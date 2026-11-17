@@ -25,6 +25,7 @@ template <class T> inline T& routerHeap(hkMemoryRouter& router)
 
 // Deletes every client that has no socket, which are the capture-file clients.
 // @fnv 0x00cd12b0
+// pdb: hkVisualDebugger::endCapture | hkVisualDebugger.obj | retail, upstream name already matches, high
 void hkVisualDebugger::endCapture()
 {
     for (int i = m_clients.m_size - 1; i >= 0; --i)
@@ -50,12 +51,14 @@ struct VisualDebuggerFactoryObject
 // Allocates and constructs a VisualDebuggerFactoryObject object and returns it as a BSFadeNode pointer.
 // @fnv 0x00ccf890
 // src: EXE 0x00ccf890
+// pdb: bhkConvexListShape::CreateObject | bhkConvexListShape.obj | retail, upstream name already matches, high
 BSFadeNode* bhkConvexListShape_CreateObject()
 {
     return reinterpret_cast<BSFadeNode*>(new VisualDebuggerFactoryObject);
 }
 
 // @fnv 0x00cd1e40
+// pdb: hkVisualDebugger::`scalar deleting destructor' | hkVisualDebugger.obj | retail, vtable slot, high
 hkVisualDebugger* hkVisualDebugger::FUN_00cd1e40(unsigned int flags)
 {
     this->hkVisualDebugger::~hkVisualDebugger();
@@ -63,7 +66,7 @@ hkVisualDebugger* hkVisualDebugger::FUN_00cd1e40(unsigned int flags)
     if (flags & 1)
     {
         hkMemoryRouter* router = &hkMemoryRouter::getInstance();
-        reinterpret_cast<hkMemoryAllocator*>(router->m_heap)->blockFree(this, m_usMemSizeAndFlags);
+        reinterpret_cast<hkMemoryAllocator*>(router->m_heap)->blockFree(this, m_memSizeAndFlags);
     }
 
     return this;
@@ -81,7 +84,10 @@ extern hkSocket*(__cdecl* DAT_011b3df0)();
 
 // Creates the debugger's socket server if absent, listens on iListenPort, and reports the outcome via DAT_01268360->message.
 // @fnv 0x00cd0d00
-void hkVisualDebugger::serve(int iListenPort)
+// pdb: hkVisualDebugger::serve | hkVisualDebugger.obj | retail, string-set bridge, high
+// pdb params: listenPort
+// pdb locals: reportBuf, ostr
+void hkVisualDebugger::serve(int listenPort)
 {
     DAT_01268360->beginSection(0x1293ade8, "Serving");
     if (!m_server)
@@ -89,13 +95,13 @@ void hkVisualDebugger::serve(int iListenPort)
         m_server = DAT_011b3df0();
         if (m_server)
         {
-            listenDebuggerSocket(m_server, iListenPort);
+            listenDebuggerSocket(m_server, listenPort);
             unsigned int auiReportBuf[0x80];
             unsigned int streamStorage[sizeof(hkOstream) / sizeof(unsigned int)];
             hkOstream& kReportStream = *reinterpret_cast<hkOstream*>(streamStorage);
             kReportStream.FUN_00cb1600(auiReportBuf, sizeof(auiReportBuf));
             kReportStream.ProcessAndReturnValue_00cc01c0("Server created and will poll for new client(s) on port ")
-                .WriteInt(iListenPort)
+                .WriteInt(listenPort)
                 .ProcessAndReturnValue_00cc01c0(" every frame");
             DAT_01268360->message(0, -1, (char*)auiReportBuf, ".\\hkVisualDebugger.cpp", 103);
             kReportStream.FUN_00cc00e0();
@@ -150,7 +156,7 @@ class hkTargetCD0E
 class hkControllerCD0E
 {
   public:
-    void hkOArchive_write32u(int mode);
+    void hkOArchive_write32u(int u);
     void hkOArchive_write8u(unsigned int flags);
     void HashUInt(float t);
     hkTargetCD0E* hkOArchive_getStreamWriter();
@@ -188,9 +194,11 @@ class hkOwnerCD0E
 };
 
 // @fnv 0x00cd0e00
-void hkOwnerCD0E::ActivateEntry(int aiIndex, float t)
+// pdb: hkVisualDebugger::writeStep | hkVisualDebugger.obj | retail, call graph, high
+// pdb params: i, t
+void hkOwnerCD0E::ActivateEntry(int i, float t)
 {
-    DebuggerClientEntry& e = m_entries[aiIndex];
+    DebuggerClientEntry& e = m_entries[i];
     if (e.m_item->m_uiContentCount.isActive())
     {
         hkControllerCD0E* c = e.m_item->m_controller;
@@ -220,6 +228,8 @@ template <class T> inline void removeAtCD11(hkVisualDebugger::Array<T>& a, int i
 
 // Finds callback in the callback array and, if present, removes it and the matching user handle.
 // @fnv 0x00cd1140
+// pdb: hkVisualDebugger::removeTrackedObjectCallback | hkVisualDebugger.obj | debug, upstream name already matches, high
+// pdb params: callback
 void hkVisualDebugger::removeTrackedObjectCallback(hkVisualDebuggerTrackedObjectCallback callback)
 {
     int iIndex = indexOfCD11(m_trackCallbacks, callback);
@@ -237,6 +247,8 @@ extern hkError* DAT_01268360;
 }  // namespace fnv_00cd11a0
 
 // @fnv 0x00cd11a0
+// pdb: hkVisualDebugger::shutdown | hkVisualDebugger.obj | retail, string-set bridge, high
+// pdb locals: reportBuf, ostr
 void hkVisualDebugger::shutdown() throw()
 {
     fnv_00cd11a0::DAT_01268360->beginSection(0x1293adef, "Shuting down Visual Debugger..");
@@ -270,7 +282,9 @@ void hkVisualDebugger::shutdown() throw()
 void __cdecl ResizeAudioStream(void*, void*, int);
 
 // @fnv 0x00cd12e0
-__declspec(noinline) void hkVisualDebugger::addDefaultProcess(const char* processName) throw()
+// pdb: hkVisualDebugger::addDefaultProcess | hkVisualDebugger.obj | retail, upstream name already matches, high
+// pdb params: viewerName
+__declspec(noinline) void hkVisualDebugger::addDefaultProcess(const char* viewerName) throw()
 {
     Array<hkStringPtr>* array = &m_defaultProcesses;
     hkMemoryRouter* router = &hkMemoryRouter::getInstance();
@@ -284,7 +298,7 @@ __declspec(noinline) void hkVisualDebugger::addDefaultProcess(const char* proces
         item->FUN_00cb0a60();
     }
     item = array->m_data + array->m_size++;
-    *item = processName;
+    *item = viewerName;
 }
 
 namespace fnv_00cd1330 {
@@ -302,6 +316,8 @@ template <typename T> inline T& allocatePairCD13(hkVisualDebugger::Array<T>& a)
 }  // namespace fnv_00cd1330
 
 // @fnv 0x00cd1330
+// pdb: hkVisualDebugger::addTrackedObject | hkVisualDebugger.obj | retail, upstream name already matches, high
+// pdb params: obj, klass, group, tagId
 void hkVisualDebugger::addTrackedObject(void* obj, const hkClass* klass, const char* group, unsigned long tagId)
 {
     hkVisualDebuggerTrackedObject& e = fnv_00cd1330::allocatePairCD13(m_trackedObjects);
@@ -326,7 +342,7 @@ template <int SIZE> __forceinline void memCpyOneAlignedXcd13c0(void* dst, const 
     } while (++i < SIZE / 4);
 }
 
-void __cdecl ResizeAudioStream(void* m_pPoolBase, void* pArray, int iSizeElem);
+void __cdecl ResizeAudioStream(void* mem, void* array, int sizeElem);
 
 template <class T> __forceinline void addBackXcd13c0(hkVisualDebugger::Array<T>& a, const T& e)
 {
@@ -339,6 +355,8 @@ template <class T> __forceinline void addBackXcd13c0(hkVisualDebugger::Array<T>&
 
 // Appends the callback and its user handle to the two parallel callback arrays.
 // @fnv 0x00cd13c0
+// pdb: hkVisualDebugger::addTrackedObjectCallback | hkVisualDebugger.obj | retail, upstream name already matches, high
+// pdb params: callback, userHandle
 void hkVisualDebugger::addTrackedObjectCallback(hkVisualDebuggerTrackedObjectCallback callback, void* userHandle)
 {
     addBackXcd13c0(m_trackCallbacks, callback);
@@ -376,13 +394,15 @@ class FUN_00cd1710_C
     EntryCD17* m_pEntries;
     int m_iNumEntries;
 
-    void hkVisualDebugger_getCurrentProcesses(SinkCD17* pkSink);
+    void hkVisualDebugger_getCurrentProcesses(SinkCD17* process);
 };
 
 // For each entry with inventory data, calls pkSink->Search using m_i04, m_i38, and m_i3C.
 // @fnv 0x00cd1710
 // src: HAVOK_LIB 0x00cd1710
-void FUN_00cd1710_C::hkVisualDebugger_getCurrentProcesses(SinkCD17* pkSink)
+// pdb: hkVisualDebugger::getCurrentProcesses | hkVisualDebugger.obj | retail, upstream name already matches, high
+// pdb params: process
+void FUN_00cd1710_C::hkVisualDebugger_getCurrentProcesses(SinkCD17* process)
 {
     int iEntryIndex = m_iNumEntries;
     for (int i = 0; i < iEntryIndex; i++)
@@ -393,8 +413,8 @@ void FUN_00cd1710_C::hkVisualDebugger_getCurrentProcesses(SinkCD17* pkSink)
             ItemCD17* pItem = kEntry.m_pInventoryEntryData;
             int iB = pItem->m_i3C;
             int iA = pItem->m_i38;
-            int iValue = pkSink->m_i04;
-            pkSink->Search(routerHeap<hkMemoryAllocator>(hkMemoryRouter::getInstance()), iValue, iA, iB);
+            int iValue = process->m_i04;
+            process->Search(routerHeap<hkMemoryAllocator>(hkMemoryRouter::getInstance()), iValue, iA, iB);
         }
     }
 }
@@ -472,6 +492,7 @@ class hkProcessContextVdb
 
 // Destroys the visual debugger server by shutting it down, detaching process contexts, clearing default viewers, and releasing the class registry.
 // @fnv 0x00cd1970
+// pdb: hkVisualDebugger::~hkVisualDebugger | hkVisualDebugger.obj | retail, upstream name already matches, high
 hkVisualDebugger::~hkVisualDebugger() throw()
 {
     shutdown();
@@ -510,6 +531,7 @@ inline hkBool* isDebuggerWriterValid(const hkStreamWriter* writer, hkBool* resul
 extern hkFileSystem* g_pkFileSystemCD1;
 
 // No shared hkServerProcessHandler header: its process-handler interface is at +0x08 in capture.
+// pdb: class hkServerProcessHandler, size 0x50 (here 0xc), bases: hkReferencedObject, hkProcessHandler, hkProcess, 3 members
 class hkServerProcessHandler
 {
   public:
@@ -529,23 +551,26 @@ class hkServerProcessHandler
 
 inline const char* hkStringPtr::cString() const
 {
-    return reinterpret_cast<const char*>(reinterpret_cast<unsigned long>(m_pcText) & ~1);
+    return reinterpret_cast<const char*>(reinterpret_cast<unsigned long>(m_stringAndFlag) & ~1);
 }
 
 // Opens a file writer for pcCaptureFilename, adds it as a client, selects default viewers, and logs the capture status via g_pkErrorCD1.
 // @fnv 0x00cd1b20
-void hkVisualDebugger::capture(const char* pcCaptureFilename) throw()
+// pdb: hkVisualDebugger::capture | hkVisualDebugger.obj | retail, string-set bridge, high
+// pdb params: captureFilename
+// pdb locals: viewerNames, reportBuf, ostr
+void hkVisualDebugger::capture(const char* captureFilename) throw()
 {
     g_pkErrorCD1->beginSection(0x1293ade7, "Capturing");
 
-    hkStreamWriter* pkWriter = g_pkFileSystemCD1->OpenWriter(pcCaptureFilename);
+    hkStreamWriter* pkWriter = g_pkFileSystemCD1->OpenWriter(captureFilename);
     hkBool writerValid;
     if (pkWriter && *isDebuggerWriterValid(pkWriter, &writerValid))
     {
         {
             unsigned int reportBuf[128];
             hkOstream ostr(reportBuf, sizeof(reportBuf));
-            ostr << "Capturing simulation state to '" << pcCaptureFilename << "'";
+            ostr << "Capturing simulation state to '" << captureFilename << "'";
             g_pkErrorCD1->message(0, -1, (const char*)reportBuf, ".\\hkVisualDebugger.cpp", 125);
         }
         createClient(0, 0, pkWriter);
@@ -575,7 +600,7 @@ void hkVisualDebugger::capture(const char* pcCaptureFilename) throw()
     {
         unsigned int reportBuf[128];
         hkOstream ostr(reportBuf, sizeof(reportBuf));
-        ostr << "Capture file '" << pcCaptureFilename << "' could not be opened for writing";
+        ostr << "Capture file '" << captureFilename << "' could not be opened for writing";
         g_pkErrorCD1->message(0, -1, (const char*)reportBuf, ".\\hkVisualDebugger.cpp", 151);
     }
 
@@ -606,19 +631,21 @@ struct Owner_cd0e
 {
     int unk00, unk04, unk08, unk0C;
     hkArray<DebuggerClientReferences> m_pairs;
-    void RemovePair(int index);
+    void RemovePair(int i);
 };
 
 // Releases both nonnull references in the indexed pair, then removes that array entry.
 // @fnv 0x00cd0e60
-void Owner_cd0e::RemovePair(int index)
+// pdb: hkVisualDebugger::deleteClient | hkVisualDebugger.obj | retail, call graph, high
+// pdb params: i
+void Owner_cd0e::RemovePair(int i)
 {
-    DebuggerClientReferences& pair = m_pairs[index];
+    DebuggerClientReferences& pair = m_pairs[i];
     if (pair.m_kPointB)
         pair.m_kPointB->removeReference();
     if (pair.m_kPointA)
         pair.m_kPointA->removeReference();
-    m_pairs.removeAt(index);
+    m_pairs.removeAt(i);
 }
 
 inline void memCpy4_836(void* dst, const void* src, int nbytes)
@@ -636,6 +663,8 @@ template <class T> inline void removeAt836(hkVisualDebugger::Array<T>& a, int in
 
 // Removes obj from the tracked objects and tells each tracked-object callback it was removed.
 // @fnv 0x00cd10a0
+// pdb: hkVisualDebugger::removeTrackedObject | hkVisualDebugger.obj | retail, upstream name already matches, high
+// pdb params: obj
 void hkVisualDebugger::removeTrackedObject(void* obj)
 {
     for (int i = 0; i < m_trackedObjects.getSize(); i++)
@@ -650,7 +679,7 @@ void hkVisualDebugger::removeTrackedObject(void* obj)
     }
 }
 
-void __cdecl hkArrayUtil__reserve(hkMemoryAllocator* heap, void* array, int numElements, int sizeOfElement) throw();
+void __cdecl hkArrayUtil__reserve(hkMemoryAllocator* mem, void* array, int numElem, int sizeElem) throw();
 void __cdecl WriteCompilerInfo(void* p) throw();
 
 template <class T> __forceinline T& allocateDebuggerEntry(hkArray<T>& a) throw()
@@ -706,8 +735,8 @@ struct Process_cd14
         p->m_usMemSizeAndFlags = (unsigned short)nbytes;
         return p;
     }
-    Process_cd14* FUN_00d60f30(void* owner, void* a, void* b) throw();
-    void VisitEntryNames() throw();
+    Process_cd14* FUN_00d60f30(void* contexts, void* inStream, void* outStream) throw();
+    void hkServerProcessHandler_registerAllAvailableProcesss() throw();
 };
 
 struct Entry_cd14
@@ -725,20 +754,22 @@ struct Server_cd14
     int* m_types;
     int m_numTypes;
     void ActivateEntry(int i, float t);
-    void AddEntry(const char* name, void* a, void* b);
+    void AddEntry(const char* socket, void* reader, void* writer);
 };
 
 // Allocates a new entry in m_entries, initializes its process with owner and parameters, enables matching viewer types, and activates the entry.
 // @fnv 0x00cd1440
-void Server_cd14::AddEntry(const char* name, void* a, void* apCompilerInfo)
+// pdb: hkVisualDebugger::createClient | hkVisualDebugger.obj | retail, call graph, high
+// pdb params: socket, reader, writer
+void Server_cd14::AddEntry(const char* socket, void* reader, void* writer)
 {
-    if (apCompilerInfo)
-        WriteCompilerInfo(apCompilerInfo);
+    if (writer)
+        WriteCompilerInfo(writer);
     Entry_cd14& e = allocateDebuggerEntry(m_entries);
-    e.m_name = name;
+    e.m_name = socket;
     e.m_process = ((Process_cd14*)Process_cd14::operator new(sizeof(Process_cd14)))
-                      ->FUN_00d60f30(&m_pOwnerObject, a, apCompilerInfo);
-    e.m_process->VisitEntryNames();
+                      ->FUN_00d60f30(&m_pOwnerObject, reader, writer);
+    e.m_process->hkServerProcessHandler_registerAllAvailableProcesss();
     for (int i = 0; i < m_numTypes; i++)
     {
         int type = m_types[i] & ~1;
@@ -761,9 +792,11 @@ inline char* acceptDebuggerClient(hkSocket*& socket)
 
 // Stops the timer, reports a message and client data when available, then restarts the timer if frame timing is enabled.
 // @fnv 0x00cd1520
+// pdb: hkVisualDebugger::pollForNewClients | hkVisualDebugger.obj | retail, string-set bridge, high
+// pdb locals: reportBuf, ostr
 void hkVisualDebugger::pollForNewClients()
 {
-    if (m_suppressPollForNewClients)
+    if (s_SuppressPollForNewClients)
         return;
 
     if (m_amTimingFrame)
@@ -799,11 +832,14 @@ extern hkError* g_pkErrorC17;
 void __cdecl hkVisualDebuggerInitFactoryC17() throw();
 
 // @fnv 0x00cd1780
-hkVisualDebugger::hkVisualDebugger(const Array<hkProcessContext*>& kContexts, const hkVtableClassRegistry* pkClassReg) throw()
-    : m_server(0), m_suppressPollForNewClients(false), m_classReg(pkClassReg), m_amTimingFrame(false),
+// pdb: hkVisualDebugger::hkVisualDebugger | hkVisualDebugger.obj | retail, string-set bridge, high
+// pdb params: contexts, reg
+// pdb locals: reportBuf, ostr
+hkVisualDebugger::hkVisualDebugger(const Array<hkProcessContext*>& contexts, const hkVtableClassRegistry* reg) throw()
+    : m_server(0), s_SuppressPollForNewClients(false), m_classReg(reg), m_amTimingFrame(false),
       m_frameTimer("Frame Timer")
 {
-    m_contexts = kContexts;
+    m_contexts = contexts;
     for (int i = 0; i < m_contexts.getSize(); i++)
         reinterpret_cast<hkProcessContextVdb*>(m_contexts[i])->SetOwnerPointer(this);
 
@@ -856,17 +892,20 @@ struct FUN_00cd1610_cls
     unsigned int unk4c;
     DefaultProcessSlot* m_processes;
     int m_uiItemCount;
-    void hkVisualDebugger_removeDefaultProcess(unsigned int wanted);
+    void hkVisualDebugger_removeDefaultProcess(unsigned int processName);
 };
 // Removes the process slot matching wanted from m_processes, or logs an error via DAT_01268360 if it is not found.
 // @fnv 0x00cd1610
 // src: HAVOK_LIB 0x00cd1610
-void FUN_00cd1610_cls::hkVisualDebugger_removeDefaultProcess(unsigned int wanted)
+// pdb: hkVisualDebugger::removeDefaultProcess | hkVisualDebugger.obj | retail, string-set bridge, high
+// pdb params: processName
+// pdb locals: reportBuf, ostr
+void FUN_00cd1610_cls::hkVisualDebugger_removeDefaultProcess(unsigned int processName)
 {
     for (int i = 0; i < m_uiItemCount; ++i)
     {
         unsigned int current = m_processes[i].taggedPtr;
-        if (hkString_strCmp(current & ~1u, wanted) == 0)
+        if (hkString_strCmp(current & ~1u, processName) == 0)
         {
             m_processes[i].Object_UpdateFields_00cb0c00();
             --m_uiItemCount;
@@ -884,7 +923,7 @@ void FUN_00cd1610_cls::hkVisualDebugger_removeDefaultProcess(unsigned int wanted
     char* reportBuffer = reinterpret_cast<char*>(reportStorage + sizeof(hkOstream) / sizeof(unsigned int));
     message.FUN_00cb1600(reportBuffer, 512);
     message.ProcessAndReturnValue_00cc01c0("The default Process'")
-        .ProcessAndReturnValue_00cc01c0((const char*)wanted)
+        .ProcessAndReturnValue_00cc01c0((const char*)processName)
         .ProcessAndReturnValue_00cc01c0("', cannot not be removed from the default process list as it cannot be found!");
     DAT_01268360->message(0, -1, reportBuffer, ".\\hkVisualDebugger.cpp", 318);
     message.FUN_00cc00e0();

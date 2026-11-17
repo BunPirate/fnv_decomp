@@ -7,6 +7,7 @@ class hkpConvexShape;
 class hkpShape;
 class PhysicsShapeClass;
 
+// pdb: class bhkConvexShape, size 0x14, bases: bhkSphereRepShape, 0 members
 class bhkConvexShape : public bhkSphereRepShape
 {
 public:
@@ -14,7 +15,7 @@ public:
     virtual ~bhkConvexShape();
 
     virtual const NiRTTI* GetRTTI() const;
-    virtual void LoadBinary(NiStream& stream);
+    virtual void LoadBinary(NiStream& arStream);
     virtual void SaveBinary(NiStream& stream);
     virtual void GetViewerStrings(NiViewerStringsArray* viewerStrings);
 
@@ -25,7 +26,7 @@ public:
     void SetRadius(float radius);
     void CopyCinfo(PhysicsShapeClass& cinfo);
     void bhkBoxShape_Init(unsigned int);
-    void bhkCapsuleShape_Init_00cab820(int a);
+    void bhkCapsuleShape_Init_00cab820(int arInfo);
 
     static bhkConvexShape* GetFromRigidBody(const hkpShape* shape);
 

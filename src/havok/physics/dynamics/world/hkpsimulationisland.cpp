@@ -41,7 +41,7 @@ struct S_00d070c0
     S_00d070c0_Inner* unk14;
 };
 
-void __cdecl hkpWorldOperationUtil_addConstraintToCriticalLockedIsland(void* a, S_00d070c0* obj);
+void __cdecl hkpWorldOperationUtil_addConstraintToCriticalLockedIsland(void* a, S_00d070c0* constraint);
 
 // @fnv 0x00d070c0
 // src: HAVOK_SRC 0x00d070c0
@@ -67,13 +67,13 @@ struct Owner
     Holder* m_pHolder;
 };
 
-void __cdecl Object_NotifyAndDetachRecord(void* apTarget, Owner* apOwner);
+void __cdecl hkpWorldOperationUtil_removeConstraintFromCriticalLockedIsland(void* apTarget, Owner* constraint);
 
 // @fnv 0x00d070e0
 // src: HAVOK_SRC 0x00d070e0
 void __stdcall hkpSimulationIsland_removeConstraintFromCriticalLockedIsland(Owner* apOwner)
 {
-    Object_NotifyAndDetachRecord(apOwner->m_pHolder->m_pFlagTarget, apOwner);
+    hkpWorldOperationUtil_removeConstraintFromCriticalLockedIsland(apOwner->m_pHolder->m_pFlagTarget, apOwner);
 }
 
 struct FUN_00d07130Arg
@@ -330,6 +330,9 @@ struct D077D0Object
 
 // @fnv 0x00d077d0
 // src: HAVOK_LIB 0x00d077d0
+// pdb: hkpSimulationIsland::isFullyConnected | hkpSimulationIsland.obj | retail, object-file run extension, low
+// pdb params: checkConnectivityOut
+// pdb locals: assertBuf, ostr, actionEntities
 bool D077D0Object::hkpSimulationIsland_isFullyConnected()
 {
     D077D0LocalBuffer buffer;
@@ -343,12 +346,12 @@ bool D077D0Object::hkpSimulationIsland_isFullyConnected()
 struct GlobalObjectO2_00d472a0
 {
 };
-extern GlobalObjectO2_00d472a0 g_012687cc;
+extern GlobalObjectO2_00d472a0 hkpSimulationIslandClass; // src: XBOX_RETAIL_PDB 0x012687cc (old: g_012687cc)
 // @fnv 0x00d078d0
 // src: GUESS 0x00d078d0 (confidence: low)
 GlobalObjectO2_00d472a0* hkpSimulationIsland_GetField012687ccAddress()
 {
-    return &g_012687cc;
+    return &hkpSimulationIslandClass;
 }
 
 // FUN_00d07100: OR a flag byte into a sub-object's flags field.
@@ -572,6 +575,9 @@ struct S_00d074c0_Island
 
 // Unions entities linked by collision entries, constraints and actions in checkConnectivityOut and returns whether they form one group.
 // @fnv 0x00d074c0
+// pdb: hkpSimulationIsland::isFullyConnected | hkpSimulationIsland.obj | retail, object-file run extension, low
+// pdb params: checkConnectivityOut
+// pdb locals: assertBuf, ostr, actionEntities
 bool S_00d074c0_Island::CheckConnectivity(S_00d074c0_UnionFind& aUnionFind) throw()
 {
     {
@@ -649,7 +655,7 @@ bool S_00d074c0_Island::CheckConnectivity(S_00d074c0_UnionFind& aUnionFind) thro
 namespace fnvc_adapt {
 hkMemoryRouter* __cdecl hkMemoryRouter_getInstance();
 }
-void __cdecl ResizeAudioStream(hkMemoryAllocator* apAllocator, void* apContainer, unsigned int auiElemSize);
+void __cdecl ResizeAudioStream(hkMemoryAllocator* mem, void* array, unsigned int sizeElem);
 
 struct PointerList
 {
@@ -686,12 +692,14 @@ struct FUN_00d07470_cls
     int unk34;
     PointerList m_kNode;
 
-    void AddItem(ListItem* apItem);
+    void AddItem(ListItem* act);
 };
 
 // Appends apItem to the pointer list, growing it via the allocator when full, and sets the item's back-pointer to this.
 // @fnv 0x00d07470
-void FUN_00d07470_cls::AddItem(ListItem* apItem)
+// pdb: hkpSimulationIsland::addAction | hkpSimulationIsland.obj | retail, call graph, high
+// pdb params: act
+void FUN_00d07470_cls::AddItem(ListItem* act)
 {
     PointerList* pItems = &m_kNode;
     hkMemoryRouter* pHolder = fnvc_adapt::hkMemoryRouter_getInstance();
@@ -701,10 +709,10 @@ void FUN_00d07470_cls::AddItem(ListItem* apItem)
     }
 
     void** pSlot = (void**)((unsigned int)pItems->m_pData + *(volatile unsigned int*)&pItems->m_uCount * 4);
-    *pSlot = apItem;
+    *pSlot = act;
     pItems->m_uCount++;
 
-    apItem->m_pSharedOwner = this;
+    act->m_pSharedOwner = this;
 }
 
 namespace fnv_00d07720 {
@@ -747,6 +755,8 @@ struct FUN_00d07720_cls
 };
 
 // @fnv 0x00d07720
+// pdb: hkpSimulationIsland::~hkpSimulationIsland | hkpSimulationIsland.obj | retail, object-file run extension, low
+// pdb locals: assertBuf, ostr
 void FUN_00d07720_cls::ResetArrays()
 {
     m_vptr00 = (int)&DAT_010ccf28;
@@ -806,6 +816,7 @@ struct FUN_00d078e0_cls
 };
 
 // @fnv 0x00d078e0
+// pdb: hkpSimulationIsland::`scalar deleting destructor' | hkpSimulationIsland.obj | retail, vtable slot, high
 FUN_00d078e0_cls* FUN_00d078e0_cls::Destroy(unsigned char acFlags)
 {
     ResetArrays();
@@ -894,49 +905,51 @@ struct FUN_00d07210_Island
     S_00d074c0_Array<S_00d074c0_Entity*> m_kActorEntries;
     int unk54;
     hkpAgentNnTrack m_pAgents;
-    void SaveIsland(FUN_00d07210_Writer* save, int unkArg);
+    void SaveIsland(FUN_00d07210_Writer* collector, int cls);
 };
 
-int __cdecl hkStatisticsCollector_getAllocatedSize(void* data, int bytes);
-void __cdecl CollectSectors(void* agents, FUN_00d07210_Writer* save);
+int __cdecl hkStatisticsCollector_getAllocatedSize(void* p, int size);
+void __cdecl hkpAgentMachineUtil_calcNnStatisticsContactMgrsOnly(void* agents, FUN_00d07210_Writer* save);
 void __cdecl hkpAgentMachineUtil_calcNnStatistics(void* agents, void* world, FUN_00d07210_Writer* save);
 
 // Serializes the island's entity and action pointer arrays, per-entity constraints, agents and collision agents through the writer.
 // @fnv 0x00d07210
-void FUN_00d07210_Island::SaveIsland(FUN_00d07210_Writer* save, int)
+// pdb: hkpSimulationIsland::calcContentStatistics | hkpSimulationIsland.obj | retail, string-set bridge, high
+// pdb params: collector, cls
+void FUN_00d07210_Island::SaveIsland(FUN_00d07210_Writer* collector, int)
 {
-    if ((m_kActorEntries.m_iCapacityState & 0x80000000) == 0 || save->m_force)
+    if ((m_kActorEntries.m_iCapacityState & 0x80000000) == 0 || collector->m_force)
     {
         int alloc = hkStatisticsCollector_getAllocatedSize(m_kActorEntries.m_data, m_kActorEntries.getCapacity() * 4);
-        save->Array(3, "EntityPtrs", m_kActorEntries.m_data, m_kActorEntries.GetLogicalSize() * 4, alloc);
+        collector->Array(3, "EntityPtrs", m_kActorEntries.m_data, m_kActorEntries.GetLogicalSize() * 4, alloc);
     }
 
     for (int i = 0; i < m_kActorEntries.GetLogicalSize(); i++)
     {
         S_00d074c0_Entity* entity = m_kActorEntries[i];
-        save->Begin("Entity", entity, 0);
-        save->Block("Constraints");
-        if ((entity->m_constraintsCap & 0x8000) == 0 || save->m_force)
+        collector->Begin("Entity", entity, 0);
+        collector->Block("Constraints");
+        if ((entity->m_constraintsCap & 0x8000) == 0 || collector->m_force)
         {
-            save->Array(3, "ConMstPtr", entity->m_constraintsData, entity->m_constraintsSize * 48,
+            collector->Array(3, "ConMstPtr", entity->m_constraintsData, entity->m_constraintsSize * 48,
                         (entity->m_constraintsCap & 0x3fff) * 48);
         }
         for (int j = 0; j < entity->m_constraintsSize; j++)
         {
 
             if (((FUN_00d07210_Constraint*)&entity->m_constraintsData[j])->m_pConstraintInstance->m_flags & 0x7fff)
-                save->Begin("ConInstance",
+                collector->Begin("ConInstance",
                             ((FUN_00d07210_Constraint*)&entity->m_constraintsData[j])->m_pConstraintInstance, 0);
             if (((FUN_00d07210_Constraint*)&entity->m_constraintsData[j])->m_pConstraintInstance->m_pData->m_flags &
                 0x7fff)
-                save->Begin("ConData",
+                collector->Begin("ConData",
                             ((FUN_00d07210_Constraint*)&entity->m_constraintsData[j])->m_pConstraintInstance->m_pData,
                             0);
         }
-        save->End();
+        collector->End();
     }
 
-    if ((m_ppActions.m_iCapacityState & 0x80000000) == 0 || save->m_force)
+    if ((m_ppActions.m_iCapacityState & 0x80000000) == 0 || collector->m_force)
     {
         int alloc;
         {
@@ -944,19 +957,19 @@ void FUN_00d07210_Island::SaveIsland(FUN_00d07210_Writer* save, int)
             void* data = m_ppActions.m_data;
             alloc = hkStatisticsCollector_getAllocatedSize(data, capacity * 4);
         }
-        save->Array(3, "ActionPtrs", m_ppActions.m_data, m_ppActions.GetLogicalSize() * 4, alloc);
+        collector->Array(3, "ActionPtrs", m_ppActions.m_data, m_ppActions.GetLogicalSize() * 4, alloc);
     }
 
     for (int i = 0; i < m_ppActions.GetLogicalSize(); i++)
     {
         S_00d074c0_Action* action = m_ppActions[i];
-        save->Begin("Actions", action, 0);
+        collector->Begin("Actions", action, 0);
     }
 
-    CollectSectors(&m_pAgents, save);
-    save->Block("CollAgents");
-    hkpAgentMachineUtil_calcNnStatistics(&m_pAgents, unk18->unk78, save);
-    save->End();
+    hkpAgentMachineUtil_calcNnStatisticsContactMgrsOnly(&m_pAgents, collector);
+    collector->Block("CollAgents");
+    hkpAgentMachineUtil_calcNnStatistics(&m_pAgents, unk18->unk78, collector);
+    collector->End();
 }
 
 extern const void* DAT_010ccf28[];  // hkpSimulationIsland vftable (not in the symbols DB)
@@ -967,8 +980,8 @@ extern const void* DAT_010ccf28[];  // hkpSimulationIsland vftable (not in the s
 
 __forceinline hkMultiThreadCheck::hkMultiThreadCheck()
 {
-    m_uiThreadId = UNMARKED;
-    m_usMarkedForWrite = 0x8000;
+    m_threadId = UNMARKED;
+    m_markCount = 0x8000;
 }
 
 struct hkpWorld;
@@ -1037,7 +1050,7 @@ struct ItemList
 };
 
 hkMemoryRouter* __cdecl hkMemoryRouter_getInstance();
-void __cdecl ResizeAudioStream(void* alloc, void* list, unsigned int n);
+void __cdecl ResizeAudioStream(void* mem, void* array, unsigned int sizeElem);
 
 struct FUN_00d07420_cls
 {
@@ -1093,16 +1106,19 @@ struct FUN_00d07420_cls
     int unkC8;
     FUN_00d07420_cls* m_cc;  // +0xcc
 
-    void hkpSimulationIsland_internalAddEntity(FUN_00d07420_cls* item);
+    void hkpSimulationIsland_internalAddEntity(FUN_00d07420_cls* entity);
 };
 
 // Sets item's parent to this and its index to the current count, then appends item to this object's item list, growing it via FUN_00c90940 when full.
 // @fnv 0x00d07420
 // src: HAVOK_LIB 0x00d07420
-void FUN_00d07420_cls::hkpSimulationIsland_internalAddEntity(FUN_00d07420_cls* item)
+// pdb: hkpSimulationIsland::internalAddEntity | hkpSimulationIsland.obj | retail, upstream name already matches, high
+// pdb params: entity
+// pdb locals: assertBuf, ostr
+void FUN_00d07420_cls::hkpSimulationIsland_internalAddEntity(FUN_00d07420_cls* entity)
 {
-    item->m_cc = this;
-    item->m_a8 = (unsigned short)m_kNode.m_uiItemCount;
+    entity->m_cc = this;
+    entity->m_a8 = (unsigned short)m_kNode.m_uiItemCount;
     ItemList* list = &m_kNode;
     hkMemoryRouter* holder = hkMemoryRouter_getInstance();
     if (list->m_uiItemCount == (int)(list->m_capFlags & 0x3fffffffu))
@@ -1110,8 +1126,8 @@ void FUN_00d07420_cls::hkpSimulationIsland_internalAddEntity(FUN_00d07420_cls* i
         ResizeAudioStream(holder->m_heap, list, 4);
     }
     void** slot = list->m_data + list->m_uiItemCount;
-    *slot = item;
-    *slot = item;  // repeated store: keeps the slot address materialised in a register
+    *slot = entity;
+    *slot = entity;  // repeated store: keeps the slot address materialised in a register
     list->m_uiItemCount++;
 }
 }  // namespace fnv_00d07420

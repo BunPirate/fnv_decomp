@@ -22,44 +22,45 @@ class XActor;
 enum DIALOGUE_TYPE;
 enum SPEECH_CHALLENGE_LEVEL;
 
+// pdb: class TESTopicInfo, size 0x50, bases: TESForm, 12 members
 class TESTopicInfo : public TESForm
 {
 public:
-    PerkEntryConditionSet m_kInfoConditions;
-    unsigned short m_uiInfoIndex;
-    bool m_bGoodbye;
+    PerkEntryConditionSet objConditions; // src: XBOX_RETAIL_PDB +0x18 (old: m_kInfoConditions)
+    unsigned short iInfoIndex; // src: XBOX_RETAIL_PDB +0x20 (old: m_uiInfoIndex)
+    bool bSaidOnce; // src: XBOX_RETAIL_PDB +0x22 (old: m_bGoodbye)
     TopicInfoData m_Data;
     unsigned char layoutPadding27;
-    BSStringT<char> m_kPrompt;
-    BSSimpleList<TESTopic*> m_kAddTopicList;
-    TESTopicInfoData* m_pResponseData;
-    TESActorBase* m_pDialogueSpeaker;
-    TESForm* m_pPerkSkillStat;
-    SPEECH_CHALLENGE_LEVEL m_eDifficultyLevel;
-    TESQuest* m_pOwnerQuest;
-    unsigned long m_ulTopicFlags;
+    BSStringT<char> cPrompt; // src: XBOX_RETAIL_PDB +0x28 (old: m_kPrompt)
+    BSSimpleList<TESTopic*> m_listAddTopics; // src: XBOX_RETAIL_PDB +0x30 (old: m_kAddTopicList)
+    TESTopicInfoData* m_pConversationData; // src: XBOX_RETAIL_PDB +0x38 (old: m_pResponseData)
+    TESActorBase* pSpeaker; // src: XBOX_RETAIL_PDB +0x3c (old: m_pDialogueSpeaker)
+    TESForm* pPerkSkillStat; // src: XBOX_RETAIL_PDB +0x40 (old: m_pPerkSkillStat)
+    SPEECH_CHALLENGE_LEVEL eDifficulty; // src: XBOX_RETAIL_PDB +0x44 (old: m_eDifficultyLevel)
+    TESQuest* pOwnerQuest; // src: XBOX_RETAIL_PDB +0x48 (old: m_pOwnerQuest)
+    unsigned long iFileOffset; // src: XBOX_RETAIL_PDB +0x4c (old: m_ulTopicFlags)
 
-    TESTopicInfo(DIALOGUE_TYPE type);
-    TESTopicInfo(int type);
+    TESTopicInfo(DIALOGUE_TYPE aeType);
+    TESTopicInfo(int aeType);
     virtual ~TESTopicInfo();
     virtual void InitializeComponent();
     virtual void ClearData();
-    virtual bool LoadForm(TESFile* file);
+    virtual bool LoadForm(TESFile* apFile);
     virtual void InitItem();
-    virtual void SetAltered(bool altered);
-    virtual void Revert(BGSLoadFormBuffer* buffer);
+    virtual void SetAltered(bool abVal);
+    virtual void Revert(BGSLoadFormBuffer* apLoadGameBuffer);
 
     void __vslot_10();
     void Save();
-    bool Load(TESFile* file);
-    void Copy(TESForm* form);
+    bool Load(TESFile* apFile);
+    void Copy(TESForm* apCopy);
     void ResetFormData();
     bool CopyTopicData(FormRecordHeader* header);
     bool CopyTopicData(TESForm* form);
     bool LoadTopicInfoData(FormRecordHeader* header, bool arg1, bool arg2);
     void CreateGroupData(FormRecordHeader* header, TESFileGroup* group);
     void SerializeTopicInfoData(void* data);
-    virtual void LoadGame(BGSLoadFormBuffer* buffer);
+    virtual void LoadGame(BGSLoadFormBuffer* apLoadGameBuffer);
     virtual void LoadGameLegacy(unsigned int arg0, unsigned int arg1);
     virtual void RevertLegacy(unsigned int flags);
 
@@ -75,7 +76,7 @@ public:
     BSSimpleList<TESTopic*>* GetAddTopicList();
     bool InAddTopicList(TESTopic* topic);
     void FormatDebugInfo(void* text, bool firstOnly);
-    void FormatDebugInfo(BSStringT<char>& text, bool firstOnly);
+    void GetInfoDisplayText(BSStringT<char>& aString, bool abFirstOnly);
     TESQuest* GetParentQuest();
     void SetOwnerQuest(TESQuest* quest);
     bool IsGoodbye();
@@ -101,7 +102,7 @@ public:
     int GetDummyNodeState();
     void SetDummyNodeState(int state);
     TESTopicInfoData* GetConversationData();
-    void SetTopicInfoData(TESTopicInfoData* data);
+    void SetConversationData(TESTopicInfoData* apConversationData);
     const BSStringT<char>& GetPrompt();
     void SetPrompt(char* prompt);
     void SetPrompt(const char* prompt);
@@ -119,8 +120,8 @@ public:
     void SetSpeaker(TESActorBase* speaker);
     void SetSpeaker(MagicItem* speaker);
     void CloneResponseList(TESResponseList* list);
-    Script* GetResultScript(int onEnd);
-    Script* GetResultScript(unsigned int onEnd);
+    Script* GetResultScript(int aeScript);
+    Script* GetResultScript(unsigned int aeScript);
     bool HasResultScript();
     unsigned int GetTempDataOffset();
     void SetTempDataOffset(unsigned int offset);
@@ -135,12 +136,12 @@ public:
     void SetSaidOnce();
     void ResetSaidOnceFlags();
     bool IsValidSaveID(bool arg);
-    TESResponseList* DuplicateResponseList(TESResponseList* list);
-    void ClearResponses();
-    void ResetResponseList();
+    TESResponseList* GetResponseList(TESResponseList* apList);
+    void ClearResponseList();
+    void ClearAddTopicList();
     TopicInfoData* GetData();
-    void RunResultScript(bool onEnd, MobileObject* speaker);
-    void RunResultScript(int onEnd, Character* speaker);
+    void RunResultScript(bool aeScript, MobileObject* apRef);
+    void RunResultScript(int aeScript, Character* apRef);
     void RunResultScript(int onEnd, XActor* speaker);
     bool IsNew();
     bool IsRefusal();

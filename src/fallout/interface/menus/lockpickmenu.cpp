@@ -48,6 +48,7 @@ void __fastcall FUN_0078e0f0(void*);
 void __cdecl _Deallocate(void*);
 // Calls FUN_0078e0f0 on this, frees this with _Deallocate when flags has bit 1 set, and returns this.
 // @fnv 0x0078dad0
+// pdb: LockPickMenu::`scalar deleting destructor' | LockPickMenu.obj | retail, vtable slot, high
 void* LockPickMenu::FUN_0078dad0(unsigned int flags)
 {
     FUN_0078e0f0(this);
@@ -64,6 +65,8 @@ void* __cdecl InterfaceManager_GetSingleton();
 // If aiID is 13, gets the next entry from FUN_004b7210 and calls Set(0xfa9, 0.0f, true) on it as a Tile.
 // @fnv 0x007902b0
 // src: XBOX_PDB 0x007902b0
+// pdb: LockPickMenu::DoEnter | LockPickMenu.obj | debug, vtable slot, medium
+// pdb params: aiID, apTarget
 void LockPickMenu::DoEnter_007902b0(int aiID, Tile* apTarget)
 {
     if (aiID == 13)
@@ -83,6 +86,8 @@ void* __cdecl InterfaceManager_GetSingleton();
 // If aiID equals 0xD, gets the next object from FUN_004b7210 and calls Set(0xFA9, 255.0f, true) on it as a Tile.
 // @fnv 0x007902f0
 // src: XBOX_PDB 0x007902f0
+// pdb: LockPickMenu::DoLeave | LockPickMenu.obj | debug, vtable slot, medium
+// pdb params: aiID, apTarget
 void LockPickMenu::DoLeave_007902f0(int aiID, Tile* apTarget)
 {
     if (aiID == 0xD)
@@ -102,7 +107,11 @@ struct Manager
 extern Manager DAT_011da24c;
 // Rotates the lock object by an angle derived from amount and tile->FUN_00a011b0(0xfb1), then applies the rotation and position and updates it.
 // @fnv 0x00790df0
-void LockPickMenu::UpdateLockRotation(float amount)
+// src: XBOX_RETAIL_PDB 0x00790df0
+// pdb: LockPickMenu::RotateLockpickModel | LockPickMenu.obj | retail, call graph (shared callers), high
+// pdb params: afNewArrowX
+// pdb locals: mrot, UpdateData, centerPoint, plockpickNode
+void LockPickMenu::RotateLockpickModel(float afNewArrowX)
 {
     NiAVObject* object;
     {
@@ -110,7 +119,7 @@ void LockPickMenu::UpdateLockRotation(float amount)
         object = DAT_011da24c.Modelloader_GetReferencedThis(1)->FUN_0043b4a0();
         NiUpdateData kUpdateData(0.0f, false, false);
         NiPoint3 offset = position.GetNegatedVector().FUN_00439e90(NiPoint3(0.0f, 0.0f, 0.6f));
-        matrix.MakeYRotation((float)((amount / m_64->FUN_00a011b0(0xfb1) * -180.0 + 90.0) * 0.01745329238474369));
+        matrix.MakeYRotation((float)((afNewArrowX / m_64->FUN_00a011b0(0xfb1) * -180.0 + 90.0) * 0.01745329238474369));
         object->NiAVObject_SetTranslate(position.FUN_00439e90(offset).SubtractIntoVector(matrix.operator*(offset)));
         matrix = matrix.operator*(rotation);
         object->SetRotate_0043fa80(matrix);
@@ -133,15 +142,19 @@ struct Sequence
     float GetStartTime(int aiIndex);
     float GetEndTime();
     float GetCurrentTime();
-    void SetTime(float afTime);
+    void SetTime(float afPhase);
 };
 }  // namespace fnv_00790f40
 
 // @fnv 0x00790f40
-void LockPickMenu::AdvanceSequence(float afDelta)
+// src: XBOX_RETAIL_PDB 0x00790f40
+// pdb: LockPickMenu::RotateLock | LockPickMenu.obj | retail, object-file run extension, high
+// pdb params: afAngleOffset
+// pdb locals: UpdateData, fAngleRatio
+void LockPickMenu::RotateLock(float afAngleOffset)
 {
     using namespace fnv_00790f40;
-    float fSequenceTimeRatio = (float)((m_8c + afDelta) / 90.0);
+    float fSequenceTimeRatio = (float)((m_8c + afAngleOffset) / 90.0);
     NiUpdateData kData(0.0f, true, false);
     if (m_a0)
     {
@@ -200,8 +213,10 @@ void __cdecl BSShaderUtil_AccumulateScene(void*, int, void*);
 void __cdecl FUN_00b6c0d0(void*, void*, int);
 
 // @fnv 0x0078e7c0
-// src: COMMUNITY 0x0078e7c0
-void __cdecl LockPickMenu_DrawScene()
+// src: XBOX_RETAIL_PDB 0x0078e7c0 (was COMMUNITY)
+// pdb: LockPickMenu::Draw3DElements | LockPickMenu.obj | retail, object-file run extension, high
+// pdb locals: spaccum, apCuller, pcam, pcamera, apSceneGraph
+void __cdecl LockPickMenu_Draw3DElements()
 {
     void* v6;
     void* v14;
@@ -437,6 +452,8 @@ extern double DAT_01070c80;
 //   d = frustum scale, e = view angle, a = trailing value object.
 // @fnv 0x0078e900
 // src: COMMUNITY 0x0078e900
+// pdb: LockPickMenu::Create3DCamera | LockPickMenu.obj | retail, upstream name already matches, high
+// pdb locals: theta, faspectDelta, fr, fHeightByWidth, pcam, port, UpdateData2
 void* LockPickMenu::Create3DCamera()
 {
     using namespace fnv_0078e900;
@@ -538,10 +555,13 @@ typedef float (Tile::*TileFloatGetter)(int);
 typedef float (Tile::*TileFloatGetterWithFlag)(int, bool);
 
 // @fnv 0x00790330
-void LockPickMenu::HandleLockPickAction(int aiCode, int aiUnused)
+// pdb: LockPickMenu::DoClick | LockPickMenu.obj | retail, string-set bridge, high
+// pdb params: aiID, apTarget
+// pdb locals: itweakIncrAmount, fdoPunishment, flockLevelRatio, iskillLevelRange, idelta, strtemp, imeterCt, pcurrTile
+void LockPickMenu::HandleLockPickAction(int aiID, int apTarget)
 {
     int iStep = 5;
-    switch (aiCode)
+    switch (aiID)
     {
     case 10:
         LockPickMenu_Close();
@@ -576,7 +596,7 @@ void LockPickMenu::HandleLockPickAction(int aiCode, int aiUnused)
         int m_eRange = g_aiLockLevels_011da28c[m_70 + 1] - g_aiLockLevels_011da28c[m_70];
         float fT =
             BSMAX_00404010(BSMIN((float)(m_74 - g_aiLockLevels_011da28c[m_70]) / (m_eRange * 2.0f), 1.0f), 0.0f);
-        int iDelta = (aiCode != 5 ? 1 : -1) * iStep;
+        int iDelta = (aiID != 5 ? 1 : -1) * iStep;
         StrMem kStr;
         g_iPickAngle_011da208 += iDelta;
         m_88 += iDelta / 2;
@@ -599,7 +619,7 @@ void LockPickMenu::HandleLockPickAction(int aiCode, int aiUnused)
         int iRange7 = g_aiLockLevels_011da28c[m_70 + 1] - g_aiLockLevels_011da28c[m_70];
         float fT2_2 =
             BSMAX_00404010(BSMIN((float)(m_74 - g_aiLockLevels_011da28c[m_70]) / (iRange7 * 2.0f), 1.0f), 0.0f);
-        int iDeltaX = (aiCode != 8 ? 1 : -1) * iStep;
+        int iDeltaX = (aiID != 8 ? 1 : -1) * iStep;
         StrMem kStrTmp;
         g_iDriverAngle_011da20c += iDeltaX;
         m_88 += iDeltaX;
@@ -647,7 +667,7 @@ struct DummyA
 
 bool __cdecl InterfaceManager_Has360Controller();
 double __cdecl NiAbs_00408820(float x);
-float __cdecl NiPow_006494b0(float a0, float a1);
+float __cdecl NiPow_006494b0(float fBase, float fExponent);
 double __cdecl FUN_00715d40();
 double __cdecl InterfaceManager_GetRealScreenWidth();
 float __cdecl BSMAX_00404010(float a0, float a1);
@@ -667,6 +687,8 @@ struct TileList
 // Computes a sound value from game state, clamps it, plays a sound on threshold crossings, stores it, and updates m_90 from nearby tiles.
 // @fnv 0x007908f0
 // src: XBOX_PDB 0x007908f0
+// pdb: LockPickMenu::RotateLockpick | LockPickMenu.obj | retail, string-set bridge, high
+// pdb locals: inewXMod, fxDelta, fdistFromCenter, fnewX, iprevXMod, ixAxis, cfmaxAxisValue, childIter, fleastHalfLength, pleastHalfLengthTile, fcurrHalfLength, pcurrChild, fdistRatio
 void __thiscall LockPickMenu::RotateLockpick()
 {
     float RunSeventhVirtualOperation = 0.0f;
@@ -705,18 +727,18 @@ void __thiscall LockPickMenu::RotateLockpick()
     }
     m_68->Tile_Set((int)DAT_011da1fc, kVal, true);
     DAT_011da2c0 = RunSeventhVirtualOperation;
-    UpdateLockRotation(kVal);
+    RotateLockpickModel(kVal);
     float x9 = (float)NiAbs_00408820(kVal - m_84);
     if (x9 < (float)m_88)
     {
         unsigned long res4;
         float aV5;
-        void* elem9 = reinterpret_cast<TileList*>(&m_64->m_kChildTileList)->GetHeadPos();
+        void* elem9 = reinterpret_cast<TileList*>(&m_64->xChildren)->GetHeadPos();
         aV5 = m_64->FUN_00a011b0(0xfb1);
         res4 = 0;
         while (elem9 != 0)
         {
-            Tile* bestElem6 = reinterpret_cast<TileList*>(&m_64->m_kChildTileList)->GetNext(elem9);
+            Tile* bestElem6 = reinterpret_cast<TileList*>(&m_64->xChildren)->GetNext(elem9);
             float a3 = (float)(((Tile*)bestElem6)->FUN_00a011b0(0xfb1) / DAT_01011590);
             if (a3 < aV5 && x9 < a3)
             {
@@ -746,6 +768,7 @@ void __thiscall LockPickMenu::RotateLockpick()
 }
 
 // InitLockInterface v1 worker20: faithful transcription from capstone ORIG
+// pdb: class ModelLoader, size 0x30 (here 0x1), 12 members
 struct ModelLoader
 {
     void* ModelLoader_LoadFile(const char* path, int a, bool b, bool c, bool d, bool e);
@@ -766,13 +789,13 @@ struct MatA
 {
     int m_00[9];
     void FUN_006815c0();
-    void FUN_00524ac0(float f);
+    void FUN_00524ac0(float fAngle);
 };
 struct MatB
 {
     int m_00[9];
     void FUN_006815c0();
-    void FUN_004a0c90(float f);
+    void FUN_004a0c90(float fAngle);
 };
 struct MatrixResult
 {
@@ -785,14 +808,14 @@ struct Comb
 struct CtrlNode
 {
     void* NiControllerManager_GetSequenceByName(const NiFixedString& str);
-    void FUN_0048fef0(float f);
+    void FUN_0048fef0(float fEaseOutTime);
     void FUN_0047aab0(void* child, int a, int b, float c, float d, int e);
 };
 struct ChildObj
 {
     bool NiControllerSequence_SetCycleType(int a);
 };
-extern "C" void __cdecl NiTimeController_StartAnimations(void* p);
+extern "C" void __cdecl NiTimeController_StartAnimations(void* pkObj);
 extern "C" void* __cdecl FUN_00450b80(unsigned int a);
 struct TimeObj
 {
@@ -868,7 +891,10 @@ struct Mat9
 extern unsigned char DAT_011a9448;
 // Loads the lock interface and bobby pin NIFs, sets up their scene nodes and controllers, and attaches the resulting node to the scene.
 // @fnv 0x0078e1c0
-void LockPickMenu::InitLockInterface()
+// src: XBOX_RETAIL_PDB 0x0078e1c0
+// pdb: LockPickMenu::Prepare3DElements | LockPickMenu.obj | retail, string-set bridge, high
+// pdb locals: matZ, plockGeometry, fradius, ppickGeometry, matX, ppickAnimController, plockAnimController, UpdateData1, plockAnimManager
+void LockPickMenu::Prepare3DElements()
 {
     void* pin;
     pin = DAT_011c3b3c->ModelLoader_LoadFile("Meshes\\Terminals\\LockInterface01.NIF", 0, true, false, false, false);
@@ -955,7 +981,10 @@ struct PickRandom
 extern int DAT_011da28c[6];
 // Interpolates pick and driver angles from lock nodes, updates the two angle labels, and builds six sweet-spot tiles with fading colors.
 // @fnv 0x00791000
-void LockPickMenu::UpdateSweetSpot()
+// src: XBOX_RETAIL_PDB 0x00791000
+// pdb: LockPickMenu::CreateSweetSpot | LockPickMenu.obj | retail, string-set bridge, high
+// pdb locals: icurrX, flockLevelRatio, iskillLevelRange, icurrDepth, innerColor, outerColor, currColor, strtemp, ispotCt, pnewSpot
+void LockPickMenu::CreateSweetSpot()
 {
     float fraction;
     int angle = DAT_011da28c[m_70 + 1] - DAT_011da28c[m_70];
@@ -1048,15 +1077,19 @@ int BSstrcmp(const char* pcA, const char* pcB);
 
 // Creates the lockpick UI menu from lockpick_menu.xml, sets skill, level, and pick count labels, and returns the menu tile or null on failure.
 // @fnv 0x0078db00
-Tile* CreateLockpickMenu(LockRef* pkLockRef, int aiLockLevel, bool bDebug)
+// src: XBOX_RETAIL_PDB 0x0078db00
+// pdb: LockPickMenu::Create | LockPickMenu.obj | retail, unique string literal, high
+// pdb params: apTarget, aiLockLevel, abDebugMode
+// pdb locals: pin, ptile, pold_menu_tile, ilockLevel, strMessage, strtemp
+Tile* LockPickMenu_Create(LockRef* apTarget, int aiLockLevel, bool abDebugMode)
 {
     char acMessageVal[260];
     char acLabel[64];
     LKSelection* pkSelection = Tile_GetMenuByClass(0x3f6);
     LKInterface* pkInterfaceVal = (LKInterface*)InterfaceManager_GetSingleton();
-    int iLockLevelNum = pkLockRef ? FUN_00430b40(((LKRef*)pkLockRef)->TESObjectREFR_GetLockLevel()) : aiLockLevel;
+    int iLockLevelNum = apTarget ? FUN_00430b40(((LKRef*)apTarget)->TESObjectREFR_GetLockLevel()) : aiLockLevel;
     iLockLevelNum = MinInt(BSMAX_00647b70(iLockLevelNum, 0), 4);
-    if (pkLockRef && g_player_011dea3c->kAVOwner.GetActorValueAsInteger(0x24) < g_aiLockLevels_011da28c[iLockLevelNum])
+    if (apTarget && g_player_011dea3c->kAVOwner.GetActorValueAsInteger(0x24) < g_aiLockLevels_011da28c[iLockLevelNum])
     {
         BSsprintf(acMessageVal, 0x104, DAT_011d1efc.FUN_00403df0(), g_aiLockLevels_011da28c[iLockLevelNum]);
         DispatchMessageToSink(acMessageVal, 0, "Interface\\Icons\\Message Icons\\glow_message_padlock.dds", 0, 2.0f, 0);
@@ -1077,9 +1110,9 @@ Tile* CreateLockpickMenu(LockRef* pkLockRef, int aiLockLevel, bool bDebug)
         }
         if (pkMenuTileNew->FUN_00a011b0(0xfa7) == 6006.0 || pkMenuTileNew->FUN_00a011b0(0xfa7) == 102.0)
             pkMenuTileNew->Tile_Set(0xfad, FUN_00a01530(), 1);
-        DAT_011da204->m_6c = reinterpret_cast<TESObjectREFR*>(pkLockRef);
+        DAT_011da204->m_6c = reinterpret_cast<TESObjectREFR*>(apTarget);
         DAT_011da204->m_70 = iLockLevelNum;
-        DAT_011da204->FUN_00726070()->FUN_00700320(Tile_TextToTrait("_DebugMode"), bDebug);
+        DAT_011da204->FUN_00726070()->FUN_00700320(Tile_TextToTrait("_DebugMode"), abDebugMode);
         BSsprintf(acLabel, 0x40, "%d", DAT_011da204->m_74);
         DAT_011da204->m_pkSkillTile->Tile_Set_00a01350(DAT_011da1f8, acLabel, 1);
         BSsprintf(acLabel, 0x40, "%s [%d", DAT_011d345c.FUN_00403df0(),
@@ -1092,7 +1125,7 @@ Tile* CreateLockpickMenu(LockRef* pkLockRef, int aiLockLevel, bool bDebug)
         DAT_011da204->m_5c->Tile_Set_00a01350(0xfc4, "PICK HEALTH: 100%", 1);
         DAT_011da204->m_30->SetTraitFloat(DAT_011da1f8, 1.0f);
         DAT_011da204->m_30->FUN_00700320(
-            DAT_011da1f8, pkLockRef ? ((LKPlayer*)g_player_011dea3c)->FUN_00575610(DAT_011ca268) : 0);
+            DAT_011da1f8, apTarget ? ((LKPlayer*)g_player_011dea3c)->FUN_00575610(DAT_011ca268) : 0);
         if (BSstrcmp(DAT_011c3cb4.FUN_00403df0(), "ENGLISH"))
         {
             pkMenuTileNew->GetNamedChild("LPM_SkillTitle")->Tile_Set_00a01350(0xfc4, DAT_011d4d2c.FUN_00403df0(), 1);
@@ -1100,8 +1133,8 @@ Tile* CreateLockpickMenu(LockRef* pkLockRef, int aiLockLevel, bool bDebug)
             pkMenuTileNew->GetNamedChild("LPM_LevelTitle")->Tile_Set_00a01350(0xfc4, DAT_011d25bc.FUN_00403df0(), 1);
             DAT_011da204->m_pkLevelLabel->Tile_Set_00a01350(0xfc4, DAT_011d33fc.FUN_00403df0(), 1);
         }
-        DAT_011da204->InitLockInterface();
-        DAT_011da204->UpdateSweetSpot();
+        DAT_011da204->Prepare3DElements();
+        DAT_011da204->CreateSweetSpot();
         DAT_011da204->FUN_00a1dc20(0);
         return pkMenuTileNew;
     }
@@ -1131,6 +1164,7 @@ int xGetTrait(const char* pName, int i);
 
 // Initializes LockPickMenu by reading trait indices and player AV value, then sets default member values.
 // @fnv 0x0078d930
+// pdb: LockPickMenu::LockPickMenu | LockPickMenu.obj | retail, upstream name already matches, high
 LockPickMenu::LockPickMenu()
 {
     xTraitValue = xGetTrait("_Value", -1);
@@ -1600,6 +1634,8 @@ extern const char s_litEnd78eb50[] = "";
 // Updates the lockpicking menu state machine, advancing sequences, adjusting tension, and handling lock success or pick breakage.
 // @fnv 0x0078eb50
 // src: XBOX_PDB 0x0078eb50
+// pdb: LockPickMenu::DoIdle | LockPickMenu.obj | retail, string-set bridge, high
+// pdb locals: ielaspedMillis, bisMenuOnTop, fxAxisRatio, ixAxis, cimaxAxisValue, UpdateData1, UpdateData2, plockAnimManager, pscrewdriver, origtrans, UpdateData, fprevLockAngle, pvictim, pform, pfaction, pnpc, bkarma, ealign, felapsedRatio, strtemp
 void LockPickMenu::DoIdle_0078eb50()
 {
     using namespace fnv_0078eb50;
@@ -1706,7 +1742,7 @@ void LockPickMenu::DoIdle_0078eb50()
                 float OLD2 = m_8c;
                 m_8c -= qSVM * 90 / 1000.0;
                 m_8c = xF404010(m_8c, 0.0f);
-                AdvanceSequence(0.0f);
+                RotateLock(0.0f);
                 if (m_8c < 30.0 && OLD2 > 30.0)
                     (BSAudio::BSAudio_QInstance()->*reinterpret_cast<SoundHandleByEditorID>(&BSAudio::BSAudio_GetSoundHandleByEditorName))(s_szSqueakA, 0x101).Play(false);
                 if (m_8c < 60.0 && OLD2 > 60.0)
@@ -1731,7 +1767,7 @@ void LockPickMenu::DoIdle_0078eb50()
                 m_8c += qSVM * 90 * qrEZrs / 1000.0;
                 m_8c = xF40ebd0(m_8c, m_90);
             }
-            AdvanceSequence(0.0f);
+            RotateLock(0.0f);
             if (xIface::InterfaceManager_Has360Controller())
                 xg_os_11dea0c->Main_GetControls()->Controls_Rumble(0.1f, 0.0f, 0xfa, 0x7d, 3, 1, 0);
             if (OLD3 < 30.0 && m_8c > 30.0)
@@ -1841,7 +1877,7 @@ void LockPickMenu::DoIdle_0078eb50()
             if (*xg_f_11d41c8.Setting_Float_00403e20() != 0.0)
                 m_94 -= qQMZREG / *xg_f_11d41c8.Setting_Float_00403e20();
             m_94 = xF404010(m_94, 0.0f);
-            AdvanceSequence(xg_iDir_11a0394 * 0.25);
+            RotateLock(xg_iDir_11a0394 * 0.25);
             if (xIface::InterfaceManager_Has360Controller())
                 xg_os_11dea0c->Main_GetControls()->Controls_Rumble(0.5f, 0.0f, 0xfa, 0, 0, 0, 0);
             if (m_ac)
@@ -1850,7 +1886,7 @@ void LockPickMenu::DoIdle_0078eb50()
                                    0);
                 xg_spNode_11da24c.Modelloader_GetReferencedThis()->NiAVObject_Update(reinterpret_cast<NiUpdateData&>(qxWmVch));
             }
-            UpdateLockRotation(m_68->FUN_00a011b0(xg_iTileId2_11da1fc) + xg_iDir_11a0394 * 2.5);
+            RotateLockpickModel(m_68->FUN_00a011b0(xg_iTileId2_11da1fc) + xg_iDir_11a0394 * 2.5);
             xg_iDir_11a0394 = -xg_iDir_11a0394;
             xSprintf(qJDuOZ, 0x20, s_szHealthFmt, (int)xF4bd510(m_94 * 100.0, 1.0f), s_szPercent);
             m_5c->Tile_Set_00a01350(0xfc4, qJDuOZ, true);
@@ -1884,7 +1920,7 @@ void LockPickMenu::DoIdle_0078eb50()
             m_5c->Tile_Set_00a01350(0xfc4, s_szHealthFull, true);
             m_94 = 1.0f + m_78 * *xg_f_11d0de0.Setting_Float_00403e20();
             m_8c = 0.0f;
-            AdvanceSequence(0.0f);
+            RotateLock(0.0f);
             m_68->Tile_Set(xg_iTileId2_11da1fc, m_64->FUN_00a011b0(0xfb1) / 2.0, true);
             xg_spNode_11da24c.Modelloader_GetReferencedThis()->FUN_0043b4a0(1)->NiAVObject_SetTranslate(position);
             xg_spNode_11da24c.Modelloader_GetReferencedThis()->FUN_0043b4a0(1)->SetRotate_0043fa80(reinterpret_cast<const NiMatrix3&>(rotation));
@@ -1892,7 +1928,7 @@ void LockPickMenu::DoIdle_0078eb50()
             reinterpret_cast<xCtrlMgr*>(m_a4)->FUN_0047aab0(reinterpret_cast<xSeq*>(m_a8), 0, 1, 1.0f, 0.0f, 0);
             if (xg_bMsg_11da2a4)
             {
-                UpdateSweetSpot();
+                CreateSweetSpot();
                 xg_bMsg_11da2a4 = false;
             }
             if (m_6c && m_30->FUN_00a011b0(xg_iTileId_11da1f8) == 0.0)

@@ -373,11 +373,11 @@ static __declspec(noinline) float _getPlaneToSurfaceDistance(Shape* shape)
     return maximum;
 }
 // src: XBOX_PDB 0x00de3200
-static __declspec(noinline) void _addBoundingPlanes(Shape* shape, hkArrayBase<PlaneVector>* planes, float radius)
+static __declspec(noinline) void _addBoundingPlanes(Shape* s, hkArrayBase<PlaneVector>* planes, float radius)
 {
     __m128 boundsStorage[sizeof(hkAabb) / sizeof(__m128)];
     hkAabb& bounds = *reinterpret_cast<hkAabb*>(boundsStorage);
-    shape->vtable->getBounds(shape, &DAT_01268370, radius, &bounds);
+    s->vtable->getBounds(s, &DAT_01268370, radius, &bounds);
     PlaneArray_reserve((*(planes)), planes->m_iElementCount + 6);
     int start = planes->m_iElementCount;
     planes->m_iElementCount += 6;
@@ -407,13 +407,13 @@ struct ConvexOutput
     OutputShape* FUN_00de1d20(Geometry*);
 };
 // src: HAVOK_LIB 0x00de3360
-static __declspec(noinline) OutputShape* _createConvexDisplayFromPlanes(hkArrayBase<PlaneVector>* planes, const Transform* transform)
+static __declspec(noinline) OutputShape* _createConvexDisplayFromPlanes(hkArrayBase<PlaneVector>* planeEqs, const Transform* transform)
 {
     hkArrayBase<PlaneVector> vertices(FinishingFlag(0));
     vertices.m_data = 0;
     vertices.m_iElementCount = 0;
     vertices.m_iCapacityState = 0x80000000;
-    hkGeometryUtility_createVerticesFromPlaneEquations(planes, &vertices);
+    hkGeometryUtility_createVerticesFromPlaneEquations(planeEqs, &vertices);
     int count = vertices.m_iElementCount;
     if (count < 1)
     {
@@ -459,7 +459,10 @@ struct Processor
 };
 // @fnv 0x00de3520
 // src: XBOX_PDB 0x00de3520
-void Processor::hkpConvexRadiusBuilder_buildShapeDisplay(Shape* shape, const Transform* transform, OutputArray* output)
+// pdb: hkpConvexRadiusBuilder::buildShapeDisplay | hkpConvexRadiusBuilder.obj | retail, upstream name already matches, high
+// pdb params: shape, transform, displayGeometries
+// pdb locals: tst, T, buffer, buffer2, convexRadius, top, bottom, trueExtents, planes, assertBuf, ostr, newPlanesEqs
+void Processor::hkpConvexRadiusBuilder_buildShapeDisplay(Shape* shape, const Transform* transform, OutputArray* displayGeometries)
 {
     Transform combined;
     ShapeBuffer buffer;
@@ -483,19 +486,19 @@ void Processor::hkpConvexRadiusBuilder_buildShapeDisplay(Shape* shape, const Tra
         local.r[2].m128_f32[2] = 1.0f;
         local.r[3] = shape->point20;
         combined.hkTransform_setMul(transform, &local);
-        hkpConvexRadiusBuilder_buildShapeDisplay(shape->child18, &combined, output);
+        hkpConvexRadiusBuilder_buildShapeDisplay(shape->child18, &combined, displayGeometries);
         return;
     }
     case 12:
         combined.hkTransform_setMul(transform, reinterpret_cast<Transform*>(&shape->point20));
-        hkpConvexRadiusBuilder_buildShapeDisplay(shape->child18, &combined, output);
+        hkpConvexRadiusBuilder_buildShapeDisplay(shape->child18, &combined, displayGeometries);
         return;
     case 15:
         combined.hkTransform_setMul(transform, reinterpret_cast<Transform*>(&shape->point30));
-        hkpConvexRadiusBuilder_buildShapeDisplay(shape->child14, &combined, output);
+        hkpConvexRadiusBuilder_buildShapeDisplay(shape->child14, &combined, displayGeometries);
         return;
     case 27:
-        hkpConvexRadiusBuilder_buildShapeDisplay(shape->child10, transform, output);
+        hkpConvexRadiusBuilder_buildShapeDisplay(shape->child10, transform, displayGeometries);
         return;
     case 8:
     case 10: {
@@ -503,7 +506,7 @@ void Processor::hkpConvexRadiusBuilder_buildShapeDisplay(Shape* shape, const Tra
         for (int key = collection->first(); key != -1; key = collection->next(key))
         {
             Shape* child = collection->child(key, buffer);
-            hkpConvexRadiusBuilder_buildShapeDisplay(child, transform, output);
+            hkpConvexRadiusBuilder_buildShapeDisplay(child, transform, displayGeometries);
         }
         return;
     }
@@ -517,7 +520,7 @@ void Processor::hkpConvexRadiusBuilder_buildShapeDisplay(Shape* shape, const Tra
         if (!collection || key == -1)
             goto commonExit;
         Shape* child = collection->child(key, buffer);
-        hkpConvexRadiusBuilder_buildShapeDisplay(child, transform, output);
+        hkpConvexRadiusBuilder_buildShapeDisplay(child, transform, displayGeometries);
         key = collection->next(key);
         goto top;
     }
@@ -540,7 +543,7 @@ void Processor::hkpConvexRadiusBuilder_buildShapeDisplay(Shape* shape, const Tra
         for (int i = 0; i < selection->count; ++i)
         {
             Shape* child = selection->owner->collection.child(selection->keys[i], buffer);
-            hkpConvexRadiusBuilder_buildShapeDisplay(child, transform, output);
+            hkpConvexRadiusBuilder_buildShapeDisplay(child, transform, displayGeometries);
         }
         return;
     }
@@ -566,7 +569,7 @@ void Processor::hkpConvexRadiusBuilder_buildShapeDisplay(Shape* shape, const Tra
         result->memorySize = 0x90;
         result = result->FUN_00d58510(&end.value, &start.value, radius + additional, 9, 1);
         result->transform.FUN_00c6cd60(transform);
-        output->append(result);
+        displayGeometries->append(result);
         return;
     }
     case 4: {
@@ -579,7 +582,7 @@ void Processor::hkpConvexRadiusBuilder_buildShapeDisplay(Shape* shape, const Tra
         result->memorySize = 0x70;
         result = result->FUN_00de1f50(&dimensions);
         result->transform.FUN_00c6cd60(transform);
-        output->append(result);
+        displayGeometries->append(result);
         return;
     }
     case 3: {
@@ -634,7 +637,7 @@ void Processor::hkpConvexRadiusBuilder_buildShapeDisplay(Shape* shape, const Tra
         planeDistance(planes, 7, *a, radius);
         OutputShape* result = _createConvexDisplayFromPlanes(&planes, transform);
         if (result)
-            output->append(result);
+            displayGeometries->append(result);
         PlaneArray_release(planes);
         return;
     }
@@ -679,7 +682,7 @@ void Processor::hkpConvexRadiusBuilder_buildShapeDisplay(Shape* shape, const Tra
         _addBoundingPlanes(shape, &planes, radius);
         OutputShape* result = _createConvexDisplayFromPlanes(&planes, transform);
         if (result)
-            output->append(result);
+            displayGeometries->append(result);
         PlaneArray_release(planes);
         return;
     }
@@ -688,7 +691,7 @@ void Processor::hkpConvexRadiusBuilder_buildShapeDisplay(Shape* shape, const Tra
         {
             CallbackEntry* entry = &DAT_01269ce4->m_data[i];
             if (entry->kind == shape->kind)
-                entry->callback(shape, transform, output, this);
+                entry->callback(shape, transform, displayGeometries, this);
         }
     }
 commonExit:

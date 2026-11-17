@@ -12,13 +12,13 @@
 struct GlobalObjectO2_00a7b610
 {
 };
-extern GlobalObjectO2_00a7b610 g_011f5ec4;
+extern GlobalObjectO2_00a7b610 NiSpotLight_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f5ec4 (old: g_011f5ec4)
 
 // @fnv 0x00a94d50
 // src: COMMUNITY 0x00a94d50
 GlobalObjectO2_00a7b610* __cdecl NiSpotLight_GetRTTI()
 {
-    return &g_011f5ec4;
+    return &NiSpotLight_ms_RTTI;
 }
 
 struct NiSpotLight;
@@ -44,6 +44,8 @@ NiSpotLightShell* __thiscall NiSpotLightShell::FUN_00a94d60(unsigned int flags)
 
 // @fnv 0x00a94e20
 // src: EXE 0x00a94e20
+// pdb: NiSpotLight::CreateObject | NiSpotLight.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 void* __cdecl NiSpotLight_CreateObject()
 {
     void* p = BSFadeNode::operator new(0x114);
@@ -56,6 +58,9 @@ void* __cdecl NiSpotLight_CreateObject()
 
 // Calls the base NiPointLight comparison, then checks that the spot light's three float fields match the other object's.
 // @fnv 0x00a94c80
+// pdb: NiSpotLight::IsEqual | NiSpotLight.obj | retail, upstream name already matches, high
+// pdb params: pObject
+// pdb locals: pLight
 bool NiSpotLight::IsEqual(NiObject* pObject) const
 {
     NiSpotLight* pOther = (NiSpotLight*)pObject;
@@ -78,6 +83,8 @@ struct S_00a94d90
 // Calls the base update, copies three floats from offsets 0x68/0x74/0x80 to 0xFC/0x100/0x104, and increments the counter at 0xA8.
 // @fnv 0x00a94d90
 // src: XBOX_PDB 0x00a94d90
+// pdb: NiSpotLight::UpdateWorldData | NiSpotLight.obj | retail, upstream name already matches, high
+// pdb params: UpdateData
 void __thiscall S_00a94d90::NiSpotLight_UpdateWorldData(NiUpdateData& UpdateData)
 {
     ((C_00a7d7a0*)this)->UpdateWorldData_00a7d7a0(UpdateData);
@@ -91,7 +98,7 @@ void __thiscall S_00a94d90::NiSpotLight_UpdateWorldData(NiUpdateData& UpdateData
 
 struct NiPointLightViewerStrings
 {
-    void __thiscall FUN_00a7d960(StrArr* strings);
+    void __thiscall FUN_00a7d960(StrArr* pStrings);
 };
 
 char* __cdecl _FUN_00a7d330(void* object);
@@ -99,52 +106,54 @@ char* __cdecl NiGetViewerString_00a7d550(char const* name, float value);
 
 struct FUN_00a94f70_shell : NiSpotLightShell
 {
-    void __thiscall AppendViewerStrings(StrArr* strings);
+    void __thiscall AppendViewerStrings(StrArr* pStrings);
 };
 
 // Appends the spot light's base viewer strings plus m_kWorldDir, m_fOuterSpotAngle, m_fInnerSpotAngle and m_fSpotExponent entries to the string array.
 // @fnv 0x00a94f70
-void FUN_00a94f70_shell::AppendViewerStrings(StrArr* strings)
+// pdb: NiSpotLight::GetViewerStrings | NiSpotLight.obj | retail, string-set bridge, high
+// pdb params: pStrings
+void FUN_00a94f70_shell::AppendViewerStrings(StrArr* pStrings)
 {
     char* value;
     unsigned int index;
 
-    reinterpret_cast<NiPointLightViewerStrings*>(this)->FUN_00a7d960(strings);
+    reinterpret_cast<NiPointLightViewerStrings*>(this)->FUN_00a7d960(pStrings);
 
-    value = _FUN_00a7d330(*reinterpret_cast<void**>(&g_011f5ec4));
+    value = _FUN_00a7d330(*reinterpret_cast<void**>(&NiSpotLight_ms_RTTI));
 
-    index = strings->m_usSize;
-    if (index >= strings->m_usMaxSize)
-        strings->SetSize(index + strings->m_usGrowBy);
-    strings->SetAt(index, value);
+    index = pStrings->m_usSize;
+    if (index >= pStrings->m_usMaxSize)
+        pStrings->SetSize(index + pStrings->m_usGrowBy);
+    pStrings->SetAt(index, value);
 
     value = reinterpret_cast<NiPoint3*>(reinterpret_cast<char*>(this) + 0xfc)->GetViewerString_00a59af0("m_kWorldDir");
 
-    index = strings->m_usSize;
-    if (index >= strings->m_usMaxSize)
-        strings->SetSize(index + strings->m_usGrowBy);
-    strings->SetAt(index, value);
+    index = pStrings->m_usSize;
+    if (index >= pStrings->m_usMaxSize)
+        pStrings->SetSize(index + pStrings->m_usGrowBy);
+    pStrings->SetAt(index, value);
 
     value = NiGetViewerString_00a7d550("m_fOuterSpotAngle", *reinterpret_cast<float*>(reinterpret_cast<char*>(this) + 0x108));
 
-    index = strings->m_usSize;
-    if (index >= strings->m_usMaxSize)
-        strings->SetSize(index + strings->m_usGrowBy);
-    strings->SetAt(index, value);
+    index = pStrings->m_usSize;
+    if (index >= pStrings->m_usMaxSize)
+        pStrings->SetSize(index + pStrings->m_usGrowBy);
+    pStrings->SetAt(index, value);
 
     value = NiGetViewerString_00a7d550("m_fInnerSpotAngle", *reinterpret_cast<float*>(reinterpret_cast<char*>(this) + 0x10c));
 
-    index = strings->m_usSize;
-    if (index >= strings->m_usMaxSize)
-        strings->SetSize(index + strings->m_usGrowBy);
-    strings->SetAt(index, value);
+    index = pStrings->m_usSize;
+    if (index >= pStrings->m_usMaxSize)
+        pStrings->SetSize(index + pStrings->m_usGrowBy);
+    pStrings->SetAt(index, value);
 
     value = NiGetViewerString_00a7d550("m_fSpotExponent", *reinterpret_cast<float*>(reinterpret_cast<char*>(this) + 0x110));
 
-    index = strings->m_usSize;
-    if (index >= strings->m_usMaxSize)
-        strings->SetSize(index + strings->m_usGrowBy);
-    strings->SetAt(index, value);
+    index = pStrings->m_usSize;
+    if (index >= pStrings->m_usMaxSize)
+        pStrings->SetSize(index + pStrings->m_usGrowBy);
+    pStrings->SetAt(index, value);
 }
 
 struct S_00a94ce0_Base
@@ -245,6 +254,7 @@ struct FUN_00a94ce0 : S_00a94ce0_Mid
 };
 // Initializes the object: sets unk9d to 4, unk110 to 1.0f, and unk108 and unk10c to 0.0f.
 // @fnv 0x00a94ce0
+// pdb: NiSpotLight::NiSpotLight | NiSpotLight.obj | retail, call graph, high
 FUN_00a94ce0::FUN_00a94ce0()
 {
     unk9d = 4;
@@ -327,7 +337,7 @@ struct FUN_00a94e40_cls
     float m_f010c;
     float m_f0110;
     void __thiscall SaveToStream(FUN_00a94e40_arg* a);
-    void __thiscall NiSpotLight_LoadBinary(FUN_00a94e40_arg* a);
+    void __thiscall NiSpotLight_LoadBinary(FUN_00a94e40_arg* stream);
 };
 
 struct StreamCb
@@ -491,23 +501,25 @@ struct FUN_00a94e40_arg
 
 // @fnv 0x00a94e40
 // src: XBOX_PDB 0x00a94e40
-void __thiscall FUN_00a94e40_cls::NiSpotLight_LoadBinary(FUN_00a94e40_arg* apArg)
+// pdb: NiSpotLight::LoadBinary | NiSpotLight.obj | retail, upstream name already matches, high
+// pdb params: stream
+void __thiscall FUN_00a94e40_cls::NiSpotLight_LoadBinary(FUN_00a94e40_arg* stream)
 {
-    SaveToStream(apArg);
-    StreamCb* s = apArg->m_024c;
+    SaveToStream(stream);
+    StreamCb* s = stream->m_024c;
     {
         unsigned int n = 4;
         s->m_04 += s->m_08(s, &m_f0108, 4, &n, 1);
     }
-    if (apArg->m_00d8 >= 0x14020005)
+    if (stream->m_00d8 >= 0x14020005)
     {
-        StreamCb* t = apArg->m_024c;
+        StreamCb* t = stream->m_024c;
         {
             unsigned int n = 4;
             t->m_04 += t->m_08(t, &m_f010c, 4, &n, 1);
         }
     }
-    s = apArg->m_024c;
+    s = stream->m_024c;
     {
         unsigned int n = 4;
         s->m_04 += s->m_08(s, &m_f0110, 4, &n, 1);
@@ -545,6 +557,8 @@ struct LightSerialization
 };
 // Calls the base light serialization, then writes m_f0108, m_f010c and m_f0110 to the stream's writer, accumulating byte counts.
 // @fnv 0x00a94ee0
+// pdb: NiSpotLight::SaveBinary | NiSpotLight.obj | retail, object-file gap fill, high
+// pdb params: stream
 void LightSerialization::WriteSpotLightData(NiStreamArg* stream)
 {
     ((LightBaseSerialization*)this)->SavePointLight(stream);
@@ -568,7 +582,7 @@ class BA94DD0FadeNode
     BA94DD0FadeNode() throw();
     virtual ~BA94DD0FadeNode();
 
-    void CopyMemberData(BA94DD0FadeNode* pkDest, BA94DD0CloningProcess& kCloning);
+    void CopyMemberData(BA94DD0FadeNode* pDest, BA94DD0CloningProcess& kCloning);
     BA94DD0FadeNode* Clone(BA94DD0CloningProcess& kCloning);
 
     int unk004;
@@ -642,6 +656,9 @@ class BA94DD0FadeNode
 };
 
 // @fnv 0x00a94dd0
+// pdb: NiSpotLight::CreateClone | NiSpotLight.obj | retail, object-file run extension, low
+// pdb params: kCloning
+// pdb locals: pkObject
 BA94DD0FadeNode* BA94DD0FadeNode::Clone(BA94DD0CloningProcess& kCloning)
 {
     BA94DD0FadeNode* pkClone = new BA94DD0FadeNode;
@@ -655,6 +672,8 @@ extern "C" void __cdecl NiAmbientLight_LinkObject(void* thisPtr, NiStream& strea
 
 // @fnv 0x00a94c60
 // src: XBOX_PDB 0x00a94c60
+// pdb: NiSpotLight::LinkObject | NiSpotLight.obj | debug, upstream name already matches, high
+// pdb params: stream
 void __cdecl NiSpotLight_LinkObject(void* thisPtr, NiStream& stream)
 {
     NiAmbientLight_LinkObject(thisPtr, stream);
@@ -664,6 +683,8 @@ extern "C" void __cdecl _FUN_00a75c10();
 
 // @fnv 0x00a94c70
 // src: XBOX_PDB 0x00a94c70
+// pdb: NiSpotLight::RegisterStreamables | NiSpotLight.obj | debug, upstream name already matches, high
+// pdb params: stream
 void __cdecl NiSpotLight_RegisterStreamables()
 {
     _FUN_00a75c10();

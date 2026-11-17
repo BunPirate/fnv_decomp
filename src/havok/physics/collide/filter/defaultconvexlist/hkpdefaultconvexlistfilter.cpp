@@ -5,10 +5,12 @@
 
 // @fnv 0x00cf6dc0
 // src: HAVOK_LIB 0x00cf6dc0
-int __stdcall hkpDefaultConvexListFilter_getConvexListCollisionType(void* apUnused, void* a2, void* a3)
+// pdb: hkpDefaultConvexListFilter::getConvexListCollisionType | hkpDefaultConvexListFilter.obj | debug, upstream name already matches, high
+// pdb params: convexListBody, otherBody, input
+int __stdcall hkpDefaultConvexListFilter_getConvexListCollisionType(void* convexListBody, void* otherBody, void* input)
 {
-    int* p1 = *(int**)a2;
-    int* p2 = *(int**)a3;
+    int* p1 = *(int**)otherBody;
+    int* p2 = *(int**)input;
     int idx = p1[3];
     unsigned int v = (unsigned int)p2[idx + 0x44];
     return (v >> 8) & 1;

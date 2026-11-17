@@ -21,32 +21,33 @@ class NiNode;
 class TESObjectREFR;
 class TESPackage;
 
+// pdb: class CombatManager, size 0x3c, 10 members
 class CombatManager
 {
 public:
-    NiTPrimitiveArray<ActorCombatGroup*> m_kCombatGroups;
-    NiTMap<Actor*, unsigned __int64>* m_pActorCombatGroupMap;
-    CombatThreatMap* m_pThreatMap;
-    CombatCoverMap* m_pCoverMap;
-    CombatTargetMap* m_pTargetMap;
-    CombatTargetTimestamp m_kFourByteManagerData;
-    TimeoutTimer m_kFirstEightByteManagerData;
-    TimeoutTimer m_kSecondEightByteManagerData;
-    unsigned int m_uiDebugFlags;
-    NiPointer<NiNode> m_spDebugRootNode;
+    NiTPrimitiveArray<ActorCombatGroup*> CombatGroups; // src: XBOX_RETAIL_PDB +0x0 (old: m_kCombatGroups)
+    NiTMap<Actor*, unsigned __int64>* pLocalActorTargetingMap; // src: XBOX_RETAIL_PDB +0x10 (old: m_pActorCombatGroupMap)
+    CombatThreatMap* pThreatMap; // src: XBOX_RETAIL_PDB +0x14 (old: m_pThreatMap)
+    CombatCoverMap* pCoverMap; // src: XBOX_RETAIL_PDB +0x18 (old: m_pCoverMap)
+    CombatTargetMap* pTargetMap; // src: XBOX_RETAIL_PDB +0x1c (old: m_pTargetMap)
+    CombatTargetTimestamp fCombatMusicStartedTimeStamp; // src: XBOX_RETAIL_PDB +0x20 (old: m_kFourByteManagerData)
+    TimeoutTimer CombatMusicStopTimer; // src: XBOX_RETAIL_PDB +0x24 (old: m_kFirstEightByteManagerData)
+    TimeoutTimer CombatMusicUpdateTimer; // src: XBOX_RETAIL_PDB +0x2c (old: m_kSecondEightByteManagerData)
+    unsigned int iNextGroupID; // src: XBOX_RETAIL_PDB +0x34 (old: m_uiDebugFlags)
+    NiPointer<NiNode> spDebugGeometry; // src: XBOX_RETAIL_PDB +0x38 (old: m_spDebugRootNode)
 
     void ResetFormData();
     void ClearData(bool);
     static void Create();
     static void Destroy();
-    void Update(bool arg);
+    void Update(bool abTimeStopped);
     void UpdateCombatGroups(bool arg);
     void UpdateCombatants();
     void ResetTargetMap();
     CombatController* AddCombatant(Actor*, Actor*, unsigned int, bool);
     CombatController* AddCombatantToGroup(Actor*, ActorCombatGroup*);
     CombatController* AddPretendCombatant(Actor*, TESPackage*);
-    unsigned int GetCombatGroupTargetCount(Actor* target, unsigned int* recentCount);
+    unsigned int GetCombatantCount(Actor* target, unsigned int* recentCount);
     bool CheckShouldFlee(Actor*, Actor*);
     void AssignCombatTarget(Actor*, Actor*);
     bool GetWanttoHelpGroup(Actor*, Actor*);
@@ -73,7 +74,7 @@ public:
     void SaveGame(BGSSaveGameBuffer*);
     void LoadGame(BGSLoadGameBuffer* buffer);
     void InitLoadGame(BGSLoadGameBuffer*);
-    void ApplyLoadBuffer(BGSLoadGameBuffer* buffer);
+    void FinishLoadGame(BGSLoadGameBuffer* apLoadGameBuffer);
     void Revert(BGSLoadGameBuffer*);
     unsigned int GetCombatGroupCount();
     ActorCombatGroup* GetCombatGroupByIndex(unsigned int);
@@ -89,7 +90,7 @@ public:
     void SwapAndDispatch(void*, void*);
     void FUN_008d0600(void*, void*);
     void CombatManager_UpdateCombatants();
-    ActorCombatGroup* FindByKey(unsigned int key);
+    ActorCombatGroup* FindByKey(unsigned int aiGroupID);
     void FUN_00993800(BGSLoadGameBuffer*);
-    void InitLoadGame_00993600(void* stream);
+    void InitLoadGame_00993600(void* apLoadGameBuffer);
 };

@@ -17,6 +17,7 @@ class NiTexture;
 class RenderTexture;
 class RenderedTextureSource;
 
+// pdb: class FOVATSEffectManager, size 0x1c4 (here 0x2d0), 37 members
 class FOVATSEffectManager
 {
 public:

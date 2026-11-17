@@ -56,6 +56,8 @@ extern "C" bool __stdcall FUN_00a57780(void*);
 
 // @fnv 0x00a461c0
 // src: XBOX_PDB 0x00a461c0
+// pdb: NiLightColorController::RegisterStreamables | NiLightColorController.obj | retail, upstream name already matches, high
+// pdb params: kStream
 char __stdcall NiLightColorController_RegisterStreamables(void* kStream)
 {
     char result = 0;
@@ -87,6 +89,8 @@ extern int DAT_01098dd4;
 
 // @fnv 0x00a4d500
 // src: EXE 0x00a4d500
+// pdb: NiLightColorController::CreateObject | NiLightColorController.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 void* __cdecl NiLightColorController_CreateObject()
 {
     void* p = BSFadeNode::operator new(0x3c);
@@ -103,6 +107,7 @@ void* __cdecl NiLightColorController_CreateObject()
 
 // Reads the light's first or second color depending on the flag and writes its RGB components into kValue.
 // @fnv 0x00a4d150
+// pdb: NiLightDimmerController::`scalar deleting destructor' | NiLightDimmerController.obj | debug, object-file run extension, low
 void __fastcall GetLightColor(NiLightColorController* self, void*, NiPoint3& kValue)
 {
     NiColor kColor;
@@ -123,6 +128,9 @@ bool __stdcall FUN_00a57c10(void*);
 // Checks pkObject via FUN_00a57c10, then compares bit 0 of the inverted byte at offset 0x38 with the byte at this+0x38 and returns the result.
 // @fnv 0x00a4d1d0
 // src: GAMEBRYO_LIB 0x00a4d1d0
+// pdb: NiLightColorController::IsEqual | NiLightColorController.obj | retail, upstream name already matches, high
+// pdb params: pkObject
+// pdb locals: pkControl
 bool __fastcall NiLightColorController_IsEqual(NiLightColorController* self, void*, NiObject* pkObject)
 {
     NiLightColorController* pkControl = (NiLightColorController*)pkObject;
@@ -139,11 +147,13 @@ extern NiRTTI g_011f4a68_arg1;
 // Walks the RTTI chain of pkTarget and returns true if it reaches g_011f4a68_arg1, false if pkTarget is null or the chain ends.
 // @fnv 0x00a4d210
 // src: GUESS 0x00a4d210 (confidence: high)
+// pdb: NiLightColorController::InterpTargetIsCorrectType | NiLightColorController.obj | debug, object-file run extension, low
+// pdb params: pkTarget
 bool __stdcall NiObjectNET_HasTargetRTTIInChain(NiObjectNET* pkTarget)
 {
     if (!pkTarget)
         return false;
-    for (const NiRTTI* p = pkTarget->GetRTTI(); p; p = p->m_pBaseRTTI)
+    for (const NiRTTI* p = pkTarget->GetRTTI(); p; p = p->m_pkBaseRTTI)
     {
         if (p == &g_011f4a68_arg1)
             return true;
@@ -154,6 +164,8 @@ bool __stdcall NiObjectNET_HasTargetRTTIInChain(NiObjectNET* pkTarget)
 void __cdecl _delete(void*, unsigned int);
 extern "C" __declspec(dllimport) long __stdcall InterlockedDecrement(long volatile*);
 // @fnv 0x00a4d460
+// pdb: NiLightColorController::`scalar deleting destructor' | NiLightColorController.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiLightColorController::GetCtlrID
 void* __fastcall DestroyAndFree(NiLightColorController* self, void*, unsigned int auiFlags)
 {
     *(void* volatile*)self = (void*)&DAT_01098dd4;
@@ -175,6 +187,9 @@ struct CloningProcess
 };
 // @fnv 0x00a4d4b0
 // src: XBOX_PDB 0x00a4d4b0
+// pdb: NiLightColorController::CreateClone | NiLightColorController.obj | retail, upstream name already matches, high
+// pdb params: kCloning
+// pdb locals: pkObject
 void* __fastcall NiLightColorController_CreateClone(NiLightColorController* self, void*, CloningProcess& kCloning)
 {
     NiLightColorController* pkObject = (NiLightColorController*)BSFadeNode::operator new(0x3c);
@@ -197,6 +212,8 @@ void __stdcall NiPoint3InterpController_GetViewerStrings(StrArr*);
 char* __cdecl NiViewerStrings_NiGetViewerString_Title(GlobalObjectO2_00a7b610*);
 // @fnv 0x00a4d5a0
 // src: XBOX_PDB 0x00a4d5a0
+// pdb: NiLightColorController::GetViewerStrings | NiLightColorController.obj | retail, upstream name already matches, high
+// pdb params: pkStrings
 void __stdcall NiLightColorController_GetViewerStrings(StrArr* pkStrings)
 {
     NiPoint3InterpController_GetViewerStrings(pkStrings);
@@ -283,6 +300,10 @@ void __stdcall FUN_00a57630(NiStream* stream);
 void __cdecl FUN_00a63430();
 // Reads a stream, and for older versions creates a RefObject from it, swaps it into activeObject with reference counting, then activates it.
 // @fnv 0x00a4d3a0
+// pdb: NiLightColorController::LinkObject | NiLightColorController.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiLightColorController::GetTargetPoint3Value
+// pdb params: kStream
+// pdb locals: spPosData
 void __fastcall LoadActiveObject(NiLightColorController* self, void*, NiStream* stream)
 {
     FUN_00a57630(stream);
@@ -293,7 +314,7 @@ void __fastcall LoadActiveObject(NiLightColorController* self, void*, NiStream* 
         InterlockedIncrement(&source->referenceCount);
     void* memory = Object_DispatchCommandFour(sizeof(RefObject));
     RefObject* fresh = memory ? static_cast<RefObject*>(memory)->FUN_00a495f0(source) : 0;
-    RefObject*& activeObject = *(RefObject**)&self->m_spControllerInterpolator.m_pObject;
+    RefObject*& activeObject = *(RefObject**)&self->m_spInterpolator.m_pObject;
     RefObject* old = activeObject;
     if (old != fresh)
     {
@@ -308,34 +329,37 @@ void __fastcall LoadActiveObject(NiLightColorController* self, void*, NiStream* 
         source->ReleaseObject();
 }
 
-extern float DAT_01096324;
+extern float NiInterpController_INVALID_TIME; // src: XBOX_RETAIL_PDB 0x01096324 (old: DAT_01096324/INVALID_TIME_A4F/g_fInvalidTimeBC3/kInvalidTime)
 extern NiColor DAT_011f4998;
 extern NiRTTI g_011f4a28;
 
 // Evaluates the controller output into a clamped 0..1 vector and writes it to the output object, swapping vector/color when the light channel flag is set.
 // @fnv 0x00a4d240
+// pdb: NiLightColorController::Update | NiLightColorController.obj | retail, object-file run extension, low
+// pdb params: UpdateData
+// pdb locals: kValue, kColor, pLight
 void NiTimeController::EvaluateAndApplyOutput(float& parameter)
 {
     if ((unsigned char)(m_uiObjectFlags >> 5) & 1)
-        m_fControllerTime = DAT_01096324;
+        m_fScaledTime = NiInterpController_INVALID_TIME;
     else if (DontDoUpdate(parameter))
     {
-        if (((NiSingleInterpController*)this)->m_spControllerInterpolator.m_pObject == 0)
+        if (((NiSingleInterpController*)this)->m_spInterpolator.m_pObject == 0)
             return;
         if (!((bool(__thiscall**)(NiInterpolator*))
-            (*(void***)((NiSingleInterpController*)this)->m_spControllerInterpolator.m_pObject + 53))[0](
-                ((NiSingleInterpController*)this)->m_spControllerInterpolator.m_pObject))
+            (*(void***)((NiSingleInterpController*)this)->m_spInterpolator.m_pObject + 53))[0](
+                ((NiSingleInterpController*)this)->m_spInterpolator.m_pObject))
             return;
     }
 
-    NiInterpolator* controller = ((NiSingleInterpController*)this)->m_spControllerInterpolator.m_pObject;
+    NiInterpolator* controller = ((NiSingleInterpController*)this)->m_spInterpolator.m_pObject;
     if (controller == 0)
         return;
 
     NiPoint3 sourceValues;
     NiPoint3 kClampedValues;
     typedef bool(__thiscall * Evaluate)(NiInterpolator*, float, NiObjectNET*, NiPoint3*);
-    if (!((Evaluate)(*(void***)controller)[37])(controller, m_fControllerTime, m_pkTarget, &sourceValues))
+    if (!((Evaluate)(*(void***)controller)[37])(controller, m_fScaledTime, m_pkTarget, &sourceValues))
         return;
 
     kClampedValues.x = sourceValues.x;
@@ -370,6 +394,7 @@ void NiTimeController::EvaluateAndApplyOutput(float& parameter)
 }
 
 // @fnv 0x00a57c80
+// pdb: NiPoint3InterpController::NiPoint3InterpController | NiPoint3InterpController.obj | retail, call graph, medium
 __declspec(noinline) NiPoint3InterpController* __fastcall InitializePoint3Controller(NiPoint3InterpController* self)
 {
     ((void(__thiscall*)(NiPoint3InterpController*))FUN_00a38e00)(self);
@@ -378,6 +403,8 @@ __declspec(noinline) NiPoint3InterpController* __fastcall InitializePoint3Contro
 }
 
 // @fnv 0x00a4d530
+// pdb: NiLightColorController::LoadBinary | NiLightColorController.obj | retail, object-file gap fill, high
+// pdb params: kStream
 void __fastcall ReadFromStream(NiLightColorController* self, void*, NiStream& stream)
 {
     ((void(__thiscall*)(NiLightColorController*, NiStream&))FUN_00a57c70)(self, stream);

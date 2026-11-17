@@ -61,6 +61,8 @@ void FUN_00642890_Class::Sun_StopSunOcclusion()
 extern Setting g_011ce00c;
 
 // @fnv 0x00643f70
+// pdb: AiFormulas::GetFollowRadiusWalk | AiFormulas.obj | debug, call graph, medium
+// pdb params: afbasePackRadius
 float ScaleByGlobalFloat(float value)
 {
     return value * *reinterpret_cast<float*>(g_011ce00c.Float());
@@ -71,6 +73,8 @@ extern double DAT_01011588;
 
 // Returns a plus the product of the float setting from originalRuntimeFloatSetting289 and DAT_01011588.
 // @fnv 0x00643fa0
+// pdb: AiFormulas::GetFollowRadiusStartMoving | AiFormulas.obj | debug, object-file run extension, low
+// pdb params: afbasePackRadius
 float AddScaledSetting(float afValue)
 {
     float result = *originalRuntimeFloatSetting289.Float() * DAT_01011588 + afValue;
@@ -81,6 +85,8 @@ namespace fnv_00643fd0 {
 extern Setting originalRuntimeFloatSetting289;
 
 // @fnv 0x00643fd0
+// pdb: AiFormulas::GetFollowRadiusMatchSpeed | AiFormulas.obj | debug, call graph, medium
+// pdb params: afbasePackRadius
 float __cdecl AddRuntimeFloatSetting(float afValue)
 {
     return afValue + *originalRuntimeFloatSetting289.Float();
@@ -103,6 +109,8 @@ struct FUN_006442b0_class
 // Sets the vftable to DAT_0104f3e8, calls FUN_00644400 with the argument twice, and returns this.
 // @fnv 0x006442b0
 // src: COMMUNITY 0x006442b0
+// pdb: BSSimpleArray<FollowerDist,1024>::BSSimpleArray<FollowerDist,1024> | AiFormulas.obj | debug, object-file run extension, low
+// pdb params: aiInitialSize
 void* FUN_006442b0_class::BSSimpleArray_FollowerDist_1024_BSSimpleArray_FollowerDist_1024(int aiValue)
 {
     vftable = &DAT_0104f3e8;
@@ -127,6 +135,7 @@ void GlobalObject_00869f00::Clear(bool b)
 }
 
 // @fnv 0x006442e0
+// pdb: BSSimpleArray<FollowerDist,1024>::~BSSimpleArray<FollowerDist,1024> | AiFormulas.obj | debug, call graph (shared callers), low
 void GlobalObject_00869f00::ResetPointer()
 {
     p = &DAT_0104f3e8;
@@ -140,6 +149,9 @@ extern Setting originalRuntimeFloatSetting509;
 
 // @fnv 0x00644520
 // src: XBOX_PDB 0x00644520
+// pdb: CombatFormulas::GetPowerAttackDamageMultiplier | CombatFormulas.obj | debug, upstream name already matches, high
+// pdb params: aiWeaponSkill, aePowerAttackGroup
+// pdb locals: fresult
 float CombatFormulas_GetPowerAttackDamageMultiplier()
 {
     float f = ((Setting*)&originalRuntimeFloatSetting509)->Float()[0];
@@ -233,6 +245,8 @@ struct FUN_0064db00_class
 
 // @fnv 0x0064db00
 // src: GUESS 0x0064db00 (confidence: low)
+// pdb: NiPointer<NiSourceTexture>::NiPointer<NiSourceTexture> | ExtraDataObjects.obj | debug, call graph (shared callers), low
+// pdb params: pObject
 bool FUN_0064db00_class::ForwardCall_0064db00()
 {
     return !GetFieldAtOffset10();
@@ -246,6 +260,8 @@ struct FUN_0064db50_class
 
 // @fnv 0x0064db50
 // src: GUESS 0x0064db50 (confidence: medium)
+// pdb: std::vector<BSFaceGenRGBA,std::allocator<BSFaceGenRGBA> >::assign | BSFaceGenImage.obj | debug, call graph, low
+// pdb params: _Count, _Val
 void __thiscall FUN_0064db50_class::ApplyToCopy_Thunk(int aiArg1, int aiArg2)
 {
     ApplyToCopy(aiArg1, aiArg2);
@@ -258,6 +274,7 @@ struct FUN_0064dbd0_Class
 };
 // @fnv 0x0064dbd0
 // src: GUESS 0x0064dbd0 (confidence: low)
+// pdb: std::_Vector_const_iterator<std::_Vector_val<BSFaceGenRGBA,std::allocator<BSFaceGenRGBA> > >::operator-> | BSFaceGenImage.obj | debug, object-file run extension, low
 void FUN_0064dbd0_Class::ForwardCall_0064dbd0()
 {
     ProcessEntries_0064dda0();
@@ -414,15 +431,17 @@ struct DecalStub
 {
     void NiMaterialProperty_SetChanged(int);
     float m_f;
-    void NiMaterialProperty_SetShine(float f);
+    void NiMaterialProperty_SetShine(float c);
 };
 
 // Stores f at offset 0x38 of this and calls FUN_004bc480(1).
 // @fnv 0x00654700
 // src: COMMUNITY 0x00654700
-void DecalStub::NiMaterialProperty_SetShine(float afValue)
+// pdb: NiMaterialProperty::SetShineness | BSFaceGenManager.obj | debug, call graph (shared callers), high
+// pdb params: c
+void DecalStub::NiMaterialProperty_SetShine(float c)
 {
-    *(float*)((char*)this + 0x38) = afValue;
+    *(float*)((char*)this + 0x38) = c;
     NiMaterialProperty_SetChanged(1);
 }
 
@@ -541,6 +560,8 @@ struct FUN_00658090_Class
 
 // @fnv 0x00658090
 // src: GUESS 0x00658090 (confidence: low)
+// pdb: std::allocator<FanFgResidualS>::deallocate | BSFaceGenManager.obj | debug, call graph, low
+// pdb params: _Ptr, __formal
 void __thiscall FUN_00658090_Class::ForwardCall_00658090(int a)
 {
     Object_AllocateStorage_00658ca0(a, 0);
@@ -569,6 +590,8 @@ struct FUN_00658aa0_class
 
 // Calls FUN_00659230 with the two arguments, sets vtbl to &DAT_01065870, and returns this.
 // @fnv 0x00658aa0
+// pdb: NiTMap<char const *,NiPointer<BSFaceGenModelMap::Entry> >::DeleteItem | BSFaceGenManager.obj | debug, object-file run extension, low
+// pdb params: pkItem
 FUN_00658aa0_class* __thiscall FUN_00658aa0_class::Initialize(int a, unsigned char b)
 {
     FUN_00659230(a, b);
@@ -597,6 +620,7 @@ struct FUN_00658d30_class
 
 // @fnv 0x00658d30
 // src: GUESS 0x00658d30 (confidence: low)
+// pdb: NiTStringMap<NiPointer<BSFaceGenModelMap::Entry> >::~NiTStringMap<NiPointer<BSFaceGenModelMap::Entry> > | BSFaceGenManager.obj | debug, call graph (shared callers), high
 void __thiscall FUN_00658d30_class::ForwardCall_00658d30()
 {
     FUN_00658d50();
@@ -725,6 +749,7 @@ struct FUN_0065cea0_class
 
 // @fnv 0x0065cea0
 // src: GUESS 0x0065cea0 (confidence: low)
+// pdb: std::vector<FffModeTexS,std::allocator<FffModeTexS> >::end | BSFaceGenModel.obj | debug, object-file run extension, low
 int __thiscall FUN_0065cea0_class::GetPointerSpanCount_0065cea0()
 {
     return (*(int*)((char*)this + 0x10) - *(int*)((char*)this + 0xc)) / 0x58;
@@ -738,6 +763,7 @@ struct FUN_0065cf90_class
 
 // @fnv 0x0065cf90
 // src: GUESS 0x0065cf90 (confidence: low)
+// pdb: std::_Vector_iterator<std::_Vector_val<BSFaceGenRGBA,std::allocator<BSFaceGenRGBA> > >::_Vector_iterator<std::_Vector_val<BSFaceGenRGBA,std::allocator<BSFaceGenRGBA> > > | BSFaceGenModel.obj | debug, call graph, low
 void* FUN_0065cf90_class::EvaluateValue_0065cf90()
 {
     FaceGenData_Iterator_Clears();
@@ -752,6 +778,7 @@ struct FUN_0065cfb0_Class
 
 // @fnv 0x0065cfb0
 // src: GUESS 0x0065cfb0 (confidence: low)
+// pdb: std::_Vector_iterator<std::_Vector_val<FffModeGS,std::allocator<FffModeGS> > >::~_Vector_iterator<std::_Vector_val<FffModeGS,std::allocator<FffModeGS> > > | BSFaceGenModel.obj | debug, object-file run extension, low
 void __thiscall FUN_0065cfb0_Class::ForwardCall_0065cfb0()
 {
     FUN_0065d6e0();
@@ -1313,6 +1340,7 @@ struct FUN_00658e70_cls : public NiTPointerMap<int, int>
 
 // @fnv 0x00658e70
 // src: GUESS 0x00658e70 (confidence: low)
+// pdb: NiTMapBase<DFALL<NiTMapItem<char const *,NiPointer<BSFaceGenModelMap::Entry> > >,char const *,NiPointer<BSFaceGenModelMap::Entry> >::~NiTMapBase<DFALL<NiTMapItem<char const *,NiPointer<BSFaceGenModelMap::Entry> > >,char const *,NiPointer<BSFaceGenModelMap::Entry> > | BSFaceGenManager.obj | debug, call graph (shared callers), high
 void FUN_00658e70_cls::SetVtableAndProcessState_00658e70()
 {
     *reinterpret_cast<void**>(this) = &DAT_010658d0;
@@ -1338,6 +1366,8 @@ struct FUN_00642860_Class
 // Sets the byte at offset 0x24 to 1, then reads a pointer at 0x28 and, if non-null, calls its UpdateQueries method.
 // @fnv 0x00642860
 // src: COMMUNITY 0x00642860
+// pdb: Sun::StartSunOcclusion | Sun.obj | debug, upstream name already matches, high
+// pdb locals: paccum
 void FUN_00642860_Class::Sun_StartSunOcclusion()
 {
     *reinterpret_cast<unsigned char*>(this + 0x24) = 1;
@@ -1352,11 +1382,14 @@ extern Setting originalRuntimeFloatSetting333;
 // Returns a float setting scaled by collection->GetFloat(0x2d) plus an offset when index is 0x38, otherwise 0.0f.
 // @fnv 0x00643ed0
 // src: COMMUNITY 0x00643ed0
-float AiFormulas_AVDeriveUnarmedDamage(GameSettingCollection* collection, int index)
+// pdb: AiFormulas::AVDeriveUnarmedDamage | AiFormulas.obj | retail, upstream name already matches, high
+// pdb params: apActor, aiWhich
+// pdb locals: fresult
+float AiFormulas_AVDeriveUnarmedDamage(GameSettingCollection* apActor, int aiWhich)
 {
     float result = 0.0f;
-    if (index == 0x38)
-        result = *originalRuntimeFloatSetting332.Float() * collection->GetFloat(0x2d) +
+    if (aiWhich == 0x38)
+        result = *originalRuntimeFloatSetting332.Float() * apActor->GetFloat(0x2d) +
                  *originalRuntimeFloatSetting333.Float();
     return result;
 }
@@ -1368,10 +1401,12 @@ float BSMAX_00404010(float a, float b);
 // Returns FUN_00404010 called with value times the float setting and value minus another float setting.
 // @fnv 0x00643f20
 // src: COMMUNITY 0x00643f20
-float AiFormulas_GetFollowRadiusStop(float value)
+// pdb: AiFormulas::GetFollowRadiusStop | AiFormulas.obj | debug, upstream name already matches, high
+// pdb params: afbasePackRadius
+float AiFormulas_GetFollowRadiusStop(float afbasePackRadius)
 {
-    return BSMAX_00404010(value * *originalRuntimeFloatSetting288.Float(),
-                        value - *originalRuntimeFloatSetting287.Float());
+    return BSMAX_00404010(afbasePackRadius * *originalRuntimeFloatSetting288.Float(),
+                        afbasePackRadius - *originalRuntimeFloatSetting287.Float());
 }
 }  // namespace fnv_00643f20
 
@@ -1381,6 +1416,9 @@ struct FUN_00644350_Class
 };
 // Compares two objects by calling IsGreaterThan on each against the other, returning 1, -1, or 0.
 // @fnv 0x00644300
+// pdb: BSSimpleArray<FollowerDist,1024>::QuickSortFunction | AiFormulas.obj | debug, object-file run extension, low
+// pdb params: apPtr1, apPtr2
+// pdb locals: pItem1, pItem2
 int CompareObjects(int aiLeft, int aiRight)
 {
     int x = aiLeft;
@@ -1435,6 +1473,9 @@ extern Setting originalRuntimeFloatSetting335;
 
 // Multiplies value by one of two runtime float game settings, choosing the second when flag is set.
 // @fnv 0x00644540
+// pdb: CombatFormulas::ChooseMeleeWeapon | CombatFormulas.obj | debug, object-file run extension, low
+// pdb params: afWeaponDamage, aiArmorRating, abHandToHand
+// pdb locals: fdamagePart
 float ScaleByGameSetting(float value, float, bool abUseSecondSetting)
 {
     float multiplier;
@@ -1454,9 +1495,12 @@ extern Setting g_011cfd8c;
 // Converts value to float and returns the sum of g_011ce840's float setting plus g_011cfd8c's float setting multiplied by that value.
 // @fnv 0x006463a0
 // src: XBOX_PDB 0x006463a0
-float CombatFormulas_CalcBlock(int value)
+// pdb: CombatFormulas::CalcBlock | CombatFormulas.obj | debug, upstream name already matches, high
+// pdb params: aiSkill
+// pdb locals: fblockSkill, fskill
+float CombatFormulas_CalcBlock(int aiSkill)
 {
-    float f = (float)value;
+    float f = (float)aiSkill;
     float result =
         *reinterpret_cast<Setting*>(&g_011ce840)->Float() + *reinterpret_cast<Setting*>(&g_011cfd8c)->Float() * f;
     return result;
@@ -1478,6 +1522,9 @@ extern Setting originalRuntimeFloatSetting1216;
 // Computes carry weight from actor value 37 divided by g_d100, scaled by a setting and offset by another setting.
 // @fnv 0x00649530
 // src: COMMUNITY 0x00649530
+// pdb: MagicFormulas::CalcConstantEffectMagnitude | MagicFormulas.obj | debug, object-file run extension, low
+// pdb params: afEffectBaseCost, afConstantEffectEnchantFactor, aiAmountofEnchantment
+// pdb locals: fresult
 float __cdecl CalculateMagicMedicine(ActorValueOwner* apOwner)
 {
     float a;
@@ -1495,6 +1542,9 @@ extern Setting g_011d1854;
 extern Setting originalRuntimeFloatSetting1217;
 // Reads actor value 44, divides it by g_d100, scales it by a runtime setting and adds another setting's float value, returning the sum.
 // @fnv 0x00649580
+// pdb: MagicFormulas::CalcDiseaseTransferChance | MagicFormulas.obj | debug, object-file run extension, low
+// pdb params: aiResistance
+// pdb locals: fresult
 float __cdecl GetActorValueScaledSetting(ActorValueOwner* apActorValueOwner)
 {
     float v;
@@ -1512,6 +1562,8 @@ struct S_0064dac0
 // Returns the value at this+0x50 plus b times the element at index this+0x60 of the array at this+0x5C, plus the element at index a of that array.
 // @fnv 0x0064dac0
 // src: XBOX_PDB 0x0064dac0
+// pdb: NiPixelData::GetPixels | TESRegionDataLandscape.obj | debug, call graph, medium
+// pdb params: uiMipmapLevel, uiFace
 int __thiscall S_0064dac0::NiPixelData_GetPixels(int a, int b)
 {
     return *(int*)((char*)this + 0x50) + b * *(int*)(*(int*)((char*)this + 0x5C) + *(int*)((char*)this + 0x60) * 4) +
@@ -1525,6 +1577,8 @@ struct FUN_0064db20_Class
 };
 // Bounds-checks index a against the container's count, then returns the pointer to the entry at offset a*16 in the buffer at this+12.
 // @fnv 0x0064db20
+// pdb: std::vector<BSFaceGenRGBA,std::allocator<BSFaceGenRGBA> >::operator[] | BSFaceGenImage.obj | debug, call graph, low
+// pdb params: _Pos
 void* __thiscall FUN_0064db20_Class::GetEntryAt(unsigned int auiIndex)
 {
     if (auiIndex >= ((FUN_0064db00_class*)this)->GetFieldAtOffset10())
@@ -1546,6 +1600,9 @@ struct Tgt
 };
 // Saves m into tmp, calls Increment on this, then writes tmp into p1 and returns p1.
 // @fnv 0x0064dbf0
+// pdb: std::_Vector_const_iterator<std::_Vector_val<BSFaceGenRGBA,std::allocator<BSFaceGenRGBA> > >::operator++ | BSFaceGenImage.obj | debug, object-file run extension, low
+// pdb params: __formal
+// pdb locals: _Tmp
 int* __thiscall Tgt::CopyPairAfterCallback(int* pOutPair, int aiUnused)
 {
     Pair tmp = m;
@@ -1680,6 +1737,7 @@ struct FUN_006505d0_class
 };
 // Returns the value of the Flt object pointed to by m_8, or 0 if m_8 is null.
 // @fnv 0x006505d0
+// pdb: BSFaceGenModel::GetEGMFilename | BSFaceGenManager.obj | debug, call graph, high
 unsigned int __thiscall FUN_006505d0_class::GetFloatValue()
 {
     return m_8 ? (unsigned int)*m_8 : 0;
@@ -1692,6 +1750,8 @@ struct Holder00aad6b0
 };
 // @fnv 0x00652fc0
 // src: GUESS 0x00652fc0 (confidence: low)
+// pdb: BSFaceGenManager::RandomizeFace | BSFaceGenManager.obj | debug, object-file run extension, low
+// pdb params: apOutCoord
 void __cdecl Object_ProcessState_00652fc0(float a1, int a2, int a3)
 {
     if (a3 != 0 && a2 != 0)
@@ -1718,6 +1778,8 @@ struct Dummy658130
 };
 // @fnv 0x00658130
 // src: GUESS 0x00658130 (confidence: low)
+// pdb: NiPointer<NiProperty>::NiPointer<NiProperty> | BSFaceGenManager.obj | debug, object-file run extension, low
+// pdb params: ptr
 unsigned __thiscall Dummy658130::UpdateState_00658130()
 {
     unsigned x = 0x1E1E1E1;
@@ -1729,6 +1791,8 @@ void __cdecl Object_InvokeCallbackForRange(int, int, int, unsigned char);
 // Computes a byte from a1 and a2 via FUN_0065e750, then passes a1, a2, a3 and that byte to FUN_00659260.
 // @fnv 0x00658bd0
 // src: GUESS 0x00658bd0 (confidence: low)
+// pdb: std::_Cons_val<std::allocator<float>,float,float> | BSFaceGenManager.obj | debug, object-file run extension, low
+// pdb params: _Alval, _Pdest, _Src
 void Range_ProcessWithMoveCategory_00658bd0(int a1, int a2, int a3)
 {
     unsigned char tmp = std_Move_cat_unsigned_char(&a1, &a2);
@@ -1741,6 +1805,8 @@ void __cdecl ForEachItem(int, int, int, unsigned char);
 // Calls FUN_0065e750 on a and b to get a byte, then passes a, b, c and that byte to ForEachItem.
 // @fnv 0x00658c60
 // src: GUESS 0x00658c60 (confidence: low)
+// pdb: std::_Destroy_range<std::allocator<FanFgResidualS> > | BSFaceGenManager.obj | debug, object-file run extension, low
+// pdb params: _First, _Last, _Al
 void Object_DispatchIteratorRange_00658c60(int a, int b, int c)
 {
     unsigned char d = std_Move_cat_unsigned_char(&a, &b);
@@ -1759,6 +1825,7 @@ struct FUN_00658d00_Class
 };
 // Calls FUN_00658bb0 on this, deletes this when flags has bit 0 set, and returns this.
 // @fnv 0x00658d00
+// pdb: BSTCaseInsensitiveStringMap<NiPointer<BSFaceGenModelMap::Entry> >::`scalar deleting destructor' | BSFaceGenManager.obj | retail, vtable slot, high
 void* __thiscall FUN_00658d00_Class::FUN_00658d00(unsigned int flags)
 {
     reinterpret_cast<FUN_00658bb0_Class*>(this)->FUN_00658bb0();
@@ -1773,6 +1840,7 @@ struct FUN_00658ea0_cls
     void* __thiscall FUN_00658ea0(unsigned int);
 };
 // @fnv 0x00658ea0
+// pdb: NiTMapBase<DFALL<NiTMapItem<char const *,NiPointer<BSFaceGenModelMap::Entry> > >,char const *,NiPointer<BSFaceGenModelMap::Entry> >::`scalar deleting destructor' | BSFaceGenManager.obj | retail, vtable slot, high
 void* __thiscall FUN_00658ea0_cls::FUN_00658ea0(unsigned int flags)
 {
     ((FUN_00658e70_cls*)this)->SetVtableAndProcessState_00658e70();
@@ -1789,6 +1857,7 @@ struct FUN_00658ed0_Class
 };
 // Calls FUN_00658e10, frees this with operator delete when flags has bit 0 set, and returns this.
 // @fnv 0x00658ed0
+// pdb: NiTMap<char const *,NiPointer<BSFaceGenModelMap::Entry> >::`scalar deleting destructor' | BSFaceGenManager.obj | retail, vtable slot, high
 void* __thiscall FUN_00658ed0_Class::FUN_00658ed0(unsigned int flags)
 {
     FUN_00658e10();
@@ -1803,6 +1872,7 @@ struct FUN_00658f00_Class : public FUN_00658d30_class
 };
 
 // @fnv 0x00658f00
+// pdb: NiTStringTemplateMap<NiTMap<char const *,NiPointer<BSFaceGenModelMap::Entry> >,NiPointer<BSFaceGenModelMap::Entry> >::`scalar deleting destructor' | BSFaceGenManager.obj | retail, vtable slot, high
 FUN_00658f00_Class* __thiscall FUN_00658f00_Class::FUN_00658f00(unsigned int flags)
 {
     this->FUN_00658d50();
@@ -1865,6 +1935,7 @@ struct S_006592c0
     void* FUN_006592c0(unsigned int flags);
 };
 // @fnv 0x006592c0
+// pdb: NiTStringMap<NiPointer<BSFaceGenModelMap::Entry> >::`scalar deleting destructor' | BSFaceGenManager.obj | debug, vtable slot, medium
 void* S_006592c0::FUN_006592c0(unsigned int flags)
 {
     ((FUN_00658d30_class*)this)->ForwardCall_00658d30();
@@ -2010,6 +2081,7 @@ struct FUN_0065b3e0_Holder
 };
 // Returns m_14 when flag is true, otherwise m_10.
 // @fnv 0x0065b3e0
+// pdb: std::_Iterator012<std::random_access_iterator_tag,FR2Vect3TC<short>,int,FR2Vect3TC<short> const *,FR2Vect3TC<short> const &,std::_Iterator_base12>::~_Iterator012<std::random_access_iterator_tag,FR2Vect3TC<short>,int,FR2Vect3TC<short> const *,FR2Vect3TC<short> const &,std::_Iterator_base12> | BSFaceGenModel.obj | debug, object-file run extension, low
 void* __thiscall FUN_0065b3e0_Holder::GetPointerByFlag(bool abUseSecond)
 {
     return abUseSecond ? m_14 : m_10;
@@ -2027,6 +2099,8 @@ struct FUN_0065cc70_Holder
 // Bounds-checks param against the holder's count, then returns the int stored at offset 0xc plus param.
 // @fnv 0x0065cc70
 // src: GUESS 0x0065cc70 (confidence: medium)
+// pdb: std::vector<signed char,std::allocator<signed char> >::operator[] | BSFaceGenModel.obj | debug, call graph (shared callers), medium
+// pdb params: _Pos
 int __thiscall FUN_0065cc70_Holder::GetElementChecked_0065cc70(unsigned int uiIndex)
 {
     if (uiIndex >= ((FUN_0065cc50_Class*)this)->GetFieldAtOffset10())
@@ -2048,6 +2122,8 @@ struct Holder : TextureBasis
 };
 // @fnv 0x0065cec0
 // src: GUESS 0x0065cec0 (confidence: low)
+// pdb: std::vector<FffModeTexS,std::allocator<FffModeTexS> >::operator[] | BSFaceGenModel.obj | debug, call graph, medium
+// pdb params: _Pos
 int Holder::ProcessEntries_0065cec0(unsigned int auiIndex)
 {
     if (auiIndex >= TextureBasis::GetPointerSpanCount_0065cea0())
@@ -2066,6 +2142,9 @@ struct Holder65cf50
 };
 // Saves data, calls FUN_0065dae0, then writes the saved pair to p and returns p.
 // @fnv 0x0065cf50
+// pdb: std::_Vector_const_iterator<std::_Vector_val<FR2Vect3TC<short>,std::allocator<FR2Vect3TC<short> > > >::operator++ | BSFaceGenModel.obj | debug, object-file run extension, low
+// pdb params: __formal
+// pdb locals: _Tmp
 void* __thiscall Holder65cf50::CopyDataAfterCallback(void* pDest, int iUnused)
 {
     Pair tmp = data;
@@ -2796,7 +2875,7 @@ struct PropHelper
 };
 void* DynamicCastByRTTI(const NiRTTI*, NiProperty*);
 extern int DAT_011f49e0;
-extern const char* const DAT_012005b8;
+extern const char* const SkyShaderProperty_ms_RTTI; // src: XBOX_RETAIL_PDB 0x012005b8 (old: DAT_012005b8/g_012005b8)
 struct FUN_00642940_class
 {
     int a;
@@ -2819,22 +2898,24 @@ struct FUN_00642940_class
 };
 // @fnv 0x00642940
 // src: COMMUNITY 0x00642940
+// pdb: Sun::RemoveTextures | Sun.obj | retail, upstream name already matches, high
+// pdb locals: pssp, pprop
 void FUN_00642940_class::Sun_RemoveTextures()
 {
     void* pProperty;
     SkyShaderProperty* obj;
     pProperty = ((PropHelper*)((Flt*)((char*)this + 0x10))->operator unsigned int())->GetProperty(3);
-    obj = (SkyShaderProperty*)DynamicCastByRTTI((const NiRTTI*)&DAT_012005b8, (NiProperty*)pProperty);
+    obj = (SkyShaderProperty*)DynamicCastByRTTI((const NiRTTI*)&SkyShaderProperty_ms_RTTI, (NiProperty*)pProperty);
     if (obj)
     {
-        obj->SetTexture(0);
+        obj->SetBaseMap(0);
         obj->SetTextureFile(&DAT_011f49e0);
     }
     pProperty = ((PropHelper*)((Flt*)((char*)this + 0x14))->operator unsigned int())->GetProperty(3);
-    obj = (SkyShaderProperty*)DynamicCastByRTTI((const NiRTTI*)&DAT_012005b8, (NiProperty*)pProperty);
+    obj = (SkyShaderProperty*)DynamicCastByRTTI((const NiRTTI*)&SkyShaderProperty_ms_RTTI, (NiProperty*)pProperty);
     if (obj)
     {
-        obj->SetTexture(0);
+        obj->SetBaseMap(0);
         obj->SetTextureFile(&DAT_011f49e0);
     }
 }
@@ -2851,6 +2932,8 @@ struct FUN_00644400_Class
 };
 // @fnv 0x00644400
 // src: COMMUNITY 0x00644400
+// pdb: BSSimpleArray<FollowerDist,1024>::Clear | AiFormulas.obj | debug, object-file run extension, low
+// pdb params: abFreeMemory
 void FUN_00644400_Class::BSSimpleArray_NavMeshTriangle_1024_InitialSetup(unsigned int a, unsigned int b)
 {
     *(int*)((char*)this + 4) = 0;
@@ -2884,6 +2967,9 @@ struct FUN_00657e60_Class
 };
 // @fnv 0x00657e60
 // src: GUESS 0x00657e60 (confidence: medium)
+// pdb: std::_Vector_val<FanFgResidualS,std::allocator<FanFgResidualS> >::_Vector_val<FanFgResidualS,std::allocator<FanFgResidualS> > | BSFaceGenManager.obj | debug, object-file run extension, low
+// pdb params: _Al
+// pdb locals: _Alproxy
 void __thiscall FUN_00657e60_Class::ReleaseStorage_00657e60()
 {
     if (m_iThirdValue)
@@ -2903,6 +2989,9 @@ struct H_0060b3b0
 int __cdecl _memcmp(const void* a, const void* b, unsigned int n);
 // @fnv 0x00658160
 // src: GUESS 0x00658160 (confidence: low)
+// pdb: FR2MatrixVTC<float>::operator= | BSFaceGenManager.obj | retail, object-file run extension, low
+// pdb note: debug build links it to FR2MatrixVTC<float>::operator==
+// pdb params: m
 bool FUN_00657880_class::ProcessAndReturnValue_00658160(int other)
 {
     if (*(unsigned int*)((char*)other + 0x18) != *(unsigned int*)((char*)this + 0x18) ||
@@ -3071,19 +3160,21 @@ void FUN_0065f430_class::UpdateState_0065f430()
 
 struct FUN_0064cc90_Class
 {
-    void __thiscall BSFaceGenAnimationData_SetAnimHeadCulled(unsigned char bFlag);
+    void __thiscall BSFaceGenAnimationData_SetAnimHeadCulled(unsigned char abCulled);
 };
 
 // If bFlag differs from the byte at this+0x18f, calls vtable slot 47 when bFlag is set, then stores bFlag at this+0x18f.
 // @fnv 0x0064cc90
 // src: XBOX_PDB 0x0064cc90
-void FUN_0064cc90_Class::BSFaceGenAnimationData_SetAnimHeadCulled(unsigned char bFlag)
+// pdb: BSFaceGenAnimationData::SetAnimHeadCulled | BSFaceGenAnimationData.obj | retail, upstream name already matches, high
+// pdb params: abCulled
+void FUN_0064cc90_Class::BSFaceGenAnimationData_SetAnimHeadCulled(unsigned char abCulled)
 {
-    if (bFlag == *(unsigned char*)((char*)this + 0x18f))
+    if (abCulled == *(unsigned char*)((char*)this + 0x18f))
         return;
-    if (bFlag)
+    if (abCulled)
         ((void(__thiscall*)(void*, float, int, int, int, int))(*((void***)this))[47])(this, 0.0f, 1, 1, 1, 1);
-    *(unsigned char*)((char*)this + 0x18f) = bFlag;
+    *(unsigned char*)((char*)this + 0x18f) = abCulled;
 }
 
 void* __cdecl NiMalloc(unsigned int);
@@ -3166,6 +3257,8 @@ extern const StartMenu g_011d41a4;
 int __cdecl _sprintf_s(char* buffer, unsigned int sizeOfBuffer, char const* format, ...);
 
 // @fnv 0x006495d0
+// pdb: MenuGameSettings::GetDamagedByPlayerBodyPartMessage | MenuGamesettings.obj | debug, call graph, medium
+// pdb params: aiWhich, apBodyPartName, apBuffer, aiMaxBufferSize
 void __cdecl FormatMenuText(int menuType, char const* text, char* buffer, unsigned int bufferSize)
 {
     if (!buffer)
@@ -3199,28 +3292,33 @@ void __cdecl FormatMenuText(int menuType, char const* text, char* buffer, unsign
 
 struct FUN_0064da80_Class
 {
-    int __thiscall NiPixelData_GetWidth(int a, int b);
+    int __thiscall NiPixelData_GetWidth(int uiMipmapLevel, int uiFace);
 };
 
 // @fnv 0x0064da80
 // src: COMMUNITY 0x0064da80
-int __thiscall FUN_0064da80_Class::NiPixelData_GetWidth(int aiIndex, int aiUnused)
+// pdb: NiPixelData::GetWidth | BSFaceGenImage.obj | debug, upstream name already matches, high
+// pdb params: uiMipmapLevel, uiFace
+int __thiscall FUN_0064da80_Class::NiPixelData_GetWidth(int uiMipmapLevel, int uiFace)
 {
-    return reinterpret_cast<int*>(*reinterpret_cast<int**>(reinterpret_cast<unsigned char*>(this) + 0x54))[aiIndex];
+    return reinterpret_cast<int*>(*reinterpret_cast<int**>(reinterpret_cast<unsigned char*>(this) + 0x54))[uiMipmapLevel];
 }
 
 struct FUN_0064daa0_Class
 {
-    int __thiscall NiPixelData_GetHeight(int a, int b);
+    int __thiscall NiPixelData_GetHeight(int uiMipmapLevel, int uiFace);
 };
 // @fnv 0x0064daa0
 // src: COMMUNITY 0x0064daa0
-int __thiscall FUN_0064daa0_Class::NiPixelData_GetHeight(int aiIndex, int b)
+// pdb: NiPixelData::GetHeight | BSFaceGenImage.obj | debug, upstream name already matches, high
+// pdb params: uiMipmapLevel, uiFace
+int __thiscall FUN_0064daa0_Class::NiPixelData_GetHeight(int uiMipmapLevel, int uiFace)
 {
-    return (*(int**)((char*)this + 0x58))[aiIndex];
+    return (*(int**)((char*)this + 0x58))[uiMipmapLevel];
 }
 
 
+// pdb: class Calendar, size 0x1c (here 0x3c), 7 members
 struct Calendar : public BGSTerrainManager
 {
     int GetDaysPassed();
@@ -3229,22 +3327,25 @@ struct Calendar : public BGSTerrainManager
 
 // @fnv 0x00653000
 // src: COMMUNITY 0x00653000
-void BSFaceGenManager_ScaleFaceCoord(float value, Calendar* calendars, bool flag)
+// pdb: BSFaceGenManager::ScaleFaceCoord | BSFaceGenManager.obj | debug, upstream name already matches, high
+// pdb params: afScaleAmount, apCoordToScale, abNoTextureScale
+// pdb locals: etype, esymm
+void BSFaceGenManager_ScaleFaceCoord(float afScaleAmount, Calendar* apCoordToScale, bool abNoTextureScale)
 {
-    if (calendars == 0 || value < 0.0f || value > 1.0f)
+    if (apCoordToScale == 0 || afScaleAmount < 0.0f || afScaleAmount > 1.0f)
         return;
 
     for (int i = 0; i < 2; ++i)
     {
         for (int j = 0; j < 2; ++j)
         {
-            if (reinterpret_cast<Calendar*>(reinterpret_cast<char*>(calendars) + (i << 6) + (j << 5))
+            if (reinterpret_cast<Calendar*>(reinterpret_cast<char*>(apCoordToScale) + (i << 6) + (j << 5))
                         ->GetDaysPassed() != 0 &&
-                reinterpret_cast<Calendar*>(reinterpret_cast<char*>(calendars) + (i << 6) + (j << 5))->GetMinLevel() !=
+                reinterpret_cast<Calendar*>(reinterpret_cast<char*>(apCoordToScale) + (i << 6) + (j << 5))->GetMinLevel() !=
                     0 &&
-                (i == 0 || (i == 1 && flag) || !flag))
+                (i == 0 || (i == 1 && abNoTextureScale) || !abNoTextureScale))
             {
-                reinterpret_cast<Calendar*>(reinterpret_cast<char*>(calendars) + (i << 6) + (j << 5))->ScaleAll(value);
+                reinterpret_cast<Calendar*>(reinterpret_cast<char*>(apCoordToScale) + (i << 6) + (j << 5))->ScaleAll(afScaleAmount);
             }
         }
     }
@@ -3265,7 +3366,7 @@ struct FUN_00658ad0_arg
 
 struct FUN_00658ad0_class
 {
-    void __thiscall AssignString(FUN_00658ad0_arg* arg, char* source, GO value);
+    void __thiscall AssignString(FUN_00658ad0_arg* pkItem, char* pcKey, GO val);
 };
 
 int __cdecl strcpy_s(char*, unsigned int, char*);
@@ -3274,20 +3375,23 @@ void* __cdecl _NiMalloc(unsigned int);
 extern unsigned int _data_011c16bc;
 
 // @fnv 0x00658ad0
-void __thiscall FUN_00658ad0_class::AssignString(FUN_00658ad0_arg* arg, char* source, GO goValue)
+// pdb: NiTStringTemplateMap<NiTMap<char const *,NiPointer<BSFaceGenModelMap::Entry> >,NiPointer<BSFaceGenModelMap::Entry> >::SetValue | BSFaceGenManager.obj | retail, vtable slot, high
+// pdb params: pkItem, pcKey, val
+// pdb locals: uiLen
+void __thiscall FUN_00658ad0_class::AssignString(FUN_00658ad0_arg* pkItem, char* pcKey, GO val)
 {
     if (*((unsigned char*)this + 0x10) != 0)
     {
-        int length = strlen(source) + 1;
-        arg->m_iWordAt04 = (char*)_NiMalloc((unsigned int)length);
-        strcpy_s(arg->m_iWordAt04, (unsigned int)length, source);
+        int length = strlen(pcKey) + 1;
+        pkItem->m_iWordAt04 = (char*)_NiMalloc((unsigned int)length);
+        strcpy_s(pkItem->m_iWordAt04, (unsigned int)length, pcKey);
     }
     else
     {
-        arg->m_iWordAt04 = source;
+        pkItem->m_iWordAt04 = pcKey;
     }
 
-    arg->m_8 = &goValue;
+    pkItem->m_8 = &val;
 }
 
 struct FUN_00658bb0 : FUN_00658d30_class
@@ -3296,6 +3400,7 @@ struct FUN_00658bb0 : FUN_00658d30_class
 };
 
 // @fnv 0x00658bb0
+// pdb: BSTCaseInsensitiveStringMap<NiPointer<BSFaceGenModelMap::Entry> >::~BSTCaseInsensitiveStringMap<NiPointer<BSFaceGenModelMap::Entry> > | BSFaceGenManager.obj | debug, call graph (shared callers), medium
 FUN_00658bb0::~FUN_00658bb0()
 {
     *(void**)this = &DAT_01065870;
@@ -3475,7 +3580,7 @@ extern const char DAT_0104f2ac;
 struct FUN_00404eb0
 {
     int state;
-    FUN_00404eb0(int category, int enabled, const char* source, int line);
+    FUN_00404eb0(int memContext, int overridable, const char* source, int aiLine);
     ~FUN_00404eb0();
 };
 struct FUN_00508050
@@ -3495,6 +3600,8 @@ struct FUN_006427c0_Class
 // Returns the value from the object obtained via unk28, or 0.0f if that object is null.
 // @fnv 0x006427c0
 // src: COMMUNITY 0x006427c0
+// pdb: Sun::GetSunOcclusionPercent | Sun.obj | debug, upstream name already matches, high
+// pdb locals: tempMemContext, paccum
 float FUN_006427c0_Class::Sun_GetSunOcclusionPercent()
 {
     FUN_00404eb0 scope(0x21, 1, &DAT_0104f2ac, 0x235);
@@ -3552,6 +3659,8 @@ struct Object_006428b0
 };
 // Looks up the value at container index 3, and if its FUN_00441110 result is 13, returns that value's unk6c float; otherwise returns 0.0f.
 // @fnv 0x006428b0
+// pdb: Sun::GetIntensity | Sun.obj | debug, object-file run extension, low
+// pdb locals: pshadeProperty
 float Object_006428b0::GetLinkedValueFloat()
 {
     Value_006428b0* value =
@@ -3566,14 +3675,17 @@ float Object_006428b0::GetLinkedValueFloat()
 
 extern double DAT_010356d8;
 extern double DAT_01012060;
-float __cdecl FUN_00476b70(float a, float b);
+float __cdecl FUN_00476b70(float afMin, float afMax);
 
 // @fnv 0x006429e0
 // src: XBOX_PDB 0x006429e0
-float __cdecl AiFormulas_RandomHour(float afValue, float afLimit)
+// pdb: AiFormulas::RandomHour | AiFormulas.obj | retail, upstream name already matches, high
+// pdb params: afMin, afMax
+// pdb locals: fhour, fadjustedMax, fadjustedHour
+float __cdecl AiFormulas_RandomHour(float afMin, float afMax)
 {
-    float lo2 = (afValue > afLimit) ? afLimit + DAT_010356d8 : afLimit;
-    float r = FUN_00476b70(afValue, lo2);
+    float lo2 = (afMin > afMax) ? afMax + DAT_010356d8 : afMax;
+    float r = FUN_00476b70(afMin, lo2);
     float s = r - DAT_010356d8;
     r = s >= DAT_01012060 ? s : r;
     return r;
@@ -3594,27 +3706,30 @@ extern Setting g_011cd438;
 // Sums base, a level-scaled term, and several setting-weighted terms (some skipped when flag is set) plus extra, returning the total.
 // @fnv 0x00642a60
 // src: COMMUNITY 0x00642a60
-int AiFormulas_GetActorDispositiontoTarget(int base, int level, int a2, int a3, int a4, int a5, int a6, int a7, int a8, int extra,
-                 bool abSkipTerms)
+// pdb: AiFormulas::GetActorDispositiontoTarget | AiFormulas.obj | retail, upstream name already matches, high
+// pdb params: aiActorBaseDisp, aiCharismaTarget, aiResponActor, aiKarmaTarget, aiRaceReactionTarget, aiFactionReactionTarget, aiFactionRankTarget, aiWeaponStatusTarget, aiDiseaseStatusTarget, aiTargetMod, abcreature
+// pdb locals: irace, iKarma, iweapon, idisposition, idisease, iCharisma, ifaction
+int AiFormulas_GetActorDispositiontoTarget(int aiActorBaseDisp, int aiCharismaTarget, int aiResponActor, int aiKarmaTarget, int aiRaceReactionTarget, int aiFactionReactionTarget, int aiFactionRankTarget, int aiWeaponStatusTarget, int aiDiseaseStatusTarget, int aiTargetMod,
+                 bool abcreature)
 {
     int total = 0;
     int levelPart6 = (int)(*g_011cddec.Float() +
-                           *originalRuntimeFloatSetting112.Float() * (level - *originalRuntimeFloatSetting117.Float()));
+                           *originalRuntimeFloatSetting112.Float() * (aiCharismaTarget - *originalRuntimeFloatSetting117.Float()));
     int part2 = 0;
-    if (!abSkipTerms)
+    if (!abcreature)
     {
-        part2 = (int)(*originalRuntimeFloatSetting113.Float() * a3 *
-                      (*originalRuntimeFloatSetting114.Float() + *g_011cdc28.Float() * a2));
+        part2 = (int)(*originalRuntimeFloatSetting113.Float() * aiKarmaTarget *
+                      (*originalRuntimeFloatSetting114.Float() + *g_011cdc28.Float() * aiResponActor));
     }
-    int part3 = (int)*g_011cdfa8.Float() * a4;
-    int part4 = (int)(a5 * *g_011cddc4.Float() * (*g_011cd890.Float() + a6 * *g_011cddc4.Float()));
+    int part3 = (int)*g_011cdfa8.Float() * aiRaceReactionTarget;
+    int part4 = (int)(aiFactionReactionTarget * *g_011cddc4.Float() * (*g_011cd890.Float() + aiFactionRankTarget * *g_011cddc4.Float()));
     int part5 = 0;
-    if (!abSkipTerms)
+    if (!abcreature)
     {
-        part5 = (int)*originalRuntimeFloatSetting116.Float() * a7;
+        part5 = (int)*originalRuntimeFloatSetting116.Float() * aiWeaponStatusTarget;
     }
-    int part9 = (int)*g_011cd438.Float() * a8;
-    total = base + levelPart6 + part2 + part3 + part4 + part5 + part9 + extra;
+    int part9 = (int)*g_011cd438.Float() * aiDiseaseStatusTarget;
+    total = aiActorBaseDisp + levelPart6 + part2 + part3 + part4 + part5 + part9 + aiTargetMod;
     return total;
 }
 
@@ -3625,22 +3740,25 @@ extern Setting DAT_011cdce8;
 
 struct FUN_0066ef50_Class
 {
-    double FUN_0066ef50(int a);
+    double FUN_0066ef50(int aiWhich);
 };
 
 // Returns a scaled value from the actor's FUN_0066ef50(7) plus a setting, multiplied by another setting, depending on the action (0x13 or 0x14); otherwise 0.
 // @fnv 0x00643e40
 // src: COMMUNITY 0x00643e40
-float __cdecl AiFormulas_AVDeriveResistance(FUN_0066ef50_Class* actor, int action)
+// pdb: AiFormulas::AVDeriveResistance | AiFormulas.obj | retail, upstream name already matches, high
+// pdb params: apActor, aiWhich
+// pdb locals: fresult
+float __cdecl AiFormulas_AVDeriveResistance(FUN_0066ef50_Class* apActor, int aiWhich)
 {
     float result = 0.0f;
-    switch (action)
+    switch (aiWhich)
     {
     case 0x13:
-        result = (float)((actor->FUN_0066ef50(7) + *DAT_011cdf78.Float()) * *DAT_011cdf44.Float());
+        result = (float)((apActor->FUN_0066ef50(7) + *DAT_011cdf78.Float()) * *DAT_011cdf44.Float());
         break;
     case 0x14:
-        result = (float)((actor->FUN_0066ef50(7) + *DAT_011cde50.Float()) * *DAT_011cdce8.Float());
+        result = (float)((apActor->FUN_0066ef50(7) + *DAT_011cde50.Float()) * *DAT_011cdce8.Float());
         break;
     }
     return result;
@@ -3656,6 +3774,8 @@ class FUN_00644350_cls
 };
 
 // @fnv 0x00644350
+// pdb: BSSimpleArray<FollowerDist,1024>::BSSimpleArray<FollowerDist,1024> | AiFormulas.obj | retail, object-file run extension, low
+// pdb params: aiInitialSize
 unsigned char FUN_00644350_cls::IsGreaterThan(FUN_00644350_cls* other)
 {
     return (m_8 == other->m_8) ? ((m_iWordAt04 > other->m_iWordAt04) ? 1 : 0) : ((m_8 > other->m_8) ? 1 : 0);
@@ -3667,7 +3787,7 @@ struct AVOwnerStub_646400
     virtual float GetBaseAV(int index);
     virtual float GetAV2(int index);
     virtual float GetCurAV(int index);
-    float GetScaledAV(int index);
+    float GetScaledAV(int aiWhich);
 };
 
 struct FloatSetting_646400
@@ -3686,6 +3806,9 @@ unsigned int DialogueRandom();
 
 // @fnv 0x00646400
 // src: COMMUNITY 0x00646400
+// pdb: CombatFormulas::CheckKnockdown | CombatFormulas.obj | retail, object-file run extension, low
+// pdb params: apActor, aiDamage
+// pdb locals: fcurrentHealth, bresult, fnewHealth, fpercentage, fmodAgility, fdamage, fchance, fagility, idieRoll
 bool ActorValueOwner_ShouldDamageKnockdownTarget(AVOwnerStub_646400* owner, int value)
 {
     bool result2 = false;
@@ -3745,21 +3868,24 @@ struct FUN_00647a30_Flag
 
 // @fnv 0x00647a30
 // src: XBOX_PDB 0x00647a30
-float __cdecl CombatFormulas_CalcTargetedLimbDamage(FUN_00647a30_Obj* pObj, FUN_00647a30_Flag* pFlag, float fValue)
+// pdb: CombatFormulas::CalcTargetedLimbDamage | CombatFormulas.obj | retail, upstream name already matches, high
+// pdb params: apTarget, apBodyPart, afHealthDamage
+// pdb locals: fresult, fbaseHealth, fbodyPartHealthPercent
+float __cdecl CombatFormulas_CalcTargetedLimbDamage(FUN_00647a30_Obj* apTarget, FUN_00647a30_Flag* apBodyPart, float afHealthDamage)
 {
     float result2 = 0.0f;
-    if (pObj != 0 && pFlag != 0)
+    if (apTarget != 0 && apBodyPart != 0)
     {
-        int flag = pFlag->Check();
+        int flag = apBodyPart->Check();
         float f = (float)flag * DAT_01016408;
-        float t2 = pObj->unk04(0x10);
+        float t2 = apTarget->unk04(0x10);
         if (t2 <= DAT_01012060)
         {
-            result2 = fValue;
+            result2 = afHealthDamage;
         }
         else if (f > DAT_01012060)
         {
-            result2 = (float)((fValue / (f * t2)) * DAT_01017a40);
+            result2 = (float)((afHealthDamage / (f * t2)) * DAT_01017a40);
         }
     }
     return result2;
@@ -3776,10 +3902,13 @@ extern SettingValue g_011cf314;
 extern SettingValue g_011ced28;
 extern SettingValue g_011ceb38;
 
-float __cdecl FUN_00476b70(float a, float b);
+float __cdecl FUN_00476b70(float afMin, float afMax);
 int __cdecl BSMAX_00647b70(int a, int b);
 
 // @fnv 0x00647ae0
+// pdb: CombatFormulas::GetScreenSplatterCount | CombatFormulas.obj | debug, call graph, medium
+// pdb params: fDamage
+// pdb locals: itotal, fbase, fdamage, frandom
 int __cdecl ComputeScaledSettingSum(float scale)
 {
     float v5 = *g_011cee24.GetValue();
@@ -3817,7 +3946,11 @@ extern double DAT_01011588;
 
 // Computes a weighted product of two normalized values and returns it scaled by DAT_01017a40, clamped to 100 when it exceeds the DAT_011d00f0 threshold.
 // @fnv 0x00648ea0
-int __cdecl ComputeWeightedValue(float value1, float value2, int weight)
+// src: XBOX_DEBUG_PDB 0x00648ea0
+// pdb: GamePlayFormulas::GetSpeechChallengeChance | GamePlayFormulas.obj | debug, call graph, high
+// pdb params: afPlayerSpeech, afTargetDisposition, aiTopicDifficulty
+// pdb locals: fdispositionFactor, fspeechFactor, fdifficultyFactor, fsuccessChance
+int __cdecl GamePlayFormulas_GetSpeechChallengeChance(float afPlayerSpeech, float afTargetDisposition, int aiTopicDifficulty)
 {
     float normalized9;
     float normalized8;
@@ -3826,10 +3959,10 @@ int __cdecl ComputeWeightedValue(float value1, float value2, int weight)
     float product3;
     int result;
 
-    normalized9 = 1.0 + *DAT_011d0c90.Setting_Float_00403e20() * (value1 - *DAT_011d07c0.Setting_Float_00403e20()) / DAT_01017a40;
-    normalized8 = 1.0 + *DAT_011d1110.Setting_Float_00403e20() * (value2 - *DAT_011d0a24.Setting_Float_00403e20()) / DAT_01017a40;
+    normalized9 = 1.0 + *DAT_011d0c90.Setting_Float_00403e20() * (afPlayerSpeech - *DAT_011d07c0.Setting_Float_00403e20()) / DAT_01017a40;
+    normalized8 = 1.0 + *DAT_011d1110.Setting_Float_00403e20() * (afTargetDisposition - *DAT_011d0a24.Setting_Float_00403e20()) / DAT_01017a40;
 
-    weightInt2 = 100 - weight;
+    weightInt2 = 100 - aiTopicDifficulty;
     weightFactor = weightInt2 / DAT_01017a40;
 
     product3 = normalized9 * normalized8 * weightFactor;
@@ -3903,6 +4036,8 @@ struct FUN_0064bda0_Class
 };
 
 // @fnv 0x0064bda0
+// pdb: BSFaceGenAnimationData::GetCurrentExpression | BSFaceGenAnimationData.obj | retail, upstream name already matches, high
+// pdb locals: fgreatestFVal, mostSignificantExpression, eexp, fval
 inline void FUN_0064bda0_Class::vf00()
 {}
 inline void FUN_0064bda0_Class::vf04()
@@ -4016,7 +4151,7 @@ struct FUN_0040fbf0_lock
 };
 struct FUN_0064be40_shell
 {
-    bool BSFaceGenAnimationData_UpdateEyeTracking(float elapsed, int unused);
+    bool BSFaceGenAnimationData_UpdateEyeTracking(float afTime, int apHeadNode);
     int BSFaceGenAnimationData_GetCurrentExpression();
     void FUN_0064bf90(int deltaY, float* deltaX, float* limit, float elapsed);
     void SetEyeHeadingAndPitch(float x, float y);
@@ -4030,7 +4165,10 @@ void __cdecl BSClamp_float(float* value, float minimum, float maximum);
 
 // @fnv 0x0064be40
 // src: XBOX_PDB 0x0064be40
-bool FUN_0064be40_shell::BSFaceGenAnimationData_UpdateEyeTracking(float elapsed, int unused)
+// pdb: BSFaceGenAnimationData::UpdateEyeTracking | BSFaceGenAnimationData.obj | retail, upstream name already matches, high
+// pdb params: afTime, apHeadNode
+// pdb locals: bres, fexpModDesiredPitch, feyeHeadingDelta, feyePitchDelta, fexpModDesiredHeading, fmaxAbsEyeDeltaThisTime, mostSignificantExpression
+bool FUN_0064be40_shell::BSFaceGenAnimationData_UpdateEyeTracking(float afTime, int apHeadNode)
 {
     ((FUN_0040fbf0_lock*)((char*)this + 0x1a0))->BSSpinLock_Lock(0);
     bool updateNeeded = !*(bool*)((char*)this + 0x18e);
@@ -4041,10 +4179,10 @@ bool FUN_0064be40_shell::BSFaceGenAnimationData_UpdateEyeTracking(float elapsed,
         float deltaX = *(float*)((char*)this + 0x150);
         float limit = *(float*)((char*)this + 0x154);
         if (deltaY < 15)
-            FUN_0064bf90(deltaY, &deltaX, &limit, elapsed);
+            FUN_0064bf90(deltaY, &deltaX, &limit, afTime);
         float desiredX = deltaX - *(float*)((char*)this + 0x140);
         float stage = limit - *(float*)((char*)this + 0x144);
-        float desiredY = *DAT_011d5924.Setting_Float_00403e20() * elapsed;
+        float desiredY = *DAT_011d5924.Setting_Float_00403e20() * afTime;
         BSClamp_float(&desiredX, -desiredY, desiredY);
         BSClamp_float(&stage, -desiredY, desiredY);
         *(float*)((char*)this + 0x140) += desiredX;
@@ -4133,6 +4271,10 @@ struct FUN_0064ccf0 : S_0064ccf0_Base
 };
 // Stores the given object pointer and, if non-null, caches its vfn_94 and vfn_98 results in unk24 and unk28; otherwise zeroes both.
 // @fnv 0x0064ccf0
+// pdb: std::vector<BSFaceGenRGBA,std::allocator<BSFaceGenRGBA> >::_Assign_n | BSFaceGenImage.obj | retail, object-file run extension, low
+// pdb note: debug build links it to BSFaceGenImage::BSFaceGenImage
+// pdb params: _Count, _Val
+// pdb locals: _Tmp
 FUN_0064ccf0::FUN_0064ccf0(S_0064ccf0_Obj* pObj) : unk08(0)
 {
     unk08 = pObj;
@@ -4185,6 +4327,7 @@ class SlotIdRange
 // Erases all elements of the vector by calling erase with begin() and end().
 // @fnv 0x0064db70
 // src: GUESS 0x0064db70 (confidence: high)
+// pdb: std::vector<BSFaceGenRGBA,std::allocator<BSFaceGenRGBA> >::clear | BSFaceGenImage.obj | debug, object-file run extension, low
 void SlotIdRange::ClearAllElements()
 {
     erase(begin(), end());
@@ -4361,8 +4504,8 @@ namespace std {
 struct exception
 {
     virtual ~exception() throw();
-    const char* message;
-    bool ownsMessage;
+    const char* _Mywhat; // src: XBOX_RETAIL_PDB +0x4 (old: message)
+    bool _Mydofree; // src: XBOX_RETAIL_PDB +0x8 (old: ownsMessage)
 };
 struct bad_alloc : public exception
 {
@@ -4538,22 +4681,25 @@ struct FUN_0064fcd0_Self
     int unk0c;
     unsigned int m_uiItemCount;
     void __thiscall SetQuantity_0064a4d0(unsigned int index, float value);
-    FUN_0064fcd0_Self* __thiscall CopyFrom(FUN_0064fcd0_Other* other);
+    FUN_0064fcd0_Self* __thiscall CopyFrom(FUN_0064fcd0_Other* aOther);
 };
 
 // If the other object's v01 matches, copies its v03, its FUN_0044edb0(1) result and each FUN_005dd4e0 value into this object, then returns this.
 // @fnv 0x0064fcd0
-FUN_0064fcd0_Self* FUN_0064fcd0_Self::CopyFrom(FUN_0064fcd0_Other* other)
+// pdb: BSFaceGenKeyframeMultiple::operator= | BSFaceGenKeyframe.obj | retail, call graph, high
+// pdb params: aOther
+// pdb locals: i
+FUN_0064fcd0_Self* FUN_0064fcd0_Self::CopyFrom(FUN_0064fcd0_Other* aOther)
 {
-    if (this->v01() != other->v01())
+    if (this->v01() != aOther->v01())
     {
         return this;
     }
-    this->v04(other->v03());
-    this->v20(other->TESMain_GetThread(1));
+    this->v04(aOther->v03());
+    this->v20(aOther->TESMain_GetThread(1));
     for (unsigned int i = 0; i < this->m_uiItemCount; i++)
     {
-        this->SetQuantity_0064a4d0(i, other->BSFaceGenKeyframeMultiple_GetQuantity(i));
+        this->SetQuantity_0064a4d0(i, aOther->BSFaceGenKeyframeMultiple_GetQuantity(i));
     }
     return this;
 }
@@ -4573,6 +4719,9 @@ struct FUN_0064fe10_cls
 
 // Destructor that calls FUN_00438af0 on the member at m_04.
 // @fnv 0x0064fe10
+// pdb: NiTStringTemplateMap<NiTMap<char const *,NiPointer<BSFaceGenModelMap::Entry> >,NiPointer<BSFaceGenModelMap::Entry> >::NiTStringTemplateMap<NiTMap<char const *,NiPointer<BSFaceGenModelMap::Entry> >,NiPointer<BSFaceGenModelMap::Entry> > | BSFaceGenManager.obj | retail, object-file run extension, low
+// pdb note: debug build links it to BSFaceGenModelMap::~BSFaceGenModelMap
+// pdb params: uiHashSize, bCopy
 FUN_0064fe10_cls::~FUN_0064fe10_cls()
 {
     reinterpret_cast<FUN_00438af0_cls*>(&m_04)->FUN_00438af0();
@@ -4595,6 +4744,7 @@ struct FUN_00650100 : PathingSolutionBase
 
 // Constructs a PathingSolutionHolder, initialising its PathingSolution pointer to null.
 // @fnv 0x00650100
+// pdb: BSFaceGenModelMap::Entry::Entry | BSFaceGenManager.obj | debug, object-file gap fill, medium
 FUN_00650100::FUN_00650100() : m_pPathingSolution(0)
 {}
 
@@ -4631,6 +4781,8 @@ struct S_006503b0_Owner
 // Iterates list04, removing each item whose nested slot reports 1, then calls FUN_00652140 and FUN_00652190 around the loop.
 // @fnv 0x006503b0
 // src: COMMUNITY 0x006503b0
+// pdb: BSFaceGenModelMap::RemoveAllUnusedModels | BSFaceGenManager.obj | retail, upstream name already matches, high
+// pdb locals: spentry, pkey, itr
 void S_006503b0_Owner::BSFaceGenModelMap_RemoveAllUnusedModels()
 {
     BSFaceGenManager_LockFaceGenAccess();
@@ -4694,15 +4846,18 @@ struct Target
 };
 // @fnv 0x00650480
 // src: COMMUNITY 0x00650480
-bool Target::BSFaceGenModelMap_LoadEGMData(FileNames* pFileNames)
+// pdb: BSFaceGenModelMap::LoadEGMData | BSFaceGenManager.obj | retail, upstream name already matches, high
+// pdb params: apModel
+// pdb locals: spentry, bres
+bool Target::BSFaceGenModelMap_LoadEGMData(FileNames* apModel)
 {
     NPX a(0);
-    if (!pFileNames || !pFileNames->GetFloatValue() || !BSstrlen(pFileNames->GetFloatValue()))
+    if (!apModel || !apModel->GetFloatValue() || !BSstrlen(apModel->GetFloatValue()))
         return false;
     bool p = false;
     BSFaceGenManager_LockFaceGenAccess();
-    if (map.NiTMapBase_DFALL_NiTMapItem_bhkRigidBody_NiPointer_ObstacleData_bhkRigidBody_NiPointer_ObstacleData_GetAt(pFileNames->GetFloatValue(), a) ||
-        (pFileNames->BSFaceGenModel_GetString() && map.NiTMapBase_DFALL_NiTMapItem_bhkRigidBody_NiPointer_ObstacleData_bhkRigidBody_NiPointer_ObstacleData_GetAt(pFileNames->BSFaceGenModel_GetString(), a)))
+    if (map.NiTMapBase_DFALL_NiTMapItem_bhkRigidBody_NiPointer_ObstacleData_bhkRigidBody_NiPointer_ObstacleData_GetAt(apModel->GetFloatValue(), a) ||
+        (apModel->BSFaceGenModel_GetString() && map.NiTMapBase_DFALL_NiTMapItem_bhkRigidBody_NiPointer_ObstacleData_bhkRigidBody_NiPointer_ObstacleData_GetAt(apModel->BSFaceGenModel_GetString(), a)))
     {
         a.Modelloader_GetReferencedThis()->time = gm_GetTickCount();
         BSFaceGenModelMap_VerifyData(a.Modelloader_GetReferencedThis());
@@ -4743,6 +4898,7 @@ struct FUN_00657c50_cls
 
 // @fnv 0x00657c50
 // src: GUESS 0x00657c50 (confidence: low)
+// pdb: std::vector<FanLinCtlS,std::allocator<FanLinCtlS> >::_Tidy | BSFaceGenManager.obj | debug, object-file run extension, low
 void* FUN_00657c50_cls::UpdateState_00657c50(void* a, EntryPosition pair, int c, int d)
 {
     Blk_657c50 t14;
@@ -4777,6 +4933,9 @@ class FUN_00657cd0_cls
 
 // Resets the three pointers, then grows the container or allocates idx entries of 0x3c bytes and sets the begin/current/end pointers.
 // @fnv 0x00657cd0
+// pdb: std::_Vector_val<FanLinCtlS,std::allocator<FanLinCtlS> >::_Vector_val<FanLinCtlS,std::allocator<FanLinCtlS> > | BSFaceGenManager.obj | debug, object-file run extension, low
+// pdb params: _Al
+// pdb locals: _Alproxy
 bool FUN_00657cd0_cls::ReserveEntries(unsigned int idx)
 {
     m_0c = 0;
@@ -4825,6 +4984,8 @@ struct FUN_00657d50_callee_b
 
 // @fnv 0x00657d50
 // src: GUESS 0x00657d50 (confidence: low)
+// pdb: std::_Vector_val<FanLinCtlS,std::allocator<FanLinCtlS> >::~_Vector_val<FanLinCtlS,std::allocator<FanLinCtlS> > | BSFaceGenManager.obj | debug, object-file run extension, low
+// pdb locals: _Alproxy
 void FUN_00657d50_cls::UpdateState_00657d50()
 {
     if (m_0c != 0)
@@ -4859,6 +5020,7 @@ struct FUN_00657dd0_cls
 
 // @fnv 0x00657dd0
 // src: GUESS 0x00657dd0 (confidence: low)
+// pdb: std::vector<FanFgResidualS,std::allocator<FanFgResidualS> >::_Tidy | BSFaceGenManager.obj | debug, object-file run extension, low
 bool FUN_00657dd0_cls::UpdateState_00657dd0(unsigned int index)
 {
     m_0c = 0;
@@ -4906,6 +5068,8 @@ struct FUN_00657ee0_cls
 
 // @fnv 0x00657ee0
 // src: GUESS 0x00657ee0 (confidence: medium)
+// pdb: std::_Vector_val<FanFgResidualS,std::allocator<FanFgResidualS> >::~_Vector_val<FanFgResidualS,std::allocator<FanFgResidualS> > | BSFaceGenManager.obj | debug, object-file run extension, low
+// pdb locals: _Alproxy
 bool FUN_00657ee0_cls::AllocateElementStorage(unsigned int a)
 {
     m_0c = 0;
@@ -4946,6 +5110,8 @@ class FUN_006580b0_cls
 
 // If CheckState or CheckEntry fails it calls FUN_00ec7c56, then returns the byte distance between m_pEntries pointers divided by 4.
 // @fnv 0x006580b0
+// pdb: std::vector<unsigned char,std::allocator<unsigned char> >::_Destroy | BSFaceGenManager.obj | debug, object-file run extension, low
+// pdb params: _First, _Last
 int FUN_006580b0_cls::GetEntryOffset(FUN_006580b0_cls* other)
 {
     if (CheckState() == 0 || CheckEntry(other) == 0)
@@ -5024,6 +5190,8 @@ extern "C" int DAT_01140ef8;
 
 // @fnv 0x00658c10
 // src: GUESS 0x00658c10 (confidence: medium)
+// pdb: std::_Destroy_range<std::allocator<FanLinCtlS> > | BSFaceGenManager.obj | debug, object-file run extension, low
+// pdb params: _First, _Last, _Al
 extern "C" void __cdecl Array_AllocateElements60Checked(int aiValue, int aiUnused)
 {
     Hldr0044 h;
@@ -5071,6 +5239,8 @@ class FUN_00659000 : public Base_b9895
 
 // Initializes the base, stores the two arguments in m_18 and m_1c, then allocates m_1c * m_18 bytes via unk_Alloc.
 // @fnv 0x00659000
+// pdb: FR2MatrixVTC<float>::FR2MatrixVTC<float> | BSFaceGenManager.obj | debug, object-file run extension, low
+// pdb params: nr, nc
 FUN_00659000::FUN_00659000(int aiFirst, int aiSecond) : Base_b9895()
 {
     m_18 = aiFirst;
@@ -5100,6 +5270,8 @@ struct FUN_00659600
 };
 
 // @fnv 0x00659600
+// pdb: EGTData::EGTData | BSFaceGenModel.obj | debug, object-file run extension, low
+// pdb params: apEGTFilename
 FUN_00659600::~FUN_00659600()
 {
     m_aiIndexedValues[0].ClearAllElements();
@@ -5129,7 +5301,7 @@ struct PacketScope
     PacketScope(unsigned int selector);
     ~PacketScope();
 };
-void __cdecl Object_ProcessEntries_00ab2640(PacketScope* scope, void* owner, PacketEntry* begin, PacketEntry* next);
+void __cdecl fffReadEgtFile(PacketScope* fname, void* basisKey, PacketEntry* symm, PacketEntry* asym);
 struct FUN_00659670
 {
     unsigned int mode;
@@ -5138,10 +5310,12 @@ struct FUN_00659670
 };
 // Constructs a PacketScope from selector and calls FUN_00ab2640 with it, this, and the two entries.
 // @fnv 0x00659670
+// pdb: EGTData::EGTData | BSFaceGenModel.obj | debug, object-file run extension, low
+// pdb params: aOther
 FUN_00659670::FUN_00659670(unsigned int selector)
 {
     PacketScope scope(selector);
-    Object_ProcessEntries_00ab2640(&scope, this, &entries[0], &entries[1]);
+    fffReadEgtFile(&scope, this, &entries[0], &entries[1]);
 }
 
 struct FUN_00659710_elem
@@ -5166,6 +5340,7 @@ class FUN_00659710_cls
 
 // Destructor that calls Init on both elements of the m_04 array.
 // @fnv 0x00659710
+// pdb: EGTData::~EGTData | BSFaceGenModel.obj | debug, object-file run extension, low
 FUN_00659710_cls::~FUN_00659710_cls()
 {
     m_04[0].Init();
@@ -5176,10 +5351,12 @@ const NiFixedString& BSFaceGenModelExtraData_GetTag();
 
 // Attaches the model to named face-generation extra data.
 // @fnv 0x0065be60
-BSFaceGenModelExtraData::BSFaceGenModelExtraData(int model)
+// pdb: BSFaceGenModelExtraData::BSFaceGenModelExtraData | BSFaceGenModel.obj | retail, upstream name already matches, high
+// pdb params: apModel
+BSFaceGenModelExtraData::BSFaceGenModelExtraData(int apModel)
     : NiExtraData(BSFaceGenModelExtraData_GetTag()), m_spModel(0)
 {
-    m_spModel = (BSFaceGenModel*)model;
+    m_spModel = (BSFaceGenModel*)apModel;
 }
 
 struct FUN_0065cfb0
@@ -5192,6 +5369,7 @@ struct FUN_0065c7c0 : FUN_0065cfb0
     void ClearStorage();
 };
 // @fnv 0x0065c7c0
+// pdb: std::vector<FutVect4TC<int>,std::allocator<FutVect4TC<int> > >::~vector<FutVect4TC<int>,std::allocator<FutVect4TC<int> > > | BSFaceGenModel.obj | debug, object-file gap fill, medium
 FUN_0065c7c0::~FUN_0065c7c0()
 {
     ClearStorage();
@@ -5224,6 +5402,7 @@ class FUN_0065c820 : public C5C820Storage
 };
 
 // @fnv 0x0065c820
+// pdb: std::vector<FR2Vect2TC<float>,std::allocator<FR2Vect2TC<float> > >::vector<FR2Vect2TC<float>,std::allocator<FR2Vect2TC<float> > > | BSFaceGenModel.obj | debug, call graph, medium
 FUN_0065c820::FUN_0065c820() : C5C820Storage(C5C820Allocator())
 {
     Buy(0);
@@ -5242,6 +5421,7 @@ struct FUN_0065c890_cls : FUN_0065cfb0_base
 };
 
 // @fnv 0x0065c890
+// pdb: std::vector<FR2Vect2TC<float>,std::allocator<FR2Vect2TC<float> > >::~vector<FR2Vect2TC<float>,std::allocator<FR2Vect2TC<float> > > | BSFaceGenModel.obj | debug, object-file gap fill, medium
 FUN_0065c890_cls::~FUN_0065c890_cls()
 {
     ClearAndFree();
@@ -5263,6 +5443,7 @@ class FUN_0065c960_cls : public ScopeBase_c960
 
 // Destructor that calls unk08 on the object before base destruction.
 // @fnv 0x0065c960
+// pdb: std::vector<FffTriVtxLabelS,std::allocator<FffTriVtxLabelS> >::~vector<FffTriVtxLabelS,std::allocator<FffTriVtxLabelS> > | BSFaceGenModel.obj | debug, object-file gap fill, medium
 FUN_0065c960_cls::~FUN_0065c960_cls()
 {
     this->unk08();
@@ -5279,6 +5460,7 @@ struct FUN_0065ca30
     ~FUN_0065ca30();
 };
 // @fnv 0x0065ca30
+// pdb: std::vector<FffTriSurfLabelS,std::allocator<FffTriSurfLabelS> >::~vector<FffTriSurfLabelS,std::allocator<FffTriSurfLabelS> > | BSFaceGenModel.obj | debug, object-file gap fill, medium
 FUN_0065ca30::~FUN_0065ca30()
 {
     ReleaseStorage_0065d460();
@@ -5302,6 +5484,7 @@ struct FUN_0065ca90 : FUN_0065d3a0
 };
 // Constructs the base with a default value and initializes the object by calling FUN_0065d4e0 with 0.
 // @fnv 0x0065ca90
+// pdb: std::vector<FffTriDiffMorphS,std::allocator<FffTriDiffMorphS> >::vector<FffTriDiffMorphS,std::allocator<FffTriDiffMorphS> > | BSFaceGenModel.obj | debug, call graph, medium
 FUN_0065ca90::FUN_0065ca90() : FUN_0065d3a0(FUN_006815c0())
 {
     AllocateElementStorage_0065d4e0(0);
@@ -5318,6 +5501,7 @@ struct FUN_0065cb00 : FUN_0065cfb0
     ~FUN_0065cb00();
 };
 // @fnv 0x0065cb00
+// pdb: std::vector<FffTriDiffMorphS,std::allocator<FffTriDiffMorphS> >::~vector<FffTriDiffMorphS,std::allocator<FffTriDiffMorphS> > | BSFaceGenModel.obj | debug, object-file gap fill, medium
 FUN_0065cb00::~FUN_0065cb00()
 {
     ClearAndFreeBuffer();
@@ -5352,6 +5536,7 @@ class FUN_0065cb60 : public C5CB60Storage
 
 // Constructs the storage with a default allocator and calls Buy(0) to initialise it.
 // @fnv 0x0065cb60
+// pdb: std::vector<FffTriStatMorphS,std::allocator<FffTriStatMorphS> >::vector<FffTriStatMorphS,std::allocator<FffTriStatMorphS> > | BSFaceGenModel.obj | debug, call graph, medium
 FUN_0065cb60::FUN_0065cb60() : C5CB60Storage(C5CB60Allocator())
 {
     Buy(0);
@@ -5415,6 +5600,8 @@ class B65CD70Vector
 // Erases all elements of the vector by calling erase(begin(), end()).
 // @fnv 0x0065cd70
 // src: GUESS 0x0065cd70 (confidence: high)
+// pdb: std::basic_string<char,std::char_traits<char>,std::allocator<char> >::basic_string<char,std::char_traits<char>,std::allocator<char> > | TESObject.obj | debug, call graph (shared callers), low
+// pdb params: _Ptr
 void B65CD70Vector::ClearAllElements()
 {
     erase(begin(), end());
@@ -5464,6 +5651,7 @@ class FUN_0065ce40 : public C65CE40List
 
 // Destructor that calls RemoveAll to clear the list's contents.
 // @fnv 0x0065ce40
+// pdb: std::vector<FffModeTexS,std::allocator<FffModeTexS> >::begin | BSFaceGenModel.obj | debug, object-file run extension, low
 FUN_0065ce40::~FUN_0065ce40()
 {
     RemoveAll();
@@ -5487,6 +5675,7 @@ class FUN_0065cef0_cls
 // Reads two FNVPair8 values via CallWithSelf and FUN_0044a170, then passes them to BuildAndComparePair to produce an output pair.
 // @fnv 0x0065cef0
 // src: XBOX_PDB 0x0065cef0
+// pdb: std::vector<FffModeTexS,std::allocator<FffModeTexS> >::clear | BSFaceGenModel.obj | debug, object-file run extension, low
 void FUN_0065cef0_cls::std_vector_FffModeTexS_std_allocator_FffModeTexS_clear()
 {
     FNVPair8 tmpA3;
@@ -6297,6 +6486,7 @@ class FUN_0065f060 : public FUN_0065f060_base
 
 // Destructor that calls unk08() on this object.
 // @fnv 0x0065f060
+// pdb: std::vector<unsigned char,std::allocator<unsigned char> >::~vector<unsigned char,std::allocator<unsigned char> > | BSFaceGenManager.obj | debug, call graph, low
 FUN_0065f060::~FUN_0065f060()
 {
     this->unk08();
@@ -6499,6 +6689,8 @@ class LengthError
 
 // Throws a LengthError constructed from the message "vector<T> too long".
 // @fnv 0x0065f640
+// pdb: std::vector<FanFgResidualS,std::allocator<FanFgResidualS> >::_Destroy | BSFaceGenManager.obj | debug, call graph, low
+// pdb params: _First, _Last
 void __cdecl ThrowVectorTooLong()
 {
     throw LengthError("vector<T> too long");
@@ -6691,7 +6883,7 @@ int __cdecl ComputeIndexAndCall(int a, int b, int c)
 
 // Candidate: CallWithFlag
 //   int CallWithFlag(int* p) { bool flag; return FUN_0043b1d0(p, flag); }
-int __cdecl NiGlobalStringTable_GetString(int* p, bool flag);
+int __cdecl NiGlobalStringTable_GetString(int* kHandle, bool flag);
 
 // @fnv 0x0065fe40
 int __cdecl CallWithFlag(int* p)
@@ -6842,6 +7034,8 @@ struct FUN_00649680 : NiMemObject
 };
 // @fnv 0x0064c5a0
 // src: COMMUNITY 0x0064c5a0
+// pdb: BSFaceGenAnimationData::CreateCopyBS | BSFaceGenAnimationData.obj | retail, upstream name already matches, high
+// pdb locals: pretval, pcopy, iter, pcurrent, ptemp
 FUN_00649680* FUN_00649680::BSFaceGenAnimationData_CreateCopyBS()
 {
     FUN_00649680* copy = new FUN_00649680;
@@ -6933,8 +7127,8 @@ struct FGRGBA
 struct FGPixels
 {
     FGRGBA* GetPixels(int aiMipmap, int aiFace);
-    unsigned int GetWidth(int aiMipmap, int aiFace);
-    unsigned int GetHeight(int aiMipmap, int aiFace);
+    unsigned int GetWidth(int uiMipmapLevel, int uiFace);
+    unsigned int GetHeight(int uiMipmapLevel, int uiFace);
 };
 
 struct FGPixelData
@@ -6967,7 +7161,7 @@ struct FGImage
 };
 
 extern const FGPixelFormat g_kFGPixelFormatRGBA32;
-FGPixelData* __cdecl FGConvertPixelData(FGSourceTexture* apTexture, const FGPixelFormat* apFormat);
+FGPixelData* __cdecl FGConvertPixelData(FGSourceTexture* apTex, const FGPixelFormat* arFormat);
 
 struct FGOwner
 {
@@ -6980,6 +7174,8 @@ struct FGOwner
 };
 
 // @fnv 0x0064d880
+// pdb: BSFaceGenImage::GetUncompressedImage | BSFaceGenImage.obj | debug, object-file run extension, low
+// pdb locals: ppixeldata, pbuffer, spUncompressedTex, ipixels, emtpyRGBA, i
 FGImage* FGOwner::GetOrConvertImage()
 {
     if (m_kImage.IsEmpty() && m_spTexture)
@@ -7042,6 +7238,7 @@ class Ref653
 
 // Returns the object held by the owner's handle, or the object of a temporary empty handle when the owner pointer is null.
 // @fnv 0x00653180
+// pdb: BSFaceGenModel::GetMorph | BSFaceGenManager.obj | debug, object-file gap fill, medium
 Obj653* Ref653::GetHandleObject()
 {
     return (m_pkOwnerManager ? m_pkOwnerManager->m_kHandle : Handle653(0)).Get();
@@ -7054,6 +7251,7 @@ struct FUN_00657a80 : FUN_0065d3a0
 
 // Constructs the object, initialising the base with FUN_006815c0() and then calling FUN_00657dd0(0) on this.
 // @fnv 0x00657a80
+// pdb: std::vector<FanFgResidualS,std::allocator<FanFgResidualS> >::vector<FanFgResidualS,std::allocator<FanFgResidualS> > | BSFaceGenManager.obj | debug, object-file run extension, low
 FUN_00657a80::FUN_00657a80() : FUN_0065d3a0(FUN_006815c0())
 {
     ((FUN_00657dd0_cls*)this)->UpdateState_00657dd0(0);
@@ -7078,6 +7276,7 @@ class FUN_00657af0 : public E7AF0Base
 };
 
 // @fnv 0x00657af0
+// pdb: std::vector<FanFgResidualS,std::allocator<FanFgResidualS> >::~vector<FanFgResidualS,std::allocator<FanFgResidualS> > | BSFaceGenManager.obj | debug, object-file gap fill, low
 FUN_00657af0::~FUN_00657af0()
 {
     Clear();
@@ -7136,6 +7335,10 @@ struct C658CA0Element
 // Clamps the element count to zero, throws C658CA0BadAlloc on overflow, and allocates count * sizeof(C658CA0Element) bytes.
 // @fnv 0x00658ca0
 // src: GUESS 0x00658ca0 (confidence: medium)
+// pdb: BSTCaseInsensitiveStringMap<NiPointer<BSFaceGenModelMap::Entry> >::KeyToHashIndex | BSFaceGenManager.obj | retail, object-file run extension, low
+// pdb note: debug build links it to std::_Destroy_range<std::allocator<unsigned char> >
+// pdb params: apKey
+// pdb locals: iretVal
 C658CA0Element* __cdecl Object_AllocateStorage_00658ca0(unsigned int ItemUpdateArray, C658CA0Element*)
 {
     if (ItemUpdateArray <= 0)
@@ -7170,6 +7373,8 @@ void __cdecl NiFree(void* p);
 
 // If flag is set, walks every bucket, frees each node's data with NiFree, and advances to the next node.
 // @fnv 0x00658d50
+// pdb: NiTStringTemplateMap<NiTMap<char const *,NiPointer<BSFaceGenModelMap::Entry> >,NiPointer<BSFaceGenModelMap::Entry> >::~NiTStringTemplateMap<NiTMap<char const *,NiPointer<BSFaceGenModelMap::Entry> >,NiPointer<BSFaceGenModelMap::Entry> > | BSFaceGenManager.obj | debug, call graph (shared callers), high
+// pdb locals: i, pkItem, pkSave
 FUN_00658d50::~FUN_00658d50()
 {
     if (this->flag)
@@ -7197,6 +7402,7 @@ struct FUN_00658e10 : ObjectCleanupBase658e10
     virtual ~FUN_00658e10();
 };
 // @fnv 0x00658e10
+// pdb: NiTMap<char const *,NiPointer<BSFaceGenModelMap::Entry> >::~NiTMap<char const *,NiPointer<BSFaceGenModelMap::Entry> > | BSFaceGenManager.obj | debug, call graph, medium
 FUN_00658e10::~FUN_00658e10()
 {
     FUN_00438af0();
@@ -7222,6 +7428,7 @@ struct FUN_0065c9c0 : FUN_0065d3a0
     void AllocateBuffer(unsigned int flag);
 };
 // @fnv 0x0065c9c0
+// pdb: std::vector<FffTriSurfLabelS,std::allocator<FffTriSurfLabelS> >::vector<FffTriSurfLabelS,std::allocator<FffTriSurfLabelS> > | BSFaceGenModel.obj | debug, call graph, medium
 FUN_0065c9c0::FUN_0065c9c0() : FUN_0065d3a0(FUN_006815c0())
 {
     AllocateBuffer(0);
@@ -7254,6 +7461,7 @@ class FUN_0065cca0_cls : public B65CCA0Base
 };
 
 // @fnv 0x0065cca0
+// pdb: std::vector<FffModeGS,std::allocator<FffModeGS> >::vector<FffModeGS,std::allocator<FffModeGS> > | BSFaceGenModel.obj | debug, object-file run extension, low
 FUN_0065cca0_cls::FUN_0065cca0_cls() : B65CCA0Base(B65CCA0List())
 {
     Reset(0);
@@ -7407,6 +7615,7 @@ struct FUN_00657b50 : FUN_0065d3a0
 };
 // Constructs the object, passing FUN_006815c0() to the base constructor and then calling FUN_00657ee0(0) on this.
 // @fnv 0x00657b50
+// pdb: std::vector<unsigned char,std::allocator<unsigned char> >::vector<unsigned char,std::allocator<unsigned char> > | BSFaceGenManager.obj | debug, call graph, low
 FUN_00657b50::FUN_00657b50() : FUN_0065d3a0(FUN_006815c0())
 {
     ((FUN_00657ee0_cls*)this)->AllocateElementStorage(0);
@@ -7573,7 +7782,7 @@ class FUN_006624c0 : public NiMemObject
     int unk0C;
     int unk10;
     int unk14;
-    FUN_006624c0(NiTriBasedGeom* pGeom, int a2, int a3);
+    FUN_006624c0(NiTriBasedGeom* apMesh, int apAdditionalVertices, int aiAdditionalVerticesCount);
 };
 
 class FaceGenGeometryModel
@@ -7590,21 +7799,24 @@ class FaceGenGeometryModel
 
 // Clones the model's geometry, copies its geometry data and skin partition, attaches extra data, and returns true on success.
 // @fnv 0x0065bbc0
+// pdb: BSFaceGenModel::CreateNewMesh | BSFaceGenModel.obj | debug, object-file run extension, low
+// pdb params: aspReturnMesh
+// pdb locals: spskinPartition, spTempObject, pmorphBase, spdata, pskin, spTempSkinObject
 bool BSFaceGenModel::CloneTriBasedGeom(NiPointer<NiTriBasedGeom>& out)
 {
     NiPointer<NiGeometryData> spModelData(0);
     NiPointer<NiSkinPartition> spSkinPartition(0);
 
     out = 0;
-    if (!m_pGeometryModel || !m_pGeometryModel->spGeom || !m_pGeometryModel->spGeom->GetModelData())
+    if (!pMeshData || !pMeshData->spGeom || !pMeshData->spGeom->GetModelData())
     {
         return false;
     }
 
-    out = (NiTriBasedGeom*)m_pGeometryModel->spGeom->Clone();
+    out = (NiTriBasedGeom*)pMeshData->spGeom->Clone();
 
     NiPointer<NiObject> spDataCopy3(0);
-    m_pGeometryModel->spGeom->GetModelData()->ResolveObjectPointer(spDataCopy3);
+    pMeshData->spGeom->GetModelData()->ResolveObjectPointer(spDataCopy3);
     spModelData = (NiGeometryData*)(NiObject*)spDataCopy3;
     out->ReplaceModelData(spModelData);
 
@@ -7617,7 +7829,7 @@ bool BSFaceGenModel::CloneTriBasedGeom(NiPointer<NiTriBasedGeom>& out)
         pObjectInstance->BSMultiBound_SetShape(spSkinPartition);
     }
 
-    FUN_006624c0* pExtra3 = new FUN_006624c0(out, m_pGeometryModel->unk14, m_pGeometryModel->unk18);
+    FUN_006624c0* pExtra3 = new FUN_006624c0(out, pMeshData->unk14, pMeshData->unk18);
     if (pExtra3)
     {
         out->AddExtraData((NiExtraData*)pExtra3);
@@ -7757,6 +7969,7 @@ struct FUN_0064ce20 : Base64ce20
 
 // Calls FUN_0064db70 on m_iSlotIds, then sets m_object to 0.
 // @fnv 0x0064ce20
+// pdb: BSFaceGenImage::~BSFaceGenImage | BSFaceGenImage.obj | debug, call graph, medium
 FUN_0064ce20::~FUN_0064ce20()
 {
     m_iSlotIds.ClearAllElements();
@@ -7816,6 +8029,7 @@ struct FUN_0065c750 : public Base65C750
 };
 
 // @fnv 0x0065c750
+// pdb: std::vector<FutVect4TC<int>,std::allocator<FutVect4TC<int> > >::vector<FutVect4TC<int>,std::allocator<FutVect4TC<int> > > | BSFaceGenModel.obj | debug, call graph, medium
 FUN_0065c750::FUN_0065c750() : Base65C750(Allocator65C750())
 {
     Init(0);
@@ -7873,11 +8087,14 @@ extern FloatGetterGlobal DAT_011cfb5c, DAT_011cf264;
 // Returns the value from src scaled by the sum of two global float values, or 0.0f if src is null.
 // @fnv 0x006479e0
 // src: COMMUNITY 0x006479e0
-float CombatFormulas_CalcExplosionDamage(FloatSource* src)
+// pdb: CombatFormulas::CalcExplosionDamage | CombatFormulas.obj | debug, upstream name already matches, high
+// pdb params: pExplosion
+// pdb locals: fdamage
+float CombatFormulas_CalcExplosionDamage(FloatSource* pExplosion)
 {
     float result;
-    if (src != 0)
-        result = src->FUN_006a78f0();
+    if (pExplosion != 0)
+        result = pExplosion->FUN_006a78f0();
     else
         result = 0.0f;
     float factor = result;
@@ -7907,6 +8124,7 @@ struct FUN_0065c8f0 : FUN_0065d3a0
 
 // Constructs a FUN_0065c8f0 object by delegating to the base FUN_0065d3a0 with a default FUN_006815c0 and calling FUN_0065d2b0 with 0.
 // @fnv 0x0065c8f0
+// pdb: std::vector<FffTriVtxLabelS,std::allocator<FffTriVtxLabelS> >::vector<FffTriVtxLabelS,std::allocator<FffTriVtxLabelS> > | BSFaceGenModel.obj | debug, call graph, medium
 FUN_0065c8f0::FUN_0065c8f0() : FUN_0065d3a0(FUN_006815c0())
 {
     UpdateState_0065d2b0(0);
@@ -8008,8 +8226,11 @@ float BSMAX_00404010(float, float);
 // Sums a base setting with distance-falloff terms for quantity, value, level and resistance and returns it as int; a total between 0 and 1 becomes 1.
 // @fnv 0x00642bc0
 // src: COMMUNITY 0x00642bc0
-int __cdecl AiFormulas_GetDetectedEvent(int skill, int count, float distance, int resistance, int level, bool flagA, bool flagB,
-                         bool flagC, int quantity, int value, bool special)
+// pdb: AiFormulas::GetDetectedEvent | AiFormulas.obj | retail, upstream name already matches, high
+// pdb params: aiPercep, aiLineofSite, afDistance, aiBlindess, aiLightLevel, absleeping, abAlert, abInCombat, aiActionSound, aiVisual, abExterior
+// pdb locals: fmodperception, fModifiedDistanceAttenuation, fAction, iAlert, iCombat, fcalvalue, idetection, iVisual, fDistanceAttenuation, fvisual, fSounds, fSkill, iLos, iSleeping, fmaxDistance, fblind, flight
+int __cdecl AiFormulas_GetDetectedEvent(int aiPercep, int aiLineofSite, float afDistance, int aiBlindess, int aiLightLevel, bool absleeping, bool abAlert,
+                         bool abInCombat, int aiActionSound, int aiVisual, bool abExterior)
 {
     int d;      // Third boolean modifier.
     int n;      // Whether count is positive.
@@ -8021,40 +8242,40 @@ int __cdecl AiFormulas_GetDetectedEvent(int skill, int count, float distance, in
     // First boolean modifier.
     int i = 0;
     d = 0;
-    if (flagB)
+    if (abAlert)
         e = 1;
-    if (flagA)
+    if (absleeping)
         i = 1;
-    if (flagC)
+    if (abInCombat)
         d = 1;
     // Skill contribution.
     float m = *originalRuntimeFloatSetting99.Float() +
-              (*originalRuntimeFloatSetting100.Float() - *originalRuntimeFloatSetting99.Float()) * (skill / 10.0f);
+              (*originalRuntimeFloatSetting100.Float() - *originalRuntimeFloatSetting99.Float()) * (aiPercep / 10.0f);
     m *= 1.0f + e * *originalRuntimeFloatSetting98.Float() + i * *originalRuntimeFloatSetting97.Float() +
          d * *originalRuntimeFloatSetting150.Float();
     // Item value.
-    int k = value;
+    int k = aiVisual;
     n = 0;
-    if (count > 0)
+    if (aiLineofSite > 0)
         n = 1;
     // Effective range.
-    float a = special ? *originalRuntimeFloatSetting101.Float() * *originalRuntimeFloatSetting87.Float()
+    float a = abExterior ? *originalRuntimeFloatSetting101.Float() * *originalRuntimeFloatSetting87.Float()
                       : *originalRuntimeFloatSetting87.Float();
     // Range attenuation.
-    float g = BSMAX_00404010((a - distance) / a, 0.0f);
+    float g = BSMAX_00404010((a - afDistance) / a, 0.0f);
     g = pow((double)g, (double)*originalRuntimeFloatSetting102.Float());
     // Attenuation adjusted for count.
     float j = g;
     if (!n)
         j = g * *originalRuntimeFloatSetting90.Float();
     // Scaled quantity.
-    int o = (int)*g_011cd080.Float() * quantity;
+    int o = (int)*g_011cd080.Float() * aiActionSound;
     // Quantity contribution.
     float q = BSMAX_00404010(j * *originalRuntimeFloatSetting93.Float() * o, 0.0f);
     // Level contribution multiplier.
-    float p = (*g_011cdb84.Float() + level) * *originalRuntimeFloatSetting92.Float();
+    float p = (*g_011cdb84.Float() + aiLightLevel) * *originalRuntimeFloatSetting92.Float();
     // Resistance multiplier, using integer division.
-    float h = (100 - resistance) / 100;
+    float h = (100 - aiBlindess) / 100;
     // Value contribution.
     float b = BSMAX_00404010(k * g * p * h, 0.0f);
     // Attenuated skill contribution.
@@ -8072,6 +8293,7 @@ struct FUN_006443d0 : GlobalObject_00869f00
     virtual ~FUN_006443d0();
 };
 // @fnv 0x006443d0
+// pdb: BSSimpleArray<FollowerDist,1024>::`scalar deleting destructor' | AiFormulas.obj | retail, vtable slot, high
 FUN_006443d0::~FUN_006443d0()
 {}
 
@@ -8186,6 +8408,8 @@ struct FUN_00658f30 : GridStorage
 };
 // Copies rows and columns from other, allocates storage, and memcpys the grid data if both instances have allocated memory.
 // @fnv 0x00658f30
+// pdb: FR2MatrixVTC<float>::FR2MatrixVTC<float> | BSFaceGenManager.obj | debug, object-file run extension, low
+// pdb params: m
 FUN_00658f30::FUN_00658f30(const FUN_00658f30& other) : rows(other.rows), columns(other.columns)
 {
     Allocate(rows * columns);

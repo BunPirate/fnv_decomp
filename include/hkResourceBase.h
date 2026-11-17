@@ -2,6 +2,7 @@
 
 #include "hkReferencedObject.h"
 
+// pdb: class hkResourceBase, size 0x8, bases: hkReferencedObject, 0 members
 class hkResourceBase : public hkReferencedObject
 {
 public:

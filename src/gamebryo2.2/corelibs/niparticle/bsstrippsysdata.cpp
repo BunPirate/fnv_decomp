@@ -82,9 +82,12 @@ float __thiscall FUN_00c25de0_shell::GetEntryFloat(unsigned short usIndex)
 }
 
 // @fnv 0x00c24c90
-__declspec(noinline) NiPSysData::NiPSysData() : m_pkParticleInfo(0), m_pfRotationSpeeds(0), m_usNumActive(0)
+// pdb: NiPSysData::NiPSysData | NiPSysData.obj | retail, upstream name already matches, medium
+// pdb note: debug build links it to BSStripPSysData::BSStripPSysData
+// pdb params: usMaxNumParticles, bHasColors, bHasRotations
+__declspec(noinline) NiPSysData::NiPSysData() : m_pkParticleInfo(0), m_pfRotationSpeeds(0), m_usNumAddedParticles(0)
 {
-    m_usNumParticles = 0;
+    m_usAddedParticlesBase = 0;
 }
 
 // 0x00c25cd0 compares fields at +0x80/+0x84/+0x88/+0x8c after NiPSysData: particle strip data, not an 8-byte BSStringT<char>.
@@ -103,6 +106,9 @@ struct FUN_00c25cd0_shell : ParticleStripData
 // Compares the base fields and then usMaxPointCount, fStartCapSize, fEndCapSize and bDoZPrePass against another ParticleStripData, returning true if all match.
 // @fnv 0x00c25cd0
 // src: XBOX_PDB 0x00c25cd0
+// pdb: BSStripPSysData::IsEqual | BSStripPSysData.obj | retail, upstream name already matches, high
+// pdb params: pkObject
+// pdb locals: pkDest
 bool __thiscall FUN_00c25cd0_shell::BSStripPSysData_IsEqual(NiObject* pkObject)
 {
     ParticleStripData* pkDest = (ParticleStripData*)pkObject;
@@ -309,6 +315,8 @@ struct FUN_00c25d40_shell
 };
 
 // @fnv 0x00c25d40
+// pdb: BSStripPSysData::~BSStripPSysData | BSStripPSysData.obj | retail, object-file run extension, low
+// pdb locals: usmaxNumParticles, ui
 void FUN_00c25d40_shell::ResetEntry(unsigned short index)
 {
     m_entries[index].unk04 = 0;
@@ -378,6 +386,9 @@ void* FUN_00ec44d0(void* dst, const void* src, unsigned int n);
 
 // Copies the base strip and its fields into dest, then allocates and deep-copies the item array from unk7c into dest->unk7c.
 // @fnv 0x00c26000
+// pdb: BSStripPSysData::CopyMembers | BSStripPSysData.obj | debug, call graph, medium
+// pdb params: pkDest, kCloning
+// pdb locals: usmaxNumParticles, pnewStripList, ui
 void S_00c26000_Strip::CloneStrip(S_00c26000_Strip* dest, S_00c26000_Proc* proc)
 {
     NiPSysData::CopyMemberData(dest, *reinterpret_cast<CloningProcess*>(proc));
@@ -575,30 +586,32 @@ class FUN_00c26570_cls : public NiPSysData
     unsigned int m_84;
     unsigned int m_88;
     unsigned int m_8C;
-    void BSStripPSysData_SaveBinary(StreamOwner* a1);
+    void BSStripPSysData_SaveBinary(StreamOwner* kStream);
 };
 
 // @fnv 0x00c26570
 // src: XBOX_PDB 0x00c26570
-void FUN_00c26570_cls::BSStripPSysData_SaveBinary(StreamOwner* apOwner)
+// pdb: BSStripPSysData::SaveBinary | BSStripPSysData.obj | retail, upstream name already matches, high
+// pdb params: kStream
+void FUN_00c26570_cls::BSStripPSysData_SaveBinary(StreamOwner* kStream)
 {
-    NiPSysData::SaveBinary(*reinterpret_cast<NiStream*>(apOwner));
-    StreamCtx* s = apOwner->m_250;
+    NiPSysData::SaveBinary(*reinterpret_cast<NiStream*>(kStream));
+    StreamCtx* s = kStream->m_250;
     {
         unsigned int n = 2;
         s->m_04 += s->m_0C(s, &m_80, 2, &n, 1);
     }
-    s = apOwner->m_250;
+    s = kStream->m_250;
     {
         unsigned int n = 4;
         s->m_04 += s->m_0C(s, &m_84, 4, &n, 1);
     }
-    s = apOwner->m_250;
+    s = kStream->m_250;
     {
         unsigned int n = 4;
         s->m_04 += s->m_0C(s, &m_88, 4, &n, 1);
     }
-    s = apOwner->m_250;
+    s = kStream->m_250;
     {
         unsigned int n = 1;
         s->m_04 += s->m_0C(s, &m_8C, 1, &n, 1);
@@ -689,36 +702,40 @@ struct FUN_00c26630_cls : NiPSysData
     unsigned short m80, unk82;
     float m84, m88;
     unsigned char m8c;
-    void BSStripPSysData_GetViewerStrings(void* p);
+    void BSStripPSysData_GetViewerStrings(void* pkStrings);
 };
 // Calls FUN_00c255b0 on the array, then appends entries built from g_01202680, m80, m84, m88 and m8c via the FUN_00a7d3xx/d4xx/d5xx helpers.
 // @fnv 0x00c26630
 // src: XBOX_PDB 0x00c26630
-void FUN_00c26630_cls::BSStripPSysData_GetViewerStrings(void* pArray)
+// pdb: BSStripPSysData::GetViewerStrings | BSStripPSysData.obj | retail, string-set bridge, high
+// pdb params: pkStrings
+void FUN_00c26630_cls::BSStripPSysData_GetViewerStrings(void* pkStrings)
 {
-    ArrHdr* a = (ArrHdr*)pArray;
+    ArrHdr* a = (ArrHdr*)pkStrings;
     NiPSysData::GetViewerStrings(reinterpret_cast<NiViewerStringsArray*>(a));
-    pArray = NiViewerStrings_NiGetViewerString_Title(g_01202680);
-    a->Add(pArray);
-    pArray = NiGetViewerString_00a7d490(str_010be5ec, m80);
-    a->Add(pArray);
-    pArray = NiGetViewerString_00a7d550(str_010be5dc, m84);
-    a->Add(pArray);
-    pArray = NiGetViewerString_00a7d550(str_010be5d0, m88);
-    a->Add(pArray);
-    pArray = NiGetViewerString(str_010be5c4, m8c);
-    a->Add(pArray);
+    pkStrings = NiViewerStrings_NiGetViewerString_Title(g_01202680);
+    a->Add(pkStrings);
+    pkStrings = NiGetViewerString_00a7d490(str_010be5ec, m80);
+    a->Add(pkStrings);
+    pkStrings = NiGetViewerString_00a7d550(str_010be5dc, m84);
+    a->Add(pkStrings);
+    pkStrings = NiGetViewerString_00a7d550(str_010be5d0, m88);
+    a->Add(pkStrings);
+    pkStrings = NiGetViewerString(str_010be5c4, m8c);
+    a->Add(pkStrings);
 }
 
 struct FUN_00a817b0_shell : NiPSysData
 {
-    bool __thiscall BSStripPSysData_RegisterStreamables(NiStream& a);
+    bool __thiscall BSStripPSysData_RegisterStreamables(NiStream& kStream);
 };
 // @fnv 0x00a817b0
 // src: XBOX_PDB 0x00a817b0
-bool __thiscall FUN_00a817b0_shell::BSStripPSysData_RegisterStreamables(NiStream& a)
+// pdb: BSStripPSysData::RegisterStreamables | BSStripPSysData.obj | debug, upstream name already matches, high
+// pdb params: kStream
+bool __thiscall FUN_00a817b0_shell::BSStripPSysData_RegisterStreamables(NiStream& kStream)
 {
-    return NiPSysData::RegisterStreamables(a);
+    return NiPSysData::RegisterStreamables(kStream);
 }
 
 #include <float.h>
@@ -925,19 +942,22 @@ struct FUN_00c26410_cls : S_00c26410_Mid
     float m_84;
     float m_88;
     unsigned char m_8C;
-    void BSStripPSysData_LoadBinary(S_00c26410_Stream* pkStream);
+    void BSStripPSysData_LoadBinary(S_00c26410_Stream* kStream);
 };
 
 // Reads m_80, m_84, m_88, m_8C from pkStream, allocates m_7C with m_08 elements, and initializes each element's fields from m_80 and DAT_01015f5c.
 // @fnv 0x00c26410
 // src: XBOX_PDB 0x00c26410
-void FUN_00c26410_cls::BSStripPSysData_LoadBinary(S_00c26410_Stream* pkStream)
+// pdb: BSStripPSysData::LoadBinary | BSStripPSysData.obj | retail, upstream name already matches, high
+// pdb params: kStream
+// pdb locals: usmaxNumParticles, ui
+void FUN_00c26410_cls::BSStripPSysData_LoadBinary(S_00c26410_Stream* kStream)
 {
-    NiPSysData::LoadBinary(*reinterpret_cast<NiStream*>(pkStream));
-    S_BinRead(pkStream->m_pkBin, &m_80, 2);
-    S_BinRead(pkStream->m_pkBin, &m_84, 4);
-    S_BinRead(pkStream->m_pkBin, &m_88, 4);
-    S_BinRead(pkStream->m_pkBin, &m_8C, 1);
+    NiPSysData::LoadBinary(*reinterpret_cast<NiStream*>(kStream));
+    S_BinRead(kStream->m_pkBin, &m_80, 2);
+    S_BinRead(kStream->m_pkBin, &m_84, 4);
+    S_BinRead(kStream->m_pkBin, &m_88, 4);
+    S_BinRead(kStream->m_pkBin, &m_8C, 1);
     unsigned short n = m_usVertices;
     m_7C = (S_00c26410_Elem*)_NiMalloc_00aa1070(n * sizeof(S_00c26410_Elem));
     for (unsigned int i = 0; i < n; i++)
@@ -970,15 +990,18 @@ struct StripCloneC263 : S_00c26000_Strip
         return Object_DispatchCommandFour(size);
     }
 
-    StripCloneC263* BSStripPSysData_CreateClone(S_00c26000_Proc& cloning);
+    StripCloneC263* BSStripPSysData_CreateClone(S_00c26000_Proc& kCloning);
 };
 
 // Allocates a new StripCloneC263 and copies the source strip into it via CloneStrip, returning the new object.
 // @fnv 0x00c263b0
 // src: XBOX_PDB 0x00c263b0
-StripCloneC263* StripCloneC263::BSStripPSysData_CreateClone(S_00c26000_Proc& cloning)
+// pdb: BSStripPSysData::CreateClone | BSStripPSysData.obj | retail, upstream name already matches, high
+// pdb params: kCloning
+// pdb locals: pkObject
+StripCloneC263* StripCloneC263::BSStripPSysData_CreateClone(S_00c26000_Proc& kCloning)
 {
     StripCloneC263* result = new StripCloneC263;
-    CloneStrip(result, &cloning);
+    CloneStrip(result, &kCloning);
     return result;
 }

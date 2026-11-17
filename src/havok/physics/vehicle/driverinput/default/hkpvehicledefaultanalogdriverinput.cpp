@@ -10,6 +10,7 @@ typedef float hkReal;
 
 
 // No shared driver-input header exists yet; reflection gives the 0x8-byte reference-counted base.
+// pdb: class hkpVehicleDriverInput, size 0x8, bases: hkReferencedObject, 0 members
 class hkpVehicleDriverInput : public hkReferencedObject
 {
   public:
@@ -17,13 +18,14 @@ class hkpVehicleDriverInput : public hkReferencedObject
 };
 
 // No shared default-input header exists yet; reflected members occupy offsets 0x8 through 0x14.
+// pdb: class hkpVehicleDefaultAnalogDriverInput, size 0x18, bases: hkpVehicleDriverInput, 4 members
 class hkpVehicleDefaultAnalogDriverInput : public hkpVehicleDriverInput
 {
   public:
-    hkReal m_fSlopeUp;
-    hkReal m_fDeadZone;
-    hkReal m_fSlopeDown;
-    hkBool m_bAutoReverse;
+    hkReal m_slopeChangePointX; // src: XBOX_RETAIL_PDB +0x8 (old: m_fSlopeUp)
+    hkReal m_initialSlope; // src: XBOX_RETAIL_PDB +0xc (old: m_fDeadZone)
+    hkReal m_deadZone; // src: XBOX_RETAIL_PDB +0x10 (old: m_fSlopeDown)
+    hkBool m_autoReverse; // src: XBOX_RETAIL_PDB +0x14 (old: m_bAutoReverse)
 
     hkpVehicleDefaultAnalogDriverInput();
     virtual ~hkpVehicleDefaultAnalogDriverInput();
@@ -104,7 +106,7 @@ class FUN_00e43540_cls : public hkpVehicleDefaultAnalogDriverInput
 float FUN_00e43540_cls::hkpVehicleDefaultAnalogDriverInput_calcAcceleratorInput(int aiUnused, FUN_00e43540_Arg1* a1, FUN_00e43540_Arg2* a2, int aiUnused2)
 {
     float v;
-    if (a1->unkcc != 0 && m_bAutoReverse != 0)
+    if (a1->unkcc != 0 && m_autoReverse != 0)
     {
         v = -a2->unk0c;
     }
@@ -112,7 +114,7 @@ float FUN_00e43540_cls::hkpVehicleDefaultAnalogDriverInput_calcAcceleratorInput(
     {
         v = a2->unk0c;
     }
-    if (m_bAutoReverse == 0 && a1->unkcc != 0)
+    if (m_autoReverse == 0 && a1->unkcc != 0)
     {
         return 1.0f;
     }
@@ -157,28 +159,30 @@ struct VehicleInput
     virtual float calculateY(float timeStep, void* vehicle, VehicleStatus* status, VehicleOutput* output);
     virtual ButtonResult calculateButton(float timeStep, void* vehicle, VehicleStatus* status, VehicleOutput* output);
     virtual float calculateZ(float timeStep, void* vehicle, VehicleStatus* status, VehicleOutput* output);
-    void CalculateOutput(float timeStep, void* vehicle, VehicleStatus* status, VehicleOutput* output);
+    void CalculateOutput(float deltaTime, void* vehicle, VehicleStatus* deviceStatus, VehicleOutput* filteredInputOut);
 };
 
 // Fills output with the results of calculateX, calculateY, calculateZ and calculateButton, and copies status->unk10 into output->autoReverse.
 // @fnv 0x00e435f0
-void VehicleInput::CalculateOutput(float timeStep, void* vehicle, VehicleStatus* status, VehicleOutput* output)
+// pdb: hkpVehicleDefaultAnalogDriverInput::calcDriverInput | hkpVehicleDefaultAnalogDriverInput.obj | retail, vtable slot, high
+// pdb params: deltaTime, vehicle, deviceStatus, filteredInputOut
+void VehicleInput::CalculateOutput(float deltaTime, void* vehicle, VehicleStatus* deviceStatus, VehicleOutput* filteredInputOut)
 {
-    output->x = calculateX(timeStep, vehicle, status, output);
-    output->y = calculateY(timeStep, vehicle, status, output);
-    output->z = calculateZ(timeStep, vehicle, status, output);
-    output->autoReverse = status->unk10;
-    output->buttonPressed = calculateButton(timeStep, vehicle, status, output).value;
+    filteredInputOut->x = calculateX(deltaTime, vehicle, deviceStatus, filteredInputOut);
+    filteredInputOut->y = calculateY(deltaTime, vehicle, deviceStatus, filteredInputOut);
+    filteredInputOut->z = calculateZ(deltaTime, vehicle, deviceStatus, filteredInputOut);
+    filteredInputOut->autoReverse = deviceStatus->unk10;
+    filteredInputOut->buttonPressed = calculateButton(deltaTime, vehicle, deviceStatus, filteredInputOut).value;
 }
 
 // Initializes the three hkReal members and the hkBool member to zero/false.
 // @fnv 0x00e43680
 hkpVehicleDefaultAnalogDriverInput::hkpVehicleDefaultAnalogDriverInput()
 {
-    m_fSlopeUp = 0.0f;
-    m_fDeadZone = 0.0f;
-    m_fSlopeDown = 0.0f;
-    m_bAutoReverse = false;
+    m_slopeChangePointX = 0.0f;
+    m_initialSlope = 0.0f;
+    m_deadZone = 0.0f;
+    m_autoReverse = false;
 }
 
 
@@ -239,18 +243,19 @@ extern "C" hkMemoryRouter& __cdecl hkMemoryRouter_getInstance() throw();
 inline void* __cdecl hkReferencedObject::operator new(std::size_t nbytes)
 {
     hkReferencedObject* b = static_cast<hkReferencedObject*>(hkRouterE43A::hkMemoryRouter_getInstance().heap().blockAlloc(nbytes));
-    b->m_usMemSizeAndFlags = (unsigned short)nbytes;
+    b->m_memSizeAndFlags = (unsigned short)nbytes;
     return b;
 }
 
 // Reflected analog-status members: positions at 0x8/0xc, flags at 0x10/0x11, total size 0x14.
+// pdb: class hkpVehicleDriverInputAnalogStatus, size 0x14, bases: hkpVehicleDriverInputStatus, 4 members
 class hkpVehicleDriverInputAnalogStatus : public hkReferencedObject
 {
   public:
-    float m_fPositionX;
-    float m_fPositionY;
-    hkBool m_bFlag;
-    hkBool m_bReverseButtonPressed;
+    float m_positionX; // src: XBOX_RETAIL_PDB +0x8 (old: m_fPositionX)
+    float m_positionY; // src: XBOX_RETAIL_PDB +0xc (old: m_fPositionY)
+    hkBool m_handbrakeButtonPressed; // src: XBOX_RETAIL_PDB +0x10 (old: m_bFlag)
+    hkBool m_reverseButtonPressed; // src: XBOX_RETAIL_PDB +0x11 (old: m_bReverseButtonPressed)
 
     virtual ~hkpVehicleDriverInputAnalogStatus();
     hkpVehicleDriverInputAnalogStatus* clone_00e43a60() const;
@@ -259,6 +264,7 @@ class hkpVehicleDriverInputAnalogStatus : public hkReferencedObject
 // Allocates a new hkpVehicleDriverInputAnalogStatus, copies the current object into it, and returns the pointer to the copy.
 // @fnv 0x00e43a60
 // src: HAVOK_LIB 0x00e43a60
+// pdb: hkpVehicleDriverInputAnalogStatus::clone | hkpVehicleDefaultAnalogDriverInput.obj | retail, vtable slot, high
 hkpVehicleDriverInputAnalogStatus* hkpVehicleDriverInputAnalogStatus::clone_00e43a60() const
 {
     hkpVehicleDriverInputAnalogStatus* p = new hkpVehicleDriverInputAnalogStatus;
@@ -445,22 +451,24 @@ static __forceinline LocalM128 rotateDir(VehInst* veh, const HkVec& bodyPos)
 class Cls : public hkpVehicleDefaultAnalogDriverInput
 {
   public:
-    ButtonResult hkpVehicleDefaultAnalogDriverInput_calcTryingToReverse(int a1, StatusX* status, InputX* input, int a4);
+    ButtonResult hkpVehicleDefaultAnalogDriverInput_calcTryingToReverse(int deltaTime, StatusX* vehicle, InputX* deviceStatus, int FilteredDriverInputOutputOut);
 };
 
 // Returns input->m_flag unless m_bAutoReverse is set, then picks a ButtonResult from the gear flag, filter value, a vector length and a normalized dot product.
 // @fnv 0x00e43780
 // src: HAVOK_SRC 0x00e43780
-ButtonResult Cls::hkpVehicleDefaultAnalogDriverInput_calcTryingToReverse(int a1, StatusX* status, InputX* input, int a4)
+// pdb: hkpVehicleDefaultAnalogDriverInput::calcTryingToReverse | hkpVehicleDefaultAnalogDriverInput.obj | retail, upstream name already matches, high
+// pdb params: deltaTime, vehicle, deviceStatus, FilteredDriverInputOutputOut
+ButtonResult Cls::hkpVehicleDefaultAnalogDriverInput_calcTryingToReverse(int deltaTime, StatusX* vehicle, InputX* deviceStatus, int FilteredDriverInputOutputOut)
 {
-    if (!m_bAutoReverse)
+    if (!m_autoReverse)
     {
-        return input->m_flag;
+        return deviceStatus->m_flag;
     }
 
-    VehInst* veh = status->m_veh;
+    VehInst* veh = vehicle->m_veh;
     HkVec pos = veh->m_pos;
-    char bReverse = status->m_iGearCount;
+    char bReverse = vehicle->m_iGearCount;
 
     float len;
     _mm_store_ss(&len, _mm_sqrt_ss(reduce3(_mm_mul_ps(pos.quad(), pos.quad()))));
@@ -468,12 +476,12 @@ ButtonResult Cls::hkpVehicleDefaultAnalogDriverInput_calcTryingToReverse(int a1,
     bool bLess = len < DAT_010ebf10;
 
     unsigned char res;
-    if (input->m_uiFilterValue > DAT_0101ffa0)
+    if (deviceStatus->m_uiFilterValue > DAT_0101ffa0)
     {
         res = 1;
         if (len > DAT_0104da4c)
         {
-            HkVec bodyPos = status->m_pChassisCollidable->m_pos;
+            HkVec bodyPos = vehicle->m_pChassisCollidable->m_pos;
             LocalM128 q = rotateDir(veh, bodyPos);
 
             LocalM128 invP = sqrtInv(reduce3(_mm_mul_ps(pos.quad(), pos.quad())));

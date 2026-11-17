@@ -7,13 +7,13 @@
 #include "../../../../include/MemoryManager.h"
 #include "../../../../include/NiBinaryStream.h"
 
-extern "C" void* g_011f3fb4;
+extern "C" void* NiKeyframeManager_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f3fb4 (old: g_011f3fb4)
 
 // @fnv 0x00a4da80
 // src: COMMUNITY 0x00a4da80
 void* __cdecl NiKeyframeManager_GetRTTI()
 {
-    return &g_011f3fb4;
+    return &NiKeyframeManager_ms_RTTI;
 }
 
 struct Map_00a4da90
@@ -45,6 +45,8 @@ struct AllocatedAnimationController
 };
 // @fnv 0x00a4db60
 // src: EXE 0x00a4db60
+// pdb: NiKeyframeManager::CreateObject | NiKeyframeManager.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 void* __cdecl NiKeyframeManager_CreateObject()
 {
     void* storage = Object_DispatchCommandFour(0x48);
@@ -122,7 +124,7 @@ struct NiStreamR
 {
     void ReadStreamString(char*& pc);
     void ResetStreamState();
-    void SetNumLinks(unsigned int ui);
+    void SetNumLinks(unsigned int uiLinks);
     int Version()
     {
         return *(int*)((char*)this + 0xd8);
@@ -135,12 +137,15 @@ struct NiStreamR
 
 struct SeqController : NiTimeController
 {
-    void NiKeyframeManager_Add(char* p1, char* p2, unsigned int ui);
+    void NiKeyframeManager_Add(char* pcSequenceFile, char* pcSequenceName, unsigned int uiIndex);
     void NiKeyframeManager_LoadBinary(NiStreamR& kStream);
 };
 
 // @fnv 0x00a4db80
 // src: XBOX_PDB 0x00a4db80
+// pdb: NiKeyframeManager::LoadBinary | NiKeyframeManager.obj | retail, upstream name already matches, high
+// pdb params: kStream
+// pdb locals: uiNumLinkIDs, uiNumSequences, pcName, bSaveURL, pcFileName, uiFileNum, bSuccess, uiNumKeys, uiTextKeyReference, pcKeyName
 void SeqController::NiKeyframeManager_LoadBinary(NiStreamR& kStream)
 {
     NiTimeController::LoadBinary(reinterpret_cast<NiStream&>(kStream));
@@ -260,7 +265,7 @@ extern "C" __declspec(dllimport) long __stdcall InterlockedDecrement(volatile lo
 __declspec(nothrow) void __cdecl NiFree(void*);
 struct MemShellD810
 {
-    void MemoryManager_Deallocate(void* p);
+    void MemoryManager_Deallocate(void* apMem);
 };
 extern int DAT_0102102c;
 extern int DAT_0101a3a4;
@@ -348,14 +353,17 @@ struct TargetD810
     int unk00, unk04, unk08, unk0c, unk10, unk14, unk18, unk1c, unk20, unk24, unk28, unk2c, unk30;
     MapD810 map;
     void FUN_00a6d500(StreamD810&);
-    void NiKeyframeManager_LinkObject(StreamD810& akStream);
+    void NiKeyframeManager_LinkObject(StreamD810& kStream);
 };
 // @fnv 0x00a4d810
 // src: XBOX_PDB 0x00a4d810
-void TargetD810::NiKeyframeManager_LinkObject(StreamD810& akStream)
+// pdb: NiKeyframeManager::LinkObject | NiKeyframeManager.obj | retail, upstream name already matches, high
+// pdb params: kStream
+// pdb locals: ui, uj, uiNumSequences, uiNumKeys, pkTextKeys, bSuccess, pcName, pkSequence, pcKeyName, pkKFController, uiSize
+void TargetD810::NiKeyframeManager_LinkObject(StreamD810& kStream)
 {
-    FUN_00a6d500(akStream);
-    if (akStream.version < 0x4010003)
+    FUN_00a6d500(kStream);
+    if (kStream.version < 0x4010003)
     {
         unsigned int ItemUpdateArray = DAT_011f3fb0->counts.size;
         unsigned int uiLink = 0;
@@ -365,14 +373,14 @@ void TargetD810::NiKeyframeManager_LinkObject(StreamD810& akStream)
             FUN_00a47bd0* pkItem = new FUN_00a47bd0(pvName, 12, 12);
             NiFree(pvName);
             pkItem->unk30 = DAT_011f3fb0->values.data[i];
-            pkItem->SetObject(akStream.FUN_00a63430());
+            pkItem->SetObject(kStream.FUN_00a63430());
             unsigned int uiEntries = DAT_011f3fb0->counts.data[i];
             while (uiEntries)
             {
                 void* pvLink = DAT_011f3fb0->linkNames.data[uiLink];
                 --uiEntries;
                 ++uiLink;
-                RefD810* pkObj = akStream.FUN_00a63430();
+                RefD810* pkObj = kStream.FUN_00a63430();
                 pkItem->AddSeq(pvLink, pkObj);
                 NiFree(pvLink);
             }
@@ -384,10 +392,10 @@ void TargetD810::NiKeyframeManager_LinkObject(StreamD810& akStream)
     }
     else
     {
-        unsigned int ItemUpdateArray = akStream.FUN_00a63460();
+        unsigned int ItemUpdateArray = kStream.FUN_00a63460();
         for (unsigned int i = 0; i < ItemUpdateArray; i++)
         {
-            RefD810* pkItem = akStream.FUN_00a63430();
+            RefD810* pkItem = kStream.FUN_00a63430();
             int id = pkItem->id;
             map.NiTStringTemplateMap_NiTPointerMap_char_const_NiPointer_NiSequence_NiPointer_NiSequence_SetAt(id, pkItem);
         }
@@ -458,18 +466,21 @@ struct S_00a4dac0
     int unk2c;
     int unk30;
     S_00a4dac0_Map map34;
-    bool __thiscall NiKeyframeManager_Add(int a, const char* name, int b) throw();
+    bool __thiscall NiKeyframeManager_Add(int pcSequenceFile, const char* pcSequenceName, int uiIndex) throw();
 };
 // @fnv 0x00a4dac0
 // src: COMMUNITY 0x00a4dac0
-bool __thiscall S_00a4dac0::NiKeyframeManager_Add(int a, const char* name, int b) throw()
+// pdb: NiKeyframeManager::Add | NiKeyframeManager.obj | retail, upstream name already matches, high
+// pdb params: pcSequenceFile, pcSequenceName, uiIndex
+// pdb locals: spSequence
+bool __thiscall S_00a4dac0::NiKeyframeManager_Add(int pcSequenceFile, const char* pcSequenceName, int uiIndex) throw()
 {
     S_00a4dac0_Obj* obj = 0;
-    CreateOrReleaseRef(a, b, &obj, name);
+    CreateOrReleaseRef(pcSequenceFile, uiIndex, &obj, pcSequenceName);
     if (!obj)
         return false;
-    if (name)
-        obj->SetString(name);
+    if (pcSequenceName)
+        obj->SetString(pcSequenceName);
     const char* key = obj->m_name;
     map34.NiTStringTemplateMap_NiTPointerMap_char_const_NiPointer_NiSequence_NiPointer_NiSequence_SetAt(key, obj);
     if (obj)

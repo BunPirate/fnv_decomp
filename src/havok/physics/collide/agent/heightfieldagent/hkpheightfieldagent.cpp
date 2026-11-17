@@ -145,7 +145,7 @@ extern char DAT_010ceaa8[];
 
 hkMemoryRouter* hkMemoryRouter_getInstance();
 
-void __cdecl hkArrayUtil__reserve(hkMemoryAllocator& alloc, void* arr, int numElem, int sizeElem);
+void __cdecl hkArrayUtil__reserve(hkMemoryAllocator& mem, void* array, int numElem, int sizeElem);
 
 struct SizeSource {
     virtual void v00(); virtual void v01(); virtual void v02(); virtual void v03();
@@ -263,6 +263,9 @@ struct S_00d321e0_Dispatcher {
 
 // @fnv 0x00d321e0
 // src: XBOX_PDB 0x00d321e0
+// pdb: hkpHeightFieldAgent::registerAgent | hkpHeightFieldAgent.obj | retail, upstream name already matches, high
+// pdb params: dispatcher
+// pdb locals: af
 void hkpHeightFieldAgent_registerAgent(S_00d321e0_Dispatcher* dispatcher)
 {
     {
@@ -308,11 +311,14 @@ struct D323B0Collector : D323B0CollectorBase {
     virtual void unk04();
 };
 
-void __cdecl hkpHeightFieldAgent_staticGetClosestPoints(int a, int b, int c, D323B0CollectorBase* collector);
+void __cdecl hkpHeightFieldAgent_staticGetClosestPoints(int csBody, int hfBody, int c, D323B0CollectorBase* collector);
 
 // Constructs a D323B0Collector from d and passes it with b, a, c to FUN_00d319e0.
 // @fnv 0x00d323b0
 // src: GUESS 0x00d323b0 (confidence: low)
+// pdb: hkpSymmetricAgentLinearCast<hkpHeightFieldAgent>::staticGetClosestPoints | hkpHeightFieldAgent.obj | retail, object-file run extension, low
+// pdb params: bodyA, bodyB, input, collector
+// pdb locals: flip
 void __cdecl hkpHeightFieldAgent_staticGetClosestPoints_ProcessState_00d323b0(int aiArg1, int aiArg2, int aiArg3, int aiData)
 {
     D323B0Collector collector(aiData);
@@ -333,16 +339,18 @@ struct Owner {
     Handler* callback;
     unsigned short* indices;
     int count;
-    void NotifyAndClear(int value);
+    void NotifyAndClear(int constraintOwner);
 };
 // Invokes callback->invoke for each non-0xffff entry in indices, then calls clear(1).
 // @fnv 0x00d31770
-void Owner::NotifyAndClear(int value) {
+// pdb: hkpHeightFieldAgent::cleanup | hkpHeightFieldAgent.obj | retail, vtable slot, high
+// pdb params: constraintOwner
+void Owner::NotifyAndClear(int constraintOwner) {
     if (callback) {
         for(int index=0; index<count; ++index) {
             unsigned short item=indices[index];
             if(item!=0xffff)
-                callback->invoke(item,value);
+                callback->invoke(item,constraintOwner);
         }
     }
     clear(1);
@@ -357,7 +365,7 @@ extern "C" void __stdcall hkpHeightFieldAgent_linearCast(void* arg0, void* arg1,
     hkpHeightFieldAgent_ProcessSphereQueries(arg0, arg1, arg2, arg3, arg4);
 }
 
-extern "C" void __cdecl hkpHeightFieldAgent_staticGetPenetrations(void* arg0, void* arg1, void* arg2, void* arg3);
+extern "C" void __cdecl hkpHeightFieldAgent_staticGetPenetrations(void* csBody, void* hfBody, void* arg2, void* arg3);
 // @fnv 0x00d32150
 // src: HAVOK_SRC 0x00d32150
 extern "C" void __stdcall hkpHeightFieldAgent_getPenetrations(void* arg0, void* arg1, void* arg2, void* arg3)
@@ -367,7 +375,7 @@ extern "C" void __stdcall hkpHeightFieldAgent_getPenetrations(void* arg0, void* 
 
 extern char DAT_010ce81c;
 
-void __cdecl hkpHeightFieldAgent_staticGetPenetrations(int a1, int a2, int a3, void* a4);
+void __cdecl hkpHeightFieldAgent_staticGetPenetrations(int csBody, int hfBody, int a3, void* a4);
 
 struct FUN_00d32370_cls {
     void* vt;
@@ -378,6 +386,9 @@ struct FUN_00d32370_cls {
 // Builds a FUN_00d32370_cls with vt set to DAT_010ce81c and d set to a4, then calls FUN_00d317d0 with a2, a1, a3 and the struct.
 // @fnv 0x00d32370
 // src: GUESS 0x00d32370 (confidence: low)
+// pdb: hkpSymmetricAgentLinearCast<hkpHeightFieldAgent>::staticGetPenetrations | hkpHeightFieldAgent.obj | retail, object-file run extension, low
+// pdb params: bodyA, bodyB, input, collector
+// pdb locals: flip
 void __cdecl hkpHeightFieldAgent_staticGetPenetrations_UpdateState_00d32370(int aiArg1, int aiArg2, int aiArg3, int a4) {
     FUN_00d32370_cls local;
     local.flag = 0;
@@ -413,6 +424,10 @@ extern "C" void __cdecl hkpHeightFieldAgent_ProcessSphereQueries(int, int, const
 // Copies a CopyPacket with its orientation sign-flipped and calls FUN_00d31d30 with one or two Argument descriptors built from the source.
 // @fnv 0x00d323f0
 // src: GUESS 0x00d323f0 (confidence: low)
+// pdb: hkpSymmetricAgentLinearCast<hkpHeightFieldAgent>::staticLinearCast | hkpHeightFieldAgent.obj | retail, object-file run extension, low
+// pdb note: debug build links it to hkpProcessCollisionOutput::commitContactPoints
+// pdb params: bodyA, bodyB, input, collector, startCollector
+// pdb locals: flip, flippedInput, startFlip
 void __cdecl Hkpheightfieldagent_UpdateState_00d323f0(int a, int b, const CopyPacket* source, int id1, int id2) {
     __m128 orient = _mm_load_ps(&source->orientation.x);
     __m128 inverted = _mm_xor_ps(orient, DAT_010c44d0);
@@ -584,21 +599,24 @@ struct CollisionScratch { hkTransform transform; ContactPointPair contact; };
 
 // @fnv 0x00d317d0
 // src: XBOX_PDB 0x00d317d0
-void __cdecl hkpHeightFieldAgent_staticGetPenetrations(int a1, int a2, int a3, void* a4)
+// pdb: hkpHeightFieldAgent::staticGetPenetrations | hkpHeightFieldAgent.obj | retail, upstream name already matches, high
+// pdb params: csBody, hfBody, input, collector
+// pdb locals: bTa, in2
+void __cdecl hkpHeightFieldAgent_staticGetPenetrations(int csBody, int hfBody, int a3, void* a4)
 {
-    const hkpCdBody* bodyA = (const hkpCdBody*)a1;
-    const hkpCdBody* bodyB = (const hkpCdBody*)a2;
+    const hkpCdBody* bodyA = (const hkpCdBody*)csBody;
+    const hkpCdBody* bodyB = (const hkpCdBody*)hfBody;
     const CollisionAgentContext* input = (const CollisionAgentContext*)a3;
     hkpCdBodyPairCollector* collector = (hkpCdBodyPairCollector*)a4;
 
     static_cast<StringCursor_hkpheightfieldagent&>(hkMonitorStream::getInstance()).timerBegin("LtHeightField", "StGetSpheres");
 
-    const hkpShape* shapeA = bodyA->m_pCollisionShape;
-    hkpHeightFieldShape* shapeB = (hkpHeightFieldShape*)bodyB->m_pCollisionShape;
+    const hkpShape* shapeA = bodyA->m_shape;
+    hkpHeightFieldShape* shapeB = (hkpHeightFieldShape*)bodyB->m_shape;
     // Float storage avoids VC9 treating the SDK __m128 byte lanes as a GS buffer.
     __declspec(align(16)) float transformStorage[sizeof(hkTransform) / sizeof(float)];
     hkTransform& aTb = *::new (transformStorage) hkTransform;
-    aTb.hkTransform_setMulInverseMul(bodyB->m_pMotionState, bodyA->m_pMotionState);
+    aTb.hkTransform_setMulInverseMul(bodyB->m_motion, bodyA->m_motion);
 
     int count = ((CollisionSphereShape*)shapeA)->getNumCollisionSpheres();
 
@@ -657,12 +675,14 @@ struct FUN_00d32190_cls {
 // Allocates a 0x18 byte object via m_pAllocator, sets m_w04 to 0x18, calls FUN_00d32060, and sets m_vptr to DAT_010ceaf4.
 // @fnv 0x00d32190
 // src: HAVOK_LIB 0x00d32190
-FUN_00d32190_cls* __cdecl hkpHeightFieldAgent_createHeightFieldAAgent(int a1, int a2, int a3, int a4)
+// pdb: hkpHeightFieldAgent::createHeightFieldAAgent | hkpHeightFieldAgent.obj | retail, upstream name already matches, high
+// pdb params: bodyA, bodyB, input, mgr
+FUN_00d32190_cls* __cdecl hkpHeightFieldAgent_createHeightFieldAAgent(int bodyA, int bodyB, int input, int mgr)
 {
     hkMemoryRouter* holder = hkMemoryRouter_getInstance();
     FUN_00d32190_cls* obj = (FUN_00d32190_cls*)((hkMemoryAllocator*)holder->m_heap)->blockAlloc(0x18);
     obj->m_w04 = 0x18;
-    obj->FUN_00d32060(a2, a1, a3, a4);
+    obj->FUN_00d32060(bodyB, bodyA, input, mgr);
     obj->m_vptr = DAT_010ceaf4;
     return obj;
 }

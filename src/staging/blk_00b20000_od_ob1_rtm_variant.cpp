@@ -642,7 +642,7 @@ struct FUN_00b3fdd0_class
     int unk54;
     int unk58;
     FUN_00b37880_class* unk5c;
-    void __thiscall UpdateState_00b3fdd0(FUN_00b37880_class* value);
+    void __thiscall SIdvBranchInfo_SetFlexibilityScale(FUN_00b37880_class* pSpline);
 };
 extern int DAT_010173e8;
 struct FUN_00b3c3b0_Sub
@@ -691,7 +691,7 @@ struct Mat
     float m22;
     void __thiscall CRotTransform_CRotTransform();
     Mat* __thiscall Multiply(Mat* out, Mat* rhs);
-    void __thiscall CRotTransform_RotateY(float angle);
+    void __thiscall CRotTransform_RotateY(float fAngle);
 };
 struct ElemAlloc
 {
@@ -1403,6 +1403,8 @@ using namespace eraseb2d;
 
 // @fnv 0x00b2def0
 // src: GUESS 0x00b2def0 (confidence: low)
+// pdb: SIdvTreeInfo::operator= | TreeEngine.obj | debug, object-file run extension, low
+// pdb params: __that
 AsIterator AsVector::EvaluateValue_00b2def0(AsConstIterator _Where)
 {
     AsUncheckedCopy(_Where._Myptr + 1, _Mylast, _Where._Myptr);

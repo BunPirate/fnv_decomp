@@ -65,6 +65,7 @@ struct LinearCastInputPrefix
     hkpCollisionDispatcher* m_pCollisionDispatcher;
 };
 
+// pdb: class hkpKdTreeWorldLinearCaster, size 0x90 (here 0x24), bases: hkKdTreeCastCollector, 7 members
 class hkpKdTreeWorldLinearCaster
 {
   public:
@@ -78,20 +79,22 @@ class hkpKdTreeWorldLinearCaster
     int unk1C;
     LinearCastInputPrefix m_pRayCastInput;
 
-    hkBool QueryPenetrations(const hkpCollidable& bodyB);
+    hkBool QueryPenetrations(const hkpCollidable& primId);
 };
 
 // Checks the collidable filter, then dispatches the five-argument linear cast at agent-table offset +0x0c.
 // @fnv 0x00d98430
-hkBool hkpKdTreeWorldLinearCaster::QueryPenetrations(const hkpCollidable& bodyB)
+// pdb: hkpKdTreeWorldLinearCaster::addMidPhaseHit | hkpKdTreeWorldLinearCaster.obj | retail, vtable slot, high
+// pdb params: primId
+hkBool hkpKdTreeWorldLinearCaster::QueryPenetrations(const hkpCollidable& primId)
 {
-    const hkpShape* shapeB = bodyB.m_pCollisionShape;
-    if (shapeB && m_pBodyA != &bodyB && m_iFilter->IsCollisionEnabled(*m_pBodyA, bodyB))
+    const hkpShape* shapeB = primId.m_pCollisionShape;
+    if (shapeB && m_pBodyA != &primId && m_iFilter->IsCollisionEnabled(*m_pBodyA, primId))
     {
         hkpCollisionDispatcher* pDispatcher = m_pRayCastInput.m_pCollisionDispatcher;
         pDispatcher->m_agent2Funcs[pDispatcher->m_agent2TypeMap[m_iAgentTypeA][shapeB->getType()]]
             .m_pLinearCastFunc(reinterpret_cast<const hkpCdBody&>(*m_pBodyA),
-                              reinterpret_cast<const hkpCdBody&>(bodyB),
+                              reinterpret_cast<const hkpCdBody&>(primId),
                               reinterpret_cast<const ShapeSweepParameters&>(m_pRayCastInput),
                               *m_kCollector, m_startCollector);
         return true;

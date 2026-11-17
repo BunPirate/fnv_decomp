@@ -9,26 +9,30 @@
 // fallout/ai/combat/continuousbeamprojectile.cpp: ContinuousBeamProjectile (7 functions)
 
 // @fnv 0x009da760
+// pdb: ContinuousBeamProjectile::Initialize | ContinuousBeamProjectile.obj | retail, upstream name already matches, high
+// pdb locals: pActor
 int ContinuousBeamProjectile::Initialize()
 {
     return 5;
 }
 
-bool __cdecl CanProjectileHit(void*, void*, void*, void*);
+bool __cdecl Projectile_IsValidImpact(void*, void*, void*, void*);
 
 // @fnv 0x009ab9c0
 // src: XBOX_PDB 0x009ab9c0
-bool ContinuousBeamProjectile::AddImpact_009ab9c0(void* arg1, NiPoint3* arg2, void* arg3, void* arg4, void* arg5, void* arg6)
+// pdb: ContinuousBeamProjectile::AddImpact | ContinuousBeamProjectile.obj | retail, vtable slot, high
+// pdb params: apCollidee, aContactPoint, aContactNormal, apTargetCollidable, aiKey, aeForceMaterial
+bool ContinuousBeamProjectile::AddImpact_009ab9c0(void* apCollidee, NiPoint3* aContactPoint, void* aContactNormal, void* apTargetCollidable, void* aiKey, void* aeForceMaterial)
 {
-    if (CanProjectileHit(arg1, arg4, this, GetActorBase()) && !Projectile_IsFlagSet(0x20) &&
-        ProcessHit(arg1, arg2, arg3, arg4, arg5, arg6))
+    if (Projectile_IsValidImpact(apCollidee, apTargetCollidable, this, GetActorBase()) && !Projectile_IsFlagSet(0x20) &&
+        ProcessHit(apCollidee, aContactPoint, aContactNormal, apTargetCollidable, aiKey, aeForceMaterial))
     {
         if (m_bHasImpactData)
         {
             kImpacts.RemoveAll();
         }
         m_bHasImpactData = 0;
-        Projectile_SetRange((*arg2 - *static_cast<const ContinuousBeamProjectile*>(this)->GetPos()).Length());
+        Projectile_SetRange((*aContactPoint - *static_cast<const ContinuousBeamProjectile*>(this)->GetPos()).Length());
         return true;
     }
     return false;
@@ -298,8 +302,8 @@ struct ScAccess
 struct ScGeom
 {
     ScGeomData* NiTimeController_GetNext();
-    bool FUN_00a67360(int i);
-    void NiGeometryData_GetVerticesIterator(ScAccess* pkAccess);
+    bool FUN_00a67360(int bWriteAccess);
+    void NiGeometryData_GetVerticesIterator(ScAccess* arIterator);
     void NiGeometryData_UnlockPackedVertexData();
     ScPoint3* BGSSaveFormBuffer_GetForm();
     unsigned short FUN_004a8ae0();
@@ -367,7 +371,7 @@ struct ScAVObject
     virtual void v34();
     virtual void v35();
     virtual void FUN_vd8(void* pkArg);
-    ScTransform* GetSourceFilesFromForm();
+    ScTransform* NiGeometry_GetModelBound();
     ScGeom* NiGeometry_GetModelData();
     unsigned int NiParticleSystem_GetModifierCount();
     ScAVObject* GetByIndex(unsigned int uiIndex);
@@ -377,12 +381,15 @@ void* __cdecl NiXenonRenderer_GetRenderer();
 
 // Scales pkObject's transform by fScale and scales its geometry vertices or child objects depending on the geometry type.
 // @fnv 0x009aba90
+// pdb: ContinuousBeamProjectile::ScaleBeamGeometryLength | ContinuousBeamProjectile.obj | debug, object-file run extension, low
+// pdb params: apGeometry, afScaleFactor
+// pdb locals: pdata, pparticles, i, pmod, pemitter, pAGD, vertexIterator, pdest, istride, psrc, icurrent, vertexPosition, vvertexData
 void ContinuousBeamProjectile::ScaleObject(NiAVObject* pkObject, float fScale)
 {
     if (pkObject)
     {
-        reinterpret_cast<ScAVObject*>(pkObject)->GetSourceFilesFromForm()->m_fScale *= fScale;
-        reinterpret_cast<ScAVObject*>(pkObject)->GetSourceFilesFromForm()->ScaleComponents(fScale);
+        reinterpret_cast<ScAVObject*>(pkObject)->NiGeometry_GetModelBound()->m_fScale *= fScale;
+        reinterpret_cast<ScAVObject*>(pkObject)->NiGeometry_GetModelBound()->ScaleComponents(fScale);
         ScGeom* pkGeom = reinterpret_cast<ScAVObject*>(pkObject)->NiGeometry_GetModelData();
         if (pkGeom)
         {
@@ -632,6 +639,8 @@ class AlignTargetSource
 
 // Updates the 3D object's world data and recomputes m_kRotate from the target node's transform when a target node exists.
 // @fnv 0x009ab160
+// pdb: ContinuousBeamProjectile::Process3D | ContinuousBeamProjectile.obj | retail, vtable slot, high
+// pdb locals: pav, pfireNode, frange, UpdateData
 void ContinuousBeamProjectile::UpdateAlignment()
 {
     AlignSceneObject* pkObject2 = reinterpret_cast<AlignSceneObject*>(GetNiNode());

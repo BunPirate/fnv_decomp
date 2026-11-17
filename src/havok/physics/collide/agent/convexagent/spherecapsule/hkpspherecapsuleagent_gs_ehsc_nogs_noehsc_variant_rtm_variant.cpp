@@ -55,20 +55,22 @@ static __forceinline float rootVal(float x){return sqrtf(x);}
 static __forceinline void difference(hkVector4& dst, const hkVector4& a, const hkVector4& b){ dst.m_vComponents=_mm_sub_ps(*(__m128*)&a,*(__m128*)&b); }
 // @fnv 0x00d3e530
 // src: XBOX_PDB 0x00d3e530
-int __cdecl hkpSphereCapsuleAgent_getClosestPoint(hkpCdBody* a0, hkpCdBody* a1, Arg2S* a2, hkContactPoint* out) {
+// pdb: hkpSphereCapsuleAgent::getClosestPoint | hkpSphereCapsuleAgent.obj | retail, upstream name already matches, high
+// pdb params: bodyA, bodyB, input, cpoint
+int __cdecl hkpSphereCapsuleAgent_getClosestPoint(hkpCdBody* bodyA, hkpCdBody* bodyB, Arg2S* input, hkContactPoint* cpoint) {
     
-    const hkVector4* qp = static_cast<const hkVector4*>(a0->m_pMotionState) + 3;
-    const hkpCapsuleShape* bp = static_cast<const hkpCapsuleShape*>(a1->m_pCollisionShape);
-    const hkpSphereShape* ap = static_cast<const hkpSphereShape*>(a0->m_pCollisionShape);
-    hkVector4 vc0 = reinterpret_cast<const hkVector4*>(a1->m_pMotionState)[0];
-    hkVector4 vc1 = reinterpret_cast<const hkVector4*>(a1->m_pMotionState)[1];
-    hkVector4 vc2 = reinterpret_cast<const hkVector4*>(a1->m_pMotionState)[2];
-    hkVector4 vc3 = reinterpret_cast<const hkVector4*>(a1->m_pMotionState)[3];
+    const hkVector4* qp = static_cast<const hkVector4*>(bodyA->m_motion) + 3;
+    const hkpCapsuleShape* bp = static_cast<const hkpCapsuleShape*>(bodyB->m_shape);
+    const hkpSphereShape* ap = static_cast<const hkpSphereShape*>(bodyA->m_shape);
+    hkVector4 vc0 = reinterpret_cast<const hkVector4*>(bodyB->m_motion)[0];
+    hkVector4 vc1 = reinterpret_cast<const hkVector4*>(bodyB->m_motion)[1];
+    hkVector4 vc2 = reinterpret_cast<const hkVector4*>(bodyB->m_motion)[2];
+    hkVector4 vc3 = reinterpret_cast<const hkVector4*>(bodyB->m_motion)[3];
     __m128 c0 = *(__m128*)&vc0;
     __m128 c1 = *(__m128*)&vc1;
     __m128 c2 = *(__m128*)&vc2;
     __m128 c3 = *(__m128*)&vc3;
-    const hkVector4* inp = &bp->m_kVertexA;
+    const hkVector4* inp = &bp->m_vertexA;
     hkVector4 t[2];
     for (int i = 1; i >= 0; i--) {
         __m128 v = _mm_load_ps((float*)&inp[i]);
@@ -81,8 +83,8 @@ int __cdecl hkpSphereCapsuleAgent_getClosestPoint(hkpCdBody* a0, hkpCdBody* a1, 
     hkpCapsuleShape::GetClosestPointOnLineSegment(*qp, t[0], t[1], res);
     hkVector4 diff;
     _mm_store_ps((float*)&diff, _mm_sub_ps(_mm_load_ps((float*)qp), _mm_load_ps((float*)&res)));
-    float sum1 = ap->m_fSphereRadius + bp->m_fSphereRadius;
-    float S = a2->f8 + sum1;
+    float sum1 = ap->m_radius + bp->m_radius;
+    float S = input->f8 + sum1;
     __m128 sq = _mm_mul_ps(_mm_load_ps((float*)&diff), _mm_load_ps((float*)&diff));
     __m128 s1 = _mm_add_ss(_mm_shuffle_ps(sq, sq, 0x55), sq);
     __m128 s2 = _mm_add_ss(_mm_shuffle_ps(sq, sq, 0xaa), s1);
@@ -92,14 +94,14 @@ if (compareValue(S*S,lenSq)) return 0;
     float D;
     if (lenSq > 0.0f) {
         D = sqrtf(lenSq);
-        out->m_vSeparatingNormal.m_vComponents = *(__m128*)&diff;
+        cpoint->m_separatingNormal.m_vComponents = *(__m128*)&diff;
     } else {
         D = 0.0f;
         hkVector4 d;
         difference(d,t[1],t[0]);
-        perpendicular(out->m_vSeparatingNormal,d);
+        perpendicular(cpoint->m_separatingNormal,d);
     }
-    __m128 n = out->m_vSeparatingNormal.m_vComponents;
+    __m128 n = cpoint->m_separatingNormal.m_vComponents;
     __m128 nsq = _mm_mul_ps(n, n);
     __m128 nsum = _mm_add_ss(_mm_shuffle_ps(nsq, nsq, 0xaa), _mm_add_ss(_mm_shuffle_ps(nsq, nsq, 0x55), nsq));
     __m128 r = _mm_rsqrt_ss(nsum);
@@ -107,12 +109,12 @@ if (compareValue(S*S,lenSq)) return 0;
                                _mm_sub_ss(_mm_set_ss(DAT_01017718), _mm_mul_ss(_mm_mul_ss(nsum, r), r)));
     factor = _mm_andnot_ps(_mm_cmpeq_ss(nsum, _mm_set_ss(DAT_01011d78)), factor);
     __m128 fn = _mm_mul_ps(_mm_shuffle_ps(factor, factor, 0), n);
-    out->m_vSeparatingNormal.m_vComponents = fn;
+    cpoint->m_separatingNormal.m_vComponents = fn;
     _ReadWriteBarrier();
-    float t1 = bp->m_fSphereRadius - D;
-    __m128 pos = _mm_add_ps(_mm_mul_ps(_mm_shuffle_ps(_mm_load_ss(&t1), _mm_load_ss(&t1), 0), _mm_load_ps((float*)&out->m_vSeparatingNormal)), _mm_load_ps((float*)qp));
-    _mm_store_ps((float*)&out->m_vContactPosition,pos);
-    out->m_vSeparatingNormal.w = D - sum1;
+    float t1 = bp->m_radius - D;
+    __m128 pos = _mm_add_ps(_mm_mul_ps(_mm_shuffle_ps(_mm_load_ss(&t1), _mm_load_ss(&t1), 0), _mm_load_ps((float*)&cpoint->m_separatingNormal)), _mm_load_ps((float*)qp));
+    _mm_store_ps((float*)&cpoint->m_position,pos);
+    cpoint->m_separatingNormal.w = D - sum1;
     return 1;
 }
 
@@ -175,9 +177,9 @@ hkQuadReal r1=_mm_mul_ps(t.m_row1,b1);
 hkQuadReal b2=_mm_shuffle_ps(b.m_vComponents,b.m_vComponents,(((2)<<6)|((2)<<4)|((2)<<2)|((2))));
 hkQuadReal r2=_mm_mul_ps(t.m_row2,b2);
 out.m_vComponents=_mm_add_ps(_mm_add_ps(r0,r1),_mm_add_ps(r2,t.m_row3));}
-__forceinline hkSimdReal hkVector4::dot3(const hkVector4&a)const
+__forceinline hkSimdReal hkVector4::dot3(const hkVector4&x)const
 {
-hkQuadReal x2=_mm_mul_ps(m_vComponents,a.m_vComponents);
+hkQuadReal x2=_mm_mul_ps(m_vComponents,x.m_vComponents);
 hkQuadReal xySum=_mm_add_ss(_mm_shuffle_ps(x2,x2,(((1)<<6)|((1)<<4)|((1)<<2)|((1)))),x2);
 hkSimdReal result; result.m_vValue=_mm_add_ss(_mm_shuffle_ps(x2,x2,(((2)<<6)|((2)<<4)|((2)<<2)|((2)))),xySum); return result;}
 __forceinline hkSimdReal hkVector4::lengthSquared3()const
@@ -223,24 +225,24 @@ __forceinline hkTransform::hkTransform(const hkTransform& t)
     m_row2=*reinterpret_cast<const __m128*>(&r2);
     m_row3=*reinterpret_cast<const __m128*>(&r3);
 }
-__forceinline const hkTransform& hkpCdBody::getTransform() const { return *static_cast<const hkTransform*>(m_pMotionState); }
-__forceinline const hkpShape* hkpCdBody::getShape() const { return m_pCollisionShape; }
-inline const hkVector4* hkpCapsuleShape::GetIndexedVertices() const { return &m_kVertexA; }
+__forceinline const hkTransform& hkpCdBody::getTransform() const { return *static_cast<const hkTransform*>(m_motion); }
+__forceinline const hkpShape* hkpCdBody::getShape() const { return m_shape; }
+inline const hkVector4* hkpCapsuleShape::GetIndexedVertices() const { return &m_vertexA; }
 inline const hkVector4&hkContactPoint::getNormal()const
 {
-return m_vSeparatingNormal;
+return m_separatingNormal;
 }
 inline hkVector4&hkContactPoint::getPosition()
 {
-return m_vContactPosition;
+return m_position;
 }
 inline hkVector4&hkContactPoint::getSeparatingNormal()
 {
-return m_vSeparatingNormal;
+return m_separatingNormal;
 }
 inline void hkContactPoint::setDistance(hkReal d)
 {
-m_vSeparatingNormal(3)=d;
+m_separatingNormal(3)=d;
 }
 struct CollisionAgentContext
 {
@@ -383,6 +385,9 @@ cpoint.getPosition().setAddMul4(posA,cpoint.getNormal(),radiusOffset);
 cpoint.setDistance(dist-radiusSum);
 return ST_CP_HIT;}
 // @fnv 0x00d3f080
+// pdb: hkpSphereCapsuleAgent::processCollision | hkpSphereCapsuleAgent.obj | retail, vtable slot, high
+// pdb params: bodyA, bodyB, input, result
+// pdb locals: assertBuf, ostr
 void hkpSphereCapsuleAgent::ProcessAgent(const hkpCdBody&bodyA,const hkpCdBody&bodyB,const GskAgentInput&input,WorldOperationEntry&result)
 {
 ;
@@ -390,13 +395,13 @@ void hkpSphereCapsuleAgent::ProcessAgent(const hkpCdBody&bodyA,const hkpCdBody&b
 ContactPointWithId*point=result.reserveContactPoints(1);
 if(getClosestPointInl(bodyA,bodyB,input,point->m_kPoint))
 {
-if(m_usContactPointId==(0xffff))
+if(m_contactPointId==(0xffff))
 {
-m_usContactPointId=m_pContactManager->addContactPoint(bodyA,bodyB,input,result,0,point->m_kPoint);
+m_contactPointId=m_contactMgr->addContactPoint(bodyA,bodyB,input,result,0,point->m_kPoint);
 }
-if(m_usContactPointId !=(0xffff))
+if(m_contactPointId !=(0xffff))
 {
-point->m_usContactPointId=m_usContactPointId;
+point->m_usContactPointId=m_contactPointId;
 result.commitContactPoints(1);
 }
 else
@@ -407,10 +412,10 @@ result.abortContactPoints(1);
 else
 {
 result.abortContactPoints(1);
-if(m_usContactPointId !=(0xffff))
+if(m_contactPointId !=(0xffff))
 {
-m_pContactManager->removeContactPoint(m_usContactPointId,*result.m_pConstraintOwner.val());
-m_usContactPointId=(0xffff);
+m_contactMgr->removeContactPoint(m_contactPointId,*result.m_pConstraintOwner.val());
+m_contactPointId=(0xffff);
 }
 }
 {hkMonitorStream&mStream=hkMonitorStream::getInstance();if(mStream.m_end.val()<mStream.m_capacityMinus16.val()){hkMonitorStream::TimerCommand*h=reinterpret_cast<hkMonitorStream::TimerCommand*>(mStream.getEnd());h->m_commandAndMonitor="E" "t" "";h->setTime();mStream.setEnd((char*)(h+1));}};

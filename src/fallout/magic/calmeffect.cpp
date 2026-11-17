@@ -7,9 +7,12 @@
 // Calls ClearCasterIfMatch on the caster; if it returns true, dispels the effect and returns that result.
 // @fnv 0x0080ba50
 // src: XBOX_PDB 0x0080ba50
-bool __thiscall CalmEffect::AbsorbEffect_CheckDeletedCaster(MagicCaster* caster)
+// pdb: TurnUndeadEffect::CheckDeletedCaster | TurnUndeadEffect.obj | retail, vtable slot, high
+// pdb params: apCaster
+// pdb locals: bresult
+bool __thiscall CalmEffect::AbsorbEffect_CheckDeletedCaster(MagicCaster* apCaster)
 {
-    bool result = ClearCasterIfMatch(caster);
+    bool result = ClearCasterIfMatch(apCaster);
     if (result)
         Dispel(true);
     return result;
@@ -18,6 +21,8 @@ bool __thiscall CalmEffect::AbsorbEffect_CheckDeletedCaster(MagicCaster* caster)
 // Allocates a CalmEffect from the caster, spell and effect, copies its state, and returns it.
 // @fnv 0x0080a930
 // src: XBOX_PDB 0x0080a930
+// pdb: CalmEffect::Copy | CalmEffect.obj | retail, vtable slot, high
+// pdb locals: presult
 CalmEffect* CalmEffect::Copy_0080a930()
 {
     CalmEffect* presult = new CalmEffect(m_pEffectInstance, pSpell, pEffect);
@@ -310,6 +315,8 @@ struct FUN_00822b40_Class
 
 // @fnv 0x0080abf0
 // src: XBOX_PDB 0x0080abf0
+// pdb: CalmEffect::Finish | CalmEffect.obj | retail, vtable slot, high
+// pdb locals: ptarget
 void CalmEffect::Finish_0080abf0()
 {
     ApplyEffect();
@@ -527,10 +534,13 @@ bool __cdecl MagicFormulas_CheckTargetLevelMagnitude(unsigned short a, float b);
 
 // @fnv 0x0080a9e0
 // src: XBOX_PDB 0x0080a9e0
-bool CalmEffect::CheckTarget_0080a9e0(MagicCaster* caster)
+// pdb: CalmEffect::CheckTarget | CalmEffect.obj | retail, vtable slot, high
+// pdb params: apTarget
+// pdb locals: pactor
+bool CalmEffect::CheckTarget_0080a9e0(MagicCaster* apTarget)
 {
     FUN_0080a9e0_Effect* pEffect;
-    pEffect = (caster != 0) ? ((FUN_0080a9e0_Caster*)caster)->FUN_00822b40() : 0;
+    pEffect = (apTarget != 0) ? ((FUN_0080a9e0_Caster*)apTarget)->FUN_00822b40() : 0;
     if (pEffect != 0 && !pEffect->vf08B(false) && !pEffect->vf0BA() && ((FUN_0080a9e0_Helper*)pEffect)->Actor_IsInCombat())
     {
         if (MagicFormulas_CheckTargetLevelMagnitude(((FUN_0080a9e0_Helper*)pEffect)->GetLevel_0087f9f0(),
@@ -544,7 +554,7 @@ bool CalmEffect::CheckTarget_0080a9e0(MagicCaster* caster)
 
 struct FUN_0080aa90_Ret
 {
-    void StopActorMoving();
+    void StartCalmed();
 };
 
 struct FUN_0080aa90_Obj
@@ -827,6 +837,8 @@ struct FUN_0080aa90_Holder
 // Starts the value modifier, then stops the target actor moving when its process is available.
 // @fnv 0x0080aa90
 // src: XBOX_PDB 0x0080aa90
+// pdb: CalmEffect::Start | CalmEffect.obj | retail, vtable slot, high
+// pdb locals: ptarget
 void CalmEffect::Start_0080aa90()
 {
     FUN_0080aa90_Obj* pObject;
@@ -837,7 +849,7 @@ void CalmEffect::Start_0080aa90()
     {
         if (pObject->Virt266() != 0)
         {
-            pObject->Virt266()->StopActorMoving();
+            pObject->Virt266()->StartCalmed();
         }
     }
 }
@@ -1119,11 +1131,14 @@ struct FUN_0080ab10_obj
 
 // @fnv 0x0080ab10
 // src: XBOX_PDB 0x0080ab10
-void CalmEffect::Update_0080ab10(float afValue)
+// pdb: CalmEffect::Update | CalmEffect.obj | retail, vtable slot, high
+// pdb params: afSecondsElapsed
+// pdb locals: ptarget, bcalmed
+void CalmEffect::Update_0080ab10(float afSecondsElapsed)
 {
     unsigned char flag;
     FUN_0080ab10_obj* obj;
-    ValueModifierEffect::Update(afValue);
+    ValueModifierEffect::Update(afSecondsElapsed);
     obj = (ActiveEffect::FUN_0059bb30() != 0) ? ((FUN_0080ab10_obj*)ActiveEffect::FUN_0059bb30())->FUN_00822b40() : 0;
     if (obj != 0)
     {

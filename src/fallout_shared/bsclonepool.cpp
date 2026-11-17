@@ -28,6 +28,9 @@ struct S_004b0aa0_Self : S_004b0aa0_Cur
     void ProcessKeyedEntry(int key, unsigned count);
 };
 // @fnv 0x004b0aa0
+// pdb: BSClonePools::KillClones | BSClonePool.obj | debug, object-file gap fill, medium
+// pdb params: apLoadedObject, aiCloneCount
+// pdb locals: plist, ppool, boldreporthit, pitem, i
 void S_004b0aa0_Self::ProcessKeyedEntry(int key, unsigned count)
 {
     if (!key)
@@ -70,12 +73,15 @@ struct SpawnedObject
 class FUN_004b0ba0_cls
 {
   public:
-    unsigned int BSClonePools_RequestClone(unsigned int arg);
+    unsigned int BSClonePools_RequestClone(unsigned int apLoadedObject);
 };
 
 // @fnv 0x004b0ba0
 // src: COMMUNITY 0x004b0ba0
-unsigned int FUN_004b0ba0_cls::BSClonePools_RequestClone(unsigned int arg)
+// pdb: BSClonePools::RequestClone | BSClonePool.obj | debug, upstream name already matches, high
+// pdb params: apLoadedObject
+// pdb locals: plist, ppool, presult, pitem, pclones, pclone
+unsigned int FUN_004b0ba0_cls::BSClonePools_RequestClone(unsigned int apLoadedObject)
 {
     unsigned int result2;
     unsigned int found8 = 0;
@@ -83,7 +89,7 @@ unsigned int FUN_004b0ba0_cls::BSClonePools_RequestClone(unsigned int arg)
     while (cur != 0 && found8 == 0 && !((SpawnedObject*)cur)->FUN_008256d0())
     {
         unsigned int tmp = *((SpawnedObject*)cur)->FUN_006815c0();
-        if (tmp != 0 && *(unsigned int*)tmp == arg)
+        if (tmp != 0 && *(unsigned int*)tmp == apLoadedObject)
             found8 = tmp;
         cur = ((SpawnedObject*)cur)->FUN_00726070();
     }
@@ -124,6 +130,7 @@ struct FUN_004b0c80
 };
 
 // @fnv 0x004b0c80
+// pdb: BSClonePools::ClonePool::ClonePool | BSClonePool.obj | debug, object-file gap fill, medium
 FUN_004b0c80::FUN_004b0c80()
 {
     m_iArrayLength = 0;
@@ -189,13 +196,17 @@ struct FUN_004b0c80
 
 struct FUN_004b0910_cls : public List4b0910
 {
-    void AddKeyedItems(Key4b0910* pkKey, unsigned int ItemUpdateArray);
+    void BSClonePools_MakeClones(Key4b0910* apLoadedObject, unsigned int aiCloneCount);
 };
 
 // @fnv 0x004b0910
-void FUN_004b0910_cls::AddKeyedItems(Key4b0910* pkKey, unsigned int ItemUpdateArray)
+// src: XBOX_DEBUG_PDB 0x004b0910
+// pdb: BSClonePools::MakeClones | BSClonePool.obj | debug, unique string literal, high
+// pdb params: apLoadedObject, aiCloneCount
+// pdb locals: plist, ppool, tempMemContext, pitem, i, pclone, process
+void FUN_004b0910_cls::BSClonePools_MakeClones(Key4b0910* apLoadedObject, unsigned int aiCloneCount)
 {
-    if (!pkKey)
+    if (!apLoadedObject)
         return;
 
     AutoMemHelper kMemVal(0x31, true, DAT_0101fca0, 0x38);
@@ -204,7 +215,7 @@ void FUN_004b0910_cls::AddKeyedItems(Key4b0910* pkKey, unsigned int ItemUpdateAr
     while (pkIter && !pkFound4 && !pkIter->FUN_008256d0())
     {
         Entry4b0910* pkEntry = *pkIter->FUN_006815c0();
-        if (pkEntry && pkEntry->m_pkKey == pkKey)
+        if (pkEntry && pkEntry->m_pkKey == apLoadedObject)
             pkFound4 = pkEntry;
         pkIter = pkIter->FUN_00726070();
     }
@@ -212,14 +223,14 @@ void FUN_004b0910_cls::AddKeyedItems(Key4b0910* pkKey, unsigned int ItemUpdateAr
     if (!pkFound4)
     {
         pkFound4 = (Entry4b0910*)new n4b0910::FUN_004b0c80;
-        pkFound4->m_pkKey = pkKey;
+        pkFound4->m_pkKey = apLoadedObject;
         FUN_005ae3d0(&pkFound4);
     }
 
-    for (unsigned int uiIndex = 0; uiIndex < ItemUpdateArray; uiIndex++)
+    for (unsigned int uiIndex = 0; uiIndex < aiCloneCount; uiIndex++)
     {
         FUN_004ad050 kArgTmp(1.0f);
-        int iObject2 = pkKey->FUN_00a5d2c0(&kArgTmp);
+        int iObject2 = apLoadedObject->FUN_00a5d2c0(&kArgTmp);
         pkFound4->m_kList.BSSimpleList_NiPointer_bhkAction_AddHead(iObject2);
     }
 }

@@ -26,13 +26,13 @@ void NiQuaternionInterpolator::GuaranteeTimeRange_00a48960(float m_fStartTime, f
         p->GuaranteeKeysAtStartAndEnd(m_fStartTime, m_fMaximumDistance);
 }
 
-extern "C" const void* g_011f3f60;
+extern "C" const void* NiQuaternionInterpolator_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f3f60 (old: g_011f3f60)
 
 // @fnv 0x00a48ab0
 // src: COMMUNITY 0x00a48ab0
 const void* __cdecl NiQuaternionInterpolator_GetRTTI()
 {
-    return &g_011f3f60;
+    return &NiQuaternionInterpolator_ms_RTTI;
 }
 
 extern int DAT_010986f4;
@@ -49,12 +49,12 @@ NiQuaternionInterpolator* __cdecl CreateNiQuaternionInterpolator()
     {
         p->NiKeyBasedInterpolator::NiKeyBasedInterpolator();
         *(int*)(p) = (int)&DAT_010986f4;
-        *reinterpret_cast<int*>(&p->m_kQuaternionValue.m_fVectorX) = DAT_011f4208;
-        *reinterpret_cast<int*>(&p->m_kQuaternionValue.m_fVectorY) = DAT_011f420c;
-        *reinterpret_cast<int*>(&p->m_kQuaternionValue.m_fVectorZ) = DAT_011f4210;
-        *reinterpret_cast<int*>(&p->m_kQuaternionValue.m_fScalarPart) = DAT_011f4214;
+        *reinterpret_cast<int*>(&p->m_kQuaternionValue.m_fW) = DAT_011f4208;
+        *reinterpret_cast<int*>(&p->m_kQuaternionValue.m_fX) = DAT_011f420c;
+        *reinterpret_cast<int*>(&p->m_kQuaternionValue.m_fY) = DAT_011f4210;
+        *reinterpret_cast<int*>(&p->m_kQuaternionValue.m_fZ) = DAT_011f4214;
         p->m_spQuaternionData.m_pObject = 0;
-        p->m_uiLastKeyIndex = 0;
+        p->m_uiLastIdx = 0;
         return p;
     }
     return 0;
@@ -121,9 +121,9 @@ inline void NiRefObject::DecRefCount()
 inline TimedRotationKey* NiRotData::ComputePositionAtTime(unsigned int& uiNumKeys, int& eType, unsigned char& ucSize) const
 {
     uiNumKeys = m_uiNumKeys;
-    eType = m_eRequestType;
-    ucSize = m_ucKeyDataSize;
-    return m_pKeyArray;
+    eType = m_eType;
+    ucSize = m_ucKeySize;
+    return m_pkKeys;
 }
 
 inline bool QuaternionEqual(const NiQuaternion& a, const NiQuaternion& b)
@@ -200,6 +200,9 @@ template <class T> inline T* NiPointer<T>::operator->() const
 }
 
 // @fnv 0x00a48a50
+// pdb: NiQuaternionInterpolator::IsEqual | NiQuaternionInterpolator.obj | retail, upstream name already matches, high
+// pdb params: pkObject
+// pdb locals: pkDest
 bool NiQuaternionInterpolator::IsEqual(NiObject* pkObject) const
 {
     if (!reinterpret_cast<bool (__thiscall*)(const NiKeyBasedInterpolator*, NiObject*)>(&InterpolatorBaseIsEqual)(this, pkObject))
@@ -252,7 +255,7 @@ NiInterpolator* NiQuaternionInterpolator::CloneForTimeRange(float a, float b)
         reinterpret_cast<void (__thiscall*)(NiRotData*, float, float, NiRefObject**)>(&CopyRotationData)(
             m_spQuaternionData.m_pObject, a, b, &pInterp);
         Assign(reinterpret_cast<NiRefObject*&>(pResult->m_spQuaternionData.m_pObject), pInterp);
-        pResult->m_uiLastKeyIndex = 0;
+        pResult->m_uiLastIdx = 0;
         if (pInterp)
             ::DecRef(pInterp);
     }
@@ -276,23 +279,25 @@ struct Stream
 };
 
 void* __cdecl NiViewerStrings_NiGetViewerString_Title(const void* value);
-void* __cdecl NiGetViewerString_00a7d5a0(const void* key, void* value);
+void* __cdecl NiGetViewerString_00a7d5a0(const void* pcPrefix, void* pvValue);
 
 // The shared base does not declare its viewer-string override.
 void GetKeyBasedViewerStrings();
 
 // @fnv 0x00a48ea0
-void NiQuaternionInterpolator::GetViewerStrings(NiViewerStringsArray* strings)
+// pdb: NiQuaternionInterpolator::GetViewerStrings | NiQuaternionInterpolator.obj | retail, string-set bridge, high
+// pdb params: pkStrings
+void NiQuaternionInterpolator::GetViewerStrings(NiViewerStringsArray* pkStrings)
 {
-    Stream* stream = (Stream*)strings;
-    reinterpret_cast<void (__thiscall*)(NiKeyBasedInterpolator*, NiViewerStringsArray*)>(&GetKeyBasedViewerStrings)(this, strings);
-    void* value = NiViewerStrings_NiGetViewerString_Title(g_011f3f60);
+    Stream* stream = (Stream*)pkStrings;
+    reinterpret_cast<void (__thiscall*)(NiKeyBasedInterpolator*, NiViewerStringsArray*)>(&GetKeyBasedViewerStrings)(this, pkStrings);
+    void* value = NiViewerStrings_NiGetViewerString_Title(NiQuaternionInterpolator_ms_RTTI);
     unsigned int index = stream->unk0a;
     if (index >= stream->unk08)
         stream->FUN_0096ad30(index + stream->unk0e);
     stream->FUN_0096ae90(index, &value);
 
-    value = m_kQuaternionValue.FormatToBuffer(&DAT_01098800);
+    value = m_kQuaternionValue.GetViewerString(&DAT_01098800);
     index = stream->unk0a;
     if (index >= stream->unk08)
         stream->FUN_0096ad30(index + stream->unk0e);
@@ -341,7 +346,7 @@ bool NiQuaternionInterpolator::GetQuaternionAtTime(float fTime, NiObjectNET* pkI
     TimedRotationKey* pkKeys = GetKeys(uiNumKeys, eType, ucSize);
     if (uiNumKeys > 0)
     {
-        CopyQuaternionValue(m_kQuaternionValue, FUN_00a28740(fTime, pkKeys, eType, uiNumKeys, &m_uiLastKeyIndex, ucSize));
+        CopyQuaternionValue(m_kQuaternionValue, FUN_00a28740(fTime, pkKeys, eType, uiNumKeys, &m_uiLastIdx, ucSize));
     }
 
     if (QuaternionEqual(m_kQuaternionValue, (*(const NiQuaternion*)&DAT_011f4208)))
@@ -374,9 +379,9 @@ void NiQuaternionInterpolator::GetInterpolatorTimeRange(float& begin, float& end
     {
         unsigned int count = p->m_uiNumKeys;
         // Preserve the original volatile read of the interpolation type.
-        int type = *(volatile int*)&p->m_eRequestType;
-        unsigned char stride = p->m_ucKeyDataSize;
-        KeyTrackData* base = (KeyTrackData*)p->m_pKeyArray;
+        int type = *(volatile int*)&p->m_eType;
+        unsigned char stride = p->m_ucKeySize;
+        KeyTrackData* base = (KeyTrackData*)p->m_pkKeys;
         if (count > 0)
         {
             if (type == 4)
@@ -423,11 +428,14 @@ inline NiQuaternionInterpolator* InitializeQuaternionInterpolator(NiQuaternionIn
     *(void**)object = &DAT_010986f4;
     CopyQuaternionValue(object->m_kQuaternionValue, *reinterpret_cast<const NiQuaternion*>(&DAT_011f4208));
     object->m_spQuaternionData.m_pObject = 0;
-    *(volatile unsigned int*)&object->m_uiLastKeyIndex = 0;
+    *(volatile unsigned int*)&object->m_uiLastIdx = 0;
     return object;
 }
 
 // @fnv 0x00a48e20
+// pdb: NiQuaternionInterpolator::CreateClone | NiQuaternionInterpolator.obj | retail, object-file run extension, low
+// pdb params: kCloning
+// pdb locals: pkObject
 NiObject* NiQuaternionInterpolator::MakeClone(CloningProcess& cloning)
 {
     NiQuaternionInterpolator* storage = (NiQuaternionInterpolator*)BSFadeNode::operator new(sizeof(NiQuaternionInterpolator));

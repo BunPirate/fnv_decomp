@@ -13,6 +13,7 @@
 
 // Returns a reference to the function-local static BSWin32FileCache instance.
 // @fnv 0x00aff100
+// pdb: BSFileCache::QInstance | BSFileCache_Xenon.obj | retail, call graph, medium
 BSFileCache& BSFileCache::GetRandomGenerator()
 {
     static BSWin32FileCache s_fileCache;

@@ -50,8 +50,8 @@ class ScriptFunctionData
   public:
     static unsigned int GetParamCount(const FunctionData* apData);
     static bool IsParamTESForm(const FunctionData* apData, unsigned int auiParam);
-    static bool GetParamIsScriptVariable(const FunctionData* apData, unsigned int auiParam);
-    static Script* GetScriptForParam(unsigned int auiParam, FunctionData* apData);
-    static void InitItem(TESForm* apForm, FunctionData* apData);
+    static bool GetParamIsScriptVariable(const FunctionData* apFuncData, unsigned int aiParam);
+    static Script* GetScriptForParam(unsigned int aiParam, FunctionData* apFuncData);
+    static void TESParameters_InitItem(TESForm* apOwner, FunctionData* apData);
 };
 #endif

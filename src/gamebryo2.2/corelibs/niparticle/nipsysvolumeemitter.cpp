@@ -12,17 +12,21 @@
 #include "../../../../include/NiTStringPointerMap.h"
 
 // @fnv 0x00c31b20
-void NiPSysVolumeEmitter::LoadBinary(NiStream& stream)
+// pdb: NiPSysVolumeEmitter::LoadBinary | NiPSysVolumeEmitter.obj | retail, upstream name already matches, high
+// pdb params: kStream
+void NiPSysVolumeEmitter::LoadBinary(NiStream& kStream)
 {
-    NiPSysEmitter::LoadBinary(stream);
-    stream.ResetStreamState();
+    NiPSysEmitter::LoadBinary(kStream);
+    kStream.ResetStreamState();
 }
 
 // @fnv 0x00c31b40
-void NiPSysVolumeEmitter::LinkObject(NiStream& stream)
+// pdb: NiPSysVolumeEmitter::LinkObject | NiPSysVolumeEmitter.obj | retail, upstream name already matches, high
+// pdb params: kStream
+void NiPSysVolumeEmitter::LinkObject(NiStream& kStream)
 {
-    NiPSysEmitter::LinkObject(stream);
-    m_pkEmitterObject = (NiAVObject*)stream.GetLoadedObject();
+    NiPSysEmitter::LinkObject(kStream);
+    m_pkEmitterObj = (NiAVObject*)kStream.GetLoadedObject();
 }
 
 struct CloningProcess
@@ -40,6 +44,9 @@ typedef char _sizecheck_NiCloningProcess[sizeof(CloningProcess) == 16 ? 1 : -1];
 class ShaderBufferRecord;
 
 // @fnv 0x00c31c90
+// pdb: NiPSysVolumeEmitter::ProcessClone | NiPSysVolumeEmitter.obj | retail, upstream name already matches, high
+// pdb params: kCloning
+// pdb locals: bCloned, pkClone, pkDest
 void NiPSysVolumeEmitter::ProcessClone(CloningProcess& kCloning)
 {
     NiPSysModifier::ProcessClone(kCloning);
@@ -47,30 +54,33 @@ void NiPSysVolumeEmitter::ProcessClone(CloningProcess& kCloning)
     ((NiTStringPointerMap<ShaderBufferRecord*>*)kCloning.m_pCloneMap)
         ->GetAt((const char*)this, (ShaderBufferRecord*&)pkClone);
     NiPSysVolumeEmitter* pkDest = (NiPSysVolumeEmitter*)pkClone;
-    if (m_pkEmitterObject)
+    if (m_pkEmitterObj)
     {
         if (((NiTStringPointerMap<ShaderBufferRecord*>*)kCloning.m_pCloneMap)
-                ->GetAt((const char*)m_pkEmitterObject, (ShaderBufferRecord*&)pkClone))
+                ->GetAt((const char*)m_pkEmitterObj, (ShaderBufferRecord*&)pkClone))
         {
-            pkDest->m_pkEmitterObject = (NiAVObject*)pkClone;
+            pkDest->m_pkEmitterObj = (NiAVObject*)pkClone;
         }
         else
         {
-            pkDest->m_pkEmitterObject = m_pkEmitterObject;
+            pkDest->m_pkEmitterObj = m_pkEmitterObj;
         }
     }
 }
 
 // Builds the emitter-to-PSys transform from the emitter and target transforms (or identity) and calls the volume emitter's virtual compute function with it.
 // @fnv 0x00c31cf0
-void NiPSysVolumeEmitter::GetPositionAndDirection(NiPoint3& kPosition, NiPoint3& kMotionVelocity)
+// pdb: NiPSysVolumeEmitter::ComputeInitialPositionAndVelocity | NiPSysVolumeEmitter.obj | retail, vtable slot, high
+// pdb params: kPosition, kVelocity
+// pdb locals: kEmitter, kEmitterToPSys, kInvPSys, kPSys
+void NiPSysVolumeEmitter::GetPositionAndDirection(NiPoint3& kPosition, NiPoint3& kVelocity)
 {
-    if (m_pkEmitterObject)
+    if (m_pkEmitterObj)
     {
         // The original uses uninitialized scratch transforms and raw transform copies.
         unsigned int emitterStorage[sizeof(NiTransform) / sizeof(unsigned int)];
         NiTransform& kEmitter = *(NiTransform*)emitterStorage;
-        memcpy(&kEmitter, (char*)m_pkEmitterObject + 0x68, sizeof(NiTransform));
+        memcpy(&kEmitter, (char*)m_pkEmitterObj + 0x68, sizeof(NiTransform));
         unsigned int psysStorage[sizeof(NiTransform) / sizeof(unsigned int)];
         NiTransform& kPSys = *(NiTransform*)psysStorage;
         memcpy(&kPSys, (char*)m_pkTarget + 0x68, sizeof(NiTransform));
@@ -78,14 +88,14 @@ void NiPSysVolumeEmitter::GetPositionAndDirection(NiPoint3& kPosition, NiPoint3&
         NiTransform& kInvPSys = *(NiTransform*)inverseStorage;
         kPSys.CalculateInverse(kInvPSys);
         NiTransform kEmitterToPSys = kInvPSys * kEmitter;
-        vf44(kEmitterToPSys, &kPosition, &kMotionVelocity);
+        vf44(kEmitterToPSys, &kPosition, &kVelocity);
     }
     else
     {
         unsigned int identityStorage[sizeof(NiTransform) / sizeof(unsigned int)];
         NiTransform& kEmitterToPSys = *(NiTransform*)identityStorage;
         kEmitterToPSys.ResetToIdentity();
-        vf44(kEmitterToPSys, &kPosition, &kMotionVelocity);
+        vf44(kEmitterToPSys, &kPosition, &kVelocity);
     }
 }
 
@@ -112,26 +122,31 @@ void* NiPSysVolumeEmitter::DestroyIfFlagged(unsigned int flags)
 }
 
 // @fnv 0x00c31b60
-void NiPSysVolumeEmitter::SaveBinary(NiStream& stream)
+// pdb: NiPSysVolumeEmitter::SaveBinary | NiPSysVolumeEmitter.obj | retail, upstream name already matches, high
+// pdb params: kStream
+void NiPSysVolumeEmitter::SaveBinary(NiStream& kStream)
 {
-    NiPSysEmitter::SaveBinary(stream);
-    stream.SaveLinkID(reinterpret_cast<const NiObject*>(m_pkEmitterObject));
+    NiPSysEmitter::SaveBinary(kStream);
+    kStream.SaveLinkID(reinterpret_cast<const NiObject*>(m_pkEmitterObj));
 }
 
 // @fnv 0x00c31b80
+// pdb: NiPSysVolumeEmitter::IsEqual | NiPSysVolumeEmitter.obj | retail, upstream name already matches, high
+// pdb params: pkObject
+// pdb locals: pkDest
 bool NiPSysVolumeEmitter::IsEqual(NiObject* pkObject) const
 {
     NiPSysVolumeEmitter* pkDest = (NiPSysVolumeEmitter*)pkObject;
     if (!NiPSysEmitter::IsEqual(pkObject))
         return false;
-    if (m_pkEmitterObject)
+    if (m_pkEmitterObj)
     {
-        if (!pkDest->m_pkEmitterObject)
+        if (!pkDest->m_pkEmitterObj)
             return false;
     }
-    if (!m_pkEmitterObject)
+    if (!m_pkEmitterObj)
     {
-        if (pkDest->m_pkEmitterObject)
+        if (pkDest->m_pkEmitterObj)
             return false;
     }
     return true;
@@ -156,13 +171,15 @@ struct NameHolder_b9457
 
 extern void* DAT_012027d8;
 void* __cdecl NiViewerStrings_NiGetViewerString_Title(void* p);
-void* __cdecl NiGetViewerString_00a7d5e0(const char* fmt, void* arg);
+void* __cdecl NiGetViewerString_00a7d5e0(const char* pcPrefix, void* pcValue);
 
 // @fnv 0x00c31db0
-void NiPSysVolumeEmitter::GetViewerStrings(NiViewerStringsArray* strings)
+// pdb: NiPSysVolumeEmitter::GetViewerStrings | NiPSysVolumeEmitter.obj | retail, string-set bridge, high
+// pdb params: pkStrings
+void NiPSysVolumeEmitter::GetViewerStrings(NiViewerStringsArray* pkStrings)
 {
-    NameArray_b9457* arr = (NameArray_b9457*)strings;
-    NiPSysEmitter::GetViewerStrings(strings);
+    NameArray_b9457* arr = (NameArray_b9457*)pkStrings;
+    NiPSysEmitter::GetViewerStrings(pkStrings);
     void* name = NiViewerStrings_NiGetViewerString_Title(DAT_012027d8);
     unsigned int uiIndex = arr->m_usNum;
     if (uiIndex >= arr->m_usMax)
@@ -170,9 +187,9 @@ void NiPSysVolumeEmitter::GetViewerStrings(NiViewerStringsArray* strings)
         arr->Resize(uiIndex + arr->m_usGrow);
     }
     arr->SetAt(uiIndex, &name);
-    if (m_pkEmitterObject != 0)
+    if (m_pkEmitterObj != 0)
     {
-        void* holderVal = ((NameHolder_b9457*)m_pkEmitterObject)->m_pIntegerData;
+        void* holderVal = ((NameHolder_b9457*)m_pkEmitterObj)->m_pIntegerData;
         name = NiGetViewerString_00a7d5e0("Emitter Object", holderVal);
         uiIndex = arr->m_usNum;
         if (uiIndex >= arr->m_usMax)
@@ -189,8 +206,10 @@ NiPSysVolumeEmitter::NiPSysVolumeEmitter(const char* pcName, NiAVObject* pkEmitt
                            float fRadiusVar)
     // Constructs a particle system modifier by delegating to the base class and storing the emitter object pointer.
 // @fnv 0x00c31bd0
+// pdb: NiPSysVolumeEmitter::NiPSysVolumeEmitter | NiPSysVolumeEmitter.obj | debug, call graph, medium
+// pdb params: pcName, pkEmitterObj, fSpeed, fSpeedVar, fDeclination, fDeclinationVar, fPlanarAngle, fPlanarAngleVar, kInitialColor, fInitialRadius, fLifeSpan, fLifeSpanVar, fRadiusVar
     : NiPSysEmitter(pcName, 1000, fSpeed, fSpeedVar, fDeclination, fDeclinationVar, fPlanarAngle, fPlanarAngleVar,
                         kInitialColor, fInitialRadius, fLifeSpan, fLifeSpanVar, fRadiusVar)
 {
-    m_pkEmitterObject = pkEmitterObj;
+    m_pkEmitterObj = pkEmitterObj;
 }

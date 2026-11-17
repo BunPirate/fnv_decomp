@@ -11,6 +11,7 @@ class CreditTextureName;
 class CreditTextureSource;
 class OutputA;
 
+// pdb: class CreditsMenu, size 0x80, bases: Menu, 16 members
 class CreditsMenu : public Menu
 {
 public:
@@ -97,7 +98,7 @@ public:
         char* m3c;
         char* m_3c;
     };
-    int font;
+    int eFont; // src: XBOX_RETAIL_PDB +0x40 (old: font)
     union
     {
         int align;
@@ -113,7 +114,7 @@ public:
         int y;
         int iY;
     };
-    CreditColor color;
+    CreditColor Color; // src: XBOX_RETAIL_PDB +0x50 (old: color)
     union
     {
         struct
@@ -131,9 +132,9 @@ public:
             };
         };
     };
-    float fLineDelay;
-    float m_fPackageValue;
-    unsigned int uiLineIndex;
+    float fBackgroundSwapInterval; // src: XBOX_RETAIL_PDB +0x74 (old: fLineDelay)
+    float fBackgroundSwapTimer; // src: XBOX_RETAIL_PDB +0x78 (old: m_fPackageValue)
+    unsigned int uiBackgroundIndexCounter; // src: XBOX_RETAIL_PDB +0x7c (old: uiLineIndex)
 
     int FUN_0075f1c0();
     void FUN_0075f910();

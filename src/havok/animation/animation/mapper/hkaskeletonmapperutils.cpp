@@ -39,15 +39,18 @@ extern "C"
 #include "../../../../../include/hkQuaternion.h"
 #include "../../../../../include/hkMemoryRouter.h"
 
-void __cdecl hkaSkeletonMapperUtils_computeMappingTransform(hkQsTransform* out, const hkQsTransform* a, const hkQsTransform* b, int mode,
+void __cdecl hkaSkeletonMapper_setMulWithScaling(hkQsTransform* out, const hkQsTransform* a, const hkQsTransform* b, int mode,
                           float weightA, float weightB);
 
 // @fnv 0x00ce5f90
 // src: HAVOK_LIB 0x00ce5f90
+// pdb: hkaSkeletonMapperUtils::computeMappingTransform | hkaSkeletonMapperUtils.obj | retail, object-file run extension, low
+// pdb params: type, a, b, mapOut, tolerance, defaultScale
+// pdb locals: assertBuf, ostr
 void __cdecl hkaSkeletonMapperUtils_computeMappingTransform_00ce5f90(hkQsTransform* out, const hkQsTransform* poseA, short boneA,
                           const hkQsTransform* poseB, short boneB, int mode, float weightA, float weightB)
 {
-    hkaSkeletonMapperUtils_computeMappingTransform(out, &poseA[boneA], &poseB[boneB], mode, weightA, weightB);
+    hkaSkeletonMapper_setMulWithScaling(out, &poseA[boneA], &poseB[boneB], mode, weightA, weightB);
 }
 
 #include <xmmintrin.h>
@@ -160,6 +163,8 @@ void __cdecl Object_GetPathOffsetBounds(const hkQsTransform* pose, int numBones,
 // Computes scale factors for two poses based on ScaleParams mode, storing results in outA and outB.
 // @fnv 0x00ce55d0
 // src: GUESS 0x00ce55d0 (confidence: medium)
+// pdb: hkaSkeletonMapperUtils::computeChainLengthAndPosition | hkaSkeletonMapperUtils.obj | debug, object-file run extension, low
+// pdb params: skeleton, pose, start, end, lengthOut, posOut
 void __cdecl hkQsTransform_ComputePoseScaleFactors(const ScaleParams* params, int unused, const hkQsTransform* poseA, int numBonesA,
                           const hkQsTransform* poseB, int numBonesB, hkQsTransform* outA, hkQsTransform* outB)
 {
@@ -228,22 +233,25 @@ struct ValueSource
     int unk0c;
 };
 
-extern "C" float __cdecl GetAngle();
+extern "C" float __cdecl hkQuaternion_getAngle();
 typedef float(__thiscall* ReadValue)(void*);
 
 // Returns 1 if state->mode is not 1, otherwise returns whether the larger absolute angle of first or second is at most state->threshold.
 // @fnv 0x00ce57c0
 // src: HAVOK_LIB 0x00ce57c0
-unsigned char __cdecl hkaSkeletonMapperUtils_checkRotation(ThresholdState* state, void* unused1, void* unused2, ValueSource* first,
-                                   ValueSource* second)
+// pdb: hkaSkeletonMapperUtils::checkRotation | hkaSkeletonMapperUtils.obj | retail, upstream name already matches, high
+// pdb params: params, boneA, boneB, aToBTransform, bToATransform
+// pdb locals: assertBuf, ostr
+unsigned char __cdecl hkaSkeletonMapperUtils_checkRotation(ThresholdState* params, void* boneA, void* boneB, ValueSource* aToBTransform,
+                                   ValueSource* bToATransform)
 {
-    if (state->mode != 1)
+    if (params->mode != 1)
         return 1;
 
-    float a = fabs(reinterpret_cast<ReadValue>(GetAngle)(reinterpret_cast<char*>(first) + 0x10));
-    float b = fabs(reinterpret_cast<ReadValue>(GetAngle)(reinterpret_cast<char*>(second) + 0x10));
+    float a = fabs(reinterpret_cast<ReadValue>(hkQuaternion_getAngle)(reinterpret_cast<char*>(aToBTransform) + 0x10));
+    float b = fabs(reinterpret_cast<ReadValue>(hkQuaternion_getAngle)(reinterpret_cast<char*>(bToATransform) + 0x10));
     float fMaxAngle = a > b ? a : b;
-    return static_cast<unsigned char>(fMaxAngle <= state->threshold);
+    return static_cast<unsigned char>(fMaxAngle <= params->threshold);
 }
 
 namespace fnv_00ce5e60 {
@@ -299,6 +307,9 @@ static __forceinline hkReal hkLength3(const hkVector4& v)
 // Walks the parent chain from bone to ancestor, rotating the accumulated position, adding translations, and summing their lengths.
 // @fnv 0x00ce5e60
 // src: GUESS 0x00ce5e60 (confidence: medium)
+// pdb: hkaSkeletonMapperUtils::computeChainLengthAndPosition | hkaSkeletonMapperUtils.obj | retail, object-file run extension, low
+// pdb note: debug build links it to hkaSkeletonMapper::combineSparsePoseWithFullPose
+// pdb params: skeleton, pose, start, end, lengthOut, posOut
 void Object_AccumulateBoneChainLength(const hkaSkeletonq* apSkeleton, const hkQsTransform* poses, hkInt16 ancestor, hkInt16 bone,
                   hkReal* pfLengthOut, hkVector4* posOut)
 {
@@ -350,6 +361,9 @@ void Object_AccumulateBoneChainLength(const hkaSkeleton* skel, const hkQsTransfo
 // Fills out with bone indices, offset, rotation, scale, and relative rotation derived from two skeleton bone pairs.
 // @fnv 0x00ce5fe0
 // src: GUESS 0x00ce5fe0 (confidence: medium)
+// pdb: hkaSkeletonMapperUtils::computeChainMapping | hkaSkeletonMapperUtils.obj | retail, object-file run extension, low
+// pdb params: type, skeletonA, poseA, startA, endA, skeletonB, poseB, startB, endB, mapAFromBOut
+// pdb locals: lengthA, endPosB, endPosA, shortestRotation, lengthB
 void Object_BuildBonePairMapping(const void* data, const hkaSkeleton* skelA, const hkQsTransform* poseA, hkInt16 boneA0,
                   hkInt16 boneA1, const hkaSkeleton* skelB, const hkQsTransform* poseB, hkInt16 boneB0, hkInt16 boneB1,
                   BonePairInfo* out)
@@ -387,7 +401,7 @@ inline void* operator new(size_t, void* p)
 }
 
 // hkMemoryRouter is the shared router: GetMonitorStream binds to 0x00c85750, with the heap at +0x10.
-extern "C" void __cdecl hkArrayUtil__reserve(hkMemoryAllocator* mem, void* array, int numElems, int elemSize);
+extern "C" void __cdecl hkArrayUtil__reserve(hkMemoryAllocator* mem, void* array, int numElem, int sizeElem);
 
 struct HkElem8
 {
@@ -481,6 +495,7 @@ struct FUN_00ce9580
 
 // Copies scalar fields and tail from other, then deep-copies the three HkArrayLocalForm<HkElem8> members via their operator=.
 // @fnv 0x00ce9580
+// pdb: hkaSkeletonMapperUtils::Params::Params | hkaSkeletonMapperUtils.obj | retail, object-file run extension, low
 FUN_00ce9580::FUN_00ce9580(const FUN_00ce9580& other)
     : unk00(other.unk00), unk04(other.unk04), unk08(other.unk08), unk0C(other.unk0C), unk10(other.unk10), arr14(),
       arr20(), arr2C(), unk38(other.unk38), unk39(other.unk39), tail(other.tail)

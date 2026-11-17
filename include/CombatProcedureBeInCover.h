@@ -5,6 +5,7 @@
 
 class Projectile;
 
+// pdb: class CombatProcedureBeInCover, size 0x6c, bases: CombatProcedure, 11 members
 class CombatProcedureBeInCover : public CombatProcedure
 {
 public:
@@ -30,12 +31,12 @@ public:
         float GetElapsedTime();
     };
 
-    CombatProcedureBeInCover(void* pLoc);
+    CombatProcedureBeInCover(void* apCombatCoverLocation);
 
     virtual ~CombatProcedureBeInCover();
     virtual int GetType();
-    virtual void SaveGame(BGSSaveFormBuffer* apBuffer);
-    virtual void LoadGame(BGSLoadFormBuffer* apBuffer);
+    virtual void SaveGame(BGSSaveFormBuffer* apSaveGameBuffer);
+    virtual void LoadGame(BGSLoadFormBuffer* apLoadGameBuffer);
 
     void DebugText(IDebugText*, DEBUGTEXT_LOCATION, DEBUGTEXT_JUSTIFY);
     void UpdateCoverState();
@@ -43,14 +44,14 @@ public:
     void UpdateCombatProcedure(Projectile* apProjectile);
 
     COVER_STATE eState;
-    void* m_pCurrentCoverPoint;
-    float m_afFirstVector[3];
-    float m_afSecondVector[3];
-    unsigned char _pad1[0x0C];
-    Timer m_waitTimer;
-    Timer m_waitingOutTimer;
-    Timer m_firingTimer;
-    Timer m_reevaluateTimer;
-    Timer m_holdingGroundTimer;
-    Timer m_targetBlockedTimer;
+    void* pCoverLocation; // src: XBOX_RETAIL_PDB +0x14 (old: m_pCurrentCoverPoint)
+    float CurrentCoverPosition[3]; // src: XBOX_RETAIL_PDB +0x18 (old: m_afFirstVector)
+    float CurrentFirePosition[3]; // src: XBOX_RETAIL_PDB +0x24 (old: m_afSecondVector)
+    unsigned char LookAtPosition[0x0C]; // src: XBOX_RETAIL_PDB +0x30 (old: _pad1)
+    Timer WaitBehindCoverTimer; // src: XBOX_RETAIL_PDB +0x3c (old: m_waitTimer)
+    Timer WaitingOutOfCoverTimer; // src: XBOX_RETAIL_PDB +0x44 (old: m_waitingOutTimer)
+    Timer FiringOutOfCoverTimer; // src: XBOX_RETAIL_PDB +0x4c (old: m_firingTimer)
+    Timer ReevaluateCoverTimer; // src: XBOX_RETAIL_PDB +0x54 (old: m_reevaluateTimer)
+    Timer HoldingGroundTimer; // src: XBOX_RETAIL_PDB +0x5c (old: m_holdingGroundTimer)
+    Timer TargetBlockedTimer; // src: XBOX_RETAIL_PDB +0x64 (old: m_targetBlockedTimer)
 };

@@ -19,6 +19,9 @@ bool __cdecl AreRecordsEqual(const FloatKeyPrefixView&, const FloatKeyPrefixView
 // Returns false if AreRecordsEqual rejects the keys, otherwise compares the two float fields of the keys for equality.
 // @fnv 0x00a26f30
 // src: GAMEBRYO_LIB 0x00a26f30
+// pdb: NiBezFloatKey::Equal | NiBezFloatKey.obj | retail, upstream name already matches, high
+// pdb params: key0, key1
+// pdb locals: bez0, bez1
 bool NiBezFloatKey_Equal(const FloatKeyPrefixView& key0, const FloatKeyPrefixView& key1)
 {
     const TimedAnimationKey* pKey1Floats = (const TimedAnimationKey*)&key1;
@@ -54,6 +57,8 @@ inline NiBinaryStream* NiStream::GetBinaryStream()
 // Reads 4 bytes from the stream's input into pValue and advances the input position by the bytes read.
 // @fnv 0x00a26df0
 // src: XBOX_PDB 0x00a26df0
+// pdb: NiStreamLoadBinary<unsigned int> | NiXenonPersistentSrcTextureRendererData.obj | retail, call graph, medium
+// pdb params: binstream, value
 void NiStreamLoadBinary_float(NiStream* pkStream, void* pValue)
 {
     pkStream->GetBinaryStream()->Read(pValue);
@@ -62,7 +67,7 @@ void NiStreamLoadBinary_float(NiStream* pkStream, void* pValue)
 struct Base_00a26eb0
 {
     int _0;
-    void AccumulateAnimSink(NiStream&);
+    void NiAnimationKey_LoadBinary(NiStream&);
 };
 struct Holder_00a26eb0 : Base_00a26eb0
 {
@@ -72,9 +77,12 @@ struct Holder_00a26eb0 : Base_00a26eb0
 // Calls the base stream reader, then reads 4 bytes from the input stream into m and advances the stream position by the bytes read.
 // @fnv 0x00a26eb0
 // src: GUESS 0x00a26eb0 (confidence: medium)
+// pdb: NiFloatKey::LoadBinary | NiFloatKey.obj | retail, call graph (shared callers), low
+// pdb note: debug build links it to NiFloatKey::CreateFromStream
+// pdb params: stream
 void Holder_00a26eb0::LoadBaseAndMemberValue(NiStream& stream)
 {
-    Base_00a26eb0::AccumulateAnimSink(stream);
+    Base_00a26eb0::NiAnimationKey_LoadBinary(stream);
     stream.GetBinaryStream()->Read(static_cast<void*>(&m));
 }
 
@@ -86,6 +94,10 @@ struct SObj
 void __cdecl CallAnimCallback(NiStream*, SObj*);
 // Calls CallAnimCallback, then writes the float at a2->v and advances the output stream position by the bytes written.
 // @fnv 0x00a26ef0
+// pdb: NiFloatKey::SaveBinary | NiFloatKey.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiFloatKey::LoadBinary
+// pdb params: stream, pkKey
+// pdb locals: pkFloatKey
 void WriteFloatToStream(NiStream* pStream, SObj* pObj)
 {
     CallAnimCallback(pStream, pObj);
@@ -122,6 +134,8 @@ extern BA26E20Func g_apfnA26E20IsPosed[];
 
 // Registers the float-key operations in the global function tables and key-size table, returning 1 on first registration and 0 if already registered.
 // @fnv 0x00a26e20
+// pdb: NiFloatKey::RegisterLoader | NiFloatKey.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiFloatKey::GenInterpDefault
 int __cdecl RegisterFloatKeyOps()
 {
     if (g_bA26E20Registered)
@@ -146,6 +160,7 @@ int __cdecl RegisterFloatKeyOps()
 
 // Local fallback: include/NiFloatKey.h is absent; +0 time/+4 value and
 // InterpolatePosition at 0x00a26b40 agree with nirollcontroller.cpp bindings.
+// pdb: class NiFloatKey, size 0x8, bases: NiAnimationKey, 1 members
 class NiFloatKey
 {
   public:
@@ -186,6 +201,10 @@ extern float g_fDefaultValueA26;
 
 // Returns the key value at fTime, clamping to the first/last key outside the range and otherwise delegating to the interpolating lookup.
 // @fnv 0x00a26d70
+// pdb: NiFloatKey::GenInterpDefault | NiFloatKey.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiFloatKey::Equal
+// pdb params: fTime, pkKeys, eType, uiNumKeys, ucSize
+// pdb locals: uiLastIdx
 float NiFloatKey::GetValueAtTime(float fTime, NiFloatKey* pkKeys, KeyType eType, unsigned int uiNumKeys,
                                     unsigned char ucSize)
 {
@@ -213,6 +232,9 @@ static inline const NiFloatKey& FloatKeyAt(const NiFloatKey* keys, unsigned int 
 
 // Selects a key interval for time, interpolates when a next key exists, and updates lastIndex on the multi-key path.
 // @fnv 0x00a26b40
+// pdb: NiFloatKey::GenInterp | NiFloatKey.obj | retail, call graph, low
+// pdb params: fTime, pkKeys, eType, uiNumKeys, uiLastIdx, ucSize
+// pdb locals: fLastTime, uiNextIdx, uiNumKeysM1, fNextTime, uiLastIdxCopy, fReturn, fNormTime, interp
 float NiFloatKey::InterpolatePosition(float time, NiFloatKey* keys, KeyType type, unsigned int count,
                                        unsigned int& lastIndex, unsigned char keySize)
 {

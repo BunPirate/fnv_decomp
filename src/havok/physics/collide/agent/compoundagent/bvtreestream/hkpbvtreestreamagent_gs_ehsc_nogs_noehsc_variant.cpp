@@ -92,7 +92,7 @@ struct Registry
 {
     void AppendRecordAndRegisterAgents(Conversion*, int, int);
 };
-void hkpBvTreeStreamAgent_registerMultiRayAgent(Registry* registry);
+void hkpBvTreeStreamAgent_registerMultiRayAgent(Registry* dispatcher);
 typedef void*(__cdecl* S_00d2e8e0_CreateFunc)(void*, void*, void*, void*);
 typedef void(__cdecl* S_00d2e8e0_GetPenetrationsFunc)(void*, void*, void*, void*);
 typedef void(__cdecl* S_00d2e8e0_GetClosestPointsFunc)(void*, void*, void*, void*);
@@ -118,16 +118,16 @@ struct S_00d2e8e0_Dispatcher
     void AppendRecordAndRegisterAgents(S_00d2e8e0_AgentFuncs& f, int typeA, int typeB);
 };
 void Object_RegisterSymmetricAgentFunctions(S_00d2e8e0_Dispatcher* dispatcher);
-void __cdecl hkpBvTreeAgent_staticGetClosestPoints(int a, int b, int c, hkpCdPointCollector* collector);
+void __cdecl hkpBvTreeAgent_staticGetClosestPoints(int bodyA, int b, int c, hkpCdPointCollector* collector);
 void __cdecl hkpSymmetricAgentFlipCollector_UpdateState_00d2e9b0(int a, int b, int c, int d);
 extern float DAT_0104da48;
 struct Context
 {
-    void hkpShapeCollectionAgent_getClosestPoints(void* first, void* second, void* third, hkpSymmetricAgentFlipCollector* collector);
-    void UpdateState_00d2edd0(void* first, void* second, void* third, void* fourth);
+    void hkpShapeCollectionAgent_getClosestPoints(void* bodyA, void* bodyB, void* input, hkpSymmetricAgentFlipCollector* collector);
+    void UpdateState_00d2edd0(void* bodyA, void* bodyB, void* input, void* fourth);
 };
-extern "C" void* __cdecl hkStatisticsCollector_getAllocatedSize(void* ptr, unsigned int size);
-extern "C" void __cdecl hkpAgentMachineUtil_calc1nStatistics(void* a, int b, void* c);
+extern "C" void* __cdecl hkStatisticsCollector_getAllocatedSize(void* p, unsigned int size);
+extern "C" void __cdecl hkpAgentMachineUtil_calc1nStatistics(void* agentTrack, int input, void* collector);
 extern "C" const char str_010ce828[];
 struct VisitTarget
 {
@@ -214,7 +214,7 @@ struct SearchObject
 struct FUN_00d43cd0_class
 {
     void __thiscall ProcessCollisionEntries(void* a, void* b, void* c, void* d);
-    void __thiscall UpdateState_00d2ed90(void* a1, void* a2, void* a3, void* a4);
+    void __thiscall UpdateState_00d2ed90(void* bodyA, void* bodyB, void* input, void* a4);
 };
 
 #include <xmmintrin.h>
@@ -320,33 +320,35 @@ class hkpAgentBase
 {
   public:
     void hkpShapeCollectionAgent_processCollision(S2ee10_Ref bodyA, const hkpCdBody& bodyB, const CollisionAgentContext& input,
-                      S2ee10_Output& output);
+                      S2ee10_Output& result);
 };
 
 class hkpSymmetricAgentT : public hkpAgentBase
 {
   public:
     void ProcessEntries_00d2ee10(const hkpCdBody& bodyA, S2ee10_Ref bodyB, const CollisionAgentContext& input,
-                      S2ee10_Output& output);
+                      S2ee10_Output& result);
 };
 
 // @fnv 0x00d2ee10
 // src: GUESS 0x00d2ee10 (confidence: low)
+// pdb: hkpSymmetricAgentLinearCast<hkpShapeCollectionAgent>::processCollision | hkpBvTreeStreamAgent.obj | retail, vtable slot, high
+// pdb params: bodyA, bodyB, input, result
 void hkpSymmetricAgentT::ProcessEntries_00d2ee10(const hkpCdBody& bodyA, S2ee10_Ref bodyB, const CollisionAgentContext& input,
-                                      S2ee10_Output& output)
+                                      S2ee10_Output& result)
 {
-    float oldTime = output.m_fTimeOfImpact.m_uiCommandId;
-    S2ee10_ContactPoint* cp = output.m_pAlignedPairData;
-    hkpAgentBase::hkpShapeCollectionAgent_processCollision(bodyB, bodyA, input, output);
-    for (; cp < output.m_pAlignedPairData; cp++)
+    float oldTime = result.m_fTimeOfImpact.m_uiCommandId;
+    S2ee10_ContactPoint* cp = result.m_pAlignedPairData;
+    hkpAgentBase::hkpShapeCollectionAgent_processCollision(bodyB, bodyA, input, result);
+    for (; cp < result.m_pAlignedPairData; cp++)
     {
         cp->m_vContactPosition.addMul4(cp->m_vSeparatingNormal.getSimdAt3(), cp->m_vSeparatingNormal);
         cp->m_vSeparatingNormal.setNeg4(cp->m_vSeparatingNormal);
     }
-    if (oldTime != output.m_fTimeOfImpact.m_uiCommandId)
+    if (oldTime != result.m_fTimeOfImpact.m_uiCommandId)
     {
-        __m128 n = _mm_load_ps((const float*)&output.m_fTimeOfImpact.m_vSeparatingNormal);
-        output.m_fTimeOfImpact.m_vSeparatingNormal.m_vComponents = _mm_xor_ps(n, DAT_010c4c00.m_vComponents);
-        output.m_fTimeOfImpact.m_kGskCache.flip();
+        __m128 n = _mm_load_ps((const float*)&result.m_fTimeOfImpact.m_vSeparatingNormal);
+        result.m_fTimeOfImpact.m_vSeparatingNormal.m_vComponents = _mm_xor_ps(n, DAT_010c4c00.m_vComponents);
+        result.m_fTimeOfImpact.m_kGskCache.flip();
     }
 }

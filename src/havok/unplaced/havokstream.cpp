@@ -21,6 +21,7 @@ struct FUN_0056d6c0_class : B1
 
 // @fnv 0x0056d6c0
 // src: GUESS 0x0056d6c0 (confidence: medium)
+// pdb: hkError::~hkError | HavokStream.obj | debug, call graph, medium
 void FUN_0056d6c0_class::DestroyFields_0056d6c0()
 {
     B1::~B1();
@@ -39,6 +40,7 @@ struct FUN_006264d0
 };
 // @fnv 0x00625650
 // src: XBOX_PDB 0x00625650
+// pdb: HavokError::enableAll | HavokStream.obj | debug, vtable slot, medium
 void __thiscall HavokError::enableAll_00625650()
 {
     ((FUN_006264d0*)((char*)this + 0x14))->FUN_006264d1();
@@ -47,10 +49,12 @@ void __thiscall HavokError::enableAll_00625650()
 extern "C" void __cdecl _FNV_Warning(int, const char*);
 // @fnv 0x00625a80
 // src: XBOX_PDB 0x00625a80
-void HavokError::showString(const char* pcMessage)
+// pdb: HavokError::showString | HavokStream.obj | debug, upstream name already matches, high
+// pdb params: apStr
+void HavokError::showString(const char* apStr)
 {
     MessageHandler::Handler();
-    _FNV_Warning(4, pcMessage);
+    _FNV_Warning(4, apStr);
 }
 
 struct FUN_00625bd0_class
@@ -61,6 +65,7 @@ struct FUN_00625bd0_class
 
 // @fnv 0x00625bd0
 // src: GUESS 0x00625bd0 (confidence: low)
+// pdb: hkPointerMap<int,int,hkContainerHeapAllocator>::~hkPointerMap<int,int,hkContainerHeapAllocator> | HavokStream.obj | debug, call graph, medium
 void FUN_00625bd0_class::ForwardCall_00625bd0()
 {
     FUN_006264f0();
@@ -92,6 +97,7 @@ struct FUN_00538ef0_class
 };
 // @fnv 0x00625fe0
 // src: GUESS 0x00625fe0 (confidence: low)
+// pdb: hkStreamWriter::hkStreamWriter | HavokStream.obj | debug, call graph, medium
 void* FUN_00538ef0_class::InitializeFields_00625fe0()
 {
     UpdateState_00538ef0();
@@ -129,14 +135,16 @@ struct FUN_00626100_shell
     void* pad0;
     void* pad1;
     NiBinaryStream* m_stream;
-    unsigned int ReadFromStream(void* buffer, unsigned int size);
+    unsigned int ReadFromStream(void* apBuf, unsigned int aiBytes);
 };
 
 // Reads size bytes from m_stream into buffer and returns the result of the stream's Read call.
 // @fnv 0x00626100
-unsigned int FUN_00626100_shell::ReadFromStream(void* buffer, unsigned int size)
+// pdb: HavokFileStreambufReader::read | HavokStream.obj | retail, vtable slot, high
+// pdb params: apBuf, aiBytes
+unsigned int FUN_00626100_shell::ReadFromStream(void* apBuf, unsigned int aiBytes)
 {
-    return m_stream->Read(buffer, size);
+    return m_stream->Read(apBuf, aiBytes);
 }
 
 
@@ -145,23 +153,28 @@ struct FUN_00626320
     void* p;
     void* unused;
     BSFile* file;
-    void Method(const void* data, unsigned int size);
+    void Method(const void* apBuf, unsigned int aiBytes);
 };
 
 // @fnv 0x00626320
-void FUN_00626320::Method(const void* data, unsigned int size)
+// pdb: HavokFileStreambufWriter::write | HavokStream.obj | retail, vtable slot, high
+// pdb params: apBuf, aiBytes
+void FUN_00626320::Method(const void* apBuf, unsigned int aiBytes)
 {
-    file->NiBinaryStream_Write(data, size);
+    file->NiBinaryStream_Write(apBuf, aiBytes);
 }
 
 extern "C" BSAudio* __cdecl hkMemoryRouter_getInstance();
 void __cdecl hkMemoryRouter_easyFree(void* a, void* b);
 // @fnv 0x00626760
 // src: GUESS 0x00626760 (confidence: low)
-void __cdecl Object_UpdateFields_00626760(void* a)
+// pdb: hkDeallocate<char> | HavokStream.obj | debug, call graph, high
+// pdb params: ptr
+// pdb locals: a
+void __cdecl Object_UpdateFields_00626760(void* ptr)
 {
     BSAudio* p = hkMemoryRouter_getInstance();
-    hkMemoryRouter_easyFree(p->GetAudioBackendData(), a);
+    hkMemoryRouter_easyFree(p->GetAudioBackendData(), ptr);
 }
 
 struct FUN_006264b0_Class
@@ -176,17 +189,19 @@ struct FUN_00626470_Class
 struct FUN_006255d0_class
 {
     char pad[0x14];
-    void HavokError_setEnabled(int a, int b);
+    void HavokError_setEnabled(int id, int enabled);
 };
 // Converts the hkBool stored in b; if true forwards a to FUN_006264b0 at this+0x14, otherwise calls FUN_00626470 with a and 1.
 // @fnv 0x006255d0
 // src: XBOX_PDB 0x006255d0
-void FUN_006255d0_class::HavokError_setEnabled(int a, int b)
+// pdb: HavokError::setEnabled | HavokStream.obj | retail, upstream name already matches, high
+// pdb params: id, enabled
+void FUN_006255d0_class::HavokError_setEnabled(int id, int enabled)
 {
-    if (reinterpret_cast<const hkBool*>(&b)->operator bool())
-        ((FUN_006264b0_Class*)((char*)this + 0x14))->hkPointerMap_int_int_hkContainerHeapAllocator_remove(a);
+    if (reinterpret_cast<const hkBool*>(&enabled)->operator bool())
+        ((FUN_006264b0_Class*)((char*)this + 0x14))->hkPointerMap_int_int_hkContainerHeapAllocator_remove(id);
     else
-        ((FUN_00626470_Class*)((char*)this + 0x14))->hkPointerMap_int_int_hkContainerHeapAllocator_insert(a, 1);
+        ((FUN_00626470_Class*)((char*)this + 0x14))->hkPointerMap_int_int_hkContainerHeapAllocator_insert(id, 1);
 }
 
 void __cdecl Tesland_UpdateState_00538eb0(void*);
@@ -211,6 +226,7 @@ struct FUN_00626030_class
 };
 // Calls FUN_00626060, then if the low flag bit is set calls FUN_00538eb0 on this, and returns this.
 // @fnv 0x00626030
+// pdb: HavokFileStreambufReader::`scalar deleting destructor' | HavokStream.obj | retail, vtable slot, high
 void* __thiscall FUN_00626030_class::FUN_00626030(unsigned int flags)
 {
     FUN_00626060();
@@ -227,6 +243,7 @@ struct FUN_00626250_class
 };
 // Calls FUN_00626280, then if bit 0 of flags is set calls FUN_00538eb0 on this, and returns this.
 // @fnv 0x00626250
+// pdb: HavokFileStreambufWriter::`scalar deleting destructor' | HavokStream.obj | retail, vtable slot, high
 void* __thiscall FUN_00626250_class::FUN_00626250(unsigned int flags)
 {
     FUN_00626280();
@@ -248,6 +265,7 @@ struct FUN_00626390_class
 // Returns the result of FUN_004720a0 on pFile, or 0 when pFile is null.
 // @fnv 0x00626390
 // src: COMMUNITY 0x00626390
+// pdb: HavokFileStreambufReader::tell | HavokStream.obj | debug, upstream name already matches, high
 int FUN_00626390_class::HavokFileStreambufReader_tell()
 {
     return pFile ? BSFile_Tell(reinterpret_cast<char*>(pFile)) : 0;
@@ -267,6 +285,9 @@ struct ErrorFileList
 };
 // @fnv 0x00625e70
 // src: XBOX_PDB 0x00625e70
+// pdb: HavokError::disableReport | HavokStream.obj | retail, upstream name already matches, high
+// pdb params: apFile, aiLine
+// pdb locals: ap, pfile, pext
 void HavokError::disableReport(const char* apFile, int aiLine)
 {
     char pfile[128];
@@ -286,34 +307,38 @@ struct $SG2686
 struct FUN_00626060 : FUN_0056d6c0_class
 {
     void* pad;
-    void* p;
-    unsigned char flag;
+    void* pFile; // src: XBOX_RETAIL_PDB +0x8 (old: p)
+    unsigned char bOwned; // src: XBOX_RETAIL_PDB +0xc (old: flag)
     virtual ~FUN_00626060();
 };
 // @fnv 0x00626060
+// pdb: HavokFileStreambufReader::~HavokFileStreambufReader | HavokStream.obj | debug, object-file gap fill, medium
 FUN_00626060::~FUN_00626060()
 {
-    if (p && flag)
-        delete static_cast<$SG2686*>(p);
+    if (pFile && bOwned)
+        delete static_cast<$SG2686*>(pFile);
 }
 
 struct FUN_00626280_shell : FUN_0056d6c0_class
 {
     const char* pStr;
-    void* p;
-    unsigned char b;
+    void* pFile; // src: XBOX_RETAIL_PDB +0x8 (old: p)
+    unsigned char bOwned; // src: XBOX_RETAIL_PDB +0xc (old: b)
     virtual ~FUN_00626280_shell();
 };
 // If p is set and b is true, deletes the object pointed to by p.
 // @fnv 0x00626280
+// pdb: HavokFileStreambufWriter::~HavokFileStreambufWriter | HavokStream.obj | debug, object-file gap fill, medium
 FUN_00626280_shell::~FUN_00626280_shell()
 {
-    if (p && b)
-        delete (FUN_00626280_shell*)p;
+    if (pFile && bOwned)
+        delete (FUN_00626280_shell*)pFile;
 }
 
 void __cdecl FNV_Warning(int, const char*, const char*, int, const char*, const char*);
 // @fnv 0x006259b0
+// pdb: HavokError::errorMessage | HavokStream.obj | debug, vtable slot, medium
+// pdb params: apWhat, aiID, apDescription, apFile, aiLine
 void HavokError::ReportWarning(const char* apWhat, int aiID, const char* apDescription, const char* apFile,
                                        int aiLine)
 {
@@ -323,6 +348,8 @@ void HavokError::ReportWarning(const char* apWhat, int aiID, const char* apDescr
 
 // Reports a Havok error by calling _FNV_Warning with the file, line, description and what text.
 // @fnv 0x00625a40
+// pdb: HavokError::programFlowMessage | HavokStream.obj | debug, vtable slot, medium
+// pdb params: apWhat, aiID, apDescription, apFile, aiLine
 void __thiscall HavokError::ReportError(const char* apDescription, int aiID, const char* apWhat,
                                                 const char* apFile, int aiLine)
 {
@@ -337,6 +364,7 @@ struct FUN_00625b40_class : HavokError
     void* __thiscall FUN_00625b10(unsigned int flags);
 };
 // @fnv 0x00625b10
+// pdb: HavokError::`scalar deleting destructor' | HavokStream.obj | retail, vtable slot, high
 void* __thiscall FUN_00625b40_class::FUN_00625b10(unsigned int flags)
 {
     this->FUN_00625b40_class::~FUN_00625b40_class();
@@ -375,23 +403,25 @@ struct FUN_00626000
     unsigned int counter;
     unsigned int state;
     FUN_00626000(int index);
-    static __forceinline void* operator new(unsigned int size)
+    static __forceinline void* operator new(unsigned int nbytes)
     {
-        return Object_AllocateStorage_0056d280(size);
+        return Object_AllocateStorage_0056d280(nbytes);
     }
 };
 
 struct FUN_00624e90_Class
 {
-    FUN_00626000* HavokStreambufFactory_openReader(int index);
+    FUN_00626000* HavokStreambufFactory_openReader(int apName);
 };
 
 // Allocates and constructs a FUN_00626000 object with the given index, returning the new object.
 // @fnv 0x00624e90
 // src: XBOX_PDB 0x00624e90
-FUN_00626000* FUN_00624e90_Class::HavokStreambufFactory_openReader(int index)
+// pdb: HavokStreambufFactory::openReader | HavokStream.obj | retail, upstream name already matches, high
+// pdb params: apName
+FUN_00626000* FUN_00624e90_Class::HavokStreambufFactory_openReader(int apName)
 {
-    return new FUN_00626000(index);
+    return new FUN_00626000(apName);
 }
 
 class B625F10Base
@@ -420,6 +450,7 @@ class FUN_00625f10_cls : public B625F10Base, public B625F10List
 };
 
 // @fnv 0x00625f10
+// pdb: hkError::hkError | HavokStream.obj | debug, object-file run extension, low
 FUN_00625f10_cls::FUN_00625f10_cls()
 {}
 
@@ -456,6 +487,7 @@ struct FUN_00626120_cls
 };
 // Returns the result of calling v10 on m_08 if m_08 is non-null, otherwise returns -1.
 // @fnv 0x00626120
+// pdb: HavokFileStreambufReader::sysGetFileSize | HavokStream.obj | debug, vtable slot, medium
 int FUN_00626120_cls::GetV10OrMinusOne()
 {
     return m_08 != 0 ? m_08->v10() : -1;
@@ -570,6 +602,8 @@ struct FUN_006261a0 : FUN_00625fe0
 
 // Initializes the object: sets pStr to a string literal, sets m_0c to 1, and allocates a FUN_00b00260 with arg, 1, 0x4000, 0.
 // @fnv 0x006261a0
+// pdb: HavokFileStreambufWriter::HavokFileStreambufWriter | HavokStream.obj | debug, object-file gap fill, medium
+// pdb params: apName
 FUN_006261a0::FUN_006261a0(void* arg)
 {
     pStr = "Pbb";
@@ -595,17 +629,20 @@ class C626340Dispatcher
     int unk04;
     C626340Handler* m_pkHandler;
 
-    int DispatchToHandler(int iA, int iB);
+    int DispatchToHandler(int aiOffset, int aeWhence);
 };
 
 // Calls m_pkHandler->Handle(iA, iB) if the handler is set and returns 0, otherwise returns 1.
 // @fnv 0x00626340
-int C626340Dispatcher::DispatchToHandler(int iA, int iB)
+// pdb: HavokFileStreambufReader::seek | HavokStream.obj | retail, vtable slot, high
+// pdb params: aiOffset, aeWhence
+// pdb locals: eres
+int C626340Dispatcher::DispatchToHandler(int aiOffset, int aeWhence)
 {
     int iResult = 1;
     if (m_pkHandler)
     {
-        m_pkHandler->Handle(iA, iB);
+        m_pkHandler->Handle(aiOffset, aeWhence);
         iResult = 0;
     }
     return iResult;
@@ -613,6 +650,8 @@ int C626340Dispatcher::DispatchToHandler(int iA, int iB)
 
 // Calls MessageHandler::Handler, then logs a warning with file, line, message and type via FNV_Warning.
 // @fnv 0x00625a00
+// pdb: HavokError::warningMessage | HavokStream.obj | debug, vtable slot, medium
+// pdb params: apWhat, aiID, apDescription, apFile, aiLine
 void HavokError::WarnWithLocation(const char* message, int unused, const char* type, const char* file, int line)
 {
     MessageHandler::Handler();
@@ -668,7 +707,7 @@ class FUN_00624f90 : public C624F90Base
     FUN_00624f90();
     virtual ~FUN_00624f90();
 
-    void AddHandler(unsigned int uiHash, C624F90Handler kHandler);
+    void AddHandler(unsigned int id, C624F90Handler enabled);
     void AddEvent(const char* pcName, int m_uiSoundID);
 
     C624F90HandlerList m_kHandlers;
@@ -677,6 +716,7 @@ class FUN_00624f90 : public C624F90Base
 };
 
 // @fnv 0x00624f90
+// pdb: HavokError::HavokError | HavokStream.obj | retail, string-set bridge, high
 FUN_00624f90::FUN_00624f90()
 {
     AddHandler(0x6E8D163B, C624F90Handler(false));
@@ -750,6 +790,8 @@ struct FUN_00625610_Class
 // Calls FUN_00626490(b, 0) on m_sub, passes whether the result equals 0 to obj->FUN_00622570, and returns obj.
 // @fnv 0x00625610
 // src: XBOX_PDB 0x00625610
+// pdb: HavokError::isEnabled | HavokStream.obj | retail, upstream name already matches, high
+// pdb params: id
 CalleeObj* FUN_00625610_Class::HavokError_isEnabled(CalleeObj* obj, int b)
 {
     obj->UpdateState_00622570(m_sub.hkPointerMap_int_int_hkContainerHeapAllocator_getWithDefault(b, 0) == 0);
@@ -774,34 +816,36 @@ struct ErrorHandler6256
     virtual void ShowError(const char* pcType, int aiSoundId, const char* pcMessage, const char* pcFile, int iLine);
     virtual void ShowWarning(const char* pcType, int aiSoundId, const char* pcMessage, const char* pcFile, int iLine);
     virtual void ShowReport(const char* pcType, int aiSoundId, const char* pcMessage, const char* pcFile, int iLine);
-    bool HavokError_isReportEnabled(const char* pcFile, int iLine);
-    int ReportMessage(int iType, int aiSoundId, const char* pcMessage, const char* pcFile, int iLine);
+    bool HavokError_isReportEnabled(const char* apFile, int aiLine);
+    int ReportMessage(int m, int id, const char* description, const char* file, int line);
 };
 
 // @fnv 0x00625670
-int ErrorHandler6256::ReportMessage(int iType, int iMessageId, const char* pcMessage, const char* pcFile, int iLine)
+// pdb: HavokError::message | HavokStream.obj | retail, vtable slot, high
+// pdb params: m, id, description, file, line
+int ErrorHandler6256::ReportMessage(int m, int id, const char* description, const char* file, int line)
 {
-    if (iMessageId == -1)
+    if (id == -1)
     {
-        if (!HavokError_isReportEnabled(pcFile, iLine))
+        if (!HavokError_isReportEnabled(file, line))
             return 0;
     }
-    else if (!IsEnabled(iMessageId).operator bool())
+    else if (!IsEnabled(id).operator bool())
         return 0;
-    switch (iType)
+    switch (m)
     {
     case 0:
-        ShowReport("Report", iMessageId, pcMessage, pcFile, iLine);
+        ShowReport("Report", id, description, file, line);
         break;
     case 1:
-        ShowWarning("Warning", iMessageId, pcMessage, pcFile, iLine);
+        ShowWarning("Warning", id, description, file, line);
         break;
     case 2:
     case 3:
-        ShowAssert("Assert", iMessageId, pcMessage, pcFile, iLine);
+        ShowAssert("Assert", id, description, file, line);
         break;
     default:
-        ShowError("Error", iMessageId, pcMessage, pcFile, iLine);
+        ShowError("Error", id, description, file, line);
         break;
     }
     return 1;
@@ -838,54 +882,57 @@ struct ErrorHandler6257
     virtual void Raise(int aiSoundId, FUN_00622570 kResult);
     char m_acPad4[0x1c];
     char m_acSdkPath[0x104];
-    void HavokError_assertMessage(const char* pcPrefix, int aiSoundId, const char* pcMessage, const char* pcFile, int iLine);
+    void HavokError_assertMessage(const char* apWhat, int aiID, const char* apDescription, const char* apFile, int aiLine);
 };
 
 // Builds a prefix/message string, resolves the report file path against m_acSdkPath, reports it with the line number, and raises on result 5.
 // @fnv 0x00625790
 // src: XBOX_PDB 0x00625790
-void ErrorHandler6257::HavokError_assertMessage(const char* pcPrefix, int aiSoundId, const char* pcMessage, const char* pcFile,
-                                    int iLine)
+// pdb: HavokError::assertMessage | HavokStream.obj | retail, upstream name already matches, high
+// pdb params: apWhat, aiID, apDescription, apFile, aiLine
+// pdb locals: pfileName, pfile, pmsg, iline
+void ErrorHandler6257::HavokError_assertMessage(const char* apWhat, int aiID, const char* apDescription, const char* apFile,
+                                    int aiLine)
 {
     char acMsg[0x400];
-    if (pcPrefix)
-        FUN_00406d30(acMsg, 0x400, pcPrefix);
+    if (apWhat)
+        FUN_00406d30(acMsg, 0x400, apWhat);
     else
         acMsg[0] = 0;
-    if (pcMessage)
+    if (apDescription)
     {
         FUN_00406d50(acMsg, 0x400, " : ");
-        FUN_00406d50(acMsg, 0x400, pcMessage);
+        FUN_00406d50(acMsg, 0x400, apDescription);
     }
-    int iLineNo = iLine;
+    int iLineNo = aiLine;
     char acFileName[0x104];
     const char* pcReportFile = 0;
     if (m_acSdkPath[0])
     {
-        pcReportFile = FUN_00ec7750(pcFile, "TES4");
+        pcReportFile = FUN_00ec7750(apFile, "TES4");
         if (!pcReportFile)
-            pcReportFile = FUN_00ec7750(pcFile, "tes4");
+            pcReportFile = FUN_00ec7750(apFile, "tes4");
         if (pcReportFile)
         {
             FUN_00406d30(acFileName, 0x104, m_acSdkPath);
             FUN_00406d50(acFileName, 0x104, pcReportFile);
             pcReportFile = acFileName;
         }
-        else if (pcFile[0] == '.' && pcFile[1] == '.')
+        else if (apFile[0] == '.' && apFile[1] == '.')
         {
             FUN_00406d30(acFileName, 0x104, m_acSdkPath);
             FUN_00406d50(acFileName, 0x104, "TES4\\Havok\\SDK\\Include\\");
-            FUN_00406d50(acFileName, 0x104, pcFile + 3);
+            FUN_00406d50(acFileName, 0x104, apFile + 3);
             pcReportFile = acFileName;
         }
     }
     if (!pcReportFile)
     {
-        pcReportFile = pcFile;
-        iLineNo = iLine;
+        pcReportFile = apFile;
+        iLineNo = aiLine;
     }
     if (BSCoreMessage_GetInstance()->Report(pcReportFile, iLineNo, acMsg) == 5)
-        Raise(aiSoundId, FUN_00622570(false));
+        Raise(aiID, FUN_00622570(false));
 }
 
 const char* __cdecl hkString_strRchr(const char*, int);
@@ -893,6 +940,9 @@ const char* __cdecl hkString_strRchr(const char*, int);
 
 // @fnv 0x00625aa0
 // src: XBOX_PDB 0x00625aa0
+// pdb: HavokError::hkGetFileBaseName | HavokStream.obj | retail, upstream name already matches, high
+// pdb params: apPath
+// pdb locals: slash, i, pfileName
 const char* HavokError::hkGetFileBaseName(const char* apPath)
 {
     const char* pSeparators = "/\\";
@@ -917,19 +967,22 @@ struct FUN_00625bf0_Container
     int FUN_00726070();
     FUN_00625bf0_Item* ComputeValue_00626660(int index);
 };
-void __cdecl Object_UpdateFields_00626760(void* object);
+void __cdecl Object_UpdateFields_00626760(void* ptr);
 struct FUN_00625bf0_Class
 {
-    void ProcessEntries_00625bf0(FUN_00625bf0_Container* container);
+    void ProcessEntries_00625bf0(FUN_00625bf0_Container* arArray);
 };
 // Iterates the container's items and calls FUN_00626760 on each item's unk00 pointer.
 // @fnv 0x00625bf0
 // src: GUESS 0x00625bf0 (confidence: low)
-void FUN_00625bf0_Class::ProcessEntries_00625bf0(FUN_00625bf0_Container* container)
+// pdb: HavokError::KillArray | HavokStream.obj | retail, object-file run extension, high
+// pdb params: arArray
+// pdb locals: i, ap
+void FUN_00625bf0_Class::ProcessEntries_00625bf0(FUN_00625bf0_Container* arArray)
 {
-    for (int index = 0; index < container->FUN_00726070(); ++index)
+    for (int index = 0; index < arArray->FUN_00726070(); ++index)
     {
-        FUN_00625bf0_Item item = *container->ComputeValue_00626660(index);
+        FUN_00625bf0_Item item = *arArray->ComputeValue_00626660(index);
         Object_UpdateFields_00626760(item.unk00);
     }
 }
@@ -955,24 +1008,27 @@ struct FileFilter625c
     int unk04;
     FileList625c m_kList;
 
-    bool HavokError_isReportEnabled(const char* pcPath, int iValue);
+    bool HavokError_isReportEnabled(const char* apFile, int aiLine);
 };
 
 // Builds a name-plus-extension string from pcPath, then returns false if any list entry matches it and has the same iValue; otherwise returns true.
 // @fnv 0x00625c50
 // src: XBOX_PDB 0x00625c50
-bool FileFilter625c::HavokError_isReportEnabled(const char* pcPath, int iValue)
+// pdb: HavokError::isReportEnabled | HavokStream.obj | retail, upstream name already matches, high
+// pdb params: apFile, aiLine
+// pdb locals: pfile, pext, i, ap
+bool FileFilter625c::HavokError_isReportEnabled(const char* apFile, int aiLine)
 {
     if (m_kList.FUN_00726070())
     {
         char acExtBuf[32];
         char acName[128];
-        FUN_00462d40(pcPath, 0, 0, 0, 0, acName, 0x80, acExtBuf, 0x20);
+        FUN_00462d40(apFile, 0, 0, 0, 0, acName, 0x80, acExtBuf, 0x20);
         strcat_s(acName, 0x80, acExtBuf);
         for (int i3 = 0; i3 < m_kList.FUN_00726070(); i3++)
         {
             FileEntry625c kEntry = *m_kList.ComputeValue_00626660(i3);
-            if (!CompareStringsCaseInsensitive(acName, kEntry.m_pcName) && iValue == kEntry.m_iValue)
+            if (!CompareStringsCaseInsensitive(acName, kEntry.m_pcName) && aiLine == kEntry.m_iValue)
                 return false;
         }
     }
@@ -997,16 +1053,19 @@ struct FileList625c
 
 // Builds a name from the path and extension, then removes the first list entry whose name matches and whose value equals iValue.
 // @fnv 0x00625d60
-void HavokError::RemoveEntryByPathAndValue(const char* pcPath, int iValue)
+// pdb: HavokError::enableReport | HavokStream.obj | retail, vtable slot, high
+// pdb params: apFile, aiLine
+// pdb locals: pfile, pext, i, ap
+void HavokError::RemoveEntryByPathAndValue(const char* apFile, int aiLine)
 {
     char acExtBuf[32];
     char acName[128];
-    FUN_00462d40(pcPath, 0, 0, 0, 0, acName, 0x80, acExtBuf, 0x20);
+    FUN_00462d40(apFile, 0, 0, 0, 0, acName, 0x80, acExtBuf, 0x20);
     strcat_s(acName, 0x80, acExtBuf);
     for (int i3 = 0; i3 < ((fnv_00625d60::FileList625c*)((char*)this + 8))->FUN_00726070(); i3++)
     {
         fnv_00625d60::FileEntry625c kEntry = *((fnv_00625d60::FileList625c*)((char*)this + 8))->ComputeValue_00626660(i3);
-        if (!CompareStringsCaseInsensitive(acName, kEntry.m_pcName) && iValue == kEntry.m_iValue)
+        if (!CompareStringsCaseInsensitive(acName, kEntry.m_pcName) && aiLine == kEntry.m_iValue)
         {
             Object_UpdateFields_00626760((void*)kEntry.m_pcName);
             ((fnv_00625d60::FileList625c*)((char*)this + 8))->RemoveAt(i3);
@@ -1027,20 +1086,22 @@ struct StreamObject : StreamBase
     BSFile* file;
     bool ownsFile;
     StreamObject(void* path);
-    static __forceinline void* operator new(unsigned int size)
+    static __forceinline void* operator new(unsigned int nbytes)
     {
-        return Object_AllocateStorage_0056d280(size);
+        return Object_AllocateStorage_0056d280(nbytes);
     }
 };
 struct StreamFactory
 {
-    StreamObject* CreateStreamObject(void* path);
+    StreamObject* CreateStreamObject(void* apName);
 };
 // Allocates and returns a new StreamObject constructed from the given path.
 // @fnv 0x00624f10
-StreamObject* StreamFactory::CreateStreamObject(void* path)
+// pdb: HavokStreambufFactory::openWriter | HavokStream.obj | retail, vtable slot, high
+// pdb params: apName
+StreamObject* StreamFactory::CreateStreamObject(void* apName)
 {
-    return new StreamObject(path);
+    return new StreamObject(apName);
 }
 
 class FUN_0056d6c0
@@ -1075,7 +1136,7 @@ class FUN_00625b40 : public FUN_0056d6c0
   public:
     virtual ~FUN_00625b40();
 
-    void ProcessEntries_00625bf0(FUN_0057c530* pkList);
+    void ProcessEntries_00625bf0(FUN_0057c530* arArray);
 
     FUN_0057c530 m_kList;
     FUN_00625bd0 m_kRef;
@@ -1083,6 +1144,7 @@ class FUN_00625b40 : public FUN_0056d6c0
 
 // Destructor that calls FUN_00625bf0 on m_kList before returning.
 // @fnv 0x00625b40
+// pdb: HavokError::~HavokError | HavokStream.obj | debug, call graph, medium
 FUN_00625b40::~FUN_00625b40()
 {
     ProcessEntries_00625bf0(&m_kList);

@@ -10,8 +10,8 @@
 // @fnv 0x00e48de0
 void __fastcall ResetConnectivity(hkpConvexVerticesConnectivity* connectivity, void*)
 {
-    connectivity->m_kVertexIndices.m_iElementCount = 0;
-    connectivity->m_kNumVerticesPerFace.m_iElementCount = 0;
+    connectivity->m_vertexIndices.m_iElementCount = 0;
+    connectivity->m_numVerticesPerFace.m_iElementCount = 0;
 }
 
 inline void* operator new(unsigned int, void* p)
@@ -33,9 +33,11 @@ static inline void AppendConnectivityElement(hkArray<T>& array, const T& value)
 }
 
 // @fnv 0x00e48df0
+// pdb: hkpConvexVerticesConnectivity::addFace | hkpConvexVerticesConnectivity.obj | retail, object-file run extension, low
+// pdb params: indices, numIndices
 void __fastcall AppendConnectivityFace(hkpConvexVerticesConnectivity* connectivity, void*, const int* values, int count)
 {
-    AppendConnectivityElement(connectivity->m_kNumVerticesPerFace, (unsigned char)count);
+    AppendConnectivityElement(connectivity->m_numVerticesPerFace, (unsigned char)count);
     for (int i = 0; i < count; i++)
-        AppendConnectivityElement(connectivity->m_kVertexIndices, (unsigned short)values[i]);
+        AppendConnectivityElement(connectivity->m_vertexIndices, (unsigned short)values[i]);
 }

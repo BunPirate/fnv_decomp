@@ -49,7 +49,7 @@
 class CombatFormulaWeapon : public TESObjectWEAP
 {
 public:
-    BGSProjectile* GetProjectileForOwner(ActorValueOwner* owner);
+    BGSProjectile* TESObjectWEAP_GetProjectile(ActorValueOwner* apWeaponHolder);
     void SetFlag2(bool set);
     bool IsDamageDisabled();
     float GetField124Float();
@@ -57,11 +57,14 @@ public:
     unsigned char GetBaseVATSChance(unsigned char modded);
     unsigned int GetAttackAnimation();
     int GetField1BC();
-    float GetSpread(bool modded);
+    float TESObjectWEAP_GetMinSpreadDegrees(bool bModValue);
     float GetAnimationMultiplier();
 };
 
 // @fnv 0x004be0b0
+// pdb: ItemChange::GetModifiedDamageThreshold | InventoryChanges.obj | debug, call graph, medium
+// pdb params: apActor
+// pdb locals: fvalue, fbaseHealth, fcondition, parmor
 float InventoryStackRecord::GetArmorDamageThreshold(Actor* actor)
 {
     float fArmorProtectionValue = -1.0f;
@@ -71,12 +74,12 @@ float InventoryStackRecord::GetArmorDamageThreshold(Actor* actor)
         float baseHealth;
         float fraction;
     } condition;
-    if (reinterpret_cast<TESForm*>(m_pItemObject)->GetFormType() == 24)
+    if (reinterpret_cast<TESForm*>(pContainerObj)->GetFormType() == 24)
     {
-        pArmorForm = reinterpret_cast<TESObjectARMO*>(m_pItemObject);
+        pArmorForm = reinterpret_cast<TESObjectARMO*>(pContainerObj);
         condition.baseHealth = TESHealthForm::GetBaseHealth(pArmorForm);
         condition.fraction = condition.baseHealth == 0.0 ? 0.0 : GetConditionPercent(false) / condition.baseHealth;
-        fArmorProtectionValue = CombatDamageCalculator::CalculateArmorDamageThreshold(
+        fArmorProtectionValue = CombatFormulas::CalculateArmorDamageThreshold(
             (unsigned short)pArmorForm->GetDamageThreshold(), condition.fraction);
     }
     return InventoryStackRecord::GetConditionPercent(fArmorProtectionValue);
@@ -89,7 +92,10 @@ float NiCamera::GetMaxFarNearRatio() const
 }
 
 // @fnv 0x00645380
-float CombatDamageCalculator::CalculateWeaponDamage(ActorValueOwner* owner, TESObjectWEAP* weapon, float health,
+// pdb: CombatFormulas::CalcWeaponDamagePerSecond | CombatFormulas.obj | retail, call graph (shared callers), medium
+// pdb params: apActor, apWeapon, afCondition, abRunEntryPoint, apItem, bForceReloadCalc, bForceJamTime, weapSkillOverride, fCritChanceOverride, fCritDamageModifier, bForceSneakAttackCrit, bForceNinjaCrit, apAmmo
+// pdb locals: fuseCondition, fCriticalDamage, fcritChance, fdamagePerClip, fdamagePerHit, fsecondsPerClip, fBonus, bHasSpeedIncrease, fresult, iclipSize, iroundedCondition, bHasClipIncrease, fconditionMod, fAnimShotsPerSecond, pactor, bcreature, fBaseCritChance, baddAIDelay, pAmmo, pAmmoEffectList, fWeaponSkillOverride, bburstFire, fshotTime, favgDelayTime ...
+float CombatFormulas::CalculateWeaponDamage(ActorValueOwner* owner, TESObjectWEAP* weapon, float health,
                                                     bool abApplyPerks, InventoryStackRecord* item, bool includeReload,
                                                     bool noJams, int skill, float critChance, float critMult,
                                                     bool sneakAttack, bool specialAttack, TESAmmo* ammoOverride)
@@ -444,7 +450,10 @@ float CombatDamageCalculator::CalculateWeaponDamage(ActorValueOwner* owner, TESO
 }
 
 // @fnv 0x00646800
-float CombatDamageCalculator::GetActorValueMultiplier(ActorValueOwner* owner, ActorValue::Index part, bool percentage)
+// pdb: CombatFormulas::GetBodyPartCondition | CombatFormulas.obj | debug, call graph, medium
+// pdb params: apActor, aiWhich, abRaw
+// pdb locals: fresult
+float CombatFormulas::GetActorValueMultiplier(ActorValueOwner* owner, ActorValue::Index part, bool percentage)
 {
     float fWeaponDamage = 1.0f;
     switch (part)
@@ -465,7 +474,10 @@ float CombatDamageCalculator::GetActorValueMultiplier(ActorValueOwner* owner, Ac
 
 // Computes the min and max of two floats and returns a random float in that range, or the shared value if they are equal.
 // @fnv 0x006465f0
-float CombatDamageCalculator::GetDamageMultiplier(float afValueA, float afValueB)
+// pdb: CombatFormulas::GetRandomBetween | CombatFormulas.obj | debug, call graph (shared callers), high
+// pdb params: afMin, afMax
+// pdb locals: fuseMax, fuseMin
+float CombatFormulas::GetDamageMultiplier(float afMin, float afMax)
 {
     // Local min/max pair (maximum stored first, at +0x00); not the shared AABB Bounds.
     struct DamageRange
@@ -473,8 +485,8 @@ float CombatDamageCalculator::GetDamageMultiplier(float afValueA, float afValueB
         float maximum;
         float minimum;
     } bounds;
-    bounds.minimum = BSMIN(afValueA, afValueB);
-    bounds.maximum = BSMAX_00404010(afValueA, afValueB);
+    bounds.minimum = BSMIN(afMin, afMax);
+    bounds.maximum = BSMAX_00404010(afMin, afMax);
     if (bounds.minimum != bounds.maximum)
     {
         return RandomFloat(bounds.minimum, bounds.maximum);
@@ -487,11 +499,14 @@ float CombatDamageCalculator::GetDamageMultiplier(float afValueA, float afValueB
 
 // Multiplies rating by the condition multiplier from GetArmorConditionFactor and returns the result.
 // @fnv 0x00646360
-float CombatDamageCalculator::CalculateArmorDamageThreshold(unsigned short rating, float condition)
+// pdb: CombatFormulas::CalcArmorRating | CombatFormulas.obj | debug, call graph (shared callers), high
+// pdb params: asArmorRating, afcondition
+// pdb locals: fConditionModifier, farmorRating
+float CombatFormulas::CalculateArmorDamageThreshold(unsigned short asArmorRating, float afcondition)
 {
     float fRating = 0.0f;
-    float fConditionMult = GetArmorConditionFactor(condition);
-    fRating = rating * fConditionMult;
+    float fConditionMult = GetArmorConditionFactor(afcondition);
+    fRating = asArmorRating * fConditionMult;
     return fRating;
 }
 
@@ -662,6 +677,9 @@ extern Setting* DAT_0119b26c[10];
 // Returns the float value of the game setting at index aiCondition if it is in [0,10), otherwise 0.0f.
 // @fnv 0x006477b0
 // src: XBOX_PDB 0x006477b0
+// pdb: RandomBool | ScreenCustomSplatter.obj | retail, call graph, low
+// pdb note: debug build links it to CombatFormulas::GetWeaponConditionJamMult
+// pdb params: afPercentTrue
 float CombatFormulas_GetWeaponConditionJamMult(int aiCondition)
 {
     float fresult = 0.0f;
@@ -680,11 +698,14 @@ extern "C"
 // Returns the float value of the game setting at index a if a is in [0,10), otherwise 0.0f.
 // @fnv 0x006477e0
 // src: COMMUNITY 0x006477e0
-float __cdecl CombatFormulas_GetWeaponConditionReloadJamMult(int aiIndex)
+// pdb: CombatFormulas::GetWeaponConditionReloadJamMult | CombatFormulas.obj | debug, upstream name already matches, high
+// pdb params: aiCondition
+// pdb locals: fresult
+float __cdecl CombatFormulas_GetWeaponConditionReloadJamMult(int aiCondition)
 {
     float v = 0.0f;
-    if (aiIndex >= 0 && aiIndex < 10)
-        v = *DAT_0119b2bc[aiIndex]->Float();
+    if (aiCondition >= 0 && aiCondition < 10)
+        v = *DAT_0119b2bc[aiCondition]->Float();
     return v;
 }
 
@@ -706,7 +727,11 @@ float __cdecl CombatFormulas_CalcExplosionPowerDistance(float, float);
 
 // Computes the damage ratio afActualDamage/afBaseExplosionDamage, returns 0 if it exceeds 1, otherwise passes the radius and ratio to FUN_00647960.
 // @fnv 0x006479a0
-float __cdecl ComputeExplosionDamageFalloff(float afExplosionRadius, float afBaseExplosionDamage, float afActualDamage)
+// src: XBOX_DEBUG_PDB 0x006479a0
+// pdb: CombatFormulas::CalcExplosionDamageDistance | CombatFormulas.obj | debug, call graph (shared callers), high
+// pdb params: afExplosionRadius, afBaseExplosionDamage, afActualDamage
+// pdb locals: fpower
+float __cdecl CombatFormulas_CalcExplosionDamageDistance(float afExplosionRadius, float afBaseExplosionDamage, float afActualDamage)
 {
     float fDamageRatio = afActualDamage / afBaseExplosionDamage;
     if (fDamageRatio > 1.0f)
@@ -715,14 +740,20 @@ float __cdecl ComputeExplosionDamageFalloff(float afExplosionRadius, float afBas
 }
 
 // @fnv 0x00525ae0
-BGSProjectile* CombatFormulaWeapon::GetProjectileForOwner(ActorValueOwner* pActorOffset)
+// src: XBOX_RETAIL_PDB 0x00525ae0
+// pdb: TESObjectWEAP::GetProjectile | TESObjectWEAP.obj | retail, call graph (shared callers), high
+// pdb params: apWeaponHolder
+// pdb locals: pAmmo, pProjectile
+BGSProjectile* CombatFormulaWeapon::TESObjectWEAP_GetProjectile(ActorValueOwner* apWeaponHolder)
 {
-    Actor* actor = pActorOffset ? (Actor*)((char*)pActorOffset - 0xA4) : 0;
+    Actor* actor = apWeaponHolder ? (Actor*)((char*)apWeaponHolder - 0xA4) : 0;
     return GetProjectileData(actor);
 }
 
 // @fnv 0x00646020
 // src: XBOX_PDB 0x00646020
+// pdb: TESObjectWEAP::GetAttackSpeed | CombatFormulas.obj | retail, upstream name already matches, high
+// pdb params: bModValue
 float TESObjectWEAP::GetAttackSpeed(bool bModValue)
 {
     if (bModValue)
@@ -735,9 +766,11 @@ extern Setting originalRuntimeFloatSetting508;
 // Multiplies a by b, then multiplies the result by the float value of originalRuntimeFloatSetting508.
 // @fnv 0x006462e0
 // src: XBOX_PDB 0x006462e0
-float CombatFormulas_CalcDamageToArmor(float afValueA, float afValueB)
+// pdb: CombatFormulas::CalcDamageToArmor | CombatFormulas.obj | debug, upstream name already matches, high
+// pdb params: afHealthDamage, afArmorRatingPercent
+float CombatFormulas_CalcDamageToArmor(float afHealthDamage, float afArmorRatingPercent)
 {
-    return (double)(afValueA * afValueB) * *originalRuntimeFloatSetting508.Float();
+    return (double)(afHealthDamage * afArmorRatingPercent) * *originalRuntimeFloatSetting508.Float();
 }
 
 extern double DAT_01011588;
@@ -745,23 +778,28 @@ float __cdecl CombatFormulas_CalcWeaponDamage(void*, int, float, float, int, int
 // Stores the result of FUN_00644ce0 into *c and, when b is false, sets *d to *c multiplied by DAT_01011588.
 // @fnv 0x00646310
 // src: XBOX_PDB 0x00646310
-void CombatFormulas_CalcHandToHandDamage(void* a, bool b, float* pfValue, float* pfScaledValue)
+// pdb: CombatFormulas::CalcHandToHandDamage | CombatFormulas.obj | retail, upstream name already matches, high
+// pdb params: apActor, abOpponentKnockedOut, afHealthDamage, afFatigueDamage
+void CombatFormulas_CalcHandToHandDamage(void* apActor, bool abOpponentKnockedOut, float* afHealthDamage, float* afFatigueDamage)
 {
-    *pfValue = CombatFormulas_CalcWeaponDamage(a, 0, 1.0f, 1.0f, 0, 0, 0, 0);
-    if (!b)
-        *pfScaledValue = *pfValue * DAT_01011588;
+    *afHealthDamage = CombatFormulas_CalcWeaponDamage(apActor, 0, 1.0f, 1.0f, 0, 0, 0, 0);
+    if (!abOpponentKnockedOut)
+        *afFatigueDamage = *afHealthDamage * DAT_01011588;
 }
 
 void __cdecl ClampInt(int*, int, int);
 extern Setting originalRuntimeFloatSetting583;
 // @fnv 0x00647810
 // src: XBOX_PDB 0x00647810
-float __cdecl CombatFormulas_GetWeaponStrengthRequirementModifier(unsigned int uiMinuend, unsigned int uiSubtrahend, unsigned int a3)
+// pdb: CombatFormulas::GetWeaponStrengthRequirementModifier | CombatFormulas.obj | debug, upstream name already matches, high
+// pdb params: aiSTRReq, aiSTR, aiSTRMod
+// pdb locals: idiffSTR
+float __cdecl CombatFormulas_GetWeaponStrengthRequirementModifier(unsigned int aiSTRReq, unsigned int aiSTR, unsigned int aiSTRMod)
 {
     int v = 0;
-    if (uiSubtrahend <= uiMinuend)
+    if (aiSTR <= aiSTRReq)
     {
-        v = uiMinuend - uiSubtrahend - a3;
+        v = aiSTRReq - aiSTR - aiSTRMod;
     }
     else
     {
@@ -772,6 +810,8 @@ float __cdecl CombatFormulas_GetWeaponStrengthRequirementModifier(unsigned int u
 }
 
 // @fnv 0x00647730
+// pdb: TESObjectWEAP::GetVATSToHitChance | CombatFormulas.obj | debug, object-file run extension, low
+// pdb params: bModValue
 unsigned char CombatFormulaWeapon::GetBaseVATSChance(unsigned char type)
 {
     if (type)
@@ -787,6 +827,9 @@ unsigned char CombatFormulaWeapon::GetBaseVATSChance(unsigned char type)
 bool __fastcall TESObjectWEAP_IsMeleeWeapon(TESObjectWEAP*);
 // @fnv 0x00645d00
 // src: COMMUNITY 0x00645d00
+// pdb: CombatFormulas::GetWeaponRateOfFire | CombatFormulas.obj | debug, object-file run extension, low
+// pdb params: apActor, apWeapon, apItem
+// pdb locals: pactor, frateOfFire, bUseSplit
 float __cdecl ActorValueOwner_GetWeaponAnimMult(ActorValueOwner* pActorValueOwner, TESObjectWEAP* weapon, InventoryStackRecord* item)
 {
     float frateOfFire = 1.0f;
@@ -795,7 +838,7 @@ float __cdecl ActorValueOwner_GetWeaponAnimMult(ActorValueOwner* pActorValueOwne
     if (TESObjectWEAP_IsMeleeWeapon(weapon))
         frateOfFire = ((CombatFormulaWeapon*)weapon)->GetAnimationMultiplier();
     else
-        frateOfFire = CombatDamageCalculator::CalculateWeaponDamageForActor(
+        frateOfFire = CombatFormulas::CalculateWeaponDamageForActor(
             dynamic_cast<TESObjectREFR*>(pActorValueOwner), weapon, true, item);
     bool bUseSplit = false;
     if (item)
@@ -811,7 +854,7 @@ struct Animation
 };
 struct HackAnim
 {
-    TESAnimGroup* Animation_LookupGroup(unsigned short);
+    TESAnimGroup* Animation_GetTESAnimGroup(unsigned short);
 };
 // The shared group does not declare the event-time query yet.
 struct AnimGroupTiming : TESAnimGroup
@@ -827,6 +870,9 @@ bool __fastcall TESObjectWEAP_IsThrownWeapon(TESObjectWEAP*);
 // Computes a weapon's shots-per-second from its animation group timings, reload time and speed modifiers, folding in reload when requested.
 // @fnv 0x00645dc0
 // src: COMMUNITY 0x00645dc0
+// pdb: CombatFormulas::GetWeaponShotsPerSecond | CombatFormulas.obj | debug, object-file run extension, low
+// pdb params: apActorRef, apWeapon, abUseReload, apItem
+// pdb locals: fweapSPS, bClipSize, bSpeedMod, panim, fweapReloadTime, eanim, sanimGroup, panimGroup, eattackAnim, freloadRounds, inumRounds
 float Actor_GetAttackSpeedMult(TESObjectREFR* apActorRef, TESObjectWEAP* apWeapon, bool abUseReload, InventoryStackRecord* apItem)
 {
     float fweapSPS = 0;
@@ -849,7 +895,7 @@ float Actor_GetAttackSpeedMult(TESObjectREFR* apActorRef, TESObjectWEAP* apWeapo
         sanimGroup = panim->ResolveAnimGroup(sanimGroup, false);
         if (GetType(sanimGroup) == iReloadAnim)
         {
-            TESAnimGroup* panimGroup = ((HackAnim*)panim)->Animation_LookupGroup(sanimGroup);
+            TESAnimGroup* panimGroup = ((HackAnim*)panim)->Animation_GetTESAnimGroup(sanimGroup);
             if (panimGroup)
                 fweapReloadTime = static_cast<AnimGroupTiming*>(panimGroup)->GetActionTime(1) *
                                   ((CombatFormulaWeapon*)apWeapon)->GetAnimationMultiplier();
@@ -869,7 +915,7 @@ float Actor_GetAttackSpeedMult(TESObjectREFR* apActorRef, TESObjectWEAP* apWeapo
         sanimGroup = panim->ResolveAnimGroup(sanimGroup, false);
         if (GetType(sanimGroup) == eattackAnim)
         {
-            TESAnimGroup* panimGroup = ((HackAnim*)panim)->Animation_LookupGroup(sanimGroup);
+            TESAnimGroup* panimGroup = ((HackAnim*)panim)->Animation_GetTESAnimGroup(sanimGroup);
             fweapSPS = 1.0f / static_cast<AnimGroupTiming*>(panimGroup)->GetActionTime(3);
         }
     }
@@ -888,10 +934,13 @@ float Actor_GetAttackSpeedMult(TESObjectREFR* apActorRef, TESObjectWEAP* apWeapo
 // Returns the average of actor values 27 and 28 for weapon types 0,2,5-9, otherwise actor value 28 alone.
 // @fnv 0x00646880
 // src: XBOX_PDB 0x00646880
-float CombatFormulas_GetArmCondition(ActorValueOwner* actor, int weaponType)
+// pdb: CombatFormulas::GetArmCondition | CombatFormulas.obj | retail, upstream name already matches, high
+// pdb params: apActor, aeWeaponType
+// pdb locals: fresult
+float CombatFormulas_GetArmCondition(ActorValueOwner* apActor, int aeWeaponType)
 {
     float result = 1.0f;
-    switch (weaponType)
+    switch (aeWeaponType)
     {
     case 0:
     case 2:
@@ -900,12 +949,12 @@ float CombatFormulas_GetArmCondition(ActorValueOwner* actor, int weaponType)
     case 7:
     case 8:
     case 9:
-        result = (CombatDamageCalculator::GetActorValueMultiplier(actor, ActorValue::Index(27), false) +
-                  CombatDamageCalculator::GetActorValueMultiplier(actor, ActorValue::Index(28), false)) /
+        result = (CombatFormulas::GetActorValueMultiplier(apActor, ActorValue::Index(27), false) +
+                  CombatFormulas::GetActorValueMultiplier(apActor, ActorValue::Index(28), false)) /
                  2.0;
         break;
     default:
-        result = CombatDamageCalculator::GetActorValueMultiplier(actor, ActorValue::Index(28), false);
+        result = CombatFormulas::GetActorValueMultiplier(apActor, ActorValue::Index(28), false);
         break;
     }
     return result;
@@ -919,16 +968,19 @@ extern Setting originalRuntimeFloatSetting613;
 // Computes a damage multiplier from the owner's agility (actor value 10) and the damage value using four game settings, and returns their product.
 // @fnv 0x00646580
 // src: XBOX_PDB 0x00646580
-float CombatFormulas_GetKnockbackSpeed(ActorValueOwner* owner, int damage)
+// pdb: CombatFormulas::GetKnockbackSpeed | CombatFormulas.obj | retail, upstream name already matches, high
+// pdb params: apActor, aiDamage
+// pdb locals: fmodAgility, fdamage, fagility
+float CombatFormulas_GetKnockbackSpeed(ActorValueOwner* apActor, int aiDamage)
 {
     float fmodAgility;
     float fDamageFactor;
     {
-        float fagility = owner->GetActorValueFloatByIndex((ActorValue::Index)10) * 10.0;
+        float fagility = apActor->GetActorValueFloatByIndex((ActorValue::Index)10) * 10.0;
         fDamageFactor = *g_011ce660.Float() + *originalRuntimeFloatSetting611.Float() * fagility;
     }
     {
-        fmodAgility = *originalRuntimeFloatSetting612.Float() + *originalRuntimeFloatSetting613.Float() * damage;
+        fmodAgility = *originalRuntimeFloatSetting612.Float() + *originalRuntimeFloatSetting613.Float() * aiDamage;
     }
     return fDamageFactor * fmodAgility;
 }
@@ -1024,6 +1076,9 @@ struct FUN_00646260Process
 
 // @fnv 0x00646260
 // src: COMMUNITY 0x00646260
+// pdb: CombatFormulas::CalcDamageToWeapon | CombatFormulas.obj | retail, upstream name already matches, high
+// pdb params: apActor
+// pdb locals: pWeap, fDamageToWeapon
 float CombatFormulas_CalcDamageToWeapon(Actor* apActor)
 {
     TESObjectWEAP* pWeap;
@@ -1288,43 +1343,47 @@ extern const double DAT_01020758;
 extern const double DAT_0102f078;
 // Computes weapon damage via FUN_00645380 for NPC or creature forms, then scales it by weapon type and ammo category.
 // @fnv 0x00646060
-float __cdecl ComputeWeaponDamage(CombatActorForm* form, TESObjectWEAP* weapon, float condition, DamageAmmo* ammo,
-                                  void* changes, void* extra)
+// src: XBOX_RETAIL_PDB 0x00646060
+// pdb: CombatFormulas::CalcCombatWeaponDPS | CombatFormulas.obj | retail, call graph (shared callers), high
+// pdb params: apActorForm, apWeapon, afCondition, apCombatStyle, apItem, apAmmo
+// pdb locals: ecombatWeaponType, fdamagePerSecond, pactorBase, pactor, cweaponRestrictions
+float __cdecl CombatFormulas_CalcCombatWeaponDPS(CombatActorForm* apActorForm, TESObjectWEAP* apWeapon, float afCondition, DamageAmmo* apCombatStyle,
+                                  void* apItem, void* apAmmo)
 {
-    if (weapon && static_cast<CombatFormulaWeapon*>(weapon)->IsDamageDisabled())
+    if (apWeapon && static_cast<CombatFormulaWeapon*>(apWeapon)->IsDamageDisabled())
         return 0.0f;
     float damage3 = 0.0f;
-    if (form->GetFormType() == 43 || form->GetFormType() == 42)
+    if (apActorForm->GetFormType() == 43 || apActorForm->GetFormType() == 42)
     {
-        NPCCombatForm* npc = static_cast<NPCCombatForm*>(form);
-        damage3 = CombatDamageCalculator::CalculateWeaponDamage(
-            (npc ? &npc->actorValues : 0), weapon, condition, false,
-            reinterpret_cast<InventoryStackRecord*>(changes), false, false, -1, 0.0f, 0.0f, false, false,
-            reinterpret_cast<TESAmmo*>(extra));
-        if (!ammo)
-            ammo = npc->GetAmmo();
+        NPCCombatForm* npc = static_cast<NPCCombatForm*>(apActorForm);
+        damage3 = CombatFormulas::CalculateWeaponDamage(
+            (npc ? &npc->actorValues : 0), apWeapon, afCondition, false,
+            reinterpret_cast<InventoryStackRecord*>(apItem), false, false, -1, 0.0f, 0.0f, false, false,
+            reinterpret_cast<TESAmmo*>(apAmmo));
+        if (!apCombatStyle)
+            apCombatStyle = npc->GetAmmo();
     }
     else
     {
-        CreatureCombatForm* pCreature = static_cast<CreatureCombatForm*>(form);
-        damage3 = CombatDamageCalculator::CalculateWeaponDamage(
-            (pCreature ? &pCreature->actorValues : 0), weapon, condition, false,
-            reinterpret_cast<InventoryStackRecord*>(changes), false, false, -1, 0.0f, 0.0f, false, false,
-            reinterpret_cast<TESAmmo*>(extra));
-        if (!ammo)
-            ammo = pCreature->GetCreatureAmmo();
+        CreatureCombatForm* pCreature = static_cast<CreatureCombatForm*>(apActorForm);
+        damage3 = CombatFormulas::CalculateWeaponDamage(
+            (pCreature ? &pCreature->actorValues : 0), apWeapon, afCondition, false,
+            reinterpret_cast<InventoryStackRecord*>(apItem), false, false, -1, 0.0f, 0.0f, false, false,
+            reinterpret_cast<TESAmmo*>(apAmmo));
+        if (!apCombatStyle)
+            apCombatStyle = pCreature->GetCreatureAmmo();
     }
-    int weaponType = weapon ? weapon->TESObjectWEAP_GetCombatWeaponType() : 6;
+    int weaponType = apWeapon ? apWeapon->TESObjectWEAP_GetCombatWeaponType() : 6;
     if (weaponType == 3)
         damage3 /= DAT_01020758;
     else if (weaponType == 4)
         damage3 = 0.0f;
-    if (ammo)
+    if (apCombatStyle)
     {
-        signed char cAmmoCategory = ammo->GetCategory();
-        if (cAmmoCategory == 1 && weapon && weapon->IsRangedWeapon())
+        signed char cAmmoCategory = apCombatStyle->GetCategory();
+        if (cAmmoCategory == 1 && apWeapon && apWeapon->IsRangedWeapon())
             damage3 /= DAT_0102f078;
-        else if (cAmmoCategory == 2 && (!weapon || !weapon->IsRangedWeapon()))
+        else if (cAmmoCategory == 2 && (!apWeapon || !apWeapon->IsRangedWeapon()))
             damage3 /= DAT_0102f078;
     }
     return damage3;
@@ -1363,6 +1422,9 @@ struct ChanceModifier
 };
 // Rolls a random 0-99 value and sets success/critical flags against computed chances, then applies a modifier that can override the outcome.
 // @fnv 0x00646e50
+// pdb: CombatFormulas::CheckDismemberOrExplode | CombatFormulas.obj | debug, call graph (shared callers), low
+// pdb params: apAttacker, apWeapon, aiExplodeChance, aiDismemberBonus, aiExplodeBonus, abExplodeChanceAbsolute, abDismember, abExplode
+// pdb locals: idismemberChance, iexplodeChance, idieRoll
 void __cdecl RollChanceOutcome(void* unused, ChanceModifier* modifier, int baseChance, int effectChance,
                                int extraChance, bool fixedChance, unsigned char* success, unsigned char* critical)
 {
@@ -1462,46 +1524,49 @@ extern Setting g_kOCSettingBonus;
 // Rolls three skill/bonus-weighted random scores and returns an outcome code (0,1,2,4,8) based on comparisons and actor checks.
 // @fnv 0x00644a70
 // src: XBOX_PDB 0x00644a70
-unsigned short __cdecl CombatFormulas_SelectDodgeDirection(OCActor* apActor, bool abUseSkillB, bool abUseSkillA, float afValueA,
-                                    float afValueB, bool abBonus, bool abNoFirst, unsigned short ausFlags)
+// pdb: CombatFormulas::SelectDodgeDirection | CombatFormulas.obj | retail, upstream name already matches, high
+// pdb params: apCombatStyle, abDodgerAttacking, abTargetAttacking, fTargetDistance, fWeaponReach, abFavorLeftRight, abTargetUsingRanged, asMovementRestrictions
+// pdb locals: fforward, sresult, fleftRight, fbackward, fdieRoll
+unsigned short __cdecl CombatFormulas_SelectDodgeDirection(OCActor* apCombatStyle, bool abDodgerAttacking, bool abTargetAttacking, float fTargetDistance,
+                                    float fWeaponReach, bool abFavorLeftRight, bool abTargetUsingRanged, unsigned short asMovementRestrictions)
 {
     unsigned short usResult6 = 0;
     usResult6 = 0;
 
-    float fFirst = *g_kOCSettingSkillMult.Float() * (abUseSkillA ? apActor->GetFieldCC() : apActor->FUN_00453700()) *
+    float fFirst = *g_kOCSettingSkillMult.Float() * (abTargetAttacking ? apCombatStyle->GetFieldCC() : apCombatStyle->FUN_00453700()) *
                    (OCDialogueRandom() % 5 + 1);
     float fSecond = *g_kOCSettingSkillMult.Float() *
-                    (abUseSkillB ? apActor->GetFirstLightParameter() : apActor->FUN_00885bd0()) *
+                    (abDodgerAttacking ? apCombatStyle->GetFirstLightParameter() : apCombatStyle->FUN_00885bd0()) *
                     (OCDialogueRandom() % 5 + 1);
-    if ((ausFlags & 2) || abNoFirst)
+    if ((asMovementRestrictions & 2) || abTargetUsingRanged)
         fFirst = 0.0f;
-    if (ausFlags & 1)
+    if (asMovementRestrictions & 1)
         fSecond = 0.0f;
     float fThird2 =
-        *g_kOCSettingSkillMult.Float() * (abBonus ? *g_kOCSettingBonus.Float() : 1.0f) * (OCDialogueRandom() % 5 + 1);
+        *g_kOCSettingSkillMult.Float() * (abFavorLeftRight ? *g_kOCSettingBonus.Float() : 1.0f) * (OCDialogueRandom() % 5 + 1);
 
-    if ((fFirst >= fSecond && fFirst > fThird2) || afValueA < afValueB * 0.5)
+    if ((fFirst >= fSecond && fFirst > fThird2) || fTargetDistance < fWeaponReach * 0.5)
     {
         usResult6 = 2;
     }
-    else if (fSecond > fFirst && fSecond > fThird2 && afValueA > afValueB * 1.5)
+    else if (fSecond > fFirst && fSecond > fThird2 && fTargetDistance > fWeaponReach * 1.5)
     {
         usResult6 = 1;
     }
     else
     {
         float fRoll = OCDialogueRandom() % 100;
-        if (apActor->GetByteAt59() >= fRoll)
+        if (apCombatStyle->GetByteAt59() >= fRoll)
         {
             fRoll = OCDialogueRandom() % 100;
             if (fRoll <= 49.0)
             {
-                if (!(ausFlags & 4))
+                if (!(asMovementRestrictions & 4))
                     usResult6 = 4;
             }
             else
             {
-                if (!(ausFlags & 8))
+                if (!(asMovementRestrictions & 8))
                     usResult6 = 8;
             }
         }
@@ -1512,10 +1577,13 @@ unsigned short __cdecl CombatFormulas_SelectDodgeDirection(OCActor* apActor, boo
 float CombatFormulas_CalcWeaponDamage(void*, int, float, float, int, int, int, bool);
 // Computes weapon damage from condition and ammo, applies ammo effects and perk modifiers, and returns the result.
 // @fnv 0x006450f0
+// pdb: CombatFormulas::CalcWeaponDamageForDisplay | CombatFormulas.obj | retail, call graph (shared callers), medium
+// pdb params: apWeapon, afCondition, apItem, apLoadedAmmo
+// pdb locals: fresult
 float GetWeaponDamage(TESObjectWEAP* weapon, float condition, InventoryStackRecord* extra, TESAmmo* specifiedAmmo)
 {
     float damage = 0.0f;
-    damage = CombatDamageCalculator::CalculateWeaponDamage(
+    damage = CombatFormulas::CalculateWeaponDamage(
         static_cast<ActorValueOwner*>(g_thePlayer), weapon, condition, true, extra, false, false, -1,
         0.0f, 0.0f, false, false, specifiedAmmo);
     if (weapon && weapon->GetIsAutomaticWeapon() && TESObjectWEAP_IsMeleeWeapon(weapon))
@@ -1548,6 +1616,9 @@ float GetWeaponDamage(TESObjectWEAP* weapon, float condition, InventoryStackReco
 }
 
 // @fnv 0x00646d80
+// pdb: CombatFormulas::GetCriticalChance | CombatFormulas.obj | debug, object-file run extension, low
+// pdb params: apActor, apWeapon
+// pdb locals: eweaponType, fbaseChance, ffiringRate, fresult, bUseModSpeed
 float __cdecl GetWeaponDPS(ActorValueOwner* pkOwner, TESObjectWEAP* pkWeapon)
 {
     int iType = pkWeapon ? pkWeapon->GetWeaponType() : -1;
@@ -1579,67 +1650,71 @@ extern Setting DAT_011ceb8c;
 extern const double DAT_01012070;
 
 float __cdecl FUN_00646800(ActorValueOwner* owner, int attribute, int unused);
-float __cdecl CombatFormulas_GetWeaponStrengthRequirementModifier(unsigned int weaponType, unsigned int baseValue, unsigned int perkLevel);
+float __cdecl CombatFormulas_GetWeaponStrengthRequirementModifier(unsigned int aiSTRReq, unsigned int aiSTR, unsigned int aiSTRMod);
 float __cdecl ComputeScaledCount(int weaponCategory, int ownerValue, int mode);
 
 // Computes a weapon damage modifier from actor perks, game settings, weapon type and category values, clamps it to a minimum and returns it.
 // @fnv 0x00646910
-float __cdecl ComputeWeaponDamageModifier(Actor* actor, TESObjectWEAP* weapon, void* unused, bool bypassDamage,
-                                          bool bypassCritical, bool useEnergy, bool useUnarmed)
+// src: XBOX_DEBUG_PDB 0x00646910
+// pdb: CombatFormulas::GetGunSpread | CombatFormulas.obj | debug, call graph, high
+// pdb params: apActor, apWeapon, afDrift, abIronSights, abCrouching, abWalking, abRunning
+// pdb locals: factorRightArmCondition, iSTRreq, factorSkill, iSTR, fSTRMOD, iweaponSkill, fskillMult, fCheckForPerk, fretVal, factorHeadCondition, iSTRMOD, fModSkill, iSkill, iSKILLreq, pactor, factorLeftArmCondition, fMod
+float __cdecl CombatFormulas_GetGunSpread(Actor* apActor, TESObjectWEAP* apWeapon, void* afDrift, bool abIronSights,
+                                          bool abCrouching, bool abWalking, bool abRunning)
 {
     float damageFactor_2 = 1.0f;
     float modifier4 = 0.0f;
-    if (actor == reinterpret_cast<Actor*>(g_thePlayer))
+    if (apActor == reinterpret_cast<Actor*>(g_thePlayer))
     {
-        ApplyPerkModifiers(0x36, reinterpret_cast<Actor*>(g_thePlayer), weapon, &damageFactor_2);
+        ApplyPerkModifiers(0x36, reinterpret_cast<Actor*>(g_thePlayer), apWeapon, &damageFactor_2);
         if (damageFactor_2 < DAT_01012070)
         {
             damageFactor_2 = 1.0f;
         }
     }
-    if (!bypassCritical)
+    if (!abCrouching)
         modifier4 += *DAT_011cf648.Float();
-    if (useEnergy)
+    if (abWalking)
         modifier4 += *DAT_011cf654.Float() / damageFactor_2;
-    else if (useUnarmed)
+    else if (abRunning)
         modifier4 += *DAT_011ce830.Float() / damageFactor_2;
-    if (!bypassDamage)
+    if (!abIronSights)
         modifier4 += *DAT_011cedd0.Float();
 
-    float firstB = FUN_00646800(static_cast<ActorValueOwner*>(actor), 0x1b, 0);
-    float second7 = FUN_00646800(static_cast<ActorValueOwner*>(actor), 0x1c, 0);
-    float third3 = FUN_00646800(static_cast<ActorValueOwner*>(actor), 0x19, 0);
-    if (actor->GetActorValue(static_cast<ActorValue::Index>(0x48)) == 0)
+    float firstB = FUN_00646800(static_cast<ActorValueOwner*>(apActor), 0x1b, 0);
+    float second7 = FUN_00646800(static_cast<ActorValueOwner*>(apActor), 0x1c, 0);
+    float third3 = FUN_00646800(static_cast<ActorValueOwner*>(apActor), 0x19, 0);
+    if (apActor->GetActorValue(static_cast<ActorValue::Index>(0x48)) == 0)
     {
         if (firstB == 0.0 && second7 == 0.0)
         {
-            if (weapon->IsTwoHandedWeapon())
+            if (apWeapon->IsTwoHandedWeapon())
                 modifier4 += *DAT_011cef38.Float();
             else
                 modifier4 += *DAT_011ce60c.Float();
         }
         else if (firstB == 0.0 || second7 == 0.0)
         {
-            if (weapon->IsTwoHandedWeapon())
+            if (apWeapon->IsTwoHandedWeapon())
                 modifier4 += *DAT_011cf008.Float();
             else if (second7 == 0.0)
                 modifier4 += *DAT_011cf068.Float();
         }
     }
 
-    int baseValue_ = (unsigned int)(reinterpret_cast<ActorValueOwner*>((char*)actor + 0xa4)->GetActorValueFloatByIndex(5));
+    int baseValue_ = (unsigned int)(reinterpret_cast<ActorValueOwner*>((char*)apActor + 0xa4)->GetActorValueFloatByIndex(5));
     float perkValue3 = 0.0f;
-    Actor* perkActor = actor;
-    ApplyPerkModifiers(0x35, perkActor, weapon, &perkValue3);
+    Actor* perkActor = apActor;
+    ApplyPerkModifiers(0x35, perkActor, apWeapon, &perkValue3);
     int perkLevelB = (unsigned int)perkValue3;
-    int weaponType7 = weapon->GetField19C();
+    int weaponType7 = apWeapon->GetField19C();
     float weaponModifier4 = CombatFormulas_GetWeaponStrengthRequirementModifier(weaponType7, baseValue_, perkLevelB);
     modifier4 += weaponModifier4;
 
-    int weaponCategoryX = weapon ? weapon->GetUnk15C() : 0x2d;
-    float categoryValueB = reinterpret_cast<ActorValueOwner*>((char*)actor + 0xa4)->GetActorValueAsInteger(weaponCategoryX);
+    int weaponCategoryX = apWeapon ? apWeapon->GetUnk15C() : 0x2d;
+    float categoryValueB = reinterpret_cast<ActorValueOwner*>((char*)apActor + 0xa4)->GetActorValueAsInteger(weaponCategoryX);
     int categoryLevel = (unsigned int)categoryValueB;
-    int weaponClass2 = reinterpret_cast<CombatFormulaWeapon*>(weapon)->GetField1BC();
+    int weaponClass2 = reinterpret_cast<CombatFormulaWeapon*>(apWeapon)->GetField1BC();
     float categoryModifier4 = ComputeScaledCount(weaponClass2, categoryLevel, 0);
     modifier4 += categoryModifier4;
 
@@ -1655,6 +1730,9 @@ float FUN_00476b20(float value);
 void ClampUInt(unsigned* value, unsigned low, unsigned high);
 extern Setting originalRuntimeFloatSetting583;
 // @fnv 0x00647870
+// pdb: CombatFormulas::GetWeaponSkillRequirementModifier | CombatFormulas.obj | debug, object-file run extension, low
+// pdb params: aiSkillReq, aiSkill, aiSTRMod
+// pdb locals: idiffSKILL, fdiffSkill
 float ComputeScaledCount(unsigned first, unsigned second, unsigned third)
 {
     unsigned count = 0;
@@ -1687,15 +1765,18 @@ struct FUN_009a1260_Class
 // Computes a float from iLevel, fRatio, bFlag, and values returned by calls on pkActor.
 // @fnv 0x00644990
 // src: XBOX_PDB 0x00644990
-float __cdecl CombatFormulas_ChooseDodge(void* pkActor, int iLevel, float fRatio, bool bFlag)
+// pdb: CombatFormulas::ChooseDodge | CombatFormulas.obj | debug, upstream name already matches, high
+// pdb params: apCombatStyle, aiWalkSpeed, afFatiguePercent, abTargetAttacking
+// pdb locals: fspeedMod, fchance, ffatigueMod
+float __cdecl CombatFormulas_ChooseDodge(void* apCombatStyle, int aiWalkSpeed, float afFatiguePercent, bool abTargetAttacking)
 {
     float fBonus =
-        iLevel * ((Actor*)pkActor)->PathingRequestCoveredMove_GetAttackerHealth() + ((Actor*)pkActor)->BSSceneGraph_GetCameraFOV();
+        aiWalkSpeed * ((Actor*)apCombatStyle)->PathingRequestCoveredMove_GetAttackerHealth() + ((Actor*)apCombatStyle)->BSSceneGraph_GetCameraFOV();
     float fBase =
-        (1.0f - fRatio) * ((Actor*)pkActor)->GetFieldB4Float() + ((TESForm*)pkActor)->GetFieldB8Float();
-    float fResult = (char)((FUN_00644a30_shell*)pkActor)->TESCombatStyle_GetDodgeChance() + fBonus + fBase;
+        (1.0f - afFatiguePercent) * ((Actor*)apCombatStyle)->GetFieldB4Float() + ((TESForm*)apCombatStyle)->GetFieldB8Float();
+    float fResult = (char)((FUN_00644a30_shell*)apCombatStyle)->TESCombatStyle_GetDodgeChance() + fBonus + fBase;
     fResult *=
-        bFlag ? ((FUN_00644a50_shell*)pkActor)->TESCombatStyle_GetDodgeDuringAttackMult() : ((FUN_009a1260_Class*)pkActor)->GetFloatAt0xC8();
+        abTargetAttacking ? ((FUN_00644a50_shell*)apCombatStyle)->TESCombatStyle_GetDodgeDuringAttackMult() : ((FUN_009a1260_Class*)apCombatStyle)->GetFloatAt0xC8();
     return fResult;
 }
 }  // namespace fnv_00644990
@@ -1708,6 +1789,9 @@ extern const double DAT_01012060;
 // Combines setting values using a1 and a2, then sets the result to zero if it is below a global threshold.
 // @fnv 0x00646660
 // src: XBOX_PDB 0x00646660
+// pdb: CombatFormulas::GetArrowGravity | CombatFormulas.obj | debug, upstream name already matches, high
+// pdb params: afArrowPower, afMarksmanSkill, aiLuck
+// pdb locals: fmodMarksman, fskillGravity, fgravity
 float CombatFormulas_GetArrowGravity(float afLerp, float afScale)
 {
     float fScale = afScale;
@@ -1785,24 +1869,28 @@ extern const float DAT_01016410;
 
 // Computes the hit chance for a weapon attack on a target, applying range, spread, ammo, and stealth modifiers, and returns the final probability.
 // @fnv 0x00646f70
-float __cdecl GetHitChance(ActorValueOwner* m_pkAttacker, TESObjectREFR* pTarget, TESObjectWEAP* pWeapon,
-                           void* unused14, void* unused18, float fSpreadBonus, const char* pAmmoName,
-                           CombatFormulaWeapon* pWeaponMod, float fWeaponDamage, float afDistance, float fWeaponSpread,
-                           CombatDebugLog* pLog)
+// src: XBOX_RETAIL_PDB 0x00646f70
+// pdb: CombatFormulas::GetVATSChanceToHit | CombatFormulas.obj | retail, string-set bridge, high
+// pdb params: apActor, apTarget, apWeapon, afWeaponCondition, afReach, afGunSkill, apTargetedLimb, apTargetedWeapon, afScreenPercentage, afTargetRange, afTargetSize, apDebugText
+// pdb locals: bgrenadeTarget, fscreenPercentagePart, fresult, fvatsChance, fbodyPartHitChance, ptargetActor, fscreenPercentageFactor, bdestructibleTarget, frangeGap, fmodMaxRange, fmaxRange, fskillCalc, frangeOdds, farmConditionFactor, fspreadAreaatRange, fcombinedRangeSpread, fspreadRadiusatRange, fspreadFactor, fpotentialTargetArea, fHasImproved
+float __cdecl CombatFormulas_GetVATSChanceToHit(ActorValueOwner* apActor, TESObjectREFR* apTarget, TESObjectWEAP* apWeapon,
+                           void* afWeaponCondition, void* afReach, float afGunSkill, const char* apTargetedLimb,
+                           CombatFormulaWeapon* apTargetedWeapon, float afScreenPercentage, float afTargetRange, float afTargetSize,
+                           CombatDebugLog* apDebugText)
 {
     float fFinalVal = 0.0f;
     float fOutOdds = 0.0f;
-    bool bDestTarget = pTarget ? (((FUN_00452370_shell*)pTarget)->TESForm_GetDestructible() && !pTarget->IsActor()) : false;
-    bool bThrown = ((RefBoolFn)(*(void***)pTarget)[0x89])(pTarget);
-    ActorValueOwner* pTargetAV = (pTarget && pTarget->IsActor()) ? (ActorValueOwner*)(Actor*)pTarget : 0;
+    bool bDestTarget = apTarget ? (((FUN_00452370_shell*)apTarget)->TESForm_GetDestructible() && !apTarget->IsActor()) : false;
+    bool bThrown = ((RefBoolFn)(*(void***)apTarget)[0x89])(apTarget);
+    ActorValueOwner* pTargetAV = (apTarget && apTarget->IsActor()) ? (ActorValueOwner*)(Actor*)apTarget : 0;
     float fOutAmmoChance = 0.0f;
-    if (pAmmoName)
+    if (apTargetedLimb)
     {
-        fOutAmmoChance = (float)(unsigned char)BGSBodyPart_GetToHitChance(pAmmoName);
+        fOutAmmoChance = (float)(unsigned char)BGSBodyPart_GetToHitChance(apTargetedLimb);
     }
-    else if (pWeaponMod)
+    else if (apTargetedWeapon)
     {
-        fOutAmmoChance = (float)pWeaponMod->GetBaseVATSChance(0);
+        fOutAmmoChance = (float)apTargetedWeapon->GetBaseVATSChance(0);
     }
     else
     {
@@ -1810,34 +1898,34 @@ float __cdecl GetHitChance(ActorValueOwner* m_pkAttacker, TESObjectREFR* pTarget
     }
     if (bThrown)
         fOutAmmoChance = 1.0f;
-    if (pLog && (bDestTarget || bThrown))
+    if (apDebugText && (bDestTarget || bThrown))
     {
-        pLog->Log(1, 3, "%s%s", bDestTarget ? "Destructible Target " : "", bThrown ? "Grenade Target" : "");
+        apDebugText->Log(1, 3, "%s%s", bDestTarget ? "Destructible Target " : "", bThrown ? "Grenade Target" : "");
     }
     float fCurWeight = BSMIN(*DAT_011cfab0.Float(), 1.0f);
-    float fConditionMultVal = fCurWeight * fWeaponDamage + (1.0f - fCurWeight);
-    if (pWeapon && !TESObjectWEAP_IsMeleeWeapon(pWeapon))
+    float fConditionMultVal = fCurWeight * afScreenPercentage + (1.0f - fCurWeight);
+    if (apWeapon && !TESObjectWEAP_IsMeleeWeapon(apWeapon))
     {
-        if (((CombatFormulaWeapon*)pWeapon)->GetProjectileForOwner(m_pkAttacker) &&
-            ((CombatFormulaWeapon*)pWeapon)->GetProjectileForOwner(m_pkAttacker)->GetExplosionProximity() != DAT_01012060)
+        if (((CombatFormulaWeapon*)apWeapon)->TESObjectWEAP_GetProjectile(apActor) &&
+            ((CombatFormulaWeapon*)apWeapon)->TESObjectWEAP_GetProjectile(apActor)->GetExplosionProximity() != DAT_01012060)
         {
-            if (pLog)
-                pLog->Log(1, 3, "Target out of explosion range");
+            if (apDebugText)
+                apDebugText->Log(1, 3, "Target out of explosion range");
             return 0.0f;
         }
-        if (TESObjectWEAP_IsThrownWeapon(pWeapon))
+        if (TESObjectWEAP_IsThrownWeapon(apWeapon))
         {
-            float fCurMaxRange = ((CombatFormulaWeapon*)pWeapon)->GetField124Float();
-            if (fCurMaxRange * *DAT_011cef80.Float() < afDistance)
+            float fCurMaxRange = ((CombatFormulaWeapon*)apWeapon)->GetField124Float();
+            if (fCurMaxRange * *DAT_011cef80.Float() < afTargetRange)
             {
-                if (pLog)
-                    pLog->Log(1, 3, "Target out of thrown weapon range");
+                if (apDebugText)
+                    apDebugText->Log(1, 3, "Target out of thrown weapon range");
                 return 0.0f;
             }
             float fModRangeVal = fCurMaxRange * *DAT_011ced00.Float();
             float fGap = fModRangeVal - *DAT_011cfba8.Float();
-            float fFalloff = 1.0f - BSMAX_00404010(afDistance - *DAT_011cfba8.Float(), 0.0f) / fGap;
-            float fOutArmMult = CombatFormulas_GetArmCondition(m_pkAttacker, pWeapon ? pWeapon->FUN_00446390() : 0);
+            float fFalloff = 1.0f - BSMAX_00404010(afTargetRange - *DAT_011cfba8.Float(), 0.0f) / fGap;
+            float fOutArmMult = CombatFormulas_GetArmCondition(apActor, apWeapon ? apWeapon->FUN_00446390() : 0);
             if (fOutArmMult <= DAT_01012060)
             {
                 fOutArmMult = 1.0f - *DAT_011cf068.Float();
@@ -1847,43 +1935,43 @@ float __cdecl GetHitChance(ActorValueOwner* m_pkAttacker, TESObjectREFR* pTarget
                 fOutArmMult = 1.0f;
             }
             float fOutSkill =
-                (m_pkAttacker->GetActorValueFloatByIndex(pWeapon->GetUnk15C()) *
+                (apActor->GetActorValueFloatByIndex(apWeapon->GetUnk15C()) *
                      *DAT_011cf528.Float() / DAT_01017a40 +
                  (1.0f - *DAT_011ce99c.Float())) *
                 fOutArmMult;
             fOutOdds = *DAT_011cf8bc.Float() * (fFalloff + fOutSkill) * DAT_01017a40;
-            if (pLog)
+            if (apDebugText)
             {
-                pLog->Log(1, 3, "mod max range: %.2f, range gap: %.2f, range odds: %.2f", (double)fModRangeVal,
+                apDebugText->Log(1, 3, "mod max range: %.2f, range gap: %.2f, range odds: %.2f", (double)fModRangeVal,
                           (double)fGap, (double)fFalloff);
-                pLog->Log(1, 3, "arm condition: %.2f, skill calc %.2f, final chance %.2f", (double)fOutArmMult,
+                apDebugText->Log(1, 3, "arm condition: %.2f, skill calc %.2f, final chance %.2f", (double)fOutArmMult,
                           (double)fOutSkill, (double)fOutOdds);
             }
         }
         else
         {
-            if (TESObjectWEAP_IsGunWeapon(pWeapon) && ((CombatFormulaWeapon*)pWeapon)->IsFlag20Set() &&
-                ((CombatFormulaWeapon*)pWeapon)->GetField124Float() < afDistance)
+            if (TESObjectWEAP_IsGunWeapon(apWeapon) && ((CombatFormulaWeapon*)apWeapon)->IsFlag20Set() &&
+                ((CombatFormulaWeapon*)apWeapon)->GetField124Float() < afTargetRange)
             {
                 return 0.0f;
             }
             float fOutSpreadMult = 1.0f;
-            if (TESObjectWEAP_IsGunWeapon(pWeapon))
+            if (TESObjectWEAP_IsGunWeapon(apWeapon))
             {
-                fOutSpreadMult = ((CombatFormulaWeapon*)pWeapon)->GetSpread(false) + fSpreadBonus;
+                fOutSpreadMult = ((CombatFormulaWeapon*)apWeapon)->TESObjectWEAP_GetMinSpreadDegrees(false) + afGunSkill;
             }
-            float fOutConeRadius = tan_0057dd70(fOutSpreadMult * *DAT_011cfe08.Float() * DAT_01023128) * afDistance;
+            float fOutConeRadius = tan_0057dd70(fOutSpreadMult * *DAT_011cfe08.Float() * DAT_01023128) * afTargetRange;
             float fAreaVal = fOutConeRadius * fOutConeRadius * 3.1415927410125732;
-            float fCurTargetArea = fWeaponSpread / 3.0 * fWeaponSpread;
+            float fCurTargetArea = afTargetSize / 3.0 * afTargetSize;
             if (bThrown)
             {
                 fCurTargetArea = *DAT_011ceb20.Float();
             }
             else
             {
-                if (fOutConeRadius * 2.0f < fWeaponSpread)
+                if (fOutConeRadius * 2.0f < afTargetSize)
                 {
-                    fCurTargetArea = (fOutConeRadius * 2.0f) / fWeaponSpread * fCurTargetArea;
+                    fCurTargetArea = (fOutConeRadius * 2.0f) / afTargetSize * fCurTargetArea;
                 }
                 if (bDestTarget)
                 {
@@ -1896,12 +1984,12 @@ float __cdecl GetHitChance(ActorValueOwner* m_pkAttacker, TESObjectREFR* pTarget
                 fAreaRatio = BSMIN(fCurTargetArea / fAreaVal, *DAT_011cfe50.Float());
             }
             fOutOdds = *DAT_011cf504.Float() * fConditionMultVal * fAreaRatio * fOutAmmoChance;
-            if (pLog)
+            if (apDebugText)
             {
-                pLog->Log(1, 3, "bound size: %.2f, base chance: %.2f", (double)fWeaponSpread, (double)fOutAmmoChance);
-                pLog->Log(1, 3, "spread factor: %.2f, radius %.2f, area %.2f", (double)fOutSpreadMult,
+                apDebugText->Log(1, 3, "bound size: %.2f, base chance: %.2f", (double)afTargetSize, (double)fOutAmmoChance);
+                apDebugText->Log(1, 3, "spread factor: %.2f, radius %.2f, area %.2f", (double)fOutSpreadMult,
                           (double)fOutConeRadius, (double)fAreaVal);
-                pLog->Log(1, 3, "target area: %.2f, range spread: %.2f, final chance: %.2f", (double)fCurTargetArea,
+                apDebugText->Log(1, 3, "target area: %.2f, range spread: %.2f, final chance: %.2f", (double)fCurTargetArea,
                           (double)fAreaRatio, (double)fOutOdds);
             }
         }
@@ -1912,29 +2000,29 @@ float __cdecl GetHitChance(ActorValueOwner* m_pkAttacker, TESObjectREFR* pTarget
             {
                 fOutOdds = 1.0f;
             }
-            if (pLog)
-                pLog->Log(1, 3, "destructible/grenade target chance: %.2f", (double)fOutOdds);
+            if (apDebugText)
+                apDebugText->Log(1, 3, "destructible/grenade target chance: %.2f", (double)fOutOdds);
         }
     }
     else
     {
-        if (afDistance <= *DAT_011cf678.Float())
+        if (afTargetRange <= *DAT_011cf678.Float())
         {
-            if (pLog)
-                pLog->Log(1, 3, "Melee weapon or unarmed assume 100%");
+            if (apDebugText)
+                apDebugText->Log(1, 3, "Melee weapon or unarmed assume 100%");
             fOutOdds = DAT_01016410;
         }
         else
         {
-            if (pLog)
-                pLog->Log(1, 3, "Melee weapon or unarmed -- out of range");
+            if (apDebugText)
+                apDebugText->Log(1, 3, "Melee weapon or unarmed -- out of range");
         }
     }
     if (pTargetAV && (pTargetAV->GetActorValue((ActorValue::Index)0x31) > 0 ||
-                      m_pkAttacker->GetActorValue((ActorValue::Index)0x30) > 0))
+                      apActor->GetActorValue((ActorValue::Index)0x30) > 0))
     {
-        if (pLog)
-            pLog->Log(1, 3, "Stealth bonus: %f becomes %f", (double)fOutOdds,
+        if (apDebugText)
+            apDebugText->Log(1, 3, "Stealth bonus: %f becomes %f", (double)fOutOdds,
                       (double)(fOutOdds * *DAT_011cee54.Float()));
         float fStealthBonus = 0.0f;
         ApplyPerkModifiers(0x45, (Actor*)g_thePlayer, &fStealthBonus);
@@ -1962,7 +2050,7 @@ struct DmgTimeGlobal
     float GetTimeMult();
 };
 
-float __cdecl DmgAmmoEffectMult(void* apEffect);
+float __cdecl DmgAmmoEffectMult(void* pExplosion);
 
 extern Setting g_kDmgBaseMult;
 extern Setting g_kDmgSkillMultA;
@@ -1977,8 +2065,11 @@ extern const float g_fDmgDefaultSkill;
 // Computes total weapon damage from base, skill, ammo, condition, time and teammate multipliers, returning the final value.
 // @fnv 0x00644ce0
 // src: XBOX_PDB 0x00644ce0
-float __cdecl CombatFormulas_CalcWeaponDamage(ActorValueOwner* apOwner, TESObjectWEAP* apWeapon, float afCondition, float afMult, int aiUnused,
-                           bool abNoAmmo, InventoryStackRecord* apItem, bool abUseActor)
+// pdb: CombatFormulas::CalcWeaponDamage | CombatFormulas.obj | retail, upstream name already matches, high
+// pdb params: apActor, apWeapon, afCondition, afDamageMultiplier, abIgnoreFatigue, abIgnoreExplosion, apItem, abUseCurrentAmmo
+// pdb locals: iskill, fdamageWeapon, fdamageBonus, fexplosionDamage, fskill, fconditionMod, fdamageSkill, fmeleeConditionSkillMult, pActorReal, fdamageMult, ftimeMult, fNerveBonus, afCharisma
+float __cdecl CombatFormulas_CalcWeaponDamage(ActorValueOwner* apActor, TESObjectWEAP* apWeapon, float afCondition, float afDamageMultiplier, int abIgnoreFatigue,
+                           bool abIgnoreExplosion, InventoryStackRecord* apItem, bool abUseCurrentAmmo)
 {
     int iSkillB = apWeapon ? apWeapon->GetUnk15C() : 0x2d;
     float fBaseDamage4 = *g_kDmgBaseMult.Float() * (apWeapon ? (float)apWeapon->GetAttackDamage() : 1.0f);
@@ -1993,49 +2084,49 @@ float __cdecl CombatFormulas_CalcWeaponDamage(ActorValueOwner* apOwner, TESObjec
         case 1:
         case 2:
         case 13:
-            if (apOwner)
-                fBonus6 += apOwner->GetCurrentActorValue((ActorValue::Index)0x11);
+            if (apActor)
+                fBonus6 += apActor->GetCurrentActorValue((ActorValue::Index)0x11);
             break;
         case -1:
         case 0:
-            if (apOwner)
-                fBonus6 += apOwner->GetCurrentActorValue((ActorValue::Index)0x38);
+            if (apActor)
+                fBonus6 += apActor->GetCurrentActorValue((ActorValue::Index)0x38);
             break;
         }
     }
-    else if (apOwner)
+    else if (apActor)
     {
-        fBonus6 += apOwner->GetCurrentActorValue((ActorValue::Index)0x38);
+        fBonus6 += apActor->GetCurrentActorValue((ActorValue::Index)0x38);
     }
 
     float fSkillMultA = 1.0f;
-    if (apOwner && (!apWeapon || TESObjectWEAP_IsMeleeWeapon(apWeapon)))
-        fSkillMultA = CombatFormulas_GetArmCondition(apOwner, apWeapon ? apWeapon->FUN_00446390() : 0) * *g_kDmgSkillMultA.Float() +
+    if (apActor && (!apWeapon || TESObjectWEAP_IsMeleeWeapon(apWeapon)))
+        fSkillMultA = CombatFormulas_GetArmCondition(apActor, apWeapon ? apWeapon->FUN_00446390() : 0) * *g_kDmgSkillMultA.Float() +
                       *g_kDmgSkillMultB.Float();
 
-    float _fSkill = apOwner ? apOwner->GetActorValueFloatByIndex((ActorValue::Index)iSkillB) : g_fDmgDefaultSkill;
+    float _fSkill = apActor ? apActor->GetActorValueFloatByIndex((ActorValue::Index)iSkillB) : g_fDmgDefaultSkill;
     float fSkillDamage5 = fSkillMultA;
     if (apWeapon && apWeapon->FUN_00446390())
         fSkillDamage5 = *g_kDmgConditionBase.Float() + *g_kDmgConditionMult.Float() * (0.01f * _fSkill) * fSkillMultA;
-    float kFDamage = fSkillDamage5 * afMult;
+    float kFDamage = fSkillDamage5 * afDamageMultiplier;
 
     float fAmmoBonus6 = 0.0f;
-    if (!abNoAmmo && apWeapon && reinterpret_cast<DmgAmmo*>(
-            static_cast<CombatFormulaWeapon*>(apWeapon)->GetProjectileForOwner(abUseActor ? apOwner : 0)) &&
+    if (!abIgnoreExplosion && apWeapon && reinterpret_cast<DmgAmmo*>(
+            static_cast<CombatFormulaWeapon*>(apWeapon)->TESObjectWEAP_GetProjectile(abUseCurrentAmmo ? apActor : 0)) &&
         reinterpret_cast<DmgAmmo*>(
-            static_cast<CombatFormulaWeapon*>(apWeapon)->GetProjectileForOwner(abUseActor ? apOwner : 0))->GetEffect())
+            static_cast<CombatFormulaWeapon*>(apWeapon)->TESObjectWEAP_GetProjectile(abUseCurrentAmmo ? apActor : 0))->GetEffect())
     {
         fAmmoBonus6 = DmgAmmoEffectMult(reinterpret_cast<DmgAmmo*>(
-            static_cast<CombatFormulaWeapon*>(apWeapon)->GetProjectileForOwner(abUseActor ? apOwner : 0))->GetEffect()) *
+            static_cast<CombatFormulaWeapon*>(apWeapon)->TESObjectWEAP_GetProjectile(abUseCurrentAmmo ? apActor : 0))->GetEffect()) *
                       apWeapon->GetDamageForActor(apItem ? apItem->SetEquipmentState(0xc) : false, false,
-                                                  abUseActor ? dynamic_cast<Actor*>(apOwner) : 0);
+                                                  abUseCurrentAmmo ? dynamic_cast<Actor*>(apActor) : 0);
     }
 
     float fTimeMult3 = 1.0f;
     float fHealthMult3 = 1.0f;
     fHealthMult3 = GetWeaponHealthConditionMultiplier(afCondition);
     float fTeammateMult = 1.0f;
-    Actor* pActor4 = dynamic_cast<Actor*>(apOwner);
+    Actor* pActor4 = dynamic_cast<Actor*>(apActor);
     if (pActor4 && pActor4->IsPlayerTeammate())
     {
         float fPlayerLevel_ = g_pDmgPlayer->GetActorValueFloatByIndex((ActorValue::Index)8);

@@ -7,6 +7,7 @@ class SaveFile;
 class FormExtra;
 enum ENUM_FORM_ID;
 
+// pdb: class BGSLoadFormBuffer, size 0x30, bases: BGSLoadGameBuffer, 6 members
 class BGSLoadFormBuffer : public BGSLoadGameBuffer
 {
 public:
@@ -86,5 +87,5 @@ unsigned int iFormID;
     void FUN_0042ce50(bool value);
     bool GetSkipForm_00848dd0();
     void* FUN_0081db60(unsigned int flags);
-    void FUN_00848d50();
+    void DeleteBuffer();
 };

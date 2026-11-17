@@ -5,6 +5,7 @@
 class LockExtraData;
 class TESObjectREFR;
 
+// pdb: class ExtraLock, size 0x10, bases: BSExtraData, 1 members
 class ExtraLock : public BSExtraData
 {
 public:
@@ -18,7 +19,7 @@ public:
     void* __thiscall ReleaseIfFlagged(unsigned int flags);
     void FUN_00517360();
     int FUN_0043a320();
-    void FUN_0043a210(TESObjectREFR* apRef, bool abFlag);
+    void SetConnectedCellsPublic(TESObjectREFR* apDoorRef, bool abIsPublic);
     void FUN_00430ca0();
     bool MenuTopic_GetResponseListEmpty();
     void MenuTopic_FillResponseList(int);

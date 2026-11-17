@@ -38,10 +38,12 @@ hkDisplaySerializeIStream* __fastcall ConstructDisplaySerializeIStream(
 
 // @fnv 0x00ddac60
 // src: HAVOK_LIB 0x00ddac60
-__declspec(noinline) void hkDisplaySerializeIStream::readQuadVector4(hkVector4& obj)
+// pdb: hkDisplaySerializeIStream::readQuadVector4 | hkDisplaySerializeIStream.obj | retail, upstream name already matches, high
+// pdb params: v
+__declspec(noinline) void hkDisplaySerializeIStream::readQuadVector4(hkVector4& v)
 {
-    hkIArchive_readArrayGeneric(&obj, 4, 3);
-    obj.w = 0.0f;
+    hkIArchive_readArrayGeneric(&v, 4, 3);
+    v.w = 0.0f;
 }
 
 struct ArrayRecord
@@ -64,9 +66,11 @@ typedef void (__thiscall* DisplayTriangleReader)(hkDisplaySerializeIStream*, voi
 
 // @fnv 0x00ddacd0
 // src: HAVOK_LIB 0x00ddacd0
-void hkDisplaySerializeIStream::readGeometry(hkGeometry* geometry)
+// pdb: hkDisplaySerializeIStream::readGeometry | hkDisplaySerializeIStream.obj | retail, upstream name already matches, high
+// pdb params: g
+void hkDisplaySerializeIStream::readGeometry(hkGeometry* g)
 {
-    ArrayPair* arrays = reinterpret_cast<ArrayPair*>(geometry);
+    ArrayPair* arrays = reinterpret_cast<ArrayPair*>(g);
     {
         int firstCount;
         hkIArchive_readArrayGeneric(&firstCount, 4, 1);
@@ -132,27 +136,32 @@ hkIArchive* __fastcall DeleteIArchive(hkIArchive* archive, void*, unsigned char 
         hkMemoryAllocator* pAllocator = reinterpret_cast<hkMemoryAllocator*>(pHolder->m_heap);
         // Preserve the allocator's virtual free dispatch at vtable slot 2.
         typedef void (__thiscall* FreeFunction)(hkMemoryAllocator*, void*, unsigned int);
-        reinterpret_cast<FreeFunction>((*reinterpret_cast<void***>(pAllocator))[2])(pAllocator, archive, archive->m_usMemSizeAndFlags);
+        reinterpret_cast<FreeFunction>((*reinterpret_cast<void***>(pAllocator))[2])(pAllocator, archive, archive->m_memSizeAndFlags);
     }
     return archive;
 }
 
 // Reads the translation (w set to 1.0f), then a quaternion used to set the rotation.
 // @fnv 0x00ddac80
-// src: GUESS 0x00ddac80 (confidence: medium)
-void hkDisplaySerializeIStream::ReadTranslationAndRotation(hkTransform* target)
+// src: XBOX_RETAIL_PDB 0x00ddac80
+// pdb: hkDisplaySerializeIStream::readTransform | hkDisplaySerializeIStream.obj | retail, object-file gap fill, high
+// pdb params: t
+// pdb locals: position, orientation
+void hkDisplaySerializeIStream::readTransform(hkTransform* t)
 {
     Vec4 source;
     Vec4 destination;
     hkIArchive_readArrayGeneric(&source, 4, 3);
     source.w = 1.0f;
     hkIArchive_readArrayGeneric(&destination, 4, 4);
-    target->m_vTranslation = *(__m128*)&source;
-    target->m_rotation.hkRotation_set(reinterpret_cast<const hkQuaternion&>(destination));
+    t->m_vTranslation = *(__m128*)&source;
+    t->m_rotation.hkRotation_set(reinterpret_cast<const hkQuaternion&>(destination));
 }
 
 // Reads three 4-byte integers via FUN_00dd8fe0 and stores them sequentially into the output buffer.
 // @fnv 0x00ddac00
+// pdb: hkDisplaySerializeIStream::readTriangle | hkDisplaySerializeIStream.obj | retail, object-file run extension, low
+// pdb params: ti
 __declspec(noinline) void __fastcall ReadDisplayTriangle(hkDisplaySerializeIStream* stream, void*, void* output)
 {
     int* dst = (int*)output;

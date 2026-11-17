@@ -13,7 +13,7 @@
 class NiShader;
 
 typedef NiTStringTemplateMap<NiTPointerMap<const char*, NiShader*>, NiShader*> CreatorMap;
-extern CreatorMap* DAT_0126fa14;
+extern CreatorMap* NiD3DShaderProgramFactory_ms_pkShaderCreators; // src: XBOX_RETAIL_PDB 0x0126fa14 (old: DAT_0126fa14)
 extern "C" const char* __cdecl strchr(const char*, int);
 extern "C" int __cdecl tolower(int);
 struct DirectoryEntry
@@ -34,6 +34,9 @@ const char* NiD3DShaderProgramFactory::GetNextName(void*& apPosition)
     return 0;
 }
 // @fnv 0x00e93e70
+// pdb: NiD3DShaderProgramFactory::RegisterShaderCreator | NiD3DShaderProgramFactory.obj | retail, call graph (shared callers), medium
+// pdb params: pcExt, pkCreator
+// pdb locals: acFileExt, i
 bool NiD3DShaderProgramFactory::RegisterCreator(const char* pcName, NiD3DShaderProgramCreator* creator)
 {
     char lower[256];
@@ -45,32 +48,33 @@ bool NiD3DShaderProgramFactory::RegisterCreator(const char* pcName, NiD3DShaderP
         if (!pcName[i])
             break;
     }
-    if (!DAT_0126fa14)
+    if (!NiD3DShaderProgramFactory_ms_pkShaderCreators)
         CreateFactoryInstance();
-    DAT_0126fa14->SetAt(lower, reinterpret_cast<NiShader*>(creator));
+    NiD3DShaderProgramFactory_ms_pkShaderCreators->SetAt(lower, reinterpret_cast<NiShader*>(creator));
     return true;
 }
 
 struct Program;
-extern Program* DAT_0126fa10;
+extern Program* NiD3DShaderProgramFactory_ms_pkFactory; // src: XBOX_RETAIL_PDB 0x0126fa10 (old: DAT_0126fa10)
 // @fnv 0x00e92eb0
 // src: COMMUNITY 0x00e92eb0
 Program* NiD3DShaderProgramFactory_GetInstance()
 {
-    return DAT_0126fa10;
+    return NiD3DShaderProgramFactory_ms_pkFactory;
 }
 
 struct Program
 {
     virtual void Destroy(int);
 };
-extern Program* DAT_0126fa10;
+extern Program* NiD3DShaderProgramFactory_ms_pkFactory; // src: XBOX_RETAIL_PDB 0x0126fa10 (old: DAT_0126fa10)
 // @fnv 0x00e92ec0
+// pdb: NiD3DShaderProgramFactory::Shutdown | NiD3DShaderProgramFactory.obj | retail, call graph, medium
 void DestroyProgram()
 {
-    if (DAT_0126fa10)
-        DAT_0126fa10->Destroy(1);
-    DAT_0126fa10 = 0;
+    if (NiD3DShaderProgramFactory_ms_pkFactory)
+        NiD3DShaderProgramFactory_ms_pkFactory->Destroy(1);
+    NiD3DShaderProgramFactory_ms_pkFactory = 0;
 }
 
 struct Nd
@@ -101,9 +105,10 @@ int __fastcall NiD3D10ShaderProgramFactory_GetFirstProgramDirectory(Lst* l, int,
 
 // @fnv 0x00e93df0
 // src: COMMUNITY 0x00e93df0
+// pdb: NiD3DShaderProgramFactory::_SDMInit | NiD3DShaderProgramFactory.obj | debug, upstream name already matches, high
 void NiD3DShaderProgramFactory__SDMInit()
 {
-    if (DAT_0126fa14 == 0)
+    if (NiD3DShaderProgramFactory_ms_pkShaderCreators == 0)
         NiD3DShaderProgramFactory::CreateFactoryInstance();
 }
 
@@ -135,12 +140,16 @@ struct ShaderFactoryCacheView
     int m_unusedPrefix[5];
     NiTStringPointerMap<ShaderBufferRecord*>* m_pVertexShaderMap;
     NiTStringPointerMap<ShaderBufferRecord*>* m_pPixelShaderMap;
-    ShaderBufferRecord* __thiscall FindVertexShader(const char* pcShaderName);
-    ShaderBufferRecord* __thiscall FindPixelShader(const char* pcShaderName);
+    ShaderBufferRecord* __thiscall NiD3DShaderProgramFactory_GetVertexShader(const char* pcShaderName);
+    ShaderBufferRecord* __thiscall NiD3DShaderProgramFactory_GetPixelShader(const char* pcShaderName);
 };
 
 // @fnv 0x00e93060
-ShaderBufferRecord* ShaderFactoryCacheView::FindPixelShader(const char* pcShaderName)
+// src: XBOX_RETAIL_PDB 0x00e93060
+// pdb: NiD3DShaderProgramFactory::GetPixelShader | NiD3DShaderProgramFactory.obj | retail, call graph, high
+// pdb params: pcShaderName
+// pdb locals: pkPixelShader
+ShaderBufferRecord* ShaderFactoryCacheView::NiD3DShaderProgramFactory_GetPixelShader(const char* pcShaderName)
 {
     NiTStringPointerMap<ShaderBufferRecord*>* map = m_pPixelShaderMap;
     if (!map)
@@ -162,6 +171,7 @@ extern int DAT_010f0eb0;
 extern int DAT_010f0f50;
 
 // @fnv 0x00e93d80
+// pdb: NiD3DShaderProgramFactory::CreateShaderCreatorMap | NiD3DShaderProgramFactory.obj | retail, object-file run extension, low
 void CreateCreatorMap()
 {
     int* p = (int*)g_memoryManager.Allocate(0x14);
@@ -175,11 +185,11 @@ void CreateCreatorMap()
         _fnv_zlib_memset((void*)data, 0, 4 * p[1]);
         *(char*)(p + 4) = 1;
         p[0] = (int)&DAT_010f0f50;
-        DAT_0126fa14 = (CreatorMap*)p;
+        NiD3DShaderProgramFactory_ms_pkShaderCreators = (CreatorMap*)p;
     }
     else
     {
-        DAT_0126fa14 = 0;
+        NiD3DShaderProgramFactory_ms_pkShaderCreators = 0;
     }
 }
 
@@ -187,10 +197,13 @@ namespace fnv_00e92ee0 {
 // If a global flag is set and pkVertexShader is non-null, returns true when already recreated, otherwise asks its creator to recreate it.
 // @fnv 0x00e92ee0
 // src: XBOX_PDB 0x00e92ee0
+// pdb: NiD3DShaderProgramFactory::RecreateVertexShader | NiD3DShaderProgramFactory.obj | retail, upstream name already matches, high
+// pdb params: pkVertexShader
+// pdb locals: pkCreator
 bool __cdecl NiD3DShaderProgramFactory_RecreateVertexShader(NiD3DVertexShader* pkVertexShader)
 {
     NiD3DShaderProgramCreator* pkCreator;
-    if (DAT_0126fa10 && pkVertexShader)
+    if (NiD3DShaderProgramFactory_ms_pkFactory && pkVertexShader)
     {
         if (pkVertexShader->IsRecreated())
             return true;
@@ -203,7 +216,11 @@ bool __cdecl NiD3DShaderProgramFactory_RecreateVertexShader(NiD3DVertexShader* p
 }  // namespace fnv_00e92ee0
 
 // @fnv 0x00e93020
-ShaderBufferRecord* ShaderFactoryCacheView::FindVertexShader(const char* pcShaderName)
+// src: XBOX_RETAIL_PDB 0x00e93020
+// pdb: NiD3DShaderProgramFactory::GetVertexShader | NiD3DShaderProgramFactory.obj | retail, call graph, high
+// pdb params: pcShaderName
+// pdb locals: pkVertexShader
+ShaderBufferRecord* ShaderFactoryCacheView::NiD3DShaderProgramFactory_GetVertexShader(const char* pcShaderName)
 {
     if (!m_pVertexShaderMap)
         return 0;
@@ -219,6 +236,8 @@ struct FUN_00e93820_shell
 };
 // If p and m_map are non-null, inserts p into m_map keyed by p->GetName().
 // @fnv 0x00e93820
+// pdb: NiD3DShaderProgramFactory::InsertPixelShaderIntoMap | NiD3DShaderProgramFactory.obj | retail, call graph, medium
+// pdb params: pkShader
 void FUN_00e93820_shell::RegisterShader(NiD3DPixelShader* apShader)
 {
     if (apShader && m_map)
@@ -227,7 +246,7 @@ void FUN_00e93820_shell::RegisterShader(NiD3DPixelShader* apShader)
 
 struct Dealloc_00e93ab0
 {
-    void __thiscall _DeallocateAlias(void* p);
+    void __thiscall _DeallocateAlias(void* apMem);
 };
 struct Owner_00e93ab0
 {
@@ -235,6 +254,8 @@ struct Owner_00e93ab0
     void* __thiscall DestroyIfFlagged(unsigned int);
 };
 // @fnv 0x00e93ab0
+// pdb: NiTStringPointerMap<NiD3DShaderProgramCreator *>::`scalar deleting destructor' | NiD3DShaderProgramFactory.obj | retail, object-file gap fill, high
+// pdb params: this
 void* __thiscall Owner_00e93ab0::DestroyIfFlagged(unsigned int flags)
 {
     FUN_00e93540();
@@ -247,10 +268,13 @@ namespace fnv_00e92f30 {
 // Returns true if the pixel shader can be recreated or its creator successfully recreates it, otherwise false.
 // @fnv 0x00e92f30
 // src: XBOX_PDB 0x00e92f30
+// pdb: NiD3DShaderProgramFactory::RecreatePixelShader | NiD3DShaderProgramFactory.obj | retail, upstream name already matches, high
+// pdb params: pkPixelShader
+// pdb locals: pkCreator
 bool NiD3DShaderProgramFactory_RecreatePixelShader(NiD3DPixelShader* pkPixelShader)
 {
     NiD3DShaderProgramCreator* pkCreator;
-    if (DAT_0126fa10 && pkPixelShader)
+    if (NiD3DShaderProgramFactory_ms_pkFactory && pkPixelShader)
     {
         if (pkPixelShader->GetD3DPixelShader())
             return true;
@@ -294,6 +318,8 @@ struct FUN_00e937f0_shell
 };
 // If pkShader and the map are non-null, inserts pkShader into the map keyed by pkShader->GetKey().
 // @fnv 0x00e937f0
+// pdb: NiD3DShaderProgramFactory::InsertVertexShaderIntoMap | NiD3DShaderProgramFactory.obj | retail, call graph, medium
+// pdb params: pkShader
 void __thiscall FUN_00e937f0_shell::AddShader(ShaderArg* pkShader)
 {
     if (pkShader && m_pTaskMap)
@@ -306,12 +332,14 @@ extern int DAT_0126fa20;
 
 // @fnv 0x00e92f70
 // src: COMMUNITY 0x00e92f70
-void NiD3DShaderProgramFactory_SetD3DRenderer(int param_1)
+// pdb: NiD3DShaderProgramFactory::SetD3DRenderer | NiD3DShaderProgramFactory.obj | retail, upstream name already matches, high
+// pdb params: pkD3DRenderer
+void NiD3DShaderProgramFactory_SetD3DRenderer(int pkD3DRenderer)
 {
-    DAT_0126fa1c = param_1;
-    if (param_1 != 0)
+    DAT_0126fa1c = pkD3DRenderer;
+    if (pkD3DRenderer != 0)
     {
-        int* piVar1 = *(int**)(param_1 + 0x288);
+        int* piVar1 = *(int**)(pkD3DRenderer + 0x288);
         if (DAT_0126fa18 != 0)
         {
             (**(void(__stdcall**)(int))(*(int*)DAT_0126fa18 + 8))(DAT_0126fa18);
@@ -336,7 +364,7 @@ extern "C" int __cdecl strcmp(const char*, const char*);
 extern "C" unsigned int __cdecl strlen(const char*);
 int strcpy_s(char* dst, unsigned int size, const char* src);
 void* NiMalloc(unsigned int size);
-extern "C" int __cdecl FUN_00aa1360(const char* a, const char* b);
+extern "C" int __cdecl FUN_00aa1360(const char* s1, const char* s2);
 typedef NiTListItem<char* > DirNode;
 struct NodePoolView
 {
@@ -373,16 +401,20 @@ struct ProgFactoryDirs
 {
     void* vtbl;
     DirList m_kDirs;
-    void AddDirectory(const char* pcDir);
+    void NiD3DShaderProgramFactory_AddProgramDirectory(const char* pacDirectory);
 };
 // Normalizes '/' to '\\' in pcDir, returns if it already exists in m_kDirs, otherwise allocates a copy and adds it to the head of the list.
 // @fnv 0x00e93960
-void ProgFactoryDirs::AddDirectory(const char* pcDir)
+// src: XBOX_RETAIL_PDB 0x00e93960
+// pdb: NiD3DShaderProgramFactory::AddProgramDirectory | NiD3DShaderProgramFactory.obj | retail, object-file gap fill, high
+// pdb params: pacDirectory
+// pdb locals: pacNewAdd, kIter, pacCheckName, acSourcePath, uiLen, ui
+void ProgFactoryDirs::NiD3DShaderProgramFactory_AddProgramDirectory(const char* pacDirectory)
 {
-    if (!pcDir || strcmp(pcDir, "") == 0)
+    if (!pacDirectory || strcmp(pacDirectory, "") == 0)
         return;
     char acDir[260];
-    strcpy_s(acDir, 260, pcDir);
+    strcpy_s(acDir, 260, pacDirectory);
     for (unsigned int i = 0; i < strlen(acDir); i++)
     {
         if (acDir[i] == '/')
@@ -439,12 +471,16 @@ struct ShaderFactoryDirectoryView
     int unk04;
     BSBatchRenderer__AlphaList m_directories;
 
-    void __thiscall RemoveDirectoryEntry(const char* pcDirectory);
+    void __thiscall NiD3DShaderProgramFactory_RemoveProgramDirectory(const char* pcDirectory);
 };
 
 // Copies pcDirectory into a path buffer, converts '/' to '\\', then removes the matching entry from m_directories if found.
 // @fnv 0x00e93bb0
-void __thiscall ShaderFactoryDirectoryView::RemoveDirectoryEntry(const char* pcDirectory)
+// src: XBOX_RETAIL_PDB 0x00e93bb0
+// pdb: NiD3DShaderProgramFactory::RemoveProgramDirectory | NiD3DShaderProgramFactory.obj | retail, object-file gap fill, high
+// pdb params: pcDirectory
+// pdb locals: pcCheckName, kIter, acSourcePath, ui
+void __thiscall ShaderFactoryDirectoryView::NiD3DShaderProgramFactory_RemoveProgramDirectory(const char* pcDirectory)
 {
     if (!pcDirectory || strcmp(pcDirectory, "") == 0)
         return;
@@ -556,19 +592,22 @@ class CreatorMapView
 // Removes pkCreator from the global CreatorMapView at DAT_0126fa14 if found, iterating entries and calling RemoveAt on a matching key.
 // @fnv 0x00e93260
 // src: COMMUNITY 0x00e93260
+// pdb: NiD3DShaderProgramFactory::UnregisterShaderCreator | NiD3DShaderProgramFactory.obj | retail, upstream name already matches, high
+// pdb params: pkCreator
+// pdb locals: kIter, pkMapCreator, pcExt
 void __cdecl NiD3DShaderProgramFactory_UnregisterShaderCreator(NiD3DShaderProgramCreator* pkCreator)
 {
-    if (DAT_0126fa14 == 0)
+    if (NiD3DShaderProgramFactory_ms_pkShaderCreators == 0)
         return;
 
-    void* pvIter = ((CreatorMapView*)DAT_0126fa14)->GetFirstPos();
+    void* pvIter = ((CreatorMapView*)NiD3DShaderProgramFactory_ms_pkShaderCreators)->GetFirstPos();
     while (pvIter)
     {
         const char* pcExt = 0;
         NiD3DShaderProgramCreator* pkTestCreator = 0;
-        ((CreatorMapView*)DAT_0126fa14)->AdvanceToNextEntry(pvIter, pcExt, pkTestCreator);
+        ((CreatorMapView*)NiD3DShaderProgramFactory_ms_pkShaderCreators)->AdvanceToNextEntry(pvIter, pcExt, pkTestCreator);
         if (pkCreator == pkTestCreator)
-            ((CreatorMapView*)DAT_0126fa14)->RemoveAt(pcExt);
+            ((CreatorMapView*)NiD3DShaderProgramFactory_ms_pkShaderCreators)->RemoveAt(pcExt);
     }
 }
 
@@ -577,26 +616,29 @@ NiD3DShaderProgramCreator* __cdecl NiD3DShaderProgramFactory_GetShaderCreator(co
 // Returns the cached entry for pcName, or creates a shader with pkLibrary, registers it, and returns it.
 // @fnv 0x00e938e0
 // src: GAMEBRYO_LIB 0x00e938e0
-void* __cdecl NiD3DShaderProgramFactory_CreatePixelShaderFromBuffer(void* pkDesc, void* pkRenderer, const char* pcLibName, const char* pcName, void* pvArg4,
-                           void* pvArg5, void* pvArg6)
+// pdb: NiD3DShaderProgramFactory::CreatePixelShaderFromBuffer | NiD3DShaderProgramFactory.obj | retail, upstream name already matches, high
+// pdb params: pvBuffer, uiBufferSize, pcExt, pcShaderName, pcEntryPoint, pcShaderTarget, bRecoverable
+// pdb locals: pkPixelShader, pkCreator
+void* __cdecl NiD3DShaderProgramFactory_CreatePixelShaderFromBuffer(void* pvBuffer, void* uiBufferSize, const char* pcExt, const char* pcShaderName, void* pcEntryPoint,
+                           void* pcShaderTarget, void* bRecoverable)
 {
-    if (!DAT_0126fa10)
+    if (!NiD3DShaderProgramFactory_ms_pkFactory)
         return 0;
-    if (!pkDesc || !pkRenderer)
+    if (!pvBuffer || !uiBufferSize)
         return 0;
     ShaderBufferRecord* pkEntry =
-        reinterpret_cast<ShaderFactoryCacheView*>(DAT_0126fa10)->FindPixelShader(pcName);
+        reinterpret_cast<ShaderFactoryCacheView*>(NiD3DShaderProgramFactory_ms_pkFactory)->NiD3DShaderProgramFactory_GetPixelShader(pcShaderName);
     if (pkEntry)
         return pkEntry;
-    NiD3DShaderProgramCreator* pkLibrary = NiD3DShaderProgramFactory_GetShaderCreator(pcLibName);
+    NiD3DShaderProgramCreator* pkLibrary = NiD3DShaderProgramFactory_GetShaderCreator(pcExt);
     if (!pkLibrary)
         return 0;
     // The shared creator header does not yet declare the pixel-shader creation slot.
     typedef NiD3DPixelShader* (__thiscall* CreatePixelShader)(NiD3DShaderProgramCreator*, void*, void*, const char*,
                                                             void*, void*, void*);
     NiD3DPixelShader* pkShader =
-        (*reinterpret_cast<CreatePixelShader**>(pkLibrary))[6](pkLibrary, pkDesc, pkRenderer, pcName, pvArg4, pvArg5, pvArg6);
-    reinterpret_cast<FUN_00e93820_shell*>(DAT_0126fa10)->RegisterShader(pkShader);
+        (*reinterpret_cast<CreatePixelShader**>(pkLibrary))[6](pkLibrary, pvBuffer, uiBufferSize, pcShaderName, pcEntryPoint, pcShaderTarget, bRecoverable);
+    reinterpret_cast<FUN_00e93820_shell*>(NiD3DShaderProgramFactory_ms_pkFactory)->RegisterShader(pkShader);
     return pkShader;
 }
 
@@ -688,6 +730,7 @@ class FUN_00e93ad0 : public NiRefObject
 
 // Allocates string maps for NiD3DVertexShaderEntry and NiD3DPixelShaderEntry pointers, each with hash size 59 and copying disabled.
 // @fnv 0x00e93ad0
+// pdb: NiD3DShaderProgramFactory::NiD3DShaderProgramFactory | NiD3DShaderProgramFactory.obj | retail, object-file gap fill, high
 FUN_00e93ad0::FUN_00e93ad0() throw()
 {
     m_pVertexShaderMap = new ShaderStringMap<NiD3DVertexShaderEntry*>(59, false);
@@ -733,6 +776,8 @@ struct ShaderEntryOwner
 // Iterates nonnull elements, searches for matching list nodes, removes matches, and passes each element to FUN_00aa10f0.
 // @fnv 0x00e93cc0
 // src: XBOX_PDB 0x00e93cc0
+// pdb: NiD3DShaderProgramFactory::RemoveAllProgramDirectories | NiD3DShaderProgramFactory.obj | retail, upstream name already matches, high
+// pdb locals: pcCheckName, kIter
 void ShaderEntryOwner::NiD3DShaderProgramFactory_RemoveAllProgramDirectories()
 {
     ShaderEntryList* pEntries = &entries;
@@ -795,27 +840,30 @@ NiD3DShaderProgramCreator* NiD3DShaderProgramFactory_GetShaderCreator(const char
 // Returns a cached ShaderArg for p3, or creates one via the NiD3DShaderProgramCreator for p2 and registers it with the factory.
 // @fnv 0x00e93850
 // src: XBOX_PDB 0x00e93850
-ShaderArg* NiD3DShaderProgramFactory_CreateVertexShaderFromBuffer(const char* p0, const char* p1, const char* apCreatorName, const char* apShaderName,
-                        unsigned int aiParam0, unsigned int aiParam1, unsigned int aiParam2, unsigned int aiParam3,
-                        unsigned int aiParam4, unsigned int aiParam5)
+// pdb: NiD3DShaderProgramFactory::CreateVertexShaderFromBuffer | NiD3DShaderProgramFactory.obj | retail, upstream name already matches, high
+// pdb params: pvBuffer, uiBufferSize, pcExt, pcShaderName, pcEntryPoint, pcShaderTarget, hDecl, uiUsage, bSoftwareVP, bRecoverable
+// pdb locals: pkVertexShader, pkCreator
+ShaderArg* NiD3DShaderProgramFactory_CreateVertexShaderFromBuffer(const char* pvBuffer, const char* uiBufferSize, const char* pcExt, const char* pcShaderName,
+                        unsigned int pcEntryPoint, unsigned int pcShaderTarget, unsigned int hDecl, unsigned int uiUsage,
+                        unsigned int bSoftwareVP, unsigned int bRecoverable)
 {
-    if (!DAT_0126fa10)
+    if (!NiD3DShaderProgramFactory_ms_pkFactory)
         return 0;
 
-    if (!p0 || !p1)
+    if (!pvBuffer || !uiBufferSize)
         return 0;
 
-    ShaderArg* pkShader = (ShaderArg*)((ShaderFactoryCacheView*)DAT_0126fa10)->FindVertexShader(apShaderName);
+    ShaderArg* pkShader = (ShaderArg*)((ShaderFactoryCacheView*)NiD3DShaderProgramFactory_ms_pkFactory)->NiD3DShaderProgramFactory_GetVertexShader(pcShaderName);
     if (pkShader)
         return pkShader;
 
-    NiD3DShaderProgramCreator* pkCreator = NiD3DShaderProgramFactory_GetShaderCreator(apCreatorName);
+    NiD3DShaderProgramCreator* pkCreator = NiD3DShaderProgramFactory_GetShaderCreator(pcExt);
     if (!pkCreator)
         return (ShaderArg*)pkCreator;
 
     ShaderArg* pkNewShader =
-        pkCreator->CreateShader(p0, p1, apShaderName, aiParam0, aiParam1, aiParam2, aiParam3, aiParam4, aiParam5);
-    ((FUN_00e937f0_shell*)DAT_0126fa10)->AddShader(pkNewShader);
+        pkCreator->CreateShader(pvBuffer, uiBufferSize, pcShaderName, pcEntryPoint, pcShaderTarget, hDecl, uiUsage, bSoftwareVP, bRecoverable);
+    ((FUN_00e937f0_shell*)NiD3DShaderProgramFactory_ms_pkFactory)->AddShader(pkNewShader);
     return pkNewShader;
 }
 }  // namespace fnv_00e93850
@@ -823,7 +871,7 @@ ShaderArg* NiD3DShaderProgramFactory_CreateVertexShaderFromBuffer(const char* p0
 bool __cdecl NiFile_Access(const char* pcName, int eMode);
 extern "C" int __cdecl FUN_00ec65a6(char* d, unsigned int n, const char* s);
 int __cdecl NiShaderFactory_ReportError(int, bool, const char*, ...);
-void __cdecl NiD3DUtility_GetSplitPath(const char* pcPath, char* pcDrive, char* pcDir, char* pcFName, char* pcExt);
+void __cdecl NiD3DUtility_GetSplitPath(const char* pcFilename, char* pcDrive, char* pcDir, char* pcFname, char* pcExt);
 int __cdecl FUN_00a305b0(char* d, unsigned int n, const char* fmt, ...);
 typedef NiTListItem<const char* > ShPF_Node;
 struct ShPF_Factory
@@ -857,15 +905,19 @@ struct ShPF_Factory
 };
 inline ShPF_Factory* ShPF_Get()
 {
-    return (ShPF_Factory*)DAT_0126fa10;
+    return (ShPF_Factory*)NiD3DShaderProgramFactory_ms_pkFactory;
 }
 // Resolves a shader program file path by checking registered directories and returns true if the file exists.
 // @fnv 0x00e930a0
-bool FindShaderProgramFile(const char* pcShaderName, char* pcResolvedPath, unsigned int uiBufferLength)
+// src: XBOX_RETAIL_PDB 0x00e930a0
+// pdb: NiD3DShaderProgramFactory::ResolveShaderFileName | NiD3DShaderProgramFactory.obj | retail, string-set bridge, high
+// pdb params: pcOriginalName, pcTrueName, uiStringLen
+// pdb locals: acFileExt, acDir, acFileName, pacProgDir, kIter, acDrive, bGood
+bool NiD3DShaderProgramFactory_ResolveShaderFileName(const char* pcOriginalName, char* pcTrueName, unsigned int uiStringLen)
 {
-    if (NiFile_Access(pcShaderName, 0))
+    if (NiFile_Access(pcOriginalName, 0))
     {
-        FUN_00ec65a6(pcResolvedPath, uiBufferLength, pcShaderName);
+        FUN_00ec65a6(pcTrueName, uiStringLen, pcOriginalName);
         return true;
     }
     if (!ShPF_Get())
@@ -877,7 +929,7 @@ bool FindShaderProgramFile(const char* pcShaderName, char* pcResolvedPath, unsig
     char acDir[260];
     char acFileName[260];
     char acExt[256];
-    NiD3DUtility_GetSplitPath(pcShaderName, acDrive, acDir, acFileName, acExt);
+    NiD3DUtility_GetSplitPath(pcOriginalName, acDrive, acDir, acFileName, acExt);
     ShPF_Node* kIter;
     const char* pcDir = ShPF_Get()->GetFirstDir(kIter);
     while (pcDir)
@@ -886,9 +938,9 @@ bool FindShaderProgramFile(const char* pcShaderName, char* pcResolvedPath, unsig
         if (valid)
         {
             if (pcDir[strlen(pcDir) - 1] != '/' && pcDir[strlen(pcDir) - 1] != '\\')
-                FUN_00a305b0(pcResolvedPath, uiBufferLength, "%s\\%s%s", pcDir, acFileName, acExt);
+                FUN_00a305b0(pcTrueName, uiStringLen, "%s\\%s%s", pcDir, acFileName, acExt);
             else
-                FUN_00a305b0(pcResolvedPath, uiBufferLength, "%s%s%s", pcDir, acFileName, acExt);
+                FUN_00a305b0(pcTrueName, uiStringLen, "%s%s%s", pcDir, acFileName, acExt);
         }
         else
         {
@@ -896,9 +948,9 @@ bool FindShaderProgramFile(const char* pcShaderName, char* pcResolvedPath, unsig
         }
         if (valid)
         {
-            if (NiFile_Access(pcResolvedPath, 0))
+            if (NiFile_Access(pcTrueName, 0))
                 return true;
-            NiShaderFactory_ReportError(1, true, "Shader program file not found %s in directory %s\n", pcShaderName, pcDir);
+            NiShaderFactory_ReportError(1, true, "Shader program file not found %s in directory %s\n", pcOriginalName, pcDir);
         }
         pcDir = ShPF_Get()->GetNextDir(kIter);
     }
@@ -911,12 +963,15 @@ struct FUN_00a53c30_Map
     bool __thiscall FUN_00a53c30(const char* key, void*& value);
 };
 
-void __cdecl NiD3DUtility_GetFileExtension(const char* source, char* destination, unsigned int size);
+void __cdecl NiD3DUtility_GetFileExtension(const char* source, char* pcExt, unsigned int uiMaxLen);
 char __cdecl FUN_00ec67aa(int c);
 
 // Looks up a value in DAT_0126fa14 using the lowercased extension, or the filename when no extension is extracted.
 // @fnv 0x00e932f0
 // src: XBOX_PDB 0x00e932f0
+// pdb: NiD3DShaderProgramFactory::GetShaderCreator | NiD3DShaderProgramFactory.obj | retail, upstream name already matches, high
+// pdb params: pcFilename
+// pdb locals: acFileExt, pcSrc, i, pkCreator
 void* __cdecl NiD3DShaderProgramFactory_GetShaderCreator(const char* pcFilename)
 {
     char acFileExt[256];
@@ -924,7 +979,7 @@ void* __cdecl NiD3DShaderProgramFactory_GetShaderCreator(const char* pcFilename)
     const char* source;
     unsigned int index;
 
-    if (DAT_0126fa14 == 0)
+    if (NiD3DShaderProgramFactory_ms_pkShaderCreators == 0)
         return 0;
 
     if (pcFilename == 0 || *pcFilename == 0)
@@ -944,7 +999,7 @@ void* __cdecl NiD3DShaderProgramFactory_GetShaderCreator(const char* pcFilename)
     }
 
     creator = 0;
-    if (((FUN_00a53c30_Map*)DAT_0126fa14)->FUN_00a53c30(acFileExt, creator))
+    if (((FUN_00a53c30_Map*)NiD3DShaderProgramFactory_ms_pkShaderCreators)->FUN_00a53c30(acFileExt, creator))
         return creator;
 
     return 0;

@@ -7,6 +7,7 @@ class BGSSaveFormBuffer;
 class BGSLoadFormBuffer;
 class NiPoint3;
 
+// pdb: class CombatProcedure, size 0x10, 3 members
 class CombatProcedure
 {
 public:
@@ -35,9 +36,9 @@ public:
         USE_COMBAT_ITEM = 11
     };
 
-    CombatController* m_pCombatController;
+    CombatController* pCombatController; // src: XBOX_RETAIL_PDB +0x4 (old: m_pCombatController)
     int eStatus;
-    const char* m_pcProcedureName;
+    const char* pFailureReason; // src: XBOX_RETAIL_PDB +0xc (old: m_pcProcedureName)
 
     CombatProcedure();
 

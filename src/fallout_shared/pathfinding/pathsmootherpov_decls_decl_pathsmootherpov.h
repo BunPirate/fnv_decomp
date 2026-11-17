@@ -26,11 +26,12 @@ class CircularArc
     bool AngleSinCosArc_WithinRange(const SineCosine&) const;
 };
 
+// pdb: structure Sphere, size 0x10, 2 members
 class Sphere
 {
   public:
     NiPoint3 Center;
-    float Radius;
+    float fRadius; // src: XBOX_RETAIL_PDB +0xc (old: Radius)
     Sphere(const NiPoint3&, float);
 };
 

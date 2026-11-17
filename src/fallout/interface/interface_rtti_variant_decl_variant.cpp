@@ -27,18 +27,21 @@ void __cdecl VATSMenu_Create();
 void __cdecl Interface_CreateVATSMenu();
 
 Tile* __cdecl Tile_GetMenuByClass(unsigned int);
-bool __cdecl IsSomethingZero();
-void __cdecl CreateSleepWaitMenu(bool);
+bool __cdecl Interface_IsPipboyClosed();
+void __cdecl SleepWaitMenu_Create(bool);
 // @fnv 0x007054f0
 // src: COMMUNITY 0x007054f0
-void __cdecl Interface_CreateSleepMenu(bool sleep)
+// pdb: Interface::CreateSleepMenu | Interface.obj | retail, upstream name already matches, high
+// pdb params: abSleep
+// pdb locals: pmenu, ptile
+void __cdecl Interface_CreateSleepMenu(bool abSleep)
 {
-    if (InterfaceManager_GetSingleton() && InterfaceManager_GetSingleton()->TESTextureList_GetTextureCount() && IsSomethingZero())
+    if (InterfaceManager_GetSingleton() && InterfaceManager_GetSingleton()->TESTextureList_GetTextureCount() && Interface_IsPipboyClosed())
     {
         Tile* menu = Tile_GetMenuByClass(1012);
         SleepWaitMenu* tile = menu ? dynamic_cast<SleepWaitMenu*>(static_cast<const Tile*>(menu)->GetMenu()) : 0;
         if (tile)
             delete tile;
-        CreateSleepWaitMenu(sleep);
+        SleepWaitMenu_Create(abSleep);
     }
 }

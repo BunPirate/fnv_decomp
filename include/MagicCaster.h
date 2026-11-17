@@ -18,6 +18,7 @@ class hkpRigidBody;
 struct blob12;
 
 
+// pdb: class MagicCaster, size 0xc, 2 members
 class MagicCaster
 {
   public:
@@ -36,11 +37,11 @@ class MagicCaster
     MagicEffectCollection* apTargetLight;
     State eState;
 
-    virtual void CastSpellOnCaster(SpellItem* spell, bool immediate);
+    virtual void CastSpellOnCaster(SpellItem* apSpell, bool abLoadCast);
     virtual void CastSpellOnSelf(SpellItem* spell, bool immediate);
     virtual void CastSpellAtLocation(SpellItem* spell, bool immediate);
-    virtual void CastMagicItem(MagicItem* item, bool arg1, MagicTarget* target, float value, bool arg2);
-    virtual void CastSpellAtTarget(SpellItem* spell, MagicTarget* target, bool immediate);
+    virtual void CastMagicItem(MagicItem* apSpell, bool abLoadCast, MagicTarget* apDesiredTarget, float afEffectivenessMult, bool abAdjustOnlyHostileEffectiveness);
+    virtual void CastSpellAtTarget(SpellItem* apSpell, MagicTarget* apDesiredTarget, bool abLoadCast);
     virtual void CastMagicItemOnObject(MagicItem* item, TESBoundObject* object, bool immediate);
     virtual MagicTarget* GetSpellTarget();
     virtual void UpdateCastState();
@@ -50,24 +51,24 @@ class MagicCaster
     virtual TESObjectREFR* GetCasterReference();
     virtual NiNode* GetMagicNode();
     virtual MagicItem* GetSelectedMagicItem();
-    virtual bool HasActiveEffect(ActiveEffect* effect);
+    virtual bool HasActiveEffect(ActiveEffect* apActiveEffect);
     virtual float GetCasterEffectiveness(bool flag, float value);
     virtual void SetSelectedMagicItem(MagicItem* item);
     virtual MagicTarget* GetCurrentMagicTarget();
     virtual void SetMagicTarget(MagicTarget* target);
-    virtual ActiveEffect* CreateActiveEffect(MagicItem* item, EffectItem* effect, TESBoundObject* source);
+    virtual ActiveEffect* CreateActiveEffect(MagicItem* apSpell, EffectItem* apEffectItem, TESBoundObject* apSource);
 
     MagicCaster();
     void UpdateCaster(float delta);
     bool CastSpell(MagicItem* item, MagicTarget* target, bool immediate);
     void EndAim();
     bool CanCastSpellOnObject(TESBoundObject* object);
-    void RemoveCastingArt();
+    void InterruptCast();
     void LaunchMagicProjectile(MagicItem* item, TESObjectCELL* cell, blob12 position,
                                MagicProjectile* projectile, TESObjectREFR* target, bool flag, float arg1, float arg2);
     void LaunchMagicProjectile(MagicItem* item, MagicProjectile* projectile, TESObjectREFR* target,
                                bool flag, float arg1, float arg2);
-    void LaunchMagicProjectile(float value, TESBoundObject* object, bool arg1, float impulseRadiusSquared, bool arg2);
+    void LaunchMagicProjectile(float afEffectStrength, TESBoundObject* apSource, bool abLoadCast, float afEffectivenessMult, bool abAdjustOnlyHostileEffectiveness);
     void CreateSpellImpactEffect(blob12 position, TESObjectCELL* cell, MagicItem* item, EffectItem* effect,
                                  void* data, float arg1, float arg2);
     void ApplyMagicEffectToActor(Actor* actor, blob12 position, EffectItem* effect, float value);
@@ -80,13 +81,13 @@ class MagicCaster
     MagicEffectCollection* GetMagicLight();
     void UpdateMagicCaster(float delta);
     unsigned int GetCasterHandle();
-    static MagicCaster* GetCasterByHandle(unsigned int handle);
+    static MagicCaster* GetCasterByHandle(unsigned int aiFormID);
     void FireRefData();
     void ApplyMagicEffect(MagicItem* item, ActiveEffect* effect, TESObjectCELL* cell, blob12 position,
                           MagicTarget* target, MagicProjectile* projectile, void* data, bool* flag, float value);
     bool RunExplosionLOSPick(blob12 position, Actor* actor);
     void CreateMagicProjectile(MagicItem* item, int type, blob12 position, void* data);
-    bool AddEffectToTarget(MagicTarget* target, blob12 position, MagicItem* item, ActiveEffect* effect, bool immediate);
+    bool AddEffectToTarget(MagicTarget* apTarget, blob12 aSourceLoc, MagicItem* apSpell, ActiveEffect* apActiveEffect, bool abAreaTarget);
     bool AddEffectToTarget(MagicTarget* target, NiPoint3 position, MagicItem* item, ActiveEffect* effect, bool immediate);
     void SetState(int state, char* reason);
     void SetState(MagicCaster::State state, char* reason);

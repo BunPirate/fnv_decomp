@@ -18,6 +18,8 @@ inline void* __cdecl operator new(size_t, void* storage) { return storage; }
 
 // @fnv 0x00a7e770
 // src: EXE 0x00a7e770
+// pdb: NiBillboardNode::CreateObject | NiBillboardNode.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 NiBillboardNode* NiBillboardNode_CreateObject()
 {
     void* storage = NiNode::operator new(sizeof(NiBillboardNode));

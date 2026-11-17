@@ -91,8 +91,11 @@ const char kInvalidMorphDistances[] =
 
 // Initializes a terrain node: stores manager/parent/level/coords, computes center and distances, and recursively creates four child nodes unless at min level.
 // @fnv 0x006fd210
-BGSTerrainNode::BGSTerrainNode(BGSTerrainManager* pManagerArg, BGSTerrainNode* pParentArg, short sX, short sY,
-                               unsigned int uiSize, bool bPersistentArg)
+// pdb: BGSTerrainNode::BGSTerrainNode | BGSTerrainNode.obj | retail, upstream name already matches, high
+// pdb params: apManager, apParent, asBaseCellX, asBaseCellY, aiLevel, abPersistentNode
+// pdb locals: fchunkCornerX, fchunkCenterY, tempMemContext, fchunkCornerY, fchunkCenterX, fchunkWidth, corner, i, bpersistent, inewLevel, shalfCellX, shalfCellY
+BGSTerrainNode::BGSTerrainNode(BGSTerrainManager* apManager, BGSTerrainNode* apParent, short asBaseCellX, short asBaseCellY,
+                               unsigned int aiLevel, bool abPersistentNode)
 {
     AutoMemContext fCornerX(MEM_CONTEXT_MEM_CONTEXT_LODMANAGER, true, kBGSTerrainNodeFileLabel,
                             kBGSTerrainNodeCtorLine);
@@ -100,14 +103,14 @@ BGSTerrainNode::BGSTerrainNode(BGSTerrainManager* pManagerArg, BGSTerrainNode* p
     pChunk = 0;
     pBlock = 0;
     pTrees = 0;
-    pManager = pManagerArg;
-    pParent = pParentArg;
-    iLevel = uiSize;
-    m_sX = sX;
-    m_sY = sY;
+    pManager = apManager;
+    pParent = apParent;
+    iLevel = aiLevel;
+    m_sX = asBaseCellX;
+    m_sY = asBaseCellY;
     for (int i = 0; i < 4; i++)
         pChildren[i] = 0;
-    if (uiSize <= pManager->GetMaxLevel())
+    if (aiLevel <= pManager->GetMaxLevel())
         m_bWithinMaximumLevel = true;
     else
         m_bWithinMaximumLevel = false;
@@ -119,8 +122,8 @@ BGSTerrainNode::BGSTerrainNode(BGSTerrainManager* pManagerArg, BGSTerrainNode* p
     NiPoint3 corner(fMin, kCtx, 0.0f);
     Center = NiPoint3(fCornerY, fZ, 0.0f);
     m_fNodeRadius = static_cast<const NiPoint3&>(Center - corner).ComputeMagnitude();
-    m_bPersistent = bPersistentArg;
-    if (uiSize > pManager->GetMinLevel())
+    m_bPersistent = abPersistentNode;
+    if (aiLevel > pManager->GetMinLevel())
     {
         unsigned int uH = iLevel >> 1;
         short sMX = m_sX + (iLevel >> 1);
@@ -167,6 +170,8 @@ struct FUN_00485b60
 };
 // Calls FUN_00485bc0, checks whether the first file's list is non-empty, and ORs that flag into bit 24 of the result.
 // @fnv 0x00485b60
+// pdb: TESForm::GetFormIDAsSaved | TESForm.obj | debug, call graph, medium
+// pdb locals: ifileindex, iid, pfile
 unsigned int FUN_00485b60::Go()
 {
     char flag;
@@ -195,6 +200,9 @@ struct FUN_006fd750
 };
 // Calls Go(7), then for each of the four pointers at offset 0x20 calls Del(1) on the non-null ones.
 // @fnv 0x006fd750
+// pdb: MagicItem::Unload | MagicItem.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
+// pdb params: abRelease
+// pdb locals: plist, binProgess, pavEffectSetting, pitem, pes, pform, pweapon, parmor, pcreature, pnpc, modelList, pfilename, path, pfilelist, plastBackSlash, pcreatureFileList, plastSlash, pkfList, pFilenameList, pspecialList
 void FUN_006fd750::Unload()
 {
     ((FUN_006fd7b0*)this)->Go(7);
@@ -226,6 +234,7 @@ struct FUN_006fd8f0
 };
 // Calls Dtor on this object, frees it with operator delete when flags has bit 0 set, and returns this.
 // @fnv 0x006fd8f0
+// pdb: BGSTerrainChunk::`scalar deleting destructor' | BGSTerrainNode.obj | debug, object-file run extension, low
 void* FUN_006fd8f0::Del(unsigned int flags)
 {
     ((FUN_006fa420*)this)->Dtor();
@@ -241,11 +250,13 @@ struct FUN_006f5370
 };
 struct FUN_006fd920
 {
-    void* Del(unsigned int flags);
+    void* BGSDistantObjectBlock_ScalarDtor(unsigned int flags);
 };
 // Calls Dtor on this object, frees it with operator delete when flags has bit 0 set, and returns this.
 // @fnv 0x006fd920
-void* FUN_006fd920::Del(unsigned int flags)
+// src: XBOX_DEBUG_PDB 0x006fd920
+// pdb: BGSDistantObjectBlock::`scalar deleting destructor' | BGSTerrainNode.obj | debug, call graph, high
+void* FUN_006fd920::BGSDistantObjectBlock_ScalarDtor(unsigned int flags)
 {
     ((FUN_006f5370*)this)->Dtor();
     if (flags & 1)
@@ -271,21 +282,24 @@ struct FUN_006fd980_shell
     int f18, f1c;
     FUN_006fd980_shell* pChildren[4];
     void ClearSelectedParts(int a);
-    void BGSTerrainNode_UnloadDataRecurse(int a);
+    void BGSTerrainNode_UnloadDataRecurse(int aeDataToUnload);
 };
 // @fnv 0x006fd980
 // src: COMMUNITY 0x006fd980
-void FUN_006fd980_shell::BGSTerrainNode_UnloadDataRecurse(int aiFlags)
+// pdb: BGSTerrainNode::UnloadDataRecurse | BGSTerrainNode.obj | retail, upstream name already matches, high
+// pdb params: aeDataToUnload
+// pdb locals: i
+void FUN_006fd980_shell::BGSTerrainNode_UnloadDataRecurse(int aeDataToUnload)
 {
     if (pChunk || pBlock)
-        ClearSelectedParts(aiFlags);
+        ClearSelectedParts(aeDataToUnload);
     for (int i = 0; i < 4; i++)
     {
         if (pChildren[i])
-            pChildren[i]->BGSTerrainNode_UnloadDataRecurse(aiFlags);
+            pChildren[i]->BGSTerrainNode_UnloadDataRecurse(aeDataToUnload);
     }
     m_bNodeStateFlag = 0;
-    if (aiFlags & 4)
+    if (aeDataToUnload & 4)
     {
         if (this == pManager->_ref_00726070())
             BGSDistantTreeBlock_DeallocateStaticData();
@@ -333,6 +347,8 @@ struct FUN_006ff210_shell
 // Returns a NiPoint2 chosen from the mode field: (0.5,0), (0.5,0.5), (0,0) or (0,0.5), defaulting to (0,0).
 // @fnv 0x006ff210
 // src: COMMUNITY 0x006ff210
+// pdb: BGSTerrainNode::GetOffsetFromParent | BGSTerrainNode.obj | debug, object-file gap fill, low
+// pdb locals: foffx, foffy
 NiPoint2 FUN_006ff210_shell::BGSTerrainNode_SetFloatPairForLinkID()
 {
     float x, y;
@@ -369,7 +385,7 @@ typedef void (__thiscall* TerrainSetBoolFunction)(NiNode*, int, int, int);
 namespace fnv_006ff2c0 {
 struct Chunk
 {
-    int BGSTerrainChunk_GetTexture(int i);
+    int BGSTerrainChunk_GetTexture(int aTexType);
 };
 struct Holder
 {
@@ -390,6 +406,8 @@ struct FUN_006ff2c0_shell
     void UpdateTileFromChunk();
 };
 // @fnv 0x006ff2c0
+// pdb: BGSTerrainNode::StartTextureMorph | BGSTerrainNode.obj | retail, object-file run extension, low
+// pdb locals: pdiffuse, plp, pnormal, off
 void FUN_006ff2c0_shell::UpdateTileFromChunk()
 {
     int c;
@@ -420,6 +438,8 @@ struct FUN_006ff380_shell
 };
 // @fnv 0x006ff380
 // src: COMMUNITY 0x006ff380
+// pdb: BGSTerrainNode::EndTextureMorph | BGSTerrainNode.obj | retail, object-file run extension, low
+// pdb locals: plp
 void FUN_006ff380_shell::BGSTerrainNode_EndFade()
 {
     NiNode* node;
@@ -461,6 +481,9 @@ struct FUN_006ff4c0_shell
     void ProcessBlock();
 };
 // @fnv 0x006ff4c0
+// pdb: BGSTerrainNode::~BGSTerrainNode | BGSTerrainNode.obj | retail, object-file run extension, low
+// pdb note: debug build links it to BGSTerrainNode::TriggerApocalypseRecurse
+// pdb locals: i
 void FUN_006ff4c0_shell::ProcessBlock()
 {
     if (_ref_00726070() == pManager->GetThreadID() && pBlock)
@@ -492,6 +515,8 @@ struct FUN_006fda10_shell
 
 // @fnv 0x006fda10
 // src: COMMUNITY 0x006fda10
+// pdb: BGSTerrainNode::UnloadPersistentDataRecurse | BGSTerrainNode.obj | debug, object-file run extension, low
+// pdb locals: i
 void FUN_006fda10_shell::BGSTerrainNode_DestroyRecurse()
 {
     int i;
@@ -523,6 +548,8 @@ struct FUN_006ff3f0_shell : FUN_006ff380_shell
 
 // @fnv 0x006ff3f0
 // src: COMMUNITY 0x006ff3f0
+// pdb: BGSTerrainNode::UpdateFadeParameters | BGSTerrainNode.obj | retail, upstream name already matches, high
+// pdb locals: uitime, uielapsed, ffrac, off
 void FUN_006ff3f0_shell::BGSTerrainNode_UpdateFadeParameters()
 {
     unsigned int delta;
@@ -548,7 +575,7 @@ struct ClearPartA
 {
     int unk00;
     ~ClearPartA();
-    void SetAllAppCulled();
+    void BGSTerrainChunk_Hide();
 };
 struct ClearPartB
 {
@@ -598,6 +625,8 @@ struct FUN_006fd7b0_Owner
 // Deletes pPartA/pPartB/pPartC according to auiFlags bits, conditionally keeping pPartA, and clears pFlagHolder->bActive.
 // @fnv 0x006fd7b0
 // src: GUESS 0x006fd7b0 (confidence: medium)
+// pdb: BGSTerrainNode::UnloadData | BGSTerrainNode.obj | retail, call graph, medium
+// pdb params: aeDataToUnload
 void FUN_006fd7b0_Owner::ClearSelectedParts(unsigned int auiFlags)
 {
     if (bInitialized && pPartA && (auiFlags & 1))
@@ -608,7 +637,7 @@ void FUN_006fd7b0_Owner::ClearSelectedParts(unsigned int auiFlags)
             pPartA = 0;
         }
         else
-            pPartA->SetAllAppCulled();
+            pPartA->BGSTerrainChunk_Hide();
     }
     if (pPartB && (auiFlags & 2))
     {
@@ -675,7 +704,7 @@ struct SceneUpdate
     virtual void v45() = 0;
     virtual void v46() = 0;
     virtual void Refresh() = 0;
-    void SetTaskFlag2000(bool);
+    void NiAVObject_SetFixedBound(bool);
     void NiCamera_SetMaxFarNearRatio(float);
     void FUN_00450f90(bool);
 };
@@ -736,6 +765,9 @@ struct TerrainUpdate
 };
 // Recursively updates a terrain node: decides split vs geometry state, creates or refreshes its chunk, and updates child nodes and scene objects.
 // @fnv 0x006fdaa0
+// pdb: BGSTerrainNode::UpdateTerrain | BGSTerrainNode.obj | debug, object-file run extension, low
+// pdb params: aViewPosition, abUpdateWaterVisibility
+// pdb locals: bshouldSplit, tempMemContext, bforceSplit, i, pmesh, battachNow, proot, pactualCurrentWorld, pwater0, pwater1
 void TerrainUpdate::UpdateTerrainNode(void* arg, bool update)
 {
     AutoMemContext context4((MEM_CONTEXT)35, true, kBGSTerrainNodeFileLabel, 284);
@@ -781,9 +813,9 @@ void TerrainUpdate::UpdateTerrainNode(void* arg, bool update)
                 chunk->BGSTerrainChunk_Attach();
                 chunk->GetModel_0056c7f0()->NiCamera_SetMaxFarNearRatio((float)((level / 4.0) * g_011d86f8.Float()->f));
                 SceneUpdate* root7 = Get()->GetMenuRoot();
-                root7->SetTaskFlag2000(false);
+                root7->NiAVObject_SetFixedBound(false);
                 root7->Refresh();
-                root7->SetTaskFlag2000(true);
+                root7->NiAVObject_SetFixedBound(true);
             }
         }
         if (chunk->AnimatingText_IsDisplayFinished() && childrenLoaded)
@@ -820,28 +852,31 @@ struct TerrainSceneX
 
 unsigned int TerrainTreeLevelX();
 bool TerrainTreesEnabledX();
-void TerrainTreesInitX(const char* pName);
+void BGSDistantTreeBlock_AllocateStaticData(const char* apWorld);
 
 struct TerrainNodeX : BGSTerrainNode
 {
     unsigned int GetLevel();
     TerrainSceneX* GetOwner();
-    bool WantsTrees(int iArg);
-    void BGSTerrainNode_UpdateTrees(int iArg);
+    bool WantsTrees(int aViewPosition);
+    void BGSTerrainNode_UpdateTrees(int aViewPosition);
 };
 
 // @fnv 0x006fe330
 // src: COMMUNITY 0x006fe330
-void TerrainNodeX::BGSTerrainNode_UpdateTrees(int iArg)
+// pdb: BGSTerrainNode::UpdateTrees | BGSTerrainNode.obj | retail, upstream name already matches, high
+// pdb params: aViewPosition
+// pdb locals: tempMemContext, i
+void TerrainNodeX::BGSTerrainNode_UpdateTrees(int aViewPosition)
 {
     AutoMemContext kMemContext((MEM_CONTEXT)0x25, true, kBGSTerrainNodeFileLabel, 0x1ed);
     if (GetLevel() == TerrainTreeLevelX())
     {
         if (!TerrainTreesEnabledX())
         {
-            TerrainTreesInitX(GetOwner()->GetName());
+            BGSDistantTreeBlock_AllocateStaticData(GetOwner()->GetName());
         }
-        if (WantsTrees(iArg))
+        if (WantsTrees(aViewPosition))
         {
             if (pTrees == 0)
             {
@@ -852,7 +887,7 @@ void TerrainNodeX::BGSTerrainNode_UpdateTrees(int iArg)
                 if (pTrees->IsLoaded())
                 {
                     pTrees->Prepare();
-                    pTrees->Attach();
+                    pTrees->UpdateShaderProperties();
                 }
             }
         }
@@ -868,7 +903,7 @@ void TerrainNodeX::BGSTerrainNode_UpdateTrees(int iArg)
         {
             if (pChildren[i] != 0)
             {
-                ((TerrainNodeX*)pChildren[i])->BGSTerrainNode_UpdateTrees(iArg);
+                ((TerrainNodeX*)pChildren[i])->BGSTerrainNode_UpdateTrees(aViewPosition);
             }
         }
     }
@@ -900,6 +935,9 @@ class TerrainNodeX
 };
 
 // @fnv 0x006ff0d0
+// pdb: BGSTerrainNode::UpdateWaterVisibility | BGSTerrainNode.obj | debug, call graph, low
+// pdb params: apWater, abDebugOutput
+// pdb locals: psegments, pactualWorld, x, y, pcell, isegment, icellx, icelly
 void TerrainNodeX::UpdateVisibility(TerrainVisibility* pVisibility, int unused)
 {
     TESWorldSpace* pWorld = g_TES->GetParentWorldSpace();
@@ -1070,11 +1108,14 @@ struct FeeNode
     void* pChunk;
     BlockObj* pBlock;
     bool BGSTerrainNode_CheckIntersectsLoadedRange();
-    void BGSTerrainNode_UpdateBlockVisibility(int a);
+    void BGSTerrainNode_UpdateBlockVisibility(int abDebugOutput);
 };
 // @fnv 0x006fee90
 // src: COMMUNITY 0x006fee90
-void FeeNode::BGSTerrainNode_UpdateBlockVisibility(int a)
+// pdb: BGSTerrainNode::UpdateBlockVisibility | BGSTerrainNode.obj | retail, upstream name already matches, high
+// pdb params: abDebugOutput
+// pdb locals: pactualWorld, psegments, x, y, pcell, isegment, icellx, icelly
+void FeeNode::BGSTerrainNode_UpdateBlockVisibility(int abDebugOutput)
 {
     TESWorldSpace* getter5 = DAT_011dea10->GetParentWorldSpace();
     GridObj* grid;

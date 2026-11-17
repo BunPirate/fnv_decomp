@@ -4,12 +4,14 @@
 #include "../../include/MemoryManager.h"
 
 // @fnv 0x00af2f60
+// pdb: BSSaveDataSystemUtility::Destroy | BSSaveDataSystemUtility.obj | debug, upstream name already matches, high
 void BSSaveDataSystemUtility::Destroy()
 {
-    m_pOperationContext = 0;
+    pSaveDataFile = 0;
 }
 
 // @fnv 0x00af2f40
+// pdb: BSSaveDataSystemUtility::Initialize | BSSaveDataSystemUtility.obj | debug, object-file gap fill, medium
 void BSSaveDataSystemUtility::vf04()
 {
     Destroy();
@@ -20,6 +22,7 @@ extern MemoryManager g_memoryManager;
 void DestroyBSSaveDataSystemUtility();
 
 // @fnv 0x00af2fc0
+// pdb: BSSaveDataSystemUtility::`scalar deleting destructor' | BSSaveDataSystemUtility.obj | debug, object-file run extension, low
 void* BSSaveDataSystemUtility::vf00(unsigned int flags)
 {
     reinterpret_cast<void (__thiscall*)(BSSaveDataSystemUtility*)>(&DestroyBSSaveDataSystemUtility)(this);

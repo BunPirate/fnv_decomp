@@ -3,6 +3,7 @@
 #include "Menu.h"
 #include "ListBox_enum_ActorValue__Index_.h"
 
+// pdb: class CharGenMenu, size 0x88, bases: Menu, 8 members
 class CharGenMenu : public Menu
 {
 public:
@@ -43,18 +44,18 @@ public:
             unsigned char unk56[2];
         };
     };
-    ListBox_enum_ActorValue__Index_ list;
+    ListBox_enum_ActorValue__Index_ lbItemList; // src: XBOX_RETAIL_PDB +0x58 (old: list)
 
     CharGenMenu();
     void SetTile(int id, Tile* tile);
     int __thiscall vf13();
     int __thiscall GetMenuID_00753340();
-    void UpdateValueString(Tile*);
-    void UpdatePointsDisplay();
+    void SetDisplayString(Tile*);
+    void UpdatePointCounter();
     bool HasAllSlotsSet();
     void HandleTileClick(int, Tile*);
-    void InitMenu();
-    void BuildSkillList();
+    void InitAttributeList();
+    void InitSkillList();
     void HandleSkillMenuCommand(int, Tile*);
     bool __thiscall UpdateState_00754150(int, float);
     bool __thiscall HandleButton(int, float);

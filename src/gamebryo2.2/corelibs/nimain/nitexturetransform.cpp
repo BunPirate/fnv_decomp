@@ -56,21 +56,23 @@ struct FUN_00a88f00_Class
     int unk3c;
     int unk40;
     unsigned int unk44;
-    void NiTextureTransform_LoadBinary(NiStream& stream);
+    void NiTextureTransform_LoadBinary(NiStream& kStream);
 };
 
 // Reads point00, point0c, unk08, a value into unk44 and point14 from the stream, then sets loaded to true.
 // @fnv 0x00a88f00
 // src: COMMUNITY 0x00a88f00
-void FUN_00a88f00_Class::NiTextureTransform_LoadBinary(NiStream& stream)
+// pdb: NiTextureTransform::LoadBinary | NiTextureTransform.obj | retail, upstream name already matches, high
+// pdb params: kStream
+void FUN_00a88f00_Class::NiTextureTransform_LoadBinary(NiStream& kStream)
 {
-    point00.LoadBinary(&stream);
-    point0c.LoadBinary(&stream);
-    ReadBinaryValue(stream, unk08);
+    point00.LoadBinary(&kStream);
+    point0c.LoadBinary(&kStream);
+    ReadBinaryValue(kStream, unk08);
     unsigned int value;
-    ReadBinaryValue(stream, value);
+    ReadBinaryValue(kStream, value);
     unk44 = value;
-    point14.LoadBinary(&stream);
+    point14.LoadBinary(&kStream);
     loaded = true;
 }
 
@@ -98,6 +100,8 @@ class FUN_00a88f80_cls
 // Writes point00, point0c, unk08, unk44 and point14 to the stream in that order.
 // @fnv 0x00a88f80
 // src: COMMUNITY 0x00a88f80
+// pdb: NiTextureTransform::SaveBinary | NiTextureTransform.obj | retail, upstream name already matches, high
+// pdb params: kStream
 void FUN_00a88f80_cls::NiTextureTransform_SaveBinary(NiStream& stream)
 {
     point00.SaveBinary(&stream);

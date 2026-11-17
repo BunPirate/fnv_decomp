@@ -98,43 +98,46 @@ struct TargetItem
 
 // @fnv 0x00d29830
 // src: COMMUNITY 0x00d29830
-TargetItem* __cdecl hkRigidMotionUtilApplyForcesAndBuildAccumulators(hkStepInfo* a0, hkpMotion** a1, int a2, int a3, TargetItem* a4)
+// pdb: hkRigidMotionUtilApplyForcesAndBuildAccumulators | hkpRigidMotionUtil.obj | retail, upstream name already matches, high
+// pdb params: info, motions, numMotions, motionOffset, accumulatorsOut
+// pdb locals: i, assertBuf, ostr
+TargetItem* __cdecl hkRigidMotionUtilApplyForcesAndBuildAccumulators(hkStepInfo* info, hkpMotion** motions, int numMotions, int motionOffset, TargetItem* accumulatorsOut)
 {
-    int count = a2 - 1;
+    int count = numMotions - 1;
     if (count >= 0)
     {
 
-        OutputCell* last = &a4->cells[7];
+        OutputCell* last = &accumulatorsOut->cells[7];
         do
         {
-            hkpMotion* item = (hkpMotion*)((char*)*a1 + a3);
+            hkpMotion* item = (hkpMotion*)((char*)*motions + motionOffset);
             switch (*reinterpret_cast<const unsigned char*>(&item->m_type))
             {
             case 0:
             case 3:
             case 6: {
-                float dt = a0->m_fTimeStep;
-                float d1 = 1.0f - dt * item->m_kMotionState.m_fLinearDamping;
+                float dt = info->m_deltaTime;
+                float d1 = 1.0f - dt * item->m_kMotionState.m_linearDamping;
 
                 LocalM128 s1 = broadcast(0.0f > d1 ? 0.0f : d1);
                 item->m_kTranslationalVelocity.m_vComponents = _mm_mul_ps(s1, item->m_kTranslationalVelocity.m_vComponents);
                 _ReadWriteBarrier();
 
-                float d2 = 1.0f - dt * item->m_kMotionState.m_fAngularDamping;
+                float d2 = 1.0f - dt * item->m_kMotionState.m_angularDamping;
 
                 LocalM128 s2 = broadcast(0.0f > d2 ? 0.0f : d2);
                 item->m_kAngularVelocity.m_vComponents = _mm_mul_ps(s2, item->m_kAngularVelocity.m_vComponents);
 
                 hkMotionState* sub = &item->m_kMotionState;
                 ((hkMatrix3*)&last[-2].vector)->_setTranspose(*reinterpret_cast<const hkMatrix3*>(sub));
-                a4->cells[0].header.unk00 = 0;
-                last[-4].vector = _mm_load_ps((const volatile float*)&item->m_kInertiaAndMassInv.m_vComponents);
+                accumulatorsOut->cells[0].header.unk00 = 0;
+                last[-4].vector = _mm_load_ps((const volatile float*)&item->m_inertiaAndMassInv.m_vComponents);
                 last[-6].vector = item->m_kTranslationalVelocity.m_vComponents;
 
-                float ldt = (a0->m_uiStartTime - sub->m_kSweptTransform.m_vCenterOfMass0.w) * sub->m_kSweptTransform.m_vCenterOfMass1.w;
+                float ldt = (info->m_startTime - sub->m_kSweptTransform.m_centerOfMass0.w) * sub->m_kSweptTransform.m_vCenterOfMass1.w;
                 LocalM128 dtv = broadcast(ldt);
                 LocalM128 inv_dt = _mm_sub_ps(DAT_010ec7f0, dtv);
-                last[-3].vector = _mm_add_ps(_mm_mul_ps(inv_dt, sub->m_kSweptTransform.m_vCenterOfMass0.m_vComponents), _mm_mul_ps(dtv, sub->m_kSweptTransform.m_vCenterOfMass1.m_vComponents));
+                last[-3].vector = _mm_add_ps(_mm_mul_ps(inv_dt, sub->m_kSweptTransform.m_centerOfMass0.m_vComponents), _mm_mul_ps(dtv, sub->m_kSweptTransform.m_vCenterOfMass1.m_vComponents));
 
                 LocalM128 v = item->m_kAngularVelocity.m_vComponents;
                 LocalM128 c1 =
@@ -145,34 +148,34 @@ TargetItem* __cdecl hkRigidMotionUtilApplyForcesAndBuildAccumulators(hkStepInfo*
                 LocalM128 c2 = _mm_mul_ps(_mm_shuffle_ps(v, v, 0xaa), last[0].vector);
                 last[-5].vector = _mm_add_ps(res, c2);
 
-                last[-7].header.unk04 = item->m_kMotionState.m_uiDeactivationClass;
-                last[-7].header.unk08 = ((int)item->m_fGravityFactor.m_value) << 16;
+                last[-7].header.unk04 = item->m_kMotionState.m_deactivationClass;
+                last[-7].header.unk08 = ((int)item->m_gravityFactor.m_value) << 16;
                 break;
             }
             case 7:
-                a4->cells[0].header.unk00 = 2;
+                accumulatorsOut->cells[0].header.unk00 = 2;
                 goto handle_case_2;
             case 2:
-                a4->cells[0].header.unk00 = 0;
+                accumulatorsOut->cells[0].header.unk00 = 0;
             handle_case_2: {
-                float dt = a0->m_fTimeStep;
-                float d1 = 1.0f - dt * item->m_kMotionState.m_fLinearDamping;
+                float dt = info->m_deltaTime;
+                float d1 = 1.0f - dt * item->m_kMotionState.m_linearDamping;
 
                 LocalM128 s1 = broadcast(0.0f > d1 ? 0.0f : d1);
                 item->m_kTranslationalVelocity.m_vComponents = _mm_mul_ps(s1, item->m_kTranslationalVelocity.m_vComponents);
                 _ReadWriteBarrier();
 
-                float d2 = 1.0f - dt * item->m_kMotionState.m_fAngularDamping;
+                float d2 = 1.0f - dt * item->m_kMotionState.m_angularDamping;
 
                 LocalM128 s2 = broadcast(0.0f > d2 ? 0.0f : d2);
                 item->m_kAngularVelocity.m_vComponents = _mm_mul_ps(s2, item->m_kAngularVelocity.m_vComponents);
 
-                last[-4].vector = _mm_load_ps((const volatile float*)&item->m_kInertiaAndMassInv.m_vComponents);
+                last[-4].vector = _mm_load_ps((const volatile float*)&item->m_inertiaAndMassInv.m_vComponents);
 
-                float ldt = (a0->m_uiStartTime - item->m_kMotionState.m_kSweptTransform.m_vCenterOfMass0.w) * item->m_kMotionState.m_kSweptTransform.m_vCenterOfMass1.w;
+                float ldt = (info->m_startTime - item->m_kMotionState.m_kSweptTransform.m_centerOfMass0.w) * item->m_kMotionState.m_kSweptTransform.m_vCenterOfMass1.w;
                 LocalM128 dtv = broadcast(ldt);
                 LocalM128 inv_dt = _mm_sub_ps(DAT_010ec7f0, dtv);
-                last[-3].vector = _mm_add_ps(_mm_mul_ps(inv_dt, item->m_kMotionState.m_kSweptTransform.m_vCenterOfMass0.m_vComponents), _mm_mul_ps(dtv, item->m_kMotionState.m_kSweptTransform.m_vCenterOfMass1.m_vComponents));
+                last[-3].vector = _mm_add_ps(_mm_mul_ps(inv_dt, item->m_kMotionState.m_kSweptTransform.m_centerOfMass0.m_vComponents), _mm_mul_ps(dtv, item->m_kMotionState.m_kSweptTransform.m_vCenterOfMass1.m_vComponents));
 
                 last[-5].vector = item->m_kAngularVelocity.m_vComponents;
                 last[-6].vector = item->m_kTranslationalVelocity.m_vComponents;
@@ -185,14 +188,14 @@ TargetItem* __cdecl hkRigidMotionUtilApplyForcesAndBuildAccumulators(hkStepInfo*
                 *(volatile float*)&last[-1].y = 1.0f;
                 *(volatile float*)&last[0].z = 1.0f;
 
-                last[-7].header.unk04 = item->m_kMotionState.m_uiDeactivationClass;
-                last[-7].header.unk08 = ((int)item->m_fGravityFactor.m_value) << 16;
+                last[-7].header.unk04 = item->m_kMotionState.m_deactivationClass;
+                last[-7].header.unk08 = ((int)item->m_gravityFactor.m_value) << 16;
                 break;
             }
             case 5: {
                 LocalM128 zero = _mm_setzero_ps();
                 last[-7].header.scalar08 = 0.0f;
-                a4->cells[0].header.unk00 = 1;
+                accumulatorsOut->cells[0].header.unk00 = 1;
                 last[-4].vector = zero;
                 last[-6].vector = zero;
                 last[-5].vector = zero;
@@ -203,7 +206,7 @@ TargetItem* __cdecl hkRigidMotionUtilApplyForcesAndBuildAccumulators(hkStepInfo*
                 break;
             }
             case 4: {
-                a4->cells[0].header.unk00 = 1;
+                accumulatorsOut->cells[0].header.unk00 = 1;
                 LocalM128 zero = _mm_setzero_ps();
                 last[-4].vector = zero;
                 last[-3].vector = item->m_kMotionState.m_kSweptTransform.m_vCenterOfMass1.m_vComponents;
@@ -215,19 +218,19 @@ TargetItem* __cdecl hkRigidMotionUtilApplyForcesAndBuildAccumulators(hkStepInfo*
                 *(volatile float*)&last[-2].x = 1.0f;
                 *(volatile float*)&last[-1].y = 1.0f;
                 *(volatile float*)&last[0].z = 1.0f;
-                last[-7].header.unk08 = ((int)item->m_fGravityFactor.m_value) << 16;
+                last[-7].header.unk08 = ((int)item->m_gravityFactor.m_value) << 16;
                 break;
             }
             default:
                 break;
             }
 
-            a1++;
-            a4++;
+            motions++;
+            accumulatorsOut++;
             last += 8;
         } while (--count >= 0);
     }
-    return a4;
+    return accumulatorsOut;
 }
 
 #include <math.h>
@@ -332,12 +335,12 @@ __forceinline const hkVector4& hkMatrix3::getColumn(int x) const
 
 __forceinline hkTransform& hkMotionState::getTransform()
 {
-    return m_kMotionTransform;
+    return m_transform;
 }
 
 __forceinline const hkTransform& hkMotionState::getTransform() const
 {
-    return m_kMotionTransform;
+    return m_transform;
 }
 
 __forceinline const hkSweptTransform& hkMotionState::getSweptTransform() const
@@ -360,7 +363,7 @@ __forceinline void hkQuaternion::operator=(const hkQuaternion& q)
 
 __forceinline void hkQuaternion::normalize()
 {
-    (*reinterpret_cast<hkVector4*>(this)).normalize_005611c0();
+    (*reinterpret_cast<hkVector4*>(this)).hkQuaternion_normalize();
 }
 
 __forceinline hkRotation& hkTransform::getRotation()
@@ -424,9 +427,9 @@ __forceinline void hkVector4::mul4(const hkSimdReal& s)
     m_vComponents = _mm_mul_ps(s.broadcast(), m_vComponents);
 }
 
-__forceinline void hkVector4::setMul4(const hkSimdReal& r, const hkVector4& v1)
+__forceinline void hkVector4::setMul4(const hkSimdReal& r, const hkVector4& x)
 {
-    m_vComponents = _mm_mul_ps(r.broadcast(), v1.m_vComponents);
+    m_vComponents = _mm_mul_ps(r.broadcast(), x.m_vComponents);
 }
 
 __forceinline void hkVector4::addMul4(const hkSimdReal& r, const hkVector4& v1)
@@ -463,16 +466,16 @@ __forceinline void hkVector4::setRotatedInverseDir(const hkRotation& t, const hk
     _setRotatedInverseDir(t, v);
 }
 
-__forceinline hkSimdReal hkVector4::dot3(const hkVector4& a) const
+__forceinline hkSimdReal hkVector4::dot3(const hkVector4& x) const
 {
-    LocalM128 x2 = _mm_mul_ps(m_vComponents, a.m_vComponents);
+    LocalM128 x2 = _mm_mul_ps(m_vComponents, x.m_vComponents);
     LocalM128 xySum = _mm_add_ss(_mm_shuffle_ps(x2, x2, 0x55), x2);
     return _mm_add_ss(_mm_shuffle_ps(x2, x2, 0xaa), xySum);
 }
 
-__forceinline hkSimdReal hkVector4::dot4(const hkVector4& a) const
+__forceinline hkSimdReal hkVector4::dot4(const hkVector4& x) const
 {
-    LocalM128 x2 = _mm_mul_ps(m_vComponents, a.m_vComponents);
+    LocalM128 x2 = _mm_mul_ps(m_vComponents, x.m_vComponents);
     LocalM128 sum0 = _mm_add_ps(_mm_shuffle_ps(x2, x2, 0x4e), x2);
     LocalM128 sum1 = _mm_shuffle_ps(sum0, sum0, 0xb1);
     return _mm_add_ps(sum0, sum1);
@@ -500,24 +503,24 @@ __forceinline const hkTransform& hkpMotion::getTransform() const
 
 __forceinline int hkpMotion::getNumInactiveFrames(int select)
 {
-    return m_ausDeactivationNumInactiveFrames[select] & 0x7f;
+    return m_deactivationNumInactiveFrames[select] & 0x7f;
 }
 
 __forceinline void hkpMotion::incrementNumInactiveFramesMt(int select, int worldDeactivationNumInactiveFramesSelectFlag)
 {
-    int dc = m_ausDeactivationNumInactiveFrames[select];
+    int dc = m_deactivationNumInactiveFrames[select];
     dc = dc & 0x7f;
     int newdc = dc + 1 - (dc >> 6);
     dc = newdc | (dc << 7) | (worldDeactivationNumInactiveFramesSelectFlag << 14);
-    m_ausDeactivationNumInactiveFrames[select] = hkUint16(dc);
+    m_deactivationNumInactiveFrames[select] = hkUint16(dc);
 }
 
 __forceinline void hkpMotion::zeroNumInactiveFramesMt(int select, int worldDeactivationNumInactiveFramesSelectFlag)
 {
-    int dc = m_ausDeactivationNumInactiveFrames[select];
+    int dc = m_deactivationNumInactiveFrames[select];
     dc = dc & 0x7f;
     dc = (dc << 7) | (worldDeactivationNumInactiveFramesSelectFlag << 14);
-    m_ausDeactivationNumInactiveFrames[select] = hkUint16(dc);
+    m_deactivationNumInactiveFrames[select] = hkUint16(dc);
 }
 
 __forceinline void hkVector4::_setMul3(const hkRotation& a, const hkVector4& b)
@@ -657,10 +660,10 @@ namespace MotionUtilities {
 
 __forceinline void calcTransAtT1(const hkSweptTransform& sweptTrans, hkTransform& transformOut)
 {
-    const hkQuaternion& qt = sweptTrans.m_qRotation1;
+    const hkQuaternion& qt = sweptTrans.m_rotation1;
     transformOut.SetBodyOrientation(qt);
     hkVector4 centerShift;
-    centerShift._setRotatedDir(transformOut.getRotation(), sweptTrans.m_vCenterOfMassLocal);
+    centerShift._setRotatedDir(transformOut.getRotation(), sweptTrans.m_centerOfMassLocal);
     transformOut.getTranslation().setSub4(sweptTrans.m_vCenterOfMass1, centerShift);
 }
 
@@ -669,11 +672,11 @@ __forceinline void _clipVelocities(const hkMotionState& motionState, hkVector4& 
 {
     hkReal linVelSq = linearVelocity.lengthSquared3();
     hkReal angVelSq = angularVelocity.lengthSquared3();
-    const hkReal maxLinear = motionState.m_fSurfaceFriction * motionState.m_fSurfaceFriction;
-    const hkReal maxAngular = motionState.m_fRestitution * motionState.m_fRestitution;
+    const hkReal maxLinear = motionState.m_maxLinearVelocity * motionState.m_maxLinearVelocity;
+    const hkReal maxAngular = motionState.m_maxAngularVelocity * motionState.m_maxAngularVelocity;
     if ((linVelSq > maxLinear) || (linVelSq != linVelSq))
     {
-        hkReal f = motionState.m_fSurfaceFriction * MathUtilities::sqrtInverse(linVelSq);
+        hkReal f = motionState.m_maxLinearVelocity * MathUtilities::sqrtInverse(linVelSq);
         linearVelocity.mul4(hkSimdReal(f));
         if (linVelSq != linVelSq)
         {
@@ -682,7 +685,7 @@ __forceinline void _clipVelocities(const hkMotionState& motionState, hkVector4& 
     }
     if ((angVelSq > maxAngular) || (angVelSq != angVelSq))
     {
-        hkReal f = motionState.m_fRestitution * MathUtilities::sqrtInverse(angVelSq);
+        hkReal f = motionState.m_maxAngularVelocity * MathUtilities::sqrtInverse(angVelSq);
         angularVelocity.mul4(hkSimdReal(f));
         if (angVelSq != angVelSq)
         {
@@ -712,30 +715,30 @@ __forceinline void _stepMotionState(const hkStepInfo& info, hkVector4& linearVel
         }
     }
 
-    motionState.getSweptTransform().m_vCenterOfMass0 = motionState.getSweptTransform().m_vCenterOfMass1;
-    motionState.getSweptTransform().m_vCenterOfMass0(3) = info.m_uiStartTime;
+    motionState.getSweptTransform().m_centerOfMass0 = motionState.getSweptTransform().m_vCenterOfMass1;
+    motionState.getSweptTransform().m_centerOfMass0(3) = info.m_startTime;
 
     hkReal linVelSq = linearVelocity.lengthSquared3();
-    if (linVelSq > motionState.m_fSurfaceFriction * motionState.m_fSurfaceFriction)
+    if (linVelSq > motionState.m_maxLinearVelocity * motionState.m_maxLinearVelocity)
     {
-        hkReal f = motionState.m_fSurfaceFriction * MathUtilities::sqrtInverse(linVelSq);
+        hkReal f = motionState.m_maxLinearVelocity * MathUtilities::sqrtInverse(linVelSq);
         linearVelocity.mul4(hkSimdReal(f));
     }
 
-    motionState.getSweptTransform().m_vCenterOfMass1.addMul4(info.m_fTimeStep.val(), linearVelocity);
-    motionState.getSweptTransform().m_vCenterOfMass1(3) = info.m_fInverseDeltaTime;
+    motionState.getSweptTransform().m_vCenterOfMass1.addMul4(info.m_deltaTime.val(), linearVelocity);
+    motionState.getSweptTransform().m_vCenterOfMass1(3) = info.m_invDeltaTime;
 
-    __declspec(align(16)) hkQuaternion newRotation = motionState.getSweptTransform().m_qRotation1;
-    motionState.getSweptTransform().m_qRotation0 = newRotation;
+    __declspec(align(16)) hkQuaternion newRotation = motionState.getSweptTransform().m_rotation1;
+    motionState.getSweptTransform().m_rotation0 = newRotation;
 
     hkReal angle;
     {
         __declspec(align(16)) hkQuaternion dq;
-        (*reinterpret_cast<hkVector4*>(&dq)).setMul4(hkSimdReal(info.m_fTimeStep * 0.5f), angularVelocity);
+        (*reinterpret_cast<hkVector4*>(&dq)).setMul4(hkSimdReal(info.m_deltaTime * 0.5f), angularVelocity);
         const hkReal pi = 3.14159265358979f;
         hkReal dx2 = hkReal((*reinterpret_cast<hkVector4*>(&dq)).lengthSquared3()) * DAT_010ce4b0;
 
-        const hkReal maxAnglePerStep = MathUtilities::min2(0.9f, info.m_fTimeStep.val() * motionState.m_fRestitution);
+        const hkReal maxAnglePerStep = MathUtilities::min2(0.9f, info.m_deltaTime.val() * motionState.m_maxAngularVelocity);
 
         if (dx2 <= maxAnglePerStep * maxAnglePerStep)
         {
@@ -758,11 +761,11 @@ __forceinline void _stepMotionState(const hkStepInfo& info, hkVector4& linearVel
         newRotation.setMul(dq, newRotation);
         newRotation.normalize();
 
-        motionState.m_kDeltaAngle.setAdd4((*reinterpret_cast<hkVector4*>(&dq)), (*reinterpret_cast<hkVector4*>(&dq)));
+        motionState.m_deltaAngle.setAdd4((*reinterpret_cast<hkVector4*>(&dq)), (*reinterpret_cast<hkVector4*>(&dq)));
         angle = MathUtilities::sqrt(dx2) * pi;
-        motionState.m_kDeltaAngle(3) = angle;
+        motionState.m_deltaAngle(3) = angle;
     }
-    motionState.getSweptTransform().m_qRotation1 = newRotation;
+    motionState.getSweptTransform().m_rotation1 = newRotation;
     calcTransAtT1(motionState.getSweptTransform(), motionState.getTransform());
 }
 
@@ -778,9 +781,9 @@ static __forceinline hkReal calcVelocityForDeactivation(const hkpMotion& motion,
 
 static __forceinline int hkRigidMotionUtilCheckDeactivation(const ConstraintSolverInfo& si, hkpMotion& motion)
 {
-    hkUint32 c = motion.m_ucDeactivationIntegrateCounter;
+    hkUint32 c = motion.m_deactivationIntegrateCounter;
     c += 1;
-    motion.m_ucDeactivationIntegrateCounter = hkUint8(c);
+    motion.m_deactivationIntegrateCounter = hkUint8(c);
     if (c & 3)
     {
         goto END_OF_FUNCTION;
@@ -795,30 +798,30 @@ static __forceinline int hkRigidMotionUtilCheckDeactivation(const ConstraintSolv
         {
             if (c == 0x100)
             {
-                motion.m_ucDeactivationIntegrateCounter = 0xff;
+                motion.m_deactivationIntegrateCounter = 0xff;
                 goto END_OF_FUNCTION;
             }
-            motion.m_ucDeactivationIntegrateCounter = 0;
+            motion.m_deactivationIntegrateCounter = 0;
             select = 1;
         }
 
-        hkReal radius = MathUtilities::min2(1.0f, motion.m_kMotionState.m_fObjectRadius);
+        hkReal radius = MathUtilities::min2(1.0f, motion.m_kMotionState.m_objectRadius);
         {
             hkReal velSqrd = calcVelocityForDeactivation(motion, radius);
-            hkReal& maxDeactVel = motion.m_akDeactivationReferencePositions[select](3);
+            hkReal& maxDeactVel = motion.m_deactivationRefPosition[select](3);
             maxDeactVel = MathUtilities::max2(maxDeactVel, velSqrd);
         }
 
-        hkVector4& refPosition = motion.m_akDeactivationReferencePositions[select];
-        hkUint32& refOrientation = motion.m_auiDeactivationReferenceOrientations[select];
+        hkVector4& refPosition = motion.m_deactivationRefPosition[select];
+        hkUint32& refOrientation = motion.m_deactivationRefOrientation[select];
         const hkSweptTransform& sweptTransform = motion.m_kMotionState.getSweptTransform();
         const hkVector4& currentPosition = sweptTransform.m_vCenterOfMass1;
-        const hkQuaternion& currentRotation = sweptTransform.m_qRotation1;
+        const hkQuaternion& currentRotation = sweptTransform.m_rotation1;
 
         while (1)
         {
             const ConstraintSolverInfo::FloatAndHalfRecord& di =
-                si.m_kDeactivationClassInfo[motion.m_kMotionState.m_uiDeactivationClass];
+                si.m_kDeactivationClassInfo[motion.m_kMotionState.m_deactivationClass];
             {
                 hkReal maxSqrd = di.m_afFloatPair[select];
                 hkVector4 transDist;
@@ -864,6 +867,9 @@ static __forceinline void setReciprocal4(hkVector4& result, const hkVector4& vec
 
 // @fnv 0x00d29bf0
 // src: COMMUNITY 0x00d29bf0
+// pdb: hkRigidMotionUtilApplyAccumulators | hkpRigidMotionUtil.obj | retail, upstream name already matches, high
+// pdb params: solverInfo, info, accumulators, motions, numMotions, motionOffset
+// pdb locals: integrationAngularVelocity, numInactiveFrames, angularMomentum, i, assertBuf, ostr, angVelLocalSpace, h
 extern "C" int __cdecl hkRigidMotionUtilApplyAccumulators(const ConstraintSolverInfo& solverInfo, const hkStepInfo& info,
                                     const QuantizedBoundsData* accumulators, hkpMotion* const* motions, int numMotions,
                                     int motionOffset)
@@ -886,7 +892,7 @@ extern "C" int __cdecl hkRigidMotionUtilApplyAccumulators(const ConstraintSolver
             hkpThinBoxMotion* tbm = static_cast<hkpThinBoxMotion*>(motion);
             hkVector4 angVelLocalSpace = accu->m_vAngularVelocity;
             hkVector4 in;
-            setReciprocal4(in, tbm->m_kInertiaAndMassInv);
+            setReciprocal4(in, tbm->m_inertiaAndMassInv);
             angVelLocalSpace.mul4(in);
             angularMomentum.hkVector4_setRotatedDir(tbm->getTransform().getRotation(), angVelLocalSpace);
         }
@@ -924,7 +930,7 @@ extern "C" int __cdecl hkRigidMotionUtilApplyAccumulators(const ConstraintSolver
             tbm->m_kTranslationalVelocity = accu->m_vLinearVelocity;
             hkVector4 h;
             h.setRotatedInverseDir(tbm->getTransform().getRotation(), angularMomentum);
-            h.mul4(tbm->m_kInertiaAndMassInv);
+            h.mul4(tbm->m_inertiaAndMassInv);
             tbm->m_kAngularVelocity.hkVector4_setRotatedDir(tbm->getTransform().getRotation(), h);
         }
         MotionUtilities::_clipVelocities(motion->m_kMotionState, motion->m_kTranslationalVelocity,
@@ -1013,16 +1019,16 @@ static __forceinline bool validVelocities(hkpMotion* motion)
 static __forceinline void clampVelocities(hkpMotion* motion)
 {
     hkMotionState* s = &motion->m_kMotionState;
-    float maxAngularSquare = maxVelocity(*reinterpret_cast<const unsigned char*>(&s->m_fRestitution)) * maxVelocity(*reinterpret_cast<const unsigned char*>(&s->m_fRestitution));
+    float maxAngularSquare = maxVelocity(*reinterpret_cast<const unsigned char*>(&s->m_maxAngularVelocity)) * maxVelocity(*reinterpret_cast<const unsigned char*>(&s->m_maxAngularVelocity));
 
     LocalM128 linear = (*reinterpret_cast<LocalM128*>(&motion->m_kTranslationalVelocity));
     float linearSquare = lengthSquared3(linear);
     float angularSquare = lengthSquared3((*reinterpret_cast<LocalM128*>(&motion->m_kAngularVelocity)));
-    float maxLinearSquare = maxVelocity(*reinterpret_cast<const unsigned char*>(&s->m_fSurfaceFriction)) * maxVelocity(*reinterpret_cast<const unsigned char*>(&s->m_fSurfaceFriction));
+    float maxLinearSquare = maxVelocity(*reinterpret_cast<const unsigned char*>(&s->m_maxLinearVelocity)) * maxVelocity(*reinterpret_cast<const unsigned char*>(&s->m_maxLinearVelocity));
     if (linearSquare > maxLinearSquare || linearSquare != linearSquare)
     {
         float inverse = 1.0f / (float)sqrt(linearSquare);
-        (*reinterpret_cast<LocalM128*>(&motion->m_kTranslationalVelocity)) = _mm_mul_ps(splat(inverse * maxVelocity(*reinterpret_cast<const unsigned char*>(&s->m_fSurfaceFriction))), linear);
+        (*reinterpret_cast<LocalM128*>(&motion->m_kTranslationalVelocity)) = _mm_mul_ps(splat(inverse * maxVelocity(*reinterpret_cast<const unsigned char*>(&s->m_maxLinearVelocity))), linear);
         if (linearSquare != linearSquare)
             (*reinterpret_cast<LocalM128*>(&motion->m_kTranslationalVelocity)) = DAT_01268370.m_vComponents;
     }
@@ -1030,7 +1036,7 @@ static __forceinline void clampVelocities(hkpMotion* motion)
     {
         float inverse = 1.0f / (float)sqrt(angularSquare);
         (*reinterpret_cast<LocalM128*>(&motion->m_kAngularVelocity)) =
-            _mm_mul_ps(splat(inverse * maxVelocity(*reinterpret_cast<const unsigned char*>(&s->m_fRestitution))), (*reinterpret_cast<LocalM128*>(&motion->m_kAngularVelocity)));
+            _mm_mul_ps(splat(inverse * maxVelocity(*reinterpret_cast<const unsigned char*>(&s->m_maxAngularVelocity))), (*reinterpret_cast<LocalM128*>(&motion->m_kAngularVelocity)));
         if (angularSquare != angularSquare)
             (*reinterpret_cast<LocalM128*>(&motion->m_kAngularVelocity)) = DAT_01268370.m_vComponents;
     }
@@ -1045,8 +1051,8 @@ static __forceinline float minf(float a, float b)
 }
 static __forceinline void updateTransform(const hkSweptTransform& history, hkTransform& world)
 {
-    reinterpret_cast<hkRotation*>(&world.m_row0)->hkRotation_set(history.m_qRotation1);
-    LocalM128 local = history.m_vCenterOfMassLocal.m_vComponents;
+    reinterpret_cast<hkRotation*>(&world.m_row0)->hkRotation_set(history.m_rotation1);
+    LocalM128 local = history.m_centerOfMassLocal.m_vComponents;
     LocalM128 y = _mm_mul_ps(_mm_shuffle_ps(local, local, 0x55), world.m_row1);
     LocalM128 x = _mm_mul_ps(_mm_shuffle_ps(local, local, 0), world.m_row0);
     LocalM128 z = _mm_mul_ps(_mm_shuffle_ps(local, local, 0xaa), world.m_row2);
@@ -1062,26 +1068,26 @@ static __forceinline void integrateMotion(hkpMotion* motion, const hkStepInfo* s
         (*reinterpret_cast<LocalM128*>(&motion->m_kTranslationalVelocity)) = DAT_01268370.m_vComponents;
         (*reinterpret_cast<LocalM128*>(&motion->m_kAngularVelocity)) = DAT_01268370.m_vComponents;
     }
-    s->m_kSweptTransform.m_vCenterOfMass0.m_vComponents = s->m_kSweptTransform.m_vCenterOfMass1.m_vComponents;
-    elem(s->m_kSweptTransform.m_vCenterOfMass0, 3) = step->m_uiStartTime;
+    s->m_kSweptTransform.m_centerOfMass0.m_vComponents = s->m_kSweptTransform.m_vCenterOfMass1.m_vComponents;
+    elem(s->m_kSweptTransform.m_centerOfMass0, 3) = step->m_startTime;
     LocalM128 linear = (*reinterpret_cast<LocalM128*>(&motion->m_kTranslationalVelocity));
     float speedSquare = lengthSquared3(linear);
-    if (speedSquare > maxVelocity(*reinterpret_cast<const unsigned char*>(&s->m_fSurfaceFriction)) * maxVelocity(*reinterpret_cast<const unsigned char*>(&s->m_fSurfaceFriction)))
+    if (speedSquare > maxVelocity(*reinterpret_cast<const unsigned char*>(&s->m_maxLinearVelocity)) * maxVelocity(*reinterpret_cast<const unsigned char*>(&s->m_maxLinearVelocity)))
     {
         float inverse = 1.0f / (float)sqrt(speedSquare);
-        (*reinterpret_cast<LocalM128*>(&motion->m_kTranslationalVelocity)) = _mm_mul_ps(splat(inverse * maxVelocity(*reinterpret_cast<const unsigned char*>(&s->m_fSurfaceFriction))), linear);
+        (*reinterpret_cast<LocalM128*>(&motion->m_kTranslationalVelocity)) = _mm_mul_ps(splat(inverse * maxVelocity(*reinterpret_cast<const unsigned char*>(&s->m_maxLinearVelocity))), linear);
     }
-    float dt = step->m_fTimeStep;
+    float dt = step->m_deltaTime;
     s->m_kSweptTransform.m_vCenterOfMass1.m_vComponents = _mm_add_ps(_mm_mul_ps(splat(dt), (*reinterpret_cast<LocalM128*>(&motion->m_kTranslationalVelocity))), s->m_kSweptTransform.m_vCenterOfMass1.m_vComponents);
-    elem(s->m_kSweptTransform.m_vCenterOfMass1, 3) = step->m_fInverseDeltaTime;
+    elem(s->m_kSweptTransform.m_vCenterOfMass1, 3) = step->m_invDeltaTime;
     __declspec(align(16)) hkQuaternion rotation;
-    memcpy(&rotation, &s->m_kSweptTransform.m_qRotation1, sizeof(rotation));
-    (*reinterpret_cast<LocalM128*>(&s->m_kSweptTransform.m_qRotation0)) = (*reinterpret_cast<LocalM128*>(&rotation));
+    memcpy(&rotation, &s->m_kSweptTransform.m_rotation1, sizeof(rotation));
+    (*reinterpret_cast<LocalM128*>(&s->m_kSweptTransform.m_rotation0)) = (*reinterpret_cast<LocalM128*>(&rotation));
     LocalM128 angular = (*reinterpret_cast<LocalM128*>(&motion->m_kAngularVelocity));
     hkVector4 angle;
-    angle.q() = _mm_mul_ps(splat((float)(step->m_fTimeStep * 0.5)), angular);
+    angle.q() = _mm_mul_ps(splat((float)(step->m_deltaTime * 0.5)), angular);
     float halfSquare = (float)(lengthSquared3(angle.q()) * (4.0 / (3.1415927410125732 * 3.1415927410125732)));
-    float limit = minf(maxVelocity(*reinterpret_cast<const unsigned char*>(&s->m_fRestitution)) * step->m_fTimeStep, 0.9f);
+    float limit = minf(maxVelocity(*reinterpret_cast<const unsigned char*>(&s->m_maxAngularVelocity)) * step->m_deltaTime, 0.9f);
     float limitSquare = limit * limit;
     if (halfSquare <= limitSquare)
     {
@@ -1102,11 +1108,11 @@ static __forceinline void integrateMotion(hkpMotion* motion, const hkStepInfo* s
         angle.w = (float)((1.0 - ((double)0.822948f) * h - DAT_010ce4a0 * fourth) - (h * DAT_010ce498) * fourth);
     }
     rotation.setMul(*reinterpret_cast<const hkQuaternion*>(&angle), rotation);
-    reinterpret_cast<hkVector4*>(&rotation)->normalize_005611c0();
-    s->m_kDeltaAngle.m_vComponents = _mm_add_ps(angle.q(), angle.q());
-    ((float*)&s->m_kDeltaAngle)[3] = (float)((float)sqrt(halfSquare) * 3.1415927410125732);
-    (*reinterpret_cast<LocalM128*>(&s->m_kSweptTransform.m_qRotation1)) = (*reinterpret_cast<LocalM128*>(&rotation));
-    updateTransform(s->m_kSweptTransform, s->m_kMotionTransform);
+    reinterpret_cast<hkVector4*>(&rotation)->hkQuaternion_normalize();
+    s->m_deltaAngle.m_vComponents = _mm_add_ps(angle.q(), angle.q());
+    ((float*)&s->m_deltaAngle)[3] = (float)((float)sqrt(halfSquare) * 3.1415927410125732);
+    (*reinterpret_cast<LocalM128*>(&s->m_kSweptTransform.m_rotation1)) = (*reinterpret_cast<LocalM128*>(&rotation));
+    updateTransform(s->m_kSweptTransform, s->m_transform);
 }
 static __forceinline void applyGravity(hkpMotion* motion, const hkVector4* gravity, LocalM128 gravityFactor)
 {
@@ -1120,23 +1126,23 @@ static __forceinline void mul4(hkVector4& v, float s)
 }
 static __forceinline void applyDamping(hkpMotion* motion, const hkStepInfo* step)
 {
-    float delta = step->m_fTimeStep;
+    float delta = step->m_deltaTime;
     float zero = 0.0f;
-    float linear = 1.0f - motion->m_kMotionState.m_fLinearDamping * delta;
+    float linear = 1.0f - motion->m_kMotionState.m_linearDamping * delta;
     mul4(motion->m_kTranslationalVelocity, zero > linear ? zero : linear);
-    float angular = 1.0f - motion->m_kMotionState.m_fAngularDamping * delta;
+    float angular = 1.0f - motion->m_kMotionState.m_angularDamping * delta;
     mul4(motion->m_kAngularVelocity, zero > angular ? zero : angular);
 }
 
 static __forceinline bool rotationMoved(hkpMotion* motion, const DeactivationClass* config, int which)
 {
-    unsigned int packed = motion->m_auiDeactivationReferenceOrientations[which];
+    unsigned int packed = motion->m_deactivationRefOrientation[which];
     hkVector4 previous;
     previous.x = (float)(((int)(packed & 255) - 128) * DAT_010ce488);
     previous.y = (float)(((int)((packed >> 8) & 255) - 128) * DAT_010ce488);
     previous.z = (float)(((int)((packed >> 16) & 255) - 128) * DAT_010ce488);
     previous.w = (float)(DAT_010ce488 * (float)((int)(packed >> 24) - 128));
-    LocalM128 difference = _mm_sub_ps(previous.q(), (*reinterpret_cast<const LocalM128*>(&motion->m_kMotionState.m_kSweptTransform.m_qRotation1)));
+    LocalM128 difference = _mm_sub_ps(previous.q(), (*reinterpret_cast<const LocalM128*>(&motion->m_kMotionState.m_kSweptTransform.m_rotation1)));
     difference = _mm_mul_ps(difference, difference);
     LocalM128 pair = _mm_add_ps(_mm_shuffle_ps(difference, difference, 0x4e), difference);
     float square;
@@ -1173,39 +1179,42 @@ struct MotionList
 
 // @fnv 0x00d28a30
 // src: XBOX_PDB 0x00d28a30
-extern "C" int __cdecl hkRigidMotionUtilApplyForcesAndStep(Ref<const SolverInfo> info, const hkStepInfo* step, Ref<const hkVector4> gravity,
-                                    MotionList motions, int count, int offset)
+// pdb: hkRigidMotionUtilApplyForcesAndStep | hkpRigidMotionUtil.obj | retail, upstream name already matches, high
+// pdb params: solverInfo, info, deltaVel, motions, numMotions, motionOffset
+// pdb locals: numInactiveFrames, i, angularMomentum, h
+extern "C" int __cdecl hkRigidMotionUtilApplyForcesAndStep(Ref<const SolverInfo> solverInfo, const hkStepInfo* step, Ref<const hkVector4> deltaVel,
+                                    MotionList motions, int numMotions, int motionOffset)
 {
     int minimum = 0x7fffffff;
-    for (int remaining = count - 1; remaining >= 0; motions.next(), --remaining)
+    for (int remaining = numMotions - 1; remaining >= 0; motions.next(), --remaining)
     {
-        hkpMotion* motion = (hkpMotion*)((char*)*motions + offset);
-        int gravityBits = (int)motion->m_fGravityFactor.m_value << 16;
+        hkpMotion* motion = (hkpMotion*)((char*)*motions + motionOffset);
+        int gravityBits = (int)motion->m_gravityFactor.m_value << 16;
         LocalM128 gravityFactor = _mm_load_ss((float*)&gravityBits);
         switch (*reinterpret_cast<const unsigned char*>(&motion->m_type))
         {
         case 6: {
-            applyGravity(motion, gravity, gravityFactor);
+            applyGravity(motion, deltaVel, gravityFactor);
             applyDamping(motion, step);
             hkVector4 localAngular;
-            localAngular.hkVector4_setRotatedInverseDir(*reinterpret_cast<const hkRotation*>(&motion->m_kMotionState.m_kMotionTransform), motion->m_kAngularVelocity);
-            LocalM128 inertia = motion->m_kInertiaAndMassInv.m_vComponents;
+            localAngular.hkVector4_setRotatedInverseDir(*reinterpret_cast<const hkRotation*>(&motion->m_kMotionState.m_transform), motion->m_kAngularVelocity);
+            LocalM128 inertia = motion->m_inertiaAndMassInv.m_vComponents;
             LocalM128 reciprocal = _mm_rcp_ps(inertia);
             reciprocal =
                 _mm_sub_ps(_mm_add_ps(reciprocal, reciprocal), _mm_mul_ps(_mm_mul_ps(reciprocal, inertia), reciprocal));
             localAngular.q() = _mm_mul_ps(reciprocal, localAngular.q());
             hkVector4 momentum;
-            momentum.hkVector4_setRotatedDir(*reinterpret_cast<const hkRotation*>(&motion->m_kMotionState.m_kMotionTransform), localAngular);
+            momentum.hkVector4_setRotatedDir(*reinterpret_cast<const hkRotation*>(&motion->m_kMotionState.m_transform), localAngular);
             integrateMotion(motion, step);
             hkVector4 transformed;
-            transformed.hkVector4_setRotatedInverseDir(*reinterpret_cast<const hkRotation*>(&motion->m_kMotionState.m_kMotionTransform), momentum);
-            transformed.q() = _mm_mul_ps(transformed.q(), motion->m_kInertiaAndMassInv.m_vComponents);
-            motion->m_kAngularVelocity.hkVector4_setRotatedDir(*reinterpret_cast<const hkRotation*>(&motion->m_kMotionState.m_kMotionTransform), transformed);
+            transformed.hkVector4_setRotatedInverseDir(*reinterpret_cast<const hkRotation*>(&motion->m_kMotionState.m_transform), momentum);
+            transformed.q() = _mm_mul_ps(transformed.q(), motion->m_inertiaAndMassInv.m_vComponents);
+            motion->m_kAngularVelocity.hkVector4_setRotatedDir(*reinterpret_cast<const hkRotation*>(&motion->m_kMotionState.m_transform), transformed);
             clampVelocities(motion);
             break;
         }
         default:
-            applyGravity(motion, gravity, gravityFactor);
+            applyGravity(motion, deltaVel, gravityFactor);
         case 7:
             applyDamping(motion, step);
         case 4:
@@ -1214,8 +1223,8 @@ extern "C" int __cdecl hkRigidMotionUtilApplyForcesAndStep(Ref<const SolverInfo>
         case 5:
             continue;
         }
-        unsigned int counter = (unsigned int)motion->m_ucDeactivationIntegrateCounter + 1;
-        motion->m_ucDeactivationIntegrateCounter = (unsigned char)counter;
+        unsigned int counter = (unsigned int)motion->m_deactivationIntegrateCounter + 1;
+        motion->m_deactivationIntegrateCounter = (unsigned char)counter;
         if ((counter & 3) == 0)
         {
             int which;
@@ -1223,49 +1232,49 @@ extern "C" int __cdecl hkRigidMotionUtilApplyForcesAndStep(Ref<const SolverInfo>
                 which = 0;
             else if (counter == 256)
             {
-                motion->m_ucDeactivationIntegrateCounter = 255;
+                motion->m_deactivationIntegrateCounter = 255;
                 goto counters;
             }
             else
             {
-                motion->m_ucDeactivationIntegrateCounter = 0;
+                motion->m_deactivationIntegrateCounter = 0;
                 which = 1;
             }
-            float radius = minf2(motion->m_kMotionState.m_fObjectRadius, 1.0f);
+            float radius = minf2(motion->m_kMotionState.m_objectRadius, 1.0f);
             float energy = lengthSquared3((*reinterpret_cast<LocalM128*>(&motion->m_kTranslationalVelocity))) +
                            radius * radius * lengthSquared3((*reinterpret_cast<LocalM128*>(&motion->m_kAngularVelocity)));
-            float& refW = ((float*)&motion->m_akDeactivationReferencePositions[which])[3];
+            float& refW = ((float*)&motion->m_deactivationRefPosition[which])[3];
             refW = maxf2(refW, energy);
-            hkVector4* reference = &motion->m_akDeactivationReferencePositions[which];
-            hkQuaternion* rotation = &motion->m_kMotionState.m_kSweptTransform.m_qRotation1;
+            hkVector4* reference = &motion->m_deactivationRefPosition[which];
+            hkQuaternion* rotation = &motion->m_kMotionState.m_kSweptTransform.m_rotation1;
             LocalM128 difference = _mm_sub_ps(reference->quad, motion->m_kMotionState.m_kSweptTransform.m_vCenterOfMass1.m_vComponents);
-            const DeactivationClass* config = &info->deactivation[motion->m_kMotionState.m_uiDeactivationClass];
+            const DeactivationClass* config = &solverInfo->deactivation[motion->m_kMotionState.m_deactivationClass];
             if (lengthSquared3(difference) > config->positionThreshold[which])
                 goto reset;
             if (rotationMoved(motion, config, which))
             {
             reset:
-                motion->m_ausDeactivationNumInactiveFrames[which] =
-                    (unsigned short)((unsigned short)((unsigned short)info->selectFlags[which] << 7) |
-                                     (unsigned short)(motion->m_ausDeactivationNumInactiveFrames[which] & 127))
+                motion->m_deactivationNumInactiveFrames[which] =
+                    (unsigned short)((unsigned short)((unsigned short)solverInfo->selectFlags[which] << 7) |
+                                     (unsigned short)(motion->m_deactivationNumInactiveFrames[which] & 127))
                     << 7;
                 hkVector4 center = *(hkVector4*)&motion->m_kMotionState.m_kSweptTransform.m_vCenterOfMass1;
                 reference->quad = _mm_and_ps(center.q(), DAT_010cbfc0.m_vComponents);
-                motion->m_auiDeactivationReferenceOrientations[which] = PackFloatsToUInt(rotation);
+                motion->m_deactivationRefOrientation[which] = PackFloatsToUInt(rotation);
             }
             else
             {
-                int count = motion->m_ausDeactivationNumInactiveFrames[which] & 127;
-                motion->m_ausDeactivationNumInactiveFrames[which] =
+                int count = motion->m_deactivationNumInactiveFrames[which] & 127;
+                motion->m_deactivationNumInactiveFrames[which] =
                     (unsigned short)((count - (count >> 6) + 1) |
-                                     (unsigned short)((unsigned short)((unsigned short)info->selectFlags[which] << 7) |
+                                     (unsigned short)((unsigned short)((unsigned short)solverInfo->selectFlags[which] << 7) |
                                                       (unsigned short)count)
                                          << 7);
             }
         }
     counters:
-        int inactive1 = motion->m_ausDeactivationNumInactiveFrames[1] & 127;
-        int inactive0 = motion->m_ausDeactivationNumInactiveFrames[0] & 127;
+        int inactive1 = motion->m_deactivationNumInactiveFrames[1] & 127;
+        int inactive0 = motion->m_deactivationNumInactiveFrames[0] & 127;
         int inactive = inactive0 > inactive1 ? inactive0 : inactive1;
         if (minimum >= inactive)
             minimum = inactive;

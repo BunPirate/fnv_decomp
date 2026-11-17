@@ -6,6 +6,7 @@
 class TESFile;
 class TESSound;
 
+// pdb: class TESObjectSTAT, size 0x58, bases: TESBoundObject, TESModelTextureSwap, 2 members
 class TESObjectSTAT : public TESBoundObject, public TESModelTextureSwap
 {
 public:
@@ -13,10 +14,10 @@ public:
     virtual ~TESObjectSTAT();
     virtual bool LoadForm(TESFile* file);
 
-    bool Load(TESFile* file);
+    bool Load(TESFile* apFile);
     void BGSMovableStatic_InitItem();
 
-    char m_cType;
+    char cPassThroughSoundIndex; // src: XBOX_RETAIL_PDB +0x50 (old: m_cType)
     unsigned char layoutPadding51[3];
-    TESSound* m_pSoundForm;
+    TESSound* pRandomSound; // src: XBOX_RETAIL_PDB +0x54 (old: m_pSoundForm)
 };

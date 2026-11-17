@@ -23,9 +23,9 @@ __forceinline __m128 hkSimdReal::broadcast() const
 
 
 
-__forceinline void hkVector4::setMul4(const hkSimdReal& r, const hkVector4& v)
+__forceinline void hkVector4::setMul4(const hkSimdReal& r, const hkVector4& x)
 {
-    m_vComponents = _mm_mul_ps(r.broadcast(), v.m_vComponents);
+    m_vComponents = _mm_mul_ps(r.broadcast(), x.m_vComponents);
 }
 
 __forceinline void hkVector4::add4(const hkVector4& v)
@@ -83,10 +83,10 @@ __forceinline void hkMatrix4::transformPosition(const hkVector4& kPoint, hkVecto
     kBz.setBroadcast(kPoint, 2);
 
     hkVector4 kSum;
-    kSum.setMul4(kBx, m_kColumn0);
-    kSum.addMul4(kBy, m_kColumn1);
-    kSum.addMul4(kBz, m_kColumn2);
-    kSum.add4(m_kColumn3);
+    kSum.setMul4(kBx, m_col0);
+    kSum.addMul4(kBy, m_col1);
+    kSum.addMul4(kBz, m_col2);
+    kSum.add4(m_col3);
 
     kPointOut = kSum;
 }
@@ -101,9 +101,9 @@ __forceinline void hkMatrix4::transformDirection(const hkVector4& kDir, hkVector
     kBz.setBroadcast(kDir, 2);
 
     hkVector4 kSum;
-    kSum.setMul4(kBx, m_kColumn0);
-    kSum.addMul4(kBy, m_kColumn1);
-    kSum.addMul4(kBz, m_kColumn2);
+    kSum.setMul4(kBx, m_col0);
+    kSum.addMul4(kBy, m_col1);
+    kSum.addMul4(kBz, m_col2);
 
     kDirOut = kSum;
 }
@@ -111,27 +111,27 @@ __forceinline void hkMatrix4::transformDirection(const hkVector4& kDir, hkVector
 __forceinline void hkMatrix4::setMulAffine(const hkMatrix4& a, const hkMatrix4& b)
 {
     hkVector4 col0;
-    a.transformDirection(b.m_kColumn0, col0);
+    a.transformDirection(b.m_col0, col0);
     hkVector4 col1;
-    a.transformDirection(b.m_kColumn1, col1);
+    a.transformDirection(b.m_col1, col1);
     hkVector4 col2;
-    a.transformDirection(b.m_kColumn2, col2);
+    a.transformDirection(b.m_col2, col2);
     hkVector4 col3;
-    a.transformPosition(b.m_kColumn3, col3);
+    a.transformPosition(b.m_col3, col3);
 
-    m_kColumn0 = col0;
-    m_kColumn1 = col1;
-    m_kColumn2 = col2;
-    m_kColumn3 = col3;
+    m_col0 = col0;
+    m_col1 = col1;
+    m_col2 = col2;
+    m_col3 = col3;
 }
 
 // src: GUESS 0x00de88a0 (confidence: low)
 __declspec(noinline) void hkMatrix4::ProcessAndReturnValue_00de88a0(const hkSimdReal& s, const hkMatrix4& m)
 {
-    m_kColumn0.setMul4(s, m.m_kColumn0);
-    m_kColumn1.setMul4(s, m.m_kColumn1);
-    m_kColumn2.setMul4(s, m.m_kColumn2);
-    m_kColumn3.setMul4(s, m.m_kColumn3);
+    m_col0.setMul4(s, m.m_col0);
+    m_col1.setMul4(s, m.m_col1);
+    m_col2.setMul4(s, m.m_col2);
+    m_col3.setMul4(s, m.m_col3);
 }
 
 // src: GUESS 0x00de8910 (confidence: low)

@@ -45,27 +45,30 @@ inline NiTransform::NiTransform() {}
 // src/bsshader/skyshader.cpp - unit created 2026-10-16 from the whole-binary attribution (360 source path: d:/_fallout3/platforms/common/code/bsshader/skyshader.cpp).
 // Functions are listed by their @fnv annotations; compile flags inferred from the PC code.
 
-extern void* g_011ff8d8;
+extern void* SkyShader_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011ff8d8 (old: g_011ff8d8)
 
 // @fnv 0x00b887b0
 // src: COMMUNITY 0x00b887b0
 void* __cdecl SkyShader_GetRTTI()
 {
-    return &g_011ff8d8;
+    return &SkyShader_ms_RTTI;
 }
 
-extern void __cdecl AddToTwoCounters(int, int, int);
+extern void __cdecl BSRenderState_SetAlphaBlendFunc(int, int, int);
 extern void __cdecl _FUN_00b98070(int, int);
 
 
 // @fnv 0x00b8a1a0
 // src: COMMUNITY 0x00b8a1a0
+// pdb: SkyShader::PostGeometry | SkyShader.obj | retail, upstream name already matches, high
+// pdb params: apState
+// pdb locals: pkSkyProp
 void __stdcall SkyShader_PostGeometry(const NiPropertyState* apState)
 {
     void* pkSkyProp = apState->m_aspProps[3];
     int val = *(int*)((char*)pkSkyProp + 0x8c);
     if (val == 0 || val == 6)
-        AddToTwoCounters(6, 7, 0);
+        BSRenderState_SetAlphaBlendFunc(6, 7, 0);
 
     void* rendererSpecific = apState->m_aspProps[4];
     if (rendererSpecific && (*(unsigned char*)((char*)rendererSpecific + 0x18) & 1))
@@ -80,6 +83,7 @@ struct S
 void __cdecl _delete(void*, unsigned int);
 // Calls FUN_00b88670, then frees this with _delete when bit 0 of a1 is set, and returns this.
 // @fnv 0x00b8a360
+// pdb: SkyShader::`scalar deleting destructor' | SkyShader.obj | retail, object-file gap fill, high
 void* S::DestroyIfFlagged(unsigned int auiFlags)
 {
     FUN_00b88670();
@@ -170,6 +174,8 @@ struct Struct00b884b0
     void AttachAll();
 };
 // @fnv 0x00b884b0
+// pdb: SkyShader::ClearPassStages | SkyShader.obj | retail, object-file run extension, low
+// pdb locals: i
 void Struct00b884b0::AttachAll()
 {
     void** p = m_aiIndexedValues;
@@ -259,6 +265,8 @@ struct FUN_00b88670 : ShaderBase
 
 // Releases the shader's 11 pass pointers, 11 pixel shaders and 8 vertex shaders by assigning null to each NiPointer slot.
 // @fnv 0x00b88670
+// pdb: SkyShader::~SkyShader | SkyShader.obj | debug, call graph, medium
+// pdb locals: i
 FUN_00b88670::~FUN_00b88670()
 {
     unsigned int i;
@@ -394,10 +402,13 @@ struct Holder_Stand
 
 // @fnv 0x00b89cc0
 // src: COMMUNITY 0x00b89cc0
-void __stdcall SkyShader_SetupGeometryTextures(Holder_Stand* apHolder)
+// pdb: SkyShader::SetupGeometryTextures | SkyShader.obj | retail, upstream name already matches, high
+// pdb params: apState
+// pdb locals: ptex, pcurrentpass, ecurrentPass, pprop, pstage
+void __stdcall SkyShader_SetupGeometryTextures(Holder_Stand* apState)
 {
     Mgr_Stand* mgr = DAT_0126f74c;
-    Node_Stand* esi = apHolder->m_0c;
+    Node_Stand* esi = apState->m_0c;
     if (esi->m_70 != 0)
     {
         Dev_Stand* d = mgr->m_24->m_00;
@@ -498,6 +509,7 @@ struct FUN_00b8a1f0 : ShaderBase
 
 // Initializes the shader: sets m_uiPassCount to 11, resets the global colors to g_kDefaultColor, and sets unk24 to true.
 // @fnv 0x00b8a1f0
+// pdb: SkyShader::SkyShader | SkyShader.obj | retail, call graph, high
 FUN_00b8a1f0::FUN_00b8a1f0()
 {
     m_uiPassCount = 11;
@@ -654,6 +666,8 @@ struct SpawnedObject
 
 // @fnv 0x00b8a390
 // src: COMMUNITY 0x00b8a390
+// pdb: SkyShader::CreateShader | SkyShader.obj | retail, upstream name already matches, high
+// pdb locals: spShaderDecl, pshader
 SpawnedObject* __cdecl SkyShader_CreateShader()
 {
     SpawnedMgr* mgr = (SpawnedMgr*)NiDX9ShaderDeclaration_Create(g_011f9508, 3, 1);
@@ -718,6 +732,8 @@ extern void* g_pCurrentShaderObject;
 
 // Sets g_pCurrentShaderObject to the shader pointer matching aeType, leaving it unchanged for unknown types.
 // @fnv 0x00b884e0
+// pdb: SkyShader::~SkyShader | SkyShader.obj | retail, object-file run extension, low
+// pdb locals: i
 void ShaderStateTable::SelectShaderByType(unsigned int aeType)
 {
     switch (aeType)
@@ -1069,7 +1085,7 @@ struct ShaderPassBuilder
     bool InitPasses();
 };
 
-void __cdecl ConfigureBeamStage(StageReturn* self, int a, int b, int c, int d);
+void __cdecl ConfigureBeamStage(StageReturn* apStage, int aiStageNum, int aiAddressValue, int aiMipFilter, int abAniso);
 
 static __forceinline void AddProp(ClusterObj*& slot, int t, int a)
 
@@ -1096,6 +1112,8 @@ static __forceinline void SetBlend(ClusterObj* cp, int source, int dest)
 
 // Creates each shader pass object if missing, configures its properties and blend modes, then assigns its pixel and vertex shaders; returns true.
 // @fnv 0x00b887c0
+// pdb: SkyShader::LoadStagesAndPasses | SkyShader.obj | retail, call graph, high
+// pdb locals: spStage
 bool ShaderPassBuilder::InitPasses()
 
 {
@@ -1534,11 +1552,14 @@ struct ConstantMapOwner
     unsigned int unkE0;
     unsigned int unkE4;
     unsigned int unkE8;
-    void CreateShaderConstantMaps();
+    void SkyShader_CreateConstantMaps();
 };
 // Creates the pixel and vertex NiD3DShaderConstantMap objects if missing and registers their shader constants.
 // @fnv 0x00b8a480
-void ConstantMapOwner::CreateShaderConstantMaps()
+// src: XBOX_RETAIL_PDB 0x00b8a480
+// pdb: SkyShader::CreateConstantMaps | SkyShader.obj | retail, string-set bridge, high
+// pdb locals: uiConstantPoint2Flags, uiDefinedMatrixFlags, uiConstantPoint4Flags, uiConstantPoint1Flags
+void ConstantMapOwner::SkyShader_CreateConstantMaps()
 {
     if (!pixelConstants.object)
     {
@@ -1603,8 +1624,8 @@ struct SkyGeometryDataView
 };
 struct Shape_b899a0 : NiRefObject
 {
-    Shape_b899a0(unsigned short a1, Pt3_b899a0* points, void* a3, Col_b899a0* colors, void* a5, unsigned short a6,
-                 unsigned int a7, unsigned short a8, unsigned short* indices);
+    Shape_b899a0(unsigned short usVertices, Pt3_b899a0* pkVertex, void* pkNormal, Col_b899a0* pkColor, void* pkTexture, unsigned short usNumTextureSets,
+                 unsigned int eNBTMethod, unsigned short usTriangles, unsigned short* pusTriList);
     void* operator new(unsigned int size)
     {
         return Object_DispatchCommandFour(size);
@@ -1740,12 +1761,15 @@ struct Shell_b899a0
     int fb0;
     int fb4;
     void FUN_00baf3c0();
-    void AddProperties(Shape_b899a0* obj, unsigned int flag);
+    void BSShaderData_Convert(Shape_b899a0* obj, unsigned int flag);
 };
 // Allocates a 4-vertex quad shape with two triangles, sets its bound to origin with radius 1000, and stores it in rspOut.
 // @fnv 0x00b899a0
 // src: COMMUNITY 0x00b899a0
-void __cdecl SkyShader_CreateSkyQuad(ShapePtr_b899a0& rspOut)
+// pdb: SkyShader::CreateSkyQuad | SkyShader.obj | retail, upstream name already matches, high
+// pdb params: aspTriShape
+// pdb locals: pvert, pRes, pcolors, pconn, bound, bsshaderdata
+void __cdecl SkyShader_CreateSkyQuad(ShapePtr_b899a0& aspTriShape)
 {
     Pt3_b899a0* pkVerts = (Pt3_b899a0*)DAT_011f6238.Game_DoHeapAlloc(0x30);
     pkVerts[0] = Pt3_b899a0(-1.0f, -1.0f, 0.999999f);
@@ -1773,8 +1797,8 @@ void __cdecl SkyShader_CreateSkyQuad(ShapePtr_b899a0& rspOut)
     kShell.FUN_00baf3c0();
     kShell.f00 = 6;
     kShell.f90 = 4;
-    kShell.AddProperties(pShape, 1);
-    rspOut = pShape;
+    kShell.BSShaderData_Convert(pShape, 1);
+    aspTriShape = pShape;
 }
 
 struct Shader447
@@ -1785,6 +1809,7 @@ struct Shader447
 };
 // @fnv 0x00b89960
 // src: COMMUNITY 0x00b89960
+// pdb: SkyShader::ReloadShaders | SkyShader.obj | retail, upstream name already matches, high
 bool Shader447::SkyShader_ReloadShaders()
 {
     LoadShaders();
@@ -2192,7 +2217,10 @@ struct Shader
 // Sets up transform and shader uniforms from a RenderArg, then dispatches the geometry to the first and second render passes and signals the end device.
 // @fnv 0x00b89d80
 // src: COMMUNITY 0x00b89d80
-void Shader::SkyShader_SetupGeometryConstants(float apRenderArg)
+// pdb: SkyShader::SetupGeometryConstants | SkyShader.obj | retail, upstream name already matches, high
+// pdb params: apState
+// pdb locals: auiCurrentPass, pgeometry, keyeposcol, keyepos, worldTransform, apRenderPass, worldBound, pbufferData, pskin, pkSkyProp, trans, currpos, pcam
+void Shader::SkyShader_SetupGeometryConstants(float apState)
 {
     Vec4& out8c8 = *(Vec4*)&DAT_011ff8c8;
     Vec4& out910 = *(Vec4*)&DAT_011ff910;
@@ -2203,7 +2231,7 @@ void Shader::SkyShader_SetupGeometryConstants(float apRenderArg)
     NiTransform* world = &geometry->world;
     Bound* bound = geometry->bound ? geometry->bound : &DAT_011f4288;
     void* data = geometry->geometryData->data;
-    RenderArg* pRenderArg = *(RenderArg**)&apRenderArg;
+    RenderArg* pRenderArg = *(RenderArg**)&apState;
     void* skin = geometry->skin;
     Property* property = pRenderArg->property;
     if (BSShaderManager_GetCurrentAccumulator()->relative)
@@ -2287,7 +2315,7 @@ void Shader::SkyShader_SetupGeometryConstants(float apRenderArg)
             second->Render(pass, geometry, skin, 0, data, pRenderArg, 0, world, bound, 0, 1);
     }
     if (property->kind == 0 || property->kind == 6)
-        AddToTwoCounters(6, 0, 0);
+        BSRenderState_SetAlphaBlendFunc(6, 0, 0);
     Extra* extra = pRenderArg->extra;
     if (extra && (extra->flags & 1))
         endDevice->End(extra);
@@ -2301,6 +2329,7 @@ void __cdecl FUN_00be0c00(const char*, char*);
 int __cdecl BSsprintf(char*, int, const char*, ...);
 extern float DAT_011ff8ac;
 extern float DAT_011ff8b0;
+// pdb: class SkyShader, size 0xcc (here 0xe4), bases: BSShader, 5 members
 struct SkyShader
 {
     int m_00;
@@ -2367,6 +2396,8 @@ struct SkyShader
 // Requests vertex and pixel shader objects for sky shader variants and stores the returned pointers in member fields.
 // @fnv 0x00b874f0
 // src: XBOX_PDB 0x00b874f0
+// pdb: SkyShader::LoadShaders | SkyShader.obj | retail, upstream name already matches, high
+// pdb locals: texPixelShaderParamsHorizonFade, cloudsVertexShaderParams, spPixelShaderSunOcclusionParams, ptempFName, occVertexShaderParams, tempBuff, noTexPixelShaderParams, vertexShaderParams, texVertexShaderParams, kHorizonFadePSParams, pcacheFName, kStarsParams, MMVertexShaderParams, cloudsVertexShaderParamsHorizonFade, texPixelShaderParams
 void SkyShader::LoadShaders()
 {
     char compiledName[260];

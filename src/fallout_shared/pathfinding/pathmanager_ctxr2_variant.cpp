@@ -2,6 +2,7 @@
 
 #include "../../../include/PathingRequest.h"
 
+// pdb: class PathManagerImpl, size 0x1498 (here 0x14c0), 11 members
 class PathManagerImpl
 {
   public:
@@ -31,7 +32,7 @@ struct PathWorkList
 
 struct PathIndex
 {
-    bool TryGetNextEntry(PathWorkList* list, PathingRequest** ref, int* out, bool flag);
+    bool LockFreeMap_PathingRequest_PathingTaskData_GetNext(PathWorkList* arIterator, PathingRequest** arKey, int* arData, bool abSwitchBuckets);
 };
 
 struct FUN_006eb6b0_cls : public PathManagerImpl
@@ -41,6 +42,9 @@ struct FUN_006eb6b0_cls : public PathManagerImpl
 
 // @fnv 0x006eb6b0
 // src: COMMUNITY 0x006eb6b0
+// pdb: PathManagerImpl::ClearInventoryPointersFromCurrentRequests | PathManager.obj | debug, object-file gap fill, medium
+// pdb params: apInventory
+// pdb locals: it, prequest, ptaskData
 void FUN_006eb6b0_cls::PathManagerImpl_CancelCurrentPathsAndPause_0(int id)
 {
     reinterpret_cast<BSSpinLock_r006eb6b0*>(reinterpret_cast<char*>(this) + 0xc38)
@@ -51,7 +55,7 @@ void FUN_006eb6b0_cls::PathManagerImpl_CancelCurrentPathsAndPause_0(int id)
     while (!list3.LockFreeMap_char_const_Model_LockFreeMapIterator_GetFinished())
     {
         if (reinterpret_cast<PathIndex*>(reinterpret_cast<char*>(this) + 0x1480)
-                ->TryGetNextEntry(&list3, &ref, &outA2, true))
+                ->LockFreeMap_PathingRequest_PathingTaskData_GetNext(&list3, &ref, &outA2, true))
         {
             if (reinterpret_cast<PathSlot*>(ref->GetActorLockData())->unk04 == id)
             {

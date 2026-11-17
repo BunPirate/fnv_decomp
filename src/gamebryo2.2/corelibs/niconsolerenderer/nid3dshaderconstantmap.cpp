@@ -280,10 +280,14 @@ struct ShaderFloat4View_00e82b40 { float x, y, z, w; };
 // @fnv 0x00e87200
 void NiD3DShaderConstantMap::ResetShaderConstantMap()
 {
-    ClearShaderConstantEntries(&m_kEntries);
-    ClearShaderConstantEntries(&m_kDefinedEntries);
+    ClearShaderConstantEntries(&m_aspEntries);
+    ClearShaderConstantEntries(&m_aspDefinedEntries);
 }
 // @fnv 0x00b71a40
+// pdb: NiXenonFragmentShader::CreateShaderDeclaration | NiXenonFragmentShader.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiD3DUtility::GetD3DFromNi
+// pdb params: uiMaxStreamEntryCount, uiStreamCount
+// pdb locals: pkDecl
 void BuildTransformMatrix(float* afOutMatrix, const NiMatrix3& r, const NiPoint3& atTranslation, float afScale)
 {
     afOutMatrix[0] = r.m_pEntry[0][0] * afScale;
@@ -311,44 +315,44 @@ unsigned int NiD3DShaderConstantMap::ConfigureShaderConstantMap(
     const NiDynamicEffectState* effects, const NiTransform& transform, const NiBound& bound, unsigned int pass,
     bool global)
 {
-    m_pShaderProgram = program;
+    m_pkLastShaderProgram = program;
     bool success = true;
-    unsigned int n = m_kDefinedEntries.size;
+    unsigned int n = m_aspDefinedEntries.size;
     for (unsigned int i = 0; i < n;)
     {
-        NiShaderConstantMapEntry* e = m_kDefinedEntries.GetAt(i++);
-        if (!e || !*(bool*)&e->unk08 || (e->m_uiValue3 == ~0u && !(unsigned int)e->m_kSecondaryString.m_kHandle))
+        NiShaderConstantMapEntry* e = m_aspDefinedEntries.GetAt(i++);
+        if (!e || !*(bool*)&e->m_bEnabled || (e->m_uiShaderRegister == ~0u && !(unsigned int)e->m_kVariableName.m_kHandle))
             continue;
-        if ((e->m_uiValue1 & 0xf0000000) == 0x20000000 &&
+        if ((e->m_uiFlags & 0xf0000000) == 0x20000000 &&
             vfn_8c(program, e, geometry, skin, partition, buffer, property, effects, transform, bound, pass))
             success = false;
     }
-    unsigned int uiEntryCount = m_kEntries.size;
+    unsigned int uiEntryCount = m_aspEntries.size;
     for (unsigned int i = 0; i < uiEntryCount;)
     {
-        NiShaderConstantMapEntry* e = m_kEntries.GetAt(i++);
-        if (!e || !*(bool*)&e->unk08)
+        NiShaderConstantMapEntry* e = m_aspEntries.GetAt(i++);
+        if (!e || !*(bool*)&e->m_bEnabled)
             continue;
-        unsigned int index = e->m_uiValue3;
-        if (index == ~0u && !(unsigned int)e->m_kSecondaryString.m_kHandle)
+        unsigned int index = e->m_uiShaderRegister;
+        if (index == ~0u && !(unsigned int)e->m_kVariableName.m_kHandle)
             continue;
-        unsigned int kind = e->m_uiValue1 & 0xf0000000;
+        unsigned int kind = e->m_uiFlags & 0xf0000000;
         if (kind == 0x20000000)
             continue;
         unsigned int result;
         if (kind == 0x10000000)
         {
-            if (e->m_uiValue2 == 1)
+            if (e->m_uiExtra == 1)
             {
-                unsigned int count = e->m_uiValue4;
-                const float* data = (const float*)e->m_pConstantData;
-                result = m_pD3DDevice->UploadVertex(index, data, count);
+                unsigned int count = e->m_uiRegisterCount;
+                const float* data = (const float*)e->m_pvDataSource;
+                result = m_pkD3DDevice->UploadVertex(index, data, count);
             }
-            else if (e->m_uiValue2 == 2)
+            else if (e->m_uiExtra == 2)
             {
-                unsigned int count = e->m_uiValue4;
-                const float* data = (const float*)e->m_pConstantData;
-                result = m_pD3DDevice->UploadPixel(index, data, count);
+                unsigned int count = e->m_uiRegisterCount;
+                const float* data = (const float*)e->m_pvDataSource;
+                result = m_pkD3DDevice->UploadPixel(index, data, count);
             }
             else
                 result = vfn_90(program, e, pass);
@@ -376,26 +380,30 @@ unsigned int NiD3DShaderConstantMap::ConfigureShaderConstantMap(
 unsigned int __cdecl NiShaderConstantMap_LookUpPredefinedMappingType_(unsigned int, unsigned int);
 // @fnv 0x00a9c0a0
 // src: COMMUNITY 0x00a9c0a0
-unsigned int __cdecl NiShaderConstantMap_LookUpPredefinedMappingType(const char* name)
+// pdb: NiShaderConstantMap::LookUpPredefinedMappingType | NiShaderConstantMap.obj | retail, upstream name already matches, high
+// pdb params: pszMapping
+// pdb locals: uiNumRegisters, uiMappingID
+unsigned int __cdecl NiShaderConstantMap_LookUpPredefinedMappingType(const char* pszMapping)
 {
     unsigned int a, b;
-    if (NiShaderConstantMap::FindConstantMapping(name, a, b) && a)
+    if (NiShaderConstantMap::FindConstantMapping(pszMapping, a, b) && a)
         return NiShaderConstantMap_LookUpPredefinedMappingType_(a, b);
     return 0;
 }
 
 struct GlobalObjectO2_00a7b610;
-extern GlobalObjectO2_00a7b610 g_0126f7c4;
+extern GlobalObjectO2_00a7b610 NiD3DShaderConstantMap_ms_RTTI; // src: XBOX_RETAIL_PDB 0x0126f7c4 (old: g_0126f7c4)
 // @fnv 0x00b7e400
 // src: COMMUNITY 0x00b7e400
 GlobalObjectO2_00a7b610* __cdecl NiD3DShaderConstantMap_GetRTTI()
 {
-    return &g_0126f7c4;
+    return &NiD3DShaderConstantMap_ms_RTTI;
 }
 
 void __fastcall UpdateMatrix(void*);
 // @fnv 0x00bc5c20
 // src: COMMUNITY 0x00bc5c20
+// pdb: NiTextureTransform::GetMatrix | NiD3DShaderConstantMap.obj | debug, upstream name already matches, high
 char* __fastcall NiTextureTransform_GetMatrix(char* self)
 {
     if (self[0x1c])
@@ -405,6 +413,8 @@ char* __fastcall NiTextureTransform_GetMatrix(char* self)
 
 // @fnv 0x00e826c0
 // src: COMMUNITY 0x00e826c0
+// pdb: NiD3DShaderConstantMap::GetEntryAtIndex | NiD3DShaderConstantMap.obj | debug, upstream name already matches, high
+// pdb params: uiIndex
 void* __fastcall NiD3DShaderConstantMap_GetEntryAtIndex(char* self, int unused, unsigned int i)
 {
     return (*(void***)(self + 0x10))[i];
@@ -415,20 +425,23 @@ bool __cdecl LookupShaderConstantMapping(unsigned int, void*&);
 unsigned int __cdecl GetAttributeTypeForMapping(void*, unsigned int*, unsigned int*);
 // Looks up the entry's key, stores a byte from DAT_011f5fb4 indexed by the result into flags, and on success stores the pointer and y into p10 and v20.
 // @fnv 0x00e82ac0
+// pdb: NiD3DShaderConstantMap::SetupObjectEntry | NiD3DShaderConstantMap.obj | retail, object-file run extension, low
+// pdb params: pkEntry
+// pdb locals: uiFlags, uiRegCount, eAttribType, uiMappingID, uiFloatCount
 unsigned int __stdcall UpdateEntryFromKey(NiShaderConstantMapEntry* pEntry)
 {
     void* x;
-    unsigned int uiKey = (unsigned int)pEntry->m_kControlPoint.m_kHandle;
+    unsigned int uiKey = (unsigned int)pEntry->m_kKey.m_kHandle;
     unsigned int y = 0;
     unsigned int z;
     if (LookupShaderConstantMapping(uiKey, x))
     {
         unsigned int idx = GetAttributeTypeForMapping(x, &y, &z);
-        pEntry->m_uiValue1 = (pEntry->m_uiValue1 & 0xffffff00) | DAT_011f5fb4[idx];
+        pEntry->m_uiFlags = (pEntry->m_uiFlags & 0xffffff00) | DAT_011f5fb4[idx];
         if (x)
         {
-            *(void**)&pEntry->unk10 = x;
-            pEntry->m_uiValue4 = y;
+            *(void**)&pEntry->m_uiInternal = x;
+            pEntry->m_uiRegisterCount = y;
             return 0;
         }
     }
@@ -483,12 +496,15 @@ const void* __stdcall GetConstantData(void*);
 // Looks up data for entry via GetConstantData and, if found, calls prog->SetConstant with it, returning 0 on success, 1 if no data, or 0x50 on failure.
 // @fnv 0x00e84b60
 // src: COMMUNITY 0x00e84b60
-unsigned int __stdcall NiD3DShaderConstantMap_SetConstantConstant(FUN_00e84b60_prog* prog, void* entry, unsigned int pass)
+// pdb: NiD3DShaderConstantMap::SetConstantConstant | NiD3DShaderConstantMap.obj | retail, upstream name already matches, high
+// pdb params: pkShaderProgram, pkEntry, uiPass
+// pdb locals: pvData
+unsigned int __stdcall NiD3DShaderConstantMap_SetConstantConstant(FUN_00e84b60_prog* pkShaderProgram, void* pkEntry, unsigned int uiPass)
 {
-    const void* pvData = GetConstantData(entry);
+    const void* pvData = GetConstantData(pkEntry);
     if (!pvData)
         return 1;
-    return prog->SetConstant(entry, pvData, 0) ? 0 : 0x50;
+    return pkShaderProgram->SetConstant(pkEntry, pvData, 0) ? 0 : 0x50;
 }
 
 
@@ -531,7 +547,7 @@ struct RMap
     char pad2[0x20];
     volatile unsigned int status;
 };
-void __cdecl RemoveGlobalConstant(char**);
+void __cdecl NiShaderFactory_ReleaseGlobalShaderConstant(char**);
 struct RArr
 {
     void NiTObjectArray_NiShaderConstantMapEntry_SetAt(unsigned int, void*);
@@ -544,12 +560,12 @@ unsigned int __fastcall LookupAndReleaseEntry(RMap* self, int unused, const char
     {
         char* pKey;
         NiShaderConstantMapEntry* e = self->entries[idx];
-        if (e && (e->m_uiValue1 & 0xf0000000) == 0x40000000)
+        if (e && (e->m_uiFlags & 0xf0000000) == 0x40000000)
         {
-            if (e->m_kControlPoint.m_kHandle != NiGlobalStringTable::ms_pcEmptyString)
-                InterlockedIncrement((long*)(e->m_kControlPoint.m_kHandle - 8));
-            pKey = e->m_kControlPoint.m_kHandle;
-            RemoveGlobalConstant(&pKey);
+            if (e->m_kKey.m_kHandle != NiGlobalStringTable::ms_pcEmptyString)
+                InterlockedIncrement((long*)(e->m_kKey.m_kHandle - 8));
+            pKey = e->m_kKey.m_kHandle;
+            NiShaderFactory_ReleaseGlobalShaderConstant(&pKey);
             if (pKey != NiGlobalStringTable::ms_pcEmptyString)
                 InterlockedDecrement((long*)(pKey - 8));
         }
@@ -738,6 +754,8 @@ struct FUN_00b7e330 : ShaderMapBase
 };
 // Constructs a shader map by initializing base state, calling FUN_00e81d00 with mapId, and preparing activeEntries.
 // @fnv 0x00b7e330
+// pdb: NiD3DShaderConstantMap::NiD3DShaderConstantMap | NiXenonFragmentShader.obj | retail, call graph, medium
+// pdb params: pkRenderer, eType
 FUN_00b7e330::FUN_00b7e330(unsigned int mapId, unsigned int initMode)
     : ShaderMapBase(initMode), activeEntries(), definedEntries(), unk30(0), unk34(0), unk38(0), unk3c(0), unk40(0)
 {
@@ -794,6 +812,10 @@ struct FUN_00e81d70_t
 
 // @fnv 0x00e81d70
 // src: COMMUNITY 0x00e81d70
+// pdb: D3DXMatrixMultiply_NonAccelerated | NiD3DShaderConstantMap.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiD3DShaderConstantMap::~NiD3DShaderConstantMap
+// pdb params: pkOut, pkM1, pkM2
+// pdb locals: c, b, a
 unsigned int FUN_00e81d70_t::NiD3DShaderConstantMap_AddEntry(const char* pszKey, unsigned int uiFlags, unsigned int uiExtra,
                                           unsigned int uiShaderRegister, unsigned int uiRegisterCount,
                                           const char* pszVariableName, unsigned int uiConstantDataSize,
@@ -801,7 +823,7 @@ unsigned int FUN_00e81d70_t::NiD3DShaderConstantMap_AddEntry(const char* pszKey,
 {
     m_uiErrorCode = 0;
     NiShaderConstantMapEntry* pkEntry = GetEntry(pszKey);
-    if (pkEntry && pkEntry->m_uiValue2 == uiExtra)
+    if (pkEntry && pkEntry->m_uiExtra == uiExtra)
     {
         m_uiErrorCode = 0x20;
         return 0x20;
@@ -861,51 +883,54 @@ __forceinline void AssignEntryString(NiFixedString& dst, const char* text)
 __forceinline void SetEntryData(NiShaderConstantMapEntry* entry, unsigned int size, unsigned int stride,
                                void* source, bool copy)
 {
-    entry->m_uiValue5 = size;
-    entry->m_uiValue6 = stride;
+    entry->m_uiDataSize = size;
+    entry->m_uiDataStride = stride;
     if (copy)
     {
-        entry->m_bFlag0 = true;
-        _NiFree(entry->m_pConstantData);
-        entry->m_pConstantData = _NiMalloc(size);
-        _memmove(entry->m_pConstantData, source, size);
+        entry->m_bOwnData = true;
+        _NiFree(entry->m_pvDataSource);
+        entry->m_pvDataSource = _NiMalloc(size);
+        _memmove(entry->m_pvDataSource, source, size);
     }
     else
     {
-        entry->m_bFlag0 = false;
-        entry->m_pConstantData = source;
+        entry->m_bOwnData = false;
+        entry->m_pvDataSource = source;
     }
 }
 
 // Allocates and fills an entry, copies or references constant data, then passes it to a virtual call and conditionally another.
 // @fnv 0x00e81f10
 // src: COMMUNITY 0x00e81f10
+// pdb: NiD3DShaderConstantMap::AddPredefinedEntry | NiD3DShaderConstantMap.obj | retail, upstream name already matches, high
+// pdb params: pszKey, uiExtra, uiShaderRegister, pszVariableName, uiDataSize, uiDataStride, pvDataSource, bCopyData
+// pdb locals: pkEntry
 unsigned int FUN_00e81f10_shell::NiD3DShaderConstantMap_AddPredefinedEntry(char* pszKey, unsigned int uiExtra, unsigned int uiShaderRegister,
-                                              char* pszVariableName, unsigned int uiConstantDataSize,
+                                              char* pszVariableName, unsigned int uiDataSize,
                                               unsigned int uiDataStride, void* pvDataSource, bool bCopyData)
 {
     void* mem = BSFadeNode::operator new(0x38);
     NiShaderConstantMapEntry* pkEntry = mem ? ::new (mem) NiShaderConstantMapEntry : 0;
     NiShaderConstantMapEntry* e = pkEntry;
-    AssignEntryString(e->m_kControlPoint, pszKey);
-    e->m_uiValue2 = uiExtra;
-    e->m_uiValue3 = uiShaderRegister;
-    AssignEntryString(e->m_kSecondaryString, pszVariableName);
-    e->m_uiValue5 = uiConstantDataSize;
-    e->m_uiValue6 = uiDataStride;
+    AssignEntryString(e->m_kKey, pszKey);
+    e->m_uiExtra = uiExtra;
+    e->m_uiShaderRegister = uiShaderRegister;
+    AssignEntryString(e->m_kVariableName, pszVariableName);
+    e->m_uiDataSize = uiDataSize;
+    e->m_uiDataStride = uiDataStride;
     if (bCopyData)
     {
-        e->m_bFlag0 = true;
-        _NiFree(e->m_pConstantData);
-        e->m_pConstantData = _NiMalloc(uiConstantDataSize);
-        _memmove(e->m_pConstantData, pvDataSource, uiConstantDataSize);
+        e->m_bOwnData = true;
+        _NiFree(e->m_pvDataSource);
+        e->m_pvDataSource = _NiMalloc(uiDataSize);
+        _memmove(e->m_pvDataSource, pvDataSource, uiDataSize);
     }
     else
     {
-        e->m_bFlag0 = false;
-        e->m_pConstantData = pvDataSource;
+        e->m_bOwnData = false;
+        e->m_pvDataSource = pvDataSource;
     }
-    e->m_uiValue1 = 0x20000000;
+    e->m_uiFlags = 0x20000000;
     typedef unsigned int(__thiscall * Fn)(void*, NiShaderConstantMapEntry*);
     unsigned int* self = (unsigned int*)this;
     self[0x34 / 4] = ((Fn)(*(void***)this)[0x88 / 4])(this, pkEntry);
@@ -982,20 +1007,23 @@ struct MapStub
 // Creates and populates an entry, optionally sets its buffer, then passes it to ReadEntryData.
 // @fnv 0x00e82090
 // src: COMMUNITY 0x00e82090
+// pdb: NiD3DShaderConstantMap::AddAttributeEntry | NiD3DShaderConstantMap.obj | retail, upstream name already matches, high
+// pdb params: pszKey, uiFlags, uiExtra, uiShaderRegister, uiRegisterCount, pszVariableName, uiDataSize, uiDataStride, pvDataSource, bCopyData
+// pdb locals: pkEntry
 unsigned int FUN_00e82090_shell::NiD3DShaderConstantMap_AddAttributeEntry(char* pszKey, unsigned int uiFlags, unsigned int uiExtra,
                                               unsigned int uiShaderRegister, unsigned int uiRegisterCount,
-                                              char* pszVariableName, unsigned int uiConstantDataSize,
+                                              char* pszVariableName, unsigned int uiDataSize,
                                               unsigned int uiDataStride, void* pvDataSource, bool bCopyData)
 {
     NiShaderConstantMapEntry* pkEntry = new NiShaderConstantMapEntry;
-    AssignEntryString(pkEntry->m_kControlPoint, pszKey);
-    pkEntry->m_uiValue1 = (uiFlags & 0x0fffffff) | 0x30000000;
-    pkEntry->m_uiValue2 = uiExtra;
-    pkEntry->m_uiValue3 = uiShaderRegister;
-    pkEntry->m_uiValue4 = uiRegisterCount;
-    AssignEntryString(pkEntry->m_kSecondaryString, pszVariableName);
+    AssignEntryString(pkEntry->m_kKey, pszKey);
+    pkEntry->m_uiFlags = (uiFlags & 0x0fffffff) | 0x30000000;
+    pkEntry->m_uiExtra = uiExtra;
+    pkEntry->m_uiShaderRegister = uiShaderRegister;
+    pkEntry->m_uiRegisterCount = uiRegisterCount;
+    AssignEntryString(pkEntry->m_kVariableName, pszVariableName);
     if (pvDataSource)
-        ((ShaderEntryOperations*)pkEntry)->SetBuffer(uiConstantDataSize, uiDataStride, pvDataSource, bCopyData);
+        ((ShaderEntryOperations*)pkEntry)->SetBuffer(uiDataSize, uiDataStride, pvDataSource, bCopyData);
     MapStub* self = (MapStub*)this;
     self->m_uiErrorCode = self->ReadEntryData(pkEntry);
     if (self->m_uiErrorCode)
@@ -1013,7 +1041,7 @@ struct FUN_00e821e0_shell : public NiD3DShaderConstantMap
 void* NiMalloc(unsigned int);
 void NiFree(void*);
 extern unsigned int DAT_011f5fc4[];
-bool __cdecl AcquireGlobalConstantEntry(const NiFixedString&, unsigned int, unsigned int, const void*) throw();
+bool __cdecl NiShaderFactory_RegisterGlobalShaderConstant(const NiFixedString&, unsigned int, unsigned int, const void*) throw();
 
 struct ScmMapS
 {
@@ -1055,20 +1083,23 @@ struct ScmMapS
 // Creates a NiShaderConstantMapEntry from the given key, flags, register and data, reads its entry data, and on success acquires a global constant entry.
 // @fnv 0x00e821e0
 // src: COMMUNITY 0x00e821e0
+// pdb: NiD3DShaderConstantMap::AddGlobalEntry | NiD3DShaderConstantMap.obj | retail, upstream name already matches, high
+// pdb params: pszKey, uiFlags, uiExtra, uiShaderRegister, uiRegisterCount, pszVariableName, uiDataSize, uiDataStride, pvDataSource, bCopyData
+// pdb locals: pkEntry, eType
 unsigned int FUN_00e821e0_shell::NiD3DShaderConstantMap_AddGlobalEntry(char* pszKey, unsigned int uiFlags, unsigned int uiExtra,
                                               unsigned int uiShaderRegister, unsigned int uiRegisterCount,
-                                              char* pszVariableName, unsigned int uiConstantDataSize,
+                                              char* pszVariableName, unsigned int uiDataSize,
                                               unsigned int uiDataStride, void* pvDataSource, bool bCopyData)
 {
     NiShaderConstantMapEntry* pkEntry = new NiShaderConstantMapEntry;
-    AssignEntryString(pkEntry->m_kControlPoint, pszKey);
+    AssignEntryString(pkEntry->m_kKey, pszKey);
     unsigned int uiEntryFlags = (uiFlags & 0x0fffffff) | 0x40000000;
-    pkEntry->m_uiValue1 = uiEntryFlags;
-    pkEntry->m_uiValue2 = uiExtra;
-    pkEntry->m_uiValue3 = uiShaderRegister;
-    pkEntry->m_uiValue4 = uiRegisterCount;
-    AssignEntryString(pkEntry->m_kSecondaryString, pszVariableName);
-    SetEntryData(pkEntry, uiConstantDataSize, uiDataStride, pvDataSource, bCopyData);
+    pkEntry->m_uiFlags = uiEntryFlags;
+    pkEntry->m_uiExtra = uiExtra;
+    pkEntry->m_uiShaderRegister = uiShaderRegister;
+    pkEntry->m_uiRegisterCount = uiRegisterCount;
+    AssignEntryString(pkEntry->m_kVariableName, pszVariableName);
+    SetEntryData(pkEntry, uiDataSize, uiDataStride, pvDataSource, bCopyData);
     unsigned int& m_eErrorCode = *(unsigned int*)((char*)this + 0x34);
     m_eErrorCode = ((ScmMapS*)this)->ReadEntryData(pkEntry);
     if (m_eErrorCode != 0)
@@ -1078,7 +1109,7 @@ unsigned int FUN_00e821e0_shell::NiD3DShaderConstantMap_AddGlobalEntry(char* psz
     else
     {
         unsigned int uiConstantType = DAT_011f5fc4[uiEntryFlags & 0xff];
-        AcquireGlobalConstantEntry(NiFixedString((const char*)pszKey), uiConstantType, uiConstantDataSize, pvDataSource);
+        NiShaderFactory_RegisterGlobalShaderConstant(NiFixedString((const char*)pszKey), uiConstantType, uiDataSize, pvDataSource);
     }
     return m_eErrorCode;
 }
@@ -1091,17 +1122,20 @@ struct FUN_00e823d0_shell : public NiD3DShaderConstantMap
 // Creates a NiShaderConstantMapEntry from the given parameters, passes it to ReadEntryData, and returns the resulting error code.
 // @fnv 0x00e823d0
 // src: COMMUNITY 0x00e823d0
-unsigned int FUN_00e823d0_shell::NiD3DShaderConstantMap_AddOperatorEntry(char* pszControlPoint, unsigned int uiFlags, unsigned int uiExtra,
+// pdb: NiD3DShaderConstantMap::AddOperatorEntry | NiD3DShaderConstantMap.obj | retail, upstream name already matches, high
+// pdb params: pszKey, uiFlags, uiExtra, uiShaderRegister, uiRegisterCount, pszVariableName
+// pdb locals: pkEntry
+unsigned int FUN_00e823d0_shell::NiD3DShaderConstantMap_AddOperatorEntry(char* pszKey, unsigned int uiFlags, unsigned int uiExtra,
                                               unsigned int uiShaderRegister, unsigned int uiRegisterCount,
                                               char* pszVariableName)
 {
     NiShaderConstantMapEntry* pkEntry = new NiShaderConstantMapEntry;
-    AssignEntryString(pkEntry->m_kControlPoint, pszControlPoint);
-    pkEntry->m_uiValue1 = (uiFlags & 0x0fffffff) | 0x50000000;
-    pkEntry->m_uiValue2 = uiExtra;
-    pkEntry->m_uiValue3 = uiShaderRegister;
-    pkEntry->m_uiValue4 = uiRegisterCount;
-    AssignEntryString(pkEntry->m_kSecondaryString, pszVariableName);
+    AssignEntryString(pkEntry->m_kKey, pszKey);
+    pkEntry->m_uiFlags = (uiFlags & 0x0fffffff) | 0x50000000;
+    pkEntry->m_uiExtra = uiExtra;
+    pkEntry->m_uiShaderRegister = uiShaderRegister;
+    pkEntry->m_uiRegisterCount = uiRegisterCount;
+    AssignEntryString(pkEntry->m_kVariableName, pszVariableName);
     unsigned int& m_eErrorCode = *(unsigned int*)((char*)this + 0x34);
     m_eErrorCode = ((ScmMapS*)this)->ReadEntryData(pkEntry);
     if (m_eErrorCode != 0)
@@ -1175,11 +1209,11 @@ unsigned int Map311::AddEntry(const char* name, unsigned int index, const char* 
                               unsigned int type)
 {
     NiShaderConstantMapEntry* entry = new NiShaderConstantMapEntry;
-    AssignEntryString(entry->m_kControlPoint, name);
-    entry->m_uiValue3 = index;
-    AssignEntryString(entry->m_kSecondaryString, alternative);
-    entry->m_uiValue2 = value;
-    entry->m_uiValue1 = DAT_011f5f7c[type] | 0x60000000;
+    AssignEntryString(entry->m_kKey, name);
+    entry->m_uiShaderRegister = index;
+    AssignEntryString(entry->m_kVariableName, alternative);
+    entry->m_uiExtra = value;
+    entry->m_uiFlags = DAT_011f5f7c[type] | 0x60000000;
     error = Find(entry);
     if (!error)
     {
@@ -1190,7 +1224,7 @@ unsigned int Map311::AddEntry(const char* name, unsigned int index, const char* 
     return error;
 }
 
-int __cdecl FUN_00aa1360(unsigned int name, int value);
+int __cdecl FUN_00aa1360(unsigned int s1, int s2);
 
 class FUN_00e82640_Obj
 {
@@ -1230,7 +1264,7 @@ NiShaderConstantMapEntry* __thiscall FUN_00e82640_Obj::FindEntry(unsigned int na
             entry = unk20[index];
             if (entry != 0)
             {
-                value = (int)entry->m_kControlPoint.m_kHandle;
+                value = (int)entry->m_kKey.m_kHandle;
                 result = FUN_00aa1360(name, value);
                 if (result == 0)
                 {
@@ -1250,7 +1284,7 @@ NiShaderConstantMapEntry* __thiscall FUN_00e82640_Obj::FindEntry(unsigned int na
             entry = unk10[index];
             if (entry != 0)
             {
-                value = (int)entry->m_kControlPoint.m_kHandle;
+                value = (int)entry->m_kKey.m_kHandle;
                 result = FUN_00aa1360(name, value);
                 if (result == 0)
                 {
@@ -1266,7 +1300,7 @@ found:
     return entry;
 }
 
-unsigned int __cdecl FUN_00aa1360(const char* name, const char* key);
+unsigned int __cdecl FUN_00aa1360(const char* s1, const char* s2);
 
 class FUN_00e82960_cls
 {
@@ -1289,7 +1323,7 @@ unsigned int FUN_00e82960_cls::FindEntryIndex(const char* name)
         NiShaderConstantMapEntry* e = entries[i];
         if (e != 0)
         {
-            const char* key = e->m_kControlPoint.m_kHandle;
+            const char* key = e->m_kKey.m_kHandle;
             if (FUN_00aa1360(name, key) == 0)
             {
                 return i;
@@ -1308,42 +1342,45 @@ extern const unsigned int g_ShaderMatrixDesc1[];
 
 // Looks up the shader constant type for the entry key, sets flags, dataSize, type, and matrix descriptor fields, returning 0 on success or 0x40 on failure.
 // @fnv 0x00e829b0
+// pdb: NiD3DShaderConstantMap::SetupPredefinedEntry | NiD3DShaderConstantMap.obj | retail, object-file run extension, low
+// pdb params: pkEntry
+// pdb locals: uiFlags, bFound, uiRegCount, eAttribType, uiMappingID, pkMapping, uiBoneCount
 unsigned int __stdcall InitShaderConstantEntry(NiShaderConstantMapEntry* apEntry)
 {
     unsigned int count = 4;
     unsigned int type;
-    unsigned int key = (unsigned int)apEntry->m_kControlPoint.m_kHandle;
+    unsigned int key = (unsigned int)apEntry->m_kKey.m_kHandle;
     if (!LookUpShaderConstantType(key, &type, &count))
         return 0x40;
-    apEntry->m_uiValue1 = (apEntry->m_uiValue1 & 0xffffff00) | DAT_011f5fb4[NiShaderConstantMap_LookUpPredefinedMappingType_(type, count)];
+    apEntry->m_uiFlags = (apEntry->m_uiFlags & 0xffffff00) | DAT_011f5fb4[NiShaderConstantMap_LookUpPredefinedMappingType_(type, count)];
     if (type == 0)
         return 0x40;
     if (type < 0x45)
     {
         if (type == 0x21 || type == 0x23)
-            apEntry->m_uiValue4 = ((unsigned short*)&apEntry->m_uiValue2)[1] * 3;
+            apEntry->m_uiRegisterCount = ((unsigned short*)&apEntry->m_uiExtra)[1] * 3;
         else if (type == 0x22 || type == 0x24)
-            apEntry->m_uiValue4 = ((unsigned short*)&apEntry->m_uiValue2)[1] * 4;
+            apEntry->m_uiRegisterCount = ((unsigned short*)&apEntry->m_uiExtra)[1] * 4;
         else if (type == 0x19 || type == 0x1a || type == 0x1b || type == 0x1c || type == 0x1d || type == 0x1e ||
                  type == 0x1f || type == 0x20 || type == 0x60 || type == 0x61 || type == 0x62 || type == 0x63)
-            apEntry->m_uiValue4 = 4;
+            apEntry->m_uiRegisterCount = 4;
         else
-            apEntry->m_uiValue4 = count;
+            apEntry->m_uiRegisterCount = count;
     }
-    apEntry->unk10 = type;
+    apEntry->m_uiInternal = type;
     switch (type)
     {
     case 0x50:
-        apEntry->m_pConstantData = (void*)g_ShaderMatrixDesc0;
-        apEntry->m_uiValue5 = 0x10;
-        apEntry->m_uiValue6 = 0x10;
-        apEntry->m_bFlag0 = false;
+        apEntry->m_pvDataSource = (void*)g_ShaderMatrixDesc0;
+        apEntry->m_uiDataSize = 0x10;
+        apEntry->m_uiDataStride = 0x10;
+        apEntry->m_bOwnData = false;
         break;
     case 0x51:
-        apEntry->m_pConstantData = (void*)g_ShaderMatrixDesc1;
-        apEntry->m_uiValue5 = 0x10;
-        apEntry->m_uiValue6 = 0x10;
-        apEntry->m_bFlag0 = false;
+        apEntry->m_pvDataSource = (void*)g_ShaderMatrixDesc1;
+        apEntry->m_uiDataSize = 0x10;
+        apEntry->m_uiDataStride = 0x10;
+        apEntry->m_bOwnData = false;
         break;
     }
     return 0;
@@ -1378,21 +1415,23 @@ void __stdcall Transform(ShaderFloat4View_00e82b40*, ShaderFloat4View_00e82b40*,
 // Computes a matrix or vector constant based on type and mode, applies inverse or transpose in some matrix cases, and passes it to SetConstant.
 // @fnv 0x00e82b40
 // src: COMMUNITY 0x00e82b40
-unsigned int __stdcall NiD3DShaderConstantMap_PerformOperatorMultiply(FUN_00e84b60_prog* prog, void* entry, unsigned int type, unsigned int mode,
-                                    bool inverse, bool transpose)
+// pdb: NiD3DShaderConstantMap::PerformOperatorMultiply | NiD3DShaderConstantMap.obj | retail, upstream name already matches, high
+// pdb params: pkShaderProgram, pkEntry, eType1, eType2, bInverse, bTranspose
+unsigned int __stdcall NiD3DShaderConstantMap_PerformOperatorMultiply(FUN_00e84b60_prog* pkShaderProgram, void* pkEntry, unsigned int eType1, unsigned int eType2,
+                                    bool bInverse, bool bTranspose)
 {
-    switch (type)
+    switch (eType1)
     {
     case 9:
-        switch (mode)
+        switch (eType2)
         {
         case 9:
             Multiply(&DAT_0126f8c0, &DAT_0126f820, &DAT_0126f860);
-            if (inverse)
+            if (bInverse)
                 Invert(&DAT_0126f8c0, 0, &DAT_0126f8c0);
-            if (transpose)
+            if (bTranspose)
                 Transpose(&DAT_0126f8c0, &DAT_0126f8c0);
-            return prog->SetConstant(entry, &DAT_0126f8c0, 0) ? 0 : 80;
+            return pkShaderProgram->SetConstant(pkEntry, &DAT_0126f8c0, 0) ? 0 : 80;
         case 3:
         case 4: {
             Matrix temp;
@@ -1413,39 +1452,39 @@ unsigned int __stdcall NiD3DShaderConstantMap_PerformOperatorMultiply(FUN_00e84b
             temp.m14 = DAT_0126f820.m14 * DAT_0126f8b0.x;
             temp.m15 = DAT_0126f820.m15 * DAT_0126f8b0.x;
             DAT_0126f8c0 = temp;
-            if (inverse)
+            if (bInverse)
                 Invert(&DAT_0126f8c0, 0, &DAT_0126f8c0);
-            if (transpose)
+            if (bTranspose)
                 Transpose(&DAT_0126f8c0, &DAT_0126f8c0);
-            return prog->SetConstant(entry, &DAT_0126f8c0, 0) ? 0 : 80;
+            return pkShaderProgram->SetConstant(pkEntry, &DAT_0126f8c0, 0) ? 0 : 80;
         }
         case 7:
         case 10:
             Transform(&DAT_0126f900, &DAT_0126f8b0, &DAT_0126f820);
-            return prog->SetConstant(entry, &DAT_0126f900, 0) ? 0 : 80;
+            return pkShaderProgram->SetConstant(pkEntry, &DAT_0126f900, 0) ? 0 : 80;
         }
         break;
     case 7:
     case 10:
-        switch (mode)
+        switch (eType2)
         {
         case 9:
             Transform(&DAT_0126f900, &DAT_0126f8a0, &DAT_0126f860);
-            return prog->SetConstant(entry, &DAT_0126f900, 0) ? 0 : 80;
+            return pkShaderProgram->SetConstant(pkEntry, &DAT_0126f900, 0) ? 0 : 80;
         case 3:
         case 4:
             DAT_0126f900.x = DAT_0126f8a0.x * DAT_0126f8b0.x;
             DAT_0126f900.y = DAT_0126f8a0.y * DAT_0126f8b0.x;
             DAT_0126f900.z = DAT_0126f8a0.z * DAT_0126f8b0.x;
             DAT_0126f900.w = DAT_0126f8a0.w * DAT_0126f8b0.x;
-            return prog->SetConstant(entry, &DAT_0126f900, 0) ? 0 : 80;
+            return pkShaderProgram->SetConstant(pkEntry, &DAT_0126f900, 0) ? 0 : 80;
         case 7:
         case 10:
             DAT_0126f900.x = DAT_0126f8a0.x * DAT_0126f8b0.x;
             DAT_0126f900.y = DAT_0126f8a0.y * DAT_0126f8b0.y;
             DAT_0126f900.z = DAT_0126f8a0.z * DAT_0126f8b0.z;
             DAT_0126f900.w = DAT_0126f8a0.w * DAT_0126f8b0.w;
-            return prog->SetConstant(entry, &DAT_0126f900, 0) ? 0 : 80;
+            return pkShaderProgram->SetConstant(pkEntry, &DAT_0126f900, 0) ? 0 : 80;
         }
     }
     return 1;
@@ -1516,94 +1555,97 @@ struct ShaderConstantMap_83650
     char pad2d[3];
     void* last;
     unsigned int error;
-    unsigned int NiD3DShaderConstantMap_AddConstantEntry(const char* shader, unsigned int flags, unsigned int parameter,
-                              unsigned int additionalValue, unsigned int registerType, const char* property,
-                              unsigned int elementSize, int elementType, void* data, bool copied);
+    unsigned int NiD3DShaderConstantMap_AddConstantEntry(const char* pszKey, unsigned int uiFlags, unsigned int uiExtra,
+                              unsigned int uiShaderRegister, unsigned int uiRegisterCount, const char* pszVariableName,
+                              unsigned int uiDataSize, int uiDataStride, void* pvDataSource, bool bCopyData);
 };
 
 // Creates a shader constant entry, copies data if requested, passes it to vfn_80, and returns the error code.
 // @fnv 0x00e83650
 // src: COMMUNITY 0x00e83650
-unsigned int ShaderConstantMap_83650::NiD3DShaderConstantMap_AddConstantEntry(const char* shader, unsigned int flags, unsigned int parameter,
-                                                   unsigned int additionalValue, unsigned int registerType,
-                                                   const char* property, unsigned int elementSize, int elementType,
-                                                   void* data, bool copied)
+// pdb: NiD3DShaderConstantMap::AddConstantEntry | NiD3DShaderConstantMap.obj | retail, upstream name already matches, high
+// pdb params: pszKey, uiFlags, uiExtra, uiShaderRegister, uiRegisterCount, pszVariableName, uiDataSize, uiDataStride, pvDataSource, bCopyData
+// pdb locals: pkEntry
+unsigned int ShaderConstantMap_83650::NiD3DShaderConstantMap_AddConstantEntry(const char* pszKey, unsigned int uiFlags, unsigned int uiExtra,
+                                                   unsigned int uiShaderRegister, unsigned int uiRegisterCount,
+                                                   const char* pszVariableName, unsigned int uiDataSize, int uiDataStride,
+                                                   void* pvDataSource, bool bCopyData)
 {
     void* memory = Object_DispatchCommandFour(sizeof(NiShaderConstantMapEntry));
     NiShaderConstantMapEntry* entry = memory ? ::new (memory) NiShaderConstantMapEntry() : 0;
     char* name;
-    if (!shader)
+    if (!pszKey)
         name = NiGlobalStringTable::ms_pcEmptyString;
     else
-        name = FUN_00a5b690(shader);
-    if (entry->m_kControlPoint.m_kHandle != name)
+        name = FUN_00a5b690(pszKey);
+    if (entry->m_kKey.m_kHandle != name)
     {
         if (name != NiGlobalStringTable::ms_pcEmptyString)
             InterlockedIncrement((long*)(name - 8));
-        if (entry->m_kControlPoint.m_kHandle != NiGlobalStringTable::ms_pcEmptyString)
-            InterlockedDecrement((long*)(entry->m_kControlPoint.m_kHandle - 8));
-        entry->m_kControlPoint.m_kHandle = name;
+        if (entry->m_kKey.m_kHandle != NiGlobalStringTable::ms_pcEmptyString)
+            InterlockedDecrement((long*)(entry->m_kKey.m_kHandle - 8));
+        entry->m_kKey.m_kHandle = name;
     }
     if (name != NiGlobalStringTable::ms_pcEmptyString)
         InterlockedDecrement((long*)(name - 8));
 
-    flags = (flags & 0x0fffffff) | 0x10000000;
-    if (elementSize == 8)
-        flags |= 5;
-    else if (elementSize == 12)
-        flags |= 6;
-    else if (elementSize == 16)
-        flags |= 7;
-    else if (elementSize == 32)
-        flags |= 9;
-    else if (elementSize == 36)
-        flags |= 8;
-    else if (elementSize == 48)
-        flags |= 9;
-    else if (elementSize == 64)
-        flags |= 9;
-    entry->m_uiValue1 = flags;
+    uiFlags = (uiFlags & 0x0fffffff) | 0x10000000;
+    if (uiDataSize == 8)
+        uiFlags |= 5;
+    else if (uiDataSize == 12)
+        uiFlags |= 6;
+    else if (uiDataSize == 16)
+        uiFlags |= 7;
+    else if (uiDataSize == 32)
+        uiFlags |= 9;
+    else if (uiDataSize == 36)
+        uiFlags |= 8;
+    else if (uiDataSize == 48)
+        uiFlags |= 9;
+    else if (uiDataSize == 64)
+        uiFlags |= 9;
+    entry->m_uiFlags = uiFlags;
 
-    if (!(elementSize & 3) && elementType == 4 && DAT_011f5fc4[flags & 255] != 1 && DAT_011f5fc4[flags & 255] != 3)
+    if (!(uiDataSize & 3) && uiDataStride == 4 && DAT_011f5fc4[uiFlags & 255] != 1 && DAT_011f5fc4[uiFlags & 255] != 3)
     {
         if (renderStage == 0)
-            parameter = elementType - 3;
+            uiExtra = uiDataStride - 3;
         else if (renderStage == 2)
-            parameter = 2;
+            uiExtra = 2;
     }
-    entry->m_uiValue2 = parameter;
-    entry->m_uiValue3 = additionalValue;
-    entry->m_uiValue4 = registerType;
+    entry->m_uiExtra = uiExtra;
+    entry->m_uiShaderRegister = uiShaderRegister;
+    entry->m_uiRegisterCount = uiRegisterCount;
 
     char* prop;
-    if (!property)
+    if (!pszVariableName)
         prop = NiGlobalStringTable::ms_pcEmptyString;
     else
-        prop = FUN_00a5b690(property);
-    if (entry->m_kSecondaryString.m_kHandle != prop)
+        prop = FUN_00a5b690(pszVariableName);
+    if (entry->m_kVariableName.m_kHandle != prop)
     {
         if (prop != NiGlobalStringTable::ms_pcEmptyString)
             InterlockedIncrement((long*)(prop - 8));
-        if (entry->m_kSecondaryString.m_kHandle != NiGlobalStringTable::ms_pcEmptyString)
-            InterlockedDecrement((long*)(entry->m_kSecondaryString.m_kHandle - 8));
-        entry->m_kSecondaryString.m_kHandle = prop;
+        if (entry->m_kVariableName.m_kHandle != NiGlobalStringTable::ms_pcEmptyString)
+            InterlockedDecrement((long*)(entry->m_kVariableName.m_kHandle - 8));
+        entry->m_kVariableName.m_kHandle = prop;
     }
     if (prop != NiGlobalStringTable::ms_pcEmptyString)
         InterlockedDecrement((long*)(prop - 8));
 
-    entry->m_uiValue6 = elementType;
-    entry->m_uiValue5 = elementSize;
-    if (copied)
+    entry->m_uiDataStride = uiDataStride;
+    entry->m_uiDataSize = uiDataSize;
+    if (bCopyData)
     {
-        entry->m_bFlag0 = true;
-        _NiFree_00aa10f0(entry->m_pConstantData);
-        entry->m_pConstantData = _NiMalloc_00aa1070(elementSize);
-        FUN_00ec44d0(entry->m_pConstantData, data, elementSize);
+        entry->m_bOwnData = true;
+        _NiFree_00aa10f0(entry->m_pvDataSource);
+        entry->m_pvDataSource = _NiMalloc_00aa1070(uiDataSize);
+        FUN_00ec44d0(entry->m_pvDataSource, pvDataSource, uiDataSize);
     }
     else
     {
-        entry->m_bFlag0 = false;
-        entry->m_pConstantData = data;
+        entry->m_bOwnData = false;
+        entry->m_pvDataSource = pvDataSource;
     }
     error = vfn_80(entry);
     if (error)
@@ -1612,8 +1654,8 @@ unsigned int ShaderConstantMap_83650::NiD3DShaderConstantMap_AddConstantEntry(co
 }
 
 class GlobalObjectO2_00a7b610;
-extern GlobalObjectO2_00a7b610 g_011f5b60;
-extern GlobalObjectO2_00a7b610 g_011f5b68;
+extern GlobalObjectO2_00a7b610 NiFloatsExtraData_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f5b60 (old: g_011f5b60)
+extern GlobalObjectO2_00a7b610 NiColorExtraData_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f5b68 (old: g_011f5b68)
 
 bool __cdecl NiObject_IsExactKindOf(void*, void*);
 
@@ -1625,9 +1667,12 @@ extern float DAT_0126f7e0[];
 
 // Converts extraData fields according to the mapped type, returning a static buffer, pData, or null.
 // @fnv 0x00e83840
+// pdb: NiD3DShaderConstantMap::MapAttributeValue | NiD3DShaderConstantMap.obj | retail, call graph, medium
+// pdb params: pkEntry, pkExtra
+// pdb locals: pkBoolED, pkIntED, pkFloatED, uiSize, pfValue, pkFloatsED, pkColorED
 const void* __stdcall GetShaderConstantValue(NiShaderConstantMapEntry* entry, NiExtraData* extraData)
 {
-    int type = DAT_011f5fc4[entry->m_uiValue1 & 0xff];
+    int type = DAT_011f5fc4[entry->m_uiFlags & 0xff];
 
     if (type == 1)
     {
@@ -1673,7 +1718,7 @@ const void* __stdcall GetShaderConstantValue(NiShaderConstantMapEntry* entry, Ni
         }
         if (type == 7)
         {
-            if (NiObject_IsExactKindOf(&g_011f5b60, extraData))
+            if (NiObject_IsExactKindOf(&NiFloatsExtraData_ms_RTTI, extraData))
             {
                 const float* pf = static_cast<NiFloatsExtraData*>(extraData)->m_pfValue;
                 DAT_0126f7cc[0] = pf[0];
@@ -1682,7 +1727,7 @@ const void* __stdcall GetShaderConstantValue(NiShaderConstantMapEntry* entry, Ni
                 DAT_0126f7cc[3] = pf[3];
                 return DAT_0126f7cc;
             }
-            if (NiObject_IsExactKindOf(&g_011f5b68, extraData))
+            if (NiObject_IsExactKindOf(&NiColorExtraData_ms_RTTI, extraData))
             {
                 DAT_0126f7cc[0] = ((const float*)(extraData + 1))[0];
                 DAT_0126f7cc[1] = ((const float*)(extraData + 1))[1];
@@ -1731,29 +1776,32 @@ extern float DAT_0126f7e0[16];
 
 // Returns entry data directly for some counts, otherwise converts supported values into static buffers.
 // @fnv 0x00e83a90
+// pdb: NiD3DShaderConstantMap::MapConstantValue | NiD3DShaderConstantMap.obj | debug, call graph (shared callers), medium
+// pdb params: pkEntry
+// pdb locals: uiCount, eattributeType, pfValue, piValue
 const void* __stdcall GetConstantData(void* apEntry)
 {
     NiShaderConstantMapEntry* entry = static_cast<NiShaderConstantMapEntry*>(apEntry);
-    unsigned int count = entry->m_uiValue5 / entry->m_uiValue6;
-    unsigned int type = reinterpret_cast<const unsigned int*>(DAT_011f5fb4 + 16)[entry->m_uiValue1 & 255];
+    unsigned int count = entry->m_uiDataSize / entry->m_uiDataStride;
+    unsigned int type = reinterpret_cast<const unsigned int*>(DAT_011f5fb4 + 16)[entry->m_uiFlags & 255];
     switch (count)
     {
     case 1:
         if (type == 1)
         {
-            DAT_0126f7b0 = *static_cast<const unsigned char*>(entry->m_pConstantData);
+            DAT_0126f7b0 = *static_cast<const unsigned char*>(entry->m_pvDataSource);
             return &DAT_0126f7b0;
         }
         if (type == 3)
         {
-            unsigned int value = *static_cast<const unsigned int*>(entry->m_pConstantData);
+            unsigned int value = *static_cast<const unsigned int*>(entry->m_pvDataSource);
             DAT_0126f7b4[0] = value;
             DAT_0126f7b4[1] = value;
             DAT_0126f7b4[2] = value;
             DAT_0126f7b4[3] = value;
             return DAT_0126f7b4;
         }
-        DAT_0126f7cc[0] = *static_cast<const float*>(entry->m_pConstantData);
+        DAT_0126f7cc[0] = *static_cast<const float*>(entry->m_pvDataSource);
         DAT_0126f7cc[1] = DAT_0126f7cc[0];
         DAT_0126f7cc[2] = DAT_0126f7cc[0];
         DAT_0126f7cc[3] = DAT_0126f7cc[0];
@@ -1761,14 +1809,14 @@ const void* __stdcall GetConstantData(void* apEntry)
     case 2: {
         if (type == 3)
         {
-            const unsigned int* values = static_cast<const unsigned int*>(entry->m_pConstantData);
+            const unsigned int* values = static_cast<const unsigned int*>(entry->m_pvDataSource);
             DAT_0126f7b4[0] = values[0];
             DAT_0126f7b4[1] = values[1];
             DAT_0126f7b4[2] = DAT_0126f7b4[0];
             DAT_0126f7b4[3] = DAT_0126f7b4[1];
             return DAT_0126f7b4;
         }
-        const float* values = static_cast<const float*>(entry->m_pConstantData);
+        const float* values = static_cast<const float*>(entry->m_pvDataSource);
         DAT_0126f7cc[0] = values[0];
         DAT_0126f7cc[1] = values[1];
         DAT_0126f7cc[2] = DAT_0126f7cc[0];
@@ -1776,7 +1824,7 @@ const void* __stdcall GetConstantData(void* apEntry)
         return DAT_0126f7cc;
     }
     case 3: {
-        const void* data = entry->m_pConstantData;
+        const void* data = entry->m_pvDataSource;
         if (type == 3)
         {
             const unsigned int* values = static_cast<const unsigned int*>(data);
@@ -1786,7 +1834,7 @@ const void* __stdcall GetConstantData(void* apEntry)
             DAT_0126f7b4[3] = 1;
             return DAT_0126f7b4;
         }
-        const float* values = static_cast<const float*>(entry->m_pConstantData);
+        const float* values = static_cast<const float*>(entry->m_pvDataSource);
         DAT_0126f7cc[0] = values[0];
         DAT_0126f7cc[1] = values[1];
         DAT_0126f7cc[2] = values[2];
@@ -1795,9 +1843,9 @@ const void* __stdcall GetConstantData(void* apEntry)
     }
     case 4:
     case 16:
-        return entry->m_pConstantData;
+        return entry->m_pvDataSource;
     case 8: {
-        const float* values = static_cast<const float*>(entry->m_pConstantData);
+        const float* values = static_cast<const float*>(entry->m_pvDataSource);
         DAT_0126f7e0[0] = values[0];
         DAT_0126f7e0[1] = values[1];
         DAT_0126f7e0[2] = values[2];
@@ -1817,7 +1865,7 @@ const void* __stdcall GetConstantData(void* apEntry)
         return DAT_0126f7e0;
     }
     case 9: {
-        const float* values = static_cast<const float*>(entry->m_pConstantData);
+        const float* values = static_cast<const float*>(entry->m_pvDataSource);
         DAT_0126f7e0[0] = values[0];
         DAT_0126f7e0[1] = values[1];
         DAT_0126f7e0[2] = values[2];
@@ -1837,7 +1885,7 @@ const void* __stdcall GetConstantData(void* apEntry)
         return DAT_0126f7e0;
     }
     case 12: {
-        const float* values = static_cast<const float*>(entry->m_pConstantData);
+        const float* values = static_cast<const float*>(entry->m_pvDataSource);
         DAT_0126f7e0[0] = values[0];
         DAT_0126f7e0[1] = values[1];
         DAT_0126f7e0[2] = values[2];
@@ -1857,8 +1905,8 @@ const void* __stdcall GetConstantData(void* apEntry)
         return DAT_0126f7e0;
     }
     default:
-        if (entry->m_uiValue6 == 4 && (count & 3) == 0)
-            return entry->m_pConstantData;
+        if (entry->m_uiDataStride == 4 && (count & 3) == 0)
+            return entry->m_pvDataSource;
         return 0;
     }
 }
@@ -1910,67 +1958,70 @@ struct TexConstantMap
     int unk08;
     const void* LookupDefault(NiShaderConstantMapEntry* entry);
     const void* LookupTexture(NiShaderConstantMapEntry* entry, NiTexture* tex);
-    unsigned int NiD3DShaderConstantMap_SetAttributeConstant(TexProgram* prog, NiShaderConstantMapEntry* entry, NiAVObject* geom, void* a3, void* a4, void* a5,
-                              void* a6, void* a7, void* a8, void* a9, unsigned int pass, bool global, TexCache* cache);
+    unsigned int NiD3DShaderConstantMap_SetAttributeConstant(TexProgram* pkShaderProgram, NiShaderConstantMapEntry* pkEntry, NiAVObject* pkGeometry, void* pkSkin, void* pkPartition, void* pkBuffData,
+                              void* pkState, void* pkEffects, void* kWorld, void* kWorldBound, unsigned int uiPass, bool bGlobal, TexCache* pkExtraData);
 };
 
 // Resolves a texture for a NiShaderConstantMapEntry via cache or geom, looks up its constant data, and calls prog->SetConstant with a size derived from entry->flags.
 // @fnv 0x00e84ba0
 // src: XBOX_PDB 0x00e84ba0
-unsigned int TexConstantMap::NiD3DShaderConstantMap_SetAttributeConstant(TexProgram* prog, NiShaderConstantMapEntry* entry, NiAVObject* geom, void* apUnused3,
-                                          void* apUnused4, void* apUnused5, void* apUnused6, void* apUnused7,
-                                          void* apUnused8, void* apUnused9, unsigned int pass, bool global,
-                                          TexCache* cache)
+// pdb: NiD3DShaderConstantMap::SetAttributeConstant | NiD3DShaderConstantMap.obj | retail, upstream name already matches, high
+// pdb params: pkShaderProgram, pkEntry, pkGeometry, pkSkin, pkPartition, pkBuffData, pkState, pkEffects, kWorld, kWorldBound, uiPass, bGlobal, pkExtraData
+// pdb locals: pkExtra, pvValue, pkShaderData
+unsigned int TexConstantMap::NiD3DShaderConstantMap_SetAttributeConstant(TexProgram* pkShaderProgram, NiShaderConstantMapEntry* pkEntry, NiAVObject* pkGeometry, void* pkSkin,
+                                          void* pkPartition, void* pkBuffData, void* pkState, void* pkEffects,
+                                          void* kWorld, void* kWorldBound, unsigned int uiPass, bool bGlobal,
+                                          TexCache* pkExtraData)
 {
-    if (!geom)
+    if (!pkGeometry)
         return 1;
 
     NiTexture* tex;
-    if (cache)
+    if (pkExtraData)
     {
         int owner = unk08;
-        unsigned int id = entry->m_uiValue3;
-        tex = cache->Find(id, pass, owner, global);
-        if (!tex || tex->GetFilename().m_kHandle != entry->m_kControlPoint.m_kHandle)
+        unsigned int id = pkEntry->m_uiShaderRegister;
+        tex = pkExtraData->Find(id, uiPass, owner, bGlobal);
+        if (!tex || tex->GetFilename().m_kHandle != pkEntry->m_kKey.m_kHandle)
         {
-            tex = (NiTexture*)geom->GetExtraData(entry->m_kControlPoint);
+            tex = (NiTexture*)pkGeometry->GetExtraData(pkEntry->m_kKey);
             if (tex)
-                cache->Add(entry->m_uiValue3, pass, unk08, tex, global);
+                pkExtraData->Add(pkEntry->m_uiShaderRegister, uiPass, unk08, tex, bGlobal);
         }
     }
     else
     {
-        tex = (NiTexture*)geom->GetExtraData(entry->m_kControlPoint);
+        tex = (NiTexture*)pkGeometry->GetExtraData(pkEntry->m_kKey);
     }
 
     const void* data;
     if (!tex)
     {
-        data = LookupDefault(entry);
+        data = LookupDefault(pkEntry);
         if (!data)
             return 0x10;
     }
     else
     {
-        data = LookupTexture(entry, tex);
+        data = LookupTexture(pkEntry, tex);
         if (!data)
             return 0x40;
     }
 
-    int type = DAT_011f5fc4[entry->m_uiValue1 & 0xff];
+    int type = DAT_011f5fc4[pkEntry->m_uiFlags & 0xff];
     if (type == 9)
     {
-        if (!prog->SetConstant(entry, data, 4))
+        if (!pkShaderProgram->SetConstant(pkEntry, data, 4))
             return 0x50;
     }
     else if (type == 6 || type == 7 || type == 5 || type == 4 || type == 10 || type == 3 || type == 1)
     {
-        if (!prog->SetConstant(entry, data, 0))
+        if (!pkShaderProgram->SetConstant(pkEntry, data, 0))
             return 0x50;
     }
     else if (type == 8)
     {
-        if (!prog->SetConstant(entry, data, 3))
+        if (!pkShaderProgram->SetConstant(pkEntry, data, 3))
             return 0x50;
     }
     return 0;
@@ -1986,71 +2037,74 @@ extern float DAT_0126f7e0[12];
 // For supported uiType values, copies or passes (const float*)pkEntry->m_pConstantData to SetConstant, returning 0x50 if that call fails.
 // @fnv 0x00e84d00
 // src: COMMUNITY 0x00e84d00
-unsigned int __stdcall NiD3DShaderConstantMap_SetGlobalConstant(FUN_00e84b60_prog* pkProgram, NiShaderConstantMapEntry* pkEntry,
+// pdb: NiD3DShaderConstantMap::SetGlobalConstant | NiD3DShaderConstantMap.obj | retail, upstream name already matches, high
+// pdb params: pkShaderProgram, pkEntry, uiPass
+// pdb locals: eResult, pfData
+unsigned int __stdcall NiD3DShaderConstantMap_SetGlobalConstant(FUN_00e84b60_prog* pkShaderProgram, NiShaderConstantMapEntry* pkEntry,
                                     unsigned int uiPass)
 {
     unsigned int uiResult = 0;
-    unsigned int uiType = DAT_011f5fc4[pkEntry->m_uiValue1 & 0xff];
+    unsigned int uiType = DAT_011f5fc4[pkEntry->m_uiFlags & 0xff];
 
     if (uiType == 1)
     {
-        DAT_0126f7b0 = *(const unsigned char*)(const float*)pkEntry->m_pConstantData;
-        if (!pkProgram->SetConstant(pkEntry, &DAT_0126f7b0, 0))
+        DAT_0126f7b0 = *(const unsigned char*)(const float*)pkEntry->m_pvDataSource;
+        if (!pkShaderProgram->SetConstant(pkEntry, &DAT_0126f7b0, 0))
             uiResult = 0x50;
     }
     else if (uiType == 3)
     {
-        unsigned int uiValue = *(const unsigned int*)(const float*)pkEntry->m_pConstantData;
+        unsigned int uiValue = *(const unsigned int*)(const float*)pkEntry->m_pvDataSource;
         DAT_0126f7b4[0] = uiValue;
         DAT_0126f7b4[1] = uiValue;
         DAT_0126f7b4[2] = uiValue;
         DAT_0126f7b4[3] = uiValue;
-        if (!pkProgram->SetConstant(pkEntry, DAT_0126f7b4, 0))
+        if (!pkShaderProgram->SetConstant(pkEntry, DAT_0126f7b4, 0))
             uiResult = 0x50;
     }
     else if (uiType == 4)
     {
-        const float* pVector4 = (const float*)pkEntry->m_pConstantData;
+        const float* pVector4 = (const float*)pkEntry->m_pvDataSource;
         DAT_0126f7cc[0] = pVector4[0];
         DAT_0126f7cc[1] = DAT_0126f7cc[0];
         DAT_0126f7cc[2] = DAT_0126f7cc[0];
         DAT_0126f7cc[3] = DAT_0126f7cc[0];
-        if (!pkProgram->SetConstant(pkEntry, DAT_0126f7cc, 0))
+        if (!pkShaderProgram->SetConstant(pkEntry, DAT_0126f7cc, 0))
             uiResult = 0x50;
     }
     else if (uiType == 5)
     {
-        const float* pVector4 = (const float*)pkEntry->m_pConstantData;
+        const float* pVector4 = (const float*)pkEntry->m_pvDataSource;
         DAT_0126f7cc[0] = pVector4[0];
         DAT_0126f7cc[1] = pVector4[1];
         DAT_0126f7cc[2] = DAT_0126f7cc[0];
         DAT_0126f7cc[3] = DAT_0126f7cc[1];
-        if (!pkProgram->SetConstant(pkEntry, DAT_0126f7cc, 0))
+        if (!pkShaderProgram->SetConstant(pkEntry, DAT_0126f7cc, 0))
             uiResult = 0x50;
     }
     else if (uiType == 6)
     {
-        const float* pVector4 = (const float*)pkEntry->m_pConstantData;
+        const float* pVector4 = (const float*)pkEntry->m_pvDataSource;
         DAT_0126f7cc[0] = pVector4[0];
         DAT_0126f7cc[1] = pVector4[1];
         DAT_0126f7cc[2] = pVector4[2];
         DAT_0126f7cc[3] = 1.0f;
-        if (!pkProgram->SetConstant(pkEntry, DAT_0126f7cc, 0))
+        if (!pkShaderProgram->SetConstant(pkEntry, DAT_0126f7cc, 0))
             uiResult = 0x50;
     }
     else if (uiType == 7 || uiType == 10)
     {
-        const float* pVector4 = (const float*)pkEntry->m_pConstantData;
+        const float* pVector4 = (const float*)pkEntry->m_pvDataSource;
         DAT_0126f7cc[0] = pVector4[0];
         DAT_0126f7cc[1] = pVector4[1];
         DAT_0126f7cc[2] = pVector4[2];
         DAT_0126f7cc[3] = pVector4[3];
-        if (!pkProgram->SetConstant(pkEntry, DAT_0126f7cc, 0))
+        if (!pkShaderProgram->SetConstant(pkEntry, DAT_0126f7cc, 0))
             uiResult = 0x50;
     }
     else if (uiType == 8)
     {
-        const float* pVector4 = (const float*)pkEntry->m_pConstantData;
+        const float* pVector4 = (const float*)pkEntry->m_pvDataSource;
         DAT_0126f7e0[0] = pVector4[0];
         DAT_0126f7e0[1] = pVector4[1];
         DAT_0126f7e0[2] = pVector4[2];
@@ -2063,13 +2117,13 @@ unsigned int __stdcall NiD3DShaderConstantMap_SetGlobalConstant(FUN_00e84b60_pro
         DAT_0126f7e0[9] = pVector4[7];
         DAT_0126f7e0[10] = pVector4[8];
         DAT_0126f7e0[11] = 0.0f;
-        if (!pkProgram->SetConstant(pkEntry, DAT_0126f7e0, 0))
+        if (!pkShaderProgram->SetConstant(pkEntry, DAT_0126f7e0, 0))
             uiResult = 0x50;
     }
     else if (uiType == 9)
     {
-        const float* pVector4 = (const float*)pkEntry->m_pConstantData;
-        if (!pkProgram->SetConstant(pkEntry, pVector4, 0))
+        const float* pVector4 = (const float*)pkEntry->m_pvDataSource;
+        if (!pkShaderProgram->SetConstant(pkEntry, pVector4, 0))
             uiResult = 0x50;
     }
     return uiResult;
@@ -2282,6 +2336,9 @@ static __declspec(noinline) void CopyMatrix(void* dst, const void* src)
 
 // Fills pvData with light constant values selected by uiMapping from the StandinLight in pSource, transforming positions and directions with kWorld when needed.
 // @fnv 0x00e84ed0
+// pdb: NiD3DShaderConstantMap::GetDynamicEffectData | NiD3DShaderConstantMap.obj | retail, object-file run extension, low
+// pdb params: pvData, uiDataSize, eMapping, pkDynEffect, pkGeometry, pkSkin, pkPartition, pkBuffData, pkState, pkEffects, kWorld, kWorldBound, uiPass
+// pdb locals: uiRegCount, uiFloatCount, pfData, kIdentMatrix, eType, kColor, kPosition, kInvWorld, kDirection, kMatrix, kDynEffectWorld, kTranslation, pkTexEffect, kPlane, kNormal, fConstant, kPoint, fTexCoordGen
 bool __cdecl FillLightConstantData(void* apConstantData, unsigned int uiConstantDataSize, unsigned int uiMapping,
                                    void* pSource, NiGeometry* m_pShaderGeometry, const NiSkinInstance* pSkinInstance,
                                    const NiSkinPartition::Partition* pPartition, NiGeometryBufferData* pBuffData,
@@ -2893,22 +2950,25 @@ static unsigned int Dbl(unsigned int x)
 // Gets a format and dimensions, calls FillLightConstantData with the source and derived pitch, then passes the buffer to obj->s1d.
 // @fnv 0x00e85c40
 // src: COMMUNITY 0x00e85c40
-int __stdcall NiD3DShaderConstantMap_SetObjectConstant(S00e85c40_Obj* obj, NiShaderConstantMapEntry* tex, int p3, int p4, int p5, int p6, int p7,
-                           unsigned int auiLightType, int p9, int p10, int p11)
+// pdb: NiD3DShaderConstantMap::SetObjectConstant | NiD3DShaderConstantMap.obj | retail, upstream name already matches, high
+// pdb params: pkShaderProgram, pkEntry, pkGeometry, pkSkin, pkPartition, pkBuffData, pkState, pkEffects, kWorld, kWorldBound, uiPass
+// pdb locals: uiArraySize, eMapping, eResult, uiRegCount, pkDynEffect, uiFloatCount, eType
+int __stdcall NiD3DShaderConstantMap_SetObjectConstant(S00e85c40_Obj* pkShaderProgram, NiShaderConstantMapEntry* pkEntry, int pkGeometry, int pkSkin, int pkPartition, int pkBuffData, int pkState,
+                           unsigned int pkEffects, int kWorld, int kWorldBound, int uiPass)
 {
     int result = 0;
-    unsigned int m18 = tex->m_uiValue2;
-    unsigned int idx = ((unsigned char*)&tex->m_uiValue1)[1];
+    unsigned int m18 = pkEntry->m_uiExtra;
+    unsigned int idx = ((unsigned char*)&pkEntry->m_uiFlags)[1];
     unsigned int uiTableEntry = DAT_011f5f90[idx];
-    unsigned int fmt = GetLightByType(auiLightType, uiTableEntry, m18);
-    void* src = *(void**)&tex->unk10;
+    unsigned int fmt = GetLightByType(pkEffects, uiTableEntry, m18);
+    void* src = *(void**)&pkEntry->m_uiInternal;
     unsigned int w, h;
     if (!GetAttributeTypeForMapping(src, &w, &h))
         return 0x10;
     unsigned int pitch = Dbl(Dbl(Dbl(Dbl(w))));
-    if (!FillLightConstantData(&DAT_0126f770, pitch, src, fmt, p3, p4, p5, p6, p7, auiLightType, p9, p10, p11))
+    if (!FillLightConstantData(&DAT_0126f770, pitch, src, fmt, pkGeometry, pkSkin, pkPartition, pkBuffData, pkState, pkEffects, kWorld, kWorldBound, uiPass))
         result = 0x60;
-    if (!obj->s1d(tex, &DAT_0126f770, 0))
+    if (!pkShaderProgram->s1d(pkEntry, &DAT_0126f770, 0))
         result = 0x50;
     return result;
 }
@@ -2924,96 +2984,99 @@ struct GlobalObjectO2_00a7b610
 // Copies the float data from object into the matching slot of g_0126f7c4 based on the type code and returns that code.
 // @fnv 0x00e86a50
 // src: COMMUNITY 0x00e86a50
-unsigned int __stdcall NiD3DShaderConstantMap_SetupConstantConstantValue(unsigned int index, NiShaderConstantMapEntry* object, unsigned int unused)
+// pdb: NiD3DShaderConstantMap::SetupConstantConstantValue | NiD3DShaderConstantMap.obj | retail, upstream name already matches, high
+// pdb params: uiOperatorNum, pkEntry, uiPass
+// pdb locals: pfData
+unsigned int __stdcall NiD3DShaderConstantMap_SetupConstantConstantValue(unsigned int uiOperatorNum, NiShaderConstantMapEntry* pkEntry, unsigned int uiPass)
 {
-    float* source = (float*)object->m_pConstantData;
-    unsigned int type = DAT_011f5fc4[object->m_uiValue1 & 0xff];
+    float* source = (float*)pkEntry->m_pvDataSource;
+    unsigned int type = DAT_011f5fc4[pkEntry->m_uiFlags & 0xff];
 
     if (type == 3)
     {
-        g_0126f7c4.small[index * 4] = source[0];
+        NiD3DShaderConstantMap_ms_RTTI.small[uiOperatorNum * 4] = source[0];
         return type;
     }
 
     if (type == 4)
     {
-        g_0126f7c4.small[index * 4] = source[0];
+        NiD3DShaderConstantMap_ms_RTTI.small[uiOperatorNum * 4] = source[0];
         return 4;
     }
 
     if (type == 5)
     {
-        g_0126f7c4.small[index * 4] = source[0];
-        g_0126f7c4.small[index * 4 + 1] = source[1];
+        NiD3DShaderConstantMap_ms_RTTI.small[uiOperatorNum * 4] = source[0];
+        NiD3DShaderConstantMap_ms_RTTI.small[uiOperatorNum * 4 + 1] = source[1];
         return 5;
     }
 
     if (type == 6)
     {
-        g_0126f7c4.small[index * 4] = source[0];
-        g_0126f7c4.small[index * 4 + 1] = source[1];
-        g_0126f7c4.small[index * 4 + 2] = source[2];
+        NiD3DShaderConstantMap_ms_RTTI.small[uiOperatorNum * 4] = source[0];
+        NiD3DShaderConstantMap_ms_RTTI.small[uiOperatorNum * 4 + 1] = source[1];
+        NiD3DShaderConstantMap_ms_RTTI.small[uiOperatorNum * 4 + 2] = source[2];
         return 6;
     }
 
     if (type == 7)
     {
-        g_0126f7c4.small[index * 4] = source[0];
-        g_0126f7c4.small[index * 4 + 1] = source[1];
-        g_0126f7c4.small[index * 4 + 2] = source[2];
-        g_0126f7c4.small[index * 4 + 3] = source[3];
+        NiD3DShaderConstantMap_ms_RTTI.small[uiOperatorNum * 4] = source[0];
+        NiD3DShaderConstantMap_ms_RTTI.small[uiOperatorNum * 4 + 1] = source[1];
+        NiD3DShaderConstantMap_ms_RTTI.small[uiOperatorNum * 4 + 2] = source[2];
+        NiD3DShaderConstantMap_ms_RTTI.small[uiOperatorNum * 4 + 3] = source[3];
         return 7;
     }
 
     if (type == 8)
     {
         float zero = 0.0f;
-        g_0126f7c4.large[index * 16] = source[0];
-        g_0126f7c4.large[index * 16 + 1] = source[1];
-        g_0126f7c4.large[index * 16 + 2] = source[2];
-        g_0126f7c4.large[index * 16 + 3] = zero;
-        g_0126f7c4.large[index * 16 + 4] = source[3];
-        g_0126f7c4.large[index * 16 + 5] = source[4];
-        g_0126f7c4.large[index * 16 + 6] = source[5];
-        g_0126f7c4.large[index * 16 + 7] = zero;
-        g_0126f7c4.large[index * 16 + 8] = source[6];
-        g_0126f7c4.large[index * 16 + 9] = source[7];
-        g_0126f7c4.large[index * 16 + 10] = source[8];
-        g_0126f7c4.large[index * 16 + 11] = zero;
-        g_0126f7c4.large[index * 16 + 12] = zero;
-        g_0126f7c4.large[index * 16 + 13] = zero;
-        g_0126f7c4.large[index * 16 + 14] = zero;
-        g_0126f7c4.large[index * 16 + 15] = 1.0f;
+        NiD3DShaderConstantMap_ms_RTTI.large[uiOperatorNum * 16] = source[0];
+        NiD3DShaderConstantMap_ms_RTTI.large[uiOperatorNum * 16 + 1] = source[1];
+        NiD3DShaderConstantMap_ms_RTTI.large[uiOperatorNum * 16 + 2] = source[2];
+        NiD3DShaderConstantMap_ms_RTTI.large[uiOperatorNum * 16 + 3] = zero;
+        NiD3DShaderConstantMap_ms_RTTI.large[uiOperatorNum * 16 + 4] = source[3];
+        NiD3DShaderConstantMap_ms_RTTI.large[uiOperatorNum * 16 + 5] = source[4];
+        NiD3DShaderConstantMap_ms_RTTI.large[uiOperatorNum * 16 + 6] = source[5];
+        NiD3DShaderConstantMap_ms_RTTI.large[uiOperatorNum * 16 + 7] = zero;
+        NiD3DShaderConstantMap_ms_RTTI.large[uiOperatorNum * 16 + 8] = source[6];
+        NiD3DShaderConstantMap_ms_RTTI.large[uiOperatorNum * 16 + 9] = source[7];
+        NiD3DShaderConstantMap_ms_RTTI.large[uiOperatorNum * 16 + 10] = source[8];
+        NiD3DShaderConstantMap_ms_RTTI.large[uiOperatorNum * 16 + 11] = zero;
+        NiD3DShaderConstantMap_ms_RTTI.large[uiOperatorNum * 16 + 12] = zero;
+        NiD3DShaderConstantMap_ms_RTTI.large[uiOperatorNum * 16 + 13] = zero;
+        NiD3DShaderConstantMap_ms_RTTI.large[uiOperatorNum * 16 + 14] = zero;
+        NiD3DShaderConstantMap_ms_RTTI.large[uiOperatorNum * 16 + 15] = 1.0f;
         return 8;
     }
 
     if (type == 9)
     {
-        g_0126f7c4.large[index * 16] = source[0];
-        g_0126f7c4.large[index * 16 + 1] = source[1];
-        g_0126f7c4.large[index * 16 + 2] = source[2];
-        g_0126f7c4.large[index * 16 + 3] = source[3];
-        g_0126f7c4.large[index * 16 + 4] = source[4];
-        g_0126f7c4.large[index * 16 + 5] = source[5];
-        g_0126f7c4.large[index * 16 + 6] = source[6];
-        g_0126f7c4.large[index * 16 + 7] = source[7];
-        g_0126f7c4.large[index * 16 + 8] = source[8];
-        g_0126f7c4.large[index * 16 + 9] = source[9];
-        g_0126f7c4.large[index * 16 + 10] = source[10];
-        g_0126f7c4.large[index * 16 + 11] = source[11];
-        g_0126f7c4.large[index * 16 + 12] = source[12];
-        g_0126f7c4.large[index * 16 + 13] = source[13];
-        g_0126f7c4.large[index * 16 + 14] = source[14];
-        g_0126f7c4.large[index * 16 + 15] = source[15];
+        NiD3DShaderConstantMap_ms_RTTI.large[uiOperatorNum * 16] = source[0];
+        NiD3DShaderConstantMap_ms_RTTI.large[uiOperatorNum * 16 + 1] = source[1];
+        NiD3DShaderConstantMap_ms_RTTI.large[uiOperatorNum * 16 + 2] = source[2];
+        NiD3DShaderConstantMap_ms_RTTI.large[uiOperatorNum * 16 + 3] = source[3];
+        NiD3DShaderConstantMap_ms_RTTI.large[uiOperatorNum * 16 + 4] = source[4];
+        NiD3DShaderConstantMap_ms_RTTI.large[uiOperatorNum * 16 + 5] = source[5];
+        NiD3DShaderConstantMap_ms_RTTI.large[uiOperatorNum * 16 + 6] = source[6];
+        NiD3DShaderConstantMap_ms_RTTI.large[uiOperatorNum * 16 + 7] = source[7];
+        NiD3DShaderConstantMap_ms_RTTI.large[uiOperatorNum * 16 + 8] = source[8];
+        NiD3DShaderConstantMap_ms_RTTI.large[uiOperatorNum * 16 + 9] = source[9];
+        NiD3DShaderConstantMap_ms_RTTI.large[uiOperatorNum * 16 + 10] = source[10];
+        NiD3DShaderConstantMap_ms_RTTI.large[uiOperatorNum * 16 + 11] = source[11];
+        NiD3DShaderConstantMap_ms_RTTI.large[uiOperatorNum * 16 + 12] = source[12];
+        NiD3DShaderConstantMap_ms_RTTI.large[uiOperatorNum * 16 + 13] = source[13];
+        NiD3DShaderConstantMap_ms_RTTI.large[uiOperatorNum * 16 + 14] = source[14];
+        NiD3DShaderConstantMap_ms_RTTI.large[uiOperatorNum * 16 + 15] = source[15];
         return 9;
     }
 
     if (type == 10)
     {
-        g_0126f7c4.small[index * 4] = source[0];
-        g_0126f7c4.small[index * 4 + 1] = source[1];
-        g_0126f7c4.small[index * 4 + 2] = source[2];
-        g_0126f7c4.small[index * 4 + 3] = source[3];
+        NiD3DShaderConstantMap_ms_RTTI.small[uiOperatorNum * 4] = source[0];
+        NiD3DShaderConstantMap_ms_RTTI.small[uiOperatorNum * 4 + 1] = source[1];
+        NiD3DShaderConstantMap_ms_RTTI.small[uiOperatorNum * 4 + 2] = source[2];
+        NiD3DShaderConstantMap_ms_RTTI.small[uiOperatorNum * 4 + 3] = source[3];
         return 10;
     }
 
@@ -3027,106 +3090,110 @@ extern float g_afSCMatrixConstants[][16];
 struct SCConstantMap
 {
     void* GetExtraDataPtr(NiShaderConstantMapEntry* apEntry, NiExtraData* apExtra);
-    int LoadConstant(unsigned int auiRegister, NiShaderConstantMapEntry* apEntry, NiAVObject* apGeometry, void* apSkin,
-                     void* apPartition, void* apBuffData, unsigned int auiPass, void* apState);
+    int NiD3DShaderConstantMap_SetupAttributeConstantValue(unsigned int uiOperatorNum, NiShaderConstantMapEntry* pkEntry, NiAVObject* pkGeometry, void* pkSkin,
+                     void* pkState, void* kWorld, unsigned int kWorldBound, void* uiPass);
 };
 
 // @fnv 0x00e86ca0
-int SCConstantMap::LoadConstant(unsigned int auiRegister, NiShaderConstantMapEntry* apEntry, NiAVObject* apGeometry, void* apSkin,
-                                void* apPartition, void* apBuffData, unsigned int auiPass, void* apState)
+// src: XBOX_RETAIL_PDB 0x00e86ca0
+// pdb: NiD3DShaderConstantMap::SetupAttributeConstantValue | NiD3DShaderConstantMap.obj | retail, call graph, high
+// pdb params: uiOperatorNum, pkEntry, pkGeometry, pkSkin, pkState, kWorld, kWorldBound, uiPass
+// pdb locals: pkExtra, pvData, uiStartReg
+int SCConstantMap::NiD3DShaderConstantMap_SetupAttributeConstantValue(unsigned int uiOperatorNum, NiShaderConstantMapEntry* pkEntry, NiAVObject* pkGeometry, void* pkSkin,
+                                void* pkState, void* kWorld, unsigned int kWorldBound, void* uiPass)
 {
-    if (!apGeometry)
+    if (!pkGeometry)
         return 1;
 
-    NiExtraData* pExtraData = apGeometry->GetExtraData(apEntry->m_kControlPoint);
+    NiExtraData* pExtraData = pkGeometry->GetExtraData(pkEntry->m_kKey);
     if (!pExtraData)
         return 0x10;
 
-    void* pData = GetExtraDataPtr(apEntry, pExtraData);
-    unsigned int uiType = g_auiSCAttributeTypes[apEntry->m_uiValue1 & 0xff];
+    void* pData = GetExtraDataPtr(pkEntry, pExtraData);
+    unsigned int uiType = g_auiSCAttributeTypes[pkEntry->m_uiFlags & 0xff];
     if (uiType == 3)
     {
-        g_afSCVectorConstants[auiRegister][0] = (float)*(unsigned int*)pData;
+        g_afSCVectorConstants[uiOperatorNum][0] = (float)*(unsigned int*)pData;
         return 3;
     }
     else if (uiType == 4)
     {
-        g_afSCVectorConstants[auiRegister][0] = *(float*)pData;
+        g_afSCVectorConstants[uiOperatorNum][0] = *(float*)pData;
         return 4;
     }
     else if (uiType == 5)
     {
         float* pf = (float*)pData;
-        g_afSCVectorConstants[auiRegister][0] = pf[0];
-        g_afSCVectorConstants[auiRegister][1] = pf[1];
+        g_afSCVectorConstants[uiOperatorNum][0] = pf[0];
+        g_afSCVectorConstants[uiOperatorNum][1] = pf[1];
         return 5;
     }
     else if (uiType == 6)
     {
         float* pf = (float*)pData;
-        g_afSCVectorConstants[auiRegister][0] = pf[0];
-        g_afSCVectorConstants[auiRegister][1] = pf[1];
-        g_afSCVectorConstants[auiRegister][2] = pf[2];
+        g_afSCVectorConstants[uiOperatorNum][0] = pf[0];
+        g_afSCVectorConstants[uiOperatorNum][1] = pf[1];
+        g_afSCVectorConstants[uiOperatorNum][2] = pf[2];
         return 6;
     }
     else if (uiType == 7)
     {
         float* pf = (float*)pData;
-        g_afSCVectorConstants[auiRegister][0] = pf[0];
-        g_afSCVectorConstants[auiRegister][1] = pf[1];
-        g_afSCVectorConstants[auiRegister][2] = pf[2];
-        g_afSCVectorConstants[auiRegister][3] = pf[3];
+        g_afSCVectorConstants[uiOperatorNum][0] = pf[0];
+        g_afSCVectorConstants[uiOperatorNum][1] = pf[1];
+        g_afSCVectorConstants[uiOperatorNum][2] = pf[2];
+        g_afSCVectorConstants[uiOperatorNum][3] = pf[3];
         return 7;
     }
     else if (uiType == 8)
     {
         float* pf = (float*)pData;
-        g_afSCMatrixConstants[auiRegister][0] = pf[0];
-        g_afSCMatrixConstants[auiRegister][1] = pf[1];
-        g_afSCMatrixConstants[auiRegister][2] = pf[2];
-        g_afSCMatrixConstants[auiRegister][3] = 0.0f;
-        g_afSCMatrixConstants[auiRegister][4] = pf[3];
-        g_afSCMatrixConstants[auiRegister][5] = pf[4];
-        g_afSCMatrixConstants[auiRegister][6] = pf[5];
-        g_afSCMatrixConstants[auiRegister][7] = 0.0f;
-        g_afSCMatrixConstants[auiRegister][8] = pf[6];
-        g_afSCMatrixConstants[auiRegister][9] = pf[7];
-        g_afSCMatrixConstants[auiRegister][10] = pf[8];
-        g_afSCMatrixConstants[auiRegister][11] = 0.0f;
-        g_afSCMatrixConstants[auiRegister][12] = 0.0f;
-        g_afSCMatrixConstants[auiRegister][13] = 0.0f;
-        g_afSCMatrixConstants[auiRegister][14] = 0.0f;
-        g_afSCMatrixConstants[auiRegister][15] = 1.0f;
+        g_afSCMatrixConstants[uiOperatorNum][0] = pf[0];
+        g_afSCMatrixConstants[uiOperatorNum][1] = pf[1];
+        g_afSCMatrixConstants[uiOperatorNum][2] = pf[2];
+        g_afSCMatrixConstants[uiOperatorNum][3] = 0.0f;
+        g_afSCMatrixConstants[uiOperatorNum][4] = pf[3];
+        g_afSCMatrixConstants[uiOperatorNum][5] = pf[4];
+        g_afSCMatrixConstants[uiOperatorNum][6] = pf[5];
+        g_afSCMatrixConstants[uiOperatorNum][7] = 0.0f;
+        g_afSCMatrixConstants[uiOperatorNum][8] = pf[6];
+        g_afSCMatrixConstants[uiOperatorNum][9] = pf[7];
+        g_afSCMatrixConstants[uiOperatorNum][10] = pf[8];
+        g_afSCMatrixConstants[uiOperatorNum][11] = 0.0f;
+        g_afSCMatrixConstants[uiOperatorNum][12] = 0.0f;
+        g_afSCMatrixConstants[uiOperatorNum][13] = 0.0f;
+        g_afSCMatrixConstants[uiOperatorNum][14] = 0.0f;
+        g_afSCMatrixConstants[uiOperatorNum][15] = 1.0f;
         return 8;
     }
     else if (uiType == 9)
     {
         float* pf = (float*)pData;
-        g_afSCMatrixConstants[auiRegister][0] = pf[0];
-        g_afSCMatrixConstants[auiRegister][1] = pf[1];
-        g_afSCMatrixConstants[auiRegister][2] = pf[2];
-        g_afSCMatrixConstants[auiRegister][3] = pf[3];
-        g_afSCMatrixConstants[auiRegister][4] = pf[4];
-        g_afSCMatrixConstants[auiRegister][5] = pf[5];
-        g_afSCMatrixConstants[auiRegister][6] = pf[6];
-        g_afSCMatrixConstants[auiRegister][7] = pf[7];
-        g_afSCMatrixConstants[auiRegister][8] = pf[8];
-        g_afSCMatrixConstants[auiRegister][9] = pf[9];
-        g_afSCMatrixConstants[auiRegister][10] = pf[10];
-        g_afSCMatrixConstants[auiRegister][11] = pf[11];
-        g_afSCMatrixConstants[auiRegister][12] = pf[12];
-        g_afSCMatrixConstants[auiRegister][13] = pf[13];
-        g_afSCMatrixConstants[auiRegister][14] = pf[14];
-        g_afSCMatrixConstants[auiRegister][15] = pf[15];
+        g_afSCMatrixConstants[uiOperatorNum][0] = pf[0];
+        g_afSCMatrixConstants[uiOperatorNum][1] = pf[1];
+        g_afSCMatrixConstants[uiOperatorNum][2] = pf[2];
+        g_afSCMatrixConstants[uiOperatorNum][3] = pf[3];
+        g_afSCMatrixConstants[uiOperatorNum][4] = pf[4];
+        g_afSCMatrixConstants[uiOperatorNum][5] = pf[5];
+        g_afSCMatrixConstants[uiOperatorNum][6] = pf[6];
+        g_afSCMatrixConstants[uiOperatorNum][7] = pf[7];
+        g_afSCMatrixConstants[uiOperatorNum][8] = pf[8];
+        g_afSCMatrixConstants[uiOperatorNum][9] = pf[9];
+        g_afSCMatrixConstants[uiOperatorNum][10] = pf[10];
+        g_afSCMatrixConstants[uiOperatorNum][11] = pf[11];
+        g_afSCMatrixConstants[uiOperatorNum][12] = pf[12];
+        g_afSCMatrixConstants[uiOperatorNum][13] = pf[13];
+        g_afSCMatrixConstants[uiOperatorNum][14] = pf[14];
+        g_afSCMatrixConstants[uiOperatorNum][15] = pf[15];
         return 9;
     }
     else if (uiType == 10)
     {
         float* pf = (float*)pData;
-        g_afSCVectorConstants[auiRegister][0] = pf[0];
-        g_afSCVectorConstants[auiRegister][1] = pf[1];
-        g_afSCVectorConstants[auiRegister][2] = pf[2];
-        g_afSCVectorConstants[auiRegister][3] = pf[3];
+        g_afSCVectorConstants[uiOperatorNum][0] = pf[0];
+        g_afSCVectorConstants[uiOperatorNum][1] = pf[1];
+        g_afSCVectorConstants[uiOperatorNum][2] = pf[2];
+        g_afSCVectorConstants[uiOperatorNum][3] = pf[3];
         return 10;
     }
     return 0;
@@ -3217,7 +3284,7 @@ void __stdcall CompactEnabledEntries(ShaderEntryArray* pkArray)
         spEntry = pkArray->GetAt(uiIndex);
         if (!spEntry)
             continue;
-        if (*(bool*)&spEntry.m_pObject->unk08 == true)
+        if (*(bool*)&spEntry.m_pObject->m_bEnabled == true)
         {
             if (uiFirstDisabled < uiIndex)
             {
@@ -3227,7 +3294,7 @@ void __stdcall CompactEnabledEntries(ShaderEntryArray* pkArray)
                 while (uiFirstDisabled < uiSize)
                 {
                     spEntry = pkArray->GetAt(uiFirstDisabled);
-                    if (!*(bool*)&spEntry.m_pObject->unk08)
+                    if (!*(bool*)&spEntry.m_pObject->m_bEnabled)
                         break;
                     ++uiFirstDisabled;
                 }
@@ -3279,17 +3346,17 @@ struct FUN_00e87220_shell
     virtual NiShaderConstantMapEntry* GetOperationEntry(unsigned int uiIndex);
 
     unsigned int NiD3DShaderConstantMap_PerformOperatorMultiply(void* pkShaderProgram, NiShaderConstantMapEntry* pkEntry, unsigned int eType1, unsigned int eType2,
-                              bool bTranspose, bool bInverse);
+                              bool bInverse, bool bTranspose);
     unsigned int NiD3DShaderConstantMap_PerformOperatorDivide(void* pkShaderProgram, NiShaderConstantMapEntry* pkEntry, unsigned int eType1, unsigned int eType2,
-                              bool bTranspose, bool bInverse);
-    unsigned int SetConstantSum(void* pkShaderProgram, NiShaderConstantMapEntry* pkEntry, unsigned int eType1, unsigned int eType2,
-                                bool bTranspose, bool bInverse);
+                              bool bInverse, bool bTranspose);
+    unsigned int NiD3DShaderConstantMap_PerformOperatorAdd(void* pkShaderProgram, NiShaderConstantMapEntry* pkEntry, unsigned int eType1, unsigned int eType2,
+                                bool bInverse, bool bTranspose);
     unsigned int NiD3DShaderConstantMap_PerformOperatorSubtract(void* pkShaderProgram, NiShaderConstantMapEntry* pkEntry, unsigned int eType1, unsigned int eType2,
-                              bool bTranspose, bool bInverse);
-    unsigned int NiD3DShaderConstantMap_SetupDefinedConstantValue(bool bSecond, NiShaderConstantMapEntry* pkEntry, void* pkGeometry, const void* pkSkin,
+                              bool bInverse, bool bTranspose);
+    unsigned int NiD3DShaderConstantMap_SetupDefinedConstantValue(bool uiOperatorNum, NiShaderConstantMapEntry* pkEntry, void* pkGeometry, const void* pkSkin,
                               const void* pkState, const void* pkEffects, const void* kWorld, const void* kWorldBound);
-    unsigned int NiD3DShaderConstantMap_SetupConstantConstantValue(bool bSecond, NiShaderConstantMapEntry* pkEntry, unsigned int uiPass);
-    unsigned int LoadConstant(bool bSecond, NiShaderConstantMapEntry* pkEntry, void* pkGeometry, const void* pkSkin,
+    unsigned int NiD3DShaderConstantMap_SetupConstantConstantValue(bool uiOperatorNum, NiShaderConstantMapEntry* pkEntry, unsigned int uiPass);
+    unsigned int NiD3DShaderConstantMap_SetupAttributeConstantValue(bool uiOperatorNum, NiShaderConstantMapEntry* pkEntry, void* pkGeometry, const void* pkSkin,
                               const void* pkState, const void* kWorld, const void* kWorldBound, unsigned int uiPass);
 
     unsigned int NiD3DShaderConstantMap_SetOperatorConstant(void* pkShaderProgram, NiShaderConstantMapEntry* pkEntry, void* pkGeometry, const void* pkSkin,
@@ -3300,11 +3367,14 @@ struct FUN_00e87220_shell
 // Resolves two operand entries, dispatches their evaluation by type, then applies the operator to the shader program and returns the result.
 // @fnv 0x00e87220
 // src: XBOX_PDB 0x00e87220
+// pdb: NiD3DShaderConstantMap::SetOperatorConstant | NiD3DShaderConstantMap.obj | retail, string-set bridge, high
+// pdb params: pkShaderProgram, pkEntry, pkGeometry, pkSkin, pkState, pkEffects, kWorld, kWorldBound, uiPass
+// pdb locals: uiEntry1, pkEntry2, uiCheckType1, uiExtra, uiCheckType2, eType2, uiOperator, eType1, uiEntry2, bTranspose, pkEntry1, bInverse
 unsigned int FUN_00e87220_shell::NiD3DShaderConstantMap_SetOperatorConstant(void* pkShaderProgram, NiShaderConstantMapEntry* pkEntry, void* pkGeometry,
                                               const void* pkSkin, const void* pkState, const void* pkEffects,
                                               const void* kWorld, const void* kWorldBound, unsigned int uiPass)
 {
-    unsigned int uiExtra = pkEntry->m_uiValue2;
+    unsigned int uiExtra = pkEntry->m_uiExtra;
     bool bInverse = (uiExtra & 0x02000000) != 0;
     unsigned int uiOperator = uiExtra & 0xf0000000;
     bool bTranspose = (uiExtra & 0x01000000) != 0;
@@ -3319,40 +3389,40 @@ unsigned int FUN_00e87220_shell::NiD3DShaderConstantMap_SetOperatorConstant(void
         return 1;
     }
 
-    unsigned int eType1 = DAT_011f5fc4[pkEntry1->m_uiValue1 & 0xff];
-    unsigned int eType2 = DAT_011f5fc4[pkEntry2->m_uiValue1 & 0xff];
+    unsigned int eType1 = DAT_011f5fc4[pkEntry1->m_uiFlags & 0xff];
+    unsigned int eType2 = DAT_011f5fc4[pkEntry2->m_uiFlags & 0xff];
 
-    if ((pkEntry1->m_uiValue1 & 0xf0000000) == 0x20000000)
+    if ((pkEntry1->m_uiFlags & 0xf0000000) == 0x20000000)
     {
-        eType1 = NiShaderConstantMap_LookUpPredefinedMappingType(pkEntry1->m_kControlPoint);
+        eType1 = NiShaderConstantMap_LookUpPredefinedMappingType(pkEntry1->m_kKey);
         NiD3DShaderConstantMap_SetupDefinedConstantValue(false, pkEntry1, pkGeometry, pkSkin, pkState, pkEffects, kWorld, kWorldBound);
     }
     else
     {
-        unsigned int uiOperand1Type = pkEntry1->m_uiValue1 & 0xf0000000;
+        unsigned int uiOperand1Type = pkEntry1->m_uiFlags & 0xf0000000;
         if (uiOperand1Type == 0x40000000)
         {
             NiD3DShaderConstantMap_SetupConstantConstantValue(false, pkEntry1, uiPass);
         }
         else if (uiOperand1Type == 0x30000000)
         {
-            LoadConstant(false, pkEntry1, pkGeometry, pkSkin, pkState, kWorld, kWorldBound, uiPass);
+            NiD3DShaderConstantMap_SetupAttributeConstantValue(false, pkEntry1, pkGeometry, pkSkin, pkState, kWorld, kWorldBound, uiPass);
         }
         else if (uiOperand1Type == 0x10000000)
         {
-            LoadConstant(false, pkEntry1, pkGeometry, pkSkin, pkState, kWorld, kWorldBound, uiPass);
+            NiD3DShaderConstantMap_SetupAttributeConstantValue(false, pkEntry1, pkGeometry, pkSkin, pkState, kWorld, kWorldBound, uiPass);
         }
     }
 
-    unsigned int uiOperand2Type = pkEntry2->m_uiValue1 & 0xf0000000;
+    unsigned int uiOperand2Type = pkEntry2->m_uiFlags & 0xf0000000;
     if (uiOperand2Type == 0x20000000)
     {
-        eType2 = NiShaderConstantMap_LookUpPredefinedMappingType(pkEntry2->m_kControlPoint);
+        eType2 = NiShaderConstantMap_LookUpPredefinedMappingType(pkEntry2->m_kKey);
         NiD3DShaderConstantMap_SetupDefinedConstantValue(true, pkEntry2, pkGeometry, pkSkin, pkState, pkEffects, kWorld, kWorldBound);
     }
     else if (uiOperand2Type == 0x30000000)
     {
-        LoadConstant(true, pkEntry2, pkGeometry, pkSkin, pkState, kWorld, kWorldBound, uiPass);
+        NiD3DShaderConstantMap_SetupAttributeConstantValue(true, pkEntry2, pkGeometry, pkSkin, pkState, kWorld, kWorldBound, uiPass);
     }
     else if (uiOperand2Type == 0x40000000)
     {
@@ -3376,7 +3446,7 @@ unsigned int FUN_00e87220_shell::NiD3DShaderConstantMap_SetOperatorConstant(void
     case 0x20000000:
         return NiD3DShaderConstantMap_PerformOperatorDivide(pkShaderProgram, pkEntry, eType1, eType2, bTranspose, bInverse);
     case 0x30000000:
-        return SetConstantSum(pkShaderProgram, pkEntry, eType1, eType2, bTranspose, bInverse);
+        return NiD3DShaderConstantMap_PerformOperatorAdd(pkShaderProgram, pkEntry, eType1, eType2, bTranspose, bInverse);
     case 0x40000000:
         return NiD3DShaderConstantMap_PerformOperatorSubtract(pkShaderProgram, pkEntry, eType1, eType2, bTranspose, bInverse);
     }
@@ -3540,6 +3610,7 @@ struct LightLink
     LightLink* next;
     Light* light;
 };
+// pdb: class Renderer, size 0x1 (here 0xa80), 0 members
 struct Renderer
 {
     unsigned int u000;
@@ -4160,9 +4231,12 @@ struct ConstantMap
 // Writes a shader constant (matrix, vector, or scalar) to the program based on the entry type, applying optional inverse or transpose to renderer matrices.
 // @fnv 0x00e83db0
 // src: COMMUNITY 0x00e83db0
-unsigned int ConstantMap::NiD3DShaderConstantMap_SetDefinedConstant(Program* prog, NiShaderConstantMapEntry* entry, NiAVObject* geom, Skin* skin, NiSkinPartition::Partition* partition,
-                                       void* buffer, Properties* props, Effects_nid3dshaderconstantmap* effects, const void* transform,
-                                       const void* bound, unsigned int pass)
+// pdb: NiD3DShaderConstantMap::SetDefinedConstant | NiD3DShaderConstantMap.obj | retail, upstream name already matches, high
+// pdb params: pkShaderProgram, pkEntry, pkGeometry, pkSkin, pkPartition, pkBuffData, pkState, pkEffects, kWorld, kWorldBound, uiPass
+// pdb locals: eResult, uiInternal, bInv, bTrans, kD3DMat, kD3DView, kD3DWorld, kD3DProj, uiBMRegs, pfBoneMatrices, uiRegister, pkTexProp, pkMatrix, pkMap, pkTextureTransform, pkShaderMap, acString, pkMaterial, kColor, kViewMat, kPos, kDir, afData, fTime ...
+unsigned int ConstantMap::NiD3DShaderConstantMap_SetDefinedConstant(Program* pkShaderProgram, NiShaderConstantMapEntry* pkEntry, NiAVObject* pkGeometry, Skin* pkSkin, NiSkinPartition::Partition* pkPartition,
+                                       void* pkBuffData, Properties* pkState, Effects_nid3dshaderconstantmap* pkEffects, const void* kWorld,
+                                       const void* kWorldBound, unsigned int uiPass)
 {
     S83_Matrix matA;
     S83_Matrix matB;
@@ -4174,7 +4248,7 @@ unsigned int ConstantMap::NiD3DShaderConstantMap_SetDefinedConstant(Program* pro
     S83_Matrix* ptr;
     bool bInverse, bTranspose;
     unsigned int result = 0;
-    unsigned int type = entry->unk10;
+    unsigned int type = pkEntry->m_uiInternal;
     switch (type)
     {
     case 1:
@@ -4193,7 +4267,7 @@ unsigned int ConstantMap::NiD3DShaderConstantMap_SetDefinedConstant(Program* pro
             D3DXMatrixInverse_00ee6dda(ptr, 0, ptr);
         if (bTranspose)
             D3DXMatrixTranspose_00ee6dd4(ptr, ptr);
-        if (!prog->SetConstant(entry, &matResult, 0))
+        if (!pkShaderProgram->SetConstant(pkEntry, &matResult, 0))
             result = 0x50;
         goto done;
     }
@@ -4213,7 +4287,7 @@ unsigned int ConstantMap::NiD3DShaderConstantMap_SetDefinedConstant(Program* pro
             D3DXMatrixInverse_00ee6dda(ptr, 0, ptr);
         if (bTranspose)
             D3DXMatrixTranspose_00ee6dd4(ptr, ptr);
-        if (!prog->SetConstant(entry, &matResult, 0))
+        if (!pkShaderProgram->SetConstant(pkEntry, &matResult, 0))
             result = 0x50;
         goto done;
     }
@@ -4233,7 +4307,7 @@ unsigned int ConstantMap::NiD3DShaderConstantMap_SetDefinedConstant(Program* pro
             D3DXMatrixInverse_00ee6dda(ptr, 0, ptr);
         if (bTranspose)
             D3DXMatrixTranspose_00ee6dd4(ptr, ptr);
-        if (!prog->SetConstant(entry, &matResult, 0))
+        if (!pkShaderProgram->SetConstant(pkEntry, &matResult, 0))
             result = 0x50;
         goto done;
     }
@@ -4257,7 +4331,7 @@ unsigned int ConstantMap::NiD3DShaderConstantMap_SetDefinedConstant(Program* pro
             D3DXMatrixInverse_00ee6dda(ptr, 0, ptr);
         if (bTranspose)
             D3DXMatrixTranspose_00ee6dd4(ptr, ptr);
-        if (!prog->SetConstant(entry, &matResult, 0))
+        if (!pkShaderProgram->SetConstant(pkEntry, &matResult, 0))
             result = 0x50;
         goto done;
     }
@@ -4279,7 +4353,7 @@ unsigned int ConstantMap::NiD3DShaderConstantMap_SetDefinedConstant(Program* pro
             D3DXMatrixInverse_00ee6dda(ptr, 0, ptr);
         if (bTranspose)
             D3DXMatrixTranspose_00ee6dd4(ptr, ptr);
-        if (!prog->SetConstant(entry, &matResult, 0))
+        if (!pkShaderProgram->SetConstant(pkEntry, &matResult, 0))
             result = 0x50;
         goto done;
     }
@@ -4288,7 +4362,7 @@ unsigned int ConstantMap::NiD3DShaderConstantMap_SetDefinedConstant(Program* pro
     case 23:
     case 24: {
         D3DXMatrixMultiplyTranspose_00ee6dfe(&matA, &renderer->view, &renderer->adjust);
-        if (!prog->SetConstant(entry, &matA, 0))
+        if (!pkShaderProgram->SetConstant(pkEntry, &matA, 0))
             result = 0x50;
         goto done;
     }
@@ -4296,7 +4370,7 @@ unsigned int ConstantMap::NiD3DShaderConstantMap_SetDefinedConstant(Program* pro
     case 26:
     case 27:
     case 28: {
-        if (!skin)
+        if (!pkSkin)
             goto done;
         bInverse = false;
         bTranspose = false;
@@ -4310,7 +4384,7 @@ unsigned int ConstantMap::NiD3DShaderConstantMap_SetDefinedConstant(Program* pro
             D3DXMatrixInverse_00ee6dda(ptr, 0, ptr);
         if (bTranspose)
             D3DXMatrixTranspose_00ee6dd4(ptr, ptr);
-        if (!prog->SetConstant(entry, &matResult, 0))
+        if (!pkShaderProgram->SetConstant(pkEntry, &matResult, 0))
             result = 0x50;
         goto done;
     }
@@ -4318,7 +4392,7 @@ unsigned int ConstantMap::NiD3DShaderConstantMap_SetDefinedConstant(Program* pro
     case 30:
     case 31:
     case 32: {
-        if (!skin)
+        if (!pkSkin)
             goto done;
         bInverse = false;
         bTranspose = false;
@@ -4334,7 +4408,7 @@ unsigned int ConstantMap::NiD3DShaderConstantMap_SetDefinedConstant(Program* pro
             D3DXMatrixInverse_00ee6dda(ptr, 0, ptr);
         if (bTranspose)
             D3DXMatrixTranspose_00ee6dd4(ptr, ptr);
-        if (!prog->SetConstant(entry, &matResult, 0))
+        if (!pkShaderProgram->SetConstant(pkEntry, &matResult, 0))
             result = 0x50;
         goto done;
     }
@@ -4342,7 +4416,7 @@ unsigned int ConstantMap::NiD3DShaderConstantMap_SetDefinedConstant(Program* pro
     case 97:
     case 98:
     case 99: {
-        if (!skin)
+        if (!pkSkin)
             goto done;
         matResult.m[0][1] = matResult.m[0][2] = matResult.m[0][3] = matResult.m[1][0] = matResult.m[1][2] =
             matResult.m[1][3] = matResult.m[2][0] = matResult.m[2][1] = matResult.m[2][3] = matResult.m[3][0] =
@@ -4359,27 +4433,27 @@ unsigned int ConstantMap::NiD3DShaderConstantMap_SetDefinedConstant(Program* pro
             D3DXMatrixInverse_00ee6dda(ptr, 0, ptr);
         if (bTranspose)
             D3DXMatrixTranspose_00ee6dd4(ptr, ptr);
-        if (!prog->SetConstant(entry, &matResult, 0))
+        if (!pkShaderProgram->SetConstant(pkEntry, &matResult, 0))
             result = 0x50;
         goto done;
     }
     case 33:
     case 35: {
-        if (!skin || !partition)
+        if (!pkSkin || !pkPartition)
             goto done;
-        void* matrices = skin->matrices;
-        void* skindata = skin->data;
-        if (!prog->SetSkin(entry, matrices, partition->m_usBoneCount, skindata, partition->m_pusBonePalette))
+        void* matrices = pkSkin->matrices;
+        void* skindata = pkSkin->data;
+        if (!pkShaderProgram->SetSkin(pkEntry, matrices, pkPartition->m_usBones, skindata, pkPartition->m_pusBones))
             result = 0x50;
         goto done;
     }
     case 34:
     case 36: {
-        if (!skin)
+        if (!pkSkin)
             goto done;
-        void* matrices = skin->matrices;
-        void* skindata = skin->data;
-        if (!prog->SetSkin(entry, matrices, partition->m_usBoneCount, skindata, partition->m_pusBonePalette))
+        void* matrices = pkSkin->matrices;
+        void* skindata = pkSkin->data;
+        if (!pkShaderProgram->SetSkin(pkEntry, matrices, pkPartition->m_usBones, skindata, pkPartition->m_pusBones))
             result = 0x50;
         goto done;
     }
@@ -4389,13 +4463,13 @@ unsigned int ConstantMap::NiD3DShaderConstantMap_SetDefinedConstant(Program* pro
         case 38:
         case 39:
         case 40: {
-            TexProperty* tex = props->tex;
+            TexProperty* tex = pkState->tex;
             const char* texdata = 0;
             scalarTemp.transpose = false;
             pairScratch.inverse = false;
             if (tex)
             {
-                TextureLayer* desc = props->tex->textures->slots[0];
+                TextureLayer* desc = pkState->tex->textures->slots[0];
                 if (desc && desc->transform)
                 {
                     texdata = NiTextureTransform_GetMatrix(desc->transform);
@@ -4406,7 +4480,7 @@ unsigned int ConstantMap::NiD3DShaderConstantMap_SetDefinedConstant(Program* pro
                 }
             }
             SetAffineMatrix(&matA, texdata, scalarTemp.transpose, pairScratch.inverse, 4);
-            if (!prog->SetConstant(entry, &matA, 0))
+            if (!pkShaderProgram->SetConstant(pkEntry, &matA, 0))
                 result = 0x50;
             goto done;
         }
@@ -4414,13 +4488,13 @@ unsigned int ConstantMap::NiD3DShaderConstantMap_SetDefinedConstant(Program* pro
         case 42:
         case 43:
         case 44: {
-            TexProperty* tex = props->tex;
+            TexProperty* tex = pkState->tex;
             const char* texdata = 0;
             pairScratch.inverse = false;
             scalarTemp.transpose = false;
             if (tex)
             {
-                TextureLayer* desc = props->tex->textures->slots[1];
+                TextureLayer* desc = pkState->tex->textures->slots[1];
                 if (desc && desc->transform)
                 {
                     texdata = NiTextureTransform_GetMatrix(desc->transform);
@@ -4431,7 +4505,7 @@ unsigned int ConstantMap::NiD3DShaderConstantMap_SetDefinedConstant(Program* pro
                 }
             }
             SetAffineMatrix(&matA, texdata, pairScratch.inverse, scalarTemp.transpose, 4);
-            if (!prog->SetConstant(entry, &matA, 0))
+            if (!pkShaderProgram->SetConstant(pkEntry, &matA, 0))
                 result = 0x50;
             goto done;
         }
@@ -4439,13 +4513,13 @@ unsigned int ConstantMap::NiD3DShaderConstantMap_SetDefinedConstant(Program* pro
         case 46:
         case 47:
         case 48: {
-            TexProperty* tex = props->tex;
+            TexProperty* tex = pkState->tex;
             const char* texdata = 0;
             pairScratch.inverse = false;
             scalarTemp.transpose = false;
             if (tex)
             {
-                TextureLayer* desc = props->tex->textures->slots[2];
+                TextureLayer* desc = pkState->tex->textures->slots[2];
                 if (desc && desc->transform)
                 {
                     texdata = NiTextureTransform_GetMatrix(desc->transform);
@@ -4456,7 +4530,7 @@ unsigned int ConstantMap::NiD3DShaderConstantMap_SetDefinedConstant(Program* pro
                 }
             }
             SetAffineMatrix(&matA, texdata, pairScratch.inverse, scalarTemp.transpose, 4);
-            if (!prog->SetConstant(entry, &matA, 0))
+            if (!pkShaderProgram->SetConstant(pkEntry, &matA, 0))
                 result = 0x50;
             goto done;
         }
@@ -4464,13 +4538,13 @@ unsigned int ConstantMap::NiD3DShaderConstantMap_SetDefinedConstant(Program* pro
         case 50:
         case 51:
         case 52: {
-            TexProperty* tex = props->tex;
+            TexProperty* tex = pkState->tex;
             const char* texdata = 0;
             pairScratch.inverse = false;
             scalarTemp.transpose = false;
             if (tex)
             {
-                TextureLayer* desc = props->tex->textures->slots[3];
+                TextureLayer* desc = pkState->tex->textures->slots[3];
                 if (desc && desc->transform)
                 {
                     texdata = NiTextureTransform_GetMatrix(desc->transform);
@@ -4481,7 +4555,7 @@ unsigned int ConstantMap::NiD3DShaderConstantMap_SetDefinedConstant(Program* pro
                 }
             }
             SetAffineMatrix(&matA, texdata, pairScratch.inverse, scalarTemp.transpose, 4);
-            if (!prog->SetConstant(entry, &matA, 0))
+            if (!pkShaderProgram->SetConstant(pkEntry, &matA, 0))
                 result = 0x50;
             goto done;
         }
@@ -4489,13 +4563,13 @@ unsigned int ConstantMap::NiD3DShaderConstantMap_SetDefinedConstant(Program* pro
         case 54:
         case 55:
         case 56: {
-            TexProperty* tex = props->tex;
+            TexProperty* tex = pkState->tex;
             const char* texdata = 0;
             pairScratch.inverse = false;
             scalarTemp.transpose = false;
             if (tex)
             {
-                TextureLayer* desc = props->tex->textures->slots[4];
+                TextureLayer* desc = pkState->tex->textures->slots[4];
                 if (desc && desc->transform)
                 {
                     texdata = NiTextureTransform_GetMatrix(desc->transform);
@@ -4506,7 +4580,7 @@ unsigned int ConstantMap::NiD3DShaderConstantMap_SetDefinedConstant(Program* pro
                 }
             }
             SetAffineMatrix(&matA, texdata, pairScratch.inverse, scalarTemp.transpose, 4);
-            if (!prog->SetConstant(entry, &matA, 0))
+            if (!pkShaderProgram->SetConstant(pkEntry, &matA, 0))
                 result = 0x50;
             goto done;
         }
@@ -4514,13 +4588,13 @@ unsigned int ConstantMap::NiD3DShaderConstantMap_SetDefinedConstant(Program* pro
         case 58:
         case 59:
         case 60: {
-            TexProperty* tex = props->tex;
+            TexProperty* tex = pkState->tex;
             const char* texdata = 0;
             pairScratch.inverse = false;
             scalarTemp.transpose = false;
             if (tex)
             {
-                TextureLayer* desc = props->tex->textures->slots[5];
+                TextureLayer* desc = pkState->tex->textures->slots[5];
                 if (desc && desc->transform)
                 {
                     texdata = NiTextureTransform_GetMatrix(desc->transform);
@@ -4531,7 +4605,7 @@ unsigned int ConstantMap::NiD3DShaderConstantMap_SetDefinedConstant(Program* pro
                 }
             }
             SetAffineMatrix(&matA, texdata, pairScratch.inverse, scalarTemp.transpose, 4);
-            if (!prog->SetConstant(entry, &matA, 0))
+            if (!pkShaderProgram->SetConstant(pkEntry, &matA, 0))
                 result = 0x50;
             goto done;
         }
@@ -4539,13 +4613,13 @@ unsigned int ConstantMap::NiD3DShaderConstantMap_SetDefinedConstant(Program* pro
         case 89:
         case 90:
         case 91: {
-            TexProperty* tex = props->tex;
+            TexProperty* tex = pkState->tex;
             const char* texdata = 0;
             pairScratch.inverse = false;
             scalarTemp.transpose = false;
             if (tex)
             {
-                TextureLayer* desc = props->tex->textures->slots[6];
+                TextureLayer* desc = pkState->tex->textures->slots[6];
                 if (desc && desc->transform)
                 {
                     texdata = NiTextureTransform_GetMatrix(desc->transform);
@@ -4556,7 +4630,7 @@ unsigned int ConstantMap::NiD3DShaderConstantMap_SetDefinedConstant(Program* pro
                 }
             }
             SetAffineMatrix(&matA, texdata, pairScratch.inverse, scalarTemp.transpose, 4);
-            if (!prog->SetConstant(entry, &matA, 0))
+            if (!pkShaderProgram->SetConstant(pkEntry, &matA, 0))
                 result = 0x50;
             goto done;
         }
@@ -4564,13 +4638,13 @@ unsigned int ConstantMap::NiD3DShaderConstantMap_SetDefinedConstant(Program* pro
         case 93:
         case 94:
         case 95: {
-            TexProperty* tex = props->tex;
+            TexProperty* tex = pkState->tex;
             const char* texdata = 0;
             pairScratch.inverse = false;
             scalarTemp.transpose = false;
             if (tex)
             {
-                TextureLayer* desc = props->tex->textures->slots[7];
+                TextureLayer* desc = pkState->tex->textures->slots[7];
                 if (desc && desc->transform)
                 {
                     texdata = NiTextureTransform_GetMatrix(desc->transform);
@@ -4581,7 +4655,7 @@ unsigned int ConstantMap::NiD3DShaderConstantMap_SetDefinedConstant(Program* pro
                 }
             }
             SetAffineMatrix(&matA, texdata, pairScratch.inverse, scalarTemp.transpose, 4);
-            if (!prog->SetConstant(entry, &matA, 0))
+            if (!pkShaderProgram->SetConstant(pkEntry, &matA, 0))
                 result = 0x50;
             goto done;
         }
@@ -4589,13 +4663,13 @@ unsigned int ConstantMap::NiD3DShaderConstantMap_SetDefinedConstant(Program* pro
         case 62:
         case 63:
         case 64: {
-            TexProperty* tex = props->tex;
+            TexProperty* tex = pkState->tex;
             const char* texdata = 0;
             pairScratch.inverse = false;
             scalarTemp.transpose = false;
             if (tex)
             {
-                TextureLayer* desc = props->tex->textures->extra[entry->m_uiValue2];
+                TextureLayer* desc = pkState->tex->textures->extra[pkEntry->m_uiExtra];
                 if (desc && desc->transform)
                 {
                     texdata = NiTextureTransform_GetMatrix(desc->transform);
@@ -4606,7 +4680,7 @@ unsigned int ConstantMap::NiD3DShaderConstantMap_SetDefinedConstant(Program* pro
                 }
             }
             SetAffineMatrix(&matA, texdata, pairScratch.inverse, scalarTemp.transpose, 4);
-            if (!prog->SetConstant(entry, &matA, 0))
+            if (!pkShaderProgram->SetConstant(pkEntry, &matA, 0))
                 result = 0x50;
             goto done;
         }
@@ -4614,13 +4688,13 @@ unsigned int ConstantMap::NiD3DShaderConstantMap_SetDefinedConstant(Program* pro
         case 66:
         case 67:
         case 68: {
-            TexProperty* tex = props->tex;
+            TexProperty* tex = pkState->tex;
             const char* texdata = 0;
             pairScratch.inverse = false;
             scalarTemp.transpose = false;
             if (tex)
             {
-                TextureLayer* desc = tex->GetElementAt(entry->m_uiValue2);
+                TextureLayer* desc = tex->GetElementAt(pkEntry->m_uiExtra);
                 if (desc && desc->transform)
                 {
                     texdata = NiTextureTransform_GetMatrix(desc->transform);
@@ -4631,57 +4705,57 @@ unsigned int ConstantMap::NiD3DShaderConstantMap_SetDefinedConstant(Program* pro
                 }
             }
             SetAffineMatrix(&matA, texdata, pairScratch.inverse, scalarTemp.transpose, 4);
-            if (!prog->SetConstant(entry, &matA, 0))
+            if (!pkShaderProgram->SetConstant(pkEntry, &matA, 0))
                 result = 0x50;
             goto done;
         }
         }
     case 73:
     case 74: {
-        Material* __restrict m = props->material;
+        Material* __restrict m = pkState->material;
         if (!m)
             goto done;
         vec4.x = DAT_011f4998.x;
         vec4.y = DAT_011f4998.y;
         vec4.z = DAT_011f4998.z;
         vec4.w = m->alpha;
-        if (!prog->SetConstant(entry, &vec4, 0))
+        if (!pkShaderProgram->SetConstant(pkEntry, &vec4, 0))
             result = 0x50;
         goto done;
     }
     case 75: {
-        Material* __restrict m = props->material;
+        Material* __restrict m = pkState->material;
         if (!m)
             goto done;
         vec4.x = m->diffuse.x;
         vec4.y = m->diffuse.y;
         vec4.z = m->diffuse.z;
         vec4.w = m->alpha;
-        if (!prog->SetConstant(entry, &vec4, 0))
+        if (!pkShaderProgram->SetConstant(pkEntry, &vec4, 0))
             result = 0x50;
         goto done;
     }
     case 76: {
-        Material* __restrict m = props->material;
+        Material* __restrict m = pkState->material;
         if (!m)
             goto done;
         vec4.x = m->GetSpecular().x;
         vec4.y = m->GetSpecular().y;
         vec4.z = m->GetSpecular().z;
         vec4.w = m->alpha;
-        if (!prog->SetConstant(entry, &vec4, 0))
+        if (!pkShaderProgram->SetConstant(pkEntry, &vec4, 0))
             result = 0x50;
         goto done;
     }
     case 77: {
-        Material* __restrict m = props->material;
+        Material* __restrict m = pkState->material;
         if (!m)
             goto done;
         vec4.x = m->gloss;
         vec4.y = m->gloss;
         vec4.z = m->gloss;
         vec4.w = m->gloss;
-        if (!prog->SetConstant(entry, &vec4, 0))
+        if (!pkShaderProgram->SetConstant(pkEntry, &vec4, 0))
             result = 0x50;
         goto done;
     }
@@ -4691,7 +4765,7 @@ unsigned int ConstantMap::NiD3DShaderConstantMap_SetDefinedConstant(Program* pro
         vec4.y = matResult.m[3][1];
         vec4.z = matResult.m[3][2];
         vec4.w = matResult.m[3][3];
-        if (!prog->SetConstant(entry, &vec4, 0))
+        if (!pkShaderProgram->SetConstant(pkEntry, &vec4, 0))
             result = 0x50;
         goto done;
     }
@@ -4701,13 +4775,13 @@ unsigned int ConstantMap::NiD3DShaderConstantMap_SetDefinedConstant(Program* pro
         vec4.y = matResult.m[2][1];
         vec4.z = matResult.m[2][2];
         vec4.w = matResult.m[2][3];
-        if (!prog->SetConstant(entry, &vec4, 0))
+        if (!pkShaderProgram->SetConstant(pkEntry, &vec4, 0))
             result = 0x50;
         goto done;
     }
     case 80:
     case 81:
-        if (!prog->SetConstant(entry, 0, 0))
+        if (!pkShaderProgram->SetConstant(pkEntry, 0, 0))
             result = 0x50;
         goto done;
     case 82:
@@ -4715,7 +4789,7 @@ unsigned int ConstantMap::NiD3DShaderConstantMap_SetDefinedConstant(Program* pro
     case 84:
     case 85:
     case 86: {
-        NiExtraData* extra = ((ShaderExtraDataObject*)geom)->GetShaderExtraData(NiFixedString(DAT_011bf65c));
+        NiExtraData* extra = ((ShaderExtraDataObject*)pkGeometry)->GetShaderExtraData(NiFixedString(DAT_011bf65c));
         if (!extra)
             result = 0x10;
         pairScratch.time = static_cast<NiFloatExtraData*>(extra)->m_fValue;
@@ -4760,16 +4834,16 @@ unsigned int ConstantMap::NiD3DShaderConstantMap_SetDefinedConstant(Program* pro
         default:
             return 0x10;
         }
-        if (!prog->SetConstant(entry, &vec4, 0))
+        if (!pkShaderProgram->SetConstant(pkEntry, &vec4, 0))
             result = 0x50;
         goto done;
     }
     case 87: {
         vec4.z = vec4.y = vec4.x = 0.0f;
         vec4.w = 1.0f;
-        if (effects)
+        if (pkEffects)
         {
-            LightLink* link = reinterpret_cast<LightLink*>(effects->lights);
+            LightLink* link = reinterpret_cast<LightLink*>(pkEffects->lights);
             do
             {
                 if (link)
@@ -4791,7 +4865,7 @@ unsigned int ConstantMap::NiD3DShaderConstantMap_SetDefinedConstant(Program* pro
                 }
             } while (link);
         }
-        if (!prog->SetConstant(entry, &vec4, 0))
+        if (!pkShaderProgram->SetConstant(pkEntry, &vec4, 0))
             result = 0x50;
         goto done;
     }
@@ -4799,20 +4873,20 @@ unsigned int ConstantMap::NiD3DShaderConstantMap_SetDefinedConstant(Program* pro
             ScalarScratch scalarTemp;
         case 105: {
             scalarTemp.scalar = 0;
-            TexProperty* tex = props->tex;
+            TexProperty* tex = pkState->tex;
             if (tex)
             {
                 TextureLayer* d = tex->textures->slots[7];
                 if (d)
                     scalarTemp.scalar = d->value;
             }
-            if (!prog->SetConstant(entry, &scalarTemp.scalar, 0))
+            if (!pkShaderProgram->SetConstant(pkEntry, &scalarTemp.scalar, 0))
                 result = 0x50;
             goto done;
         }
         case 103: {
             vec4.w = vec4.z = vec4.y = vec4.x = 1.0f;
-            TexProperty* tex = props->tex;
+            TexProperty* tex = pkState->tex;
             if (tex)
             {
                 TextureLayer* d = tex->textures->slots[5];
@@ -4824,14 +4898,14 @@ unsigned int ConstantMap::NiD3DShaderConstantMap_SetDefinedConstant(Program* pro
                     vec4.w = d->bump.w;
                 }
             }
-            if (!prog->SetConstant(entry, &vec4, 0))
+            if (!pkShaderProgram->SetConstant(pkEntry, &vec4, 0))
                 result = 0x50;
             goto done;
         }
         case 104: {
             scalarTemp.rgb.x = 0;
             scalarTemp.rgb.y = 1;
-            TexProperty* tex = props->tex;
+            TexProperty* tex = pkState->tex;
             if (tex)
             {
                 TextureLayer* d = tex->textures->slots[5];
@@ -4841,7 +4915,7 @@ unsigned int ConstantMap::NiD3DShaderConstantMap_SetDefinedConstant(Program* pro
                     scalarTemp.rgb.y = d->value;
                 }
             }
-            if (!prog->SetConstant(entry, &scalarTemp.rgb, 0))
+            if (!pkShaderProgram->SetConstant(pkEntry, &scalarTemp.rgb, 0))
                 result = 0x50;
             goto done;
         }
@@ -4858,7 +4932,7 @@ unsigned int ConstantMap::NiD3DShaderConstantMap_SetDefinedConstant(Program* pro
         case 113:
         case 114:
         case 115: {
-            TexProperty* tex = props->tex;
+            TexProperty* tex = pkState->tex;
             if (!tex)
                 goto done;
             TextureLayer* d = 0;
@@ -4889,10 +4963,10 @@ unsigned int ConstantMap::NiD3DShaderConstantMap_SetDefinedConstant(Program* pro
                 d = tex->textures->slots[7];
                 break;
             case 114:
-                d = tex->textures->extra[entry->m_uiValue2];
+                d = tex->textures->extra[pkEntry->m_uiExtra];
                 break;
             case 115:
-                d = tex->GetElementAt(entry->m_uiValue2);
+                d = tex->GetElementAt(pkEntry->m_uiExtra);
                 break;
             }
             pairScratch.pair.x = 0;
@@ -4918,7 +4992,7 @@ unsigned int ConstantMap::NiD3DShaderConstantMap_SetDefinedConstant(Program* pro
                     }
                 }
             }
-            if (!prog->SetConstant(entry, &pairScratch.pair, 0))
+            if (!pkShaderProgram->SetConstant(pkEntry, &pairScratch.pair, 0))
                 result = 0x50;
             goto done;
         }
@@ -5704,11 +5778,14 @@ struct ConstantMapView
 // Selects work by entry->mapping, writes to a slot-indexed output region, and returns a status value.
 // @fnv 0x00e85d10
 // src: COMMUNITY 0x00e85d10
-unsigned int ConstantMapView::NiD3DShaderConstantMap_SetupDefinedConstantValue(unsigned int slot, NiShaderConstantMapEntry* apMapping, NiAVObject* geometry, void* skin,
-                                           Properties* state, Effects_nid3dshaderconstantmap* effects, void*, unsigned int)
+// pdb: NiD3DShaderConstantMap::SetupDefinedConstantValue | NiD3DShaderConstantMap.obj | retail, upstream name already matches, high
+// pdb params: uiOperatorNum, pkEntry, pkGeometry, pkSkin, pkState, pkEffects, kWorld, kWorldBound
+// pdb locals: uiInternal, bInv, bTrans, kD3DView, kD3DWorld, kD3DProj, kD3DWorldView, pkTexProp, pkMatrix, pkMap, pkTextureTransform, pkShaderMap, pkMaterial, kViewMat, fTime, pkFloatED, fSin, fCos, fTan, kIter, pkLight, kColor
+unsigned int ConstantMapView::NiD3DShaderConstantMap_SetupDefinedConstantValue(unsigned int uiOperatorNum, NiShaderConstantMapEntry* pkEntry, NiAVObject* pkGeometry, void* pkSkin,
+                                           Properties* pkState, Effects_nid3dshaderconstantmap* pkEffects, void*, unsigned int)
 {
     MatrixWorkspace work;
-    unsigned int mapping = apMapping->unk10;
+    unsigned int mapping = pkEntry->m_uiInternal;
     switch (mapping)
     {
     case 1:
@@ -5722,13 +5799,13 @@ unsigned int ConstantMapView::NiD3DShaderConstantMap_SetupDefinedConstantValue(u
         if (mapping == 13 || mapping == 14)
             transpose = true;
         work.a = renderer->projection;
-        reinterpret_cast<MapMatrix*>(&DAT_0126f820)[slot] = work.a;
+        reinterpret_cast<MapMatrix*>(&DAT_0126f820)[uiOperatorNum] = work.a;
         if (inverse)
-            D3DXMatrixInverse_00ee6dda(&reinterpret_cast<MapMatrix*>(&DAT_0126f820)[slot], 0,
-                         &reinterpret_cast<MapMatrix*>(&DAT_0126f820)[slot]);
+            D3DXMatrixInverse_00ee6dda(&reinterpret_cast<MapMatrix*>(&DAT_0126f820)[uiOperatorNum], 0,
+                         &reinterpret_cast<MapMatrix*>(&DAT_0126f820)[uiOperatorNum]);
         if (transpose)
-            D3DXMatrixTranspose_00ee6dd4(&reinterpret_cast<MapMatrix*>(&DAT_0126f820)[slot],
-                         &reinterpret_cast<MapMatrix*>(&DAT_0126f820)[slot]);
+            D3DXMatrixTranspose_00ee6dd4(&reinterpret_cast<MapMatrix*>(&DAT_0126f820)[uiOperatorNum],
+                         &reinterpret_cast<MapMatrix*>(&DAT_0126f820)[uiOperatorNum]);
         return 9;
     }
     case 3:
@@ -5742,13 +5819,13 @@ unsigned int ConstantMapView::NiD3DShaderConstantMap_SetupDefinedConstantValue(u
         if (mapping == 15 || mapping == 16)
             transpose = true;
         work.a = renderer->view;
-        reinterpret_cast<MapMatrix*>(&DAT_0126f820)[slot] = work.a;
+        reinterpret_cast<MapMatrix*>(&DAT_0126f820)[uiOperatorNum] = work.a;
         if (inverse)
-            D3DXMatrixInverse_00ee6dda(&reinterpret_cast<MapMatrix*>(&DAT_0126f820)[slot], 0,
-                         &reinterpret_cast<MapMatrix*>(&DAT_0126f820)[slot]);
+            D3DXMatrixInverse_00ee6dda(&reinterpret_cast<MapMatrix*>(&DAT_0126f820)[uiOperatorNum], 0,
+                         &reinterpret_cast<MapMatrix*>(&DAT_0126f820)[uiOperatorNum]);
         if (transpose)
-            D3DXMatrixTranspose_00ee6dd4(&reinterpret_cast<MapMatrix*>(&DAT_0126f820)[slot],
-                         &reinterpret_cast<MapMatrix*>(&DAT_0126f820)[slot]);
+            D3DXMatrixTranspose_00ee6dd4(&reinterpret_cast<MapMatrix*>(&DAT_0126f820)[uiOperatorNum],
+                         &reinterpret_cast<MapMatrix*>(&DAT_0126f820)[uiOperatorNum]);
         return 9;
     }
     case 5:
@@ -5761,13 +5838,13 @@ unsigned int ConstantMapView::NiD3DShaderConstantMap_SetupDefinedConstantValue(u
             inverse = true;
         if (mapping == 17 || mapping == 18)
             transpose = true;
-        reinterpret_cast<MapMatrix*>(&DAT_0126f820)[slot] = renderer->world;
+        reinterpret_cast<MapMatrix*>(&DAT_0126f820)[uiOperatorNum] = renderer->world;
         if (inverse)
-            D3DXMatrixInverse_00ee6dda(&reinterpret_cast<MapMatrix*>(&DAT_0126f820)[slot], 0,
-                         &reinterpret_cast<MapMatrix*>(&DAT_0126f820)[slot]);
+            D3DXMatrixInverse_00ee6dda(&reinterpret_cast<MapMatrix*>(&DAT_0126f820)[uiOperatorNum], 0,
+                         &reinterpret_cast<MapMatrix*>(&DAT_0126f820)[uiOperatorNum]);
         if (transpose)
-            D3DXMatrixTranspose_00ee6dd4(&reinterpret_cast<MapMatrix*>(&DAT_0126f820)[slot],
-                         &reinterpret_cast<MapMatrix*>(&DAT_0126f820)[slot]);
+            D3DXMatrixTranspose_00ee6dd4(&reinterpret_cast<MapMatrix*>(&DAT_0126f820)[uiOperatorNum],
+                         &reinterpret_cast<MapMatrix*>(&DAT_0126f820)[uiOperatorNum]);
         return 9;
     }
     case 7:
@@ -5788,13 +5865,13 @@ unsigned int ConstantMapView::NiD3DShaderConstantMap_SetupDefinedConstantValue(u
             work.a = *view;
         }
         D3DXMatrixMultiply_00ee6de0(&work.f, &work.b, &work.a);
-        reinterpret_cast<MapMatrix*>(&DAT_0126f820)[slot] = work.f;
+        reinterpret_cast<MapMatrix*>(&DAT_0126f820)[uiOperatorNum] = work.f;
         if (inverse)
-            D3DXMatrixInverse_00ee6dda(&reinterpret_cast<MapMatrix*>(&DAT_0126f820)[slot], 0,
-                         &reinterpret_cast<MapMatrix*>(&DAT_0126f820)[slot]);
+            D3DXMatrixInverse_00ee6dda(&reinterpret_cast<MapMatrix*>(&DAT_0126f820)[uiOperatorNum], 0,
+                         &reinterpret_cast<MapMatrix*>(&DAT_0126f820)[uiOperatorNum]);
         if (transpose)
-            D3DXMatrixTranspose_00ee6dd4(&reinterpret_cast<MapMatrix*>(&DAT_0126f820)[slot],
-                         &reinterpret_cast<MapMatrix*>(&DAT_0126f820)[slot]);
+            D3DXMatrixTranspose_00ee6dd4(&reinterpret_cast<MapMatrix*>(&DAT_0126f820)[uiOperatorNum],
+                         &reinterpret_cast<MapMatrix*>(&DAT_0126f820)[uiOperatorNum]);
         return 9;
     }
     case 9:
@@ -5815,13 +5892,13 @@ unsigned int ConstantMapView::NiD3DShaderConstantMap_SetupDefinedConstantValue(u
             work.b = *projection;
         }
         D3DXMatrixMultiply_00ee6de0(&work.e, &work.a, &work.b);
-        reinterpret_cast<MapMatrix*>(&DAT_0126f820)[slot] = work.e;
+        reinterpret_cast<MapMatrix*>(&DAT_0126f820)[uiOperatorNum] = work.e;
         if (inverse)
-            D3DXMatrixInverse_00ee6dda(&reinterpret_cast<MapMatrix*>(&DAT_0126f820)[slot], 0,
-                         &reinterpret_cast<MapMatrix*>(&DAT_0126f820)[slot]);
+            D3DXMatrixInverse_00ee6dda(&reinterpret_cast<MapMatrix*>(&DAT_0126f820)[uiOperatorNum], 0,
+                         &reinterpret_cast<MapMatrix*>(&DAT_0126f820)[uiOperatorNum]);
         if (transpose)
-            D3DXMatrixTranspose_00ee6dd4(&reinterpret_cast<MapMatrix*>(&DAT_0126f820)[slot],
-                         &reinterpret_cast<MapMatrix*>(&DAT_0126f820)[slot]);
+            D3DXMatrixTranspose_00ee6dd4(&reinterpret_cast<MapMatrix*>(&DAT_0126f820)[uiOperatorNum],
+                         &reinterpret_cast<MapMatrix*>(&DAT_0126f820)[uiOperatorNum]);
         return 9;
     }
     case 11:
@@ -5844,22 +5921,22 @@ unsigned int ConstantMapView::NiD3DShaderConstantMap_SetupDefinedConstantValue(u
         }
         D3DXMatrixMultiply_00ee6de0(&work.c, &work.a, &work.b);
         D3DXMatrixMultiply_00ee6de0(&work.g, &work.c, &work.d);
-        reinterpret_cast<MapMatrix*>(&DAT_0126f820)[slot] = work.g;
+        reinterpret_cast<MapMatrix*>(&DAT_0126f820)[uiOperatorNum] = work.g;
         if (inverse)
-            D3DXMatrixInverse_00ee6dda(&reinterpret_cast<MapMatrix*>(&DAT_0126f820)[slot], 0,
-                         &reinterpret_cast<MapMatrix*>(&DAT_0126f820)[slot]);
+            D3DXMatrixInverse_00ee6dda(&reinterpret_cast<MapMatrix*>(&DAT_0126f820)[uiOperatorNum], 0,
+                         &reinterpret_cast<MapMatrix*>(&DAT_0126f820)[uiOperatorNum]);
         if (transpose)
-            D3DXMatrixTranspose_00ee6dd4(&reinterpret_cast<MapMatrix*>(&DAT_0126f820)[slot],
-                         &reinterpret_cast<MapMatrix*>(&DAT_0126f820)[slot]);
+            D3DXMatrixTranspose_00ee6dd4(&reinterpret_cast<MapMatrix*>(&DAT_0126f820)[uiOperatorNum],
+                         &reinterpret_cast<MapMatrix*>(&DAT_0126f820)[uiOperatorNum]);
         return 9;
     }
     case 25:
     case 26:
     case 27:
     case 28: {
-        if (!skin)
+        if (!pkSkin)
             return 0;
-        reinterpret_cast<MapMatrix*>(&DAT_0126f820)[slot].Identity();
+        reinterpret_cast<MapMatrix*>(&DAT_0126f820)[uiOperatorNum].Identity();
         bool inverse = false;
         bool transpose = false;
         if (mapping == 26 || mapping == 28)
@@ -5867,23 +5944,23 @@ unsigned int ConstantMapView::NiD3DShaderConstantMap_SetupDefinedConstantValue(u
         if (mapping == 27 || mapping == 28)
             transpose = true;
         work.c = renderer->view;
-        D3DXMatrixMultiply_00ee6de0(&reinterpret_cast<MapMatrix*>(&DAT_0126f820)[slot],
-                     &reinterpret_cast<MapMatrix*>(&DAT_0126f820)[slot], &work.c);
+        D3DXMatrixMultiply_00ee6de0(&reinterpret_cast<MapMatrix*>(&DAT_0126f820)[uiOperatorNum],
+                     &reinterpret_cast<MapMatrix*>(&DAT_0126f820)[uiOperatorNum], &work.c);
         if (inverse)
-            D3DXMatrixInverse_00ee6dda(&reinterpret_cast<MapMatrix*>(&DAT_0126f820)[slot], 0,
-                         &reinterpret_cast<MapMatrix*>(&DAT_0126f820)[slot]);
+            D3DXMatrixInverse_00ee6dda(&reinterpret_cast<MapMatrix*>(&DAT_0126f820)[uiOperatorNum], 0,
+                         &reinterpret_cast<MapMatrix*>(&DAT_0126f820)[uiOperatorNum]);
         if (transpose)
-            D3DXMatrixTranspose_00ee6dd4(&reinterpret_cast<MapMatrix*>(&DAT_0126f820)[slot],
-                         &reinterpret_cast<MapMatrix*>(&DAT_0126f820)[slot]);
+            D3DXMatrixTranspose_00ee6dd4(&reinterpret_cast<MapMatrix*>(&DAT_0126f820)[uiOperatorNum],
+                         &reinterpret_cast<MapMatrix*>(&DAT_0126f820)[uiOperatorNum]);
         return 9;
     }
     case 29:
     case 30:
     case 31:
     case 32: {
-        if (!skin)
+        if (!pkSkin)
             return 0;
-        reinterpret_cast<MapMatrix*>(&DAT_0126f820)[slot].Identity();
+        reinterpret_cast<MapMatrix*>(&DAT_0126f820)[uiOperatorNum].Identity();
         bool inverse = false;
         bool transpose = false;
         if (mapping == 30 || mapping == 32)
@@ -5892,16 +5969,16 @@ unsigned int ConstantMapView::NiD3DShaderConstantMap_SetupDefinedConstantValue(u
             transpose = true;
         work.c = renderer->view;
         work.d = renderer->projection;
-        D3DXMatrixMultiply_00ee6de0(&reinterpret_cast<MapMatrix*>(&DAT_0126f820)[slot],
-                     &reinterpret_cast<MapMatrix*>(&DAT_0126f820)[slot], &work.c);
-        D3DXMatrixMultiply_00ee6de0(&reinterpret_cast<MapMatrix*>(&DAT_0126f820)[slot],
-                     &reinterpret_cast<MapMatrix*>(&DAT_0126f820)[slot], &work.d);
+        D3DXMatrixMultiply_00ee6de0(&reinterpret_cast<MapMatrix*>(&DAT_0126f820)[uiOperatorNum],
+                     &reinterpret_cast<MapMatrix*>(&DAT_0126f820)[uiOperatorNum], &work.c);
+        D3DXMatrixMultiply_00ee6de0(&reinterpret_cast<MapMatrix*>(&DAT_0126f820)[uiOperatorNum],
+                     &reinterpret_cast<MapMatrix*>(&DAT_0126f820)[uiOperatorNum], &work.d);
         if (inverse)
-            D3DXMatrixInverse_00ee6dda(&reinterpret_cast<MapMatrix*>(&DAT_0126f820)[slot], 0,
-                         &reinterpret_cast<MapMatrix*>(&DAT_0126f820)[slot]);
+            D3DXMatrixInverse_00ee6dda(&reinterpret_cast<MapMatrix*>(&DAT_0126f820)[uiOperatorNum], 0,
+                         &reinterpret_cast<MapMatrix*>(&DAT_0126f820)[uiOperatorNum]);
         if (transpose)
-            D3DXMatrixTranspose_00ee6dd4(&reinterpret_cast<MapMatrix*>(&DAT_0126f820)[slot],
-                         &reinterpret_cast<MapMatrix*>(&DAT_0126f820)[slot]);
+            D3DXMatrixTranspose_00ee6dd4(&reinterpret_cast<MapMatrix*>(&DAT_0126f820)[uiOperatorNum],
+                         &reinterpret_cast<MapMatrix*>(&DAT_0126f820)[uiOperatorNum]);
         return 9;
     }
     case 33:
@@ -5919,9 +5996,9 @@ unsigned int ConstantMapView::NiD3DShaderConstantMap_SetupDefinedConstantValue(u
     case 97:
     case 98:
     case 99: {
-        if (!skin)
+        if (!pkSkin)
             return 0;
-        reinterpret_cast<MapMatrix*>(&DAT_0126f820)[slot].Identity();
+        reinterpret_cast<MapMatrix*>(&DAT_0126f820)[uiOperatorNum].Identity();
         bool inverse = false;
         bool transpose = false;
         if (mapping == 97 || mapping == 99)
@@ -5930,18 +6007,18 @@ unsigned int ConstantMapView::NiD3DShaderConstantMap_SetupDefinedConstantValue(u
             transpose = true;
 
         if (inverse)
-            D3DXMatrixInverse_00ee6dda(&reinterpret_cast<MapMatrix*>(&DAT_0126f820)[slot], 0,
-                         &reinterpret_cast<MapMatrix*>(&DAT_0126f820)[slot]);
+            D3DXMatrixInverse_00ee6dda(&reinterpret_cast<MapMatrix*>(&DAT_0126f820)[uiOperatorNum], 0,
+                         &reinterpret_cast<MapMatrix*>(&DAT_0126f820)[uiOperatorNum]);
         if (transpose)
-            D3DXMatrixTranspose_00ee6dd4(&reinterpret_cast<MapMatrix*>(&DAT_0126f820)[slot],
-                         &reinterpret_cast<MapMatrix*>(&DAT_0126f820)[slot]);
+            D3DXMatrixTranspose_00ee6dd4(&reinterpret_cast<MapMatrix*>(&DAT_0126f820)[uiOperatorNum],
+                         &reinterpret_cast<MapMatrix*>(&DAT_0126f820)[uiOperatorNum]);
         return 9;
     }
     case 37:
     case 38:
     case 39:
     case 40: {
-        Texturing* textures = state->textures;
+        Texturing* textures = pkState->textures;
         char* name = 0;
         bool inverse = false, transpose = false;
         if (textures)
@@ -5956,14 +6033,14 @@ unsigned int ConstantMapView::NiD3DShaderConstantMap_SetupDefinedConstantValue(u
                     transpose = true;
             }
         }
-        SetAffineMatrix(&reinterpret_cast<MapMatrix*>(&DAT_0126f820)[slot], name, inverse, transpose, 4);
+        SetAffineMatrix(&reinterpret_cast<MapMatrix*>(&DAT_0126f820)[uiOperatorNum], name, inverse, transpose, 4);
         return 9;
     }
     case 41:
     case 42:
     case 43:
     case 44: {
-        Texturing* textures = state->textures;
+        Texturing* textures = pkState->textures;
         char* name = 0;
         bool inverse = false, transpose = false;
         if (textures)
@@ -5978,14 +6055,14 @@ unsigned int ConstantMapView::NiD3DShaderConstantMap_SetupDefinedConstantValue(u
                     transpose = true;
             }
         }
-        SetAffineMatrix(&reinterpret_cast<MapMatrix*>(&DAT_0126f820)[slot], name, inverse, transpose, 4);
+        SetAffineMatrix(&reinterpret_cast<MapMatrix*>(&DAT_0126f820)[uiOperatorNum], name, inverse, transpose, 4);
         return 9;
     }
     case 45:
     case 46:
     case 47:
     case 48: {
-        Texturing* textures = state->textures;
+        Texturing* textures = pkState->textures;
         char* name = 0;
         bool inverse = false, transpose = false;
         if (textures)
@@ -6000,14 +6077,14 @@ unsigned int ConstantMapView::NiD3DShaderConstantMap_SetupDefinedConstantValue(u
                     transpose = true;
             }
         }
-        SetAffineMatrix(&reinterpret_cast<MapMatrix*>(&DAT_0126f820)[slot], name, inverse, transpose, 4);
+        SetAffineMatrix(&reinterpret_cast<MapMatrix*>(&DAT_0126f820)[uiOperatorNum], name, inverse, transpose, 4);
         return 9;
     }
     case 49:
     case 50:
     case 51:
     case 52: {
-        Texturing* textures = state->textures;
+        Texturing* textures = pkState->textures;
         char* name = 0;
         bool inverse = false, transpose = false;
         if (textures)
@@ -6022,14 +6099,14 @@ unsigned int ConstantMapView::NiD3DShaderConstantMap_SetupDefinedConstantValue(u
                     transpose = true;
             }
         }
-        SetAffineMatrix(&reinterpret_cast<MapMatrix*>(&DAT_0126f820)[slot], name, inverse, transpose, 4);
+        SetAffineMatrix(&reinterpret_cast<MapMatrix*>(&DAT_0126f820)[uiOperatorNum], name, inverse, transpose, 4);
         return 9;
     }
     case 53:
     case 54:
     case 55:
     case 56: {
-        Texturing* textures = state->textures;
+        Texturing* textures = pkState->textures;
         char* name = 0;
         bool inverse = false, transpose = false;
         if (textures)
@@ -6044,14 +6121,14 @@ unsigned int ConstantMapView::NiD3DShaderConstantMap_SetupDefinedConstantValue(u
                     transpose = true;
             }
         }
-        SetAffineMatrix(&reinterpret_cast<MapMatrix*>(&DAT_0126f820)[slot], name, inverse, transpose, 4);
+        SetAffineMatrix(&reinterpret_cast<MapMatrix*>(&DAT_0126f820)[uiOperatorNum], name, inverse, transpose, 4);
         return 9;
     }
     case 57:
     case 58:
     case 59:
     case 60: {
-        Texturing* textures = state->textures;
+        Texturing* textures = pkState->textures;
         char* name = 0;
         bool inverse = false, transpose = false;
         if (textures)
@@ -6066,19 +6143,19 @@ unsigned int ConstantMapView::NiD3DShaderConstantMap_SetupDefinedConstantValue(u
                     transpose = true;
             }
         }
-        SetAffineMatrix(&reinterpret_cast<MapMatrix*>(&DAT_0126f820)[slot], name, inverse, transpose, 4);
+        SetAffineMatrix(&reinterpret_cast<MapMatrix*>(&DAT_0126f820)[uiOperatorNum], name, inverse, transpose, 4);
         return 9;
     }
     case 61:
     case 62:
     case 63:
     case 64: {
-        Texturing* textures = state->textures;
+        Texturing* textures = pkState->textures;
         char* name = 0;
         bool inverse = false, transpose = false;
         if (textures)
         {
-            Texture* texture = textures->slots->shader[apMapping->m_uiValue2];
+            Texture* texture = textures->slots->shader[pkEntry->m_uiExtra];
             if (texture && texture->name)
             {
                 name = NiTextureTransform_GetMatrix(texture->name);
@@ -6088,19 +6165,19 @@ unsigned int ConstantMapView::NiD3DShaderConstantMap_SetupDefinedConstantValue(u
                     transpose = true;
             }
         }
-        SetAffineMatrix(&reinterpret_cast<MapMatrix*>(&DAT_0126f820)[slot], name, inverse, transpose, 4);
+        SetAffineMatrix(&reinterpret_cast<MapMatrix*>(&DAT_0126f820)[uiOperatorNum], name, inverse, transpose, 4);
         return 9;
     }
     case 65:
     case 66:
     case 67:
     case 68: {
-        Texturing* textures = state->textures;
+        Texturing* textures = pkState->textures;
         char* name = 0;
         bool inverse = false, transpose = false;
         if (textures)
         {
-            Texture* texture = textures->GetElementAt(apMapping->m_uiValue2);
+            Texture* texture = textures->GetElementAt(pkEntry->m_uiExtra);
             if (texture && texture->name)
             {
                 name = NiTextureTransform_GetMatrix(texture->name);
@@ -6110,73 +6187,73 @@ unsigned int ConstantMapView::NiD3DShaderConstantMap_SetupDefinedConstantValue(u
                     transpose = true;
             }
         }
-        SetAffineMatrix(&reinterpret_cast<MapMatrix*>(&DAT_0126f820)[slot], name, inverse, transpose, 4);
+        SetAffineMatrix(&reinterpret_cast<MapMatrix*>(&DAT_0126f820)[uiOperatorNum], name, inverse, transpose, 4);
         return 9;
     }
     case 73: {
-        Material* material = state->material;
+        Material* material = pkState->material;
         if (!material)
             return 0;
-        (&DAT_0126f8a0)[slot].x = DAT_011f4998.r;
-        (&DAT_0126f8a0)[slot].y = DAT_011f4998.g;
-        (&DAT_0126f8a0)[slot].z = DAT_011f4998.b;
-        (&DAT_0126f8a0)[slot].w = material->alpha;
+        (&DAT_0126f8a0)[uiOperatorNum].x = DAT_011f4998.r;
+        (&DAT_0126f8a0)[uiOperatorNum].y = DAT_011f4998.g;
+        (&DAT_0126f8a0)[uiOperatorNum].z = DAT_011f4998.b;
+        (&DAT_0126f8a0)[uiOperatorNum].w = material->alpha;
         return 10;
     }
     case 74: {
-        Material* material = state->material;
+        Material* material = pkState->material;
         if (!material)
             return 0;
-        (&DAT_0126f8a0)[slot].x = DAT_011f4998.r;
-        (&DAT_0126f8a0)[slot].y = DAT_011f4998.g;
-        (&DAT_0126f8a0)[slot].z = DAT_011f4998.b;
-        (&DAT_0126f8a0)[slot].w = material->alpha;
+        (&DAT_0126f8a0)[uiOperatorNum].x = DAT_011f4998.r;
+        (&DAT_0126f8a0)[uiOperatorNum].y = DAT_011f4998.g;
+        (&DAT_0126f8a0)[uiOperatorNum].z = DAT_011f4998.b;
+        (&DAT_0126f8a0)[uiOperatorNum].w = material->alpha;
         return 10;
     }
     case 75: {
-        Material* material = state->material;
+        Material* material = pkState->material;
         if (!material)
             return 0;
-        (&DAT_0126f8a0)[slot].x = material->diffuse.x;
-        (&DAT_0126f8a0)[slot].y = material->diffuse.y;
-        (&DAT_0126f8a0)[slot].z = material->diffuse.z;
-        (&DAT_0126f8a0)[slot].w = material->alpha;
+        (&DAT_0126f8a0)[uiOperatorNum].x = material->diffuse.x;
+        (&DAT_0126f8a0)[uiOperatorNum].y = material->diffuse.y;
+        (&DAT_0126f8a0)[uiOperatorNum].z = material->diffuse.z;
+        (&DAT_0126f8a0)[uiOperatorNum].w = material->alpha;
         return 10;
     }
     case 76: {
-        Material* material = state->material;
+        Material* material = pkState->material;
         if (!material)
             return 0;
-        (&DAT_0126f8a0)[slot].x = material->Specular().x;
-        (&DAT_0126f8a0)[slot].y = material->Specular().y;
-        (&DAT_0126f8a0)[slot].z = material->Specular().z;
-        (&DAT_0126f8a0)[slot].w = material->alpha;
+        (&DAT_0126f8a0)[uiOperatorNum].x = material->Specular().x;
+        (&DAT_0126f8a0)[uiOperatorNum].y = material->Specular().y;
+        (&DAT_0126f8a0)[uiOperatorNum].z = material->Specular().z;
+        (&DAT_0126f8a0)[uiOperatorNum].w = material->alpha;
         return 10;
     }
     case 77: {
-        Material* material = state->material;
+        Material* material = pkState->material;
         if (!material)
             return 0;
-        (&DAT_0126f8a0)[slot].x = material->gloss;
-        (&DAT_0126f8a0)[slot].y = material->gloss;
-        (&DAT_0126f8a0)[slot].z = material->gloss;
-        (&DAT_0126f8a0)[slot].w = material->gloss;
+        (&DAT_0126f8a0)[uiOperatorNum].x = material->gloss;
+        (&DAT_0126f8a0)[uiOperatorNum].y = material->gloss;
+        (&DAT_0126f8a0)[uiOperatorNum].z = material->gloss;
+        (&DAT_0126f8a0)[uiOperatorNum].w = material->gloss;
         return 10;
     }
     case 78: {
         work.a = renderer->inverseView;
-        (&DAT_0126f8a0)[slot].x = work.a.m[3][0];
-        (&DAT_0126f8a0)[slot].y = work.a.m[3][1];
-        (&DAT_0126f8a0)[slot].z = work.a.m[3][2];
-        (&DAT_0126f8a0)[slot].w = work.a.m[3][3];
+        (&DAT_0126f8a0)[uiOperatorNum].x = work.a.m[3][0];
+        (&DAT_0126f8a0)[uiOperatorNum].y = work.a.m[3][1];
+        (&DAT_0126f8a0)[uiOperatorNum].z = work.a.m[3][2];
+        (&DAT_0126f8a0)[uiOperatorNum].w = work.a.m[3][3];
         return 7;
     }
     case 79: {
         work.a = renderer->inverseView;
-        (&DAT_0126f8a0)[slot].x = work.a.m[2][0];
-        (&DAT_0126f8a0)[slot].y = work.a.m[2][1];
-        (&DAT_0126f8a0)[slot].z = work.a.m[2][2];
-        (&DAT_0126f8a0)[slot].w = work.a.m[2][3];
+        (&DAT_0126f8a0)[uiOperatorNum].x = work.a.m[2][0];
+        (&DAT_0126f8a0)[uiOperatorNum].y = work.a.m[2][1];
+        (&DAT_0126f8a0)[uiOperatorNum].z = work.a.m[2][2];
+        (&DAT_0126f8a0)[uiOperatorNum].w = work.a.m[2][3];
         return 7;
     }
     case 82:
@@ -6184,69 +6261,69 @@ unsigned int ConstantMapView::NiD3DShaderConstantMap_SetupDefinedConstantValue(u
     case 84:
     case 85:
     case 86: {
-        NiExtraData* extra = ((ShaderExtraDataObject*)geometry)->GetShaderExtraData(NiFixedString(DAT_011bf65c));
+        NiExtraData* extra = ((ShaderExtraDataObject*)pkGeometry)->GetShaderExtraData(NiFixedString(DAT_011bf65c));
         if (!extra)
             return 16;
         float value = static_cast<NiFloatExtraData*>(extra)->m_fValue;
         switch (mapping)
         {
         case 82:
-            (&DAT_0126f8a0)[slot].x = value;
-            (&DAT_0126f8a0)[slot].y = value;
-            (&DAT_0126f8a0)[slot].z = value;
-            (&DAT_0126f8a0)[slot].w = value;
+            (&DAT_0126f8a0)[uiOperatorNum].x = value;
+            (&DAT_0126f8a0)[uiOperatorNum].y = value;
+            (&DAT_0126f8a0)[uiOperatorNum].z = value;
+            (&DAT_0126f8a0)[uiOperatorNum].w = value;
             return 7;
         case 83: {
             float s = (float)sin(value);
-            (&DAT_0126f8a0)[slot].x = s;
-            (&DAT_0126f8a0)[slot].y = s;
-            (&DAT_0126f8a0)[slot].z = s;
-            (&DAT_0126f8a0)[slot].w = s;
+            (&DAT_0126f8a0)[uiOperatorNum].x = s;
+            (&DAT_0126f8a0)[uiOperatorNum].y = s;
+            (&DAT_0126f8a0)[uiOperatorNum].z = s;
+            (&DAT_0126f8a0)[uiOperatorNum].w = s;
             return 7;
         }
         case 84: {
             float s = (float)cos(value);
-            (&DAT_0126f8a0)[slot].x = s;
-            (&DAT_0126f8a0)[slot].y = s;
-            (&DAT_0126f8a0)[slot].z = s;
-            (&DAT_0126f8a0)[slot].w = s;
+            (&DAT_0126f8a0)[uiOperatorNum].x = s;
+            (&DAT_0126f8a0)[uiOperatorNum].y = s;
+            (&DAT_0126f8a0)[uiOperatorNum].z = s;
+            (&DAT_0126f8a0)[uiOperatorNum].w = s;
             return 7;
         }
         case 85: {
             float s = (float)tan(value);
-            (&DAT_0126f8a0)[slot].x = s;
-            (&DAT_0126f8a0)[slot].y = s;
-            (&DAT_0126f8a0)[slot].z = s;
-            (&DAT_0126f8a0)[slot].w = s;
+            (&DAT_0126f8a0)[uiOperatorNum].x = s;
+            (&DAT_0126f8a0)[uiOperatorNum].y = s;
+            (&DAT_0126f8a0)[uiOperatorNum].z = s;
+            (&DAT_0126f8a0)[uiOperatorNum].w = s;
             return 7;
         }
         case 86:
-            (&DAT_0126f8a0)[slot].x = value;
-            (&DAT_0126f8a0)[slot].y = (float)sin(value);
-            (&DAT_0126f8a0)[slot].z = (float)cos(value);
-            (&DAT_0126f8a0)[slot].w = (float)tan(value);
+            (&DAT_0126f8a0)[uiOperatorNum].x = value;
+            (&DAT_0126f8a0)[uiOperatorNum].y = (float)sin(value);
+            (&DAT_0126f8a0)[uiOperatorNum].z = (float)cos(value);
+            (&DAT_0126f8a0)[uiOperatorNum].w = (float)tan(value);
             return 7;
         }
         break;
     }
     case 87: {
-        (&DAT_0126f8a0)[slot].x = 0.0f;
-        (&DAT_0126f8a0)[slot].y = 0.0f;
-        (&DAT_0126f8a0)[slot].z = 0.0f;
-        (&DAT_0126f8a0)[slot].w = 1.0f;
-        if (effects)
+        (&DAT_0126f8a0)[uiOperatorNum].x = 0.0f;
+        (&DAT_0126f8a0)[uiOperatorNum].y = 0.0f;
+        (&DAT_0126f8a0)[uiOperatorNum].z = 0.0f;
+        (&DAT_0126f8a0)[uiOperatorNum].w = 1.0f;
+        if (pkEffects)
         {
-            EffectLink* iter = effects->Head();
+            EffectLink* iter = pkEffects->Head();
             while (iter)
             {
-                Light* light = LightObject::Cast(&g_011f5f6c, reinterpret_cast<LightObject*>(effects->Next(iter)));
+                Light* light = LightObject::Cast(&g_011f5f6c, reinterpret_cast<LightObject*>(pkEffects->Next(iter)));
                 if (light && light->enabled)
                 {
                     NiPoint3 point;
                     ((PointExt*)&light->ambient)->ScaleTo(&point, light->dimmer);
-                    (&DAT_0126f8a0)[slot].x = (&DAT_0126f8a0)[slot].x + point.x;
-                    (&DAT_0126f8a0)[slot].y = point.y + (&DAT_0126f8a0)[slot].y;
-                    (&DAT_0126f8a0)[slot].z = (&DAT_0126f8a0)[slot].z + point.z;
+                    (&DAT_0126f8a0)[uiOperatorNum].x = (&DAT_0126f8a0)[uiOperatorNum].x + point.x;
+                    (&DAT_0126f8a0)[uiOperatorNum].y = point.y + (&DAT_0126f8a0)[uiOperatorNum].y;
+                    (&DAT_0126f8a0)[uiOperatorNum].z = (&DAT_0126f8a0)[uiOperatorNum].z + point.z;
                 }
             }
         }

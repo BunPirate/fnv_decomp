@@ -209,9 +209,9 @@ __forceinline void hkVector4::setCross(const hkVector4& a, const hkVector4& b)
     m_vComponents = _mm_sub_ps(cross0, cross1);
 }
 
-__forceinline hkSimdReal hkVector4::dot3(const hkVector4& vector) const
+__forceinline hkSimdReal hkVector4::dot3(const hkVector4& x) const
 {
-    __m128 p = _mm_mul_ps(m_vComponents, vector.m_vComponents);
+    __m128 p = _mm_mul_ps(m_vComponents, x.m_vComponents);
     __m128 s = _mm_add_ss(_mm_shuffle_ps(p, p, 0x55), p);
     return _mm_add_ss(_mm_shuffle_ps(p, p, 0xaa), s);
 }
@@ -243,9 +243,9 @@ __forceinline void hkVector4::setFlipSign(const hkVector4& vector, const hkSimdR
     m_vComponents = _mm_xor_ps(_mm_and_ps(sign.broadcast(), DAT_010c44d0), vector.m_vComponents);
 }
 
-__forceinline void hkVector4::mul4(const hkSimdReal& scalar)
+__forceinline void hkVector4::mul4(const hkSimdReal& s)
 {
-    m_vComponents = _mm_mul_ps(m_vComponents, scalar.broadcast());
+    m_vComponents = _mm_mul_ps(m_vComponents, s.broadcast());
 }
 
 __forceinline void hkVector4::normalize3()
@@ -580,29 +580,31 @@ struct __declspec(align(16)) FUN_00da9880_cls
     int unk12C;
     __m128 m_v130;
 
-    void hkpGsk_convertFeatureToClosestDistance(const SpawnedSrc* apSrc, SpawnedDst* apDst);
+    void hkpGsk_convertFeatureToClosestDistance(const SpawnedSrc* separatingNormal, SpawnedDst* out);
 };
 
 // Copies apSrc's vector and float into apDst, then sets m_v10 to m_v20 if m_i00 is 1, to a w-scaled blend with m_va0 if m_i04 is 1, else to m_v130.
 // @fnv 0x00da9880
 // src: XBOX_PDB 0x00da9880
-void FUN_00da9880_cls::hkpGsk_convertFeatureToClosestDistance(const SpawnedSrc* apSrc, SpawnedDst* apDst)
+// pdb: hkpGsk::convertFeatureToClosestDistance | hkpGsk.obj | debug, upstream name already matches, high
+// pdb params: separatingNormal, out
+void FUN_00da9880_cls::hkpGsk_convertFeatureToClosestDistance(const SpawnedSrc* separatingNormal, SpawnedDst* out)
 {
-    apDst->m_f20 = *(const volatile float*)((const char*)apSrc + 0xc);
-    apDst->m_v00 = apSrc->m_v;
+    out->m_f20 = *(const volatile float*)((const char*)separatingNormal + 0xc);
+    out->m_v00 = separatingNormal->m_v;
     if (m_i00 == 1)
     {
-        apDst->m_v10 = m_v20;
+        out->m_v10 = m_v20;
     }
     else if (m_i04 == 1)
     {
-        __m128 vW = _mm_shuffle_ps(apSrc->m_v, apSrc->m_v, 0xff);
+        __m128 vW = _mm_shuffle_ps(separatingNormal->m_v, separatingNormal->m_v, 0xff);
         __m128 vB = _mm_shuffle_ps(vW, vW, 0);
-        apDst->m_v10 = _mm_add_ps(_mm_mul_ps(vB, apDst->m_v00), m_va0);
+        out->m_v10 = _mm_add_ps(_mm_mul_ps(vB, out->m_v00), m_va0);
     }
     else
     {
-        apDst->m_v10 = m_v130;
+        out->m_v10 = m_v130;
     }
 }
 
@@ -1210,6 +1212,9 @@ finish:
 // GJK-style cast of path against shapeA (or shapeA minus transformed shapeB); returns true and updates hit's fraction and normal when it hits sooner.
 // @fnv 0x00da9b30
 // src: GUESS 0x00da9b30 (confidence: low)
+// pdb: hkpGsk::linearCast | hkpGsk.obj | retail, object-file run extension, low
+// pdb params: shapeA, shapeB, aRb, input, output
+// pdb locals: radiusAB, supportVertex, hitFraction, count, supportVertexB, zero, tmpv, rotSupportVertexB, supportB
 SmallBool Collision_workspace::ProcessEntries_00da9b30(Collision_vcls* shapeA, Collision_vcls* shapeB, Collision_mat* transform,
                                             Collision_vector* path, Collision_hit* hit)
 {
@@ -2481,6 +2486,9 @@ __forceinline float hkGskCalcSupportDistSquared(const GapVector& support, const 
 }
 // @fnv 0x00daad40
 // src: XBOX_PDB 0x00daad40
+// pdb: hkpGsk::getClosestFeature | hkpGsk.obj | retail, upstream name already matches, high
+// pdb params: shapeA, shapeB, aTb, separatingNormalOut
+// pdb locals: loopCounter, supportA, supportB
 GapStatus GapSolver::hkpGsk_getClosestFeature(const GapShape* shapeA, const GapShape* shapeB, const GapTransform& aTb,
                                   GapVector& separatingNormalOut)
 {
@@ -3019,15 +3027,18 @@ class S00daac40_RayCastTarget
 class S00daac40_FUN_00daac40_cls
 {
   public:
-    bool* ProcessAndReturnValue_00daac40(S00daac40_RayArgument<bool*> out, int p2, int p3,
+    bool* hkpGsk_castRay(S00daac40_RayArgument<bool*> out, int p2, int p3,
                        S00daac40_RayArgument<S00daac40_RayParams*> p4);
     void ProcessEntries_00da9b30(bool* hit, int p2, int zero, S00daac40_Mat3* m, int p3, S00daac40_RayParams* p);
 };
 
 // Records a GJK ray-cast profile tick, runs FUN_00da9b30 with an identity matrix, and sets out true when hit and local.m_z10 is non-zero.
 // @fnv 0x00daac40
-// src: GUESS 0x00daac40 (confidence: low)
-bool* S00daac40_FUN_00daac40_cls::ProcessAndReturnValue_00daac40(S00daac40_RayArgument<bool*> out, int p2, int p3,
+// src: XBOX_RETAIL_PDB 0x00daac40
+// pdb: hkpGsk::castRay | hkpGsk.obj | retail, string-set bridge, high
+// pdb params: shape, input, output
+// pdb locals: I, tmpOutput, result
+bool* S00daac40_FUN_00daac40_cls::hkpGsk_castRay(S00daac40_RayArgument<bool*> out, int p2, int p3,
                                                S00daac40_RayArgument<S00daac40_RayParams*> apRayParams)
 {
     volatile unsigned long ticks;

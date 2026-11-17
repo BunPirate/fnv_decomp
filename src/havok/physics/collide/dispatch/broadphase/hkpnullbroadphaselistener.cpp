@@ -3,10 +3,16 @@
 
 // @fnv 0x00d87bd0
 // src: COMMUNITY 0x00d87bd0
+// pdb: hkpNullBroadPhaseListener::addCollisionPair | hkpNullBroadPhaseListener.obj | debug, vtable slot, medium
+// pdb params: pair
+// pdb locals: assertBuf, ostr
 void __stdcall nullsub_57(int)
 {}
 
 // @fnv 0x00d87be0
 // src: COMMUNITY 0x00d87be0
+// pdb: hkpNullBroadPhaseListener::removeCollisionPair | hkpNullBroadPhaseListener.obj | debug, vtable slot, medium
+// pdb params: pair
+// pdb locals: assertBuf, ostr
 void __stdcall nullsub_58(int)
 {}

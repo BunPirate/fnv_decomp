@@ -10,6 +10,7 @@ __if_not_exists(__m128)
 }
 
 // src: HAVOK_SRC (name); existing decompiled scalar packet declarations.
+// pdb: class hkSimdReal, size 0x10, 1 members
 class hkSimdReal
 {
 public:

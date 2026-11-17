@@ -9,13 +9,13 @@
 #include "../../include/hkStringPtr.h"
 #include "../../include/hkaSkeleton.h"
 
-extern "C" void* g_012682bc;
+extern "C" void* hkPackedNiTriStripsData_ms_RTTI; // src: XBOX_RETAIL_PDB 0x012682bc (old: g_012682bc)
 
 // @fnv 0x00ca34b0
 // src: COMMUNITY 0x00ca34b0
 void* __cdecl hkPackedNiTriStripsData_GetRTTI()
 {
-    return &g_012682bc;
+    return &hkPackedNiTriStripsData_ms_RTTI;
 }
 
 extern int DAT_0102e388;
@@ -90,7 +90,7 @@ int __cdecl hkPackedNiTriStripsShape_getType()
 
 struct Allocator
 {
-    void MemoryManager_Deallocate(void* p);
+    void MemoryManager_Deallocate(void* apMem);
 };
 extern Allocator DAT_011f6238;
 struct Special
@@ -100,6 +100,7 @@ struct Special
 };
 // Calls FUN_00ca2140, then if flags bit 0 is set and this is non-null, frees the block at this minus the byte stored before it, and returns this.
 // @fnv 0x00ca2aa0
+// pdb: bhkRagdollPenetrationUtil::`scalar deleting destructor' | bhkRagdollPenetrationUtil.obj | retail, object-file gap fill, high
 Special* Special::FUN_00ca2aa0(unsigned int flags)
 {
     FUN_00ca2140();
@@ -483,22 +484,22 @@ typedef hkReferencedObject RigBase;
 __forceinline void* __cdecl hkaSkeleton::operator new(unsigned int n)
 {
     RigBase* memory = (RigBase*)((MemoryAllocator&)hkMemoryRouter_getInstance().heap()).allocate(n);
-    memory->m_usMemSizeAndFlags = (unsigned short)n;
+    memory->m_memSizeAndFlags = (unsigned short)n;
     return memory;
 }
 __forceinline HavokArray<short>& hkaSkeleton::getParents()
 {
-    return reinterpret_cast<HavokArray<short>&>(m_kParentIndices);
+    return reinterpret_cast<HavokArray<short>&>(m_parentIndices);
 }
 __forceinline hkArray<hkQsTransform>& hkaSkeleton::getPose()
 {
-    return m_kReferencePose;
+    return m_referencePose;
 }
 // this unit's array and hkQsTransform layouts over the reference pose
 typedef HavokArray<SkeletonQsTransform> PoseArray;
 __forceinline HavokArray<BoneName>& hkaSkeleton::getBones()
 {
-    return reinterpret_cast<HavokArray<BoneName>&>(m_kBones);
+    return reinterpret_cast<HavokArray<BoneName>&>(m_bones);
 }
 // hkArray() for each skeleton member: the shared hkArray's own constructor.
 __forceinline hkaSkeleton::hkaSkeleton()
@@ -607,7 +608,11 @@ static __forceinline void copyName(char* d, const char* s)
 }
 // Builds an hkaSkeleton rig from scene nodes and attachments, computing parent links, relative transforms, bone names, and shape-derived attachment positions.
 // @fnv 0x00ca21c0
-Rig* __stdcall BuildRigFromNodes(NodeList* nodes, NodeList* sorted, AttachmentList* attachments)
+// src: XBOX_RETAIL_PDB 0x00ca21c0
+// pdb: bhkRagdollPenetrationUtil::CreateSkeletonForRagdoll | bhkRagdollPenetrationUtil.obj | retail, unique string literal, high
+// pdb params: arRigidBodies, arConstraints, arLeaves
+// pdb locals: numBones, pskeleton, inumRbs, leafIdxA, b, rbody, parentId, constraint, parentRb, p, assertBuf, ostr, ui, parentWorldTransform, boneWorldTransform, rbodyName, prb, pshape, iskeletonBoneIdx, boneName, boneTranslation, inumbIdx, radiusAdj, pcap ...
+Rig* __stdcall bhkRagdollPenetrationUtil_CreateSkeletonForRagdoll(NodeList* arRigidBodies, NodeList* arConstraints, AttachmentList* arLeaves)
 {
     Rig* rig;
     rig = new Rig;
@@ -615,39 +620,39 @@ Rig* __stdcall BuildRigFromNodes(NodeList* nodes, NodeList* sorted, AttachmentLi
     {
         HavokArray<short>& parentArray = rig->getParents();
         PoseArray& poseArray = (PoseArray&)rig->getPose();
-        int nodeCount = nodes->size;
-        int attachmentCount = attachments->size;
+        int nodeCount = arRigidBodies->size;
+        int attachmentCount = arLeaves->size;
         int totalCount = attachmentCount + nodeCount;
         baseCount = nodeCount;
         parentArray.SetSizeAndGrow(attachmentCount + nodeCount);
         poseArray.SetSizeAndGrow(totalCount);
         rig->getBones().SetSizeAndGrow(totalCount);
     }
-    IndexArray indices(attachments->size);
+    IndexArray indices(arLeaves->size);
     int i = 0;
-    if (nodes->GetLogicalSize() > 0)
+    if (arRigidBodies->GetLogicalSize() > 0)
         do
         {
             long parentIndex = -1;
             if (i)
             {
-                SceneNode* prev = sorted->data[i - 1];
+                SceneNode* prev = arConstraints->data[i - 1];
                 SceneNode* parent = prev->parent;
                 for (int j = 0; j < i; ++j)
-                    if (nodes->data[j] == parent)
+                    if (arRigidBodies->data[j] == parent)
                     {
                         parentIndex = j;
                         break;
                     }
             }
             rig->getParents().data[i] = (short)parentIndex;
-            SceneNode* node = nodes->data[i];
-            for (unsigned int j = 0; j < attachments->size; ++j)
-                if (node == attachments->data[j]->node)
+            SceneNode* node = arRigidBodies->data[i];
+            for (unsigned int j = 0; j < arLeaves->size; ++j)
+                if (node == arLeaves->data[j]->node)
                     indices.data[j] = i;
             if (0 <= parentIndex)
             {
-                SceneNode* parent = nodes->data[parentIndex];
+                SceneNode* parent = arRigidBodies->data[parentIndex];
                 SkeletonQsTransform childTransform, parentTransform;
                 childTransform.setFromTransformNoScale(&node->transform);
                 parentTransform.setFromTransformNoScale(&parent->transform);
@@ -675,10 +680,10 @@ Rig* __stdcall BuildRigFromNodes(NodeList* nodes, NodeList* sorted, AttachmentLi
                 rig->getBones().data[i] = (const char*)0;
             }
             rig->getBones().data[i].locked = 0 != i;
-        } while (++i < nodes->size);
-    for (unsigned int i = 0; i < attachments->size; ++i)
+        } while (++i < arRigidBodies->size);
+    for (unsigned int i = 0; i < arLeaves->size; ++i)
     {
-        SceneNode* node = attachments->data[i]->node;
+        SceneNode* node = arLeaves->data[i]->node;
         unsigned int parentIndex = indices.data[i];
         Shape* shape = node->shape;
         if (shape)
@@ -782,6 +787,7 @@ struct RendererTable
     void* unk38;
     void(__thiscall* bounds)(void*, void*, void*);
 };
+// pdb: class Renderer, size 0x1 (here 0x4), 0 members
 struct Renderer
 {
     RendererTable* vtbl;
@@ -1214,8 +1220,8 @@ enum PreparationResult
     PreparationSucceeded,
     PreparationFailed
 };
-PreparationResult __cdecl hkaRagdollUtils_reorderForRagdoll(SmallVec* a, RightSmallVec* b);
-void* __cdecl hkaRagdollUtils_createRagdollInstanceFromSkeleton(void* x, SmallVec* a, RightSmallVec* b);
+PreparationResult __cdecl hkaRagdollUtils_reorderForRagdoll(SmallVec* rigidBodies, RightSmallVec* constraints);
+void* __cdecl hkaRagdollUtils_createRagdollInstanceFromSkeleton(void* x, SmallVec* candidateRBs, RightSmallVec* candidateConstraints);
 uint64 __cdecl BSPrecisionTimer_GetTimer();
 struct Grower
 {
@@ -1372,8 +1378,8 @@ struct Manager
     void CollectShaderNodes(void* source, SourceVec* result);
     void TraverseSceneNode(Item* input, SmallVec* first, RightSmallVec* second);
     void CollectMixedTypeNodes(SmallVec* first, Builder* builder);
-    void* BuildRigFromNodes(SmallVec* first, RightSmallVec* second, Builder* build);
-    bool bhkRagdollPenetrationUtil_Initialize(void* source, unsigned int flags);
+    void* bhkRagdollPenetrationUtil_CreateSkeletonForRagdoll(SmallVec* arRigidBodies, RightSmallVec* arConstraints, Builder* arLeaves);
+    bool bhkRagdollPenetrationUtil_Initialize(void* apRoot, unsigned int aiGroup);
     __forceinline unsigned int storageCount()
     {
         unsigned int n = storage.count;
@@ -1549,13 +1555,16 @@ static __forceinline void setResource(SceneRecord& r, unsigned int opt)
 // Rebuilds the storage list from source data, reusing existing items, creating new ones with bounding boxes, and removing stale entries.
 // @fnv 0x00ca2ad0
 // src: COMMUNITY 0x00ca2ad0
-bool Manager::bhkRagdollPenetrationUtil_Initialize(void* source, unsigned int flags)
+// pdb: bhkRagdollPenetrationUtil::Initialize | bhkRagdollPenetrationUtil.obj | retail, upstream name already matches, high
+// pdb params: apRoot, aiGroup
+// pdb locals: systemRoots, newSystems, bsystemsExist, bragdollFail, ui, ires, rbarray, constarray, pconstrainedSystem, bsystemMatch, systemLeaves, uj, minExtent, maxExtent, setup, rayflt, pworld, cinfo, ragdollAabb, i, pcol, pbhkWorld, pbhkRB, prb ...
+bool Manager::bhkRagdollPenetrationUtil_Initialize(void* apRoot, unsigned int aiGroup)
 {
     int inner;
     int work;
-    option = flags;
+    option = aiGroup;
     SourceVec original;
-    CollectShaderNodes(source, &original);
+    CollectShaderNodes(apRoot, &original);
     PointerVec retained;
     bool unavailable = false;
     for (unsigned int outer = 0; outer < original.count; ++outer)
@@ -1589,7 +1598,7 @@ bool Manager::bhkRagdollPenetrationUtil_Initialize(void* source, unsigned int fl
         if (hkaRagdollUtils_reorderForRagdoll(&left, &right) != PreparationFailed)
         {
             entry->source = original.data[outer];
-            entry->scene = BuildRigFromNodes(&left, &right, &temp);
+            entry->scene = bhkRagdollPenetrationUtil_CreateSkeletonForRagdoll(&left, &right, &temp);
             if (entry->scene)
                 entry->collection = hkaRagdollUtils_createRagdollInstanceFromSkeleton(entry->scene, &left, &right);
             if (entry->collection)

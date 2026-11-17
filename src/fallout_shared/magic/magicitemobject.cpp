@@ -2,51 +2,55 @@
 
 #include "magicitemobject_decls.h"
 // @fnv 0x0040c9d0
+// pdb: MagicItemObject::InitItem | MagicItemObject.obj | retail, upstream name already matches, high
 void MagicItemObject::InitItem()
 {
     if (static_cast<const TESForm*>(this)->GetInitialized())
         return;
-    LoadEffectsFromForm(this);
+    MagicItemInitItem(this);
     SetInitializationState(true);
 }
 
 #include <malloc.h>
 // Reads a magic item record's chunks (editor ID, bounds, full name, effects), warns when the effect list is empty, and returns true.
 // @fnv 0x0040c650
-bool MagicItemObject::Load(TESFile* file)
+// pdb: MagicItemObject::Load | MagicItemObject.obj | retail, upstream name already matches, high
+// pdb params: apFile
+// pdb locals: echunkid, pMessage
+bool MagicItemObject::Load(TESFile* apFile)
 {
     int chunk;
-    LoadRecordHeader(file);
-    while (chunk = file->GetChunkID())
+    LoadRecordHeader(apFile);
+    while (chunk = apFile->GetChunkID())
     {
         switch (chunk)
         {
         case 0x44494445: {
-            char* editor = (char*)_alloca(file->GetChunkSize());
-            file->GetChunkData(editor, 512);
+            char* editor = (char*)_alloca(apFile->GetChunkSize());
+            apFile->GetChunkData(editor, 512);
             SetEditorID_AtRuntime(editor);
             break;
         }
         case 0x444e424f:
-            readOBNDSubRecord(file);
+            readOBNDSubRecord(apFile);
             break;
         case 0x4c4c5546:
-            TESFullName::LoadFullNameChunk(this, file);
+            TESFullName::LoadFullNameChunk(this, apFile);
             break;
         case 0x44494645:
         case 0x41445443:
-            EffectItemList::Load(file, GetFullName());
+            EffectItemList::Load(apFile, GetFullName());
             break;
         }
-        LoadMagicItemChunk(file, chunk);
+        LoadMagicItemChunk(apFile, chunk);
         if (chunk == GetChunkID())
         {
             memset(GetData(), 0, GetDataSize());
-            file->GetChunkData(GetData(), GetDataSize());
-            if (file->GetChunkData())
+            apFile->GetChunkData(GetData(), GetDataSize());
+            if (apFile->GetChunkData())
                 vfn_180();
         }
-        if (!file->NextChunk())
+        if (!apFile->NextChunk())
             break;
     }
     if (!reinterpret_cast<EffectListEntries*>(reinterpret_cast<char*>(this) + kEffectEntriesOffset)->ItemsInList())
@@ -55,6 +59,7 @@ bool MagicItemObject::Load(TESFile* file)
 }
 
 // @fnv 0x0040c5f0
+// pdb: MagicItemObject::Save | MagicItemObject.obj | debug, object-file run extension, low
 void MagicItemObject::ClearData()
 {
     TESForm::BeginFormRecord();
@@ -70,28 +75,31 @@ void MagicItemObject::ClearData()
 class EffectListOperations : public EffectItemList
 {
 public:
-    bool CompareEffects(EffectItemList* other);
-    void CopyItemsFromList(EffectItemList* other);
+    bool EffectItemList_Compare(EffectItemList* apCompare);
+    void EffectItemList_Copy(EffectItemList* apCopy);
 };
 
 class MagicItemObjectOperations : public MagicItemObject
 {
 public:
-    bool CompareObject(TESForm* other);
-    void CopyObject(TESForm* other);
+    bool CompareObject(TESForm* apCompare);
+    void CopyObject(TESForm* apCopy);
 };
 
 // @fnv 0x0040c870
-bool MagicItemObjectOperations::CompareObject(TESForm* other)
+// pdb: MagicItemObject::Compare | MagicItemObject.obj | retail, object-file run extension, high
+// pdb params: apCompare
+// pdb locals: pmagicItem
+bool MagicItemObjectOperations::CompareObject(TESForm* apCompare)
 {
-    MagicItemObject* converted = dynamic_cast<MagicItemObject*>(other);
+    MagicItemObject* converted = dynamic_cast<MagicItemObject*>(apCompare);
     if (!converted)
         return true;
-    if (TESForm::Compare(other))
+    if (TESForm::Compare(apCompare))
         return true;
     if (IsMagicItemEqual(static_cast<MagicItem*>(converted)))
         return true;
-    if (reinterpret_cast<EffectListOperations*>(reinterpret_cast<char*>(this) + kEffectListOffset)->CompareEffects(converted ? reinterpret_cast<EffectItemList*>(reinterpret_cast<char*>(converted) + kEffectListOffset) : 0))
+    if (reinterpret_cast<EffectListOperations*>(reinterpret_cast<char*>(this) + kEffectListOffset)->EffectItemList_Compare(converted ? reinterpret_cast<EffectItemList*>(reinterpret_cast<char*>(converted) + kEffectListOffset) : 0))
         return true;
     return false;
 }
@@ -102,15 +110,18 @@ extern int DAT_011830e8;
 MagicItemObject* __cdecl FUN_00ec43fb(TESForm* arg, int a, int* b, int* c, int d);
 
 // @fnv 0x0040c930
-void MagicItemObjectOperations::CopyObject(TESForm* pForm)
+// pdb: MagicItemObject::Copy | MagicItemObject.obj | retail, object-file run extension, high
+// pdb params: apCopy
+// pdb locals: pmagicItem
+void MagicItemObjectOperations::CopyObject(TESForm* apCopy)
 {
-    MagicItemObject* result = FUN_00ec43fb(pForm, 0, &DAT_01183028, &DAT_011830e8, 0);
+    MagicItemObject* result = FUN_00ec43fb(apCopy, 0, &DAT_01183028, &DAT_011830e8, 0);
     if (!result)
         return;
 
-    TESForm::CopyFrom(pForm);
+    TESForm::CopyFrom(apCopy);
 
     CopyMagicItemData(result ? reinterpret_cast<MagicItem*>(reinterpret_cast<char*>(result) + kMagicItemOffset) : 0);
 
-    reinterpret_cast<EffectListOperations*>(reinterpret_cast<char*>(this) + kEffectListOffset)->CopyItemsFromList(result ? reinterpret_cast<EffectItemList*>(reinterpret_cast<char*>(result) + kEffectListOffset) : 0);
+    reinterpret_cast<EffectListOperations*>(reinterpret_cast<char*>(this) + kEffectListOffset)->EffectItemList_Copy(result ? reinterpret_cast<EffectItemList*>(reinterpret_cast<char*>(result) + kEffectListOffset) : 0);
 }

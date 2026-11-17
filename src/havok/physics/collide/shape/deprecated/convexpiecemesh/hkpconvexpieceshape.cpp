@@ -59,6 +59,8 @@ struct Dispatch { int x0,x4,x8,xc; InnerDispatch inner; };
 struct FUN_00e60690_owner { int unk00; int unk04; int unk08; Dispatch* unk0c; int* unk10; void DispatchToInner(int index,int value); };
 // Calls run on the inner dispatcher with the value from unk10 at index and the given value.
 // @fnv 0x00e60690
+// pdb: hkpConvexPieceShape::getChildShape | hkpConvexPieceShape.obj | debug, vtable slot, medium
+// pdb params: key, buffer
 void FUN_00e60690_owner::DispatchToInner(int index,int value) { unk0c->inner.run(unk10[index],value); }
 
 extern int DAT_010c6fb0;
@@ -81,6 +83,7 @@ struct FUN_00e60c30_cls {
 
 // Sets the vtable and a global pointer, then, if acFlags has bit 0 set, frees this object through the allocator obtained from FUN_00c85750.
 // @fnv 0x00e60c30
+// pdb: hkpConvexPieceShape::`scalar deleting destructor' | hkpConvexPieceShape.obj | retail, vtable slot, high
 FUN_00e60c30_cls* FUN_00e60c30_cls::Destroy(unsigned char acFlags)
 {
     m_p14 = (void*)&DAT_010c6fb0;
@@ -114,6 +117,8 @@ struct FUN_00e606c0_cls {
 };
 
 // @fnv 0x00e606c0
+// pdb: hkpConvexPieceShape::getFirstVertex | hkpConvexPieceShape.obj | debug, vtable slot, medium
+// pdb params: v
 void FUN_00e606c0_cls::Copy(__m128* apDst)
 {
     *apDst = *m_pSrc;
@@ -180,21 +185,24 @@ struct FUN_00e60730_cls {
     int unk1c;
     Holder* m_p20;
     void** m_p24;
-    void hkpConvexPieceShape_GetRTTI(const unsigned short* apIndices, int aiCount, Vec4* apOut);
+    void hkpConvexPieceShape_GetRTTI(const unsigned short* ids, int numIds, Vec4* verticesOut);
 };
 
 // @fnv 0x00e60730
 // src: COMMUNITY 0x00e60730
-void FUN_00e60730_cls::hkpConvexPieceShape_GetRTTI(const unsigned short* apIndices, int aiCount, Vec4* apOut)
+// pdb: hkpConvexPieceShape::convertVertexIdsToVerticesImpl | hkpConvexPieceShape.obj | retail, vtable slot, high
+// pdb params: ids, numIds, verticesOut
+// pdb locals: triangleBuffer
+void FUN_00e60730_cls::hkpConvexPieceShape_GetRTTI(const unsigned short* ids, int numIds, Vec4* verticesOut)
 {
     Scratch scratch;
-    for (int i = aiCount - 1; i >= 0; i--) {
-        int iIndex = *apIndices;
+    for (int i = numIds - 1; i >= 0; i--) {
+        int iIndex = *ids;
         Mat* pMatrix = m_p20->sub10.GetMat(m_p24[iIndex / 3], &scratch);
-        apIndices++;
-        apOut->v = pMatrix->rows[iIndex % 3 + 2].v;
-        *((unsigned int*)apOut + 3) = iIndex | 0x3f000000;
-        apOut++;
+        ids++;
+        verticesOut->v = pMatrix->rows[iIndex % 3 + 2].v;
+        *((unsigned int*)verticesOut + 3) = iIndex | 0x3f000000;
+        verticesOut++;
     }
 }
 
@@ -222,25 +230,28 @@ public:
     __m128* m_kVertices;
     int m_iStridedVertexCount;
 
-    void GetExpandedWorldVertexBounds(const hkTransform& kLocalToWorld, float fTolerance, Aabb_e608& kOut) const;
+    void GetExpandedWorldVertexBounds(const hkTransform& localToWorld, float tolerance, Aabb_e608& out) const;
 };
 
 // Computes the world-space AABB of the shape's vertices via kLocalToWorld, then expands it by m_fSphereRadius plus fTolerance into kOut.
 // @fnv 0x00e60800
 // src: GUESS 0x00e60800 (confidence: medium)
-void Shape_e608::GetExpandedWorldVertexBounds(const hkTransform& kLocalToWorld, float fTolerance, Aabb_e608& kOut) const
+// pdb: hkpConvexPieceShape::getAabbImpl | hkpConvexPieceShape.obj | retail, vtable slot, high
+// pdb params: localToWorld, tolerance, out
+// pdb locals: tol4
+void Shape_e608::GetExpandedWorldVertexBounds(const hkTransform& localToWorld, float tolerance, Aabb_e608& out) const
 {
-    kOut.m_kMinimumCorner = _mm_set1_ps(3.40282e+38f);
-    kOut.m_kMaximumCorner = _mm_set1_ps(-3.40282e+38f);
+    out.m_kMinimumCorner = _mm_set1_ps(3.40282e+38f);
+    out.m_kMaximumCorner = _mm_set1_ps(-3.40282e+38f);
     for (int i = 0; i < m_iStridedVertexCount; i++) {
-        __m128 world = TransformedPos_e608(kLocalToWorld, m_kVertices[i]);
-        kOut.m_kMinimumCorner = _mm_min_ps(kOut.m_kMinimumCorner, world);
-        kOut.m_kMaximumCorner = _mm_max_ps(kOut.m_kMaximumCorner, world);
+        __m128 world = TransformedPos_e608(localToWorld, m_kVertices[i]);
+        out.m_kMinimumCorner = _mm_min_ps(out.m_kMinimumCorner, world);
+        out.m_kMaximumCorner = _mm_max_ps(out.m_kMaximumCorner, world);
     }
-    float fRadius = m_fSphereRadius + fTolerance;
+    float fRadius = m_fSphereRadius + tolerance;
     __m128 r = _mm_load1_ps(&fRadius);
-    kOut.m_kMinimumCorner = _mm_sub_ps(kOut.m_kMinimumCorner, r);
-    kOut.m_kMaximumCorner = _mm_add_ps(kOut.m_kMaximumCorner, r);
+    out.m_kMinimumCorner = _mm_sub_ps(out.m_kMinimumCorner, r);
+    out.m_kMaximumCorner = _mm_add_ps(out.m_kMaximumCorner, r);
 }
 
 extern "C" void _ReadWriteBarrier(void);
@@ -350,6 +361,9 @@ struct S_00e609c0_ConvexPieceShape : S_00e609c0_Shape {
 // Ray-casts each child shape whose filter allows it and, if any hit, sets results' key to the last hit index; returns whether any child was hit.
 // @fnv 0x00e609c0
 // src: HAVOK_LIB 0x00e609c0
+// pdb: hkpConvexPieceShape::castRayImpl | hkpConvexPieceShape.obj | retail, upstream name already matches, high
+// pdb params: input, results
+// pdb locals: buffer, assertBuf, ostr
 S_00e609c0_Bool S_00e609c0_ConvexPieceShape::hkpConvexPieceShape_castRayImpl(const S_00e609c0_RayInput& input, S_00e609c0_RayOutput& results) const
 {
     int hitIndex;
@@ -483,12 +497,15 @@ struct FUN_00e60b00_cls {
     int* m_keys;
     int m_uiItemCount;
 
-    void ProcessCollisionShapes(const BodyA* bodyA, const BodyB* bodyB, void* input);
+    void ProcessCollisionShapes(const BodyA* bodyA, const BodyB* cdBody, void* collector);
 };
 
 // For each key passing bodyA's filter, gets the child shape and calls its func24 with bodyA, a CdBody built from bodyB, and input, between profiler timers.
 // @fnv 0x00e60b00
-void FUN_00e60b00_cls::ProcessCollisionShapes(const BodyA* bodyA, const BodyB* bodyB, void* input) {
+// pdb: hkpConvexPieceShape::castRayWithCollectorImpl | hkpConvexPieceShape.obj | retail, vtable slot, high
+// pdb params: input, cdBody, collector
+// pdb locals: buffer, assertBuf, ostr, body
+void FUN_00e60b00_cls::ProcessCollisionShapes(const BodyA* bodyA, const BodyB* cdBody, void* collector) {
     static_cast<StringCursor_hkpconvexpieceshape&>(hkMonitorStream::getInstance()).timerBegin("TtrcConvxPiece");
 
     for (int i = 0; i < this->m_uiItemCount; ++i) {
@@ -501,11 +518,11 @@ void FUN_00e60b00_cls::ProcessCollisionShapes(const BodyA* bodyA, const BodyB* b
         __declspec(align(16)) int buffer[128];
         ChildShape* child = this->m_pCollisionShape->m_base.GetShapeForKey(this->m_keys[i], buffer);
         CdBody body;
-        body.m_parent = bodyB;
-        body.m_kMotionState = bodyB->m_kMotionState;
+        body.m_parent = cdBody;
+        body.m_kMotionState = cdBody->m_kMotionState;
         body.m_pCollisionShape = child;
         body.m_uiCollisionShapeKey = i;
-        child->func24(bodyA, &body, input);
+        child->func24(bodyA, &body, collector);
     }
 
     static_cast<StringCursor_hkpconvexpieceshape&>(hkMonitorStream::getInstance()).timerEnd("Et");

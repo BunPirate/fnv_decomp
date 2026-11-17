@@ -28,6 +28,7 @@ struct S_00a47190 : NiObject
 };
 // Frees m_08, destroys the NiRefObject base, and deletes this with size 0x14 when flag bit 0 is set.
 // @fnv 0x00a47190
+// pdb: NiStringPalette::`scalar deleting destructor' | NiStringPalette.obj | retail, object-file gap fill, high
 void* S_00a47190::DestroyAndFree(unsigned int auiFlags)
 {
     void* p = m_08;
@@ -55,11 +56,13 @@ inline NiBinaryStream& NiStream::Istr()
 // Reads uiNumEls bytes into pValue through the stream's input reader and advances the input position by the bytes read.
 // @fnv 0x00a471d0
 // src: XBOX_PDB 0x00a471d0
-void NiStreamLoadBinary_char(NiStream* kStream, unsigned char* pBuffer, unsigned int uiNumEls)
+// pdb: NiStreamLoadBinary<char> | NiStringPalette.obj | retail, call graph (shared callers), high
+// pdb params: binstream, value, uiNumEls
+void NiStreamLoadBinary_char(NiStream* kStream, unsigned char* pValue, unsigned int uiNumEls)
 {
     NiBinaryStream* __restrict input = &kStream->Istr();
     unsigned int size = 1;
-    input->BinaryRead(pBuffer, uiNumEls, &size, 1);
+    input->BinaryRead(pValue, uiNumEls, &size, 1);
 }
 
 inline unsigned int NiBinaryStream::Write(const void* pvBuffer, unsigned int uiBytes,
@@ -96,6 +99,10 @@ struct S_00a47210 : NiObject
 };
 // Links the object to the stream, writes m_uiSize, then writes m_pcData bytes if the size is nonzero, and writes m_uiSize again.
 // @fnv 0x00a47210
+// pdb: NiStringPalette::SaveBinary | NiStringPalette.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiStringPalette::NiStringPalette
+// pdb params: kStream
+// pdb locals: uiStreamedSize
 void S_00a47210::WriteToStream(NiStream& kStream)
 {
     NiObject::LinkObject(kStream);
@@ -108,21 +115,24 @@ void S_00a47210::WriteToStream(NiStream& kStream)
 
 struct S_00a470c0 : S_00a47190
 {
-    bool NiStringPalette_IsEqual(S_00a470c0* other);
+    bool NiStringPalette_IsEqual(S_00a470c0* pkObject);
 };
 
 // Compares this object with another: checks the base comparison, matching m_0C and m_10, then byte-compares m_0C bytes at m_08; returns true if all match.
 // @fnv 0x00a470c0
 // src: GAMEBRYO_LIB 0x00a470c0
-bool S_00a470c0::NiStringPalette_IsEqual(S_00a470c0* other)
+// pdb: NiStringPalette::IsEqual | NiStringPalette.obj | retail, upstream name already matches, high
+// pdb params: pkObject
+// pdb locals: pkDest
+bool S_00a470c0::NiStringPalette_IsEqual(S_00a470c0* pkObject)
 {
-    if (IsSameAs(other) && other->m_0C == m_0C && other->m_10 == m_10)
+    if (IsSameAs(pkObject) && pkObject->m_0C == m_0C && pkObject->m_10 == m_10)
     {
         unsigned int size = (unsigned int)m_0C;
         if (size <= 0)
             goto pass;
         unsigned char* p1 = (unsigned char*)m_08;
-        unsigned char* p2 = (unsigned char*)other->m_08;
+        unsigned char* p2 = (unsigned char*)pkObject->m_08;
         while (size >= 4)
         {
             if (*(unsigned int*)p2 != *(unsigned int*)p1)
@@ -166,6 +176,8 @@ struct S_00a47150_Obj : NiObject
 // Allocates and constructs a new S_00a47150_Obj via its operator new and returns the pointer.
 // @fnv 0x00a47150
 // src: EXE 0x00a47150
+// pdb: NiStringPalette::CreateObject | NiStringPalette.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 S_00a47150_Obj* __cdecl NiStringPalette_CreateObject()
 {
     return new S_00a47150_Obj;
@@ -186,6 +198,8 @@ class FUN_00a472b0_cls : public NiObject
 };
 // Reads a count and extra value from the stream, allocates a buffer of that count and reads it in.
 // @fnv 0x00a472b0
+// pdb: NiStringPalette::LoadBinary | NiStringPalette.obj | retail, object-file run extension, low
+// pdb params: kStream
 void FUN_00a472b0_cls::ReadFromStream(NiStream* stream)
 {
     NiObject::LoadBinary(*stream);

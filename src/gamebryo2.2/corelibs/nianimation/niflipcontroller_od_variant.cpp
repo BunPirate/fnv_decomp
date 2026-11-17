@@ -38,6 +38,8 @@ class FUN_0060c120_cls
 
 // @fnv 0x0060c120
 // src: COMMUNITY 0x0060c120
+// pdb: NiTArray<NiPointer<NiTexture>,NiTNewInterface<NiPointer<NiTexture> > >::SetAt | TESNPC.obj | retail, call graph, medium
+// pdb params: uiIndex, element
 void FUN_0060c120_cls::NiTObjectArray_NiPointer_NiTexture_SetAt(unsigned int idx, SlotTarget* a2)
 {
     static StaticKey key(0);

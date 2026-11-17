@@ -548,6 +548,9 @@ triangleIndexOut=0;
 }
 // @fnv 0x00d24b50
 // src: XBOX_PDB 0x00d24b50
+// pdb: hkpSampledHeightFieldShape::castRayInternal | hkpSampledHeightFieldShape.obj | retail, upstream name already matches, high
+// pdb params: input, cdBody, reportPenetratingStartPosition, maxExtraPenetration, collector
+// pdb locals: from, ep, signedGridLineDistance, signRayDir, gridLineDistance, distToNextCell, triangleFlip, clippedFrom, to, absRayDir, output, ratio, distToPrevCell, fraction, curPos
 void SampledHeightRayCastView::hkpSampledHeightFieldShape_castRayInternal(const ShapeRayCastQuery&input,const hkpCdBody&cdBody,hkBoolR reportPenetratingStartPosition,hkReal maxExtraPenetration,hkpRayHitCollector&collector)const
 {
 {hkMonitorStream&mStream=hkMonitorStream::getInstance();if(mStream.memoryAvailable()){hkMonitorStream::TimerCommand*h=reinterpret_cast<hkMonitorStream::TimerCommand*>(mStream.getEnd());h->m_commandAndMonitor="T" "t" "rcHeightFild";h->setTime();mStream.setEnd((char*)(h+1));}};
@@ -642,7 +645,7 @@ return;
 }
 hitFraction=h0 /(h0-h1);
 }
-if(hitFraction<collector.m_fEarlyOutHitFraction)
+if(hitFraction<collector.m_earlyOutHitFraction)
 {
 output.m_vHitNormal.mul4(m_kInverseScale);
 output.m_vHitNormal.normalize3();
@@ -836,7 +839,7 @@ if((unsigned)ep[0]>=(unsigned)m_iXResolution ||(unsigned)ep[2]>=(unsigned)m_iZRe
 {hkMonitorStream&mStream=hkMonitorStream::getInstance();if(mStream.memoryAvailable()){hkMonitorStream::TimerCommand*h=reinterpret_cast<hkMonitorStream::TimerCommand*>(mStream.getEnd());h->m_commandAndMonitor="E" "t" "";h->setTime();mStream.setEnd((char*)(h+1));}};
 return;
 }
-if(distToLastCrossedCell>collector.m_fEarlyOutHitFraction)
+if(distToLastCrossedCell>collector.m_earlyOutHitFraction)
 {
 break;
 }
@@ -945,7 +948,7 @@ reportHit:
 lastFieldHeight=fieldHeight;
 lastRayHeight=rayHeight;
 distToLastCrossedCell=fraction;
-if(hitFraction>collector.m_fEarlyOutHitFraction)
+if(hitFraction>collector.m_earlyOutHitFraction)
 {
 {hkMonitorStream&mStream=hkMonitorStream::getInstance();if(mStream.memoryAvailable()){hkMonitorStream::TimerCommand*h=reinterpret_cast<hkMonitorStream::TimerCommand*>(mStream.getEnd());h->m_commandAndMonitor="E" "t" "";h->setTime();mStream.setEnd((char*)(h+1));}};
 return;

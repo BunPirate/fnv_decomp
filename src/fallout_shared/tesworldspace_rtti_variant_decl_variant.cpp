@@ -14,13 +14,16 @@ struct WorldSpaceCloneMethods : TESWorldSpace
 {
     TESForm* TESForm_CreateDuplicateForm(bool, TESFile*);
     void TESWorldSpace_AddPersistentReferences();
-    TESWorldSpace* TESWorldSpace_CreateDuplicateForm(bool temporary, TESFile* file);
+    TESWorldSpace* TESWorldSpace_CreateDuplicateForm(bool abCreateEditorID, TESFile* apCopyMap);
 };
 // @fnv 0x00584e60
 // src: XBOX_PDB 0x00584e60
-TESWorldSpace* WorldSpaceCloneMethods::TESWorldSpace_CreateDuplicateForm(bool temporary, TESFile* file)
+// pdb: TESWorldSpace::CreateDuplicateForm | TESWorldSpace.obj | retail, upstream name already matches, high
+// pdb params: abCreateEditorID, apCopyMap
+// pdb locals: pdupworld, pcell, it, key, pdupcell
+TESWorldSpace* WorldSpaceCloneMethods::TESWorldSpace_CreateDuplicateForm(bool abCreateEditorID, TESFile* apCopyMap)
 {
-    TESWorldSpace* world = dynamic_cast<TESWorldSpace*>(TESForm_CreateDuplicateForm(temporary, file));
+    TESWorldSpace* world = dynamic_cast<TESWorldSpace*>(TESForm_CreateDuplicateForm(abCreateEditorID, apCopyMap));
     world->cellMap->RemoveAll();
     void* position = cellMap->GetFirstPos();
     while (position)
@@ -30,7 +33,7 @@ TESWorldSpace* WorldSpaceCloneMethods::TESWorldSpace_CreateDuplicateForm(bool te
         cellMap->GetNext(position, key, reinterpret_cast<TESObjectREFR*&>(form2));
         if (form2)
         {
-            TESObjectCELL* cell3 = dynamic_cast<TESObjectCELL*>(form2->CreateForm(0, file));
+            TESObjectCELL* cell3 = dynamic_cast<TESObjectCELL*>(form2->CreateForm(0, apCopyMap));
             if (cell3)
             {
                 cell3->SetAltered(true);
@@ -41,10 +44,10 @@ TESWorldSpace* WorldSpaceCloneMethods::TESWorldSpace_CreateDuplicateForm(bool te
     TESObjectCELL* persistent3 = GetInteriorCell();
     if (persistent3)
     {
-        TESObjectCELL* copy = dynamic_cast<TESObjectCELL*>(persistent3->CreateForm(0, file));
+        TESObjectCELL* copy = dynamic_cast<TESObjectCELL*>(persistent3->CreateForm(0, apCopyMap));
         if (copy)
         {
-            world->m_pCell = copy;
+            world->pPersistentCell = copy;
             copy->SetAltered(true);
         }
     }

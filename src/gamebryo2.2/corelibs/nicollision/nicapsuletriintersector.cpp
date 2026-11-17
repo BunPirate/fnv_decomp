@@ -59,18 +59,20 @@ struct S_eb5ce0_Obj
     int unk60;
     float s64;
     float s68;
-    void NiCapsuleTriIntersector_ComputeContactInformation(int unused, const NiPoint3* d);
+    void NiCapsuleTriIntersector_ComputeContactInformation(int kV0, const NiPoint3* kV1);
 };
 // Computes the contact point and opposing triangle normal, then applies motion at the contact time in mode 2.
 // @fnv 0x00eb5ce0
 // src: GAMEBRYO_SRC 0x00eb5ce0
-void S_eb5ce0_Obj::NiCapsuleTriIntersector_ComputeContactInformation(int unused, const NiPoint3* d)
+// pdb: NiCapsuleTriIntersector::ComputeContactInformation | NiCapsuleTriIntersector.obj | retail, upstream name already matches, high
+// pdb params: kV0, kV1
+void S_eb5ce0_Obj::NiCapsuleTriIntersector_ComputeContactInformation(int kV0, const NiPoint3* kV1)
 {
     p20 = (triangle.origin + triangle.edge0 * s64) + triangle.edge1 * s68;
     p2c = -triangle.NiTrigon_GetNormal();
     if (mode == 2)
     {
-        AccumulateContactPoint(p20, *d * unk1c);
+        AccumulateContactPoint(p20, *kV1 * unk1c);
     }
 }
 

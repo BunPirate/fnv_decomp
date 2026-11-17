@@ -20,6 +20,7 @@ struct Skin;
 struct Properties;
 struct Effects;
 
+// pdb: class NiD3DShaderConstantMap, size 0x44, bases: NiShaderConstantMap, 8 members
 class NiD3DShaderConstantMap : public NiShaderConstantMap
 {
 public:
@@ -104,13 +105,13 @@ public:
         Program*, NiShaderConstantMapEntry*, NiAVObject*, Skin*, NiSkinPartition::Partition*,
         void*, Properties*, Effects*, const void*, const void*, unsigned int);
 
-    NiTObjectArray<NiPointer<NiShaderConstantMapEntry> > m_kEntries;
-    NiTObjectArray<NiPointer<NiShaderConstantMapEntry> > m_kDefinedEntries;
-    bool m_bHasChanges;
+    NiTObjectArray<NiPointer<NiShaderConstantMapEntry> > m_aspEntries; // src: XBOX_RETAIL_PDB +0xc (old: m_kEntries)
+    NiTObjectArray<NiPointer<NiShaderConstantMapEntry> > m_aspDefinedEntries; // src: XBOX_RETAIL_PDB +0x1c (old: m_kDefinedEntries)
+    bool m_bModified; // src: XBOX_RETAIL_PDB +0x2c (old: m_bHasChanges)
     unsigned char layoutPadding2D[3];
-    NiD3DShaderProgram* m_pShaderProgram;
-    unsigned int m_uiErrorCode;
-    Direct3DDeviceInterface* m_pD3DDevice;
-    GraphicsRenderer* m_pShaderObject;
-    ShaderPassRenderer* m_pRenderState;
+    NiD3DShaderProgram* m_pkLastShaderProgram; // src: XBOX_RETAIL_PDB +0x30 (old: m_pShaderProgram)
+    unsigned int m_eLastError; // src: XBOX_RETAIL_PDB +0x34 (old: m_uiErrorCode)
+    Direct3DDeviceInterface* m_pkD3DDevice; // src: XBOX_RETAIL_PDB +0x38 (old: m_pD3DDevice)
+    GraphicsRenderer* m_pkD3DRenderer; // src: XBOX_RETAIL_PDB +0x3c (old: m_pShaderObject)
+    ShaderPassRenderer* m_pkD3DRenderState; // src: XBOX_RETAIL_PDB +0x40 (old: m_pRenderState)
 };

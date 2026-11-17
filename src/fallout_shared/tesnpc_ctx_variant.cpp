@@ -59,7 +59,7 @@ class FUN_009611e0_shell
 class FUN_006141f0_shell
 {
   public:
-    void BuildAppearance(TESActorBase* apBase, void* apData, SEX aeSex, bool abFlag);
+    void TESRace_GetFaceGenData(TESActorBase* apNPC, void* arNpcData, SEX aeSex, bool abNoModTextures);
 };
 class FUN_004eaf60_shell
 {
@@ -81,18 +81,18 @@ extern bool DAT_011c5cb4;
 int __fastcall Character_GetBiped(char* apRef);
 TESForm* TESForm_GetFormByNumericID(unsigned int auiFormID);
 void FNV_Warning(const char* apFormat, ...);
-void __cdecl RecurseAndRemoveObjectsFromPalette(NiNode* apNode, NiControllerManager* apManager);
-void __cdecl ApplyFaceGenTextures(NiNode* apNode, void* apData);
+void __cdecl RecurseAndRemoveObjectsFromPalette(NiNode* apObj3D, NiControllerManager* apPalette);
+void __cdecl BSFaceGenManager_PrepareHeadForShaders(NiNode* apNode, void* apData);
 class FaceRefr
 {
   public:
-    void TESObjectREFR_Set3D(NiNode* apNode, bool abQueue);
-    NiNode* Actor_Load3D(bool abFlag);
+    void TESObjectREFR_Set3D(NiNode* apObject, bool abTestProcessLevel);
+    NiNode* Actor_Load3D(bool abBackgroundLoading);
 };
 class PlayerFace
 {
   public:
-    void PlayerCharacter_SetFirstPerson(bool abFlag);
+    void PlayerCharacter_SetFirstPerson(bool abFirst);
     void PlayerCharacter_Setup3rdPerson3D(NiNode* apNode, bool abFlag);
 };
 class FUN_005dd590
@@ -111,16 +111,19 @@ class FaceGenPaletteEntry
 class QHeadLocal : public FaceGenPaletteEntry
 {
   public:
-    QHeadLocal(TESNPC* apNPC, int aiFlag);
+    QHeadLocal(TESNPC* apNPC, int aePriority);
     void QueuedHead_Run();
-    void QueuedHead_Attach(Actor* apActor, int aiValue);
+    void QueuedHead_Attach(Actor* apRef, int apBipedAnim);
 };
 
 
 
 // @fnv 0x00609f60
 // src: XBOX_PDB 0x00609f60
-void TESNPC::LoadFaceGen(Actor* apActor)
+// pdb: TESNPC::LoadFaceGen | TESNPC.obj | retail, string-set bridge, high
+// pdb params: apCharacter
+// pdb locals: bchanged, bbeastPrev, prace, phair, ieyeID, bbeastNow, bfemale, ihairID, ftempHairLength, peyes, iraceID, itempHairColor, i, j, inumrows, inumcolumns, k, l, foffset, proot, pobj, premove, ppal, ptmpPal ...
+void TESNPC::LoadFaceGen(Actor* apCharacter)
 {
     bool bChanged = false;
     for (unsigned int i = 0; i < 2; i++)
@@ -193,7 +196,7 @@ void TESNPC::LoadFaceGen(Actor* apActor)
     TESActorBaseData::UpdateFlagBit(1, bLoadedFemale, true);
     if (bChanged)
     {
-        NiAVObject* p3D = apActor->TESObjectREFR::Get3DSimple();
+        NiAVObject* p3D = apCharacter->TESObjectREFR::Get3DSimple();
         NiNode* pNode = 0;
         if (p3D)
             pNode = p3D->IsSceneNode();
@@ -202,20 +205,20 @@ void TESNPC::LoadFaceGen(Actor* apActor)
             if (pNode)
             {
                 NiControllerManager* pAnimManager = 0;
-                if (apActor->Actor_GetAnimation() &&
-                    ((ActorAnimData*)apActor->Actor_GetAnimation())->GetControllerManager_00496940())
-                    pAnimManager = (NiControllerManager*)((ActorAnimData*)apActor->Actor_GetAnimation())
+                if (apCharacter->Actor_GetAnimation() &&
+                    ((ActorAnimData*)apCharacter->Actor_GetAnimation())->GetControllerManager_00496940())
+                    pAnimManager = (NiControllerManager*)((ActorAnimData*)apCharacter->Actor_GetAnimation())
                                        ->GetControllerManager_00496940()
                                        ->GetStringAtOffset();
                 NiControllerManager* pkManager = pAnimManager;
                 // TESObjectREFR slots 0x1B0 and 0x1AC return the face and head roots.
-                NiNode* pFace = (NiNode*)apActor->vfn_1b0(false);
+                NiNode* pFace = (NiNode*)apCharacter->vfn_1b0(false);
                 if (pFace && ((FUN_009611e0_shell*)pFace)->NiAVObject_GetParent())
                 {
                     RecurseAndRemoveObjectsFromPalette(pFace, pkManager);
                     ((NiNode*)((FUN_009611e0_shell*)pFace)->NiAVObject_GetParent())->RemoveObject(pFace);
                 }
-                pFace = (NiNode*)apActor->vfn_1ac(false);
+                pFace = (NiNode*)apCharacter->vfn_1ac(false);
                 if (pFace && ((FUN_009611e0_shell*)pFace)->NiAVObject_GetParent())
                 {
                     RecurseAndRemoveObjectsFromPalette(pFace, pkManager);
@@ -223,14 +226,14 @@ void TESNPC::LoadFaceGen(Actor* apActor)
                 }
             }
             ResetFaceGen();
-            if (Character_GetBiped((char*)apActor))
-                UpdateBodyModel(apActor, (BipedAnim*)Character_GetBiped((char*)apActor));
-            if ((NiNode*)apActor->vfn_1ac(false) && (NiNode*)apActor->vfn_1b0(false))
+            if (Character_GetBiped((char*)apCharacter))
+                UpdateBodyModel(apCharacter, (BipedAnim*)Character_GetBiped((char*)apCharacter));
+            if ((NiNode*)apCharacter->vfn_1ac(false) && (NiNode*)apCharacter->vfn_1b0(false))
             {
                 FUN_005dd590 kData;
-                ((FUN_006141f0_shell*)GetFormRace())->BuildAppearance(this, &kData, SEX_SEX_MALE, false);
-                ApplyFaceGenTextures((NiNode*)apActor->vfn_1ac(false), &kData);
-                ApplyFaceGenTextures((NiNode*)apActor->vfn_1b0(false), &kData);
+                ((FUN_006141f0_shell*)GetFormRace())->TESRace_GetFaceGenData(this, &kData, SEX_SEX_MALE, false);
+                BSFaceGenManager_PrepareHeadForShaders((NiNode*)apCharacter->vfn_1ac(false), &kData);
+                BSFaceGenManager_PrepareHeadForShaders((NiNode*)apCharacter->vfn_1b0(false), &kData);
             }
         }
         else
@@ -241,8 +244,8 @@ void TESNPC::LoadFaceGen(Actor* apActor)
             ((PlayerFace*)g_thePlayer)->PlayerCharacter_SetFirstPerson(false);
             if (pNode && bPrevHadRace != bNowHasRace)
             {
-                pParent = (NiNode*)((FUN_009611e0_shell*)apActor->TESObjectREFR::Get3DSimple())->NiAVObject_GetParent();
-                ((FaceRefr*)apActor)->TESObjectREFR_Set3D(0, true);
+                pParent = (NiNode*)((FUN_009611e0_shell*)apCharacter->TESObjectREFR::Get3DSimple())->NiAVObject_GetParent();
+                ((FaceRefr*)apCharacter)->TESObjectREFR_Set3D(0, true);
             }
             if (bNowHasRace)
                 SetModelFilePath(g_011d2b38.FUN_00403df0());
@@ -253,23 +256,23 @@ void TESNPC::LoadFaceGen(Actor* apActor)
             if (pParent)
             {
                 DAT_011c5cb4 = true;
-                NiNode* pNew3D = ((FaceRefr*)apActor)->Actor_Load3D(false);
-                if (!(NiNode*)apActor->vfn_1b0(false) && !(NiNode*)apActor->vfn_1ac(false))
+                NiNode* pNew3D = ((FaceRefr*)apCharacter)->Actor_Load3D(false);
+                if (!(NiNode*)apCharacter->vfn_1b0(false) && !(NiNode*)apCharacter->vfn_1ac(false))
                 {
-                    TESNPC* m_pActorBaseFormItem = (TESNPC*)apActor->GetActorBase();
+                    TESNPC* m_pActorBaseFormItem = (TESNPC*)apCharacter->GetActorBase();
                     QHeadLocal kHead(m_pActorBaseFormItem, 0);
                     kHead.QueuedHead_Run();
                     ((FUN_0043c610_shell*)&kHead)->RunVirtualMethod28();
-                    kHead.QueuedHead_Attach(apActor, Character_GetBiped((char*)apActor));
+                    kHead.QueuedHead_Attach(apCharacter, Character_GetBiped((char*)apCharacter));
                 }
                 pParent->AttachChildInAvailableSlot((NiAVObject*)pNew3D, true);
                 DAT_011c5cb4 = false;
-                if (apActor == (Actor*)g_thePlayer)
+                if (apCharacter == (Actor*)g_thePlayer)
                     ((PlayerFace*)g_thePlayer)->PlayerCharacter_Setup3rdPerson3D(pNew3D, false);
-                apActor->AnimateNiNode();
-                MiddleHighProcess* pProcess = dynamic_cast<MiddleHighProcess*>(apActor->GetProcess());
+                apCharacter->AnimateNiNode();
+                MiddleHighProcess* pProcess = dynamic_cast<MiddleHighProcess*>(apCharacter->GetProcess());
                 if (pProcess)
-                    pProcess->ApplyProcessLevelChange(apActor);
+                    pProcess->ApplyProcessLevelChange(apCharacter);
             }
             ((PlayerFace*)g_thePlayer)->PlayerCharacter_SetFirstPerson(!bWasFirstPerson);
         }
@@ -395,7 +398,10 @@ void __cdecl BSStringT_char_SPrintF(void*, const char*, ...);
 void __cdecl FUN_00b57e30(void*, int, int);
 // @fnv 0x0060a950
 // src: XBOX_PDB 0x0060a950
-void TESNPC::SwapEyes(TESEyes* param)
+// pdb: TESNPC::SwapEyes | TESNPC.obj | retail, upstream name already matches, high
+// pdb params: apSwapToEyes
+// pdb locals: pobj, spLeftEye, spRightEye, isizeArray, ichild, filename, sptexBase, ptexprop, pstateleft, pstateright, pshaderpropLightingLeft, pshadeleft, pshaderight, pshaderpropLightingRight
+void TESNPC::SwapEyes(TESEyes* apSwapToEyes)
 {
     FUN_00633c90 a(0);
     FUN_00633c90 eye(0);
@@ -416,8 +422,8 @@ void TESNPC::SwapEyes(TESEyes* param)
         if (a.Modelloader_GetReferencedThis() && eye.Modelloader_GetReferencedThis())
         {
             FUN_004037b0 p40;
-            if (param)
-                BSStringT_char_SPrintF(&p40, &DAT_0104a64c, param->TESTexture::GetTextureResourceName());
+            if (apSwapToEyes)
+                BSStringT_char_SPrintF(&p40, &DAT_0104a64c, apSwapToEyes->TESTexture::GetTextureResourceName());
             else
                 BSStringT_char_SPrintF(&p40, &DAT_0104aa80);
             FUN_00633c90 c(0);

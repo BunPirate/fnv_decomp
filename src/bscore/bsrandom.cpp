@@ -28,9 +28,12 @@ MersenneTwister::MersenneTwister()
 }
 
 // @fnv 0x00aa51a0
-void MersenneTwister::Seed(unsigned int seed)
+// src: XBOX_DEBUG_PDB 0x00aa51a0
+// pdb: BSRandom::Seed | BSRandom.obj | debug, call graph (shared callers), high
+// pdb params: aiSeed
+void MersenneTwister::BSRandom_Seed(unsigned int aiSeed)
 {
-    mt[0] = seed;
+    mt[0] = aiSeed;
     for (mti = 1; mti < 0x270; ++mti)
     {
         mt[mti] = mt[mti - 1] * 0x10dcd;
@@ -48,6 +51,9 @@ FUN_0049fcd0_Object::FUN_0049fcd0_Object() : node(0), accumulator(0), object(0)
 
 // Advances the Mersenne Twister state, regenerating the table when mti reaches 0x270, and returns a random value masked or reduced modulo bound.
 // @fnv 0x00aa5230
+// pdb: BSRandom::UnsignedInt | BSRandom.obj | debug, call graph, medium
+// pdb params: aiMax
+// pdb locals: y, kk
 unsigned int MersenneTwister::GetRandomUInt(unsigned int bound)
 {
     if (bound == 0)
@@ -57,7 +63,7 @@ unsigned int MersenneTwister::GetRandomUInt(unsigned int bound)
     if (mti >= 0x270)
     {
         if (mti == 0x271)
-            Seed(GetTickCount());
+            BSRandom_Seed(GetTickCount());
 
         int iIndex;
         for (iIndex = 0; iIndex < 0xe3; ++iIndex)
@@ -97,5 +103,6 @@ unsigned char TESRenderer_GetFullScreen()
 }
 
 // @fnv 0x00aa5220
+// pdb: BSRandom::Kill | BSRandom.obj | debug, object-file gap fill, medium
 void MersenneTwister::Kill()
 {}

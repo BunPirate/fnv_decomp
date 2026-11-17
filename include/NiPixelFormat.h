@@ -2,6 +2,7 @@
 
 class NiStream;
 
+// pdb: class NiPixelFormat, size 0x44, 7 members
 class NiPixelFormat
 {
 public:

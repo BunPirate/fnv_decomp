@@ -44,6 +44,7 @@ enum KNOCK_STATE_ENUM;
 enum RESET_3D_FLAGS;
 
 #pragma pack(push, 4)
+// pdb: class MiddleHighProcess, size 0x25c, bases: MiddleLowProcess, 93 members
 class MiddleHighProcess : public MiddleLowProcess
 {
 public:
@@ -71,110 +72,110 @@ public:
     virtual bool ShouldAttackTarget(Actor*, Actor*, bool, bool, ActorCombatGroup*, bool, bool, bool, bool, bool, bool,
                                     bool, TESPackage*); // slot 207 override, 0x00916880 (HighProcess 0x009001c0 calls it directly)
 
-    BSSimpleList<TESObjectREFR*> m_kReferenceList; // 0x0C8
-    BSSimpleList<TESObjectREFR*> m_kSecondaryReferenceList; // 0x0D0
-    float m_kNinthUnshownMember; // 0x0D8
-    float m_kEighthUnshownMember; // 0x0DC
-    bool m_bPackageStateFlag2; // 0x0E0
-    bool m_bPackageStateFlag; // 0x0E1
-    bool m_bPackageStateFlag3; // 0x0E2
-    bool m_bPackageStateFlag4; // 0x0E3
-    ActorPackageContext PackageReference; // 0x0E4
-    NiPoint3 m_kPackageTargetPosition; // 0x0FC
-    PACKAGE_OBJECT_TYPE m_ePackageObjectType; // 0x108
-    TESIdleForm* m_pPackageIdleForm; // 0x10C
-    bool m_kSecondUnshownMember; // 0x110
+    BSSimpleList<TESObjectREFR*> DeadDetectList; // 0x0C8 // src: XBOX_RETAIL_PDB +0xc8 (old: m_kReferenceList)
+    BSSimpleList<TESObjectREFR*> RefListChairBed; // 0x0D0 // src: XBOX_RETAIL_PDB +0xd0 (old: m_kSecondaryReferenceList)
+    float fPursueTimer; // 0x0D8 // src: XBOX_RETAIL_PDB +0xd8 (old: m_kNinthUnshownMember)
+    float fEquippedWeight; // 0x0DC // src: XBOX_RETAIL_PDB +0xdc (old: m_kEighthUnshownMember)
+    bool bDoneOnce; // 0x0E0 // src: XBOX_RETAIL_PDB +0xe0 (old: m_bPackageStateFlag2)
+    bool bAimingTarget; // 0x0E1 // src: XBOX_RETAIL_PDB +0xe1 (old: m_bPackageStateFlag)
+    bool bNeedReparentWeapon; // 0x0E2 // src: XBOX_RETAIL_PDB +0xe2 (old: m_bPackageStateFlag3)
+    bool bDrawn; // 0x0E3 // src: XBOX_RETAIL_PDB +0xe3 (old: m_bPackageStateFlag4)
+    ActorPackageContext RunOncePackage; // 0x0E4 // src: XBOX_RETAIL_PDB +0xe4 (old: PackageReference)
+    NiPoint3 lastSeenPostion; // 0x0FC // src: XBOX_RETAIL_PDB +0xfc (old: m_kPackageTargetPosition)
+    PACKAGE_OBJECT_TYPE eUseItem; // 0x108 // src: XBOX_RETAIL_PDB +0x108 (old: m_ePackageObjectType)
+    TESIdleForm* pLastIdlePlayed; // 0x10C // src: XBOX_RETAIL_PDB +0x10c (old: m_pPackageIdleForm)
+    bool bPickPackIdle; // 0x110 // src: XBOX_RETAIL_PDB +0x110 (old: m_kSecondUnshownMember)
     unsigned char layoutPadding111[3]; // 0x111
     InventoryStackRecord* pWeapon; // 0x114
     InventoryStackRecord* pAmmo; // 0x118
-    NiPointer<QueuedFile> m_pQueuedWeaponFile; // 0x11C
-    NiPointer<ActorSupportClass> m_pWeaponData; // 0x120
-    bool m_bFirstWeaponFlag; // 0x124
-    bool m_bSecondWeaponFlag; // 0x125
-    bool m_bThirdWeaponFlag; // 0x126
-    bool m_bFourthWeaponFlag; // 0x127
-    bool m_bFifthWeaponFlag; // 0x128
-    bool m_bSixthWeaponFlag; // 0x129
-    bool m_bSeventhWeaponFlag; // 0x12A
+    NiPointer<QueuedFile> spWeaponPreload; // 0x11C // src: XBOX_RETAIL_PDB +0x11c (old: m_pQueuedWeaponFile)
+    NiPointer<ActorSupportClass> spReserveProjectileClones; // 0x120 // src: XBOX_RETAIL_PDB +0x120 (old: m_pWeaponData)
+    bool bWeaponGrenade; // 0x124 // src: XBOX_RETAIL_PDB +0x124 (old: m_bFirstWeaponFlag)
+    bool bWeaponMine; // 0x125 // src: XBOX_RETAIL_PDB +0x125 (old: m_bSecondWeaponFlag)
+    bool bWeaponThrown; // 0x126 // src: XBOX_RETAIL_PDB +0x126 (old: m_bThirdWeaponFlag)
+    bool bHeavyArmorWorn; // 0x127 // src: XBOX_RETAIL_PDB +0x127 (old: m_bFourthWeaponFlag)
+    bool bPowerArmorWorn; // 0x128 // src: XBOX_RETAIL_PDB +0x128 (old: m_bFifthWeaponFlag)
+    bool bPowerArmorHelmet; // 0x129 // src: XBOX_RETAIL_PDB +0x129 (old: m_bSixthWeaponFlag)
+    bool bHasBackPackWorn; // 0x12A // src: XBOX_RETAIL_PDB +0x12a (old: m_bSeventhWeaponFlag)
     unsigned char layoutPadding12B[1]; // 0x12B
-    NiNode* m_pActorNode; // 0x12C
-    NiAVObject* m_pActorObject; // 0x130
-    bool m_bFirstActorFlag; // 0x134
-    bool m_bAdditionalActorFlag; // 0x135
+    NiNode* pWeaponBone; // 0x12C // src: XBOX_RETAIL_PDB +0x12c (old: m_pActorNode)
+    NiAVObject* pFireNode; // 0x130 // src: XBOX_RETAIL_PDB +0x130 (old: m_pActorObject)
+    bool bWantWeaponDrawn; // 0x134 // src: XBOX_RETAIL_PDB +0x134 (old: m_bFirstActorFlag)
+    bool bWeaponDrawn; // 0x135 // src: XBOX_RETAIL_PDB +0x135 (old: m_bAdditionalActorFlag)
     unsigned char layoutPadding136[2]; // 0x136
-    NiPointer<bhkCharacterController> m_pCharacterController; // 0x138
-    char m_cCharacterControllerState; // 0x13C
-    unsigned char m_ucFurnitureInteractionState; // 0x13D
+    NiPointer<bhkCharacterController> spCharController; // 0x138 // src: XBOX_RETAIL_PDB +0x138 (old: m_pCharacterController)
+    char cKnockState; // 0x13C // src: XBOX_RETAIL_PDB +0x13c (old: m_cCharacterControllerState)
+    unsigned char cSitSleepState; // 0x13D // src: XBOX_RETAIL_PDB +0x13d (old: m_ucFurnitureInteractionState)
     unsigned char layoutPadding13E[2]; // 0x13E
     TESObjectREFR* m_pFurnitureReference; // 0x140
-    unsigned char m_ucFurnitureMarkerIndex; // 0x144
+    unsigned char cCurrentFurnitureIndex; // 0x144 // src: XBOX_RETAIL_PDB +0x144 (old: m_ucFurnitureMarkerIndex)
     unsigned char layoutPadding145[3]; // 0x145
     FurnitureMark FurnitureMarker; // 0x148
-    Actor* m_pCombatTarget; // 0x158
-    TESObjectWEAP* m_pEquippedWeapon; // 0x15C
-    MagicItem* m_pFirstMagicItem; // 0x160
-    MagicItem* m_pSecondMagicItem; // 0x164
-    bool m_bWeaponOut; // 0x168
+    Actor* pCommandingActor; // 0x158 // src: XBOX_RETAIL_PDB +0x158 (old: m_pCombatTarget)
+    TESObjectWEAP* pLastBoundWeapon; // 0x15C // src: XBOX_RETAIL_PDB +0x15c (old: m_pEquippedWeapon)
+    MagicItem* pCurrentSpell; // 0x160 // src: XBOX_RETAIL_PDB +0x160 (old: m_pFirstMagicItem)
+    MagicItem* pCurrentPackageSpell; // 0x164 // src: XBOX_RETAIL_PDB +0x164 (old: m_pSecondMagicItem)
+    bool bCheckMagicNode; // 0x168 // src: XBOX_RETAIL_PDB +0x168 (old: m_bWeaponOut)
     unsigned char layoutPadding169[3]; // 0x169
-    TESEffectShader* m_pEffectShader; // 0x16C
-    float m_fFirstEffectShaderValue; // 0x170
-    float m_fSecondEffectShaderValue; // 0x174
-    BSFaceGenAnimationData* m_pFaceGenAnimationData; // 0x178
-    bool m_bFirstFaceGenFlag; // 0x17C
-    bool m_kSixthUnshownMember; // 0x17D
-    bool m_bThirdFaceGenFlag; // 0x17E
-    bool m_kSeventhUnshownMember; // 0x17F
-    bool m_kFifthUnshownMember; // 0x180
+    TESEffectShader* pCurrentWeaponEffect; // 0x16C // src: XBOX_RETAIL_PDB +0x16c (old: m_pEffectShader)
+    float fAlphaMult; // 0x170 // src: XBOX_RETAIL_PDB +0x170 (old: m_fFirstEffectShaderValue)
+    float fScriptRefractPower; // 0x174 // src: XBOX_RETAIL_PDB +0x174 (old: m_fSecondEffectShaderValue)
+    BSFaceGenAnimationData* m_pFaceAnimationData; // 0x178 // src: XBOX_RETAIL_PDB +0x178 (old: m_pFaceGenAnimationData)
+    bool bRefreshMagicShaderEffects; // 0x17C // src: XBOX_RETAIL_PDB +0x17c (old: m_bFirstFaceGenFlag)
+    bool bRefreshMagicShaderEffectBody; // 0x17D // src: XBOX_RETAIL_PDB +0x17d (old: m_kSixthUnshownMember)
+    bool bRefreshMagicShaderEffectWeapon; // 0x17E // src: XBOX_RETAIL_PDB +0x17e (old: m_bThirdFaceGenFlag)
+    bool bRefreshMagicShaderEffectLoading; // 0x17F // src: XBOX_RETAIL_PDB +0x17f (old: m_kSeventhUnshownMember)
+    bool bRefreshFlareFlags; // 0x180 // src: XBOX_RETAIL_PDB +0x180 (old: m_kFifthUnshownMember)
     unsigned char layoutPadding181[3]; // 0x181
-    unsigned int m_uiAnimationStateFlags; // 0x184
-    bool m_bAiming; // 0x188
-    bool m_bAimStateFlag; // 0x189
-    bool m_bCombatStateFlag; // 0x18A
-    bool m_bFourthStateFlag; // 0x18B
-    unsigned char m_ucProcessState; // 0x18C
-    bool m_bEquipStateFlag; // 0x18D
+    unsigned int uiFlareFlags; // 0x184 // src: XBOX_RETAIL_PDB +0x184 (old: m_uiAnimationStateFlags)
+    bool bPickPocketed; // 0x188 // src: XBOX_RETAIL_PDB +0x188 (old: m_bAiming)
+    bool bDoneClothesChange; // 0x189 // src: XBOX_RETAIL_PDB +0x189 (old: m_bAimStateFlag)
+    bool bDetectLifeDetected; // 0x18A // src: XBOX_RETAIL_PDB +0x18a (old: m_bCombatStateFlag)
+    bool bSummonedCreature; // 0x18B // src: XBOX_RETAIL_PDB +0x18b (old: m_bFourthStateFlag)
+    unsigned char cUpdate3DModel; // 0x18C // src: XBOX_RETAIL_PDB +0x18c (old: m_ucProcessState)
+    bool bForceNextUpdate; // 0x18D // src: XBOX_RETAIL_PDB +0x18d (old: m_bEquipStateFlag)
     unsigned char layoutPadding18E[2]; // 0x18E
-    int m_iIdleState; // 0x190
-    TESIdleForm* m_pCurrentIdleForm; // 0x194
-    float m_fIdleAnimationTime; // 0x198
-    bool m_kThirdUnshownMember; // 0x19C
-    bool m_kFourthUnshownMember; // 0x19D
+    int iPackageIdleNumber; // 0x190 // src: XBOX_RETAIL_PDB +0x190 (old: m_iIdleState)
+    TESIdleForm* pCurrentIdle; // 0x194 // src: XBOX_RETAIL_PDB +0x194 (old: m_pCurrentIdleForm)
+    float fPackageIdleTimer; // 0x198 // src: XBOX_RETAIL_PDB +0x198 (old: m_fIdleAnimationTime)
+    bool bPlayedBeginIdles; // 0x19C // src: XBOX_RETAIL_PDB +0x19c (old: m_kThirdUnshownMember)
+    bool bPlayedEndIdles; // 0x19D // src: XBOX_RETAIL_PDB +0x19d (old: m_kFourthUnshownMember)
     unsigned char layoutPadding19E[2]; // 0x19E
-    LipSyncAnimation* m_pLipSyncAnimation; // 0x1A0
-    unsigned int m_uiLipSyncState; // 0x1A4
-    int m_iProjectileCount; // 0x1A8
-    BSSimpleList<ArrowProjectile*>* m_pArrowProjectileList; // 0x1AC
-    BSSimpleList<MiddleHighProcess__DeferredHideLimb*> m_kDeferredHideLimbList; // 0x1B0
-    BSSimpleList<ActiveEffect*>* m_pActiveEffectList; // 0x1B8
-    MagicTarget* m_pMagicTarget; // 0x1BC
-    Animation* pCurrentAnimation; // 0x1C0
-    BSAnimGroupSequence* m_apAnimGroupSequences[3]; // 0x1C4
-    float m_fAnimationTime; // 0x1D0
-    float m_fAnimationSpeed; // 0x1D4
-    unsigned char m_ucAnimationState; // 0x1D8
-    bool m_bFirstAnimationFlag; // 0x1D9
-    bool m_bAnimationStateFlag; // 0x1DA
+    LipSyncAnimation* pCreatureLipsynchAnim; // 0x1A0 // src: XBOX_RETAIL_PDB +0x1a0 (old: m_pLipSyncAnimation)
+    unsigned int iCreatureLipsynchStartTime; // 0x1A4 // src: XBOX_RETAIL_PDB +0x1a4 (old: m_uiLipSyncState)
+    int iReservationSlot; // 0x1A8 // src: XBOX_RETAIL_PDB +0x1a8 (old: m_iProjectileCount)
+    BSSimpleList<ArrowProjectile*>* pAttachedArrowList; // 0x1AC // src: XBOX_RETAIL_PDB +0x1ac (old: m_pArrowProjectileList)
+    BSSimpleList<MiddleHighProcess__DeferredHideLimb*> DeferredHideLimbList; // 0x1B0 // src: XBOX_RETAIL_PDB +0x1b0 (old: m_kDeferredHideLimbList)
+    BSSimpleList<ActiveEffect*>* pActiveEffectList; // 0x1B8 // src: XBOX_RETAIL_PDB +0x1b8 (old: m_pActiveEffectList)
+    MagicTarget* pDesiredTarget; // 0x1BC // src: XBOX_RETAIL_PDB +0x1bc (old: m_pMagicTarget)
+    Animation* pAnimation; // 0x1C0 // src: XBOX_RETAIL_PDB +0x1c0 (old: pCurrentAnimation)
+    BSAnimGroupSequence* pAimSequence[3]; // 0x1C4 // src: XBOX_RETAIL_PDB +0x1c4 (old: m_apAnimGroupSequences)
+    float fAimLooking; // 0x1D0 // src: XBOX_RETAIL_PDB +0x1d0 (old: m_fAnimationTime)
+    float fAutomaticShotDelay; // 0x1D4 // src: XBOX_RETAIL_PDB +0x1d4 (old: m_fAnimationSpeed)
+    unsigned char cShotsToFire; // 0x1D8 // src: XBOX_RETAIL_PDB +0x1d8 (old: m_ucAnimationState)
+    bool bSustainedFire; // 0x1D9 // src: XBOX_RETAIL_PDB +0x1d9 (old: m_bFirstAnimationFlag)
+    bool bBeenAttacked; // 0x1DA // src: XBOX_RETAIL_PDB +0x1da (old: m_bAnimationStateFlag)
     unsigned char layoutPadding1DB[1]; // 0x1DB
-    NiNode* m_apBodyPartNodes[15]; // 0x1DC
-    NiAVObject* m_pFirstAttachedObject; // 0x218
-    NiAVObject* m_pSecondAttachedObject; // 0x21C
-    NiPointer<BSShaderPPLightingProperty> m_pLightingProperty; // 0x220
-    BSBound* m_pBound; // 0x224
-    bool m_kFieldAfterWeaponFlags; // 0x228
+    NiNode* pDamageRootNode[15]; // 0x1DC // src: XBOX_RETAIL_PDB +0x1dc (old: m_apBodyPartNodes)
+    NiAVObject* pHeadNode; // 0x218 // src: XBOX_RETAIL_PDB +0x218 (old: m_pFirstAttachedObject)
+    NiAVObject* pTorsoNode; // 0x21C // src: XBOX_RETAIL_PDB +0x21c (old: m_pSecondAttachedObject)
+    NiPointer<BSShaderPPLightingProperty> pLightingProperty; // 0x220 // src: XBOX_RETAIL_PDB +0x220 (old: m_pLightingProperty)
+    BSBound* pBSBound; // 0x224 // src: XBOX_RETAIL_PDB +0x224 (old: m_pBound)
+    bool bIronSights; // 0x228 // src: XBOX_RETAIL_PDB +0x228 (old: m_kFieldAfterWeaponFlags)
     unsigned char layoutPadding229[1]; // 0x229
-    short m_sBoundDataValue; // 0x22A
-    unsigned int m_kEleventhUnshownMember; // 0x22C
-    BSSimpleList<PaddedFloatRecord*>* m_pkPaddedFloatRecordList; // 0x230
-    float m_kTenthUnshownMember; // 0x234
-    float m_fFirstFaceGenValue; // 0x238
-    float m_fSecondFaceGenValue; // 0x23C
-    BooleanFloatQuery* m_pData; // 0x240
-    int m_iFaceGenNodeIndex; // 0x244
-    BSFaceGenNiNode* m_pFirstFaceGenNode; // 0x248
-    BSFaceGenNiNode* m_pSecondFaceGenNode; // 0x24C
-    NiAVObject* m_pFaceGenObject; // 0x250
-    BooleanFloatQuery* m_pAdditionalFaceGenData; // 0x254
-    unsigned int m_uiFaceGenDataFlags; // 0x258
+    short iAnimActionSuccess; // 0x22A // src: XBOX_RETAIL_PDB +0x22a (old: m_sBoundDataValue)
+    unsigned int iMovementAnimations; // 0x22C // src: XBOX_RETAIL_PDB +0x22c (old: m_kEleventhUnshownMember)
+    BSSimpleList<PaddedFloatRecord*>* pListItemstoEquipUnequip; // 0x230 // src: XBOX_RETAIL_PDB +0x230 (old: m_pkPaddedFloatRecordList)
+    float fRadiationDelta; // 0x234 // src: XBOX_RETAIL_PDB +0x234 (old: m_kTenthUnshownMember)
+    float fRadiationMagicDelta; // 0x238 // src: XBOX_RETAIL_PDB +0x238 (old: m_fFirstFaceGenValue)
+    float fRadiationWaterDelta; // 0x23C // src: XBOX_RETAIL_PDB +0x23c (old: m_fSecondFaceGenValue)
+    BooleanFloatQuery* pLastHitData; // 0x240 // src: XBOX_RETAIL_PDB +0x240 (old: m_pData)
+    int iWeaponConditionStage; // 0x244 // src: XBOX_RETAIL_PDB +0x244 (old: m_iFaceGenNodeIndex)
+    BSFaceGenNiNode* pFaceNode; // 0x248 // src: XBOX_RETAIL_PDB +0x248 (old: m_pFirstFaceGenNode)
+    BSFaceGenNiNode* pFaceNodeSkinned; // 0x24C // src: XBOX_RETAIL_PDB +0x24c (old: m_pSecondFaceGenNode)
+    NiAVObject* pAnimFace; // 0x250 // src: XBOX_RETAIL_PDB +0x250 (old: m_pFaceGenObject)
+    BooleanFloatQuery* pLastAttackHitData; // 0x254 // src: XBOX_RETAIL_PDB +0x254 (old: m_pAdditionalFaceGenData)
+    unsigned int nFurnitureListTimer; // 0x258 // src: XBOX_RETAIL_PDB +0x258 (old: m_uiFaceGenDataFlags)
 
     MiddleHighProcess();
     virtual ~MiddleHighProcess();

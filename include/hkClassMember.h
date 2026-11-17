@@ -10,6 +10,7 @@ typedef unsigned char hkUint8;
 typedef short hkInt16;
 typedef unsigned short hkUint16;
 
+// pdb: class hkClassMember, size 0x18, 9 members
 class hkClassMember
 {
 public:
@@ -85,11 +86,11 @@ public:
 
     char* m_name;
     hkClass* m_class;
-    hkClassEnum* m_pClassEnum;
+    hkClassEnum* m_enum; // src: XBOX_RETAIL_PDB +0x8 (old: m_pClassEnum)
     hkUint8 m_type;
-    hkUint8 m_eSubtype;
-    hkInt16 m_iArraySize;
+    hkUint8 m_subtype; // src: XBOX_RETAIL_PDB +0xd (old: m_eSubtype)
+    hkInt16 m_cArraySize; // src: XBOX_RETAIL_PDB +0xe (old: m_iArraySize)
     hkUint16 m_flags;
     hkUint16 m_offset;
-    hkCustomAttributes* m_pCustomAttributes;
+    hkCustomAttributes* m_attributes; // src: XBOX_RETAIL_PDB +0x14 (old: m_pCustomAttributes)
 };

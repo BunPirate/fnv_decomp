@@ -3,10 +3,11 @@
 #include <cstddef>
 #include "FinishingFlag.h"
 
+// pdb: class hkStringPtr, size 0x4, 1 members
 class hkStringPtr
 {
 public:
-    const char* m_pcText;
+    const char* m_stringAndFlag; // src: XBOX_RETAIL_PDB +0x0 (old: m_pcText)
 
 #if defined(HKSTRINGPTR_THROWING_DEFAULT_CONSTRUCTOR)
     hkStringPtr();

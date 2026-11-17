@@ -29,6 +29,9 @@ NiPSysFieldModifier* __thiscall NiPSysFieldModifier::Destroy(unsigned int flags)
 }
 
 // @fnv 0x00c32060
+// pdb: NiPSysFieldModifier::IsEqual | NiPSysFieldModifier.obj | retail, upstream name already matches, high
+// pdb params: pkObject
+// pdb locals: pkDest
 bool NiPSysFieldModifier::IsEqual(NiObject* pkObject) const
 {
     if (!NiPSysModifier::IsEqual(pkObject))
@@ -36,14 +39,14 @@ bool NiPSysFieldModifier::IsEqual(NiObject* pkObject) const
 
     NiPSysFieldModifier* pkDest = static_cast<NiPSysFieldModifier*>(pkObject);
 
-    if ((m_spFieldObject && !pkDest->m_spFieldObject) || (!m_spFieldObject && pkDest->m_spFieldObject) ||
-        (m_spFieldObject && pkDest->m_spFieldObject && !m_spFieldObject->IsEqual(pkDest->m_spFieldObject)))
+    if ((m_pkFieldObj && !pkDest->m_pkFieldObj) || (!m_pkFieldObj && pkDest->m_pkFieldObj) ||
+        (m_pkFieldObj && pkDest->m_pkFieldObj && !m_pkFieldObj->IsEqual(pkDest->m_pkFieldObj)))
     {
         return false;
     }
 
-    if (pkDest->m_fInfluence != m_fInfluence || pkDest->m_fFieldAttenuation != m_fFieldAttenuation || pkDest->m_bEnableMaxDistance != m_bEnableMaxDistance ||
-        pkDest->m_fDistanceLimit != m_fDistanceLimit)
+    if (pkDest->m_fMagnitude != m_fMagnitude || pkDest->m_fAttenuation != m_fAttenuation || pkDest->m_bUseMaxDistance != m_bUseMaxDistance ||
+        pkDest->m_fMaxDistance != m_fMaxDistance)
         return false;
 
     return true;
@@ -81,20 +84,23 @@ inline NiBinaryStream* NiStream::GetBinaryStream()
 
 // Calls the base loader, then reads m_fInfluence, m_fFieldAttenuation, a byte flag into m_bEnableMaxDistance, and m_fDistanceLimit from the stream, and sets m_fFieldStrength to m_fDistanceLimit squared.
 // @fnv 0x00c32120
-void NiPSysFieldModifier::LoadBinary(NiStream& stream)
+// pdb: NiPSysFieldModifier::LoadBinary | NiPSysFieldModifier.obj | retail, upstream name already matches, high
+// pdb params: kStream
+// pdb locals: kBool
+void NiPSysFieldModifier::LoadBinary(NiStream& kStream)
 {
-    NiStream* apOwner = &stream;
+    NiStream* apOwner = &kStream;
     NiPSysModifier::LoadBinary(*apOwner);
     apOwner->ReadLinkID();
     NiBinaryStream* s = &apOwner->Istr();
     {
         unsigned int n = 4;
-        s->BinaryRead(&m_fInfluence, 4, &n, 1);
+        s->BinaryRead(&m_fMagnitude, 4, &n, 1);
     }
     s = &apOwner->Istr();
     {
         unsigned int n = 4;
-        s->BinaryRead(&m_fFieldAttenuation, 4, &n, 1);
+        s->BinaryRead(&m_fAttenuation, 4, &n, 1);
     }
     unsigned char flag;
     s = &apOwner->Istr();
@@ -102,13 +108,13 @@ void NiPSysFieldModifier::LoadBinary(NiStream& stream)
         unsigned int n = 1;
         s->BinaryRead(&flag, 1, &n, 1);
     }
-    m_bEnableMaxDistance = (flag != 0);
+    m_bUseMaxDistance = (flag != 0);
     s = &apOwner->Istr();
     {
         unsigned int n = 4;
-        s->BinaryRead(&m_fDistanceLimit, 4, &n, 1);
+        s->BinaryRead(&m_fMaxDistance, 4, &n, 1);
     }
-    m_fFieldStrength = m_fDistanceLimit * m_fDistanceLimit;
+    m_fMaxDistanceSqr = m_fMaxDistance * m_fMaxDistance;
 }
 
 inline void SerializeValue(NiStream& kStream, const float& fValue)
@@ -123,15 +129,18 @@ inline void SerializeValue(NiStream& kStream, const unsigned char& ucValue)
 
 // Calls FUN_00c31950, then writes the link ID and the float, float, bool and float fields to the stream.
 // @fnv 0x00c321f0
+// pdb: NiPSysFieldModifier::SaveBinary | NiPSysFieldModifier.obj | retail, upstream name already matches, high
+// pdb params: kStream
+// pdb locals: kBool
 void NiPSysFieldModifier::SaveBinary(NiStream& kStream)
 {
     FUN_00c31950(kStream);
-    kStream.SaveLinkID(reinterpret_cast<const NiObject*>(m_spFieldObject));
-    SerializeValue(kStream, m_fInfluence);
-    SerializeValue(kStream, m_fFieldAttenuation);
-    unsigned char ucUseMaxDistance = m_bEnableMaxDistance;
+    kStream.SaveLinkID(reinterpret_cast<const NiObject*>(m_pkFieldObj));
+    SerializeValue(kStream, m_fMagnitude);
+    SerializeValue(kStream, m_fAttenuation);
+    unsigned char ucUseMaxDistance = m_bUseMaxDistance;
     SerializeValue(kStream, ucUseMaxDistance);
-    SerializeValue(kStream, m_fDistanceLimit);
+    SerializeValue(kStream, m_fMaxDistance);
 }
 
 struct S_00c322b0_Arr
@@ -153,9 +162,9 @@ struct FieldModifierViewerBase
 };
 extern const char* DAT_012027e0;
 char* __cdecl NiViewerStrings_NiGetViewerString_Title(const char* s);
-char* __cdecl NiGetViewerString(const char* fmt, ...);
+char* __cdecl NiGetViewerString(const char* pcPrefix, ...);
 char* __cdecl NiGetViewerString_00a7d550(const char* name, float value);
-char* __cdecl NiGetViewerString_00a7d5e0(const char* name, const char* value);
+char* __cdecl NiGetViewerString_00a7d5e0(const char* pcPrefix, const char* pcValue);
 __forceinline void S_00c322b0_Add(S_00c322b0_Arr* a, char* s)
 {
     unsigned int i = a->esize;
@@ -164,15 +173,18 @@ __forceinline void S_00c322b0_Add(S_00c322b0_Arr* a, char* s)
     a->FUN_0096ae90(i, s);
 }
 // @fnv 0x00c322b0
+// pdb: NiPSysFieldModifier::GetViewerStrings | NiPSysFieldModifier.obj | retail, string-set bridge, high
+// pdb params: pkStrings
+// pdb locals: pcFieldObj
 // A free fastcall helper preserves the thiscall register and stack arguments
 // until the shared class declares its viewer-string override.
 void __fastcall GetFieldModifierViewerStrings(NiPSysFieldModifier* self, void*, S_00c322b0_Arr* a)
 {
     reinterpret_cast<FieldModifierViewerBase*>(self)->GetViewerStrings(a);
     S_00c322b0_Add(a, NiViewerStrings_NiGetViewerString_Title(DAT_012027e0));
-    S_00c322b0_Add(a, NiGetViewerString_00a7d5e0("Field Object", self->m_spFieldObject ? self->m_spFieldObject->m_kName.m_kHandle : "None"));
-    S_00c322b0_Add(a, NiGetViewerString_00a7d550("Magnitude", self->m_fInfluence));
-    S_00c322b0_Add(a, NiGetViewerString_00a7d550("Attenuation", self->m_fFieldAttenuation));
-    S_00c322b0_Add(a, NiGetViewerString("Use Max Distance", self->m_bEnableMaxDistance));
-    S_00c322b0_Add(a, NiGetViewerString_00a7d550("Max Distance", self->m_fDistanceLimit));
+    S_00c322b0_Add(a, NiGetViewerString_00a7d5e0("Field Object", self->m_pkFieldObj ? self->m_pkFieldObj->m_kName.m_kHandle : "None"));
+    S_00c322b0_Add(a, NiGetViewerString_00a7d550("Magnitude", self->m_fMagnitude));
+    S_00c322b0_Add(a, NiGetViewerString_00a7d550("Attenuation", self->m_fAttenuation));
+    S_00c322b0_Add(a, NiGetViewerString("Use Max Distance", self->m_bUseMaxDistance));
+    S_00c322b0_Add(a, NiGetViewerString_00a7d550("Max Distance", self->m_fMaxDistance));
 }

@@ -111,16 +111,16 @@ class FUN_00d67ce0 : public FUN_00ddccb0,
     virtual void entitySetMotionTypeCallback(hkpEntity* entity);
     virtual void EntityDeletionCallback(hkpEntity* entity);
     CountArray counts;
-    FUN_00d67ce0(int context);
+    FUN_00d67ce0(int contexts);
 };
-void* AllocateToiCountViewer();
+void* hkpToiCountViewer_create();
 struct S_00d67e10_Registry
 {
-    int Register(const char* name, void* (*create)());
+    int Register(const char* viewerName, void* (*creationFunction)());
 };
 extern S_00d67e10_Registry* g_00d67e10_registry;
 extern int g_00d67e10_toiCounterId;
-void RegisterToiCounter();
+void hkpToiCountViewer_registerViewer();
 __declspec(nothrow) BSAudio* hkMemoryRouter_getInstance();
 struct ItemList
 {
@@ -142,7 +142,7 @@ struct BaseC
 {
     virtual void c0();
     ItemList* list;
-    __declspec(nothrow) void Remove(void* item);
+    __declspec(nothrow) void Remove(void* w);
 };
 struct Base0 : BaseP, BaseQ, BaseC
 {
@@ -227,17 +227,17 @@ struct Query
 };
 struct BaseHelper
 {
-    void hkpToiCountViewer_displayCountForBody(void* entry, int mode);
+    void hkpToiCountViewer_displayCountForBody(void* body, int displayPosition);
 };
 int __cdecl Object_GetSignedLargestComponentIndex(float* direction);
 struct Context
 {
-    void ProcessQuery(Query* query);
+    void ProcessQuery(Query* world);
 };
 struct FUN_00d67970_helper
 {
-    void __thiscall c93920(void* value);
-    void __thiscall c93a20(void* value);
+    void __thiscall c93920(void* worldListener);
+    void __thiscall c93a20(void* collisionListener);
 };
 struct FUN_00d67970_class
 {
@@ -246,7 +246,7 @@ struct FUN_00d67970_class
     void* unk08;
     void* unk0c;
 
-    void __thiscall hkpToiCountViewer_worldAddedCallback(FUN_00d67970_helper* helper);
+    void __thiscall hkpToiCountViewer_worldAddedCallback(FUN_00d67970_helper* w);
 };
 struct OwnerBinding
 {
@@ -272,7 +272,7 @@ struct FUN_00d67b90_cls
     int unk28;
     int unk2c;
 
-    void BindAndAttach(int* arg);
+    void BindAndAttach(int* entity);
 };
 struct ListItem;
 struct ItemVisitor
@@ -307,11 +307,11 @@ struct SpawnedObject
     unsigned int unk04;
     SpawnedObject* m_08;
     void removeEntityListener_00c9c670(void* listener) throw();
-    void hkpWorld_removeContactListener(void* listener) throw();
+    void hkpWorld_removeContactListener(void* collisionListener) throw();
     void ClearValue(void* listener) throw();
 };
 BSAudio* hkMemoryRouter_getInstance() throw();
-void __cdecl ResizeAudioStream(void* a, void* arr, unsigned int size) throw();
+void __cdecl ResizeAudioStream(void* mem, void* array, unsigned int sizeElem) throw();
 // Exe 0x00d681e0: unit-local Map view; declarations and layout are preserved.
 struct HkptoicountviewerMapView
 {
@@ -378,7 +378,7 @@ class FUN_00d67e30_cls
     unsigned int unk10;
     HkptoicountviewerMapView m_14;
 
-    void RemoveEntriesForObject(SpawnedObject* a1);
+    void RemoveEntriesForObject(SpawnedObject* w);
 };
 #include <xmmintrin.h>
 extern const __m128 DAT_01017d10;
@@ -495,10 +495,10 @@ struct ContactViewer
     int unk30;
     ContactTable m_table;
 
-    void hkpToiCountViewer_displayCountForBody(void* entry, int mode);
+    void hkpToiCountViewer_displayCountForBody(void* body, int displayPosition);
 };
-extern void __cdecl HkptoicountviewerGsEhscNogsNoehsc_UpdateState_00d67a50(int owner, int id, void* entry, int mode, const char* name, unsigned int info,
-                                 float value, BSAudioValue flags);
+extern void __cdecl hkpToiCountViewer_displayTextAtBody(int handler, int tag, void* body, int mode, const char* text, unsigned int color,
+                                 float extraDistance, BSAudioValue drawLine);
 struct D681E0Primary
 {
     virtual void vfunc00();
@@ -725,13 +725,16 @@ inline double abs377(float x)
 }
 
 // @fnv 0x00d67a50
-// src: GUESS 0x00d67a50 (confidence: low)
-void HkptoicountviewerGsEhscNogsNoehsc_UpdateState_00d67a50(S00d67a50_Owner377* self, int a2, S00d67a50_Context377* ctx, int i, int a18, int a1c, float dist,
-                  unsigned char flag)
+// src: XBOX_RETAIL_PDB 0x00d67a50
+// pdb: hkpToiCountViewer::displayTextAtBody | hkpToiCountViewer.obj | retail, call graph, high
+// pdb params: handler, tag, body, pos, text, color, extraDistance, drawLine
+// pdb locals: faceCenter, aabb, textPosition, assertBuf, ostr, axis
+void hkpToiCountViewer_displayTextAtBody(S00d67a50_Owner377* handler, int tag, S00d67a50_Context377* body, int i, int text, int color, float extraDistance,
+                  unsigned char drawLine)
 {
     Bounds377 box;
-    S00d67a50_Shape377** p10 = &ctx->shape;
-    (*p10)->GetAabb(&ctx->rotation0, 0.0f, (__m128*)&box);
+    S00d67a50_Shape377** p10 = &body->shape;
+    (*p10)->GetAabb(&body->rotation0, 0.0f, (__m128*)&box);
     S00d67a50_MathVector377 center, extent;
     center.sum(*(S00d67a50_MathVector377*)&box.mxx, *(S00d67a50_MathVector377*)&box.mnx);
     center.scale(S00d67a50_Scalar377(0.5f));
@@ -743,8 +746,8 @@ void HkptoicountviewerGsEhscNogsNoehsc_UpdateState_00d67a50(S00d67a50_Owner377* 
     direction.coordinates[r] = 1.0f - 2.0f * (float)q;
     S00d67a50_MathVector377 anchor, pos;
     anchor.offset(center, S00d67a50_Scalar377(abs377((float)extent.dot(direction))), direction);
-    pos.offset(anchor, S00d67a50_Scalar377(dist), direction);
-    self->v0c(a18, (__m128*)&pos, a1c, p10, a2);
-    if (flag)
-        self->v09((__m128*)&anchor, &ctx->unk140, a1c, p10, a2);
+    pos.offset(anchor, S00d67a50_Scalar377(extraDistance), direction);
+    handler->v0c(text, (__m128*)&pos, color, p10, tag);
+    if (drawLine)
+        handler->v09((__m128*)&anchor, &body->unk140, color, p10, tag);
 }

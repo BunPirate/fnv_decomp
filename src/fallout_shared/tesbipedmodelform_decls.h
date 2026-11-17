@@ -17,12 +17,14 @@ template <class T> class BSSimpleList;
 #include "../../include/BGSListForm.h"
 #include "../../include/BSFaceGenModelExtraData.h"
 #include "../../include/NiNode.h"
+// pdb: class BipedAnim, size 0x2b4 (here 0x1), 6 members
 class BipedAnim
 {
   public:
-    void SetBipedObject(TESForm*, TESModel*, BIPED_OBJECT);
+    void SetBipedPart(TESForm*, TESModel*, BIPED_OBJECT);
     NiNode* FUN_0043f010(BSFaceGenModel*);
 };
+// pdb: class ModelLoader, size 0x30 (here 0x1), 12 members
 class ModelLoader
 {
   public:

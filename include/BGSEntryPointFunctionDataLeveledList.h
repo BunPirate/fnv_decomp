@@ -5,6 +5,7 @@
 class TESLevItem;
 struct TESFile_s;
 
+// pdb: class BGSEntryPointFunctionDataLeveledList, size 0x8, bases: BGSEntryPointFunctionData, 1 members
 class BGSEntryPointFunctionDataLeveledList : public BGSEntryPointFunctionData
 {
 public:

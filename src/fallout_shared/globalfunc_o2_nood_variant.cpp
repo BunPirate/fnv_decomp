@@ -29,13 +29,13 @@
 #include "../../include/hkMemoryAllocator.h"
 #include "../../include/hkVector4.h"
 bool ConvertLocalizedString(const char* input, char* output, unsigned int capacity);
-bool UpdateObjectVisibility(NiAVObject* object);
-bool RemoveInvalidChildNodes(NiNode* object);
-bool HandleUnparentedObjectNode(NiNode* object);
-void SetObjectFormID(NiAVObject* object, unsigned int referenceID);
-bool IsObjectNetValid(NiObjectNET* object);
+bool UpdateObjectVisibility(NiAVObject* ap3D);
+bool RemoveEditorMarkers(NiNode* object);
+bool RemoveScabard(NiNode* apNode);
+void SetReferenceIDOnScenegraph(NiAVObject* apObject, unsigned int auiID);
+bool HasParticleSystem(NiObjectNET* apObj);
 float GetAngleFromVector(const NiPoint3& vector);
-int CountCollisionObjects(NiAVObject* object, bool skipPhantoms, bool skipBlendObjects, bool skipUnknown);
+int GetCollisionObjectCountInSceneGraph(NiAVObject* apRoot, bool abIgnoreWeaponBone, bool abIgnoreFadeNodes, bool abIgnoreArrows);
 LANGUAGE GetConfiguredLanguage();
 bool IsSettingEnabled();
 
@@ -59,7 +59,7 @@ extern const float DAT_01016248;
 extern const float DAT_01017870;
 extern const float DAT_0101b2d0;
 extern const float str_0101ffc0;
-extern const char* DAT_0126812c;
+extern const char* bhkMouseSpringAction_ms_RTTI; // src: XBOX_RETAIL_PDB 0x0126812c (old: DAT_0126812c/g_0126812c)
 struct __declspec(align(16)) SpringInfo
 {
     int unk00;
@@ -88,13 +88,16 @@ static void AppendString(StrArr* strings, char*& value)
 }
 // @fnv 0x00c873d0
 // src: XBOX_PDB 0x00c873d0
-void MouseSpringDiagnostic::bhkMouseSpringAction_GetViewerStrings(StrArr* strings)
+// pdb: bhkMouseSpringAction::GetViewerStrings | bhkMouseSpringAction.obj | retail, upstream name already matches, high
+// pdb params: apStrings
+// pdb locals: tempMemContext, ci
+void MouseSpringDiagnostic::bhkMouseSpringAction_GetViewerStrings(StrArr* apStrings)
 {
     MemoryContextScope scope(16);
     char* str;
-    bhkUnaryAction_GetViewerStrings(strings);
-    str = NiViewerStrings_NiGetViewerString_Title(DAT_0126812c);
-    AppendString(strings, str);
+    bhkUnaryAction_GetViewerStrings(apStrings);
+    str = NiViewerStrings_NiGetViewerString_Title(bhkMouseSpringAction_ms_RTTI);
+    AppendString(apStrings, str);
     SpringInfo info;
     info.unk00 = 0;
     info.unk04 = 0;
@@ -111,13 +114,13 @@ void MouseSpringDiagnostic::bhkMouseSpringAction_GetViewerStrings(StrArr* string
     info.objectDamping = str_0101ffc0;
     bhkMouseSpringAction_CopyCinfo(&info);
     str = NiGetViewerString_00a7d550("Damping", info.damping);
-    AppendString(strings, str);
+    AppendString(apStrings, str);
     str = NiGetViewerString_00a7d550("Elasticity", info.elasticity);
-    AppendString(strings, str);
+    AppendString(apStrings, str);
     str = NiGetViewerString_00a7d550("Object Damping", info.objectDamping);
-    AppendString(strings, str);
+    AppendString(apStrings, str);
     str = NiGetViewerString_00a7d550("Max Force", info.maxForce);
-    AppendString(strings, str);
+    AppendString(apStrings, str);
 }
 
 #include <xmmintrin.h>
@@ -179,8 +182,8 @@ struct MouseSpringAction
     }
     static void operator delete(void* p, unsigned int nbytes);
 
-    MouseSpringAction(const hkVector4& kPositionInRbLocal, const hkVector4& kMousePositionInWorld, float fSpringDamping,
-                      float fSpringElasticity, float fObjectDamping, void* pkBody, int iUserData);
+    MouseSpringAction(const hkVector4& positionInRbLocal, const hkVector4& mousePositionInWorld, float springDamping,
+                      float springElasticity, float objectDamping, void* rb, int appliedCallbacks);
     void hkpMouseSpringAction_setMaxRelativeForce(float fMaxRelativeForce);
     void FUN_00c905b0();
 
@@ -258,20 +261,23 @@ struct MouseSpringOwner
     virtual void vf45();
     virtual void vf46();
     virtual void finish(struct MouseSpringInfo* pkInfo);
-    void bhkMouseSpringAction_Init(MouseSpringInfo* pkInfo);
+    void bhkMouseSpringAction_Init(MouseSpringInfo* arInfo);
 };
 
 // @fnv 0x00c87260
 // src: XBOX_PDB 0x00c87260
-void MouseSpringOwner::bhkMouseSpringAction_Init(MouseSpringInfo* pkInfo)
+// pdb: bhkMouseSpringAction::Init | bhkMouseSpringAction.obj | retail, upstream name already matches, high
+// pdb params: arInfo
+// pdb locals: hkva, po, tempMemContext, hkvb, cinfo
+void MouseSpringOwner::bhkMouseSpringAction_Init(MouseSpringInfo* arInfo)
 {
     MemContextGuard kGuard(0x10);
     MouseSpringAction* pkAction = new MouseSpringAction(
-        AsHkVector4(_mm_setr_ps(pkInfo->m_f10, pkInfo->m_f14, pkInfo->m_f18, pkInfo->m_f1C)),
-        AsHkVector4(_mm_setr_ps(pkInfo->m_f20, pkInfo->m_f24, pkInfo->m_f28, pkInfo->m_f2C)), pkInfo->m_fSpringDamping,
-        pkInfo->m_fSpringElasticity, pkInfo->m_fObjectDamping, pkInfo->m_pkBody, 0);
-    pkAction->hkpMouseSpringAction_setMaxRelativeForce(pkInfo->m_fMaxRelativeForce);
+        AsHkVector4(_mm_setr_ps(arInfo->m_f10, arInfo->m_f14, arInfo->m_f18, arInfo->m_f1C)),
+        AsHkVector4(_mm_setr_ps(arInfo->m_f20, arInfo->m_f24, arInfo->m_f28, arInfo->m_f2C)), arInfo->m_fSpringDamping,
+        arInfo->m_fSpringElasticity, arInfo->m_fObjectDamping, arInfo->m_pkBody, 0);
+    pkAction->hkpMouseSpringAction_setMaxRelativeForce(arInfo->m_fMaxRelativeForce);
     RegisterAction(pkAction);
     pkAction->FUN_00c905b0();
-    finish(pkInfo);
+    finish(arInfo);
 }

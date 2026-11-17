@@ -50,7 +50,7 @@ static inline hkReal length3(const hkVector4& vector)
 }
 inline const hkpShape* hkpCdBody::getShape() const
 {
-    return m_pCollisionShape;
+    return m_shape;
 }
 inline hkpShapeType hkpShape::getType() const
 {
@@ -66,11 +66,11 @@ inline hkpCdPointCollector::~hkpCdPointCollector()
 inline hkpFixedBufferCdPointCollector::hkpFixedBufferCdPointCollector(RootContactPoint* buffer, int capacity)
 {
     *reinterpret_cast<const void***>(this) = DAT_0108f288;
-    m_fEarlyOutDistance = DAT_0104da48;
-    m_pPointBuffer = buffer;
-    m_pPointBufferEnd = buffer;
-    m_pRayCursor = capacity;
-    m_iPointCount = 0;
+    m_earlyOutDistance = DAT_0104da48;
+    m_pointsArrayBase = buffer;
+    m_nextFreePoint = buffer;
+    m_capacity = capacity;
+    m_numPoints = 0;
 }
 
 struct RealIntegerData
@@ -138,7 +138,10 @@ static inline void memCpy16(void* dst, const void* src, int numQuads)
 
 // @fnv 0x00df7760
 // src: XBOX_PDB 0x00df7760
-void hkCpuPairLinearCastImplementation(const CastSettings* settings, const CollisionAgentContext* in, CastJob* jobs, int numJobs)
+// pdb: hkCpuPairLinearCastImplementation | hkpCpuPairLinearCastJob.obj | retail, upstream name already matches, high
+// pdb params: pairLinearCastJob, collisionInput, commandsBase, numCommands
+// pdb locals: collector, startPointCollector, startPointResultsArray, input, resultsArray, config
+void hkCpuPairLinearCastImplementation(const CastSettings* pairLinearCastJob, const CollisionAgentContext* collisionInput, CastJob* commandsBase, int numCommands)
 {
     RootContactPoint shapeB[16];
     RootContactPoint idx[16];
@@ -148,37 +151,37 @@ void hkCpuPairLinearCastImplementation(const CastSettings* settings, const Colli
     hkpFixedBufferCdPointCollector& collB = *::new (storageB) hkpFixedBufferCdPointCollector(shapeB, 16);
 
     RealIntegerData disp;
-    disp.m_iValue = settings->m_maxIterations;
-    disp.m_fValue = settings->m_fHitDistance;
+    disp.m_iValue = pairLinearCastJob->m_maxIterations;
+    disp.m_fValue = pairLinearCastJob->m_fHitDistance;
 
     ShapeSweepParameters bufB;
     bufB.m_fMaxExtraPenetration = DAT_0104da4c;
-    bufB.m_fScalar = settings->m_fScalar;
+    bufB.m_fScalar = pairLinearCastJob->m_fScalar;
     bufB.m_collisionQuality = 0;
-    bufB.m_pCollisionDispatcher = in->m_pCollisionDispatcher;
-    bufB.m_iFilter = in->m_iFilter;
+    bufB.m_pCollisionDispatcher = collisionInput->m_pCollisionDispatcher;
+    bufB.m_iFilter = collisionInput->m_iFilter;
     bufB.m_pConfiguration = &disp;
 
-    for (int i = 0; i < numJobs; i++)
+    for (int i = 0; i < numCommands; i++)
     {
-        CastJob& p = jobs[i];
+        CastJob& p = commandsBase[i];
         const hkpShape* res = p.m_pBodyA->getShape();
         const hkpShape* input = p.m_pBodyB->getShape();
         bufB.m_path.setSub4(p.m_vTo, p.m_vFrom);
         bufB.m_fStartPointTolerance = length3(bufB.m_path);
-        bufB.m_fScalar = settings->m_fScalar;
-        bufB.m_fMaxExtraPenetration = settings->m_fMaxExtraPenetration;
+        bufB.m_fScalar = pairLinearCastJob->m_fScalar;
+        bufB.m_fMaxExtraPenetration = pairLinearCastJob->m_fMaxExtraPenetration;
         ::new (&collA) hkpFixedBufferCdPointCollector(idx, p.m_capacityA);
         if (p.m_hitsB)
         {
             ::new (&collB) hkpFixedBufferCdPointCollector(shapeB, p.m_capacityB);
         }
-        hkpCollisionDispatcher* func = in->m_pCollisionDispatcher;
+        hkpCollisionDispatcher* func = collisionInput->m_pCollisionDispatcher;
         hkpCollisionDispatcher::LinearCastFunc bodyA = func->m_agent2Funcs[func->m_agent2TypeMap[res->getType()][input->getType()]].m_pLinearCastFunc;
         bodyA(*p.m_pBodyA, *p.m_pBodyB, bufB, collA, p.m_hitsB ? &collB : 0);
 
-        p.m_numHitsA = (hkUint16)collA.m_iPointCount;
-        p.m_numHitsB = (hkUint16)collB.m_iPointCount;
+        p.m_numHitsA = (hkUint16)collA.m_numPoints;
+        p.m_numHitsB = (hkUint16)collB.m_numPoints;
         if (p.m_numHitsA > 0)
         {
             memCpy16(p.m_hitsA, idx, p.m_numHitsA * (sizeof(RootContactPoint) / 16));
@@ -192,14 +195,16 @@ void hkCpuPairLinearCastImplementation(const CastSettings* settings, const Colli
 
 
 inline hkxAttributeHolder::hkxAttributeHolder(FinishingFlag flag) throw()
-    : hkReferencedObject(flag), attributes(flag)
+    : hkReferencedObject(flag), m_attributeGroups(flag)
 {}
 inline hkxNode::hkxNode(FinishingFlag flag) throw()
-    : hkxAttributeHolder(flag), name(flag), keyFrames(flag), children(flag), annotations(flag), userProperties(flag)
+    : hkxAttributeHolder(flag), m_name(flag), m_keyFrames(flag), m_children(flag), m_annotations(flag), m_userProperties(flag)
 {}
 
 // @fnv 0x00dfd800
 // src: GUESS 0x00dfd800 (confidence: low)
+// pdb: getVtablehkxNode | hkxNodeClass.obj | retail, object-file run extension, low
+// pdb locals: u
 void* __cdecl Object_ProcessAndReturnValue_00dfd800()
 {
     __declspec(align(16)) unsigned char storage[sizeof(hkxNode)];

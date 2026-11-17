@@ -13,10 +13,10 @@ class ModifierPointerList;
 class ActorValueModifierList : public BSSimpleList<Modifier*>
 {
 public:
-    bool m_bAllowZeroValueModifiers;
+    bool bZeroValuesAllowed; // src: XBOX_RETAIL_PDB +0x8 (old: m_bAllowZeroValueModifiers)
     unsigned char layoutPadding9;
     unsigned short layoutPaddingA;
-    ModifierPointerList* m_ppModifiedActorValues;
+    ModifierPointerList* pFastModifiers; // src: XBOX_RETAIL_PDB +0xc (old: m_ppModifiedActorValues)
 
     enum ClampStyle
     {
@@ -26,16 +26,16 @@ public:
     ActorValueModifierList();
     ~ActorValueModifierList();
 
-    Modifier* GetModifierItem(char key);
-    float GetActorValueModifierAmount(char key, bool& found);
-    float GetActorValueModifierAmount(char key);
-    void ModifyModifier(char key, float delta, ClampStyle clamp);
-    void ModifierList_SetModifier(char key, float value);
+    Modifier* GetModifierItem(char acKey);
+    float GetActorValueModifierAmount(char acKey, bool& abExists);
+    float GetActorValueModifierAmount(char acKey);
+    void ModifyModifier(char acKey, float afValue, ClampStyle aeClampStyle);
+    void ModifierList_SetModifier(char acKey, float afValue);
     static float ModifyAndClamp(float value, float delta, ClampStyle clamp);
     void EraseModifier(Modifier* modifier);
-    void CopyModifierListFrom(ActorValueModifierList* other);
-    void AppendModifier(Modifier* modifier);
-    void RemoveAllModifiers();
+    void SetAllModifiers(ActorValueModifierList* other);
+    void AppendModifier(Modifier* apModifier);
+    void DeleteAllModifiers();
     void AddFastModifier(char key, Modifier* modifier);
     void ModifierList_SaveGameBGS(BGSSaveFormBuffer* buffer);
     void Revert();

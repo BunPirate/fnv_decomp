@@ -177,54 +177,57 @@ inline float dot3(__m128 a, __m128 b)
 
 // @fnv 0x00e36510
 // src: HAVOK_SRC 0x00e36510
-void __stdcall hkpVehicleLinearCastWheelCollide_getCollisionOutputFromCastResult(VehicleInstanceStandIn* vehicle, unsigned char wheelIndex, HitStandIn* hit,
-                            WheelCollideOutputStandIn* out)
+// pdb: hkpVehicleLinearCastWheelCollide::getCollisionOutputFromCastResult | hkpVehicleLinearCastWheelCollide.obj | retail, upstream name already matches, high
+// pdb params: vehicle, wheelNum, linearCastOutput, output
+// pdb locals: assertBuf, ostr, groundVelocityAtContactPoint, chassis_velocity_at_contactPoint
+void __stdcall hkpVehicleLinearCastWheelCollide_getCollisionOutputFromCastResult(VehicleInstanceStandIn* vehicle, unsigned char wheelNum, HitStandIn* linearCastOutput,
+                            WheelCollideOutputStandIn* output)
 {
-    float velChassis = vehicle->m_pSuspension->m_wheelData[wheelIndex].m_fRestLength;
-    WheelStateStandIn* velGround = &vehicle->m_kWheelStates[wheelIndex];
+    float velChassis = vehicle->m_pSuspension->m_wheelData[wheelNum].m_fRestLength;
+    WheelStateStandIn* velGround = &vehicle->m_kWheelStates[wheelNum];
 
-    out->m_vContactPoint.m_vContactPosition.m_vComponents = hit->m_vContactPoint.m_vContactPosition.m_vComponents;
-    out->m_vContactPoint.m_vSeparatingNormal.m_vComponents = hit->m_vContactPoint.m_vSeparatingNormal.m_vComponents;
+    output->m_vContactPoint.m_position.m_vComponents = linearCastOutput->m_vContactPoint.m_position.m_vComponents;
+    output->m_vContactPoint.m_separatingNormal.m_vComponents = linearCastOutput->m_vContactPoint.m_separatingNormal.m_vComponents;
 
     hkpRigidBody* val;
     hkpCollidable* i;
-    i = hit->m_kCollidable;
-    if (i->m_kBroadPhaseHandle.m_type == 1)
+    i = linearCastOutput->m_kCollidable;
+    if (i->m_broadPhaseHandle.m_type == 1)
     {
-        val = (hkpRigidBody*)((char*)i + i->m_iOwnerOffset);
+        val = (hkpRigidBody*)((char*)i + i->m_ownerOffset);
     }
     else
     {
         val = 0;
     }
-    out->m_pUserData = val;
-    out->m_fSlipAngle = val->m_iMaterialIndex.m_fSlipAngle;
-    out->m_uiCollisionShapeKey = hit->m_uiCollisionShapeKey;
-    out->m_hardpointIndex = -1;
-    out->m_suspensionLength = hit->m_vContactPoint.m_vSeparatingNormal.w * velChassis;
+    output->m_pUserData = val;
+    output->m_fSlipAngle = val->m_material.m_friction;
+    output->m_uiCollisionShapeKey = linearCastOutput->m_uiCollisionShapeKey;
+    output->m_hardpointIndex = -1;
+    output->m_suspensionLength = linearCastOutput->m_vContactPoint.m_separatingNormal.w * velChassis;
 
     float pObj;
-    pObj = dot3(velGround->m_dir, out->m_vContactPoint.m_vSeparatingNormal.m_vComponents);
-    if (pObj < -vehicle->m_data->m_fChassisUnitInertiaPitch)
+    pObj = dot3(velGround->m_dir, output->m_vContactPoint.m_separatingNormal.m_vComponents);
+    if (pObj < -vehicle->m_data->m_normalClippingAngleCos)
     {
         float z[4];
         float len[4];
-        vehicle->m_pChassisCollidable->hkpRigidBody_getPointVelocity(reinterpret_cast<const SpringVector*>(&out->m_vContactPoint.m_vContactPosition), reinterpret_cast<SpringVector*>(len));
-        out->m_pUserData->hkpRigidBody_getPointVelocity(reinterpret_cast<const SpringVector*>(&out->m_vContactPoint.m_vContactPosition), reinterpret_cast<SpringVector*>(z));
+        vehicle->m_pChassisCollidable->hkpRigidBody_getPointVelocity(reinterpret_cast<const SpringVector*>(&output->m_vContactPoint.m_position), reinterpret_cast<SpringVector*>(len));
+        output->m_pUserData->hkpRigidBody_getPointVelocity(reinterpret_cast<const SpringVector*>(&output->m_vContactPoint.m_position), reinterpret_cast<SpringVector*>(z));
         __m128 idx;
         idx = _mm_load_ps(z);
         __m128 wheelState;
         wheelState = _mm_load_ps(len);
         float vc;
-        vc = dot3(_mm_sub_ps(wheelState, idx), out->m_vContactPoint.m_vSeparatingNormal.m_vComponents);
+        vc = dot3(_mm_sub_ps(wheelState, idx), output->m_vContactPoint.m_separatingNormal.m_vComponents);
         float q;
         q = (float)(-1.0 / pObj);
-        out->m_suspensionClosingVelocity = q * vc;
-        out->m_invSuspensionClosingVelocity = q;
+        output->m_suspensionClosingVelocity = q * vc;
+        output->m_invSuspensionClosingVelocity = q;
     }
     else
     {
-        out->m_suspensionClosingVelocity = 0.0f;
-        out->m_invSuspensionClosingVelocity = 1.0f / vehicle->m_data->m_fChassisUnitInertiaPitch;
+        output->m_suspensionClosingVelocity = 0.0f;
+        output->m_invSuspensionClosingVelocity = 1.0f / vehicle->m_data->m_normalClippingAngleCos;
     }
 }

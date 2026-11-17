@@ -13,7 +13,7 @@ class bhkCharacterController;
 #include "../../../include/BSSoundHandle.h"
 extern TESDataHandler* g_dataHandler;
 #include "mobileobject_private/mobileobject_packet.h"
-bhkCharacterController* CopyCharacterControllerVector(bhkCharacterController* output, const NiPoint3& point);
+bhkCharacterController* CopyCharacterControllerVector(bhkCharacterController* arhkV, const NiPoint3& arNiP);
 
 struct UnkCallee
 {

@@ -25,9 +25,9 @@ inline hkpCdPointCollector::~hkpCdPointCollector()
 
 inline hkpSimpleClosestContactCollector::hkpSimpleClosestContactCollector()
 {
-    contact.distance = DAT_0104da48;
-    m_fEarlyOutDistance = DAT_0104da48;
-    m_bOk = 0;
+    m_hitPoint.distance = DAT_0104da48;
+    m_earlyOutDistance = DAT_0104da48;
+    m_hasHit = 0;
 }
 
 inline hkpSimpleClosestContactCollector::~hkpSimpleClosestContactCollector()
@@ -54,15 +54,17 @@ struct FUN_00d452a0
     int c;
     FUN_00d452a0_vtbl* p1;
     FUN_00d452a0_vtbl* p2;
-    void Method(float f, float g, void* arg);
+    void Method(float oldTime, float newTime, void* input);
 };
 // Calls v10(f, g, arg) on p1, and also on p2 when p2 is non-null.
 // @fnv 0x00d452a0
-void FUN_00d452a0::Method(float afValue, float agValue, void* arg)
+// pdb: hkpBvAgent::warpTime | hkpBvAgent.obj | retail, vtable slot, high
+// pdb params: oldTime, newTime, input
+void FUN_00d452a0::Method(float oldTime, float newTime, void* input)
 {
-    p1->v10(afValue, agValue, arg);
+    p1->v10(oldTime, newTime, input);
     if (p2)
-        p2->v10(afValue, agValue, arg);
+        p2->v10(oldTime, newTime, input);
 }
 
 void __cdecl hkpBvAgent_createShapeBvAgent();
@@ -84,9 +86,12 @@ struct FUN_00cfbbe0_vtbl
 };
 struct FUN_00cfbbe0
 {
-    void Method(FUN_00cfbbe0_vtbl* p, int a, int b);
+    void Method(FUN_00cfbbe0_vtbl* f, int typeA, int typeB);
 };
 // @fnv 0x00d45f80
+// pdb: hkpBvAgent::registerAgent | hkpBvAgent.obj | retail, object-file run extension, low
+// pdb params: dispatcher
+// pdb locals: af
 void __cdecl ConfigureVtblHandlers(FUN_00cfbbe0* p)
 {
     FUN_00cfbbe0_vtbl t1;
@@ -126,18 +131,20 @@ struct TargetClass
     TargetVtbl* p1;
     TargetVtbl* p2;
 
-    void hkpBvAgent_cleanup(void* arg);
+    void hkpBvAgent_cleanup(void* constraintOwner);
 };
 
 // Calls v7(arg) on p1 and, if set, on p2 (then clears p2), and finally deletes this object.
 // @fnv 0x00d45230
 // src: HAVOK_LIB 0x00d45230
-void TargetClass::hkpBvAgent_cleanup(void* arg)
+// pdb: hkpBvAgent::cleanup | hkpBvAgent.obj | retail, upstream name already matches, high
+// pdb params: constraintOwner
+void TargetClass::hkpBvAgent_cleanup(void* constraintOwner)
 {
-    p1->v7(arg);
+    p1->v7(constraintOwner);
     if (p2)
     {
-        p2->v7(arg);
+        p2->v7(constraintOwner);
         p2 = 0;
     }
     delete this;
@@ -161,16 +168,18 @@ struct Worker
     int a, b, c;
     WorkerIface* p1;
     WorkerIface* p2;
-    void __thiscall hkpBvAgent_invalidateTim(void* value);
+    void __thiscall hkpBvAgent_invalidateTim(void* input);
 };
 // Forwards value to the v9 method of p1 and, if p2 is non-null, to the v9 method of p2.
 // @fnv 0x00d45270
 // src: HAVOK_LIB 0x00d45270
-void Worker::hkpBvAgent_invalidateTim(void* value)
+// pdb: hkpBvAgent::invalidateTim | hkpBvAgent.obj | retail, upstream name already matches, high
+// pdb params: input
+void Worker::hkpBvAgent_invalidateTim(void* input)
 {
-    p1->v9(value);
+    p1->v9(input);
     if (p2)
-        p2->v9(value);
+        p2->v9(input);
 }
 
 struct FUN_00d45310_target
@@ -258,21 +267,24 @@ struct D45350Agent
     D45350Collector* m_collectorA;
     D45350Collector* m_collectorB;
 
-    void ProcessShapeChildren(const D45350CdBody& body, void* a, void* b, void* c);
+    void ProcessShapeChildren(const D45350CdBody& bodyA, void* bodyB, void* input, void* constraintOwner);
 };
 
 // Builds a child body from the shape's m_childA and m_childB and passes it to m_collectorA and, if present, m_collectorB.
 // @fnv 0x00d45350
-void D45350Agent::ProcessShapeChildren(const D45350CdBody& body, void* apArg1, void* apArg2, void* apArg3)
+// pdb: hkpBvAgent::updateShapeCollectionFilter | hkpBvAgent.obj | retail, vtable slot, high
+// pdb params: bodyA, bodyB, input, constraintOwner
+// pdb locals: newA
+void D45350Agent::ProcessShapeChildren(const D45350CdBody& bodyA, void* bodyB, void* input, void* constraintOwner)
 {
-    const D45350Shape* shape = body.m_pCollisionShape;
-    D45350CdBody child(&body);
+    const D45350Shape* shape = bodyA.m_pCollisionShape;
+    D45350CdBody child(&bodyA);
     child.SetCollisionShapeAndKey(shape->m_childA, 0xffffffff);
-    m_collectorA->process(child, apArg1, apArg2, apArg3);
+    m_collectorA->process(child, bodyB, input, constraintOwner);
     if (m_collectorB)
     {
         child.SetCollisionShapeAndKey(shape->m_childB, 0);
-        m_collectorB->process(child, apArg1, apArg2, apArg3);
+        m_collectorB->process(child, bodyB, input, constraintOwner);
     }
 }
 
@@ -285,11 +297,15 @@ struct Functor_d46010
     int m_uiFilterValue;
 };
 
-void __cdecl hkpBvAgent_staticGetPenetrations(int a, int b, int c, Functor_d46010* f);
+void __cdecl hkpBvAgent_staticGetPenetrations(int a, int b, int c, Functor_d46010* collector);
 
 // Builds a Functor_d46010 with the given value and a false flag, then passes it with b, a and c to FUN_00d45dd0.
 // @fnv 0x00d46010
 // src: GUESS 0x00d46010 (confidence: low)
+// pdb: hkpSymmetricAgentLinearCast<hkpBvAgent>::staticGetPenetrations | hkpBvAgent.obj | retail, object-file run extension, low
+// pdb note: debug build links it to hkpBvAgent::`scalar deleting destructor'
+// pdb params: bodyA, bodyB, input, collector
+// pdb locals: flip
 void __cdecl hkpBvAgent_staticGetPenetrations_UpdateState_00d46010(int aiArg1, int aiArg2, int aiArg3, int aiValue)
 {
     Functor_d46010 f;
@@ -388,7 +404,7 @@ struct FUN_00d453d0_args
 class FUN_00d453d0_cls
 {
   public:
-    FUN_00d453d0_cls* Construct(FUN_00d452a0* a1, void* a2, void* a3, int a4);
+    FUN_00d453d0_cls* hkpBvAgent_ctor(FUN_00d452a0* bodyA, void* bodyB, void* input, int mgr);
 
     int* m_vptr;           // 0x00
     unsigned short unk04;  // 0x04
@@ -400,20 +416,24 @@ class FUN_00d453d0_cls
 
 // Initialises the object's vtable and fields, builds an argument struct from a1/a2/a3, and calls a function pointer selected by an index from a table.
 // @fnv 0x00d453d0
-FUN_00d453d0_cls* FUN_00d453d0_cls::Construct(FUN_00d452a0* a1, void* apArg2, void* apArg3, int aiValue)
+// src: XBOX_RETAIL_PDB 0x00d453d0
+// pdb: hkpBvAgent::hkpBvAgent | hkpBvAgent.obj | retail, call graph (shared callers), high
+// pdb params: bodyA, bodyB, input, mgr
+// pdb locals: newA
+FUN_00d453d0_cls* FUN_00d453d0_cls::hkpBvAgent_ctor(FUN_00d452a0* bodyA, void* bodyB, void* input, int mgr)
 {
     m_vptr = (int*)&DAT_010cf3cc;
     m_06 = 1;
-    m_08 = aiValue;
+    m_08 = mgr;
 
     FUN_00d453d0_args args;
-    int c = a1->c;
+    int c = bodyA->c;
     args.m_08 = c;
-    int ebp0 = *(int*)apArg2;
-    int cond = *(int*)((char*)apArg3 + 0x14);
-    args.m_0C = (int)a1;
-    int y = *(int*)(a1->a + 0x10);
-    int vt3 = *(int*)apArg3;
+    int ebp0 = *(int*)bodyB;
+    int cond = *(int*)((char*)input + 0x14);
+    args.m_0C = (int)bodyA;
+    int y = *(int*)(bodyA->a + 0x10);
+    int vt3 = *(int*)input;
     args.m_00 = y;
     args.m_04 = -1;
     int base = *(int*)(ebp0 + 0xc);
@@ -421,7 +441,7 @@ FUN_00d453d0_cls* FUN_00d453d0_cls::Construct(FUN_00d452a0* a1, void* apArg2, vo
     int tab = (cond != 0) ? vt3 + 0x5a0 : vt3 + 0x1a0;
     unsigned char idx = *(unsigned char*)(base + (int)((z << 5) + tab));
     void* fn = *(void**)(vt3 + 0x9a0 + (int)idx * 20);
-    m_0C = ((int(__cdecl*)(FUN_00d453d0_args*, void*, void*, int))fn)(&args, apArg2, apArg3, aiValue);
+    m_0C = ((int(__cdecl*)(FUN_00d453d0_args*, void*, void*, int))fn)(&args, bodyB, input, mgr);
     m_10 = 0;
     return this;
 }
@@ -469,7 +489,7 @@ class D45480ReferencedObject
 class D45480Object : public D45480ReferencedObject
 {
   public:
-    __declspec(nothrow) D45480Object(void* a, void* b, void* c, void* d);
+    __declspec(nothrow) D45480Object(void* bodyA, void* bodyB, void* input, void* mgr);
 
     int unk08;
     int unk0C;
@@ -479,9 +499,11 @@ class D45480Object : public D45480ReferencedObject
 // Allocates a D45480Object via its four-argument constructor and returns the new object.
 // @fnv 0x00d45480
 // src: HAVOK_LIB 0x00d45480
-D45480Object* __cdecl hkpBvAgent_createBvShapeAgent(void* apArg1, void* apArg2, void* apArg3, void* apArg4)
+// pdb: hkpBvAgent::createBvShapeAgent | hkpBvAgent.obj | retail, upstream name already matches, high
+// pdb params: A, B, input, mgr
+D45480Object* __cdecl hkpBvAgent_createBvShapeAgent(void* A, void* B, void* input, void* mgr)
 {
-    return new D45480Object(apArg1, apArg2, apArg3, apArg4);
+    return new D45480Object(A, B, input, mgr);
 }
 
 extern float DAT_0104da48;
@@ -497,6 +519,10 @@ struct FUN_00d46050_cls
 // Builds a FUN_00d46050_cls from DAT_0104da48 and a4, then calls FUN_00d45af0 with a2, a1, a3 and a pointer to it.
 // @fnv 0x00d46050
 // src: GUESS 0x00d46050 (confidence: low)
+// pdb: hkpSymmetricAgentLinearCast<hkpBvAgent>::staticGetClosestPoints | hkpBvAgent.obj | retail, object-file run extension, low
+// pdb note: debug build links it to hkpSymmetricAgentLinearCast<hkpBvAgent>::staticGetPenetrations
+// pdb params: bodyA, bodyB, input, collector
+// pdb locals: flip
 void __cdecl hkpBvAgent_staticGetClosestPoints_UpdateState_00d46050(int aiArg1, int aiArg2, int aiArg3, int aiValue)
 {
     FUN_00d46050_cls local;
@@ -545,13 +571,16 @@ struct FUN_00d461a0_Owner
 
 // Builds an argument struct from DAT_010ce81c and a4, then forwards a2, a1, a3 and the struct to FUN_00d45c50.
 // @fnv 0x00d461a0
-void FUN_00d461a0_Owner::DispatchWithArgs(int aiArg1, int aiArg2, int aiArg3, int aiArg4)
+// pdb: hkpSymmetricAgentLinearCast<hkpBvAgent>::getPenetrations | hkpBvAgent.obj | retail, vtable slot, high
+// pdb params: bodyA, bodyB, input, collector
+// pdb locals: flip
+void FUN_00d461a0_Owner::DispatchWithArgs(int bodyA, int bodyB, int input, int collector)
 {
     FUN_00d461a0_Args l;
-    l.unk08 = aiArg4;
+    l.unk08 = collector;
     l.unk04 = 0;
     l.unk00 = DAT_010ce81c;
-    this->hkpBvAgent_getPenetrations(aiArg2, aiArg1, aiArg3, &l);
+    this->hkpBvAgent_getPenetrations(bodyB, bodyA, input, &l);
 }
 
 namespace fnv_00d461e0 {
@@ -568,19 +597,22 @@ struct Rec
 struct FUN_00d461e0_Cls
 {
     void GetPenetrations(int, int, int, Rec*);
-    void UpdateFields_00d461e0(int a1, int a2, int a3, int a4);
+    void UpdateFields_00d461e0(int bodyA, int bodyB, int input, int collector);
 };
 
 // Builds a Rec from a4, DAT_0104da48 and DAT_010ce7fc, then calls GetPenetrations with a2, a1, a3 and the Rec.
 // @fnv 0x00d461e0
 // src: GUESS 0x00d461e0 (confidence: low)
-void FUN_00d461e0_Cls::UpdateFields_00d461e0(int aiArg1, int aiArg2, int aiArg3, int aiValue)
+// pdb: hkpSymmetricAgentLinearCast<hkpBvAgent>::getClosestPoints | hkpBvAgent.obj | retail, vtable slot, high
+// pdb params: bodyA, bodyB, input, collector
+// pdb locals: flip
+void FUN_00d461e0_Cls::UpdateFields_00d461e0(int bodyA, int bodyB, int input, int collector)
 {
     Rec rec;
-    rec.m_i = aiValue;
+    rec.m_i = collector;
     rec.m_f = DAT_0104da48;
     rec.m_p = &DAT_010ce7fc;
-    GetPenetrations(aiArg2, aiArg1, aiArg3, &rec);
+    GetPenetrations(bodyB, bodyA, input, &rec);
 }
 }  // namespace fnv_00d461e0
 
@@ -684,6 +716,9 @@ union BeginRecordOrCollector
 
 // @fnv 0x00d45af0
 // src: HAVOK_LIB 0x00d45af0
+// pdb: hkpBvAgent::staticGetClosestPoints | hkpBvAgent.obj | retail, upstream name already matches, high
+// pdb params: bodyA, bodyB, input, collector
+// pdb locals: checker, newA
 void __cdecl hkpBvAgent_staticGetClosestPoints(CdBody* bodyA, CdBody* bodyB, CollisionInput* input, void* collector)
 {
     CdBody child;
@@ -773,17 +808,20 @@ struct S00d454c0_Owner
     void* m_pManager;
     S00d454c0_Filter* m_iFilter;
     S00d454c0_Agent* m_pCollisionAgent;
-    void hkpBvAgent_processCollision(CdBody* bodyA, CdBody* bodyB, S00d454c0_Input* input, S00d454c0_Result* result);
+    void hkpBvAgent_processCollision(CdBody* bodyAin, CdBody* bodyB, S00d454c0_Input* input, S00d454c0_Result* result);
 };
 // @fnv 0x00d454c0
 // src: HAVOK_LIB 0x00d454c0
-void S00d454c0_Owner::hkpBvAgent_processCollision(CdBody* bodyA, CdBody* bodyB, S00d454c0_Input* input, S00d454c0_Result* result)
+// pdb: hkpBvAgent::processCollision | hkpBvAgent.obj | retail, upstream name already matches, high
+// pdb params: bodyAin, bodyB, input, result
+// pdb locals: checker, newA, assertBuf, ostr
+void S00d454c0_Owner::hkpBvAgent_processCollision(CdBody* bodyAin, CdBody* bodyB, S00d454c0_Input* input, S00d454c0_Result* result)
 {
     TimerBeginObj(DAT_010cf414, DAT_010cf404);
-    BvShape* shape = bodyA->m_pCollisionShape;
+    BvShape* shape = bodyAin->m_pCollisionShape;
     CdBody body;
-    body.m_parent = bodyA;
-    body.m_pMotionState = bodyA->m_pMotionState;
+    body.m_parent = bodyAin;
+    body.m_pMotionState = bodyAin->m_pMotionState;
     body.m_pCollisionShape = shape->m_boundingShape;
     body.m_key = 0xffffffff;
     EarlyOutCollector out;
@@ -860,52 +898,54 @@ struct Simplex
 
 struct AgentBase
 {
-    void hkpBvAgent_processCollision(int a, int b, int c, Simplex* s);
+    void hkpBvAgent_processCollision(int bodyAin, int b, int c, Simplex* s);
 };
 
 struct Agent : AgentBase
 {
-    void UpdateClosestPointSimplexState(int a, int b, int c, Simplex* s);
+    void UpdateClosestPointSimplexState(int bodyA, int bodyB, int input, Simplex* result);
 };
 
 // Calls base FUN_00d454c0, then updates vertex SIMD data and swaps simplex dimension and id fields when the closest point distance changed.
 // @fnv 0x00d46220
 // src: GUESS 0x00d46220 (confidence: medium)
-void Agent::UpdateClosestPointSimplexState(int a, int b, int c, Simplex* apSimplex)
+// pdb: hkpSymmetricAgentLinearCast<hkpBvAgent>::processCollision | hkpBvAgent.obj | retail, vtable slot, high
+// pdb params: bodyA, bodyB, input, result
+void Agent::UpdateClosestPointSimplexState(int bodyA, int bodyB, int input, Simplex* result)
 {
-    SimplexVertex* pVertex = apSimplex->m_kRayEnd;
-    float oldDistance = apSimplex->m_fClosestPointDistanceSquared;
-    AgentBase::hkpBvAgent_processCollision(b, a, c, apSimplex);
-    for (; pVertex < apSimplex->m_kRayEnd; pVertex++)
+    SimplexVertex* pVertex = result->m_kRayEnd;
+    float oldDistance = result->m_fClosestPointDistanceSquared;
+    AgentBase::hkpBvAgent_processCollision(bodyB, bodyA, input, result);
+    for (; pVertex < result->m_kRayEnd; pVertex++)
     {
         const LocalM128* pb = &pVertex->m_kPointB;
         LocalM128 w = _mm_shuffle_ps(*pb, *pb, 0xff);
         pVertex->m_kPointA = _mm_add_ps(_mm_mul_ps(w, pVertex->m_kPointB), pVertex->m_kPointA);
         pVertex->m_kPointB = _mm_xor_ps(pVertex->m_kPointB, DAT_010c4c00);
     }
-    if (oldDistance != apSimplex->m_fClosestPointDistanceSquared)
+    if (oldDistance != result->m_fClosestPointDistanceSquared)
     {
-        LocalM128* n = &apSimplex->m_vHitNormal;
+        LocalM128* n = &result->m_vHitNormal;
         *n = _mm_xor_ps(*n, DAT_010c4c00);
         {
-            unsigned char t = apSimplex->m_dims.m_ucLowNibble;
-            apSimplex->m_dims.m_ucLowNibble = apSimplex->m_dims.m_ucHighNibble;
-            apSimplex->m_dims.m_ucHighNibble = t;
+            unsigned char t = result->m_dims.m_ucLowNibble;
+            result->m_dims.m_ucLowNibble = result->m_dims.m_ucHighNibble;
+            result->m_dims.m_ucHighNibble = t;
         }
         {
-            unsigned char t = apSimplex->m_ucDimensionA;
-            apSimplex->m_ucDimensionA = apSimplex->m_ucDimensionB;
-            apSimplex->m_ucDimensionB = t;
+            unsigned char t = result->m_ucDimensionA;
+            result->m_ucDimensionA = result->m_ucDimensionB;
+            result->m_ucDimensionB = t;
         }
-        int last = apSimplex->m_ucDimensionA + apSimplex->m_ucDimensionB - 1;
-        unsigned short t0 = apSimplex->m_ids[0];
-        apSimplex->m_ids[0] = apSimplex->m_ids[last];
-        apSimplex->m_ids[last] = t0;
-        if ((apSimplex->m_ucDimensionA & apSimplex->m_ucDimensionB) == 2)
+        int last = result->m_ucDimensionA + result->m_ucDimensionB - 1;
+        unsigned short t0 = result->m_ids[0];
+        result->m_ids[0] = result->m_ids[last];
+        result->m_ids[last] = t0;
+        if ((result->m_ucDimensionA & result->m_ucDimensionB) == 2)
         {
-            unsigned short t1 = apSimplex->m_ids[1];
-            apSimplex->m_ids[1] = apSimplex->m_ids[2];
-            apSimplex->m_ids[2] = t1;
+            unsigned short t1 = result->m_ids[1];
+            result->m_ids[1] = result->m_ids[2];
+            result->m_ids[2] = t1;
         }
     }
 }
@@ -950,7 +990,10 @@ typedef void(__cdecl* CollideFn5)(CdBody* a, CdBody* b, CollisionInput* input, v
 // Tests bodyA's bounding shape against bodyB via a dispatched collide function, then if a hit is found, re-tests the contained shape.
 // @fnv 0x00d45800
 // src: HAVOK_LIB 0x00d45800
-void __cdecl hkpBvAgent_staticLinearCast(CdBody* bodyA, CdBody* bodyB, CollisionInput* input, void* c, void* d)
+// pdb: hkpBvAgent::staticLinearCast | hkpBvAgent.obj | retail, upstream name already matches, high
+// pdb params: bodyA, bodyB, input, pointDetails, startCollector
+// pdb locals: checker, newA
+void __cdecl hkpBvAgent_staticLinearCast(CdBody* bodyA, CdBody* bodyB, CollisionInput* input, void* pointDetails, void* startCollector)
 {
     volatile unsigned int ticks;
     D458Begin(DAT_010cf414, DAT_010cf404, ticks);
@@ -968,13 +1011,13 @@ void __cdecl hkpBvAgent_staticLinearCast(CdBody* bodyA, CdBody* bodyB, Collision
     } collectorStorage;
     hkpSimpleClosestContactCollector& coll = *::new (&collectorStorage) hkpSimpleClosestContactCollector;
     fn(&tmp, bodyB, input, &coll, &coll);
-    if (coll.m_bOk)
+    if (coll.m_hasHit)
     {
         D458Mark(DAT_010cec4c, ticks);
         tmp.m_pCollisionShape = bvShape->m_pContainedShape;
         tmp.m_key = 0;
         fn = (CollideFn5)D45800Get(input, tmp.m_pCollisionShape, typeB);
-        fn(&tmp, bodyB, input, c, d);
+        fn(&tmp, bodyB, input, pointDetails, startCollector);
     }
     D458Mark(DAT_01076f38, ticks);
 }
@@ -1000,11 +1043,14 @@ struct Record_d2e9
     int m_uiFilterValue;
 };
 
-void __cdecl hkpBvAgent_staticLinearCast(int a1, int a2, Input_d2e9* input, Record_d2e9* rec, Record_d2e9* optRec);
+void __cdecl hkpBvAgent_staticLinearCast(int a1, int a2, Input_d2e9* input, Record_d2e9* pointDetails, Record_d2e9* startCollector);
 
 // Copies input, XORs its m_key with DAT_010c44d0, builds a Record_d2e9 with a4, and calls FUN_00d45800 with a second record when a5 is non-zero.
 // @fnv 0x00d46090
 // src: GUESS 0x00d46090 (confidence: low)
+// pdb: hkpSymmetricAgentLinearCast<hkpBvAgent>::staticLinearCast | hkpBvAgent.obj | retail, object-file run extension, low
+// pdb params: bodyA, bodyB, input, collector, startCollector
+// pdb locals: flip, flippedInput, startFlip
 void __cdecl hkpBvAgent_staticLinearCast_UpdateState_00d46090(int a2, int a1, const Input_d2e9* input, int a4, int a5)
 {
     Input_d2e9 local = *input;
@@ -1085,9 +1131,9 @@ struct S_00d45970_BvShape : S_00d45970_Shape
 
 #include "../../../../../../../include/hkpCdBody.h"
 
-inline hkpCdBody::hkpCdBody(const hkpCdBody* parent) : m_parent(parent) { m_pMotionState = parent->m_pMotionState; }
-inline const hkpShape* hkpCdBody::getShape() const { return m_pCollisionShape; }
-inline void hkpCdBody::SetCollisionShapeAndKey(const hkpShape* shape, unsigned int key) { m_pCollisionShape = shape; m_uiCollisionShapeKey = key; }
+inline hkpCdBody::hkpCdBody(const hkpCdBody* parent) : m_parent(parent) { m_motion = parent->m_motion; }
+inline const hkpShape* hkpCdBody::getShape() const { return m_shape; }
+inline void hkpCdBody::SetCollisionShapeAndKey(const hkpShape* shape, unsigned int key) { m_shape = shape; m_shapeKey = key; }
 
 
 
@@ -1160,8 +1206,8 @@ __forceinline S_00d45970_Agent* S_00d45970_Dispatcher::getNewCollisionAgent(cons
                                                                             const S_00d45970_Input& input,
                                                                             S_00d45970_ContactMgr* mgr) const
 {
-    int typeA = reinterpret_cast<const S_00d45970_Shape*>(bodyA.m_pCollisionShape)->m_type;
-    int typeB = reinterpret_cast<const S_00d45970_Shape*>(bodyB.m_pCollisionShape)->m_type;
+    int typeA = reinterpret_cast<const S_00d45970_Shape*>(bodyA.m_shape)->m_type;
+    int typeB = reinterpret_cast<const S_00d45970_Shape*>(bodyB.m_shape)->m_type;
     int idx = getAgentType(typeA, typeB, input.m_bCreatePredictiveAgents);
     S_00d45970_CreateFunc f = m_agent2Funcs[idx].m_pCreateFunc;
     return f(bodyA, bodyB, input, mgr);
@@ -1199,13 +1245,16 @@ struct S_00d45970_BvAgent
     S_00d45970_Agent* m_pAgent;
 
     void GetPenetrations(const hkpCdBody& bodyA, const hkpCdBody& bodyB, const S_00d45970_Input& input,
-                         S_00d45970_CollectorBase& result);
+                         S_00d45970_CollectorBase& collector);
 };
 
 // Checks bounding volume overlap, then dispatches to the contained shape agent to collect penetrations into result.
 // @fnv 0x00d45970
+// pdb: hkpBvAgent::getClosestPoints | hkpBvAgent.obj | retail, vtable slot, high
+// pdb params: bodyA, bodyB, input, collector
+// pdb locals: checker, newA
 void S_00d45970_BvAgent::GetPenetrations(const hkpCdBody& bodyA, const hkpCdBody& bodyB,
-                                         const S_00d45970_Input& input, S_00d45970_CollectorBase& result)
+                                         const S_00d45970_Input& input, S_00d45970_CollectorBase& collector)
 {
     {
         S_00d45970_MonitorStream& mStream = S_00d45970_MonitorStream::GetMonitorStream();
@@ -1221,7 +1270,7 @@ void S_00d45970_BvAgent::GetPenetrations(const hkpCdBody& bodyA, const hkpCdBody
     }
 
     {
-        const S_00d45970_BvShape* bvShape = (const S_00d45970_BvShape*)bodyA.m_pCollisionShape;
+        const S_00d45970_BvShape* bvShape = (const S_00d45970_BvShape*)bodyA.m_shape;
 
         hkpCdBody newBodyA(&bodyA);
         newBodyA.SetCollisionShapeAndKey(reinterpret_cast<const hkpShape*>(bvShape->m_pBvShapeReference), 0xffffffff);
@@ -1248,7 +1297,7 @@ void S_00d45970_BvAgent::GetPenetrations(const hkpCdBody& bodyA, const hkpCdBody
                 m_pAgent =
                     input.m_pCollisionDispatcher->getNewCollisionAgent(newBodyA, bodyB, input, m_pContactManager);
             }
-            m_pAgent->getPenetrations(newBodyA, bodyB, input, result);
+            m_pAgent->getPenetrations(newBodyA, bodyB, input, collector);
         }
     }
 
@@ -1388,8 +1437,8 @@ __forceinline S_00d45c50_Agent* S_00d45c50_Dispatcher::getNewCollisionAgent(cons
                                                                             const S_00d45c50_Input& input,
                                                                             S_00d45c50_ContactMgr* mgr) const
 {
-    int typeA = reinterpret_cast<const S_00d45c50_Shape*>(bodyA.m_pCollisionShape)->m_type;
-    int typeB = reinterpret_cast<const S_00d45c50_Shape*>(bodyB.m_pCollisionShape)->m_type;
+    int typeA = reinterpret_cast<const S_00d45c50_Shape*>(bodyA.m_shape)->m_type;
+    int typeB = reinterpret_cast<const S_00d45c50_Shape*>(bodyB.m_shape)->m_type;
     int idx = getAgentType(typeA, typeB, input.m_bCreatePredictiveAgents);
     S_00d45c50_CreateFunc f = m_agent2Funcs[idx].m_pCreateFunc;
     return f(bodyA, bodyB, input, mgr);
@@ -1426,14 +1475,17 @@ struct S_00d45c50_BvAgent
     S_00d45c50_Agent* m_pAgent;
 
     void hkpBvAgent_getPenetrations(const hkpCdBody& bodyA, const hkpCdBody& bodyB, const S_00d45c50_Input& input,
-                      S_00d45c50_Output& result);
+                      S_00d45c50_Output& collector);
 };
 
 // Checks bounding volume penetration between two collision bodies and, on hit, dispatches the contained-shape collision agent to fill the output result.
 // @fnv 0x00d45c50
 // src: HAVOK_LIB 0x00d45c50
+// pdb: hkpBvAgent::getPenetrations | hkpBvAgent.obj | retail, upstream name already matches, high
+// pdb params: bodyA, bodyB, input, collector
+// pdb locals: checker, newA
 void S_00d45c50_BvAgent::hkpBvAgent_getPenetrations(const hkpCdBody& bodyA, const hkpCdBody& bodyB,
-                                      const S_00d45c50_Input& input, S_00d45c50_Output& result)
+                                      const S_00d45c50_Input& input, S_00d45c50_Output& collector)
 {
     {
         S_00d45c50_MonitorStream& mStream = S_00d45c50_MonitorStream::GetMonitorStream();
@@ -1449,7 +1501,7 @@ void S_00d45c50_BvAgent::hkpBvAgent_getPenetrations(const hkpCdBody& bodyA, cons
     }
 
     {
-        const S_00d45c50_BvShape* bvShape = (const S_00d45c50_BvShape*)bodyA.m_pCollisionShape;
+        const S_00d45c50_BvShape* bvShape = (const S_00d45c50_BvShape*)bodyA.m_shape;
 
         hkpCdBody newBodyA(&bodyA);
         newBodyA.SetCollisionShapeAndKey(reinterpret_cast<const hkpShape*>(bvShape->m_pBvShapeReference), 0xffffffff);
@@ -1476,7 +1528,7 @@ void S_00d45c50_BvAgent::hkpBvAgent_getPenetrations(const hkpCdBody& bodyA, cons
                 m_pAgent =
                     input.m_pCollisionDispatcher->getNewCollisionAgent(newBodyA, bodyB, input, m_pContactManager);
             }
-            m_pAgent->ProcessAgent(newBodyA, bodyB, input, result);
+            m_pAgent->ProcessAgent(newBodyA, bodyB, input, collector);
         }
     }
 
@@ -1702,8 +1754,11 @@ struct S_00d45dd0_Input
 // Checks BvShape containment for bodyA against bodyB, then queries penetrations on the contained shape if a hit is found.
 // @fnv 0x00d45dd0
 // src: HAVOK_LIB 0x00d45dd0
+// pdb: hkpBvAgent::staticGetPenetrations | hkpBvAgent.obj | retail, upstream name already matches, high
+// pdb params: bodyA, bodyB, input, collector
+// pdb locals: checker, newA
 void __cdecl hkpBvAgent_staticGetPenetrations(const hkpCdBody& bodyA, const hkpCdBody& bodyB, const S_00d45dd0_Input& input,
-                          S_00d45dd0_CollectorBase& result)
+                          S_00d45dd0_CollectorBase& collector)
 {
     {
         S_00d45dd0_MonitorStream& mStream = S_00d45dd0_MonitorStream::GetMonitorStream();
@@ -1719,14 +1774,14 @@ void __cdecl hkpBvAgent_staticGetPenetrations(const hkpCdBody& bodyA, const hkpC
     }
 
     {
-        const S_00d45dd0_BvShape* bvShape = (const S_00d45dd0_BvShape*)bodyA.m_pCollisionShape;
+        const S_00d45dd0_BvShape* bvShape = (const S_00d45dd0_BvShape*)bodyA.m_shape;
 
         hkpCdBody newBodyA(&bodyA);
         newBodyA.SetCollisionShapeAndKey(reinterpret_cast<const hkpShape*>(bvShape->m_pBvShapeReference), 0xffffffff);
 
-        int typeB = reinterpret_cast<const S_00d45dd0_Shape*>(bodyB.m_pCollisionShape)->m_type;
+        int typeB = reinterpret_cast<const S_00d45dd0_Shape*>(bodyB.m_shape)->m_type;
         S_00d45dd0_PenFunc f =
-            input.m_pCollisionDispatcher->getPenetrationsFunc(reinterpret_cast<const S_00d45dd0_Shape*>(newBodyA.m_pCollisionShape)->m_type, typeB);
+            input.m_pCollisionDispatcher->getPenetrationsFunc(reinterpret_cast<const S_00d45dd0_Shape*>(newBodyA.m_shape)->m_type, typeB);
         S_00d45dd0_FlagCollector checker;
         f(newBodyA, bodyB, input, checker);
 
@@ -1744,8 +1799,8 @@ void __cdecl hkpBvAgent_staticGetPenetrations(const hkpCdBody& bodyA, const hkpC
                 }
             }
             newBodyA.SetCollisionShapeAndKey(reinterpret_cast<const hkpShape*>(bvShape->m_pContainedShape), 0);
-            input.m_pCollisionDispatcher->getPenetrationsFunc(reinterpret_cast<const S_00d45dd0_Shape*>(newBodyA.m_pCollisionShape)->m_type,
-                                                              typeB)(newBodyA, bodyB, input, result);
+            input.m_pCollisionDispatcher->getPenetrationsFunc(reinterpret_cast<const S_00d45dd0_Shape*>(newBodyA.m_shape)->m_type,
+                                                              typeB)(newBodyA, bodyB, input, collector);
         }
     }
 
@@ -1872,12 +1927,15 @@ class Agent228
     BvHost* m_0c;
     BvHost* m_10;
 
-    void CheckBvShape(BvA* a1, BvB* a2, BvC* a3, DWORD a4, DWORD a5);
+    void CheckBvShape(BvA* bodyA, BvB* bodyB, BvC* input, DWORD pointDetails, DWORD startCollector);
 };
 
 // Profiles and runs a Havok BV shape check against a2/a3, caching the result host in m_10 and invoking its v5 callback when a contact is found.
 // @fnv 0x00d45660
-void Agent228::CheckBvShape(BvA* a1, BvB* a2, BvC* a3, DWORD a4, DWORD a5)
+// pdb: hkpBvAgent::linearCast | hkpBvAgent.obj | retail, vtable slot, high
+// pdb params: bodyA, bodyB, input, pointDetails, startCollector
+// pdb locals: checker, newA
+void Agent228::CheckBvShape(BvA* bodyA, BvB* bodyB, BvC* input, DWORD pointDetails, DWORD startCollector)
 {
     volatile DWORD tick;
     BvProfBuf* pBuf = (BvProfBuf*)TlsGetValue(DAT_0126835c);
@@ -1892,11 +1950,11 @@ void Agent228::CheckBvShape(BvA* a1, BvB* a2, BvC* a3, DWORD a4, DWORD a5)
         pBuf->m_pCur = (char*)pRec + 0x10;
     }
 
-    BvAVtbl* shape = a1->m_vt;
+    BvAVtbl* shape = bodyA->m_vt;
     BvRes r;
 
-    r.m_parent = a1;
-    r.m_08 = a1->m_08;
+    r.m_parent = bodyA;
+    r.m_08 = bodyA->m_08;
     r.m_00 = shape->m_10;
     r.m_04 = 0xffffffff;
     // Aligned raw storage for the explicitly managed collector lifetime.
@@ -1906,9 +1964,9 @@ void Agent228::CheckBvShape(BvA* a1, BvB* a2, BvC* a3, DWORD a4, DWORD a5)
     } collectorStorage;
     hkpSimpleClosestContactCollector& collector = *::new (&collectorStorage) hkpSimpleClosestContactCollector;
 
-    m_0c->v5(&r, a2, a3, &collector, &collector);
+    m_0c->v5(&r, bodyB, input, &collector, &collector);
 
-    if (collector.m_bOk != 0)
+    if (collector.m_hasHit != 0)
     {
         BvProfBuf* pb = (BvProfBuf*)TlsGetValue(DAT_0126835c);
         if (pb->m_pCur < pb->m_pRecordEnd)
@@ -1926,19 +1984,19 @@ void Agent228::CheckBvShape(BvA* a1, BvB* a2, BvC* a3, DWORD a4, DWORD a5)
         r.m_04 = 0;
         if (m_10 == 0)
         {
-            char* vt = a3->m_vt;
-            DWORD tbl = a2->m_vt->m_0c;
+            char* vt = input->m_vt;
+            DWORD tbl = bodyB->m_vt->m_0c;
             DWORD row = ((BvX*)p)->m_0c;
             char* base = vt + 0x5a0;
-            if (a3->m_14 == 0)
+            if (input->m_14 == 0)
                 base = vt + 0x1a0;
             unsigned char k = *(unsigned char*)(base + (row << 5) + tbl);
             BvLookupFn fn = *(BvLookupFn*)(vt + 0x9a0 + k * 20);
             DWORD extra = m_08;
-            m_10 = fn(&r, a2, a3, extra);
+            m_10 = fn(&r, bodyB, input, extra);
         }
 
-        m_10->v5(&r, a2, a3, (void*)a4, (void*)a5);
+        m_10->v5(&r, bodyB, input, (void*)pointDetails, (void*)startCollector);
     }
 
     pBuf = (BvProfBuf*)TlsGetValue(DAT_0126835c);
@@ -1981,7 +2039,7 @@ struct SpawnedBase
 {
     virtual void v0();
     unsigned short m_iElementCount;
-    SpawnedBase(int a, int b, int c, int d);
+    SpawnedBase(int bodyA, int bodyB, int input, int mgr);
 };
 
 struct SpawnedObject : SpawnedBase
@@ -1999,13 +2057,15 @@ inline void* __cdecl operator new(unsigned int, void* p) throw()
 // Allocates a SpawnedObject via the holder's allocator, sets its size field to 0x14, and constructs it in place with the given arguments.
 // @fnv 0x00d45f30
 // src: HAVOK_LIB 0x00d45f30
-void* __cdecl hkpBvAgent_createShapeBvAgent(int a1, int a2, int a3, int a4)
+// pdb: hkpBvAgent::createShapeBvAgent | hkpBvAgent.obj | retail, upstream name already matches, high
+// pdb params: A, B, input, mgr
+void* __cdecl hkpBvAgent_createShapeBvAgent(int A, int B, int input, int mgr)
 {
     SpawnedHolder* pHolder = hkMemoryRouter_getInstance();
     SpawnedAllocator* pAlloc = pHolder->m_pAllocator;
     SpawnedObject* pObj = (SpawnedObject*)pAlloc->v1(0x14);
     pObj->m_iElementCount = 0x14;
-    return new (pObj) SpawnedObject(a2, a1, a3, a4);
+    return new (pObj) SpawnedObject(B, A, input, mgr);
 }
 }  // namespace fnv_00d45f30
 
@@ -2053,38 +2113,41 @@ struct __declspec(align(16)) Event
 
 struct Host
 {
-    void Dispatch(int a, int b, Block* blk, Event* ev, Event* ctx);
+    void Dispatch(int bodyA, int bodyB, Block* input, Event* pointDetails, Event* startCollector);
 };
 
 struct Owner
 {
-    void UpdateFields_00d46340(int a1, int a2, const Block* p, int a4, int a5);
+    void UpdateFields_00d46340(int bodyA, int bodyB, const Block* input, int collector, int startCollector);
 };
 
 // Copies p with its m_vec XORed by DAT_010c44d0, builds an Event from a4 (and a second from a5 if non-zero), and calls Host::Dispatch(a2, a1, ...).
 // @fnv 0x00d46340
 // src: GUESS 0x00d46340 (confidence: low)
-void Owner::UpdateFields_00d46340(int a1, int a2, const Block* p, int a4, int a5)
+// pdb: hkpSymmetricAgent<hkpBvAgent>::linearCast | hkpBvAgent.obj | retail, vtable slot, high
+// pdb params: bodyA, bodyB, input, collector, startCollector
+// pdb locals: flip, flippedInput, startFlip
+void Owner::UpdateFields_00d46340(int bodyA, int bodyB, const Block* input, int collector, int startCollector)
 {
     Event ev;
     ev.m_fHitFraction = DAT_0104da48;
-    Block blk = *p;
-    ev.m_vec = p->m_vec;
-    ev.m_kCollisionBody = a4;
-    _mm_store_ps((float*)&blk.m_vec, _mm_xor_ps(*(const LocalM128*)&p->m_vec, DAT_010c44d0));
+    Block blk = *input;
+    ev.m_vec = input->m_vec;
+    ev.m_kCollisionBody = collector;
+    _mm_store_ps((float*)&blk.m_vec, _mm_xor_ps(*(const LocalM128*)&input->m_vec, DAT_010c44d0));
     ev.vtbl = &DAT_010ce80c;
 
     Event ctx;
-    if (a5 != 0)
+    if (startCollector != 0)
     {
         ctx.vtbl = &DAT_010ce80c;
         ctx.m_fHitFraction = DAT_0104da48;
-        ctx.m_vec = p->m_vec;
-        ctx.m_kCollisionBody = a5;
-        reinterpret_cast<Host*>(this)->Dispatch(a2, a1, &blk, &ev, &ctx);
+        ctx.m_vec = input->m_vec;
+        ctx.m_kCollisionBody = startCollector;
+        reinterpret_cast<Host*>(this)->Dispatch(bodyB, bodyA, &blk, &ev, &ctx);
     }
     else
     {
-        reinterpret_cast<Host*>(this)->Dispatch(a2, a1, &blk, &ev, 0);
+        reinterpret_cast<Host*>(this)->Dispatch(bodyB, bodyA, &blk, &ev, 0);
     }
 }

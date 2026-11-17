@@ -165,6 +165,8 @@ struct FUN_00cb0a70
 };
 // @fnv 0x00e01c30
 // src: GUESS 0x00e01c30 (confidence: low)
+// pdb: hkxScene::hkxScene | hkxSceneClass.obj | debug, object-file run extension, low
+// pdb params: f
 void Object_UpdateState_00e01c30(void* apObject, void* aValue)
 {
     if (apObject)
@@ -610,6 +612,9 @@ extern int DAT_010e95b4;
 // If a is non-null, stores &DAT_010e95b4 at its start and calls m(b) on the objects at offsets 8, 12 and 16.
 // @fnv 0x00e017f0
 // src: GUESS 0x00e017f0 (confidence: low)
+// pdb: getVtablehkxTextureFile | hkxTextureFileClass.obj | retail, object-file run extension, low
+// pdb note: debug build links it to hkxTextureFile::operator delete
+// pdb locals: u
 void Object_UpdateState_00e017f0(FUN_00cb0a70** apObject, int aiValue)
 {
     if (apObject)
@@ -683,6 +688,8 @@ extern int DAT_010e9ccc;
 // If a is non-null, stores the address of DAT_010e9ccc at a[0] and calls m(b) on the objects at a+2, a+4, a+5 and a+6.
 // @fnv 0x00e02140
 // src: GUESS 0x00e02140 (confidence: low)
+// pdb: getVtablehkxMaterialShader | hkxMaterialShaderClass.obj | retail, object-file run extension, low
+// pdb locals: u
 void __cdecl Object_UpdateFields_00e02140(int* pObject, int iValue)
 {
     if (pObject)
@@ -838,6 +845,7 @@ struct FUN_00e0bf20_s
     FUN_00e0bf20_s();
 };
 // @fnv 0x00e0bf20
+// pdb: hkMonitorStreamStringMap::StringMap::StringMap | hkMonitorStreamAnalyzer.obj | debug, call graph, medium
 FUN_00e0bf20_s::FUN_00e0bf20_s()
 {
     ((FUN_00e0bf20_s*)((char*)this + 8))->FUN_00cb0a60();
@@ -862,6 +870,9 @@ struct FUN_00e11dc0_class
 
 // @fnv 0x00e11dc0
 // src: HAVOK_LIB 0x00e11dc0
+// pdb: hkgpMesh::applyTranslation | hkgpMesh.obj | retail, object-file run extension, low
+// pdb params: translation
+// pdb locals: trs
 void __thiscall FUN_00e11dc0_class::hkgpMesh_copyPartIdToVerticesW()
 {
     int node = m_2c;
@@ -1136,13 +1147,13 @@ int __cdecl Runtime_EvaluateValue_00e01450(void* p)
     return (*(Vfn*)*(void**)p)(p, 0);
 }
 
-extern int DAT_0126e330;
+extern int hkMemoryMeshShapeClass; // src: XBOX_RETAIL_PDB 0x0126e330 (old: DAT_0126e330/g_0126e330)
 
 // @fnv 0x00e01460
 // src: GUESS 0x00e01460 (confidence: low)
 int* __cdecl Object_GetGlobalObjectAddress_00e01460()
 {
-    return &DAT_0126e330;
+    return &hkMemoryMeshShapeClass;
 }
 
 extern int DAT_010e929c;
@@ -1459,6 +1470,7 @@ struct FUN_00e00000_cls
 // Frees both allocated arrays through the audio allocator, resets their counts and capacity bits, and sets the vtable pointer.
 // @fnv 0x00e00000
 // src: GUESS 0x00e00000 (confidence: medium)
+// pdb: hkpLinearParametricCurve::~hkpLinearParametricCurve | hkpLinearParametricCurveClass.obj | retail, object-file run extension, low
 void FUN_00e00000_cls::ReleaseBothArrays()
 {
     hkMemoryRouter* pHolder = (hkMemoryRouter*)hkMemoryRouter_getInstance();
@@ -1485,19 +1497,19 @@ void FUN_00e00000_cls::ReleaseBothArrays()
     *(volatile int*)&m_vptr00 = (int)&DAT_0102e388;
 }
 
-extern int DAT_0126d9a0;
+extern int hkpGenericConstraintDataClass; // src: XBOX_RETAIL_PDB 0x0126d9a0 (old: DAT_0126d9a0/g_0126d9a0)
 
 // @fnv 0x00e000b0
 // src: GUESS 0x00e000b0 (confidence: low)
 int __cdecl Runtime_EvaluateValue_00e000b0()
 {
-    return reinterpret_cast<int>(&DAT_0126d9a0);
+    return reinterpret_cast<int>(&hkpGenericConstraintDataClass);
 }
 
 // Forward a value to the owner object when the owner pointer is present.
 struct FUN_00d50c00_cls
 {
-    void __thiscall FUN_00d50c00(int value);
+    void __thiscall FUN_00d50c00(int f);
 };
 
 // @fnv 0x00e000c0
@@ -1509,12 +1521,12 @@ void __cdecl Object_ProcessState_00e000c0(FUN_00d50c00_cls* pOwner, int value)
 }
 
 struct CpuOpaque;
-extern CpuOpaque DAT_0126d9e8;
+extern CpuOpaque hkpFixedRigidMotionClass; // src: XBOX_RETAIL_PDB 0x0126d9e8 (old: DAT_0126d9e8/g_0126d9e8)
 // @fnv 0x00e00110
 // src: GUESS 0x00e00110 (confidence: low)
 CpuOpaque* __cdecl Runtime_GetDAT0126d9e8Address()
 {
-    return &DAT_0126d9e8;
+    return &hkpFixedRigidMotionClass;
 }
 
 extern int DAT_010c6cdc;
@@ -1526,13 +1538,13 @@ int* Runtime_GetDAT010c6cdcAddress()
     return &DAT_010c6cdc;
 }
 
-extern int DAT_0126da30;
+extern int hkpDefaultWorldMemoryWatchDogClass; // src: XBOX_RETAIL_PDB 0x0126da30 (old: DAT_0126da30/g_0126da30)
 
 // @fnv 0x00e00170
 // src: GUESS 0x00e00170 (confidence: low)
 int* __cdecl Runtime_GetDAT0126da30Address()
 {
-    return &DAT_0126da30;
+    return &hkpDefaultWorldMemoryWatchDogClass;
 }
 
 extern int DAT_010e81a4;
@@ -1544,13 +1556,13 @@ void* __cdecl Runtime_GetDAT010e81a4Address()
     return &DAT_010e81a4;
 }
 
-extern int DAT_0126da78;
+extern int hkpConstraintChainInstanceActionClass; // src: XBOX_RETAIL_PDB 0x0126da78 (old: DAT_0126da78/g_0126da78)
 
 // @fnv 0x00e001b0
 // src: GUESS 0x00e001b0 (confidence: low)
 int* __cdecl Runtime_GetDAT0126da78Address()
 {
-    return &DAT_0126da78;
+    return &hkpConstraintChainInstanceActionClass;
 }
 
 struct FUN_00e00220_Class
@@ -1565,31 +1577,31 @@ void __cdecl Object_InvokeVirtualMethod_00e00220(FUN_00e00220_Class* param_1)
     param_1->VF00(0);
 }
 
-extern int g_unk0126dac0;
+extern int hkpConstraintChainInstanceClass; // src: XBOX_RETAIL_PDB 0x0126dac0 (old: g_0126dac0/g_unk0126dac0)
 
 // @fnv 0x00e00230
 // src: GUESS 0x00e00230 (confidence: low)
 void* __cdecl Runtime_GetUnk0126dac0Address()
 {
-    return &g_unk0126dac0;
+    return &hkpConstraintChainInstanceClass;
 }
 
 // FUN_00e002e0 : a one-line function - getter
-extern int g_target_00e002e0;
+extern int hkpCharacterMotionClass; // src: XBOX_RETAIL_PDB 0x0126db08 (old: g_0126db08/g_target_00e002e0)
 // @fnv 0x00e002e0
 // src: GUESS 0x00e002e0 (confidence: low)
 void* Object_GetGlobalObjectAddress_00e002e0()
 {
-    return &g_target_00e002e0;
+    return &hkpCharacterMotionClass;
 }
 
-extern int g_unk0126db50;
+extern int hkpCallbackConstraintMotorClass; // src: XBOX_RETAIL_PDB 0x0126db50 (old: g_0126db50/g_unk0126db50)
 
 // @fnv 0x00e00340
 // src: GUESS 0x00e00340 (confidence: low)
 void* __cdecl Object_GetGlobalObjectAddress_00e00340()
 {
-    return &g_unk0126db50;
+    return &hkpCallbackConstraintMotorClass;
 }
 
 extern int DAT_010e83b4;
@@ -1601,13 +1613,13 @@ int* __cdecl Object_GetGlobalObjectAddress_00e00360()
     return &DAT_010e83b4;
 }
 
-extern unsigned char DAT_0126db98;
+extern unsigned char hkpCachingShapePhantomClass; // src: XBOX_RETAIL_PDB 0x0126db98 (old: DAT_0126db98/g_0126db98)
 
 // @fnv 0x00e00380
 // src: GUESS 0x00e00380 (confidence: low)
 void* __cdecl Object_GetGlobalObjectAddress_00e00380()
 {
-    return &DAT_0126db98;
+    return &hkpCachingShapePhantomClass;
 }
 
 struct E00390FinishFlag
@@ -1778,12 +1790,12 @@ void __cdecl Runtime_ForwardCall_00e00490(S_00e00490_vt* p)
     p->m(0);
 }
 
-extern int DAT_0126dc28;
+extern int hkpAabbPhantomClass; // src: XBOX_RETAIL_PDB 0x0126dc28 (old: DAT_0126dc28/g_0126dc28)
 // @fnv 0x00e004a0
 // src: GUESS 0x00e004a0 (confidence: low)
 int* __cdecl Object_GetGlobalObjectAddress_00e004a0()
 {
-    return &DAT_0126dc28;
+    return &hkpAabbPhantomClass;
 }
 
 struct FUN_00e004f0_class
@@ -1801,13 +1813,13 @@ void __cdecl Runtime_ProcessState_00e004b0(FUN_00e004f0_class* object, int value
     }
 }
 
-extern int DAT_0126dc70;
+extern int hkpTriangleShapeClass; // src: XBOX_RETAIL_PDB 0x0126dc70 (old: DAT_0126dc70/g_0126dc70)
 
 // @fnv 0x00e00560
 // src: GUESS 0x00e00560 (confidence: low)
 int* __cdecl Object_GetGlobalObjectAddress_00e00560()
 {
-    return &DAT_0126dc70;
+    return &hkpTriangleShapeClass;
 }
 
 extern int DAT_010c749c;
@@ -1819,13 +1831,13 @@ int* Object_GetGlobalObjectAddress_00e005a0()
     return &DAT_010c749c;
 }
 
-extern int DAT_0126dcb8;
+extern int hkpTriSampledHeightFieldCollectionClass; // src: XBOX_RETAIL_PDB 0x0126dcb8 (old: DAT_0126dcb8/g_0126dcb8)
 
 // @fnv 0x00e005c0
 // src: GUESS 0x00e005c0 (confidence: low)
 void* __cdecl Object_GetGlobalObjectAddress_00e005c0()
 {
-    return &DAT_0126dcb8;
+    return &hkpTriSampledHeightFieldCollectionClass;
 }
 
 struct Handler_cls
@@ -1896,13 +1908,13 @@ FUN_00e00610::FUN_00e00610(int flag) : S_00e00610_Mid(flag)
     }
 }
 
-extern int DAT_0126dd00;
+extern int hkpTriSampledHeightFieldBvTreeShapeClass; // src: XBOX_RETAIL_PDB 0x0126dd00 (old: DAT_0126dd00/g_0126dd00)
 
 // @fnv 0x00e00680
 // src: GUESS 0x00e00680 (confidence: low)
 int* Object_GetGlobalObjectAddress_00e00680()
 {
-    return &DAT_0126dd00;
+    return &hkpTriSampledHeightFieldBvTreeShapeClass;
 }
 
 // FUN_00e00690: null-guarded forwarding of a second argument to a
@@ -1967,13 +1979,13 @@ FUN_00e006d0::FUN_00e006d0(int flag) : S_00e006d0_B(flag)
     }
 }
 
-extern int DAT_0126dd48;
+extern int hkpTransformShapeClass; // src: XBOX_RETAIL_PDB 0x0126dd48 (old: DAT_0126dd48/g_0126dd48)
 
 // @fnv 0x00e00730
 // src: GUESS 0x00e00730 (confidence: low)
 int __cdecl Runtime_EvaluateValue_00e00730()
 {
-    return reinterpret_cast<int>(&DAT_0126dd48);
+    return reinterpret_cast<int>(&hkpTransformShapeClass);
 }
 
 extern int DAT_010cc41c;
@@ -1985,12 +1997,12 @@ int* __cdecl Object_GetGlobalObjectAddress_00e00780()
 }
 
 struct CpuOpaque;
-extern CpuOpaque DAT_0126dd90;
+extern CpuOpaque hkpSphereShapeClass; // src: XBOX_RETAIL_PDB 0x0126dd90 (old: DAT_0126dd90/g_0126dd90)
 // @fnv 0x00e007a0
 // src: GUESS 0x00e007a0 (confidence: low)
 CpuOpaque* __cdecl Object_GetGlobalObjectAddress_00e007a0()
 {
-    return &DAT_0126dd90;
+    return &hkpSphereShapeClass;
 }
 
 extern int DAT_010cb5ac;
@@ -2002,12 +2014,12 @@ int* __cdecl Object_GetGlobalObjectAddress_00e007e0()
 }
 
 struct CpuOpaque;
-extern CpuOpaque DAT_0126ddd8;
+extern CpuOpaque hkpShapeInfoClass; // src: XBOX_RETAIL_PDB 0x0126ddd8 (old: DAT_0126ddd8/g_0126ddd8)
 // @fnv 0x00e00800
 // src: GUESS 0x00e00800 (confidence: low)
 CpuOpaque* __cdecl Object_GetGlobalObjectAddress_00e00800()
 {
-    return &DAT_0126ddd8;
+    return &hkpShapeInfoClass;
 }
 
 extern int DAT_010e8824;
@@ -2127,16 +2139,17 @@ struct FUN_00e00830 : S_00e00830_Base
 };
 
 // @fnv 0x00e00830
+// pdb: hkpShapeInfo::~hkpShapeInfo | hkpShapeInfoClass.obj | retail, object-file run extension, low
 FUN_00e00830::~FUN_00e00830() throw()
 {}
 
 // FUN_00e00940 : a one-line function - getter
-extern int g_target_00e00940;
+extern int hkpRemoveTerminalsMoppModifierClass; // src: XBOX_RETAIL_PDB 0x0126de20 (old: g_0126de20/g_target_00e00940)
 // @fnv 0x00e00940
 // src: GUESS 0x00e00940 (confidence: low)
 void* Object_GetGlobalObjectAddress_00e00940()
 {
-    return &g_target_00e00940;
+    return &hkpRemoveTerminalsMoppModifierClass;
 }
 
 // Resets an object to the "script terminal" class layout: it installs the
@@ -2183,6 +2196,8 @@ struct FUN_00e00990_cls
 
 // Calls FUN_00e48740, then if bit 0 of acFlags is set frees this through the allocator from FUN_00c85750 using m_uSize, and returns this.
 // @fnv 0x00e00990
+// pdb: hkpRemoveTerminalsMoppModifier::`scalar deleting destructor' | hkpRemoveTerminalsMoppModifierClass.obj | retail, vtable slot, high
+// pdb params: this
 FUN_00e00990_cls* FUN_00e00990_cls::DestroyIfFlagged(unsigned char acFlags)
 {
     FUN_00e48740();
@@ -2306,13 +2321,13 @@ FUN_00e00a80_cls::FUN_00e00a80_cls(int iEnabled)
         m_iEnabled = 1;
 }
 
-extern char DAT_0126def8;
+extern char hkpMultiSphereShapeClass; // src: XBOX_RETAIL_PDB 0x0126def8 (old: DAT_0126def8/g_0126def8)
 
 // @fnv 0x00e00af0
 // src: GUESS 0x00e00af0 (confidence: low)
 char* __cdecl Runtime_GetDAT0126def8Address(void)
 {
-    return &DAT_0126def8;
+    return &hkpMultiSphereShapeClass;
 }
 
 extern int DAT_010ce4bc;
@@ -2324,13 +2339,13 @@ void* Runtime_GetDAT010ce4bcAddress()
     return &DAT_010ce4bc;
 }
 
-extern int g_unk0126df40;
+extern int hkpGroupFilterClass; // src: XBOX_RETAIL_PDB 0x0126df40 (old: g_0126df40/g_unk0126df40)
 
 // @fnv 0x00e00b50
 // src: GUESS 0x00e00b50 (confidence: low)
 void* __cdecl Runtime_GetUnk0126df40Address()
 {
-    return &g_unk0126df40;
+    return &hkpGroupFilterClass;
 }
 
 inline void* operator new(unsigned int, void* pvWhere) throw()
@@ -2403,20 +2418,20 @@ FUN_00e00ba0::FUN_00e00ba0(int flag)
 }
 
 struct CpuOpaque;
-extern CpuOpaque DAT_0126df88;
+extern CpuOpaque hkpFastMeshShapeClass; // src: XBOX_RETAIL_PDB 0x0126df88 (old: DAT_0126df88/g_0126df88)
 // @fnv 0x00e00c80
 // src: GUESS 0x00e00c80 (confidence: low)
 CpuOpaque* __cdecl Object_GetGlobalObjectAddress_00e00c80()
 {
-    return &DAT_0126df88;
+    return &hkpFastMeshShapeClass;
 }
 
-extern int DAT_0126dfd0;
+extern int hkpDefaultConvexListFilterClass; // src: XBOX_RETAIL_PDB 0x0126dfd0 (old: DAT_0126dfd0/g_0126dfd0)
 // @fnv 0x00e00d00
 // src: GUESS 0x00e00d00 (confidence: low)
 int* __cdecl Object_GetGlobalObjectAddress_00e00d00()
 {
-    return &DAT_0126dfd0;
+    return &hkpDefaultConvexListFilterClass;
 }
 
 // FUN_00e00d20: cdecl, returns the address of a global object.
@@ -2429,13 +2444,13 @@ int* __cdecl Object_GetGlobalObjectAddress_00e00d20()
     return &DAT_010c63cc;
 }
 
-extern int DAT_0126e018;
+extern int hkpCylinderShapeClass; // src: XBOX_RETAIL_PDB 0x0126e018 (old: DAT_0126e018/g_0126e018)
 
 // @fnv 0x00e00d40
 // src: GUESS 0x00e00d40 (confidence: low)
 int* __cdecl Object_GetGlobalObjectAddress_00e00d40()
 {
-    return &DAT_0126e018;
+    return &hkpCylinderShapeClass;
 }
 
 struct FUN_00d57b20_class
@@ -2451,13 +2466,13 @@ void __cdecl hkpCylinderShape_hkpCylinderShape_00d57b20_ProcessState_00e00d50(FU
         pObject->hkpCylinderShape_hkpCylinderShape_00d57b20(value);
 }
 
-extern int DAT_0126e060;
+extern int hkpConvexVerticesConnectivityClass; // src: XBOX_RETAIL_PDB 0x0126e060 (old: DAT_0126e060/g_0126e060)
 
 // @fnv 0x00e00da0
 // src: GUESS 0x00e00da0 (confidence: low)
 void* __cdecl Object_GetGlobalObjectAddress_00e00da0()
 {
-    return &DAT_0126e060;
+    return &hkpConvexVerticesConnectivityClass;
 }
 
 extern int DAT_010e8d8c;
@@ -2469,13 +2484,13 @@ int* __cdecl Object_GetGlobalObjectAddress_00e00dc0()
     return &DAT_010e8d8c;
 }
 
-extern int DAT_0126e0a8;
+extern int hkpConvexTranslateShapeClass; // src: XBOX_RETAIL_PDB 0x0126e0a8 (old: DAT_0126e0a8/g_0126e0a8)
 
 // @fnv 0x00e00e80
 // src: GUESS 0x00e00e80 (confidence: low)
 void* __cdecl Object_GetGlobalObjectAddress_00e00e80()
 {
-    return &DAT_0126e0a8;
+    return &hkpConvexTranslateShapeClass;
 }
 
 extern int DAT_010d0e5c;
@@ -2497,13 +2512,13 @@ void __cdecl Object_InvokeVirtualMethod_00e00ee0(S_00e00ee0_vt* p)
     p->m0(0);
 }
 
-extern int DAT_0126e0f0;
+extern int hkpConvexTransformShapeClass; // src: XBOX_RETAIL_PDB 0x0126e0f0 (old: DAT_0126e0f0/g_0126e0f0)
 
 // @fnv 0x00e00ef0
 // src: GUESS 0x00e00ef0 (confidence: low)
 void* __cdecl Runtime_GetDAT0126e0f0Address()
 {
-    return &DAT_0126e0f0;
+    return &hkpConvexTransformShapeClass;
 }
 
 extern int DAT_010d102c;
@@ -2529,12 +2544,12 @@ void __cdecl Runtime_ForwardCall_00e00f50(FUN_00e00f50_cls* pObj)
     pObj->m_fn(0);
 }
 
-extern int DAT_0126e138;
+extern int hkpConvexPieceMeshShapeClass; // src: XBOX_RETAIL_PDB 0x0126e138 (old: DAT_0126e138/g_0126e138)
 // @fnv 0x00e00f60
 // src: GUESS 0x00e00f60 (confidence: low)
 int* __cdecl Object_GetGlobalObjectAddress_00e00f60()
 {
-    return &DAT_0126e138;
+    return &hkpConvexPieceMeshShapeClass;
 }
 
 // FUN_00e00f70: forwards a value to a helper on the passed-in object
@@ -2577,6 +2592,8 @@ class FUN_00e00fb0
 
 // Constructor that installs successive vtable and member pointers and, when flag is non-zero, sets m_0c and m_15.
 // @fnv 0x00e00fb0
+// pdb: hkpConvexPieceMeshShape::operator delete | hkpConvexPieceMeshShapeClass.obj | debug, object-file run extension, low
+// pdb params: p
 FUN_00e00fb0::FUN_00e00fb0(int flag)
 {
     *(void* volatile*)&m_vptr = &DAT_010305a8;
@@ -2608,13 +2625,13 @@ void __cdecl Runtime_ForwardCall_00e01050(VirtualSlotObject* p)
     p->unk00(0);
 }
 
-extern int DAT_0126e180;
+extern int hkpConvexListShapeClass; // src: XBOX_RETAIL_PDB 0x0126e180 (old: DAT_0126e180/g_0126e180)
 
 // @fnv 0x00e01060
 // src: GUESS 0x00e01060 (confidence: low)
 int* __cdecl Object_GetGlobalObjectAddress_00e01060()
 {
-    return &DAT_0126e180;
+    return &hkpConvexListShapeClass;
 }
 
 extern int DAT_010c6fb0;
@@ -2657,13 +2674,13 @@ void* __cdecl Runtime_GetDAT010d10c4Address()
     return &DAT_010d10c4;
 }
 
-extern int DAT_0126e1c8;
+extern int hkpCompressedSampledHeightFieldShapeClass; // src: XBOX_RETAIL_PDB 0x0126e1c8 (old: DAT_0126e1c8/g_0126e1c8)
 
 // @fnv 0x00e010d0
 // src: GUESS 0x00e010d0 (confidence: low)
 void* __cdecl Runtime_GetDAT0126e1c8Address(void)
 {
-    return &DAT_0126e1c8;
+    return &hkpCompressedSampledHeightFieldShapeClass;
 }
 
 extern int DAT_010e901c;
@@ -2675,13 +2692,13 @@ void* __cdecl Runtime_GetDAT010e901cAddress()
     return &DAT_010e901c;
 }
 
-extern int DAT_0126e210;
+extern int hkpCollisionFilterListClass; // src: XBOX_RETAIL_PDB 0x0126e210 (old: DAT_0126e210/g_0126e210)
 
 // @fnv 0x00e01200
 // src: GUESS 0x00e01200 (confidence: low)
 void* __cdecl Object_GetGlobalObjectAddress_00e01200()
 {
-    return &DAT_0126e210;
+    return &hkpCollisionFilterListClass;
 }
 
 namespace fnv_00e01210 {
@@ -2754,12 +2771,12 @@ void __cdecl Object_InvokeVirtualMethod_00e01320(FUN_00e01320_cls* pObject)
     pObject->m_v00(0);
 }
 
-extern int DAT_0126e258;
+extern int hkpCapsuleShapeClass; // src: XBOX_RETAIL_PDB 0x0126e258 (old: DAT_0126e258/g_0126e258)
 // @fnv 0x00e01330
 // src: GUESS 0x00e01330 (confidence: low)
 int* __cdecl Runtime_GetDAT0126e258Address(void)
 {
-    return &DAT_0126e258;
+    return &hkpCapsuleShapeClass;
 }
 
 extern int DAT_010ce25c;
@@ -2770,13 +2787,13 @@ int* __cdecl Runtime_GetDAT010ce25cAddress()
     return &DAT_010ce25c;
 }
 
-extern int DAT_0126e2a0;
+extern int hkpBvShapeClass; // src: XBOX_RETAIL_PDB 0x0126e2a0 (old: DAT_0126e2a0/g_0126e2a0)
 
 // @fnv 0x00e01390
 // src: GUESS 0x00e01390 (confidence: low)
 int __cdecl Runtime_EvaluateValue_00e01390()
 {
-    return reinterpret_cast<int>(&DAT_0126e2a0);
+    return reinterpret_cast<int>(&hkpBvShapeClass);
 }
 
 // @fnv 0x00e013e0
@@ -2786,13 +2803,13 @@ void* __cdecl Object_GetGlobalObjectAddress_00e013e0()
     return &DAT_010c6ff8;
 }
 
-extern int DAT_0126e2e8;
+extern int hkpBoxShapeClass; // src: XBOX_RETAIL_PDB 0x0126e2e8 (old: DAT_0126e2e8/g_0126e2e8)
 
 // @fnv 0x00e01400
 // src: GUESS 0x00e01400 (confidence: low)
 int* __cdecl Object_GetGlobalObjectAddress_00e01400()
 {
-    return &DAT_0126e2e8;
+    return &hkpBoxShapeClass;
 }
 
 extern int DAT_010c70b4;
@@ -2805,12 +2822,12 @@ int* __cdecl Object_GetGlobalObjectAddress_00e01440()
 }
 
 // FUN_00e01520 : a one-line function - getter
-extern int g_target_00e01520;
+extern int hkxVertexVectorDataChannelClass; // src: XBOX_RETAIL_PDB 0x0126e378 (old: g_0126e378/g_target_00e01520)
 // @fnv 0x00e01520
 // src: GUESS 0x00e01520 (confidence: low)
 void* Object_GetGlobalObjectAddress_00e01520()
 {
-    return &g_target_00e01520;
+    return &hkxVertexVectorDataChannelClass;
 }
 
 extern int DAT_010e9300;
@@ -2822,13 +2839,13 @@ int* Object_GetGlobalObjectAddress_00e01540()
     return &DAT_010e9300;
 }
 
-extern int DAT_0126e3c0;
+extern int hkxVertexSelectionChannelClass; // src: XBOX_RETAIL_PDB 0x0126e3c0 (old: DAT_0126e3c0/g_0126e3c0)
 
 // @fnv 0x00e01560
 // src: GUESS 0x00e01560 (confidence: low)
 void* __cdecl Object_GetGlobalObjectAddress_00e01560()
 {
-    return &DAT_0126e3c0;
+    return &hkxVertexSelectionChannelClass;
 }
 
 extern int DAT_010e9358;
@@ -2850,13 +2867,13 @@ void __cdecl Runtime_ForwardCall_00e01590(FnvCpu_FUN_00e01590_CpuInterface* obje
     object->Invoke(0);
 }
 
-extern int DAT_0126e408;
+extern int hkxVertexIntDataChannelClass; // src: XBOX_RETAIL_PDB 0x0126e408 (old: DAT_0126e408/g_0126e408)
 
 // @fnv 0x00e015a0
 // src: GUESS 0x00e015a0 (confidence: low)
 int* __cdecl Object_GetGlobalObjectAddress_00e015a0()
 {
-    return &DAT_0126e408;
+    return &hkxVertexIntDataChannelClass;
 }
 
 extern int DAT_010e93ac;
@@ -2869,12 +2886,12 @@ void* __cdecl Object_GetGlobalObjectAddress_00e015c0()
 }
 
 struct CpuOpaque;
-extern CpuOpaque DAT_0126e450;
+extern CpuOpaque hkxVertexFloatDataChannelClass; // src: XBOX_RETAIL_PDB 0x0126e450 (old: DAT_0126e450/g_0126e450)
 // @fnv 0x00e01650
 // src: GUESS 0x00e01650 (confidence: low)
 CpuOpaque* __cdecl Runtime_GetDAT0126e450Address()
 {
-    return &DAT_0126e450;
+    return &hkxVertexFloatDataChannelClass;
 }
 
 extern int DAT_010e943c;
@@ -2898,13 +2915,13 @@ int __cdecl Object_InvokeVirtualMethod_00e01680(CallerVtbl* p)
     return p->v0(0);
 }
 
-extern int DAT_0126e498;
+extern int hkxTriangleSelectionChannelClass; // src: XBOX_RETAIL_PDB 0x0126e498 (old: DAT_0126e498/g_0126e498)
 
 // @fnv 0x00e01690
 // src: GUESS 0x00e01690 (confidence: low)
 void* __cdecl Runtime_GetDAT0126e498Address()
 {
-    return &DAT_0126e498;
+    return &hkxTriangleSelectionChannelClass;
 }
 
 extern int DAT_010e9494;
@@ -2931,13 +2948,13 @@ void __cdecl Object_InvokeVirtualMethod_00e016c0(FUN_00e016c0_cls* pObject)
     pObject->m0(0);
 }
 
-extern int DAT_0126e4e0;
+extern int hkxTextureInplaceClass; // src: XBOX_RETAIL_PDB 0x0126e4e0 (old: DAT_0126e4e0/g_0126e4e0)
 
 // @fnv 0x00e016d0
 // src: GUESS 0x00e016d0 (confidence: low)
 int __cdecl Runtime_EvaluateValue_00e016d0()
 {
-    return reinterpret_cast<int>(&DAT_0126e4e0);
+    return reinterpret_cast<int>(&hkxTextureInplaceClass);
 }
 
 struct EffectSubObject
@@ -3026,26 +3043,27 @@ struct __declspec(novtable) FUN_00e01750 : S_00e01750_Base
 };
 // Destroys the object, releasing its array and the two handles through their destructors.
 // @fnv 0x00e01750
+// pdb: hkxTextureInplace::~hkxTextureInplace | hkxTextureInplaceClass.obj | retail, object-file run extension, low
 FUN_00e01750::~FUN_00e01750() throw()
 {}
 }  // namespace fnv_00e01750
 
-extern int DAT_0126e528;
+extern int hkxTextureFileClass; // src: XBOX_RETAIL_PDB 0x0126e528 (old: DAT_0126e528/g_0126e528)
 
 // @fnv 0x00e017e0
 // src: GUESS 0x00e017e0 (confidence: low)
 int* __cdecl Object_GetGlobalObjectAddress_00e017e0()
 {
-    return &DAT_0126e528;
+    return &hkxTextureFileClass;
 }
 
-extern int DAT_0126e570;
+extern int hkxSparselyAnimatedStringClass; // src: XBOX_RETAIL_PDB 0x0126e570 (old: DAT_0126e570/g_0126e570)
 
 // @fnv 0x00e018d0
 // src: GUESS 0x00e018d0 (confidence: low)
 int* __cdecl Runtime_GetDAT0126e570Address()
 {
-    return &DAT_0126e570;
+    return &hkxSparselyAnimatedStringClass;
 }
 
 extern int DAT_010e9614;
@@ -3075,12 +3093,12 @@ int* __cdecl Object_GetGlobalObjectAddress_00e01a00()
 }
 
 struct CpuOpaque;
-extern CpuOpaque DAT_0126e600;
+extern CpuOpaque hkxSparselyAnimatedBoolClass; // src: XBOX_RETAIL_PDB 0x0126e600 (old: DAT_0126e600/g_0126e600)
 // @fnv 0x00e01a20
 // src: GUESS 0x00e01a20 (confidence: low)
 CpuOpaque* __cdecl Object_GetGlobalObjectAddress_00e01a20()
 {
-    return &DAT_0126e600;
+    return &hkxSparselyAnimatedBoolClass;
 }
 
 extern int DAT_010e96c8;
@@ -3148,17 +3166,18 @@ struct __declspec(novtable) FUN_00e01a50 : S_00e01a50_Base
 
 // Destructor that releases the char and int arrays through the router's heap allocator.
 // @fnv 0x00e01a50
+// pdb: hkxSparselyAnimatedBool::~hkxSparselyAnimatedBool | hkxSparselyAnimatedBoolClass.obj | retail, object-file run extension, low
 FUN_00e01a50::~FUN_00e01a50() throw()
 {}
 }  // namespace fnv_00e01a50
 
-extern int g_unk0126e648;
+extern int hkxSkinBindingClass; // src: XBOX_RETAIL_PDB 0x0126e648 (old: g_0126e648/g_unk0126e648)
 
 // @fnv 0x00e01b00
 // src: GUESS 0x00e01b00 (confidence: low)
 void* __cdecl Object_GetGlobalObjectAddress_00e01b00()
 {
-    return &g_unk0126e648;
+    return &hkxSkinBindingClass;
 }
 
 extern int DAT_010e977c;
@@ -3279,26 +3298,27 @@ struct __declspec(novtable) FUN_00e01b30 : S_00e01b30_Base
 };
 // Destroys the object, releasing its reference-counted target and both arrays through their member destructors.
 // @fnv 0x00e01b30
+// pdb: hkxSkinBinding::~hkxSkinBinding | hkxSkinBindingClass.obj | retail, object-file run extension, low
 FUN_00e01b30::~FUN_00e01b30() throw()
 {}
 }  // namespace fnv_00e01b30
 
-extern int DAT_0126e690;
+extern int hkxSceneClass; // src: XBOX_RETAIL_PDB 0x0126e690 (old: DAT_0126e690/g_0126e690)
 
 // @fnv 0x00e01c20
 // src: GUESS 0x00e01c20 (confidence: low)
 void* __cdecl Object_GetGlobalObjectAddress_00e01c20()
 {
-    return &DAT_0126e690;
+    return &hkxSceneClass;
 }
 
-extern int g_unkGlobal;
+extern int hkxNodeSelectionSetClass; // src: XBOX_RETAIL_PDB 0x0126e6d8 (old: g_0126e6d8/g_unkGlobal)
 
 // @fnv 0x00e01ce0
 // src: GUESS 0x00e01ce0 (confidence: low)
 void* Object_GetGlobalObjectAddress_00e01ce0()
 {
-    return &g_unkGlobal;
+    return &hkxNodeSelectionSetClass;
 }
 
 struct FUN_00e01e00_vt
@@ -3313,13 +3333,13 @@ void __cdecl Object_InvokeVirtualMethod_00e01e00(FUN_00e01e00_vt* p)
     p->m(0);
 }
 
-extern int DAT_0126e720;
+extern int hkxMeshUserChannelInfoClass; // src: XBOX_RETAIL_PDB 0x0126e720 (old: DAT_0126e720/g_0126e720)
 
 // @fnv 0x00e01e10
 // src: GUESS 0x00e01e10 (confidence: low)
 int* __cdecl Runtime_GetDAT0126e720Address()
 {
-    return &DAT_0126e720;
+    return &hkxMeshUserChannelInfoClass;
 }
 
 // Null-guarded forwarder: the first argument is an object pointer; when it
@@ -3340,12 +3360,12 @@ void __cdecl CallHandleIfNotNull(FUN_00e01e20_cls* pObject, int aiValue)
     }
 }
 
-extern int DAT_0126e768;
+extern int hkxMeshClass; // src: XBOX_RETAIL_PDB 0x0126e768 (old: DAT_0126e768/g_0126e768)
 // @fnv 0x00e01e70
 // src: GUESS 0x00e01e70 (confidence: low)
 int* __cdecl Runtime_GetDAT0126e768Address()
 {
-    return &DAT_0126e768;
+    return &hkxMeshClass;
 }
 
 extern int DAT_010e9acc;
@@ -3364,6 +3384,8 @@ struct FUN_00e01e80_obj
 // If param_1 is non-null, stores the address of DAT_010e9acc in unk00 and calls m(param_2) on the objects at offsets 0x14 and 0x18.
 // @fnv 0x00e01e80
 // src: GUESS 0x00e01e80 (confidence: low)
+// pdb: hkxMesh::UserChannelInfo::UserChannelInfo | hkxMeshClass.obj | debug, object-file run extension, low
+// pdb params: f
 void __cdecl Object_UpdateFields_00e01e80(FUN_00e01e80_obj* pObj, int aiValue)
 {
     if (pObj != 0)
@@ -3374,13 +3396,13 @@ void __cdecl Object_UpdateFields_00e01e80(FUN_00e01e80_obj* pObj, int aiValue)
     }
 }
 
-extern int DAT_0126e7b0;
+extern int hkxMeshSectionClass; // src: XBOX_RETAIL_PDB 0x0126e7b0 (old: DAT_0126e7b0/g_0126e7b0)
 
 // @fnv 0x00e01f40
 // src: GUESS 0x00e01f40 (confidence: low)
 int* __cdecl Object_GetGlobalObjectAddress_00e01f40()
 {
-    return &DAT_0126e7b0;
+    return &hkxMeshSectionClass;
 }
 
 extern int DAT_010e9b7c;
@@ -3407,13 +3429,13 @@ void __cdecl Object_ProcessState_00e020c0(FUN_00e4ae80_Obj* pObj, int iValue)
     }
 }
 
-extern int g_unk0126e7f8;
+extern int hkxMaterialShaderSetClass; // src: XBOX_RETAIL_PDB 0x0126e7f8 (old: g_0126e7f8/g_unk0126e7f8)
 
 // @fnv 0x00e02110
 // src: GUESS 0x00e02110 (confidence: low)
 void* __cdecl Runtime_GetUnk0126e7f8Address()
 {
-    return &g_unk0126e7f8;
+    return &hkxMaterialShaderSetClass;
 }
 
 // FUN_00e02120: cdecl, takes a pointer, calls virtual slot 0 with argument 0.
@@ -3431,13 +3453,13 @@ void Object_InvokeVirtualMethod_00e02120(FUN_00e02120_cls* obj)
     obj->v00(0);
 }
 
-extern int g_unk0126e840;
+extern int hkxMaterialShaderClass; // src: XBOX_RETAIL_PDB 0x0126e840 (old: g_0126e840/g_unk0126e840)
 
 // @fnv 0x00e02130
 // src: GUESS 0x00e02130 (confidence: low)
 void* __cdecl Runtime_GetUnk0126e840Address()
 {
-    return &g_unk0126e840;
+    return &hkxMaterialShaderClass;
 }
 
 namespace fnv_00e021d0 {
@@ -3475,6 +3497,7 @@ struct FUN_00e021d0_class
 extern int DAT_0102e388;
 
 // @fnv 0x00e021d0
+// pdb: hkxMaterialShader::~hkxMaterialShader | hkxMaterialShaderClass.obj | retail, object-file run extension, low
 void FUN_00e021d0_class::ClearAndReset()
 {
     hkMemoryRouter& manager = hkMemoryRouter::getInstance();
@@ -3500,23 +3523,23 @@ struct GlobalObject
 {
     int unk00;
 };
-extern GlobalObject g_global;
+extern GlobalObject hkxMaterialEffectClass; // src: XBOX_RETAIL_PDB 0x0126e888 (old: g_0126e888/g_global)
 
 // @fnv 0x00e02270
 // src: GUESS 0x00e02270 (confidence: high)
 GlobalObject* __cdecl Runtime_GetGlobalAddress_00e02270()
 {
-    return &g_global;
+    return &hkxMaterialEffectClass;
 }
 
 struct Data_0126e8d0;
-extern Data_0126e8d0 DAT_0126e8d0;
+extern Data_0126e8d0 hkxLightClass; // src: XBOX_RETAIL_PDB 0x0126e8d0 (old: DAT_0126e8d0/g_0126e8d0)
 
 // @fnv 0x00e02350
 // src: GUESS 0x00e02350 (confidence: low)
 Data_0126e8d0* __cdecl Runtime_GetDAT0126e8d0Address()
 {
-    return &DAT_0126e8d0;
+    return &hkxLightClass;
 }
 
 extern int DAT_010e9e74;
@@ -3528,13 +3551,13 @@ void* __cdecl Runtime_GetDAT010e9e74Address()
     return &DAT_010e9e74;
 }
 
-extern int DAT_0126e918;
+extern int hkxIndexBufferClass; // src: XBOX_RETAIL_PDB 0x0126e918 (old: DAT_0126e918/g_0126e918)
 
 // @fnv 0x00e02390
 // src: GUESS 0x00e02390 (confidence: low)
 int* __cdecl Runtime_GetDAT0126e918Address()
 {
-    return &DAT_0126e918;
+    return &hkxIndexBufferClass;
 }
 
 extern int DAT_010e9f48;
@@ -3601,6 +3624,7 @@ class __declspec(novtable) FUN_00e023c0 : public E023C0BaseObject
 
 // Empty destructor for the object; member arrays are destroyed by their own destructors.
 // @fnv 0x00e023c0
+// pdb: hkxIndexBuffer::~hkxIndexBuffer | hkxIndexBufferClass.obj | retail, object-file run extension, low
 FUN_00e023c0::~FUN_00e023c0()
 {}
 }  // namespace fnv_00e023c0
@@ -3617,13 +3641,13 @@ void Object_Destroy_Thunk_00e02460(E02460Object* pkObject)
     pkObject->Destroy(false);
 }
 
-extern int DAT_0126e960;
+extern int hkxEdgeSelectionChannelClass; // src: XBOX_RETAIL_PDB 0x0126e960 (old: DAT_0126e960/g_0126e960)
 
 // @fnv 0x00e02470
 // src: GUESS 0x00e02470 (confidence: low)
 int* __cdecl Runtime_GetDAT0126e960Address()
 {
-    return &DAT_0126e960;
+    return &hkxEdgeSelectionChannelClass;
 }
 
 extern int DAT_010e9fa4;
@@ -3636,12 +3660,12 @@ void* __cdecl Runtime_GetDAT010e9fa4Address()
 }
 
 // FUN_00e024b0 : a one-line function - getter
-extern int g_target_00e024b0;
+extern int hkxCameraClass; // src: XBOX_RETAIL_PDB 0x0126e9a8 (old: g_0126e9a8/g_target_00e024b0)
 // @fnv 0x00e024b0
 // src: GUESS 0x00e024b0 (confidence: low)
 void* Runtime_GetTarget00e024b0Address()
 {
-    return &g_target_00e024b0;
+    return &hkxCameraClass;
 }
 
 extern int DAT_010ea0a4;
@@ -3679,13 +3703,13 @@ struct GlobalObject
 {
     int unk00;
 };
-extern GlobalObject g_global;
+extern GlobalObject hkxAnimatedVectorClass; // src: XBOX_RETAIL_PDB 0x0126ea38 (old: g_0126ea38/g_global)
 
 // @fnv 0x00e02530
 // src: GUESS 0x00e02530 (confidence: high)
 GlobalObject* __cdecl Runtime_GetGlobalAddress()
 {
-    return &g_global;
+    return &hkxAnimatedVectorClass;
 }
 }  // namespace fnv_00e02530
 
@@ -3736,6 +3760,8 @@ struct FUN_00e025a0_cls
 
 // Frees the array buffer via the audio allocator, resets the object's fields and vtable, and optionally frees the object itself when acFlags bit 0 is set.
 // @fnv 0x00e025a0
+// pdb: hkxVertexVectorDataChannel::`scalar deleting destructor' | hkxVertexVectorDataChannelClass.obj | retail, vtable slot, high
+// pdb params: this
 FUN_00e025a0_cls* FUN_00e025a0_cls::FUN_00e025a0(unsigned char acFlags)
 {
     hkMemoryRouter* pHolder = hkMemoryRouter_getInstance();
@@ -3759,13 +3785,13 @@ FUN_00e025a0_cls* FUN_00e025a0_cls::FUN_00e025a0(unsigned char acFlags)
 }
 }  // namespace fnv_00e025a0
 
-extern int DAT_0126eac8;
+extern int hkxAnimatedMatrixClass; // src: XBOX_RETAIL_PDB 0x0126eac8 (old: DAT_0126eac8/g_0126eac8)
 
 // @fnv 0x00e02620
 // src: GUESS 0x00e02620 (confidence: low)
 void* Object_GetGlobalObjectAddress_00e02620()
 {
-    return &DAT_0126eac8;
+    return &hkxAnimatedMatrixClass;
 }
 
 extern int DAT_010ea188;
@@ -3777,12 +3803,12 @@ int __cdecl Object_ComputeValue_00e02640()
     return reinterpret_cast<int>(&DAT_010ea188);
 }
 
-extern unsigned char DAT_0126eb10;
+extern unsigned char hkxAnimatedFloatClass; // src: XBOX_RETAIL_PDB 0x0126eb10 (old: DAT_0126eb10/g_0126eb10)
 // @fnv 0x00e026d0
 // src: GUESS 0x00e026d0 (confidence: low)
 unsigned char* __cdecl Runtime_GetDAT0126eb10Address()
 {
-    return &DAT_0126eb10;
+    return &hkxAnimatedFloatClass;
 }
 
 extern int DAT_010ea1ac;
@@ -3808,22 +3834,22 @@ void __cdecl Object_ProcessState_00e02700(E02700Object* pkObject, void* pvData)
         pkObject->Process(pvData);
 }
 
-extern int g_0126eb58;
+extern int hkAlignSceneToNodeOptionsClass; // src: XBOX_RETAIL_PDB 0x0126eb58 (old: g_0126eb58)
 
 // @fnv 0x00e02750
 // src: GUESS 0x00e02750 (confidence: low)
 int* __cdecl Runtime_GetField0126eb58Address()
 {
-    return &g_0126eb58;
+    return &hkAlignSceneToNodeOptionsClass;
 }
 
-extern int DAT_0126eba0;
+extern int hkOstreamClass; // src: XBOX_RETAIL_PDB 0x0126eba0 (old: DAT_0126eba0/g_0126eba0)
 
 // @fnv 0x00e02770
 // src: GUESS 0x00e02770 (confidence: low)
 int* __cdecl Runtime_GetDAT0126eba0Address()
 {
-    return &DAT_0126eba0;
+    return &hkOstreamClass;
 }
 
 extern int DAT_010c9314;
@@ -4219,13 +4245,15 @@ struct SearchContainer
 
 // @fnv 0x00e10820
 // src: HAVOK_LIB 0x00e10820
-SearchItem* findChildNode(SearchContainer* c, double key, int aiFieldIndex)
+// pdb: findChildNode | hkMonitorStreamAnalyzer.obj | debug, upstream name already matches, high
+// pdb params: currentNode, sampleTime, absoluteTimeIndex
+SearchItem* findChildNode(SearchContainer* currentNode, double sampleTime, int absoluteTimeIndex)
 {
     int lo = 0;
-    int hi = c->m_uiItemCount;
+    int hi = currentNode->m_uiItemCount;
     if (hi > 2)
     {
-        SearchItem** items = c->m_items;
+        SearchItem** items = currentNode->m_items;
         do
         {
             int mid = (hi + lo) >> 1;
@@ -4234,7 +4262,7 @@ SearchItem* findChildNode(SearchContainer* c, double key, int aiFieldIndex)
             {
                 break;
             }
-            if (key < it->m_key)
+            if (sampleTime < it->m_key)
             {
                 hi = mid;
             }
@@ -4249,7 +4277,7 @@ SearchItem* findChildNode(SearchContainer* c, double key, int aiFieldIndex)
     {
         return 0;
     }
-    SearchItem** p = c->m_items + i;
+    SearchItem** p = currentNode->m_items + i;
     for (; i < hi; i++, p++)
     {
         SearchItem* it = *p;
@@ -4257,10 +4285,10 @@ SearchItem* findChildNode(SearchContainer* c, double key, int aiFieldIndex)
         {
             continue;
         }
-        float f = ((float*)it)[aiFieldIndex];
-        if ((double)f + it->m_key >= key)
+        float f = ((float*)it)[absoluteTimeIndex];
+        if ((double)f + it->m_key >= sampleTime)
         {
-            if (key >= it->m_key)
+            if (sampleTime >= it->m_key)
             {
                 return it;
             }
@@ -4631,6 +4659,8 @@ void __cdecl RegisterContextHandlers(BE04D90Object* pkObject, BE04D90PointerMap*
 
 // Initializes a pointer map, calls RegisterContextHandlers for each non-null object in ppkObjects, then clears and deallocates the map.
 // @fnv 0x00e04d90
+// pdb: hkClass::updateMetadataInplace | hkClassUpdate.obj | retail, object-file run extension, low
+// pdb params: c, updated, sourceVersion
 void __cdecl ProcessObjectArray(BE04D90Object** ppkObjects, int iArg)
 {
     BE04D90PointerMap kMap;
@@ -6145,6 +6175,8 @@ void hkpSaveContactPointsEndianUtil_swapEndianType_00e06010(void*);
 void ProcessListBlocks(Context**, void*);
 // Dispatches input handling by input->type and reverse, selects a payload, then applies the operation from the context entry key to that payload.
 // @fnv 0x00e06070
+// pdb: XGRAPHICS::Compiler::ProcessInput | compilerinc.obj | debug, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
+// pdb locals: buffer, name
 void ProcessInput(Context** context, Input* input, void* argument, bool reverse, int* type, bool* changed)
 {
     *changed = false;
@@ -7074,10 +7106,13 @@ struct Target
     int u1C, u20, u24, u28;
     Link* links;
     int hkgpMesh_countParts();
-    int ResolveLinkNodes();
+    int hkgpMesh_segregateVerticesBasedOnPartId();
 };
 // @fnv 0x00e18b70
-int Target::ResolveLinkNodes()
+// src: XBOX_RETAIL_PDB 0x00e18b70
+// pdb: hkgpMesh::segregateVerticesBasedOnPartId | hkgpMesh.obj | retail, object-file gap fill, high
+// pdb locals: map
+int Target::hkgpMesh_segregateVerticesBasedOnPartId()
 {
     int total = hkgpMesh_countParts();
     int copies = 0;
@@ -7251,6 +7286,7 @@ struct FUN_00e00dd0_cls
 // Frees the two dynamic arrays held by the object via the audio allocator, resets their pointers and sizes, then sets the vtable pointer.
 // @fnv 0x00e00dd0
 // src: GUESS 0x00e00dd0 (confidence: low)
+// pdb: hkpConvexVerticesConnectivity::~hkpConvexVerticesConnectivity | hkpConvexVerticesConnectivityClass.obj | retail, object-file run extension, low
 void __thiscall FUN_00e00dd0_cls::UpdateState_00e00dd0()
 {
     hkMemoryRouter* holder = reinterpret_cast<hkMemoryRouter*>(hkMemoryRouter_getInstance());
@@ -7301,7 +7337,7 @@ void ReverseBytesInGroupsOfFour(unsigned char* pucData)
 
 struct S_e05_res
 {
-    char* __thiscall hkClass_isSuperClass(char* a, S_e05_res* b);
+    char* __thiscall hkClass_isSuperClass(char* k, S_e05_res* b);
 };
 
 struct S_e05_obj
@@ -7512,7 +7548,7 @@ template <int SIZE> __forceinline void memCpyOneAlignedE030(void* dst, const voi
     } while (++i < SIZE / 4);
 }
 
-void __cdecl ResizeAudioStream(void* m_pPoolBase, void* pArray, int iSizeElem);
+void __cdecl ResizeAudioStream(void* mem, void* array, int sizeElem);
 
 // Keep the heap lookup inside the growth branch, as in the original parser.
 template <class T> __forceinline T& ExpandParsedRange(hkArray<T>& array)
@@ -7582,7 +7618,7 @@ struct Slot00e04e10
 };
 struct Mgr00e04e10
 {
-    unsigned char* hkClass_isSuperClass(unsigned char* out, void* key);
+    unsigned char* hkClass_isSuperClass(unsigned char* k, void* key);
 };
 
 // Calls obj->v10 with a and b, then FUN_00d46d80 on the b result with the a result as key; returns whether the byte it returns is non-zero.
@@ -7644,12 +7680,14 @@ extern const char DAT_010ea878[];
 struct ColorRegistry
 {
     void hkMonitorStreamColorTable_addColor(const char* name, unsigned int color);
-    void RegisterDefaultColors();
+    void hkMonitorStreamColorTable_setupDefaultColorTable();
 };
 
 // Calls FUN_00e0d980 once per entry, pairing a name string with a 32-bit ARGB color constant.
 // @fnv 0x00e0f340
-void ColorRegistry::RegisterDefaultColors()
+// src: XBOX_RETAIL_PDB 0x00e0f340
+// pdb: hkMonitorStreamColorTable::setupDefaultColorTable | hkMonitorStreamAnalyzer.obj | retail, string-set bridge, high
+void ColorRegistry::hkMonitorStreamColorTable_setupDefaultColorTable()
 {
     hkMonitorStreamColorTable_addColor(DAT_010cb2c0, 0xff404040u);
     hkMonitorStreamColorTable_addColor(DAT_010eaa4c, 0xff6495edu);
@@ -7741,6 +7779,7 @@ struct FUN_00e11480
 };
 
 // @fnv 0x00e11480
+// pdb: hkgpMesh::IConvexOverlap::IConvexShape::`scalar deleting destructor' | hkgpMesh.obj | retail, vtable slot, high
 FUN_00e11480::~FUN_00e11480()
 {}
 
@@ -7799,8 +7838,10 @@ float __cdecl Hkgpmesh_ComputeValues_00e13870(int a, int b);
 
 // Returns 1 if FUN_00e13870(a, b) is less than c, otherwise 0.
 // @fnv 0x00e16e20
-// src: GUESS 0x00e16e20 (confidence: low)
-int __stdcall Object_IsComputedValueBelowThreshold_00e16e20(int a, int b, float afThreshold)
+// src: XBOX_RETAIL_PDB 0x00e16e20
+// pdb: hkgpMesh::isConcave | hkgpMesh.obj | retail, object-file gap fill, high
+// pdb params: edge, eps
+int __stdcall hkgpMesh_isConcave(int a, int b, float afThreshold)
 {
     if (Hkgpmesh_ComputeValues_00e13870(a, b) < afThreshold)
         return 1;
@@ -8097,23 +8138,26 @@ struct Mesh
     PoolList<Vertex> m_kVertices;
     PoolList<Triangle> m_uiTriangleCount;
     void ReleaseSubobject();
-    void hkgpMesh_append(Mesh* mesh);
+    void hkgpMesh_append(Mesh* other);
 };
 
 // Copies vertices and triangles from mesh into this mesh, remapping vertex pointers and edge links, then calls FUN_00e114c0.
 // @fnv 0x00e192c0
 // src: HAVOK_LIB 0x00e192c0
-void Mesh::hkgpMesh_append(Mesh* apSrcMesh)
+// pdb: hkgpMesh::append | hkgpMesh.obj | retail, upstream name already matches, high
+// pdb params: other
+// pdb locals: emap, vmap, t
+void Mesh::hkgpMesh_append(Mesh* other)
 {
     PtrMap mapVertexToNew;
     mapVertexToNew.init();
     PtrMap mapEdgeToNew;
     mapEdgeToNew.init();
 
-    for (Vertex* v = apSrcMesh->m_kVertices.m_pFirstNode; v; v = v->m_next)
+    for (Vertex* v = other->m_kVertices.m_pFirstNode; v; v = v->m_next)
         mapVertexToNew.insert((unsigned int)v, (unsigned int)m_kVertices.allocate(*v));
 
-    for (Triangle* t = apSrcMesh->m_uiTriangleCount.m_pFirstNode; t; t = t->m_next)
+    for (Triangle* t = other->m_uiTriangleCount.m_pFirstNode; t; t = t->m_next)
     {
         Triangle* pNewTriangle = m_uiTriangleCount.allocate(*t);
         for (int i = 0; i < 3; ++i)
@@ -8233,6 +8277,8 @@ struct MeshQ
 
 // @fnv 0x00e11990
 // src: GUESS 0x00e11990 (confidence: low)
+// pdb: hkgpMesh::setDistanceToPlane | hkgpMesh.obj | retail, object-file run extension, low
+// pdb params: plane, data_index
 int MeshQ::ProcessEntries_00e11990(const hkVector4& plane, int aiComponent)
 {
     bool negative = false;

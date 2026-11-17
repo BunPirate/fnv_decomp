@@ -19,16 +19,19 @@ extern "C" __declspec(dllimport) long __stdcall InterlockedDecrement(volatile lo
 
 struct FUN_00c3a090_Class
 {
-    char __thiscall BSMultiBoundRoom_IsEqual(void* arg);
-    char __thiscall IsSameAs(void* arg);
+    char __thiscall BSMultiBoundRoom_IsEqual(void* pkObject);
+    char __thiscall IsSameAs(void* pObject);
 };
 
 // Calls IsSameAs with arg and returns its result unchanged.
 // @fnv 0x00c3a090
 // src: XBOX_PDB 0x00c3a090
-char __thiscall FUN_00c3a090_Class::BSMultiBoundRoom_IsEqual(void* arg)
+// pdb: BSMultiBoundRoom::IsEqual | BSMultiBoundRoom.obj | debug, upstream name already matches, high
+// pdb params: pkObject
+// pdb locals: bres
+char __thiscall FUN_00c3a090_Class::BSMultiBoundRoom_IsEqual(void* pkObject)
 {
-    char result = IsSameAs(arg);
+    char result = IsSameAs(pkObject);
     return result;
 }
 
@@ -124,6 +127,7 @@ struct FUN_00c3c520_class
 
 // @fnv 0x00c3c520
 // src: GUESS 0x00c3c520 (confidence: low)
+// pdb: QueuedChildren::~QueuedChildren | QueuedFiles.obj | debug, object-file run extension, low
 void __thiscall FUN_00c3c520_class::SetVirtualTable_00c3c520()
 {
     vtbl = &DAT_010c14e8;
@@ -133,6 +137,7 @@ void __thiscall FUN_00c3c520_class::SetVirtualTable_00c3c520()
 extern int DAT_010c1510;
 // @fnv 0x00c3c570
 // src: GUESS 0x00c3c570 (confidence: low)
+// pdb: QueuedParents::~QueuedParents | QueuedFiles.obj | debug, object-file run extension, low
 void __thiscall QueuedParents::SetVtableAndProcessState_00c3c570()
 {
     *reinterpret_cast<int**>(this) = &DAT_010c1510;
@@ -151,6 +156,8 @@ struct FUN_00c3d930_Class
 // Sets the vftable to DAT_010c14fc and calls FUN_00c3d980 with 1.
 // @fnv 0x00c3d930
 // src: GUESS 0x00c3d930 (confidence: low)
+// pdb: BSSimpleArray<NiPointer<QueuedFile>,1024>::_Reallocate | QueuedFiles.obj | debug, object-file run extension, low
+// pdb params: apBuffer, aiNewSizeInItem
 void __thiscall FUN_00c3d930_Class::SetVtableAndProcessState_00c3d930()
 {
     char buf[0x18];
@@ -165,6 +172,7 @@ struct FUN_00c3f6f0_Class
 
 // @fnv 0x00c3f6f0
 // src: COMMUNITY 0x00c3f6f0
+// pdb: LockFreeQueue<NiPointer<IOTask> >::IncrementCount | IOManager.obj | debug, vtable slot, medium
 void FUN_00c3f6f0_Class::LockFreeMap_int64_NiPointer_BSTask_int64_IncrementCount()
 {
     InterlockedIncrement((volatile long*)((char*)this + 0x18));
@@ -176,6 +184,7 @@ struct FUN_00c3f710_Class
 };
 
 // @fnv 0x00c3f710
+// pdb: LockFreePriorityQueue<NiPointer<IOTask> >::IncrementCount | IOManager.obj | debug, vtable slot, medium
 void FUN_00c3f710_Class::IncrementRefCount()
 {
     InterlockedIncrement((volatile long*)((char*)this + 0xc));
@@ -187,6 +196,7 @@ struct FUN_00c3f730_Class
 };
 
 // @fnv 0x00c3f730
+// pdb: LockFreePriorityQueue<NiPointer<IOTask> >::DecrementCount | IOManager.obj | debug, vtable slot, medium
 void __thiscall FUN_00c3f730_Class::DecrementRefCount()
 {
     InterlockedDecrement((volatile long*)(this + 0xc));
@@ -235,10 +245,12 @@ void* FUN_00c3a080_Class::BSMultiBoundRoom_CreateClone(int arg)
 void* __cdecl NiViewerStrings_NiGetViewerString_Title(void*);
 struct FUN_00c3a0c0_Class
 {
-    void* __thiscall BSMultiBoundNode_GetViewerStrings(unsigned int a);
+    void* __thiscall BSMultiBoundNode_GetViewerStrings(unsigned int apStrings);
     void __thiscall AddFirstEmptyFromGlobal(unsigned int a);
 };
 // @fnv 0x00c3a0c0
+// pdb: BSMultiBoundRoom::GetViewerStrings | BSMultiBoundRoom.obj | debug, vtable slot, medium
+// pdb params: pStrings
 void __thiscall FUN_00c3a0c0_Class::AddFirstEmptyFromGlobal(unsigned int pArray)
 {
     struct
@@ -302,6 +314,7 @@ struct FUN_00c3a140_Class
 };
 // Calls FUN_00c39770, then deletes this with operator delete when flags has bit 0 set, and returns this.
 // @fnv 0x00c3a140
+// pdb: BSMultiBoundRoom::`scalar deleting destructor' | BSMultiBoundRoom.obj | debug, vtable slot, medium
 void* FUN_00c3a140_Class::FUN_00c3a140(unsigned int flags)
 {
     FUN_00c39770();
@@ -313,9 +326,11 @@ void* FUN_00c3a140_Class::FUN_00c3a140(unsigned int flags)
 // Calls UpdateDownwardPass with data and flags, then invokes the object's virtual method at vtable slot 47 on this.
 // @fnv 0x00c3a5b0
 // src: XBOX_PDB 0x00c3a5b0
-void __thiscall BSMultiBoundNode::UpdateDownwardPass_00c3a5b0(NiUpdateData& aUpdateData, unsigned int flags)
+// pdb: BSMultiBoundNode::UpdateDownwardPass | BSMultiBoundRoom.obj | retail, vtable slot, high
+// pdb params: UpdateData, uFlags
+void __thiscall BSMultiBoundNode::UpdateDownwardPass_00c3a5b0(NiUpdateData& UpdateData, unsigned int uFlags)
 {
-    NiNode::UpdateDownwardPass(aUpdateData, flags);
+    NiNode::UpdateDownwardPass(UpdateData, uFlags);
     UpdateWorldBound();
 }
 
@@ -328,6 +343,7 @@ struct FUN_00c3a6a0_Class
     void* __thiscall FUN_00c3a6a0(unsigned int flags);
 };
 // @fnv 0x00c3a6a0
+// pdb: BSSimpleArray<ShadowSceneLight *,1024>::`scalar deleting destructor' | BSMultiBoundRoom.obj | retail, vtable slot, high
 void* __thiscall FUN_00c3a6a0_Class::FUN_00c3a6a0(unsigned int flags)
 {
     ((FUN_00c3a620_Class*)this)->SetVirtualTableAndProcessState_00c3a620();
@@ -340,6 +356,8 @@ extern char DAT_01202c50[260];
 extern char DAT_01202fa0[];
 // @fnv 0x00c3bb90
 // src: COMMUNITY 0x00c3bb90
+// pdb: MessageHandler::SetWarningFileName | MessageHandler.obj | retail, call graph, medium
+// pdb params: apFileName
 void MessageHandler_SetAllWarningFileNames(const char* src)
 {
     strcpy_s(DAT_01202c50, 260, DAT_01202fa0);
@@ -353,10 +371,12 @@ char* __cdecl _strcpy_s(char* dest, unsigned int size, const char* src);
 char* __cdecl _strcat_s(char* dest, unsigned int size, const char* src);
 // @fnv 0x00c3bbe0
 // src: COMMUNITY 0x00c3bbe0
-void __cdecl MessageHandler_SetProgramFlowFileName(const char* pcSuffix)
+// pdb: MessageHandler::SetProgramFlowFileName | MessageHandler.obj | retail, upstream name already matches, high
+// pdb params: apFileName
+void __cdecl MessageHandler_SetProgramFlowFileName(const char* apFileName)
 {
     _strcpy_s(DAT_01202b48, 260, &DAT_01202fa0);
-    _strcat_s(DAT_01202b48, 260, pcSuffix);
+    _strcat_s(DAT_01202b48, 260, apFileName);
 }
 }  // namespace fnv_00c3bbe0
 
@@ -365,10 +385,12 @@ extern char DAT_01202fa0[0x104];
 // Copies DAT_01202fa0 into DAT_01202a40, then appends p to it.
 // @fnv 0x00c3bc30
 // src: COMMUNITY 0x00c3bc30
-void __cdecl MessageHandler_SetProgrammerOutputFileName(const char* pcSuffix)
+// pdb: MessageHandler::SetProgrammerOutputFileName | MessageHandler.obj | retail, upstream name already matches, high
+// pdb params: apFileName
+void __cdecl MessageHandler_SetProgrammerOutputFileName(const char* apFileName)
 {
     strcpy_s(DAT_01202a40, 0x104, DAT_01202fa0);
-    strcat_s(DAT_01202a40, 0x104, pcSuffix);
+    strcat_s(DAT_01202a40, 0x104, apFileName);
 }
 
 namespace fnv_00c3bc80 {
@@ -379,10 +401,12 @@ void __cdecl _strcat_s(char* dst, unsigned int, const char* src);
 // Copies DAT_01202fa0 into DAT_01202938, then appends src to that buffer.
 // @fnv 0x00c3bc80
 // src: COMMUNITY 0x00c3bc80
-void __cdecl MessageHandler_SetCrashTraceFileName(const char* pcSuffix)
+// pdb: MessageHandler::SetCrashTraceFileName | MessageHandler.obj | retail, upstream name already matches, high
+// pdb params: apFileName
+void __cdecl MessageHandler_SetCrashTraceFileName(const char* apFileName)
 {
     _strcpy_s(DAT_01202938, 0x104, DAT_01202fa0);
-    _strcat_s(DAT_01202938, 0x104, pcSuffix);
+    _strcat_s(DAT_01202938, 0x104, apFileName);
 }
 }  // namespace fnv_00c3bc80
 
@@ -429,6 +453,7 @@ struct FUN_00c3d380_Class : public FUN_00c3c520_class
     void* __thiscall FUN_00c3d380(unsigned int flags);
 };
 // @fnv 0x00c3d380
+// pdb: QueuedChildren::`scalar deleting destructor' | QueuedFiles.obj | retail, vtable slot, high
 void* __thiscall FUN_00c3d380_Class::FUN_00c3d380(unsigned int flags)
 {
     SetVirtualTable_00c3c520();
@@ -449,6 +474,7 @@ struct FUN_00c3d410_Class : _Base_00441d20
 };
 // Runs the base destructor, frees this via the memory manager when flags has bit 0 set, and returns this.
 // @fnv 0x00c3d410
+// pdb: QueuedFileEntry::`scalar deleting destructor' | QueuedFiles.obj | retail, vtable slot, high
 void* __thiscall FUN_00c3d410_Class::DestroySelf(unsigned int flags)
 {
     _Base_00441d20::~_Base_00441d20();
@@ -464,6 +490,7 @@ struct FUN_00c3d950_Class
     void* __thiscall FUN_00c3d950(unsigned int flags);
 };
 // @fnv 0x00c3d950
+// pdb: BSSimpleArray<NiPointer<QueuedFile>,1024>::`scalar deleting destructor' | QueuedFiles.obj | retail, vtable slot, high
 void* __thiscall FUN_00c3d950_Class::FUN_00c3d950(unsigned int flags)
 {
     ((FUN_00c3d930_Class*)this)->SetVtableAndProcessState_00c3d930();
@@ -579,6 +606,8 @@ bool FUN_00c3fe80_Class::LockFreeMapInterface_GetAt(int aiArg1, int aiArg2, int 
 
 // @fnv 0x00c33090
 // src: XBOX_PDB 0x00c33090
+// pdb: Setting::DataSize | Setting.obj | debug, object-file run extension, low
+// pdb locals: isize
 int __cdecl Setting_DataType_00c33090(const char* p)
 {
     int result = 9;
@@ -626,23 +655,26 @@ void __cdecl MessageHandler_InstallMessageBoxHook();
 void __cdecl MessageHandler_RemoveMessageBoxHook();
 // @fnv 0x00c3c100
 // src: COMMUNITY 0x00c3c100
-void* __cdecl MessageHandler_DoMessageBox(void* a, void* b, unsigned int auiFlags)
+// pdb: MessageHandler::DoMessageBox | MessageHandler.obj | debug, upstream name already matches, high
+// pdb params: apText, apCaption, aiType
+// pdb locals: iretVal
+void* __cdecl MessageHandler_DoMessageBox(void* apText, void* apCaption, unsigned int aiType)
 {
     void* r = 0;
     if (DAT_01202d5c)
     {
         bool bAdjusted = false;
-        if (auiFlags & 3)
+        if (aiType & 3)
         {
             MessageHandler_InstallMessageBoxHook();
             if (DAT_01202d70)
             {
-                auiFlags &= 0xffffefff;
-                auiFlags |= 0x2000;
+                aiType &= 0xffffefff;
+                aiType |= 0x2000;
                 bAdjusted = true;
             }
         }
-        r = DAT_01202d5c(a, b, auiFlags);
+        r = DAT_01202d5c(apText, apCaption, aiType);
         if (bAdjusted)
             MessageHandler_RemoveMessageBoxHook();
     }
@@ -674,7 +706,7 @@ NiObject* __cdecl BSPSysMultiTargetEmitterCtlr_CreateObject();
 NiObject* __cdecl BSMasterParticleSystem_CreateObject();
 NiObject* __cdecl BSMultiBound_CreateObject();
 NiObject* __cdecl CreateNewObject();
-NiObject* __cdecl CreateNewBodyCls();
+NiObject* __cdecl BSMultiBoundAABB_CreateObject();
 NiObject* __cdecl CreateBC36500Object();
 NiObject* __cdecl BSMultiBoundCapsule_CreateObject();
 FUN_00c4fb10_shell* __cdecl BSMultiBoundSphere_CreateObject();
@@ -710,6 +742,7 @@ extern char const g_01204388_arg0[];
 
 // @fnv 0x00c3a6d0
 // src: COMMUNITY 0x00c3a6d0
+// pdb: BSStream::InitLoaders | BSStream.obj | retail, string-set bridge, high
 void BSStream_InitLoaders()
 {
     NiStream::RegisterObjectLoader(g_012043dc_arg0, BSReference_CreateObject);
@@ -730,7 +763,7 @@ void BSStream_InitLoaders()
     NiStream::RegisterObjectLoader(g_0120436c_arg0, BSMasterParticleSystem_CreateObject);
     NiStream::RegisterObjectLoader(g_01202810_arg0, BSMultiBound_CreateObject);
     NiStream::RegisterObjectLoader(g_01202e74_arg0, CreateNewObject);
-    NiStream::RegisterObjectLoader(g_01202820_arg0, CreateNewBodyCls);
+    NiStream::RegisterObjectLoader(g_01202820_arg0, BSMultiBoundAABB_CreateObject);
     NiStream::RegisterObjectLoader(g_01202818_arg0, CreateBC36500Object);
     NiStream::RegisterObjectLoader(g_01204398_arg0, BSMultiBoundCapsule_CreateObject);
     NiStream::RegisterObjectLoader(g_01203108_arg0, reinterpret_cast<PFN_NiObjectLoader>(BSMultiBoundSphere_CreateObject));
@@ -750,6 +783,7 @@ struct FUN_00c3ba80_Class
 
 // Calls FUN_00c3bab0, then deletes this with operator delete when flags has bit 0 set, and returns this.
 // @fnv 0x00c3ba80
+// pdb: BSNodeReferences::`scalar deleting destructor' | BSStream.obj | retail, vtable slot, high
 void* __thiscall FUN_00c3ba80_Class::FUN_00c3ba80(unsigned int flags)
 {
     int x, y, z;
@@ -765,11 +799,14 @@ void* __cdecl MessageHandler_DoMessageBox(void*, void*, unsigned int);
 // Sets DAT_01202d55 to 1, calls FUN_00c3c100 with a, "Confirm" and 0x2034, then resets DAT_01202d55 to 0 and returns the result.
 // @fnv 0x00c3c180
 // src: COMMUNITY 0x00c3c180
-void* __cdecl MessageHandler_MenuMessageBoxYesNo(void* a)
+// pdb: MessageHandler::MenuMessageBoxYesNo | MessageHandler.obj | debug, upstream name already matches, high
+// pdb params: apMessageText
+// pdb locals: ibutton
+void* __cdecl MessageHandler_MenuMessageBoxYesNo(void* apMessageText)
 {
     void* result;
     DAT_01202d55 = 1;
-    result = MessageHandler_DoMessageBox(a, "Confirm", 0x2034);
+    result = MessageHandler_DoMessageBox(apMessageText, "Confirm", 0x2034);
     DAT_01202d55 = 0;
     return result;
 }
@@ -779,15 +816,19 @@ extern unsigned char DAT_01202d55;
 // Sets DAT_01202d55 to 1, calls FUN_00c3c100 with a, "Confirm" and 0x2033, then resets DAT_01202d55 to 0 and returns the result.
 // @fnv 0x00c3c1c0
 // src: COMMUNITY 0x00c3c1c0
-void* __cdecl MessageHandler_MenuMessageBoxYesNoAll(void* a)
+// pdb: MessageHandler::MenuMessageBoxYesNoAll | MessageHandler.obj | debug, upstream name already matches, high
+// pdb params: apMessageText
+// pdb locals: ibutton
+void* __cdecl MessageHandler_MenuMessageBoxYesNoAll(void* apMessageText)
 {
     DAT_01202d55 = 1;
-    void* result = MessageHandler_DoMessageBox(a, "Confirm", 0x2033);
+    void* result = MessageHandler_DoMessageBox(apMessageText, "Confirm", 0x2033);
     DAT_01202d55 = 0;
     return result;
 }
 
 // @fnv 0x00c3c430
+// pdb: MessageHandler::`scalar deleting destructor' | MessageHandler.obj | retail, vtable slot, high
 void* MessageHandler::DestroyAndFree(unsigned int flags)
 {
     this->MessageHandler::~MessageHandler();
@@ -799,6 +840,7 @@ void* MessageHandler::DestroyAndFree(unsigned int flags)
 extern MemoryManager g_memoryManager;
 // Calls FUN_00c3c570, then deallocates this via g_memoryManager when flags has bit 0 set, and returns this.
 // @fnv 0x00c3d3b0
+// pdb: QueuedParents::`scalar deleting destructor' | QueuedFiles.obj | retail, vtable slot, high
 void* QueuedParents::FUN_00c3d3b0(unsigned int flags)
 {
     SetVtableAndProcessState_00c3c570();
@@ -934,6 +976,8 @@ struct FUN_00c337c0_State
 };
 
 // @fnv 0x00c337c0
+// pdb: BSOcclusionPlane::CopyMembers | BSOcclusionPlane.obj | debug, call graph, medium
+// pdb params: pDest, arCloneData
 void FUN_00c337c0_State::CopyStateTo(FUN_00c337c0_State* destination, unsigned int unused)
 {
     destination->primary = primary;
@@ -1021,13 +1065,16 @@ struct FUN_00c347d0_Obj
 
 struct FUN_00c347d0_cls
 {
-    void Init(FUN_00c347d0_Elem* res);
-    bool BSOcclusionPlane_CompletelyWithinFrustum(FUN_00c347d0_Obj* obj);
+    void Init(FUN_00c347d0_Elem* apPoints);
+    bool BSOcclusionPlane_CompletelyWithinFrustum(FUN_00c347d0_Obj* aPlanes);
 };
 
 // @fnv 0x00c347d0
 // src: COMMUNITY 0x00c347d0
-bool FUN_00c347d0_cls::BSOcclusionPlane_CompletelyWithinFrustum(FUN_00c347d0_Obj* obj)
+// pdb: BSOcclusionPlane::CompletelyWithinFrustum | BSOcclusionPlane.obj | retail, upstream name already matches, high
+// pdb params: aPlanes
+// pdb locals: kpoints, i, j
+bool FUN_00c347d0_cls::BSOcclusionPlane_CompletelyWithinFrustum(FUN_00c347d0_Obj* aPlanes)
 {
     FUN_00c347d0_Scratch b1;
     FUN_00c347d0_Elem res[4];
@@ -1042,11 +1089,11 @@ bool FUN_00c347d0_cls::BSOcclusionPlane_CompletelyWithinFrustum(FUN_00c347d0_Obj
     Init(res);
     for (lst = 0; lst < 6; lst++)
     {
-        if ((bool)((1u << lst) & obj->m_uiMask))
+        if ((bool)((1u << lst) & aPlanes->m_uiMask))
         {
             for (val = 0; val < 4; val++)
             {
-                if (obj->m_slot[lst].Probe(&res[val]) == 2)
+                if (aPlanes->m_slot[lst].Probe(&res[val]) == 2)
                 {
                     return false;
                 }
@@ -1094,21 +1141,23 @@ class FUN_00c39a80_cls
         unk78, unk7c, unk80, unk84, unk88, unk8c, unk90, unk94, unk98, unk9c, unka0, unka4, unka8, unkac, unkb0, unkb4,
         unkb8, unkbc;
     Mid m_c0;
-    void BSMultiBoundRoom_AddOccluder(unsigned int a1);
+    void BSMultiBoundRoom_AddOccluder(unsigned int apOccluder);
 };
 
 // If a1 is nonzero, acquires a Node from m_c0's Sub08, stores a1 in its m_08, and passes it to m_c0.Consume.
 // @fnv 0x00c39a80
 // src: XBOX_PDB 0x00c39a80
-void FUN_00c39a80_cls::BSMultiBoundRoom_AddOccluder(unsigned int auiValue)
+// pdb: BSMultiBoundRoom::AddOccluder | BSMultiBoundRoom.obj | retail, upstream name already matches, high
+// pdb params: apOccluder
+void FUN_00c39a80_cls::BSMultiBoundRoom_AddOccluder(unsigned int apOccluder)
 {
     Scratch18 scratch;
     Node* n;
-    if (auiValue != 0)
+    if (apOccluder != 0)
     {
         Mid* mid = &m_c0;
         n = mid->m_08.Acquire();
-        n->m_08 = auiValue;
+        n->m_08 = apOccluder;
         mid->Consume(n);
     }
 }
@@ -1126,6 +1175,7 @@ struct FUN_00c3a220_cls
 // Sets the vtable pointer to DAT_010c117c, calls InitBuffer with 0 and 0, and returns this.
 // @fnv 0x00c3a220
 // src: GUESS 0x00c3a220 (confidence: low)
+// pdb: BSSimpleArray<ShadowSceneLight *,1024>::BSSimpleArray<ShadowSceneLight *,1024> | BSMultiBoundRoom.obj | debug, call graph, medium
 FUN_00c3a220_cls* FUN_00c3a220_cls::SetVirtualTable_00c3a220()
 {
     int unk04;
@@ -1246,6 +1296,8 @@ struct FUN_00c3a530_pad
 // Removes the head node from a linked list, clears its payload pointer, frees the node, decrements the count and returns the payload.
 // @fnv 0x00c3a530
 // src: GUESS 0x00c3a530 (confidence: low)
+// pdb: NiCullingProcess::IsExactKindOf | BSMultiBoundRoom.obj | debug, object-file run extension, low
+// pdb params: pkRTTI
 void* FUN_00c3a530_cls::UpdateState_00c3a530()
 {
     FUN_00c3a530_pad pad;
@@ -1269,6 +1321,7 @@ void* FUN_00c3a530_cls::UpdateState_00c3a530()
 
 // Calls the base upward pass, then updates the world bound through the shared virtual declaration.
 // @fnv 0x00c3a5e0
+// pdb: BSMultiBoundNode::UpdateUpwardPass | BSMultiBoundRoom.obj | retail, upstream name already matches, high
 void BSMultiBoundNode::UpdateUpwardPass()
 {
     NiNode::UpdateUpwardPass();
@@ -1295,6 +1348,7 @@ class FUN_00c3a620_cls : public SpawnedBase
 // Sets the object's vtable pointer to DAT_010c117c and calls SpawnedBase::FUN_00b5af80 with flags 1.
 // @fnv 0x00c3a620
 // src: GUESS 0x00c3a620 (confidence: low)
+// pdb: BSSimpleArray<ShadowSceneLight *,1024>::~BSSimpleArray<ShadowSceneLight *,1024> | BSMultiBoundRoom.obj | debug, call graph (shared callers), medium
 void FUN_00c3a620_cls::SetVirtualTableAndProcessState_00c3a620()
 {
     int unk00;
@@ -1311,7 +1365,7 @@ extern "C" __declspec(dllimport) unsigned long __stdcall GetPrivateProfileString
 
 
 
-PFN_NiObjectLoader __cdecl BSStream_GetCreatorFunction(const char* name);
+PFN_NiObjectLoader __cdecl BSStream_GetCreatorFunction(const char* apObjectName);
 
 static const char kLoadersSection[] = "Loaders";
 static const char kNoDefault[] = "";
@@ -1321,7 +1375,11 @@ static const char kSpace[] = " ";
 
 // Reads the Loaders section of Loaders.ini next to dir, resolves each key's value to a loader and registers it with NiStream under the key name.
 // @fnv 0x00c3b3f0
-void __cdecl LoadObjectLoadersFromIni(const char* dir)
+// src: XBOX_DEBUG_PDB 0x00c3b3f0
+// pdb: BSStream::RegisterLoadersINI | BSStream.obj | debug, unique string literal, high
+// pdb params: apINIFilePath
+// pdb locals: pini, ilen
+void __cdecl BSStream_RegisterLoadersINI(const char* apINIFilePath)
 {
     char pathX[260];
     unsigned int len4;
@@ -1332,7 +1390,7 @@ void __cdecl LoadObjectLoadersFromIni(const char* dir)
     PFN_NiObjectLoader loader;
     char* copy3;
 
-    strcpy_s(pathX, 260, dir);
+    strcpy_s(pathX, 260, apINIFilePath);
     len4 = strlen(pathX);
     if (len4 < 4 || pathX[len4 - 4] != '.')
     {
@@ -1457,18 +1515,21 @@ void __cdecl MessageHandler_InitSDM();
 // Calls FUN_00c3c460, stores four bytes and a function pointer into globals, clears DAT_011f6370, and copies DAT_01202d74 into DAT_011f6388.
 // @fnv 0x00c3bd30
 // src: COMMUNITY 0x00c3bd30
-void __cdecl MessageHandler_Init(unsigned char ucParam1, unsigned char ucParam2, unsigned char ucParam3,
-                          unsigned char ucParam4, unsigned int e)
+// pdb: MessageHandler::Init | MessageHandler.obj | retail, upstream name already matches, high
+// pdb params: abDisableWarningMessageBox, abAllowYesToAll, abSkipProgramFlows, abSkipInitializationFlows, apMessageBoxCallback
+// pdb locals: i
+void __cdecl MessageHandler_Init(unsigned char abDisableWarningMessageBox, unsigned char abAllowYesToAll, unsigned char abSkipProgramFlows,
+                          unsigned char abSkipInitializationFlows, unsigned int apMessageBoxCallback)
 {
     unsigned int unk04;
     unsigned int unk08;
     int i;
     MessageHandler_InitSDM();
-    DAT_011af49c = ucParam1;
-    DAT_011af49d = ucParam2;
-    DAT_011af49e = ucParam3;
-    DAT_011af49f = ucParam4;
-    DAT_01202d5c = reinterpret_cast<PFN_00c3c100>(e);
+    DAT_011af49c = abDisableWarningMessageBox;
+    DAT_011af49d = abAllowYesToAll;
+    DAT_011af49e = abSkipProgramFlows;
+    DAT_011af49f = abSkipInitializationFlows;
+    DAT_01202d5c = reinterpret_cast<PFN_00c3c100>(apMessageBoxCallback);
     for (i = 0; i < 0x18; i++)
     {
         DAT_011f6370[i] = 0;
@@ -1482,6 +1543,8 @@ int __cdecl GetFileSize(int* buf, int* out);
 
 
 // @fnv 0x00c3bda0
+// pdb: MessageHandler::~MessageHandler | MessageHandler.obj | retail, upstream name already matches, high
+// pdb locals: uisize
 MessageHandler::~MessageHandler()
 {
     int info[9];
@@ -1503,6 +1566,9 @@ int Object_ReturnZero_00c3be40()
 
 // @fnv 0x00c3c220
 // src: XBOX_PDB 0x00c3c220
+// pdb: MessageHandler::Output | MessageHandler.obj | debug, upstream name already matches, high
+// pdb params: apFileName, apMessage, pbuffer
+// pdb locals: isize, varArgs
 int __cdecl MessageHandler_Output()
 {
     return 0;
@@ -1550,6 +1616,9 @@ int C3C2B0StrCmp(const char* pcA, const char* pcB);
 // EnumChildWindows callback: finds the "Cancel" button.
 // Searches a window: if it is a Button whose text is non-empty and not "Cancel", stores it through lParam and returns false; otherwise returns true.
 // @fnv 0x00c3c2b0
+// pdb: MessageHandler::ShowXUIMessageBox | MessageHandler.obj | debug, object-file run extension, low
+// pdb params: apTitle, apMsg, aiIcon, abXUIExit
+// pdb locals: error, g_pwstrButtons, pwcStrings, isize
 int __stdcall FindFirstNonCancelButton(C3C2B0HWND hWnd, long lParam)
 {
     bool bContinueSearch = true;
@@ -1575,6 +1644,7 @@ int __stdcall FindFirstNonCancelButton(C3C2B0HWND hWnd, long lParam)
 int __stdcall FindFirstNonCancelButton(void* hwnd, int lParam);
 
 // @fnv 0x00c3c3a0
+// pdb: MessageHandler::UpdateXUIMessageBox | MessageHandler.obj | debug, object-file run extension, low
 int __stdcall CbtHookProc(int code, unsigned int wParam, int lParam)
 {
     if (code < 0)
@@ -1601,6 +1671,7 @@ int __stdcall CbtHookProc(int code, unsigned int wParam, int lParam)
 // Sets the vtable to DAT_010c14fc, calls Resize(5, 0), then sets it to DAT_010c1510 and returns this.
 // @fnv 0x00c3c540
 // src: COMMUNITY 0x00c3c540
+// pdb: QueuedParents::QueuedParents | QueuedFiles.obj | debug, object-file run extension, low
 int* __thiscall QueuedParents::QueuedParents_00c3c540()
 {
     int unused04;
@@ -1639,7 +1710,7 @@ struct C3CAE0TaskArray
 class C3CAE0Manager
 {
   public:
-    void IOManager_RequeueTask(void* pvTask, int iStatus);
+    void IOManager_RequeueTask(void* apTask, int aeNewPriority);
 };
 
 extern C3CAE0Manager* g_pkC3CAE0Manager;
@@ -1657,12 +1728,15 @@ class C3CAE0Request
     int unk1C;
     C3CAE0TaskArray* m_pkTasks;
 
-    void NotifyTasks(int iStatus);
+    void NotifyTasks(int aeNewPriority);
 };
 
 // Notifies each task in m_pkTasks with iStatus, then forwards this request and iStatus to g_pkC3CAE0Manager.
 // @fnv 0x00c3cae0
-void C3CAE0Request::NotifyTasks(int iStatus)
+// pdb: QueuedFile::Requeue | QueuedFiles.obj | retail, vtable slot, high
+// pdb params: aeNewPriority
+// pdb locals: inumChildren, i, pqueuedFile
+void C3CAE0Request::NotifyTasks(int aeNewPriority)
 {
     if (m_pkTasks)
     {
@@ -1672,15 +1746,15 @@ void C3CAE0Request::NotifyTasks(int iStatus)
             C3CAE0Task*& rpkEntry = m_pkTasks->m_ppkData[i];
             C3CAE0Task* pkTask = rpkEntry;
             if (pkTask)
-                pkTask->Notify(iStatus);
+                pkTask->Notify(aeNewPriority);
         }
     }
-    g_pkC3CAE0Manager->IOManager_RequeueTask(this, iStatus);
+    g_pkC3CAE0Manager->IOManager_RequeueTask(this, aeNewPriority);
 }
 
 struct C3D3E0Heap
 {
-    void Deallocate(void* pvMem);
+    void Deallocate(void* apMem);
 };
 
 extern C3D3E0Heap g_kC3D3E0Heap;
@@ -1697,6 +1771,7 @@ class C3D3E0Palette
 // Scalar deleting destructor.
 // Destructs the object, frees it via g_kC3D3E0Heap when uiFlags has bit 0 set, and returns this.
 // @fnv 0x00c3d3e0
+// pdb: QueuedFile::`scalar deleting destructor' | QueuedFiles.obj | debug, vtable slot, medium
 C3D3E0Palette* C3D3E0Palette::FUN_00c3d3e0(unsigned int uiFlags)
 {
     this->C3D3E0Palette::~C3D3E0Palette();
@@ -1723,6 +1798,8 @@ struct Array
 };
 // Resets the array, allocates reserve slots (at least count), zero-initialises count elements and sets size to count.
 // @fnv 0x00c3d780
+// pdb: BSSimpleArray<NiPointer<QueuedFile>,1024>::BSSimpleArray<NiPointer<QueuedFile>,1024> | QueuedFiles.obj | debug, call graph (shared callers), low
+// pdb params: aiReserveSize, aiInitialSize
 void Array::Resize(unsigned int reserve, unsigned int count)
 {
     data = 0;
@@ -1773,6 +1850,9 @@ class FUN_00c3d870_cls
 // Rebuilds m_04 from a1 when a2 differs from m_0c, otherwise updates m_04 via v3; caches a1 in m_0c when m_04 is null.
 // @fnv 0x00c3d870
 // src: COMMUNITY 0x00c3d870
+// pdb: BSSimpleArray<NiPointer<QueuedFile>,1024>::Add | QueuedFiles.obj | debug, object-file run extension, low
+// pdb params: aValue
+// pdb locals: iindex
 void FUN_00c3d870_cls::QueuedChildren_SetLength(void* a1, void* a2)
 {
     void* tmp;
@@ -1840,6 +1920,7 @@ struct FUN_00c3db60 : S_00c3db60_Base
 };
 // Destructor that deletes the owned item pointer unk64.
 // @fnv 0x00c3db60
+// pdb: IOManager::~IOManager | IOManager.obj | debug, object-file gap fill, medium
 FUN_00c3db60::~FUN_00c3db60()
 {
     delete unk64;
@@ -1857,16 +1938,19 @@ struct FUN_00c3df40_Param1
 struct FUN_00c3df40_Class
 {
     void __thiscall BSTaskManager_int64_RequeueTask(FUN_00c3df40_Param1* a1, __int64 a2);
-    void __thiscall IOManager_RequeueTask(FUN_00c3df40_Param1* a1, int a2);
+    void __thiscall IOManager_RequeueTask(FUN_00c3df40_Param1* apTask, int aeNewPriority);
 };
 
 // @fnv 0x00c3df40
 // src: XBOX_PDB 0x00c3df40
-void __thiscall FUN_00c3df40_Class::IOManager_RequeueTask(FUN_00c3df40_Param1* pParam, int iValue)
+// pdb: IOManager::RequeueTask | IOManager.obj | debug, upstream name already matches, high
+// pdb params: apTask, aeNewPriority
+// pdb locals: ikey
+void __thiscall FUN_00c3df40_Class::IOManager_RequeueTask(FUN_00c3df40_Param1* apTask, int aeNewPriority)
 {
-    __int64 val = pParam->unk10;
-    val = (val & 0xFFFFFFFFFF00FFFFULL) + ((__int64)iValue << 16);
-    this->BSTaskManager_int64_RequeueTask(pParam, val);
+    __int64 val = apTask->unk10;
+    val = (val & 0xFFFFFFFFFF00FFFFULL) + ((__int64)aeNewPriority << 16);
+    this->BSTaskManager_int64_RequeueTask(apTask, val);
 }
 
 struct FUN_00c3f650_cls
@@ -1930,7 +2014,7 @@ struct FUN_00c3fa70_elem
 
 struct DynamicMemoryAllocator
 {
-    void MemoryManager_Deallocate(void* apPtr);
+    void MemoryManager_Deallocate(void* apMem);
 };
 
 extern "C" DynamicMemoryAllocator DAT_011f6238;
@@ -2117,6 +2201,9 @@ struct MultiBoundNodeStandIn
 
 // @fnv 0x00c39890
 // src: XBOX_PDB 0x00c39890
+// pdb: BSMultiBoundRoom::OnVisible | BSMultiBoundRoom.obj | retail, upstream name already matches, high
+// pdb params: kCuller
+// pdb locals: pprevcfrustum, pcfrustum, kpushcull, kresult, pkbsCuller, i, pkChild
 void MultiBoundNodeStandIn::BSMultiBoundRoom_OnVisible(NiCullingProcess& kCuller)
 {
     CullerData* pProcB = 0;
@@ -2208,12 +2295,12 @@ void __cdecl nullsub_345()
 {}
 
 int __cdecl Setting_DataType_00c33090(const char* p);
-unsigned int __cdecl NiGetViewerString(const char* buf, bool v);
-unsigned int __cdecl FormatStringAssignment(const char* buf, char v);
-unsigned int __cdecl NiGetViewerString_00a7d4d0(const char* buf, int v);
+unsigned int __cdecl NiGetViewerString(const char* pcPrefix, bool bValue);
+unsigned int __cdecl FormatStringAssignment(const char* pcPrefix, char v);
+unsigned int __cdecl NiGetViewerString_00a7d4d0(const char* pcPrefix, int iValue);
 unsigned int __cdecl NiGetViewerString_00a7d510(const char* buf, unsigned int v);
 unsigned int __cdecl NiGetViewerString_00a7d550(const char* buf, float v);
-char* __cdecl NiGetViewerString_00a7d5e0(const char* buf, const char* v);
+char* __cdecl NiGetViewerString_00a7d5e0(const char* pcPrefix, const char* pcValue);
 
 union SettingValue
 {
@@ -2231,13 +2318,16 @@ struct FUN_00c33280_Class
     unsigned int m_00;
     SettingValue value;
     const char* m_08;
-    void __thiscall Setting_GetViewerStrings(NiTPrimitiveArray<unsigned int>* arr);
+    void __thiscall Setting_GetViewerStrings(NiTPrimitiveArray<unsigned int>* apStringsA);
 };
 
 // Builds two spaces plus m_08 in a 256-byte buffer, formats value by the type from FUN_00c33090(m_08), and adds the helper's result to arr via AddFirstEmpty.
 // @fnv 0x00c33280
 // src: XBOX_PDB 0x00c33280
-void __thiscall FUN_00c33280_Class::Setting_GetViewerStrings(NiTPrimitiveArray<unsigned int>* arr)
+// pdb: Setting::GetViewerStrings | Setting.obj | retail, upstream name already matches, high
+// pdb params: apStringsA
+// pdb locals: pname
+void __thiscall FUN_00c33280_Class::Setting_GetViewerStrings(NiTPrimitiveArray<unsigned int>* apStringsA)
 {
     char aBuf[256];
     unsigned int ai;
@@ -2274,22 +2364,22 @@ void __thiscall FUN_00c33280_Class::Setting_GetViewerStrings(NiTPrimitiveArray<u
     case 0:
         d4 = this ? &value.boolean : (DAT_01202800.boolean = false, &DAT_01202800.boolean);
         bi = NiGetViewerString(aBuf, *d4);
-        arr->AddFirstEmpty(bi);
+        apStringsA->AddFirstEmpty(bi);
         break;
     case 1:
     case 2:
         by = this ? &value.character : (DAT_01202800.character = 0, &DAT_01202800.character);
         gf = FormatStringAssignment(aBuf, *by);
-        arr->AddFirstEmpty(gf);
+        apStringsA->AddFirstEmpty(gf);
     case 3:
         ap = this ? &value.integer : (DAT_01202800.integer = 0, &DAT_01202800.integer);
         fl = NiGetViewerString_00a7d4d0(aBuf, *ap);
-        arr->AddFirstEmpty(fl);
+        apStringsA->AddFirstEmpty(fl);
         break;
     case 5:
         ff = this ? &value.real : (DAT_01202800.real = 0.0f, &DAT_01202800.real);
         eh = NiGetViewerString_00a7d550(aBuf, *ff);
-        arr->AddFirstEmpty(eh);
+        apStringsA->AddFirstEmpty(eh);
         break;
     case 6:
         if (this)
@@ -2297,13 +2387,13 @@ void __thiscall FUN_00c33280_Class::Setting_GetViewerStrings(NiTPrimitiveArray<u
         else
             em = 0;
         dt = (unsigned int)NiGetViewerString_00a7d5e0(aBuf, em);
-        arr->AddFirstEmpty(dt);
+        apStringsA->AddFirstEmpty(dt);
         break;
     case 4:
     default:
         cb = this ? &value.unsignedInteger : (DAT_01202800.unsignedInteger = 0, &DAT_01202800.unsignedInteger);
         dg = NiGetViewerString_00a7d510(aBuf, *cb);
-        arr->AddFirstEmpty(dg);
+        apStringsA->AddFirstEmpty(dg);
         break;
     }
 }
@@ -2318,19 +2408,21 @@ struct FUN_00c39ad0_Class
     int unk00[0x30];
     FUN_00c3a250_Class m_c0;
 
-    void BSMultiBoundRoom_RemoveOccluder(int a);
+    void BSMultiBoundRoom_RemoveOccluder(int apOccluder);
 };
 
 // If a is non-zero, forwards it to m_c0.FUN_00c3a250.
 // @fnv 0x00c39ad0
 // src: XBOX_PDB 0x00c39ad0
-void FUN_00c39ad0_Class::BSMultiBoundRoom_RemoveOccluder(int a)
+// pdb: BSMultiBoundRoom::RemoveOccluder | BSMultiBoundRoom.obj | retail, upstream name already matches, high
+// pdb params: apOccluder
+void FUN_00c39ad0_Class::BSMultiBoundRoom_RemoveOccluder(int apOccluder)
 {
     int pad0[10];
     int pad1[9];
-    if (a)
+    if (apOccluder)
     {
-        m_c0.FUN_00c3a250(a);
+        m_c0.FUN_00c3a250(apOccluder);
     }
 }
 
@@ -2411,10 +2503,13 @@ struct C3BEFile
 // Returns true immediately; the unreachable code after it writes text to path through a file object, recursing once with a message under a critical section.
 // @fnv 0x00c3be50
 // src: COMMUNITY 0x00c3be50
-bool __cdecl MessageHandler_WriteFile(const char* path, const char* text, bool flush)
+// pdb: MessageHandler::WriteFile | MessageHandler.obj | debug, upstream name already matches, high
+// pdb params: apFileName, apBuffer, abFlush
+// pdb locals: bres, File, streamHeader, pauthor, isize, uiWrite
+bool __cdecl MessageHandler_WriteFile(const char* apFileName, const char* apBuffer, bool abFlush)
 {
     return true;
-    if (!path)
+    if (!apFileName)
         return true;
     EnterCriticalSection((LPCRITICAL_SECTION)&DAT_01202d78);
     if (DAT_01202d58 && !DAT_01202d90)
@@ -2425,23 +2520,23 @@ bool __cdecl MessageHandler_WriteFile(const char* path, const char* text, bool f
             prefix = DAT_01015890;
         char buffer[256];
         sprintf_s(buffer, 256, DAT_010c14c0, DAT_01202d58 + 0xe0, prefix);
-        MessageHandler_WriteFile(path, buffer, false);
+        MessageHandler_WriteFile(apFileName, buffer, false);
         DAT_01202d90 = false;
     }
     LeaveCriticalSection((LPCRITICAL_SECTION)&DAT_01202d78);
     bool success = false;
-    C3BEFile file(path, 1, 1, 0);
+    C3BEFile file(apFileName, 1, 1, 0);
     if (file.m_00 == 0)
     {
-        unsigned __int64 written = strlen(text);
+        unsigned __int64 written = strlen(apBuffer);
         unsigned __int64 length;
-        file.m_00 = file.BSSystemFile_DoWrite(text, written, &length);
-        if (!DAT_01202d90 && success && (text[written - 2] != '\r' || text[written - 1] != '\n'))
+        file.m_00 = file.BSSystemFile_DoWrite(apBuffer, written, &length);
+        if (!DAT_01202d90 && success && (apBuffer[written - 2] != '\r' || apBuffer[written - 1] != '\n'))
         {
             written = 2;
             file.m_00 = file.BSSystemFile_DoWrite(DAT_0101f520, written, &length);
         }
-        if (flush)
+        if (abFlush)
             file.m_00 = file.BSSystemFile_DoFlush();
         success = file.m_00 == 0;
     }

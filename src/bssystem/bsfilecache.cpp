@@ -4,32 +4,33 @@
 #include "../../include/MemoryManager.h"
 
 // @fnv 0x00b00f20
+// pdb: BSFileCache::BSFileCache | BSFileCache.obj | debug, upstream name already matches, high
 BSFileCache::BSFileCache()
 {
-    m_uiCacheIndex = 0;
-    m_pFileCacheArray = 0;
-    m_pCacheSyncObject = 0;
-    m_eCacheState = FILE_CACHING_IN_PROGRESS;
-    m_pActiveFileCache = 0;
-    m_uiCacheEntryCount = 0;
-    m_uiCachedBytes = 0;
-    m_uiCacheByteCount = 0;
-    m_uiCacheCapacity = 0;
-    m_iCacheEntryIndex = -1;
-    m_uiCacheLimit = 0;
-    m_uiCacheRequestCount = 0;
-    m_uiReferenceCount = 1;
-    m_uiCacheFlags = 0;
-    m_iCacheCount = 0;
-    m_eDVDLayer = DVD_LAYER_FRONT;
-    m_bCacheEnabled = false;
-    m_bCacheReadPending = false;
-    m_bCacheInitialized = false;
-    m_iFileSize = 0;
-    m_uiCacheOffset = 0;
-    m_uiCacheBufferCount = 2;
-    m_pfnCacheStatus = 0;
-    m_pfnCacheProgress = 0;
+    iNumCachedFiles = 0;
+    pCachedFiles = 0;
+    hFileCachingThreadHandle = 0;
+    eFileCacheState = FILE_CACHING_IN_PROGRESS;
+    pCurrentlyCachingFile = 0;
+    iCurrentWritten = 0;
+    iCurrentFileSize = 0;
+    iTotalDiskSpaceAvailable = 0;
+    iFreeDiskSpaceAvailable = 0;
+    iCurrentThreadPriority = -1;
+    iTotalWritten = 0;
+    iTotalAlreadyCached = 0;
+    iThreadTime = 1;
+    iTotalSizeToCache = 0;
+    iCurrentPriority = 0;
+    eCurrentLayer = DVD_LAYER_FRONT;
+    bArraySorted = false;
+    bCacheDriveAvailable = false;
+    bInPauseLoop = false;
+    iPrecachePriority = 0;
+    iFileCacheLoadScreenTime = 0;
+    iFileCacheLoadScreenEssentialTime = 2;
+    pForceFileCacheCallback = 0;
+    pFileCacheCompletionCallback = 0;
 }
 
 struct FUN_00b011b0_shell : public BSFileCache
@@ -53,6 +54,8 @@ struct ST_00b011b0
 // Calls v5 on the argument, then forwards the result to FUN_00b011e0 and returns its bool result.
 // @fnv 0x00b011b0
 // src: COMMUNITY 0x00b011b0
+// pdb: BSFileCache::IsFileCached | BSFileCache.obj | debug, object-file gap fill, medium
+// pdb params: apFileName
 bool FUN_00b011b0_shell::BSWin32FileCache_IsFileCached(int a)
 {
     return ((ST_00b011b0*)this)->BSWin32FileCache_IsFileCached_0(((VT_00b011b0*)this)->v5(a));
@@ -63,6 +66,7 @@ struct FUN_00b01020
     virtual ~FUN_00b01020();
 };
 // @fnv 0x00b01020
+// pdb: BSFileCache::~BSFileCache | BSFileCache.obj | debug, object-file gap fill, medium
 FUN_00b01020::~FUN_00b01020()
 {}
 
@@ -87,6 +91,7 @@ struct VBase
 };
 // Calls the virtual f11 on this with arguments 0, the int at offset 0x38, 1 and 0.
 // @fnv 0x00b01040
+// pdb: BSFileCache::WaitForEssentialFileCachingToFinish | BSFileCache.obj | debug, object-file gap fill, medium
 void Unk00b01040::CallVirtualWithField38()
 {
     ((VBase*)this)->f11(0, *(int*)((char*)this + 0x38), 1, 0);
@@ -98,6 +103,7 @@ struct FUN_00b01070_Class
 };
 // @fnv 0x00b01070
 // src: COMMUNITY 0x00b01070
+// pdb: BSFileCache::CalculateCurrentLayer | BSFileCache.obj | debug, object-file gap fill, medium
 void FUN_00b01070_Class::nullsub_316()
 {}
 
@@ -124,6 +130,8 @@ struct C00b011e0
 // Returns true when idx is within cnt and the entry at mid->arr[idx] has v equal to 2; otherwise false.
 // @fnv 0x00b011e0
 // src: COMMUNITY 0x00b011e0
+// pdb: BSFileCache::IsFileCached | BSFileCache.obj | debug, object-file gap fill, medium
+// pdb params: aiIndex
 bool C00b011e0::BSWin32FileCache_IsFileCached_0(int aiIndex)
 {
     if (aiIndex < 0 || aiIndex >= cnt)
@@ -136,15 +144,17 @@ extern int DAT_011ad02c;
 
 struct FUN_00b012f0_shell
 {
-    void BSFileCache_SetFileCacheList(int param_1, int param_2);
+    void BSFileCache_SetFileCacheList(int aEssentialFileCacheList, int aUnessentialFileCacheList);
 };
 
 // @fnv 0x00b012f0
 // src: COMMUNITY 0x00b012f0
-void __thiscall FUN_00b012f0_shell::BSFileCache_SetFileCacheList(int aiValue1, int aiValue2)
+// pdb: BSFileCache::SetFileCacheList | BSFileCache.obj | debug, upstream name already matches, high
+// pdb params: aEssentialFileCacheList, aUnessentialFileCacheList
+void __thiscall FUN_00b012f0_shell::BSFileCache_SetFileCacheList(int aEssentialFileCacheList, int aUnessentialFileCacheList)
 {
-    DAT_011ad028 = aiValue1;
-    DAT_011ad02c = aiValue2;
+    DAT_011ad028 = aEssentialFileCacheList;
+    DAT_011ad02c = aUnessentialFileCacheList;
 }
 
 struct FUN_00b01020_Holder
@@ -172,6 +182,8 @@ struct FUN_00b01340_Shell
 };
 // @fnv 0x00b01340
 // src: COMMUNITY 0x00b01340
+// pdb: BSFileCache::ParseCachedFileList | BSFileCache.obj | debug, upstream name already matches, high
+// pdb params: apFileList, aiCurrentPriority
 int FUN_00b01340_Shell::BSFileCache_ParseCachedFileList(const char* apFileList, unsigned int aiCurrentPriority)
 {
     return 0;
@@ -191,11 +203,13 @@ bool __thiscall FUN_00b01350_shell::_retn_0_(void* apCachedFile)
 
 struct FUN_00b01360_Cls
 {
-    void BSFileCache_WaitForFileCachingToFinish(int a, int b, int c, int d);
+    void BSFileCache_WaitForFileCachingToFinish(int aiMaxWait, int aiPriority, int abUpdateLoadingBar, int cLoadingBarSection);
 };
 // @fnv 0x00b01360
 // src: COMMUNITY 0x00b01360
-void FUN_00b01360_Cls::BSFileCache_WaitForFileCachingToFinish(int a, int b, int c, int d)
+// pdb: BSFileCache::WaitForFileCachingToFinish | BSFileCache.obj | debug, upstream name already matches, high
+// pdb params: aiMaxWait, aiPriority, abUpdateLoadingBar, cLoadingBarSection
+void FUN_00b01360_Cls::BSFileCache_WaitForFileCachingToFinish(int aiMaxWait, int aiPriority, int abUpdateLoadingBar, int cLoadingBarSection)
 {}
 
 struct StandIn
@@ -203,6 +217,7 @@ struct StandIn
     void ClearPointerAt60();
 };
 // @fnv 0x00b01370
+// pdb: BSFileCache::WaitDuringLoadingScreen | BSFileCache.obj | debug, object-file run extension, low
 void StandIn::ClearPointerAt60()
 {
     *reinterpret_cast<void**>(reinterpret_cast<char*>(this) + 0x60) = 0;
@@ -247,6 +262,7 @@ class B01130Task
 
 // @fnv 0x00b01130
 // src: COMMUNITY 0x00b01130
+// pdb: BSFileCache::ForcePauseAndWaitForIdle | BSFileCache.obj | retail, upstream name already matches, high
 void B01130Task::BSFileCache_ForcePauseAndWaitForIdle()
 {
     if (!m_pvThread)
@@ -262,35 +278,38 @@ void B01130Task::BSFileCache_ForcePauseAndWaitForIdle()
 
 struct S : public BSFileCache
 {
-    void WaitWhilePaused();
+    void BSFileCache_WaitIfPaused();
 };
 // @fnv 0x00b01080
-void S::WaitWhilePaused()
+// src: XBOX_RETAIL_PDB 0x00b01080
+// pdb: BSFileCache::WaitIfPaused | BSFileCache.obj | retail, object-file run extension, high
+void S::BSFileCache_WaitIfPaused()
 {
-    while ((bool)((m_eCacheState == FILE_CACHING_PAUSED || m_eCacheState == FILE_CACHING_FORCE_PAUSED) ? 1 : 0))
+    while ((bool)((eFileCacheState == FILE_CACHING_PAUSED || eFileCacheState == FILE_CACHING_FORCE_PAUSED) ? 1 : 0))
     {
-        m_bCacheInitialized = true;
+        bInPauseLoop = true;
         Sleep(50);
     }
-    m_bCacheInitialized = false;
+    bInPauseLoop = false;
 }
 
 struct FUN_00b010d0_cls : public BSFileCache
 {
-    void ProcessEntries_00b010d0();
+    void BSFileCache_PauseAndWaitForIdle();
 };
 
 // @fnv 0x00b010d0
-// src: GUESS 0x00b010d0 (confidence: low)
-void FUN_00b010d0_cls::ProcessEntries_00b010d0()
+// src: XBOX_RETAIL_PDB 0x00b010d0
+// pdb: BSFileCache::PauseAndWaitForIdle | BSFileCache.obj | retail, object-file run extension, high
+void FUN_00b010d0_cls::BSFileCache_PauseAndWaitForIdle()
 {
-    if (m_eCacheState == FILE_CACHING_IN_PROGRESS)
+    if (eFileCacheState == FILE_CACHING_IN_PROGRESS)
     {
-        m_eCacheState = FILE_CACHING_PAUSED;
+        eFileCacheState = FILE_CACHING_PAUSED;
     }
-    if ((bool)((m_eCacheState == FILE_CACHING_PAUSED || m_eCacheState == FILE_CACHING_FORCE_PAUSED) ? 1 : 0))
+    if ((bool)((eFileCacheState == FILE_CACHING_PAUSED || eFileCacheState == FILE_CACHING_FORCE_PAUSED) ? 1 : 0))
     {
-        while (m_bCacheInitialized == 0)
+        while (bInPauseLoop == 0)
         {
             Sleep(10);
         }

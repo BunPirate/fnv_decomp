@@ -3,6 +3,7 @@
 class Menu;
 class Tile;
 
+// pdb: class ListBoxBase, size 0x4, 0 members
 class ListBoxBase
 {
 public:

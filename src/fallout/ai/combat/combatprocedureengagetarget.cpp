@@ -50,6 +50,7 @@ public:
 // Functions are listed by their @fnv annotations; compile flags inferred from the PC code.
 
 // @fnv 0x009d3b50
+// pdb: CombatProcedureEngageTarget::Shutdown | CombatProcedureEngageTarget.obj | retail, vtable slot, high
 void CombatProcedureEngageTarget::Unk0c()
 {
     ResetCombatState();
@@ -61,6 +62,7 @@ void __cdecl operator delete(void*);
 
 // The compiler also supplies the scalar deleting destructor at 0x009d3b00.
 // @fnv 0x009d3b30
+// pdb: CombatProcedureEngageTarget::~CombatProcedureEngageTarget | CombatProcedureEngageTarget.obj | debug, upstream name already matches, high
 CombatProcedureEngageTarget::~CombatProcedureEngageTarget()
 {}
 
@@ -76,36 +78,38 @@ struct FUN_009a5eb0_shell
 };
 
 // @fnv 0x009d5880
-void CombatProcedureEngageTarget::SaveGame(BGSSaveFormBuffer* buffer)
+// pdb: CombatProcedureEngageTarget::SaveGame | CombatProcedureEngageTarget.obj | retail, upstream name already matches, high
+// pdb params: apSaveGameBuffer
+void CombatProcedureEngageTarget::SaveGame(BGSSaveFormBuffer* apSaveGameBuffer)
 {
-    CombatProcedure::SaveGame(buffer);
+    CombatProcedure::SaveGame(apSaveGameBuffer);
 
-    buffer->SaveData(reinterpret_cast<void*>(reinterpret_cast<char*>(this) + 0x10), 4, 0);
-    buffer->SaveData(reinterpret_cast<void*>(reinterpret_cast<char*>(this) + 0x14), 4, 0);
-    buffer->SaveData(reinterpret_cast<void*>(reinterpret_cast<char*>(this) + 0x18), 4, 0);
-    buffer->SaveData(reinterpret_cast<void*>(reinterpret_cast<char*>(this) + 0x1C), 4, 0);
+    apSaveGameBuffer->SaveData(reinterpret_cast<void*>(reinterpret_cast<char*>(this) + 0x10), 4, 0);
+    apSaveGameBuffer->SaveData(reinterpret_cast<void*>(reinterpret_cast<char*>(this) + 0x14), 4, 0);
+    apSaveGameBuffer->SaveData(reinterpret_cast<void*>(reinterpret_cast<char*>(this) + 0x18), 4, 0);
+    apSaveGameBuffer->SaveData(reinterpret_cast<void*>(reinterpret_cast<char*>(this) + 0x1C), 4, 0);
 
-    reinterpret_cast<FUN_009a5eb0_shell*>(reinterpret_cast<char*>(this) + 0x20)->FUN_009a5eb0(buffer);
-    reinterpret_cast<FUN_009a5eb0_shell*>(reinterpret_cast<char*>(this) + 0x28)->FUN_009a5eb0(buffer);
+    reinterpret_cast<FUN_009a5eb0_shell*>(reinterpret_cast<char*>(this) + 0x20)->FUN_009a5eb0(apSaveGameBuffer);
+    reinterpret_cast<FUN_009a5eb0_shell*>(reinterpret_cast<char*>(this) + 0x28)->FUN_009a5eb0(apSaveGameBuffer);
 
-    buffer->SaveData(reinterpret_cast<void*>(reinterpret_cast<char*>(this) + 0x30), 1, 0);
-    buffer->SaveData(reinterpret_cast<void*>(reinterpret_cast<char*>(this) + 0x31), 1, 0);
-    buffer->SaveData(reinterpret_cast<void*>(reinterpret_cast<char*>(this) + 0x32), 1, 0);
-    buffer->SaveData(reinterpret_cast<void*>(reinterpret_cast<char*>(this) + 0x34), 12, 0);
+    apSaveGameBuffer->SaveData(reinterpret_cast<void*>(reinterpret_cast<char*>(this) + 0x30), 1, 0);
+    apSaveGameBuffer->SaveData(reinterpret_cast<void*>(reinterpret_cast<char*>(this) + 0x31), 1, 0);
+    apSaveGameBuffer->SaveData(reinterpret_cast<void*>(reinterpret_cast<char*>(this) + 0x32), 1, 0);
+    apSaveGameBuffer->SaveData(reinterpret_cast<void*>(reinterpret_cast<char*>(this) + 0x34), 12, 0);
 
-    reinterpret_cast<CoordinateTriple*>(reinterpret_cast<char*>(this) + 0x40)->BGSWorldLocation_SaveGame(buffer);
-    reinterpret_cast<CoordinateTriple*>(reinterpret_cast<char*>(this) + 0x50)->BGSWorldLocation_SaveGame(buffer);
+    reinterpret_cast<CoordinateTriple*>(reinterpret_cast<char*>(this) + 0x40)->BGSWorldLocation_SaveGame(apSaveGameBuffer);
+    reinterpret_cast<CoordinateTriple*>(reinterpret_cast<char*>(this) + 0x50)->BGSWorldLocation_SaveGame(apSaveGameBuffer);
 
-    buffer->SaveData(reinterpret_cast<void*>(reinterpret_cast<char*>(this) + 0x33), 1, 0);
+    apSaveGameBuffer->SaveData(reinterpret_cast<void*>(reinterpret_cast<char*>(this) + 0x33), 1, 0);
 
-    reinterpret_cast<CombatTargetTimestamp*>(reinterpret_cast<char*>(this) + 0x60)->SaveTimeStamp(buffer);
+    reinterpret_cast<CombatTargetTimestamp*>(reinterpret_cast<char*>(this) + 0x60)->SaveTimeStamp(apSaveGameBuffer);
 }
 
 namespace fnv_009d5990 {
 
 struct FUN_00527ba0_Class
 {
-    void BGSLoadGameBuffer_LoadBGSWorldLocation(void* buffer);
+    void BGSWorldLocation_LoadGame(void* buffer);
 };
 
 extern float DAT_01022958;
@@ -114,39 +118,41 @@ extern float DAT_01022958;
 
 // Loads the combat procedure's fields from the buffer, reading a version-gated float and two sub-objects, with extra fields for versions 10 and 14.
 // @fnv 0x009d5990
-void CombatProcedureEngageTarget::LoadGame(BGSLoadFormBuffer* buffer)
+// pdb: CombatProcedureEngageTarget::LoadGame | CombatProcedureEngageTarget.obj | retail, upstream name already matches, high
+// pdb params: apLoadGameBuffer
+void CombatProcedureEngageTarget::LoadGame(BGSLoadFormBuffer* apLoadGameBuffer)
 {
     using namespace fnv_009d5990;
-    CombatProcedure::LoadGame(buffer);
+    CombatProcedure::LoadGame(apLoadGameBuffer);
 
-    buffer->ReadTypedData(reinterpret_cast<void*>(reinterpret_cast<char*>(this) + 0x10), 4u);
-    buffer->ReadTypedData(reinterpret_cast<void*>(reinterpret_cast<char*>(this) + 0x14), 4u);
-    buffer->ReadTypedData(reinterpret_cast<void*>(reinterpret_cast<char*>(this) + 0x18), 4u);
+    apLoadGameBuffer->ReadTypedData(reinterpret_cast<void*>(reinterpret_cast<char*>(this) + 0x10), 4u);
+    apLoadGameBuffer->ReadTypedData(reinterpret_cast<void*>(reinterpret_cast<char*>(this) + 0x14), 4u);
+    apLoadGameBuffer->ReadTypedData(reinterpret_cast<void*>(reinterpret_cast<char*>(this) + 0x18), 4u);
 
-    if (buffer->GetVersion() >= 14)
+    if (apLoadGameBuffer->GetVersion() >= 14)
     {
-        buffer->ReadTypedData(reinterpret_cast<void*>(reinterpret_cast<char*>(this) + 0x1c), 4u);
+        apLoadGameBuffer->ReadTypedData(reinterpret_cast<void*>(reinterpret_cast<char*>(this) + 0x1c), 4u);
     }
     else
     {
         *reinterpret_cast<float*>(reinterpret_cast<char*>(this) + 0x1c) = DAT_01022958;
     }
 
-    reinterpret_cast<TimeoutTimer*>(reinterpret_cast<char*>(this) + 0x20)->LoadGame(buffer);
-    reinterpret_cast<TimeoutTimer*>(reinterpret_cast<char*>(this) + 0x28)->LoadGame(buffer);
+    reinterpret_cast<TimeoutTimer*>(reinterpret_cast<char*>(this) + 0x20)->LoadGame(apLoadGameBuffer);
+    reinterpret_cast<TimeoutTimer*>(reinterpret_cast<char*>(this) + 0x28)->LoadGame(apLoadGameBuffer);
 
-    buffer->ReadTypedData(reinterpret_cast<void*>(reinterpret_cast<char*>(this) + 0x30), 1u);
-    buffer->ReadTypedData(reinterpret_cast<void*>(reinterpret_cast<char*>(this) + 0x31), 1u);
-    buffer->ReadTypedData(reinterpret_cast<void*>(reinterpret_cast<char*>(this) + 0x32), 1u);
-    buffer->ReadTypedData(reinterpret_cast<void*>(reinterpret_cast<char*>(this) + 0x34), 12u);
+    apLoadGameBuffer->ReadTypedData(reinterpret_cast<void*>(reinterpret_cast<char*>(this) + 0x30), 1u);
+    apLoadGameBuffer->ReadTypedData(reinterpret_cast<void*>(reinterpret_cast<char*>(this) + 0x31), 1u);
+    apLoadGameBuffer->ReadTypedData(reinterpret_cast<void*>(reinterpret_cast<char*>(this) + 0x32), 1u);
+    apLoadGameBuffer->ReadTypedData(reinterpret_cast<void*>(reinterpret_cast<char*>(this) + 0x34), 12u);
 
-    reinterpret_cast<FUN_00527ba0_Class*>(reinterpret_cast<char*>(this) + 0x40)->BGSLoadGameBuffer_LoadBGSWorldLocation(buffer);
-    reinterpret_cast<FUN_00527ba0_Class*>(reinterpret_cast<char*>(this) + 0x50)->BGSLoadGameBuffer_LoadBGSWorldLocation(buffer);
+    reinterpret_cast<FUN_00527ba0_Class*>(reinterpret_cast<char*>(this) + 0x40)->BGSWorldLocation_LoadGame(apLoadGameBuffer);
+    reinterpret_cast<FUN_00527ba0_Class*>(reinterpret_cast<char*>(this) + 0x50)->BGSWorldLocation_LoadGame(apLoadGameBuffer);
 
-    if (buffer->GetVersion() >= 10)
+    if (apLoadGameBuffer->GetVersion() >= 10)
     {
-        buffer->ReadTypedData(reinterpret_cast<void*>(reinterpret_cast<char*>(this) + 0x33), 1u);
-        reinterpret_cast<CombatTargetTimestamp*>(reinterpret_cast<char*>(this) + 0x60)->LoadGame(buffer);
+        apLoadGameBuffer->ReadTypedData(reinterpret_cast<void*>(reinterpret_cast<char*>(this) + 0x33), 1u);
+        reinterpret_cast<CombatTargetTimestamp*>(reinterpret_cast<char*>(this) + 0x60)->LoadGame(apLoadGameBuffer);
     }
 }
 
@@ -258,7 +264,10 @@ struct Procedure
     bool CheckAndApply(bool);
 };
 // @fnv 0x009d5000
-bool Procedure::CheckAndApply(bool mode)
+// pdb: CombatProcedureEngageTarget::CreateOptimalLocationPath | CombatProcedureEngageTarget.obj | retail, object-file run extension, high
+// pdb params: abOutsideAbsoluteRange
+// pdb locals: request, ptarget, pattacker, optimalLocation, pcombatState
+bool Procedure::CheckAndApply(bool abOutsideAbsoluteRange)
 {
     if (time.FUN_00435e00() < DAT_01020998)
         return false;
@@ -277,7 +286,7 @@ bool Procedure::CheckAndApply(bool mode)
         if (!actor->SetPathingRequestAvoidNodes(&request))
             return false;
         target = targetActor3->TESObjectREFR_GetWorldLocation();
-        SetMoveMode_00996e20(mode ? 3 : 1);
+        SetMoveMode_00996e20(abOutsideAbsoluteRange ? 3 : 1);
         active = false;
         return true;
     }
@@ -298,7 +307,7 @@ bool Procedure::CheckAndApply(bool mode)
             return false;
         point = query2.FUN_006815c0();
         target = targetActor2->TESObjectREFR_GetWorldLocation();
-        SetMoveMode_00996e20(mode ? 3 : 1);
+        SetMoveMode_00996e20(abOutsideAbsoluteRange ? 3 : 1);
         return true;
     }
 }
@@ -330,7 +339,7 @@ struct WorldLocation
 {
     float x, y, z;
     int world;
-    float Distance(WorldLocation*);
+    float BGSWorldLocation_GetDistance(WorldLocation*);
 };
 struct Timer
 {
@@ -365,58 +374,61 @@ struct Engage
     WorldLocation target;
     Timer timer60;
     Actor* GetRef();
-    void PrintDebugInfo(Output* out, int a, int b);
+    void PrintDebugInfo(Output* apDebugText, int aeLocation, int aeJustify);
 };
 // Prints state-specific debug text for the engage state, plus a timer-based message when timer60 has elapsed less than 5 seconds.
 // @fnv 0x009d5410
-void Engage::PrintDebugInfo(Output* pOutput, int a, int b)
+// pdb: CombatProcedureEngageTarget::DisplayDebugText | CombatProcedureEngageTarget.obj | retail, string-set bridge, high
+// pdb params: apDebugText, aeLocation, aeJustify
+// pdb locals: ptarget, targetWorldLoc
+void Engage::PrintDebugInfo(Output* apDebugText, int aeLocation, int aeJustify)
 {
     Actor* actor = GetRef();
     switch (state)
     {
     case 0:
-        pOutput->Print(a, b, text_0);
+        apDebugText->Print(aeLocation, aeJustify, text_0);
         break;
     case 1:
-        pOutput->Print(a, b, text_1);
-        pOutput->Print(a, b, text_2, timer20.Elapsed(), timer20.Value());
+        apDebugText->Print(aeLocation, aeJustify, text_1);
+        apDebugText->Print(aeLocation, aeJustify, text_2, timer20.Elapsed(), timer20.Value());
         break;
     case 2:
-        pOutput->Print(a, b, text_3);
-        pOutput->Print(a, b, text_4, timer20.Elapsed(), timer20.Value());
+        apDebugText->Print(aeLocation, aeJustify, text_3);
+        apDebugText->Print(aeLocation, aeJustify, text_4, timer20.Elapsed(), timer20.Value());
         break;
     case 3:
-        pOutput->Print(a, b, text_5);
-        pOutput->Print(a, b, text_6, range14, range18);
+        apDebugText->Print(aeLocation, aeJustify, text_5);
+        apDebugText->Print(aeLocation, aeJustify, text_6, range14, range18);
         if (actor)
         {
             WorldLocation location = actor->TESObjectREFR_GetWorldLocation<WorldLocation>();
-            pOutput->Print(a, b, text_7, location.Distance(&target), 256.0);
+            apDebugText->Print(aeLocation, aeJustify, text_7, location.BGSWorldLocation_GetDistance(&target), 256.0);
         }
         break;
     case 4:
-        pOutput->Print(a, b, text_8);
-        pOutput->Print(a, b, text_9, range14, range18);
+        apDebugText->Print(aeLocation, aeJustify, text_8);
+        apDebugText->Print(aeLocation, aeJustify, text_9, range14, range18);
         if (actor)
         {
             WorldLocation location = actor->TESObjectREFR_GetWorldLocation<WorldLocation>();
-            pOutput->Print(a, b, text_10, location.Distance(&target), 256.0);
+            apDebugText->Print(aeLocation, aeJustify, text_10, location.BGSWorldLocation_GetDistance(&target), 256.0);
         }
         break;
     case 5:
-        pOutput->Print(a, b, text_11);
+        apDebugText->Print(aeLocation, aeJustify, text_11);
         break;
     case 8:
-        pOutput->Print(a, b, text_15);
+        apDebugText->Print(aeLocation, aeJustify, text_15);
         break;
     case 6:
-        pOutput->Print(a, b, text_12);
+        apDebugText->Print(aeLocation, aeJustify, text_12);
         break;
     case 7:
-        pOutput->Print(a, b, text_13);
+        apDebugText->Print(aeLocation, aeJustify, text_13);
         if (enabled && timer28.Active())
         {
-            pOutput->Print(a, b, text_14, timer28.Elapsed(), timer28.Value());
+            apDebugText->Print(aeLocation, aeJustify, text_14, timer28.Elapsed(), timer28.Value());
         }
         break;
     }
@@ -424,15 +436,15 @@ void Engage::PrintDebugInfo(Output* pOutput, int a, int b)
     {
         if (result == -1)
         {
-            pOutput->Print(a, b, text_16, timer60.Remaining(), 5.0);
+            apDebugText->Print(aeLocation, aeJustify, text_16, timer60.Remaining(), 5.0);
         }
         else if (result == -2)
         {
-            pOutput->Print(a, b, text_17, timer60.Remaining(), 5.0);
+            apDebugText->Print(aeLocation, aeJustify, text_17, timer60.Remaining(), 5.0);
         }
         else
         {
-            pOutput->Print(a, b, text_18, timer60.Remaining(), 5.0);
+            apDebugText->Print(aeLocation, aeJustify, text_18, timer60.Remaining(), 5.0);
         }
     }
 }
@@ -740,10 +752,10 @@ struct ProcessObj
 // the complete object layout and virtual table; this helper adds declarations only.
 struct ActorPathingAccess : Actor
 {
-    void BuildPathTo(PathRequest_combatprocedureengagetarget* req, NiPoint3* pos, void* cell, float radius, int flags);
+    void BuildPathTo(PathRequest_combatprocedureengagetarget* apRequest, NiPoint3* aGoalLocation, void* apSpace, float afTargetRadius, int apAvoidNodes);
     bool PathHasError();
     void StopPathAlt();
-    bool GetFallbackPos(NiPoint3* out);
+    bool GetFallbackPos(NiPoint3* apRetLocation);
 };
 
 struct CombatCtrlObj
@@ -752,7 +764,7 @@ struct CombatCtrlObj
     Stamp GetLastSeen();
     bool CanReach(Location* loc, int a, int b);
     bool IsCovered();
-    bool FindDodge(SearchRequest* req, int mode, int a, float dist, float maxDist);
+    bool CombatState_FindBestDodgeLocation(SearchRequest* apRetLocation, int aiDodgeDirections, int aiDodgeDirectionLOSCheck, float afDodgeDistance, float afMinDodgeDistance);
     bool CanReachPos(NiPoint3* pos, void* cell, int a, int b);
     void OnPathFailed();
     void SetDestination(Location* loc);
@@ -785,12 +797,12 @@ extern float DAT_0101712c;
 extern double DAT_0108e058;
 extern float DAT_01013ea4;
 
-float __cdecl RandRange(float lo, float hi);
-bool __cdecl RandChance(float p);
+float __cdecl RandRange(float afMin, float afMax);
+bool __cdecl RandChance(float afPercentTrue);
 float __cdecl GetCurrentTime();
-void __cdecl UpdateRanges(CombatOwner* owner, void* group, float* a, float* b, float* c);
-bool __cdecl FindNavPos(int a, int b, NiPoint3* pos, NiPoint3* out);
-bool __cdecl CheckLineOfFire(Actor* actor, Actor* target, NiPoint3* pos, NiPoint3* look, int a, int b);
+void __cdecl UpdateRanges(CombatOwner* apCombatController, void* apEquippedWeapon, float* arfMinRange, float* arfMaxRange, float* arfAbsoluteMaxRange);
+bool __cdecl FindNavPos(int apWorldSpace, int apCell, NiPoint3* aLocation, NiPoint3* apRetPt);
+bool __cdecl CheckLineOfFire(Actor* apAttacker, Actor* apTarget, NiPoint3* arAttackerLocation, NiPoint3* arTargetLocation, int abIgnoreCrouch, int aiCollisionLayer);
 
 // Retained: CombatProcedureEngageTarget.h lacks this layout and the engagement helper declarations.
 class EngageProc
@@ -821,13 +833,15 @@ class EngageProc
     void UpdatePlayerStatus(int mode);
     void StopMove();
     void Fail(const char* msg);
-    bool TryAttack(bool b);
+    bool TryAttack(bool abOutsideAbsoluteRange);
     bool IsAimingWeapon();
     void ResetState();
     void UpdateEngagement();
 };
 
 // @fnv 0x009d3b80
+// pdb: CombatProcedureEngageTarget::Update | CombatProcedureEngageTarget.obj | retail, unique string literal, high
+// pdb locals: boutsideAbsoluteRange, targetLoc, ftempMinOptimalRange, ptarget, attackerWorldLoc, pcombatState, fsquaredDistance, targetWorldLoc, btooFar, btooClose, pattacker, ftempMaxOptimalRange, brangeChanged, request, fcutoff, dodgeLocation, fdistance, center, ptargetCell, ptargetWorld, newPoint, bcanDodge, fdodgeDistance, bisSneaking ...
 void EngageProc::UpdateEngagement()
 {
     Actor* actorZ = GetActor();
@@ -946,7 +960,7 @@ void EngageProc::UpdateEngagement()
                 {
                     SearchRequest search;
                     float dodgeDist = RandRange(DAT_0101e704, DAT_01032adc);
-                    if (ctrlD->FindDodge(&search, tooFar4 ? 4 : 8, 0, dodgeDist, DAT_0104e0e8))
+                    if (ctrlD->CombatState_FindBestDodgeLocation(&search, tooFar4 ? 4 : 8, 0, dodgeDist, DAT_0104e0e8))
                     {
                         PathRequest_combatprocedureengagetarget req34;
                         actorZ->PathToLocation(
@@ -1034,7 +1048,7 @@ void EngageProc::UpdateEngagement()
                 }
                 m_timer28.Reset();
                 SearchRequest search2;
-                if (ctrlD->FindDodge(&search2, 3, 0, dist, DAT_0104e0e8))
+                if (ctrlD->CombatState_FindBestDodgeLocation(&search2, 3, 0, dist, DAT_0104e0e8))
                 {
                     PathRequest_combatprocedureengagetarget req62;
                     actorZ->PathToLocation(
@@ -1327,6 +1341,7 @@ struct FUN_009d3a00 : public FUN_009ca680
 
 // Constructor for FUN_009d3a00 that initializes base class, member fields, and sets m60 to negative DAT_010914d0.
 // @fnv 0x009d3a00
+// pdb: CombatProcedureEngageTarget::CombatProcedureEngageTarget | CombatProcedureEngageTarget.obj | debug, call graph, medium
 FUN_009d3a00::FUN_009d3a00()
     : FUN_009ca680(), unk10(0), f14(0.0f), f18(0.0f), f1c(0.0f), m20(), m28(), b30(false), b31(false), b32(false),
       b33(true), pt34(DAT_011f426c), m40(), m50(), m60(-DAT_010914d0)

@@ -70,6 +70,7 @@ struct CpuObject
     CpuObject* FUN_00d49630(unsigned int flags);
 };
 // @fnv 0x00d49630
+// pdb: hkpStorageSampledHeightFieldShape::`scalar deleting destructor' | hkpStorageSampledHeightFieldShapeClass.obj | retail, vtable slot, high
 CpuObject* CpuObject::FUN_00d49630(unsigned int flags)
 {
     FUN_00d496d0();

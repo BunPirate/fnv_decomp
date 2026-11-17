@@ -37,6 +37,9 @@ struct Obj
 
 // @fnv 0x00db1d90
 // src: GUESS 0x00db1d90 (confidence: low)
+// pdb: hkpBoxBoxCollisionDetection::tryToAddPointOnEdge | hkpBoxBoxCollisionDetection.obj | retail, object-file run extension, low
+// pdb params: manifold, edgeA, edgeB, nextVertA, nextVertB, normalA, normalB, closestPointDist
+// pdb locals: fcp
 void Obj::UpdateState_00db1d90(void* a1, int idxA, int idxB, int axisA, int axisB, const Vec4& vecA, const Vec4& vecB,
                        float scale)
 {

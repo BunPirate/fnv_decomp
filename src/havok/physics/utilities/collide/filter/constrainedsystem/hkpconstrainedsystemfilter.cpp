@@ -10,13 +10,13 @@
 #include "../../../../../../../include/hkpConstraintInstance.h"
 #include "../../../../../../../include/hkpEntity.h"
 
-extern int g_unk0126d658;
+extern int hkpConstrainedSystemFilterClass; // src: XBOX_RETAIL_PDB 0x0126d658 (old: g_0126d658/g_unk0126d658)
 
 // @fnv 0x00dffaf0
 // src: GUESS 0x00dffaf0 (confidence: low)
 void* __cdecl hkpConstrainedSystemFilter_GetUnk0126d658Address()
 {
-    return &g_unk0126d658;
+    return &hkpConstrainedSystemFilterClass;
 }
 
 struct FnvCpu_FUN_00dffb00_CpuAllocator
@@ -43,6 +43,7 @@ struct FnvCpu_FUN_00dffb00_CpuObject
 };
 // Calls FUN_00e46b80, then if bit 0 of flags is set, invokes the allocator's Invoke on this with size, and returns this.
 // @fnv 0x00dffb00
+// pdb: hkpConstrainedSystemFilter::`scalar deleting destructor' | hkpConstrainedSystemFilterClass.obj | retail, vtable slot, high
 FnvCpu_FUN_00dffb00_CpuObject* FnvCpu_FUN_00dffb00_CpuObject::FUN_00dffb00(unsigned int flags)
 {
     UpdateFields_00e46b80();
@@ -57,14 +58,14 @@ FnvCpu_FUN_00dffb00_CpuObject* FnvCpu_FUN_00dffb00_CpuObject::FUN_00dffb00(unsig
 // Keep the original inline owner calculation when using the shared collidable layout.
 inline void* hkpCollidable::getOwner() const
 {
-    return const_cast<char*>(reinterpret_cast<const char*>(this)) + m_iOwnerOffset;
+    return const_cast<char*>(reinterpret_cast<const char*>(this)) + m_ownerOffset;
 }
 
 class hkpEntity;
 
 inline hkpEntity* getRigidBodyForConstraintFilter(const hkpCollidable* pkCollidable)
 {
-    if (pkCollidable->m_kBroadPhaseHandle.m_type == 1)
+    if (pkCollidable->m_broadPhaseHandle.m_type == 1)
         return static_cast<hkpEntity*>(pkCollidable->getOwner());
     return 0;
 }
@@ -83,6 +84,8 @@ class ConstrainedSystemCollidableFilterView
 
 // Returns false if the collidable filter rejects the pair or a non-type-11 constraint links the two rigid bodies; true otherwise.
 // @fnv 0x00e46bf0
+// pdb: hkpConstrainedSystemFilter::isCollisionEnabled | hkpConstrainedSystemFilter.obj | retail, vtable slot, high
+// pdb params: a, b
 hkBool ConstrainedSystemCollidableFilterView::IsCollisionEnabled(const hkpCollidable& a,
                                                                 const hkpCollidable& b) const throw()
 {
@@ -109,7 +112,7 @@ hkBool ConstrainedSystemCollidableFilterView::IsCollisionEnabled(const hkpCollid
             reinterpret_cast<const hkpConstraintInstance*>(pkEntityA->GetEntryAt(i));
         if (pkConstraint && pkConstraint->m_data->getType() != 11)
         {
-            if (pkConstraint->m_kActorEntries[0] == pkEntityB || pkConstraint->m_kActorEntries[1] == pkEntityB)
+            if (pkConstraint->m_entities[0] == pkEntityB || pkConstraint->m_entities[1] == pkEntityB)
                 return false;
         }
     }
@@ -135,10 +138,12 @@ struct ConstraintFilter
     hkBool Evaluate(int, int, int, int, int);
 };
 // @fnv 0x00e46cf0
-hkBool ConstraintFilter::Evaluate(int aiArg1, int aiArg2, int aiArg3, int aiArg4, int aiArg5)
+// pdb: hkpConstrainedSystemFilter::isCollisionEnabled | hkpConstrainedSystemFilter.obj | retail, vtable slot, high
+// pdb params: a, b
+hkBool ConstraintFilter::Evaluate(int input, int a, int b, int bContainer, int bKey)
 {
     FilterDelegate* const& ref = delegate;
-    return hkBool(ref == 0 || *delegate->callback.evaluate(&aiArg5, aiArg1, aiArg2, aiArg3, aiArg4, aiArg5) != 0);
+    return hkBool(ref == 0 || *delegate->callback.evaluate(&bKey, input, a, b, bContainer, bKey) != 0);
 }
 
 class hkFilterE46D
@@ -164,14 +169,16 @@ class hkObjE46D
     int unk00, unk04, unk08, unk0C, unk10, unk14, unk18, unk1C;
     hkWorldE46D* m_pOwningWorld;
 
-    hkBool IsInWorldFilter(void* a, void* b);
+    hkBool IsInWorldFilter(void* a, void* collidableB);
 };
 
 // Returns true if the object has no world or its world's filter accepts the two arguments.
 // @fnv 0x00e46df0
-hkBool hkObjE46D::IsInWorldFilter(void* a, void* b)
+// pdb: hkpConstrainedSystemFilter::isCollisionEnabled | hkpConstrainedSystemFilter.obj | retail, vtable slot, high
+// pdb params: a, b
+hkBool hkObjE46D::IsInWorldFilter(void* a, void* collidableB)
 {
-    return !m_pOwningWorld || m_pOwningWorld->m_iFilter.IsCollisionEnabled(a, b).m_cBooleanValue;
+    return !m_pOwningWorld || m_pOwningWorld->m_iFilter.IsCollisionEnabled(a, collidableB).m_cBooleanValue;
 }
 
 class hkBase0E46C
@@ -198,17 +205,19 @@ class hkListE46C
     int unk00[10];
     hkFilterImplE46C* m_iFilter;
 
-    hkBool hkpConstrainedSystemFilter_isCollisionEnabled(const void* a, const void* b, const void* c, const void* d, const void* e, const void* f,
-                            const void* g) const;
+    hkBool hkpConstrainedSystemFilter_isCollisionEnabled(const void* input, const void* collectionBodyA, const void* collectionBodyB, const void* containerShapeA, const void* containerShapeB, const void* keyA,
+                            const void* keyB) const;
 };
 
 // Returns true when m_iFilter is null or when m_iFilter->IsCollisionEnabled(a, b, c, d, e, f, g) is true.
 // @fnv 0x00e46d40
 // src: HAVOK_LIB 0x00e46d40
-hkBool hkListE46C::hkpConstrainedSystemFilter_isCollisionEnabled(const void* a, const void* b, const void* c, const void* d, const void* e,
-                                    const void* f, const void* g) const
+// pdb: hkpConstrainedSystemFilter::isCollisionEnabled | hkpConstrainedSystemFilter.obj | retail, vtable slot, high
+// pdb params: a, b
+hkBool hkListE46C::hkpConstrainedSystemFilter_isCollisionEnabled(const void* input, const void* collectionBodyA, const void* collectionBodyB, const void* containerShapeA, const void* containerShapeB,
+                                    const void* keyA, const void* keyB) const
 {
-    return !m_iFilter || m_iFilter->IsCollisionEnabled(a, b, c, d, e, f, g);
+    return !m_iFilter || m_iFilter->IsCollisionEnabled(input, collectionBodyA, collectionBodyB, containerShapeA, containerShapeB, keyA, keyB);
 }
 
 namespace fnv_00e46da0 {
@@ -235,15 +244,17 @@ class hkListE46D
     int unk00[9];
     hkFilterImplE46D* m_iFilter;
 
-    hkBool hkpConstrainedSystemFilter_isCollisionEnabled_00e46da0(const void* a, const void* b, const void* c, const void* d) const;
+    hkBool hkpConstrainedSystemFilter_isCollisionEnabled_00e46da0(const void* aInput, const void* shape, const void* bContainer, const void* bKey) const;
 };
 
 // Returns true when m_iFilter is null or when m_iFilter->IsCollisionEnabled(a, b, c, d) is true.
 // @fnv 0x00e46da0
 // src: HAVOK_LIB 0x00e46da0
-hkBool hkListE46D::hkpConstrainedSystemFilter_isCollisionEnabled_00e46da0(const void* a, const void* b, const void* c, const void* d) const
+// pdb: hkpConstrainedSystemFilter::isCollisionEnabled | hkpConstrainedSystemFilter.obj | retail, vtable slot, high
+// pdb params: a, b
+hkBool hkListE46D::hkpConstrainedSystemFilter_isCollisionEnabled_00e46da0(const void* aInput, const void* shape, const void* bContainer, const void* bKey) const
 {
-    return !m_iFilter || m_iFilter->IsCollisionEnabled(a, b, c, d);
+    return !m_iFilter || m_iFilter->IsCollisionEnabled(aInput, shape, bContainer, bKey);
 }
 }  // namespace fnv_00e46da0
 
@@ -252,13 +263,15 @@ void __cdecl CallB(void*);
 // If the owner at +0xc has type other than 11, calls CallA with the +0x10 offsets of the pointers at +0x14 and +0x18, and passes a nonzero result to CallB.
 // @fnv 0x00e46e30
 // src: HAVOK_LIB 0x00e46e30
-void __stdcall hkpConstrainedSystemFilter_constraintAddedCallback(void* p)
+// pdb: hkpConstrainedSystemFilter::constraintAddedCallback | hkpConstrainedSystemFilter.obj | retail, upstream name already matches, high
+// pdb params: constraint
+void __stdcall hkpConstrainedSystemFilter_constraintAddedCallback(void* constraint)
 {
-    hkpConstraintData* owner = *reinterpret_cast<hkpConstraintData**>(reinterpret_cast<char*>(p) + 0xc);
+    hkpConstraintData* owner = *reinterpret_cast<hkpConstraintData**>(reinterpret_cast<char*>(constraint) + 0xc);
     if (owner->getType() != 11)
     {
-        void* b = *reinterpret_cast<void**>(reinterpret_cast<char*>(p) + 0x18);
-        void* a = *reinterpret_cast<void**>(reinterpret_cast<char*>(p) + 0x14);
+        void* b = *reinterpret_cast<void**>(reinterpret_cast<char*>(constraint) + 0x18);
+        void* a = *reinterpret_cast<void**>(reinterpret_cast<char*>(constraint) + 0x14);
         void* obj =
             reinterpret_cast<char*>(CallA(reinterpret_cast<char*>(a) + 0x10, reinterpret_cast<char*>(b) + 0x10));
         if (obj)

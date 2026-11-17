@@ -54,26 +54,28 @@ __forceinline void hkArrayBase<T>::_setSize(hkMemoryAllocator& alloc, int n, con
 inline void hkReferencedObject::operator delete(void* p)
 {
     HavokHeap::hkMemoryRouter_getInstance().heap().blockFree(
-        p, static_cast<hkReferencedObject*>(p)->m_usMemSizeAndFlags);
+        p, static_cast<hkReferencedObject*>(p)->m_memSizeAndFlags);
 }
 
 // Kept locally: include/hkArrayStreamWriter.h does not declare Reset or Seek.
 
 struct FUN_00d467c0
 {
-    void write(const char* a, unsigned int b);
+    void write(const char* data, unsigned int numBytes);
 };
 struct FUN_00d468a0_obj
 {
     unsigned int pad[2];
     FUN_00d467c0* p;
-    unsigned int WriteToStream(unsigned int arg, unsigned int b);
+    unsigned int WriteToStream(unsigned int mem, unsigned int size);
 };
 // @fnv 0x00d468a0
-unsigned int FUN_00d468a0_obj::WriteToStream(unsigned int apData, unsigned int auiSize)
+// pdb: hkMemoryTrackStreamWriter::write | hkArrayStreamWriter.obj | retail, vtable slot, high
+// pdb params: mem, size
+unsigned int FUN_00d468a0_obj::WriteToStream(unsigned int mem, unsigned int size)
 {
-    p->write((const char*)apData, auiSize);
-    return auiSize;
+    p->write((const char*)mem, size);
+    return size;
 }
 
 struct FUN_00d469c0
@@ -174,21 +176,23 @@ struct FUN_00d46770_cls
     int unk00;
     int unk04;
     hkArray<char>* buffer;
-    void WriteBufferToWriter(FNVWriter* writer, int unused);
+    void WriteBufferToWriter(FNVWriter* collector, int cls);
 };
 // If buffer is set and either unrestricted or the writer allows restricted data, passes its data, used size and computed limit to writer->method14.
 // @fnv 0x00d46770
-void FUN_00d46770_cls::WriteBufferToWriter(FNVWriter* writer, int unused)
+// pdb: hkArrayStreamWriter::calcContentStatistics | hkArrayStreamWriter.obj | retail, vtable slot, high
+// pdb params: collector, cls
+void FUN_00d46770_cls::WriteBufferToWriter(FNVWriter* collector, int cls)
 {
     hkArray<char>* b = buffer;
     if (b != 0)
     {
         unsigned int flags = b->m_iCapacityState;
-        if ((flags & 0x80000000u) == 0 || writer->allowRestricted)
+        if ((flags & 0x80000000u) == 0 || collector->allowRestricted)
         {
             void* data = b->m_data;
             unsigned int limit = hkStatisticsCollector_getAllocatedSize(data, flags & 0x3fffffff);
-            writer->method14(3, &DAT_010cc460, b->m_data, b->m_iElementCount, limit);
+            collector->method14(3, &DAT_010cc460, b->m_data, b->m_iElementCount, limit);
         }
     }
 }
@@ -209,6 +213,7 @@ class hkBlockPoolD469
 };
 
 // @fnv 0x00d469e0
+// pdb: hkMemoryTrack::clear | hkArrayStreamWriter.obj | retail, object-file run extension, low
 void hkBlockPoolD469::FreeAllChunks()
 {
     for (int i = 0; i < m_kBlocks.m_iElementCount; i++)
@@ -232,6 +237,7 @@ struct FUN_00d46be0_Cls
 };
 // @fnv 0x00d46be0
 // src: GUESS 0x00d46be0 (confidence: low)
+// pdb: hkMemoryTrack::~hkMemoryTrack | hkArrayStreamWriter.obj | retail, object-file run extension, low
 void FUN_00d46be0_Cls::UpdateFields_00d46be0()
 {
     reinterpret_cast<FUN_00d469e0_Obj*>(this)->FreeAllChunks();
@@ -270,19 +276,20 @@ class FUN_00d46be0_class
 class FUN_00d46c30 : public hkReferencedObject
 {
   public:
-    FUN_00d46be0_class* m_stream;
-    int m_0c;
-    int m_ownership;
+    FUN_00d46be0_class* m_track; // src: XBOX_RETAIL_PDB +0x8 (old: m_stream)
+    int m_offset; // src: XBOX_RETAIL_PDB +0xc (old: m_0c)
+    int m_memType; // src: XBOX_RETAIL_PDB +0x10 (old: m_ownership)
 
     virtual ~FUN_00d46c30() throw();
 };
 
 // Destructor that deletes m_stream when m_ownership equals 1.
 // @fnv 0x00d46c30
+// pdb: hkMemoryTrackStreamReader::~hkMemoryTrackStreamReader | hkArrayStreamWriter.obj | retail, object-file run extension, low
 FUN_00d46c30::~FUN_00d46c30() throw()
 {
-    if (m_ownership == 1)
-        delete m_stream;
+    if (m_memType == 1)
+        delete m_track;
 }
 
 struct State
@@ -323,6 +330,7 @@ struct FnvCpu_FUN_00d46cc0_CpuObject
     FnvCpu_FUN_00d46cc0_CpuObject* Destroy(unsigned int flags);
 };
 // @fnv 0x00d46cc0
+// pdb: hkMemoryTrackStreamReader::`scalar deleting destructor' | hkArrayStreamWriter.obj | retail, vtable slot, high
 FnvCpu_FUN_00d46cc0_CpuObject* FnvCpu_FUN_00d46cc0_CpuObject::Destroy(unsigned int flags)
 {
     FUN_00d46c30();
@@ -395,20 +403,22 @@ class hkStreamD467
     hkBufferD467* m_buffer;
     int m_offset;
 
-    int hkMemoryTrackStreamReader_read(void* dst, int n);
+    int hkMemoryTrackStreamReader_read(void* buf, int nbytes);
 };
 
 // Reads up to n bytes from the stream buffer into dst, advancing m_offset, and returns the number of bytes actually read.
 // @fnv 0x00d46710
 // src: HAVOK_LIB 0x00d46710
-int hkStreamD467::hkMemoryTrackStreamReader_read(void* apBuffer, int aiCount)
+// pdb: hkMemoryTrackStreamReader::read | hkArrayStreamWriter.obj | retail, upstream name already matches, high
+// pdb params: buf, nbytes
+int hkStreamD467::hkMemoryTrackStreamReader_read(void* buf, int nbytes)
 {
     if (IsStreamValid())
     {
         int avail = (m_buffer->m_iCapacity - 1) * m_buffer->m_iFirstIndex + m_buffer->m_last - m_offset;
-        int k = aiCount < avail ? aiCount : avail;
-        m_buffer->Read(apBuffer, k, m_offset);
-        m_offset += aiCount;
+        int k = nbytes < avail ? nbytes : avail;
+        m_buffer->Read(buf, k, m_offset);
+        m_offset += nbytes;
         return k;
     }
     return 0;
@@ -418,34 +428,37 @@ int hkStreamD467::hkMemoryTrackStreamReader_read(void* apBuffer, int aiCount)
 // @fnv 0x00d468c0
 void hkArrayStreamWriter::Reset()
 {
-    m_aiIndexedValues->m_iElementCount = 0;
+    m_arr->m_iElementCount = 0;
     m_offset = 0;
-    m_aiIndexedValues->reserve(m_aiIndexedValues->m_iElementCount + 1);
-    m_aiIndexedValues->m_data[m_aiIndexedValues->m_iElementCount] = 0;
+    m_arr->reserve(m_arr->m_iElementCount + 1);
+    m_arr->m_data[m_arr->m_iElementCount] = 0;
 }
 // Seeks m_offset to iRelOffset relative to eWhence, growing m_aiIndexedValues if needed, and returns 1 on negative offset.
 // @fnv 0x00d46b30
-int hkArrayStreamWriter::Seek(int iRelOffset, int eWhence)
+// pdb: hkArrayStreamWriter::seek | hkArrayStreamWriter.obj | retail, vtable slot, high
+// pdb params: offset, whence
+// pdb locals: assertBuf, ostr
+int hkArrayStreamWriter::Seek(int offset, int whence)
 {
     int iAbsOffset = m_offset;
-    switch (eWhence)
+    switch (whence)
     {
     case 0:
-        iAbsOffset = iRelOffset;
+        iAbsOffset = offset;
         break;
     case 1:
-        iAbsOffset = m_offset + iRelOffset;
+        iAbsOffset = m_offset + offset;
         break;
     case 2:
-        iAbsOffset = m_aiIndexedValues->GetLogicalSize() - iRelOffset;
+        iAbsOffset = m_arr->GetLogicalSize() - offset;
         break;
     }
     if (iAbsOffset >= 0)
     {
-        if (iAbsOffset > m_aiIndexedValues->GetLogicalSize())
+        if (iAbsOffset > m_arr->GetLogicalSize())
         {
-            m_aiIndexedValues->setSize(iAbsOffset + 1, 0);
-            m_aiIndexedValues->m_iElementCount = iAbsOffset;
+            m_arr->setSize(iAbsOffset + 1, 0);
+            m_arr->m_iElementCount = iAbsOffset;
         }
         m_offset = iAbsOffset;
         return 0;
@@ -460,7 +473,7 @@ class Stream_d467
     int m_offset;
     hkArray<const char*> m_kBlocks;
 
-    void WriteBytesToBlocks(const char* pcData, int iSize);
+    void WriteBytesToBlocks(const char* data, int numBytes);
 };
 
 void __cdecl ResizeAudioStream(void*, void*, int);
@@ -469,11 +482,14 @@ void __cdecl hkString_memCpy(void* dst, const void* src, int count);
 // Copies iSize bytes from pcData into the stream's block array, allocating new blocks from the heap when the current block is full.
 // @fnv 0x00d467c0
 // src: GUESS 0x00d467c0 (confidence: medium)
-void Stream_d467::WriteBytesToBlocks(const char* pcData, int iSize)
+// pdb: hkMemoryTrack::write | hkArrayStreamWriter.obj | retail, call graph (shared callers), high
+// pdb params: data, numBytes
+// pdb locals: newSector
+void Stream_d467::WriteBytesToBlocks(const char* data, int numBytes)
 {
     int blockIndex = m_kBlocks.m_iElementCount - 1;
 
-    if (iSize > 0)
+    if (numBytes > 0)
     {
         hkArray<const char*>* blocks = &m_kBlocks;
         do
@@ -503,40 +519,43 @@ void Stream_d467::WriteBytesToBlocks(const char* pcData, int iSize)
 
             char* destination = (char*)m_kBlocks.m_data[blockIndex] + m_offset;
 
-            if (iSize > available)
+            if (numBytes > available)
             {
-                hkString_memCpy(destination, pcData, available);
-                pcData += available;
-                iSize -= available;
+                hkString_memCpy(destination, data, available);
+                data += available;
+                numBytes -= available;
                 m_offset = m_iDofCount;
             }
             else
             {
-                hkString_memCpy(destination, pcData, iSize);
-                m_offset += iSize;
+                hkString_memCpy(destination, data, numBytes);
+                m_offset += numBytes;
                 return;
             }
-        } while (iSize > 0);
+        } while (numBytes > 0);
     }
 }
 
 // Copies size bytes from mem into the indexed values array at m_offset, growing the array if needed, then advances m_offset and returns size.
 // @fnv 0x00d46920
+// pdb: hkArrayStreamWriter::write | hkArrayStreamWriter.obj | retail, upstream name already matches, high
+// pdb params: mem, size
+// pdb locals: assertBuf, ostr
 int hkArrayStreamWriter::write(const void* mem, int size)
 {
-    int spaceLeft = m_aiIndexedValues->GetLogicalSize() - m_offset;
+    int spaceLeft = m_arr->GetLogicalSize() - m_offset;
     if (size > spaceLeft)
     {
-        int newSize = m_aiIndexedValues->GetLogicalSize() - spaceLeft + size;
-        m_aiIndexedValues->reserve(newSize + 1);
-        m_aiIndexedValues->m_iElementCount = newSize;
-        (*m_aiIndexedValues)[newSize] = 0;
+        int newSize = m_arr->GetLogicalSize() - spaceLeft + size;
+        m_arr->reserve(newSize + 1);
+        m_arr->m_iElementCount = newSize;
+        (*m_arr)[newSize] = 0;
     }
-    else if (m_aiIndexedValues->getCapacity() > m_aiIndexedValues->GetLogicalSize())
+    else if (m_arr->getCapacity() > m_arr->GetLogicalSize())
     {
-        (*m_aiIndexedValues)[m_aiIndexedValues->GetLogicalSize()] = 0;
+        (*m_arr)[m_arr->GetLogicalSize()] = 0;
     }
-    hkString_memCpy(m_aiIndexedValues->m_data + m_offset, mem, size);
+    hkString_memCpy(m_arr->m_data + m_offset, mem, size);
     m_offset += size;
     return size;
 }
@@ -547,8 +566,8 @@ struct V46a50Elem
 };
 struct V46a50Owner
 {
-    void doElem(V46a50Elem* e, int n);
-    void hkMemoryTrack_appendByMove(struct V46a50List* l);
+    void doElem(V46a50Elem* data, int numBytes);
+    void hkMemoryTrack_appendByMove(struct V46a50List* other);
 };
 struct V46a50List
 {
@@ -563,29 +582,31 @@ struct V46a50List
 // Processes each stored element with doElem and heap v08, then releases the array buffer and resets the list.
 // @fnv 0x00d46a50
 // src: HAVOK_LIB 0x00d46a50
-void V46a50Owner::hkMemoryTrack_appendByMove(V46a50List* apList)
+// pdb: hkMemoryTrack::appendByMove | hkArrayStreamWriter.obj | retail, upstream name already matches, high
+// pdb params: other
+void V46a50Owner::hkMemoryTrack_appendByMove(V46a50List* other)
 {
-    int n = apList->m_iElementCount;
+    int n = other->m_iElementCount;
     for (int i = 0; i < n - 1; i++)
     {
-        V46a50Elem* e = apList->m_data[i];
-        doElem(e, apList->m0);
-        int k = apList->m0;
+        V46a50Elem* e = other->m_data[i];
+        doElem(e, other->m0);
+        int k = other->m0;
         HavokHeap::hkMemoryRouter_getInstance().heap().blockFree(e, k);
     }
     if (n != 0)
     {
-        V46a50Elem* e = apList->m_data[n - 1];
-        doElem(e, apList->m4);
-        int k = apList->m0;
+        V46a50Elem* e = other->m_data[n - 1];
+        doElem(e, other->m4);
+        int k = other->m0;
         HavokHeap::hkMemoryRouter_getInstance().heap().blockFree(e, k);
     }
     hkMemoryAllocator& a = HavokHeap::hkMemoryRouter_getInstance().heap();
-    apList->m_iElementCount = 0;
-    if ((apList->m_capFlags & 0x80000000) == 0)
-        a.bufFree(apList->m_data, (apList->m_capFlags & 0x3fffffff) * sizeof(V46a50Elem*));
-    apList->m_data = 0;
-    apList->m_capFlags = 0x80000000;
-    apList->FreeAllChunks();
+    other->m_iElementCount = 0;
+    if ((other->m_capFlags & 0x80000000) == 0)
+        a.bufFree(other->m_data, (other->m_capFlags & 0x3fffffff) * sizeof(V46a50Elem*));
+    other->m_data = 0;
+    other->m_capFlags = 0x80000000;
+    other->FreeAllChunks();
 }
 }  // namespace fnv_00d46a50

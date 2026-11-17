@@ -5,15 +5,16 @@ class BGSSaveFormBuffer;
 class BGSLoadFormBuffer;
 class CombatController;
 
+// pdb: class CombatPlan, size 0x18, 6 members
 class CombatPlan
 {
 public:
-    int unk00;
-    int unk04;
-    int unk08;
-    int unk0C;
-    int unk10;
-    int unk14;
+    int pPlanSteps; // src: XBOX_RETAIL_PDB +0x0 (old: unk00)
+    int iLength; // src: XBOX_RETAIL_PDB +0x4 (old: unk04)
+    int iCurrentAction; // src: XBOX_RETAIL_PDB +0x8 (old: unk08)
+    int pGoal; // src: XBOX_RETAIL_PDB +0xc (old: unk0C)
+    int iCombatLocation; // src: XBOX_RETAIL_PDB +0x10 (old: unk10)
+    int pCombatController; // src: XBOX_RETAIL_PDB +0x14 (old: unk14)
 
     CombatPlan(CombatController* controller);
     ~CombatPlan();

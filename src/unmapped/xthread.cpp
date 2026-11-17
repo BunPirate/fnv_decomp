@@ -9,6 +9,7 @@ struct S_0082f1f0_Lock
 
 // @fnv 0x0082f1f0
 // src: XBOX_PDB 0x0082f1f0
+// pdb: BSCriticalSection::Unlock | ModelLoader.obj | debug, upstream name already matches, high
 void S_0082f1f0_Lock::BSCriticalSection_Unlock()
 {
     LeaveCriticalSection(&m_cs);

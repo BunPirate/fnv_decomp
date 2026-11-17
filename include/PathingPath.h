@@ -17,7 +17,7 @@ public:
     PathingPath();
     ~PathingPath();
     float CalculatePathDistance();
-    void Clear();
+    void TeleportPath_Clear();
 #if !defined(_MSC_VER) || defined(__vecDelDtor)
     void* __vecDelDtor(unsigned int);
 #endif

@@ -33,22 +33,25 @@ unsigned char ToArrayIndex(int section, Index actorValue);
 
 // Resolves the stored race form ID against the owner's file, looks up the TESRace, and warns if the race cannot be found.
 // @fnv 0x0048b920
-void TESRaceForm::InitItem(TESForm* owner)
+// pdb: TESRaceForm::InitItem | TESRaceForm.obj | retail, string-set bridge, high
+// pdb params: apOwner
+// pdb locals: itempint
+void TESRaceForm::InitItem(TESForm* apOwner)
 {
     if (m_pRace)
     {
         unsigned int formID = reinterpret_cast<unsigned int>(m_pRace);
-        TESForm::RemapFormIDForFile(formID, owner->GetFile(-1));
+        TESForm::RemapFormIDForFile(formID, apOwner->GetFile(-1));
         m_pRace = dynamic_cast<TESRace*>(GetFormByID(formID));
         if (!m_pRace)
         {
-            if (owner)
+            if (apOwner)
             {
-                if (reinterpret_cast<BGSCameraPath*>(owner)->HasNameForWarning())
-                    Warning("MASTERFILE: Unable to find race (%08X) on owner object \"%s\".", formID, owner->GetName());
+                if (reinterpret_cast<BGSCameraPath*>(apOwner)->HasNameForWarning())
+                    Warning("MASTERFILE: Unable to find race (%08X) on owner object \"%s\".", formID, apOwner->GetName());
                 else
                     Warning("MASTERFILE: Unable to find race (%08X) on owner object (%08X).", formID,
-                            owner->GetFormID());
+                            apOwner->GetFormID());
             }
             else
             {
@@ -60,28 +63,34 @@ void TESRaceForm::InitItem(TESForm* owner)
 
 // Returns a skill value from kData arrays (plus offset unless IsAutoCalculated), otherwise delegates to ActorValueOwner::GetActorValue.
 // @fnv 0x00607850
-int TESNPC::GetActorValue(ActorValue::Index actorValue)
+// pdb: TESNPC::GetActorValue | TESNPC.obj | retail, upstream name already matches, high
+// pdb params: aiWhich
+// pdb locals: iresult, i
+int TESNPC::GetActorValue(ActorValue::Index aiWhich)
 {
     int value = 0;
-    if (ActorValue::IsSkill(actorValue))
+    if (ActorValue::IsSkill(aiWhich))
     {
-        int skillIndex = static_cast<signed char>(ActorValue::ToArrayIndex(2, actorValue));
+        int skillIndex = static_cast<signed char>(ActorValue::ToArrayIndex(2, aiWhich));
         value = kData.ucSkillValues[skillIndex];
         if (!static_cast<const TESNPC*>(this)->IsAutoCalculated())
             value += kData.ucSkillOffsets[skillIndex];
     }
     else
     {
-        value = ActorValueOwner::GetActorValue(actorValue);
+        value = ActorValueOwner::GetActorValue(aiWhich);
     }
     return value;
 }
 
 // Casts component to TESRaceForm and, if successful, sets this form's race to the component's race.
 // @fnv 0x0048b870
-void TESRaceForm::BaseFormRecord(BaseFormComponent* component)
+// pdb: TESRaceForm::CopyComponent | TESRaceForm.obj | retail, vtable slot, high
+// pdb params: apCopyFC
+// pdb locals: pcopy
+void TESRaceForm::BaseFormRecord(BaseFormComponent* apCopyFC)
 {
-    TESRaceForm* raceForm = dynamic_cast<TESRaceForm*>(component);
+    TESRaceForm* raceForm = dynamic_cast<TESRaceForm*>(apCopyFC);
     if (!raceForm)
         return;
     SetFormRace(raceForm->GetFormRace());
@@ -89,13 +98,18 @@ void TESRaceForm::BaseFormRecord(BaseFormComponent* component)
 
 // Returns the actor value for the given ActorValue::Index converted to float.
 // @fnv 0x005f7480
-float TESActorBase::GetCurrentActorValue(ActorValue::Index actorValue)
+// pdb: TESActorBase::GetActorFloatValue | TESCreature.obj | retail, vtable slot, high
+// pdb params: aiWhich
+float TESActorBase::GetCurrentActorValue(ActorValue::Index aiWhich)
 {
-    return static_cast<float>(GetActorValue(actorValue));
+    return static_cast<float>(GetActorValue(aiWhich));
 }
 
 // Returns true if apCompareFC is not a TESRaceForm or its race differs from this form's race; otherwise false.
 // @fnv 0x0048b8c0
+// pdb: TESRaceForm::CompareComponent | TESRaceForm.obj | retail, vtable slot, high
+// pdb params: apCompareFC
+// pdb locals: pcompare
 bool TESRaceForm::IsEqualToBase(BaseFormComponent* apCompareFC)
 {
     TESRaceForm* pcompare = dynamic_cast<TESRaceForm*>(apCompareFC);

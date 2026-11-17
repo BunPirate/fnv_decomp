@@ -14,12 +14,12 @@
 
 inline const hkpShape* hkpCdBody::getShape() const
 {
-    return m_pCollisionShape;
+    return m_shape;
 }
 
 inline unsigned int hkpCdBody::getShapeKey() const
 {
-    return m_uiCollisionShapeKey;
+    return m_shapeKey;
 }
 
 inline const hkpCdBody* hkpCdBody::getParent() const
@@ -37,7 +37,7 @@ __forceinline const hkpCollidable* hkpCdBody::getRootCollidable() const
 
 __forceinline unsigned int hkpCollidable::GetFilterInfoForKey() const
 {
-    return m_kBroadPhaseHandle.m_uiCollisionFilterData;
+    return m_broadPhaseHandle.m_collisionFilterInfo;
 }
 
 inline hkBool32 hkpCollisionDispatcher::hasAlternateType(hkpShapeType type, hkpShapeType alternateType)
@@ -86,7 +86,7 @@ struct CollisionGroupMaskDisabler : public hkpGroupFilter
 // @fnv 0x00e48970
 void CollisionGroupMaskDisabler::ClearMaskedBits(unsigned int auiMaskA, unsigned int auiMaskB)
 {
-    unsigned int* mask = m_uiCollisionGroupMasks;
+    unsigned int* mask = m_collisionLookupTable;
 
     unsigned int bit = 1;
     unsigned int count = 32;
@@ -123,6 +123,8 @@ struct FUN_00e48b60_class
 // Applies the world-ray filter info and collidable filter info using the owner at this-0x14.
 // @fnv 0x00e48b60
 // src: GUESS 0x00e48b60 (confidence: medium)
+// pdb: hkpGroupFilter::isCollisionEnabled | hkpGroupFilter.obj | retail, vtable slot, high
+// pdb params: aInput, bShape, bContainer, bKey
 int* FUN_00e48b60_class::ApplyWorldAndCollidableFilters(int* value, FUN_00e48b60_arg1* arg1, hkpCollidable* arg2)
 {
     reinterpret_cast<FUN_00e48830_class*>(reinterpret_cast<char*>(this) - 0x14)
@@ -139,6 +141,8 @@ class GroupFilter : public hkpGroupFilter
 
 // Checks whether two collision filter infos may collide, using group/subgroup masks or the group filter table.
 // @fnv 0x00e48830
+// pdb: hkArrayBase<unsigned int>::_expandOne | hkpRemoveTerminalsMoppModifier.obj | debug, object-file run extension, low
+// pdb params: alloc
 hkBool GroupFilter::ShouldCollide(unsigned int infoA, unsigned int infoB)
 {
     if (((infoA ^ infoB) & 0xffff0000) == 0 && (infoA & 0xffff0000) != 0)
@@ -152,7 +156,7 @@ hkBool GroupFilter::ShouldCollide(unsigned int infoA, unsigned int infoB)
         return true;
     }
 
-    return (m_uiCollisionGroupMasks[infoA & 0x1f] & (1 << (infoB & 0x1f))) != 0;
+    return (m_collisionLookupTable[infoA & 0x1f] & (1 << (infoB & 0x1f))) != 0;
 }
 
 struct FUN_00e488a0_data
@@ -170,18 +174,20 @@ struct FUN_00e488a0_data
 
 struct FUN_00e488a0_class
 {
-    int* CallGetValueAndDispatch(int* value, FUN_00e488a0_data* data, int unused, hkpShapeContainer* object,
-                                 int input);
+    int* CallGetValueAndDispatch(int* value, FUN_00e488a0_data* a, int b, hkpShapeContainer* bContainer,
+                                 int bKey);
 };
 
 // Applies the shape-key filter info and ray filter info using the owner at this-16.
 // @fnv 0x00e488a0
-int* FUN_00e488a0_class::CallGetValueAndDispatch(int* value, FUN_00e488a0_data* data, int unused,
-                                                 hkpShapeContainer* object, int input)
+// pdb: hkpGroupFilter::isCollisionEnabled | hkpGroupFilter.obj | retail, vtable slot, high
+// pdb params: aInput, bShape, bContainer, bKey
+int* FUN_00e488a0_class::CallGetValueAndDispatch(int* value, FUN_00e488a0_data* a, int b,
+                                                 hkpShapeContainer* bContainer, int bKey)
 {
-    int result = object->GetFilterInfoForKey(input);
+    int result = bContainer->GetFilterInfoForKey(bKey);
     FUN_00e48830_class* owner = reinterpret_cast<FUN_00e48830_class*>(reinterpret_cast<char*>(this) - 16);
-    owner->ShouldCollide(value, data->value20, result);
+    owner->ShouldCollide(value, a->value20, result);
     return value;
 }
 
@@ -196,8 +202,8 @@ public:
 // @fnv 0x00e48940
 void CollisionLayerMaskEditor::DisableCollisionPair(int iLayerA, int iLayerB)
 {
-    m_uiCollisionGroupMasks[iLayerA] &= ~(1 << iLayerB);
-    m_uiCollisionGroupMasks[iLayerB] &= ~(1 << iLayerA);
+    m_collisionLookupTable[iLayerA] &= ~(1 << iLayerB);
+    m_collisionLookupTable[iLayerB] &= ~(1 << iLayerA);
 }
 
 struct FUN_00e48ab0_class
@@ -208,6 +214,8 @@ struct FUN_00e48ab0_class
 // Applies the two collidable filter infos using the owner at this-8.
 // @fnv 0x00e48ab0
 // src: GUESS 0x00e48ab0 (confidence: low)
+// pdb: hkpGroupFilter::isCollisionEnabled | hkpGroupFilter.obj | retail, vtable slot, high
+// pdb params: aInput, bShape, bContainer, bKey
 int* FUN_00e48ab0_class::EvaluateValue_00e48ab0(int* value, hkpCollidable* pFirstValue, hkpCollidable* pSecondValue)
 {
     reinterpret_cast<FUN_00e48830_class*>(reinterpret_cast<char*>(this) - 8)
@@ -232,53 +240,55 @@ class CollectionBodyCollisionFilter : public hkpGroupFilter
 {
   public:
     hkBool ShouldCollide(hkUint32 uiInfoA, hkUint32 uiInfoB) const throw();
-    virtual hkBool IsCollisionEnabled(const CollisionAgentContext& kInput, const hkpCdBody& kA,
-                                             const hkpCdBody& kB, const hkpShapeContainer& kBContainer,
-                                             hkUint32 uiBKey) const throw();
+    virtual hkBool IsCollisionEnabled(const CollisionAgentContext& input, const hkpCdBody& a,
+                                             const hkpCdBody& b, const hkpShapeContainer& bContainer,
+                                             hkUint32 bKey) const throw();
 };
 
 // Computes the collision filter info for both bodies, walking up the parent chain for alternate shape types, then tests the pair with ShouldCollide.
 // @fnv 0x00e48b90
-hkBool CollectionBodyCollisionFilter::IsCollisionEnabled(const CollisionAgentContext& kInput, const hkpCdBody& kA,
-                                                     const hkpCdBody& kB, const hkpShapeContainer& kBContainer,
-                                                     hkUint32 uiBKey) const throw()
+// pdb: hkpGroupFilter::isCollisionEnabled | hkpGroupFilter.obj | retail, vtable slot, high
+// pdb params: aInput, bShape, bContainer, bKey
+hkBool CollectionBodyCollisionFilter::IsCollisionEnabled(const CollisionAgentContext& input, const hkpCdBody& a,
+                                                     const hkpCdBody& b, const hkpShapeContainer& bContainer,
+                                                     hkUint32 bKey) const throw()
 {
-    hkUint32 uiInfoB = kBContainer.GetFilterInfoForKey(uiBKey);
+    hkUint32 uiInfoB = bContainer.GetFilterInfoForKey(bKey);
     if (uiInfoB == 0xffffffff)
-        uiInfoB = kB.getRootCollidable()->GetFilterInfoForKey();
+        uiInfoB = b.getRootCollidable()->GetFilterInfoForKey();
 
     hkUint32 uiInfoA;
-    if (kA.getParent() == 0)
+    if (a.getParent() == 0)
     {
-        uiInfoA = kA.getRootCollidable()->GetFilterInfoForKey();
+        uiInfoA = a.getRootCollidable()->GetFilterInfoForKey();
     }
     else
     {
-        const hkpCdBody* pkChild = &kA;
-        const hkpCdBody* pkParent = kA.getParent();
+        const hkpCdBody* pkChild = &a;
+        const hkpCdBody* pkParent = a.getParent();
         do
         {
             const hkpShapeType iType = pkParent->getShape()->getType();
-            if (kInput.m_pCollisionDispatcher->hasAlternateType(iType, static_cast<hkpShapeType>(7)))
+            if (input.m_pCollisionDispatcher->hasAlternateType(iType, static_cast<hkpShapeType>(7)))
             {
                 const hkpShapeCollection* pkCollection =
                     static_cast<const hkpShapeCollection*>(pkParent->getShape());
                 uiInfoA = pkCollection->GetFilterInfoForKey(pkChild->getShapeKey());
                 goto done;
             }
-            else if (kInput.m_pCollisionDispatcher->hasAlternateType(iType, static_cast<hkpShapeType>(8)))
+            else if (input.m_pCollisionDispatcher->hasAlternateType(iType, static_cast<hkpShapeType>(8)))
             {
                 ShapeCollectionScratchBuffer kBuffer;
                 const hkpShapeContainer* pkContainer = Hkpbvtreeagent3_ForwardCall_00d2d4b0(pkParent, kBuffer);
                 uiInfoA = pkContainer->GetFilterInfoForKey(pkChild->getShapeKey());
                 goto done;
             }
-            else if (kInput.m_pCollisionDispatcher->hasAlternateType(iType, static_cast<hkpShapeType>(21)))
+            else if (input.m_pCollisionDispatcher->hasAlternateType(iType, static_cast<hkpShapeType>(21)))
             {
-                uiInfoA = kA.getRootCollidable()->GetFilterInfoForKey();
+                uiInfoA = a.getRootCollidable()->GetFilterInfoForKey();
                 goto done;
             }
-            else if (kInput.m_pCollisionDispatcher->hasAlternateType(iType, static_cast<hkpShapeType>(22)))
+            else if (input.m_pCollisionDispatcher->hasAlternateType(iType, static_cast<hkpShapeType>(22)))
             {
                 return true;
             }
@@ -300,24 +310,26 @@ class CollectionPairCollisionFilter : public hkpGroupFilter
         USE_COLLIDABLE_FILTER_INFO = 0xffffffff
     };
     hkBool ShouldCollide(unsigned int infoA, unsigned int infoB) const;
-    virtual hkBool IsCollisionEnabled(const CollisionAgentContext& input, const hkpCdBody& a, const hkpCdBody& b,
+    virtual hkBool IsCollisionEnabled(const CollisionAgentContext& input, const hkpCdBody& collectionBodyA, const hkpCdBody& collectionBodyB,
                                    const hkpShapeContainer& containerShapeA,
                                    const hkpShapeContainer& containerShapeB, unsigned int keyA,
                                    unsigned int keyB) const;
 };
 // Resolves per-shape or root-collidable filter info for two shapes and returns whether they should collide via ShouldCollide.
 // @fnv 0x00e48ae0
-hkBool CollectionPairCollisionFilter::IsCollisionEnabled(const CollisionAgentContext& input, const hkpCdBody& a,
-                                          const hkpCdBody& b, const hkpShapeContainer& containerShapeA,
+// pdb: hkpGroupFilter::isCollisionEnabled | hkpGroupFilter.obj | retail, vtable slot, high
+// pdb params: aInput, bShape, bContainer, bKey
+hkBool CollectionPairCollisionFilter::IsCollisionEnabled(const CollisionAgentContext& input, const hkpCdBody& collectionBodyA,
+                                          const hkpCdBody& collectionBodyB, const hkpShapeContainer& containerShapeA,
                                           const hkpShapeContainer& containerShapeB, unsigned int keyA,
                                           unsigned int keyB) const
 {
     unsigned int infoA = containerShapeA.GetFilterInfoForKey(keyA);
     if (infoA == USE_COLLIDABLE_FILTER_INFO)
-        infoA = a.getRootCollidable()->GetFilterInfoForKey();
+        infoA = collectionBodyA.getRootCollidable()->GetFilterInfoForKey();
     unsigned int infoB = containerShapeB.GetFilterInfoForKey(keyB);
     if (infoB == USE_COLLIDABLE_FILTER_INFO)
-        infoB = b.getRootCollidable()->GetFilterInfoForKey();
+        infoB = collectionBodyB.getRootCollidable()->GetFilterInfoForKey();
     return ShouldCollide(infoA, infoB);
 }
 
@@ -325,24 +337,27 @@ hkBool CollectionPairCollisionFilter::IsCollisionEnabled(const CollisionAgentCon
 class CollisionGroupMaskEnabler : public hkpGroupFilter
 {
   public:
-    void hkpGroupFilter_enableCollisionsUsingBitfield(hkUint32 infoA, hkUint32 infoB);
+    void hkpGroupFilter_enableCollisionsUsingBitfield(hkUint32 layerBitsA, hkUint32 layerBitsB);
 };
 
 // For each of 32 collision groups, if infoA has the bit set, OR infoB into the group mask, and if infoB has the bit set, OR infoA into it.
 // @fnv 0x00e488e0
 // src: HAVOK_LIB 0x00e488e0
-void CollisionGroupMaskEnabler::hkpGroupFilter_enableCollisionsUsingBitfield(hkUint32 infoA, hkUint32 infoB)
+// pdb: hkpGroupFilter::enableCollisionsUsingBitfield | hkpGroupFilter.obj | debug, upstream name already matches, high
+// pdb params: layerBitsA, layerBitsB
+// pdb locals: assertBuf, ostr
+void CollisionGroupMaskEnabler::hkpGroupFilter_enableCollisionsUsingBitfield(hkUint32 layerBitsA, hkUint32 layerBitsB)
 {
     hkUint32 mask = 1;
-    hkUint32* pGroupMask = m_uiCollisionGroupMasks;
+    hkUint32* pGroupMask = m_collisionLookupTable;
     int count = 32;
 
     do
     {
-        if (infoA & mask)
-            *pGroupMask |= infoB;
-        if (infoB & mask)
-            *pGroupMask |= infoA;
+        if (layerBitsA & mask)
+            *pGroupMask |= layerBitsB;
+        if (layerBitsB & mask)
+            *pGroupMask |= layerBitsA;
 
         ++pGroupMask;
         mask = (mask << 1) | (mask >> 31);

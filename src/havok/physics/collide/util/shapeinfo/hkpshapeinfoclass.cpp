@@ -42,5 +42,6 @@ struct FUN_00e008e0
 
 // Empty default constructor of a class with a vtable, m_usMemSizeAndFlags and m_sReferenceCount, and an operator delete that releases through the heap.
 // @fnv 0x00e008e0
+// pdb: hkpShapeInfo::`scalar deleting destructor' | hkpShapeInfoClass.obj | retail, vtable slot, high
 FUN_00e008e0::FUN_00e008e0()
 {}

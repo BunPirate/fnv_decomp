@@ -8,19 +8,22 @@ extern "C" int __cdecl FUN_00d86980();
 
 // Reads a signed char, short or int from p depending on the size returned by FUN_00d86980, defaulting to 0.
 // @fnv 0x00d86b80
-int __stdcall ReadSignedValueBySize(const void* apData)
+// src: XBOX_RETAIL_PDB 0x00d86b80
+// pdb: hkClassMember::getEnumValue | hkClassMember.obj | retail, call graph, high
+// pdb params: memberAddress
+int __stdcall hkClassMember_getEnumValue(const void* memberAddress)
 {
     int r = 0;
     switch (FUN_00d86980())
     {
     case 1:
-        r = *(const signed char*)apData;
+        r = *(const signed char*)memberAddress;
         break;
     case 2:
-        r = *(const signed short*)apData;
+        r = *(const signed short*)memberAddress;
         break;
     case 4:
-        r = *(const int*)apData;
+        r = *(const int*)memberAddress;
         break;
     }
     return r;
@@ -55,13 +58,15 @@ struct FUN_00db7870 : public FUN_00db7860
 
 struct hkObjDB76
 {
-    void writeSignature(FUN_00db7860* p) throw();
+    void writeSignature(FUN_00db7860* w) throw();
     void hkClassEnum_getSignature();
 };
 
 // Constructs a temporary FUN_00db7870 with 0 and passes it to FUN_00db7600.
 // @fnv 0x00db76c0
 // src: HAVOK_LIB 0x00db76c0
+// pdb: hkClassEnum::getSignature | hkClassEnum.obj | retail, upstream name already matches, high
+// pdb locals: crc
 void hkObjDB76::hkClassEnum_getSignature()
 {
     FUN_00db7870 tmp(0);
@@ -91,7 +96,7 @@ struct hkMemoryRouterXdb76f0
 namespace hkRouterXdb76f0 {
 extern "C" hkMemoryRouterXdb76f0& __cdecl hkMemoryRouter_getInstance() throw();
 }
-void __cdecl ResizeAudioStream(void* m_pPoolBase, void* pArray, int iSizeElem);
+void __cdecl ResizeAudioStream(void* mem, void* array, int sizeElem);
 
 template <class T> class hkArrayXdb76f0LocalForm
 { // local form of hkArray: 0x00db76f0 needs the original inline/out-of-line helper split; shared replacement changes bytes.
@@ -126,25 +131,28 @@ class hkOwnerXdb76f0
     int unk00;
     hkArrayXdb76f0LocalForm<hkEntryXdb76f0> m_entries;
 
-    bool CollectMatchingEntries(unsigned int flags, hkArrayXdb76f0LocalForm<void*>& out, unsigned int* remaining);
+    bool CollectMatchingEntries(unsigned int flagValue, hkArrayXdb76f0LocalForm<void*>& bitsOut, unsigned int* bitsOver);
 };
 
 // Iterates m_entries in reverse, adds entries whose m_flags are a subset of flags to out, and stores the unmatched bits in remaining.
 // @fnv 0x00db76f0
-bool hkOwnerXdb76f0::CollectMatchingEntries(unsigned int flags, hkArrayXdb76f0LocalForm<void*>& out, unsigned int* remaining)
+// pdb: hkClassEnum::decomposeFlags | hkClassEnum.obj | retail, call graph, high
+// pdb params: flagValue, bitsOut, bitsOver
+// pdb locals: assertBuf, ostr
+bool hkOwnerXdb76f0::CollectMatchingEntries(unsigned int flagValue, hkArrayXdb76f0LocalForm<void*>& bitsOut, unsigned int* bitsOver)
 {
-    out.m_iElementCount = 0;
-    for (int i = m_entries.m_iElementCount - 1; i >= 0 && flags; i--)
+    bitsOut.m_iElementCount = 0;
+    for (int i = m_entries.m_iElementCount - 1; i >= 0 && flagValue; i--)
     {
         hkEntryXdb76f0& e = m_entries.m_data[i];
         unsigned int f = e.m_flags;
-        if ((f & flags) == f)
+        if ((f & flagValue) == f)
         {
             void* value = e.m_uiFilterValue;
-            out.AddBack(value);
-            flags &= ~f;
+            bitsOut.AddBack(value);
+            flagValue &= ~f;
         }
     }
-    *remaining = flags;
-    return flags != 0;
+    *bitsOver = flagValue;
+    return flagValue != 0;
 }

@@ -34,6 +34,8 @@ FUN_0080ed20_shell* FUN_0080ed20_shell::DivideByScalar(float divisor)
 }
 
 // @fnv 0x0080f030
+// pdb: LightEffect::Revert | LightEffect.obj | retail, upstream name already matches, high
+// pdb params: apActor
 void LightEffect::Revert(Actor* apActor)
 {
     ActiveEffect::Revert(apActor);
@@ -42,10 +44,12 @@ void LightEffect::Revert(Actor* apActor)
 
 // Constructs a light effect with no attached light.
 // @fnv 0x0080e610
-LightEffect::LightEffect(void* caster, void* item, void* effect)
-    : ActiveEffect((MagicCaster*)caster, (MagicItem*)item, (EffectItem*)effect), m_spLight(0)
+// pdb: LightEffect::LightEffect | LightEffect.obj | retail, upstream name already matches, high
+// pdb params: apCaster, apSpell, apEffect
+LightEffect::LightEffect(void* apCaster, void* apSpell, void* apEffect)
+    : ActiveEffect((MagicCaster*)apCaster, (MagicItem*)apSpell, (EffectItem*)apEffect), spPointLight(0)
 {
-    m_spLight = 0;
+    spPointLight = 0;
 }
 
 // The constructor must emit its vtable store; the destructor must omit it.
@@ -53,29 +57,35 @@ LightEffect::LightEffect(void* caster, void* item, void* effect)
 class __declspec(novtable) LightEffect;
 
 // @fnv 0x0080e6d0
+// pdb: LightEffect::~LightEffect | LightEffect.obj | retail, upstream name already matches, high
 LightEffect::~LightEffect()
 {}
 
 // The shared ShadowSceneNode declaration does not expose this lookup.
 extern "C" void FindExistingShadowSceneLight();
 // @fnv 0x0080e8a0
+// pdb: LightEffect::Update | LightEffect.obj | retail, upstream name already matches, high
+// pdb params: afSecondsElapsed
+// pdb locals: pnode
 void LightEffect::Update(float afSecondsElapsed)
 {
     ShadowSceneNode* pnode;
-    if ((NiPointLight*)m_spLight)
+    if ((NiPointLight*)spPointLight)
     {
         pnode = NiAdditionalGeometryData::GetShadowSceneNodeForIndex(0);
         if (pnode)
         {
-            if (!((int (__thiscall*)(ShadowSceneNode*, NiPointLight*))FindExistingShadowSceneLight)(pnode, m_spLight))
+            if (!((int (__thiscall*)(ShadowSceneNode*, NiPointLight*))FindExistingShadowSceneLight)(pnode, spPointLight))
             {
-                pnode->GetShadowSceneLight((NiLight*)(NiPointLight*)m_spLight, true);
+                pnode->GetShadowSceneLight((NiLight*)(NiPointLight*)spPointLight, true);
             }
         }
     }
 }
 
 // @fnv 0x0080efd0
+// pdb: LightEffect::FinishInitLoadGame | LightEffect.obj | retail, vtable slot, high
+// pdb params: apActor
 void LightEffect::FinishLoadGameTES(Actor* apActor)
 {
     ActiveEffect::FinishLoadGameTES(apActor);
@@ -83,6 +93,8 @@ void LightEffect::FinishLoadGameTES(Actor* apActor)
 }
 
 // @fnv 0x0080f000
+// pdb: LightEffect::FinishLoadGame | LightEffect.obj | retail, vtable slot, high
+// pdb params: apLoadGameBuffer
 void LightEffect::ApplyLoadBuffer(BGSLoadFormBuffer* apLoadGameBuffer)
 {
     ActiveEffect::ApplyLoadBuffer(apLoadGameBuffer);
@@ -90,6 +102,8 @@ void LightEffect::ApplyLoadBuffer(BGSLoadFormBuffer* apLoadGameBuffer)
 }
 
 // @fnv 0x0080e730
+// pdb: LightEffect::Copy | LightEffect.obj | retail, upstream name already matches, high
+// pdb locals: presult
 ActiveEffect* LightEffect::Copy()
 {
     ActiveEffect* presult = new LightEffect(m_pEffectInstance, pSpell, pEffect);
@@ -98,19 +112,24 @@ ActiveEffect* LightEffect::Copy()
 }
 
 // @fnv 0x0080ef50
+// pdb: LightEffect::Instantiate | LightEffect.obj | retail, object-file run extension, low
+// pdb params: apCaster, apSpell, apEffect
 LightEffect* CreateLightEffect(void* caster, void* item, void* effect)
 {
     return new LightEffect(caster, item, effect);
 }
 
 // @fnv 0x0080e7e0
-void LightEffect::CopyData(ActiveEffect* other)
+// pdb: LightEffect::CopyData | LightEffect.obj | retail, upstream name already matches, high
+// pdb params: apDestination
+// pdb locals: pdestination
+void LightEffect::CopyData(ActiveEffect* apDestination)
 {
-    ActiveEffect::CopyData(other);
-    LightEffect* effect = dynamic_cast<LightEffect*>(other);
+    ActiveEffect::CopyData(apDestination);
+    LightEffect* effect = dynamic_cast<LightEffect*>(apDestination);
     if (effect)
     {
-        effect->m_spLight = m_spLight;
+        effect->spPointLight = spPointLight;
     }
 }
 
@@ -155,9 +174,11 @@ struct Effect
     int unk90;
     int field94;
 };
-void __cdecl LightEffect_AttachBestLightEffect(int* value);
+void __cdecl LightEffect_AttachBestLightEffect(int* apTarget);
 // Gets an Effect via FUN_0059bb30()->FUN_00822b40() and, if non-null, passes its field94 to FUN_0080ee50.
 // @fnv 0x0080e830
+// pdb: LightEffect::Start | LightEffect.obj | retail, upstream name already matches, high
+// pdb locals: ptargetActor
 void LightEffect::Start()
 {
     Effect* effect = FUN_0059bb30() ? (Effect*)FUN_0059bb30()->FUN_00822b40() : 0;
@@ -165,9 +186,11 @@ void LightEffect::Start()
         LightEffect_AttachBestLightEffect(effect ? &effect->field94 : 0);
 }
 
-void __cdecl LightEffect_AttachBestLightEffect(char* p);
+void __cdecl LightEffect_AttachBestLightEffect(char* apTarget);
 
 // @fnv 0x0080e900
+// pdb: LightEffect::Finish | LightEffect.obj | retail, upstream name already matches, high
+// pdb locals: ptargetActor
 void LightEffect::Finish()
 {
     DetachLight();
@@ -193,6 +216,8 @@ typedef void(__thiscall* EdVirtual)(void* self, void* apArg);
 
 // @fnv 0x0080ed60
 // src: XBOX_PDB 0x0080ed60
+// pdb: LightEffect::DetachLight | LightEffect.obj | retail, upstream name already matches, high
+// pdb locals: ptargetActor, pparent, pnode
 void LightEffect::DetachLight()
 {
     void* pActor2;
@@ -200,23 +225,23 @@ void LightEffect::DetachLight()
     void* pObj;
     pActor2 = FUN_0059bb30() ? FUN_0059bb30()->FUN_00822b40() : 0;
 
-    if ((NiPointLight*)m_spLight != 0)
+    if ((NiPointLight*)spPointLight != 0)
     {
         pTmp = FUN_00450b80(0);
         if (pTmp != 0)
         {
-            ((EdCallee*)pTmp)->ShadowSceneNode_RemoveLight((NiPointLight*)m_spLight);
+            ((EdCallee*)pTmp)->ShadowSceneNode_RemoveLight((NiPointLight*)spPointLight);
         }
-        pObj = ((EdCallee*)(NiPointLight*)m_spLight)->NiAVObject_GetParent();
+        pObj = ((EdCallee*)(NiPointLight*)spPointLight)->NiAVObject_GetParent();
         if (pObj != 0)
         {
-            ((EdVirtual)(*(void***)pObj)[58])(pObj, (NiPointLight*)m_spLight);
+            ((EdVirtual)(*(void***)pObj)[58])(pObj, (NiPointLight*)spPointLight);
         }
         if (pActor2 != 0)
         {
             ((EdCallee*)pActor2)->TESObjectREFR_KillLight(1);
         }
-        m_spLight = 0;
+        spPointLight = 0;
         DAT_011dc304 = DAT_011dc304 - 1;
         if (DAT_011dc304 < 0)
         {
@@ -386,10 +411,13 @@ struct FUN_005e3fc0_shell
 };
 
 // @fnv 0x0080e970
-void LightEffect::AttachLightEffect()
+// src: XBOX_DEBUG_PDB 0x0080e970
+// pdb: LightEffect::AttachLight | LightEffect.obj | debug, unique string literal, high
+// pdb locals: ptargetActor, pparent, fZ, fY, fX, fradius, plight, pnode, ucolor, fakeSpecular, color
+void LightEffect::AttachLight()
 {
     Actor* pTarget3 = this->FUN_0059bb30() ? this->FUN_0059bb30()->FUN_00822b40() : 0;
-    if (!this->m_spLight && pTarget3 && !((int (__thiscall*)(Actor*))GetActorEffectLight)(pTarget3) && DAT_011dc304 <= *g_011d1d18.Int())
+    if (!this->spPointLight && pTarget3 && !((int (__thiscall*)(Actor*))GetActorEffectLight)(pTarget3) && DAT_011dc304 <= *g_011d1d18.Int())
     {
         TESObjectLIGH* pLightTmp = GetEffectSetting()->GetLight();
         if (!pLightTmp)
@@ -399,25 +427,25 @@ void LightEffect::AttachLightEffect()
             return;
         }
 
-        this->m_spLight = new NiPointLight();
+        this->spPointLight = new NiPointLight();
 
         unsigned int color4 = ((FUN_005e3fc0_shell*)pLightTmp)->Get();
         NiPoint3 colorPoint4((float)(unsigned char)(color4 & 0xff),
                              (float)(unsigned char)(((unsigned short)color4 >> 8) & 0xff),
                              (float)(unsigned char)((color4 >> 16) & 0xff));
         ((FUN_0080ed20_shell*)&colorPoint4)->DivideByScalar(255.0f);
-        this->m_spLight->SetEffectColor(colorPoint4);
+        this->spPointLight->SetEffectColor(colorPoint4);
 
         float fValX = (*g_011d1980.Float() + this->GetFloatAtOffset1C()) * *originalRuntimeFloatSetting1112.Float();
         NiPoint3 offsetPoint5(fValX, 0.0f, 0.0f);
-        this->m_spLight->FUN_0050dd50(offsetPoint5);
+        this->spPointLight->FUN_0050dd50(offsetPoint5);
 
-        this->m_spLight->NiLight_SetDimmer(((PathingRequest*)pLightTmp)->GetFieldB4Float());
+        this->spPointLight->NiLight_SetDimmer(((PathingRequest*)pLightTmp)->GetFieldB4Float());
 
         ShadowSceneNode* aPScene = (ShadowSceneNode*)FUN_00450b80(0);
         if (aPScene)
         {
-            aPScene->GetShadowSceneLight((NiLight*)(NiPointLight*)this->m_spLight, true);
+            aPScene->GetShadowSceneLight((NiLight*)(NiPointLight*)this->spPointLight, true);
         }
 
         float fX = *g_011d1a30.Float() * pTarget3->TESObjectREFR_GetScale_00567400();
@@ -427,12 +455,12 @@ void LightEffect::AttachLightEffect()
         float fZ = pTarget3->GetActorHeight() +
                    *originalRuntimeFloatSetting1167.Float() * pTarget3->TESObjectREFR_GetScale_00567400();
 
-        this->m_spLight->NiAVObject_SetTranslate_004bc1f0(fX, fY, fZ);
+        this->spPointLight->NiAVObject_SetTranslate_004bc1f0(fX, fY, fZ);
 
         NiPointer<NiNode> spNode3((pTarget3 == (Actor*)_g_thePlayer) ? _g_thePlayer->GetNode(false)
                                                                      : pTarget3->GetNiNode());
-        spNode3->AttachChildInAvailableSlot((NiAVObject*)(NiPointLight*)this->m_spLight, true);
-        ((void (__thiscall*)(Actor*, NiPointLight*))SetActorEffectLight)(pTarget3, this->m_spLight);
+        spNode3->AttachChildInAvailableSlot((NiAVObject*)(NiPointLight*)this->spPointLight, true);
+        ((void (__thiscall*)(Actor*, NiPointLight*))SetActorEffectLight)(pTarget3, this->spPointLight);
         ++DAT_011dc304;
     }
 }

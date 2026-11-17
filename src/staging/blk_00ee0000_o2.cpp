@@ -67,6 +67,9 @@ struct FUN_00eea710_class
 
 // Assigns the reference-counted pointer from p to m_field_18, incrementing the new target's count and decrementing the old one when they differ.
 // @fnv 0x00eea710
+// pdb: NiLookAtInterpolator::ResolveDependencies | NiLookAtInterpolator.obj | debug, object-file run extension, low
+// pdb params: pkPalette
+// pdb locals: pkTarget
 void FUN_00eea710_class::AssignRefCounted(void** apSource)
 {
     void* src = *apSource;
@@ -428,6 +431,8 @@ extern "C" void (*DAT_00fdf398)();
 
 // @fnv 0x00ee820a
 // src: XBOX_PDB 0x00ee820a
+// pdb: XInputManager::KillRumbles | XInputManager.obj | retail, upstream name already matches, high
+// pdb locals: i
 void __cdecl XInputManager_KillRumbles()
 {
     DAT_00fdf398();
@@ -707,6 +712,10 @@ class FUN_00ee8850_C
 
 // Returns a base value from m_usValue0 or m_usValue2 shifted left by 16, plus the sum of FUN_00eea4e0 over all m_ppItems.
 // @fnv 0x00ee8850
+// pdb: NiFragmentMaterial::GetProgramVersion | NiFragmentMaterial.obj | retail, call graph, low
+// pdb note: debug build links it to NiRenderTargetGroup::`scalar deleting destructor'
+// pdb params: eType
+// pdb locals: uiVersion, ui, pkLib
 unsigned int FUN_00ee8850_C::GetTotalValue(int iType)
 {
     unsigned int uiResult = 0;

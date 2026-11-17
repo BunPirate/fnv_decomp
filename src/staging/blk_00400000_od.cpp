@@ -68,6 +68,7 @@ struct FUN_00404b70 : Dummy
 
 // @fnv 0x00404b70
 // src: GUESS 0x00404b70 (confidence: low)
+// pdb: GameSettingCollection::~GameSettingCollection | EffectItem.obj | debug, object-file gap fill, medium
 void FUN_00404b70::ForwardCall_00404b70()
 {
     FUN_00404c00();
@@ -83,6 +84,7 @@ struct Twin_008d0360
 
 // @fnv 0x00404c80
 // src: GUESS 0x00404c80 (confidence: low)
+// pdb: SettingCollection<Setting>::~SettingCollection<Setting> | EffectItem.obj | debug, object-file gap fill, medium
 void Twin_008d0360::UpdateFields_00404c80()
 {
     *reinterpret_cast<void**>(this) = &DAT_01012188;
@@ -117,6 +119,7 @@ struct FUN_00405230_Class
 
 // @fnv 0x00405230
 // src: GUESS 0x00405230 (confidence: low)
+// pdb: NiTStringMap<Setting *>::~NiTStringMap<Setting *> | EffectItem.obj | debug, object-file run extension, low
 void __thiscall FUN_00405230_Class::ForwardCall_00405230()
 {
     FUN_00405250();
@@ -133,6 +136,8 @@ struct FUN_00405570_cls
 
 // Calls FUN_004055d0 with the arguments, stores the address of DAT_01012298 into this, and returns this.
 // @fnv 0x00405570
+// pdb: NiTStringMap<Setting *>::NiTStringMap<Setting *> | EffectItem.obj | debug, object-file run extension, low
+// pdb params: uiHashSize, bCopy
 FUN_00405570_cls* __thiscall FUN_00405570_cls::InitFromGlobal(int a, char b)
 {
     FUN_004055d0(a, b);
@@ -152,6 +157,8 @@ struct FUN_00405600_class
 // Calls Init with param_2, stores the address of DAT_01012258 into this, and returns this.
 // @fnv 0x00405600
 // src: EXE 0x00405600
+// pdb: NiTMap<char const *,Setting *>::NiTMap<char const *,Setting *> | EffectItem.obj | debug, object-file run extension, low
+// pdb params: uiHashSize
 void* __thiscall FUN_00405600_class::NiTMap_char_const_Setting_NiTMap(int param_2)
 {
     Init(param_2);
@@ -161,6 +168,7 @@ void* __thiscall FUN_00405600_class::NiTMap_char_const_Setting_NiTMap(int param_
 
 // @fnv 0x00405e60
 // src: XBOX_PDB 0x00405e60
+// pdb: EffectSetting::IsDisabled | EffectItemList.obj | debug, upstream name already matches, high
 void __fastcall EffectSetting_IsDisabled(EffectSetting* effect)
 {
     effect->IsFlagSet(0x400000);
@@ -248,6 +256,7 @@ struct FUN_0040c130_Class
 
 // @fnv 0x0040c130
 // src: XBOX_PDB 0x0040c130
+// pdb: Model::DecRefCount | MagicItem.obj | debug, upstream name already matches, high
 int FUN_0040c130_Class::Model_DecRefCount()
 {
     return FinishScriptRunLock((char*)this + 4);
@@ -287,6 +296,7 @@ struct FUN_0040f6b0 : BSExtraData
 
 // Initializes the extra-data base with type 0x0b and clears pBound.
 // @fnv 0x0040f6b0
+// pdb: ExtraDetachTime::ExtraDetachTime | ExtraDataCell.obj | debug, call graph, medium
 FUN_0040f6b0::FUN_0040f6b0() : BSExtraData(0x0b)
 {
     pBound = 0;
@@ -301,6 +311,8 @@ struct FUN_0040f6e0_class
 
 // @fnv 0x0040f6e0
 // src: XBOX_PDB 0x0040f6e0
+// pdb: NiRefObject::IncRefCount | ExtraDataCell.obj | debug, upstream name already matches, high
+// pdb locals: pmessage
 int __thiscall FUN_0040f6e0_class::NiRefObject_IncRefCount()
 {
     return InitScriptRunLock((char*)this + 4);
@@ -332,6 +344,8 @@ void __thiscall FUN_004181c0_class::SetIndexedValue(int index, int value)
 
 // @fnv 0x00418200
 // src: COMMUNITY 0x00418200
+// pdb: ExtraDataList::GetAnimSave | ExtraDataList.obj | debug, upstream name already matches, high
+// pdb locals: pExtra
 BSExtraData* __fastcall ExtraDataList_GetAnimSave(BaseExtraList* extras)
 {
     BSExtraData* result = extras->GetExtraData(0x2d);
@@ -340,6 +354,7 @@ BSExtraData* __fastcall ExtraDataList_GetAnimSave(BaseExtraList* extras)
 
 // @fnv 0x0041af30
 // src: COMMUNITY 0x0041af30
+// pdb: ExtraDataList::RemovePoison | ExtraDataList.obj | debug, upstream name already matches, high
 void __fastcall ExtraDataList_RemovePoison(BaseExtraList* extras)
 {
     extras->RemoveExtra(static_cast<unsigned char>(0x3f));
@@ -352,6 +367,7 @@ struct GlobalObject_0040c150
 };
 // Runs the destructor and, when flags has bit 0 set, frees the object with operator delete; returns this.
 // @fnv 0x004049d0
+// pdb: SettingT<GameSettingCollection>::`scalar deleting destructor' | EffectItem.obj | retail, vtable slot, high
 GlobalObject_0040c150* __thiscall GlobalObject_0040c150::FUN_004049d0(unsigned int flags)
 {
     GlobalObject_0040c150::~GlobalObject_0040c150();
@@ -367,6 +383,7 @@ struct FUN_00404da0_class
 };
 
 // @fnv 0x00405200
+// pdb: BSTCaseInsensitiveStringMap<Setting *>::`scalar deleting destructor' | EffectItem.obj | retail, vtable slot, high
 void* __thiscall FUN_00404da0_class::FUN_00405200(unsigned int flags)
 {
     FUN_00404da0();
@@ -385,6 +402,7 @@ struct FUN_00405370_Class
 
 // Calls FUN_00405370, frees this with Deallocate when flags has bit 0 set, and returns this.
 // @fnv 0x004053a0
+// pdb: NiTMapBase<DFALL<NiTMapItem<char const *,Setting *> >,char const *,Setting *>::`scalar deleting destructor' | EffectItem.obj | retail, vtable slot, high
 void* __thiscall FUN_00405370_Class::FUN_004053a0(unsigned int flags)
 {
     SetVtableAndProcessState_00405370();
@@ -401,6 +419,7 @@ struct FUN_004053d0_class
     void* FUN_004053d0(unsigned int flags);
 };
 // @fnv 0x004053d0
+// pdb: NiTMap<char const *,Setting *>::`scalar deleting destructor' | EffectItem.obj | retail, vtable slot, high
 void* FUN_004053d0_class::FUN_004053d0(unsigned int flags)
 {
     FUN_00405310();
@@ -411,6 +430,7 @@ void* FUN_004053d0_class::FUN_004053d0(unsigned int flags)
 
 // Calls the BSExtraData destructor and, when flags has bit 0 set, frees this; returns this.
 // @fnv 0x0040ecd0
+// pdb: BSExtraData::`scalar deleting destructor' | ExtraDataCell.obj | debug, vtable slot, medium
 void* BSExtraData::FUN_0040ecd0(unsigned int flags)
 {
     BSExtraData::~BSExtraData();
@@ -451,6 +471,7 @@ struct FUN_00401ac0 : Base5a
     ~FUN_00401ac0();
 };
 // @fnv 0x00401ac0
+// pdb: BGSHungerStage::~BGSHungerStage | BGSHunger.obj | debug, object-file gap fill, medium
 FUN_00401ac0::~FUN_00401ac0()
 {
     ClearData();
@@ -460,6 +481,7 @@ extern int _gHungerStageCount;
 extern int* _gHungerStages;
 // Returns the hunger stage value at index if index is within _gHungerStageCount, otherwise 0.
 // @fnv 0x004020b0
+// pdb: BGSSleepDeprevationStageData::Endian | BGSSleepDeprevation.obj | debug, object-file run extension, low
 int GetHungerStage(unsigned int index)
 {
     return index >= 0 && index < _gHungerStageCount ? _gHungerStages[index] : 0;
@@ -508,6 +530,7 @@ struct FUN_004055a0_Class
 };
 // Calls FUN_00405230 on this, frees this with _Deallocate when flags has bit 0 set, and returns this.
 // @fnv 0x004055a0
+// pdb: NiTStringMap<Setting *>::`scalar deleting destructor' | EffectItem.obj | debug, vtable slot, medium
 void* __thiscall FUN_004055a0_Class::FUN_004055a0(unsigned int flags)
 {
     ((FUN_00405230_Class*)this)->ForwardCall_00405230();
@@ -523,6 +546,8 @@ struct FUN_004055d0 : public FUN_00405600_class
 };
 // Calls the base constructor with a, installs the vtable from DAT_01012238, and stores b at offset 0x10.
 // @fnv 0x004055d0
+// pdb: NiTStringTemplateMap<NiTMap<char const *,Setting *>,Setting *>::NiTStringTemplateMap<NiTMap<char const *,Setting *>,Setting *> | EffectItem.obj | debug, object-file run extension, low
+// pdb params: uiHashSize, bCopy
 FUN_004055d0::FUN_004055d0(int a, char b)
 {
     NiTMap_char_const_Setting_NiTMap(a);
@@ -543,6 +568,9 @@ struct FUN_00405630_s
 };
 // Sets the vtable, stores count, allocates count*4 zeroed bytes into data and returns this.
 // @fnv 0x00405630
+// pdb: NiTMapBase<DFALL<NiTMapItem<char const *,Setting *> >,char const *,Setting *>::NiTMapBase<DFALL<NiTMapItem<char const *,Setting *> >,char const *,Setting *> | EffectItem.obj | debug, object-file run extension, low
+// pdb params: uiHashSize
+// pdb locals: uiSize
 FUN_00405630_s* __thiscall FUN_00405630_s::Init(int count)
 {
     vtbl = &DAT_01012278;
@@ -555,6 +583,7 @@ FUN_00405630_s* __thiscall FUN_00405630_s::Init(int count)
 }
 
 // @fnv 0x004056a0
+// pdb: EffectItemList::EffectItemList | EffectItemList.obj | debug, upstream name already matches, high
 EffectItemList::EffectItemList()
 {
     m_iEffectCount = 0;
@@ -569,6 +598,7 @@ struct FUN_00406db0
 };
 // Initializes the object's f0 pointer to the string literal "@n@".
 // @fnv 0x00406db0
+// pdb: StatsMenu::StatusDataList::StatusDataList | EffectItemList.obj | debug, call graph (shared callers), high
 FUN_00406db0::FUN_00406db0()
 {
     f0 = "@n@";
@@ -586,6 +616,9 @@ struct FUN_00408da0_Class
 // Returns the unsigned int conversion of the Flt at offset 4, or a pointer to $SG3295 when that conversion is zero.
 // @fnv 0x00408da0
 // src: XBOX_PDB 0x00408da0
+// pdb: TESModel::GetModel | TESModel.obj | retail, upstream name already matches, high
+// pdb params: apObj
+// pdb locals: pmodel
 int* __thiscall FUN_00408da0_Class::TESModel_GetModel()
 {
     return ((Flt*)((char*)this + 4))->operator unsigned int() ? (int*)((Flt*)((char*)this + 4))->operator unsigned int()
@@ -603,9 +636,11 @@ struct Outer00409100
 // Calls FUN_0040e230 on the inner object at this-0x18 with 1 and the inverse of b.
 // @fnv 0x00409100
 // src: COMMUNITY 0x00409100
-void __thiscall Outer00409100::EnchantmentItem_SetAutoCalc(bool b)
+// pdb: EnchantmentItem::SetAutoCalc | EnchantmentItem.obj | debug, upstream name already matches, high
+// pdb params: abValue
+void __thiscall Outer00409100::EnchantmentItem_SetAutoCalc(bool abValue)
 {
-    ((Inner0040e230*)((char*)this - 0x18))->SpellItem_SetFlag(1, !b);
+    ((Inner0040e230*)((char*)this - 0x18))->SpellItem_SetFlag(1, !abValue);
 }
 
 struct TESSound;
@@ -649,6 +684,7 @@ extern int vftable_SettingBase_01012120;
 // Sets the vtable pointer, stores the string in _08 and the float in _04, then returns this.
 // @fnv 0x0040e130
 // src: GUESS 0x0040e130 (confidence: medium)
+// pdb: SpellItem::`scalar deleting destructor' | SpellItem.obj | retail, object-file run extension, low
 SettingBase_01012120* __thiscall SettingBase_01012120::InitializeFloatSetting(const char* a, float afValue)
 {
     *(void**)this = (void*)&vftable_SettingBase_01012120;
@@ -697,6 +733,7 @@ struct BlkInterfaceView
 };
 // @fnv 0x0040fba0
 // src: XBOX_PDB 0x0040fba0
+// pdb: BSSpinLock::Unlock | ExtraDataList.obj | debug, upstream name already matches, high
 void __thiscall RecursiveSpinLock::BSSpinLock_Unlock()
 {
     BlkInterfaceView::PrintDebugMessage();
@@ -734,6 +771,7 @@ struct FUN_004141e0_class
 };
 // @fnv 0x004141e0
 // src: XBOX_PDB 0x004141e0
+// pdb: CHUNK::Endian | TESFile.obj | debug, upstream name already matches, high
 void __thiscall FUN_004141e0_class::CHUNK_Endian()
 {
     BSEndian((unsigned char*)this, EndianSizeTag<0>());
@@ -745,6 +783,7 @@ struct FUN_0041fcd0 : BSExtraData
     FUN_0041fcd0();
 };
 // @fnv 0x0041fcd0
+// pdb: ExtraPatrolRefData::ExtraPatrolRefData | ExtraDataList.obj | debug, object-file run extension, low
 FUN_0041fcd0::FUN_0041fcd0() : BSExtraData(0x6f)
 {
 }
@@ -758,6 +797,9 @@ extern BGSDehydrationStage** _DAT_011c3184;
 // Inserts apNewStage into the global stage array ordered by header value, reallocating the array and updating the global count and pointer.
 // @fnv 0x004016a0
 // src: XBOX_PDB 0x004016a0
+// pdb: BGSDehydrationStage::AddStage | BGSDehydration.obj | retail, upstream name already matches, high
+// pdb params: apNewStage
+// pdb locals: cnewStagesCount, inewStageCounter, binserted, pnewStages, i
 void BGSDehydrationStage_AddStage(BGSDehydrationStage* apNewStage)
 {
     unsigned char newCount;
@@ -809,6 +851,7 @@ struct FUN_0040a1c0_Class
     ~FUN_0040a1c0_Class();
 };
 // @fnv 0x0040a1c0
+// pdb: EffectItemList::~EffectItemList | MagicItem.obj | debug, call graph, medium
 FUN_0040a1c0_Class::~FUN_0040a1c0_Class()
 {}
 
@@ -819,12 +862,14 @@ struct FUN_00411ea0 : BSExtraData
     ~FUN_00411ea0();
 };
 // @fnv 0x00411ea0
+// pdb: ExtraSpecialRenderFlags::~ExtraSpecialRenderFlags | ExtraDataList.obj | debug, object-file gap fill, medium
 FUN_00411ea0::~FUN_00411ea0()
 {}
 }  // namespace fnv_00411ea0
 
 // @fnv 0x0041af50
 // src: COMMUNITY 0x0041af50
+// pdb: ExtraDataList::RemoveScript | ExtraDataList.obj | debug, upstream name already matches, high
 void __fastcall ExtraDataList_RemoveScript(BaseExtraList* extras)
 {
     extras->RemoveExtra(static_cast<unsigned char>(0xd));
@@ -867,6 +912,8 @@ struct FUN_00405250 : public FUN_00405310
     virtual ~FUN_00405250();
 };
 // @fnv 0x00405250
+// pdb: NiTStringTemplateMap<NiTMap<char const *,Setting *>,Setting *>::~NiTStringTemplateMap<NiTMap<char const *,Setting *>,Setting *> | EffectItem.obj | debug, object-file run extension, low
+// pdb locals: i, pkItem, pkSave
 FUN_00405250::~FUN_00405250()
 {
     if (ownsData)
@@ -955,6 +1002,7 @@ class FUN_004010b0 : public FUN_00483370
 
 // Constructor that initializes m_kList, sets the form type to ENUM_FORM_ID_DEHY_ID, and calls FUN_00401b20.
 // @fnv 0x004010b0
+// pdb: BGSDehydrationStage::BGSDehydrationStage | BGSDehydration.obj | retail, call graph, high
 FUN_004010b0::FUN_004010b0()
 {
     m_kList.FUN_004019f0();
@@ -989,6 +1037,7 @@ class FUN_00404c00 : public SettingCollection<Setting>
 };
 // Destructor that calls RemoveAll on the settings map.
 // @fnv 0x00404c00
+// pdb: SettingCollectionMap<Setting>::~SettingCollectionMap<Setting> | EffectItem.obj | debug, object-file gap fill, medium
 FUN_00404c00::~FUN_00404c00()
 {
     settings.RemoveAll();
@@ -1032,6 +1081,10 @@ struct EffectListSaveOperation : EffectItemList
 };
 
 // @fnv 0x004056d0
+// pdb: BSStringT<char>::SPrintF | EffectItemList.obj | retail, object-file run extension, low
+// pdb note: debug build links it to EffectItemList::Save
+// pdb params: apFormat, ires
+// pdb locals: marker
 void EffectListSaveOperation::Save()
 {
     EffectListSaveOperation* pkList = this;
@@ -1055,6 +1108,9 @@ struct EffectListScriptQuery : EffectItemList
 };
 // Returns true for a matching script on a non-detrimental effect; false for an empty list.
 // @fnv 0x00405e80
+// pdb: EffectItemList::HasScript | EffectItemList.obj | debug, object-file run extension, low
+// pdb params: apScript
+// pdb locals: plist, bfound, pitem
 bool EffectListScriptQuery::HasScriptEffect(int iType)
 {
     EffectListScriptQuery* pNode_aqd = this;
@@ -1064,7 +1120,7 @@ bool EffectListScriptQuery::HasScriptEffect(int iType)
     while (pNode_aqd && !bFound_jw)
     {
         EffectItem* pItem = pNode_aqd->GetItem();
-        if (pItem && reinterpret_cast<int>(pItem->GetScript()) == iType && !pItem->IsDetrimental())
+        if (pItem && reinterpret_cast<int>(pItem->GetScript()) == iType && !pItem->IsDisabled())
             bFound_jw = true;
         pNode_aqd = static_cast<EffectListScriptQuery*>(pNode_aqd->GetNext());
     }
@@ -1117,40 +1173,42 @@ struct ItemExtraList
 // Returns false if object or effect is null; otherwise checks object form type, effect flag bits and extra list; true for form type 43.
 // @fnv 0x00409720
 // src: COMMUNITY 0x00409720
-bool __cdecl EnchantmentItem_IsValidEffectForEnchantment(TESBoundObject* object, ItemExtraList* extra, EffectSetting* effect)
+// pdb: EnchantmentItem::IsValidEffectForEnchantment | EnchantmentItem.obj | retail, upstream name already matches, high
+// pdb params: apEnchantableItem, apEffectSetting, abFromMenus
+bool __cdecl EnchantmentItem_IsValidEffectForEnchantment(TESBoundObject* apEnchantableItem, ItemExtraList* apEffectSetting, EffectSetting* abFromMenus)
 {
-    if (!object || !effect)
+    if (!apEnchantableItem || !abFromMenus)
         return false;
-    if (object->GetFormType() == 43)
+    if (apEnchantableItem->GetFormType() == 43)
         return true;
-    if (!dynamic_cast<TESEnchantableForm*>(object))
+    if (!dynamic_cast<TESEnchantableForm*>(apEnchantableItem))
         return false;
-    switch (object->GetFormType())
+    switch (apEnchantableItem->GetFormType())
     {
     case 40:
     case 41:
-        if (!effect->IsFlagSet(0x20))
+        if (!abFromMenus->IsFlagSet(0x20))
             return false;
-        if (extra && extra->ExtraDataList_GetCanNotWear())
+        if (apEffectSetting && apEffectSetting->ExtraDataList_GetCanNotWear())
             return false;
         break;
     case 24:
     case 26:
-        if (!effect->IsFlagSet(0x10))
+        if (!abFromMenus->IsFlagSet(0x10))
             return false;
-        if (effect->IsFlagSet(0x40000))
+        if (abFromMenus->IsFlagSet(0x40000))
             return false;
-        if (effect->IsFlagSet(0x80))
+        if (abFromMenus->IsFlagSet(0x80))
             return false;
-        if (effect->IsFlagSet(0x100))
+        if (abFromMenus->IsFlagSet(0x100))
             return false;
-        if (extra && extra->ExtraDataList_GetCanNotWear())
+        if (apEffectSetting && apEffectSetting->ExtraDataList_GetCanNotWear())
             return false;
         {
-            TESBipedModelForm* biped = dynamic_cast<TESBipedModelForm*>(object);
+            TESBipedModelForm* biped = dynamic_cast<TESBipedModelForm*>(apEnchantableItem);
             if (!biped)
                 return false;
-            if (!biped->FUN_0047c850() && effect->IsFlagSet(0x20000))
+            if (!biped->FUN_0047c850() && abFromMenus->IsFlagSet(0x20000))
                 return false;
         }
         break;
@@ -1174,6 +1232,7 @@ struct StringMapDeletingEntry : FUN_00405230_Class
 };
 // Calls FUN_00405250, frees this if bit 0 of flags is set, and returns this.
 // @fnv 0x00405400
+// pdb: NiTStringTemplateMap<NiTMap<char const *,Setting *>,Setting *>::`scalar deleting destructor' | EffectItem.obj | retail, vtable slot, high
 void* StringMapDeletingEntry::FUN_00405400(unsigned int flags)
 {
     FUN_00405250();
@@ -1192,15 +1251,18 @@ struct FUN_00480ad0_shell
 
 // @fnv 0x0040dfa0
 // src: COMMUNITY 0x0040dfa0
-bool __cdecl MagicSystem_CheckBoundItemEffects(EffectItem* timer1, EffectItem* timer2)
+// pdb: MagicSystem::CheckBoundItemEffects | MagicSystem.obj | retail, upstream name already matches, high
+// pdb params: apEffectToAdd, apEffectToCheck
+// pdb locals: pitemToAdd, pmodelToCheck, pitemToCheck, pmodelToAdd
+bool __cdecl MagicSystem_CheckBoundItemEffects(EffectItem* apEffectToAdd, EffectItem* apEffectToCheck)
 {
-    if (timer1 == 0 || timer2 == 0)
+    if (apEffectToAdd == 0 || apEffectToCheck == 0)
         return false;
 
-    if (timer1->GetEffectSetting()->IsFlagSet_00403e60(0x20000) && timer2->GetEffectSetting()->IsFlagSet_00403e60(0x20000))
+    if (apEffectToAdd->GetEffectSetting()->IsFlagSet_00403e60(0x20000) && apEffectToCheck->GetEffectSetting()->IsFlagSet_00403e60(0x20000))
     {
-        TESForm* interval1 = GetEffectAssociatedForm(timer1->GetEffectSetting());
-        TESForm* interval2 = GetEffectAssociatedForm(timer2->GetEffectSetting());
+        TESForm* interval1 = GetEffectAssociatedForm(apEffectToAdd->GetEffectSetting());
+        TESForm* interval2 = GetEffectAssociatedForm(apEffectToCheck->GetEffectSetting());
 
         TESBipedModelForm* result2 = dynamic_cast<TESBipedModelForm*>(interval1);
         TESBipedModelForm* result1 = dynamic_cast<TESBipedModelForm*>(interval2);
@@ -1212,7 +1274,7 @@ bool __cdecl MagicSystem_CheckBoundItemEffects(EffectItem* timer1, EffectItem* t
         }
     }
 
-    if (timer1->GetEffectSetting()->IsFlagSet_00403e60(0x10000) && timer2->GetEffectSetting()->IsFlagSet_00403e60(0x10000))
+    if (apEffectToAdd->GetEffectSetting()->IsFlagSet_00403e60(0x10000) && apEffectToCheck->GetEffectSetting()->IsFlagSet_00403e60(0x10000))
         return true;
 
     return false;

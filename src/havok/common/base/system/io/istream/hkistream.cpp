@@ -25,6 +25,7 @@ struct Record
 };
 // Calls FUN_00dcc160, then if bit 0 of flags is set frees this through the manager's allocator using unk04 as size, and returns this.
 // @fnv 0x00dcca30
+// pdb: hkIstream::`scalar deleting destructor' | hkIStream.obj | retail, vtable slot, high
 Record* Record::FUN_00dcca30(unsigned int flags)
 {
     SetVirtualTable_00dcc160();

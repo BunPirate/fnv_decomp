@@ -3,6 +3,7 @@
 #include "NiProperty.h"
 #include <stddef.h>
 
+// pdb: class NiAlphaProperty, size 0x1c, bases: NiProperty, 2 members
 class NiAlphaProperty : public NiProperty
 {
   public:
@@ -24,23 +25,23 @@ class NiAlphaProperty : public NiProperty
 
     NiAlphaProperty();
     virtual ~NiAlphaProperty();
-    virtual void LoadBinary(NiStream& stream);
+    virtual void LoadBinary(NiStream& kStream);
 
-    void SetFlag512(bool enable);
-    void SetFlags(unsigned short flags);
+    void SetFlag512(bool bAlpha);
+    void SetTestMode(unsigned short eTestFunc);
 
     void NiAlphaProperty_SetAlphaBlending(bool enable);
     void NiAlphaProperty_SetTestRef(unsigned char value);
-    void NiAlphaProperty_SetSrcBlendMode(int value);
-    void NiAlphaProperty_SetDestBlendMode(int value);
-    void NiAlphaProperty_SetNoSorter(bool enable);
+    void NiAlphaProperty_SetSrcBlendMode(int eSrcBlend);
+    void NiAlphaProperty_SetDestBlendMode(int eDestBlend);
+    void NiAlphaProperty_SetNoSorter(bool bNoSort);
     void NiAlphaProperty_SetBit(bool enable, unsigned short flags);
     void NiAlphaProperty_SetBit(bool enable, unsigned int flags);
     void ForwardCall_00439320();
     void* FUN_004392f0(unsigned int flags);
 
 
-    unsigned short m_usAlphaArg;
-    unsigned char m_ucAlphaArg2;
+    unsigned short m_uFlags; // src: XBOX_RETAIL_PDB +0x18 (old: m_usAlphaArg)
+    unsigned char m_ucAlphaTestRef; // src: XBOX_RETAIL_PDB +0x1a (old: m_ucAlphaArg2)
     unsigned char m_ucPad1b;
 };

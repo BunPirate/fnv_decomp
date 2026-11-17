@@ -5,6 +5,7 @@
 class PhysicsSimulationContext;
 struct hkFinishLoadedObjectFlagCD2C;
 
+// pdb: class hkMultiThreadCheck, size 0x8, 3 members
 class hkMultiThreadCheck
 {
 public:
@@ -28,9 +29,9 @@ public:
         UNMARKED = 0xfffffff1
     };
 
-    unsigned int m_uiThreadId;
-    unsigned short m_usMarkedForWrite;
-    unsigned short m_usMarkCount;
+    unsigned int m_threadId; // src: XBOX_RETAIL_PDB +0x0 (old: m_uiThreadId)
+    unsigned short m_markCount; // src: XBOX_RETAIL_PDB +0x4 (old: m_usMarkedForWrite)
+    unsigned short m_markBitStack; // src: XBOX_RETAIL_PDB +0x6 (old: m_usMarkCount)
 
     hkMultiThreadCheck();
     hkMultiThreadCheck(hkFinishLoadedObjectFlagCD2C flag);

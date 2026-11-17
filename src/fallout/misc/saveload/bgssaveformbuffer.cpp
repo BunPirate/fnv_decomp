@@ -29,6 +29,8 @@ unsigned int __cdecl GetSizeTypeForSize(unsigned int);
 unsigned int __cdecl GetSizeTypeSize(unsigned int);
 // Calls FUN_0084e3a0, passes the result through FUN_00845d40 and FUN_00845d70, then returns that value plus 9.
 // @fnv 0x00865b10
+// pdb: BGSSaveFormBuffer::GetOverhead | BGSSaveFormBuffer.obj | debug, object-file gap fill, medium
+// pdb locals: isizeTypeSize
 unsigned int __thiscall BGSSaveFormBuffer::GetSize()
 {
     unsigned int value = GetSizeTypeSize(GetSizeTypeForSize(GetHavokWorldObjectCountInSceneGraph_0084e3a0()));
@@ -37,6 +39,8 @@ unsigned int __thiscall BGSSaveFormBuffer::GetSize()
 
 // Returns the buffer's form cast to TESObjectREFR if it is a reference, otherwise returns null.
 // @fnv 0x00865b40
+// pdb: BGSSaveFormBuffer::GetReference | BGSSaveFormBuffer.obj | retail, vtable slot, high
+// pdb locals: pform
 TESObjectREFR* BGSSaveFormBuffer::GetFormAsReference()
 {
     TESForm* pform = GetForm();
@@ -52,6 +56,8 @@ TESObjectREFR* BGSSaveFormBuffer::GetFormAsReference()
 
 // Returns the buffer's reference cast to Actor if it is an actor, otherwise returns null.
 // @fnv 0x00865b80
+// pdb: BGSSaveFormBuffer::GetActor | BGSSaveFormBuffer.obj | retail, vtable slot, high
+// pdb locals: pref
 Actor* BGSSaveFormBuffer::GetActorReference()
 {
     TESObjectREFR* pref = GetReference();
@@ -62,24 +68,27 @@ Actor* BGSSaveFormBuffer::GetActorReference()
 
 struct PackedFormID
 {
-    void __thiscall WriteFormIDBytes(unsigned int a);
+    void __thiscall BGSNumericIDIndex_SetNumericID(unsigned int aiNumericID);
 };
 struct BGSFormInfo
 {
-    void __thiscall BGSSaveLoadFormInfo_SetFormType(unsigned int a);
+    void __thiscall BGSSaveLoadFormInfo_SetFormType(unsigned int aeFormType);
 };
 // Stores the form ID, change flags, form type and version into this save-form buffer's fields.
 // @fnv 0x00865ad0
+// pdb: BGSSaveFormBuffer::SetHeader | BGSSaveFormBuffer.obj | debug, call graph (shared callers), medium
+// pdb params: aiFormID, aiChangeFlags, aeFormType, acVersion
 void BGSSaveFormBuffer::InitFormEntry(unsigned int aiFormID, unsigned int aiChangeFlags, unsigned int aeFormType,
                                       unsigned char acVersion)
 {
-    reinterpret_cast<PackedFormID*>(Header.formID)->WriteFormIDBytes(aiFormID);
+    reinterpret_cast<PackedFormID*>(Header.formID)->BGSNumericIDIndex_SetNumericID(aiFormID);
     Header.changeFlags = aiChangeFlags;
     reinterpret_cast<BGSFormInfo*>(&Header.formInfo)->BGSSaveLoadFormInfo_SetFormType(aeFormType);
     Header.version = acVersion;
 }
 
 // @fnv 0x008659c0
+// pdb: BGSSaveFormBuffer::BGSSaveFormBuffer | BGSSaveFormBuffer.obj | retail, upstream name already matches, high
 BGSSaveFormBuffer::BGSSaveFormBuffer() : BGSSaveGameBuffer()
 {
     // The shared POD header still needs the original FormLoadContext constructor.
@@ -90,17 +99,20 @@ BGSSaveFormBuffer::BGSSaveFormBuffer() : BGSSaveGameBuffer()
 class SaveLoadFile
 {
 public:
-    void __thiscall WriteToFile(void* data, int size);
+    void __thiscall BGSSaveLoadFile_Write(void* data, int size);
 };
 
 void __cdecl WriteValueByType(void*, unsigned int, unsigned int);
 // @fnv 0x00865a30
-void BGSSaveFormBuffer::Save(SaveLoadFile* buffer)
+// pdb: BGSSaveFormBuffer::Save | BGSSaveFormBuffer.obj | retail, upstream name already matches, high
+// pdb params: apFile
+// pdb locals: esizeType, isize
+void BGSSaveFormBuffer::Save(SaveLoadFile* apFile)
 {
     unsigned int secondValue = GetHavokWorldObjectCountInSceneGraph_0084e3a0();
     unsigned int firstValue = GetSizeTypeForSize(secondValue);
     reinterpret_cast<FUN_00865aa0_shell*>(&Header.formInfo)->SetFlags(firstValue);
-    buffer->WriteToFile(&Header, 9);
-    WriteValueByType(buffer, secondValue, firstValue);
-    BGSSaveGameBuffer::Save(buffer, secondValue);
+    apFile->BGSSaveLoadFile_Write(&Header, 9);
+    WriteValueByType(apFile, secondValue, firstValue);
+    BGSSaveGameBuffer::Save(apFile, secondValue);
 }

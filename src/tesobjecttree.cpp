@@ -24,6 +24,8 @@ TreeRecordData* TESObjectTREE::GetData()
 }
 
 // @fnv 0x006e29d0
+// pdb: PathingRequest::SetActorLockData | PathingRequest.obj | debug, object-file run extension, low
+// pdb params: aLockData
 void TESObjectTREE::UpdateRustleSpeed(const float speed)
 {
     Data.m_fRustleSpeed = speed;
@@ -31,6 +33,7 @@ void TESObjectTREE::UpdateRustleSpeed(const float speed)
 
 // If the form is not yet initialized, calls BGSDestructibleObjectForm::InitItem and marks this form as initialized.
 // @fnv 0x0051bb80
+// pdb: TESObjectTREE::InitItem | TESObjectTREE.obj | retail, upstream name already matches, high
 void TESObjectTREE::InitItem()
 {
     if (((const TESFormInitFlag*)this)->IsFormInitialized())
@@ -59,35 +62,38 @@ void BSEndian(float* value, EndianSizeTag<4>);
 
 // Reads a TESObjectTREE record from the file, dispatching EDID, OBND, MODL/MODT, ICON, DEST/DSTD, SNAM, CNAM and BNAM chunks until the chunk list ends.
 // @fnv 0x0051bbc0
-bool TESObjectTREE::LoadForm(TESFile* file)
+// pdb: TESObjectTREE::Load | TESObjectTREE.obj | retail, vtable slot, high
+// pdb params: apFile
+// pdb locals: chunkid, formid, pMessage, isize, inumSeeds, pdata, i
+bool TESObjectTREE::LoadForm(TESFile* apFile)
 {
-    unsigned char form = file->GetTESForm();
+    unsigned char form = apFile->GetTESForm();
     if (form != 37)
         return false;
-    LoadRecordHeader(file);
-    while (CHUNK_ID chunk = (CHUNK_ID)file->GetChunkID())
+    LoadRecordHeader(apFile);
+    while (CHUNK_ID chunk = (CHUNK_ID)apFile->GetChunkID())
     {
         switch (chunk)
         {
         case CHUNK_ID_EDID_ID: {
-            char* editorID = (char*)_alloca(file->GetChunkSize());
-            file->GetChunkData(editorID, 512);
+            char* editorID = (char*)_alloca(apFile->GetChunkSize());
+            apFile->GetChunkData(editorID, 512);
             SetEditorID_AtRuntime(editorID);
             break;
         }
         case CHUNK_ID_OBND_ID:
-            readOBNDSubRecord(file);
+            readOBNDSubRecord(apFile);
             break;
         case CHUNK_ID_MODL_ID:
         case CHUNK_ID_MODT_ID:
-            TESModel::LoadModelData(this, file);
+            TESModel::LoadModelData(this, apFile);
             break;
         case CHUNK_ID_ICON_ID:
-            TESTexture::ReadTextureData(this, file);
+            TESTexture::ReadTextureData(this, apFile);
             break;
         case CHUNK_ID_DEST_ID:
         case CHUNK_ID_DSTD_ID:
-            BGSDestructibleObjectForm::LoadDestructibleData(this, file);
+            BGSDestructibleObjectForm::LoadDestructibleData(this, apFile);
             break;
         case CHUNK_ID_SNAM_ID: {
             struct SeedBuffer
@@ -96,7 +102,7 @@ bool TESObjectTREE::LoadForm(TESFile* file)
                 unsigned int* values;
             } seeds;
             seeds.values = 0;
-            unsigned int chunkSize = file->GetChunkSize();
+            unsigned int chunkSize = apFile->GetChunkSize();
             if (!chunkSize)
                 break;
             if (chunkSize % sizeof(unsigned int))
@@ -104,43 +110,43 @@ bool TESObjectTREE::LoadForm(TESFile* file)
             seeds.count = chunkSize / sizeof(unsigned int);
             seeds.values = new unsigned int[seeds.count];
             memset(seeds.values, 0, chunkSize);
-            file->GetChunkData(seeds.values, chunkSize);
-            m_kSeedArray.RemoveAll();
+            apFile->GetChunkData(seeds.values, chunkSize);
+            SeedArray.RemoveAll();
             for (unsigned int i = 0; i < seeds.count; ++i)
             {
-                if (file->IsEndianConversionRequired())
+                if (apFile->IsEndianConversionRequired())
                     BSEndian(&seeds.values[i], EndianSizeTag<4>());
                 if (seeds.values[i] > 0)
-                    m_kSeedArray.AddFirstEmpty(seeds.values[i]);
+                    SeedArray.AddFirstEmpty(seeds.values[i]);
             }
             delete[] seeds.values;
             break;
         }
         case CHUNK_ID_CNAM_ID: {
-            unsigned int dataSize = file->GetChunkSize();
+            unsigned int dataSize = apFile->GetChunkSize();
             if (dataSize != sizeof(TreeRecordData))
                 break;
-            file->GetChunkData(&Data, dataSize);
-            if (file->IsEndianConversionRequired())
+            apFile->GetChunkData(&Data, dataSize);
+            if (apFile->IsEndianConversionRequired())
                 Data.Endian();
             if (Data.m_iShadowRadius < 0)
                 Data.m_iShadowRadius = 128;
             break;
         }
         case CHUNK_ID_BNAM_ID: {
-            unsigned int billboardSize = file->GetChunkSize();
+            unsigned int billboardSize = apFile->GetChunkSize();
             if (billboardSize != sizeof(NiPoint2))
                 break;
-            file->GetChunkData(&m_kBillboardDimensions, billboardSize);
-            if (file->IsEndianConversionRequired())
+            apFile->GetChunkData(&BillboardSize, billboardSize);
+            if (apFile->IsEndianConversionRequired())
             {
-                BSEndian(&m_kBillboardDimensions.x, EndianSizeTag<4>());
-                BSEndian(&m_kBillboardDimensions.y, EndianSizeTag<4>());
+                BSEndian(&BillboardSize.x, EndianSizeTag<4>());
+                BSEndian(&BillboardSize.y, EndianSizeTag<4>());
             }
             break;
         }
         }
-        if (!file->NextChunk())
+        if (!apFile->NextChunk())
             break;
     }
     return true;
@@ -171,6 +177,7 @@ struct FUN_0051d1c0 : public FUN_004a7090
 };
 // Destructor for the texture set: destroys the six ::BSStringT<char> texture entries and the base object.
 // @fnv 0x0051d1c0
+// pdb: BSShaderTextureSet::~BSShaderTextureSet | TESObjectTREE.obj | debug, call graph, medium
 FUN_0051d1c0::~FUN_0051d1c0()
 {}
 
@@ -193,6 +200,7 @@ struct FUN_0051b950_shell : TESModel
 
 // @fnv 0x0051b950
 // src: GUESS 0x0051b950 (confidence: low)
+// pdb: TESModelPSA::~TESModelPSA | BGSBodyPart.obj | debug, call graph, medium
 void FUN_0051b950_shell::DestroySubobject_0051b950()
 {
     TESModel::~TESModel();
@@ -206,6 +214,8 @@ struct NiPoint2_shell : NiPoint2
 
 // @fnv 0x0051c330
 // src: GUESS 0x0051c330 (confidence: low)
+// pdb: NiPoint2::operator!= | TESObjectTREE.obj | debug, call graph, medium
+// pdb params: pt
 bool NiPoint2_shell::ForwardCall_0051c330(const NiPoint2& other) const
 {
     return !HasEqualFloatPair(other);
@@ -213,13 +223,13 @@ bool NiPoint2_shell::ForwardCall_0051c330(const NiPoint2& other) const
 
 struct NiRTTI;
 
-extern const NiRTTI g_0120044c;
+extern const NiRTTI BSShaderTextureSet_ms_RTTI; // src: XBOX_RETAIL_PDB 0x0120044c (old: g_0120044c)
 
 
 // @fnv 0x0051d150
 const NiRTTI* BSShaderTextureSet::GetNiRTTI() const
 {
-    return &g_0120044c;
+    return &BSShaderTextureSet_ms_RTTI;
 }
 
 extern const char* const g_0120044c_arg1;
@@ -245,6 +255,7 @@ struct FUN_0051d400_shell
 // Frees the two pointers stored at offsets 0x14 and 0x18 of this object via Deallocate.
 // @fnv 0x0051d400
 // src: GUESS 0x0051d400 (confidence: medium)
+// pdb: TREE_BILLBOARD_DATA::~TREE_BILLBOARD_DATA | TESObjectTREE.obj | debug, object-file run extension, low
 void __thiscall FUN_0051d400_shell::ReleaseStorage_0051d400()
 {
     void* p2 = *(void**)((char*)this + 0x14);
@@ -262,6 +273,7 @@ struct GlobalObject_0045cf30 : Setting
 extern GlobalObject_0045cf30 g_011d5ce8;
 
 // @fnv 0x0051d740
+// pdb: BSTreeManager::CanTreesLoad | TESObjectTREE.obj | debug, call graph, medium
 unsigned char GetFirstProcessListByte()
 {
     return g_011d5ce8.FUN_00408d60()[0];
@@ -333,6 +345,7 @@ struct FUN_0051b970_shell : TESTexture1024
 };
 
 // @fnv 0x0051b970
+// pdb: TESIconTree::TESIconTree | TESObjectTREE.obj | debug, call graph, medium
 FUN_0051b970_shell::FUN_0051b970_shell()
 {}
 
@@ -346,6 +359,8 @@ struct FUN_0051c360_shell
 // Returns a random element from the seed array at offset 0x5c, or 0 when the array is empty.
 // @fnv 0x0051c360
 // src: COMMUNITY 0x0051c360
+// pdb: TESObjectTREE::GetRandomSeed | TESObjectTREE.obj | retail, upstream name already matches, high
+// pdb locals: ival, isize
 unsigned int FUN_0051c360_shell::TESObjectTREE_GetRandomSeed()
 {
     unsigned int index = reinterpret_cast<NiTPrimitiveArray<unsigned int>*>(reinterpret_cast<char*>(this) + 0x5c)->GetSize();
@@ -370,6 +385,7 @@ struct FUN_0051d220_shell : FUN_004a7090
 
 // Calls the base destructor, then frees this with _delete when bit 0 of flags is set, and returns this.
 // @fnv 0x0051d220
+// pdb: BSTextureSet::`scalar deleting destructor' | TESObjectTREE.obj | retail, vtable slot, high
 void* FUN_0051d220_shell::DestroyAndFree(unsigned int flags)
 {
     this->FUN_004a7090::~FUN_004a7090();
@@ -421,6 +437,7 @@ struct S_0051b900
 void _Deallocate(void*);
 // Calls FUN_0051b9d0, then deallocates this when flags has bit 0 set, and returns this.
 // @fnv 0x0051b900
+// pdb: TESObjectTREE::`scalar deleting destructor' | TESObjectTREE.obj | retail, vtable slot, high
 void* S_0051b900::FUN_0051b900(unsigned int flags)
 {
     this->FUN_0051b9d0();
@@ -446,6 +463,7 @@ void FUN_0051b990_shell::DestroySubobject_0051b990()
 #include "../include/NiBillboardNode.h"
 void __cdecl _delete(void*, unsigned int);
 // @fnv 0x0051cfa0
+// pdb: NiBillboardNode::`scalar deleting destructor' | TESObjectTREE.obj | retail, vtable slot, high
 void* NiBillboardNode::Destroy(unsigned int flags)
 {
     this->ForwardCall_0051cfe0();
@@ -463,6 +481,9 @@ struct Holder
 };
 // Searches arr for the first element equal to aiIndex and returns its index, or 0xff if not found.
 // @fnv 0x0051ba90
+// pdb: TESObjectTREE::GetIndexForSeed | TESObjectTREE.obj | debug, object-file run extension, low
+// pdb params: aiSeed
+// pdb locals: iretval, i
 unsigned char Holder::FindIndex(unsigned int aiIndex)
 {
     unsigned char idx = 0xff;
@@ -526,6 +547,7 @@ struct FUN_0051b6e0 : public FUN_0050f7a0,
 };
 
 // @fnv 0x0051b6e0
+// pdb: TESObjectTREE::TESObjectTREE | TESObjectTREE.obj | retail, call graph, medium
 FUN_0051b6e0::FUN_0051b6e0() : m5c(0, 1)
 {
     reinterpret_cast<TESForm*>(this)->SetFormType(static_cast<ENUM_FORM_ID>(0x25));
@@ -899,6 +921,9 @@ struct FUN_0051baf0_shell
     unsigned int GetEntryByIndex(unsigned char index);
 };
 // @fnv 0x0051baf0
+// pdb: TESObjectTREE::GetSeedAtIndex | TESObjectTREE.obj | debug, object-file run extension, low
+// pdb params: aiIndex
+// pdb locals: iseed
 unsigned int FUN_0051baf0_shell::GetEntryByIndex(unsigned char index)
 {
     unsigned int result;
@@ -925,13 +950,16 @@ struct Struct_004b0680
 struct SoundListView
 {
     void AddTail(char* const& item);
-    void AddSoundEntry(float* a, float* b);
+    void CombatWorldStateList_AddWorldState(float* aeState, float* aiValue);
 };
 // Allocates a Struct_004b0680 from the two float pointers and appends it to the list via AddTail.
 // @fnv 0x009aa2b0
-void SoundListView::AddSoundEntry(float* apFirst, float* apSecond)
+// src: XBOX_DEBUG_PDB 0x009aa2b0
+// pdb: CombatWorldStateList::AddWorldState | CombatWorldState.obj | debug, call graph (shared callers), high
+// pdb params: aeState, aiValue
+void SoundListView::CombatWorldStateList_AddWorldState(float* aeState, float* aiValue)
 {
-    char* item = (char*)new Struct_004b0680(apFirst, apSecond);
+    char* item = (char*)new Struct_004b0680(aeState, aiValue);
     AddTail(item);
 }
 
@@ -1056,6 +1084,9 @@ struct FUN_0051c220_shell : TESObjectTREE
 };
 
 // @fnv 0x0051c220
+// pdb: TESObjectTREE::Compare | TESObjectTREE.obj | retail, vtable slot, high
+// pdb params: apCompare
+// pdb locals: pcomp, isize, i
 bool FUN_0051c220_shell::IsNotEqual(TESForm* apCompare)
 {
     TESObjectTREE* i = dynamic_cast<TESObjectTREE*>(apCompare);
@@ -1147,6 +1178,7 @@ struct FUN_0051b930 : SpawnedBase
 };
 
 // @fnv 0x0051b930
+// pdb: TESModelTree::TESModelTree | TESObjectTREE.obj | debug, call graph, high
 FUN_0051b930::FUN_0051b930() : SpawnedBase()
 {}
 
@@ -1223,6 +1255,8 @@ struct FUN_0051d250_Class
 // Returns false if unk8C or unk90 falls within their respective ranges above DAT_01012060, otherwise true.
 // @fnv 0x0051d250
 // src: XBOX_PDB 0x0051d250
+// pdb: TREE_BILLBOARD_DATA::TREE_BILLBOARD_DATA | TESObjectTREE.obj | retail, object-file run extension, low
+// pdb params: apTree, aiCellChunk, aiCellKey, apInstancedNode, aiArraySize, apLocArray, apColorArray
 bool __thiscall FUN_0051d250_Class::TESObjectTREE_IsLargeEnoughForDistantLOD()
 {
     if ((this->unk8C > DAT_01012060 && this->unk8C <= DAT_010179e0) ||
@@ -1247,18 +1281,22 @@ class BS9AA340List
     BS9AA340Item** GetItem();
     BS9AA340List* GetNext();
     void RemoveItem(BS9AA340Item** ppkItem);
-    void RemoveItemByOwner(int iOwner);
+    void CombatWorldStateList_RemoveWorldState(int aeState);
 };
 
 // Walks the list and, for the first item whose owner equals iOwner, removes it from its node and deletes it.
 // @fnv 0x009aa340
-void BS9AA340List::RemoveItemByOwner(int iOwner)
+// src: XBOX_DEBUG_PDB 0x009aa340
+// pdb: CombatWorldStateList::RemoveWorldState | CombatWorldState.obj | debug, call graph (shared callers), high
+// pdb params: aeState
+// pdb locals: plist, pstate
+void BS9AA340List::CombatWorldStateList_RemoveWorldState(int aeState)
 {
     BS9AA340List* pkNode = this;
     while (pkNode)
     {
         BS9AA340Item* pkItem = *pkNode->GetItem();
-        if (pkItem && pkItem->GetOwner() == iOwner)
+        if (pkItem && pkItem->GetOwner() == aeState)
         {
             pkNode->RemoveItem(&pkItem);
             delete pkItem;
@@ -1309,6 +1347,8 @@ struct SaveTree
 };
 // @fnv 0x0051bfb0
 // src: XBOX_PDB 0x0051bfb0
+// pdb: TESObjectTREE::Save | TESObjectTREE.obj | retail, upstream name already matches, high
+// pdb locals: ival, isize, inumSeeds, pdata, i
 void SaveTree::TESObjectTREE_Save()
 {
     BeginFormRecord();
@@ -1356,15 +1396,18 @@ class TreeNameView
 class FUN_0051c3b0_cls : public TESObjectTREE
 {
   public:
-    void BuildBillboardTexturePath(char* dst);
+    void BuildBillboardTexturePath(char* apOutString);
 };
 
 // Writes the billboard texture folder path, appends the tree name up to its extension, then adds ".dds" and a null terminator.
 // @fnv 0x0051c3b0
-void FUN_0051c3b0_cls::BuildBillboardTexturePath(char* dst)
+// pdb: TESObjectTREE::GetBillboardTextureFilename | TESObjectTREE.obj | retail, string-set bridge, high
+// pdb params: apOutString
+// pdb locals: pmodel, ppath, pout
+void FUN_0051c3b0_cls::BuildBillboardTexturePath(char* apOutString)
 {
     const char* src2 = "Textures\\Trees\\Billboards";
-    char* out4 = dst;
+    char* out4 = apOutString;
     for (; *src2 != 0; src2++, out4++)
     {
         *out4 = *src2;
@@ -1480,10 +1523,14 @@ class TreeObj
     int field84;
     int field88;
     NiPoint2 m_kBillboardDimensions;
-    void CreateTreeGeometry(bool flag, SpPtr<CreatedObj>* out);
+    void TESObjectTREE_CreateBillboardGeomData(bool abZUp, SpPtr<CreatedObj>* aspTriShapeData);
 };
 // @fnv 0x0051c490
-void TreeObj::CreateTreeGeometry(bool abVertical, SpPtr<CreatedObj>* out)
+// src: XBOX_RETAIL_PDB 0x0051c490
+// pdb: TESObjectTREE::CreateBillboardGeomData | TESObjectTREE.obj | retail, call graph (shared callers), high
+// pdb params: abZUp, aspTriShapeData
+// pdb locals: ptrilist, STBBNBT, pcol, tempMemContext, ptext, pverts, flatsize, spgeomData, pnorm
+void TreeObj::TESObjectTREE_CreateBillboardGeomData(bool abZUp, SpPtr<CreatedObj>* aspTriShapeData)
 {
     AutoMemContext ctx3((MEM_CONTEXT)0x23, true,
                         "D:\\_Fallout3\\Platforms\\Common\\Code\\Fallout Shared\\TESObjectTREE.cpp", 409);
@@ -1533,7 +1580,7 @@ void TreeObj::CreateTreeGeometry(bool abVertical, SpPtr<CreatedObj>* out)
     bsize.x = (float)(bsize.y / 2.0);
     pA[0] = NiPoint3(-bsize.x, 0.0f, 0.0f);
     pA[3] = NiPoint3(bsize.x, 0.0f, 0.0f);
-    if (abVertical)
+    if (abZUp)
     {
         pA[1] = NiPoint3(-bsize.x, 0.0f, bsize.y);
         pA[2] = NiPoint3(bsize.x, 0.0f, bsize.y);
@@ -1563,7 +1610,7 @@ void TreeObj::CreateTreeGeometry(bool abVertical, SpPtr<CreatedObj>* out)
     pE[4] = 3;
     pE[5] = 2;
     SpPtr<CreatedObj> sp(new CreatedObj(4, pA, pB2, pDB, pCA, 1, 0x1000, 2, pE));
-    *out = sp;
+    *aspTriShapeData = sp;
 }
 
 namespace fnv_0051cba0 {
@@ -1695,7 +1742,7 @@ class FUN_00a74480 : public TreeSceneObject
     unsigned int unkBC;
     unsigned int unkC0;
     FUN_00a74480(unsigned int texture);
-    void AttachProperty(NiObject* property);
+    void AttachProperty(NiObject* pkProperty);
 };
 class FUN_00ba8630 : public TreeSceneObject
 {
@@ -1765,7 +1812,7 @@ class FUN_00ba8630 : public TreeSceneObject
     unsigned int unkFC;
     unsigned int unk100;
     FUN_00ba8630();
-    void BSShaderPPLightingProperty_LoadTextureSet(const char* name, TreeSceneObject* object);
+    void BSShaderPPLightingProperty_LoadTextureSet(const char* apcfilename, TreeSceneObject* apTextureSet);
 };
 class FUN_0051d0d0 : public TreeSceneObject
 {
@@ -1835,18 +1882,21 @@ TreeSceneObject* GetFloatAsUInt();
 class TreeBillboardBuilder : public FUN_0051d250_Class
 {
   public:
-    void CreateTreeGeometry(bool variant, NiPointer<BillboardTexture>* texture);
-    void BuildBillboardTexturePath(char* path);
-    TreeSceneObject* CreateBillboardSceneObject(bool variant);
+    void TESObjectTREE_CreateBillboardGeomData(bool abZUp, NiPointer<BillboardTexture>* aspTriShapeData);
+    void BuildBillboardTexturePath(char* apOutString);
+    TreeSceneObject* CreateBillboardSceneObject(bool abZUp);
 };
 // @fnv 0x0051cba0
-TreeSceneObject* TreeBillboardBuilder::CreateBillboardSceneObject(bool variant)
+// pdb: TESObjectTREE::BuildDistant3D | TESObjectTREE.obj | retail, call graph (shared callers), high
+// pdb params: abZUp
+// pdb locals: texfile, ptextureSet, tempMemContext, paprop, pnode, pbillboardProp, spgeomData, p3D, spTempTexture
+TreeSceneObject* TreeBillboardBuilder::CreateBillboardSceneObject(bool abZUp)
 {
     if (!TESObjectTREE_IsLargeEnoughForDistantLOD())
         return 0;
     AutoMemContext eb(0x23, true, treeSourceFile, 470);
     NiPointer<BillboardTexture> a(0);
-    CreateTreeGeometry(variant, &a);
+    TESObjectTREE_CreateBillboardGeomData(abZUp, &a);
     FUN_00a74480* h = new FUN_00a74480((unsigned int)(BillboardTexture*)a);
     TreeSceneObject* f = GetFloatAsUInt();
     if (f)
@@ -1903,7 +1953,7 @@ struct Loader
 };
 extern Loader* g_modelLoader;
 unsigned char GetFirstProcessListByte();
-bool IsTextureReady(unsigned int);
+bool DistantLODShaderProperty_HasCachedGeometry(unsigned int);
 void CopyTexturePath(char*, char*, unsigned int);
 bool fnv_NiStreamGetTexture(char*, TexturePtr*);
 void ProcessTexture(int, int, int, TextureInfo*, int, int, unsigned short);
@@ -1917,18 +1967,21 @@ struct TreeTexture
 };
 // Validates inputs and texture readiness, loads or queues the tree texture, then processes it and deletes the work object.
 // @fnv 0x0051d440
-void TreeTexture::ProcessTreeTexture(int a, int unused, int c, int d, int e, int f, int g, int unused2)
+// pdb: TESObjectTREE::CreateDistant3D | TESObjectTREE.obj | retail, vtable slot, high
+// pdb params: apLocArray, apRotArray, apColorArray, aiArraySize, aiCellChunk, aiCellKey, apInstancedNode, apFullNode
+// pdb locals: param, tempMemContext, pnode, pstandardizedTexFile, sptexture, ptexfile, pbillboardData
+void TreeTexture::ProcessTreeTexture(int apLocArray, int apRotArray, int apColorArray, int aiArraySize, int aiCellChunk, int aiCellKey, int apInstancedNode, int apFullNode)
 {
     AutoMemContext context4(0x23, true, "D:\\_Fallout3\\Platforms\\Common\\Code\\Fallout Shared\\TESObjectTREE.cpp",
                             0x228);
-    if (!g || !a || !c || !d)
+    if (!apInstancedNode || !apLocArray || !apColorArray || !aiArraySize)
         return;
     if (!GetFirstProcessListByte())
         return;
     if (!Valid())
         return;
     TreeWork* work2 = 0;
-    if (!IsTextureReady(Deallocate()))
+    if (!DistantLODShaderProperty_HasCachedGeometry(Deallocate()))
     {
         char path3[260];
         char normalized[260];
@@ -1938,7 +1991,7 @@ void TreeTexture::ProcessTreeTexture(int a, int unused, int c, int d, int e, int
         fnv_NiStreamGetTexture(normalized, &texture5);
         if (!texture5)
         {
-            TreeWork* request = new TreeWork(this, e, f, g, d, a, c);
+            TreeWork* request = new TreeWork(this, aiCellChunk, aiCellKey, apInstancedNode, aiArraySize, apLocArray, apColorArray);
             g_modelLoader->Queue(normalized, request);
             return;
         }
@@ -1953,7 +2006,7 @@ void TreeTexture::ProcessTreeTexture(int a, int unused, int c, int d, int e, int
     info2.id = Deallocate();
     info2.work = work2;
     info2.flags = 0;
-    ProcessTexture(e, f, g, &info2, a, c, (unsigned short)d);
+    ProcessTexture(aiCellChunk, aiCellKey, apInstancedNode, &info2, apLocArray, apColorArray, (unsigned short)aiArraySize);
     delete info2.work;
 }
 }  // namespace fnv_0051d440
@@ -2038,6 +2091,8 @@ extern unsigned int _data_011c16bc;
 
 // Initializes the shell object by copying four pointers, allocating and copying arrays of items and IDs, then returns this.
 // @fnv 0x0051d2c0
+// pdb: TREE_BILLBOARD_DATA::TREE_BILLBOARD_DATA | TESObjectTREE.obj | debug, object-file run extension, low
+// pdb params: apTree, aiCellChunk, aiCellKey, apInstancedNode, aiArraySize, apLocArray, apColorArray
 FUN_0051d2c0_shell* FUN_0051d2c0_shell::Init(void* apField0, void* apField4, void* apField8, void* apFieldC,
                                              unsigned int itemCount, const void* itemSource, const void* idSource)
 {
@@ -2068,24 +2123,27 @@ typedef TreeRecordData*(__thiscall* TreeDataGetter)(TESObjectTREE*);
 // Copies seed array, tree record data, and billboard dimensions from a source TESObjectTREE into this TreeCopy.
 // @fnv 0x0051c140
 // src: XBOX_PDB 0x0051c140
-void TreeCopy::TESObjectTREE_Copy(TESForm* source)
+// pdb: TESObjectTREE::Copy | TESObjectTREE.obj | retail, upstream name already matches, high
+// pdb params: apCopy
+// pdb locals: ptree, isize, i
+void TreeCopy::TESObjectTREE_Copy(TESForm* apCopy)
 {
     TESObjectTREE* tree;
-    tree = dynamic_cast<TESObjectTREE*>(source);
+    tree = dynamic_cast<TESObjectTREE*>(apCopy);
     if (!tree)
         return;
 
-    TESForm_CopyAllComponents(source);
+    TESForm_CopyAllComponents(apCopy);
     {
         unsigned int count;
-        count = tree->m_kSeedArray.GetSize();
-        m_kSeedArray.RemoveAll();
+        count = tree->SeedArray.GetSize();
+        SeedArray.RemoveAll();
         {
             unsigned int index;
             for (index = 0; index < count; ++index)
-                m_kSeedArray.Add(tree->m_kSeedArray.GetAt(index));
+                SeedArray.Add(tree->SeedArray.GetAt(index));
         }
     }
     Data = *reinterpret_cast<TreeDataGetter>((*reinterpret_cast<void***>(tree))[0x63])(tree);
-    m_kBillboardDimensions = tree->m_kBillboardDimensions;
+    BillboardSize = tree->BillboardSize;
 }

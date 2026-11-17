@@ -6,6 +6,7 @@
 class TextureAccessor;
 class ExtraName;
 
+// pdb: class NiTexture, size 0x30, bases: NiObjectNET, 4 members
 class NiTexture : public NiObjectNET
 {
   public:
@@ -86,7 +87,7 @@ class NiTexture : public NiObjectNET
     int NiTexture_GetTextureQualityLevel();
     int FUN_00726070();
     NiTexture* FUN_0055b980();
-    NiTexture* BSFaceGenImage_GetCompressedImage(float lo, float hi, float scale, void* srcv);
+    NiTexture* BSFaceGenImage_GetCompressedImage(float afUncompressedMin, float afUncompressedMax, float afScale, void* aFormat);
     const ExtraName& GetFilename_00a62660();
 
     TextureFormatPreferences m_kFormatPrefs;

@@ -7,6 +7,7 @@
 typedef unsigned char hkUint8;
 typedef unsigned int hkpShapeKey;
 
+// pdb: class hkpBvTreeShape, size 0x14, bases: hkpShape, 1 members
 class hkpBvTreeShape : public hkpShape
 {
 public:
@@ -28,5 +29,5 @@ public:
 
     hkUint32 GetAabbHits(const hkAabb& aabb, hkpShapeKey* hits, int maxNumKeys) const;
 
-    hkEnum<BvTreeType, hkUint8> m_uiUserData;
+    hkEnum<BvTreeType, hkUint8> m_bvTreeType; // src: XBOX_RETAIL_PDB +0x10 (old: m_uiUserData)
 };

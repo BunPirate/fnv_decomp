@@ -40,6 +40,8 @@ struct FUN_008260b0
 };
 // Allocates a new FUN_008260b0 from object28, object08 and object0c, installs it, and returns it.
 // @fnv 0x008260e0
+// pdb: OpenEffect::Copy | OpenEffect.obj | retail, vtable slot, high
+// pdb locals: presult
 FUN_008260b0* FUN_008260b0::CloneAndInstall()
 {
     FUN_008260b0* result = new FUN_008260b0(object28, object08, object0c);
@@ -64,6 +66,8 @@ struct S_00826190_Effect
 
 // @fnv 0x00826190
 // src: XBOX_PDB 0x00826190
+// pdb: OpenEffect::Start | OpenEffect.obj | retail, upstream name already matches, high
+// pdb locals: plock, pnaTarget, espellLevel, elockLevel
 void S_00826190_Effect::OpenEffect_Start()
 {
     NonActorMagicTarget* target = dynamic_cast<NonActorMagicTarget*>(FUN_0059bb30());

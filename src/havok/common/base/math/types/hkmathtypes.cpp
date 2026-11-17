@@ -3,7 +3,10 @@
 
 // @fnv 0x00cbfe20
 // src: HAVOK_LIB 0x00cbfe20
-int __cdecl hkMath_hkFloorToInt(float afValue)
+// pdb: hkMath::hkFloorToInt | hkMathTypes.obj | retail, upstream name already matches, high
+// pdb params: r
+// pdb locals: convert
+int __cdecl hkMath_hkFloorToInt(float r)
 {
     union fiu
     {
@@ -13,7 +16,7 @@ int __cdecl hkMath_hkFloorToInt(float afValue)
     };
 
     fiu convert;
-    convert.f = afValue;
+    convert.f = r;
 
     int fracMask = 0xff800000;
 

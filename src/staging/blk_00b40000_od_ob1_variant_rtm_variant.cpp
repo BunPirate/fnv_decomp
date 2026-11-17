@@ -354,7 +354,7 @@ struct FUN_00b40000_class
     int unk68;
     int unk6C;
     Sub_b40000* m_pSub;
-    void UpdateFields_00b40000(Sub_b40000* apSub);
+    void SIdvBranchInfo_SetAngleProfile(Sub_b40000* pSpline);
 };
 // VC9 (Dinkumware, _SECURE_SCL=1) vector / vector<bool> subset, transcribed
 // into namespace stl so the checker can compile it without <vector>.
@@ -1087,7 +1087,7 @@ struct MatchPoint
     float x;
     float y;
     float z;
-    float CVec3_Distance(const MatchPoint& other) const;
+    float CVec3_Distance(const MatchPoint& cVec) const;
 };
 struct MatchNode
 {
@@ -1963,8 +1963,8 @@ class exception
 {
   public:
     void* vptr;
-    int a;
-    int b;
+    int _Mywhat; // src: XBOX_RETAIL_PDB +0x4 (old: a)
+    int _Mydofree; // src: XBOX_RETAIL_PDB +0x8 (old: b)
 };
 class logic_error : public exception
 {
@@ -2049,7 +2049,7 @@ class length_error : public logic_error
 }
 struct VbXlen
 {
-    void ThrowLengthError() const;
+    void std_vector_bool_std_allocator_bool__Trim() const;
 };
 void __cdecl FUN_00ec7c56();
 struct ContainerBaseAuxB42
@@ -3207,8 +3207,8 @@ struct BitTrim : TrimContainer
     {
         return (_Count + 31) / 32;
     }
-// src: GUESS 0x00b429d0 (confidence: high)
-    void ThrowLengthError() const
+// src: XBOX_RETAIL_PDB 0x00b429d0
+    void std_vector_bool_std_allocator_bool__Trim() const
     {
         throw TrimLengthError("vector<bool> too long");
     }
@@ -3219,7 +3219,7 @@ struct BitTrim : TrimContainer
 void BitTrim::UpdateState_00b41db0(unsigned int _Size)
 {
     if (max_size() < _Size)
-        ThrowLengthError();
+        std_vector_bool_std_allocator_bool__Trim();
     unsigned int _Words = _Nw(_Size);
     if (_Words < _Myvec.size())
         _Myvec.ProcessAndReturnValue_00b335c0(_Myvec.begin() + _Words, _Myvec.end());

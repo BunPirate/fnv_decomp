@@ -59,7 +59,7 @@ public:
     void SetRotatedDirection(const hkQuaternion_S& q, const hkVector4_S& b);
     void SetTransformedPoint(const hkQsTransform_S& a, const hkVector4_S& b);
     void _setMul3(const hkMatrix3_S& a, const hkVector4_S& b);
-    void _setRotatedDir(const hkRotation& a, const hkVector4_S& b);
+    void _setRotatedDir(const hkRotation& quat, const hkVector4_S& direction);
     void _setRotatedInverseDir(const hkRotation& a, const hkVector4_S& b);
     void _setTransformedInversePos(const hkTransform& a, const hkVector4_S& b);
     void _setTransformedPos(const hkTransform& a, const hkVector4_S& b);

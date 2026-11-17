@@ -91,7 +91,7 @@ extern char DAT_0102e388;
 class ProcessManager
 {
   public:
-    void RemoveListener(void* process);
+    void hkDebugDisplay_removeDebugDisplayHandler(void* debugDisplay);
 };
 extern ProcessManager* DAT_012681e0;
 class Process
@@ -106,16 +106,17 @@ class Process
     int unk18;
     int unk1c;
     void* listenerVftable;
-    void SetVtableAndProcessState_00ddcb50();
+    void hkDebugDisplayProcess_dtor();
 };
 // @fnv 0x00ddcb50
-// src: GUESS 0x00ddcb50 (confidence: low)
-void Process::SetVtableAndProcessState_00ddcb50()
+// src: XBOX_RETAIL_PDB 0x00ddcb50
+// pdb: hkDebugDisplayProcess::~hkDebugDisplayProcess | hkDebugDisplayProcess.obj | retail, object-file gap fill, high
+void Process::hkDebugDisplayProcess_dtor()
 {
     vftable = &DAT_010d7ed0;
     baseVftable = &DAT_010d7eb0;
     listenerVftable = &DAT_010d7e5c;
-    DAT_012681e0->RemoveListener(&listenerVftable);
+    DAT_012681e0->hkDebugDisplay_removeDebugDisplayHandler(&listenerVftable);
     listenerVftable = &DAT_010d7cfc;
     baseVftable = &DAT_010d1508;
     vftable = &DAT_0102e388;
@@ -177,6 +178,8 @@ struct S_00ddcb90_Obj : S_00ddcb90_RefObj, S_00ddcb90_Base2
 // Allocates and constructs a new S_00ddcb90_Obj via its operator new and returns it as S_00ddcb90_Base2.
 // @fnv 0x00ddcb90
 // src: HAVOK_LIB 0x00ddcb90
+// pdb: hkDebugDisplayProcess::create | hkDebugDisplayProcess.obj | retail, upstream name already matches, high
+// pdb params: contexts
 S_00ddcb90_Base2* hkDebugDisplayProcess_create()
 {
     return new S_00ddcb90_Obj();
@@ -212,15 +215,16 @@ struct Process
     unsigned short unk04;
     unsigned short unk06;
     int unk08;
-    void SetVtableAndProcessState_00ddcb50();
+    void hkDebugDisplayProcess_dtor();
     Process* hkDebugDisplayProcess_Destroy(unsigned char flags);
 };
 // Calls FUN_00ddcb50, and if flags has bit 0 set, releases this process with size unk04 through the allocator from FUN_00c85750; returns this.
 // @fnv 0x00ddcc10
 // src: COMMUNITY 0x00ddcc10
+// pdb: hkDebugDisplayProcess::`scalar deleting destructor' | hkDebugDisplayProcess.obj | retail, vtable slot, high
 Process* Process::hkDebugDisplayProcess_Destroy(unsigned char flags)
 {
-    SetVtableAndProcessState_00ddcb50();
+    hkDebugDisplayProcess_dtor();
     if (flags & 1)
     {
         ProcessServices* services = hkMemoryRouter_getInstance();
@@ -755,6 +759,7 @@ class FUN_00ddcaf0_cls
 // Initializes m_06, m_0c, m_08, m_20, and m_vtbl, calls Helper if DAT_01269cdc is zero, then dispatches m_20 via GlobalDispatcher.
 // @fnv 0x00ddcaf0
 // src: HAVOK_LIB 0x00ddcaf0
+// pdb: hkDebugDisplayProcess::hkDebugDisplayProcess | hkDebugDisplayProcess.obj | retail, upstream name already matches, high
 FUN_00ddcaf0_cls* FUN_00ddcaf0_cls::hkDebugDisplayProcess_hkDebugDisplayProcess()
 {
     unsigned char flag = 1;
@@ -780,7 +785,7 @@ void* __cdecl hkDebugDisplayProcess_create();
 
 struct S_00ddcbc0_Factory
 {
-    void* hkProcessFactory_registerProcess(const char* name, void*(__cdecl* createFn)());
+    void* hkProcessFactory_registerProcess(const char* viewerName, void*(__cdecl* creationFunction)());
 };
 
 extern "C" S_00ddcbc0_Factory* DAT_01269cd0;
@@ -788,6 +793,7 @@ extern "C" void* DAT_01269cdc;
 
 // @fnv 0x00ddcbc0
 // src: COMMUNITY 0x00ddcbc0
+// pdb: hkDebugDisplayProcess::registerProcess | hkDebugDisplayProcess.obj | retail, upstream name already matches, high
 void hkDebugDisplayProcess_registerProcess()
 {
     DAT_01269cdc = DAT_01269cd0->hkProcessFactory_registerProcess("Debug Display", hkDebugDisplayProcess_create);
@@ -811,22 +817,24 @@ struct BehaviorReceiver : TargetIface
 
 struct BehaviorForwarder
 {
-    int hkDebugDisplayProcess_updateBehavior(const HavokElementArray<int>& words, const HavokElementArray<int>& values, const HavokElementArray<int>& quads,
-                     const HavokElementArray<hkVector4>& vectors, const HavokElementArray<char*>& nodes,
-                     const HavokElementArray<int>& states, const HavokElementArray<int>& transitions,
-                     const HavokElementArray<hkQsTransform>& poses);
+    int hkDebugDisplayProcess_updateBehavior(const HavokElementArray<int>& wordVarIdx, const HavokElementArray<int>& wordStack, const HavokElementArray<int>& quadVarIdx,
+                     const HavokElementArray<hkVector4>& quadStack, const HavokElementArray<char*>& activeNodes,
+                     const HavokElementArray<int>& activeStateIds, const HavokElementArray<int>& activeTransitions,
+                     const HavokElementArray<hkQsTransform>& transforms);
 };
 
 // @fnv 0x00ddca00
 // src: HAVOK_LIB 0x00ddca00
-int BehaviorForwarder::hkDebugDisplayProcess_updateBehavior(const HavokElementArray<int>& words, const HavokElementArray<int>& values,
-                                    const HavokElementArray<int>& quads, const HavokElementArray<hkVector4>& vectors,
-                                    const HavokElementArray<char*>& nodes, const HavokElementArray<int>& states,
-                                    const HavokElementArray<int>& transitions, const HavokElementArray<hkQsTransform>& poses)
+// pdb: hkDebugDisplayProcess::updateBehavior | hkDebugDisplayProcess.obj | retail, upstream name already matches, high
+// pdb params: wordVarIdx, wordStack, quadVarIdx, quadStack, activeNodes, activeStateIds, activeTransitions, transforms
+int BehaviorForwarder::hkDebugDisplayProcess_updateBehavior(const HavokElementArray<int>& wordVarIdx, const HavokElementArray<int>& wordStack,
+                                    const HavokElementArray<int>& quadVarIdx, const HavokElementArray<hkVector4>& quadStack,
+                                    const HavokElementArray<char*>& activeNodes, const HavokElementArray<int>& activeStateIds,
+                                    const HavokElementArray<int>& activeTransitions, const HavokElementArray<hkQsTransform>& transforms)
 {
     OwnerHolder* owner = reinterpret_cast<OwnerHolder*>(reinterpret_cast<char*>(this) - sizeof(OwnerHolder));
     return static_cast<BehaviorReceiver*>(owner->m_target)
-        ->DisplayBehaviorGraph(words, values, quads, vectors, nodes, states, transitions, poses);
+        ->DisplayBehaviorGraph(wordVarIdx, wordStack, quadVarIdx, quadStack, activeNodes, activeStateIds, activeTransitions, transforms);
 }
 
 struct TextReceiver : TargetIface

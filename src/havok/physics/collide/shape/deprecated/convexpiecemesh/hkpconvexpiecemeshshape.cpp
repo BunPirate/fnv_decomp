@@ -38,6 +38,7 @@ HkpRouter* _D1A0E0GetMemoryRouter();
 
 // Calls FUN_00e490d0, then if flags has bit 0 set, releases this through the memory router's allocator with this->value as size, and returns this.
 // @fnv 0x00e01010
+// pdb: hkpConvexPieceMeshShape::`scalar deleting destructor' | hkpConvexPieceMeshShapeClass.obj | retail, vtable slot, high
 HkpStandIn* HkpStandIn::FUN_00e01010(int flags)
 {
     this->ForwardCall_00e490d0();
@@ -72,6 +73,8 @@ struct FUN_00e49290_Target
 {
     // Virtual stub that returns 0 for the given int argument.
 // @fnv 0x00e49290
+// pdb: hkpConvexPieceMeshShape::getCollisionFilterInfo | hkpConvexPieceMeshShape.obj | debug, upstream name already matches, high
+// pdb params: key
     virtual int FUN_00e49290_f0(int)
     {
         return 0;
@@ -117,22 +120,22 @@ struct FUN_00e49290_Class
     FUN_00e49290_Data* data;
     FUN_00e49290_Owner* owner;
 
-    int hkpConvexPieceMeshShape_getCollisionFilterInfo(unsigned int index);
+    int hkpConvexPieceMeshShape_getCollisionFilterInfo(unsigned int key);
 };
 
 // src: HAVOK_LIB 0x00e49290
-int FUN_00e49290_Class::hkpConvexPieceMeshShape_getCollisionFilterInfo(unsigned int index)
+int FUN_00e49290_Class::hkpConvexPieceMeshShape_getCollisionFilterInfo(unsigned int key)
 {
     int result;
 
-    if (index < this->data->count)
+    if (key < this->data->count)
     {
-        int i = this->data->p14[index];
+        int i = this->data->p14[key];
         result = this->data->p8[i + 1];
     }
     else
     {
-        result = this->data->p20[index - this->data->count];
+        result = this->data->p20[key - this->data->count];
     }
 
     return this->owner->target.FUN_00e49290_f4(result);
@@ -183,12 +186,12 @@ void D::ForwardCall_00e490d0()
 
 extern hkClass g_01269198;
 
-int __cdecl hkStatisticsCollector_getAllocatedSize(const void* pvChunk, int iNumBytes) throw();
+int __cdecl hkStatisticsCollector_getAllocatedSize(const void* p, int size) throw();
 
 template <class T> inline void CollectArray(hkStatisticsCollector* pkCollector, const char* pcName,
                                           const hkArray<T>& kArray)
 {
-    if ((kArray.m_iCapacityState & 0x80000000) == 0 || pkCollector->m_reportInplaceAllocations)
+    if ((kArray.m_iCapacityState & 0x80000000) == 0 || pkCollector->m_includeUnmanagedArrayMemory)
     {
         const T* pData = kArray.m_data;
         int iAllocated = hkStatisticsCollector_getAllocatedSize(pData, kArray.getCapacity() * sizeof(T));
@@ -197,12 +200,13 @@ template <class T> inline void CollectArray(hkStatisticsCollector* pkCollector, 
 }
 
 // The three uint32 arrays at +8/+0x14/+0x20 identify convex-piece stream data, not a mesh section; include/ has no header.
+// pdb: class hkpConvexPieceStreamData, size 0x2c, bases: hkReferencedObject, 3 members
 class hkpConvexPieceStreamData : public hkReferencedObject
 {
   public:
-    hkArray<hkUint32> m_pConvexPieceStreamData;
-    hkArray<hkUint32> m_kSecondUInt32Array;
-    hkArray<hkUint32> m_kThirdUInt32Array;
+    hkArray<hkUint32> m_convexPieceStream; // src: XBOX_RETAIL_PDB +0x8 (old: m_pConvexPieceStreamData)
+    hkArray<hkUint32> m_convexPieceOffsets; // src: XBOX_RETAIL_PDB +0x14 (old: m_kSecondUInt32Array)
+    hkArray<hkUint32> m_convexPieceSingleTriangles; // src: XBOX_RETAIL_PDB +0x20 (old: m_kThirdUInt32Array)
 };
 
 // The +0x18/+0x1c pointers and base statistics call at 0x00d213e0 identify a convex-piece mesh, not display geometry.
@@ -210,14 +214,16 @@ class hkpConvexPieceStreamData : public hkReferencedObject
 
 // Adds the three convex-piece stream arrays and the display mesh, then forwards to the collection statistics routine.
 // @fnv 0x00e49410
-void hkpConvexPieceMeshShape::calcContentStatistics(hkStatisticsCollector* pkCollector,
-                                                  const hkClass* pkClass) const throw()
+// pdb: hkpConvexPieceMeshShape::calcContentStatistics | hkpConvexPieceMeshShape.obj | retail, string-set bridge, high
+// pdb params: collector, cls
+void hkpConvexPieceMeshShape::calcContentStatistics(hkStatisticsCollector* collector,
+                                                  const hkClass* cls) const throw()
 {
-    CollectArray(pkCollector, "Stream", m_pConvexPieceStreamData->m_kSecondUInt32Array);
-    CollectArray(pkCollector, "Stream", m_pConvexPieceStreamData->m_kThirdUInt32Array);
-    CollectArray(pkCollector, "Stream", m_pConvexPieceStreamData->m_pConvexPieceStreamData);
-    pkCollector->beginObject("DisplayMesh", m_pDisplayMesh, 0);
-    CollectShapeStatistics(pkCollector, &g_01269198);
+    CollectArray(collector, "Stream", m_convexPieceStream->m_convexPieceOffsets);
+    CollectArray(collector, "Stream", m_convexPieceStream->m_convexPieceSingleTriangles);
+    CollectArray(collector, "Stream", m_convexPieceStream->m_convexPieceStream);
+    collector->beginObject("DisplayMesh", m_displayMesh, 0);
+    CollectShapeStatistics(collector, &g_01269198);
 }
 
 // Stores whether bit bitIndex % 31 of word bitIndex / 31, at bits[bits[0] + 1 + word], is set into *found, and returns found.

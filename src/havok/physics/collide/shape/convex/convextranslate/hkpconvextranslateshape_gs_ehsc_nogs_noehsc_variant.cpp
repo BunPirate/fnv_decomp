@@ -58,8 +58,8 @@ struct Own_dd5e70
     int unk14;
     void* m_sub;
 
-    void __thiscall hkReferencedObject_calcContentStatistics(Sub_dd5e70* object, const int* attribute);
-    void __thiscall AttachChildAndAttribute(Sub_dd5e70* object, int unused);
+    void __thiscall hkReferencedObject_calcContentStatistics(Sub_dd5e70* collector, const int* cls);
+    void __thiscall AttachChildAndAttribute(Sub_dd5e70* collector, int cls);
 };
 struct FUN_00dd5ea0_class
 {
@@ -91,14 +91,16 @@ struct FUN_00dd5eb0_cls
     FUN_00dd5eb0_Sub* m_18;
     int unk1C;
     __m128 unk20;
-    float hkpConvexTranslateShape_getMaximumProjection(__m128* a);
+    float hkpConvexTranslateShape_getMaximumProjection(__m128* direction);
 };
 // @fnv 0x00dd5eb0
 // src: HAVOK_SRC 0x00dd5eb0
-float FUN_00dd5eb0_cls::hkpConvexTranslateShape_getMaximumProjection(__m128* a)
+// pdb: hkpConvexTranslateShape::getMaximumProjection | hkpConvexTranslateShape.obj | retail, upstream name already matches, high
+// pdb params: direction
+float FUN_00dd5eb0_cls::hkpConvexTranslateShape_getMaximumProjection(__m128* direction)
 {
-    float d = m_18->v0C(a);
-    __m128 m = _mm_mul_ps(*a, unk20);
+    float d = m_18->v0C(direction);
+    __m128 m = _mm_mul_ps(*direction, unk20);
     __m128 sum = _mm_add_ss(_mm_shuffle_ps(m, m, 0xaa), _mm_add_ss(_mm_shuffle_ps(m, m, 0x55), m));
     float dot;
     _mm_store_ss(&dot, sum);
@@ -136,15 +138,18 @@ struct Own_dd5f10
     Sub_dd5f10* m_sub;
     int unk1C;
     __m128 m_trans;
-    void __thiscall hkpConvexTranslateShape_getSupportingVertexImpl(float* a, float* b);
+    void __thiscall hkpConvexTranslateShape_getSupportingVertexImpl(float* direction, float* supportingVertexOut);
 };
 // @fnv 0x00dd5f10
 // src: HAVOK_SRC 0x00dd5f10
-void __thiscall Own_dd5f10::hkpConvexTranslateShape_getSupportingVertexImpl(float* a, float* b)
+// pdb: hkpConvexTranslateShape::getSupportingVertexImpl | hkpConvexTranslateShape.obj | retail, upstream name already matches, high
+// pdb params: direction, supportingVertexOut
+// pdb locals: assertBuf, ostr
+void __thiscall Own_dd5f10::hkpConvexTranslateShape_getSupportingVertexImpl(float* direction, float* supportingVertexOut)
 {
     Sub_dd5f10* s = m_sub;
-    s->v38(a, b);
-    __m128* pb = (__m128*)b;
+    s->v38(direction, supportingVertexOut);
+    __m128* pb = (__m128*)supportingVertexOut;
     *pb = _mm_add_ps(m_trans, *pb);
 }
 
@@ -153,22 +158,24 @@ void __thiscall Own_dd5f10::hkpConvexTranslateShape_getSupportingVertexImpl(floa
 class ConvexTranslateCollisionSpheresView : public hkpConvexTranslateShape
 {
   public:
-    virtual const hkSphere* GetCollisionSpheres(hkSphere* pBuffer) const;
+    virtual const hkSphere* GetCollisionSpheres(hkSphere* sphereBuffer) const;
 };
 
 // @fnv 0x00dd6000
-const hkSphere* ConvexTranslateCollisionSpheresView::GetCollisionSpheres(hkSphere* pBuffer) const
+// pdb: hkpConvexTranslateShape::getCollisionSpheresImpl | hkpConvexTranslateShape.obj | retail, vtable slot, high
+// pdb params: sphereBuffer
+const hkSphere* ConvexTranslateCollisionSpheresView::GetCollisionSpheres(hkSphere* sphereBuffer) const
 {
-    hkSphere* pDst = pBuffer;
-    const hkSphere* m_pkDeltas = static_cast<const hkpConvexShape*>(m_pContainedShape.m_pContainedShape)->GetCollisionSpheres(pDst);
-    int iEntryIndex = static_cast<const hkpConvexShape*>(m_pContainedShape.m_pContainedShape)->GetNumCollisionSpheres();
+    hkSphere* pDst = sphereBuffer;
+    const hkSphere* m_pkDeltas = static_cast<const hkpConvexShape*>(m_childShape.m_childShape)->GetCollisionSpheres(pDst);
+    int iEntryIndex = static_cast<const hkpConvexShape*>(m_childShape.m_childShape)->GetNumCollisionSpheres();
     for (int i = 0; i < iEntryIndex; ++i)
     {
-        pDst->m_pos.m_vComponents = _mm_add_ps(m_pkDeltas->m_pos.m_vComponents, m_vTranslation.m_vComponents);
+        pDst->m_pos.m_vComponents = _mm_add_ps(m_pkDeltas->m_pos.m_vComponents, m_translation.m_vComponents);
         ++m_pkDeltas;
         ++pDst;
     }
-    return pBuffer;
+    return sphereBuffer;
 }
 
 #include <string.h>
@@ -231,23 +238,26 @@ struct Dummy
     ChildShape* m_pContainedShape;
     MyVec m_vTranslation;
 
-    void hkpConvexTranslateShape_castRayWithCollectorImpl(const MyVec* points, const Context2* context, int value);
+    void hkpConvexTranslateShape_castRayWithCollectorImpl(const MyVec* input, const Context2* cdBody, int collector);
 };
 
 // @fnv 0x00dd61b0
 // src: HAVOK_SRC 0x00dd61b0
-void Dummy::hkpConvexTranslateShape_castRayWithCollectorImpl(const MyVec* points, const Context2* context, int value)
+// pdb: hkpConvexTranslateShape::castRayWithCollectorImpl | hkpConvexTranslateShape.obj | retail, upstream name already matches, high
+// pdb params: input, cdBody, collector
+// pdb locals: t, subInput, thisTransform, childBody, assertBuf, ostr
+void Dummy::hkpConvexTranslateShape_castRayWithCollectorImpl(const MyVec* input, const Context2* cdBody, int collector)
 {
     __m128 p1 = m_vTranslation.quad;
-    __m128 s = _mm_sub_ps(points[0].quad, p1);
+    __m128 s = _mm_sub_ps(input[0].quad, p1);
 
     MyVec localBody[3];
-    memcpy(localBody, points, 48);
+    memcpy(localBody, input, 48);
 
-    const void* motion = context->m_localBody;
+    const void* motion = cdBody->m_localBody;
 
     localBody[0].quad = s;
-    __m128 t = _mm_sub_ps(points[1].quad, p1);
+    __m128 t = _mm_sub_ps(input[1].quad, p1);
 
     MyTransform c;
     localBody[1].quad = t;
@@ -265,9 +275,9 @@ void Dummy::hkpConvexTranslateShape_castRayWithCollectorImpl(const MyVec* points
 
     Context2 trans;
     trans.m_localBody = &r;
-    trans.m_parentContext = context;
+    trans.m_parentContext = cdBody;
     trans.m_pContainedShape = m_pContainedShape;
     trans.m_zero = 0;
 
-    m_pContainedShape->v24(localBody, &trans, value);
+    m_pContainedShape->v24(localBody, &trans, collector);
 }

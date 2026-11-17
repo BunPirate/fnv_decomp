@@ -12,32 +12,34 @@ __forceinline bool NiRenderedTexture::IsExactKindOf(const NiRTTI* type)
 }
 
 // @fnv 0x00b6b260
+// pdb: BSRenderedTexture::GetGroup | BSRenderedTexture.obj | retail, upstream name already matches, high
+// pdb locals: prencube, iface
 NiRenderTargetGroup* BSRenderedTexture::GetGroup()
 {
     if (!this)
         return 0;
-    if (!(spTexture[0] ? spTexture[0]->IsExactKindOf(&DAT_012708e4) : false))
-        return m_apRenderTargetGroups[0];
-    return m_apRenderTargetGroups[static_cast<NiRenderedCubeMap*>(spTexture[0])->unk48];
+    if (!(spTexture[0] ? spTexture[0]->IsExactKindOf(&NiRenderedCubeMap_ms_RTTI) : false))
+        return spGroup[0];
+    return spGroup[static_cast<NiRenderedCubeMap*>(spTexture[0])->m_eFace];
 }
 
 template <class T> inline NiPointer<T>::NiPointer() : m_pObject(0)
 {}
 
-inline void BSShaderProperty::SetFlag(unsigned int uiBit, bool bEnabled)
+inline void BSShaderProperty::SetFlag(unsigned int aiFlag, bool abSetFlag)
 {
-    unsigned long uiMask = 1u << (uiBit & 31);
-    if (bEnabled)
+    unsigned long uiMask = 1u << (aiFlag & 31);
+    if (abSetFlag)
     {
-        if (!(ulFlags[uiBit >> 5] & uiMask))
+        if (!(ulFlags[aiFlag >> 5] & uiMask))
             iLastRenderPassState = 0;
-        ulFlags[uiBit >> 5] |= uiMask;
+        ulFlags[aiFlag >> 5] |= uiMask;
     }
     else
     {
-        if (ulFlags[uiBit >> 5] & uiMask)
+        if (ulFlags[aiFlag >> 5] & uiMask)
             iLastRenderPassState = 0;
-        ulFlags[uiBit >> 5] &= ~uiMask;
+        ulFlags[aiFlag >> 5] &= ~uiMask;
     }
 }
 
@@ -59,17 +61,18 @@ template <> inline BSStringT<char>::BSStringT()
 }
 
 // @fnv 0x00b6fc90
+// pdb: BSShaderNoLightingProperty::BSShaderNoLightingProperty | BSShaderNoLightingProperty.obj | retail, upstream name already matches, high
 BSShaderNoLightingProperty::BSShaderNoLightingProperty()
-    : eClampMode(NiTexturingProperty::WRAP_S_WRAP_T)
+    : TextureClampMode(NiTexturingProperty::WRAP_S_WRAP_T)
 {
-    InitializeFalloff(&fFalloffStartAngle, 0.0f, 0.0f, 0.0f, 0.0f);
+    InitializeFalloff(&FalloffData, 0.0f, 0.0f, 0.0f, 0.0f);
     iShader = 0x21;
     iShaderPropertyType = 0x15;
     SetFlag(31, true);
     SetFlag(32, true);
 }
 
-bool __cdecl BSRenderedTexture_Begin(NiRenderTargetGroup* pkGroup, int iArg);
+bool __cdecl BSRenderedTexture_Begin(NiRenderTargetGroup* apTargetGroup, int aiClearMode);
 
 // 0x011f4748 is NiRenderer::ms_pRenderer; NiDX9Renderer supplies virtual slot 95.
 // Its shared vf95 declaration lacks the Boolean result consumed by this caller.
@@ -82,10 +85,12 @@ static inline bool QueryFrameState(NiDX9Renderer* renderer)
 // Sets the frame state to 2 when it is 0 and virtual slot 95 returns true, then forwards to FUN_00b6b7d0.
 // @fnv 0x00b6b8d0
 // src: COMMUNITY 0x00b6b8d0
-bool __cdecl BSRenderedTexture_StartOffscreen(int iArg, NiRenderTargetGroup* pkGroup)
+// pdb: BSRenderedTexture::StartOffscreen | BSRenderedTexture.obj | retail, upstream name already matches, high
+// pdb params: aiClearMode, apTarget
+bool __cdecl BSRenderedTexture_StartOffscreen(int aiClearMode, NiRenderTargetGroup* apTarget)
 {
     int& iState = NiRenderer::ms_pRenderer->m_eFrameState;
     if (iState == 0 && QueryFrameState(static_cast<NiDX9Renderer*>(NiRenderer::ms_pRenderer)))
         iState = 2;
-    return BSRenderedTexture_Begin(pkGroup, iArg);
+    return BSRenderedTexture_Begin(apTarget, aiClearMode);
 }

@@ -43,7 +43,7 @@ template <class T> __forceinline void hkArrayBase<T>::_clearAndDeallocate(hkMemo
 template <class T, class A> __forceinline hkArray<T, A>::~hkArray() { clearAndDeallocate(); }
 inline void hkReferencedObject::operator delete(void* p)
 {
-    hkMemoryRouter_getInstance().heap().blockFree(p, static_cast<hkReferencedObject*>(p)->m_usMemSizeAndFlags);
+    hkMemoryRouter_getInstance().heap().blockFree(p, static_cast<hkReferencedObject*>(p)->m_memSizeAndFlags);
 }
 
 struct GGTransform;
@@ -60,27 +60,30 @@ struct GunArg3;
 // src: GUESS 0x00e45fb0 (confidence: high)
 void hkpGravityGun::DropPickedObjectIfPresent(int, int, int)
 {
-    if (m_kPickedBodies.m_iElementCount != 0)
+    if (m_grabbedBodies.m_iElementCount != 0)
         hkpGravityGun_dropObject(0);
 }
 
 
 // @fnv 0x00e45fc0
+// pdb: hkpGravityGun::reset | hkpGravityGun.obj | retail, vtable slot, high
+// pdb params: world
 void hkpGravityGun::RemoveAllReferences(int)
 {
     int i = 0;
-    if (m_kPickedBodies.m_iElementCount > 0)
+    if (m_grabbedBodies.m_iElementCount > 0)
     {
         do
         {
-            ((hkReferencedObject*)m_kPickedBodies.m_data[i])->removeReference();
+            ((hkReferencedObject*)m_grabbedBodies.m_data[i])->removeReference();
             ++i;
-        } while (i < m_kPickedBodies.m_iElementCount);
+        } while (i < m_grabbedBodies.m_iElementCount);
     }
-    m_kPickedBodies.m_iElementCount = 0;
+    m_grabbedBodies.m_iElementCount = 0;
 }
 
 // @fnv 0x00e46300
+// pdb: hkpGravityGun::hkpGravityGun | hkpGravityGun.obj | retail, object-file gap fill, high
 hkpGravityGun::hkpGravityGun(FinishingFlag flag) : hkpFirstPersonGun(flag)
 {
     if (flag.m_bFinishing)
@@ -89,10 +92,11 @@ hkpGravityGun::hkpGravityGun(FinishingFlag flag) : hkpFirstPersonGun(flag)
 
 // Destroys the object and, when bit 0 of uiFlags is set, frees its memory via operator delete; returns this.
 // @fnv 0x00e46340
+// pdb: hkpGravityGun::`scalar deleting destructor' | hkpGravityGun.obj | retail, vtable slot, high
 hkpGravityGun* hkpGravityGun::DestroyAndFree(unsigned int uiFlags) throw()
 {
     // The original scalar-deleting wrapper tears down members and the base without a derived vptr store.
-    m_kPickedBodies.~hkArray();
+    m_grabbedBodies.~hkArray();
     this->hkpFirstPersonGun::~hkpFirstPersonGun();
     if (uiFlags & 1)
         hkpGravityGun::operator delete(this);
@@ -257,20 +261,20 @@ struct GGTransform
 
 inline const hkVector4& hkpRigidBody::getCenterOfMassInWorld() const
 {
-    return m_pMotionState.m_kMotionState.m_kSweptTransform.m_vCenterOfMass1;
+    return m_motion.m_kMotionState.m_kSweptTransform.m_vCenterOfMass1;
 }
 
 inline hkReal gravityGunBodyMass(hkpRigidBody* body)
 {
-    return body->m_pMotionState.GetMassValue();
+    return body->m_motion.GetMassValue();
 }
 
 // The shared gravity-gun declarations still use the opaque GGRigidBody pointer type.
 bool hkpGravityGun::isGrabbed(const GGRigidBody* body) const
     {
-        for (int i = 0; i < m_kPickedBodies.m_iElementCount; i++)
+        for (int i = 0; i < m_grabbedBodies.m_iElementCount; i++)
         {
-            if (m_kPickedBodies.m_data[i] == body)
+            if (m_grabbedBodies.m_data[i] == body)
             {
                 return true;
             }
@@ -281,6 +285,9 @@ bool hkpGravityGun::isGrabbed(const GGRigidBody* body) const
 // Finds the best rigid body to grab by scoring candidates in active and inactive islands, then ray-casting to verify line of sight.
 // @fnv 0x00e45a60
 // src: GUESS 0x00e45a60 (confidence: medium)
+// pdb: hkpGravityGun::pickBody | hkpGravityGun.obj | retail, object-file run extension, low
+// pdb params: viewTransform, characterBody, world
+// pdb locals: nearestBody, islands, ii, inplayerSpace, collector, ray
 GGRigidBody* hkpGravityGun::FindVisibleRigidBodyToGrab(const GGTransform& viewTransform, const GGRigidBody* characterBody,
                                       const GGWorld* world)
 {
@@ -302,7 +309,7 @@ GGRigidBody* hkpGravityGun::FindVisibleRigidBodyToGrab(const GGTransform& viewTr
                 posInView.SetTransformedPosition(reinterpret_cast<const hkTransform&>(viewTransform), vCenterOfMass);
 
                 hkReal x = posInView(0);
-                if (x < 0.1f || x > m_fMaxPickDistance || body == reinterpret_cast<const hkpRigidBody*>(characterBody))
+                if (x < 0.1f || x > m_maxDistOfObjectPicked || body == reinterpret_cast<const hkpRigidBody*>(characterBody))
                 {
                     continue;
                 }
@@ -310,7 +317,7 @@ GGRigidBody* hkpGravityGun::FindVisibleRigidBodyToGrab(const GGTransform& viewTr
                 hkReal value = MathUtilities::fabs(posInView(2)) + MathUtilities::fabs(posInView(1));
                 value = value / (x + 1.0);
 
-                if (gravityGunBodyMass(body) > m_fMaxPickMass)
+                if (gravityGunBodyMass(body) > m_maxMassOfObjectPicked)
                 {
                     value += 0.1f;
                 }
@@ -391,45 +398,48 @@ struct GunListener
 // Dispatches a gun action to listeners based on b1/b2 and picked-body capacity, then calls FUN_00e45c90 with dt, a4, a3.
 // @fnv 0x00e46140
 // src: HAVOK_SRC 0x00e46140
-void hkpGravityGun::stepGun(hkReal dt, hkpWorld* world, GunArg3* a3, GunTransform* apGunTransform, bool b1,
-                                   bool b2)
+// pdb: hkpGravityGun::stepGun | hkpGravityGun.obj | retail, upstream name already matches, high
+// pdb params: timeStep, world, body, viewTransform, fire, fireRmb
+// pdb locals: from, targetPos
+void hkpGravityGun::stepGun(hkReal timeStep, hkpWorld* world, GunArg3* body, GunTransform* viewTransform, bool fire,
+                                   bool fireRmb)
 {
     hkVector4 v1;
     hkVector4 v2;
 
-    if (b1)
+    if (fire)
     {
-        gravityGunPush(apGunTransform, a3, world);
-        *(__m128*)&v1 = *(__m128*)&a3->unk120;
-        for (int i = 0; i < m_kListeners.m_iElementCount; ++i)
+        gravityGunPush(viewTransform, body, world);
+        *(__m128*)&v1 = *(__m128*)&body->unk120;
+        for (int i = 0; i < m_listeners.m_iElementCount; ++i)
         {
-            ((GunListener*)m_kListeners.m_data[i])->gunAction(v1, 0);
+            ((GunListener*)m_listeners.m_data[i])->gunAction(v1, 0);
         }
     }
-    else if (b2)
+    else if (fireRmb)
     {
-        if (m_kPickedBodies.m_iElementCount != m_iMaxPickedBodies)
+        if (m_grabbedBodies.m_iElementCount != m_maxNumObjectsPicked)
         {
-            gravityGunPull(apGunTransform, a3, world);
-            *(__m128*)&v2 = *(__m128*)&apGunTransform->m_vTranslation;
-            *(__m128*)&v1 = *(__m128*)&a3->unk120;
-            for (int i = 0; i < m_kListeners.m_iElementCount; ++i)
+            gravityGunPull(viewTransform, body, world);
+            *(__m128*)&v2 = *(__m128*)&viewTransform->m_vTranslation;
+            *(__m128*)&v1 = *(__m128*)&body->unk120;
+            for (int i = 0; i < m_listeners.m_iElementCount; ++i)
             {
-                ((GunListener*)m_kListeners.m_data[i])->gunAction(v2, &v1);
+                ((GunListener*)m_listeners.m_data[i])->gunAction(v2, &v1);
             }
         }
         else
         {
-            DropPickedObjectIfPresent(apGunTransform, a3, world);
-            *(__m128*)&v2 = *(__m128*)&a3->unk120;
-            for (int i = 0; i < m_kListeners.m_iElementCount; ++i)
+            DropPickedObjectIfPresent(viewTransform, body, world);
+            *(__m128*)&v2 = *(__m128*)&body->unk120;
+            for (int i = 0; i < m_listeners.m_iElementCount; ++i)
             {
-                ((GunListener*)m_kListeners.m_data[i])->gunAction(v2, 0);
+                ((GunListener*)m_listeners.m_data[i])->gunAction(v2, 0);
             }
         }
     }
 
-    gravityGunStep(dt, apGunTransform, a3);
+    gravityGunStep(timeStep, viewTransform, body);
 }
 
 extern "C" __m128 _mm_shuffle_ps(__m128 _A, __m128 _B, unsigned int _Imm8);
@@ -451,27 +461,30 @@ template <class T> __forceinline void hkArrayBase<T>::_pushBack(hkMemoryAllocato
 // Retains the body, appends it to the picked bodies, and scales its inverse mass by 100.
 // @fnv 0x00e46000
 // src: XBOX_PDB 0x00e46000
-void hkpGravityGun::takeObject(hkpRigidBody* apEntity)
+// pdb: hkpGravityGun::takeObject | hkpGravityGun.obj | retail, upstream name already matches, high
+// pdb params: body
+void hkpGravityGun::takeObject(hkpRigidBody* body)
 {
-    apEntity->addReference();
-    m_kPickedBodies.pushBack(apEntity);
-    float w = apEntity->m_pMotionState.m_kInertiaAndMassInv.getW();
+    body->addReference();
+    m_grabbedBodies.pushBack(body);
+    float w = body->m_motion.m_inertiaAndMassInv.getW();
     float f = (float)(w * 100.0);
-    apEntity->hkpRigidBody_setMassInv(f);
+    body->hkpRigidBody_setMassInv(f);
 }
 
 extern "C" __m128 _mm_setr_ps(float, float, float, float);
 
 // Constructs a GravityGun object, initializing pick limits, grab and target positions, and setting the type and name fields.
 // @fnv 0x00e46260
+// pdb: hkpGravityGun::hkpGravityGun | hkpGravityGun.obj | retail, string-set bridge, high
 hkpGravityGun::hkpGravityGun() throw()
-    : m_iMaxPickedBodies(10), m_fMaxPickMass(200.0f), m_fMaxPickDistance(50.0f), m_fPickAngle(100.0f),
-      m_fHoldDistance(50.0f)
+    : m_maxNumObjectsPicked(10), m_maxMassOfObjectPicked(200.0f), m_maxDistOfObjectPicked(50.0f), m_impulseAppliedWhenObjectNotPicked(100.0f),
+      m_throwVelocity(50.0f)
 {
     m_type = 3;
     m_name = "GravityGun";
-    m_kGrabPosition.set(2.5f, 0.6f, 0.0f);
-    m_kTargetPosition.set(0.0f, 1.0f, 0.0f);
+    m_capturedObjectPosition.set(2.5f, 0.6f, 0.0f);
+    m_capturedObjectsOffset.set(0.0f, 1.0f, 0.0f);
 }
 
 __forceinline float hkVector4::getW() const

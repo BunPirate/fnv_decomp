@@ -95,7 +95,7 @@ Tile* __cdecl FindNamedTile(Tile*, char const*);
 void __cdecl _FNV_Warning(char const*);
 void __cdecl _FUN_007037e0();
 void __cdecl ShutdownVats();
-Tile* __cdecl VATSMenu_VatsMenuGetTileByName(Tile* a1, char const* a2);
+Tile* __cdecl VATSMenu_VatsMenuGetTileByName(Tile* apTarget, char const* apName);
 extern GameTimerRecord g_timeGlobal;
 struct DAT_Pointee_7f4bb0
 {
@@ -125,21 +125,24 @@ struct __declspec(align(16)) B006815c0
     B006815c0();
 };
 
-B006815c0* __cdecl NI2HK(B006815c0* a1, const NiPoint3& a2);
+B006815c0* __cdecl NI2HK(B006815c0* arhkTran, const NiPoint3& arNiTran);
 
 class Class_007f68a0
 {
   public:
-    void ForwardToSubObject(B006815c0* a1);
-    void bhkPickData_SetLength(const NiPoint3& pt);
+    void bhkPickData_SetLength(B006815c0* arLength);
+    void bhkPickData_SetLength(const NiPoint3& arLength);
 };
 
 // @fnv 0x007f68a0
 // src: XBOX_PDB 0x007f68a0
-void Class_007f68a0::bhkPickData_SetLength(const NiPoint3& pt)
+// pdb: bhkPickData::SetLength | VATSMenu.obj | debug, call graph, high
+// pdb params: arLength
+// pdb locals: hkv
+void Class_007f68a0::bhkPickData_SetLength(const NiPoint3& arLength)
 {
     B006815c0 vec;
-    ForwardToSubObject(NI2HK(&vec, pt));
+    bhkPickData_SetLength(NI2HK(&vec, arLength));
 }
 
 struct Quest007f6af0
@@ -280,6 +283,8 @@ struct Owner007f6af0
 };
 // @fnv 0x007f6af0
 // src: XBOX_PDB 0x007f6af0
+// pdb: VATSMenu::PickNewTarget | VATSMenu.obj | debug, upstream name already matches, high
+// pdb locals: collector, dir, origin, fltr, uimultiLayer, icolFilter, ptargetRef, fpickLength, pd, i, pav, pref, point, ptarget
 bool __fastcall VATSMenu_PickNewTarget(Owner007f6af0* self)
 {
     if (self->field_10e)

@@ -6,6 +6,7 @@ class NiAVObject;
 class NiFixedString;
 class StrArr;
 
+// pdb: class NiAVObjectPalette, size 0x8, bases: NiObject, 0 members
 class NiAVObjectPalette : public NiObject
 {
 public:

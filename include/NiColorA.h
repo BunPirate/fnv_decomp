@@ -5,6 +5,7 @@
 // out of class.
 struct NiStream;
 
+// pdb: class NiColorA, size 0x10, 4 members
 class NiColorA
 {
 public:

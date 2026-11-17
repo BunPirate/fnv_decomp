@@ -19,11 +19,11 @@
 #include "../../../../include/Setting.h"
 #include "../../../../include/BSSoundHandle.h"
 extern Actor* g_thePlayer;
-bool CompanionWheelMenu_GetShouldCompanionWheelOpen(Actor* a);
+bool CompanionWheelMenu_GetShouldCompanionWheelOpen(Actor* apCompanion);
 int __cdecl return_1075();
 extern "C" float __cdecl LogFloat(float);
-float NiATan(float value);
-extern "C" void __cdecl CloseMenuAndRefresh(int);
+float NiATan(float fValue);
+extern "C" void __cdecl CompanionWheelMenu_Close(int);
 void __fastcall CompanionWheelMenu_Do_Talk(int thisPtr);
 extern bool __cdecl _FUN_004b71d0();
 struct FUN_00755680_shell
@@ -39,7 +39,7 @@ MagicCaster* __cdecl _FUN_004b7210();
 extern int DAT_011d92b8;
 void __cdecl InterfaceManager_PlayMenuSound(int);
 unsigned int __cdecl gm_GetTickCount(void);
-float __cdecl NiATan(float value);
+float __cdecl NiATan(float fValue);
 int __cdecl _FUN_00ec7d40(int value);
 extern char $SG3295[];
 extern double _DAT_01012060;
@@ -55,7 +55,7 @@ struct MenuFactory
     Menu* Tile_GetMenu();
 };
 MenuFactory* __cdecl Tile_GetMenuByClass(int id);
-int __cdecl OpenCompanionMenu(int value);
+int __cdecl CompanionWheelMenu_Create(int apRelatedCompanion);
 bool __cdecl DestroyCompanionWheelMenu(int value);
 extern "C" bool __cdecl Interface_IsTopMenuID(int);
 bool __cdecl Interface_IsTopMenuID(int);
@@ -84,7 +84,7 @@ struct ActorPosition
 };
 struct ActorExtraData
 {
-    void FUN_00815b00();
+    void InterruptCast();
 };
 struct ActorLock
 {
@@ -119,6 +119,7 @@ struct SoundPath
 {
     const char* CStr();
 };
+// pdb: class DialogueResponse, size 0x2c (here 0x1), 9 members
 struct DialogueResponse
 {
     SoundFile* GetSoundByEditorID();
@@ -891,6 +892,9 @@ Reference* TESObjectREFR_CreateReference(int, int);
 bool Script_ParseParameters(void*, void*, void*, Reference*, void*, void*, void*, Idle**, int*, void**, int*, int*);
 // @fnv 0x005c8a50
 // src: EXE 0x005c8a50
+// pdb: Script::SayFunction | TESScriptFunctions.obj | debug, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: isubtitle, iPCHead, iAlwaysPlay, bforcesub, pNpc, ptopic, bplayerhead, balwaysplay, pactor, ioldLipDistance, pcurrentScriptTarget, pVoice, aSoundHand, pResponse, ptempactor
 bool Cmd_Say_Execute(void* paramInfo, void* scriptData, Reference* source, void* containing, void* script, void* locals,
                   double* result, void* offset)
 {
@@ -921,7 +925,7 @@ bool Cmd_Say_Execute(void* paramInfo, void* scriptData, Reference* source, void*
         {
             if (reinterpret_cast<Process*>(actor->FUN_008d8520()) && !reinterpret_cast<Reference*>(actor)->IsDead(1))
             {
-                actor->ReferenceMobileState = DAT_01012054;
+                actor->fSayToFailVoiceTimer = DAT_01012054;
                 reinterpret_cast<Process*>(actor->FUN_008d8520())->SetAlert(0);
                 reinterpret_cast<Process*>(actor->FUN_008d8520())->Reset();
                 if (!actor->FUN_00931850())
@@ -1001,15 +1005,15 @@ class SaveLoad755
 class Manager755
 {
   public:
-    void Refresh();
+    void ProcessLists_Update3DAfterResting();
 };
 extern CompanionWheelMenu* g_pkMenu755;
 extern SaveLoad755* g_pkSaveLoad755;
 extern Manager755 g_kManager755;
-void __cdecl CloseMenuAndRefresh(bool bFade);
+void __cdecl CompanionWheelMenu_Close(bool abClearOutSpeech);
 struct ScriptTile256
 {
-    void Set(const char*, double);
+    void Actor_SetLocalVariableOnActor(const char*, double);
 };
 struct MenuGlobal256
 {
@@ -1067,16 +1071,18 @@ void* FollowerBarks_GetBarkTopicByType(int);
 
 // @fnv 0x00755c50
 // src: XBOX_PDB 0x00755c50
-void CompanionWheelMenu::SetButtonAsHighlighted(float angle)
+// pdb: CompanionWheelMenu::SetButtonAsHighlighted | CompanionWheelMenu.obj | retail, object-file run extension, high
+// pdb params: aiID, bForceRefresh
+void CompanionWheelMenu::SetButtonAsHighlighted(float fInputStickAngle)
 {
-    if (angle >= 0.0 && angle < 0.5235980153083801)
-        angle = 0.55f;
-    else if (angle >= 2.617990016937256 && angle < 3.141590118408203)
-        angle = 2.6f;
-    else if (angle >= 3.14159 && angle < 3.665186)
-        angle = 3.7f;
-    else if (angle >= 5.759578)
-        angle = 5.7f;
+    if (fInputStickAngle >= 0.0 && fInputStickAngle < 0.5235980153083801)
+        fInputStickAngle = 0.55f;
+    else if (fInputStickAngle >= 2.617990016937256 && fInputStickAngle < 3.141590118408203)
+        fInputStickAngle = 2.6f;
+    else if (fInputStickAngle >= 3.14159 && fInputStickAngle < 3.665186)
+        fInputStickAngle = 3.7f;
+    else if (fInputStickAngle >= 5.759578)
+        fInputStickAngle = 5.7f;
 
     int k;
     RadialTile* radialTile;
@@ -1084,12 +1090,12 @@ void CompanionWheelMenu::SetButtonAsHighlighted(float angle)
     float high;
     for (k = 0; k < 16; k++)
     {
-        radialTile = dynamic_cast<RadialTile*>(tiles[k]);
+        radialTile = dynamic_cast<RadialTile*>(pTiles[k]);
         if (radialTile)
         {
             a = radialTile->GetValueFloat(0x1006);
             high = radialTile->GetValueFloat(0x1007);
-            if (angle >= a && angle < high)
+            if (fInputStickAngle >= a && fInputStickAngle < high)
             {
                 SelectTile(k, false);
                 break;

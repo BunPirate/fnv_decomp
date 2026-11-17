@@ -51,16 +51,19 @@ inline NiNodeHolder_bsshaderutil_decl_variant::NiNodeHolder_bsshaderutil_decl_va
 void BSShaderManager_SetAccumulator(NiRefObject*);
 // @fnv 0x00b6bee0
 // src: COMMUNITY 0x00b6bee0
-void BSShaderUtil_AccumulateScene(void* first, void* second, BSShaderAccumulatorView* accumulator)
+// pdb: BSShaderUtil::AccumulateScene | BSShaderUtil.obj | retail, upstream name already matches, high
+// pdb params: apCamera, apScene, aCuller
+// pdb locals: prenderer, spaccum
+void BSShaderUtil_AccumulateScene(void* apCamera, void* apScene, BSShaderAccumulatorView* aCuller)
 {
-    if (DAT_011f4748 && first && second)
+    if (DAT_011f4748 && apCamera && apScene)
     {
         if (!DAT_012722bc)
         {
             NiNodeHolder_bsshaderutil_decl_variant guard(DAT_011f4748->object);
-            DAT_011f4748->NiTexturingProperty_Map_SetTexture(accumulator->texture);
+            DAT_011f4748->NiTexturingProperty_Map_SetTexture(aCuller->texture);
         }
-        BSShaderManager_SetAccumulator(accumulator->texture);
-        accumulator->vfn_48(first, second, 0);
+        BSShaderManager_SetAccumulator(aCuller->texture);
+        aCuller->vfn_48(apCamera, apScene, 0);
     }
 }

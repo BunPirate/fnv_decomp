@@ -51,6 +51,8 @@ struct FUN_00cf5070_class
 };
 
 // @fnv 0x00cf5070
+// pdb: hkpListShape::getChildShape | hkpListShape.obj | debug, vtable slot, medium
+// pdb params: key, buffer
 void* FUN_00cf5070_class::GetShapeAt(int index, void* buffer)
 {
     void** shapes = *(void***)((char*)this + 8);
@@ -63,6 +65,8 @@ struct hkPListShape2
 };
 
 // @fnv 0x00cf5080
+// pdb: hkpListShape::getCollisionFilterInfo | hkpListShape.obj | debug, vtable slot, medium
+// pdb params: key
 int hkPListShape2::GetElementAt(int index)
 {
     return *(int*)(*(int*)((char*)this + 8) + (index << 4) + 4);
@@ -105,6 +109,9 @@ struct FUN_00cf5420_class
 
 // @fnv 0x00cf5420
 // src: HAVOK_LIB 0x00cf5420
+// pdb: hkpListShape::recalcAabbExtents | hkpListShape.obj | retail, object-file gap fill, high
+// pdb params: aabb
+// pdb locals: t
 void FUN_00cf5420_class::hkpListShape_recalcAabbExtents()
 {
     BufAligned32 bufAligned;
@@ -114,12 +121,12 @@ void FUN_00cf5420_class::hkpListShape_recalcAabbExtents()
 
 extern const hkClass DAT_01269198;
 
-int __cdecl hkStatisticsCollector_getAllocatedSize(const void* pvChunk, int iNumBytes) throw();
+int __cdecl hkStatisticsCollector_getAllocatedSize(const void* p, int size) throw();
 
 template <class T, class Allocator>
 void hkStatisticsCollector::addArray(const char* pcName, const hkArray<T, Allocator>& kArray)
 {
-    if ((kArray.m_iCapacityState & 0x80000000) == 0 || m_reportInplaceAllocations)
+    if ((kArray.m_iCapacityState & 0x80000000) == 0 || m_includeUnmanagedArrayMemory)
     {
         const T* pData = kArray.m_data;
         int iAllocated = hkStatisticsCollector_getAllocatedSize(pData, kArray.getCapacity() * sizeof(T));
@@ -133,17 +140,19 @@ class ListShapeStatistics : public hkpListShape
 {
   public:
     void CollectBaseStatistics(hkStatisticsCollector* pkCollector, const hkClass* pkClass) const throw();
-    void AddChildObjectsToCollector(hkStatisticsCollector* pkCollector, const hkClass* pkClass) const throw();
+    void AddChildObjectsToCollector(hkStatisticsCollector* collector, const hkClass* cls) const throw();
 };
 
 // @fnv 0x00cf5440
-void ListShapeStatistics::AddChildObjectsToCollector(hkStatisticsCollector* pkCollector, const hkClass* pkClass) const
+// pdb: hkpListShape::calcContentStatistics | hkpListShape.obj | retail, string-set bridge, high
+// pdb params: collector, cls
+void ListShapeStatistics::AddChildObjectsToCollector(hkStatisticsCollector* collector, const hkClass* cls) const
     throw()
 {
-    pkCollector->addArray("ChildPtrs", m_kChildInfoList);
-    for (int i = 0; i < m_kChildInfoList.GetLogicalSize(); i++)
-        pkCollector->beginObject("Child", m_kChildInfoList.m_data[i].m_pCollisionShape, 0);
-    CollectBaseStatistics(pkCollector, &DAT_01269198);
+    collector->addArray("ChildPtrs", m_childInfo);
+    for (int i = 0; i < m_childInfo.GetLogicalSize(); i++)
+        collector->beginObject("Child", m_childInfo.m_data[i].m_pCollisionShape, 0);
+    CollectBaseStatistics(collector, &DAT_01269198);
 }
 
 // These shared constructor bodies preserve the finishing constructor's uninitialized storage.
@@ -224,6 +233,8 @@ struct hkListShapeCF58
 
 // Scans child indices after oldKey up to m_childInfoSize and returns the first enabled one, or -1 if none.
 // @fnv 0x00cf5840
+// pdb: hkpListShape::getNextKey | hkpListShape.obj | debug, vtable slot, medium
+// pdb params: key
 int hkListShapeCF58::FindNextEnabledChild(int oldKey) const
 {
     for (int i = oldKey + 1; i < m_childInfoSize; i++)
@@ -244,6 +255,7 @@ struct FnvCpu_FUN_00cf5890_CpuObject
 };
 // Calls FUN_00cf5750, then if flags has bit 0 set, invokes the allocator from FUN_00c85750 on this with size, and returns this.
 // @fnv 0x00cf5890
+// pdb: hkpListShape::`scalar deleting destructor' | hkpListShape.obj | retail, vtable slot, high
 FnvCpu_FUN_00cf5890_CpuObject* FnvCpu_FUN_00cf5890_CpuObject::Destroy(unsigned int flags)
 {
     FUN_00cf5750();
@@ -255,7 +267,7 @@ FnvCpu_FUN_00cf5890_CpuObject* FnvCpu_FUN_00cf5890_CpuObject::Destroy(unsigned i
     return this;
 }
 
-void __cdecl hkArrayUtil__reserve(hkMemoryAllocator& kAlloc, void* apvArray, int aiNumElements, int iSizeElem) throw();
+void __cdecl hkArrayUtil__reserve(hkMemoryAllocator& mem, void* array, int numElem, int sizeElem) throw();
 
 
 __forceinline hkMemoryAllocator& hkContainerHeapAllocator::get(const void*)
@@ -304,11 +316,13 @@ class FUN_00cf5640 : public ShapeCollectionConstruction
     int m_aiIds[8];
 
     FUN_00cf5640(int iA, int iB, int iC) throw();
-    void hkpListShape_setShapes(int iA, int iB, int iZero, int iC) throw();
+    void hkpListShape_setShapes(int shapeArray, int numShapes, int filterInfo, int ref) throw();
 };
 
 // Constructs a shape by reserving 4 points, calling FUN_00cf54d0 with iA, iB, 0, iC, and initializing m_aiIds to -1 and flags to 0.
 // @fnv 0x00cf5640
+// pdb: hkpListShape::hkpListShape | hkpListShape.obj | retail, object-file run extension, low
+// pdb params: shapeArray, numShapes, ref
 FUN_00cf5640::FUN_00cf5640(int iA, int iB, int iC) throw() : ShapeCollectionConstruction(9, 0)
 {
     m_kPoints.reserve(4);
@@ -332,6 +346,9 @@ struct ListShapeCF
 };
 // @fnv 0x00cf50c0
 // src: HAVOK_LIB 0x00cf50c0
+// pdb: hkpListShape::calcSizeForSpu | hkpListShape.obj | retail, upstream name already matches, high
+// pdb params: input, spuBufferSizeLeft
+// pdb locals: assertBuf, ostr
 int ListShapeCF::hkpListShape_calcSizeForSpu(const bool& input, int spuBufferSizeLeft)
 {
     if (input && m_kChildInfoList.GetLogicalSize() > 252)
@@ -348,54 +365,57 @@ int ListShapeCF::hkpListShape_calcSizeForSpu(const bool& input, int spuBufferSiz
     return 0x70;
 }
 
-void __cdecl hkArrayUtil__reserve(void* allocator, void* array, int capacity, int elementSize);
-void __cdecl hkReferencedObject_addReferences(void* data, int count, int elementSize);
+void __cdecl hkArrayUtil__reserve(void* mem, void* array, int numElem, int sizeElem);
+void __cdecl hkReferencedObject_addReferences(void* data, int count, int pointerStriding);
 
 struct ListShapeCF54 : public hkpListShape
 {
     void hkpListShape_recalcAabbExtents();
-    void hkpListShape_setShapes(int* shapes, int count, int* shapeData, int flag);
+    void hkpListShape_setShapes(int* shapeArray, int numShapes, int* filterInfo, int ref);
 };
 
 // Copies shape and filter data into m_kChildInfoList, growing capacity as needed, then calls FUN_00cf5420.
 // @fnv 0x00cf54d0
 // src: HAVOK_LIB 0x00cf54d0
-void ListShapeCF54::hkpListShape_setShapes(int* shapes, int count, int* shapeData, int flag)
+// pdb: hkpListShape::setShapes | hkpListShape.obj | retail, upstream name already matches, high
+// pdb params: shapeArray, numShapes, filterInfo, ref
+// pdb locals: assertBuf, ostr
+void ListShapeCF54::hkpListShape_setShapes(int* shapeArray, int numShapes, int* filterInfo, int ref)
 {
-    hkArray<hkpListShapeChildInfo>& children = m_kChildInfoList;
+    hkArray<hkpListShapeChildInfo>& children = m_childInfo;
     hkMemoryAllocator& heap = hkMemoryRouter_getInstance()->heap();
     int capacity = children.m_iCapacityState & 0x3fffffff;
-    if (capacity < count)
+    if (capacity < numShapes)
     {
         int increasedCapacity = capacity * 2;
-        if (count >= increasedCapacity)
-            increasedCapacity = count;
+        if (numShapes >= increasedCapacity)
+            increasedCapacity = numShapes;
         hkArrayUtil__reserve(&heap, &children, increasedCapacity, 16);
     }
-    children.m_iElementCount = count;
-    if (count > 0)
+    children.m_iElementCount = numShapes;
+    if (numShapes > 0)
     {
-        int* current = shapes;
+        int* current = shapeArray;
         int offset = 0;
-        volatile int difference = (int)shapeData - (int)shapes;
-        int remaining = count;
+        volatile int difference = (int)filterInfo - (int)shapeArray;
+        int remaining = numShapes;
         do
         {
             int shape = *current;
             if (shape)
             {
                 *(int*)((char*)children.m_data + offset) = shape;
-                int filter = shapeData ? *(int*)((char*)current + difference) : 0;
+                int filter = filterInfo ? *(int*)((char*)current + difference) : 0;
                 *(int*)((char*)children.m_data + offset + 4) = filter;
-                *(int*)((char*)this->m_kChildInfoList.m_data + offset + 12) = count;
-                *(int*)((char*)this->m_kChildInfoList.m_data + offset + 8) = 0;
+                *(int*)((char*)this->m_childInfo.m_data + offset + 12) = numShapes;
+                *(int*)((char*)this->m_childInfo.m_data + offset + 8) = 0;
             }
             ++current;
             offset += 16;
         } while (--remaining);
     }
-    if (flag == 1)
-        hkReferencedObject_addReferences(children.m_data, this->m_kChildInfoList.m_iElementCount, 16);
+    if (ref == 1)
+        hkReferencedObject_addReferences(children.m_data, this->m_childInfo.m_iElementCount, 16);
     hkpListShape_recalcAabbExtents();
 }
 
@@ -455,6 +475,9 @@ class hkpListShapeq
 // Computes the combined AABB of all child shapes by querying each child's AABB and merging the min and max corners.
 // @fnv 0x00cf5590
 // src: XBOX_PDB 0x00cf5590
+// pdb: hkpListShape::getAabbImpl | hkpListShape.obj | retail, vtable slot, high
+// pdb params: localToWorld, tolerance, out
+// pdb locals: t
 void hkpListShapeq::hkpListShape_getAabb(const hkTransform& localToWorld, float tolerance, hkAabbq& out)
 {
     if (m_kAabbHalfExtents.compareLessThanEqual4(DAT_01267e30) == 15)
@@ -565,7 +588,7 @@ struct S00cf5140_Obj : public hkpListShape
     {
         if (i < 0x100)
         {
-            return m_uiChildEnabledFlags[i >> 5] & (1 << (i & 0x1f));
+            return m_enabledChildren[i >> 5] & (1 << (i & 0x1f));
         }
         return 1;
     }
@@ -576,6 +599,8 @@ struct S00cf5140_Obj : public hkpListShape
 // Performs a ray cast against all enabled child shapes of this list shape, recording the hit child index in the output and returning whether any child was hit.
 // @fnv 0x00cf5140
 // src: HAVOK_LIB 0x00cf5140
+// pdb: hkpListShape::castRayImpl | hkpListShape.obj | retail, upstream name already matches, high
+// pdb params: input, results
 hkBool S00cf5140_Obj::hkpListShape_castRayImpl(const S00cf5140_Input& input, S00cf5140_Output& results) const
 {
     ((S00cf5140_Stream*)TlsGetValue(DAT_0126835c))->timerBegin(str_010cc398);
@@ -585,11 +610,11 @@ hkBool S00cf5140_Obj::hkpListShape_castRayImpl(const S00cf5140_Input& input, S00
 
     if (!input.m_pRayShapeCollectionFilter)
     {
-        for (unsigned int i = 0; (int)i < m_kChildInfoList.m_iElementCount; i++)
+        for (unsigned int i = 0; (int)i < m_childInfo.m_iElementCount; i++)
         {
             if (isChildEnabled(i))
             {
-                const hkpShape* child = m_kChildInfoList.m_data[i].m_pCollisionShape;
+                const hkpShape* child = m_childInfo.m_data[i].m_pCollisionShape;
                 hkBool hit = child->IntersectRayWithShape(reinterpret_cast<const ShapeRayCastQuery&>(input), reinterpret_cast<ShapeRayCastOutput&>(results));
                 if (hit)
                 {
@@ -600,14 +625,14 @@ hkBool S00cf5140_Obj::hkpListShape_castRayImpl(const S00cf5140_Input& input, S00
     }
     else
     {
-        for (unsigned int i = 0; (int)i < m_kChildInfoList.m_iElementCount; i++)
+        for (unsigned int i = 0; (int)i < m_childInfo.m_iElementCount; i++)
         {
             if (isChildEnabled(i))
             {
                 if (input.m_pRayShapeCollectionFilter->IsCollisionEnabled(
                         input, *this, *static_cast<const hkpShapeContainer*>(this), i))
                 {
-                    const hkpShape* child = m_kChildInfoList.m_data[i].m_pCollisionShape;
+                    const hkpShape* child = m_childInfo.m_data[i].m_pCollisionShape;
                     hkBool hit = child->IntersectRayWithShape(reinterpret_cast<const ShapeRayCastQuery&>(input), reinterpret_cast<ShapeRayCastOutput&>(results));
                     if (hit)
                     {
@@ -690,6 +715,9 @@ struct S00cf52c0_Obj : public S00cf5140_Obj
 // Iterates enabled children, optionally filtering via m_pRayShapeCollectionFilter, and casts a ray on each child's collision shape into the collector.
 // @fnv 0x00cf52c0
 // src: HAVOK_LIB 0x00cf52c0
+// pdb: hkpListShape::castRayWithCollectorImpl | hkpListShape.obj | retail, upstream name already matches, high
+// pdb params: input, cdBody, collector
+// pdb locals: childBody
 void S00cf52c0_Obj::hkpListShape_castRayWithCollectorImpl(const S00cf5140_Input& input, const hkpCdBody& cdBody,
                                  hkpRayHitCollector& collector) const
 {
@@ -698,22 +726,22 @@ void S00cf52c0_Obj::hkpListShape_castRayWithCollectorImpl(const S00cf5140_Input&
 
     if (!input.m_pRayShapeCollectionFilter)
     {
-        for (unsigned int i = 0; (int)i < m_kChildInfoList.m_iElementCount; i++)
+        for (unsigned int i = 0; (int)i < m_childInfo.m_iElementCount; i++)
         {
             if (isChildEnabled(i))
             {
-                child.m_pCollisionShape =
-                    reinterpret_cast<const hkpShape*>(m_kChildInfoList.m_data[i].m_pCollisionShape);
+                child.m_shape =
+                    reinterpret_cast<const hkpShape*>(m_childInfo.m_data[i].m_pCollisionShape);
                 child.m_parent = &cdBody;
-                child.m_pMotionState = cdBody.m_pMotionState;
-                child.m_uiCollisionShapeKey = i;
-                child.m_pCollisionShape->CastRayWithCollector(reinterpret_cast<const ShapeRayCastQuery&>(input), child, collector);
+                child.m_motion = cdBody.m_motion;
+                child.m_shapeKey = i;
+                child.m_shape->CastRayWithCollector(reinterpret_cast<const ShapeRayCastQuery&>(input), child, collector);
             }
         }
     }
     else
     {
-        for (unsigned int i = 0; (int)i < m_kChildInfoList.m_iElementCount; i++)
+        for (unsigned int i = 0; (int)i < m_childInfo.m_iElementCount; i++)
         {
             if (isChildEnabled(i))
             {
@@ -721,12 +749,12 @@ void S00cf52c0_Obj::hkpListShape_castRayWithCollectorImpl(const S00cf5140_Input&
                         ->IsCollisionEnabled(input, *this, *static_cast<const hkpShapeContainer*>(this), i)
                         .m_cBooleanValue)
                 {
-                    child.m_pCollisionShape =
-                        reinterpret_cast<const hkpShape*>(m_kChildInfoList.m_data[i].m_pCollisionShape);
+                    child.m_shape =
+                        reinterpret_cast<const hkpShape*>(m_childInfo.m_data[i].m_pCollisionShape);
                     child.m_parent = &cdBody;
-                    child.m_pMotionState = cdBody.m_pMotionState;
-                    child.m_uiCollisionShapeKey = i;
-                    child.m_pCollisionShape->CastRayWithCollector(reinterpret_cast<const ShapeRayCastQuery&>(input), child, collector);
+                    child.m_motion = cdBody.m_motion;
+                    child.m_shapeKey = i;
+                    child.m_shape->CastRayWithCollector(reinterpret_cast<const ShapeRayCastQuery&>(input), child, collector);
                 }
             }
         }

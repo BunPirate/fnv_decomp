@@ -9,6 +9,7 @@ class NiPoint3;
 class SphereBound;
 class Vec57;
 
+// pdb: class BSMultiBoundShape, size 0xc, bases: NiObject, 1 members
 class BSMultiBoundShape : public NiObject
 {
 public:
@@ -28,11 +29,11 @@ public:
     virtual void SetGridPosition(const NiPoint3& center);
 
     int v8c();
-    void GetPlanes(NiPlane* planes);
+    void BSMultiBoundOBB_GetPlanes(NiPlane* apPlanes);
     void center(const Vec57& center);
     void update();
-    void BSMultiBoundAABB_GetVertices(NiPoint3* pts);
-    void BSMultiBoundOBB_GetVertices(NiPoint3* pts);
+    void BSMultiBoundAABB_GetVertices(NiPoint3* apPoints);
+    void BSMultiBoundOBB_GetVertices(NiPoint3* apPoints);
 
     union
     {

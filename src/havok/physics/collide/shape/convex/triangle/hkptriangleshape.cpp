@@ -77,7 +77,7 @@ void __cdecl hkpTriangleShape_calcContentStatistics(char const* arg1, char const
 // @fnv 0x00d1ff10
 int hkpTriangleShape::GetNumCollisionSpheres() const
 {
-    return (m_ucWeldingPadding + 1) * 3;
+    return (m_isExtruded + 1) * 3;
 }
 
 // edge is a triangle edge index (0, 1, or 2).
@@ -169,27 +169,30 @@ struct SimdVector {
 };
 // The shared triangle header omits its AABB override; this adapter contains only the method.
 struct TriangleBounds : hkpTriangleShape {
-    void hkpTriangleShape_getAabbImpl(const void* transform, float tolerance, hkAabb& out) const;
+    void hkpTriangleShape_getAabbImpl(const void* localToWorld, float tolerance, hkAabb& out) const;
 };
 // Computes the axis-aligned bounding box of the triangle (and extrusion) under a transform, expanded by the sphere radius plus tolerance.
 // @fnv 0x00d20050
 // src: XBOX_PDB 0x00d20050
-void TriangleBounds::hkpTriangleShape_getAabbImpl(const void* transform, float tolerance, hkAabb& out) const {
+// pdb: hkpTriangleShape::getAabbImpl | hkpTriangleShape.obj | retail, upstream name already matches, high
+// pdb params: localToWorld, tolerance, out
+// pdb locals: v0, v2, tol4, v1
+void TriangleBounds::hkpTriangleShape_getAabbImpl(const void* localToWorld, float tolerance, hkAabb& out) const {
     SimdVector extent;
-    extent.broadcast(m_fSphereRadius + tolerance);
+    extent.broadcast(m_radius + tolerance);
     SimdVector a, b, c;
-    a.setTransformedPos_00c7f640(transform, reinterpret_cast<const SimdVector&>(m_kVertexA));
-    b.setTransformedPos_00c7f640(transform, reinterpret_cast<const SimdVector&>(m_kVertexB));
-    c.setTransformedPos_00c7f640(transform, reinterpret_cast<const SimdVector&>(m_kVertexC));
+    a.setTransformedPos_00c7f640(localToWorld, reinterpret_cast<const SimdVector&>(m_kVertexA));
+    b.setTransformedPos_00c7f640(localToWorld, reinterpret_cast<const SimdVector&>(m_kVertexB));
+    c.setTransformedPos_00c7f640(localToWorld, reinterpret_cast<const SimdVector&>(m_kVertexC));
     SimdVector* bounds = reinterpret_cast<SimdVector*>(&out.m_kMinimumCorner.x);
     bounds[0].lower(a,b);
     bounds[1].upper(a,b);
     bounds[0].lower(bounds[0],c);
     bounds[1].upper(bounds[1],c);
     SimdVector shifted;
-    shifted.value = _mm_add_ps(bounds[0].value,_mm_load_ps(reinterpret_cast<const float*>(&m_kVertexTransform)));
+    shifted.value = _mm_add_ps(bounds[0].value,_mm_load_ps(reinterpret_cast<const float*>(&m_extrusion)));
     bounds[0].lower(bounds[0],shifted);
-    shifted.value = _mm_add_ps(bounds[1].value,_mm_load_ps(reinterpret_cast<const float*>(&m_kVertexTransform)));
+    shifted.value = _mm_add_ps(bounds[1].value,_mm_load_ps(reinterpret_cast<const float*>(&m_extrusion)));
     bounds[1].upper(bounds[1],shifted);
     bounds[0].difference(bounds[0],extent);
     bounds[1].sum(bounds[1],extent);
@@ -200,22 +203,22 @@ const hkSphere* hkpTriangleShape::GetCollisionSpheres(hkSphere* sphereBuffer) co
 {
     hkVector4* apVertices = reinterpret_cast<hkVector4*>(sphereBuffer);
     *(LocalM128*)apVertices = *(const LocalM128*)&m_kVertexA;
-    apVertices->w = m_fSphereRadius;
+    apVertices->w = m_radius;
     *(LocalM128*)(apVertices + 1) = *(const LocalM128*)&m_kVertexB;
     hkVector4* q = apVertices + 1;
-    q->w = m_fSphereRadius;
+    q->w = m_radius;
     ++q;
     *(LocalM128*)q = *(const LocalM128*)&m_kVertexC;
-    q->w = m_fSphereRadius;
+    q->w = m_radius;
     ++q;
-    if (m_ucWeldingPadding != 0) {
-        *(LocalM128*)q = _mm_add_ps(*(const LocalM128*)&m_kVertexTransform, *(const LocalM128*)&m_kVertexA);
-        q->w = m_fSphereRadius;
+    if (m_isExtruded != 0) {
+        *(LocalM128*)q = _mm_add_ps(*(const LocalM128*)&m_extrusion, *(const LocalM128*)&m_kVertexA);
+        q->w = m_radius;
         ++q;
-        *(LocalM128*)q = _mm_add_ps(*(const LocalM128*)&m_kVertexTransform, *(const LocalM128*)&m_kVertexB);
-        q->w = m_fSphereRadius;
-        *(LocalM128*)&q[1] = _mm_add_ps(_mm_load_ps(reinterpret_cast<const float*>(&m_kVertexC.x)), *(const LocalM128*)&m_kVertexTransform);
-        q[1].w = m_fSphereRadius;
+        *(LocalM128*)q = _mm_add_ps(*(const LocalM128*)&m_extrusion, *(const LocalM128*)&m_kVertexB);
+        q->w = m_radius;
+        *(LocalM128*)&q[1] = _mm_add_ps(_mm_load_ps(reinterpret_cast<const float*>(&m_kVertexC.x)), *(const LocalM128*)&m_extrusion);
+        q[1].w = m_radius;
     }
     return sphereBuffer;
 }
@@ -265,14 +268,14 @@ void hkpTriangleShape::GetSupportVertex(const hkVector4& direction, Vector4WithI
     _mm_store_ps(sv, s);
     int idx = rootSelect48(sv);
     _mm_store_ps(out, reinterpret_cast<const LocalM128*>(&m_kVertexA)[idx]);
-    LocalM128 vD = *reinterpret_cast<const LocalM128*>(&m_kVertexTransform);
+    LocalM128 vD = *reinterpret_cast<const LocalM128*>(&m_extrusion);
     LocalM128 vP = _mm_mul_ps(_mm_load_ps(pf), vD);
     LocalM128 e = _mm_add_ss(_mm_shuffle_ps(vP, vP, 0xaa), _mm_add_ss(_mm_shuffle_ps(vP, vP, 0x55), vP));
     float fE;
     _mm_store_ss(&fE, e);
     if (fE > 0.0f) {
         idx += 3;
-        reinterpret_cast<SupportVector*>(out)->add(*reinterpret_cast<const SupportVector*>(&m_kVertexTransform));
+        reinterpret_cast<SupportVector*>(out)->add(*reinterpret_cast<const SupportVector*>(&m_extrusion));
     }
     ((int*)out)[3] = idx | 0x3f000000;
 }
@@ -350,41 +353,44 @@ extern float __cdecl NiMin(float, float);
 // The shared reference-based welding signature changes code at 0x00d203f0; retain this pointer-based adapter.
 class TriangleWelding : public hkpTriangleShape {
 public:
-    int WeldContactPoint(unsigned short* indices, unsigned char* count,
-        const hkVector4* position, const hkTransform* transform,
-        SupportShape* source, const hkTransform* sourceTransform, hkVector4* output);
+    int WeldContactPoint(unsigned short* featurePoints, unsigned char* numFeaturePoints,
+        const hkVector4* contactPointWs, const hkTransform* thisObjTransform,
+        SupportShape* collidingShape, const hkTransform* collidingTransform, hkVector4* separatingNormalInOut);
 };
 
 // Welds a triangle edge against a support shape, adjusting the face normal and separation based on welding type and sector cone.
 // @fnv 0x00d203f0
-int TriangleWelding::WeldContactPoint(unsigned short* indices, unsigned char* count,
-    const hkVector4* position, const hkTransform* transform,
-    SupportShape* source, const hkTransform* sourceTransform, hkVector4* output) {
-    unsigned int weldingType = *(const unsigned char*)&m_eWeldingType;
+// pdb: hkpTriangleShape::weldContactPointImpl | hkpTriangleShape.obj | retail, vtable slot, high
+// pdb params: featurePoints, numFeaturePoints, contactPointWs, thisObjTransform, collidingShape, collidingTransform, separatingNormalInOut
+// pdb locals: sepNormalLocal, sepNormal, assertBuf, ostr, contactPointLocal, centreOfObjectA
+int TriangleWelding::WeldContactPoint(unsigned short* featurePoints, unsigned char* numFeaturePoints,
+    const hkVector4* contactPointWs, const hkTransform* thisObjTransform,
+    SupportShape* collidingShape, const hkTransform* collidingTransform, hkVector4* separatingNormalInOut) {
+    unsigned int weldingType = *(const unsigned char*)&m_weldingType;
     if (weldingType == 6) return 2;
-    int edge = DAT_011b3b4c[indices[0]];
-    unsigned char sectors = *count;
+    int edge = DAT_011b3b4c[featurePoints[0]];
+    unsigned char sectors = *numFeaturePoints;
     if (sectors > 1) {
-        int other = DAT_011b3b4c[indices[1]];
+        int other = DAT_011b3b4c[featurePoints[1]];
         if (sectors == 3) {
-            if (indices[0] + indices[1] + indices[2] == 3) return 2;
-            if (other == edge) other = DAT_011b3b4c[indices[2]];
-            *count = 2;
-            indices[0] = (unsigned short)edge;
-            indices[1] = (unsigned short)other;
+            if (featurePoints[0] + featurePoints[1] + featurePoints[2] == 3) return 2;
+            if (other == edge) other = DAT_011b3b4c[featurePoints[2]];
+            *numFeaturePoints = 2;
+            featurePoints[0] = (unsigned short)edge;
+            featurePoints[1] = (unsigned short)other;
         }
         if (DAT_011b3b50[edge] != other) edge = other;
     }
 
     VectorOperations corrected;
     // Copy the caller's four scalar components, preserving the original unaligned load form.
-    ((int*)&corrected)[0] = ((const int*)output)[0];
-    ((int*)&corrected)[1] = ((const int*)output)[1];
-    ((int*)&corrected)[2] = ((const int*)output)[2];
-    ((int*)&corrected)[3] = ((const int*)output)[3];
-    LocalM128 v0 = *(const LocalM128*)&transform->m_rotation.m_kColumn0;
-    LocalM128 v1 = *(const LocalM128*)&transform->m_rotation.m_kColumn1;
-    LocalM128 v4 = *(const LocalM128*)&transform->m_rotation.m_kColumn2;
+    ((int*)&corrected)[0] = ((const int*)separatingNormalInOut)[0];
+    ((int*)&corrected)[1] = ((const int*)separatingNormalInOut)[1];
+    ((int*)&corrected)[2] = ((const int*)separatingNormalInOut)[2];
+    ((int*)&corrected)[3] = ((const int*)separatingNormalInOut)[3];
+    LocalM128 v0 = *(const LocalM128*)&thisObjTransform->m_rotation.m_kColumn0;
+    LocalM128 v1 = *(const LocalM128*)&thisObjTransform->m_rotation.m_kColumn1;
+    LocalM128 v4 = *(const LocalM128*)&thisObjTransform->m_rotation.m_kColumn2;
     LocalM128 tp = _mm_unpacklo_ps(v0, v1);
     LocalM128 ct = _mm_unpackhi_ps(v0, v1);
     v0 = _mm_movelh_ps(tp, v4);
@@ -408,7 +414,7 @@ int TriangleWelding::WeldContactPoint(unsigned short* indices, unsigned char* co
     LocalM128 faceProduct = _mm_mul_ps(face, localNormal);
     float separation = (float)fabs(scalar(horizontal3(faceProduct))) * ((const hkVector4*)&corrected)->w;
     LocalM128 edgeDirection = normalized3(_mm_sub_ps(((const LocalM128*)&m_kVertexA)[DAT_011b3b50[edge]], ((const LocalM128*)&m_kVertexA)[edge]));
-    unsigned int code = (m_kWeldingInfo >> ((signed char)edge * (signed char)5)) & 31;
+    unsigned int code = (m_weldingInfo >> ((signed char)edge * (signed char)5)) & 31;
 
     if (weldingType != 5) {
         if (!shouldSnapOneSided(weldingType, face, localNormal, DAT_01269210[code].value)) return 2;
@@ -418,17 +424,17 @@ int TriangleWelding::WeldContactPoint(unsigned short* indices, unsigned char* co
         corrected.value = normalized3(_mm_add_ps(
             _mm_mul_ps(cross3(edgeDirection, face), splat(angleSin)),
             _mm_mul_ps(splat(angleCos), face)));
-        corrected.hkVector4_setRotatedDir(&transform->m_rotation, &corrected.value);
-        if (m_ucWeldingPadding) {
+        corrected.hkVector4_setRotatedDir(&thisObjTransform->m_rotation, &corrected.value);
+        if (m_isExtruded) {
             faceTemporary.value = _mm_mul_ps(_mm_load_ps1(DAT_011b3b38 + weldingType), faceTemporary.value);
             VectorOperations localPosition;
-            localPosition.hkVector4_setTransformedInversePos(transform, position);
+            localPosition.hkVector4_setTransformedInversePos(thisObjTransform, contactPointWs);
             separation = NiMin(scalar(dot3(_mm_sub_ps(localPosition.value, *(const LocalM128*)&m_kVertexA), faceTemporary.value)), separation);
         } else {
             VectorOperations support;
-            source->getSupport(&support);
-            support.setTransformedPos_00c7f640(sourceTransform, support);
-            LocalM128 projection = dot3(_mm_sub_ps(*(const LocalM128*)position, support.value), corrected.value);
+            collidingShape->getSupport(&support);
+            support.setTransformedPos_00c7f640(collidingTransform, support);
+            LocalM128 projection = dot3(_mm_sub_ps(*(const LocalM128*)contactPointWs, support.value), corrected.value);
             if ((_mm_movemask_ps(projection) & 1) == 0) return 0;
         }
     } else {
@@ -439,7 +445,7 @@ int TriangleWelding::WeldContactPoint(unsigned short* indices, unsigned char* co
         case 2: return 0;
         default: return 2;
         }
-        if (*count == 1) return 0;
+        if (*numFeaturePoints == 1) return 0;
         const FloatArray6& entry = DAT_01269210[code];
         LocalM128 angleCos = _mm_load_ss(&entry.value[cone]);
         LocalM128 angleSin = _mm_load_ss(&entry.value[cone + 1]);
@@ -450,10 +456,10 @@ int TriangleWelding::WeldContactPoint(unsigned short* indices, unsigned char* co
             _mm_mul_ps(splat(dot3(edgeDirection, localNormal)), edgeDirection),
             _mm_mul_ps(splat(dot3(correction, localNormal)), correction));
         normalStore.value = normalized3(blend);
-        corrected.hkVector4_setRotatedDir(&transform->m_rotation, &normalStore.value);
+        corrected.hkVector4_setRotatedDir(&thisObjTransform->m_rotation, &normalStore.value);
     }
-    *(LocalM128*)output = corrected.value;
-    output->w = separation;
+    *(LocalM128*)separatingNormalInOut = corrected.value;
+    separatingNormalInOut->w = separation;
     return 1;
 }
 
@@ -800,6 +806,9 @@ public:
     Vector4Comparison CastRayBundle(const ShapeRayBundleCastInput&, ShapeRayCastOutputArray&, hkVector4ComparisonParameter) const;
 };
 // @fnv 0x00d20e70
+// pdb: hkpTriangleShape::castRayBundleImpl | hkpTriangleShape.obj | retail, string-set bridge, high
+// pdb params: input, results, mask
+// pdb locals: distance, assertBuf, ostr
 Vector4Comparison TriangleRayBundle::CastRayBundle(const ShapeRayBundleCastInput&input,ShapeRayCastOutputArray&results,hkVector4ComparisonParameter mask) const
 {
 const hkpTriangleShape* thisObj = this;

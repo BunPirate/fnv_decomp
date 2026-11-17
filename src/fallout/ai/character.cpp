@@ -18,16 +18,20 @@
 // @fnv 0x008d1e70
 bool __fastcall Character_GetTrespassing(Character* self)
 {
-    return self->m_bTrespassing;
+    return self->bTrespassing;
 }
 
 // @fnv 0x008d34b0
+// pdb: Character::InitLoadGame | Character.obj | debug, object-file gap fill, medium
+// pdb params: apLoadGameBuffer
 void Character::InitLoadGame(BGSLoadFormBuffer* buffer)
 {
     reinterpret_cast<CharacterActorCalls*>(this)->InitLoadGame(buffer);
 }
 
 // @fnv 0x008d34d0
+// pdb: Character::FinishLoadGame | Character.obj | debug, object-file gap fill, medium
+// pdb params: apLoadGameBuffer
 void Character::ApplyLoadBuffer(BGSLoadFormBuffer* buffer)
 {
     reinterpret_cast<CharacterActorCalls*>(this)->ApplyLoadBuffer(buffer);
@@ -41,17 +45,21 @@ MagicTarget* Character::GetMagicTarget()
 }
 
 // @fnv 0x008d34f0
+// pdb: Character::Revert | Character.obj | debug, object-file gap fill, medium
+// pdb params: apLoadGameBuffer
 void Character::Revert(BGSLoadFormBuffer* buffer)
 {
     reinterpret_cast<CharacterActorCalls*>(this)->Revert(buffer);
-    m_fFirstResetValue = -1.0f;
-    m_fSecondValue = -1.0f;
-    m_fThirdValue = -1.0f;
-    m_bTrespassing = false;
-    m_bActorGuard = false;
+    fArmorRating = -1.0f;
+    fArmorThreshold = -1.0f;
+    fequippedweight = -1.0f;
+    bTrespassing = false;
+    bGuard = false;
 }
 
 // @fnv 0x009698a0
+// pdb: PlayerCharacter::GetMediaLocationController | PlayerCharacter.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
+// pdb locals: pMarker
 void* Character::GetCurrentMusicMarker()
 {
     if (*(void**)(reinterpret_cast<char*>(this) + 0x7dc) != 0 &&
@@ -71,6 +79,9 @@ return_zero:
 }
 
 // @fnv 0x008d33f0
+// pdb: Character::LoadGame | Character.obj | debug, object-file gap fill, medium
+// pdb params: apLoadGameBuffer
+// pdb locals: ptempData
 void Character::LoadGame(BGSLoadFormBuffer* buffer)
 {
     struct OldData
@@ -97,8 +108,8 @@ void Character::LoadGame(BGSLoadFormBuffer* buffer)
         buffer->ReadTypedData(static_cast<void*>(&oldData.byte), 1u);
         buffer->ReadTypedData(static_cast<void*>(&oldData.word), 4u);
     }
-    buffer->ReadTypedData(static_cast<void*>(&m_bTrespassing), 1u);
-    buffer->ReadTypedData(static_cast<void*>(&m_bActorGuard), 1u);
+    buffer->ReadTypedData(static_cast<void*>(&bTrespassing), 1u);
+    buffer->ReadTypedData(static_cast<void*>(&bGuard), 1u);
     if (buffer->GetVersion() < 9)
     {
         buffer->ReadTypedData(static_cast<void*>(&newData.byte), 1u);
@@ -127,6 +138,8 @@ struct FUN_008b3b30_shell
 // Returns the stored point when f is not above _gModifierZero, otherwise delegates to the object at offset 0x190 with f.
 // @fnv 0x008b3b30
 // src: COMMUNITY 0x008b3b30
+// pdb: Actor::RotateActor | Actor.obj | debug, object-file run extension, low
+// pdb params: afTargetAngle, abForceTurn
 NiPoint3 FUN_008b3b30_shell::Actor_GetAnticipatedLocation(float f)
 {
     if (f <= _gModifierZero)
@@ -144,6 +157,7 @@ struct FUN_008d1f10_shell : public Character
 };
 // Calls FUN_008d2060, then deallocates this if bit 0 of aiFlags is set, and returns this.
 // @fnv 0x008d1f10
+// pdb: Character::`scalar deleting destructor' | Character.obj | retail, object-file run extension, low
 FUN_008d1f10_shell* FUN_008d1f10_shell::FUN_008d1f10(unsigned int aiFlags)
 {
     FUN_008d2060();
@@ -162,6 +176,8 @@ struct FUN_008d24a0_shell : public Character
 // Calls FUN_00646310 on the object at offset 0xa4 to fill fx and fy, then returns fx as an int.
 // @fnv 0x008d24a0
 // src: COMMUNITY 0x008d24a0
+// pdb: Character::GetAttackDamage | Character.obj | retail, upstream name already matches, high
+// pdb locals: ffatigueDamage, fhealthDamage
 int FUN_008d24a0_shell::Character_GetAttackDamage()
 {
     float fx = 0.0f;
@@ -177,6 +193,9 @@ struct FUN_008d32b0_shell : public Character
 };
 // @fnv 0x008d32b0
 // src: XBOX_PDB 0x008d32b0
+// pdb: Character::Revert | Character.obj | retail, object-file run extension, low
+// pdb note: debug build links it to Character::GetSaveSize
+// pdb params: aiFlags
 unsigned short FUN_008d32b0_shell::Character_GetSaveSize(unsigned int aiFlags)
 {
     unsigned short isize = 0;
@@ -190,13 +209,15 @@ struct FUN_008a9380_target
 };
 struct FUN_008d32f0_shell
 {
-    void Character_SaveGame(unsigned int aiFlags);
+    void Character_SaveGame(unsigned int apSaveGameBuffer);
 };
 // @fnv 0x008d32f0
 // src: XBOX_PDB 0x008d32f0
-void FUN_008d32f0_shell::Character_SaveGame(unsigned int aiFlags)
+// pdb: Character::SaveGame | Character.obj | retail, upstream name already matches, high
+// pdb params: aiFlags
+void FUN_008d32f0_shell::Character_SaveGame(unsigned int apSaveGameBuffer)
 {
-    ((FUN_008a9380_target*)this)->SaveActorData(aiFlags);
+    ((FUN_008a9380_target*)this)->SaveActorData(apSaveGameBuffer);
 }
 
 struct FUN_008d3310_shell : public Character
@@ -206,6 +227,8 @@ struct FUN_008d3310_shell : public Character
 };
 // @fnv 0x008d3310
 // src: XBOX_PDB 0x008d3310
+// pdb: Character::LoadGame | Character.obj | retail, upstream name already matches, high
+// pdb params: aiFlags, aiCurrentFlags
 void FUN_008d3310_shell::Character_LoadGame(unsigned int aiFlags, unsigned int aiCurrentFlags)
 {
     Actor_LoadGame(aiFlags, aiCurrentFlags);
@@ -216,18 +239,20 @@ extern TESSaveLoadGame* g_TESSaveLoadGame;
 struct FUN_008d3330_shell : public Character
 {
     void Actor_RevertTES(unsigned int);
-    void Character_RevertTES(unsigned int aiFlags);
+    void Character_RevertTES(unsigned int apLoadGameBuffer);
 };
 // Calls FUN_008aa210 with aiFlags, then if g_TESSaveLoadGame->FUN_0055f5b0() succeeds, sets two floats to -1.0f.
 // @fnv 0x008d3330
 // src: COMMUNITY 0x008d3330
-void FUN_008d3330_shell::Character_RevertTES(unsigned int aiFlags)
+// pdb: Character::Revert | Character.obj | retail, object-file run extension, high
+// pdb params: aiFlags
+void FUN_008d3330_shell::Character_RevertTES(unsigned int apLoadGameBuffer)
 {
-    Actor_RevertTES(aiFlags);
+    Actor_RevertTES(apLoadGameBuffer);
     if (g_TESSaveLoadGame->TESSaveLoadGame_GetRevertBefore())
     {
-        m_fFirstResetValue = -1.0f;
-        m_fSecondValue = -1.0f;
+        fArmorRating = -1.0f;
+        fArmorThreshold = -1.0f;
     }
 }
 
@@ -238,6 +263,8 @@ struct FUN_008d3380_shell : public Character
 };
 // @fnv 0x008d3380
 // src: XBOX_PDB 0x008d3380
+// pdb: Character::InitLoadGame | Character.obj | debug, object-file gap fill, medium
+// pdb params: aiFlags, aiOldFlags
 void FUN_008d3380_shell::Character_InitLoadGame(unsigned int a, unsigned int b)
 {
     Actor_InitLoadGame(a, b);
@@ -250,6 +277,8 @@ struct FUN_008d33a0_shell : public Character
 };
 // Calls FUN_008aaf40, then saves the two bytes at offsets 0x1c0 and 0x1c1 of this into the save buffer.
 // @fnv 0x008d33a0
+// pdb: Character::SaveGame | Character.obj | debug, object-file gap fill, medium
+// pdb params: apSaveGameBuffer
 void FUN_008d33a0_shell::SaveFormData(BGSSaveFormBuffer* apSaveGameBuffer)
 {
     Actor_SaveGame(apSaveGameBuffer);
@@ -276,6 +305,7 @@ struct FUN_00950ad0_shell : public PlayerCharacter
 // Returns the BipedAnim for the player, choosing the variant based on the result of FUN_00524d10(this).
 // @fnv 0x00950ad0
 // src: COMMUNITY 0x00950ad0
+// pdb: PlayerCharacter::GetCurrentBiped | PlayerCharacter.obj | debug, upstream name already matches, high
 BipedAnim* FUN_00950ad0_shell::PlayerCharacter_GetCurrentBiped()
 {
     return GetBipedAnimation(!PlayerCharacter_IsActually3rdPerson((bool*)this));
@@ -295,6 +325,8 @@ struct FUN_009698a0_shell : public PlayerCharacter
 };
 
 // @fnv 0x009698a0
+// pdb: PlayerCharacter::GetMediaLocationController | PlayerCharacter.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
+// pdb locals: pMarker
 MediaLocationController* FUN_009698a0_shell::GetMediaLocationController()
 {
     if (*(MusicMarkerReference**)((char*)this + 0x7dc) && *(AudioMarkerDataCalls**)(*(char**)((char*)this + 0x7dc) + 4))
@@ -316,7 +348,7 @@ MediaLocationController* FUN_009698a0_shell::GetMediaLocationController()
 struct ExtraDataList_Accessor
 {
     void ExtraDataList_SetTalkingActorExtra(BGSTalkingActivator*, TESObjectREFR*);
-    void* FUN_0042e110();
+    void* ExtraDataList_GetTalkingActorExtra();
 };
 
 struct Slot12cHolder
@@ -401,28 +433,31 @@ struct Slot12cHolder
 
 struct FUN_008b1910_shell
 {
-    TESObjectREFR* Actor_SetUpTalkingActivatorActor(TESObjectREFR* apRefr, TESObjectREFR*& apOutRefr);
+    TESObjectREFR* Actor_SetUpTalkingActivatorActor(TESObjectREFR* apTarget, TESObjectREFR*& aptalkingactivator);
 };
 
 // @fnv 0x008b1910
 // src: COMMUNITY 0x008b1910
-TESObjectREFR* FUN_008b1910_shell::Actor_SetUpTalkingActivatorActor(TESObjectREFR* apRefr, TESObjectREFR*& apOutRefr)
+// pdb: Actor::SetUpTalkingActivatorActor | Actor.obj | retail, upstream name already matches, high
+// pdb params: apTarget, aptalkingactivator
+// pdb locals: pactitalk, pextratalk
+TESObjectREFR* FUN_008b1910_shell::Actor_SetUpTalkingActivatorActor(TESObjectREFR* apTarget, TESObjectREFR*& aptalkingactivator)
 {
-    BGSTalkingActivator* m_pLinkedReference = (BGSTalkingActivator*)((TESObject*)apRefr)->GetNext();
-    ((ExtraDataList_Accessor*)apRefr->GetExtraData())->ExtraDataList_SetTalkingActorExtra(m_pLinkedReference, apRefr);
-    apRefr->MarkAsModified(0x80000000);
-    void* extra9 = ((ExtraDataList_Accessor*)apRefr->GetExtraData())->FUN_0042e110();
+    BGSTalkingActivator* m_pLinkedReference = (BGSTalkingActivator*)((TESObject*)apTarget)->GetNext();
+    ((ExtraDataList_Accessor*)apTarget->GetExtraData())->ExtraDataList_SetTalkingActorExtra(m_pLinkedReference, apTarget);
+    apTarget->MarkAsModified(0x80000000);
+    void* extra9 = ((ExtraDataList_Accessor*)apTarget->GetExtraData())->ExtraDataList_GetTalkingActorExtra();
     if (extra9)
     {
-        apRefr = *(TESObjectREFR**)((char*)extra9 + 0xc);
-        apOutRefr = *(TESObjectREFR**)((char*)extra9 + 0xc);
+        apTarget = *(TESObjectREFR**)((char*)extra9 + 0xc);
+        aptalkingactivator = *(TESObjectREFR**)((char*)extra9 + 0xc);
         if (static_cast<const BGSTalkingActivator*>(m_pLinkedReference)->GetTempRef())
         {
-            apRefr = static_cast<const BGSTalkingActivator*>(m_pLinkedReference)->GetTempRef();
+            apTarget = static_cast<const BGSTalkingActivator*>(m_pLinkedReference)->GetTempRef();
         }
     }
-    (*(Slot12cHolder**)((char*)this + 0x68))->Method12c(apRefr);
-    return apRefr;
+    (*(Slot12cHolder**)((char*)this + 0x68))->Method12c(apTarget);
+    return apTarget;
 }
 
 struct TopicH
@@ -437,6 +472,9 @@ struct FUN_00968690_shell : public Character
 
 // @fnv 0x00968690
 // src: COMMUNITY 0x00968690
+// pdb: PlayerCharacter::CalculateAnticipatedLocation | PlayerCharacter.obj | retail, object-file run extension, low
+// pdb params: afDeltaT
+// pdb locals: velocity, futureLocation
 NiPoint3 FUN_00968690_shell::PlayerCharacter_GetAnticipatedLocation(float f)
 {
     NiPoint3 kPos = *(NiPoint3*)((TopicH*)this)->GetAddTopicList();
@@ -474,6 +512,7 @@ extern int DAT_01086a60;
 extern int DAT_01086a6c;
 
 // @fnv 0x008d1f40
+// pdb: Character::Character | Character.obj | retail, call graph (shared callers), high
 FUN_008d1f40_t::FUN_008d1f40_t(bool abadd) : FUN_0087d4a0(abadd)
 {
     *reinterpret_cast<int*>(this) = reinterpret_cast<int>(&DAT_01086a6c);
@@ -752,6 +791,7 @@ struct FUN_00573150_shell
 };
 
 // @fnv 0x00573150
+// pdb: TESObjectREFR::GetCurrentBiped | TESObjectREFR.obj | debug, object-file gap fill, medium
 void FUN_00573150_shell::CallLastVirtualMethod()
 {
     v122();
@@ -804,7 +844,7 @@ extern Setting DAT_011d8928;
 extern const double DAT_01017a40;
 void Callback();
 
-void __cdecl CB3(unsigned int, int);
+void __cdecl MobileObject_SayToCallBack(unsigned int, int);
 void __cdecl FmtStr(char*, int, const char*);
 void __cdecl Spawn(const char*, BSSoundHandle, NiPoint3, int, int);
 struct Inner
@@ -1247,6 +1287,9 @@ struct Self
 
 // Creates a Proc from arg, registers a callback or builds an audio handle from the sub-object's name, plays it, and optionally spawns it.
 // @fnv 0x008a1bd0
+// pdb: Actor::VoiceSoundFunction | Actor.obj | debug, object-file gap fill, medium
+// pdb params: apTopic, apTarget, abPlayerhead, abNeverSubtitle, abForceCorrectDuration, abSayTo
+// pdb locals: aSoundHand, pVoice, ftime, pResponse, ptopicinfo, bnosound, handle, isoundFileID, mgr, wavFileName, loc
 BSSoundHandle Self::PlaySoundOnObject(Arg* arg, int p2, bool p3, bool abSkipSpawn, int aiUnused, bool abWithCallback)
 {
     BSSoundHandle result;
@@ -1304,7 +1347,7 @@ BSSoundHandle Self::PlaySoundOnObject(Arg* arg, int p2, bool p3, bool abSkipSpaw
                     result.Play(false);
                     if (abWithCallback)
                     {
-                        result.SetCompletionCallback(reinterpret_cast<BSSoundHandle::CompletionCallback>(CB3), reinterpret_cast<void*>(GetID()));
+                        result.SetCompletionCallback(reinterpret_cast<BSSoundHandle::CompletionCallback>(MobileObject_SayToCallBack), reinterpret_cast<void*>(GetID()));
                     }
                     flag80 = false;
                     inner->Play(0, result);
@@ -1312,7 +1355,7 @@ BSSoundHandle Self::PlaySoundOnObject(Arg* arg, int p2, bool p3, bool abSkipSpaw
                 }
                 else if (sub && abWithCallback)
                 {
-                    CB3(GetID(), 1);
+                    MobileObject_SayToCallBack(GetID(), 1);
                 }
             }
             if (*DAT_011d8928.Bool() || Check())
@@ -1604,17 +1647,20 @@ struct FUN_008ac850_owner
     virtual void* f0265();
     virtual FUN_008ac850_object* f0266();
 
-    void __thiscall Actor_SetCombatGroup(void* value);
+    void __thiscall Actor_SetCombatGroup(void* apGroup);
 };
 
 // Retrieves the object via f0266 and, if non-null, forwards value to its SetWaterForm method.
 // @fnv 0x008ac850
 // src: COMMUNITY 0x008ac850
-void __thiscall FUN_008ac850_owner::Actor_SetCombatGroup(void* value)
+// pdb: Actor::SetCombatGroup | Actor.obj | retail, upstream name already matches, high
+// pdb params: apGroup
+// pdb locals: pcombatController
+void __thiscall FUN_008ac850_owner::Actor_SetCombatGroup(void* apGroup)
 {
     FUN_008ac850_object* object = f0266();
     if (object != 0)
-        object->SetWaterForm(value);
+        object->SetWaterForm(apGroup);
 }
 
 // Pool of 1000 entry pointers (all null) plus three 4-slot tables, all cleared on construction.
@@ -2070,7 +2116,7 @@ struct ActorBaseAVVtbl
 };
 
 bool __cdecl IsAVModifiable(int aiAV);
-void __cdecl OnAVChanged(int aiAV);
+void __cdecl OnAVChanged(int aeWhich);
 void __cdecl NotifyAVChange(ActorValueOwner* apOwner, int aiAV, float afOld, float afDelta, int aiFlag);
 
 struct ActorAVUpdater
@@ -2085,6 +2131,9 @@ struct FUN_0093a8f0_shell : public Actor
 
 // @fnv 0x0093a8f0
 // src: COMMUNITY 0x0093a8f0
+// pdb: PlayerCharacter::ModActorBaseValue | PlayerCharacter.obj | debug, object-file gap fill, medium
+// pdb params: aiWhich, aiValue
+// pdb locals: foldValue, foverride, boverride
 void FUN_0093a8f0_shell::PlayerCharacter_ModActorBaseValueI(int aiAV, int aiAmount)
 {
     float fOld = IsAVModifiable(aiAV) ? GetCurrentActorValue((ActorValue::Index)aiAV) : 0.0f;
@@ -2754,7 +2803,7 @@ struct XObj
     virtual void v2ec();
     virtual void v2f0();
     virtual void Finish(XAObj*, int, int);
-    void PlayerCharacter_InitiateCannibalPackage(void* arg0);
+    void PlayerCharacter_InitiateCannibalPackage(void* apTarget);
     void PlayerCharacter_SetAIControlledPackage(int);
     void PlayerCharacter_ForceTemp3rdPerson(int);
     XUpdatable* FUN_008d8520();
@@ -2764,9 +2813,12 @@ struct XObj
 
 // @fnv 0x009694d0
 // src: COMMUNITY 0x009694d0
-void XObj::PlayerCharacter_InitiateCannibalPackage(void* arg0)
+// pdb: PlayerCharacter::InitiateCannibalPackage | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb params: apTarget
+// pdb locals: pnew, ploc, ppack
+void XObj::PlayerCharacter_InitiateCannibalPackage(void* apTarget)
 {
-    if (((XA8a*)arg0)->GetExtraDataVersion())
+    if (((XA8a*)apTarget)->GetExtraDataVersion())
         return;
     PlayerCharacter_SetAIControlledPackage(1);
     PlayerCharacter_ForceTemp3rdPerson(1);
@@ -2785,7 +2837,7 @@ void XObj::PlayerCharacter_InitiateCannibalPackage(void* arg0)
     delete X;
     A5->FUN_00984f60(0x2F);
     ((XTmpObj*)A5->FUN_00671d10(0))->FUN_006800b0();
-    ((XTmpObj*)A5->FUN_00671d10((int)arg0))->FUN_00680110();
+    ((XTmpObj*)A5->FUN_00671d10((int)apTarget))->FUN_00680110();
     ((XTmpObj*)A5->FUN_00671d10(0))->FUN_00403550();
     FUN_008d8520()->Update();
     Finish(A5, 0, 1);
@@ -2867,11 +2919,14 @@ struct PackageAssignment : Actor
 };
 // @fnv 0x008bf7b0
 // src: XBOX_PDB 0x008bf7b0
-void PackageAssignment::Actor_InitiateStealWarning(void* arg, int unused)
+// pdb: Actor::InitiateStealWarning | Actor.obj | retail, upstream name already matches, high
+// pdb params: apActor, apOwner
+// pdb locals: pnew, pTempPack, ploc, ppack
+void PackageAssignment::Actor_InitiateStealWarning(void* apActor, int apOwner)
 {
     if (Actor_IsInCombat())
         return;
-    ((OtherBF*)m_pBaseProcess)->reset();
+    ((OtherBF*)pCurrentProcess)->reset();
     ((ProcBF*)GetProcess())->set(true);
     void* old3 = ((ProcBF*)GetProcess())->get();
     if (FUN_009344a0() && ((TargetBF*)FUN_009344a0())->FUN_00678610())
@@ -2881,7 +2936,7 @@ void PackageAssignment::Actor_InitiateStealWarning(void* arg, int unused)
     pack->FUN_00826b40(true);
     pack->FUN_00826b90(true);
     LocBF* loc = new LocBF;
-    loc->PackageLocation_SetLocReference(arg);
+    loc->PackageLocation_SetLocReference(apActor);
     pack->SetPackageLocation(loc);
     delete loc;
     DataBF* kDat = new DataBF;
@@ -2889,7 +2944,7 @@ void PackageAssignment::Actor_InitiateStealWarning(void* arg, int unused)
     delete kDat;
     pack->FUN_00984f60(0x2a);
     pack->FUN_00671d10()->FUN_006800b0(0);
-    pack->FUN_00671d10()->FUN_00680110(arg);
+    pack->FUN_00671d10()->FUN_00680110(apActor);
     pack->FUN_00671d10()->FUN_00403550(0);
     ((ProcBF*)GetProcess())->clear();
     ((ProcBF*)GetProcess())->update(this);
@@ -3517,7 +3572,7 @@ struct AssignedExtraView
 };
 struct AssignedArgument
 {
-    void EnableActionResourceIfLowState();
+    void Actor_InitiateDoNothingPackage();
 };
 struct AssignedCharacter : Character
 {
@@ -3528,11 +3583,14 @@ struct AssignedCharacter : Character
 };
 // @fnv 0x008d2a80
 // src: COMMUNITY 0x008d2a80
+// pdb: Character::InitiateCannibal | Character.obj | debug, object-file gap fill, medium
+// pdb params: apTarget
+// pdb locals: pnew, pTempPack, ploc, ppack
 void AssignedCharacter::Character_InitiateCannibalPackage(AssignedArgument* argument)
 {
     if (Actor_IsInCombat())
         return;
-    ((AssignedProcess*)m_pBaseProcess)->Attach(0, this);
+    ((AssignedProcess*)pCurrentProcess)->Attach(0, this);
     ((AssignedProcess*)GetProcess())->Detach(0);
     void* previousTarget = ((AssignedProcess*)GetProcess())->GetTarget();
     if (FUN_009344a0() && FUN_009344a0()->FUN_00678610())
@@ -3556,18 +3614,19 @@ void AssignedCharacter::Character_InitiateCannibalPackage(AssignedArgument* argu
     ((AssignedPackageDataView*)location)->FUN_00671d10()->FUN_00680110(argument);
     ((AssignedPackageDataView*)location)->FUN_00671d10()->FUN_00403550(0);
     ((AssignedProcess*)GetProcess())->Update();
-    if (((AssignedProcess*)m_pBaseProcess)->GetTarget())
+    if (((AssignedProcess*)pCurrentProcess)->GetTarget())
     {
         BSFile_GetDevice()->AllocateStorage_0041c930(
-            ((AssignedProcess*)m_pBaseProcess)->GetTarget(), ((AssignedProcess*)m_pBaseProcess)->State23c(),
-            ((AssignedProcess*)m_pBaseProcess)->State128(), ((AssignedProcess*)m_pBaseProcess)->State11c(),
-            ((AssignedProcess*)m_pBaseProcess)->State4e8(), ((AssignedProcess*)m_pBaseProcess)->State5a4());
+            ((AssignedProcess*)pCurrentProcess)->GetTarget(), ((AssignedProcess*)pCurrentProcess)->State23c(),
+            ((AssignedProcess*)pCurrentProcess)->State128(), ((AssignedProcess*)pCurrentProcess)->State11c(),
+            ((AssignedProcess*)pCurrentProcess)->State4e8(), ((AssignedProcess*)pCurrentProcess)->State5a4());
     }
     ((AssignedActorView*)this)->Finish(location, 0, 1);
-    argument->EnableActionResourceIfLowState();
+    argument->Actor_InitiateDoNothingPackage();
 }
 
 // @fnv 0x008d2060
+// pdb: Character::~Character | Character.obj | retail, upstream name already matches, high
 Character::~Character()
 {
     if (!IsTemporary())

@@ -26,6 +26,7 @@ struct TransformEntry
 };
 // Retained locally: include/ has no RagDollData.h. The former RagDollDataEx
 // used this layout and called RagDollData routines at 0x004da340, 0x004da010 and 0x004d9bd0.
+// pdb: class RagDollData, size 0x14 (here 0x8), 3 members
 class RagDollData
 {
   public:
@@ -40,6 +41,8 @@ class RagDollData
 
 // Returns the negation of operator== for this matrix compared with another matrix.
 // @fnv 0x004d9ab0
+// pdb: NiMatrix3::operator!= | RagDollData.obj | debug, object-file gap fill, medium
+// pdb params: mat
 bool NiMatrix3::operator!=(const NiMatrix3& matrix) const
 {
     return !(*this == matrix);
@@ -47,46 +50,50 @@ bool NiMatrix3::operator!=(const NiMatrix3& matrix) const
 
 // Recursively applies stored bone translation and rotation to node and its children, advancing index while bones remain.
 // @fnv 0x004d9dc0
-bool RagDollData::FindBoneIndex(NiNode* node, unsigned int& ruiIndex)
+// pdb: RagDollData::UpdateNodeFromRagDollData | RagDollData.obj | debug, call graph, high
+// pdb params: apNode, aiBoneIndex
+// pdb locals: bretval, icount, UpdateData, pcol, iboneID, rot, i, pav, pnode
+bool RagDollData::FindBoneIndex(NiNode* apNode, unsigned int& aiBoneIndex)
 {
     bool result = true;
-    if (node && ruiIndex < count)
+    if (apNode && aiBoneIndex < count)
     {
-        bhkCollisionObject* collision = bhkNiCollisionObject_GetbhkNiCollisionObject(node);
+        bhkCollisionObject* collision = bhkNiCollisionObject_GetbhkNiCollisionObject(apNode);
         if (collision)
         {
             {
                 int id = collision->bhkNiCollisionObject_GetWorldObject()->bhkWorldObject_GetCollisionFilter().CFilter_GetPart();
-                if (bones[ruiIndex].id != id)
+                if (bones[aiBoneIndex].id != id)
                     return false;
             }
-            node->NiAVObject_SetTranslate(bones[ruiIndex].translate);
+            apNode->NiAVObject_SetTranslate(bones[aiBoneIndex].translate);
             NiMatrix3 rotation;
-            rotation.FromEulerAnglesXYZ(bones[ruiIndex].rotate.x, bones[ruiIndex].rotate.y, bones[ruiIndex].rotate.z);
-            node->SetRotate_0043fa80(&rotation);
+            rotation.FromEulerAnglesXYZ(bones[aiBoneIndex].rotate.x, bones[aiBoneIndex].rotate.y, bones[aiBoneIndex].rotate.z);
+            apNode->SetRotate_0043fa80(&rotation);
             collision->bhkNiCollisionObject_SetReset(true);
             reinterpret_cast<RagdollCollisionUpdate>((*reinterpret_cast<void***>(collision))[0xb0 / 4])(collision, 1, 0, 0);
-            ++ruiIndex;
+            ++aiBoneIndex;
         }
         NiUpdateData update(0.0f, false, false);
-        node->UpdateWorldData(update);
-        unsigned int children = node->FUN_0043b480();
+        apNode->UpdateWorldData(update);
+        unsigned int children = apNode->FUN_0043b480();
         for (unsigned int i = 0; i < children; ++i)
         {
             NiNode* childNode;
             {
-                NiAVObject* child = node->FUN_0043b4a0(i);
+                NiAVObject* child = apNode->FUN_0043b4a0(i);
                 childNode = child ? child->IsSceneNode() : 0;
             }
-            if (childNode && !FindBoneIndex(childNode, ruiIndex))
+            if (childNode && !FindBoneIndex(childNode, aiBoneIndex))
                 result = false;
-            if (ruiIndex >= count)
+            if (aiBoneIndex >= count)
                 break;
         }
     }
     return result;
 }
 
+// pdb: class CFilter, size 0x4, 1 members
 struct CFilter
 {
     bool QLinkedGroup();
@@ -124,6 +131,8 @@ unsigned int FUN_004d9da0_shell::CFilter_GetPart()
 
 // @fnv 0x004d9fa0
 // src: COMMUNITY 0x004d9fa0
+// pdb: bhkNiCollisionObject::SetReset | RagDollData.obj | debug, upstream name already matches, high
+// pdb params: abTF
 void bhkCollisionObject::bhkNiCollisionObject_SetReset(bool abTF)
 {
     static_cast<RagdollCollisionFlags*>(this)->SetFlags(abTF, 0x40);
@@ -142,6 +151,7 @@ struct FUN_004d9280
 
 // Byte-swaps the six 4-byte words following the object's first word via BSEndian.
 // @fnv 0x004d9280
+// pdb: RagDollBone::Endian | RagDollData.obj | debug, object-file run extension, low
 void __thiscall FUN_004d9280::EndianSwap()
 {
     BSEndian((int*)this + 1, EndianSizeTag<4>());
@@ -164,21 +174,24 @@ void RagdollCollisionFlags::SetFlags(bool abSet, unsigned short uFlags)
 
 // Recursively counts node and its descendants for which FUN_004a8b00 returns true, returning the total count.
 // @fnv 0x004da180
-// src: GUESS 0x004da180 (confidence: medium)
-unsigned char NiAVObject_CountCollisionNodes(NiNode* node)
+// src: XBOX_RETAIL_PDB 0x004da180
+// pdb: RagDollData::CountRagDollBones | RagDollData.obj | retail, object-file run extension, high
+// pdb params: apNode
+// pdb locals: iretval, icount, i, pav, pnode
+unsigned char RagDollData_CountRagDollBones(NiNode* apNode)
 {
     unsigned char count = 0;
-    if (node)
+    if (apNode)
     {
-        if (bhkNiCollisionObject_GetbhkNiCollisionObject(node))
+        if (bhkNiCollisionObject_GetbhkNiCollisionObject(apNode))
             ++count;
-        unsigned int total = node->FUN_0043b480();
+        unsigned int total = apNode->FUN_0043b480();
         for (unsigned int i = 0; i < total; ++i)
         {
-            NiAVObject* object = node->FUN_0043b4a0(i);
+            NiAVObject* object = apNode->FUN_0043b4a0(i);
             NiNode* child = object ? object->IsSceneNode() : 0;
             if (child)
-                count += NiAVObject_CountCollisionNodes(child);
+                count += RagDollData_CountRagDollBones(child);
         }
     }
     return count;
@@ -211,6 +224,9 @@ struct FUN_0055a400 : FUN_004d9280
     FUN_0055a400();
 };
 // @fnv 0x004d94a0
+// pdb: RagDollData::Load | RagDollData.obj | debug, object-file run extension, low
+// pdb params: apFile
+// pdb locals: bretval, isize, I
 bool FUN_004d94a0_shell::LoadRagdollChunk(TESFile* apFile)
 {
     bool bretval = false;
@@ -263,6 +279,8 @@ struct FUN_004d9780_shell
 
 // @fnv 0x004d9780
 // src: XBOX_PDB 0x004d9780
+// pdb: RagDollData::Compare | RagDollData.obj | debug, upstream name already matches, high
+// pdb params: apCompare
 bool FUN_004d9780_shell::RagDollData_Compare(FUN_004d9780_shell* apCompare)
 {
     if (!apCompare)
@@ -301,25 +319,27 @@ struct FUN_004d9670_shell
     DoorTeleportLoadData* items;
     Payload0C data;
 
-    void RagDollData_Copy(const FUN_004d9670_shell* source);
+    void RagDollData_Copy(const FUN_004d9670_shell* apCopy);
 };
 
 // Copies count, data and the items array from source into this object, reallocating the items buffer.
 // @fnv 0x004d9670
 // src: COMMUNITY 0x004d9670
-void FUN_004d9670_shell::RagDollData_Copy(const FUN_004d9670_shell* source)
+// pdb: RagDollData::Copy | RagDollData.obj | retail, upstream name already matches, high
+// pdb params: apCopy
+void FUN_004d9670_shell::RagDollData_Copy(const FUN_004d9670_shell* apCopy)
 {
-    if (source)
+    if (apCopy)
     {
         DoorTeleportLoadData* oldItems = items;
         _Deallocate(oldItems);
 
-        count = source->count;
-        data = source->data;
+        count = apCopy->count;
+        data = apCopy->data;
 
         items = new DoorTeleportLoadData[count];
 
-        __memcpy(items, source->items, count * sizeof(DoorTeleportLoadData));
+        __memcpy(items, apCopy->items, count * sizeof(DoorTeleportLoadData));
     }
 }
 
@@ -348,11 +368,13 @@ struct FUN_004d93c0_cls
 
 bool __cdecl TESForm_QEndianSwapOnSave();
 void __cdecl AppendChunk(unsigned int tag, void* p, unsigned int size);
-void __cdecl TESForm_AddChunkArray_00485710(unsigned int tag, void* p, unsigned int n);
+void __cdecl TESForm_AddChunkArray_00485710(unsigned int aeChunkID, void* apData, unsigned int aiCount);
 extern char DAT_011f426c[];
 
 // @fnv 0x004d93c0
 // src: COMMUNITY 0x004d93c0
+// pdb: RagDollData::Save | RagDollData.obj | retail, upstream name already matches, high
+// pdb locals: i
 void FUN_004d93c0_cls::RagDollData_Save()
 {
     if (m_uiItemCount != 0)
@@ -381,6 +403,9 @@ void FUN_004d93c0_cls::RagDollData_Save()
 
 // @fnv 0x004d9800
 // src: XBOX_PDB 0x004d9800
+// pdb: RagDollData::UpdateDataFromReference | RagDollData.obj | retail, upstream name already matches, high
+// pdb params: apRef
+// pdb locals: ibone, bsuccess, pav, pnode
 bool RagDollData::UpdateDataFromReference(TESObjectREFR* apRef)
 {
     unsigned int uiIndex = 0;
@@ -413,18 +438,21 @@ struct NiMatrix3Cmp
 };
 
 void __cdecl bhkNiCollisionObject_ResetSim(NiAVObject* apObject, bool abFlag);
-void __cdecl bhkWorld_SetMotion(NiNode* apNode, int aiVal, bool ab1, bool ab2, bool ab3);
+void __cdecl bhkWorld_SetMotion(NiNode* apObject, int aeType, bool abRecurse, bool abForce, bool abAllowActivate);
 
 struct RagDollRefUpdater
 {
     bool bEnabled;
     void SyncRef(TESObjectREFR* apRef);
-    bool ApplyToAnimationData(NiNode* apNode, unsigned int& auiCount);
+    bool ApplyToAnimationData(NiNode* apNode, unsigned int& aiBoneIndex);
     bool RagDollData_UpdateReferenceFromData(TESObjectREFR* apRef);
 };
 
 // @fnv 0x004d9910
 // src: XBOX_PDB 0x004d9910
+// pdb: RagDollData::UpdateReferenceFromData | RagDollData.obj | retail, upstream name already matches, high
+// pdb params: apRef
+// pdb locals: ibone, bsuccess, pav, pnode, UpdateData
 bool RagDollRefUpdater::RagDollData_UpdateReferenceFromData(TESObjectREFR* apRef)
 {
     unsigned int ItemUpdateArray = 0;
@@ -463,6 +491,9 @@ struct RagDollWalker
 };
 
 // @fnv 0x004d9bd0
+// pdb: RagDollData::UpdateRagDollDataFromNode | RagDollData.obj | retail, call graph, medium
+// pdb params: apNode, aiBoneIndex, abInit
+// pdb locals: bsuccess, icount, pcol, i, pav, pnode
 bool RagDollWalker::CollectBoneTransforms(NiNode* apNode, unsigned int& arIndex, bool abSet)
 {
     bool bResult2 = true;
@@ -512,13 +543,16 @@ struct LocalRagdollTransform
     int field08;
     int field0c;
     int field10;
-    void RagDollData_UpdateRagDollDataFromBip01Node(TESObjectREFR* source);
+    void RagDollData_UpdateRagDollDataFromBip01Node(TESObjectREFR* apRef);
 };
 // @fnv 0x004da340
 // src: XBOX_PDB 0x004da340
-void LocalRagdollTransform::RagDollData_UpdateRagDollDataFromBip01Node(TESObjectREFR* source)
+// pdb: RagDollData::UpdateRagDollDataFromBip01Node | RagDollData.obj | retail, upstream name already matches, high
+// pdb params: apRef
+// pdb locals: pnode, p3d, pbip
+void LocalRagdollTransform::RagDollData_UpdateRagDollDataFromBip01Node(TESObjectREFR* apRef)
 {
-    NiAVObject* pObject = source && source->IsActor() ? source->GetNiNode() : 0;
+    NiAVObject* pObject = apRef && apRef->IsActor() ? apRef->GetNiNode() : 0;
     NiNode* node = pObject ? pObject->IsSceneNode() : 0;
     if (node != 0)
     {
@@ -540,18 +574,21 @@ struct FUN_004da230_shell
     unsigned int unk00;
     unsigned int unk04;
     NiPoint3 position;
-    void UpdateNodeFromPosition(TESObjectREFR* object);
+    void UpdateNodeFromPosition(TESObjectREFR* apRef);
 };
 
 // @fnv 0x004da230
-void FUN_004da230_shell::UpdateNodeFromPosition(TESObjectREFR* object)
+// pdb: RagDollData::UpdateBip01NodeFromRagdollData | RagDollData.obj | retail, object-file run extension, high
+// pdb params: apRef
+// pdb locals: pnode, p3d, pbip, UpdateData, rot
+void FUN_004da230_shell::UpdateNodeFromPosition(TESObjectREFR* apRef)
 {
     if (reinterpret_cast<Call_439090&>(position) == reinterpret_cast<Call_439090&>(_NiPoint3_ZERO))
     {
         NiAVObject* pContainer;
         NiNode* pNode;
 
-        pContainer = (object != 0 && object->IsActor()) ? object->GetNiNode() : 0;
+        pContainer = (apRef != 0 && apRef->IsActor()) ? apRef->GetNiNode() : 0;
         pNode = (pContainer != 0) ? pContainer->IsSceneNode() : 0;
 
         if (pNode != 0)
@@ -569,7 +606,7 @@ void FUN_004da230_shell::UpdateNodeFromPosition(TESObjectREFR* object)
     }
 }
 
-unsigned char NiAVObject_CountCollisionNodes(NiNode* node);
+unsigned char RagDollData_CountRagDollBones(NiNode* apNode);
 void FNV_Warning(const char* fmt, ...);
 
 struct RagDollBoneInit : public TransformEntry
@@ -585,6 +622,9 @@ class RagDollDataInit : public RagDollData
 
 // Initializes ragdoll bone data from a reference's 3D node, collecting bone transforms and warning on failure.
 // @fnv 0x004da010
+// pdb: RagDollData::CreateRagDollBoneArray | RagDollData.obj | retail, call graph, high
+// pdb params: apRef
+// pdb locals: pav, pnode, ibone
 void RagDollDataInit::InitFromRef(TESObjectREFR* apRef)
 {
     count = 0;
@@ -593,7 +633,7 @@ void RagDollDataInit::InitFromRef(TESObjectREFR* apRef)
     {
         NiAVObject* pObj = apRef->GetNiNode();
         NiNode* pNode = pObj ? pObj->IsSceneNode() : 0;
-        count = NiAVObject_CountCollisionNodes(pNode);
+        count = RagDollData_CountRagDollBones(pNode);
         if (count)
         {
             bones = new RagDollBoneInit[count];

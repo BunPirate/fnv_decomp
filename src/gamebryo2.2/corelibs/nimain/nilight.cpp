@@ -37,6 +37,8 @@ inline NiColor::NiColor()
 
 // Loads the dimmer value and ambient, diffuse and specular colors from the stream after the base NiDynamicEffect data.
 // @fnv 0x00a72080
+// pdb: NiLight::LoadBinary | NiLight.obj | retail, upstream name already matches, high
+// pdb params: stream
 void NiLight::LoadBinary(NiStream& stream)
 {
     NiDynamicEffect::LoadBinary(stream);
@@ -47,6 +49,8 @@ void NiLight::LoadBinary(NiStream& stream)
 }
 
 // @fnv 0x00a68d40
+// pdb: NiDynamicEffect::CopyMembers | NiDynamicEffect.obj | retail, object-file run extension, low
+// pdb params: pkDest, kCloning
 void NiLight::CopyMemberData(NiLight* clone, CloningProcess& process)
 {
     NiAVObject::CopyMembers_00a5ac90(clone, process);
@@ -78,6 +82,9 @@ void NiLight::DestroyMembers()
 }
 
 // @fnv 0x00a72160
+// pdb: NiLight::IsEqual | NiLight.obj | retail, upstream name already matches, high
+// pdb params: pObject
+// pdb locals: pLight
 bool NiLight::IsEqual(NiObject* pObject) const
 {
     const NiLight* light = static_cast<const NiLight*>(pObject);
@@ -95,70 +102,72 @@ char* __cdecl NiGetViewerString_00a7d550(const char*, float);
 
 // Appends formatted strings for the dimmer, ambient, diffuse and specular properties to pArray, growing it when full.
 // @fnv 0x00a721e0
-void NiLight::AppendEffectProperties(StrArr* pArray)
+// pdb: NiLight::GetViewerStrings | NiLight.obj | retail, string-set bridge, high
+// pdb params: pStrings
+void NiLight::AppendEffectProperties(StrArr* pStrings)
 {
     char* pString;
 
-    NiDynamicEffect::AppendEffectProperties(pArray);
+    NiDynamicEffect::AppendEffectProperties(pStrings);
 
     pString = _FUN_00a7d330(g_011f4a68_arg1);
     {
-        unsigned int nIndex = pArray->m_usSize;
-        unsigned int nCapacity = pArray->m_usMaxSize;
+        unsigned int nIndex = pStrings->m_usSize;
+        unsigned int nCapacity = pStrings->m_usMaxSize;
         if (nIndex >= nCapacity)
         {
-            unsigned int nGrow = pArray->m_usGrowBy;
-            pArray->SetSize(nGrow + nIndex);
+            unsigned int nGrow = pStrings->m_usGrowBy;
+            pStrings->SetSize(nGrow + nIndex);
         }
-        pArray->SetAt(nIndex, pString);
+        pStrings->SetAt(nIndex, pString);
     }
 
     pString = NiGetViewerString_00a7d550("m_fDimmer", m_fDimmer);
     {
-        unsigned int nIndex = pArray->m_usSize;
-        unsigned int nCapacity = pArray->m_usMaxSize;
+        unsigned int nIndex = pStrings->m_usSize;
+        unsigned int nCapacity = pStrings->m_usMaxSize;
         if (nIndex >= nCapacity)
         {
-            unsigned int nGrow = pArray->m_usGrowBy;
-            pArray->SetSize(nGrow + nIndex);
+            unsigned int nGrow = pStrings->m_usGrowBy;
+            pStrings->SetSize(nGrow + nIndex);
         }
-        pArray->SetAt(nIndex, pString);
+        pStrings->SetAt(nIndex, pString);
     }
 
-    pString = m_kAmb.GetFormattedString("m_kAmb");
+    pString = m_kAmb.GetViewerString("m_kAmb");
     {
-        unsigned int nIndex = pArray->m_usSize;
-        unsigned int nCapacity = pArray->m_usMaxSize;
+        unsigned int nIndex = pStrings->m_usSize;
+        unsigned int nCapacity = pStrings->m_usMaxSize;
         if (nIndex >= nCapacity)
         {
-            unsigned int nGrow = pArray->m_usGrowBy;
-            pArray->SetSize(nGrow + nIndex);
+            unsigned int nGrow = pStrings->m_usGrowBy;
+            pStrings->SetSize(nGrow + nIndex);
         }
-        pArray->SetAt(nIndex, pString);
+        pStrings->SetAt(nIndex, pString);
     }
 
-    pString = m_kDiff.GetFormattedString("m_kDiff");
+    pString = m_kDiff.GetViewerString("m_kDiff");
     {
-        unsigned int nIndex = pArray->m_usSize;
-        unsigned int nCapacity = pArray->m_usMaxSize;
+        unsigned int nIndex = pStrings->m_usSize;
+        unsigned int nCapacity = pStrings->m_usMaxSize;
         if (nIndex >= nCapacity)
         {
-            unsigned int nGrow = pArray->m_usGrowBy;
-            pArray->SetSize(nGrow + nIndex);
+            unsigned int nGrow = pStrings->m_usGrowBy;
+            pStrings->SetSize(nGrow + nIndex);
         }
-        pArray->SetAt(nIndex, pString);
+        pStrings->SetAt(nIndex, pString);
     }
 
-    pString = m_kSpec.GetFormattedString("m_kSpec");
+    pString = m_kSpec.GetViewerString("m_kSpec");
     {
-        unsigned int nIndex = pArray->m_usSize;
-        unsigned int nCapacity = pArray->m_usMaxSize;
+        unsigned int nIndex = pStrings->m_usSize;
+        unsigned int nCapacity = pStrings->m_usMaxSize;
         if (nIndex >= nCapacity)
         {
-            unsigned int nGrow = pArray->m_usGrowBy;
-            pArray->SetSize(nGrow + nIndex);
+            unsigned int nGrow = pStrings->m_usGrowBy;
+            pStrings->SetSize(nGrow + nIndex);
         }
-        pArray->SetAt(nIndex, pString);
+        pStrings->SetAt(nIndex, pString);
     }
 }
 
@@ -166,6 +175,7 @@ extern int DAT_0109ce4c;
 
 // Initializes the base and colors, clears the material pointer, and sets the dimmer and colors to 1.0f.
 // @fnv 0x00a71f60
+// pdb: NiLight::NiLight | NiLight.obj | retail, upstream name already matches, high
 NiLight::NiLight()
 {
     m_pMaterialData = 0;
@@ -189,6 +199,8 @@ inline unsigned int NiBinaryStream::Write(const void* data, unsigned int size)
     return written;
 }
 // @fnv 0x00a720f0
+// pdb: NiLight::SaveBinary | NiLight.obj | retail, upstream name already matches, high
+// pdb params: stream
 void NiLight::SaveBinary(NiStream& stream)
 {
     NiDynamicEffect::SaveBinary(stream);
@@ -199,6 +211,8 @@ void NiLight::SaveBinary(NiStream& stream)
 }
 
 // @fnv 0x00a71f50
+// pdb: NiLight::LinkObject | NiLight.obj | debug, upstream name already matches, high
+// pdb params: stream
 void NiLight::LinkObject(NiStream& stream)
 {
     NiDynamicEffect::LinkObject(stream);
@@ -208,6 +222,8 @@ void __cdecl NiDynamicEffect_RegisterStreamables();
 
 // @fnv 0x00a90010
 // src: XBOX_PDB 0x00a90010
+// pdb: NiLight::RegisterStreamables | NiLight.obj | debug, upstream name already matches, high
+// pdb params: stream
 void __cdecl NiLight_RegisterStreamables()
 {
     NiDynamicEffect_RegisterStreamables();
@@ -219,6 +235,7 @@ extern int DAT_0109ce4c;
 
 // Sets the vtable, calls UnkF8 on the renderer when present, destroys the dynamic effect, and optionally frees memory when flag bit 0 is set.
 // @fnv 0x00a72040
+// pdb: NiLight::`scalar deleting destructor' | NiLight.obj | retail, object-file run extension, low
 void* NiLight::Destroy(unsigned int auiFlags)
 {
     *(void**)this = &DAT_0109ce4c;

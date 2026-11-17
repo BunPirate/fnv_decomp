@@ -165,7 +165,7 @@ public:
     const ShapeContainer* m_pShapeCollection;
     int m_iCurrentChunkId;
 
-    void hkpMoppRayBundleVirtualMachine_queryRayOnTree(const MachineVectorIndexRecord* query, const unsigned char* pc, PointBundlePairAndVector* fQuery, int chunkId);
+    void hkpMoppRayBundleVirtualMachine_queryRayOnTree(const MachineVectorIndexRecord* query, const unsigned char* PC, PointBundlePairAndVector* fQuery, int chunkId);
     __forceinline void querySub(const TreeCode* code, const RayBundleInput& input, const Vec4Comp& mask);
     Vec4Comp UpdateState_00dd4870(const ShapeContainer* collection, const TreeCode* code, const RayBundleInput& input, RayBundleOutput& rayResult, const Vec4Comp& mask);
 };
@@ -220,6 +220,8 @@ inline void BundleMachine::querySub(const TreeCode* code, const RayBundleInput& 
 
 // @fnv 0x00dd4870
 // src: GUESS 0x00dd4870 (confidence: low)
+// pdb: hkpMoppRayBundleVirtualMachine::queryRayBundle | hkpMoppRayBundleVirtualMachine.obj | retail, object-file run extension, low
+// pdb params: collection, code, input, rayResult, mask
 Vec4Comp BundleMachine::UpdateState_00dd4870(const ShapeContainer* collection, const TreeCode* code, const RayBundleInput& input, RayBundleOutput& rayResult, const Vec4Comp& mask)
 {
     m_pShapeCollection = collection;

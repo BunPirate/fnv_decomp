@@ -76,29 +76,32 @@
 
 // @fnv 0x006b23d0
 // src: COMMUNITY 0x006b23d0
-bool PathSmootherPOVSearch::DoubleCheckArcAgainstNavMesh(const NavMeshEdgePoint& edge, Sphere& sphere, CircularArc arc)
+// pdb: PathSmootherPOVSearch::DoubleCheckArcAgainstNavMesh | PathSmootherPOV.obj | retail, upstream name already matches, high
+// pdb params: aEntryLocation, aSphere, aArc
+// pdb locals: leftLoc, dummyLeftEnd, fLeftRadius, leftSphere, rightLoc, rightVec, fRightRadius, leftVec, fdummy, rightSphere, dummyRightEnd
+bool PathSmootherPOVSearch::DoubleCheckArcAgainstNavMesh(const NavMeshEdgePoint& aEntryLocation, Sphere& aSphere, CircularArc aArc)
 {
-    float firstRadius1 = arc.Direction == ANGLE_DIRECTION_AD_CCW ? sphere.Radius - pRequest->GetFloatAtOffset68() * 0.9f
-                                                 : sphere.Radius + pRequest->GetFloatAtOffset68() * 0.9f;
-    NiPoint3 firstDirection0 = arc.Start.MakePointOnCircle(firstRadius1);
+    float firstRadius1 = aArc.Direction == ANGLE_DIRECTION_AD_CCW ? aSphere.fRadius - pRequest->GetFloatAtOffset68() * 0.9f
+                                                 : aSphere.fRadius + pRequest->GetFloatAtOffset68() * 0.9f;
+    NiPoint3 firstDirection0 = aArc.Start.MakePointOnCircle(firstRadius1);
     NavMeshEdgePoint firstLocation6;
-    Sphere firstSphere2(sphere.Center, firstRadius1);
+    Sphere firstSphere2(aSphere.Center, firstRadius1);
     float cost13 = 0.0f;
-    if (!FindPath(edge, sphere.Center + firstDirection0, firstLocation6, cost13))
+    if (!CheckSegmentAgainstNavMesh(aEntryLocation, aSphere.Center + firstDirection0, firstLocation6, cost13))
         return false;
     NavMeshEdgePoint firstExit15;
-    if (!CheckArcAgainstNavMesh(firstLocation6, firstSphere2, arc, &firstExit15))
+    if (!CheckArcAgainstNavMesh(firstLocation6, firstSphere2, aArc, &firstExit15))
         return false;
 
-    float secondRadius1 = arc.Direction == ANGLE_DIRECTION_AD_CCW ? sphere.Radius + pRequest->GetFloatAtOffset68() * 0.9f
-                                                  : sphere.Radius - pRequest->GetFloatAtOffset68() * 0.9f;
-    NiPoint3 secondDirection2 = arc.Start.MakePointOnCircle(secondRadius1);
+    float secondRadius1 = aArc.Direction == ANGLE_DIRECTION_AD_CCW ? aSphere.fRadius + pRequest->GetFloatAtOffset68() * 0.9f
+                                                  : aSphere.fRadius - pRequest->GetFloatAtOffset68() * 0.9f;
+    NiPoint3 secondDirection2 = aArc.Start.MakePointOnCircle(secondRadius1);
     NavMeshEdgePoint secondLocation2;
-    Sphere secondSphere12(sphere.Center, secondRadius1);
-    if (!FindPath(edge, sphere.Center + secondDirection2, secondLocation2, cost13))
+    Sphere secondSphere12(aSphere.Center, secondRadius1);
+    if (!CheckSegmentAgainstNavMesh(aEntryLocation, aSphere.Center + secondDirection2, secondLocation2, cost13))
         return false;
     NavMeshEdgePoint secondExit9;
-    if (!CheckArcAgainstNavMesh(secondLocation2, secondSphere12, arc, &secondExit9))
+    if (!CheckArcAgainstNavMesh(secondLocation2, secondSphere12, aArc, &secondExit9))
         return false;
     return true;
 }

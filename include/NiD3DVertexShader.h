@@ -6,6 +6,7 @@
 class RenderableGeometry;
 class COMUnknownInterface;
 
+// pdb: class NiD3DVertexShader, size 0x3c, bases: NiD3DShaderProgram, 4 members
 class NiD3DVertexShader : public NiD3DShaderProgram
 {
 public:
@@ -39,8 +40,8 @@ public:
 
     static const NiRTTI ms_kRTTI;
 
-    bool m_bIsInitialized;
-    unsigned int m_uiShaderUsage;
-    RenderableGeometry* m_pD3DPixelShader;
-    COMUnknownInterface* m_pD3DVertexShader;
+    bool m_bSoftwareVP; // src: XBOX_RETAIL_PDB +0x2c (old: m_bIsInitialized)
+    unsigned int m_uiUsage; // src: XBOX_RETAIL_PDB +0x30 (old: m_uiShaderUsage)
+    RenderableGeometry* m_hShader; // src: XBOX_RETAIL_PDB +0x34 (old: m_pD3DPixelShader)
+    COMUnknownInterface* m_hDecl; // src: XBOX_RETAIL_PDB +0x38 (old: m_pD3DVertexShader)
 };

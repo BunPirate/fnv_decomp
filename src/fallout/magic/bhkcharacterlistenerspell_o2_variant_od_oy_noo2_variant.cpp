@@ -18,7 +18,7 @@
 #include "../../../include/TESObjectREFR.h"
 #include "../../../include/bhkCharacterProxy.h"
 
-extern const NiRTTI g_01268344;
+extern const NiRTTI bhkCharacterProxy_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01268344 (old: g_01268344)
 
 #include <xmmintrin.h>
 
@@ -258,19 +258,19 @@ class Debug807
 };
 extern Debug807* g_pkDebug807;
 
-DebugNode807* __cdecl bhkShape_Getbhk(void* pvOwner);
+DebugNode807* __cdecl bhkShape_Getbhk(void* apShape);
 void __cdecl HK2NI_00624b10(Matrix807& kOut, const hkRotation& kIn);
 void __cdecl FUN_00458620(NiPoint3& kOut, const hkVector4& kIn);
 void* __cdecl hkpGetPhantom(void* pvCollidable);
 void* __cdecl hkpGetRigidBody(void* pvCollidable);
-void* __cdecl bhkEntity_Getbhk(void* pvEntry);
+void* __cdecl bhkEntity_Getbhk(void* apEnt);
 Line807* __cdecl CreateOctahedron(float fSize, const ColorA807& kColor, int iType);
 
 class Listener807
 {
   public:
-    TESObjectREFR* GetRef(void* pvCollidable);
-    void bhkCharacterListenerSpell_contactPointAddedCallback(Event807* pkEvent);
+    TESObjectREFR* GetRef(void* apCollidable);
+    void bhkCharacterListenerSpell_contactPointAddedCallback(Event807* point);
     unsigned int unk00;
     unsigned int unk04;
     unsigned int unk08;
@@ -682,16 +682,19 @@ class Listener807
 #pragma strict_gs_check(push, on)
 // @fnv 0x008070d0
 // src: XBOX_PDB 0x008070d0
-void Listener807::bhkCharacterListenerSpell_contactPointAddedCallback(Event807* pkEvent)
+// pdb: bhkCharacterListenerSpell::contactPointAddedCallback | bhkCharacterListenerSpell.obj | retail, upstream name already matches, high
+// pdb params: point
+// pdb locals: pprojectile, pcaster, pbody, ptarget, pph, pmagicCaster, pactortarg, pactor, phkbody, contact, bpersonal, nihitspot, pshape1, pshape2, hkhitspot, pos, rot, pnode, color, ppt
+void Listener807::bhkCharacterListenerSpell_contactPointAddedCallback(Event807* point)
 {
-    MagicProjectile* pkProjectile = dynamic_cast<MagicProjectile*>(GetRef(pkEvent->m_pvCollidableA));
+    MagicProjectile* pkProjectile = dynamic_cast<MagicProjectile*>(GetRef(point->m_pvCollidableA));
     if (!pkProjectile)
         pkProjectile = m_pkProjectile;
     if (!pkProjectile->IsActive())
         return;
-    TESObjectREFR* pkHit = GetRef(pkEvent->m_pvCollidableB);
+    TESObjectREFR* pkHit = GetRef(point->m_pvCollidableB);
     Actor* pkActor = pkHit && pkHit->IsActor() ? (Actor*)pkHit : 0;
-    void* pvEntry = hkpGetPhantom(pkEvent->m_pvCollidableB);
+    void* pvEntry = hkpGetPhantom(point->m_pvCollidableB);
     if (pvEntry)
     {
         if (!pkActor)
@@ -710,7 +713,7 @@ void Listener807::bhkCharacterListenerSpell_contactPointAddedCallback(Event807* 
     if (*g_kDebugSetting807.Bool())
     {
         NiPoint3 kUnused;
-        EventCopy807 kCopy(pkEvent);
+        EventCopy807 kCopy(point);
         DebugNode807* pkNodeA = bhkShape_Getbhk(kCopy.m_pkBodyA->GetOwner());
         if (pkNodeA)
         {
@@ -739,7 +742,7 @@ void Listener807::bhkCharacterListenerSpell_contactPointAddedCallback(Event807* 
         }
     }
     NiPoint3 kPos;
-    FUN_00458620(kPos, pkEvent->GetPosition());
+    FUN_00458620(kPos, point->GetPosition());
     if (*g_kDebugSetting807.Bool())
     {
         Line807* pkMarker = CreateOctahedron(5.0f, ColorA807(1.0f, 0.0f, 0.0f, 1.0f), 1);
@@ -755,7 +758,7 @@ void Listener807::bhkCharacterListenerSpell_contactPointAddedCallback(Event807* 
         pkHitActor = pkHit;
     }
     Unk815* pkEffect = pkCaster ? pkCaster->GetEffect() : 0;
-    void* pvHitEntry = hkpGetRigidBody(pkEvent->m_pvCollidableB);
+    void* pvHitEntry = hkpGetRigidBody(point->m_pvCollidableB);
     void* pvTarget = pvHitEntry ? bhkEntity_Getbhk(pvHitEntry) : 0;
     pkProjectile->OnHit(kPos, pvTarget, pkHit, 0);
 }

@@ -59,7 +59,7 @@ struct __declspec(align(16)) IterativeSweep_hkTransform
     float m_linearLimit;
     float m_fAngularLimit;
     float m_timeFactor;
-    void FUN_00d431b0(const void* src);
+    void hkMotionState_ctor(const void* src);
 };
 
 struct IterativeSweep_hkpShape
@@ -296,6 +296,9 @@ __forceinline IterativeSweep_hkpLinearCastFunc IterativeSweep_getLinearCastFunc(
 
 // @fnv 0x00daf8e0
 // src: GUESS 0x00daf8e0 (confidence: low)
+// pdb: hkpIterativeLinearCastAgent::staticLinearCast | hkpIterativeLinearCastAgent.obj | retail, object-file run extension, low
+// pdb params: bodyA, bodyB, input, collector, startCollector
+// pdb locals: in2, startPointCollector, event, currentFraction, assertBuf, ostr, checkPointCollector, ms, bodyACopy
 void Object_ProcessEntries_00daf8e0(const IterativeSweep_hkpCdBody* bodyA, const IterativeSweep_hkpCdBody* bodyB,
                   const IterativeSweep_hkpLinearCastCollisionInput* input,
                   IterativeSweep_hkpCdPointCollector* castCollector, IterativeSweep_hkpCdPointCollector* startCollector)
@@ -348,7 +351,7 @@ void Object_ProcessEntries_00daf8e0(const IterativeSweep_hkpCdBody* bodyA, const
     float localTransform = frac4 / (frac4 - c);
     IterativeSweep_hkpSimpleClosestContactCollector projectedDistance;
     IterativeSweep_hkTransform fraction;
-    fraction.FUN_00d431b0(bodyA->m_kMotionState);
+    fraction.hkMotionState_ctor(bodyA->m_kMotionState);
 
     IterativeSweep_hkpCdBody tempBodyA;
     tempBodyA.m_parent = bodyA;

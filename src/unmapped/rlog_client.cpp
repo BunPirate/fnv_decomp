@@ -29,6 +29,7 @@ struct FUN_0060ce80_Obj
 // Calls FUN_00401080_helper on the object's field at offset 4, passing the byte-swap flag from a ByteSwapFlag.
 // @fnv 0x0060ce80
 // src: XBOX_PDB 0x0060ce80
+// pdb: PACK_SCHED_DATA::Endian | PackageSchedule.obj | debug, upstream name already matches, high
 void FUN_0060ce80_Obj::PACK_SCHED_DATA_Endian()
 {
     FUN_00401080_helper((void*)((char*)this + 4), ByteSwapFlag().m_bDoSwap);
@@ -59,32 +60,35 @@ struct LodGrid
     char pad00[0x24];
     int m_iCenterX;
     int m_iCenterY;
-    int TES_GetCellPriority(LodCell* pkCell, LodPoint* pkPos);
+    int TES_GetCellPriority(LodCell* apCell, LodPoint* apPos);
 };
 
 // Computes a LOD level from the cell's grid offset relative to the grid center or a position, caches it with the cell, and returns it.
 // @fnv 0x00458be0
 // src: XBOX_PDB 0x00458be0
-int LodGrid::TES_GetCellPriority(LodCell* pkCell, LodPoint* pkPos)
+// pdb: TES::GetCellPriority | TES.obj | retail, upstream name already matches, high
+// pdb params: apCell, apPos
+// pdb locals: igridPriorityY, igridX, igridPriorityX, cpriority, igridY
+int LodGrid::TES_GetCellPriority(LodCell* apCell, LodPoint* apPos)
 {
-    if (g_pkLastCell_011c3f04 == pkCell)
+    if (g_pkLastCell_011c3f04 == apCell)
         return g_iLastLod_011c3f00;
     int iDXVal2;
     int iDYVal2;
-    if (pkCell->FUN_00425fd0())
+    if (apCell->FUN_00425fd0())
     {
         iDXVal2 = *g_s_011c63cc.Setting_Int() >> 1;
         iDYVal2 = *g_s_011c63cc.Setting_Int() >> 1;
     }
-    else if (pkPos)
+    else if (apPos)
     {
-        iDXVal2 = pkCell->FUN_00544c30() - ((TruncateFloatToInt(pkPos->x) >> 12) - (*g_s_011c63cc.Setting_Int() >> 1));
-        iDYVal2 = pkCell->FUN_00544c60() - ((TruncateFloatToInt(pkPos->y) >> 12) - (*g_s_011c63cc.Setting_Int() >> 1));
+        iDXVal2 = apCell->FUN_00544c30() - ((TruncateFloatToInt(apPos->x) >> 12) - (*g_s_011c63cc.Setting_Int() >> 1));
+        iDYVal2 = apCell->FUN_00544c60() - ((TruncateFloatToInt(apPos->y) >> 12) - (*g_s_011c63cc.Setting_Int() >> 1));
     }
     else
     {
-        iDXVal2 = pkCell->FUN_00544c30() - (m_iCenterX - (*g_s_011c63cc.Setting_Int() >> 1));
-        iDYVal2 = pkCell->FUN_00544c60() - (m_iCenterY - (*g_s_011c63cc.Setting_Int() >> 1));
+        iDXVal2 = apCell->FUN_00544c30() - (m_iCenterX - (*g_s_011c63cc.Setting_Int() >> 1));
+        iDYVal2 = apCell->FUN_00544c60() - (m_iCenterY - (*g_s_011c63cc.Setting_Int() >> 1));
     }
     int iXY = iDXVal2 - (*g_s_011c63cc.Setting_Int() >> 1);
     int iY8 = iDYVal2 - (*g_s_011c63cc.Setting_Int() >> 1);
@@ -115,6 +119,6 @@ int LodGrid::TES_GetCellPriority(LodCell* pkCell, LodPoint* pkPos)
         g_iLastLod_011c3f00 = 4;
         break;
     }
-    g_pkLastCell_011c3f04 = pkCell;
+    g_pkLastCell_011c3f04 = apCell;
     return g_iLastLod_011c3f00;
 }

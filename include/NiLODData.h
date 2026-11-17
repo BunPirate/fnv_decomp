@@ -3,6 +3,7 @@
 #include "NiObject.h"
 #include <cstddef>
 
+// pdb: class NiLODData, size 0x8, bases: NiObject, 0 members
 class NiLODData : public NiObject
 {
   public:

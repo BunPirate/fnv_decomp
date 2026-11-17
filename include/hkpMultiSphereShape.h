@@ -6,6 +6,7 @@
 
 #include "hkVector4.h"
 
+// pdb: class hkpMultiSphereShape, size 0xa0, bases: hkpSphereRepShape, 2 members
 class hkpMultiSphereShape : public hkpSphereRepShape
 {
 public:
@@ -19,7 +20,7 @@ public:
     virtual int getNumCollisionSpheres() const;
     virtual hkVector4* CopySpheres(hkVector4* pDst);
 
-    int m_iSphereCount;
+    int m_numSpheres; // src: XBOX_RETAIL_PDB +0x10 (old: m_iSphereCount)
     char pad14[0xC];
-    hkVector4 m_kSpheres[8];
+    hkVector4 m_spheres[8]; // src: XBOX_RETAIL_PDB +0x20 (old: m_kSpheres)
 };

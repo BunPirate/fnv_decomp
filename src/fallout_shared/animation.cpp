@@ -80,7 +80,7 @@ struct Container4965
 };
 struct Loader4965
 {
-    void* InsertIdle(void*, void*, int, void*);
+    void* ModelLoader_QueueAnimIdle(void*, void*, int, void*);
     void* LoadKFModel(void*);
 };
 struct Manager4965
@@ -263,6 +263,7 @@ class TESObjectREFR_AnimationExt : public TESObjectREFR
 };
 struct Root490;
 // No shared KFModel.h is available yet; all KFModel views use this declaration.
+// pdb: class KFModel, size 0x14 (here 0x1), 5 members
 class KFModel
 {
   public:
@@ -272,6 +273,7 @@ class KFModel
     void AcquireReference();
 };
 // No shared ModelLoader.h is available yet; all loader views use this declaration.
+// pdb: class ModelLoader, size 0x30 (here 0x1), 12 members
 class ModelLoader
 {
   public:
@@ -287,45 +289,46 @@ extern "C" void* memset(void*, int, unsigned int);
 int Warning(const char*, ...);
 #include "../../include/ANIM_GROUP_ACTION.h"
 // No shared Animation.h is available yet; retain the canonical per-file layout.
+// pdb: class Animation, size 0x13c, 33 members
 class Animation
 {
   public:
-    unsigned char m_uiObjectFlags;  // +0x0, 1 bytes
+    unsigned char m_uFlags;  // +0x0, 1 bytes // src: XBOX_RETAIL_PDB +0x0 (old: m_uiObjectFlags)
     unsigned char layoutPadding1[3];
-    TESObjectREFR* m_pAttachedReference;           // +0x4, 4 bytes
-    AnimationPointer<NiNode> m_acHeaderData;        // +0x8, 4 bytes
-    NiNode* m_pObjectNode;                 // +0xC, 4 bytes
-    AnimationVector m_kNodeTranslation;             // +0x10, 12 bytes
-    AnimationVector m_kRootTranslation;        // +0x1C, 12 bytes
-    NiAVObject* m_acNodeName[8];  // +0x28, 32 bytes
-    float m_fAnimationAmount;                   // +0x48, 4 bytes
+    TESObjectREFR* pActorRef;           // +0x4, 4 bytes // src: XBOX_RETAIL_PDB +0x4 (old: m_pAttachedReference)
+    AnimationPointer<NiNode> pAnimRoot;        // +0x8, 4 bytes // src: XBOX_RETAIL_PDB +0x8 (old: m_acHeaderData)
+    NiNode* pAccumRoot;                 // +0xC, 4 bytes // src: XBOX_RETAIL_PDB +0xc (old: m_pObjectNode)
+    AnimationVector movementDelta;             // +0x10, 12 bytes // src: XBOX_RETAIL_PDB +0x10 (old: m_kNodeTranslation)
+    AnimationVector AccumRootTranslate;        // +0x1C, 12 bytes // src: XBOX_RETAIL_PDB +0x1c (old: m_kRootTranslation)
+    NiAVObject* pSoundPriorityBone[8];  // +0x28, 32 bytes // src: XBOX_RETAIL_PDB +0x28 (old: m_acNodeName)
+    float m_fLooking;                   // +0x48, 4 bytes // src: XBOX_RETAIL_PDB +0x48 (old: m_fAnimationAmount)
     unsigned short group[8];            // +0x4C, 16 bytes
     ANIM_GROUP_ACTION action[8];        // +0x5C, 32 bytes
-    int m_acTargetName[8];                   // +0x7C, 32 bytes
-    unsigned short usReloadGroup[8];        // +0x9C, 16 bytes
-    int m_acAnimationName[8];                   // +0xAC, 32 bytes
-    char m_cState;                   // +0xCC, 1 bytes
-    bool m_bIsPlaying;                     // +0xCD, 1 bytes
+    int loopCount[8];                   // +0x7C, 32 bytes // src: XBOX_RETAIL_PDB +0x7c (old: m_acTargetName)
+    unsigned short nextGroup[8];        // +0x9C, 16 bytes // src: XBOX_RETAIL_PDB +0x9c (old: usReloadGroup)
+    int nextLoops[8];                   // +0xAC, 32 bytes // src: XBOX_RETAIL_PDB +0xac (old: m_acAnimationName)
+    char cSkipUpdate;                   // +0xCC, 1 bytes // src: XBOX_RETAIL_PDB +0xcc (old: m_cState)
+    bool bShutDown;                     // +0xCD, 1 bytes // src: XBOX_RETAIL_PDB +0xcd (old: m_bIsPlaying)
     unsigned char layoutPaddingCE[2];
     float time;                                                          // +0xD0, 4 bytes
-    float m_fTimeOffset;                                                      // +0xD4, 4 bytes
-    AnimationPointer<NiControllerManager> m_acReservedBytes;                            // +0xD8, 4 bytes
-    AnimationSequenceMap<unsigned short, AnimSequenceBase*>* m_pOwnerReference;  // +0xDC, 4 bytes
-    BSAnimGroupSequence* m_pChildTile[8];                            // +0xE0, 32 bytes
-    BSAnimGroupSequence* m_pCurrentSequence;                          // +0x100, 4 bytes
+    float fLipTime;                                                      // +0xD4, 4 bytes // src: XBOX_RETAIL_PDB +0xd4 (old: m_fTimeOffset)
+    AnimationPointer<NiControllerManager> spManager;                            // +0xD8, 4 bytes // src: XBOX_RETAIL_PDB +0xd8 (old: m_acReservedBytes)
+    AnimationSequenceMap<unsigned short, AnimSequenceBase*>* pAnimSequenceMap;  // +0xDC, 4 bytes // src: XBOX_RETAIL_PDB +0xdc (old: m_pOwnerReference)
+    BSAnimGroupSequence* pCurrentSequence[8];                            // +0xE0, 32 bytes // src: XBOX_RETAIL_PDB +0xe0 (old: m_pChildTile)
+    BSAnimGroupSequence* pLastMovementSequence;                          // +0x100, 4 bytes // src: XBOX_RETAIL_PDB +0x100 (old: m_pCurrentSequence)
     AnimationList<KFModel*> kfModelList;                                  // +0x104, 8 bytes
-    float m_fMovementRate;                                                  // +0x10C, 4 bytes
-    float m_fCombatAnimationRate;                                                // +0x110, 4 bytes
-    float m_fEquipAnimationRate;                                       // +0x114, 4 bytes
-    float m_fReloadAnimationRate;                                             // +0x118, 4 bytes
-    float m_fAnimationTimeScale;                                              // +0x11C, 4 bytes
-    char m_cSkipNextBlend;                                                 // +0x120, 1 bytes
+    float m_fMoveSpeed;                                                  // +0x10C, 4 bytes // src: XBOX_RETAIL_PDB +0x10c (old: m_fMovementRate)
+    float m_fAttackSpeed;                                                // +0x110, 4 bytes // src: XBOX_RETAIL_PDB +0x110 (old: m_fCombatAnimationRate)
+    float m_fGlobalTimeMultiplier;                                       // +0x114, 4 bytes // src: XBOX_RETAIL_PDB +0x114 (old: m_fEquipAnimationRate)
+    float m_fReloadModifier;                                             // +0x118, 4 bytes // src: XBOX_RETAIL_PDB +0x118 (old: m_fReloadAnimationRate)
+    float m_fEquipModifier;                                              // +0x11C, 4 bytes // src: XBOX_RETAIL_PDB +0x11c (old: m_fAnimationTimeScale)
+    char cSkipNextBlend;                                                 // +0x120, 1 bytes // src: XBOX_RETAIL_PDB +0x120 (old: m_cSkipNextBlend)
     unsigned char layoutPadding121[1];
-    unsigned short m_usQueuedGroup;                    // +0x122, 2 bytes
-    AnimationPointer<LocalAnimIdle> LocalInput;                       // +0x124, 4 bytes
-    AnimationPointer<LocalAnimIdle> LocalStateValue;                 // +0x128, 4 bytes
-    AnimationPointer<LocalAnimIdle> LocalOutput[2];   // +0x12C, 8 bytes
-    AnimationList<IdleReplayDelayEntry*> m_acTrailingData;  // +0x134, 8 bytes
+    unsigned short sQueuedReloadGroup;                    // +0x122, 2 bytes // src: XBOX_RETAIL_PDB +0x122 (old: m_usQueuedGroup)
+    AnimationPointer<LocalAnimIdle> spAnimIdle;                       // +0x124, 4 bytes // src: XBOX_RETAIL_PDB +0x124 (old: LocalInput)
+    AnimationPointer<LocalAnimIdle> spAnimIdleQueued;                 // +0x128, 4 bytes // src: XBOX_RETAIL_PDB +0x128 (old: LocalStateValue)
+    AnimationPointer<LocalAnimIdle> spAnimIdleFreeWhenInactiveA[2];   // +0x12C, 8 bytes // src: XBOX_RETAIL_PDB +0x12c (old: LocalOutput)
+    AnimationList<IdleReplayDelayEntry*> replayDelayList;  // +0x134, 8 bytes // src: XBOX_RETAIL_PDB +0x134 (old: m_acTrailingData)
 
     Animation();
     bool Init(AnimationList<const char*>*, NiNode*, TESObjectREFR*, bool);
@@ -337,16 +340,19 @@ class Animation
     void UpdateFlags(unsigned char, unsigned char, unsigned char);
     NiControllerManager* GetControllerManager_00496940();
     bool SpecialIdleReplace_0();
-    bool SpecialIdlePlay_0();
+    bool SpecialIdlePlay();
     BSAnimGroupSequence* Animation_PlayGroup(unsigned int, int, int, int);
 };
 
 // @fnv 0x00498910
-void Animation::SpecialIdleFree(bool freeQueued, bool immediate)
+// pdb: Animation::SpecialIdleFree | Animation.obj | retail, upstream name already matches, high
+// pdb params: abFreeQueued, abForceDelete
+// pdb locals: esection
+void Animation::SpecialIdleFree(bool abFreeQueued, bool abForceDelete)
 {
-    if (LocalInput)
+    if (spAnimIdle)
     {
-        int section = LocalInput->GetSection();
+        int section = spAnimIdle->GetSection();
         switch (section)
         {
         case 21:
@@ -356,39 +362,39 @@ void Animation::SpecialIdleFree(bool freeQueued, bool immediate)
             section = 1;
             break;
         }
-        if (LocalInput->GetControllerSequence() && m_pChildTile[section] == LocalInput->GetControllerSequence())
+        if (spAnimIdle->GetControllerSequence() && pCurrentSequence[section] == spAnimIdle->GetControllerSequence())
         {
-            if (immediate)
-                m_pChildTile[section] = 0;
+            if (abForceDelete)
+                pCurrentSequence[section] = 0;
             else
             {
-                switch (LocalInput->GetControllerSequence()->GetState())
+                switch (spAnimIdle->GetControllerSequence()->GetState())
                 {
                 case 2:
                 case 5:
                     Warning("ANIMATION: Trying to SpecialIdleFree an animation '%s' that just started.",
-                            (const char*)static_cast<const NiControllerSequence*>(LocalInput->GetControllerSequence())->GetName());
+                            (const char*)static_cast<const NiControllerSequence*>(spAnimIdle->GetControllerSequence())->GetName());
                     return;
                 }
-                BlendOut(LocalInput->GetSection(), false);
+                BlendOut(spAnimIdle->GetSection(), false);
             }
         }
-        if (!immediate && !LocalOutput[0])
+        if (!abForceDelete && !spAnimIdleFreeWhenInactiveA[0])
         {
-            LocalOutput[0] = LocalInput;
-            LocalInput = 0;
+            spAnimIdleFreeWhenInactiveA[0] = spAnimIdle;
+            spAnimIdle = 0;
         }
-        else if (!immediate && !LocalOutput[1])
+        else if (!abForceDelete && !spAnimIdleFreeWhenInactiveA[1])
         {
-            LocalOutput[1] = LocalInput;
-            LocalInput = 0;
+            spAnimIdleFreeWhenInactiveA[1] = spAnimIdle;
+            spAnimIdle = 0;
         }
         else
-            AssignControllerManager(LocalInput);
+            AssignControllerManager(spAnimIdle);
     }
-    if (freeQueued && LocalStateValue)
+    if (abFreeQueued && spAnimIdleQueued)
     {
-        int queuedSection = LocalStateValue->GetSection();
+        int queuedSection = spAnimIdleQueued->GetSection();
         switch (queuedSection)
         {
         case 21:
@@ -398,125 +404,129 @@ void Animation::SpecialIdleFree(bool freeQueued, bool immediate)
             queuedSection = 1;
             break;
         }
-        if (LocalStateValue->GetControllerSequence() &&
-            m_pChildTile[queuedSection] == LocalStateValue->GetControllerSequence())
+        if (spAnimIdleQueued->GetControllerSequence() &&
+            pCurrentSequence[queuedSection] == spAnimIdleQueued->GetControllerSequence())
         {
-            if (immediate)
-                m_pChildTile[queuedSection] = 0;
+            if (abForceDelete)
+                pCurrentSequence[queuedSection] = 0;
             else
             {
-                switch (LocalStateValue->GetControllerSequence()->GetState())
+                switch (spAnimIdleQueued->GetControllerSequence()->GetState())
                 {
                 case 2:
                 case 5:
                     Warning("ANIMATION: Trying to SpecialIdleFree an animation '%s' that just started.",
-                            (const char*)static_cast<const NiControllerSequence*>(LocalStateValue->GetControllerSequence())->GetName());
+                            (const char*)static_cast<const NiControllerSequence*>(spAnimIdleQueued->GetControllerSequence())->GetName());
                     return;
                 }
                 BlendOut(queuedSection, false);
             }
         }
-        if (!immediate && !LocalOutput[0])
+        if (!abForceDelete && !spAnimIdleFreeWhenInactiveA[0])
         {
-            LocalOutput[0] = LocalStateValue;
-            LocalStateValue = 0;
+            spAnimIdleFreeWhenInactiveA[0] = spAnimIdleQueued;
+            spAnimIdleQueued = 0;
         }
-        else if (!immediate && !LocalOutput[1])
+        else if (!abForceDelete && !spAnimIdleFreeWhenInactiveA[1])
         {
-            LocalOutput[1] = LocalStateValue;
-            LocalStateValue = 0;
+            spAnimIdleFreeWhenInactiveA[1] = spAnimIdleQueued;
+            spAnimIdleQueued = 0;
         }
         else
-            AssignControllerManager(LocalStateValue);
+            AssignControllerManager(spAnimIdleQueued);
     }
     else
     {
-        LocalInput = LocalStateValue;
-        LocalStateValue = 0;
+        spAnimIdle = spAnimIdleQueued;
+        spAnimIdleQueued = 0;
     }
 }
 
 // Validates files, root and actor, loads KF models into the animation list, creates the controller manager and optionally activates the first sequence.
 // @fnv 0x0048ffd0
-bool Animation::Init(AnimationList<const char*>* files, NiNode* root, TESObjectREFR* actor, bool activate)
+// pdb: Animation::Init | Animation.obj | retail, upstream name already matches, high
+// pdb params: apFileList, apRoot, apRef, abUpdate3D
+// pdb locals: tempMemContext, panimSeq, bNPC, bqueueAnims, bretVal, esection, pkfModel, pfilename, pwarningGroup, plist, ssearchGroup, pprevKFModel, pseq, UpdateData
+bool Animation::Init(AnimationList<const char*>* apFileList, NiNode* apRoot, TESObjectREFR* apRef, bool abUpdate3D)
 {
     AutoMemContext context(MEM_CONTEXT_MEM_CONTEXT_ANIMATION, true,
                            "D:\\_Fallout3\\Platforms\\Common\\Code\\Fallout Shared\\Animation.cpp", 568);
-    if (!files || !root || !actor)
+    if (!apFileList || !apRoot || !apRef)
         return false;
-    m_pAttachedReference = actor;
+    pActorRef = apRef;
     AnimSequenceBase* pSequence;
-    if (m_pOwnerReference && m_pOwnerReference->GetAt(0, pSequence))
+    if (pAnimSequenceMap && pAnimSequenceMap->GetAt(0, pSequence))
         return false;
-    bool bIsCreature = actor->GetObjectReference()->GetFormType() == 42;
-    m_acHeaderData = root;
+    bool bIsCreature = apRef->GetObjectReference()->GetFormType() == 42;
+    pAnimRoot = apRoot;
     for (int i = 0; i <= 7; ++i)
         if (DAT_01199bcc[i])
-            m_acNodeName[i] =
-                static_cast<TESObjectREFR_AnimationExt*>(actor)->TESObjectREFR_GetActorBone(root, DAT_01199bcc[i]);
-    static_cast<AnimationNodeAccess*>((NiNode*)m_acHeaderData)->NiAVObject_SetSelectiveUpdate(false);
-    m_acReservedBytes = new NiControllerManager(m_acHeaderData, true);
+            pSoundPriorityBone[i] =
+                static_cast<TESObjectREFR_AnimationExt*>(apRef)->TESObjectREFR_GetActorBone(apRoot, DAT_01199bcc[i]);
+    static_cast<AnimationNodeAccess*>((NiNode*)pAnimRoot)->NiAVObject_SetSelectiveUpdate(false);
+    spManager = new NiControllerManager(pAnimRoot, true);
     bool bQueue = IsAnimationLoaded();
-    while (!files->IsEmpty())
+    while (!apFileList->IsEmpty())
     {
-        const char* file = files->GetItem();
+        const char* file = apFileList->GetItem();
         KFModel* model = g_modelLoader->LoadKF(file);
         if (model && model->GetControllerSequence())
             AddAnimation(model, bQueue);
         delete file;
-        files->RemoveHead();
+        apFileList->RemoveHead();
     }
-    if (m_pObjectNode)
-        static_cast<AnimationNodeAccess*>(m_pObjectNode)->SetRotate_0043fa80(&DAT_011a9448);
-    delete files;
-    bool m_bHeaderParsed = m_pOwnerReference->GetAt(0, pSequence);
-    if (m_bHeaderParsed && activate)
+    if (pAccumRoot)
+        static_cast<AnimationNodeAccess*>(pAccumRoot)->SetRotate_0043fa80(&DAT_011a9448);
+    delete apFileList;
+    bool m_bHeaderParsed = pAnimSequenceMap->GetAt(0, pSequence);
+    if (m_bHeaderParsed && abUpdate3D)
     {
         BSAnimGroupSequence* anim = pSequence->GetSequenceAtIndex(-1);
         if (anim)
         {
             anim->Activate(100, true, 1.0f, 0.0f, 0, false);
             NiUpdateData update(0.0f, true, false);
-            m_acHeaderData->Update(update);
+            pAnimRoot->Update(update);
             anim->Deactivate(0.0f, false);
         }
     }
     return m_bHeaderParsed;
 }
 // @fnv 0x0048f810
-Animation::Animation() : m_acHeaderData(0), m_acReservedBytes(0), LocalInput(0), LocalStateValue(0)
+// pdb: Animation::Animation | Animation.obj | retail, call graph, high
+Animation::Animation() : pAnimRoot(0), spManager(0), spAnimIdle(0), spAnimIdleQueued(0)
 {
-    m_acHeaderData = 0;
-    m_pObjectNode = 0;
-    m_kNodeTranslation = AnimationVector::ZERO;
-    m_kRootTranslation = AnimationVector::ZERO;
-    m_fAnimationAmount = 0.0f;
-    m_cState = -1;
-    m_cSkipNextBlend = 0;
+    pAnimRoot = 0;
+    pAccumRoot = 0;
+    movementDelta = AnimationVector::ZERO;
+    AccumRootTranslate = AnimationVector::ZERO;
+    m_fLooking = 0.0f;
+    cSkipUpdate = -1;
+    cSkipNextBlend = 0;
     UpdateFlags(0, 255, 0);
-    m_pAttachedReference = 0;
-    m_pCurrentSequence = 0;
+    pActorRef = 0;
+    pLastMovementSequence = 0;
     time = 0.0f;
-    m_acReservedBytes = 0;
-    LocalInput = 0;
-    LocalStateValue = 0;
-    LocalOutput[0] = 0;
-    LocalOutput[1] = 0;
-    m_pOwnerReference = new AnimationSequenceMap<unsigned short, AnimSequenceBase*>(101);
-    memset(m_acNodeName, 0, 32);
-    memset(m_pChildTile, 0, 32);
+    spManager = 0;
+    spAnimIdle = 0;
+    spAnimIdleQueued = 0;
+    spAnimIdleFreeWhenInactiveA[0] = 0;
+    spAnimIdleFreeWhenInactiveA[1] = 0;
+    pAnimSequenceMap = new AnimationSequenceMap<unsigned short, AnimSequenceBase*>(101);
+    memset(pSoundPriorityBone, 0, 32);
+    memset(pCurrentSequence, 0, 32);
     memset(group, 255, 16);
-    memset(usReloadGroup, 255, 16);
+    memset(nextGroup, 255, 16);
     memset(action, -1, 32);
-    memset(m_acTargetName, -1, 32);
-    memset(m_acAnimationName, -1, 32);
-    m_fMovementRate = 1.0f;
-    m_fCombatAnimationRate = 1.0f;
-    m_fEquipAnimationRate = 1.0f;
-    m_fReloadAnimationRate = 1.0f;
-    m_fAnimationTimeScale = 1.0f;
-    m_usQueuedGroup = 255;
-    m_bIsPlaying = false;
+    memset(loopCount, -1, 32);
+    memset(nextLoops, -1, 32);
+    m_fMoveSpeed = 1.0f;
+    m_fAttackSpeed = 1.0f;
+    m_fGlobalTimeMultiplier = 1.0f;
+    m_fReloadModifier = 1.0f;
+    m_fEquipModifier = 1.0f;
+    sQueuedReloadGroup = 255;
+    bShutDown = false;
 }
 
 struct FUN_0048ef40_shell : public AnimSequenceBase
@@ -553,21 +563,23 @@ struct WaitableObject
 }  // namespace fnv_0048f010
 
 // @fnv 0x0048f010
+// pdb: AnimSequenceSingle::SetSequence | Animation.obj | retail, vtable slot, high
+// pdb params: apSeq, abReleaseModelLoader
 void AnimSequenceSingle::AssignSequence(BSAnimGroupSequence* apSeq, bool abReleaseModelLoader)
 {
-    if (pForwardSequence)
+    if (pSeq)
     {
         if (abReleaseModelLoader)
         {
             ((fnv_0048f010::NiTMapView<unsigned int, fnv_0048f010::CombatThreatRecord*>*)g_modelLoader)
-                ->NewItem((void*)(const char*)((NiAVObject*)pForwardSequence)->GetName());
+                ->NewItem((void*)(const char*)((NiAVObject*)pSeq)->GetName());
         }
-        ((NiAVObject*)pForwardSequence)->DecRefCount();
+        ((NiAVObject*)pSeq)->DecRefCount();
     }
-    pForwardSequence = apSeq;
-    if (pForwardSequence)
+    pSeq = apSeq;
+    if (pSeq)
     {
-        ((fnv_0048f010::WaitableObject*)pForwardSequence)->NiRefObject_IncRefCount();
+        ((fnv_0048f010::WaitableObject*)pSeq)->NiRefObject_IncRefCount();
     }
 }
 
@@ -597,6 +609,8 @@ struct FUN_0048f0c0 : public FUN_0048f1b0
 };
 
 // @fnv 0x0048f0c0
+// pdb: AnimSequenceMultiple::AnimSequenceMultiple | Animation.obj | debug, call graph, high
+// pdb params: apSingleSeq
 FUN_0048f0c0::FUN_0048f0c0(AnimSequenceSingle* apSingleSeq)
 {
     m_ppVirtualMethodTable = &DAT_0101d908;
@@ -656,12 +670,15 @@ struct ST_0048f3a0
 };
 // Calls a function on seq, then passes seq by address to a function on the object at this+4.
 // @fnv 0x0048f3a0
-void AnimSequenceMultiple::AssignSequence(BSAnimGroupSequence* seq, bool b)
+// pdb: AnimSequenceMultiple::SetSequence | Animation.obj | retail, vtable slot, high
+// pdb params: apSeq, abReleaseModelLoader
+void AnimSequenceMultiple::AssignSequence(BSAnimGroupSequence* apSeq, bool abReleaseModelLoader)
 {
-    ((WaitableObject*)seq)->NiRefObject_IncRefCount();
-    (*(ST_0048f3a0**)((char*)this + 4))->NiTPointerListBase_DFALL_NiTListItem_BSAnimGroupSequence_const_BSAnimGroupSequence_const_AddTail(&seq);
+    ((WaitableObject*)apSeq)->NiRefObject_IncRefCount();
+    (*(ST_0048f3a0**)((char*)this + 4))->NiTPointerListBase_DFALL_NiTListItem_BSAnimGroupSequence_const_BSAnimGroupSequence_const_AddTail(&apSeq);
 }
 
+// pdb: class TaskQueueInterface, size 0x10 (here 0x1), 4 members
 class TaskQueueInterface
 {
   public:
@@ -671,6 +688,8 @@ class TaskQueueInterface
 
 // @fnv 0x004902f0
 // src: XBOX_PDB 0x004902f0
+// pdb: NiAVObject::SetSelectiveUpdate | Animation.obj | debug, upstream name already matches, high
+// pdb params: bUpdate
 void TaskQueueInterface::NiAVObject_SetSelectiveUpdate(bool bUpdate)
 {
     SetTaskFlagDWord(bUpdate, 2);
@@ -685,6 +704,8 @@ NiAVObject* __cdecl BSUtilities_GetObjectByName_00c4b310(NiAVObject*, NiFixedStr
 
 // @fnv 0x00490310
 // src: XBOX_PDB 0x00490310
+// pdb: TESObjectREFR::GetActorBone | Animation.obj | debug, call graph (shared callers), high
+// pdb params: apRoot, apSearch
 NiAVObject* FUN_00490310_shell::TESObjectREFR_GetActorBone(NiAVObject* apRoot, NiFixedString* apSearch)
 {
     return BSUtilities_GetObjectByName_00c4b310(apRoot, apSearch, 1);
@@ -720,16 +741,18 @@ template <class T> class BSStringTView
 
 // @fnv 0x00490d90
 // src: COMMUNITY 0x00490d90
+// pdb: NiControllerManager::GetAccumRoot | Animation.obj | debug, upstream name already matches, high
+// pdb locals: I
 NiAVObject* AnimationManagerRootAccess::NiControllerManager_GetAccumRoot()
 {
-    if (m_bUseCumulativeAnimation)
+    if (m_bCumulative)
     {
         for (unsigned int uiIndex = 0;
-             uiIndex < reinterpret_cast<GlobalObject_004aff00*>(&m_kSequences)->GetSize();
+             uiIndex < reinterpret_cast<GlobalObject_004aff00*>(&m_kSequenceArray)->GetSize();
              ++uiIndex)
         {
             if (reinterpret_cast<const BSStringTView<char>&>(
-                    reinterpret_cast<BSSimpleArrayView<unsigned int, 1024>*>(&m_kSequences)
+                    reinterpret_cast<BSSimpleArrayView<unsigned int, 1024>*>(&m_kSequenceArray)
                         ->GetAt(uiIndex))
                     .
                     operator const char*())
@@ -738,7 +761,7 @@ NiAVObject* AnimationManagerRootAccess::NiControllerManager_GetAccumRoot()
                     const_cast<TESChallenge*>(
                         reinterpret_cast<const TESChallenge*>(reinterpret_cast<const BSStringTView<char>&>(
                                                                   reinterpret_cast<BSSimpleArrayView<unsigned int, 1024>*>(
-                                                                      &m_kSequences)
+                                                                      &m_kSequenceArray)
                                                                       ->GetAt(uiIndex))
                                                                   .
                                                                   operator const char*()))
@@ -758,11 +781,13 @@ void __fastcall Animation_UpdateState_0048f1b0(void* pThis);
 extern int DAT_0101d8c8;
 
 // @fnv 0x00490e10
-void* __fastcall ConstructAnimSequenceSingle(AnimSequenceSingle* pThis)
+// src: XBOX_DEBUG_PDB 0x00490e10
+// pdb: AnimSequenceSingle::AnimSequenceSingle | Animation.obj | debug, call graph, high
+void* __fastcall AnimSequenceSingle_ctor(AnimSequenceSingle* pThis)
 {
     Animation_UpdateState_0048f1b0(pThis);
     *reinterpret_cast<void**>(pThis) = &DAT_0101d8c8;
-    pThis->pForwardSequence = 0;
+    pThis->pSeq = 0;
     return pThis;
 }
 
@@ -778,6 +803,7 @@ template <class T> class BSStringTView
 }  // namespace fnv_00490e40
 
 // @fnv 0x00490e40
+// pdb: BSTempEffectParticle::GetParticleObject | BGSDecalManager.obj | debug, call graph, medium
 BSAnimGroupSequence* LocalAnimIdle::GetControllerSequence()
 {
     return (BSAnimGroupSequence*)(const char*)*(fnv_00490e40::BSStringTView<char>*)((char*)this + 0x18);
@@ -794,6 +820,7 @@ template <class T> class BSStringTView
 
 // @fnv 0x00490f80
 // src: XBOX_PDB 0x00490f80
+// pdb: PlayerCharacter::GetInventory3D | Animation.obj | debug, upstream name already matches, high
 const char* __fastcall PlayerCharacter_GetInventory3D(char* pThis)
 {
     return *(const BSStringTView<char>*)(pThis + 0x69c);
@@ -812,6 +839,9 @@ struct _FakeNiNode
 // Recursively checks whether apAVObject or any descendant is a NiTriBasedGeom with a skin instance, returning true if found.
 // @fnv 0x004910d0
 // src: XBOX_PDB 0x004910d0
+// pdb: Animation::FindSkinnedNode | Animation.obj | retail, upstream name already matches, high
+// pdb params: apAVObject
+// pdb locals: pnode, pGeom, bretVal, n, pAVObj
 bool __cdecl Animation_FindSkinnedNode(NiAVObject* apAVObject)
 {
     bool bretVal = false;
@@ -861,6 +891,7 @@ struct AnimationSequenceTimingAccess : public NiControllerSequence
 
 // @fnv 0x00493770
 // src: XBOX_PDB 0x00493770
+// pdb: NiControllerSequence::GetPhase | Animation.obj | debug, upstream name already matches, high
 float AnimationSequenceTimingAccess::NiControllerSequence_GetPhase()
 {
     return GetSequenceEndTime(this) - ((NiControllerSequence*)this)->NiPSysSpawnModifier_GetLifeSpan();
@@ -873,6 +904,8 @@ struct AnimationSequenceInterpolatorAccess : public NiControllerSequence
 };
 
 // @fnv 0x004937a0
+// pdb: NiControllerSequence::GetInterpolatorAt | Animation.obj | debug, upstream name already matches, high
+// pdb params: uiIndex
 // BSStringTView: unit-local view (declares only what 0x004937a0 calls), not the shared BSStringT; renamed so no local type keeps the shared name
 template <class T> class BSStringTView
 {
@@ -880,9 +913,9 @@ template <class T> class BSStringTView
     operator const T*() const;
 };
 // src: COMMUNITY 0x004937a0
-NiInterpolator* AnimationSequenceInterpolatorAccess::NiControllerSequence_GetInterpolatorAt(unsigned int i)
+NiInterpolator* AnimationSequenceInterpolatorAccess::NiControllerSequence_GetInterpolatorAt(unsigned int uiIndex)
 {
-    return (NiInterpolator*)(const char*)*(BSStringTView<char>*)((char*)(*(char**)((char*)this + 0x14)) + (i << 4));
+    return (NiInterpolator*)(const char*)*(BSStringTView<char>*)((char*)(*(char**)((char*)this + 0x14)) + (uiIndex << 4));
 }
 }  // namespace fnv_004937a0
 
@@ -896,6 +929,8 @@ struct FUN_00493800_impl : public Animation
 
 // @fnv 0x00493800
 // src: XBOX_PDB 0x00493800
+// pdb: Animation::GetTime | Animation.obj | debug, upstream name already matches, high
+// pdb params: apSequence
 float FUN_00493800_impl::Animation_GetTime(BGSCameraShot* apSequence)
 {
     return GetSequenceEndTime(apSequence) + *(float*)((char*)this + 0xd0);
@@ -911,6 +946,7 @@ bool __fastcall _ref_008256d0(void* pThis);
 
 // @fnv 0x00493830
 // src: XBOX_PDB 0x00493830
+// pdb: Animation::GetAnimsLoading | Animation.obj | debug, upstream name already matches, high
 bool FUN_00493830_shell::Animation_GetAnimsLoading()
 {
     return !_ref_008256d0(reinterpret_cast<char*>(this) + 0x104);
@@ -927,9 +963,11 @@ struct ST_00493860
 };
 // @fnv 0x00493860
 // src: XBOX_PDB 0x00493860
-void FUN_00493860_shell::Animation_SetMoved(bool f)
+// pdb: Animation::SetMoved | Animation.obj | debug, upstream name already matches, high
+// pdb params: abFlag
+void FUN_00493860_shell::Animation_SetMoved(bool abFlag)
 {
-    ((ST_00493860*)this)->SetFlag(f, true);
+    ((ST_00493860*)this)->SetFlag(abFlag, true);
 }
 
 struct FUN_00493b90_shell : public Animation
@@ -944,6 +982,7 @@ struct FUN_00493990_helper
 
 // @fnv 0x00493b90
 // src: XBOX_PDB 0x00493b90
+// pdb: Animation::GetMoved | Animation.obj | debug, upstream name already matches, high
 bool FUN_00493b90_shell::Animation_GetMoved()
 {
     return ((FUN_00493990_helper*)this)->HasFlag(1);
@@ -956,6 +995,8 @@ struct FUN_004941c0_shell : public AnimationVector
 
 // Multiplies x, y and z by the reciprocal of fScalar and returns this.
 // @fnv 0x004941c0
+// pdb: NiControllerSequence::GetTargetAt | Animation.obj | debug, object-file run extension, low
+// pdb params: uiIndex
 AnimationVector* FUN_004941c0_shell::ScaleByInverse(float fScalar)
 {
     float fReciprocal = 1.0f / fScalar;
@@ -1011,7 +1052,7 @@ extern float DAT_0101d890;
 // @fnv 0x004942c0
 bool NiQuatTransform::IsTranslateXNotNegatedConstant()
 {
-    return x != -DAT_0101d890;
+    return m_kTranslate != -DAT_0101d890;
 }
 
 struct FUN_00494300_shell : public Animation
@@ -1034,12 +1075,15 @@ TESAnimGroup* __fastcall FUN_0048f7f0(const BSAnimGroupSequence*);
 
 // @fnv 0x00494300
 // src: COMMUNITY 0x00494300
+// pdb: Animation::GetGroupSpeed | Animation.obj | retail, upstream name already matches, high
+// pdb params: asAnimGroup
+// pdb locals: panimGroup, panimSeq
 short FUN_00494300_shell::Animation_GetGroupSpeed(unsigned short asAnimGroup)
 {
     AnimSequenceBase* panimSeq;
     TESAnimGroup* panimGroup;
 
-    if (!m_pOwnerReference->GetAt(asAnimGroup, panimSeq))
+    if (!pAnimSequenceMap->GetAt(asAnimGroup, panimSeq))
         return 0;
 
     if (reinterpret_cast<AnimSequenceBase_vtable*>(panimSeq)->vfn_c())
@@ -1070,11 +1114,13 @@ struct FUN_004946a0_shell : public Animation
 
 struct FUN_00493d50_helper
 {
-    void CheckAnimGroupMovement(TESAnimGroup*);
+    void Animation_InitGroupSpeed(TESAnimGroup*);
 };
 
 // @fnv 0x004946a0
 // src: COMMUNITY 0x004946a0
+// pdb: Animation::AddGroup | Animation.obj | retail, upstream name already matches, high
+// pdb params: pAnimGroup
 void FUN_004946a0_shell::Animation_AddGroup(TESAnimGroup* pAnimGroup)
 {
     if (!pAnimGroup)
@@ -1088,7 +1134,7 @@ void FUN_004946a0_shell::Animation_AddGroup(TESAnimGroup* pAnimGroup)
             reinterpret_cast<TESActorBaseData*>(pAnimGroup)->GetAnimGroupType_0047d3b0();
     }
 
-    reinterpret_cast<FUN_00493d50_helper*>(this)->CheckAnimGroupMovement(pAnimGroup);
+    reinterpret_cast<FUN_00493d50_helper*>(this)->Animation_InitGroupSpeed(pAnimGroup);
 }
 
 struct FUN_00494710_shell : public Animation
@@ -1098,10 +1144,13 @@ struct FUN_00494710_shell : public Animation
 
 // @fnv 0x00494710
 // src: XBOX_PDB 0x00494710
-bool FUN_00494710_shell::Animation_GroupLoaded(unsigned short ausGroupIndex)
+// pdb: Animation::GroupLoaded | Animation.obj | retail, upstream name already matches, high
+// pdb params: asTestGroup
+// pdb locals: panimSeq
+bool FUN_00494710_shell::Animation_GroupLoaded(unsigned short asTestGroup)
 {
     AnimSequenceBase* panimSeq;
-    return m_pOwnerReference->GetAt(ausGroupIndex, panimSeq);
+    return pAnimSequenceMap->GetAt(asTestGroup, panimSeq);
 }
 
 // @fnv 0x00495460
@@ -1147,6 +1196,7 @@ extern Setting g_01267c30;
 
 // @fnv 0x00495580
 // src: XBOX_PDB 0x00495580
+// pdb: bhkRagdollController::QFootIK | Animation.obj | debug, upstream name already matches, high
 unsigned char bhkRagdollController_QFootIK()
 {
     return *g_01267c30.FUN_00408d60();
@@ -1194,9 +1244,10 @@ class GlobalObject_004aff00
 
 // @fnv 0x00495d00
 // src: XBOX_PDB 0x00495d00
+// pdb: NiControllerManager::GetSequenceCount | Animation.obj | debug, call graph, high
 unsigned int NiControllerManager::GetSequenceCount_00495d00()
 {
-    return ((GlobalObject_004aff00*)&m_kSequences)->GetSize();
+    return ((GlobalObject_004aff00*)&m_kSequenceArray)->GetSize();
 }
 
 
@@ -1222,15 +1273,18 @@ template <typename T, unsigned int N> class BSSimpleArrayView
 // Returns the controller sequence stored at the given index in the array at offset 0x34, reinterpreted as a NiControllerSequence pointer.
 // @fnv 0x00495d20
 // src: XBOX_PDB 0x00495d20
+// pdb: NiControllerManager::GetSequenceAt | Animation.obj | debug, call graph, medium
+// pdb params: uiIndex
 NiControllerSequence* NiControllerManager::GetSequenceAt_00495d20(unsigned int uiIndex)
 {
     return (NiControllerSequence*)(const char*)reinterpret_cast<fnv_00495d20::BSStringTView<char>&>(
-        reinterpret_cast<fnv_00495d20::BSSimpleArrayView<unsigned int, 1024>*>(&m_kSequences)->GetAt(uiIndex));
+        reinterpret_cast<fnv_00495d20::BSSimpleArrayView<unsigned int, 1024>*>(&m_kSequenceArray)->GetAt(uiIndex));
 }
 
 
 // @fnv 0x00495f30
 // src: XBOX_PDB 0x00495f30
+// pdb: NiControllerSequence::GetTextKeys | Animation.obj | debug, call graph (shared callers), high
 TimedTextEntry* NiTextKeyExtraData::GetKeys_00495f30(unsigned int* uiNumKeys)
 {
     *uiNumKeys = m_uiNumKeys;
@@ -1257,6 +1311,9 @@ template <typename T> class BSStringTView
 
 // @fnv 0x00496080
 // src: XBOX_PDB 0x00496080
+// pdb: Animation::ClearGroup | Animation.obj | retail, upstream name already matches, high
+// pdb params: aeSection, afEaseOutTime
+// pdb locals: esection
 void FUN_00496080_shell::Animation_ClearGroup(int aeSection, float afEaseOutTime)
 {
     int esection = aeSection;
@@ -1320,10 +1377,11 @@ struct FUN_00496280_shell : public Animation
 void __fastcall Animation_ClearAccumRootTranslate(void*);
 void* __cdecl DynamicCastByRTTI(const void*, void*);
 extern char const* const g_011f36ec_arg1;
-extern int g_011f371c;
+extern int NiBlendAccumTransformInterpolator_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f371c (old: g_011f371c)
 
 
 
+// pdb: class Model, size 0x10 (here 0x1), 4 members
 class Model
 {
   public:
@@ -1391,6 +1449,8 @@ class FakeVtable_00496280
 
 // @fnv 0x00496280
 // src: XBOX_PDB 0x00496280
+// pdb: Animation::ZeroGlobalTransform | Animation.obj | retail, upstream name already matches, high
+// pdb locals: pcont, pinter, pinter2, pblendInter
 void FUN_00496280_shell::Animation_ZeroGlobalTransform()
 {
     if (*(NiNode**)((char*)this + 0xc) == 0)
@@ -1410,10 +1470,10 @@ void FUN_00496280_shell::Animation_ZeroGlobalTransform()
             if (pinter2)
             {
                 NiBlendAccumTransformInterpolator* pBlendInterpolator =
-                    (NiBlendAccumTransformInterpolator*)DynamicCastByRTTI(&g_011f371c, pinter2);
+                    (NiBlendAccumTransformInterpolator*)DynamicCastByRTTI(&NiBlendAccumTransformInterpolator_ms_RTTI, pinter2);
                 if (pBlendInterpolator)
                 {
-                    pBlendInterpolator->ResetAccumulation();
+                    pBlendInterpolator->ClearAccumulatedTransform();
                 }
             }
         }
@@ -1424,9 +1484,11 @@ void FUN_00496280_shell::Animation_ZeroGlobalTransform()
 
 
 // @fnv 0x00496420
+// pdb: NiQuatTransform::SetScale | Animation.obj | debug, upstream name already matches, high
+// pdb params: fScale
 void NiQuatTransform::SetScale(float fScale)
 {
-    scale = fScale;
+    m_fScale = fScale;
     SetScaleValid(true);
 }
 
@@ -1450,12 +1512,16 @@ struct FUN_00496550_shell : public Animation
 };
 
 float __cdecl GetFloatProperty(NiNode*, int);
+// pdb: class Calendar, size 0x1c (here 0x1), 7 members
 struct Calendar
 {
     unsigned int GetDaysPassed();
 };
 
 // @fnv 0x00496550
+// pdb: Animation::GetSmallestHavokBlendValue | Animation.obj | debug, object-file gap fill, medium
+// pdb params: apNode
+// pdb locals: fretVal, fblendValue
 float FUN_00496550_shell::GetMinBlendValue(NiNode* apNode)
 {
     float fMinBlend = 1.0f;
@@ -1464,7 +1530,7 @@ float FUN_00496550_shell::GetMinBlendValue(NiNode* apNode)
         float fblendValue = GetFloatProperty(apNode, 0);
         if (fblendValue < fMinBlend)
             fMinBlend = fblendValue;
-        if (apNode != m_pObjectNode)
+        if (apNode != pAccumRoot)
         {
             fblendValue = GetMinBlendValue((NiNode*)((Calendar*)apNode)->GetDaysPassed());
             if (fblendValue < fMinBlend)
@@ -1500,6 +1566,7 @@ template <typename T> class BSStringTView
 
 // @fnv 0x00496940
 // src: XBOX_PDB 0x00496940
+// pdb: Animation::GetControllerManager | Animation.obj | debug, call graph (shared callers), medium
 NiControllerManager* Animation::GetControllerManager_00496940()
 {
     return (NiControllerManager*)(const char*)*(fnv_00496940::BSStringTView<char>*)((char*)this + 0xd8);
@@ -1514,6 +1581,7 @@ struct FUN_00496980_caller
 
 // Calls FUN_004969b0 on this, then frees this with NiMemObject::operator delete when flags has bit 1 set, and returns this.
 // @fnv 0x00496980
+// pdb: AnimIdle::`scalar deleting destructor' | Animation.obj | retail, vtable slot, high
 void* FUN_00496980_caller::FUN_00496980(unsigned int flags)
 {
     FUN_004969b0(this);
@@ -1543,15 +1611,17 @@ struct FUN_00496fe0_cls
     AnimationPointer<NiNode> node;
     char pad2[0x34 - 0x1c];
     FUN_00496fe0_tgt* tgt;
-    bool AnimIdle_PlayAnim(NiNode* n);
+    bool AnimIdle_PlayAnim(NiNode* apSeq);
 };
 // @fnv 0x00496fe0
 // src: COMMUNITY 0x00496fe0
-bool FUN_00496fe0_cls::AnimIdle_PlayAnim(NiNode* apNode)
+// pdb: AnimIdle::PlayAnim | Animation.obj | retail, upstream name already matches, high
+// pdb params: apSeq
+bool FUN_00496fe0_cls::AnimIdle_PlayAnim(NiNode* apSeq)
 {
     if (state != 1)
         return false;
-    node = apNode;
+    node = apSeq;
     state = 2;
     if (kind == 3)
         tgt->Actor_SetAnimAction(0xd, ((BSStringTView<char>*)&node)->operator const char*());
@@ -1665,7 +1735,7 @@ struct FUN_00497f20_shell : public Animation
 
 
 void __fastcall FUN_004965d0(void* pThis, int, TESIdleForm*, int, int, Actor*, int, Animation*);
-void __fastcall SpecialIdlePlay_0(Animation* pThis);
+void __fastcall SpecialIdlePlay(Animation* pThis);
 
 
 struct VTable0x390
@@ -1903,6 +1973,9 @@ struct VTable0x390
 
 // @fnv 0x00497f20
 // src: XBOX_PDB 0x00497f20
+// pdb: Animation::SpecialIdleAuto | Animation.obj | retail, upstream name already matches, high
+// pdb params: apIdleForm, apActor, aeSection, aeType
+// pdb locals: tempMemContext, etype
 void FUN_00497f20_shell::Animation_SpecialIdleAuto(TESIdleForm* apIdleForm, Actor* apActor, int aeSection, int aeType)
 {
     AutoMemContext tempMemContext((MEM_CONTEXT)0x33, true,
@@ -1919,7 +1992,7 @@ void FUN_00497f20_shell::Animation_SpecialIdleAuto(TESIdleForm* apIdleForm, Acto
     *(AnimationPointer<NiNode>*)((char*)this + 0x128) =
         (NiNode*)new LocalAnimIdle(apIdleForm, aeSection, etype, apActor, 0, this);
     ((VTable0x390*)((TES*)apActor)->GetLogDate())->v390(apIdleForm);
-    ::SpecialIdlePlay_0(this);
+    ::SpecialIdlePlay(this);
 }
 
 class bhkWorldObject;
@@ -1944,20 +2017,23 @@ struct TESObjectREFR_GetFlags_Helper
 
 // @fnv 0x00498170
 // src: COMMUNITY 0x00498170
+// pdb: Animation::SpecialIdlePlay | Animation.obj | retail, object-file run extension, low
+// pdb note: debug build links it to Animation::SpecialIdleReplace
+// pdb params: apActor
 bool Animation::SpecialIdleReplace_0()
 {
-    if (reinterpret_cast<fnv_00498170::BSStringTView<char>*>(&LocalStateValue)->operator const char*() &&
+    if (reinterpret_cast<fnv_00498170::BSStringTView<char>*>(&spAnimIdleQueued)->operator const char*() &&
         reinterpret_cast<fnv_00498170::TESObjectREFR_GetFlags_Helper*>(
-            const_cast<char*>(reinterpret_cast<fnv_00498170::BSStringTView<char>*>(&LocalStateValue)->operator const char*()))
+            const_cast<char*>(reinterpret_cast<fnv_00498170::BSStringTView<char>*>(&spAnimIdleQueued)->operator const char*()))
                 ->GetFlags() == 1 &&
         AddAnimation(
             reinterpret_cast<KFModel*>(
                 reinterpret_cast<bhkCollisionObject*>(
-                    const_cast<char*>(reinterpret_cast<fnv_00498170::BSStringTView<char>*>(&LocalStateValue)->operator const char*()))
+                    const_cast<char*>(reinterpret_cast<fnv_00498170::BSStringTView<char>*>(&spAnimIdleQueued)->operator const char*()))
                     ->GetWorldObject()),
             false))
     {
-        reinterpret_cast<AnimationPointer<NiNode>*>(&LocalStateValue)->operator=(0);
+        reinterpret_cast<AnimationPointer<NiNode>*>(&spAnimIdleQueued)->operator=(0);
         return true;
     }
     return false;
@@ -1971,11 +2047,14 @@ struct FUN_00498910_shell : public Animation
 
 // @fnv 0x00498910
 // src: XBOX_PDB 0x00498910
+// pdb: Animation::SpecialIdleFree | Animation.obj | retail, upstream name already matches, high
+// pdb params: abFreeQueued, abForceDelete
+// pdb locals: esection
 void FUN_00498910_shell::Animation_SpecialIdleFree(bool abFreeQueued, bool abForceDelete)
 {
-    if (LocalInput)
+    if (spAnimIdle)
     {
-        int esection = LocalInput->GetSection();
+        int esection = spAnimIdle->GetSection();
         switch (esection)
         {
         case 0x15:
@@ -1985,43 +2064,43 @@ void FUN_00498910_shell::Animation_SpecialIdleFree(bool abFreeQueued, bool abFor
             esection = 1;
             break;
         }
-        if (LocalInput->GetControllerSequence() && m_pChildTile[esection] == LocalInput->GetControllerSequence())
+        if (spAnimIdle->GetControllerSequence() && pCurrentSequence[esection] == spAnimIdle->GetControllerSequence())
         {
             if (abForceDelete)
             {
-                m_pChildTile[esection] = 0;
+                pCurrentSequence[esection] = 0;
             }
             else
             {
-                switch (LocalInput->GetControllerSequence()->GetState())
+                switch (spAnimIdle->GetControllerSequence()->GetState())
                 {
                 case 2:
                 case 5:
                     Warning("ANIMATION: Trying to SpecialIdleFree an animation '%s' that just started.",
-                            (const char*)static_cast<const NiControllerSequence*>(LocalInput->GetControllerSequence())->GetName());
+                            (const char*)static_cast<const NiControllerSequence*>(spAnimIdle->GetControllerSequence())->GetName());
                     return;
                 }
-                BlendOut(LocalInput->GetSection(), false);
+                BlendOut(spAnimIdle->GetSection(), false);
             }
         }
-        if (!abForceDelete && !LocalOutput[0])
+        if (!abForceDelete && !spAnimIdleFreeWhenInactiveA[0])
         {
-            LocalOutput[0] = LocalInput;
-            LocalInput = 0;
+            spAnimIdleFreeWhenInactiveA[0] = spAnimIdle;
+            spAnimIdle = 0;
         }
-        else if (!abForceDelete && !LocalOutput[1])
+        else if (!abForceDelete && !spAnimIdleFreeWhenInactiveA[1])
         {
-            LocalOutput[1] = LocalInput;
-            LocalInput = 0;
+            spAnimIdleFreeWhenInactiveA[1] = spAnimIdle;
+            spAnimIdle = 0;
         }
         else
         {
-            AssignControllerManager(LocalInput);
+            AssignControllerManager(spAnimIdle);
         }
     }
-    if (abFreeQueued && LocalStateValue)
+    if (abFreeQueued && spAnimIdleQueued)
     {
-        int esection = LocalStateValue->GetSection();
+        int esection = spAnimIdleQueued->GetSection();
         switch (esection)
         {
         case 0x15:
@@ -2031,45 +2110,45 @@ void FUN_00498910_shell::Animation_SpecialIdleFree(bool abFreeQueued, bool abFor
             esection = 1;
             break;
         }
-        if (LocalStateValue->GetControllerSequence() &&
-            m_pChildTile[esection] == LocalStateValue->GetControllerSequence())
+        if (spAnimIdleQueued->GetControllerSequence() &&
+            pCurrentSequence[esection] == spAnimIdleQueued->GetControllerSequence())
         {
             if (abForceDelete)
             {
-                m_pChildTile[esection] = 0;
+                pCurrentSequence[esection] = 0;
             }
             else
             {
-                switch (LocalStateValue->GetControllerSequence()->GetState())
+                switch (spAnimIdleQueued->GetControllerSequence()->GetState())
                 {
                 case 2:
                 case 5:
                     Warning("ANIMATION: Trying to SpecialIdleFree an animation '%s' that just started.",
-                            (const char*)static_cast<const NiControllerSequence*>(LocalStateValue->GetControllerSequence())->GetName());
+                            (const char*)static_cast<const NiControllerSequence*>(spAnimIdleQueued->GetControllerSequence())->GetName());
                     return;
                 }
                 BlendOut(esection, false);
             }
         }
-        if (!abForceDelete && !LocalOutput[0])
+        if (!abForceDelete && !spAnimIdleFreeWhenInactiveA[0])
         {
-            LocalOutput[0] = LocalStateValue;
-            LocalStateValue = 0;
+            spAnimIdleFreeWhenInactiveA[0] = spAnimIdleQueued;
+            spAnimIdleQueued = 0;
         }
-        else if (!abForceDelete && !LocalOutput[1])
+        else if (!abForceDelete && !spAnimIdleFreeWhenInactiveA[1])
         {
-            LocalOutput[1] = LocalStateValue;
-            LocalStateValue = 0;
+            spAnimIdleFreeWhenInactiveA[1] = spAnimIdleQueued;
+            spAnimIdleQueued = 0;
         }
         else
         {
-            AssignControllerManager(LocalStateValue);
+            AssignControllerManager(spAnimIdleQueued);
         }
     }
     else
     {
-        LocalInput = LocalStateValue;
-        LocalStateValue = 0;
+        spAnimIdle = spAnimIdleQueued;
+        spAnimIdleQueued = 0;
     }
 }
 
@@ -2088,6 +2167,7 @@ template <class T> class BSStringTView
 
 // @fnv 0x00498cf0
 // src: XBOX_PDB 0x00498cf0
+// pdb: Animation::SpecialIdleGetSequence | Animation.obj | debug, upstream name already matches, high
 BSAnimGroupSequence* FUN_00498cf0_shell::Animation_SpecialIdleGetSequence()
 {
     if (!*(BSStringTView<char>*)((char*)this + 0x124))
@@ -2103,6 +2183,8 @@ struct FUN_00498ea0_wrap
 
 // Checks the four LocalAnimIdle pointers at offsets 0x124-0x130 and returns true if any of their sequences equals pSequence.
 // @fnv 0x00498ea0
+// pdb: Animation::SpecialIdleWorking | Animation.obj | debug, object-file gap fill, medium
+// pdb params: apSeq
 bool FUN_00498ea0_wrap::impl(BSAnimGroupSequence* pSequence)
 {
     if (*(AnimationPointer<LocalAnimIdle>*)((char*)this + 0x124) != 0)
@@ -2148,6 +2230,7 @@ struct FUN_00498f80_cls
 };
 // @fnv 0x00498f80
 // src: XBOX_PDB 0x00498f80
+// pdb: Animation::SpecialIdleWorking | Animation.obj | debug, call graph, high
 bool FUN_00498f80_cls::Animation_SpecialIdleWorking()
 {
     if (a.operator const char*())
@@ -2195,6 +2278,7 @@ struct FUN_0049bb20_cls : public NiMemObject
 };
 // Calls FUN_004eeb00, then if bit 0 of f is set frees this with operator delete and returns this.
 // @fnv 0x0049bb20
+// pdb: BSAnimGroupSequence::`scalar deleting destructor' | Animation.obj | retail, vtable slot, high
 void* FUN_0049bb20_cls::FUN_0049bb20(unsigned int auiFlags)
 {
     FUN_004eeb00();
@@ -2269,7 +2353,7 @@ typedef char _sizecheck_MagicCaster[sizeof(MagicCaster) == 12 ? 1 : -1];
 // @fnv 0x00825c00
 unsigned int GameTimerRecord::GetTime()
 {
-    return m_uiFirstTimerValue;
+    return iLastTime;
 }
 
 void __cdecl Deallocate(void*);
@@ -2283,6 +2367,7 @@ struct DelStandIn
     void* FUN_0048efc0(unsigned int flags);
 };
 // @fnv 0x0048efc0
+// pdb: AnimSequenceSingle::`scalar deleting destructor' | Animation.obj | retail, vtable slot, high
 void* DelStandIn::FUN_0048efc0(unsigned int flags)
 {
     ((DtorStandIn*)this)->FUN_0083dec0();
@@ -2354,22 +2439,25 @@ struct SeqListT : public AnimationOffset08View, public Flt, public FUN_006317a0_
 
 // Returns the BSAnimGroupSequence at aiSequenceIndex, or a random one when the index is -1 or out of range, by walking the list.
 // @fnv 0x0048f450
+// pdb: AnimSequenceMultiple::GetSequenceToPlay | Animation.obj | retail, vtable slot, high
+// pdb params: aiSequenceIndex
+// pdb locals: listIt, irand, pseq
 BSAnimGroupSequence* AnimSequenceMultiple::GetSequenceAtIndex(char aiSequenceIndex)
 {
     BSAnimGroupSequence* pForwardSequence;
     void* listIt;
     int iTargetIndex;
-    if (aiSequenceIndex != -1 && (unsigned int)aiSequenceIndex < ((fnv_0048f450::AnimationOffset08View*)m_pSingleSequence)->GetFlags())
+    if (aiSequenceIndex != -1 && (unsigned int)aiSequenceIndex < ((fnv_0048f450::AnimationOffset08View*)pSeqList)->GetFlags())
         iTargetIndex = aiSequenceIndex;
     else
-        iTargetIndex = fnv_0048f450::DialogueRandom() % ((fnv_0048f450::AnimationOffset08View*)m_pSingleSequence)->GetFlags();
-    listIt = (void*)(unsigned int)*(fnv_0048f450::Flt*)m_pSingleSequence;
+        iTargetIndex = fnv_0048f450::DialogueRandom() % ((fnv_0048f450::AnimationOffset08View*)pSeqList)->GetFlags();
+    listIt = (void*)(unsigned int)*(fnv_0048f450::Flt*)pSeqList;
     while (listIt)
     {
-        pForwardSequence = *(BSAnimGroupSequence**)((fnv_0048f450::FUN_006317a0_struct*)m_pSingleSequence)->AddEight((int)listIt);
+        pForwardSequence = *(BSAnimGroupSequence**)((fnv_0048f450::FUN_006317a0_struct*)pSeqList)->AddEight((int)listIt);
         if (iTargetIndex-- == 0)
             return pForwardSequence;
-        listIt = ((fnv_0048f450::NiTPointerList_TESObjectREFR*)m_pSingleSequence)->DereferenceIfNotNull(listIt);
+        listIt = ((fnv_0048f450::NiTPointerList_TESObjectREFR*)pSeqList)->DereferenceIfNotNull(listIt);
     }
     return 0;
 }
@@ -2378,7 +2466,7 @@ BSAnimGroupSequence* AnimSequenceMultiple::GetSequenceAtIndex(char aiSequenceInd
 namespace fnv_00493d50 {
 struct FUN_00493d50_shell : public Animation
 {
-    void CheckAnimGroupMovement(TESAnimGroup*);
+    void Animation_InitGroupSpeed(TESAnimGroup*);
 };
 
 struct AnimSequenceBase_Helper
@@ -2465,7 +2553,11 @@ extern const char* DAT_011977a4[];
 extern double _gModifierZero;
 
 // @fnv 0x00493d50
-void FUN_00493d50_shell::CheckAnimGroupMovement(TESAnimGroup* apAnimGroup)
+// src: XBOX_RETAIL_PDB 0x00493d50
+// pdb: Animation::InitGroupSpeed | Animation.obj | retail, unique string literal, high
+// pdb params: apAnimGroup
+// pdb locals: pbip01, eanimGroup, estart, sanimGroup, panimSeq, estop, bcheckForMovement, spseq, interpDelta, n, pinterp, fstopTime, fstartTime, quatStop, quatStart, delta
+void FUN_00493d50_shell::Animation_InitGroupSpeed(TESAnimGroup* apAnimGroup)
 {
     unsigned short sanimGroup = ((TESActorBaseData*)apAnimGroup)->GetAnimGroupType_0047d3b0();
     unsigned int eanimGroup = apAnimGroup->GetType();
@@ -2597,7 +2689,7 @@ struct SeqIface
     virtual void vfn_8();
     virtual bool IsSingleSeq();
     virtual SeqIface* GetSequenceAtIndex(int);
-    SeqIface* FindObjectByNameVariant(void*, int);
+    SeqIface* AnimSequenceMultiple_GetCorrespondingSequence(void*, int);
 };
 struct FUN_004948c0_shell : public Animation
 {
@@ -2606,17 +2698,20 @@ struct FUN_004948c0_shell : public Animation
 };
 // Looks up the sequence base for a group, resolves its type when type is -1, picks a single or multiple sequence, and passes it to FUN_004949a0.
 // @fnv 0x004948c0
-SeqIface* FUN_004948c0_shell::GetSequenceForGroup(unsigned short group, int type)
+// pdb: Animation::StartGroup | Animation.obj | retail, call graph (shared callers), high
+// pdb params: asNewGroup, aeSection
+// pdb locals: etestSection, panimSeq, pseq, pmultiple
+SeqIface* FUN_004948c0_shell::GetSequenceForGroup(unsigned short asNewGroup, int aeSection)
 {
     AnimSequenceBase* pSeqBase;
     SeqIface* pseqX;
     SeqIface* pSeqMultiple;
     int iType;
-    if (group == 0xff || !m_pOwnerReference->GetAt(group, pSeqBase))
+    if (asNewGroup == 0xff || !pAnimSequenceMap->GetAt(asNewGroup, pSeqBase))
         return 0;
-    iType = type;
+    iType = aeSection;
     if (iType == -1)
-        iType = DAT_011977e0[GetType(group)].iType;
+        iType = DAT_011977e0[GetType(asNewGroup)].iType;
     switch (iType)
     {
     case 5:
@@ -2624,13 +2719,13 @@ SeqIface* FUN_004948c0_shell::GetSequenceForGroup(unsigned short group, int type
         if (!((SeqIface*)pSeqBase)->IsSingleSeq())
         {
             pSeqMultiple = (SeqIface*)pSeqBase;
-            pseqX = pSeqMultiple->FindObjectByNameVariant(*(void**)((char*)this + 0xf0), iType);
+            pseqX = pSeqMultiple->AnimSequenceMultiple_GetCorrespondingSequence(*(void**)((char*)this + 0xf0), iType);
             break;
         }
     default:
         pseqX = ((SeqIface*)pSeqBase)->GetSequenceAtIndex(-1);
     }
-    return Animation_StartGroup(pseqX, group, type);
+    return Animation_StartGroup(pseqX, asNewGroup, aeSection);
 }
 
 namespace fnv_00495740 {
@@ -2656,13 +2751,16 @@ int __cdecl TESAnimGroup_GetWeapon(unsigned short);
 
 // Resolves an animation group to an available sequence group, recursing through variant and iron-sights fallbacks and returning 0 when none is found.
 // @fnv 0x00495740
+// pdb: Animation::PickBestAnimation | Animation.obj | retail, call graph (shared callers), high
+// pdb params: asAnimGroup, abRecursive
+// pdb locals: panimSeq, sreturnGroup, stestGroup
 unsigned short FUN_00495740_shell::ResolveAnimGroup(unsigned short asAnimGroup, bool abRecursive)
 {
     AnimSequenceBase* panimSeq;
     unsigned short sreturnGroup;
     unsigned short stestGroup;
 
-    if (((Animation*)this)->m_pOwnerReference->GetAt(asAnimGroup, panimSeq) && panimSeq->GetSequenceAtIndex(-1))
+    if (((Animation*)this)->pAnimSequenceMap->GetAt(asAnimGroup, panimSeq) && panimSeq->GetSequenceAtIndex(-1))
         return asAnimGroup;
 
     if (asAnimGroup & 0x8000)
@@ -2673,7 +2771,7 @@ unsigned short FUN_00495740_shell::ResolveAnimGroup(unsigned short asAnimGroup, 
             return sreturnGroup;
     }
 
-    if (((Animation*)this)->m_pAttachedReference == g_thePlayer && (Animation*)this == g_thePlayer->GetAnimation(true) &&
+    if (((Animation*)this)->pActorRef == g_thePlayer && (Animation*)this == g_thePlayer->GetAnimation(true) &&
         (asAnimGroup & 0x7000))
     {
         switch (DAT_011977d8[asAnimGroup & 0xff].sequenceType)
@@ -2703,7 +2801,7 @@ unsigned short FUN_00495740_shell::ResolveAnimGroup(unsigned short asAnimGroup, 
         switch (TESAnimGroup_GetWeapon(asAnimGroup))
         {
         case 3:
-            if (((Animation*)this)->m_pOwnerReference->GetAt(asAnimGroup & 0xf0ff | 0x200, panimSeq) &&
+            if (((Animation*)this)->pAnimSequenceMap->GetAt(asAnimGroup & 0xf0ff | 0x200, panimSeq) &&
                 panimSeq->GetSequenceAtIndex(-1))
                 return asAnimGroup & 0xf0ff | 0x200;
             break;
@@ -2711,11 +2809,11 @@ unsigned short FUN_00495740_shell::ResolveAnimGroup(unsigned short asAnimGroup, 
         case 4:
             break;
         default:
-            if (((Animation*)this)->m_pOwnerReference->GetAt(asAnimGroup & 0xf0ff | 0x400, panimSeq) &&
+            if (((Animation*)this)->pAnimSequenceMap->GetAt(asAnimGroup & 0xf0ff | 0x400, panimSeq) &&
                 panimSeq->GetSequenceAtIndex(-1))
                 return asAnimGroup & 0xf0ff | 0x400;
         }
-        if (((Animation*)this)->m_pOwnerReference->GetAt(asAnimGroup & 0xf0ff, panimSeq) &&
+        if (((Animation*)this)->pAnimSequenceMap->GetAt(asAnimGroup & 0xf0ff, panimSeq) &&
             panimSeq->GetSequenceAtIndex(-1))
             return asAnimGroup & 0xf0ff;
     }
@@ -2798,6 +2896,10 @@ struct FUN_004969b0 : public EBase
     ~FUN_004969b0();
 };
 // @fnv 0x004969b0
+// pdb: Animation::SetLipTime | Animation.obj | retail, object-file run extension, low
+// pdb note: debug build links it to AnimIdle::~AnimIdle
+// pdb params: afPercent
+// pdb locals: ftimeDelta
 FUN_004969b0::~FUN_004969b0()
 {
     DetachObjectModels(this);
@@ -2820,6 +2922,8 @@ struct HA
 };
 // @fnv 0x00497040
 // src: COMMUNITY 0x00497040
+// pdb: AnimIdle::Update | Animation.obj | retail, upstream name already matches, high
+// pdb params: apAnimation
 void AnimationIdleStateAccess::AnimIdle_Update(Animation* apAnimation)
 {
     if (*(int*)((char*)this + 8) == 2)
@@ -2860,6 +2964,8 @@ struct Flt
 };
 // @fnv 0x0049bca0
 // src: XBOX_PDB 0x0049bca0
+// pdb: Animation::UpdateBipOnly | Animation.obj | retail, upstream name already matches, high
+// pdb params: afTime, apTranslate, abControllers
 void FUN_0049bca0_shell::Animation_UpdateBipOnly(float afTime, AnimationVector* apTranslate, bool abControllers)
 {
     if ((*(FUN_00440460_S**)((char*)this + 0xc)))
@@ -2899,6 +3005,9 @@ struct MapBase
 
 // Looks up the key in the hash bucket; updates the existing item's value, or allocates a new item, inserts it at the bucket head and increments the count.
 // @fnv 0x0049c170
+// pdb: NiTMapBase<NiTPointerAllocator<unsigned int>,unsigned short,AnimSequenceBase *>::SetAt | Animation.obj | debug, call graph, high
+// pdb params: key, val
+// pdb locals: pkItem, uiIndex, uiDepth
 void MapBase::SetOrInsert(unsigned short key, AnimSequenceBase* val)
 {
     unsigned int uiIndex = this->KeyToHashIndex(key);
@@ -2925,6 +3034,7 @@ void __cdecl FinishScriptRunLock(void*);
 
 // If the counter at p+0x10 is positive, calls FinishScriptRunLock on that field.
 // @fnv 0x0043bac0
+// pdb: KFModel::GetSequence | ModelLoader.obj | debug, object-file run extension, low
 void __fastcall FinishScriptRunLockIfActive(void* p)
 {
     if (*(int*)((char*)p + 0x10) > 0)
@@ -2977,7 +3087,10 @@ struct FUN_00726070_standin
 };
 
 // @fnv 0x0049bd30
-int __fastcall GetListCount(void* pThis)
+// src: XBOX_DEBUG_PDB 0x0049bd30
+// pdb: Animation::GetAnimsLoadingCount | Animation.obj | debug, call graph, high
+// pdb locals: icount, plist
+int __fastcall Animation_GetAnimsLoadingCount(void* pThis)
 {
     int count = 0;
     if (!_ref_008256d0((char*)pThis + 0x104))
@@ -2999,6 +3112,8 @@ typedef char _sizecheck_NiRTTI[sizeof(NiRTTI) == 8 ? 1 : -1];
 
 // @fnv 0x00653270
 // src: XBOX_PDB 0x00653270
+// pdb: NiObject::DynamicCast | ModelLoader.obj | debug, call graph, medium
+// pdb params: pkRTTI, pkObject
 NiObject* __cdecl NiObject_DynamicCast(NiRTTI const* pkRTTI, NiObject* pkObject)
 {
     if (!pkObject)
@@ -3020,6 +3135,9 @@ struct FUN_00490330_t : public Animation
 // Builds a path from apPath, "SpecialAnims" and each file name, loads the KF model and adds it as an animation.
 // @fnv 0x00490330
 // src: COMMUNITY 0x00490330
+// pdb: Animation::AddSpecialAnimations | Animation.obj | retail, string-set bridge, high
+// pdb params: apFileList, apPath
+// pdb locals: pfileList, pkfModel, message, pfilename, bqueueAnims
 void FUN_00490330_t::Animation_AddSpecialAnimations(AnimationList<const char*>* apFileList, const char* apPath)
 {
     AnimationList<const char*>* pfileList;
@@ -3058,14 +3176,17 @@ struct FUN_004948c0_shell
 };
 struct FUN_004955c0_t : public Animation
 {
-    void Animation_ForceSection(int aeSequenceType, unsigned short ausGroup, int aeAction, float afTime, bool abFlag);
+    void Animation_ForceSection(int aeSection, unsigned short asNewGroup, int aeNewAction, float afNewTime, bool aiSequenceIndex);
 };
 
 // @fnv 0x004955c0
 // src: XBOX_PDB 0x004955c0
-void FUN_004955c0_t::Animation_ForceSection(int aeSequenceType, unsigned short ausGroup, int aeAction, float afTime, bool abFlag)
+// pdb: Animation::ForceSection | Animation.obj | retail, upstream name already matches, high
+// pdb params: aeSection, asNewGroup, aeNewAction, afNewTime, aiSequenceIndex
+// pdb locals: esection, panimSeq, pseq
+void FUN_004955c0_t::Animation_ForceSection(int aeSection, unsigned short asNewGroup, int aeNewAction, float afNewTime, bool aiSequenceIndex)
 {
-    int iSlot = aeSequenceType;
+    int iSlot = aeSection;
     switch (iSlot)
     {
     case 0x14:
@@ -3075,43 +3196,44 @@ void FUN_004955c0_t::Animation_ForceSection(int aeSequenceType, unsigned short a
         iSlot = 4;
         break;
     }
-    if (aeAction == -1)
+    if (aeNewAction == -1)
     {
-        ((FUN_00496080_t*)this)->Animation_ClearGroup(aeSequenceType, 0.0f);
-        if (ausGroup != 0xff)
+        ((FUN_00496080_t*)this)->Animation_ClearGroup(aeSection, 0.0f);
+        if (asNewGroup != 0xff)
         {
             AnimSequenceBase* pAnimSeqBase;
-            if (m_pOwnerReference->GetAt(ausGroup, pAnimSeqBase))
+            if (pAnimSequenceMap->GetAt(asNewGroup, pAnimSeqBase))
             {
-                if (pAnimSeqBase->GetSequenceAtIndex(abFlag))
+                if (pAnimSeqBase->GetSequenceAtIndex(aiSequenceIndex))
                 {
-                    m_pChildTile[iSlot] = pAnimSeqBase->GetSequenceAtIndex(abFlag);
-                    ((NiControllerManager*)(NiControllerManager*)m_acReservedBytes)
-                        ->ActivateControllerSequence(m_pChildTile[iSlot], 0, false, 1.0f, 0.0f, static_cast<NiControllerSequence*>(0));
+                    pCurrentSequence[iSlot] = pAnimSeqBase->GetSequenceAtIndex(aiSequenceIndex);
+                    ((NiControllerManager*)(NiControllerManager*)spManager)
+                        ->ActivateControllerSequence(pCurrentSequence[iSlot], 0, false, 1.0f, 0.0f, static_cast<NiControllerSequence*>(0));
                 }
             }
         }
     }
     else
     {
-        if (((FUN_00494710_shell*)this)->Animation_GroupLoaded(ausGroup))
+        if (((FUN_00494710_shell*)this)->Animation_GroupLoaded(asNewGroup))
         {
             AnimSequenceBase* pBase;
-            if (m_pOwnerReference->GetAt(ausGroup, pBase))
+            if (pAnimSequenceMap->GetAt(asNewGroup, pBase))
             {
-                BSAnimGroupSequence* pSequence = pBase->GetSequenceAtIndex(abFlag);
-                ((FUN_004948c0_shell*)this)->Animation_StartGroup((SeqIface*)pSequence, ausGroup, aeSequenceType);
+                BSAnimGroupSequence* pSequence = pBase->GetSequenceAtIndex(aiSequenceIndex);
+                ((FUN_004948c0_shell*)this)->Animation_StartGroup((SeqIface*)pSequence, asNewGroup, aeSection);
             }
-            action[iSlot] = (ANIM_GROUP_ACTION)aeAction;
+            action[iSlot] = (ANIM_GROUP_ACTION)aeNewAction;
         }
     }
-    group[iSlot] = ausGroup;
-    time = afTime;
+    group[iSlot] = asNewGroup;
+    time = afNewTime;
 }
 }  // namespace fnv_004955c0
 
 
 // No shared VATS.h exists; the global at 0x011f2250 and its command accessor at 0x009c71c0 identify VATS.
+// pdb: class VATS, size 0x48 (here 0x1), 17 members
 class VATS
 {
   public:
@@ -3127,26 +3249,28 @@ struct FUN_00498d30_t : public Animation
 };
 
 // @fnv 0x00498d30
+// pdb: Animation::SpecialIdleWorking | Animation.obj | debug, call graph (shared callers), high
+// pdb params: apIdleForm
 bool FUN_00498d30_t::HasIdleForm(TESIdleForm* apIdleForm)
 {
-    if (LocalInput && ((Script*)(LocalAnimIdle*)LocalInput)->GetText() == (void*)apIdleForm &&
-        ((LocalAnimIdle*)LocalInput)->GetFlags() != 1)
+    if (spAnimIdle && ((Script*)(LocalAnimIdle*)spAnimIdle)->GetText() == (void*)apIdleForm &&
+        ((LocalAnimIdle*)spAnimIdle)->GetFlags() != 1)
         return true;
-    if (LocalStateValue && ((Script*)(LocalAnimIdle*)LocalStateValue)->GetText() == (void*)apIdleForm &&
-        ((LocalAnimIdle*)LocalStateValue)->GetFlags() != 1)
+    if (spAnimIdleQueued && ((Script*)(LocalAnimIdle*)spAnimIdleQueued)->GetText() == (void*)apIdleForm &&
+        ((LocalAnimIdle*)spAnimIdleQueued)->GetFlags() != 1)
         return true;
-    if (LocalOutput[0])
+    if (spAnimIdleFreeWhenInactiveA[0])
     {
-        if (((Script*)(LocalAnimIdle*)LocalOutput[0])->GetText() == (void*)apIdleForm)
+        if (((Script*)(LocalAnimIdle*)spAnimIdleFreeWhenInactiveA[0])->GetText() == (void*)apIdleForm)
             return true;
-        else if (DAT_011f2250.GetFlags() == 4 && ((LocalAnimIdle*)LocalOutput[0])->GetControllerSequence())
+        else if (DAT_011f2250.GetFlags() == 4 && ((LocalAnimIdle*)spAnimIdleFreeWhenInactiveA[0])->GetControllerSequence())
             return true;
     }
-    if (LocalOutput[1])
+    if (spAnimIdleFreeWhenInactiveA[1])
     {
-        if (((Script*)(LocalAnimIdle*)LocalOutput[1])->GetText() == (void*)apIdleForm)
+        if (((Script*)(LocalAnimIdle*)spAnimIdleFreeWhenInactiveA[1])->GetText() == (void*)apIdleForm)
             return true;
-        else if (DAT_011f2250.GetFlags() == 4 && ((LocalAnimIdle*)LocalOutput[1])->GetControllerSequence())
+        else if (DAT_011f2250.GetFlags() == 4 && ((LocalAnimIdle*)spAnimIdleFreeWhenInactiveA[1])->GetControllerSequence())
             return true;
     }
     return false;
@@ -3163,6 +3287,8 @@ struct CameraShotHelper
 
 // @fnv 0x009c8d60
 // src: XBOX_PDB 0x009c8d60
+// pdb: VATS::GetTargetUpdateMult | VATS.obj | retail, upstream name already matches, high
+// pdb locals: ftargetUpdateMult
 float VATS::GetTargetUpdateMult()
 {
     float fMultiplier = 1.0f;
@@ -3235,7 +3361,7 @@ namespace fnv_004939b0 {
 struct ST_00493860
 {
     void SetFlag(bool, int);
-    void Animation_SetDelayUpdateScenegraph(bool argument0);
+    void Animation_SetDelayUpdateScenegraph(bool abFlag);
 };
 
 void ST_00493860::SetFlag(bool, int)
@@ -3243,9 +3369,11 @@ void ST_00493860::SetFlag(bool, int)
 
 // @fnv 0x004939b0
 // src: XBOX_PDB 0x004939b0
-void ST_00493860::Animation_SetDelayUpdateScenegraph(bool argument0)
+// pdb: Animation::SetDelayUpdateScenegraph | Animation.obj | debug, upstream name already matches, high
+// pdb params: abFlag
+void ST_00493860::Animation_SetDelayUpdateScenegraph(bool abFlag)
 {
-    SetFlag(argument0, 2);
+    SetFlag(abFlag, 2);
 }
 }  // namespace fnv_004939b0
 
@@ -3270,7 +3398,7 @@ extern float DAT_0101d890;
 void NiQuatTransform::SetScaleValid(bool abFlag)
 {
     if (!abFlag)
-        scale = -DAT_0101d890;
+        m_fScale = -DAT_0101d890;
 }
 
 
@@ -3278,7 +3406,7 @@ void NiQuatTransform::SetScaleValid(bool abFlag)
 // @fnv 0x00496960
 void AnimationActorOperations::SetByteAt14E(unsigned char value)
 {
-    *reinterpret_cast<unsigned char*>(&m_bThirdBooleanFlagAfterActorBase) = value;
+    *reinterpret_cast<unsigned char*>(&bUpdateLighting) = value;
 }
 
 
@@ -3290,6 +3418,8 @@ struct FUN_004970e0_shell
 };
 
 // @fnv 0x004970e0
+// pdb: AnimIdle::SetSequence | Animation.obj | debug, object-file gap fill, medium
+// pdb params: apSeq
 void FUN_004970e0_shell::AssignGO(void* apValue)
 {
     ((GO*)((char*)this + 0x18))->operator=(apValue);
@@ -3297,7 +3427,7 @@ void FUN_004970e0_shell::AssignGO(void* apValue)
 
 struct FUN_0049bd90_shell : KFModel
 {
-    void Animation_RemoveObject(void* a1);
+    void Animation_RemoveObject(void* apObject);
 };
 
 struct FUN_004f05c0_shell
@@ -3310,11 +3440,14 @@ void FUN_004f05c0_shell::ApplyFlagsToEntries(void* a1)
 
 // @fnv 0x0049bd90
 // src: COMMUNITY 0x0049bd90
-void FUN_0049bd90_shell::Animation_RemoveObject(void* a1)
+// pdb: Animation::RemoveObject | Animation.obj | debug, upstream name already matches, high
+// pdb params: apObject
+// pdb locals: pn
+void FUN_0049bd90_shell::Animation_RemoveObject(void* apObject)
 {
     void* seq = GetControllerSequence();
     if (seq)
-        ((FUN_004f05c0_shell*)seq)->ApplyFlagsToEntries(a1);
+        ((FUN_004f05c0_shell*)seq)->ApplyFlagsToEntries(apObject);
 }
 
 
@@ -3322,9 +3455,11 @@ void FUN_0049bd90_shell::Animation_RemoveObject(void* a1)
 // This entry point calls slot 0x04 with the assignment signature.
 // @fnv 0x0048f080
 // src: XBOX_PDB 0x0048f080
+// pdb: AnimSequenceSingle::RemoveSequence | Animation.obj | retail, upstream name already matches, high
+// pdb params: apSeq, abReleaseModelLoader
 bool AnimSequenceSingle::RemoveSequence(BSAnimGroupSequence* apSeq, bool abReleaseModelLoader)
 {
-    if (pForwardSequence == apSeq)
+    if (pSeq == apSeq)
     {
         typedef void (__thiscall *AssignSlot)(AnimSequenceSingle*, BSAnimGroupSequence*, bool);
         reinterpret_cast<AssignSlot>((*reinterpret_cast<void***>(this))[1])(this, 0, abReleaseModelLoader);
@@ -3335,6 +3470,7 @@ bool AnimSequenceSingle::RemoveSequence(BSAnimGroupSequence* apSeq, bool abRelea
 
 void __cdecl _Deallocate(void*);
 // @fnv 0x0048f1d0
+// pdb: AnimSequenceMultiple::`scalar deleting destructor' | Animation.obj | retail, vtable slot, high
 void* AnimSequenceMultiple::ScalarDeletingDestructor(unsigned int flags)
 {
     this->~AnimSequenceMultiple();
@@ -3353,6 +3489,7 @@ struct S48f370
 };
 // Calls FUN_0054da00 on this, deallocates this when flags has bit 1 set, and returns this.
 // @fnv 0x0048f370
+// pdb: NiTList<BSAnimGroupSequence const *>::~NiTList<BSAnimGroupSequence const *> | Animation.obj | debug, object-file run extension, low
 void* S48f370::FUN_0048f370(unsigned int flags)
 {
     this->ForwardCall_0054da00();
@@ -3363,16 +3500,18 @@ void* S48f370::FUN_0048f370(unsigned int flags)
 
 struct ThisStub
 {
-    void UpdateAnimationForRef(void* apRef);
+    void Animation_UpdateMovementNoWorldUpdate(void* apRef);
     void Animation_UpdateSceneGraphNoController();
     void Animation_UpdateMovement(void* apRef);
 };
 // Calls UpdateAnimationForRef with apRef, then calls FUN_00493bd0.
 // @fnv 0x00493900
 // src: XBOX_PDB 0x00493900
+// pdb: Animation::UpdateMovement | Animation.obj | retail, upstream name already matches, high
+// pdb params: apRef
 void ThisStub::Animation_UpdateMovement(void* apRef)
 {
-    UpdateAnimationForRef(apRef);
+    Animation_UpdateMovementNoWorldUpdate(apRef);
     Animation_UpdateSceneGraphNoController();
 }
 
@@ -3386,6 +3525,7 @@ struct C00493930
 // If FUN_00493970 succeeds, calls FUN_00493bd0 and FUN_004939b0(0), then returns true; otherwise returns false.
 // @fnv 0x00493930
 // src: XBOX_PDB 0x00493930
+// pdb: Animation::UpdateQueuedScenegraph | Animation.obj | retail, upstream name already matches, high
 bool C00493930::Animation_UpdateQueuedScenegraph()
 {
     if (Animation_GetDelayUpdateScenegraph())
@@ -3404,9 +3544,10 @@ extern float DAT_0101d890;
 void NiQuatTransform::SetTranslateValid(bool b)
 {
     if (!b)
-        x = -DAT_0101d890;
+        m_kTranslate = -DAT_0101d890;
 }
 
+// pdb: class Modifier, size 0x8 (here 0x1), 2 members
 struct Modifier
 {
     void SetValue(float);
@@ -3415,10 +3556,12 @@ extern float DAT_0101d890;
 
 // If flag is false, sets the modifier's value to the negation of DAT_0101d890.
 // @fnv 0x00496470
-void NiQuatTransform::SetRotateValid(bool flag)
+// pdb: NiQuatTransform::SetRotateValid | Animation.obj | debug, upstream name already matches, high
+// pdb params: bValid
+void NiQuatTransform::SetRotateValid(bool bValid)
 {
-    if (!flag)
-        ((Modifier*)&qx)->SetValue(-DAT_0101d890);
+    if (!bValid)
+        ((Modifier*)&m_kRotate)->SetValue(-DAT_0101d890);
 }
 
 struct EBase
@@ -3432,6 +3575,8 @@ struct FUN_004968e0_shell : EBase
 };
 // Runs the base destructor, frees this with _delete when flags has bit 0 set, and returns this.
 // @fnv 0x004968e0
+// pdb: NiRefObject::`scalar deleting destructor' | Animation.obj | retail, vtable slot, high
+// pdb params: this
 void* FUN_004968e0_shell::FUN_004968e0(unsigned int flags)
 {
     this->EBase::~EBase();
@@ -3450,16 +3595,20 @@ struct HA
 {
     void Actor_SetAnimAction(int, void*);
 };
-bool __fastcall SpecialIdlePlay_0(void*);
+bool __fastcall SpecialIdlePlay(void*);
 struct Holder
 {
     bool Animation_SpecialIdlePlay(void*);
 };
 // @fnv 0x00498230
 // src: XBOX_PDB 0x00498230
+// pdb: Animation::SpecialIdleReplace | Animation.obj | retail, object-file run extension, low
+// pdb note: debug build links it to Animation::SpecialIdlePlay
+// pdb params: apIdleForm, apActor, aeSection
+// pdb locals: tempMemContext, panim
 bool Holder::Animation_SpecialIdlePlay(void* apActor)
 {
-    if (SpecialIdlePlay_0(this))
+    if (SpecialIdlePlay(this))
     {
         ((LowProcess*)(unsigned int)*(Flt*)((char*)this + 0x124))->LowProcess::SetCurrentBoundObject(static_cast<TESObject*>(apActor));
         ((HA*)apActor)
@@ -3484,6 +3633,7 @@ struct FUN_004985b0_Owner
     bool IsFlaggedAsTwo();
 };
 // @fnv 0x004985b0
+// pdb: Animation::SpecialIdlePlaying | Animation.obj | debug, call graph, high
 bool FUN_004985b0_Owner::IsFlaggedAsTwo()
 {
     if ((unsigned int)*(Flt*)((char*)this + 0x124) == 0)
@@ -3500,6 +3650,8 @@ struct S_0049c050
 extern int DAT_0101ded0;
 // Calls FUN_0049c100 with a, stores the address of DAT_0101ded0 into this, and returns this.
 // @fnv 0x0049c050
+// pdb: NiTPointerMap<unsigned short,AnimSequenceBase *>::NiTPointerMap<unsigned short,AnimSequenceBase *> | Animation.obj | debug, object-file gap fill, medium
+// pdb params: uiHashSize
 void* S_0049c050::Construct(int a)
 {
     NiTMapBase_NiTPointerAllocator_unsigned_int_unsigned_short_AnimSequenceBase_NiTMapBase(a);
@@ -3515,6 +3667,7 @@ struct Holder_49c080
 };
 // Calls FUN_0049c510, frees this when flags has bit 0 set, and returns this.
 // @fnv 0x0049c080
+// pdb: NiTPointerMap<unsigned short,AnimSequenceBase *>::`scalar deleting destructor' | Animation.obj | retail, vtable slot, high
 void* Holder_49c080::FUN_0049c080(unsigned int flags)
 {
     FUN_0049c510();
@@ -3550,9 +3703,11 @@ struct S00739970
 // Calls FUN_004bc1f0 on _p with zero x/y and a z of g_011da6a4_arg1 when b is false, or 0.0 when b is true.
 // @fnv 0x00739970
 // src: XBOX_PDB 0x00739970
-void S00739970::BlackJackMenu_SetSideHandVisibility(bool b)
+// pdb: BlackJackMenu::SetSideHandVisibility | BlackJackMenu.obj | debug, upstream name already matches, high
+// pdb params: bVisible
+void S00739970::BlackJackMenu_SetSideHandVisibility(bool bVisible)
 {
-    if (!b)
+    if (!bVisible)
     {
         _p->NiAVObject_SetTranslate_004bc1f0(0.0f, 0.0f, g_011da6a4_arg1);
     }
@@ -3575,6 +3730,7 @@ struct StandIn
 };
 // @fnv 0x00921e30
 // src: XBOX_PDB 0x00921e30
+// pdb: Animation::GetSpecialIdleSequence | MiddleHighProcess.obj | debug, upstream name already matches, high
 BSAnimGroupSequence* StandIn::Animation_GetSpecialIdleSequence()
 {
     return m_kHandle ? ((LocalAnimIdle*)(unsigned int)m_kHandle)->GetControllerSequence() : 0;
@@ -3585,6 +3741,7 @@ BSAnimGroupSequence* StandIn::Animation_GetSpecialIdleSequence()
 
 
 // @fnv 0x004937c0
+// pdb: TESAnimGroup::IsAimAction | Animation.obj | debug, call graph, high
 bool __fastcall IsAimAnimGroup(TESAnimGroup* group)
 {
     return TESAnimGroup::IsAimAnimation(group->sType);
@@ -3595,6 +3752,7 @@ namespace fnv_004937e0 {
 
 
 // @fnv 0x004937e0
+// pdb: TESAnimGroup::IsAttackAction | Animation.obj | debug, call graph, high
 bool __fastcall IsAnimGroupActionValid(TESAnimGroup* group)
 {
     return TESAnimGroup::IsActionTypeValid(group->sType);
@@ -3610,6 +3768,7 @@ struct FUN_00493990_shell
 
 // @fnv 0x00493970
 // src: XBOX_PDB 0x00493970
+// pdb: Animation::GetDelayUpdateScenegraph | Animation.obj | debug, upstream name already matches, high
 bool FUN_00493990_shell::Animation_GetDelayUpdateScenegraph()
 {
     return HasFlag(2);
@@ -3629,6 +3788,9 @@ struct FUN_0049c100_shell
 // Sets the vtable, stores n in count, allocates count*4 zeroed bytes into data and returns this.
 // @fnv 0x0049c100
 // src: EXE 0x0049c100
+// pdb: NiTMapBase<NiTPointerAllocator<unsigned int>,unsigned short,AnimSequenceBase *>::NiTMapBase<NiTPointerAllocator<unsigned int>,unsigned short,AnimSequenceBase *> | Animation.obj | debug, object-file run extension, low
+// pdb params: uiHashSize
+// pdb locals: uiSize
 FUN_0049c100_shell* FUN_0049c100_shell::NiTMapBase_NiTPointerAllocator_unsigned_int_unsigned_short_AnimSequenceBase_NiTMapBase(int aiCount)
 {
     vft = (void*)&DAT_0101def0;
@@ -3682,12 +3844,15 @@ struct HackAnim
 {
     char _pad[0xdc];
     AnimationSequenceMap<unsigned short, AnimSequenceBase*>* m_pOwnerReference;
-    TESAnimGroup* Animation_LookupGroup(unsigned short asGroup);
+    TESAnimGroup* Animation_GetTESAnimGroup(unsigned short asGroup);
 };
 // Looks up the sequence for asGroup in the map and returns the anim group from its sequence, or null if not found.
 // @fnv 0x00496500
-// src: COMMUNITY 0x00496500
-TESAnimGroup* HackAnim::Animation_LookupGroup(unsigned short asGroup)
+// src: XBOX_RETAIL_PDB 0x00496500 (was COMMUNITY)
+// pdb: Animation::GetTESAnimGroup | Animation.obj | retail, call graph, high
+// pdb params: asGroup
+// pdb locals: panimSeq
+TESAnimGroup* HackAnim::Animation_GetTESAnimGroup(unsigned short asGroup)
 {
     AnimSequenceBase* panimSeq;
     if (m_pOwnerReference->GetAt(asGroup, panimSeq))
@@ -3842,11 +4007,15 @@ struct FakeRef
 };
 struct FakeAnim
 {
-    unsigned short __thiscall GetSerializedSize(void* apRef);
+    unsigned short __thiscall Animation_GetSaveSize(void* apRef);
 };
 // Returns 2 plus the animation's size for apRef when apAnimation is set and apRef's Virt(0) check fails.
 // @fnv 0x0049aa20
-unsigned short GetAnimationSize(void* apRef, void* apAnimation)
+// src: XBOX_RETAIL_PDB 0x0049aa20
+// pdb: Animation::GetAnimationSaveSize | Animation.obj | retail, call graph (shared callers), high
+// pdb params: apRef, apAnimation
+// pdb locals: isize
+unsigned short Animation_GetAnimationSaveSize(void* apRef, void* apAnimation)
 {
     unsigned short usSize = 0;
     usSize += 2;
@@ -3854,7 +4023,7 @@ unsigned short GetAnimationSize(void* apRef, void* apAnimation)
     {
         if (!((FakeRef*)apRef)->Virt(0))
         {
-            usSize += ((FakeAnim*)apAnimation)->GetSerializedSize(apRef);
+            usSize += ((FakeAnim*)apAnimation)->Animation_GetSaveSize(apRef);
         }
     }
     return usSize;
@@ -3908,6 +4077,8 @@ extern BGSSaveLoadGame* g_BGSSaveLoadGame;
 extern FUN_00451530_shell* g_TES;
 
 // @fnv 0x00490e60
+// pdb: Animation::ShouldQueueSequenceCloning | Animation.obj | retail, call graph, high
+// pdb locals: bqueueAnims
 bool FUN_00490e60_shell::ShouldQueueAnimations()
 {
     bool bqueueAnims = false;
@@ -3961,18 +4132,21 @@ struct AnimationFormList
 
 // Walks the sequence list from the head, returning the zero-based index of apSeq or -1 if it is not found.
 // @fnv 0x0048f720
+// pdb: AnimSequenceMultiple::GetSequenceIndex | Animation.obj | debug, vtable slot, medium
+// pdb params: apSeq
+// pdb locals: icount, listIt, pseq
 char AnimSequenceMultiple::ContainsSequence(BSAnimGroupSequence* apSeq)
 {
-    void* listIt = (void*)(unsigned int)*(fnv_0048f720::Flt*)m_pSingleSequence;
+    void* listIt = (void*)(unsigned int)*(fnv_0048f720::Flt*)pSeqList;
     char iIndex = 0;
     while (listIt)
     {
         BSAnimGroupSequence* pSequence =
-            *(BSAnimGroupSequence**)((fnv_0048f720::FUN_006317a0_struct*)m_pSingleSequence)->AddEight((int)listIt);
+            *(BSAnimGroupSequence**)((fnv_0048f720::FUN_006317a0_struct*)pSeqList)->AddEight((int)listIt);
         if (apSeq == pSequence)
             return iIndex;
         ++iIndex;
-        listIt = ((fnv_0048f720::AnimationFormList*)m_pSingleSequence)->DereferenceIfNotNull(listIt);
+        listIt = ((fnv_0048f720::AnimationFormList*)pSeqList)->DereferenceIfNotNull(listIt);
     }
     return -1;
 }
@@ -3994,6 +4168,8 @@ struct FUN_00497100_shell
 // Computes a size: sums 4+4+4+1, and if the field at offset 0x18 is nonzero adds its FUN_004efb10 result plus 1.
 // @fnv 0x00497100
 // src: COMMUNITY 0x00497100
+// pdb: AnimIdle::GetSaveSize | Animation.obj | debug, upstream name already matches, high
+// pdb locals: isize
 unsigned short FUN_00497100_shell::AnimIdle_GetSaveSize()
 {
     unsigned short v = 0;
@@ -4025,6 +4201,7 @@ struct FUN_004981f0_shell
 // Returns true if the GO at offset 0x124 is nonzero and its Crime target equals 1, otherwise false.
 // @fnv 0x004981f0
 // src: XBOX_PDB 0x004981f0
+// pdb: Animation::SpecialIdleLoaded | Animation.obj | debug, upstream name already matches, high
 bool FUN_004981f0_shell::Animation_SpecialIdleLoaded()
 {
     if (!((GO*)((char*)this + 0x124))->operator unsigned int())
@@ -4095,6 +4272,9 @@ struct S_00490400_Anim : public Animation
 // Loads each path in the list as a KF model, adds it as an animation with a flag from ShouldQueueAnimations, then frees the paths and the list.
 // @fnv 0x00490400
 // src: XBOX_PDB 0x00490400
+// pdb: Animation::AddAnimationsFromList | Animation.obj | retail, upstream name already matches, high
+// pdb params: apFileList
+// pdb locals: tempMemContext, bqueueAnims, pkfModel, pfilename
 void S_00490400_Anim::Animation_AddAnimationsFromList(AnimationList<const char*>* apFileList)
 {
     if (!apFileList)
@@ -4120,6 +4300,7 @@ extern "C" int __cdecl tolower(int c);
 unsigned int BSStringLength(const char* pcString);
 
 // No shared NiTextKey.h exists; the 8-byte time/text record matches the Xbox type.
+// pdb: class NiTextKey, size 0x8, 2 members
 class NiTextKey
 {
   public:
@@ -4133,13 +4314,16 @@ struct AnimSequenceStub
 {
     int unk00[60];
     NiControllerSequence* m_pkSequence;
-    char Animation_FindSwitchKey(float* pfTime);
+    char Animation_FindSwitchKey(float* pTime);
 };
 
 // Scans the sequence's text keys for one starting with "a:" and returns the lowercased character after the prefix, optionally storing its time.
 // @fnv 0x00495e40
 // src: XBOX_PDB 0x00495e40
-char AnimSequenceStub::Animation_FindSwitchKey(float* pfOutTime)
+// pdb: Animation::FindSwitchKey | Animation.obj | retail, upstream name already matches, high
+// pdb params: pTime
+// pdb locals: isearchKeyLength, inumKeys, psearchKey, ptext, pkeys, i, pkeyText
+char AnimSequenceStub::Animation_FindSwitchKey(float* pTime)
 {
     const char* pcPrefixVal = "a:";
     if (!m_pkSequence)
@@ -4155,8 +4339,8 @@ char AnimSequenceStub::Animation_FindSwitchKey(float* pfOutTime)
         const char* pcText9 = pkKeys6[i4].GetText();
         if (pcText9 && !_strnicmp(pcText9, pcPrefixVal, uiPrefixLen))
         {
-            if (pfOutTime)
-                *pfOutTime = pkKeys6[i4].GetTime();
+            if (pTime)
+                *pTime = pkKeys6[i4].GetTime();
             return tolower(pcText9[uiPrefixLen]);
         }
     }
@@ -4169,7 +4353,7 @@ using ::NiPointer;
 
 struct SaveLoadStub
 {
-    void Read(void* apData, unsigned int auiSize);
+    void Read(void* apData, unsigned int aiSize);
     void SetVersion(unsigned int auiVersion);
 };
 extern SaveLoadStub* g_TESSaveLoadGame;
@@ -4205,10 +4389,10 @@ struct SeqMapStub
 
 struct AnimStub
 {
-    bool AddAnimation(KFModel* apModel, bool abFlag);
+    bool AddAnimation(KFModel* apKFModel, bool abDelaySequenceClone);
     SeqMapStub* GetSequenceMap();
     void Animation_SkipNextBlend();
-    GroupSeqStub* Animation_StartGroup(GroupSeqStub* apSeq, unsigned short asGroup, int aiFlag);
+    GroupSeqStub* Animation_StartGroup(GroupSeqStub* apSeq, unsigned short asNewGroup, int aeSection);
 };
 
 struct QueuedAnimStub
@@ -4384,6 +4568,9 @@ extern "C" const char DAT_01012c78[];
 extern "C" const char DAT_0101d930[];
 // Computes a message size by summing fixed and variable field sizes, then logs the total with the message id and display value.
 // @fnv 0x004974c0
+// pdb: AnimIdle::GetAnimIdleSaveSize | Animation.obj | retail, object-file run extension, low
+// pdb params: apActor, apAnimIdle
+// pdb locals: isize, itempStartSize, pheader, pform
 unsigned short __cdecl GetMessageSize(void* unused, ParameterObject* param)
 {
     unsigned short count = 0;
@@ -4423,33 +4610,36 @@ struct FUN_0049bdc0_shell : Animation
     void Animation_PlayGroup(unsigned short, int, int, int);
 };
 // @fnv 0x0049bdc0
+// pdb: Animation::SetLipTime | Animation.obj | debug, object-file gap fill, medium
+// pdb params: afPercent
+// pdb locals: ftimeDelta
 void FUN_0049bdc0_shell::SetAnimationAmount(float amount)
 {
     if (amount == 0.0)
     {
-        if (m_pChildTile[3])
+        if (pCurrentSequence[3])
         {
-            m_pChildTile[3]->Update(0.0f, true);
+            pCurrentSequence[3]->Update(0.0f, true);
             Animation_ClearGroup(3, 0.0f);
         }
     }
     else
     {
-        if (!m_pChildTile[3])
+        if (!pCurrentSequence[3])
         {
             Animation_PlayGroup(0xe1, 1, -1, -1);
-            if (m_pChildTile[3])
+            if (pCurrentSequence[3])
             {
-                m_pChildTile[3]
-                    ->Update(m_pChildTile[3]->NiPSysSpawnModifier_GetLifeSpan() + time, true);
+                pCurrentSequence[3]
+                    ->Update(pCurrentSequence[3]->NiPSysSpawnModifier_GetLifeSpan() + time, true);
             }
         }
-        if (m_pChildTile[3] && m_pChildTile[3]->GetState() == 1)
+        if (pCurrentSequence[3] && pCurrentSequence[3]->GetState() == 1)
         {
             float delta =
-                m_pChildTile[3]->GetEndKeyTime_00508100() - m_pChildTile[3]->NiPSysSpawnModifier_GetLifeSpan();
-            m_fTimeOffset = m_pChildTile[3]->NiPSysSpawnModifier_GetLifeSpan() + delta * amount;
-            m_pChildTile[3]->SetSequenceTime(m_fTimeOffset - time, true);
+                pCurrentSequence[3]->GetEndKeyTime_00508100() - pCurrentSequence[3]->NiPSysSpawnModifier_GetLifeSpan();
+            fLipTime = pCurrentSequence[3]->NiPSysSpawnModifier_GetLifeSpan() + delta * amount;
+            pCurrentSequence[3]->SetSequenceTime(fLipTime - time, true);
         }
     }
 }
@@ -4468,14 +4658,16 @@ struct C48F3D0
 {
     int unk00;
     List_48f3d0* pList;
-    bool AnimSequenceMultiple_RemoveSequence(Seq_48f3d0* pForwardSequence, bool b);
+    bool AnimSequenceMultiple_RemoveSequence(Seq_48f3d0* apSeq, bool abReleaseModelLoader);
 };
 // @fnv 0x0048f3d0
 // src: XBOX_PDB 0x0048f3d0
-bool C48F3D0::AnimSequenceMultiple_RemoveSequence(Seq_48f3d0* pItem, bool abUnused)
+// pdb: AnimSequenceMultiple::RemoveSequence | Animation.obj | retail, upstream name already matches, high
+// pdb params: apSeq, abReleaseModelLoader
+bool C48F3D0::AnimSequenceMultiple_RemoveSequence(Seq_48f3d0* apSeq, bool abReleaseModelLoader)
 {
-    pItem->NiRefObject_DecRefCount();
-    pList->FindOrSelf(pItem);
+    apSeq->NiRefObject_DecRefCount();
+    pList->FindOrSelf(apSeq);
     if (pList->NiTListBase_DFALL_NiTListItem_BSAnimGroupSequence_const_BSAnimGroupSequence_const_IsEmpty())
     {
         List_48f3d0* a = pList;
@@ -4515,21 +4707,25 @@ struct BNLookup
     int unk00;
     BNObjectList* m_pObjectList;
 
-    BNObject* FindObjectByNameVariant(BNObject* apObject, int aiVariant);
+    BNObject* AnimSequenceMultiple_GetCorrespondingSequence(BNObject* apSeq, int aeSection);
 };
 
 // @fnv 0x0048f500
-BNObject* BNLookup::FindObjectByNameVariant(BNObject* apObject, int aiVariant)
+// src: XBOX_RETAIL_PDB 0x0048f500
+// pdb: AnimSequenceMultiple::GetCorrespondingSequence | Animation.obj | retail, object-file run extension, high
+// pdb params: apSeq, aeSection
+// pdb locals: seqName, ptmp, p3rdLastSlash, listIt, p1stLastSlash, pseq
+BNObject* BNLookup::AnimSequenceMultiple_GetCorrespondingSequence(BNObject* apSeq, int aeSection)
 {
     void* pPosVal = m_pObjectList->GetHeadPos();
-    char* pName3 = strrchr(apObject->GetName(), '\\');
+    char* pName3 = strrchr(apSeq->GetName(), '\\');
     char* pSuffix4;
     char acBufferX[260];
 
     if (!pName3)
         return 0;
 
-    switch (aiVariant)
+    switch (aeSection)
     {
     case 5:
         BNStrcpy(acBufferX, pName3);
@@ -4831,21 +5027,24 @@ struct Anim490
     IdlePtr490 queued;
     int unk134;
     void UpdateGroup(Group490*);
-    bool AddModel(KFModel* model, bool queue);
+    bool AddModel(KFModel* apKFModel, bool abDelaySequenceClone);
 };
 // Adds a model's animation sequence to the manager, queuing it or replacing the current sequence for its group, with warnings on failure.
 // @fnv 0x00490500
-bool Anim490::AddModel(KFModel* model, bool queue)
+// pdb: Animation::AddAnimation | Animation.obj | retail, unique string literal, high
+// pdb params: apKFModel, abDelaySequenceClone
+// pdb locals: eanimGroup, spanimGroup, sanimGroup, tempMemContext, panimSeq, panimSingle, bremoveSequence, pseq, n, pagSeq, bresult, bbsSeq, bdeleteAnimSeq, pname
+bool Anim490::AddModel(KFModel* apKFModel, bool abDelaySequenceClone)
 {
-    GroupPtr490 group(((Group490*)model->GetControllerSequence()));
+    GroupPtr490 group(((Group490*)apKFModel->GetControllerSequence()));
     if (!(Group490*)group)
         return false;
     int groupTypeTmp = ((Group490*)group)->GetType();
     unsigned short code = ((Group490*)group)->GetCode();
     if (groupTypeTmp == 255)
     {
-        if (model->GetRoot())
-            Warning490(DAT_0101da38, (const char*)model->GetRoot()->GetName(), (const char*)*model);
+        if (apKFModel->GetRoot())
+            Warning490(DAT_0101da38, (const char*)apKFModel->GetRoot()->GetName(), (const char*)*apKFModel);
         return false;
     }
     Context490 memContext(51, true, DAT_0101d930, 794);
@@ -4866,7 +5065,7 @@ bool Anim490::AddModel(KFModel* model, bool queue)
         }
         else
         {
-            if (base->Get(-1)->GetAnimGroup() == ((Group490*)model->GetControllerSequence()))
+            if (base->Get(-1)->GetAnimGroup() == ((Group490*)apKFModel->GetControllerSequence()))
                 return true;
             bool remove = true;
             if ((Idle490*)idle && ((Idle490*)idle)->GetControllerSequence() == base->Get(-1))
@@ -4896,14 +5095,14 @@ bool Anim490::AddModel(KFModel* model, bool queue)
             base->Set(0, true);
         }
     }
-    if (queue && !Menu490(1036, 0) && groupTypeTmp != 23 && groupTypeTmp != 0 && groupTypeTmp != 224)
+    if (abDelaySequenceClone && !Menu490(1036, 0) && groupTypeTmp != 23 && groupTypeTmp != 0 && groupTypeTmp != 224)
     {
-        model->AcquireReference();
-        models.AddTail(model);
+        apKFModel->AcquireReference();
+        models.AddTail(apKFModel);
     }
     else
     {
-        Root490* original4 = model->GetRoot();
+        Root490* original4 = apKFModel->GetRoot();
         if (groupTypeTmp >= 3 && groupTypeTmp <= 16 && original4->GetState() == 2)
         {
             map->Erase(code);
@@ -4915,7 +5114,7 @@ bool Anim490::AddModel(KFModel* model, bool queue)
         if (aCompatible && original4->GetKind() == 1)
             seq = (Seq490*)original4;
         else
-            seq = new Seq490(((Group490*)model->GetControllerSequence()), original4);
+            seq = new Seq490(((Group490*)apKFModel->GetControllerSequence()), original4);
         base->Set(seq, true);
         bool added = ((Manager490*)manager)->Add(seq, &DAT_011f49e0, true);
         if (!added)
@@ -4950,7 +5149,7 @@ bool Anim490::AddModel(KFModel* model, bool queue)
         {
             if (!accum)
                 accum = ((Manager490*)manager)->GetAccum();
-            UpdateGroup(((Group490*)model->GetControllerSequence()));
+            UpdateGroup(((Group490*)apKFModel->GetControllerSequence()));
         }
     }
     return true;
@@ -4970,7 +5169,7 @@ struct AnimGroupInfoStub
     bool IsReloadStart();
     bool IsReloadLoop();
     float GetActionTime(int aiAction);
-    bool HasMoveData();
+    bool IsJumpingLoopAnim();
     unsigned int GetGroupType();
     AnimPoint3 GetMoveVector();
     unsigned char GetSectionPriority(int aiSection);
@@ -4986,13 +5185,13 @@ struct SeqStub : public BSAnimGroupSequence
 {
     AnimGroupInfoStub* GetAnimGroup() const;
     float GetLastTime(int aiUnused);
-    void SetTime(float afTime);
+    void SetTime(float afPhase);
     float GetEaseTime(float afTime);
     void* GetOwner();
     float GetEndKeyTime();
     float GetBeginKeyTime();
-    void* GetInterpolator(int aiIndex);
-    unsigned char GetPriority(const char* apName, unsigned int* apIndex);
+    void* GetInterpolator(int uiIndex);
+    unsigned char GetPriority(const char* apBoneName, unsigned int* apReturnIndex);
 };
 
 struct BlendStub
@@ -5436,20 +5635,23 @@ struct FUN_00491180_shell : public Animation
     bool HasQueuedSequences();
     BSAnimGroupSequence* PlayGroupEx(unsigned short asGroup, int aeFlags, int aiLoops, int aeSection);
     BSAnimGroupSequence* GetSectionSequence(int aeSection);
-    void* PlayNextGroup(unsigned short asGroup, int aiFlags);
+    void* PlayNextGroup(unsigned short asNewGroup, int aeSection);
     float GetSequenceTime(BSAnimGroupSequence* apSeq);
     void ResetMovement(bool abFlag);
     void ResetLoop();
     void UpdateAccumRoot(float afTime, AnimationVector* apTranslate, bool abFlag);
-    void Animation_Update(TESObjectREFR* apRef, float afDelta, float afTime);
+    void Animation_Update(TESObjectREFR* ownerObject, float fSecondsPassed, float forceTime);
 };
 
 // Advances animation sequences, handles queued groups, reload actions, idle cleanup, movement accumulation and sound updates for the reference.
 // @fnv 0x00491180
 // src: XBOX_PDB 0x00491180
-void FUN_00491180_shell::Animation_Update(TESObjectREFR* apRef, float afDelta, float afTime)
+// pdb: Animation::Update | Animation.obj | retail, upstream name already matches, high
+// pdb params: ownerObject, fSecondsPassed, forceTime
+// pdb locals: timeDelta, ppreSeq, fAppTimeMod, egroup, enextGroup, pactor, esection, bInDialog, flastScaledTime, pkfModel, pweapSeq, pAct, bLoopReload, pWeap, pdelayList, pdelay, i, UpdateData, ft, pcurrentSequence, bupdate, pprocess, floopDelta, bfakeDelta ...
+void FUN_00491180_shell::Animation_Update(TESObjectREFR* ownerObject, float fSecondsPassed, float forceTime)
 {
-    float fTimeMultiplier = g_timeGlobal.GetTimeMult() * m_fEquipAnimationRate;
+    float fTimeMultiplier = g_timeGlobal.GetTimeMult() * m_fGlobalTimeMultiplier;
     if (HasQueuedSequences())
     {
         for (; DAT_011c56e8 < *g_011c5778.Int(); DAT_011c56e8++)
@@ -5462,9 +5664,9 @@ void FUN_00491180_shell::Animation_Update(TESObjectREFR* apRef, float afDelta, f
                 break;
         }
     }
-    else if (m_usQueuedGroup != 0xff)
+    else if (sQueuedReloadGroup != 0xff)
     {
-        BSAnimGroupSequence* pWeaponSeq = m_pChildTile[4];
+        BSAnimGroupSequence* pWeaponSeq = pCurrentSequence[4];
         switch (action[4])
         {
         case 1:
@@ -5473,12 +5675,12 @@ void FUN_00491180_shell::Animation_Update(TESObjectREFR* apRef, float afDelta, f
                 ((SeqStub*)pWeaponSeq)->GetAnimGroup()->IsReloadLoop())
                 break;
         case 3:
-            if (((Actor*)m_pAttachedReference)->IsWeaponDrawn())
+            if (((Actor*)pActorRef)->IsWeaponDrawn())
             {
-                PlayGroupEx(m_usQueuedGroup, 1, -1, -1);
-                if (apRef == g_thePlayer)
-                    ((PlayerStub*)g_thePlayer)->QueueReloadGroup(m_usQueuedGroup, true);
-                Actor* pReloader = (Actor*)apRef;
+                PlayGroupEx(sQueuedReloadGroup, 1, -1, -1);
+                if (ownerObject == g_thePlayer)
+                    ((PlayerStub*)g_thePlayer)->QueueReloadGroup(sQueuedReloadGroup, true);
+                Actor* pReloader = (Actor*)ownerObject;
                 bool bSpecial = false;
                 if (pReloader->GetCurrentAIProcess())
                 {
@@ -5490,32 +5692,32 @@ void FUN_00491180_shell::Animation_Update(TESObjectREFR* apRef, float afDelta, f
                         bSpecial = true;
                 }
                 if (bSpecial)
-                    ((AnimationActorOperations*)pReloader)->SetAnimAction(0x11, m_pChildTile[4]);
+                    ((AnimationActorOperations*)pReloader)->SetAnimAction(0x11, pCurrentSequence[4]);
                 else
-                    ((AnimationActorOperations*)pReloader)->SetAnimAction(9, m_pChildTile[4]);
+                    ((AnimationActorOperations*)pReloader)->SetAnimAction(9, pCurrentSequence[4]);
             }
         default:
-            m_usQueuedGroup = 0xff;
+            sQueuedReloadGroup = 0xff;
         }
     }
 
-    if (!m_acTrailingData.IsEmpty())
+    if (!replayDelayList.IsEmpty())
     {
-        AnimationList<IdleReplayDelayEntry*>* pNode = &m_acTrailingData;
+        AnimationList<IdleReplayDelayEntry*>* pNode = &replayDelayList;
         while (pNode)
         {
             IdleReplayDelayEntry* pDelay = pNode->GetItem();
-            pDelay->m_fDelay = pDelay->m_fDelay - afDelta;
+            pDelay->m_fDelay = pDelay->m_fDelay - fSecondsPassed;
             if (pDelay->m_fDelay <= 0.0)
             {
-                if (pNode == &m_acTrailingData)
+                if (pNode == &replayDelayList)
                     pNode = 0;
                 else
                     pNode = pNode->GetNext();
-                m_acTrailingData.Remove(pDelay);
+                replayDelayList.Remove(pDelay);
                 delete pDelay;
-                if (!pNode && !m_acTrailingData.IsEmpty())
-                    pNode = &m_acTrailingData;
+                if (!pNode && !replayDelayList.IsEmpty())
+                    pNode = &replayDelayList;
             }
             else
             {
@@ -5525,53 +5727,53 @@ void FUN_00491180_shell::Animation_Update(TESObjectREFR* apRef, float afDelta, f
     }
 
     Actor* pRefActor = 0;
-    if (apRef && apRef->IsActor())
-        pRefActor = (Actor*)apRef;
+    if (ownerObject && ownerObject->IsActor())
+        pRefActor = (Actor*)ownerObject;
 
     for (int iIdle = 0; iIdle < 2; iIdle++)
     {
-        if (LocalOutput[iIdle])
+        if (spAnimIdleFreeWhenInactiveA[iIdle])
         {
-            if (((IdleStub*)(LocalAnimIdle*)LocalOutput[iIdle])->GetIdleSequence())
+            if (((IdleStub*)(LocalAnimIdle*)spAnimIdleFreeWhenInactiveA[iIdle])->GetIdleSequence())
             {
-                if (((IdleStub*)(LocalAnimIdle*)LocalOutput[iIdle])->GetIdleSequence()->GetState() == 1)
+                if (((IdleStub*)(LocalAnimIdle*)spAnimIdleFreeWhenInactiveA[iIdle])->GetIdleSequence()->GetState() == 1)
                 {
                     Warning("'%s' is trying to free a special idle '%s' sequence '%s' that is animating.",
-                            m_pAttachedReference->GetName(),
-                            ((IdleStub*)(LocalAnimIdle*)LocalOutput[iIdle])->GetIdleForm()->GetName(),
-                            (const char*)((IdleStub*)(LocalAnimIdle*)LocalOutput[iIdle])
+                            pActorRef->GetName(),
+                            ((IdleStub*)(LocalAnimIdle*)spAnimIdleFreeWhenInactiveA[iIdle])->GetIdleForm()->GetName(),
+                            (const char*)((IdleStub*)(LocalAnimIdle*)spAnimIdleFreeWhenInactiveA[iIdle])
                                 ->GetIdleSequence()
                                 ->GetName());
-                    LocalOutput[iIdle] = 0;
+                    spAnimIdleFreeWhenInactiveA[iIdle] = 0;
                 }
-                else if (((IdleStub*)(LocalAnimIdle*)LocalOutput[iIdle])->GetIdleSequence()->GetState() == 0)
+                else if (((IdleStub*)(LocalAnimIdle*)spAnimIdleFreeWhenInactiveA[iIdle])->GetIdleSequence()->GetState() == 0)
                 {
-                    AssignControllerManager(LocalOutput[iIdle]);
+                    AssignControllerManager(spAnimIdleFreeWhenInactiveA[iIdle]);
                 }
             }
-            else if (((IdleStub*)(LocalAnimIdle*)LocalOutput[iIdle])->IsFinished())
+            else if (((IdleStub*)(LocalAnimIdle*)spAnimIdleFreeWhenInactiveA[iIdle])->IsFinished())
             {
-                AssignControllerManager(LocalOutput[iIdle]);
+                AssignControllerManager(spAnimIdleFreeWhenInactiveA[iIdle]);
             }
         }
     }
 
-    if (!m_acHeaderData)
+    if (!pAnimRoot)
         return;
 
     ResetMovement(false);
-    m_kNodeTranslation.x = 0.0f;
-    m_kNodeTranslation.y = 0.0f;
+    movementDelta.x = 0.0f;
+    movementDelta.y = 0.0f;
 
-    if (m_cState == 0x14)
+    if (cSkipUpdate == 0x14)
     {
-        float fTime = (afTime == -1.0) ? time : afTime;
+        float fTime = (forceTime == -1.0) ? time : forceTime;
         NiUpdateData kUpdData(fTime, false, false);
-        ((NiNode*)m_acHeaderData)->Update(kUpdData);
+        ((NiNode*)pAnimRoot)->Update(kUpdData);
         return;
     }
 
-    float fTimeStep = afDelta;
+    float fTimeStep = fSecondsPassed;
     int iGroup = 0xff;
     int iNextGroupType;
     BSAnimGroupSequence* apSequences[8];
@@ -5581,12 +5783,12 @@ void FUN_00491180_shell::Animation_Update(TESObjectREFR* apRef, float afDelta, f
     for (i = 0; i < 8; i++)
     {
         iGroup = GetType(group[i]);
-        iNextGroupType = GetType(usReloadGroup[i]);
+        iNextGroupType = GetType(nextGroup[i]);
         if (iGroup == 0xff && iNextGroupType != 0xff)
         {
-            m_acTargetName[i] = m_acAnimationName[i];
-            PlayNextGroup(usReloadGroup[i], -1);
-            usReloadGroup[i] = iNextGroupType = 0xff;
+            loopCount[i] = nextLoops[i];
+            PlayNextGroup(nextGroup[i], -1);
+            nextGroup[i] = iNextGroupType = 0xff;
             iGroup = GetType(group[i]);
         }
         BSAnimGroupSequence* pForwardSequence = GetSectionSequence(i);
@@ -5597,15 +5799,15 @@ void FUN_00491180_shell::Animation_Update(TESObjectREFR* apRef, float afDelta, f
         afPrevTimes[i] = ((SeqStub*)pForwardSequence)->GetEaseTime(time);
     }
 
-    if (afTime != -1.0)
+    if (forceTime != -1.0)
     {
-        time = afTime;
+        time = forceTime;
         NiUpdateData kUpdateData(time, true, false);
-        ((NiNode*)m_acHeaderData)->Update(kUpdateData);
+        ((NiNode*)pAnimRoot)->Update(kUpdateData);
         return;
     }
 
-    fTimeStep = fTimeStep * m_fEquipAnimationRate;
+    fTimeStep = fTimeStep * m_fGlobalTimeMultiplier;
     time = time + fTimeStep;
 
     for (i = 0; i < 8; i++)
@@ -5613,12 +5815,12 @@ void FUN_00491180_shell::Animation_Update(TESObjectREFR* apRef, float afDelta, f
         SeqStub* pSequence = (SeqStub*)GetSectionSequence(i);
         bool bUpdate = true;
         iGroup = GetType(group[i]);
-        iNextGroupType = GetType(usReloadGroup[i]);
+        iNextGroupType = GetType(nextGroup[i]);
         if (iGroup == 0xff || !pSequence)
             continue;
         if (i == 3)
             bUpdate = false;
-        switch (m_cState)
+        switch (cSkipUpdate)
         {
         case 0x17:
             if (i != 7 && i != 0)
@@ -5648,7 +5850,7 @@ void FUN_00491180_shell::Animation_Update(TESObjectREFR* apRef, float afDelta, f
             }
             break;
         default:
-            if (i == m_cState)
+            if (i == cSkipUpdate)
                 bUpdate = false;
         }
 
@@ -5659,13 +5861,13 @@ void FUN_00491180_shell::Animation_Update(TESObjectREFR* apRef, float afDelta, f
         else if (pSequence->GetState() == 1)
         {
             if (iGroup >= 3 && iGroup <= 0x10)
-                pSequence->SetTime(pSequence->GetLastTime(0) + (fTimeStep * m_fMovementRate - fTimeStep));
+                pSequence->SetTime(pSequence->GetLastTime(0) + (fTimeStep * m_fMoveSpeed - fTimeStep));
             else if (iGroup == 0x18 || iGroup == 0x19)
-                pSequence->SetTime(pSequence->GetLastTime(0) + (fTimeStep * m_fAnimationTimeScale - fTimeStep));
+                pSequence->SetTime(pSequence->GetLastTime(0) + (fTimeStep * m_fEquipModifier - fTimeStep));
             else if (iGroup >= 0x18 && iGroup <= 0xa8)
-                pSequence->SetTime(pSequence->GetLastTime(0) + (fTimeStep * m_fCombatAnimationRate - fTimeStep));
+                pSequence->SetTime(pSequence->GetLastTime(0) + (fTimeStep * m_fAttackSpeed - fTimeStep));
             else if (iGroup >= 0xb1 && iGroup <= 0xc7)
-                pSequence->SetTime(pSequence->GetLastTime(0) + (fTimeStep * m_fReloadAnimationRate - fTimeStep));
+                pSequence->SetTime(pSequence->GetLastTime(0) + (fTimeStep * m_fReloadModifier - fTimeStep));
         }
 
         if (bUpdate && pSequence->GetState() == 1)
@@ -5680,9 +5882,9 @@ void FUN_00491180_shell::Animation_Update(TESObjectREFR* apRef, float afDelta, f
                 {
                     if (iNextGroupType != 0xff)
                     {
-                        m_acTargetName[i] = m_acAnimationName[i];
-                        PlayNextGroup(usReloadGroup[i], -1);
-                        usReloadGroup[i] = iNextGroupType = 0xff;
+                        loopCount[i] = nextLoops[i];
+                        PlayNextGroup(nextGroup[i], -1);
+                        nextGroup[i] = iNextGroupType = 0xff;
                     }
                     else
                     {
@@ -5701,9 +5903,9 @@ void FUN_00491180_shell::Animation_Update(TESObjectREFR* apRef, float afDelta, f
                 {
                     if (iNextGroupType != 0xff)
                     {
-                        m_acTargetName[i] = m_acAnimationName[i];
-                        PlayNextGroup(usReloadGroup[i], -1);
-                        usReloadGroup[i] = iNextGroupType = 0xff;
+                        loopCount[i] = nextLoops[i];
+                        PlayNextGroup(nextGroup[i], -1);
+                        nextGroup[i] = iNextGroupType = 0xff;
                     }
                     else
                     {
@@ -5731,9 +5933,9 @@ void FUN_00491180_shell::Animation_Update(TESObjectREFR* apRef, float afDelta, f
                 {
                     if (iNextGroupType != 0xff)
                     {
-                        m_acTargetName[i] = m_acAnimationName[i];
-                        PlayNextGroup(usReloadGroup[i], -1);
-                        usReloadGroup[i] = iNextGroupType = 0xff;
+                        loopCount[i] = nextLoops[i];
+                        PlayNextGroup(nextGroup[i], -1);
+                        nextGroup[i] = iNextGroupType = 0xff;
                     }
                     else
                     {
@@ -5749,9 +5951,9 @@ void FUN_00491180_shell::Animation_Update(TESObjectREFR* apRef, float afDelta, f
                 {
                     if (iNextGroupType != 0xff)
                     {
-                        m_acTargetName[i] = m_acAnimationName[i];
-                        PlayNextGroup(usReloadGroup[i], -1);
-                        usReloadGroup[i] = iNextGroupType = 0xff;
+                        loopCount[i] = nextLoops[i];
+                        PlayNextGroup(nextGroup[i], -1);
+                        nextGroup[i] = iNextGroupType = 0xff;
                     }
                     else
                     {
@@ -5765,7 +5967,7 @@ void FUN_00491180_shell::Animation_Update(TESObjectREFR* apRef, float afDelta, f
                     action[i] = (ANIM_GROUP_ACTION)(action[i] + 1);
                 if (action[i] == 2 && pRefActor && pRefActor->GetCurrentAIProcess() &&
                     ((pRefActor->GetCurrentAIProcess()->GetSustainedFire() && pRefActor->GetAnimAction_008a7570() == 2) ||
-                     (m_pAttachedReference == g_thePlayer && DAT_011f2250.GetFlags() == 4 &&
+                     (pActorRef == g_thePlayer && DAT_011f2250.GetFlags() == 4 &&
                       DAT_011f2250.GetTarget())) &&
                     pSequence->GetAnimGroup()->GetActionTime(2) >= afPrevTimes[i])
                 {
@@ -5790,9 +5992,9 @@ void FUN_00491180_shell::Animation_Update(TESObjectREFR* apRef, float afDelta, f
                 {
                     if (iNextGroupType != 0xff)
                     {
-                        m_acTargetName[i] = m_acAnimationName[i];
-                        PlayNextGroup(usReloadGroup[i], -1);
-                        usReloadGroup[i] = iNextGroupType = 0xff;
+                        loopCount[i] = nextLoops[i];
+                        PlayNextGroup(nextGroup[i], -1);
+                        nextGroup[i] = iNextGroupType = 0xff;
                     }
                     else
                     {
@@ -5821,12 +6023,12 @@ void FUN_00491180_shell::Animation_Update(TESObjectREFR* apRef, float afDelta, f
                 {
                     if (GetSequenceTime(pSequence) >= pSequence->GetAnimGroup()->GetActionTime(3))
                     {
-                        m_acTargetName[i] = m_acAnimationName[i];
-                        PlayNextGroup(usReloadGroup[i], -1);
-                        usReloadGroup[i] = iNextGroupType = 0xff;
+                        loopCount[i] = nextLoops[i];
+                        PlayNextGroup(nextGroup[i], -1);
+                        nextGroup[i] = iNextGroupType = 0xff;
                     }
                 }
-                else if (GetSequenceTime(pSequence) >= pSequence->GetAnimGroup()->GetActionTime(2) && m_acTargetName[i])
+                else if (GetSequenceTime(pSequence) >= pSequence->GetAnimGroup()->GetActionTime(2) && loopCount[i])
                 {
                     ResetLoop();
                     action[i] = (ANIM_GROUP_ACTION)1;
@@ -5834,13 +6036,13 @@ void FUN_00491180_shell::Animation_Update(TESObjectREFR* apRef, float afDelta, f
                         pSequence->GetAnimGroup()->GetActionTime(2) - pSequence->GetAnimGroup()->GetActionTime(1);
                     pSequence->SetTime(pSequence->GetLastTime(0) - fLoopTime);
                     afPrevTimes[i] = afPrevTimes[i] - fLoopTime;
-                    if (m_acTargetName[i] != -1 && m_acTargetName[i] < 0xff)
-                        m_acTargetName[i] = m_acTargetName[i] - 1;
+                    if (loopCount[i] != -1 && loopCount[i] < 0xff)
+                        loopCount[i] = loopCount[i] - 1;
                 }
                 else if (GetSequenceTime(pSequence) >= pSequence->GetAnimGroup()->GetActionTime(3))
                 {
-                    if (((IdleStub*)(LocalAnimIdle*)LocalInput)->GetIdleState() == 1)
-                        ((IdleStub*)(LocalAnimIdle*)LocalInput)->SetIdleState(3);
+                    if (((IdleStub*)(LocalAnimIdle*)spAnimIdle)->GetIdleState() == 1)
+                        ((IdleStub*)(LocalAnimIdle*)spAnimIdle)->SetIdleState(3);
                     else
                         BlendOut(i, false);
                 }
@@ -5866,18 +6068,18 @@ void FUN_00491180_shell::Animation_Update(TESObjectREFR* apRef, float afDelta, f
                     {
                         if (GetSequenceTime(pSequence) >= pSequence->GetAnimGroup()->GetActionTime(1))
                         {
-                            m_acTargetName[i] = m_acAnimationName[i];
-                            PlayNextGroup(usReloadGroup[i], -1);
-                            usReloadGroup[i] = iNextGroupType = 0xff;
+                            loopCount[i] = nextLoops[i];
+                            PlayNextGroup(nextGroup[i], -1);
+                            nextGroup[i] = iNextGroupType = 0xff;
                         }
                     }
-                    else if (GetSequenceTime(pSequence) >= pSequence->GetAnimGroup()->GetActionTime(1) && m_acTargetName[i])
+                    else if (GetSequenceTime(pSequence) >= pSequence->GetAnimGroup()->GetActionTime(1) && loopCount[i])
                     {
                         action[i] = (ANIM_GROUP_ACTION)0;
                         float fLoopTime = pSequence->GetEndKeyTime() - pSequence->GetBeginKeyTime();
                         pSequence->SetTime(pSequence->GetLastTime(0) - fLoopTime);
-                        if (m_acTargetName[i] != -1)
-                            m_acTargetName[i] = m_acTargetName[i] - 1;
+                        if (loopCount[i] != -1)
+                            loopCount[i] = loopCount[i] - 1;
                     }
                     else if (GetSequenceTime(pSequence) >= pSequence->GetAnimGroup()->GetActionTime(1))
                     {
@@ -5895,14 +6097,14 @@ void FUN_00491180_shell::Animation_Update(TESObjectREFR* apRef, float afDelta, f
                         {
                             if (i != 1 || (pRefActor->GetActorStateFlags() & 0xf))
                             {
-                                m_acTargetName[i] = m_acAnimationName[i];
-                                PlayNextGroup(usReloadGroup[i], -1);
+                                loopCount[i] = nextLoops[i];
+                                PlayNextGroup(nextGroup[i], -1);
                             }
                             else
                             {
                                 BlendOut(i, false);
                             }
-                            usReloadGroup[i] = iNextGroupType = 0xff;
+                            nextGroup[i] = iNextGroupType = 0xff;
                         }
                     }
                     else if (GetSequenceTime(pSequence) >= pSequence->GetAnimGroup()->GetActionTime(1))
@@ -5915,33 +6117,33 @@ void FUN_00491180_shell::Animation_Update(TESObjectREFR* apRef, float afDelta, f
         }
     }
 
-    if (m_pObjectNode)
+    if (pAccumRoot)
     {
-        AnimPoint3 kOld = (AnimPoint3&)m_kRootTranslation;
+        AnimPoint3 kOld = (AnimPoint3&)AccumRootTranslate;
         bool bUseMoveData = false;
         AnimPoint3 kMoveDelta = (const AnimPoint3&)AnimationVector::ZERO;
         if (pRefActor->IsMoving_004938e0())
         {
             unsigned short usMoveFlags = (unsigned short)pRefActor->GetActorStateFlags();
-            if (m_pChildTile[1] && (usMoveFlags & 0xf))
+            if (pCurrentSequence[1] && (usMoveFlags & 0xf))
             {
                 int iType = 0;
-                if (((SeqStub*)m_pChildTile[1])->GetAnimGroup()->HasMoveData())
+                if (((SeqStub*)pCurrentSequence[1])->GetAnimGroup()->IsJumpingLoopAnim())
                     bUseMoveData = true;
-                switch (((SeqStub*)m_pChildTile[1])->GetAnimGroup()->GetGroupType())
+                switch (((SeqStub*)pCurrentSequence[1])->GetAnimGroup()->GetGroupType())
                 {
                 case 0xe3:
                     bUseMoveData = true;
                     break;
                 default:
-                    switch (m_pChildTile[1]->GetState())
+                    switch (pCurrentSequence[1]->GetState())
                     {
                     case 2:
                     case 5:
                         bUseMoveData = true;
                     }
                 }
-                ControllerStub* pController = ((AccumRootStub*)m_pObjectNode)->GetController(&g_011f36ec);
+                ControllerStub* pController = ((AccumRootStub*)pAccumRoot)->GetController(&g_011f36ec);
                 ControllerStub* pMgr = pController;
                 BlendStub* pBlendInterpolator = pMgr->GetInterpolator(0);
                 if (pBlendInterpolator)
@@ -5950,9 +6152,9 @@ void FUN_00491180_shell::Animation_Update(TESObjectREFR* apRef, float afDelta, f
                     if (pBlend)
                     {
                         int iHighPriority = pBlend->GetHighPriority();
-                        void* pSeqInterp = ((SeqStub*)m_pChildTile[1])->GetInterpolator(0);
+                        void* pSeqInterp = ((SeqStub*)pCurrentSequence[1])->GetInterpolator(0);
                         pBlend = (BlendStub*)NiObject_DynamicCast((const NiRTTI*)&g_011f36fc, (NiObject*)pSeqInterp);
-                        if (((SeqStub*)m_pChildTile[1])->GetPriority(((AccumRootStub*)m_pObjectNode)->GetName(), 0) <
+                        if (((SeqStub*)pCurrentSequence[1])->GetPriority(((AccumRootStub*)pAccumRoot)->GetName(), 0) <
                             iHighPriority)
                             bUseMoveData = false;
                     }
@@ -5981,10 +6183,10 @@ void FUN_00491180_shell::Animation_Update(TESObjectREFR* apRef, float afDelta, f
                         else if (usMoveFlags & 8)
                             iType = 6;
                     }
-                    if (iType == ((SeqStub*)m_pChildTile[1])->GetAnimGroup()->GetGroupType())
+                    if (iType == ((SeqStub*)pCurrentSequence[1])->GetAnimGroup()->GetGroupType())
                     {
-                        kMoveDelta = ((SeqStub*)m_pChildTile[1])->GetAnimGroup()->GetMoveVector() *
-                                     fTimeMultiplier * *g_011c5724.Float() * m_fMovementRate;
+                        kMoveDelta = ((SeqStub*)pCurrentSequence[1])->GetAnimGroup()->GetMoveVector() *
+                                     fTimeMultiplier * *g_011c5724.Float() * m_fMoveSpeed;
                     }
                     else
                     {
@@ -5993,39 +6195,39 @@ void FUN_00491180_shell::Animation_Update(TESObjectREFR* apRef, float afDelta, f
                         if (iType)
                         {
                             AnimSequenceBase* pSeqBase;
-                            if (m_pOwnerReference->GetAt(usMoveGroup, pSeqBase))
+                            if (pAnimSequenceMap->GetAt(usMoveGroup, pSeqBase))
                             {
                                 SeqStub* pMoveSeq = (SeqStub*)pSeqBase->GetSequenceAtIndex(-1);
                                 if (pMoveSeq)
                                     kMoveDelta = pMoveSeq->GetAnimGroup()->GetMoveVector() * fTimeMultiplier *
-                                                 *g_011c5724.Float() * m_fMovementRate;
+                                                 *g_011c5724.Float() * m_fMoveSpeed;
                             }
                         }
                     }
                 }
             }
         }
-        UpdateAccumRoot(time, &m_kRootTranslation, true);
+        UpdateAccumRoot(time, &AccumRootTranslate, true);
         if (bUseMoveData)
         {
-            m_kNodeTranslation.x = kMoveDelta.x;
-            m_kNodeTranslation.y = kMoveDelta.y;
+            movementDelta.x = kMoveDelta.x;
+            movementDelta.y = kMoveDelta.y;
         }
         else
         {
-            AnimPoint3 kTranslateDelta = (AnimPoint3&)m_kRootTranslation - kOld;
-            m_kNodeTranslation.x = kTranslateDelta.x;
-            m_kNodeTranslation.y = kTranslateDelta.y;
+            AnimPoint3 kTranslateDelta = (AnimPoint3&)AccumRootTranslate - kOld;
+            movementDelta.x = kTranslateDelta.x;
+            movementDelta.y = kTranslateDelta.y;
         }
-        m_kNodeTranslation.x = ((Actor*)apRef)->TESObjectREFR_GetScale_00567400() * m_kNodeTranslation.x;
-        m_kNodeTranslation.y = ((Actor*)apRef)->TESObjectREFR_GetScale_00567400() * m_kNodeTranslation.y;
-        if (!bUseMoveData && !m_pChildTile[1] && m_pCurrentSequence && m_pCurrentSequence->GetState())
+        movementDelta.x = ((Actor*)ownerObject)->TESObjectREFR_GetScale_00567400() * movementDelta.x;
+        movementDelta.y = ((Actor*)ownerObject)->TESObjectREFR_GetScale_00567400() * movementDelta.y;
+        if (!bUseMoveData && !pCurrentSequence[1] && pLastMovementSequence && pLastMovementSequence->GetState())
         {
-            m_kNodeTranslation.y = 0.0f;
-            m_kNodeTranslation.x = 0.0f;
+            movementDelta.y = 0.0f;
+            movementDelta.x = 0.0f;
         }
-        if (m_pCurrentSequence && !m_pCurrentSequence->GetState())
-            m_pCurrentSequence = 0;
+        if (pLastMovementSequence && !pLastMovementSequence->GetState())
+            pLastMovementSequence = 0;
     }
 
     bTalks = false;
@@ -6033,12 +6235,12 @@ void FUN_00491180_shell::Animation_Update(TESObjectREFR* apRef, float afDelta, f
         bTalks = pRefActor->GetCurrentAIProcess()->IsDetectionEnabled();
     if (!bTalks)
     {
-        if (!((AccumRootStub*)(NiNode*)m_acHeaderData)->IsCulled() ||
+        if (!((AccumRootStub*)(NiNode*)pAnimRoot)->IsCulled() ||
             (this == ((PlayerStub*)g_thePlayer)->GetAnimationEx(true) && IsVATSCameraActive()))
         {
             for (i = 0; i < 8; i++)
             {
-                switch (m_cState)
+                switch (cSkipUpdate)
                 {
                 case 0x17:
                     if (i != 7 && i != 0)
@@ -6057,7 +6259,7 @@ void FUN_00491180_shell::Animation_Update(TESObjectREFR* apRef, float afDelta, f
                     }
                     break;
                 default:
-                    if (i == m_cState)
+                    if (i == cSkipUpdate)
                         continue;
                 }
                 SeqStub* pForwardSequence = (SeqStub*)GetSectionSequence(i);
@@ -6067,20 +6269,20 @@ void FUN_00491180_shell::Animation_Update(TESObjectREFR* apRef, float afDelta, f
                     bool bPlaySounds = true;
                     if (DAT_01199bcc[i])
                     {
-                        if (m_acNodeName[i])
+                        if (pSoundPriorityBone[i])
                         {
                             BSAnimGroupSequence* pBest = 0;
                             unsigned char ucMaxPriority = 0;
                             for (int iSection = 0; iSection < 8; iSection++)
                             {
-                                if (m_pChildTile[iSection] && m_acNodeName[i] &&
-                                    (const char*)((BoneStub*)m_acNodeName[i])->GetName())
+                                if (pCurrentSequence[iSection] && pSoundPriorityBone[i] &&
+                                    (const char*)((BoneStub*)pSoundPriorityBone[i])->GetName())
                                 {
                                     unsigned char ucPriority =
-                                        ((SeqStub*)m_pChildTile[iSection])->GetAnimGroup()->GetSectionPriority(i);
+                                        ((SeqStub*)pCurrentSequence[iSection])->GetAnimGroup()->GetSectionPriority(i);
                                     if (ucPriority > ucMaxPriority)
                                     {
-                                        pBest = m_pChildTile[iSection];
+                                        pBest = pCurrentSequence[iSection];
                                         ucMaxPriority = ucPriority;
                                     }
                                 }
@@ -6097,18 +6299,18 @@ void FUN_00491180_shell::Animation_Update(TESObjectREFR* apRef, float afDelta, f
                     {
                         float fNewTime = pForwardSequence->GetEaseTime(time);
                         if (-DAT_0101d890 != fNewTime && -DAT_0101d890 != afPrevTimes[i] && fNewTime != afPrevTimes[i])
-                            pForwardSequence->GetAnimGroup()->UpdateSounds(apRef, afPrevTimes[i], fNewTime, pForwardSequence);
+                            pForwardSequence->GetAnimGroup()->UpdateSounds(ownerObject, afPrevTimes[i], fNewTime, pForwardSequence);
                     }
                 }
             }
         }
     }
 
-    if (LocalInput)
-        ((IdleStub*)(LocalAnimIdle*)LocalInput)->Update(this);
-    if (m_cSkipNextBlend)
-        m_cSkipNextBlend = 0;
-    m_cState = -1;
+    if (spAnimIdle)
+        ((IdleStub*)(LocalAnimIdle*)spAnimIdle)->Update(this);
+    if (cSkipNextBlend)
+        cSkipNextBlend = 0;
+    cSkipUpdate = -1;
 }
 
 struct AnimRoot3D
@@ -6230,6 +6432,8 @@ struct AnimSwap
 // If both animation roots exist, temporarily detaches their controllers, updates the first node with fTime, then restores the controllers.
 // @fnv 0x00493bd0
 // src: XBOX_PDB 0x00493bd0
+// pdb: Animation::UpdateSceneGraphNoController | Animation.obj | retail, upstream name already matches, high
+// pdb locals: updateData, spAccumRootCon, spAnimRootCon
 void AnimSwap::Animation_UpdateSceneGraphNoController()
 {
     if (!m_pRootNode || !pOther)
@@ -6557,12 +6761,15 @@ struct BlendAnimation
 };
 // @fnv 0x004949a0
 // src: XBOX_PDB 0x004949a0
-BlendSequence* BlendAnimation::Animation_StartGroup(BlendSequence* apSequence, unsigned short group, int aiRequestedSection)
+// pdb: Animation::StartGroup | Animation.obj | retail, string-set bridge, high
+// pdb params: asNewGroup, aeSection
+// pdb locals: etestSection, panimSeq, pseq, pmultiple
+BlendSequence* BlendAnimation::Animation_StartGroup(BlendSequence* apSeq, unsigned short asNewGroup, int aeSection)
 {
-    if (FUN_00498ea0(apSequence))
+    if (FUN_00498ea0(apSeq))
         return 0;
-    int type4 = FUN_005f2440(group);
-    int section3 = aiRequestedSection;
+    int type4 = FUN_005f2440(asNewGroup);
+    int section3 = aeSection;
     BlendActor* owner2 = actor;
     if (section3 == -1)
         section3 = DAT_011977e0[type4].section;
@@ -6582,15 +6789,15 @@ BlendSequence* BlendAnimation::Animation_StartGroup(BlendSequence* apSequence, u
     int state = 0;
     if (previous2)
         state = previous2->FUN_008041a0();
-    if (!apSequence || group == 255)
+    if (!apSeq || asNewGroup == 255)
         return 0;
-    if (apSequence)
+    if (apSeq)
     {
         if (section3 == 4 || section3 == 5 || section3 == 6)
         {
             if (actor == DAT_011dea3c && this == DAT_011dea3c->FUN_00950a60(1))
             {
-                apSequence->NiControllerSequence_SetSequenceWeight(section3 == 4 ? 1.0f : 0.0f);
+                apSeq->NiControllerSequence_SetSequenceWeight(section3 == 4 ? 1.0f : 0.0f);
             }
             else
             {
@@ -6603,30 +6810,30 @@ BlendSequence* BlendAnimation::Animation_StartGroup(BlendSequence* apSequence, u
                     BlendSequence* priorA = highProcess->GetFieldAt(section3 - 4);
                     if (priorA)
                     {
-                        apSequence->NiControllerSequence_SetSequenceWeight(priorA->GetFloatAtOffset1C());
+                        apSeq->NiControllerSequence_SetSequenceWeight(priorA->GetFloatAtOffset1C());
                         reset = false;
                     }
                 }
                 if (reset && (section3 == 5 || section3 == 6))
-                    apSequence->NiControllerSequence_SetSequenceWeight(0.0f);
+                    apSeq->NiControllerSequence_SetSequenceWeight(0.0f);
             }
         }
-        if (apSequence->FUN_008041a0() == 3)
-            apSequence->Deactivate(0.0f, 0);
-        if (((apSequence->FUN_008041a0() != 0 && !apSequence->FUN_0059bb30()) ||
-             (apSequence->FUN_008041a0() == 1 && apSequence == previous2)) &&
-            (!Interface_IsInMenuMode() || apSequence->FUN_008041a0() == 1))
+        if (apSeq->FUN_008041a0() == 3)
+            apSeq->Deactivate(0.0f, 0);
+        if (((apSeq->FUN_008041a0() != 0 && !apSeq->FUN_0059bb30()) ||
+             (apSeq->FUN_008041a0() == 1 && apSeq == previous2)) &&
+            (!Interface_IsInMenuMode() || apSeq->FUN_008041a0() == 1))
         {
             flags[section3] = 0;
-            apSequence->SetNegatedGlobal();
-            return apSequence;
+            apSeq->SetNegatedGlobal();
+            return apSeq;
         }
         if (Interface_IsInMenuMode() && node.Modelloader_GetReferencedThis() == DAT_011dea3c->PlayerCharacter_Get3D_00950bb0(0) && !DAT_011de45c->FUN_0047c850() &&
             !DAT_011f2250.FUN_0044ddc0())
         {
         }
         else if (Interface_IsInPipboyMenu() && node.Modelloader_GetReferencedThis() == DAT_011dea3c->PlayerCharacter_Get3D_00950bb0(1) && type4 == 1 &&
-                 aiRequestedSection == 0 && previous2)
+                 aeSection == 0 && previous2)
         {
             Animation_ClearGroup(originalSection, 0.0f);
             previous2 = 0;
@@ -6650,7 +6857,7 @@ BlendSequence* BlendAnimation::Animation_StartGroup(BlendSequence* apSequence, u
                 Animation_ClearGroup(originalSection, 0.0f);
                 previous2 = 0;
             }
-            else if (originalSection != section3 || force || apSequence->FUN_008041a0() != 0)
+            else if (originalSection != section3 || force || apSeq->FUN_008041a0() != 0)
             {
                 Animation_ClearGroup(originalSection, 0.0f);
             }
@@ -6660,30 +6867,30 @@ BlendSequence* BlendAnimation::Animation_StartGroup(BlendSequence* apSequence, u
                 Animation_ClearGroup(6, 0.0f);
             }
         }
-        groups[section3] = group;
-        sequences[section3] = apSequence;
-        if ((!Interface_IsInMenuMode() || node.Modelloader_GetReferencedThis() != DAT_011dea3c->PlayerCharacter_Get3D_00950bb0(0)) && apSequence && previous2)
+        groups[section3] = asNewGroup;
+        sequences[section3] = apSeq;
+        if ((!Interface_IsInMenuMode() || node.Modelloader_GetReferencedThis() != DAT_011dea3c->PlayerCharacter_Get3D_00950bb0(0)) && apSeq && previous2)
         {
-            BlendGroupPtr newGroup3(apSequence->FUN_0048f7f0());
+            BlendGroupPtr newGroup3(apSeq->FUN_0048f7f0());
             BlendGroupPtr oldGroup(previous2->FUN_0048f7f0());
             if (oldGroup.Modelloader_GetReferencedThis()->IsUnk28Set() &&
                 oldGroup.Modelloader_GetReferencedThis()->IsUnk28Set() == newGroup3.Modelloader_GetReferencedThis()->IsUnk28Set())
             {
-                if (previous2->GetHavokWorldObjectCountInSceneGraph_0084e3a0() == apSequence->GetHavokWorldObjectCountInSceneGraph_0084e3a0())
+                if (previous2->GetHavokWorldObjectCountInSceneGraph_0084e3a0() == apSeq->GetHavokWorldObjectCountInSceneGraph_0084e3a0())
                 {
-                    if (apSequence->CanSyncTo(previous2))
+                    if (apSeq->CanSyncTo(previous2))
                         synchronize = true;
                     else
                         Warning_005b5e40(DAT_0101dc58, previous2->FUN_00413f40()->FUN_0043b1b0(),
-                                     apSequence->FUN_00413f40()->FUN_0043b1b0(),
+                                     apSeq->FUN_00413f40()->FUN_0043b1b0(),
                                      node.Modelloader_GetReferencedThis()->FUN_00413f40()->FUN_0043b1b0());
                 }
                 else
                     Warning_005b5e40(DAT_0101dbe8, previous2->FUN_00413f40()->FUN_0043b1b0(), previous2->GetHavokWorldObjectCountInSceneGraph_0084e3a0(),
-                                 apSequence->FUN_00413f40()->FUN_0043b1b0(), apSequence->GetHavokWorldObjectCountInSceneGraph_0084e3a0(),
+                                 apSeq->FUN_00413f40()->FUN_0043b1b0(), apSeq->GetHavokWorldObjectCountInSceneGraph_0084e3a0(),
                                  node.Modelloader_GetReferencedThis()->FUN_00413f40()->FUN_0043b1b0());
             }
-            if (synchronize && apSequence == previous2)
+            if (synchronize && apSeq == previous2)
             {
                 Warning_005b5e40(DAT_0101db90, previous2->FUN_00413f40()->FUN_0043b1b0(),
                              node.Modelloader_GetReferencedThis()->FUN_00413f40()->FUN_0043b1b0());
@@ -6694,15 +6901,15 @@ BlendSequence* BlendAnimation::Animation_StartGroup(BlendSequence* apSequence, u
         unsigned char priority = 0;
         if (previous2)
             priority = previous2->FUN_0048f7f0()->GetMaxByte();
-        if (apSequence->FUN_0048f7f0()->GetMaxOfTwoBytes() > priority)
-            priority = apSequence->FUN_0048f7f0()->GetMaxOfTwoBytes();
+        if (apSeq->FUN_0048f7f0()->GetMaxOfTwoBytes() > priority)
+            priority = apSeq->FUN_0048f7f0()->GetMaxOfTwoBytes();
         if (priority)
             duration = priority / DAT_0101db88;
         if ((Interface_IsInMenuMode() && node.FUN_00822510(DAT_011dea3c->PlayerCharacter_GetInventory3D())) || Interface_IsMenuIDVisible(1036, 0))
             duration = *DAT_011c5740.Setting_Float_00403e20();
         if (type4 >= 177 && type4 <= 199 && previous2 && owner2 != DAT_011dea3c && duration < DAT_01011588)
         {
-            switch (apSequence->FUN_0048f7f0()->GetMoveAnimGroup())
+            switch (apSeq->FUN_0048f7f0()->GetMoveAnimGroup())
             {
             case 1:
                 if (previous2->FUN_0048f7f0()->GetMoveAnimGroup() != 1)
@@ -6719,24 +6926,24 @@ BlendSequence* BlendAnimation::Animation_StartGroup(BlendSequence* apSequence, u
         if (force)
             duration = 0.0f;
         duration /= *DAT_011c5724.Setting_Float_00403e20();
-        apSequence->SetPhase(0.0f, 0);
+        apSeq->SetPhase(0.0f, 0);
         if (!previous2 && (section3 == 5 || section3 == 6))
-            manager.Modelloader_GetReferencedThis()->FUN_0047aab0(apSequence, 0, 1, apSequence->GetFloatAtOffset1C(), duration, 0);
+            manager.Modelloader_GetReferencedThis()->FUN_0047aab0(apSeq, 0, 1, apSeq->GetFloatAtOffset1C(), duration, 0);
         else if (duration < DAT_01016408)
-            manager.Modelloader_GetReferencedThis()->FUN_0047aab0(apSequence, 0, 1, apSequence->GetFloatAtOffset1C(), 0.0f, 0);
+            manager.Modelloader_GetReferencedThis()->FUN_0047aab0(apSeq, 0, 1, apSeq->GetFloatAtOffset1C(), 0.0f, 0);
         else if (synchronize)
-            manager.Modelloader_GetReferencedThis()->CallFUN_00a351d0(previous2, apSequence, duration, 0,
-                                                     previous2->GetFloatAtOffset1C(), apSequence->GetFloatAtOffset1C());
+            manager.Modelloader_GetReferencedThis()->CallFUN_00a351d0(previous2, apSeq, duration, 0,
+                                                     previous2->GetFloatAtOffset1C(), apSeq->GetFloatAtOffset1C());
         else
         {
             bool blended = false;
             if (previous2 && previous2->FUN_008041a0())
-                blended = manager.Modelloader_GetReferencedThis()->NiControllerManager_CrossFade(previous2, apSequence, duration, 0, 1,
-                                                               apSequence->GetFloatAtOffset1C(), 0);
+                blended = manager.Modelloader_GetReferencedThis()->NiControllerManager_CrossFade(previous2, apSeq, duration, 0, 1,
+                                                               apSeq->GetFloatAtOffset1C(), 0);
             if (!blended)
             {
                 if (DAT_011dea10->TES_CellTestRunning())
-                    manager.Modelloader_GetReferencedThis()->FUN_0047aab0(apSequence, 0, 1, 1.0f, 0.0f, 0);
+                    manager.Modelloader_GetReferencedThis()->FUN_0047aab0(apSeq, 0, 1, 1.0f, 0.0f, 0);
                 else
                 {
                     if (actor && actor->IsActor())
@@ -6745,11 +6952,11 @@ BlendSequence* BlendAnimation::Animation_StartGroup(BlendSequence* apSequence, u
                         if (bhkRagdollController_QFootIK() && blendActor->ragdoll && blendActor->ragdoll->bhkRagdollController_GetsFootIKActive())
                             blendActor->ragdoll->UpdateBoneLocalTransforms();
                     }
-                    manager.Modelloader_GetReferencedThis()->NiControllerManager_BlendFromPose(apSequence, 0.0f, duration, 0, 0);
+                    manager.Modelloader_GetReferencedThis()->NiControllerManager_BlendFromPose(apSeq, 0.0f, duration, 0, 0);
                 }
             }
         }
-        if (previous2 && previous2 != apSequence)
+        if (previous2 && previous2 != apSeq)
         {
             switch (previous2->FUN_008041a0())
             {
@@ -6762,7 +6969,7 @@ BlendSequence* BlendAnimation::Animation_StartGroup(BlendSequence* apSequence, u
         }
     }
     flags[section3] = 0;
-    return apSequence;
+    return apSeq;
 }
 
 }
@@ -6798,10 +7005,13 @@ struct FNV_AnimationOwner : public Animation
 };
 
 // @fnv 0x00495da0
+// pdb: Animation::SyncSequences | Animation.obj | debug, object-file run extension, low
+// pdb params: apSeq, asGroup
+// pdb locals: pmultiple, panimSeq, pseq
 BSAnimGroupSequence* FNV_AnimationOwner::GetSequenceForKey(BSAnimGroupSequence* pSequence, unsigned short usKey)
 {
     SeqIface* pFound;
-    if (usKey == 0xff || !((FNV_SeqMapStandIn*)m_pOwnerReference)->GetAt(usKey, pFound))
+    if (usKey == 0xff || !((FNV_SeqMapStandIn*)pAnimSequenceMap)->GetAt(usKey, pFound))
         return 0;
 
     SeqIface* _pUse = 0;
@@ -6811,7 +7021,7 @@ BSAnimGroupSequence* FNV_AnimationOwner::GetSequenceForKey(BSAnimGroupSequence* 
     if (!_pUse)
         return 0;
 
-    SeqIface* pSeqObj = _pUse->FindObjectByNameVariant(pSequence, -1);
+    SeqIface* pSeqObj = _pUse->AnimSequenceMultiple_GetCorrespondingSequence(pSequence, -1);
     if (!pSeqObj)
         return 0;
 
@@ -6839,33 +7049,36 @@ char __cdecl FUN_00ec67aa(int character);
 
 struct AnimationInterface : Animation
 {
-    char Animation_FindNextNoteKey(int sequenceIndex, int actionId, float* outTime);
+    char Animation_FindNextNoteKey(int aeSection, int apSearchKey, float* apKeyTime);
 };
 // @fnv 0x00495f50
 // src: COMMUNITY 0x00495f50
-char AnimationInterface::Animation_FindNextNoteKey(int sequenceIndex, int actionId, float* outTime)
+// pdb: Animation::FindNextNoteKey | Animation.obj | retail, upstream name already matches, high
+// pdb params: aeSection, apSearchKey, apKeyTime
+// pdb locals: isearchKeyLength, inumKeys, fcurrentTime, ptext, pkeys, i, pkeyText
+char AnimationInterface::Animation_FindNextNoteKey(int aeSection, int apSearchKey, float* apKeyTime)
 {
-    if (outTime != 0)
-        *outTime = 0.0f;
+    if (apKeyTime != 0)
+        *apKeyTime = 0.0f;
 
-    if (m_pChildTile[sequenceIndex] == 0 || actionId == 0)
+    if (pCurrentSequence[aeSection] == 0 || apSearchKey == 0)
         return 0;
 
     unsigned int entries;
-    float tracks = static_cast<SequenceInterface*>(m_pChildTile[sequenceIndex])->FUN_00598040();
-    NiTextKeyExtraData* sequenceTime = m_pChildTile[sequenceIndex]->GetName_00700300();
+    float tracks = static_cast<SequenceInterface*>(pCurrentSequence[aeSection])->FUN_00598040();
+    NiTextKeyExtraData* sequenceTime = pCurrentSequence[aeSection]->GetName_00700300();
     TrackEntry* key = reinterpret_cast<TrackEntry*>(sequenceTime->GetKeys_00495f30(&entries));
-    unsigned int trackCount = BSstrlen(actionId);
+    unsigned int trackCount = BSstrlen(apSearchKey);
     if (!trackCount)
         return 0;
 
     for (unsigned int i = 0; i < static_cast<unsigned int>(entries); ++i)
     {
         signed char* object = key[i].FUN_00717e50()->FUN_0043b1b0();
-        if (object != 0 && FUN_00ec7ec0(object, actionId, trackCount) == 0 && tracks <= key[i].AStarSearch_EvaluateValue_006a7f50())
+        if (object != 0 && FUN_00ec7ec0(object, apSearchKey, trackCount) == 0 && tracks <= key[i].AStarSearch_EvaluateValue_006a7f50())
         {
-            if (outTime != 0)
-                *outTime = key[i].AStarSearch_EvaluateValue_006a7f50();
+            if (apKeyTime != 0)
+                *apKeyTime = key[i].AStarSearch_EvaluateValue_006a7f50();
             return FUN_00ec67aa(object[trackCount]);
         }
     }
@@ -7028,7 +7241,11 @@ extern const char DAT_0101d930[], DAT_01015718[], DAT_010156a8[], DAT_0101dcec[]
     DAT_010154a0[], DAT_01015440[];
 // Reads an idle block from the stream, creates an IdleLoadTask for the matching TESIdleForm and logs block-size mismatches.
 // @fnv 0x004977e0
-IdleLoadTask* __cdecl LoadIdleAnimation(Actor* actor, Animation* animation, float time)
+// src: XBOX_DEBUG_PDB 0x004977e0
+// pdb: AnimIdle::LoadAnimIdle | Animation.obj | debug, unique string literal, high
+// pdb params: apActor, apAnimation, afTime
+// pdb locals: tempMemContext, panimIdle, istartBufferPosition, bforcedToZero, iblockSize, iformID, iblockHeader, pheader, pform, pidle, isize, icurrentBufferPosition
+IdleLoadTask* __cdecl AnimIdle_LoadAnimIdle(Actor* apActor, Animation* apAnimation, float afTime)
 {
     AutoMemContext context4((MEM_CONTEXT)51, true, DAT_0101d930, 0x1218);
     IdleLoadTask* result2 = 0;
@@ -7064,12 +7281,12 @@ IdleLoadTask* __cdecl LoadIdleAnimation(Actor* actor, Animation* animation, floa
             idle = dynamic_cast<TESIdleForm*>(TESForm_GetFormByNumericID(id4));
         if (idle)
         {
-            result2 = new IdleLoadTask(idle, 7, 1, actor, 1, 0);
-            result2->LoadQueuedAnim(time, animation);
+            result2 = new IdleLoadTask(idle, 7, 1, apActor, 1, 0);
+            result2->LoadQueuedAnim(afTime, apAnimation);
         }
         else
         {
-            Warning_005b5e40(DAT_0101dcec, id4, ((IdleLogName*)actor)->Name());
+            Warning_005b5e40(DAT_0101dcec, id4, ((IdleLogName*)apActor)->Name());
             ((IdleStream*)DAT_011de45c)->FUN_00857bd0(size);
         }
     }
@@ -7109,12 +7326,15 @@ struct FUN_00497ca0_shell : public Animation
 
 // @fnv 0x00497ca0
 // src: XBOX_PDB 0x00497ca0
-void FUN_00497ca0_shell::Animation_SpecialIdleQueue(TESIdleForm* a1, int a2)
+// pdb: Animation::SpecialIdleQueue | Animation.obj | retail, upstream name already matches, high
+// pdb params: apIdleForm, aeSection
+// pdb locals: tempMemContext, esection
+void FUN_00497ca0_shell::Animation_SpecialIdleQueue(TESIdleForm* apIdleForm, int aeSection)
 {
     AutoMemContext ctx(MEM_CONTEXT_MEM_CONTEXT_ANIMATION, true, DAT_0101d930, 4701);
-    if (LocalInput)
+    if (spAnimIdle)
     {
-        int section = LocalInput->GetSection();
+        int section = spAnimIdle->GetSection();
         switch (section)
         {
         case 21:
@@ -7124,38 +7344,38 @@ void FUN_00497ca0_shell::Animation_SpecialIdleQueue(TESIdleForm* a1, int a2)
             section = 1;
             break;
         }
-        if (LocalInput->GetControllerSequence())
+        if (spAnimIdle->GetControllerSequence())
         {
-            if (m_pChildTile[section] == LocalInput->GetControllerSequence())
+            if (pCurrentSequence[section] == spAnimIdle->GetControllerSequence())
             {
-                switch (LocalInput->GetControllerSequence()->GetState())
+                switch (spAnimIdle->GetControllerSequence()->GetState())
                 {
                 case 2:
                 case 5:
-                    Warning(DAT_0101dd28, (const char*)static_cast<const NiControllerSequence*>(LocalInput->GetControllerSequence())->GetName());
+                    Warning(DAT_0101dd28, (const char*)static_cast<const NiControllerSequence*>(spAnimIdle->GetControllerSequence())->GetName());
                     return;
                 default:
                     break;
                 }
-                BlendOut(LocalInput->GetSection(), false);
+                BlendOut(spAnimIdle->GetSection(), false);
             }
         }
-        if (!LocalOutput[0])
+        if (!spAnimIdleFreeWhenInactiveA[0])
         {
-            LocalOutput[0] = LocalInput;
-            LocalInput = 0;
+            spAnimIdleFreeWhenInactiveA[0] = spAnimIdle;
+            spAnimIdle = 0;
         }
-        else if (!LocalOutput[1])
+        else if (!spAnimIdleFreeWhenInactiveA[1])
         {
-            LocalOutput[1] = LocalInput;
-            LocalInput = 0;
+            spAnimIdleFreeWhenInactiveA[1] = spAnimIdle;
+            spAnimIdle = 0;
         }
         else
         {
-            AssignControllerManager(LocalInput);
+            AssignControllerManager(spAnimIdle);
         }
     }
-    LocalInput = (LocalAnimIdle*)new LocalAnimIdle(a1, a2, 1, (Actor*)m_pAttachedReference, 0, 0);
+    spAnimIdle = (LocalAnimIdle*)new LocalAnimIdle(apIdleForm, aeSection, 1, (Actor*)pActorRef, 0, 0);
 }
 
 namespace fnv_00498030 {
@@ -7171,18 +7391,21 @@ struct WorkerAnimation : Animation
 };
 // @fnv 0x00498030
 // src: COMMUNITY 0x00498030
-void WorkerAnimation::Animation_SpecialIdleReplace(TESIdleForm* idle, Actor* actor, int section)
+// pdb: Animation::SpecialIdleReplace | Animation.obj | retail, call graph (shared callers), high
+// pdb params: apIdleForm, apActor, aeSection
+// pdb locals: tempMemContext, panim
+void WorkerAnimation::Animation_SpecialIdleReplace(TESIdleForm* apIdleForm, Actor* apActor, int aeSection)
 {
     AutoMemContext h(MEM_CONTEXT_MEM_CONTEXT_ANIMATION, true,
                      "D:\\_Fallout3\\Platforms\\Common\\Code\\Fallout Shared\\Animation.cpp", 4797);
     Animation* p = this;
     if (!g_BGSSaveLoadGame->IsLoading())
     {
-        LocalStateValue = (LocalAnimIdle*)new LocalAnimIdle(idle, section, 0, actor, 0, this);
+        spAnimIdleQueued = (LocalAnimIdle*)new LocalAnimIdle(apIdleForm, aeSection, 0, apActor, 0, this);
     }
     else
     {
-        LocalStateValue = (LocalAnimIdle*)new LocalAnimIdle(idle, section, 0, actor, 1, 0);
+        spAnimIdleQueued = (LocalAnimIdle*)new LocalAnimIdle(apIdleForm, aeSection, 0, apActor, 1, 0);
     }
     ((AnimationFinish*)p)->SpecialIdleReplace_0();
 }
@@ -7194,25 +7417,27 @@ struct FUN_00499080_shell : public Animation
     void Animation_ClearBlendInterps();
 };
 
-void __fastcall ClearItemField2(NiObject* object);
+void __fastcall BSAnimGroupSequence_ClearBlendInterp(NiObject* object);
 extern NiRTTI DAT_011c7d74;
 
 // @fnv 0x00499080
 // src: COMMUNITY 0x00499080
+// pdb: Animation::ClearBlendInterps | Animation.obj | retail, upstream name already matches, high
+// pdb locals: icount, n, pbsSeq, pseq, pkfmodel
 void FUN_00499080_shell::Animation_ClearBlendInterps()
 {
-    if (!m_acReservedBytes)
+    if (!spManager)
         return;
-    unsigned int sequenceCount = m_acReservedBytes->GetSequenceCount_00495d00();
+    unsigned int sequenceCount = spManager->GetSequenceCount_00495d00();
 
     for (unsigned int index = 0; index < sequenceCount; ++index)
     {
         NiControllerSequence* sequence =
-            ((NiControllerManager*)(NiControllerManager*)m_acReservedBytes)->GetSequenceAt_00495d20(index);
+            ((NiControllerManager*)(NiControllerManager*)spManager)->GetSequenceAt_00495d20(index);
         NiObject* matchingObject = NiObject_DynamicCast(&DAT_011c7d74, (NiObject*)sequence);
         if (matchingObject)
         {
-            ClearItemField2(matchingObject);
+            BSAnimGroupSequence_ClearBlendInterp(matchingObject);
         }
     }
     while (((FUN_00493830_shell*)this)->Animation_GetAnimsLoading())
@@ -7296,11 +7521,14 @@ struct S_00499160_Node
 
 // @fnv 0x00499160
 // src: XBOX_PDB 0x00499160
-void __cdecl Animation_ClearControllersInterpolators(NiAVObject* obj)
+// pdb: Animation::ClearControllersInterpolators | Animation.obj | retail, upstream name already matches, high
+// pdb params: apObj
+// pdb locals: pnode, pcont, pinter, pmultiTargetTransformController, n, pchild
+void __cdecl Animation_ClearControllersInterpolators(NiAVObject* apObj)
 {
-    if (!obj)
+    if (!apObj)
         return;
-    NiTimeController* c = obj->GetControllers();
+    NiTimeController* c = apObj->GetControllers();
     while (c)
     {
         S_00499160_Mgr* m = (S_00499160_Mgr*)NiObject_DynamicCast(&DAT_011f3714, (NiObject*)c);
@@ -7316,7 +7544,7 @@ void __cdecl Animation_ClearControllersInterpolators(NiAVObject* obj)
         }
         c = c->GetNext();
     }
-    S_00499160_Node* node = (S_00499160_Node*)obj->IsSceneNode();
+    S_00499160_Node* node = (S_00499160_Node*)apObj->IsSceneNode();
     if (node)
     {
         for (unsigned int i = 0; i < node->FUN_0043b480(); i++)
@@ -7336,13 +7564,13 @@ struct ResetSequence
 {
     unsigned int Priority();
     void Attach(ResetRoot*, unsigned int);
-    void Detach();
+    void BSAnimGroupSequence_ValidateTargetsFromPalette();
     NiFixedStr& GetName();
     bool Activate(ResetRoot*);
 };
 struct ResetPalette
 {
-    void Clear();
+    void ResetAndFillFromScenegraph();
 };
 struct ResetManager
 {
@@ -7353,7 +7581,7 @@ struct ResetManager
     void Start(void*, int, int, float, float, int);
 };
 ResetPalette* __cdecl CastPalette(const void*, void*);
-extern int resetPaletteRTTI, resetControllerRTTI, resetOtherRTTI;
+extern int NiDefaultAVObjectPalette_ms_RTTI, resetControllerRTTI, resetOtherRTTI; // src: XBOX_RETAIL_PDB 0x011f4a04 (old: DAT_011f4a04/g_011f4a04/resetPaletteRTTI)
 template <class T> struct ResetPointer
 {
     T* value;
@@ -7418,20 +7646,23 @@ struct ResetAnimation
     ResetPointer<ResetManager> manager;
     int unkdc;
     void* currentSequences[8];
-    void Animation_ReloadTargets(bool attach);
+    void Animation_ReloadTargets(bool abReload);
 };
 // @fnv 0x00499240
 // src: XBOX_PDB 0x00499240
-void ResetAnimation::Animation_ReloadTargets(bool attach)
+// pdb: Animation::ReloadTargets | Animation.obj | retail, upstream name already matches, high
+// pdb params: abReload
+// pdb locals: ppalette, itransControllerCount, tempAutoEvent, pmultiTread, pmulti, pdefaultPalette, n, pseq
+void ResetAnimation::Animation_ReloadTargets(bool abReload)
 {
     if (!(ResetManager*)manager)
         return;
     void* paletteVal = ((ResetManager*)manager)->Palette();
     if (paletteVal)
     {
-        ResetPalette* castPalette3 = CastPalette(&resetPaletteRTTI, paletteVal);
+        ResetPalette* castPalette3 = CastPalette(&NiDefaultAVObjectPalette_ms_RTTI, paletteVal);
         if (castPalette3)
-            castPalette3->Clear();
+            castPalette3->ResetAndFillFromScenegraph();
     }
     void* controller5 = ((ResetRoot*)root)->GetController(&resetControllerRTTI);
     void* otherController = ((ResetRoot*)root)->GetController(&resetOtherRTTI);
@@ -7452,7 +7683,7 @@ void ResetAnimation::Animation_ReloadTargets(bool attach)
         ResetSequence* seqSecond3 = ((ResetManager*)manager)->Sequence(second7);
         if (seqSecond3)
         {
-            if (attach)
+            if (abReload)
             {
                 if (!((ResetRoot*)root)->GetController(&resetControllerRTTI) && priority2)
                     seqSecond3->Attach((ResetRoot*)root, priority2);
@@ -7461,7 +7692,7 @@ void ResetAnimation::Animation_ReloadTargets(bool attach)
             }
             else
             {
-                seqSecond3->Detach();
+                seqSecond3->BSAnimGroupSequence_ValidateTargetsFromPalette();
                 seqSecond3->Attach((ResetRoot*)root, priority2);
             }
         }
@@ -7476,13 +7707,13 @@ void ResetAnimation::Animation_ReloadTargets(bool attach)
 namespace fnv_004994f0 {
 struct FUN_004994f0_shell : Animation
 {
-    void Animation_BlendOut(int section, bool restoreAction);
+    void Animation_BlendOut(int aeSection, bool abIronSightsToggle);
     void Animation_ClearGroup(int section, float timeTmp);
 };
 struct BlendActor : Actor
 {
     bool IsSneaking();
-    void PlayAnimationSequence(int group, Animation* animation);
+    void Actor_StartWeaponGroup(int aeBaseAnimGroup, Animation* apAnim);
 };
 bool __fastcall IsWeaponDrawn(Actor*);
 int __fastcall GetAnimAction_008a7570(Actor*);
@@ -7501,10 +7732,13 @@ extern "C" int DAT_011c5724;
 extern AnimationVector NiPoint3_ZERO;
 // @fnv 0x004994f0
 // src: XBOX_PDB 0x004994f0
-void FUN_004994f0_shell::Animation_BlendOut(int section, bool restoreAction)
+// pdb: Animation::BlendOut | Animation.obj | retail, upstream name already matches, high
+// pdb params: aeSection, abIronSightsToggle
+// pdb locals: bstartAim, eseqSection, bclearGroup, pactor, fduration, bstartAttack, pblendOutSeq, cblendFrames, eattackAnim
+void FUN_004994f0_shell::Animation_BlendOut(int aeSection, bool abIronSightsToggle)
 {
-    int kIndex = section;
-    switch (section)
+    int kIndex = aeSection;
+    switch (aeSection)
     {
     case 20:
         kIndex = 1;
@@ -7513,12 +7747,12 @@ void FUN_004994f0_shell::Animation_BlendOut(int section, bool restoreAction)
         kIndex = 4;
         break;
     }
-    BlendActor* actor = static_cast<BlendActor*>(m_pAttachedReference);
+    BlendActor* actor = static_cast<BlendActor*>(pActorRef);
     if (kIndex == 1)
-        m_kNodeTranslation = NiPoint3_ZERO;
-    BSAnimGroupSequence* sequence_ = m_pChildTile[kIndex];
+        movementDelta = NiPoint3_ZERO;
+    BSAnimGroupSequence* sequence_ = pCurrentSequence[kIndex];
     float timeTmp = 0.0f;
-    if (sequence_ && !m_cSkipNextBlend)
+    if (sequence_ && !cSkipNextBlend)
     {
         timeTmp = *Setting_Float_00403e20(&DAT_011c56fc);
         char frames = GetMaxByte(reinterpret_cast<unsigned char*>(FUN_0048f7f0(sequence_)));
@@ -7529,9 +7763,9 @@ void FUN_004994f0_shell::Animation_BlendOut(int section, bool restoreAction)
     bool allowed = true;
     bool _overrideFlag = false;
     bool aChanged = false;
-    if (m_pAttachedReference && (kIndex == 4 || section == 20) && IsWeaponDrawn(actor) && !TESDataHandler_GetClearingData(DAT_011c3f2c))
+    if (pActorRef && (kIndex == 4 || aeSection == 20) && IsWeaponDrawn(actor) && !TESDataHandler_GetClearingData(DAT_011c3f2c))
     {
-        if (restoreAction && GetAnimAction_008a7570(actor) == 2 && actor->GetProcess()->GetActorProcessTime())
+        if (abIronSightsToggle && GetAnimAction_008a7570(actor) == 2 && actor->GetProcess()->GetActorProcessTime())
             _overrideFlag = true;
         else
             aChanged = true;
@@ -7557,18 +7791,18 @@ void FUN_004994f0_shell::Animation_BlendOut(int section, bool restoreAction)
         }
     }
     if (allowed)
-        Animation_ClearGroup(section, timeTmp);
+        Animation_ClearGroup(aeSection, timeTmp);
     if (_overrideFlag)
     {
         ANIM_GROUP_ENUM group =
             static_cast<BlendGroup*>(FUN_0048f7f0(actor->GetProcess()->GetActorProcessTime()))->GetType();
         if (IsIronSightsAction(group))
             group = static_cast<ANIM_GROUP_ENUM>(group - 3);
-        actor->PlayAnimationSequence(group, this);
+        actor->Actor_StartWeaponGroup(group, this);
     }
     else if (aChanged)
     {
-        actor->PlayAnimationSequence(17, this);
+        actor->Actor_StartWeaponGroup(17, this);
     }
 }
 }  // namespace fnv_004994f0
@@ -7656,7 +7890,11 @@ struct MessageRecord
 };
 // Accumulates the serialized byte size of the animation, including group sequences, idle data, and an optional scene sequence, and logs the total when enabled.
 // @fnv 0x004997f0
-unsigned short FakeAnim::GetSerializedSize(void* apRef)
+// src: XBOX_RETAIL_PDB 0x004997f0
+// pdb: Animation::GetSaveSize | Animation.obj | retail, call graph (shared callers), high
+// pdb params: apRef
+// pdb locals: isize, itempStartSize, pactor, i, pobj, pnode, pdata3D, pmanager, po, pseq, pheader, pform
+unsigned short FakeAnim::Animation_GetSaveSize(void* apRef)
 {
     unsigned short p = 0;
     unsigned short i = p;
@@ -7682,17 +7920,17 @@ unsigned short FakeAnim::GetSerializedSize(void* apRef)
             p += 2;
             p += 4;
             p += 1;
-            if (((Animation*)this)->m_pChildTile[h])
-                p += ((SequenceSize*)((Animation*)this)->m_pChildTile[h])->GetSaveSize_004efb10();
+            if (((Animation*)this)->pCurrentSequence[h])
+                p += ((SequenceSize*)((Animation*)this)->pCurrentSequence[h])->GetSaveSize_004efb10();
         }
     }
     Actor* a = 0;
     if (apRef && ((TESObjectREFR*)apRef)->IsActor())
         a = (Actor*)apRef;
-    if ((LocalAnimIdle*)((Animation*)this)->LocalStateValue)
-        p += GetMessageSize(a, (ParameterObject*)(LocalAnimIdle*)((Animation*)this)->LocalStateValue);
+    if ((LocalAnimIdle*)((Animation*)this)->spAnimIdleQueued)
+        p += GetMessageSize(a, (ParameterObject*)(LocalAnimIdle*)((Animation*)this)->spAnimIdleQueued);
     else
-        p += GetMessageSize(a, (ParameterObject*)(LocalAnimIdle*)((Animation*)this)->LocalInput);
+        p += GetMessageSize(a, (ParameterObject*)(LocalAnimIdle*)((Animation*)this)->spAnimIdle);
     p += 1;
     if (((SaveVersion*)DAT_011de45c)->FUN_008df040() >= 64)
         p += 1;
@@ -7752,14 +7990,14 @@ extern char UNK_0101536c;
 extern char UNK_010153a0;
 extern char UNK_01015318;
 
-void __cdecl AnimIdle_SaveAnimIdle(void* pA, unsigned int uB, void* pC, float fD);
+void __cdecl AnimIdle_SaveAnimIdle(void* apActor, unsigned int apAnimIdle, void* apAnimation, float fD);
 void* __cdecl NiObject_DynamicCast(void* pKey, unsigned int uVal);
 void* __cdecl TESForm_GetFormByNumericID(unsigned int uVal);
 struct Stream_00499b90
 {
     unsigned int FUN_00825c00();
     bool TESSaveLoadGame_UseSaveGameBlocks();
-    void TESSaveLoadGame_SaveGameDataOLD(const void* pSrc, unsigned int uSize);
+    void TESSaveLoadGame_SaveGameDataOLD(const void* apData, unsigned int aiSize);
     unsigned char FUN_008df040();
     unsigned int FUN_004fd3e0();
 };
@@ -7793,7 +8031,7 @@ struct Chan_00499b90
 };
 struct Bc_00499b90
 {
-    int NiNode_GetAtChecked(unsigned int uA);
+    int NiNode_GetAtChecked(unsigned int i);
 };
 struct Chan2_00499b90
 {
@@ -8080,11 +8318,15 @@ struct Holder_00499b90
     char unk121, unk122, unk123;
     void* f124;
     void* f128;
-    void WriteToStream(Class2_00499b90* param_2);
+    void Animation_SaveGame(Class2_00499b90* apRef);
 };
 // Serializes the holder's fields and per-slot data to the stream, writing a KOLB block header and patching its length afterwards.
 // @fnv 0x00499b90
-void Holder_00499b90::WriteToStream(Class2_00499b90* pClass2)
+// src: XBOX_RETAIL_PDB 0x00499b90
+// pdb: Animation::SaveGame | Animation.obj | retail, unique string literal, high
+// pdb params: apRef
+// pdb locals: itempStartPosition, iblockSize, coccupied, pactor, bsavedMagicNode, pblockSize, i, iblockHeader, panimSeq, csequenceIndex, pobj, pnode, pdata3D, pmanager, po, pseq, plight, ffadeTimer, icurrentBufferPosition, pheader, pform, istartBufferPosition
+void Holder_00499b90::Animation_SaveGame(Class2_00499b90* apRef)
 {
     unsigned short lengthA5;
     unsigned int uStart7;
@@ -8141,7 +8383,7 @@ void Holder_00499b90::WriteToStream(Class2_00499b90* pClass2)
             }
             if (this->fe0[cb_] == 0)
             {
-                Warning_005b5e40(&UNK_0101ddc8, pClass2->FUN_0130(), pClass2->GetHavokWorldObjectCountInSceneGraph_0084e3a0(), (int)cb_, (int)this->f4c[cb_],
+                Warning_005b5e40(&UNK_0101ddc8, apRef->FUN_0130(), apRef->GetHavokWorldObjectCountInSceneGraph_0084e3a0(), (int)cb_, (int)this->f4c[cb_],
                              this->f5c[cb_]);
                 bId = 0xfe;
             }
@@ -8153,11 +8395,11 @@ void Holder_00499b90::WriteToStream(Class2_00499b90* pClass2)
         }
     }
     pPi14 = 0;
-    if (pClass2 != 0)
+    if (apRef != 0)
     {
-        if (pClass2->FUN_0100())
+        if (apRef->FUN_0100())
         {
-            pPi14 = pClass2;
+            pPi14 = apRef;
         }
     }
     if (((Span_00499b90*)&this->f128)->Modelloader_GetReferencedThis() != 0)
@@ -8277,35 +8519,38 @@ struct FUN_0049bb70_shell : public FUN_00496280_shell
 
 // @fnv 0x0049bb70
 // src: XBOX_PDB 0x0049bb70
+// pdb: Animation::Revert | Animation.obj | debug, object-file run extension, low
+// pdb params: apLoadGameBuffer
+// pdb locals: pdelayList, i, pdelay
 void FUN_0049bb70_shell::Animation_Revert(int aiUnused)
 {
-    m_cSkipNextBlend = 0;
+    cSkipNextBlend = 0;
     Animation_ClearGroup(20, 0.0f);
     Animation_ZeroGlobalTransform();
-    if (LocalInput)
+    if (spAnimIdle)
     {
-        RemoveItemFromMap(&LocalInput);
+        RemoveItemFromMap(&spAnimIdle);
     }
-    LocalInput = 0;
-    if (LocalStateValue)
+    spAnimIdle = 0;
+    if (spAnimIdleQueued)
     {
-        RemoveItemFromMap(&LocalStateValue);
+        RemoveItemFromMap(&spAnimIdleQueued);
     }
-    LocalStateValue = 0;
-    m_pChildTile[7] = 0;
+    spAnimIdleQueued = 0;
+    pCurrentSequence[7] = 0;
     Animation_ClearGroup(7, 0.0f);
-    if (m_acReservedBytes)
+    if (spManager)
     {
-        ((NiControllerManager*)(NiControllerManager*)m_acReservedBytes)->FUN_0048fef0(0.0f);
+        ((NiControllerManager*)(NiControllerManager*)spManager)->FUN_0048fef0(0.0f);
     }
-    ReplayDelayNode* pIter = (ReplayDelayNode*)&m_acTrailingData;
+    ReplayDelayNode* pIter = (ReplayDelayNode*)&replayDelayList;
     while (pIter)
     {
         IdleReplayDelayEntry* pDelay = *pIter->FUN_006815c0();
         delete pDelay;
         pIter = pIter->FUN_00726070();
     }
-    ((ReplayDelayNode*)&m_acTrailingData)->FUN_00470470();
+    ((ReplayDelayNode*)&replayDelayList)->FUN_00470470();
 }
 }  // namespace fnv_0049bb70
 
@@ -8321,6 +8566,9 @@ extern TimeGlobal g_timeGlobal;
 
 
 // @fnv 0x0049bf10
+// pdb: Animation::SetLipTime | Animation.obj | debug, object-file gap fill, medium
+// pdb params: afPercent, apManager, apSeq
+// pdb locals: ftimeDelta, flipTime
 void SetSequenceProgress(float afPercent, NiControllerManager* apManager, NiControllerSequence* apSequence)
 {
     if (!apManager || !apSequence)
@@ -8423,13 +8671,17 @@ struct FUN_004f0040_shell
 class AnimationShell : public Animation
 {
   public:
-    void UpdateAnimationForRef(TESObjectREFR* apRef);
+    void Animation_UpdateMovementNoWorldUpdate(TESObjectREFR* apRef);
 };
 
 // @fnv 0x004939d0
-void AnimationShell::UpdateAnimationForRef(TESObjectREFR* apRef)
+// src: XBOX_RETAIL_PDB 0x004939d0
+// pdb: Animation::UpdateMovementNoWorldUpdate | Animation.obj | retail, call graph, high
+// pdb params: apRef
+// pdb locals: pfn, flastZ, paccum, pnode, btestFrustum, bforceNotVisible
+void AnimationShell::Animation_UpdateMovementNoWorldUpdate(TESObjectREFR* apRef)
 {
-    if (!m_acHeaderData || !m_pObjectNode)
+    if (!pAnimRoot || !pAccumRoot)
         return;
 
     if (reinterpret_cast<FUN_00493b90_shell*>(this)->Animation_GetMoved())
@@ -8474,11 +8726,11 @@ void AnimationShell::UpdateAnimationForRef(TESObjectREFR* apRef)
     }
 
     float fOldZ =
-        reinterpret_cast<FUN_0043c490_shell*>(static_cast<_FakeNiNode*>(m_pObjectNode)->FUN_0043b4a0(0))->GetTranslate_0043c490().z;
+        reinterpret_cast<FUN_0043c490_shell*>(static_cast<_FakeNiNode*>(pAccumRoot)->FUN_0043b4a0(0))->GetTranslate_0043c490().z;
 
-    reinterpret_cast<FUN_004f0040_shell*>((NiNode*)m_acHeaderData)->UpdateControls(time);
+    reinterpret_cast<FUN_004f0040_shell*>((NiNode*)pAnimRoot)->UpdateControls(time);
 
-    m_kNodeTranslation.z = reinterpret_cast<FUN_0043c490_shell*>(static_cast<_FakeNiNode*>(m_pObjectNode)->FUN_0043b4a0(0))
+    movementDelta.z = reinterpret_cast<FUN_0043c490_shell*>(static_cast<_FakeNiNode*>(pAccumRoot)->FUN_0043b4a0(0))
                           ->GetTranslate_0043c490()
                           .z -
                       fOldZ;
@@ -8532,6 +8784,7 @@ class FUN_0048f810
 typedef char AnimationSizeCheck[sizeof(FUN_0048f810) == 0x13c ? 1 : -1];
 
 // @fnv 0x0048f810
+// pdb: Animation::Animation | Animation.obj | retail, call graph, high
 FUN_0048f810::FUN_0048f810() : m_acHeaderData(0), m_acReservedBytes(0), LocalInput(0), LocalStateValue(0)
 {
     m_acHeaderData = 0;
@@ -8647,6 +8900,9 @@ struct Target496
     static void DetachObjectModels(PendingIdleRecord* data);
 };
 // @fnv 0x00496a50
+// pdb: AnimIdle::FreeAnimIdleData | Animation.obj | debug, object-file gap fill, medium
+// pdb params: apFreeIdle
+// pdb locals: n, ppal, pa, ptmpPal
 void Target496::DetachObjectModels(PendingIdleRecord* data)
 {
     if (!data)
@@ -8746,15 +9002,19 @@ class FUN_00496cd0_cls
     int unk2C;
     Animation* pAnim;
     Actor* pActor;
-    void InitFromModel(KFModel* m_kModelObjectsItem);
+    void AnimIdle_Loaded(KFModel* apKFModel);
 };
 // @fnv 0x00496cd0
-void FUN_00496cd0_cls::InitFromModel(KFModel* m_kModelObjectsItem)
+// src: XBOX_DEBUG_PDB 0x00496cd0
+// pdb: AnimIdle::Loaded | Animation.obj | debug, call graph (shared callers), high
+// pdb params: apKFModel
+// pdb locals: tempMemContext, n, ppal, ptmpPal, panim
+void FUN_00496cd0_cls::AnimIdle_Loaded(KFModel* apKFModel)
 {
     AutoMemContext kContext(0x33, true, "D:\\_Fallout3\\Platforms\\Common\\Code\\Fallout Shared\\Animation.cpp",
                              0x1101);
-    m_pRenderedNodeEntry.UpdateState_0044b070(m_kModelObjectsItem);
-    if (m_kModelObjectsItem)
+    m_pRenderedNodeEntry.UpdateState_0044b070(apKFModel);
+    if (apKFModel)
     {
         for (int i = 0; i < 2; i++)
         {
@@ -8767,7 +9027,7 @@ void FUN_00496cd0_cls::InitFromModel(KFModel* m_kModelObjectsItem)
                 ((AnimationActorOperations*)pActor)->SetByteAt14E(true);
             }
         }
-        m_kModelObjectsItem->AcquireReference();
+        apKFModel->AcquireReference();
         m_uiImageSpaceModifierCount = 1;
         if (pActor && (iType == 2 || iType == 3))
         {
@@ -8779,7 +9039,7 @@ void FUN_00496cd0_cls::InitFromModel(KFModel* m_kModelObjectsItem)
                 delete this;
                 return;
             }
-            if (pkAnim->SpecialIdlePlay_0())
+            if (pkAnim->SpecialIdlePlay())
             {
                 if (iType == 3)
                     ((AnimationActorOperations*)pActor)->SetAnimAction(0xd, kName.Modelloader_GetReferencedThis());
@@ -8852,13 +9112,16 @@ struct Target
     void* values[8];
     void* current;
     void Animation_ClearGroup(unsigned, float);
-    void RemoveItemFromMap(Ref* arg);
+    void RemoveItemFromMap(Ref* aspAnimIdle);
 };
 // Looks up the map entry for the node's key, clears the matching value slot, updates current and the ref, then removes and deletes the item.
 // @fnv 0x00498670
-void Target::RemoveItemFromMap(Ref* apRef)
+// pdb: Animation::AnimIdleFree | Animation.obj | retail, call graph (shared callers), high
+// pdb params: aspAnimIdle
+// pdb locals: pkfModel, sanimGroup, panimSeq, spfadeSeq
+void Target::RemoveItemFromMap(Ref* aspAnimIdle)
 {
-    Node* world = apRef->Modelloader_GetReferencedThis()->bhkNiCollisionObject_GetWorldObject();
+    Node* world = aspAnimIdle->Modelloader_GetReferencedThis()->bhkNiCollisionObject_GetWorldObject();
     Item* item5 = 0;
     unsigned short key5 = 255;
     Ref hold3(0);
@@ -8866,18 +9129,18 @@ void Target::RemoveItemFromMap(Ref* apRef)
     {
         key5 = world->FUN_005585e0()->GetAnimGroupType_0047d3b0();
         map->Lookup(key5, item5);
-        if (item5 && item5->v4(-1) != apRef->Modelloader_GetReferencedThis()->FUN_00490e40())
+        if (item5 && item5->v4(-1) != aspAnimIdle->Modelloader_GetReferencedThis()->FUN_00490e40())
         {
             item5 = 0;
         }
         else
         {
-            if (values[apRef->Modelloader_GetReferencedThis()->FUN_00825c00()] == apRef->Modelloader_GetReferencedThis()->FUN_00490e40())
-                Animation_ClearGroup(apRef->Modelloader_GetReferencedThis()->FUN_00825c00(), 0.0f);
+            if (values[aspAnimIdle->Modelloader_GetReferencedThis()->FUN_00825c00()] == aspAnimIdle->Modelloader_GetReferencedThis()->FUN_00490e40())
+                Animation_ClearGroup(aspAnimIdle->Modelloader_GetReferencedThis()->FUN_00825c00(), 0.0f);
         }
     }
     if (!item5)
-        hold3.FUN_0066b0d0(apRef->Modelloader_GetReferencedThis()->FUN_00490e40());
+        hold3.FUN_0066b0d0(aspAnimIdle->Modelloader_GetReferencedThis()->FUN_00490e40());
     if (!flag)
     {
         if (item5)
@@ -8893,8 +9156,8 @@ void Target::RemoveItemFromMap(Ref* apRef)
             ref.Modelloader_GetReferencedThis()->ReleaseObject(hold3.Modelloader_GetReferencedThis());
         }
     }
-    DetachObjectModels(apRef->Modelloader_GetReferencedThis());
-    apRef->FUN_0066b0d0(0);
+    DetachObjectModels(aspAnimIdle->Modelloader_GetReferencedThis());
+    aspAnimIdle->FUN_0066b0d0(0);
     if (item5)
     {
         map->FUN_0049c250(key5);
@@ -9106,7 +9369,10 @@ struct MovementAnimation
 };
 // Builds a movement vector, limits its components under a sequence condition, optionally removes Z, and rotates it.
 // @fnv 0x00494390
-bool MovementAnimation::GetMovement(MotionPoint* apMovement, MotionActor* actor, bool rotate, bool removeZ)
+// pdb: Animation::GetDelta | Animation.obj | retail, call graph (shared callers), high
+// pdb params: delta, apRef, applyRot, zeroZ
+// pdb locals: fAppTimeMod, offset, rot, posIn, fspeed, fmaxDelta, fattackSpeed, fscale
+bool MovementAnimation::GetMovement(MotionPoint* delta, MotionActor* apRef, bool applyRot, bool zeroZ)
 {
     float alternate, speed2, limitVal, scale4;
     if (!root.Modelloader_GetReferencedThis())
@@ -9116,7 +9382,7 @@ bool MovementAnimation::GetMovement(MotionPoint* apMovement, MotionActor* actor,
     MotionPoint origin3 = zero3;
     MotionPoint delta3 = movement;
     MotionMatrix rotation5 = root.Modelloader_GetReferencedThis()->NiAVObject_GetRotate_006a9540();
-    if (!actor->disabled() && actor->IsMoving_004938e0() && sequences[1] &&
+    if (!apRef->disabled() && apRef->IsMoving_004938e0() && sequences[1] &&
         sequences[1]->FUN_0048f7f0()->FUN_005f2420() >= 3 && sequences[1]->FUN_0048f7f0()->FUN_005f2420() <= 16)
     {
         speed2 = sequences[1]->FUN_0048f7f0()->FUN_005f4c70() * moveSpeed * deltaTime7 * owner->TESObjectREFR_GetScale_00567400();
@@ -9143,15 +9409,15 @@ bool MovementAnimation::GetMovement(MotionPoint* apMovement, MotionActor* actor,
                 delta3.z = -speed2;
         }
     }
-    if (actor)
+    if (apRef)
     {
-        switch (actor->getType())
+        switch (apRef->getType())
         {
         case 3:
         case 5:
         case 8:
         case 10: {
-            scale4 = actor->TESObjectREFR_GetScale_00567400();
+            scale4 = apRef->TESObjectREFR_GetScale_00567400();
             delta3.x /= scale4;
             delta3.y /= scale4;
             break;
@@ -9160,12 +9426,12 @@ bool MovementAnimation::GetMovement(MotionPoint* apMovement, MotionActor* actor,
             break;
         }
     }
-    if (removeZ)
+    if (zeroZ)
         delta3.z = 0.0f;
-    if (rotate)
-        NiMatrix3_TransformVertices(&rotation5, &origin3, 1, &delta3, apMovement);
+    if (applyRot)
+        NiMatrix3_TransformVertices(&rotation5, &origin3, 1, &delta3, delta);
     else
-        *apMovement = delta3;
+        *delta = delta3;
     return true;
 }
 }  // namespace fnv_00494390
@@ -9202,6 +9468,9 @@ struct FUN_00494740_t : public Animation
 // Resolves the group type and section, then updates stored group data or retrieves a sequence according to key type and flags.
 // @fnv 0x00494740
 // src: XBOX_PDB 0x00494740
+// pdb: Animation::PlayGroup | Animation.obj | retail, upstream name already matches, high
+// pdb params: asNewGroup, aeFlags, aiLoops, aeSection
+// pdb locals: enewGroup, esection, pretSeq
 BSAnimGroupSequence* FUN_00494740_t::Animation_PlayGroup(unsigned short asNewGroup, int aeFlags, int aiLoops, int aeSection)
 {
     int iGroupType = TESAnimGroup::GetType(asNewGroup);
@@ -9226,12 +9495,12 @@ BSAnimGroupSequence* FUN_00494740_t::Animation_PlayGroup(unsigned short asNewGro
         switch (aeFlags)
         {
         case 0:
-            usReloadGroup[esection] = asNewGroup;
-            m_acAnimationName[esection] = aiLoops;
+            nextGroup[esection] = asNewGroup;
+            nextLoops[esection] = aiLoops;
             break;
         case 1:
-            usReloadGroup[esection] = 0xff;
-            m_acTargetName[esection] = aiLoops;
+            nextGroup[esection] = 0xff;
+            loopCount[esection] = aiLoops;
             pretSeq = (BSAnimGroupSequence*)((FUN_004948c0_shell*)this)->GetSequenceForGroup(asNewGroup, aeSection);
             ((FUN_0049bca0_t*)this)->Animation_UpdateBipOnly(time, false, true);
             break;
@@ -9261,25 +9530,28 @@ struct BoneStub
 
 struct SeqStub : public BSAnimGroupSequence
 {
-    unsigned char GetPriority(const char* apName, unsigned int* apIndex);
+    unsigned char GetPriority(const char* apBoneName, unsigned int* apReturnIndex);
 };
 
 int __cdecl GetType(unsigned short asGroup);
 
 struct PriorityAnimation : public Animation
 {
-    bool IsHighestPriority();
+    bool Animation_ShouldBeMoving();
 };
 
 // Returns true if the sequence in slot 1 has the highest priority among all active sequences for the given bone name.
 // @fnv 0x00495be0
-bool PriorityAnimation::IsHighestPriority()
+// src: XBOX_RETAIL_PDB 0x00495be0
+// pdb: Animation::ShouldBeMoving | Animation.obj | retail, call graph, high
+// pdb locals: plowerBodyBone, phighestSeq, cpriority, etestSection, ctestPriority
+bool PriorityAnimation::Animation_ShouldBeMoving()
 {
-    if (!m_pChildTile[1])
+    if (!pCurrentSequence[1])
         return false;
-    if (!m_acNodeName[1])
+    if (!pSoundPriorityBone[1])
         return false;
-    const char* name = ((BoneStub*)m_acNodeName[1])->GetName();
+    const char* name = ((BoneStub*)pSoundPriorityBone[1])->GetName();
     switch (GetType(group[1]))
     {
     case 3:
@@ -9298,22 +9570,22 @@ bool PriorityAnimation::IsHighestPriority()
         unsigned char maxPriority = 0;
         for (int section = 0; section < 8; section++)
         {
-            if (m_pChildTile[section])
+            if (pCurrentSequence[section])
             {
-                unsigned char priority = ((SeqStub*)m_pChildTile[section])->GetPriority(name, 0);
+                unsigned char priority = ((SeqStub*)pCurrentSequence[section])->GetPriority(name, 0);
                 if (priority > maxPriority)
                 {
-                    best = m_pChildTile[section];
+                    best = pCurrentSequence[section];
                     maxPriority = priority;
                 }
                 else if (priority == maxPriority && section == 1)
                 {
-                    best = m_pChildTile[section];
+                    best = pCurrentSequence[section];
                     maxPriority = priority;
                 }
             }
         }
-        if (best == m_pChildTile[1])
+        if (best == pCurrentSequence[1])
             return true;
         break;
     }
@@ -9361,7 +9633,7 @@ template <class T> struct S49Ptr
 };
 struct S49Save
 {
-    void TESSaveLoadGame_SaveGameDataOLD(void* data, int size);
+    void TESSaveLoadGame_SaveGameDataOLD(void* apData, int aiSize);
 };
 struct S49Entry
 {
@@ -9381,6 +9653,9 @@ extern S49Save* DAT_011de45c;
 // Writes iA, iB, iC, and an object flag; if an object exists, writes a checker result or -1, then calls kObj's FUN_004efb20.
 // @fnv 0x00497180
 // src: COMMUNITY 0x00497180
+// pdb: AnimIdle::SaveGame | Animation.obj | debug, object-file run extension, low
+// pdb params: afTime, apAnimation
+// pdb locals: bhasSequence, panimSeq, csequenceIndex
 void S49Entry::AnimIdle_SaveGameTES(float value, S49Map* map)
 {
     bool bHasObj;
@@ -9409,6 +9684,7 @@ void S49Entry::AnimIdle_SaveGameTES(float value, S49Map* map)
 
 // Calls the virtual destructor of the object and frees its memory when the low bit of flags is set, returning the original pointer.
 // @fnv 0x0048ef60
+// pdb: AnimSequenceBase::`scalar deleting destructor' | Animation.obj | retail, vtable slot, high
 void* FUN_0048ef60(void* apThis, unsigned int flags)
 {
     struct FUN_0048ef40_shell
@@ -9425,27 +9701,30 @@ void* FUN_0048ef60(void* apThis, unsigned int flags)
 
 // Initializes item model and solution refs, loads KF model via idle or direct load, and adds objects to palette if model is valid.
 // @fnv 0x004965d0
-LocalAnimIdle::LocalAnimIdle(TESIdleForm* apItem, int apField14, int apFieldC, Actor* apActor, bool abLoadDirect,
-                   Animation* aiField30)
+// pdb: AnimIdle::AnimIdle | Animation.obj | retail, call graph, high
+// pdb params: apIdleForm, aeSection, aeType, apActor, abForceLoad, apAnimation
+// pdb locals: filename, n, ppal, ptmpPal
+LocalAnimIdle::LocalAnimIdle(TESIdleForm* apIdleForm, int aeSection, int aeType, Actor* apActor, bool abForceLoad,
+                   Animation* apAnimation)
     : model(0), solution(0), sols()
 {
     using namespace fnv_004965d0;
     solution.Reset(0);
-    field14 = (void*)apField14;
-    fieldc = (void*)apFieldC;
-    source = (fnv_004965d0::Item4965*)apItem;
+    field14 = (void*)aeSection;
+    fieldc = (void*)aeType;
+    source = (fnv_004965d0::Item4965*)apIdleForm;
     for (int i = 0; i < 2; ++i)
     {
-        items[i] = (Item4965*)(*(Container4965**)&DAT_011c3f2c)->FindNthMatchingItem(apItem, i);
+        items[i] = (Item4965*)(*(Container4965**)&DAT_011c3f2c)->FindNthMatchingItem(apIdleForm, i);
         sols[i].Reset(0);
     }
-    field30 = (int)aiField30;
+    field30 = (int)apAnimation;
     actor = apActor;
     StrMem strModelPath;
-    BSStringT_char_SPrintF(&strModelPath, &DAT_0101dcc4, &DAT_0101dccc, ((ItemBase4965*)((char*)apItem + 24))->v5());
-    if (!abLoadDirect)
+    BSStringT_char_SPrintF(&strModelPath, &DAT_0101dcc4, &DAT_0101dccc, ((ItemBase4965*)((char*)apIdleForm + 24))->v5());
+    if (!abForceLoad)
     {
-        model.UpdateState_0044b070((*(Loader4965**)&DAT_011c3b3c)->InsertIdle(strModelPath.GetText(), this, 0, apActor));
+        model.UpdateState_0044b070((*(Loader4965**)&DAT_011c3b3c)->ModelLoader_QueueAnimIdle(strModelPath.GetText(), this, 0, apActor));
     }
     else
     {
@@ -9466,7 +9745,7 @@ LocalAnimIdle::LocalAnimIdle(TESIdleForm* apItem, int apField14, int apFieldC, A
                 ((AnimationActorOperations*)apActor)->SetByteAt14E(true);
             }
         }
-        if (!abLoadDirect)
+        if (!abForceLoad)
             QueuedChildren_AddFinishedChild(model.Modelloader_GetReferencedThis());
         ready = 1;
     }
@@ -9490,7 +9769,7 @@ struct SaveLoadGame
     char* GetBufferPos();
     bool IsSaving();
     void WriteData(void* apData, int aiSize);
-    void WriteRefID(void* apData, int aiSize);
+    void WriteRefID(void* apFormID, int aiSize);
     SaveFormInfo* GetCurrentForm();
 };
 extern SaveLoadGame* g_TESSaveLoadGame;
@@ -9601,7 +9880,10 @@ void LogWarning(const char* apFormat, ...);
 // Writes the animation save block to the save buffer, including the target refID, save group, and animation state, then patches the block size.
 // @fnv 0x004975e0
 // src: COMMUNITY 0x004975e0
-void AnimIdle_SaveAnimIdle(void* apUnused, SavedAnim* apAnim, int aiState, float afTime)
+// pdb: AnimIdle::SaveAnimIdle | Animation.obj | retail, upstream name already matches, high
+// pdb params: apActor, apAnimIdle, apAnimation, afTime
+// pdb locals: itempStartPosition, iblockSize, iformID, pblockSize, iblockHeader, isize, icurrentBufferPosition, pheader, pform, istartBufferPosition
+void AnimIdle_SaveAnimIdle(void* apActor, SavedAnim* apAnimIdle, int apAnimation, float afTime)
 {
     unsigned short usBlockSize4 = 0;
     char* pSizePos8 = 0;
@@ -9616,14 +9898,14 @@ void AnimIdle_SaveAnimIdle(void* apUnused, SavedAnim* apAnim, int aiState, float
         g_TESSaveLoadGame->WriteData(&usBlockSize4, 2);
     }
     unsigned int uiRefID4 = 0;
-    if (apAnim && apAnim->GetTarget())
-        uiRefID4 = apAnim->GetTarget()->GetRefID();
+    if (apAnimIdle && apAnimIdle->GetTarget())
+        uiRefID4 = apAnimIdle->GetTarget()->GetRefID();
     g_TESSaveLoadGame->WriteRefID(&uiRefID4, 4);
     if (uiRefID4)
     {
-        unsigned short usGroup = apAnim->GetSaveGroup();
+        unsigned short usGroup = apAnimIdle->GetSaveGroup();
         g_TESSaveLoadGame->WriteData(&usGroup, 2);
-        apAnim->SaveState(afTime, aiState);
+        apAnimIdle->SaveState(afTime, apAnimation);
     }
     if (*g_011de4e8.Bool())
     {
@@ -9659,61 +9941,63 @@ void AnimIdle_SaveAnimIdle(void* apUnused, SavedAnim* apAnim, int aiState, float
 
 // May free an idle, add a model, obtain a sequence, and pass it to an idle method.
 // @fnv 0x00498290
-// src: COMMUNITY 0x00498290
-bool Animation::SpecialIdlePlay_0()
+// src: XBOX_RETAIL_PDB 0x00498290 (was COMMUNITY)
+// pdb: Animation::SpecialIdlePlay | Animation.obj | retail, call graph (shared callers), high
+// pdb params: apActor
+bool Animation::SpecialIdlePlay()
 {
-    if ((LocalAnimIdle*)LocalStateValue)
+    if ((LocalAnimIdle*)spAnimIdleQueued)
     {
-        if (static_cast<AnimIdleAccess*>((LocalAnimIdle*)LocalStateValue)->FUN_0044ddc0() == 1)
+        if (static_cast<AnimIdleAccess*>((LocalAnimIdle*)spAnimIdleQueued)->FUN_0044ddc0() == 1)
             SpecialIdleFree(false, true);
         else
             return false;
     }
-    if ((LocalAnimIdle*)LocalInput && static_cast<AnimIdleAccess*>((LocalAnimIdle*)LocalInput)->FUN_0044ddc0() == 1)
+    if ((LocalAnimIdle*)spAnimIdle && static_cast<AnimIdleAccess*>((LocalAnimIdle*)spAnimIdle)->FUN_0044ddc0() == 1)
     {
-        IdleModelAccess* pkModel = static_cast<AnimIdleAccess*>((LocalAnimIdle*)LocalInput)->bhkNiCollisionObject_GetWorldObject();
+        IdleModelAccess* pkModel = static_cast<AnimIdleAccess*>((LocalAnimIdle*)spAnimIdle)->bhkNiCollisionObject_GetWorldObject();
         if (pkModel && AddAnimation(pkModel, false) && pkModel->FUN_005585e0())
         {
             BSAnimGroupSequence* pkSequence = 0;
-            if (!static_cast<AnimIdleAccess*>((LocalAnimIdle*)LocalInput)->GetSection() &&
-                static_cast<AnimIdleAccess*>((LocalAnimIdle*)LocalInput)->bhkNiCollisionObject_GetWorldObject()->FUN_005585e0()->FUN_005f2420() ==
+            if (!static_cast<AnimIdleAccess*>((LocalAnimIdle*)spAnimIdle)->GetSection() &&
+                static_cast<AnimIdleAccess*>((LocalAnimIdle*)spAnimIdle)->bhkNiCollisionObject_GetWorldObject()->FUN_005585e0()->FUN_005f2420() ==
                     1)
             {
                 pkSequence = Animation_PlayGroup(pkModel->FUN_005585e0()->FUN_005f2420(), 1, -1,
-                                          static_cast<AnimIdleAccess*>((LocalAnimIdle*)LocalInput)->GetSection());
+                                          static_cast<AnimIdleAccess*>((LocalAnimIdle*)spAnimIdle)->GetSection());
             }
             else
             {
                 pkSequence =
                     Animation_PlayGroup(pkModel->FUN_005585e0()->FUN_005f2420(), 1,
-                                 static_cast<AnimIdleAccess*>((LocalAnimIdle*)LocalInput)->FUN_0055b980()->GetRandomValue(),
-                                 static_cast<AnimIdleAccess*>((LocalAnimIdle*)LocalInput)->GetSection());
+                                 static_cast<AnimIdleAccess*>((LocalAnimIdle*)spAnimIdle)->FUN_0055b980()->GetRandomValue(),
+                                 static_cast<AnimIdleAccess*>((LocalAnimIdle*)spAnimIdle)->GetSection());
             }
             if (pkSequence)
             {
-                if (static_cast<AnimIdleAccess*>((LocalAnimIdle*)LocalInput)->FUN_0055b980()->GetField3C() > 0.0)
+                if (static_cast<AnimIdleAccess*>((LocalAnimIdle*)spAnimIdle)->FUN_0055b980()->GetField3C() > 0.0)
                 {
                     IdleReplayDelayAccess498* pDelay = new IdleReplayDelayAccess498;
-                    pDelay->idle = static_cast<AnimIdleAccess*>((LocalAnimIdle*)LocalInput)->FUN_0055b980();
-                    pDelay->delay = static_cast<AnimIdleAccess*>((LocalAnimIdle*)LocalInput)->FUN_0055b980()->GetField3C();
-                    m_acTrailingData.AddTail(reinterpret_cast<IdleReplayDelayEntry*&>(pDelay));
+                    pDelay->idle = static_cast<AnimIdleAccess*>((LocalAnimIdle*)spAnimIdle)->FUN_0055b980();
+                    pDelay->delay = static_cast<AnimIdleAccess*>((LocalAnimIdle*)spAnimIdle)->FUN_0055b980()->GetField3C();
+                    replayDelayList.AddTail(reinterpret_cast<IdleReplayDelayEntry*&>(pDelay));
                 }
-                static_cast<AnimIdleAccess*>((LocalAnimIdle*)LocalInput)->AnimIdle_PlayAnim(pkSequence);
+                static_cast<AnimIdleAccess*>((LocalAnimIdle*)spAnimIdle)->AnimIdle_PlayAnim(pkSequence);
                 return true;
             }
             else
             {
-                static_cast<AnimIdleAccess*>((LocalAnimIdle*)LocalInput)->FUN_00403550(3);
-                if (static_cast<AnimIdleAccess*>((LocalAnimIdle*)LocalInput)->GetHavokWorldObjectCountInSceneGraph_0084e3a0() == 2 ||
-                    static_cast<AnimIdleAccess*>((LocalAnimIdle*)LocalInput)->GetHavokWorldObjectCountInSceneGraph_0084e3a0() == 3)
+                static_cast<AnimIdleAccess*>((LocalAnimIdle*)spAnimIdle)->FUN_00403550(3);
+                if (static_cast<AnimIdleAccess*>((LocalAnimIdle*)spAnimIdle)->GetHavokWorldObjectCountInSceneGraph_0084e3a0() == 2 ||
+                    static_cast<AnimIdleAccess*>((LocalAnimIdle*)spAnimIdle)->GetHavokWorldObjectCountInSceneGraph_0084e3a0() == 3)
                     SpecialIdleFree(true, false);
             }
         }
         else
         {
-            static_cast<AnimIdleAccess*>((LocalAnimIdle*)LocalInput)->FUN_00403550(3);
-            if (static_cast<AnimIdleAccess*>((LocalAnimIdle*)LocalInput)->GetHavokWorldObjectCountInSceneGraph_0084e3a0() == 2 ||
-                static_cast<AnimIdleAccess*>((LocalAnimIdle*)LocalInput)->GetHavokWorldObjectCountInSceneGraph_0084e3a0() == 3)
+            static_cast<AnimIdleAccess*>((LocalAnimIdle*)spAnimIdle)->FUN_00403550(3);
+            if (static_cast<AnimIdleAccess*>((LocalAnimIdle*)spAnimIdle)->GetHavokWorldObjectCountInSceneGraph_0084e3a0() == 2 ||
+                static_cast<AnimIdleAccess*>((LocalAnimIdle*)spAnimIdle)->GetHavokWorldObjectCountInSceneGraph_0084e3a0() == 3)
                 SpecialIdleFree(true, false);
         }
     }
@@ -9722,17 +10006,20 @@ bool Animation::SpecialIdlePlay_0()
 
 // Iterates m_pSingleSequence's list and returns the first BSAnimGroupSequence whose group matches apAnimGroup, or null.
 // @fnv 0x0048f790
+// pdb: AnimSequenceMultiple::GetSequence | Animation.obj | debug, vtable slot, medium
+// pdb params: apAnimGroup
+// pdb locals: listIt, pseq
 BSAnimGroupSequence* AnimSequenceMultiple::GetControllerSequence(TESAnimGroup* apAnimGroup)
 {
     void* listIt;
-    listIt = (void*)((SequenceListHead48*)m_pSingleSequence)->Modelloader_GetReferencedThis();
+    listIt = (void*)((SequenceListHead48*)pSeqList)->Modelloader_GetReferencedThis();
     while (listIt != 0)
     {
         BSAnimGroupSequence* pseq;
-        pseq = *(BSAnimGroupSequence**)((FUN_006317a0_struct*)m_pSingleSequence)->AddEight((int)listIt);
+        pseq = *(BSAnimGroupSequence**)((FUN_006317a0_struct*)pSeqList)->AddEight((int)listIt);
         if (::FUN_0048f7f0(pseq) == apAnimGroup)
             return pseq;
-        listIt = ((NiTPointerList_SV<TESObjectREFR*>*)m_pSingleSequence)->DereferenceIfNotNull(listIt);
+        listIt = ((NiTPointerList_SV<TESObjectREFR*>*)pSeqList)->DereferenceIfNotNull(listIt);
     }
     return 0;
 }

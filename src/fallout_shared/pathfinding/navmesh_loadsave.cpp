@@ -57,6 +57,7 @@ void BSSimpleArray<NavMeshTriangle, 1024>::CopyTo<1024>(BSSimpleArray<NavMeshTri
 template <> template <>
 void BSSimpleArray<unsigned short, 1024>::CopyTo<1024>(BSSimpleArray<unsigned short, 1024>*);
 
+// pdb: structure NavMeshVertex, size 0xc, 1 members
 class NavMeshVertex
 {
   public:
@@ -71,6 +72,7 @@ class NavMeshInfoTriangleReference
     unsigned char layoutPadding6[2];
 };
 
+// pdb: structure EdgeExtraInfo, size 0xc, 2 members
 class EdgeExtraInfo
 {
   public:
@@ -78,11 +80,12 @@ class EdgeExtraInfo
     NavMeshInfoTriangleReference Portal;
 };
 
+// pdb: structure NavMeshTriangleDoorPortal, size 0x8, 2 members
 class NavMeshTriangleDoorPortal
 {
   public:
-    TESObjectREFR* NavMeshDoorPortalData;
-    unsigned short m_usDoorPortalIndex;
+    TESObjectREFR* pDoorForm; // src: XBOX_RETAIL_PDB +0x0 (old: NavMeshDoorPortalData)
+    unsigned short iOwningTriangleIndex; // src: XBOX_RETAIL_PDB +0x4 (old: m_usDoorPortalIndex)
     unsigned char layoutPadding6[2];
 };
 
@@ -124,12 +127,16 @@ void TESForm::SetCollisionDisabled(bool noCollision)
 
 // TESForm/NavMesh PC slot 74 both bind the base SetRefID body to 00485c10.
 // @fnv 0x006942c0
-void NavMesh::ForceSetFormID(unsigned int formID)
+// pdb: NavMesh::ForceSetFormID | NavMesh_LoadSave.obj | debug, upstream name already matches, high
+// pdb params: aiID
+void NavMesh::ForceSetFormID(unsigned int aiID)
 {
-    TESForm::SetRefID(formID, false);
+    TESForm::SetRefID(aiID, false);
 }
 
 // @fnv 0x00693e60
+// pdb: NavMesh::InitItem | NavMesh_LoadSave.obj | retail, upstream name already matches, high
+// pdb locals: boldaltered
 void NavMesh::InitItem()
 {
     if (GetDisabled())
@@ -145,16 +152,19 @@ void NavMesh::InitItem()
 }
 
 // @fnv 0x006942e0
+// pdb: NavMesh::MakeCopyForObstacle | NavMesh_LoadSave.obj | debug, object-file gap fill, medium
+// pdb params: spDestNavMesh
+// pdb locals: it, ustriangle, spObstacle, povData
 void NavMesh::CopyNavMeshDataTo(NavMeshPtr& copy)
 {
-    static_cast<const NavMeshPtr&>(copy)->m_pOwningCell = m_pOwningCell;
+    static_cast<const NavMeshPtr&>(copy)->pParentCell = pParentCell;
     Vertices.CopyTo(&static_cast<const NavMeshPtr&>(copy)->Vertices);
     Triangles.CopyTo(&static_cast<const NavMeshPtr&>(copy)->Triangles);
-    m_kEdgeExtraInfo.CopyTo(&static_cast<const NavMeshPtr&>(copy)->m_kEdgeExtraInfo);
-    m_kIndexList.CopyTo(&static_cast<const NavMeshPtr&>(copy)->m_kIndexList);
-    m_kGrid.CopyTo_0069dd50(&static_cast<const NavMeshPtr&>(copy)->m_kGrid);
-    m_kObstacleUndoData.CopyTo(&static_cast<const NavMeshPtr&>(copy)->m_kObstacleUndoData);
-    m_kClosedDoorInfo.CopyTo(&static_cast<const NavMeshPtr&>(copy)->m_kClosedDoorInfo);
+    ExtraEdgeInfo.CopyTo(&static_cast<const NavMeshPtr&>(copy)->ExtraEdgeInfo);
+    CoverArray.CopyTo(&static_cast<const NavMeshPtr&>(copy)->CoverArray);
+    MeshGrid.CopyTo_0069dd50(&static_cast<const NavMeshPtr&>(copy)->MeshGrid);
+    Obstacles.CopyTo(&static_cast<const NavMeshPtr&>(copy)->Obstacles);
+    ClosedDoors.CopyTo(&static_cast<const NavMeshPtr&>(copy)->ClosedDoors);
     void* pos = ((NavMeshObstacleMap*)pTriangleToObstacleMap)->GetFirstPos();
     while (pos)
     {
@@ -163,27 +173,30 @@ void NavMesh::CopyNavMeshDataTo(NavMeshPtr& copy)
         ((NavMeshObstacleMap*)pTriangleToObstacleMap)->NiTMapBase_DFALL_NiTMapItem_unsigned_short_NiPointer_ObstacleData_unsigned_short_NiPointer_ObstacleData_GetNext(pos, triangle, m_spRegisteredObstacle);
         ((NavMeshObstacleMap*)static_cast<const NavMeshPtr&>(copy)->pTriangleToObstacleMap)->NiTMapBase_DFALL_NiTMapItem_unsigned_short_NiPointer_NavMeshObstacleData_unsigned_short_NiPointer_NavMeshObstacleData_SetAt(triangle, m_spRegisteredObstacle);
     }
-    pos = ((NavMeshPOVMap*)&POVPointerArray)->GetFirstPos();
+    pos = ((NavMeshPOVMap*)&POVs)->GetFirstPos();
     while (pos)
     {
         NavMeshPOVData POV;
         unsigned short key;
-        ((NavMeshPOVMap*)&POVPointerArray)->NiTMapBase_DFALL_NiTMapItem_unsigned_short_NavMeshPOVData_unsigned_short_NavMeshPOVData_GetNext(pos, key, POV);
-        ((NavMeshPOVMap*)&static_cast<const NavMeshPtr&>(copy)->POVPointerArray)->InsertOrUpdate(key, POV);
+        ((NavMeshPOVMap*)&POVs)->NiTMapBase_DFALL_NiTMapItem_unsigned_short_NavMeshPOVData_unsigned_short_NavMeshPOVData_GetNext(pos, key, POV);
+        ((NavMeshPOVMap*)&static_cast<const NavMeshPtr&>(copy)->POVs)->InsertOrUpdate(key, POV);
     }
-    m_kAdditionalIndexList.CopyTo(&static_cast<const NavMeshPtr&>(copy)->m_kAdditionalIndexList);
-    m_kAdditionalData.CopyTo(&static_cast<const NavMeshPtr&>(copy)->m_kAdditionalData);
-    static_cast<const NavMeshPtr&>(copy)->m_pNavigationMesh = 0;
+    ClosestPOVs.CopyTo(&static_cast<const NavMeshPtr&>(copy)->ClosestPOVs);
+    ObstaclePOVs.CopyTo(&static_cast<const NavMeshPtr&>(copy)->ObstaclePOVs);
+    static_cast<const NavMeshPtr&>(copy)->pNavMeshInfo = 0;
 }
 
 // @fnv 0x00693b70
+// pdb: NavMesh::GetTriangle | NavMesh.obj | debug, call graph (shared callers), medium
+// pdb params: asTriangleIndex
 bool NavMeshTriangle::HasFlag40()
 {
-    return (m_uiTriangleFlags & 0x40) != 0;
+    return (TriangleFlags & 0x40) != 0;
 }
 
 // @fnv 0x00693b90
 // src: XBOX_PDB 0x00693b90
+// pdb: NavMeshTriangle::IsNoLargeCreature | NavMesh_LoadSave.obj | debug, upstream name already matches, high
 bool NavMeshTriangle::IsNoLargeCreature()
 {
     return FUN_00691140(0x10);
@@ -198,8 +211,9 @@ class GlobalObject_00869f00
 };
 
 // @fnv 0x00694e10
-// src: GUESS 0x00694e10 (confidence: low)
-void __fastcall NavmeshLoadsave_UpdateState_00694e10(GlobalObject_00869f00* pThis)
+// src: XBOX_DEBUG_PDB 0x00694e10
+// pdb: BSSimpleArray<int,1024>::~BSSimpleArray<int,1024> | NavMesh_LoadSave.obj | debug, call graph, high
+void __fastcall BSSimpleArray_int_1024_dtor(GlobalObject_00869f00* pThis)
 {
     *(unsigned int**)pThis = &DAT_0106b0dc;
     pThis->Clear(true);
@@ -227,6 +241,9 @@ struct SA00694f20
 };
 // @fnv 0x00694f20
 // src: COMMUNITY 0x00694f20
+// pdb: BSSimpleArray<unsigned short,1024>::CopyTo<1024> | NavMesh_LoadSave.obj | debug, object-file run extension, low
+// pdb params: aDestArray
+// pdb locals: i
 void SA00694f20::BSSimpleArray_EdgeExtraInfo_1024_CopyTo_1024(DA00694f20* dest)
 {
     dest->BSSimpleArray_EdgeExtraInfo_1024_SetSize(count, 1);
@@ -236,6 +253,10 @@ void SA00694f20::BSSimpleArray_EdgeExtraInfo_1024_CopyTo_1024(DA00694f20* dest)
 
 // Resizes dest to this container's count and copies each element via GetAt.
 // @fnv 0x00694f80
+// pdb: BSSimpleArray<NavMeshTriangle,1024>::CopyTo<1024> | NavMesh_LoadSave.obj | retail, object-file run extension, low
+// pdb note: debug build links it to BSSimpleArray<NiPointer<ObstacleUndoData>,1024>::CopyTo<1024>
+// pdb params: aDestArray
+// pdb locals: i
 template <> template <>
 void BSSimpleArray<unsigned short, 1024>::CopyTo<1024>(BSSimpleArray<unsigned short, 1024>* dest)
 {
@@ -266,6 +287,10 @@ struct SA00694fe0
 };
 // @fnv 0x00694fe0
 // src: COMMUNITY 0x00694fe0
+// pdb: BSSimpleArray<EdgeExtraInfo,1024>::CopyTo<1024> | NavMesh_LoadSave.obj | retail, object-file run extension, low
+// pdb note: debug build links it to BSSimpleArray<NiPointer<ObstacleUndoData>,1024>::operator[]
+// pdb params: aDestArray
+// pdb locals: i
 void SA00694fe0::BSSimpleArray_NiPointer_ObstacleUndoData_1024_CopyTo_1024(DA00694fe0* dest)
 {
     dest->BSSimpleArray_NiPointer_1024_SetSize(count, 1);
@@ -290,6 +315,10 @@ struct SA00695040
 };
 // @fnv 0x00695040
 // src: COMMUNITY 0x00695040
+// pdb: BSSimpleArray<unsigned short,1024>::CopyTo<1024> | NavMesh_LoadSave.obj | retail, object-file run extension, low
+// pdb note: debug build links it to BSSimpleArray<NavMeshClosedDoorInfo,1024>::CopyTo<1024>
+// pdb params: aDestArray
+// pdb locals: i
 void SA00695040::BSSimpleArray_NavMeshClosedDoorInfo_1024_CopyTo_1024(DA00695040* dest)
 {
     dest->FUN_006950f0(count, 1);
@@ -334,6 +363,9 @@ struct Map00694c50
 };
 // Looks up key in the hash bucket; updates the existing item's value or inserts a new item at the bucket head and increments count.
 // @fnv 0x00694c50
+// pdb: NiTMapBase<DFALL<NiTMapItem<unsigned short,NavMeshPOVData> >,unsigned short,NavMeshPOVData>::GetNext | NavMesh_LoadSave.obj | debug, object-file run extension, low
+// pdb params: pos, key, val
+// pdb locals: bfound, ihashIndex, pkItem, pcompItem, i
 void Map00694c50::InsertOrUpdate(unsigned short key, unsigned int auiValue)
 {
     unsigned int uiIndex;
@@ -375,6 +407,9 @@ struct Map00694d30
 // Reads the key and value of the entry at *pos, then advances *pos to the next entry or the next non-empty bucket, or null at the end.
 // @fnv 0x00694d30
 // src: COMMUNITY 0x00694d30
+// pdb: NiTMapBase<NiTPointerAllocator<unsigned int>,unsigned int,NavMeshInfo *>::GetAt | NavMesh_LoadSave.obj | debug, object-file run extension, low
+// pdb params: key, val
+// pdb locals: pkItem, uiIndex
 void Map00694d30::NiTMapBase_DFALL_NiTMapItem_unsigned_short_NavMeshPOVData_unsigned_short_NavMeshPOVData_GetNext(Item00694d30** pos, unsigned short* key, NavMeshPOVData* val)
 {
     Item00694d30* pkItem = *pos;
@@ -426,7 +461,7 @@ void ClampUnsignedShort(unsigned short* pusValue, unsigned short usMin, unsigned
         *pusValue = usMin;
 }
 
-void __fastcall NavmeshLoadsave_UpdateState_00694e10(void*);
+void __fastcall BSSimpleArray_int_1024_dtor(void*);
 void _Deallocate(void*);
 
 struct FUN_006950a0_shell
@@ -436,9 +471,10 @@ struct FUN_006950a0_shell
 
 // Calls FUN_00694e10 on this, frees this with _Deallocate when flags has bit 1 set, and returns this.
 // @fnv 0x006950a0
+// pdb: BSSimpleArray<int,1024>::`scalar deleting destructor' | NavMesh_LoadSave.obj | retail, vtable slot, high
 void* FUN_006950a0_shell::FUN_006950a0(unsigned int flags)
 {
-    NavmeshLoadsave_UpdateState_00694e10(this);
+    BSSimpleArray_int_1024_dtor(this);
     if (flags & 1)
         _Deallocate(this);
     return this;
@@ -467,45 +503,47 @@ struct FUN_00694b10_shell
     void* p;
     unsigned int allocated;
     unsigned int capacity;
-    void BSSimpleArray_EdgeExtraInfo_1024_SetSize(unsigned int size, bool flag);
+    void BSSimpleArray_EdgeExtraInfo_1024_SetSize(unsigned int aiNewSize, bool abFreeMemory);
 };
 // @fnv 0x00694b10
 // src: COMMUNITY 0x00694b10
-void FUN_00694b10_shell::BSSimpleArray_EdgeExtraInfo_1024_SetSize(unsigned int size, bool abShrink)
+// pdb: BSSimpleArray<EdgeExtraInfo,1024>::SetSize | NavMesh_LoadSave.obj | debug, call graph, high
+// pdb params: aiNewSize, abFreeMemory
+void FUN_00694b10_shell::BSSimpleArray_EdgeExtraInfo_1024_SetSize(unsigned int aiNewSize, bool abFreeMemory)
 {
-    if (size == 0)
+    if (aiNewSize == 0)
     {
-        ((GlobalObject_00869f00*)this)->Clear(abShrink);
+        ((GlobalObject_00869f00*)this)->Clear(abFreeMemory);
     }
-    else if (size > capacity)
+    else if (aiNewSize > capacity)
     {
         if (capacity == 0)
         {
-            p = ((void*(__thiscall*)(void*, unsigned int))((void**)vtbl)[1])(this, size);
-            capacity = size;
+            p = ((void*(__thiscall*)(void*, unsigned int))((void**)vtbl)[1])(this, aiNewSize);
+            capacity = aiNewSize;
         }
         else
         {
-            ((S5460*)this)->BSSimpleArray_NiPoint2_1024_ReallocateBuffer(size, allocated);
-            capacity = size;
+            ((S5460*)this)->BSSimpleArray_NiPoint2_1024_ReallocateBuffer(aiNewSize, allocated);
+            capacity = aiNewSize;
         }
-        ((FUN_00692320_shell*)this)->ConstructEntries((char*)p + allocated * 0xc, size - allocated);
-        allocated = size;
+        ((FUN_00692320_shell*)this)->ConstructEntries((char*)p + allocated * 0xc, aiNewSize - allocated);
+        allocated = aiNewSize;
     }
-    else if (size < allocated)
+    else if (aiNewSize < allocated)
     {
-        ((FUN_0072ba80_shell*)this)->FUN_0072ba80((char*)p + size * 0xc, allocated - size);
-        allocated = size;
-        if (abShrink && size <= capacity / 4)
+        ((FUN_0072ba80_shell*)this)->FUN_0072ba80((char*)p + aiNewSize * 0xc, allocated - aiNewSize);
+        allocated = aiNewSize;
+        if (abFreeMemory && aiNewSize <= capacity / 4)
         {
-            ((S5460*)this)->BSSimpleArray_NiPoint2_1024_ReallocateBuffer(size, size);
-            capacity = size;
+            ((S5460*)this)->BSSimpleArray_NiPoint2_1024_ReallocateBuffer(aiNewSize, aiNewSize);
+            capacity = aiNewSize;
         }
     }
     else
     {
-        ((FUN_00692320_shell*)this)->ConstructEntries((char*)p + allocated * 0xc, size - allocated);
-        allocated = size;
+        ((FUN_00692320_shell*)this)->ConstructEntries((char*)p + allocated * 0xc, aiNewSize - allocated);
+        allocated = aiNewSize;
     }
 }
 }  // namespace fnv_00694b10
@@ -538,10 +576,12 @@ struct Host006bc8e0
 // Stores the two inner pointers, calls FUN_006bebd0, then forwards b's v10 and v18 to the two sub-objects with flag 1 and returns true.
 // @fnv 0x006bc8e0
 // src: COMMUNITY 0x006bc8e0
-bool Host006bc8e0::NavMeshObstacleCutter_ResetNavMeshFromObstacleUndoData(InnerA006bc8e0* pInnerA, InnerB006bc8e0* pInnerB)
+// pdb: NavMeshObstacleCutter::ResetNavMeshFromObstacleUndoData | NavMeshObstacleCutter.obj | retail, upstream name already matches, high
+// pdb params: apNavMesh, apUndoData
+bool Host006bc8e0::NavMeshObstacleCutter_ResetNavMeshFromObstacleUndoData(InnerA006bc8e0* apNavMesh, InnerB006bc8e0* apUndoData)
 {
-    p0 = pInnerA;
-    p8 = pInnerB;
+    p0 = apNavMesh;
+    p8 = apUndoData;
     ((S006bebd0*)this)->NavMeshObstacleCutter_RemoveTrianglesFromNavMeshGrid();
     p0->o28.SetSize(p8->v10, true);
     p0->o38.SetSize(p8->v18, true);
@@ -550,11 +590,13 @@ bool Host006bc8e0::NavMeshObstacleCutter_ResetNavMeshFromObstacleUndoData(InnerA
 }  // namespace fnv_006bc8e0
 
 // @fnv 0x00694090
+// pdb: NavMesh::SetAltered | NavMesh_LoadSave.obj | retail, upstream name already matches, high
+// pdb params: abVal
 void NavMesh::SetAltered(bool abVal)
 {
     ((TESForm*)this)->TESForm::SetAltered(abVal);
-    if (abVal && m_pOwningCell)
-        m_pOwningCell->SetAltered(true);
+    if (abVal && pParentCell)
+        pParentCell->SetAltered(true);
 }
 
 struct FUN_00694620_shell : TESForm
@@ -565,6 +607,8 @@ struct FUN_00694620_shell : TESForm
 };
 // @fnv 0x00694620
 // src: COMMUNITY 0x00694620
+// pdb: NavMesh::FinishLoadGame | NavMesh_LoadSave.obj | retail, vtable slot, high
+// pdb params: apLoadGameBuffer
 void FUN_00694620_shell::NavMesh_FinishLoadGameBGS(BGSLoadFormBuffer* apLoadGameBuffer)
 {
     TESForm::Revert((unsigned int)apLoadGameBuffer);
@@ -741,7 +785,7 @@ struct GridS
 };
 struct InfoMapS
 {
-    void ProcessState_006b6990(unsigned int);
+    void RemoveNavMeshInfo(unsigned int);
 };
 unsigned int EdgeExtraInfo_GetSizeOfV0();
 TESForm* __fastcall NavMeshInfo_GetParentSpace(const NavMeshInfo*);
@@ -751,6 +795,9 @@ extern ProcessListsView g_011d6ca8;
 // Reads a NavMesh record from a TESFile, parsing subrecords, converting old versions, and resolving the parent cell and NavMeshInfo.
 // @fnv 0x00692950
 // src: COMMUNITY 0x00692950
+// pdb: NavMesh::Load | NavMesh_LoadSave.obj | retail, upstream name already matches, high
+// pdb params: apFile
+// pdb locals: oldDoorPortalIndices, ifileVersionNumber, tempMemContext, bbadNavMesh, formid, pMessage, saveStruct, isize, i, idoorID, pdoor, navmeshString, itriIndex, pchunkData, ichunkSize, ichunksize, pchunkPointer, pchunkdata, oldFormat, pbufferLoc, newFormat, imodified, bcoverMessedUp, ptri ...
 bool FUN_00692950_shell::NavMesh_Load(TESFile* apFile)
 {
     AutoMemHelper tempMemContext(
@@ -810,7 +857,7 @@ bool FUN_00692950_shell::NavMesh_Load(TESFile* apFile)
                 Triangles.SetSize(saveStruct.GetTriangleTotal, true);
                 ((DA00694f20*)((char*)this + 0x48))->BSSimpleArray_EdgeExtraInfo_1024_SetSize(saveStruct.m_uiField3, 1);
                 ((DA00694f80*)((char*)this + 0x78))->SetSize(saveStruct.m_uiField4, true);
-                m_kDoorPortals.SetSize(saveStruct.m_uiField5, true);
+                DoorPortals.SetSize(saveStruct.m_uiField5, true);
                 TESForm::RemapFormIDForFile(saveStruct.m_uiField0, apFile);
                 *(TESObjectCELL**)((char*)this + 0x24) =
                     dynamic_cast<TESObjectCELL*>(GetFormByID(saveStruct.m_uiField0));
@@ -972,7 +1019,7 @@ bool FUN_00692950_shell::NavMesh_Load(TESFile* apFile)
     if (((TESForm*)this)->IsDeleted())
     {
         ((G00559a40*)((char*)this + 0x1c))->NiRefObject_IncRefCount();
-        ((InfoMapS*)g_TES->GetActiveCell())->ProcessState_006b6990(((TESForm*)this)->GetFormID());
+        ((InfoMapS*)g_TES->GetActiveCell())->RemoveNavMeshInfo(((TESForm*)this)->GetFormID());
         return false;
     }
     if (*(NavMeshInfo**)((char*)this + 0x104))
@@ -1032,7 +1079,7 @@ bool FUN_00692950_shell::NavMesh_Load(TESFile* apFile)
         {
             Warning("MASTERFILE: Did not find matching NavMeshInfo for NavMesh ID %08X, Creating a temporary one",
                     ((TESForm*)this)->GetFormID());
-            FUN_006986d0();
+            UpdateNavMeshInfo();
         }
         else
         {
@@ -1093,54 +1140,59 @@ bool FUN_00692950_shell::NavMesh_Load(TESFile* apFile)
         }
     }
     if ((*g_011d6ca8.GetLifeStateControlFlag() || !apFile->IsMasterFile()) && !((TESForm*)this)->IsDeleted())
-        Validate(false);
+        CheckNavMesh(false);
     return true;
 }
 }  // namespace fnv_00692950
 
 // @fnv 0x00694890
+// pdb: BSSimpleArray<CombatSearchDoor,1024>::SetSize | CombatGroup.obj | retail, call graph, high
+// pdb params: aiNewSize, abFreeMemory
 template <>
-void BSSimpleArray<NavMeshVertex, 1024>::SetSize(unsigned int newCount, bool reset)
+void BSSimpleArray<NavMeshVertex, 1024>::SetSize(unsigned int aiNewSize, bool abFreeMemory)
 {
-    if (newCount == 0)
+    if (aiNewSize == 0)
     {
-        this->Clear(reset);
+        this->Clear(abFreeMemory);
     }
-    else if (newCount > this->SimpleArrayStorage)
+    else if (aiNewSize > this->SimpleArrayStorage)
     {
         if (this->SimpleArrayStorage == 0)
         {
-            this->pBuffer = this->_Allocate(newCount);
-            this->SimpleArrayStorage = newCount;
+            this->pBuffer = this->_Allocate(aiNewSize);
+            this->SimpleArrayStorage = aiNewSize;
         }
         else
         {
-            this->ReallocateStorage(newCount, this->iSize);
-            this->SimpleArrayStorage = newCount;
+            this->ReallocateStorage(aiNewSize, this->iSize);
+            this->SimpleArrayStorage = aiNewSize;
         }
 
-        this->InitializeItems(this->pBuffer + this->iSize, newCount - this->iSize);
-        this->iSize = newCount;
+        this->InitializeItems(this->pBuffer + this->iSize, aiNewSize - this->iSize);
+        this->iSize = aiNewSize;
     }
-    else if (newCount < this->iSize)
+    else if (aiNewSize < this->iSize)
     {
-        this->ReleaseElements(this->pBuffer + newCount, this->iSize - newCount);
-        this->iSize = newCount;
+        this->ReleaseElements(this->pBuffer + aiNewSize, this->iSize - aiNewSize);
+        this->iSize = aiNewSize;
 
-        if (reset && newCount <= this->SimpleArrayStorage / 4)
+        if (abFreeMemory && aiNewSize <= this->SimpleArrayStorage / 4)
         {
-            this->ReallocateStorage(newCount, newCount);
-            this->SimpleArrayStorage = newCount;
+            this->ReallocateStorage(aiNewSize, aiNewSize);
+            this->SimpleArrayStorage = aiNewSize;
         }
     }
     else
     {
-        this->InitializeItems(this->pBuffer + this->iSize, newCount - this->iSize);
-        this->iSize = newCount;
+        this->InitializeItems(this->pBuffer + this->iSize, aiNewSize - this->iSize);
+        this->iSize = aiNewSize;
     }
 }
 
 // @fnv 0x006949d0
+// pdb: BSSimpleArray<TeleportLink,1024>::SetSize | TeleportDoorSearch.obj | retail, call graph, low
+// pdb note: debug build links it to BSSimpleArray<NavMeshTriangle,1024>::SetSize
+// pdb params: aiNewSize, abFreeMemory
 template <>
 void BSSimpleArray<NavMeshTriangle, 1024>::SetSize(unsigned int uiNewSize, bool bShrinkCapacity)
 {
@@ -1185,51 +1237,54 @@ void BSSimpleArray<NavMeshTriangle, 1024>::SetSize(unsigned int uiNewSize, bool 
 }
 
 // @fnv 0x006950f0
+// pdb: BSSimpleArray<NavMeshTriangleDoorPortal,1024>::SetSize | NavMesh_LoadSave.obj | debug, call graph, high
+// pdb params: aiNewSize, abFreeMemory
 template <>
-void BSSimpleArray<NavMeshTriangleDoorPortal, 1024>::SetSize(unsigned int size, bool clear)
+void BSSimpleArray<NavMeshTriangleDoorPortal, 1024>::SetSize(unsigned int aiNewSize, bool abFreeMemory)
 {
-    if (size == 0)
+    if (aiNewSize == 0)
     {
-        this->Clear(clear);
+        this->Clear(abFreeMemory);
         return;
     }
 
-    if (size > this->SimpleArrayStorage)
+    if (aiNewSize > this->SimpleArrayStorage)
     {
         if (this->SimpleArrayStorage == 0)
         {
-            this->pBuffer = this->_Allocate(size);
-            this->SimpleArrayStorage = size;
+            this->pBuffer = this->_Allocate(aiNewSize);
+            this->SimpleArrayStorage = aiNewSize;
         }
         else
         {
-            this->ReallocateStorage(size, this->iSize);
-            this->SimpleArrayStorage = size;
+            this->ReallocateStorage(aiNewSize, this->iSize);
+            this->SimpleArrayStorage = aiNewSize;
         }
 
-        this->InitializeItems(this->pBuffer + this->iSize, size - this->iSize);
-        this->iSize = size;
+        this->InitializeItems(this->pBuffer + this->iSize, aiNewSize - this->iSize);
+        this->iSize = aiNewSize;
         return;
     }
 
-    if (size < this->iSize)
+    if (aiNewSize < this->iSize)
     {
-        this->ReleaseElements(this->pBuffer + size, this->iSize - size);
-        this->iSize = size;
+        this->ReleaseElements(this->pBuffer + aiNewSize, this->iSize - aiNewSize);
+        this->iSize = aiNewSize;
 
-        if (clear && size <= (this->SimpleArrayStorage >> 2))
+        if (abFreeMemory && aiNewSize <= (this->SimpleArrayStorage >> 2))
         {
-            this->ReallocateStorage(size, size);
-            this->SimpleArrayStorage = size;
+            this->ReallocateStorage(aiNewSize, aiNewSize);
+            this->SimpleArrayStorage = aiNewSize;
         }
         return;
     }
 
-    this->InitializeItems(this->pBuffer + this->iSize, size - this->iSize);
-    this->iSize = size;
+    this->InitializeItems(this->pBuffer + this->iSize, aiNewSize - this->iSize);
+    this->iSize = aiNewSize;
 }
 
 // @fnv 0x0068ef50
+// pdb: NavMesh::GetSaveParentCell | NavMesh.obj | debug, upstream name already matches, high
 TESObjectCELL* NavMesh::GetSaveParentCell()
 {
     return GetParentCell();
@@ -1295,14 +1350,17 @@ struct FUN_00693f30_cls
     FUN_00693f30_count triCount;
     FUN_00693f30_obj* FUN_0059bb30();
     unsigned int GetHavokWorldObjectCountInSceneGraph_0084e3a0();
-    void PrintNavMeshInfo(void* a1);
+    void PrintNavMeshInfo(void* aString);
 };
 
 int BSStringT_char_SPrintF(void*, const char*, ...);
 
 // Builds a name via the nav object's vfn_90 and prints the navmesh id, triangle count and cell name through FUN_00406f60.
 // @fnv 0x00693f30
-void FUN_00693f30_cls::PrintNavMeshInfo(void* a1)
+// pdb: NavMesh::GetFormDetailedString | NavMesh_LoadSave.obj | retail, string-set bridge, high
+// pdb params: aString
+// pdb locals: pcell, cellString
+void FUN_00693f30_cls::PrintNavMeshInfo(void* aString)
 {
     int unk_pad;
     FUN_00693f30_name name;
@@ -1313,7 +1371,7 @@ void FUN_00693f30_cls::PrintNavMeshInfo(void* a1)
             nav->vfn_90(&name);
         }
     }
-    BSStringT_char_SPrintF(a1, "NavMesh (%08X) with %d Triangles in Cell %s", GetHavokWorldObjectCountInSceneGraph_0084e3a0(), triCount.FUN_0044ddc0(),
+    BSStringT_char_SPrintF(aString, "NavMesh (%08X) with %d Triangles in Cell %s", GetHavokWorldObjectCountInSceneGraph_0084e3a0(), triCount.FUN_0044ddc0(),
                  name.c_str());
 }
 
@@ -1326,7 +1384,7 @@ struct Node
 
 struct Res
 {
-    void Fin();
+    void DeleteNavMeshInfo();
 };
 
 void Bar(void* p);
@@ -1386,36 +1444,39 @@ struct FUN_00693fe0_cls
     virtual void v32(bool flag);
 
     unsigned char GetA();
-    Node* GetB(int arg);
-    void Foo(unsigned char arg);
+    Node* GetB(int aiIndex);
+    void Foo(unsigned char abDeleted);
     void* GetC();
     void* GetD();
 
-    void NavMesh_SetDelete(unsigned char arg);
+    void NavMesh_SetDelete(unsigned char abDeleted);
 };
 
 // If arg differs from GetA, updates state via Foo and v32 based on GetB(0)->Test(); when arg is non-zero, calls Bar(GetC()) and Fin() on the active TES navmesh map.
 // @fnv 0x00693fe0
 // src: XBOX_PDB 0x00693fe0
-void FUN_00693fe0_cls::NavMesh_SetDelete(unsigned char arg)
+// pdb: NavMesh::SetDelete | NavMesh_LoadSave.obj | retail, upstream name already matches, high
+// pdb params: abDeleted
+// pdb locals: pfile, baltered
+void FUN_00693fe0_cls::NavMesh_SetDelete(unsigned char abDeleted)
 {
     bool flag;
-    if (arg != GetA())
+    if (abDeleted != GetA())
     {
         flag = true;
         Node* p = GetB(0);
-        if (arg != 0)
+        if (abDeleted != 0)
         {
             if (!(p != 0 && p->Test() != 0))
                 flag = false;
         }
-        Foo(arg);
+        Foo(abDeleted);
         v32(flag);
     }
-    if (arg != 0)
+    if (abDeleted != 0)
     {
         Bar(GetC());
-        reinterpret_cast<Res*>(g_TES->GetActiveCell(GetD()))->Fin();
+        reinterpret_cast<Res*>(g_TES->GetActiveCell(GetD()))->DeleteNavMeshInfo();
     }
 }
 
@@ -1503,21 +1564,24 @@ struct PathingService
 struct NavMeshActionController
 {
     PathingService* FUN_0059bb30();
-    unsigned char ProcessNavMeshAction(NavMeshAction* entry, unsigned char enabled, unsigned char option);
+    unsigned char ProcessNavMeshAction(NavMeshAction* apGroupFORM, unsigned char abAllowParentGroups, unsigned char abCurrentOnly);
 };
 // Validates a NavMeshAction against DAT_01187020 and dispatches it by action type, checking the triangle for actions 6, 8 and 9.
 // @fnv 0x006940e0
-unsigned char NavMeshActionController::ProcessNavMeshAction(NavMeshAction* apAction, unsigned char enabled,
-                                                            unsigned char option)
+// pdb: NavMesh::BelongsInGroup | NavMesh_LoadSave.obj | retail, vtable slot, high
+// pdb params: apGroupFORM, abAllowParentGroups, abCurrentOnly
+// pdb locals: bretval, pparentcell, brightcell
+unsigned char NavMeshActionController::ProcessNavMeshAction(NavMeshAction* apGroupFORM, unsigned char abAllowParentGroups,
+                                                            unsigned char abCurrentOnly)
 {
     unsigned char result = 0;
-    if (apAction != 0 && apAction->descriptor == DAT_01187020)
+    if (apGroupFORM != 0 && apGroupFORM->descriptor == DAT_01187020)
     {
         PathingService* service = FUN_0059bb30();
-        switch (apAction->action)
+        switch (apGroupFORM->action)
         {
         case 6:
-            if (enabled == 0)
+            if (abAllowParentGroups == 0)
             {
                 result = 0;
                 break;
@@ -1525,11 +1589,11 @@ unsigned char NavMeshActionController::ProcessNavMeshAction(NavMeshAction* apAct
         case 8:
         case 9: {
             unsigned char valid = 0;
-            if (service->TESForm_FormIDMatchesWithoutIndex(apAction->triangleIndex))
+            if (service->TESForm_FormIDMatchesWithoutIndex(apGroupFORM->triangleIndex))
                 valid = 1;
             if (valid)
             {
-                switch (apAction->action)
+                switch (apGroupFORM->action)
                 {
                 case 8:
                     result = 0;
@@ -1542,8 +1606,8 @@ unsigned char NavMeshActionController::ProcessNavMeshAction(NavMeshAction* apAct
             break;
         }
         default:
-            if (enabled)
-                result = service->DispatchAction(apAction, enabled, option);
+            if (abAllowParentGroups)
+                result = service->DispatchAction(apGroupFORM, abAllowParentGroups, abCurrentOnly);
             break;
         }
     }
@@ -1582,41 +1646,44 @@ class FUN_006941c0_cls
 {
   public:
     FUN_006941c0_mid* GetMid();
-    void MapHandleState(FUN_006941c0_out* out, FUN_006941c0_in* in);
+    void MapHandleState(FUN_006941c0_out* apOutGroupFORM, FUN_006941c0_in* apParentGroup);
 };
 
 // If out and in are non-null, checks in->unk0C (3/5/6) and in->unk08 against the mid's code or handle, filling out with DAT_01187020 and state 6 or 9.
 // @fnv 0x006941c0
-void FUN_006941c0_cls::MapHandleState(FUN_006941c0_out* out, FUN_006941c0_in* in)
+// pdb: NavMesh::CreateGroupData | NavMesh_LoadSave.obj | retail, vtable slot, high
+// pdb params: apOutGroupFORM, apParentGroup
+// pdb locals: pparentcell, iparentID
+void FUN_006941c0_cls::MapHandleState(FUN_006941c0_out* apOutGroupFORM, FUN_006941c0_in* apParentGroup)
 {
-    if (out != 0)
+    if (apOutGroupFORM != 0)
     {
-        out->vtbl = 0;
-        if (in != 0)
+        apOutGroupFORM->vtbl = 0;
+        if (apParentGroup != 0)
         {
             FUN_006941c0_mid* m1 = this->GetMid();
             void* h = this->GetMid()->GetHandle();
-            switch (in->unk0C)
+            switch (apParentGroup->unk0C)
             {
             case 3:
             case 5:
-                if (in->unk08 == m1->GetCode())
+                if (apParentGroup->unk08 == m1->GetCode())
                 {
-                    out->vtbl = DAT_01187020;
-                    out->unk0C = 6;
-                    out->unk08 = h;
-                    out->unk04 = 0;
-                    out->unk10 = 0;
+                    apOutGroupFORM->vtbl = DAT_01187020;
+                    apOutGroupFORM->unk0C = 6;
+                    apOutGroupFORM->unk08 = h;
+                    apOutGroupFORM->unk04 = 0;
+                    apOutGroupFORM->unk10 = 0;
                 }
                 break;
             case 6:
-                if (in->unk08 == h)
+                if (apParentGroup->unk08 == h)
                 {
-                    out->vtbl = DAT_01187020;
-                    out->unk0C = 9;
-                    out->unk08 = this->GetMid()->GetHandle();
-                    out->unk04 = 0;
-                    out->unk10 = 0;
+                    apOutGroupFORM->vtbl = DAT_01187020;
+                    apOutGroupFORM->unk0C = 9;
+                    apOutGroupFORM->unk08 = this->GetMid()->GetHandle();
+                    apOutGroupFORM->unk04 = 0;
+                    apOutGroupFORM->unk10 = 0;
                 }
                 break;
             }
@@ -1644,6 +1711,8 @@ class FUN_006947e0_cls
 
 // @fnv 0x006947e0
 // src: COMMUNITY 0x006947e0
+// pdb: BSSimpleArray<CombatMember,1024>::SetSize | CombatGroup.obj | retail, object-file run extension, low
+// pdb params: aiNewSize, abFreeMemory
 void FUN_006947e0_cls::NiTMapBase_DFALL_NiTMapItem_unsigned_short_NiPointer_ObstacleData_unsigned_short_NiPointer_ObstacleData_GetNext(FUN_006947e0_node** ppNode, unsigned short* pKey, NiPointer<ObstacleData>* pOwner)
 {
     FUN_006947e0_node* node = *ppNode;
@@ -1687,13 +1756,16 @@ void __cdecl FNV_Warning(const char*, ...);
 // Looks up the NavMeshInfo for a NavMesh ID and sets its mesh disabled state, warning and returning false if the info or mesh is missing.
 // @fnv 0x00694500
 // src: COMMUNITY 0x00694500
-bool __cdecl NavMesh_SetDisableNavMesh(unsigned int uiNavMeshId, bool disabled)
+// pdb: NavMesh::SetDisableNavMesh | NavMesh_LoadSave.obj | retail, upstream name already matches, high
+// pdb params: aiID, abDisable
+// pdb locals: pnavMeshInfo, spmesh
+bool __cdecl NavMesh_SetDisableNavMesh(unsigned int aiID, bool abDisable)
 {
-    Info69* info = reinterpret_cast<Map69*>(g_TES->GetActiveCell(uiNavMeshId))->FUN_00693d70();
+    Info69* info = reinterpret_cast<Map69*>(g_TES->GetActiveCell(aiID))->FUN_00693d70();
     if (!info)
     {
         FNV_Warning("DisableNavMesh Script Function: Did not find matching NavMeshInfo for NavMesh ID parameter %08X",
-                    uiNavMeshId);
+                    aiID);
         return false;
     }
     else
@@ -1702,14 +1774,14 @@ bool __cdecl NavMesh_SetDisableNavMesh(unsigned int uiNavMeshId, bool disabled)
         if (!info->FUN_00690860(&navMeshPtr))
         {
             FNV_Warning("DisableNavMesh Script Function: Did not find matching NavMesh for NavMesh ID parameter %08X",
-                        uiNavMeshId);
+                        aiID);
             return false;
         }
-        else if (reinterpret_cast<Mesh69*>(navMeshPtr.Modelloader_GetReferencedThis())->FUN_00440da0() != disabled)
+        else if (reinterpret_cast<Mesh69*>(navMeshPtr.Modelloader_GetReferencedThis())->FUN_00440da0() != abDisable)
         {
-            reinterpret_cast<Mesh69*>(navMeshPtr.Modelloader_GetReferencedThis())->TESForm_SetDisabled(disabled);
-            info->FUN_00693ef0(disabled);
-            if (!disabled)
+            reinterpret_cast<Mesh69*>(navMeshPtr.Modelloader_GetReferencedThis())->TESForm_SetDisabled(abDisable);
+            info->FUN_00693ef0(abDisable);
+            if (!abDisable)
                 reinterpret_cast<Mesh69*>(navMeshPtr.Modelloader_GetReferencedThis())->LinkMatchingEdges();
         }
     }
@@ -1739,6 +1811,9 @@ struct Map6946a0
 // Looks up the bucket for key, updates the value if the key exists, otherwise inserts a new item and increments the count.
 // @fnv 0x006946a0
 // src: COMMUNITY 0x006946a0
+// pdb: NiTMapBase<DFALL<NiTMapItem<unsigned short,NiPointer<ObstacleData> > >,unsigned short,NiPointer<ObstacleData> >::SetAt | NavMesh_LoadSave.obj | debug, call graph, medium
+// pdb params: key, val
+// pdb locals: pkItem, uiIndex, uiDepth
 void Map6946a0::NiTMapBase_DFALL_NiTMapItem_unsigned_short_NiPointer_NavMeshObstacleData_unsigned_short_NiPointer_NavMeshObstacleData_SetAt(unsigned short key, NiPointer<ObstacleData> aRefVal)
 {
     unsigned int uiIndex = KeyToHashIndex(key);

@@ -16,6 +16,7 @@ struct CollidableRayCastCommand;
 typedef unsigned int hkUint32;
 typedef int hkInt32;
 
+// pdb: class hkpVehicleRayCastWheelCollide, size 0x24, bases: hkpVehicleWheelCollide, 3 members
 class hkpVehicleRayCastWheelCollide : public hkpVehicleWheelCollide
 {
 public:
@@ -38,16 +39,16 @@ public:
     void RemoveFromWorld();
     void CreateWheelPhantom(const hkpVehicleInstance* vehicle);
     void Destroy();
-    void AppendPhantom(hkArray<hkpAabbPhantom*>& phantoms);
+    void AppendPhantom(hkArray<hkpAabbPhantom*>& phantomsOut);
     void CollideWheels(float deltaTime, const hkpVehicleInstance* vehicle,
                        WheelCollideResult* output);
     int BuildRayCastCommands(const hkpVehicleInstance* vehicle, const hkpCollisionFilter* filter,
                              hkInt32 filterSize, CollidableRayCastCommand* commands,
                              hkpWorldRayCastOutput* results) const;
-    hkpVehicleRayCastWheelCollide* Clone(hkpWorldObject* chassis,
-                                       const hkArray<hkpAabbPhantom*>& phantoms);
+    hkpVehicleRayCastWheelCollide* Clone(hkpWorldObject* newChassis,
+                                       const hkArray<hkpAabbPhantom*>& newPhantoms);
 
-    hkUint32 m_uiWheelCount;
-    hkpAabbPhantom* m_pPhantom;
-    hkpRejectChassisListener m_kChassisRejectionListener;
+    hkUint32 m_wheelCollisionFilterInfo; // src: XBOX_RETAIL_PDB +0xc (old: m_uiWheelCount)
+    hkpAabbPhantom* m_phantom; // src: XBOX_RETAIL_PDB +0x10 (old: m_pPhantom)
+    hkpRejectChassisListener m_rejectRayChassisListener; // src: XBOX_RETAIL_PDB +0x14 (old: m_kChassisRejectionListener)
 };

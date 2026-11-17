@@ -47,6 +47,9 @@ static __declspec(noinline) void SkipWhitespace(S00dcc240_Stream* stream)
 // Skips whitespace, then parses an optional sign and a decimal, octal, or hexadecimal integer from the stream, storing the sign in negative.
 // @fnv 0x00dcc240
 // src: HAVOK_LIB 0x00dcc240
+// pdb: readInteger64 | hkIStream.obj | retail, upstream name already matches, high
+// pdb params: reader, negOut
+// pdb locals: storage
 static __declspec(noinline) unsigned __int64 readInteger64(S00dcc240_Stream* stream, bool* negative)
 {
     int storage[64];

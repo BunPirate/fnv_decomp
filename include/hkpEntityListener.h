@@ -2,6 +2,7 @@
 
 class hkpEntity;
 
+// pdb: class hkpEntityListener, size 0x4, 0 members
 class hkpEntityListener
 {
 public:

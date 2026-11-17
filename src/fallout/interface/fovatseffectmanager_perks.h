@@ -6,6 +6,7 @@
 #include "Actor.h"
 class PlayerCharacter;
 extern PlayerCharacter* g_thePlayer;
+// pdb: class BGSEntryPointFunction, size 0x1, 0 members
 class BGSEntryPointFunction
 {
   public:

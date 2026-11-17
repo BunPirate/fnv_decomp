@@ -2,6 +2,7 @@
 
 #include "NiBSplineColorInterpolator.h"
 
+// pdb: class NiBSplineCompColorInterpolator, size 0x3c, bases: NiBSplineColorInterpolator, 1 members
 class NiBSplineCompColorInterpolator : public NiBSplineColorInterpolator
 {
 public:

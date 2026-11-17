@@ -6,6 +6,7 @@ class ShaderArg;
 class NiD3DVertexShader;
 class NiD3DPixelShader;
 
+// pdb: class NiD3DShaderProgramCreator, size 0x4, 0 members
 class NiD3DShaderProgramCreator : public NiMemObject
 {
 public:

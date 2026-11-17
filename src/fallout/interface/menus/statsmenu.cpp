@@ -24,7 +24,7 @@
 class ActorValueUtility_statsmenu
 {
 public:
-    static int __cdecl ConvertActorValue(int);
+    static int __cdecl GamePlayFormulas_GetRequiredExperiencePoints(int);
 };
 #include "../../../../include/ActorValues.h"
 #include "../../../../include/BGSPerk.h"
@@ -164,7 +164,7 @@ extern PlayerCharacter* g_thePlayer;
 // Unit-local method declaration until BSAudio's sound factory returns BSSoundHandle.
 struct StatsMenuAudioMethods : BSAudio
 {
-    BSSoundHandle GetSoundHandleByEditorID(const char* editorID, unsigned int flags);
+    BSSoundHandle GetSoundHandleByEditorID(const char* apSoundName, unsigned int aiTypeFlags);
 };
 
 // Unit-local declaration for an accessor absent from ActiveEffect.h.
@@ -187,6 +187,7 @@ float ActiveEffect::GetDuration() const
     return fDuration;
 }
 // @fnv 0x007df1d0
+// pdb: ActiveEffect::GetEffectSetting | StatsMenu.obj | debug, upstream name already matches, high
 EffectSetting* ActiveEffect::GetEffectSetting() const
 {
     return pEffect->GetEffectSetting();
@@ -202,6 +203,8 @@ float StatsMenu::GetChartScale()
     return 1000.0f;
 }
 // @fnv 0x007dfd00
+// pdb: StatsMenu::SetCurrentStatsPage | StatsMenu.obj | debug, object-file gap fill, medium
+// pdb params: acPage
 void StatsMenu::SetStatsPage(unsigned char page)
 {
     if (ms_pInventoryMenu)
@@ -209,6 +212,7 @@ void StatsMenu::SetStatsPage(unsigned char page)
 }
 // Returns the current page as a Page enum, read from the menu's float value at 0x1004.
 // @fnv 0x007dcc00
+// pdb: StatsMenu::GetCurrentPage | StatsMenu.obj | debug, upstream name already matches, high
 StatsMenu::Page StatsMenu::GetCurrentPage()
 {
     return static_cast<Page>(static_cast<unsigned int>(pMenu->GetFloat(0x1004)));
@@ -230,24 +234,32 @@ int StatsMenu::GetTraitForValue(ActorValue::Index value)
     }
 }
 // @fnv 0x007df5d0
-void StatsMenu::UpdateStatusEffects()
+// src: XBOX_RETAIL_PDB 0x007df5d0
+// pdb: StatsMenu::UpdatePlayerTitle | StatsMenu.obj | retail, call graph (shared callers), high
+void StatsMenu::UpdatePlayerTitle()
 {
-    if (ms_pInventoryMenu && ms_pInventoryMenu->m_pTiles[37])
-        ms_pInventoryMenu->m_pTiles[37]->Set(0xFC4, TESActorBaseData::GetActorDisplayName(g_thePlayer), true);
+    if (ms_pInventoryMenu && ms_pInventoryMenu->pTiles[37])
+        ms_pInventoryMenu->pTiles[37]->Set(0xFC4, TESActorBaseData::GetActorDisplayName(g_thePlayer), true);
 }
 // @fnv 0x007dda60
+// pdb: StatsMenu::ClearPerks | StatsMenu.obj | debug, upstream name already matches, high
 void StatsMenu::ClearPerks()
 {
-    if (ms_pInventoryMenu && ms_pInventoryMenu->m_pTiles[34])
-        ((void (__thiscall*)(ListBoxBase*))(*(void***)&ms_pInventoryMenu->m_kPerkRankList)[7])(&ms_pInventoryMenu->m_kPerkRankList);
+    if (ms_pInventoryMenu && ms_pInventoryMenu->pTiles[34])
+        ((void (__thiscall*)(ListBoxBase*))(*(void***)&ms_pInventoryMenu->lbPerks)[7])(&ms_pInventoryMenu->lbPerks);
 }
 // @fnv 0x007ddad0
+// pdb: StatsMenu::UpdateMiscStat | StatsMenu.obj | debug, object-file gap fill, medium
+// pdb params: aeID
 void StatsMenu::RefreshMiscStat(MiscStatManager__MiscStatID value)
 {
-    UpdateMiscStatTile(m_kMiscStatList.GetTileForData(value), value);
+    UpdateMiscStatTile(lbGeneral.GetTileForData(value), value);
 }
 // @fnv 0x007dcfc0
-void StatsMenu::UpdateActorValueTiles()
+// src: XBOX_RETAIL_PDB 0x007dcfc0
+// pdb: StatsMenu::UpdateAllActorValues | StatsMenu.obj | retail, call graph, high
+// pdb locals: eindex
+void StatsMenu::UpdateAllActorValues()
 {
     RefreshActorValueTile(ActorValue::ActorValue__Index_HEALTH);
     RefreshActorValueTile(ActorValue::ActorValue__Index_ACTION_POINTS);
@@ -256,38 +268,43 @@ void StatsMenu::UpdateActorValueTiles()
     RefreshActorValueTile(ActorValue::ActorValue__Index_RADIATION_RESISTANCE);
     for (int value = 25; value < 32; ++value)
         RefreshActorValueTile(static_cast<ActorValue::Index>(value));
-    m_pTiles[6]->Set(0x1004, 0);
-    m_kPrimaryActorValueList.Traverse(UpdatePrimaryActorValueTile, 0, 2147483647);
-    m_pTiles[7]->Set(0x1004, 0);
-    m_kSecondaryActorValueList.Traverse(UpdateSecondaryActorValueTile, 0, 2147483647);
+    pTiles[6]->Set(0x1004, 0);
+    lbSpecial.Traverse(SPECIALUpdateFn, 0, 2147483647);
+    pTiles[7]->Set(0x1004, 0);
+    lbSkills.Traverse(UpdateSecondaryActorValueTile, 0, 2147483647);
     RefreshActorValueTile(ActorValue::ActorValue__Index_KARMA);
 }
 // Sets a tile's current actor value and, if it differs from the permanent value, marks it with a (+)/(-) indicator and flags the parent.
 // @fnv 0x007dfa30
-void StatsMenu::UpdatePrimaryActorValueTile(Tile* tile, ActorValue::Index value)
+// src: XBOX_RETAIL_PDB 0x007dfa30
+// pdb: StatsMenu::SPECIALUpdateFn | StatsMenu.obj | retail, object-file run extension, high
+// pdb params: apTile, aeIndex
+// pdb locals: ival, ibase
+void StatsMenu::SPECIALUpdateFn(Tile* apTile, ActorValue::Index aeIndex)
 {
-    if (tile)
+    if (apTile)
     {
         struct ComparedActorValues
         {
             int current;
             int permanent;
         } values;
-        values.current = g_thePlayer->GetActorValueAsInteger(value);
-        values.permanent = g_thePlayer->GetPermanentActorValue(value);
-        tile->Set(0x1005, values.current);
+        values.current = g_thePlayer->GetActorValueAsInteger(aeIndex);
+        values.permanent = g_thePlayer->GetPermanentActorValue(aeIndex);
+        apTile->Set(0x1005, values.current);
         if (values.permanent == values.current)
-            tile->Set(0x1004, 0);
+            apTile->Set(0x1004, 0);
         else
         {
-            tile->Set(0x1004, 1);
-            tile->Set(0x1006, values.current > values.permanent ? "(+)" : "(-)", true);
-            tile->GetParent()->Set(0x1004, 1);
+            apTile->Set(0x1004, 1);
+            apTile->Set(0x1006, values.current > values.permanent ? "(+)" : "(-)", true);
+            apTile->GetParent()->Set(0x1004, 1);
         }
     }
 }
 
 // @fnv 0x007df1b0
+// pdb: EffectSetting::IsScriptEffect | StatsMenu.obj | debug, upstream name already matches, high
 bool EffectSetting::IsScriptEffect()
 {
     return MagicEffectSystem_statsmenu::IsFlagSet(GetArchetype(), 0x40);
@@ -320,7 +337,7 @@ struct MenuSI
     char pad2[0x68];
     VObj e4;
     void FadeTile(int, int, unsigned int, float);
-    void PopulateListBoxTiles(void*, int, int, int, bool);
+    void StartMenu_PopulateConfirmationListBox(void*, int, int, int, bool);
 };
 struct ListBoxSI
 {
@@ -335,19 +352,23 @@ struct StatsmenuOffset08View
 extern StatsmenuOffset08View g_011dab88;
 // Resets the menu, sets tile values from a, b, c and d, then adds each entry of g_011dab88 to lb and creates a named tile for it.
 // @fnv 0x007d49a0
-void MenuSI::PopulateListBoxTiles(void* apListBox, int aiValueA, int aiValueB, int auiValueC, bool abFlag)
+// src: XBOX_RETAIL_PDB 0x007d49a0
+// pdb: StartMenu::PopulateConfirmationListBox | StartMenu.obj | retail, call graph, high
+// pdb params: aiModes, aucFlags
+// pdb locals: iwidth, iy, ix
+void MenuSI::StartMenu_PopulateConfirmationListBox(void* aiModes, int aiRealX, int aiRealY, int aiWidth, bool abShowWarning)
 {
     unsigned int i;
     this->e4.v7();
     this->e4.ListBox_StartMenu_Option_SetEnabled(1);
     this->FadeTile(7, 1, 0x80000000, -1.0f);
-    ((Tile*)this->t44)->Set(0xfa1, (float)(aiValueA - ((Tile*)this->t44->GetParent())->GetTotalFloat()), true);
-    ((Tile*)this->t44)->Set(0xfa2, (float)(aiValueB - ((Tile*)this->t44->GetParent())->GetScreenY()), true);
-    ((Tile*)this->t44)->Set(0xfb1, (unsigned int)auiValueC);
-    this->t78->Set(0xfa3, (int)abFlag);
+    ((Tile*)this->t44)->Set(0xfa1, (float)(aiRealX - ((Tile*)this->t44->GetParent())->GetTotalFloat()), true);
+    ((Tile*)this->t44)->Set(0xfa2, (float)(aiRealY - ((Tile*)this->t44->GetParent())->GetScreenY()), true);
+    ((Tile*)this->t44)->Set(0xfb1, (unsigned int)aiWidth);
+    this->t78->Set(0xfa3, (int)abShowWarning);
     for (i = 0; i < g_011dab88.GetFlags(); i++)
     {
-        if (((ListBoxSI*)g_011dab88.GetAt(i))->AddItem(apListBox))
+        if (((ListBoxSI*)g_011dab88.GetAt(i))->AddItem(aiModes))
         {
             Tile* ptile = this->e4.CreateListItem(g_011dab88.GetAt(i), 0, 0, 0);
             ptile->Set(0xfc4, g_011dab88.GetAt(i)->name, true);
@@ -364,9 +385,10 @@ struct StatusPageMenuMethods : public StatsMenu
 
 // @fnv 0x007dcc40
 // src: XBOX_PDB 0x007dcc40
+// pdb: StatsMenu::GetStatusPage | StatsMenu.obj | debug, upstream name already matches, high
 int StatusPageMenuMethods::StatsMenu_GetStatusPage()
 {
-    return (unsigned int)m_pTiles[5]->GetFloat(0x1004);
+    return (unsigned int)pTiles[5]->GetFloat(0x1004);
 }
 
 // @fnv 0x007df210
@@ -377,17 +399,20 @@ bool ActiveEffect::HasConditions()
 }
 
 int __cdecl TruncateFloatToInt(float);
-float __cdecl GetSkillValue(void*, int, bool);
+float __cdecl AiFormulas_AVDeriveSkill(void*, int, bool);
 
 // @fnv 0x007dfb00
+// pdb: StatsMenu::SkillsUpdateFn | StatsMenu.obj | retail, object-file run extension, high
+// pdb params: apTile, aeIndex
+// pdb locals: fderivedBase, ival, idelta, ibase, fderivedVal
 void __cdecl UpdateActorValueTile(Tile* apTile, ActorValue::Index aeIndex)
 {
     if (apTile)
     {
         int ival = g_thePlayer->GetActorValueAsInteger(aeIndex);
         int ibase = g_thePlayer->GetPermanentActorValue(aeIndex);
-        float fderivedVal = GetSkillValue((ActorValueOwner*)g_thePlayer, aeIndex, false);
-        float fderivedBase = GetSkillValue((ActorValueOwner*)g_thePlayer, aeIndex, true);
+        float fderivedVal = AiFormulas_AVDeriveSkill((ActorValueOwner*)g_thePlayer, aeIndex, false);
+        float fderivedBase = AiFormulas_AVDeriveSkill((ActorValueOwner*)g_thePlayer, aeIndex, true);
         int idelta = (ival - ibase) + TruncateFloatToInt(fderivedVal - fderivedBase);
 
         apTile->Set(0x1005, ival);
@@ -409,6 +434,8 @@ int __cdecl MiscStatManager_GetVal(int);
 // If apTile is non-null, calls Set with 0x1005 and the result of FUN_005a3370(aeID).
 // @fnv 0x007dfc60
 // src: XBOX_PDB 0x007dfc60
+// pdb: StatsMenu::MiscStatsUpdateFn | StatsMenu.obj | retail, upstream name already matches, high
+// pdb params: apTile, aeID
 void __cdecl StatsMenu_MiscStatsUpdateFn(Tile* apTile, int aeID)
 {
     if (apTile)
@@ -419,16 +446,20 @@ void __cdecl StatsMenu_MiscStatsUpdateFn(Tile* apTile, int aeID)
 
 bool __fastcall PlayerCharacter_IsHardcore(PlayerCharacter* pPlayer);
 bool __cdecl InterfaceManager_Has360Controller(void);
-int __cdecl GetStatusResult(void);
+int __cdecl StatsMenu_GetTargetedBodyPart(void);
 
 // Checks whether the player's current actor value is below its permanent value, choosing the target actor value based on hardcore mode and aHO[2].
 // @fnv 0x007e05f0
-bool __cdecl IsActorValueBelowPermanent(int* aHO)
+// src: XBOX_RETAIL_PDB 0x007e05f0
+// pdb: StatsMenu::StimpakTargetConditionCallback | StatsMenu.obj | retail, call graph, high
+// pdb params: aHO
+// pdb locals: bIsHardcore, etargetAV
+bool __cdecl StatsMenu_StimpakTargetConditionCallback(int* aHO)
 {
     bool bIsHardcore = PlayerCharacter_IsHardcore(g_thePlayer);
     if (aHO[2] != 0)
     {
-        int etargetAV = GetStatusResult();
+        int etargetAV = StatsMenu_GetTargetedBodyPart();
         if (bIsHardcore && etargetAV != -1)
         {
             return false;
@@ -456,26 +487,27 @@ struct Dummy_0071f9c0
 
 bool __fastcall _ref_008256d0(void*);
 Dummy_0071f9c0** __fastcall _ref_006815c0(void*);
-void* __fastcall FUN_0071f9c0(Dummy_0071f9c0*, int, unsigned int);
+void* __fastcall StatsMenu_StatusEffect_ScalarDtor(Dummy_0071f9c0*, int, unsigned int);
 void __fastcall _ref_0063f7b0(void*);
 
 struct Caller_0071f9c0
 {
     void* call_del(unsigned int f)
     {
-        return FUN_0071f9c0((Dummy_0071f9c0*)this, 0, f);
+        return StatsMenu_StatusEffect_ScalarDtor((Dummy_0071f9c0*)this, 0, f);
     }
 };
 
 // @fnv 0x007e07f0
 // src: XBOX_PDB 0x007e07f0
+// pdb: StatsMenu::StatusEffectList::Flush | StatsMenu.obj | retail, upstream name already matches, high
 void __fastcall StatsMenu_StatusEffectList_Flush(char* this_ptr)
 {
     while (!_ref_008256d0(this_ptr + 4))
     {
         Dummy_0071f9c0* p1;
         Dummy_0071f9c0* p2 = (p1 = *_ref_006815c0(this_ptr + 4));
-        (p2 != 0) ? ((void*(__thiscall*)(Dummy_0071f9c0*, unsigned int))FUN_0071f9c0)(p2, 1) : 0;
+        (p2 != 0) ? ((void*(__thiscall*)(Dummy_0071f9c0*, unsigned int))StatsMenu_StatusEffect_ScalarDtor)(p2, 1) : 0;
         _ref_0063f7b0(this_ptr + 4);
     }
 }
@@ -526,7 +558,7 @@ class StatsMenu__StatusEffect
     {
       public:
         virtual ~EffectDataList();
-        void ApplyParamToEntry(ActiveEffect* effect);
+        void StatsMenu_StatusDataList_Register(ActiveEffect* apActiveEffect);
     };
     class NamedEffectsList : public BSSimpleList<EffectSetting*>
     {
@@ -536,7 +568,7 @@ class StatsMenu__StatusEffect
     TESForm* pForm;
     EffectDataList xEffectData;
     NamedEffectsList m_kNamedEffectsList;
-    StatsMenu__StatusEffect(SpellItem* spell);
+    StatsMenu__StatusEffect(SpellItem* apForm);
     ~StatsMenu__StatusEffect();
 };
 class StatusEffectListOps : public StatsMenu__StatusEffectList
@@ -579,6 +611,7 @@ struct MenuH : StatsMenu
     void UpdateXboxButtonState();
 };
 
+// pdb: class Calendar, size 0x1c (here 0x1), 7 members
 struct Calendar
 {
     unsigned int GetDaysPassed();
@@ -586,7 +619,7 @@ struct Calendar
 
 struct StatusH
 {
-    void ForwardCall_007db250(Tile*);
+    void StatsMenu_BodyPartController_AddFlash(Tile*);
     void SetFieldBits(int, int);
 };
 // The stats-label normalization helper at 0x007b52a0 is absent from BSStringT.h.
@@ -601,9 +634,9 @@ const char* __cdecl GetGameSettingString(int);
 void __cdecl CompareActorValueNames();
 StatusH* __stdcall StatsMenu_BodyPartController_GetInstance(int);
 void __cdecl StatsMenu_UpdatePerks();
-void __cdecl UpdateStatsMenuLevelText();
-bool __cdecl IsActorValueBelowPermanent(int*);
-bool __cdecl IsHealingOptionAvailable(int*);
+void __cdecl StatsMenu_UpdatePlayerName();
+bool __cdecl StatsMenu_StimpakTargetConditionCallback(int*);
+bool __cdecl StatsMenu_DrBagTargetConditionCallback(int*);
 bool __cdecl IsPlayerSubObjectValueAboveThreshold(int*);
 int __cdecl GetTileValueID(const char*, int);
 Menu* __cdecl FindMenuById(int);
@@ -636,6 +669,8 @@ extern const StartMenu g_011d50b0;
 
 // @fnv 0x007da2c0
 // src: XBOX_PDB 0x007da2c0
+// pdb: StatsMenu::Create | StatsMenu.obj | retail, upstream name already matches, high
+// pdb locals: pin, ftop_depth, ptile, pold_menu_tile, pstage, strtmp, pformat, pform, i, eindex, ptmp, eID, ptext
 Tile* StatsMenu_Create()
 {
     Menu* pold_menu_tile = FindMenuById(StatsMenu_GetClassStatic());
@@ -645,7 +680,7 @@ Tile* StatsMenu_Create()
     float ftop_depth = Tile::GetInterfaceScale();
     Tile* ptile = ((Tile*)((IMH*)pin)->CombatController_GetCombatState())->ReadFile("Data\\Menus\\Main\\stats_menu.xml");
     StatsMenu::ms_pInventoryMenu = (StatsMenu*)((Tile*)ptile)->GetMenu();
-    MenuH::ReadMenuDefinition("Data\\Menus\\Main\\stats_menu.xml", StatsMenu::ms_pInventoryMenu);
+    MenuH::RemoveFromXMLArchive("Data\\Menus\\Main\\stats_menu.xml", StatsMenu::ms_pInventoryMenu);
     ((MenuH*)StatsMenu::ms_pInventoryMenu)->Menu_SetRenderedMenu();
     if (StatsMenu::ms_pInventoryMenu && StatsMenu::ms_pInventoryMenu->GetClass() == StatsMenu_GetClassStatic())
     {
@@ -658,7 +693,7 @@ Tile* StatsMenu_Create()
         if (ptile->GetFloat(0xfa7) == _DAT_010704f0 || ptile->GetFloat(0xfa7) == _DAT_010704e8)
             ((Tile*)ptile)->Set(0xfad, ftop_depth, true);
         ((TutorialState*)((char*)InterfaceManager_GetSingleton() + 0x4d4))->ShowMessage(0x19, StatsMenu_GetClassStatic(), 0x200);
-        UpdateStatsMenuLevelText();
+        StatsMenu_UpdatePlayerName();
         BGSRadiationStage* pstage = BGSRadiationStage::GetStageForLevel(3.402823466e+38F);
         ((Tile*)ptile)->Set(0x1006, pstage ? ((Calendar*)pstage)->GetDaysPassed() : 1000);
         BSStringT<char> strtmp;
@@ -676,98 +711,98 @@ Tile* StatsMenu_Create()
         else
         {
             strtmp.PrintfString(pformat, g_thePlayer->GetActorValue((ActorValue::Index)0x18),
-                           ActorValueUtility_statsmenu::ConvertActorValue(((Actor*)g_thePlayer)->GetLevel() + 1));
+                           ActorValueUtility_statsmenu::GamePlayFormulas_GetRequiredExperiencePoints(((Actor*)g_thePlayer)->GetLevel() + 1));
         }
         ptile->Set(0x100b, (const char*)strtmp, true);
         ptile->Set(0x100c, ((Actor*)g_thePlayer)->GetLevel());
         strtmp = "stats_list_template";
-        ((LBH*)&StatsMenu::ms_pInventoryMenu->m_kPrimaryActorValueList)
-            ->Initialize(StatsMenu::ms_pInventoryMenu->m_pTiles[6], (const char*)strtmp);
+        ((LBH*)&StatsMenu::ms_pInventoryMenu->lbSpecial)
+            ->Initialize(StatsMenu::ms_pInventoryMenu->pTiles[6], (const char*)strtmp);
         for (int i = 0; i < AVH::GetCountForSection(0); i++)
         {
             ActorValue::Index eindex = AVH::GetActorValueForSectionIndex(0, (unsigned char)i);
             if (!P09AV::GetFlag(eindex, 0x2000) && eindex != 0x1f)
             {
                 Tile* ptmp =
-                    ((LBH*)&StatsMenu::ms_pInventoryMenu->m_kPrimaryActorValueList)->AddListEntry(eindex, 0, 0, 0);
+                    ((LBH*)&StatsMenu::ms_pInventoryMenu->lbSpecial)->AddListEntry(eindex, 0, 0, 0);
                 ptmp->Set(0xfc4, AVH::GetActorValueName(eindex), true);
                 ((Tile*)ptmp)->SetName(AVH::GetActorValueName(eindex));
             }
         }
-        ((LBH*)&StatsMenu::ms_pInventoryMenu->m_kSecondaryActorValueList)
-            ->Initialize(StatsMenu::ms_pInventoryMenu->m_pTiles[7], (const char*)strtmp);
+        ((LBH*)&StatsMenu::ms_pInventoryMenu->lbSkills)
+            ->Initialize(StatsMenu::ms_pInventoryMenu->pTiles[7], (const char*)strtmp);
         for (int i = 0; i < AVH::GetCountForSection(2); i++)
         {
             ActorValue::Index eindex = AVH::GetActorValueForSectionIndex(2, (unsigned char)i);
             if (!P09AV::GetFlag(eindex, 0x2000) && eindex != 0x1f)
             {
                 Tile* ptmp =
-                    ((LBH*)&StatsMenu::ms_pInventoryMenu->m_kSecondaryActorValueList)->AddListEntry(eindex, 0, 0, 0);
+                    ((LBH*)&StatsMenu::ms_pInventoryMenu->lbSkills)->AddListEntry(eindex, 0, 0, 0);
                 ptmp->Set(0xfc4, AVH::GetActorValueName(eindex), true);
                 ((Tile*)ptmp)->SetName(AVH::GetActorValueName(eindex));
             }
         }
-        ((void (__thiscall*)(ListBoxBase*, void*))(*(void***)&StatsMenu::ms_pInventoryMenu->m_kSecondaryActorValueList)[8])(&StatsMenu::ms_pInventoryMenu->m_kSecondaryActorValueList, (void*)CompareActorValueNames);
-        ((LBH*)&StatsMenu::ms_pInventoryMenu->m_kPerkRankList)
-            ->Initialize(StatsMenu::ms_pInventoryMenu->m_pTiles[34], (const char*)strtmp);
+        ((void (__thiscall*)(ListBoxBase*, void*))(*(void***)&StatsMenu::ms_pInventoryMenu->lbSkills)[8])(&StatsMenu::ms_pInventoryMenu->lbSkills, (void*)CompareActorValueNames);
+        ((LBH*)&StatsMenu::ms_pInventoryMenu->lbPerks)
+            ->Initialize(StatsMenu::ms_pInventoryMenu->pTiles[34], (const char*)strtmp);
         StatsMenu_UpdatePerks();
-        ((LBH*)&StatsMenu::ms_pInventoryMenu->m_kReputationList)
-            ->Initialize(StatsMenu::ms_pInventoryMenu->m_pTiles[46], (const char*)strtmp);
-        ((LBH*)&StatsMenu::ms_pInventoryMenu->m_kMiscStatList)
-            ->Initialize(StatsMenu::ms_pInventoryMenu->m_pTiles[8], (const char*)strtmp);
+        ((LBH*)&StatsMenu::ms_pInventoryMenu->lbReputation)
+            ->Initialize(StatsMenu::ms_pInventoryMenu->pTiles[46], (const char*)strtmp);
+        ((LBH*)&StatsMenu::ms_pInventoryMenu->lbGeneral)
+            ->Initialize(StatsMenu::ms_pInventoryMenu->pTiles[8], (const char*)strtmp);
         for (MiscStatManager__MiscStatID eMiscStat = MiscStatManager__MiscStatID_MS_QUESTS_COMPLETED;
              eMiscStat < MiscStatManager__MiscStatID_MS_COUNT;
              TESReputation::GetUnsignedIntegerPointer((unsigned int*)&eMiscStat))
         {
-            Tile* ptile = ((LBH*)&StatsMenu::ms_pInventoryMenu->m_kMiscStatList)->ListBox_enum_MiscStatManager_MiscStatID_AddItem(eMiscStat, 0, 0, 0);
+            Tile* ptile = ((LBH*)&StatsMenu::ms_pInventoryMenu->lbGeneral)->ListBox_enum_MiscStatManager_MiscStatID_AddItem(eMiscStat, 0, 0, 0);
             const char* ptext = GetGameSettingString(eMiscStat);
             ptile->Set(0xfc4, ptext, true);
             ptile->Set(0x1005, MiscStatManager_GetVal(eMiscStat));
             ((Tile*)ptile)->SetName(ptext);
         }
-        StatsMenu::ms_pInventoryMenu->m_pTiles[47]->Set(0xfcc, "Interface\\shared\\solid_black.dds", true);
-        StatsMenu::ms_pInventoryMenu->m_pTiles[47]->Set(0xfa3, 0);
+        StatsMenu::ms_pInventoryMenu->pTiles[47]->Set(0xfcc, "Interface\\shared\\solid_black.dds", true);
+        StatsMenu::ms_pInventoryMenu->pTiles[47]->Set(0xfa3, 0);
         TESForm* pform = BGSDefaultObjectManager::GetDefaultObjectByIndex(0);
-        StatsMenu::ms_pInventoryMenu->m_kHealingOptions[0].m_pHealingItem = dynamic_cast<AlchemyItem*>(pform);
-        StatsMenu::ms_pInventoryMenu->m_kHealingOptions[0].pTile = StatsMenu::ms_pInventoryMenu->m_pTiles[10];
-        StatsMenu::ms_pInventoryMenu->m_kHealingOptions[0].pTile->Set(
+        StatsMenu::ms_pInventoryMenu->pHealingOptionsA[0].m_pHealingItem = dynamic_cast<AlchemyItem*>(pform);
+        StatsMenu::ms_pInventoryMenu->pHealingOptionsA[0].pTile = StatsMenu::ms_pInventoryMenu->pTiles[10];
+        StatsMenu::ms_pInventoryMenu->pHealingOptionsA[0].pTile->Set(
             0x1004, ((TESFullName*)dynamic_cast<TESFullName*>(pform))->GetFullName(), true);
-        StatsMenu::ms_pInventoryMenu->m_kHealingOptions[0].m_pfnIsAvailable =
-            (bool___cdecl__StatsMenu__HealingOption__*)IsActorValueBelowPermanent;
+        StatsMenu::ms_pInventoryMenu->pHealingOptionsA[0].m_pfnIsAvailable =
+            (bool___cdecl__StatsMenu__HealingOption__*)StatsMenu_StimpakTargetConditionCallback;
         pform = BGSDefaultObjectManager::GetDefaultObjectByIndex(0x15);
-        StatsMenu::ms_pInventoryMenu->m_kHealingOptions[3].m_pHealingItem = dynamic_cast<AlchemyItem*>(pform);
-        StatsMenu::ms_pInventoryMenu->m_kHealingOptions[3].pTile = StatsMenu::ms_pInventoryMenu->m_pTiles[59];
-        StatsMenu::ms_pInventoryMenu->m_kHealingOptions[3].pTile->Set(
+        StatsMenu::ms_pInventoryMenu->pHealingOptionsA[3].m_pHealingItem = dynamic_cast<AlchemyItem*>(pform);
+        StatsMenu::ms_pInventoryMenu->pHealingOptionsA[3].pTile = StatsMenu::ms_pInventoryMenu->pTiles[59];
+        StatsMenu::ms_pInventoryMenu->pHealingOptionsA[3].pTile->Set(
             0x1004, ((TESFullName*)dynamic_cast<TESFullName*>(pform))->GetFullName(), true);
-        StatsMenu::ms_pInventoryMenu->m_kHealingOptions[3].m_pfnIsAvailable =
-            (bool___cdecl__StatsMenu__HealingOption__*)IsHealingOptionAvailable;
+        StatsMenu::ms_pInventoryMenu->pHealingOptionsA[3].m_pfnIsAvailable =
+            (bool___cdecl__StatsMenu__HealingOption__*)StatsMenu_DrBagTargetConditionCallback;
         pform = BGSDefaultObjectManager::GetDefaultObjectByIndex(2);
-        StatsMenu::ms_pInventoryMenu->m_kHealingOptions[1].m_pHealingItem = dynamic_cast<AlchemyItem*>(pform);
-        StatsMenu::ms_pInventoryMenu->m_kHealingOptions[1].pTile = StatsMenu::ms_pInventoryMenu->m_pTiles[31];
-        StatsMenu::ms_pInventoryMenu->m_kHealingOptions[1].pTile->Set(
+        StatsMenu::ms_pInventoryMenu->pHealingOptionsA[1].m_pHealingItem = dynamic_cast<AlchemyItem*>(pform);
+        StatsMenu::ms_pInventoryMenu->pHealingOptionsA[1].pTile = StatsMenu::ms_pInventoryMenu->pTiles[31];
+        StatsMenu::ms_pInventoryMenu->pHealingOptionsA[1].pTile->Set(
             0x1004, ((TESFullName*)dynamic_cast<TESFullName*>(pform))->GetFullName(), true);
         pform = BGSDefaultObjectManager::GetDefaultObjectByIndex(3);
-        StatsMenu::ms_pInventoryMenu->m_kHealingOptions[2].m_pHealingItem = dynamic_cast<AlchemyItem*>(pform);
-        StatsMenu::ms_pInventoryMenu->m_kHealingOptions[2].pTile = StatsMenu::ms_pInventoryMenu->m_pTiles[11];
-        StatsMenu::ms_pInventoryMenu->m_kHealingOptions[2].pTile->Set(
+        StatsMenu::ms_pInventoryMenu->pHealingOptionsA[2].m_pHealingItem = dynamic_cast<AlchemyItem*>(pform);
+        StatsMenu::ms_pInventoryMenu->pHealingOptionsA[2].pTile = StatsMenu::ms_pInventoryMenu->pTiles[11];
+        StatsMenu::ms_pInventoryMenu->pHealingOptionsA[2].pTile->Set(
             0x1004, ((TESFullName*)dynamic_cast<TESFullName*>(pform))->GetFullName(), true);
-        StatsMenu::ms_pInventoryMenu->m_kHealingOptions[2].m_pfnIsAvailable =
+        StatsMenu::ms_pInventoryMenu->pHealingOptionsA[2].m_pfnIsAvailable =
             (bool___cdecl__StatsMenu__HealingOption__*)IsPlayerSubObjectValueAboveThreshold;
-        ((LBH*)&StatsMenu::ms_pInventoryMenu->m_kStatusEffectList)
-            ->Initialize(StatsMenu::ms_pInventoryMenu->m_pTiles[33], "stats_effects_template");
-        StatsMenu_BodyPartController_GetInstance(0)->ForwardCall_007db250(StatsMenu::ms_pInventoryMenu->m_pTiles[12]);
-        StatsMenu_BodyPartController_GetInstance(0)->ForwardCall_007db250(StatsMenu::ms_pInventoryMenu->m_pTiles[13]);
-        StatsMenu_BodyPartController_GetInstance(0)->ForwardCall_007db250(StatsMenu::ms_pInventoryMenu->m_pTiles[24]);
-        StatsMenu_BodyPartController_GetInstance(1)->ForwardCall_007db250(StatsMenu::ms_pInventoryMenu->m_pTiles[18]);
-        StatsMenu_BodyPartController_GetInstance(1)->ForwardCall_007db250(StatsMenu::ms_pInventoryMenu->m_pTiles[19]);
-        StatsMenu_BodyPartController_GetInstance(2)->ForwardCall_007db250(StatsMenu::ms_pInventoryMenu->m_pTiles[14]);
-        StatsMenu_BodyPartController_GetInstance(2)->ForwardCall_007db250(StatsMenu::ms_pInventoryMenu->m_pTiles[15]);
-        StatsMenu_BodyPartController_GetInstance(3)->ForwardCall_007db250(StatsMenu::ms_pInventoryMenu->m_pTiles[16]);
-        StatsMenu_BodyPartController_GetInstance(3)->ForwardCall_007db250(StatsMenu::ms_pInventoryMenu->m_pTiles[17]);
-        StatsMenu_BodyPartController_GetInstance(4)->ForwardCall_007db250(StatsMenu::ms_pInventoryMenu->m_pTiles[22]);
-        StatsMenu_BodyPartController_GetInstance(4)->ForwardCall_007db250(StatsMenu::ms_pInventoryMenu->m_pTiles[23]);
-        StatsMenu_BodyPartController_GetInstance(5)->ForwardCall_007db250(StatsMenu::ms_pInventoryMenu->m_pTiles[20]);
-        StatsMenu_BodyPartController_GetInstance(5)->ForwardCall_007db250(StatsMenu::ms_pInventoryMenu->m_pTiles[21]);
+        ((LBH*)&StatsMenu::ms_pInventoryMenu->lbStatusEffects)
+            ->Initialize(StatsMenu::ms_pInventoryMenu->pTiles[33], "stats_effects_template");
+        StatsMenu_BodyPartController_GetInstance(0)->StatsMenu_BodyPartController_AddFlash(StatsMenu::ms_pInventoryMenu->pTiles[12]);
+        StatsMenu_BodyPartController_GetInstance(0)->StatsMenu_BodyPartController_AddFlash(StatsMenu::ms_pInventoryMenu->pTiles[13]);
+        StatsMenu_BodyPartController_GetInstance(0)->StatsMenu_BodyPartController_AddFlash(StatsMenu::ms_pInventoryMenu->pTiles[24]);
+        StatsMenu_BodyPartController_GetInstance(1)->StatsMenu_BodyPartController_AddFlash(StatsMenu::ms_pInventoryMenu->pTiles[18]);
+        StatsMenu_BodyPartController_GetInstance(1)->StatsMenu_BodyPartController_AddFlash(StatsMenu::ms_pInventoryMenu->pTiles[19]);
+        StatsMenu_BodyPartController_GetInstance(2)->StatsMenu_BodyPartController_AddFlash(StatsMenu::ms_pInventoryMenu->pTiles[14]);
+        StatsMenu_BodyPartController_GetInstance(2)->StatsMenu_BodyPartController_AddFlash(StatsMenu::ms_pInventoryMenu->pTiles[15]);
+        StatsMenu_BodyPartController_GetInstance(3)->StatsMenu_BodyPartController_AddFlash(StatsMenu::ms_pInventoryMenu->pTiles[16]);
+        StatsMenu_BodyPartController_GetInstance(3)->StatsMenu_BodyPartController_AddFlash(StatsMenu::ms_pInventoryMenu->pTiles[17]);
+        StatsMenu_BodyPartController_GetInstance(4)->StatsMenu_BodyPartController_AddFlash(StatsMenu::ms_pInventoryMenu->pTiles[22]);
+        StatsMenu_BodyPartController_GetInstance(4)->StatsMenu_BodyPartController_AddFlash(StatsMenu::ms_pInventoryMenu->pTiles[23]);
+        StatsMenu_BodyPartController_GetInstance(5)->StatsMenu_BodyPartController_AddFlash(StatsMenu::ms_pInventoryMenu->pTiles[20]);
+        StatsMenu_BodyPartController_GetInstance(5)->StatsMenu_BodyPartController_AddFlash(StatsMenu::ms_pInventoryMenu->pTiles[21]);
         StatsMenu_BodyPartController_GetInstance(0)->SetFieldBits(1, 2);
         StatsMenu_BodyPartController_GetInstance(0)->SetFieldBits(2, 1);
         StatsMenu_BodyPartController_GetInstance(0)->SetFieldBits(3, 3);
@@ -785,7 +820,7 @@ Tile* StatsMenu_Create()
         StatsMenu_BodyPartController_GetInstance(4)->SetFieldBits(3, 5);
         StatsMenu_BodyPartController_GetInstance(5)->SetFieldBits(0, 2);
         StatsMenu_BodyPartController_GetInstance(5)->SetFieldBits(2, 4);
-        StatsMenu::ms_pInventoryMenu->UpdateActorValueTiles();
+        StatsMenu::ms_pInventoryMenu->UpdateAllActorValues();
         ((MenuH*)StatsMenu::ms_pInventoryMenu)->UpdateXboxButtonState();
         strtmp = g_011d30c0.GetMenuTitle();
         ((void (__thiscall*)(BSStringT<char>*))NormalizeStatsLabel)(&strtmp);
@@ -799,26 +834,26 @@ Tile* StatsMenu_Create()
         strtmp = g_011d246c.GetMenuTitle();
         ((void (__thiscall*)(BSStringT<char>*))NormalizeStatsLabel)(&strtmp);
         ptile->Set(GetTileValueID("_sleep", -1), (const char*)strtmp, true);
-        StatsMenu::ms_pInventoryMenu->m_pTiles[39]->Set(0xfc4, g_011d3fdc.GetMenuTitle(), true);
-        StatsMenu::ms_pInventoryMenu->m_pTiles[40]->Set(GetTileValueID(_DAT_0106ed20, -1), g_011d1f5c.GetMenuTitle(),
+        StatsMenu::ms_pInventoryMenu->pTiles[39]->Set(0xfc4, g_011d3fdc.GetMenuTitle(), true);
+        StatsMenu::ms_pInventoryMenu->pTiles[40]->Set(GetTileValueID(_DAT_0106ed20, -1), g_011d1f5c.GetMenuTitle(),
                                                         true);
-        StatsMenu::ms_pInventoryMenu->m_pTiles[41]->Set(GetTileValueID(_DAT_0106ed20, -1), g_011d50b0.GetMenuTitle(),
+        StatsMenu::ms_pInventoryMenu->pTiles[41]->Set(GetTileValueID(_DAT_0106ed20, -1), g_011d50b0.GetMenuTitle(),
                                                         true);
-        StatsMenu::ms_pInventoryMenu->m_pTiles[42]->Set(GetTileValueID(_DAT_0106ed20, -1), g_011d44a4.GetMenuTitle(),
+        StatsMenu::ms_pInventoryMenu->pTiles[42]->Set(GetTileValueID(_DAT_0106ed20, -1), g_011d44a4.GetMenuTitle(),
                                                         true);
-        StatsMenu::ms_pInventoryMenu->m_pTiles[43]->Set(GetTileValueID(_DAT_0106ed20, -1), g_011d3bd4.GetMenuTitle(),
+        StatsMenu::ms_pInventoryMenu->pTiles[43]->Set(GetTileValueID(_DAT_0106ed20, -1), g_011d3bd4.GetMenuTitle(),
                                                         true);
-        StatsMenu::ms_pInventoryMenu->m_pTiles[28]->Set(0xfc4, g_011d48d0.GetMenuTitle(), true);
-        StatsMenu::ms_pInventoryMenu->m_pTiles[29]->Set(0xfc4, g_011d3e74.GetMenuTitle(), true);
+        StatsMenu::ms_pInventoryMenu->pTiles[28]->Set(0xfc4, g_011d48d0.GetMenuTitle(), true);
+        StatsMenu::ms_pInventoryMenu->pTiles[29]->Set(0xfc4, g_011d3e74.GetMenuTitle(), true);
         ptile->Set(0x100d, g_011d2e80.GetMenuTitle(), true);
         ptile->Set(0x100e, g_011d41bc.GetMenuTitle(), true);
-        StatsMenu::ms_pInventoryMenu->m_pTiles[44]->Set(0xfc4, g_011d47ec.GetMenuTitle(), true);
-        StatsMenu::ms_pInventoryMenu->m_pTiles[45]->Set(0xfc4, g_011d2ebc.GetMenuTitle(), true);
-        StatsMenu::ms_pInventoryMenu->m_pTiles[0]->Set(0xfc4, g_011d2f88.GetMenuTitle(), true);
-        StatsMenu::ms_pInventoryMenu->m_pTiles[1]->Set(0xfc4, g_011d2994.GetMenuTitle(), true);
-        StatsMenu::ms_pInventoryMenu->m_pTiles[2]->Set(0xfc4, g_011d3b08.GetMenuTitle(), true);
-        StatsMenu::ms_pInventoryMenu->m_pTiles[3]->Set(0xfc4, g_011d4bd0.GetMenuTitle(), true);
-        StatsMenu::ms_pInventoryMenu->m_pTiles[4]->Set(0xfc4, g_011d4ef4.GetMenuTitle(), true);
+        StatsMenu::ms_pInventoryMenu->pTiles[44]->Set(0xfc4, g_011d47ec.GetMenuTitle(), true);
+        StatsMenu::ms_pInventoryMenu->pTiles[45]->Set(0xfc4, g_011d2ebc.GetMenuTitle(), true);
+        StatsMenu::ms_pInventoryMenu->pTiles[0]->Set(0xfc4, g_011d2f88.GetMenuTitle(), true);
+        StatsMenu::ms_pInventoryMenu->pTiles[1]->Set(0xfc4, g_011d2994.GetMenuTitle(), true);
+        StatsMenu::ms_pInventoryMenu->pTiles[2]->Set(0xfc4, g_011d3b08.GetMenuTitle(), true);
+        StatsMenu::ms_pInventoryMenu->pTiles[3]->Set(0xfc4, g_011d4bd0.GetMenuTitle(), true);
+        StatsMenu::ms_pInventoryMenu->pTiles[4]->Set(0xfc4, g_011d4ef4.GetMenuTitle(), true);
         ((MenuH*)StatsMenu::ms_pInventoryMenu)->SetMenuVisibility(true);
         return ptile;
     }
@@ -836,24 +871,27 @@ void* __cdecl memcpy(void*, const void*, unsigned int);
 
 // Appends text, growing the buffer when the combined length exceeds MaxLength.
 // @fnv 0x00404820
-template <> BSStringT<char>& BSStringT<char>::operator+=(const char* text)
+// pdb: BSStringT<char>::operator+= | EffectItem.obj | retail, call graph, high
+// pdb params: arString
+// pdb locals: itotalLen
+template <> BSStringT<char>& BSStringT<char>::operator+=(const char* apString)
 {
     unsigned int uiTotalLen;
     unsigned int uiSrcLen;
-    if (text)
+    if (apString)
     {
         if ((const char*)*this)
         {
-            uiSrcLen = text ? BSStringLength(text) : 0;
+            uiSrcLen = apString ? BSStringLength(apString) : 0;
             uiTotalLen = Length() + uiSrcLen;
             if (uiTotalLen > MaxLength())
                 Set((const char*)*this, uiTotalLen);
-            fnv_00404820::memcpy(pString + Length(), text, uiSrcLen + 1);
+            fnv_00404820::memcpy(pString + Length(), apString, uiSrcLen + 1);
             SetLength(uiTotalLen);
         }
         else
         {
-            Set(text, 0);
+            Set(apString, 0);
         }
     }
     return *this;
@@ -869,9 +907,9 @@ struct StatsMenuImpl : public StatsMenu
 struct StatsMenuHelper : StatsMenu
 {
     Tile* FUN_00726070();
-    void UpdatePipboyNeedle();
+    void StatsMenu_UpdateRadLevel();
     void StatsMenu_UpdateActiveEffects();
-    void UpdateOption(int mode);
+    void StatsMenu_UpdateHealingOptions(int aeID);
     int StatsMenu_GetFaceFileNumber();
 };
 unsigned int __cdecl TESActorBaseData_GetAlignmentForKarma(float);
@@ -889,6 +927,9 @@ extern const char* DAT_011a0a80[];
 
 // Updates the stats menu tile for the given actor value: formats value text, sets image/bar tiles, and handles special cases like level, resistances, and karma.
 // @fnv 0x007dd090
+// pdb: StatsMenu::UpdateActorValue | StatsMenu.obj | retail, unique string literal, high
+// pdb params: aeWhich
+// pdb locals: eimage, ebar, strtmp, pformat, iresist, fval
 void StatsMenuImpl::UpdateStatEntry(int aeWhich)
 {
     int eimage = 60;
@@ -900,11 +941,11 @@ void StatsMenuImpl::UpdateStatEntry(int aeWhich)
     {
     case 16:
         strtmp.PrintfString("Interface\\Stats\\face_%02d.dds", ((StatsMenuHelper*)this)->StatsMenu_GetFaceFileNumber());
-        m_pTiles[24]->Set(0xfcc, strtmp.String(), true);
+        pTiles[24]->Set(0xfcc, strtmp.String(), true);
         strtmp.PrintfString(pformat, g_thePlayer->GetActorValue((ActorValue::Index)16),
                        g_thePlayer->GetPermanentActorValue((ActorValue::Index)16));
         ((StatsMenuHelper*)this)->FUN_00726070()->Set(GetTraitForValue((ActorValue::Index)16), strtmp.String(), true);
-        ((StatsMenuHelper*)this)->UpdateOption(0);
+        ((StatsMenuHelper*)this)->StatsMenu_UpdateHealingOptions(0);
         break;
     case 12:
         strtmp.PrintfString(pformat, g_thePlayer->GetActorValue((ActorValue::Index)12),
@@ -916,19 +957,19 @@ void StatsMenuImpl::UpdateStatEntry(int aeWhich)
             strtmp.PrintfString("%s", g_011d472c.String());
         else
             strtmp.PrintfString(pformat, g_thePlayer->GetActorValue((ActorValue::Index)24),
-                           ActorValueUtility_statsmenu::ConvertActorValue(((Actor*)g_thePlayer)->GetLevel() + 1));
+                           ActorValueUtility_statsmenu::GamePlayFormulas_GetRequiredExperiencePoints(((Actor*)g_thePlayer)->GetLevel() + 1));
         ((StatsMenuHelper*)this)->FUN_00726070()->Set(GetTraitForValue((ActorValue::Index)24), strtmp.String(), true);
         break;
     case 54:
-        ((StatsMenuHelper*)this)->UpdatePipboyNeedle();
-        ((StatsMenuHelper*)this)->UpdateOption(2);
+        ((StatsMenuHelper*)this)->StatsMenu_UpdateRadLevel();
+        ((StatsMenuHelper*)this)->StatsMenu_UpdateHealingOptions(2);
         ((StatsMenuHelper*)this)->StatsMenu_UpdateActiveEffects();
         break;
     case 20: {
         int iresist = MinInt((int)*originalRuntimeFloatSetting1017.Float(),
                              g_thePlayer->GetActorValueAsInteger((ActorValue::Index)20));
         strtmp.PrintfString("%d%%", iresist);
-        m_pTiles[38]->Set(0xfc4, strtmp.String(), true);
+        pTiles[38]->Set(0xfc4, strtmp.String(), true);
         ((StatsMenuHelper*)this)->StatsMenu_UpdateActiveEffects();
         break;
     }
@@ -969,44 +1010,44 @@ void StatsMenuImpl::UpdateStatEntry(int aeWhich)
             float fval = g_thePlayer->GetCurrentActorValue((ActorValue::Index)aeWhich) / 100.0;
             strtmp.PrintfString(fval > 0.0 ? "Interface\\Stats\\%s.dds" : "Interface\\Stats\\%s_broken.dds",
                            DAT_011a0a80[aeWhich]);
-            m_pTiles[eimage]->Set(0xfcc, strtmp.String(), true);
-            ((Tile*)m_pTiles[ebar])->Set(GetTileValueID("_Value", -1), fval, true);
+            pTiles[eimage]->Set(0xfcc, strtmp.String(), true);
+            ((Tile*)pTiles[ebar])->Set(GetTileValueID("_Value", -1), fval, true);
             if (m_bUpdateOption)
-                ((StatsMenuHelper*)this)->UpdateOption(0);
+                ((StatsMenuHelper*)this)->StatsMenu_UpdateHealingOptions(0);
             break;
         }
     case 23:
         switch (TESActorBaseData_GetAlignmentForKarma(g_thePlayer->GetCurrentActorValue((ActorValue::Index)23)))
         {
         case 1:
-            m_pTiles[36]->Set(0xfcc, "Interface\\Icons\\PipboyImages\\Karma icons\\karma_neutral.dds", true);
-            m_pTiles[35]->Set(0xfc4, g_011d3204.String(), true);
+            pTiles[36]->Set(0xfcc, "Interface\\Icons\\PipboyImages\\Karma icons\\karma_neutral.dds", true);
+            pTiles[35]->Set(0xfc4, g_011d3204.String(), true);
             break;
         case 0:
-            m_pTiles[36]->Set(0xfcc, "Interface\\Icons\\PipboyImages\\Karma icons\\karma_good.dds", true);
-            m_pTiles[35]->Set(0xfc4, g_011d41b0.String(), true);
+            pTiles[36]->Set(0xfcc, "Interface\\Icons\\PipboyImages\\Karma icons\\karma_good.dds", true);
+            pTiles[35]->Set(0xfc4, g_011d41b0.String(), true);
             break;
         case 2:
-            m_pTiles[36]->Set(0xfcc, "Interface\\Icons\\PipboyImages\\Karma icons\\karma_bad.dds", true);
-            m_pTiles[35]->Set(0xfc4, g_011d457c.String(), true);
+            pTiles[36]->Set(0xfcc, "Interface\\Icons\\PipboyImages\\Karma icons\\karma_bad.dds", true);
+            pTiles[35]->Set(0xfc4, g_011d457c.String(), true);
             break;
         case 3:
-            m_pTiles[36]->Set(0xfcc, "Interface\\Icons\\PipboyImages\\Karma icons\\karma_saintly.dds", true);
-            m_pTiles[35]->Set(0xfc4, g_011d4ffc.String(), true);
+            pTiles[36]->Set(0xfcc, "Interface\\Icons\\PipboyImages\\Karma icons\\karma_saintly.dds", true);
+            pTiles[35]->Set(0xfc4, g_011d4ffc.String(), true);
             break;
         case 4:
-            m_pTiles[36]->Set(0xfcc, "Interface\\Icons\\PipboyImages\\Karma icons\\karma_evil.dds", true);
-            m_pTiles[35]->Set(0xfc4, g_011d31d4.String(), true);
+            pTiles[36]->Set(0xfcc, "Interface\\Icons\\PipboyImages\\Karma icons\\karma_evil.dds", true);
+            pTiles[35]->Set(0xfc4, g_011d31d4.String(), true);
             break;
         }
-        StatsMenu::UpdateStatusEffects();
+        StatsMenu::UpdatePlayerTitle();
         break;
     default:
-        StatsMenu::UpdatePrimaryActorValueTile(((ListBox_enum_MiscStatManager__MiscStatID_*)&m_kPrimaryActorValueList)
+        StatsMenu::SPECIALUpdateFn(((ListBox_enum_MiscStatManager__MiscStatID_*)&lbSpecial)
                                                    ->GetTileForData(*(MiscStatManager__MiscStatID*)&aeWhich),
                                                (ActorValue::Index)aeWhich);
         StatsMenu::UpdateSecondaryActorValueTile(
-            ((ListBox_enum_MiscStatManager__MiscStatID_*)&m_kSecondaryActorValueList)
+            ((ListBox_enum_MiscStatManager__MiscStatID_*)&lbSkills)
                 ->GetTileForData(*(MiscStatManager__MiscStatID*)&aeWhich),
             (ActorValue::Index)aeWhich);
         break;
@@ -1028,14 +1069,17 @@ struct GlobalObject_0040c150
 extern GlobalObject_0040c150 g_011d2028;
 
 // @fnv 0x007df4e0
-void UpdateStatsMenuLevelText()
+// src: XBOX_RETAIL_PDB 0x007df4e0
+// pdb: StatsMenu::UpdatePlayerName | StatsMenu.obj | retail, string-set bridge, high
+// pdb locals: strtmp
+void StatsMenu_UpdatePlayerName()
 {
     if (StatsMenu::ms_pInventoryMenu && g_thePlayer)
     {
         BSStringT<char> strtmp;
         strtmp.PrintfString("%s - %s %hd", ((Actor*)g_thePlayer)->GetFullName(),
                        ((MenuActiveS*)&g_011d2028)->GetMenuTitle(), ((Actor*)g_thePlayer)->GetLevel());
-        StatsMenu::ms_pInventoryMenu->m_pTiles[27]->Set(0xfc4, (const char*)strtmp, true);
+        StatsMenu::ms_pInventoryMenu->pTiles[27]->Set(0xfc4, (const char*)strtmp, true);
         ((Menu*)StatsMenu::ms_pInventoryMenu)->FUN_00726070()->Set(0x100c, ((Actor*)g_thePlayer)->GetLevel());
     }
 }
@@ -1056,6 +1100,8 @@ extern const double DAT_01020998;
 
 // @fnv 0x007dfe40
 // src: XBOX_PDB 0x007dfe40
+// pdb: StatsMenu::GetFaceFileNumber | StatsMenu.obj | retail, upstream name already matches, high
+// pdb locals: fdmg, fmax, iret, pnode
 int ConditionMenuMethods::StatsMenu_GetFaceFileNumber()
 {
     NodeHelper* node;
@@ -1091,6 +1137,8 @@ struct StatsMenuEffectItemMethods : EffectItem
 };
 
 // @fnv 0x00404210
+// pdb: EffectItem::Copy | EffectItem.obj | debug, object-file gap fill, medium
+// pdb params: apCopy
 void StatsMenuEffectItemMethods::CopyFrom(EffectItem* apSource)
 {
     m_pEffectSetting = apSource->m_pEffectSetting;
@@ -1111,6 +1159,8 @@ struct BodyPartDisplay
 };
 
 // @fnv 0x007dbfa0
+// pdb: StatsMenu::BodyPartController::SetCurrentBodyPart | StatsMenu.obj | retail, call graph, high
+// pdb params: aeBodyPart, abFlash
 void BodyPartDisplay::SetBodyPart(int aeBodyPart, bool abFlash)
 {
     if (abFlash)
@@ -1126,24 +1176,27 @@ void BodyPartDisplay::SetBodyPart(int aeBodyPart, bool abFlash)
 
 namespace fnv_007dcb40 {
 // The shared header does not yet declare this reputation icon accessor.
-const char* __cdecl GetReputationIcon();
+const char* __cdecl GetReputationTitle();
 
 struct ReputationEntryMenuMethods : public StatsMenu
 {
-    void SetReputationEntry(TESReputation* pRep);
+    void StatsMenu_SetReputation(TESReputation* pRep);
 };
 
 // @fnv 0x007dcb40
-void ReputationEntryMenuMethods::SetReputationEntry(TESReputation* pRep)
+// src: XBOX_DEBUG_PDB 0x007dcb40
+// pdb: StatsMenu::SetReputation | StatsMenu.obj | debug, call graph, high
+// pdb params: pRep
+void ReputationEntryMenuMethods::StatsMenu_SetReputation(TESReputation* pRep)
 {
     if (!pRep)
         return;
-    m_pTiles[47]->Set(0xfcc, pRep->GetReputationName(), true);
-    m_pTiles[47]->Set(0xfa3, 1);
-    m_pTiles[48]->Set(0xfa3, 1);
-    m_pTiles[51]->Set(0xfa3, 1);
-    m_pTiles[51]->Set(0xfc4, ((TESFullName*)((char*)pRep + 0x18))->GetFullName(), true);
-    m_pTiles[48]->Set(0xfc4, ((const char* (__thiscall*)(TESReputation*))GetReputationIcon)(pRep), true);
+    pTiles[47]->Set(0xfcc, pRep->GetReputationName(), true);
+    pTiles[47]->Set(0xfa3, 1);
+    pTiles[48]->Set(0xfa3, 1);
+    pTiles[51]->Set(0xfa3, 1);
+    pTiles[51]->Set(0xfc4, ((TESFullName*)((char*)pRep + 0x18))->GetFullName(), true);
+    pTiles[48]->Set(0xfc4, ((const char* (__thiscall*)(TESReputation*))GetReputationTitle)(pRep), true);
 }
 }  // namespace fnv_007dcb40
 
@@ -1156,12 +1209,15 @@ void* __cdecl InterfaceManager_GetSingleton(void);
 
 // If a stats menu exists, gets the pipboy manager and plays sounds for the menu's current page.
 // @fnv 0x007dfc90
-void PlayPipboyPageSound(bool abPlaySounds)
+// src: XBOX_RETAIL_PDB 0x007dfc90
+// pdb: StatsMenu::SetKnobPosition | StatsMenu.obj | retail, object-file run extension, high
+// pdb params: abPlaySounds
+void StatsMenu_SetKnobPosition(bool abPlaySounds)
 {
     if (StatsMenu::ms_pInventoryMenu)
         reinterpret_cast<PipboyInterface*>(InterfaceManager_GetSingleton())
             ->GetPipboyManager()
-            ->SetValue(StatsMenu::ms_pInventoryMenu->GetCurrentPage(), abPlaySounds);
+            ->SetTabKnobPosition(StatsMenu::ms_pInventoryMenu->GetCurrentPage(), abPlaySounds);
 }
 
 namespace fnv_007dff40 {
@@ -1189,30 +1245,33 @@ struct StatsPageUpdateMethods : StatsMenu
     void UpdateScrollBar(void*);
     void RefreshHealingOptions();
 };
-void __cdecl PlayPipboyPageSound(int);
+void __cdecl StatsMenu_SetKnobPosition(int);
 extern Setting g_011db37c;
 extern Setting g_011db458;
 
 // Validates aePage (0-4), updates the Pipboy menu, sets menu value 0x1004 to aePage, and applies page-specific actions.
 // @fnv 0x007dff40
+// pdb: TutorialMenu::SetPage | TutorialMenu.obj | retail, upstream name already matches, high; only the method name matches, on a class other than the PDB class, so its parameter names are not applied
+// pdb params (unverified): aiPage
+// pdb locals (unverified): strtmp, pformlist
 void PageMenuMethods::SetPage(int aePage)
 {
     if (aePage < 0 || aePage > 4)
         return;
-    ((StatsmenuInterfaceView*)InterfaceManager_GetSingleton())->GetPipboyManager()->StartBurst(*g_011db458.Float(), *g_011db37c.Float(), 0.5f);
+    ((StatsmenuInterfaceView*)InterfaceManager_GetSingleton())->GetPipboyManager()->TriggerBurst(*g_011db458.Float(), *g_011db37c.Float(), 0.5f);
     pMenu->Set(0x1004, aePage);
     if (((StatsmenuInterfaceView*)InterfaceManager_GetSingleton())->GetPipboyManager()->GetInitialized())
-        PlayPipboyPageSound(1);
+        StatsMenu_SetKnobPosition(1);
     if (m_bUpdateOption)
         ((StatsPageUpdateMethods*)this)->RefreshHealingOptions();
     if (aePage == 1)
         ((StatsPageUpdateMethods*)this)->UpdateStatsDisplay(5);
     else if (aePage == 2)
         ((StatsPageUpdateMethods*)this)->UpdateStatsDisplay(0x20);
-    else if (aePage == 3 && ((PerkListQueries*)&m_kPerkRankList)->GetUnfilteredRaceCount())
-        ((StatsPageUpdateMethods*)this)->UpdateScrollBar(((PerkListQueries*)&m_kPerkRankList)->ListBox_BGSSaveLoadFileEntry_GetDataAt(0, 0));
+    else if (aePage == 3 && ((PerkListQueries*)&lbPerks)->GetUnfilteredRaceCount())
+        ((StatsPageUpdateMethods*)this)->UpdateScrollBar(((PerkListQueries*)&lbPerks)->ListBox_BGSSaveLoadFileEntry_GetDataAt(0, 0));
     else
-        m_pTiles[25]->Set(0xfa3, 0);
+        pTiles[25]->Set(0xfa3, 0);
 }
 }  // namespace fnv_007dff40
 
@@ -1223,6 +1282,8 @@ struct LimbTileMenuMethods : public StatsMenu
 
 // Maps a tile ID (0x1c,0x1d,0x1e,0x35,0x37,0x39) to an index written to apIndex and returns true, otherwise returns false.
 // @fnv 0x007e0160
+// pdb: StatsMenu::SetCurrentPage | StatsMenu.obj | retail, call graph (shared callers), medium
+// pdb params: aePage
 bool LimbTileMenuMethods::GetTileIndex(int aiTileID, int* apIndex)
 {
     switch (aiTileID)
@@ -1255,6 +1316,8 @@ int __cdecl _stricmp(const char*, const char*);
 
 // Compares the full names of the TESFullName objects referenced at offset 4 of a and b using _stricmp and returns the result.
 // @fnv 0x007e0510
+// pdb: StatsMenu::ReputationListSortFn | StatsMenu.obj | debug, object-file gap fill, medium
+// pdb params: apItem1, apItem2
 int __cdecl CompareEntryNames(void* pEntryA, void* pEntryB)
 {
     return _stricmp(((TESFullName*)((char*)*(void**)((char*)pEntryA + 4) + 0x18))->GetFullName(),
@@ -1264,20 +1327,27 @@ int __cdecl CompareEntryNames(void* pEntryA, void* pEntryB)
 
 // Compares the effect names of two effects case-insensitively via _stricmp and returns the result.
 // @fnv 0x007e0540
-int __cdecl CompareEffectNames(EffectSetting* apEffectA, EffectSetting* apEffectB)
+// src: XBOX_RETAIL_PDB 0x007e0540
+// pdb: StatsMenu::NamedEffectSortFn | StatsMenu.obj | retail, object-file run extension, high
+// pdb params: apItem1, apItem2
+int __cdecl StatsMenu_NamedEffectSortFn(EffectSetting* apItem1, EffectSetting* apItem2)
 {
-    return fnv_007e0510::_stricmp(apEffectA->GetEffectName(), apEffectB->GetEffectName());
+    return fnv_007e0510::_stricmp(apItem1->GetEffectName(), apItem2->GetEffectName());
 }
 
 bool __fastcall PlayerCharacter_IsHardcore(PlayerCharacter* pPlayer);
-int __cdecl GetStatusResult();
+int __cdecl StatsMenu_GetTargetedBodyPart();
 // @fnv 0x007e06f0
-bool __cdecl IsHealingOptionAvailable(StatsMenu__HealingOption* apOption)
+// src: XBOX_RETAIL_PDB 0x007e06f0
+// pdb: StatsMenu::DrBagTargetConditionCallback | StatsMenu.obj | retail, call graph, high
+// pdb params: aHO
+// pdb locals: bIsHardcore, etargetAV, eav
+bool __cdecl StatsMenu_DrBagTargetConditionCallback(StatsMenu__HealingOption* aHO)
 {
     bool bResult = PlayerCharacter_IsHardcore(g_thePlayer);
-    if (apOption->m_pStatusEffect)
+    if (aHO->m_pStatusEffect)
     {
-        int iIndex = GetStatusResult();
+        int iIndex = StatsMenu_GetTargetedBodyPart();
         if (!bResult && iIndex != -1)
             return false;
         for (int i = 0x19; i < 0x1f; i++)
@@ -1298,6 +1368,7 @@ void __cdecl _Deallocate(void*);
 
 // @fnv 0x007e0850
 // src: XBOX_PDB 0x007e0850
+// pdb: StatsMenu::StatusDataList::Flush | StatsMenu.obj | retail, upstream name already matches, high
 void __fastcall StatsMenu_StatusDataList_Flush(void* thisPtr)
 {
     void* p;
@@ -1327,13 +1398,16 @@ struct GroupedEffectLookupMethods : StatsMenu__StatusEffectList
 // Walks the list nodes and returns the first item whose form's GetFormID matches formID, or null if none matches.
 // @fnv 0x007e0c50
 // src: XBOX_PDB 0x007e0c50
-FUN_007e0c50_item* GroupedEffectLookupMethods::StatsMenu_StatusEffectList_Find(unsigned int formID)
+// pdb: StatsMenu::StatusEffectList::Find | StatsMenu.obj | debug, upstream name already matches, high
+// pdb params: aiID
+// pdb locals: peffect, pnode
+FUN_007e0c50_item* GroupedEffectLookupMethods::StatsMenu_StatusEffectList_Find(unsigned int aiID)
 {
     FUN_007e0c50_node* pNode;
     FUN_007e0c50_item* pEffect = 0;
     for (pNode = this ? reinterpret_cast<FUN_007e0c50_node*>(&bSSimpleList_StatsMenu__StatusEffect___Component) : 0; !pEffect && pNode && pNode->FUN_006815c0(); pNode = pNode->FUN_00726070())
     {
-        if (pNode->FUN_006815c0()->pForm->GetFormID() == formID)
+        if (pNode->FUN_006815c0()->pForm->GetFormID() == aiID)
             pEffect = pNode->FUN_006815c0();
     }
     return pEffect;
@@ -1348,6 +1422,8 @@ struct MenuH : StatsMenu
 
 // @fnv 0x007e0d60
 // src: XBOX_PDB 0x007e0d60
+// pdb: StatsMenu::DoControllerSwitch | StatsMenu.obj | debug, upstream name already matches, high
+// pdb params: abHas360Controller
 void MenuH::StatsMenu_DoControllerSwitch(bool abHas360Controller)
 {
     MenuH::UpdateXboxButtonState();
@@ -1379,6 +1455,7 @@ int MapIndexToCode(int aiIndex)
 
 // Returns the current page of the stats menu, or 0 when the menu is not open.
 // @fnv 0x007dfcd0
+// pdb: StatsMenu::GetCurrentStatsPage | StatsMenu.obj | debug, object-file gap fill, medium
 char GetStatsMenuPage()
 {
     int page;
@@ -1401,6 +1478,7 @@ struct NamedEffectClearMethods : StatsMenu__NamedEffectsList
 
 // @fnv 0x007e09b0
 // src: XBOX_PDB 0x007e09b0
+// pdb: StatsMenu::NamedEffectsList::Flush | StatsMenu.obj | debug, upstream name already matches, high
 void NamedEffectClearMethods::StatsMenu_NamedEffectsList_Flush()
 {
     ((List_009e03e0*)&bSSimpleList_EffectSetting___Component)->RemoveAll();
@@ -1411,12 +1489,14 @@ void _Deallocate(void*);
 struct FUN_0071f9c0_class
 {
     void FUN_0071f9f0();
-    void* FUN_0071f9c0(unsigned int flags);
+    void* StatsMenu_StatusEffect_ScalarDtor(unsigned int flags);
 };
 
 // Calls FUN_0071f9f0, then deallocates this when flags has bit 0 set, and returns this.
 // @fnv 0x0071f9c0
-void* FUN_0071f9c0_class::FUN_0071f9c0(unsigned int flags)
+// src: XBOX_DEBUG_PDB 0x0071f9c0
+// pdb: StatsMenu::StatusEffect::`scalar deleting destructor' | MenuManager.obj | debug, call graph (shared callers), high
+void* FUN_0071f9c0_class::StatsMenu_StatusEffect_ScalarDtor(unsigned int flags)
 {
     FUN_0071f9f0();
     if (flags & 1)
@@ -1433,14 +1513,16 @@ struct S
 {
     int pad;
     G2 arr[1];
-    void ForwardCall_007db250(int idx, int* val);
+    void StatsMenu_BodyPartController_AddFlash(int aeBodyPart, int* apTile);
 };
 // Calls AddHead on the element of arr at idx, passing val.
 // @fnv 0x007db250
-// src: GUESS 0x007db250 (confidence: low)
-void S::ForwardCall_007db250(int aiIndex, int* apValue)
+// src: XBOX_DEBUG_PDB 0x007db250
+// pdb: StatsMenu::BodyPartController::AddFlash | StatsMenu.obj | debug, call graph, high
+// pdb params: aeBodyPart, apTile
+void S::StatsMenu_BodyPartController_AddFlash(int aeBodyPart, int* apTile)
 {
-    arr[aiIndex].AddHead(apValue);
+    arr[aeBodyPart].AddHead(apTile);
 }
 
 namespace fnv_007dbfe0 {
@@ -1460,6 +1542,9 @@ struct BodyPartDisplay
 // Calls FUN_007e0e30 on the element at mIndex, passing the FUN_007dc040 callback and aiOn.
 // @fnv 0x007dbfe0
 // src: XBOX_PDB 0x007dbfe0
+// pdb: BSSimpleList<Tile *>::Traverse | StatsMenu.obj | retail, call graph (shared callers), low
+// pdb note: debug build links it to StatsMenu::BodyPartController::SetFlash
+// pdb params: apTraverseFn, aiIn
 void BodyPartDisplay::StatsMenu_BodyPartController_SetFlash(unsigned int aiOn)
 {
     mElems[mIndex].BSSimpleList_Tile_Traverse(&FUN_007dc040, aiOn);
@@ -1474,6 +1559,9 @@ struct S_007dc010
 };
 // Returns byte b of the 32-bit value stored at arr[a] by masking and shifting.
 // @fnv 0x007dc010
+// pdb: CBaseEndianBuffer::GetByte | endian.obj | debug, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
+// pdb params: pb
+// pdb locals: cb
 unsigned int S_007dc010::GetByte(unsigned int auiIndex, unsigned int auiByteIndex)
 {
     return (arr[auiIndex] & (0xFF << (auiByteIndex * 8))) >> (auiByteIndex * 8);
@@ -1481,15 +1569,18 @@ unsigned int S_007dc010::GetByte(unsigned int auiIndex, unsigned int auiByteInde
 
 struct MiscStatMenuMethods : StatsMenu
 {
-    void TraverseListBox();
+    void StatsMenu_UpdateAllMiscStats();
 };
 // @fnv 0x007ddaa0
-void MiscStatMenuMethods::TraverseListBox()
+// src: XBOX_DEBUG_PDB 0x007ddaa0
+// pdb: StatsMenu::UpdateAllMiscStats | StatsMenu.obj | debug, call graph, high
+// pdb locals: plocals, pscript, id
+void MiscStatMenuMethods::StatsMenu_UpdateAllMiscStats()
 {
     int unused1;
     int unused2;
     int FlushUsageData;
-    ((ListBox_enum_ActorValue__Index_*)&m_kMiscStatList)->Traverse((void(__cdecl*)(Tile*, ActorValue::Index))StatsMenu::UpdateMiscStatTile, 0, 0x7fffffff);
+    ((ListBox_enum_ActorValue__Index_*)&lbGeneral)->Traverse((void(__cdecl*)(Tile*, ActorValue::Index))StatsMenu::UpdateMiscStatTile, 0, 0x7fffffff);
 }
 
 namespace fnv_007e0b20 {
@@ -1516,6 +1607,9 @@ struct FUN_007e0b20_shell
 };
 
 // @fnv 0x007e0b20
+// pdb: StatsMenu::StatusDataList::Register | StatsMenu.obj | debug, object-file gap fill, medium
+// pdb params: apEffectItem
+// pdb locals: pdata
 void FUN_007e0b20_shell::AddEffectItem(EffectItem* apEffect)
 {
     if (apEffect)
@@ -1553,6 +1647,7 @@ struct FUN_00406de0 : ListX
     void StatsMenu_StatusDataList_Flush();
 };
 // @fnv 0x00406de0
+// pdb: StatsMenu::StatusDataList::~StatusDataList | EffectItemList.obj | debug, call graph (shared callers), high
 FUN_00406de0::~FUN_00406de0()
 {
     StatsMenu_StatusDataList_Flush();
@@ -1570,15 +1665,16 @@ void FUN_007db270_t::SetFieldBits(unsigned int auiIndex, unsigned int auiByteOff
     *(unsigned int*)((char*)this + 0x34 + auiIndex * 4) |= auiValue << (auiByteOffset << 3);
 }
 
-bool __cdecl IsActorValueBelowPermanent(int*);
-bool __cdecl IsHealingOptionAvailable(int*);
+bool __cdecl StatsMenu_StimpakTargetConditionCallback(int*);
+bool __cdecl StatsMenu_DrBagTargetConditionCallback(int*);
 
 // @fnv 0x007e0230
+// pdb: StatsMenu::ToggleHealingMode | StatsMenu.obj | debug, call graph, high
 void StatsMenu::RefreshHealingOptions()
 {
     m_bUpdateOption = !m_bUpdateOption;
-    (*(Tile**)((char*)this + 0x2c))->Set(0xfaf, IsActorValueBelowPermanent((int*)((char*)this + 0x28)));
-    (*(Tile**)((char*)this + 0x5c))->Set(0xfaf, IsHealingOptionAvailable((int*)((char*)this + 0x58)));
+    (*(Tile**)((char*)this + 0x2c))->Set(0xfaf, StatsMenu_StimpakTargetConditionCallback((int*)((char*)this + 0x28)));
+    (*(Tile**)((char*)this + 0x5c))->Set(0xfaf, StatsMenu_DrBagTargetConditionCallback((int*)((char*)this + 0x58)));
     ((MenuH*)this)->UpdateXboxButtonState();
 }
 
@@ -1586,17 +1682,17 @@ namespace fnv_007dcc80 {
 
 struct MiscStatMenuMethods : StatsMenu
 {
-    void TraverseListBox();
+    void StatsMenu_UpdateAllMiscStats();
 };
 
 struct ReputationMenuMethods
 {
-    void UpdateReputationList();
+    void StatsMenu_UpdateReputations();
 };
 
 struct HealingMenuMethods
 {
-    void UpdateOption(int value);
+    void StatsMenu_UpdateHealingOptions(int aeID);
 };
 
 struct LimbStatusMenuMethods
@@ -1640,31 +1736,33 @@ extern const StartMenu g_011d50b0;
 
 struct StatsMenuInitializationMethods : public StatsMenu
 {
-    void InitializeStatsMenu();
+    void StatsMenu_UpdateAll();
 };
 
 // Calls the base menu setup routines, then if the language is English, assigns localized text to the menu's tiles by index and by name.
 // @fnv 0x007dcc80
-void StatsMenuInitializationMethods::InitializeStatsMenu()
+// src: XBOX_RETAIL_PDB 0x007dcc80
+// pdb: StatsMenu::UpdateAll | StatsMenu.obj | retail, unique string literal, high
+void StatsMenuInitializationMethods::StatsMenu_UpdateAll()
 {
-    this->UpdateActorValueTiles();
-    reinterpret_cast<MiscStatMenuMethods*>(this)->TraverseListBox();
-    reinterpret_cast<ReputationMenuMethods*>(this)->UpdateReputationList();
-    reinterpret_cast<HealingMenuMethods*>(this)->UpdateOption(4);
+    this->UpdateAllActorValues();
+    reinterpret_cast<MiscStatMenuMethods*>(this)->StatsMenu_UpdateAllMiscStats();
+    reinterpret_cast<ReputationMenuMethods*>(this)->StatsMenu_UpdateReputations();
+    reinterpret_cast<HealingMenuMethods*>(this)->StatsMenu_UpdateHealingOptions(4);
     reinterpret_cast<LimbStatusMenuMethods*>(this)->ShowWorstLimbStatus();
 
     if (BSstrcmp(g_011c3cb4.GetMenuTitle(), reinterpret_cast<char const*>(&ENGLISH)))
     {
-        this->m_pTiles[0]->Set(0xfc4, g_011d2f88.GetMenuTitle(), true);
-        this->m_pTiles[1]->Set(0xfc4, g_011d2994.GetMenuTitle(), true);
-        this->m_pTiles[2]->Set(0xfc4, g_011d3b08.GetMenuTitle(), true);
-        this->m_pTiles[3]->Set(0xfc4, g_011d4bd0.GetMenuTitle(), true);
-        this->m_pTiles[4]->Set(0xfc4, g_011d4ef4.GetMenuTitle(), true);
-        this->m_pTiles[28]->Set(0xfc4, g_011d48d0.GetMenuTitle(), true);
-        this->m_pTiles[29]->Set(0xfc4, g_011d3e74.GetMenuTitle(), true);
-        this->m_pTiles[53]->Set(0xfc4, g_011d1f08.GetMenuTitle(), true);
-        this->m_pTiles[57]->Set(0xfc4, g_011d246c.GetMenuTitle(), true);
-        this->m_pTiles[55]->Set(0xfc4, g_011d37c8.GetMenuTitle(), true);
+        this->pTiles[0]->Set(0xfc4, g_011d2f88.GetMenuTitle(), true);
+        this->pTiles[1]->Set(0xfc4, g_011d2994.GetMenuTitle(), true);
+        this->pTiles[2]->Set(0xfc4, g_011d3b08.GetMenuTitle(), true);
+        this->pTiles[3]->Set(0xfc4, g_011d4bd0.GetMenuTitle(), true);
+        this->pTiles[4]->Set(0xfc4, g_011d4ef4.GetMenuTitle(), true);
+        this->pTiles[28]->Set(0xfc4, g_011d48d0.GetMenuTitle(), true);
+        this->pTiles[29]->Set(0xfc4, g_011d3e74.GetMenuTitle(), true);
+        this->pTiles[53]->Set(0xfc4, g_011d1f08.GetMenuTitle(), true);
+        this->pTiles[57]->Set(0xfc4, g_011d246c.GetMenuTitle(), true);
+        this->pTiles[55]->Set(0xfc4, g_011d37c8.GetMenuTitle(), true);
 
         reinterpret_cast<Tile*>(reinterpret_cast<BSSimpleList<Tile*>*>(this)->GetNext())
             ->Set(0x100d, g_011d2e80.GetMenuTitle(), true);
@@ -1712,7 +1810,9 @@ StatusH* __stdcall StatsMenu_BodyPartController_GetInstance();
 int __cdecl MapIndexToCode(int);
 
 // @fnv 0x007e06b0
-int __cdecl GetStatusResult()
+// src: XBOX_DEBUG_PDB 0x007e06b0
+// pdb: StatsMenu::GetTargetedBodyPart | StatsMenu.obj | debug, call graph (shared callers), high
+int __cdecl StatsMenu_GetTargetedBodyPart()
 {
     int result;
 
@@ -1739,6 +1839,7 @@ struct GeneralStatsMenuMethods : StatsMenu
 
 // @fnv 0x007e02b0
 // src: XBOX_PDB 0x007e02b0
+// pdb: StatsMenu::ToggleGenRepMode | StatsMenu.obj | retail, string-set bridge, high
 void GeneralStatsMenuMethods::StatsMenu_ToggleGenRepMode()
 {
     static int DAT_011dad88 = GetTileValueID($SG2844, -1);
@@ -1747,20 +1848,20 @@ void GeneralStatsMenuMethods::StatsMenu_ToggleGenRepMode()
 
     DAT_011a0ae0 = !DAT_011a0ae0;
 
-    StatsMenu::ms_pInventoryMenu->m_pTiles[46]->Set(DAT_011dad88, DAT_011a0ae0);
-    StatsMenu::ms_pInventoryMenu->m_pTiles[46]->Set(0xFA3, DAT_011a0ae0);
-    StatsMenu::ms_pInventoryMenu->m_pTiles[8]->Set(DAT_011dad88, !DAT_011a0ae0);
-    StatsMenu::ms_pInventoryMenu->m_pTiles[8]->Set(0xFA3, !DAT_011a0ae0);
+    StatsMenu::ms_pInventoryMenu->pTiles[46]->Set(DAT_011dad88, DAT_011a0ae0);
+    StatsMenu::ms_pInventoryMenu->pTiles[46]->Set(0xFA3, DAT_011a0ae0);
+    StatsMenu::ms_pInventoryMenu->pTiles[8]->Set(DAT_011dad88, !DAT_011a0ae0);
+    StatsMenu::ms_pInventoryMenu->pTiles[8]->Set(0xFA3, !DAT_011a0ae0);
 
     if (DAT_011a0ae0)
     {
-        StatsMenu::ms_pInventoryMenu->m_pTiles[49]->Set(0xFC4, g_011d4ef4.GetMenuTitle(), true);
-        StatsMenu::ms_pInventoryMenu->m_pTiles[50]->Set(0x1004, 1);
+        StatsMenu::ms_pInventoryMenu->pTiles[49]->Set(0xFC4, g_011d4ef4.GetMenuTitle(), true);
+        StatsMenu::ms_pInventoryMenu->pTiles[50]->Set(0x1004, 1);
     }
     else
     {
-        StatsMenu::ms_pInventoryMenu->m_pTiles[49]->Set(0xFC4, g_011d4144.GetMenuTitle(), true);
-        StatsMenu::ms_pInventoryMenu->m_pTiles[50]->Set(0x1004, 0);
+        StatsMenu::ms_pInventoryMenu->pTiles[49]->Set(0xFC4, g_011d4144.GetMenuTitle(), true);
+        StatsMenu::ms_pInventoryMenu->pTiles[50]->Set(0x1004, 0);
     }
 }
 }  // namespace fnv_007e02b0
@@ -1847,6 +1948,7 @@ extern SM7d6* DAT_011daac0;
 // If DAT_011daac0 is set, calls its e4.v7, sets tile 0xfc4 text from g_011d4930.String(), and calls FUN_0075f6f0(0x4000, true).
 // @fnv 0x007d35c0
 // src: COMMUNITY 0x007d35c0
+// pdb: StartMenu::ConfirmSaveGame | StartMenu.obj | retail, upstream name already matches, high
 void __cdecl StartMenu_ConfirmSaveGame()
 {
     if (DAT_011daac0)
@@ -1868,7 +1970,7 @@ bool StatsMenuSlotMethods::HasAllSlots()
 {
     for (int i = 0; i < 60; i++)
     {
-        if (m_pTiles[i] == 0)
+        if (pTiles[i] == 0)
         {
             return false;
         }
@@ -1886,17 +1988,21 @@ struct FUN_007db630_Owner
 {
     int unk00;
     FUN_007db630_Entry entries[6];
-    int FindEntryIndex(int value);
+    int StatsMenu_BodyPartController_Find(int apTile);
 };
 void __cdecl FUN_007dc0a0(int* value);
 // Scans up to 6 entries, returning the index of the first whose FUN_005f65d0 accepts value, otherwise 6.
 // @fnv 0x007db630
-int FUN_007db630_Owner::FindEntryIndex(int value)
+// src: XBOX_DEBUG_PDB 0x007db630
+// pdb: StatsMenu::BodyPartController::Find | StatsMenu.obj | debug, call graph, high
+// pdb params: apTile
+// pdb locals: eindex
+int FUN_007db630_Owner::StatsMenu_BodyPartController_Find(int apTile)
 {
     int index = 0;
     for (; index < 6; FUN_007dc0a0(&index))
     {
-        if (entries[index].BSSimpleList_TESLevSpell_IsInList(&value))
+        if (entries[index].BSSimpleList_TESLevSpell_IsInList(&apTile))
             return index;
     }
     return 6;
@@ -1909,7 +2015,7 @@ extern const char UNK_01070250;
 extern double DAT_01012070;
 
 int __cdecl Tile_TextToTrait(const char* name);
-int __cdecl ActorValue_GetActorValueIcon(void* value);
+int __cdecl ActorValue_GetActorValueIcon(void* aiIndex);
 int __cdecl GetActorValueDescription(void* value);
 unsigned int __cdecl GetWeaponSkillIconPath(void* value);
 float __cdecl BSMAX_00404010(float low, float high);
@@ -1923,29 +2029,32 @@ struct ChildList007dc7e0
 
 struct ActorValueDisplayMenuMethods : StatsMenu
 {
-    void UpdateStatsDisplay(void* actor);
+    void UpdateStatsDisplay(void* aeIndex);
 };
 // @fnv 0x007dc7e0
-void ActorValueDisplayMenuMethods::UpdateStatsDisplay(void* actor)
+// pdb: StatsMenu::SetIconAndDescription | StatsMenu.obj | debug, call graph, high
+// pdb params: aeIndex
+// pdb locals: fheightDifference, badgeicon, pdescText, pscrollbar, fscrollDelta
+void ActorValueDisplayMenuMethods::UpdateStatsDisplay(void* aeIndex)
 {
     Tile* pMain = *(reinterpret_cast<Tile**>(
-        reinterpret_cast<ChildList007dc7e0*>((char*)m_pTiles[26] + 4)->NiTPointerListBase_NiTPointerAllocator_unsigned_int_Tile_GetHead()));
+        reinterpret_cast<ChildList007dc7e0*>((char*)pTiles[26] + 4)->NiTPointerListBase_NiTPointerAllocator_unsigned_int_Tile_GetHead()));
     Tile* second = *(reinterpret_cast<Tile**>(
-        reinterpret_cast<ChildList007dc7e0*>((char*)m_pTiles[26] + 4)->FUN_007b5370()));
+        reinterpret_cast<ChildList007dc7e0*>((char*)pTiles[26] + 4)->FUN_007b5370()));
     float fMinimumInputValue = second->FUN_00a011b0(Tile_TextToTrait(&UNK_01074eb8));
     float diff = 0.0f;
-    reinterpret_cast<Tile*>(m_pTiles[25])->FUN_00700320(0xfa3, 1);
-    reinterpret_cast<Tile*>(m_pTiles[25])->Tile_Set_00a01350(0xfcc, ActorValue_GetActorValueIcon(actor), true);
-    pMain->Tile_Set_00a01350(0xfc4, GetActorValueDescription(actor), true);
-    unsigned int amount = GetWeaponSkillIconPath(actor);
+    reinterpret_cast<Tile*>(pTiles[25])->FUN_00700320(0xfa3, 1);
+    reinterpret_cast<Tile*>(pTiles[25])->Tile_Set_00a01350(0xfcc, ActorValue_GetActorValueIcon(aeIndex), true);
+    pMain->Tile_Set_00a01350(0xfc4, GetActorValueDescription(aeIndex), true);
+    unsigned int amount = GetWeaponSkillIconPath(aeIndex);
     if (amount > 0)
     {
-        reinterpret_cast<Tile*>(m_pTiles[52])->FUN_00700320(0xfa3, 1);
-        reinterpret_cast<Tile*>(m_pTiles[52])->Tile_Set_00a01350(0xfcc, amount, true);
+        reinterpret_cast<Tile*>(pTiles[52])->FUN_00700320(0xfa3, 1);
+        reinterpret_cast<Tile*>(pTiles[52])->Tile_Set_00a01350(0xfcc, amount, true);
     }
     else
     {
-        reinterpret_cast<Tile*>(m_pTiles[52])->FUN_00700320(0xfa3, 0);
+        reinterpret_cast<Tile*>(pTiles[52])->FUN_00700320(0xfa3, 0);
     }
     pMain->Tile_UpdateTile(0);
     diff = pMain->FUN_00a011b0(0xfb0) - pMain->FUN_0045cd60()->FUN_00a011b0(0xfb0);
@@ -1968,6 +2077,8 @@ float __cdecl BSMAX_00404010(float, float);
 float __cdecl FUN_004bd510(float, float);
 // @fnv 0x007ddc20
 // src: XBOX_PDB 0x007ddc20
+// pdb: StatsMenu::UpdateH20Level | StatsMenu.obj | retail, upstream name already matches, high
+// pdb locals: fposh20, frandomVariance, fh20, fwiggleRange
 void LimbModifierMenuMethods::StatsMenu_UpdateH20Level()
 {
     float a = FUN_00726070(0x1008)->FUN_00a011b0() * g_01017b70;
@@ -1995,6 +2106,8 @@ struct SecondaryModifierMenuMethods : StatsMenu
 };
 // @fnv 0x007ddd10
 // src: XBOX_PDB 0x007ddd10
+// pdb: StatsMenu::UpdateFODLevel | StatsMenu.obj | retail, upstream name already matches, high
+// pdb locals: fposh20, frandomVariance, fh20, fwiggleRange
 void SecondaryModifierMenuMethods::StatsMenu_UpdateFODLevel()
 {
     float scale;
@@ -2027,6 +2140,8 @@ struct ModifierMenuMethods : StatsMenu
 };
 
 // @fnv 0x007dde00
+// pdb: StatsMenu::UpdateSLPLevel | StatsMenu.obj | retail, object-file run extension, high
+// pdb locals: fposh20, frandomVariance, fh20, fwiggleRange
 void ModifierMenuMethods::UpdateModifierTile()
 {
     float fRange5 = GetTile()->GetFloat(0x1008) * 1000.0;
@@ -2111,20 +2226,23 @@ struct ScrollKnobMenuMethods : StatsMenu
 
 // @fnv 0x007dfd20
 // src: XBOX_PDB 0x007dfd20
-void ScrollKnobMenuMethods::StatsMenu_MoveKnob(Tile* apObj, unsigned int* apOut)
+// pdb: StatsMenu::MoveKnob | StatsMenu.obj | retail, upstream name already matches, high
+// pdb params: apTarget, aiLastIndex
+// pdb locals: iindex
+void ScrollKnobMenuMethods::StatsMenu_MoveKnob(Tile* apTarget, unsigned int* aiLastIndex)
 {
-    unsigned int v = (unsigned int)apObj->FUN_00a011b0(0xfac);
-    if (*apOut < v)
+    unsigned int v = (unsigned int)apTarget->FUN_00a011b0(0xfac);
+    if (*aiLastIndex < v)
     {
         ((void (__thiscall*)(FOPipboyManager*))UpdatePipboyScrollKnobTarget)(
             InterfaceManager_GetSingleton(0, *DAT_011db2f0.Get(), *DAT_011db358.Get(1))->FUN_00704370());
     }
-    else if (*apOut > v)
+    else if (*aiLastIndex > v)
     {
         ((void (__thiscall*)(FOPipboyManager*))UpdatePipboyScrollKnobTarget)(
             InterfaceManager_GetSingleton(0, -*DAT_011db2f0.Get(), *DAT_011db358.Get(1))->FUN_00704370());
     }
-    *apOut = v;
+    *aiLastIndex = v;
 }
 
 extern char DAT_01183028[];
@@ -2135,10 +2253,12 @@ void __cdecl BSstricmp(void* a, void* b);
 // Resolves the objects referenced by *pA and *pB via FUN_00ec43fb and passes their FUN_00408da0 results to FUN_00404dc0.
 // @fnv 0x007e0480
 // src: XBOX_PDB 0x007e0480
-void __cdecl StatsMenu_StatusEffectSortFn(int* pA, int* pB)
+// pdb: StatsMenu::StatusEffectSortFn | StatsMenu.obj | retail, upstream name already matches, high
+// pdb params: apItem1, apItem2
+void __cdecl StatsMenu_StatusEffectSortFn(int* apItem1, int* apItem2)
 {
-    BSstricmp(FUN_00ec43fb(*pA, 0, DAT_01183028, DAT_01183158, 0)->GetFullName(),
-                 FUN_00ec43fb(*pB, 0, DAT_01183028, DAT_01183158, 0)->GetFullName());
+    BSstricmp(FUN_00ec43fb(*apItem1, 0, DAT_01183028, DAT_01183158, 0)->GetFullName(),
+                 FUN_00ec43fb(*apItem2, 0, DAT_01183028, DAT_01183158, 0)->GetFullName());
 }
 
 struct Holder
@@ -2153,6 +2273,8 @@ struct Entry
 int __cdecl BSstricmp(const char*, const char*);
 // Compares the text strings of the items referenced by two entries via FUN_00404dc0 and returns its result.
 // @fnv 0x007e04e0
+// pdb: StatsMenu::PerkListSortFn | StatsMenu.obj | debug, object-file gap fill, medium
+// pdb params: apItem1, apItem2
 int __cdecl CompareEntryText(const Entry* pLeftEntry, const Entry* pRightEntry)
 {
     return BSstricmp(reinterpret_cast<TESFullName*>((char*)pLeftEntry->holder->item + sizeof(TESForm))->GetFullName(), reinterpret_cast<TESFullName*>((char*)pRightEntry->holder->item + sizeof(TESForm))->GetFullName());
@@ -2162,6 +2284,8 @@ extern const double DAT_01012060;
 
 // Returns true when apArg[2] is nonzero and the player's sub-object at offset 0xa4 returns a value above DAT_01012060 for 0x36.
 // @fnv 0x007e07a0
+// pdb: StatsMenu::RadAwayTargetConditionCallback | StatsMenu.obj | debug, object-file gap fill, medium
+// pdb params: aHO
 bool __cdecl IsPlayerSubObjectValueAboveThreshold(int* apArg)
 {
     int iResult;
@@ -2191,25 +2315,29 @@ struct S_007e0a20_Owner
     int unk00;
     BSSimpleList<S_007e0a20_Entry*> m_kNode;
     S_007e0a20_Entry* FindEntryByFormID(int);
-    void ApplyParamToEntry(ActiveEffect* apParam);
+    void StatsMenu_StatusDataList_Register(ActiveEffect* apActiveEffect);
 };
 
 // Looks up an entry by the param's object id; adds the param's float to its unk00, or creates a new entry with that id and value and adds it to the list.
 // @fnv 0x007e0a20
-void S_007e0a20_Owner::ApplyParamToEntry(ActiveEffect* apParam)
+// src: XBOX_DEBUG_PDB 0x007e0a20
+// pdb: StatsMenu::StatusDataList::Register | StatsMenu.obj | debug, call graph, high
+// pdb params: apActiveEffect
+// pdb locals: pdata
+void S_007e0a20_Owner::StatsMenu_StatusDataList_Register(ActiveEffect* apActiveEffect)
 {
-    if (apParam)
+    if (apActiveEffect)
     {
-        S_007e0a20_Entry* pEntry = FindEntryByFormID(apParam->GetHavokWorldObjectCountInSceneGraph_0084e3a0()->GetAffectedActorValue());
+        S_007e0a20_Entry* pEntry = FindEntryByFormID(apActiveEffect->GetHavokWorldObjectCountInSceneGraph_0084e3a0()->GetAffectedActorValue());
         if (pEntry)
         {
-            pEntry->unk00 += (int)apParam->GetFloatAtOffset1C();
+            pEntry->unk00 += (int)apActiveEffect->GetFloatAtOffset1C();
         }
         else
         {
             pEntry = new S_007e0a20_Entry;
-            pEntry->unk10 = apParam->GetHavokWorldObjectCountInSceneGraph_0084e3a0()->GetAffectedActorValue();
-            pEntry->unk00 = (int)apParam->GetFloatAtOffset1C();
+            pEntry->unk10 = apActiveEffect->GetHavokWorldObjectCountInSceneGraph_0084e3a0()->GetAffectedActorValue();
+            pEntry->unk00 = (int)apActiveEffect->GetFloatAtOffset1C();
             m_kNode.AddHead(pEntry);
         }
     }
@@ -2239,6 +2367,9 @@ class ItemListOwner
 
 // Walks the linked list and returns the first entry whose formID matches the given formID, or null if none is found.
 // @fnv 0x007e0ce0
+// pdb: StatsMenu::StatusDataList::Find | StatsMenu.obj | debug, object-file gap fill, medium
+// pdb params: aeIndex
+// pdb locals: pdata, pnode
 ItemListEntry* ItemListOwner::FindEntryByFormID(int formID)
 {
     ItemListEntry* found = 0;
@@ -2282,6 +2413,7 @@ extern FUN_007db2c0* DAT_011dace4;
 // Returns the global FUN_007db2c0 instance, allocating it with new if it does not exist yet.
 // @fnv 0x007db1c0
 // src: XBOX_PDB 0x007db1c0
+// pdb: StatsMenu::BodyPartController::GetInstance | StatsMenu.obj | retail, upstream name already matches, high
 FUN_007db2c0* StatsMenu_BodyPartController_GetInstance()
 {
     if (!DAT_011dace4)
@@ -2297,12 +2429,12 @@ struct ClickNode
 
 struct ClickStatus
 {
-    int FindEntryIndex();
+    int StatsMenu_BodyPartController_Find();
 };
 
 struct ClickMenu : StatsMenu
 {
-    void StatsMenu_DoClick(int id, Tile* tile);
+    void StatsMenu_DoClick(int aiID, Tile* apTarget);
     bool SetIndexFromType(int, int*);
     bool GetTileIndex(int, int*);
     void SetPage(int);
@@ -2310,65 +2442,68 @@ struct ClickMenu : StatsMenu
     void FUN_007e0230();
     void StatsMenu_ToggleGenRepMode();
     void UpdateStatEntry(int);
-    void UpdateOption(int);
+    void StatsMenu_UpdateHealingOptions(int);
     void StatsMenu_UpdateActiveEffects();
 };
 // @fnv 0x007db380
 // src: XBOX_PDB 0x007db380
-void ClickMenu::StatsMenu_DoClick(int id, Tile* tile)
+// pdb: StatsMenu::DoClick | StatsMenu.obj | retail, upstream name already matches, high
+// pdb params: aiID, apTarget
+// pdb locals: estatuspage, epage, i, pcontainerobj, pnode, eindex
+void ClickMenu::StatsMenu_DoClick(int aiID, Tile* apTarget)
 {
-    if (!tile && id >= 0 && id < 60)
-        tile = m_pTiles[id];
-    if (InterfaceManager_Has360Controller() && !((Tile*)tile)->IsTraitNonZero(4015))
+    if (!apTarget && aiID >= 0 && aiID < 60)
+        apTarget = pTiles[aiID];
+    if (InterfaceManager_Has360Controller() && !((Tile*)apTarget)->IsTraitNonZero(4015))
         return;
     int skill;
-    if (SetIndexFromType(id, &skill))
+    if (SetIndexFromType(aiID, &skill))
     {
         SetPage(skill);
         return;
     }
     int special;
-    if (GetTileIndex(id, &special))
+    if (GetTileIndex(aiID, &special))
     {
         StatsMenu_SetStatusPage(special);
         return;
     }
-    if (id == 9 || (m_bUpdateOption && id == 5))
+    if (aiID == 9 || (m_bUpdateOption && aiID == 5))
     {
         FUN_007e0230();
         return;
     }
-    if (id == 49)
+    if (aiID == 49)
     {
         StatsMenu_ToggleGenRepMode();
         return;
     }
     for (int i = 0; i < 4; i++)
     {
-        if (tile == m_kHealingOptions[i].pTile && m_kHealingOptions[i].m_pStatusEffect)
+        if (apTarget == pHealingOptionsA[i].pTile && pHealingOptionsA[i].m_pStatusEffect)
         {
             ((Actor*)g_thePlayer)
-                ->Actor_QueueEquipObject(m_kHealingOptions[i].m_pStatusEffect->FUN_0044ddc0(),
-                               m_kHealingOptions[i].m_pStatusEffect->FUN_00726070(),
-                               reinterpret_cast<ExtraDataList*>(m_kHealingOptions[i].m_pStatusEffect->Modelloader_GetReferencedThis()
-                                   ? ((ClickNode*)m_kHealingOptions[i].m_pStatusEffect->Modelloader_GetReferencedThis())->FUN_006815c0()
+                ->Actor_QueueEquipObject(pHealingOptionsA[i].m_pStatusEffect->FUN_0044ddc0(),
+                               pHealingOptionsA[i].m_pStatusEffect->FUN_00726070(),
+                               reinterpret_cast<ExtraDataList*>(pHealingOptionsA[i].m_pStatusEffect->Modelloader_GetReferencedThis()
+                                   ? ((ClickNode*)pHealingOptionsA[i].m_pStatusEffect->Modelloader_GetReferencedThis())->FUN_006815c0()
                                    : 0),
                                false, false, true);
-            TESBoundObject* object = m_kHealingOptions[i].m_pStatusEffect->FUN_0044ddc0();
+            TESBoundObject* object = pHealingOptionsA[i].m_pStatusEffect->FUN_0044ddc0();
             for (ClickNode* node = (ClickNode*)dynamic_cast<BSSimpleList<EffectItem*>*>(object);
                  node && node->FUN_006815c0(); node = node->FUN_00726070())
             {
                 UpdateStatEntry(((EffectItem*)node->FUN_006815c0())->GetAffectedActorValue());
             }
-            UpdateOption(i);
-            m_bStatUpdatePending = false;
+            StatsMenu_UpdateHealingOptions(i);
+            bActiveEffectsUpdatedThisFrame = false;
             StatsMenu_UpdateActiveEffects();
             i = 4;
         }
     }
     if (m_bUpdateOption && !InterfaceManager_Has360Controller())
     {
-        int part = ((ClickStatus*)StatsMenu_BodyPartController_GetInstance((int)tile))->FindEntryIndex();
+        int part = ((ClickStatus*)StatsMenu_BodyPartController_GetInstance((int)apTarget))->StatsMenu_BodyPartController_Find();
         if (part != 6)
             PlayerCharacter_IsHardcore(g_thePlayer) ? HandleSelection(59, 0) : HandleSelection(10, 0);
     }
@@ -2383,9 +2518,11 @@ struct AcceptKeyMenuMethods : StatsMenu
 
 // @fnv 0x007dc0e0
 // src: XBOX_PDB 0x007dc0e0
-bool AcceptKeyMenuMethods::StatsMenu_DoGamepadUpEvent(int iKey, int iUnused)
+// pdb: StatsMenu::DoGamepadUpEvent | StatsMenu.obj | retail, string-set bridge, high
+// pdb params: aiButton, afValue
+bool AcceptKeyMenuMethods::StatsMenu_DoGamepadUpEvent(int aiButton, int afValue)
 {
-    if (m_bUpdateOption && iKey == 10 && m_pTiles[9]->IsTraitNonZero(0xfaf))
+    if (m_bUpdateOption && aiButton == 10 && pTiles[9]->IsTraitNonZero(0xfaf))
     {
         HandleSelection(9, 0);
         static_cast<StatsMenuAudioMethods*>(BSAudio::GetSingleton())
@@ -2409,7 +2546,7 @@ extern StatsMenu* DAT_011dace0;
 
 struct Host15 : StatsMenu
 {
-    void UpdatePipboyNeedle();
+    void StatsMenu_UpdateRadLevel();
     void StatsMenu_UpdateH20Level();
     void StatsMenu_UpdateFODLevel();
     void UpdateModifierTile();
@@ -2421,9 +2558,10 @@ struct Host15 : StatsMenu
 };
 
 // @fnv 0x007dc4f0
+// pdb: StatsMenu::DoIdle | StatsMenu.obj | retail, vtable slot, high
 void Host15::UpdateStatsMenu()
 {
-    m_bStatUpdatePending = 0;
+    bActiveEffectsUpdatedThisFrame = 0;
     if (Interface_GetPipboy()->IsUnk28Set())
     {
         InterfaceManager_GetSingleton();
@@ -2431,7 +2569,7 @@ void Host15::UpdateStatsMenu()
         {
             if (Cmd_GetSessionTime_Execute() >= DAT_011dad74)
             {
-                UpdatePipboyNeedle();
+                StatsMenu_UpdateRadLevel();
                 if (DAT_011dea3c && PlayerCharacter_IsHardcore(DAT_011dea3c))
                 {
                     StatsMenu_UpdateH20Level();
@@ -2454,22 +2592,22 @@ void Host15::UpdateStatsMenu()
     }
     if (DAT_011dea3c && !PlayerCharacter_IsHardcore(DAT_011dea3c) && DAT_011a0ae1)
     {
-        DAT_011dace0->m_pTiles[53]->Set(0xfaf, 0);
-        DAT_011dace0->m_pTiles[53]->Set(0xfa3, 0);
-        DAT_011dace0->m_pTiles[57]->Set(0xfaf, 0);
-        DAT_011dace0->m_pTiles[57]->Set(0xfa3, 0);
-        DAT_011dace0->m_pTiles[55]->Set(0xfaf, 0);
-        DAT_011dace0->m_pTiles[55]->Set(0xfa3, 0);
+        DAT_011dace0->pTiles[53]->Set(0xfaf, 0);
+        DAT_011dace0->pTiles[53]->Set(0xfa3, 0);
+        DAT_011dace0->pTiles[57]->Set(0xfaf, 0);
+        DAT_011dace0->pTiles[57]->Set(0xfa3, 0);
+        DAT_011dace0->pTiles[55]->Set(0xfaf, 0);
+        DAT_011dace0->pTiles[55]->Set(0xfa3, 0);
         DAT_011a0ae1 = 0;
     }
     else if (DAT_011dea3c && PlayerCharacter_IsHardcore(DAT_011dea3c) && !DAT_011a0ae1)
     {
-        DAT_011dace0->m_pTiles[53]->Set(0xfaf, 1);
-        DAT_011dace0->m_pTiles[53]->Set(0xfa3, 1);
-        DAT_011dace0->m_pTiles[57]->Set(0xfaf, 1);
-        DAT_011dace0->m_pTiles[57]->Set(0xfa3, 1);
-        DAT_011dace0->m_pTiles[55]->Set(0xfaf, 1);
-        DAT_011dace0->m_pTiles[55]->Set(0xfa3, 1);
+        DAT_011dace0->pTiles[53]->Set(0xfaf, 1);
+        DAT_011dace0->pTiles[53]->Set(0xfa3, 1);
+        DAT_011dace0->pTiles[57]->Set(0xfaf, 1);
+        DAT_011dace0->pTiles[57]->Set(0xfa3, 1);
+        DAT_011dace0->pTiles[55]->Set(0xfaf, 1);
+        DAT_011dace0->pTiles[55]->Set(0xfa3, 1);
     }
     DAT_011a0ae1 = PlayerCharacter_IsHardcore(DAT_011dea3c);
 }
@@ -2487,20 +2625,23 @@ float __cdecl FUN_004e4430(float);
 
 struct ScrollMenuMethods : public StatsMenu
 {
-    void UpdateScrollBar(BGSPerk** apEntry);
+    void UpdateScrollBar(BGSPerk** apPerkRankData);
 };
 
 // @fnv 0x007dc9b0
-void ScrollMenuMethods::UpdateScrollBar(BGSPerk** apEntry)
+// pdb: StatsMenu::SetIconAndDescription | StatsMenu.obj | debug, call graph, high
+// pdb params: apPerkRankData
+// pdb locals: fheightDifference, pdescText, pscrollbar, fscrollDelta
+void ScrollMenuMethods::UpdateScrollBar(BGSPerk** apPerkRankData)
 {
-    Tile* pHeadTile = (Tile*)((ChildListSI*)((char*)m_pTiles[26] + 4))->NiTPointerListBase_NiTPointerAllocator_unsigned_int_Tile_GetHead();
-    Tile* pTailTile = (Tile*)((ChildListSI*)((char*)m_pTiles[26] + 4))->FUN_007b5370();
+    Tile* pHeadTile = (Tile*)((ChildListSI*)((char*)pTiles[26] + 4))->NiTPointerListBase_NiTPointerAllocator_unsigned_int_Tile_GetHead();
+    Tile* pTailTile = (Tile*)((ChildListSI*)((char*)pTiles[26] + 4))->FUN_007b5370();
     float fTailScrollDelta = pTailTile->FUN_00a011b0(Tile_TextToTrait("_ScrollDelta"));
     {
         float fPos = 0.0f;
-        m_pTiles[25]->Set(0xfa3, 1);
-        m_pTiles[25]->Set(0xfcc, reinterpret_cast<TESFullName*>((char*)*apEntry + offsetof(BGSPerk, TESIcon::FullNameComponent) - offsetof(TESIcon, FullNameComponent))->GetFullName(), true);
-        pHeadTile->Set(0xfc4, reinterpret_cast<TESDescription*>((char*)*apEntry + offsetof(BGSPerk, TESDescription::m_uiDescriptionFileOffset) - offsetof(TESDescription, m_uiDescriptionFileOffset))->GetDescription(0, static_cast<CHUNK_ID>(0x43534544)), true);
+        pTiles[25]->Set(0xfa3, 1);
+        pTiles[25]->Set(0xfcc, reinterpret_cast<TESFullName*>((char*)*apPerkRankData + offsetof(BGSPerk, TESIcon::FullNameComponent) - offsetof(TESIcon, FullNameComponent))->GetFullName(), true);
+        pHeadTile->Set(0xfc4, reinterpret_cast<TESDescription*>((char*)*apPerkRankData + offsetof(BGSPerk, TESDescription::m_uiDescriptionFileOffset) - offsetof(TESDescription, m_uiDescriptionFileOffset))->GetDescription(0, static_cast<CHUNK_ID>(0x43534544)), true);
         pHeadTile->Tile_UpdateTile(0);
         fPos = pHeadTile->FUN_00a011b0(0xfb0) - ((Tile*)pHeadTile->GetParent())->FUN_00a011b0(0xfb0);
         fPos = BSMAX_00404010(0.0f, fPos);
@@ -2536,11 +2677,13 @@ extern PlayerCharacter* DAT_011dea3c;
 
 // @fnv 0x007dd710
 // src: COMMUNITY 0x007dd710
+// pdb: StatsMenu::UpdatePerks | StatsMenu.obj | retail, upstream name already matches, high
+// pdb locals: pnode, strtmp
 void __cdecl StatsMenu_UpdatePerks()
 {
-    if (DAT_011dace0 && DAT_011dace0->m_pTiles[34])
+    if (DAT_011dace0 && DAT_011dace0->pTiles[34])
     {
-        ((void (__thiscall*)(ListBoxBase*))(*(void***)&DAT_011dace0->m_kPerkRankList)[7])(&DAT_011dace0->m_kPerkRankList);
+        ((void (__thiscall*)(ListBoxBase*))(*(void***)&DAT_011dace0->lbPerks)[7])(&DAT_011dace0->lbPerks);
         for (FUN_007dd710_node* node = reinterpret_cast<FUN_007dd710_node*>(DAT_011dea3c->GetPerks(false)); node != 0 && node->FUN_006815c0() != 0;
              node = node->FUN_00726070())
         {
@@ -2556,7 +2699,7 @@ void __cdecl StatsMenu_UpdatePerks()
                 {
                     strEntry.PrintfString("%s", node->FUN_006815c0()->pForm->TESFullName::GetFullName());
                 }
-                ((void (__thiscall*)(ListBox_PerkRankData___*, FUN_007dd710_item*, const char*, int(__cdecl*)(const void*, const void*), int))InsertPerkEntry)(&DAT_011dace0->m_kPerkRankList, node->FUN_006815c0(), strEntry.String(), CompareEntryText, 0);
+                ((void (__thiscall*)(ListBox_PerkRankData___*, FUN_007dd710_item*, const char*, int(__cdecl*)(const void*, const void*), int))InsertPerkEntry)(&DAT_011dace0->lbPerks, node->FUN_006815c0(), strEntry.String(), CompareEntryText, 0);
             }
         }
     }
@@ -2582,18 +2725,21 @@ struct ReputationMenuList : ListBox_TESReputation___
 
 struct ReputationMenuUpdater : StatsMenu
 {
-    void UpdateReputationList();
+    void StatsMenu_UpdateReputations();
 };
 
 // @fnv 0x007dd8c0
-void ReputationMenuUpdater::UpdateReputationList()
+// src: XBOX_RETAIL_PDB 0x007dd8c0
+// pdb: StatsMenu::UpdateReputations | StatsMenu.obj | retail, call graph, high
+// pdb locals: pRep, pRepItem, strtmp
+void ReputationMenuUpdater::StatsMenu_UpdateReputations()
 {
-    if (DAT_011dace0 && DAT_011dace0->m_pTiles[46])
+    if (DAT_011dace0 && DAT_011dace0->pTiles[46])
     {
-        m_pTiles[47]->Set(4003, 0);
-        m_pTiles[51]->Set(4003, 0);
-        m_pTiles[48]->Set(4003, 0);
-        ((void (__thiscall*)(ListBoxBase*))(*(void***)&DAT_011dace0->m_kReputationList)[7])(&DAT_011dace0->m_kReputationList);
+        pTiles[47]->Set(4003, 0);
+        pTiles[51]->Set(4003, 0);
+        pTiles[48]->Set(4003, 0);
+        ((void (__thiscall*)(ListBoxBase*))(*(void***)&DAT_011dace0->lbReputation)[7])(&DAT_011dace0->lbReputation);
         for (ReputationNode* node = reinterpret_cast<ReputationNode*>(DAT_011c3f2c->GetTESReputationList()); node && node->Get(); node = node->Next())
         {
             TESReputation* reputation = node->Get();
@@ -2602,7 +2748,7 @@ void ReputationMenuUpdater::UpdateReputationList()
             {
                 BSStringT<char> label;
                 label.PrintfString(DAT_01019f08, reputation->TESFullName::GetFullName());
-                reinterpret_cast<ReputationMenuList*>(&DAT_011dace0->m_kReputationList)
+                reinterpret_cast<ReputationMenuList*>(&DAT_011dace0->lbReputation)
                     ->Insert(reputation, label.String(), CompareEntryNames, false);
             }
         }
@@ -2622,11 +2768,14 @@ extern float g_fPipboyNeedleSpeed;
 struct NeedleMenuMethods : public Menu
 {
     Tile* GetMenuTile();
-    void UpdatePipboyNeedle();
+    void StatsMenu_UpdateRadLevel();
 };
 
 // @fnv 0x007ddb00
-void NeedleMenuMethods::UpdatePipboyNeedle()
+// src: XBOX_RETAIL_PDB 0x007ddb00
+// pdb: StatsMenu::UpdateRadLevel | StatsMenu.obj | retail, call graph (shared callers), high
+// pdb locals: frandomVariance, fpos, frads, fwiggleRange
+void NeedleMenuMethods::StatsMenu_UpdateRadLevel()
 {
     float fRange5 = GetMenuTile()->GetFloat(0x1008) * 1000.0;
     float fBase2 = -fRange5 / 2.0 + FUN_005c5420() * fRange5;
@@ -2646,38 +2795,42 @@ extern PlayerCharacter* g_healPlayer;
 struct HealingMenuMethods : StatsMenu
 {
     void Toggle();
-    void UpdateOption(int);
+    void StatsMenu_UpdateHealingOptions(int);
 };
 
 // @fnv 0x007df230
-void HealingMenuMethods::UpdateOption(int aiOptionIndex)
+// src: XBOX_RETAIL_PDB 0x007df230
+// pdb: StatsMenu::UpdateHealingOptions | StatsMenu.obj | retail, string-set bridge, high
+// pdb params: aeID
+// pdb locals: i, strtmp, iStimpakCount, iDoctorBagCount, bCanHealLimbs
+void HealingMenuMethods::StatsMenu_UpdateHealingOptions(int aeID)
 {
     if (!g_healPlayer)
         return;
     for (int indexB = 0; indexB < 4; indexB++)
     {
-        if (aiOptionIndex == indexB || aiOptionIndex == 4)
+        if (aeID == indexB || aeID == 4)
         {
             BSStringT<char> text;
-            delete m_kHealingOptions[indexB].m_pStatusEffect;
-            m_kHealingOptions[indexB].m_pStatusEffect = g_healPlayer->FindEntryForObject(m_kHealingOptions[indexB].m_pHealingItem, 0);
-            m_kHealingOptions[indexB].pTile->Set(0xfaf, ((bool (__cdecl*)(StatsMenu__HealingOption*))m_kHealingOptions[indexB].m_pfnIsAvailable)(&m_kHealingOptions[indexB]));
-            if (m_kHealingOptions[indexB].m_pStatusEffect)
+            delete pHealingOptionsA[indexB].m_pStatusEffect;
+            pHealingOptionsA[indexB].m_pStatusEffect = g_healPlayer->FindEntryForObject(pHealingOptionsA[indexB].m_pHealingItem, 0);
+            pHealingOptionsA[indexB].pTile->Set(0xfaf, ((bool (__cdecl*)(StatsMenu__HealingOption*))pHealingOptionsA[indexB].m_pfnIsAvailable)(&pHealingOptionsA[indexB]));
+            if (pHealingOptionsA[indexB].m_pStatusEffect)
             {
-                text.PrintfString("(%d) %s", m_kHealingOptions[indexB].m_pStatusEffect->FUN_00726070(),
-                           m_kHealingOptions[indexB].pTile->GetString(0x1004));
+                text.PrintfString("(%d) %s", pHealingOptionsA[indexB].m_pStatusEffect->FUN_00726070(),
+                           pHealingOptionsA[indexB].pTile->GetString(0x1004));
                 if ((indexB == 0 && !((bool (__thiscall*)(PlayerCharacter*))GetPlayerHardcoreMode)(g_healPlayer)) || indexB == 3)
-                    m_pTiles[9]->Set(0xfaf, 1);
+                    pTiles[9]->Set(0xfaf, 1);
             }
             else
-                text = m_kHealingOptions[indexB].pTile->GetString(0x1004);
-            m_kHealingOptions[indexB].pTile->Set(0xfc4, (const char*)text, true);
+                text = pHealingOptionsA[indexB].pTile->GetString(0x1004);
+            pHealingOptionsA[indexB].pTile->Set(0xfc4, (const char*)text, true);
         }
     }
-    if (aiOptionIndex == 0 || aiOptionIndex == 3 || aiOptionIndex == 4)
+    if (aeID == 0 || aeID == 3 || aeID == 4)
     {
-        int first2 = ((int (__thiscall*)(PlayerCharacter*, AlchemyItem*))CountPlayerItem)(g_healPlayer, m_kHealingOptions[0].m_pHealingItem);
-        int last = ((int (__thiscall*)(PlayerCharacter*, AlchemyItem*))CountPlayerItem)(g_healPlayer, m_kHealingOptions[3].m_pHealingItem);
+        int first2 = ((int (__thiscall*)(PlayerCharacter*, AlchemyItem*))CountPlayerItem)(g_healPlayer, pHealingOptionsA[0].m_pHealingItem);
+        int last = ((int (__thiscall*)(PlayerCharacter*, AlchemyItem*))CountPlayerItem)(g_healPlayer, pHealingOptionsA[3].m_pHealingItem);
         bool enabled3 = true;
         if (((bool (__thiscall*)(PlayerCharacter*))GetPlayerHardcoreMode)(g_healPlayer) && last == 0)
             enabled3 = false;
@@ -2687,7 +2840,7 @@ void HealingMenuMethods::UpdateOption(int aiOptionIndex)
         {
             if (m_bUpdateOption)
                 Toggle();
-            m_pTiles[9]->Set(0xfaf, 0);
+            pTiles[9]->Set(0xfaf, 0);
         }
     }
 }
@@ -2710,25 +2863,26 @@ struct ControllerLabelMenuMethods : StatsMenu
 };
 
 // @fnv 0x007df620
+// pdb: StatsMenu::UpdateHealingMode | StatsMenu.obj | retail, string-set bridge, high
 void ControllerLabelMenuMethods::UpdateXboxButtonState()
 {
     static int iConsoleButtonTrait = Tile_AddUserTrait("_xbox_button", -1);
     static int iEnabledTrait = Tile_AddUserTrait("_enabled", -1);
-    if (m_pTiles[9] && InterfaceManager_Has360Controller())
+    if (pTiles[9] && InterfaceManager_Has360Controller())
     {
-        m_pTiles[9]->Set(iConsoleButtonTrait, !m_bUpdateOption + 10);
-        m_pTiles[9]->Set(0xfc4, m_bUpdateOption ? DAT_011d4708.FUN_00403df0() : DAT_011d2658.FUN_00403df0(), true);
-        m_pTiles[0]->Set(iEnabledTrait, !m_bUpdateOption);
-        m_pTiles[1]->Set(iEnabledTrait, !m_bUpdateOption);
-        m_pTiles[2]->Set(iEnabledTrait, !m_bUpdateOption);
-        m_pTiles[3]->Set(iEnabledTrait, !m_bUpdateOption);
-        m_pTiles[4]->Set(iEnabledTrait, !m_bUpdateOption);
-        m_pTiles[28]->Set(iEnabledTrait, !m_bUpdateOption);
-        m_pTiles[29]->Set(iEnabledTrait, !m_bUpdateOption);
-        m_pTiles[53]->Set(iEnabledTrait, !m_bUpdateOption);
-        m_pTiles[57]->Set(iEnabledTrait, !m_bUpdateOption);
-        m_pTiles[55]->Set(iEnabledTrait, !m_bUpdateOption);
-        m_pTiles[30]->Set(iEnabledTrait, !m_bUpdateOption);
+        pTiles[9]->Set(iConsoleButtonTrait, !m_bUpdateOption + 10);
+        pTiles[9]->Set(0xfc4, m_bUpdateOption ? DAT_011d4708.FUN_00403df0() : DAT_011d2658.FUN_00403df0(), true);
+        pTiles[0]->Set(iEnabledTrait, !m_bUpdateOption);
+        pTiles[1]->Set(iEnabledTrait, !m_bUpdateOption);
+        pTiles[2]->Set(iEnabledTrait, !m_bUpdateOption);
+        pTiles[3]->Set(iEnabledTrait, !m_bUpdateOption);
+        pTiles[4]->Set(iEnabledTrait, !m_bUpdateOption);
+        pTiles[28]->Set(iEnabledTrait, !m_bUpdateOption);
+        pTiles[29]->Set(iEnabledTrait, !m_bUpdateOption);
+        pTiles[53]->Set(iEnabledTrait, !m_bUpdateOption);
+        pTiles[57]->Set(iEnabledTrait, !m_bUpdateOption);
+        pTiles[55]->Set(iEnabledTrait, !m_bUpdateOption);
+        pTiles[30]->Set(iEnabledTrait, !m_bUpdateOption);
     }
     StatsMenu_BodyPartController_GetInstance()->StatsMenu_BodyPartController_SetFlash(m_bUpdateOption);
 }
@@ -2749,15 +2903,17 @@ struct StatusPageMenuMethods : StatsMenu
 
 // @fnv 0x007e0060
 // src: XBOX_PDB 0x007e0060
-bool StatusPageMenuMethods::StatsMenu_SetStatusPage(int id)
+// pdb: StatsMenu::SetStatusPage | StatsMenu.obj | retail, upstream name already matches, high
+// pdb params: aiPage
+bool StatusPageMenuMethods::StatsMenu_SetStatusPage(int aiPage)
 {
-    if (id >= 0 && id <= (PlayerCharacter_IsHardcore(g_011dea3c) ? 5 : 2) && StatsMenu_GetStatusPage() != id)
+    if (aiPage >= 0 && aiPage <= (PlayerCharacter_IsHardcore(g_011dea3c) ? 5 : 2) && StatsMenu_GetStatusPage() != aiPage)
     {
         if (m_bUpdateOption)
         {
             FUN_007e0230();
         }
-        m_pTiles[5]->FUN_00700320(0x1004, id);
+        pTiles[5]->FUN_00700320(0x1004, aiPage);
         return true;
     }
     else
@@ -2770,8 +2926,8 @@ bool StatusPageMenuMethods::StatsMenu_SetStatusPage(int id)
 struct EntryEffects
 {
     unsigned int unk00, unk04, unk08;
-    void StatsMenu_NamedEffectsList_InsertActiveEffect(ActiveEffect*);
-    void ApplyParamToEntry(ActiveEffect*);
+    void StatsMenu_NamedEffectsList_Register(ActiveEffect*);
+    void StatsMenu_StatusDataList_Register(ActiveEffect*);
 };
 struct EffectGroup
 {
@@ -2793,6 +2949,10 @@ struct GroupedEffectListMethods : StatsMenu__StatusEffectList
 };
 // Looks up or creates an EffectGroup for the effect's form, then adds the effect to its special or normal list based on a setting flag.
 // @fnv 0x007e08a0
+// pdb: StatsMenu::StatusDataList::Register | StatsMenu.obj | retail, object-file run extension, low
+// pdb note: debug build links it to StatsMenu::StatusEffectList::Register
+// pdb params: apActiveEffect
+// pdb locals: pdata
 void GroupedEffectListMethods::AddEffectToGroup(ActiveEffect* effect)
 {
     TESForm* group = dynamic_cast<TESForm*>(effect->FUN_0044ddc0());
@@ -2803,9 +2963,9 @@ void GroupedEffectListMethods::AddEffectToGroup(ActiveEffect* effect)
         ((EffectGroupList*)&bSSimpleList_StatsMenu__StatusEffect___Component)->BSSimpleList_ActiveEffect_Insert(pGroup, StatsMenu_StatusEffectSortFn);
     }
     if (((EffectSetting*)effect->GetEffectSetting())->IsFlagSet_00403e60(0x2000))
-        pGroup->special.StatsMenu_NamedEffectsList_InsertActiveEffect(effect);
+        pGroup->special.StatsMenu_NamedEffectsList_Register(effect);
     else
-        pGroup->normal.ApplyParamToEntry(effect);
+        pGroup->normal.StatsMenu_StatusDataList_Register(effect);
 }
 
 struct FUN_007e09d0_sub
@@ -2817,17 +2977,19 @@ struct FUN_007e09d0_sub
 class NamedEffectListMethods : public StatsMenu__NamedEffectsList
 {
 public:
-    void StatsMenu_NamedEffectsList_InsertActiveEffect(ActiveEffect*);
+    void StatsMenu_NamedEffectsList_Register(ActiveEffect*);
 };
 
 // @fnv 0x007e09d0
-// src: COMMUNITY 0x007e09d0
-void NamedEffectListMethods::StatsMenu_NamedEffectsList_InsertActiveEffect(ActiveEffect* arg)
+// src: XBOX_DEBUG_PDB 0x007e09d0 (was COMMUNITY)
+// pdb: StatsMenu::NamedEffectsList::Register | StatsMenu.obj | debug, call graph, high
+// pdb params: apActiveEffect
+void NamedEffectListMethods::StatsMenu_NamedEffectsList_Register(ActiveEffect* apActiveEffect)
 {
-    EffectSetting* value = arg->FUN_007df1d0();
+    EffectSetting* value = apActiveEffect->FUN_007df1d0();
     if (!((FUN_007e09d0_sub*)&bSSimpleList_EffectSetting___Component)->BSSimpleList_TESLevSpell_IsInList(&value))
     {
-        ((FUN_007e09d0_sub*)&bSSimpleList_EffectSetting___Component)->BSSimpleList_ActiveEffect_Insert(arg->FUN_007df1d0(), CompareEffectNames);
+        ((FUN_007e09d0_sub*)&bSSimpleList_EffectSetting___Component)->BSSimpleList_ActiveEffect_Insert(apActiveEffect->FUN_007df1d0(), StatsMenu_NamedEffectSortFn);
     }
 }
 
@@ -3018,7 +3180,7 @@ bool InterfaceManager_Has360Controller();
 class StatusEntry
 {
   public:
-    int FindEntryIndex();
+    int StatsMenu_BodyPartController_Find();
 };
 StatusEntry* __stdcall StatsMenu_BodyPartController_GetInstance(int iIndex);
 
@@ -3031,15 +3193,18 @@ public:
 
 // @fnv 0x007dc490
 // src: XBOX_PDB 0x007dc490
-void StatusMenuMethods::StatsMenu_DoLeave(int iUnused, int iIndex)
+// pdb: StatsMenu::DoLeave | StatsMenu.obj | debug, upstream name already matches, high
+// pdb params: aiID, apTarget
+// pdb locals: eindex
+void StatusMenuMethods::StatsMenu_DoLeave(int aiID, int apTarget)
 {
     if (m_bUpdateOption && !InterfaceManager_Has360Controller())
     {
-        int iType = StatsMenu_BodyPartController_GetInstance(iIndex)->FindEntryIndex();
+        int iType = StatsMenu_BodyPartController_GetInstance(apTarget)->StatsMenu_BodyPartController_Find();
         if (iType != 6)
             FUN_007e0230();
     }
-    m_pTiles[52]->Set(0xfa3, 0);
+    pTiles[52]->Set(0xfa3, 0);
 }
 }  // namespace fnv_007dc490
 
@@ -3052,7 +3217,7 @@ struct ListClick
 };
 struct StatusH
 {
-    int FindEntryIndex();
+    int StatsMenu_BodyPartController_Find();
     void SetBodyPart(bool);
 };
 StatusH* __stdcall StatsMenu_BodyPartController_GetInstance(Tile*);
@@ -3065,27 +3230,30 @@ struct ClickMenu : public StatsMenu
     void StatsMenu_MoveKnob(Tile*, int*);
     void UpdateStatsDisplay(void*);
     void UpdateScrollBar(void*);
-    void SetReputationEntry(void*);
+    void StatsMenu_SetReputation(void*);
     void FUN_007e0230();
-    void OnTileClick(int id, Tile* tile);
+    void OnTileClick(int aiID, Tile* apTarget);
 };
 // Handles a tile click on the stats menu by dispatching to the current page's list, updating the display, and playing a sound for status effects.
 // @fnv 0x007dc1b0
-void ClickMenu::OnTileClick(int aiTileIndex, Tile* tile)
+// pdb: StatsMenu::DoEnter | StatsMenu.obj | retail, vtable slot, high
+// pdb params: aiID, apTarget
+// pdb locals: eindex
+void ClickMenu::OnTileClick(int aiID, Tile* apTarget)
 {
-    if (!tile && aiTileIndex >= 0 && aiTileIndex < 60)
-        tile = m_pTiles[aiTileIndex];
+    if (!apTarget && aiID >= 0 && aiID < 60)
+        apTarget = pTiles[aiID];
     switch (GetCurrentPage())
     {
     case SM_STATUS:
-        if (((Tile*)tile)->FUN_00a011b0(0xfac) > 0.0)
-            StatsMenu_MoveKnob(tile, &DAT_011dad60);
+        if (((Tile*)apTarget)->FUN_00a011b0(0xfac) > 0.0)
+            StatsMenu_MoveKnob(apTarget, &DAT_011dad60);
         if (!InterfaceManager_Has360Controller())
         {
-            if ((g_thePlayer && ((bool (__thiscall*)(PlayerCharacter*))GetPlayerHardcoreMode)(g_thePlayer)) ? m_kHealingOptions[3].m_pStatusEffect
-                                                                             : m_kHealingOptions[0].m_pStatusEffect)
+            if ((g_thePlayer && ((bool (__thiscall*)(PlayerCharacter*))GetPlayerHardcoreMode)(g_thePlayer)) ? pHealingOptionsA[3].m_pStatusEffect
+                                                                             : pHealingOptionsA[0].m_pStatusEffect)
             {
-                int status = StatsMenu_BodyPartController_GetInstance(tile)->FindEntryIndex();
+                int status = StatsMenu_BodyPartController_GetInstance(apTarget)->StatsMenu_BodyPartController_Find();
                 if (status != 6)
                 {
                     StatsMenu_BodyPartController_GetInstance(status)->SetBodyPart(true);
@@ -3098,33 +3266,33 @@ void ClickMenu::OnTileClick(int aiTileIndex, Tile* tile)
         }
         break;
     case SM_SPECIAL:
-        if (((ListClick*)&m_kPrimaryActorValueList)->ContainsKey(tile))
+        if (((ListClick*)&lbSpecial)->ContainsKey(apTarget))
         {
-            StatsMenu_MoveKnob(tile, &DAT_011dad64);
-            UpdateStatsDisplay(((ListClick*)&m_kPrimaryActorValueList)->FindItemData(tile));
+            StatsMenu_MoveKnob(apTarget, &DAT_011dad64);
+            UpdateStatsDisplay(((ListClick*)&lbSpecial)->FindItemData(apTarget));
         }
         break;
     case SM_SKILLS:
-        if (((ListClick*)&m_kSecondaryActorValueList)->ContainsKey(tile))
+        if (((ListClick*)&lbSkills)->ContainsKey(apTarget))
         {
-            StatsMenu_MoveKnob(tile, &DAT_011dad68);
-            UpdateStatsDisplay(((ListClick*)&m_kSecondaryActorValueList)->FindItemData(tile));
+            StatsMenu_MoveKnob(apTarget, &DAT_011dad68);
+            UpdateStatsDisplay(((ListClick*)&lbSkills)->FindItemData(apTarget));
         }
         break;
     case SM_PERKS:
-        if (((ListClick*)&m_kPerkRankList)->ContainsKey(tile))
+        if (((ListClick*)&lbPerks)->ContainsKey(apTarget))
         {
-            StatsMenu_MoveKnob(tile, &DAT_011dad6c);
-            UpdateScrollBar(((ListClick*)&m_kPerkRankList)->FindItemData(tile));
+            StatsMenu_MoveKnob(apTarget, &DAT_011dad6c);
+            UpdateScrollBar(((ListClick*)&lbPerks)->FindItemData(apTarget));
         }
         break;
     case SM_GENERAL:
-        if (((ListClick*)&m_kMiscStatList)->ContainsKey(tile))
-            StatsMenu_MoveKnob(tile, &DAT_011dad70);
-        if (((ListClick*)&m_kReputationList)->ContainsKey(tile))
+        if (((ListClick*)&lbGeneral)->ContainsKey(apTarget))
+            StatsMenu_MoveKnob(apTarget, &DAT_011dad70);
+        if (((ListClick*)&lbReputation)->ContainsKey(apTarget))
         {
-            SetReputationEntry(((ListClick*)&m_kReputationList)->FindItemData(tile));
-            StatsMenu_MoveKnob(tile, &DAT_011dad70);
+            StatsMenu_SetReputation(((ListClick*)&lbReputation)->FindItemData(apTarget));
+            StatsMenu_MoveKnob(apTarget, &DAT_011dad70);
         }
         break;
     }
@@ -3179,28 +3347,30 @@ extern Setting g_011d1ef0;
 // Rebuilds the stats menu status-effect tiles and list from the player's active effects and survival stage spells.
 // @fnv 0x007ddf00
 // src: XBOX_PDB 0x007ddf00
+// pdb: StatsMenu::UpdateActiveEffects | StatsMenu.obj | retail, upstream name already matches, high
+// pdb locals: ph20stage, psleepstage, pradstage, strtmp, ptile, pactiveEffect, phungerstage, pnode, pspell, i, peffectlistnode, ppotion, streffects, pname, pnamelistnode, pdatalistnode
 void StatsMenuActiveEffects::StatsMenu_UpdateActiveEffects()
 {
     BGSDehydrationStage* ph20stage;
     BGSSleepDeprevationStage* psleepstage;
     BGSRadiationStage* pradstage;
-    if (m_bStatUpdatePending)
+    if (bActiveEffectsUpdatedThisFrame)
         return;
-    m_bStatUpdatePending = true;
+    bActiveEffectsUpdatedThisFrame = true;
     BSStringT<char> strtmp;
     Tile* ptile;
     ActiveEffect* pactiveEffect;
     BGSHungerStage* phungerstage;
 
-    ((StatusEffectListOps*)&m_kStatusEffectEntries)->StatsMenu_StatusEffectList_Flush();
-    delete m_pStatusEffectAtIndex0;
-    m_pStatusEffectAtIndex0 = 0;
-    delete m_pStatusEffectAtIndex1;
-    m_pStatusEffectAtIndex1 = 0;
-    delete m_pStatusEffectAtIndex3;
-    m_pStatusEffectAtIndex3 = 0;
-    delete m_pStatusEffectAtIndex2;
-    m_pStatusEffectAtIndex2 = 0;
+    ((StatusEffectListOps*)&xStatusEffects)->StatsMenu_StatusEffectList_Flush();
+    delete pRadiationEffect;
+    pRadiationEffect = 0;
+    delete pDehydrationEffect;
+    pDehydrationEffect = 0;
+    delete pSleepEffect;
+    pSleepEffect = 0;
+    delete pHungerEffect;
+    pHungerEffect = 0;
 
     pradstage = BGSRadiationStage::GetStageForLevel(g_thePlayer->GetCurrentActorValue((ActorValue::Index)54));
     ph20stage = BGSDehydrationStage::FindStage(g_thePlayer->GetCurrentActorValue((ActorValue::Index)73));
@@ -3211,38 +3381,38 @@ void StatsMenuActiveEffects::StatsMenu_UpdateActiveEffects()
          pnode && (pactiveEffect = pnode->GetItem()); pnode = pnode->GetNext())
     {
         if (((ActiveEffect*)pactiveEffect)->ActiveEffect_IsActive() &&
-            !((EffectItem*)((ActiveEffect*)pactiveEffect)->GetHavokWorldObjectCountInSceneGraph_0084e3a0())->IsScriptBasedEffect() &&
+            !((EffectItem*)((ActiveEffect*)pactiveEffect)->GetHavokWorldObjectCountInSceneGraph_0084e3a0())->IsUsageMonitorEffect() &&
             (!pactiveEffect->GetEffectSetting()->IsScriptEffect() ||
              ((EffectSetting*)pactiveEffect->GetEffectSetting())->IsFlagSet(0x2000)))
         {
             SpellItem* pspell = dynamic_cast<SpellItem*>(((ActiveEffect*)pactiveEffect)->FUN_0044ddc0());
             if (pspell && pradstage && pspell == pradstage->GetSpell())
             {
-                if (!m_pStatusEffectAtIndex0)
-                    m_pStatusEffectAtIndex0 = new StatsMenu__StatusEffect(pspell);
-                if (m_pStatusEffectAtIndex0->pForm == pspell)
-                    m_pStatusEffectAtIndex0->xEffectData.ApplyParamToEntry(pactiveEffect);
+                if (!pRadiationEffect)
+                    pRadiationEffect = new StatsMenu__StatusEffect(pspell);
+                if (pRadiationEffect->pForm == pspell)
+                    pRadiationEffect->xEffectData.StatsMenu_StatusDataList_Register(pactiveEffect);
             }
             if (pspell && ph20stage && pspell == ph20stage->GetSpell())
             {
-                if (!m_pStatusEffectAtIndex1)
-                    m_pStatusEffectAtIndex1 = new StatsMenu__StatusEffect(pspell);
-                if (m_pStatusEffectAtIndex1->pForm == pspell)
-                    m_pStatusEffectAtIndex1->xEffectData.ApplyParamToEntry(pactiveEffect);
+                if (!pDehydrationEffect)
+                    pDehydrationEffect = new StatsMenu__StatusEffect(pspell);
+                if (pDehydrationEffect->pForm == pspell)
+                    pDehydrationEffect->xEffectData.StatsMenu_StatusDataList_Register(pactiveEffect);
             }
             if (pspell && phungerstage && pspell == phungerstage->GetSpell())
             {
-                if (!m_pStatusEffectAtIndex2)
-                    m_pStatusEffectAtIndex2 = new StatsMenu__StatusEffect(pspell);
-                if (m_pStatusEffectAtIndex2->pForm == pspell)
-                    m_pStatusEffectAtIndex2->xEffectData.ApplyParamToEntry(pactiveEffect);
+                if (!pHungerEffect)
+                    pHungerEffect = new StatsMenu__StatusEffect(pspell);
+                if (pHungerEffect->pForm == pspell)
+                    pHungerEffect->xEffectData.StatsMenu_StatusDataList_Register(pactiveEffect);
             }
             if (pspell && psleepstage && pspell == psleepstage->GetSpell())
             {
-                if (!m_pStatusEffectAtIndex3)
-                    m_pStatusEffectAtIndex3 = new StatsMenu__StatusEffect(pspell);
-                if (m_pStatusEffectAtIndex3->pForm == pspell)
-                    m_pStatusEffectAtIndex3->xEffectData.ApplyParamToEntry(pactiveEffect);
+                if (!pSleepEffect)
+                    pSleepEffect = new StatsMenu__StatusEffect(pspell);
+                if (pSleepEffect->pForm == pspell)
+                    pSleepEffect->xEffectData.StatsMenu_StatusDataList_Register(pactiveEffect);
             }
             if (((EffectItem*)((ActiveEffect*)pactiveEffect)->GetHavokWorldObjectCountInSceneGraph_0084e3a0())->IsActorValueUsed() &&
                 ActorValue_GetActorValueAbbreviation(
@@ -3253,23 +3423,23 @@ void StatsMenuActiveEffects::StatsMenu_UpdateActiveEffects()
                  (((int (__thiscall*)(ActiveEffect*))GetActiveEffectSpellType)(pactiveEffect) == 4 &&
                   ((ActiveEffect*)pactiveEffect)->HasConditions())))
             {
-                ((StatusEffectListOps*)&m_kStatusEffectEntries)->AddEffectToGroup(pactiveEffect);
+                ((StatusEffectListOps*)&xStatusEffects)->AddEffectToGroup(pactiveEffect);
             }
             else if (((EffectSetting*)pactiveEffect->GetEffectSetting())->IsFlagSet(0x2000))
             {
-                ((StatusEffectListOps*)&m_kStatusEffectEntries)->AddEffectToGroup(pactiveEffect);
+                ((StatusEffectListOps*)&xStatusEffects)->AddEffectToGroup(pactiveEffect);
             }
         }
     }
 
-    if (m_pStatusEffectAtIndex0)
+    if (pRadiationEffect)
     {
-        ((Tile*)m_pTiles[32])->ResetImage();
+        ((Tile*)pTiles[32])->ResetImage();
         int i = 0;
-        for (BSSimpleList<MagicEffectEntry*>* pnode = &m_pStatusEffectAtIndex0->xEffectData; pnode && pnode->GetItem();
+        for (BSSimpleList<MagicEffectEntry*>* pnode = &pRadiationEffect->xEffectData; pnode && pnode->GetItem();
              pnode = pnode->GetNext())
         {
-            Tile* ptile = ((Menu*)this)->CreateTileFromTemplate(m_pTiles[32], "stats_rad_effects_template", 0);
+            Tile* ptile = ((Menu*)this)->CreateTileFromTemplate(pTiles[32], "stats_rad_effects_template", 0);
             ptile->Set(0xfac, i++);
             strtmp = "stats_rad_effect_";
             strtmp += ActorValue_GetActorValueAbbreviation(pnode->GetItem()->m_eAssociatedActorValue);
@@ -3278,21 +3448,21 @@ void StatsMenuActiveEffects::StatsMenu_UpdateActiveEffects()
             ptile->Set(0xfc4, strtmp, true);
             ptile->Set(0x1005, ActorValue_GetActorValueAbbreviation(pnode->GetItem()->m_eAssociatedActorValue), true);
         }
-        m_pTiles[32]->Set(0xfa3, 1);
+        pTiles[32]->Set(0xfa3, 1);
     }
     else
     {
-        m_pTiles[32]->Set(0xfa3, 0);
+        pTiles[32]->Set(0xfa3, 0);
     }
 
-    if (m_pStatusEffectAtIndex1)
+    if (pDehydrationEffect)
     {
-        ((Tile*)m_pTiles[54])->ResetImage();
+        ((Tile*)pTiles[54])->ResetImage();
         int i = 0;
-        for (BSSimpleList<MagicEffectEntry*>* pnode = &m_pStatusEffectAtIndex1->xEffectData; pnode && pnode->GetItem();
+        for (BSSimpleList<MagicEffectEntry*>* pnode = &pDehydrationEffect->xEffectData; pnode && pnode->GetItem();
              pnode = pnode->GetNext())
         {
-            Tile* ptile = ((Menu*)this)->CreateTileFromTemplate(m_pTiles[54], "stats_rad_effects_template", 0);
+            Tile* ptile = ((Menu*)this)->CreateTileFromTemplate(pTiles[54], "stats_rad_effects_template", 0);
             ptile->Set(0xfac, i++);
             strtmp = "stats_h20_effect_";
             strtmp += ActorValue_GetActorValueAbbreviation(pnode->GetItem()->m_eAssociatedActorValue);
@@ -3301,21 +3471,21 @@ void StatsMenuActiveEffects::StatsMenu_UpdateActiveEffects()
             ptile->Set(0xfc4, strtmp, true);
             ptile->Set(0x1005, ActorValue_GetActorValueAbbreviation(pnode->GetItem()->m_eAssociatedActorValue), true);
         }
-        m_pTiles[54]->Set(0xfa3, 1);
+        pTiles[54]->Set(0xfa3, 1);
     }
     else
     {
-        m_pTiles[54]->Set(0xfa3, 0);
+        pTiles[54]->Set(0xfa3, 0);
     }
 
-    if (m_pStatusEffectAtIndex2)
+    if (pHungerEffect)
     {
-        ((Tile*)m_pTiles[56])->ResetImage();
+        ((Tile*)pTiles[56])->ResetImage();
         int i = 0;
-        for (BSSimpleList<MagicEffectEntry*>* pnode = &m_pStatusEffectAtIndex2->xEffectData; pnode && pnode->GetItem();
+        for (BSSimpleList<MagicEffectEntry*>* pnode = &pHungerEffect->xEffectData; pnode && pnode->GetItem();
              pnode = pnode->GetNext())
         {
-            Tile* ptile = ((Menu*)this)->CreateTileFromTemplate(m_pTiles[56], "stats_rad_effects_template", 0);
+            Tile* ptile = ((Menu*)this)->CreateTileFromTemplate(pTiles[56], "stats_rad_effects_template", 0);
             ptile->Set(0xfac, i++);
             strtmp = "stats_hunger_effect_";
             strtmp += ActorValue_GetActorValueAbbreviation(pnode->GetItem()->m_eAssociatedActorValue);
@@ -3324,21 +3494,21 @@ void StatsMenuActiveEffects::StatsMenu_UpdateActiveEffects()
             ptile->Set(0xfc4, strtmp, true);
             ptile->Set(0x1005, ActorValue_GetActorValueAbbreviation(pnode->GetItem()->m_eAssociatedActorValue), true);
         }
-        m_pTiles[56]->Set(0xfa3, 1);
+        pTiles[56]->Set(0xfa3, 1);
     }
     else
     {
-        m_pTiles[56]->Set(0xfa3, 0);
+        pTiles[56]->Set(0xfa3, 0);
     }
 
-    if (m_pStatusEffectAtIndex3)
+    if (pSleepEffect)
     {
-        ((Tile*)m_pTiles[58])->ResetImage();
+        ((Tile*)pTiles[58])->ResetImage();
         int i = 0;
-        for (BSSimpleList<MagicEffectEntry*>* pnode = &m_pStatusEffectAtIndex3->xEffectData; pnode && pnode->GetItem();
+        for (BSSimpleList<MagicEffectEntry*>* pnode = &pSleepEffect->xEffectData; pnode && pnode->GetItem();
              pnode = pnode->GetNext())
         {
-            Tile* ptile = ((Menu*)this)->CreateTileFromTemplate(m_pTiles[58], "stats_rad_effects_template", 0);
+            Tile* ptile = ((Menu*)this)->CreateTileFromTemplate(pTiles[58], "stats_rad_effects_template", 0);
             ptile->Set(0xfac, i++);
             strtmp = "stats_sleep_effect_";
             strtmp += ActorValue_GetActorValueAbbreviation(pnode->GetItem()->m_eAssociatedActorValue);
@@ -3347,19 +3517,19 @@ void StatsMenuActiveEffects::StatsMenu_UpdateActiveEffects()
             ptile->Set(0xfc4, strtmp, true);
             ptile->Set(0x1005, ActorValue_GetActorValueAbbreviation(pnode->GetItem()->m_eAssociatedActorValue), true);
         }
-        m_pTiles[58]->Set(0xfa3, 1);
+        pTiles[58]->Set(0xfa3, 1);
     }
     else
     {
-        m_pTiles[58]->Set(0xfa3, 0);
+        pTiles[58]->Set(0xfa3, 0);
     }
 
     ptile = 0;
-    ((void (__thiscall*)(ListBoxBase*))(*(void***)&m_kStatusEffectList)[7])(&m_kStatusEffectList);
-    for (BSSimpleList<StatsMenu__StatusEffect*>* peffectlistnode = &m_kStatusEffectEntries ? &m_kStatusEffectEntries.bSSimpleList_StatsMenu__StatusEffect___Component : 0;
+    ((void (__thiscall*)(ListBoxBase*))(*(void***)&lbStatusEffects)[7])(&lbStatusEffects);
+    for (BSSimpleList<StatsMenu__StatusEffect*>* peffectlistnode = &xStatusEffects ? &xStatusEffects.bSSimpleList_StatsMenu__StatusEffect___Component : 0;
          peffectlistnode && peffectlistnode->GetItem(); peffectlistnode = peffectlistnode->GetNext())
     {
-        ptile = ((StatusEffectListBox*)&m_kStatusEffectList)->AddItem(peffectlistnode->GetItem(), 0, 0, 0);
+        ptile = ((StatusEffectListBox*)&lbStatusEffects)->AddItem(peffectlistnode->GetItem(), 0, 0, 0);
         AlchemyItem* ppotion = dynamic_cast<AlchemyItem*>(peffectlistnode->GetItem()->pForm);
         if (ppotion && ((EquipTypeComponent*)((char*)ppotion + 0x9c))->GetEquipType() == 13)
         {
@@ -3409,17 +3579,17 @@ void StatsMenuActiveEffects::StatsMenu_UpdateActiveEffects()
 
     if (ptile)
     {
-        ((Tile*)m_pTiles[33])
+        ((Tile*)pTiles[33])
             ->Set(0xfb0,
-                  FUN_0042f5a0(8, ((StatusEffectListBox*)&m_kStatusEffectList)->GetNumItems()) * ptile->GetFloat(0xfb0),
+                  FUN_0042f5a0(8, ((StatusEffectListBox*)&lbStatusEffects)->GetNumItems()) * ptile->GetFloat(0xfb0),
                   true);
         ptile->Set(0x1006, 0);
     }
     else
     {
-        m_pTiles[33]->Set(0xfb0, 0);
+        pTiles[33]->Set(0xfb0, 0);
     }
-    ((StatusEffectListBox*)&m_kStatusEffectList)->Synchronize();
+    ((StatusEffectListBox*)&lbStatusEffects)->Synchronize();
 }
 
 namespace fnv_007db680 {
@@ -3447,7 +3617,7 @@ struct InputRendered
     bool IsUnk28Set();
 };
 InputRendered* __cdecl Interface_GetPipboy();
-bool __cdecl IsActorValueBelowPermanent(StatsMenu__HealingOption*);
+bool __cdecl StatsMenu_StimpakTargetConditionCallback(StatsMenu__HealingOption*);
 bool __cdecl IsHealingOptionAvailable(const StatsMenu__HealingOption*);
 BSAudio* __cdecl BSAudio_QInstance();
 void __cdecl InterfaceManager_PlayMenuSound(int);
@@ -3486,22 +3656,25 @@ struct InputStats : public StatsMenu
     int StatsMenu_GetStatusPage();
     bool StatsMenu_SetStatusPage(int);
     bool GetTileIndex(int, int*);
-    bool StatsMenu_DoGamepad(int code, float amount);
+    bool StatsMenu_DoGamepad(int aiButton, float afValue);
 };
 
 // Processes input codes for the stats menu, updating healing options, status values, page navigation, and scrolling effect lists.
 // @fnv 0x007db680
 // src: XBOX_PDB 0x007db680
-bool InputStats::StatsMenu_DoGamepad(int code, float amount)
+// pdb: StatsMenu::DoGamepad | StatsMenu.obj | retail, string-set bridge, high
+// pdb params: aiButton, afValue
+// pdb locals: edir, enewBodyPart, epage, idelta, istatusPage, etestPage, iyAxis, iscrollDelta, pscrollbar, icurrScrollbarValue, iUT_CurrentValue
+bool InputStats::StatsMenu_DoGamepad(int aiButton, float afValue)
 {
     if (!Interface_IsTopMenuID(1003) || !Interface_GetPipboy()->IsUnk28Set())
         return false;
     if (Interface_IsTopMenuID(1003))
     {
-        if (m_bUpdateOption && (code == 1 || code == 2 || code == 4 || code == 3))
+        if (m_bUpdateOption && (aiButton == 1 || aiButton == 2 || aiButton == 4 || aiButton == 3))
         {
             int direction;
-            switch (code)
+            switch (aiButton)
             {
             case 1:
                 direction = 0;
@@ -3523,39 +3696,39 @@ bool InputStats::StatsMenu_DoGamepad(int code, float amount)
             if (selected3 < 6)
             {
                 ((InputStatus*)StatsMenu_BodyPartController_GetInstance())->SetBodyPart(selected3, true);
-                m_kHealingOptions[0].pTile->Set(0xfaf, IsActorValueBelowPermanent(&m_kHealingOptions[0]));
-                m_kHealingOptions[3].pTile->Set(0xfaf, IsHealingOptionAvailable(&m_kHealingOptions[3]));
+                pHealingOptionsA[0].pTile->Set(0xfaf, StatsMenu_StimpakTargetConditionCallback(&pHealingOptionsA[0]));
+                pHealingOptionsA[3].pTile->Set(0xfaf, StatsMenu_DrBagTargetConditionCallback(&pHealingOptionsA[3]));
                 static_cast<StatsMenuAudioMethods*>(BSAudio_QInstance())
                     ->GetSoundHandleByEditorID("UIPipBoyHighlight", 0x121).Play(false);
             }
             return true;
         }
-        else if ((code == 13 || code == 14) && amount >= 1.0)
+        else if ((aiButton == 13 || aiButton == 14) && afValue >= 1.0)
         {
             InterfaceManager_PlayMenuSound(0x24);
-            if (code == 13)
+            if (aiButton == 13)
                 UpdatePipboyMapVisibility(1, false);
             else
                 Interface_SetInventoryMenuVisible(1, false, true);
             return true;
         }
-        else if (code == 4)
+        else if (aiButton == 4)
         {
             Page _previousPage = GetCurrentPage();
             SetCurrentPage(_previousPage == 0 ? SM_LAST_PAGE : *DecrementInt(&_previousPage));
-            ((Tile*)m_pTiles[0])->Tile_PlayTileSound(0xfcb);
+            ((Tile*)pTiles[0])->Tile_PlayTileSound(0xfcb);
             return true;
         }
-        else if (code == 3)
+        else if (aiButton == 3)
         {
             Page nextPage = GetCurrentPage();
             SetCurrentPage(nextPage == 4 ? SM_FIRST_PAGE : *FUN_007dc0a0(&nextPage));
-            ((Tile*)m_pTiles[0])->Tile_PlayTileSound(0xfcb);
+            ((Tile*)pTiles[0])->Tile_PlayTileSound(0xfcb);
             return true;
         }
         else if (GetCurrentPage() == SM_GENERAL)
         {
-            if (code == 11)
+            if (aiButton == 11)
             {
                 HandleSelection(0x31, 0);
                 return true;
@@ -3563,32 +3736,32 @@ bool InputStats::StatsMenu_DoGamepad(int code, float amount)
         }
         else if (GetCurrentPage() == SM_STATUS)
         {
-            if (code == 1 || code == 2)
+            if (aiButton == 1 || aiButton == 2)
             {
-                int statusStep6 = code == 1 ? -1 : 1;
+                int statusStep6 = aiButton == 1 ? -1 : 1;
                 int newStatusVal = StatsMenu_GetStatusPage() + statusStep6;
                 if (StatsMenu_SetStatusPage(newStatusVal))
                 {
                     int limbVal = 6;
                     if (GetTileIndex(0x1c, &limbVal) && limbVal == newStatusVal)
-                        ((Tile*)m_pTiles[28])->Tile_PlayTileSound(0xfcb);
+                        ((Tile*)pTiles[28])->Tile_PlayTileSound(0xfcb);
                     else if (GetTileIndex(0x1d, &limbVal) && limbVal == newStatusVal)
-                        ((Tile*)m_pTiles[29])->Tile_PlayTileSound(0xfcb);
+                        ((Tile*)pTiles[29])->Tile_PlayTileSound(0xfcb);
                     else if (GetTileIndex(0x1e, &limbVal) && limbVal == newStatusVal)
-                        ((Tile*)m_pTiles[30])->Tile_PlayTileSound(0xfcb);
+                        ((Tile*)pTiles[30])->Tile_PlayTileSound(0xfcb);
                     else if (GetTileIndex(0x35, &limbVal) && limbVal == newStatusVal)
-                        ((Tile*)m_pTiles[53])->Tile_PlayTileSound(0xfcb);
+                        ((Tile*)pTiles[53])->Tile_PlayTileSound(0xfcb);
                     else if (GetTileIndex(0x37, &limbVal) && limbVal == newStatusVal)
-                        ((Tile*)m_pTiles[55])->Tile_PlayTileSound(0xfcb);
+                        ((Tile*)pTiles[55])->Tile_PlayTileSound(0xfcb);
                     else if (GetTileIndex(0x39, &limbVal) && limbVal == newStatusVal)
-                        ((Tile*)m_pTiles[57])->Tile_PlayTileSound(0xfcb);
+                        ((Tile*)pTiles[57])->Tile_PlayTileSound(0xfcb);
                     ((void (__thiscall*)(FOPipboyManager*, int, float, float, bool))UpdatePipboyScrollKnobTarget)(
                         InterfaceManager_GetSingleton()->FUN_00704370(), 0, *g_011db2f0.Setting_Float_00403e20() * statusStep6,
                                                                  *g_011db358.Setting_Float_00403e20(), true);
                     return true;
                 }
             }
-            else if (code == 9)
+            else if (aiButton == 9)
             {
                 switch (StatsMenu_GetStatusPage())
                 {
@@ -3602,12 +3775,12 @@ bool InputStats::StatsMenu_DoGamepad(int code, float amount)
                     return false;
                 }
             }
-            else if (code == 11)
+            else if (aiButton == 11)
             {
                 switch (StatsMenu_GetStatusPage())
                 {
                 case 0:
-                    if (!m_bUpdateOption && ((Tile*)m_pTiles[9])->IsTraitNonZero(0xfaf))
+                    if (!m_bUpdateOption && ((Tile*)pTiles[9])->IsTraitNonZero(0xfaf))
                     {
                         HandleSelection(9, 0);
                         static_cast<StatsMenuAudioMethods*>(BSAudio_QInstance())
@@ -3622,12 +3795,12 @@ bool InputStats::StatsMenu_DoGamepad(int code, float amount)
                     return false;
                 }
             }
-            else if (code == 12)
+            else if (aiButton == 12)
             {
                 switch (StatsMenu_GetStatusPage())
                 {
                 case 0:
-                    if (((Tile*)m_pTiles[9])->IsTraitNonZero(0xfaf))
+                    if (((Tile*)pTiles[9])->IsTraitNonZero(0xfaf))
                     {
                         HandleSelection(59, 0);
                         static_cast<StatsMenuAudioMethods*>(BSAudio_QInstance())
@@ -3644,8 +3817,8 @@ bool InputStats::StatsMenu_DoGamepad(int code, float amount)
             }
         }
         if (Interface_Has360Controller() &&
-            (((InputList*)&m_kStatusEffectList)->FUN_00825c00()->IsAllChildrenFlag0() ||
-             ((Tile*)((InputChildren*)&m_pTiles[26]->m_kChildTileList)->FUN_007b5370())->IsTraitNonZero(0xfa3)))
+            (((InputList*)&lbStatusEffects)->FUN_00825c00()->IsAllChildrenFlag0() ||
+             ((Tile*)((InputChildren*)&pTiles[26]->xChildren)->FUN_007b5370())->IsTraitNonZero(0xfa3)))
         {
             int axisB = 0;
             int scrollStepVal4 = 0;
@@ -3658,16 +3831,16 @@ bool InputStats::StatsMenu_DoGamepad(int code, float amount)
             {
                 Tile* scrollTile =
                     GetCurrentPage() == SM_STATUS
-                        ? ((InputList*)&m_kStatusEffectList)->FUN_00825c00()
-                        : (Tile*)((InputChildren*)&m_pTiles[26]->m_kChildTileList)->FUN_007b5370();
+                        ? ((InputList*)&lbStatusEffects)->FUN_00825c00()
+                        : (Tile*)((InputChildren*)&pTiles[26]->xChildren)->FUN_007b5370();
                 int trait3 = Tile_TextToTrait("_current_value");
                 int oldValue4 = (int)scrollTile->FUN_00a011b0(trait3);
                 scrollTile->Tile_Set(trait3, (float)(oldValue4 + scrollStepVal4), false);
                 if (oldValue4 != scrollTile->FUN_00a011b0(trait3))
                     scrollTile->SetTraitFloat(Tile_TextToTrait("_SetInCode"), 1.0f);
                 DAT_011dad5c =
-                    gm_GetTickCount() + (DAT_011dad5c ? (int)((Tile*)m_pTiles[33])->FUN_00a011b0(0x1004)
-                                                      : (int)((Tile*)m_pTiles[33])->FUN_00a011b0(0x1005));
+                    gm_GetTickCount() + (DAT_011dad5c ? (int)((Tile*)pTiles[33])->FUN_00a011b0(0x1004)
+                                                      : (int)((Tile*)pTiles[33])->FUN_00a011b0(0x1005));
             }
             else if (scrollStepVal4 == 0)
                 DAT_011dad5c = 0;

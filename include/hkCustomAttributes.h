@@ -2,6 +2,7 @@
 
 #include "hkVariant.h"
 
+// pdb: class hkCustomAttributes, size 0x8, 2 members
 class hkCustomAttributes
 {
 public:
@@ -11,8 +12,8 @@ public:
         hkVariant m_value;
     };
 
-    Attribute* m_data;
-    int m_iElementCount;
+    Attribute* m_attributes; // src: XBOX_RETAIL_PDB +0x0 (old: m_data)
+    int m_numAttributes; // src: XBOX_RETAIL_PDB +0x4 (old: m_iElementCount)
 
     void* __thiscall getAttribute(void* arg);
     const hkVariant* getAttribute(const char* name) const;

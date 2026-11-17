@@ -23,6 +23,7 @@ struct FUN_0045c620
     FUN_0045c620();
 };
 // @fnv 0x0045c620
+// pdb: NiFrustumPlanes::NiFrustumPlanes | TES.obj | debug, call graph, medium
 FUN_0045c620::FUN_0045c620()
 {
     x = 0x3F;

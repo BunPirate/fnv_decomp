@@ -58,14 +58,18 @@ struct D3DD50Collector : D3DD50CollectorBase
     virtual void unk04();
 };
 
-void __cdecl D3DD50Query(int a, int b, int c, D3DD50CollectorBase* collector);
+void __cdecl D3DD50Query(int bodyA, int bodyB, int input, D3DD50CollectorBase* collector);
 
 // Constructs a D3DD50Collector from d and passes it to D3DD50Query with b, a, c.
 // @fnv 0x00d3dd50
-void __cdecl QueryD3DCollector(int aiArg1, int aiArg2, int aiArg3, int aiData)
+// src: XBOX_RETAIL_PDB 0x00d3dd50
+// pdb: hkpSymmetricAgentLinearCast<hkpSphereTriangleAgent>::staticGetPenetrations | hkpSphereTriangleAgent.obj | retail, object-file gap fill, high
+// pdb params: bodyA, bodyB, input, collector
+// pdb locals: flip
+void __cdecl hkpSymmetricAgentLinearCast_hkpSphereTriangleAgent_staticGetPenetrations(int bodyA, int bodyB, int input, int aiData)
 {
     D3DD50Collector collector(aiData);
-    D3DD50Query(aiArg2, aiArg1, aiArg3, &collector);
+    D3DD50Query(bodyB, bodyA, input, &collector);
 }
 
 extern char DAT_010ce7fc[];
@@ -81,14 +85,17 @@ void __cdecl hkpCdBody_ProcessAndReturnValue_00d3d8c0(int a, int b, int c, Funct
 
 // Builds a Functor_d3e110 with a max-float value and d, sets its vtable to DAT_010ce7fc, and calls FUN_00d3d8c0(b, a, c, &f).
 // @fnv 0x00d3e110
-// src: GUESS 0x00d3e110 (confidence: low)
-void __cdecl Hkpspheretriangleagent_UpdateState_00d3e110(int a, int b, int aiArg3, int d)
+// src: XBOX_RETAIL_PDB 0x00d3e110
+// pdb: hkpSymmetricAgentLinearCast<hkpSphereTriangleAgent>::staticGetClosestPoints | hkpSphereTriangleAgent.obj | retail, object-file gap fill, high
+// pdb params: bodyA, bodyB, input, collector
+// pdb locals: flip
+void __cdecl hkpSymmetricAgentLinearCast_hkpSphereTriangleAgent_staticGetClosestPoints(int bodyA, int bodyB, int input, int collector)
 {
     Functor_d3e110 f;
     f.m_fHitFraction = 3.40282e+38f;
-    f.m_uiFilterValue = d;
+    f.m_uiFilterValue = collector;
     f.m_vtbl = DAT_010ce7fc;
-    hkpCdBody_ProcessAndReturnValue_00d3d8c0(b, a, aiArg3, &f);
+    hkpCdBody_ProcessAndReturnValue_00d3d8c0(bodyB, bodyA, input, &f);
 }
 
 struct SpawnedInner
@@ -109,17 +116,19 @@ class FUN_00d3d200_cls
     SpawnedInner* m_pInner;   // +0x08
     unsigned short m_wFlags;  // +0x0C
 
-    void hkpSphereTriangleAgent_cleanup(void* param);
+    void hkpSphereTriangleAgent_cleanup(void* constraintOwner);
 };
 
 // If m_wFlags is not 0xFFFF, forwards m_wFlags and param to m_pInner->unk14, then calls unk00(1) on this object.
 // @fnv 0x00d3d200
 // src: HAVOK_SRC 0x00d3d200
-void FUN_00d3d200_cls::hkpSphereTriangleAgent_cleanup(void* param)
+// pdb: hkpSphereTriangleAgent::cleanup | hkpSphereTriangleAgent.obj | retail, upstream name already matches, high
+// pdb params: constraintOwner
+void FUN_00d3d200_cls::hkpSphereTriangleAgent_cleanup(void* constraintOwner)
 {
     if (m_wFlags != 0xFFFF)
     {
-        m_pInner->unk14(m_wFlags, param);
+        m_pInner->unk14(m_wFlags, constraintOwner);
     }
     this->unk00(1);
 }
@@ -160,7 +169,10 @@ struct TargetAgent
 
 // Allocates a 0x20-byte chunk from the thread memory and constructs a TargetAgent from bodyA and mgr, returning it.
 // @fnv 0x00d3d240
-void* __cdecl CreateTargetAgent(void* bodyA, void* bodyB, void* input, void* mgr)
+// src: XBOX_RETAIL_PDB 0x00d3d240
+// pdb: hkpSphereTriangleAgent::createTriangleSphereAgent | hkpSphereTriangleAgent.obj | retail, object-file gap fill, high
+// pdb params: bodyA, bodyB, input, mgr
+void* __cdecl hkpSphereTriangleAgent_createTriangleSphereAgent(void* bodyA, void* bodyB, void* input, void* mgr)
 {
     TargetAgent* agent = (TargetAgent*)hkThreadMemory::GetMonitorStream()->allocateChunk(0x20);
     agent->TargetAgent::TargetAgent(bodyA, mgr);
@@ -178,23 +190,26 @@ struct D3DD10Data
 
 struct D3DD10Object
 {
-    void __thiscall hkpSphereTriangleAgent_getPenetrations(unsigned int a1, unsigned int a2, unsigned int a3, D3DD10Data* data);
+    void __thiscall hkpSphereTriangleAgent_getPenetrations(unsigned int bodyA, unsigned int bodyB, unsigned int input, D3DD10Data* collector);
 
-    void __thiscall hkpSymmetricAgentLinearCast_hkpSphereTriangleAgent_getPenetrations(unsigned int p0, unsigned int p1, unsigned int p2, unsigned int p3);
+    void __thiscall hkpSymmetricAgentLinearCast_hkpSphereTriangleAgent_getPenetrations(unsigned int bodyA, unsigned int bodyB, unsigned int input, unsigned int collector);
 };
 
 // Builds a D3DD10Data with value p3, flag 0 and vt DAT_010ce81c, then calls FUN_00d3d2a0 with p1, p0, p2 and that data.
 // @fnv 0x00d3dd10
 // src: XBOX_PDB 0x00d3dd10
-void __thiscall D3DD10Object::hkpSymmetricAgentLinearCast_hkpSphereTriangleAgent_getPenetrations(unsigned int p0, unsigned int p1, unsigned int p2, unsigned int uiValue)
+// pdb: hkpSymmetricAgentLinearCast<hkpSphereTriangleAgent>::getPenetrations | hkpSphereTriangleAgent.obj | retail, vtable slot, high
+// pdb params: bodyA, bodyB, input, collector
+// pdb locals: flip
+void __thiscall D3DD10Object::hkpSymmetricAgentLinearCast_hkpSphereTriangleAgent_getPenetrations(unsigned int bodyA, unsigned int bodyB, unsigned int input, unsigned int collector)
 {
     D3DD10Data data;
 
-    data.value = uiValue;
+    data.value = collector;
     data.flag = 0;
     data.vt = &DAT_010ce81c[0];
 
-    this->hkpSphereTriangleAgent_getPenetrations(p1, p0, p2, &data);
+    this->hkpSphereTriangleAgent_getPenetrations(bodyB, bodyA, input, &data);
 }
 
 __forceinline void hkVector4q::setBroadcast3(const hkVector4q& v)
@@ -272,33 +287,35 @@ class ParticleSystemOps
 {
   public:
     void hkpSphereTriangleAgent_processCollision(int a, int b, int c, ParticleSystemState* state);
-    void hkpSymmetricAgentLinearCast_hkpSphereTriangleAgent_processCollision(int a1, int a2, int a3, ParticleSystemState* s);
+    void hkpSymmetricAgentLinearCast_hkpSphereTriangleAgent_processCollision(int bodyA, int bodyB, int input, ParticleSystemState* result);
 };
 
 // After FUN_00d3dd90, adds each new particle's w-scaled velocity to its first vector and flips its sign; if m_3030 changed, swaps several info fields.
 // @fnv 0x00d3e150
 // src: XBOX_PDB 0x00d3e150
-void ParticleSystemOps::hkpSymmetricAgentLinearCast_hkpSphereTriangleAgent_processCollision(int a1, int a2, int a3, ParticleSystemState* s)
+// pdb: hkpSymmetricAgentLinearCast<hkpSphereTriangleAgent>::processCollision | hkpSphereTriangleAgent.obj | retail, vtable slot, high
+// pdb params: bodyA, bodyB, input, result
+void ParticleSystemOps::hkpSymmetricAgentLinearCast_hkpSphereTriangleAgent_processCollision(int bodyA, int bodyB, int input, ParticleSystemState* result)
 {
     float x;
-    x = s->m_3030;
+    x = result->m_3030;
     SpawnedParticle* t;
-    t = s->m_kRayEnd;
-    this->hkpSphereTriangleAgent_processCollision(a2, a1, a3, s);
-    for (; t < s->m_kRayEnd; t++)
+    t = result->m_kRayEnd;
+    this->hkpSphereTriangleAgent_processCollision(bodyB, bodyA, input, result);
+    for (; t < result->m_kRayEnd; t++)
     {
         hkVector4q pObj;
         pObj.setBroadcast3(t->m_fVelocity);
         t->m_vContactPosition.addMul4(pObj, t->m_fVelocity);
         t->m_fVelocity.setXor4(t->m_fVelocity, DAT_010c4c00);
     }
-    if (x != s->m_3030)
+    if (x != result->m_3030)
     {
         hkVector4q* v3020;
-        v3020 = &s->m_3020;
+        v3020 = &result->m_3020;
         v3020->xor4(DAT_010c4c00);
         ParticleSystemState::Info* p;
-        p = &s->m_info;
+        p = &result->m_info;
         char val;
         val = p->m_304a.lo;
         p->m_304a.lo = p->m_304a.hi;
@@ -396,7 +413,7 @@ struct Sink
     virtual void unk04(BodyHolderB& a, BodyHolderB& b);
 };
 
-extern void __cdecl hkpCollideTriangleUtil_closestPointTriangle(hkVector4q* v, void* tri, float* f, Res* out, void* flag);
+extern void __cdecl hkpCollideTriangleUtil_closestPointTriangle(hkVector4q* v, void* tri, float* f, Res* out, void* featureOutput);
 
 // non-POD 1-dword wrapper params: block the entry-enregister pass so the
 // params are read lazily from their incoming arg slots (see e2fbc0)
@@ -419,13 +436,16 @@ class SphereTriAgent
   public:
     int unk00, unk04, unk08, unk0C;
     float unk10;
-    void hkpSphereTriangleAgent_getPenetrations(BodyHolderB* a, BodyHolderB* b, int c_, Sink* sink);
+    void hkpSphereTriangleAgent_getPenetrations(BodyHolderB* bodyA, BodyHolderB* bodyB, int input, Sink* collector);
 };
 
 // Tests sphere-triangle collision between two bodies and calls the sink if the distance is within the combined radii.
 // @fnv 0x00d3d2a0
 // src: HAVOK_SRC 0x00d3d2a0
-void SphereTriAgent::hkpSphereTriangleAgent_getPenetrations(BodyHolderB* apBodyA, BodyHolderB* apBodyB, int aiUnused, Sink* sink)
+// pdb: hkpSphereTriangleAgent::getPenetrations | hkpSphereTriangleAgent.obj | retail, upstream name already matches, high
+// pdb params: bodyA, bodyB, input, collector
+// pdb locals: cptr, posAinB
+void SphereTriAgent::hkpSphereTriangleAgent_getPenetrations(BodyHolderB* bodyA, BodyHolderB* bodyB, int input, Sink* collector)
 {
     volatile unsigned int lo;
     {
@@ -440,10 +460,10 @@ void SphereTriAgent::hkpSphereTriangleAgent_getPenetrations(BodyHolderB* apBodyA
             pProfBuf->m_end.m_storage = reinterpret_cast<char*>(pProfRec + 1);
         }
     }
-    BodyB* shapeA = apBodyA->obj;
-    LocalM128 vTransA = apBodyA->xf->t;
-    BodyB* shapeB = apBodyB->obj;
-    XForm* pXFormB = apBodyB->xf;
+    BodyB* shapeA = bodyA->obj;
+    LocalM128 vTransA = bodyA->xf->t;
+    BodyB* shapeB = bodyB->obj;
+    XForm* pXFormB = bodyB->xf;
     LocalM128 d = _mm_sub_ps(vTransA, pXFormB->t);
     LocalM128 r0 = pXFormB->r0, r1 = pXFormB->r1, r2 = pXFormB->r2;
     LocalM128 tmpLo = _mm_unpacklo_ps(r0, r1);
@@ -462,7 +482,7 @@ void SphereTriAgent::hkpSphereTriangleAgent_getPenetrations(BodyHolderB* apBodyA
     float dist = shapeB->unk10 + shapeA->unk10;
     if (out.d < dist)
     {
-        sink->unk04(*apBodyA, *apBodyB);
+        collector->unk04(*bodyA, *bodyB);
     }
     {
         hkMonitorStream* pProfBuf = (hkMonitorStream*)TlsGetValue(DAT_0126835c);
@@ -525,7 +545,7 @@ struct __declspec(align(16)) S_00d3d3e0_Out
 };
 
 void __cdecl hkpCollideTriangleUtil_setupClosestPointTriangleCache(void* a, hkVector4q* out);
-void __cdecl hkpCollideTriangleUtil_closestPointTriangle(hkVector4q* a, void* b, hkVector4q* c, S_00d3d3e0_Out* d, bool* e);
+void __cdecl hkpCollideTriangleUtil_closestPointTriangle(hkVector4q* a, void* b, hkVector4q* c, S_00d3d3e0_Out* d, bool* featureOutput);
 
 struct S_00d3d3e0_P1P
 {
@@ -554,7 +574,10 @@ struct S_00d3d3e0_P3P
 
 // @fnv 0x00d3d3e0
 // src: XBOX_PDB 0x00d3d3e0
-void hkpSphereTriangleAgent_staticGetPenetrations(S_00d3d3e0_P1P a1, S_00d3d3e0_P2P a2, int unused, S_00d3d3e0_P3P a3)
+// pdb: hkpSphereTriangleAgent::staticGetPenetrations | hkpSphereTriangleAgent.obj | retail, upstream name already matches, high
+// pdb params: bodyA, bodyB, input, collector
+// pdb locals: cache, cptr, posAinB
+void hkpSphereTriangleAgent_staticGetPenetrations(S_00d3d3e0_P1P bodyA, S_00d3d3e0_P2P bodyB, int input, S_00d3d3e0_P3P collector)
 {
     hkMonitorStream* h = (hkMonitorStream*)TlsGetValue(DAT_0126835c);
     if (h->m_end.m_storage < h->m_capacityMinus16.m_storage)
@@ -566,12 +589,12 @@ void hkpSphereTriangleAgent_staticGetPenetrations(S_00d3d3e0_P1P a1, S_00d3d3e0_
         e->m_time0 = t;
         h->m_end.m_storage = reinterpret_cast<char*>(e + 1);
     }
-    S_00d3d3e0_P1* p1 = a1.val();
+    S_00d3d3e0_P1* p1 = bodyA.val();
     S_00d3d3e0_Shape* shape = p1->shape;
-    S_00d3d3e0_Obj* obj = a2.val()->obj;
+    S_00d3d3e0_Obj* obj = bodyB.val()->obj;
     hkVector4q q;
     hkpCollideTriangleUtil_setupClosestPointTriangleCache(&obj->unk20, &q);
-    S_00d3d3e0_Mat* m2 = a2.val()->mat;
+    S_00d3d3e0_Mat* m2 = bodyB.val()->mat;
     S_00d3d3e0_Mat* m1 = p1->mat;
     LocalM128 d = _mm_sub_ps(*(LocalM128*)&m1->t, *(LocalM128*)&m2->t);
     LocalM128 c0 = *(LocalM128*)&m2->r0;
@@ -596,7 +619,7 @@ void hkpSphereTriangleAgent_staticGetPenetrations(S_00d3d3e0_P1P a1, S_00d3d3e0_
     hkpCollideTriangleUtil_closestPointTriangle(&v, &obj->unk20, &q, &out, 0);
     float sum = shape->f10 + obj->f10;
     if (out.f10 < sum)
-        a3.val()->v1(p1, a2.val());
+        collector.val()->v1(p1, bodyB.val());
     h = (hkMonitorStream*)TlsGetValue(DAT_0126835c);
     if (h->m_end.m_storage < h->m_capacityMinus16.m_storage)
     {
@@ -626,12 +649,15 @@ struct CpuObject
 // Fills a CpuCallData with fourth, DAT_0104da48 and &DAT_010ce7fc, then calls FUN_00d3d6b0 with second, first, third and the data pointer.
 // @fnv 0x00d3e0d0
 // src: XBOX_PDB 0x00d3e0d0
-void CpuObject::hkpSymmetricAgentLinearCast_hkpSphereTriangleAgent_getClosestPoints(void* first, void* second, unsigned int third, unsigned int uiValue)
+// pdb: hkpSymmetricAgentLinearCast<hkpSphereTriangleAgent>::getClosestPoints | hkpSphereTriangleAgent.obj | retail, vtable slot, high
+// pdb params: bodyA, bodyB, input, collector
+// pdb locals: flip
+void CpuObject::hkpSymmetricAgentLinearCast_hkpSphereTriangleAgent_getClosestPoints(void* bodyA, void* bodyB, unsigned int input, unsigned int collector)
 {
     CpuCallData data;
-    data.value = uiValue;
+    data.value = collector;
     data.bound = DAT_0104da48;
     data.descriptor = &DAT_010ce7fc;
-    hkpSphereTriangleAgent_getClosestPoints(second, first, third, &data);
+    hkpSphereTriangleAgent_getClosestPoints(bodyB, bodyA, input, &data);
 }
 }  // namespace fnv_00d3e0d0

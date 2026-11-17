@@ -119,6 +119,7 @@ struct FUN_00d877d0_class
 };
 
 // @fnv 0x00d877d0
+// pdb: hkCachedHashMap<hkStringMapOperations,hkContainerHeapAllocator>::~hkCachedHashMap<hkStringMapOperations,hkContainerHeapAllocator> | hkStringMap.obj | retail, call graph, medium
 void FUN_00d877d0_class::FreeBuffer()
 {
     hkMemoryRouter* router = _D1A0E0GetMemoryRouter();
@@ -130,14 +131,16 @@ struct FUN_00d87820_Class
     char* SetBoolFromThreshold(char* p, int value);
     int FindStringKey(int);
     void ProcessEntries_00d876a0(int);
-    int ProcessAndReturnValue_00d87820(int a);
+    int ProcessAndReturnValue_00d87820(int key);
 };
 
 // @fnv 0x00d87820
 // src: GUESS 0x00d87820 (confidence: low)
-int FUN_00d87820_Class::ProcessAndReturnValue_00d87820(int a)
+// pdb: hkCachedHashMap<hkStringMapOperations,hkContainerHeapAllocator>::remove | hkStringMap.obj | retail, call graph, high
+// pdb params: it
+int FUN_00d87820_Class::ProcessAndReturnValue_00d87820(int key)
 {
-    int v = FindStringKey(a);
+    int v = FindStringKey(key);
     char r;
     if (*SetBoolFromThreshold(&r, v))
     {
@@ -205,6 +208,8 @@ static __forceinline int stringHash(const char* str)
 }
 
 // @fnv 0x00d87580
+// pdb: hkCachedHashMap<hkStringMapOperations,hkContainerHeapAllocator>::findKey | hkStringMap.obj | retail, call graph (shared callers), high
+// pdb params: key
 int FUN_00d87820_Class::FindStringKey(int key)
 {
     const char* str = (const char*)key;
@@ -230,11 +235,13 @@ struct FUN_00d87790
     int m_iCapacityFlags;
     int m_iPairCount;
 
-    FUN_00d87790(int a);
+    FUN_00d87790(int ops);
 };
 
 // @fnv 0x00d87790
-FUN_00d87790::FUN_00d87790(int a)
+// pdb: hkCachedHashMap<hkStringMapOperations,hkContainerHeapAllocator>::hkCachedHashMap<hkStringMapOperations,hkContainerHeapAllocator> | hkStringMap.obj | retail, call graph, high
+// pdb params: ops
+FUN_00d87790::FUN_00d87790(int ops)
 {
     hkMemoryRouter* router = hkMemoryRouter_getInstance();
     void* p = reinterpret_cast<hkMemoryAllocator*>(router->m_heap)->blockAlloc(0xc0);
@@ -247,11 +254,13 @@ FUN_00d87790::FUN_00d87790(int a)
 class hkObjectD878
 {
   public:
-    void hkCachedHashMap_hkStringMapOperations_hkContainerHeapAllocator_get(int a, int* piValue);
+    void hkCachedHashMap_hkStringMapOperations_hkContainerHeapAllocator_get(int a, int* out);
     int GetValue(int a, int b);
 };
 
 // @fnv 0x00d87800
+// pdb: hkCachedHashMap<hkStringMapOperations,hkContainerHeapAllocator>::getWithDefault | hkStringMap.obj | retail, call graph, medium
+// pdb params: key, def
 int hkObjectD878::GetValue(int a, int aiDefault)
 {
     int iValue = aiDefault;
@@ -275,6 +284,8 @@ class hkStringMapD876
 
 // Looks up key; if found returns its value, otherwise stores def under key and returns def.
 // @fnv 0x00d87600
+// pdb: hkCachedHashMap<hkStringMapOperations,hkContainerHeapAllocator>::getOrInsert | hkStringMap.obj | retail, object-file run extension, low
+// pdb params: key, ifNotFound
 int hkStringMapD876::GetOrSetInt(const char* key, int iDefault)
 {
     int it = FindStringKey(key);
@@ -300,12 +311,14 @@ class hkStringMapD8765
 // Looks up key; if found writes its value to out and returns 0, otherwise returns 1.
 // @fnv 0x00d87650
 // src: XBOX_PDB 0x00d87650
-int hkStringMapD8765::hkCachedHashMap_hkStringMapOperations_hkContainerHeapAllocator_get(const char* key, int* piOut)
+// pdb: hkCachedHashMap<hkStringMapOperations,hkContainerHeapAllocator>::get | hkStringMap.obj | retail, call graph, high
+// pdb params: key, out
+int hkStringMapD8765::hkCachedHashMap_hkStringMapOperations_hkContainerHeapAllocator_get(const char* key, int* out)
 {
     int it = FindStringKey(key);
     if (SetBoolFromThreshold(it))
     {
-        *piOut = hkCachedHashMap_hkStringMapOperations_hkContainerHeapAllocator_getValue(it);
+        *out = hkCachedHashMap_hkStringMapOperations_hkContainerHeapAllocator_getValue(it);
         return 0;
     }
     return 1;
@@ -322,13 +335,16 @@ class FUN_00d874d0_s
     int m_iCapacityFlags;
     int m_iPairCount;
 
-    void hkCachedHashMap_hkStringMapOperations_hkContainerHeapAllocator_insert(const char* pcKey, int iValue);
+    void hkCachedHashMap_hkStringMapOperations_hkContainerHeapAllocator_insert(const char* key, int val);
     void hkCachedHashMap_struct_hkStringMapOperations_struct_hkContainerHeapAllocator_resizeTable(int iNewCap);
 };
 
 // Grows the primitive element array to iNewCap, re-inserts existing pairs via FUN_00d874d0, and releases the old block.
 // @fnv 0x00d87860
 // src: HAVOK_LIB 0x00d87860
+// pdb: hkCachedHashMap<hkStringMapOperations,hkContainerHeapAllocator>::resizeTable | hkStringMap.obj | retail, object-file run extension, low
+// pdb params: newcap
+// pdb locals: assertBuf, ostr
 void FUN_00d874d0_s::hkCachedHashMap_struct_hkStringMapOperations_struct_hkContainerHeapAllocator_resizeTable(int iNewCap)
 {
     int iOldCap = m_iPairCount + 1;
@@ -360,6 +376,8 @@ struct S00d876a0_Map
 // Removes the element at index it from the open-addressing hash table, compacting remaining entries to fill the gap.
 // @fnv 0x00d876a0
 // src: GUESS 0x00d876a0 (confidence: low)
+// pdb: hkCachedHashMap<hkStringMapOperations,hkContainerHeapAllocator>::remove | hkStringMap.obj | debug, call graph, low
+// pdb params: it
 void S00d876a0_Map::ProcessEntries_00d876a0(int aiIndex)
 {
     unsigned i = aiIndex;
@@ -421,16 +439,18 @@ class hkStringMapD874
         return h & 0x7fffffff;
     }
 
-    void hkCachedHashMap_hkStringMapOperations_hkContainerHeapAllocator_insert(const char* pcKey, int iValue);
+    void hkCachedHashMap_hkStringMapOperations_hkContainerHeapAllocator_insert(const char* key, int val);
     void hkCachedHashMap_struct_hkStringMapOperations_struct_hkContainerHeapAllocator_resizeTable(int iNewCap);
 };
 
 // Inserts a key-value pair into the hash map, growing the table if the load factor exceeds half capacity.
 // @fnv 0x00d874d0
 // src: XBOX_PDB 0x00d874d0
-void hkStringMapD874::hkCachedHashMap_hkStringMapOperations_hkContainerHeapAllocator_insert(const char* pcKey, int iValue)
+// pdb: hkCachedHashMap<hkStringMapOperations,hkContainerHeapAllocator>::insert | hkStringMap.obj | retail, call graph, high
+// pdb params: key, val
+void hkStringMapD874::hkCachedHashMap_hkStringMapOperations_hkContainerHeapAllocator_insert(const char* key, int val)
 {
-    int uiHash = hash(pcKey);
+    int uiHash = hash(key);
     if (m_iCapacityFlags * 2 > m_iPairCount)
         hkCachedHashMap_struct_hkStringMapOperations_struct_hkContainerHeapAllocator_resizeTable(m_iPairCount + m_iPairCount + 2);
 
@@ -440,7 +460,7 @@ void hkStringMapD874::hkCachedHashMap_hkStringMapOperations_hkContainerHeapAlloc
         if (m_kPrimitiveElement[i] == uiHash)
         {
             const char* pcStored = (const char*)m_kPrimitiveElement[m_iPairCount + i + 1];
-            if (hkString_strCmp(pcKey, pcStored) == 0)
+            if (hkString_strCmp(key, pcStored) == 0)
                 goto KEY_FOUND;
         }
         i = (i + 1) & m_iPairCount;
@@ -450,8 +470,8 @@ void hkStringMapD874::hkCachedHashMap_hkStringMapOperations_hkContainerHeapAlloc
 
 KEY_FOUND:
     m_kPrimitiveElement[i] = uiHash;
-    m_kPrimitiveElement[m_iPairCount + i + 1] = (unsigned long)pcKey;
-    m_kPrimitiveElement[2 * m_iPairCount + 2 + i] = iValue;
+    m_kPrimitiveElement[m_iPairCount + i + 1] = (unsigned long)key;
+    m_kPrimitiveElement[2 * m_iPairCount + 2 + i] = val;
 }
 
 namespace fnv_00e02800 {
@@ -469,7 +489,7 @@ class FUN_00d87790
     int m_iPairCount;
     int unk0C;
 
-    FUN_00d87790(hkBool bOwnsKeys) throw();
+    FUN_00d87790(hkBool ops) throw();
 
     static void* operator new(unsigned int uiSize)
     {
@@ -479,7 +499,7 @@ class FUN_00d87790
 
     int FindStringKey(const char* pcKey);
     char* SetBoolFromThreshold(char* pcOut, int iIt);
-    void hkCachedHashMap_hkStringMapOperations_hkContainerHeapAllocator_insert(const char* pcKey, int iValue);
+    void hkCachedHashMap_hkStringMapOperations_hkContainerHeapAllocator_insert(const char* key, int val);
     int GetEntry(int iIt);
     void SetElement(int iIt, int iValue);
 
@@ -517,6 +537,8 @@ class NamedObjectsE028
 // Pools pcName via m_pkPool, stores a new EntryE028 with pkObject and the pooled name into m_kEntries.
 // @fnv 0x00e02800
 // src: GUESS 0x00e02800 (confidence: medium)
+// pdb: hkRelocationInfo::addImport | hkRelocationInfo.obj | retail, object-file run extension, low
+// pdb params: off, name
 void NamedObjectsE028::AddNamedPooledObject(void* pkObject, const char* pcName)
 {
     if (!m_pkPool)

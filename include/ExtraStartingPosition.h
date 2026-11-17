@@ -4,6 +4,7 @@
 
 class TESObjectREFR;
 
+// pdb: class ExtraStartingPosition, size 0x24, bases: BSExtraData, 1 members
 class ExtraStartingPosition : public BSExtraData
 {
 public:

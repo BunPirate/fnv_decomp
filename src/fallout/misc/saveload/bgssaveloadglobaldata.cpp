@@ -34,11 +34,13 @@ class NiTexture;
 class NiNode;
 class BGSPerkEntry;
 extern TES* g_TES;
+// pdb: class ScreenSplatter, size 0x1, 0 members
 class ScreenSplatter
 {
   public:
     static void Clear();
 };
+// pdb: class ScreenCustomSplatter, size 0x1, 0 members
 class ScreenCustomSplatter
 {
   public:
@@ -51,7 +53,7 @@ class BgssaveloadglobaldataInterfaceView
   public:
     static void ApplyLoadBuffer(BGSLoadGameBuffer*);
     static void Revert(BGSLoadGameBuffer*);
-    static void LoadGame(BGSLoadGameBuffer*);
+    static void Interface_LoadGame(BGSLoadGameBuffer*);
     static void PrintDebugMessage(BGSLoadGameBuffer*);
 };
 
@@ -66,7 +68,7 @@ void ResetRadioGlobals(BGSLoadGameBuffer*);
 class MagicItem;
 
 void BGSSaveLoadGlobalData_LoadGlobals(BGSLoadGameBuffer*);
-void ReadSavedSettings(BGSLoadGameBuffer*);
+void MiscStatManager_LoadGame(BGSLoadGameBuffer*);
 void FalloutRadio_LoadGame(BGSLoadGameBuffer*);
 class SoundPlaybackManager
 {
@@ -84,17 +86,18 @@ class TESObjectCELL;
 extern TESWorldSpace* BGSSaveLoadGlobalDataWorldspacePtr;
 
 
-class SaveGameLoader
+// pdb: class BGSSaveLoadGlobalData, size 0x1, 0 members
+class BGSSaveLoadGlobalData // src: XBOX_RETAIL_PDB 0x0084be40 (first retail link of 6 high-tier links to its methods; old: SaveGameLoader)
 {
   public:
     static void LoadGameData(BGSLoadGameBuffer*);
     static void FreeChangeData();
     static void UnloadGameData();
-    static bool LoadFormType(unsigned int, BGSLoadGameBuffer*);
+    static bool FinishLoadGlobalDataRange(unsigned int, BGSLoadGameBuffer*);
     static void LoadEffects(BGSLoadGameBuffer*);
-    static bool LoadFormRange(unsigned int, BGSLoadGameBuffer*, bool);
-    static bool LoadGlobalDataRange(unsigned int, BGSLoadGameBuffer*);
-    static bool LoadGlobalDataType(unsigned int type, BGSLoadGameBuffer* buffer);
+    static bool RevertGlobalDataRange(unsigned int, BGSLoadGameBuffer*, bool);
+    static bool LoadGlobalData(unsigned int, BGSLoadGameBuffer*);
+    static bool LoadGlobalDataType(unsigned int aiStart, BGSLoadGameBuffer* aiEnd);
 };
 
 void __cdecl LogWarning(const char* format, ...);
@@ -104,7 +107,9 @@ extern "C" void fnv_call_836af0();
 extern "C" void fnv_call_845cc0();
 
 // @fnv 0x0084d160
-void SaveGameLoader::UnloadGameData()
+// pdb: BGSSaveLoadGlobalData::RevertEffects | BGSSaveLoadGlobalData.obj | debug, object-file gap fill, medium
+// pdb locals: plist, pmod
+void BGSSaveLoadGlobalData::UnloadGameData()
 {
     ScreenSplatter::Clear();
     ScreenCustomSplatter::Clear();
@@ -133,24 +138,28 @@ void SaveGameLoader::UnloadGameData()
 
 // Dispatches loading of global game data by type to the matching loader, logging an error for unknown types.
 // @fnv 0x0084c190
-bool SaveGameLoader::LoadFormType(unsigned int type, BGSLoadGameBuffer* buffer)
+// src: XBOX_RETAIL_PDB 0x0084c190
+// pdb: BGSSaveLoadGlobalData::FinishLoadGlobalDataRange | BGSSaveLoadGlobalData.obj | retail, string-set bridge, high
+// pdb params: aiStart, aiEnd
+// pdb locals: loadGameBuffer, i
+bool BGSSaveLoadGlobalData::FinishLoadGlobalDataRange(unsigned int aiStart, BGSLoadGameBuffer* aiEnd)
 {
-    switch (type)
+    switch (aiStart)
     {
     case 1:
         return false;
     case 2:
-        g_TES->ProcessItems(buffer);
+        g_TES->FinishLoadGame(aiEnd);
         return true;
     case 3:
         return false;
     case 4:
         return false;
     case 5:
-        ((CombatManager*)BGSSaveLoadGlobalDataWorldspacePtr)->ApplyLoadBuffer(buffer);
+        ((CombatManager*)BGSSaveLoadGlobalDataWorldspacePtr)->FinishLoadGame(aiEnd);
         return true;
     case 6:
-        BgssaveloadglobaldataInterfaceView::ApplyLoadBuffer(buffer);
+        BgssaveloadglobaldataInterfaceView::ApplyLoadBuffer(aiEnd);
         return true;
     case 7:
         return false;
@@ -161,33 +170,36 @@ bool SaveGameLoader::LoadFormType(unsigned int type, BGSLoadGameBuffer* buffer)
     case 9:
         return false;
     case 10:
-        FalloutRadio::ApplyLoadBuffer(buffer);
+        FalloutRadio::ApplyLoadBuffer(aiEnd);
         return true;
     case 11:
         return false;
     case 1000:
         return false;
     default:
-        LogWarning("DEFAULT: Unknown global data type %i in FinishLoadGlobalData()", type);
+        LogWarning("DEFAULT: Unknown global data type %i in FinishLoadGlobalData()", aiStart);
         return false;
     }
 }
 
 // @fnv 0x0084d070
-void SaveGameLoader::LoadEffects(BGSLoadGameBuffer* buffer)
+// pdb: BGSSaveLoadGlobalData::LoadEffects | BGSSaveLoadGlobalData.obj | retail, call graph, high
+// pdb params: apLoadGameBuffer
+// pdb locals: iextraCount, i, foffset, pmod, fstrength, pinstance
+void BGSSaveLoadGlobalData::LoadEffects(BGSLoadGameBuffer* apLoadGameBuffer)
 {
-    unsigned int count = buffer->ReadElementCount();
+    unsigned int count = apLoadGameBuffer->ReadElementCount();
     for (unsigned int i = 0; i < count; ++i)
     {
         float strength = 0.0f;
-        buffer->ReadDataBlock(&strength, 4);
+        apLoadGameBuffer->ReadDataBlock(&strength, 4);
         TESImageSpaceModifier* modifier;
         {
             float age = 0.0f;
-            if (buffer->GetVersion() >= 14)
-                buffer->ReadDataBlock(&age, 4);
+            if (apLoadGameBuffer->GetVersion() >= 14)
+                apLoadGameBuffer->ReadDataBlock(&age, 4);
             modifier = 0;
-            modifier = dynamic_cast<TESImageSpaceModifier*>(TESForm::GetFormByID(buffer->ReadFormIdentifier()));
+            modifier = dynamic_cast<TESImageSpaceModifier*>(TESForm::GetFormByID(apLoadGameBuffer->ReadFormIdentifier()));
             if (modifier)
             {
                 ImageSpaceModifierInstanceForm* instance =
@@ -201,104 +213,112 @@ void SaveGameLoader::LoadEffects(BGSLoadGameBuffer* buffer)
 
 // Dispatches on a global data type to revert the matching subsystem from the load buffer, returning false for unsupported types.
 // @fnv 0x0084c330
-bool SaveGameLoader::LoadFormRange(unsigned int type, BGSLoadGameBuffer* buffer, bool globals)
+// src: XBOX_RETAIL_PDB 0x0084c330
+// pdb: BGSSaveLoadGlobalData::RevertGlobalDataRange | BGSSaveLoadGlobalData.obj | retail, string-set bridge, high
+// pdb params: aiStart, aiEnd, abFullRevert
+// pdb locals: loadGameBuffer, i
+bool BGSSaveLoadGlobalData::RevertGlobalDataRange(unsigned int aiStart, BGSLoadGameBuffer* aiEnd, bool abFullRevert)
 {
-    switch (type)
+    switch (aiStart)
     {
     case 1:
         return false;
     case 2:
-        g_TES->TES_Revert(buffer);
+        g_TES->TES_Revert(aiEnd);
         return true;
     case 3:
-        if (globals)
+        if (abFullRevert)
         {
             FreeChangeData();
             return true;
         }
         return false;
     case 4:
-        ((FalloutRadio*)&g_011e0e80)->Revert(buffer);
+        ((FalloutRadio*)&g_011e0e80)->Revert(aiEnd);
         return true;
     case 5:
-        ((CombatManager*)BGSSaveLoadGlobalDataWorldspacePtr)->FUN_00993800(buffer);
+        ((CombatManager*)BGSSaveLoadGlobalDataWorldspacePtr)->FUN_00993800(aiEnd);
         return true;
     case 6:
-        BgssaveloadglobaldataInterfaceView::Revert(buffer);
+        BgssaveloadglobaldataInterfaceView::Revert(aiEnd);
         return true;
     case 7:
         UnloadGameData();
         return true;
     case 0:
-        MiscStatManager_Revert(buffer);
+        MiscStatManager_Revert(aiEnd);
         return true;
     case 8:
         return false;
     case 9:
-        ActorCause::ClearActorCauseList(buffer);
+        ActorCause::ClearActorCauseList(aiEnd);
         return true;
     case 10:
-        ResetRadioGlobals(buffer);
+        ResetRadioGlobals(aiEnd);
         return true;
     case 11:
-        BgssaveloadglobaldataInterfaceView::PrintDebugMessage(buffer);
+        BgssaveloadglobaldataInterfaceView::PrintDebugMessage(aiEnd);
         return true;
     case 1000:
-        ((ProcessLists*)&g_011e0e80)->Revert(buffer);
+        ((ProcessLists*)&g_011e0e80)->Revert(aiEnd);
         return true;
     default:
-        LogWarning("DEFAULT: Unknown global data type %i in RevertGlobalData()", type);
+        LogWarning("DEFAULT: Unknown global data type %i in RevertGlobalData()", aiStart);
         return false;
     }
 }
 
 // Dispatches loading of global game data to the handler for the given type, returning false and logging an error for unknown types.
 // @fnv 0x0084be40
-bool SaveGameLoader::LoadGlobalDataRange(unsigned int type, BGSLoadGameBuffer* buffer)
+// src: XBOX_RETAIL_PDB 0x0084be40
+// pdb: BGSSaveLoadGlobalData::LoadGlobalData | BGSSaveLoadGlobalData.obj | retail, string-set bridge, high
+// pdb params: apFile, aiCount
+// pdb locals: i, iindex, loadGameBuffer
+bool BGSSaveLoadGlobalData::LoadGlobalData(unsigned int apFile, BGSLoadGameBuffer* aiCount)
 {
-    switch (type)
+    switch (apFile)
     {
     case 1:
-        LoadGameData(buffer);
+        LoadGameData(aiCount);
         return true;
     case 2:
-        g_TES->LoadGame(buffer);
+        g_TES->LoadGame(aiCount);
         return true;
     case 3:
-        BGSSaveLoadGlobalData_LoadGlobals(buffer);
+        BGSSaveLoadGlobalData_LoadGlobals(aiCount);
         return true;
     case 4:
-        ((FalloutRadio*)&g_011e0e80)->LoadGame(buffer);
+        ((FalloutRadio*)&g_011e0e80)->LoadGame(aiCount);
         return true;
     case 5:
-        ((CombatManager*)BGSSaveLoadGlobalDataWorldspacePtr)->LoadGame(buffer);
+        ((CombatManager*)BGSSaveLoadGlobalDataWorldspacePtr)->LoadGame(aiCount);
         return true;
     case 6:
-        BgssaveloadglobaldataInterfaceView::LoadGame(buffer);
+        BgssaveloadglobaldataInterfaceView::Interface_LoadGame(aiCount);
         return true;
     case 7:
-        LoadEffects(buffer);
+        LoadEffects(aiCount);
         return true;
     case 0:
-        ReadSavedSettings(buffer);
+        MiscStatManager_LoadGame(aiCount);
         return true;
     case 8:
-        Sky::GetInstance()->LoadGame(buffer);
+        Sky::GetInstance()->LoadGame(aiCount);
         return true;
     case 9:
-        ActorCause::LoadReferencesFromBuffer(buffer);
+        ActorCause::LoadReferencesFromBuffer(aiCount);
         return true;
     case 10:
-        FalloutRadio_LoadGame(buffer);
+        FalloutRadio_LoadGame(aiCount);
         return true;
     case 11:
-        SoundPlaybackManager::LoadGame(buffer);
+        SoundPlaybackManager::LoadGame(aiCount);
         return true;
     case 1000:
-        ((MagicCaster*)&g_011e0e80)->MagicCaster::SetSelectedMagicItem((MagicItem*)buffer);
+        ((MagicCaster*)&g_011e0e80)->MagicCaster::SetSelectedMagicItem((MagicItem*)aiCount);
         return true;
     default:
-        LogWarning("SAVELOAD: Unknown global data type %i in LoadGlobalData()", type);
+        LogWarning("SAVELOAD: Unknown global data type %i in LoadGlobalData()", apFile);
         return false;
     }
 }
@@ -309,6 +329,9 @@ void __cdecl ReadFileIntoBuffer(SaveLoadFile*, unsigned int*, unsigned int);
 
 // Reads count entries from file, each a type followed by a buffer, and loads each global data range.
 // @fnv 0x0084bc20
+// pdb: BGSSaveLoadGlobalData::LoadGlobalData | BGSSaveLoadGlobalData.obj | debug, object-file run extension, low
+// pdb params: apFile, aiCount
+// pdb locals: i, iindex, loadGameBuffer
 void __cdecl LoadGlobalDataRanges(SaveLoadFile* file, unsigned int count)
 {
     for (unsigned int i = 0; i < count; ++i)
@@ -318,7 +341,7 @@ void __cdecl LoadGlobalDataRanges(SaveLoadFile* file, unsigned int count)
             unsigned int type = 0;
             ReadFileIntoBuffer(file, &type, 4);
             buffer.ReadAndVerifySize(file);
-            SaveGameLoader::LoadGlobalDataRange(type, &buffer);
+            BGSSaveLoadGlobalData::LoadGlobalData(type, &buffer);
         }
     }
 }
@@ -330,7 +353,7 @@ void __cdecl BGSSaveLoadGlobalData_InitGlobalDataRange(unsigned int start, unsig
     BGSLoadGameBuffer buffer;
     for (unsigned int i = start; i < end; ++i)
     {
-        SaveGameLoader::LoadGlobalDataType(i, &buffer);
+        BGSSaveLoadGlobalData::LoadGlobalDataType(i, &buffer);
     }
 }
 
@@ -340,9 +363,12 @@ struct G975
 };
 // @fnv 0x0084c030
 // src: XBOX_PDB 0x0084c030
-bool __cdecl BGSSaveLoadGlobalData_InitGlobalDataRange_0084c030(unsigned int type, BGSLoadGameBuffer* buffer)
+// pdb: BGSSaveLoadGlobalData::InitGlobalDataRange | BGSSaveLoadGlobalData.obj | retail, string-set bridge, high
+// pdb params: aiStart, aiEnd
+// pdb locals: loadGameBuffer, i
+bool __cdecl BGSSaveLoadGlobalData_InitGlobalDataRange_0084c030(unsigned int aiStart, BGSLoadGameBuffer* aiEnd)
 {
-    switch (type)
+    switch (aiStart)
     {
     case 1:
         return false;
@@ -351,10 +377,10 @@ bool __cdecl BGSSaveLoadGlobalData_InitGlobalDataRange_0084c030(unsigned int typ
     case 3:
         return false;
     case 4:
-        ((G975*)&g_011e0e80)->fnv_call_975af0(buffer);
+        ((G975*)&g_011e0e80)->fnv_call_975af0(aiEnd);
         return true;
     case 5:
-        ((CombatManager*)BGSSaveLoadGlobalDataWorldspacePtr)->InitLoadGame_00993600(buffer);
+        ((CombatManager*)BGSSaveLoadGlobalDataWorldspacePtr)->InitLoadGame_00993600(aiEnd);
         return true;
     case 6:
         return false;
@@ -365,10 +391,10 @@ bool __cdecl BGSSaveLoadGlobalData_InitGlobalDataRange_0084c030(unsigned int typ
     case 8:
         return false;
     case 9:
-        ((void(__cdecl*)(BGSLoadGameBuffer*))fnv_call_66e810)(buffer);
+        ((void(__cdecl*)(BGSLoadGameBuffer*))fnv_call_66e810)(aiEnd);
         return true;
     case 10:
-        ((void(__cdecl*)(BGSLoadGameBuffer*))fnv_call_836af0)(buffer);
+        ((void(__cdecl*)(BGSLoadGameBuffer*))fnv_call_836af0)(aiEnd);
         return true;
     case 11:
         return false;
@@ -376,7 +402,7 @@ bool __cdecl BGSSaveLoadGlobalData_InitGlobalDataRange_0084c030(unsigned int typ
         return false;
     }
     ((void(__cdecl*)(const char*, unsigned int))fnv_call_845cc0)(
-        "DEFAULT: Unknown global data type %i in InitGlobalData()", type);
+        "DEFAULT: Unknown global data type %i in InitGlobalData()", aiStart);
     return false;
 }
 
@@ -384,11 +410,13 @@ namespace fnv_0084c110 {
 
 // @fnv 0x0084c110
 // src: XBOX_PDB 0x0084c110
+// pdb: BGSSaveLoadGlobalData::InitGlobalData | BGSSaveLoadGlobalData.obj | debug, object-file gap fill, medium
+// pdb params: aiGlobalDataType, apLoadGameBuffer
 void __cdecl BGSSaveLoadGlobalData_FinishLoadGlobalDataRange(unsigned int aiStart, unsigned int aiEnd)
 {
     BGSLoadGameBuffer loadGameBuffer;
     for (unsigned int i = aiStart; i < aiEnd; ++i)
-        SaveGameLoader::LoadFormType(i, &loadGameBuffer);
+        BGSSaveLoadGlobalData::FinishLoadGlobalDataRange(i, &loadGameBuffer);
 }
 }  // namespace fnv_0084c110
 
@@ -437,31 +465,34 @@ extern TESDataHandler* g_dataHandler;
 
 // @fnv 0x0084cc90
 // src: COMMUNITY 0x0084cc90
-void BGSSaveLoadGlobalData_SaveGlobals(BGSSaveFormBuffer* apBuffer)
+// pdb: BGSSaveLoadGlobalData::SaveGlobals | BGSSaveLoadGlobalData.obj | retail, upstream name already matches, high
+// pdb params: apSaveGameBuffer
+// pdb locals: pglobals, icount, plist, isaveGameBufferPos, pglobal, fvalue
+void BGSSaveLoadGlobalData_SaveGlobals(BGSSaveFormBuffer* apSaveGameBuffer)
 {
     BSSimpleList<TESGlobal*>* pList = g_dataHandler->GetTESGlobalList();
     int iCount = 0;
-    unsigned int uiStart = apBuffer->StartVariableSizedValue();
+    unsigned int uiStart = apSaveGameBuffer->StartVariableSizedValue();
     BSSimpleList<TESGlobal*>* pIter = pList;
     while (pIter)
     {
         TESGlobal* pGlobalForm = pIter->GetItem();
         if (pGlobalForm && !pGlobalForm->IsConstantGlobal())
         {
-            apBuffer->SerializeFormData(pGlobalForm, 0);
+            apSaveGameBuffer->SerializeFormData(pGlobalForm, 0);
             float fValue = pGlobalForm->GetValue();
-            apBuffer->SaveData(&fValue, 4, 0);
+            apSaveGameBuffer->SaveData(&fValue, 4, 0);
             ++iCount;
         }
         pIter = pIter->GetNext();
     }
-    apBuffer->SaveVariableSizedValue_00865ff0(iCount, uiStart);
+    apSaveGameBuffer->SaveVariableSizedValue_00865ff0(iCount, uiStart);
 }
 
 namespace fnv_00866200 {
 struct SaveLoadFile
 {
-    void WriteToFile(const void* apData, unsigned int auiSize);
+    void BGSSaveLoadFile_Write(const void* apData, unsigned int auiSize);
 };
 
 struct PackedFormID
@@ -469,7 +500,7 @@ struct PackedFormID
     unsigned char m_ucIDByte0;
     unsigned char m_ucIDByte1;
     unsigned char m_ucIDByte2;
-    void WriteFormIDBytes(unsigned int auiFormID);
+    void BGSNumericIDIndex_SetNumericID(unsigned int aiNumericID);
 };
 
 struct BGSSaveLoadChangeFlags
@@ -501,27 +532,30 @@ void __cdecl WriteValueByType(SaveLoadFile* apFile, unsigned int auiValue, int a
 struct FUN_00866200_owner
 {
     char* pBuffer;
-    void BGSUnloadedFormBuffer_Save(SaveLoadFile* apFile, unsigned int auiFormID, BGSSaveLoadChangeFlags aChangeFlags);
+    void BGSUnloadedFormBuffer_Save(SaveLoadFile* apFile, unsigned int aiFormID, BGSSaveLoadChangeFlags aiChangeFlags);
 };
 
 // @fnv 0x00866200
 // src: COMMUNITY 0x00866200
-void FUN_00866200_owner::BGSUnloadedFormBuffer_Save(SaveLoadFile* apFile, unsigned int auiFormID, BGSSaveLoadChangeFlags aChangeFlags)
+// pdb: BGSUnloadedFormBuffer::Save | BGSUnloadedFormBuffer.obj | retail, upstream name already matches, high
+// pdb params: apFile, aiFormID, aiChangeFlags
+// pdb locals: header, pbuffer, esizeType, isize, pheader
+void FUN_00866200_owner::BGSUnloadedFormBuffer_Save(SaveLoadFile* apFile, unsigned int aiFormID, BGSSaveLoadChangeFlags aiChangeFlags)
 {
     char* pData = pBuffer;
     char* pCurrent = pBuffer + 2;
     FormLoadContext header;
-    header.iFormID.WriteFormIDBytes(auiFormID);
-    header.m_pDeathItem = aChangeFlags;
+    header.iFormID.BGSNumericIDIndex_SetNumericID(aiFormID);
+    header.m_pDeathItem = aiChangeFlags;
     header.m_ucFormType.m_ucFormType = pData[0];
     header.cVersion = pData[1];
-    apFile->WriteToFile(&header, 9);
+    apFile->BGSSaveLoadFile_Write(&header, 9);
     int iSize = header.m_ucFormType.BGSSaveLoadFormInfo_GetSizeType();
     unsigned int uiValue = 0;
     pCurrent += ReadValueBySizeType(pCurrent, &uiValue, iSize);
     WriteValueByType(apFile, uiValue, iSize);
     if (uiValue)
-        apFile->WriteToFile(pCurrent, uiValue);
+        apFile->BGSSaveLoadFile_Write(pCurrent, uiValue);
 }
 }  // namespace fnv_00866200
 
@@ -540,33 +574,35 @@ struct ItemListNode
 
 struct FUN_00975840_owner
 {
-    void ProcessLists_SaveGame(BGSSaveFormBuffer* apBuffer);
+    void ProcessLists_SaveGame(BGSSaveFormBuffer* apSaveGameBuffer);
 };
 
 // @fnv 0x00975840
 // src: COMMUNITY 0x00975840
-void FUN_00975840_owner::ProcessLists_SaveGame(BGSSaveFormBuffer* apBuffer)
+// pdb: ProcessLists::SaveGame | ProcessLists.obj | retail, call graph, high
+// pdb locals: i, icount, plist, pcount, pcrime
+void FUN_00975840_owner::ProcessLists_SaveGame(BGSSaveFormBuffer* apSaveGameBuffer)
 {
-    apBuffer->SaveData((char*)this + 0x154, 4, 0);
-    apBuffer->SaveData((char*)this + 0x158, 4, 0);
-    apBuffer->SaveData((char*)this + 0x103b4, 4, 0);
-    apBuffer->SaveData((char*)this + 0x103b8, 4, 0);
+    apSaveGameBuffer->SaveData((char*)this + 0x154, 4, 0);
+    apSaveGameBuffer->SaveData((char*)this + 0x158, 4, 0);
+    apSaveGameBuffer->SaveData((char*)this + 0x103b4, 4, 0);
+    apSaveGameBuffer->SaveData((char*)this + 0x103b8, 4, 0);
     for (unsigned int i = 0; i < 5; ++i)
     {
         unsigned int ItemUpdateArray = 0;
-        unsigned int uiStart = apBuffer->StartVariableSizedValue();
+        unsigned int uiStart = apSaveGameBuffer->StartVariableSizedValue();
         ItemListNode* pIter = ((ItemListNode**)((char*)this + 0x44))[i];
         while (pIter)
         {
             SavedItem* pSavedItem = pIter->FUN_006815c0();
             if (pSavedItem)
             {
-                pSavedItem->SaveToStream(apBuffer);
+                pSavedItem->SaveToStream(apSaveGameBuffer);
                 ++ItemUpdateArray;
             }
             pIter = pIter->FUN_00726070();
         }
-        apBuffer->SaveVariableSizedValue_00865ff0(ItemUpdateArray, uiStart);
+        apSaveGameBuffer->SaveVariableSizedValue_00865ff0(ItemUpdateArray, uiStart);
     }
 }
 }  // namespace fnv_00975840
@@ -588,6 +624,8 @@ extern TESDataHandler* g_dataHandler;
 
 // Iterates the data handler's TESGlobal list and calls FUN_00843630 on each global through the save-load reconstruct map.
 // @fnv 0x0084ced0
+// pdb: BGSSaveLoadGlobalData::RevertGlobals | BGSSaveLoadGlobalData.obj | retail, object-file run extension, high
+// pdb locals: pglobals, preconstructForms, pglobal
 void ReconstructAllGlobals()
 {
     BSSimpleList<TESGlobal*>* pGlobalList;
@@ -677,6 +715,9 @@ extern TESDataHandler* g_dataHandler;
 extern BGSSaveLoadGame* g_BGSSaveLoadGame;
 
 // @fnv 0x0084c5a0
+// pdb: BGSSaveLoadGlobalData::LoadLocationData | BGSSaveLoadGlobalData.obj | debug, call graph, medium
+// pdb params: apLoadGameBuffer
+// pdb locals: plocation, ptesWorldSpace, icurrentGridY, inextID, icurrentGridX, bvalidPlayerLocation, playerLocation, pcell, pworld, centerGridLocation, icellX, icellY, isafeMarkerID, pref, loc, angle
 void LoadPlayerLocation(BGSLoadGameBuffer* apLoadGameBuffer)
 {
     TESForm* plocation;
@@ -816,13 +857,16 @@ void LoadPlayerLocation(BGSLoadGameBuffer* apLoadGameBuffer)
     NiObjectGarbage_ClearAll(0);
 }
 
-void __cdecl SaveLoadScreenData(BGSSaveFormBuffer* pkBuffer);
+void __cdecl LoadingMenu_SaveGame(BGSSaveFormBuffer* pkBuffer);
 
 extern TESDataHandler* g_pkB84C490DataHandler;
 extern TES* g_pkB84C490TES;
 extern TESObjectREFR* g_pkB84C490Player;
 
 // @fnv 0x0084c490
+// pdb: BGSSaveLoadGlobalData::SaveLocationData | BGSSaveLoadGlobalData.obj | retail, call graph, medium
+// pdb params: apSaveGameBuffer
+// pdb locals: plocation, icurrentGridY, inextID, icurrentGridX, playerLocation
 void __cdecl SavePlayerLocation(BGSSaveFormBuffer* pkBuffer)
 {
     unsigned int ItemUpdateArray = GetDataHandlerField208(g_pkB84C490DataHandler);
@@ -838,14 +882,14 @@ void __cdecl SavePlayerLocation(BGSSaveFormBuffer* pkBuffer)
     pkBuffer->SerializeFormData(pkWorldSpace2, 0);
     LLD_Point3 kPos = *(const LLD_Point3*)g_pkB84C490Player->GetPos();
     pkBuffer->SaveData(&kPos, 12, 0);
-    SaveLoadScreenData(pkBuffer);
+    LoadingMenu_SaveGame(pkBuffer);
 }
 
 void __cdecl SavePlayerLocation(BGSSaveFormBuffer*);
 void __cdecl Interface_SaveGame(BGSSaveFormBuffer*);
-void __cdecl SaveImageSpaceModifierInstances(BGSSaveFormBuffer*);
-void __cdecl SaveMiscStats(BGSSaveFormBuffer*);
-void __cdecl SaveE6D0Items(BGSSaveFormBuffer*);
+void __cdecl BGSSaveLoadGlobalData_SaveEffects(BGSSaveFormBuffer*);
+void __cdecl MiscStatManager_SaveGame(BGSSaveFormBuffer*);
+void __cdecl ActorCause_SaveActorCausesList(BGSSaveFormBuffer*);
 void __cdecl FalloutRadio_SaveGame(BGSSaveFormBuffer*);
 void __cdecl TESAudio_SaveGame(BGSSaveFormBuffer*);
 void __cdecl SaveGameWarning(const char*, ...);
@@ -855,55 +899,57 @@ struct Manager84
     void FUN_004534f0(BGSSaveFormBuffer*);
 };
 // Sky saving is absent from the shared interface; preserve the thiscall ABI.
-extern "C" void SaveSkyGame();
+extern "C" void Sky_SaveGame();
 // Dispatches saving of global data to a handler based on the type id, logging an error and returning false for unknown types.
 // @fnv 0x0084bcd0
 // src: COMMUNITY 0x0084bcd0
-bool __cdecl BGSSaveLoadGlobalData_SaveGlobalData(unsigned int type, BGSSaveFormBuffer* buffer)
+// pdb: BGSSaveLoadGlobalData::SaveGlobalData | BGSSaveLoadGlobalData.obj | retail, upstream name already matches, high
+// pdb params: aiGlobalDataType, apSaveGameBuffer
+bool __cdecl BGSSaveLoadGlobalData_SaveGlobalData(unsigned int aiGlobalDataType, BGSSaveFormBuffer* apSaveGameBuffer)
 {
-    switch (type)
+    switch (aiGlobalDataType)
     {
     case 1:
-        SavePlayerLocation(buffer);
+        SavePlayerLocation(apSaveGameBuffer);
         return true;
     case 2:
-        g_TES->SaveGame(buffer);
+        g_TES->SaveGame(apSaveGameBuffer);
         return true;
     case 3:
-        BGSSaveLoadGlobalData_SaveGlobals(buffer);
+        BGSSaveLoadGlobalData_SaveGlobals(apSaveGameBuffer);
         return true;
     case 4:
-        ((Manager84*)&g_011e0e80)->ProcessLists_SaveGame(buffer);
+        ((Manager84*)&g_011e0e80)->ProcessLists_SaveGame(apSaveGameBuffer);
         return true;
     case 5:
-        ((CombatManager*)BGSSaveLoadGlobalDataWorldspacePtr)->SaveGame(buffer);
+        ((CombatManager*)BGSSaveLoadGlobalDataWorldspacePtr)->SaveGame(apSaveGameBuffer);
         return true;
     case 6:
-        Interface_SaveGame(buffer);
+        Interface_SaveGame(apSaveGameBuffer);
         return true;
     case 7:
-        SaveImageSpaceModifierInstances(buffer);
+        BGSSaveLoadGlobalData_SaveEffects(apSaveGameBuffer);
         return true;
     case 0:
-        SaveMiscStats(buffer);
+        MiscStatManager_SaveGame(apSaveGameBuffer);
         return true;
     case 8:
-        ((void (__thiscall*)(Sky*, BGSSaveFormBuffer*))SaveSkyGame)(Sky::GetInstance(), buffer);
+        ((void (__thiscall*)(Sky*, BGSSaveFormBuffer*))Sky_SaveGame)(Sky::GetInstance(), apSaveGameBuffer);
         return true;
     case 9:
-        SaveE6D0Items(buffer);
+        ActorCause_SaveActorCausesList(apSaveGameBuffer);
         return true;
     case 10:
-        FalloutRadio_SaveGame(buffer);
+        FalloutRadio_SaveGame(apSaveGameBuffer);
         return true;
     case 11:
-        TESAudio_SaveGame(buffer);
+        TESAudio_SaveGame(apSaveGameBuffer);
         return true;
     case 1000:
-        ((Manager84*)&g_011e0e80)->FUN_004534f0(buffer);
+        ((Manager84*)&g_011e0e80)->FUN_004534f0(apSaveGameBuffer);
         return true;
     default:
-        SaveGameWarning("SAVELOAD: Unknown global data type %i in SaveGlobalData()", type);
+        SaveGameWarning("SAVELOAD: Unknown global data type %i in SaveGlobalData()", aiGlobalDataType);
         return false;
     }
 }
@@ -929,7 +975,10 @@ struct GlobalSeenMap
 
 // @fnv 0x0084cd40
 // src: COMMUNITY 0x0084cd40
-void BGSSaveLoadGlobalData_LoadGlobals(BGSLoadGameBuffer* pLoadBuffer)
+// pdb: BGSSaveLoadGlobalData::LoadGlobals | BGSSaveLoadGlobalData.obj | retail, upstream name already matches, high
+// pdb params: apLoadGameBuffer
+// pdb locals: pglobals, preconstructForms, GlobalsMap, it, pglobal, isaveGameCount, iloop, fvalue, bignore
+void BGSSaveLoadGlobalData_LoadGlobals(BGSLoadGameBuffer* apLoadGameBuffer)
 {
     SaveLoadChangeHistory* history5 = g_BGSSaveLoadGame->GetHistory();
     GlobalSeenMap unchanged2(37);
@@ -942,13 +991,13 @@ void BGSSaveLoadGlobalData_LoadGlobals(BGSLoadGameBuffer* pLoadBuffer)
         node2 = node2->GetNext();
     }
     {
-        unsigned int count8 = pLoadBuffer->ReadElementCount();
+        unsigned int count8 = apLoadGameBuffer->ReadElementCount();
         for (unsigned int aI = 0; aI < count8; aI++)
         {
             TESGlobal* loaded =
-                dynamic_cast<TESGlobal*>(TESForm::GetFormByID(pLoadBuffer->ReadFormIdentifier()));
+                dynamic_cast<TESGlobal*>(TESForm::GetFormByID(apLoadGameBuffer->ReadFormIdentifier()));
             float value9 = 0.0f;
-            pLoadBuffer->ReadDataBlock(&value9, 4);
+            apLoadGameBuffer->ReadDataBlock(&value9, 4);
             if (loaded)
             {
                 if (!loaded->IsConstantGlobal())
@@ -973,7 +1022,11 @@ extern "C" double __cdecl GetImageSpaceModifierSaveTime();
 extern "C" void GetImageSpaceModifierStartTime();
 
 // @fnv 0x0084cf30
-void __cdecl SaveImageSpaceModifierInstances(int pBuffer)
+// src: XBOX_RETAIL_PDB 0x0084cf30
+// pdb: BGSSaveLoadGlobalData::SaveEffects | BGSSaveLoadGlobalData.obj | retail, call graph, high
+// pdb params: apSaveGameBuffer
+// pdb locals: icount, plist, icountPosition, pmod, pinstanceForm, foffset, fstrength
+void __cdecl BGSSaveLoadGlobalData_SaveEffects(int apSaveGameBuffer)
 {
     int aV11;
     BSSimpleList<NiPointer<ImageSpaceModifierInstance> >* i6;
@@ -984,7 +1037,7 @@ void __cdecl SaveImageSpaceModifierInstances(int pBuffer)
     float v5;
 
     v3 = 0;
-    aV11 = ((BGSSaveFormBuffer*)pBuffer)->StartVariableSizedValue();
+    aV11 = ((BGSSaveFormBuffer*)apSaveGameBuffer)->StartVariableSizedValue();
     i6 = (BSSimpleList<NiPointer<ImageSpaceModifierInstance> >*)g_TES->FUN_0043b5d0();
     while (i6 != 0)
     {
@@ -995,18 +1048,18 @@ void __cdecl SaveImageSpaceModifierInstances(int pBuffer)
             if (v2 != 0)
             {
                 aV6 = ((NiBound*)v2)->FUN_0084d030();
-                ((BGSSaveFormBuffer*)pBuffer)->SaveData(&aV6, 4, 0);
+                ((BGSSaveFormBuffer*)apSaveGameBuffer)->SaveData(&aV6, 4, 0);
                 v5 = (float)(GetImageSpaceModifierSaveTime() -
                     ((double (__thiscall*)(ImageSpaceModifierInstanceForm*))GetImageSpaceModifierStartTime)(
                         (ImageSpaceModifierInstanceForm*)v2));
-                ((BGSSaveFormBuffer*)pBuffer)->SaveData(&v5, 4, 0);
-                ((BGSSaveFormBuffer*)pBuffer)->FUN_00865df0((void*)((NiTimeController*)v2)->FUN_00441110(), 0);
+                ((BGSSaveFormBuffer*)apSaveGameBuffer)->SaveData(&v5, 4, 0);
+                ((BGSSaveFormBuffer*)apSaveGameBuffer)->FUN_00865df0((void*)((NiTimeController*)v2)->FUN_00441110(), 0);
                 ++v3;
             }
         }
         i6 = i6->GetNext();
     }
-    ((BGSSaveFormBuffer*)pBuffer)->SaveVariableSizedValue_00865ff0(v3, aV11);
+    ((BGSSaveFormBuffer*)apSaveGameBuffer)->SaveVariableSizedValue_00865ff0(v3, aV11);
 }
 
 #include <stdarg.h>
@@ -1014,6 +1067,8 @@ void __cdecl FUN_00ecbe60(const char* fmt, va_list args);
 
 // @fnv 0x0084cbd0
 // src: COMMUNITY 0x0084cbd0
+// pdb: BSprintf | BGSSaveLoadManager.obj | retail, upstream name already matches, high
+// pdb params: apFormat, vList
 void __cdecl BSprintf(const char* apFormat, ...)
 {
     va_list args;

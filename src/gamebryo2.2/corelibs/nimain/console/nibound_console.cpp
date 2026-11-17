@@ -22,6 +22,7 @@ struct NiAGDDataBlock
 
 // Allocates a 16-byte NiAGDDataBlock, initialises its fields to zero, sets its vtable, and returns it (or null on failure).
 // @fnv 0x00a7f650
+// pdb: BSPackedAdditionalGeometryData::CreateAGDDataBlock | BSPackedAdditionalGeometryData.obj | retail, vtable slot, high
 NiAGDDataBlock* __cdecl CreateNiAGDDataBlock()
 {
     NiAGDDataBlock* pDataBlock = (NiAGDDataBlock*)g_memoryManager.Allocate(0x10);
@@ -94,6 +95,9 @@ void __fastcall ReleasePackedAGDBuffer(BSPackedAdditionalGeometryData::NiBSPacke
 }
 
 // @fnv 0x00a7f620
+// pdb: BSPackedAdditionalGeometryData::IsEqual | BSPackedAdditionalGeometryData.obj | retail, vtable slot, high
+// pdb params: pkObject
+// pdb locals: pkData
 bool __fastcall IsPackedAdditionalGeometryDataEqual(BSPackedAdditionalGeometryData* pData,
                                                    void*, const NiAdditionalGeometryData* pkObject)
 {
@@ -158,6 +162,9 @@ struct Bound88
 };
 
 // @fnv 0x00a7ee30
+// pdb: NiBound::ComputeFromData | NiBound_Xenon.obj | retail, call graph, medium
+// pdb params: iQuantity, pkData
+// pdb locals: kMax, kMin, fRadiusSqr, i, diff, fLengthSqr
 void Bound88::ComputeBoundingSphere(int count, const Vec88* points)
 {
 
@@ -329,38 +336,42 @@ struct NiPt3
 
 extern const float kSphereEpsilon;
 
+// pdb: structure Sphere, size 0x10, 2 members
 struct Sphere
 {
-    NiPt3 center;
-    float radius;
-    void NiBound_Merge(const Sphere& other);
+    NiPt3 Center; // src: XBOX_RETAIL_PDB +0x0 (old: center)
+    float fRadius; // src: XBOX_RETAIL_PDB +0xc (old: radius)
+    void NiBound_Merge(const Sphere& pBound);
 };
 
 // Sets this sphere to the other when it contains this; otherwise adjusts center and radius to enclose both.
 // @fnv 0x00a7f3f0
 // src: GAMEBRYO_LIB 0x00a7f3f0
-void Sphere::NiBound_Merge(const Sphere& other)
+// pdb: NiBound::Merge | NiBound_Xenon.obj | debug, upstream name already matches, high
+// pdb params: pBound
+// pdb locals: selComp, dif, tmp1, c2, tmp2, calcCenter, c1, reclength, length, containedCenter, calcRadius, res, alpha
+void Sphere::NiBound_Merge(const Sphere& pBound)
 {
-    NiPt3 vDelta = center - other.center;
+    NiPt3 vDelta = Center - pBound.Center;
     float distSq = vDelta.SqrLength();
-    float fRadiusDiff = other.radius - radius;
+    float fRadiusDiff = pBound.fRadius - fRadius;
     float fRadiusDiffSq = fRadiusDiff * fRadiusDiff;
     float dist;
     if (fRadiusDiff >= 0.0f)
     {
         if (fRadiusDiffSq >= distSq)
         {
-            center = other.center;
-            radius = other.radius;
+            Center = pBound.Center;
+            fRadius = pBound.fRadius;
             return;
         }
         dist = sqrtf(distSq);
         if (dist > kSphereEpsilon)
         {
             float t = (dist - fRadiusDiff) / (dist * 2.0f);
-            center = other.center + vDelta * t;
+            Center = pBound.Center + vDelta * t;
         }
-        radius = (dist + other.radius + radius) * 0.5;
+        fRadius = (dist + pBound.fRadius + fRadius) * 0.5;
         return;
     }
     if (!(fRadiusDiffSq < distSq))
@@ -369,7 +380,7 @@ void Sphere::NiBound_Merge(const Sphere& other)
     if (dist > kSphereEpsilon)
     {
         float t = (dist - fRadiusDiff) / (dist * 2.0f);
-        center = other.center + vDelta * t;
+        Center = pBound.Center + vDelta * t;
     }
-    radius = (dist + other.radius + radius) * 0.5;
+    fRadius = (dist + pBound.fRadius + fRadius) * 0.5;
 }

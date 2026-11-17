@@ -4,7 +4,7 @@
 // @fnv 0x00441110
 unsigned int BGSTerrainManager::GetMinLevel()
 {
-    return uiMinLevel;
+    return iMinLevel;
 }
 
 // @fnv 0x0047d3f0

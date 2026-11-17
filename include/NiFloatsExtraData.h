@@ -6,6 +6,7 @@ template <class T> struct NiFloatsMallocInterface;
 #include "NiTArray.h"
 typedef NiTArray<char*, NiTMallocInterface<char*> > NiFloatsViewerStringsArray;
 
+// pdb: class NiFloatsExtraData, size 0x14, bases: NiExtraData, 2 members
 class NiFloatsExtraData : public NiExtraData
 {
   public:
@@ -29,7 +30,7 @@ class NiFloatsExtraData : public NiExtraData
     void* DestroyNiFloatsExtraData(unsigned int flags);
     bool IsEqual_00a890b0(const NiFloatsExtraData* pOther);
     void SaveBinary_00a89210(NiStream& stream);
-    void GetViewerStrings_00a89280(NiFloatsViewerStringsArray* pkStrings);
+    void GetViewerStrings_00a89280(NiFloatsViewerStringsArray* pStrings);
 
     unsigned int m_uiSize;
     float* m_pfValue;

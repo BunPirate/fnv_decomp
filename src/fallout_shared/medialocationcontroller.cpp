@@ -15,37 +15,40 @@ int __cdecl Warning(const char* apFormat, ...);
 extern TESDataHandler* g_dataHandler;
 
 // @fnv 0x005974f0
+// pdb: MediaLocationController::InitializeData | MediaLocationController.obj | retail, vtable slot, high
 void MediaLocationController::ResetFormData()
 {
-    m_fLowerWeightThreshold = 0.33f;
-    m_fUpperWeightThreshold = 0.66f;
-    m_fUpdateInterval = 60.0f;
-    m_uiShortDelay = 0x40;
-    m_uiLongDelay = 0x150;
-    m_kMediaSetList1.RemoveAll();
-    m_kMediaSetList2.RemoveAll();
-    m_kMediaSetList3.RemoveAll();
-    m_kMediaSetList4.RemoveAll();
-    m_kMediaSetList5.RemoveAll();
-    m_kMediaSetList6.RemoveAll();
+    fLayerTwoPercent = 0.33f;
+    fLayerThreePercent = 0.66f;
+    fLocationDelay = 60.0f;
+    uiDayStart = 0x40;
+    uiNightStart = 0x150;
+    lConditionalNeutralList.RemoveAll();
+    lConditionalAllyList.RemoveAll();
+    lConditionalFriendList.RemoveAll();
+    lConditionalEnemyList.RemoveAll();
+    lLocationList.RemoveAll();
+    lBattleList.RemoveAll();
     pFaction = 0;
-    m_eRequiredFightReaction = FIGHT_REACTION_FIGHT_REACTION_ENEMY;
-    m_pReference = 0;
+    rFactionConditional = FIGHT_REACTION_FIGHT_REACTION_ENEMY;
+    pAudioMarker = 0;
 }
 
 // Removes all entries from the six member containers of MediaLocationController.
 // @fnv 0x005975b0
+// pdb: MediaLocationController::ClearData | MediaLocationController.obj | retail, upstream name already matches, high
 void MediaLocationController::ClearData()
 {
-    m_kMediaSetList1.RemoveAll();
-    m_kMediaSetList2.RemoveAll();
-    m_kMediaSetList3.RemoveAll();
-    m_kMediaSetList4.RemoveAll();
-    m_kMediaSetList5.RemoveAll();
-    m_kMediaSetList6.RemoveAll();
+    lConditionalNeutralList.RemoveAll();
+    lConditionalAllyList.RemoveAll();
+    lConditionalFriendList.RemoveAll();
+    lConditionalEnemyList.RemoveAll();
+    lLocationList.RemoveAll();
+    lBattleList.RemoveAll();
 }
 
 // @fnv 0x005977d0
+// pdb: MediaSet::MediaLayer::MediaLayer | MediaSet.obj | debug, object-file gap fill, medium; the default constructor; 0x00599780 is the copy constructor
 MediaSetEntry::MediaSetEntry()
 {
     Name.Set(0, 0);
@@ -54,21 +57,23 @@ MediaSetEntry::MediaSetEntry()
 }
 
 // @fnv 0x005962e0
+// pdb: MediaLocationController::InitItem | MediaLocationController.obj | retail, string-set bridge, high
+// pdb locals: temp
 void MediaLocationController::InitItem()
 {
     if (IsFormInitialized())
         return;
-    ProcessMediaSetList(&m_kMediaSetList1);
-    ProcessMediaSetList(&m_kMediaSetList2);
-    ProcessMediaSetList(&m_kMediaSetList3);
-    ProcessMediaSetList(&m_kMediaSetList4);
-    ProcessMediaSetList(&m_kMediaSetList5);
-    ProcessMediaSetList(&m_kMediaSetList6);
+    InitItemList(&lConditionalNeutralList);
+    InitItemList(&lConditionalAllyList);
+    InitItemList(&lConditionalFriendList);
+    InitItemList(&lConditionalEnemyList);
+    InitItemList(&lLocationList);
+    InitItemList(&lBattleList);
     if (pFaction)
     {
         unsigned int auiFormId = reinterpret_cast<unsigned int>(pFaction);
         TESForm::RemapFormIDForFile(auiFormId, GetFile(-1));
-        pFaction = g_dataHandler->GetFactionByFormID(auiFormId);
+        pFaction = g_dataHandler->GetFaction(auiFormId);
         if (!pFaction)
             Warning("MASTERFILE: Could not find reputation (%08X) for MediaLocationController", pFaction);
     }
@@ -77,12 +82,16 @@ void MediaLocationController::InitItem()
 
 // Walks a list of MediaSet form IDs, resolves each via TESForm lookup, warns and removes entries that fail to resolve.
 // @fnv 0x00596190
-void MediaLocationController::ProcessMediaSetList(BSSimpleList<MediaSet*>* apList)
+// src: XBOX_RETAIL_PDB 0x00596190
+// pdb: MediaLocationController::InitItemList | MediaLocationController.obj | retail, string-set bridge, high
+// pdb params: plist
+// pdb locals: plastlist, tempint, pSet, tempstring
+void MediaLocationController::InitItemList(BSSimpleList<MediaSet*>* plist)
 {
     BSSimpleList<MediaSet*>* pPrevNode = 0;
-    while (apList && !apList->IsEmpty())
+    while (plist && !plist->IsEmpty())
     {
-        unsigned int auiFormId = reinterpret_cast<unsigned int>(apList->GetItem());
+        unsigned int auiFormId = reinterpret_cast<unsigned int>(plist->GetItem());
         TESForm::RemapFormIDForFile(auiFormId, GetFile(-1));
         MediaSet* pMediaSet = dynamic_cast<MediaSet*>(TESForm::GetFormByID(auiFormId));
         if (!pMediaSet)
@@ -93,21 +102,24 @@ void MediaLocationController::ProcessMediaSetList(BSSimpleList<MediaSet*>* apLis
             if (pPrevNode)
             {
                 pPrevNode->Remove(reinterpret_cast<MediaSet*>(auiFormId));
-                apList = pPrevNode->GetNext();
+                plist = pPrevNode->GetNext();
             }
             else
-                apList->RemoveHead();
+                plist->RemoveHead();
         }
         else
         {
-            apList->SetItem(pMediaSet);
-            pPrevNode = apList;
-            apList = apList->GetNext();
+            plist->SetItem(pMediaSet);
+            pPrevNode = plist;
+            plist = plist->GetNext();
         }
     }
 }
 
 // @fnv 0x005963d0
+// pdb: MediaLocationController::Load | MediaLocationController.obj | retail, vtable slot, high
+// pdb params: apFile
+// pdb locals: itempint, chunkid, pMessage
 bool MediaLocationController::LoadForm(TESFile* apFile)
 {
     unsigned int auiFormId = 0;
@@ -134,56 +146,56 @@ bool MediaLocationController::LoadForm(TESFile* apFile)
             apFile->GetChunkData(reinterpret_cast<unsigned int*>(&iFlags));
             break;
         case CHUNK_ID_NAM2_ID:
-            apFile->GetChunkData(reinterpret_cast<unsigned int*>(&m_fLowerWeightThreshold));
+            apFile->GetChunkData(reinterpret_cast<unsigned int*>(&fLayerTwoPercent));
             break;
         case CHUNK_ID_NAM3_ID:
-            apFile->GetChunkData(reinterpret_cast<unsigned int*>(&m_fUpperWeightThreshold));
+            apFile->GetChunkData(reinterpret_cast<unsigned int*>(&fLayerThreePercent));
             break;
         case CHUNK_ID_NAM4_ID:
-            apFile->GetChunkData(reinterpret_cast<unsigned int*>(&m_fUpdateInterval));
+            apFile->GetChunkData(reinterpret_cast<unsigned int*>(&fLocationDelay));
             break;
         case CHUNK_ID_NAM5_ID:
-            apFile->GetChunkData(&m_uiShortDelay);
+            apFile->GetChunkData(&uiDayStart);
             break;
         case CHUNK_ID_NAM6_ID:
-            apFile->GetChunkData(&m_uiLongDelay);
+            apFile->GetChunkData(&uiNightStart);
             break;
         case CHUNK_ID_NAM7_ID:
-            apFile->GetChunkData(reinterpret_cast<unsigned int*>(&m_fMediaSelectionValue));
+            apFile->GetChunkData(reinterpret_cast<unsigned int*>(&fRetriggerDelay));
             break;
         case CHUNK_ID_HNAM_ID: {
             apFile->GetChunkData(&auiFormId);
-            m_kMediaSetList1.AddHead(
+            lConditionalNeutralList.AddHead(
                 const_cast<MediaSet*&>(static_cast<MediaSet* const&>(reinterpret_cast<MediaSet*>(auiFormId))));
             break;
         }
         case CHUNK_ID_ZNAM_ID: {
             apFile->GetChunkData(&auiFormId);
-            m_kMediaSetList2.AddHead(
+            lConditionalAllyList.AddHead(
                 const_cast<MediaSet*&>(static_cast<MediaSet* const&>(reinterpret_cast<MediaSet*>(auiFormId))));
             break;
         }
         case CHUNK_ID_XNAM_ID: {
             apFile->GetChunkData(&auiFormId);
-            m_kMediaSetList3.AddHead(
+            lConditionalFriendList.AddHead(
                 const_cast<MediaSet*&>(static_cast<MediaSet* const&>(reinterpret_cast<MediaSet*>(auiFormId))));
             break;
         }
         case CHUNK_ID_YNAM_ID: {
             apFile->GetChunkData(&auiFormId);
-            m_kMediaSetList4.AddHead(
+            lConditionalEnemyList.AddHead(
                 const_cast<MediaSet*&>(static_cast<MediaSet* const&>(reinterpret_cast<MediaSet*>(auiFormId))));
             break;
         }
         case CHUNK_ID_LNAM_ID: {
             apFile->GetChunkData(&auiFormId);
-            m_kMediaSetList5.AddHead(
+            lLocationList.AddHead(
                 const_cast<MediaSet*&>(static_cast<MediaSet* const&>(reinterpret_cast<MediaSet*>(auiFormId))));
             break;
         }
         case CHUNK_ID_GNAM_ID: {
             apFile->GetChunkData(&auiFormId);
-            m_kMediaSetList6.AddHead(
+            lBattleList.AddHead(
                 const_cast<MediaSet*&>(static_cast<MediaSet* const&>(reinterpret_cast<MediaSet*>(auiFormId))));
             break;
         }
@@ -193,7 +205,7 @@ bool MediaLocationController::LoadForm(TESFile* apFile)
             break;
         case CHUNK_ID_FNAM_ID:
             apFile->GetChunkData(&auiFormId);
-            m_eRequiredFightReaction = static_cast<FIGHT_REACTION>(auiFormId);
+            rFactionConditional = static_cast<FIGHT_REACTION>(auiFormId);
             break;
         }
         if (!apFile->NextChunk())
@@ -204,9 +216,13 @@ bool MediaLocationController::LoadForm(TESFile* apFile)
 
 // Picks a random MediaSet from the list, moves it to the tail, and returns it, or returns null if the list is empty.
 // @fnv 0x00595560
-MediaSet* MediaLocationController::GetMediaSetFromList(BSSimpleList<MediaSet*>* apList)
+// src: XBOX_RETAIL_PDB 0x00595560
+// pdb: MediaLocationController::GetRandomListItem | MediaLocationController.obj | retail, object-file run extension, high
+// pdb params: list
+// pdb locals: pItem, pList, r
+MediaSet* MediaLocationController::GetRandomListItem(BSSimpleList<MediaSet*>* list)
 {
-    BSSimpleList<MediaSet*>* pList = apList;
+    BSSimpleList<MediaSet*>* pList = list;
     MediaSet* pResult = 0;
     if (pList && pList->GetItem())
     {
@@ -222,12 +238,15 @@ MediaSet* MediaLocationController::GetMediaSetFromList(BSSimpleList<MediaSet*>* 
         return 0;
     if (pResult)
     {
-        apList->Remove(pResult);
-        apList->AddTail(pResult);
+        list->Remove(pResult);
+        list->AddTail(pResult);
     }
     return pResult;
 }
 // @fnv 0x00595600
+// pdb: MediaLocationController::Update | MediaLocationController.obj | retail, upstream name already matches, high
+// pdb params: abInCombat
+// pdb locals: pNearList, bFoundHostile, bFoundFaction, cLayer, XYDist, fPlayerRadius, bChangeTension, pnAudioMarker, radius, bChangeCombat, eReaction, Loc, bChangeDead, bChangeDay, bChangeReaction, ticks, bLastFoundFactionActors, Dist, pact
 bool MediaLocationController::Update(bool abInCombat)
 {
     // Local spellings and declaration order preserve MSVC 2008 stack allocation.
@@ -253,17 +272,17 @@ bool MediaLocationController::Update(bool abInCombat)
         return false;
     if (DAT_011dd374 != this)
     {
-        if (m_pMediaSet)
-            m_pMediaSet->Reset();
-        m_pMediaSet = 0;
+        if (pCurrentMediaSet)
+            pCurrentMediaSet->Reset();
+        pCurrentMediaSet = 0;
     }
     DAT_011dd374 = this;
     a = BSAudio::GetSingleton()->GetSynchTime();
     if (!bIsActive)
     {
-        if (m_pMediaSet)
-            m_pMediaSet->Reset();
-        m_pMediaSet = 0;
+        if (pCurrentMediaSet)
+            pCurrentMediaSet->Reset();
+        pCurrentMediaSet = 0;
     }
     g = pFaction ? pFaction->GetFactionReaction(static_cast<TESFaction*>(
                        BGSDefaultObjectManager::GetDefaultObjectByIndex(DEFAULT_OBJECT_DO_PLAYER_FACTION)))
@@ -281,9 +300,9 @@ bool MediaLocationController::Update(bool abInCombat)
     o = g_thePlayer->GetListofPerceivedActors();
     j = false;
     m = false;
-    h = static_cast<bool>(m_uiPreviousPerceivedActorCount);
-    m_uiPreviousPerceivedActorCount = 0;
-    m_uiPerceivedActorCount = 0;
+    h = static_cast<bool>(uiFoundFactionActors);
+    uiFoundFactionActors = 0;
+    uiFoundHostileActors = 0;
     while (o && !o->IsEmpty())
     {
         ActorCombatEntry* s = o->GetItem();  // perceived actor record
@@ -291,66 +310,66 @@ bool MediaLocationController::Update(bool abInCombat)
         {
             if (pFaction && s->pActor->HasFaction(pFaction))
             {
-                m_uiPreviousPerceivedActorCount++;
+                uiFoundFactionActors++;
                 j = true;
                 if (s->m_bIsEnemy)
                     g = FIGHT_REACTION_FIGHT_REACTION_ENEMY;
             }
             if (s->m_bIsEnemy)
             {
-                m_uiPerceivedActorCount++;
+                uiFoundHostileActors++;
                 m = true;
             }
         }
         o = o->GetNext();
     }
-    b = m_bActorStateFlag != abInCombat;
-    c = m_bCountWasNonzero != (m_uiPerceivedActorCount > 0 ? 1U : 0U);
-    f = h != (m_uiPreviousPerceivedActorCount > 0 ? 1U : 0U);
-    n = m_bConditionWasTrue != IsMediaLocationActive();
-    i = m_eCurrentFightReaction != g;
+    b = bInCombat != abInCombat;
+    c = bInTension != (uiFoundHostileActors > 0 ? 1U : 0U);
+    f = h != (uiFoundFactionActors > 0 ? 1U : 0U);
+    n = bIsDay != IsMediaLocationActive();
+    i = eCurrentFactionReaction != g;
     if (g == GetDeadRep())
         f = false;
-    m_bActorStateFlag = abInCombat;
-    m_bCountWasNonzero = m_uiPerceivedActorCount > 0U ? true : false;
-    m_bConditionWasTrue = IsMediaLocationActive();
-    m_eCurrentFightReaction = g;
-    m_fLocationDistance = d;
-    if (m_fLocationDistance < 100.0 && m_fUpdateCooldown > a && !bIsActive)
+    bInCombat = abInCombat;
+    bInTension = uiFoundHostileActors > 0U ? true : false;
+    bIsDay = IsMediaLocationActive();
+    eCurrentFactionReaction = g;
+    fCurrentPlayerRadius = d;
+    if (fCurrentPlayerRadius < 100.0 && uiLocationDelay > a && !bIsActive)
         return false;
     bIsActive = false;
-    if (m_pMediaSet)
-        bIsActive = m_pMediaSet->Update(a, abInCombat, this);
+    if (pCurrentMediaSet)
+        bIsActive = pCurrentMediaSet->Update(a, abInCombat, this);
     if (n || i || f)
     {
-        if (m_pMediaSet)
-            m_pMediaSet->Reset();
-        m_pMediaSet = 0;
+        if (pCurrentMediaSet)
+            pCurrentMediaSet->Reset();
+        pCurrentMediaSet = 0;
     }
     if (!bIsActive && d < 100.0)
     {
-        if (m_pMediaSet)
+        if (pCurrentMediaSet)
         {
-            m_pMediaSet->Reset();
-            m_pMediaSet = 0;
+            pCurrentMediaSet->Reset();
+            pCurrentMediaSet = 0;
         }
-        if (!m_pMediaSet)
+        if (!pCurrentMediaSet)
         {
             if (j)
             {
                 switch (g)
                 {
                 case FIGHT_REACTION_FIGHT_REACTION_NEUTRAL:
-                    m_pMediaSet = GetMediaSetFromList(&m_kMediaSetList1);
+                    pCurrentMediaSet = GetRandomListItem(&lConditionalNeutralList);
                     break;
                 case FIGHT_REACTION_FIGHT_REACTION_ENEMY:
-                    m_pMediaSet = GetMediaSetFromList(&m_kMediaSetList4);
+                    pCurrentMediaSet = GetRandomListItem(&lConditionalEnemyList);
                     break;
                 case FIGHT_REACTION_FIGHT_REACTION_ALLY:
-                    m_pMediaSet = GetMediaSetFromList(&m_kMediaSetList2);
+                    pCurrentMediaSet = GetRandomListItem(&lConditionalAllyList);
                     break;
                 case FIGHT_REACTION_FIGHT_REACTION_FRIEND:
-                    m_pMediaSet = GetMediaSetFromList(&m_kMediaSetList3);
+                    pCurrentMediaSet = GetRandomListItem(&lConditionalFriendList);
                     break;
                 }
             }
@@ -360,41 +379,41 @@ bool MediaLocationController::Update(bool abInCombat)
                 {
                     break;
                 case DEADFACTION_LOCATION:
-                    m_pMediaSet = GetMediaSetFromList(&m_kMediaSetList5);
+                    pCurrentMediaSet = GetRandomListItem(&lLocationList);
                     break;
                 case DEADFACTION_CONDITIONAL_NEUTRAL:
-                    m_pMediaSet = GetMediaSetFromList(&m_kMediaSetList1);
+                    pCurrentMediaSet = GetRandomListItem(&lConditionalNeutralList);
                     break;
                 case DEADFACTION_CONDITIONAL_ALLY:
-                    m_pMediaSet = GetMediaSetFromList(&m_kMediaSetList2);
+                    pCurrentMediaSet = GetRandomListItem(&lConditionalAllyList);
                     break;
                 case DEADFACTION_CONDITIONAL_FRIEND:
-                    m_pMediaSet = GetMediaSetFromList(&m_kMediaSetList3);
+                    pCurrentMediaSet = GetRandomListItem(&lConditionalFriendList);
                     break;
                 case DEADFACTION_CONDITIONAL_ENEMY:
-                    m_pMediaSet = GetMediaSetFromList(&m_kMediaSetList4);
+                    pCurrentMediaSet = GetRandomListItem(&lConditionalEnemyList);
                     break;
                 }
             }
         }
     }
-    if ((!m_pMediaSet ||
-         (m_pMediaSet->GetType() != MediaSet::BATTLE && m_pMediaSet->GetType() != MediaSet::LAYER_DUNGEON)) &&
-        m_fLocationDistance < 100.0 && abInCombat)
+    if ((!pCurrentMediaSet ||
+         (pCurrentMediaSet->GetType() != MediaSet::BATTLE && pCurrentMediaSet->GetType() != MediaSet::LAYER_DUNGEON)) &&
+        fCurrentPlayerRadius < 100.0 && abInCombat)
     {
-        if (m_pMediaSet)
+        if (pCurrentMediaSet)
         {
-            m_pMediaSet->Reset();
-            m_pMediaSet = 0;
+            pCurrentMediaSet->Reset();
+            pCurrentMediaSet = 0;
         }
         if (!DAT_011dd378)
-            m_pMediaSet = GetMediaSetFromList(&m_kMediaSetList6);
+            pCurrentMediaSet = GetRandomListItem(&lBattleList);
     }
-    if (!bIsActive && m_pMediaSet)
-        bIsActive = m_pMediaSet->Update(a, abInCombat, this);
+    if (!bIsActive && pCurrentMediaSet)
+        bIsActive = pCurrentMediaSet->Update(a, abInCombat, this);
     if (bIsActive)
-        m_fUpdateCooldown = static_cast<unsigned int>(a + m_fUpdateInterval * 1000.0);
-    if (!bIsActive && m_fLocationDistance > 1.0)
+        uiLocationDelay = static_cast<unsigned int>(a + fLocationDelay * 1000.0);
+    if (!bIsActive && fCurrentPlayerRadius > 1.0)
         DAT_011dd374 = 0;
     return bIsActive;
 }
@@ -453,6 +472,7 @@ extern float DAT_011ca9e8;
 
 // @fnv 0x00595ea0
 // src: COMMUNITY 0x00595ea0
+// pdb: Sky::GetSunriseBegin | MediaLocationController.obj | debug, upstream name already matches, high
 float __fastcall Sky_GetSunriseBegin(char* apThis)
 {
     if ((*(unsigned int*)(apThis + 0x118) & 0x100) && *(TESClimate**)(apThis + 0xc))
@@ -503,6 +523,7 @@ extern float DAT_011ca9ec;
 
 // @fnv 0x00595f50
 // src: COMMUNITY 0x00595f50
+// pdb: Sky::GetSunriseEnd | MediaLocationController.obj | debug, upstream name already matches, high
 float __fastcall Sky_GetSunriseEnd(Sky* pThis)
 {
     if ((*(unsigned int*)((char*)pThis + 0x118) & 0x200) && *(TESClimate**)((char*)pThis + 0xc))
@@ -520,6 +541,7 @@ extern float DAT_011ca9f0;
 // If the 0x400 flag is set and a TESClimate is present, stores its value for index 2 divided by 6.0 in DAT_011ca9f0 and clears the flag; returns DAT_011ca9f0.
 // @fnv 0x00595fc0
 // src: COMMUNITY 0x00595fc0
+// pdb: Sky::GetSunsetBegin | MediaLocationController.obj | debug, upstream name already matches, high
 float __fastcall Sky_GetSunsetBegin(char* pThis)
 {
     if ((*(unsigned int*)(pThis + 0x118) & 0x400) && *(TESClimate**)(pThis + 0xc))
@@ -543,6 +565,7 @@ struct FUN_00596030_cls
 };
 // @fnv 0x00596030
 // src: COMMUNITY 0x00596030
+// pdb: Sky::GetSunsetEnd | MediaLocationController.obj | debug, upstream name already matches, high
 float FUN_00596030_cls::Sky_GetSunsetEnd()
 {
     if ((flags & 0x800) && inner)
@@ -634,6 +657,7 @@ struct Stub00595530
 };
 // Calls FUN_005960a0, deallocates this when flags has bit 0 set, and returns this.
 // @fnv 0x00595530
+// pdb: MediaLocationController::`scalar deleting destructor' | MediaLocationController.obj | retail, vtable slot, high
 void* Stub00595530::DestroyIfFlagged(unsigned int flags)
 {
     this->FUN_005960a0();
@@ -701,6 +725,7 @@ MLCFullName_cls::~MLCFullName_cls()
 {}
 
 // @fnv 0x005960a0
+// pdb: MediaLocationController::~MediaLocationController | MediaLocationController.obj | retail, object-file run extension, high
 FUN_005960a0::~FUN_005960a0()
 {}
 
@@ -762,6 +787,8 @@ struct MLCSaver : public TESForm, public MLCFullNameSaver
 
 // Writes the form's flags, float fields, media-set form IDs and faction form ID as chunks, then finishes the form save.
 // @fnv 0x00596790
+// pdb: MediaLocationController::Save | MediaLocationController.obj | retail, vtable slot, high
+// pdb locals: pList, pSet, tempint
 void MLCSaver::SaveToStream()
 {
     ((MLCFormSaver*)this)->BeginFormRecord();
@@ -855,52 +882,55 @@ struct ListOps
 };
 struct FormOps
 {
-    bool TESForm_CompareAllComponents(TESForm* apOther);
+    bool TESForm_CompareAllComponents(TESForm* apCompare);
 };
 struct FUN_00596d70_shell : public MediaLocationController
 {
-    bool MediaLocationController_Compare(TESForm* apForm);
+    bool MediaLocationController_Compare(TESForm* apCompare);
 };
 // Compares this MediaLocationController with apForm: returns true if apForm is not one, or if any flag, faction, field or media list differs; false if all match.
 // @fnv 0x00596d70
 // src: XBOX_PDB 0x00596d70
-bool FUN_00596d70_shell::MediaLocationController_Compare(TESForm* apForm)
+// pdb: MediaLocationController::Compare | MediaLocationController.obj | retail, upstream name already matches, high
+// pdb params: apCompare
+// pdb locals: pcomp, tList, bFound, tListc
+bool FUN_00596d70_shell::MediaLocationController_Compare(TESForm* apCompare)
 {
-    MediaLocationController* pOther = dynamic_cast<MediaLocationController*>(apForm);
+    MediaLocationController* pOther = dynamic_cast<MediaLocationController*>(apCompare);
     if (!pOther)
         return true;
     if (iFlags != pOther->iFlags)
         return true;
     if (pFaction != pOther->pFaction)
         return true;
-    if (m_eRequiredFightReaction != pOther->m_eRequiredFightReaction)
+    if (rFactionConditional != pOther->rFactionConditional)
         return true;
-    if (m_pReference != pOther->m_pReference)
+    if (pAudioMarker != pOther->pAudioMarker)
         return true;
-    if (m_fLowerWeightThreshold != pOther->m_fLowerWeightThreshold)
+    if (fLayerTwoPercent != pOther->fLayerTwoPercent)
         return true;
-    if (m_fUpperWeightThreshold != pOther->m_fUpperWeightThreshold)
+    if (fLayerThreePercent != pOther->fLayerThreePercent)
         return true;
-    if (m_fUpdateInterval != pOther->m_fUpdateInterval)
+    if (fLocationDelay != pOther->fLocationDelay)
         return true;
-    if (m_fMediaSelectionValue != pOther->m_fMediaSelectionValue)
+    if (fRetriggerDelay != pOther->fRetriggerDelay)
         return true;
-    if (m_uiShortDelay != pOther->m_uiShortDelay)
+    if (uiDayStart != pOther->uiDayStart)
         return true;
-    if (m_uiLongDelay != pOther->m_uiLongDelay)
+    if (uiNightStart != pOther->uiNightStart)
         return true;
     if (reinterpret_cast<FormOps*>(this)->TESForm_CompareAllComponents(pOther))
         return true;
-    if (pOther->m_kMediaSetList1.GetItem() && m_kMediaSetList1.GetItem() &&
-        reinterpret_cast<ListOps*>(&pOther->m_kMediaSetList1)->FUN_005ae380() ==
-            reinterpret_cast<ListOps*>(&m_kMediaSetList1)->FUN_005ae380())
+    if (pOther->lConditionalNeutralList.GetItem() && lConditionalNeutralList.GetItem() &&
+        reinterpret_cast<ListOps*>(&pOther->lConditionalNeutralList)->FUN_005ae380() ==
+            reinterpret_cast<ListOps*>(&lConditionalNeutralList)->FUN_005ae380())
     {
-        BSSimpleList<MediaSet*>* pIter = &m_kMediaSetList1;
+        BSSimpleList<MediaSet*>* pIter = &lConditionalNeutralList;
         while (pIter && pIter->GetItem())
         {
             BSSimpleList<MediaSet*>* pOtherIter;
             bool bFound = false;
-            pOtherIter = &pOther->m_kMediaSetList1;
+            pOtherIter = &pOther->lConditionalNeutralList;
             while (pOtherIter && pOtherIter->GetItem())
             {
                 if (!pIter->GetItem()->Compare(pOtherIter->GetItem()))
@@ -919,16 +949,16 @@ bool FUN_00596d70_shell::MediaLocationController_Compare(TESForm* apForm)
     {
         return true;
     }
-    if (pOther->m_kMediaSetList2.GetItem() && m_kMediaSetList2.GetItem() &&
-        reinterpret_cast<ListOps*>(&pOther->m_kMediaSetList2)->FUN_005ae380() ==
-            reinterpret_cast<ListOps*>(&m_kMediaSetList2)->FUN_005ae380())
+    if (pOther->lConditionalAllyList.GetItem() && lConditionalAllyList.GetItem() &&
+        reinterpret_cast<ListOps*>(&pOther->lConditionalAllyList)->FUN_005ae380() ==
+            reinterpret_cast<ListOps*>(&lConditionalAllyList)->FUN_005ae380())
     {
-        BSSimpleList<MediaSet*>* pIter = &m_kMediaSetList2;
+        BSSimpleList<MediaSet*>* pIter = &lConditionalAllyList;
         while (pIter && pIter->GetItem())
         {
             BSSimpleList<MediaSet*>* pOtherIter;
             bool bFound = false;
-            pOtherIter = &pOther->m_kMediaSetList2;
+            pOtherIter = &pOther->lConditionalAllyList;
             while (pOtherIter && pOtherIter->GetItem())
             {
                 if (!pIter->GetItem()->Compare(pOtherIter->GetItem()))
@@ -947,16 +977,16 @@ bool FUN_00596d70_shell::MediaLocationController_Compare(TESForm* apForm)
     {
         return true;
     }
-    if (pOther->m_kMediaSetList3.GetItem() && m_kMediaSetList3.GetItem() &&
-        reinterpret_cast<ListOps*>(&pOther->m_kMediaSetList3)->FUN_005ae380() ==
-            reinterpret_cast<ListOps*>(&m_kMediaSetList3)->FUN_005ae380())
+    if (pOther->lConditionalFriendList.GetItem() && lConditionalFriendList.GetItem() &&
+        reinterpret_cast<ListOps*>(&pOther->lConditionalFriendList)->FUN_005ae380() ==
+            reinterpret_cast<ListOps*>(&lConditionalFriendList)->FUN_005ae380())
     {
-        BSSimpleList<MediaSet*>* pIter = &m_kMediaSetList3;
+        BSSimpleList<MediaSet*>* pIter = &lConditionalFriendList;
         while (pIter && pIter->GetItem())
         {
             BSSimpleList<MediaSet*>* pOtherIter;
             bool bFound = false;
-            pOtherIter = &pOther->m_kMediaSetList3;
+            pOtherIter = &pOther->lConditionalFriendList;
             while (pOtherIter && pOtherIter->GetItem())
             {
                 if (!pIter->GetItem()->Compare(pOtherIter->GetItem()))
@@ -975,16 +1005,16 @@ bool FUN_00596d70_shell::MediaLocationController_Compare(TESForm* apForm)
     {
         return true;
     }
-    if (pOther->m_kMediaSetList4.GetItem() && m_kMediaSetList4.GetItem() &&
-        reinterpret_cast<ListOps*>(&pOther->m_kMediaSetList4)->FUN_005ae380() ==
-            reinterpret_cast<ListOps*>(&m_kMediaSetList4)->FUN_005ae380())
+    if (pOther->lConditionalEnemyList.GetItem() && lConditionalEnemyList.GetItem() &&
+        reinterpret_cast<ListOps*>(&pOther->lConditionalEnemyList)->FUN_005ae380() ==
+            reinterpret_cast<ListOps*>(&lConditionalEnemyList)->FUN_005ae380())
     {
-        BSSimpleList<MediaSet*>* pIter = &m_kMediaSetList4;
+        BSSimpleList<MediaSet*>* pIter = &lConditionalEnemyList;
         while (pIter && pIter->GetItem())
         {
             BSSimpleList<MediaSet*>* pOtherIter;
             bool bFound = false;
-            pOtherIter = &pOther->m_kMediaSetList4;
+            pOtherIter = &pOther->lConditionalEnemyList;
             while (pOtherIter && pOtherIter->GetItem())
             {
                 if (!pIter->GetItem()->Compare(pOtherIter->GetItem()))
@@ -1003,16 +1033,16 @@ bool FUN_00596d70_shell::MediaLocationController_Compare(TESForm* apForm)
     {
         return true;
     }
-    if (pOther->m_kMediaSetList5.GetItem() && m_kMediaSetList5.GetItem() &&
-        reinterpret_cast<ListOps*>(&pOther->m_kMediaSetList5)->FUN_005ae380() ==
-            reinterpret_cast<ListOps*>(&m_kMediaSetList5)->FUN_005ae380())
+    if (pOther->lLocationList.GetItem() && lLocationList.GetItem() &&
+        reinterpret_cast<ListOps*>(&pOther->lLocationList)->FUN_005ae380() ==
+            reinterpret_cast<ListOps*>(&lLocationList)->FUN_005ae380())
     {
-        BSSimpleList<MediaSet*>* pIter = &m_kMediaSetList5;
+        BSSimpleList<MediaSet*>* pIter = &lLocationList;
         while (pIter && pIter->GetItem())
         {
             BSSimpleList<MediaSet*>* pOtherIter;
             bool bFound = false;
-            pOtherIter = &pOther->m_kMediaSetList5;
+            pOtherIter = &pOther->lLocationList;
             while (pOtherIter && pOtherIter->GetItem())
             {
                 if (!pIter->GetItem()->Compare(pOtherIter->GetItem()))
@@ -1031,16 +1061,16 @@ bool FUN_00596d70_shell::MediaLocationController_Compare(TESForm* apForm)
     {
         return true;
     }
-    if (pOther->m_kMediaSetList6.GetItem() && m_kMediaSetList6.GetItem() &&
-        reinterpret_cast<ListOps*>(&pOther->m_kMediaSetList6)->FUN_005ae380() ==
-            reinterpret_cast<ListOps*>(&m_kMediaSetList6)->FUN_005ae380())
+    if (pOther->lBattleList.GetItem() && lBattleList.GetItem() &&
+        reinterpret_cast<ListOps*>(&pOther->lBattleList)->FUN_005ae380() ==
+            reinterpret_cast<ListOps*>(&lBattleList)->FUN_005ae380())
     {
-        BSSimpleList<MediaSet*>* pIter = &m_kMediaSetList6;
+        BSSimpleList<MediaSet*>* pIter = &lBattleList;
         while (pIter && pIter->GetItem())
         {
             BSSimpleList<MediaSet*>* pOtherIter;
             bool bFound = false;
-            pOtherIter = &pOther->m_kMediaSetList6;
+            pOtherIter = &pOther->lBattleList;
             while (pOtherIter && pOtherIter->GetItem())
             {
                 if (!pIter->GetItem()->Compare(pOtherIter->GetItem()))
@@ -1179,65 +1209,68 @@ struct ThisCls
     BSSimpleList<MediaSet*> m_kMediaSetList5;
     BSSimpleList<MediaSet*> m_kMediaSetList6;
     void TESForm_CopyAllComponents(MediaLocationController* apSrc);
-    void CopyFromMediaLocationController(TESForm* apForm);
+    void CopyFromMediaLocationController(TESForm* apCopy);
 };
 
 // Casts apForm to MediaLocationController, copies its scalar fields and faction/ref, and copies each of six MediaSet lists in reverse order.
 // @fnv 0x00596ac0
-void ThisCls::CopyFromMediaLocationController(TESForm* apForm)
+// pdb: MediaLocationController::Copy | MediaLocationController.obj | retail, vtable slot, high
+// pdb params: apCopy
+// pdb locals: pcopy, tList
+void ThisCls::CopyFromMediaLocationController(TESForm* apCopy)
 {
     BSSimpleList<MediaSet*>* pNode;
-    MediaLocationController* pSrc = dynamic_cast<MediaLocationController*>(apForm);
+    MediaLocationController* pSrc = dynamic_cast<MediaLocationController*>(apCopy);
     if (pSrc == 0)
         return;
     TESForm_CopyAllComponents(pSrc);
     iFlags = pSrc->iFlags;
-    m_fLowerWeightThreshold = pSrc->m_fLowerWeightThreshold;
-    m_fUpperWeightThreshold = pSrc->m_fUpperWeightThreshold;
-    m_fUpdateInterval = pSrc->m_fUpdateInterval;
-    m_fMediaSelectionValue = pSrc->m_fMediaSelectionValue;
-    m_uiShortDelay = pSrc->m_uiShortDelay;
-    m_uiLongDelay = pSrc->m_uiLongDelay;
+    m_fLowerWeightThreshold = pSrc->fLayerTwoPercent;
+    m_fUpperWeightThreshold = pSrc->fLayerThreePercent;
+    m_fUpdateInterval = pSrc->fLocationDelay;
+    m_fMediaSelectionValue = pSrc->fRetriggerDelay;
+    m_uiShortDelay = pSrc->uiDayStart;
+    m_uiLongDelay = pSrc->uiNightStart;
     pFaction = pSrc->pFaction;
-    m_eRequiredFightReaction = pSrc->m_eRequiredFightReaction;
-    m_pReference = pSrc->m_pReference;
+    m_eRequiredFightReaction = pSrc->rFactionConditional;
+    m_pReference = pSrc->pAudioMarker;
     m_kMediaSetList1.RemoveAll();
-    pNode = &pSrc->m_kMediaSetList1;
+    pNode = &pSrc->lConditionalNeutralList;
     while (pNode && pNode->GetItem())
     {
         m_kMediaSetList1.AddHead(pNode->GetItem());
         pNode = pNode->GetNext();
     }
     m_kMediaSetList2.RemoveAll();
-    pNode = &pSrc->m_kMediaSetList2;
+    pNode = &pSrc->lConditionalAllyList;
     while (pNode && pNode->GetItem())
     {
         m_kMediaSetList2.AddHead(pNode->GetItem());
         pNode = pNode->GetNext();
     }
     m_kMediaSetList3.RemoveAll();
-    pNode = &pSrc->m_kMediaSetList3;
+    pNode = &pSrc->lConditionalFriendList;
     while (pNode && pNode->GetItem())
     {
         m_kMediaSetList3.AddHead(pNode->GetItem());
         pNode = pNode->GetNext();
     }
     m_kMediaSetList4.RemoveAll();
-    pNode = &pSrc->m_kMediaSetList4;
+    pNode = &pSrc->lConditionalEnemyList;
     while (pNode && pNode->GetItem())
     {
         m_kMediaSetList4.AddHead(pNode->GetItem());
         pNode = pNode->GetNext();
     }
     m_kMediaSetList5.RemoveAll();
-    pNode = &pSrc->m_kMediaSetList5;
+    pNode = &pSrc->lLocationList;
     while (pNode && pNode->GetItem())
     {
         m_kMediaSetList5.AddHead(pNode->GetItem());
         pNode = pNode->GetNext();
     }
     m_kMediaSetList6.RemoveAll();
-    pNode = &pSrc->m_kMediaSetList6;
+    pNode = &pSrc->lBattleList;
     while (pNode && pNode->GetItem())
     {
         m_kMediaSetList6.AddHead(pNode->GetItem());

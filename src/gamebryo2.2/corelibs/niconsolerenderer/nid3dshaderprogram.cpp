@@ -50,19 +50,19 @@ struct Program
     char _pad[0x14];
     ShaderMapBase* pkMap;
 };
-extern Program* DAT_0126fa10;
+extern Program* NiD3DShaderProgramFactory_ms_pkFactory; // src: XBOX_RETAIL_PDB 0x0126fa10 (old: DAT_0126fa10)
 // If the global Program and its map exist, gets the device's name and removes that entry from the map.
 // @fnv 0x00e93790
 void RemoveDeviceFromMap(Direct3DDeviceInterface* pkD3DDevice)
 {
-    if (!DAT_0126fa10)
+    if (!NiD3DShaderProgramFactory_ms_pkFactory)
         return;
     if (!pkD3DDevice)
         return;
     char const* psz = pkD3DDevice->GetName();
     if (!psz)
         return;
-    ShaderMapBase* pkM = DAT_0126fa10->pkMap;
+    ShaderMapBase* pkM = NiD3DShaderProgramFactory_ms_pkFactory->pkMap;
     if (!pkM)
         return;
     pkM->RemoveAt(psz);
@@ -110,6 +110,8 @@ struct FUN_00e69970_class
 // Sets the vtable, removes this device from the map, calls FUN_00e69970 when offset 0x34 is nonzero using the pointer at 0x24, then calls FUN_00e89840.
 // @fnv 0x00e89b70
 // src: GUESS 0x00e89b70 (confidence: medium)
+// pdb: NiD3DPass::SetName | ShadowLightShader.obj | debug, object-file run extension, low
+// pdb params: pcName
 __declspec(noinline) void S::RemoveDeviceAndClearShader()
 {
     char* self = (char*)this;

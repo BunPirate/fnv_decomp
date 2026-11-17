@@ -3,9 +3,9 @@
 class AutoMemHelper
 {
 public:
-    AutoMemHelper(int aiMemoryContext, bool bPush, const char* pcFile, int iLine);
-    AutoMemHelper(int aiMemoryContext, int bPush, const char* pcFile, int iLine);
-    AutoMemHelper(int aiMemoryContext, bool bPush, char* pcFile, int iLine);
+    AutoMemHelper(int memContext, bool overridable, const char* pcFile, int aiLine);
+    AutoMemHelper(int memContext, int overridable, const char* pcFile, int aiLine);
+    AutoMemHelper(int memContext, bool overridable, char* pcFile, int aiLine);
     ~AutoMemHelper();
 
     int pad;

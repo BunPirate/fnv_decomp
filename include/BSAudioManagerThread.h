@@ -3,6 +3,7 @@
 #include "BSThread.h"
 #include "BSSemaphore_adf080.h"
 
+// pdb: class BSAudioManagerThread, size 0x50 (here 0x4c), bases: BSThread, 3 members
 class BSAudioManagerThread : public BSThread
 {
 public:

@@ -73,7 +73,7 @@ struct hkpShapeBase : public hkReferencedObject
     __forceinline void* operator new(unsigned int nbytes)
     {
         hkReferencedObject* b = static_cast<hkReferencedObject*>(hkMemoryRouter::getInstance().heap().blockAlloc(nbytes));
-        b->m_usMemSizeAndFlags = static_cast<hkUint16>(nbytes);
+        b->m_memSizeAndFlags = static_cast<hkUint16>(nbytes);
         return b;
     }
     __forceinline void operator delete(void*)
@@ -121,14 +121,14 @@ struct FUN_00cf5ea0
 
 // 0x00ca8c90 constructs hkpRigidBody; the shared header does not yet declare
 // its hkpRigidBodyCinfo overload. Cast only this external entry to its thiscall ABI.
-extern "C" void constructBallGunBullet() throw();
+extern "C" void hkpRigidBody_ctor() throw();
 typedef hkpRigidBody* (__thiscall* BallGunBulletConstructor)(hkpRigidBody*, const FUN_00cf5ea0&);
 
 __forceinline hkpRigidBody* createBallGunBullet(const FUN_00cf5ea0& info)
 {
     hkpRigidBody* body = static_cast<hkpRigidBody*>(hkpShapeBase::operator new(sizeof(hkpRigidBody)));
     if (body)
-        return reinterpret_cast<BallGunBulletConstructor>(&constructBallGunBullet)(body, info);
+        return reinterpret_cast<BallGunBulletConstructor>(&hkpRigidBody_ctor)(body, info);
     return 0;
 }
 
@@ -195,7 +195,7 @@ template <typename T> struct CapacityGrowingArray
     }
 };
 
-void hkpInertiaTensorComputer_setShapeVolumeMassProperties(const hkpShapeBase* shape, hkReal mass, FUN_00cf5ea0& out);
+void hkpInertiaTensorComputer_setShapeVolumeMassProperties(const hkpShapeBase* shape, hkReal mass, FUN_00cf5ea0& bodyInfo);
 int hkpWorldq_CastSphereAndStoreHit(hkpWorld* world, const hkVector4& start, hkReal radius, const hkVector4& end,
                  hkpBallGunSweepOutput& output);
 void hkpFirstPersonGun_calcVelocityToTarget(const hkVector4& position, const hkVector4& target, const hkVector4& gravity,
@@ -204,6 +204,9 @@ void hkpFirstPersonGun_calcVelocityToTarget(const hkVector4& position, const hkV
 // The shared hkpBallGun has no fireGun declaration yet; ECX carries the gun and
 // the unused EDX argument preserves the original thiscall stack arguments.
 // @fnv 0x00e470d0
+// pdb: hkpBallGun::fireGun | hkpBallGun.obj | retail, vtable slot, high
+// pdb params: world, viewTransform
+// pdb locals: from, sweepEnd, target, sweepStart, ci, targetPos, rb
 void __fastcall fireBallGun(hkpBallGun* gun, void*, hkpWorld* world, const hkQuadTransform& viewTransform)
 {
     hkVector4 forward = viewTransform.m_kColumn0;
@@ -214,61 +217,61 @@ void __fastcall fireBallGun(hkpBallGun* gun, void*, hkpWorld* world, const hkQua
     end.setAddMul4(start, forward, 200.0f);
 
     FUN_00cf5ea0 ci;
-    ci.m_pCollisionShape = new FUN_00cd8160(gun->m_fBulletRadius);
-    ci.m_fViscosityFriction = gun->m_fBulletMass;
+    ci.m_pCollisionShape = new FUN_00cd8160(gun->m_bulletRadius);
+    ci.m_fViscosityFriction = gun->m_bulletMass;
     ci.m_fAllowedPenetrationDepth = 0.01f;
     ci.m_fSurfaceFriction = 0.2f;
     ci.m_iAutoRemoveLevel = 6;
     ci.m_bFlag = 2;
     ci.m_fElasticity = 1.0f;
-    hkpInertiaTensorComputer_setShapeVolumeMassProperties(ci.m_pCollisionShape, gun->m_fBulletMass * 2.0f, ci);
-    ci.m_fViscosityFriction = gun->m_fBulletMass;
+    hkpInertiaTensorComputer_setShapeVolumeMassProperties(ci.m_pCollisionShape, gun->m_bulletMass * 2.0f, ci);
+    ci.m_fViscosityFriction = gun->m_bulletMass;
     ci.m_fLinearDamping = 0.0f;
     ci.m_fAngularDamping = 0.4f;
-    ci.m_vContactPosition.setAdd4(start, gun->m_kBulletDirection);
+    ci.m_vContactPosition.setAdd4(start, gun->m_bulletOffsetFromCenter);
 
     hkpBallGunSweepOutput output;
-    if (!hkpWorldq_CastSphereAndStoreHit(world, start, gun->m_fBulletRadius, end, output))
+    if (!hkpWorldq_CastSphereAndStoreHit(world, start, gun->m_bulletRadius, end, output))
     {
-        hkpFirstPersonGun_calcVelocityToTarget(ci.m_vContactPosition, output.m_vContactPosition, world->m_kGravity, gun->m_fBulletVelocity,
+        hkpFirstPersonGun_calcVelocityToTarget(ci.m_vContactPosition, output.m_vContactPosition, world->m_gravity, gun->m_bulletVelocity,
                      ci.m_kTranslationalVelocity);
     }
     else
     {
-        ci.m_kTranslationalVelocity.setMul4(gun->m_fBulletVelocity, forward);
+        ci.m_kTranslationalVelocity.setMul4(gun->m_bulletVelocity, forward);
     }
 
     hkVector4 target = output.m_vContactPosition;
     int i;
-    for (i = 0; i < gun->m_kListeners.m_iElementCount; i++)
+    for (i = 0; i < gun->m_listeners.m_iElementCount; i++)
     {
-        static_cast<hkpBallGunListener*>(gun->m_kListeners.m_data[i])->gunFiredCallback(&eye, &target);
+        static_cast<hkpBallGunListener*>(gun->m_listeners.m_data[i])->gunFiredCallback(&eye, &target);
     }
 
     hkpRigidBody* bullet = createBallGunBullet(ci);
     ci.m_pCollisionShape->FUN_00c905b0();
-    bullet->m_fBulletSpread = gun->m_fBulletSpread;
+    bullet->m_damageMultiplier = gun->m_damageMultiplier;
 
-    for (i = 0; i < gun->m_kListeners.m_iElementCount; i++)
+    for (i = 0; i < gun->m_listeners.m_iElementCount; i++)
     {
-        static_cast<hkpBallGunListener*>(gun->m_kListeners.m_data[i])->bulletCreatedCallback(bullet);
+        static_cast<hkpBallGunListener*>(gun->m_listeners.m_data[i])->bulletCreatedCallback(bullet);
     }
 
     world->hkpWorld_addEntity(bullet, 1);
 
     CapacityGrowingArray<hkpRigidBody*>* addedBodies =
-        static_cast<CapacityGrowingArray<hkpRigidBody*>*>(gun->m_pBulletQueue);
+        static_cast<CapacityGrowingArray<hkpRigidBody*>*>(gun->m_addedBodies);
     addedBodies->enqueue(bullet);
 
-    if (static_cast<CapacityGrowingArray<hkpRigidBody*>*>(gun->m_pBulletQueue)->GetLogicalSize() > gun->m_iBulletBatchCount)
+    if (static_cast<CapacityGrowingArray<hkpRigidBody*>*>(gun->m_addedBodies)->GetLogicalSize() > gun->m_maxBulletsInWorld)
     {
         hkpRigidBody* rb;
-        static_cast<CapacityGrowingArray<hkpRigidBody*>*>(gun->m_pBulletQueue)->dequeue(rb);
-        for (i = gun->m_kListeners.m_iElementCount - 1; i >= 0; i--)
+        static_cast<CapacityGrowingArray<hkpRigidBody*>*>(gun->m_addedBodies)->dequeue(rb);
+        for (i = gun->m_listeners.m_iElementCount - 1; i >= 0; i--)
         {
-            static_cast<hkpBallGunListener*>(gun->m_kListeners.m_data[i])->bulletDeletedCallback(rb);
+            static_cast<hkpBallGunListener*>(gun->m_listeners.m_data[i])->bulletDeletedCallback(rb);
         }
-        if (rb->m_pOwningWorld)
+        if (rb->m_world)
         {
             world->ProcessTarget(rb);
         }

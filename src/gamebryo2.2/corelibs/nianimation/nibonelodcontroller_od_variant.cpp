@@ -26,24 +26,29 @@ struct NiBSBoneLODControllerMethods : NiBSBoneLODController
     void __thiscall NiBSBoneLODController_SaveBinary(NiStream*);
     void FUN_00a6d500(NiStream*);
     void NiBSBoneLODController_LinkObject(NiStream*);
-    void NiBSBoneLODController_GetViewerStrings(NiTPrimitiveArray<unsigned int>* array);
+    void NiBSBoneLODController_GetViewerStrings(NiTPrimitiveArray<unsigned int>* pkStrings);
 };
 // @fnv 0x00c536a0
 // src: XBOX_PDB 0x00c536a0
-bool NiBSBoneLODControllerMethods::NiBSBoneLODController_RegisterStreamables(int a)
+// pdb: NiBSBoneLODController::RegisterStreamables | NiBSBoneLODController.obj | retail, upstream name already matches, high
+// pdb params: kStream
+bool NiBSBoneLODControllerMethods::NiBSBoneLODController_RegisterStreamables(int kStream)
 {
-    if (NiTimeController_RegisterStreamables(a) == 0)
+    if (NiTimeController_RegisterStreamables(kStream) == 0)
         return false;
     return true;
 }
 
 // @fnv 0x00c53ab0
 // src: XBOX_PDB 0x00c53ab0
-void NiBSBoneLODController::PostLinkObject_00c53ab0(NiStream& s)
+// pdb: NiBSBoneLODController::PostLinkObject | NiBSBoneLODController.obj | retail, vtable slot, high
+// pdb params: kStream
+// pdb locals: iLOD
+void NiBSBoneLODController::PostLinkObject_00c53ab0(NiStream& kStream)
 {
-    NiObject::LinkObject(s);
-    void* old = m_34;
-    m_34 = (void*)0xffffffff;
+    NiObject::LinkObject(kStream);
+    void* old = m_iLOD;
+    m_iLOD = (void*)0xffffffff;
     NiBSBoneLODController_SetBoneLOD(old);
 }
 
@@ -52,6 +57,7 @@ extern const char g_012031b8_arg0[];
 NiObject* __cdecl NiBSBoneLODController_CreateObject();
 // @fnv 0x00c53cd0
 // src: GUESS 0x00c53cd0 (confidence: medium)
+// pdb: NiBSBoneLODController::InitLoaders | NiBSBoneLODController.obj | debug, object-file run extension, low
 int __cdecl NiStream_RegisterObjectLoader_Thunk()
 {
     return NiStream::RegisterObjectLoader(g_012031b8_arg0, NiBSBoneLODController_CreateObject);
@@ -68,15 +74,18 @@ NiRTTI* __thiscall NiBSBoneLODControllerMethods::NiBSBoneLODController_GetRTTI()
 
 // @fnv 0x00c533f0
 // src: XBOX_PDB 0x00c533f0
-void NiBSBoneLODControllerMethods::NiBSBoneLODController_CopyMembers(NiBSBoneLODController* a, CloningProcess* b)
+// pdb: NiBSBoneLODController::CopyMembers | NiBSBoneLODController.obj | debug, upstream name already matches, high
+// pdb params: pkDest, arCloneData
+void NiBSBoneLODControllerMethods::NiBSBoneLODController_CopyMembers(NiBSBoneLODController* pkDest, CloningProcess* arCloneData)
 {
-    FUN_00a6cfe0(a, b);
-    a->m_34 = m_34;
-    a->f38 = f38;
+    FUN_00a6cfe0(pkDest, arCloneData);
+    pkDest->m_iLOD = m_iLOD;
+    pkDest->m_uiNumLODs = m_uiNumLODs;
 }
 
 void operator delete(void*, unsigned int);
 // @fnv 0x00c53e10
+// pdb: NiBSBoneLODController::`scalar deleting destructor' | NiBSBoneLODController.obj | retail, vtable slot, high
 void* NiBSBoneLODControllerMethods::FUN_00c53e10(unsigned int flags)
 {
     int pad[2];
@@ -88,6 +97,7 @@ void* NiBSBoneLODControllerMethods::FUN_00c53e10(unsigned int flags)
 
 // @fnv 0x00c53ed0
 // src: XBOX_PDB 0x00c53ed0
+// pdb: NiBSBoneLODController::TargetIsRequiredType | NiBSBoneLODController.obj | retail, upstream name already matches, high
 bool NiBSBoneLODControllerMethods::NiBSBoneLODController_TargetIsRequiredType()
 {
     if (m_pkTarget != 0 && m_pkTarget->IsSceneNode() != 0)
@@ -99,7 +109,10 @@ extern "C" void __cdecl CallAnimCallback(void*, const void*);
 extern "C" void __cdecl NiStreamSaveBinary_unsigned_int(void*, const void*);
 // @fnv 0x00c536d0
 // src: XBOX_PDB 0x00c536d0
-void __thiscall NiBSBoneLODControllerMethods::NiBSBoneLODController_SaveBinary(NiStream* stream)
+// pdb: NiBSBoneLODController::SaveBinary | NiBSBoneLODController.obj | retail, upstream name already matches, high
+// pdb params: kStream
+// pdb locals: ui, pkSet, uj, pkBone
+void __thiscall NiBSBoneLODControllerMethods::NiBSBoneLODController_SaveBinary(NiStream* kStream)
 {
     NiTPrimitiveSet<void*>* i;
     unsigned int n;
@@ -111,42 +124,45 @@ void __thiscall NiBSBoneLODControllerMethods::NiBSBoneLODController_SaveBinary(N
     unsigned int innerCount;
     unsigned int j;
 
-    FUN_00a6d730(stream);
-    CallAnimCallback(stream, &m_34);
-    NiStreamSaveBinary_unsigned_int(stream, &f38);
-    savedCount = sub.high;
-    NiStreamSaveBinary_unsigned_int(stream, &savedCount);
+    FUN_00a6d730(kStream);
+    CallAnimCallback(kStream, &m_iLOD);
+    NiStreamSaveBinary_unsigned_int(kStream, &m_uiNumLODs);
+    savedCount = m_kBoneArray.high;
+    NiStreamSaveBinary_unsigned_int(kStream, &savedCount);
 
-    for (n = 0; n < sub.high; ++n)
+    for (n = 0; n < m_kBoneArray.high; ++n)
     {
-        i = reinterpret_cast<NiTPrimitiveSet<void*>**>(sub.data)[n];
+        i = reinterpret_cast<NiTPrimitiveSet<void*>**>(m_kBoneArray.data)[n];
         if (i)
         {
             innerCount = i->m_uiUsed;
             zero = innerCount;
-            NiStreamSaveBinary_unsigned_int(stream, &zero);
+            NiStreamSaveBinary_unsigned_int(kStream, &zero);
             for (groupTotal = 0; groupTotal < (j = i->m_uiUsed); ++groupTotal)
             {
                 group = i->m_pBase[groupTotal];
-                stream->SaveLinkID(reinterpret_cast<const NiObject*>(group));
+                kStream->SaveLinkID(reinterpret_cast<const NiObject*>(group));
             }
         }
         else
         {
             object = 0;
-            CallAnimCallback(stream, &object);
+            CallAnimCallback(kStream, &object);
         }
     }
 }
 
 // @fnv 0x00c53a10
 // src: XBOX_PDB 0x00c53a10
-void NiBSBoneLODControllerMethods::NiBSBoneLODController_LinkObject(NiStream* stream)
+// pdb: NiBSBoneLODController::LinkObject | NiBSBoneLODController.obj | retail, upstream name already matches, high
+// pdb params: kStream
+// pdb locals: ui, pkSet, uj
+void NiBSBoneLODControllerMethods::NiBSBoneLODController_LinkObject(NiStream* kStream)
 {
-    FUN_00a6d500(stream);
-    for (unsigned int i = 0; i < sub.high; ++i)
+    FUN_00a6d500(kStream);
+    for (unsigned int i = 0; i < m_kBoneArray.high; ++i)
     {
-        NiTPrimitiveSet<unsigned int>* list = reinterpret_cast<NiTPrimitiveSet<unsigned int>**>(sub.data)[i];
+        NiTPrimitiveSet<unsigned int>* list = reinterpret_cast<NiTPrimitiveSet<unsigned int>**>(m_kBoneArray.data)[i];
         if (list != 0)
         {
             unsigned int value = 0;
@@ -154,7 +170,7 @@ void NiBSBoneLODControllerMethods::NiBSBoneLODController_LinkObject(NiStream* st
             unsigned int j;
             for (; value < (j = list->m_uiUsed); ++value)
             {
-                size = reinterpret_cast<unsigned int>(stream->FUN_00a63430());
+                size = reinterpret_cast<unsigned int>(kStream->FUN_00a63430());
                 if (value >= list->m_uiUsed)
                 {
                 }
@@ -169,11 +185,13 @@ void NiBSBoneLODControllerMethods::NiBSBoneLODController_LinkObject(NiStream* st
 
 // @fnv 0x00c53cf0
 // src: GUESS 0x00c53cf0 (confidence: low)
+// pdb: NiBSBoneLODController::GetHasBones | NiBSBoneLODController.obj | debug, object-file run extension, low
+// pdb locals: ui, pkSet, uj
 bool NiBSBoneLODController::ProcessEntries_00c53cf0()
 {
-    for (unsigned int i = 0; i < sub.high; i++)
+    for (unsigned int i = 0; i < m_kBoneArray.high; i++)
     {
-        NiTPrimitiveSet<void*>* a = reinterpret_cast<NiTPrimitiveSet<void*>**>(sub.data)[i];
+        NiTPrimitiveSet<void*>* a = reinterpret_cast<NiTPrimitiveSet<void*>**>(m_kBoneArray.data)[i];
         if (a)
         {
             unsigned int idx;
@@ -225,18 +243,20 @@ struct ViewerStringValues
 
 // @fnv 0x00c53c50
 // src: XBOX_PDB 0x00c53c50
-void __thiscall NiBSBoneLODControllerMethods::NiBSBoneLODController_GetViewerStrings(NiTPrimitiveArray<unsigned int>* array)
+// pdb: NiBSBoneLODController::GetViewerStrings | NiBSBoneLODController.obj | retail, upstream name already matches, high
+// pdb params: pkStrings
+void __thiscall NiBSBoneLODControllerMethods::NiBSBoneLODController_GetViewerStrings(NiTPrimitiveArray<unsigned int>* pkStrings)
 {
     ViewerStringStackPadding padding;
     ViewerStringValues values;
 
     values.value3 = *(unsigned int*)&g_012031b8;
     values.value0 = (unsigned int)NiViewerStrings_NiGetViewerString_Title(values.value3);
-    array->AddFirstEmpty(values.value0);
+    pkStrings->AddFirstEmpty(values.value0);
 
-    values.value1 = (unsigned int)NiGetViewerString_00a7d4d0(str_0109a394, (unsigned int)this->m_34);
-    array->AddFirstEmpty(values.value1);
+    values.value1 = (unsigned int)NiGetViewerString_00a7d4d0(str_0109a394, (unsigned int)this->m_iLOD);
+    pkStrings->AddFirstEmpty(values.value1);
 
-    values.value2 = (unsigned int)NiGetViewerString_00a7d510(str_0109a388, this->f38);
-    array->AddFirstEmpty(values.value2);
+    values.value2 = (unsigned int)NiGetViewerString_00a7d510(str_0109a388, this->m_uiNumLODs);
+    pkStrings->AddFirstEmpty(values.value2);
 }

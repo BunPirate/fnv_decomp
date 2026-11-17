@@ -4,6 +4,7 @@
 
 class QueuedFile;
 
+// pdb: class QueuedChildren, size 0x14, bases: BSSimpleArray<NiPointer<QueuedFile>, 1 members
 class QueuedChildren : public BSSimpleArray<NiPointer<QueuedFile>, 1024>
 {
 public:
@@ -15,5 +16,5 @@ public:
     void AddFinishedChild();
     unsigned int GetChildCountFinished();
 
-    volatile unsigned int m_uiChildCountFinished;
+    volatile unsigned int iNumChildrenFinished; // src: XBOX_RETAIL_PDB +0x10 (old: m_uiChildCountFinished)
 };

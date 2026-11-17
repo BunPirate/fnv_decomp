@@ -31,6 +31,9 @@ struct Holder
 
 // @fnv 0x00458700
 // src: COMMUNITY 0x00458700
+// pdb: hkVector4::getSimdAt | TES.obj | debug, upstream name already matches, high
+// pdb params: i
+// pdb locals: res
 Holder* Holder::hkVector4_getSimdAt(Holder* target, int index)
 {
     switch (index)
@@ -71,6 +74,9 @@ class S00458900_Vector
 
 // @fnv 0x00458900
 // src: XBOX_PDB 0x00458900
+// pdb: hkVector4::equals3 | TES.obj | debug, upstream name already matches, high
+// pdb params: v, epsilon
+// pdb locals: t, epsilon_v
 bool S00458900_Vector::hkVector4_equals3(const S00458900_Vector* v, float epsilon) const
 {
     S00458900_Vector kDiff;
@@ -89,6 +95,7 @@ struct FUN_00458990_Holder
 
 // @fnv 0x00458990
 // src: COMMUNITY 0x00458990
+// pdb: NiPick::Record::GetAVObject | TES.obj | debug, object-file run extension, low
 int FUN_00458990_Holder::hkVector4Comparison_allAreSet(int mask)
 {
     return (_mm_movemask_ps(m_v) & mask) == mask;
@@ -101,6 +108,8 @@ struct FUN_004589c0_cls
 };
 // @fnv 0x004589c0
 // src: COMMUNITY 0x004589c0
+// pdb: hkVector4::setAll | bhkWorld.obj | debug, upstream name already matches, high
+// pdb params: a
 void FUN_004589c0_cls::hkVector4_setAll(float value)
 {
     m_v = _mm_set1_ps(value);

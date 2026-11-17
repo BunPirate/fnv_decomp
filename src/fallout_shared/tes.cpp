@@ -150,6 +150,7 @@ extern "C" void __cdecl FUN_00c44e20(BSTempNodeManager*);
 extern void __cdecl __Dummy_00b6fef0(void*, unsigned int);
 
 // @fnv 0x00450630
+// pdb: BSTempNodeManager::`scalar deleting destructor' | TES.obj | retail, vtable slot, high
 void* BSTempNodeManager::FUN_00450630(unsigned int flags)
 {
     this->BSTempNodeManager::~BSTempNodeManager();
@@ -184,9 +185,11 @@ extern NP DAT_011f95e8;
 
 // @fnv 0x00451570
 // src: XBOX_PDB 0x00451570
-void BSShaderManager_SetProjectedShadowMaskTexture(void* apValue)
+// pdb: BSShaderManager::SetProjectedShadowMaskTexture | TES.obj | debug, upstream name already matches, high
+// pdb params: apTexture
+void BSShaderManager_SetProjectedShadowMaskTexture(void* apTexture)
 {
-    DAT_011f95e8 = apValue;
+    DAT_011f95e8 = apTexture;
 }
 
 extern unsigned char DAT_011ad86c;
@@ -233,6 +236,7 @@ int __fastcall GetByteAtOffset38(void*);
 
 // @fnv 0x004523c0
 // src: XBOX_PDB 0x004523c0
+// pdb: TESObjectCELL::GetAttaching | TES.obj | debug, upstream name already matches, high
 bool SaveLoadStateQuery::TESObjectCELL_GetAttaching()
 {
     return GetByteAtOffset38(this) == 5;
@@ -261,21 +265,25 @@ struct FormCollisionQuery : TESForm
 
 struct FormFlagQuery : TESForm
 {
-    bool __thiscall HasFlags(int arg);
+    bool __thiscall IsFlagSet(int aeFlag);
 };
 
 // @fnv 0x00452440
 // src: XBOX_PDB 0x00452440
+// pdb: BGSPlaceableWater::IsAutomaticWater | TES.obj | debug, upstream name already matches, high
 bool __thiscall FormCollisionQuery::BGSPlaceableWater_IsAutomaticWater()
 {
-    return reinterpret_cast<FormFlagQuery*>(this)->HasFlags(0x40000000);
+    return reinterpret_cast<FormFlagQuery*>(this)->IsFlagSet(0x40000000);
 }
 
 
 // @fnv 0x00452460
-bool __thiscall BGSPlaceableWater::HasFlags(unsigned int flags)
+// src: XBOX_DEBUG_PDB 0x00452460
+// pdb: BGSPlaceableWater::IsFlagSet | TES.obj | debug, call graph (shared callers), high
+// pdb params: aeFlag
+bool __thiscall BGSPlaceableWater::IsFlagSet(unsigned int aeFlag)
 {
-    return (this->GetExtraPartList()->flags & flags) ? true : false;
+    return (this->GetExtraPartList()->flags & aeFlag) ? true : false;
 }
 
 extern unsigned char DAT_0119b8c8;
@@ -296,6 +304,7 @@ struct FUN_00453470_shell
 
 // @fnv 0x00453470
 // src: XBOX_PDB 0x00453470
+// pdb: NiNode::GetChildCount | TES.obj | debug, upstream name already matches, high
 int __thiscall FUN_00453470_shell::NiNode_GetChildCount(void)
 {
     return NiTArray_char_NiTMallocInterface_char_GetEffectiveSize(reinterpret_cast<char*>(this) + 0x9c);
@@ -313,6 +322,8 @@ struct FUN_00453500_shell
 
 // @fnv 0x00453500
 // src: XBOX_PDB 0x00453500
+// pdb: TES::SyncCellActorHavok | TES.obj | debug, object-file run extension, low
+// pdb locals: pcell
 void FUN_00453500_shell::BGSSaveLoadGame_SetDeferInitForms(bool set)
 {
     if (set)
@@ -330,6 +341,7 @@ BSAudio* DAT_011f6d98;
 
 // @fnv 0x00453a70
 // src: XBOX_PDB 0x00453a70
+// pdb: BSAudio::QInstance | TES.obj | debug, upstream name already matches, high
 BSAudio* BSAudio_QInstance()
 {
     return DAT_011f6d98;
@@ -361,6 +373,7 @@ struct FUN_00454b50_shell
 
 // @fnv 0x00454b50
 // src: XBOX_PDB 0x00454b50
+// pdb: TESWorldSpace::GetWaterNoiseTextureName | TES.obj | debug, upstream name already matches, high
 char const* FUN_00454b50_shell::TESWorldSpace_GetWaterNoiseTextureName() const
 {
     return ((FNStub*)((char*)this + 0xe0))->GetFullName();
@@ -381,6 +394,7 @@ struct TESFaction_RankDataView
 
 // @fnv 0x00455620
 // src: XBOX_PDB 0x00455620
+// pdb: TESQuest::GetEnabled | TES.obj | debug, upstream name already matches, high
 bool TESFaction_RankDataView::TESQuest_GetEnabled()
 {
     return (*GetRankDataList() & 1) != 0;
@@ -431,6 +445,7 @@ struct FUN_00458f70_shell
 
 // @fnv 0x00458f70
 // src: GUESS 0x00458f70 (confidence: low)
+// pdb: BSTempNode::~BSTempNode | TES.obj | debug, call graph, medium
 void __thiscall FUN_00458f70_shell::SetVtableAndProcessState_00458f70()
 {
     *(int*)this = (int)&DAT_01017d24;
@@ -439,6 +454,7 @@ void __thiscall FUN_00458f70_shell::SetVtableAndProcessState_00458f70()
 
 namespace fnv_0045a520 {
 
+// pdb: class ModelLoader, size 0x30, 12 members
 struct ModelLoader
 {
     void ModelLoader_ReleaseFile(char const*);
@@ -457,6 +473,7 @@ struct FUN_0045a520_shell
 };
 
 // @fnv 0x0045a520
+// pdb: TES::UnloadDefaultModels | TES.obj | debug, object-file gap fill, medium
 void __thiscall FUN_0045a520_shell::LoadStartMenuModels()
 {
     if (static_cast<const StartMenu&>(g_011d14c4).GetMenuTitle()[0])
@@ -593,18 +610,18 @@ struct ModelLoader
     static int GetIOFileIndexForArchiveTypeIndex(int);
     void AddModelToMap(Model*, char*);
     void* __vecDelDtor(unsigned int);
-    void* m_pLoadedModelMap;
-    void* m_pLoadedKFModelMap;
-    void* m_pQueuedReferenceMap;
-    void* m_pQueuedReferenceUpdateMap;
-    void* m_pQueuedAnimIdleMap;
-    void* m_pQueuedReplacementKFListMap;
-    void* m_pQueuedHelmetMap;
-    void* m_pDistant3DTaskQueue;
-    void* m_pQueuedTextureMap;
-    void* m_pLoadedFileMap;
-    BackgroundCloneThread* m_pBackgroundCloneThread;
-    bool m_bLoadTexturesDegraded;
+    void* pModelMap; // src: XBOX_RETAIL_PDB +0x0 (old: m_pLoadedModelMap)
+    void* pKFModelMap; // src: XBOX_RETAIL_PDB +0x4 (old: m_pLoadedKFModelMap)
+    void* pQueuedReferencesMap; // src: XBOX_RETAIL_PDB +0x8 (old: m_pQueuedReferenceMap)
+    void* pReferencesToQueueMap; // src: XBOX_RETAIL_PDB +0xc (old: m_pQueuedReferenceUpdateMap)
+    void* pQueuedAnimIdleMap; // src: XBOX_RETAIL_PDB +0x10 (old: m_pQueuedAnimIdleMap)
+    void* pQueuedReplacementKFListMap; // src: XBOX_RETAIL_PDB +0x14 (old: m_pQueuedReplacementKFListMap)
+    void* pQueuedHelmetMap; // src: XBOX_RETAIL_PDB +0x18 (old: m_pQueuedHelmetMap)
+    void* pAttachDistant3DTaskQueue; // src: XBOX_RETAIL_PDB +0x1c (old: m_pDistant3DTaskQueue)
+    void* pQueuedTextureMap; // src: XBOX_RETAIL_PDB +0x20 (old: m_pQueuedTextureMap)
+    void* pLoadedFileMap; // src: XBOX_RETAIL_PDB +0x24 (old: m_pLoadedFileMap)
+    BackgroundCloneThread* pBackgroundCloneThread; // src: XBOX_RETAIL_PDB +0x28 (old: m_pBackgroundCloneThread)
+    bool bHasDelayedFree; // src: XBOX_RETAIL_PDB +0x2c (old: m_bLoadTexturesDegraded)
     char _pad_2d[3];
 };
 typedef char _sizecheck_ModelLoader[sizeof(ModelLoader) == 48 ? 1 : -1];
@@ -615,27 +632,30 @@ struct FUN_0045a5e0_shell : public ModelLoader
 
 // @fnv 0x0045a5e0
 // src: XBOX_PDB 0x0045a5e0
+// pdb: ModelLoader::ReleaseFile | TES.obj | debug, upstream name already matches, high
+// pdb params: apModelFileName
 void FUN_0045a5e0_shell::ModelLoader_ReleaseFile(char* apModelFileName)
 {
     QueueModelLoad(apModelFileName, true, 1);
 }
 
 void __cdecl CreateCSDFadeNode(void);
-void __cdecl CreateSpdFadeNode(void);
-void __cdecl BGSAddonNodeSoundHandleExtra_InitTag(void);
-void __cdecl BSFaceGenAnimationData_InitTag(void);
-void __cdecl BSFaceGenModelExtraData_InitTag(void);
-void __cdecl BSFaceGenBaseMorphExtraData_InitTag(void);
+void __cdecl BSSplatterExtraData_InitSDM(void);
+void __cdecl BGSAddonNodeSoundHandleExtra_InitSDM(void);
+void __cdecl BSFaceGenAnimationData_InitSDM(void);
+void __cdecl BSFaceGenModelExtraData_InitSDM(void);
+void __cdecl BSFaceGenBaseMorphExtraData_InitSDM(void);
 
 // @fnv 0x0045b020
 // src: COMMUNITY 0x0045b020
+// pdb: TES::InitSDM | TES.obj | retail, upstream name already matches, high
 void __cdecl TES_InitSDM(void)
 {
-    BSFaceGenAnimationData_InitTag();
-    BSFaceGenModelExtraData_InitTag();
-    BSFaceGenBaseMorphExtraData_InitTag();
-    BGSAddonNodeSoundHandleExtra_InitTag();
-    CreateSpdFadeNode();
+    BSFaceGenAnimationData_InitSDM();
+    BSFaceGenModelExtraData_InitSDM();
+    BSFaceGenBaseMorphExtraData_InitSDM();
+    BGSAddonNodeSoundHandleExtra_InitSDM();
+    BSSplatterExtraData_InitSDM();
     CreateCSDFadeNode();
 }
 
@@ -660,27 +680,30 @@ extern Flt g_011deb7c;
 
 // @fnv 0x0045c670
 // src: XBOX_PDB 0x0045c670
+// pdb: Main::GetWorldSceneGraph | TES.obj | debug, upstream name already matches, high
 unsigned int Main_GetWorldSceneGraph()
 {
     return g_011deb7c;
 }
 
 
-void TESObjectREFR_AddMasterParticleAddonNodes(TESObjectREFR* self);
-void TESObjectREFR_RemoveMasterParticleAddonNodes(TESObjectREFR* self);
+void TESObjectREFR_AddMasterParticleAddonNodes(TESObjectREFR* apNode);
+void TESObjectREFR_RemoveMasterParticleAddonNodes(TESObjectREFR* apNode);
 
 // Calls FUN_00578060 on arg when flag is true, otherwise calls FUN_00578170 on arg.
 // @fnv 0x0045c680
 // src: COMMUNITY 0x0045c680
-void TES_RangedNodeVisibilityChangedCB(TESObjectREFR* apRefr, bool flag)
+// pdb: TES::RangedNodeVisibilityChangedCB | TES.obj | debug, upstream name already matches, high
+// pdb params: apNode, abVisible
+void TES_RangedNodeVisibilityChangedCB(TESObjectREFR* apNode, bool abVisible)
 {
-    if (flag)
+    if (abVisible)
     {
-        TESObjectREFR_AddMasterParticleAddonNodes(apRefr);
+        TESObjectREFR_AddMasterParticleAddonNodes(apNode);
     }
     else
     {
-        TESObjectREFR_RemoveMasterParticleAddonNodes(apRefr);
+        TESObjectREFR_RemoveMasterParticleAddonNodes(apNode);
     }
 }
 
@@ -752,6 +775,9 @@ void __cdecl BSTexturePalette_PurgeUnusedTextures(void);
 void __cdecl BSTexturePalette_Unlock(void);
 
 // @fnv 0x00452490
+// pdb: TES::CleanUpUnusedTextures | TES.obj | retail, call graph, high
+// pdb params: abWaitForCompletion
+// pdb locals: tempAutoEvent
 } // namespace fnv_00452490
 void TES::SetTESActive(bool abWaitForCompletion)
 {
@@ -774,17 +800,19 @@ namespace fnv_00452490 {
 
 // If cell is non-null, adds it to the interior buffer when it is interior, otherwise to the exterior buffer.
 // @fnv 0x00454b90
-void TES::AddToBuffer(TESObjectCELL* cell)
+// pdb: TES::AddToBuffer | TES.obj | debug, upstream name already matches, high
+// pdb params: apCell
+void TES::AddToBuffer(TESObjectCELL* apCell)
 {
-    if (cell)
+    if (apCell)
     {
-        if (cell->IsInterior())
+        if (apCell->IsInterior())
         {
-            ((TES*)this)->AddCellToInteriorBuffer(cell);
+            ((TES*)this)->AddCellToInteriorBuffer(apCell);
         }
         else
         {
-            ((TES*)this)->AddCellToExteriorBuffer(cell);
+            ((TES*)this)->AddCellToExteriorBuffer(apCell);
         }
     }
 }
@@ -799,6 +827,7 @@ void _delete(void* obj, unsigned int size);
 
 // Calls FUN_00458f70, then deletes this with size 0xb0 when bit 0 of flags is set, and returns this.
 // @fnv 0x00458f30
+// pdb: BSTempNode::`scalar deleting destructor' | TES.obj | retail, vtable slot, high
 void* FUN_00458f30_shell::DestroyIfFlagged(unsigned int flags)
 {
     this->SetVtableAndProcessState_00458f70();
@@ -810,12 +839,14 @@ void* FUN_00458f30_shell::DestroyIfFlagged(unsigned int flags)
 struct CellLoadFinalizer : TES
 {
     void TES_ClearDeadCountList();
-    void TES_Revert(unsigned int a);
+    void TES_Revert(unsigned int apLoadGameBuffer);
 };
 
 // @fnv 0x00459840
 // src: XBOX_PDB 0x00459840
-void __thiscall CellLoadFinalizer::TES_Revert(unsigned int a)
+// pdb: TES::Revert | TES.obj | retail, upstream name already matches, high
+// pdb params: apLoadGameBuffer
+void __thiscall CellLoadFinalizer::TES_Revert(unsigned int apLoadGameBuffer)
 {
     this->TES_ClearDeadCountList();
     *reinterpret_cast<unsigned int*>(reinterpret_cast<char*>(this) + 0x48) = 0x7fffffff;
@@ -843,6 +874,7 @@ struct FUN_0045ae20_shell
 
 // Calls FUN_0045ae50, then deallocates this if bit 0 of flags is set, and returns this.
 // @fnv 0x0045ae20
+// pdb: TES::ParticleObjectCache::`scalar deleting destructor' | TES.obj | debug, object-file run extension, low
 void* FUN_0045ae20_shell::FUN_0045ae20(unsigned int flags)
 {
     FUN_0045ae50();
@@ -911,6 +943,7 @@ struct FUN_00451cb0_shell
 };
 // @fnv 0x00451cb0
 // src: COMMUNITY 0x00451cb0
+// pdb: TESObjectCELL::GetCellName | TES.obj | debug, upstream name already matches, high
 void FUN_00451cb0_shell::TESObjectCELL_GetCellName()
 {
     ((FUN_00401280_shell*)this)->retn_empty_string();
@@ -929,6 +962,10 @@ struct FNVHelper
 
 // Gets the form type of apRef's object reference and returns true only if apRef is neither deleted nor disabled.
 // @fnv 0x00451e40
+// pdb: TES::PreCloneMove | TES.obj | retail, object-file run extension, low
+// pdb note: debug build links it to TES::CanAttach3D
+// pdb params: apRef
+// pdb locals: pactor
 bool TES::IsRefUsable(TESObjectREFR* apRef)
 {
     unsigned char type = ((FNVHelper*)apRef)->_FNV_GetObjectReference()->_FNV_GetFormType();
@@ -984,6 +1021,7 @@ extern TESDataHandler* g_dataHandler;
 // If g_dataHandler is set, clears the grid cell array and calls FUN_00451570(0) and FUN_00451520(1).
 // @fnv 0x00453940
 // src: XBOX_PDB 0x00453940
+// pdb: TES::DetachGridCells | TES.obj | retail, upstream name already matches, high
 void ExteriorCellReset::TES_DetachGridCells()
 {
     if (!g_dataHandler)
@@ -1020,6 +1058,7 @@ struct FUN_00454400_shell
 };
 
 // @fnv 0x00454400
+// pdb: TESObjectCELL::GetReferenceCount | TES.obj | debug, call graph, high
 int FUN_00454400_shell::GetRaceListSize()
 {
     return ((BSSimpleListTESRaceSize*)((char*)this + 0xac))->GetSize();
@@ -1048,6 +1087,7 @@ struct FUN_00455640_shell
 // Calls FUN_00455680, then invokes FUN_00553820 on the previous path if one exists, otherwise calls FUN_004baba0 on m8.
 // @fnv 0x00455640
 // src: COMMUNITY 0x00455640
+// pdb: TES::RunAnimations | TES.obj | debug, upstream name already matches, high
 void FUN_00455640_shell::TES_RunAnimations()
 {
     ClearAnimationCloneCount();
@@ -1097,7 +1137,7 @@ struct CP_008c48d0
 };
 struct S_005538e0
 {
-    void PlayCellSoundEffects();
+    void TESObjectCELL_UpdateRefSounds();
 };
 struct CellGridSoundUpdate : GridCellArray
 {
@@ -1105,10 +1145,11 @@ struct CellGridSoundUpdate : GridCellArray
 };
 // @fnv 0x00455690
 // src: COMMUNITY 0x00455690
+// pdb: TES::UpdateRefSounds | TES.obj | debug, upstream name already matches, high
 void CellSoundUpdate::TES_UpdateRefSounds()
 {
     if (((CP_008c48d0*)this)->GetPrevPath())
-        ((S_005538e0*)((CP_008c48d0*)this)->GetPrevPath())->PlayCellSoundEffects();
+        ((S_005538e0*)((CP_008c48d0*)this)->GetPrevPath())->TESObjectCELL_UpdateRefSounds();
     else
         ((CellGridSoundUpdate*)*(void**)((char*)this + 8))->UpdateRefSounds_004bac20();
 }
@@ -1136,6 +1177,8 @@ struct FUN_00456be0_shell
 };
 // @fnv 0x00456be0
 // src: XBOX_PDB 0x00456be0
+// pdb: TES::ToggleCollision | TES.obj | retail, upstream name already matches, high
+// pdb locals: pw, pcell, bcol
 void FUN_00456be0_shell::TES_ToggleCollision()
 {
     bool bcol = !TES_QCollisionDisableFlag();
@@ -1164,6 +1207,8 @@ struct CellGridLandBorders : GridCellArray
 };
 
 // @fnv 0x00456cb0
+// pdb: TES::ShowLandBorders | TES.obj | debug, object-file gap fill, medium
+// pdb params: abShow
 } // namespace fnv_00456cb0
 void TES::SetShowLandBorders(bool abShow)
 {
@@ -1205,6 +1250,7 @@ struct blob12
 
 
 // @fnv 0x00457070
+// pdb: TES::GetCurrentCell | TES.obj | debug, call graph, high
 } // namespace fnv_00457070
 TESObjectCELL* TES::GetDetailedActorPathHandler()
 {
@@ -1222,13 +1268,17 @@ namespace fnv_00457070 {
 
 struct CellSceneAccess : public TESObjectCELL
 {
-    NiAVObject* GetCellNodeAt(unsigned int index);
+    NiAVObject* TESObjectCELL_GetLandNode(unsigned int aiQuad);
 };
 // @fnv 0x0045c9a0
-NiAVObject* CellSceneAccess::GetCellNodeAt(unsigned int index)
+// src: XBOX_DEBUG_PDB 0x0045c9a0
+// pdb: TESObjectCELL::GetLandNode | TES.obj | debug, call graph, high
+// pdb params: aiQuad
+// pdb locals: pn
+NiAVObject* CellSceneAccess::TESObjectCELL_GetLandNode(unsigned int aiQuad)
 {
     NiAVObject* node = ((TESObjectCELL*)this)->GetCellChildAt(2);
-    return node ? ((NiNode*)node)->GetAt(index) : 0;
+    return node ? ((NiNode*)node)->GetAt(aiQuad) : 0;
 }
 
 struct FUN_00557090_shell
@@ -1241,30 +1291,37 @@ struct FUN_005570b0_shell
 };
 // @fnv 0x00557090
 // src: COMMUNITY 0x00557090
+// pdb: TESObjectCELL::IsRefListLocked | TESObjectCELL.obj | debug, upstream name already matches, high
 void FUN_00557090_shell::TESObjectCELL_IsRefListLocked()
 {
     ((FUN_005570b0_shell*)((char*)this + 0x80))->IsSet();
 }
 
 // @fnv 0x00c44e40
-void BSTempNode::UpdateDownwardPass(NiUpdateData& data, unsigned int flags)
+// pdb: BSTempNodeManager::UpdateDownwardPass | BSTempNodeManager.obj | retail, vtable slot, high
+// pdb params: UpdateData, uFlags
+void BSTempNode::UpdateDownwardPass(NiUpdateData& UpdateData, unsigned int uFlags)
 {
-    BSTempNodeManager_RemoveExpired(*(float*)&data);
-    NiNode::UpdateDownwardPass(data, flags);
+    BSTempNodeManager_RemoveExpired(*(float*)&UpdateData);
+    NiNode::UpdateDownwardPass(UpdateData, uFlags);
 }
 
 // @fnv 0x00c44e70
-void BSTempNode::UpdateSelectedDownwardPass(NiUpdateData& data, unsigned int flags)
+// pdb: BSTempNodeManager::UpdateSelectedDownwardPass | BSTempNodeManager.obj | retail, vtable slot, high
+// pdb params: UpdateData, uFlags
+void BSTempNode::UpdateSelectedDownwardPass(NiUpdateData& UpdateData, unsigned int uFlags)
 {
-    BSTempNodeManager_RemoveExpired(*(float*)&data);
-    NiNode::UpdateSelectedDownwardPass(data, flags);
+    BSTempNodeManager_RemoveExpired(*(float*)&UpdateData);
+    NiNode::UpdateSelectedDownwardPass(UpdateData, uFlags);
 }
 
 // @fnv 0x00c44ea0
-void BSTempNode::UpdateRigidDownwardPass(NiUpdateData& data, unsigned int flags)
+// pdb: BSTempNodeManager::UpdateRigidDownwardPass | BSTempNodeManager.obj | retail, vtable slot, high
+// pdb params: UpdateData, uFlags
+void BSTempNode::UpdateRigidDownwardPass(NiUpdateData& UpdateData, unsigned int uFlags)
 {
-    BSTempNodeManager_RemoveExpired(*(float*)&data);
-    NiNode::UpdateRigidDownwardPass(data, flags);
+    BSTempNodeManager_RemoveExpired(*(float*)&UpdateData);
+    NiNode::UpdateRigidDownwardPass(UpdateData, uFlags);
 }
 
 
@@ -1279,6 +1336,9 @@ namespace fnv_00451ea0 {
 extern int DAT_011e0e80;
 
 // @fnv 0x00451ea0
+// pdb: TES::PreCloneMove | TES.obj | debug, call graph, high
+// pdb params: apRef
+// pdb locals: pactor
 } // namespace fnv_00451ea0
 void TES::DetachModel(TESObjectREFR* apRef)
 {
@@ -1290,7 +1350,7 @@ void TES::DetachModel(TESObjectREFR* apRef)
         if (pactor)
         {
             pactor->Unk_98();
-            ((ProcessLists*)&DAT_011e0e80)->RemoveMobileObjectFromList(pactor);
+            ((ProcessLists*)&DAT_011e0e80)->RemoveActorFromTempChangeList(pactor);
         }
     }
 }
@@ -1320,6 +1380,8 @@ struct Holder4523e0
 // Returns the loaded object's flag for aiFlag when pLoaded is set, otherwise false.
 // @fnv 0x004523e0
 // src: XBOX_PDB 0x004523e0
+// pdb: TESObjectREFR::GetLoadedDataFlag | TES.obj | debug, upstream name already matches, high
+// pdb params: aiFlag
 bool Holder4523e0::TESObjectREFR_GetLoadedDataFlag(unsigned int aiFlag)
 {
     return pLoaded ? pLoaded->GetFlag(aiFlag) : false;
@@ -1336,6 +1398,9 @@ struct GlobalObject_0045cfe0 : CellStand
 extern GlobalObject_0045cfe0 g_011c3e38;
 
 // @fnv 0x00454bd0
+// pdb: TES::IsInteriorBuffered | TES.obj | debug, call graph, medium
+// pdb params: apCell
+// pdb locals: n
 } // namespace fnv_00454bd0
 bool TES::ContainsCell(TESObjectCELL* apCell)
 {
@@ -1361,11 +1426,14 @@ struct CellStand
 extern CellStand DAT_011c3c90;
 // @fnv 0x00454e20
 // src: XBOX_PDB 0x00454e20
-bool CellStand::TES_IsExteriorBuffered(void* pElement)
+// pdb: TES::IsExteriorBuffered | TES.obj | debug, upstream name already matches, high
+// pdb params: apCell
+// pdb locals: n
+bool CellStand::TES_IsExteriorBuffered(void* apCell)
 {
     for (unsigned int i = 0; i < (unsigned int)DAT_011c3c90.GetCellStandValue(); ++i)
     {
-        if (_arr[i] == pElement)
+        if (_arr[i] == apCell)
             return true;
     }
     return false;
@@ -1373,9 +1441,11 @@ bool CellStand::TES_IsExteriorBuffered(void* pElement)
 }  // namespace fnv_00454e20
 
 // @fnv 0x00458ef0
-BSTempNode::BSTempNode(float value) : NiNode(0)
+// pdb: BSTempNode::BSTempNode | TES.obj | debug, upstream name already matches, high
+// pdb params: afTime
+BSTempNode::BSTempNode(float afTime) : NiNode(0)
 {
-    fTime = value;
+    fTime = afTime;
 }
 
 namespace fnv_00459000 {
@@ -1392,6 +1462,9 @@ struct FakeList
 
 // Searches the list for an entry whose TESActorBase pointer matches apObject and returns its short value, or 0 if not found.
 // @fnv 0x00459000
+// pdb: TES::GetDeadCount | TES.obj | debug, call graph, medium
+// pdb params: apObject
+// pdb locals: plist, pdead
 } // namespace fnv_00459000
 short TES::FindActorBaseValue(TESActorBase* apObject)
 {
@@ -1425,6 +1498,8 @@ namespace fnv_00628da0 {
 
 // Clears _pad_2, sets all six entries of arr to null, and calls RemoveAll on map.
 // @fnv 0x00628da0
+// pdb: LoadedAreaBound::Clear | LoadedAreaBound.obj | retail, call graph (shared callers), high
+// pdb locals: i
 struct LoadedAreaBoundReset : LoadedAreaBound
 {
     void Reset();
@@ -1463,6 +1538,9 @@ struct ExteriorBufferPromoter : TES
 
 // Moves apCell to the front of the cell list, shifting entries, and unloads the displaced cell via g_dataHandler if one remains.
 // @fnv 0x00454e70
+// pdb: TES::AddToExteriorBuffer | TES.obj | debug, call graph, high
+// pdb params: apCell
+// pdb locals: pmoveCell, bvisible, n, ptempCell
 void ExteriorBufferPromoter::MoveCellToFront(TESObjectCELL* apCell)
 {
     TESObjectCELL* pmoveCell;
@@ -1563,6 +1641,9 @@ struct ExteriorGridLoader : TES
 
 // @fnv 0x00451a50
 // src: COMMUNITY 0x00451a50
+// pdb: TES::LoadGridCell | TES.obj | retail, string-set bridge, high
+// pdb params: apCell
+// pdb locals: igridX, igridY
 void ExteriorGridLoader::TES_LoadGridCell(int aiGridX, int aiGridY, int aiCellX, int aiCellY)
 {
     if (!((WorldSpaceQuery*)this)->GetHitSound())
@@ -1599,10 +1680,12 @@ void ExteriorGridLoader::TES_LoadGridCell(int aiGridX, int aiGridY, int aiCellX,
 }
 
 
+// pdb: class Animation, size 0x13c (here 0x1), 33 members
 struct Animation
 {
     float FUN_00453700();
 };
+// pdb: class TaskQueueInterface, size 0x10 (here 0x1), 4 members
 struct TaskQueueInterface
 {
     static TaskQueueInterface* __cdecl GetInstance();
@@ -1625,7 +1708,7 @@ struct Zt5Cell
 };
 struct Zt5Grid
 {
-    void UpdateCellGrid(float);
+    void UpdateManagedNodes(float);
 };
 struct Zt5Listener
 {
@@ -1680,6 +1763,9 @@ struct Zt5TES
 // Advances the global time, updates wind and cell/grid state, runs queued tasks and the sky, then processes the listener and DAT_011e0e80.
 // @fnv 0x00453550
 // src: XBOX_PDB 0x00453550
+// pdb: TES::UpdateCellAnimations | TES.obj | retail, upstream name already matches, high
+// pdb params: afTime
+// pdb locals: pcell, fwindAngle, fwindSpeed, pqueueInterface
 void Zt5TES::TES_UpdateCellAnimations(float afTime)
 {
     Zt5Cell* pcell = (Zt5Cell*)((CP_008c48d0*)this)->GetPrevPath();
@@ -1700,7 +1786,7 @@ void Zt5TES::TES_UpdateCellAnimations(float afTime)
     if (pcell)
         pcell->TESObjectCELL_UpdateManagedNodes(DAT_011c3c08, false);
     else
-        m_pGridCells->UpdateCellGrid(DAT_011c3c08);
+        m_pGridCells->UpdateManagedNodes(DAT_011c3c08);
     TES_LockHavokUpdateMT(false);
     if (*g_011c3ea4.Int() > 1)
     {
@@ -1719,6 +1805,9 @@ void Zt5TES::TES_UpdateCellAnimations(float afTime)
 // Calls the object's virtual method and maps its returned type code to 3, 2, or 1 depending on which case group it falls into.
 // @fnv 0x0045c6b0
 // src: XBOX_PDB 0x0045c6b0
+// pdb: TES::GetLODMult | TES.obj | debug, upstream name already matches, high
+// pdb params: apObj
+// pdb locals: eLODFadeMult
 int TES_GetLODMult(TESForm* apObj)
 {
     int iResult = 0;
@@ -1755,20 +1844,22 @@ struct FUN_00453490_shell
 {
     bool ContainsCell(TESObjectCELL*);
     bool TES_IsExteriorBuffered(TESObjectCELL*);
-    bool TES_IsBuffered(TESObjectCELL* cell);
+    bool TES_IsBuffered(TESObjectCELL* apCell);
 };
 // Returns false for a null cell, otherwise dispatches to ContainsCell for interior cells or FUN_00454e20 for exterior cells.
 // @fnv 0x00453490
 // src: XBOX_PDB 0x00453490
-bool FUN_00453490_shell::TES_IsBuffered(TESObjectCELL* cell)
+// pdb: TES::IsBuffered | TES.obj | debug, upstream name already matches, high
+// pdb params: apCell
+bool FUN_00453490_shell::TES_IsBuffered(TESObjectCELL* apCell)
 {
-    return cell ? ((bool)(unsigned char)(cell->IsInterior() ? ContainsCell(cell) : TES_IsExteriorBuffered(cell))) : false;
+    return apCell ? ((bool)(unsigned char)(apCell->IsInterior() ? ContainsCell(apCell) : TES_IsExteriorBuffered(apCell))) : false;
 }
 
 struct SkyModeAccess : Sky
 {
     int Sky_GetMode();
-    void SetMode(int mode);
+    void SetMode(int aeNewMode);
 };
 struct CellSkyAccess : TESObjectCELL
 {
@@ -1780,6 +1871,8 @@ struct CellAtmosphereUpdate : TES
     void UpdateSkyModeForCell(TESObjectCELL*);
 };
 // @fnv 0x00455400
+// pdb: TES::SetAtmosphere | TES.obj | debug, call graph, medium
+// pdb params: apCell
 void CellAtmosphereUpdate::UpdateSkyModeForCell(TESObjectCELL* apCell)
 {
     if (!GetLogDate()->Sky_GetMode())
@@ -1807,6 +1900,7 @@ struct ParticleCacheEntry : GO
 };
 // Initializes the object by assigning 0 to the base GO and setting mObject2 and mObject3 to 0.
 // @fnv 0x0045ab30
+// pdb: TES::ParticleObjectCache::ParticleObjectCache | TES.obj | debug, object-file run extension, low
 ParticleCacheEntry::ParticleCacheEntry() : GO(0)
 {
     ((GO*)this)->operator=((void*)0);
@@ -1830,6 +1924,8 @@ struct CellCollisionUpdate : TES
 };
 // @fnv 0x00451cf0
 // src: COMMUNITY 0x00451cf0
+// pdb: TES::UpdateGridLights | TES.obj | retail, upstream name already matches, high
+// pdb locals: x, y, pcell
 void CellCollisionUpdate::TES_UpdateGridLights()
 {
     for (unsigned int x = 0; x < *g_011c63cc.Int(); x++)
@@ -1848,6 +1944,9 @@ struct LLD_Cell;
 
 // Converts cell coordinates to grid indices, returns the grid cell if in range, otherwise falls back to the data handler lookup.
 // @fnv 0x00451900
+// pdb: TES::GetGridCellCell | TES.obj | retail, call graph, medium
+// pdb params: aiCellX, aiCellY
+// pdb locals: pcell, igridX, igridY
 TESObjectCELL* TESCoordinateLookup::FindCell(int aiCellX, int aiCellY)
 {
     TESObjectCELL* pcell;
@@ -1888,6 +1987,8 @@ extern int g_TES;
 
 
 // @fnv 0x00452ed0
+// pdb: TES::AllCellsInGridLoaded | TES.obj | debug, object-file run extension, low
+// pdb locals: icellX, icellY, ix, iy, pgc, pcell
 } // namespace fnv_00452ed0
 bool TES::IsCellBuffering()
 {
@@ -1940,6 +2041,8 @@ void* __cdecl _FUN_00ec7230(void*, void*, unsigned int);
 
 
 // @fnv 0x00454fc0
+// pdb: TES::SortExteriorBuffer | TES.obj | debug, call graph, high
+// pdb locals: iattachedCount, ilastNonQueuedPos, ihalfgrid, i, icellX, pcell, bqueuedArea, ideltaY, icellY, ideltaX
 void TES::UpdateExteriorCellBuffer()
 {
     unsigned int iattachedCount;
@@ -2007,6 +2110,9 @@ struct TemporarySceneGraph : SceneGraph
     void AttachTemporaryNode(NiAVObject*, float);
 };
 // @fnv 0x00458e20
+// pdb: TES::AddTempDebugObject | TES.obj | retail, call graph, high
+// pdb params: apObject, afTime
+// pdb locals: pn
 void TemporarySceneGraph::AttachTemporaryNode(NiAVObject* apObject, float afTime)
 {
     if (apObject)
@@ -2039,6 +2145,9 @@ struct FUN_00459060_shell
 
 // Walks the list at this+0x9c for an item with the given key, adds value to it if found, otherwise allocates a new item and adds it to the head.
 // @fnv 0x00459060
+// pdb: TES::AddDeadCount | TES.obj | debug, object-file gap fill, medium
+// pdb params: apObject, ascount
+// pdb locals: plist, pdead
 void FUN_00459060_shell::AddOrAccumulateItem(unsigned int key, short sValue)
 {
     G2* node = reinterpret_cast<G2*>(reinterpret_cast<char*>(this) + 0x9c);
@@ -2113,6 +2222,9 @@ extern float runtimeFloatSettingDefault175;
 
 // Logs the target cell, moves the player into it, times the load, updates the calendar and handles save options.
 // @fnv 0x00459d20
+// pdb: TES::TestCell | TES.obj | retail, string-set bridge, high
+// pdb params: apCell, aiOptions, aiTestStartTime
+// pdb locals: itime, inumSeconds, icenterOnCellStartTime, icenterOnCellStopTime, inumMinutes, inumHours
 void FUN_00459d20_shell::MoveToCell(TESObjectCELL* apCell, unsigned int aiOptions, unsigned int aiTestStartTime)
 {
     unsigned int itime;
@@ -2188,13 +2300,16 @@ struct FUN_0045c780_shell
     TESForm* sound;
 
     void InitSoundGrid();
-    void TES_SetHideLandBlendPassForGridCell(unsigned int index1, unsigned int index2, unsigned char value);
+    void TES_SetHideLandBlendPassForGridCell(unsigned int aiGridX, unsigned int aiGridY, unsigned char abFlag);
 };
 
 extern bool DAT_011c3c0c;
 extern const unsigned char DAT_01017830[5][5];
 
 // @fnv 0x0045c780
+// pdb: TES::PreloadPlaceableWaterNoiseTextures | TES.obj | retail, object-file run extension, low
+// pdb note: debug build links it to TES::HideUnneededLandPasses
+// pdb locals: tempMemContext, pwaterlist, pwater, spSourceTexture
 void FUN_0045c780_shell::InitSoundGrid()
 {
     if (*g_011c63cc.Int() == 5)
@@ -2236,6 +2351,10 @@ extern unsigned char DAT_0101784c[];
 unsigned int __fastcall _ref_0084e3a0(void* object);
 
 // @fnv 0x0045c840
+// pdb: TES::GetUnusedCachedParticleObject | TES.obj | retail, object-file run extension, low
+// pdb note: debug build links it to TES::HideFarLandNormalMaps
+// pdb params: apModel, arInstance
+// pdb locals: pcache, iresult, i
 void FUN_0045c840_shell::InitFromMatrix()
 {
     if (*g_011c63cc.Int() == 5)
@@ -2265,6 +2384,10 @@ extern int g_TES;
 
 
 // @fnv 0x004572e0
+// pdb: TES::PickWorldDistance | TES.obj | retail, object-file run extension, low
+// pdb note: debug build links it to TES::GetLandHeight
+// pdb params: apPick, aOrigin, aDir, afDistance, acNodeFlags
+// pdb locals: bhitsomething, x, y, pcell
 bool LandscapeHeightQuery::GetLandHeightAt(const NiPoint3& coord, float& height)
 {
     int icellX = _TruncateFloatToInt(coord.x);
@@ -2309,6 +2432,8 @@ int __fastcall GetByteAtOffset38(void*);
 
 // Returns true if pObj is non-null and its state from GetByteAtOffset38 is 5 or 6, or is 2-4 when bFlag is zero.
 // @fnv 0x004511e0
+// pdb: TES::IsCellLoaded | TES.obj | debug, call graph, medium
+// pdb params: apCell, abIgnorebuffered
 bool TES::IsCellBuffered(TESObjectCELL* pObj, bool bFlag)
 {
     if (pObj == 0)
@@ -2341,28 +2466,31 @@ class ReferenceSceneStateAccess : public TESObjectREFR
 {
   public:
     bool IsFlagged();
-    void SetPending(int iValue);
+    void SetPending(int ap3D);
     void SetActive(bool bActive);
 };
 
 class ActorStateHandler
 {
   public:
-    void TES_CleanTemp3D(ReferenceSceneStateAccess* pActor);
+    void TES_CleanTemp3D(ReferenceSceneStateAccess* apRef);
 };
 
 // Detaches a flagged reference's scene node from its parent, then clears its 3D and active state.
 // @fnv 0x00451da0
 // src: XBOX_PDB 0x00451da0
-void ActorStateHandler::TES_CleanTemp3D(ReferenceSceneStateAccess* pActor)
+// pdb: TES::CleanTemp3D | TES.obj | retail, upstream name already matches, high
+// pdb params: apRef
+// pdb locals: pparent
+void ActorStateHandler::TES_CleanTemp3D(ReferenceSceneStateAccess* apRef)
 {
-    if (pActor->IsFlagged() && pActor->GetNiNode() && pActor->TESObjectREFR_HasTemp3D())
+    if (apRef->IsFlagged() && apRef->GetNiNode() && apRef->TESObjectREFR_HasTemp3D())
     {
-        NiNode* pOwner = pActor->GetNiNode()->GetParent();
+        NiNode* pOwner = apRef->GetNiNode()->GetParent();
         if (pOwner)
-            pOwner->RemoveObject(pActor->GetNiNode());
-        pActor->SetPending(0);
-        pActor->SetActive(false);
+            pOwner->RemoveObject(apRef->GetNiNode());
+        apRef->SetPending(0);
+        apRef->SetActive(false);
     }
 }
 
@@ -2376,6 +2504,10 @@ struct TESBuffer45130 : Zt5TES
 
 // @fnv 0x00455130
 // src: XBOX_PDB 0x00455130
+// pdb: TES::AddToExteriorBuffer | TES.obj | retail, object-file run extension, low
+// pdb note: debug build links it to TES::MoveToEndOfExteriorBuffer
+// pdb params: apCell
+// pdb locals: pmoveCell, bvisible, n, ptempCell
 void TESBuffer45130::TES_MoveToEndOfExteriorBuffer(TESObjectCELL* apCell)
 {
     if (apCell == 0)
@@ -2445,23 +2577,26 @@ struct TES_ExteriorBuffer
 
     bool IsCellBuffered(ExtCell* apCell, bool abCheck);
     WorldSpaceView* GetParentWorldSpace();
-    unsigned int TES_FreeExteriorBuffer(bool abSkipLoaded, TESWorldSpace* apWorld);
+    unsigned int TES_FreeExteriorBuffer(bool abBufferedonly, TESWorldSpace* apWorldSpace);
 };
 
 // @fnv 0x00455200
 // src: XBOX_PDB 0x00455200
-unsigned int TES_ExteriorBuffer::TES_FreeExteriorBuffer(bool abSkipLoaded, TESWorldSpace* apWorld)
+// pdb: TES::FreeExteriorBuffer | TES.obj | retail, upstream name already matches, high
+// pdb params: abBufferedonly, apWorldSpace
+// pdb locals: inumFreedCells, n
+unsigned int TES_ExteriorBuffer::TES_FreeExteriorBuffer(bool abBufferedonly, TESWorldSpace* apWorldSpace)
 {
     unsigned int ItemUpdateArray = 0;
     for (unsigned int i = 0; i < ((BufferSizeSetting*)&DAT_011c3c90)->GetUInt(); i++)
     {
         if (m_ppCellBufferB[i])
         {
-            if (!abSkipLoaded || !IsCellBuffered(m_ppCellBufferB[i], true))
+            if (!abBufferedonly || !IsCellBuffered(m_ppCellBufferB[i], true))
             {
                 if (!m_ppCellBufferB[i]->GetCellStandValue())
                 {
-                    if (apWorld && m_ppCellBufferB[i]->GetParentWorldSpace() != apWorld)
+                    if (apWorldSpace && m_ppCellBufferB[i]->GetParentWorldSpace() != apWorldSpace)
                         continue;
                     g_dataHandler->RemoveCell(m_ppCellBufferB[i]);
                     m_ppCellBufferB[i] = 0;
@@ -2539,17 +2674,20 @@ void __cdecl FindTextureByPath(void* object, LookupResult* result);
 void __cdecl BSTexturePalette_RemoveTexture(LookupEntry* entry);
 struct LookupHandler
 {
-    bool TES_FreeTexture(void* object, unsigned int limit);
+    bool TES_RemoveTextureImage(void* apfilename, unsigned int aiOtherRefs);
 };
 // @fnv 0x00456800
-// src: COMMUNITY 0x00456800
-bool LookupHandler::TES_FreeTexture(void* object, unsigned int limit)
+// src: XBOX_RETAIL_PDB 0x00456800 (was COMMUNITY)
+// pdb: TES::RemoveTextureImage | TES.obj | retail, object-file run extension, high
+// pdb params: apfilename, aiOtherRefs
+// pdb locals: sptexture
+bool LookupHandler::TES_RemoveTextureImage(void* apfilename, unsigned int aiOtherRefs)
 {
     LookupResult result(0);
-    FindTextureByPath(object, &result);
+    FindTextureByPath(apfilename, &result);
     if (result.Modelloader_GetReferencedThis() != 0)
     {
-        if (result.Modelloader_GetReferencedThis()->FUN_00726070() <= limit + 2)
+        if (result.Modelloader_GetReferencedThis()->FUN_00726070() <= aiOtherRefs + 2)
         {
             BSTexturePalette_RemoveTexture(result.Modelloader_GetReferencedThis());
             return true;
@@ -2580,7 +2718,7 @@ extern FUN_004570d0_lst DAT_011c63cc;
 
 struct CellObjectQuery : TES
 {
-    FUN_004570d0_node** GetGridCell_00457050(unsigned int i, unsigned int j);
+    FUN_004570d0_node** GetGridCell_00457050(unsigned int aix, unsigned int aiy);
     bool TES_PickWaterOnly(void* a1, int a2, int a3, float f);
 };
 
@@ -2638,20 +2776,23 @@ struct FUN_00457620_cellhost
 
 struct TerrainMaterialQuery : TES
 {
-    int TES_GetLandGeometry(const float* pos);
+    int TES_GetLandGeometry(const float* acoord);
 };
 
 // @fnv 0x00457620
 // src: XBOX_PDB 0x00457620
-int TerrainMaterialQuery::TES_GetLandGeometry(const float* pos)
+// pdb: TES::GetLandGeometry | TES.obj | retail, upstream name already matches, high
+// pdb params: acoord
+// pdb locals: icellX, icellY, ptestcell
+int TerrainMaterialQuery::TES_GetLandGeometry(const float* acoord)
 {
-    int cellX = FloatToInt(pos[0]);
-    int cellY2 = FloatToInt(pos[1]);
-    if (cellX % 4096 == 0 && (float)cellX > pos[0])
+    int cellX = FloatToInt(acoord[0]);
+    int cellY2 = FloatToInt(acoord[1]);
+    if (cellX % 4096 == 0 && (float)cellX > acoord[0])
     {
         cellX--;
     }
-    if (cellY2 % 4096 == 0 && (float)cellY2 > pos[1])
+    if (cellY2 % 4096 == 0 && (float)cellY2 > acoord[1])
     {
         cellY2--;
     }
@@ -2662,7 +2803,7 @@ int TerrainMaterialQuery::TES_GetLandGeometry(const float* pos)
     {
         if (DAT_011dea10->FUN_004511e0(cell5, false))
         {
-            return ((FUN_00457620_cellhost*)cell5)->TESObjectCELL_GetLand(pos)->GetGeometry_0053f0e0();
+            return ((FUN_00457620_cellhost*)cell5)->TESObjectCELL_GetLand(acoord)->GetGeometry_0053f0e0();
         }
     }
     return 0;
@@ -2729,7 +2870,10 @@ struct OwnerProxy
 // Scans a grid-sized area around x/y, skipping cells by mode, and sums cell values into a total that triggers FUN_00457d70 when nonzero.
 // @fnv 0x00457be0
 // src: XBOX_PDB 0x00457be0
-void OwnerProxy::TES_InitModelsToLoad(int mode)
+// pdb: TES::InitModelsToLoad | TES.obj | retail, upstream name already matches, high
+// pdb params: aeType
+// pdb locals: icellX, icellY, imodelsToLoad, x, y, pcell
+void OwnerProxy::TES_InitModelsToLoad(int aeType)
 {
     unsigned int h, p;
     int a = 0;
@@ -2739,7 +2883,7 @@ void OwnerProxy::TES_InitModelsToLoad(int mode)
     {
         for (p = 0; p < (unsigned int)*g_011c63cc.Int(); ++p)
         {
-            switch (mode)
+            switch (aeType)
             {
             case 0:
                 if (grid->FUN_004ba5a0(h, p))
@@ -2778,6 +2922,8 @@ struct G2List : G2
 // Walks the list at this+0x9c, deleting each referenced object, then calls FUN_00470470 on the list.
 // @fnv 0x00458f90
 // src: XBOX_PDB 0x00458f90
+// pdb: TES::ClearDeadCountList | TES.obj | retail, upstream name already matches, high
+// pdb locals: plist, pdead
 void FUN_00458f90_shell::TES_ClearDeadCountList()
 {
     G2* entry = (G2*)((char*)this + 0x9c);
@@ -2904,6 +3050,8 @@ struct SaveSizeOwner
 };
 // @fnv 0x00459100
 // src: XBOX_PDB 0x00459100
+// pdb: TES::GetSaveSize | TES.obj | retail, upstream name already matches, high
+// pdb locals: isize, itempStartSize, plist, pheader, pform
 unsigned short SaveSizeOwner::TES_GetSaveSize()
 {
     unsigned short size = 0;
@@ -2966,7 +3114,11 @@ struct SubX
 // Iterates m_38 and m_3C, calling FUN_0054ba00 on non-null entries accepted by FUN_004511e0, then calls FUN_00628da0 on the result of m_C0.FUN_00559450().
 // @fnv 0x00459750
 } // namespace fnv_00459750
-void TES::ProcessItems(BGSLoadGameBuffer* unused)
+// src: XBOX_RETAIL_PDB 0x00459750
+// pdb: TES::FinishLoadGame | TES.obj | retail, call graph, high
+// pdb params: apLoadGameBuffer
+// pdb locals: i
+void TES::FinishLoadGame(BGSLoadGameBuffer* apLoadGameBuffer)
 {
     using namespace fnv_00459750;
     for (int i = 0; i < reinterpret_cast<ArrAccessor*>(&fnv_00459750::DAT_011c3e38)->Setting_Int()->count; i++)
@@ -3007,15 +3159,17 @@ struct ArrAccessor
 extern char DAT_011c63cc;
 struct ItemNode
 {
-    void AddFurnitureToList(void* p);
+    void AddFurnitureToList(void* apFurnList);
 };
 struct Lookup
 {
-    ItemNode** FUN_004ba490(unsigned int a, unsigned int b);
+    ItemNode** FUN_004ba490(unsigned int aiX, unsigned int aiY);
 };
 
 // If m_34 is set, calls FUN_0054ca00 on it with &m_94; otherwise iterates all index pairs via m_08->FUN_004ba490 and calls FUN_0054ca00 on each node.
 // @fnv 0x00459870
+// pdb: TES::CreateFurnitureList | TES.obj | retail, call graph, high
+// pdb locals: x, y, pcell, pgridcell
 } // namespace fnv_00459870
 void TES::ProcessItemNodes()
 {
@@ -3044,11 +3198,11 @@ namespace fnv_00459870 {
 struct FUN_00459920_reference
 {
     bool TESObjectCELL_GetAttached();
-    void QueueReferences(int changeFlag);
+    void QueueReferences(int abHighPriorityOnly);
 };
 struct ReferenceSoundGrid : GridCellArray
 {
-    FUN_00459920_reference** FUN_004ba490(unsigned int column, unsigned int row);
+    FUN_00459920_reference** FUN_004ba490(unsigned int aiX, unsigned int aiY);
 };
 struct ReferenceSoundReset : TES
 {
@@ -3057,6 +3211,8 @@ struct ReferenceSoundReset : TES
 };
 // @fnv 0x00459920
 // src: XBOX_PDB 0x00459920
+// pdb: TES::QueueReferencesForAttachedCells | TES.obj | retail, upstream name already matches, high
+// pdb locals: x, y, pcell, pgridcell
 void ReferenceSoundReset::TES_QueueReferencesForAttachedCells()
 {
     if (!g_dataHandler)
@@ -3096,7 +3252,7 @@ struct WaterFormNode
 // TES.h lacks the typed texture overload; add its declaration without duplicating TES storage.
 struct TESTextureImageAccess : TES
 {
-    void CreateTextureImage(const char* apPath, NiPointer<NiSourceTexture>& arTexture, bool abA, bool abB);
+    void CreateTextureImage(const char* apfilename, NiPointer<NiSourceTexture>& aspSourceTexture, bool abNoFileOK, bool abB);
 };
 
 struct WaterTextureLoader
@@ -3106,6 +3262,8 @@ struct WaterTextureLoader
 
 // Iterates the water form list and, unless g_011c7b98.Bool() is set, creates and assigns a texture image for each form that has a texture.
 // @fnv 0x0045a600
+// pdb: TES::PreloadPlaceableWaterNoiseTextures | TES.obj | debug, object-file run extension, low
+// pdb locals: tempMemContext, pwaterlist, pwater, spSourceTexture
 void WaterTextureLoader::LoadWaterTextures()
 {
     AutoMemContext kMemContext(29, true, "D:\\_Fallout3\\Platforms\\Common\\Code\\Fallout Shared\\TES.cpp", 7207);
@@ -3197,6 +3355,9 @@ struct ModelCloneOwner
 };
 
 // @fnv 0x0045a9a0
+// pdb: TES::AddTemporaryParticleObjectToCache | TES.obj | debug, call graph, high
+// pdb params: apObject
+// pdb locals: pnew, pcache, i
 void ModelCloneOwner::AddCloneEntry(NiObject* apObject)
 {
     if (!apObject)
@@ -3253,6 +3414,9 @@ struct CachedParticleSearch : TES
 };
 
 // @fnv 0x0045aba0
+// pdb: TES::GetUnusedCachedParticleObject | TES.obj | debug, object-file run extension, low
+// pdb params: apModel, arInstance
+// pdb locals: pcache, iresult, i
 int CachedParticleSearch::FindMatchingNode(void* pKey, ObjC* pObj)
 {
     int result;
@@ -3352,15 +3516,17 @@ struct FUN_0045afb0_cls
     unsigned int unkB8;
     NavMeshHolder* m_pNavMeshMaps;
 
-    void SetNavMeshMaps(NavMeshHolder* arg);
+    void SetNavMeshMaps(NavMeshHolder* apNavMeshInfoMap);
 };
 
 // @fnv 0x0045afb0
-void FUN_0045afb0_cls::SetNavMeshMaps(NavMeshHolder* pNavMeshMaps)
+// pdb: TES::SetNavMeshInfoMap | TES.obj | retail, object-file run extension, high
+// pdb params: apNavMeshInfoMap
+void FUN_0045afb0_cls::SetNavMeshMaps(NavMeshHolder* apNavMeshInfoMap)
 {
     if (m_pNavMeshMaps != 0)
     {
-        if (pNavMeshMaps != 0)
+        if (apNavMeshInfoMap != 0)
         {
             Warning_005b5e40("AI: Multiple NavMeshInfoMaps loaded");
         }
@@ -3368,7 +3534,7 @@ void FUN_0045afb0_cls::SetNavMeshMaps(NavMeshHolder* pNavMeshMaps)
         NavMeshHolder* first = pOldMaps;
         (first != 0) ? first->unkV4(1) : 0;
     }
-    m_pNavMeshMaps = pNavMeshMaps;
+    m_pNavMeshMaps = apNavMeshInfoMap;
 }
 
 namespace fnv_0045bc80 {
@@ -3520,7 +3686,7 @@ struct Obj
     Obj* AddEight(Obj*);
     int BGSSaveFormBuffer_GetForm();
     Obj* FUN_006733e0();
-    Obj* BSPortal_GetSharedGeometry();
+    Obj* BSPortal_QSharedGeometryNode();
     Obj* FUN_004f9bf0();
     void InitFromArg(int);
     Obj* NiNode_GetAtChecked(int);
@@ -3541,11 +3707,14 @@ struct ThisC
     Obj* m_08;
     char pad0c[0x28];
     Obj* m_34;
-    void TES_ResetAllMultiBoundNodes(unsigned char a1, unsigned char a2);
+    void TES_ResetAllMultiBoundNodes(unsigned char abLandscape, unsigned char abRooms);
 };
 // @fnv 0x0045bc80
 // src: COMMUNITY 0x0045bc80
-void ThisC::TES_ResetAllMultiBoundNodes(unsigned char a1, unsigned char a2)
+// pdb: TES::ResetAllMultiBoundNodes | TES.obj | retail, upstream name already matches, high
+// pdb params: abLandscape, abRooms
+// pdb locals: pavobj, pnode, i, pmbnode, pterrain, x, y, pobjcell, pgridcell, kiter, klist, poccluder, sptestroom, kocciter, kportaliter, pportal, pocc, pgroup, next, iter, waternext, wateriter, pwater, pref
+void ThisC::TES_ResetAllMultiBoundNodes(unsigned char abLandscape, unsigned char abRooms)
 {
     Obj* list;
     Obj* formPtr;
@@ -3602,7 +3771,7 @@ void ThisC::TES_ResetAllMultiBoundNodes(unsigned char a1, unsigned char a2)
                                 }
                             }
                         }
-                        if (a1 != 0)
+                        if (abLandscape != 0)
                         {
                             c = discB->FUN_00456fc0(2);
                             unsigned int nxtBase;
@@ -3648,7 +3817,7 @@ void ThisC::TES_ResetAllMultiBoundNodes(unsigned char a1, unsigned char a2)
         Obj* obj2 = FUN_00450b80(0)->ShadowSceneNode_QPortalGraph()->FUN_00891170();
         if (obj2->NiTListBase_DFALL_NiTListItem_BSAnimGroupSequence_const_BSAnimGroupSequence_const_IsEmpty() == 0)
         {
-            if (a2 != 0)
+            if (abRooms != 0)
             {
                 Obj* temp68 = obj2->Modelloader_GetReferencedThis();
                 while (temp68 != 0)
@@ -3666,9 +3835,9 @@ void ThisC::TES_ResetAllMultiBoundNodes(unsigned char a1, unsigned char a2)
                             if (nxt != 0)
                             {
                                 nxt->ClearField40();
-                                if (nxt->BSPortal_GetSharedGeometry()->FUN_004f9bf0() != 0)
+                                if (nxt->BSPortal_QSharedGeometryNode()->FUN_004f9bf0() != 0)
                                 {
-                                    nxt->BSPortal_GetSharedGeometry()->FUN_004f9bf0()->InitFromArg(0);
+                                    nxt->BSPortal_QSharedGeometryNode()->FUN_004f9bf0()->InitFromArg(0);
                                 }
                             }
                         }
@@ -3751,7 +3920,7 @@ void ThisC::TES_ResetAllMultiBoundNodes(unsigned char a1, unsigned char a2)
 struct S_0045c8d0_Obj;
 struct S_0045c8d0_Tgt
 {
-    void BSShaderProperty_SetFlag(unsigned int a, unsigned char b);
+    void BSShaderProperty_SetFlag(unsigned int aiFlag, unsigned char abSetFlag);
 };
 struct S_0045c8d0_Obj
 {
@@ -3769,12 +3938,12 @@ struct S_0045c8d0_Virt
 };
 struct S_0045c8d0_Child
 {
-    int NiNode_GetAtChecked(int a);
-    S_0045c8d0_Virt* FUN_0043b4a0(int a);
+    int NiNode_GetAtChecked(int i);
+    S_0045c8d0_Virt* FUN_0043b4a0(int i);
 };
 struct S_0045c8d0_Cell
 {
-    S_0045c8d0_Child* GetCellNodeAt(int a);
+    S_0045c8d0_Child* TESObjectCELL_GetLandNode(int aiQuad);
 };
 struct S_0045c8d0_R
 {
@@ -3782,7 +3951,7 @@ struct S_0045c8d0_R
 };
 struct S_0045c8d0_A
 {
-    S_0045c8d0_R* FUN_004ba490(unsigned int a, unsigned int b);
+    S_0045c8d0_R* FUN_004ba490(unsigned int aiX, unsigned int aiY);
 };
 int NiShadeProperty_GetType();
 struct S_0045c8d0
@@ -3790,23 +3959,26 @@ struct S_0045c8d0
     int unk0;
     int unk4;
     S_0045c8d0_A* unk8;
-    void TES_SetHideLandBlendPassForGridCell(unsigned int a, unsigned int b, unsigned char c);
+    void TES_SetHideLandBlendPassForGridCell(unsigned int aiGridX, unsigned int aiGridY, unsigned char abFlag);
 };
 // @fnv 0x0045c8d0
 // src: COMMUNITY 0x0045c8d0
-void S_0045c8d0::TES_SetHideLandBlendPassForGridCell(unsigned int a, unsigned int b, unsigned char c)
+// pdb: TES::SetHideLandBlendPassForGridCell | TES.obj | retail, upstream name already matches, high
+// pdb params: aiGridX, aiGridY, abFlag
+// pdb locals: pgcell, i, pnode, pgeom, psp
+void S_0045c8d0::TES_SetHideLandBlendPassForGridCell(unsigned int aiGridX, unsigned int aiGridY, unsigned char abFlag)
 {
-    S_0045c8d0_R* r7 = unk8->FUN_004ba490(a, b);
+    S_0045c8d0_R* r7 = unk8->FUN_004ba490(aiGridX, aiGridY);
     if (r7 && r7->unk0)
     {
         for (int i = 0; i < 4; i++)
         {
-            S_0045c8d0_Child* child = r7->unk0->GetCellNodeAt(i);
+            S_0045c8d0_Child* child = r7->unk0->TESObjectCELL_GetLandNode(i);
             S_0045c8d0_Obj* objVal = child->NiNode_GetAtChecked(0) ? child->FUN_0043b4a0(0)->v6() : 0;
             if (objVal)
             {
                 S_0045c8d0_Tgt* t = objVal->FUN_00a59d30(NiShadeProperty_GetType());
-                t->BSShaderProperty_SetFlag(0x2e, c);
+                t->BSShaderProperty_SetFlag(0x2e, abFlag);
             }
         }
     }
@@ -3852,6 +4024,9 @@ struct FUN_0045c9e0_shell
 
 // @fnv 0x0045c9e0
 // src: COMMUNITY 0x0045c9e0
+// pdb: TES::SetHideLandNormalMapForGridCell | TES.obj | debug, object-file gap fill, medium
+// pdb params: aiGridX, aiGridY, abFlag
+// pdb locals: pgcell, i, pnode, pgeom, psp
 void FUN_0045c9e0_shell::TES_SetSkipNormalMapsForGridCell(int x, int y, bool flag)
 {
     TESObjectCELL** cell = (TESObjectCELL**)cells->Get(x, y);
@@ -3861,7 +4036,7 @@ void FUN_0045c9e0_shell::TES_SetSkipNormalMapsForGridCell(int x, int y, bool fla
         FUN_00a59d30_shell* obj;
         for (i = 0; i < 4; i++)
         {
-            NiAVObject* node = ((CellSceneAccess*)*cell)->GetCellNodeAt(i);
+            NiAVObject* node = ((CellSceneAccess*)*cell)->TESObjectCELL_GetLandNode(i);
             obj = ((FUN_0045bc00_shell*)node)->NiNode_GetAtChecked(0)
                       ? ((FUN_0045bc00_shell*)node)->FUN_0043b4a0(0)->FUN_Virtual0x18()
                       : 0;
@@ -3911,7 +4086,7 @@ struct B45CDA0GridCell
 class LandscapeCellGrid : GridCellArray
 {
   public:
-    B45CDA0GridCell* Get(unsigned int uiX, unsigned int uiY);
+    B45CDA0GridCell* Get(unsigned int aiX, unsigned int aiY);
 };
 
 struct LandscapeReset : TES
@@ -3922,6 +4097,8 @@ struct LandscapeReset : TES
 // Calls FUN_00558c90 on the interior cell if set, otherwise on every non-null cell in the grid cell array.
 // @fnv 0x0045cda0
 // src: XBOX_PDB 0x0045cda0
+// pdb: TES::ActivateAllSubmergedReferencesIslands | TES.obj | retail, upstream name already matches, high
+// pdb locals: x, y, pobjcell, pgridcell
 void LandscapeReset::TES_ActivateAllSubmergedReferencesIslands()
 {
     if ((*(B45CDA0Cell**)((char*)this + 0x34)))
@@ -3954,7 +4131,7 @@ struct Grid4512
 struct Terrain4512
 {
     void UnloadAll_006fce00();
-    void Update_006fca90(void* position);
+    void Update_006fca90(void* aViewPosition);
 };
 struct World4512
 {
@@ -4156,23 +4333,26 @@ struct TES4512
     void TES_FreeExteriorBuffer(bool, TESWorldSpace*);
     void FUN_00452490(bool);
     void TES_InitModelsToLoad(bool);
-    void RefreshGrid();
+    void TES_GridArrayLoad();
     bool GetLandHeightAt(const NiPoint3&, float&);
     bool TES_CellTestRunning();
     void ProcessItemNodes();
     void TES_RunScripts();
-    void TES_ReloadGridCells(const NiPoint3* position, bool reload);
+    void TES_ReloadGridCells(const NiPoint3* apPos, bool abFullreload);
 };
 // @fnv 0x004512c0
 // src: XBOX_PDB 0x004512c0
-void TES4512::TES_ReloadGridCells(const NiPoint3* position, bool reload)
+// pdb: TES::ReloadGridCells | TES.obj | retail, upstream name already matches, high
+// pdb params: apPos, abFullreload
+// pdb locals: UpdateData, kGrassPos
+void TES4512::TES_ReloadGridCells(const NiPoint3* apPos, bool abFullreload)
 {
     if (!DAT_011c3f2c || FUN_005f36f0())
         return;
     if (DAT_011c3ed0)
         return;
     DAT_011c3ed0 = true;
-    if (reload)
+    if (abFullreload)
     {
         grid->Reset();
         GridCellArray_SetRecreateCanopyShadowMaskTexture(1);
@@ -4183,10 +4363,10 @@ void TES4512::TES_ReloadGridCells(const NiPoint3* position, bool reload)
         TES_FreeExteriorBuffer(false, 0);
         FUN_00452490(false);
         TES_InitModelsToLoad(false);
-        RefreshGrid();
+        TES_GridArrayLoad();
         DAT_01202d98->LoadQueuedPriority(4);
-        NiPoint3 point(position->x, position->y, 0.0f);
-        GetLandHeightAt(*position, point.z);
+        NiPoint3 point(apPos->x, apPos->y, 0.0f);
+        GetLandHeightAt(*apPos, point.z);
         TallGrassShaderProperty_SetUseBackgroundLoading(0);
         TESTerrainLODManager_UpdateGrass(*(blob12*)&point, *(blob12*)&DAT_011a9478, 1.0f);
         TallGrassShaderProperty_SetUseBackgroundLoading(1);
@@ -4200,7 +4380,7 @@ void TES4512::TES_ReloadGridCells(const NiPoint3* position, bool reload)
     {
         grid->SetGridPosition(gridX, gridY);
         TES_InitModelsToLoad(true);
-        RefreshGrid();
+        TES_GridArrayLoad();
     }
     TES_RunScripts();
     NiUpdateData update(0.0f, false, false);
@@ -4217,6 +4397,8 @@ struct WaterCellSearch : TES
 
 // @fnv 0x004516d0
 // src: XBOX_PDB 0x004516d0
+// pdb: TES::FindFirstGridCellWithWater | TES.obj | retail, upstream name already matches, high
+// pdb locals: pwatergrid, imiddle, igridside, istepcount, istep, pcheck, ibottom, iright, itop, ileft, ix, iy
 TESObjectCELL** WaterCellSearch::TES_FindFirstGridCellWithWater()
 {
     TESObjectCELL** foundCell = 0;
@@ -4590,7 +4772,7 @@ extern AttachContext* DAT_011ddf38;
 extern AttachRef* DAT_011dea3c;
 void __cdecl Script_InitActionList(AttachRef*, void*);
 void __cdecl Script_SetActionFlag(AttachRef*, void*, unsigned int);
-void __cdecl FUN_004b6dc0(void*, unsigned int);
+void __cdecl SetReferenceIDOnScenegraph(void*, unsigned int);
 
 struct AttachmentHandler
 {
@@ -4602,40 +4784,43 @@ struct AttachmentHandler
 // Attaches ref to cell: handles special cases, picks a node from other or ref, adds ref to the cell, and updates actor/tree state.
 // @fnv 0x00451ef0
 // src: XBOX_PDB 0x00451ef0
-void AttachmentHandler::TES_AttachModel(AttachRef* ref, AttachCell* cell, AttachRef* other, bool skip)
+// pdb: TES::AttachModel | TES.obj | retail, upstream name already matches, high
+// pdb params: apRef, apCell, apQueuedReference, abMoved
+// pdb locals: type, pproj, pexplosion, pObj, pModel, battach, pwat, pactor, ptree, kbillboardsize
+void AttachmentHandler::TES_AttachModel(AttachRef* apRef, AttachCell* apCell, AttachRef* apQueuedReference, bool abMoved)
 {
-    if (!ref)
+    if (!apRef)
         return;
-    if (ref->IsSpecialB())
+    if (apRef->IsSpecialB())
     {
-        AttachRef* specialB = ref;
+        AttachRef* specialB = apRef;
         specialB->HandleB();
         return;
     }
-    if (ref->IsSpecialA())
+    if (apRef->IsSpecialA())
     {
-        AttachRef* specialA = ref;
+        AttachRef* specialA = apRef;
         specialA->HandleA();
         return;
     }
-    TES_CleanTemp3D(ref);
-    unsigned char type = ref->BGSSaveFormBuffer_GetForm()->FUN_00401170();
-    if (IsRefUsable(ref))
+    TES_CleanTemp3D(apRef);
+    unsigned char type = apRef->BGSSaveFormBuffer_GetForm()->FUN_00401170();
+    if (IsRefUsable(apRef))
     {
-        if (!skip)
-            FUN_00451ea0(ref);
+        if (!abMoved)
+            FUN_00451ea0(apRef);
         AttachNode* node = 0;
-        if (other && other->VATS_GetVATSLight())
+        if (apQueuedReference && apQueuedReference->VATS_GetVATSLight())
         {
-            node = other->VATS_GetVATSLight();
-            if (!ref->TESObjectREFR_Get3D())
-                ref->TESObjectREFR_Set3DSimple(node);
+            node = apQueuedReference->VATS_GetVATSLight();
+            if (!apRef->TESObjectREFR_Get3D())
+                apRef->TESObjectREFR_Set3DSimple(node);
         }
         else
-            node = ref->GetNode(0);
+            node = apRef->GetNode(0);
         AttachNode* chosen = node;
-        if (other)
-            other->FinalizeAttach();
+        if (apQueuedReference)
+            apQueuedReference->FinalizeAttach();
         if (chosen)
         {
             if (type == 44 || type == 45)
@@ -4645,68 +4830,68 @@ void AttachmentHandler::TES_AttachModel(AttachRef* ref, AttachCell* cell, Attach
             }
             else
             {
-                cell->GetOrCreateWidget();
+                apCell->GetOrCreateWidget();
                 FUN_00450b80(0)->FUN_00b5eeb0(chosen);
-                if (ref->IsActor())
+                if (apRef->IsActor())
                     FUN_00450b80(0)->FUN_00b5cbd0(chosen);
-                if (ref->TESObjectREFR_GetVisibleDistant())
-                    cell->TESObjectCELL_IncLoadedRefsWithVisibleDistantCount();
+                if (apRef->TESObjectREFR_GetVisibleDistant())
+                    apCell->TESObjectCELL_IncLoadedRefsWithVisibleDistantCount();
                 bool add = true;
-                if (ref->BGSSaveFormBuffer_GetForm()->FUN_00401170() == 35)
+                if (apRef->BGSSaveFormBuffer_GetForm()->FUN_00401170() == 35)
                 {
-                    TESBoundObject* base = ref->BGSSaveFormBuffer_GetForm();
+                    TESBoundObject* base = apRef->BGSSaveFormBuffer_GetForm();
                     if (reinterpret_cast<FormCollisionQuery*>(base)->BGSPlaceableWater_IsAutomaticWater())
                         add = false;
                 }
                 if (add)
                 {
-                    cell->TESObjectCELL_AttachReference3D(ref, 0);
-                    ref->TESObjectREFR_UpdateReference3D();
+                    apCell->TESObjectCELL_AttachReference3D(apRef, 0);
+                    apRef->TESObjectREFR_UpdateReference3D();
                 }
-                if (ref->TESForm_GetDestructible() && ref->TESObjectREFR_QUnderwater())
+                if (apRef->TESForm_GetDestructible() && apRef->TESObjectREFR_QUnderwater())
                     TESObjectREFR_RemoveMasterParticleAddonNodes((TESObjectREFR*)chosen);
-                else if (ref->TESObjectREFR_GetLoadedDataFlag(2))
+                else if (apRef->TESObjectREFR_GetLoadedDataFlag(2))
                 {
-                    if (cell->TESObjectCELL_GetAttached() || cell->TESObjectCELL_GetAttaching())
+                    if (apCell->TESObjectCELL_GetAttached() || apCell->TESObjectCELL_GetAttaching())
                         TESObjectREFR_AddMasterParticleAddonNodes((TESObjectREFR*)chosen);
                 }
-                if (ref->IsActor())
+                if (apRef->IsActor())
                 {
-                    AttachRef* actor = ref;
+                    AttachRef* actor = apRef;
                     if (actor)
                         actor->FUN_00483710();
                 }
                 if (type == 30)
-                    ref->BGSSaveFormBuffer_GetForm()->Revert(reinterpret_cast<unsigned int>(ref->FUN_00430830()));
+                    apRef->BGSSaveFormBuffer_GetForm()->Revert(reinterpret_cast<unsigned int>(apRef->FUN_00430830()));
                 else
                     FUN_00450b80(0)->FUN_00b5d9f0(chosen, 0);
             }
         }
-        ref->TESObjectREFR_InitScript();
+        apRef->TESObjectREFR_InitScript();
         if (!DAT_011ddf38->BGSSaveLoadGame_GetSaveGameLoading())
         {
-            Script_InitActionList(ref, ref->BSFile_GetDevice());
-            Script_SetActionFlag(ref, ref->BSFile_GetDevice(), 4096);
+            Script_InitActionList(apRef, apRef->BSFile_GetDevice());
+            Script_SetActionFlag(apRef, apRef->BSFile_GetDevice(), 4096);
         }
         if (type == 37)
         {
-            TESObjectTREE* tree = dynamic_cast<TESObjectTREE*>(ref->BGSSaveFormBuffer_GetForm());
+            TESObjectTREE* tree = dynamic_cast<TESObjectTREE*>(apRef->BGSSaveFormBuffer_GetForm());
             if (tree && BSTreeManager_GetUseCanopyShadows())
             {
                 NiPoint2 treeDimensions = *tree->GetDimensions();
                 if (reinterpret_cast<const float*>(&treeDimensions)[0] > DAT_010179e0 &&
                     reinterpret_cast<const float*>(&treeDimensions)[1] > DAT_010179e0)
                 {
-                    cell->TESObjectCELL_PlaceCanopyShadow(*(blob12*)ref->GetPoint((unsigned int)(tree->GetTreeScale(1.0f) * ref->TESObjectREFR_GetScale_00567400())));
+                    apCell->TESObjectCELL_PlaceCanopyShadow(*(blob12*)apRef->GetPoint((unsigned int)(tree->GetTreeScale(1.0f) * apRef->TESObjectREFR_GetScale_00567400())));
                 }
             }
         }
-        if (ref->IsActor())
+        if (apRef->IsActor())
         {
-            AttachRef* actor2 = ref;
+            AttachRef* actor2 = apRef;
             actor2->FUN_008c4640();
-            if (ref != DAT_011dea3c)
-                FUN_004b6dc0(actor2->TESObjectREFR_Get3D(), ref->GetHavokWorldObjectCountInSceneGraph_0084e3a0());
+            if (apRef != DAT_011dea3c)
+                SetReferenceIDOnScenegraph(actor2->TESObjectREFR_Get3D(), apRef->GetHavokWorldObjectCountInSceneGraph_0084e3a0());
         }
     }
 }
@@ -4753,7 +4938,7 @@ struct Loader
 {
     void BGSSaveLoadGame_SetDeferInitForms(bool);
     bool BGSSaveLoadGame_GetSaveGameLoading();
-    void ResetLoadBuffers(int);
+    void InitForms(int);
 };
 extern Loader* DAT_011ddf38;
 struct Main
@@ -4791,14 +4976,17 @@ struct Grid
     World* FUN_004fd3e0();
     void AddCellToBuffer(Cell*);
     CellHandle* NiAVObject_GetWorldTranslate(Cell**);
-    void RefreshGrid();
+    void TES_GridArrayLoad();
 };
 bool FUN_00705e80();
 void BSShaderManager_SetProjectedShadowMaskTexture(void*);
 void GridCellArray_SetRecreateCanopyShadowMaskTexture(unsigned char);
 extern const double DAT_01017a40;
 // @fnv 0x00452ff0
-void Grid::RefreshGrid()
+// src: XBOX_RETAIL_PDB 0x00452ff0
+// pdb: TES::GridArrayLoad | TES.obj | retail, call graph, high
+// pdb locals: icellX, bdelayedlandload, tempMemContext, icellY, icellsLoaded, bshowLoadingBar, x, y, pcell, fpercent, brestore, brestore2, pRoot, UpdateData
+void Grid::TES_GridArrayLoad()
 {
     Profile profile3(26, 1, DAT_01017874, 2262);
     int originX = centerX - (*DAT_011c63cc.GetPtr() >> 1);
@@ -4846,7 +5034,7 @@ void Grid::RefreshGrid()
     }
     DAT_011ddf38->BGSSaveLoadGame_SetDeferInitForms(false);
     if (!DAT_011ddf38->BGSSaveLoadGame_GetSaveGameLoading())
-        DAT_011ddf38->ResetLoadBuffers(0);
+        DAT_011ddf38->InitForms(0);
     if (TESObjectCELL_ExteriorWorld())
         TESObjectCELL_ExteriorWorld()->bhkWorld_StartBatchingAdds();
     for (unsigned int x2 = 0; x2 < *DAT_011c63cc.GetPtr(); ++x2)
@@ -4913,6 +5101,8 @@ float Main_QFrameAnimTime();
 // Updates the sky with a time-based or fallback value, builds a fade from DAT_011c3c08, and passes it to the manager obtained via FUN_009611e0.
 // @fnv 0x004537c0
 // src: XBOX_PDB 0x004537c0
+// pdb: TES::UpdateCellMainThread | TES.obj | retail, upstream name already matches, high
+// pdb locals: UpdateData
 void Zt5TES::TES_UpdateCellMainThread()
 {
     S_004537c0_Fade fadeData;
@@ -4945,24 +5135,27 @@ struct FUN_004539a0_helperB
 
 // @fnv 0x004539a0
 // src: XBOX_PDB 0x004539a0
-void CellBufferPurge::TES_ClearAllCells(unsigned char a1, unsigned char a2)
+// pdb: TES::ClearAllCells | TES.obj | retail, upstream name already matches, high
+// pdb params: abBufferedonly, abDoNotSetInterior
+// pdb locals: tempAutoEvent
+void CellBufferPurge::TES_ClearAllCells(unsigned char abBufferedonly, unsigned char abDoNotSetInterior)
 {
     ((FUN_004539a0_helperA*)NiAVObject_GetWorldTranslate())->FUN_00470470();
-    if (a1 == 0 || FUN_005f36f0() != 0)
+    if (abBufferedonly == 0 || FUN_005f36f0() != 0)
     {
         TES_DetachGridCells();
     }
     ((FUN_004539a0_helperB*)BSAudio_QInstance())->FUN_00483710();
-    TES_FreeExteriorBuffer(a1, 0);
-    if (FUN_005f36f0() != 0 && a1 == 0)
+    TES_FreeExteriorBuffer(abBufferedonly, 0);
+    if (FUN_005f36f0() != 0 && abBufferedonly == 0)
     {
         if (!ContainsCell(FUN_005f36f0()))
         {
             g_dataHandler->RemoveCell(FUN_005f36f0());
         }
     }
-    FUN_00454d50(a1);
-    if (a1 == 0 && a2 == 0)
+    FUN_00454d50(abBufferedonly);
+    if (abBufferedonly == 0 && abDoNotSetInterior == 0)
     {
         FUN_008d7dc0(0);
     }
@@ -5010,6 +5203,8 @@ struct CellBufferManager
 
 // @fnv 0x00453a80
 // src: XBOX_PDB 0x00453a80
+// pdb: TES::ClearOldestBufferedCell | TES.obj | retail, upstream name already matches, high
+// pdb locals: tempAutoEvent, poldcell, n, nmin
 bool CellBufferManager::TES_ClearOldestBufferedCell()
 {
     BufferedCell* cell = 0;
@@ -5509,6 +5704,9 @@ struct ReloadPlayerCheck
 extern ReloadPlayerCheck* reloadPlayerCheck;
 // Switches the active scene to destination at position, resetting interfaces, streaming, terrain and audio, then updates the menu and pathing.
 // @fnv 0x00453dc0
+// pdb: TES::LoadInterior | TES.obj | retail, call graph, medium
+// pdb params: apNewInterior, apPos
+// pdb locals: wasInterior, pint, pzone, poldint, pw, pRoot, bloadingSaveGameOLD, bloadingSaveGame, UpdateData, paccum, tempMemContext, spSourceTexture
 void ReloadManager::AttachScene(ReloadScene* destination, ReloadPoint* position)
 {
     if (!TES_CellTestRunning())
@@ -5859,13 +6057,16 @@ struct ReloadManager
 };
 // @fnv 0x00454450
 // src: XBOX_PDB 0x00454450
-void ReloadManager::TES_LeaveInterior(ReloadPoint* point)
+// pdb: TES::LeaveInterior | TES.obj | retail, upstream name already matches, high
+// pdb params: apPos
+// pdb locals: pcurrentCell, kGrassPos, pint, bloadingSaveGameOLD, pWorld, bloadingSaveGame, pLODroot, tempMemContext, spSourceTexture
+void ReloadManager::TES_LeaveInterior(ReloadPoint* apPos)
 {
     ReloadWorld* world = FUN_004fd3e0();
     if (world)
     {
-        world->FUN_00586170()->Update_006fca90(point, 15);
-        world->FUN_00586170()->FUN_006fcdb0(point);
+        world->FUN_00586170()->Update_006fca90(apPos, 15);
+        world->FUN_00586170()->FUN_006fcdb0(apPos);
     }
     BSShaderManager_SetInterior(0);
     if (name)
@@ -5891,7 +6092,7 @@ void ReloadManager::TES_LeaveInterior(ReloadPoint* point)
                 {
                     gridX = savedX;
                     gridY = savedY;
-                    Pause(0, point);
+                    Pause(0, apPos);
                 }
                 else
                 {
@@ -5903,7 +6104,7 @@ void ReloadManager::TES_LeaveInterior(ReloadPoint* point)
                 savedX = 0x7fffffff;
                 savedY = 0x7fffffff;
             }
-            else if (!TES_GetLandGeometry(point))
+            else if (!TES_GetLandGeometry(apPos))
             {
                 gridX = 0x7fffffff;
                 gridY = 0x7fffffff;
@@ -5927,7 +6128,7 @@ void ReloadManager::TES_LeaveInterior(ReloadPoint* point)
     bool stateB = false;
     mode = reloadMode->BGSSaveLoadGame_GetSaveGameLoading();
     stateB = reloadState->FUN_0047c850();
-    FUN_00452580(point, !stateB);
+    FUN_00452580(apPos, !stateB);
     ReloadCell* cellA = FUN_00451900(gridX, gridY);
     if (reloadCells->ModelLoader_IsFileQueuedForCell(cellA))
         TES_ShowLoadingMenu(1, cellA, 0);
@@ -5941,8 +6142,8 @@ void ReloadManager::TES_LeaveInterior(ReloadPoint* point)
     if (ReloadGetRoot())
         ReloadGetRoot()->bhkWorld_StopBatchingAdds(0);
     TES_ActivateAllSubmergedReferencesIslands();
-    ReloadPoint position6(point->x, point->y, 0.0f);
-    GetLandHeightAt(point, position6.z);
+    ReloadPoint position6(apPos->x, apPos->y, 0.0f);
+    GetLandHeightAt(apPos, position6.z);
     TallGrassShaderProperty_SetUseBackgroundLoading(0);
     ReloadMovePoint(position6, reloadRotation, 1.0f);
     TallGrassShaderProperty_SetUseBackgroundLoading(1);
@@ -6005,8 +6206,11 @@ extern TESDataHandler* DAT_011c3f2c;
 
 
 // @fnv 0x00454d50
+// pdb: TES::FreeInteriorBuffer | TES.obj | retail, call graph (shared callers), high
+// pdb params: abBufferedonly
+// pdb locals: inumFreedCells, n
 } // namespace fnv_00454d50
-unsigned int TES::GetInteriorBufferCount(bool abSkipCurrent)
+unsigned int TES::GetInteriorBufferCount(bool abBufferedonly)
 {
     using namespace fnv_00454d50;
     unsigned int count = 0;
@@ -6015,7 +6219,7 @@ unsigned int TES::GetInteriorBufferCount(bool abSkipCurrent)
     {
         if ((*(TESObjectCELL***)((char*)this + 0x38))[i] != 0)
         {
-            if (!(abSkipCurrent && GetInteriorCell() != 0 && (*(TESObjectCELL***)((char*)this + 0x38))[i] == GetInteriorCell()))
+            if (!(abBufferedonly && GetInteriorCell() != 0 && (*(TESObjectCELL***)((char*)this + 0x38))[i] == GetInteriorCell()))
             {
                 if (!((FUN_00557090_obj*)(*(TESObjectCELL***)((char*)this + 0x38))[i])->TESObjectCELL_IsRefListLocked())
                 {
@@ -6045,7 +6249,7 @@ struct Q455490List
 };
 struct Q455490Cell
 {
-    bool RunScripts_0054c740(int, int);
+    bool RunScripts(int, int);
 };
 struct QuestCellGrid : GridCellArray
 {
@@ -6082,6 +6286,8 @@ struct QuestCellUpdate : TES
 // Under a lock, runs scripts of all enabled quests, updates the interior cell or scans the grid for a matching cell, then updates the player.
 // @fnv 0x00455490
 // src: XBOX_PDB 0x00455490
+// pdb: TES::RunScripts | TES.obj | retail, upstream name already matches, high
+// pdb locals: pQuest, pQuestList, bquit, x, y, pGridCell
 void QuestCellUpdate::TES_RunScripts()
 {
     if (g_455490_busy || !FUN_005ac740())
@@ -6101,7 +6307,7 @@ void QuestCellUpdate::TES_RunScripts()
         }
         if (GetInteriorCell())
         {
-            GetInteriorCell()->RunScripts_0054c740(0, 0);
+            GetInteriorCell()->RunScripts(0, 0);
         }
         else
         {
@@ -6111,7 +6317,7 @@ void QuestCellUpdate::TES_RunScripts()
                 for (unsigned int uiY = 0; uiY < *g_011c63cc_455490.Int(); uiY++)
                 {
                     Q455490Cell* pCell = *(*(QuestCellGrid**)((char*)this + 0x8))->Get(uiX, uiY);
-                    if (pCell && TESObjectCELL_GetAttached(pCell) && pCell->RunScripts_0054c740(0, 0))
+                    if (pCell && TESObjectCELL_GetAttached(pCell) && pCell->RunScripts(0, 0))
                     {
                         bCellFound = true;
                         break;
@@ -6145,7 +6351,7 @@ struct FixedStr
 };
 
 // FileFinder::Exist is 0x00456a20 (also bound by bipedanim.cpp); no shared FileFinder.h exists yet.
-int __cdecl FindFileLocation(const char* apPath, char* apOut, unsigned int auiFlags, unsigned int auiMask);
+int __cdecl FindFileLocation(const char* apName, char* apFilePath, unsigned int aiFlags, unsigned int aiArchiveType);
 
 struct SourceTextureStub
 {
@@ -6153,18 +6359,21 @@ struct SourceTextureStub
 };
 
 bool StreamGetTexture(const char* apPath, NiPointer<NiSourceTexture>* apTexture);
-void TextureLoaded(NiSourceTexture* apTexture, int aiUnk);
+void TextureLoaded(NiSourceTexture* apTex, int apEntry);
 void ModelWarning(const char* apFormat, ...);
 
 // @fnv 0x004568c0
-void TESTextureImageAccess::CreateTextureImage(const char* apPath, NiPointer<NiSourceTexture>& arTexture, bool abNoWarning,
+// pdb: TES::CreateTextureImage | TES.obj | retail, string-set bridge, high
+// pdb params: apfilename, aspSourceTexture, abNoFileOK, abArchiveOnly
+// pdb locals: iflags, pimage
+void TESTextureImageAccess::CreateTextureImage(const char* apfilename, NiPointer<NiSourceTexture>& aspSourceTexture, bool abNoFileOK,
                                 bool abArchiveOnly)
 {
     unsigned int uiFlags = 0;
     unsigned int uiMask = 0xffff;
-    arTexture = 0;
-    StreamGetTexture(apPath, &arTexture);
-    if (arTexture)
+    aspSourceTexture = 0;
+    StreamGetTexture(apfilename, &aspSourceTexture);
+    if (aspSourceTexture)
         return;
     NiPointer<NiSourceTexture> spTexture(0);
     if (abArchiveOnly)
@@ -6172,13 +6381,13 @@ void TESTextureImageAccess::CreateTextureImage(const char* apPath, NiPointer<NiS
         uiFlags = 6;
         uiMask = 2;
     }
-    if (!FindFileLocation(apPath, 0, uiFlags, uiMask) && abNoWarning)
+    if (!FindFileLocation(apfilename, 0, uiFlags, uiMask) && abNoFileOK)
         return;
-    arTexture = SourceTextureStub::Create(FixedStr(apPath), g_kTexturePrefs, true, false);
-    if (arTexture)
-        TextureLoaded(arTexture, 0);
-    else if (!abNoWarning)
-        ModelWarning("MODELS: TES::CreateTextureImage unable to create image for \"%s\".\r\n", apPath);
+    aspSourceTexture = SourceTextureStub::Create(FixedStr(apfilename), g_kTexturePrefs, true, false);
+    if (aspSourceTexture)
+        TextureLoaded(aspSourceTexture, 0);
+    else if (!abNoFileOK)
+        ModelWarning("MODELS: TES::CreateTextureImage unable to create image for \"%s\".\r\n", apfilename);
 }
 
 struct FUN_00450f90_obj
@@ -6191,7 +6400,7 @@ void __cdecl TESObjectCELL_SetNodeCulled(int aiType, bool abFlag);
 struct FUN_00456fc0_ref
 {
     FUN_00450f90_obj* FUN_00456fc0(int aiType);
-    void TESObjectCELL_CullChildrenOfMultibounds(bool abFlag, int aiType);
+    void TESObjectCELL_CullChildrenOfMultibounds(bool abCull, int aeAsProxyForNode);
 };
 
 struct FUN_00456d00_cnt
@@ -6202,7 +6411,7 @@ struct FUN_00456d00_cnt
 struct GridCellQuery : TES
 {
     FUN_00456fc0_ref* FUN_005f36f0();
-    FUN_00456fc0_ref** GetGridCell_00457050(unsigned int i, unsigned int j);
+    FUN_00456fc0_ref** GetGridCell_00457050(unsigned int aix, unsigned int aiy);
 };
 
 struct CellDebugUpdate : TES
@@ -6213,10 +6422,13 @@ struct CellDebugUpdate : TES
 
 // @fnv 0x00456d00
 // src: XBOX_PDB 0x00456d00
-void CellDebugUpdate::TES_ShowCellNode(int aiType, bool abShow, bool abGrid)
+// pdb: TES::ShowCellNode | TES.obj | retail, upstream name already matches, high
+// pdb params: aiNode, abShow, abActiveCellsOnly
+// pdb locals: ibuffercount, icell, pcell, pnode, a, b, pgridcell
+void CellDebugUpdate::TES_ShowCellNode(int aiNode, bool abShow, bool abActiveCellsOnly)
 {
-    TESObjectCELL_SetNodeCulled(aiType, !abShow);
-    if (aiType == 0xb)
+    TESObjectCELL_SetNodeCulled(aiNode, !abShow);
+    if (aiNode == 0xb)
     {
         if (!((GridCellQuery*)DAT_011dea10)->FUN_005f36f0() ||
             !((TESObjectCELL*)((GridCellQuery*)DAT_011dea10)->FUN_005f36f0())->HasWater())
@@ -6224,13 +6436,13 @@ void CellDebugUpdate::TES_ShowCellNode(int aiType, bool abShow, bool abGrid)
         return;
     }
 
-    int iCount = abGrid ? 0 : *((FUN_00456d00_cnt*)&DAT_011c3e38)->Setting_Int();
+    int iCount = abActiveCellsOnly ? 0 : *((FUN_00456d00_cnt*)&DAT_011c3e38)->Setting_Int();
     for (int i = -1; i < iCount; i++)
     {
         FUN_00456fc0_ref* pRef = i == -1 ? FUN_005f36f0() : (*(FUN_00456fc0_ref***)((char*)this + 0x38))[i];
         if (pRef)
         {
-            switch (aiType)
+            switch (aiNode)
             {
             case 0:
             case 1:
@@ -6241,23 +6453,23 @@ void CellDebugUpdate::TES_ShowCellNode(int aiType, bool abShow, bool abGrid)
             case 6:
             case 7:
             case 8:
-                FUN_00450f90_obj* pNode = pRef->FUN_00456fc0(aiType);
+                FUN_00450f90_obj* pNode = pRef->FUN_00456fc0(aiNode);
                 if (pNode)
                     pNode->FUN_00450f90(!abShow);
-                pRef->TESObjectCELL_CullChildrenOfMultibounds(!abShow, aiType);
+                pRef->TESObjectCELL_CullChildrenOfMultibounds(!abShow, aiNode);
                 break;
             }
         }
     }
 
-    if (!abGrid)
+    if (!abActiveCellsOnly)
     {
         for (int j = 0; j < *((FUN_00456d00_cnt*)&DAT_011c3c90)->Setting_Int(); j++)
         {
             FUN_00456fc0_ref* pOther = (*(FUN_00456fc0_ref***)((char*)this + 0x3c))[j];
             if (pOther)
             {
-                switch (aiType)
+                switch (aiNode)
                 {
                 case 0:
                 case 1:
@@ -6267,7 +6479,7 @@ void CellDebugUpdate::TES_ShowCellNode(int aiType, bool abShow, bool abGrid)
                 case 5:
                 case 7:
                 case 8:
-                    FUN_00450f90_obj* pNode2 = pOther->FUN_00456fc0(aiType);
+                    FUN_00450f90_obj* pNode2 = pOther->FUN_00456fc0(aiNode);
                     if (pNode2)
                         pNode2->FUN_00450f90(!abShow);
                     break;
@@ -6285,7 +6497,7 @@ void CellDebugUpdate::TES_ShowCellNode(int aiType, bool abShow, bool abGrid)
                 FUN_00456fc0_ref* pGridRef = *ppGrid;
                 if (pGridRef)
                 {
-                    switch (aiType)
+                    switch (aiNode)
                     {
                     case 0:
                     case 1:
@@ -6295,7 +6507,7 @@ void CellDebugUpdate::TES_ShowCellNode(int aiType, bool abShow, bool abGrid)
                     case 5:
                     case 7:
                     case 8:
-                        FUN_00450f90_obj* pNode3 = pGridRef->FUN_00456fc0(aiType);
+                        FUN_00450f90_obj* pNode3 = pGridRef->FUN_00456fc0(aiNode);
                         if (pNode3)
                             pNode3->FUN_00450f90(!abShow);
                         break;
@@ -6316,7 +6528,7 @@ struct FUN_004571c0_obj
 
 struct FUN_004571c0_cell : FUN_004570d0_node
 {
-    bool Apply(FUN_004571c0_obj* obj, int a2, int a3, float f, unsigned char b);
+    bool PickWorldDistance(FUN_004571c0_obj* apPick, int aOrigin, int aDir, float afDistance, unsigned char acNodeFlags);
 };
 
 struct ObjectPlacementQuery : CellObjectQuery
@@ -6326,6 +6538,9 @@ struct ObjectPlacementQuery : CellObjectQuery
 
 // If obj and b are set, resets obj's flag and transforms, then applies the current cell or every grid cell to obj, returning whether any applied.
 // @fnv 0x004571c0
+// pdb: TES::PickWorldDistance | TES.obj | debug, object-file run extension, low
+// pdb params: apPick, aOrigin, aDir, afDistance, acNodeFlags
+// pdb locals: bhitsomething, x, y, pcell
 bool ObjectPlacementQuery::ApplyToObject(FUN_004571c0_obj* pObject, int a2, int a3, float f, char b)
 {
     bool result = false;
@@ -6335,7 +6550,7 @@ bool ObjectPlacementQuery::ApplyToObject(FUN_004571c0_obj* pObject, int a2, int 
         pObject->SetTransforms(&NiPoint3_ZERO, &NiPoint3_ZERO, 0);
         if (DAT_011dea10->FUN_005f36f0())
         {
-            result = ((FUN_004571c0_cell*)DAT_011dea10->FUN_005f36f0())->Apply(pObject, a2, a3, f, b);
+            result = ((FUN_004571c0_cell*)DAT_011dea10->FUN_005f36f0())->PickWorldDistance(pObject, a2, a3, f, b);
         }
         else
         {
@@ -6346,7 +6561,7 @@ bool ObjectPlacementQuery::ApplyToObject(FUN_004571c0_obj* pObject, int a2, int 
                     FUN_004571c0_cell* cell = (FUN_004571c0_cell*)*GetGridCell_00457050(i, j);
                     if (cell)
                     {
-                        if (cell->Apply(pObject, a2, a3, f, b))
+                        if (cell->PickWorldDistance(pObject, a2, a3, f, b))
                             result = true;
                     }
                 }
@@ -6370,12 +6585,12 @@ struct WorldTextureSource : TESWorldSpace
 };
 struct CanopySky : Sky
 {
-    void SetColorData(NiSourceTexture* apTexture);
+    void SetColorData(NiSourceTexture* pkColorData);
 };
 struct WorldTextureUpdate : TES
 {
     CanopySky* GetSky();
-    void CreateTextureImage(const char* apPath, NiPointer<NiSourceTexture>& arTexture, bool abA, bool abB);
+    void CreateTextureImage(const char* apfilename, NiPointer<NiSourceTexture>& aspSourceTexture, bool abNoFileOK, bool abB);
 };
 extern WorldTextureUpdate* g_pWS458200TES;
 extern GlobalObject_0045cf30 g_011c3d40;
@@ -6397,9 +6612,12 @@ struct WorldSpaceAssignment : TES
 
 // @fnv 0x00458200
 // src: XBOX_PDB 0x00458200
-void WorldSpaceAssignment::TES_SetWorldSpace(WorldTextureSource* apWorld)
+// pdb: TES::SetWorldSpace | TES.obj | retail, upstream name already matches, high
+// pdb params: apWorldSpace
+// pdb locals: pzone, inumFreedCells, tempMemContext, spSourceTexture
+void WorldSpaceAssignment::TES_SetWorldSpace(WorldTextureSource* apWorldSpace)
 {
-    if (apWorld && (*(WorldTextureSource**)((char*)this + 0x88)) != apWorld)
+    if (apWorldSpace && (*(WorldTextureSource**)((char*)this + 0x88)) != apWorldSpace)
     {
         if (*g_011c3d40.Bool())
         {
@@ -6412,7 +6630,7 @@ void WorldSpaceAssignment::TES_SetWorldSpace(WorldTextureSource* apWorld)
             if (iCount)
                 FUN_00452490(false);
         }
-        (*(WorldTextureSource**)((char*)this + 0x88)) = apWorld;
+        (*(WorldTextureSource**)((char*)this + 0x88)) = apWorldSpace;
         WS458200_Obj* pObj = (*(WorldTextureSource**)((char*)this + 0x88))->GetFieldD0();
         if (pObj)
             pObj->DetermineLevel();
@@ -6420,19 +6638,19 @@ void WorldSpaceAssignment::TES_SetWorldSpace(WorldTextureSource* apWorld)
         TES_DetachGridCells();
         FUN_00450d80();
         FUN_007043c0();
-        Interface_SetRootMapSpace(apWorld);
-        if (*apWorld->TESWorldSpace_GetWaterNoiseTextureName())
+        Interface_SetRootMapSpace(apWorldSpace);
+        if (*apWorldSpace->TESWorldSpace_GetWaterNoiseTextureName())
         {
             AutoMemContext kMemContext(0x1d, true, DAT_01017874, 0x1751);
             NiPointer<NiSourceTexture> spTexture(0);
-            g_pWS458200TES->CreateTextureImage(apWorld->TESWorldSpace_GetWaterNoiseTextureName(), spTexture, true, true);
+            g_pWS458200TES->CreateTextureImage(apWorldSpace->TESWorldSpace_GetWaterNoiseTextureName(), spTexture, true, true);
             g_pWS458200TES->GetSky()->SetColorData(spTexture);
         }
         else
         {
             g_pWS458200TES->GetSky()->SetColorData(0);
         }
-        BSShaderManager_SetUseNoiseMap(!apWorld->IsFlag4C20Set());
+        BSShaderManager_SetUseNoiseMap(!apWorldSpace->IsFlag4C20Set());
     }
 }
 
@@ -6525,17 +6743,20 @@ class Manager458
 {
   public:
     Ref458* GetDefaultRef();
-    bool PlaySoundOnRef(int iSound, NiPoint3 kPos, Ref458* pkRef);
+    bool PlaySoundOnRef(int aMapName, NiPoint3 aWorldLoc, Ref458* apWorldSpace);
 };
 
 // Resolves the given ref or the default ref, then calls PlaySound on it with the sound id and position, returning false if no ref exists.
 // @fnv 0x00458b70
-bool Manager458::PlaySoundOnRef(int iSound, NiPoint3 kPos, Ref458* pkRef)
+// pdb: TES::GetMapNameForLocation | TES.obj | retail, vtable slot, high
+// pdb params: aMapName, aWorldLoc, apWorldSpace
+// pdb locals: pworldspace
+bool Manager458::PlaySoundOnRef(int aMapName, NiPoint3 aWorldLoc, Ref458* apWorldSpace)
 {
-    Ref458* pkTarget = pkRef ? pkRef : GetDefaultRef();
+    Ref458* pkTarget = apWorldSpace ? apWorldSpace : GetDefaultRef();
     if (!pkTarget)
         return false;
-    return pkTarget->PlaySound(iSound, kPos);
+    return pkTarget->PlaySound(aMapName, aWorldLoc);
 }
 
 struct SaveWriter : SaveState
@@ -6561,6 +6782,8 @@ struct SaveBlockOwner : SaveSizeOwner
 void FNV_Warning(const char*, ...);
 
 // @fnv 0x00459230
+// pdb: TES::SaveGame | TES.obj | retail, object-file run extension, high
+// pdb locals: plist, icount, itempStartPosition, iblockSize, pblockSize, iblockHeader, pdeadCount, iactorBaseID, icurrentBufferPosition, pheader, pform, istartBufferPosition
 void SaveBlockOwner::WriteSaveBlock()
 {
     SaveEntryNode* node;
@@ -6771,7 +6994,10 @@ struct CellTest
 // Marks the test running, iterates world cells within bounds and interior cells, invoking the per-cell test, then clears finished.
 // @fnv 0x00459ae0
 // src: XBOX_PDB 0x00459ae0
-void CellTest::TES_RunCellTest(unsigned int flags)
+// pdb: TES::RunCellTest | TES.obj | retail, upstream name already matches, high
+// pdb params: aiOptions
+// pdb locals: plist, iinteriorCount, icellTestStartTime, pworld, iminX, iminY, imaxY, pworldSpaceName, imaxX, x, y, pcell, i
+void CellTest::TES_RunCellTest(unsigned int aiOptions)
 {
     running = true;
     PlayerCharacter_SetGodMode(true);
@@ -6801,7 +7027,7 @@ void CellTest::TES_RunCellTest(unsigned int flags)
                     if (!cellTmp)
                         cellTmp = world->TESWorldSpace_LoadCell(x7, y4);
                     if (cellTmp)
-                        MoveToCell(cellTmp, flags, state3);
+                        MoveToCell(cellTmp, aiOptions, state3);
                 }
             }
         }
@@ -6812,7 +7038,7 @@ void CellTest::TES_RunCellTest(unsigned int flags)
     for (unsigned int index7 = 0; index7 < count2; index7++)
     {
         EmptyStructPlaceholder* interior4 = (EmptyStructPlaceholder*)testDataHandler->GetCellByInteriorIndex(index7);
-        MoveToCell(interior4, flags, state3);
+        MoveToCell(interior4, aiOptions, state3);
     }
     finished = false;
 }
@@ -6832,7 +7058,7 @@ struct AddonParticleNode : NiNode
 };
 struct AddonParticleManager
 {
-    void BSParticleSystemManager_AddMasterParticleSystem(AddonParticleNode* node);
+    void BSParticleSystemManager_AddMasterParticleSystem(AddonParticleNode* apMasterParticleSystem);
 };
 AddonParticleManager* Main_GetMasterParticleSystemManager();
 extern ModelLoader* g_modelLoader;
@@ -6849,6 +7075,8 @@ struct AddonOwner
 // Queues a priority-5 file, then for each addon node loads its model, configures the particle node and registers it, or queues the model for loading.
 // @fnv 0x00459f10
 // src: COMMUNITY 0x00459f10
+// pdb: TES::PreloadAddonNodes | TES.obj | retail, upstream name already matches, high
+// pdb locals: iaddonNodeCount, tempMemContext, i, paddonNode, pav, pmasterPSys
 void AddonOwner::TES_PreloadAddonNodes()
 {
     if (queuedFile.Modelloader_GetReferencedThis())
@@ -6976,6 +7204,8 @@ struct Target45
     void QueueLoadForAll();
 };
 // @fnv 0x0045a1e0
+// pdb: TES::PreloadForms | TES.obj | debug, object-file run extension, low
+// pdb locals: plist, tempMemContext, ppart
 void Target45::QueueLoadForAll()
 {
     if (queued.Modelloader_GetReferencedThis())
@@ -7016,6 +7246,8 @@ extern ModelSetting g_011cf54c;
 extern ModelSetting g_011cebb0;
 // If not already done, marks the flag and loads each non-empty model setting string via g_modelLoader, passing the result to AddCloneEntry.
 // @fnv 0x0045a750
+// pdb: TES::SetupTemporaryParticleCache | TES.obj | retail, call graph, high
+// pdb locals: tempMemContext
 void PreloadOwner::PreloadModelSettings()
 {
     if (DAT_011c3f08)
@@ -7109,6 +7341,8 @@ struct Target
 };
 // @fnv 0x0045ac80
 // src: XBOX_PDB 0x0045ac80
+// pdb: TES::CleanupTemporaryParticleCache | TES.obj | retail, upstream name already matches, high
+// pdb locals: pcache, pnext
 void Target::TES_CleanupTemporaryParticleCache()
 {
     FUN_0045ae20* current = head;
@@ -7198,6 +7432,7 @@ class Owner45A
 // Lazily creates m_pkNavMeshInfoMap when it is null, the data handler exists and is not loading, then returns it.
 // @fnv 0x0045af00
 // src: XBOX_PDB 0x0045af00
+// pdb: TES::GetNavMeshInfoMap | TES.obj | retail, upstream name already matches, high
 NavMeshInfoMap* Owner45A::TES_GetNavMeshInfoMap()
 {
     if (!m_pkNavMeshInfoMap && g_pkDataHandler45A && !g_pkDataHandler45A->GetSaveLoad())
@@ -7208,7 +7443,7 @@ NavMeshInfoMap* Owner45A::TES_GetNavMeshInfoMap()
 extern float DAT_01015f5c;
 struct CellView : public TESObjectCELL
 {
-    bool CheckWaterHeight(const NiPoint3* apPos, float* apfHeight);
+    bool GetWaterHeight(const NiPoint3* arPos, float* apfHeight);
     int FUN_00544c30();
     int FUN_00544c60();
 };
@@ -7231,13 +7466,16 @@ struct CellWaterHeightQuery : TES
     float GetCellHeightAtPosition(const NiPoint3*, CellView*);
 };
 // @fnv 0x0045cbc0
+// pdb: TES::GetWaterHeight | TES.obj | debug, call graph, medium
+// pdb params: arPos, apCell
+// pdb locals: fwaterHeight, cy, fbaseHeight, cx, fheight, x, y, pcell
 float CellWaterHeightQuery::GetCellHeightAtPosition(const NiPoint3* apPos, CellView* apCell)
 {
     float fRate = DAT_01015f5c;
     if (apCell)
     {
         float fCellHeight;
-        if (apCell->CheckWaterHeight(apPos, &fCellHeight))
+        if (apCell->GetWaterHeight(apPos, &fCellHeight))
             return fCellHeight;
         else if (FUN_00425fd0(apCell))
             return DAT_01015f5c;
@@ -7248,7 +7486,7 @@ float CellWaterHeightQuery::GetCellHeightAtPosition(const NiPoint3* apPos, CellV
         if (FUN_005f36f0())
         {
             float fCurrentHeight;
-            FUN_005f36f0()->CheckWaterHeight(apPos, &fCurrentHeight);
+            FUN_005f36f0()->GetWaterHeight(apPos, &fCurrentHeight);
             return fCurrentHeight;
         }
         apCell = ((WorldCellCoordinateQuery*)g_TES)->FUN_004fd3e0()->GetCellFromWorldCoord(apPos);
@@ -7275,7 +7513,7 @@ float CellWaterHeightQuery::GetCellHeightAtPosition(const NiPoint3* apPos, CellV
         for (int iY = iBaseY - 1; iY < iBaseY + 2; iY++)
         {
             CellView* pCell = ((WorldCellCoordinateQuery*)g_TES)->FUN_004fd3e0()->FUN_005875a0(iX, iY);
-            if (pCell && pCell != apCell && pCell->CheckWaterHeight(apPos, &fOtherHeight))
+            if (pCell && pCell != apCell && pCell->GetWaterHeight(apPos, &fOtherHeight))
                 return fOtherHeight;
         }
     }
@@ -7302,9 +7540,9 @@ class C6760Ref;
 class C6760Manager : public C6760Base, public C6760ManagerBase
 {
   public:
-    void AddPlanes(C6760Ref* pkRef);
-    void AddToLists(C6760Ref* pkRef);
-    void UpdateBounds(C6760Ref* pkRef);
+    void AddPlanes(C6760Ref* apZone);
+    void AddToLists(C6760Ref* apTarget);
+    void UpdateBounds(C6760Ref* apRef);
 };
 
 class C6760World
@@ -7329,6 +7567,8 @@ class C6760Ref
 // Gets the parent cell's world, then registers this ref with its occlusion manager via AddPlanes, AddToLists and UpdateBounds.
 // @fnv 0x00576760
 // src: XBOX_PDB 0x00576760
+// pdb: TESObjectREFR::CleanUpTraps | TESObjectREFR.obj | retail, upstream name already matches, high
+// pdb locals: pcell, pw, ptrapListener
 void C6760Ref::TESObjectREFR_CleanUpTraps()
 {
     C6760Cell* pkCell = GetParentCell();
@@ -7394,6 +7634,8 @@ struct LandscapeUpdate : LandscapeReset
 // Iterates the grid cells, and for each cell with an entry object that passes FUN_0045cb90, calls FUN_005400e0 on it.
 // @fnv 0x0045cac0
 // src: COMMUNITY 0x0045cac0
+// pdb: TES::InitDistantTextureBlending | TES.obj | retail, upstream name already matches, high
+// pdb locals: pcell, x, y, pland
 void LandscapeUpdate::TES_InitDistantTextureBlending()
 {
     FUN_00546fb0_cell* pCell = 0;
@@ -7434,21 +7676,24 @@ struct SurfaceNormalQuery : TES
 // Computes the cell coordinates from pos, sets normal to (0,0,1), and if the cell passes a lookup test returns the result of a probe hit test.
 // @fnv 0x004573f0
 // src: COMMUNITY 0x004573f0
-bool SurfaceNormalQuery::TES_GetLandNormal(const NiPoint3* pos, NiPoint3* normal, int flags)
+// pdb: TES::GetLandNormal | TES.obj | retail, upstream name already matches, high
+// pdb params: aCoord, aNormal, aFaceNormal
+// pdb locals: icellX, icellY, ptestcell
+bool SurfaceNormalQuery::TES_GetLandNormal(const NiPoint3* aCoord, NiPoint3* aNormal, int aFaceNormal)
 {
-    int cellX = _TruncateFloatToInt(pos->x);
-    int cellY2 = _TruncateFloatToInt(pos->y);
-    if (cellX % 4096 == 0 && (float)cellX > pos->x)
+    int cellX = _TruncateFloatToInt(aCoord->x);
+    int cellY2 = _TruncateFloatToInt(aCoord->y);
+    if (cellX % 4096 == 0 && (float)cellX > aCoord->x)
         cellX = cellX - 1;
-    if (cellY2 % 4096 == 0 && (float)cellY2 > pos->y)
+    if (cellY2 % 4096 == 0 && (float)cellY2 > aCoord->y)
         cellY2 = cellY2 - 1;
     cellX >>= 12;
     cellY2 >>= 12;
-    *(blob12*)normal = *(const blob12*)&NiPoint3_ZERO;
-    normal->z = 1.0f;
+    *(blob12*)aNormal = *(const blob12*)&NiPoint3_ZERO;
+    aNormal->z = 1.0f;
     TESObjectCELL* cell5 = FUN_00451900(cellX, cellY2);
     if (cell5 && ((TESCellLookup*)g_TES)->FUN_004511e0(cell5, 0))
-        return ((CellProbe*)cell5)->TESObjectCELL_GetLand(pos, normal, flags)->TESObjectLAND_GetLandNormal();
+        return ((CellProbe*)cell5)->TESObjectCELL_GetLand(aCoord, aNormal, aFaceNormal)->TESObjectLAND_GetLandNormal();
     return false;
 }
 
@@ -7474,25 +7719,28 @@ class xWorldC
 {
   public:
     xCellC* GetContainingCell(int x, int y);
-    bool TES_GetLandColor(const xPt3C* pPos, int i);
+    bool TES_GetLandColor(const xPt3C* acoord, int acolor);
 };
 
 // Truncates pPos to cell coordinates, checks if the containing cell is loaded, and returns whether the cell's test at pPos passes.
 // @fnv 0x00457520
 // src: COMMUNITY 0x00457520
-bool xWorldC::TES_GetLandColor(const xPt3C* pPos, int i)
+// pdb: TES::GetLandColor | TES.obj | retail, upstream name already matches, high
+// pdb params: acoord, acolor
+// pdb locals: icellX, icellY, ptestcell
+bool xWorldC::TES_GetLandColor(const xPt3C* acoord, int acolor)
 {
-    int qrEZrs = xTruncate(pPos->x);
-    int qsSDDgz = xTruncate(pPos->y);
-    if (qrEZrs % 4096 == 0 && qrEZrs > pPos->x)
+    int qrEZrs = xTruncate(acoord->x);
+    int qsSDDgz = xTruncate(acoord->y);
+    if (qrEZrs % 4096 == 0 && qrEZrs > acoord->x)
         qrEZrs--;
-    if (qsSDDgz % 4096 == 0 && qsSDDgz > pPos->y)
+    if (qsSDDgz % 4096 == 0 && qsSDDgz > acoord->y)
         qsSDDgz--;
     qrEZrs >>= 12;
     qsSDDgz >>= 12;
     xCellC* qfTOqo = GetContainingCell(qrEZrs, qsSDDgz);
     if (qfTOqo && xTheTES->IsLoaded(qfTOqo, 0))
-        return qfTOqo->GetAt(pPos, i)->Test();
+        return qfTOqo->GetAt(acoord, acolor)->Test();
     return false;
 }
 
@@ -7524,6 +7772,7 @@ class FUN_0045ae50 : public FUN_0045cec0
 
 // Destructor that resets the shared reference and deletes the m_pkArray array if it is not null.
 // @fnv 0x0045ae50
+// pdb: TES::ParticleObjectCache::~ParticleObjectCache | TES.obj | debug, object-file run extension, low
 FUN_0045ae50::~FUN_0045ae50()
 {
     NiPointer<NiRefObject>::operator=(static_cast<NiRefObject*>(0));
@@ -7537,13 +7786,13 @@ struct Cell
 {
     bool TESObjectCELL_GetLoaded();
     bool TESObjectCELL_GetAttached();
-    void TESObjectCELL_AttachModels(int iArg);
-    void TESObjectCELL_Detach(int iArg);
+    void TESObjectCELL_AttachModels(int abSetupMopp);
+    void TESObjectCELL_Detach(int abDetachHavok);
 };
 
 struct CellGrid
 {
-    Cell** FUN_004ba490(unsigned int uiX, unsigned int uiY);
+    Cell** FUN_004ba490(unsigned int aiX, unsigned int aiY);
     void AttachToWorld(int iWorld, unsigned int uiX, unsigned int uiY);
 };
 
@@ -7557,7 +7806,7 @@ struct Scheduler
     void bhkWorld_StartBatchingAdds();
     void bhkWorld_StartBatchingRemovals();
     void FUN_00c68f00(int iArg);
-    void bhkWorld_StopBatchingAdds(int iArg);
+    void bhkWorld_StopBatchingAdds(int abAllowPartial);
 };
 
 struct Audio
@@ -7600,6 +7849,9 @@ struct World
 
 // Updates the scheduler and cells based on bPause, clears mobile object data when resuming, updates the camera, and applies a zero fade.
 // @fnv 0x00450dd0
+// pdb: TES::CullGridCells | TES.obj | debug, object-file run extension, low
+// pdb params: abDisable, apPos
+// pdb locals: UpdateData, pLODroot, x, y, pcell, pgridcell
 void World::Pause(bool bPause, int iUnused)
 {
     if (!DAT_011c3f2c)
@@ -7664,6 +7916,9 @@ struct FnCls
 // Returns a non-null result from FUN_005f36f0; otherwise looks up a cell using shifted coordinates and checks it with FUN_004511e0.
 // @fnv 0x004519d0
 // src: XBOX_PDB 0x004519d0
+// pdb: TES::GetCellForPoint | TES.obj | retail, upstream name already matches, high
+// pdb params: aLocation
+// pdb locals: icellX, pcell, icellY
 TESObjectCELL* FnCls::TES_GetCellForPoint(float afX, float afY, int a3)
 {
     if (FUN_005f36f0())
@@ -7679,7 +7934,7 @@ TESObjectCELL* FnCls::TES_GetCellForPoint(float afX, float afY, int a3)
 bool __cdecl FUN_00705e80();
 bool __cdecl LoadingMenu_GetResetFlagged();
 void __cdecl UpdateIfEnabled(void*);
-void __cdecl FUN_00705e00(void*, bool);
+void __cdecl Interface_CreateLoadingMenu(void*, bool);
 bool __cdecl LoadingMenu_IsInScriptMode();
 void __cdecl LoadingMenu_SetScriptMode(int);
 void __cdecl Interface_CloseLoadingMenu();
@@ -7736,6 +7991,9 @@ struct S457d70
 // On the abFlag1 path, may pass apForm to FUN_00705e00 and call manager methods; otherwise updates DAT_011c3efc and may run cleanup calls.
 // @fnv 0x00457d70
 // src: COMMUNITY 0x00457d70
+// pdb: TES::ShowLoadingMenu | TES.obj | retail, upstream name already matches, high
+// pdb params: abShow, apLocation
+// pdb locals: pcell, pList, pworld, pcontrols, pfile
 bool S457d70::TES_ShowLoadingMenu(bool abFlag1, Form457* apForm, bool abFlag2)
 {
     if (abFlag1)
@@ -7790,7 +8048,7 @@ bool S457d70::TES_ShowLoadingMenu(bool abFlag1, Form457* apForm, bool abFlag2)
                 break;
             }
         }
-        FUN_00705e00(apForm, abFlag2);
+        Interface_CreateLoadingMenu(apForm, abFlag2);
         FUN_00aff100()->BSFileCache_ResumeFileCaching();
         FUN_00aff100()->v30();
         FUN_00aff100()->BSFileCache_PauseFileCaching();
@@ -8064,7 +8322,7 @@ struct BatchTES
     void InteriorExit(BatchPoint*);
     void ExteriorMove(BatchPoint*, bool);
     void Refresh(bool, bool);
-    void TES_TestAllCells(int mode);
+    void TES_TestAllCells(int aiControl);
 };
 extern bool batchInitialized, batchNewWorld, batchLog;
 extern int batchMode, batchInputDirection, batchX, batchY, batchExteriorCount;
@@ -8097,23 +8355,26 @@ void __cdecl BatchFilePrint(const char*, const char*, ...);
 // Iterates through batch worlds and cells, moving the player to each and logging performance stats based on the specified mode.
 // @fnv 0x004556d0
 // src: XBOX_PDB 0x004556d0
-void BatchTES::TES_TestAllCells(int mode)
+// pdb: TES::TestAllCells | TES.obj | retail, upstream name already matches, high
+// pdb params: aiControl
+// pdb locals: btestagain, pws, bstarted, pcell, bfinishedints, start, bloadCell, ptestworld, imaxY, imaxX, pregionList, pos, freedata, stop, time, ploc, ignored, z, bportaled, ultexmemory, pportalgraph, fTnumber, ptex, textMnum ...
+void BatchTES::TES_TestAllCells(int aiControl)
 {
-    if (mode == 4 || mode == 5 || mode == 9)
+    if (aiControl == 4 || aiControl == 5 || aiControl == 9)
         batchInitialized = true;
-    switch (mode)
+    switch (aiControl)
     {
     case 6:
     case 7:
-        mode -= 5;
+        aiControl -= 5;
         batchInitialized = true;
         SetCategory(BatchCategory);
         break;
     }
-    switch (mode)
+    switch (aiControl)
     {
     default:
-        batchMode = mode;
+        batchMode = aiControl;
         active = true;
         BatchActive(true);
         BatchOpenLog(batchLogFile);
@@ -8125,7 +8386,7 @@ void BatchTES::TES_TestAllCells(int mode)
             static_cast<TESDataHandlerIconValidation*>(batchHandler)->ValidateFormIcons();
             batchInitialized = true;
         }
-        if ((mode == 1 || mode == 4 || mode == 5 || mode == 9) && !batchWorlds && !batchCellCount)
+        if ((aiControl == 1 || aiControl == 4 || aiControl == 5 || aiControl == 9) && !batchWorlds && !batchCellCount)
         {
             batchWorlds = (BatchWorldNode*)batchHandler->GetTESWorldSpaceList();
             batchNewWorld = true;
@@ -8133,7 +8394,7 @@ void BatchTES::TES_TestAllCells(int mode)
             batchCellCount = batchHandler->GetInteriorCellCount();
             batchCellIndex = 0;
         }
-        else if (mode == 3)
+        else if (aiControl == 3)
         {
             if (!batchWorlds || *batchWorlds->Data() != currentWorld)
             {
@@ -8154,7 +8415,7 @@ void BatchTES::TES_TestAllCells(int mode)
                 batchCellIndex = 0;
             }
         }
-        else if (mode == 2)
+        else if (aiControl == 2)
         {
             bool changed = false;
             if (batchWorlds)
@@ -8186,7 +8447,7 @@ void BatchTES::TES_TestAllCells(int mode)
         again = false;
         if (active)
         {
-            if (mode == 9)
+            if (aiControl == 9)
                 again = true;
             BatchCell* cell = 0;
             int start = BatchClock();
@@ -8390,7 +8651,7 @@ void BatchTES::TES_TestAllCells(int mode)
             }
         }
     }
-    switch (mode)
+    switch (aiControl)
     {}
 }
 
@@ -8431,11 +8692,15 @@ TESForm* FUN_0058db10(int);
 struct ActorSpellView : public Actor
 {
     bool HandleRef(ItemEntry*);
-    void UpdateSpells(bool equipped);
+    void Actor_CastPermanentMagic(bool abWornEnchantmentsOnly);
 };
 // Adds actor and race spells when unequipped, applies qualifying inventory enchantments when equipped, and adds the default spell if absent.
 // @fnv 0x008c26e0
-void ActorSpellView::UpdateSpells(bool equipped)
+// src: XBOX_RETAIL_PDB 0x008c26e0
+// pdb: Actor::CastPermanentMagic | Actor_Magic.obj | retail, call graph (shared callers), high
+// pdb params: abWornEnchantmentsOnly
+// pdb locals: peveryActorAbility, pspells, pspell, pinventory, pusedSources, i, pitem, penchantment, penchantable, bfound, j
+void ActorSpellView::Actor_CastPermanentMagic(bool abWornEnchantmentsOnly)
 {
     ItemEntry* released7;
     ItemEntry* releasedA;
@@ -8454,7 +8719,7 @@ void ActorSpellView::UpdateSpells(bool equipped)
     SpellNode* node;
     TESForm* aDefaultForm5;
 
-    if (!equipped)
+    if (!abWornEnchantmentsOnly)
     {
         node = reinterpret_cast<SpellList*>(reinterpret_cast<char*>(GetActorBase()) +
             (offsetof(TESActorBase, spellList) - offsetof(TESSpellList, spellList)))->FUN_00717e50();
@@ -8583,6 +8848,8 @@ struct TextureLoader
 // Queues each nonempty setting string and loads a texture using a path built under Data\Textures.
 // @fnv 0x0045a370
 // src: COMMUNITY 0x0045a370
+// pdb: TES::PreloadDefaultModels | TES.obj | retail, upstream name already matches, high
+// pdb locals: texname, tempMemContext
 void TextureLoader::TES_PreloadDefaultModels()
 {
     AutoMemHelper context(7, true, "D:\\_Fallout3\\Platforms\\Common\\Code\\Fallout Shared\\TES.cpp", 7152);
@@ -8633,21 +8900,24 @@ struct RecentItems
 // Moves item to the front of items, shifting entries down and releasing the last entry when it is non-null.
 // @fnv 0x00454c20
 // src: XBOX_PDB 0x00454c20
-void RecentItems::TES_AddToInteriorBuffer(void* item)
+// pdb: TES::AddToInteriorBuffer | TES.obj | retail, upstream name already matches, high
+// pdb params: apCell
+// pdb locals: isize, n
+void RecentItems::TES_AddToInteriorBuffer(void* apCell)
 {
     int last;
-    if (ContainsCell(item))
+    if (ContainsCell(apCell))
     {
         for (unsigned int index = 0; index < DAT_011c3e38.FUN_004503f0(); index++)
         {
-            if (items[index] == item)
+            if (items[index] == apCell)
             {
                 while (index != 0)
                 {
                     items[index] = items[index - 1];
                     index--;
                 }
-                items[0] = item;
+                items[0] = apCell;
                 break;
             }
         }
@@ -8670,7 +8940,7 @@ void RecentItems::TES_AddToInteriorBuffer(void* item)
                 items[slot] = 0;
             }
         }
-        items[0] = item;
+        items[0] = apCell;
     }
 }
 }  // namespace fnv_00454c20
@@ -8695,7 +8965,7 @@ struct GridCalls
 extern TES* g_TES;
 struct FUN_0062e710_shell
 {
-    void SetValueAt(float, int, int);
+    void TESWaterListener_SetWaterHeight(float, int, int);
 };
 struct FUN_005471e0_shell
 {
@@ -8718,6 +8988,8 @@ extern const float DAT_01015f5c;
 extern double DAT_010241b0;
 // @fnv 0x0062f460
 // src: XBOX_PDB 0x0062f460
+// pdb: TESWaterListener::RefreshExteriorWaterHeights | TESWaterListener.obj | retail, upstream name already matches, high
+// pdb locals: pcell, pwater, iarrayWidth, iarrayHeight, ix, iy, fheight
 void __cdecl TESWaterListener_RefreshExteriorWaterHeights()
 {
     FUN_0062e780_Class* width = TESWaterListener_GetExteriorListener();
@@ -8732,7 +9004,7 @@ void __cdecl TESWaterListener_RefreshExteriorWaterHeights()
             TESObjectCELL* cell = ((GridCalls*)g_TES)->GetGridCell_00457050(x, y)->cell;
             if (cell && ((TESObjectCELL*)cell)->HasWater())
                 value = ((FUN_005471e0_shell*)cell)->TESObjectCELL_GetWaterHeight();
-            ((FUN_0062e710_shell*)width)->SetValueAt(value, x, y);
+            ((FUN_0062e710_shell*)width)->TESWaterListener_SetWaterHeight(value, x, y);
             if (width->maximum < value)
                 width->maximum = value;
         }
@@ -8764,6 +9036,8 @@ struct FadeAttachedTES
 
 // @fnv 0x00459a00
 // src: XBOX_PDB 0x00459a00
+// pdb: TES::UpdateFadeNodesForAttachedCells | TES.obj | retail, upstream name already matches, high
+// pdb locals: x, y, pcell, pgridcell
 void FadeAttachedTES::TES_UpdateFadeNodesForAttachedCells()
 {
     if (!g_dataHandler)

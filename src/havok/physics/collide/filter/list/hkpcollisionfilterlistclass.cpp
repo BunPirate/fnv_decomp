@@ -38,6 +38,7 @@ extern "C" NotifyRoot* __cdecl hkMemoryRouter_getInstance();
 
 // Calls FUN_00e49f40 on this, then if flags has bit 0 set, notifies the target from FUN_00c85750 with this and m4, and returns this.
 // @fnv 0x00e012f0
+// pdb: hkpCollisionFilterList::`scalar deleting destructor' | hkpCollisionFilterListClass.obj | retail, vtable slot, high
 FUN_00e012f0_class* FUN_00e012f0_class::InitialiseAndNotify(unsigned int flags)
 {
     reinterpret_cast<InitialiseFunction>(FUN_00e49f40)(this);

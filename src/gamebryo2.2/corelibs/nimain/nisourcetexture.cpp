@@ -10,6 +10,7 @@
 
 // Releases the app pixel data object: decrements its ref count, deletes it when the count reaches zero, and clears the pointer.
 // @fnv 0x00a60910
+// pdb: NiSourceTexture::DestroyAppPixelData | NiSourceTexture.obj | debug, upstream name already matches, high
 void NiSourceTexture::DestroyAppPixelData()
 {
     NiPixelData* pAppPixelData = m_spSrcPixelData.m_pObject;
@@ -22,6 +23,9 @@ void NiSourceTexture::DestroyAppPixelData()
 }
 
 // @fnv 0x00a5fd70
+// pdb: NiSourceTexture::Create | NiSourceTexture.obj | debug, call graph, medium
+// pdb params: kFilename, kPrefs, bLoadDirectToRendererHint, bSrcRendererDataIsPersistent
+// pdb locals: pkTexture
 NiSourceTexture* NiSourceTexture::Create(const NiFixedString& name, NiTexture::TextureFormatPreferences& prefs,
                                          bool loadDirectToRendererHint, bool srcRendererDataIsPersistent)
 {
@@ -43,7 +47,7 @@ NiSourceTexture* NiSourceTexture::Create(const NiFixedString& name, NiTexture::T
         filename->m_kHandle = newHandle;
     }
     NiStandardizeFilePath(filename);
-    NiImageConverter_ConvertFilenameToPlatformSpecific_(filename, &texture->m_kPlatformFilename);
+    NiImageConverter_ConvertFilenameToPlatformSpecific(filename, &texture->m_kPlatformFilename);
 
     if (DAT_011a9594 && !reinterpret_cast<NiSourceTextureVCall*>(texture)->vfn_0ac())
     {

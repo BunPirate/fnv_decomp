@@ -14,34 +14,37 @@ struct PlayerCharacterMovingStateView
     unsigned char padding[0x20c];
     unsigned char movingIntoNewSpace;
 };
-bool __cdecl GetEssentialConditionFunction(TESObjectREFR* reference, void* arg1, void* arg2, double& result);
+bool __cdecl Script_IsEssentialConditionFunction(TESObjectREFR* reference, void* apParam1, void* apParam2, double& afReturnValue);
 bool __cdecl IsPlayerEnteringSpaceConditionFunction(TESObjectREFR* reference, void* arg1, void* arg2, double& result);
-bool GetLastHitLocationConditionFunction(TESObjectREFR* reference, void* arg1, void* arg2, double& result);
+bool Script_GetHitLocationConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue);
 
 extern __declspec(thread) bool g_bShowConditionDebug;
 void __cdecl DebugLog(char const*, ...);
 // @fnv 0x0059c010
 // src: XBOX_PDB 0x0059c010
-bool __cdecl Script_GetInZoneConditionFunction(TESObjectREFR* reference, void* parameter, void* unused, double& result)
+// pdb: Script::GetInZoneConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pzone, pcell, prefzone, pworld
+bool __cdecl Script_GetInZoneConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
-    result = 0.0;
-    void* zone = parameter;
-    if (reference && zone)
+    afReturnValue = 0.0;
+    void* zone = apParam1;
+    if (apRefObject && zone)
     {
         void* found = 0;
-        TESObjectCELL* cell = reference->GetParentCell();
+        TESObjectCELL* cell = apRefObject->GetParentCell();
         if (cell)
             found = cell->FUN_00546c20();
         if (!found)
         {
-            TESWorldSpace* world = reference->TESObjectREFR_GetWorldSpace();
+            TESWorldSpace* world = apRefObject->TESObjectREFR_GetWorldSpace();
             if (world)
                 found = world->GetFieldD0();
         }
         if (found == zone)
-            result = 1.0;
+            afReturnValue = 1.0;
     }
     if (g_bShowConditionDebug)
-        DebugLog("GetInZone >> %0.2f", result);
+        DebugLog("GetInZone >> %0.2f", afReturnValue);
     return true;
 }

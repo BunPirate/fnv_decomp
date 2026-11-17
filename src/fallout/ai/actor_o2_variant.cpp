@@ -24,6 +24,7 @@ inline NiNode* NiAVObject::GetParent() const { return m_pkParent; }
 
 extern MemoryManager g_memoryManager;
 // @fnv 0x00c7de30
+// pdb: bhkRagdollController::`scalar deleting destructor' | bhkRagdollController.obj | retail, object-file gap fill, high
 void* bhkRagdollController::FUN_00c7de30(unsigned int flag)
 {
     bhkRagdollController::~bhkRagdollController();
@@ -86,6 +87,7 @@ struct FUN_00cda4b0_cls
 
 // @fnv 0x00cda4b0
 // src: COMMUNITY 0x00cda4b0
+// pdb: hkaPose::accessSyncedPoseModelSpace | hkaPose.obj | retail, upstream name already matches, high
 void __thiscall FUN_00cda4b0_cls::hkaPose_accessSyncedPoseModelSpace()
 {
     hkaPose_syncModelSpace();
@@ -100,6 +102,7 @@ struct FUN_00cda8d0_class
 
 // @fnv 0x00cda8d0
 // src: HAVOK_LIB 0x00cda8d0
+// pdb: hkaPose::getSyncedPoseModelSpace | hkaPose.obj | retail, upstream name already matches, high
 void* FUN_00cda8d0_class::hkaPose_getSyncedPoseModelSpace()
 {
     hkaPose_syncModelSpace();
@@ -138,6 +141,7 @@ struct Outer
     Outer* __thiscall FUN_00c7e970(unsigned int);
 };
 // @fnv 0x00c7e970
+// pdb: hkaSkeleton::`scalar deleting destructor' | bhkRagdollController.obj | retail, vtable slot, high
 Outer* __thiscall Outer::FUN_00c7e970(unsigned int a)
 {
     FUN_00c7dc40();
@@ -152,16 +156,19 @@ Outer* __thiscall Outer::FUN_00c7e970(unsigned int a)
 
 // @fnv 0x00c802d0
 // src: COMMUNITY 0x00c802d0
-NiCollisionObject* __cdecl bhkUtilFunctions_FindNextCollisionObject(NiAVObject* p)
+// pdb: bhkUtilFunctions::FindNextCollisionObject | bhkUtilFunctions.obj | retail, upstream name already matches, high
+// pdb params: apObj
+// pdb locals: pret, pnode, ui, pchild
+NiCollisionObject* __cdecl bhkUtilFunctions_FindNextCollisionObject(NiAVObject* apObj)
 {
-    NiCollisionObject* r = p->m_spCollisionObject.m_pObject;
-    if (!r && p->IsSceneNode())
+    NiCollisionObject* r = apObj->m_spCollisionObject.m_pObject;
+    if (!r && apObj->IsSceneNode())
     {
-        for (unsigned i = 0; i < static_cast<NiNode*>(p)->m_kChildren.m_usSize; ++i)
+        for (unsigned i = 0; i < static_cast<NiNode*>(apObj)->m_kChildren.m_usSize; ++i)
         {
             if (r)
                 break;
-            NiAVObject* child = static_cast<NiNode*>(p)->m_kChildren.m_pBase[i].m_pObject;
+            NiAVObject* child = static_cast<NiNode*>(apObj)->m_kChildren.m_pBase[i].m_pObject;
             if (child)
                 r = bhkUtilFunctions_FindNextCollisionObject(child);
         }
@@ -268,15 +275,17 @@ struct Target
 
 struct FUN_00c6ffc0_Class
 {
-    Target* bhkCharacterController_GetCollisionDebugNode();
+    Target* bhkCharacterController_FindDisplayGeometry();
     void bhkCharacterController_RemoveCollisionDebug();
 };
 
 // @fnv 0x00c6ffc0
 // src: COMMUNITY 0x00c6ffc0
+// pdb: bhkCharacterController::KillDisplayGeometry | bhkCharacterController.obj | retail, call graph (shared callers), high
+// pdb locals: pav, spTempAVObject, pparent
 void FUN_00c6ffc0_Class::bhkCharacterController_RemoveCollisionDebug()
 {
-    Target* p = bhkCharacterController_GetCollisionDebugNode();
+    Target* p = bhkCharacterController_FindDisplayGeometry();
     NiPointer<MyRef> sp;
     Target18* t;
     if (p && (t = p->field_18))
@@ -342,6 +351,9 @@ RObj* __cdecl BSUtilities_GetObjectByName_00c4b470(RCtx*, RKey*, int);
 
 // @fnv 0x00c7bcb0
 // src: COMMUNITY 0x00c7bcb0
+// pdb: bhkRagdollController::CopyPoseTo3DRec | bhkRagdollController.obj | retail, object-file run extension, low
+// pdb params: apSkeleton, apPose, arPoseA
+// pdb locals: pbonePose, pnode, pboneSkel, poseBoneName, localTransf, bone, ui, pchild
 void __cdecl CopyPoseFunctor(RCtx* ctx, RObj* obj, RArr* arr)
 {
     RKey key(obj->name);
@@ -373,7 +385,7 @@ void __cdecl CopyPoseFunctor(RCtx* ctx, RObj* obj, RArr* arr)
     }
 }
 
-void __cdecl SetFlagRecursive(int, void*);
+void __cdecl bhkUtilFunctions_SetCOUseVel(int, void*);
 void __cdecl CopyPoseFunctor(void*, void*, void*);
 
 inline unsigned char GetFlag6(unsigned short w)
@@ -383,9 +395,12 @@ inline unsigned char GetFlag6(unsigned short w)
 
 // @fnv 0x00c7d3b0
 // src: XBOX_PDB 0x00c7d3b0
-void __cdecl bhkRagdollController_CopyPoseTo3D(NiNode* param_1, void* param_2, void* param_3, char* param_4, unsigned int* param_5)
+// pdb: bhkRagdollController::CopyPoseTo3D | bhkRagdollController.obj | retail, upstream name already matches, high
+// pdb params: apSkeleton, apPose, arPoseA, arbPrevUseVel, arePrevMotion
+// pdb locals: pcolObj, pbody, data
+void __cdecl bhkRagdollController_CopyPoseTo3D(NiNode* apSkeleton, void* apPose, void* arPoseA, char* arbPrevUseVel, unsigned int* arePrevMotion)
 {
-    NiCollisionObject* node = bhkUtilFunctions_FindNextCollisionObject(param_1);
+    NiCollisionObject* node = bhkUtilFunctions_FindNextCollisionObject(apSkeleton);
     char flag;
     if (!node || !(*(unsigned short*)((char*)node + 0xc) & 0x20) || GetFlag6(*(unsigned short*)((char*)node + 0xc)))
     {
@@ -395,10 +410,10 @@ void __cdecl bhkRagdollController_CopyPoseTo3D(NiNode* param_1, void* param_2, v
     {
         flag = 1;
     }
-    *param_4 = flag;
+    *arbPrevUseVel = flag;
     if (flag)
     {
-        SetFlagRecursive(0, param_1);
+        bhkUtilFunctions_SetCOUseVel(0, apSkeleton);
     }
     if (node)
     {
@@ -412,15 +427,15 @@ void __cdecl bhkRagdollController_CopyPoseTo3D(NiNode* param_1, void* param_2, v
         {
             val = 5;
         }
-        *param_5 = val;
+        *arePrevMotion = val;
     }
-    if (*param_5 != 4)
+    if (*arePrevMotion != 4)
     {
-        Creature::SetNodeFlagsRecursive(param_1, 4, true, false, true);
+        Creature::SetNodeFlagsRecursive(apSkeleton, 4, true, false, true);
     }
-    if (param_1 && param_2)
+    if (apSkeleton && apPose)
     {
-        CopyPoseFunctor(param_1, param_2, param_3);
+        CopyPoseFunctor(apSkeleton, apPose, arPoseA);
         NiUpdateData updateData;
         updateData.fTime = 0.0f;
         updateData.pad1 = false;
@@ -428,7 +443,7 @@ void __cdecl bhkRagdollController_CopyPoseTo3D(NiNode* param_1, void* param_2, v
         updateData.pad3 = false;
         updateData.pad4 = false;
         updateData.pad5 = false;
-        param_1->Update(static_cast<const NiUpdateData&>(updateData));
+        apSkeleton->Update(static_cast<const NiUpdateData&>(updateData));
     }
 }
 
@@ -499,6 +514,9 @@ struct FUN_00c7d630_t
 
 // @fnv 0x00c7d630
 // src: XBOX_PDB 0x00c7d630
+// pdb: bhkRagdollController::DoRagdollAnim | bhkRagdollController.obj | retail, upstream name already matches, high
+// pdb params: abUpdateBones
+// pdb locals: pragdollDrivePoseLS, nitrans, buseDrivePose, ragdollDrivePoseLS
 void FUN_00c7d630_t::bhkRagdollController_DoRagdollAnim(float)
 {
     char* self = (char*)this;
@@ -560,6 +578,8 @@ struct FUN_00c7d810_Cls
 
 // @fnv 0x00c7d810
 // src: XBOX_PDB 0x00c7d810
+// pdb: bhkRagdollController::SyncRagdollTo3D | bhkRagdollController.obj | retail, upstream name already matches, high
+// pdb locals: nitrans, etype
 void FUN_00c7d810_Cls::bhkRagdollController_SyncRagdollTo3D()
 {
     NiTransform nitrans;
@@ -617,21 +637,24 @@ void FUN_00c7d890_cls::ProcessEntries_00c7d890()
 void* __cdecl FUN_00ec7230(char*, char const*, unsigned int);
 
 // @fnv 0x00c7f900
-// src: COMMUNITY 0x00c7f900
-void __stdcall BSSimpleArray_bhkUtilFunctions_AVLevel_1024_CopyItems(char* dst, char* src, unsigned int count)
+// src: XBOX_RETAIL_PDB 0x00c7f900 (was COMMUNITY)
+// pdb: BSSimpleArray<DetailedActorPathHandler::ActorAvoidanceData,1024>::_MoveItems | DetailedActorPathHandler.obj | retail, call graph, high
+// pdb params: apDestAddr, apSrcAddr, aiCount
+// pdb locals: i
+void __stdcall BSSimpleArray_DetailedActorPathHandler_ActorAvoidanceData_1024__MoveItems(char* apDestAddr, char* apSrcAddr, unsigned int aiCount)
 {
-    if (count <= 0)
+    if (aiCount <= 0)
         return;
 
-    if (dst < src)
+    if (apDestAddr < apSrcAddr)
     {
-        for (unsigned int i = 0; i < count; ++i)
-            FUN_00ec7230(dst + i * 8, src + i * 8, 8);
+        for (unsigned int i = 0; i < aiCount; ++i)
+            FUN_00ec7230(apDestAddr + i * 8, apSrcAddr + i * 8, 8);
     }
-    else if (dst > src)
+    else if (apDestAddr > apSrcAddr)
     {
-        for (int i = (int)count - 1; i >= 0; --i)
-            FUN_00ec7230(dst + i * 8, src + i * 8, 8);
+        for (int i = (int)aiCount - 1; i >= 0; --i)
+            FUN_00ec7230(apDestAddr + i * 8, apSrcAddr + i * 8, 8);
     }
 }
 
@@ -663,26 +686,29 @@ struct S_c6a200_Ev
     int unk10, unk14, unk18;
 };
 extern void* DAT_011afecc;
-S_c6a200_Info* __cdecl GetExtraDataChecked(void* obj);
-void __cdecl bhkWorld_DoObjectRec(void* obj, S_c6a200_Ev* ev, void* extra);
+S_c6a200_Info* __cdecl GetExtraDataChecked(void* apObject);
+void __cdecl bhkWorld_DoObjectRec(void* apObject, S_c6a200_Ev* arData, void* apFunc);
 // @fnv 0x00c6a200
 // src: XBOX_PDB 0x00c6a200
-bool __cdecl bhkWorld_SetDisabled(void* obj, unsigned char a1, unsigned char a2, unsigned char a3)
+// pdb: bhkWorld::SetDisabled | bhkWorld.obj | retail, upstream name already matches, high
+// pdb params: apObject, abDisabled, abRecurse, abForce
+// pdb locals: bres, recData
+bool __cdecl bhkWorld_SetDisabled(void* apObject, unsigned char abDisabled, unsigned char abRecurse, unsigned char abForce)
 {
     bool r = false;
-    if (obj)
+    if (apObject)
     {
         S_c6a200_Info* info;
-        if (a3 || ((info = GetExtraDataChecked(obj)) ? (info->unk0c & 2) : 0))
+        if (abForce || ((info = GetExtraDataChecked(apObject)) ? (info->unk0c & 2) : 0))
         {
             S_c6a200_Ev ev;
-            ev.unk04 = a2;
+            ev.unk04 = abRecurse;
             r = true;
             ev.unk00 = 0;
             ev.unk08 = 0x11;
-            ev.unk0c = a1;
+            ev.unk0c = abDisabled;
             if (DAT_011afecc)
-                bhkWorld_DoObjectRec(obj, &ev, DAT_011afecc);
+                bhkWorld_DoObjectRec(apObject, &ev, DAT_011afecc);
         }
     }
     return r;
@@ -695,10 +721,13 @@ struct FlagController
 };
 // @fnv 0x00c7ba10
 // src: XBOX_PDB 0x00c7ba10
-void FlagController::bhkRagdollController_EnableRagdollFeedback(bool enabled)
+// pdb: bhkRagdollController::EnableRagdollFeedback | bhkRagdollController.obj | retail, call graph, high
+// pdb params: abEnable
+// pdb locals: benabled
+void FlagController::bhkRagdollController_EnableRagdollFeedback(bool abEnable)
 {
     unsigned char* state = (unsigned char*)this;
-    bool target = state[0x28c] && enabled;
+    bool target = state[0x28c] && abEnable;
     if (!target && state[0x28e])
         bhkRagdollController_SetRagdollFeedbackActive(0);
     state[0x28d] = target;
@@ -914,6 +943,7 @@ struct FUN_00c7d5c0_cls
 
 // @fnv 0x00c7d5c0
 // src: GUESS 0x00c7d5c0 (confidence: low)
+// pdb: bhkRagdollController::GetWorld | bhkRagdollController.obj | debug, object-file run extension, low
 void FUN_00c7d5c0_cls::ProcessEntries_00c7d5c0()
 {
     hkMemoryRouter* pHolder = hkMemoryRouter_getInstance();
@@ -965,7 +995,7 @@ struct MiddleObject : BaseObject
 struct FUN_00c7f9e0 : MiddleObject
 {
     FUN_00c7f9e0(void* context);
-    void SpawnAndAttach(void* context);
+    void SpawnAndAttach(void* arInfo);
 };
 
 // @fnv 0x00c7f9e0
@@ -1012,8 +1042,8 @@ struct BCB9810Entry
 class BCB9810Registry
 {
   public:
-    void AppendTailPair(void* pvOwner, BCB9810Node* pkNode);
-    void bhkFilteredCdBodyCollector_addCdBodyPair(void* pvOwner, BCB9810Node* pkNode);
+    void AppendTailPair(void* bodyA, BCB9810Node* bodyB);
+    void bhkFilteredCdBodyCollector_addCdBodyPair(void* arBodyA, BCB9810Node* arBodyB);
 
     int unk00;
     int unk04;
@@ -1023,7 +1053,10 @@ class BCB9810Registry
 
 // @fnv 0x00cb9810
 // src: XBOX_PDB 0x00cb9810
-void BCB9810Registry::bhkFilteredCdBodyCollector_addCdBodyPair(void* pvOwner, BCB9810Node* pkNode)
+// pdb: bhkFilteredCdBodyCollector::addCdBodyPair | bhkFilteredCdBodyCollector.obj | retail, upstream name already matches, high
+// pdb params: arBodyA, arBodyB
+// pdb locals: bFound, tempMemContext, i
+void BCB9810Registry::bhkFilteredCdBodyCollector_addCdBodyPair(void* arBodyA, BCB9810Node* arBodyB)
 {
     BCB9810AllocTagScope kScope(0x10);
     bool bFound = false;
@@ -1031,14 +1064,14 @@ void BCB9810Registry::bhkFilteredCdBodyCollector_addCdBodyPair(void* pvOwner, BC
     {
         if (bFound)
             break;
-        BCB9810Node* pkRoot = pkNode;
+        BCB9810Node* pkRoot = arBodyB;
         while (pkRoot->m_pParentNode)
             pkRoot = pkRoot->m_pParentNode;
         if (pkRoot == m_pkEntryArray[i].m_pkTreeNode)
             bFound = true;
     }
     if (!bFound)
-        AppendTailPair(pvOwner, pkNode);
+        AppendTailPair(arBodyA, arBodyB);
 }
 
 struct CE4360Iter
@@ -1088,6 +1121,9 @@ void __cdecl hkaSkeletonMapper_mapPoseLocalSpace_00ce4330(CE4360Context* pkConte
 
 // @fnv 0x00ce4360
 // src: HAVOK_LIB 0x00ce4360
+// pdb: hkaSkeletonMapper::mapPose | hkaSkeletonMapper.obj | retail, object-file run extension, low
+// pdb params: poseAModelSpace, originalPoseBLocalSpace, poseBModelSpace, source
+// pdb locals: outputInitialized, assertBuf, ostr, numChainMappings, i, chainBones, currentRot, rotationQuaternion, currentDirection, desiredDirection
 void __cdecl hkaSkeletonMapper_mapPose(CE4360Context* pkContext, CE4360Iter* pkFrom, CE4360Iter* pkTo, int iValue)
 {
     if (pkContext->m_iMode == 0)
@@ -1176,7 +1212,7 @@ struct S
     virtual void v38();
     virtual void SetMode(int iMode);
     void bhkRigidBody_SetLinearVelocity_00561690(int);
-    void bhkRigidBody_SetAngularVelocity_005617c0(float* pf);
+    void bhkRigidBody_SetAngularVelocity_005617c0(float* arVel);
 };
 
 struct Cast_c9b
@@ -1204,7 +1240,7 @@ class Obj_c9b
     unsigned short m_usElementCount;
 };
 
-void __cdecl ApplyCollisionEffect(Obj_c9b* pkObj, float f);
+void __cdecl bhkBlendController_DoGetUpRecursive(Obj_c9b* apObject, float afTime);
 
 __forceinline bool IsNode_c9b(Obj_c9b* pkObj)
 {
@@ -1220,11 +1256,14 @@ __forceinline bool IsNode_c9b(Obj_c9b* pkObj)
 
 // @fnv 0x00c9bdf0
 // src: XBOX_PDB 0x00c9bdf0
-void __cdecl bhkBlendController_DoGetUp(Obj_c9b* pkObj, float f)
+// pdb: bhkBlendController::DoGetUp | bhkBlendController.obj | retail, upstream name already matches, high
+// pdb params: apObject, afTime
+// pdb locals: pbip, pnonAccum, pcol, pbody
+void __cdecl bhkBlendController_DoGetUp(Obj_c9b* apObject, float afTime)
 {
-    if (pkObj && IsNode_c9b(pkObj) && pkObj->m_usElementCount > 0)
+    if (apObject && IsNode_c9b(apObject) && apObject->m_usElementCount > 0)
     {
-        Obj_c9b* pkChild = pkObj->m_ppChildren[0];
+        Obj_c9b* pkChild = apObject->m_ppChildren[0];
         if (pkChild && IsNode_c9b(pkChild) && pkChild->m_usElementCount > 0)
         {
             Obj_c9b* pkGrand = pkChild->m_ppChildren[0];
@@ -1244,10 +1283,10 @@ void __cdecl bhkBlendController_DoGetUp(Obj_c9b* pkObj, float f)
             }
         }
     }
-    ApplyCollisionEffect(pkObj, f);
+    bhkBlendController_DoGetUpRecursive(apObject, afTime);
 }
 
-void __stdcall BSSimpleArray_bhkUtilFunctions_AVLevel_1024_CopyItems(char* dst, char* src, unsigned int count);
+void __stdcall BSSimpleArray_DetailedActorPathHandler_ActorAvoidanceData_1024__MoveItems(char* apDestAddr, char* apSrcAddr, unsigned int aiCount);
 class FUN_00c7f970_cls
 {
   public:
@@ -1264,6 +1303,9 @@ class FUN_00c7f970_cls
 
 // @fnv 0x00c7f970
 // src: COMMUNITY 0x00c7f970
+// pdb: BSSimpleArray<DetailedActorPathHandler::ActorAvoidanceData,1024>::_ReallocateBuffer | DetailedActorPathHandler.obj | retail, object-file run extension, low
+// pdb params: aiNewSize, aiCopyCount
+// pdb locals: pnewBuffer
 void FUN_00c7f970_cls::BSSimpleArray_bhkUtilFunctions_AVLevel_1024_ReallocateBuffer(unsigned int uiNew, unsigned int uiOld)
 {
     if (m_pData)
@@ -1275,7 +1317,7 @@ void FUN_00c7f970_cls::BSSimpleArray_bhkUtilFunctions_AVLevel_1024_ReallocateBuf
         else
         {
             char* pNew = Alloc(uiNew);
-            ((void(__thiscall*)(void*, char*, char*, unsigned int))BSSimpleArray_bhkUtilFunctions_AVLevel_1024_CopyItems)(this, pNew, m_pData, uiOld);
+            ((void(__thiscall*)(void*, char*, char*, unsigned int))BSSimpleArray_DetailedActorPathHandler_ActorAvoidanceData_1024__MoveItems)(this, pNew, m_pData, uiOld);
             Free(m_pData);
             m_pData = pNew;
         }
@@ -1313,6 +1355,7 @@ struct FUN_00c7bfd0
     FUN_00c7bfd0();
 };
 // @fnv 0x00c7bfd0
+// pdb: hkaSkeletonMapperUtils::Params::Params | bhkRagdollController.obj | debug, call graph, high
 FUN_00c7bfd0::FUN_00c7bfd0()
     : m_00(0), m_04(0), m_08(0), m_0c(0.0f), m_10(0.5235988f), m_40(0), m_44(0), m_48(0), m_4c(1.0f), m_50(1.0f)
 {}
@@ -1330,24 +1373,27 @@ struct FUN_00cb9650_Object
     virtual NiNode* vf0C();
 
     void* NiObjectNET_GetController(const void* typeInfo);
-    void NiObjectNET_RemoveController(int value);
+    void NiObjectNET_RemoveController(int pkControl);
 };
 
 extern const char DAT_012683f4[];
 
 // @fnv 0x00cb9650
 // src: XBOX_PDB 0x00cb9650
-void __cdecl bhkForceController_RemoveForce(FUN_00cb9650_Object* object)
+// pdb: bhkForceController::RemoveForce | bhkForceController.obj | retail, upstream name already matches, high
+// pdb params: apObject
+// pdb locals: pnode, pcon, I
+void __cdecl bhkForceController_RemoveForce(FUN_00cb9650_Object* apObject)
 {
-    if (object != 0)
+    if (apObject != 0)
     {
-        void* controller = object->NiObjectNET_GetController(DAT_012683f4);
+        void* controller = apObject->NiObjectNET_GetController(DAT_012683f4);
         if (controller != 0)
         {
-            object->NiObjectNET_RemoveController((int)controller);
+            apObject->NiObjectNET_RemoveController((int)controller);
         }
 
-        NiNode* node = object->vf0C();
+        NiNode* node = apObject->vf0C();
         if (node != 0)
         {
             for (unsigned int index = 0; index < node->m_kChildren.m_usSize; ++index)
@@ -1390,16 +1436,18 @@ struct RagController
     {
         return *reinterpret_cast<unsigned char*>(reinterpret_cast<char*>(this) + 0x180);
     }
-    void bhkRagdollController_SetLookIKActive(unsigned char enabled);
+    void bhkRagdollController_SetLookIKActive(unsigned char abActive);
 };
 // @fnv 0x00c75580
 // src: XBOX_PDB 0x00c75580
-void RagController::bhkRagdollController_SetLookIKActive(unsigned char enabled)
+// pdb: bhkRagdollController::SetLookIKActive | bhkRagdollController.obj | debug, upstream name already matches, high
+// pdb params: abActive
+void RagController::bhkRagdollController_SetLookIKActive(unsigned char abActive)
 {
     int state;
     if (controlFlag() == 0)
     {
-        if (activeFlag() != 0 && enabled != 0)
+        if (activeFlag() != 0 && abActive != 0)
         {
             state = 1;
         }
@@ -1413,7 +1461,7 @@ void RagController::bhkRagdollController_SetLookIKActive(unsigned char enabled)
         state = stateFlag();
     }
     stateFlag() = (unsigned char)state;
-    if (enabled == 0)
+    if (abActive == 0)
     {
         poseA() = DAT_010c71b0;
         poseB() = DAT_010c71b0;
@@ -1659,12 +1707,15 @@ struct Cls
     bool m_284;
     int m_288;
 
-    void bhkRagdollController_DoPoseMatching(void* a1, void* a2, bool* a3);
+    void bhkRagdollController_DoPoseMatching(void* arWorldFromModel, void* apRagdollDrivePoseLS, bool* arbUseDrivePose);
 };
 
 // @fnv 0x00c7ba50
 // src: COMMUNITY 0x00c7ba50
-void Cls::bhkRagdollController_DoPoseMatching(void* a1, void* a2, bool* a3)
+// pdb: bhkRagdollController::DoPoseMatching | bhkRagdollController.obj | retail, upstream name already matches, high
+// pdb params: arWorldFromModel, apRagdollDrivePoseLS, arbUseDrivePose
+// pdb locals: fmoveDist, ragdollWorldSpace, imatchIdx, pskel
+void Cls::bhkRagdollController_DoPoseMatching(void* arWorldFromModel, void* apRagdollDrivePoseLS, bool* arbUseDrivePose)
 {
     NiPoint3* wp = &m_058->world.m_Translate;
     float dx = m_pos.x - wp->x;
@@ -1677,9 +1728,9 @@ void Cls::bhkRagdollController_DoPoseMatching(void* a1, void* a2, bool* a3)
     {
         if (m_288 != -1)
         {
-            m_250->bhkPoseArray_CreatePoseForRagdoll(a2, m_048->inner, m_288);
+            m_250->bhkPoseArray_CreatePoseForRagdoll(apRagdollDrivePoseLS, m_048->inner, m_288);
             m_00c = 3;
-            *a3 = true;
+            *arbUseDrivePose = true;
             m_258 = m_288;
             m_288 = -1;
         }
@@ -1688,7 +1739,7 @@ void Cls::bhkRagdollController_DoPoseMatching(void* a1, void* a2, bool* a3)
             m_pos = *(const NiPoint3*)&m_058->world.m_Translate;
             InnerC* inner = m_048->inner;
             ScrapMarker marker(inner->count);
-            m_048->hkaRagdollInstance_getPoseModelSpace(marker.p, a1);
+            m_048->hkaRagdollInstance_getPoseModelSpace(marker.p, arWorldFromModel);
             int id = m_248->hkaPoseMatchingUtility_findBestCandidatePoseIndex(marker.p, &m_008);
             if (m_008 < DAT_011b02e4 && id != m_258)
             {
@@ -1696,21 +1747,21 @@ void Cls::bhkRagdollController_DoPoseMatching(void* a1, void* a2, bool* a3)
                 if (id != -1)
                 {
                     Obj250* o250 = m_250;
-                    o250->bhkPoseArray_CreatePoseForRagdoll(a2, inner, id);
+                    o250->bhkPoseArray_CreatePoseForRagdoll(apRagdollDrivePoseLS, inner, id);
                     m_00c = 3;
-                    *a3 = true;
+                    *arbUseDrivePose = true;
                 }
-                else if (!*a3)
+                else if (!*arbUseDrivePose)
                 {
                     m_00c = 0;
-                    *a3 = false;
+                    *arbUseDrivePose = false;
                     m_004 = true;
                 }
             }
-            else if (!*a3)
+            else if (!*arbUseDrivePose)
             {
                 m_00c = 0;
-                *a3 = false;
+                *arbUseDrivePose = false;
                 m_004 = true;
             }
         }
@@ -2247,7 +2298,10 @@ struct RagdollCtl
 
 // @fnv 0x00c7c150
 // src: XBOX_PDB 0x00c7c150
-void RagdollCtl::bhkRagdollController_DisableRagdollAnim(bool b)
+// pdb: bhkRagdollController::DisableRagdollAnim | bhkRagdollController.obj | retail, upstream name already matches, high
+// pdb params: abUpdateConstraints
+// pdb locals: inumBones, i, pcol, pobj, pblendCol
+void RagdollCtl::bhkRagdollController_DisableRagdollAnim(bool abUpdateConstraints)
 {
     if (active)
     {
@@ -2288,7 +2342,7 @@ void RagdollCtl::bhkRagdollController_DisableRagdollAnim(bool b)
         unk228 = 0;
         unk28f = false;
         unk294 = 0;
-        if (b)
+        if (abUpdateConstraints)
             ctrl48->Reattach();
         for (int j = 0; j < 0; ++j)
         {
@@ -2358,7 +2412,7 @@ struct S_Out
 };
 struct S_Inner
 {
-    int bhkWorldObject_GetAVObject(int arg);
+    int bhkWorldObject_GetAVObject(int aiKey);
 };
 struct S_Val
 {
@@ -2404,17 +2458,20 @@ inline S_Elem* GetPhantom(S_Obj* c)
 }
 // @fnv 0x00c7fa90
 // src: XBOX_PDB 0x00c7fa90
-int __cdecl bhkUtilFunctions_GetNiAVObject(S_Obj* p)
+// pdb: bhkUtilFunctions::GetNiAVObject | bhkUtilFunctions.obj | retail, upstream name already matches, high
+// pdb params: apCollidable
+// pdb locals: pav, prb, pcol, pph, pbp
+int __cdecl bhkUtilFunctions_GetNiAVObject(S_Obj* apCollidable)
 {
     int result = 0;
-    if (S_Elem* e = GetEntity(p))
+    if (S_Elem* e = GetEntity(apCollidable))
     {
         S_Out out;
         S_Val* v = *(S_Val**)bhkWorldObject_GetProperty(&out, e, &DAT_01267b70);
         if (v)
             result = v->unk08;
     }
-    else if (S_Elem* ph = GetPhantom(p))
+    else if (S_Elem* ph = GetPhantom(apCollidable))
     {
         S_Out out;
         S_Val* v = *(S_Val**)bhkWorldObject_GetProperty(&out, ph, &DAT_01267b70);
@@ -2498,11 +2555,12 @@ struct PoseState
     int unk24;
     bool ready;
     void hkaPose_syncModelSpace();
-    void ProcessEntries_00cda4c0();
+    void hkaPose_enforceSkeletonConstraintsModelSpace();
 };
 // @fnv 0x00cda4c0
-// src: GUESS 0x00cda4c0 (confidence: low)
-void PoseState::ProcessEntries_00cda4c0()
+// src: XBOX_RETAIL_PDB 0x00cda4c0
+// pdb: hkaPose::enforceSkeletonConstraintsModelSpace | hkaPose.obj | retail, object-file gap fill, high
+void PoseState::hkaPose_enforceSkeletonConstraintsModelSpace()
 {
     int n = model->count;
     hkaPose_syncModelSpace();
@@ -2565,6 +2623,7 @@ struct ShapeArrays
     ~ShapeArrays();
 };
 // @fnv 0x00c7c2b0
+// pdb: hkaSkeletonMapperUtils::Params::~Params | bhkRagdollController.obj | retail, object-file gap fill, high
 ShapeArrays::~ShapeArrays()
 {}
 
@@ -2704,12 +2763,14 @@ struct X48
 };
 struct MapStd
 {
-    void FUN_00e92760(char* key, void** out);
+    void FUN_00e92760(char* key, void** val);
     void FUN_00e91fd0(char* key);
 };
 extern MapStd DAT_011b02f0;
 extern MapStd DAT_011b0300;
 // @fnv 0x00c7d900
+// pdb: bhkRagdollController::~bhkRagdollController | bhkRagdollController.obj | retail, upstream name already matches, high
+// pdb locals: ifeet, I
 bhkRagdollController::~bhkRagdollController()
 {
     int n = m_22c.m_iElementCount;
@@ -2779,6 +2840,7 @@ struct S
 };
 // @fnv 0x00cda110
 // src: HAVOK_LIB 0x00cda110
+// pdb: hkaPose::setToReferencePose | hkaPose.obj | retail, upstream name already matches, high
 void __fastcall hkaPose_setToReferencePose(S* s)
 {
     int i;
@@ -2826,7 +2888,7 @@ struct KQuat
 {
     float w, x, y, z;
     __declspec(noalias) void ToRotationMatrix(KMatrix3& m) const;
-    __declspec(noalias) void FromRotationMatrix(const KMatrix3& m);
+    __declspec(noalias) void FromRotationMatrix(const KMatrix3& rot);
 };
 
 struct KUpdateData
@@ -2842,8 +2904,8 @@ struct KUpdateData
 struct KRigidBody
 {
     __declspec(noalias) bool IsActive();
-    __declspec(noalias) void GetPosition(KPoint3& p);
-    __declspec(noalias) void GetRotation(KQuat& q);
+    __declspec(noalias) void GetPosition(KPoint3& arPos);
+    __declspec(noalias) void GetRotation(KQuat& arRot);
 };
 
 struct KRagInfo
@@ -2941,17 +3003,20 @@ struct KNode : KObject
     }
 };
 
-__declspec(noalias) void* bhkBlendCollisionObject_GetFirstCollisionObject(void* node);
+__declspec(noalias) void* bhkBlendCollisionObject_GetFirstCollisionObject(void* apBip);
 
 // @fnv 0x00c821b0
 // src: XBOX_PDB 0x00c821b0
-void bhkBlendCollisionObject_SetBipTransform(KObject* root, KPoint3* outDelta, bool update)
+// pdb: bhkBlendCollisionObject::SetBipTransform | bhkBlendCollisionObject.obj | retail, upstream name already matches, high
+// pdb params: apObject, arDelta, abZeroZ
+// pdb locals: pnode, pbip, paccum, wtrans, bfullRagdoll, prb, ltrans, pbc, niq, UpdateData
+void bhkBlendCollisionObject_SetBipTransform(KObject* apObject, KPoint3* arDelta, bool abZeroZ)
 {
     bool weightless;
     bool fromNode;
-    if (!root)
+    if (!apObject)
         return;
-    KNode* node = root->GetAsNode();
+    KNode* node = apObject->GetAsNode();
     if (!node)
         return;
     KObject* c0 = node->childCount > 0 ? node->children[0] : 0;
@@ -2999,19 +3064,19 @@ void bhkBlendCollisionObject_SetBipTransform(KObject* root, KPoint3* outDelta, b
         }
 
         KTransform old = node->local;
-        if (update || !weightless)
+        if (abZeroZ || !weightless)
             t.trans.z = old.trans.z;
 
         KPoint3 pos = t.trans;
         if (!fromNode)
         {
-            *outDelta = pos;
-            outDelta->Sub(node->local.trans);
+            *arDelta = pos;
+            arDelta->Sub(node->local.trans);
         }
         node->local.trans = pos;
         if (weightless)
             node->local.rot = t.rot;
-        if (update)
+        if (abZeroZ)
         {
             node->UpdateWorldLoc();
             KUpdateData data;
@@ -3165,6 +3230,7 @@ class __declspec(novtable) FUN_00c7dc40 : public Base
     virtual ~FUN_00c7dc40();
 };
 // @fnv 0x00c7dc40
+// pdb: hkaSkeleton::~hkaSkeleton | bhkRagdollController.obj | retail, object-file gap fill, high
 FUN_00c7dc40::~FUN_00c7dc40()
 {}
 
@@ -3610,6 +3676,7 @@ struct RagdollAnimControllerView
 
 // @fnv 0x00c7a8d0
 // src: XBOX_PDB 0x00c7a8d0
+// pdb: bhkRagdollController::EnableRagdollAnim | bhkRagdollController.obj | retail, upstream name already matches, high
 int RagdollAnimControllerView::bhkRagdollController_EnableRagdollAnim()
 {
     if (b41 == 0 && p4C != 0)

@@ -8,6 +8,7 @@ class hkpCdPointCollector;
 class hkpSimpleClosestContactCollector;
 class ShapeSweepParameters;
 
+// pdb: class hkpIterativeLinearCastAgent, size 0xc, bases: hkpCollisionAgent, 0 members
 class hkpIterativeLinearCastAgent : public hkpCollisionAgent
 {
 public:
@@ -19,6 +20,6 @@ public:
 
     void ProcessEntries_00daf540(const hkpCdBody* bodyA, const hkpCdBody* bodyB,
                       const ShapeSweepParameters* input,
-                      hkpCdPointCollector* castCollector,
+                      hkpCdPointCollector* collector,
                       hkpCdPointCollector* startCollector);
 };

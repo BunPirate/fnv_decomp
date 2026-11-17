@@ -6,6 +6,7 @@ class BGSSaveGameBuffer;
 class BGSSaveFormBuffer;
 class TESForm;
 
+// pdb: class BGSLoadGameSubBuffer, size 0x4, 1 members
 class BGSLoadGameSubBuffer
 {
 public:
@@ -16,15 +17,15 @@ public:
 
     void SetBuffer(char* buffer);
     void ResetReadPosition();
-    void RestoreAnimation(TESForm* form);
-    void ReadAnimationState(TESForm* form);
-    void LoadHavokData(TESForm* form);
+    void RestoreAnimation(TESForm* apForm);
+    void LoadCharController(TESForm* apForm);
+    void LoadHavokData(TESForm* apForm);
     void LoadHavokData(void* form);
-    void SaveAnimation(TESForm* form);
-    void SaveFormState(TESForm* form);
+    void SaveAnimation(TESForm* apForm);
+    void SaveHavokData(TESForm* apForm);
     void SaveGame(BGSSaveGameBuffer* buffer);
-    void LoadGame(BGSLoadGameBuffer* buffer);
-    BGSLoadFormBuffer* CreateFormBuffer(TESForm* form);
+    void LoadGame(BGSLoadGameBuffer* apLoadGameBuffer);
+    BGSLoadFormBuffer* CreateLoadFormBuffer(TESForm* apForm);
     void RenderCopyData(BGSSaveFormBuffer* buffer);
     void DeleteBuffer();
 };

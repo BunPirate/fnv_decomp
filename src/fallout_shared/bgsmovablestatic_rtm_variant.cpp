@@ -28,6 +28,8 @@ void FNV_Warning(const char* fmt, ...);
 
 // @fnv 0x004fbb70
 // src: XBOX_PDB 0x004fbb70
+// pdb: BGSMovableStatic::InitItem | BGSMovableStatic.obj | retail, string-set bridge, high
+// pdb locals: itempint
 void TESObjectSTAT::BGSMovableStatic_InitItem()
 {
     if (GetInitialized())
@@ -43,12 +45,12 @@ void TESObjectSTAT::BGSMovableStatic_InitItem()
                                             ? (TESForm*)((char*)((BGSMovableStaticOwner*)((char*)this - 0x14)) + 0x14)
                                             : (TESForm*)0);
 
-    unsigned int soundID = (unsigned int)((BGSMovableStatic*)((char*)this - 0x14))->soundLoop;
+    unsigned int soundID = (unsigned int)((BGSMovableStatic*)((char*)this - 0x14))->pSoundLoop;
     if (soundID)
     {
         FixupFormID(&soundID, GetFile(-1));
-        ((BGSMovableStatic*)((char*)this - 0x14))->soundLoop = dynamic_cast<TESSound*>(LookupForm(soundID));
-        if (!((BGSMovableStatic*)((char*)this - 0x14))->soundLoop)
+        ((BGSMovableStatic*)((char*)this - 0x14))->pSoundLoop = dynamic_cast<TESSound*>(LookupForm(soundID));
+        if (!((BGSMovableStatic*)((char*)this - 0x14))->pSoundLoop)
             FNV_Warning("MASTERFILE: Could not find looping sound (%08X) for movable static '%s' (%08X).", soundID,
                         ((TESForm*)((char*)((BGSMovableStaticOwner*)((char*)this - 0x14)) + 0x14))->GetName(),
                         GetFormID());

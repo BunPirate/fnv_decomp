@@ -21,7 +21,7 @@ extern "C" void _mm_store_ss(float* p, LocalM128 a);
 struct S00e43f70_Vec
 {
     LocalM128 q;
-    void hkVector4_setRotatedDir(const void* a, const void* b);
+    void hkVector4_setRotatedDir(const void* quat, const void* direction);
 };
 
 struct S00e43f70_Obj
@@ -30,18 +30,21 @@ struct S00e43f70_Obj
     int unk04;
     float unk08;
     float unk0c;
-    void hkpVehicleDefaultSteering_calcMainSteeringAngle(int a0, char* a1, S00e43f70_Obj* a2, float* a3);
+    void hkpVehicleDefaultSteering_calcMainSteeringAngle(int deltaTime, char* vehicle, S00e43f70_Obj* filteredInfoOutput, float* steeringOutput);
 };
 
 // Stores a scaled product of two floats into a3, scaling it down when the dot product of two vectors exceeds the threshold in unk0c.
 // @fnv 0x00e43f70
 // src: HAVOK_SRC 0x00e43f70
-void S00e43f70_Obj::hkpVehicleDefaultSteering_calcMainSteeringAngle(int aiUnused, char* a1, S00e43f70_Obj* apOther, float* apResult)
+// pdb: hkpVehicleDefaultSteering::calcMainSteeringAngle | hkpVehicleDefaultSteering.obj | retail, upstream name already matches, high
+// pdb params: deltaTime, vehicle, filteredInfoOutput, steeringOutput
+// pdb locals: forward_ws
+void S00e43f70_Obj::hkpVehicleDefaultSteering_calcMainSteeringAngle(int deltaTime, char* vehicle, S00e43f70_Obj* filteredInfoOutput, float* steeringOutput)
 {
-    *apResult = apOther->unk08 * unk08;
+    *steeringOutput = filteredInfoOutput->unk08 * unk08;
     S00e43f70_Vec v;
-    v.hkVector4_setRotatedDir(*(char**)(a1 + 0x18) + 0xf0, *(char**)(a1 + 0x1c) + 0x40);
-    LocalM128 w = _mm_load_ps((const float*)(*(char**)(a1 + 0x18) + 0x1b0));
+    v.hkVector4_setRotatedDir(*(char**)(vehicle + 0x18) + 0xf0, *(char**)(vehicle + 0x1c) + 0x40);
+    LocalM128 w = _mm_load_ps((const float*)(*(char**)(vehicle + 0x18) + 0x1b0));
     LocalM128 p = _mm_mul_ps(w, v.q);
     LocalM128 s = _mm_add_ss(_mm_shuffle_ps(p, p, 0x55), p);
     LocalM128 vDot = _mm_add_ss(_mm_shuffle_ps(p, p, 0xaa), s);
@@ -50,7 +53,7 @@ void S00e43f70_Obj::hkpVehicleDefaultSteering_calcMainSteeringAngle(int aiUnused
     if (dot > unk0c)
     {
         dot = unk0c / dot;
-        *apResult = *apResult * dot * dot;
+        *steeringOutput = *steeringOutput * dot * dot;
     }
 }
 
@@ -77,19 +80,21 @@ class hkMaskedE440 : public hkBaseE440
     char* m_uiMask;
     int m_numMask;
 
-    void hkpVehicleDefaultSteering_calcSteering(float t, int a, int b, hkOutputE440* out);
+    void hkpVehicleDefaultSteering_calcSteering(float deltaTime, int vehicle, int filteredInfoOutput, hkOutputE440* steeringOutput);
 };
 
 // @fnv 0x00e44010
 // src: HAVOK_LIB 0x00e44010
-void hkMaskedE440::hkpVehicleDefaultSteering_calcSteering(float t, int a, int b, hkOutputE440* out)
+// pdb: hkpVehicleDefaultSteering::calcSteering | hkpVehicleDefaultSteering.obj | retail, upstream name already matches, high
+// pdb params: deltaTime, vehicle, filteredInfoOutput, steeringOutput
+void hkMaskedE440::hkpVehicleDefaultSteering_calcSteering(float deltaTime, int vehicle, int filteredInfoOutput, hkOutputE440* steeringOutput)
 {
-    vfn_10(t, a, b, out);
+    vfn_10(deltaTime, vehicle, filteredInfoOutput, steeringOutput);
     for (int i = 0; i < m_numMask; i++)
     {
         if (m_uiMask[i])
-            out->m_weights[i] = out->m_uiFilterValue;
+            steeringOutput->m_weights[i] = steeringOutput->m_uiFilterValue;
         else
-            out->m_weights[i] = 0.0f;
+            steeringOutput->m_weights[i] = 0.0f;
     }
 }

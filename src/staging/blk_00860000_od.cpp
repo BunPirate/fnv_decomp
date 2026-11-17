@@ -66,6 +66,7 @@ struct FUN_008640e0_class
 };
 // @fnv 0x008640e0
 // src: COMMUNITY 0x008640e0
+// pdb: NiTLargePrimitiveArray<unsigned int>::~NiTLargePrimitiveArray<unsigned int> | TESSaveLoadGame.obj | debug, object-file gap fill, medium
 void __thiscall FUN_008640e0_class::NiTLargePrimitiveArray_unsigned_int_Free()
 {
     DestroyAndFreeBuffer();
@@ -83,6 +84,7 @@ struct FUN_00865870_Class
 
 // @fnv 0x00865870
 // src: COMMUNITY 0x00865870
+// pdb: NiTMap<TESForm *,BGSLoadGameSubBuffer>::NewItem | BGSLoadGameSubBuffer.obj | debug, vtable slot, medium
 void __thiscall FUN_00865870_Class::NiTMap_TESForm_BGSLoadGameSubBuffer_NewItem()
 {
     ((FUN_00865900_Class*)((char*)this + 0xc))->CreateInstance();
@@ -178,6 +180,7 @@ struct FUN_00869a40_Class
 
 // @fnv 0x00869a40
 // src: GUESS 0x00869a40 (confidence: low)
+// pdb: NiTArray<TESObjectREFR *,NiTNewInterface<TESObjectREFR *> >::~NiTArray<TESObjectREFR *,NiTNewInterface<TESObjectREFR *> > | GarbageCollector.obj | debug, object-file gap fill, medium
 void FUN_00869a40_Class::UpdateFields_00869a40()
 {
     m_ppVirtualMethodTable = &DAT_010827f0;
@@ -194,6 +197,7 @@ struct FUN_00869b90_cls
 };
 // Sets the object's vtbl to DAT_01082800 and passes next to FUN_008696c0.
 // @fnv 0x00869b90
+// pdb: NiTArray<BipedAnim *,NiTNewInterface<BipedAnim *> >::~NiTArray<BipedAnim *,NiTNewInterface<BipedAnim *> > | GarbageCollector.obj | debug, object-file gap fill, medium
 void FUN_00869b90_cls::InitializeAndReleaseNext()
 {
     vtbl = (int)&DAT_01082800;
@@ -211,6 +215,8 @@ struct FUN_00869c60
 
 // Calls FUN_00869d40 with the two arguments, then sets vfn to point at DAT_01082808.
 // @fnv 0x00869c60
+// pdb: NiTObjectArray<Animation *>::NiTObjectArray<Animation *> | GarbageCollector.obj | debug, object-file run extension, low
+// pdb params: uiMaxSize, uiGrowBy
 FUN_00869c60::FUN_00869c60(unsigned int auiFirst, unsigned int auiSecond)
 {
     FUN_00869d40(auiFirst, auiSecond);
@@ -225,6 +231,7 @@ struct FUN_00869cc0_class
 
 // @fnv 0x00869cc0
 // src: COMMUNITY 0x00869cc0
+// pdb: NiTObjectArray<Animation *>::~NiTObjectArray<Animation *> | GarbageCollector.obj | debug, object-file gap fill, medium
 void FUN_00869cc0_class::NiTObjectArray_Animation_Free()
 {
     SetVirtualTable_00869ce0();
@@ -241,6 +248,7 @@ struct FUN_00869ce0_cls
 // Sets the vtable pointer to DAT_01082810 and calls FUN_008696c0 with field4.
 // @fnv 0x00869ce0
 // src: GUESS 0x00869ce0 (confidence: low)
+// pdb: NiTArray<Animation *,NiTNewInterface<Animation *> >::~NiTArray<Animation *,NiTNewInterface<Animation *> > | GarbageCollector.obj | debug, object-file gap fill, medium
 void FUN_00869ce0_cls::SetVirtualTable_00869ce0()
 {
     vtbl = (int)&DAT_01082810;
@@ -260,6 +268,7 @@ struct FUN_00869e30_class
 // Sets p to point at DAT_01082820 and calls FUN_004b0220 with f.
 // @fnv 0x00869e30
 // src: GUESS 0x00869e30 (confidence: low)
+// pdb: NiTArray<NiPointer<BSTempEffect>,NiTNewInterface<NiPointer<BSTempEffect> > >::~NiTArray<NiPointer<BSTempEffect>,NiTNewInterface<NiPointer<BSTempEffect> > > | GarbageCollector.obj | debug, object-file gap fill, medium
 void FUN_00869e30_class::UpdateState_00869e30()
 {
     p = &DAT_01082820;
@@ -271,6 +280,9 @@ struct FUN_0086c600_shell
     void SignalAtOffset();
 };
 // @fnv 0x0086c600
+// pdb: ReleaseSemaphore | synch.obj | retail, call graph (shared callers), low
+// pdb note: debug build links it to BSPackedTaskQueue::ThreadBeginInput
+// pdb params: hSemaphore, lReleaseCount, lpPreviousCount
 void FUN_0086c600_shell::SignalAtOffset()
 {
     ((CountingSemaphore*)((char*)this + 0x14))->Signal();
@@ -283,6 +295,7 @@ struct FUN_0086cdd0
 };
 
 // @fnv 0x0086cdd0
+// pdb: BSPackedTaskQueue::ThreadEndInput | Main.obj | debug, call graph (shared callers), high
 void FUN_0086cdd0::Wait()
 {
     ((CountingSemaphore*)((char*)this + 0x14))->Wait();
@@ -298,6 +311,7 @@ struct FUN_00876a00_Class
 
 // @fnv 0x00876a00
 // src: COMMUNITY 0x00876a00
+// pdb: ImageSpaceEffectDepthOfField::ReturnMaskTexture | Main.obj | debug, upstream name already matches, high
 void FUN_00876a00_Class::ImageSpaceEffectDepthOfField_ReturnMaskTexture()
 {
     ((ImageSpaceTexture*)((char*)this + 0x7c))->AddRenderedTexture();
@@ -366,6 +380,7 @@ struct BSTCommonMessageQueue
 };
 // Calls FUN_00877df0, installs the vtable pointer at offset 0 and clears the field at offset 4, then returns this.
 // @fnv 0x00877d80
+// pdb: BSScrapHeapQueueElem<BSPackedTask>::`scalar deleting destructor' | Main.obj | debug, object-file run extension, low
 void* __thiscall BSTCommonMessageQueue::Construct()
 {
     FUN_00877df0();
@@ -409,6 +424,7 @@ struct FUN_00878130_Class
 
 // Sets the int at offset 0x134 of this object to 0 and returns that value.
 // @fnv 0x00878130
+// pdb: IOManager::GetPostProcessingCount | MemoryLevelManager.obj | debug, object-file run extension, low
 int FUN_00878130_Class::ResetAndGetValue()
 {
     *(int*)((char*)this + 0x134) = 0;
@@ -428,6 +444,7 @@ struct FUN_0087a6f0_shell
 
 // @fnv 0x0087a6f0
 // src: COMMUNITY 0x0087a6f0
+// pdb: TaskQueueInterface::ThreadBeginSecondaryInput | TaskQueueInterface.obj | retail, upstream name already matches, high
 void* __thiscall FUN_0087a6f0_shell::TaskQueueInterface_ThreadBeginSecondaryInput()
 {
     return reinterpret_cast<FUN_0086c600_shell*>(reinterpret_cast<void**>(this)[1])->SignalAtOffset();
@@ -446,6 +463,7 @@ struct FUN_0087a710_shell
 };
 // @fnv 0x0087a710
 // src: COMMUNITY 0x0087a710
+// pdb: TaskQueueInterface::ThreadEndSecondaryInput | TaskQueueInterface.obj | retail, upstream name already matches, high
 void __thiscall FUN_0087a710_shell::TaskQueueInterface_ThreadEndSecondaryInput()
 {
     p->FUN_0086cdd0();
@@ -458,6 +476,7 @@ struct FUN_0087a770
 };
 
 // @fnv 0x0087a770
+// pdb: BSPackedTaskQueue::IsEmpty | TaskQueueInterface.obj | debug, object-file gap fill, medium
 void FUN_0087a770::DoWork()
 {
     IsEmpty();
@@ -467,15 +486,17 @@ extern int DAT_010840d0;
 struct FUN_0087d2c0_class
 {
     void* vtable;
-    void UpdateFields_0087d340(int a, int b);
+    void BSSimpleArray_NiPointer_NiNode_1024_dtor(int a, int b);
     FUN_0087d2c0_class* SetVirtualTableAndProcessState_0087d2c0();
 };
 // @fnv 0x0087d2c0
 // src: GUESS 0x0087d2c0 (confidence: low)
+// pdb: BSSimpleArray<ActorHavokSyncData,1024>::_Reallocate | TaskQueueInterface.obj | debug, object-file run extension, low
+// pdb params: apBuffer, aiNewSizeInItem
 FUN_0087d2c0_class* FUN_0087d2c0_class::SetVirtualTableAndProcessState_0087d2c0()
 {
     vtable = &DAT_010840d0;
-    UpdateFields_0087d340(0, 0);
+    BSSimpleArray_NiPointer_NiNode_1024_dtor(0, 0);
     return this;
 }
 
@@ -483,11 +504,14 @@ extern int DAT_010840d0;
 struct GlobalObject_00869f00
 {
     void Clear(bool);
-    void ResetVirtualTableAndClear_0087d320();
+    void TaskQueueInterface_QueueActorHavokSyncTask();
 };
 // @fnv 0x0087d320
-// src: GUESS 0x0087d320 (confidence: medium)
-void GlobalObject_00869f00::ResetVirtualTableAndClear_0087d320()
+// src: XBOX_RETAIL_PDB 0x0087d320
+// pdb: TaskQueueInterface::QueueActorHavokSyncTask | TaskQueueInterface.obj | retail, object-file gap fill, high
+// pdb params: apActor, apObj
+// pdb locals: iindex
+void GlobalObject_00869f00::TaskQueueInterface_QueueActorHavokSyncTask()
 {
     *reinterpret_cast<int*>(this) = (int)&DAT_010840d0;
     Clear(true);
@@ -498,12 +522,13 @@ extern int DAT_010840e4;
 struct Caller00822860
 {
     void BSSimpleArray_NiPointer_ObstacleUndoData_1024_InitialSetup(unsigned int, bool);
-    void* BSSimpleArray_NiPointer_NiNode_1024_BSSimpleArray_NiPointer_NiNode_1024();
+    void* BSScrapArray_NiPointer_NiAVObject_1024_dtor();
 };
 
 // @fnv 0x0087d420
-// src: COMMUNITY 0x0087d420
-void* Caller00822860::BSSimpleArray_NiPointer_NiNode_1024_BSSimpleArray_NiPointer_NiNode_1024()
+// src: XBOX_RETAIL_PDB 0x0087d420 (was COMMUNITY)
+// pdb: BSScrapArray<NiPointer<NiAVObject>,1024>::~BSScrapArray<NiPointer<NiAVObject>,1024> | TaskQueueInterface.obj | retail, object-file gap fill, high
+void* Caller00822860::BSScrapArray_NiPointer_NiAVObject_1024_dtor()
 {
     *(void**)(this) = (void*)&DAT_010840e4;
     BSSimpleArray_NiPointer_ObstacleUndoData_1024_InitialSetup(0, false);
@@ -527,17 +552,20 @@ void Arr3520::ResetVirtualTableAndRemoveAll()
     RemoveAll(true);
 }
 
+// pdb: class TaskQueueInterface, size 0x10 (here 0x1), 4 members
 struct TaskQueueInterface
 {
     void SetTaskFlagDWord(bool, unsigned int);
-    void NiAVObject_SetShadowReceiver(bool argument0);
+    void NiAVObject_SetShadowReceiver(bool abShadow);
 };
 
 // @fnv 0x0087e100
 // src: XBOX_PDB 0x0087e100
-void TaskQueueInterface::NiAVObject_SetShadowReceiver(bool abFlag)
+// pdb: NiAVObject::SetShadowReceiver | Actor.obj | debug, upstream name already matches, high
+// pdb params: abShadow
+void TaskQueueInterface::NiAVObject_SetShadowReceiver(bool abShadow)
 {
-    SetTaskFlagDWord(abFlag == 0, 0x800000);
+    SetTaskFlagDWord(abShadow == 0, 0x800000);
 }
 
 struct FUN_0087e920_class
@@ -547,6 +575,7 @@ struct FUN_0087e920_class
 
 // @fnv 0x0087e920
 // src: COMMUNITY 0x0087e920
+// pdb: BGSBodyPart::GetIKStartNodeName | Actor.obj | debug, object-file run extension, low
 bool FUN_0087e920_class::BGSBodyPart_IsIKBiped()
 {
     return ((const unsigned char*)this)[0x60] & 4;
@@ -559,6 +588,7 @@ struct FUN_0087e940_cls
 
 // @fnv 0x0087e940
 // src: COMMUNITY 0x0087e940
+// pdb: bhkCharacterController::GetShapePhantom | Actor.obj | debug, object-file run extension, low
 bool FUN_0087e940_cls::BGSBodyPart_DoesHeadtracking()
 {
     return reinterpret_cast<unsigned char*>(this)[0x60] & 0x20;
@@ -570,6 +600,8 @@ struct FUN_0087e960_Class
 };
 
 // @fnv 0x0087e960
+// pdb: bhkRagdollController::operator new | Actor.obj | debug, object-file run extension, low
+// pdb params: blocksize
 void FUN_0087e960_Class::SetByteAtOffset1B0(char value)
 {
     ((char*)this)[0x1b0] = value;
@@ -587,6 +619,7 @@ struct FUN_0087e980_class
 
 // @fnv 0x0087e980
 // src: COMMUNITY 0x0087e980
+// pdb: bhkRagdollController::QSkelDebugLines | Actor.obj | debug, object-file run extension, low
 unsigned int FUN_0087e980_class::bhkCharacterController_GetChrPhantom()
 {
     return reinterpret_cast<Flt*>(reinterpret_cast<char*>(this) + 0x594)->operator unsigned int();
@@ -616,6 +649,7 @@ struct FUN_0087f480_Class
 
 // @fnv 0x0087f480
 // src: COMMUNITY 0x0087f480
+// pdb: TESActorBaseData::GetEssential | Actor.obj | debug, upstream name already matches, high
 bool FUN_0087f480_Class::TESActorBaseData_GetEssential()
 {
     return ((ABD_005f92d0*)this)->GetFlag(2);
@@ -645,6 +679,7 @@ NiRenderer* __cdecl NiXenonRenderer_GetRenderer();
 // If FUN_0043c4b0 returns a renderer, calls its vfn_8c virtual method, then returns 0.
 // @fnv 0x0086a020
 // src: COMMUNITY 0x0086a020
+// pdb: SystemUtilityDialogIdleCallback | Main.obj | retail, upstream name already matches, high
 int __cdecl SystemUtilityDialogIdleCallback()
 {
     if (NiXenonRenderer_GetRenderer())
@@ -701,7 +736,7 @@ void* FUN_00863e30_struct::NiTMapBase_DFALL_NiTMapItem_unsigned_int_BSSimpleList
 extern "C" void __cdecl Deallocate(void*);
 struct FUN_008636a0
 {
-    void __thiscall Init();
+    void __thiscall NiTMapBase_NiTPointerAllocator_unsigned_int_unsigned_int_ChangeData_dtor();
 };
 struct FUN_00863f60_cls
 {
@@ -709,9 +744,10 @@ struct FUN_00863f60_cls
 };
 // Calls Init on this, then deallocates this if bit 0 of flags is set, and returns this.
 // @fnv 0x00863f60
+// pdb: NiTMapBase<NiTPointerAllocator<unsigned int>,unsigned int,ChangeData *>::`scalar deleting destructor' | TESSaveLoadGame.obj | retail, vtable slot, high
 void* __thiscall FUN_00863f60_cls::InitAndMaybeFree(unsigned int flags)
 {
-    ((FUN_008636a0*)this)->Init();
+    ((FUN_008636a0*)this)->NiTMapBase_NiTPointerAllocator_unsigned_int_unsigned_int_ChangeData_dtor();
     if (flags & 1)
         Deallocate(this);
     return this;
@@ -723,13 +759,14 @@ struct FUN_008637a0_class
 };
 struct FUN_00863f90_class
 {
-    void __thiscall ReleaseStorage_008637a0();
+    void __thiscall NiTMapBase_NiTPointerAllocator_unsigned_int_unsigned_int_BSSimpleList_unsigned_int_dtor();
     void* __thiscall FUN_00863f90(unsigned int flags);
 };
 // @fnv 0x00863f90
+// pdb: NiTMapBase<NiTPointerAllocator<unsigned int>,unsigned int,BSSimpleList<unsigned int> *>::`scalar deleting destructor' | TESSaveLoadGame.obj | retail, vtable slot, high
 void* __thiscall FUN_00863f90_class::FUN_00863f90(unsigned int flags)
 {
-    ReleaseStorage_008637a0();
+    NiTMapBase_NiTPointerAllocator_unsigned_int_unsigned_int_BSSimpleList_unsigned_int_dtor();
     if (flags & 1)
         Deallocate(this);
     return this;
@@ -738,14 +775,15 @@ void* __thiscall FUN_00863f90_class::FUN_00863f90(unsigned int flags)
 extern "C" void __cdecl Deallocate(void*);
 struct FUN_008638c0_Class
 {
-    void __thiscall ReleaseStorage_008638c0();
+    void __thiscall NiTMapBase_NiTPointerAllocator_unsigned_int_unsigned_int_BSSimpleList_ExteriorCellReferenceData_dtor();
     void* __thiscall FUN_00863fc0(unsigned int flags);
 };
 // Calls FUN_008638c0, then frees this via Deallocate when flags has bit 0 set, and returns this.
 // @fnv 0x00863fc0
+// pdb: NiTMapBase<NiTPointerAllocator<unsigned int>,unsigned int,BSSimpleList<ExteriorCellReferenceData *> *>::`scalar deleting destructor' | TESSaveLoadGame.obj | retail, vtable slot, high
 void* __thiscall FUN_008638c0_Class::FUN_00863fc0(unsigned int flags)
 {
-    ReleaseStorage_008638c0();
+    NiTMapBase_NiTPointerAllocator_unsigned_int_unsigned_int_BSSimpleList_ExteriorCellReferenceData_dtor();
     if (flags & 1)
         Deallocate(this);
     return this;
@@ -758,6 +796,7 @@ struct FUN_00863ff0_class
     void* __thiscall FUN_00863ff0(unsigned int flags);
 };
 // @fnv 0x00863ff0
+// pdb: NiTMapBase<NiTPointerAllocator<unsigned int>,unsigned int,void *>::`scalar deleting destructor' | TESSaveLoadGame.obj | retail, vtable slot, high
 void* __thiscall FUN_00863ff0_class::FUN_00863ff0(unsigned int flags)
 {
     FUN_008639c0();
@@ -772,6 +811,7 @@ struct FUN_00864020_Class
     void* __thiscall FUN_00864020(unsigned int flags);
 };
 // @fnv 0x00864020
+// pdb: NiTMapBase<NiTPointerAllocator<unsigned int>,unsigned char,BSSimpleList<LoadFormHeader *> *>::`scalar deleting destructor' | TESSaveLoadGame.obj | retail, vtable slot, high
 void* __thiscall FUN_00864020_Class::FUN_00864020(unsigned int flags)
 {
     // 0x00863d30 destroys the NiTMapBase specialization (vftable 0x01081f78), not NiTPointerMap.
@@ -793,6 +833,7 @@ struct FUN_00864050_class
 };
 
 // @fnv 0x00864050
+// pdb: NiTLargeArray<FormAndFlags *,NiTMallocInterface<FormAndFlags *> >::`scalar deleting destructor' | TESSaveLoadGame.obj | debug, vtable slot, medium
 void* __thiscall FUN_00864050_class::FUN_00864050(unsigned int flags)
 {
     reinterpret_cast<FUN_00863d60_obj*>(this)->ReleaseStorage_00863d60();
@@ -810,6 +851,7 @@ struct FUN_00864080_shell
     void* __thiscall FUN_00864080(unsigned int flags);
 };
 // @fnv 0x00864080
+// pdb: NiTLargePrimitiveArray<FormAndFlags *>::`scalar deleting destructor' | TESSaveLoadGame.obj | debug, vtable slot, medium
 void* __thiscall FUN_00864080_shell::FUN_00864080(unsigned int flags)
 {
     ((FUN_00857350_obj*)this)->ForwardCall_00857350();
@@ -825,6 +867,7 @@ struct FUN_008640b0_Class
 };
 // Calls Init on this, frees this when flags has bit 0 set, and returns this.
 // @fnv 0x008640b0
+// pdb: NiTMapBase<DFALL<NiTMapItem<unsigned int,BSSimpleList<ExpiredCellData *> *> >,unsigned int,BSSimpleList<ExpiredCellData *> *>::`scalar deleting destructor' | TESSaveLoadGame.obj | debug, vtable slot, medium
 void* __thiscall FUN_008640b0_Class::FUN_008640b0(unsigned int flags)
 {
     reinterpret_cast<FUN_00863f00*>(this)->Init();
@@ -838,6 +881,7 @@ struct FUN_00864130_Class
     void* __thiscall FUN_00864130(unsigned int flags);
 };
 // @fnv 0x00864130
+// pdb: NiTLargeArray<unsigned int,NiTMallocInterface<unsigned int> >::`scalar deleting destructor' | TESSaveLoadGame.obj | debug, vtable slot, medium
 void* __thiscall FUN_00864130_Class::FUN_00864130(unsigned int flags)
 {
     ((FUN_008640e0_class*)this)->DestroyAndFreeBuffer();
@@ -851,6 +895,7 @@ extern void* DAT_0126fac4;
 // If DAT_0126fac4 is set, calls its first virtual method with 1, then clears DAT_0126fac4.
 // @fnv 0x00867090
 // src: COMMUNITY 0x00867090
+// pdb: BGSMoviePlayer::Destroy | BGSMoviePlayer.obj | retail, upstream name already matches, high
 void __cdecl BGSMoviePlayer_Destroy()
 {
     void* p = DAT_0126fac4;
@@ -867,6 +912,7 @@ void __fastcall Menu_SetRenderedMenu(void*);
 void __fastcall ZeroSixInts(void*);
 // @fnv 0x008677d0
 // src: COMMUNITY 0x008677d0
+// pdb: Calendar::Calendar | calendar.obj | debug, upstream name already matches, high
 void* __fastcall Calendar_Calendar(void* p)
 {
     *(int*)p = 0;
@@ -912,6 +958,7 @@ struct FUN_00869a20_class
     void* FUN_00869a70(unsigned int flags);
 };
 // @fnv 0x00869a70
+// pdb: NiTArray<TESObjectREFR *,NiTNewInterface<TESObjectREFR *> >::`scalar deleting destructor' | GarbageCollector.obj | debug, vtable slot, medium
 void* FUN_00869a20_class::FUN_00869a70(unsigned int flags)
 {
     UpdateFields_00869a40();
@@ -929,6 +976,7 @@ struct GlobalObject_00869b10
 // Calls FUN_00869b70, then deallocates this when bit 0 of flags is set, and returns this.
 // @fnv 0x00869b40
 // src: COMMUNITY 0x00869b40
+// pdb: NiTObjectArray<BipedAnim *>::`scalar deleting destructor' | GarbageCollector.obj | debug, vtable slot, medium
 GlobalObject_00869b10* __thiscall GlobalObject_00869b10::NiTObjectArray_BipedAnim_Destroy(unsigned int flags)
 {
     NiTObjectArray_BipedAnim_Free();
@@ -948,6 +996,7 @@ struct GlobalObject_00869c60
 
 // @fnv 0x00869c90
 // src: COMMUNITY 0x00869c90
+// pdb: NiTObjectArray<Animation *>::`scalar deleting destructor' | GarbageCollector.obj | debug, vtable slot, medium
 GlobalObject_00869c60* GlobalObject_00869c60::NiTObjectArray_Animation_Destroy(unsigned int flags)
 {
     NiTObjectArray_Animation_Free();
@@ -968,6 +1017,7 @@ struct FUN_00869d10_cls
 };
 // Calls FUN_00869ce0, then deallocates this if bit 0 of flags is set, and returns this.
 // @fnv 0x00869d10
+// pdb: NiTArray<Animation *,NiTNewInterface<Animation *> >::`scalar deleting destructor' | GarbageCollector.obj | debug, vtable slot, medium
 FUN_00869d10_cls* __thiscall FUN_00869d10_cls::FUN_00869d10(unsigned int flags)
 {
     SetVirtualTable_00869ce0();
@@ -983,6 +1033,7 @@ struct FUN_00869e10_class
 };
 
 // @fnv 0x00869e60
+// pdb: NiTArray<NiPointer<BSTempEffect>,NiTNewInterface<NiPointer<BSTempEffect> > >::`scalar deleting destructor' | GarbageCollector.obj | debug, vtable slot, medium
 void* FUN_00869e10_class::FUN_00869e60(unsigned int flags)
 {
     UpdateState_00869e30();
@@ -1143,6 +1194,7 @@ void __cdecl SkyShader_SetSkyBrightness(float value)
 
 // Deletes the global MessageHandler instance if it exists and its byte at offset 4 is zero.
 // @fnv 0x0086cd80
+// pdb: MessageHandler::Close | Main.obj | debug, object-file run extension, low
 void __cdecl DestroyMessageHandler()
 {
     if (MessageHandler::pHandler && !((unsigned char*)MessageHandler::pHandler)[4])
@@ -1161,6 +1213,7 @@ extern int DAT_01204368;
 void __cdecl SettingT_RegSettingCollection_InitCollection();
 // @fnv 0x00877950
 // src: XBOX_PDB 0x00877950
+// pdb: SettingT<RegSettingCollection>::QCollection | Main.obj | debug, call graph, low
 int __cdecl SettingT_RegSettingCollection_QCollection()
 {
     SettingT_RegSettingCollection_InitCollection();
@@ -1175,6 +1228,7 @@ struct FUN_00877d50_Class
     void* __thiscall FUN_00877d50(unsigned int flags);
 };
 // @fnv 0x00877d50
+// pdb: BSTCommonScrapHeapMessageQueue<BSPackedTask>::`scalar deleting destructor' | Main.obj | retail, vtable slot, high
 void* __thiscall FUN_00877d50_Class::FUN_00877d50(unsigned int flags)
 {
     FUN_00877ac0();
@@ -1206,6 +1260,7 @@ struct GlobalObject_00877f10
 
 // Runs the destructor, then frees this object with Deallocate when flags has bit 0 set, and returns this.
 // @fnv 0x00877f90
+// pdb: SettingT<RegSettingCollection>::`scalar deleting destructor' | Main.obj | retail, vtable slot, high
 void* GlobalObject_00877f10::FUN_00877f90(unsigned int flags)
 {
     GlobalObject_00877f10::~GlobalObject_00877f10();
@@ -1294,6 +1349,7 @@ struct GlobalObject_0087d420
 };
 // Runs the destructor, frees this with Deallocate when flags has bit 0 set, and returns this.
 // @fnv 0x0087d450
+// pdb: BSSimpleArray<NiPointer<NiNode>,1024>::`scalar deleting destructor' | TaskQueueInterface.obj | retail, vtable slot, high
 GlobalObject_0087d420* __thiscall GlobalObject_0087d420::FUN_0087d450(unsigned int flags)
 {
     GlobalObject_0087d420::~GlobalObject_0087d420();
@@ -1314,6 +1370,8 @@ struct FUN_008660b0_shell
     void GrowBuffer();
 };
 // @fnv 0x008660b0
+// pdb: BGSSaveGameBuffer::ExpandBuffer | BGSSaveGameBuffer.obj | debug, call graph (shared callers), high
+// pdb locals: ioldBufferSize, poldBuffer
 void FUN_008660b0_shell::GrowBuffer()
 {
     int* old = data;
@@ -1399,6 +1457,8 @@ struct FUN_00869d40
     FUN_00869d40(unsigned int aiA, unsigned int aiB);
 };
 // @fnv 0x00869d40
+// pdb: BSSimpleArray<NavMesh *,1024>::BSSimpleArray<NavMesh *,1024> | GarbageCollector.obj | debug, object-file run extension, low
+// pdb params: aiReserveSize, aiInitialSize
 FUN_00869d40::FUN_00869d40(unsigned int aiA, unsigned int aiB)
 {
     vtbl = &DAT_01082810;
@@ -1456,6 +1516,8 @@ struct FUN_00867890_shell
 // Looks up six forms by id, adds the f3 global's value divided by 24 to the f4 global, stores it, resets f6 and calls FUN_00867a20.
 // @fnv 0x00867890
 // src: COMMUNITY 0x00867890
+// pdb: Calendar::InitGlobals | calendar.obj | retail, upstream name already matches, high
+// pdb locals: fhour, fdays
 void FUN_00867890_shell::Calendar_InitGlobals()
 {
     f0 = _ref_004839c0(0x35);
@@ -1524,6 +1586,7 @@ extern int DAT_01204368;
 // Allocates a FUN_008779f0 instance and stores it in DAT_01204368 if that global is currently null.
 // @fnv 0x00877960
 // src: XBOX_PDB 0x00877960
+// pdb: SettingT<RegSettingCollection>::InitCollection | Main.obj | debug, object-file run extension, low
 void SettingT_RegSettingCollection_InitCollection()
 {
     if (!DAT_01204368)
@@ -1541,6 +1604,8 @@ struct FUN_00877a80_Class : FUN_00877d80_Class
 };
 // Calls the base initializer, installs DAT_01082f04 as the vtable, stores a at offset 8, and sets offset 12 to 0 with offset 16 pointing to it.
 // @fnv 0x00877a80
+// pdb: BSTCommonScrapHeapMessageQueue<BSPackedTask>::BSTCommonScrapHeapMessageQueue<BSPackedTask> | Main.obj | debug, call graph, medium
+// pdb params: apScrapHeap
 int FUN_00877a80_Class::InitWithValue(int aiValue)
 {
     Construct();
@@ -1618,13 +1683,14 @@ struct FUN_0087d340_Class
 {
     virtual void vfn_00();
     virtual int vfn_04(unsigned int);
-    void ProcessEntries_0087d3d0(int, unsigned int);
-    void UpdateFields_0087d340(unsigned int requested, unsigned int savedSize);
+    void BSScrapArray_NiPointer_NiAVObject_1024_ctor(int, unsigned int);
+    void BSSimpleArray_NiPointer_NiNode_1024_dtor(unsigned int requested, unsigned int savedSize);
 };
 
 // @fnv 0x0087d340
-// src: GUESS 0x0087d340 (confidence: low)
-void FUN_0087d340_Class::UpdateFields_0087d340(unsigned int requested, unsigned int savedSize)
+// src: XBOX_RETAIL_PDB 0x0087d340
+// pdb: BSSimpleArray<NiPointer<NiNode>,1024>::~BSSimpleArray<NiPointer<NiNode>,1024> | TaskQueueInterface.obj | retail, object-file gap fill, high
+void FUN_0087d340_Class::BSSimpleArray_NiPointer_NiNode_1024_dtor(unsigned int requested, unsigned int savedSize)
 {
     *(int*)((char*)this + 4) = 0;
     *(int*)((char*)this + 8) = 0;
@@ -1640,7 +1706,7 @@ void FUN_0087d340_Class::UpdateFields_0087d340(unsigned int requested, unsigned 
     }
     if (savedSize > 0)
     {
-        ProcessEntries_0087d3d0(*(int*)((char*)this + 4), savedSize);
+        BSScrapArray_NiPointer_NiAVObject_1024_ctor(*(int*)((char*)this + 4), savedSize);
         *(int*)((char*)this + 8) = savedSize;
     }
 }
@@ -1922,6 +1988,9 @@ struct BSFadeNodeResult2 : public BSFadeNodeResult
 
 // @fnv 0x0086a050
 // src: COMMUNITY 0x0086a050
+// pdb: MaxAlphaCallback | Main.obj | debug, object-file run extension, low
+// pdb params: apNode
+// pdb locals: pref
 float __cdecl BSFadeNode_GetLinkedActorAlpha(BSFadeNode* node)
 {
     BSFadeNodeResult2* p = (BSFadeNodeResult2*)node->QUserData();
@@ -1940,6 +2009,7 @@ struct FUN_00863f30_shell
 
 // Calls FUN_008640e0, then deallocates this if flags has bit 0 set, and returns this.
 // @fnv 0x00863f30
+// pdb: NiTLargePrimitiveArray<unsigned int>::`scalar deleting destructor' | TESSaveLoadGame.obj | debug, vtable slot, medium
 void* __thiscall FUN_00863f30_shell::FUN_00863f30(unsigned int flags)
 {
     NiTLargePrimitiveArray_unsigned_int_Free();
@@ -1952,6 +2022,7 @@ void __cdecl FUN_00864100_Deallocate(void** p);
 
 // Sets the object's vtable pointer to DAT_01081fc8 and frees the buffer stored at offset 4 via FUN_00864100_Deallocate.
 // @fnv 0x00864100
+// pdb: NiTLargeArray<unsigned int,NiTMallocInterface<unsigned int> >::~NiTLargeArray<unsigned int,NiTMallocInterface<unsigned int> > | TESSaveLoadGame.obj | debug, object-file gap fill, medium
 void __thiscall FUN_008640e0_class::DestroyAndFreeBuffer()
 {
     *(int*)this = (int)&DAT_01081fc8;
@@ -1966,6 +2037,7 @@ struct FUN_00865840_class : NiTPointerMap<int, int>
 };
 // @fnv 0x00865840
 // src: GUESS 0x00865840 (confidence: low)
+// pdb: NiTMapBase<DFALL<NiTMapItem<TESForm *,BGSLoadGameSubBuffer> >,TESForm *,BGSLoadGameSubBuffer>::~NiTMapBase<DFALL<NiTMapItem<TESForm *,BGSLoadGameSubBuffer> >,TESForm *,BGSLoadGameSubBuffer> | BGSLoadGameSubBuffer.obj | debug, object-file run extension, low
 void FUN_00865840_class::UpdateFields_00865840()
 {
     *(void**)this = (void*)&DAT_010822a8;
@@ -1994,6 +2066,8 @@ struct FUN_00865890_Class
 
 // Constructs a CF845 with value 0, stores its value into param[2], then calls member_0x0c.FreeMemory(param).
 // @fnv 0x00865890
+// pdb: NiTMap<TESForm *,BGSLoadGameSubBuffer>::DeleteItem | BGSLoadGameSubBuffer.obj | debug, vtable slot, medium
+// pdb params: pkItem
 void FUN_00865890_Class::InitAndDispatch(int* piData)
 {
     CF845 local(0);
@@ -2011,6 +2085,7 @@ struct FUN_008658d0 : FUN_00865840_shell
     void* DeleteThis(unsigned int flags);
 };
 // @fnv 0x008658d0
+// pdb: NiTMapBase<DFALL<NiTMapItem<TESForm *,BGSLoadGameSubBuffer> >,TESForm *,BGSLoadGameSubBuffer>::`scalar deleting destructor' | BGSLoadGameSubBuffer.obj | retail, vtable slot, high
 void* FUN_008658d0::DeleteThis(unsigned int flags)
 {
     UpdateFields_00865840();
@@ -2047,7 +2122,7 @@ struct FUN_00865aa0_shell
 
 struct FUN_00853670_shell
 {
-    void BGSSaveLoadFormInfo_SetFormType(int value);
+    void BGSSaveLoadFormInfo_SetFormType(int aeFormType);
 };
 
 unsigned int __cdecl GetSizeTypeForSize(unsigned int value);
@@ -2063,6 +2138,9 @@ struct FUN_008665d0_class
 // Allocates a buffer sized from size, writes a flag and encoded size/value header, then copies size bytes from source into it.
 // @fnv 0x008665d0
 // src: COMMUNITY 0x008665d0
+// pdb: BGSUnloadedFormBuffer::Initialize | BGSUnloadedFormBuffer.obj | debug, object-file run extension, low
+// pdb params: apBuffer, aiBufferSize, aeFormType, acVersion
+// pdb locals: pbuffer, esizeType, isize, punloadedHeader, isizeTypeSize
 void FUN_008665d0_class::BGSUnloadedFormBuffer_Initialize(void* source, unsigned int size, int value, unsigned char flag)
 {
     unsigned int data4 = GetSizeTypeForSize(size);
@@ -2107,7 +2185,7 @@ struct FUN_00866690_Class
 
 extern void* DAT_011f6118;
 
-void __cdecl _FUN_00aa2020();
+void __cdecl NiMemManager__SDMInit();
 
 namespace std {
 struct StandardLibrarySingletonObject
@@ -2120,11 +2198,12 @@ template <class T> T& __cdecl _Immortalize();
 }
 
 // @fnv 0x00866690
+// pdb: MemoryManager::RegisterMemoryManager | AppMemory.obj | retail, object-file run extension, low
 void FUN_00866690_Class::InitializeGlobal()
 {
     DAT_011f6118 = new FUN_00aa21d0(new FUN_00aa2230);
 
-    _FUN_00aa2020();
+    NiMemManager__SDMInit();
 
     std::_Immortalize<std::StandardLibrarySingletonObject>().vfn_04(0, 0, 0);
 }
@@ -2165,6 +2244,7 @@ struct FUN_008699f0_class : public GlobalObject_008699c0
 // Runs the base destructor, frees this with Deallocate when flags has bit 0 set, and returns this.
 // @fnv 0x008699f0
 // src: COMMUNITY 0x008699f0
+// pdb: NiTObjectArray<TESObjectREFR *>::`scalar deleting destructor' | GarbageCollector.obj | debug, vtable slot, medium
 void* FUN_008699f0_class::NiTObjectArray_TESObjectREFR_Destroy(unsigned int flags)
 {
     this->GlobalObject_008699c0::~GlobalObject_008699c0();
@@ -2179,6 +2259,7 @@ struct FUN_00869bc0_Class : FUN_00869b90_cls
 };
 
 // @fnv 0x00869bc0
+// pdb: NiTArray<BipedAnim *,NiTNewInterface<BipedAnim *> >::`scalar deleting destructor' | GarbageCollector.obj | debug, vtable slot, medium
 void* FUN_00869bc0_Class::FUN_00869bc0(unsigned int flags)
 {
     InitializeAndReleaseNext();
@@ -2196,6 +2277,7 @@ struct GlobalObject_00869db0
 // Calls FUN_00869e10, then deallocates this when flags has bit 0 set, and returns this.
 // @fnv 0x00869de0
 // src: COMMUNITY 0x00869de0
+// pdb: NiTObjectArray<NiPointer<BSTempEffect> >::`scalar deleting destructor' | GarbageCollector.obj | debug, vtable slot, medium
 void* __thiscall GlobalObject_00869db0::NiTObjectArray_NiPointer_BSTempEffect_Destroy(unsigned int flags)
 {
     NiTObjectArray_NiPointer_BSTempEffect_Free();
@@ -2247,7 +2329,7 @@ struct RegionPointList
 
 struct SoundPlaybackManager
 {
-    static bool __cdecl ResolveSoundFile(char const*, char*, unsigned int*, void**);
+    static bool __cdecl ResolveSoundName(char const*, char*, unsigned int*, void**);
 };
 
 
@@ -2270,6 +2352,7 @@ struct FUN_0086ce40_class
 
 // Registers audio callbacks and a value on the BSAudio singleton, then calls FUN_0082f830.
 // @fnv 0x0086ce40
+// pdb: Main::Main_AudioInit | Main.obj | debug, call graph, low
 void FUN_0086ce40_class::InitAudioCallbacks()
 {
     BSWin32Audio_Create();
@@ -2278,7 +2361,7 @@ void FUN_0086ce40_class::InitAudioCallbacks()
         ->SetDistanceInsideAtMax(reinterpret_cast<unsigned int>(&GetSoundPathAndFlags));
 
     reinterpret_cast<TESRecipe*>(BSAudio::GetSingleton())
-        ->SetSkill(reinterpret_cast<int>(&SoundPlaybackManager::ResolveSoundFile));
+        ->SetSkill(reinterpret_cast<int>(&SoundPlaybackManager::ResolveSoundName));
 
     reinterpret_cast<TESRecipe*>(BSAudio::GetSingleton())->SetSkillLevel(reinterpret_cast<int>(&FindDialogueFile));
 
@@ -2311,6 +2394,8 @@ struct FUN_00872ea0 : FUN_00a69400
 };
 // Constructs the object by forwarding the NiVisibleArray pointer to the base constructor and setting the vtable pointer to DAT_01082ccc.
 // @fnv 0x00872ea0
+// pdb: BSFadeNodeCuller::BSFadeNodeCuller | Main.obj | debug, object-file run extension, low
+// pdb params: apVisSet
 FUN_00872ea0::FUN_00872ea0(NiVisibleArray* apVisibleArray) : FUN_00a69400(apVisibleArray)
 {
     m_vft = &DAT_01082ccc;
@@ -2326,6 +2411,7 @@ struct FUN_008779f0_class : FUN_0044f600_class
     FUN_008779f0_class();
 };
 // @fnv 0x008779f0
+// pdb: RegSettingCollection::RegSettingCollection | Main.obj | debug, object-file run extension, low
 FUN_008779f0_class::FUN_008779f0_class()
 {
     FUN_0044f700();
@@ -2338,6 +2424,7 @@ struct FUN_00877b40_Delete : FUN_00877b40
 };
 // Calls Init, deallocates this when flags has bit 0 set, and returns this.
 // @fnv 0x00877b80
+// pdb: BSTCommonMessageQueue<BSPackedTask>::`scalar deleting destructor' | Main.obj | debug, vtable slot, medium
 void* FUN_00877b40_Delete::FUN_00877b80(unsigned int flags)
 {
     Init();
@@ -2354,6 +2441,7 @@ struct FUN_00877bb0 : FUN_00877b40
 };
 // Calls SetVtable, frees this via Deallocate when flags has bit 0 set, and returns this.
 // @fnv 0x00877bb0
+// pdb: BSTMessageQueue<BSPackedTask>::`scalar deleting destructor' | Main.obj | retail, vtable slot, high
 void* FUN_00877bb0::DeleteThis(unsigned int flags)
 {
     SetVtable();
@@ -2402,6 +2490,7 @@ struct FUN_0087a790_class
 
 // @fnv 0x0087a790
 // src: COMMUNITY 0x0087a790
+// pdb: TaskQueueInterface::ProcessQueue | TaskQueueInterface.obj | retail, upstream name already matches, high
 void FUN_0087a790_class::TaskQueueInterface_ProcessQueue()
 {
     m_pTaskQueueProcessor = m_pSecondaryTaskProcessor;
@@ -2417,6 +2506,7 @@ struct BSScrapArray_NiPointer_NiAVObject_1024
 };
 // Runs the destructor and, when bit 0 of flags is set, deallocates this object; returns this.
 // @fnv 0x0087d290
+// pdb: BSScrapArray<NiPointer<NiAVObject>,1024>::`scalar deleting destructor' | TaskQueueInterface.obj | retail, vtable slot, high
 void* BSScrapArray_NiPointer_NiAVObject_1024::FUN_0087d290(unsigned int flags)
 {
     this->BSScrapArray_NiPointer_NiAVObject_1024::~BSScrapArray_NiPointer_NiAVObject_1024();
@@ -2433,6 +2523,7 @@ struct GlobalObject_0087d2c0
 };
 // Runs the destructor and, when bit 0 of flags is set, deallocates this, returning the pointer.
 // @fnv 0x0087d2f0
+// pdb: BSSimpleArray<ActorHavokSyncData,1024>::`scalar deleting destructor' | TaskQueueInterface.obj | retail, vtable slot, high
 GlobalObject_0087d2c0* GlobalObject_0087d2c0::FUN_0087d2f0(unsigned int flags)
 {
     this->GlobalObject_0087d2c0::~GlobalObject_0087d2c0();
@@ -2445,13 +2536,14 @@ extern void* __cdecl operator new(unsigned int, void*);
 
 struct FUN_0087d3d0_Class
 {
-    void ProcessEntries_0087d3d0(int a, unsigned int count);
+    void BSScrapArray_NiPointer_NiAVObject_1024_ctor(int a, unsigned int count);
 };
 
 // Calls operator new(8, ...) for each of count elements at successive 8-byte offsets from a.
 // @fnv 0x0087d3d0
-// src: GUESS 0x0087d3d0 (confidence: low)
-void FUN_0087d3d0_Class::ProcessEntries_0087d3d0(int aiBase, unsigned int count)
+// src: XBOX_RETAIL_PDB 0x0087d3d0
+// pdb: BSScrapArray<NiPointer<NiAVObject>,1024>::BSScrapArray<NiPointer<NiAVObject>,1024> | TaskQueueInterface.obj | retail, object-file gap fill, high
+void FUN_0087d3d0_Class::BSScrapArray_NiPointer_NiAVObject_1024_ctor(int aiBase, unsigned int count)
 {
     unsigned int i;
     void* p2;
@@ -2480,6 +2572,7 @@ struct FlagHelper
 };
 // @fnv 0x0087f4a0
 // src: XBOX_PDB 0x0087f4a0
+// pdb: Actor::GetRespawn | Actor.obj | debug, upstream name already matches, high
 bool __fastcall Actor_GetRespawn(Actor* actor)
 {
     return reinterpret_cast<FlagHelper*>(reinterpret_cast<char*>(actor->GetActorBase()) + 0x30)->GetFlag8();
@@ -2500,6 +2593,7 @@ class FUN_008657e0_cls : public MapDtorWrap_b9629
 
 // Destructor that clears all entries from the underlying NiTPointerMap before destruction.
 // @fnv 0x008657e0
+// pdb: NiTMap<TESForm *,BGSLoadGameSubBuffer>::~NiTMap<TESForm *,BGSLoadGameSubBuffer> | BGSLoadGameSubBuffer.obj | debug, object-file run extension, low
 FUN_008657e0_cls::~FUN_008657e0_cls()
 {
     reinterpret_cast<NiTPointerMap<int, int>*>(this)->RemoveAll();
@@ -2514,13 +2608,16 @@ struct FUN_00866140_cls
     int m_08;
     int m_0c;
     void Step();
-    void BGSSaveGameBuffer_ShiftBuffer(int a1, int a2);
+    void BGSSaveGameBuffer_ShiftBuffer(int aiPosition, int a2);
 };
 
 // Adds a2 to m_0c, calls Step while the total exceeds m_08, then emits four values unless DAT_011de134->FUN_00424940() is true, and stores the new total.
 // @fnv 0x00866140
 // src: XBOX_PDB 0x00866140
-void FUN_00866140_cls::BGSSaveGameBuffer_ShiftBuffer(int aiOffset, int aiAmount)
+// pdb: BGSSaveGameBuffer::ShiftBuffer | BGSSaveGameBuffer.obj | retail, upstream name already matches, high
+// pdb params: aiPosition, aiAmount
+// pdb locals: ishiftedPosition, idestSize, pdest, psource
+void FUN_00866140_cls::BGSSaveGameBuffer_ShiftBuffer(int aiPosition, int aiAmount)
 {
     int iNewTotal = m_0c + aiAmount;
     if (iNewTotal <= 0)
@@ -2533,10 +2630,10 @@ void FUN_00866140_cls::BGSSaveGameBuffer_ShiftBuffer(int aiOffset, int aiAmount)
     }
     if (!DAT_011de134->InterfaceManager_GetMenuMode())
     {
-        int lo_ = m_04 + aiOffset;
-        int hi = m_04 + aiOffset + aiAmount;
-        int rem3 = m_08 - (aiOffset + aiAmount);
-        Emit4(hi, rem3, lo_, m_0c - aiOffset);
+        int lo_ = m_04 + aiPosition;
+        int hi = m_04 + aiPosition + aiAmount;
+        int rem3 = m_08 - (aiPosition + aiAmount);
+        Emit4(hi, rem3, lo_, m_0c - aiPosition);
     }
     m_0c = iNewTotal;
 }
@@ -2554,6 +2651,8 @@ struct FUN_00866570_Class : public FUN_008665d0_class
 };
 // Calls the base initializer with four values obtained from the input object.
 // @fnv 0x00866570
+// pdb: BGSUnloadedFormBuffer::Initialize | BGSUnloadedFormBuffer.obj | debug, object-file run extension, low
+// pdb params: apSaveGameBuffer
 void FUN_00866570_Class::InitFromInput(FUN_00866570_Input* input)
 {
     BGSUnloadedFormBuffer_Initialize(input->FUN_00726070(), input->GetHavokWorldObjectCountInSceneGraph_0084e3a0(), input->GetFormType_008665b0(), input->FUN_008a81c0());
@@ -2602,7 +2701,7 @@ void FUN_00866de0_cls::CallElementAt(int aiIndex)
 struct ScopeGuardCtx
 {
     int m_unk00;
-    ScopeGuardCtx(unsigned int size, int flag, const char* file, int line);
+    ScopeGuardCtx(unsigned int memContext, int overridable, const char* file, int aiLine);
     ~ScopeGuardCtx();
 };
 
@@ -2639,6 +2738,8 @@ ScopeGuardCtx::~ScopeGuardCtx()
 
 // @fnv 0x00866ff0
 // src: COMMUNITY 0x00866ff0
+// pdb: BGSMoviePlayer::Create | BGSMoviePlayer.obj | retail, upstream name already matches, high
+// pdb locals: tempMemContext
 void __cdecl BGSMoviePlayer_Create()
 {
     ScopeGuardCtx ctx(0x14, 1, "D:\\_Fallout3\\Platforms\\Common\\Code\\Fallout\\Misc\\BGSMoviePlayer.cpp", 0x1c);
@@ -2826,6 +2927,8 @@ void __cdecl ResetSystemUtility();
 
 // Switches on mode; for mode 2 it runs a fixed sequence of renderer, manager, world and service calls, with the manager call repeated at the end.
 // @fnv 0x00869f30
+// pdb: SystemUtilityEventNotificationCallback | Main.obj | debug, object-file run extension, low
+// pdb params: aeEventNotification
 void __cdecl RunModeSwitch(int mode)
 {
     switch (mode)
@@ -3023,6 +3126,8 @@ class FUN_0086c620_cls : public B86C620Base
 
 // Constructs the object with the given owner and target, initializing the timer to start 0 with duration 100 and marking it not done.
 // @fnv 0x0086c620
+// pdb: BSPackedTaskQueue::BSPackedTaskQueue | Main.obj | debug, object-file gap fill, medium
+// pdb params: apScrapHeap, apUnpackFunc
 FUN_0086c620_cls::FUN_0086c620_cls(void* pvOwner, void* pvTarget)
     : B86C620Base(pvOwner), m_kTimer(0, 100), m_pvTarget(pvTarget), m_bDone(false)
 {}
@@ -3057,6 +3162,7 @@ class FUN_0086c6e0_cls : public FUN_0086c6e0_base
 };
 
 // @fnv 0x0086c6e0
+// pdb: BSPackedTaskQueue::~BSPackedTaskQueue | Main.obj | debug, call graph, low
 FUN_0086c6e0_cls::~FUN_0086c6e0_cls()
 {
     Tidy();
@@ -3077,6 +3183,8 @@ struct FadeNodeLocal_cls
 // Repeatedly calls vfn_10 with a 32-byte scratch buffer until it returns false.
 // @fnv 0x0086c750
 // src: GUESS 0x0086c750 (confidence: low)
+// pdb: BSPackedTaskQueue::Kill | Main.obj | debug, object-file run extension, low
+// pdb locals: task
 void FadeNodeLocal_cls::ForwardCall_0086c750()
 {
     char buffer[0x20];
@@ -3101,6 +3209,7 @@ extern FUN_0086cdf0_cls* DAT_011f35cc;
 
 // @fnv 0x0086cdf0
 // src: COMMUNITY 0x0086cdf0
+// pdb: Controls::DeleteInstance | Main.obj | debug, upstream name already matches, high
 void Controls_DeleteInstance()
 {
     if (DAT_011f35cc != 0)
@@ -3174,17 +3283,20 @@ struct FUN_00876a20_shell
     int unk8C;
     int unk90;
     FUN_00876a20_list unk94;
-    void TESMain_DrawWorld_ScreenSplatter(FUN_00876a20_arg* apArg);
+    void TESMain_DrawWorld_ScreenSplatter(FUN_00876a20_arg* apRenderer);
 };
 
 // Clears DAT_011a9604, passes FUN_00874690() to apArg, calls FUN_00b65ec0 on unk94's element, then restores the flag.
 // @fnv 0x00876a20
 // src: COMMUNITY 0x00876a20
-void FUN_00876a20_shell::TESMain_DrawWorld_ScreenSplatter(FUN_00876a20_arg* apArg)
+// pdb: Main::DrawWorld_ScreenSplatter | Main.obj | debug, call graph, high
+// pdb params: apRenderer
+// pdb locals: bsaveposadjust, tempAutoEvent
+void FUN_00876a20_shell::TESMain_DrawWorld_ScreenSplatter(FUN_00876a20_arg* apRenderer)
 {
     bool bOld = DAT_011a9604;
     DAT_011a9604 = false;
-    apArg->SetFromCamera(ScreenSplatter_GetCamera());
+    apRenderer->SetFromCamera(ScreenSplatter_GetCamera());
     unk94.Modelloader_GetReferencedThis()->BSShaderAccumulator_RenderScreenSplatter();
     DAT_011a9604 = bOld;
 }
@@ -3205,11 +3317,14 @@ class FUN_00877ac0_cls : public FUN_00877ac0_base
 {
   public:
     virtual ~FUN_00877ac0_cls();
-    bool FUN_00877ac0_step(FUN_00877ac0_iter& it);
+    bool FUN_00877ac0_step(FUN_00877ac0_iter& aMessage);
 };
 
 // Destructor that repeatedly calls FUN_00877ac0_step with a local iterator until it returns false.
 // @fnv 0x00877ac0
+// pdb: BSTCommonMessageQueue<BSPackedTask>::Push | Main.obj | debug, object-file run extension, low
+// pdb params: aMessage
+// pdb locals: bResult
 FUN_00877ac0_cls::~FUN_00877ac0_cls()
 {
     FUN_00877ac0_iter it;
@@ -3258,16 +3373,19 @@ class B877BE0Queue
     B877BE0Node* m_pkHead;
     B877BE0Node** m_ppkTail;
 
-    bool Push(const B877BE0Item& kItem);
+    bool Push(const B877BE0Item& aMessage);
 };
 
 // Allocates and constructs a node, copies kItem into it, appends the node to the tail of the queue, and returns true.
 // @fnv 0x00877be0
-bool B877BE0Queue::Push(const B877BE0Item& kItem)
+// pdb: BSTCommonScrapHeapMessageQueue<BSPackedTask>::DoTryPush | Main.obj | retail, vtable slot, high
+// pdb params: aMessage
+// pdb locals: pElem
+bool B877BE0Queue::Push(const B877BE0Item& aMessage)
 {
     B877BE0Node* pkNode = (B877BE0Node*)m_pkPool->Allocate(sizeof(B877BE0Node), g_uiB877BE0Alignment);
     new (pkNode) B877BE0Node;
-    pkNode->m_kItem = kItem;
+    pkNode->m_kItem = aMessage;
     if (!m_pkHead)
         m_ppkTail = &m_pkHead;
     *m_ppkTail = pkNode;
@@ -3294,7 +3412,7 @@ struct Cls877
     int m_04;
     Holder877* m_08;
     Node877* m_0c;
-    unsigned char __thiscall PopNode(void* dest);
+    unsigned char __thiscall PopNode(void* aMessage);
 };
 
 struct Block877
@@ -3303,13 +3421,16 @@ struct Block877
 };
 
 // @fnv 0x00877cc0
-unsigned char __thiscall Cls877::PopNode(void* dest)
+// pdb: BSTCommonScrapHeapMessageQueue<BSPackedTask>::DoTryPop | Main.obj | retail, vtable slot, high
+// pdb params: aMessage
+// pdb locals: pElem, bResult
+unsigned char __thiscall Cls877::PopNode(void* aMessage)
 {
     Node877* node = m_0c;
     unsigned char result;
     if (node != 0)
     {
-        *(Block877*)dest = *(Block877*)((char*)node + 4);
+        *(Block877*)aMessage = *(Block877*)((char*)node + 4);
         m_0c = node->next;
         node->FUN_007b3fa0(0);
         m_08->ScrapHeap_Deallocate(node);
@@ -3343,6 +3464,7 @@ struct FUN_00877db0_Class
 };
 
 // @fnv 0x00877db0
+// pdb: BSTCommonMessageQueue<BSPackedTask>::BSTCommonMessageQueue<BSPackedTask> | Main.obj | debug, object-file run extension, low
 FUN_00877db0_Class::FUN_00877db0_Class() : unk00(0), unk04()
 {}
 
@@ -3371,6 +3493,8 @@ class FUN_00877f10 : public FUN_00877f10_base
 
 // Constructs the base with a and b, then passes this to v1 on the object returned by FUN_00877950.
 // @fnv 0x00877f10
+// pdb: SettingT<RegSettingCollection>::SettingT<RegSettingCollection> | Main.obj | debug, object-file run extension, low
+// pdb params: apID, apString
 FUN_00877f10::FUN_00877f10(int a, int b) : FUN_00877f10_base(a, b)
 {
     reinterpret_cast<FUN_00877f10_obj*>(SettingT_RegSettingCollection_QCollection())->v1(this);
@@ -3401,6 +3525,7 @@ class FUN_00877fc0 : public FUN_00877fc0_base
 
 // Calls v2 on the object returned by FUN_00877950, passing this, as part of destruction.
 // @fnv 0x00877fc0
+// pdb: SettingT<RegSettingCollection>::~SettingT<RegSettingCollection> | Main.obj | debug, object-file run extension, low
 FUN_00877fc0::~FUN_00877fc0()
 {
     reinterpret_cast<FUN_00877fc0_obj*>(SettingT_RegSettingCollection_QCollection())->v2(this);
@@ -3427,6 +3552,7 @@ struct FUN_00878030_cls
 
 // @fnv 0x00878030
 // src: COMMUNITY 0x00878030
+// pdb: MemoryLevelManager::MemoryLevelManager | MemoryLevelManager.obj | debug, upstream name already matches, high
 FUN_00878030_cls* FUN_00878030_cls::MemoryLevelManager_MemoryLevelManager()
 {
     m_Sub14.Object_InitializeCriticalSection_Thunk();
@@ -3445,7 +3571,7 @@ struct StateControl
 };
 struct ManagedEntry
 {
-    void __thiscall RunStep();
+    void __thiscall MemoryManager_ProcessMemoryProblem();
 };
 void* __cdecl MemoryManager_Instance();
 ManagedEntry* __stdcall MemoryManager_Instance(int mode, unsigned int index, bool* enabled);
@@ -3457,11 +3583,14 @@ struct FUN_00878080_Class
     int unk0c;
     int unk10;
     StateControl control;
-    void __thiscall MemoryLevelManager_CheckMemoryLevel(int unused);
+    void __thiscall MemoryLevelManager_CheckMemoryLevel(int abInIdle);
 };
 // @fnv 0x00878080
 // src: COMMUNITY 0x00878080
-void FUN_00878080_Class::MemoryLevelManager_CheckMemoryLevel(int unused)
+// pdb: MemoryLevelManager::CheckMemoryLevel | MemoryLevelManager.obj | retail, upstream name already matches, high
+// pdb params: abInIdle
+// pdb locals: bdegradedtex, ilowmemvalue, bdefault, iminfree, ioutputfree, ptemp, freedata, iwantfree, bkeepdegrading, dignore, file, iignore, fTnumber, fMnumber, iactorcount, ipass, ilastfree, bignore, idiff, bfreed
+void FUN_00878080_Class::MemoryLevelManager_CheckMemoryLevel(int abInIdle)
 {
     if (!control.BSCriticalSection_TryLock())
         return;
@@ -3472,7 +3601,7 @@ void FUN_00878080_Class::MemoryLevelManager_CheckMemoryLevel(int unused)
             unsigned int index = 0;
             for (; index <= reinterpret_cast<FUN_00878110_Class*>(MemoryManager_Instance())->MemoryManager_GetMainThreadMemoryProblemPassSignal(); ++index)
             {
-                MemoryManager_Instance(0, index, &enabled)->RunStep();
+                MemoryManager_Instance(0, index, &enabled)->MemoryManager_ProcessMemoryProblem();
             }
         }
         reinterpret_cast<FUN_00878130_Class*>(MemoryManager_Instance())->ResetAndGetValue();
@@ -3538,6 +3667,7 @@ struct FUN_0087a730_cls
 // Returns true when unk00's FUN_0087a770 and GetField24 both return false, otherwise false.
 // @fnv 0x0087a730
 // src: XBOX_PDB 0x0087a730
+// pdb: TaskQueueInterface::QQueueFurtherTasks | TaskQueueInterface.obj | debug, upstream name already matches, high
 bool FUN_0087a730_cls::TaskQueueInterface_QQueueFurtherTasks()
 {
     if (!this->unk00->FUN_0087a770() && !this->unk00->GetField24())
@@ -3572,18 +3702,22 @@ struct EventMessage
 struct Receiver
 {
     void __thiscall FUN_0087d160(EventMessage* message);
-    void __thiscall SendEvent(EventSource* source, unsigned char first, unsigned char second, unsigned char third);
+    void __thiscall TaskQueueInterface_QueueHavokAdjustForceAddCount(EventSource* ap3D, unsigned char abIncrement, unsigned char abRecurse, unsigned char abForce);
 };
 // @fnv 0x0087b300
-void Receiver::SendEvent(EventSource* source, unsigned char first, unsigned char second, unsigned char third)
+// src: XBOX_RETAIL_PDB 0x0087b300
+// pdb: TaskQueueInterface::QueueHavokAdjustForceAddCount | TaskQueueInterface.obj | retail, object-file gap fill, high
+// pdb params: ap3D, abIncrement, abRecurse, abForce
+// pdb locals: task
+void Receiver::TaskQueueInterface_QueueHavokAdjustForceAddCount(EventSource* ap3D, unsigned char abIncrement, unsigned char abRecurse, unsigned char abForce)
 {
     EventMessage message;
     message.code = 49;
-    message.source = source;
-    message.payload.arguments.first.byte = first;
-    message.payload.arguments.second.byte = second;
-    message.payload.arguments.third.byte = third;
-    source->NiRefObject_IncRefCount();
+    message.source = ap3D;
+    message.payload.arguments.first.byte = abIncrement;
+    message.payload.arguments.second.byte = abRecurse;
+    message.payload.arguments.third.byte = abForce;
+    ap3D->NiRefObject_IncRefCount();
     FUN_0087d160(&message);
 }
 
@@ -3806,6 +3940,7 @@ class FUN_008670e0 : public Base867
 
 // Constructs the object and sets its enabled state from BSAudio::GetSingleton()->IsEnabled().
 // @fnv 0x008670e0
+// pdb: BGSMoviePlayer::BGSMoviePlayer | BGSMoviePlayer.obj | debug, call graph, medium
 FUN_008670e0::FUN_008670e0()
 {
     SetEnabled(BSAudio::GetSingleton()->IsEnabled());
@@ -3861,7 +3996,7 @@ struct FUN_00aa53f0
     FUN_00aa53f0();
     ~FUN_00aa53f0();
 };
-void FUN_0087b990();
+void TaskUnpackFunc();
 struct FUN_0086c620
 {
     int owner;
@@ -3993,8 +4128,10 @@ struct FUN_0086c160
     void InitAudioCallbacks();
 };
 // @fnv 0x0086c160
+// pdb: Main::Main | Main.obj | debug, object-file run extension, low
+// pdb locals: ptestfile, tempMemContext
 FUN_0086c160::FUN_0086c160(int aiArg1, int aiArg2)
-    : timer28(&list18, FUN_0087b990), timer60(&list50, FUN_0087b990), acc88(0), acc8c(0), acc90(0), acc94(0), acc98(0),
+    : timer28(&list18, TaskUnpackFunc), timer60(&list50, TaskUnpackFunc), acc88(0), acc8c(0), acc90(0), acc94(0), acc98(0),
       acca0(0)
 {
     b1 = false;
@@ -5917,6 +6054,8 @@ struct FUN_0086c880
     ~FUN_0086c880();
 };
 // @fnv 0x0086c880
+// pdb: Main::~Main | Main.obj | debug, object-file run extension, low
+// pdb locals: i
 FUN_0086c880::~FUN_0086c880()
 {
     ClearArchiveTables();
@@ -6035,6 +6174,7 @@ struct FUN_00872e00 : FUN_005d8b10
     virtual ~FUN_00872e00();
 };
 // @fnv 0x00872e00
+// pdb: HighActorCuller::HighActorCuller | Main.obj | debug, object-file run extension, low
 FUN_00872e00::FUN_00872e00() : m08(0), m98(0), m9c(0)
 {
     ma0.FUN_00633c90(0);
@@ -6054,16 +6194,20 @@ union Command
 struct ActorCommandSender
 {
     void __thiscall FUN_0087d160(Command*);
-    void __thiscall SendCommand22(unsigned int, unsigned int);
+    void __thiscall TaskQueueInterface_QueueRemoveWeapon(unsigned int, unsigned int);
 };
 // Builds a Command with operation 22 and the two arguments, then passes it to FUN_0087d160.
 // @fnv 0x0087b3b0
-void __thiscall ActorCommandSender::SendCommand22(unsigned int uiFirst, unsigned int uiSecond)
+// src: XBOX_RETAIL_PDB 0x0087b3b0
+// pdb: TaskQueueInterface::QueueRemoveWeapon | TaskQueueInterface.obj | retail, object-file gap fill, high
+// pdb params: apActor, apWeapon
+// pdb locals: task
+void __thiscall ActorCommandSender::TaskQueueInterface_QueueRemoveWeapon(unsigned int apActor, unsigned int apWeapon)
 {
     Command cmdRequest;
     cmdRequest.fields.operation = 22;
-    cmdRequest.fields.first = uiFirst;
-    cmdRequest.fields.second = uiSecond;
+    cmdRequest.fields.first = apActor;
+    cmdRequest.fields.second = apWeapon;
     FUN_0087d160(&cmdRequest);
 }
 
@@ -6159,82 +6303,84 @@ extern Manager DAT_011e0e80;
 // Initializes the actor: allocates process and controller, optionally registers it, sets default field values, resets state and runs update/init calls.
 // @fnv 0x0087d890
 // src: XBOX_PDB 0x0087d890
-void Actor::ConstructorInitialize(bool registerActor)
+// pdb: Actor::ConstructorInitialize | Actor.obj | retail, upstream name already matches, high
+// pdb params: abAddToProcessList
+void Actor::ConstructorInitialize(bool abAddToProcessList)
 {
     using namespace ActorInitialization;
     FUN_0046a010(1);
-    m_pBaseProcess = reinterpret_cast<BaseProcess*>(new ActorInitialization::Process);
-    if (registerActor)
+    pCurrentProcess = reinterpret_cast<BaseProcess*>(new ActorInitialization::Process);
+    if (abAddToProcessList)
     {
         if (AILinearTaskThreadManager_ShouldQueue3DTask())
             DAT_011e0e80.FUN_0096e870(this);
         else
             DAT_011e0e80.ProcessLists_AddReference(this, 3, 0, 0, 0);
     }
-    ActorConditionAndAnimationState = ActorInitialization::DAT_01012054;
-    m_uiValueBeforeBooleanFields = 0;
-    m_eLifeState = static_cast<ACTOR_LIFE_STATE>(0);
-    m_eCriticalStage = static_cast<ACTOR_CRITICAL_STAGE>(0);
-    m_bHasUpdated = 0;
-    m_eDialogueEmotion = static_cast<DIALOGUE_EMOTION>(8);
-    m_bFirstActorFlag = 1;
-    m_bActorFlag = 0;
-    ActorRagdollData = 0.0f;
-    ActorReferenceData = 0;
-    ActorStateFlags = 0;
-    m_pActorReference = 0;
-    m_pMobileObject = 0;
-    m_pActorBase = 0;
-    ActorReferenceListData = 1;
-    ActorBaseReference = 0;
-    IntegerFloatFlagSettings = 0.0f;
-    m_bFirstBehaviorFlag = 1;
-    ProcessReferenceState = FUN_00476b70(*DAT_011df810.Setting_Float_00403e20(), *DAT_011df828.Setting_Float_00403e20());
-    m_iActorStateValue = 0;
-    FormReferenceState = 0;
-    FormPositionData = 0.0f;
-    memcpy(&m_kFormPosition, &DAT_011f426c, sizeof(m_kFormPosition));
-    m_fFirstValueAfterFlag = 0.0f;
-    m_fSecondScalar = DAT_01017718;
-    m_bFirstFlagAfterForm = 0;
-    m_bFormFlag = 1;
-    m_eAnimationGroup = static_cast<ANIM_GROUP_ENUM>(255);
+    fLastUpdate = ActorInitialization::DAT_01012054;
+    iLastSeenTime = 0;
+    eLifeState = static_cast<ACTOR_LIFE_STATE>(0);
+    eCriticalStage = static_cast<ACTOR_CRITICAL_STAGE>(0);
+    bDeadFlag = 0;
+    ePersuasionEmotion = static_cast<DIALOGUE_EMOTION>(8);
+    bProcessMe = 1;
+    bMurderAlarm = 0;
+    fEmotionValue = 0.0f;
+    bForceSneak = 0;
+    bForceRun = 0;
+    pMyKiller = 0;
+    pDialogueItemTarget = 0;
+    pTemplateActorBase = 0;
+    bForceUpdateQuestTarget = 1;
+    bInWater = 0;
+    fHeadTrackTimer = 0.0f;
+    bWasInFrustum = 1;
+    fUpdateTargetTimer = FUN_00476b70(*DAT_011df810.Setting_Float_00403e20(), *DAT_011df828.Setting_Float_00403e20());
+    iVisFlags = 0;
+    pEditorLocForm = 0;
+    fEditorLocZRot = 0.0f;
+    memcpy(&EditorLocCoord, &DAT_011f426c, sizeof(EditorLocCoord));
+    fCheckMyDeadBodyTimer = 0.0f;
+    fDeadBodyAlarm = DAT_01017718;
+    bSetOnDeath = 0;
+    bContainerReset = 1;
+    eQueuedattack = static_cast<ANIM_GROUP_ENUM>(255);
     ResetState();
     Actor_ClearInCombat(0);
-    m_bSecondActorFlag = 0;
+    bSwimming = 0;
     m_pRagdollController = 0;
-    m_pRagdollPenetrationUtil = reinterpret_cast<bhkRagdollPenetrationUtil*>(new ActorInitialization::Controller);
-    FloatTripleBooleanFlagRecord = 0;
+    pPenetrationDetection = reinterpret_cast<bhkRagdollPenetrationUtil*>(new ActorInitialization::Controller);
+    bFootIKInRange = 0;
     ResetCachedGunSkill();
     ResetCachedWeaponCondition();
     Update();
     ResetRadiationResistanceMult();
-    m_iIntegerBeforeTwoFloatValues = 0;
-    BooleanIntegerTwoFloatData = 0.0f;
-    m_bMiddleFlag = 0;
-    reinterpret_cast<ActorInitialization::Package*>(&m_kSecondActorData)->ModifierList_SetZeroValuesAllowed(1);
-    ActorBaseConfiguration = 0;
-    m_bFlagBeforeActorBase = 0;
-    MobileObject::m_bThirdFlag = 0;
-    m_bFlagBeforeTwoBooleans = 0;
-    m_iPackageState = 0;
-    ActorProjectileState = 0;
-    m_bMiddleFlagBeforeActorMover = 0;
-    m_bFlagBeforeCurrentActor = 0;
-    m_pCurrentActor = 0;
-    m_pFirstActorArray = 0;
-    m_pSecondActorArray = 0;
-    m_eSitSleepState = static_cast<SIT_SLEEP_STATE>(0);
-    m_bMovementFlag = 0;
-    m_pData = 0;
-    m_bSecondOfTwoFlags = 1;
-    m_pPackage = 0;
-    ActorStatusData = 0;
-    m_bFlagAfterSitSleepState = 0;
-    m_pContinuousBeamProjectile = 0;
-    ActorSleepState = 0;
-    m_uiActorFlags = 0;
-    m_uiFirstValueAfterInteger = 0;
+    iActionValue = 0;
+    fTimeronAction = 0.0f;
+    bReloadTargetQueued = 0;
+    reinterpret_cast<ActorInitialization::Package*>(&pBaseValueOverrides)->ModifierList_SetZeroValuesAllowed(1);
+    bEVPBuffered = 0;
+    bResetAI = 0;
+    MobileObject::bIgnoreChangeAnimationCall = 0;
+    bBlockPostAnim = 0;
+    iEmotion = 0;
+    iEmotionValue = 0;
+    bPlayerTeammate = 0;
+    bSearchingInCombat = 0;
+    pCurrentCombatTarget = 0;
+    pCurrentCombatTargetArray = 0;
+    pCurrentCombatMemberArray = 0;
+    cCurrentSitSleepState = static_cast<SIT_SLEEP_STATE>(0);
+    bLightingUpdatedNonMoving = 0;
+    pLastHitData = 0;
+    bShouldRotateToTrack = 1;
+    pInitialPackage = 0;
+    bIgnoreCrime = 0;
+    bTurretBehavior = 0;
+    pContinuousBeamPersistant = 0;
+    bForceHitReaction = 0;
+    iMajorCrimes = 0;
+    iMinorCrimes = 0;
 }
 
 // Allocates a new array of unsigned int with a elements and returns it as an int.
@@ -6380,11 +6526,11 @@ class SSRenderer
 class SSImage
 {
   public:
-    SSImage(unsigned int uiWidth, unsigned int uiHeightRes, SSFormat* pkFormat, bool bA, bool bB);
+    SSImage(unsigned int uiWidth, unsigned int uiHeight, SSFormat* kFormat, bool uiMipmapLevels, bool uiFaces);
     virtual ~SSImage();
     static void* operator new(unsigned int uiSize);
     static void operator delete(void* pvMem);
-    unsigned int NiPixelData_GetWidth(int iA, int iB);
+    unsigned int NiPixelData_GetWidth(int uiMipmapLevel, int uiFace);
     unsigned int DetailedActorPathHandler_GetCurrentNodeIndex();
     unsigned char* NiPixelData_GetPixels(int iA, int iB);
     unsigned int unk04[28];
@@ -6398,7 +6544,7 @@ class SSFile
     unsigned int unk08;
     unsigned int unk0c;
     unsigned int unk10;
-    SSFile(const char* pcPath, int iMode, int iAccess, int iFlags);
+    SSFile(const char* apName, int aeAccessMode, int aeOpenMode, int abAllowAsync);
     ~SSFile();
     int Modelloader_GetReferencedThis();
     void SetAndReturnPointer(const void* pvData, unsigned __int64 uiSize, unsigned __int64* puiWritten);
@@ -6436,7 +6582,7 @@ extern Setting DAT_011df124;
 extern Setting DAT_011df0f8;
 
 SSRenderer* Renderer_GetNIRenderer();
-int FUN_00e7bd20(SSFormat* pkFormat);
+int FUN_00e7bd20(SSFormat* kDesc);
 void Warning_005b5e40(const char* pcFormat, ...);
 bool TESRenderer_GetMultiSampleEnabled();
 unsigned int Renderer_GetScreenWidth();
@@ -6573,6 +6719,7 @@ struct Factory_00865900
 
 // Allocates and returns a new FUN_00865980 object.
 // @fnv 0x00865900
+// pdb: DFALL<NiTMapItem<TESForm *,BGSLoadGameSubBuffer> >::Allocate | BGSLoadGameSubBuffer.obj | debug, object-file run extension, low
 FUN_00865980* Factory_00865900::CreateInstance()
 {
     return new FUN_00865980;
@@ -6597,6 +6744,8 @@ struct RefArrayOwner
 // Stores value at index, growing size if needed and adjusting used when the empty state of the slot changes.
 // @fnv 0x00869870
 // src: COMMUNITY 0x00869870
+// pdb: NiTArray<NiPointer<BSTempEffect>,NiTNewInterface<NiPointer<BSTempEffect> > >::SetAt | GarbageCollector.obj | debug, object-file run extension, low
+// pdb params: uiIndex, element
 void RefArrayOwner::NiTObjectArray_NiPointer_BSTempEffect_SetAt(unsigned int index, const ArraySmartRef& value)
 {
     static ArraySmartRef empty(0);
@@ -6819,9 +6968,9 @@ struct H
     void ProcessLists_ReferDestructorNullOut(void*);
     void ProcessLists_NullOutTargetRef(void*, int);
     void ProcessLists_NullOutActorInCrimeList(void*);
-    void FUN_0096f400(void*);
+    void RemoveActorFromTempChangeList(void*);
     void Actor_StopCombat(int);
-    void DeleteAllItems();
+    void Actor_DeleteCastPowers();
     void FUN_009370b0();
     void Actor_DestroyActorMover();
     void TESObjectREFR_Set3D(int, int);
@@ -6834,8 +6983,8 @@ struct H
     void* GetHavokWorldObjectCountInSceneGraph_0084e3a0();
     void RemoveEntry(void*);
     int FUN_0045cd60();
-    void FUN_008c30a0();
-    void DispelSummonEffects();
+    void Actor_UnloadPermanentMagic();
+    void Actor_CheckSummonedActor();
 };
 
 struct VObj
@@ -6930,7 +7079,7 @@ struct M_d0
     void* unk08;
     void* unk0C;
     ~M_d0();
-    void FUN_009370b0();
+    void DeleteAllModifiers();
 };
 struct M_e0
 {
@@ -6940,7 +7089,7 @@ struct M_e0
     void* unk0C;
     void* unk10;
     ~M_e0();
-    void FUN_009370b0();
+    void DeleteAllModifiers();
 };
 struct M_f4
 {
@@ -6991,6 +7140,8 @@ struct FUN_0087dcb0 : Base0, B88, B94
 
 // Deletes m_ac, m_b0, m_12c and m_130, then unless FUN_004077c0 is true runs a series of cleanup calls on this and global objects.
 // @fnv 0x0087dcb0
+// pdb: Actor::~Actor | Actor.obj | retail, call graph, high
+// pdb locals: handle, tempAutoEvent, paccum
 FUN_0087dcb0::~FUN_0087dcb0()
 {
     delete m_ac;
@@ -7035,19 +7186,19 @@ FUN_0087dcb0::~FUN_0087dcb0()
                         {
                             ((H*)p)->RemoveEntry(((H*)this)->GetHavokWorldObjectCountInSceneGraph_0084e3a0());
                         }
-                        ((H*)this)->FUN_008c30a0();
+                        ((H*)this)->Actor_UnloadPermanentMagic();
                     }
-                    ((H*)this)->DispelSummonEffects();
+                    ((H*)this)->Actor_CheckSummonedActor();
                 }
             }
-            ((H*)&DAT_011e0e80)->FUN_0096f400(this);
+            ((H*)&DAT_011e0e80)->RemoveActorFromTempChangeList(this);
             if (m_104)
             {
                 ((H*)this)->Actor_StopCombat(0);
             }
-            ((H*)this)->DeleteAllItems();
-            m_d0.FUN_009370b0();
-            m_e0.FUN_009370b0();
+            ((H*)this)->Actor_DeleteCastPowers();
+            m_d0.DeleteAllModifiers();
+            m_e0.DeleteAllModifiers();
             ((H*)this)->Actor_DestroyActorMover();
             ((H*)this)->TESObjectREFR_Set3D(0, 0);
         }

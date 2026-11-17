@@ -17,6 +17,7 @@ void TESObjectCONT::ResetFormData()
 }
 
 // @fnv 0x005160f0
+// pdb: TESObjectCONT::TESObjectCONT | TESObjectCONT.obj | retail, upstream name already matches, high
 TESObjectCONT::TESObjectCONT()
 {
     *reinterpret_cast<void**>(this) = &kVtbl_TESObjectCONT;
@@ -32,6 +33,8 @@ TESObjectCONT::TESObjectCONT()
 }
 
 // @fnv 0x00516370
+// pdb: TESObjectCONT::InitItem | TESObjectCONT.obj | retail, string-set bridge, high
+// pdb locals: itempint
 void TESObjectCONT::InitItem()
 {
     unsigned int soundFormID;
@@ -80,36 +83,39 @@ void TESObjectCONT::InitItem()
 
 // Reads a TESObjectCONT record: checks the form type, loads the record header, then dispatches each chunk to its loader until the chunk list ends.
 // @fnv 0x00516580
-bool TESObjectCONT::LoadForm(TESFile* file)
+// pdb: TESObjectCONT::Load | TESObjectCONT.obj | retail, vtable slot, high
+// pdb params: apFile
+// pdb locals: chunkid, formid, pMessage, isize, pdata, tempint, cfile, itempint
+bool TESObjectCONT::LoadForm(TESFile* apFile)
 {
     unsigned char formType;
     int chunkID;
 
-    formType = file->GetTESForm();
+    formType = apFile->GetTESForm();
     if (formType != 0x1B)
         return false;
 
-    LoadRecordHeader(file);
+    LoadRecordHeader(apFile);
     SetInitializationState(false);
 
-    while ((chunkID = file->GetChunkID()) != 0)
+    while ((chunkID = apFile->GetChunkID()) != 0)
     {
         switch (chunkID)
         {
         case 0x44494445: {
-            char* editorIDData = (char*)_alloca(file->GetChunkSize());
-            file->GetChunkData(editorIDData, 0x200);
+            char* editorIDData = (char*)_alloca(apFile->GetChunkSize());
+            apFile->GetChunkData(editorIDData, 0x200);
             SetEditorID_AtRuntime(editorIDData);
             break;
         }
 
         case 0x444E424F:
-            readOBNDSubRecord(file);
+            readOBNDSubRecord(apFile);
             break;
 
         case 0x4C4C5546:
             TESFullNameLoader::LoadFullNameChunk(
-                this ? reinterpret_cast<TESFullName*>(reinterpret_cast<unsigned char*>(this) + 0x3C) : 0, file);
+                this ? reinterpret_cast<TESFullName*>(reinterpret_cast<unsigned char*>(this) + 0x3C) : 0, apFile);
             break;
 
         case 0x4C444F4D:
@@ -117,22 +123,22 @@ bool TESObjectCONT::LoadForm(TESFile* file)
         case 0x44534F4D:
         case 0x54444F4D:
             TESModel::LoadModelData(
-                this ? reinterpret_cast<TESModel*>(reinterpret_cast<unsigned char*>(this) + 0x48) : 0, file);
+                this ? reinterpret_cast<TESModel*>(reinterpret_cast<unsigned char*>(this) + 0x48) : 0, apFile);
             break;
 
         case 0x53444F4D: {
-            unsigned int textureSwapSize = file->GetChunkSize();
+            unsigned int textureSwapSize = apFile->GetChunkSize();
             char* textureSwapData = (char*)_alloca(textureSwapSize);
-            file->GetChunkData(textureSwapData, textureSwapSize);
+            apFile->GetChunkData(textureSwapData, textureSwapSize);
             reinterpret_cast<TESModelTextureSwap*>(reinterpret_cast<unsigned char*>(this) + 0x48)
-                ->ParseTextureSwapData(textureSwapData, textureSwapSize,
-                                       reinterpret_cast<TESFileFormVersion*>(file)->GetFormVersion());
+                ->UnpackTextureSwapChunkData(textureSwapData, textureSwapSize,
+                                       reinterpret_cast<TESFileFormVersion*>(apFile)->GetFormVersion());
             break;
         }
 
         case 0x49524353: {
             unsigned int scriptFormID = 0;
-            file->GetChunkData(&scriptFormID);
+            apFile->GetChunkData(&scriptFormID);
             reinterpret_cast<CombatProcedure*>(reinterpret_cast<unsigned char*>(this) + 0x68)
                 ->Initialize(reinterpret_cast<CombatController*>(scriptFormID));
             reinterpret_cast<TESObjectCONT_TESScriptableInitCall*>(reinterpret_cast<unsigned char*>(this) + 0x68)
@@ -142,13 +148,13 @@ bool TESObjectCONT::LoadForm(TESFile* file)
 
         case 0x44454F43:
         case 0x4F544E43: {
-            switch (file->GetChunkID())
+            switch (apFile->GetChunkID())
             {
             case 0x4F544E43: {
                 CNTOChunkData cntoItem;
                 memset(&cntoItem, 0, 8);
-                file->GetChunkData(&cntoItem, 8);
-                if (file->IsEndianConversionRequired())
+                apFile->GetChunkData(&cntoItem, 8);
+                if (apFile->IsEndianConversionRequired())
                     cntoItem.TwoValues_Endian();
                 DAT_011c9348 = reinterpret_cast<ContainerItemExtraOwner*>(
                     reinterpret_cast<TESContainer*>(reinterpret_cast<unsigned char*>(this) + 0x30)
@@ -159,7 +165,7 @@ bool TESObjectCONT::LoadForm(TESFile* file)
                 if (DAT_011c9348)
                 {
                     DAT_011c9348->item = new ContainerItemExtra;
-                    DAT_011c9348->item->Load(file);
+                    DAT_011c9348->item->Load(apFile);
                     DAT_011c9348 = 0;
                 }
                 break;
@@ -168,38 +174,38 @@ bool TESObjectCONT::LoadForm(TESFile* file)
         }
 
         case 0x41544144:
-            ReadTypedData(file, &Data, 1);
+            ReadTypedData(apFile, &Data, 1);
             break;
 
         case 0x44545344:
         case 0x54534544:
             BGSDestructibleObjectForm::LoadDestructibleData(
                 this ? reinterpret_cast<BGSDestructibleObjectForm*>(reinterpret_cast<unsigned char*>(this) + 0x7C) : 0,
-                file);
+                apFile);
             break;
 
         case 0x4D414E53: {
             unsigned int snamFormID = 0;
-            file->GetChunkData(&snamFormID);
+            apFile->GetChunkData(&snamFormID);
             reinterpret_cast<EffectSetting*>(this)->SetAreaSound(reinterpret_cast<TESSound*>(snamFormID));
             break;
         }
 
         case 0x4D414E51: {
             unsigned int qnamFormID = 0;
-            file->GetChunkData(&qnamFormID);
+            apFile->GetChunkData(&qnamFormID);
             SetImpactDataSet_004fb0b0(qnamFormID);
             break;
         }
 
         case 0x4D414E52: {
             unsigned int rnamFormID = 0;
-            file->GetChunkData(&rnamFormID);
+            apFile->GetChunkData(&rnamFormID);
             reinterpret_cast<BGSTalkingActivator*>(this)->SetVoiceType(reinterpret_cast<BGSVoiceType*>(rnamFormID));
             break;
         }
         }
-        if (!file->NextChunk())
+        if (!apFile->NextChunk())
             break;
     }
 
@@ -216,6 +222,7 @@ struct S2
     void* DestroyIfFlagged(unsigned int);
 };
 // @fnv 0x00516210
+// pdb: TESObjectCONT::`scalar deleting destructor' | TESObjectCONT.obj | retail, vtable slot, high
 void* S2::DestroyIfFlagged(unsigned int flags)
 {
     ((S1*)this)->FUN_00516240();
@@ -237,6 +244,9 @@ struct FUN_00516b60_shell
     void CopyFromContainer(TESForm* apCopy);
 };
 // @fnv 0x00516b60
+// pdb: TESObjectCONT::Copy | TESObjectCONT.obj | retail, vtable slot, high
+// pdb params: apCopy
+// pdb locals: cont
 void FUN_00516b60_shell::CopyFromContainer(TESForm* apCopy)
 {
     TESObjectCONT* cont = dynamic_cast<TESObjectCONT*>(apCopy);
@@ -271,6 +281,9 @@ struct FUN_00516c10_shell
     bool IsNotMatchingContainer(TESForm* apCompare);
 };
 // @fnv 0x00516c10
+// pdb: TESObjectCONT::Compare | TESObjectCONT.obj | retail, vtable slot, high
+// pdb params: apCompare
+// pdb locals: pComp
 bool FUN_00516c10_shell::IsNotMatchingContainer(TESForm* apCompare)
 {
     TESObjectCONT* pComp = dynamic_cast<TESObjectCONT*>(apCompare);
@@ -296,7 +309,7 @@ struct FUN_00516a20_shell
 
 struct FUN_00481b40_shell
 {
-    void FUN_00481b40();
+    void TESContainer_Save();
 };
 
 struct FUN_004855a0
@@ -339,6 +352,8 @@ void _FUN_00485910(unsigned int, unsigned int);
 
 // @fnv 0x00516a20
 // src: COMMUNITY 0x00516a20
+// pdb: TESObjectCONT::Save | TESObjectCONT.obj | retail, vtable slot, high
+// pdb locals: itempint
 void FUN_00516a20_shell::TESObjectCONT_SaveAlt()
 {
     reinterpret_cast<FUN_004855a0*>(this)->M();
@@ -346,7 +361,7 @@ void FUN_00516a20_shell::TESObjectCONT_SaveAlt()
     reinterpret_cast<DoorPart3c*>(reinterpret_cast<char*>(this) + 0x48)
         ->ProcessAndFreeData(0x4c444f4d, 0x54444f4d, 0x53444f4d);
     reinterpret_cast<DoorPart5c*>(reinterpret_cast<char*>(this) + 0x68)->Save_0048cca0();
-    reinterpret_cast<FUN_00481b40_shell*>(reinterpret_cast<char*>(this) + 0x30)->FUN_00481b40();
+    reinterpret_cast<FUN_00481b40_shell*>(reinterpret_cast<char*>(this) + 0x30)->TESContainer_Save();
     reinterpret_cast<DoorPart68*>(reinterpret_cast<char*>(this) + 0x7c)->FUN_00477f20();
 
     if (_FUN_00401500())
@@ -483,5 +498,6 @@ class FUN_00516240 : public PrimaryBase_b4857,
 
 // Empty destructor for a class inheriting from multiple base classes.
 // @fnv 0x00516240
+// pdb: TESObjectCONT::~TESObjectCONT | TESObjectCONT.obj | debug, object-file run extension, low
 FUN_00516240::~FUN_00516240()
 {}

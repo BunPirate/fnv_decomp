@@ -11,6 +11,7 @@ struct FUN_00c6fd20_class
 };
 // @fnv 0x00c6fd20
 // src: XBOX_PDB 0x00c6fd20
+// pdb: bhkCharacterController::GetSupportBody | bhkCharacterController.obj | debug, upstream name already matches, high
 int FUN_00c6fd20_class::bhkCharacterController_GetSupportBody()
 {
     if (*reinterpret_cast<void**>(reinterpret_cast<char*>(this) + 0x60c))

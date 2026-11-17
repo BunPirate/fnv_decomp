@@ -67,6 +67,7 @@ enum hkpShapeType  // src: HAVOK_SRC (names)
 
 #include "hkEnum.h"
 
+// pdb: class hkpShape, size 0x10, bases: hkReferencedObject, 2 members
 class hkpShape : public hkReferencedObject
 {
 public:
@@ -109,6 +110,6 @@ public:
                               hkpRayHitCollector& collector) const;
     static void __cdecl resetShapeFunctions();
 
-    hkUlong m_ulUserData;
+    hkUlong m_userData; // src: XBOX_RETAIL_PDB +0x8 (old: m_ulUserData)
     hkEnum<hkpShapeType, hkUint32> m_type;
 };

@@ -81,42 +81,45 @@ struct SizePointer { unsigned int* value; SizePointer(unsigned int* p):value(p) 
 // Allocates a Block, links it into the block list, copies entries into records, and optionally creates a Group tracking size ranges.
 // @fnv 0x00d94ec0
 // src: HAVOK_LIB 0x00d94ec0
-static __declspec(noinline) void __cdecl createAndAppendNewTask(BlockList* blocks, Owner* owner, Group** groupHead, Block** blockTail,
-    Group** groupTail, Group** rangeBegin, Group** rangeEnd,
-    SizePointer firstSizeArg, unsigned int* secondSize, EntryListNode* entries,
-    void** currentState, void* state, unsigned short** count,
-    bool suppressHead, bool makeGroup, SpecialList* specials)
+// pdb: createAndAppendNewTask | hkpCpuIntegrateJob.obj | retail, upstream name already matches, high
+// pdb params: taskHeader, outBuildCollection, outSolveCollection, prevBuildTask, prevSolveTask, firstTaskOfPreviousBatch, firstTaskOfCurrentBatch, schemas, elemTemp, constraintsForThisTask, batchIndexOfLastTask, currentBatchIndex, ptrToBatchSize, putOnPpuOnlyBuildJacobianTaskList, generateSolveTasks, callbackConstraints
+// pdb locals: schemaStart, elemTempStart, assertBuf, ostr
+static __declspec(noinline) void __cdecl createAndAppendNewTask(BlockList* taskHeader, Owner* outBuildCollection, Group** outSolveCollection, Block** prevBuildTask,
+    Group** prevSolveTask, Group** firstTaskOfPreviousBatch, Group** firstTaskOfCurrentBatch,
+    SizePointer schemas, unsigned int* elemTemp, EntryListNode* constraintsForThisTask,
+    void** batchIndexOfLastTask, void* currentBatchIndex, unsigned short** ptrToBatchSize,
+    bool putOnPpuOnlyBuildJacobianTaskList, bool generateSolveTasks, SpecialList* callbackConstraints)
 {
-    unsigned int* firstSize = firstSizeArg.value;
+    unsigned int* firstSize = schemas.value;
     unsigned int firstOffset = *firstSize;
-    unsigned int secondOffset = *secondSize;
+    unsigned int secondOffset = *elemTemp;
     Block* block = new Block;
-    if (*blockTail == 0) {
-        if (!suppressHead) {
-            blocks->head = block;
-            blocks->count = 0;
+    if (*prevBuildTask == 0) {
+        if (!putOnPpuOnlyBuildJacobianTaskList) {
+            taskHeader->head = block;
+            taskHeader->count = 0;
         }
     } else {
-        (*blockTail)->next = block;
-        (*blockTail)->firstEnd = *firstSize;
+        (*prevBuildTask)->next = block;
+        (*prevBuildTask)->firstEnd = *firstSize;
     }
-    ++blocks->count;
-    block->owner = owner;
-    block->count = entries->count;
-    block->payload = owner->payload;
+    ++taskHeader->count;
+    block->owner = outBuildCollection;
+    block->count = constraintsForThisTask->count;
+    block->payload = outBuildCollection->payload;
     block->firstOffset = firstOffset;
-    int length = entries->count;
+    int length = constraintsForThisTask->count;
     for (int i = 0; i < length; ++i) {
         Record* record = &block->firstRecord + i;
-        Entry* entry = &entries->data[i];
+        Entry* entry = &constraintsForThisTask->data[i];
         Item* item = entry->item;
         if (item->flags & 0x0b) {
-            int n = specials->count;
-            specials->count = n + 1;
-            Special* special = &specials->data[n];
+            int n = callbackConstraints->count;
+            callbackConstraints->count = n + 1;
+            Special* special = &callbackConstraints->data[n];
             special->entry = *entry;
             special->record = record;
-            firstSize = *(unsigned int* volatile*)&firstSizeArg.value;
+            firstSize = *(unsigned int* volatile*)&schemas.value;
         }
         record->key = item->key;
         record->kind = item->kind;
@@ -130,41 +133,41 @@ static __declspec(noinline) void __cdecl createAndAppendNewTask(BlockList* block
         record->first = item->first + 0xf0;
         record->second = item->second + 0xf0;
         *firstSize += item->firstSize;
-        *secondSize += item->secondSize * 4;
+        *elemTemp += item->secondSize * 4;
     }
-    entries->count = 0;
+    constraintsForThisTask->count = 0;
     *firstSize += 0x10;
     block->firstEnd = *firstSize;
-    *secondSize = (*secondSize + 0xf) & ~0xf;
-    *blockTail = block;
-    if (makeGroup) {
+    *elemTemp = (*elemTemp + 0xf) & ~0xf;
+    *prevBuildTask = block;
+    if (generateSolveTasks) {
         Group* group = new Group;
-        if (*groupTail) (*groupTail)->next = group;
-        if (state != *currentState) {
-            if (!state) *groupHead = group;
-            *currentState = state;
-            if (*groupTail) {
-                Group* cursor = *rangeBegin;
-                unsigned short size = **count;
-                while (cursor && cursor != *rangeEnd) {
+        if (*prevSolveTask) (*prevSolveTask)->next = group;
+        if (currentBatchIndex != *batchIndexOfLastTask) {
+            if (!currentBatchIndex) *outSolveCollection = group;
+            *batchIndexOfLastTask = currentBatchIndex;
+            if (*prevSolveTask) {
+                Group* cursor = *firstTaskOfPreviousBatch;
+                unsigned short size = **ptrToBatchSize;
+                while (cursor && cursor != *firstTaskOfCurrentBatch) {
                     cursor->count = size;
-                    cursor->limit = *rangeEnd;
+                    cursor->limit = *firstTaskOfCurrentBatch;
                     cursor = cursor->next;
                 }
-                (*groupTail)->boundary = true;
-                *count = &(*groupTail)->count;
+                (*prevSolveTask)->boundary = true;
+                *ptrToBatchSize = &(*prevSolveTask)->count;
             }
-            *rangeBegin = *rangeEnd;
-            *rangeEnd = group;
+            *firstTaskOfPreviousBatch = *firstTaskOfCurrentBatch;
+            *firstTaskOfCurrentBatch = group;
         }
-        ++**count;
-        group->owner = owner;
-        group->payload = owner->payload;
+        ++**ptrToBatchSize;
+        group->owner = outBuildCollection;
+        group->payload = outBuildCollection->payload;
         group->firstOffset = firstOffset;
         group->secondOffset = secondOffset;
         group->firstLength = *firstSize - firstOffset;
-        group->secondLength = *secondSize - secondOffset;
-        *groupTail = group;
+        group->secondLength = *elemTemp - secondOffset;
+        *prevSolveTask = group;
     }
 }
 
@@ -614,8 +617,11 @@ static __forceinline void finalizeCounts(JobHeader* state) {
 
 // @fnv 0x00d95130
 // src: HAVOK_LIB 0x00d95130
-void createBuildJacobianAndSolveJacobianTaskCollection(SceneInput island, FlagByte coherent, JobHeader* header,
-    BuildCollection* builds, SolveCollection* solves)
+// pdb: createBuildJacobianAndSolveJacobianTaskCollection | hkpCpuIntegrateJob.obj | retail, upstream name already matches, high
+// pdb params: island, forceCoherentConstraintOrderingInSolver, taskHeader, outBuildCollection, outSolveCollection
+// pdb locals: bodiesEnd, ptrToBatchSize, prevSolveTask, firstTaskOfPreviousBatch, currentBatchIndex, entityGroup, normalPriorityConstraints, batchIndexOfLastTask, callbackConstraints, highPriorityConstraints, numBodies, firstTaskOfCurrentBatch, generateSolveTasks, pointerBuffer, entityPtrToIndex, assertBuf, ostr, info, il, sourceConstraints, nextConstraintLeftOut, fixedEntityGroup
+void createBuildJacobianAndSolveJacobianTaskCollection(SceneInput island, FlagByte forceCoherentConstraintOrderingInSolver, JobHeader* taskHeader,
+    BuildCollection* outBuildCollection, SolveCollection* outSolveCollection)
 {
     TaskArray<ProbeEntry,TempPolicy> normal((DelayInit())); TaskArray<ProbeEntry,TempPolicy> high((DelayInit()));
      FinalPhase finalPhase;
@@ -713,7 +719,7 @@ void createBuildJacobianAndSolveJacobianTaskCollection(SceneInput island, FlagBy
             stream.setEnd((char*)(event+1));
         }
     }
-    JobHeader* flagHeader=bytesCopy(header);
+    JobHeader* flagHeader=bytesCopy(taskHeader);
     flagHeader->m_kSecondTaskFlagByte = allNormal == 0;
     flagHeader->m_kFirstTaskFlagByte = bytesCopy(bool(flagHeader->m_kSecondTaskFlagByte));
     FlagByte makeSolve = !flagHeader->m_kFirstTaskFlagByte;
@@ -721,7 +727,7 @@ void createBuildJacobianAndSolveJacobianTaskCollection(SceneInput island, FlagBy
     int* temporary = flagHeader->m_pIntegerArrayAt40;
     int batch = -1;
     int lastBatch = -1;
-    unsigned short* batchSize = &solves->m_usTaskCount;
+    unsigned short* batchSize = &outSolveCollection->m_usTaskCount;
     *batchSize = 0;
     BuildTask* previousBuild = 0;
     SolveTask* previousSolve = 0;
@@ -747,18 +753,18 @@ void createBuildJacobianAndSolveJacobianTaskCollection(SceneInput island, FlagBy
                 int& a = entry.firstIndex == 0xffff ? fixedGroup : groups[entry.firstIndex];
                 int& b = entry.secondIndex == 0xffff ? fixedGroup : groups[entry.secondIndex];
                 if (pending.GetLogicalSize() == 144) {
-                    appendProbe<false>(header, builds, solves, previousBuild, previousSolve, priorBatch, thisBatch,
+                    appendProbe<false>(taskHeader, outBuildCollection, outSolveCollection, previousBuild, previousSolve, priorBatch, thisBatch,
                         schema, temporary, pending, lastBatch, batch, batchSize, ppuOnly, makeSolve, callbacks);
                     group += bool(makeSolve);
                 }
-                if (coherent && group > 1) {
+                if (forceCoherentConstraintOrderingInSolver && group > 1) {
                     for (; cursor < end; ++cursor) *deferred++ = *cursor;
                     break;
                 }
                 if ((a && a != group) || (b && b != group)) *deferred++ = *cursor;
                 else { pending.pushBackUnchecked(entry); a = group; b = group; }
             }
-            if (pending.GetLogicalSize()) appendProbe<true>(header, builds, solves, previousBuild, previousSolve, priorBatch,
+            if (pending.GetLogicalSize()) appendProbe<true>(taskHeader, outBuildCollection, outSolveCollection, previousBuild, previousSolve, priorBatch,
                 thisBatch, schema, temporary, pending, lastBatch, batch, batchSize, ppuOnly, makeSolve, callbacks);
             source->setSizeUnchecked(int(deferred - source->begin()));
         }
@@ -773,15 +779,15 @@ void createBuildJacobianAndSolveJacobianTaskCollection(SceneInput island, FlagBy
             walk = walk->m_next;
         }
         previousSolve->m_kSolveTaskFlagByte = true;
-        finalizeCounts(header);
+        finalizeCounts(taskHeader);
     }
-    builds->m_iEntryCapacity = 0;
-    builds->m_pInternalConstraint = 0;
+    outBuildCollection->m_iEntryCapacity = 0;
+    outBuildCollection->m_pInternalConstraint = 0;
     int callbackCount = callbacks.GetLogicalSize();
     if (callbackCount) {
         BuildCollection::ConstraintBuildTaskLink* result = taskHeapAllocate<BuildCollection::ConstraintBuildTaskLink>(callbackCount,3);
-        builds->m_iEntryCapacity = callbackCount;
-        builds->m_pInternalConstraint = result;
+        outBuildCollection->m_iEntryCapacity = callbackCount;
+        outBuildCollection->m_pInternalConstraint = result;
         for (int index = 0; index < callbackCount; ++index) {
             result[index].m_pInternalConstraint = callbacks[index].constraint;
             result[index].m_pBuildTaskEntry = callbacks[index].output;
@@ -961,13 +967,13 @@ struct __declspec(align(16)) QueueStorage : JobQueueEntry {
 
 struct Queue {
     int __thiscall FUN_00d05190(JobQueueEntry& cmd, int waitMode);
-    void __thiscall hkJobQueue_addJob(JobQueueEntry& cmd, int priority);
-    void __thiscall hkJobQueue_finishJob(const JobQueueEntry* cmd, int flag);
-    void* __thiscall hkJobQueue_lockQueue(void* storage);
-    void __thiscall FUN_00d04b00(void* token, const PacketBase& cmd, int priority);
-    void __thiscall hkJobQueue_unlockQueue(void* token);
-    int __thiscall hkJobQueue_finishAddAndGetNextJob(int kind, int priority, JobQueueEntry& next, int waitMode);
-    int __thiscall ProcessCallback(const PacketBase* prev, JobQueueEntry& next, int waitMode);
+    void __thiscall hkJobQueue_addJob(JobQueueEntry& job, int priority);
+    void __thiscall hkJobQueue_finishJob(const JobQueueEntry* oldJob, int flag);
+    void* __thiscall hkJobQueue_lockQueue(void* dynamicDataStorage);
+    void __thiscall hkJobQueue_addJobQueueLocked(void* data, const PacketBase& job, int priority);
+    void __thiscall hkJobQueue_unlockQueue(void* dynamicDataStorage);
+    int __thiscall hkJobQueue_finishAddAndGetNextJob(int oldJobType, int priority, JobQueueEntry& next, int waitMode);
+    int __thiscall ProcessCallback(const PacketBase* oldJob, JobQueueEntry& jobOut, int waitStatus);
 };
 
 struct QueryStepBase {
@@ -1189,18 +1195,18 @@ struct AccumulatorsPacket : DynamicsPacket {
 };
 
 extern int __cdecl hkMemoryRouter_UpdateState_00d889f0(SceneIsland& island);
-extern int __cdecl hkRigidMotionUtilApplyForcesAndStep(const SolverParams& solver, const StepTiming& timing, const AccelVec& accel, void* const* entities, int numEntities, int offset);
-extern void __cdecl hkpEntityAabbUtil_entityBatchRecalcAabb(const void* input, void* const* entities, int numEntities);
+extern int __cdecl hkRigidMotionUtilApplyForcesAndStep(const SolverParams& solverInfo, const StepTiming& timing, const AccelVec& deltaVel, void* const* entities, int numMotions, int motionOffset);
+extern void __cdecl hkpEntityAabbUtil_entityBatchRecalcAabb(const void* collisionInput, void* const* entityBatch, int numEntities);
 extern int __cdecl hkpConstraintSolverSetup_solve(const StepTiming& timing, const SolverParams& solver, ConstraintQueryIn& queryIn, SceneIsland& island, void* buffer, int bufferSize, void* const* entities, int numEntities);
 extern void __cdecl FUN_00d942f0(SceneIsland* island, TaskArray<void*>& splitIslands);
-extern int __cdecl Object_ProcessAndReturnValue_00d883c0(const SceneIsland& island, char* buffer, int bufferSize, JobHeader& header);
+extern int __cdecl hkpConstraintSolverSetup_calcBufferOffsetsForSolve(const SceneIsland& island, char* buffer, int bufferSize, JobHeader& header);
 
 // src: HAVOK_LIB 0x00d95130
-__declspec(noinline) void __cdecl createBuildJacobianAndSolveJacobianTaskCollection(SceneIsland* island, FlagByte onSpu, JobHeader* header, BuildCollection* builds, SolveCollection* solves)
+__declspec(noinline) void __cdecl createBuildJacobianAndSolveJacobianTaskCollection(SceneIsland* island, FlagByte forceCoherentConstraintOrderingInSolver, JobHeader* taskHeader, BuildCollection* outBuildCollection, SolveCollection* outSolveCollection)
 {
-    builds->numBuildTasks = island->numConstraints;
-    builds->buildTasks = header->buffer;
-    solves->numSolveTasks = onSpu ? 1 : 2;
+    outBuildCollection->numBuildTasks = island->numConstraints;
+    outBuildCollection->buildTasks = taskHeader->buffer;
+    outSolveCollection->numSolveTasks = forceCoherentConstraintOrderingInSolver ? 1 : 2;
 }
 
 __forceinline int estimateIslandSize(int numEntities, int numConstraints) { return maxVal(numEntities, numConstraints); }
@@ -1208,7 +1214,10 @@ __forceinline bool checkIslandSparse(Settings* world, int size) { return size < 
 
 // @fnv 0x00d95cf0
 // src: COMMUNITY 0x00d95cf0
-int __cdecl integrateJob(TaskOwner& owner, Queue& queue, JobQueueEntry& nextJobOut)
+// pdb: integrateJob | hkpCpuIntegrateJob.obj | retail, string-set bridge, high
+// pdb params: tl, jobQueue, nextJobOut
+// pdb locals: nextJob, jEntry, k, assertBuf, ostr, dynamicDataStorage, splitJob, in, outBuildCollection, fjob, outSolveCollection
+int __cdecl integrateJob(TaskOwner& tl, Queue& jobQueue, JobQueueEntry& nextJobOut)
 {
     const DynamicsPacket& currentJob = reinterpret_cast<DynamicsPacket&>(nextJobOut);
     SceneIsland* island = currentJob.island;
@@ -1226,15 +1235,15 @@ int __cdecl integrateJob(TaskOwner& owner, Queue& queue, JobQueueEntry& nextJobO
             JobQueueEntry retryJob;
             int prevThread = DAT_012687c8.get();
             DAT_012687c8.set(1);
-            int status = queue.FUN_00d05190(retryJob, 1);
+            int status = jobQueue.FUN_00d05190(retryJob, 1);
             DAT_012687c8.set(prevThread);
             if (status == 0)
             {
-                queue.hkJobQueue_addJob(nextJobOut, 1);
+                jobQueue.hkJobQueue_addJob(nextJobOut, 1);
                 JobQueueEntry stopJob;
                 stopJob.kind = PACKET_DYNAMICS;
                 stopJob.subType = 16;
-                queue.hkJobQueue_finishJob(&stopJob, 0);
+                jobQueue.hkJobQueue_finishJob(&stopJob, 0);
                 nextJobOut = retryJob;
                 return 0;
             }
@@ -1267,8 +1276,8 @@ int __cdecl integrateJob(TaskOwner& owner, Queue& queue, JobQueueEntry& nextJobO
         }
     }
 
-    Context& stepCtx = owner.settings->context;
-    if (!owner.settings->skipObservers)
+    Context& stepCtx = tl.settings->context;
+    if (!tl.settings->skipObservers)
     {
         const TaskArrayBase<Observer*>& observers = island->observers;
         {
@@ -1334,10 +1343,10 @@ int __cdecl integrateJob(TaskOwner& owner, Queue& queue, JobQueueEntry& nextJobO
     SyncCheck::verify<bool>(0xF0000098, island->isSparse);
     SyncCheck::verify<bool>(0xF0000099, island->sparseEnabled);
     SyncCheck::verify(0xF000009A, island->splitCounter);
-    SyncCheck::verify(0xF000009B, owner.settings->wantSparseCheck);
+    SyncCheck::verify(0xF000009B, tl.settings->wantSparseCheck);
     if (!island->isSparse)
     {
-        if (island->sparseEnabled && (island->splitCounter & 7) == 0 && owner.settings->wantSparseCheck)
+        if (island->sparseEnabled && (island->splitCounter & 7) == 0 && tl.settings->wantSparseCheck)
         {
             splitRequested = 1;
         }
@@ -1345,7 +1354,7 @@ int __cdecl integrateJob(TaskOwner& owner, Queue& queue, JobQueueEntry& nextJobO
     else
     {
         int islandSize = estimateIslandSize(island->GetEntities().GetLogicalSize(), island->numConstraints);
-        FlagByte canBeSparse = checkIslandSparse(owner.settings, islandSize);
+        FlagByte canBeSparse = checkIslandSparse(tl.settings, islandSize);
         SyncCheck::verify(0xF000009C, islandSize);
         SyncCheck::verify(0xF000009D, canBeSparse);
         if (!canBeSparse)
@@ -1368,7 +1377,7 @@ int __cdecl integrateJob(TaskOwner& owner, Queue& queue, JobQueueEntry& nextJobO
     unsigned int estimatedConstraints;
     if (!island->schemaSize)
     {
-        if (owner.settings->directIntegrate)
+        if (tl.settings->directIntegrate)
         {
             header->buffer = 0;
             header->bufferCapacity = 0;
@@ -1378,7 +1387,7 @@ int __cdecl integrateJob(TaskOwner& owner, Queue& queue, JobQueueEntry& nextJobO
             header->impulseLimits = 0;
             header->numSolverResults = island->numSolverResults;
             header->numSolverElemTemps = island->numSolverElemTemps;
-            header->queryIn = &owner.queryIn;
+            header->queryIn = &tl.queryIn;
             header->bufferCapacity = bufferCapacity;
             int motionJobs = (numEntities - 1) / 128 + 1;
             header->unfinishedJobs = splitRequested + motionJobs;
@@ -1405,14 +1414,14 @@ int __cdecl integrateJob(TaskOwner& owner, Queue& queue, JobQueueEntry& nextJobO
             }
 
             QueueStorage tempStorage;
-            void* token = queue.hkJobQueue_lockQueue(&tempStorage);
+            void* token = jobQueue.hkJobQueue_lockQueue(&tempStorage);
             if (splitRequested)
             {
                 SplitPacket splitJob(currentJob, 0x20, 5);
-                queue.FUN_00d04b00(token, splitJob, 0);
+                jobQueue.hkJobQueue_addJobQueueLocked(token, splitJob, 0);
             }
-            queue.hkJobQueue_unlockQueue(token);
-            return queue.hkJobQueue_finishAddAndGetNextJob(0, 0, nextJobOut, 0);
+            jobQueue.hkJobQueue_unlockQueue(token);
+            return jobQueue.hkJobQueue_finishAddAndGetNextJob(0, 0, nextJobOut, 0);
         }
 
         {
@@ -1435,7 +1444,7 @@ int __cdecl integrateJob(TaskOwner& owner, Queue& queue, JobQueueEntry& nextJobO
     }
 
     estimatedConstraints = maxVal(island->numConstraints, island->GetEntities().GetLogicalSize());
-    if (estimatedConstraints < owner.secondary->constraintLimit)
+    if (estimatedConstraints < tl.secondary->constraintLimit)
     {
         {
             hkMonitorStream& stream = hkMonitorStream::getInstance();
@@ -1448,7 +1457,7 @@ int __cdecl integrateJob(TaskOwner& owner, Queue& queue, JobQueueEntry& nextJobO
             }
         }
         {
-            ConstraintQueryIn localQuery = owner.queryIn;
+            ConstraintQueryIn localQuery = tl.queryIn;
             int inactiveFrames = hkpConstraintSolverSetup_solve(stepCtx.timing, stepCtx.solver, localQuery, *island, buffer, bufferSize, entities, numEntities);
             if (inactiveFrames <= 5)
             {
@@ -1476,7 +1485,7 @@ FINISH_BROAD_PHASE:
         header->exportFinished = true;
         new (&nextJobOut) BroadPacket(currentJob, header);
         {
-            int status = queue.hkJobQueue_finishAddAndGetNextJob(0, 0, nextJobOut, 0);
+            int status = jobQueue.hkJobQueue_finishAddAndGetNextJob(0, 0, nextJobOut, 0);
         }
         return 0;
     }
@@ -1492,10 +1501,10 @@ FINISH_BROAD_PHASE:
                 stream.setEnd((char*)(ev + 1));
             }
         }
-        Object_ProcessAndReturnValue_00d883c0(*island, buffer, bufferSize, *header);
+        hkpConstraintSolverSetup_calcBufferOffsetsForSolve(*island, buffer, bufferSize, *header);
         header->numSolverResults = island->numSolverResults;
         header->numSolverElemTemps = island->numSolverElemTemps;
-        header->queryIn = &owner.queryIn;
+        header->queryIn = &tl.queryIn;
         header->bufferCapacity = bufferCapacity;
         {
             int motionJobs = (numEntities - 1) / 128 + 1;
@@ -1511,7 +1520,7 @@ FINISH_BROAD_PHASE:
             accJob.firstEntityIdx = 0;
             accJob.numEntities = (unsigned short)numEntities;
             accJob.mode = MODE_ENABLED;
-            queue.hkJobQueue_addJob(nextJobOut, 0);
+            jobQueue.hkJobQueue_addJob(nextJobOut, 0);
         }
 
         BuildCollection outBuilds;
@@ -1531,7 +1540,7 @@ FINISH_BROAD_PHASE:
         header->solveTasks = outSolves;
 
         FinishPacket FinalizePacket(currentJob, header);
-        int status = queue.ProcessCallback(&FinalizePacket, nextJobOut, 0);
+        int status = jobQueue.ProcessCallback(&FinalizePacket, nextJobOut, 0);
         return status;
     }
 }

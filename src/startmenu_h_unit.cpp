@@ -17,6 +17,7 @@ TileMenu* StartMenu::GetMenuTitle()
 }
 
 // @fnv 0x007ce8f0
+// pdb: StartMenu::WaitingForControlRemapButtonPress | StartMenu.obj | debug, call graph, high
 bool StartMenu::IsStartMenuActive()
 {
     return StartMenuInterfaceQuery::GetSelectedTargetIndex(StartMenuInterfaceQuery::START_MENU) && IsFlagSet(FLAG_ACTION_MAPPING) &&
@@ -24,6 +25,7 @@ bool StartMenu::IsStartMenuActive()
 }
 
 // @fnv 0x007cb710
+// pdb: StartMenu::IdleTimer::Instance | StartMenu.obj | debug, call graph, high
 StartMenu::OptionManager* StartMenu::OptionManager::Instance()
 {
     if (!DAT_011daac4)

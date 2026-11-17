@@ -14,6 +14,7 @@ namespace loader
 class PackageRef;
 }
 
+// pdb: class ExtraPackage, size 0x1c, bases: BSExtraData, 6 members
 class ExtraPackage : public BSExtraData
 {
 public:
@@ -55,7 +56,7 @@ public:
             unsigned short unk16;
         };
     };
-    char unk18;
-    char unk19;
-    unsigned short unk1A;
+    char bActionComplete; // src: XBOX_RETAIL_PDB +0x18 (old: unk18)
+    char bActivated; // src: XBOX_RETAIL_PDB +0x19 (old: unk19)
+    unsigned short bDoneOnce; // src: XBOX_RETAIL_PDB +0x1a (old: unk1A)
 };

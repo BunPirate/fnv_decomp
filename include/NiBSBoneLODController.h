@@ -8,6 +8,7 @@ class ArrB;
 class LinkSet;
 class NiTPrimitiveArray_unsigned_int;
 
+// pdb: class NiBSBoneLODController, size 0x4c, bases: NiTimeController, 3 members
 class NiBSBoneLODController : public NiTimeController
 {
 public:
@@ -29,15 +30,15 @@ public:
     void UpdateMaxValue(Node_cls* a, ArrA* b, unsigned int* out);
     int GetField38();
     void NiBSBoneLODController_CleanUp();
-    void NiBSBoneLODController_CollectMarkedBones(Node_cls* a, ArrA* b, ArrB* c);
-    void NiBSBoneLODController_SetBoneLOD(void* a);
-    void NiBSBoneLODController_SetBoneLOD(int a);
-    bool InitializeData_00c52d80(Node_cls* arg);
-    void PostLinkObject_00c53ab0(NiStream& s);
+    void NiBSBoneLODController_CollectMarkedBones(Node_cls* pkBone, ArrA* kBoneToLOD, ArrB* kUsedLODs);
+    void NiBSBoneLODController_SetBoneLOD(void* iLOD);
+    void NiBSBoneLODController_SetBoneLOD(int iLOD);
+    bool InitializeData_00c52d80(Node_cls* pkBoneRoot);
+    void PostLinkObject_00c53ab0(NiStream& kStream);
     void __thiscall NiBSBoneLODController_GetViewerStrings(NiTPrimitiveArray_unsigned_int* array);
     bool ProcessEntries_00c53cf0();
 
-    void* m_34;
-    unsigned int f38;
-    SubObj sub;
+    void* m_iLOD; // src: XBOX_RETAIL_PDB +0x34 (old: m_34)
+    unsigned int m_uiNumLODs; // src: XBOX_RETAIL_PDB +0x38 (old: f38)
+    SubObj m_kBoneArray; // src: XBOX_RETAIL_PDB +0x3c (old: sub)
 };

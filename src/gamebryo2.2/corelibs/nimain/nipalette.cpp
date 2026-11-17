@@ -5,13 +5,13 @@
 #include "../../../../include/BSFadeNode.h"
 #include "../../../../include/NiPalette.h"
 
-extern "C" void* g_011f5c08;
+extern "C" void* NiPalette_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f5c08 (old: g_011f5c08)
 
 // @fnv 0x00a8b070
 // src: COMMUNITY 0x00a8b070
 void* __cdecl NiPalette_GetRTTI()
 {
-    return &g_011f5c08;
+    return &NiPalette_ms_RTTI;
 }
 
 extern "C" __declspec(dllimport) void __stdcall EnterCriticalSection(void*);
@@ -21,17 +21,18 @@ extern NiPalette* DAT_011f5c04;
 extern int DAT_011f5c80;
 // Under a critical section, removes this node from the doubly linked list, updating the head, tail and neighbouring links.
 // @fnv 0x00a8b010
+// pdb: NiPalette::RemovePaletteFromList | NiPalette.obj | retail, object-file run extension, low
 void __fastcall UnlinkPalette(NiPalette* self)
 {
     EnterCriticalSection(&DAT_011f5c80);
     if (DAT_011f5c00 == self)
-        DAT_011f5c00 = reinterpret_cast<NiPalette*>(self->unk20);
+        DAT_011f5c00 = reinterpret_cast<NiPalette*>(self->m_pkNext);
     if (DAT_011f5c04 == self)
-        DAT_011f5c04 = reinterpret_cast<NiPalette*>(self->unk1C);
-    if (reinterpret_cast<NiPalette*>(self->unk1C))
-        reinterpret_cast<NiPalette*>(self->unk1C)->unk20 = self->unk20;
-    if (reinterpret_cast<NiPalette*>(self->unk20))
-        reinterpret_cast<NiPalette*>(self->unk20)->unk1C = self->unk1C;
+        DAT_011f5c04 = reinterpret_cast<NiPalette*>(self->m_pkPrev);
+    if (reinterpret_cast<NiPalette*>(self->m_pkPrev))
+        reinterpret_cast<NiPalette*>(self->m_pkPrev)->m_pkNext = self->m_pkNext;
+    if (reinterpret_cast<NiPalette*>(self->m_pkNext))
+        reinterpret_cast<NiPalette*>(self->m_pkNext)->m_pkPrev = self->m_pkPrev;
     LeaveCriticalSection(&DAT_011f5c80);
 }
 
@@ -40,6 +41,8 @@ void __fastcall _Call_a5d3a0(void*);
 void __fastcall NiPalette_AddPaletteToList(void*);
 // @fnv 0x00a8b220
 // src: EXE 0x00a8b220
+// pdb: NiPalette::CreateObject | NiPalette.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 void* NiPalette_CreateObject()
 {
     NiPalette* p = (NiPalette*)BSFadeNode::operator new(0x24);
@@ -47,11 +50,11 @@ void* NiPalette_CreateObject()
     {
         _Call_a5d3a0(p);
         *(void**)p = (void*)&DAT_0109f3fc;
-        *(unsigned char*)&p->unk08 = 0;
-        p->unk0C = 0;
-        p->unk14 = 0;
-        p->unk10 = 1;
-        p->unk18 = 0;
+        *(unsigned char*)&p->m_bAlpha = 0;
+        p->m_uiEntries = 0;
+        p->m_pkPalette = 0;
+        p->m_uiRevID = 1;
+        p->m_pkRendererData = 0;
         NiPalette_AddPaletteToList(p);
         return p;
     }
@@ -71,11 +74,12 @@ extern MM g_memoryManager;
 extern int DAT_0109f3fc;
 void _delete(void*, unsigned int);
 // @fnv 0x00a8b270
+// pdb: NiPalette::`scalar deleting destructor' | NiPalette.obj | retail, object-file gap fill, high
 void* NiPalette::DestroyPalette(unsigned int auiFlags)
 {
     *(void**)this = (void*)&DAT_0109f3fc;
-    g_memoryManager._DeallocateAlias((void*)unk14);
-    delete (NipaletteRendererDataView*)unk18;
+    g_memoryManager._DeallocateAlias((void*)m_pkPalette);
+    delete (NipaletteRendererDataView*)m_pkRendererData;
     UnlinkPalette(this);
     this->NiRefObject::~NiRefObject();
     if (auiFlags & 1)
@@ -95,10 +99,12 @@ void __stdcall AppendCameraPathEntries(PaletteStringArray<char*, PaletteStringAl
 char* __cdecl _FUN_00a7d330(void*);
 // @fnv 0x00a8b460
 // src: XBOX_PDB 0x00a8b460
+// pdb: NiPalette::GetViewerStrings | NiPalette.obj | retail, upstream name already matches, high
+// pdb params: pkStrings
 void __stdcall NiPalette_GetViewerStrings(PaletteStringArray<char*, PaletteStringAllocator<char*> >* pkStrings)
 {
     AppendCameraPathEntries(pkStrings);
-    char* pszString = _FUN_00a7d330(g_011f5c08);
+    char* pszString = _FUN_00a7d330(NiPalette_ms_RTTI);
     unsigned int uiSize = *(unsigned short*)((char*)pkStrings + 10);
     unsigned int uiCapacity = *(unsigned short*)((char*)pkStrings + 8);
     if (uiSize >= uiCapacity)
@@ -111,26 +117,29 @@ void __stdcall NiPalette_GetViewerStrings(PaletteStringArray<char*, PaletteStrin
 
 
 // @fnv 0x00a8af40
+// pdb: NiPalette::IsEqual | NiPalette.obj | retail, object-file run extension, low
+// pdb params: pkObject
+// pdb locals: pkPalette
 unsigned char __fastcall PaletteEquals(NiPalette* self, void*, NiPalette* apOther)
 {
     if (self->NiObject::IsEqual(apOther) == 0)
     {
         return 0;
     }
-    if (*(unsigned char*)&self->unk08 != *(unsigned char*)&apOther->unk08)
+    if (*(unsigned char*)&self->m_bAlpha != *(unsigned char*)&apOther->m_bAlpha)
     {
         return 0;
     }
-    if (self->unk0C != apOther->unk0C)
+    if (self->m_uiEntries != apOther->m_uiEntries)
     {
         return 0;
     }
-    unsigned int uiByteCount = self->unk0C;
+    unsigned int uiByteCount = self->m_uiEntries;
     uiByteCount += uiByteCount;
     uiByteCount += uiByteCount;
     unsigned int n = uiByteCount != 0;
-    unsigned char* pOtherData = (unsigned char*)apOther->unk14;
-    unsigned char* pThisData = (unsigned char*)self->unk14;
+    unsigned char* pOtherData = (unsigned char*)apOther->m_pkPalette;
+    unsigned char* pThisData = (unsigned char*)self->m_pkPalette;
     while (n >= 4)
     {
         if (*(unsigned int*)pThisData != *(unsigned int*)pOtherData)
@@ -273,16 +282,17 @@ void __cdecl FUN_00ec44d0(void* dst, void* src, unsigned int size);
 // Initializes the owner: stores the byte and count, allocates an element array, copies count*4 bytes from a3, and notifies DAT_011f4748.
 // @fnv 0x00a8b110
 // src: EXE 0x00a8b110
+// pdb: NiPalette::NiPalette | NiPalette.obj | retail, call graph, high
 void* __fastcall NiPalette_NiPalette_00a8b110(NiPalette* self, void*, unsigned char a1, unsigned int a2, void* pSrc)
 {
     _Call_a5d3a0(self);
-    *(unsigned char*)&self->unk08 = a1;
-    self->unk0C = a2;
+    *(unsigned char*)&self->m_bAlpha = a1;
+    self->m_uiEntries = a2;
     *(void**)self = (void*)&DAT_0109f3fc;
-    self->unk10 = 1;
-    self->unk14 = (unsigned int)(new A8b110Elem[a2]);
-    FUN_00ec44d0((void*)self->unk14, pSrc, self->unk0C * 4);
-    self->unk18 = 0;
+    self->m_uiRevID = 1;
+    self->m_pkPalette = (unsigned int)(new A8b110Elem[a2]);
+    FUN_00ec44d0((void*)self->m_pkPalette, pSrc, self->m_uiEntries * 4);
+    self->m_pkRendererData = 0;
     if (DAT_011f4748)
     {
         DAT_011f4748->v54(self);
@@ -336,6 +346,9 @@ struct Observer
 extern Observer* DAT_011f4748;
 // Reads an enabled flag and element count from the source's reader, reallocates values if the count changed, reads the values, then notifies the observer.
 // @fnv 0x00a8b2c0
+// pdb: NiPalette::LoadBinary | NiPalette.obj | retail, object-file gap fill, high
+// pdb params: kStream
+// pdb locals: bAlpha, uiEntries
 void __fastcall ReadPaletteFromSource(NiPalette* self, void*, DataSource* source)
 {
     ReadGroup(source);
@@ -344,19 +357,19 @@ void __fastcall ReadPaletteFromSource(NiPalette* self, void*, DataSource* source
     unsigned char enabledByte;
     BinaryReader* reader = source->reader();
     reader->readBlock(&enabledByte, 1, 1);
-    *(unsigned char*)&self->unk08 = enabledByte != 0;
+    *(unsigned char*)&self->m_bAlpha = enabledByte != 0;
 
     reader = source->reader();
     reader->readBlock(&readState.elementCount, 4, 4);
-    if (readState.elementCount != self->unk0C)
+    if (readState.elementCount != self->m_uiEntries)
     {
-        g_memoryManager._DeallocateAlias((void*)self->unk14);
-        self->unk0C = readState.elementCount;
-        self->unk14 = (unsigned int)(new MemoryBlock[readState.elementCount]);
+        g_memoryManager._DeallocateAlias((void*)self->m_pkPalette);
+        self->m_uiEntries = readState.elementCount;
+        self->m_pkPalette = (unsigned int)(new MemoryBlock[readState.elementCount]);
     }
 
     reader = source->reader();
-    reader->readBlock((void*)self->unk14, self->unk0C * sizeof(MemoryBlock), 1);
+    reader->readBlock((void*)self->m_pkPalette, self->m_uiEntries * sizeof(MemoryBlock), 1);
     Observer* observer = DAT_011f4748;
     if (observer)
     {
@@ -564,12 +577,14 @@ template <class T> inline void A8B3C0SaveBinary(A8B3C0Stream& kStream, const T* 
 
 // @fnv 0x00a8b3c0
 // src: XBOX_PDB 0x00a8b3c0
+// pdb: NiPalette::SaveBinary | NiPalette.obj | retail, upstream name already matches, high
+// pdb params: kStream
 void __fastcall NiPalette_SaveBinary(NiPalette* self, void*, A8B3C0Stream& kStream)
 {
     self->NiObject::SaveBinary(reinterpret_cast<NiStream&>(kStream));
-    A8B3C0SaveBinary<unsigned char>(kStream, *reinterpret_cast<const bool*>(&self->unk08));
-    A8B3C0SaveBinary(kStream, self->unk0C);
-    A8B3C0SaveBinary(kStream, (unsigned char*)self->unk14, self->unk0C * 4);
+    A8B3C0SaveBinary<unsigned char>(kStream, *reinterpret_cast<const bool*>(&self->m_bAlpha));
+    A8B3C0SaveBinary(kStream, self->m_uiEntries);
+    A8B3C0SaveBinary(kStream, (unsigned char*)self->m_pkPalette, self->m_uiEntries * 4);
 }
 
 struct PaletteElement : A8b110Elem
@@ -581,16 +596,17 @@ struct PaletteElement : A8b110Elem
 // Copies m_08, m_0C and a deep copy of the m_14 element array from src, then calls FUN_00a8afc0.
 // @fnv 0x00a8b080
 // src: EXE 0x00a8b080
+// pdb: NiPalette::NiPalette | NiPalette.obj | retail, object-file run extension, low
 void* __fastcall NiPalette_NiPalette(NiPalette* self, void*, const NiPalette& src)
 {
     _Call_a5d3a0(self);
     *(void**)self = &DAT_0109f3fc;
-    *(unsigned char*)&self->unk08 = *(const unsigned char*)&src.unk08;
-    self->unk0C = src.unk0C;
-    self->unk10 = 1;
-    self->unk14 = (unsigned int)(new PaletteElement[self->unk0C]);
-    FUN_00ec44d0((void*)self->unk14, (void*)src.unk14, src.unk0C * 4);
-    self->unk18 = 0;
+    *(unsigned char*)&self->m_bAlpha = *(const unsigned char*)&src.m_bAlpha;
+    self->m_uiEntries = src.m_uiEntries;
+    self->m_uiRevID = 1;
+    self->m_pkPalette = (unsigned int)(new PaletteElement[self->m_uiEntries]);
+    FUN_00ec44d0((void*)self->m_pkPalette, (void*)src.m_pkPalette, src.m_uiEntries * 4);
+    self->m_pkRendererData = 0;
     if (DAT_011f4748)
         DAT_011f4748->v54(self);
     NiPalette_AddPaletteToList(self);
@@ -617,21 +633,21 @@ NiPalette* __fastcall NiPalette_Replace(NiPalette* self, void*, const NiPalette*
 {
     if (self != rhs)
     {
-        if (self->unk18)
+        if (self->m_pkRendererData)
         {
-            delete reinterpret_cast<NipaletteRendererDataView*>(self->unk18);
-            self->unk18 = 0;
+            delete reinterpret_cast<NipaletteRendererDataView*>(self->m_pkRendererData);
+            self->m_pkRendererData = 0;
         }
-        *(unsigned char*)&self->unk08 = *(const unsigned char*)&rhs->unk08;
-        self->unk10 = 1;
-        if (self->unk0C != rhs->unk0C)
+        *(unsigned char*)&self->m_bAlpha = *(const unsigned char*)&rhs->m_bAlpha;
+        self->m_uiRevID = 1;
+        if (self->m_uiEntries != rhs->m_uiEntries)
         {
-            g_memoryManager._DeallocateAlias((void*)self->unk14);
-            unsigned int count = (unsigned int)rhs->unk0C;
-            self->unk0C = count;
-            self->unk14 = (unsigned int)(new ArrayElement[count]);
+            g_memoryManager._DeallocateAlias((void*)self->m_pkPalette);
+            unsigned int count = (unsigned int)rhs->m_uiEntries;
+            self->m_uiEntries = count;
+            self->m_pkPalette = (unsigned int)(new ArrayElement[count]);
         }
-        memcpy((void*)self->unk14, (void*)rhs->unk14, (unsigned int)rhs->unk0C * sizeof(int));
+        memcpy((void*)self->m_pkPalette, (void*)rhs->m_pkPalette, (unsigned int)rhs->m_uiEntries * sizeof(int));
     }
     return self;
 }
@@ -639,6 +655,7 @@ NiPalette* __fastcall NiPalette_Replace(NiPalette* self, void*, const NiPalette*
 // Appends the given node to the end of a doubly-linked list guarded by a critical section, updating the head and tail pointers.
 // @fnv 0x00a8afc0
 // src: COMMUNITY 0x00a8afc0
+// pdb: NiPalette::AddPaletteToList | NiPalette.obj | retail, upstream name already matches, high
 void __fastcall NiPalette_AddPaletteToList(void* apNode)
 {
     NiPalette* node = static_cast<NiPalette*>(apNode);
@@ -647,14 +664,14 @@ void __fastcall NiPalette_AddPaletteToList(void* apNode)
         DAT_011f5c00 = node;
     if (DAT_011f5c04 != 0)
     {
-        DAT_011f5c04->unk20 = (unsigned int)node;
-        node->unk1C = (unsigned int)DAT_011f5c04;
+        DAT_011f5c04->m_pkNext = (unsigned int)node;
+        node->m_pkPrev = (unsigned int)DAT_011f5c04;
     }
     else
     {
-        node->unk1C = 0;
+        node->m_pkPrev = 0;
     }
     DAT_011f5c04 = node;
-    node->unk20 = 0;
+    node->m_pkNext = 0;
     LeaveCriticalSection(&DAT_011f5c80);
 }

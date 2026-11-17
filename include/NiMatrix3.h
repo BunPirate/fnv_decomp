@@ -11,6 +11,7 @@ struct _XMMATRIX;
 // keeps three NiPoint4 rows (0x30). Out-of-line bodies the PC game has: NiMatrix3.cpp at 0x00a58550-0x00a59af0
 // (src/gamebryo2.2/corelibs/nimain/console/nimatrix3.cpp); inline bodies are defined by the units whose originals
 // inline or emit them (e.g. GetCol 0x00439f50, operator* 0x0043f8d0 and 0x004b4500, Inverse 0x004b46a0).
+// pdb: class NiMatrix3, size 0x30 (here 0x24), 1 members
 class NiMatrix3
 {
 public:
@@ -69,7 +70,7 @@ public:
         const NiPoint3* pkSrcVerts, NiPoint3* pkDstVerts, const NiPoint3* pkSrcNorms, NiPoint3* pkDstNorms);
 
     // Euler angle conversions, one pair per axis order (the To* forms report whether the decomposition is unique)
-    void FromEulerAnglesXYZ(float fA, float fB, float fC);
+    void FromEulerAnglesXYZ(float fXAngle, float fYAngle, float fZAngle);
     bool ToEulerAnglesXYZ(float& fA, float& fB, float& fC) const;
     void FromEulerAnglesXZY(float fA, float fB, float fC);
     bool ToEulerAnglesXZY(float& fA, float& fB, float& fC) const;
@@ -77,13 +78,13 @@ public:
     bool ToEulerAnglesYXZ(float& fA, float& fB, float& fC) const;
     void FromEulerAnglesYZX(float fA, float fB, float fC);
     bool ToEulerAnglesYZX(float& fA, float& fB, float& fC) const;
-    void FromEulerAnglesZXY(float fA, float fB, float fC);
+    void FromEulerAnglesZXY(float fZAngle, float fXAngle, float fYAngle);
     bool ToEulerAnglesZXY(float& fA, float& fB, float& fC) const;
-    void FromEulerAnglesZYX(float fA, float fB, float fC);
+    void FromEulerAnglesZYX(float fZAngle, float fYAngle, float fXAngle);
     bool ToEulerAnglesZYX(float& fA, float& fB, float& fC) const;
     void ExtractAngleAndAxis(float& fRadians, float& fAxisX, float& fAxisY, float& fAxisZ) const;
 
-    void EigenSolveSymmetric(float* pfValues, NiPoint3* pkVectors);
+    void EigenSolveSymmetric(float* afEigenvalue, NiPoint3* pkVectors);
     static const NiMatrix3 ZERO;
     static const NiMatrix3 IDENTITY;
 
@@ -97,8 +98,8 @@ public:
 
     float m_pEntry[3][3];
 
-    bool Tridiagonal(float* afDiag, float* afSubDiag);
-    bool QLAlgorithm(float* afDiag, float* afSubDiag);
+    bool Tridiagonal(float* afDiag, float* afSubd);
+    bool QLAlgorithm(float* afDiag, float* afSubd);
     float Determinant();
 };
 

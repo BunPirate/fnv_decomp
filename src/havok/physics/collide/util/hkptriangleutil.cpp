@@ -60,9 +60,9 @@ inline hkSimdReal hkVector4::lengthSquared3() const
     return s;
 }
 
-inline hkSimdReal hkVector4::dot3(const hkVector4& v) const
+inline hkSimdReal hkVector4::dot3(const hkVector4& x) const
 {
-    const LocalM128 x2 = _mm_mul_ps(m_vComponents, v.m_vComponents);
+    const LocalM128 x2 = _mm_mul_ps(m_vComponents, x.m_vComponents);
     LocalM128 s = _mm_add_ss(_mm_shuffle_ps(x2, x2, 0x55), x2);
     s = _mm_add_ss(_mm_shuffle_ps(x2, x2, 0xaa), s);
     return s;

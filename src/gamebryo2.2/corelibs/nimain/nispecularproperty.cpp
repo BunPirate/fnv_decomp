@@ -10,21 +10,25 @@ extern int DAT_010a02e4;
 inline NiSpecularProperty::NiSpecularProperty() throw()
 {
     *(void**)this = (void*)&DAT_010a02e4;
-    m_uiObjectFlags = 0;
+    m_uFlags = 0;
 }
 // @fnv 0x00a95110
+// pdb: NiSpecularProperty::CreateClone | NiSpecularProperty.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiSpecularProperty::CopyMembers
+// pdb params: kCloning
+// pdb locals: pkObject
 NiObject* NiSpecularProperty::MakeClone(CloningProcess& kCloning)
 {
     NiSpecularProperty* pkObject = new NiSpecularProperty;
     ((NiCullingProperty*)this)->NiProperty_CopyMembers(pkObject, kCloning);
-    pkObject->m_uiObjectFlags = m_uiObjectFlags;
+    pkObject->m_uFlags = m_uFlags;
     return pkObject;
 }
 
-extern unsigned int DAT_011f5ecc;
+extern unsigned int NiSpecularProperty_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f5ecc (old: DAT_011f5ecc/g_011f5ecc)
 
 unsigned int __cdecl NiViewerStrings_NiGetViewerString_Title(unsigned int key);
-unsigned int __cdecl NiGetViewerString(const char* name, unsigned int value);
+unsigned int __cdecl NiGetViewerString(const char* pcPrefix, unsigned int bValue);
 
 struct FUN_00a951f0_list
 {
@@ -43,17 +47,19 @@ struct FUN_00a951f0_list
 void __fastcall NiProperty_GetViewerStrings(NiProperty* property, void*, FUN_00a951f0_list* list);
 
 // @fnv 0x00a951f0
+// pdb: NiSpecularProperty::GetViewerStrings | NiSpecularProperty.obj | retail, string-set bridge, high
+// pdb params: pkStrings
 void __fastcall NiSpecularProperty_GetViewerStrings(NiSpecularProperty* property, void* unusedEDX,
                                                    FUN_00a951f0_list* list)
 {
     NiProperty_GetViewerStrings(property, unusedEDX, list);
-    unsigned int item = NiViewerStrings_NiGetViewerString_Title(DAT_011f5ecc);
+    unsigned int item = NiViewerStrings_NiGetViewerString_Title(NiSpecularProperty_ms_RTTI);
     unsigned int count = list->m_0a;
     if (count >= list->m_08)
         list->FUN_0096ad30(count + list->m_0e);
     list->FUN_0096ae90(count, &item);
 
-    unsigned char ucSpecFlag = (unsigned char)property->m_uiObjectFlags;
+    unsigned char ucSpecFlag = (unsigned char)property->m_uFlags;
     ucSpecFlag &= 1;
     *(volatile unsigned char*)&item = ucSpecFlag;
     unsigned int result = NiGetViewerString("m_bSpec", *(volatile unsigned int*)&item);

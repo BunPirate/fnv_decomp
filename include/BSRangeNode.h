@@ -2,6 +2,7 @@
 
 #include "BSNiNode.h"
 
+// pdb: class BSRangeNode, size 0xe0 (here 0xb0), bases: BSNiNode, 4 members
 class BSRangeNode : public BSNiNode
 {
 public:
@@ -9,7 +10,7 @@ public:
     virtual ~BSRangeNode();
     virtual const NiRTTI* GetRTTI() const;
     virtual NiObject* MakeClone(CloningProcess& process);
-    virtual void LoadBinary(NiStream& stream);
+    virtual void LoadBinary(NiStream& arStream);
     virtual void LinkObject(NiStream& stream);
     virtual bool RegisterStreamables(NiStream& stream);
     virtual void SaveBinary(NiStream& stream);

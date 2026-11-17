@@ -11,7 +11,10 @@ void NiRefObject::DeleteThis()
 #include "nirefobject_queue.h"
 // Acquires the lock, enqueues command, releases the lock, and returns the enqueue result.
 // @fnv 0x009054a0
-bool ScrapHeapTaskQueue::QueueCall(void* command)
+// pdb: BSTCommonMessageQueue<ActorPathingMessage>::Push | HighProcess.obj | retail, vtable slot, high
+// pdb params: aMessage
+// pdb locals: bResult
+bool ScrapHeapTaskQueue::QueueCall(void* aMessage)
 {
     bool result;
     while (true)
@@ -19,7 +22,7 @@ bool ScrapHeapTaskQueue::QueueCall(void* command)
         if (BSAtomicCompareExchange(&lock, 0, 1) == 0)
         {
             reinterpret_cast<void(__cdecl*)()>(&Interface::PrintDebugMessage)();
-            result = Enqueue(command);
+            result = Enqueue(aMessage);
             reinterpret_cast<void(__cdecl*)()>(&Interface::PrintDebugMessage)();
             BSAtomicCompareExchange(&lock, 1, 0);
             break;

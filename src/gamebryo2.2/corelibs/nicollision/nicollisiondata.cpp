@@ -50,13 +50,13 @@ inline unsigned int StrArr::AddInline(char* pcElement)
 // src/gamebryo2.2/corelibs/nicollision/nicollisiondata.cpp - unit created 2026-10-16 from the whole-binary attribution (360 source path: d:/_fallout3/platforms/common/code/gamebryo2.2/corelibs/nicollision/nicollisiondata.cpp).
 // Functions are listed by their @fnv annotations; compile flags inferred from the PC code.
 
-extern void* g_0126fab4;
+extern void* NiCollisionData_ms_RTTI; // src: XBOX_RETAIL_PDB 0x0126fab4 (old: g_0126fab4)
 
 // @fnv 0x00eacd20
 // src: COMMUNITY 0x00eacd20
 void* __cdecl NiCollisionData_GetRTTI()
 {
-    return &g_0126fab4;
+    return &NiCollisionData_ms_RTTI;
 }
 
 extern "C" void* __cdecl _NiMalloc(unsigned int);
@@ -66,6 +66,9 @@ int __cdecl NiSprintf(char*, unsigned int, const char*, ...);
 // Allocates a string sized from pcPrefix and formats it as "<pcPrefix> = <mode name>" based on eMode, returning the buffer.
 // @fnv 0x00eacef0
 // src: XBOX_PDB 0x00eacef0
+// pdb: NiCollisionData::GetViewerString | NiCollisionData.obj | retail, string-set bridge, high
+// pdb params: pcPrefix, eMode
+// pdb locals: pString, uiLen
 char* __stdcall NiCollisionData_GetViewerString(const char* pcPrefix, unsigned int eMode)
 {
     char* pString;
@@ -113,28 +116,34 @@ NiPoint3 NiCollisionData::GetVelocity()
 }
 
 // @fnv 0x00eace50
-void NiCollisionData::SetBoundingVolume(NiBoundingVolume* pkBV)
+// src: XBOX_RETAIL_PDB 0x00eace50
+// pdb: NiCollisionData::SetModelSpaceABV | NiCollisionData.obj | retail, object-file gap fill, high
+// pdb params: pkBV
+void NiCollisionData::SetModelSpaceABV(NiBoundingVolume* pkBV)
 {
     if (m_pkModelABV)
         delete m_pkModelABV;
-    if (unk30)
-        delete unk30;
+    if (m_pkWorldABV)
+        delete m_pkWorldABV;
     m_pkModelABV = pkBV;
     if (pkBV)
     {
-        unk30 = pkBV->v6();
+        m_pkWorldABV = pkBV->v6();
         if (m_pkSceneObject)
-            unk30->v5(m_pkModelABV, &m_pkSceneObject->m_kWorld);
+            m_pkWorldABV->v5(m_pkModelABV, &m_pkSceneObject->m_kWorld);
     }
     else
     {
-        unk30 = 0;
+        m_pkWorldABV = 0;
     }
 }
 
 extern void* __cdecl NiBoundingVolume_CreateFromStream(void*);
 
 // @fnv 0x00eaceb0
+// pdb: NiCollisionData::Initialize | NiCollisionData.obj | retail, object-file gap fill, high
+// pdb params: pkData
+// pdb locals: puiArray, uiCreateABVFromStream, pkBV
 void __fastcall AssignFromSource(NiCollisionData* self, void*, void* pSource)
 {
     self->SetSceneObject(*(NiAVObject**)pSource);
@@ -142,7 +151,7 @@ void __fastcall AssignFromSource(NiCollisionData* self, void*, void* pSource)
     if (*(int*)((char*)pSource + 8))
     {
         void* bv = NiBoundingVolume_CreateFromStream(*(void**)((char*)pSource + 12));
-        self->SetBoundingVolume((NiBoundingVolume*)bv);
+        self->SetModelSpaceABV((NiBoundingVolume*)bv);
     }
 }
 
@@ -151,7 +160,7 @@ void __cdecl _delete(void*, unsigned int);
 // @fnv 0x00ead0b0
 void* NiCollisionData::DestroyIfFlagged(unsigned int auiFlags)
 {
-    UpdateFields_00eacde0();
+    NiCollisionData_dtor();
     if (auiFlags & 1)
         _delete(this, 0x50);
     return this;
@@ -164,10 +173,10 @@ void NiCollisionData::CloneCollisionData(NiCollisionData* pkDest, CloningProcess
     pkDest->m_ePropagationMode = m_ePropagationMode;
     pkDest->m_eCollisionMode = m_eCollisionMode;
     if (m_pkModelABV)
-        pkDest->SetBoundingVolume(m_pkModelABV->Clone());
-    if (m_pCollisionObject)
+        pkDest->SetModelSpaceABV(m_pkModelABV->Clone());
+    if (m_pkOBBRoot)
     {
-        if (!pkDest->m_pWorldVertices)
+        if (!pkDest->m_pkWorldVertex)
         {
             pkDest->CreateWorldVertices();
             pkDest->UpdateWorldVertices();
@@ -184,6 +193,8 @@ struct Helper38
 
 // @fnv 0x00ead330
 // src: XBOX_PDB 0x00ead330
+// pdb: NiCollisionData::SetSceneGraphObject | NiCollisionData.obj | retail, upstream name already matches, high
+// pdb params: pkSceneObject
 void NiCollisionData::SetSceneGraphObject(NiAVObject* pkSceneObject)
 {
     NiCollisionObject::SetSceneObject(pkSceneObject);
@@ -211,6 +222,8 @@ struct TargetObj
 void __cdecl LinkCollisionObject();
 
 // @fnv 0x00ead760
+// pdb: NiCollisionData::LinkObject | NiCollisionData.obj | retail, object-file run extension, low
+// pdb params: kStream
 void __fastcall LinkCollisionData(NiCollisionData* self, void*, void* stream)
 {
     NiStream& kStream = *(NiStream*)stream;
@@ -238,10 +251,12 @@ char* __cdecl _FUN_00a7d330(const char*);
 
 // @fnv 0x00ead870
 // src: XBOX_PDB 0x00ead870
+// pdb: NiCollisionData::GetViewerStrings | NiCollisionData.obj | retail, object-file run extension, low
+// pdb params: pkStrings
 void NiCollisionData::GetViewerStrings_00ead870(StrArr* pkStrings)
 {
     FUN_00a81100(pkStrings);
-    char* pszDup = _FUN_00a7d330((const char*)g_0126fab4);
+    char* pszDup = _FUN_00a7d330((const char*)NiCollisionData_ms_RTTI);
     unsigned int uiSize = pkStrings->m_usSize;
     unsigned int uiMax = pkStrings->m_usMaxSize;
     if (uiSize >= uiMax)
@@ -264,13 +279,15 @@ void NiCollisionData::GetViewerStrings_00ead870(StrArr* pkStrings)
 // The writer is the collection's "write to stream" helper; it is declared
 // here with a byte sized result because the original only looks at AL.
 
-extern "C" unsigned char __stdcall MyColl_WriteToStream(void* pStream);
+extern "C" unsigned char __stdcall MyColl_WriteToStream(void* kStream);
 
 // @fnv 0x00eacd00
 // src: XBOX_PDB 0x00eacd00
-bool __stdcall NiCollisionData_RegisterStreamables(void* pStream)
+// pdb: NiCollisionData::RegisterStreamables | NiCollisionData.obj | retail, upstream name already matches, high
+// pdb params: kStream
+bool __stdcall NiCollisionData_RegisterStreamables(void* kStream)
 {
-    return MyColl_WriteToStream(pStream);
+    return MyColl_WriteToStream(kStream);
 }
 
 extern unsigned char DAT_010f18bc;
@@ -280,25 +297,27 @@ inline void* __cdecl operator new(unsigned int, void* memory) { return memory; }
 
 // Initialize the base, zero collision buffers and copy the default velocities.
 // @fnv 0x00eacd60
+// pdb: NiCollisionData::NiCollisionData | NiCollisionData.obj | retail, upstream name already matches, high
+// pdb params: pkSceneObject
 NiCollisionData::NiCollisionData() : NiCollisionObject((void*)0)
 {
-    m_pWorldVertices = 0;
-    unk44 = 0;
-    unk48 = 0;
-    unk49 = 0;
+    m_pkWorldVertex = 0;
+    m_pkWorldNormal = 0;
+    m_bWorldVerticesNeedUpdate = 0;
+    m_bWorldNormalsNeedUpdate = 0;
     *(unsigned int*)&m_kLocalVelocity.x = DAT_011f426c;
     *(unsigned int*)&m_kLocalVelocity.y = *(unsigned int*)&DAT_011f4270;
     *(unsigned int*)&m_kLocalVelocity.z = *(unsigned int*)&DAT_011f4274;
     *(unsigned int*)&m_kWorldVelocity.x = DAT_011f426c;
     *(unsigned int*)&m_kWorldVelocity.y = *(unsigned int*)&DAT_011f4270;
     *(unsigned int*)&m_kWorldVelocity.z = *(unsigned int*)&DAT_011f4274;
-    unk4C = 0;
+    m_usNumTriangles = 0;
     m_pkModelABV = 0;
-    unk30 = 0;
-    m_pCollisionObject = 0;
-    unk38 = 0;
-    unk3C = 0;
-    unk4E = 0;
+    m_pkWorldABV = 0;
+    m_pkOBBRoot = 0;
+    m_pfnCollideCallback = 0;
+    m_pvCollideCallbackData = 0;
+    m_bAuxCallbacks = 0;
     m_ePropagationMode = 2;
     m_eCollisionMode = 3;
 
@@ -322,26 +341,27 @@ struct SpawnedObj
 };
 
 // @fnv 0x00eacde0
-// src: GUESS 0x00eacde0 (confidence: low)
-void NiCollisionData::UpdateFields_00eacde0()
+// src: XBOX_RETAIL_PDB 0x00eacde0
+// pdb: NiCollisionData::~NiCollisionData | NiCollisionData.obj | retail, object-file gap fill, high
+void NiCollisionData::NiCollisionData_dtor()
 {
-    unsigned int a = (unsigned int)m_pWorldVertices;
+    unsigned int a = (unsigned int)m_pkWorldVertex;
     *(void**)this = &DAT_010f18bc;
     ((FUN_00aa4060_shell*)&DAT_011f6238)->MemoryManager_Deallocate(a);
-    ((FUN_00aa4060_shell*)&DAT_011f6238)->MemoryManager_Deallocate((unsigned int)unk44);
+    ((FUN_00aa4060_shell*)&DAT_011f6238)->MemoryManager_Deallocate((unsigned int)m_pkWorldNormal);
     if (m_pkModelABV != 0)
     {
         delete m_pkModelABV;
     }
-    if (unk30 != 0)
+    if (m_pkWorldABV != 0)
     {
-        delete unk30;
+        delete m_pkWorldABV;
     }
-    if (m_pCollisionObject != 0)
+    if (m_pkOBBRoot != 0)
     {
-        ((SpawnedObj*)m_pCollisionObject)->v00(1);
+        ((SpawnedObj*)m_pkOBBRoot)->v00(1);
     }
-    m_pCollisionObject = 0;
+    m_pkOBBRoot = 0;
     DestroyCollisionObject((NiCollisionObject*)this);
 }
 
@@ -439,6 +459,8 @@ struct S_00ead250_Second
 // If unk08's m18() result is non-null and m_pWorldVertices and unk48 are set, calls g_011aa050 with the second object's unk20 and m90() and clears unk48.
 // @fnv 0x00ead250
 // src: XBOX_PDB 0x00ead250
+// pdb: NiCollisionData::UpdateWorldVertices | NiCollisionData.obj | retail, upstream name already matches, high
+// pdb locals: pkGeom
 void NiCollisionData::UpdateWorldVertices()
 {
     NiAVObject* first = m_pkSceneObject;
@@ -447,15 +469,15 @@ void NiCollisionData::UpdateWorldVertices()
     {
         NiAVObject* object = (NiAVObject*)first->IsGeometry();
 
-        if (object != 0 && m_pWorldVertices != 0 && unk48 != 0)
+        if (object != 0 && m_pkWorldVertex != 0 && m_bWorldVerticesNeedUpdate != 0)
         {
             S_00ead250_Second* second = *reinterpret_cast<S_00ead250_Second**>((char*)object + 0xB8);
             unsigned int value20 = second->unk20;
             unsigned short value90 = second->m90();
 
-            g_011aa050(value90, value20, m_pWorldVertices, (void*)((char*)object + 0x68));
+            g_011aa050(value90, value20, m_pkWorldVertex, (void*)((char*)object + 0x68));
 
-            unk48 = 0;
+            m_bWorldVerticesNeedUpdate = 0;
         }
     }
 }
@@ -472,9 +494,12 @@ bool __cdecl CollisionObjectIsEqual();
 
 // Checks Probe(other), a node list for g_0126fab4, equal m_28/m_24, and equal m_2c unk0c values; returns true on match, false otherwise.
 // @fnv 0x00ead2b0
-bool NiCollisionData::IsEqual(NiObject* pkOther) const
+// pdb: NiCollisionData::IsEqual | NiCollisionData.obj | retail, upstream name already matches, high
+// pdb params: pkObject
+// pdb locals: pkCD
+bool NiCollisionData::IsEqual(NiObject* pkObject) const
 {
-    NiCollisionData* other = (NiCollisionData*)pkOther;
+    NiCollisionData* other = (NiCollisionData*)pkObject;
     FUN_00ead2b0_node* node;
     NiBoundingVolume* a;
     NiBoundingVolume* b;
@@ -493,7 +518,7 @@ bool NiCollisionData::IsEqual(NiObject* pkOther) const
     }
     do
     {
-        if (node == (FUN_00ead2b0_node*)&g_0126fab4)
+        if (node == (FUN_00ead2b0_node*)&NiCollisionData_ms_RTTI)
         {
             goto found;
         }
@@ -720,7 +745,7 @@ inline bool IsKindOfHelper(const NiRTTI& rtti, NiObject* obj)
 {
     if (obj)
     {
-        for (const NiRTTI* r = obj->GetRTTI(); r; r = r->m_pBaseRTTI)
+        for (const NiRTTI* r = obj->GetRTTI(); r; r = r->m_pkBaseRTTI)
         {
             if (r == &rtti)
                 return true;
@@ -731,27 +756,30 @@ inline bool IsKindOfHelper(const NiRTTI& rtti, NiObject* obj)
 
 // Builds m_pCollisionObject from the scene object's triangle or triangle-strip geometry, creating world normals first if needed.
 // @fnv 0x00ead380
+// pdb: NiCollisionData::CreateOBB | NiCollisionData.obj | retail, object-file run extension, low
+// pdb params: iBinSize
+// pdb locals: pkShape, j, pTriList, uiUsedTriangles, uiTriangles, pkStrips, i
 void NiCollisionData::CreateTriData(int iParam)
 {
     if (m_pkSceneObject && IsKindOfHelper(g_NiTriShapeRTTI, (NiObject*)m_pkSceneObject))
     {
-        if (m_pCollisionObject)
+        if (m_pkOBBRoot)
             return;
-        if (!m_pWorldVertices)
+        if (!m_pkWorldVertex)
         {
             CreateWorldVertices();
             UpdateWorldVertices();
         }
         GeomObj* pkShape = (GeomObj*)m_pkSceneObject;
-        m_pCollisionObject =
+        m_pkOBBRoot =
             new TriData(pkShape->m_spGeometryData->GetTriangleCount(), pkShape->m_spGeometryData->GetTriangleList(),
-                        pkShape->m_spGeometryData->GetVertices(), m_pWorldVertices, iParam);
+                        pkShape->m_spGeometryData->GetVertices(), m_pkWorldVertex, iParam);
     }
     else if (m_pkSceneObject && IsKindOfHelper(g_NiTriStripsRTTI, (NiObject*)m_pkSceneObject))
     {
-        if (m_pCollisionObject)
+        if (m_pkOBBRoot)
             return;
-        if (!m_pWorldVertices)
+        if (!m_pkWorldVertex)
         {
             CreateWorldVertices();
             UpdateWorldVertices();
@@ -770,8 +798,8 @@ void NiCollisionData::CreateTriData(int iParam)
                 uiTriangleCount++;
             }
         }
-        m_pCollisionObject = new TriData(uiTriangleCount, pusTriList, pkStrips->m_spGeometryData->GetVertices(),
-                                  m_pWorldVertices, iParam);
+        m_pkOBBRoot = new TriData(uiTriangleCount, pusTriList, pkStrips->m_spGeometryData->GetVertices(),
+                                  m_pkWorldVertex, iParam);
         NiFreeHelper(pusTriList);
     }
 }
@@ -904,7 +932,7 @@ template <class T> inline T LoadValue(NiStream& stream)
     return ReadBinaryScalar<T>(*stream.m_pkIstr);
 }
 
-NiBoundingVolume* __cdecl LoadBoundingVolume(void* stream);
+NiBoundingVolume* __cdecl LoadBoundingVolume(void* kStream);
 void __cdecl LoadCollisionObject();
 
 // Reads two ints (or one for older file versions), a bool, and if set loads an object and stores its v06() result.
@@ -927,7 +955,7 @@ void __fastcall LoadCollisionData(NiCollisionData* self, void*, void* source)
     if (bHasObject)
     {
         self->m_pkModelABV = LoadBoundingVolume(source);
-        self->unk30 = self->m_pkModelABV->v6();
+        self->m_pkWorldABV = self->m_pkModelABV->v6();
     }
 }
 
@@ -955,6 +983,8 @@ void __cdecl SaveCollisionObject();
 
 // Saves the base fields, m_ePropagationMode and m_eCollisionMode, then a presence flag and the child's SaveBinary if m_pkModelABV is set.
 // @fnv 0x00ead7b0
+// pdb: NiCollisionData::SaveBinary | NiCollisionData.obj | retail, object-file run extension, low
+// pdb params: kStream
 void __fastcall SaveCollisionData(NiCollisionData* self, void*, void* target)
 {
     NiStream& kStream = *(NiStream*)target;
@@ -975,6 +1005,9 @@ void __fastcall SaveCollisionData(NiCollisionData* self, void*, void* target)
 void* __cdecl Object_DispatchCommandFour(unsigned int);
 
 // @fnv 0x00eada20
+// pdb: NiCollisionData::CreateClone | NiCollisionData.obj | retail, object-file run extension, low
+// pdb params: kCloning
+// pdb locals: pkObject
 NiObject* NiCollisionData::MakeClone(CloningProcess& arg)
 {
     NiCollisionData* result;
@@ -1002,25 +1035,28 @@ __forceinline NiPoint3 AddVelocity(const NiPoint3& kA, const NiPoint3& kB)
     return kResult;
 }
 
-__declspec(noinline) NiAVObject* __stdcall FindCollisionParent(NiAVObject* pkNode)
+__declspec(noinline) NiAVObject* __stdcall FindCollisionParent(NiAVObject* pkObj)
 {
-    if (pkNode == 0)
+    if (pkObj == 0)
         return 0;
     do
     {
-        pkNode = (NiAVObject*)pkNode->m_pkParent;
-        if (pkNode == 0)
+        pkObj = (NiAVObject*)pkObj->m_pkParent;
+        if (pkObj == 0)
             return 0;
-    } while (pkNode->m_spCollisionObject.m_pObject == 0);
-    return pkNode;
+    } while (pkObj->m_spCollisionObject.m_pObject == 0);
+    return pkObj;
 }
 
 // @fnv 0x00ead0f0
+// pdb: NiCollisionData::UpdateWorldData | NiCollisionData.obj | debug, object-file run extension, low
+// pdb params: UpdateData
+// pdb locals: pkParent, pkParentData, pkAncestorWithCD
 void NiCollisionData::Unk_24(NiUpdateData& arData)
 {
     if (m_pkModelABV)
     {
-        unk30->v5(m_pkModelABV, &m_pkSceneObject->m_kWorld);
+        m_pkWorldABV->v5(m_pkModelABV, &m_pkSceneObject->m_kWorld);
     }
     if (DAT_0126fab0)
     {
@@ -1054,21 +1090,23 @@ void NiCollisionData::Unk_24(NiUpdateData& arData)
             m_kWorldVelocity = m_kLocalVelocity;
         }
     }
-    unk49 = unk48 = true;
+    m_bWorldNormalsNeedUpdate = m_bWorldVerticesNeedUpdate = true;
 }
 
 char* NiViewerStrings_NiGetViewerString_Title(char* pcText);
-char* __stdcall FormatName(const char* name, int mode);
+char* __stdcall FormatName(const char* pcPrefix, int eMode);
 
 void __cdecl AddCollisionObjectViewerStrings();
 
 // Appends viewer strings for propagation/collision modes, the ABV model and local/world velocities to pkStrings.
 // @fnv 0x00ead8d0
+// pdb: NiCollisionData::AddViewerStrings | NiCollisionData.obj | retail, string-set bridge, high
+// pdb params: pkStrings
 void NiCollisionData::AddViewerStrings(NiViewerStringsArray* strings)
 {
     StrArr* pkStrings = (StrArr*)strings;
     ((void (__thiscall*)(NiCollisionData*, StrArr*))AddCollisionObjectViewerStrings)(this, pkStrings);
-    pkStrings->AddInline(NiViewerStrings_NiGetViewerString_Title((char*)g_0126fab4));
+    pkStrings->AddInline(NiViewerStrings_NiGetViewerString_Title((char*)NiCollisionData_ms_RTTI));
     // The original callers also supply the collision owner in ECX to these
     // stateless formatters; preserve that calling convention.
     unsigned int propagationMode = m_ePropagationMode;
@@ -1093,26 +1131,29 @@ void FUN_00a305b0(char* buf, unsigned int size, const char* fmt, const char* nam
 
 // Obtains a buffer sized from name length and formats name into it using the mode-selected format string.
 // @fnv 0x00eacfd0
-char* __stdcall FormatName(const char* name, int mode)
+// pdb: NiCollisionData::GetViewerString | NiCollisionData.obj | retail, string-set bridge, high
+// pdb params: pcPrefix, eMode
+// pdb locals: pString, uiLen
+char* __stdcall FormatName(const char* pcPrefix, int eMode)
 {
-    unsigned int len = strlen(name);
+    unsigned int len = strlen(pcPrefix);
     char* buf = (char*)_NiMalloc_00aa1070(len + 0x20);
-    switch (mode)
+    switch (eMode)
     {
     case 0:
-        FUN_00a305b0(buf, len + 0x20, str_010f19fc, name);
+        FUN_00a305b0(buf, len + 0x20, str_010f19fc, pcPrefix);
         break;
     case 1:
-        FUN_00a305b0(buf, len + 0x20, str_010f19e0, name);
+        FUN_00a305b0(buf, len + 0x20, str_010f19e0, pcPrefix);
         break;
     case 2:
-        FUN_00a305b0(buf, len + 0x20, str_010f19c8, name);
+        FUN_00a305b0(buf, len + 0x20, str_010f19c8, pcPrefix);
         break;
     case 3:
-        FUN_00a305b0(buf, len + 0x20, str_010f19b0, name);
+        FUN_00a305b0(buf, len + 0x20, str_010f19b0, pcPrefix);
         break;
     default:
-        FUN_00a305b0(buf, len + 0x20, str_0109b2ec, name);
+        FUN_00a305b0(buf, len + 0x20, str_0109b2ec, pcPrefix);
         break;
     }
     return buf;
@@ -1200,20 +1241,22 @@ struct Geometry
 
 // @fnv 0x00ead1e0
 // src: XBOX_PDB 0x00ead1e0
+// pdb: NiCollisionData::CreateWorldVertices | NiCollisionData.obj | retail, upstream name already matches, high
+// pdb locals: pkGeom
 void NiCollisionData::CreateWorldVertices()
 {
     if (m_pkSceneObject)
     {
         Geometry* geometry = (Geometry*)m_pkSceneObject->IsTriBasedGeometry();
-        if (geometry && !m_pWorldVertices)
+        if (geometry && !m_pkWorldVertex)
         {
             unsigned short count = geometry->geometryData->vertexCount;
             if (count != 0)
             {
-                unk4A = count;
-                m_pWorldVertices = new NiPoint3[count];
-                unk48 = 1;
-                unk4C = geometry->geometryData->geomFlags;
+                m_usNumVertices = count;
+                m_pkWorldVertex = new NiPoint3[count];
+                m_bWorldVerticesNeedUpdate = 1;
+                m_usNumTriangles = geometry->geometryData->geomFlags;
             }
         }
     }

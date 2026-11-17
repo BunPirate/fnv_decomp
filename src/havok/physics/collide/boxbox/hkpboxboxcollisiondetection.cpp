@@ -185,6 +185,9 @@ static __forceinline float dot3(LocalM128 a, LocalM128 b)
 
 // Tests edge-edge contact between two boxes, computing closest points, normal.q(), and distance, returning true if a valid contact is found.
 // @fnv 0x00db15a0
+// pdb: hkpBoxBoxCollisionDetection::isValidEdgeEdge | hkpBoxBoxCollisionDetection.obj | retail, object-file run extension, low
+// pdb params: fpp
+// pdb locals: vertexA_inA, d12, edgeB_inA, assertBuf, ostr, edgeA_inA
 hkBool BoxBoxCollisionDetection::TestEdgeEdgeContact(BoxBoxEdgeContact* contact)
 {
     int axisA = contact->m_featureA & 0xf;

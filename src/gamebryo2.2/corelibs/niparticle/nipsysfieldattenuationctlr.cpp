@@ -23,6 +23,7 @@ struct BaseStandIn
 // An explicit-this function pointer preserves its thiscall ABI.
 NiPSysModifier* __cdecl FUN_00c1b0f0();
 extern char const* const g_01202688_arg1;
+// pdb: class NiPSysFieldAttenuationCtlr, size 0x40 (here 0x1), bases: NiPSysModifierFloatCtlr, 0 members
 struct NiPSysFieldAttenuationCtlr : BaseStandIn
 {
     bool InterpTargetIsCorrectType_00c2b290(NiObjectNET*);
@@ -30,6 +31,10 @@ struct NiPSysFieldAttenuationCtlr : BaseStandIn
 // Calls the base check on pkTarget, resolves a NiPSysModifier from this+0x38, and returns true if its RTTI chain contains g_01202688_arg1.
 // @fnv 0x00c2b290
 // src: XBOX_PDB 0x00c2b290
+// pdb: NiPSysFieldAttenuationCtlr::CreateClone | NiPSysFieldAttenuationCtlr.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiPSysFieldAttenuationCtlr::IsEqual
+// pdb params: kCloning
+// pdb locals: pkObject
 bool NiPSysFieldAttenuationCtlr::InterpTargetIsCorrectType_00c2b290(NiObjectNET* pkTarget)
 {
     if (!BaseStandIn::IsTargetParticleSystem(pkTarget))
@@ -94,6 +99,8 @@ struct Owner
 
 // Allocates and constructs an AttenCtlr, passes it with pArg to FUN_00c32de0, and returns it as a NiPSysFieldAttenuationCtlr.
 // @fnv 0x00c2b240
+// pdb: NiPSysFieldAttenuationCtlr::SaveBinary | NiPSysFieldAttenuationCtlr.obj | debug, object-file run extension, low
+// pdb params: kStream
 NiPSysFieldAttenuationCtlr* Owner::CreateFieldAttenuationController(NiObjectNET* pArg)
 {
     AttenCtlr* pCtlr = (AttenCtlr*)NiMemAlloc(sizeof(AttenCtlr));
@@ -115,13 +122,15 @@ void __stdcall NiPSysModifierFloatCtlr_GetViewerStrings(StrArr*);
 // Appends the string returned by FUN_00a7d330(g_01202720) to the array, growing it if the index reaches capacity.
 // @fnv 0x00c2b2e0
 // src: XBOX_PDB 0x00c2b2e0
-void __stdcall NiPSysFieldAttenuationCtlr_GetViewerStrings(StrArr* array)
+// pdb: NiPSysFieldAttenuationCtlr::GetViewerStrings | NiPSysFieldAttenuationCtlr.obj | retail, upstream name already matches, high
+// pdb params: pkStrings
+void __stdcall NiPSysFieldAttenuationCtlr_GetViewerStrings(StrArr* pkStrings)
 {
-    NiPSysModifierFloatCtlr_GetViewerStrings(array);
+    NiPSysModifierFloatCtlr_GetViewerStrings(pkStrings);
     char* value = NiViewerStrings_NiGetViewerString_Title(static_cast<char*>(g_01202720));
-    unsigned int index = array->m_usSize;
-    unsigned int capacity = array->m_usMaxSize;
+    unsigned int index = pkStrings->m_usSize;
+    unsigned int capacity = pkStrings->m_usMaxSize;
     if (index >= capacity)
-        array->SetSize(index + array->m_usGrowBy);
-    array->SetAt(index, value);
+        pkStrings->SetSize(index + pkStrings->m_usGrowBy);
+    pkStrings->SetAt(index, value);
 }

@@ -14,6 +14,8 @@ float* __stdcall D3DXMatrixTranspose_00ee6dd4(float* pOut, const float* pM);
 
 // Builds a 4x4 matrix from a 2D affine transform (layout depends on iMode), optionally inverts and transposes it, or sets identity when affine is null.
 // @fnv 0x00e83550
+// pdb: NiD3DShaderConstantMap::SetupTextureTransformMatrix | NiD3DShaderConstantMap.obj | retail, object-file run extension, low
+// pdb params: kResult, pkTexMatrix, bInv, bTrans, uiTexCoordSize
 void __cdecl SetAffineMatrix(float* afMatrix, const float* affine, bool bInvert, bool bTranspose, int iMode)
 {
     if (affine)

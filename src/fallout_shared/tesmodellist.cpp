@@ -27,27 +27,33 @@ class TESModelListCopyTarget
 
 // Deletes every filename string in the list at offset 4, then calls ClearAndDeleteArray on the object at offset 12.
 // @fnv 0x00489b40
+// pdb: TESModelList::ClearDataComponent | TESModelList.obj | retail, vtable slot, high
+// pdb locals: pnifFilename
 void TESModelList::ClearComponent()
 {
-    while (!m_kModelPaths.IsEmpty())
+    while (!nifFilenames.IsEmpty())
     {
         const char* filenameToDelete;
         const char* filename;
-        filenameToDelete = m_kModelPaths.GetItem();
-        m_kModelPaths.RemoveHead();
+        filenameToDelete = nifFilenames.GetItem();
+        nifFilenames.RemoveHead();
         filename = filenameToDelete;
         ::operator delete((void*)filename);
     }
-    reinterpret_cast<FileEntryListCollection*>(m_kModelData)->ClearAndDeleteArray();
+    reinterpret_cast<FileEntryListCollection*>(TextureListArray)->ClearAndDeleteArray();
 }
 
 // @fnv 0x00489ae0
+// pdb: TESModelList::~TESModelList | TESModelList.obj | retail, upstream name already matches, high
 TESModelList::~TESModelList()
 {
     ClearComponent();
 }
 
 // @fnv 0x005fa180
+// pdb: TESCreature::GetActorValue | TESCreature.obj | retail, vtable slot, high
+// pdb params: aiWhich
+// pdb locals: iresult
 unsigned int TESModelList::BaseFormRecord(unsigned int type)
 {
     unsigned int result = 0;
@@ -79,6 +85,7 @@ struct FUN_00478690_shell
 // Releases the object stored at offset 4 by calling its virtual method with 1, then sets that pointer to null.
 // @fnv 0x00478690
 // src: XBOX_PDB 0x00478690
+// pdb: BGSDestructibleObjectForm::ClearDataComponent | BGSDestructibleObjectForm.obj | retail, vtable slot, high
 void FUN_00478690_shell::BGSDestructibleObjectForm_RemoveData()
 {
     delete *(FileEntryListCollection**)((char*)this + 4);
@@ -92,6 +99,8 @@ extern SettingT<GameSettingCollection> originalRuntimeFloatSetting43;
 // Returns the byte at pThis+0x12d, adding the scaled level from the actor base data when it matches the PC level.
 // @fnv 0x005f8f70
 // src: COMMUNITY 0x005f8f70
+// pdb: TESCreature::GetCombatSkill | TESCreature.obj | retail, upstream name already matches, high
+// pdb locals: cretval, slevel
 unsigned char __fastcall TESCreature_GetCombatSkill(char* pThis)
 {
     unsigned char ucLevel = static_cast<unsigned char>(pThis[0x12d]);
@@ -111,26 +120,29 @@ unsigned char __fastcall TESCreature_GetCombatSkill(char* pThis)
 struct FUN_005fa180_cls : public ActorValueOwner
 {
     char pad[0xc - 4];
-    int TESCreature_GetActorValueI(ActorValue::Index aeIndex);
+    int TESCreature_GetActorValueI(ActorValue::Index aiWhich);
 };
 // @fnv 0x005fa180
 // src: COMMUNITY 0x005fa180
-int FUN_005fa180_cls::TESCreature_GetActorValueI(ActorValue::Index aeIndex)
+// pdb: TESCreature::GetActorValue | TESCreature.obj | retail, vtable slot, high
+// pdb params: aiWhich
+// pdb locals: iresult
+int FUN_005fa180_cls::TESCreature_GetActorValueI(ActorValue::Index aiWhich)
 {
     int result = 0;
-    if (ActorValue::GetFlag(aeIndex, 0x400))
+    if (ActorValue::GetFlag(aiWhich, 0x400))
     {
         result = ((TESModelList*)((char*)this - 0x100))->HasModels();
     }
     else
     {
-        switch (aeIndex)
+        switch (aiWhich)
         {
         case 0x38:
             result = ((TESModelListCopyTarget*)((char*)this + 0xc))->vfn_10();
             break;
         default:
-            result = ActorValueOwner::GetActorValue(aeIndex);
+            result = ActorValueOwner::GetActorValue(aiWhich);
             break;
         }
     }
@@ -139,18 +151,25 @@ int FUN_005fa180_cls::TESCreature_GetActorValueI(ActorValue::Index aeIndex)
 
 // Initializes the model list and its collection storage, then clears the component.
 // @fnv 0x00489a60
+// pdb: TESModelList::AddNIFFile | TESModelList.obj | retail, object-file run extension, low
+// pdb note: debug build links it to TESModelList::TESModelList
+// pdb params: apFilename
+// pdb locals: iFilenameLen, pnifFilename
 TESModelList::TESModelList()
 {
     // The raw storage is initialized as a list without adding a member destructor.
-    reinterpret_cast<BSSimpleList<const char*>*>(m_kModelData)->BSSimpleList<const char*>::BSSimpleList();
+    reinterpret_cast<BSSimpleList<const char*>*>(TextureListArray)->BSSimpleList<const char*>::BSSimpleList();
     Free();
 }
 
 unsigned int __cdecl BSStringLength(const char*);
 // @fnv 0x00489ce0
-void TESModelList::LoadStringChunk(TESModelList* p1, TESFile* apFile)
+// pdb: TESModelList::LoadModelListChunk | TESModelList.obj | retail, object-file run extension, high
+// pdb params: apModelList, apFile
+// pdb locals: chunk, pcurrentFile, pmessage
+void TESModelList::LoadStringChunk(TESModelList* apModelList, TESFile* apFile)
 {
-    if (!apFile || !p1)
+    if (!apFile || !apModelList)
         return;
     unsigned int id = apFile->GetChunkID();
     switch (id)
@@ -170,24 +189,26 @@ void TESModelList::LoadStringChunk(TESModelList* p1, TESFile* apFile)
         break;
     }
     case 0x5446494e:
-        reinterpret_cast<FileEntryListCollection*>(m_kModelData)->LoadFromTESFile(p1, apFile);
+        reinterpret_cast<FileEntryListCollection*>(TextureListArray)->LoadFromTESFile(apModelList, apFile);
         break;
     }
 }
 
 // Deletes each element of the array at this+4, frees the array, nulls the pointer, and resets the count at this+0 to zero.
 // @fnv 0x0048a010
+// pdb: TESTextureListArray::ClearData | TESModelList.obj | retail, call graph (shared callers), high
+// pdb locals: i
 void FileEntryListCollection::ClearAndDeleteArray()
 {
     unsigned int i;
-    if (m_ppElementArray)
+    if (pTextureLists)
     {
-        for (i = 0; i < m_uiFileEntryCount; i++)
-            delete m_ppElementArray[i];
-        delete m_ppElementArray;
-        m_ppElementArray = 0;
+        for (i = 0; i < iTextureListCount; i++)
+            delete pTextureLists[i];
+        delete pTextureLists;
+        pTextureLists = 0;
     }
-    m_uiFileEntryCount = 0;
+    iTextureListCount = 0;
 }
 
 struct FUN_0048a2c0_shell
@@ -196,13 +217,16 @@ struct FUN_0048a2c0_shell
 };
 // Casts component to TESModelList, copies each filename via FUN_00489fa0, then copies the origin pathing location.
 // @fnv 0x00489db0
-void TESModelList::BaseFormRecord(BaseFormComponent* component)
+// pdb: TESModelList::CopyComponent | TESModelList.obj | retail, vtable slot, high
+// pdb params: apCopyFC
+// pdb locals: pcopy, pnifFileList, pnifFilename
+void TESModelList::BaseFormRecord(BaseFormComponent* apCopyFC)
 {
-    TESModelList* source = dynamic_cast<TESModelList*>(component);
+    TESModelList* source = dynamic_cast<TESModelList*>(apCopyFC);
     if (!source)
         return;
     Free();
-    BSSimpleList<char const*>* list = &source->m_kModelPaths;
+    BSSimpleList<char const*>* list = &source->nifFilenames;
     while (list)
     {
         const char* filename = list->GetItem();
@@ -213,6 +237,7 @@ void TESModelList::BaseFormRecord(BaseFormComponent* component)
     ((FUN_0048a2c0_shell*)((char*)this + 0xc))->TESTextureListArray_Copy(((PathingRequest*)source)->GetOrigin());
 }
 
+// pdb: class TaskQueueInterface, size 0x10 (here 0x1), 4 members
 struct TaskQueueInterface
 {
     static void CopyStringToBuffer(char* dest, unsigned int size, const char* src);
@@ -224,14 +249,17 @@ struct SoundListView
 // If the string is not already present, allocates a copy of it, copies the text into it, and appends it to the list at this+4.
 // @fnv 0x00489fa0
 // src: COMMUNITY 0x00489fa0
-void TESModelList::AddModel_00489fa0(const char* apString)
+// pdb: TESModelList::AddNIFFile | TESModelList.obj | debug, call graph, high
+// pdb params: apFilename
+// pdb locals: iFilenameLen, pnifFilename
+void TESModelList::AddModel_00489fa0(const char* apFilename)
 {
-    if (!ContainsFile(apString))
+    if (!ContainsFile(apFilename))
     {
-        int size = BSStringLength(apString) + 1;
+        int size = BSStringLength(apFilename) + 1;
         char* copy = static_cast<char*>(operator new(size));
         char* dest = copy;
-        TaskQueueInterface::CopyStringToBuffer(dest, size, apString);
+        TaskQueueInterface::CopyStringToBuffer(dest, size, apFilename);
         ((SoundListView*)((char*)this + 4))->AddTail(dest);
     }
 }
@@ -250,9 +278,12 @@ int __cdecl BSstricmp(int a, int b);
 
 // Looks up a record via FUN_00ec43fb and walks both node lists, returning true if any pair of entries differs or the lists have different lengths.
 // @fnv 0x00489e40
-bool TESModelList::CompareWithBase(BaseFormComponent* arg)
+// pdb: TESModelList::CompareComponent | TESModelList.obj | retail, vtable slot, high
+// pdb params: apCompareFC
+// pdb locals: pnifFileListCompare, pnifFileList, pcompare, pnifFilename, pnifFilenameCompare
+bool TESModelList::CompareWithBase(BaseFormComponent* apCompareFC)
 {
-    char* p = (char*)FUN_00ec43fb(reinterpret_cast<unsigned int>(arg), 0, &DAT_01183040, &DAT_01186b14, 0);
+    char* p = (char*)FUN_00ec43fb(reinterpret_cast<unsigned int>(apCompareFC), 0, &DAT_01183040, &DAT_01186b14, 0);
     if (p == 0)
     {
         return true;
@@ -290,12 +321,15 @@ int __cdecl BSstricmp(const char* lhs, const char* rhs);
 
 // Returns true if filename is non-null and matches an entry in the model list, otherwise false.
 // @fnv 0x00489f20
+// pdb: TESModelList::IsNIFFileInList | TESModelList.obj | debug, object-file gap fill, medium
+// pdb params: apFilename
+// pdb locals: pnifFileList, pnifFilename
 bool TESModelList::ContainsFile(const char* filename)
 {
-    if (m_kModelPaths.IsEmpty() || filename == 0)
+    if (nifFilenames.IsEmpty() || filename == 0)
         return false;
 
-    BSSimpleList<const char*>* entry = &m_kModelPaths;
+    BSSimpleList<const char*>* entry = &nifFilenames;
     while (entry != 0)
     {
         const char* value = entry->GetItem();
@@ -309,16 +343,19 @@ bool TESModelList::ContainsFile(const char* filename)
 
 unsigned int __cdecl BSstrlen(const char* text);
 void __cdecl FUN_00406d30(char* destination, unsigned int capacity, const char* source);
-void __cdecl TESForm_AddChunkArray(void* destination, char* source, unsigned int length);
+void __cdecl TESForm_AddChunkArray(void* aeChunkID, char* apData, unsigned int aiSize);
 
 // If the model list is non-empty, concatenates its strings into a new buffer, copies it to destination, frees it, then clears the list data.
 // @fnv 0x00489ba0
-void TESModelList::CopyModelListToBuffer(void* destination, unsigned int flags)
+// pdb: TESModelList::Save | TESModelList.obj | retail, call graph, high
+// pdb params: aeModelListID, aeTextureListID
+// pdb locals: pcurrentFile, pnifFileList, pnifFilenames, ilocalsize, idataSize, pnifFilename, isize
+void TESModelList::CopyModelListToBuffer(void* aeModelListID, unsigned int aeTextureListID)
 {
-    if (!m_kModelPaths.IsEmpty())
+    if (!nifFilenames.IsEmpty())
     {
         unsigned int iStack_8 = 1;
-        BSSimpleList<const char*>* iStack7 = &m_kModelPaths;
+        BSSimpleList<const char*>* iStack7 = &nifFilenames;
         const char* piVar4;
         char* allocResult;
         char* puVar4;
@@ -339,7 +376,7 @@ void TESModelList::CopyModelListToBuffer(void* destination, unsigned int flags)
         allocResult = (char*)::operator new(iStack_8);
         puVar4 = allocResult;
         puStack_18 = puVar4;
-        iStack7 = &m_kModelPaths;
+        iStack7 = &nifFilenames;
         iStack_c = iStack_8;
         while (iStack7 != 0)
         {
@@ -354,9 +391,9 @@ void TESModelList::CopyModelListToBuffer(void* destination, unsigned int flags)
             iStack7 = iStack7->GetNext();
         }
         *puStack_18 = 0;
-        TESForm_AddChunkArray(destination, puVar4, iStack_8);
+        TESForm_AddChunkArray(aeModelListID, puVar4, iStack_8);
         freeBuffer_ = puVar4;
         ::operator delete(freeBuffer_);
     }
-    reinterpret_cast<FileEntryListCollection*>(m_kModelData)->ClearData(flags);
+    reinterpret_cast<FileEntryListCollection*>(TextureListArray)->ClearData(aeTextureListID);
 }

@@ -53,7 +53,7 @@ bool FOPipboyManager::CheckOrangeButtonsClicked(bool press, bool release, float&
     if (!SkyObject_GetNiNode() || !(NiAVObject*)m_cPipBoyButtonAvailability[0] ||
         !(NiAVObject*)m_cPipBoyButtonAvailability[1] || !(NiAVObject*)m_cPipBoyButtonAvailability[2])
         return false;
-    if (InterfaceManager_IsInPipboyMenu() && FUN_00717920() && (NiNode*)m_pPipBoyObject0)
+    if (InterfaceManager_IsInPipboyMenu() && FUN_00717920() && (NiNode*)spPipboyRoot)
     {
         PipboyRayPoint origin;
         PipboyRayPoint c;

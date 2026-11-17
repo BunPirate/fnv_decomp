@@ -7,6 +7,7 @@
 
 class NiStream;
 
+// pdb: class NiTransform, size 0x40 (here 0x34), 3 members
 class NiTransform
 {
 public:
@@ -29,7 +30,7 @@ public:
     void LoadBinary(NiStream* stream);
     void LoadBinary(NiStream& stream);
     void SaveBinary(NiStream* stream);
-    char* ToString(const char* prefix);
+    char* ToString(const char* pPrefix);
 
     NiMatrix3 FUN_004768c0();
     NiTransform* NiTransform_NiTransform();

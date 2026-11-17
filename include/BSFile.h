@@ -5,6 +5,7 @@
 
 template <class T> class BSStringT;
 
+// pdb: class BSFile, size 0x1a0 (here 0x158), bases: NiFile, 12 members
 class BSFile : public NiFile
 {
 public:
@@ -15,7 +16,7 @@ public:
 
     virtual void SetEndianSwap(bool bDoSwap);
     using NiFile::Seek;
-    virtual void Seek(int iOffset, int iWhence); // 0x14
+    virtual void Seek(int aiOffset, int aiWhence); // 0x14
     virtual char* FileName();
     virtual unsigned int GetFileSize();
 

@@ -65,6 +65,7 @@ class NiD3DVertexDeclaration
     virtual void vfn_b4();
 };
 extern NiRenderer* DAT_011f9508;
+// pdb: class ParticleShader, size 0x12c, bases: BSShader, 13 members
 class ParticleShader : public BSShader
 {
   public:
@@ -74,7 +75,7 @@ class ParticleShader : public BSShader
     static void operator delete(void*);
     virtual void vfn_13c();
     virtual void vfn_140();
-    char data[0xc0];
+    char ePass[0xc0]; // src: XBOX_RETAIL_PDB +0x6c (old: data)
 };
 
 class FUN_00ba53f0 : public ParticleShader

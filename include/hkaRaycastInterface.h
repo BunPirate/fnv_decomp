@@ -4,6 +4,7 @@
 
 class hkVector4;
 
+// pdb: class hkaRaycastInterface, size 0x4, 0 members
 class hkaRaycastInterface
 {
 public:

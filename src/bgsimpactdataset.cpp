@@ -11,6 +11,7 @@
 #include "../include/TESDataHandler.h"
 #include "../include/TESForm.h"
 
+// pdb: class ImpactSwap, size 0x15c (here 0x1), 2 members
 class ImpactSwap
 {
   public:
@@ -24,6 +25,7 @@ void __cdecl ResetFootstepSounds();
 extern "C" void* __cdecl memset(void*, int, unsigned int);
 
 // @fnv 0x0058e810
+// pdb: BGSImpactDataSet::BGSImpactDataSet | BGSImpactDataSet.obj | retail, upstream name already matches, high
 BGSImpactDataSet::BGSImpactDataSet()
 {
     SetFormType((ENUM_FORM_ID)0x5f);
@@ -31,19 +33,21 @@ BGSImpactDataSet::BGSImpactDataSet()
 }
 
 // @fnv 0x0058eb10
+// pdb: BGSImpactDataSet::InitializeData | BGSImpactDataSet.obj | debug, object-file gap fill, medium
 void BGSImpactDataSet::ResetFormData()
 {
-    memset(m_apImpactData, 0, sizeof(m_apImpactData));
+    memset(ppImpactData, 0, sizeof(ppImpactData));
 }
 
 #include <malloc.h>
 void* __cdecl operator new(unsigned int);
 extern TESDataHandler* g_dataHandler;
 int __cdecl Warning(const char*, ...);
+// pdb: class ModelLoader, size 0x30 (here 0x1), 12 members
 class ModelLoader
 {
   public:
-    void ProcessModelRequest(TESModel*, int priority, QueuedFile*, bool, bool, bool, bool);
+    void ProcessModelRequest(TESModel*, int aePriority, QueuedFile*, bool, bool, bool, bool);
 };
 extern ModelLoader* g_modelLoader;
 template <int N> struct EndianSizeTag
@@ -53,7 +57,9 @@ void __cdecl BSEndian(float*, EndianSizeTag<4>);
 
 // Looks up the form with ref ID 0x276; if missing, creates a BGSImpactDataSet, sets its ref ID and editor ID, and adds it to the data handler.
 // @fnv 0x0058ea10
-void BGSImpactDataSet::CacheImpactDataSet()
+// src: XBOX_RETAIL_PDB 0x0058ea10
+// pdb: BGSImpactDataSet::CreateDefaultImpactDataSet | BGSImpactDataSet.obj | retail, string-set bridge, high
+void BGSImpactDataSet::CreateDefaultImpactDataSet()
 {
     ms_pImpactDataSet = dynamic_cast<BGSImpactDataSet*>(TESForm::GetFormByID(0x276));
     if (!ms_pImpactDataSet)
@@ -67,55 +73,60 @@ void BGSImpactDataSet::CacheImpactDataSet()
 
 // Validates the TESForm type is 0x5f, loads the record header, then reads EDID, OBND and DATA chunks until no chunk remains.
 // @fnv 0x0058ec00
-bool BGSImpactDataSet::Load(TESFile* file)
+// pdb: BGSImpactDataSet::Load | BGSImpactDataSet.obj | retail, upstream name already matches, high
+// pdb params: apFile
+// pdb locals: chunkid, pMessage, i
+bool BGSImpactDataSet::Load(TESFile* apFile)
 {
     // This record loader uses the original full-register form-type return ABI.
     typedef ENUM_FORM_ID (TESFile::*GetTESFormFn)();
-    if ((file->*reinterpret_cast<GetTESFormFn>(&TESFile::GetTESForm))() != 0x5f)
+    if ((apFile->*reinterpret_cast<GetTESFormFn>(&TESFile::GetTESForm))() != 0x5f)
         return false;
-    LoadRecordHeader(file);
+    LoadRecordHeader(apFile);
     unsigned int uiChunkID;
-    while ((uiChunkID = file->GetChunkID()) != 0)
+    while ((uiChunkID = apFile->GetChunkID()) != 0)
     {
         switch (uiChunkID)
         {
         case 0x44494445: {
-            char* editorID = (char*)_alloca(file->GetChunkSize());
-            file->GetChunkData(editorID, 0x200);
+            char* editorID = (char*)_alloca(apFile->GetChunkSize());
+            apFile->GetChunkData(editorID, 0x200);
             SetEditorID_AtRuntime(editorID);
             break;
         }
         case 0x444e424f:
-            readOBNDSubRecord(file);
+            readOBNDSubRecord(apFile);
             break;
         case 0x41544144:
-            file->GetChunkData(m_apImpactData, sizeof(m_apImpactData));
-            if (file->GetChunkData())
+            apFile->GetChunkData(ppImpactData, sizeof(ppImpactData));
+            if (apFile->GetChunkData())
             {
                 for (int i = 0; i < 12; ++i)
-                    BSEndian((float*)&m_apImpactData[i], EndianSizeTag<4>());
+                    BSEndian((float*)&ppImpactData[i], EndianSizeTag<4>());
             }
             break;
         }
-        if (!file->NextChunk())
+        if (!apFile->NextChunk())
             break;
     }
     return true;
 }
 
 // @fnv 0x0058edd0
+// pdb: BGSImpactDataSet::InitItem | BGSImpactDataSet.obj | retail, string-set bridge, high
+// pdb locals: i, itempint
 void BGSImpactDataSet::InitItem()
 {
     if (IsFormInitialized())
         return;
     for (int i = 0; i < 12; ++i)
     {
-        unsigned int formID = (unsigned int)m_apImpactData[i];
+        unsigned int formID = (unsigned int)ppImpactData[i];
         if (formID)
         {
             RemapFormIDForFile(formID, GetFile(-1));
-            m_apImpactData[i] = dynamic_cast<BGSImpactData*>(GetFormByID(formID));
-            if (m_apImpactData[i])
+            ppImpactData[i] = dynamic_cast<BGSImpactData*>(GetFormByID(formID));
+            if (ppImpactData[i])
             {
             }
             else
@@ -127,7 +138,10 @@ void BGSImpactDataSet::InitItem()
 }
 
 // @fnv 0x0058ef10
-void BGSImpactDataSet::QueueResourceLoad(IO_TASK_PRIORITY priority, QueuedFile* pQueuedFile)
+// pdb: BGSImpactDataSet::QueueFiles | BGSImpactDataSet.obj | retail, vtable slot, high
+// pdb params: aePriority, apParent
+// pdb locals: i, pimpactData, ptexset
+void BGSImpactDataSet::QueueResourceLoad(IO_TASK_PRIORITY aePriority, QueuedFile* apParent)
 {
     for (int i = 0; i < 12; ++i)
     {
@@ -135,31 +149,36 @@ void BGSImpactDataSet::QueueResourceLoad(IO_TASK_PRIORITY priority, QueuedFile* 
         if (data)
         {
             if (static_cast<const BGSImpactData*>(data)->GetModelLength())
-                g_modelLoader->ProcessModelRequest(data, priority, pQueuedFile, true, true, false, false);
+                g_modelLoader->ProcessModelRequest(data, aePriority, apParent, true, true, false, false);
             BGSTextureSet* textureSet = data->GetDecalTextureSet();
             if (textureSet)
-                textureSet->LoadTextures(priority, pQueuedFile, false);
+                textureSet->QueueTextureSet(aePriority, apParent, false);
         }
     }
 }
 
 // @fnv 0x0058e9d0
-BGSImpactData* BGSImpactDataSet::GetImpactDataForMaterial(int material)
+// pdb: BGSImpactDataSet::GetImpactData | BGSImpactDataSet.obj | debug, call graph, high
+// pdb params: aeType
+BGSImpactData* BGSImpactDataSet::GetImpactDataForMaterial(int aeType)
 {
     if (DAT_011ca834)
-        return DAT_011ca834->GetSwappedImpactData(material, m_apImpactData[material]);
-    return m_apImpactData[material];
+        return DAT_011ca834->GetSwappedImpactData(aeType, ppImpactData[aeType]);
+    return ppImpactData[aeType];
 }
 
 // Stores swap in DAT_011ca834, then for each of 10 indices passes the swap's alt footstep material name (or 0) to SetGlobalPointerAtOffset and calls FUN_00837500.
 // @fnv 0x0058eeb0
-void BGSImpactDataSet::RefreshImpactData(ImpactSwap* swap)
+// pdb: BGSImpactDataSet::ApplyImpactSwap | BGSImpactDataSet.obj | debug, call graph, high
+// pdb params: apSwap
+// pdb locals: i
+void BGSImpactDataSet::RefreshImpactData(ImpactSwap* apSwap)
 {
-    DAT_011ca834 = swap;
+    DAT_011ca834 = apSwap;
     for (int i = 0; i < 10; ++i)
     {
-        if (swap)
-            SetGlobalPointerAtOffset(i, swap->GetAltFootstepMaterialName(i));
+        if (apSwap)
+            SetGlobalPointerAtOffset(i, apSwap->GetAltFootstepMaterialName(i));
         else
             SetGlobalPointerAtOffset(i, 0);
     }
@@ -173,6 +192,9 @@ struct FUN_0040f2a0
 };
 // Calls FUN_0058f010, frees this when flags has bit 0 set, and returns this.
 // @fnv 0x0040f2a0
+// pdb: ImpactSwap::~ImpactSwap | BGSImpactDataSet.obj | retail, call graph (shared callers), low
+// pdb note: debug build links it to NiRefObject::DeleteThis
+// pdb locals: i
 void* FUN_0040f2a0::DeleteThis(unsigned int flags)
 {
     NiTPointerMap_DeleteImpactDataMaps();
@@ -182,11 +204,14 @@ void* FUN_0040f2a0::DeleteThis(unsigned int flags)
 }
 
 // @fnv 0x0058e8c0
+// pdb: BGSImpactDataSet::~BGSImpactDataSet | BGSImpactDataSet.obj | debug, upstream name already matches, high
 BGSImpactDataSet::~BGSImpactDataSet()
 {}
 
 void __cdecl TESForm_AddChunkArray_00485710(unsigned int, unsigned int*, unsigned int);
 // @fnv 0x0058ed50
+// pdb: BGSImpactDataSet::Save | BGSImpactDataSet.obj | retail, upstream name already matches, high
+// pdb locals: pids, i
 void BGSImpactDataSet::Save()
 {
     int iIndex;
@@ -194,8 +219,8 @@ void BGSImpactDataSet::Save()
     TESForm::BeginFormRecord();
     for (iIndex = 0; iIndex < 12; iIndex++)
     {
-        if (m_apImpactData[iIndex])
-            auiFormIDs[iIndex] = m_apImpactData[iIndex]->GetFormID();
+        if (ppImpactData[iIndex])
+            auiFormIDs[iIndex] = ppImpactData[iIndex]->GetFormID();
         else
             auiFormIDs[iIndex] = 0;
     }
@@ -211,6 +236,7 @@ struct FUN_0058efd0
 };
 // Zero-initializes the two embedded buffers a and b of the object.
 // @fnv 0x0058efd0
+// pdb: ImpactSwap::ImpactSwap | BGSImpactDataSet.obj | retail, call graph, high
 FUN_0058efd0::FUN_0058efd0()
 {
     memset(a, 0, sizeof(a));
@@ -220,6 +246,8 @@ FUN_0058efd0::FUN_0058efd0()
 // Deletes each of the 12 item pointers in the array and sets them to null.
 // @fnv 0x0058f010
 // src: GUESS 0x0058f010 (confidence: medium)
+// pdb: ImpactSwap::~ImpactSwap | BGSImpactDataSet.obj | debug, object-file gap fill, medium
+// pdb locals: i
 void __fastcall NiTPointerMap_DeleteImpactDataMaps(NiTPointerMap<BGSImpactData*, BGSImpactData*>** apItems)
 {
     for (int i = 0; i < 12; i++)
@@ -245,10 +273,13 @@ void __cdecl TESForm_AddChunkArray(unsigned int, void*, unsigned int);
 struct FUN_0058f080
 {
     NiTPointerMap<BGSImpactData*, BGSImpactData*>* m_pData[12];
-    void Save();
+    void ImpactSwap_Save();
 };
 // @fnv 0x0058f080
-void FUN_0058f080::Save()
+// src: XBOX_DEBUG_PDB 0x0058f080
+// pdb: ImpactSwap::Save | BGSImpactDataSet.obj | debug, call graph, high
+// pdb locals: i, iter, data
+void FUN_0058f080::ImpactSwap_Save()
 {
     void* cur;
     int i;
@@ -320,17 +351,20 @@ void FUN_0058f180::Load(TESFile* apFile)
 struct FUN_0058f6f0
 {
     DummyPointerMap* m[1];
-    unsigned int Get(unsigned int idx, unsigned int def);
+    unsigned int Get(unsigned int aeType, unsigned int apOrigImpactData);
 };
 // Looks up idx in the pointer map and returns the stored value for def, or def itself when the slot is null.
 // @fnv 0x0058f6f0
-unsigned int FUN_0058f6f0::Get(unsigned int auiIndex, unsigned int auiDefault)
+// pdb: ImpactSwap::GetSwappedImpactData | BGSImpactDataSet.obj | debug, call graph (shared callers), high
+// pdb params: aeType, apOrigImpactData
+// pdb locals: pnewdata
+unsigned int FUN_0058f6f0::Get(unsigned int aeType, unsigned int apOrigImpactData)
 {
     unsigned int result = 0;
-    if (m[auiIndex])
-        static_cast<const DummyPointerMap*>(m[auiIndex])->GetAt(auiDefault, result);
+    if (m[aeType])
+        static_cast<const DummyPointerMap*>(m[aeType])->GetAt(apOrigImpactData, result);
     else
-        result = auiDefault;
+        result = apOrigImpactData;
     return result;
 }
 
@@ -363,12 +397,16 @@ struct ShadowLightData
 };
 struct FUN_006233c0
 {
-    void GetImpactDataForMaterial(int aeType);
+    void DecalCaster_SetCustomPickCollisions(int aeCustomPick);
 };
 // @fnv 0x006233c0
-void FUN_006233c0::GetImpactDataForMaterial(int aeType)
+// src: XBOX_DEBUG_PDB 0x006233c0
+// pdb: DecalCaster::SetCustomPickCollisions | DecalCaster.obj | debug, call graph, high
+// pdb params: aeCustomPick
+// pdb locals: uimultiLayer
+void FUN_006233c0::DecalCaster_SetCustomPickCollisions(int aeCustomPick)
 {
-    switch (aeType)
+    switch (aeCustomPick)
     {
     case 0: {
         unsigned __int64 a = 0x26636;
@@ -388,12 +426,16 @@ int __cdecl _memcmp(const void*, const void*, unsigned int);
 
 struct FUN_0058f5c0_shell
 {
-    bool IsImpactSwapDifferent(ImpactSwap* apSwap);
+    bool ImpactSwap_Compare(ImpactSwap* apSwap);
 };
 
 // Compares 12 map entries and their impact data against apSwap, returning true if any entry, form ID, mapped data or trailing 0x12c bytes differ.
 // @fnv 0x0058f5c0
-bool FUN_0058f5c0_shell::IsImpactSwapDifferent(ImpactSwap* apSwap)
+// src: XBOX_DEBUG_PDB 0x0058f5c0
+// pdb: ImpactSwap::Compare | BGSImpactDataSet.obj | debug, call graph, high
+// pdb params: apSwap
+// pdb locals: i, iter, pnewdata, polddata
+bool FUN_0058f5c0_shell::ImpactSwap_Compare(ImpactSwap* apSwap)
 {
     int i;
 
@@ -445,7 +487,7 @@ void __cdecl operator delete(void*);
 struct SomeClass
 {
     FUN_0058f820* m_pData[12];
-    void RemapImpactData(TESForm* apForm);
+    void ImpactSwap_InitItem(TESForm* apOwner);
 };
 
 struct Entry
@@ -460,7 +502,11 @@ TESForm* __cdecl TESForm_GetFormByNumericID(unsigned int);
 
 // For each of the 12 maps, collects old/new impact pairs, resolves their form IDs against apForm's file, warns on missing impacts, and reinserts them.
 // @fnv 0x0058f210
-void SomeClass::RemapImpactData(TESForm* apForm)
+// src: XBOX_RETAIL_PDB 0x0058f210
+// pdb: ImpactSwap::InitItem | BGSImpactDataSet.obj | retail, unique string literal, high
+// pdb params: apOwner
+// pdb locals: i, icount, iindex, pdataarray, iter, pnewdata, polddata, itempint
+void SomeClass::ImpactSwap_InitItem(TESForm* apOwner)
 {
     int i6;
     void* posVal;
@@ -493,12 +539,12 @@ void SomeClass::RemapImpactData(TESForm* apForm)
                 if (entries3[j_].oldImpact)
                 {
                     oldFormID = (unsigned int)entries3[j_].oldImpact;
-                    ResolveFormID(&oldFormID, apForm->GetFile(-1));
+                    ResolveFormID(&oldFormID, apOwner->GetFile(-1));
                     oldImpact6 = dynamic_cast<BGSImpactData*>(TESForm_GetFormByNumericID(oldFormID));
                     if (!oldImpact6)
                     {
                         Warning("Could not find old ImpactData (%08X) for ImpactSwap on '%s' (%08X).", oldFormID,
-                                apForm->GetName(), apForm->GetFormID());
+                                apOwner->GetName(), apOwner->GetFormID());
                     }
                 }
 
@@ -506,12 +552,12 @@ void SomeClass::RemapImpactData(TESForm* apForm)
                 if (entries3[j_].newImpact)
                 {
                     newFormID4 = (unsigned int)entries3[j_].newImpact;
-                    ResolveFormID(&newFormID4, apForm->GetFile(-1));
+                    ResolveFormID(&newFormID4, apOwner->GetFile(-1));
                     newImpact = dynamic_cast<BGSImpactData*>(TESForm_GetFormByNumericID(newFormID4));
                     if (!newImpact)
                     {
                         Warning("Could not find new ImpactData (%08X) for ImpactSwap on '%s' (%08X).", newFormID4,
-                                apForm->GetName(), apForm->GetFormID());
+                                apOwner->GetName(), apOwner->GetFormID());
                     }
                 }
 
@@ -535,10 +581,13 @@ void SomeClass::RemapImpactData(TESForm* apForm)
 // Maps selected integer values to integers 0–9; returns 4 for all other values.
 // @fnv 0x0058e8f0
 // src: XBOX_PDB 0x0058e8f0
-int BGSImpactDataSet_GetImpactMaterialType(int value)
+// pdb: BGSImpactDataSet::GetImpactMaterialType | BGSImpactDataSet.obj | debug, upstream name already matches, high
+// pdb params: aehkMatType
+// pdb locals: eretval
+int BGSImpactDataSet_GetImpactMaterialType(int aehkMatType)
 {
     int result = 4;
-    switch (value)
+    switch (aehkMatType)
     {
     case 0:
     case 10:
@@ -599,17 +648,23 @@ int BGSImpactDataSet_GetImpactMaterialType(int value)
 #include <string.h>
 // Copies impact data from apCopy after casting it to BGSImpactDataSet.
 // @fnv 0x0058eb30
+// pdb: BGSImpactDataSet::Copy | BGSImpactDataSet.obj | retail, upstream name already matches, high
+// pdb params: apCopy
+// pdb locals: pcopy
 void BGSImpactDataSet::Copy(TESForm* apCopy)
 {
     BGSImpactDataSet* pSource = dynamic_cast<BGSImpactDataSet*>(apCopy);
     if (!pSource)
         return;
     TESForm::CopyFrom(pSource);
-    memcpy(m_apImpactData, pSource->m_apImpactData, sizeof(m_apImpactData));
+    memcpy(ppImpactData, pSource->ppImpactData, sizeof(ppImpactData));
 }
 
 // Returns true if apCompare is not a BGSImpactDataSet, TESForm::Compare returns true, or the impact-data arrays differ.
 // @fnv 0x0058eb90
+// pdb: BGSImpactDataSet::Compare | BGSImpactDataSet.obj | retail, upstream name already matches, high
+// pdb params: apCompare
+// pdb locals: pcomp
 bool BGSImpactDataSet::Compare(TESForm* apCompare)
 {
     BGSImpactDataSet* pcomp = dynamic_cast<BGSImpactDataSet*>(apCompare);
@@ -617,7 +672,7 @@ bool BGSImpactDataSet::Compare(TESForm* apCompare)
         return true;
     if (((TESForm*)this)->TESForm::Compare(pcomp))
         return true;
-    if (memcmp(((BGSImpactDataSet*)this)->m_apImpactData, pcomp->m_apImpactData, sizeof(pcomp->m_apImpactData)))
+    if (memcmp(((BGSImpactDataSet*)this)->ppImpactData, pcomp->ppImpactData, sizeof(pcomp->ppImpactData)))
         return true;
     return false;
 }
@@ -631,6 +686,9 @@ struct ImpactSwapMaps
 // Deletes this object's 12 map entries, adds entries from apSwap's maps, then copies 300 bytes from offset 0x30.
 // @fnv 0x0058f4c0
 // src: COMMUNITY 0x0058f4c0
+// pdb: ImpactSwap::Copy | BGSImpactDataSet.obj | retail, upstream name already matches, high
+// pdb params: apSwap
+// pdb locals: i, iter, pnewdata, polddata
 void ImpactSwapMaps::ImpactSwap_Copy(ImpactSwapMaps* apSwap)
 {
     for (int i = 0; i < 12; i++)

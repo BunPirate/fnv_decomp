@@ -89,7 +89,7 @@ void __cdecl ConvertPackedPixelsToRGBA(unsigned, unsigned, unsigned, unsigned ch
 void __cdecl NiDevImageConverter_ConvertBUMPLUMA32To32(unsigned, unsigned, unsigned, unsigned char*, const NiPalette*,
                           const NiDevImageConverter::PixelFormatBitLayout&, const unsigned char*,
                           const NiDevImageConverter::PixelFormatBitLayout&);
-void __cdecl ConvertRgbToPacked16(unsigned, unsigned, unsigned, unsigned char*, const NiPalette*,
+void __cdecl NiDevImageConverter_ConvertBUMPLUMA32To16(unsigned, unsigned, unsigned, unsigned char*, const NiPalette*,
                                   const NiDevImageConverter::PixelFormatBitLayout&, const unsigned char*,
                                   const NiDevImageConverter::PixelFormatBitLayout&);
 void __cdecl NiDevImageConverter_ConvertBUMP16To32(unsigned, unsigned, unsigned, unsigned char*, const NiPalette*,

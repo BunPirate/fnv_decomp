@@ -27,7 +27,7 @@ extern const NiColorA DAT_011a9430;
 inline NiMorphData::MorphTarget* NiMorphData::GetTarget(unsigned int uiIndex) const
 {
     if (uiIndex < m_uiNumTargets)
-        return &m_pMorphTargets[uiIndex];
+        return &m_aMorphTargets[uiIndex];
     return 0;
 }
 
@@ -95,11 +95,15 @@ inline NiBound::NiBound()
 
 // Searches the morph targets for one whose name handle matches kID and returns its index, or INVALID_INDEX if none match.
 // @fnv 0x00a3aeb0
+// pdb: NiGeomMorpherController::GetInterpolatorIndexFx | NiGeomMorpherController.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiGeomMorpherController::NiGeomMorpherController
+// pdb params: arName
+// pdb locals: us, pkTarget
 unsigned short NiGeomMorpherController::GetTargetIndex(const NiFixedString& kID) const
 {
     for (unsigned short us = 0; us < GetNumTargets(); us++)
     {
-        NiMorphData::MorphTarget* pkTarget = m_spMorphTargetData.m_pObject->GetTarget(us);
+        NiMorphData::MorphTarget* pkTarget = m_spMorphData.m_pObject->GetTarget(us);
         if (pkTarget->GetName().m_kHandle == kID.m_kHandle)
             return us;
     }
@@ -108,6 +112,9 @@ unsigned short NiGeomMorpherController::GetTargetIndex(const NiFixedString& kID)
 }
 
 // @fnv 0x00a3add0
+// pdb: NiGeomMorpherController::GetInterpolatorIndex | NiGeomMorpherController.obj | retail, object-file run extension, low
+// pdb params: pcID
+// pdb locals: us, pkTarget
 unsigned short NiGeomMorpherController::GetTargetIndex(const char* pcName) const
 {
     if (!pcName)
@@ -115,7 +122,7 @@ unsigned short NiGeomMorpherController::GetTargetIndex(const char* pcName) const
 
     for (unsigned short us = 0; us < GetNumTargets(); us++)
     {
-        NiMorphData::MorphTarget* pkTarget = m_spMorphTargetData.m_pObject->GetTarget(us);
+        NiMorphData::MorphTarget* pkTarget = m_spMorphData.m_pObject->GetTarget(us);
         if (NiStricmp(pkTarget->GetName().m_kHandle, pcName) == 0)
             return us;
     }
@@ -144,7 +151,7 @@ NiAnimationKey::KeyType NiColorInterpolator::GetColorKeyType(unsigned short) con
     if (!m_spColorData.m_pObject)
         return NiAnimationKey::NOINTERP;
 
-    return m_spColorData.m_pObject->m_eRequestType;
+    return m_spColorData.m_pObject->m_eType;
 }
 
 // @fnv 0x00a3bc20
@@ -153,7 +160,7 @@ unsigned char NiColorInterpolator::GetColorKeySize(unsigned short) const
     if (!m_spColorData.m_pObject)
         return 0;
 
-    return m_spColorData.m_pObject->m_ucKeyDataSize;
+    return m_spColorData.m_pObject->m_ucKeySize;
 }
 
 // @fnv 0x00a3bc40
@@ -184,25 +191,25 @@ extern bool DAT_011f3724;
 void NiGeomMorpherController::CopyMemberData(NiGeomMorpherController* pkDest, CloningProcess& kCloning)
 {
     NiInterpController::CopyMemberData(pkDest, kCloning);
-    pkDest->m_uiObjectFlags = m_uiObjectFlags;
-    if (m_spMorphTargetData.m_pObject)
+    pkDest->m_uFlags = m_uFlags;
+    if (m_spMorphData.m_pObject)
     {
-        pkDest->SetMorphData(m_spMorphTargetData.m_pObject, pkDest->m_pkTarget != 0);
+        pkDest->SetMorphData(m_spMorphData.m_pObject, pkDest->m_pkTarget != 0);
     }
 
     if (DAT_011f3724)
     {
-        m_bNeedsUpdate = true;
-        pkDest->m_bNeedsUpdate = true;
+        m_bAlwaysUpdate = true;
+        pkDest->m_bAlwaysUpdate = true;
     }
 
     for (unsigned short us = 0; us < GetNumTargets(); us++)
     {
-        InterpItem& kInterpItem = m_pInterpolatorItems[us];
-        if (kInterpItem.m_spControllerInterpolator.m_pObject)
+        InterpItem& kInterpItem = m_pkInterpItems[us];
+        if (kInterpItem.m_spInterpolator.m_pObject)
         {
-            NiInterpolator* pkNew = static_cast<NiInterpolator*>(kInterpItem.m_spControllerInterpolator.m_pObject->CloneObject(kCloning));
-            NiPointer<NiInterpolator>& spDest = pkDest->m_pInterpolatorItems[us].m_spControllerInterpolator;
+            NiInterpolator* pkNew = static_cast<NiInterpolator*>(kInterpItem.m_spInterpolator.m_pObject->CloneObject(kCloning));
+            NiPointer<NiInterpolator>& spDest = pkDest->m_pkInterpItems[us].m_spInterpolator;
             if (spDest.m_pObject != pkNew)
             {
                 if (spDest.m_pObject)
@@ -212,7 +219,7 @@ void NiGeomMorpherController::CopyMemberData(NiGeomMorpherController* pkDest, Cl
                     pkNew->IncRefCount();
             }
         }
-        pkDest->m_pInterpolatorItems[us].m_fWeight = kInterpItem.m_fWeight;
+        pkDest->m_pkInterpItems[us].m_fWeight = kInterpItem.m_fWeight;
     }
 }
 
@@ -220,23 +227,27 @@ void NiGeomMorpherController::CopyMemberData(NiGeomMorpherController* pkDest, Cl
 // @fnv 0x00a3a870
 char* __fastcall GetMorphTargetName(NiGeomMorpherController* self, int, unsigned short ausIndex)
 {
-    NiMorphData* md = *reinterpret_cast<NiMorphData**>(&self->m_spMorphTargetData);
+    NiMorphData* md = *reinterpret_cast<NiMorphData**>(&self->m_spMorphData);
     return md->GetTarget(ausIndex)->GetName().m_kHandle;
 }
 
 // @fnv 0x00a3a8a0
 // src: GAMEBRYO_LIB 0x00a3a8a0
+// pdb: NiGeomMorpherController::GetInterpolator | NiGeomMorpherController.obj | debug, upstream name already matches, high
+// pdb params: usIndex
 void* __fastcall NiGeomMorpherController_GetInterpolator(NiGeomMorpherController* self, int unused, unsigned short idx)
 {
-    return self->m_pInterpolatorItems[idx].m_spControllerInterpolator.m_pObject;
+    return self->m_pkInterpItems[idx].m_spInterpolator.m_pObject;
 }
 
 // Stores pkInterpolator into the morph controller's interpolator slot at usIndex, releasing the old interpolator and incrementing the new one's ref count.
 // @fnv 0x00a3a8b0
 // src: GAMEBRYO_LIB 0x00a3a8b0
+// pdb: NiGeomMorpherController::SetInterpolator | NiGeomMorpherController.obj | debug, upstream name already matches, high
+// pdb params: pkInterpolator, usIndex
 void __fastcall NiGeomMorpherController_SetInterpolator(NiGeomMorpherController* self, int, NiInterpolator* pkInterpolator, unsigned short usIndex)
 {
-    NiInterpolator** slot = reinterpret_cast<NiInterpolator**>(&self->m_pInterpolatorItems[usIndex]);
+    NiInterpolator** slot = reinterpret_cast<NiInterpolator**>(&self->m_pkInterpItems[usIndex]);
     NiInterpolator* pOldInterpolator = *slot;
     if (pOldInterpolator != pkInterpolator)
     {
@@ -250,11 +261,14 @@ void __fastcall NiGeomMorpherController_SetInterpolator(NiGeomMorpherController*
 
 // Reads the morph weight at usIndex from the controller's weight array (or 0.0f) and allocates a NiFloatInterpolator initialized with that value.
 // @fnv 0x00a3a900
+// pdb: NiGeomMorpherController::CreatePoseInterpolator | NiGeomMorpherController.obj | debug, object-file run extension, low
+// pdb params: usIndex
+// pdb locals: fValue, pkPoseInterp
 NiInterpolator* __fastcall CreateMorphWeightInterpolator(NiGeomMorpherController* self, int, unsigned short usIndex)
 {
     float fValue = 0.0f;
-    if (self->m_pInterpolatorItems)
-        fValue = self->m_pInterpolatorItems[usIndex].m_fWeight;
+    if (self->m_pkInterpItems)
+        fValue = self->m_pkInterpItems[usIndex].m_fWeight;
     NiFloatInterpolator* p = static_cast<NiFloatInterpolator*>(BSFadeNode::operator new(0x18));
     if (p)
         return static_cast<NiInterpolator*>(p->FUN_00a3c390(fValue));
@@ -262,7 +276,7 @@ NiInterpolator* __fastcall CreateMorphWeightInterpolator(NiGeomMorpherController
 }
 
 // @fnv 0x00a3a940
-NiGeomMorpherController::InterpItem::InterpItem() : m_spControllerInterpolator(0), m_fWeight(0.0f)
+NiGeomMorpherController::InterpItem::InterpItem() : m_spInterpolator(0), m_fWeight(0.0f)
 {
 }
 
@@ -321,23 +335,25 @@ struct GeomT
 
 // @fnv 0x00a3aba0
 // src: XBOX_PDB 0x00a3aba0
+// pdb: NiGeomMorpherController::OnPreDisplay | NiGeomMorpherController.obj | retail, upstream name already matches, high
+// pdb locals: pkAGD, pkData, bLocked, pkMorphedVerts, pdest, istride, usVerts, VertexIterator, vsrc
 void __fastcall NiGeomMorpherController_OnPreDisplay(NiGeomMorpherController* self, int)
 {
-    if (self->m_pkTarget && self->m_bUpdateEnabled)
+    if (self->m_pkTarget && self->m_bNeedPreDisplay)
     {
         GeomData* pData = reinterpret_cast<GeomT*>(self->m_pkTarget)->data;
         pData->SetDirtyFlags(1);
-        if ((self->m_uiObjectFlags & 1) && pData->f24)
+        if ((self->m_uFlags & 1) && pData->f24)
             pData->s40();
-        self->m_bUpdateEnabled = false;
+        self->m_bNeedPreDisplay = false;
     }
 }
 
 // @fnv 0x00a3adc0
 unsigned short NiGeomMorpherController::GetTargetCount() const
 {
-    if (m_spMorphTargetData.m_pObject)
-        return static_cast<unsigned short>(m_spMorphTargetData.m_pObject->m_uiNumTargets);
+    if (m_spMorphData.m_pObject)
+        return static_cast<unsigned short>(m_spMorphData.m_pObject->m_uiNumTargets);
     return 0;
 }
 
@@ -352,10 +368,13 @@ struct DynCastHelper
 };
 // Reads a float from the morph data array at usIndex and passes it to the interpolator's SetFloatValue after a dynamic cast.
 // @fnv 0x00a3ae50
+// pdb: NiGeomMorpherController::SynchronizePoseInterpolator | NiGeomMorpherController.obj | retail, object-file run extension, low
+// pdb params: pkInterp, usIndex
+// pdb locals: fValue, pkPoseInterp
 void __fastcall SetMorphPose(NiGeomMorpherController* self, int, NiInterpolator* pkInterp, unsigned short usMorphIndex)
 {
     float fValue = 0.0f;
-    NiGeomMorpherController::InterpItem* data = self->m_pInterpolatorItems;
+    NiGeomMorpherController::InterpItem* data = self->m_pkInterpItems;
     if (data)
         fValue = data[usMorphIndex].m_fWeight;
     NiFloatInterpolator* pkPoseInterp;
@@ -371,12 +390,12 @@ struct GlobalObjectO2_00a7b610
 {
     int x;
 };
-extern GlobalObjectO2_00a7b610 g_011f3728;
+extern GlobalObjectO2_00a7b610 NiGeomMorpherController_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f3728 (old: DAT_011f3728/g_011f3728)
 // @fnv 0x00a3afd0
 // src: COMMUNITY 0x00a3afd0
 GlobalObjectO2_00a7b610* __cdecl NiGeomMorpherController_GetRTTI()
 {
-    return &g_011f3728;
+    return &NiGeomMorpherController_ms_RTTI;
 }
 }  // namespace fnv_00a3afd0
 
@@ -426,7 +445,7 @@ struct MorphPoint3
 
 struct MorphGeomData
 {
-    void NiGeometryData_ReplaceData(unsigned short usVerts, MorphPoint3* pkDest, void* pvA, void* pvB, void* pvC,
+    void NiGeometryData_ReplaceData(unsigned short usVertices, MorphPoint3* pkDest, void* pvA, void* pvB, void* pvC,
                       unsigned int uiFlagA, unsigned int uiFlagB);
     unsigned short GetVertexCount() const
     {
@@ -463,6 +482,8 @@ struct MorphGeom
 };
 
 // @fnv 0x00a3b010
+// pdb: NiGeomMorpherController::GetVertexData | NiGeomMorpherController.obj | retail, object-file run extension, low
+// pdb locals: usVertCount, pkData, pkGeom, pkVerts
 MorphPoint3* __fastcall GetMorphVertices(NiGeomMorpherController* self, int)
 {
     MorphGeom* pkGeom = (MorphGeom*)self->m_pkTarget;
@@ -486,22 +507,25 @@ extern float DAT_011a8538[5];
 
 struct FUN_00a3e680_shell
 {
-    float SampleLength(int iA, int iB, float fT);
-    float NiPathInterpolator_PathLength(int iA, int iB, float fT);
+    float NiPathInterpolator_PathSpeed(int iI0, int iI1, float fTime);
+    float NiPathInterpolator_PathLength(int iI0, int iI1, float fTime);
 };
 
 // Samples SampleLength at five scaled points from DAT_011a854c, weights each by DAT_011a8538, sums them and multiplies by fT.
 // @fnv 0x00a3e680
 // src: XBOX_PDB 0x00a3e680
-float FUN_00a3e680_shell::NiPathInterpolator_PathLength(int iA, int iB, float fT)
+// pdb: NiPathInterpolator::PathLength | NiPathInterpolator.obj | retail, upstream name already matches, high
+// pdb params: iI0, iI1, fTime
+// pdb locals: iDegree, fResult, i
+float FUN_00a3e680_shell::NiPathInterpolator_PathLength(int iI0, int iI1, float fTime)
 {
     float fWeightedSum = 0.0f;
     for (int i = 0; i < 5; i++)
     {
-        float fSampleTime = DAT_011a854c[i] * fT;
-        fWeightedSum += SampleLength(iA, iB, fSampleTime) * DAT_011a8538[i];
+        float fSampleTime = DAT_011a854c[i] * fTime;
+        fWeightedSum += NiPathInterpolator_PathSpeed(iI0, iI1, fSampleTime) * DAT_011a8538[i];
     }
-    return fWeightedSum * fT;
+    return fWeightedSum * fTime;
 }
 
 namespace fnv_00a3aa10 {
@@ -584,18 +608,21 @@ inline NiPoint3* GetMorphVertexArray(NiGeomMorpherController* self)
 inline float GetMorphWeight(const NiGeomMorpherController* self, unsigned int i)
 {
     float f = 0.0f;
-    if (self->m_pInterpolatorItems)
-        f = self->m_pInterpolatorItems[i].m_fWeight;
+    if (self->m_pkInterpItems)
+        f = self->m_pkInterpItems[i].m_fWeight;
     return f;
 }
 
 inline void SetMorphWeight(NiGeomMorpherController* self, unsigned int i, float f)
 {
-    if (self->m_pInterpolatorItems)
-        self->m_pInterpolatorItems[i].m_fWeight = f;
+    if (self->m_pkInterpItems)
+        self->m_pkInterpItems[i].m_fWeight = f;
 }
 
 // @fnv 0x00a3aa10
+// pdb: NiGeomMorpherController::GenMorphInterp | NiGeomMorpherController.obj | retail, object-file run extension, low
+// pdb params: fTime
+// pdb locals: bupdate, pkVerts, uiI, iVertexDataArraySize, uiNumTargets, fFrac, pkInterp, pkDeltaVerts
 void __fastcall UpdateMorphWeights(NiGeomMorpherController* self, int, float fTime)
 {
     bool bupdate;
@@ -605,36 +632,36 @@ void __fastcall UpdateMorphWeights(NiGeomMorpherController* self, int, float fTi
     unsigned int uiNumTargets;
 
     pkVerts = GetMorphVertexArray(self);
-    uiNumTargets = self->m_spMorphTargetData.m_pObject->m_uiNumTargets;
+    uiNumTargets = self->m_spMorphData.m_pObject->m_uiNumTargets;
     iVertexDataArraySize = *(unsigned short*)(*(char**)((char*)self->m_pkTarget + 0xb8) + 8);
     for (uiIndex = 0; uiIndex < uiNumTargets; uiIndex++)
     {
         InterpV* pkInterp = reinterpret_cast<InterpV*>(self->GetInterpolator(uiIndex));
         float fFrac = GetMorphWeight(self, uiIndex);
-        if (uiIndex == 0 && self->m_spMorphTargetData.m_pObject->m_bTargetsAreRelative)
+        if (uiIndex == 0 && self->m_spMorphData.m_pObject->m_bRelativeTargets)
         {
-            if (self->m_bUpdateNormals)
+            if (self->m_bIgnoreBaseTarget)
                 fFrac = 0.0f;
             else
                 fFrac = 1.0f;
         }
-        else if (!pkInterp || !pkInterp->Update(self->m_fControllerTime, self->m_pkTarget, fFrac))
+        else if (!pkInterp || !pkInterp->Update(self->m_fScaledTime, self->m_pkTarget, fFrac))
         {
             continue;
         }
         SetMorphWeight(self, uiIndex, fFrac);
     }
-    if (!self->m_bUpdateNormals)
+    if (!self->m_bIgnoreBaseTarget)
         _fnv_zlib_memset(pkVerts, 0, sizeof(NiPoint3) * iVertexDataArraySize);
     bupdate = false;
     for (uiIndex = 0; uiIndex < uiNumTargets; uiIndex++)
     {
-        if (self->m_pInterpolatorItems)
+        if (self->m_pkInterpItems)
         {
-            float fFrac = self->m_pInterpolatorItems[uiIndex].m_fWeight;
+            float fFrac = self->m_pkInterpItems[uiIndex].m_fWeight;
             if (fFrac >= 0.001f || fFrac <= runtimeFloatSettingDefault166)
             {
-                NiPoint3* pkDeltaVerts = self->m_spMorphTargetData.m_pObject->m_pMorphTargets[uiIndex].m_pkVertexPositions;
+                NiPoint3* pkDeltaVerts = self->m_spMorphData.m_pObject->m_aMorphTargets[uiIndex].m_aTargetVerts;
                 AddScaledPoints(pkVerts, fFrac, pkDeltaVerts, iVertexDataArraySize);
                 bupdate = true;
             }
@@ -652,6 +679,9 @@ inline unsigned int NiStream::GetFileVersion() const
 
 // Links the object to the stream, reads morph data, sets per-target interpolators and key times depending on the stream version.
 // @fnv 0x00a3b5a0
+// pdb: NiGeomMorpherController::LinkObject | NiGeomMorpherController.obj | retail, object-file gap fill, high
+// pdb params: kStream
+// pdb locals: ui, uiNumTargets, pkInterp, pkTarget, uiSize
 void __fastcall LinkMorphData(NiGeomMorpherController* self, int, NiStream& kStream)
 {
     typedef void(__thiscall * SetInterpolatorType)(NiGeomMorpherController*, const char*, unsigned int);
@@ -659,26 +689,26 @@ void __fastcall LinkMorphData(NiGeomMorpherController* self, int, NiStream& kStr
 
     self->NiInterpController::LinkObject(kStream);
 
-    self->m_spMorphTargetData = static_cast<NiMorphData*>(kStream.GetLoadedObject());
+    self->m_spMorphData = static_cast<NiMorphData*>(kStream.GetLoadedObject());
 
     if (kStream.GetFileVersion() < 0x14010003)
     {
-        self->ClearInterpolatorArray();
+        self->AllocateInterpArray();
 
         for (unsigned int uiIndex = 0; uiIndex < self->GetNumTargets(); ++uiIndex)
         {
-            NiMorphData::MorphTarget* pkTarget = self->m_spMorphTargetData->GetTarget(uiIndex);
-            self->m_pInterpolatorItems[uiIndex].m_fWeight = pkTarget->m_fMorphWeight;
+            NiMorphData::MorphTarget* pkTarget = self->m_spMorphData->GetTarget(uiIndex);
+            self->m_pkInterpItems[uiIndex].m_fWeight = pkTarget->m_fLegacyWeight;
         }
     }
 
-    if (kStream.GetFileVersion() < 0x0A010068 && self->m_spMorphTargetData)
+    if (kStream.GetFileVersion() < 0x0A010068 && self->m_spMorphData)
     {
-        unsigned int uiNumTargets = self->m_spMorphTargetData->m_uiNumTargets;
+        unsigned int uiNumTargets = self->m_spMorphData->m_uiNumTargets;
 
         for (unsigned int uiIndex = 0; uiIndex < uiNumTargets; ++uiIndex)
         {
-            NiMorphData::MorphTarget* pkTarget = self->m_spMorphTargetData->GetTarget(uiIndex);
+            NiMorphData::MorphTarget* pkTarget = self->m_spMorphData->GetTarget(uiIndex);
             const char* pcName = reinterpret_cast<NiD3DShaderProgram*>(pkTarget)->NiD3DShaderProgram::GetName();
 
             void** ppVTable = reinterpret_cast<void**>(*reinterpret_cast<void***>(self));
@@ -702,7 +732,7 @@ void __fastcall LinkMorphData(NiGeomMorpherController* self, int, NiStream& kStr
         }
     }
 
-    if (self->m_spMorphTargetData && kStream.GetFileVersion() <= 0x0401000C)
+    if (self->m_spMorphData && kStream.GetFileVersion() <= 0x0401000C)
     {
         void** ppVTable = reinterpret_cast<void**>(*reinterpret_cast<void***>(self));
         SetTimeType pfnSetTime = reinterpret_cast<SetTimeType>(ppVTable[0x38]);
@@ -711,15 +741,16 @@ void __fastcall LinkMorphData(NiGeomMorpherController* self, int, NiStream& kStr
 }
 
 // @fnv 0x00a3a750
+// pdb: NiParallelUpdateTaskManager::SignalUpdateSema | NiParallelUpdateTaskManager.obj | debug, object-file run extension, low
 void __fastcall SetMorphTarget(NiGeomMorpherController* self, int, NiObjectNET* pkTarget)
 {
     if (pkTarget->IsGeometry())
     {
         self->NiTimeController::SetTarget(pkTarget);
-        if (self->m_spMorphTargetData.m_pObject)
+        if (self->m_spMorphData.m_pObject)
         {
             self->vf59();
-            self->m_bUpdateBounds = true;
+            self->m_bBoundCalculated = true;
         }
     }
     else
@@ -730,9 +761,10 @@ void __fastcall SetMorphTarget(NiGeomMorpherController* self, int, NiObjectNET* 
 
 // Iterates over the list up to m_uiCount, gets each item via GetItem, and calls Apply(a1, a2) on non-null items.
 // @fnv 0x00a3a7a0
+// pdb: NiParallelUpdateTaskManager::WaitUpdateSema | NiParallelUpdateTaskManager.obj | debug, object-file run extension, low
 void __fastcall SetMorphActiveTimeRange(NiGeomMorpherController* self, int, float afValue1, float afValue2)
 {
-    for (unsigned int i = 0; i < self->m_spMorphTargetData.m_pObject->m_uiNumTargets; ++i)
+    for (unsigned int i = 0; i < self->m_spMorphData.m_pObject->m_uiNumTargets; ++i)
     {
         NiInterpolator* item = self->GetInterpolator(i);
         if (item != 0)
@@ -777,7 +809,7 @@ bool __fastcall RegisterMorphStreamables(NiGeomMorpherController* self, int, NiS
     if (!reinterpret_cast<bool (__thiscall*)(NiInterpController*, NiStream&)>(&RegisterInterpStreamables)(self, *stream))
         return false;
 
-    void* morphData = self->m_spMorphTargetData.m_pObject;
+    void* morphData = self->m_spMorphData.m_pObject;
 
     if (morphData)
     {
@@ -868,11 +900,13 @@ __forceinline unsigned char IsManaged(const NiTimeController* object)
 }
 
 // @fnv 0x00a3a950
+// pdb: NiGeomMorpherController::ResetTimeExtrema | NiGeomMorpherController.obj | retail, object-file run extension, low
+// pdb locals: uiNumTargets, uiI, pkInterp, fHi, fLo
 void __fastcall UpdateKeyTimeRange(NiGeomMorpherController* self, int)
 {
     if (!IsManaged(self))
     {
-        NiMorphData* morphData = self->m_spMorphTargetData.m_pObject;
+        NiMorphData* morphData = self->m_spMorphData.m_pObject;
         unsigned int numTargets = morphData ? morphData->m_uiNumTargets : 0;
         self->m_fLoKeyTime = DAT_01096ce0;
         self->m_fHiKeyTime = DAT_01015f5c;
@@ -922,19 +956,21 @@ struct Geometry
 };
 
 // @fnv 0x00a3abe0
+// pdb: NiGeomMorpherController::CalculateMorphBound | NiGeomMorpherController.obj | retail, object-file run extension, low
+// pdb locals: kBound, uiNumTargets, pkTarget, i, kTargetBound
 void __fastcall UpdateGeometryBound(NiGeomMorpherController* self, int)
 {
     NiBound morphBound;
-    const unsigned int count = self->m_spMorphTargetData.m_pObject->m_uiNumTargets;
+    const unsigned int count = self->m_spMorphData.m_pObject->m_uiNumTargets;
     if (count != 0)
     {
-        NiMorphData* data = self->m_spMorphTargetData.m_pObject;
-        morphBound.ComputeBoundingSphere(data->m_uiNumVertsPerTarget, data->GetTarget(0)->m_pkVertexPositions);
+        NiMorphData* data = self->m_spMorphData.m_pObject;
+        morphBound.ComputeBoundingSphere(data->m_uiNumVertsPerTarget, data->GetTarget(0)->m_aTargetVerts);
         for (unsigned int i = 1; i < count; ++i)
         {
             NiBound targetBound;
-            data = self->m_spMorphTargetData.m_pObject;
-            targetBound.ComputeBoundingSphere(data->m_uiNumVertsPerTarget, data->GetTarget(i)->m_pkVertexPositions);
+            data = self->m_spMorphData.m_pObject;
+            targetBound.ComputeBoundingSphere(data->m_uiNumVertsPerTarget, data->GetTarget(i)->m_aTargetVerts);
             morphBound.NiBound_Merge(&targetBound);
         }
     }
@@ -982,13 +1018,16 @@ struct FUN_00a3acb0_elem
 
 // Calls FUN_00a6d0c0(p), then forwards p to Slot26 on each non-null item pointer in items up to FUN_008d3ed0().
 // @fnv 0x00a3acb0
+// pdb: NiGeomMorpherController::ProcessClone | NiGeomMorpherController.obj | retail, object-file run extension, low
+// pdb params: kCloning
+// pdb locals: us
 void __fastcall ProcessMorphClone(NiGeomMorpherController* self, int, void* p)
 {
     self->NiInterpController::ProcessClone(*static_cast<CloningProcess*>(p));
     unsigned short i;
     for (i = 0; i < self->GetNumTargets(); i++)
     {
-        FUN_00a3acb0_elem* pElem = (FUN_00a3acb0_elem*)self->m_pInterpolatorItems[i].m_spControllerInterpolator.m_pObject;
+        FUN_00a3acb0_elem* pElem = (FUN_00a3acb0_elem*)self->m_pkInterpItems[i].m_spInterpolator.m_pObject;
         if (pElem != 0)
         {
             pElem->Slot26(p);
@@ -998,7 +1037,7 @@ void __fastcall ProcessMorphClone(NiGeomMorpherController* self, int, void* p)
 
 struct A3AF10MemoryManager
 {
-    void Deallocate(void* pvMem);
+    void Deallocate(void* apMem);
 };
 
 extern A3AF10MemoryManager g_A3AF10MemoryManager;
@@ -1009,15 +1048,16 @@ inline NiGeomMorpherController::InterpItem::~InterpItem()
 
 // Releases the morph data pointer and destroys the interpolator item array, then frees its allocation cookie.
 // @fnv 0x00a3af10
+// pdb: NiGeomMorpherController::~NiGeomMorpherController | NiGeomMorpherController.obj | retail, upstream name already matches, high
 NiGeomMorpherController::~NiGeomMorpherController() throw()
 {
-    m_spMorphTargetData = 0;
+    m_spMorphData = 0;
     // NiDelete[] m_pInterpolatorItems, expanded: destroy elements back to front, then free the count cookie
-    if (m_pInterpolatorItems)
+    if (m_pkInterpItems)
     {
-        unsigned int* puiCookie = reinterpret_cast<unsigned int*>(m_pInterpolatorItems) - 1;
+        unsigned int* puiCookie = reinterpret_cast<unsigned int*>(m_pkInterpItems) - 1;
         int i = *puiCookie;
-        InterpItem* pkItem = m_pInterpolatorItems + i;
+        InterpItem* pkItem = m_pkInterpItems + i;
         while (--i >= 0)
         {
             --pkItem;
@@ -1030,6 +1070,7 @@ NiGeomMorpherController::~NiGeomMorpherController() throw()
 void __cdecl FUN_00aa1460(void* apMemory, unsigned int auiSize);
 
 // @fnv 0x00a3b530
+// pdb: NiGeomMorpherController::`scalar deleting destructor' | NiGeomMorpherController.obj | retail, object-file gap fill, high
 NiGeomMorpherController* __fastcall DeleteMorphController(NiGeomMorpherController* self, int, unsigned char acFlags)
 {
     self->NiGeomMorpherController::~NiGeomMorpherController();
@@ -1042,11 +1083,13 @@ NiGeomMorpherController* __fastcall DeleteMorphController(NiGeomMorpherControlle
 
 // Stores pkMorphData, calls FUN_00a3b460, and if bCanUpdate is set invokes the virtual method at vtable slot v59.
 // @fnv 0x00a3ba10
-void NiGeomMorpherController::SetMorphData(NiMorphData* pkMorphData, bool bCanUpdate)
+// pdb: NiGeomMorpherController::SetMorphData | NiGeomMorpherController.obj | debug, upstream name already matches, high
+// pdb params: pkData, bCalculateMorphBound
+void NiGeomMorpherController::SetMorphData(NiMorphData* pkData, bool bCalculateMorphBound)
 {
-    m_spMorphTargetData = pkMorphData;
-    ClearInterpolatorArray();
-    if (bCanUpdate)
+    m_spMorphData = pkData;
+    AllocateInterpArray();
+    if (bCalculateMorphBound)
     {
         vf59();
     }
@@ -1109,11 +1152,11 @@ struct Owner
 };
 struct Mgr
 {
-    bool Check(void* p, int n);
+    bool Check(void* pkTask, int ePriority);
 };
 extern Mgr* DAT_011f5b04;
 extern unsigned char DAT_011f3725;
-extern float DAT_01096324;
+extern float NiInterpController_INVALID_TIME; // src: XBOX_RETAIL_PDB 0x01096324 (old: DAT_01096324/INVALID_TIME_A4F/g_fInvalidTimeBC3/kInvalidTime)
 struct Obj56
 {
     virtual void V00();
@@ -1169,9 +1212,12 @@ struct SetterArg
 
 // Applies a SetterArg to this object: sets flags and m_28, calls Sub_00a36250/Sub_00a3aa10, and attaches an object when m_2c and m_40 are set.
 // @fnv 0x00a3b080
+// pdb: NiGeomMorpherController::Update | NiGeomMorpherController.obj | retail, object-file run extension, low
+// pdb params: UpdateData
+// pdb locals: pkTask
 void __fastcall ApplySetterArg(NiGeomMorpherController* self, int, SetterArg* a1)
 {
-    if (self->m_spMorphTargetData.m_pObject == 0)
+    if (self->m_spMorphData.m_pObject == 0)
     {
         return;
     }
@@ -1183,26 +1229,26 @@ void __fastcall ApplySetterArg(NiGeomMorpherController* self, int, SetterArg* a1
     unsigned char uiFlags = ((self->NiTimeController::m_uiObjectFlags >> 5) & 7);
     if ((uiFlags & 1) != 0)
     {
-        self->m_bUpdateEnabled = 1;
-        self->m_fControllerTime = DAT_01096324;
+        self->m_bNeedPreDisplay = 1;
+        self->m_fScaledTime = NiInterpController_INVALID_TIME;
     }
     else
     {
         bool ok = self->DontDoUpdate(a1->m_00);
-        if (!ok || self->m_bNeedsUpdate != 0)
+        if (!ok || self->m_bAlwaysUpdate != 0)
         {
-            self->m_bUpdateEnabled = 1;
+            self->m_bNeedPreDisplay = 1;
         }
     }
     if (reinterpret_cast<Owner*>(self->m_pkTarget) == 0)
     {
         return;
     }
-    if (self->m_bUpdateEnabled == 0)
+    if (self->m_bNeedPreDisplay == 0)
     {
         return;
     }
-    reinterpret_cast<void (__thiscall*)(NiGeomMorpherController*, float)>(&fnv_00a3aa10::UpdateMorphWeights)(self, self->m_fControllerTime);
+    reinterpret_cast<void (__thiscall*)(NiGeomMorpherController*, float)>(&fnv_00a3aa10::UpdateMorphWeights)(self, self->m_fScaledTime);
     if (DAT_011f3725 == 0)
     {
         return;
@@ -1231,6 +1277,8 @@ void* __cdecl Object_DispatchCommandFour(unsigned int size);
 // Allocates a morph controller with no morph data.
 // @fnv 0x00a3b550
 // src: EXE 0x00a3b550
+// pdb: NiGeomMorpherController::CreateObject | NiGeomMorpherController.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 NiGeomMorpherController* __cdecl NiGeomMorpherController_CreateObject()
 {
     return new NiGeomMorpherController(0);
@@ -1240,6 +1288,9 @@ NiGeomMorpherController* __cdecl NiGeomMorpherController_CreateObject()
 extern bool __cdecl IsInterpControllerEqual();
 
 // @fnv 0x00a3ad00
+// pdb: NiGeomMorpherController::IsEqual | NiGeomMorpherController.obj | retail, object-file run extension, low
+// pdb params: pkObject
+// pdb locals: pkMorph, ui, kCompareItem
 bool __fastcall IsMorphEqual(NiGeomMorpherController* self, int, NiObject* pkObject)
 {
     if (!reinterpret_cast<bool (__thiscall*)(NiInterpController*, NiObject*)>(&IsInterpControllerEqual)(self, pkObject))
@@ -1247,19 +1298,19 @@ bool __fastcall IsMorphEqual(NiGeomMorpherController* self, int, NiObject* pkObj
 
     NiGeomMorpherController* pkMorph = (NiGeomMorpherController*)pkObject;
 
-    if (!self->m_spMorphTargetData->IsEqual(pkMorph->m_spMorphTargetData))
+    if (!self->m_spMorphData->IsEqual(pkMorph->m_spMorphData))
         return false;
 
     for (unsigned int i = 0; i < self->GetNumTargets(); i++)
     {
-        NiGeomMorpherController::InterpItem& kOther = pkMorph->m_pInterpolatorItems[i];
-        if ((kOther.m_spControllerInterpolator && !self->m_pInterpolatorItems[i].m_spControllerInterpolator) ||
-            (!kOther.m_spControllerInterpolator && self->m_pInterpolatorItems[i].m_spControllerInterpolator))
+        NiGeomMorpherController::InterpItem& kOther = pkMorph->m_pkInterpItems[i];
+        if ((kOther.m_spInterpolator && !self->m_pkInterpItems[i].m_spInterpolator) ||
+            (!kOther.m_spInterpolator && self->m_pkInterpItems[i].m_spInterpolator))
             return false;
-        if (kOther.m_spControllerInterpolator &&
-            !kOther.m_spControllerInterpolator->IsEqual(self->m_pInterpolatorItems[i].m_spControllerInterpolator))
+        if (kOther.m_spInterpolator &&
+            !kOther.m_spInterpolator->IsEqual(self->m_pkInterpItems[i].m_spInterpolator))
             return false;
-        if (kOther.m_fWeight != self->m_pInterpolatorItems[i].m_fWeight)
+        if (kOther.m_fWeight != self->m_pkInterpItems[i].m_fWeight)
             return false;
     }
     return true;
@@ -1315,25 +1366,28 @@ struct S00c27120
 
 inline unsigned int GetMorphTargetCountSV(const NiGeomMorpherController* self)
 {
-    if (self->m_spMorphTargetData.m_pObject)
-        return self->m_spMorphTargetData.m_pObject->m_uiNumTargets;
+    if (self->m_spMorphData.m_pObject)
+        return self->m_spMorphData.m_pObject->m_uiNumTargets;
     return 0;
 }
 
 // Calls FUN_00c27120, then saves a value, morph target link, update flag, target count, and interpolator links and weights.
 // @fnv 0x00a3b350
+// pdb: NiGeomMorpherController::SaveBinary | NiGeomMorpherController.obj | retail, object-file gap fill, high
+// pdb params: kStream
+// pdb locals: uiArraySize, bAlwaysUpdate, ui
 void __fastcall SaveMorphData(NiGeomMorpherController* self, int, NiStream& stream)
 {
     reinterpret_cast<S00c27120*>(self)->NiInterpController_SaveBinary(stream);
-    SaveStreamValue(stream, self->m_uiObjectFlags);
-    stream.SaveLinkID(reinterpret_cast<const NiObject*>(self->m_spMorphTargetData.m_pObject));
-    unsigned char bNeedsUpdate = self->m_bNeedsUpdate;
+    SaveStreamValue(stream, self->m_uFlags);
+    stream.SaveLinkID(reinterpret_cast<const NiObject*>(self->m_spMorphData.m_pObject));
+    unsigned char bNeedsUpdate = self->m_bAlwaysUpdate;
     SaveStreamValue(stream, bNeedsUpdate);
     unsigned int count = GetMorphTargetCountSV(self);
     SaveStreamValue(stream, count);
     for (unsigned int i = 0; i < count; ++i)
     {
-        stream.SaveLinkID(reinterpret_cast<const NiObject*>(self->m_pInterpolatorItems[i].m_spControllerInterpolator.m_pObject));
-        SaveStreamValue(stream, self->m_pInterpolatorItems[i].m_fWeight);
+        stream.SaveLinkID(reinterpret_cast<const NiObject*>(self->m_pkInterpItems[i].m_spInterpolator.m_pObject));
+        SaveStreamValue(stream, self->m_pkInterpItems[i].m_fWeight);
     }
 }

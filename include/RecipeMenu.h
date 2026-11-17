@@ -5,6 +5,7 @@
 class TESForm;
 class MenuTileList;
 
+// pdb: class RecipeMenu, size 0x104, bases: Menu, 9 members
 class RecipeMenu : public Menu
 {
 public:
@@ -17,7 +18,7 @@ public:
     virtual int GetClass();
     virtual bool HandleMenuInput(int, float);
 
-    unsigned char layoutExtension[0xDC];
+    unsigned char pTiles[0xDC]; // src: XBOX_RETAIL_PDB +0x28 (old: layoutExtension)
 
     int GetMenuID_00726f00();
     void* FUN_00726f20(unsigned int flags);

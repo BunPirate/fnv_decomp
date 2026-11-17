@@ -41,5 +41,6 @@ struct FUN_00dfc1e0
 };
 
 // @fnv 0x00dfc1e0
+// pdb: hkpVehicleData::`scalar deleting destructor' | hkpVehicleDataClass.obj | retail, vtable slot, high
 FUN_00dfc1e0::FUN_00dfc1e0()
 {}

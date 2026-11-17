@@ -21,6 +21,7 @@ struct AudioObject
 };
 // Calls FUN_00e023c0, then deletes this via operator delete when flags has bit 0 set, and returns this.
 // @fnv 0x00e02430
+// pdb: hkxIndexBuffer::`scalar deleting destructor' | hkxIndexBufferClass.obj | retail, vtable slot, high
 void* AudioObject::ReleaseIfFlagged(unsigned int flags)
 {
     FUN_00e023c0();

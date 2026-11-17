@@ -51,11 +51,13 @@ class FUN_00e98f20
     unsigned char unk32;
     unsigned char unk33;
 
-    FUN_00e98f20(unsigned int a, unsigned int b);
+    FUN_00e98f20(unsigned int uiResultsInitialSize, unsigned int uiResultsGrowBy);
 };
 
 // @fnv 0x00e98f20
-FUN_00e98f20::FUN_00e98f20(unsigned int a, unsigned int b) : m_pReference(0), m_sub(a, b)
+// pdb: NiPick::NiPick | NiPick.obj | retail, object-file run extension, high
+// pdb params: uiResultsInitialSize, uiResultsGrowBy
+FUN_00e98f20::FUN_00e98f20(unsigned int uiResultsInitialSize, unsigned int uiResultsGrowBy) : m_pReference(0), m_sub(uiResultsInitialSize, uiResultsGrowBy)
 {
     unk00 = 0;
     unk04 = 0;

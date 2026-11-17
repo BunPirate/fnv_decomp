@@ -45,7 +45,7 @@ inline void DestroyPropertyState(NiPropertyState* p)
 {
     if (p)
     {
-        p->ReleaseAllRefs();
+        p->NiPropertyState_dtor();
         g_memoryManager.Deallocate(p);
     }
 }
@@ -121,9 +121,12 @@ struct NiAVObjectBaseCalls
 
 // Searches this node's children recursively for an object matching name, returning the first match or null.
 // @fnv 0x00a5e560
-NiAVObject* NiNode::GetObjectByName(const NiFixedString& name) const
+// pdb: NiNode::GetObjectByName | NiNode.obj | retail, upstream name already matches, high
+// pdb params: kName
+// pdb locals: pkObject, i, pkChild
+NiAVObject* NiNode::GetObjectByName(const NiFixedString& kName) const
 {
-    NiAVObject* result = NiAVObject::GetObjectByName(name);
+    NiAVObject* result = NiAVObject::GetObjectByName(kName);
     if (result)
         return result;
     for (unsigned int i = 0; i < m_kChildren.m_usSize; ++i)
@@ -131,7 +134,7 @@ NiAVObject* NiNode::GetObjectByName(const NiFixedString& name) const
         NiAVObject* child = m_kChildren.m_pBase[i].m_pObject;
         if (child)
         {
-            result = child->GetObjectByName(name);
+            result = child->GetObjectByName(kName);
             if (result)
                 return result;
         }
@@ -140,6 +143,8 @@ NiAVObject* NiNode::GetObjectByName(const NiFixedString& name) const
 }
 
 // @fnv 0x00a5dc80
+// pdb: BSFadeNode::CopyMembers | BSFadeNode.obj | debug, call graph, medium
+// pdb params: pDest, arCloneData
 void NiNode::CopyMemberData(NiNode* target, CloningProcess& process)
 {
     NiAVObject::CopyMembers_00a5ac90(target, process);
@@ -156,27 +161,33 @@ void NiNode::CopyMemberData(NiNode* target, CloningProcess& process)
 
 // Applies the property state to this node, propagates it to all children, and destroys the temporary state if one was created.
 // @fnv 0x00a5db60
-void NiNode::UpdatePropertiesDownwardPass(NiPropertyState* state)
+// pdb: NiNode::UpdatePropertiesDownward | NiNode.obj | retail, vtable slot, high
+// pdb params: pkParentState
+// pdb locals: spState, i, pkChild
+void NiNode::UpdatePropertiesDownwardPass(NiPropertyState* pkParentState)
 {
-    NiAVObject::UpdatePropertiesDownwardPass(state);
+    NiAVObject::UpdatePropertiesDownwardPass(pkParentState);
     NiPropertyState* pLocalState = 0;
-    BuildPropertyState(state, true, pLocalState);
+    PushLocalProperties(pkParentState, true, pLocalState);
     for (unsigned int i = 0; i < m_kChildren.m_usSize; ++i)
     {
         NiAVObject* child = m_kChildren.m_pBase[i].m_pObject;
         if (child)
             child->UpdatePropertiesDownwardPass(pLocalState);
     }
-    if (state != pLocalState)
+    if (pkParentState != pLocalState)
         DestroyPropertyState(pLocalState);
 }
 
 // Updates world data when the transform flag is set, recurses into children, and recomputes or merges m_kWorldBound from child bounds.
 // @fnv 0x00a5e0b0
-void NiNode::UpdateTransformAndBounds(NiUpdateData& data)
+// pdb: NiNode::UpdateTransformAndBounds | NiNode.obj | retail, upstream name already matches, high
+// pdb params: UpdateData
+// pdb locals: pkChild, isize, i
+void NiNode::UpdateTransformAndBounds(NiUpdateData& UpdateData)
 {
     if (TransformFlag())
-        UpdateWorldData(data);
+        UpdateWorldData(UpdateData);
     unsigned int count = m_kChildren.m_usSize;
     unsigned int i = 0;
     if (BoundFlag19())
@@ -190,7 +201,7 @@ void NiNode::UpdateTransformAndBounds(NiUpdateData& data)
                 NiAVObject* child = m_kChildren.m_pBase[i].m_pObject;
                 if (child)
                 {
-                    child->UpdateTransformAndBounds(data);
+                    child->UpdateTransformAndBounds(UpdateData);
                     if (child->m_kWorldBound && ((NiBound*)child->m_kWorldBound)->m_fRadius != 0.0f)
                     {
                         EnsureWorldBound();
@@ -210,7 +221,7 @@ void NiNode::UpdateTransformAndBounds(NiUpdateData& data)
         NiAVObject* child = m_kChildren.m_pBase[i].m_pObject;
         if (child)
         {
-            child->UpdateTransformAndBounds(data);
+            child->UpdateTransformAndBounds(UpdateData);
             if (!BoundFlag13() && BoundFlag19())
             {
                 NiBound* bound = (NiBound*)child->m_kWorldBound;
@@ -223,13 +234,16 @@ void NiNode::UpdateTransformAndBounds(NiUpdateData& data)
 
 // Updates controllers and world data, then recurses into children, merging or setting the world bound depending on bound flags.
 // @fnv 0x00a5dd70
-void NiNode::UpdateDownwardPass(NiUpdateData& aUpdateData, unsigned int flags)
+// pdb: NiNode::UpdateDownwardPass | NiNode.obj | retail, upstream name already matches, high
+// pdb params: UpdateData, uFlags
+// pdb locals: pkChild, isize, i
+void NiNode::UpdateDownwardPass(NiUpdateData& UpdateData, unsigned int uFlags)
 {
-    if (UpdateControllersFlag(aUpdateData))
-        UpdateTimeControllers(aUpdateData, true);
-    UpdateWorldData(aUpdateData);
+    if (UpdateControllersFlag(UpdateData))
+        UpdateTimeControllers(UpdateData, true);
+    UpdateWorldData(UpdateData);
     if (*(unsigned char*)&m_uFlags & 1)
-        flags |= 1;
+        uFlags |= 1;
     unsigned int count = m_kChildren.m_usSize;
     unsigned int i = 0;
     if (BoundFlag19())
@@ -243,7 +257,7 @@ void NiNode::UpdateDownwardPass(NiUpdateData& aUpdateData, unsigned int flags)
                 NiAVObject* child = m_kChildren.m_pBase[i].m_pObject;
                 if (child)
                 {
-                    child->UpdateDownwardPass(aUpdateData, flags);
+                    child->UpdateDownwardPass(UpdateData, uFlags);
                     if (child->m_kWorldBound && ((NiBound*)child->m_kWorldBound)->m_fRadius != 0.0f)
                     {
                         EnsureWorldBound();
@@ -263,7 +277,7 @@ void NiNode::UpdateDownwardPass(NiUpdateData& aUpdateData, unsigned int flags)
         NiAVObject* child = m_kChildren.m_pBase[i].m_pObject;
         if (child)
         {
-            child->UpdateDownwardPass(aUpdateData, flags);
+            child->UpdateDownwardPass(UpdateData, uFlags);
             if (!BoundFlag13() && BoundFlag19())
             {
                 NiBound* bound = (NiBound*)child->m_kWorldBound;
@@ -276,17 +290,20 @@ void NiNode::UpdateDownwardPass(NiUpdateData& aUpdateData, unsigned int flags)
 
 // Updates selected child nodes' controllers and world bounds, recursing into selected children and merging their bounds into m_kWorldBound.
 // @fnv 0x00a5ded0
-void NiNode::UpdateSelectedDownwardPass(NiUpdateData& aUpdateData, unsigned int flags)
+// pdb: NiNode::UpdateSelectedDownwardPass | NiNode.obj | retail, upstream name already matches, high
+// pdb params: UpdateData, uFlags
+// pdb locals: boldUpdateValue, pkChild, isize, bdoTransforms, i
+void NiNode::UpdateSelectedDownwardPass(NiUpdateData& UpdateData, unsigned int uFlags)
 {
-    bool bSavedControllers = UpdateControllersFlag(aUpdateData);
-    UpdateControllersFlag(aUpdateData) = (m_uFlags >> 3) & 1;
-    UpdateTimeControllers(aUpdateData, true);
-    UpdateControllersFlag(aUpdateData) = bSavedControllers;
-    bool updateBounds = !ForceUpdateFlag(aUpdateData);
+    bool bSavedControllers = UpdateControllersFlag(UpdateData);
+    UpdateControllersFlag(UpdateData) = (m_uFlags >> 3) & 1;
+    UpdateTimeControllers(UpdateData, true);
+    UpdateControllersFlag(UpdateData) = bSavedControllers;
+    bool updateBounds = !ForceUpdateFlag(UpdateData);
     if (TransformFlag() && updateBounds)
-        UpdateWorldData(aUpdateData);
+        UpdateWorldData(UpdateData);
     if (*(unsigned char*)&m_uFlags & 1)
-        flags |= 1;
+        uFlags |= 1;
     unsigned int count = m_kChildren.m_usSize;
     unsigned int i = 0;
     if (BoundFlag19())
@@ -303,9 +320,9 @@ void NiNode::UpdateSelectedDownwardPass(NiUpdateData& aUpdateData, unsigned int 
                     if (child->SelectedFlag())
                     {
                         if (child->RigidFlag())
-                            child->UpdateRigidDownwardPass(aUpdateData, flags);
+                            child->UpdateRigidDownwardPass(UpdateData, uFlags);
                         else
-                            child->UpdateSelectedDownwardPass(aUpdateData, flags);
+                            child->UpdateSelectedDownwardPass(UpdateData, uFlags);
                     }
                     if (child->m_kWorldBound && ((NiBound*)child->m_kWorldBound)->m_fRadius != 0.0f && updateBounds)
                     {
@@ -329,9 +346,9 @@ void NiNode::UpdateSelectedDownwardPass(NiUpdateData& aUpdateData, unsigned int 
             if (child->SelectedFlag())
             {
                 if (child->RigidFlag())
-                    child->UpdateRigidDownwardPass(aUpdateData, flags);
+                    child->UpdateRigidDownwardPass(UpdateData, uFlags);
                 else
-                    child->UpdateSelectedDownwardPass(aUpdateData, flags);
+                    child->UpdateSelectedDownwardPass(UpdateData, uFlags);
             }
             if (!BoundFlag13() && BoundFlag19())
             {
@@ -347,9 +364,11 @@ void NiNode::UpdateSelectedDownwardPass(NiUpdateData& aUpdateData, unsigned int 
 // Stores the dimmer and updates the revision ID.
 // @fnv 0x0050dd20
 // src: XBOX_PDB 0x0050dd20
-void NiPointLight::NiLight_SetDimmer(float afValue)
+// pdb: NiLight::SetDimmer | TESLight.obj | debug, upstream name already matches, high
+// pdb params: fDimmer
+void NiPointLight::NiLight_SetDimmer(float fDimmer)
 {
-    m_fDimmer = afValue;
+    m_fDimmer = fDimmer;
     FUN_004bc2c0();
 }
 #pragma optimize("", on)
@@ -365,6 +384,8 @@ struct FUN_00a5db30_shell : public NiNode
 // Calls the object's virtual at offset 0xbc, then if the parent pointer at 0x18 is set, calls the parent's virtual at offset 0xfc.
 // @fnv 0x00a5db30
 // src: XBOX_PDB 0x00a5db30
+// pdb: NiNode::UpdateUpwardPass | NiNode.obj | retail, upstream name already matches, high
+// pdb locals: pParent
 void FUN_00a5db30_shell::NiNode_UpdateUpwardPass()
 {
     int* pParent = *(int**)((char*)this + 0x18);
@@ -399,6 +420,9 @@ struct FUN_00a5dbe0_shell : public NiNode
 
 // @fnv 0x00a5dbe0
 // src: XBOX_PDB 0x00a5dbe0
+// pdb: NiNode::OnVisible | NiNode.obj | retail, upstream name already matches, high
+// pdb params: kCuller
+// pdb locals: isize, pchildren, i, pkChild
 void FUN_00a5dbe0_shell::NiNode_OnVisible(NiCullingProcess* kCuller)
 {
     if (*(void**)((char*)this + 0x20) && *(float*)(*(char**)((char*)this + 0x20) + 0xc) != 0.0f)
@@ -425,6 +449,9 @@ struct FUN_00a5dce0_shell : public NiNode
 // Processes the clone of this node and recursively processes each child node through the cloning map.
 // @fnv 0x00a5dce0
 // src: XBOX_PDB 0x00a5dce0
+// pdb: NiNode::ProcessClone | NiNode.obj | retail, upstream name already matches, high
+// pdb params: kCloning
+// pdb locals: bCloned, pkClone, i, pkChild
 void FUN_00a5dce0_shell::NiNode_ProcessClone(CloningProcess* kCloning)
 {
     ((NiAVObjectBaseCalls*)this)->ProcessClone(*kCloning);
@@ -452,6 +479,8 @@ struct FUN_00a5dd40_shell : public NiNode
 
 // @fnv 0x00a5dd40
 // src: XBOX_PDB 0x00a5dd40
+// pdb: NiNode::LoadBinary | NiNode.obj | retail, upstream name already matches, high
+// pdb params: kStream
 void FUN_00a5dd40_shell::NiNode_LoadBinary(NiStream* kStream)
 {
     ((NiAVObjectBaseCalls*)this)->LoadBinary(*kStream);
@@ -470,6 +499,9 @@ struct FUN_00a5e3a0_Helper
 
 // @fnv 0x00a5e3a0
 // src: XBOX_PDB 0x00a5e3a0
+// pdb: NiNode::UpdatePropertiesUpward | NiNode.obj | retail, upstream name already matches, high
+// pdb params: aspPropertyState
+// pdb locals: spParentState
 void __fastcall NiNode_UpdatePropertiesUpward(NiAVObject* pThis, int, NiPropertyState*& pkState)
 {
     NiPropertyState* pkParentState = 0;
@@ -493,14 +525,14 @@ void __fastcall NiNode_UpdatePropertiesUpward(NiAVObject* pThis, int, NiProperty
             pkParentState = 0;
     }
 
-    pThis->BuildPropertyState(pkParentState, false, pkState);
+    pThis->PushLocalProperties(pkParentState, false, pkState);
 
     if (pkParentState != pkState)
     {
         NiPropertyState* pkTemp = pkParentState;
         if (pkTemp)
         {
-            pkTemp->ReleaseAllRefs();
+            pkTemp->NiPropertyState_dtor();
             g_memoryManager.Deallocate(pkTemp);
         }
     }
@@ -589,6 +621,9 @@ struct NodeStub
 
 // Retrieves the child reference at index i from node and decrements its reference count if non-null.
 // @fnv 0x00a5d8a0
+// pdb: NiNode::DetachChildAt | NiNode.obj | debug, vtable slot, medium
+// pdb params: i
+// pdb locals: spobject
 void __fastcall ReleaseChildRef(NiNode* node, int, unsigned int uiIndex)
 {
     NiRefObject* spRetainedObject = 0;
@@ -663,6 +698,9 @@ struct NodeStub
 
 // @fnv 0x00a5d8f0
 // src: XBOX_PDB 0x00a5d8f0
+// pdb: NiNode::DetachChild | NiNode.obj | retail, upstream name already matches, high
+// pdb params: pkChild
+// pdb locals: spobject
 void __fastcall NiNode_DetachChild(NiNode* node, int, NiAVObject* pkChild)
 {
     NiRefObject* spRetainedObject = 0;
@@ -739,6 +777,9 @@ struct BaseStub
 // Calls FUN_00a59e50 on the node, then calls PurgeRendererData on each non-null child in the node's child array.
 // @fnv 0x00a5dc30
 // src: XBOX_PDB 0x00a5dc30
+// pdb: NiNode::PurgeRendererData | NiNode.obj | retail, upstream name already matches, high
+// pdb params: apkRenderer
+// pdb locals: pkRenderer, i, pkChild
 void __fastcall NiNode_PurgeRendererData(NiNode* node, int, NiRenderer* pkRenderer)
 {
     ((BaseStub*)node)->FUN_00a59e50(pkRenderer);
@@ -752,6 +793,9 @@ void __fastcall NiNode_PurgeRendererData(NiNode* node, int, NiRenderer* pkRender
 
 // @fnv 0x00a5e1f0
 // src: XBOX_PDB 0x00a5e1f0
+// pdb: NiNode::UpdateRigidDownwardPass | NiNode.obj | retail, upstream name already matches, high
+// pdb params: UpdateData, uFlags
+// pdb locals: boldUpdateValue, pkChild, isize, i
 void __fastcall NiNode_UpdateRigidDownwardPass(NiNode* node, int, NiUpdateData& kData, unsigned int uFlags)
 {
     unsigned int nodeFlags = *(unsigned int*)((char*)node + 0x30);
@@ -820,6 +864,9 @@ struct ChildStub
 };
 
 // @fnv 0x00a5e280
+// pdb: NiNode::UpdateControllers | NiNode.obj | retail, vtable slot, high
+// pdb params: UpdateData
+// pdb locals: isize, ui, pkChild
 void __fastcall UpdateChildControllers(NiNode* node, int, NiUpdateData& kData)
 {
     node->UpdateTimeControllers(kData, true);
@@ -866,6 +913,9 @@ struct BaseStub
 
 // Calls FUN_00a59f00 on the node, then registers streamables for each of its child pointers, returning false if the base call fails.
 // @fnv 0x00a5e5b0
+// pdb: NiNode::RegisterStreamables | NiNode.obj | retail, vtable slot, high
+// pdb params: kStream
+// pdb locals: i, pkChild
 bool __fastcall RegisterChildStreamables(NiNode* node, int, NiStream& kStream)
 {
     if (!((BaseStub*)node)->FUN_00a59f00(kStream))
@@ -888,7 +938,10 @@ struct ArrStub
 };
 
 // @fnv 0x00a89890
-void __fastcall ReleaseAllRefs(ArrStub* self)
+// src: XBOX_RETAIL_PDB 0x00a89890
+// pdb: NiPropertyState::~NiPropertyState | NiPropertyState.obj | retail, call graph, high
+// pdb locals: i
+void __fastcall NiPropertyState_dtor(ArrStub* self)
 {
     for (unsigned int i = 0; i < 7; i++)
     {
@@ -978,6 +1031,10 @@ struct NodeStub
 
 // Calls SetAt on the node with index i and pkChild, then decrements the ref count of the returned child if non-null.
 // @fnv 0x00a93ea0
+// pdb: BSParticleSystemManager::SetAt | BSParticleSystemManager.obj | retail, call graph, low
+// pdb note: debug build links it to NiNode::SetAt
+// pdb params: i, pkChild
+// pdb locals: spobject
 void __fastcall SetChildAt(NiNode* node, int, unsigned int uiIndex, NiAVObject* pkChild)
 {
     NiRefObject* spRetainedObject = 0;
@@ -1002,6 +1059,8 @@ struct FUN_00a5ea70_t
 
 // @fnv 0x00a5ea70
 // src: XBOX_PDB 0x00a5ea70
+// pdb: NiNode::GetViewerStrings | NiNode.obj | retail, string-set bridge, high
+// pdb params: pkStrings
 void FUN_00a5ea70_t::NiNode_GetViewerStrings(StrArr* pkStrings)
 {
     FUN_00a5ad00(pkStrings);
@@ -1102,6 +1161,9 @@ struct StandInNode
 
 // Applies a transform to each child node, composing the matrix and translation with this node's own when bOnLeft is set.
 // @fnv 0x00a5d940
+// pdb: NiNode::ApplyTransform | NiNode.obj | retail, vtable slot, high
+// pdb params: kMat, kTrn, bOnLeft
+// pdb locals: pkChild, i, kM1, kT1
 void StandInNode::ApplyTransformToChildren(const NiMatrix3& kMat, const StandInPt3& kTrn, bool bOnLeft)
 {
     StandInNode* pkChild;
@@ -1215,12 +1277,15 @@ struct ChildNode
     int unk94;
     int unk98;
     NodeChildArray m_kChildList;
-    void NiNode_SetAt(unsigned int i, ChildObj* pkChild, ChildObj*& spOld);
+    void NiNode_SetAt(unsigned int i, ChildObj* pkChild, ChildObj*& aspAVObject);
 };
 
 // @fnv 0x00a5ee30
 // src: XBOX_PDB 0x00a5ee30
-void ChildNode::NiNode_SetAt(unsigned int i, ChildObj* pkChild, ChildObj*& spOld)
+// pdb: NiNode::SetAt | NiNode.obj | retail, upstream name already matches, high
+// pdb params: i, pkChild
+// pdb locals: spobject
+void ChildNode::NiNode_SetAt(unsigned int i, ChildObj* pkChild, ChildObj*& aspAVObject)
 {
     if (m_kChildList.m_usSize <= i)
     {
@@ -1232,10 +1297,10 @@ void ChildNode::NiNode_SetAt(unsigned int i, ChildObj* pkChild, ChildObj*& spOld
         m_kChildList.SetAtGrow(i, spChild);
         if (pkChild)
             pkChild->DecRefCount();
-        if (spOld)
+        if (aspAVObject)
         {
-            spOld->DecRefCount();
-            spOld = 0;
+            aspAVObject->DecRefCount();
+            aspAVObject = 0;
         }
     }
     else
@@ -1256,11 +1321,11 @@ void ChildNode::NiNode_SetAt(unsigned int i, ChildObj* pkChild, ChildObj*& spOld
             if (pkChild)
                 pkChild->DecRefCount();
         }
-        if (spOld != pChild)
+        if (aspAVObject != pChild)
         {
-            if (spOld)
-                spOld->DecRefCount();
-            spOld = pChild;
+            if (aspAVObject)
+                aspAVObject->DecRefCount();
+            aspAVObject = pChild;
             if (pChild)
                 pChild->IncRefCount();
         }
@@ -1350,6 +1415,8 @@ template <class T> inline bool EqualObjectPointers(const NiPointer<T>& left, con
 // The shared array has no InsertAt declaration; keep its implementation as a free function.
 // Inserts a non-null element at uiIndex, shifting existing entries up by one and returning the index, or ~0 if the element is null.
 // @fnv 0x00a5ebe0
+// pdb: BSPortalGraph::BSPortalGraph | BSPortalGraph.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiTArray<NiPointer<NiAVObject>,NiTNewInterface<NiPointer<NiAVObject> > >::RemoveAtAndFill
 unsigned int __fastcall InsertObjectArrayAt(
     NiTArray<NiPointer<NiAVObject>, NiTNewInterface<NiPointer<NiAVObject> > >* array, int,
     unsigned int uiIndex, const NiPointer<NiAVObject>& element)
@@ -1422,30 +1489,32 @@ class FUN_00a5edc0_cls
     FUN_00a5edc0_sub m_sub;
 
     void SetParent(void* owner);
-    void NiNode_InsertChildAt(NiRefObject* a1, NiRefObject* a2);
+    void NiNode_InsertChildAt(NiRefObject* i, NiRefObject* pkChild);
 };
 
 // @fnv 0x00a5edc0
 // src: XBOX_PDB 0x00a5edc0
-void FUN_00a5edc0_cls::NiNode_InsertChildAt(NiRefObject* apArg, NiRefObject* apRefObject)
+// pdb: NiNode::InsertChildAt | NiNode.obj | retail, upstream name already matches, high
+// pdb params: i, pkChild
+void FUN_00a5edc0_cls::NiNode_InsertChildAt(NiRefObject* i, NiRefObject* pkChild)
 {
-    if (apRefObject)
+    if (pkChild)
     {
         long(__stdcall * pfnIncRef)(volatile long*) = InterlockedIncrement;
         long(__stdcall * pfnDecRef)(volatile long*) = InterlockedDecrement;
-        volatile long* rc = (volatile long*)&apRefObject->m_uiRefCount;
+        volatile long* rc = (volatile long*)&pkChild->m_uiRefCount;
         pfnIncRef(rc);
-        ((NiAVObject*)apRefObject)->AssignParent((NiNode*)this);
-        NiRefObject* pRefObject = apRefObject;
+        ((NiAVObject*)pkChild)->AssignParent((NiNode*)this);
+        NiRefObject* pRefObject = pkChild;
         pfnIncRef(rc);
-        m_sub.FUN_00a5ebe0(apArg, &pRefObject);
+        m_sub.FUN_00a5ebe0(i, &pRefObject);
         if (pfnDecRef(rc) == 0)
         {
-            apRefObject->DeleteThis();
+            pkChild->DeleteThis();
         }
         if (pfnDecRef(rc) == 0)
         {
-            apRefObject->DeleteThis();
+            pkChild->DeleteThis();
         }
     }
 }
@@ -1538,6 +1607,9 @@ class BA5EFA0Node : public BA5EFA0AVObject
 
 // @fnv 0x00a5efa0
 // src: XBOX_PDB 0x00a5efa0
+// pdb: NiNode::CreateClone | NiNode.obj | retail, upstream name already matches, high
+// pdb params: kCloning
+// pdb locals: pkObject
 BA5EFA0Node* BA5EFA0Node::NiNode_CreateClone(BA5EFA0CloningProcess& kCloning)
 {
     BA5EFA0Node* pkClone = new BA5EFA0Node;
@@ -1551,7 +1623,7 @@ struct Bnd
 {
     NiPoint3 c;
     float r;
-    void NiBound_Merge(const Bnd* b);
+    void NiBound_Merge(const Bnd* pBound);
     void Set(const NiPoint3& cc, float rr)
     {
         c = cc;
@@ -1591,6 +1663,8 @@ class Node2 : public AV
     void UpdateWorldBoundFromChildren();
 };
 // @fnv 0x00a5e2d0
+// pdb: NiNode::UpdateWorldBound | NiNode.obj | retail, vtable slot, high
+// pdb locals: pkChild, isize, i
 void Node2::UpdateWorldBoundFromChildren()
 {
     if (!F13() && F19())
@@ -1675,20 +1749,23 @@ struct S_00a5eb20_Arr
     unsigned short m_usGrowBy;
     void FUN_0060bef0(unsigned int n);
     void FUN_004b0310(unsigned int i, const S_00a5eb20_Ptr& e);
-    unsigned int NiTArray_NiPointer_NiAVObject_NiTNewInterface_NiPointer_NiAVObject_AddFirstEmpty(const S_00a5eb20_Ptr& e);
+    unsigned int NiTArray_NiPointer_NiAVObject_NiTNewInterface_NiPointer_NiAVObject_AddFirstEmpty(const S_00a5eb20_Ptr& element);
 };
 // Adds a ref-counted pointer to the array: reuses the first null slot or appends, growing the array if needed, and returns its index or -1 for a null pointer.
 // @fnv 0x00a5eb20
 // src: XBOX_PDB 0x00a5eb20
-unsigned int S_00a5eb20_Arr::NiTArray_NiPointer_NiAVObject_NiTNewInterface_NiPointer_NiAVObject_AddFirstEmpty(const S_00a5eb20_Ptr& e)
+// pdb: NiTArray<NiPointer<NiAVObject>,NiTNewInterface<NiPointer<NiAVObject> > >::AddFirstEmpty | BSPortalGraph.obj | retail, call graph, high
+// pdb params: element
+// pdb locals: i
+unsigned int S_00a5eb20_Arr::NiTArray_NiPointer_NiAVObject_NiTNewInterface_NiPointer_NiAVObject_AddFirstEmpty(const S_00a5eb20_Ptr& element)
 {
-    if (e == S_00a5eb20_Ptr(0))
+    if (element == S_00a5eb20_Ptr(0))
         return (unsigned int)-1;
     for (unsigned short i = 0; i < m_usESize; ++i)
     {
         if (m_pBase[i] == S_00a5eb20_Ptr(0))
         {
-            m_pBase[i] = e;
+            m_pBase[i] = element;
             ++m_usElementCount;
             return i;
         }
@@ -1696,7 +1773,7 @@ unsigned int S_00a5eb20_Arr::NiTArray_NiPointer_NiAVObject_NiTNewInterface_NiPoi
     unsigned int index = m_usESize;
     if (index >= m_usMaxSize)
         FUN_0060bef0(m_usGrowBy + index);
-    FUN_004b0310(index, e);
+    FUN_004b0310(index, element);
     return index;
 }
 
@@ -1734,6 +1811,9 @@ struct NiNodeEq : NiNode
 };
 // @fnv 0x00a5e600
 // src: XBOX_PDB 0x00a5e600
+// pdb: NiNode::IsEqual | NiNode.obj | retail, upstream name already matches, high
+// pdb params: pkObject
+// pdb locals: pkNode, uiCount0, uiCount1, i, pkChild1, pkChild0
 bool NiNodeEq::NiNode_IsEqual(NiAVObject* pkObject)
 {
     if (!FUN_00a5a260(pkObject))
@@ -1769,9 +1849,11 @@ class FUN_00a59dc0_shell
 
 // @fnv 0x00a7fdb0
 // src: XBOX_PDB 0x00a7fdb0
-void FUN_00a59dc0_shell::NiGeometry_SetBound(void* pValue)
+// pdb: NiGeometry::SetBound | NiGeometry.obj | debug, upstream name already matches, high
+// pdb params: apBound
+void FUN_00a59dc0_shell::NiGeometry_SetBound(void* apBound)
 {
-    SetBoundObject(pValue);
+    SetBoundObject(apBound);
 }
 
 inline unsigned int NiBinaryStream::BinaryWrite(const void* pvBuffer, unsigned int uiTotalBytes,
@@ -1803,6 +1885,9 @@ class NodeA5E8
 // Saves the node's size, child link IDs, and a terminating zero to the stream after calling the base save routine.
 // @fnv 0x00a5e880
 // src: XBOX_PDB 0x00a5e880
+// pdb: NiNode::SaveBinary | NiNode.obj | retail, upstream name already matches, high
+// pdb params: kStream
+// pdb locals: uiChildrenSize, iListSize, i, pkChild
 void NodeA5E8::NiNode_SaveBinary(NiStream& kStream)
 {
     FUN_00a5a900(kStream);
@@ -1910,6 +1995,9 @@ struct SUArray
 // Computes selective update flags from this node and child results, then stores them in this node's flag word.
 // @fnv 0x00a5e440
 // src: XBOX_PDB 0x00a5e440
+// pdb: NiNode::SetSelectiveUpdateFlags | NiNode.obj | retail, upstream name already matches, high
+// pdb params: bSelectiveUpdate, bSelectiveUpdateTransforms, bRigid
+// pdb locals: bAnimatedTransform, bSelectiveUpdatePropertyControllers, ui, pkChild, bSelectiveUpdateTemp, bRigidTemp
 void SUNode::NiNode_SetSelectiveUpdateFlags(bool& bSelectiveUpdate, bool bSelectiveUpdateTransforms, bool& bRigid)
 {
     bool bTransformControllers = FUN_00a5a0e0();
@@ -2013,7 +2101,7 @@ struct S00a5e690_Obj
     unsigned short m_unkA4;
     unsigned short m_usEffectiveSize;
 
-    void GetChild(unsigned int index, NiRefA** out);
+    void GetChild(unsigned int i, NiRefA** aspAVObject);
 };
 
 void S00a5e690_sub::FUN_00869260(NiRefA*& out, unsigned int index)
@@ -2023,18 +2111,21 @@ void S00a5e690_sub::FUN_00869260(NiRefA*& out, unsigned int index)
 
 // Returns the child at index via out, releasing the previous value and any temporary reference.
 // @fnv 0x00a5e690
-void S00a5e690_Obj::GetChild(unsigned int index, NiRefA** out)
+// pdb: NiNode::DetachChildAt | NiNode.obj | retail, vtable slot, high
+// pdb params: i
+// pdb locals: spobject
+void S00a5e690_Obj::GetChild(unsigned int i, NiRefA** aspAVObject)
 {
-    if (index < m_usEffectiveSize)
+    if (i < m_usEffectiveSize)
     {
-        unsigned int iIndex = index;
+        unsigned int iIndex = i;
         NiRefA* n = m_children[iIndex];
         long(__stdcall * incFn)(volatile long*) = InterlockedIncrement;
         if (n != 0)
         {
             incFn(&n->m_uiRefCount);
             n->m_i18 = 0;
-            NiRefA*& slot = reinterpret_cast<NiRefA*&>(index);
+            NiRefA*& slot = reinterpret_cast<NiRefA*&>(i);
             m_sub.FUN_00869260(slot, iIndex);
             NiRefA* r = slot;
             if (r != 0)
@@ -2043,7 +2134,7 @@ void S00a5e690_Obj::GetChild(unsigned int index, NiRefA** out)
                     r->DeleteThis();
             }
         }
-        NiRefA* old = *out;
+        NiRefA* old = *aspAVObject;
         if (old != n)
         {
             if (old != 0)
@@ -2051,7 +2142,7 @@ void S00a5e690_Obj::GetChild(unsigned int index, NiRefA** out)
                 if (InterlockedDecrement(&old->m_uiRefCount) == 0)
                     old->DeleteThis();
             }
-            *out = n;
+            *aspAVObject = n;
             if (n != 0)
                 incFn(&n->m_uiRefCount);
         }
@@ -2063,12 +2154,12 @@ void S00a5e690_Obj::GetChild(unsigned int index, NiRefA** out)
     }
     else
     {
-        NiRefA* old = *out;
+        NiRefA* old = *aspAVObject;
         if (old != 0)
         {
             if (InterlockedDecrement(&old->m_uiRefCount) == 0)
                 old->DeleteThis();
-            *out = 0;
+            *aspAVObject = 0;
         }
     }
 }
@@ -2193,6 +2284,9 @@ struct NodeStandIn
 };
 // @fnv 0x00a5e780
 // src: XBOX_PDB 0x00a5e780
+// pdb: NiNode::DetachChild | NiNode.obj | debug, vtable slot, medium
+// pdb params: pkChild, aspAVObject
+// pdb locals: i, spChild
 void NodeStandIn::NiNode_DetachChild_00a5e780(RefObj* pkChild, RefPtr& spRemovedChild)
 {
     for (unsigned int i = 0; i < m_kChildList.GetSize(); i++)
@@ -2329,34 +2423,37 @@ class Node
     ObjectArray m_kChildList;
 
     void ReadFromStream(NiStream* pkStream);
-    void ReadChildListFromStream(NiStream* pkStream);
+    void ReadChildListFromStream(NiStream* kStream);
 };
 
 // Reads the child object count and objects from pkStream, then reads and discards uiEffects objects based on m_uiFileVersion.
 // @fnv 0x00a5e9d0
-void Node::ReadChildListFromStream(NiStream* pkStream)
+// pdb: NiNode::LinkObject | NiNode.obj | retail, vtable slot, high
+// pdb params: kStream
+// pdb locals: uiSize, i, pkChild
+void Node::ReadChildListFromStream(NiStream* kStream)
 {
-    ReadFromStream(pkStream);
-    unsigned int ItemUpdateArray = pkStream->GetLinkID();
+    ReadFromStream(kStream);
+    unsigned int ItemUpdateArray = kStream->GetLinkID();
     if (ItemUpdateArray)
     {
         m_kChildList.FUN_0060bef0(ItemUpdateArray);
         for (unsigned int i = 0; i < ItemUpdateArray; i++)
         {
-            Object* pkChild = reinterpret_cast<Object*>(pkStream->GetLoadedObject());
+            Object* pkChild = reinterpret_cast<Object*>(kStream->GetLoadedObject());
             SetAt(i, pkChild);
         }
     }
-    unsigned int uiEffects = pkStream->GetLinkID();
-    if (pkStream->GetFileVersion() < 0x4010008)
+    unsigned int uiEffects = kStream->GetLinkID();
+    if (kStream->GetFileVersion() < 0x4010008)
     {
         while (uiEffects--)
-            pkStream->GetLoadedObject();
+            kStream->GetLoadedObject();
     }
     else
     {
         while (uiEffects--)
-            pkStream->GetLoadedObject();
+            kStream->GetLoadedObject();
     }
 }
 
@@ -2453,7 +2550,7 @@ struct ChildNode
     int unk94;
     int unk98;
     ChildArray m_kChildList;
-    void NiNode_AttachChild(ChildObj* pkChild, bool firstAvailable) throw();
+    void NiNode_AttachChild(ChildObj* pkChild, bool bFirstAvail) throw();
 };
 
 struct HeldChild
@@ -2533,13 +2630,15 @@ __declspec(noinline) void ChildArray::NiTArray_NiPointer_NiAVObject_NiTNewInterf
 // Adds pkChild to m_kChildList, placing it in the first available slot if firstAvailable is true, otherwise appending it.
 // @fnv 0x00a5ed10
 // src: XBOX_PDB 0x00a5ed10
-void ChildNode::NiNode_AttachChild(ChildObj* pkChild, bool firstAvailable)
+// pdb: NiNode::AttachChild | NiNode.obj | retail, upstream name already matches, high
+// pdb params: pkChild, bFirstAvail
+void ChildNode::NiNode_AttachChild(ChildObj* pkChild, bool bFirstAvail)
 {
     if (pkChild)
     {
         pkChild->IncRefCount();
         pkChild->SetParent(this);
-        if (firstAvailable)
+        if (bFirstAvail)
         {
             m_kChildList.NiTArray_NiPointer_NiAVObject_NiTNewInterface_NiPointer_NiAVObject_AddFirstEmpty(pkChild);
         }

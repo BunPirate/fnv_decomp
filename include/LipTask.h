@@ -6,6 +6,7 @@ class BGSTerrainManager;
 class LipSyncBackgroundManager;
 class UnkHolder;
 
+// pdb: class LipTask, size 0x40, bases: QueuedFileEntry, 3 members
 class LipTask : public QueuedFileEntry
 {
 public:

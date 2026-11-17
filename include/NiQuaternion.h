@@ -5,18 +5,19 @@ class NiPoint3;
 class NiStream;
 class NiMatrix3;
 
+// pdb: class NiQuaternion, size 0x10, 4 members
 class NiQuaternion
 {
 public:
-    float m_fVectorX;
-    float m_fVectorY;
-    float m_fVectorZ;
-    float m_fScalarPart;
+    float m_fW; // src: XBOX_RETAIL_PDB +0x0 (old: m_fVectorX)
+    float m_fX; // src: XBOX_RETAIL_PDB +0x4 (old: m_fVectorY)
+    float m_fY; // src: XBOX_RETAIL_PDB +0x8 (old: m_fVectorZ)
+    float m_fZ; // src: XBOX_RETAIL_PDB +0xc (old: m_fScalarPart)
 
     NiQuaternion();
 
     NiQuaternion(float w, float x, float y, float z)
-        : m_fVectorX(w), m_fVectorY(x), m_fVectorZ(y), m_fScalarPart(z)
+        : m_fW(w), m_fX(x), m_fY(y), m_fZ(z)
     {}
 
     NiQuaternion& operator=(const NiQuaternion& src);
@@ -26,14 +27,14 @@ public:
 
     NiQuaternion operator+(const NiQuaternion& q) const
     {
-        return NiQuaternion(m_fVectorX + q.m_fVectorX, m_fVectorY + q.m_fVectorY,
-                            m_fVectorZ + q.m_fVectorZ, m_fScalarPart + q.m_fScalarPart);
+        return NiQuaternion(m_fW + q.m_fW, m_fX + q.m_fX,
+                            m_fY + q.m_fY, m_fZ + q.m_fZ);
     }
 
     NiQuaternion operator*(float scalar) const
     {
-        return NiQuaternion(m_fVectorX * scalar, m_fVectorY * scalar,
-                            m_fVectorZ * scalar, m_fScalarPart * scalar);
+        return NiQuaternion(m_fW * scalar, m_fX * scalar,
+                            m_fY * scalar, m_fZ * scalar);
     }
 
     NiQuaternion ScaleFourComponents(float scalar) const;
@@ -53,33 +54,33 @@ public:
 
     void Sum4(const NiQuaternion& q, float w, float x, float y, float z)
     {
-        m_fVectorX = q.m_fVectorX + w;
-        m_fVectorY = q.m_fVectorY + x;
-        m_fVectorZ = q.m_fVectorZ + y;
-        m_fScalarPart = q.m_fScalarPart + z;
+        m_fW = q.m_fW + w;
+        m_fX = q.m_fX + x;
+        m_fY = q.m_fY + y;
+        m_fZ = q.m_fZ + z;
     }
 
     void MakeUnitLength();
     void Normalize();
-    void EnsureCanonicalSign();
+    void FastNormalize();
     void Snap();
-    void Slerp(float t, const NiQuaternion& a, const NiQuaternion& b);
+    void Slerp(float t, const NiQuaternion& p, const NiQuaternion& q);
     void Slerp(float t, NiQuaternion* a, NiQuaternion* b);
     void InterpolateSquad(float t, NiQuaternion* a, NiQuaternion* b, NiQuaternion* c, NiQuaternion* d);
     void GetAngleAxis(float& angle, NiPoint3& axis);
     void GetAngleAxis(float* angle, NiPoint3* axis);
     void FromAngleAxis(float angle, NiPoint3* axis);
-    void FromAngleAxisX(float angle);
+    void FromAngleAxisX(float fAngle);
     void FromAngleAxisY(float angle);
     void FromAngleAxisZ(float angle);
     void SetRotationFromEulerXYZ(float x, float y, float z);
     void ToRotationMatrix(NiMatrix3& matrix);
     void ToRotationMatrix(NiMatrix3* matrix);
-    void FromRotationMatrix(const NiMatrix3& matrix);
+    void FromRotationMatrix(const NiMatrix3& rot);
     void FromRotationMatrix(NiMatrix3* matrix);
     void LoadBinary(NiStream* stream);
     void SaveBinary(NiStream* stream);
-    char* FormatToBuffer(char* buffer);
+    char* GetViewerString(char* buffer);
 
     static float Dot(const NiQuaternion& p, const NiQuaternion& q);
 

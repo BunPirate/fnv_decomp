@@ -14,6 +14,8 @@ struct FUN_00b65660_StandIn
 };
 // @fnv 0x00b65660
 // src: COMMUNITY 0x00b65660
+// pdb: BSShaderAccumulator::ClearRenderedGeometryCache | BSShaderAccumulator.obj | retail, upstream name already matches, high
+// pdb locals: i
 void FUN_00b65660_StandIn::BSShaderAccumulator_ClearRenderedGeometryCache()
 {
     BSBatchRenderer__PassList* p = (BSBatchRenderer__PassList*)((char*)this + 0xa0);

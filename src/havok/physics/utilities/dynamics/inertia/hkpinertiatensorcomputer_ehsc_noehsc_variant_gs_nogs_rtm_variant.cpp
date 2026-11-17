@@ -36,7 +36,7 @@ struct S_00cee1c0_Router
     S_00cee1c0_Heap* heap;
 };
 S_00cee1c0_Router* hkMemoryRouter_getInstance();
-void __cdecl ResizeAudioStream(void* heap, void* array, int elemSize);
+void __cdecl ResizeAudioStream(void* mem, void* array, int sizeElem);
 
 #include <math.h>
 extern "C"
@@ -132,9 +132,9 @@ __forceinline void hkVector4::setCross(const hkVector4& v0, const hkVector4& v1)
     m_vComponents = _mm_sub_ps(cross0, cross1);
 }
 
-__forceinline hkSimdReal hkVector4::dot3(const hkVector4& a) const
+__forceinline hkSimdReal hkVector4::dot3(const hkVector4& x) const
 {
-    hkQuadReal x2 = _mm_mul_ps(m_vComponents, a.m_vComponents);
+    hkQuadReal x2 = _mm_mul_ps(m_vComponents, x.m_vComponents);
     hkQuadReal xySum = _mm_add_ss(_mm_shuffle_ps(x2, x2, 0x55), x2);
     return _mm_add_ss(_mm_shuffle_ps(x2, x2, 0xaa), xySum);
 }
@@ -242,10 +242,10 @@ __forceinline void hkTransform::setIdentity()
     reinterpret_cast<hkMatrix3*>(&m_row0)->setIdentity();
     m_row3 = _mm_setzero_ps();
 }
-__forceinline hkpMassProperties::hkpMassProperties() : m_iBufferSize(0.0f), m_fViscosityFriction(0.0f)
+__forceinline hkpMassProperties::hkpMassProperties() : m_volume(0.0f), m_mass(0.0f)
 {
-    m_kCenterOfMass1.setZero4();
-    m_kInertiaTensor.setZero();
+    m_centerOfMass.setZero4();
+    m_inertiaTensor.setZero();
 }
 
 struct MassPropertiesTransform
@@ -307,6 +307,9 @@ __forceinline hkReal fabs(hkReal r)
 
 // @fnv 0x00cef6d0
 // src: XBOX_PDB 0x00cef6d0
+// pdb: hkpInertiaTensorComputer::computeCylinderVolumeMassProperties | hkpInertiaTensorComputer.obj | retail, upstream name already matches, high
+// pdb params: startAxis, endAxis, radius, mass, result
+// pdb locals: capsuleToLocal, elements, massOfCylinder, assertBuf, ostr, rotAxis, q
 __declspec(noinline) int __cdecl hkpInertiaTensorComputer_computeCylinderVolumeMassProperties(const hkVector4& startAxis, const hkVector4& endAxis, hkReal radius,
                                               hkReal mass, hkpMassProperties& result)
 {
@@ -344,16 +347,16 @@ __declspec(noinline) int __cdecl hkpInertiaTensorComputer_computeCylinderVolumeM
             hkInplaceArray<MassPropertiesTransform, 1> elements(0);
             MassPropertiesTransform& el = elements.expandOne();
             el.m_kMotionTransform = cylinderBaseTransform;
-            el.m_kProperties.m_kCenterOfMass1.set(0.0f, 0.0f, 0.0f, 0.0f);
-            el.m_kProperties.m_kInertiaTensor.setIdentity();
-            el.m_kProperties.m_kInertiaTensor(0, 0) =
+            el.m_kProperties.m_centerOfMass.set(0.0f, 0.0f, 0.0f, 0.0f);
+            el.m_kProperties.m_inertiaTensor.setIdentity();
+            el.m_kProperties.m_inertiaTensor(0, 0) =
                 (hkReal)(radius * radius * 0.25 + height / 2.0 * height / 2.0 / 3.0);
-            el.m_kProperties.m_kInertiaTensor(1, 1) = el.m_kProperties.m_kInertiaTensor(0, 0);
-            el.m_kProperties.m_kInertiaTensor(2, 2) = (hkReal)(radius * radius * 0.5);
-            el.m_kProperties.m_kInertiaTensor.Multiply(massCopy);
-            el.m_kProperties.m_kCenterOfMass1.setZero4();
-            el.m_kProperties.m_iBufferSize = volume;
-            el.m_kProperties.m_fViscosityFriction = massCopy;
+            el.m_kProperties.m_inertiaTensor(1, 1) = el.m_kProperties.m_inertiaTensor(0, 0);
+            el.m_kProperties.m_inertiaTensor(2, 2) = (hkReal)(radius * radius * 0.5);
+            el.m_kProperties.m_inertiaTensor.Multiply(massCopy);
+            el.m_kProperties.m_centerOfMass.setZero4();
+            el.m_kProperties.m_volume = volume;
+            el.m_kProperties.m_mass = massCopy;
             hkpInertiaTensorComputer_combineMassProperties(elements, result);
             return 0;
         }

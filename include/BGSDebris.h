@@ -7,6 +7,7 @@
 class DebrisModelEntry;
 struct NiPoint3;
 
+// pdb: class BGSDebris, size 0x24, bases: TESForm, BGSPreloadable, 1 members
 class BGSDebris : public TESForm, public BGSPreloadable
 {
 public:
@@ -15,17 +16,17 @@ public:
     BGSDebris();
     virtual ~BGSDebris();
     virtual void ClearData();
-    virtual bool LoadForm(TESFile* file);
-    virtual void QueueResourceLoad(IO_TASK_PRIORITY priority, QueuedFile* file);
-    virtual void CopyFrom(const TESForm* source);
-    virtual bool Compare(TESForm* form);
+    virtual bool LoadForm(TESFile* apFile);
+    virtual void QueueResourceLoad(IO_TASK_PRIORITY aePriority, QueuedFile* apParent);
+    virtual void CopyFrom(const TESForm* apCopy);
+    virtual bool Compare(TESForm* apCompare);
 
     BSSimpleList<DebrisModelEntry*>* GetDataList();
     BSSimpleList<DebrisModelEntry*>* GetData();
-    bool Load(TESFile* file);
+    bool Load(TESFile* apFile);
     void Preload(int priority, void* file);
-    DebrisModelEntry* AddDebrisModel(char chance, const char* path, char flags);
+    DebrisModelEntry* AddDebrisData(char acPercentage, const char* apFileName, char acFlags);
     void InsertDebrisIfValid(DebrisModelEntry* entry);
     void WriteDebrisEntries();
-    void SpawnDebris(void* cell, NiPoint3* position, unsigned int count, float scale);
+    void SpawnDebris(void* apCell, NiPoint3* arLocation, unsigned int aiNumParticles, float afScale);
 };

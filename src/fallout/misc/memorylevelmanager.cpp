@@ -26,6 +26,7 @@ struct ActorReferenceArray::ActorReferenceSetupData
     unsigned int e;
 };
 
+// pdb: class MemoryLevelManager, size 0x30 (here 0x160), 6 members
 class MemoryLevelManager
 {
   public:
@@ -53,6 +54,8 @@ extern SettingT<GameSettingCollection> originalRuntimeFloatSetting292;
 float ScaleByInverseRatio(float, float, float);
 
 // @fnv 0x008782b0
+// pdb: MemoryLevelManager::RunNonDestructiveFree | MemoryLevelManager.obj | retail, object-file run extension, low
+// pdb locals: freedata
 void MemoryLevelManager::SetupActorReferences()
 {
     ActorReferenceSetupData data;
@@ -64,6 +67,8 @@ void MemoryLevelManager::SetupActorReferences()
     MemoryLevelManager_EndMemoryFree(data);
 }
 // @fnv 0x009777a0
+// pdb: ProcessLists::UpdateRadiationList | ProcessLists.obj | retail, call graph, medium
+// pdb locals: bclearRadiation, pheaviestRadiation, pmap, fheaviestPlayerRadiation, iter, referenceID, pextra, preference, pMob, fradius, pProcess, fdistance, fadjustedRadiation, pactor, fradiation, i, fresistance
 void MemoryLevelManager::ResetActorReferences()
 {
     struct Locals
@@ -216,6 +221,8 @@ extern IOManager* DAT_01202d98;
 
 // @fnv 0x00878200
 // src: XBOX_PDB 0x00878200
+// pdb: MemoryLevelManager::EndMemoryFree | MemoryLevelManager.obj | retail, upstream name already matches, high
+// pdb params: aFreeData
 void __cdecl MemoryLevelManager_EndMemoryFree(unsigned char* aFreeData)
 {
     NiGlobalStringTable_FreeUnusedStrings();
@@ -232,6 +239,7 @@ void __cdecl MemoryLevelManager_EndMemoryFree(unsigned char* aFreeData)
     IOManager_Resume(DAT_01202d98);
 }
 
+// pdb: class ModelLoader, size 0x30 (here 0x1), 12 members
 class ModelLoader
 {
   public:
@@ -249,6 +257,8 @@ void __cdecl BSFaceGenManager_ClearEGTCache();
 
 // @fnv 0x00878250
 // src: XBOX_PDB 0x00878250
+// pdb: MemoryLevelManager::FreeReleasedObjects | MemoryLevelManager.obj | retail, upstream name already matches, high
+// pdb locals: dignore, file, iignore
 void __cdecl MemoryLevelManager_FreeReleasedObjects(bool abRunExtraSteps)
 {
     GarbageCollector_ClearAll(1);

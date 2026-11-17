@@ -3,18 +3,22 @@
 #include "decaldata_decls.h"
 #include "TESFile.h"
 // @fnv 0x005932b0
-void DecalData::Copy(DecalData* source)
+// pdb: DecalData::Copy | DecalData.obj | debug, upstream name already matches, high
+// pdb params: apCopy
+void DecalData::Copy(DecalData* apCopy)
 {
-    if (source)
-        memcpy(this, source, sizeof(DecalData::DataRecordView));
+    if (apCopy)
+        memcpy(this, apCopy, sizeof(DecalData::DataRecordView));
 }
 
 // @fnv 0x00593450
-void DecalData::Load(TESFile* file)
+// pdb: DecalData::Load | DecalData.obj | retail, upstream name already matches, high
+// pdb params: apFile
+void DecalData::Load(TESFile* apFile)
 {
-    file->GetChunkData(this, sizeof(DecalData::DataRecordView));
-    if (file->IsEndianConversionRequired())
-        SwapEndianFields();
+    apFile->GetChunkData(this, sizeof(DecalData::DataRecordView));
+    if (apFile->IsEndianConversionRequired())
+        DECAL_DATA_DATA_Endian();
 }
 
 // @fnv 0x00593240
@@ -33,14 +37,17 @@ DecalData::DecalData()
 
 struct FUN_005932e0_shell
 {
-    bool __thiscall Compare(void* apCompare);
+    bool __thiscall DecalData_Compare(void* apCompare);
 };
 
 extern int __cdecl _memcmp(const void*, const void*, int);
 
 // Returns true if apCompare is null or the first 0x24 bytes differ from this; otherwise returns false.
 // @fnv 0x005932e0
-bool __thiscall FUN_005932e0_shell::Compare(void* apCompare)
+// src: XBOX_DEBUG_PDB 0x005932e0
+// pdb: DecalData::Compare | DecalData.obj | debug, call graph (shared callers), high
+// pdb params: apCompare
+bool __thiscall FUN_005932e0_shell::DecalData_Compare(void* apCompare)
 {
     if (apCompare == 0)
         return true;
@@ -57,12 +64,14 @@ void __cdecl BSEndian(int*, EndianSizeTag<4>);
 
 struct FUN_00593370_shell
 {
-    void SwapEndianFields();
+    void DECAL_DATA_DATA_Endian();
 };
 
 // Byte-swaps eight 4-byte fields of this object via BSEndian, in the order 0,1,2,3,6,4,5,8.
 // @fnv 0x00593370
-void FUN_00593370_shell::SwapEndianFields()
+// src: XBOX_DEBUG_PDB 0x00593370
+// pdb: DECAL_DATA_DATA::Endian | DecalData.obj | debug, call graph (shared callers), high
+void FUN_00593370_shell::DECAL_DATA_DATA_Endian()
 {
     BSEndian((int*)this, EndianSizeTag<4>());
     BSEndian((int*)this + 1, EndianSizeTag<4>());
@@ -78,15 +87,17 @@ bool __cdecl TESForm_QEndianSwapOnSave();
 void __cdecl AppendChunk(void*, void*, unsigned int);
 struct FUN_00593320_shell
 {
-    void ProcessState_00593320(void*);
+    void DecalData_Save(void*);
 };
 // @fnv 0x00593320
-// src: GUESS 0x00593320 (confidence: low)
-void FUN_00593320_shell::ProcessState_00593320(void* a1)
+// src: XBOX_RETAIL_PDB 0x00593320
+// pdb: DecalData::Save | DecalData.obj | retail, call graph (shared callers), high
+// pdb params: aeChunk
+void FUN_00593320_shell::DecalData_Save(void* aeChunk)
 {
     if (TESForm_QEndianSwapOnSave())
-        ((DecalData*)this)->SwapEndianFields();
-    AppendChunk(a1, this, 0x24);
+        ((DecalData*)this)->DECAL_DATA_DATA_Endian();
+    AppendChunk(aeChunk, this, 0x24);
     if (TESForm_QEndianSwapOnSave())
-        ((DecalData*)this)->SwapEndianFields();
+        ((DecalData*)this)->DECAL_DATA_DATA_Endian();
 }

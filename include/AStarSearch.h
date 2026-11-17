@@ -156,14 +156,14 @@ template <> class AStarSearch<NavMeshTriangleReference, NavMeshTriangleEdgeRefer
                                     AStarConnectionArray<NavMeshTriangleReference, NavMeshTriangleEdgeReference>* pConnectionArray);
     virtual bool HasReachedGoal(AStarNode<NavMeshTriangleReference, NavMeshTriangleEdgeReference>* pNode);
 
-    CREATE_ASTARNODE_RESULT CreateOrUpdateNode(unsigned int uiKey, float m_fPathingCostCur,
-                                               AStarNode<NavMeshTriangleReference, NavMeshTriangleEdgeReference>*& pNodeOut);
-    AStarNode<NavMeshTriangleReference, NavMeshTriangleEdgeReference>* FindOrCreateSearchNode(unsigned int uiKey,
-                                                                 const NavMeshTriangleReference& ObjectResolver,
-                                                                 float m_fCost);
+    CREATE_ASTARNODE_RESULT CreateOrUpdateNode(unsigned int aiKey, float afCost,
+                                               AStarNode<NavMeshTriangleReference, NavMeshTriangleEdgeReference>*& aRetNode);
+    AStarNode<NavMeshTriangleReference, NavMeshTriangleEdgeReference>* FindOrCreateSearchNode(unsigned int aiKey,
+                                                                 const NavMeshTriangleReference& aNodeData,
+                                                                 float afHeuristic);
     AStarNode<NavMeshTriangleReference, NavMeshTriangleEdgeReference>* ComputePath();
     bool AStarSearch_NavMeshSearchNode_NavMeshSearchLink_GetPathToNode(AStarNode<NavMeshTriangleReference, NavMeshTriangleEdgeReference>* pNode, unsigned int uiParam1, unsigned int uiParam2);
-    bool Search(unsigned int uiParam1, unsigned int uiParam2, bool bUseBestNode);
+    bool Search(unsigned int apReturnArray, unsigned int apReturnLinkArray, bool abReturnBestPathIfFailed);
 };
 
 template <> class AStarSearch<AStarNodeData*, AStarNodeLink*>

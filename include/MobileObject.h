@@ -17,26 +17,27 @@ class TESTopicInfo;
 class bhkCharacterController;
 enum PROCESS_TYPE;
 
+// pdb: class MobileObject, size 0x88, bases: TESObjectREFR, 17 members
 class MobileObject : public TESObjectREFR
 {
 public:
-    BaseProcess* m_pBaseProcess;
-    TESObjectREFR* m_pLinkedReference;
-    MobileObject* m_pMobileObject;
-    float ProcessReferenceState;
-    float ReferenceMobileState;
-    bool m_bFirstFlag;
-    bool m_bSecondBooleanValue;
-    bool m_bThirdFlag;
-    bool m_bFourthBooleanValue;
-    bool m_bFifthFlag;
-    bool m_bSixthFlag;
-    bool m_bSeventhFlag;
-    bool m_bEighthFlag;
-    char m_cCharacterValue;
-    bool m_bNinthFlag;
-    bool m_bTenthFlag;
-    bool m_bThirdActorFlag;
+    BaseProcess* pCurrentProcess; // src: XBOX_RETAIL_PDB +0x68 (old: m_pBaseProcess)
+    TESObjectREFR* pTalkingActivator; // src: XBOX_RETAIL_PDB +0x6c (old: m_pLinkedReference)
+    MobileObject* pDialogueItemTarget; // src: XBOX_RETAIL_PDB +0x70 (old: m_pMobileObject)
+    float fUpdateTargetTimer; // src: XBOX_RETAIL_PDB +0x74 (old: ProcessReferenceState)
+    float fSayToFailVoiceTimer; // src: XBOX_RETAIL_PDB +0x78 (old: ReferenceMobileState)
+    bool bSpeakingDone; // src: XBOX_RETAIL_PDB +0x7c (old: m_bFirstFlag)
+    bool bTalkingToPlayer; // src: XBOX_RETAIL_PDB +0x7d (old: m_bSecondBooleanValue)
+    bool bIgnoreChangeAnimationCall; // src: XBOX_RETAIL_PDB +0x7e (old: m_bThirdFlag)
+    bool bSoundFileDone; // src: XBOX_RETAIL_PDB +0x7f (old: m_bFourthBooleanValue)
+    bool bVoiceFileDone; // src: XBOX_RETAIL_PDB +0x80 (old: m_bFifthFlag)
+    bool bTalkingActivator; // src: XBOX_RETAIL_PDB +0x81 (old: m_bSixthFlag)
+    bool bInTempChangeList; // src: XBOX_RETAIL_PDB +0x82 (old: m_bSeventhFlag)
+    bool bDoNotRunSayToCallBack; // src: XBOX_RETAIL_PDB +0x83 (old: m_bEighthFlag)
+    char cSoundCallBackSet; // src: XBOX_RETAIL_PDB +0x84 (old: m_cCharacterValue)
+    bool bSoundCallBackSuccess; // src: XBOX_RETAIL_PDB +0x85 (old: m_bNinthFlag)
+    bool bUseEmotion; // src: XBOX_RETAIL_PDB +0x86 (old: m_bTenthFlag)
+    bool bRunsInLow; // src: XBOX_RETAIL_PDB +0x87 (old: m_bThirdActorFlag)
 
     virtual void StartHighProcess(void);
     virtual void Unk_91(void);
@@ -93,7 +94,7 @@ public:
 
     MobileObject();
     virtual ~MobileObject();
-    virtual void Revert(BGSLoadFormBuffer* buffer);
+    virtual void Revert(BGSLoadFormBuffer* apLoadGameBuffer);
     virtual NiPoint3* GetPos() const;
     virtual bool IsProjectile() const;
 
@@ -101,8 +102,8 @@ public:
     bhkCharacterController* GetPhysicsCharacterController();
     bool IsActorDead();
     bool GetCharControllerFlag() const;
-    BSSoundHandle PlaySoundByEditorName(const char* editorName, bool loop, unsigned int flags, bool unused);
-    void AdvanceMovement(float delta);
+    BSSoundHandle PlaySoundByEditorName(const char* apEditorName, bool abLoop, unsigned int aiSoundType, bool abAllowCopy);
+    void AdvanceMovement(float afModAngle);
     float GetLooking() const;
     bool IsInDialogueWithPlayer() const;
     void ProcessAnimation();
@@ -140,13 +141,13 @@ public:
 
     using TESObjectREFR::IsDead;
     bool IsDead();
-    void FUN_008c30a0() {}
+    void Actor_UnloadPermanentMagic() {} // src: XBOX_RETAIL_PDB 0x008c30a0
 
     bool FUN_00440d80();
     bool FUN_00440da0();
     bool MobileObject_IsTalkingActivator();
     bool IsSwimming_005a2030() const;
-    bool Actor_IsAtPoint(const NiPoint3& targetPos, float radius, bool addCharRadius, bool check3D);
+    bool Actor_IsAtPoint(const NiPoint3& aPoint, float afRadius, bool abExpandRadius, bool abAlwaysTestHeight);
     BaseProcess* FUN_008d8520();
     BaseProcess* FUN_008d8520() const;
     void ArrowProjectile_InitLoadGame(unsigned int, unsigned int);

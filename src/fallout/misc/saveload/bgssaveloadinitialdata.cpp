@@ -22,50 +22,60 @@
 
 #include "bgssaveloadinitialdata_packet.h"
 // @fnv 0x0084e700
+// pdb: BGSSaveLoadInitialData::GetInitialDataType | BGSSaveLoadInitialData.obj | debug, call graph (shared callers), medium
+// pdb params: apForm, aiChangeFlags
 INITIAL_DATA_TYPE BGSSaveLoadInitialData::DetermineInitialDataType(TESForm* apForm, InitialDataChangeMask eChangeFlags)
 {
     return DetermineInitialDataType(apForm->GetFormID(), ((const TESForm*)apForm)->GetFormType(), eChangeFlags);
 }
 
 // @fnv 0x00849280
+// pdb: ReferenceInitialData::ReferenceInitialData | BGSSaveLoadGame.obj | debug, call graph, high
 ReferencePlacementData::ReferencePlacementData()
 {}
 
 // @fnv 0x0084e610
-bool ReferencePlacementData::GetCellAndWorld(TESObjectCELL*& apCell, TESWorldSpace*& apWorld)
+// src: XBOX_RETAIL_PDB 0x0084e610
+// pdb: ReferenceInitialData::GetLocationCellAndWorld | BGSSaveLoadInitialData.obj | retail, call graph (shared callers), high
+// pdb params: arpCell, arpWorld
+// pdb locals: plocation, bresult, icellX, icellY
+bool ReferencePlacementData::GetLocationCellAndWorld(TESObjectCELL*& arpCell, TESWorldSpace*& arpWorld)
 {
     bool bResult;
     TESForm* apForm = TESForm::GetFormByID(m_uiLocationFormID);
-    bResult = GetCellAndWorldspaceForForm(apForm, apCell, apWorld);
-    if (apWorld)
+    bResult = GetCellAndWorldspaceForForm(apForm, arpCell, arpWorld);
+    if (arpWorld)
     {
         int x = TruncateFloatToInt(Location.x) >> 12;
         int y = TruncateFloatToInt(Location.y) >> 12;
-        apCell = apWorld->GetCellAtGridPosition(x, y);
+        arpCell = arpWorld->GetCellAtGridPosition(x, y);
     }
     return bResult;
 }
 
 // Loads a cell or reference change record from the save buffer and applies its location, angle and cell/worldspace to the form.
 // @fnv 0x0084f330
-INITIAL_DATA_TYPE BGSSaveLoadInitialData::LoadInitialDataForForm(BGSLoadFormBuffer* apBuffer, TESForm* apForm,
-                                                                       InitialDataChangeMask eChangeFlags)
+// pdb: BGSSaveLoadInitialData::LoadInitialData | BGSSaveLoadInitialData.obj | retail, string-set bridge, high
+// pdb params: apLoadGameBuffer, apForm, aiChangeFlags
+// pdb locals: etype, pcell, cellData, refData, pworld, pref, pbound, pactor, pspace
+INITIAL_DATA_TYPE BGSSaveLoadInitialData::LoadInitialDataForForm(BGSLoadFormBuffer* apLoadGameBuffer, TESForm* apForm,
+                                                                       InitialDataChangeMask aiChangeFlags)
 {
-    INITIAL_DATA_TYPE eType = DetermineInitialDataType(apForm, eChangeFlags);
+    INITIAL_DATA_TYPE eType = DetermineInitialDataType(apForm, aiChangeFlags);
     if (BGSSaveLoadInitialData_IsInitialDataCellType(eType))
     {
         CellDetachTimeData kCellData;
-        LoadFormData(apBuffer, eType, &kCellData);
+        LoadFormData(apLoadGameBuffer, eType, &kCellData);
         TESObjectCELL* pLocationCell = (TESObjectCELL*)apForm;
         pLocationCell->SetDetachTime(kCellData.m_uiDetachTime, true);
     }
     else if (BGSSaveLoadInitialData_IsInitialDataRefType(eType))
     {
         ReferencePlacementData kRefData;
-        LoadFormData(apBuffer, eType, &kRefData);
+        LoadFormData(apLoadGameBuffer, eType, &kRefData);
         TESWorldSpace* pWorld = 0;
         TESObjectCELL* pLocationCell = 0;
-        kRefData.GetCellAndWorld(pLocationCell, pWorld);
+        kRefData.GetLocationCellAndWorld(pLocationCell, pWorld);
         TESObjectREFR* m_pWorldReferenceInfo = (TESObjectREFR*)apForm;
         switch (eType)
         {
@@ -92,7 +102,7 @@ INITIAL_DATA_TYPE BGSSaveLoadInitialData::LoadInitialDataForForm(BGSLoadFormBuff
                            pBound ? pBound->TESForm_GetFormTypeString() : DAT_01015890);
                 m_pWorldReferenceInfo->FUN_0046a010(0);
                 g_BGSSaveLoadGame->DeleteForm(m_pWorldReferenceInfo);
-                ((TESRecipe*)apBuffer)->SetSkill(0);
+                ((TESRecipe*)apLoadGameBuffer)->SetSkill(0);
                 return eType;
             }
             m_pWorldReferenceInfo->PostLoad();
@@ -136,7 +146,7 @@ INITIAL_DATA_TYPE BGSSaveLoadInitialData::LoadInitialDataForForm(BGSLoadFormBuff
                     {
                         LogWarning(DAT_0107f8d0, m_pWorldReferenceInfo->GetName(), m_pWorldReferenceInfo->GetFormID(), pWorld->GetName(),
                                    pWorld->GetFormID());
-                        apBuffer->SetFlag10(1);
+                        apLoadGameBuffer->SetFlag10(1);
                     }
                 }
                 else
@@ -166,8 +176,8 @@ INITIAL_DATA_TYPE BGSSaveLoadInitialData::LoadInitialDataForForm(BGSLoadFormBuff
             }
             break;
         }
-        if (eChangeFlags.ContainsAnyFlags(4))
-            g_BGSSaveLoadGame->QueueSubBuffer(2, apBuffer, 0);
+        if (aiChangeFlags.ContainsAnyFlags(4))
+            g_BGSSaveLoadGame->QueueSubBuffer(2, apLoadGameBuffer, 0);
     }
     else if (eType != INITIAL_DATA_TYPE_INITIAL_DATA_NONE)
     {
@@ -180,6 +190,9 @@ unsigned int __cdecl BGSSaveLoadInitialData_GetInitialDataTypeSize(int);
 
 // @fnv 0x0084e800
 // src: COMMUNITY 0x0084e800
+// pdb: BGSSaveLoadInitialData::GetInitialDataTypeDataSize | BGSSaveLoadInitialData.obj | debug, upstream name already matches, high
+// pdb params: aeType
+// pdb locals: isize
 unsigned int __cdecl BGSSaveLoadInitialData_GetInitialDataTypeDataSize(int aeType)
 {
     unsigned int isize = BGSSaveLoadInitialData_GetInitialDataTypeSize(aeType);
@@ -192,7 +205,10 @@ int __cdecl BGSSaveLoadInitialData_LoadInitialDataStruct(void*, int, void*);
 
 // If aeType is non-zero, reads isize bytes from apFile into pbuffer and passes them with aeType and apInitialDataBuffer to FUN_0084e930; returns 0 for aeType 0.
 // @fnv 0x0084e8c0
-int __cdecl LoadFormData(BGSLoadFormBuffer* apFile, int aeType, void* apInitialDataBuffer)
+// pdb: BGSSaveLoadInitialData::LoadInitialDataStruct | BGSSaveLoadInitialData.obj | debug, call graph, high
+// pdb params: apLoadGameBuffer, aeType, apInitialDataBuffer
+// pdb locals: pbuffer, isize
+int __cdecl LoadFormData(BGSLoadFormBuffer* apLoadGameBuffer, int aeType, void* apInitialDataBuffer)
 {
     unsigned int isize;
     char pbuffer[128];
@@ -201,7 +217,7 @@ int __cdecl LoadFormData(BGSLoadFormBuffer* apFile, int aeType, void* apInitialD
         return 0;
 
     isize = BGSSaveLoadInitialData_GetInitialDataTypeSize(aeType);
-    apFile->ReadTypedData(pbuffer, isize);
+    apLoadGameBuffer->ReadTypedData(pbuffer, isize);
     return BGSSaveLoadInitialData_LoadInitialDataStruct(pbuffer, aeType, apInitialDataBuffer);
 }
 
@@ -253,6 +269,7 @@ struct Dummy84eaf0
 // Calls FUN_0084eac0 on this object, then ClearNumericIDIndex on the sub-object at offset 0x1C, and returns this.
 // @fnv 0x0084eb20
 // src: COMMUNITY 0x0084eb20
+// pdb: CreatedReferenceInitialData::CreatedReferenceInitialData | BGSSaveLoadInitialData.obj | debug, upstream name already matches, high
 BGSNumericIDIndex3* __thiscall BGSNumericIDIndex3::CreatedReferenceInitialData_CreatedReferenceInitialData()
 {
     ReferenceLocationInitialData_ReferenceLocationInitialData();
@@ -275,7 +292,7 @@ void BGSLoadFormBuffer::SetCellChanged(bool abSet)
 // src: XBOX_PDB 0x0084f8c0
 void TESObjectREFR::Actor_SetEditorLocationForm(TESForm* value)
 {
-    ((Actor*)this)->FormReferenceState = value;
+    ((Actor*)this)->pEditorLocForm = value;
 }
 
 struct FUN_0084e6a0_shell
@@ -285,18 +302,21 @@ struct FUN_0084e6a0_shell
     int f8;
     int fC;
     int f10;
-    bool ReferenceInitialData_GetOriginalLocationCellAndWorld(TESObjectCELL*& cell, TESWorldSpace*& world);
+    bool ReferenceInitialData_GetOriginalLocationCellAndWorld(TESObjectCELL*& arpCell, TESWorldSpace*& arpWorld);
 };
 
 // @fnv 0x0084e6a0
 // src: XBOX_PDB 0x0084e6a0
-bool FUN_0084e6a0_shell::ReferenceInitialData_GetOriginalLocationCellAndWorld(TESObjectCELL*& cell, TESWorldSpace*& world)
+// pdb: ReferenceInitialData::GetOriginalLocationCellAndWorld | BGSSaveLoadInitialData.obj | retail, upstream name already matches, high
+// pdb params: arpCell, arpWorld
+// pdb locals: plocation, bresult
+bool FUN_0084e6a0_shell::ReferenceInitialData_GetOriginalLocationCellAndWorld(TESObjectCELL*& arpCell, TESWorldSpace*& arpWorld)
 {
     TESForm* form = TESForm::GetFormByID(f8);
-    bool bResolved = GetCellAndWorldspaceForForm(form, cell, world);
-    if (world)
+    bool bResolved = GetCellAndWorldspaceForForm(form, arpCell, arpWorld);
+    if (arpWorld)
     {
-        cell = reinterpret_cast<TESWorldSpace*>(world)->GetCellAtGridPosition(fC, f10);
+        arpCell = reinterpret_cast<TESWorldSpace*>(arpWorld)->GetCellAtGridPosition(fC, f10);
     }
     return bResolved;
 }
@@ -327,6 +347,7 @@ struct Outer84eac0 : Dummy84eaf0
 // Calls ClearNumericIDIndex, then invokes FUN_006815c0 on m1 and m2, and returns this.
 // @fnv 0x0084eac0
 // src: COMMUNITY 0x0084eac0
+// pdb: ReferenceLocationInitialData::ReferenceLocationInitialData | BGSSaveLoadInitialData.obj | debug, upstream name already matches, high
 Outer84eac0* Outer84eac0::ReferenceLocationInitialData_ReferenceLocationInitialData()
 {
     Dummy84eaf0::ClearNumericIDIndex();
@@ -353,6 +374,7 @@ struct S84eb50
 // Calls the base FUN_0084eac0, then calls ClearNumericIDIndex on member m, and returns this.
 // @fnv 0x0084eb50
 // src: COMMUNITY 0x0084eb50
+// pdb: MovedReferenceInitialData::MovedReferenceInitialData | BGSSaveLoadInitialData.obj | debug, upstream name already matches, high
 S84eb50* S84eb50::MovedReferenceInitialData_MovedReferenceInitialData()
 {
     ((Base84eac0*)this)->ReferenceLocationInitialData_ReferenceLocationInitialData();
@@ -364,7 +386,7 @@ S84eb50* S84eb50::MovedReferenceInitialData_MovedReferenceInitialData()
 class GameFileBuf
 {
   public:
-    void FUN_00846300(void* apBuffer, unsigned int auiModule);
+    void FUN_00846300(void* apBuffer, unsigned int aiBytes);
 };
 
 unsigned int __cdecl BGSSaveLoadInitialData_GetInitialDataTypeDataSize(int aeType);
@@ -372,6 +394,9 @@ int __cdecl BGSSaveLoadInitialData_LoadInitialDataStruct(void* apBuffer, int aeT
 
 // @fnv 0x0084e850
 // src: COMMUNITY 0x0084e850
+// pdb: BGSSaveLoadInitialData::LoadInitialDataStruct | BGSSaveLoadInitialData.obj | debug, object-file run extension, low
+// pdb params: apFile, aeType, apInitialDataBuffer
+// pdb locals: pbuffer, isize
 unsigned int __cdecl BGSSaveLoadInitialData_LoadInitialDataStruct_0(GameFileBuf* apFile, int aeType, void* apInitialDataBuffer)
 {
     char acBuffer[128];
@@ -398,20 +423,24 @@ extern const char DAT_0107f9b8[];
 TESBoundObject* __fastcall ExtraDataList_GetLevCreaOriginalBase(ExtraDataList*);
 
 // @fnv 0x0084f8e0
-TESForm* __cdecl ResolveReferenceForm(unsigned int formID, ReferencePlacementData* data, TESForm* existing)
+// src: XBOX_RETAIL_PDB 0x0084f8e0
+// pdb: BGSSaveLoadInitialData::CreateReference | BGSSaveLoadInitialData.obj | retail, string-set bridge, high
+// pdb params: aiFormID, apReferenceInitialData, apPreExistingForm
+// pdb locals: pbound, ccreatedType, pform, bdeleteForm, pcurrentBound, pref, erefType, pprojectile
+TESForm* __cdecl BGSSaveLoadInitialData_CreateReference(unsigned int aiFormID, ReferencePlacementData* apReferenceInitialData, TESForm* apPreExistingForm)
 {
-    TESForm* form = existing;
+    TESForm* form = apPreExistingForm;
     {
         unsigned char flags;
         {
             if (!form)
-                form = TESForm_GetFormByNumericID(formID);
-            if (g_dataHandler->FUN_00469860(data->m_uiBaseFormID))
-                data->m_uiBaseFormID = 0;
-            TESBoundObject* bound = dynamic_cast<TESBoundObject*>(TESForm_GetFormByNumericID(data->m_uiBaseFormID));
+                form = TESForm_GetFormByNumericID(aiFormID);
+            if (g_dataHandler->FUN_00469860(apReferenceInitialData->m_uiBaseFormID))
+                apReferenceInitialData->m_uiBaseFormID = 0;
+            TESBoundObject* bound = dynamic_cast<TESBoundObject*>(TESForm_GetFormByNumericID(apReferenceInitialData->m_uiBaseFormID));
             if (!bound)
             {
-                SaveGameWarning(DAT_0107fa20, data->m_uiBaseFormID, formID);
+                SaveGameWarning(DAT_0107fa20, apReferenceInitialData->m_uiBaseFormID, aiFormID);
                 return 0;
             }
             if (form)
@@ -437,7 +466,7 @@ TESForm* __cdecl ResolveReferenceForm(unsigned int formID, ReferencePlacementDat
                     form = 0;
                 }
             }
-            flags = data->m_ucFlags;
+            flags = apReferenceInitialData->m_ucFlags;
             if (!form)
             {
                 TESObjectREFR* created = 0;
@@ -467,11 +496,11 @@ TESForm* __cdecl ResolveReferenceForm(unsigned int formID, ReferencePlacementDat
                         if (!created)
                             created = TESObjectREFR_CreateReference((unsigned char)type, true);
                         ((TESObjectREFR*)created)->TESObjectREFR_SetObjectReference(bound);
-                        ((TESObjectREFR*)created)->SetRefID(formID, true);
+                        ((TESObjectREFR*)created)->SetRefID(aiFormID, true);
                         form = created;
                     }
                     else
-                        SaveGameWarning(DAT_0107f9b8, flags, formID, data->m_uiBaseFormID, data->m_uiLocationFormID);
+                        SaveGameWarning(DAT_0107f9b8, flags, aiFormID, apReferenceInitialData->m_uiBaseFormID, apReferenceInitialData->m_uiLocationFormID);
                 }
             }
             if (form && (flags & 2))
@@ -490,12 +519,12 @@ void __cdecl SaveGameWarning(const char*, ...);
 
 struct BGSSaveLoadGame_SubAccessor
 {
-    unsigned short FUN_00846c90(unsigned int);
+    unsigned short AddFormID(unsigned int);
 };
 
 struct FUN_00853570_shell
 {
-    void WriteFormIDBytes(unsigned int);
+    void BGSNumericIDIndex_SetNumericID(unsigned int);
 };
 
 // Save-specific entry point not declared by the shared ExtraDataList header.
@@ -581,37 +610,40 @@ struct TESObjectREFRSaveAccess : TESObjectREFR
 // Determines the initial-data type for a form, writes the matching cell or reference record to the save buffer, and optionally saves extra data.
 // @fnv 0x0084eb80
 // src: XBOX_PDB 0x0084eb80
-INITIAL_DATA_TYPE __cdecl BGSSaveLoadInitialData_SaveInitialData(BGSSaveFormBuffer* apFile, TESForm* apForm, InitialDataChangeMask eChangeFlags)
+// pdb: BGSSaveLoadInitialData::SaveInitialData | BGSSaveLoadInitialData.obj | retail, string-set bridge, high
+// pdb params: apSaveGameBuffer, apForm, aiChangeFlags
+// pdb locals: etype, pcell, exteriorCellDataChar, exteriorCellDataShort, interiorCellData, plocation, refLocationData, pref, createdRefData, pobjectReference, poriginalActorBase, pmob, peditorLocationForm, movedRefData, editorLoc, editorAngle, savedHavokData, iposition2, isizePosition, iposition1
+INITIAL_DATA_TYPE __cdecl BGSSaveLoadInitialData_SaveInitialData(BGSSaveFormBuffer* apSaveGameBuffer, TESForm* apForm, InitialDataChangeMask aiChangeFlags)
 {
-    INITIAL_DATA_TYPE eType = BGSSaveLoadInitialData::DetermineInitialDataType(apForm, eChangeFlags);
+    INITIAL_DATA_TYPE eType = BGSSaveLoadInitialData::DetermineInitialDataType(apForm, aiChangeFlags);
     switch (eType)
     {
     case INITIAL_DATA_TYPE_INITIAL_DATA_EXTERIOR_CELL_CHAR: {
         ExteriorCellCharData data;
         TESObjectCELL* cell = (TESObjectCELL*)apForm;
         data.worldID = ((BGSSaveLoadGame_SubAccessor*)g_BGSSaveLoadGame->GetHavokWorldObjectCountInSceneGraph_0084e3a0())
-                           ->FUN_00846c90(cell->GetParentWorldSpace()->GetFormID());
+                           ->AddFormID(cell->GetParentWorldSpace()->GetFormID());
         data.cellX = (char)cell->GetCellGridX();
         data.cellY = (char)cell->GetCellGridY();
         data.detachTime = cell->GetDetachTime();
-        apFile->SaveData(&data, sizeof(data), 0);
+        apSaveGameBuffer->SaveData(&data, sizeof(data), 0);
         break;
     }
     case INITIAL_DATA_TYPE_INITIAL_DATA_EXTERIOR_CELL_SHORT: {
         ExteriorCellShortData data;
         TESObjectCELL* cell = (TESObjectCELL*)apForm;
         data.worldID = ((BGSSaveLoadGame_SubAccessor*)g_BGSSaveLoadGame->GetHavokWorldObjectCountInSceneGraph_0084e3a0())
-                           ->FUN_00846c90(cell->GetParentWorldSpace()->GetFormID());
+                           ->AddFormID(cell->GetParentWorldSpace()->GetFormID());
         data.cellX = cell->GetCellGridX();
         data.cellY = cell->GetCellGridY();
         *(unsigned int*)&data.detachTimeLow = cell->GetDetachTime();
-        apFile->SaveData(&data, sizeof(data), 0);
+        apSaveGameBuffer->SaveData(&data, sizeof(data), 0);
         break;
     }
     case INITIAL_DATA_TYPE_INITIAL_DATA_INTERIOR_CELL: {
         TESObjectCELL* pCell = (TESObjectCELL*)apForm;
         unsigned int detachTime = pCell->GetDetachTime();
-        apFile->SaveData(&detachTime, sizeof(detachTime), 0);
+        apSaveGameBuffer->SaveData(&detachTime, sizeof(detachTime), 0);
         break;
     }
     case INITIAL_DATA_TYPE_INITIAL_DATA_REFERENCE_LOCATION: {
@@ -638,10 +670,10 @@ INITIAL_DATA_TYPE __cdecl BGSSaveLoadInitialData_SaveInitialData(BGSSaveFormBuff
         }
         RefLocData refData;
         refData.ReferenceLocationInitialData_ReferenceLocationInitialData();
-        ((FUN_00853570_shell*)&refData)->WriteFormIDBytes(cell->GetFormID());
+        ((FUN_00853570_shell*)&refData)->BGSNumericIDIndex_SetNumericID(cell->GetFormID());
         *(NiPoint3*)&refData.pos = pos3;
         *(NiPoint3*)&refData.rot = rot_2;
-        apFile->SaveData(&refData, 0x1b, 0);
+        apSaveGameBuffer->SaveData(&refData, 0x1b, 0);
         break;
     }
     case INITIAL_DATA_TYPE_INITIAL_DATA_CREATED_REFERENCE: {
@@ -653,11 +685,11 @@ INITIAL_DATA_TYPE __cdecl BGSSaveLoadInitialData_SaveInitialData(BGSSaveFormBuff
         }
         CreatedRefInitialData createdRefData;
         createdRefData.CreatedReferenceInitialData_CreatedReferenceInitialData();
-        ((FUN_00853570_shell*)&createdRefData)->WriteFormIDBytes(kLoc->GetFormID());
+        ((FUN_00853570_shell*)&createdRefData)->BGSNumericIDIndex_SetNumericID(kLoc->GetFormID());
         *(NiPoint3*)&createdRefData.base.pos = *((const TESObjectREFR*)pRefr)->GetPos();
         *(NiPoint3*)&createdRefData.base.rot = *pRefr->FUN_00430830();
         TESBoundObject* baseObject3 = pRefr->GetObjectReference();
-        if (pRefr->IsActor() && ((BGSChangeFlags*)&eChangeFlags)->Test(0x40000))
+        if (pRefr->IsActor() && ((BGSChangeFlags*)&aiChangeFlags)->Test(0x40000))
         {
             TESBoundObject* boundObj4 = ExtraDataList_GetLevCreaOriginalBase(pRefr->GetExtraData());
             if (boundObj4)
@@ -665,7 +697,7 @@ INITIAL_DATA_TYPE __cdecl BGSSaveLoadInitialData_SaveInitialData(BGSSaveFormBuff
                 baseObject3 = boundObj4;
             }
         }
-        ((FUN_00853570_shell*)&createdRefData.bound0)->WriteFormIDBytes(baseObject3->GetFormID());
+        ((FUN_00853570_shell*)&createdRefData.bound0)->BGSNumericIDIndex_SetNumericID(baseObject3->GetFormID());
         createdRefData.flags = 1;
         if (pRefr->TESObjectREFR_GetRefPersists_005653d0())
         {
@@ -679,7 +711,7 @@ INITIAL_DATA_TYPE __cdecl BGSSaveLoadInitialData_SaveInitialData(BGSSaveFormBuff
                 createdRefData.flags |= 4;
             }
         }
-        apFile->SaveData(&createdRefData, 0x1f, 0);
+        apSaveGameBuffer->SaveData(&createdRefData, 0x1f, 0);
         break;
     }
     case INITIAL_DATA_TYPE_INITIAL_DATA_MOVED_REFERENCE: {
@@ -706,7 +738,7 @@ INITIAL_DATA_TYPE __cdecl BGSSaveLoadInitialData_SaveInitialData(BGSSaveFormBuff
         }
         MovedRefInitialData movedRefDataTmp;
         movedRefDataTmp.MovedReferenceInitialData_MovedReferenceInitialData();
-        ((FUN_00853570_shell*)&movedRefDataTmp)->WriteFormIDBytes(locMain->GetFormID());
+        ((FUN_00853570_shell*)&movedRefDataTmp)->BGSNumericIDIndex_SetNumericID(locMain->GetFormID());
         *(NiPoint3*)&movedRefDataTmp.base.pos = pos3;
         *(NiPoint3*)&movedRefDataTmp.base.rot = rot_2;
         NiPoint3 editorPos;
@@ -714,7 +746,7 @@ INITIAL_DATA_TYPE __cdecl BGSSaveLoadInitialData_SaveInitialData(BGSSaveFormBuff
         TESForm* editorCell = 0;
         if (pRefr->GetStartingPosition(&editorPos, &editorRot5, &editorCell, 0))
         {
-            ((FUN_00853570_shell*)&movedRefDataTmp.orig0)->WriteFormIDBytes(editorCell->GetFormID());
+            ((FUN_00853570_shell*)&movedRefDataTmp.orig0)->BGSNumericIDIndex_SetNumericID(editorCell->GetFormID());
             movedRefDataTmp.originalCellX = (short)(TruncateFloatToInt(editorPos.x) >> 12);
             movedRefDataTmp.originalCellY = (short)(TruncateFloatToInt(editorPos.y) >> 12);
         }
@@ -726,27 +758,27 @@ INITIAL_DATA_TYPE __cdecl BGSSaveLoadInitialData_SaveInitialData(BGSSaveFormBuff
                          pRefr->GetName(), pRefr->GetFormID(), pRefr->GetObjectReference()->GetName(),
                          pRefr->GetObjectReference()->GetFormID());
         }
-        apFile->SaveData(&movedRefDataTmp, 0x22, 0);
+        apSaveGameBuffer->SaveData(&movedRefDataTmp, 0x22, 0);
         break;
     }
     }
 
-    if (((TESObjectREFR*)apForm)->GetIsReference() && ((BGSChangeFlags*)&eChangeFlags)->Test(4))
+    if (((TESObjectREFR*)apForm)->GetIsReference() && ((BGSChangeFlags*)&aiChangeFlags)->Test(4))
     {
         TESObjectREFR* pRefr = (TESObjectREFR*)apForm;
         CF845 holder_(((ExtraDataListSaveAccess*)pRefr->GetExtraData())->ExtraDataList_GetSavedHavokData());
         if (pRefr->GetNiNode() || !holder_.Modelloader_GetReferencedThis())
         {
             unsigned int offsetBefore6;
-            unsigned int bookmark8 = apFile->StartVariableSizedValue();
-            offsetBefore6 = apFile->GetHavokWorldObjectCountInSceneGraph_0084e3a0();
-            ((TESObjectREFRSaveAccess*)pRefr)->TESObjectREFR_SaveHavokData(apFile);
-            unsigned int offsetAfter = apFile->GetHavokWorldObjectCountInSceneGraph_0084e3a0();
-            apFile->SaveVariableSizedValue_00865ff0(offsetAfter - offsetBefore6, bookmark8);
+            unsigned int bookmark8 = apSaveGameBuffer->StartVariableSizedValue();
+            offsetBefore6 = apSaveGameBuffer->GetHavokWorldObjectCountInSceneGraph_0084e3a0();
+            ((TESObjectREFRSaveAccess*)pRefr)->TESObjectREFR_SaveHavokData(apSaveGameBuffer);
+            unsigned int offsetAfter = apSaveGameBuffer->GetHavokWorldObjectCountInSceneGraph_0084e3a0();
+            apSaveGameBuffer->SaveVariableSizedValue_00865ff0(offsetAfter - offsetBefore6, bookmark8);
         }
         else
         {
-            holder_.WriteToSaveGameBuffer(apFile);
+            holder_.WriteToSaveGameBuffer(apSaveGameBuffer);
         }
     }
 
@@ -824,56 +856,59 @@ struct InitDataF
 // Copies a type-sized block from a BGSLoadFormBuffer into a matching data struct and dispatches it to the appropriate InitData handler.
 // @fnv 0x0084e930
 // src: XBOX_PDB 0x0084e930
-void BGSSaveLoadInitialData_LoadInitialDataStruct(BGSLoadFormBuffer* pBuffer, INITIAL_DATA_TYPE eType, void* pData)
+// pdb: BGSSaveLoadInitialData::LoadInitialDataStruct | BGSSaveLoadInitialData.obj | retail, call graph, high
+// pdb params: apFile, aeType, apInitialDataBuffer
+// pdb locals: pbuffer, isize
+void BGSSaveLoadInitialData_LoadInitialDataStruct(BGSLoadFormBuffer* apBuffer, INITIAL_DATA_TYPE aeType, void* apInitialDataBuffer)
 {
-    unsigned int uiSize = BGSSaveLoadInitialData_GetInitialDataTypeSize(eType);
-    switch (eType)
+    unsigned int uiSize = BGSSaveLoadInitialData_GetInitialDataTypeSize(aeType);
+    switch (aeType)
     {
     case INITIAL_DATA_TYPE_INITIAL_DATA_EXTERIOR_CELL_CHAR: {
         ExtCellCharData kData;
-        memcpy(&kData, pBuffer, uiSize);
-        InitDataA* pInit = (InitDataA*)pData;
+        memcpy(&kData, apBuffer, uiSize);
+        InitDataA* pInit = (InitDataA*)apInitialDataBuffer;
         pInit->CellInitialData_Initialize_CHAR(&kData);
         break;
     }
     case INITIAL_DATA_TYPE_INITIAL_DATA_EXTERIOR_CELL_SHORT: {
         ExtCellShortData kData;
-        memcpy(&kData, pBuffer, uiSize);
-        InitDataB* p = (InitDataB*)pData;
+        memcpy(&kData, apBuffer, uiSize);
+        InitDataB* p = (InitDataB*)apInitialDataBuffer;
         p->LoadFromSaveEntry(&kData);
         break;
     }
     case INITIAL_DATA_TYPE_INITIAL_DATA_INTERIOR_CELL: {
         IntCellData kData;
-        memcpy(&kData, pBuffer, uiSize);
-        InitDataC* p = (InitDataC*)pData;
+        memcpy(&kData, apBuffer, uiSize);
+        InitDataC* p = (InitDataC*)apInitialDataBuffer;
         p->ResetFromValue(&kData);
         break;
     }
     case INITIAL_DATA_TYPE_INITIAL_DATA_REFERENCE_LOCATION: {
         RefLocData kData;
         kData.ReferenceLocationInitialData_ReferenceLocationInitialData();
-        memcpy(&kData, pBuffer, uiSize);
-        InitDataD* pInit = (InitDataD*)pData;
+        memcpy(&kData, apBuffer, uiSize);
+        InitDataD* pInit = (InitDataD*)apInitialDataBuffer;
         pInit->ReferenceInitialData_Initialize_LOCATION(&kData);
         break;
     }
     case INITIAL_DATA_TYPE_INITIAL_DATA_CREATED_REFERENCE: {
         CreatedRefData kData;
         kData.CreatedReferenceInitialData_CreatedReferenceInitialData();
-        memcpy(&kData, pBuffer, uiSize);
-        InitDataE* p = (InitDataE*)pData;
+        memcpy(&kData, apBuffer, uiSize);
+        InitDataE* p = (InitDataE*)apInitialDataBuffer;
         p->ReferenceInitialData_Initialize_CREATED(&kData);
         break;
     }
     case INITIAL_DATA_TYPE_INITIAL_DATA_MOVED_REFERENCE: {
         MovedRefData kData;
         kData.MovedReferenceInitialData_MovedReferenceInitialData();
-        memcpy(&kData, pBuffer, uiSize);
-        InitDataF* p = (InitDataF*)pData;
+        memcpy(&kData, apBuffer, uiSize);
+        InitDataF* p = (InitDataF*)apInitialDataBuffer;
         p->ReferenceInitialData_Initialize_MOVED(&kData);
         break;
     }
     }
-    BGSSaveLoadInitialData_GetInitialDataTypeDataSize(eType);
+    BGSSaveLoadInitialData_GetInitialDataTypeDataSize(aeType);
 }

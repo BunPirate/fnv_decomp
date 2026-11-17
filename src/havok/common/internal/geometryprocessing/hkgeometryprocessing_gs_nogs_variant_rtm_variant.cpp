@@ -155,9 +155,9 @@ struct Obj
 {
     void NextFloat4(Vec4* p);
 };
-void __cdecl ResizeAudioStream(void* allocator, Vec4Array* arr, int elemSize);
+void __cdecl ResizeAudioStream(void* mem, Vec4Array* array, int sizeElem);
 extern Vec4 DAT_01267e30;
-bool __cdecl hkGeometryProcessingInternals_generateRandomDistribution(Owner* self, int count, Vec4Array* out, Obj* obj);
+bool __cdecl hkGeometryProcessingInternals_generateRandomDistribution(Owner* mesh, int numPoints, Vec4Array* points, Obj* rndGenerator);
 
 #include <xmmintrin.h>
 

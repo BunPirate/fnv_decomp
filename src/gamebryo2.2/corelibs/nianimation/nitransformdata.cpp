@@ -37,7 +37,7 @@ public:
     void AppendTransformKeyCounts(void*);
     void RestrictKeyRange(float, float);
     bool CompareTransformData(NiObject*);
-    void ExtractKeyRange(float, float, NiPointer<NiTransformData>&);
+    void NiTransformData_GetSequenceData(float, float, NiPointer<NiTransformData>&);
     void SaveTransformData(NiStream&);
     void LoadTransformData(NiStream&);
 };
@@ -68,7 +68,10 @@ template <class T> inline NiPointer<T>& NiPointer<T>::operator=(T* pkNew)
 // replacement in the opposite order.
 // Releases the previous rotation keys via the per-type deleter, then stores the new keys, count and interpolation type, or clears them.
 // @fnv 0x00a4e2e0
-void NiTransformData::SetRotationKeys(TimedRotationKey* keys, unsigned int count, NiAnimationKey::KeyType type)
+// src: XBOX_DEBUG_PDB 0x00a4e2e0
+// pdb: NiTransformData::ReplaceRotAnim | NiTransformData.obj | debug, call graph, high
+// pdb params: pkKeys, uiNumKeys, eType
+void NiTransformData::ReplaceRotAnim(TimedRotationKey* pkKeys, unsigned int uiNumKeys, NiAnimationKey::KeyType eType)
 {
     TimedRotationKey* oldKeys = m_pkRotationKeys;
     if (oldKeys)
@@ -77,62 +80,70 @@ void NiTransformData::SetRotationKeys(TimedRotationKey* keys, unsigned int count
             oldKeys->ClearFloatKeys();
         DAT_011f38d0[m_eRotationKeyType](oldKeys);
     }
-    if (keys && count)
+    if (pkKeys && uiNumKeys)
     {
-        m_usNumRotKeys = (unsigned short)count;
-        m_pkRotationKeys = keys;
-        m_eRotationKeyType = type;
-        m_ucRotationKeySize = DAT_011f3764[type];
+        m_usNumRotKeys = (unsigned short)uiNumKeys;
+        m_pkRotationKeys = pkKeys;
+        m_eRotationKeyType = eType;
+        m_ucRotSize = DAT_011f3764[eType];
     }
     else
     {
         m_usNumRotKeys = 0;
         m_pkRotationKeys = 0;
         m_eRotationKeyType = NiAnimationKey::NOINTERP;
-        m_ucRotationKeySize = 0;
+        m_ucRotSize = 0;
     }
 }
 
 // @fnv 0x00a4e350
-void NiTransformData::SetPositionKeys(PositionKeyInterpolator* keys, unsigned int count, NiAnimationKey::KeyType eKeyType)
+// src: XBOX_RETAIL_PDB 0x00a4e350
+// pdb: NiTransformData::ReplacePosAnim | NiTransformData.obj | retail, call graph, high
+// pdb params: pkKeys, uiNumKeys, eType
+// pdb locals: pfnDeleteFunc
+void NiTransformData::ReplacePosAnim(PositionKeyInterpolator* pkKeys, unsigned int uiNumKeys, NiAnimationKey::KeyType eType)
 {
     if (m_pkPositionKeys)
-        DAT_011f38b8[m_ePositionKeyType](m_pkPositionKeys);
-    if (keys && count)
+        DAT_011f38b8[m_ePosType](m_pkPositionKeys);
+    if (pkKeys && uiNumKeys)
     {
-        m_usNumPosKeys = (unsigned short)count;
-        m_pkPositionKeys = keys;
-        m_ePositionKeyType = eKeyType;
-        m_ucPositionKeySize = DAT_011f375e[eKeyType];
+        m_usNumPosKeys = (unsigned short)uiNumKeys;
+        m_pkPositionKeys = pkKeys;
+        m_ePosType = eType;
+        m_ucPosSize = DAT_011f375e[eType];
     }
     else
     {
         m_usNumPosKeys = 0;
         m_pkPositionKeys = 0;
-        m_ePositionKeyType = NiAnimationKey::NOINTERP;
-        m_ucPositionKeySize = 0;
+        m_ePosType = NiAnimationKey::NOINTERP;
+        m_ucPosSize = 0;
     }
 }
 
 // Releases the previous scale keys and stores the new key array, count and interpolation type, or clears them when keys or count is zero.
 // @fnv 0x00a4e3b0
-void NiTransformData::SetScaleKeys(TimedAnimationKey* keys, unsigned int count, NiAnimationKey::KeyType type)
+// src: XBOX_RETAIL_PDB 0x00a4e3b0
+// pdb: NiTransformData::ReplaceScaleAnim | NiTransformData.obj | retail, call graph, high
+// pdb params: pkKeys, uiNumKeys, eType
+// pdb locals: pfnDeleteFunc
+void NiTransformData::ReplaceScaleAnim(TimedAnimationKey* pkKeys, unsigned int uiNumKeys, NiAnimationKey::KeyType eType)
 {
     if (m_pkScaleKeyArray)
-        DAT_011f38a0[m_eScaleKeyType](m_pkScaleKeyArray);
-    if (keys && count)
+        DAT_011f38a0[m_eScaleType](m_pkScaleKeyArray);
+    if (pkKeys && uiNumKeys)
     {
-        m_usNumScaleKeys = (unsigned short)count;
-        m_pkScaleKeyArray = keys;
-        m_eScaleKeyType = type;
-        m_ucScaleKeySize = DAT_011f3758[type];
+        m_usNumScaleKeys = (unsigned short)uiNumKeys;
+        m_pkScaleKeyArray = pkKeys;
+        m_eScaleType = eType;
+        m_ucScaleSize = DAT_011f3758[eType];
     }
     else
     {
         m_usNumScaleKeys = 0;
         m_pkScaleKeyArray = 0;
-        m_ucScaleKeySize = 0;
-        m_eScaleKeyType = NiAnimationKey::NOINTERP;
+        m_ucScaleSize = 0;
+        m_eScaleType = NiAnimationKey::NOINTERP;
     }
 }
 
@@ -144,11 +155,14 @@ bool NiFloatsExtraDataPoint3Controller::ControlsTransform(NiInterpolator* interp
 
 // Returns true if the base controller and the floats extra data index both match the given object's.
 // @fnv 0x00a4eb10
-bool NiFloatsExtraDataController::IsEqual(NiObject* object) const
+// pdb: NiFloatsExtraDataController::IsEqual | NiFloatsExtraDataController.obj | retail, upstream name already matches, high
+// pdb params: pkObject
+// pdb locals: pkDest
+bool NiFloatsExtraDataController::IsEqual(NiObject* pkObject) const
 {
-    if (!NiExtraDataController::IsEqual(object))
+    if (!NiExtraDataController::IsEqual(pkObject))
         return false;
-    if (m_iFloatsExtraDataIndex != static_cast<NiFloatsExtraDataController*>(object)->m_iFloatsExtraDataIndex)
+    if (m_iFloatsExtraDataIndex != static_cast<NiFloatsExtraDataController*>(pkObject)->m_iFloatsExtraDataIndex)
         return false;
     return true;
 }
@@ -175,13 +189,13 @@ void TransformDataOperations::DestroyTransformData()
     PositionKeyInterpolator* pkPosKeys = m_pkPositionKeys;
     if (pkPosKeys)
     {
-        NiPosKeyDeleteFunction pfnPosDeleteFunc = DAT_011f38b8[m_ePositionKeyType];
+        NiPosKeyDeleteFunction pfnPosDeleteFunc = DAT_011f38b8[m_ePosType];
         pfnPosDeleteFunc(pkPosKeys);
     }
     TimedAnimationKey* pkScaleKeys = m_pkScaleKeyArray;
     if (pkScaleKeys)
     {
-        NiFloatKeyDeleteFunction pfnScaleDeleteFunc = DAT_011f38a0[m_eScaleKeyType];
+        NiFloatKeyDeleteFunction pfnScaleDeleteFunc = DAT_011f38a0[m_eScaleType];
         pfnScaleDeleteFunc(pkScaleKeys);
     }
     NiObject::FUN_00a5d3d0();
@@ -192,6 +206,7 @@ void __cdecl FUN_00aa1460(void*, unsigned int);
 
 // Calls DestroyTransformData on pThis, then if flags has bit 1 set calls FUN_00aa1460 with 0x2c, and returns pThis.
 // @fnv 0x00a4e5b0
+// pdb: NiTransformData::`scalar deleting destructor' | NiTransformData.obj | retail, object-file gap fill, high
 void* __fastcall FUN_00a4e5b0(void* pThis, int, unsigned int flags)
 {
     DestroyTransformData(pThis);
@@ -200,13 +215,13 @@ void* __fastcall FUN_00a4e5b0(void* pThis, int, unsigned int flags)
     return pThis;
 }
 
-extern "C" const NiRTTI g_011f3fbc;
+extern "C" const NiRTTI NiTransformData_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f3fbc (old: g_011f3fbc)
 
 // @fnv 0x00a4e0a0
 // src: COMMUNITY 0x00a4e0a0
 const NiRTTI* __cdecl NiTransformData_GetRTTI()
 {
-    return &g_011f3fbc;
+    return &NiTransformData_ms_RTTI;
 }
 
 struct BlendPoint3Stub
@@ -229,13 +244,13 @@ inline TransformDataOperations::TransformDataOperations() throw()
     m_usNumRotKeys = 0;
     m_pkRotationKeys = 0;
     m_eRotationKeyType = NiAnimationKey::NOINTERP;
-    m_ucRotationKeySize = 0;
+    m_ucRotSize = 0;
     m_pkPositionKeys = 0;
-    m_ePositionKeyType = NiAnimationKey::NOINTERP;
-    m_ucPositionKeySize = 0;
+    m_ePosType = NiAnimationKey::NOINTERP;
+    m_ucPosSize = 0;
     m_pkScaleKeyArray = 0;
-    m_eScaleKeyType = NiAnimationKey::NOINTERP;
-    m_ucScaleKeySize = 0;
+    m_eScaleType = NiAnimationKey::NOINTERP;
+    m_ucScaleSize = 0;
     *reinterpret_cast<int**>(this) = &DAT_01099004;
     m_usNumPosKeys = 0;
     m_usNumScaleKeys = 0;
@@ -249,6 +264,8 @@ NiTransformData* CreateTransformData()
 
 // Iterates three slots, deletes each non-null key via the function at DAT_011f38a0 indexed by the slot's index, then zeroes the key, index and count fields.
 // @fnv 0x00a29ad0
+// pdb: NiEulerRotKey::CleanUp | NiEulerRotKey.obj | retail, object-file run extension, low
+// pdb locals: i, pfnDeleteFunc
 void TimedRotationKey::ClearFloatKeys()
 {
     int* p = (int*)((char*)this + 0x30);
@@ -277,15 +294,15 @@ void TransformDataOperations::SetPositionKeyStorage(PositionKeyInterpolator* key
     {
         m_usNumPosKeys = static_cast<unsigned short>(count);
         m_pkPositionKeys = keys;
-        m_ePositionKeyType = type;
-        m_ucPositionKeySize = DAT_011f375e[type];
+        m_ePosType = type;
+        m_ucPosSize = DAT_011f375e[type];
     }
     else
     {
         m_usNumPosKeys = 0;
         m_pkPositionKeys = 0;
-        m_ePositionKeyType = NiAnimationKey::NOINTERP;
-        m_ucPositionKeySize = 0;
+        m_ePosType = NiAnimationKey::NOINTERP;
+        m_ucPosSize = 0;
     }
 }
 
@@ -297,15 +314,15 @@ void TransformDataOperations::SetScaleKeyStorage(TimedAnimationKey* keys, unsign
     {
         m_usNumScaleKeys = static_cast<unsigned short>(count);
         m_pkScaleKeyArray = keys;
-        m_eScaleKeyType = type;
-        m_ucScaleKeySize = DAT_011f3758[type];
+        m_eScaleType = type;
+        m_ucScaleSize = DAT_011f3758[type];
     }
     else
     {
         m_usNumScaleKeys = 0;
         m_pkScaleKeyArray = 0;
-        m_ucScaleKeySize = 0;
-        m_eScaleKeyType = NiAnimationKey::NOINTERP;
+        m_ucScaleSize = 0;
+        m_eScaleType = NiAnimationKey::NOINTERP;
     }
 }
 
@@ -326,18 +343,20 @@ char* NiViewerStrings_NiGetViewerString_Title(const char*);
 char* __cdecl NiGetViewerString_00a7d490(const char*, unsigned short);
 
 // @fnv 0x00a4e990
-void TransformDataOperations::AppendTransformKeyCounts(void* pStrArr)
+// pdb: NiTransformData::GetViewerStrings | NiTransformData.obj | retail, string-set bridge, high
+// pdb params: pStrings
+void TransformDataOperations::AppendTransformKeyCounts(void* pStrings)
 {
-    StrArr* apViewerStrings = (StrArr*)pStrArr;
+    StrArr* apViewerStrings = (StrArr*)pStrings;
     NiObject::AddViewerStrings(reinterpret_cast<NiViewerStringsArray*>(apViewerStrings));
-    apViewerStrings->AddInline(NiViewerStrings_NiGetViewerString_Title(g_011f3fbc.m_pcName));
+    apViewerStrings->AddInline(NiViewerStrings_NiGetViewerString_Title(NiTransformData_ms_RTTI.m_pcName));
     apViewerStrings->AddInline(NiGetViewerString_00a7d490("m_usNumRotKeys", m_usNumRotKeys));
     apViewerStrings->AddInline(NiGetViewerString_00a7d490("m_usNumPosKeys", m_usNumPosKeys));
     apViewerStrings->AddInline(NiGetViewerString_00a7d490("m_usNumScaleKeys", m_usNumScaleKeys));
 }
 
-void UpdateSlotStates(unsigned int content, NiAnimationKey::KeyType type, NiAnimationKey*& keys, unsigned int& count,
-                      float start, float end);
+void NiAnimationKey_GuaranteeKeyAtStartAndEnd(unsigned int eContent, NiAnimationKey::KeyType eType, NiAnimationKey*& pkKeys, unsigned int& uiNumKeys,
+                      float fStartTime, float fEndTime);
 
 // @fnv 0x00a4df40
 void TransformDataOperations::RestrictKeyRange(float start, float end)
@@ -348,7 +367,7 @@ void TransformDataOperations::RestrictKeyRange(float start, float end)
     {
         count = m_usNumRotKeys;
         keys = reinterpret_cast<NiAnimationKey*>(m_pkRotationKeys);
-        UpdateSlotStates(2, m_eRotationKeyType, keys, count, start, end);
+        NiAnimationKey_GuaranteeKeyAtStartAndEnd(2, m_eRotationKeyType, keys, count, start, end);
         m_usNumRotKeys = static_cast<unsigned short>(count);
         m_pkRotationKeys = reinterpret_cast<TimedRotationKey*>(keys);
     }
@@ -356,7 +375,7 @@ void TransformDataOperations::RestrictKeyRange(float start, float end)
     {
         count = m_usNumPosKeys;
         keys = reinterpret_cast<NiAnimationKey*>(m_pkPositionKeys);
-        UpdateSlotStates(1, m_ePositionKeyType, keys, count, start, end);
+        NiAnimationKey_GuaranteeKeyAtStartAndEnd(1, m_ePosType, keys, count, start, end);
         m_usNumPosKeys = static_cast<unsigned short>(count);
         m_pkPositionKeys = reinterpret_cast<PositionKeyInterpolator*>(keys);
     }
@@ -364,7 +383,7 @@ void TransformDataOperations::RestrictKeyRange(float start, float end)
     {
         count = m_usNumScaleKeys;
         keys = reinterpret_cast<NiAnimationKey*>(m_pkScaleKeyArray);
-        UpdateSlotStates(0, m_eScaleKeyType, keys, count, start, end);
+        NiAnimationKey_GuaranteeKeyAtStartAndEnd(0, m_eScaleType, keys, count, start, end);
         m_usNumScaleKeys = static_cast<unsigned short>(count);
         m_pkScaleKeyArray = reinterpret_cast<TimedAnimationKey*>(keys);
     }
@@ -383,36 +402,36 @@ bool TransformDataOperations::CompareTransformData(NiObject* pkObject)
 
     NiTransformData* pkData = (NiTransformData*)pkObject;
     if (m_usNumRotKeys != pkData->m_usNumRotKeys || m_eRotationKeyType != pkData->m_eRotationKeyType ||
-        m_usNumPosKeys != pkData->m_usNumPosKeys || m_ePositionKeyType != pkData->m_ePositionKeyType ||
-        m_usNumScaleKeys != pkData->m_usNumScaleKeys || m_eScaleKeyType != pkData->m_eScaleKeyType ||
-        m_ucRotationKeySize != pkData->m_ucRotationKeySize || m_ucPositionKeySize != pkData->m_ucPositionKeySize ||
-        m_ucScaleKeySize != pkData->m_ucScaleKeySize)
+        m_usNumPosKeys != pkData->m_usNumPosKeys || m_ePosType != pkData->m_ePosType ||
+        m_usNumScaleKeys != pkData->m_usNumScaleKeys || m_eScaleType != pkData->m_eScaleType ||
+        m_ucRotSize != pkData->m_ucRotSize || m_ucPosSize != pkData->m_ucPosSize ||
+        m_ucScaleSize != pkData->m_ucScaleSize)
         return false;
 
     NiAnimKeyEqualFunction pfnKeyEqual = DAT_011f3b10[m_eRotationKeyType];
     unsigned int i;
     for (i = 0; i < m_usNumRotKeys; i++)
     {
-        char* pKeyB = (char*)pkData->m_pkRotationKeys + i * m_ucRotationKeySize;
-        char* pKeyA = (char*)m_pkRotationKeys + i * m_ucRotationKeySize;
+        char* pKeyB = (char*)pkData->m_pkRotationKeys + i * m_ucRotSize;
+        char* pKeyA = (char*)m_pkRotationKeys + i * m_ucRotSize;
         if (!pfnKeyEqual(pKeyA, pKeyB))
             return false;
     }
 
-    pfnKeyEqual = DAT_011f3af8[m_ePositionKeyType];
+    pfnKeyEqual = DAT_011f3af8[m_ePosType];
     for (i = 0; i < m_usNumPosKeys; i++)
     {
-        char* pKeyB = (char*)pkData->m_pkPositionKeys + i * m_ucPositionKeySize;
-        char* pKeyA = (char*)m_pkPositionKeys + i * m_ucPositionKeySize;
+        char* pKeyB = (char*)pkData->m_pkPositionKeys + i * m_ucPosSize;
+        char* pKeyA = (char*)m_pkPositionKeys + i * m_ucPosSize;
         if (!pfnKeyEqual(pKeyA, pKeyB))
             return false;
     }
 
-    pfnKeyEqual = DAT_011f3ae0[m_eScaleKeyType];
+    pfnKeyEqual = DAT_011f3ae0[m_eScaleType];
     for (i = 0; i < m_usNumScaleKeys; i++)
     {
-        char* pKeyB = (char*)pkData->m_pkScaleKeyArray + i * m_ucScaleKeySize;
-        char* pKeyA = (char*)m_pkScaleKeyArray + i * m_ucScaleKeySize;
+        char* pKeyB = (char*)pkData->m_pkScaleKeyArray + i * m_ucScaleSize;
+        char* pKeyA = (char*)m_pkScaleKeyArray + i * m_ucScaleSize;
         if (!pfnKeyEqual(pKeyA, pKeyB))
             return false;
     }
@@ -420,11 +439,15 @@ bool TransformDataOperations::CompareTransformData(NiObject* pkObject)
     return true;
 }
 
-void __cdecl NiAnimationKey_CopySequence(int iKind, NiAnimationKey::KeyType keyType, void* pvExtra, unsigned int ItemUpdateArray, float fA, float fB, int* piOutA,
-                          int* piOutB);
+void __cdecl NiAnimationKey_CopySequence(int eContent, NiAnimationKey::KeyType eType, void* pkOrigKeys, unsigned int uiOrigNumKeys, float fStartTime, float fEndTime, int* pkNewKeys,
+                          int* uiNewNumKeys);
 
 // @fnv 0x00a4e410
-void TransformDataOperations::ExtractKeyRange(float fA, float fB, NiPointer<NiTransformData>& spOut)
+// src: XBOX_RETAIL_PDB 0x00a4e410
+// pdb: NiTransformData::GetSequenceData | NiTransformData.obj | retail, object-file gap fill, high
+// pdb params: fStartTime, fEndTime, aspTransformData
+// pdb locals: spDeepCopy, pkNewKeys, uiNewNumKeys, spNewData
+void TransformDataOperations::NiTransformData_GetSequenceData(float fStartTime, float fEndTime, NiPointer<NiTransformData>& aspTransformData)
 {
     NiTransformData* pkData = 0;
     NiObject::ResolveObjectPointer(reinterpret_cast<NiPointer<NiObject>&>(pkData));
@@ -435,20 +458,20 @@ void TransformDataOperations::ExtractKeyRange(float fA, float fB, NiPointer<NiTr
     int iOutB = 0;
     if (m_usNumRotKeys > 0)
     {
-        NiAnimationKey_CopySequence(2, m_eRotationKeyType, m_pkRotationKeys, m_usNumRotKeys, fA, fB, &iOutA, &iOutB);
-        pkResult->SetRotationKeys(reinterpret_cast<TimedRotationKey*>(iOutA), iOutB, m_eRotationKeyType);
+        NiAnimationKey_CopySequence(2, m_eRotationKeyType, m_pkRotationKeys, m_usNumRotKeys, fStartTime, fEndTime, &iOutA, &iOutB);
+        pkResult->ReplaceRotAnim(reinterpret_cast<TimedRotationKey*>(iOutA), iOutB, m_eRotationKeyType);
     }
     if (m_usNumPosKeys > 0)
     {
-        NiAnimationKey_CopySequence(1, m_ePositionKeyType, m_pkPositionKeys, m_usNumPosKeys, fA, fB, &iOutA, &iOutB);
-        pkResult->SetPositionKeys(reinterpret_cast<PositionKeyInterpolator*>(iOutA), iOutB, m_ePositionKeyType);
+        NiAnimationKey_CopySequence(1, m_ePosType, m_pkPositionKeys, m_usNumPosKeys, fStartTime, fEndTime, &iOutA, &iOutB);
+        pkResult->ReplacePosAnim(reinterpret_cast<PositionKeyInterpolator*>(iOutA), iOutB, m_ePosType);
     }
     if (m_usNumScaleKeys > 0)
     {
-        NiAnimationKey_CopySequence(0, m_eScaleKeyType, m_pkScaleKeyArray, m_usNumScaleKeys, fA, fB, &iOutA, &iOutB);
-        pkResult->SetScaleKeys(reinterpret_cast<TimedAnimationKey*>(iOutA), iOutB, m_eScaleKeyType);
+        NiAnimationKey_CopySequence(0, m_eScaleType, m_pkScaleKeyArray, m_usNumScaleKeys, fStartTime, fEndTime, &iOutA, &iOutB);
+        pkResult->ReplaceScaleAnim(reinterpret_cast<TimedAnimationKey*>(iOutA), iOutB, m_eScaleType);
     }
-    spOut = pkResult;
+    aspTransformData = pkResult;
     if (pkResult)
         pkResult->DecRefCount();
     if (pkData)
@@ -498,6 +521,9 @@ extern ScaleSave g_011f3a50[];
 
 // Saves the transform data's rotation, position and scale key counts and key arrays to the stream via the per-type save function tables.
 // @fnv 0x00a4e810
+// pdb: NiTransformData::SaveBinary | NiTransformData.obj | retail, object-file gap fill, high
+// pdb params: stream
+// pdb locals: uiNumKeys, sf
 void TransformDataOperations::SaveTransformData(NiStream& stream)
 {
     NiObject::SaveBinary(stream);
@@ -513,17 +539,17 @@ void TransformDataOperations::SaveTransformData(NiStream& stream)
     SaveAnimationValue(stream, count);
     if (m_usNumPosKeys > 0)
     {
-        SaveAnimationValue(stream, m_ePositionKeyType);
+        SaveAnimationValue(stream, m_ePosType);
         count = m_usNumPosKeys;
-        g_011f3a68[m_ePositionKeyType](stream, m_pkPositionKeys, count);
+        g_011f3a68[m_ePosType](stream, m_pkPositionKeys, count);
     }
     count = m_usNumScaleKeys;
     SaveAnimationValue(stream, count);
     if (m_usNumScaleKeys > 0)
     {
-        SaveAnimationValue(stream, m_eScaleKeyType);
+        SaveAnimationValue(stream, m_eScaleType);
         count = m_usNumScaleKeys;
-        g_011f3a50[m_eScaleKeyType](stream, m_pkScaleKeyArray, count);
+        g_011f3a50[m_eScaleType](stream, m_pkScaleKeyArray, count);
     }
 }
 
@@ -531,12 +557,16 @@ extern void FUN_00a57630();
 
 // @fnv 0x00a4eaf0
 // src: XBOX_PDB 0x00a4eaf0
+// pdb: NiFloatsExtraDataPoint3Controller::LinkObject | NiFloatsExtraDataPoint3Controller.obj | debug, upstream name already matches, high
+// pdb params: kStream
 void NiFloatsExtraDataPoint3Controller_LinkObject()
 {
     FUN_00a57630();
 }
 
 // @fnv 0x00a4eb00
+// pdb: NiTransformData::~NiTransformData | NiTransformData.obj | retail, upstream name already matches, high
+// pdb locals: pfnPosDeleteFunc, pfnScaleDeleteFunc
 bool __fastcall RegisterPoint3Controller(NiFloatsExtraDataPoint3Controller* controller, int, NiStream& stream)
 {
     return controller->NiSingleInterpController::RegisterStreamables(stream);
@@ -600,6 +630,9 @@ void __cdecl Object_DoNothing(const char* message);
 
 // Reads rotation, position, and scale key data from a NiStream, creating and loading each key set via type-specific factory and load functions.
 // @fnv 0x00a4e5d0
+// pdb: NiTransformData::LoadBinary | NiTransformData.obj | retail, string-set bridge, high
+// pdb params: stream
+// pdb locals: uiNumKeys, cf, eRotType, ucSize, pkRotKeys, derived, pkPosKeys, ePosType, eScaleType, pkScaleKeys
 void TransformDataOperations::LoadTransformData(NiStream& stream)
 {
     NiObject::LoadBinary(stream);
@@ -617,7 +650,7 @@ void TransformDataOperations::LoadTransformData(NiStream& stream)
             numKeys = 65535;
             Object_DoNothing("Transform data loading has more than 65535 rotation keys!");
         }
-        SetRotationKeys(keys, numKeys, type);
+        ReplaceRotAnim(keys, numKeys, type);
     }
     stream.Istr().Read(&numKeys, 4);
     if (numKeys > 0)
@@ -632,7 +665,7 @@ void TransformDataOperations::LoadTransformData(NiStream& stream)
             numKeys = 65535;
             Object_DoNothing("Transform data loading has more than 65535 position keys!");
         }
-        SetPositionKeys(keys, numKeys, type);
+        ReplacePosAnim(keys, numKeys, type);
     }
     stream.Istr().Read(&numKeys, 4);
     if (numKeys > 0)
@@ -647,6 +680,6 @@ void TransformDataOperations::LoadTransformData(NiStream& stream)
             numKeys = 65535;
             Object_DoNothing("Transform data loading has more than 65535 scale keys!");
         }
-        SetScaleKeys(keys, numKeys, type);
+        ReplaceScaleAnim(keys, numKeys, type);
     }
 }

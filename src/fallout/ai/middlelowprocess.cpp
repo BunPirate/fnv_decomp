@@ -14,12 +14,12 @@
 // @fnv 0x008d80e0
 int MiddleLowProcess::GetProcessInteger() const
 {
-    return m_iValueB4;
+    return iHourPackageEvaluated;
 }
 // @fnv 0x00502c90
 void MiddleLowProcess::SetProcessInteger(int argument0)
 {
-    m_iValueB4 = argument0;
+    iHourPackageEvaluated = argument0;
 }
 
 struct Base_0092c950
@@ -43,6 +43,7 @@ struct FUN_0092c950 : Base_0092c950
 };
 // Constructs the object and initializes its skill level to 2 via SetSkillLevel.
 // @fnv 0x0092c950
+// pdb: MiddleLowProcess::MiddleLowProcess | MiddleLowProcess.obj | retail, call graph, high
 FUN_0092c950::FUN_0092c950()
 {
     SetSkillLevel(2);
@@ -143,6 +144,8 @@ struct LP_0092ce00
     float GetCurrentActorValue(TESActorBase*, int, Actor*);
 };
 // @fnv 0x0092ce00
+// pdb: MiddleLowProcess::GetActorFloatValue | MiddleLowProcess.obj | retail, object-file run extension, low
+// pdb params: apActorBase, aiWhich, apActor
 float FUN_0092ce00_shell::GetActorValueWithModifiers(TESActorBase* apActorBase, int aiWhich, Actor* apActor)
 {
     if (ActorValue::GetFlag(aiWhich, 0x100))
@@ -171,13 +174,16 @@ struct ModifierListCall
 
 // @fnv 0x0092eaa0
 // src: XBOX_PDB 0x0092eaa0
+// pdb: MiddleLowProcess::LoadGame | MiddleLowProcess.obj | retail, object-file run extension, low
+// pdb params: aiFlags, aiCurrentFlags, pmob
+// pdb locals: istartBufferPosition, iblockSize, iblockHeader, pheader, pform, icurrentBufferPosition
 void FUN_0092eaa0_shell::MiddleLowProcess_LoadGame_0092eaa0(BGSLoadFormBuffer* apLoadGameBuffer)
 {
     reinterpret_cast<LowProcessCall*>(this)->LoadGame(apLoadGameBuffer);
-    static_cast<BGSLoadGameBuffer*>(apLoadGameBuffer)->ReadTypedData(reinterpret_cast<void*>(&m_iValueB4), 4);
+    static_cast<BGSLoadGameBuffer*>(apLoadGameBuffer)->ReadTypedData(reinterpret_cast<void*>(&iHourPackageEvaluated), 4);
     if (apLoadGameBuffer->GetChangeFlags()(0x100000))
     {
-        reinterpret_cast<ModifierListCall*>(&m_kProcessModifierList)->LoadGame(apLoadGameBuffer);
+        reinterpret_cast<ModifierListCall*>(&pTemporaryModifiers)->LoadGame(apLoadGameBuffer);
     }
 }
 }  // namespace fnv_0092eaa0
@@ -202,6 +208,8 @@ struct ModifierList_helper
 
 // @fnv 0x0092eb00
 // src: XBOX_PDB 0x0092eb00
+// pdb: MiddleLowProcess::Revert | MiddleLowProcess.obj | retail, object-file run extension, low
+// pdb params: aiFlags, pmob
 void FUN_0092eb00_shell::MiddleLowProcess_Revert_0092eb00(BGSLoadFormBuffer* apLoadGameBuffer)
 {
     reinterpret_cast<LowProcess_helper*>(this)->Revert(apLoadGameBuffer);
@@ -238,6 +246,8 @@ struct StandIn : Lvl<23>
 };
 // Converts the third integer argument to float and forwards all three arguments to Target.
 // @fnv 0x00907430
+// pdb: LowProcess::DamageModActorValue | LowProcess.obj | debug, object-file gap fill, medium
+// pdb params: apActor, aiWhich, aiValue
 void StandIn::CallTargetWithFloat(int aiArg1, int aiArg2, int aiArg3)
 {
     Target(aiArg1, aiArg2, (float)aiArg3);
@@ -254,6 +264,7 @@ struct FUN_0092c9d0_shell
 };
 // Calls FUN_0092ca00 on this, frees this when bit 0 of flags is set, and returns this.
 // @fnv 0x0092c9d0
+// pdb: MiddleLowProcess::`scalar deleting destructor' | MiddleLowProcess.obj | debug, object-file gap fill, medium
 void* FUN_0092c9d0_shell::FUN_0092c9d0(unsigned int flags)
 {
     ((S0092ca00*)this)->FUN_0092ca00();
@@ -276,6 +287,8 @@ struct FUN_0092ce70_shell
 };
 // Returns early if P09AV::GetFlag(a2, 0x100) is set; otherwise calls ModifyModifier on the ModHack at this+0xB8 with a2, a3 and 2.
 // @fnv 0x0092ce70
+// pdb: MiddleLowProcess::TempModActorValue | MiddleLowProcess.obj | retail, object-file run extension, low
+// pdb params: apActor, aiWhich, aiValue
 void FUN_0092ce70_shell::ApplyModifierIfNotFlagged(void* apUnused, int aiArg, int afValue)
 {
     if (P09AV::GetFlag(aiArg, 0x100))
@@ -296,6 +309,8 @@ struct FUN_0092cf10_shell
 };
 // @fnv 0x0092cf10
 // src: COMMUNITY 0x0092cf10
+// pdb: MiddleLowProcess::GetTemporaryModifier | MiddleLowProcess.obj | debug, object-file run extension, low
+// pdb params: aiWhich
 float FUN_0092cf10_shell::MiddleLowProcess_GetMagicModifier(char aWhich)
 {
     return _m.GetActorValueModifierAmount(aWhich);
@@ -312,6 +327,8 @@ struct Holder
 };
 // @fnv 0x0092e400
 // src: COMMUNITY 0x0092e400
+// pdb: MiddleLowProcess::Update | MiddleLowProcess.obj | debug, object-file gap fill, medium
+// pdb params: apRef, fTimeDelta
 void Holder::MiddleLowProcess_UpdateAlt(void* a, float afValue)
 {
     ((LowHolder*)this)->UpdateAlt_0090c360(a, afValue);
@@ -331,6 +348,8 @@ struct FUN_0092e9f0_shell
 };
 // @fnv 0x0092e9f0
 // src: XBOX_PDB 0x0092e9f0
+// pdb: MiddleLowProcess::Revert | MiddleLowProcess.obj | retail, object-file run extension, high
+// pdb params: aiFlags, pmob
 void FUN_0092e9f0_shell::MiddleLowProcess_Revert(unsigned int aiFlags, class MobileObject* pmob)
 {
     ((FUN_00910310_shell*)this)->ResetAndClear(aiFlags, pmob);
@@ -350,6 +369,8 @@ struct Host096d450
 };
 // @fnv 0x0096d450
 // src: XBOX_PDB 0x0096d450
+// pdb: ProcessLists::AddReference | ProcessLists.obj | debug, upstream name already matches, high
+// pdb params: apActor, aWhichList, aiWhere, abinsert, apInsertActor
 void Host096d450::ProcessLists_AddReference(MobileObject* apActor, int aWhichList, bool aiWhere, bool abinsert,
                                MobileObject* apInsertActor)
 {
@@ -370,6 +391,8 @@ struct FUN_0092cd90_shell : LowProcess
     int GetActorValue(TESActorBase*, ActorValue__Index, Actor*);
 };
 // @fnv 0x0092cd90
+// pdb: MiddleLowProcess::GetActorValue | MiddleLowProcess.obj | retail, object-file run extension, low
+// pdb params: apActorBase, aiWhich, apActor
 int FUN_0092cd90_shell::GetActorValue(TESActorBase* apActorBase, ActorValue__Index index, Actor* actorPtr)
 {
     if (P09AV::GetFlag((int)index, 0x100))
@@ -388,6 +411,9 @@ struct FUN_0092cc90_shell
 
 // @fnv 0x0092cc90
 // src: COMMUNITY 0x0092cc90
+// pdb: MiddleLowProcess::ProcessCombatOneHour | MiddleLowProcess.obj | retail, upstream name already matches, high
+// pdb params: apActor, afTimeDelta
+// pdb locals: inumber, ptarget
 bool FUN_0092cc90_shell::MiddleLowProcess_ProcessCombatOneHour(Actor* apActor, float afTimeDelta)
 {
     int iCount = (int)(*originalRuntimeSetting236.Float() * 4.0);
@@ -479,14 +505,17 @@ struct FUN_0092e420_shell
 
 // @fnv 0x0092e420
 // src: COMMUNITY 0x0092e420
-unsigned short FUN_0092e420_shell::MiddleLowProcess_GetSaveSize(unsigned int flags, int value)
+// pdb: MiddleLowProcess::GetSaveSize | MiddleLowProcess.obj | retail, upstream name already matches, high
+// pdb params: aiFlags, pmob
+// pdb locals: isize, itempStartSize, pheader, pform
+unsigned short FUN_0092e420_shell::MiddleLowProcess_GetSaveSize(unsigned int aiFlags, int pmob)
 {
     unsigned short usSize = 0;
     unsigned short usInitialSize;
     HitSoundData_0092e420* hitSound;
     TESForm* form;
 
-    usSize += this->GetSaveSize_0090f8b0(flags, value);
+    usSize += this->GetSaveSize_0090f8b0(aiFlags, pmob);
     usInitialSize = usSize;
 
     if (DAT_011de45c->TESSaveLoadGame_UseSaveGameBlocks())
@@ -497,7 +526,7 @@ unsigned short FUN_0092e420_shell::MiddleLowProcess_GetSaveSize(unsigned int fla
 
     usSize += 4;
 
-    if (flags & 0x100000)
+    if (aiFlags & 0x100000)
     {
         usSize += this->saveSizePart.ModifierList_GetSaveSize();
     }
@@ -533,13 +562,15 @@ class FUN_00501c10_cls
 {
   public:
     void FUN_00438470(int arg);
-    FUN_00501c10_cls* CallAndReturnSelf(int arg);
+    FUN_00501c10_cls* CallAndReturnSelf(int arString);
 };
 
 // @fnv 0x00501c10
-FUN_00501c10_cls* FUN_00501c10_cls::CallAndReturnSelf(int arg)
+// pdb: BSStringT<char>::operator= | BGSTerminal.obj | debug, call graph, high
+// pdb params: arString
+FUN_00501c10_cls* FUN_00501c10_cls::CallAndReturnSelf(int arString)
 {
-    FUN_00438470(arg);
+    FUN_00438470(arString);
     return this;
 }
 
@@ -551,23 +582,26 @@ extern FNVTimeClock g_GameClock;
 
 struct FUN_0092cfd0_shell : MiddleLowProcess
 {
-    bool FUN_0090a1a0(int packageType, bool forced);
-    bool MiddleLowProcess_CheckforNewPackage(int packageType, bool forced);
+    bool FUN_0090a1a0(int apActor, bool abFlag);
+    bool MiddleLowProcess_CheckforNewPackage(int apActor, bool abFlag);
 };
 
 // Re-evaluates the current package via FUN_0090a1a0 when forced, no package is active, or the clock's integer second changed, caching that second.
 // @fnv 0x0092cfd0
 // src: XBOX_PDB 0x0092cfd0
-bool FUN_0092cfd0_shell::MiddleLowProcess_CheckforNewPackage(int packageType, bool forced)
+// pdb: MiddleLowProcess::CheckforNewPackage | MiddleLowProcess.obj | retail, upstream name already matches, high
+// pdb params: apActor, abFlag
+// pdb locals: fhour, bnewPackage
+bool FUN_0092cfd0_shell::MiddleLowProcess_CheckforNewPackage(int apActor, bool abFlag)
 {
     bool result;
     {
         float currentTime = g_GameClock.GetTime();
         result = false;
-        if (forced || !GetCurrentPackage() || m_iValueB4 != static_cast<int>(currentTime))
+        if (abFlag || !GetCurrentPackage() || iHourPackageEvaluated != static_cast<int>(currentTime))
         {
-            result = FUN_0090a1a0(packageType, forced);
-            m_iValueB4 = static_cast<int>(currentTime);
+            result = FUN_0090a1a0(apActor, abFlag);
+            iHourPackageEvaluated = static_cast<int>(currentTime);
         }
     }
     return result;
@@ -591,13 +625,13 @@ struct SaveFormData_92e560
 // ActorValueModifierList lacks the no-argument save method bound at 0x009378d0.
 struct ModifierSaveCall
 {
-    void SaveGame();
+    void ModifierList_SaveGame();
 };
 
 // The shared process layout is complete; its MiddleLowProcess save override is not declared yet.
 struct ProcessSave : MiddleLowProcess
 {
-    void SaveGameTES(unsigned int auiFlags, MobileObject* apObject);
+    void SaveGameTES(unsigned int aiFlags, MobileObject* pmob);
 };
 
 extern TESSaveLoadGame* g_TESSaveLoadGame;
@@ -607,9 +641,12 @@ void __cdecl DebugPrintf_92e560(const char* apFmt, ...);
 void __cdecl SaveWarning_92e560(const char* apFmt, ...);
 
 // @fnv 0x0092e560
-void ProcessSave::SaveGameTES(unsigned int auiFlags, MobileObject* apObject)
+// pdb: MiddleLowProcess::SaveGame | MiddleLowProcess.obj | retail, object-file gap fill, high
+// pdb params: aiFlags, pmob
+// pdb locals: itempStartPosition, iblockSize, pblockSize, iblockHeader, icurrentBufferPosition, pheader, pform, istartBufferPosition
+void ProcessSave::SaveGameTES(unsigned int aiFlags, MobileObject* pmob)
 {
-    LowProcess::SaveGameTES(auiFlags, apObject);
+    LowProcess::SaveGameTES(aiFlags, pmob);
     unsigned short usBlockSize = 0;
     unsigned short* pBlockSize3 = 0;
     unsigned int _uiStart = g_TESSaveLoadGame->FUN_00825c00();
@@ -622,9 +659,9 @@ void ProcessSave::SaveGameTES(unsigned int auiFlags, MobileObject* apObject)
         pBlockSize3 = (unsigned short*)g_TESSaveLoadGame->FUN_00825c00();
         g_TESSaveLoadGame->TESSaveLoadGame_SaveGameDataOLD(&usBlockSize, 2);
     }
-    g_TESSaveLoadGame->TESSaveLoadGame_SaveGameDataOLD(&m_iValueB4, 4);
-    if (auiFlags & 0x100000)
-        reinterpret_cast<ModifierSaveCall*>(&m_kProcessModifierList)->SaveGame();
+    g_TESSaveLoadGame->TESSaveLoadGame_SaveGameDataOLD(&iHourPackageEvaluated, 4);
+    if (aiFlags & 0x100000)
+        reinterpret_cast<ModifierSaveCall*>(&pTemporaryModifiers)->ModifierList_SaveGame();
     if (*g_bSaveDebug_92e560.Bool())
     {
         unsigned int uiEnd4 = g_TESSaveLoadGame->FUN_00825c00();
@@ -667,17 +704,20 @@ struct FUN_0092ea30_shell : public LowProcess
     int m_iValueB4;
     TemporaryModifiers_shell m_kProcessModifierList;
     void SaveGame_00910450(FUN_00865e50_shell* a);
-    void LoadFromStream(FUN_00865e50_shell* a);
+    void LoadFromStream(FUN_00865e50_shell* apSaveGameBuffer);
 };
 // @fnv 0x0092ea30
-void FUN_0092ea30_shell::LoadFromStream(FUN_00865e50_shell* a)
+// pdb: MiddleLowProcess::SaveGame | MiddleLowProcess.obj | retail, object-file run extension, high
+// pdb params: aiFlags, pmob
+// pdb locals: itempStartPosition, iblockSize, pblockSize, iblockHeader, icurrentBufferPosition, pheader, pform, istartBufferPosition
+void FUN_0092ea30_shell::LoadFromStream(FUN_00865e50_shell* apSaveGameBuffer)
 {
     unsigned int flags;
-    SaveGame_00910450(a);
-    a->FUN_00865e50(&m_iValueB4, 4, 0);
-    if (a->FUN_00428110(&flags)->Test(0x100000))
+    SaveGame_00910450(apSaveGameBuffer);
+    apSaveGameBuffer->FUN_00865e50(&m_iValueB4, 4, 0);
+    if (apSaveGameBuffer->FUN_00428110(&flags)->Test(0x100000))
     {
-        m_kProcessModifierList.ModifierList_SaveGameBGS(a);
+        m_kProcessModifierList.ModifierList_SaveGameBGS(apSaveGameBuffer);
     }
 }
 
@@ -702,7 +742,7 @@ struct Base92
 };
 struct Sub92
 {
-    void LoadModifiers();
+    void ModifierList_LoadGame();
 };
 TESForm* __cdecl TESForm_GetFormByNumericID(unsigned);
 void __cdecl Warning_005b5e40(const char*, ...);
@@ -716,9 +756,12 @@ struct Target92
 // Calls the base handler, reads a 4-byte field from the save stream, logs a mismatch record, and compares stream position against a stored offset.
 // @fnv 0x0092e730
 // src: XBOX_PDB 0x0092e730
-void Target92::MiddleLowProcess_LoadGame(unsigned flags, unsigned arg2, unsigned arg3)
+// pdb: MiddleLowProcess::LoadGame | MiddleLowProcess.obj | retail, string-set bridge, high
+// pdb params: aiFlags, aiCurrentFlags, pmob
+// pdb locals: istartBufferPosition, iblockSize, iblockHeader, pheader, pform, icurrentBufferPosition
+void Target92::MiddleLowProcess_LoadGame(unsigned aiFlags, unsigned aiCurrentFlags, unsigned pmob)
 {
-    ((Base92*)this)->LoadGame_0090fd80(flags, arg2, arg3);
+    ((Base92*)this)->LoadGame_0090fd80(aiFlags, aiCurrentFlags, pmob);
     unsigned short a = 0;
     unsigned b = 0;
     if (::DAT_011de45c->TESSaveLoadGame_UseSaveGameBlocks())
@@ -743,8 +786,8 @@ void Target92::MiddleLowProcess_LoadGame(unsigned flags, unsigned arg2, unsigned
         ::DAT_011de45c->TESSaveLoadGame_LoadGameDataOLD(&a, 2);
     }
     ::DAT_011de45c->TESSaveLoadGame_LoadGameDataOLD(&field, 4);
-    if (flags & 0x100000)
-        sub.LoadModifiers();
+    if (aiFlags & 0x100000)
+        sub.ModifierList_LoadGame();
     if (::DAT_011de45c->TESSaveLoadGame_UseSaveGameBlocks())
     {
         unsigned uiNewPos = ::DAT_011de45c->FUN_00825c00();
@@ -784,7 +827,7 @@ bool ActorValue_IsFlagSet(int aiValue, int aiFlag);
 
 struct Sub0092cec0
 {
-    void __thiscall FUN_00937480(unsigned char aucIndex, float afValue, int aiType);
+    void __thiscall FUN_00937480(unsigned char acKey, float afValue, int aeClampStyle);
 };
 
 struct Owner0092cec0
@@ -843,6 +886,8 @@ struct Owner0092cec0
 // Returns when FUN_00406d70(aiIndex, 0x100) is true; otherwise calls unkB8.FUN_00937480(aiIndex, afValue, 2).
 // @fnv 0x0092cec0
 // src: COMMUNITY 0x0092cec0
+// pdb: MiddleLowProcess::TempModActorValue | MiddleLowProcess.obj | debug, object-file run extension, low
+// pdb params: apActor, aiWhich, afValue
 void Owner0092cec0::MiddleLowProcess_MagicModActorValueF(int aiUnused, int aiIndex, float afValue)
 {
     if (ActorValue_IsFlagSet(aiIndex, 0x100))
@@ -1422,16 +1467,16 @@ struct Ref
     void ClearState();
     BaseObj* GetBase();
     bool IsBusy();
-    void ApplyThing(const NiPoint3& p, int a, int b);
+    void ApplyThing(const NiPoint3& aGoalLocation, int apCell, int apWorldSpace);
     Owner* GetOwner();
     void Reset(int a);
     const char* GetName();
-    float GetDistance(Ref* r, int a, int b);
+    float GetDistance(Ref* r, int abDisabled, int bSameSpace);
     int GetMode();
     int GetFlags();
     bool IsDone();
     bool IsBlocked();
-    bool HasMember(Ref* r);
+    bool PlayerCharacter_IsPlayerFollower(Ref* r);
     int CountMembers();
 };
 
@@ -1524,13 +1569,13 @@ struct Pkg
     float GetRange(Ref* r, int a);
     int GetProcType();
     int GetA(Ref* r, float f, int b);
-    int GetB(Ref* r);
-    NiPoint3 GetC(Ref* r);
+    int GetB(Ref* apActor);
+    NiPoint3 GetC(Ref* apActor);
     bool FlagA();
     bool FlagB();
     int GetLocationPointer();
     ProcData* GetData();
-    void MarkDone(int a);
+    void TESPackage_SetWaiting(int abVal);
     bool FlagC();
     bool FlagD();
     DurInfo* GetDur();
@@ -1549,7 +1594,7 @@ struct Lock
 
 struct Queue
 {
-    void Add(Owner* o, int b, int c, void (*fn)(), Ref* r);
+    void Add(Owner* apPoint1Cell, int aPoint1, int afRadius1, void (*aPoint2)(), Ref* afRadius2);
 };
 
 extern Lock DAT_011e0528;
@@ -2126,6 +2171,9 @@ struct ProcStandIn
 
 // @fnv 0x0092d050
 // src: XBOX_PDB 0x0092d050
+// pdb: MiddleLowProcess::Update | MiddleLowProcess.obj | retail, upstream name already matches, high
+// pdb params: apRef
+// pdb locals: apActor, fHour, ppack, string, pRef, ploc, pproc, ftimedelta, fradius, fhour, ptimescale, ftargetangle, pact, fwaitdistance, idistpack, pobj, ptemp
 void ProcStandIn::MiddleLowProcess_Update(Ref* apRef)
 {
     DAT_011e0528.Enter();
@@ -2338,9 +2386,9 @@ void ProcStandIn::MiddleLowProcess_Update(Ref* apRef)
                     }
                     else if (pPkg->IsDone())
                     {
-                        if (!DAT_011dea3c->HasMember(pActor) && DAT_011dea3c->CountMembers() < *DAT_011cdad0.Int())
+                        if (!DAT_011dea3c->PlayerCharacter_IsPlayerFollower(pActor) && DAT_011dea3c->CountMembers() < *DAT_011cdad0.Int())
                         {
-                            pPkg->MarkDone(0);
+                            pPkg->TESPackage_SetWaiting(0);
                         }
                     }
                     else if (pPkg->GetProcType() != 0x1c && !pPkg->IsDone())

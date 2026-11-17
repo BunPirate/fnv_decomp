@@ -45,6 +45,7 @@ public:
 
 class FUN_00622c80;
 
+// pdb: class ScreenSplatter, size 0x1, 0 members
 class ScreenSplatter
 {
   public:
@@ -147,6 +148,8 @@ extern unsigned char DAT_011ce284;
 extern unsigned char DAT_011cede8;
 
 // @fnv 0x004e0540
+// pdb: ScreenSplatter::Init | ScreenSplatter.obj | retail, upstream name already matches, high
+// pdb locals: tempMemContext, faspectratio, frustum, prenderer, UpdateData1, UpdateData2
 void ScreenSplatter::Init()
 {
     AutoMemContext m_uiMemoryContext(static_cast<MEM_CONTEXT>(7), true, &DAT_01022ab8, 181);
@@ -188,13 +191,13 @@ void ScreenSplatter::Init()
         DAT_011c786c = reinterpret_cast<NiAVObject*>(new NiSortAdjustNode(0));
         DAT_011c7828 = 0;
 
-        SkyTextureManager::LoadTextureFromPath(
+        SkyTextureManager::LoadTextureInBackground(
             &DAT_011c7864, reinterpret_cast<SettingT_GameSettingCollection_*>(&DAT_011ce918)->String());
-        SkyTextureManager::LoadTextureFromPath(
+        SkyTextureManager::LoadTextureInBackground(
             &DAT_011c7860, reinterpret_cast<SettingT_GameSettingCollection_*>(&DAT_011ce284)->String());
         if (DAT_011f941e)
         {
-            SkyTextureManager::LoadTextureFromPath(
+            SkyTextureManager::LoadTextureInBackground(
                 &DAT_011c7868, reinterpret_cast<SettingT_GameSettingCollection_*>(&DAT_011cede8)->String());
         }
     }
@@ -202,6 +205,7 @@ void ScreenSplatter::Init()
 
 // If DAT_011c7834 is set, calls FUN_004def90 on the NiNode from DAT_011c786c and clears DAT_011c7828.
 // @fnv 0x004e0870
+// pdb: ScreenSplatter::Clear | ScreenSplatter.obj | retail, upstream name already matches, high
 void ScreenSplatter::Clear()
 {
     if (DAT_011c7834)
@@ -212,6 +216,8 @@ void ScreenSplatter::Clear()
 }
 
 // @fnv 0x00622a70
+// pdb: DecalCaster::GetInstance | DecalCaster.obj | debug, call graph, medium
+// pdb params: afDecalRadius, abCreate
 FUN_00622c80* ScreenSplatter::Activate(float time, bool enabled)
 {
     if (time > DecalCaster_GetMaxDecalWidthSmall())
@@ -234,7 +240,9 @@ extern NiFixedString* DAT_011c7830;
 // The former BSFadeNode stand-in is a four-byte fixed string, not a scene node.
 // Allocates the fixed string "SPD" and stores it in DAT_011c7830.
 // @fnv 0x004e0050
-void CreateSpdFadeNode()
+// src: XBOX_RETAIL_PDB 0x004e0050
+// pdb: BSSplatterExtraData::InitSDM | ScreenSplatter.obj | retail, call graph, high
+void BSSplatterExtraData_InitSDM()
 {
     DAT_011c7830 = ::new NiFixedString("SPD");
 }
@@ -278,21 +286,24 @@ float DecalCaster_GetMaxDecalWidthLarge()
 
 // Calls FUN_004b9900(1) on DAT_011c7830 if non-null, then sets DAT_011c7830 to null.
 // @fnv 0x004e00d0
-// src: GUESS 0x004e00d0 (confidence: low)
-void NiFixedString_UpdateState_004e00d0()
+// src: XBOX_RETAIL_PDB 0x004e00d0
+// pdb: BSSplatterExtraData::KillSDM | ScreenSplatter.obj | retail, object-file run extension, high
+void BSSplatterExtraData_KillSDM()
 {
     NiFixedString* b;
     {
         NiFixedString* a = DAT_011c7830;
         b = a;
     }
-    (b ? b->FUN_004b9900(1) : 0);
+    (b ? b->NiFixedString_ScalarDtor(1) : 0);
     DAT_011c7830 = 0;
 }
 
 // @fnv 0x004e0800
-// src: GUESS 0x004e0800 (confidence: low)
-void Object_ProcessEntries_004e0800()
+// src: XBOX_RETAIL_PDB 0x004e0800
+// pdb: ScreenSplatter::Shutdown | ScreenSplatter.obj | retail, object-file gap fill, high
+// pdb locals: i
+void ScreenSplatter_Shutdown()
 {
     if (DAT_011c7834)
     {
@@ -313,6 +324,9 @@ struct Dummy00622c50
 };
 // Calls FUN_00622d00, then if bit 0 of flags is set calls CallWithParam with this, and returns this.
 // @fnv 0x00622c50
+// pdb: DecalCaster::DecalCaster | DecalCaster.obj | retail, object-file run extension, low
+// pdb note: debug build links it to DecalCaster::`scalar deleting destructor'
+// pdb params: afRadius, aiGroup
 void* Dummy00622c50::FUN_00622c50(unsigned int flags)
 {
     FUN_00622d00();
@@ -413,6 +427,9 @@ struct RootProxy
 // If screen splatter is enabled, allocates a splatter proxy for the requested amount, attaches it to the root, and updates it.
 // @fnv 0x004e0330
 // src: XBOX_PDB 0x004e0330
+// pdb: ScreenSplatter::Activate | ScreenSplatter.obj | retail, upstream name already matches, high
+// pdb params: auiCount, afDuration, aeType
+// pdb locals: uicount, splatterData, UpdateData, pnode, ped
 void ScreenSplatter_Activate(unsigned int requested, float time)
 {
     if (DAT_011c7834)
@@ -489,6 +506,8 @@ float __cdecl BSShaderBloodSplatter_GetGlobalAlpha();
 // Advances each splatter child's age by elapsed time, detaches expired ones and decrements DAT_011c7828, fades alpha, updates nodes, and ramps splash5 toward 1.
 // @fnv 0x004e0110
 // src: COMMUNITY 0x004e0110
+// pdb: ScreenSplatter::Update | ScreenSplatter.obj | retail, upstream name already matches, high
+// pdb locals: ui, fglobalAlpha, uichildCount, felapsedtime, pchild, splatterData, ped, UpdateData
 void ScreenSplatter_Update()
 {
     if (DAT_011c7834)
@@ -562,6 +581,8 @@ struct FUN_004e04e0_cls : FUN_004e04e0_base
 // Sets the vtable, copies the given quad into m_0c, and returns this after calling FUN_00a7b440 on FUN_004e0320().
 // @fnv 0x004e04e0
 // src: GUESS 0x004e04e0 (confidence: low)
+// pdb: BSSplatterExtraData::BSSplatterExtraData | ScreenSplatter.obj | retail, call graph, medium
+// pdb params: aSplatterData
 FUN_004e04e0_cls* FUN_004e04e0_cls::InitializeFields_004e04e0(const FUN_004e04e0_quad* pQuad)
 {
     FUN_00a7b440(BSSplatterExtraData_Tag());
@@ -573,6 +594,7 @@ FUN_004e04e0_cls* FUN_004e04e0_cls::InitializeFields_004e04e0(const FUN_004e04e0
 // If DAT_011cc200 and DAT_011cc1fc are set, calls FUN_00622c50(1) on each, then clears both globals.
 // @fnv 0x00622bc0
 // src: COMMUNITY 0x00622bc0
+// pdb: DecalCaster::ClearInstance | DecalCaster.obj | retail, upstream name already matches, high
 void DecalCaster_ClearInstance()
 {
     if (DAT_011cc200)
@@ -620,7 +642,7 @@ class FUN_00622c80 : public FUN_00620ff0
   public:
     FUN_00622c80(float value, unsigned int id);
 
-    void DecalCaster_Init(float value, unsigned int id);
+    void DecalCaster_Init(float value, unsigned int aiGroup);
 
     int unk000, unk004, unk008, unk00C, unk010, unk014, unk018, unk01C, unk020, unk024, unk028, unk02C;
     int unk030, unk034, unk038, unk03C, unk040, unk044, unk048, unk04C, unk050, unk054, unk058, unk05C;

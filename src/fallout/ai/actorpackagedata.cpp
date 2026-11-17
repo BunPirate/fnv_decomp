@@ -19,10 +19,14 @@
 
 // Allocates and returns the ActorPackageData subclass matching the given package type, or NULL for unsupported types.
 // @fnv 0x008c6ca0
-ActorPackageData* ActorPackageData::CreatePackageData(PTYPE aeType)
+// src: XBOX_RETAIL_PDB 0x008c6ca0
+// pdb: ActorPackageData::CreateActorPackageData | ActorPackageData.obj | retail, call graph (shared callers), high
+// pdb params: aPackageType
+// pdb locals: pret
+ActorPackageData* ActorPackageData::CreateActorPackageData(PTYPE aPackageType)
 {
     ActorPackageData* pResult = NULL;
-    switch (aeType)
+    switch (aPackageType)
     {
     case PTYPE_ESCORT:
         pResult = new EscortActorPackageData();

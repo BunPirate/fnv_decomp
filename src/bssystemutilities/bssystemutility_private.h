@@ -20,7 +20,7 @@ class NetworkSystemUtility
 class DownloadableContentManager
 {
   public:
-    static DownloadableContentManager& GetRandomGenerator();
+    static DownloadableContentManager& BSDLCSystemUtility_QInstance();
     void DoNothing_00af2c80();
 };
 
@@ -47,10 +47,10 @@ class FNVVTableSlot8Args
     virtual void vfn_08();
 };
 
-void FUN_00af2370();
+void BSAwardsSystemUtility_Destroy();
 void FUN_00af2360();
 void Runtime_EvaluateValue_00af2750();
-void Object_ClearGlobalObject();
+void BSDLCSystemUtility_Destroy();
 void Runtime_DoNothing();
 FNVVTableSlot8* BSSysInfoSystemUtility_GetSingleton();
 FNVVTableSlot8Args* GetStaticSlot();

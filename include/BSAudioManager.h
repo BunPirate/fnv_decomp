@@ -17,6 +17,7 @@ enum SOUND_MSG
     SOUND_MSG_ENTER_DIALOGUE = 13
 };
 
+// pdb: class BSAudioManager, size 0x19c (here 0x188), 44 members
 class BSAudioManager
 {
 public:
@@ -72,7 +73,7 @@ public:
     unsigned char _pad185[3];
 
     static BSAudioManager& __cdecl GetRandomGenerator();
-    void DisableAudioPlayback(unsigned int, bool);
+    void UnPauseAllOfType(unsigned int, bool);
     void SetAudioSettingValue(unsigned int, unsigned int, unsigned int);
     void SetListenerPosition(NiPoint3);
     void Update(bool);
@@ -81,7 +82,7 @@ public:
     bool IsPlaying(unsigned int);
     void SetPlaybackTime(unsigned int, unsigned int, unsigned int);
     bool SetPlaybackFrequency(unsigned int, float);
-    bool IsSoundPlaying(unsigned int);
+    bool IsValid(unsigned int);
     BSSoundHandle FindSoundHandleByPath(const char* path, unsigned int flags, void* sound);
     BSSoundHandle GetSoundHandleByFilePath(const char* path, unsigned int flags, void* sound);
     void SendSoundMessage(SOUND_MSG, unsigned int, int, void*, NiPointer<NiAVObject>, NiPoint3);
@@ -109,11 +110,11 @@ public:
     bool __thiscall AddSlot(void*, bool);
     bool __thiscall ClearPausedType(int, unsigned char);
     void __thiscall BSAudioManager_SetAttenuationCurve(unsigned int, unsigned short, unsigned short, unsigned short, unsigned short, unsigned short);
-    void __thiscall AddSound(BSGameSound*);
+    void __thiscall AddToCache(BSGameSound*);
 
     void InitAudioVolumes();
     void InitUISounds(bool);
-    void SetAudioCacheSize(int);
+    void SetAudioCacheSizeInK(int);
     void ProcessAudioQueue();
     void BSAudioManager_Initialize();
     void BSAudioManager_Shutdown();
@@ -140,7 +141,7 @@ public:
     bool BSAudioManager_SetPosition(unsigned int, float, float, float);
     bool BSAudioManager_SetPosition(int, float, float, float);
     bool BSAudioManager_SetBeamEnd(unsigned int, float, float, float);
-    void BSAudioManager_SetMinMaxDistance(unsigned int, float, float);
+    void SetMinMax(unsigned int, float, float);
     void BSAudioManager_SetMinMaxDistance(int, float, float);
     void BSAudioManager_SetReverbAttenuation(int, int);
     void BSAudioManager_SetReverbAttenuation(int, unsigned short);

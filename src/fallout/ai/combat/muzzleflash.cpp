@@ -16,7 +16,9 @@
 // Functions are listed by their @fnv annotations; compile flags inferred from the PC code.
 
 // @fnv 0x009baf30
-bool __fastcall HasProjectileFlag8(const BGSProjectile* projectile)
+// src: XBOX_DEBUG_PDB 0x009baf30
+// pdb: BGSProjectile::GetHasMuzzleFlash | MuzzleFlash.obj | debug, call graph (shared callers), high
+bool __fastcall BGSProjectile_GetHasMuzzleFlash(const BGSProjectile* projectile)
 {
     return projectile->GetFlag(8);
 }
@@ -25,11 +27,13 @@ void __cdecl Deallocate(void*);
 struct FUN_009badc0_shell
 {
     void FUN_009badc0();
-    void* DestroyIfFlagged(unsigned int flags);
+    void* MuzzleFlash_ScalarDtor(unsigned int flags);
 };
 // Calls FUN_009badc0, then if flags has bit 1 set calls Deallocate on this, and returns this.
 // @fnv 0x008d9f70
-void* FUN_009badc0_shell::DestroyIfFlagged(unsigned int flags)
+// src: XBOX_DEBUG_PDB 0x008d9f70
+// pdb: MuzzleFlash::`scalar deleting destructor' | HighProcess.obj | debug, call graph, high
+void* FUN_009badc0_shell::MuzzleFlash_ScalarDtor(unsigned int flags)
 {
     FUN_009badc0();
     if (flags & 1)
@@ -45,9 +49,10 @@ struct FUN_009baee0_owner
 };
 // @fnv 0x009baee0
 // src: COMMUNITY 0x009baee0
+// pdb: MuzzleFlash::GetMuzzleFlashModel | MuzzleFlash.obj | debug, upstream name already matches, high
 void* FUN_009baee0_owner::MuzzleFlash_GetMuzzleFlashModel()
 {
-    return (pItem && HasProjectileFlag8(pItem)) ? reinterpret_cast<BSMultiBoundRoom*>(pItem)->TESCombatStyle_GetAdvancedData() : 0;
+    return (pItem && BGSProjectile_GetHasMuzzleFlash(pItem)) ? reinterpret_cast<BSMultiBoundRoom*>(pItem)->TESCombatStyle_GetAdvancedData() : 0;
 }
 
 extern double _gModifierZero;
@@ -66,6 +71,7 @@ struct FUN_009bb690_shell
 // If unk4 is at or below _gModifierZero, sets unk0 and unk2 to 1 and stores ptr14->FUN_00507e10() into unk8.
 // @fnv 0x009bb690
 // src: COMMUNITY 0x009bb690
+// pdb: MuzzleFlash::Enable | MuzzleFlash.obj | debug, upstream name already matches, high
 void FUN_009bb690_shell::MuzzleFlash_Enable()
 {
     if (unk4 <= _gModifierZero)
@@ -89,9 +95,10 @@ struct FUN_009bacb0
     unsigned int handle;
     void* context;
     FUN_009bacb0(Projectile*, void*);
-    void UpdateNodePosition(void*);
+    void MuzzleFlash_Init(void*);
 };
 // @fnv 0x009bacb0
+// pdb: MuzzleFlash::MuzzleFlash | MuzzleFlash.obj | retail, call graph (shared callers), low
 FUN_009bacb0::FUN_009bacb0(Projectile* projectile, void* pContext) : first(0), second(0)
 {
     first = 0;
@@ -104,7 +111,7 @@ FUN_009bacb0::FUN_009bacb0(Projectile* projectile, void* pContext) : first(0), s
     flagsC = 0;
     elapsed = 0.0f;
     total = data->BGSProjectile_GetMuzzleFlashDuration();
-    UpdateNodePosition(pContext);
+    MuzzleFlash_Init(pContext);
 }
 
 struct S_009baf50_Item
@@ -148,12 +155,16 @@ void __cdecl NiTimeController_StartAnimations(S_009baf50_Node*);
 struct S_009baf50_Self : FUN_009bacb0
 {
     void* MuzzleFlash_GetMuzzleFlashModel();
-    void UpdateMuzzleFlash(void*);
+    void MuzzleFlash_Position3D(void*);
     void UpdateLightFromChallenge();
 };
 
 // @fnv 0x009baf50
-void FUN_009bacb0::UpdateNodePosition(void* arg)
+// src: XBOX_RETAIL_PDB 0x009baf50
+// pdb: MuzzleFlash::Init | MuzzleFlash.obj | retail, object-file run extension, high
+// pdb params: apParentRef
+// pdb locals: UpdateData, pmodel, part
+void FUN_009bacb0::MuzzleFlash_Init(void* apParentRef)
 {
     S_009baf50_Item* item = (S_009baf50_Item*)static_cast<S_009baf50_Self*>(this)->MuzzleFlash_GetMuzzleFlashModel();
     if (item)
@@ -170,7 +181,7 @@ void FUN_009bacb0::UpdateNodePosition(void* arg)
     if (!((S_009baf50_Ptr*)&first)->Modelloader_GetReferencedThis())
         return;
     TESHavokUtilities_RemoveHavokFromSceneGraph(((S_009baf50_Ptr*)&first)->Modelloader_GetReferencedThis());
-    static_cast<S_009baf50_Self*>(this)->UpdateMuzzleFlash(arg);
+    static_cast<S_009baf50_Self*>(this)->MuzzleFlash_Position3D(apParentRef);
     static_cast<S_009baf50_Self*>(this)->UpdateLightFromChallenge();
     NiTimeController_StartAnimations(((S_009baf50_Ptr*)&first)->Modelloader_GetReferencedThis());
     ((S_009baf50_Ptr*)&first)->Modelloader_GetReferencedThis()->UpdateProperties();
@@ -325,18 +336,21 @@ struct S_009bb080
     S_009bb080_Ptr unkc;
     int unk10;
     PathingRequest* unk14;
-    void UpdateMuzzleFlash(S_009bb080_Base0*);
+    void MuzzleFlash_Position3D(S_009bb080_Base0*);
     void UpdateLightVisibility();
-    void MuzzleFlash_Update(float dt, S_009bb080_Base0* proj);
+    void MuzzleFlash_Update(float afDelta, S_009bb080_Base0* apParentRef);
 };
 // @fnv 0x009bb080
 // src: XBOX_PDB 0x009bb080
-void S_009bb080::MuzzleFlash_Update(float afDeltaTime, S_009bb080_Base0* proj)
+// pdb: MuzzleFlash::Update | MuzzleFlash.obj | retail, upstream name already matches, high
+// pdb params: afDelta, apParentRef
+// pdb locals: pActor
+void S_009bb080::MuzzleFlash_Update(float afDelta, S_009bb080_Base0* apParentRef)
 {
     S_009bb080_Base0* q;
     if (!unkc.Modelloader_GetReferencedThis())
         return;
-    UpdateMuzzleFlash(proj);
+    MuzzleFlash_Position3D(apParentRef);
     unkc.Modelloader_GetReferencedThis()->FUN_00450f90(unk0 == 0);
     if (unk0 && !unk1)
     {
@@ -352,18 +366,18 @@ void S_009bb080::MuzzleFlash_Update(float afDeltaTime, S_009bb080_Base0* proj)
         UpdateLightVisibility();
     if (DAT_011f2250.FUN_0044ddc0() == 4 && FUN_00716440() > DAT_01012060)
     {
-        afDeltaTime = afDeltaTime / FUN_00716440();
+        afDelta = afDelta / FUN_00716440();
     }
-    else if (proj->FUN_vfn100())
+    else if (apParentRef->FUN_vfn100())
     {
-        q = proj;
+        q = apParentRef;
         if (q->sub.FUN_vfn8(0x33) > 0)
-            afDeltaTime = afDeltaTime / FUN_00716440();
+            afDelta = afDelta / FUN_00716440();
     }
-    unk4 = unk4 - afDeltaTime;
+    unk4 = unk4 - afDelta;
     if (unk0)
     {
-        unk8 = unk8 - afDeltaTime;
+        unk8 = unk8 - afDelta;
         if (unk8 <= DAT_01012060)
         {
             unk8 = unk14->BGSProjectile_GetMuzzleFlashDuration();
@@ -724,11 +738,11 @@ struct HolderCls
 };
 struct TaskQ
 {
-    void QueueTaskWithTwoObjects(NiAVObject*, ObjCls*, int, int);
+    void TaskQueueInterface_QueueNodeAttach(NiAVObject*, ObjCls*, int, int);
 };
 bool AILinearTaskThreadManager_ShouldQueue3DTask();
 TaskQ* FUN_004537b0();
-void FUN_00b6bb30(void*, float);
+void RecursiveSetPropertyFadeAlpha(void*, float);
 void Warning_005b5e40(const char*);
 extern PlayerCls* DAT_011dea3c;
 extern unsigned char DAT_011a59bc;
@@ -738,18 +752,22 @@ struct ThisCls
     int m_04;
     int m_08;
     NiPtrC m_0c;
-    void UpdateMuzzleFlash(ParamCls*);
+    void MuzzleFlash_Position3D(ParamCls*);
 };
 // @fnv 0x009bb240
-void ThisCls::UpdateMuzzleFlash(ParamCls* apParam)
+// src: XBOX_RETAIL_PDB 0x009bb240
+// pdb: MuzzleFlash::Position3D | MuzzleFlash.obj | retail, call graph, high
+// pdb params: apParentRef
+// pdb locals: bupdate, pprojectileNode, fupdateTime, psceneParent, ktrans, kplayerInvTransform, pcell, UpdateData
+void ThisCls::MuzzleFlash_Position3D(ParamCls* apParentRef)
 {
-    if (!(m_0c.Modelloader_GetReferencedThis() && apParam && apParam->FUN_008d6f30() && apParam->v116()))
+    if (!(m_0c.Modelloader_GetReferencedThis() && apParentRef && apParentRef->FUN_008d6f30() && apParentRef->v116()))
         return;
     NodeCls* node2 =
-        apParam->v64()
-            ? (NodeCls*)apParam->v131()
+        apParentRef->v64()
+            ? (NodeCls*)apParentRef->v131()
             : (((FUN_009611e0_shell*)this)->NiAVObject_GetParent()
-                   ? (NodeCls*)((NodeSrc*)((FUN_009611e0_shell*)this)->NiAVObject_GetParent())->TESObjectWEAP_GetFireNode(apParam->v116())
+                   ? (NodeCls*)((NodeSrc*)((FUN_009611e0_shell*)this)->NiAVObject_GetParent())->TESObjectWEAP_GetFireNode(apParentRef->v116())
                    : (NodeCls*)0);
     bool _flag = false;
     float fResultTmp = 0.0f;
@@ -757,7 +775,7 @@ void ThisCls::UpdateMuzzleFlash(ParamCls* apParam)
     {
         NiTransform A_2;
         ObjCls* target2;
-        if (apParam == (ParamCls*)DAT_011dea3c)
+        if (apParentRef == (ParamCls*)DAT_011dea3c)
         {
             if (!DAT_011dea3c->PlayerCharacter_IsActually3rdPerson())
             {
@@ -791,7 +809,7 @@ void ThisCls::UpdateMuzzleFlash(ParamCls* apParam)
         else
         {
             memcpy(&A_2, node2->NiAVObject_GetWorldRotate(), sizeof(A_2));
-            HolderCls* holder6 = (HolderCls*)apParam->FUN_008d6f30();
+            HolderCls* holder6 = (HolderCls*)apParentRef->FUN_008d6f30();
             target2 = holder6->FUN_005497a0();
         }
         if (target2)
@@ -804,9 +822,9 @@ void ThisCls::UpdateMuzzleFlash(ParamCls* apParam)
                 }
                 else
                 {
-                    FUN_004537b0()->QueueTaskWithTwoObjects(m_0c.Modelloader_GetReferencedThis(), target2, 1, 0);
+                    FUN_004537b0()->TaskQueueInterface_QueueNodeAttach(m_0c.Modelloader_GetReferencedThis(), target2, 1, 0);
                 }
-                FUN_00b6bb30(m_0c.Modelloader_GetReferencedThis()->IsSceneNode(), 1.0f);
+                RecursiveSetPropertyFadeAlpha(m_0c.Modelloader_GetReferencedThis()->IsSceneNode(), 1.0f);
             }
         }
         m_0c.Modelloader_GetReferencedThis()->NiAVObject_SetTranslate(&A_2.m_Translate);
@@ -1348,29 +1366,32 @@ struct FUN_009611e0_cls
 };
 struct FUN_00978740_cls
 {
-    void ActivateMuzzleFlash(Projectile* p, ProjTarget* q);
+    void ProcessLists_SpawnReferenceMuzzleFlash(Projectile* apProjectile, ProjTarget* apParentRef);
 };
 extern FUN_00978740_cls DAT_011e0e80;
 
 // @fnv 0x009bb6d0
 // src: XBOX_PDB 0x009bb6d0
-void __cdecl MuzzleFlash_SpawnMuzzleFlash(ProjTarget* pTarget, Projectile* pProjectile)
+// pdb: MuzzleFlash::SpawnMuzzleFlash | MuzzleFlash.obj | retail, upstream name already matches, high
+// pdb params: apParentRef, apProjectile
+// pdb locals: pactor, pprocess
+void __cdecl MuzzleFlash_SpawnMuzzleFlash(ProjTarget* apParentRef, Projectile* apProjectile)
 {
-    if (pTarget != 0 && pProjectile != 0)
+    if (apParentRef != 0 && apProjectile != 0)
     {
-        if (pTarget->v100())
+        if (apParentRef->v100())
         {
             SpawnedItem* item;
-            ProjTarget* node = pTarget;
+            ProjTarget* node = apParentRef;
             item = node->FUN_008d8520();
             if (item != 0)
             {
                 if (!(item->v6b8() != 0 &&
-                      ((FUN_00825c00_cls*)item->v6b8())->FUN_00825c00() == pProjectile->FUN_004181e0() &&
-                      ((FUN_009611e0_cls*)item->v6b8())->NiAVObject_GetParent() == pProjectile->Sky_GetMode()))
+                      ((FUN_00825c00_cls*)item->v6b8())->FUN_00825c00() == apProjectile->FUN_004181e0() &&
+                      ((FUN_009611e0_cls*)item->v6b8())->NiAVObject_GetParent() == apProjectile->Sky_GetMode()))
                 {
                     item->v6c4();
-                    item->v6b4(pProjectile, pTarget);
+                    item->v6b4(apProjectile, apParentRef);
                 }
                 if (item->v6b8() != 0)
                     ((FUN_009bb690_shell*)item->v6b8())->MuzzleFlash_Enable();
@@ -1378,16 +1399,18 @@ void __cdecl MuzzleFlash_SpawnMuzzleFlash(ProjTarget* pTarget, Projectile* pProj
         }
         else
         {
-            DAT_011e0e80.ActivateMuzzleFlash(pProjectile, pTarget);
+            DAT_011e0e80.ProcessLists_SpawnReferenceMuzzleFlash(apProjectile, apParentRef);
         }
     }
 }
 
+// pdb: class TaskQueueInterface, size 0x10 (here 0x1), 4 members
 struct TaskQueueInterface
 {
     static TaskQueueInterface* __cdecl GetInstance();
     void TaskQueueInterface_QueueNodeDetach(unsigned int);
 };
+// pdb: class ModelLoader, size 0x30 (here 0x1), 12 members
 struct ModelLoader
 {
     void ModelLoader_ReleaseFile(const char*);
@@ -1395,6 +1418,7 @@ struct ModelLoader
 struct Loader_S;
 extern Loader_S* g_modelLoader;
 bool __cdecl IsConditionMet();
+// pdb: class Calendar, size 0x1c (here 0x1), 7 members
 struct Calendar
 {
     unsigned int GetDaysPassed();
@@ -1482,6 +1506,8 @@ struct FUN_009badc0
 
 // For nonzero model length, passes its path to the loader; conditionally calls Release3D or FUN_0087ac60, then clears m_pController.
 // @fnv 0x009badc0
+// pdb: MuzzleFlash::~MuzzleFlash | MuzzleFlash.obj | debug, object-file run extension, low
+// pdb locals: pmodel
 FUN_009badc0::~FUN_009badc0()
 {
     TESModel* m_kModelObjectsItem = (TESModel*)((FUN_009baee0_owner*)this)->MuzzleFlash_GetMuzzleFlashModel();

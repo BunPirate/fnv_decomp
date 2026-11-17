@@ -69,6 +69,7 @@ inline char& FontStringCharacter(BSStringT<char>& text, unsigned int index)
 
 
 
+// pdb: structure ButtonIcon, size 0x20, 5 members
 class ButtonIcon
 {
   public:
@@ -101,6 +102,7 @@ inline NiGeometryData* NiGeometry::GetModelData() { return m_spModelData.m_pObje
 inline Font* FontManager::GetFont(int index) { return pFont[index]; }
 
 // @fnv 0x00a1b3a0
+// pdb: FontManager::`scalar deleting destructor' | Font.obj | debug, object-file run extension, low
 float FontManager::GetFontPadding(int font)
 {
     float padding = 0.0f;
@@ -157,20 +159,20 @@ class FontCharacterInfo
 // Complete compiled WIP for Font::AddCharacterToShape at 00a142d0; see NOTES.md.
 // The shared Font declaration still requires the legacy color pointer type.
 // Coordinate records contain genuine glyph coordinates, never frame storage.
-void Font::AddCharacterToShape(FontCharacterInfo* letter, int index, NiTriShape* shape,
-                   NiPoint3& position, const NiColorA* color)
+void Font::AddCharacterToShape(FontCharacterInfo* apLetter, int aiVert, NiTriShape* apShape,
+                   NiPoint3& axPos, const NiColorA* apColor)
 {
-    position.x += letter->m_fHorizontalAdvance;
-    int baseVertex = index * 4;
-    NiGeometryData* vertexData = shape->m_spModelData.m_pObject;
+    axPos.x += apLetter->m_fHorizontalAdvance;
+    int baseVertex = aiVert * 4;
+    NiGeometryData* vertexData = apShape->m_spModelData.m_pObject;
     FontPoint3* vertexArray = (FontPoint3*)vertexData->m_pkVertex;
     FontPoint3* vertices = vertexArray + baseVertex;
 
     struct GlyphCornerCoordinates { float x; float y; float z; };
     GlyphCornerCoordinates topLeftCoordinates;
-    topLeftCoordinates.x = position.x;
-    topLeftCoordinates.y = position.y;
-    topLeftCoordinates.z = letter->m_fVerticalOffset + position.z;
+    topLeftCoordinates.x = axPos.x;
+    topLeftCoordinates.y = axPos.y;
+    topLeftCoordinates.z = apLetter->m_fVerticalOffset + axPos.z;
     FontPoint3 topLeft;
     topLeft.x = topLeftCoordinates.x;
     topLeft.y = topLeftCoordinates.y;
@@ -178,9 +180,9 @@ void Font::AddCharacterToShape(FontCharacterInfo* letter, int index, NiTriShape*
     vertices[0] = topLeft;
 
     GlyphCornerCoordinates bottomLeftCoordinates;
-    bottomLeftCoordinates.x = position.x;
-    bottomLeftCoordinates.y = position.y;
-    bottomLeftCoordinates.z = (letter->m_fVerticalOffset + position.z) - letter->m_fGlyphExtent;
+    bottomLeftCoordinates.x = axPos.x;
+    bottomLeftCoordinates.y = axPos.y;
+    bottomLeftCoordinates.z = (apLetter->m_fVerticalOffset + axPos.z) - apLetter->m_fGlyphExtent;
     FontPoint3 bottomLeft;
     bottomLeft.x = bottomLeftCoordinates.x;
     bottomLeft.y = bottomLeftCoordinates.y;
@@ -188,9 +190,9 @@ void Font::AddCharacterToShape(FontCharacterInfo* letter, int index, NiTriShape*
     vertices[1] = bottomLeft;
 
     GlyphCornerCoordinates topRightCoordinates;
-    topRightCoordinates.x = letter->m_fGlyphWidthInPixels + position.x;
-    topRightCoordinates.y = position.y;
-    topRightCoordinates.z = letter->m_fVerticalOffset + position.z;
+    topRightCoordinates.x = apLetter->m_fGlyphWidthInPixels + axPos.x;
+    topRightCoordinates.y = axPos.y;
+    topRightCoordinates.z = apLetter->m_fVerticalOffset + axPos.z;
     FontPoint3 topRight;
     topRight.x = topRightCoordinates.x;
     topRight.y = topRightCoordinates.y;
@@ -198,54 +200,54 @@ void Font::AddCharacterToShape(FontCharacterInfo* letter, int index, NiTriShape*
     vertices[2] = topRight;
 
     GlyphCornerCoordinates bottomRightCoordinates;
-    bottomRightCoordinates.x = letter->m_fGlyphWidthInPixels + position.x;
-    bottomRightCoordinates.y = position.y;
-    bottomRightCoordinates.z = (letter->m_fVerticalOffset + position.z) - letter->m_fGlyphExtent;
+    bottomRightCoordinates.x = apLetter->m_fGlyphWidthInPixels + axPos.x;
+    bottomRightCoordinates.y = axPos.y;
+    bottomRightCoordinates.z = (apLetter->m_fVerticalOffset + axPos.z) - apLetter->m_fGlyphExtent;
     FontPoint3 bottomRight;
     bottomRight.x = bottomRightCoordinates.x;
     bottomRight.y = bottomRightCoordinates.y;
     bottomRight.z = bottomRightCoordinates.z;
     vertices[3] = bottomRight;
 
-    NiGeometryData* textureData = shape->m_spModelData.m_pObject;
+    NiGeometryData* textureData = apShape->m_spModelData.m_pObject;
     NiPoint2* textureArray = textureData->m_pkTexture;
     NiPoint2* textureCoordinates = (NiPoint2*)(textureArray + baseVertex);
 
     NiPoint2 topLeftUV;
-    topLeftUV.x = letter->pMapping[0].x;
-    topLeftUV.y = letter->pMapping[0].y;
+    topLeftUV.x = apLetter->pMapping[0].x;
+    topLeftUV.y = apLetter->pMapping[0].y;
     NiPoint2 topLeftTexture;
     topLeftTexture.x = topLeftUV.x;
     topLeftTexture.y = topLeftUV.y;
     textureCoordinates[0] = topLeftTexture;
 
     NiPoint2 bottomLeftUV;
-    bottomLeftUV.x = letter->pMapping[2].x;
-    bottomLeftUV.y = letter->pMapping[2].y;
+    bottomLeftUV.x = apLetter->pMapping[2].x;
+    bottomLeftUV.y = apLetter->pMapping[2].y;
     NiPoint2 bottomLeftTexture;
     bottomLeftTexture.x = bottomLeftUV.x;
     bottomLeftTexture.y = bottomLeftUV.y;
     textureCoordinates[1] = bottomLeftTexture;
 
     NiPoint2 topRightUV;
-    topRightUV.x = letter->pMapping[1].x;
-    topRightUV.y = letter->pMapping[1].y;
+    topRightUV.x = apLetter->pMapping[1].x;
+    topRightUV.y = apLetter->pMapping[1].y;
     NiPoint2 topRightTexture;
     topRightTexture.x = topRightUV.x;
     topRightTexture.y = topRightUV.y;
     textureCoordinates[2] = topRightTexture;
 
     NiPoint2 bottomRightUV;
-    bottomRightUV.x = letter->pMapping[3].x;
-    bottomRightUV.y = letter->pMapping[3].y;
+    bottomRightUV.x = apLetter->pMapping[3].x;
+    bottomRightUV.y = apLetter->pMapping[3].y;
     NiPoint2 bottomRightTexture;
     bottomRightTexture.x = bottomRightUV.x;
     bottomRightTexture.y = bottomRightUV.y;
     textureCoordinates[3] = bottomRightTexture;
 
     NiTriShapeData* triangleData =
-        static_cast<NiTriShapeData*>(shape->m_spModelData.m_pObject);
-    unsigned short* triangles = triangleData->GetTriangleList() + index * 6;
+        static_cast<NiTriShapeData*>(apShape->m_spModelData.m_pObject);
+    unsigned short* triangles = triangleData->GetTriangleList() + aiVert * 6;
     triangles[0] = static_cast<unsigned short>(baseVertex);
     triangles[1] = static_cast<unsigned short>(baseVertex + 1);
     triangles[2] = static_cast<unsigned short>(baseVertex + 2);
@@ -253,11 +255,15 @@ void Font::AddCharacterToShape(FontCharacterInfo* letter, int index, NiTriShape*
     triangles[4] = static_cast<unsigned short>(baseVertex + 1);
     triangles[5] = static_cast<unsigned short>(baseVertex + 3);
 
-    position.x += letter->m_fGlyphWidthInPixels + (letter->m_fGlyphWidthInPixels > 0.0 ? letter->m_fHorizontalSpacing : 0.0f);
+    axPos.x += apLetter->m_fGlyphWidthInPixels + (apLetter->m_fGlyphWidthInPixels > 0.0 ? apLetter->m_fHorizontalSpacing : 0.0f);
 }
 
 // Replaces smart single and double quote bytes with plain apostrophe and double quote characters in place.
 // @fnv 0x00a122b0
+// pdb: BSSimpleList<int>::AddTail | Font.obj | retail, call graph, low
+// pdb note: debug build links it to Font::~Font
+// pdb params: item
+// pdb locals: pkCur
 void __cdecl NormalizeSmartQuotes(unsigned char* acChar)
 {
     switch (*acChar)
@@ -283,36 +289,42 @@ extern "C" int __cdecl strcat_s(char*, unsigned int, const char*);
 
 // Builds dst from src: prefixes "Trees" when src ends in "spt", prefixes str_010a435c unless src starts with "meshes\", else copies src.
 // @fnv 0x00af4250
-void __cdecl BuildAssetPath(const char* pcSourcePath, char* pcDestPath, unsigned int uiDestSize)
+// src: XBOX_RETAIL_PDB 0x00af4250
+// pdb: StandardizeModelPath | Archive.obj | retail, unique string literal, high
+// pdb params: apFileName, apStandardizedFileName, aiOutSize
+// pdb locals: ilength
+void __cdecl StandardizeModelPath(const char* apFileName, char* apStandardizedFileName, unsigned int aiOutSize)
 {
-    unsigned int len = strlen(pcSourcePath);
-    if (len > 3 && _stricmp(pcSourcePath + len - 3, "spt") == 0) {
-        strcpy_s(pcDestPath, uiDestSize, "Trees");
-        strcat_s(pcDestPath, uiDestSize, pcSourcePath);
-    } else if (_strnicmp(pcSourcePath, "meshes\\", 7) != 0) {
-        strcpy_s(pcDestPath, uiDestSize, str_010a435c);
-        strcat_s(pcDestPath, uiDestSize, pcSourcePath);
+    unsigned int len = strlen(apFileName);
+    if (len > 3 && _stricmp(apFileName + len - 3, "spt") == 0) {
+        strcpy_s(apStandardizedFileName, aiOutSize, "Trees");
+        strcat_s(apStandardizedFileName, aiOutSize, apFileName);
+    } else if (_strnicmp(apFileName, "meshes\\", 7) != 0) {
+        strcpy_s(apStandardizedFileName, aiOutSize, str_010a435c);
+        strcat_s(apStandardizedFileName, aiOutSize, apFileName);
     } else {
-        strcpy_s(pcDestPath, uiDestSize, pcSourcePath);
+        strcpy_s(apStandardizedFileName, aiOutSize, apFileName);
     }
 }
 
-void __cdecl BuildAssetPath(int, char*, int);
+void __cdecl StandardizeModelPath(int, char*, int);
 int __cdecl strcpy_s(char*, unsigned int, const char*);
 struct FUN_00c3d090_shell2 {
     char pad[0x28];
     char* p;
-    void QueuedFileEntry_GetLookupFileName(int flag, char* dst);
+    void QueuedFileEntry_GetLookupFileName(int aeArchiveTypeIndex, char* apLookupFileName);
 };
 // @fnv 0x00c3d090
 // src: XBOX_PDB 0x00c3d090
-void FUN_00c3d090_shell2::QueuedFileEntry_GetLookupFileName(int flag, char* dst)
+// pdb: QueuedFileEntry::GetLookupFileName | QueuedFiles.obj | debug, upstream name already matches, high
+// pdb params: aeArchiveTypeIndex, apLookupFileName
+void FUN_00c3d090_shell2::QueuedFileEntry_GetLookupFileName(int aeArchiveTypeIndex, char* apLookupFileName)
 {
-    if (flag == 0) {
-        BuildAssetPath((int)p, dst, 0x104);
+    if (aeArchiveTypeIndex == 0) {
+        StandardizeModelPath((int)p, apLookupFileName, 0x104);
     } else {
         char* src = p;
-        strcpy_s(dst, 0x104, src);
+        strcpy_s(apLookupFileName, 0x104, src);
     }
 }
 
@@ -328,6 +340,7 @@ struct fnv_00a168b0 {
 
 // Allocates a new FontManager instance and stores it in FontManager::pInstance if none exists.
 // @fnv 0x00a167c0
+// pdb: FontManager::Init | Font.obj | retail, upstream name already matches, high
 void FontManager::Init()
 {
     if (!FontManager::pInstance)
@@ -341,6 +354,7 @@ struct FontReferenceAccess : Font {
 };
 // @fnv 0x00a152d0
 // src: COMMUNITY 0x00a152d0
+// pdb: Font::Unload | Font.obj | debug, object-file run extension, low
 void Font::Unload_00a152d0()
 {
     if (((FontReferenceAccess*)this)->Get()) {
@@ -356,6 +370,7 @@ struct FUN_00a16850_shell {
     void ProcessEntries_00a16d20();
 // Calls FUN_00a16d20, deallocates this via g_memoryManager when flags has bit 1 set, and returns this.
 // @fnv 0x00a16850
+// pdb: FontManager::Free | Font.obj | retail, upstream name already matches, high
     FUN_00a16850_shell* Destroy(unsigned int flags)
     {
         ProcessEntries_00a16d20();
@@ -383,6 +398,8 @@ extern MemoryManager g_memoryManager;
 struct FontDeletion : Font {
 // Calls FUN_00a121e0, then deallocates this via g_memoryManager when flags has bit 1 set, and returns this.
 // @fnv 0x00a16d20
+// pdb: FontManager::~FontManager | Font.obj | retail, call graph, medium
+// pdb locals: n
     FontDeletion* Destroy(unsigned int flags)
     {
         FUN_00a121e0();
@@ -411,6 +428,7 @@ extern "C" __declspec(dllimport) long __stdcall InterlockedIncrement(long volati
 struct FUN_00a1b410_shell { char* p; void ClearPointer(); };
 // Sets p to null, then if p is non-null increments the counter at p+4 via InterlockedIncrement.
 // @fnv 0x00a1b410
+// pdb: Font::`scalar deleting destructor' | Font.obj | debug, object-file run extension, low
 void FUN_00a1b410_shell::ClearPointer()
 {
     p = 0;
@@ -428,6 +446,8 @@ struct FUN_00a1b940 {
 };
 // Initializes the three integer members a, b and c to zero.
 // @fnv 0x00a1b940
+// pdb: FontManager::TextDoc::TextDoc | Font.obj | debug, call graph, high
+// pdb params: aiPageWidth, aiPageHeight, aiPageNum
 FUN_00a1b940::FUN_00a1b940()
 {
     c = 0;
@@ -441,6 +461,7 @@ struct FUN_00a1b970_t {
     void ClearString();
 };
 // @fnv 0x00a1b970
+// pdb: NiTPointerList<FontManager::TextPage *>::NiTPointerList<FontManager::TextPage *> | Font.obj | debug, object-file run extension, low
 void FUN_00a1b970_t::ClearString()
 {
     double d0, d1, d2, d3;
@@ -455,6 +476,9 @@ struct FUN_00a1c1f0_shell {
 };
 // Default-constructs aiCount FUN_00a1c1f0_elem objects in place starting at apFirstAddr.
 // @fnv 0x00a1c1f0
+// pdb: BSSimpleArray<ButtonIcon,1024>::_ConstructItems | Font.obj | debug, object-file run extension, low
+// pdb params: apFirstAddr, aiCount
+// pdb locals: i
 void FUN_00a1c1f0_shell::ConstructElements(FUN_00a1c1f0_elem* apFirstAddr, unsigned int aiCount)
 {
     unsigned int i;
@@ -476,6 +500,9 @@ struct FUN_00a1c270_shell {
 // Inserts node at the head of the doubly linked list, fixing up prev/next links, tail when empty, and incrementing count.
 // @fnv 0x00a1c270
 // src: COMMUNITY 0x00a1c270
+// pdb: BSSimpleArray<ButtonIcon,1024>::_DestructItems | Font.obj | debug, object-file run extension, low
+// pdb params: apFirstAddr, aiCount
+// pdb locals: i
 void FUN_00a1c270_shell::NiTListBase_AddNodeHead_1(FUN_00a1c270_node* node)
 {
     node->prev = 0;
@@ -504,6 +531,7 @@ struct FUN_00a1c2d0_shell {
 // Walks the linked list from head, zeroes each node's data, deallocates every node, then resets count, head and tail.
 // @fnv 0x00a1c2d0
 // src: GUESS 0x00a1c2d0 (confidence: medium)
+// pdb: NiTList<NiTriShape *>::~NiTList<NiTriShape *> | Font.obj | debug, call graph, medium
 void FUN_00a1c2d0_shell::ClearLinkedNodes()
 {
     FUN_00a1c2d0_node* cur = head;
@@ -665,6 +693,8 @@ struct FontDestruction {
 };
 
 // @fnv 0x00a121e0
+// pdb: Font::~Font | Font.obj | retail, call graph, low
+// pdb note: debug build links it to Font::Font
 FontDestruction::~FontDestruction()
 {
     void* pBuffer;
@@ -691,14 +721,14 @@ struct CloningProcess;
 struct TileShaderProperty_00a14a20;
 struct blob16 { char b[16]; };
 struct FUN_00a14a20_shell : public Font {
-    NiTriShape* CreateTextShape(int, void*, bool);
+    NiTriShape* Font_MakeTriShape(int, void*, bool);
 };
 
 extern "C" __declspec(dllimport) long __stdcall InterlockedDecrement(long volatile*);
 struct P03MM { void* Allocate(unsigned int); };
 extern P03MM g_memoryManager;
 void* NiMalloc(unsigned int);
-void __cdecl AttachFaceGenAnimationData(NiAVObject*);
+void __cdecl Interface_AttachDefaultAlphaProperty(NiAVObject*);
 
 
 struct AttachWrap {
@@ -749,7 +779,11 @@ struct FUN_00c5cf30 : NiAVObject {
 
 // Builds a NiTriShape with vertex, texture and index buffers, attaches a TileShaderProperty_00a14a20, copies the color, and optionally prepares the object.
 // @fnv 0x00a14a20
-NiTriShape* FUN_00a14a20_shell::CreateTextShape(int aiChars, void* axColor, bool abPrepareObject)
+// src: XBOX_RETAIL_PDB 0x00a14a20
+// pdb: Font::MakeTriShape | Font.obj | retail, string-set bridge, high
+// pdb params: aiChars, axColor, abPrepareObject
+// pdb locals: pvert_order, ptsp, pvertices, pshape, iverts, ptextures, pd
+NiTriShape* FUN_00a14a20_shell::Font_MakeTriShape(int aiChars, void* axColor, bool abPrepareObject)
 {
     unsigned short* pvert_order;
     TileShaderProperty_00a14a20* ptsp;
@@ -776,13 +810,16 @@ NiTriShape* FUN_00a14a20_shell::CreateTextShape(int aiChars, void* axColor, bool
         BSShaderManager::UpdateObjectTypeRecurse((::NiAVObject*)pshape, false, false);
     ptsp->SetTextureImage(((L::TexProp*)((L::TexPtr*)((char*)this + 0xc))[0])->GetBaseTexture());
     pshape->UpdateSceneObject();
-    AttachFaceGenAnimationData((::NiAVObject*)pshape);
+    Interface_AttachDefaultAlphaProperty((::NiAVObject*)pshape);
     return (NiTriShape*)pshape;
 }
 }  // namespace fnv_00a14a20
 
 // Maps a character to a flag value: 0x20 for NUL, 1 for '<'/'{', 2 for '>'/'}', 8 for quotes, 0x10 for '=', 4 for chars <= 0x20, else 0.
 // @fnv 0x00a16da0
+// pdb: Warning | TESRegionDataObjects.obj | debug, call graph, medium
+// pdb params: aWarningContext, apMessage, ires
+// pdb locals: varArgs
 int FontManager::GetCharType(char acChar)
 {
     switch (acChar)
@@ -899,6 +936,9 @@ struct SBox {
 
 // @fnv 0x00a19c00
 // src: GUESS 0x00a19c00 (confidence: low)
+// pdb: FontManager::TextPage::AddChar | Font.obj | debug, call graph, medium
+// pdb params: apChar, aiNewLines
+// pdb locals: pline, iskipped, pfontletter, ppage
 SBox* SBox::ProcessEntries_00a19c00(SItem* pItem, int aiIndex)
 {
     int iOffset;
@@ -960,6 +1000,9 @@ struct FontDimensions : public FontManager {
 
 // Measures wrapped text for a font: accumulates per-glyph widths, breaks lines at wrap points, and returns max line width, total height and line count.
 // @fnv 0x00a1b020
+// pdb: FontManager::CalculateStringDimensions | Font.obj | debug, call graph (shared callers), high
+// pdb params: strText, aiFont, afWrapwidth, aiStartIndex
+// pdb locals: fprevLetterWidth, inumLines, bsoftHyphen, returnDims, fwrapPointWidth, fcurrLineWidth, uistrLength, plettersA, flinePadding, iletterCt, cletter, fcurrLetterWidth
 FontPoint3 FontDimensions::GetStringDimensions(const char* strText, int aiFont, float afWrapwidth, int aiStartIndex)
 {
     float fprevLetterWidth;
@@ -1085,7 +1128,7 @@ void FUN_00a14170_shell::GetGlyphMetricsByName(FUN_00a14170_out* apOut, const ch
 }
 
 struct FUN_004037f0_target {
-    void FUN_004037f0(char* text, int flag);
+    void FUN_004037f0(char* apString, int aiMaxLen);
 };
 
 struct FUN_00a16700_cls {
@@ -1094,6 +1137,9 @@ struct FUN_00a16700_cls {
 };
 
 // @fnv 0x00a16700
+// pdb: Font::GetLineNumber | Font.obj | debug, object-file gap fill, medium
+// pdb params: apSrcString, axDestString, aiLineNum, acSepChar
+// pdb locals: apStart, iline, a
 void FUN_00a16700_cls::SplitAndProcessToken(char* text, FUN_004037f0_target* target, int maxCount, char delim) {
     unsigned int pad[8];
     char* last = text;
@@ -1132,6 +1178,8 @@ struct FUN_00a18ff0_cls {
 
 // Walks the linked list from head for m_14 steps and returns the node's value, or 0 if m_08 is null or the list ends early.
 // @fnv 0x00a18ff0
+// pdb: FontManager::TextDoc::CurrentPage | Font.obj | debug, object-file gap fill, medium
+// pdb locals: xelem, a
 int FUN_00a18ff0_cls::GetValueAtCount() {
     unsigned int count;
     FUN_00a18ff0_node* cur;
@@ -1168,7 +1216,7 @@ struct FUN_00a1b770_vec4
 struct FUN_00a1b770_sub
 {
     unsigned int unk00;
-    void Init(int a, int b);
+    void Init(int apString, int aiMaxLen);
 };
 
 struct FUN_00a1b770_scratch
@@ -1205,13 +1253,14 @@ struct FUN_00a1b770_cls
     unsigned int m_u18;
     FUN_00a1b770_sub m_s1c;
 
-    void FontManager_CharData_SetChar(int size);
+    void FontManager_CharData_SetChar(int acChar);
     void InitializeCharacterData();
 };
 
 // Initialises the object: zeroes m_u00, sets m_v08 from three globals with w=1, sets m_u18 to 1, inits m_s1c and calls FUN_00a1b7f0(0x20).
 // @fnv 0x00a1b770
 // src: GUESS 0x00a1b770 (confidence: medium)
+// pdb: FontManager::CharData::RevertToDefault | Font.obj | debug, object-file gap fill, medium
 void FUN_00a1b770_cls::InitializeCharacterData()
 {
     FUN_00a1b770_vec4 vec;
@@ -1358,28 +1407,31 @@ struct GQGlyph {
 };
 
 struct GQFont {
-    void BuildGlyphQuad(GQGlyph* apGlyph, unsigned int auiIndex, NiGeometry* apGeom, GQPoint3* apPos, int aiUnused);
+    void BuildGlyphQuad(GQGlyph* apLetter, unsigned int aiVert, NiGeometry* apShape, GQPoint3* axPos, int apColor);
 };
 
 // @fnv 0x00a142d0
-void GQFont::BuildGlyphQuad(GQGlyph* apGlyph, unsigned int auiIndex, NiGeometry* apGeom, GQPoint3* apPos, int aiUnused)
+// pdb: Font::AddChar | Font.obj | retail, call graph (shared callers), high
+// pdb params: apLetter, aiVert, apShape, axPos, apColor
+// pdb locals: iindex, pvert_order, pvertices, ptextures
+void GQFont::BuildGlyphQuad(GQGlyph* apLetter, unsigned int aiVert, NiGeometry* apShape, GQPoint3* axPos, int apColor)
 {
-    apPos->x += apGlyph->m_fGlyphMetric;
-    unsigned int uiVert = auiIndex * 4;
+    axPos->x += apLetter->m_fGlyphMetric;
+    unsigned int uiVert = aiVert * 4;
 
-    GQPoint3* pVerts3 = ((GQGeometryData*)apGeom->GetModelData())->GetVertices() + uiVert;
-    pVerts3[0] = GQPoint3(apPos->x, apPos->y, apPos->z + apGlyph->fTop);
-    pVerts3[1] = GQPoint3(apPos->x, apPos->y, apPos->z + apGlyph->fTop - apGlyph->m_fGlyphExtent);
-    pVerts3[2] = GQPoint3(apPos->x + apGlyph->m_fGlyphWidthInPixels, apPos->y, apPos->z + apGlyph->fTop);
-    pVerts3[3] = GQPoint3(apPos->x + apGlyph->m_fGlyphWidthInPixels, apPos->y, apPos->z + apGlyph->fTop - apGlyph->m_fGlyphExtent);
+    GQPoint3* pVerts3 = ((GQGeometryData*)apShape->GetModelData())->GetVertices() + uiVert;
+    pVerts3[0] = GQPoint3(axPos->x, axPos->y, axPos->z + apLetter->fTop);
+    pVerts3[1] = GQPoint3(axPos->x, axPos->y, axPos->z + apLetter->fTop - apLetter->m_fGlyphExtent);
+    pVerts3[2] = GQPoint3(axPos->x + apLetter->m_fGlyphWidthInPixels, axPos->y, axPos->z + apLetter->fTop);
+    pVerts3[3] = GQPoint3(axPos->x + apLetter->m_fGlyphWidthInPixels, axPos->y, axPos->z + apLetter->fTop - apLetter->m_fGlyphExtent);
 
-    NiPoint2* pUVsA = ((GQGeometryData*)apGeom->GetModelData())->GetTextures() + uiVert;
-    pUVsA[0] = NiPoint2(apGlyph->fU0, apGlyph->fV0);
-    pUVsA[1] = NiPoint2(apGlyph->fU2, apGlyph->fV2);
-    pUVsA[2] = NiPoint2(apGlyph->fU1, apGlyph->fV1);
-    pUVsA[3] = NiPoint2(apGlyph->fU3, apGlyph->fV3);
+    NiPoint2* pUVsA = ((GQGeometryData*)apShape->GetModelData())->GetTextures() + uiVert;
+    pUVsA[0] = NiPoint2(apLetter->fU0, apLetter->fV0);
+    pUVsA[1] = NiPoint2(apLetter->fU2, apLetter->fV2);
+    pUVsA[2] = NiPoint2(apLetter->fU1, apLetter->fV1);
+    pUVsA[3] = NiPoint2(apLetter->fU3, apLetter->fV3);
 
-    unsigned short* pTris = ((GQGeometryData*)apGeom->GetModelData())->GetTriangle(auiIndex * 6);
+    unsigned short* pTris = ((GQGeometryData*)apShape->GetModelData())->GetTriangle(aiVert * 6);
     pTris[0] = uiVert;
     pTris[1] = uiVert + 1;
     pTris[2] = uiVert + 2;
@@ -1387,7 +1439,7 @@ void GQFont::BuildGlyphQuad(GQGlyph* apGlyph, unsigned int auiIndex, NiGeometry*
     pTris[4] = uiVert + 1;
     pTris[5] = uiVert + 3;
 
-    apPos->x += apGlyph->m_fGlyphWidthInPixels + ((apGlyph->m_fGlyphWidthInPixels > 0.0) ? apGlyph->m_fHorizontalSpacing : 0.0f);
+    axPos->x += apLetter->m_fGlyphWidthInPixels + ((apLetter->m_fGlyphWidthInPixels > 0.0) ? apLetter->m_fHorizontalSpacing : 0.0f);
 }
 
 struct AtlasVertex { float x,y,z;AtlasVertex() {} static void* operator new[](unsigned n) { return g_memoryManager.Allocate(n); } };
@@ -1559,7 +1611,7 @@ struct AtlasGeometry : NiMemObjectAllocation_font {
  AtlasData* GetData() { AtlasData* result=data;return result; }
  void AssignFixedString(const NiFixedString&);
 // src: XBOX_PDB 0x00439410
- void NiAVObject_AttachProperty(AtlasShader* shader) { if(shader->GetPropertyType()<7) { AtlasPropertyPointer property(shader);properties.NiAVObject_AttachProperty_00439fd0(property); } }
+ void NiAVObject_AttachProperty(AtlasShader* pkProperty) { if(pkProperty->GetPropertyType()<7) { AtlasPropertyPointer property(pkProperty);properties.NiAVObject_AttachProperty_00439fd0(property); } }
  void UpdateProperties();
 };
 void* _NiMalloc_00aa1070(unsigned);
@@ -1569,7 +1621,7 @@ int BSsprintf(char*,unsigned,const char*,...);
 extern char sheetGeometryName[];
 extern unsigned DAT_011a9598;
 void* FUN_00a5fd70(const NiFixedString&,unsigned&,bool,bool);
-void AttachFaceGenAnimationData(AtlasGeometry*);
+void Interface_AttachDefaultAlphaProperty(AtlasGeometry*);
 inline void CopyAtlasPath(char* dest,const char* source,unsigned limit) { FUN_00ec8d5f(dest,limit+1,source,limit); }
 // Font has no atlas accessors with these declarations.
 struct FontAtlasAccess : Font {
@@ -1577,8 +1629,10 @@ struct FontAtlasAccess : Font {
  const char* GetTextureResourceName() { return *(const char**)IconAtlasTextureName; }
 };
 // @fnv 0x00a14da0
-// src: COMMUNITY 0x00a14da0
-PageMeshes::Shape* Font::MakeButton() {
+// src: XBOX_RETAIL_PDB 0x00a14da0 (was COMMUNITY)
+// pdb: Font::MakeIconsTriShape | Font.obj | retail, unique string literal, high
+// pdb locals: pvert_order, ptsp, strtextureFile, pvertices, pshape, iverts, ptextures, pd, strtemp
+PageMeshes::Shape* Font::MakeIconsTriShape() {
  unsigned vertices7=((FontAtlasAccess*)this)->GetCount()*4;
  AtlasVertex* positions=new AtlasVertex[vertices7];
  NiPoint2* uvs5=new NiPoint2[vertices7];
@@ -1599,7 +1653,7 @@ PageMeshes::Shape* Font::MakeButton() {
  BSsprintf(texturePath,260,"Data\\Textures\\%s",sourceName7);
  shader3->SetTileTexture(FUN_00a5fd70(NiFixedString((const char*)texturePath),DAT_011a9598,true,false));
  geometry_->UpdateProperties();
- AttachFaceGenAnimationData(geometry_);
+ Interface_AttachDefaultAlphaProperty(geometry_);
  return (PageMeshes::Shape*)geometry_;}
 
 extern "C" __declspec(dllimport) long __stdcall InterlockedDecrement(long volatile*);
@@ -1929,6 +1983,8 @@ struct FontLoaderAccess : Font {
 };
 // Loads the font file and its textures, computes glyph height/drop metrics, fills FontData, and increments the loader's ref count.
 // @fnv 0x00a15320
+// pdb: Font::Load | Font.obj | retail, unique string literal, high
+// pdb locals: tempMemContext, message, ftemp, pfontFile, fmax_height, i, ffont_height, n, psrc, prefs, ptexFile, pprop
 void Font::LoadFont() {
 ContextScope scope(12);
 float maxHeight;
@@ -1998,11 +2054,11 @@ struct LayoutString {
     unsigned int MaxLength() const { return capacity; }
     void SetMaxLength(unsigned int n) { capacity=n<=0xffff?(unsigned short)n:0xffff; }
     void SetLength(unsigned int n) { length=n<=0xffff?(unsigned short)n:0xffff; }
-    bool Set(const char* source, unsigned int minimum) {
-        unsigned int size=source?LayoutLength(source):0;
-        unsigned int maximum=LayoutCapacity(size,minimum);
+    bool Set(const char* apString, unsigned int aiMaxLen) {
+        unsigned int size=apString?LayoutLength(apString):0;
+        unsigned int maximum=LayoutCapacity(size,aiMaxLen);
         if(maximum<=MaxLength()) {
-            if(maximum) { if(source) LayoutCopy(text,source,size+1); else text[0]=0; }
+            if(maximum) { if(apString) LayoutCopy(text,apString,size+1); else text[0]=0; }
             else {
                 if(text) { char* old=text; operator delete(old); }
                 text=0; maximum=0; SetMaxLength(maximum);
@@ -2011,7 +2067,7 @@ struct LayoutString {
             char* old=text;
             void* allocated=operator new(maximum+1);
             text=(char*)allocated;
-            if(source) LayoutCopy(text,source,size+1); else text[0]=0;
+            if(apString) LayoutCopy(text,apString,size+1); else text[0]=0;
             if(old) { char* discarded=old; operator delete(discarded); }
             SetMaxLength(maximum);
         }
@@ -2028,12 +2084,12 @@ struct LayoutItem {
     LayoutColor color; int unk18;
     LayoutString string;
     int width,height,depth,offset,position;
-    LayoutItem(int fontIndex, int value, LayoutColor newColor, int flags) {
-        int limited=fontIndex<8?fontIndex:8;
+    LayoutItem(int aiFontIndex, int acChar, LayoutColor axColor, int aiJustification) {
+        int limited=aiFontIndex<8?aiFontIndex:8;
         font=limited<0?0:limited;
-        character=(unsigned char)value;
-        color=newColor;
-        unk18=flags;
+        character=(unsigned char)acChar;
+        color=axColor;
+        unk18=aiJustification;
         string=0;
         FontManager* manager=FontManager::pInstance;
         Font* selected=manager->pFont[font];
@@ -2047,8 +2103,8 @@ struct LayoutItem {
         position=0;
     }
 // src: COMMUNITY 0x00a1b7f0
-    void FontManager_CharData_SetChar(unsigned char value) {
-        character=value;
+    void FontManager_CharData_SetChar(unsigned char acChar) {
+        character=acChar;
         if(!string.Get() || !string[0]) {
             FontManager* manager=FontManager::pInstance;
             Font* selected=manager->pFont[font];
@@ -2145,6 +2201,9 @@ struct LayoutLine {
 };
 inline int LayoutMax(int a,int b) { return a>b?a:b; }
 // @fnv 0x00a19f70
+// pdb: FontManager::TextLine::AddChar | Font.obj | debug, object-file gap fill, medium
+// pdb params: apChar, abToFront
+// pdb locals: pline, elem, pchar, iend_width, plast, phyphen, bAdjustLineHeight, pfirst
 LayoutLine* LayoutLine::WrapLine(LayoutItem* apItem, bool start) {
     LayoutLine* first6=0;
     if(width+apItem->width>maxWidth) {
@@ -2264,19 +2323,23 @@ struct IconArray {
 };
 struct FUN_00a1aee0_shell : Font {
     void GetGlyphMetricsByName(IconData*, const char*);
-    void LoadIconFromPath(const char* path);
+    void Font_AddTextIcon(const char* astrIcon);
 };
 // Parses the icon suffix from the path after the last underscore, builds an IconData via FUN_00a06dd0 and FUN_00a14170, then appends it to the icon array.
 // @fnv 0x00a1aee0
-void FUN_00a1aee0_shell::LoadIconFromPath(const char* path) {
+// src: XBOX_RETAIL_PDB 0x00a1aee0
+// pdb: Font::AddTextIcon | Font.obj | retail, call graph, high
+// pdb params: astrIcon
+// pdb locals: iletterCt, strButtonID, iconData, ilastUnderscoreIndex
+void FUN_00a1aee0_shell::Font_AddTextIcon(const char* astrIcon) {
     IconData icon6;
-    Tile_GetTextureAtlasInfo(g_011f3368.Get(), path, (BSStringT<char>*)IconAtlasTextureName, &icon6.uv);
-    int offset = strlen(path) - 1;
+    Tile_GetTextureAtlasInfo(g_011f3368.Get(), astrIcon, (BSStringT<char>*)IconAtlasTextureName, &icon6.uv);
+    int offset = strlen(astrIcon) - 1;
     int count7 = 0;
-    while (path[offset] != '_') --offset;
+    while (astrIcon[offset] != '_') --offset;
     char suffix[4];
-    for (count7 = 0; count7 < 3 && path[offset + count7 + 1] != '.'; ++count7) {
-        suffix[count7] = path[offset + count7 + 1];
+    for (count7 = 0; count7 < 3 && astrIcon[offset + count7 + 1] != '.'; ++count7) {
+        suffix[count7] = astrIcon[offset + count7 + 1];
     }
     suffix[count7] = 0;
     GetGlyphMetricsByName(&icon6, suffix);
@@ -2325,7 +2388,8 @@ struct FontTextManager
     Font* GetFont(int i) { return pFont[i]; }
 };
 
-struct FontTextParams
+// pdb: structure CharData, size 0x14 (here 0x38), 5 members
+struct FontManager_CharData // src: XBOX_DEBUG_PDB 0x00a1b450 (first debug link of 2 high-tier links to its methods; old: FontTextParams)
 {
     int m_iType;
     bool bFlag;
@@ -2338,12 +2402,12 @@ struct FontTextParams
     int unk30;
     int unk34;
 
-    FontTextParams(int aiFont, bool abFlag, NiColorA akColor, int aiAlignment)
+    FontManager_CharData(int aiFontIndex, bool acChar, NiColorA axColor, int aiJustification)
     {
-        m_iType = FontTextMax(FontTextMin(aiFont, 8), 0);
-        bFlag = abFlag;
-        kColor = akColor;
-        iAlignment = aiAlignment;
+        m_iType = FontTextMax(FontTextMin(aiFontIndex, 8), 0);
+        bFlag = acChar;
+        kColor = axColor;
+        iAlignment = aiJustification;
         kText.Clear();
         FontCharacterInfo* pLetter = &((FontCharacterInfo*)FontTextManager::Instance()->GetFont(m_iType)->pFontData->pFontLetters)[bFlag];
         float width = pLetter->m_fGlyphWidthInPixels;
@@ -2367,14 +2431,17 @@ struct FontTextParams
     static __forceinline void* operator new(unsigned int s) { return g_memoryManager.Allocate(s); }
     static __forceinline void operator delete(void*) {}
 
-    FontTextParams* Clone();
+    FontManager_CharData* Copy();
 };
 
 // Allocates a copy of this FontTextParams, copies the text and metrics, resets unk30 to 0 and returns the new object.
 // @fnv 0x00a1b660
-FontTextParams* FontTextParams::Clone()
+// src: XBOX_DEBUG_PDB 0x00a1b660
+// pdb: FontManager::CharData::Copy | Font.obj | debug, call graph, high
+// pdb locals: pnew
+FontManager_CharData* FontManager_CharData::Copy()
 {
-    FontTextParams* pCopy = new FontTextParams(m_iType, bFlag, kColor, iAlignment);
+    FontManager_CharData* pCopy = new FontManager_CharData(m_iType, bFlag, kColor, iAlignment);
     pCopy->kText = kText;
     pCopy->iLineHeight = iLineHeight;
     pCopy->iHeight = iHeight;
@@ -2396,7 +2463,7 @@ struct S_00a12300_Elem {
 
 struct S_00a12300_Glob {
     int unk00;
-    void MemoryManager_Deallocate(S_00a12300_Arr* p);
+    void MemoryManager_Deallocate(S_00a12300_Arr* apMem);
 };
 
 extern S_00a12300_Glob DAT_011f6238;
@@ -2421,6 +2488,8 @@ struct S_00a12300_Obj {
 };
 
 // @fnv 0x00a12300
+// pdb: Font::KillData | Font.obj | retail, call graph, medium
+// pdb locals: n
 void S_00a12300_Obj::ClearArray() {
     int unusedOne;
     int unusedTwo;
@@ -2460,14 +2529,14 @@ inline void Pad168() { Hole hole; (void)&hole; }
 
 struct MM { void* Game_DoHeapAlloc(unsigned int); void MemoryManager_Deallocate(void*); };
 
-struct TexNode { void LoadIconFromPath(char*); };
+struct TexNode { void Font_AddTextIcon(char*); };
 
 struct FontC {
     TexNode* m_apNode[8];
     int GetCharType(char);
     TexNode* GetNode(unsigned i) { return m_apNode[i]; }
-    SStr Font_CollectTo(const char* text, int* pos, unsigned mask, unsigned mask2,
-                      int* value, char* pch, bool flag);
+    SStr Font_CollectTo(const char* apSource, int* aiIndex, unsigned aebfMatches, unsigned aebfInvMatches,
+                      int* aeResultMatch, char* acResultChar, bool bKeep);
 };
 
 void __cdecl Warning_005b5e40(int, const char*, int);
@@ -2481,8 +2550,11 @@ inline void CopyName(char* d, int sz, const char* s, int n) { FUN_00ec8d5f(d, sz
 // Scans text from *pos until a stop character or mask match, expanding '&...;' settings into _buf, and returns the accumulated SStr.
 // @fnv 0x00a16ea0
 // src: EXE 0x00a16ea0
-SStr FontC::Font_CollectTo(const char* text, int* apiPos, unsigned mask, unsigned mask2,
-                         int* apiValue, char* apCh, bool abExpandSettings)
+// pdb: FontManager::CollectTo | Font.obj | debug, unique string literal, high
+// pdb params: apSource, aiIndex, aebfMatches, aebfInvMatches, aeResultMatch, acResultChar, bKeep
+// pdb locals: ibuf_size, ireplacementStart, pbuf, presult, itype, isettingSize, strSettingVal, strSettingKey, ivalSize
+SStr FontC::Font_CollectTo(const char* apSource, int* aiIndex, unsigned aebfMatches, unsigned aebfInvMatches,
+                         int* aeResultMatch, char* acResultChar, bool bKeep)
 {
     SStr str3;
     char _buf[0x800];
@@ -2490,42 +2562,42 @@ SStr FontC::Font_CollectTo(const char* text, int* apiPos, unsigned mask, unsigne
     int other7 = 0;
     FUN_00ec61c0(_buf, 0, 0x800);
     while (true) {
-        *apCh = text[*apiPos];
-        int r6 = this->GetCharType((unsigned char)*apCh);
+        *acResultChar = apSource[*aiIndex];
+        int r6 = this->GetCharType((unsigned char)*acResultChar);
         if (r6 & 0x20) {
-            *apiValue = 0x20;
+            *aeResultMatch = 0x20;
             break;
-        } else if (r6 & mask) {
-            *apiValue = r6;
-            (*apiPos)++;
+        } else if (r6 & aebfMatches) {
+            *aeResultMatch = r6;
+            (*aiIndex)++;
             break;
-        } else if (mask2 != 0 && (r6 & mask2) == 0) {
-            *apCh = text[*apiPos];
-            *apiValue = this->GetCharType((unsigned char)*apCh);
+        } else if (aebfInvMatches != 0 && (r6 & aebfInvMatches) == 0) {
+            *acResultChar = apSource[*aiIndex];
+            *aeResultMatch = this->GetCharType((unsigned char)*acResultChar);
             break;
-        } else if (*apCh == '\n' || *apCh == '\r') {
-            (*apiPos)++;
+        } else if (*acResultChar == '\n' || *acResultChar == '\r') {
+            (*aiIndex)++;
             continue;
-        } else if (abExpandSettings) {
-            if (text[*apiPos] == '&') {
+        } else if (bKeep) {
+            if (apSource[*aiIndex] == '&') {
                 int n5 = 1;
-                while (!this->GetCharType((unsigned char)text[*apiPos + n5]) &&
-                       text[*apiPos + n5 - 1] != ';')
+                while (!this->GetCharType((unsigned char)apSource[*aiIndex + n5]) &&
+                       apSource[*aiIndex + n5 - 1] != ';')
                     n5++;
-                if (text[*apiPos + n5 - 1] != ';') {
+                if (apSource[*aiIndex + n5 - 1] != ';') {
                     Warning_005b5e40(0x12, "Font::CollectTo() -- Found GameSetting w/o ending ; in HTML text.", 0);
                 } else {
                     int iLen;
                     void* lenB = ((MM*)&DAT_011f6238)->Game_DoHeapAlloc(n5 + 1);
                     char* p2 = (char*)lenB;
-                    CopyName(p2, n5 + 1, &text[*apiPos], n5);
+                    CopyName(p2, n5 + 1, &apSource[*aiIndex], n5);
                     p2[n5] = 0;
                     char kNamebuf[0x104];
                     kNamebuf[0] = 0;
                     Interface_FindTextReplacementString(p2, kNamebuf, 0x104, 0);
                     if (kNamebuf[0] == '\\') {
                         kNamebuf[strlen(kNamebuf) - 1] = 0;
-                        GetNode(0)->LoadIconFromPath(&kNamebuf[1]);
+                        GetNode(0)->Font_AddTextIcon(&kNamebuf[1]);
                         _buf[count2] = 1;
                         count2++;
                     } else if (kNamebuf[0] != 0) {
@@ -2536,12 +2608,12 @@ SStr FontC::Font_CollectTo(const char* text, int* apiPos, unsigned mask, unsigne
                         FUN_00ec7c66(&_buf[count2], n5, p2, n5);
                         count2 += n5;
                     }
-                    *apiPos = n5 + *apiPos - 1;
+                    *aiIndex = n5 + *aiIndex - 1;
                     void* aTmp = p2;
                     ((MM*)&DAT_011f6238)->MemoryManager_Deallocate(aTmp);
                 }
             } else {
-                _buf[count2] = text[*apiPos];
+                _buf[count2] = apSource[*aiIndex];
                 count2++;
                 if (count2 > 0x7d0) {
                     str3 += _buf;
@@ -2549,7 +2621,7 @@ SStr FontC::Font_CollectTo(const char* text, int* apiPos, unsigned mask, unsigne
                 }
             }
         }
-        (*apiPos)++;
+        (*aiIndex)++;
     }
     Pad168();
     str3 += _buf;
@@ -2649,7 +2721,7 @@ struct TextRun {
     TextRun(int, unsigned char, ColA, int);
     void InitializeCharacterData();
     void FontManager_CharData_SetChar(unsigned char);
-    TextRun* Clone(int, int);
+    TextRun* Copy(int, int);
     ~TextRun() { str.Set(0, 0); }
 };
 
@@ -2667,53 +2739,57 @@ struct RunNode : RunNodeBase {
 
 // Builds a RunNode for the given text and Info_, splitting text into TextRuns by break char and updating the Info_ start/end/first/last fields.
 // @fnv 0x00a18a30
-RunNode* FontData::CreateTextRunNode(SStr* text, Info_* info) {
+// src: XBOX_RETAIL_PDB 0x00a18a30
+// pdb: FontManager::PrepText | Font.obj | retail, object-file run extension, high
+// pdb params: axTextString, axData
+// pdb locals: pdocument, xchar, inew_line, a, ch, ppage, elem, pline
+RunNode* FontData::FontManager_PrepText(SStr* axTextString, Info_* axData) {
     using namespace fnv_00a18a30;
-    if (text->GetString() == 0) return 0;
-    if (info->GetStart() < 2) info->iStart = 0x7fffffff;
-    if (info->GetEnd() < 2) info->iEnd = 0x7fffffff;
+    if (axTextString->GetString() == 0) return 0;
+    if (axData->GetStart() < 2) axData->iStart = 0x7fffffff;
+    if (axData->GetEnd() < 2) axData->iEnd = 0x7fffffff;
     RunNode* pNode = 0;
-    pNode = ParseLayout(text, info);
+    pNode = FontManager_PrepHypertext(axTextString, axData);
     if (pNode) return pNode;
-    pNode = new RunNode(info->GetStart(), info->GetEnd(), info->GetLeading());
+    pNode = new RunNode(axData->GetStart(), axData->GetEnd(), axData->GetLeading());
     Pad38();
     TextRun textRun(0, ' ', ColA(), 1);
     textRun.InitializeCharacterData();
-    textRun.m_iType = info->GetFont();
-    textRun.color = info->GetColor();
-    textRun.iExtra = info->GetHeight();
-    if (text->GetLen() <= 0) text->Set(" ", 0);
-    SetName(info, text);
+    textRun.m_iType = axData->GetFont();
+    textRun.color = axData->GetColor();
+    textRun.iExtra = axData->GetHeight();
+    if (axTextString->GetLen() <= 0) axTextString->Set(" ", 0);
+    SetName(axData, axTextString);
     int w = 0;
-    for (unsigned int i = 0; i < text->GetLen(); i++) {
-        unsigned char c = *(text->pString + (text->pString ? i : 0));
+    for (unsigned int i = 0; i < axTextString->GetLen(); i++) {
+        unsigned char c = *(axTextString->pString + (axTextString->pString ? i : 0));
         fnv_00a18a30::NormalizeSmartQuotes(c);
-        if (c == info->cBreak) w++;
+        if (c == axData->cBreak) w++;
         else if (c == 9 || c >= 0x20) {
             textRun.FontManager_CharData_SetChar(c);
-            pNode->FontManager_TextDoc_AddChar(textRun.Clone(w, 0));
+            pNode->FontManager_TextDoc_AddChar(textRun.Copy(w, 0));
             w = 0;
         }
     }
     Pad38();
-    info->bFlag = 0;
-    info->oFirst = 0;
-    info->iStart = 0;
-    info->iEnd = 0;
-    info->oLast = 0;
+    axData->bFlag = 0;
+    axData->oFirst = 0;
+    axData->iStart = 0;
+    axData->iEnd = 0;
+    axData->oLast = 0;
     if (pNode) {
-        info->oFirst = (int)pNode->GetB8();
+        axData->oFirst = (int)pNode->GetB8();
         ListObj* list = pNode->GetList();
         if (list) {
-            info->iEnd = 0;
-            info->iStart = 0;
+            axData->iEnd = 0;
+            axData->iStart = 0;
             FontListNodeView* node = (FontListNodeView*)list->GetHead();
             while (node) {
                 Entry* e = TakeNext(node);
-                info->iEnd += e->v14 + e->v1c;
-                info->iStart = Max(info->iStart, e->v0c);
+                axData->iEnd += e->v14 + e->v1c;
+                axData->iStart = Max(axData->iStart, e->v0c);
             }
-            info->oLast = (int)list->GetX8();
+            axData->oLast = (int)list->GetX8();
         }
     }
     Pad20();
@@ -2784,10 +2860,10 @@ struct FUN_00759330 {
     LayoutText text; int width; int height;
     int startOffset; int layoutVersion; int geometryKey; int layoutFlags;
     CharacterPosition firstPosition;
-    FUN_00759330(int newWidth,int newHeight,int newCount,int newLimit,unsigned char separator) {
+    FUN_00759330(int w,int h,int s,int e,unsigned char c) {
         text=DAT_01011584;
-        width=newWidth; height=newHeight; startOffset=newCount; layoutVersion=newLimit;
-        geometryKey=0; layoutFlags=separator;
+        width=w; height=h; startOffset=s; layoutVersion=e;
+        geometryKey=0; layoutFlags=c;
     }
     ~FUN_00759330() { firstPosition.RemoveAll(); }
     int GetCharacterOffset(int index) {
@@ -2865,10 +2941,10 @@ struct FinalizerView {
     virtual void* Reallocate(void*,unsigned int);
     virtual void Free(void*);
     ButtonIcon* buffer; unsigned int count,capacity;
-    void FUN_00a1bfa0(bool release) {
+    void FUN_00a1bfa0(bool abFreeMemory) {
         if(buffer) {
             for(unsigned int index=0; index<count; ++index) {}
-            if(release) { Free(buffer); buffer=0; buffer=0; capacity=0; }
+            if(abFreeMemory) { Free(buffer); buffer=0; buffer=0; capacity=0; }
             count=0;
         }
     }
@@ -2878,10 +2954,10 @@ struct FontRenderer : Font {
     bool HasNoIcons() { return ((FinalizerView*)ButtonIcons)->count==0; }
     unsigned int GetIconCount() { return ((FinalizerView*)ButtonIcons)->count; }
     void Font_CreateText(int*,int*,int*,int,int,int,char,int,ShapeView**,ShapeView**);
-    void CheckForVariablesInText(int,FUN_00759330*);
-    ShapeView* CreateTextShape(int,int,int);
-    ShapeView* MakeButton();
-    void UpdateIconGeometry(int,ShapeView*,FontPoint3&);
+    void PrepText(int,FUN_00759330*);
+    ShapeView* Font_MakeTriShape(int,int,int);
+    ShapeView* MakeIconsTriShape();
+    void Font_AddIcon(int,ShapeView*,FontPoint3&);
     void BuildGlyphQuad(GlyphData*,int,ShapeView*,FontPoint3&,int);
 };
 __forceinline int Maximum(int advance,int oldWidth) { return advance>oldWidth ? advance : oldWidth; }
@@ -2903,34 +2979,37 @@ __forceinline double TabMod(const float& value) { return (float)FUN_00ec9130((do
 __forceinline void TabAdvance(float& value) { float tabPosition=value; float tabMultiple=(float)TabMod(tabPosition); value=DAT_010731a8-tabMultiple+value; }
 // @fnv 0x00a12880
 // src: COMMUNITY 0x00a12880
-void FontRenderer::Font_CreateText(int* source,int* width,int* height,int count,int limit,int mode,char separator,int flags,ShapeView** primary,ShapeView** secondary) {
-    if(*height==0) *height=0x7fffffff;
-    if(!limit) limit=0x7fffffff;
+// pdb: Font::CreateText | Font.obj | retail, upstream name already matches, high
+// pdb params: axTextString, aiWidth, aiHeight, aiLineStart, aiLineEnd, aiFlags, aiLineBreakChar, axFontColor, apTextShape, apIconShape
+// pdb locals: start_x, xpos, fstart_x, xdata, iline_num, iiconIndex, xpos2, flinePadding, iverts, a, ptemp, ch, ich, pfont_letter
+void FontRenderer::Font_CreateText(int* axTextString,int* aiWidth,int* aiHeight,int aiLineStart,int aiLineEnd,int aiFlags,char aiLineBreakChar,int axFontColor,ShapeView** apTextShape,ShapeView** apIconShape) {
+    if(*aiHeight==0) *aiHeight=0x7fffffff;
+    if(!aiLineEnd) aiLineEnd=0x7fffffff;
     unsigned char letter9;
     int letterCode7;
     GlyphData* glyph;
     int secondaryActive_2;
     float lineB=Manager()->LinePadding(iFontNum);
-    FUN_00759330 layoutX(*width,*height,count,limit,separator);
-    CheckForVariablesInText(SourceValue(source),&layoutX);
-    *width=layoutX.GetWidth();
-    *height=layoutX.GetHeight();
+    FUN_00759330 layoutX(*aiWidth,*aiHeight,aiLineStart,aiLineEnd,aiLineBreakChar);
+    PrepText(SourceValue(axTextString),&layoutX);
+    *aiWidth=layoutX.GetWidth();
+    *aiHeight=layoutX.GetHeight();
     int linePosition_2=0;
     int linePositionTmp=0;
-    if(mode==4) linePositionTmp=-layoutX.GetCharacterOffset(linePosition_2);
-    else if(mode==2) linePositionTmp=-(layoutX.GetCharacterOffset(linePosition_2)/2);
+    if(aiFlags==4) linePositionTmp=-layoutX.GetCharacterOffset(linePosition_2);
+    else if(aiFlags==2) linePositionTmp=-(layoutX.GetCharacterOffset(linePosition_2)/2);
     FontPoint3 position6;
     position6.x=(float)linePositionTmp;
     position6.z=(pFontData->fBaseLine-fFontHeight)*2.0f;
     position6.y=0.0f;
-    *primary=CreateTextShape(layoutX.GetGeometryKey(),flags,1);
+    *apTextShape=Font_MakeTriShape(layoutX.GetGeometryKey(),axFontColor,1);
     FontPoint3 kIter;
     kIter.x=0.0f; kIter.y=position6.y; kIter.z=position6.z;
-    (*primary)->SetPosition(kIter);
+    (*apTextShape)->SetPosition(kIter);
     if(!HasNoIcons()) {
-        *secondary=MakeButton();
-        (*secondary)->SetPosition(kIter);
-        MarkGeometry(*secondary);
+        *apIconShape=MakeIconsTriShape();
+        (*apIconShape)->SetPosition(kIter);
+        MarkGeometry(*apIconShape);
     }
     float originXVal;
     originXVal = position6.x;
@@ -2939,11 +3018,11 @@ void FontRenderer::Font_CreateText(int* source,int* width,int* height,int count,
     specialCount_2 = 0;
     unsigned int cur5=0;
     while(layoutX[cur5]) {
-        if(layoutX[cur5]==separator) {
+        if(layoutX[cur5]==aiLineBreakChar) {
             ++linePosition_2;
             position6.x=0.0f;
-            if(4 == mode) position6.x=(float)-layoutX.GetCharacterOffset(linePosition_2);
-            else if(mode == 2) position6.x=(float)-(layoutX.GetCharacterOffset(linePosition_2)/2);
+            if(4 == aiFlags) position6.x=(float)-layoutX.GetCharacterOffset(linePosition_2);
+            else if(aiFlags == 2) position6.x=(float)-(layoutX.GetCharacterOffset(linePosition_2)/2);
             position6.z-=pFontData->fBaseLine+lineB;
         } else if(layoutX[cur5]=='\t') {
             TabAdvance(position6.x);
@@ -2954,21 +3033,21 @@ void FontRenderer::Font_CreateText(int* source,int* width,int* height,int count,
         if(letterCode7>256) letter9=0;
         if(letter9==1) {
             if(GetIconCount()>0) {
-                UpdateIconGeometry(specialCount_2++,*secondary,position6);
+                Font_AddIcon(specialCount_2++,*apIconShape,position6);
             }
         } else {
             glyph=&((GlyphData*)pFontData->pFontLetters)[letter9];
-            BuildGlyphQuad(glyph,drawnCount,*primary,position6,flags);
+            BuildGlyphQuad(glyph,drawnCount,*apTextShape,position6,axFontColor);
             ++drawnCount;
         }
-        *width=Maximum((int)(position6.x-originXVal),*width);
+        *aiWidth=Maximum((int)(position6.x-originXVal),*aiWidth);
         ++cur5;
     }
-    int res=(*primary)->GetGeometry()->GetActive();
-    (*primary)->GetGeometry()->bound.ComputeBoundingSphere((*primary)->GetGeometry()->GetVertices(),(NiPoint3*)res);
-    if(*secondary) {
-        secondaryActive_2=(*secondary)->GetGeometry()->GetActive();
-        (*secondary)->GetGeometry()->bound.ComputeBoundingSphere((*secondary)->GetGeometry()->GetVertices(),(NiPoint3*)secondaryActive_2);
+    int res=(*apTextShape)->GetGeometry()->GetActive();
+    (*apTextShape)->GetGeometry()->bound.ComputeBoundingSphere((*apTextShape)->GetGeometry()->GetVertices(),(NiPoint3*)res);
+    if(*apIconShape) {
+        secondaryActive_2=(*apIconShape)->GetGeometry()->GetActive();
+        (*apIconShape)->GetGeometry()->bound.ComputeBoundingSphere((*apIconShape)->GetGeometry()->GetVertices(),(NiPoint3*)secondaryActive_2);
     }
     ((FinalizerView*)ButtonIcons)->FUN_00a1bfa0(1);
 }
@@ -2988,31 +3067,35 @@ inline unsigned short* Tris_a14650(NiGeometryData* data) { return static_cast<Ni
 
 struct FontIcons_a14650 : public Font {
     ButtonIcon& Icon(int index) { return ((FontButtonIconArray*)ButtonIcons)->pBuffer[index]; }
-    void UpdateIconGeometry(int index, NiTriShape* shape, FontPoint3& position);
+    void Font_AddIcon(int index, NiTriShape* apShape, FontPoint3& aPos);
 };
 
 // Writes vertex positions, texture coordinates, and triangle indices for a button icon into the shape's geometry data, then advances position.x.
 // @fnv 0x00a14650
-void FontIcons_a14650::UpdateIconGeometry(int aiIconIndex, NiTriShape* shape, FontPoint3& position)
+// src: XBOX_DEBUG_PDB 0x00a14650
+// pdb: Font::AddIcon | Font.obj | debug, call graph (shared callers), high
+// pdb params: aiIconIndex, apShape, aPos
+// pdb locals: foffsetZ, iindex, pvert_order, ficonWidth, pvertices, foffsetX, ptextures
+void FontIcons_a14650::Font_AddIcon(int aiIconIndex, NiTriShape* apShape, FontPoint3& aPos)
 {
     int baseVertex3 = aiIconIndex * 4;
     float width6 = ((FontButtonIconArray*)ButtonIcons)->pBuffer[aiIconIndex].m_fGlyphWidthInPixels;
-    float zPos7 = position.z + ((FontButtonIconArray*)ButtonIcons)->pBuffer[aiIconIndex].m_fGlyphVerticalOffset;
-    float xPos = position.x + ((FontButtonIconArray*)ButtonIcons)->pBuffer[aiIconIndex].m_fHorizontalOffset;
+    float zPos7 = aPos.z + ((FontButtonIconArray*)ButtonIcons)->pBuffer[aiIconIndex].m_fGlyphVerticalOffset;
+    float xPos = aPos.x + ((FontButtonIconArray*)ButtonIcons)->pBuffer[aiIconIndex].m_fHorizontalOffset;
 
-    Pt3_a14650* vertices5 = (Pt3_a14650*)(Verts_a14650(Geo_a14650(shape)) + baseVertex3);
-    vertices5[0] = Pt3_a14650(xPos, position.y, zPos7);
-    vertices5[1] = Pt3_a14650(xPos, position.y, zPos7 - width6);
-    vertices5[2] = Pt3_a14650(xPos + width6, position.y, zPos7);
-    vertices5[3] = Pt3_a14650(xPos + width6, position.y, zPos7 - width6);
+    Pt3_a14650* vertices5 = (Pt3_a14650*)(Verts_a14650(Geo_a14650(apShape)) + baseVertex3);
+    vertices5[0] = Pt3_a14650(xPos, aPos.y, zPos7);
+    vertices5[1] = Pt3_a14650(xPos, aPos.y, zPos7 - width6);
+    vertices5[2] = Pt3_a14650(xPos + width6, aPos.y, zPos7);
+    vertices5[3] = Pt3_a14650(xPos + width6, aPos.y, zPos7 - width6);
 
-    NiPoint2* texCoords2 = (NiPoint2*)(Tex_a14650(Geo_a14650(shape)) + baseVertex3);
+    NiPoint2* texCoords2 = (NiPoint2*)(Tex_a14650(Geo_a14650(apShape)) + baseVertex3);
     texCoords2[0] = NiPoint2(Icon(aiIconIndex).m_kTextureCoordinates.m_fMinimumU, Icon(aiIconIndex).m_kTextureCoordinates.m_fMinimumV);
     texCoords2[1] = NiPoint2(Icon(aiIconIndex).m_kTextureCoordinates.m_fMinimumU, Icon(aiIconIndex).m_kTextureCoordinates.m_fMaximumV);
     texCoords2[2] = NiPoint2(Icon(aiIconIndex).m_kTextureCoordinates.m_fMaximumU, Icon(aiIconIndex).m_kTextureCoordinates.m_fMinimumV);
     texCoords2[3] = NiPoint2(Icon(aiIconIndex).m_kTextureCoordinates.m_fMaximumU, Icon(aiIconIndex).m_kTextureCoordinates.m_fMaximumV);
 
-    unsigned short* triangles = Tris_a14650(Geo_a14650(shape)) + aiIconIndex * 6;
+    unsigned short* triangles = Tris_a14650(Geo_a14650(apShape)) + aiIconIndex * 6;
     triangles[0] = (unsigned short)baseVertex3;
     triangles[1] = (unsigned short)(baseVertex3 + 1);
     triangles[2] = (unsigned short)(baseVertex3 + 2);
@@ -3020,7 +3103,7 @@ void FontIcons_a14650::UpdateIconGeometry(int aiIconIndex, NiTriShape* shape, Fo
     triangles[4] = (unsigned short)(baseVertex3 + 1);
     triangles[5] = (unsigned short)(baseVertex3 + 3);
 
-    position.x += width6 + ((FontButtonIconArray*)ButtonIcons)->pBuffer[aiIconIndex].m_fHorizontalSpacing;
+    aPos.x += width6 + ((FontButtonIconArray*)ButtonIcons)->pBuffer[aiIconIndex].m_fHorizontalSpacing;
 }
 
 namespace fnv_00a15ee0 {
@@ -3051,6 +3134,10 @@ struct TxtQ {
 };
 // Copies the text of the given 1-based line from a BSStringT<char> into a new buffer, replacing the original string with that line's content.
 // @fnv 0x00a15ee0
+// pdb: FontManager::CalculateStringDimensions | Font.obj | retail, object-file run extension, low
+// pdb note: debug build links it to Font::TrimToLine
+// pdb params: strText, aiFont, afWrapwidth, aiStartIndex
+// pdb locals: fprevLetterWidth, inumLines, bsoftHyphen, returnDims, fwrapPointWidth, fcurrLineWidth, uistrLength, plettersA, flinePadding, iletterCt, cletter, fcurrLetterWidth
 void TxtQ::ExtractLine(BSStringT<char>* str, int line)
 {
     int cur = 1;
@@ -3108,11 +3195,11 @@ struct LayoutString {
     unsigned int MaxLength() const { return capacity; }
     void SetMaxLength(unsigned int n) { capacity=n<=0xffff?(unsigned short)n:0xffff; }
     void SetLength(unsigned int n) { length=n<=0xffff?(unsigned short)n:0xffff; }
-    bool Set(const char* source, unsigned int minimum) {
-        unsigned int size=source?LayoutLength(source):0;
-        unsigned int maximum=LayoutCapacity(size,minimum);
+    bool Set(const char* apString, unsigned int aiMaxLen) {
+        unsigned int size=apString?LayoutLength(apString):0;
+        unsigned int maximum=LayoutCapacity(size,aiMaxLen);
         if(maximum<=MaxLength()) {
-            if(maximum) { if(source) LayoutCopy(text,source,size+1); else text[0]=0; }
+            if(maximum) { if(apString) LayoutCopy(text,apString,size+1); else text[0]=0; }
             else {
                 if(text) delete text;
                 text=0; maximum=0; SetMaxLength(maximum);
@@ -3120,7 +3207,7 @@ struct LayoutString {
         } else {
             char* old=text;
             text=new char[maximum+1];
-            if(source) LayoutCopy(text,source,size+1); else text[0]=0;
+            if(apString) LayoutCopy(text,apString,size+1); else text[0]=0;
             if(old) delete old;
             SetMaxLength(maximum);
         }
@@ -3185,11 +3272,11 @@ struct LayoutItem {
     LayoutColor color; int unk18;
     LayoutString string;
     int width,height,depth,offset,position;
-    LayoutItem(int fontIndex, unsigned char value, LayoutColor newColor, int flags) {
-        font=LayoutUpper(LayoutLower(fontIndex,8),0);
-        character=value;
-        color=newColor;
-        unk18=flags;
+    LayoutItem(int aiFontIndex, unsigned char acChar, LayoutColor axColor, int aiJustification) {
+        font=LayoutUpper(LayoutLower(aiFontIndex,8),0);
+        character=acChar;
+        color=axColor;
+        unk18=aiJustification;
         string.Set(0,0);
         FontCharacterInfo* letter=&((FontCharacterInfo*)(LayoutFonts::Instance()->GetFont(font)->pFontData)->pFontLetters)[character];
         width=(int)(letter->m_fGlyphWidthInPixels+letter->m_fGlyphWidthInPixels!=0.0?letter->m_fHorizontalAdvance+letter->m_fHorizontalSpacing:0.0);
@@ -3199,8 +3286,8 @@ struct LayoutItem {
         position=0;
     }
 // src: COMMUNITY 0x00a1b7f0
-    void FontManager_CharData_SetChar(unsigned char value) {
-        character=value;
+    void FontManager_CharData_SetChar(unsigned char acChar) {
+        character=acChar;
         if(Empty()) {
             FontCharacterInfo* letter=&((FontCharacterInfo*)(LayoutFonts::Instance()->GetFont(font)->pFontData)->pFontLetters)[character];
             width=(int)(letter->m_fGlyphWidthInPixels+(letter->m_fGlyphWidthInPixels!=0.0?letter->m_fHorizontalSpacing+letter->m_fHorizontalAdvance:0.0));
@@ -3211,7 +3298,8 @@ struct LayoutItem {
         position=0;
     }
     void SetFont(int index) { font=index; FontManager_CharData_SetChar(character); }
-    LayoutItem* Clone() {
+    // src: XBOX_DEBUG_PDB 0x00a1b660
+    LayoutItem* Copy() {
         LayoutItem* item=new LayoutItem(font,character,color,unk18);
         item->string=string;
         item->width=width;
@@ -3276,16 +3364,20 @@ __forceinline char* AllocateText(unsigned int count) {
 struct FUN_00a17390_shell : FontManager {
     Font* GetFont(unsigned int number) { return pFont[number]; }
     const char* GetFontFile(unsigned int number) { return GetFont(number)->pFontFile; }
-    LayoutString Font_CollectTo(const char* input, int* index, unsigned int stopMask, unsigned int allowedMask, unsigned int* outFlags, char* currentChar, bool parseEntities);
-    LayoutBlock* ParseLayout(LayoutString& source, LayoutResult* result);
+    LayoutString Font_CollectTo(const char* apSource, int* aiIndex, unsigned int aebfMatches, unsigned int aebfInvMatches, unsigned int* aeResultMatch, char* acResultChar, bool bKeep);
+    LayoutBlock* FontManager_PrepHypertext(LayoutString& axTextString, LayoutResult* axData);
 };
 inline ButtonIcon& GetIcon(Font* font, unsigned int index) { return ((FontButtonIconArray*)font->ButtonIcons)->pBuffer[index]; }
 // Parses HTML-like markup from source into a LayoutBlock, tracking font, color, alignment, and image attributes, then updates result dimensions.
 // @fnv 0x00a17390
-LayoutBlock* FUN_00a17390_shell::ParseLayout(LayoutString& source, LayoutResult* result) {
+// src: XBOX_RETAIL_PDB 0x00a17390
+// pdb: FontManager::PrepHypertext | Font.obj | retail, unique string literal, high
+// pdb params: axTextString, axData
+// pdb locals: pdocument, xtag, xsubtag, iindex, iiconIndex, xchar, breturn, cchar, psrc, itype, xoutput, inew_line, bnew_page, xsubval, xtext, bimage, c, a, n, buseThisFont, r, g, b, xcolor ...
+LayoutBlock* FUN_00a17390_shell::FontManager_PrepHypertext(LayoutString& axTextString, LayoutResult* axData) {
     bool layout=false;
-    char* input=AllocateText(source.Length()+1);
-    strcpy(input,source.Get());
+    char* input=AllocateText(axTextString.Length()+1);
+    strcpy(input,axTextString.Get());
     int parsePos=0;
     unsigned int mask=0;
     char character=0;
@@ -3302,7 +3394,7 @@ LayoutBlock* FUN_00a17390_shell::ParseLayout(LayoutString& source, LayoutResult*
     unsigned int iconNum=0;
     Font_CollectTo(input,&parsePos,0,4,&mask,&character,false);
     if(mask==1) {
-        block=new LayoutBlock(result->GetWidth(),result->GetHeight(),result->GetUnk24());
+        block=new LayoutBlock(axData->GetWidth(),axData->GetHeight(),axData->GetUnk24());
         layout=true;
         parsePos=0;
         while(true) {
@@ -3311,7 +3403,7 @@ LayoutBlock* FUN_00a17390_shell::ParseLayout(LayoutString& source, LayoutResult*
                 if(img) {
                     img=false;
                     format.character=0;
-                    block->FontManager_TextDoc_AddChar(format.Clone(),lines,lineRule);
+                    block->FontManager_TextDoc_AddChar(format.Copy(),lines,lineRule);
                     lines=0;
                     lineRule=false;
                     format.string="";
@@ -3323,7 +3415,7 @@ LayoutBlock* FUN_00a17390_shell::ParseLayout(LayoutString& source, LayoutResult*
                         format.width=(int)(GetIcon(GetFont(0),iconNum).m_fGlyphWidthInPixels+((FontButtonIconArray*)GetFont(0)->ButtonIcons)->pBuffer[iconNum].m_fHorizontalSpacing);
                         ++iconNum;
                     }
-                    block->FontManager_TextDoc_AddChar(format.Clone(),lines,lineRule);
+                    block->FontManager_TextDoc_AddChar(format.Copy(),lines,lineRule);
                     lines=0;
                     lineRule=false;
                 }
@@ -3362,7 +3454,7 @@ LayoutBlock* FUN_00a17390_shell::ParseLayout(LayoutString& source, LayoutResult*
                     } else if(img) {
                         img=false;
                         format.character=0;
-                        block->FontManager_TextDoc_AddChar(format.Clone(),lines,lineRule);
+                        block->FontManager_TextDoc_AddChar(format.Copy(),lines,lineRule);
                         lines=0;
                         lineRule=false;
                         format.string="";
@@ -3407,27 +3499,27 @@ LayoutBlock* FUN_00a17390_shell::ParseLayout(LayoutString& source, LayoutResult*
             if(tagText=="BR") ++lines;
             else if(tagText=="P") lines+=2;
             else if(tagText=="HR") {
-                if(result->height==0x7fffffff) lines+=2;
+                if(axData->height==0x7fffffff) lines+=2;
                 else { lineRule=true; lines=0; }
             } else if(tagText=="/FONT") format.InitializeCharacterData();
         }
-        source=output;
+        axTextString=output;
     }
     ((LayoutMemory*)&g_memoryManager)->Deallocate(input);
     if(block) {
-        result->hasLayout=true;
-        result->pages=block->Count();
+        axData->hasLayout=true;
+        axData->pages=block->Count();
         LayoutPage* page=block->GetValueAtCount();
         if(page) {
-            result->height=0;
-            result->width=0;
+            axData->height=0;
+            axData->width=0;
             LayoutLineNode* node=page->Head();
             while(node) {
                 LayoutLine* line=page->Next(node);
-                result->height+=line->height+line->unk1c;
-                result->width=LayoutMax(result->width,line->width);
+                axData->height+=line->height+line->unk1c;
+                axData->width=LayoutMax(axData->width,line->width);
             }
-            result->lines=page->Count();
+            axData->lines=page->Count();
         }
     }
     return block;
@@ -3435,13 +3527,13 @@ LayoutBlock* FUN_00a17390_shell::ParseLayout(LayoutString& source, LayoutResult*
 }  // namespace fnv_00a17390
 
 namespace fnv_00a18f00 {
-struct PoolQ { void MemoryManager_Deallocate(void* p); };
+struct PoolQ { void MemoryManager_Deallocate(void* apMem); };
 extern PoolQ DAT_011f6238;
 struct StrQ {
   char* p; unsigned short l, m;
   StrQ(const StrQ& o) { AssignFromString(o); }
   void AssignFromString(const StrQ& o);
-  void FUN_004037f0(const char* s, unsigned short n);
+  void FUN_004037f0(const char* apString, unsigned short aiMaxLen);
   ~StrQ() { FUN_004037f0(0, 0); }
 };
 struct FUN_00a1b990 {
@@ -3450,16 +3542,20 @@ struct FUN_00a1b990 {
   void operator delete(void* p) { int aiD[21]; DAT_011f6238.MemoryManager_Deallocate(p); }
 };
 struct OwnQ {
-  FUN_00a1b990* CreateTextRunNode(StrQ* s, int a);
-  bool CreateTextRun(StrQ s, int a, int b);
+  FUN_00a1b990* FontManager_PrepText(StrQ* axTextString, int axData);
+  bool FontManager_CreateText(StrQ axTextString, int axTextData, int apNode);
 };
 // Creates a text run node from the string s and parameter a, applies b and a via BuildPage, then deletes the node and returns true.
 // @fnv 0x00a18f00
-bool OwnQ::CreateTextRun(StrQ asText, int a, int b) {
+// src: XBOX_RETAIL_PDB 0x00a18f00
+// pdb: FontManager::CreateText | Font.obj | retail, object-file run extension, high
+// pdb params: axTextString, axTextData, apNode
+// pdb locals: pdocument, xtext
+bool OwnQ::FontManager_CreateText(StrQ axTextString, int axTextData, int apNode) {
   FUN_00a1b990* pNode;
-  StrQ kName_ydzun(asText);
-  pNode = CreateTextRunNode(&kName_ydzun, a);
-  if (pNode) pNode->BuildPage(b, a);
+  StrQ kName_ydzun(axTextString);
+  pNode = FontManager_PrepText(&kName_ydzun, axTextData);
+  if (pNode) pNode->BuildPage(apNode, axTextData);
   delete pNode;
   return true;
 }
@@ -3482,17 +3578,20 @@ struct OwnQ {
   unsigned int GetCount() { return ItemUpdateArray; }
   EntQ*& First() { return pHead->pEnt; }
   void AddItem(EntQ** ppEnt);
-  void FontManager_TextDoc_AddChar(int a, int b, bool bForce);
+  void FontManager_TextDoc_AddChar(int apChar, int aiNewLines, bool abNewPage);
 };
 // Calls FUN_00a19c00 on First() when the count is nonzero and bForce is false; otherwise allocates FUN_00a1bc70, then passes a non-null result to AddItem.
 // @fnv 0x00a19a10
 // src: COMMUNITY 0x00a19a10
-void OwnQ::FontManager_TextDoc_AddChar(int aiParam1, int aiParam2, bool bForce) {
+// pdb: FontManager::TextDoc::AddChar | Font.obj | retail, upstream name already matches, high
+// pdb params: apChar, aiNewLines, abNewPage
+// pdb locals: ppage
+void OwnQ::FontManager_TextDoc_AddChar(int apChar, int aiNewLines, bool abNewPage) {
   EntQ* pEnt = 0;
-  if (GetCount() && !bForce)
-    pEnt = First()->ProcessEntries_00a19c00(aiParam1, aiParam2);
+  if (GetCount() && !abNewPage)
+    pEnt = First()->ProcessEntries_00a19c00(apChar, aiNewLines);
   else
-    pEnt = new FUN_00a1bc70(this, aiParam1, unk0c, unk10);
+    pEnt = new FUN_00a1bc70(this, apChar, unk0c, unk10);
   if (pEnt) AddItem(&pEnt);
 }
 }  // namespace fnv_00a19a10
@@ -3517,6 +3616,8 @@ struct MapQ {
 };
 // Counts ObjQ entries with empty names and matching iKey across all buckets in kBuckets.
 // @fnv 0x00a19b00
+// pdb: FontManager::TextDoc::~TextDoc | Font.obj | retail, object-file run extension, low
+// pdb note: debug build links it to FontManager::TextPage::GetCharCountForFont
 int MapQ::CountEmptyNameEntries(int iKey) {
   int iCount_sia = 0;
   NodQ<BktQ*>* pOuter_bk = kBuckets.Head();
@@ -3580,19 +3681,22 @@ struct FUN_00a1b450 {
     int m30;
     int m34;
 
-    FUN_00a1b450(int a, unsigned char flag, NiColorA value, int extra);
+    FUN_00a1b450(int aiFontIndex, unsigned char acChar, NiColorA axColor, int aiJustification);
 };
 
 // Initialises a glyph record from a font index and flag, computing advance, height and offset from the font blob data.
 // @fnv 0x00a1b450
-FUN_00a1b450::FUN_00a1b450(int aiFontIndex, unsigned char flag, NiColorA av4Value, int extra)
+// pdb: FontManager::CharData::CharData | Font.obj | debug, call graph, high
+// pdb params: aiFontIndex, acChar, axColor, aiJustification
+// pdb locals: pfontletter
+FUN_00a1b450::FUN_00a1b450(int aiFontIndex, unsigned char acChar, NiColorA axColor, int aiJustification)
     : m8(), m1c(0u) {
     m0 = LowerBound00a1b450(aiFontIndex < 8 ? aiFontIndex : 8, 0);
 
-    m4 = flag;
+    m4 = acChar;
 
-    m8 = av4Value;
-    m18 = extra;
+    m8 = axColor;
+    m18 = aiJustification;
 
     Empty00a1b450(&m1c);
 
@@ -3622,7 +3726,7 @@ extern "C" int __cdecl sprintf(char*,const char*,...);
 extern "C" void* __cdecl FUN_00ec61c0(void*,int,unsigned int);
 extern "C" void* __cdecl FUN_00ec7230(void*,const void*,unsigned int);
 bool __cdecl Interface_FindTextReplacementString(const char*,char*,unsigned int,bool);
-bool __cdecl ResolveSettingString(const char*,char*);
+bool __cdecl Interface_TestConstantForGameSettings(const char*,char*);
 void __cdecl BSsprintf(char*,unsigned int,const char*,...);
 void __cdecl NormalizeSmartQuotes(unsigned char*);
 extern char DAT_01019f08[],DAT_010950a8[];
@@ -3680,16 +3784,16 @@ struct Layout {
  unsigned int MaxLength() const {return capacity;}
  void SetMaxLength(unsigned int n) {capacity=n<=0xffff?(unsigned short)n:0xffff;}
  void SetLength(unsigned int n) {length=n<=0xffff?(unsigned short)n:0xffff;}
- bool FUN_004037f0(const char* source,unsigned int minimum) {
-  unsigned int size=source?LayoutLength(source):0;
-  unsigned int maximum=LayoutCapacity(size,minimum);
+ bool FUN_004037f0(const char* apString,unsigned int aiMaxLen) {
+  unsigned int size=apString?LayoutLength(apString):0;
+  unsigned int maximum=LayoutCapacity(size,aiMaxLen);
   if(maximum<=MaxLength()) {
-   if(maximum) {if(source) LayoutCopy(text,source,size+1);else text[0]=0;}
+   if(maximum) {if(apString) LayoutCopy(text,apString,size+1);else text[0]=0;}
    else {if(text) delete text; text=0;maximum=0;SetMaxLength(maximum);}
   } else {
    char* old=text;
    text=new char[maximum+1];
-   if(source) LayoutCopy(text,source,size+1); else text[0]=0;
+   if(apString) LayoutCopy(text,apString,size+1); else text[0]=0;
    if(old) delete old;
    SetMaxLength(maximum);
   }
@@ -3702,13 +3806,16 @@ struct Layout {
 inline unsigned int Font::GetIconCount() { return ((FontButtonIconArray*)ButtonIcons)->iSize; }
 
 // @fnv 0x00a12fb0
-// src: COMMUNITY 0x00a12fb0
-void Font::CheckForVariablesInText(const char* input,TextLayout::Layout* layout) {
+// src: XBOX_RETAIL_PDB 0x00a12fb0 (was COMMUNITY)
+// pdb: Font::PrepText | Font.obj | retail, string-set bridge, high
+// pdb params: apOrigString, axData
+// pdb locals: iwidth, idest_len, iindex, imax_width, pdest, iiconIndex, iindex_width, bsubstituted, iindex_width_2, bsoftHyphen, psrc, iline_count, idest_max, ichar_count, psub, flinePadding, fheight, isrc_len, imax_lines, a, baddPushText, c, icmd_len, b ...
+void Font::PrepText(const char* apOrigString,TextLayout::Layout* axData) {
  using namespace TextLayout;
- if(!input) return;
- if(layout->width<=0) layout->width=0x7fffffff;
- if(layout->height<=0) layout->height=0x7fffffff;
- if(layout->maxLines<=0) layout->maxLines=0x7fffffff;
+ if(!apOrigString) return;
+ if(axData->width<=0) axData->width=0x7fffffff;
+ if(axData->height<=0) axData->height=0x7fffffff;
+ if(axData->maxLines<=0) axData->maxLines=0x7fffffff;
  float paddingSlot16=TextLayout::GetDebrisManager()->GetFontPadding(iFontNum);
  int breakOffsetSlot0=0;
  int breakWidthSlot43=0;
@@ -3717,11 +3824,11 @@ void Font::CheckForVariablesInText(const char* input,TextLayout::Layout* layout)
  int maxWidthSlot29=0;
  float heightSlot31=((TextLayout::Glyph*)pFontData->pFontLetters)[32].height;
  int lineCountSlot0=1;
- unsigned int length=TextLayout::strlen(input);
- int maxLinesSlot10=layout->maxLines;
+ unsigned int length=TextLayout::strlen(apOrigString);
+ int maxLinesSlot10=axData->maxLines;
  char* workSlot77=TextLayout::AllocateText(length+4);
  char* outputSlot60=TextLayout::AllocateText(length+4);
- TextLayout::sprintf(workSlot77,TextLayout::DAT_01019f08,input);
+ TextLayout::sprintf(workSlot77,TextLayout::DAT_01019f08,apOrigString);
  unsigned int outputLengthSlot0=0;
  unsigned int capacity=length+4;
  int insertedSlot12=0;
@@ -3735,13 +3842,13 @@ void Font::CheckForVariablesInText(const char* input,TextLayout::Layout* layout)
    int prefixSlot10=1;
    bool positiveSlot0=true;
    if(workSlot77[scan+1]=='-') { positiveSlot0=false;prefixSlot10=2; }
-   while(workSlot77[scan+countSlot0+prefixSlot10] && countSlot0<127 && workSlot77[scan+countSlot0]!=';' && workSlot77[scan+countSlot0]!='\n' && workSlot77[scan+countSlot0]!=layout->newline) {
+   while(workSlot77[scan+countSlot0+prefixSlot10] && countSlot0<127 && workSlot77[scan+countSlot0]!=';' && workSlot77[scan+countSlot0]!='\n' && workSlot77[scan+countSlot0]!=axData->newline) {
     entitySlot1[countSlot0]=workSlot77[scan+countSlot0+prefixSlot10];++countSlot0;
    }
    entitySlot1[countSlot0?countSlot0-prefixSlot10:countSlot0]=0;
    unsigned int consumed=TextLayout::strlen(entitySlot1)+1;
    if(workSlot77[scan+countSlot0]==';') consumed+=prefixSlot10;
-   if(TextLayout::Interface_FindTextReplacementString(entitySlot1,replacementSlot0,1024,positiveSlot0) || TextLayout::ResolveSettingString(entitySlot1,replacementSlot0)) {
+   if(TextLayout::Interface_FindTextReplacementString(entitySlot1,replacementSlot0,1024,positiveSlot0) || TextLayout::Interface_TestConstantForGameSettings(entitySlot1,replacementSlot0)) {
     unsigned int replacementLengthSlot18=TextLayout::strlen(replacementSlot0);
     int deltaSlot0=replacementLengthSlot18-consumed;
     if(replacementSlot0[replacementLengthSlot18-1]=='\\') {
@@ -3756,7 +3863,7 @@ void Font::CheckForVariablesInText(const char* input,TextLayout::Layout* layout)
       TextLayout::FUN_00ec65a6(originalPath,260,pathSlot13);
       TextLayout::BSsprintf(pathSlot13,260,TextLayout::DAT_010950a8,originalPath);
      }
-     LoadIconFromPath(pathSlot13);
+     AddTextIcon(pathSlot13);
      replacementSlot0[slashSlot0]=1;replacementSlot0[slashSlot0+1]=0;
      replacementLengthSlot18=TextLayout::strlen(replacementSlot0);
      deltaSlot0=replacementLengthSlot18-consumed;
@@ -3780,11 +3887,11 @@ void Font::CheckForVariablesInText(const char* input,TextLayout::Layout* layout)
  unsigned int imageIndexSlot13=0;
  for(unsigned int index=0;index<length;++index) {
   if(!workSlot77[index]) { break; }
-  else if(workSlot77[index]==layout->newline) {
-   outputSlot60[outputLengthSlot0]=layout->newline;++outputLengthSlot0;
+  else if(workSlot77[index]==axData->newline) {
+   outputSlot60[outputLengthSlot0]=axData->newline;++outputLengthSlot0;
    if(outputLengthSlot0>=capacity) {outputSlot60=(char*)TextLayout::DAT_011f6238.FUN_00aa4150(outputSlot60,outputLengthSlot0+4);capacity=outputLengthSlot0+4;}
    heightSlot31=pFontData->fBaseLine+paddingSlot16+heightSlot31;
-   layout->lines.FUN_00af25b0(&widthSlot1);
+   axData->lines.FUN_00af25b0(&widthSlot1);
    maxWidthSlot29=maxWidthSlot29>widthSlot1?maxWidthSlot29:widthSlot1;
    widthSlot1=0;breakOffsetSlot0=0;++lineCountSlot0;
   } else if(workSlot77[index]=='\t') {
@@ -3809,7 +3916,7 @@ void Font::CheckForVariablesInText(const char* input,TextLayout::Layout* layout)
     breakOffsetSlot0=outputLengthSlot0;breakWidthSlot43=widthSlot1;wordWidthSlot2=widthSlot1;hyphenSlot42=true;
     widthSlot1-=(int)(glyphSlot1->width+glyphSlot1->spacing);
    }
-   if(widthSlot1>layout->width) {
+   if(widthSlot1>axData->width) {
     if(breakOffsetSlot0) {
      if(hyphenSlot42) {
       hyphenSlot42=false;
@@ -3820,7 +3927,7 @@ void Font::CheckForVariablesInText(const char* input,TextLayout::Layout* layout)
       glyphSlot1=&((TextLayout::Glyph*)pFontData->pFontLetters)[45];
       heightSlot31=pFontData->fBaseLine+paddingSlot16+heightSlot31;
       widthSlot1-=(int)(glyphSlot1->width+glyphSlot1->spacing);
-      layout->lines.FUN_00af25b0(&widthSlot1);
+      axData->lines.FUN_00af25b0(&widthSlot1);
       maxWidthSlot29=maxWidthSlot29>widthSlot1?maxWidthSlot29:widthSlot1;
       breakOffsetSlot0=0;++lineCountSlot0;
       glyphSlot1=&((TextLayout::Glyph*)pFontData->pFontLetters)[outputSlot60[breakOffsetSlot0-1]];
@@ -3828,10 +3935,10 @@ void Font::CheckForVariablesInText(const char* input,TextLayout::Layout* layout)
       glyphSlot1=&((TextLayout::Glyph*)pFontData->pFontLetters)[characterSlot0];
       widthSlot1+=(int)(glyphSlot1->width+glyphSlot1->spacing);
      } else {
-      if(breakOffsetSlot0==outputLengthSlot0) characterSlot0=layout->newline;
-      else outputSlot60[breakOffsetSlot0]=layout->newline;
+      if(breakOffsetSlot0==outputLengthSlot0) characterSlot0=axData->newline;
+      else outputSlot60[breakOffsetSlot0]=axData->newline;
       heightSlot31=pFontData->fBaseLine+paddingSlot16+heightSlot31;
-      layout->lines.FUN_00af25b0(&breakWidthSlot43);
+      axData->lines.FUN_00af25b0(&breakWidthSlot43);
       maxWidthSlot29=maxWidthSlot29>breakWidthSlot43?maxWidthSlot29:breakWidthSlot43;
       breakOffsetSlot0=0;++lineCountSlot0;widthSlot1-=wordWidthSlot2;
      }
@@ -3844,7 +3951,7 @@ void Font::CheckForVariablesInText(const char* input,TextLayout::Layout* layout)
      glyphSlot1=&((TextLayout::Glyph*)pFontData->pFontLetters)[45];
      heightSlot31=pFontData->fBaseLine+paddingSlot16+heightSlot31;
      widthSlot1-=(int)(glyphSlot1->width+glyphSlot1->spacing);
-     layout->lines.FUN_00af25b0(&widthSlot1);
+     axData->lines.FUN_00af25b0(&widthSlot1);
      maxWidthSlot29=maxWidthSlot29>widthSlot1?maxWidthSlot29:widthSlot1;
      breakOffsetSlot0=0;++lineCountSlot0;
      glyphSlot1=&((TextLayout::Glyph*)pFontData->pFontLetters)[outputSlot60[outputLengthSlot0-1]];
@@ -3857,17 +3964,17 @@ void Font::CheckForVariablesInText(const char* input,TextLayout::Layout* layout)
    if(outputLengthSlot0>=capacity) {outputSlot60=(char*)TextLayout::DAT_011f6238.FUN_00aa4150(outputSlot60,outputLengthSlot0+4);capacity=outputLengthSlot0+4;}
   }
   if(maxLinesSlot10>0 && lineCountSlot0>maxLinesSlot10 && outputLengthSlot0>0) {
-   while(outputSlot60[outputLengthSlot0]!=layout->newline) --outputLengthSlot0;
+   while(outputSlot60[outputLengthSlot0]!=axData->newline) --outputLengthSlot0;
    outputSlot60[outputLengthSlot0]=0;
    heightSlot31-=pFontData->fBaseLine+paddingSlot16;break;
   }
  }
- if(outputSlot60[0] && layout->firstLine) {
+ if(outputSlot60[0] && axData->firstLine) {
   unsigned int copiedSlot1=0;
   unsigned int index=0;
   unsigned int lineSlot0=0;
   for(index=0;index<outputLengthSlot0;++index) {
-   if(lineSlot0>=layout->firstLine && lineSlot0<(unsigned int)layout->maxLines) {
+   if(lineSlot0>=axData->firstLine && lineSlot0<(unsigned int)axData->maxLines) {
     outputSlot60[copiedSlot1]=outputSlot60[index];++copiedSlot1;
    }
    if(outputSlot60[index]=='\n')++lineSlot0;
@@ -3879,15 +3986,15 @@ void Font::CheckForVariablesInText(const char* input,TextLayout::Layout* layout)
   heightSlot31=((TextLayout::Glyph*)pFontData->pFontLetters)[32].height;
   widthSlot1=(int)((TextLayout::Glyph*)pFontData->pFontLetters)[32].width;
  }
- layout->lines.FUN_00af25b0(&widthSlot1);
+ axData->lines.FUN_00af25b0(&widthSlot1);
  maxWidthSlot29=maxWidthSlot29>widthSlot1?maxWidthSlot29:widthSlot1;
  outputSlot60[outputLengthSlot0]=0;
- layout->FUN_004037f0(outputSlot60,0);
- layout->width=maxWidthSlot29;
- layout->height=fnv_FloatToInt(heightSlot31);
- layout->firstLine=0;
- layout->maxLines=lineCountSlot0;
- layout->characters=outputLengthSlot0;
+ axData->FUN_004037f0(outputSlot60,0);
+ axData->width=maxWidthSlot29;
+ axData->height=fnv_FloatToInt(heightSlot31);
+ axData->firstLine=0;
+ axData->maxLines=lineCountSlot0;
+ axData->characters=outputLengthSlot0;
  TextLayout::DAT_011f6238.MemoryManager_Deallocate(workSlot77);
  TextLayout::DAT_011f6238.MemoryManager_Deallocate(outputSlot60);
 }
@@ -3933,7 +4040,7 @@ struct Page {List<Line*> lines;int CountEmptyNameEntries(unsigned int);};
 
 struct Letter {float leading,top,width,height;unsigned int unk10,unk14,unk18,unk1c,unk20,unk24,unk28,unk2c,unk30,unk34;};
 
-struct Icons {virtual void v0();virtual void v4();virtual void Free(void*);int unk4,count,unkC;bool Empty(){return count==0;}void FUN_00a1bfa0(bool abFree){if(unk4){for(unsigned int i=0;i<(unsigned int)count;++i){}if(abFree){Free((void*)unk4);unk4=0;unk4=0;unkC=0;}count=0;}}};
+struct Icons {virtual void v0();virtual void v4();virtual void Free(void*);int unk4,count,unkC;bool Empty(){return count==0;}void FUN_00a1bfa0(bool abFreeMemory){if(unk4){for(unsigned int i=0;i<(unsigned int)count;++i){}if(abFreeMemory){Free((void*)unk4);unk4=0;unk4=0;unkC=0;}count=0;}}};
 
 
 struct Manager {Font* fonts[8];Font* GetFont(unsigned int i){return fonts[i];}Shape* FontManager_MakeImage(Text,NiPoint3,int,int);};extern Manager* DAT_011f33f8;inline Manager* GetDebrisManager(){return DAT_011f33f8;}
@@ -3944,19 +4051,22 @@ struct Builder {List<Page*> pages;int width;int unk10;int index;void BuildPage(N
 
 // Builds text and image shapes for a page, computes their bounds, and attaches them to a node.
 // @fnv 0x00a19060
+// pdb: FontManager::TextDoc::Render | Font.obj | debug, object-file gap fill, medium
+// pdb params: apParent, apData
+// pdb locals: xelem, ptri_index, iiconIndex, pflats, ximages, pIconShape, a, ppage, ichar_count, xpos, bvalid, iline, pline, izone, xelem2, pfont, pchar, xpos2, ptri, b, UpdateData, ptemp
 void Builder::BuildPage(Node* node,Layout* layout){
 
 Page* pageSlot35=0;int remainingSlot28=index;int iconIndexSlot11=0;Shape* shapesSlot32[8];int indices[8];Link<Page*>* cursorSlot10=pages.Head();while(cursorSlot10&&remainingSlot28--)pages.Next(cursorSlot10);if(cursorSlot10)pageSlot35=cursorSlot10->value;else return;
 
-for(unsigned int fontIndex=0;fontIndex<8;fontIndex++){indices[fontIndex]=0;shapesSlot32[fontIndex]=0;int count=pageSlot35->CountEmptyNameEntries(fontIndex);if(count>0){shapesSlot32[fontIndex]=GetDebrisManager()->GetFont(fontIndex)->CreateTextShape(count,&Color(117.0f/255.0f,59.0f/255.0f,33.0f/255.0f,1.0f),true);shapesSlot32[fontIndex]->SetPosition(DAT_011f426c);}}
+for(unsigned int fontIndex=0;fontIndex<8;fontIndex++){indices[fontIndex]=0;shapesSlot32[fontIndex]=0;int count=pageSlot35->CountEmptyNameEntries(fontIndex);if(count>0){shapesSlot32[fontIndex]=GetDebrisManager()->GetFont(fontIndex)->MakeTriShape(count,&Color(117.0f/255.0f,59.0f/255.0f,33.0f/255.0f,1.0f),true);shapesSlot32[fontIndex]->SetPosition(DAT_011f426c);}}
 
-List<Shape*> imagesSlot52;Shape* iconsSlot17=0;if(!((Icons*)GetDebrisManager()->GetFont(0)->ButtonIcons)->Empty()){iconsSlot17=GetDebrisManager()->GetFont(0)->MakeButton();iconsSlot17->SetPositionThroughShape(DAT_011f426c);imagesSlot52.Add(iconsSlot17);}
+List<Shape*> imagesSlot52;Shape* iconsSlot17=0;if(!((Icons*)GetDebrisManager()->GetFont(0)->ButtonIcons)->Empty()){iconsSlot17=GetDebrisManager()->GetFont(0)->MakeIconsTriShape();iconsSlot17->SetPositionThroughShape(DAT_011f426c);imagesSlot52.Add(iconsSlot17);}
 
 if(pageSlot35){int lineIndexSlot43=0;NiPoint3 position=DAT_011f426c;Link<Line*>* lineCursorSlot0=pageSlot35->lines.Head();while(lineCursorSlot0&&lineIndexSlot43<layout->Height()){Line* lineSlot0=pageSlot35->lines.Next(lineCursorSlot0);position.x=0.0f;int lineWidthSlot23=0;if(layout->UseWidth())lineWidthSlot23=width;if(lineSlot0->align==4)position.x=float(lineWidthSlot23-lineSlot0->width);if(lineSlot0->align==2)position.x=float((lineWidthSlot23-lineSlot0->width)/2);position.y=0.0f;position.z-=lineSlot0->height+lineSlot0->padding;
 
 Link<Run*>* runCursorSlot19=lineSlot0->runs.Head();while(runCursorSlot19){Run* runSlot0=lineSlot0->runs.Next(runCursorSlot19);Font* fontSlot0=GetDebrisManager()->GetFont(runSlot0->font);if((unsigned char)((!runSlot0->text.Get()||!runSlot0->text[0])?1:0)){
 
-NiPoint3 glyphPosition=position;glyphPosition.x+=runSlot0->offset;if(runSlot0->letter==1){GetDebrisManager()->GetFont(0)->UpdateIconGeometry(iconIndexSlot11++,iconsSlot17,glyphPosition);}else fontSlot0->BuildGlyphQuad(&((Letter*)fontSlot0->pFontData->pFontLetters)[runSlot0->letter],indices[runSlot0->font]++,shapesSlot32[runSlot0->font],glyphPosition,&runSlot0->color);
+NiPoint3 glyphPosition=position;glyphPosition.x+=runSlot0->offset;if(runSlot0->letter==1){GetDebrisManager()->GetFont(0)->AddIcon(iconIndexSlot11++,iconsSlot17,glyphPosition);}else fontSlot0->BuildGlyphQuad(&((Letter*)fontSlot0->pFontData->pFontLetters)[runSlot0->letter],indices[runSlot0->font]++,shapesSlot32[runSlot0->font],glyphPosition,&runSlot0->color);
 
 }else{NiPoint3 imagePosition=position;imagePosition.x+=runSlot0->offset;Shape* image=GetDebrisManager()->FontManager_MakeImage(runSlot0->text,imagePosition,runSlot0->width,runSlot0->height+runSlot0->padding);if(image)imagesSlot52.NiTList_AddTail(image);}}
 
@@ -4015,6 +4125,8 @@ template <> inline void BSSimpleArray<ButtonIcon, 1024>::ReallocateStorage(unsig
 
 // Grows the buffer when full, increments iSize, and returns the index of the newly added slot.
 // @fnv 0x00a1c130
+// pdb: BSSimpleArray<ButtonIcon,1024>::AddUninitialized | Font.obj | debug, object-file run extension, low
+// pdb locals: inewSize
 template <> unsigned int BSSimpleArray<ButtonIcon, 1024>::ReserveIndex() {
     if (NiTListBase_DFALL_NiTListItem_BSAnimGroupSequence_const_BSAnimGroupSequence_const_IsEmpty()) {
         if (SimpleArrayStorage == 0) {
@@ -4449,44 +4561,47 @@ __forceinline void TabAdvance(float& x) { float remainder = x; float input = (fl
 
 // Font methods at 0x00a12460, 0x00a12370 and 0x00a14a20; Font.h lacks these declarations.
 struct StringShapeBuilder : public Font {
-    NiTriShape* Font_MakeString(float fX, float fY, float fZ, SStr* text, int* piX,
-                             int iFlags, void* pUnk, bool bShift, bool bSkip);
+    NiTriShape* Font_MakeString(float afStartX, float afStartY, float afZ, SStr* apTextString, int* aiWidth,
+                             int aiFlags, void* axFontColor, bool abUpperLeftCorner, bool abPrepareObject);
     void Font_GetLineOffsets(char* str, float* pSize, float* pOut, int iFlags, int iStart);
-    NiTriShape* CreateTextShape(int count, void* p, bool b);
+    NiTriShape* Font_MakeTriShape(int count, void* p, bool b);
 };
 
 // Builds a NiTriShape for a text string by mapping each character to glyph geometry, handling newlines and tabs, and updating the output x-offset.
 // @fnv 0x00a12460
 // src: COMMUNITY 0x00a12460
-NiTriShape* StringShapeBuilder::Font_MakeString(float fX, float fY, float fZ, SStr* text, int* piX,
-                                int iFlags, void* pUnk, bool bShift, bool bSkip)
+// pdb: Font::MakeString | Font.obj | retail, upstream name already matches, high
+// pdb params: afStartX, afStartY, afZ, apTextString, aiWidth, aiFlags, axFontColor, abUpperLeftCorner, abPrepareObject
+// pdb locals: itext_count, xpos, pflat, fstart_x, pcurrent_color, pspecial_color, fy_offset, xpos2, fx_offset, iverts, a, ptemp, ch, ich, pfont_letter, fyoff, fxoff
+NiTriShape* StringShapeBuilder::Font_MakeString(float afStartX, float afStartY, float afZ, SStr* apTextString, int* aiWidth,
+                                int aiFlags, void* axFontColor, bool abUpperLeftCorner, bool abPrepareObject)
 {
-    if (text->GetLen() == 0 || this->pFontData == 0)
+    if (apTextString->GetLen() == 0 || this->pFontData == 0)
         return 0;
 
-    float kPos2 = (float)*piX;
+    float kPos2 = (float)*aiWidth;
     float fOut1;
-    this->Font_GetLineOffsets(text->GetString(), &kPos2, &fOut1, iFlags, 0);
+    this->Font_GetLineOffsets(apTextString->GetString(), &kPos2, &fOut1, aiFlags, 0);
 
     FontPoint3 kVertexPositionLocal;
-    kVertexPositionLocal.x = fX + kPos2;
-    kVertexPositionLocal.z = fY;
-    kVertexPositionLocal.y = fZ;
+    kVertexPositionLocal.x = afStartX + kPos2;
+    kVertexPositionLocal.z = afStartY;
+    kVertexPositionLocal.y = afZ;
 
-    if (bShift)
+    if (abUpperLeftCorner)
         kVertexPositionLocal.z = kVertexPositionLocal.z - (((FontCharacterInfo*)(this->pFontData)->pFontLetters)[32].m_fGlyphExtent - (this->pFontData)->fBaseLine) * 2.0f;
 
     unsigned int kColor = 0;
-    while (kColor < text->GetLen() &&
-           *(text->pString + (text->pString ? kColor : 0)) != 0)
+    while (kColor < apTextString->GetLen() &&
+           *(apTextString->pString + (apTextString->pString ? kColor : 0)) != 0)
         kColor++;
     if (kColor == 0)
         return 0;
 
-    NiTriShape* kPos = this->CreateTextShape((int)kColor, pUnk, bSkip);
+    NiTriShape* kPos = this->Font_MakeTriShape((int)kColor, axFontColor, abPrepareObject);
 
     FontPoint3 kOrigin2;
-    kOrigin2.x = fX;
+    kOrigin2.x = afStartX;
     kOrigin2.y = kVertexPositionLocal.y;
     kOrigin2.z = kVertexPositionLocal.z;
     *(FontPoint3*)&kPos->m_kLocal.m_Translate = kOrigin2;
@@ -4494,23 +4609,23 @@ NiTriShape* StringShapeBuilder::Font_MakeString(float fX, float fY, float fZ, SS
     NiColorA* fSize = 0;
     NiColorA iCount2(0.0f, 0.0f, 1.0f, 1.0f);
 
-    *piX = 0;
+    *aiWidth = 0;
 
     float fStartX3 = kVertexPositionLocal.x;
     int iIndex6 = 0;
     int i6 = 0;
-    while (*(text->pString + (text->pString ? i6 : 0)) != 0)
+    while (*(apTextString->pString + (apTextString->pString ? i6 : 0)) != 0)
     {
-        if (*(text->pString + (text->pString ? i6 : 0)) == 3)
+        if (*(apTextString->pString + (apTextString->pString ? i6 : 0)) == 3)
             fSize = 0;
 
-        switch (*(text->pString + (text->pString ? i6 : 0)))
+        switch (*(apTextString->pString + (apTextString->pString ? i6 : 0)))
         {
         case '\n':
             {
-                float fNewSize = (float)*piX;
+                float fNewSize = (float)*aiWidth;
                 float fOut2;
-                this->Font_GetLineOffsets(text->GetString(), &fNewSize, &fOut2, iFlags, i6 + 1);
+                this->Font_GetLineOffsets(apTextString->GetString(), &fNewSize, &fOut2, aiFlags, i6 + 1);
                 kVertexPositionLocal.x = fNewSize;
                 kVertexPositionLocal.z = kVertexPositionLocal.z - (this->pFontData)->fBaseLine;
             }
@@ -4522,7 +4637,7 @@ NiTriShape* StringShapeBuilder::Font_MakeString(float fX, float fY, float fZ, SS
             break;
         }
 
-        unsigned char cChar = *(text->pString + (text->pString ? i6 : 0));
+        unsigned char cChar = *(apTextString->pString + (apTextString->pString ? i6 : 0));
         MapCharacter(cChar);
         int iLetter = cChar;
         if (iLetter > 0x100)
@@ -4530,8 +4645,8 @@ NiTriShape* StringShapeBuilder::Font_MakeString(float fX, float fY, float fZ, SS
         FontCharacterInfo* kLetter = &((FontCharacterInfo*)(this->pFontData)->pFontLetters)[cChar];
         AddCharacterToShape(kLetter, iIndex6, kPos, *(NiPoint3*)&kVertexPositionLocal, reinterpret_cast<const NiColorA*>(fSize));
         iIndex6++;
-        *piX = Max((int)(kVertexPositionLocal.x - fStartX3), *piX);
-        if (*(text->pString + (text->pString ? i6 : 0)) == 2)
+        *aiWidth = Max((int)(kVertexPositionLocal.x - fStartX3), *aiWidth);
+        if (*(apTextString->pString + (apTextString->pString ? i6 : 0)) == 2)
             fSize = &iCount2;
         i6++;
     }
@@ -4563,13 +4678,16 @@ inline int max_val(int a, int b) {
 }
 
 struct TextWrapper : Font {
-    int Font_LineBreakText(BSStringT<char>* text, int* maxWidth, int* totalHeight, int lineLimit, char separator);
+    int Font_LineBreakText(BSStringT<char>* axTextString, int* aiWidth, int* aiHeight, int abSkipHyperLinkedCharacters, char acEolChar);
 };
 
 // Wraps text to fit maxWidth by inserting separators, returns line count and updates totalHeight.
 // @fnv 0x00a160c0
 // src: COMMUNITY 0x00a160c0
-int TextWrapper::Font_LineBreakText(BSStringT<char>* text, int* piMaxWidth, int* piTotalHeight, int lineLimit, char separator)
+// pdb: Font::LineBreakText | Font.obj | retail, upstream name already matches, high
+// pdb params: axTextString, aiWidth, aiHeight, abSkipHyperLinkedCharacters, acEolChar
+// pdb locals: icount, iwidth, iindex, imax_width, iindex_width, iheight, iline_count, n, imax_lines, ch, pfont_letter, a
+int TextWrapper::Font_LineBreakText(BSStringT<char>* axTextString, int* aiWidth, int* aiHeight, int abSkipHyperLinkedCharacters, char acEolChar)
 {
     int p; // maxLines (bucket 15) -> -0x4
     unsigned int h; // index (bucket 14) -> -0x8
@@ -4585,7 +4703,7 @@ int TextWrapper::Font_LineBreakText(BSStringT<char>* text, int* piMaxWidth, int*
     unsigned int k; // cursor (bucket 4) -> -0x30
     char* l; // textData (bucket 3) -> -0x34
 
-    l = text->pString;
+    l = axTextString->pString;
     if (!l || !pFontData) return 0;
     eb = 0;
     s = 0;
@@ -4593,15 +4711,15 @@ int TextWrapper::Font_LineBreakText(BSStringT<char>* text, int* piMaxWidth, int*
     f = 0;
     i = (int)((FontCharacterInfo*)(pFontData)->pFontLetters)[32].m_fGlyphExtent;
     a = 0;
-    q = text->Length();
-    p = *piTotalHeight;
-    if (*piMaxWidth == 0) *piMaxWidth = 999999;
+    q = axTextString->Length();
+    p = *aiHeight;
+    if (*aiWidth == 0) *aiWidth = 999999;
     h = 0;
     for (; h < q; ++h) {
-        if (!FontStringCharacter(*text, h)) break;
-        switch (FontStringCharacter(*text, h)) {
+        if (!FontStringCharacter(*axTextString, h)) break;
+        switch (FontStringCharacter(*axTextString, h)) {
         case '\n':
-            FontStringCharacter(*text, h) = separator;
+            FontStringCharacter(*axTextString, h) = acEolChar;
             i += (int)(pFontData)->fBaseLine;
             f = f > cf ? f : cf;
             cf = 0;
@@ -4614,34 +4732,34 @@ int TextWrapper::Font_LineBreakText(BSStringT<char>* text, int* piMaxWidth, int*
         case ' ':
             eb = h;
         default:
-            ba = (unsigned char)FontStringCharacter(*text, h);
+            ba = (unsigned char)FontStringCharacter(*axTextString, h);
             NormalizeSmartQuotes(&ba);
             b = &((FontCharacterInfo*)(pFontData)->pFontLetters)[ba];
             cf += (int)(b->m_fGlyphWidthInPixels + b->m_fHorizontalSpacing);
             if (eb == h) s = cf;
-            if (cf > *piMaxWidth) {
+            if (cf > *aiWidth) {
                 if (eb) {
-                    FontStringCharacter(*text, eb) = separator;
+                    FontStringCharacter(*axTextString, eb) = acEolChar;
                     i += (int)(pFontData)->fBaseLine;
                     f = f > s ? f : s;
                     eb = 0;
                     ++a;
                     cf -= s;
                 } else {
-                    if (text->Length() >= text->sMaxLen) {
-                        if (text->Length() + 1 >= text->sMaxLen) {
-                            *text += "\n\n";
-                            FontStringCharacter(*text, text->Length() - 1) = 0;
-                            FontStringCharacter(*text, text->Length() - 2) = 0;
+                    if (axTextString->Length() >= axTextString->sMaxLen) {
+                        if (axTextString->Length() + 1 >= axTextString->sMaxLen) {
+                            *axTextString += "\n\n";
+                            FontStringCharacter(*axTextString, axTextString->Length() - 1) = 0;
+                            FontStringCharacter(*axTextString, axTextString->Length() - 2) = 0;
                         } else {
-                            *text += "\n";
-                            FontStringCharacter(*text, text->Length() - 1) = 0;
+                            *axTextString += "\n";
+                            FontStringCharacter(*axTextString, axTextString->Length() - 1) = 0;
                         }
                     }
                     for (k = q + 2; k > h; --k)
-                        FontStringCharacter(*text, k) = FontStringCharacter(*text, k - 2);
-                    FontStringCharacter(*text, h - 1) = '-';
-                    FontStringCharacter(*text, h) = separator;
+                        FontStringCharacter(*axTextString, k) = FontStringCharacter(*axTextString, k - 2);
+                    FontStringCharacter(*axTextString, h - 1) = '-';
+                    FontStringCharacter(*axTextString, h) = acEolChar;
                     i += (int)(pFontData)->fBaseLine;
                     f = max_val(f, cf - (int)(b->m_fGlyphWidthInPixels + b->m_fHorizontalSpacing));
                     eb = 0;
@@ -4651,16 +4769,16 @@ int TextWrapper::Font_LineBreakText(BSStringT<char>* text, int* piMaxWidth, int*
             }
         }
         if (p > 0 && a >= p) {
-            while (FontStringCharacter(*text, h) != separator) --h;
-            FontStringCharacter(*text, h) = 0;
+            while (FontStringCharacter(*axTextString, h) != acEolChar) --h;
+            FontStringCharacter(*axTextString, h) = 0;
             i -= (int)(pFontData)->fBaseLine;
             break;
         }
     }
-    if (FontStringCharacter(*text, 0) && h >= q) ++a;
+    if (FontStringCharacter(*axTextString, 0) && h >= q) ++a;
     f = f > cf ? f : cf;
-    *piMaxWidth = f;
-    *piTotalHeight = i;
+    *aiWidth = f;
+    *aiHeight = i;
     return a;
 }
 
@@ -4699,6 +4817,8 @@ struct FUN_00a168b0 : public FontManager {
     FUN_00a168b0();
 };
 // @fnv 0x00a168b0
+// pdb: FontManager::FontManager | Font.obj | debug, unique string literal, high
+// pdb locals: bgoodfont, tempMemContext, i
 FUN_00a168b0::FUN_00a168b0() {
     AllocatorScope scope(12);
     pFont[0] = new FontManagerInitialization::FontAllocation(1, g_011f3414.c_str(), 1);
@@ -4755,9 +4875,9 @@ struct TQStr {
     unsigned int MaxLength() const { return m_usMaxLen; }
     void SetLength(unsigned int length) { m_usLen = length <= 0xFFFF ? (unsigned short)length : 0xFFFF; }
     void SetMaxLength(unsigned int length) { m_usMaxLen = length <= 0xFFFF ? (unsigned short)length : 0xFFFF; }
-    bool Set(const char* apString, unsigned int auiLength) {
+    bool Set(const char* apString, unsigned int aiMaxLen) {
         unsigned int length = apString ? BSStringLength(apString) : 0;
-        unsigned int capacity = BSStringCapacityMaximum(length, auiLength);
+        unsigned int capacity = BSStringCapacityMaximum(length, aiMaxLen);
         if (capacity <= MaxLength()) {
             if (capacity) {
                 if (apString) __memcpy(m_pString, apString, length + 1);
@@ -4860,7 +4980,7 @@ public:
     }
 };
 
-bool __cdecl TQLoadTexture(const char* apPath, float* apfScale, TQPtr<TQTexture>& arspTexture, float afUnk,
+bool __cdecl TileImage_AddToTesTextures(const char* apPath, float* apfScale, TQPtr<TQTexture>& arspTexture, float afUnk,
                            TQPtr<TQExtra> aspExtra);
 
 struct TQProperty;
@@ -4871,7 +4991,7 @@ struct TQPropertyList {
     void AddHead(const TQPtr<TQProperty>&);
 };
 struct TQZBuffer;
-TQZBuffer* __cdecl TQCreateZBuffer(int aiFlags);
+TQZBuffer* __cdecl TQCreateZBuffer(int aiShaderIndex);
 
 struct TQPropertyState {
     TQPtr<TQProperty> properties[7];
@@ -4990,7 +5110,7 @@ int unk0D0;
     TQShape(unsigned short usVertices, TQPoint3* pkVertex, TQPoint3* pkNormal, void* pkColor, NiPoint2* pkTexture,
             unsigned short usNumTextureSets, int eNBTMethod, unsigned short usTriangles, unsigned short* pusTriList,
             int iUnk1, int iUnk2, int iUnk3, int iUnk4);
-    void AttachProperty(TQProperty* apProperty);
+    void AttachProperty(TQProperty* pkProperty);
     void SetZBuffer(TQZBuffer* apZBuffer) { m_pkZBuffer = apZBuffer; }
     void GetPropertyState(TQPropertyState*& state);
     void UpdateSceneObject() {
@@ -5083,13 +5203,13 @@ int unkA8;
 int unkAC;
 
     static void* __cdecl operator new(unsigned int uiSize);
-    TQProperty(bool abFlag);
+    TQProperty(bool abUseTexturingProperty);
     void SetTexture(TQTexture* apTexture);
 };
 
-inline void TQShape::AttachProperty(TQProperty* apProperty) {
-    if (apProperty->GetType() < 7)
-        SceneGraphObject.AddHead(apProperty);
+inline void TQShape::AttachProperty(TQProperty* pkProperty) {
+    if (pkProperty->GetType() < 7)
+        SceneGraphObject.AddHead(pkProperty);
 }
 
 struct TQOwner {
@@ -5099,6 +5219,9 @@ struct TQOwner {
 // Builds a textured quad TQShape from a path and dimensions, attaches a texture property, and assigns a new z-buffer.
 // @fnv 0x00a1a800
 // src: COMMUNITY 0x00a1a800
+// pdb: FontManager::MakeImage | Font.obj | retail, upstream name already matches, high
+// pdb params: axFilename, axPos, aiWidth, aiHeight
+// pdb locals: pvert_order, ptex, fscale, ptsp, pvertices, pshape, pshader, ptileShader, ptextures, a, spTempTexture
 TQShape* TQOwner::FontManager_MakeImage(TQStr kPath, float fX, float fY, float fZ, int iWidth, int iHeight)
 {
     TQPoint3* pkVerts = new TQPoint3[4];
@@ -5124,7 +5247,7 @@ TQShape* TQOwner::FontManager_MakeImage(TQStr kPath, float fX, float fY, float f
     TQTexture* pkTexture3 = 0;
     if (kPath.m_pString && kPath[0]) {
         TQPtr<TQTexture> spTexture4 = 0;
-        TQLoadTexture(kPath.CStr(), &fScale, spTexture4, 0.0f, 0);
+        TileImage_AddToTesTextures(kPath.CStr(), &fScale, spTexture4, 0.0f, 0);
         pkTexture3 = spTexture4;
     }
 
@@ -5164,6 +5287,9 @@ struct FUN_00a12370_shell : Font {
 // For flag values 2 and 4, calls FUN_00a1b020 and sets afX to negative half or full returned x; otherwise sets afX to zero.
 // @fnv 0x00a12370
 // src: COMMUNITY 0x00a12370
+// pdb: Font::GetLineOffsets | Font.obj | retail, upstream name already matches, high
+// pdb params: apTextString, afX, afY, aiFlags, aiStart
+// pdb locals: stringDims, fwrapWidth
 void FUN_00a12370_shell::Font_GetLineOffsets(const char* apTextString, float& afX, float& afY, int aiFlags, unsigned int aiStart)
 {
     FontPoint3 stringDims;
@@ -5226,9 +5352,12 @@ struct S00a1b7f0_GlyphMetric {
 // Stores the character, conditionally computes width, height, and drop when the icon is empty, and resets fields.
 // @fnv 0x00a1b7f0
 // src: COMMUNITY 0x00a1b7f0
-void S00a1b7f0_GlyphMetric::FontManager_CharData_SetChar(unsigned char auiCharacter) {
+// pdb: FontManager::CharData::SetChar | Font.obj | debug, upstream name already matches, high
+// pdb params: acChar
+// pdb locals: pfontletter
+void S00a1b7f0_GlyphMetric::FontManager_CharData_SetChar(unsigned char acChar) {
 
- character = auiCharacter;
+ character = acChar;
 
  FontCharacterInfo* letter5;
 

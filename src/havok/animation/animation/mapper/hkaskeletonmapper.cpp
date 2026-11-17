@@ -46,6 +46,7 @@ struct FUN_00ce4ab0Class
 
 // Calls FUN_00ce29e0, then if flags has bit 0 set frees this through the memory router allocator using the size at offset 4, and returns this.
 // @fnv 0x00ce4ab0
+// pdb: hkaSkeletonMapper::`scalar deleting destructor' | hkaSkeletonMapper.obj | retail, vtable slot, high
 FUN_00ce4ab0Class* FUN_00ce4ab0Class::Destroy(unsigned int flags)
 {
     UpdateFields_00ce29e0();
@@ -92,11 +93,11 @@ void ValidateRagdollMapping(hkaSkeletonMapperData* apMapperData)
 {
     if (apMapperData->m_eMappingType == hkaSkeletonMapperData::HK_RAGDOLL_MAPPING)
     {
-        for (int iIndex = 0; iIndex < apMapperData->m_kSimpleMappings.m_iElementCount; ++iIndex)
+        for (int iIndex = 0; iIndex < apMapperData->m_simpleMappings.m_iElementCount; ++iIndex)
         {
-            const hkaSkeletonMapperDataSimpleMapping& mapping = apMapperData->m_kSimpleMappings.m_data[iIndex];
-            const hkaBone& boneA = apMapperData->m_pSkeletonA->m_kBones.m_data[mapping.m_sBoneA];
-            const hkaBone& boneB = apMapperData->m_pSkeletonB->m_kBones.m_data[mapping.m_sBoneB];
+            const hkaSkeletonMapperDataSimpleMapping& mapping = apMapperData->m_simpleMappings.m_data[iIndex];
+            const hkaBone& boneA = apMapperData->m_skeletonA->m_bones.m_data[mapping.m_sBoneA];
+            const hkaBone& boneB = apMapperData->m_skeletonB->m_bones.m_data[mapping.m_sBoneB];
 
             if (boneB.m_bLockTranslation.m_cBooleanValue)
             {
@@ -124,10 +125,10 @@ void ValidateRagdollMapping(hkaSkeletonMapperData* apMapperData)
 
     if (apMapperData->m_eMappingType == hkaSkeletonMapperData::HK_RAGDOLL_MAPPING)
     {
-        hkaSkeleton* skeletonB = apMapperData->m_pSkeletonB;
-        for (int iIndex = 0; iIndex < skeletonB->m_kBones.m_iElementCount; ++iIndex)
+        hkaSkeleton* skeletonB = apMapperData->m_skeletonB;
+        for (int iIndex = 0; iIndex < skeletonB->m_bones.m_iElementCount; ++iIndex)
         {
-            if (skeletonB->m_kBones.m_data[iIndex].m_bLockTranslation.m_cBooleanValue)
+            if (skeletonB->m_bones.m_data[iIndex].m_bLockTranslation.m_cBooleanValue)
                 return;
         }
 
@@ -145,6 +146,8 @@ void ValidateRagdollMapping(hkaSkeletonMapperData* apMapperData)
 #include <math.h>
 // Clamps the input to the domain of asin and returns the result, substituting the sign of pi/2 when the magnitude is at least 1.0f.
 // @fnv 0x00ce0c40
+// pdb: hkMath::asin | hkaLookAtIkSolver.obj | retail, object-file run extension, low
+// pdb params: r
 float ClampAsin(float angle)
 {
     float original = angle;

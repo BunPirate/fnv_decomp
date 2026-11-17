@@ -16,6 +16,8 @@ struct FUN_00d2b3b0_Class
 };
 // @fnv 0x00d2b3b0
 // src: HAVOK_LIB 0x00d2b3b0
+// pdb: hkDefaultError::isEnabled | hkDefaultError.obj | retail, upstream name already matches, high
+// pdb params: id
 unsigned char* FUN_00d2b3b0_Class::hkDefaultError_isEnabled(unsigned char* result, int value)
 {
     *result = (helper.LookupHashEntry(value, 0) == 0);
@@ -62,20 +64,22 @@ struct FUN_00d2b5c0_class
     int unk00;
     int unk04;
     FUN_00cb18f0_t sub;
-    void hkDefaultError_setEnabled(int value, char flag);
+    void hkDefaultError_setEnabled(int id, char enabled);
 };
 // If flag is set, forwards value to sub.FUN_00cb1fb0; otherwise passes manager->unk10 and value to sub.FUN_00cb1870.
 // @fnv 0x00d2b5c0
 // src: HAVOK_LIB 0x00d2b5c0
-void FUN_00d2b5c0_class::hkDefaultError_setEnabled(int value, char flag)
+// pdb: hkDefaultError::setEnabled | hkDefaultError.obj | retail, upstream name already matches, high
+// pdb params: id, enabled
+void FUN_00d2b5c0_class::hkDefaultError_setEnabled(int id, char enabled)
 {
-    if (flag != 0)
+    if (enabled != 0)
     {
-        sub.hkMapBase_unsigned_long_unsigned_long_hkMapOperations_unsigned_long_remove(value);
+        sub.hkMapBase_unsigned_long_unsigned_long_hkMapOperations_unsigned_long_remove(id);
         return;
     }
     FUN_00c85750_return* manager = hkMemoryRouter_getInstance();
-    sub.hkMapBase_unsigned_long_unsigned_long_hkMapOperations_unsigned_long_insert(manager->unk10, value, 1);
+    sub.hkMapBase_unsigned_long_unsigned_long_hkMapOperations_unsigned_long_insert(manager->unk10, id, 1);
 }
 
 namespace fnv_00d2b710 {
@@ -95,7 +99,7 @@ struct AudioState
 };
 struct Base
 {
-    void ClearAndReset();
+    void hkDefaultError_dtor();
 };
 struct Widget : Base
 {
@@ -107,9 +111,10 @@ struct Widget : Base
 extern AudioState* __cdecl hkMemoryRouter_getInstance();
 // Calls the base function, and if bit 0 of flags is set, notifies the audio manager's vtable with this object and unk04, then returns this.
 // @fnv 0x00d2b710
+// pdb: hkDefaultError::`scalar deleting destructor' | hkDefaultError.obj | retail, vtable slot, high
 void* Widget::GetSelfWithNotify(unsigned char flags)
 {
-    ClearAndReset();
+    hkDefaultError_dtor();
     if (flags & 1)
     {
         AudioState* state = hkMemoryRouter_getInstance();
@@ -136,7 +141,7 @@ struct D2B600MemoryRouter
 };
 
 extern "C" D2B600MemoryRouter& __cdecl D2B600GetMemoryRouter();
-void __cdecl ResizeAudioStream(void* alloc, void* array, int sizeElem);
+void __cdecl ResizeAudioStream(void* mem, void* array, int sizeElem);
 
 struct D2B600Object
 {
@@ -174,14 +179,16 @@ struct D2B600Container
     int unk10;
     D2B600ObjectArray m_kTrackedObjects;
 
-    void AppendObject(D2B600Object* object, int iUnused);
+    void AppendObject(D2B600Object* id, int sectionName);
 };
 
 // Appends the given object pointer to the container's object array via its push-back method.
 // @fnv 0x00d2b600
-void D2B600Container::AppendObject(D2B600Object* object, int iUnused)
+// pdb: hkDefaultError::sectionBegin | hkDefaultError.obj | retail, vtable slot, high
+// pdb params: id, sectionName
+void D2B600Container::AppendObject(D2B600Object* id, int sectionName)
 {
-    m_kTrackedObjects.pushBack(object);
+    m_kTrackedObjects.pushBack(id);
 }
 
 extern char DAT_010ce5d4[];
@@ -207,11 +214,14 @@ struct D2B640Object
     unsigned int m_20;
     unsigned int m_24;
 
-    D2B640Object* Initialize(int a1, int a2);
+    D2B640Object* hkDefaultError_ctor(int errorReportFunction, int errorReportObject);
 };
 
 // @fnv 0x00d2b640
-D2B640Object* D2B640Object::Initialize(int a1, int a2)
+// src: XBOX_RETAIL_PDB 0x00d2b640
+// pdb: hkDefaultError::hkDefaultError | hkDefaultError.obj | retail, object-file gap fill, high
+// pdb params: errorReportFunction, errorReportObject
+D2B640Object* D2B640Object::hkDefaultError_ctor(int errorReportFunction, int errorReportObject)
 {
     *(unsigned short volatile*)&m_06 = 1;
     m_vtbl = DAT_010ce5d4;
@@ -224,8 +234,8 @@ D2B640Object* D2B640Object::Initialize(int a1, int a2)
     *(unsigned int volatile*)&m_14 = 0;
     *(unsigned int volatile*)&m_18 = 0;
     *(unsigned int volatile*)&m_1c = 0x80000000u;
-    *(unsigned int volatile*)&m_20 = (unsigned int)a1;
-    m_24 = (unsigned int)a2;
+    *(unsigned int volatile*)&m_20 = (unsigned int)errorReportFunction;
+    m_24 = (unsigned int)errorReportObject;
     return this;
 }
 
@@ -259,12 +269,14 @@ struct FUN_00d2b6b0_cls
     int m_iArrayLength;
     unsigned int m_uCapBits;
 
-    void ClearAndReset();
+    void hkDefaultError_dtor();
 };
 
 // Frees m_pData via the allocator when the capacity flag is clear, resets the data pointer and capacity, then reinitializes m_sub and sets the vtable.
 // @fnv 0x00d2b6b0
-void FUN_00d2b6b0_cls::ClearAndReset()
+// src: XBOX_RETAIL_PDB 0x00d2b6b0
+// pdb: hkDefaultError::~hkDefaultError | hkDefaultError.obj | retail, object-file gap fill, high
+void FUN_00d2b6b0_cls::hkDefaultError_dtor()
 {
     FUN_00c85750_return* pHolder = hkMemoryRouter_getInstance();
     D2B6Allocator* pAllocator = (D2B6Allocator*)pHolder->unk10;
@@ -282,7 +294,7 @@ void FUN_00d2b6b0_cls::ClearAndReset()
     m_vptr00 = (int)&DAT_0102e388;
 }
 
-extern "C" int __cdecl Vsnprintf(char* buf, unsigned size, const char* fmt, ...);
+extern "C" int __cdecl hkString_snprintf(char* buf, unsigned size, const char* fmt, ...);
 
 struct S_00d2b3e0_Mgr
 {
@@ -291,8 +303,8 @@ struct S_00d2b3e0_Mgr
     unsigned short unk04;
     unsigned short unk06;
     void ReleaseReference();
-    int hkStackTracer_getStackTrace(void** trace, int max);
-    void hkStackTracer_dumpStackTrace(void** trace, int count, void(__cdecl* cb)(const char*, int), int user);
+    int hkStackTracer_getStackTrace(void** trace, int maxtrace);
+    void hkStackTracer_dumpStackTrace(void** trace, int maxtrace, void(__cdecl* pfunc)(const char*, int), int user);
 };
 extern S_00d2b3e0_Mgr* DAT_01269a84;
 S_00d2b3e0_Mgr* __cdecl hkStackTracer_create();
@@ -309,22 +321,25 @@ struct S_00d2b3e0
     int unk1c;
     void(__cdecl* m_callback)(const char*, int);
     int m_user;
-    void hkDefaultError_showMessage(const char* kind, int code, const char* msg, const char* file, int line, char trace);
+    void hkDefaultError_showMessage(const char* what, int id, const char* desc, const char* file, int line, char stackTrace);
 };
 
 // Formats a message with optional file/line/code/kind, invokes m_callback, and optionally dumps a stack trace via DAT_01269a84.
 // @fnv 0x00d2b3e0
 // src: HAVOK_LIB 0x00d2b3e0
-void S_00d2b3e0::hkDefaultError_showMessage(const char* kind, int code, const char* msg, const char* file, int line, char trace)
+// pdb: hkDefaultError::showMessage | hkDefaultError.obj | retail, upstream name already matches, high
+// pdb params: what, id, desc, file, line, stackTrace
+// pdb locals: buffer, trace
+void S_00d2b3e0::hkDefaultError_showMessage(const char* what, int id, const char* desc, const char* file, int line, char stackTrace)
 {
     unsigned int buf[512];
-    if (code == 0 && file == 0)
-        Vsnprintf((char*)buf, 0x800, "%s\n", msg);
+    if (id == 0 && file == 0)
+        hkString_snprintf((char*)buf, 0x800, "%s\n", desc);
     else
-        Vsnprintf((char*)buf, 0x800, "%s(%d): [0x%08X] %s : %s\n", file, line, code, kind, msg);
+        hkString_snprintf((char*)buf, 0x800, "%s(%d): [0x%08X] %s : %s\n", file, line, id, what, desc);
     ((char*)buf)[0x7ff] = 0;
     m_callback((char*)buf, m_user);
-    if (trace)
+    if (stackTrace)
     {
         if (!DAT_01269a84)
         {
@@ -357,6 +372,7 @@ struct FUN_00d2b5b0_Class
 };
 // @fnv 0x00d2b5b0
 // src: XBOX_PDB 0x00d2b5b0
+// pdb: hkDefaultError::sectionEnd | hkDefaultError.obj | debug, upstream name already matches, high
 void FUN_00d2b5b0_Class::hkDefaultError_sectionEnd()
 {
     unk18--;
@@ -397,25 +413,27 @@ struct D2ErrorHost
             return data[size - 1];
         }
     } items;
-    void hkDefaultError_showMessage(const char* name, int key, int a3, int a4, int a5, Bool8 flags);
-    int hkDefaultError_message(int mode, int index, int a3, int a4, int a5);
+    void hkDefaultError_showMessage(const char* what, int id, int desc, int a4, int a5, Bool8 stackTrace);
+    int hkDefaultError_message(int msg, int id, int description, int file, int line);
 };
 
 // Resolves index to last item if -1, validates it via v14, maps mode to a name and flag, calls FUN_00d2b3e0, returns 1 for modes 2 or 3.
 // @fnv 0x00d2b4f0
 // src: HAVOK_LIB 0x00d2b4f0
-int D2ErrorHost::hkDefaultError_message(int mode, int index, int aiArg3, int aiArg4, int aiArg5)
+// pdb: hkDefaultError::message | hkDefaultError.obj | retail, upstream name already matches, high
+// pdb params: msg, id, description, file, line
+int D2ErrorHost::hkDefaultError_message(int msg, int id, int description, int file, int line)
 {
-    if (index == -1)
+    if (id == -1)
     {
         if (items.GetLogicalSize() != 0)
-            index = items.back();
+            id = items.back();
     }
-    if (!v14(index))
+    if (!v14(id))
         return 0;
     const char* name = "";
     Bool8 flag(false);
-    switch (mode)
+    switch (msg)
     {
     case 0:
         name = "Report";
@@ -432,8 +450,8 @@ int D2ErrorHost::hkDefaultError_message(int mode, int index, int aiArg3, int aiA
         flag = true;
         break;
     }
-    hkDefaultError_showMessage(name, index, aiArg3, aiArg4, aiArg5, flag);
-    if (mode == 2 || mode == 3)
+    hkDefaultError_showMessage(name, id, description, file, line, flag);
+    if (msg == 2 || msg == 3)
         return 1;
     return 0;
 }

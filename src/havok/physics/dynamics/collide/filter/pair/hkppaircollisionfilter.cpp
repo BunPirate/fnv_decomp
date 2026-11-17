@@ -45,18 +45,22 @@ struct HashCls
     __int64 hkMapBase_unsigned_int64_unsigned_int64_struct_hkMapOperations_unsigned_int64_getWithDefault(unsigned __int64 key, int a2, int a3);
     void InsertKeyValue(hkMemoryAllocator& f0, __int64 m, __int64 n);
 
-    int InsertPair(int p1, int p2);
+    int hkpPairCollisionFilter_disableCollisionsBetween(int entityA, int entityB);
 };
 
 // Orders the two ints into a 64-bit key, inserts it into the hash at this+0x30 with a counter value, and returns that counter.
 // @fnv 0x00def2b0
-int HashCls::InsertPair(int aiFirst, int aiSecond)
+// src: XBOX_RETAIL_PDB 0x00def2b0
+// pdb: hkpPairCollisionFilter::disableCollisionsBetween | hkpPairCollisionFilter.obj | retail, object-file gap fill, high
+// pdb params: entityA, entityB
+// pdb locals: assertBuf, ostr
+int HashCls::hkpPairCollisionFilter_disableCollisionsBetween(int entityA, int entityB)
 {
     __int64 m;
-    if ((unsigned __int64)(__int64)aiFirst < (unsigned __int64)(__int64)aiSecond)
-        m = (__int64)aiFirst * 4294967296LL + (__int64)aiSecond;
+    if ((unsigned __int64)(__int64)entityA < (unsigned __int64)(__int64)entityB)
+        m = (__int64)entityA * 4294967296LL + (__int64)entityB;
     else
-        m = (__int64)aiSecond * 4294967296LL + (__int64)aiFirst;
+        m = (__int64)entityB * 4294967296LL + (__int64)entityA;
 
     HashCls* pHash = (HashCls*)((char*)this + 0x30);
     __int64 n = pHash->hkMapBase_unsigned_int64_unsigned_int64_struct_hkMapOperations_unsigned_int64_getWithDefault(m, 0, 0) + 1;
@@ -129,15 +133,17 @@ struct FUN_00def350 : DEF350Base, DEF350ListenerA, DEF350ListenerB, DEF350Listen
     DEF350PointerMap m_map;
     hkReferencedObject* m_object;
 
-    FUN_00def350(hkReferencedObject* object);
+    FUN_00def350(hkReferencedObject* childFilter);
 };
 
 // @fnv 0x00def350
-FUN_00def350::FUN_00def350(hkReferencedObject* object) : m_object(object)
+// pdb: hkpPairCollisionFilter::hkpPairCollisionFilter | hkpPairCollisionFilter.obj | retail, object-file gap fill, high
+// pdb params: childFilter
+FUN_00def350::FUN_00def350(hkReferencedObject* childFilter) : m_object(childFilter)
 {
     unk20 = 5;
-    if (object)
-        object->addReference();
+    if (childFilter)
+        childFilter->addReference();
 }
 }  // namespace fnv_00def350
 
@@ -154,12 +160,15 @@ struct Owner
 {
     unsigned char unk00[0x30];
     Inner inner;
-    volatile unsigned char* CheckPairAgainstThreshold(volatile unsigned char* result, int first, int second);
+    volatile unsigned char* hkpPairCollisionFilter_isCollisionEnabled(volatile unsigned char* result, int first, int second);
 };
 
 // Writes 1 to result if either argument is zero or the combined value exceeds inner.threshold, otherwise writes 0.
 // @fnv 0x00def3d0
-volatile unsigned char* Owner::CheckPairAgainstThreshold(volatile unsigned char* result, int first, int second)
+// src: XBOX_RETAIL_PDB 0x00def3d0
+// pdb: hkpPairCollisionFilter::isCollisionEnabled | hkpPairCollisionFilter.obj | retail, object-file gap fill, high
+// pdb params: input, a, b, bContainer, bKey
+volatile unsigned char* Owner::hkpPairCollisionFilter_isCollisionEnabled(volatile unsigned char* result, int first, int second)
 {
     if (first == 0 || second == 0)
     {
@@ -225,7 +234,7 @@ struct CheckHolder
 
 struct ResultWriter
 {
-    void CheckPairAgainstThreshold(char* apResult, Converted* apFirst, Converted* apSecond);
+    void hkpPairCollisionFilter_isCollisionEnabled(char* apResult, Converted* apFirst, Converted* apSecond);
 };
 
 struct FUN_00def450_cls
@@ -249,6 +258,8 @@ struct FUN_00def450_cls
 };
 
 // @fnv 0x00def450
+// pdb: hkpPairCollisionFilter::isCollisionEnabled | hkpPairCollisionFilter.obj | retail, vtable slot, high
+// pdb params: input, a, b, bContainer, bKey
 char* FUN_00def450_cls::CheckAndWriteResult(char* apResult, Operand* apFirst, Operand* apSecond)
 {
     if (m_pHolder != 0)
@@ -266,7 +277,7 @@ char* FUN_00def450_cls::CheckAndWriteResult(char* apResult, Operand* apFirst, Op
     Converted* pSecond = (apSecond->m_cType == 1) ? (Converted*)((char*)apSecond + apSecond->m_cByteAtOffset10) : 0;
 
     ResultWriter* pWriter = (ResultWriter*)((char*)this - 8);
-    pWriter->CheckPairAgainstThreshold(apResult, pFirst, pSecond);
+    pWriter->hkpPairCollisionFilter_isCollisionEnabled(apResult, pFirst, pSecond);
     return apResult;
 }
 
@@ -303,17 +314,19 @@ struct FUN_00def070_cls
     int unk2c;
     CheckHolder070* m_pHolder;
 
-    HolderCheckResult hkpPairCollisionFilter_isCollisionEnabled_00def070(int a2, int a3, int a4, int a5, int a6, int a7, int a8);
+    HolderCheckResult hkpPairCollisionFilter_isCollisionEnabled_00def070(int input, int a3, int b, int containerShapeA, int containerShapeB, int keyA, int keyB);
 };
 
 // Returns true if m_pHolder is null or its sub-object's Check returns a nonzero value.
 // @fnv 0x00def070
 // src: HAVOK_LIB 0x00def070
-HolderCheckResult FUN_00def070_cls::hkpPairCollisionFilter_isCollisionEnabled_00def070(int aiArg2, int aiArg3, int aiArg4, int aiArg5, int aiArg6, int aiArg7,
-                                                 int aiArg8)
+// pdb: hkpPairCollisionFilter::isCollisionEnabled | hkpPairCollisionFilter.obj | retail, vtable slot, high
+// pdb params: input, a, b, bContainer, bKey
+HolderCheckResult FUN_00def070_cls::hkpPairCollisionFilter_isCollisionEnabled_00def070(int input, int aiArg3, int b, int containerShapeA, int containerShapeB, int keyA,
+                                                 int keyB)
 {
     return HolderCheckResult(!m_pHolder ||
-                             m_pHolder->m_kSub.Check(aiArg2, aiArg3, aiArg4, aiArg5, aiArg6, aiArg7, aiArg8).m_cValue);
+                             m_pHolder->m_kSub.Check(input, aiArg3, b, containerShapeA, containerShapeB, keyA, keyB).m_cValue);
 }
 
 struct DfResult
@@ -351,16 +364,18 @@ class DfCls
     int unk28;
     DfHolder* m_2c;
 
-    unsigned char* CheckSubStatus(unsigned char* apOut, int a2, int a3, int a4, int a5);
+    unsigned char* CheckSubStatus(unsigned char* input, int a2, int b, int bContainer, int bKey);
 };
 
 // Writes to apOut whether m_2c is null or its sub-object's Check returns a non-zero status.
 // @fnv 0x00def0d0
-unsigned char* DfCls::CheckSubStatus(unsigned char* apOut, int a2, int a3, int a4, int a5)
+// pdb: hkpPairCollisionFilter::isCollisionEnabled | hkpPairCollisionFilter.obj | retail, vtable slot, high
+// pdb params: input, a, b, bContainer, bKey
+unsigned char* DfCls::CheckSubStatus(unsigned char* input, int a2, int b, int bContainer, int bKey)
 {
     DfResult res;
-    *apOut = (m_2c == 0 || m_2c->m_kSub.Check(&res, a2, a3, a4, a5)->m_cStatus != 0);
-    return apOut;
+    *input = (m_2c == 0 || m_2c->m_kSub.Check(&res, a2, b, bContainer, bKey)->m_cStatus != 0);
+    return input;
 }
 
 // Collision filter forwarder: enabled unless the owner's filter says otherwise.
@@ -410,14 +425,16 @@ class DEF120Wrapper
     int unk24;
     DEF120Owner* m_pkOwnerManager;
 
-    DEF120Bool hkpPairCollisionFilter_isCollisionEnabled_00def120(const void* pvA, const void* pvB) const;
+    DEF120Bool hkpPairCollisionFilter_isCollisionEnabled_00def120(const void* pvA, const void* collidableB) const;
 };
 
 // @fnv 0x00def120
 // src: HAVOK_LIB 0x00def120
-DEF120Bool DEF120Wrapper::hkpPairCollisionFilter_isCollisionEnabled_00def120(const void* pvA, const void* pvB) const
+// pdb: hkpPairCollisionFilter::isCollisionEnabled | hkpPairCollisionFilter.obj | retail, vtable slot, high
+// pdb params: input, a, b, bContainer, bKey
+DEF120Bool DEF120Wrapper::hkpPairCollisionFilter_isCollisionEnabled_00def120(const void* pvA, const void* collidableB) const
 {
-    return !m_pkOwnerManager || m_pkOwnerManager->m_kFilter.IsCollisionEnabled(pvA, pvB);
+    return !m_pkOwnerManager || m_pkOwnerManager->m_kFilter.IsCollisionEnabled(pvA, collidableB);
 }
 
 namespace fnvc_adapt {
@@ -453,15 +470,19 @@ struct DEF1E0PairCounter
     int unk2C;
     DEF1E0PairMap m_pairCounts;
 
-    int DecrementPairCount(int idA, int idB);
+    int hkpPairCollisionFilter_enableCollisionsBetween(int entityA, int entityB);
 };
 
 // Looks up the count for the ordered pair of idA and idB, decrements it, updates or removes the map entry, and returns the new count.
 // @fnv 0x00def1e0
-int DEF1E0PairCounter::DecrementPairCount(int idA, int idB)
+// src: XBOX_RETAIL_PDB 0x00def1e0
+// pdb: hkpPairCollisionFilter::enableCollisionsBetween | hkpPairCollisionFilter.obj | retail, object-file gap fill, high
+// pdb params: entityA, entityB
+// pdb locals: assertBuf, ostr
+int DEF1E0PairCounter::hkpPairCollisionFilter_enableCollisionsBetween(int entityA, int entityB)
 {
-    DEF1E0Uint64 a = idA;
-    DEF1E0Uint64 b = idB;
+    DEF1E0Uint64 a = entityA;
+    DEF1E0Uint64 b = entityB;
     DEF1E0Uint64 key = (a < b) ? a * 0x100000000ULL + b : b * 0x100000000ULL + a;
     DEF1E0PairMap& map = m_pairCounts;
     DEF1E0Uint64 count = map.FindValueForKey(key, 0);
@@ -501,15 +522,17 @@ class hkListDEF0
     int unk00[12];
     hkFilterImplDEF0* m_iFilter;
 
-    hkBool hkpPairCollisionFilter_isCollisionEnabled(const void* a, const void* b, const void* c, const void* d, const void* e) const;
+    hkBool hkpPairCollisionFilter_isCollisionEnabled(const void* input, const void* b, const void* c, const void* bContainer, const void* bKey) const;
 };
 
 // Returns true if m_iFilter is null or if m_iFilter->IsCollisionEnabled returns true for the given arguments.
 // @fnv 0x00def020
 // src: HAVOK_LIB 0x00def020
-hkBool hkListDEF0::hkpPairCollisionFilter_isCollisionEnabled(const void* a, const void* b, const void* c, const void* d, const void* e) const
+// pdb: hkpPairCollisionFilter::isCollisionEnabled | hkpPairCollisionFilter.obj | retail, vtable slot, high
+// pdb params: input, a, b, bContainer, bKey
+hkBool hkListDEF0::hkpPairCollisionFilter_isCollisionEnabled(const void* input, const void* b, const void* c, const void* bContainer, const void* bKey) const
 {
-    return !m_iFilter || m_iFilter->IsCollisionEnabled(a, b, c, d, e);
+    return !m_iFilter || m_iFilter->IsCollisionEnabled(input, b, c, bContainer, bKey);
 }
 
 // sub ecx,8; jmp target == MSVC adjustor thunk for a virtual that Derived overrides
@@ -659,12 +682,13 @@ class FUN_00def160_cls
     FUN_00def160_Sub m_sub;
     hkReferencedObject* m_pReference;
 
-    void UpdateFields_00def160();
+    void hkpPairCollisionFilter_dtor();
 };
 
 // @fnv 0x00def160
-// src: GUESS 0x00def160 (confidence: low)
-void FUN_00def160_cls::UpdateFields_00def160()
+// src: XBOX_RETAIL_PDB 0x00def160
+// pdb: hkpPairCollisionFilter::~hkpPairCollisionFilter | hkpPairCollisionFilter.obj | retail, object-file gap fill, high
+void FUN_00def160_cls::hkpPairCollisionFilter_dtor()
 {
     hkMemoryRouter* pHolder;
     FUN_00def160_Sub* pSub;
@@ -699,15 +723,16 @@ struct CpuObject
 {
     unsigned int unk00;
     unsigned short size;
-    void UpdateFields_00def160();
+    void hkpPairCollisionFilter_dtor();
     CpuObject* hkpPairCollisionFilter_Destroy(unsigned int flags);
 };
 // Calls FUN_00def160, and if the low bit of flags is set, releases this through the memory router allocator, then returns this.
 // @fnv 0x00def500
 // src: COMMUNITY 0x00def500
+// pdb: hkpPairCollisionFilter::`scalar deleting destructor' | hkpPairCollisionFilter.obj | retail, vtable slot, high
 CpuObject* CpuObject::hkpPairCollisionFilter_Destroy(unsigned int flags)
 {
-    UpdateFields_00def160();
+    hkpPairCollisionFilter_dtor();
     if (flags & 1)
     {
         hkMemoryRouter* holder = hkMemoryRouter_getInstance();

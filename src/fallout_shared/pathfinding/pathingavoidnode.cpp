@@ -6,12 +6,18 @@
 #include "../../../include/NavMesh.h"
 #include "../../../include/PathingAvoidNode.h"
 // @fnv 0x005582f0
+// pdb: NavMesh::GetTriangle | TESObjectCELL.obj | debug, call graph, medium
+// pdb params: asTriangleIndex
 NavMeshTriangle* NavMesh::GetTriangle(unsigned short index)
 {
     return &Triangles.GetAt(static_cast<unsigned int>(index));
 }
 // @fnv 0x006a78d0
 // src: XBOX_PDB 0x006a78d0
+// pdb: PathingAvoidNodeArray::GetCostForPoint | PathingAvoidNode.obj | retail, call graph (shared callers), low
+// pdb note: debug build links it to NavMeshSearchNode::GetTriangle
+// pdb params: arPoint
+// pdb locals: isize, fcost, i, avoidNode
 NavMeshTriangle* NavMeshTriangleReference::NavMeshSearchNode_GetTriangle() const
 {
     return m_pLocationNavMesh->GetTriangle(m_usTriangleIdentifier);
@@ -21,6 +27,9 @@ typedef char _sizecheck_PathingAvoidNode[sizeof(PathingAvoidNode) == 36 ? 1 : -1
 
 // Reads a type byte, two floats and a 12-byte block from the load buffer, plus a second 12-byte block when the type is 1.
 // @fnv 0x006dc910
+// pdb: PathingAvoidNode::LoadGame | PathingAvoidNode.obj | retail, object-file gap fill, high
+// pdb params: apLoadGameBuffer
+// pdb locals: ctype
 void PathingAvoidNode::LoadPathingAvoidNode(BGSLoadFormBuffer* apLoadGameBuffer)
 {
     unsigned char ctype = 0;
@@ -41,15 +50,18 @@ struct AvoidNodeList
 {
     unsigned int GetCount();
     PathingAvoidNode* GetAt(unsigned int);
-    float PathingAvoidNodeArray_ComputeCenter(const NiPoint3& point, NiPoint3& outDir);
+    float PathingAvoidNodeArray_ComputeCenter(const NiPoint3& arStartPoint, NiPoint3& arCenter);
 };
 
 // @fnv 0x006dc9f0
 // src: COMMUNITY 0x006dc9f0
-float AvoidNodeList::PathingAvoidNodeArray_ComputeCenter(const NiPoint3& point, NiPoint3& outDir)
+// pdb: PathingAvoidNodeArray::ComputeCenter | PathingAvoidNode.obj | retail, upstream name already matches, high
+// pdb params: arStartPoint, arCenter
+// pdb locals: isize, ftotalAvoidMult, fdistanceUpperBound, i, favoidNodeMult, avoidNode, closestPoint, deltaVector, testVector, fdot, flength
+float AvoidNodeList::PathingAvoidNodeArray_ComputeCenter(const NiPoint3& arStartPoint, NiPoint3& arCenter)
 {
     float fValueSum = 0.0f;
-    outDir = NiPoint3_ZERO;
+    arCenter = NiPoint3_ZERO;
     float fCostSum = 0.0f;
     unsigned int count8 = GetCount();
     if (count8 > 0)
@@ -62,7 +74,7 @@ float AvoidNodeList::PathingAvoidNodeArray_ComputeCenter(const NiPoint3& point, 
             if (pNode->eType == 1)
             {
                 NiPoint3 segmentDir = pNode->TwoComponentVector - pNode->m_kLocation;
-                NiPoint3 toPoint = point - pNode->m_kLocation;
+                NiPoint3 toPoint = arStartPoint - pNode->m_kLocation;
                 float fDot = toPoint.Dot(segmentDir);
                 if (fDot < 0.0)
                 {
@@ -78,11 +90,11 @@ float AvoidNodeList::PathingAvoidNodeArray_ComputeCenter(const NiPoint3& point, 
                     closestPoint = pNode->m_kLocation + (segmentDir * fDot).Divide(fSegLen);
                 }
             }
-            outDir += closestPoint * fCost3;
+            arCenter += closestPoint * fCost3;
             fValueSum += pNode->fRadius;
             fCostSum += fCost3;
         }
-        outDir.DivideBy(fCostSum);
+        arCenter.DivideBy(fCostSum);
     }
     return fValueSum;
 }

@@ -4,9 +4,10 @@
 #include "../../../include/NiSortAdjustNode.h"
 
 // @fnv 0x0063f830
-SkyObject::SkyObject() : m_pRootNode(static_cast<NiNode*>(0))
+// pdb: SkyObject::SkyObject | SkyObject.obj | retail, upstream name already matches, high
+SkyObject::SkyObject() : spRoot(static_cast<NiNode*>(0))
 {
-    m_pRootNode = 0;
+    spRoot = 0;
 }
 
 void _Deallocate(void*);
@@ -17,6 +18,7 @@ struct StandIn
 };
 // Calls FUN_0063f8d0, then frees this via _Deallocate when flags has bit 1 set, and returns this.
 // @fnv 0x0063f8a0
+// pdb: SkyObject::`scalar deleting destructor' | SkyObject.obj | retail, vtable slot, high
 void* StandIn::FUN_0063f8a0(unsigned int flags)
 {
     FUN_0063f8d0();
@@ -38,6 +40,7 @@ struct FUN_0063f8d0
 };
 // Destructor that resets the contained Mem_63f8d0 by calling Reset(0).
 // @fnv 0x0063f8d0
+// pdb: SkyObject::~SkyObject | SkyObject.obj | retail, call graph, high
 FUN_0063f8d0::~FUN_0063f8d0()
 {
     m_mem.Reset(0);
@@ -117,17 +120,19 @@ class F940Parent
 class F940Owner
 {
   public:
-    void CreateSortAdjustNode(F940Parent* pkParent);
+    void CreateSortAdjustNode(F940Parent* apSkyRoot);
 
     int unk00;
     F940NodePtr m_spNode;
 };
 
 // @fnv 0x0063f940
-void F940Owner::CreateSortAdjustNode(F940Parent* pkParent)
+// pdb: SkyObject::Initialize | SkyObject.obj | retail, vtable slot, high
+// pdb params: apSkyRoot
+void F940Owner::CreateSortAdjustNode(F940Parent* apSkyRoot)
 {
     m_spNode.Reset(new NiSortAdjustNode(0u));
     m_spNode->SetSelectiveUpdate(true);
     m_spNode->SetSelectiveUpdateTransforms(true);
-    pkParent->AttachChildInAvailableSlot(m_spNode, true);
+    apSkyRoot->AttachChildInAvailableSlot(m_spNode, true);
 }

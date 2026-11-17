@@ -10,6 +10,7 @@ extern "C" int DAT_011db800;
 
 // @fnv 0x005ba8d0
 // src: COMMUNITY 0x005ba8d0
+// pdb: DebugTextManager::Instance | TESScriptFunctions.obj | debug, call graph, medium
 int __cdecl DebugTextManager_GetSingleton()
 {
     if (!DAT_011db800)
@@ -39,6 +40,9 @@ struct FUN_00802a20_class
 // Searches the page table for a case-insensitive name match and returns its index, or -1 if not found.
 // @fnv 0x00802a20
 // src: COMMUNITY 0x00802a20
+// pdb: DebugTextManager::FindPageIndex | DebugTextManager.obj | retail, upstream name already matches, high
+// pdb params: apPage
+// pdb locals: ipageIndex, i
 int FUN_00802a20_class::DebugTextManager_FindPageIndex(const char* apPage)
 {
     int i;
@@ -75,6 +79,8 @@ struct PageTable
 
 // @fnv 0x00802220
 // src: COMMUNITY 0x00802220
+// pdb: FOVATSEffectManager::EnableBodyPartOnSkinInstance | FOVATSEffectManager.obj | debug, object-file gap fill, medium
+// pdb params: apInstance, aeLimb, abEnable
 void FontManager::VATSEffect_SetBodyPartEnabled(PageTable* pPages, int index, unsigned char value)
 {
     pPages->SetEntryStateByKey((unsigned short)index, value);
@@ -219,20 +225,23 @@ struct FUN_00802260_cls
     virtual void v78();
     virtual void v79();
     virtual FUN_0043f220_cls* v7a();
-    void __thiscall FOVATSEffectManager_ShowBipedObjectOnActor(FUN_00802260_cls* a1, int a2, unsigned char a3);
+    void __thiscall FOVATSEffectManager_ShowBipedObjectOnActor(FUN_00802260_cls* apActor, int aeObject, unsigned char abShow);
 };
 
 // @fnv 0x00802260
 // src: COMMUNITY 0x00802260
-void __thiscall FUN_00802260_cls::FOVATSEffectManager_ShowBipedObjectOnActor(FUN_00802260_cls* a1, int a2, unsigned char abFlag)
+// pdb: FOVATSEffectManager::ShowBipedObjectOnActor | FOVATSEffectManager.obj | retail, upstream name already matches, high
+// pdb params: apActor, aeObject, abShow
+// pdb locals: pbip, pobj
+void __thiscall FUN_00802260_cls::FOVATSEffectManager_ShowBipedObjectOnActor(FUN_00802260_cls* apActor, int aeObject, unsigned char abShow)
 {
-    FUN_0043f220_cls* p = a1->v7a();
+    FUN_0043f220_cls* p = apActor->v7a();
     if (p != 0)
     {
-        FUN_00450f90_cls* q = p->GetEntryAt(a2)->unk08;
+        FUN_00450f90_cls* q = p->GetEntryAt(aeObject)->unk08;
         if (q != 0)
         {
-            q->FUN_00450f90(abFlag == 0);
+            q->FUN_00450f90(abShow == 0);
         }
     }
 }
@@ -330,6 +339,8 @@ struct Owner
 
 // @fnv 0x008026b0
 // src: COMMUNITY 0x008026b0
+// pdb: FOVATSEffectManager::FOVATSEffectManager | FOVATSEffectManager.obj | retail, object-file run extension, low
+// pdb note: debug build links it to FOVATSEffectManager::ClearQueries
 void Owner::VATSEffect_FreeOcclusionQueries()
 {
     for (unsigned int i = 0; i < 15; i++)
@@ -415,19 +426,22 @@ struct FUN_008029c0_class
     int unk18;
     int unk1c;
 
-    bool __thiscall DebugTextManager_SetScreenDebugPage(const char* apPage, int value);
+    bool __thiscall DebugTextManager_SetScreenDebugPage(const char* apScreen, int aiSubPage);
 };
 
 // @fnv 0x008029c0
 // src: COMMUNITY 0x008029c0
-bool FUN_008029c0_class::DebugTextManager_SetScreenDebugPage(const char* apPage, int value)
+// pdb: DebugTextManager::SetScreenDebugPage | DebugTextManager.obj | retail, upstream name already matches, high
+// pdb params: apScreen, aiSubPage
+// pdb locals: ipageIndex
+bool FUN_008029c0_class::DebugTextManager_SetScreenDebugPage(const char* apScreen, int aiSubPage)
 {
-    int result = reinterpret_cast<FUN_00802a20_class*>(this)->DebugTextManager_FindPageIndex(apPage);
+    int result = reinterpret_cast<FUN_00802a20_class*>(this)->DebugTextManager_FindPageIndex(apScreen);
 
     if (result != -1)
     {
         unk18 = result;
-        unk1c = value;
+        unk1c = aiSubPage;
     }
 
     return result != -1;
@@ -499,7 +513,7 @@ struct ListObj
     virtual void tv38();
     virtual NiObj* tv39(const NiFixedString& fs);
     unsigned int __thiscall FUN_0043b480();
-    NiObj* __thiscall FUN_0043b4a0(unsigned int idx);
+    NiObj* __thiscall FUN_0043b4a0(unsigned int i);
 };
 
 struct SkyObj;
@@ -889,12 +903,14 @@ struct This8022
     int m_234;
     int m_238;
     int m_23c;
-    void __thiscall FOVATSEffectManager_ShowBipedObjectOnActor(NodeObj* a1, int a2, unsigned char a3);
+    void __thiscall FOVATSEffectManager_ShowBipedObjectOnActor(NodeObj* apActor, int aeObject, unsigned char abShow);
     void __thiscall FOVATSEffectManager_RestoreBodyParts();
 };
 
 // @fnv 0x008022c0
 // src: COMMUNITY 0x008022c0
+// pdb: FOVATSEffectManager::RestoreBodyParts | FOVATSEffectManager.obj | retail, upstream name already matches, high
+// pdb locals: ilimb, pactorRoot, pactor, n, pobj, ptri, pnode, pdSkinInstance, pskin, eindex, pbodyPartData, ppart, plimbNode
 void __thiscall This8022::FOVATSEffectManager_RestoreBodyParts()
 {
     if (!m_004->tv64())
@@ -1003,7 +1019,10 @@ void FUN_00406d50(char*, unsigned int, const char*);
 // Builds a comma-separated string of up to five page names per batch and passes each batch to the report callback.
 // @fnv 0x00802880
 // src: COMMUNITY 0x00802880
-void PageReporter::DebugTextManager_OutputDebugPageNames(void(__cdecl* report)(const char*))
+// pdb: DebugTextManager::OutputDebugPageNames | DebugTextManager.obj | retail, upstream name already matches, high
+// pdb params: apfOutput
+// pdb locals: pstring, i, x
+void PageReporter::DebugTextManager_OutputDebugPageNames(void(__cdecl* apfOutput)(const char*))
 {
     char buffer[512];
     buffer[0] = 0;
@@ -1017,7 +1036,7 @@ void PageReporter::DebugTextManager_OutputDebugPageNames(void(__cdecl* report)(c
             if (page + item + 1 < count)
                 FUN_00406d50(buffer, 512, ", ");
         }
-        report(buffer);
+        apfOutput(buffer);
     }
 }
 
@@ -1173,6 +1192,7 @@ class Manager802
 // Creates the singleton Manager802 instance if ms_pkInstance is null.
 // @fnv 0x00802a90
 // src: COMMUNITY 0x00802a90
+// pdb: DebugTextManager::Initialize | DebugTextManager.obj | debug, object-file run extension, low
 void Manager802::DebugTextManager_CreateSingleton()
 {
     if (!ms_pkInstance)

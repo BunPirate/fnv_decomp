@@ -2,6 +2,7 @@
 
 #include "hkpConvexShape.h"
 
+// pdb: class hkpSphereShape, size 0x20 (here 0x14), bases: hkpConvexShape, 1 members
 class hkpSphereShape : public hkpConvexShape
 {
 public:

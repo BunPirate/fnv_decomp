@@ -3,6 +3,7 @@
 #include "BSThread.h"
 #include "CountingSemaphore.h"
 
+// pdb: class LoadingMenuThread, size 0x50 (here 0x4c), bases: BSThread, 5 members
 class LoadingMenuThread : public BSThread
 {
 public:

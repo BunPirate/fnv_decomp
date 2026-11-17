@@ -11,12 +11,14 @@ void __cdecl CallVirtualMethodAtOffset48(void*, int, int);
 #include "bsfile_decls.h"
 
 // @fnv 0x00affc60
+// pdb: BSFile::Exist | BSFile.obj | debug, vtable slot, medium
 bool BSFile::Write()
 {
     return FUN_00ecbf05(pFileName, 0) != -1;
 }
 
 // @fnv 0x00afb780
+// pdb: ArchiveFile::GetSize | Archive.obj | debug, object-file gap fill, medium
 unsigned int BSFile::GetFilePosition()
 {
     return m_uiValueId;
@@ -31,6 +33,7 @@ struct FUN_00afc0a0_Owner
 };
 
 // @fnv 0x00afc0a0
+// pdb: CompressedArchiveFile::GetSize | Archive.obj | debug, object-file gap fill, medium
 unsigned int FUN_00afc0a0_Owner::GetValue168()
 {
     return unk168;
@@ -38,6 +41,8 @@ unsigned int FUN_00afc0a0_Owner::GetValue168()
 
 // Flushes and closes m_pFile when m_bGood and m_pFile are set, then deallocates m_pBuffer and clears m_pBuffer and m_pFile.
 // @fnv 0x00affd10
+// pdb: BSFile::Close | BSFile.obj | retail, upstream name already matches, high
+// pdb locals: dwBytesIO
 void BSFile::Close()
 {
     if (m_bGood && m_pFile)
@@ -52,6 +57,7 @@ void BSFile::Close()
 }
 
 // @fnv 0x00aff240
+// pdb: BSFile::~BSFile | BSFile.obj | retail, upstream name already matches, high
 BSFile::~BSFile()
 {
     Close();
@@ -59,6 +65,10 @@ BSFile::~BSFile()
 
 // Sets readHandler and writeHandler to one of two handler pairs depending on doSwap.
 // @fnv 0x00aff990
+// pdb: BSFile::RdSwap | BSFile.obj | retail, object-file run extension, low
+// pdb note: debug build links it to BSFile::SetEndianSwap
+// pdb params: apThis, apBuffer, aiBytes, apComponentSizes, aiNumComponents
+// pdb locals: aibytesRead
 void BSFile::SetEndianSwap(bool doSwap)
 {
     if (doSwap)
@@ -75,6 +85,9 @@ void BSFile::SetEndianSwap(bool doSwap)
 
 // Opens the file if m_pFile is null, reads bytes into buffer via NiFile::FileRead, adds the result to m_uiBufferSize and returns it.
 // @fnv 0x00b00650
+// pdb: BSFile::ReadF | BSFile_Xenon.obj | debug, vtable slot, medium
+// pdb params: apBuffer, aiBytes
+// pdb locals: ibytesRead, uiAvailBufferBytes, uiRead, ioffset, ipos, ialignedPos, iamountRead, iseekPos, isizeToRead, dwResult, irelativeSeekPos, ierror, ibytesToRead
 unsigned int BSFile::Read(void* buffer, unsigned int bytes)
 {
     if (!static_cast<bool>(static_cast<int>(m_pFile != 0)))
@@ -86,6 +99,8 @@ unsigned int BSFile::Read(void* buffer, unsigned int bytes)
 
 // Resets the buffer position and end, allocates m_pBuffer of bufferSize if needed, sets m_bGood, and returns m_bGood.
 // @fnv 0x00afb5f0
+// pdb: ArchiveFile::Open | Archive.obj | debug, object-file gap fill, medium
+// pdb params: abWaitForOpen, abTextMode
 bool BSFile::AttachFileStream(bool, bool)
 {
     void* buffer;
@@ -106,6 +121,8 @@ bool BSFile::AttachFileStream(bool, bool)
 
 // BSFile vftable slot 10.
 // @fnv 0x00b004e0
+// pdb: BSFile::GetSize | BSFile_Xenon.obj | retail, upstream name already matches, high
+// pdb locals: uioldPos
 unsigned int BSFile::GetSize()
 {
     m_uiValueId = 0;
@@ -123,7 +140,10 @@ unsigned int BSFile::GetSize()
 }
 
 // @fnv 0x00aff300
-bool BSFile::Open(bool, bool textMode)
+// pdb: BSFile::Open | BSFile.obj | retail, upstream name already matches, high
+// pdb params: abWaitForOpen, abTextMode
+// pdb locals: Attributes, RWFlags, CreationType, Error, dwResult, dwLastError, cpMode
+bool BSFile::Open(bool, bool abTextMode)
 {
     if (static_cast<bool>(static_cast<int>(m_pFile != 0)))
         return true;
@@ -135,13 +155,13 @@ bool BSFile::Open(bool, bool textMode)
     switch (m_eMode)
     {
     case 0:
-        mode = textMode ? "rt" : "rb";
+        mode = abTextMode ? "rt" : "rb";
         break;
     case 1:
-        mode = textMode ? "r+t" : "r+b";
+        mode = abTextMode ? "r+t" : "r+b";
         break;
     default:
-        mode = textMode ? "a+t" : "a+b";
+        mode = abTextMode ? "a+t" : "a+b";
         break;
     }
     m_pFile = 0;
@@ -149,7 +169,7 @@ bool BSFile::Open(bool, bool textMode)
     if (!m_pFile && m_eMode == 1)
     {
         m_pFile = 0;
-        if (textMode)
+        if (abTextMode)
             fallbackMode = "wt";
         else
             fallbackMode = "wb";
@@ -186,6 +206,8 @@ struct DummyVTable_00aff9d0
 };
 
 // @fnv 0x00aff9d0
+// pdb: BSFile::RdNoSwap | BSFile.obj | debug, object-file gap fill, medium
+// pdb params: apThis, apBuffer, aiBytes, apNothing1, aiNothing2
 int __cdecl ForwardVTableCall(DummyVTable_00aff9d0* apObject, int aiArg1, int aiArg2)
 {
     return apObject->v44(aiArg1, aiArg2);
@@ -198,6 +220,7 @@ struct FUN_005d43c0_
 
 // @fnv 0x005d43c0
 // src: XBOX_PDB 0x005d43c0
+// pdb: BSFile::GetDevice | BSFile.obj | debug, upstream name already matches, high
 void* FUN_005d43c0_::BSFile_GetDevice()
 {
     return (char*)this + 0x44;
@@ -218,12 +241,15 @@ bool FUN_00afbf60_shell::IsField158NonZero()
 
 // @fnv 0x00afc410
 // src: XBOX_PDB 0x00afc410
+// pdb: CompressedArchiveFile::Exist | Archive.obj | debug, upstream name already matches, high
 bool __fastcall CompressedArchiveFile_Exist(void* this_ptr)
 {
     return *reinterpret_cast<int*>(reinterpret_cast<char*>(this_ptr) + 0x158) != 0;
 }
 
 // @fnv 0x00aff9f0
+// pdb: BSFile::WrNoSwap | BSFile.obj | debug, object-file gap fill, medium
+// pdb params: apThis, apBuffer, aiBytes, apNothing1, aiNothing2
 void __cdecl CallVirtualMethodAtOffset48(void* apObject, int aiArg1, int aiArg2)
 {
     (*(void(__thiscall**)(void*, int, int))(*(char**)apObject + 0x48))(apObject, aiArg1, aiArg2);
@@ -251,18 +277,21 @@ struct FUN_00affa10_V
     virtual int v17(void*, unsigned int);
 };
 
-int __cdecl SwapBufferBySizes(void*, unsigned int, void*, void*);
+int __cdecl NiBinaryStream_DoByteSwap(void*, unsigned int, void*, void*);
 
 // If p3 is positive, calls p1->v17(p2, p3), then if p4 is set calls SwapBufferBySizes(p2, p3, p4, p5), and returns the v17 result.
 // @fnv 0x00affa10
 // src: COMMUNITY 0x00affa10
+// pdb: BSFile::RdSwap | BSFile.obj | debug, object-file gap fill, medium
+// pdb params: apThis, apBuffer, aiBytes, apComponentSizes, aiNumComponents
+// pdb locals: aibytesRead
 int __cdecl BSFile_ReadAndSwap(FUN_00affa10_V* p1, void* apData, unsigned int auiSize, void* apExtra, void* apExtraArg)
 {
     if (auiSize <= 0)
         return 0;
     int result = p1->v17(apData, auiSize);
     if (apExtra)
-        SwapBufferBySizes(apData, auiSize, apExtra, apExtraArg);
+        NiBinaryStream_DoByteSwap(apData, auiSize, apExtra, apExtraArg);
     return result;
 }
 
@@ -293,6 +322,9 @@ struct FUN_00affc90_t : public Base17
 };
 // Reads bytes one at a time into buf until term or maxLen-1 is reached, null-terminates buf, and returns the total bytes read.
 // @fnv 0x00affc90
+// pdb: BSFile::GetLine | BSFile.obj | debug, vtable slot, medium
+// pdb params: pBuffer, uiMaxBytes, cMark
+// pdb locals: uiBytesRead, i, c, uiRead
 unsigned int FUN_00affc90_t::ReadUntilTerminator(char* pBuffer, unsigned int maxLen, unsigned short usTerminator)
 {
     unsigned int ibytesRead;
@@ -337,7 +369,9 @@ struct S_00aff2a0_Class
 // If unk24 is already set returns 1; otherwise clears unk18, unk14 and unk20, stores a1 in unk24, calls FUN_00aff490 and returns unk2c.
 // @fnv 0x00aff2a0
 // src: XBOX_PDB 0x00aff2a0
-unsigned char __thiscall S_00aff2a0_Class::BSFile_OpenByFilePointer(int a1)
+// pdb: BSFile::OpenByFilePointer | BSFile.obj | retail, upstream name already matches, high
+// pdb params: apFile
+unsigned char __thiscall S_00aff2a0_Class::BSFile_OpenByFilePointer(int apFile)
 {
     if ((bool)(int)(unk24 != 0))
     {
@@ -347,7 +381,7 @@ unsigned char __thiscall S_00aff2a0_Class::BSFile_OpenByFilePointer(int a1)
     unk18 = 0;
     unk14 = 0;
     unk20 = 0;
-    unk24 = a1;
+    unk24 = apFile;
 
     BSFile_CheckIsGood();
 
@@ -378,10 +412,13 @@ struct VTableV18_b7074
 };
 
 void __cdecl FUN_00ec44d0(void* p, unsigned int a, unsigned int b);
-int __cdecl SwapBufferBySizes(void*, unsigned int, void*, void*);
+int __cdecl NiBinaryStream_DoByteSwap(void*, unsigned int, void*, void*);
 
 // @fnv 0x00affa60
 // src: COMMUNITY 0x00affa60
+// pdb: BSFile::WrSwap | BSFile.obj | debug, object-file gap fill, medium
+// pdb params: apThis, apBuffer, aiBytes, apComponentSizes, aiNumComponents
+// pdb locals: ptmpArray, ibytesWritten
 int __cdecl BSFile_WriteAndSwap(VTableV18_b7074* self, unsigned int a1, unsigned int auiSize, void* apExtra, void* a4)
 {
     if (auiSize <= 0)
@@ -397,7 +434,7 @@ int __cdecl BSFile_WriteAndSwap(VTableV18_b7074* self, unsigned int a1, unsigned
     FUN_00ec44d0(p, a1, auiSize);
     if (apExtra != 0)
     {
-        SwapBufferBySizes(p, auiSize, apExtra, a4);
+        NiBinaryStream_DoByteSwap(p, auiSize, apExtra, a4);
     }
     kRet = self->v18(p, auiSize);
     {
@@ -430,6 +467,9 @@ struct FUN_00affaf0_cls : public BSFile
 
 // @fnv 0x00affaf0
 // src: XBOX_PDB 0x00affaf0
+// pdb: BSFile::Write | BSFile.obj | debug, vtable slot, medium
+// pdb params: arString, abBinary
+// pdb locals: ibytesWritten
 unsigned int FUN_00affaf0_cls::BSFile_Write(FUN_00affaf0_H* pEntry, bool bIncrement)
 {
     unsigned int key;
@@ -505,6 +545,9 @@ struct BSFileW
     unsigned int ReadWideString(WStrOut* out, unsigned int maxBytes);
 };
 // @fnv 0x00aff640
+// pdb: BSFile::Read | BSFile.obj | debug, vtable slot, medium
+// pdb params: arString, aiMaxLength
+// pdb locals: ptempBuf, itotal, ibytesRead, ibuffer, iread, ch
 unsigned int BSFileW::ReadWideString(WStrOut* out, unsigned int maxBytes)
 {
     if (!((bool)(int)(m_pFile != 0)))

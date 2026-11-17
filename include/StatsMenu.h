@@ -12,6 +12,7 @@
 
 #include "MiscStatManager.h"
 
+// pdb: class StatsMenu, size 0x2a4, bases: Menu, 16 members
 class StatsMenu : public Menu
 {
 public:
@@ -40,44 +41,44 @@ public:
     virtual void AssignTileByID(int, Tile*);
     virtual int GetClass();
 
-    StatsMenu__HealingOption m_kHealingOptions[4];
-    StatsMenu__NamedEffectsList m_kNamedEffectsList;
-    StatsMenu__StatusEffect* m_pStatusEffectAtIndex0;
-    StatsMenu__StatusEffect* m_pStatusEffectAtIndex1;
-    StatsMenu__StatusEffect* m_pStatusEffectAtIndex2;
-    StatsMenu__StatusEffect* m_pStatusEffectAtIndex3;
-    StatsMenu__StatusEffectList m_kStatusEffectEntries;
+    StatsMenu__HealingOption pHealingOptionsA[4]; // src: XBOX_RETAIL_PDB +0x28 (old: m_kHealingOptions)
+    StatsMenu__NamedEffectsList xNamedEffects; // src: XBOX_RETAIL_PDB +0x68 (old: m_kNamedEffectsList)
+    StatsMenu__StatusEffect* pRadiationEffect; // src: XBOX_RETAIL_PDB +0x74 (old: m_pStatusEffectAtIndex0)
+    StatsMenu__StatusEffect* pDehydrationEffect; // src: XBOX_RETAIL_PDB +0x78 (old: m_pStatusEffectAtIndex1)
+    StatsMenu__StatusEffect* pHungerEffect; // src: XBOX_RETAIL_PDB +0x7c (old: m_pStatusEffectAtIndex2)
+    StatsMenu__StatusEffect* pSleepEffect; // src: XBOX_RETAIL_PDB +0x80 (old: m_pStatusEffectAtIndex3)
+    StatsMenu__StatusEffectList xStatusEffects; // src: XBOX_RETAIL_PDB +0x84 (old: m_kStatusEffectEntries)
 
-    Tile* m_pTiles[60];
-    ListBox_enum_ActorValue__Index_ m_kPrimaryActorValueList;
-    ListBox_enum_ActorValue__Index_ m_kSecondaryActorValueList;
-    ListBox_PerkRankData___ m_kPerkRankList;
-    ListBox_enum_MiscStatManager__MiscStatID_ m_kMiscStatList;
-    ListBox_StatsMenu__StatusEffect___ m_kStatusEffectList;
-    ListBox_TESReputation___ m_kReputationList;
+    Tile* pTiles[60]; // src: XBOX_RETAIL_PDB +0x90 (old: m_pTiles)
+    ListBox_enum_ActorValue__Index_ lbSpecial; // src: XBOX_RETAIL_PDB +0x180 (old: m_kPrimaryActorValueList)
+    ListBox_enum_ActorValue__Index_ lbSkills; // src: XBOX_RETAIL_PDB +0x1b0 (old: m_kSecondaryActorValueList)
+    ListBox_PerkRankData___ lbPerks; // src: XBOX_RETAIL_PDB +0x1e0 (old: m_kPerkRankList)
+    ListBox_enum_MiscStatManager__MiscStatID_ lbGeneral; // src: XBOX_RETAIL_PDB +0x210 (old: m_kMiscStatList)
+    ListBox_StatsMenu__StatusEffect___ lbStatusEffects; // src: XBOX_RETAIL_PDB +0x240 (old: m_kStatusEffectList)
+    ListBox_TESReputation___ lbReputation; // src: XBOX_RETAIL_PDB +0x270 (old: m_kReputationList)
     union
     {
         bool m_bUpdateOption;
         unsigned char m_bHealingMode;
     };
-    bool m_bStatUpdatePending;
+    bool bActiveEffectsUpdatedThisFrame; // src: XBOX_RETAIL_PDB +0x2a1 (old: m_bStatUpdatePending)
     unsigned char unk2A2[2];
 
     static StatsMenu* ms_pInventoryMenu;
     static float GetChartScale();
     static void SetStatsPage(unsigned char page);
     static bool SetTileFlashing(Tile*, unsigned int);
-    static void UpdatePrimaryActorValueTile(Tile* tile, ActorValue::Index value);
+    static void SPECIALUpdateFn(Tile* apTile, ActorValue::Index aeIndex);
     static void UpdateSecondaryActorValueTile(Tile* tile, ActorValue::Index value);
     static void UpdateMiscStatTile(Tile* tile, MiscStatManager__MiscStatID value);
-    static void __cdecl UpdateStatusEffects();
+    static void __cdecl UpdatePlayerTitle();
     static void ClearPerks();
 
     void SetCurrentPage(Page page);
     Page GetCurrentPage();
     void SetCurrentPageFromChar(char a);
     int GetTraitForValue(ActorValue::Index value);
-    void UpdateActorValueTiles();
+    void UpdateAllActorValues();
     void RefreshActorValueTile(ActorValue::Index value);
     void RefreshMiscStat(MiscStatManager__MiscStatID value);
     void RefreshMiscStat(MiscStatManager::MiscStat value);

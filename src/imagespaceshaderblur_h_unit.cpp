@@ -16,6 +16,7 @@ struct FUN_00b8e420_shell
 
 // Sets two vtable pointers, calls FUN_00c03a20, and if f has bit 1 set, deletes this with size 0xd0.
 // @fnv 0x00b8e420
+// pdb: ImageSpaceShaderBrightPassBlur3::`scalar deleting destructor' | ImageSpaceManager.obj | debug, object-file run extension, low
 FUN_00b8e420_shell* FUN_00b8e420_shell::FUN_00b8e420(int aiFlags)
 {
     m_vft = (int)&DAT_010b1640;
@@ -37,6 +38,7 @@ struct FUN_00b8e5c0_class
 };
 
 // @fnv 0x00b8e5c0
+// pdb: ImageSpaceShaderBrightPassBlur5::`scalar deleting destructor' | ImageSpaceManager.obj | debug, object-file run extension, low
 void* FUN_00b8e5c0_class::FUN_00b8e5c0(unsigned int flags)
 {
     *reinterpret_cast<int**>(this) = &DAT_010b17f8;
@@ -88,6 +90,7 @@ struct FNVObjectToDispose
 };
 
 // @fnv 0x00b8eaa0
+// pdb: ImageSpaceShaderBrightPassBlur11::`scalar deleting destructor' | ImageSpaceManager.obj | debug, object-file run extension, low
 FNVObjectToDispose* FNVObjectToDispose::FUN_00b8eaa0(unsigned char flags)
 {
     m_primaryVtable = &DAT_010b1c90;
@@ -138,6 +141,7 @@ struct FUN_00b8ec40_cls
 };
 
 // @fnv 0x00b8ec40
+// pdb: ImageSpaceShaderBrightPassBlur13::`scalar deleting destructor' | ImageSpaceManager.obj | debug, object-file run extension, low
 FUN_00b8ec40_cls* FUN_00b8ec40_cls::FUN_00b8ec40(unsigned int flags)
 {
     m_primaryVtable = (void*)&DAT_010b1e20;
@@ -207,6 +211,7 @@ struct FUN_00b8e760 : BlurShaderBase
 
 // Destructor that sets effectVft to the address of DAT_010b1960.
 // @fnv 0x00b8e760
+// pdb: ImageSpaceShaderBrightPassBlur7::`scalar deleting destructor' | ImageSpaceManager.obj | debug, object-file run extension, low
 FUN_00b8e760::~FUN_00b8e760()
 {
     effectVft = &DAT_010b1960;
@@ -245,6 +250,7 @@ struct FUN_00b8e900 : BlurShaderBase
 
 // Destructor that sets effectVft to the address of DAT_010b1ae8.
 // @fnv 0x00b8e900
+// pdb: ImageSpaceShaderBrightPassBlur9::`scalar deleting destructor' | ImageSpaceManager.obj | debug, object-file run extension, low
 FUN_00b8e900::~FUN_00b8e900()
 {
     effectVft = &DAT_010b1ae8;

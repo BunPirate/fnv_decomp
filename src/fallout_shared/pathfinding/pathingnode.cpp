@@ -18,6 +18,8 @@ struct FUN_006e22f0_shell : public FUN_006e2330_shell
 // If FUN_006e2330() succeeds, activates the reference stored at offset 0x38 with apActor, returning the result; otherwise returns false.
 // @fnv 0x006e22f0
 // src: COMMUNITY 0x006e22f0
+// pdb: PathingNode::ActivateNode | PathingNode.obj | debug, upstream name already matches, high
+// pdb params: apActor
 bool __thiscall FUN_006e22f0_shell::PathingNode_ActivateNode(TESObjectREFR* apActor)
 {
     if (PathingNode_IsTeleportDoorNode())
@@ -41,6 +43,8 @@ struct FUN_0045bb20_cls
 
 // Calls target->Apply with each stored component multiplied by scale and returns target.
 // @fnv 0x0045bb20
+// pdb: NiPoint3::operator* | TES.obj | debug, call graph, medium
+// pdb params: fScalar
 FUN_0045bb20_target* FUN_0045bb20_cls::ApplyScaled(FUN_0045bb20_target* target, float scale)
 {
     target->Apply(scale * m_uiX, scale * m_uiY, scale * m_uiZ);

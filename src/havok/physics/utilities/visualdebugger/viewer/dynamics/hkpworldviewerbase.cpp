@@ -5,9 +5,11 @@
 
 // @fnv 0x00ddcdd0
 // src: HAVOK_LIB 0x00ddcdd0
-unsigned int hkpMeshWeldingUtility_modifyCombinedEdgesBitcode(unsigned int auiValue, unsigned int auiIndex, unsigned int auiFieldValue)
+// pdb: hkpMeshWeldingUtility::modifyCombinedEdgesBitcode | hkpMeshWeldingUtility.obj | debug, upstream name already matches, high
+// pdb params: combinedBitcode, edgeIndex, bitcode
+unsigned int hkpMeshWeldingUtility_modifyCombinedEdgesBitcode(unsigned int combinedBitcode, unsigned int edgeIndex, unsigned int bitcode)
 {
-    return (auiValue & ~(0x1f << (auiIndex * 5))) | (auiFieldValue << (auiIndex * 5));
+    return (combinedBitcode & ~(0x1f << (edgeIndex * 5))) | (bitcode << (edgeIndex * 5));
 }
 
 // @fnv 0x00ddcdf0
@@ -61,6 +63,7 @@ struct FUN_00ddcc60 : DDCC60ReferencedObject, DDCC60Action, DDCC60Listener
 
 // If the world pointer is set, removes this listener and reference from it, then clears the pointer.
 // @fnv 0x00ddcc60
+// pdb: hkpWorldViewerBase::~hkpWorldViewerBase | hkpWorldViewerBase.obj | retail, call graph, high
 FUN_00ddcc60::~FUN_00ddcc60()
 {
     if (m_pOwningWorld)
@@ -95,6 +98,7 @@ struct CpuObject
 };
 // Calls FUN_00ddcc60, then if flags has bit 1 set, invokes the allocator from FUN_00c85750 on this with size, and returns this.
 // @fnv 0x00ddcd70
+// pdb: hkpWorldViewerBase::`scalar deleting destructor' | hkpWorldViewerBase.obj | retail, vtable slot, high
 CpuObject* CpuObject::DestroyOrFree(unsigned int flags)
 {
     FUN_00ddcc60();
@@ -182,22 +186,24 @@ class BDDCCB0WorldAddedListener
 class FUN_00ddccb0_cls : public BDDCCB0ReferencedObject, public BDDCCB0Process, public BDDCCB0WorldAddedListener
 {
   public:
-    FUN_00ddccb0_cls(const hkArrayBase<BDDCCB0ProcessContext*>& kContexts) throw();
+    FUN_00ddccb0_cls(const hkArrayBase<BDDCCB0ProcessContext*>& contexts) throw();
     virtual ~FUN_00ddccb0_cls();
 
     BDDCCB0PhysicsContext* m_pkContext;
 };
 
 // @fnv 0x00ddccb0
-FUN_00ddccb0_cls::FUN_00ddccb0_cls(const hkArrayBase<BDDCCB0ProcessContext*>& kContexts) throw()
+// pdb: hkpWorldViewerBase::hkpWorldViewerBase | hkpWorldViewerBase.obj | retail, call graph, high
+// pdb params: contexts
+FUN_00ddccb0_cls::FUN_00ddccb0_cls(const hkArrayBase<BDDCCB0ProcessContext*>& contexts) throw()
     : BDDCCB0Process(true), m_pkContext(0)
 {
-    int iSize = kContexts.GetLogicalSize();
+    int iSize = contexts.GetLogicalSize();
     for (int i = 0; i < iSize; i++)
     {
-        if (hkString_strCmp("Physics", kContexts[i]->getType()) == 0)
+        if (hkString_strCmp("Physics", contexts[i]->getType()) == 0)
         {
-            m_pkContext = static_cast<BDDCCB0PhysicsContext*>(kContexts[i]);
+            m_pkContext = static_cast<BDDCCB0PhysicsContext*>(contexts[i]);
             break;
         }
     }
@@ -322,6 +328,7 @@ struct FUN_00ddcc40
 };
 
 // @fnv 0x00ddcc40
+// pdb: hkpPhysicsContextWorldListener::`scalar deleting destructor' | hkpWorldViewerBase.obj | retail, vtable slot, high
 FUN_00ddcc40::~FUN_00ddcc40()
 {}
 

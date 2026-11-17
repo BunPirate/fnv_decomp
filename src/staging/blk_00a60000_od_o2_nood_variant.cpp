@@ -41,6 +41,7 @@ void NiProcessorSpecificCode_TransformVectorsBasic(unsigned short m_usPassCountL
 
 // @fnv 0x00a74880
 // src: COMMUNITY 0x00a74880
+// pdb: NiLines::`scalar deleting destructor' | NiLines.obj | debug, object-file run extension, low
 void __cdecl NiTransformVectorsPentium(unsigned short count, const float* src, float* dst, const float* matrix) {
     unsigned int n = count;
     fnv_TransformVectors(n, src, dst, matrix);

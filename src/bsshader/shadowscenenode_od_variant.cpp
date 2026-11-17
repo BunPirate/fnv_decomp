@@ -7,14 +7,16 @@
 
 struct FUN_00c5b5a0_cls
 {
-    int __thiscall BSPortalGraph_GetAlwaysRenderAt(int idx);
+    int __thiscall BSPortalGraph_GetAlwaysRenderAt(int i);
 };
 
 // @fnv 0x00c5b5a0
 // src: COMMUNITY 0x00c5b5a0
-int __thiscall FUN_00c5b5a0_cls::BSPortalGraph_GetAlwaysRenderAt(int idx)
+// pdb: BSPortalGraph::GetAlwaysRenderAt | BSPortalGraph.obj | debug, upstream name already matches, high
+// pdb params: i
+int __thiscall FUN_00c5b5a0_cls::BSPortalGraph_GetAlwaysRenderAt(int i)
 {
-    int* p = *(int**)((char*)this + 0x40) + idx;
+    int* p = *(int**)((char*)this + 0x40) + i;
     int result = *p;
     return result;
 }
@@ -135,6 +137,8 @@ struct Target2180
 };
 // @fnv 0x007c2180
 // src: COMMUNITY 0x007c2180
+// pdb: SlotMachineMenu::Create3DCamera | SlotMachineMenu.obj | debug, object-file gap fill, medium
+// pdb locals: theta, faspectDelta, fr, fHeightByWidth, pcam, port, UpdateData2
 FUN_00a712f0* Target2180::BlackJackMenu_SetupCamera()
 {
     FUN_00a712f0* camera5 = new FUN_00a712f0;

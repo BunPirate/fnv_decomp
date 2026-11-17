@@ -9,6 +9,7 @@ class SphereTangents;
 
 #include "ANGLE_DIRECTION.h"
 
+// pdb: class NavMeshPOVSearch, size 0x20f8 (here 0x4), bases: AStarSearch<NavMeshPOVSearchNode, 10 members
 class NavMeshPOVSearch : public AStarSearch<NavMeshPOVSearchNode, NavMeshPOVSearchLink>
 {
 public:

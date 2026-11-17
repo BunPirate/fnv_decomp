@@ -34,6 +34,7 @@ int __cdecl CharGenMenu_GetMenuID_()
 }
 
 // @fnv 0x00753380: compiler-generated scalar deleting destructor for CharGenMenu.
+// pdb: CharGenMenu::`scalar deleting destructor' | CharGenMenu.obj | retail, vtable slot, high
 
 extern "C" double _gModifierZero;
 extern int DAT_011d9220;
@@ -45,13 +46,15 @@ struct PC7d
 extern PC7d* g_thePlayer;
 // @fnv 0x00754530
 // src: COMMUNITY 0x00754530
-void __cdecl CharGenMenu_TagSkillsFunc(Tile* tile, ActorValue::Index index)
+// pdb: CharGenMenu::TagSkillsFunc | CharGenMenu.obj | retail, upstream name already matches, high
+// pdb params: apTile, aeIndex
+void __cdecl CharGenMenu_TagSkillsFunc(Tile* apTile, ActorValue::Index aeIndex)
 {
-    if (tile->GetFloat(0xfac) == _gModifierZero)
+    if (apTile->GetFloat(0xfac) == _gModifierZero)
         DAT_011d92a0 = 0;
-    if (tile->ContainsTrait(DAT_011d9220))
+    if (apTile->ContainsTrait(DAT_011d9220))
     {
-        g_thePlayer->GetClass()->SetClassSkillAtIndex(DAT_011d92a0, index);
+        g_thePlayer->GetClass()->SetClassSkillAtIndex(DAT_011d92a0, aeIndex);
         DAT_011d92a0++;
     }
 }
@@ -72,6 +75,9 @@ struct CharGenUISound
 };
 
 // @fnv 0x007542d0
+// pdb: CharGenMenu::DoGamepadUpEvent | CharGenMenu.obj | retail, vtable slot, high
+// pdb params: aiButton, afValue
+// pdb locals: bhandled
 bool __thiscall CharGenMenu::HandleButton(int aiButton, float afValue)
 {
     bool bhandled = false;
@@ -92,6 +98,7 @@ bool __thiscall CharGenMenu::HandleButton(int aiButton, float afValue)
 extern CharGenMenu* DAT_011d920c;
 // Clears the active menu; the shared list member and Menu base then destroy themselves.
 // @fnv 0x007533b0
+// pdb: CharGenMenu::~CharGenMenu | CharGenMenu.obj | retail, upstream name already matches, high
 CharGenMenu::~CharGenMenu()
 {
     DAT_011d920c = 0;
@@ -104,6 +111,8 @@ extern int DAT_011d9224;
 
 // @fnv 0x00754330
 // src: COMMUNITY 0x00754330
+// pdb: CharGenMenu::ResetAttributesFunc | CharGenMenu.obj | debug, object-file gap fill, medium
+// pdb params: apTile, aeIndex
 void __cdecl callback_Tile_T(Tile* tile)
 {
     if (DAT_011d920c)
@@ -114,7 +123,7 @@ void __cdecl callback_Tile_T(Tile* tile)
                 (int)((double)tile->GetFloat(DAT_011d9210) + tile->GetFloat(DAT_011d9214) - 1.0);
         }
         tile->Set(DAT_011d9224, 0.0f, true);
-        DAT_011d920c->UpdateValueString(tile);
+        DAT_011d920c->SetDisplayString(tile);
     }
 }
 
@@ -123,6 +132,8 @@ namespace fnv_007543c0 {
 extern CharGenMenu* DAT_011d920c;
 extern int DAT_011d9224;
 // @fnv 0x007543c0
+// pdb: CharGenMenu::ResetSkillsFunc | CharGenMenu.obj | debug, object-file gap fill, medium
+// pdb params: apTile, aeIndex
 void __cdecl UpdateTagSkillTile(Tile* apTile, ActorValue::Index aeIndex)
 {
     if (apTile->ContainsTrait(DAT_011d9220))
@@ -138,7 +149,7 @@ void __cdecl UpdateTagSkillTile(Tile* apTile, ActorValue::Index aeIndex)
             DAT_011d920c->m_iPointsUsed++;
         }
     }
-    DAT_011d920c->UpdateValueString(apTile);
+    DAT_011d920c->SetDisplayString(apTile);
 }
 }  // namespace fnv_007543c0
 
@@ -152,7 +163,10 @@ int __cdecl _sprintf_s(char*, unsigned int, char const*, ...);
 int __cdecl FNV_strcat_s(char*, unsigned int, char const*);
 
 // @fnv 0x00753d20
-void CharGenMenu::UpdatePointsDisplay()
+// src: XBOX_RETAIL_PDB 0x00753d20
+// pdb: CharGenMenu::UpdatePointCounter | CharGenMenu.obj | retail, call graph, high
+// pdb locals: strcounterStrings, ipointsLeft, strtitleStrings, strtemp
+void CharGenMenu::UpdatePointCounter()
 {
     const char* strtitleStrings[2];
     const char* strcounterStrings[2];
@@ -196,6 +210,8 @@ struct FUN_00754950_shell
 
 // @fnv 0x00754950
 // src: XBOX_PDB 0x00754950
+// pdb: ListBox<enum ActorValue::Index>::IsSelected | CharGenMenu.obj | debug, call graph, high
+// pdb params: apSelectItem
 bool FUN_00754950_shell::ListBox_enum_ActorValue_Index_IsSelected(Tile* apSelectItem)
 {
     static int selectedTrait = GetTileValueID("_selected", -1);
@@ -221,13 +237,15 @@ void __cdecl CharGenMenu_SetAttributesFunc(Tile*, int);
 
 // @fnv 0x007537b0
 // src: XBOX_PDB 0x007537b0
+// pdb: CharGenMenu::Close | CharGenMenu.obj | retail, upstream name already matches, high
+// pdb locals: iskillCt
 void __cdecl CharGenMenu_Close()
 {
     if (DAT_011d920c != 0)
     {
         if (DAT_011d920c->eMode == 0)
         {
-            DAT_011d920c->list.Traverse((void(__cdecl*)(Tile*, ActorValue::Index))CharGenMenu_SetAttributesFunc, 0, 0x7fffffff);
+            DAT_011d920c->lbItemList.Traverse((void(__cdecl*)(Tile*, ActorValue::Index))CharGenMenu_SetAttributesFunc, 0, 0x7fffffff);
         }
         else
         {
@@ -235,7 +253,7 @@ void __cdecl CharGenMenu_Close()
             {
                 ((Proxy_5f6e80*)((Proxy_884350b*)DAT_011dea3c)->Actor_GetClass(i, -1))->FUN_005f6e80();
             }
-            DAT_011d920c->list.Traverse(CharGenMenu_TagSkillsFunc, 0, 0x7fffffff);
+            DAT_011d920c->lbItemList.Traverse(CharGenMenu_TagSkillsFunc, 0, 0x7fffffff);
         }
         DAT_011d920c->FUN_00726070()->Set(0x1772, 1);
         DAT_011d920c->LoadMenuData();
@@ -252,26 +270,28 @@ char const* __cdecl GetActorValueDescription(ActorValue::Index);
 void __cdecl Interface_PlayMenuSound(int);
 
 // @fnv 0x00753870
-void CharGenMenu::HandleTileClick(int id, Tile* tile)
+// pdb: CharGenMenu::DoEnter | CharGenMenu.obj | retail, vtable slot, high
+// pdb params: aiID, apTarget
+void CharGenMenu::HandleTileClick(int aiID, Tile* apTarget)
 {
-    switch (id)
+    switch (aiID)
     {
     case 8:
     case 9:
-        if (tile->GetFloat(0xfac) != unk50)
+        if (apTarget->GetFloat(0xfac) != unk50)
         {
-            m_pTiles[2]->Set(0xfcc, ActorValue_GetActorValueIcon((ActorValue::Index)(int)((LBList*)&list)->FindItemData(tile)), true);
-            m_pTiles[3]->Set(0xfc4, GetActorValueDescription((ActorValue::Index)(int)((LBList*)&list)->FindItemData(tile)), true);
+            m_pTiles[2]->Set(0xfcc, ActorValue_GetActorValueIcon((ActorValue::Index)(int)((LBList*)&lbItemList)->FindItemData(apTarget)), true);
+            m_pTiles[3]->Set(0xfc4, GetActorValueDescription((ActorValue::Index)(int)((LBList*)&lbItemList)->FindItemData(apTarget)), true);
             m_pTiles[2]->Set(0xfa3, 1);
             m_pTiles[3]->Set(0xfa3, 1);
             Interface_PlayMenuSound(4);
-            unk50 = tile->GetFloat(0xfac);
+            unk50 = apTarget->GetFloat(0xfac);
         }
         break;
     case 10:
     case 11:
-        ((LBList*)&list)->Select(tile->FUN_0045cd60());
-        HandleMouseover(8, tile->FUN_0045cd60());
+        ((LBList*)&lbItemList)->Select(apTarget->FUN_0045cd60());
+        HandleMouseover(8, apTarget->FUN_0045cd60());
         break;
     }
 }
@@ -659,23 +679,26 @@ extern const char DAT_01071c88[];
 // Builds attribute tiles and counts the points already assigned.
 
 // @fnv 0x007539a0
-void CharGenMenu::InitMenu()
+// src: XBOX_RETAIL_PDB 0x007539a0
+// pdb: CharGenMenu::InitAttributeList | CharGenMenu.obj | retail, unique string literal, high
+// pdb locals: ivalueCt, pnew, currValue, ibaseValue
+void CharGenMenu::InitAttributeList()
 {
     m_iPointsUsed = 0;
     if (!editing)
         m_iPointsRemaining -= 7;
-    ((fnv_007539a0::List*)&list)->FUN_0075a0d0(m_pTiles[1], fnv_007539a0::DAT_01071c88);
+    ((fnv_007539a0::List*)&lbItemList)->FUN_0075a0d0(m_pTiles[1], fnv_007539a0::DAT_01071c88);
     m_pTiles[1]->Tile_Set(4002, fnv_007539a0::DAT_01071c84, true);
     fnv_007539a0::InterfaceManager_GetSingleton()->animation.InterfaceManager_TutorialManager_ShowMessage(12, GetClass(), 500);
     for (unsigned int i = 0; i < fnv_007539a0::FUN_0066ecf0(0); ++i)
     {
         int e = fnv_007539a0::FUN_0066ec10(0, (unsigned char)i);
-        Tile* j = ((fnv_007539a0::List*)&list)->AddListEntry(e, fnv_007539a0::FUN_0066e950(e), 0, 0);
+        Tile* j = ((fnv_007539a0::List*)&lbItemList)->AddListEntry(e, fnv_007539a0::FUN_0066e950(e), 0, 0);
         int c = fnv_007539a0::DAT_011dea3c->values.GetPermanentActorValue((ActorValue::Index)e);
         j->FUN_00700320(4010, 8);
         j->FUN_00700320(fnv_007539a0::DAT_011d9210, c);
         j->Tile_Set(fnv_007539a0::DAT_011d9224, 0.0f, true);
-        UpdateValueString(j);
+        SetDisplayString(j);
         if (!editing)
             m_iPointsUsed += c - 1;
     }
@@ -923,18 +946,20 @@ struct FUN_00754460_obj
 
 // @fnv 0x00754460
 // src: COMMUNITY 0x00754460
-void __cdecl CharGenMenu_SetAttributesFunc(Tile* pSelf, int a2)
+// pdb: CharGenMenu::SetAttributesFunc | CharGenMenu.obj | retail, upstream name already matches, high
+// pdb params: apTile, aeIndex
+void __cdecl CharGenMenu_SetAttributesFunc(Tile* apTile, int aeIndex)
 {
     if (DAT_011d920c != 0 && DAT_011d920c->m_bValueStringNeedsUpdate != 0 &&
         DAT_011d920c->eMode == 0)
     {
-        int v = ((FUN_00754460_obj*)DAT_011dea3c)->m_a4.GetBaseActorValue((ActorValue::Index)a2);
-        ((FUN_00754460_obj*)DAT_011dea3c)->v229(a2, (float)((double)v + pSelf->FUN_00a011b0(DAT_011d9224)));
+        int v = ((FUN_00754460_obj*)DAT_011dea3c)->m_a4.GetBaseActorValue((ActorValue::Index)aeIndex);
+        ((FUN_00754460_obj*)DAT_011dea3c)->v229(aeIndex, (float)((double)v + apTile->FUN_00a011b0(DAT_011d9224)));
     }
     else
     {
         ((FUN_00754460_obj*)DAT_011dea3c)
-            ->PlayerCharacter_SetActorBaseValueF(a2, (float)((double)pSelf->FUN_00a011b0(DAT_011d9210) + pSelf->FUN_00a011b0(DAT_011d9224)));
+            ->PlayerCharacter_SetActorBaseValueF(aeIndex, (float)((double)apTile->FUN_00a011b0(DAT_011d9210) + apTile->FUN_00a011b0(DAT_011d9224)));
     }
 }
 
@@ -963,11 +988,14 @@ const char* __cdecl Desc753(int);
 // Validates kind and points, rebuilds the menu from a tile file, attaches it, sets kind/points/flags and labels, then shows it and returns the tile.
 // @fnv 0x00753420
 // src: COMMUNITY 0x00753420
-Tile* __cdecl CharGenMenu_Create(int kind, int points, bool onlyAdd, bool flag)
+// pdb: CharGenMenu::Create | CharGenMenu.obj | retail, upstream name already matches, high
+// pdb params: aiItemType, aiMaxPoints, abOnlyAddValues, abShowTaggedSkills
+// pdb locals: pin, ptile, pold_menu_tile, efirstIndex
+Tile* __cdecl CharGenMenu_Create(int aiItemType, int aiMaxPoints, bool abOnlyAddValues, bool abShowTaggedSkills)
 {
     CharGenMenu* oldMenu = Lookup753(0x418);
     Manager753* manager = InterfaceManager_GetSingleton();
-    if (points <= 0 || kind < 0 || kind > 1)
+    if (aiMaxPoints <= 0 || aiItemType < 0 || aiItemType > 1)
         return 0;
     if (oldMenu)
         delete oldMenu;
@@ -983,21 +1011,21 @@ Tile* __cdecl CharGenMenu_Create(int kind, int points, bool onlyAdd, bool flag)
         }
         if (aTile->GetFloat(0xfa7) == 6006.0 || aTile->GetFloat(0xfa7) == 102.0)
             aTile->Set(0xfad, Scale753(), true);
-        menu753->m_iPointsRemaining = points;
-        menu753->eMode = kind;
-        menu753->flag = flag;
-        menu753->onlyAdd = onlyAdd;
-        menu753->FUN_00726070()->SetInt(Tile_TextToTrait(str_01071bfc), onlyAdd);
+        menu753->m_iPointsRemaining = aiMaxPoints;
+        menu753->eMode = aiItemType;
+        menu753->flag = abShowTaggedSkills;
+        menu753->onlyAdd = abOnlyAddValues;
+        menu753->FUN_00726070()->SetInt(Tile_TextToTrait(str_01071bfc), abOnlyAddValues);
         menu753->m_pTiles[5]->Set(0xfc4, g_011d33d8.String(), true);
         menu753->m_pTiles[6]->Set(0xfc4, g_011d35c4.String(), true);
-        if (kind == 0)
-            menu753->InitMenu();
+        if (aiItemType == 0)
+            menu753->InitAttributeList();
         else
-            menu753->BuildSkillList();
+            menu753->InitSkillList();
         menu753->FUN_00726070()->SetInt(DAT_011d9218, menu753->m_iPointsUsed);
         menu753->FUN_00726070()->SetInt(DAT_011d921c, menu753->m_iPointsRemaining);
-        menu753->UpdatePointsDisplay();
-        int iSelectedValue = ((List753*)&menu753->list)->Value(((List753*)&menu753->list)->Selected());
+        menu753->UpdatePointCounter();
+        int iSelectedValue = ((List753*)&menu753->lbItemList)->Value(((List753*)&menu753->lbItemList)->Selected());
         menu753->m_pTiles[2]->Set(0xfcc, Name753(iSelectedValue), true);
         menu753->m_pTiles[3]->Set(0xfc4, Desc753(iSelectedValue), true);
         menu753->m_pTiles[2]->SetInt(0xfa3, 1);
@@ -1405,9 +1433,12 @@ extern const float g_011c72f0_arg1;
 // Builds skill tiles with their values and tag state, then sorts the list.
 
 // @fnv 0x00753b10
-void CharGenMenu::BuildSkillList()
+// src: XBOX_RETAIL_PDB 0x00753b10
+// pdb: CharGenMenu::InitSkillList | CharGenMenu.obj | retail, unique string literal, high
+// pdb locals: ivalueCt, currValue, pnew, fbaseValue
+void CharGenMenu::InitSkillList()
 {
-    ((fnv_00753b10::SkillList*)&list)->Initialize(m_pTiles[1], fnv_00753b10::DAT_01071ca0);
+    ((fnv_00753b10::SkillList*)&lbItemList)->Initialize(m_pTiles[1], fnv_00753b10::DAT_01071ca0);
     m_pTiles[1]->Set(4002, fnv_00753b10::g_011c72f0_arg1, true);
     fnv_00753b10::InterfaceManager_GetSingleton()->skills.InterfaceManager_TutorialManager_ShowMessage(14, GetClass(), 500);
     for (unsigned int i = 0; i < fnv_00753b10::FUN_0066ecf0(2); ++i)
@@ -1415,7 +1446,7 @@ void CharGenMenu::BuildSkillList()
         ActorValue::Index skill = fnv_00753b10::FUN_0066ec10(2, (unsigned char)i);
         if (!fnv_00753b10::ActorValue_IsFlagSet(skill, 8192))
         {
-            Tile* tile = ((fnv_00753b10::SkillList*)&list)->AddListEntry(skill, fnv_00753b10::FUN_0066e950(skill), 0, 0);
+            Tile* tile = ((fnv_00753b10::SkillList*)&lbItemList)->AddListEntry(skill, fnv_00753b10::FUN_0066e950(skill), 0, 0);
             float value = (float)((fnv_00753b10::SkillPlayer*)g_thePlayer)->values.GetPermanentActorValue(skill);
             tile->SetName(fnv_00753b10::FUN_0066e950(skill));
             tile->Set(4010, 9);
@@ -1431,10 +1462,10 @@ void CharGenMenu::BuildSkillList()
                         ++m_iPointsUsed;
                 }
             }
-            UpdateValueString(tile);
+            SetDisplayString(tile);
         }
     }
-    ((fnv_00753b10::SkillList*)&list)->Sort(fnv_00753b10::CompareActorValueNames);
+    ((fnv_00753b10::SkillList*)&lbItemList)->Sort(fnv_00753b10::CompareActorValueNames);
 }
 
 class Handle754
@@ -1466,6 +1497,7 @@ class FUN_00754b40 : public Menu
 
 // Initializes the menu: clears m_bFlag, sets m_iIndex to -1, and assigns a zero-valued Handle754 to m_kHandle.
 // @fnv 0x00754b40
+// pdb: CompanionWheelMenu::CompanionWheelMenu | CompanionWheelMenu.obj | debug, call graph, medium
 FUN_00754b40::FUN_00754b40()
 {
     m_bFlag = false;
@@ -1501,6 +1533,9 @@ struct ScopeGuard
 
 // Checks the object and parameter, then sets the "_selected" trait on the parameter to 1, 0, or toggled based on action (0/1/2); returns true on success.
 // @fnv 0x00754a00
+// pdb: ListBox<enum ActorValue::Index>::Traverse | CharGenMenu.obj | debug, object-file run extension, low
+// pdb params: apTraversalFn, aiStart, aiEnd
+// pdb locals: pnode
 bool Proxy_754a00::SetTraitSelected(void* pTarget, int action)
 {
     if (((Proxy_724430*)this)->ListBox_enum_ActorValue_Index_IsEnabled())
@@ -1545,7 +1580,11 @@ int __cdecl MaxI(int, int);
 int __cdecl GetTrait(char const*, int);
 // Sums three tile reads, clamps the result by the menu mode, and sets the tile's _ValueString trait.
 // @fnv 0x007545a0
-void CharGenMenu::UpdateValueString(Tile* apTile)
+// src: XBOX_RETAIL_PDB 0x007545a0
+// pdb: CharGenMenu::SetDisplayString | CharGenMenu.obj | retail, string-set bridge, high
+// pdb params: apTile
+// pdb locals: idisplayValue, strtemp
+void CharGenMenu::SetDisplayString(Tile* apTile)
 {
     int iValue;
     char strtemp[16];
@@ -1578,37 +1617,40 @@ struct SkItemList
 
 // Processes skill menu commands by ID, toggling or adjusting skill points and updating the display accordingly.
 // @fnv 0x00753ea0
-void CharGenMenu::HandleSkillMenuCommand(int aiID, Tile* apTile)
+// pdb: CharGenMenu::DoClick | CharGenMenu.obj | retail, vtable slot, high
+// pdb params: aiID, apTarget
+// pdb locals: bisSelected, currValue, idelta, eindex, iorigPointCount
+void CharGenMenu::HandleSkillMenuCommand(int aiID, Tile* apTarget)
 {
     switch (aiID)
     {
     case 9: {
-        void* pItemData = ((SkItemList*)&list)->FindItemData(apTile);
-        bool selected = ((SkItemList*)&list)->ListBox_enum_ActorValue_Index_IsSelected(apTile);
+        void* pItemData = ((SkItemList*)&lbItemList)->FindItemData(apTarget);
+        bool selected = ((SkItemList*)&lbItemList)->ListBox_enum_ActorValue_Index_IsSelected(apTarget);
         if ((!selected && m_iPointsUsed < m_iPointsRemaining) ||
             (selected && (!bLimit || !g_skMgr_11dea3c->Actor_GetClass()->FUN_005a5f40(pItemData))))
         {
-            ((SkItemList*)&list)->ListBox_enum_ActorValue_Index_ToggleSelection(apTile);
-            apTile->Tile_Set(DAT_011d9224, ((SkItemList*)&list)->ListBox_enum_ActorValue_Index_IsSelected(apTile) ? *g_skSetting_11ccf5c.Setting_Float_00403e20() : 0.0f,
+            ((SkItemList*)&lbItemList)->ListBox_enum_ActorValue_Index_ToggleSelection(apTarget);
+            apTarget->Tile_Set(DAT_011d9224, ((SkItemList*)&lbItemList)->ListBox_enum_ActorValue_Index_IsSelected(apTarget) ? *g_skSetting_11ccf5c.Setting_Float_00403e20() : 0.0f,
                                   true);
             Interface_PlayMenuSound(3);
             m_iPointsUsed += selected ? -1 : 1;
             FUN_00726070()->Set(DAT_011d9218, m_iPointsUsed);
-            UpdateValueString(apTile);
-            UpdatePointsDisplay();
+            SetDisplayString(apTarget);
+            UpdatePointCounter();
         }
         break;
     }
     case 10:
     case 11: {
-        void* pEntry = ((SkItemList*)&list)->FindItemData(apTile->FUN_0045cd60());
+        void* pEntry = ((SkItemList*)&lbItemList)->FindItemData(apTarget->FUN_0045cd60());
         int delta = aiID != 10 ? 1 : -1;
         m_iPointsUsed += delta;
         FUN_00726070()->Set(DAT_011d9218, m_iPointsUsed);
-        apTile->FUN_0045cd60()->Tile_Set(DAT_011d9224, apTile->FUN_0045cd60()->FUN_00a011b0(DAT_011d9224) + delta,
+        apTarget->FUN_0045cd60()->Tile_Set(DAT_011d9224, apTarget->FUN_0045cd60()->FUN_00a011b0(DAT_011d9224) + delta,
                                                true);
-        UpdateValueString(apTile->FUN_0045cd60());
-        UpdatePointsDisplay();
+        SetDisplayString(apTarget->FUN_0045cd60());
+        UpdatePointCounter();
         break;
     }
     case 6:
@@ -1618,11 +1660,11 @@ void CharGenMenu::HandleSkillMenuCommand(int aiID, Tile* apTile)
         int iOldPointsUsed = m_iPointsUsed;
         m_iPointsUsed = 0;
         if (eMode == 0)
-            list.Traverse((void(__cdecl*)(Tile*, ActorValue::Index))callback_Tile_T, 0, 0x7fffffff);
+            lbItemList.Traverse((void(__cdecl*)(Tile*, ActorValue::Index))callback_Tile_T, 0, 0x7fffffff);
         if (eMode == 1)
-            list.Traverse(fnv_007543c0::UpdateTagSkillTile, 0, 0x7fffffff);
+            lbItemList.Traverse(fnv_007543c0::UpdateTagSkillTile, 0, 0x7fffffff);
         FUN_00726070()->Set(DAT_011d9218, m_iPointsUsed);
-        UpdatePointsDisplay();
+        UpdatePointCounter();
         if (m_iPointsUsed != iOldPointsUsed)
             Interface_PlayMenuSound(1);
         break;
@@ -1638,18 +1680,21 @@ struct SubList
 
 // @fnv 0x00754150
 // src: GUESS 0x00754150 (confidence: low)
-bool CharGenMenu::UpdateState_00754150(int a1, float amount)
+// pdb: CharGenMenu::DoGamepad | CharGenMenu.obj | retail, vtable slot, high
+// pdb params: aiButton, afValue
+// pdb locals: bhandled, parrowTile, earrowID
+bool CharGenMenu::UpdateState_00754150(int aiButton, float afValue)
 {
     bool result = false;
 
-    switch (a1)
+    switch (aiButton)
     {
     case 3:
     case 4:
-        if (this->eMode == 0 && ((SubList*)&this->list)->Selected())
+        if (this->eMode == 0 && ((SubList*)&this->lbItemList)->Selected())
         {
-            int var_8 = (a1 != 4) + 10;
-            Tile* var_c = ((SubList*)&this->list)->Selected()->Tile_GetChildByID(var_8);
+            int var_8 = (aiButton != 4) + 10;
+            Tile* var_c = ((SubList*)&this->lbItemList)->Selected()->Tile_GetChildByID(var_8);
             if (var_c && var_c->IsTraitNonZero(0xfa3))
             {
                 var_c->Tile_PlayTileSound(0xfcb);
@@ -1660,9 +1705,9 @@ bool CharGenMenu::UpdateState_00754150(int a1, float amount)
         break;
 
     case 9:
-        if (this->eMode == 1 && ((SubList*)&this->list)->Selected())
+        if (this->eMode == 1 && ((SubList*)&this->lbItemList)->Selected())
         {
-            this->HandleSelection(9, ((SubList*)&this->list)->Selected());
+            this->HandleSelection(9, ((SubList*)&this->lbItemList)->Selected());
             result = true;
         }
         else if (this->eMode == 0)

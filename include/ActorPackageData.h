@@ -5,6 +5,7 @@ class BGSSaveFormBuffer;
 class BGSLoadFormBuffer;
 enum PTYPE;
 
+// pdb: class ActorPackageData, size 0x4, 0 members
 class ActorPackageData
 {
 public:
@@ -21,5 +22,5 @@ public:
     TESObjectREFR* FUN_00726070();   // 0x00726070: returns +0x4
     void FUN_009f41c0();             // 0x009f41c0 (HighProcess::Update 0x008eeec0)
 
-    static ActorPackageData* CreatePackageData(PTYPE aeType);
+    static ActorPackageData* CreateActorPackageData(PTYPE aPackageType);
 };

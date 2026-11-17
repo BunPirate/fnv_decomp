@@ -58,10 +58,12 @@ extern const S_00ce5070_Vector4 DAT_010c7170;
 // Copies rotation and translation from a Transform into the QsTransform, and sets scale to the constant DAT_010c7170.
 // @fnv 0x00ce5070
 // src: COMMUNITY 0x00ce5070
-void hkQsTransform::setFromTransformNoScale(const hkTransform& akTransform)
+// pdb: hkQsTransform::setFromTransformNoScale | hkQsTransform.obj | retail, upstream name already matches, high
+// pdb params: transform
+void hkQsTransform::setFromTransformNoScale(const hkTransform& transform)
 {
-    m_rotation.FUN_00cb26e0(akTransform.m_rotation);
-    m_vTranslation.m_vComponents = akTransform.m_vTranslation;
+    m_rotation.FUN_00cb26e0(transform.m_rotation);
+    m_vTranslation.m_vComponents = transform.m_vTranslation;
     m_vScale.m_vComponents = DAT_010c7170.m_vComponents;
 }
 
@@ -79,6 +81,8 @@ class FUN_00ce50b0_cls
 
 // @fnv 0x00ce50b0
 // src: GUESS 0x00ce50b0 (confidence: medium)
+// pdb: hkQsTransform::copyToTransformNoScale | hkQsTransform.obj | retail, object-file run extension, low
+// pdb params: transformOut
 void FUN_00ce50b0_cls::CopyRotationAndTranslationToTarget(CB2FC0Object* target)
 {
     Matrix* self = (Matrix*)this;
@@ -114,6 +118,9 @@ struct QsTransformFloats
 // Builds a matrix from rotation, scale, and position, then passes out to FUN_00cb2050.
 // @fnv 0x00ce51f0
 // src: GUESS 0x00ce51f0 (confidence: medium)
+// pdb: hkQsTransform::get4x4ColumnMajor | hkQsTransform.obj | retail, object-file run extension, low
+// pdb params: d
+// pdb locals: scaMatrix, rotMatrix, temp, rotSca
 void QsTransformFloats::BuildMatrixFromRotationScaleAndPosition(int out)
 {
     FUN_008cd6a0_Class rotMatrix;
@@ -214,7 +221,7 @@ struct S_00ce5290_Result
     int unkEC;
 };
 
-void hkMathUtil_decompose4x4ColTransform(const void* input, S_00ce5290_Result* out);
+void hkMathUtil_decompose4x4ColTransform(const void* matrixIn, S_00ce5290_Result* decompOut);
 
 struct S_00ce5290
 {
@@ -226,6 +233,9 @@ struct S_00ce5290
 
 // Calls FUN_00d72e90 to compute a result from input, copies the three vector fields into m_v0, m_v1, m_v2, and returns whether res.unk31 is zero.
 // @fnv 0x00ce5290
+// pdb: hkQsTransform::set4x4ColumnMajor | hkQsTransform.obj | retail, object-file run extension, low
+// pdb params: p
+// pdb locals: decomposition
 S_00ce5290_Bool S_00ce5290::SetFromInput(const void* input)
 {
     __declspec(align(16)) S_00ce5290_Result result;

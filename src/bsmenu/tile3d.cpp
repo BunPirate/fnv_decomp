@@ -69,11 +69,13 @@ template <class T> struct Tile3DArrayAccess : NiTObjectArray<T>
 
 // Handles field value 0xFC4 by clearing the string, then returns null.
 // @fnv 0x00a20c50
-Tile* Tile3D::SetTraitValue(int uiValueID, float fFloatValue, const char* pcStrValue)
+// pdb: Tile3D::PostParse | Tile3D.obj | retail, vtable slot, high
+// pdb params: aiTrait, afValue, axString
+Tile* Tile3D::SetTraitValue(int aiTrait, float afValue, const char* axString)
 {
     char localFrame[0x1c];
-    if (uiValueID == 0xFC4)
-        m_kName.Set("", 0);
+    if (aiTrait == 0xFC4)
+        strCurrentName.Set("", 0);
     return 0;
 }
 
@@ -81,12 +83,14 @@ int* __fastcall _ref_006815c0(void* p);
 void* __fastcall _ref_00726070(void* p);
 void(__thiscall* const pFUN_0078bb60)(void*, int) = 0;
 struct DummyClass_0078a9f0;
-void __fastcall UpdatePlayerTileSettings(DummyClass_0078a9f0* pThis);
+void __fastcall UpdatePlayerTileSettings(DummyClass_0078a9f0* pLoadScreen);
 
 typedef void(__thiscall* FUN_0078bb60_t)(void*, int);
 
 // @fnv 0x0078a9f0
 // src: COMMUNITY 0x0078a9f0
+// pdb: LoadingMenu::PrepPlayerTiles | LoadingMenu.obj | retail, object-file run extension, low
+// pdb note: debug build links it to LoadingMenu::AdvanceScreen
 void __fastcall LoadingMenu_AdvanceScreen(char* pThis)
 {
     *(int*)(pThis + 0x1dc) = *_ref_006815c0(*(void**)(pThis + 0x1d8));
@@ -113,6 +117,8 @@ struct FUN_00a20720_shell : public Tile3D
     void InitTile(Tile* apParent, const char* apName, Tile* apReplacedTile);
 };
 // @fnv 0x00a20720
+// pdb: Tile3D::Init | Tile3D.obj | retail, vtable slot, high
+// pdb params: apParent, apName, apReplacedTile
 void FUN_00a20720_shell::InitTile(Tile* apParent, const char* apName, Tile* apReplacedTile)
 {
     Tile::Init(apParent, apName, apReplacedTile);
@@ -133,13 +139,17 @@ extern NiRTTI DAT_011f36ac;
 
 struct FUN_00a20c80_shell : public Tile3D
 {
-    bool AttachController(NiAVObject* obj);
+    bool Tile3D_FindManagerNode(NiAVObject* apNode);
 };
 // Looks up a NiTimeController of type DAT_011f36ac on obj; if found, stores it at this+0x38 and returns true, otherwise returns false.
 // @fnv 0x00a20c80
-bool FUN_00a20c80_shell::AttachController(NiAVObject* apObject)
+// src: XBOX_RETAIL_PDB 0x00a20c80
+// pdb: Tile3D::FindManagerNode | Tile3D.obj | retail, call graph, high
+// pdb params: apNode
+// pdb locals: pcont
+bool FUN_00a20c80_shell::Tile3D_FindManagerNode(NiAVObject* apNode)
 {
-    NiTimeController* ctrl = apObject->GetController(&DAT_011f36ac);
+    NiTimeController* ctrl = apNode->GetController(&DAT_011f36ac);
     if (ctrl)
     {
         *(NiTimeController**)((char*)this + 0x38) = ctrl;
@@ -155,11 +165,14 @@ struct PropHelper
 
 struct FUN_00a21570_shell : public Tile3D
 {
-    void ApplyAlphaToChildren(NiNode* apNode, float afAlpha, const NiColorA* apTextColor);
+    void ApplyAlphaToChildren(NiNode* apNode, float afAlpha, const NiColorA* aColor);
 };
 
 // @fnv 0x00a21570
-void FUN_00a21570_shell::ApplyAlphaToChildren(NiNode* apNode, float afAlpha, const NiColorA* apColor)
+// pdb: Tile3D::SetAlphaAndColor | Tile3D.obj | retail, vtable slot, high
+// pdb params: apNode, afAlpha, aColor
+// pdb locals: ui, pchild, pgeom, ptsp, pprop
+void FUN_00a21570_shell::ApplyAlphaToChildren(NiNode* apNode, float afAlpha, const NiColorA* aColor)
 {
     if (!apNode)
         return;
@@ -181,14 +194,14 @@ void FUN_00a21570_shell::ApplyAlphaToChildren(NiNode* apNode, float afAlpha, con
                     }
                     if (pchild)
                     {
-                        SetAlphaAndOverlayColor(pchild->IsSceneNode(), afAlpha, (NiColorAlpha*)apColor);
+                        SetAlphaAndOverlayColor(pchild->IsSceneNode(), afAlpha, (NiColorAlpha*)aColor);
                         pgeom = (PropHelper*)pchild->IsGeometry();
                         if (pgeom)
                         {
                             pprop = pgeom->GetProperty(3);
                             ptsp = (char*)pprop;
                             *(float*)(ptsp + 0x78) = afAlpha;
-                            *(NiColorA*)(ptsp + 0x68) = *apColor;
+                            *(NiColorA*)(ptsp + 0x68) = *aColor;
                         }
                     }
                 }
@@ -202,10 +215,14 @@ void __fastcall TrimTrailingNullPointers(void*);
 
 struct FUN_00a20ba0_X
 {
-    void RemovePropertyRecursive(char* pTarget);
+    void Tile3D_RemoveProperties(char* pTarget);
 };
 // @fnv 0x00a20ba0
-void FUN_00a20ba0_X::RemovePropertyRecursive(char* pTarget)
+// src: XBOX_RETAIL_PDB 0x00a20ba0
+// pdb: Tile3D::RemoveProperties | Tile3D.obj | retail, call graph, high
+// pdb params: pTarget
+// pdb locals: a, pobj, pn
+void FUN_00a20ba0_X::Tile3D_RemoveProperties(char* pTarget)
 {
     unsigned int a;
     void* pobj;
@@ -226,7 +243,7 @@ void FUN_00a20ba0_X::RemovePropertyRecursive(char* pTarget)
             ((NiAVObject*)pobj)->RemoveProperty(2);
             val = (char*)((NiAVObject*)pobj)->IsSceneNode();
             if (val)
-                RemovePropertyRecursive(val);
+                Tile3D_RemoveProperties(val);
         }
     }
 }
@@ -252,7 +269,7 @@ inline void NiControllerManager::SetBit(bool bVal, unsigned short uMask)
 inline NiControllerSequence* NiControllerManager::FindSequenceByName(const NiFixedString& kName)
 {
     NiControllerSequence* pkSequence;
-    if (((DummyPointerMap*)&m_kObjectMap)->GetAt((unsigned int)(const char*)kName, (unsigned int&)pkSequence))
+    if (((DummyPointerMap*)&m_kStringMap)->GetAt((unsigned int)(const char*)kName, (unsigned int&)pkSequence))
         return pkSequence;
     return 0;
 }
@@ -285,7 +302,7 @@ inline bool DummyPointerMap::GetAt(unsigned int key, unsigned int& val)
 
 struct Dummy_00a20ed0
 {
-    void UpdateAnimation(float, int);
+    void Tile3D_UpdateSequence(float, int);
 };
 
 struct FUN_00a20cc0_t : public Tile3D
@@ -296,37 +313,40 @@ struct FUN_00a20cc0_t : public Tile3D
     }
     NiControllerManager* Mgr()
     {
-        return (NiControllerManager*)m_pParent;
+        return (NiControllerManager*)pAniManager;
     }
     bool Tile3D_PlaySequence(const char* apSequenceName);
 };
 // Looks up a controller sequence by name and activates it, deactivating the current sequence first, then sets a manager flag and stores the new sequence.
 // @fnv 0x00a20cc0
 // src: COMMUNITY 0x00a20cc0
+// pdb: Tile3D::PlaySequence | Tile3D.obj | retail, upstream name already matches, high
+// pdb params: apSequenceName
+// pdb locals: pseq, bretVal
 bool FUN_00a20cc0_t::Tile3D_PlaySequence(const char* apSequenceName)
 {
-    if (!GetNode() || !m_pParent || !apSequenceName)
+    if (!GetNode() || !pAniManager || !apSequenceName)
         return false;
-    NiControllerSequence* pseq = ((NiControllerManager*)m_pParent)->FindSequenceByName(NiFixedString(apSequenceName));
+    NiControllerSequence* pseq = ((NiControllerManager*)pAniManager)->FindSequenceByName(NiFixedString(apSequenceName));
     if (pseq)
     {
         bool bActivated = false;
-        if (m_pChildTile)
+        if (pCurrentSequence)
         {
-            if (((NiControllerSequence*)m_pChildTile)->GetState() == 1)
-                ((Dummy_00a20ed0*)this)->UpdateAnimation(1.0f, 1);
-            ((NiControllerManager*)m_pParent)->StopSequence((NiControllerSequence*)m_pChildTile);
+            if (((NiControllerSequence*)pCurrentSequence)->GetState() == 1)
+                ((Dummy_00a20ed0*)this)->Tile3D_UpdateSequence(1.0f, 1);
+            ((NiControllerManager*)pAniManager)->StopSequence((NiControllerSequence*)pCurrentSequence);
         }
         if (!bActivated)
         {
             if (pseq->GetState() != 0)
-                ((NiControllerManager*)m_pParent)->StopSequence(pseq);
-            bActivated = ((NiControllerManager*)m_pParent)->ActivateControllerSequence(pseq);
+                ((NiControllerManager*)pAniManager)->StopSequence(pseq);
+            bActivated = ((NiControllerManager*)pAniManager)->ActivateControllerSequence(pseq);
         }
         if (bActivated)
         {
-            ((NiControllerManager*)m_pParent)->SetBit(true, 8);
-            m_pChildTile = pseq;
+            ((NiControllerManager*)pAniManager)->SetBit(true, 8);
+            pCurrentSequence = pseq;
             return true;
         }
     }
@@ -340,7 +360,7 @@ template <class T> inline BSStringT<T>::~BSStringT()
 
 
 
-void __cdecl Interface_ReleaseModelFile(unsigned int value);
+void __cdecl Interface_ReleaseModelFile(unsigned int apFilename);
 void __fastcall Tile_Release(void* pThis);
 
 struct FUN_00a20650_pad
@@ -354,6 +374,7 @@ __forceinline bool Tile3D::TestFlag(unsigned int mask) const
 }
 
 // @fnv 0x00a20650
+// pdb: Tile3D::~Tile3D | Tile3D.obj | retail, upstream name already matches, high
 Tile3D::~Tile3D()
 {
     FUN_00a20650_pad unkPad;
@@ -398,7 +419,7 @@ struct Tile__Extra : NiExtraData
 };
 
 NiNode* __fastcall GetTileNiNode(Tile* tile);
-NiNode* FUN_00706d30();
+NiNode* Interface_GetInterfaceRoot();
 
 const char* __cdecl ModelRoot();
 NiNode* __cdecl LoadTileModel(const char*, bool*);
@@ -435,7 +456,7 @@ struct Tile3DCalc
     void SetValue(int, float, bool);
     bool GetBool(int);
     void UpdateValue(int);
-    void LoadTile()
+    void Tile3D_UpdateNIF() // src: XBOX_RETAIL_PDB 0x00a20980
     {
         const char* name = GetString(0xfcc);
         if (!name)
@@ -478,6 +499,8 @@ struct Tile3DCalc
 };
 
 // @fnv 0x00a20800
+// pdb: Tile3D::MakeNode | Tile3D.obj | retail, vtable slot, high
+// pdb locals: pparent
 NiNode* Tile3DCalc::CreateTileNode()
 {
     if (node)
@@ -486,12 +509,12 @@ NiNode* Tile3DCalc::CreateTileNode()
         node = 0;
     }
     node = new NiNode(0);
-    LoadTile();
+    Tile3D_UpdateNIF();
     if (node)
     {
         NiNode* parentNode = GetTileNiNode(GetParent());
         if (!parentNode)
-            parentNode = FUN_00706d30();
+            parentNode = Interface_GetInterfaceRoot();
         parentNode->AttachChildInAvailableSlot((NiAVObject*)(NiNode*)node, true);
         node->AddExtraData(new Tile__Extra(reinterpret_cast<Tile*>(this), node));
     }
@@ -583,7 +606,7 @@ struct AnimTile
     {
         return node;
     }
-    bool UpdateAnimation(float value, bool force);
+    bool Tile3D_UpdateSequence(float afValue, bool abIsPercentage);
 };
 inline float MaxTime(float value, float low)
 {
@@ -596,7 +619,11 @@ inline float MinTime(float value, float high)
     return high < value ? high : value;
 }
 // @fnv 0x00a20ed0
-bool AnimTile::UpdateAnimation(float value, bool force)
+// src: XBOX_RETAIL_PDB 0x00a20ed0
+// pdb: Tile3D::UpdateSequence | Tile3D.obj | retail, object-file run extension, high
+// pdb params: afValue, abIsPercentage
+// pdb locals: xstr, UpdateData, fend, ftime, fnew_time
+bool AnimTile::Tile3D_UpdateSequence(float afValue, bool abIsPercentage)
 {
     const char* r = GetString(0xfd2);
     if ((name.String() || r) && name != r)
@@ -616,7 +643,7 @@ bool AnimTile::UpdateAnimation(float value, bool force)
         UpdateData update(0.0f);
         GetNode()->Update((NiUpdateData&)update);
     }
-    else if (value == -1.0)
+    else if (afValue == -1.0)
     {
         float time3;
         time3 = GetSequenceTime(sequence) + DeltaTime();
@@ -634,17 +661,17 @@ bool AnimTile::UpdateAnimation(float value, bool force)
             manager->SetBit(false, 8);
         }
     }
-    else if (force || value > 1.0)
+    else if (abIsPercentage || afValue > 1.0)
     {
         float kSeekTime;
         kSeekTime = GetSequenceDuration(sequence);
-        float c = MinTime(MaxTime(kSeekTime * value, 0.0f), kSeekTime);
+        float c = MinTime(MaxTime(kSeekTime * afValue, 0.0f), kSeekTime);
         UpdateData seekUpdate9(c);
         GetNode()->Update((NiUpdateData&)seekUpdate9);
     }
     else
     {
-        UpdateData update(value);
+        UpdateData update(afValue);
         GetNode()->Update((NiUpdateData&)update);
     }
     return true;
@@ -775,19 +802,23 @@ inline void* AllocateShader()
 
 struct FUN_00a21340_shell : Tile3D
 {
-    void ConvertShadersToTileShader(NiNode* node);
+    void Tile3D_SetupShaderPropertiesRecurse(NiNode* apNode);
 };
 
 // @fnv 0x00a21340
-void FUN_00a21340_shell::ConvertShadersToTileShader(NiNode* node)
+// src: XBOX_RETAIL_PDB 0x00a21340
+// pdb: Tile3D::SetupShaderPropertiesRecurse | Tile3D.obj | retail, call graph, high
+// pdb params: apNode
+// pdb locals: i, pnode, pgeom, pshaderprop, ptsp, pshader, ptileShader, pprop
+void FUN_00a21340_shell::Tile3D_SetupShaderPropertiesRecurse(NiNode* apNode)
 {
-    if (node)
+    if (apNode)
     {
-        for (unsigned int i8 = 0; i8 < node->m_kChildren.m_usESize; ++i8)
+        for (unsigned int i8 = 0; i8 < apNode->m_kChildren.m_usESize; ++i8)
         {
-            if (((Tile3DArrayAccess<NiPointer<NiAVObject> >*)&node->m_kChildren)->GetAt(i8))
+            if (((Tile3DArrayAccess<NiPointer<NiAVObject> >*)&apNode->m_kChildren)->GetAt(i8))
             {
-                Geometry* child_ = (Geometry*)((Tile3DArrayAccess<NiPointer<NiAVObject> >*)&node->m_kChildren)->GetAt(i8)->IsGeometry();
+                Geometry* child_ = (Geometry*)((Tile3DArrayAccess<NiPointer<NiAVObject> >*)&apNode->m_kChildren)->GetAt(i8)->IsGeometry();
                 if (child_)
                 {
                     Prop* shader = (Prop*)child_->GetProperty(3);
@@ -804,9 +835,9 @@ void FUN_00a21340_shell::ConvertShadersToTileShader(NiNode* node)
                         child_->shader = texturing2;
                     }
                 }
-                NiNode* geometry9 = ((Tile3DArrayAccess<NiPointer<NiAVObject> >*)&node->m_kChildren)->GetAt(i8)->IsSceneNode();
+                NiNode* geometry9 = ((Tile3DArrayAccess<NiPointer<NiAVObject> >*)&apNode->m_kChildren)->GetAt(i8)->IsSceneNode();
                 if (geometry9)
-                    ConvertShadersToTileShader(geometry9);
+                    Tile3D_SetupShaderPropertiesRecurse(geometry9);
             }
         }
     }
@@ -855,9 +886,9 @@ long FinishScriptRunLock(void* p);
 long InitScriptRunLock(void* p);
 
 const char* FUN_00707860();
-NiAVObject* Interface_LoadModelFile(const char* path, bool* flag);
-NiAVObject* Interface_CopyOrDeepCopyNode(NiAVObject* obj);
-void Interface_SetNeedToUpdate(int a);
+NiAVObject* Interface_LoadModelFile(const char* apFilename, bool* arbFromModelLoader);
+NiAVObject* Interface_CopyOrDeepCopyNode(NiAVObject* apNode);
+void Interface_SetNeedToUpdate(int abSet);
 void Interface_ClearTempModel();
 
 }  // namespace fnv_00a20980
@@ -875,7 +906,10 @@ template <> inline NiNode* NiPointer<NiNode>::operator->() const
 
 // Loads an object from a constructed path, attaches it beneath the node, converts its shaders, and updates culling and flags.
 // @fnv 0x00a20980
-void Tile3D::LoadTile()
+// src: XBOX_RETAIL_PDB 0x00a20980
+// pdb: Tile3D::UpdateNIF | Tile3D.obj | retail, call graph, high
+// pdb locals: bfromModelLoader, pfilename, pnif
+void Tile3D::UpdateNIF()
 {
     using namespace fnv_00a20980;
     const char* pszName = GetString(0xfcc);
@@ -889,20 +923,20 @@ void Tile3D::LoadTile()
     NiAVObject* m_kModelObjectsItem = Interface_LoadModelFile(strFilename.String(), &flag);
     if (!m_kModelObjectsItem)
     {
-        m_pRenderedNodeEntry = 0;
+        spModel = 0;
         return;
     }
     SetModelLoaded(this, flag);
     if (m_kModelObjectsItem->GetParent())
         m_kModelObjectsItem = Interface_CopyOrDeepCopyNode(m_kModelObjectsItem);
-    AttachController(m_kModelObjectsItem);
-    ((Tile3DArrayAccess<NiPointer<NiAVObject> >*)&m_pRenderedNodeEntry->m_kChildren)->RemoveAll();
-    RemovePropertyRecursive(m_kModelObjectsItem);
-    ConvertShadersToTileShader(m_kModelObjectsItem);
-    m_pRenderedNodeEntry->AttachChildInAvailableSlot(m_kModelObjectsItem, true);
+    FindManagerNode(m_kModelObjectsItem);
+    ((Tile3DArrayAccess<NiPointer<NiAVObject> >*)&spModel->m_kChildren)->RemoveAll();
+    RemoveProperties(m_kModelObjectsItem);
+    SetupShaderPropertiesRecurse(m_kModelObjectsItem);
+    spModel->AttachChildInAvailableSlot(m_kModelObjectsItem, true);
     Set(0xfa8, 1.0f, true);
-    m_pRenderedNodeEntry->SetAppCulled(!IsTraitNonZero(0xfa3));
-    m_pRenderedNodeEntry->UpdateProperties();
+    spModel->SetAppCulled(!IsTraitNonZero(0xfa3));
+    spModel->UpdateProperties();
     if (uiFlags & 0x40)
         uiFlags ^= 0x40;
     Tile_SetChangeFlag(9);

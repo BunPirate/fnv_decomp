@@ -14,6 +14,7 @@ struct FileFormCollection;
 typedef char _sizecheck_TESTextureList[sizeof(FileEntryList) == 8 ? 1 : -1];
 
 // @fnv 0x00488ff0
+// pdb: TESTextureList::~TESTextureList | TESModel.obj | debug, call graph, medium
 FileEntryList::~FileEntryList()
 {
     ClearData();
@@ -23,17 +24,19 @@ extern void __cdecl _Deallocate(void*);
 
 // Frees the texture offset array if present, nulls it, resets the texture count, and returns whether anything was freed.
 // @fnv 0x00489620
+// pdb: TESTextureList::ClearData | TESModel.obj | debug, call graph (shared callers), high
+// pdb locals: bresult
 bool FileEntryList::ClearData()
 {
     bool bresult = false;
-    if (m_ppFileEntries)
+    if (pTextureOffsetArray)
     {
-        BSFileEntry** p = m_ppFileEntries;
+        BSFileEntry** p = pTextureOffsetArray;
         _Deallocate(p);
-        m_ppFileEntries = 0;
+        pTextureOffsetArray = 0;
         bresult = true;
     }
-    m_ucFileEntryCount = 0;
+    cTextureCount = 0;
     return bresult;
 }
 
@@ -73,6 +76,7 @@ struct FUN_004890e0_shell
 };
 
 // @fnv 0x004890e0
+// pdb: TESModel::ClearDataComponent | TESModel.obj | retail, vtable slot, high
 void FUN_004890e0_shell::ForwardToMember()
 {
     ((FileEntryList*)((char*)this + 0xc))->ClearData();
@@ -91,6 +95,7 @@ struct FUN_00489860_shell
 // Stores the four byte arguments into b0..b3 and the int argument into i4, then returns this as an unsigned char pointer.
 // @fnv 0x00489860
 // src: COMMUNITY 0x00489860
+// pdb: BSArchive::QEmbeddedFileNames | TESModel.obj | debug, object-file run extension, low
 unsigned char* __thiscall FUN_00489860_shell::BSHash_BSHash_0(unsigned char aucByte0, unsigned char aucByte1,
                                                            unsigned char aucByte2, unsigned char aucByte3, int aiValue)
 {
@@ -125,13 +130,16 @@ typedef char _sizecheck_BaseFormComponent[sizeof(BaseFormComponent) == 4 ? 1 : -
 typedef char _sizecheck_TESLeveledList[sizeof(TESLeveledList) == 28 ? 1 : -1];
 
 // @fnv 0x00487a00
+// pdb: TESLeveledList::AddScriptAddedLeveledObject | TESLeveledList.obj | retail, upstream name already matches, high
+// pdb params: apOwner, asLevel, asCount, apForm, apExtra
+// pdb locals: plev
 void TESLeveledList::AddScriptAddedLeveledObject(TESForm* apOwner, unsigned short asLevel, unsigned short asCount, TESForm* apForm,
                                       ContainerItemExtra* apExtra)
 {
-    LeveledObject* plev = CreateLeveledObject(asLevel, asCount, apForm, apExtra);
+    LeveledObject* plev = AddLeveledObject(asLevel, asCount, apForm, apExtra);
     if (plev)
     {
-        m_kLeveledObjects.AddHead(plev);
+        ScriptAddedList.AddHead(plev);
         apOwner->MarkAsModified(0x80000000);
     }
 }
@@ -139,6 +147,7 @@ void TESLeveledList::AddScriptAddedLeveledObject(TESForm* apOwner, unsigned shor
 void __cdecl _Deallocate(void*);
 // Calls the TESModel destructor and, when flags has bit 0 set, deallocates this; returns this.
 // @fnv 0x00489010
+// pdb: TESModel::`scalar deleting destructor' | TESModel.obj | debug, vtable slot, medium
 void* TESModel::FUN_00489010(unsigned int flags)
 {
     this->TESModel::~TESModel();
@@ -163,6 +172,7 @@ struct FUN_00489040_shell
 };
 // If the ::BSStringT<char> member converts to a nonzero value, clears it via Set(0, 0), then zeroes the byte at offset 0x14.
 // @fnv 0x00489040
+// pdb: TESModel::InitializeDataComponent | TESModel.obj | retail, vtable slot, high
 void FUN_00489040_shell::ClearString()
 {
     if ((Flt&)FullNameComponent)
@@ -178,6 +188,8 @@ struct FUN_004898a0_shell : public FUN_004898c0_shell
 
 // @fnv 0x004898a0
 // src: COMMUNITY 0x004898a0
+// pdb: BSArchiveHeader::CheckFlag | TESModel.obj | debug, object-file run extension, low
+// pdb params: aiFlag
 bool FUN_004898a0_shell::BSArchive_HasEmbeddedFileNames()
 {
     return BSArchive_GetFlag_(256) != 0;
@@ -193,6 +205,8 @@ extern Flt DAT_011f8190[];
 extern Flt DAT_011f81b4[];
 // Returns the value at index param_1 from DAT_011f8190 if nonzero, otherwise from DAT_011f81b4.
 // @fnv 0x004898f0
+// pdb: ArchiveManager::GetMasterArchive | TESModel.obj | debug, object-file run extension, low
+// pdb params: aeTypeIndex
 unsigned int GetFltValue(int aiIndex)
 {
     Flt* b;
@@ -218,9 +232,12 @@ struct _WIN32_FIND_DATAA;
 extern "C" void* __cdecl _alloca(unsigned int);
 extern "C" void* __cdecl memset(void*, int, unsigned int);
 // @fnv 0x00489940
-void FileEntryList::Load(TESFile* file, TESForm* form, char* name)
+// pdb: TESTextureList::Load | TESModel.obj | retail, call graph (shared callers), high
+// pdb params: apFile, apParentForm, apModelName
+// pdb locals: icount, isize, iusablesize, pdata
+void FileEntryList::Load(TESFile* apFile, TESForm* apParentForm, char* apModelName)
 {
-    unsigned int isize = file->GetChunkSize();
+    unsigned int isize = apFile->GetChunkSize();
     if (isize % 24)
         return;
     unsigned int icount = isize / 24;
@@ -229,8 +246,8 @@ void FileEntryList::Load(TESFile* file, TESForm* form, char* name)
     {
         FileFormCollection* pdata = (FileFormCollection*)_alloca(iusablesize);
         memset(pdata, 0, iusablesize);
-        file->GetChunkData(pdata, iusablesize);
-        WriteFileEntryToBuffer(pdata, icount, form, name);
+        apFile->GetChunkData(pdata, iusablesize);
+        LoadFromBuffer(pdata, icount, apParentForm, apModelName);
     }
 }
 
@@ -241,6 +258,7 @@ struct FUN_004f9ec0_shell
 };
 // Calls CallInnerMethod, then deletes this if bit 0 of flags is set, and returns this.
 // @fnv 0x004f9ec0
+// pdb: BGSDebrisData::`scalar deleting destructor' | BGSDebris.obj | debug, object-file gap fill, medium
 void* FUN_004f9ec0_shell::DestroyIfFlagged(unsigned int flags)
 {
     CallInnerMethod();
@@ -282,6 +300,7 @@ struct FUN_00488f50_cls : SpawnedBase
 };
 
 // @fnv 0x00488f50
+// pdb: TESModel::TESModel | TESModel.obj | retail, call graph, medium
 FUN_00488f50_cls::FUN_00488f50_cls()
 {
     ClearString();
@@ -295,21 +314,25 @@ struct FUN_00489120_cls
     virtual void v3();
     virtual void v4();
     virtual char* GetPath();
-    void SetFarPath(char* path);
+    void TESModel_GetDistantModelName(char* apModelName);
 };
 
 void __cdecl FUN_00406d30(char* dst, int maxLen, const char* src);
 char* __cdecl strrchr_0040ab30(const char* s, int ch);
 
 // @fnv 0x00489120
-void FUN_00489120_cls::SetFarPath(char* path)
+// src: XBOX_RETAIL_PDB 0x00489120
+// pdb: TESModel::GetDistantModelName | TESModel.obj | retail, string-set bridge, high
+// pdb params: apModelName
+// pdb locals: pext
+void FUN_00489120_cls::TESModel_GetDistantModelName(char* apModelName)
 {
     char* ext;
-    FUN_00406d30(path, 0x104, GetPath());
-    ext = strrchr_0040ab30(path, 0x2e);
+    FUN_00406d30(apModelName, 0x104, GetPath());
+    ext = strrchr_0040ab30(apModelName, 0x2e);
     if (ext != 0)
     {
-        FUN_00406d30(ext, 0x104 - (ext - path), "_far.NIF");
+        FUN_00406d30(ext, 0x104 - (ext - apModelName), "_far.NIF");
     }
 }
 
@@ -339,19 +362,22 @@ class B479FB0IdleList
     short unk06;
     B479FB0Idle** m_ppkIdles;
 
-    bool BGSIdleCollection_HasIdleForActor(B479FB0Actor* pkActor, int iArg);
+    bool BGSIdleCollection_HasIdleForActor(B479FB0Actor* apActor, int apTargetRef);
 };
 
 // @fnv 0x00479fb0
 // src: COMMUNITY 0x00479fb0
-bool B479FB0IdleList::BGSIdleCollection_HasIdleForActor(B479FB0Actor* pkActor, int iArg)
+// pdb: BGSIdleCollection::HasIdleForActor | BGSIdleCollection.obj | retail, upstream name already matches, high
+// pdb params: apActor, apTargetRef
+// pdb locals: i, pidle
+bool B479FB0IdleList::BGSIdleCollection_HasIdleForActor(B479FB0Actor* apActor, int apTargetRef)
 {
-    if (pkActor)
+    if (apActor)
     {
         for (int i = 0; i < m_ucCount; i++)
         {
             B479FB0Idle* pkIdle = m_ppkIdles[i];
-            if (pkIdle && pkActor->HasIdleInFormArray(pkIdle) && pkIdle->FUN_005ff430(pkActor, iArg, true))
+            if (pkIdle && apActor->HasIdleInFormArray(pkIdle) && pkIdle->FUN_005ff430(apActor, apTargetRef, true))
                 return true;
         }
     }
@@ -361,8 +387,8 @@ bool B479FB0IdleList::BGSIdleCollection_HasIdleForActor(B479FB0Actor* pkActor, i
 // @fnv 0x00488fd0
 FileEntryList::FileEntryList()
 {
-    m_ucFileEntryCount = 0;
-    m_ppFileEntries = 0;
+    cTextureCount = 0;
+    pTextureOffsetArray = 0;
 }
 
 // Destructor: clear the entries; the entry list and the name string are destroyed afterwards.
@@ -395,6 +421,7 @@ class FUN_00489070
 };
 
 // @fnv 0x00489070
+// pdb: TESModel::~TESModel | TESModel.obj | retail, call graph, high
 FUN_00489070::~FUN_00489070()
 {
     Clear();
@@ -405,13 +432,16 @@ int __cdecl B489480Stricmp(const char* pcA, const char* pcB);
 struct FUN_00489480_shell : public TESModel
 {
 
-    bool IsModelPathDifferent(BaseFormComponent* pkComponent);
+    bool IsModelPathDifferent(BaseFormComponent* apCompareFC);
 };
 
 // @fnv 0x00489480
-bool FUN_00489480_shell::IsModelPathDifferent(BaseFormComponent* pkComponent)
+// pdb: TESModel::CompareComponent | TESModel.obj | retail, vtable slot, high
+// pdb params: apCompareFC
+// pdb locals: pcompmodel, pCompare, pmodel
+bool FUN_00489480_shell::IsModelPathDifferent(BaseFormComponent* apCompareFC)
 {
-    FUN_00489480_shell* pkOther = static_cast<FUN_00489480_shell*>(dynamic_cast<TESModel*>(pkComponent));
+    FUN_00489480_shell* pkOther = static_cast<FUN_00489480_shell*>(dynamic_cast<TESModel*>(apCompareFC));
     if (!pkOther)
         return true;
     const char* pcPath = GetModelFilePath();
@@ -463,38 +493,42 @@ void __cdecl Warning_005b5e40(const char* fmt, ...);
 
 // Stores the count and allocates an array, then for each Elem builds two keys, looks up an archive entry, and logs a warning when the lookup fails.
 // @fnv 0x00489670
-void FileEntryList::WriteFileEntryToBuffer(FileFormCollection* aElems, unsigned int count, TESForm* form, char* model)
+// src: XBOX_RETAIL_PDB 0x00489670
+// pdb: TESTextureList::LoadFromBuffer | TESModel.obj | retail, string-set bridge, high
+// pdb params: apBuffer, aiCount, apParentForm, apModelName
+// pdb locals: pmasterTextureArchive, i, dirhash, filehash, filehash2
+void FileEntryList::LoadFromBuffer(FileFormCollection* apBuffer, unsigned int aiCount, TESForm* apParentForm, char* apModelName)
 {
     FUN_004898a0_shell* s = GetFltValue(1);
     if (!(s != 0 && ((FUN_004898a0_shell*)((char*)s + 0x160))->BSArchive_HasEmbeddedFileNames() &&
           *((FUN_00408d60_shell*)&DAT_011c5574)->FUN_00408d60() != 0))
         return;
-    m_ucFileEntryCount = (unsigned char)count;
-    m_ppFileEntries = (BSFileEntry**)new unsigned int[count];
-    for (unsigned int i = 0; i < count; i++)
+    cTextureCount = (unsigned char)aiCount;
+    pTextureOffsetArray = (BSFileEntry**)new unsigned int[aiCount];
+    for (unsigned int i = 0; i < aiCount; i++)
     {
         FUN_00489860_shell key0;
-        key0.BSHash_BSHash_0(aElems[i].b0, aElems[i].b1, aElems[i].b2, aElems[i].b3, aElems[i].i4);
+        key0.BSHash_BSHash_0(apBuffer[i].b0, apBuffer[i].b1, apBuffer[i].b2, apBuffer[i].b3, apBuffer[i].i4);
         FUN_00489860_shell key1;
-        key1.BSHash_BSHash_0(aElems[i].c0, aElems[i].c1, aElems[i].c2, aElems[i].c3, aElems[i].i14);
-        m_ppFileEntries[i] = (BSFileEntry*)FindFileEntryInArchives(1, &key1, &key0, 0);
+        key1.BSHash_BSHash_0(apBuffer[i].c0, apBuffer[i].c1, apBuffer[i].c2, apBuffer[i].c3, apBuffer[i].i14);
+        pTextureOffsetArray[i] = (BSFileEntry*)FindFileEntryInArchives(1, &key1, &key0, 0);
         if (*((FUN_00408d60_shell*)&DAT_011c555c)->FUN_00408d60() != 0)
         {
             if (ArchiveManager_ArchivesEnabled())
             {
-                if (m_ppFileEntries[i] == 0)
+                if (pTextureOffsetArray[i] == 0)
                 {
-                    if (form != 0 && model != 0)
+                    if (apParentForm != 0 && apModelName != 0)
                     {
                         Warning_005b5e40(
                             "MASTERFILE: Failed to find archive file entry for texture on model '%s' for form %s (%08X).",
-                            model, form->GetName(), form->GetHavokWorldObjectCountInSceneGraph_0084e3a0());
+                            apModelName, apParentForm->GetName(), apParentForm->GetHavokWorldObjectCountInSceneGraph_0084e3a0());
                     }
-                    else if (model != 0)
+                    else if (apModelName != 0)
                     {
                         Warning_005b5e40(
                             "MASTERFILE: Failed to find archive file entry for texture on model '%s' on UNKNOWN form.",
-                            model);
+                            apModelName);
                     }
                     else
                     {
@@ -506,7 +540,7 @@ void FileEntryList::WriteFileEntryToBuffer(FileFormCollection* aElems, unsigned 
     }
 }
 
-void __cdecl TESForm_AddChunkArray(char* pcDest, const char* pcSrc, unsigned int uiSize);
+void __cdecl TESForm_AddChunkArray(char* aeChunkID, const char* apData, unsigned int aiSize);
 
 struct FUN_004891d0_hash
 {
@@ -530,6 +564,9 @@ struct FUN_004891d0_cls
 
 // When FUN_0048cee0() is nonzero, copies GetPath() to pcBuffer and passes pkOut and GetPath() to m_kObjectMap.FUN_008d0600.
 // @fnv 0x004891d0
+// pdb: BSSendSceneGraphCommand::WriteToBuffer | BSSendSceneGraphCommand.obj | debug, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
+// pdb params: apSrc, apDest, aiWrite, apiAvailable
+// pdb locals: pcurrentPos, iwritten
 void FUN_004891d0_cls::WriteToBuffer(char* pcBuffer, void* pkOut)
 {
     if (FUN_0048cee0())
@@ -556,11 +593,14 @@ extern "C" char FNV_RTTI_TESForm;
 extern "C" char FNV_RTTI_TESObjectREFR;
 extern unsigned char DAT_011831e8;
 
-FUN_004895b0_model* TESBipedModelForm_GetWorldTESModel(TESForm* form, TESObjectREFR* ref);
+FUN_004895b0_model* TESBipedModelForm_GetWorldTESModel(TESForm* apObj, TESObjectREFR* apRef);
 
 // Calls FNV_DynamicCast and FUN_00481010, then returns v5() or an empty string.
 // @fnv 0x004895b0
 // src: XBOX_PDB 0x004895b0
+// pdb: TESModel::GetModel | TESModel.obj | debug, call graph, medium
+// pdb params: apObj
+// pdb locals: pmodel
 const char* TESModel_GetModel_004895b0(TESForm* apForm)
 {
     FUN_004895b0_model* m = (FUN_004895b0_model*)FNV_DynamicCast(apForm, 0, &FNV_RTTI_TESForm, &DAT_011831e8, 0);
@@ -578,11 +618,14 @@ const char* TESModel_GetModel_004895b0(TESForm* apForm)
 
 struct DistantModelView : TESModel
 {
-    void SetFarPath(char*);
+    void TESModel_GetDistantModelName(char*);
 };
 // If apForm is a TESModel, cast it to DistantModelView and call FUN_00489120 with apModelName.
 // @fnv 0x00489190
 // src: XBOX_PDB 0x00489190
+// pdb: TESModel::GetDistantModelName | TESModel.obj | retail, object-file run extension, low
+// pdb params: apModelName
+// pdb locals: pext
 void TESModel_GetDistantModelName(char* apModelName, TESForm* apForm)
 {
     TESModel* pmodel;
@@ -591,7 +634,7 @@ void TESModel_GetDistantModelName(char* apModelName, TESForm* apForm)
         pmodel = dynamic_cast<TESModel*>(apForm);
         if (pmodel)
         {
-            static_cast<DistantModelView*>(pmodel)->SetFarPath(apModelName);
+            static_cast<DistantModelView*>(pmodel)->TESModel_GetDistantModelName(apModelName);
         }
     }
 }
@@ -599,17 +642,22 @@ void TESModel_GetDistantModelName(char* apModelName, TESForm* apForm)
 // Loads texture file entries into the model's texture list from the given file, using the model's path and form context.
 // @fnv 0x004893e0
 // src: XBOX_PDB 0x004893e0
-void TESModel_LoadModelTextureChunk(TESModel* model, TESFile* file)
+// pdb: TESModel::LoadModelTextureChunk | TESModel.obj | retail, upstream name already matches, high
+// pdb params: apModel, apFile
+void TESModel_LoadModelTextureChunk(TESModel* apModel, TESFile* apFile)
 {
-    if (model && file)
-        model->m_pTextureSwapData.Load(file, dynamic_cast<TESForm*>(model), model->GetModelFilePath());
+    if (apModel && apFile)
+        apModel->TextureList.Load(apFile, dynamic_cast<TESForm*>(apModel), apModel->GetModelFilePath());
 }
 
 // Copies the model path from a BaseFormComponent cast to TESModel.
 // @fnv 0x00489430
-void TESModel::BaseFormRecord(BaseFormComponent* component)
+// pdb: TESModel::CopyComponent | TESModel.obj | retail, vtable slot, high
+// pdb params: apCopyFC
+// pdb locals: pcopy
+void TESModel::BaseFormRecord(BaseFormComponent* apCopyFC)
 {
-    TESModel* copy = dynamic_cast<TESModel*>(component);
+    TESModel* copy = dynamic_cast<TESModel*>(apCopyFC);
     if (copy == 0)
         return;
     SetModelFilePath(copy->GetModelFilePath());
@@ -617,14 +665,17 @@ void TESModel::BaseFormRecord(BaseFormComponent* component)
 
 // @fnv 0x00489540
 // src: XBOX_PDB 0x00489540
-unsigned int __cdecl TESModel_GetModelLength(void* apForm)
+// pdb: TESModel::GetModelLength | TESModel.obj | retail, upstream name already matches, high
+// pdb params: apObj
+// pdb locals: pmodel
+unsigned int __cdecl TESModel_GetModelLength(void* apObj)
 {
     void* result;
 
-    result = ::FNV_DynamicCast(apForm, 0, &::FNV_RTTI_TESForm, &::DAT_011831e8, 0);
+    result = ::FNV_DynamicCast(apObj, 0, &::FNV_RTTI_TESForm, &::DAT_011831e8, 0);
     if (result == 0)
     {
-        result = ::TESBipedModelForm_GetWorldTESModel((::TESForm*)apForm, (::TESObjectREFR*)::FNV_DynamicCast(apForm, 0, &::FNV_RTTI_TESForm,
+        result = ::TESBipedModelForm_GetWorldTESModel((::TESForm*)apObj, (::TESObjectREFR*)::FNV_DynamicCast(apObj, 0, &::FNV_RTTI_TESForm,
                                                                                         &::FNV_RTTI_TESObjectREFR, 0));
     }
     if (result != 0)
@@ -649,18 +700,21 @@ int __fastcall _FNV_GetFormType(TESForm*);
 // Returns the biped model for a TESBipedModelForm, selecting the male or female variant based on the owner actor's sex when a reference is provided.
 // @fnv 0x00481010
 // src: XBOX_PDB 0x00481010
-FUN_004895b0_model* __cdecl TESBipedModelForm_GetWorldTESModel(TESForm* apBipedModelForm, TESObjectREFR* apReference)
+// pdb: TESBipedModelForm::GetWorldTESModel | TESBipedModelForm.obj | retail, upstream name already matches, high
+// pdb params: apObj, apRef
+// pdb locals: powner, pbipedModel, esex
+FUN_004895b0_model* __cdecl TESBipedModelForm_GetWorldTESModel(TESForm* apObj, TESObjectREFR* apRef)
 {
-    TESBipedModelForm* sex = dynamic_cast<TESBipedModelForm*>(apBipedModelForm);
+    TESBipedModelForm* sex = dynamic_cast<TESBipedModelForm*>(apObj);
     TESForm* biped;
     int iOwnerSex;
 
     if (sex == 0)
         return 0;
-    if (apReference == 0)
+    if (apRef == 0)
         return reinterpret_cast<FUN_004895b0_model*>(&sex->groundModel[0]);
 
-    biped = reinterpret_cast<ReferenceOwnerView481010*>(apReference)->TESObjectREFR_GetOwner();
+    biped = reinterpret_cast<ReferenceOwnerView481010*>(apRef)->TESObjectREFR_GetOwner();
     iOwnerSex = 0;
     if (biped != 0 && _FNV_GetFormType(biped) == 0x2a)
         iOwnerSex = reinterpret_cast<ActorSexView481010*>(biped)->FUN_005f0cc0();

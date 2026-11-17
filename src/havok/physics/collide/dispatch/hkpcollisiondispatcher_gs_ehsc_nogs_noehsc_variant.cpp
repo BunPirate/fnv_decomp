@@ -16,7 +16,7 @@
 // Functions are listed by their @fnv annotations; compile flags inferred from the PC code.
 extern int DAT_01268360;
 const char* GetHavokShapeTypeName(int type);
-int Vsnprintf(char* buf, int size, const char* fmt, ...);
+int hkString_snprintf(char* buf, int size, const char* fmt, ...);
 
 struct InlineStorageString
 {
@@ -29,6 +29,8 @@ struct InlineStorageString
 };
 // @fnv 0x00cfc1d0
 // src: HAVOK_LIB 0x00cfc1d0
+// pdb: hkpCollisionDispatcher::debugPrintTable | hkpCollisionDispatcher.obj | retail, string-set bridge, high
+// pdb locals: buf, assertBuf, ostr, str, reportBuf
 void hkpCollisionDispatcher::debugPrintTable()
 {
     ((hkError*)DAT_01268360)->beginSection(0x5e4345e4, "hkpCollisionDispatcher::debugPrintTable");
@@ -54,7 +56,7 @@ void hkpCollisionDispatcher::debugPrintTable()
                 const char* other = GetHavokShapeTypeName(j);
                 const char* a = GetHavokShapeTypeName(entry.m_iAgentTypeA);
                 const char* b = GetHavokShapeTypeName(entry.m_iAgentTypeB);
-                Vsnprintf(lineBuf, 255, "vs %30s <%i:%s-%s>", other, entry.m_priority, a, b);
+                hkString_snprintf(lineBuf, 255, "vs %30s <%i:%s-%s>", other, entry.m_priority, a, b);
                 hkOstream stream(static_cast<void*>(buf), 512);
                 stream << lineBuf;
                 ((hkError*)DAT_01268360)->message(0, -1, buf, ".\\Dispatch\\hkpCollisionDispatcher.cpp", 562);
@@ -78,7 +80,7 @@ void hkpCollisionDispatcher::debugPrintTable()
                 const char* other = GetHavokShapeTypeName(j);
                 const char* a = GetHavokShapeTypeName(entry.m_iAgentTypeA);
                 const char* b = GetHavokShapeTypeName(entry.m_iAgentTypeB);
-                Vsnprintf(lineBuf, 255, "vs %30s <%i:%s-%s>", other, entry.m_priority, a, b);
+                hkString_snprintf(lineBuf, 255, "vs %30s <%i:%s-%s>", other, entry.m_priority, a, b);
                 hkOstream stream(static_cast<void*>(buf), 512);
                 stream << lineBuf;
                 ((hkError*)DAT_01268360)->message(0, -1, buf, ".\\Dispatch\\hkpCollisionDispatcher.cpp", 585);

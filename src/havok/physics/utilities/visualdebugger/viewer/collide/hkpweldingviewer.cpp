@@ -8,13 +8,15 @@
 
 struct FUN_00dd9380_class
 {
-    void* hkProcessFactory_registerProcess(const char* name, void* factory);
+    void* hkProcessFactory_registerProcess(const char* viewerName, void* creationFunction);
 };
 extern int DAT_01269cd0;
 extern int DAT_01268fbc;
 void* __cdecl FUN_00d62e20();
 // @fnv 0x00d62e60
-void __cdecl RegisterWeldingViewer()
+// src: XBOX_RETAIL_PDB 0x00d62e60
+// pdb: hkpWeldingViewer::registerViewer | hkpWeldingViewer.obj | retail, string-set bridge, high
+void __cdecl hkpWeldingViewer_registerViewer()
 {
     void* result = ((FUN_00dd9380_class*)DAT_01269cd0)->hkProcessFactory_registerProcess("WeldingViewer", (void*)&FUN_00d62e20);
     DAT_01268fbc = (int)result;
@@ -31,7 +33,7 @@ struct S_00d62650_B3
 };
 struct S_00d62650_Arg
 {
-    void __thiscall hkpWorld_addWorldPostSimulationListener(S_00d62650_B3* p);
+    void __thiscall hkpWorld_addWorldPostSimulationListener(S_00d62650_B3* worldListener);
 };
 struct S_00d62650_B2
 {
@@ -79,7 +81,7 @@ void HKConstraint::ProcessAndTransformResult_00d62680(HKWorldList* pWorldList)
 
 struct S_00d626b0_Item
 {
-    void hkpWorld_addWorldPostSimulationListener(void* apSub);
+    void hkpWorld_addWorldPostSimulationListener(void* worldListener);
 };
 
 struct S_00d626b0_Owner
@@ -136,7 +138,7 @@ struct S_00d626b0_C
 };
 struct S_00d626b0_R : S_00d626b0_A, S_00d626b0_B, S_00d626b0_C
 {
-    S_00d626b0_R(int a) throw();
+    S_00d626b0_R(int contexts) throw();
 };
 struct S_00d626b0_S
 {
@@ -156,6 +158,8 @@ struct FUN_00d626b0 : S_00d626b0_R, S_00d626b0_S
 
 // If the owner pointer m_24 is set, calls FUN_00c93920 on each of its m_70 items, passing this object.
 // @fnv 0x00d626b0
+// pdb: hkpWeldingViewer::hkpWeldingViewer | hkpWeldingViewer.obj | retail, object-file run extension, low
+// pdb params: contexts
 FUN_00d626b0::FUN_00d626b0(int aiArg) throw() : S_00d626b0_R(aiArg)
 {
     if (m_24)
@@ -253,6 +257,7 @@ class FUN_00d62720 : public D62720Base, public D62720Listener
 
 // Destructor that unregisters this listener from every island in the world, if a world is set.
 // @fnv 0x00d62720
+// pdb: hkpWeldingViewer::~hkpWeldingViewer | hkpWeldingViewer.obj | retail, object-file run extension, low
 FUN_00d62720::~FUN_00d62720() throw()
 {
     if (m_pOwningWorld)
@@ -294,12 +299,14 @@ extern "C" void* __cdecl hkMemoryRouter_getInstance();
 // Allocates a 0x2c-byte Viewer from the manager's pool, sets its size field, constructs it with arg, and returns a pointer offset by 8 or null.
 // @fnv 0x00d62e20
 // src: GUESS 0x00d62e20 (confidence: low)
-void* __cdecl Object_ProcessAndReturnValue_00d62e20(void* arg)
+// pdb: hkpWeldingViewer::create | hkpWeldingViewer.obj | retail, object-file gap fill, high
+// pdb params: contexts
+void* __cdecl Object_ProcessAndReturnValue_00d62e20(void* contexts)
 {
     Manager* pManager = (Manager*)hkMemoryRouter_getInstance();
     Viewer* pViewer = pManager->unk10->alloc0x2c(0x2c);
     pViewer->unk04 = 0x2c;
-    void* pResult = pViewer->ctor0d626b0(arg);
+    void* pResult = pViewer->ctor0d626b0(contexts);
     if (pResult)
         return (char*)pResult + 8;
     return 0;
@@ -331,6 +338,7 @@ struct FUN_00d62ec0_cls
 
 // Calls FUN_00d62720, then if acFlags bit 0 is set frees this via the audio allocator with m_uSize and returns this.
 // @fnv 0x00d62ec0
+// pdb: hkpWeldingViewer::`scalar deleting destructor' | hkpWeldingViewer.obj | retail, vtable slot, high
 FUN_00d62ec0_cls* FUN_00d62ec0_cls::Destroy(unsigned char acFlags)
 {
     FUN_00d62720();

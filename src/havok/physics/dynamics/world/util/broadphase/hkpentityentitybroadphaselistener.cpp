@@ -262,6 +262,9 @@ struct D10800Listener
 
 // Resolves both handles to collidables, looks up a quality index from the dispatcher grid, and if nonzero stores its data in input and calls FUN_00cc0f40.
 // @fnv 0x00d10800
+// pdb: hkpEntityEntityBroadPhaseListener::addCollisionPair | hkpEntityEntityBroadPhaseListener.obj | debug, vtable slot, medium
+// pdb params: pair
+// pdb locals: assertBuf, ostr
 void D10800Listener::DispatchCollisionPair(D10800HandlePair& pair)
 {
     D10800Collidable* collA = pair.m_kPointA->getOwner();
@@ -308,6 +311,8 @@ struct D10860Listener
 };
 
 // @fnv 0x00d10860
+// pdb: hkpEntityEntityBroadPhaseListener::removeCollisionPair | hkpEntityEntityBroadPhaseListener.obj | retail, vtable slot, high
+// pdb params: pair
 void D10860Listener::ProcessHandlePair(D10860HandlePair& pair)
 {
     D10860Collidable* collA = pair.m_kPointA->getOwner();

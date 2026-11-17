@@ -6,10 +6,11 @@
 #endif
 #include "TESFullName.h"
 
+// pdb: class TESGlobal, size 0x28, bases: TESForm, 3 members
 class TESGlobal : public TESForm
 {
 public:
-    BSStringT<char> cGlobalEditorID;
+    BSStringT<char> cFormEditorID; // src: XBOX_RETAIL_PDB +0x18 (old: cGlobalEditorID)
     char cType;
     unsigned char layoutPadding21;
     unsigned short layoutPadding22;
@@ -22,9 +23,9 @@ public:
     virtual void CopyFrom(const TESForm* form);
     virtual bool Compare(TESForm* form);
     virtual char* GetName(void) const;
-    virtual bool SetEditorID_AtRuntime(const char* edid);
+    virtual bool SetEditorID_AtRuntime(const char* apEditorID);
 
-    bool Load(TESFile* file);
+    bool Load(TESFile* apFile);
     void SetValue(float value);
     float GetValue();
     bool IsConstantGlobal();

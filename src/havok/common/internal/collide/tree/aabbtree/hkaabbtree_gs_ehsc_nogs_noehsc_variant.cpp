@@ -43,10 +43,11 @@ struct Obj_d9be20 {
     int m10;
     void UpdateFields_00d9be20();
 };
+// pdb: class Key, size 0x8, 2 members
 struct Key {
-    int a;
-    int b;
-    Key& operator=(const Key& o) { a = o.a; b = o.b; a = o.a; return *this; }
+    int m_sKeyName; // src: XBOX_RETAIL_PDB +0x0 (old: a)
+    int m_pChildren; // src: XBOX_RETAIL_PDB +0x4 (old: b)
+    Key& operator=(const Key& o) { m_sKeyName = o.m_sKeyName; m_pChildren = o.m_pChildren; m_sKeyName = o.m_sKeyName; return *this; }
 };
 struct Elem {
     Vec4::Aligned v0;
@@ -68,7 +69,7 @@ struct ElemPool {
     int m_unk08;
     IntArray m_freeArr;
 
-    void Grow(int newCapacity, int a, int b);
+    void Grow(int size, int rootNode, int rootIdx);
     int AllocElem(int a, int b, const Elem& e);
 };
 struct FUN_00d9ce00_Class
@@ -78,11 +79,11 @@ struct FUN_00d9ce00_Class
     int unk08;
     int* items;
     int count;
-    int hkAabbTree_struct_hkAabbTreeData_hkAabbTreeAabb_unsigned_int_NodeManager_reserve(int start, int first, int second);
+    int hkAabbTree_struct_hkAabbTreeData_hkAabbTreeAabb_unsigned_int_NodeManager_reserve(int size, int rootNode, int rootIdx);
     int* PopItem(int first, int second, int* output);
 };
 struct UnsignedShortArray { unsigned short* elements; unsigned int count; unsigned int capacity; };
-void __cdecl ResizeAudioStream(void* memory, UnsignedShortArray* buffer, unsigned int count);
+void __cdecl ResizeAudioStream(void* mem, UnsignedShortArray* array, unsigned int sizeElem);
 struct Owner { int unknown00, unknown04, unknown08; UnsignedShortArray buffer; hkMemoryRouter* hkMemoryRouter_getInstance(); unsigned short* AppendElement(unsigned short value); };
 struct Allocator {
     virtual void v00();
@@ -92,7 +93,7 @@ struct Allocator {
     virtual void Free(void* p, unsigned int bytes);
 };
 hkMemoryRouter* __cdecl hkMemoryRouter_getInstance();
-void __cdecl hkArrayUtil__reserve(Allocator* allocator, void** data, unsigned int capacity, unsigned int elemSize);
+void __cdecl hkArrayUtil__reserve(Allocator* mem, void** array, unsigned int numElem, unsigned int sizeElem);
 struct S_d9bf30_Rec {
     int unk0; int unk4; int unk8; int unkc;
     unsigned short unk10; unsigned short unk12;
@@ -154,7 +155,7 @@ struct S_00d9d650_Heap
     virtual void unkVfn3();
     virtual void ReturnMemory(void* p, int numBytes);
 };
-void __cdecl hkArrayUtil__reserve(S_00d9d650_Heap& alloc, void* array, int reqCapacity, int sizeElem);
+void __cdecl hkArrayUtil__reserve(S_00d9d650_Heap& mem, void* array, int numElem, int sizeElem);
 template <typename T>
 struct S_00d9d650_Array
 {
@@ -215,7 +216,7 @@ struct S_00d9d650_Node
 };
 struct S_00d9d650_Pool
 {
-    void hkAabbTree_struct_hkAabbTreeData_hkAabbTreeAabb_unsigned_int_NodeManager_reserve(int numNodes, S_00d9d650_Node** root, int* a);
+    void hkAabbTree_struct_hkAabbTreeData_hkAabbTreeAabb_unsigned_int_NodeManager_reserve(int size, S_00d9d650_Node** rootNode, int* rootIdx);
     S_00d9d650_Node* PopItem(S_00d9d650_Node** root, int* a, int* b);
 };
 struct S_00d9d650_Tree
@@ -231,7 +232,7 @@ struct S_00d9d650_Tree
 
     void ProcessEntries_00d9d1c0(S_00d9d650_Aabb* aabbs, const int* keys, int n, S_00d9d650_Node* root, S_00d9d650_Array<int>& out, int depth);
     void MergeNode(S_00d9d650_Node* root, int a, int b);
-    void TraverseTree(S_00d9d650_Node* root, int a);
+    void hkAabbTree_hkAabbTreeData_hkAabbTreeAabb_unsigned_int_checkConsistency(S_00d9d650_Node* root, int skipNode);
     void BuildTree(const S_00d9d650_Aabb* aabbs, const int* keys, int n, S_00d9d650_Array<int>& out) throw();
 };
 struct Node_d9c520
@@ -266,7 +267,7 @@ struct Pool_d9c520
     int unk18;
     Resolver_d9c520 resolver;
 
-    void TraverseNodeTree(Node_d9c520* node, int second);
+    void hkAabbTree_hkAabbTreeData_hkAabbTreeAabb16_unsigned_short_checkConsistency(Node_d9c520* root, int skipNode);
 };
 void __cdecl AppendElement();
 void __cdecl Hkaabbtree_AppendElement_Thunk(int param_1, unsigned short param_2);
@@ -289,7 +290,7 @@ public:
     FreeListD9C7 m_kFreeList;
 
     void hkAabbTree_struct_hkAabbTreeData_hkAabbTreeAabb16_unsigned_short_removeLeafInternal(NodeD9C7* pkNode, NodeD9C7** ppkOut);
-    void hkAabbTree_struct_hkAabbTreeData_hkAabbTreeAabb16_unsigned_short_remove(NodeD9C7* pkNode);
+    void hkAabbTree_struct_hkAabbTreeData_hkAabbTreeAabb16_unsigned_short_remove(NodeD9C7* leafIdx);
 };
 
 extern "C" __m128 _mm_min_ps(__m128 a, __m128 b);
@@ -705,7 +706,7 @@ struct TreeHeap {
     virtual void ReturnMemory(void* p, int numBytes) throw();
 };
 
-void __cdecl hkArrayUtil__reserve(TreeHeap& alloc, void* array, int reqCapacity, int sizeElem) throw();
+void __cdecl hkArrayUtil__reserve(TreeHeap& mem, void* array, int numElem, int sizeElem) throw();
 
 template <typename T>
 struct TreeArrayLocalForm { // local form of hkArray: 0x00d9ce50 needs the original inline/out-of-line helper split; shared replacement changes bytes.
@@ -793,7 +794,7 @@ struct AabbTree16 {
 
     void hkAabbTree_hkAabbTreeData_hkAabbTreeAabb16_unsigned_short_buildTreeInternal(TreeAabb16* aabbs, const int* keys, int n, TreeNode16* root, TreeArrayLocalForm<unsigned short>* out, int depth) throw();
     void UpdateBoundsNode(TreeNode16* nodes, unsigned short root, int maxVal) throw();
-    void TraverseNodeTree(TreeNode16* nodes, int a) throw();
+    void hkAabbTree_hkAabbTreeData_hkAabbTreeAabb16_unsigned_short_checkConsistency(TreeNode16* root, int skipNode) throw();
 
     __forceinline void convertAabb(const TreeAabb& in, TreeAabb16& out)
     {
@@ -859,7 +860,7 @@ void AabbTree16::hkAabbTree_hkAabbTreeData_hkAabbTreeAabb16_unsigned_short_build
     }
 
     UpdateBoundsNode(m_kNodeCollection, m_pTreeNode, 0x7fff);
-    TraverseNodeTree(m_kNodeCollection, 0);
+    hkAabbTree_hkAabbTreeData_hkAabbTreeAabb16_unsigned_short_checkConsistency(m_kNodeCollection, 0);
 }
 
 extern float DAT_0104da48, DAT_0104e148, DAT_01016248;
@@ -920,6 +921,9 @@ struct Tree840 {
 };
 // @fnv 0x00d9c840
 // src: XBOX_PDB 0x00d9c840
+// pdb: hkAabbTree<hkAabbTreeData::hkAabbTreeAabb16,unsigned short>::buildTreeInternal | hkAabbTree.obj | retail, object-file run extension, low
+// pdb params: leafVolumes, userDatas, numLeaves, root, leavesOut, leavesAreAllocated
+// pdb locals: stack, leafIdx, space, os, childOs, childSpaces, numChildren, childIdx
 void Tree840::hkAabbTree_hkAabbTreeData_hkAabbTreeAabb16_unsigned_short_buildTreeInternal(const Source840* source,const int* keys,int count,Node840* rootNode,Words840& mapping,unsigned char reuse) {
     Words840 indices;
     indices.data=0;

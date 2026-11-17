@@ -31,7 +31,7 @@ struct hkVector4D
     __m128 m_vComponents;
 
     void setTransformedPosD(const hkTransformD& t, const hkVector4D& p);
-    void setRotatedDirD(const hkRotationD& r, const hkVector4D& d);
+    void setRotatedDirD(const hkRotationD& quat, const hkVector4D& direction);
     __forceinline void setAddMul4(const hkVector4D& a, const hkVector4D& b, hkSimdRealParameter r)
     {
         m_vComponents = _mm_add_ps(_mm_mul_ps(r.broadcast(), b.m_vComponents), a.m_vComponents);
@@ -98,7 +98,7 @@ struct DisplayHolderD
     void setHandlerD(hkDebugDisplayHandlerD* h);
 };
 
-unsigned int __cdecl hkColorRgbD(float r, float g, float b, float a);
+unsigned int __cdecl hkColorRgbD(float red, float green, float blue, float alpha);
 
 struct Drawer
 {
@@ -124,8 +124,8 @@ struct Drawer
     hkRotationD m_rotB;
     DisplayHolderD m_pDisplayHandler;
 
-    void getConstraintTransformsD(const hkpConstraintInstanceD* constraint, hkTransformD& transformB,
-                                  hkTransformD& transformA);
+    void getConstraintTransformsD(const hkpConstraintInstanceD* constraint, hkTransformD& refLocalToWorld,
+                                  hkTransformD& attLocalToWorld);
     void drawFramesD(int id, int tag);
     void drawPivotsD(int id, int tag);
 

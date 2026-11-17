@@ -13,11 +13,12 @@ enum PATHING_MESSAGE_TYPE
     PATHING_MESSAGE_TYPE_PMT_ERROR = 1
 };
 
+// pdb: class ActorPathingMessage, size 0x8, 2 members
 class ActorPathingMessage
 {
   public:
-    int m_eMessageType;
-    NiPointer<WaitableObject> m_pPathingSolution;
+    int msgType; // src: XBOX_RETAIL_PDB +0x0 (old: m_eMessageType)
+    NiPointer<WaitableObject> spSolution; // src: XBOX_RETAIL_PDB +0x4 (old: m_pPathingSolution)
     ActorPathingMessage(PATHING_MESSAGE_TYPE type, const NiPointer<PathingSolution>& solution);
     ~ActorPathingMessage();
     ActorPathingMessage& operator=(const ActorPathingMessage&);
@@ -57,6 +58,7 @@ class PerformanceTimerManager
 #include "../../../include/MEM_CONTEXT.h"
 
 
+// pdb: class PathManagerImpl, size 0x1498 (here 0x14c0), 11 members
 class PathManagerImpl
 {
   public:
@@ -80,15 +82,16 @@ struct DummyTimer
     void FUN_00483710();
 };
 
+// pdb: class PathManager, size 0x8, 2 members
 class PathManager
 {
   public:
-    PathManagerImpl* m_pPathManagerImpl;
-    PerformanceTimerManager m_kPerformanceTimerManager;
+    PathManagerImpl* pImpl; // src: XBOX_RETAIL_PDB +0x0 (old: m_pPathManagerImpl)
+    PerformanceTimerManager PerformanceTimer; // src: XBOX_RETAIL_PDB +0x4 (old: m_kPerformanceTimerManager)
     PathManager();
     bool Initialize();
-    bool BuildPath(NiPointer<PathingRequest> m_pPathingRequest, NiPointer<ActorPathingMessageQueue> spQueue,
-                   bool bAsync);
+    bool BuildPath(NiPointer<PathingRequest> aspRequest, NiPointer<ActorPathingMessageQueue> aspMessageQueue,
+                   bool abQueue);
 
     static PathManager* GetRandomGenerator();
     PathManagerImpl* Modelloader_GetReferencedThis();

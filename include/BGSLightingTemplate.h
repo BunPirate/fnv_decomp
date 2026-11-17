@@ -3,6 +3,7 @@
 #include "TESForm.h"
 #include "InteriorData.h"
 
+// pdb: class BGSLightingTemplate, size 0x44, bases: TESForm, 1 members
 class BGSLightingTemplate : public TESForm
 {
 public:
@@ -12,6 +13,6 @@ public:
     virtual ~BGSLightingTemplate();
 
     void ResetFormData();
-    bool Load(TESFile* file);
-    void ReadTypedData(TESFile* file, void* buffer, unsigned short size);
+    bool Load(TESFile* apFile);
+    void ReadTypedData(TESFile* apFile, void* apData, unsigned short asSize);
 };

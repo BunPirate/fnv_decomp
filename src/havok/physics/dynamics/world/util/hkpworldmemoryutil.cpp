@@ -118,16 +118,19 @@ struct S_00d01bc0_Owner
 };
 
 S_00d01bc0_Global* __cdecl hkMemoryRouter_getInstance();
-void __cdecl PropagateStateToChildren(S_00d01bc0_Owner* owner, S_00d01bc0_Node* node);
+void __cdecl PropagateStateToChildren(S_00d01bc0_Owner* owner, S_00d01bc0_Node* currentIsland);
 
 // @fnv 0x00d01bc0
 // src: HAVOK_LIB 0x00d01bc0
-void __cdecl hkpWorldMemoryUtil_checkMemoryForIntegration(S_00d01bc0_Owner* pOwner)
+// pdb: hkpWorldMemoryUtil::checkMemoryForIntegration | hkpWorldMemoryUtil.obj | retail, upstream name already matches, high
+// pdb params: world
+// pdb locals: memInfo, assertBuf, ostr
+void __cdecl hkpWorldMemoryUtil_checkMemoryForIntegration(S_00d01bc0_Owner* world)
 {
-    pOwner->IncrementCounter();
-    unsigned int saved = pOwner->m_uiItemCount;
+    world->IncrementCounter();
+    unsigned int saved = world->m_uiItemCount;
     S_00d01bc0_Iter iter;
-    pOwner->ComputeMemoryUsage(&iter);
+    world->ComputeMemoryUsage(&iter);
     if (!hkMemoryRouter_getInstance()->sink()->v8(iter.m_key))
     {
         do
@@ -141,11 +144,11 @@ void __cdecl hkpWorldMemoryUtil_checkMemoryForIntegration(S_00d01bc0_Owner* pOwn
                 {
                     do
                     {
-                        PropagateStateToChildren(pOwner, node);
-                        pOwner->ComputeMemoryUsage(&iter);
+                        PropagateStateToChildren(world, node);
+                        world->ComputeMemoryUsage(&iter);
                         if (iter.m_node != node || iter.m_key != key)
                             break;
-                        pOwner->m_uiItemCount >>= 1;
+                        world->m_uiItemCount >>= 1;
                     } while (iter.m_node->m_flags & 0xc);
                 }
                 s = (iter.m_node->m_flags >> 2) & 3;
@@ -159,14 +162,14 @@ void __cdecl hkpWorldMemoryUtil_checkMemoryForIntegration(S_00d01bc0_Owner* pOwn
                 }
                 else
                 {
-                    pOwner->hkpWorld_getMemoryWatchDog()->v5(node, 0);
-                    pOwner->ComputeMemoryUsage(&iter);
+                    world->hkpWorld_getMemoryWatchDog()->v5(node, 0);
+                    world->ComputeMemoryUsage(&iter);
                 }
             }
         } while (!hkMemoryRouter_getInstance()->sink()->v8(iter.m_key));
     }
-    pOwner->m_uiItemCount = saved;
-    pOwner->hkpWorld_unlock();
+    world->m_uiItemCount = saved;
+    world->hkpWorld_unlock();
 }
 
 struct D01CE0Action
@@ -200,12 +203,15 @@ struct D01CE0Context
 
 // Calls applyFirst when the action's state is 0 or 2, and applySecond when it is 0 or 3.
 // @fnv 0x00d01ce0
-void __cdecl ApplyActionPhases(D01CE0Context* context)
+// src: XBOX_RETAIL_PDB 0x00d01ce0
+// pdb: hkpWorldMemoryUtil::repeatCollideAndToiHandling | hkpWorldMemoryUtil.obj | retail, object-file gap fill, high
+// pdb params: world
+void __cdecl hkpWorldMemoryUtil_repeatCollideAndToiHandling(D01CE0Context* world)
 {
-    if (context->m_pAction->m_iValueAfterFlags == 0 || context->m_pAction->m_iValueAfterFlags == 2)
-        context->m_pAction->applyFirst();
-    if (context->m_pAction->m_iValueAfterFlags == 0 || context->m_pAction->m_iValueAfterFlags == 3)
-        context->m_pAction->applySecond();
+    if (world->m_pAction->m_iValueAfterFlags == 0 || world->m_pAction->m_iValueAfterFlags == 2)
+        world->m_pAction->applyFirst();
+    if (world->m_pAction->m_iValueAfterFlags == 0 || world->m_pAction->m_iValueAfterFlags == 3)
+        world->m_pAction->applySecond();
 }
 
 struct InnerObj
@@ -244,10 +250,13 @@ struct ParamObj
 };
 
 void __cdecl hkSetOutOfMemoryState(int value);
-void __cdecl ApplyActionPhases(ParamObj* param);
+void __cdecl hkpWorldMemoryUtil_repeatCollideAndToiHandling(ParamObj* world);
 
 // Returns early if the inner object is null; otherwise loops up to 10 times while the child's m_28 is nonzero, calling v10, FUN_00d88040 and ApplyActionPhases.
 // @fnv 0x00d01df0
+// pdb: hkpWorldMemoryUtil::tryToRecoverFromMemoryErrors | hkpWorldMemoryUtil.obj | retail, call graph (shared callers), medium
+// pdb params: world
+// pdb locals: assertBuf, ostr
 void __cdecl ProcessChildLoop(ParamObj* param)
 {
     if (param->hkpWorld_getMemoryWatchDog() == 0)
@@ -266,7 +275,7 @@ void __cdecl ProcessChildLoop(ParamObj* param)
         InnerObj* inner = param->hkpWorld_getMemoryWatchDog();
         inner->v10(param);
         hkSetOutOfMemoryState(0);
-        ApplyActionPhases(param);
+        hkpWorldMemoryUtil_repeatCollideAndToiHandling(param);
     }
 }
 
@@ -320,6 +329,8 @@ struct D01D20Holder
 // If GetA is non-null and vtbl24 returns false, records profiler ticks around a vtbl10 call, then calls FUN_00d88040(0) if DAT_01269200 is set.
 // @fnv 0x00d01d20
 // src: HAVOK_LIB 0x00d01d20
+// pdb: hkpWorldMemoryUtil::watchHeapMemory | hkpWorldMemoryUtil.obj | retail, string-set bridge, high
+// pdb params: world
 void __cdecl hkpWorldMemoryUtil_watchHeapMemory(Src* pSrc)
 {
     volatile DWORD tick;

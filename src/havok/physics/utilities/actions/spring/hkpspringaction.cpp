@@ -130,6 +130,7 @@ class FUN_00d4f000
 
 // Constructs the object by initialising its embedded shape members; the zero-fill branch is never taken because pcBegin equals pcEnd.
 // @fnv 0x00d4f000
+// pdb: hkpWheelConstraintData::`scalar deleting destructor' | hkpWheelConstraintData.obj | debug, object-file run extension, low
 FUN_00d4f000::FUN_00d4f000() throw()
 {
     char* pcBegin = (char*)&m_sB0;
@@ -165,18 +166,20 @@ struct FUN_00cf4d80
     float m_fDamping;
     bool m_bModifierActive;
     bool m_bEnableState;
-    FUN_00cf4d80(void* a, void* b, unsigned long c);
+    FUN_00cf4d80(void* entityA, void* entityB, unsigned long userData);
 };
 extern int DAT_010d08f4;
 extern float DAT_01013974;
 extern float DAT_0101e2bc;
 struct FUN_00d4d340 : FUN_00cf4d80
 {
-    FUN_00d4d340(void* a, void* b, unsigned long c);
+    FUN_00d4d340(void* entityA, void* entityB, unsigned long userData);
 };
 // Calls the base constructor, sets the vtable, m_fMass to 1.0, spring constant and damping from globals, and sets both bool flags to true.
 // @fnv 0x00d4d340
-FUN_00d4d340::FUN_00d4d340(void* a, void* b, unsigned long c) : FUN_00cf4d80(a, b, c)
+// pdb: hkpSpringAction::hkpSpringAction | hkpSpringAction.obj | retail, call graph (shared callers), high
+// pdb params: flag
+FUN_00d4d340::FUN_00d4d340(void* entityA, void* entityB, unsigned long userData) : FUN_00cf4d80(entityA, entityB, userData)
 {
     float* __restrict pf = &m_fSpringConstant;
     m_fMass = 1.0f;
@@ -190,7 +193,7 @@ FUN_00d4d340::FUN_00d4d340(void* a, void* b, unsigned long c) : FUN_00cf4d80(a, 
 class hkpStiffSpringWrapperD4D3 : public hkBaseObject
 {
   public:
-    void UpdatePivotsAndRestLength(const hkVector4& kPivotAW, const hkVector4& kPivotBW);
+    void hkpSpringAction_setPositionsInWorldSpace(const hkVector4& pivotA, const hkVector4& pivotB);
 
     unsigned int unk04, unk08, unk0C, unk10, unk14;
     hkpEntity* m_pEntityA;
@@ -203,14 +206,18 @@ class hkpStiffSpringWrapperD4D3 : public hkBaseObject
 
 // Transforms world-space pivots into local entity space, then stores their 3D distance as the spring rest length.
 // @fnv 0x00d4d390
-void hkpStiffSpringWrapperD4D3::UpdatePivotsAndRestLength(const hkVector4& kPivotAW, const hkVector4& kPivotBW)
+// src: XBOX_RETAIL_PDB 0x00d4d390
+// pdb: hkpSpringAction::setPositionsInWorldSpace | hkpSpringAction.obj | retail, object-file gap fill, high
+// pdb params: pivotA, pivotB
+// pdb locals: assertBuf, ostr
+void hkpStiffSpringWrapperD4D3::hkpSpringAction_setPositionsInWorldSpace(const hkVector4& pivotA, const hkVector4& pivotB)
 {
     hkpEntity* pkA = m_pEntityA;
     hkpEntity* pkB = m_pEntityB;
-    m_kPivotInA.hkVector4_setTransformedInversePos(pkA->m_pMotionState.m_kMotionState.m_kMotionTransform, kPivotAW);
-    m_kPivotInB.hkVector4_setTransformedInversePos(pkB->m_pMotionState.m_kMotionState.m_kMotionTransform, kPivotBW);
+    m_kPivotInA.hkVector4_setTransformedInversePos(pkA->m_motion.m_kMotionState.m_transform, pivotA);
+    m_kPivotInB.hkVector4_setTransformedInversePos(pkB->m_motion.m_kMotionState.m_transform, pivotB);
     hkVector4 kDiff;
-    kDiff.setSub4(kPivotAW, kPivotBW);
+    kDiff.setSub4(pivotA, pivotB);
     m_fSpringRestLength = kDiff.length3();
 }
 
@@ -219,7 +226,7 @@ namespace fnv_00d4d410 {
 class hkpStiffSpringWrapperD4D41 : public hkBaseObject
 {
   public:
-    void SetPivots(const hkVector4& kPivotA, const hkVector4& kPivotB);
+    void hkpSpringAction_setPositionsInBodySpace(const hkVector4& pivotA, const hkVector4& pivotB);
 
     unsigned int unk04, unk08, unk0C, unk10, unk14;
     hkpEntity* m_pEntityA;
@@ -232,16 +239,20 @@ class hkpStiffSpringWrapperD4D41 : public hkBaseObject
 
 // Stores the given pivot vectors and computes the spring rest length from the world-space distance between the two pivots.
 // @fnv 0x00d4d410
-void hkpStiffSpringWrapperD4D41::SetPivots(const hkVector4& kPivotA, const hkVector4& kPivotB)
+// src: XBOX_RETAIL_PDB 0x00d4d410
+// pdb: hkpSpringAction::setPositionsInBodySpace | hkpSpringAction.obj | retail, object-file gap fill, high
+// pdb params: pivotA, pivotB
+// pdb locals: pivotBW, pivotAW, assertBuf, ostr
+void hkpStiffSpringWrapperD4D41::hkpSpringAction_setPositionsInBodySpace(const hkVector4& pivotA, const hkVector4& pivotB)
 {
     hkpEntity* pkA = m_pEntityA;
     hkpEntity* pkB = m_pEntityB;
-    m_kPivotInA = kPivotA;
-    m_kPivotInB = kPivotB;
+    m_kPivotInA = pivotA;
+    m_kPivotInB = pivotB;
     hkVector4 kPivotAW;
-    kPivotAW.setTransformedPos_00c7f640(pkA->m_pMotionState.m_kMotionState.m_kMotionTransform, kPivotA);
+    kPivotAW.setTransformedPos_00c7f640(pkA->m_motion.m_kMotionState.m_transform, pivotA);
     hkVector4 kPivotBW;
-    kPivotBW.setTransformedPos_00c7f640(pkB->m_pMotionState.m_kMotionState.m_kMotionTransform, kPivotB);
+    kPivotBW.setTransformedPos_00c7f640(pkB->m_motion.m_kMotionState.m_transform, pivotB);
     hkVector4 kDiff;
     kDiff.setSub4(kPivotAW, kPivotBW);
     m_fSpringRestLength = kDiff.length3();
@@ -271,9 +282,9 @@ struct S00d4d4a0_Obj
         return memory;
     }
 
-    S00d4d4a0_Obj* FUN_00d4d340(void* entityA, void* entityB, void* data);
+    S00d4d4a0_Obj* FUN_00d4d340(void* entityA, void* entityB, void* userData);
 
-    S00d4d4a0_Obj* hkpSpringAction_clone(const hkpCloneArgD4A0& argA, const hkpCloneArgD4A0& argB) const;
+    S00d4d4a0_Obj* hkpSpringAction_clone(const hkpCloneArgD4A0& newEntities, const hkpCloneArgD4A0& newPhantoms) const;
 
     unsigned int unk00;
     unsigned short m_usMemSizeAndFlags;
@@ -298,17 +309,20 @@ struct S00d4d4a0_Obj
 // Returns null unless argA.m_type is 2 and argB.m_type is 0; else builds a copy on argA's entity pair and copies pivots, rest length, spring, damping and flags.
 // @fnv 0x00d4d4a0
 // src: HAVOK_SRC 0x00d4d4a0
-S00d4d4a0_Obj* S00d4d4a0_Obj::hkpSpringAction_clone(const hkpCloneArgD4A0& argA, const hkpCloneArgD4A0& argB) const
+// pdb: hkpSpringAction::clone | hkpSpringAction.obj | retail, upstream name already matches, high
+// pdb params: newEntities, newPhantoms
+// pdb locals: assertBuf, ostr
+S00d4d4a0_Obj* S00d4d4a0_Obj::hkpSpringAction_clone(const hkpCloneArgD4A0& newEntities, const hkpCloneArgD4A0& newPhantoms) const
 {
-    if (argA.m_type != 2)
+    if (newEntities.m_type != 2)
         return 0;
 
-    if (argB.m_type != 0)
+    if (newPhantoms.m_type != 0)
         return 0;
 
     S00d4d4a0_Obj* clone = new S00d4d4a0_Obj;
 
-    clone = clone->FUN_00d4d340(argA.m_kActorEntries->m_pEntityA, argA.m_kActorEntries->m_pEntityB, m_ulUserData);
+    clone = clone->FUN_00d4d340(newEntities.m_kActorEntries->m_pEntityA, newEntities.m_kActorEntries->m_pEntityB, m_ulUserData);
 
     clone->m_kPivotInA = m_kPivotInA;
     clone->m_kPivotInB = m_kPivotInB;

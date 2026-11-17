@@ -26,7 +26,7 @@ inline void BSFogProperty::DecRefCount()
 inline void BSFogProperty::SetFog(float start, float end)
 {
     nearDepth = start;
-    farDepth = end;
+    fEndDistance = end;
 }
 
 inline void BSFogProperty::SetPower(float power)
@@ -37,8 +37,8 @@ inline void BSFogProperty::SetPower(float power)
 // The shared declaration exposes the water-fog float slots as opaque integers.
 inline void BSFogProperty::SetWaterFog(float start, float end)
 {
-    reinterpret_cast<float&>(unk34) = start;
-    reinterpret_cast<float&>(unk38) = end;
+    reinterpret_cast<float&>(fStartWaterDistance) = start;
+    reinterpret_cast<float&>(fEndWaterDistance) = end;
 }
 
 inline void BSFogProperty::SetWaterColor(const NiColor& color)

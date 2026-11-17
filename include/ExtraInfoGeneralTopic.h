@@ -7,6 +7,7 @@ namespace extra_save
 class SForm;
 }
 
+// pdb: class ExtraInfoGeneralTopic, size 0x10, bases: BSExtraData, 1 members
 class ExtraInfoGeneralTopic : public BSExtraData
 {
 public:

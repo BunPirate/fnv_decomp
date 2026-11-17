@@ -10,6 +10,8 @@
 // Calls FindEntryIndex on the viewer at this-0x20 with a; if the returned index is non-negative, calls RemoveWorldData with it.
 // @fnv 0x00d64950
 // src: GUESS 0x00d64950 (confidence: high)
+// pdb: hkpSweptTransformDisplayViewer::worldRemovedCallback | hkpSweptTransformDisplayViewer.obj | debug, vtable slot, medium
+// pdb params: world
 void hkpSweptTransformDisplayViewer::RemoveWorldDataIfFound(int a)
 {
     hkpSweptTransformDisplayViewer* p = (hkpSweptTransformDisplayViewer*)((char*)this - 0x20);
@@ -84,6 +86,8 @@ struct SweptVObj
 extern "C" int g_ptr_0x1268fd0;
 
 // @fnv 0x00d64120
+// pdb: hkpSweptTransformDisplayViewer::entityRemovedCallback | hkpSweptTransformDisplayViewer.obj | retail, upstream name already matches, high
+// pdb params: entity
 // This callback receives the entity-listener subobject.
 // src: HAVOK_LIB 0x00d64120
 void __fastcall hkpSweptTransformDisplayViewer_entityRemovedCallback(hkpEntityListener* self, void*, SweptArg* a1)
@@ -195,6 +199,7 @@ struct FUN_00d647b0_Pool
 typedef void(__thiscall* FUN_00d647b0_Handler)(hkpSweptTransformDisplayViewer* self, int item);
 
 // @fnv 0x00d647b0
+// pdb: hkpSweptTransformDisplayViewer::init | hkpSweptTransformDisplayViewer.obj | retail, vtable slot, high
 void hkpSweptTransformDisplayViewer::NotifyItems()
 {
     // init receives the hkProcess subobject, eight bytes into the viewer.
@@ -256,7 +261,7 @@ struct SweptPostSimListener
 
 struct SweptWorld
 {
-    void AddEntityListener(SweptEntityListener* listener);
+    void AddEntityListener(SweptEntityListener* worldListener);
     void AddPostSimulationListener(SweptPostSimListener* listener);
 };
 
@@ -289,7 +294,7 @@ void hkpSweptTransformDisplayViewer::RemoveWorldData(int index)
 {
     m_kWorldDataList[index]->m_pOwningWorld->AddEntityListener((SweptEntityListener*)(hkpEntityListener*)this);
     m_kWorldDataList[index]->m_pOwningWorld->AddPostSimulationListener((SweptPostSimListener*)(hkpWorldPostSimulationListener*)this);
-    ClearSweptEntry(index);
+    removeAllGeometries(index);
     delete m_kWorldDataList[index];
     m_kWorldDataList.removeAt(index);
 }
@@ -469,6 +474,9 @@ struct D64020Constraint
 
 // Builds two D64020Transforms from the constraint's rotation and pivot pairs and submits them to the display handler for rendering.
 // @fnv 0x00d64020
+// pdb: hkpSweptTransformDisplayViewer::inactiveEntityMovedCallback | hkpSweptTransformDisplayViewer.obj | retail, vtable slot, high
+// pdb params: entity
+// pdb locals: t0, t1
 // This callback receives the post-simulation-listener subobject.
 void __fastcall DisplayConstraintPivots(hkpWorldPostSimulationListener* self, void*, D64020Constraint* constraint)
 {
@@ -478,22 +486,23 @@ void __fastcall DisplayConstraintPivots(hkpWorldPostSimulationListener* self, vo
     frame.m_rotation.set(constraint->m_kRotationA);
     *(__m128*)frame.m_vTranslation.m_f = _mm_sub_ps(*(const __m128*)constraint->m_kPivotA.m_f,
                                                     D64020RotateDir(frame.m_rotation, constraint->m_localPivot));
-    ((D64020DisplayHandler*)viewer->unk10)->displayFrame(frame, (unsigned long)constraint + 0x11, g_D64020Color);
+    ((D64020DisplayHandler*)viewer->m_displayHandler)->displayFrame(frame, (unsigned long)constraint + 0x11, g_D64020Color);
 
     frame.m_rotation.set(constraint->m_kRotationB);
     *(__m128*)frame.m_vTranslation.m_f = _mm_sub_ps(*(const __m128*)constraint->m_kPivotB.m_f,
                                                     D64020RotateDir(frame.m_rotation, constraint->m_localPivot));
-    ((D64020DisplayHandler*)viewer->unk10)->displayFrame(frame, (unsigned long)constraint + 0x12, g_D64020Color);
+    ((D64020DisplayHandler*)viewer->m_displayHandler)->displayFrame(frame, (unsigned long)constraint + 0x12, g_D64020Color);
 }
 
 // The shared header does not declare the deleting-destructor entry points.
 // Keep their ABI bridges as functions rather than duplicate viewer classes.
 // @fnv 0x00d649c0
+// pdb: hkpSweptTransformDisplayViewer::`scalar deleting destructor' | hkpSweptTransformDisplayViewer.obj | retail, vtable slot, high
 void* __fastcall DeleteSweptTransformViewer(hkpSweptTransformDisplayViewer* self, void*, unsigned int flags)
 {
     fnv_00d648c0::Destroy(self);
     if (flags & 1)
-        hkMemoryRouter_getInstance().heap().ReleaseBlock(self, self->m_usMemSizeAndFlags);
+        hkMemoryRouter_getInstance().heap().ReleaseBlock(self, self->m_memSizeAndFlags);
     return self;
 }
 

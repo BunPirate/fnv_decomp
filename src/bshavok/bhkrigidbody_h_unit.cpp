@@ -42,15 +42,18 @@ struct FUN_00c8f5a0_Class
     unsigned int referenceCount;
     void* havokObject;
     FUN_00c8f510* rigidBodyInfo;
-    void bhkRigidBody_CopyCinfo(FUN_00c8f510* info);
-    FUN_00c8f510* GetOrCreateRigidBodyInfo(unsigned char* wasCreated);
+    void bhkRigidBody_CopyCinfo(FUN_00c8f510* arInfo);
+    FUN_00c8f510* GetOrCreateRigidBodyInfo(unsigned char* arCreated);
 };
 // @fnv 0x00c8f5a0
-FUN_00c8f510* FUN_00c8f5a0_Class::GetOrCreateRigidBodyInfo(unsigned char* wasCreated)
+// pdb: bhkRigidBody::CreateCinfo | bhkRigidBody.obj | retail, vtable slot, high
+// pdb params: arCreated
+// pdb locals: tempMemContext
+FUN_00c8f510* FUN_00c8f5a0_Class::GetOrCreateRigidBodyInfo(unsigned char* arCreated)
 {
     MemoryContextGuard context;
     const bool needsCreation = rigidBodyInfo == 0;
-    *wasCreated = needsCreation;
+    *arCreated = needsCreation;
     if (needsCreation)
     {
         rigidBodyInfo = new (DAT_011f6238) FUN_00c8f510();
@@ -63,7 +66,7 @@ FUN_00c8f510* FUN_00c8f5a0_Class::GetOrCreateRigidBodyInfo(unsigned char* wasCre
 class C8F670Heap
 {
   public:
-    void Deallocate(void* pvMem);
+    void Deallocate(void* apMem);
 };
 
 extern C8F670Heap g_memoryManager;
@@ -134,6 +137,9 @@ class __declspec(novtable) C8F670Object
 
 // Calls the object's destructor and, when uiFlags has bit 0 set, frees the object, then returns this.
 // @fnv 0x00c8f670
+// pdb: bhkRigidBody::KillCinfo | bhkRigidBody.obj | debug, object-file run extension, low
+// pdb params: abCreated
+// pdb locals: tempMemContext, pi
 void* C8F670Object::DestroyObject(unsigned int uiFlags)
 {
     this->C8F670Object::~C8F670Object();
@@ -169,7 +175,7 @@ class C8D9BinaryStream
 class C8D9HavokData
 {
   public:
-    void SwapEndian();
+    void bhkRigidBodyCinfo_Endian();
 };
 
 class C8D9Stream
@@ -274,31 +280,34 @@ class FUN_00c8d960_cls
     unsigned int m_uiValue1;
     C8D9List m_kList;
 
-    void bhkEntity_SaveBinary(C8D9Stream* pkStream);
-    void bhkRigidBody_SaveBinary(C8D9Stream* pkStream);
+    void bhkEntity_SaveBinary(C8D9Stream* arStream);
+    void bhkRigidBody_SaveBinary(C8D9Stream* arStream);
 };
 
 // Creates Havok data, swaps endianness when not in mode 1, saves list count and item link IDs, then swaps endianness back.
 // @fnv 0x00c8d960
 // src: XBOX_PDB 0x00c8d960
-void FUN_00c8d960_cls::bhkRigidBody_SaveBinary(C8D9Stream* pkStream)
+// pdb: bhkRigidBody::SaveBinary | bhkRigidBody.obj | retail, upstream name already matches, high
+// pdb params: arStream
+// pdb locals: icount, plist, cinfo
+void FUN_00c8d960_cls::bhkRigidBody_SaveBinary(C8D9Stream* arStream)
 {
     bool bCreated;
     C8D9HavokData* pkData = CreateHavokData(&bCreated);
-    if (pkStream->m_ucMode != 1)
-        pkData->SwapEndian();
+    if (arStream->m_ucMode != 1)
+        pkData->bhkRigidBodyCinfo_Endian();
 
-    bhkEntity_SaveBinary(pkStream);
+    bhkEntity_SaveBinary(arStream);
 
-    C8D9SaveBinary(pkStream, m_kList.ItemsInList());
+    C8D9SaveBinary(arStream, m_kList.ItemsInList());
 
     for (C8D9Node* pkIter = &m_kList.m_kHead; pkIter && pkIter->m_item; pkIter = pkIter->m_pkNext)
-        pkStream->SaveLinkID(pkIter->m_item);
+        arStream->SaveLinkID(pkIter->m_item);
 
-    C8D9SaveBinary(pkStream, m_uiValue1);
+    C8D9SaveBinary(arStream, m_uiValue1);
 
-    if (pkStream->m_ucMode != 1)
-        pkData->SwapEndian();
+    if (arStream->m_ucMode != 1)
+        pkData->bhkRigidBodyCinfo_Endian();
 }
 
 struct DebugShape
@@ -329,7 +338,7 @@ struct DebugShape
 };
 
 extern void FUN_00458620(NiPoint3* dst, NiPoint3* src);
-extern void* BSTestObjects_CreateCoordinateJack(float r);
+extern void* BSTestObjects_CreateCoordinateJack(float afScale);
 
 struct WorldObject
 {
@@ -393,16 +402,19 @@ struct WorldObject
     virtual void v57();
     virtual void v58();
     virtual void v59(void* out);
-    void* AddDebugNodeToWorld(void* a1);
-    void* bhkRigidBody_CreateDisplayGeometry(void* a1);
+    void* AddDebugNodeToWorld(void* apNode);
+    void* bhkRigidBody_CreateDisplayGeometry(void* apNode);
 };
 
 // Gets a node from AddDebugNodeToWorld, creates a shape with 6.0f, sets its position, attaches it, and returns the node.
 // @fnv 0x00c8d2f0
 // src: XBOX_PDB 0x00c8d2f0
-void* WorldObject::bhkRigidBody_CreateDisplayGeometry(void* a1)
+// pdb: bhkRigidBody::CreateDisplayGeometry | bhkRigidBody.obj | retail, upstream name already matches, high
+// pdb params: apNode
+// pdb locals: com, pcom, pnt
+void* WorldObject::bhkRigidBody_CreateDisplayGeometry(void* apNode)
 {
-    WorldObject* pDebugNode = (WorldObject*)AddDebugNodeToWorld(a1);
+    WorldObject* pDebugNode = (WorldObject*)AddDebugNodeToWorld(apNode);
     if (pDebugNode != 0)
     {
         __m128 src;

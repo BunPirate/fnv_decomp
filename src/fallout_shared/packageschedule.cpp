@@ -87,6 +87,8 @@ struct FUN_0067fd40_shell : public DurationData
 // Copies the start month, day of week, date, time and duration from apCopy into this schedule when apCopy is non-null.
 // @fnv 0x0067fd40
 // src: COMMUNITY 0x0067fd40
+// pdb: PackageSchedule::Copy | PackageSchedule.obj | debug, upstream name already matches, high
+// pdb params: apCopy
 void FUN_0067fd40_shell::PackageSchedule_Copy(DurationData* apCopy)
 {
     if (apCopy)

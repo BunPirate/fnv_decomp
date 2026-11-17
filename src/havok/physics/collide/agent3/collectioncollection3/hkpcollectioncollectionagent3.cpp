@@ -93,22 +93,25 @@ struct __declspec(align(16)) D36270Data {
 };
 void hkpCollectionCollectionAgent3_updateFilter_UpdateState_00d36270(D36270Data*);
 struct D362Script {
-    void AddEntry(D36270Data*, int row, int column);
+    void hkpCollisionDispatcher_registerAgent3(D36270Data*, int typeA, int typeB);
 };
 extern unsigned char DAT_01268ad5;
 // @fnv 0x00d362c0
 // src: HAVOK_LIB 0x00d362c0
-void hkpCollectionCollectionAgent3_registerAgent3(D362Script* script) {
+// pdb: hkpCollectionCollectionAgent3::registerAgent3 | hkpCollectionCollectionAgent3.obj | retail, upstream name already matches, high
+// pdb params: dispatcher
+// pdb locals: f
+void hkpCollectionCollectionAgent3_registerAgent3(D362Script* dispatcher) {
     D36270Data data;
     data.flag0 = 0; data.flag1 = 0; data.flag2 = 0;
     data.f = 0; data.g = 0; data.h = 0; data.i = 0; data.j = 0;
     hkpCollectionCollectionAgent3_updateFilter_UpdateState_00d36270(&data);
-    script->AddEntry(&data, 8, 8);
+    dispatcher->hkpCollisionDispatcher_registerAgent3(&data, 8, 8);
     data.flag1 = 1; data.flag2 = 1;
-    script->AddEntry(&data, 7, 8);
-    script->AddEntry(&data, 8, 7);
-    script->AddEntry(&data, 7, 7);
-    *(unsigned char*)((char*)script + 0x1e22) = 1;
+    dispatcher->hkpCollisionDispatcher_registerAgent3(&data, 7, 8);
+    dispatcher->hkpCollisionDispatcher_registerAgent3(&data, 8, 7);
+    dispatcher->hkpCollisionDispatcher_registerAgent3(&data, 7, 7);
+    *(unsigned char*)((char*)dispatcher + 0x1e22) = 1;
     DAT_01268ad5 = 1;
 }
 
@@ -131,11 +134,13 @@ struct S00d34d30_Obj
 
 // @fnv 0x00d34d30
 // src: XBOX_PDB 0x00d34d30
-void __cdecl hkpCollectionCollectionAgent3_calcStatistics(void* a, void* b, void* c, void* d)
+// pdb: hkpCollectionCollectionAgent3::calcStatistics | hkpCollectionCollectionAgent3.obj | retail, string-set bridge, high
+// pdb params: entry, agentData, input, collector
+void __cdecl hkpCollectionCollectionAgent3_calcStatistics(void* entry, void* agentData, void* input, void* collector)
 {
-    S00d34d30_Obj* obj = (S00d34d30_Obj*)d;
+    S00d34d30_Obj* obj = (S00d34d30_Obj*)collector;
     obj->m6(str_010ceca8);
-    hkpAgentMachineUtil_calc1nStatistics(b, c, d);
+    hkpAgentMachineUtil_calc1nStatistics(agentData, input, collector);
     obj->m7();
 }
 
@@ -163,21 +168,24 @@ extern "C" void __cdecl Object_HkAgent1nMachine_VisitAllAgents_Thunk(void*, void
 // Fills a Local struct with a3 through a7 and the m10() results of the objects at a3 and a4, then calls FUN_00da4900 with a2 and the struct.
 // @fnv 0x00d34db0
 // src: HAVOK_LIB 0x00d34db0
-void __cdecl hkpCollectionCollectionAgent3_updateFilter(void* apUnused, void* a2, void* apFirstObj, void* apSecondObj, void* a5, void* a6, void* a7)
+// pdb: hkpCollectionCollectionAgent3::updateFilter | hkpCollectionCollectionAgent3.obj | retail, upstream name already matches, high
+// pdb params: entry, agentData, bodyA, bodyB, input, mgr, constraintOwner
+// pdb locals: vin
+void __cdecl hkpCollectionCollectionAgent3_updateFilter(void* entry, void* agentData, void* bodyA, void* bodyB, void* input, void* mgr, void* constraintOwner)
 {
     Local s;
-    void* pFirstObj = *(void**)apFirstObj;
-    void* pSecondObj = *(void**)apSecondObj;
+    void* pFirstObj = *(void**)bodyA;
+    void* pSecondObj = *(void**)bodyB;
 
-    s.f0 = apFirstObj;
-    s.f1 = apSecondObj;
-    s.f4 = a5;
-    s.f5 = a6;
-    s.f6 = a7;
+    s.f0 = bodyA;
+    s.f1 = bodyB;
+    s.f4 = input;
+    s.f5 = mgr;
+    s.f6 = constraintOwner;
     s.f2 = ((Obj*)pFirstObj)->m10();
     s.f3 = ((Obj*)pSecondObj)->m10();
 
-    Object_HkAgent1nMachine_VisitAllAgents_Thunk(a2, &s);
+    Object_HkAgent1nMachine_VisitAllAgents_Thunk(agentData, &s);
 }
 
 // Keep the intrinsic vector free of byte-array aliases, which add /GS checks absent from this unit.
@@ -481,6 +489,9 @@ static __forceinline void copyCachedAabbs(const BoundingVolumeData& bvd, int use
 
 // @fnv 0x00d351c0
 // src: XBOX_PDB 0x00d351c0
+// pdb: hkCollectionBvTreeAgent3_extractCachedAabbsOrRecalculate | hkpCollectionCollectionAgent3.obj | retail, upstream name already matches, high
+// pdb params: cdBody, overrideCdBody, collection, input, aabbs, aabbsCapacity, aabbBufferSize_usedOnSpu
+// pdb locals: useContinuousPhysics, numChildAabbs, assertBuf, ostr, buffer, sweepInput, aabb
 int __cdecl hkCollectionBvTreeAgent3_extractCachedAabbsOrRecalculate(const hkpCdBodyq* body, int useCache, const hkpShapeContainerq* container,
                          const hkpProcessCollisionInputq* input, hkAabbUint32Key* aabbsOut)
 {
@@ -690,6 +701,9 @@ __forceinline void hkSwap(T& x, T& y)
 // Sorts pArr[d..h] in place with quicksort, using the middle element as pivot and the cmpLess comparator.
 // @fnv 0x00d36360
 // src: HAVOK_LIB 0x00d36360
+// pdb: hkAlgorithm::quickSortRecursive<hk1AxisSweep::AabbInt,hkAlgorithm::less<hk1AxisSweep::AabbInt> > | hkpCollectionCollectionAgent3.obj | retail, object-file run extension, low
+// pdb params: pArr, d, h, cmpLess
+// pdb locals: str, zal
 void __cdecl hkAlgorithm_quickSortRecursive_struct_hk1AxisSweep_AabbInt_class_hkAlgorithm_less_struct_hk1AxisSweep_AabbInt(SortEntry* pArr, int aiLow, int aiHigh, SortEntryLess cmpLess)
 {
     int i, j;
@@ -763,6 +777,9 @@ static __forceinline void quantizeAabb(const hkAabbq& aabb, const hkpProcessColl
 
 // @fnv 0x00d34e10
 // src: GUESS 0x00d34e10 (confidence: low)
+// pdb: hkCollectionBvTreeAgent3_calcAabbs | hkpCollectionCollectionAgent3.obj | retail, object-file run extension, low
+// pdb params: input, container, cdBody, hitList, numHits, aabbsOut
+// pdb locals: useContinuousPhysics, sweepInput, aabb, shapeBuffer
 void __cdecl hkpAgent3ProcessInputq_ProcessEntries_00d34e10(const hkpAgent3ProcessInputq& input, const hkpShapeContainerq* container, const hkpCdBodyq* body,
                           const hkpShapeKey* keys, int numKeys, hkAabbUint32Key* __restrict aabbsOut)
 {

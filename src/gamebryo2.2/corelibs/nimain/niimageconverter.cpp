@@ -62,6 +62,7 @@ inline void Rel(NiRefObject* o)
 }
 // Allocates a NiImageConverter2, releases the previous global converter, stores the new one in DAT_011f4a7c and increments its reference count.
 // @fnv 0x00a76ab0
+// pdb: NiImageConverter::_SDMInit | NiImageConverter.obj | retail, call graph, high
 void CreateImageConverter()
 {
     NiRefObject* p = new NiImageConverter2();
@@ -93,6 +94,8 @@ struct VTable_FUN_00a76d40
 
 // @fnv 0x00a76d40
 // src: XBOX_PDB 0x00a76d40
+// pdb: NiDevImageConverter::IsASupportedMipmapGenerationFormat | NiDevImageConverter.obj | retail, upstream name already matches, high
+// pdb params: kSrcFmt
 bool __fastcall NiDevImageConverter_IsASupportedMipmapGenerationFormat(const VTable_FUN_00a76d40* pThis, int, const NiPixelFormat& kSrcFmt)
 {
     if (pThis->v20(kSrcFmt) || pThis->v24(kSrcFmt))
@@ -124,7 +127,7 @@ extern void* DAT_011f4a78;
 void _NiFreeAlias(void*) throw();
 struct Sub80
 {
-    void ProcessState_00a8ada0() throw();
+    void NiNIFImageReader_dtor() throw();
 };
 
 struct FUN_00a76680 : NiRefObject
@@ -138,7 +141,7 @@ FUN_00a76680::~FUN_00a76680()
     if (DAT_011f4a78)
         _NiFreeAlias(DAT_011f4a78);
     DAT_011f4a78 = 0;
-    ((Sub80*)((char*)this + 0x80))->ProcessState_00a8ada0();
+    ((Sub80*)((char*)this + 0x80))->NiNIFImageReader_dtor();
 }
 }  // namespace fnv_00a76680
 
@@ -164,33 +167,36 @@ int strcpy_s(char*, unsigned int, const char*);
 extern const char* DAT_011f4a78;
 extern char* EmptyFS;
 // @fnv 0x00a76960
-// src: COMMUNITY 0x00a76960
-void NiImageConverter_ConvertFilenameToPlatformSpecific_(char** apszSource, char** apszDest)
+// src: XBOX_RETAIL_PDB 0x00a76960 (was COMMUNITY)
+// pdb: NiImageConverter::ConvertFilenameToPlatformSpecific | NiImageConverter.obj | retail, object-file run extension, high
+// pdb params: pcPath
+// pdb locals: pcPlatformPath, kPlatform
+void NiImageConverter_ConvertFilenameToPlatformSpecific(char** kPath, char** kPlatformSpecificPath)
 {
     if (DAT_011f4a78)
     {
-        FileNameComponents kName(*apszSource);
+        FileNameComponents kName(*kPath);
         strcpy_s(kName.m_acTail, 0x100, DAT_011f4a78);
         char acBuf[0x104];
         kName.NiFilename_GetFullPath(acBuf, 0x104);
-        char* pcOldString = *apszDest;
+        char* pcOldString = *kPlatformSpecificPath;
         if (pcOldString != acBuf)
         {
-            *apszDest = NiGlobalStringTable::AddString(acBuf);
+            *kPlatformSpecificPath = NiGlobalStringTable::AddString(acBuf);
             if (pcOldString != EmptyFS)
                 InterlockedDecrement((long volatile*)(pcOldString - 8));
         }
     }
     else
     {
-        char* pcNewString = *apszSource;
-        if (*apszDest != pcNewString)
+        char* pcNewString = *kPath;
+        if (*kPlatformSpecificPath != pcNewString)
         {
             if (pcNewString != EmptyFS)
                 InterlockedIncrement((long volatile*)(pcNewString - 8));
-            if (*apszDest != EmptyFS)
-                InterlockedDecrement((long volatile*)(*apszDest - 8));
-            *apszDest = pcNewString;
+            if (*kPlatformSpecificPath != EmptyFS)
+                InterlockedDecrement((long volatile*)(*kPlatformSpecificPath - 8));
+            *kPlatformSpecificPath = pcNewString;
         }
     }
 }
@@ -201,6 +207,7 @@ namespace fnv_00a76b30 {
 // If the global NiRefObject pointer DAT_011f4a7c is set, decrements its reference count and clears the pointer.
 // @fnv 0x00a76b30
 // src: COMMUNITY 0x00a76b30
+// pdb: NiImageConverter::_SDMShutdown | NiImageConverter.obj | retail, upstream name already matches, high
 void NiImageConverter__SDMShutdown()
 {
     if (DAT_011f4a7c)
@@ -215,6 +222,7 @@ namespace fnv_00a76b60 {
 
 // Replaces the global image converter pointer, releasing the previous reference and incrementing the new one's reference count.
 // @fnv 0x00a76b60
+// pdb: NiImageConverter::`scalar deleting destructor' | NiImageConverter.obj | retail, object-file run extension, low
 void AssignImageConverter(NiImageConverter* conv)
 {
     NiRefObject* p = (NiRefObject*)conv;
@@ -347,17 +355,19 @@ static inline unsigned short Chan(unsigned int p, const Fmt* s, const Fmt* d, in
 // Converts each 16-bit source pixel to the destination format by remapping its four channels through Chan and OR-ing them together.
 // @fnv 0x00a76d70
 // src: GAMEBRYO_LIB 0x00a76d70
-void NiDevImageConverter_ConvertRGBA16ToBGRA16(unsigned int uiWidth, unsigned int uiHeight, unsigned int, unsigned char* pucDst, unsigned int,
-                  const Fmt* pDstFmt, const unsigned char* pucSrc, const Fmt* pSrcFmt)
+// pdb: NiDevImageConverter::ConvertRGBA16ToBGRA16 | NiDevImageConverter.obj | retail, upstream name already matches, high
+// pdb params: uiWidth, uiHeight, uiDestSize, pucDest, pkSrcPal, kDestBits, pucSrc, kSrcBits
+void NiDevImageConverter_ConvertRGBA16ToBGRA16(unsigned int uiWidth, unsigned int uiHeight, unsigned int, unsigned char* pucDest, unsigned int,
+                  const Fmt* kDestBits, const unsigned char* pucSrc, const Fmt* kSrcBits)
 {
     const unsigned short* pSrcPixels = (const unsigned short*)pucSrc;
-    unsigned short* pDstPixels = (unsigned short*)pucDst;
+    unsigned short* pDstPixels = (unsigned short*)pucDest;
     for (unsigned int y = 0; y < uiHeight; y++)
     {
         for (unsigned int x = 0; x < uiWidth; x++)
         {
-            *pDstPixels++ = Chan(*pSrcPixels, pSrcFmt, pDstFmt, 1) | Chan(*pSrcPixels, pSrcFmt, pDstFmt, 0) |
-                            Chan(*pSrcPixels, pSrcFmt, pDstFmt, 2) | Chan(*pSrcPixels, pSrcFmt, pDstFmt, 3);
+            *pDstPixels++ = Chan(*pSrcPixels, kSrcBits, kDestBits, 1) | Chan(*pSrcPixels, kSrcBits, kDestBits, 0) |
+                            Chan(*pSrcPixels, kSrcBits, kDestBits, 2) | Chan(*pSrcPixels, kSrcBits, kDestBits, 3);
             pSrcPixels++;
         }
     }
@@ -379,6 +389,8 @@ void __cdecl BuildFullPath(void);
 
 // @fnv 0x00aa29d0
 // src: COMMUNITY 0x00aa29d0
+// pdb: NiFilename::GetFullPath | NiFilename.obj | debug, upstream name already matches, high
+// pdb params: pcFullPath, uiStrLen
 void __cdecl NiFilename_GetFullPath(void)
 {
     BuildFullPath();
@@ -408,6 +420,10 @@ struct FileNameComponents
 
 // Populates a buffer from pcPath, setting its extension from DAT_011f4a78 when that value is non-null.
 // @fnv 0x00a768b0
+// pdb: NiImageConverter::ReadImageFile | NiImageConverter.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiImageConverter::ConvertFilenameToPlatformSpecific
+// pdb params: pcFilename, pkOptDest, apFile
+// pdb locals: kFileName, pcExt, pkDest, kIst
 char* GetPathWithExtension(const char* pcPath)
 {
     char* pcDest = (char*)_NiMalloc(0x104);
@@ -429,7 +445,7 @@ extern void* DAT_011f4a78;
 void _NiFreeAlias(void*) throw();
 struct Sub80
 {
-    void ProcessState_00a8ada0() throw();
+    void NiNIFImageReader_dtor() throw();
 };
 
 struct FUN_00a76bb0 : NiRefObject
@@ -445,7 +461,7 @@ FUN_00a76bb0::~FUN_00a76bb0()
     if (DAT_011f4a78)
         _NiFreeAlias(DAT_011f4a78);
     DAT_011f4a78 = 0;
-    ((Sub80*)((char*)this + 0x80))->ProcessState_00a8ada0();
+    ((Sub80*)((char*)this + 0x80))->NiNIFImageReader_dtor();
 }
 }  // namespace fnv_00a76bb0
 

@@ -31,7 +31,7 @@ public:
 
     void ResetFormData();
     virtual void InitItem();
-    bool Load(TESFile* file);
+    bool Load(TESFile* apFile);
     void SetFormType(int type);
     void SetLoopingSound(TESSound* sound);
     void FUN_009db930(unsigned int value);

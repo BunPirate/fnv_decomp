@@ -81,7 +81,7 @@ class NiPosDataOperations : public NiPosData
     void AppendCameraPathEntries(FUN_0096ad30_param*);
     void AddViewerEntries(FUN_0096ad30_param*);
     void FUN_00a5d510(NiPosDataOperations**);
-    void CopyKeyRange(float, float, NiPosDataOperations**);
+    void NiPosData_GetSequenceData(float, float, NiPosDataOperations**);
 
     void IncRefCount()
     {
@@ -95,27 +95,34 @@ class NiPosDataOperations : public NiPosData
 };
 
 // @fnv 0x00a490e0
-void NiPosData::SetColorKeys(PositionKeyInterpolator* keys, unsigned int count, NiAnimationKey::KeyType eKeyType)
+// src: XBOX_RETAIL_PDB 0x00a490e0
+// pdb: NiPosData::ReplaceAnim | NiPosData.obj | retail, object-file gap fill, high
+// pdb params: pkKeys, uiNumKeys, eType
+// pdb locals: pfnDeleteFunc
+void NiPosData::ReplaceAnim(PositionKeyInterpolator* pkKeys, unsigned int uiNumKeys, NiAnimationKey::KeyType eType)
 {
-    if (m_pKeyArray)
-        DAT_011f38b8[m_eRequestType](m_pKeyArray);
-    if (keys && count)
+    if (m_pkKeys)
+        DAT_011f38b8[m_eType](m_pkKeys);
+    if (pkKeys && uiNumKeys)
     {
-        m_ucKeyDataSize = GetPosKeySize(eKeyType);
-        m_pKeyArray = keys;
-        m_uiNumKeys = count;
-        m_eRequestType = eKeyType;
+        m_ucKeySize = GetPosKeySize(eType);
+        m_pkKeys = pkKeys;
+        m_uiNumKeys = uiNumKeys;
+        m_eType = eType;
     }
     else
     {
         m_uiNumKeys = 0;
-        m_pKeyArray = 0;
-        m_eRequestType = NiAnimationKey::NOINTERP;
-        m_ucKeyDataSize = 0;
+        m_pkKeys = 0;
+        m_eType = NiAnimationKey::NOINTERP;
+        m_ucKeySize = 0;
     }
 }
 
 // @fnv 0x00a49240
+// pdb: NiPosData::LoadBinary | NiPosData.obj | retail, upstream name already matches, high
+// pdb params: stream
+// pdb locals: uiNumKeys, pkPosKeys, ePosType, cf, derived
 void NiPosData::LoadBinary(NiStream& stream)
 {
     NiObject::LoadBinary(stream);
@@ -124,10 +131,10 @@ void NiPosData::LoadBinary(NiStream& stream)
     if (count > 0)
     {
         NiAnimationKey::KeyType type = (NiAnimationKey::KeyType)stream.ReadUnsignedInteger();
-        m_ucKeyDataSize = GetPosKeySize(type);
+        m_ucKeySize = GetPosKeySize(type);
         PositionKeyInterpolator* keys = GetCreatePosKeys(type)(stream, count);
-        GetFillPosKeys(type)(keys, count, m_ucKeyDataSize);
-        SetColorKeys(keys, count, type);
+        GetFillPosKeys(type)(keys, count, m_ucKeySize);
+        ReplaceAnim(keys, count, type);
     }
 }
 
@@ -140,6 +147,8 @@ struct BaseUnk
 };
 // @fnv 0x00a49020
 // src: EXE 0x00a49020
+// pdb: NiPosData::CreateObject | NiPosData.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 NiPosData* NiPosData_CreateObject()
 {
     NiPosData* p = (NiPosData*)BSFadeNode::operator new(sizeof(NiPosData));
@@ -147,53 +156,58 @@ NiPosData* NiPosData_CreateObject()
     {
         reinterpret_cast<BaseUnk*>(p)->_Call_a5d3a0();
         p->m_uiNumKeys = 0;
-        p->m_pKeyArray = 0;
-        p->m_eRequestType = NiAnimationKey::NOINTERP;
-        p->m_ucKeyDataSize = 0;
+        p->m_pkKeys = 0;
+        p->m_eType = NiAnimationKey::NOINTERP;
+        p->m_ucKeySize = 0;
         *(void**)p = (void*)&DAT_0109717c;
         return p;
     }
     return 0;
 }
 
-void __cdecl UpdateSlotStates(int, int, void*, void*, float, float);
+void __cdecl NiAnimationKey_GuaranteeKeyAtStartAndEnd(int, int, void*, void*, float, float);
 // Calls UpdateSlotStates with the key count and key pointer, then stores the updated key pointer back.
 // @fnv 0x00a48f70
+// pdb: NiQuaternionInterpolator::`scalar deleting destructor' | NiQuaternionInterpolator.obj | debug, object-file run extension, low
 void NiPosDataOperations::UpdateKeyRange(float afArg1, float afArg2)
 {
-    void* pkKeys = m_pKeyArray;
-    UpdateSlotStates(1, m_eRequestType, &pkKeys, &m_uiNumKeys, afArg1, afArg2);
-    m_pKeyArray = (PositionKeyInterpolator*)pkKeys;
+    void* pkKeys = m_pkKeys;
+    NiAnimationKey_GuaranteeKeyAtStartAndEnd(1, m_eType, &pkKeys, &m_uiNumKeys, afArg1, afArg2);
+    m_pkKeys = (PositionKeyInterpolator*)pkKeys;
 }
 
 // Restores the vtable, calls the stored callback on the pointer at _0C if set, then destroys the NiRefObject base.
 // @fnv 0x00a48fb0
+// pdb: NiQuaternionInterpolator::~NiQuaternionInterpolator | NiQuaternionInterpolator.obj | debug, object-file run extension, low
 void NiPosDataOperations::DestroyPosData()
 {
-    PositionKeyInterpolator* p = m_pKeyArray;
+    PositionKeyInterpolator* p = m_pkKeys;
     *(int*)this = (int)&DAT_0109717c;
     if (p)
-        DAT_011f38b8[m_eRequestType](p);
+        DAT_011f38b8[m_eType](p);
     this->NiRefObject::~NiRefObject();
 }
 
 // Stores the key array, key count and type, setting a byte from DAT_011f375e indexed by type; clears all fields when keys or numKeys is null/zero.
 // @fnv 0x00a48fe0
+// pdb: NiPosData::~NiPosData | NiPosData.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiQuaternionInterpolator::SetQuaternionData
+// pdb locals: pfnDeleteFunc
 void NiPosDataOperations::SetKeys(void* keys, unsigned int numKeys, int type)
 {
     if (keys && numKeys)
     {
-        m_ucKeyDataSize = DAT_011f375e[type];
-        m_pKeyArray = (PositionKeyInterpolator*)keys;
+        m_ucKeySize = DAT_011f375e[type];
+        m_pkKeys = (PositionKeyInterpolator*)keys;
         m_uiNumKeys = numKeys;
-        m_eRequestType = (NiAnimationKey::KeyType)type;
+        m_eType = (NiAnimationKey::KeyType)type;
     }
     else
     {
         m_uiNumKeys = 0;
-        m_pKeyArray = 0;
-        m_ucKeyDataSize = 0;
-        m_eRequestType = NiAnimationKey::NOINTERP;
+        m_pkKeys = 0;
+        m_ucKeySize = 0;
+        m_eType = NiAnimationKey::NOINTERP;
     }
 }
 
@@ -201,21 +215,24 @@ typedef bool(__cdecl* KeyEqual)(const void*, const void*);
 extern KeyEqual DAT_011f3af8[];
 
 // @fnv 0x00a49060
-bool NiPosDataOperations::Equals(const NiPosDataOperations* other)
+// pdb: NiPosData::IsEqual | NiPosData.obj | retail, object-file gap fill, high
+// pdb params: pkObject
+// pdb locals: equal, pkData, uiI
+bool NiPosDataOperations::Equals(const NiPosDataOperations* pkObject)
 {
-    if (!IsSameAs(const_cast<NiPosDataOperations*>(other)))
+    if (!IsSameAs(const_cast<NiPosDataOperations*>(pkObject)))
         return false;
 
-    if (m_uiNumKeys != other->m_uiNumKeys || m_eRequestType != other->m_eRequestType ||
-        m_ucKeyDataSize != other->m_ucKeyDataSize)
+    if (m_uiNumKeys != pkObject->m_uiNumKeys || m_eType != pkObject->m_eType ||
+        m_ucKeySize != pkObject->m_ucKeySize)
         return false;
 
-    KeyEqual pfnEqualKeys = DAT_011f3af8[m_eRequestType];
+    KeyEqual pfnEqualKeys = DAT_011f3af8[m_eType];
     for (unsigned int i = 0; i < m_uiNumKeys; ++i)
     {
-        unsigned int offset = i * m_ucKeyDataSize;
-        const unsigned char* otherKey = (const unsigned char*)other->m_pKeyArray + offset;
-        const unsigned char* currentKey = (const unsigned char*)m_pKeyArray + offset;
+        unsigned int offset = i * m_ucKeySize;
+        const unsigned char* otherKey = (const unsigned char*)pkObject->m_pkKeys + offset;
+        const unsigned char* currentKey = (const unsigned char*)m_pkKeys + offset;
         if (!pfnEqualKeys(currentKey, otherKey))
             return false;
     }
@@ -228,14 +245,18 @@ extern SavePosKeys g_apfnSavePosKeys[];
 
 // SaveBinary
 // @fnv 0x00a49300
+// pdb: NiPosData::SaveBinary | NiPosData.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiPoint3Interpolator::NiPoint3Interpolator
+// pdb params: stream
+// pdb locals: sf
 void NiPosDataOperations::SaveToStream(NiStream& kStream)
 {
     nullsub_3(kStream);
     kStream.GetBinaryStream()->Write((const void*)&m_uiNumKeys, 4);
     if (m_uiNumKeys > 0)
     {
-        kStream.GetBinaryStream()->Write((const void*)&m_eRequestType, 4);
-        g_apfnSavePosKeys[m_eRequestType](kStream, m_pKeyArray, m_uiNumKeys);
+        kStream.GetBinaryStream()->Write((const void*)&m_eType, 4);
+        g_apfnSavePosKeys[m_eType](kStream, m_pkKeys, m_uiNumKeys);
     }
 }
 
@@ -258,6 +279,9 @@ struct FUN_0096ad30_param
 
 
 // @fnv 0x00a49380
+// pdb: NiPosData::GetViewerStrings | NiPosData.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiPoint3Interpolator::NiPoint3Interpolator
+// pdb params: pStrings
 void NiPosDataOperations::AddViewerEntries(FUN_0096ad30_param* param)
 {
     unsigned int value;
@@ -285,7 +309,11 @@ void NiAnimationKey_CopySequence(int, int, int, int, float, float, unsigned int*
 
 
 // @fnv 0x00a49140
-void NiPosDataOperations::CopyKeyRange(float a1, float a2, NiPosDataOperations** apObj)
+// src: XBOX_RETAIL_PDB 0x00a49140
+// pdb: NiPosData::GetSequenceData | NiPosData.obj | retail, object-file gap fill, high
+// pdb params: fStartTime, fEndTime, aspPosData
+// pdb locals: spDeepCopy, spNewData, pkNewKeys, uiNewNumKeys
+void NiPosDataOperations::NiPosData_GetSequenceData(float fStartTime, float fEndTime, NiPosDataOperations** aspPosData)
 {
     NiPosDataOperations* tmp;
     unsigned int uiOut2;
@@ -301,17 +329,17 @@ void NiPosDataOperations::CopyKeyRange(float a1, float a2, NiPosDataOperations**
     {
         uiOut1 = 0;
         uiOut2 = 0;
-        NiAnimationKey_CopySequence(1, m_eRequestType, (int)m_pKeyArray, (int)m_uiNumKeys, a1, a2, &uiOut1, &uiOut2);
-        p->SetColorKeys((PositionKeyInterpolator*)uiOut1, uiOut2, m_eRequestType);
+        NiAnimationKey_CopySequence(1, m_eType, (int)m_pkKeys, (int)m_uiNumKeys, fStartTime, fEndTime, &uiOut1, &uiOut2);
+        p->ReplaceAnim((PositionKeyInterpolator*)uiOut1, uiOut2, m_eType);
     }
-    NiPosDataOperations* old = *apObj;
+    NiPosDataOperations* old = *aspPosData;
     if (old != p)
     {
         if (old != 0)
         {
             old->DecRefCount();
         }
-        *apObj = p;
+        *aspPosData = p;
         if (p != 0)
         {
             p->IncRefCount();

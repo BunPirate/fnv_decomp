@@ -424,6 +424,8 @@ struct BlendController {
 };
 // @fnv 0x00c7c870
 // src: COMMUNITY 0x00c7c870
+// pdb: bhkRagdollController::DoRagdollFeedback | bhkRagdollController.obj | retail, call graph, high
+// pdb locals: ragdollLS, lowPoseMS, inumRagdollBones, lowPoseLS, numBodies, pskel, ragdollMS, i, rot
 void BlendController::bhkRagdollController_DoRagdollFeedback() {
     BlendController* self=this;
     if (BSPrecisionTimer_GetTimer()-self->start > self->duration) {
@@ -869,14 +871,17 @@ struct SceneOwner {
 
 // @fnv 0x00c7e9a0
 // src: COMMUNITY 0x00c7e9a0
-void SceneOwner::bhkRagdollController_Init(Argument* sourceInput, const char* requestedName) {
+// pdb: bhkRagdollController::Init | bhkRagdollController.obj | retail, upstream name already matches, high
+// pdb params: apObject, apScaledSkeletonName
+// pdb locals: pcol, ires, rbarray, constarray, rootTransf, prbT, rbTransf, rbTransfHK, skel, x, rcontrolData, high_low_data, low_high_data, params, uiLowPoseLinesNum, uiHighPoseLinesNum
+void SceneOwner::bhkRagdollController_Init(Argument* apObject, const char* apScaledSkeletonName) {
     char* old = name;
-    if (old != requestedName) {
-        name = FUN_00a5b690(requestedName);
+    if (old != apScaledSkeletonName) {
+        name = FUN_00a5b690(apScaledSkeletonName);
         ReleaseString(old);
     }
-    if (!requestedName) {
-        char* inherited = sourceInput->name;
+    if (!apScaledSkeletonName) {
+        char* inherited = apObject->name;
         if (name != inherited) {
             RetainString(inherited);
             char* previous = name;
@@ -891,8 +896,8 @@ void SceneOwner::bhkRagdollController_Init(Argument* sourceInput, const char* re
         AssignScene(*cacheSlot, new CachedScene);
         DAT_011b0300.InsertOrAssign(GetName(), SceneRef(*cacheSlot));
     }
-    if (bhkUtilFunctions_FindNextCollisionObject(sourceInput)) {
-        InputScene* scene = bhkUtilFunctions_FindNextCollisionObject(sourceInput);
+    if (bhkUtilFunctions_FindNextCollisionObject(apObject)) {
+        InputScene* scene = bhkUtilFunctions_FindNextCollisionObject(apObject);
         skeletonHandle = scene->GetSkeleton()->GetBones();
         ScratchArray first;
         ScratchArray second;
@@ -1011,7 +1016,7 @@ extern "C" void* __cdecl hkString_memSet(void*,int,unsigned int);
 struct Clock {
     __int64 start;
     __int64 duration;
-    void FUN_00448e30(float);
+    void BSPrecisionTimer_Reset(float);
     void begin(float f) { start=BSPrecisionTimer_GetTimer(); duration=(__int64)(DAT_011ac39c*f); }
 };
 struct IndexArray {
@@ -1506,7 +1511,7 @@ struct Controller {
     PointerView<SelectionHolder> selection;
     Clock timer;
     void bhkRagdollController_UpdateConstraintsWorld(bool);
-    void bhkRagdollController_SetRagdollFeedbackActive(bool active);
+    void bhkRagdollController_SetRagdollFeedbackActive(bool abActive);
 };
 __forceinline void UpdateLinear(BodyView* body,const VectorValue& value) {
     if(!value.equal(body->getLinearVelocity())) {
@@ -1523,12 +1528,15 @@ __forceinline void UpdateAngular(BodyView* body,const VectorValue& value) {
 
 // @fnv 0x00c7b6a0
 // src: XBOX_PDB 0x00c7b6a0
-void Controller::bhkRagdollController_SetRagdollFeedbackActive(bool enable) {
+// pdb: bhkRagdollController::SetRagdollFeedbackActive | bhkRagdollController.obj | retail, call graph (shared callers), high
+// pdb params: abActive
+// pdb locals: inumRagdollBones, angularVelocities, linearVelocities, i, rb
+void Controller::bhkRagdollController_SetRagdollFeedbackActive(bool abActive) {
     if (!enabled) return;
-    if (!enable && !active) return;
-    if (active && enable) { timer.FUN_00448e30(DAT_011b02e8); return; }
-    bhkRagdollController_UpdateConstraintsWorld(enable);
-    if (enable) timer.begin(DAT_011b02e8); else timer.duration=0;
+    if (!abActive && !active) return;
+    if (active && abActive) { timer.BSPrecisionTimer_Reset(DAT_011b02e8); return; }
+    bhkRagdollController_UpdateConstraintsWorld(abActive);
+    if (abActive) timer.begin(DAT_011b02e8); else timer.duration=0;
     int count=bodies->getNumBones();
     BufferView positions(count);
     BufferView rotations(count);
@@ -1548,7 +1556,7 @@ void Controller::bhkRagdollController_SetRagdollFeedbackActive(bool enable) {
         {
             if(body) {
                 if(selection.get()->selection->find((unsigned short)i)!=-1) {
-                    if(enable) {
+                    if(abActive) {
                         if(body->getMotionType()==4 || body->getQualityType()!=4) {
                             body->hkpRigidBody_setMotionType(KindDynamic,HK_ENTITY_ACTIVATION_DO_ACTIVATE,HK_UPDATE_FILTER_ON_ENTITY_FULL_CHECK); body->setQualityType((hkpCollidableQualityType)4); body->hkpRigidBody_enableDeactivation(false);
                         }
@@ -1563,7 +1571,7 @@ void Controller::bhkRagdollController_SetRagdollFeedbackActive(bool enable) {
             }
         }
     }
-    active=enable;
+    active=abActive;
 }
 
 inline void* operator new(unsigned int, void* p) { return p; }
@@ -1814,14 +1822,17 @@ struct RenderNode {
     SharedObject91<Owner> owner;
     __forceinline Owner* GetOwner() { Owner* result=owner.operator->(); return result; }
     bool bhkRagdollController_InitBoneParams(CloneBuffer*,const char*,int);
-    bool bhkRagdollController_InitLookIK(const char* item);
+    bool bhkRagdollController_InitLookIK(const char* apNodeName);
 };
 // @fnv 0x00c7de60
 // src: COMMUNITY 0x00c7de60
-bool RenderNode::bhkRagdollController_InitLookIK(const char* item) {
+// pdb: bhkRagdollController::InitLookIK | bhkRagdollController.obj | retail, upstream name already matches, high
+// pdb params: apNodeName
+// pdb locals: bret, boneTransform
+bool RenderNode::bhkRagdollController_InitLookIK(const char* apNodeName) {
     bool ok=active;
     if(ok) {
-    ok=bhkRagdollController_InitBoneParams(input,item,1);
+    ok=bhkRagdollController_InitBoneParams(input,apNodeName,1);
     if(ok) {
         state=1;
         if(create) {
@@ -1877,7 +1888,7 @@ struct C74NiQuaternion {
     float m_fVectorY;
     float m_fVectorZ;
     float m_fScalarPart;
-    void FromRotationMatrix(const C74Matrix3& kRot);
+    void FromRotationMatrix(const C74Matrix3& rot);
 };
 
 struct C74Vector4 {
@@ -1888,7 +1899,7 @@ struct C74Vector4 {
 struct C74Quaternion {
     float m_vec[4];
     void set(float x, float y, float z, float w) { m_vec[0] = x; m_vec[1] = y; m_vec[2] = z; m_vec[3] = w; }
-    void normalize();
+    void hkQuaternion_normalize();
 };
 
 // hkQsTransform was included above with the explicit packet storage types.
@@ -1898,12 +1909,15 @@ extern float DAT_01267c20;
 
 // @fnv 0x00c74dd0
 // src: COMMUNITY 0x00c74dd0
+// pdb: NI2HK | bhkRagdollController.obj | debug, call graph, high
+// pdb params: arhkTran, arNiTran
+// pdb locals: hkpos, niquat
 hkQsTransform* NI2HK_00c74dd0(hkQsTransform* out, const C74Transform* in)
 {
     C74NiQuaternion q;
     q.FromRotationMatrix(in->m_kOrientation);
     reinterpret_cast<C74Quaternion&>(out->m_rotation).set(q.m_fVectorY, q.m_fVectorZ, q.m_fScalarPart, q.m_fVectorX);
-    reinterpret_cast<C74Quaternion&>(out->m_rotation).normalize();
+    reinterpret_cast<C74Quaternion&>(out->m_rotation).hkQuaternion_normalize();
     C74Vector4 t;
     t(0) = in->m_TranslateX * DAT_01267c20;
     t(1) = in->m_TranslateY * DAT_01267c20;
@@ -2294,7 +2308,7 @@ struct ParticleTable {
     int unk2a0;
     Table* table;
     void* getContext() { return context; }
-    void __thiscall bhkRagdollController_InitFootIK(FNVInput* incoming);
+    void __thiscall bhkRagdollController_InitFootIK(FNVInput* arboneNameA);
     bool __thiscall bhkRagdollController_ExtractBipedSetupData(Scratch*, FNVInput*);
     Geo* __thiscall bhkRagdollController_GetCapsuleBoneShapeInfo(GameForm*);
 };
@@ -2331,13 +2345,16 @@ __forceinline void EntryArray::resize(int size) {
 }
 // @fnv 0x00c7c3a0
 // src: COMMUNITY 0x00c7c3a0
-void __thiscall ParticleTable::bhkRagdollController_InitFootIK(FNVInput* incoming) {
-    FNVInput* input=incoming;
-    unsigned count=incoming->count;
+// pdb: bhkRagdollController::InitFootIK | bhkRagdollController.obj | retail, upstream name already matches, high
+// pdb params: arboneNameA
+// pdb locals: setupData, iNumFeet, pskeleton, bextractResults, binitAllFeet, I, pcalfObj, pfootObj, pthighCO, ffootRad, panklStr, phipStr, pcalfCO, pkneeStr, pfootCapsuleInfo, pthighObj, pfootCO, i, u
+void __thiscall ParticleTable::bhkRagdollController_InitFootIK(FNVInput* arboneNameA) {
+    FNVInput* input=arboneNameA;
+    unsigned count=arboneNameA->count;
     if (!count || !enabled) return;
     Scratch scratch;
     scratch.hkaFootPlacementIkSolver_Setup_Setup();
-    bool ready=bhkRagdollController_ExtractBipedSetupData(&scratch,incoming);
+    bool ready=bhkRagdollController_ExtractBipedSetupData(&scratch,arboneNameA);
     Table* ownerTable=table;
     int owner=ownerTable->owner;
     if (!ready) return;
@@ -2629,14 +2646,14 @@ struct Skeleton {
 };
 struct Processor {
  void hkaRagdollRigidBodyController_reinitialize();
- void hkaRagdollRigidBodyController_driveToPose(float delta, Transform48* transforms, void* settings, int* results);
+ void hkaRagdollRigidBodyController_driveToPose(float deltaTime, Transform48* poseLocal, void* worldFromModel, int* stressOut);
 };
 struct PoseLookup { void** hkaPose_getSyncedPoseModelSpace(); };
 struct BlendData { int unk00,unk04,unk08,unk0c; void* data; };
 extern float DAT_011afe64;
 extern float DAT_010c7948[];
-void UpdateEntriesByKind(Skeleton*);
-void EnableBehaviorsByKind(Skeleton*);
+void bhkRagdollController_bhkRagdollPoweredConstraintController_stopMotors(Skeleton*);
+void bhkRagdollController_bhkRagdollPoweredConstraintController_startMotors(Skeleton*);
 void bhkRagdollController_bhkRagdollPoweredConstraintController_driveToPose(Skeleton*, Transform48*);
 void CallWithGlobal(int, void*, void*, Transform48*);
 void hkaSkeletonUtils_transformModelPoseToLocalPose(int, void*, Transform48*, Transform48*);
@@ -2795,11 +2812,14 @@ struct RagdollUpdateController {
     int unk29c;
     int unk2a0;
  BlendData* blend;
- void bhkRagdollController_UpdateRagdollRigidBodies(const Transform48* input);
+ void bhkRagdollController_UpdateRagdollRigidBodies(const Transform48* apRagdollPoseLS);
 };
 // @fnv 0x00c7d030
 // src: XBOX_PDB 0x00c7d030
-void RagdollUpdateController::bhkRagdollController_UpdateRagdollRigidBodies(const Transform48* input) {
+// pdb: bhkRagdollController::UpdateRagdollRigidBodies | bhkRagdollController.obj | retail, upstream name already matches, high
+// pdb params: apRagdollPoseLS
+// pdb locals: pragdollSkel, pw, eprevMethod, ragdollMS, ragdollLS, iragdollBoneNum, i, soutput, boverMaxVel, pbody, flinVelSq, flinVelMaxSq
+void RagdollUpdateController::bhkRagdollController_UpdateRagdollRigidBodies(const Transform48* apRagdollPoseLS) {
  SkeletonData* data=skeleton->getData();
  int count=data->getCount();
  ScratchTransforms outputStorage(count);
@@ -2808,8 +2828,8 @@ void RagdollUpdateController::bhkRagdollController_UpdateRagdollRigidBodies(cons
  Transform48* pose=poseStorage.begin();
  int oldMode=mode;
  if(forceMode) mode=1;
- if(needsInit) { UpdateEntriesByKind(skeleton); needsInit=false; }
- if(!input) {
+ if(needsInit) { bhkRagdollController_bhkRagdollPoweredConstraintController_stopMotors(skeleton); needsInit=false; }
+ if(!apRagdollPoseLS) {
   CallWithGlobal(count,(void*)data->getParents(),(void*)data->getPoses(),pose);
   void* referencePoses=(void*)data->getPoses();
   void* poseTrack=*lookup->hkaPose_getSyncedPoseModelSpace();
@@ -2817,10 +2837,10 @@ void RagdollUpdateController::bhkRagdollController_UpdateRagdollRigidBodies(cons
   mapPose(currentBlend->data,poseTrack,referencePoses,pose,2);
   if(mode!=1) { void* bones=(void*)data->getParents(); hkaSkeletonUtils_transformModelPoseToLocalPose(count,bones,pose,output); }
  } else {
-  for(int i=0;i<count;++i) outputStorage[i]=input[i];
+  for(int i=0;i<count;++i) outputStorage[i]=apRagdollPoseLS[i];
  }
  switch(mode) {
- case 3: EnableBehaviorsByKind(skeleton); bhkRagdollController_bhkRagdollPoweredConstraintController_driveToPose(skeleton,output); mode=0; break;
+ case 3: bhkRagdollController_bhkRagdollPoweredConstraintController_startMotors(skeleton); bhkRagdollController_bhkRagdollPoweredConstraintController_driveToPose(skeleton,output); mode=0; break;
  case 2:
   if(active) { processor->hkaRagdollRigidBodyController_reinitialize(); active=false; }
   if(DAT_011afe64>0.0f) {
@@ -3087,6 +3107,9 @@ public:
     void bhkRagdollController_Init(NodeArg*,void*);
 };
 // @fnv 0x00c7f060
+// pdb: bhkRagdollController::bhkRagdollController | bhkRagdollController.obj | retail, object-file run extension, low
+// pdb params: apObject, apPose, apScaledSkeletonName
+// pdb locals: bprevUseVel, pskelNode, pposeNode, eprevMotion, boneA, i
 FUN_00c7f060::FUN_00c7f060(NodeArg* a,NodeOrFlag b,void* c) {
     unk23c=0.0f;
     unk48=0; unk4c=0; unk50=0; unk54=0; unk58=0; unk5c=0;
@@ -3345,6 +3368,9 @@ static __declspec(noinline) void hkVector4_ComputeValues_00ce2a50(ActorVectorLoc
 
 // @fnv 0x00ce3a00
 // src: XBOX_PDB 0x00ce3a00
+// pdb: hkaSkeletonMapper::mapPose | hkaSkeletonMapper.obj | retail, unique string literal, high
+// pdb params: poseAModelSpace, originalPoseBLocalSpace, poseBModelSpace, source
+// pdb locals: outputInitialized, assertBuf, ostr, numChainMappings, i, chainBones, currentRot, rotationQuaternion, currentDirection, desiredDirection
 void __cdecl hkaSkeletonMapper::mapPose(const hkQsTransform* poseAModelSpace, const hkQsTransform* originalPoseBLocalSpace, hkQsTransform* poseBModelSpace, int source) const {
     {
         hkMonitorStream& mStream = hkMonitorStream::getInstance();
@@ -3366,11 +3392,11 @@ void __cdecl hkaSkeletonMapper::mapPose(const hkQsTransform* poseAModelSpace, co
         }
     }
     {
-        const int numSimpleMappings = (reinterpret_cast<const hkArray<hkaSkeletonMapperDataSimpleMapping>&>(m_kMappingData.m_kSimpleMappings)).GetLogicalSize();
+        const int numSimpleMappings = (reinterpret_cast<const hkArray<hkaSkeletonMapperDataSimpleMapping>&>(m_mapping.m_simpleMappings)).GetLogicalSize();
         for (int i = 0; i < numSimpleMappings; i++) {
             const int prefetchDistance = 128;
-            MathUtilities::prefetch128(hkAddByteOffsetConst(&(reinterpret_cast<const hkArray<hkaSkeletonMapperDataSimpleMapping>&>(m_kMappingData.m_kSimpleMappings))[i], prefetchDistance));
-            const hkaSkeletonMapperDataSimpleMapping& simpleMapping = (reinterpret_cast<const hkArray<hkaSkeletonMapperDataSimpleMapping>&>(m_kMappingData.m_kSimpleMappings))[i];
+            MathUtilities::prefetch128(hkAddByteOffsetConst(&(reinterpret_cast<const hkArray<hkaSkeletonMapperDataSimpleMapping>&>(m_mapping.m_simpleMappings))[i], prefetchDistance));
+            const hkaSkeletonMapperDataSimpleMapping& simpleMapping = (reinterpret_cast<const hkArray<hkaSkeletonMapperDataSimpleMapping>&>(m_mapping.m_simpleMappings))[i];
             poseBModelSpace[simpleMapping.m_sBoneB].SetProduct(poseAModelSpace[simpleMapping.m_sBoneA], simpleMapping.m_kAFromBTransform);
             MathUtilities::prefetch128(hkAddByteOffsetConst(&poseAModelSpace[simpleMapping.m_sBoneA], prefetchDistance));
             MathUtilities::prefetch128(hkAddByteOffsetConst(&poseBModelSpace[simpleMapping.m_sBoneB], prefetchDistance));
@@ -3386,9 +3412,9 @@ void __cdecl hkaSkeletonMapper::mapPose(const hkQsTransform* poseAModelSpace, co
         }
     }
     {
-        const int numChainMappings = (reinterpret_cast<const hkArray<hkaSkeletonMapperDataChainMapping>&>(m_kMappingData.m_kChainMappings)).GetLogicalSize();
+        const int numChainMappings = (reinterpret_cast<const hkArray<hkaSkeletonMapperDataChainMapping>&>(m_mapping.m_chainMappings)).GetLogicalSize();
         for (int i = 0; i < numChainMappings; i++) {
-            const hkaSkeletonMapperDataChainMapping& chainMapping = (reinterpret_cast<const hkArray<hkaSkeletonMapperDataChainMapping>&>(m_kMappingData.m_kChainMappings))[i];
+            const hkaSkeletonMapperDataChainMapping& chainMapping = (reinterpret_cast<const hkArray<hkaSkeletonMapperDataChainMapping>&>(m_mapping.m_chainMappings))[i];
             const short startBoneA = chainMapping.m_sStartBoneA;
             const short endBoneA = chainMapping.m_sEndBoneA;
             const short startBoneB = chainMapping.m_sStartBoneB;
@@ -3398,7 +3424,7 @@ void __cdecl hkaSkeletonMapper::mapPose(const hkQsTransform* poseAModelSpace, co
 
             StackAllocatedArray<short> chainBones;
             chainBones.init(endBoneB - startBoneB + 1);
-            WalkChainUntilLimit(*(reinterpret_cast<const ReferenceCountedPointer<const hkaSkeleton>&>(m_kMappingData.m_pSkeletonB)), startBoneB, endBoneB, static_cast<hkArray<short>&>(static_cast<hkArrayBase<short>&>(chainBones)));
+            WalkChainUntilLimit(*(reinterpret_cast<const ReferenceCountedPointer<const hkaSkeleton>&>(m_mapping.m_skeletonB)), startBoneB, endBoneB, static_cast<hkArray<short>&>(static_cast<hkArrayBase<short>&>(chainBones)));
 
             ActorVectorLocal_00ce3a00 currentEndModelSpacePos;
             currentEndModelSpacePos = originalPoseBLocalSpace[endBoneB].getTranslation();
@@ -3447,11 +3473,11 @@ void __cdecl hkaSkeletonMapper::mapPose(const hkQsTransform* poseAModelSpace, co
         }
     }
     {
-        const int numUnmapped = (reinterpret_cast<const hkArray<short>&>(m_kMappingData.m_kUnmappedBones)).GetLogicalSize();
-        if (m_kMappingData.m_bKeepUnmappedLocal) {
+        const int numUnmapped = (reinterpret_cast<const hkArray<short>&>(m_mapping.m_unmappedBones)).GetLogicalSize();
+        if (m_mapping.m_bKeepUnmappedLocal) {
             for (int i = 0; i < numUnmapped; i++) {
-                const short boneIdx = (reinterpret_cast<const hkArray<short>&>(m_kMappingData.m_kUnmappedBones))[i];
-                const short parentIdx = (reinterpret_cast<const ReferenceCountedPointer<const hkaSkeleton>&>(m_kMappingData.m_pSkeletonB))->m_kParentIndices.m_data[boneIdx];
+                const short boneIdx = (reinterpret_cast<const hkArray<short>&>(m_mapping.m_unmappedBones))[i];
+                const short parentIdx = (reinterpret_cast<const ReferenceCountedPointer<const hkaSkeleton>&>(m_mapping.m_skeletonB))->m_parentIndices.m_data[boneIdx];
                 if (parentIdx != -1) {
                     const hkQsTransform& parentFromChild = originalPoseBLocalSpace[boneIdx];
                     const hkQsTransform& modelFromParent = poseBModelSpace[parentIdx];
@@ -3473,10 +3499,10 @@ void __cdecl hkaSkeletonMapper::mapPose(const hkQsTransform* poseAModelSpace, co
     }
     switch (source) {
     case 1:
-        hkaSkeleton_RestoreLockedBoneTranslations(*(reinterpret_cast<const ReferenceCountedPointer<const hkaSkeleton>&>(m_kMappingData.m_pSkeletonB)), poseBModelSpace);
+        hkaSkeleton_RestoreLockedBoneTranslations(*(reinterpret_cast<const ReferenceCountedPointer<const hkaSkeleton>&>(m_mapping.m_skeletonB)), poseBModelSpace);
         break;
     case 2:
-        hkQsTransform_ProcessEntries_00cde2d0(*(reinterpret_cast<const ReferenceCountedPointer<const hkaSkeleton>&>(m_kMappingData.m_pSkeletonB)), originalPoseBLocalSpace, poseBModelSpace);
+        hkQsTransform_ProcessEntries_00cde2d0(*(reinterpret_cast<const ReferenceCountedPointer<const hkaSkeleton>&>(m_mapping.m_skeletonB)), originalPoseBLocalSpace, poseBModelSpace);
         break;
     }
     {
@@ -3496,7 +3522,7 @@ void __cdecl NiFree(void* p);
 void* __cdecl _fnv_zlib_memset(void* dst, int val, unsigned int n);
 
 struct MM {
-    void Deallocate(void* p);
+    void Deallocate(void* apMem);
 };
 extern MM _g_memoryManager;
 
@@ -3512,7 +3538,7 @@ inline hkMemoryAllocator* ReferenceHeapAllocator() {
 }
 __forceinline void* __cdecl hkReferencedObject::operator new(std::size_t n) {
     hkReferencedObject* b = static_cast<hkReferencedObject*>(ReferenceHeapAllocator()->blockAlloc(n));
-    b->m_usMemSizeAndFlags = static_cast<unsigned short>(n);
+    b->m_memSizeAndFlags = static_cast<unsigned short>(n);
     return b;
 }
 __forceinline void hkReferencedObject::operator delete(void* p, unsigned int n) {
@@ -3524,7 +3550,7 @@ namespace SkeletonBuild {
 // ---- Havok memory ----
 
 
-int __cdecl hkArrayUtil__reserve(hkMemoryAllocator* alloc, void* array, int capacity, int elemSize);
+int __cdecl hkArrayUtil__reserve(hkMemoryAllocator* mem, void* array, int numElem, int sizeElem);
 const char* __cdecl hkString_strDup_00cb1410(int name);
 
 inline hkMemoryAllocator* HeapAllocator()
@@ -3630,12 +3656,12 @@ struct SkeletonPoseData {
 
     __forceinline SkeletonPoseData(const hkaSkeleton* skeleton) : m_pSkeleton(skeleton), m_bPoseFlag(false), m_bPoseInitialized(false)
     {
-        const int numBones = View<hkaBone>(m_pSkeleton->m_kBones).GetLogicalSize();
+        const int numBones = View<hkaBone>(m_pSkeleton->m_bones).GetLogicalSize();
         m_pModelPose.setSizePod(numBones);
         m_pLocalPose.setSizePod(numBones);
         m_pBoneFlags.setSizePod(numBones);
-        m_kPoseData.reserveExactly((View<hkStringPtr>(m_pSkeleton->m_kFloatSlots).GetLogicalSize() + 3) & ~3);
-        m_kPoseData.setSizeFill(View<hkStringPtr>(m_pSkeleton->m_kFloatSlots).GetLogicalSize(), 0);
+        m_kPoseData.reserveExactly((View<hkStringPtr>(m_pSkeleton->m_floatSlots).GetLogicalSize() + 3) & ~3);
+        m_kPoseData.setSizeFill(View<hkStringPtr>(m_pSkeleton->m_floatSlots).GetLogicalSize(), 0);
     }
     void hkaPose_setToReferencePose();
 };
@@ -3720,7 +3746,7 @@ struct BuildNode {
     int unk04;
     void* payload;
 };
-BuildNode* __cdecl bhkUtilFunctions_FindNextCollisionObject(void* root);
+BuildNode* __cdecl bhkUtilFunctions_FindNextCollisionObject(void* apObj);
 
 struct AnimationOwner {
     int unk000;
@@ -3892,12 +3918,14 @@ struct AnimationOwner {
     int unk2a0;
     PlainPtr<SkeletonHolder> skeletonHolder;
 
-    void bhkRagdollController_CreateSGSkeletonRec(void* node, BoneRecordArray* records, BoneRecordMap* map);
+    void bhkRagdollController_CreateSGSkeletonRec(void* apObj, BoneRecordArray* arBoneA, BoneRecordMap* arboneMap);
     void bhkRagdollController_CreateSGSkeleton();
 };
 
 // @fnv 0x00c7e3b0
 // src: COMMUNITY 0x00c7e3b0
+// pdb: bhkRagdollController::CreateSGSkeleton | bhkRagdollController.obj | retail, upstream name already matches, high
+// pdb locals: bones, pcol, boneMap, pobj, uinumBones, ui
 void AnimationOwner::bhkRagdollController_CreateSGSkeleton()
 {
     if (!root)
@@ -3912,15 +3940,15 @@ void AnimationOwner::bhkRagdollController_CreateSGSkeleton()
     if (!holder->m_pSkeleton) {
         skeletonHolder->m_pSkeleton = new hkaSkeleton;
         int numBones = records.m_uiSize;
-        View<hkaBone>(skeletonHolder->m_pSkeleton->m_kBones).setSizeObj(numBones);
-        View<short>(skeletonHolder->m_pSkeleton->m_kParentIndices).setSizePod(numBones);
-        View<hkQsTransform>(skeletonHolder->m_pSkeleton->m_kReferencePose).setSizePod(numBones);
+        View<hkaBone>(skeletonHolder->m_pSkeleton->m_bones).setSizeObj(numBones);
+        View<short>(skeletonHolder->m_pSkeleton->m_parentIndices).setSizePod(numBones);
+        View<hkQsTransform>(skeletonHolder->m_pSkeleton->m_referencePose).setSizePod(numBones);
         for (unsigned int i = 0; i < records.m_uiSize; ++i) {
-            hkaBone& bone = View<hkaBone>(skeletonHolder->m_pSkeleton->m_kBones)[i];
+            hkaBone& bone = View<hkaBone>(skeletonHolder->m_pSkeleton->m_bones)[i];
             bone.m_name.Assign(hkString_strDup_00cb1410(records.m_pBase[i]->name));
-            View<hkaBone>(skeletonHolder->m_pSkeleton->m_kBones)[i].m_bLockTranslation = true;
-            View<hkQsTransform>(skeletonHolder->m_pSkeleton->m_kReferencePose)[i] = records.m_pBase[i]->transform;
-            View<short>(skeletonHolder->m_pSkeleton->m_kParentIndices)[i] = records.m_pBase[i]->parent;
+            View<hkaBone>(skeletonHolder->m_pSkeleton->m_bones)[i].m_bLockTranslation = true;
+            View<hkQsTransform>(skeletonHolder->m_pSkeleton->m_referencePose)[i] = records.m_pBase[i]->transform;
+            View<short>(skeletonHolder->m_pSkeleton->m_parentIndices)[i] = records.m_pBase[i]->parent;
         }
     }
 
@@ -3933,7 +3961,7 @@ void AnimationOwner::bhkRagdollController_CreateSGSkeleton()
 
     pose = new SkeletonPoseData(skeletonHolder->m_pSkeleton);
     pose->hkaPose_setToReferencePose();
-    transforms.setSizePod(View<hkaBone>(skeletonHolder->m_pSkeleton->m_kBones).GetLogicalSize());
+    transforms.setSizePod(View<hkaBone>(skeletonHolder->m_pSkeleton->m_bones).GetLogicalSize());
 }
 
 } // namespace SkeletonBuild

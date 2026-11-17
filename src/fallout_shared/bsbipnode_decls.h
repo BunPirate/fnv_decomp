@@ -15,7 +15,7 @@ class AnimationInterpolatorNode : public NiMultiTargetTransformController
 {
   public:
     bool NiTimeController_GetActive();
-    void UpdateInterpolatorsAtTime(float time, bool selective);
+    void BSTransCon_UpdateAllButTarget(float afTime, bool abSkipSelectiveUpdateTest);
 };
 
 typedef char AnimationInterpolatorNode_size_check[(sizeof(AnimationInterpolatorNode) == 64) ? 1 : -1];

@@ -4,27 +4,36 @@
 #include "../../include/MemoryManager.h"
 
 // @fnv 0x00aa7be0
-unsigned int MemoryHeap::Size(const void* pointer, unsigned int)
+// pdb: MemoryHeap::Size | MemoryHeap.obj | debug, upstream name already matches, high
+// pdb params: apPointer, __formal
+unsigned int MemoryHeap::Size(const void* apPointer, unsigned int)
 {
-    return ((const unsigned int*)pointer)[-1] & 0x0fffffff;
+    return ((const unsigned int*)apPointer)[-1] & 0x0fffffff;
 }
 
 // @fnv 0x00aa7b20
-void* MemoryHeap::Allocate(unsigned int size, unsigned int)
+// pdb: MemoryHeap::Allocate | MemoryHeap.obj | debug, upstream name already matches, high
+// pdb params: aSize, __formal
+void* MemoryHeap::Allocate(unsigned int aSize, unsigned int)
 {
-    return BaseAllocate(size);
+    return BaseAllocate(aSize);
 }
 
 // Frees the given pointer via BaseFree, doing nothing when the pointer is null.
 // @fnv 0x00aa7b40
-void MemoryHeap::Deallocate(void* apMemory, unsigned int)
+// pdb: MemoryHeap::Deallocate | MemoryHeap.obj | debug, upstream name already matches, high
+// pdb params: apPointer, __formal
+void MemoryHeap::Deallocate(void* apPointer, unsigned int)
 {
-    if (!apMemory)
+    if (!apPointer)
         return;
-    BaseFree(apMemory);
+    BaseFree(apPointer);
 }
 
 // @fnv 0x00aa7a50
+// pdb: MemoryHeap::CreateMorePages | MemoryHeap.obj | retail, object-file run extension, low
+// pdb params: apMem, aiCurrentSize, aiRequestedBytes
+// pdb locals: pcurrentEnd
 unsigned int MemoryHeap::CommitRange(void* base, unsigned int offset, unsigned int size)
 {
     void* address = (char*)base + offset;
@@ -37,27 +46,30 @@ unsigned int MemoryHeap::CommitRange(void* base, unsigned int offset, unsigned i
 __declspec(dllimport) int __stdcall VirtualFree(void*, unsigned long, unsigned long);
 struct FUN_00aa7ab0_s
 {
-    unsigned int MemoryHeap_CleanExtraPages(char* pBase, unsigned int uiElapsedMilliseconds, unsigned int uiSize);
+    unsigned int MemoryHeap_CleanExtraPages(char* apMem, unsigned int aiCurrentSize, unsigned int aiFreeBytes);
 };
 
 // @fnv 0x00aa7ab0
 // src: XBOX_PDB 0x00aa7ab0
-unsigned int FUN_00aa7ab0_s::MemoryHeap_CleanExtraPages(char* pBase, unsigned int uiElapsedMilliseconds, unsigned int uiSize)
+// pdb: MemoryHeap::CleanExtraPages | MemoryHeap.obj | retail, upstream name already matches, high
+// pdb params: apMem, aiCurrentSize, aiFreeBytes
+// pdb locals: pnewEnd
+unsigned int FUN_00aa7ab0_s::MemoryHeap_CleanExtraPages(char* apMem, unsigned int aiCurrentSize, unsigned int aiFreeBytes)
 {
-    uiSize &= ~(*(unsigned int*)((char*)this + 0x10) - 1);
-    if (uiSize >= *(unsigned int*)((char*)this + 0x10))
+    aiFreeBytes &= ~(*(unsigned int*)((char*)this + 0x10) - 1);
+    if (aiFreeBytes >= *(unsigned int*)((char*)this + 0x10))
     {
-        char* pAddr = pBase + uiElapsedMilliseconds - uiSize;
-        if (!(bool)(int)(VirtualFree(pAddr, uiSize, 0x4000) == 1))
+        char* pAddr = apMem + aiCurrentSize - aiFreeBytes;
+        if (!(bool)(int)(VirtualFree(pAddr, aiFreeBytes, 0x4000) == 1))
         {
-            uiSize = 0;
+            aiFreeBytes = 0;
         }
     }
     else
     {
-        uiSize = 0;
+        aiFreeBytes = 0;
     }
-    return uiSize;
+    return aiFreeBytes;
 }
 
 struct FUN_00aa7a30_shell
@@ -65,6 +77,8 @@ struct FUN_00aa7a30_shell
     unsigned int FreeVirtualMemory(const void* p);
 };
 // @fnv 0x00aa7a30
+// pdb: MemoryHeap::DoHeapFree | MemoryHeap.obj | debug, object-file run extension, low
+// pdb params: apPtr
 unsigned int FUN_00aa7a30_shell::FreeVirtualMemory(const void* apMemory)
 {
     return VirtualFree((void*)apMemory, 0, 0x8000);
@@ -78,6 +92,8 @@ struct FUN_00aa7c00_shell
 // Reads the low 28 bits of the word before apPointer, masks them, and returns that value plus 8.
 // @fnv 0x00aa7c00
 // src: XBOX_PDB 0x00aa7c00
+// pdb: MemoryHeap::TotalSize | MemoryHeap.obj | debug, upstream name already matches, high
+// pdb params: apPointer
 unsigned int __thiscall FUN_00aa7c00_shell::MemoryHeap_TotalSize(const void* apPointer)
 {
     unsigned int offset = *(unsigned int*)((char*)apPointer - 4) & 0x0FFFFFFF;
@@ -91,6 +107,8 @@ struct FUN_00aa7c30_shell
 
 // @fnv 0x00aa7c30
 // src: COMMUNITY 0x00aa7c30
+// pdb: MemoryHeap::GetCalculatedMemoryUsed | MemoryHeap.obj | debug, object-file gap fill, medium
+// pdb locals: imemUsed
 int FUN_00aa7c30_shell::return_0_7()
 {
     int ret = 0;
@@ -103,6 +121,7 @@ struct FUN_00aa7c50_s
 };
 // @fnv 0x00aa7c50
 // src: COMMUNITY 0x00aa7c50
+// pdb: MemoryHeap::GetReportedMemoryUsed | MemoryHeap.obj | debug, object-file gap fill, medium
 int FUN_00aa7c50_s::return_0_0()
 {
     return 0;
@@ -112,11 +131,14 @@ struct FUN_00aa7c60_cls
 {
     char pad[0x20f0];
     bool m_bFlag;
-    void GetHeapStats(void* pStats, bool bFull);
+    void GetHeapStats(void* apStats, bool abFullBlockInfo);
     void UpdateStats(void* apStats, bool abFullBlockInfo);
 };
 // Clears the full-block-info request when m_bFlag is set, then forwards the stats pointer and the resulting flag to GetHeapStats.
 // @fnv 0x00aa7c60
+// pdb: MemoryHeap::MemoryHeap | MemoryHeap.obj | retail, object-file run extension, low
+// pdb note: debug build links it to MemoryHeap::GetHeapStats
+// pdb params: aiSize, aiInitialSize, apName, abSupportsSwapping
 void FUN_00aa7c60_cls::UpdateStats(void* apStats, bool abFullBlockInfo)
 {
     abFullBlockInfo &= !m_bFlag;
@@ -132,24 +154,27 @@ struct FUN_00aa7d60_cls
 {
     char pad0[0x10];
     unsigned int m_uiPage;
-    void MemoryHeap_DecommitPages(FUN_00aa7d60_blk* pBlock);
+    void MemoryHeap_DecommitPages(FUN_00aa7d60_blk* apBlock);
 };
 // @fnv 0x00aa7d60
 // src: XBOX_PDB 0x00aa7d60
-void FUN_00aa7d60_cls::MemoryHeap_DecommitPages(FUN_00aa7d60_blk* pBlock)
+// pdb: MemoryHeap::DecommitPages | MemoryHeap.obj | retail, upstream name already matches, high
+// pdb params: apBlock
+// pdb locals: isize, imem, iblock1
+void FUN_00aa7d60_cls::MemoryHeap_DecommitPages(FUN_00aa7d60_blk* apBlock)
 {
-    unsigned int uiSize = pBlock->flags & 0xFFFFFFF;
+    unsigned int uiSize = apBlock->flags & 0xFFFFFFF;
     if (uiSize >= m_uiPage)
     {
-        char* pFirst = (char*)(pBlock + 1);
+        char* pFirst = (char*)(apBlock + 1);
         char* pAligned = (char*)(((unsigned int)pFirst + m_uiPage - 1) & ~(m_uiPage - 1));
         uiSize = (uiSize - (pAligned - pFirst)) & ~(m_uiPage - 1);
         if (uiSize >= m_uiPage)
         {
             if ((VirtualFree(pAligned, uiSize, 0x4000), 1))
-                pBlock->flags |= 0x20000000;
+                apBlock->flags |= 0x20000000;
             else
-                pBlock->flags &= 0xDFFFFFFF;
+                apBlock->flags &= 0xDFFFFFFF;
         }
     }
 }
@@ -171,6 +196,7 @@ void* FakeHeap::FUN_00aa7e20(unsigned int flags)
 
 // @fnv 0x00aa9d10
 // src: GUESS 0x00aa9d10 (confidence: high)
+// pdb: AbstractHeap::CheckDelayedFreeBlocks | AbstractHeap.obj | debug, object-file gap fill, medium
 void __fastcall MemoryHeap_DoNothing(void* this_ptr)
 {}
 
@@ -180,6 +206,8 @@ struct FUN_00b02710_Cls
 };
 // @fnv 0x00b02710
 // src: COMMUNITY 0x00b02710
+// pdb: AbstractHeap::CommitPages | MemoryHeap.obj | debug, upstream name already matches, high
+// pdb params: apBlock, aiSize
 void FUN_00b02710_Cls::AbstractHeap_CommitPages(void*, int)
 {}
 
@@ -195,6 +223,9 @@ struct FUN_00aa79a0_shell
 
 // Reserves dwReserveSize bytes with VirtualAlloc and commits dwCommitSize bytes; frees the reservation and returns null if the commit fails.
 // @fnv 0x00aa79a0
+// pdb: MemoryHeap::DoHeapAllocation | MemoryHeap.obj | debug, object-file run extension, low
+// pdb params: aiSize, aiInitialSize
+// pdb locals: ipageSizeFlag, pmem
 void* FUN_00aa79a0_shell::ReserveAndCommitMemory(unsigned int dwReserveSize, unsigned int dwCommitSize)
 {
     unsigned int a = (0x10000 < m_uiPage) ? 0 : 0;
@@ -223,23 +254,26 @@ struct FUN_00aa7ca0_cls
 {
     char pad0[0x20f0];
     bool m_bFlag;
-    unsigned int WriteBucketInfo(FUN_00aa7ca0_obj* p);
-    unsigned int MemoryHeap_OutputBucketInfo(FUN_00aa7ca0_obj* p);
+    unsigned int WriteBucketInfo(FUN_00aa7ca0_obj* apFile);
+    unsigned int MemoryHeap_OutputBucketInfo(FUN_00aa7ca0_obj* apFile);
 };
 
 // @fnv 0x00aa7ca0
 // src: XBOX_PDB 0x00aa7ca0
-unsigned int FUN_00aa7ca0_cls::MemoryHeap_OutputBucketInfo(FUN_00aa7ca0_obj* pObj)
+// pdb: MemoryHeap::OutputBucketInfo | MemoryHeap.obj | retail, upstream name already matches, high
+// pdb params: apFile
+// pdb locals: ires, zero
+unsigned int FUN_00aa7ca0_cls::MemoryHeap_OutputBucketInfo(FUN_00aa7ca0_obj* apFile)
 {
     unsigned int r = 0;
     if (!m_bFlag)
     {
-        r = WriteBucketInfo(pObj);
+        r = WriteBucketInfo(apFile);
     }
     else
     {
         unsigned int out = 0;
-        r = pObj->v02(&out, 4);
+        r = apFile->v02(&out, 4);
     }
     return r;
 }
@@ -2363,23 +2397,26 @@ struct AA7D00Saver
     int unk20EC;
     bool m_bSkip;
 
-    int ValueReferencePair(AA7D00Stream* pkStream, bool bFlag);
-    int MemoryHeap_OutputBlockInfo(AA7D00Stream* pkStream, bool bFlag);
+    int ValueReferencePair(AA7D00Stream* apFile, bool abOutputWalk);
+    int MemoryHeap_OutputBlockInfo(AA7D00Stream* apFile, bool abOutputWalk);
 };
 
 // @fnv 0x00aa7d00
 // src: XBOX_PDB 0x00aa7d00
-int AA7D00Saver::MemoryHeap_OutputBlockInfo(AA7D00Stream* pkStream, bool bFlag)
+// pdb: MemoryHeap::OutputBlockInfo | MemoryHeap.obj | retail, upstream name already matches, high
+// pdb params: apFile, abOutputWalk
+// pdb locals: ires, zero
+int AA7D00Saver::MemoryHeap_OutputBlockInfo(AA7D00Stream* apFile, bool abOutputWalk)
 {
     int iResult = 0;
     if (!m_bSkip)
     {
-        iResult = ValueReferencePair(pkStream, bFlag);
+        iResult = ValueReferencePair(apFile, abOutputWalk);
     }
     else
     {
         int iZero = 0;
-        iResult = pkStream->Write(&iZero, 4);
+        iResult = apFile->Write(&iZero, 4);
     }
     return iResult;
 }

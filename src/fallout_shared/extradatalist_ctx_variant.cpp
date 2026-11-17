@@ -162,18 +162,19 @@ struct TeleportableReference
     void Copy(TeleportableReference* apSource);
 };
 
+// pdb: class MapMarkerData, size 0x14, 5 members
 struct MapMarkerData
 {
-    int unk00, unk04, unk08, unk0C, unk10;
+    int LocationName, unk04, unk08, cFlags, pReputation; // src: XBOX_RETAIL_PDB LocationName +0x0 (old: unk00); cFlags +0xc (old: unk0C); pReputation +0x10 (old: unk10)
     MapMarkerData();
-    void Copy(MapMarkerData* apSource);
+    void Copy(MapMarkerData* apCopy);
 };
 
 struct MediaLocation
 {
     int unk00, unk04, unk08, unk0C, unk10, unk14, unk18, unk1C, unk20, unk24, unk28, unk2C, unk30;
     MediaLocation();
-    void Copy(MediaLocation* apSource);
+    void AudioMarkerData_Copy(MediaLocation* apCopy);
 };
 
 struct TwoIntegerValues
@@ -183,9 +184,10 @@ struct TwoIntegerValues
     void Copy(TwoIntegerValues* apSource);
 };
 
+// pdb: class ImpactSwap, size 0x15c, 2 members
 struct ImpactSwap
 {
-    int unk000, unk004, unk008, unk00C, unk010, unk014, unk018, unk01C, unk020, unk024, unk028, unk02C, unk030, unk034,
+    int pRemappedData, unk004, unk008, unk00C, unk010, unk014, unk018, unk01C, unk020, unk024, unk028, unk02C, pAltFootstepMaterialNames, unk034, // src: XBOX_RETAIL_PDB pRemappedData +0x0 (old: unk000); pAltFootstepMaterialNames +0x30 (old: unk030)
         unk038, unk03C, unk040, unk044, unk048, unk04C, unk050, unk054, unk058, unk05C, unk060, unk064, unk068, unk06C,
         unk070, unk074, unk078, unk07C, unk080, unk084, unk088, unk08C, unk090, unk094, unk098, unk09C, unk0A0, unk0A4,
         unk0A8, unk0AC, unk0B0, unk0B4, unk0B8, unk0BC, unk0C0, unk0C4, unk0C8, unk0CC, unk0D0, unk0D4, unk0D8, unk0DC,
@@ -203,9 +205,10 @@ struct Point3Offset
     void Copy(Point3Offset* apSource);
 };
 
+// pdb: class PatrolRefData, size 0x14, 2 members
 struct PatrolRefData
 {
-    int unk00, unk04, unk08, unk0C, unk10;
+    int fTimeAtRef, OnPatrol, unk08, unk0C, unk10; // src: XBOX_RETAIL_PDB fTimeAtRef +0x0 (old: unk00); OnPatrol +0x4 (old: unk04)
     PatrolRefData();
     void Copy(PatrolRefData* apSource);
 };
@@ -229,11 +232,12 @@ struct RoomRefData
     unsigned char bIsMaster;
 };
 
+// pdb: class CollisionData, size 0x4, 1 members
 struct CollisionData
 {
     unsigned int GetCollisionLayer() const;
     void SetCollisionLayer(unsigned int auiLayer);
-    unsigned int uiCollisionLayer;
+    unsigned int eLayer; // src: XBOX_RETAIL_PDB +0x0 (old: uiCollisionLayer)
     CollisionData();
 };
 
@@ -327,13 +331,16 @@ class ConstructibleExtraSpecialRenderFlags : public ExtraSpecialRenderFlags
 
 // @fnv 0x004103d0
 // src: XBOX_PDB 0x004103d0
-void ExtraDataList::AddExtraCopy(BSExtraData* apExtra)
+// pdb: ExtraDataList::AddExtraCopy | ExtraDataList.obj | retail, string-set bridge, high
+// pdb params: apCopy
+// pdb locals: plist, pextra, pcopyextra, pcopy, pLock, pTel, pmapdata, paudiodata, pintcell, pworld, pactor, prect, pswap, pRun, cday, pPack, pdata, pcopydata, pext, pfac, pprimitive, pdataCopy, pcopyData, i ...
+void ExtraDataList::AddExtraCopy(BSExtraData* apCopy)
 {
-    if (!apExtra || !AttachExtraData(apExtra))
+    if (!apCopy || !AttachExtraData(apCopy))
         return;
 
     BSSimpleList<PackageReference*>* pIter = 0;
-    switch (GetExtraDataType(apExtra))
+    switch (GetExtraDataType(apCopy))
     {
     case 0x4C: {
         ExtraEditorRefMoveData* pMoveData = (ExtraEditorRefMoveData*)GetExtraData(0x4C);
@@ -342,29 +349,29 @@ void ExtraDataList::AddExtraCopy(BSExtraData* apExtra)
             pMoveData = new ExtraEditorRefMoveData(0);
             AddExtra(pMoveData);
         }
-        ExtraEditorRefMoveData* pSource = (ExtraEditorRefMoveData*)apExtra;
-        pMoveData->kOldLocation = pSource->kOldLocation;
-        pMoveData->kRealLocation = pSource->kRealLocation;
-        pMoveData->kRealAngle = pSource->kRealAngle;
+        ExtraEditorRefMoveData* pSource = (ExtraEditorRefMoveData*)apCopy;
+        pMoveData->oldLocation = pSource->oldLocation;
+        pMoveData->realAngle = pSource->realAngle;
+        pMoveData->realLocation = pSource->realLocation;
         break;
     }
     case 0x0E:
-        GetLocalData(((ExtraAction*)apExtra)->eAction);
+        GetLocalData(((ExtraAction*)apCopy)->eAction);
         break;
     case 0x21:
-        SetOwnership((TESForm*)((ExtraOwnership*)apExtra)->pOwner);
+        SetOwnership((TESForm*)((ExtraOwnership*)apCopy)->pOwner);
         break;
     case 0x22:
-        SetGlobalForm(((ExtraGlobal*)apExtra)->pGlobalForm);
+        SetGlobal(((ExtraGlobal*)apCopy)->pGlobalForm);
         break;
     case 0x23:
-        SetRank(((ExtraRank*)apExtra)->m_iRank);
+        SetRank(((ExtraRank*)apCopy)->m_iRank);
         break;
     case 0x24:
-        SetCount(((ExtraCount*)apExtra)->iCount);
+        SetCount(((ExtraCount*)apCopy)->iCount);
         break;
     case 0x6E: {
-        ExtraAmmo* pAmmo = (ExtraAmmo*)apExtra;
+        ExtraAmmo* pAmmo = (ExtraAmmo*)apCopy;
         SetAmmoExtra(reinterpret_cast<TESForm*>(pAmmo->pAmmo), pAmmo->iCount);
         break;
     }
@@ -372,88 +379,88 @@ void ExtraDataList::AddExtraCopy(BSExtraData* apExtra)
         SetEquippedState(true, false);
         break;
     case 0x4A:
-        SetHotKey(((ExtraHotkey*)apExtra)->cKey);
+        SetHotKey(((ExtraHotkey*)apCopy)->cKey);
         break;
     case 0x17:
         SetEquippedState(true, true);
         break;
     case 0x31:
-        SetSeedIndex(((ExtraSeed*)apExtra)->seed);
+        SetSeedIndex(((ExtraSeed*)apCopy)->seed);
         break;
     case 0x2F:
-        SetLeveledItem(((ExtraLeveledItem*)apExtra)->iIndex);
-        SetLevelItemExtraFlag(((ExtraLeveledItem*)apExtra)->m_bIsLeveledItem);
+        SetLeveledItem(((ExtraLeveledItem*)apCopy)->iIndex);
+        SetLevelItemExtraFlag(((ExtraLeveledItem*)apCopy)->m_bIsLeveledItem);
         break;
     case 0x25:
-        SetHealth((((ExtraHealth*)apExtra)->fHealthPercent));
+        SetHealth((((ExtraHealth*)apCopy)->fHealthPercent));
         break;
     case 0x7A:
-        SetHealthPerc((((ExtraHealthPerc*)apExtra)->m_fHealthPercentage));
+        SetHealthPerc((((ExtraHealthPerc*)apCopy)->m_fHealthPercentage));
         break;
     case 0x26:
-        SetUses(((ExtraUses*)apExtra)->m_ucUses);
+        SetUses(((ExtraUses*)apCopy)->m_ucUses);
         break;
     case 0x27:
-        SetTimeLeft((((ExtraTimeLeft*)apExtra)->fTime));
+        SetTimeLeft((((ExtraTimeLeft*)apCopy)->fTime));
         break;
     case 0x28:
-        SetCharge((((ExtraCharge*)apExtra)->m_fCharge));
+        SetCharge((((ExtraCharge*)apCopy)->m_fCharge));
         break;
     case 0x0D:
-        SetScript(((ExtraScript*)apExtra)->pScript);
-        AssignScriptLocals(((ExtraScript*)apExtra)->m_pLocals);
+        SetScript(((ExtraScript*)apCopy)->pScript);
+        AssignScriptLocals(((ExtraScript*)apCopy)->m_pLocals);
         break;
     case 0x30:
-        SetScale(((ExtraScale*)apExtra)->fScale);
+        SetScale(((ExtraScale*)apCopy)->fScale);
         break;
     case 0x2A: {
         LockExtraData* pLock = new LockExtraData;
-        memcpy(pLock, ((ExtraLock*)apExtra)->pLock, sizeof(LockExtraData));
+        memcpy(pLock, ((ExtraLock*)apCopy)->pLock, sizeof(LockExtraData));
         SetLockData(pLock);
         break;
     }
     case 0x68:
-        SetRadioData((int*)((ExtraRadioData*)apExtra)->unk0C);
+        SetRadioData((int*)((ExtraRadioData*)apCopy)->unk0C);
         break;
     case 0x2B: {
         TeleportableReference* pTeleport = new TeleportableReference;
-        pTeleport->Copy(((ExtraTeleport*)apExtra)->data);
+        pTeleport->Copy(((ExtraTeleport*)apCopy)->data);
         SetTeleportData(pTeleport);
         break;
     }
     case 0x2C: {
         MapMarkerData* pTeleportMarker = new MapMarkerData;
-        pTeleportMarker->Copy(((ExtraMapMarker*)apExtra)->data);
+        pTeleportMarker->Copy(((ExtraMapMarker*)apCopy)->data);
         SetMapMarkerPtr(pTeleportMarker);
         break;
     }
     case 0x90: {
         MediaLocation* pAudio = new MediaLocation;
-        pAudio->Copy(((ExtraAudioMarker*)apExtra)->pAudioData);
+        pAudio->AudioMarkerData_Copy(((ExtraAudioMarker*)apCopy)->pAudioData);
         SetAudioMarkerPtr(pAudio);
         break;
     }
     case 0x91: {
         TwoIntegerValues* pBuoy = new TwoIntegerValues;
-        pBuoy->Copy((TwoIntegerValues*)((ExtraAudioBuoyMarker*)apExtra)->unk0C);
+        pBuoy->Copy((TwoIntegerValues*)((ExtraAudioBuoyMarker*)apCopy)->unk0C);
         SetAudioBuoyMarkerPtr(pBuoy);
         break;
     }
     case 0x18: {
-        TESWorldSpace* pWorld = dynamic_cast<TESWorldSpace*>((TESForm*)((ExtraPackageStartLocation*)apExtra)->loc);
-        TESObjectCELL* m_pOwningCell = dynamic_cast<TESObjectCELL*>((TESForm*)((ExtraPackageStartLocation*)apExtra)->loc);
-        RelocateTo(pWorld, m_pOwningCell, (NiPoint3*)((ExtraPackageStartLocation*)apExtra)->pos,
-                   *(float*)&((ExtraPackageStartLocation*)apExtra)->unk1C);
+        TESWorldSpace* pWorld = dynamic_cast<TESWorldSpace*>((TESForm*)((ExtraPackageStartLocation*)apCopy)->loc);
+        TESObjectCELL* m_pOwningCell = dynamic_cast<TESObjectCELL*>((TESForm*)((ExtraPackageStartLocation*)apCopy)->loc);
+        RelocateTo(pWorld, m_pOwningCell, (NiPoint3*)((ExtraPackageStartLocation*)apCopy)->pos,
+                   *(float*)&((ExtraPackageStartLocation*)apCopy)->unk1C);
         break;
     }
     case 0x14:
-        SetRagDollDataFromCopy(((ExtraRagDollData*)apExtra)->m_pRagDollData);
+        SetRagDollDataFromCopy(((ExtraRagDollData*)apCopy)->m_pRagDollData);
         break;
     case 0x13:
-        SetWeaponModFlags(&((ExtraDistantData*)apExtra)->kDistantData);
+        SetWeaponModFlags(&((ExtraDistantData*)apCopy)->kDistantData);
         break;
     case 0x1D: {
-        BSSimpleList<Actor*>* pFollowerIter = ((ExtraFollower*)apExtra)->list;
+        BSSimpleList<Actor*>* pFollowerIter = ((ExtraFollower*)apCopy)->list;
         while (pFollowerIter && pFollowerIter->GetItem())
         {
             Actor* pFollower = pFollowerIter->GetItem();
@@ -463,57 +470,57 @@ void ExtraDataList::AddExtraCopy(BSExtraData* apExtra)
         break;
     }
     case 0x46:
-        SetHeadTrackTargetExtra(((ExtraHeadTrackTarget*)apExtra)->pTarget);
+        SetHeadTrackTargetExtra(((ExtraHeadTrackTarget*)apCopy)->pTarget);
         break;
     case 0x3F:
-        SetPoison((TESForm*)((ExtraPoison*)apExtra)->poison);
+        SetPoison((TESForm*)((ExtraPoison*)apCopy)->poison);
         break;
     case 0x02:
-        SetCell3D(((ExtraCell3D*)apExtra)->m_pController);
+        SetCell3D(((ExtraCell3D*)apCopy)->spCellNode);
         break;
     case 0x03:
-        SetWaterType(((ExtraWaterType*)apExtra)->m_pWaterForm);
+        SetWaterType(((ExtraWaterType*)apCopy)->m_pWaterForm);
         break;
     case 0x07:
-        SetMusicType(((ExtraMusicType*)apExtra)->pMusic);
+        SetMusicType(((ExtraMusicType*)apCopy)->pMusic);
         break;
     case 0x81:
-        SetAcousticSpace(((ExtraAcousticSpace*)apExtra)->m_pPathingCell);
+        SetAcousticSpace(((ExtraAcousticSpace*)apCopy)->m_pPathingCell);
         break;
     case 0x0A: {
         CanopyShadowMaskData* pMaskData;
-        SetCanopyShadowMaskData(((ExtraCanopyShadowMask*)apExtra)->iMask, ((ExtraCanopyShadowMask*)apExtra)->spTexture,
+        SetCanopyShadowMaskData(((ExtraCanopyShadowMask*)apCopy)->iMask, ((ExtraCanopyShadowMask*)apCopy)->spTexture,
                                 &pMaskData);
-        pMaskData->unk04 = ((ExtraCanopyShadowMask*)apExtra)->unk18;
-        pMaskData->unk00 = ((ExtraCanopyShadowMask*)apExtra)->unk14;
+        pMaskData->unk04 = ((ExtraCanopyShadowMask*)apCopy)->unk18;
+        pMaskData->unk00 = ((ExtraCanopyShadowMask*)apCopy)->unk14;
         break;
     }
     case 0x08:
-        SetClimate(((ExtraClimate*)apExtra)->pClimateData);
+        SetClimate(((ExtraClimate*)apCopy)->pClimateData);
         break;
     case 0x59:
-        SetImageSpace(((ExtraImageSpace*)apExtra)->m_pImageSpace);
+        SetImageSpace(((ExtraImageSpace*)apCopy)->m_pImageSpace);
         break;
     case 0x8C: {
         ImpactSwap* pSwap = new ImpactSwap;
-        pSwap->Copy(((ExtraImpactSwap*)apExtra)->pSwap);
+        pSwap->Copy(((ExtraImpactSwap*)apCopy)->pSwap);
         SetImpactSwapData(pSwap);
         break;
     }
     case 0x1C:
-        SetActivateRef(((ExtraReferencePointer*)apExtra)->ref);
+        SetActivateRef(((ExtraReferencePointer*)apCopy)->pRef);
         break;
     // The third package byte follows unk19 in the shared class's tail padding.
     case 0x19:
-        SetPackageOverride((TESPackage*)((ExtraPackage*)apExtra)->package, ((ExtraPackage*)apExtra)->unk10,
-                           (int)((ExtraPackage*)apExtra)->form14, (unsigned char)((ExtraPackage*)apExtra)->unk18,
-                           (unsigned char)((ExtraPackage*)apExtra)->unk19, ((unsigned char*)&((ExtraPackage*)apExtra)->unk19)[1]);
+        SetPackageOverride((TESPackage*)((ExtraPackage*)apCopy)->package, ((ExtraPackage*)apCopy)->unk10,
+                           (int)((ExtraPackage*)apCopy)->form14, (unsigned char)((ExtraPackage*)apCopy)->bActionComplete,
+                           (unsigned char)((ExtraPackage*)apCopy)->bActivated, ((unsigned char*)&((ExtraPackage*)apCopy)->bActivated)[1]);
         break;
     case 0x1A:
-        SetActivePackage((TESPackage*)((ExtraTresPassPackage*)apExtra)->package);
+        SetActivePackage((TESPackage*)((ExtraTresPassPackage*)apCopy)->package);
         break;
     case 0x1B:
-        pIter = (BSSimpleList<PackageReference*>*)((ExtraRunOncePacks*)apExtra)->list;
+        pIter = (BSSimpleList<PackageReference*>*)((ExtraRunOncePacks*)apCopy)->list;
         while (pIter)
         {
             PackageReference* pRunOnce = pIter->GetItem();
@@ -527,17 +534,17 @@ void ExtraDataList::AddExtraCopy(BSExtraData* apExtra)
         }
         break;
     case 0x20:
-        SetEnableStateChildren(((ExtraOriginalReference*)apExtra)->m_pWorldReferenceInfo);
+        SetOriginalReferenceExtra(((ExtraOriginalReference*)apCopy)->m_pWorldReferenceInfo);
         break;
     case 0x37:
-        SetEnableStateParentRef(((ExtraEnableStateParent*)apExtra)->pParent);
-        SetEnableStateParentFlags(((ExtraEnableStateParent*)apExtra)->cFlags);
+        SetEnableStateParentRef(((ExtraEnableStateParent*)apCopy)->pParent);
+        SetEnableStateParentFlags(((ExtraEnableStateParent*)apCopy)->cFlags);
         break;
     case 0x3B:
-        SetRandomTeleportMarker(((ExtraRandomTeleportMarker*)apExtra)->pTeleportMarker);
+        SetRandomTeleportMarker(((ExtraRandomTeleportMarker*)apCopy)->pTeleportMarker);
         break;
     case 0x51:
-        SetLinkedRef(((ExtraLinkedRef*)apExtra)->m_pLinkedReference);
+        SetLinkedRef(((ExtraLinkedRef*)apCopy)->m_pLinkedReference);
         break;
     case 0x53: {
         ExtraActivateRef* m_pFourthReference = (ExtraActivateRef*)GetExtraData(0x53);
@@ -546,7 +553,7 @@ void ExtraDataList::AddExtraCopy(BSExtraData* apExtra)
             m_pFourthReference = new ExtraActivateRef;
             AddExtra(m_pFourthReference);
         }
-        m_pFourthReference->Copy(reinterpret_cast<BSExtraDataEx*>(apExtra));
+        m_pFourthReference->Copy(reinterpret_cast<BSExtraDataEx*>(apCopy));
         break;
     }
     case 0x57: {
@@ -556,7 +563,7 @@ void ExtraDataList::AddExtraCopy(BSExtraData* apExtra)
             pDecalRefs = new ExtraDecalRefs;
             AddExtra(pDecalRefs);
         }
-        pDecalRefs->Copy(reinterpret_cast<BSExtraDataEx*>(apExtra));
+        pDecalRefs->Copy(reinterpret_cast<BSExtraDataEx*>(apCopy));
         break;
     }
     case 0x65: {
@@ -566,7 +573,7 @@ void ExtraDataList::AddExtraCopy(BSExtraData* apExtra)
             pReflectedRefs = new ExtraReflectedRefs;
             AddExtra(pReflectedRefs);
         }
-        pReflectedRefs->Copy(apExtra);
+        pReflectedRefs->Copy(apCopy);
         break;
     }
     case 0x66: {
@@ -576,7 +583,7 @@ void ExtraDataList::AddExtraCopy(BSExtraData* apExtra)
             pReflectorRefs = new ExtraReflectorRefs;
             AddExtra(pReflectorRefs);
         }
-        pReflectorRefs->Copy(apExtra);
+        pReflectorRefs->Copy(apCopy);
         break;
     }
     case 0x85: {
@@ -586,7 +593,7 @@ void ExtraDataList::AddExtraCopy(BSExtraData* apExtra)
             pLitWaterRefs = new ExtraLitWaterRefs;
             AddExtra(pLitWaterRefs);
         }
-        pLitWaterRefs->Copy(reinterpret_cast<BSExtraDataEx*>(apExtra));
+        pLitWaterRefs->Copy(reinterpret_cast<BSExtraDataEx*>(apCopy));
         break;
     }
     case 0x84: {
@@ -596,28 +603,28 @@ void ExtraDataList::AddExtraCopy(BSExtraData* apExtra)
             pWaterLightRefs = new ExtraWaterLightRefs;
             AddExtra(pWaterLightRefs);
         }
-        pWaterLightRefs->Copy(reinterpret_cast<BSExtraDataEx*>(apExtra));
+        pWaterLightRefs->Copy(reinterpret_cast<BSExtraDataEx*>(apCopy));
         break;
     }
     case 0x3C:
-        SetMerchantContainer(((ExtraMerchantContainer*)apExtra)->pContainer);
+        SetMerchantContainer(((ExtraMerchantContainer*)apCopy)->pContainer);
         break;
     case 0x44:
-        SetXTarget(((ExtraXTarget*)apExtra)->pTarget);
+        SetXTarget(((ExtraXTarget*)apCopy)->pTarget);
         break;
     // These shared classes reserve the payload as alignment padding after BSExtraData.
     case 0x74:
-        SetEncounterZone(*(BGSEncounterZone**)((char*)(ExtraEncounterZone*)apExtra + sizeof(BSExtraData)));
+        SetEncounterZone(*(BGSEncounterZone**)((char*)(ExtraEncounterZone*)apCopy + sizeof(BSExtraData)));
         break;
     case 0x67:
-        SetEmittanceSource(((ExtraEmittanceSource*)apExtra)->pSource);
+        SetEmittanceSource(((ExtraEmittanceSource*)apCopy)->pSource);
         break;
     case 0x63:
-        SetMultiBoundRef(((ExtraMultiBoundRef*)apExtra)->m_pReference);
+        SetMultiBoundRef(((ExtraMultiBoundRef*)apCopy)->m_pReference);
         break;
     case 0x62: {
         Point3Offset* pNewData = 0;
-        Point3Offset* pSrcData = ((ExtraMultiBoundMarkerData*)apExtra)->pData;
+        Point3Offset* pSrcData = ((ExtraMultiBoundMarkerData*)apCopy)->pData;
         if (pSrcData)
         {
             pNewData = new Point3Offset;
@@ -627,10 +634,10 @@ void ExtraDataList::AddExtraCopy(BSExtraData* apExtra)
         break;
     }
     case 0x1E:
-        SetLevCreaModifier(((ExtraLevCreaModifier*)apExtra)->m_iModifier);
+        SetLevCreaModifier(((ExtraLevCreaModifier*)apCopy)->m_iModifier);
         break;
     case 0x48:
-        SetRefractionAmount(true, ((ExtraRefractionProperty*)apExtra)->fRefraction);
+        SetRefractionAmount(true, ((ExtraRefractionProperty*)apCopy)->fRefractionPower);
         break;
     case 0x3E:
         SetCannotWear(true);
@@ -638,16 +645,16 @@ void ExtraDataList::AddExtraCopy(BSExtraData* apExtra)
     case 0x55:
         break;
     case 0x5C:
-        SetRadius(((ExtraRadius*)apExtra)->fRadius);
+        SetRadius(((ExtraRadius*)apCopy)->fRadius);
         break;
     // ExtraRadiation likewise stores its float in the shared class's tail padding.
     case 0x5D:
-        SetRadiation(*(float*)((char*)(ExtraRadiation*)apExtra + sizeof(BSExtraData)));
+        SetRadiation(*(float*)((char*)(ExtraRadiation*)apCopy + sizeof(BSExtraData)));
         break;
     case 0x5E: {
         UpdateExtraDataListExtension();
         ExtraFactionChanges* pChanges = GetFactionChangesExtra();
-        BSSimpleList<FactionRankData*>* pRankIter = (BSSimpleList<FactionRankData*>*)((ExtraFactionChanges*)apExtra)->m_pFactionChanges;
+        BSSimpleList<FactionRankData*>* pRankIter = (BSSimpleList<FactionRankData*>*)((ExtraFactionChanges*)apCopy)->m_pFactionChanges;
         while (pRankIter && pRankIter->GetItem())
         {
             FactionRankData* pRank = pRankIter->GetItem();
@@ -658,32 +665,32 @@ void ExtraDataList::AddExtraCopy(BSExtraData* apExtra)
         break;
     }
     case 0x5A:
-        SetPortalRefData(apExtra);
+        SetNavMeshPortal(apCopy);
         break;
     case 0x6B: {
-        BGSPrimitive* pSrcPrimitive = ((ExtraPrimitive*)apExtra)->m_pPrimitive;
+        BGSPrimitive* pSrcPrimitive = ((ExtraPrimitive*)apCopy)->m_pPrimitive;
         BGSPrimitive* pNewPrimitive = BGSPrimitive::Copy(pSrcPrimitive);
         AddPrimitive(pNewPrimitive);
         break;
     }
     case 0x61:
-        SetMultiBound(((ExtraMultiBound*)apExtra)->m_kMultiBoundNode);
+        SetMultiBound(((ExtraMultiBound*)apCopy)->spBound);
         break;
     case 0x79:
-        SetRoomNode(((ExtraRoom*)apExtra)->m_pRoomNode);
+        SetRoomNode(((ExtraRoom*)apCopy)->spRoom);
         break;
     case 0x6F: {
         PatrolRefData* pPatrol = new PatrolRefData;
-        pPatrol->Copy(((ExtraPatrolRefData*)apExtra)->pData);
+        pPatrol->Copy(((ExtraPatrolRefData*)apCopy)->pPatrolData);
         SetPatrolRefData(pPatrol);
         break;
     }
     case 0x71:
-        SetOcclusionShape(((ExtraOcclusionShape*)apExtra)->pShape);
+        SetOcclusionPlane(((ExtraOcclusionShape*)apCopy)->pShape);
         break;
     case 0x76: {
         PatrolReferenceData* pPlaneData = new PatrolReferenceData;
-        ExtraOcclusionPlaneRefData* pOcclusionExtra = (ExtraOcclusionPlaneRefData*)apExtra;
+        ExtraOcclusionPlaneRefData* pOcclusionExtra = (ExtraOcclusionPlaneRefData*)apCopy;
         PatrolReferenceData* pSrcLinkedRefs = pOcclusionExtra->pData;
         for (int i = 0; i < 4; i++)
             pPlaneData->m_pPatrolReferences[i] = pSrcLinkedRefs->m_pPatrolReferences[i];
@@ -691,14 +698,14 @@ void ExtraDataList::AddExtraCopy(BSExtraData* apExtra)
         break;
     }
     case 0x77: {
-        ExtraPortalRefData* pPortalRefExtra = (ExtraPortalRefData*)apExtra;
+        ExtraPortalRefData* pPortalRefExtra = (ExtraPortalRefData*)apCopy;
         PortalRefData* pPortalRefData = (PortalRefData*)pPortalRefExtra->pData;
         for (int j = 0; j < 2; j++)
             SetRoomLinkedRoomRef(j, pPortalRefData->pRooms[j]);
         break;
     }
     case 0x7B: {
-        ExtraRoomRefData* pRefExtra = (ExtraRoomRefData*)apExtra;
+        ExtraRoomRefData* pRefExtra = (ExtraRoomRefData*)apCopy;
         RoomRefData* pRoomRefData = pRefExtra->pData;
         BSSimpleList<TESObjectREFR*>* pRoomLinkIter = &pRoomRefData->kLinkedRooms;
         while (pRoomLinkIter && pRoomLinkIter->GetItem())
@@ -711,12 +718,12 @@ void ExtraDataList::AddExtraCopy(BSExtraData* apExtra)
     }
     case 0x72: {
         CollisionData* pCollision = new CollisionData;
-        pCollision->SetCollisionLayer(((ExtraCollisionData*)apExtra)->m_pCollisionData->GetCollisionLayer());
+        pCollision->SetCollisionLayer(((ExtraCollisionData*)apCopy)->pCollisionData->GetCollisionLayer());
         SetCollisionData(pCollision);
         break;
     }
     case 0x73: {
-        BSSimpleList<TESTopicInfo*>* pInfoIter = (BSSimpleList<TESTopicInfo*>*)((ExtraSayTopicInfoOnceADay*)apExtra)->pList;
+        BSSimpleList<TESTopicInfo*>* pInfoIter = (BSSimpleList<TESTopicInfo*>*)((ExtraSayTopicInfoOnceADay*)apCopy)->pList;
         while (pInfoIter && pInfoIter->GetItem())
         {
             SetExtraSayTopicInfoOnceADayExtra(pInfoIter->GetItem());
@@ -725,7 +732,7 @@ void ExtraDataList::AddExtraCopy(BSExtraData* apExtra)
         break;
     }
     case 0x78: {
-        BSPortalNode* pPortalNode = apExtra ? ((ExtraPortal*)apExtra)->m_pPortalNode : NiPointer<BSPortalNode>(0);
+        BSPortalNode* pPortalNode = apCopy ? ((ExtraPortal*)apCopy)->spPortal : NiPointer<BSPortalNode>(0);
         SetPortalNode(pPortalNode);
         break;
     }
@@ -733,26 +740,26 @@ void ExtraDataList::AddExtraCopy(BSExtraData* apExtra)
         SetIgnoredBySandbox(true);
         break;
     case 0x8B: {
-        ExtraFollowerSwimBreadcrumbs* pDstBreadcrumbs = GetFollowerSwimBreadcrumbsExtra();
-        ExtraFollowerSwimBreadcrumbs* pSrcBreadcrumbs = (ExtraFollowerSwimBreadcrumbs*)apExtra;
-        pDstBreadcrumbs->kLastPos = pSrcBreadcrumbs->kLastPos;
-        pDstBreadcrumbs->iLastCell = pSrcBreadcrumbs->iLastCell;
-        pDstBreadcrumbs->iCount = pSrcBreadcrumbs->iCount;
-        pDstBreadcrumbs->kBreadcrumbs.RemoveAll();
-        for (BSSimpleList<FollowerSwimBreadcrumb*>* pCrumbIter = &pSrcBreadcrumbs->kBreadcrumbs; pCrumbIter;
+        ExtraFollowerSwimBreadcrumbs* pDstBreadcrumbs = GetOrCreateExtraFollowerSwimBreadcrumbs();
+        ExtraFollowerSwimBreadcrumbs* pSrcBreadcrumbs = (ExtraFollowerSwimBreadcrumbs*)apCopy;
+        pDstBreadcrumbs->LeaderLocation = pSrcBreadcrumbs->LeaderLocation;
+        pDstBreadcrumbs->LeaderNavMeshID = pSrcBreadcrumbs->LeaderNavMeshID;
+        pDstBreadcrumbs->eLeaderState = pSrcBreadcrumbs->eLeaderState;
+        pDstBreadcrumbs->CrumbList.RemoveAll();
+        for (BSSimpleList<FollowerSwimBreadcrumb*>* pCrumbIter = &pSrcBreadcrumbs->CrumbList; pCrumbIter;
              pCrumbIter = pCrumbIter->GetNext())
         {
             if (pCrumbIter->GetItem())
-                pDstBreadcrumbs->kBreadcrumbs.AddTail(pCrumbIter->GetItem());
+                pDstBreadcrumbs->CrumbList.AddTail(pCrumbIter->GetItem());
         }
         break;
     }
     case 0x8D:
-        if (((ExtraWeaponModFlags*)apExtra)->IsModActive(1))
+        if (((ExtraWeaponModFlags*)apCopy)->IsModActive(1))
             RemoveExtraByType(1);
-        if (((ExtraWeaponModFlags*)apExtra)->IsModActive(2))
+        if (((ExtraWeaponModFlags*)apCopy)->IsModActive(2))
             RemoveExtraByType(2);
-        if (((ExtraWeaponModFlags*)apExtra)->IsModActive(4))
+        if (((ExtraWeaponModFlags*)apCopy)->IsModActive(4))
             RemoveExtraByType(4);
         break;
     case 0x92: {
@@ -762,11 +769,11 @@ void ExtraDataList::AddExtraCopy(BSExtraData* apExtra)
             pRenderFlags = new ConstructibleExtraSpecialRenderFlags;
             AddExtra((BSExtraData*)pRenderFlags);
         }
-        pRenderFlags->Copy_00438330(apExtra);
+        pRenderFlags->Copy_00438330(apCopy);
         break;
     }
     default:
-        Warning("AI: No Copy function available for Extra Data type %i.", GetExtraDataType(apExtra));
+        Warning("AI: No Copy function available for Extra Data type %i.", GetExtraDataType(apCopy));
         break;
     }
 }

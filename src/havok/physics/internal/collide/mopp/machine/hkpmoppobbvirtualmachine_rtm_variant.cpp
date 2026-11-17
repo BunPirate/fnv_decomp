@@ -42,6 +42,7 @@ struct __declspec(align(16)) GridScratch {
     int f30;
     int f34;
 };
+// pdb: structure GridCell, size 0x4 (here 0x38), 1 members
 struct GridCell {
     int m00;
     int unk04;
@@ -88,8 +89,8 @@ struct GridCell {
     void* m30;
     int m34;
 
-    void hkpMoppObbVirtualMachine_queryAabb(GridSource* a1, GridBounds* a2, int a3);
-    void Execute(GridScratch* s, unsigned char* p, int z);
+    void hkpMoppObbVirtualMachine_queryAabb(GridSource* code, GridBounds* aabb, int primitives_out);
+    void hkpMoppObbVirtualMachine_queryAabbOnTree(GridScratch* query, unsigned char* PC, int chunkOffset);
 };
 extern "C" void _ReadWriteBarrier();
 extern "C" void __debugbreak();
@@ -130,7 +131,7 @@ struct VirtualMachine {
  };};
  union {CodeData* data;void* m30;};
  union {int primitiveMask;int m34;};
- void Execute(const QueryState*,unsigned char*,int);
+ void hkpMoppObbVirtualMachine_queryAabbOnTree(const QueryState*,unsigned char*,int);
  __forceinline void AddHit(int value) {
   HitArray* out=hits;AllocatorContext* context=hkMemoryRouter_getInstance();
   if(out->size==(out->capacity&0x3fffffff)) ResizeAudioStream(context->allocator,out,4);
@@ -203,26 +204,29 @@ struct ObbCodeView {
 
 
 struct ObbMachine : GridCell {
-    void hkpMoppObbVirtualMachine_queryObb(const ObbCodeView* src, const ObbTransform* t, const ObbVector* halfExtents, float radius, unsigned int key);
+    void hkpMoppObbVirtualMachine_queryObb(const ObbCodeView* code, const ObbTransform* BvToWorld, const ObbVector* extent, float radius, unsigned int primitives_out);
 };
 
 // @fnv 0x00dd1bf0
 // src: XBOX_PDB 0x00dd1bf0
-void ObbMachine::hkpMoppObbVirtualMachine_queryObb(const ObbCodeView* src, const ObbTransform* t, const ObbVector* halfExtents, float radius, unsigned int key)
+// pdb: hkpMoppObbVirtualMachine::queryObb | hkpMoppObbVirtualMachine.obj | retail, upstream name already matches, high
+// pdb params: code, BvToWorld, extent, radius, primitives_out
+// pdb locals: query
+void ObbMachine::hkpMoppObbVirtualMachine_queryObb(const ObbCodeView* code, const ObbTransform* BvToWorld, const ObbVector* extent, float radius, unsigned int primitives_out)
 {
-    m00 = key;
-    m30 = (void*)src;
+    m00 = primitives_out;
+    m30 = (void*)code;
 
-    float scale = src->getScale();
+    float scale = code->getScale();
 
     ObbVector x,y,z,extra,center,hi,lo;
-    x.splat<0>(*halfExtents); y.splat<0x55>(*halfExtents); z.splat<0xaa>(*halfExtents);
-    x.times(t->m_kColumn0); y.times(t->m_kColumn1); z.times(t->m_kColumn2);
+    x.splat<0>(*extent); y.splat<0x55>(*extent); z.splat<0xaa>(*extent);
+    x.times(BvToWorld->m_kColumn0); y.times(BvToWorld->m_kColumn1); z.times(BvToWorld->m_kColumn2);
     x.abs(); y.abs(); z.abs();
     hi.setAdd(y,x); hi.add(z);
     extra.setFloat(radius); hi.add(extra);
     lo.neg(hi);
-    center.setSub(t->m_vTranslation,src->m_offset);
+    center.setSub(BvToWorld->m_vTranslation,code->m_offset);
     hi.add(center);
     lo.add(center);
     LowScalar factor(scale);
@@ -252,7 +256,7 @@ void ObbMachine::hkpMoppObbVirtualMachine_queryObb(const ObbCodeView* src, const
 
     const ObbProgram* shape = ((const ObbCodeView*)m30)->m_pCollisionShape;
     m34 = (shape->m_type == 13) ? -1 : 0;
-    Execute(&box, (unsigned char*)shape, 0);
+    hkpMoppObbVirtualMachine_queryAabbOnTree(&box, (unsigned char*)shape, 0);
 }
 
 }

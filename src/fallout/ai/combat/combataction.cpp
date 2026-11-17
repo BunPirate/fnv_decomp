@@ -36,66 +36,69 @@
 
 // Creates and returns a new CombatAction subclass instance matching the given COMBAT_ACTION type, warning and returning 0 for unknown types.
 // @fnv 0x00979f90
-CombatAction* CombatAction::CreateAction(COMBAT_ACTION type)
+// src: XBOX_DEBUG_PDB 0x00979f90
+// pdb: CombatAction::CreateCombatAction | CombatAction.obj | debug, unique string literal, high
+// pdb params: aeCombatAction
+CombatAction* CombatAction::CreateCombatAction(COMBAT_ACTION aeCombatAction)
 {
-    switch (type)
+    switch (aeCombatAction)
     {
     case COMBAT_ACTION_ATTACK_RANGED:
-        return new CombatActionAttackRanged(type);
+        return new CombatActionAttackRanged(aeCombatAction);
     case COMBAT_ACTION_ATTACK_RANGED_FROM_COVER:
-        return new CombatActionAttackRangedFromCover(type);
+        return new CombatActionAttackRangedFromCover(aeCombatAction);
     case COMBAT_ACTION_ATTACK_RANGED_EXPLOSIVE:
-        return new CombatActionAttackRangedExplosive(type);
+        return new CombatActionAttackRangedExplosive(aeCombatAction);
     case COMBAT_ACTION_ATTACK_RANGED_EXPLOSIVE_FROM_COVER:
-        return new CombatActionAttackRangedExplosiveFromCover(type);
+        return new CombatActionAttackRangedExplosiveFromCover(aeCombatAction);
     case COMBAT_ACTION_ATTACK_MELEE:
-        return new CombatActionAttackMelee(type);
+        return new CombatActionAttackMelee(aeCombatAction);
     case COMBAT_ACTION_ATTACK_HAND_TO_HAND:
-        return new CombatActionAttackHandToHand(type);
+        return new CombatActionAttackHandToHand(aeCombatAction);
     case COMBAT_ACTION_ATTACK_GRENADE:
-        return new CombatActionAttackGrenade(type);
+        return new CombatActionAttackGrenade(aeCombatAction);
     case COMBAT_ACTION_ATTACK_GRENADE_FLUSH_TARGET:
-        return new CombatActionAttackGrenadeFlushTarget(type);
+        return new CombatActionAttackGrenadeFlushTarget(aeCombatAction);
     case COMBAT_ACTION_ATTACK_GRENADE_FROM_COVER:
-        return new CombatActionAttackGrenadeFromCover(type);
+        return new CombatActionAttackGrenadeFromCover(aeCombatAction);
     case COMBAT_ACTION_MOVE:
-        return new CombatActionMove(type);
+        return new CombatActionMove(aeCombatAction);
     case COMBAT_ACTION_MOVE_AND_SWITCH_TO_MELEE:
-        return new CombatActionMoveAndSwitchToMelee(type);
+        return new CombatActionMoveAndSwitchToMelee(aeCombatAction);
     case COMBAT_ACTION_MOVE_AND_ATTACK_RANGED:
-        return new CombatActionMoveAndAttackRanged(type);
+        return new CombatActionMoveAndAttackRanged(aeCombatAction);
     case COMBAT_ACTION_MOVE_AND_ATTACK_RANGED_EXPLOSIVE:
-        return new CombatActionMoveAndAttackRangedExplosive(type);
+        return new CombatActionMoveAndAttackRangedExplosive(aeCombatAction);
     case COMBAT_ACTION_MOVE_AND_ATTACK_GRENADE:
-        return new CombatActionMoveAndAttackGrenade(type);
+        return new CombatActionMoveAndAttackGrenade(aeCombatAction);
     case COMBAT_ACTION_DRAW_WEAPON:
-        return new CombatActionDrawWeapon(type);
+        return new CombatActionDrawWeapon(aeCombatAction);
     case COMBAT_ACTION_SWITCH_WEAPON:
-        return new CombatActionSwitchWeapon(type);
+        return new CombatActionSwitchWeapon(aeCombatAction);
     case COMBAT_ACTION_AVOID_THREAT:
-        return new CombatActionAvoidThreat(type);
+        return new CombatActionAvoidThreat(aeCombatAction);
     case COMBAT_ACTION_SEARCH:
-        return new CombatActionSearch(type);
+        return new CombatActionSearch(aeCombatAction);
     case COMBAT_ACTION_INVESTIGATE:
-        return new CombatActionInvestigate(type);
+        return new CombatActionInvestigate(aeCombatAction);
     case COMBAT_ACTION_DODGE:
-        return new CombatActionDodge(type);
+        return new CombatActionDodge(aeCombatAction);
     case COMBAT_ACTION_IGNORE_BLOCKED_TARGET:
-        return new CombatActionIgnoreBlockedTarget(type);
+        return new CombatActionIgnoreBlockedTarget(aeCombatAction);
     case COMBAT_ACTION_FLEE:
-        return new CombatActionFlee(type);
+        return new CombatActionFlee(aeCombatAction);
     case COMBAT_ACTION_ACTIVATE_COMBAT_ITEM:
-        return new CombatActionActivateCombatItem(type);
+        return new CombatActionActivateCombatItem(aeCombatAction);
     case COMBAT_ACTION_USE_COMBAT_ITEM:
-        return new CombatActionUseCombatItem(type);
+        return new CombatActionUseCombatItem(aeCombatAction);
     case COMBAT_ACTION_ACQUIRE_LINE_OF_SIGHT:
-        return new CombatActionAcquireLineOfSight(type);
+        return new CombatActionAcquireLineOfSight(aeCombatAction);
     case COMBAT_ACTION_HIDE:
-        return new CombatActionHide(type);
+        return new CombatActionHide(aeCombatAction);
     case COMBAT_ACTION_APPROACH_TARGET:
-        return new CombatActionApproachTarget(type);
+        return new CombatActionApproachTarget(aeCombatAction);
     default:
-        Warning("COMBAT: Could not create combat action of type %i", type);
+        Warning("COMBAT: Could not create combat action of type %i", aeCombatAction);
         return 0;
     }
 }
@@ -109,6 +112,7 @@ struct CombatActionEntry
 extern CombatActionEntry DAT_011a4280[];
 
 // @fnv 0x00979e20
+// pdb: CombatAction::GetName | CombatAction.obj | debug, call graph, medium
 char* CombatAction::GetCombatActionName()
 {
     return DAT_011a4280[reinterpret_cast<BSThread*>(this)->GetThreadID()].pName;
@@ -116,11 +120,14 @@ char* CombatAction::GetCombatActionName()
 
 // @fnv 0x00979e40
 // src: XBOX_PDB 0x00979e40
+// pdb: CombatAction::GetCost | CombatAction.obj | debug, vtable slot, medium
+// pdb params: apCombatController, aiActionValue
 float CombatAction::GetCost_00979e40(CombatController* apCombatController, int aiActionValue)
 {
     return DAT_011a4280[reinterpret_cast<BSThread*>(this)->GetThreadID()].m_fPathingCostCur;
 }
 
+// pdb: class TaskQueueInterface, size 0x10 (here 0x1), 4 members
 struct TaskQueueInterface
 {
     static void __cdecl CopyStringToBuffer(char*, unsigned int, const char*);
@@ -128,6 +135,8 @@ struct TaskQueueInterface
 
 // @fnv 0x00979e60
 // src: XBOX_PDB 0x00979e60
+// pdb: CombatAction::GetDebugText | CombatAction.obj | debug, upstream name already matches, high
+// pdb params: apDebugText, aiMaxLength, aiActionValue
 void CombatAction::GetDebugText(char* apDebugText, unsigned int aiMaxLength, int aiActionValue)
 {
     TaskQueueInterface::CopyStringToBuffer(apDebugText, aiMaxLength, GetCombatActionName());
@@ -154,6 +163,9 @@ struct FUN_00979f70_shell
 
 // @fnv 0x00979e90
 // src: XBOX_PDB 0x00979e90
+// pdb: CombatAction::CanExecute | CombatAction.obj | retail, upstream name already matches, high
+// pdb params: apCombatController, apWorldStateArray, aiActionValue
+// pdb locals: plist, icombatLocation, pworldState, ivalue
 bool CombatAction::CanExecute(CombatController* apCombatController, CombatWorldStateArray* apWorldStateArray,
                                  int aiActionValue)
 {
@@ -190,9 +202,11 @@ struct CombatActionStateListAccess : CombatWorldStateListNode
 // Calls FindStateByType on the object at offset 0xc of this, passing a and b through.
 // @fnv 0x00979f50
 // src: COMMUNITY 0x00979f50
+// pdb: CombatAction::GetPreconditionWorldStateActionValue | CombatAction.obj | debug, object-file run extension, low
+// pdb params: aeState, ariActionValue
 void CombatAction::HasRequirement(int aiArg1, int aiArg2)
 {
-    reinterpret_cast<CombatActionStateListAccess*>(&m_kActionWorldStateNode)->FindStateByType(aiArg1, aiArg2);
+    reinterpret_cast<CombatActionStateListAccess*>(&Preconditions)->FindStateByType(aiArg1, aiArg2);
 }
 
 namespace fnv_00979f70 {
@@ -203,14 +217,16 @@ struct QuantityData
 
 struct FUN_00979f70_shell
 {
-    void CombatPlannerData_SetLinkLocation(unsigned int aiQuantity);
+    void CombatPlannerData_SetLinkLocation(unsigned int aiLocation);
 };
 
 // @fnv 0x00979f70
 // src: XBOX_PDB 0x00979f70
-void FUN_00979f70_shell::CombatPlannerData_SetLinkLocation(unsigned int aiQuantity)
+// pdb: CombatPlannerData::SetLinkLocation | CombatAction.obj | debug, upstream name already matches, high
+// pdb params: aiLocation
+void FUN_00979f70_shell::CombatPlannerData_SetLinkLocation(unsigned int aiLocation)
 {
-    (*reinterpret_cast<QuantityData**>(reinterpret_cast<char*>(this) + 4))->SetQuantity(aiQuantity);
+    (*reinterpret_cast<QuantityData**>(reinterpret_cast<char*>(this) + 4))->SetQuantity(aiLocation);
 }
 }  // namespace fnv_00979f70
 
@@ -227,6 +243,9 @@ extern CombatActionEntry DAT_011a4280[];
 
 // @fnv 0x0097abd0
 // src: COMMUNITY 0x0097abd0
+// pdb: CombatAction::SetCombatActionCost | CombatAction.obj | retail, upstream name already matches, high
+// pdb params: apCombatActionName, afCost
+// pdb locals: i
 bool CombatAction_SetCombatActionCost(char* apCombatActionName, float afCost)
 {
     for (unsigned int i = 0; i < 0x1b; i++)
@@ -251,6 +270,9 @@ extern float DAT_0108ca80;
 
 // Gets the combat state's attack DPS for a weapon type and returns the default value if zero, otherwise the max attack DPS minus it.
 // @fnv 0x0097ac30
+// pdb: CombatAction::GetAttackCost | CombatAction.obj | debug, call graph, medium
+// pdb params: apCombatController, aeWeaponType
+// pdb locals: fattackDPS, pcombatState, fmaxAttackDPS
 float GetWeaponDPSDeficit(CombatController* apCombatController, int aeWeaponType)
 {
     float fattackDPS;
@@ -283,6 +305,9 @@ extern double DAT_0108cb08;
 
 // @fnv 0x0097acb0
 // src: COMMUNITY 0x0097acb0
+// pdb: CombatAction::GetMovementCost | CombatAction.obj | retail, upstream name already matches, high
+// pdb params: apCombatController, arStartWorldLoc, arEndWorldLoc
+// pdb locals: fmovementCost
 float CombatAction_GetMovementCost(CombatController* apCombatController, CoordinateTriple* arStartWorldLoc,
                    CoordinateTriple* arEndWorldLoc)
 {
@@ -321,6 +346,8 @@ struct FUN_00979bd0
 
 // Stores the type argument in aeType and copies iFlags from the global type table entry at that index.
 // @fnv 0x00979bd0
+// pdb: CombatAction::CombatAction | CombatAction.obj | debug, call graph, medium
+// pdb params: aeType
 FUN_00979bd0::FUN_00979bd0(int a)
 {
     aeType = a;

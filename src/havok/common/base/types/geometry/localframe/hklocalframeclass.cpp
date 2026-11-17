@@ -22,6 +22,7 @@ struct FUN_00da0860_class : FUN_00df67d0_Base
     FUN_00da0860_class* FUN_00da0860(unsigned int flags);
 };
 // @fnv 0x00da0860
+// pdb: hkSimpleLocalFrame::`scalar deleting destructor' | hkLocalFrameClass.obj | retail, vtable slot, high
 FUN_00da0860_class* FUN_00da0860_class::FUN_00da0860(unsigned int flags)
 {
     FUN_00df67d0_Base::FUN_00df67d0();
@@ -89,6 +90,7 @@ struct SomeClass
 
 // Calls a virtual method on the object at offset 8, sets the vtable, and if flags bit 0 is set releases this via the audio manager using unk04.
 // @fnv 0x00da0800
+// pdb: hkLocalFrameGroup::`scalar deleting destructor' | hkLocalFrameClass.obj | retail, vtable slot, high
 void* SomeClass::FUN_00da0800(unsigned int flags)
 {
     ((FUN_00cb0c00_class*)((char*)this + 8))->Object_UpdateFields_00cb0c00();

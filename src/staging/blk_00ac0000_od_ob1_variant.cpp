@@ -13,8 +13,8 @@
 #include "../../include/NiRefObject.h"
 struct FUN_00ac5340_class
 {
-    void FutBinaryFileC_writeHeader(int a, int b, int c);
-    void FutBinaryFileC_write(int a, int b, int c);
+    void FutBinaryFileC_writeHeader(int a, int b, int num);
+    void FutBinaryFileC_write(int data, int size, int num);
 };
 void __cdecl _fclose(void*);
 struct FUN_00ac5ed0_This
@@ -174,8 +174,8 @@ struct FUN_00ac1120_Class
 };
 struct FUN_00ac52b0_class
 {
-    void FutBinaryFileC_readHeader(int a, int b, int c);
-    void FutBinaryFileC_read(int a, int b, int c);
+    void FutBinaryFileC_readHeader(int a, int b, int num);
+    void FutBinaryFileC_read(int data, int size, int num);
 };
 unsigned __int64 __cdecl __time64(unsigned __int64*);
 void __cdecl FUN_00ecada6(unsigned int);
@@ -646,7 +646,7 @@ struct FgBinaryFile
     int unk38;
     int unk3C;
     FgBinaryStream* m_pBinaryStream;
-    bool BSFaceGenBinaryFile_read(void* pvBuffer, unsigned int uiSize, unsigned int ItemUpdateArray);
+    bool BSFaceGenBinaryFile_read(void* data, unsigned int size, unsigned int num);
 };
 extern int DAT_010a2480;
 class FUN_00ac5e90_Target
@@ -1810,7 +1810,7 @@ void* __cdecl Runtime_UpdateState_00ad53d0(unsigned int n)
 
 struct PoolX
 {
-    void MemoryManager_Deallocate(void* p);
+    void MemoryManager_Deallocate(void* apMem);
 };
 extern "C" PoolX g_pool_011f6238;
 struct FUN_00ac05b0
@@ -6847,7 +6847,7 @@ struct BxLengthError : public BxLogicError
 struct GvHeap
 {
     void* Game_DoHeapAlloc(unsigned int _Size);
-    void MemoryManager_Deallocate(void* _Ptr);
+    void MemoryManager_Deallocate(void* apMem);
 };
 template <class T> inline T* GvHeapAllocate(unsigned int _Count, T*)
 {
@@ -13497,7 +13497,7 @@ struct AsObj;
 struct AsHeap
 {
     void* Game_DoHeapAlloc(unsigned int _Size);
-    void MemoryManager_Deallocate(void* _Ptr);
+    void MemoryManager_Deallocate(void* apMem);
 };
 void FUN_00ec7c56();
 int FUN_00ec7c6b(void* _Dst, unsigned int _Size, const void* _Src, unsigned int _Count);
@@ -16513,7 +16513,7 @@ struct BxLengthError : public BxLogicError
 struct GvHeap
 {
     void* Game_DoHeapAlloc(unsigned int _Size);
-    void MemoryManager_Deallocate(void* _Ptr);
+    void MemoryManager_Deallocate(void* apMem);
 };
 template <class T> inline T* GvHeapAllocate(unsigned int _Count, T*)
 {
@@ -17156,7 +17156,7 @@ template <class T> struct GvVector : GvVectorVal<T>
 };
 struct GvFileHandle;
 extern "C" GvFileHandle* __cdecl fopen(const char* _Filename, const char* _Mode);
-void futSetLastError(int code, BxString message);
+void futSetLastError(int err, BxString txt);
 }
 using namespace bfopen;
 struct GvBinaryFile
@@ -17166,11 +17166,14 @@ struct GvBinaryFile
     GvFileHandle* pFile;
     virtual void v00();
     void FutBinaryFileC_close();
-    bool FutBinaryFileC_readHeader(char* data, unsigned int count, bool exact);
+    bool FutBinaryFileC_readHeader(char* data, unsigned int count, bool num);
     bool ProcessAndReturnValue_00ac4f00(const BxString& path);
 };
 // @fnv 0x00ac4f00
 // src: GUESS 0x00ac4f00 (confidence: low)
+// pdb: FutBinaryFileC::openForAppend | binaryFile.obj | debug, object-file gap fill, medium
+// pdb params: fname
+// pdb locals: buff
 bool GvBinaryFile::ProcessAndReturnValue_00ac4f00(const BxString& path)
 {
     FutBinaryFileC_close();
@@ -17708,6 +17711,8 @@ inline _BidIt2 _Move_backward_optS(_BidIt1 _First, _BidIt1 _Last, _BidIt2 _Dest,
 }
 // @fnv 0x00ac61c0
 // src: GUESS 0x00ac61c0 (confidence: low)
+// pdb: std::vector<char,std::allocator<char> >::_Ucopy<std::_Vector_const_iterator<std::_Vector_val<char,std::allocator<char> > > > | binaryFile.obj | debug, object-file run extension, low
+// pdb params: _First, _Last, _Ptr
 unsigned char* __cdecl Object_ProcessAndReturnValue_00ac61c0(_Vector_const_iteratorS<unsigned char> _First,
                                     _Vector_const_iteratorS<unsigned char> _Last, unsigned char* _Dest)
 {
@@ -17727,13 +17732,15 @@ struct Str
     }
 };
 void __cdecl Object_ProcessAndReturnValue_00ac6540(Str* obj);
-void __cdecl ReportFr2Error(const char* text, int flag, const char* caption);
+void __cdecl ReportFr2Error(const char* fname, int line, const char* msg);
 struct Q
 {
     static void __cdecl UpdateState_00ac6850();
 };
 // @fnv 0x00ac6850
 // src: GUESS 0x00ac6850 (confidence: low)
+// pdb: futPrintLastError | lastError.obj | debug, unique string literal, high
+// pdb locals: txt
 void __cdecl Q::UpdateState_00ac6850()
 {
     {
@@ -18377,44 +18384,47 @@ __forceinline void PadTail36()
 }
 // @fnv 0x00ac7aa0
 // src: XBOX_PDB 0x00ac7aa0
-bool __cdecl FutPairParser(FnvInput* input, FnvMap* output, FnvString* exclude, int limit)
+// pdb: FutPairParser | algs.obj | debug, call graph, high
+// pdb params: istr, m, commentID, numLines
+// pdb locals: lineCount, s1, s2, ch
+bool __cdecl FutPairParser(FnvInput* istr, FnvMap* m, FnvString* commentID, int limit)
 {
     FnvString line;
     int numLines = 0;
-    while (!((FnvIos*)((char*)input + input->m_ppVirtualMethodTable->m_iosOffset))->eof() &&
-           !((FnvIos*)((char*)input + input->m_ppVirtualMethodTable->m_iosOffset))->fail() && (limit == 0 || numLines < limit))
+    while (!((FnvIos*)((char*)istr + istr->m_ppVirtualMethodTable->m_iosOffset))->eof() &&
+           !((FnvIos*)((char*)istr + istr->m_ppVirtualMethodTable->m_iosOffset))->fail() && (limit == 0 || numLines < limit))
     {
-        Object_ProcessEntries_00ad43a0(input, &line);
-        if (((FnvIos*)((char*)input + input->m_ppVirtualMethodTable->m_iosOffset))->eof() ||
-            ((FnvIos*)((char*)input + input->m_ppVirtualMethodTable->m_iosOffset))->fail())
+        Object_ProcessEntries_00ad43a0(istr, &line);
+        if (((FnvIos*)((char*)istr + istr->m_ppVirtualMethodTable->m_iosOffset))->eof() ||
+            ((FnvIos*)((char*)istr + istr->m_ppVirtualMethodTable->m_iosOffset))->fail())
             break;
         char ch;
-        while (!((FnvIos*)((char*)input + input->m_ppVirtualMethodTable->m_iosOffset))->eof() &&
-               !((FnvIos*)((char*)input + input->m_ppVirtualMethodTable->m_iosOffset))->fail())
+        while (!((FnvIos*)((char*)istr + istr->m_ppVirtualMethodTable->m_iosOffset))->eof() &&
+               !((FnvIos*)((char*)istr + istr->m_ppVirtualMethodTable->m_iosOffset))->fail())
         {
-            ch = (char)input->ProcessAndReturnValue_00aca7a0();
-            if (ch == '\n' || ((FnvIos*)((char*)input + input->m_ppVirtualMethodTable->m_iosOffset))->eof() ||
-                ((FnvIos*)((char*)input + input->m_ppVirtualMethodTable->m_iosOffset))->fail())
+            ch = (char)istr->ProcessAndReturnValue_00aca7a0();
+            if (ch == '\n' || ((FnvIos*)((char*)istr + istr->m_ppVirtualMethodTable->m_iosOffset))->eof() ||
+                ((FnvIos*)((char*)istr + istr->m_ppVirtualMethodTable->m_iosOffset))->fail())
                 break;
             else if (ch == ' ' || ch == '\t')
-                ch = (char)input->ProcessAndReturnValue_00aca560();
+                ch = (char)istr->ProcessAndReturnValue_00aca560();
             else
                 break;
         }
         FnvString text(&DAT_01011584);
-        if (!((FnvIos*)((char*)input + input->m_ppVirtualMethodTable->m_iosOffset))->eof() &&
-            !((FnvIos*)((char*)input + input->m_ppVirtualMethodTable->m_iosOffset))->fail())
+        if (!((FnvIos*)((char*)istr + istr->m_ppVirtualMethodTable->m_iosOffset))->eof() &&
+            !((FnvIos*)((char*)istr + istr->m_ppVirtualMethodTable->m_iosOffset))->fail())
         {
-            Runtime_ProcessEntries_00ad5770(input, &text, ((FnvIos*)((char*)input + input->m_ppVirtualMethodTable->m_iosOffset))->ProcessAndReturnValue_00ad30c0('\n'));
+            Runtime_ProcessEntries_00ad5770(istr, &text, ((FnvIos*)((char*)istr + istr->m_ppVirtualMethodTable->m_iosOffset))->ProcessAndReturnValue_00ad30c0('\n'));
         }
-        if (line.equal(*exclude) && exclude->notEqual(&DAT_01011584))
+        if (line.equal(*commentID) && commentID->notEqual(&DAT_01011584))
             continue;
-        output->ProcessEntries_00acaf50(FnvPair<FnvString, FnvString>(line, text));
+        m->ProcessEntries_00acaf50(FnvPair<FnvString, FnvString>(line, text));
         ++numLines;
     }
     PadAfter92();
-    if (((FnvIos*)((char*)input + input->m_ppVirtualMethodTable->m_iosOffset))->fail() &&
-        !((FnvIos*)((char*)input + input->m_ppVirtualMethodTable->m_iosOffset))->eof())
+    if (((FnvIos*)((char*)istr + istr->m_ppVirtualMethodTable->m_iosOffset))->fail() &&
+        !((FnvIos*)((char*)istr + istr->m_ppVirtualMethodTable->m_iosOffset))->eof())
     {
         PadTail36();
         return false;
@@ -21569,6 +21579,8 @@ struct FUN_00acbf60_SB
 typedef FUN_00acbf60_Tr Tr;
 // @fnv 0x00acbf60
 // src: GUESS 0x00acbf60 (confidence: low)
+// pdb: std::basic_stringbuf<char,std::char_traits<char>,std::allocator<char> >::pbackfail | algs.obj | debug, object-file run extension, low
+// pdb params: _Meta
 int FUN_00acbf60_SB::ProcessAndReturnValue_00acbf60(int meta)
 {
     if (gptr() == 0 || gptr() <= eback() ||
@@ -21625,6 +21637,7 @@ struct FUN_00acc070_SB
 };
 // @fnv 0x00acc070
 // src: GUESS 0x00acc070 (confidence: low)
+// pdb: std::basic_stringbuf<char,std::char_traits<char>,std::allocator<char> >::underflow | algs.obj | debug, object-file run extension, low
 int FUN_00acc070_SB::UpdateState_00acc070()
 {
     if (gptr() == 0)
@@ -27954,7 +27967,7 @@ struct StrQ
         return (_Num <= 1 ? 1 : _Num - 1);
     }
     StrQ& EraseRange(unsigned int off, unsigned int count);
-    StrQ& AppendChars(unsigned int count, char ch);
+    StrQ& AppendChars(unsigned int _Count, char _Ch);
     StrQ& operator+=(char ch)
     {
         return AppendChars((unsigned int)1, ch);
@@ -30096,6 +30109,7 @@ struct FUN_00ad8650_cls
 };
 // @fnv 0x00ad8650
 // src: XBOX_PDB 0x00ad8650
+// pdb: BSAudio::ExitDialogue | BSAudio.obj | retail, upstream name already matches, high
 void FUN_00ad8650_cls::BSAudio_ExitDialogue()
 {
     BSAudioManager_QInstance_00ad9060()->BSAudioManager_ComposeMessage(0xd, 0, 0, 0, 0, DAT_011f426c);
@@ -32141,7 +32155,7 @@ void FUN_00acb1a0_cls::ProcessEntries_00acf0b0(void* p)
 namespace fnv_00ac2540 {
 struct PoolX
 {
-    void MemoryManager_Deallocate(void* p);
+    void MemoryManager_Deallocate(void* apMem);
 };
 extern "C" PoolX g_pool_011f6238;
 inline void* operator new(unsigned int, void* p)
@@ -33093,7 +33107,7 @@ SB3030* __cdecl Runtime_UpdateState_00ac3030(SB3030* _First, SB3030* _Last, SB30
 namespace fnv_00ac3ac0 {
 struct PoolX
 {
-    void MemoryManager_Deallocate(void* p);
+    void MemoryManager_Deallocate(void* apMem);
 };
 extern "C" PoolX g_pool_011f6238;
 inline void* operator new(unsigned int, void* p)
@@ -33169,7 +33183,7 @@ CopyFromSource* Object_ProcessEntries_00ac3ac0(CopyFromSource* first, CopyFromSo
 namespace fnv_00ac3bd0 {
 struct PoolX
 {
-    void MemoryManager_Deallocate(void* p);
+    void MemoryManager_Deallocate(void* apMem);
 };
 extern "C" PoolX g_pool_011f6238;
 inline void* operator new(unsigned int, void* p)
@@ -33257,7 +33271,7 @@ unsigned int __cdecl FUN_00ec7c56();
 
 struct PoolAdapter : FUN_00ac1720_pool
 {
-    void MemoryManager_Deallocate(void* p);
+    void MemoryManager_Deallocate(void* apMem);
 };
 
 struct Alloc43B0
@@ -33437,7 +33451,7 @@ struct Buf43B0 : VecVal43B0
     }
 };
 
-void __cdecl futSetLastError(int level, Str43B0 msg);
+void __cdecl futSetLastError(int err, Str43B0 txt);
 
 struct C43B0
 {
@@ -33447,19 +33461,22 @@ struct C43B0
     void* m_file;
 
     void FutBinaryFileC_close();
-    bool FutBinaryFileC_readHeader(void* pv, unsigned int size, unsigned int count);
-    bool FutBinaryFileC_openForRead(Str43B0 name);
+    bool FutBinaryFileC_readHeader(void* pv, unsigned int size, unsigned int num);
+    bool FutBinaryFileC_openForRead(Str43B0 a_fname);
 };
 
 // @fnv 0x00ac43b0
 // src: XBOX_PDB 0x00ac43b0
-bool C43B0::FutBinaryFileC_openForRead(Str43B0 name)
+// pdb: FutBinaryFileC::openForRead | binaryFile.obj | retail, upstream name already matches, high
+// pdb params: a_fname
+// pdb locals: buff, buff2
+bool C43B0::FutBinaryFileC_openForRead(Str43B0 a_fname)
 {
     FutBinaryFileC_close();
-    m_file = fopen(name._Myptr(), "rb");
+    m_file = fopen(a_fname._Myptr(), "rb");
     if (!m_file)
     {
-        futSetLastError(4, Str43B0(name, 0));
+        futSetLastError(4, Str43B0(a_fname, 0));
         return false;
     }
     Buf43B0 v(m_str20.size() + 1);
@@ -33470,18 +33487,18 @@ bool C43B0::FutBinaryFileC_openForRead(Str43B0 name)
     w[5] = m_str20[5];
     if ((bool)(int)!(bool)(int)(m_str20.compare(w.begin()) == 0))
     {
-        futSetLastError(2, Str43B0(name, 0));
+        futSetLastError(2, Str43B0(a_fname, 0));
         FutBinaryFileC_close();
         return false;
     }
     if (v[5] > '0' && m_str20[5] != v[5])
     {
-        futSetLastError(4, Str43B0(name, 0));
+        futSetLastError(4, Str43B0(a_fname, 0));
         FutBinaryFileC_close();
         return false;
     }
     m_str20[5] = v[5];
-    m_str04.AssignSubstring(name, 0, DAT_010173f0);
+    m_str04.AssignSubstring(a_fname, 0, DAT_010173f0);
     return true;
 }
 }  // namespace fnv_00ac43b0
@@ -38529,7 +38546,7 @@ namespace ac3_signature {
 using ucpyac15::BxString;
 using ucpyac15::GvVector;
 extern "C" _iobuf* __cdecl fopen(const char*, const char*);
-void futSetLastError(int code, BxString message);
+void futSetLastError(int err, BxString txt);
 
 extern "C" unsigned int __cdecl fread(void* _DstBuf, unsigned int _ElementSize, unsigned int _Count, _iobuf* _File);
 using ::fclose;
@@ -38560,6 +38577,9 @@ struct FileGuard
 
 // @fnv 0x00ac3fe0
 // src: GUESS 0x00ac3fe0 (confidence: low)
+// pdb: FutBinaryFileC::isCorrectFileId | binaryFile.obj | debug, object-file gap fill, medium
+// pdb params: fname
+// pdb locals: fp, buff
 bool FutBinaryFileC::ProcessAndReturnValue_00ac3fe0(const ::BxString& path)
 {
     using ac3_signature::FileGuard;
@@ -38574,17 +38594,17 @@ bool FutBinaryFileC::ProcessAndReturnValue_00ac3fe0(const ::BxString& path)
         return false;
     }
     // The original checker reads the second string, at 0x20 (the shared path member).
-    GvVector<unsigned char> buffer2(reinterpret_cast<ucpyac15::BxString&>(this->path).size() + 1);
-    if (ac3_signature::fread(&buffer2[0], reinterpret_cast<ucpyac15::BxString&>(this->path).size(), 1, file.get()) != 1)
+    GvVector<unsigned char> buffer2(reinterpret_cast<ucpyac15::BxString&>(this->fileId).size() + 1);
+    if (ac3_signature::fread(&buffer2[0], reinterpret_cast<ucpyac15::BxString&>(this->fileId).size(), 1, file.get()) != 1)
     {
         file.Close();
         futSetLastError(1, reinterpret_cast<const ucpyac15::BxString&>(path));
         return false;
     }
-    buffer2[reinterpret_cast<ucpyac15::BxString&>(this->path).size()] = 0;
+    buffer2[reinterpret_cast<ucpyac15::BxString&>(this->fileId).size()] = 0;
     file.Close();
-    buffer2[5] = reinterpret_cast<ucpyac15::BxString&>(this->path)[5];
-    if (reinterpret_cast<ucpyac15::BxString&>(this->path) == (const char*)&buffer2[0])
+    buffer2[5] = reinterpret_cast<ucpyac15::BxString&>(this->fileId)[5];
+    if (reinterpret_cast<ucpyac15::BxString&>(this->fileId) == (const char*)&buffer2[0])
         return true;
     else
         return false;
@@ -40112,7 +40132,7 @@ struct BxLengthError : public BxLogicError
 struct GvHeap
 {
     void* Game_DoHeapAlloc(unsigned int _Size);
-    void MemoryManager_Deallocate(void* _Ptr);
+    void MemoryManager_Deallocate(void* apMem);
 };
 template <class T> inline T* GvHeapAllocate(unsigned int _Count, T*)
 {
@@ -40756,7 +40776,7 @@ template <class T> struct GvVector : GvVectorVal<T>
 };
 struct GvFileHandle;
 extern "C" GvFileHandle* __cdecl fopen(const char* _Filename, const char* _Mode);
-void futSetLastError(int code, BxString message);
+void futSetLastError(int err, BxString txt);
 }
 namespace bfopenrw {
 
@@ -40767,12 +40787,15 @@ struct GvBinaryFile
     GvFileHandle* pFile;
     virtual void v00();
     void FutBinaryFileC_close();
-    bool FutBinaryFileC_readHeader(char* data, unsigned int count, bool exact);
+    bool FutBinaryFileC_readHeader(char* data, unsigned int count, bool num);
     bool ProcessAndReturnValue_00ac4b00(const BxString& path);
 };
 
 // @fnv 0x00ac4b00
 // src: GUESS 0x00ac4b00 (confidence: low)
+// pdb: FutBinaryFileC::openForUpdate | binaryFile.obj | debug, object-file gap fill, medium
+// pdb params: fname
+// pdb locals: buff, buff2
 bool GvBinaryFile::ProcessAndReturnValue_00ac4b00(const BxString& path)
 {
     FutBinaryFileC_close();
@@ -41062,8 +41085,8 @@ struct S5540_Buffer : S5540_VectorVal
     }
 };
 
-void __cdecl futSetLastError(int code, S5540_String msg);
-void* __cdecl FUN_00afdf20(const char* name, int a, int b, int c);
+void __cdecl futSetLastError(int err, S5540_String txt);
+void* __cdecl FUN_00afdf20(const char* apName, int aeMode, int aiSize, int aiArchiveType);
 
 struct S5540_File
 {
@@ -41094,7 +41117,7 @@ struct S5540_File
 
 struct S5540_Loader
 {
-    S5540_File* GetHolderValue(const char* name);
+    S5540_File* GetHolderValue(const char* apFileName);
 };
 extern S5540_Loader* DAT_011c3b3c;
 
@@ -41121,8 +41144,8 @@ struct S5540_Stream
     int m_3c;
     void* m_40;
     S5540_File* m_44;
-    bool BSFaceGenBinaryFile_readHeader(char* buf, unsigned int len, bool flag);
-    bool BSFaceGenBinaryFile_openForRead(S5540_String name, bool flag);
+    bool BSFaceGenBinaryFile_readHeader(char* buf, unsigned int len, bool num);
+    bool BSFaceGenBinaryFile_openForRead(S5540_String apFileName, bool abCTLFile);
 };
 
 // These dead inline locals retain the scratch space of the original STL
@@ -41143,12 +41166,15 @@ static __forceinline void HeaderCleanupScratch()
 
 // @fnv 0x00ac5540
 // src: XBOX_PDB 0x00ac5540
-bool S5540_Stream::BSFaceGenBinaryFile_openForRead(S5540_String name, bool flag)
+// pdb: BSFaceGenBinaryFile::openForRead | binaryFile.obj | retail, upstream name already matches, high
+// pdb params: apFileName, abCTLFile
+// pdb locals: aetype, sploadedFile, buff, buff2
+bool S5540_Stream::BSFaceGenBinaryFile_openForRead(S5540_String apFileName, bool abCTLFile)
 {
     int archive = 1;
-    if (flag)
+    if (abCTLFile)
         archive = 0x100;
-    S5540_FilePtr copy(DAT_011c3b3c ? DAT_011c3b3c->GetHolderValue(name.c_str()) : 0);
+    S5540_FilePtr copy(DAT_011c3b3c ? DAT_011c3b3c->GetHolderValue(apFileName.c_str()) : 0);
     if (copy.m_p)
     {
         m_44 = copy.m_p;
@@ -41157,11 +41183,11 @@ bool S5540_Stream::BSFaceGenBinaryFile_openForRead(S5540_String name, bool flag)
     }
     else
     {
-        m_40 = FUN_00afdf20(name.c_str(), 0, 0x2800, archive);
+        m_40 = FUN_00afdf20(apFileName.c_str(), 0, 0x2800, archive);
     }
     if (m_40 == 0)
     {
-        futSetLastError(4, name);
+        futSetLastError(4, apFileName);
         return false;
     }
     S5540_Buffer flags(m_20.size() + 1);
@@ -41172,7 +41198,7 @@ bool S5540_Stream::BSFaceGenBinaryFile_openForRead(S5540_String name, bool flag)
     vec[5] = m_20[5];
     if (m_20 != &vec[0])
     {
-        futSetLastError(2, name);
+        futSetLastError(2, apFileName);
         ((FUN_00ac5c00_cls*)this)->ClearHolders();
         return false;
     }
@@ -41180,13 +41206,13 @@ bool S5540_Stream::BSFaceGenBinaryFile_openForRead(S5540_String name, bool flag)
     {
         if (m_20[5] != flags[5])
         {
-            futSetLastError(4, name);
+            futSetLastError(4, apFileName);
             ((FUN_00ac5c00_cls*)this)->ClearHolders();
             return false;
         }
     }
     m_20[5] = flags[5];
-    m_04 = name;
+    m_04 = apFileName;
     return (bool)(m_40 != 0);
     HeaderCleanupScratch();
 }
@@ -41307,6 +41333,9 @@ inline ByteIterator::ByteIterator(unsigned char* p, const AuxContainer* c)
     pointer = p;
 }
 // @fnv 0x00ac5f00
+// pdb: std::basic_string<char,std::char_traits<char>,std::allocator<char> >::compare | binaryFile.obj | debug, object-file run extension, low
+// pdb params: _Off, _N0, _Ptr, _Count
+// pdb locals: _Ans
 FUN_00ac5f00::FUN_00ac5f00(const FUN_00ac5f00& right) : ByteVectorVal(right.allocator)
 {
     if (ProcessAndReturnValue_00ac03a0(right.size()))
@@ -41563,7 +41592,10 @@ void futSetLastError(int, parser839::String);
 bool FutPairParser(parser839::Input<char, parser839::Traits<char> >&, parser839::BlkMapView&, const parser839::String&, bool);
 // @fnv 0x00ac8390
 // src: XBOX_PDB 0x00ac8390
-bool FutBufferPairParser(const char* buffer, const parser839::String& name, parser839::BlkMapView& output)
+// pdb: FutBufferPairParser | algs.obj | debug, upstream name already matches, high
+// pdb params: buffer, bufferID, m
+// pdb locals: iss
+bool FutBufferPairParser(const char* buffer, const parser839::String& bufferID, parser839::BlkMapView& m)
 {
     if (!buffer)
     {
@@ -41576,22 +41608,22 @@ bool FutBufferPairParser(const char* buffer, const parser839::String& name, pars
         futSetLastError(11, "Unable to create string stream for buffer.");
         return false;
     }
-    output.ResetListSentinel();
-    if (name != &DAT_01011584)
+    m.ResetListSentinel();
+    if (bufferID != &DAT_01011584)
     {
-        if (!FutPairParser(stream, output, "//", true))
+        if (!FutPairParser(stream, m, "//", true))
         {
             futSetLastError(11, "Unable to parse string stream.");
             return false;
         }
-        if (output.ProcessAndReturnValue_00acb200(name) == output.end())
+        if (m.ProcessAndReturnValue_00acb200(bufferID) == m.end())
         {
             futSetLastError(2, "string stream buffer");
             return false;
         }
     }
-    output.ResetListSentinel();
-    if (!FutPairParser(stream, output, "//", false))
+    m.ResetListSentinel();
+    if (!FutPairParser(stream, m, "//", false))
     {
         futSetLastError(4, "string stream buffer");
         return false;
@@ -41887,11 +41919,14 @@ template <class T> class Table87 : public TreeData87<T>
 
 typedef Table87<int> List87b0;
 
-void futSetLastError(int kind, QString s);
-unsigned char FutPairParser(Stream87b0* stream, List87b0* a3, const QString& sep, int flag);
+void futSetLastError(int err, QString txt);
+unsigned char FutPairParser(Stream87b0* istr, List87b0* m, const QString& commentID, int flag);
 
 // @fnv 0x00ac87b0
 // src: GUESS 0x00ac87b0 (confidence: low)
+// pdb: FutFilePairParser | algs.obj | debug, object-file gap fill, medium
+// pdb params: fname, fileID, m
+// pdb locals: tagData, ifs
 bool Runtime_EvaluateValue_00ac87b0(QString* pStr, const QString& a2, List87b0* a3)
 {
     QString path;

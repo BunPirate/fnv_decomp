@@ -3,6 +3,7 @@
 #include "hkStringPtr.h"
 #include "hkRefVariant.h"
 
+// pdb: structure hkxAttribute, size 0x8, 2 members
 class hkxAttribute
 {
 public:
@@ -17,5 +18,5 @@ public:
     };
 
     hkStringPtr m_name;
-    hkRefVariant m_uiFilterValue;
+    hkRefVariant m_value; // src: XBOX_RETAIL_PDB +0x4 (old: m_uiFilterValue)
 };

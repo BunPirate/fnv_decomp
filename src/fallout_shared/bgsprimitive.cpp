@@ -90,6 +90,9 @@ typedef char BSFadeNode_size_check[sizeof(BSFadeNode) == 0xe4 ? 1 : -1];
 
 // Takes the absolute value of each radius component, stores it, rebuilds the box and frame geometry vertices, and updates the model and world bounds.
 // @fnv 0x004a6640
+// pdb: BGSPrimitiveBox::SetRadii | BGSPrimitive.obj | debug, object-file run extension, low
+// pdb params: aRadii
+// pdb locals: UpdateData, pverts, pgeomdata, frameMult, i, fRad, kBound
 void BGSPrimitiveBox::NormalizeRadii(NiPoint3& radii)
 {
     radii[0] = std::abs(radii[0]);
@@ -115,9 +118,9 @@ void BGSPrimitiveBox::NormalizeRadii(NiPoint3& radii)
         reinterpret_cast<NiPoint3&>(geometry.vertices[7]) = reinterpret_cast<const NiPoint3&>(NiPoint3(-m_kRadii[0], -m_kRadii[1], -m_kRadii[2]));
         geometry.data->SetDirtyFlags(1);
     }
-    if (m_kLines)
+    if (spFrame)
     {
-        NiGeometryData* pkData = m_kLines->GetModelData();
+        NiGeometryData* pkData = spFrame->GetModelData();
         {
             struct FrameVertices
             {
@@ -160,9 +163,12 @@ void BGSPrimitiveBox::NormalizeRadii(NiPoint3& radii)
 }
 
 // @fnv 0x004a53e0
-void BGSPrimitivePlane::SetColor(NiColorA& color)
+// pdb: BGSPrimitivePlane::SetColor | BGSPrimitive.obj | retail, upstream name already matches, high
+// pdb params: aColor
+// pdb locals: pcolors, pgeomdata
+void BGSPrimitivePlane::SetColor(NiColorA& aColor)
 {
-    Color = color;
+    Color = aColor;
     if (m_kGeometry)
     {
         struct GeometryColors
@@ -176,15 +182,18 @@ void BGSPrimitivePlane::SetColor(NiColorA& color)
             geometry.colors[5] = geometry.colors[6] = geometry.colors[7] = reinterpret_cast<const NiColorA&>(Color);
         geometry.data->SetDirtyFlags(4);
     }
-    if (m_kLines)
-        m_kLines->SetAppCulled(color.a < 0.001);
+    if (spFrame)
+        spFrame->SetAppCulled(aColor.a < 0.001);
 }
 
 // Stores color, then if geometry exists, fills both geometry data color arrays with it and sets app-culled based on alpha.
 // @fnv 0x004a64e0
-void BGSPrimitiveBox::SetColor(NiColorA& color)
+// pdb: BGSPrimitiveBox::SetColor | BGSPrimitive.obj | retail, upstream name already matches, high
+// pdb params: aColor
+// pdb locals: i, pcolors, pgeomdata
+void BGSPrimitiveBox::SetColor(NiColorA& aColor)
 {
-    Color = color;
+    Color = aColor;
     if (m_kGeometry)
     {
         struct GeometryColors
@@ -198,17 +207,19 @@ void BGSPrimitiveBox::SetColor(NiColorA& color)
         for (i = 0; i < geometry.data->NiGeometryData::GetVertexCount(); i++)
             geometry.colors[i] = reinterpret_cast<const NiColorA&>(Color);
         geometry.data->SetDirtyFlags(4);
-        geometry.data = m_kLines->GetModelData();
+        geometry.data = spFrame->GetModelData();
         geometry.colors = reinterpret_cast<NiColorA*>(geometry.data->GetColors());
         for (i = 0; i < geometry.data->NiGeometryData::GetVertexCount(); i++)
             geometry.colors[i] = reinterpret_cast<const NiColorA&>(Color);
         geometry.data->SetDirtyFlags(4);
-        m_kLines->SetAppCulled(color.a < 0.001);
+        spFrame->SetAppCulled(aColor.a < 0.001);
     }
 }
 
 // Creates a BSFadeNode named "Box" and stores it in the primitive's node pointer if not already created.
 // @fnv 0x004a63f0
+// pdb: BGSPrimitiveBox::Build | BGSPrimitive.obj | retail, upstream name already matches, high
+// pdb locals: frameMult, alpha
 void BGSPrimitiveBox::Build()
 {
     if (!m_pController)
@@ -221,6 +232,7 @@ void BGSPrimitiveBox::Build()
 
 // Initializes the primitive box: clears two fields and sets eType to 1.
 // @fnv 0x004a6370
+// pdb: BGSPrimitiveBox::BGSPrimitiveBox | BGSPrimitive.obj | retail, upstream name already matches, high
 BGSPrimitiveBox::BGSPrimitiveBox()
 {
     m_kGeometry = 0;
@@ -236,12 +248,15 @@ unsigned int bhkMultiSphereShape::GetInstanceSize()
 
 // Compares this object's first four floats with those of p and returns true only if all four are equal.
 // @fnv 0x004a4cc0
+// pdb: NiColorInterpolator::GetKeys | TESImageSpaceModifier.obj | debug, call graph, medium
+// pdb params: uiNumKeys, eType, ucSize
 bool NiColorA::operator==(const NiColorA& apOther) const
 {
     return r == apOther.r && g == apOther.g && b == apOther.b && a == apOther.a;
 }
 
 // @fnv 0x004a51d0
+// pdb: NiBound::NiBound | BGSPrimitive.obj | debug, object-file run extension, low
 void NiBound::SetCenterAndRadius(const NiPoint3& apCenter, float fRadius)
 {
     reinterpret_cast<NiPoint3&>(m_kCenter) = reinterpret_cast<const NiPoint3&>(apCenter);
@@ -250,6 +265,8 @@ void NiBound::SetCenterAndRadius(const NiPoint3& apCenter, float fRadius)
 
 // Copies the center and radius from the given NiBound into this bound and returns this.
 // @fnv 0x004a5250
+// pdb: NiBound::operator= | BGSPrimitive.obj | debug, object-file gap fill, medium
+// pdb params: aRhs
 const NiBound& NiBound::operator=(const NiBound& aRhs)
 {
     SetCenterAndRadius(aRhs.m_kCenter, aRhs.m_fRadius);
@@ -260,6 +277,7 @@ void __fastcall _ref_006815c0(void* pThis);
 
 // @fnv 0x006240d0
 // src: GUESS 0x006240d0 (confidence: low)
+// pdb: BGSDistantTreeBlock::InstanceData::InstanceData | BGSDistantTreeBlock.obj | debug, call graph, medium
 void* __fastcall BGSPrimitive_EvaluateValue_006240d0(void* pThis)
 {
     _ref_006815c0(pThis);
@@ -269,6 +287,7 @@ void* __fastcall BGSPrimitive_EvaluateValue_006240d0(void* pThis)
 
 // @fnv 0x00c37ec0
 // src: GUESS 0x00c37ec0 (confidence: low)
+// pdb: BSMultiBoundAABB::BSMultiBoundAABB | BSMultiBoundAABB.obj | debug, call graph, medium
 void* __fastcall Object_ProcessAndReturnValue_00c37ec0(void* this_ptr)
 {
     static_cast<BSMultiBoundShape*>(this_ptr)->BSMultiBoundShape::BSMultiBoundShape();
@@ -284,12 +303,13 @@ int __fastcall Object_Return0x1e(int this_)
 }
 
 // @fnv 0x004a7040
+// pdb: BSMultiBoundAABB::QMultiBoundRadius | BGSPrimitive.obj | debug, vtable slot, medium
 float BSMultiBoundAABB::GetPointLength()
 {
-    return static_cast<const NiPoint3&>(m_kOffset).Length();
+    return static_cast<const NiPoint3&>(HalfExtents).Length();
 }
 
-extern int g_01202818;
+extern int BSMultiBoundOBB_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01202818 (old: g_01202818)
 
 struct FUN_004a70f0_shell
 {
@@ -300,7 +320,7 @@ struct FUN_004a70f0_shell
 // src: COMMUNITY 0x004a70f0
 int* __thiscall FUN_004a70f0_shell::BSMultiBoundOBB_GetRTTI()
 {
-    return &g_01202818;
+    return &BSMultiBoundOBB_ms_RTTI;
 }
 
 // @fnv 0x00c365e0
@@ -384,15 +404,18 @@ struct FUN_00c335d0 : NiRefObject
 struct FUN_00c33730_shell
 {
     void CopyStateTo(FUN_00c335d0* pkDest, CloningProcess& kCloning);
-    FUN_00c335d0* BSOcclusionPlane_CreateClone(CloningProcess& kCloning);
+    FUN_00c335d0* BSOcclusionPlane_CreateClone(CloningProcess& arCloneData);
 };
 
 // @fnv 0x00c33730
 // src: XBOX_PDB 0x00c33730
-FUN_00c335d0* FUN_00c33730_shell::BSOcclusionPlane_CreateClone(CloningProcess& kCloning)
+// pdb: BSOcclusionPlane::CreateClone | BSOcclusionPlane.obj | retail, upstream name already matches, high
+// pdb params: arCloneData
+// pdb locals: pobj
+FUN_00c335d0* FUN_00c33730_shell::BSOcclusionPlane_CreateClone(CloningProcess& arCloneData)
 {
     FUN_00c335d0* pkObject = new FUN_00c335d0;
-    CopyStateTo(pkObject, kCloning);
+    CopyStateTo(pkObject, arCloneData);
     return pkObject;
 }
 
@@ -402,14 +425,17 @@ namespace fnv_00c36330 {
 struct MultiBoundOBBClone : public BSMultiBoundOBB
 {
     void CopyTo(BSMultiBoundOBB* pkDest, CloningProcess& kCloning);
-    BSMultiBoundOBB* Clone(CloningProcess& kCloning);
+    BSMultiBoundOBB* Clone(CloningProcess& arCloneData);
 };
 
 // @fnv 0x00c36330
-BSMultiBoundOBB* MultiBoundOBBClone::Clone(CloningProcess& kCloning)
+// pdb: BSMultiBoundOBB::CreateClone | BSMultiBoundOBB.obj | retail, vtable slot, high
+// pdb params: arCloneData
+// pdb locals: pobj
+BSMultiBoundOBB* MultiBoundOBBClone::Clone(CloningProcess& arCloneData)
 {
     BSMultiBoundOBB* pkObject = new BSMultiBoundOBB;
-    CopyTo(pkObject, kCloning);
+    CopyTo(pkObject, arCloneData);
     return pkObject;
 }
 }  // namespace fnv_00c36330
@@ -419,21 +445,27 @@ namespace fnv_00c37ee0 {
 struct MultiBoundAABBCloneHelper
 {
     void FUN_00c37f70(BSMultiBoundAABB* pkDest, CloningProcess& kCloning);
-    BSMultiBoundAABB* BSMultiBoundAABB_CreateClone(CloningProcess& kCloning);
+    BSMultiBoundAABB* BSMultiBoundAABB_CreateClone(CloningProcess& arCloneData);
 };
 
 // @fnv 0x00c37ee0
 // src: XBOX_PDB 0x00c37ee0
-BSMultiBoundAABB* MultiBoundAABBCloneHelper::BSMultiBoundAABB_CreateClone(CloningProcess& kCloning)
+// pdb: BSMultiBoundAABB::CreateClone | BSMultiBoundAABB.obj | retail, upstream name already matches, high
+// pdb params: arCloneData
+// pdb locals: pobj
+BSMultiBoundAABB* MultiBoundAABBCloneHelper::BSMultiBoundAABB_CreateClone(CloningProcess& arCloneData)
 {
     BSMultiBoundAABB* pkObject = new BSMultiBoundAABB;
-    FUN_00c37f70(pkObject, kCloning);
+    FUN_00c37f70(pkObject, arCloneData);
     return pkObject;
 }
 }  // namespace fnv_00c37ee0
 
 // @fnv 0x00c4fb30
 // src: XBOX_PDB 0x00c4fb30
+// pdb: BSMultiBoundSphere::CreateClone | BSMultiBoundSphere.obj | debug, vtable slot, medium
+// pdb params: arCloneData
+// pdb locals: pobj
 BSMultiBoundSphere* BSMultiBoundSphere::CreateClone_00c4fb30(CloningProcess& kCloning)
 {
     BSMultiBoundSphere* pkObject = new BSMultiBoundSphere;
@@ -478,9 +510,11 @@ int BSMultiBoundAABB::GetDebugGeomShapeSize()
 
 // @fnv 0x004a71d0
 // src: XBOX_PDB 0x004a71d0
-void BGSPrimitiveSphere::SetRadii(NiPoint3& aPoint)
+// pdb: BGSPrimitiveSphere::SetRadii | BGSPrimitive.obj | debug, upstream name already matches, high
+// pdb params: aRadii
+void BGSPrimitiveSphere::SetRadii(NiPoint3& aRadii)
 {
-    SetRadius(aPoint.x);
+    SetRadius(aRadii.x);
 }
 
 // This destructor entry calls the base directly without installing a vtable.
@@ -489,6 +523,7 @@ struct PrimitiveSphereDestruction
     void Destroy();
 };
 // @fnv 0x004a7220
+// pdb: BGSPrimitiveSphere::~BGSPrimitiveSphere | BGSPrimitive.obj | debug, object-file gap fill, medium
 void PrimitiveSphereDestruction::Destroy()
 {
     reinterpret_cast<BGSPrimitive*>(this)->BGSPrimitive::~BGSPrimitive();
@@ -496,6 +531,7 @@ void PrimitiveSphereDestruction::Destroy()
 
 // Calls DestroyBase, frees this with _delete when flags has bit 0 set, and returns this.
 // @fnv 0x004a7bf0
+// pdb: BSMultiBoundSphere::`scalar deleting destructor' | BGSPrimitive.obj | debug, vtable slot, medium
 void* BSMultiBoundSphere::FUN_004a7bf0(unsigned int flags)
 {
     DestroyBase();
@@ -506,16 +542,18 @@ void* BSMultiBoundSphere::FUN_004a7bf0(unsigned int flags)
 
 struct FUN_00c38020_shell
 {
-    unsigned char __thiscall BSMultiBoundShape_RegisterStreamables(int a);
-    unsigned char __thiscall BSMultiBoundAABB_RegisterStreamables(int a);
+    unsigned char __thiscall BSMultiBoundShape_RegisterStreamables(int arStream);
+    unsigned char __thiscall BSMultiBoundAABB_RegisterStreamables(int arStream);
 };
 
 // Returns 0 if FUN_00c4fa30(a) is false, otherwise returns 1.
 // @fnv 0x00c38020
 // src: XBOX_PDB 0x00c38020
-unsigned char __thiscall FUN_00c38020_shell::BSMultiBoundAABB_RegisterStreamables(int aiArg)
+// pdb: BSMultiBoundAABB::RegisterStreamables | BSMultiBoundAABB.obj | retail, upstream name already matches, high
+// pdb params: arStream
+unsigned char __thiscall FUN_00c38020_shell::BSMultiBoundAABB_RegisterStreamables(int arStream)
 {
-    if (!BSMultiBoundShape_RegisterStreamables(aiArg))
+    if (!BSMultiBoundShape_RegisterStreamables(arStream))
         return 0;
     return 1;
 }
@@ -542,6 +580,7 @@ struct FUN_00c4f820_shell
 };
 
 // @fnv 0x00c4f820
+// pdb: BSPortalSharedNode::`scalar deleting destructor' | BSPortal.obj | retail, vtable slot, high
 void* FUN_00c4f820_shell::FUN_00c4f820(unsigned int flags)
 {
     reinterpret_cast<FUN_00c4f550_shell*>(this)->FUN_00c4f550();
@@ -552,28 +591,32 @@ void* FUN_00c4f820_shell::FUN_00c4f820(unsigned int flags)
 
 struct FUN_00c4f9f0_shell : NiObject
 {
-    void BSMultiBoundShape_LoadBinary(NiStream& stream);
+    void BSMultiBoundShape_LoadBinary(NiStream& arStream);
 };
 
 // @fnv 0x00c4f9f0
 // src: XBOX_PDB 0x00c4f9f0
-void FUN_00c4f9f0_shell::BSMultiBoundShape_LoadBinary(NiStream& stream)
+// pdb: BSMultiBoundShape::LoadBinary | BSMultiBoundShape.obj | debug, upstream name already matches, high
+// pdb params: arStream
+void FUN_00c4f9f0_shell::BSMultiBoundShape_LoadBinary(NiStream& arStream)
 {
-    NiObject::LoadBinary(stream);
+    NiObject::LoadBinary(arStream);
 }
 
 namespace fnv_00c4fa10 {
 
 struct FUN_00c4fa10_shell : NiObject
 {
-    void BSMultiBoundShape_LinkObject(NiStream& stream);
+    void BSMultiBoundShape_LinkObject(NiStream& arStream);
 };
 
 // @fnv 0x00c4fa10
 // src: XBOX_PDB 0x00c4fa10
-void FUN_00c4fa10_shell::BSMultiBoundShape_LinkObject(NiStream& stream)
+// pdb: BSMultiBoundShape::LinkObject | BSMultiBoundShape.obj | debug, upstream name already matches, high
+// pdb params: arStream
+void FUN_00c4fa10_shell::BSMultiBoundShape_LinkObject(NiStream& arStream)
 {
-    NiObject::LinkObject(stream);
+    NiObject::LinkObject(arStream);
 }
 }  // namespace fnv_00c4fa10
 
@@ -581,15 +624,17 @@ namespace fnv_00c4fa30 {
 
 struct FUN_00c4fa30_shell : NiObject
 {
-    bool BSMultiBoundShape_RegisterStreamables(NiStream& stream);
+    bool BSMultiBoundShape_RegisterStreamables(NiStream& arStream);
 };
 
 // Calls the base NiObject::RegisterStreamables and returns its result.
 // @fnv 0x00c4fa30
 // src: XBOX_PDB 0x00c4fa30
-bool FUN_00c4fa30_shell::BSMultiBoundShape_RegisterStreamables(NiStream& stream)
+// pdb: BSMultiBoundShape::RegisterStreamables | BSMultiBoundShape.obj | retail, upstream name already matches, high
+// pdb params: arStream
+bool FUN_00c4fa30_shell::BSMultiBoundShape_RegisterStreamables(NiStream& arStream)
 {
-    if (!NiObject::RegisterStreamables(stream))
+    if (!NiObject::RegisterStreamables(arStream))
         return false;
     return true;
 }
@@ -599,14 +644,16 @@ namespace fnv_00c4fa60 {
 
 struct FUN_00c4fa60_shell : NiObject
 {
-    void BSMultiBoundShape_SaveBinary(NiStream& stream);
+    void BSMultiBoundShape_SaveBinary(NiStream& arStream);
 };
 
 // @fnv 0x00c4fa60
 // src: XBOX_PDB 0x00c4fa60
-void FUN_00c4fa60_shell::BSMultiBoundShape_SaveBinary(NiStream& stream)
+// pdb: BSMultiBoundShape::SaveBinary | BSMultiBoundShape.obj | debug, upstream name already matches, high
+// pdb params: arStream
+void FUN_00c4fa60_shell::BSMultiBoundShape_SaveBinary(NiStream& arStream)
 {
-    NiObject::LinkObject(stream);
+    NiObject::LinkObject(arStream);
 }
 }  // namespace fnv_00c4fa60
 
@@ -626,6 +673,8 @@ char const* const* FUN_00c4fb00_shell::BSMultiBoundShape_GetRTTI()
 
 // Returns the logical negation of color equality.
 // @fnv 0x004a4c90
+// pdb: NiColorA::operator!= | BGSPrimitive.obj | debug, call graph, medium
+// pdb params: c
 bool NiColorA::operator!=(const NiColorA& c) const
 {
     return !operator==(c);
@@ -634,6 +683,7 @@ bool NiColorA::operator!=(const NiColorA& c) const
 void __cdecl _delete(void*, unsigned int);
 
 // @fnv 0x004a6110
+// pdb: BSOcclusionPlane::`scalar deleting destructor' | BGSPrimitive.obj | retail, vtable slot, high
 void* BSOcclusionPlane::FUN_004a6110(unsigned int flags)
 {
     this->BSOcclusionPlane::~BSOcclusionPlane();
@@ -644,6 +694,7 @@ void* BSOcclusionPlane::FUN_004a6110(unsigned int flags)
 
 void __cdecl _delete(void*, unsigned int);
 // @fnv 0x004a62d0
+// pdb: BSPortal::`scalar deleting destructor' | BGSPrimitive.obj | retail, vtable slot, high
 void* BSPortal::Destroy(unsigned int flags)
 {
     DestroyBase();
@@ -666,6 +717,7 @@ struct BSPortalTeardown_004a6310 : BSOcclusionPlaneTeardown_004a7090
     ~BSPortalTeardown_004a6310();
 };
 // @fnv 0x004a6310
+// pdb: BSPortal::~BSPortal | BGSPrimitive.obj | debug, call graph, medium
 BSPortalTeardown_004a6310::~BSPortalTeardown_004a6310()
 {}
 
@@ -673,6 +725,7 @@ void __cdecl _delete(void*, unsigned int);
 
 // Calls DestroyBase on this, optionally frees this with _delete when flags has bit 0 set, and returns this.
 // @fnv 0x004a7060
+// pdb: BSMultiBoundAABB::`scalar deleting destructor' | BGSPrimitive.obj | debug, vtable slot, medium
 void* BSMultiBoundAABB::FUN_004a7060(unsigned int flags)
 {
     reinterpret_cast<BSMultiBoundSphere*>(this)->DestroyBase();
@@ -683,6 +736,7 @@ void* BSMultiBoundAABB::FUN_004a7060(unsigned int flags)
 
 void __cdecl _delete(void*, unsigned int);
 // @fnv 0x004a7100
+// pdb: BSMultiBoundOBB::`scalar deleting destructor' | BGSPrimitive.obj | retail, vtable slot, high
 void* BSMultiBoundOBB::FUN_004a7100(unsigned int flags)
 {
     this->DestroyBase_Thunk();
@@ -704,6 +758,8 @@ void* BGSPrimitiveSphere::FUN_004a71f0(unsigned int flags)
 
 // @fnv 0x004a7240
 // src: XBOX_PDB 0x004a7240
+// pdb: BGSPrimitiveSphere::IsInside | BGSPrimitive.obj | debug, upstream name already matches, high
+// pdb params: aPoint
 bool BGSPrimitiveSphere::IsInside(TESCombatStyle& aPoint)
 {
     return (double)*(float*)((char*)this + 0x18) * *(float*)((char*)this + 0x18) > aPoint.UpdateCombatStyle();
@@ -719,12 +775,14 @@ struct MultiBoundSphereInitialization : public BSMultiBoundSphere
 
 // Initializes the base, center and radius.
 // @fnv 0x004a7b40
+// pdb: BSMultiBoundSphere::BSMultiBoundSphere | BGSPrimitive.obj | debug, object-file run extension, low
+// pdb params: arCenter, afRadius
 BSMultiBoundSphere* MultiBoundSphereInitialization::Initialize(const NiPoint3& aPt, float aRadius)
 {
     this->BSMultiBoundShape::BSMultiBoundShape();
     *(void**)this = (void*)&DAT_0101ea8c;
-    center = aPt;
-    radius = aRadius;
+    Center = aPt;
+    Radius = aRadius;
     return this;
 }
 
@@ -737,10 +795,12 @@ struct MultiBoundOBBLoad : public BSMultiBoundOBB
 };
 // Loads the object from the stream: calls FUN_00c37fc0(s), then loads the member via LoadBinary(s).
 // @fnv 0x00c36400
-void MultiBoundOBBLoad::LoadBinary(NiStream& aStream)
+// pdb: BSMultiBoundOBB::LoadBinary | BSMultiBoundOBB.obj | retail, vtable slot, high
+// pdb params: arStream
+void MultiBoundOBBLoad::LoadBinary(NiStream& arStream)
 {
-    LoadBase(aStream);
-    reinterpret_cast<NiMatrix3&>(unk24).LoadBinary(aStream);
+    LoadBase(arStream);
+    reinterpret_cast<NiMatrix3&>(unk24).LoadBinary(arStream);
 }
 }  // namespace fnv_00c36400
 
@@ -755,9 +815,11 @@ struct FUN_00c36450_shell : FUN_00c38020_shell
 };
 // @fnv 0x00c36450
 // src: XBOX_PDB 0x00c36450
-bool FUN_00c36450_shell::BSMultiBoundOBB_RegisterStreamables(int aiValue)
+// pdb: BSMultiBoundOBB::RegisterStreamables | BSMultiBoundOBB.obj | retail, upstream name already matches, high
+// pdb params: arStream
+bool FUN_00c36450_shell::BSMultiBoundOBB_RegisterStreamables(int arStream)
 {
-    if (!BSMultiBoundAABB_RegisterStreamables(aiValue))
+    if (!BSMultiBoundAABB_RegisterStreamables(arStream))
         return false;
     return true;
 }
@@ -769,10 +831,12 @@ struct MultiBoundOBBSave : public BSMultiBoundOBB
     void SaveBinary(NiStream*);
 };
 // @fnv 0x00c36480
-void MultiBoundOBBSave::SaveBinary(NiStream* p)
+// pdb: BSMultiBoundOBB::SaveBinary | BSMultiBoundOBB.obj | retail, vtable slot, high
+// pdb params: arStream
+void MultiBoundOBBSave::SaveBinary(NiStream* arStream)
 {
-    SaveBase(p);
-    reinterpret_cast<NiMatrix3&>(unk24).SaveBinary(*p);
+    SaveBase(arStream);
+    reinterpret_cast<NiMatrix3&>(unk24).SaveBinary(*arStream);
 }
 
 namespace fnv_00c37110 {
@@ -800,6 +864,8 @@ struct S37110
 };
 // Copies v into a->v and stores the length of p into a->l.
 // @fnv 0x00c37110
+// pdb: BSMultiBoundOBB::GetNiBound | BSMultiBoundOBB.obj | debug, vtable slot, medium
+// pdb params: aBound
 void S37110::GetVectorAndLength(Out12* apOut)
 {
     int dummy;
@@ -827,11 +893,13 @@ struct FUN_00c37fc0_shell : FUN_00c4f9f0_shell
 // Calls the base loader, then reads two NiColor members from the stream.
 // @fnv 0x00c37fc0
 // src: XBOX_PDB 0x00c37fc0
-void FUN_00c37fc0_shell::BSMultiBoundAABB_LoadBinary(class NiStream& aStream)
+// pdb: BSMultiBoundAABB::LoadBinary | BSMultiBoundAABB.obj | retail, upstream name already matches, high
+// pdb params: arStream
+void FUN_00c37fc0_shell::BSMultiBoundAABB_LoadBinary(class NiStream& arStream)
 {
-    FUN_00c4f9f0_shell::BSMultiBoundShape_LoadBinary(aStream);
-    unk0C.LoadBinary(aStream);
-    unk18.LoadBinary(aStream);
+    FUN_00c4f9f0_shell::BSMultiBoundShape_LoadBinary(arStream);
+    unk0C.LoadBinary(arStream);
+    unk18.LoadBinary(arStream);
 }
 }  // namespace fnv_00c37fc0
 
@@ -845,22 +913,26 @@ struct FUN_00c38050_Holder
 };
 // @fnv 0x00c38050
 // src: XBOX_PDB 0x00c38050
-void FUN_00c38050_Holder::BSMultiBoundAABB_SaveBinary(NiStream& aStream)
+// pdb: BSMultiBoundAABB::SaveBinary | BSMultiBoundAABB.obj | retail, upstream name already matches, high
+// pdb params: arStream
+void FUN_00c38050_Holder::BSMultiBoundAABB_SaveBinary(NiStream& arStream)
 {
-    BSMultiBoundShape_SaveBinary(aStream);
-    c1.SaveBinary(aStream);
-    c2.SaveBinary(aStream);
+    BSMultiBoundShape_SaveBinary(arStream);
+    c1.SaveBinary(arStream);
+    c2.SaveBinary(arStream);
 }
 
 // @fnv 0x00c389e0
 // src: XBOX_PDB 0x00c389e0
-void BSMultiBoundAABB::GetNiBound(Vec4* apOut)
+// pdb: BSMultiBoundAABB::GetNiBound | BSMultiBoundAABB.obj | debug, upstream name already matches, high
+// pdb params: aBound
+void BSMultiBoundAABB::GetNiBound(Vec4* aBound)
 {
     int pad;
     {
-        float len = static_cast<const NiPoint3&>(m_kOffset).Length();
-        *reinterpret_cast<NiPoint3*>(apOut) = reinterpret_cast<const NiPoint3&>(Center);
-        apOut->w = len;
+        float len = static_cast<const NiPoint3&>(HalfExtents).Length();
+        *reinterpret_cast<NiPoint3*>(aBound) = reinterpret_cast<const NiPoint3&>(Center);
+        aBound->w = len;
     }
 }
 
@@ -888,6 +960,9 @@ struct TCEq
 };
 // @fnv 0x00c4fa80
 // src: XBOX_PDB 0x00c4fa80
+// pdb: BSMultiBoundShape::IsEqual | BSMultiBoundShape.obj | debug, upstream name already matches, high
+// pdb params: apObject
+// pdb locals: bres
 bool TCEq::BSMultiBoundShape_IsEqual(class NiObject* apObject)
 {
     bool result = IsSameAs(apObject);
@@ -903,6 +978,7 @@ struct FUN_00c4fad0_host : NiRefObject
 };
 // Destructs the NiRefObject base and, when flags has bit 0 set, frees this with _delete, returning this.
 // @fnv 0x00c4fad0
+// pdb: BSMultiBoundShape::`scalar deleting destructor' | BSMultiBoundShape.obj | retail, vtable slot, high
 void* FUN_00c4fad0_host::FUN_00c4fad0(unsigned int flags)
 {
     this->NiRefObject::~NiRefObject();
@@ -925,11 +1001,13 @@ struct MultiBoundSphereLoad : public BSMultiBoundSphere
 };
 // @fnv 0x00c4fc10
 // src: XBOX_PDB 0x00c4fc10
-void MultiBoundSphereLoad::BSMultiBoundSphere_LoadBinary(NiStream& stream)
+// pdb: BSMultiBoundSphere::LoadBinary | BSMultiBoundSphere.obj | retail, upstream name already matches, high
+// pdb params: arStream
+void MultiBoundSphereLoad::BSMultiBoundSphere_LoadBinary(NiStream& arStream)
 {
-    ((FUN_00c4f9f0_shell*)this)->BSMultiBoundShape_LoadBinary(stream);
-    reinterpret_cast<NiColor&>(center).LoadBinary(stream);
-    ReadBinaryValue<unsigned int>(stream, reinterpret_cast<unsigned int&>(radius));
+    ((FUN_00c4f9f0_shell*)this)->BSMultiBoundShape_LoadBinary(arStream);
+    reinterpret_cast<NiColor&>(Center).LoadBinary(arStream);
+    ReadBinaryValue<unsigned int>(arStream, reinterpret_cast<unsigned int&>(Radius));
 }
 }  // namespace fnv_00c4fc10
 
@@ -942,9 +1020,11 @@ struct FUN_00c38020_shell
 // Returns 1 if FUN_00c4fa30 returns nonzero for a, otherwise returns 0.
 // @fnv 0x00c4fc70
 // src: XBOX_PDB 0x00c4fc70
-unsigned char FUN_00c38020_shell::BSMultiBoundSphere_RegisterStreamables(int a)
+// pdb: BSMultiBoundSphere::RegisterStreamables | BSMultiBoundSphere.obj | debug, upstream name already matches, high
+// pdb params: arStream
+unsigned char FUN_00c38020_shell::BSMultiBoundSphere_RegisterStreamables(int arStream)
 {
-    if (!BSMultiBoundShape_RegisterStreamables(a))
+    if (!BSMultiBoundShape_RegisterStreamables(arStream))
         return 0;
     return 1;
 }
@@ -962,11 +1042,14 @@ struct MultiBoundSphereSave : public BSMultiBoundSphere
     void SaveToStream(NiStream&);
 };
 // @fnv 0x00c4fca0
+// pdb: BSMultiBoundSphere::BSMultiBoundSphere | BSMultiBoundSphere.obj | retail, object-file run extension, low
+// pdb note: debug build links it to BSMultiBoundSphere::SaveBinary
+// pdb params: arCenter, afRadius
 void MultiBoundSphereSave::SaveToStream(NiStream& s)
 {
     ((Holder60*)this)->BSMultiBoundShape_SaveBinary(s);
-    reinterpret_cast<NiColor&>(center).SaveBinary(s);
-    CallAnimCallback(s, &radius);
+    reinterpret_cast<NiColor&>(Center).SaveBinary(s);
+    CallAnimCallback(s, &Radius);
 }
 }  // namespace fnv_00c4fca0
 
@@ -986,6 +1069,7 @@ char const* const* __thiscall FUN_004a7020_shell::BSMultiBoundAABB_GetRTTI()
 
 // @fnv 0x004a7130
 // src: GUESS 0x004a7130 (confidence: medium)
+// pdb: BSMultiBoundOBB::~BSMultiBoundOBB | BGSPrimitive.obj | debug, call graph, medium
 void BSMultiBoundSphere::DestroyBase_Thunk()
 {
     DestroyBase();
@@ -993,6 +1077,10 @@ void BSMultiBoundSphere::DestroyBase_Thunk()
 
 // @fnv 0x004a7830
 // src: XBOX_PDB 0x004a7830
+// pdb: BGSPrimitiveBox::MakeMultiBoundShape | BGSPrimitive.obj | retail, object-file run extension, low
+// pdb note: debug build links it to BGSPrimitiveSphere::SetColor
+// pdb params: akAngle
+// pdb locals: abOriented, mat, pshape
 void BGSPrimitiveSphere::SetColor_004a7830(NiColorA& apTextColor)
 {
     Color = apTextColor;
@@ -1041,27 +1129,31 @@ void FUN_004a7c20_shell::DestroyBase()
 struct FUN_00c36430_shell
 {
     void BSMultiBoundAABB_LinkObject(int);
-    void BSMultiBoundOBB_LinkObject(int a);
+    void BSMultiBoundOBB_LinkObject(int arStream);
 };
 
 // @fnv 0x00c36430
 // src: XBOX_PDB 0x00c36430
-void FUN_00c36430_shell::BSMultiBoundOBB_LinkObject(int a)
+// pdb: BSMultiBoundOBB::LinkObject | BSMultiBoundOBB.obj | debug, upstream name already matches, high
+// pdb params: arStream
+void FUN_00c36430_shell::BSMultiBoundOBB_LinkObject(int arStream)
 {
-    BSMultiBoundAABB_LinkObject(a);
+    BSMultiBoundAABB_LinkObject(arStream);
 }
 
 struct FUN_00c38000_shell
 {
     void BSMultiBoundShape_LinkObject(int);
-    void BSMultiBoundAABB_LinkObject(int a);
+    void BSMultiBoundAABB_LinkObject(int arStream);
 };
 
 // @fnv 0x00c38000
 // src: XBOX_PDB 0x00c38000
-void FUN_00c38000_shell::BSMultiBoundAABB_LinkObject(int a)
+// pdb: BSMultiBoundAABB::LinkObject | BSMultiBoundAABB.obj | debug, upstream name already matches, high
+// pdb params: arStream
+void FUN_00c38000_shell::BSMultiBoundAABB_LinkObject(int arStream)
 {
-    BSMultiBoundShape_LinkObject(a);
+    BSMultiBoundShape_LinkObject(arStream);
 }
 
 struct FUN_00c4f9a0_shell
@@ -1078,26 +1170,30 @@ void* FUN_00c4f9a0_shell::GetSelf(void* apUnused)
 struct FUN_00c4fab0_shell
 {
     void __thiscall AppendCameraPathEntries(int);
-    void __thiscall BSMultiBoundShape_GetViewerStrings(int a);
+    void __thiscall BSMultiBoundShape_GetViewerStrings(int apStrings);
 };
 
 // @fnv 0x00c4fab0
 // src: XBOX_PDB 0x00c4fab0
-void __thiscall FUN_00c4fab0_shell::BSMultiBoundShape_GetViewerStrings(int a)
+// pdb: BSMultiBoundShape::GetViewerStrings | BSMultiBoundShape.obj | debug, upstream name already matches, high
+// pdb params: apStrings
+void __thiscall FUN_00c4fab0_shell::BSMultiBoundShape_GetViewerStrings(int apStrings)
 {
-    AppendCameraPathEntries(a);
+    AppendCameraPathEntries(apStrings);
 }
 
 struct FUN_00c4fa10_shell
 {
     void __thiscall BSMultiBoundShape_LinkObject(int);
-    void __thiscall BSMultiBoundSphere_LinkObject(int a);
+    void __thiscall BSMultiBoundSphere_LinkObject(int arStream);
 };
 // @fnv 0x00c4fc50
 // src: XBOX_PDB 0x00c4fc50
-void __thiscall FUN_00c4fa10_shell::BSMultiBoundSphere_LinkObject(int a)
+// pdb: BSMultiBoundSphere::LinkObject | BSMultiBoundSphere.obj | debug, upstream name already matches, high
+// pdb params: arStream
+void __thiscall FUN_00c4fa10_shell::BSMultiBoundSphere_LinkObject(int arStream)
 {
-    BSMultiBoundShape_LinkObject(a);
+    BSMultiBoundShape_LinkObject(arStream);
 }
 
 struct FUN_00c50370_shell
@@ -1113,25 +1209,28 @@ void FUN_00c50370_shell::BSMultiBoundSphere_CreateDebugGeometry(int a, int b, in
 extern float _DAT_010162c0;
 
 void* __cdecl BGSPrimitivePlane_CreateObject(NiPoint2*, NiColorA*);
-void* __cdecl CreatePrimitiveBox(NiPoint3*, NiColorA*);
+void* __cdecl BGSPrimitive_CreateBox(NiPoint3*, NiColorA*);
 void* __cdecl BGSPrimitive_CreateSphere(float, NiColorA*);
 
 // @fnv 0x004a4e90
-// src: COMMUNITY 0x004a4e90
-void* __cdecl BGSPrimitive_CreateObjects(int eType, NiPoint3* apPoint, NiColorA* apTextColor)
+// src: XBOX_RETAIL_PDB 0x004a4e90 (was COMMUNITY)
+// pdb: BGSPrimitive::CreateAbstract | BGSPrimitive.obj | retail, object-file run extension, high
+// pdb params: eType, aRadii, aColor
+// pdb locals: extents
+void* __cdecl BGSPrimitive_CreateAbstract(int eType, NiPoint3* aRadii, NiColorA* aColor)
 {
     switch (eType)
     {
     case 3: {
-        NiPoint2 extents = NiPoint2(apPoint->x, apPoint->z) * _DAT_010162c0;
-        return BGSPrimitivePlane_CreateObject(&extents, apTextColor);
+        NiPoint2 extents = NiPoint2(aRadii->x, aRadii->z) * _DAT_010162c0;
+        return BGSPrimitivePlane_CreateObject(&extents, aColor);
     }
     case 1: {
-        NiPoint3 extents = *static_cast<const NiPoint3*>(apPoint) * _DAT_010162c0;
-        return CreatePrimitiveBox(&extents, apTextColor);
+        NiPoint3 extents = *static_cast<const NiPoint3*>(aRadii) * _DAT_010162c0;
+        return BGSPrimitive_CreateBox(&extents, aColor);
     }
     case 2:
-        return BGSPrimitive_CreateSphere(apPoint->x, apTextColor);
+        return BGSPrimitive_CreateSphere(aRadii->x, aColor);
     default:
         return 0;
     }
@@ -1145,7 +1244,7 @@ PrimitiveAABB* PrimitiveAABB::Initialize(const NiPoint3& aPoint1, const NiPoint3
     this->BSMultiBoundShape::BSMultiBoundShape();
     *(void***)this = gMultiBoundAABBVtable;
     reinterpret_cast<NiPoint3&>(Center) = reinterpret_cast<const NiPoint3&>(aPoint1);
-    reinterpret_cast<NiPoint3&>(m_kOffset) = reinterpret_cast<const NiPoint3&>(aPoint2);
+    reinterpret_cast<NiPoint3&>(HalfExtents) = reinterpret_cast<const NiPoint3&>(aPoint2);
     return this;
 }
 
@@ -1161,6 +1260,7 @@ struct MultiBoundOBBInitialization : public BSMultiBoundOBB
 };
 // Calls FUN_004a6fc0 with a and b, sets the vtable pointer to DAT_0101e9a4, copies c into d, and returns this.
 // @fnv 0x004a70b0
+// pdb: BSMultiBoundShape::~BSMultiBoundShape | BGSPrimitive.obj | debug, object-file run extension, low
 MultiBoundOBBInitialization* MultiBoundOBBInitialization::Initialize(int aiArg1, int aiArg2, const Data9& arData)
 {
     InitializeBase(aiArg1, aiArg2);
@@ -1176,6 +1276,9 @@ struct MultiBoundOBBCopy : public BSMultiBoundOBB
 };
 // Calls FUN_00c37f70 on the passed Holder and then copies this object's fld into it.
 // @fnv 0x00c363c0
+// pdb: BSMultiBoundAABB::CopyMembers | BSMultiBoundAABB.obj | retail, call graph, low
+// pdb note: debug build links it to BSMultiBoundOBB::CopyMembers
+// pdb params: pDest, arCloneData
 void MultiBoundOBBCopy::CopyTo(MultiBoundOBBCopy* apTarget, int b)
 {
     CopyBase(apTarget, b);
@@ -1189,12 +1292,15 @@ struct MultiBoundOBBEquality : public BSMultiBoundOBB
 };
 // Calls FUN_00c38090 on other; if it returns true, also compares m with other's m via _Call_4d9ae0 and returns that result.
 // @fnv 0x00c364b0
-bool MultiBoundOBBEquality::Equals(MultiBoundOBBEquality* other)
+// pdb: BSMultiBoundOBB::IsEqual | BSMultiBoundOBB.obj | retail, vtable slot, high
+// pdb params: apObject
+// pdb locals: bres, pobj
+bool MultiBoundOBBEquality::Equals(MultiBoundOBBEquality* apObject)
 {
-    bool ret = EqualsBase(other);
+    bool ret = EqualsBase(apObject);
     if (ret)
     {
-        MultiBoundOBBEquality* p = other;
+        MultiBoundOBBEquality* p = apObject;
         ret = reinterpret_cast<const NiMatrix3&>(unk24) == reinterpret_cast<const NiMatrix3&>(p->unk24);
     }
     return ret;
@@ -1208,11 +1314,13 @@ struct MultiBoundAABBCopy : public BSMultiBoundAABB
 };
 
 // @fnv 0x00c37f70
+// pdb: BSMultiBoundAABB::CopyMembers | BSMultiBoundAABB.obj | debug, call graph, medium
+// pdb params: pDest, arCloneData
 void MultiBoundAABBCopy::CopyTo(BSMultiBoundAABB* apTarget, int b)
 {
     CopyMembersStreamWithField(apTarget, b);
     apTarget->SetGridPosition(Center);
-    reinterpret_cast<NiPoint3&>(apTarget->m_kOffset) = reinterpret_cast<const NiPoint3&>(m_kOffset);
+    reinterpret_cast<NiPoint3&>(apTarget->HalfExtents) = reinterpret_cast<const NiPoint3&>(HalfExtents);
 }
 
 // Copies the portal fields into the target portal.
@@ -1226,12 +1334,16 @@ void BSPortal::CopyFields(BSPortal* apTarget, int aiUnused)
 // Calls CopyMembersStreamWithField with a2, invokes Real on _m0C, then reads and rewrites _m18 with its own value.
 // @fnv 0x00c4fbc0
 // src: XBOX_PDB 0x00c4fbc0
+// pdb: BSMultiBoundSphere::CreateClone | BSMultiBoundSphere.obj | retail, object-file run extension, low
+// pdb note: debug build links it to BSMultiBoundSphere::CopyMembers
+// pdb params: arCloneData
+// pdb locals: pobj
 void BSMultiBoundSphere::CopyMembers_00c4fbc0(BSMultiBoundSphere* a1, CloningProcess& a2)
 {
     reinterpret_cast<fnv_00c4f9b0::FUN_00c4f9b0_class*>(this)->CopyMembersStreamWithField(a1, &a2);
-    a1->SetGridPosition(reinterpret_cast<const NiPoint3&>(center));
-    float f = radius;
-    a1->radius = f;
+    a1->SetGridPosition(reinterpret_cast<const NiPoint3&>(Center));
+    float f = Radius;
+    a1->Radius = f;
 }
 
 struct MultiBoundSphereVector : public BSMultiBoundSphere
@@ -1240,16 +1352,19 @@ struct MultiBoundSphereVector : public BSMultiBoundSphere
 };
 // Copies the stored vector and scalar into the given output structure.
 // @fnv 0x00c50330
+// pdb: BSMultiBoundSphere::GetNiBound | BSMultiBoundSphere.obj | debug, vtable slot, medium
+// pdb params: aBound
 void MultiBoundSphereVector::CopyTo(Vec4* pOut)
 {
-    float f = radius;
-    *reinterpret_cast<NiPoint3*>(pOut) = reinterpret_cast<const NiPoint3&>(center);
+    float f = Radius;
+    *reinterpret_cast<NiPoint3*>(pOut) = reinterpret_cast<const NiPoint3&>(Center);
     pOut->w = f;
 }
 
 // Allocates and constructs a sphere bound.
 // @fnv 0x00c4fdb0
 // src: EXE 0x00c4fdb0
+// pdb: BSMultiBoundSphere::CreateObject | BSMultiBoundSphere.obj | retail, upstream name already matches, high
 BSMultiBoundSphere* BSMultiBoundSphere_CreateObject()
 {
     return new BSMultiBoundSphere;
@@ -1258,16 +1373,21 @@ BSMultiBoundSphere* BSMultiBoundSphere_CreateObject()
 // Allocates a sphere, applies color and radius, and sets its primitive type.
 // @fnv 0x004a5100
 // src: XBOX_PDB 0x004a5100
-void* __cdecl BGSPrimitive_CreateSphere(float afValue, NiColorA* apColor)
+// pdb: BGSPrimitive::CreateSphere | BGSPrimitive.obj | retail, upstream name already matches, high
+// pdb params: afRadius, aColor
+// pdb locals: pprimitive
+void* __cdecl BGSPrimitive_CreateSphere(float afRadius, NiColorA* aColor)
 {
     BGSPrimitiveSphere* p = new BGSPrimitiveSphere;
-    p->ApplyColor(reinterpret_cast<NiColorA&>(*apColor));
-    p->SetRadius(afValue);
+    p->ApplyColor(reinterpret_cast<NiColorA&>(*aColor));
+    p->SetRadius(afRadius);
     p->eType = 2;
     return p;
 }
 
 // @fnv 0x004a5300
+// pdb: BGSPrimitivePlane::Build | BGSPrimitive.obj | retail, string-set bridge, high
+// pdb locals: alpha
 void BGSPrimitivePlane::Build()
 {
     m_pController = new BSFadeNode;
@@ -1287,6 +1407,7 @@ extern int _data_011c16bc;
 
 // Allocates a BSPortal using the zero point, a NiPoint2 built from the floats at this+0x18 and this+0x20, and DAT_011a9448, then returns it.
 // @fnv 0x004a6150
+// pdb: BGSPrimitivePlane::MakePortal | BGSPrimitive.obj | retail, vtable slot, high
 BSPortal* FUN_004a6150_shell::CreateBSPortal()
 {
     return new BSPortal(NiPoint3::ZERO,
@@ -1313,24 +1434,26 @@ struct FUN_00c38220_shell : public FUN_00c4fab0_shell
 
 // Calls the base method, then appends the property id and the "Center" and "Half Extents" names to the array.
 // @fnv 0x00c38220
-void FUN_00c38220_shell::AddPropertyNames(NiTPrimitiveArray<unsigned int>* array)
+// pdb: BSMultiBoundAABB::GetViewerStrings | BSMultiBoundAABB.obj | retail, string-set bridge, high
+// pdb params: apStrings
+void FUN_00c38220_shell::AddPropertyNames(NiTPrimitiveArray<unsigned int>* apStrings)
 {
     char unused[0x20];
     char* denter;
 
-    FUN_00c4fab0_shell::BSMultiBoundShape_GetViewerStrings(reinterpret_cast<int>(array));
+    FUN_00c4fab0_shell::BSMultiBoundShape_GetViewerStrings(reinterpret_cast<int>(apStrings));
 
     char const* volatile property = g_01202818_arg1;
     void* propertyId = _FUN_00a7d330(property);
-    array->AddFirstEmpty(reinterpret_cast<unsigned int const&>(propertyId));
+    apStrings->AddFirstEmpty(reinterpret_cast<unsigned int const&>(propertyId));
 
     denter =
         reinterpret_cast<NiPoint3*>(reinterpret_cast<char*>(this) + 0x0c)->GetViewerString_00a59af0("Center");
-    array->AddFirstEmpty(reinterpret_cast<unsigned int const&>(denter));
+    apStrings->AddFirstEmpty(reinterpret_cast<unsigned int const&>(denter));
 
     char* halfExtents = reinterpret_cast<NiPoint3*>(reinterpret_cast<char*>(this) + 0x18)
                             ->GetViewerString_00a59af0("Half Extents");
-    array->AddFirstEmpty(reinterpret_cast<unsigned int const&>(halfExtents));
+    apStrings->AddFirstEmpty(reinterpret_cast<unsigned int const&>(halfExtents));
 }
 }  // namespace fnv_00c38220
 
@@ -1358,6 +1481,9 @@ struct FUN_00c4f6c0_shell
 // Allocates a FUN_00c4f460 using the int at this+0xc0, passes it and arg to FUN_00c4f6c0, and returns the new object.
 // @fnv 0x00c4f620
 // src: XBOX_PDB 0x00c4f620
+// pdb: BSPortalSharedNode::CreateClone | BSPortal.obj | retail, upstream name already matches, high
+// pdb params: arCloneData
+// pdb locals: pobj
 FUN_00c4f460* FUN_00c4f6c0_shell::BSPortalSharedNode_CreateClone(int arg)
 {
     FUN_00c4f460* object = new FUN_00c4f460(*(int*)((char*)this + 0xc0));
@@ -1370,6 +1496,7 @@ FUN_00c4f460* FUN_00c4f6c0_shell::BSPortalSharedNode_CreateClone(int arg)
 
 // Initializes the primitive type and clears its geometry and controller pointers.
 // @fnv 0x004a5280
+// pdb: BGSPrimitivePlane::BGSPrimitivePlane | BGSPrimitive.obj | retail, upstream name already matches, high
 BGSPrimitivePlane::BGSPrimitivePlane()
 {
     m_kGeometry = 0;
@@ -1379,6 +1506,9 @@ BGSPrimitivePlane::BGSPrimitivePlane()
 
 // Takes the absolute X/Z of a point, zeroes Y, writes the 8 or 16 box vertices into the geometry data and updates the model bound and node.
 // @fnv 0x004a55a0
+// pdb: BGSPrimitivePlane::SetRadii | BGSPrimitive.obj | retail, vtable slot, high
+// pdb params: aRadii
+// pdb locals: UpdateData, pverts, pgeomdata, fRad, kBound
 void BGSPrimitivePlane::NormalizeRadii(NiPoint3& aExtents)
 {
     aExtents[0] = std::abs(aExtents[0]);
@@ -1399,9 +1529,9 @@ void BGSPrimitivePlane::NormalizeRadii(NiPoint3& aExtents)
         reinterpret_cast<NiPoint3&>(verts[7]) = reinterpret_cast<const NiPoint3&>(NiPoint3(-m_kRadii[0], -m_kRadii[1], -m_kRadii[2]));
         dataB->SetDirtyFlags(1);
     }
-    if (m_kLines)
+    if (spFrame)
     {
-        NiGeometryData* data2 = m_kLines->GetModelData();
+        NiGeometryData* data2 = spFrame->GetModelData();
         NiPoint3* aVerts2 = data2->GetVertices();
         reinterpret_cast<NiPoint3&>(aVerts2[0]) = reinterpret_cast<const NiPoint3&>(NiPoint3(-m_kRadii[0], m_kRadii[1], m_kRadii[2]));
         reinterpret_cast<NiPoint3&>(aVerts2[1]) = reinterpret_cast<const NiPoint3&>(NiPoint3(m_kRadii[0], m_kRadii[1], m_kRadii[2]));
@@ -1492,6 +1622,8 @@ class FUN_004a5ff0_cls : public BGSPrimBase
 
 // Constructs the primitive from a center point, pair and matrix, and initializes m_e4, m_e5, m_ea to 1 and m_40 to 0.
 // @fnv 0x004a5ff0
+// pdb: BSOcclusionPlane::BSOcclusionPlane | BGSPrimitive.obj | debug, object-file run extension, low
+// pdb params: arCenter, arHalfExtents, arRotation
 FUN_004a5ff0_cls::FUN_004a5ff0_cls(NiPoint3& akCenter, BGSPrimPair& akPair, BGSPrimMatrix& akMatrix)
     : m_kCenter(reinterpret_cast<const NiPoint3&>(akCenter)), m_pair(akPair), m_mat(akMatrix)
 {
@@ -1503,6 +1635,8 @@ FUN_004a5ff0_cls::FUN_004a5ff0_cls(NiPoint3& akCenter, BGSPrimPair& akPair, BGSP
 
 // Initializes the base from the centre, extents and rotation, sets m_e4/m_e5 to 1, zeroes m_40, m_100, m_fc, and constructs m_104 with 0 then calls Ping(0).
 // @fnv 0x004a61f0
+// pdb: BSPortal::BSPortal | BGSPrimitive.obj | debug, object-file run extension, low
+// pdb params: arCenter, arHalfExtents, arRotation
 BSPortal::BSPortal(const NiPoint3& arCenter, NiPoint2* apExtents, char* apRotation)
     : BSOcclusionPlane(arCenter, apExtents, apRotation), m_104(0)
 {
@@ -1526,7 +1660,7 @@ struct BoundMatrix3
     float m21;
     float m22;
     BoundMatrix3();
-    void SetRotationFromEulerXYZ(float x, float y, float z);
+    void SetRotationFromEulerXYZ(float fXAngle, float fYAngle, float fZAngle);
     static const BoundMatrix3 IDENTITY;
 };
 
@@ -1595,19 +1729,24 @@ struct FUN_004a7aa0_cls
 {
     char _00[0x18];
     float m_f18;
-    void* BGSPrimitiveSphere_MakeMultiBoundShape(int a1);
+    void* BGSPrimitiveSphere_MakeMultiBoundShape(int akAngle);
 };
 
 // Allocates a new object constructed from a color built with the class's m_f18 value and returns it.
 // @fnv 0x004a7aa0
 // src: XBOX_PDB 0x004a7aa0
-void* FUN_004a7aa0_cls::BGSPrimitiveSphere_MakeMultiBoundShape(int aiUnused)
+// pdb: BGSPrimitiveSphere::MakeMultiBoundShape | BGSPrimitive.obj | retail, upstream name already matches, high
+// pdb params: akAngle
+void* FUN_004a7aa0_cls::BGSPrimitiveSphere_MakeMultiBoundShape(int akAngle)
 {
     return new PrimitiveSphereBound(FUN_004a7aa0_color(0.0f, 0.0f, 0.0f, m_f18));
 }
 
 // Allocates and constructs a new OBB.
 // @fnv 0x00c36500
+// pdb: BSMultiBoundOBB::BSMultiBoundOBB | BSMultiBoundOBB.obj | retail, object-file run extension, low
+// pdb note: debug build links it to BSMultiBoundOBB::CreateObject
+// pdb params: arCenter, arHalfExtents, arAxis
 BSMultiBoundOBB* __cdecl CreateMultiBoundOBB()
 {
     return new BSMultiBoundOBB;
@@ -1618,12 +1757,16 @@ extern "C" int _NiPoint3_ZERO;
 class MultiBoundOBBPlanes : public BSMultiBoundOBB
 {
   public:
-    void GetPlanes(NiPlane* pkPlanes);
+    void BSMultiBoundOBB_GetPlanes(NiPlane* apPlanes);
 };
 
 // Builds three planes from the columns of m_kRotate, setting each plane normal to a matrix column and its constant to the dot product with m_kCenter.
 // @fnv 0x00c37e00
-void MultiBoundOBBPlanes::GetPlanes(NiPlane* pkPlanes)
+// src: XBOX_DEBUG_PDB 0x00c37e00
+// pdb: BSMultiBoundOBB::GetPlanes | BSMultiBoundOBB.obj | debug, call graph (shared callers), high
+// pdb params: apPlanes
+// pdb locals: i, kaxis
+void MultiBoundOBBPlanes::BSMultiBoundOBB_GetPlanes(NiPlane* apPlanes)
 {
     for (int i = 0; i < 3; i++)
     {
@@ -1632,16 +1775,18 @@ void MultiBoundOBBPlanes::GetPlanes(NiPlane* pkPlanes)
         kColumn.x = reinterpret_cast<const float(*)[3]>(&kMatrix)[0][i];
         kColumn.y = reinterpret_cast<const float(*)[3]>(&kMatrix)[1][i];
         kColumn.z = reinterpret_cast<const float(*)[3]>(&kMatrix)[2][i];
-        reinterpret_cast<NiPoint3&>(pkPlanes[i]) = kColumn;
+        reinterpret_cast<NiPoint3&>(apPlanes[i]) = kColumn;
         float fConstant = kColumn.Dot(reinterpret_cast<const NiPoint3&>(Center));
-        pkPlanes[i].c = fConstant;
+        apPlanes[i].m_fConstant = fConstant;
     }
 }
 
 extern "C" void* __cdecl Object_DispatchCommandFour(unsigned int size);
 
 // @fnv 0x00c381a0
-BSMultiBoundAABB* __cdecl CreateMultiBoundAABB()
+// src: XBOX_RETAIL_PDB 0x00c381a0
+// pdb: BSMultiBoundAABB::CreateObject | BSMultiBoundAABB.obj | retail, object-file run extension, high
+BSMultiBoundAABB* __cdecl BSMultiBoundAABB_CreateObject()
 {
     return new BSMultiBoundAABB();
 }
@@ -1674,14 +1819,17 @@ struct FUN_0049da80_shell
 
 struct FUN_00c38920_cls
 {
-    void __thiscall BSMultiBoundAABB_GetVertices(Vec12* a);
-    bool __thiscall BSMultiBoundAABB_CompletelyWithinFrustum(ProbeSet* other);
+    void __thiscall BSMultiBoundAABB_GetVertices(Vec12* apPoints);
+    bool __thiscall BSMultiBoundAABB_CompletelyWithinFrustum(ProbeSet* aPlanes);
 };
 
 // Builds eight box points, then for each masked element tests all eight points and returns false if any test returns 2, otherwise true.
 // @fnv 0x00c38920
 // src: XBOX_PDB 0x00c38920
-bool __thiscall FUN_00c38920_cls::BSMultiBoundAABB_CompletelyWithinFrustum(ProbeSet* pProbeSet)
+// pdb: BSMultiBoundAABB::CompletelyWithinFrustum | BSMultiBoundAABB.obj | retail, upstream name already matches, high
+// pdb params: aPlanes
+// pdb locals: kboxpoints, i, j
+bool __thiscall FUN_00c38920_cls::BSMultiBoundAABB_CompletelyWithinFrustum(ProbeSet* aPlanes)
 {
     Vec12 boxPts[8];
     int i;
@@ -1699,11 +1847,11 @@ bool __thiscall FUN_00c38920_cls::BSMultiBoundAABB_CompletelyWithinFrustum(Probe
     BSMultiBoundAABB_GetVertices(boxPts);
     for (i = 0; i < 6; i++)
     {
-        if (bool(pProbeSet->mask & (1u << i)))
+        if (bool(aPlanes->mask & (1u << i)))
         {
             for (j = 0; j < 8; j++)
             {
-                if (((FUN_0049da80_shell*)&pProbeSet->elems[i])->ClassifyPoint(&boxPts[j]) == 2)
+                if (((FUN_0049da80_shell*)&aPlanes->elems[i])->ClassifyPoint(&boxPts[j]) == 2)
                 {
                     return false;
                 }
@@ -1830,12 +1978,15 @@ struct FUN_00c4f6d0_cls
     unsigned short unkAA;
     FUN_00c49850_cls* m_pEntryObject;
 
-    void BSPortalSharedNode_OnVisible(FUN_00c4f6d0_arg* pObj);
+    void BSPortalSharedNode_OnVisible(FUN_00c4f6d0_arg* kCuller);
 };
 
 // @fnv 0x00c4f6d0
 // src: XBOX_PDB 0x00c4f6d0
-void FUN_00c4f6d0_cls::BSPortalSharedNode_OnVisible(FUN_00c4f6d0_arg* pObj)
+// pdb: BSPortalSharedNode::OnVisible | BSPortal.obj | retail, upstream name already matches, high
+// pdb params: kCuller
+// pdb locals: pprevcfrustum, isize, pkbsCuller, pchildren, i, pkChild
+void FUN_00c4f6d0_cls::BSPortalSharedNode_OnVisible(FUN_00c4f6d0_arg* kCuller)
 {
     FUN_00c4f6d0_sub* tgtC;
     FUN_00c4f6d0_arg* subB = 0;
@@ -1850,7 +2001,7 @@ void FUN_00c4f6d0_cls::BSPortalSharedNode_OnVisible(FUN_00c4f6d0_arg* pObj)
     }
     else
     {
-        subB = pObj;
+        subB = kCuller;
         savA = subB->m_pThing;
         pSwapE = m_pEntryObject;
         subB->m_pThing = pSwapE;
@@ -1866,7 +2017,7 @@ void FUN_00c4f6d0_cls::BSPortalSharedNode_OnVisible(FUN_00c4f6d0_arg* pObj)
             pElemA = *pSlotE;
             if (pElemA != 0)
             {
-                pElemA->FUN_00a59e00(pObj);
+                pElemA->FUN_00a59e00(kCuller);
             }
         }
         subB->m_pThing = savA;
@@ -1882,6 +2033,8 @@ struct FUN_00c4f7b0_scratch
 
 // Returns whether either of the two fields m_fc or m_100 is nonzero and passes FUN_00c4f860 with result 1.
 // @fnv 0x00c4f7b0
+// pdb: BSPortalSharedNode::~BSPortalSharedNode | BSPortal.obj | retail, object-file run extension, low
+// pdb note: debug build links it to BSPortal::AnyRoomsVisible
 int BSPortal::QueryLinkedObjects()
 {
     FUN_00c4f7b0_scratch scratch;
@@ -1900,28 +2053,32 @@ int BSPortal::QueryLinkedObjects()
 }
 
 // @fnv 0x00c4f980
+// pdb: BSMultiBoundShape::BSMultiBoundShape | BSMultiBoundShape.obj | retail, upstream name already matches, high
 BSMultiBoundShape::BSMultiBoundShape()
 {}
 
 struct MultiBoundSphereEquality : public BSMultiBoundSphere
 {
     bool BSMultiBoundShape_IsEqual(void* other);
-    bool Equals(MultiBoundSphereEquality* other);
+    bool Equals(MultiBoundSphereEquality* apObject);
 };
 
 // Compares this object with another: first calls FUN_00c4fa80, then checks m_pos x/y/z and m_18 are equal, returning the combined result.
 // @fnv 0x00c4fce0
-bool MultiBoundSphereEquality::Equals(MultiBoundSphereEquality* other)
+// pdb: BSMultiBoundSphere::IsEqual | BSMultiBoundSphere.obj | retail, object-file run extension, high
+// pdb params: apObject
+// pdb locals: bres, pobj
+bool MultiBoundSphereEquality::Equals(MultiBoundSphereEquality* apObject)
 {
-    bool r6 = BSMultiBoundShape_IsEqual(other);
+    bool r6 = BSMultiBoundShape_IsEqual(apObject);
     if (r6)
     {
-        MultiBoundSphereEquality* o4 = other;
-        const NiPoint3* pb = &o4->center;
-        const NiPoint3* pa = &center;
+        MultiBoundSphereEquality* o4 = apObject;
+        const NiPoint3* pb = &o4->Center;
+        const NiPoint3* pa = &Center;
         r6 = (pa->x == pb->x && pa->y == pb->y && pa->z == pb->z);
-        float t = radius;
-        r6 = r6 & (t == o4->radius);
+        float t = Radius;
+        r6 = r6 & (t == o4->Radius);
     }
     return r6;
 }
@@ -1938,24 +2095,26 @@ extern void* DAT_01203108;
 
 struct MultiBoundSphereProperties : public BSMultiBoundSphere
 {
-    void Init(NodeArgB9733* p);
-    void InitNode(NodeArgB9733* pNode);
+    void Init(NodeArgB9733* apStrings);
+    void InitNode(NodeArgB9733* apStrings);
 };
 
 // @fnv 0x00c4fe30
-void MultiBoundSphereProperties::InitNode(NodeArgB9733* pNode)
+// pdb: BSMultiBoundSphere::GetViewerStrings | BSMultiBoundSphere.obj | retail, string-set bridge, high
+// pdb params: apStrings
+void MultiBoundSphereProperties::InitNode(NodeArgB9733* apStrings)
 {
-    Init(pNode);
+    Init(apStrings);
     unsigned int data[5];
     unsigned int unk[4];
     void* g = DAT_01203108;
     void* root = NiViewerStrings_NiGetViewerString_Title(g);
-    pNode->FUN_0096a610(&root);
-    void* center7 = reinterpret_cast<NiPoint3*>(&center)->GetViewerString_00a59af0("Center");
-    pNode->FUN_0096a610(&center7);
-    float r = radius;
+    apStrings->FUN_0096a610(&root);
+    void* center7 = reinterpret_cast<NiPoint3*>(&Center)->GetViewerString_00a59af0("Center");
+    apStrings->FUN_0096a610(&center7);
+    float r = Radius;
     void* radius = NiGetViewerString_00a7d550("Radius", r);
-    pNode->FUN_0096a610(&radius);
+    apStrings->FUN_0096a610(&radius);
 }
 
 struct Point2_construct_shell
@@ -1976,6 +2135,7 @@ extern int g_011f426c;
 
 // Allocates a new primitive of type g_011f426c using this primitive's x and z extents and returns it.
 // @fnv 0x004a5f50
+// pdb: BGSPrimitivePlane::MakeOcclusionPlane | BGSPrimitive.obj | retail, vtable slot, high
 FUN_004a5ff0_shell* PrimitivePlaneClone::CreatePrimitive()
 {
     return new FUN_004a5ff0_shell(&g_011f426c, Point2_construct_shell(m_kRadii.x, m_kRadii.z, &g_011a9448));
@@ -1990,9 +2150,12 @@ struct SphereVertex
 extern SphereVertex DAT_01187ac8[];
 
 // @fnv 0x004a78e0
-void BGSPrimitiveSphere::SetRadius(float radius)
+// pdb: BGSPrimitiveSphere::SetRadius | BGSPrimitive.obj | retail, upstream name already matches, high
+// pdb params: fRadius
+// pdb locals: UpdateData, pverts, pgeomdata, i, kBound
+void BGSPrimitiveSphere::SetRadius(float fRadius)
 {
-    radius = std::abs(radius);
+    fRadius = std::abs(fRadius);
     if (m_kGeometry)
     {
         NiGeometryData* pkData5 = m_kGeometry->GetModelData();
@@ -2002,16 +2165,16 @@ void BGSPrimitiveSphere::SetRadius(float radius)
             pkVertices2[i].x = DAT_01187ac8[i].x;
             pkVertices2[i].y = DAT_01187ac8[i].y;
             pkVertices2[i].z = DAT_01187ac8[i].z;
-            ((NiPoint3*)pkVertices2)[i] *= radius;
+            ((NiPoint3*)pkVertices2)[i] *= fRadius;
         }
         pkData5->SetDirtyFlags(1);
     }
-    m_kRadii.x = m_kRadii.y = m_kRadii.z = radius;
+    m_kRadii.x = m_kRadii.y = m_kRadii.z = fRadius;
     NiUpdateData kUpdateDataTmp(0.0f, false, false);
     if (m_pController)
     {
         NiBound kBound;
-        kBound.SetCenterAndRadius(NiPoint3(0.0f, 0.0f, 0.0f), radius);
+        kBound.SetCenterAndRadius(NiPoint3(0.0f, 0.0f, 0.0f), fRadius);
         m_kGeometry->SetModelBound(kBound);
         static_cast<NiAVObject*>(m_pController)->Update(kUpdateDataTmp);
         m_kGeometry->UpdateSceneObject();
@@ -2029,9 +2192,9 @@ class PrimitiveSphereStrips : public NiGeometry
 {
   public:
     static void operator delete(void*, unsigned int);
-    PrimitiveSphereStrips(unsigned short count, SphereVertexPosition* vertices, void* normals, NiColorA* colors, void* extra1,
-                  void* extra2, void* extra3, unsigned short segments, unsigned int groups, unsigned short* lengths,
-                  unsigned short* indices);
+    PrimitiveSphereStrips(unsigned short usVertices, SphereVertexPosition* pkVertex, void* pkNormal, NiColorA* pkColor, void* pkTexture,
+                  void* usNumTextureSets, void* eNBTMethod, unsigned short usTriangles, unsigned int usStrips, unsigned short* pusStripLengths,
+                  unsigned short* pusStripLists);
 };
 
 extern const double gSphereCoordinates[112][3];
@@ -2039,6 +2202,8 @@ void __cdecl FUN_00b57e30(PrimitiveSphereStrips*, int, int);
 
 // Builds the sphere's line geometry, shader and alpha properties and fade node on first call, otherwise updates radius and color, then updates the fade node.
 // @fnv 0x004a72d0
+// pdb: BGSPrimitiveSphere::Build | BGSPrimitive.obj | retail, unique string literal, high
+// pdb locals: UpdateData, l, ptri, pshprop, pverts, pcolors, pstrip, alpha, i
 void BGSPrimitiveSphere::CreateSphereGeometry()
 {
     if (!m_kGeometry)
@@ -2114,32 +2279,35 @@ struct KSphere
 {
     KVec m_kCenter;
     float m_fBoundRadius;
-    int Side(KPlane* pPlane);
+    int Side(KPlane* kPlane);
 };
 
 class MultiBoundSphereFrustum : public BSMultiBoundSphere
 {
   public:
 
-    bool BSMultiBoundSphere_WithinFrustum(KPlanes* planes);
+    bool BSMultiBoundSphere_WithinFrustum(KPlanes* aPlanes);
 };
 
 // @fnv 0x00c50210
 // src: XBOX_PDB 0x00c50210
-bool MultiBoundSphereFrustum::BSMultiBoundSphere_WithinFrustum(KPlanes* planes)
+// pdb: BSMultiBoundSphere::WithinFrustum | BSMultiBoundSphere.obj | debug, upstream name already matches, high
+// pdb params: aPlanes
+// pdb locals: kbound, i, iSide
+bool MultiBoundSphereFrustum::BSMultiBoundSphere_WithinFrustum(KPlanes* aPlanes)
 {
     int iPlaneIndex;
-    float fRad = radius;
+    float fRad = Radius;
     int result;
     KSphere kBound;
     unsigned int iLoop;
-    kBound.m_kCenter = *(KVec*)&center;
+    kBound.m_kCenter = *(KVec*)&Center;
     kBound.m_fBoundRadius = fRad;
     for (iLoop = 0; iLoop < 6; ++iLoop)
     {
-        if ((bool)((planes->m_uiActivePlaneMask & (1u << iLoop)) != 0))
+        if ((bool)((aPlanes->m_uiActivePlaneMask & (1u << iLoop)) != 0))
         {
-            result = kBound.Side(&planes->m_akPlanes[iLoop]);
+            result = kBound.Side(&aPlanes->m_akPlanes[iLoop]);
             if (result == 2)
                 return false;
         }
@@ -2212,7 +2380,10 @@ struct TrianglePointsB
 };
 // Fills the line and face meshes with the box's 8 corners: 12 edges and 12 triangles, setting vertices, colors, flags and indices.
 // @fnv 0x00c37150
-void BoxB::BuildBoxGeometry(MeshB* apLineMesh, MeshB* apFaceMesh, ColorB aFaceColor)
+// pdb: BSMultiBoundOBB::MakeDebugGeom | BSMultiBoundOBB.obj | retail, vtable slot, high
+// pdb params: apLines, apShape, akBaseColor
+// pdb locals: kpoints, klinecolor, kpvert, kpconn, ktriconn, kconn, kcolor, kpcol, kpflag, i
+void BoxB::BuildBoxGeometry(MeshB* apLines, MeshB* apShape, ColorB akBaseColor)
 {
     // Locals are declared separately from their first assignment so that the
     // index tables and operation results have independent lifetimes.
@@ -2312,18 +2483,18 @@ void BoxB::BuildBoxGeometry(MeshB* apLineMesh, MeshB* apFaceMesh, ColorB aFaceCo
     triangles6[11][0] = 7;
     triangles6[11][1] = 5;
     triangles6[11][2] = 1;
-    color9 = aFaceColor;
+    color9 = akBaseColor;
     _white = DAT_011a9be0;
-    lineVertexData7 = apLineMesh->data;
+    lineVertexData7 = apLines->data;
     lineVertexResultR = lineVertexData7->vertices;
     _vertices = lineVertexResultR;
-    _lineColorDataR = apLineMesh->data;
+    _lineColorDataR = apLines->data;
     lineColorResult2 = _lineColorDataR->colors;
     colorsT = lineColorResult2;
-    lineFlagData6 = apLineMesh->data;
+    lineFlagData6 = apLines->data;
     lineFlagResult8 = lineFlagData6->flags;
     flagsR = lineFlagResult8;
-    apLineMesh->position = position;
+    apLines->position = position;
     for (i8 = 0; i8 < 12; ++i8)
     {
         _vertices[i8 * 2] = *cornersInA[edges9[i8][0]].Difference(&pointR, position);
@@ -2333,15 +2504,15 @@ void BoxB::BuildBoxGeometry(MeshB* apLineMesh, MeshB* apFaceMesh, ColorB aFaceCo
         flagsR[i8 * 2] = true;
         flagsR[i8 * 2 + 1] = false;
     }
-    faceVertexDataJ = apFaceMesh->data;
+    faceVertexDataJ = apShape->data;
     faceVertexResultV = faceVertexDataJ->vertices;
     _vertices = faceVertexResultV;
-    faceColorData4 = apFaceMesh->data;
+    faceColorData4 = apShape->data;
     pTemp = faceColorData4->colors;
     colorsT = pTemp;
-    faceIndexDataS = apFaceMesh->data;
+    faceIndexDataS = apShape->data;
     indices2 = faceIndexDataS->GetIndices();
-    apFaceMesh->position = position;
+    apShape->position = position;
     for (j4 = 0; j4 < 12; ++j4)
     {
         _vertices[j4 * 3] = *cornersInA[triangles6[j4][0]].Difference(&pointB, position);
@@ -2358,12 +2529,13 @@ void BoxB::BuildBoxGeometry(MeshB* apLineMesh, MeshB* apFaceMesh, ColorB aFaceCo
 
 // Initializes the primitive's color, extents, geometry pointers and flags.
 // @fnv 0x004a4ac0
-BGSPrimitive::BGSPrimitive() : Color(0.0f, 0.0f, 0.0f, 0.0f), m_kGeometry(0), m_kLines(0), m_pController(0)
+// pdb: BGSPrimitive::BGSPrimitive | BGSPrimitive.obj | retail, upstream name already matches, high
+BGSPrimitive::BGSPrimitive() : Color(0.0f, 0.0f, 0.0f, 0.0f), m_kGeometry(0), spFrame(0), m_pController(0)
 {
     m_kGeometry = 0;
     m_pController = 0;
-    m_kLines = 0;
-    m_uiPrimitiveFlags = 7;
+    spFrame = 0;
+    iScaleHandlesEnabled = 7;
 }
 
 #include <math.h>
@@ -2373,6 +2545,9 @@ struct MultiBoundAABBSphereTest : public BSMultiBoundAABB
 };
 // Tests a sphere against the axis-aligned box Center/m_kOffset and returns 2 for inside, 1 for intersecting, or 0 for outside.
 // @fnv 0x00c382b0
+// pdb: BSMultiBoundAABB::CheckBound | BSMultiBoundAABB.obj | debug, vtable slot, medium
+// pdb params: aTargetBound
+// pdb locals: r, bintersect, fDx, bwithin, P, fDy, fDz
 int MultiBoundAABBSphereTest::TestSphereBox(const NiBound& bound)
 {
     NiPoint3 p = reinterpret_cast<const NiPoint3&>(bound.m_kCenter);
@@ -2383,22 +2558,22 @@ int MultiBoundAABBSphereTest::TestSphereBox(const NiBound& bound)
     float c, e, j;
     c = (p.x) - (Center.x);
     f = (double)(float)fabs((double)c);
-    s &= f - (m_kOffset.x - cf) <= 0.0;
-    eb &= f - (m_kOffset.x + cf) <= 0.0;
+    s &= f - (HalfExtents.x - cf) <= 0.0;
+    eb &= f - (HalfExtents.x + cf) <= 0.0;
     if (s || eb)
     {
         e = (p.y) - (Center.y);
         q = (double)(float)fabs((double)e);
         if (s)
-            s &= q - (m_kOffset.y - cf) <= 0.0;
-        eb &= q - (m_kOffset.y + cf) <= 0.0;
+            s &= q - (HalfExtents.y - cf) <= 0.0;
+        eb &= q - (HalfExtents.y + cf) <= 0.0;
         if (s || eb)
         {
             j = (p.z) - (Center.z);
             b = (double)(float)fabs((double)j);
             if (s)
-                s &= b - (m_kOffset.z - cf) <= 0.0;
-            eb &= b - (m_kOffset.z + cf) <= 0.0;
+                s &= b - (HalfExtents.z - cf) <= 0.0;
+            eb &= b - (HalfExtents.z + cf) <= 0.0;
         }
     }
     return s ? 2 : (eb ? 1 : 0);
@@ -2409,27 +2584,30 @@ extern double DAT_01012060;
 class MultiBoundSphereIntersection : public BSMultiBoundSphere
 {
   public:
-    int BSMultiBoundSphere_CheckBound(const NiBound& kBound);
+    int BSMultiBoundSphere_CheckBound(const NiBound& aTargetBound);
 };
 
 // Returns 2 when center distance is at most the radius difference plus DAT_01012060, 1 when at most the radius sum plus that value, otherwise 0.
 // @fnv 0x00c4fed0
 // src: XBOX_PDB 0x00c4fed0
-int MultiBoundSphereIntersection::BSMultiBoundSphere_CheckBound(const NiBound& kBound)
+// pdb: BSMultiBoundSphere::CheckBound | BSMultiBoundSphere.obj | retail, upstream name already matches, high
+// pdb params: aTargetBound
+// pdb locals: flen, kvect
+int MultiBoundSphereIntersection::BSMultiBoundSphere_CheckBound(const NiBound& aTargetBound)
 {
-    NiPoint3 kDiff = reinterpret_cast<const NiPoint3&>(center) - kBound.m_kCenter;
+    NiPoint3 kDiff = reinterpret_cast<const NiPoint3&>(Center) - aTargetBound.m_kCenter;
     float fCenterDist = static_cast<const NiPoint3&>(kDiff).Length();
     float ba;
     float k;
     float l;
     float c;
-    float j = kBound.m_fRadius;
-    if (fCenterDist - (radius - j) <= DAT_01012060)
+    float j = aTargetBound.m_fRadius;
+    if (fCenterDist - (Radius - j) <= DAT_01012060)
         return 2;
     else
     {
-        float kTemp = kBound.m_fRadius;
-        if (fCenterDist - (radius + kTemp) <= DAT_01012060)
+        float kTemp = aTargetBound.m_fRadius;
+        if (fCenterDist - (Radius + kTemp) <= DAT_01012060)
             return 1;
     }
     return 0;
@@ -2444,30 +2622,34 @@ struct Frustum
     Plane planes[6];
     unsigned int kComparisonMask;
 };
+// pdb: structure Sphere, size 0x10, 2 members
 struct Sphere
 {
-    NiPoint3 center;
-    float radius;
-    int ClassifySphereAgainstPlane(const Plane& plane);
+    NiPoint3 Center; // src: XBOX_RETAIL_PDB +0x0 (old: center)
+    float fRadius; // src: XBOX_RETAIL_PDB +0xc (old: radius)
+    int ClassifySphereAgainstPlane(const Plane& kPlane);
 };
 struct MultiBoundSphereContainment : public BSMultiBoundSphere
 {
-    bool BSMultiBoundSphere_CompletelyWithinFrustum(const Frustum* frustum);
+    bool BSMultiBoundSphere_CompletelyWithinFrustum(const Frustum* aPlanes);
 };
 // Returns true when every plane selected by kComparisonMask classifies the sphere as 1; otherwise returns false.
 // @fnv 0x00c502a0
 // src: XBOX_PDB 0x00c502a0
-bool MultiBoundSphereContainment::BSMultiBoundSphere_CompletelyWithinFrustum(const Frustum* frustum)
+// pdb: BSMultiBoundSphere::CompletelyWithinFrustum | BSMultiBoundSphere.obj | debug, upstream name already matches, high
+// pdb params: aPlanes
+// pdb locals: kbound, i, iSide
+bool MultiBoundSphereContainment::BSMultiBoundSphere_CompletelyWithinFrustum(const Frustum* aPlanes)
 {
-    float radius = this->radius;
-    Sphere bound = {reinterpret_cast<const NiPoint3&>(center), radius};
+    float radius = this->Radius;
+    Sphere bound = {reinterpret_cast<const NiPoint3&>(Center), radius};
     int planeSide;
     unsigned int uiPlaneIndex;
     for (uiPlaneIndex = 0; uiPlaneIndex < 6; ++uiPlaneIndex)
     {
-        if (bool(frustum->kComparisonMask & (1 << uiPlaneIndex)))
+        if (bool(aPlanes->kComparisonMask & (1 << uiPlaneIndex)))
         {
-            planeSide = bound.ClassifySphereAgainstPlane(frustum->planes[uiPlaneIndex]);
+            planeSide = bound.ClassifySphereAgainstPlane(aPlanes->planes[uiPlaneIndex]);
             if (planeSide != 1)
                 return false;
         }
@@ -2480,6 +2662,7 @@ bool MultiBoundSphereContainment::BSMultiBoundSphere_CompletelyWithinFrustum(con
 
 // Initializes the sphere's geometry and controller pointers and primitive type.
 // @fnv 0x004a7150
+// pdb: BGSPrimitiveSphere::BGSPrimitiveSphere | BGSPrimitive.obj | retail, upstream name already matches, high
 BGSPrimitiveSphere::BGSPrimitiveSphere()
 {
     m_kGeometry = 0;
@@ -2495,6 +2678,9 @@ struct MultiBoundOBBConstructor
 };
 // @fnv 0x00c36310
 // src: GUESS 0x00c36310 (confidence: low)
+// pdb: BSMultiBoundAABB::BSMultiBoundAABB | BSMultiBoundAABB.obj | retail, call graph, low
+// pdb note: debug build links it to BSMultiBoundOBB::BSMultiBoundOBB
+// pdb params: arCenter, arHalfExtents
 int __thiscall MultiBoundOBBConstructor::SetVtableAndProcessState_00c36310()
 {
     Object_ProcessAndReturnValue_00c37ec0(this);
@@ -2505,6 +2691,7 @@ int __thiscall MultiBoundOBBConstructor::SetVtableAndProcessState_00c36310()
 extern int DAT_0101ea8c;
 // @fnv 0x00c4fb10
 // src: EXE 0x00c4fb10
+// pdb: BSMultiBoundSphere::BSMultiBoundSphere | BSMultiBoundSphere.obj | debug, call graph, medium
 void* __fastcall BSMultiBoundSphere_BSMultiBoundSphere(void* apObj)
 {
     static_cast<BSMultiBoundShape*>(apObj)->BSMultiBoundShape::BSMultiBoundShape();

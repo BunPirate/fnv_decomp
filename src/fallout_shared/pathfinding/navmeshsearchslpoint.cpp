@@ -20,6 +20,7 @@ struct FUN_006ac1b0_shell
 
 // Calls FUN_006ac1b0, frees this with Deallocate when flags has bit 0 set, and returns this.
 // @fnv 0x006ac180
+// pdb: NavMeshSearchSLPoint::`scalar deleting destructor' | NavMeshSearchSLPoint.obj | retail, vtable slot, high
 void* __thiscall FUN_006ac1b0_shell::Destroy(unsigned int flags)
 {
     FUN_006ac1b0();
@@ -31,24 +32,27 @@ void* __thiscall FUN_006ac1b0_shell::Destroy(unsigned int flags)
 struct FUN_006ac340_shell : NavMeshSearch
 {
     PathingLocation pLocation;
-    bool BuildPathingLocationAndSearch(PathingRequest* request, NavMeshTriangleReference const& start,
-                                       NavMeshTriangleReference const& end,
-                                       BSSimpleArray<NavMeshTriangleReference, 1024>* nodes,
-                                       BSSimpleArray<NavMeshTriangleEdgeReference, 1024>* links);
+    bool NavMeshSearchSLPoint_BuildPathToSafeStraightLine(PathingRequest* apRequest, NavMeshTriangleReference const& aStartNode,
+                                       NavMeshTriangleReference const& aGoalNode,
+                                       BSSimpleArray<NavMeshTriangleReference, 1024>* apNodes,
+                                       BSSimpleArray<NavMeshTriangleEdgeReference, 1024>* apLinks);
 };
 // Copies the request's rotation and radius-derived values into pLocation and runs the navmesh search with the given start, end, nodes and links.
 // @fnv 0x006ac340
-bool FUN_006ac340_shell::BuildPathingLocationAndSearch(PathingRequest* request, NavMeshTriangleReference const& start,
-                                                       NavMeshTriangleReference const& end,
-                                                       BSSimpleArray<NavMeshTriangleReference, 1024>* nodes,
-                                                       BSSimpleArray<NavMeshTriangleEdgeReference, 1024>* links)
+// src: XBOX_DEBUG_PDB 0x006ac340
+// pdb: NavMeshSearchSLPoint::BuildPathToSafeStraightLine | NavMeshSearchSLPoint.obj | debug, call graph, high
+// pdb params: apRequest, aStartNode, aGoalNode, apNodes, apLinks
+bool FUN_006ac340_shell::NavMeshSearchSLPoint_BuildPathToSafeStraightLine(PathingRequest* apRequest, NavMeshTriangleReference const& aStartNode,
+                                                       NavMeshTriangleReference const& aGoalNode,
+                                                       BSSimpleArray<NavMeshTriangleReference, 1024>* apNodes,
+                                                       BSSimpleArray<NavMeshTriangleEdgeReference, 1024>* apLinks)
 {
-    pLocation = *(PathingLocation const*)((char*)&request->GetRotate());
-    *(float*)((char*)this + 0x20f8) = request->GetCenterRadius();
-    *(float*)((char*)this + 0x20f4) = request->GetFieldB4Float() + request->GetCenterRadius();
-    *(float*)((char*)this + 0x20f0) = request->GetFloatAtOffsetB0() + request->GetCenterRadius();
-    *(float*)((char*)this + 0x20fc) = request->GetFloatAtOffset68();
-    return ComputePath(request, start, end, nodes, links, 0);
+    pLocation = *(PathingLocation const*)((char*)&apRequest->GetRotate());
+    *(float*)((char*)this + 0x20f8) = apRequest->GetCenterRadius();
+    *(float*)((char*)this + 0x20f4) = apRequest->GetFieldB4Float() + apRequest->GetCenterRadius();
+    *(float*)((char*)this + 0x20f0) = apRequest->GetFloatAtOffsetB0() + apRequest->GetCenterRadius();
+    *(float*)((char*)this + 0x20fc) = apRequest->GetFloatAtOffset68();
+    return BuildNodePath(apRequest, aStartNode, aGoalNode, apNodes, apLinks, 0);
 }
 
 #include "../../../include/BSSimpleArray.h"
@@ -67,6 +71,9 @@ struct FUN_006ac220_shell : NavMeshSearch
 
 // Copies the request's location and radius bounds into the search object, then runs the path search between start and end using fresh node and link arrays.
 // @fnv 0x006ac220
+// pdb: NavMeshSearchSLPoint::FindStraightLinePath | NavMeshSearchSLPoint.obj | debug, object-file gap fill, medium
+// pdb params: apRequest, aStartNode, aGoalNode
+// pdb locals: nodes, links
 bool FUN_006ac220_shell::SearchPath(PathingRequest* request, NavMeshTriangleReference const& start,
                                     NavMeshTriangleReference const& end)
 {
@@ -77,7 +84,7 @@ bool FUN_006ac220_shell::SearchPath(PathingRequest* request, NavMeshTriangleRefe
     fUnk20FC = request->GetFloatAtOffset68();
     BSScrapArray<NavMeshSearchNode, 1024> nodes(0x20, 0, 0);
     BSScrapArray<NavMeshSearchLink, 1024> links(0x20, 0, 0);
-    return ComputePath(request, start, end, reinterpret_cast<BSSimpleArray<NavMeshTriangleReference, 1024>*>(&nodes), reinterpret_cast<BSSimpleArray<NavMeshTriangleEdgeReference, 1024>*>(&links), 0);
+    return BuildNodePath(request, start, end, reinterpret_cast<BSSimpleArray<NavMeshTriangleReference, 1024>*>(&nodes), reinterpret_cast<BSSimpleArray<NavMeshTriangleEdgeReference, 1024>*>(&links), 0);
 }
 
 struct Tri
@@ -118,10 +125,13 @@ struct Search : NavMeshSearch
 };
 // Tests whether a node's mesh triangle intersects the search volume, sampling along the direction when the triangle is large enough, and stores the hit in result.
 // @fnv 0x006ac3f0
-bool Search::TestNode(Node* node)
+// pdb: NavMeshSearchSLPoint::IsGoalNode | NavMeshSearchSLPoint.obj | retail, vtable slot, high
+// pdb params: apNode
+// pdb locals: nodeToTargetVec, circumCenter, targetLoc, ftriangleRadius, fradii, fdistanceSqr, fradiiSqr, circumCenterToVert0Vec, pmesh, itriIndex, triCenter, validPoint, fminCheckRadii, fvecLen, icount, fmaxDotLen, fcount, translatedTestVec, fsamples, testPoint, pverts, targetToVertVec, translatedStartTestPoint, fsampleDistance ...
+bool Search::TestNode(Node* apNode)
 {
-    Mesh* mesh7 = node->ref.mesh;
-    unsigned short triangle = node->ref.triangle;
+    Mesh* mesh7 = apNode->ref.mesh;
+    unsigned short triangle = apNode->ref.triangle;
     NiPoint3 position3 = location.Location();
     NiPoint3 delta = position3;
     NiPoint3 center5;
@@ -138,7 +148,7 @@ bool Search::TestNode(Node* node)
         float inner = lower - triangleRadius;
         if (inner > 0.0 && distanceSquared3 < inner * inner)
             return false;
-        NiPoint3 target = node->ref.Center();
+        NiPoint3 target = apNode->ref.Center();
         NiPoint3 hit_2;
         if (Test(target, position3, mesh7, hit_2))
         {
@@ -203,5 +213,6 @@ struct FUN_006ac1b0_cls : NavMeshSearch
 
 // The destructor body is empty.
 // @fnv 0x006ac1b0
+// pdb: NavMeshSearchSLPoint::~NavMeshSearchSLPoint | NavMeshSearchSLPoint.obj | debug, call graph, high
 FUN_006ac1b0_cls::~FUN_006ac1b0_cls()
 {}

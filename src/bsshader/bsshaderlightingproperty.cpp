@@ -88,6 +88,7 @@ void ShadowSceneLightPointerList::InsertAfter(void* source, void* const& process
 }
 
 // @fnv 0x00b71300
+// pdb: NiTPointerList<NiNode *>::~NiTPointerList<NiNode *> | NiDynamicEffect.obj | debug, call graph, low
 void ShadowSceneLightPointerList::RemoveAll()
 {
     FNVPointerListBase* list = (FNVPointerListBase*)this;
@@ -113,20 +114,23 @@ void ShadowSceneLightPointerList::RemoveAll()
 
 // Walks the linked list at this+0x60 via iter, returning the first ShadowSceneLight that IsActive, or null.
 // @fnv 0x00b70590
-ShadowSceneLight* BSShaderLightingProperty::GetFirstActiveLight(void*& iter)
+// pdb: BSShaderLightingProperty::GetFirstActiveLight | BSShaderLightingProperty.obj | debug, upstream name already matches, high
+// pdb params: aitIter
+// pdb locals: psslight
+ShadowSceneLight* BSShaderLightingProperty::GetFirstActiveLight(void*& aitIter)
 {
     void* node = *(void**)((char*)this + 0x60);
-    iter = node;
+    aitIter = node;
     if (node)
     {
-        iter = *(void**)node;
+        aitIter = *(void**)node;
         ShadowSceneLight* light = *(ShadowSceneLight**)((char*)node + 8);
-        while (iter && light)
+        while (aitIter && light)
         {
             if (bsshaderlightingproperty_IsActive(light))
                 break;
-            void* next = iter;
-            iter = *(void**)next;
+            void* next = aitIter;
+            aitIter = *(void**)next;
             light = *(ShadowSceneLight**)((char*)next + 8);
         }
         if (!light || bsshaderlightingproperty_IsActive(light))
@@ -137,6 +141,9 @@ ShadowSceneLight* BSShaderLightingProperty::GetFirstActiveLight(void*& iter)
 
 // 0x00b6fe00 and 0x00b6fe80 allocate 0x80 bytes and run 0x00b6fc90: BSShaderNoLightingProperty.
 // @fnv 0x00b6fe00
+// pdb: BSShaderNoLightingProperty::CreateClone | BSShaderNoLightingProperty.obj | retail, object-file run extension, low
+// pdb params: arCloneData
+// pdb locals: pprop
 NiObject* BSShaderNoLightingProperty::MakeClone(CloningProcess& process)
 {
     BSShaderNoLightingProperty* clone = ::new (LightingAllocation) BSShaderNoLightingProperty;
@@ -147,6 +154,8 @@ NiObject* BSShaderNoLightingProperty::MakeClone(CloningProcess& process)
 extern unsigned int _data_011c16bc;
 
 // @fnv 0x00b6fe80
+// pdb: BSShaderNoLightingProperty::CreateObject | BSShaderNoLightingProperty.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 NiObject* BSShaderNoLightingProperty::CreateObject()
 {
     return ::new (LightingAllocation) BSShaderNoLightingProperty;
@@ -163,7 +172,9 @@ extern "C" void __cdecl _Dummy_00b6fef0(void*, unsigned int);
 
 // Calls FUN_00b6fd30 on pThis, then if flags has bit 1 set calls _Dummy_00b6fef0 with pThis and 0x80, and returns pThis.
 // @fnv 0x00b6fef0
-void* __fastcall FUN_00b6fef0(void* pThis, int, unsigned int flags)
+// src: XBOX_RETAIL_PDB 0x00b6fef0
+// pdb: BSShaderNoLightingProperty::`scalar deleting destructor' | BSShaderNoLightingProperty.obj | retail, object-file gap fill, high
+void* __fastcall BSShaderNoLightingProperty_ScalarDtor(void* pThis, int, unsigned int flags)
 {
     FUN_00b6fd30(pThis);
     if (flags & 1)
@@ -230,6 +241,8 @@ void __fastcall BSShaderProperty_CopyTo(Dummy_00b70290*, int, int);
 
 // @fnv 0x00b70290
 // src: XBOX_PDB 0x00b70290
+// pdb: BSShaderLightingProperty::CopyTo | BSShaderLightingProperty.obj | retail, upstream name already matches, high
+// pdb params: pDest
 void __fastcall BSShaderLightingProperty_CopyTo(Dummy_00b70290* pThis, int edx_val, int arg)
 {
     BSShaderProperty_CopyTo(pThis, edx_val, arg);
@@ -251,11 +264,13 @@ static void (__thiscall _Helper_00ba8b10::*const _ref_00ba8b10)(char*, void*) = 
 // Calls FUN_00ba8b10 with p1 and p2, then invokes the virtual function at offset 0xc8 with this and p1.
 // @fnv 0x00b702b0
 // src: XBOX_PDB 0x00b702b0
-void FUN_00b702b0_shell::BSShaderLightingProperty_CopyMembers(char* p1, void* p2)
+// pdb: BSShaderLightingProperty::CopyMembers | BSShaderLightingProperty.obj | retail, upstream name already matches, high
+// pdb params: pDest, arCloneData
+void FUN_00b702b0_shell::BSShaderLightingProperty_CopyMembers(char* pDest, void* arCloneData)
 {
-    ((_Helper_00ba8b10*)this)->BSShaderProperty_CopyMembers(p1, p2);
+    ((_Helper_00ba8b10*)this)->BSShaderProperty_CopyMembers(pDest, arCloneData);
     typedef void(__thiscall * VFn)(void*, char*);
-    (*(VFn*)((*(int*)this) + 0xc8))(this, p1);
+    (*(VFn*)((*(int*)this) + 0xc8))(this, pDest);
 }
 
 struct Node_00b702e0
@@ -272,6 +287,9 @@ struct List_00b702e0
 
 // Unlinks node from the doubly linked list and reinserts it immediately before target, updating head and tail pointers.
 // @fnv 0x00b702e0
+// pdb: NiTPointerListBase<NiTPointerAllocator<unsigned int>,NiPointer<NiProperty> >::AddHead | MultiBoundMarkerData.obj | retail, call graph (shared callers), medium
+// pdb params: element
+// pdb locals: pkNode
 void __fastcall MoveNodeBefore(List_00b702e0* list, int, Node_00b702e0* node, Node_00b702e0* target)
 {
     if (node != target)
@@ -383,6 +401,8 @@ struct Helper_00b707d0_Node
 // Walks the linked list at thisPtr+0x60 and counts lights whose word110 is not 0xFF, whose objF8 flags bit 0 is clear, and whose byteEC is false.
 // @fnv 0x00b707d0
 // src: XBOX_PDB 0x00b707d0
+// pdb: BSShaderLightingProperty::GetNumberofActiveNonShadowLights | BSShaderLightingProperty.obj | debug, upstream name already matches, high
+// pdb locals: uslength, kiterator, psslight
 int __fastcall BSShaderLightingProperty_GetNumberofActiveNonShadowLights(void* thisPtr)
 {
     int count = 0;
@@ -402,6 +422,7 @@ void __fastcall FUN_00baa0e0(void*);
 // Sets the vtable, calls the lighting property's cleanup twice on the sub-object at offset 0x60, then calls FUN_00baa0e0 on pThis.
 // @fnv 0x00b71410
 // src: GUESS 0x00b71410 (confidence: medium)
+// pdb: BSShaderLightingProperty::~BSShaderLightingProperty | BSShaderLightingProperty.obj | debug, call graph (shared callers), medium
 void __fastcall BSShaderLightingProperty_ClearLightsAndBaseState(void* pThis, int)
 {
     BSShaderLightingProperty* pSub = (BSShaderLightingProperty*)((char*)pThis + 0x60);
@@ -497,6 +518,9 @@ extern const double DAT_010784d0;
 extern const double DAT_01026998;
 
 // @fnv 0x00b70820
+// pdb: BSShaderLightingProperty::SetLight1x2x | BSShaderLightingProperty.obj | debug, call graph, medium
+// pdb params: auiLightIndex, apLight, afForcedDarkness
+// pdb locals: lightcolor, bambientLight, pnilight, fshadowfade, ipass, fdimmer, bpointlight, pprop, dirlight, dir, plightDir, ptlight, pos, plightPos, ambcol, pambientColor, minamb, ambluminance, lumscale, lightradius
 void UpdateWaterTint(unsigned int uiIndex, WaterStub* apWater, float fScale)
 {
     if (uiIndex >= 8)
@@ -720,6 +744,7 @@ struct FUN_00b6fd30 : Base_00b6fd30
 
 // Destructor that releases the smart pointer member, decrementing its reference count and clearing the pointer.
 // @fnv 0x00b6fd30
+// pdb: BSShaderNoLightingProperty::~BSShaderNoLightingProperty | BSShaderNoLightingProperty.obj | retail, object-file run extension, low
 FUN_00b6fd30::~FUN_00b6fd30()
 {
     m_pReferencedObject.Release();
@@ -728,9 +753,11 @@ FUN_00b6fd30::~FUN_00b6fd30()
 bool __stdcall BSShaderTextureSet_IsEqual(void* p);
 // @fnv 0x00b70270
 // src: XBOX_PDB 0x00b70270
-bool __stdcall BSShaderLightingProperty_IsEqual(void* p)
+// pdb: BSShaderLightingProperty::IsEqual | BSShaderLightingProperty.obj | retail, upstream name already matches, high
+// pdb params: pkObject
+bool __stdcall BSShaderLightingProperty_IsEqual(void* pkObject)
 {
-    if (BSShaderTextureSet_IsEqual(p))
+    if (BSShaderTextureSet_IsEqual(pkObject))
         return true;
     return false;
 }
@@ -755,6 +782,9 @@ struct FUN_00b70600_list
 
 // @fnv 0x00b70600
 // src: COMMUNITY 0x00b70600
+// pdb: BSShaderLightingProperty::GetFirstActiveNonShadowLight | BSShaderLightingProperty.obj | debug, upstream name already matches, high
+// pdb params: aitIter
+// pdb locals: psslight
 ShadowSceneLight* __fastcall BSShaderLightingProperty_GetFirstActiveNonShadowLight(FUN_00b70600_list* self, int unused, FUN_00b70600_node** it)
 {
     FUN_00b70600_node* n = self->head;
@@ -795,6 +825,8 @@ struct FUN_00b70790_owner
 };
 // @fnv 0x00b70790
 // src: XBOX_PDB 0x00b70790
+// pdb: BSShaderLightingProperty::GetNumberofActiveLights | BSShaderLightingProperty.obj | debug, upstream name already matches, high
+// pdb locals: uslength, kiterator, psslight
 unsigned int __fastcall BSShaderLightingProperty_GetNumberofActiveLights(FUN_00b70790_owner* self)
 {
     unsigned int n = 0;
@@ -829,19 +861,21 @@ void __cdecl ApplyWaterLighting(unsigned int, FUN_00b71360_water*, float);
 void __cdecl SetLightColor(unsigned int, FUN_00b71360_water*, float);
 // @fnv 0x00b71360
 // src: COMMUNITY 0x00b71360
-void __cdecl BSShaderLightingProperty_SetLight(unsigned int id, FUN_00b71360_water* w, float fValue)
+// pdb: BSShaderLightingProperty::SetLight | BSShaderLightingProperty.obj | debug, upstream name already matches, high
+// pdb params: auiLightIndex, apLight, afForcedDarkness
+void __cdecl BSShaderLightingProperty_SetLight(unsigned int auiLightIndex, FUN_00b71360_water* apLight, float afForcedDarkness)
 {
     NiGeometry* g = *DAT_011f91e0;
     if (reinterpret_cast<FUN_00b71360_inner*>(g->m_spShader)->type == 0x11)
     {
-        if (w->flag)
-            SetLightColor(id, w, fValue);
+        if (apLight->flag)
+            SetLightColor(auiLightIndex, apLight, afForcedDarkness);
         else
-            ApplyWaterLighting(id, w, fValue);
+            ApplyWaterLighting(auiLightIndex, apLight, afForcedDarkness);
     }
     else
     {
-        UpdateWaterTint(id, w, fValue);
+        UpdateWaterTint(auiLightIndex, apLight, afForcedDarkness);
     }
 }
 
@@ -857,6 +891,7 @@ extern int DAT_010ae7b0;
 void __fastcall FUN_00baa0e0(void*);
 void __cdecl __Dummy_00b6fef0(void* p, unsigned int size);
 // @fnv 0x00b71760
+// pdb: BSShaderLightingProperty::`scalar deleting destructor' | BSShaderLightingProperty.obj | retail, object-file run extension, low
 BSShaderLightingProperty* __fastcall DestroyShaderLightingProperty(BSShaderLightingProperty* self, int edx,
                                                                    unsigned int flags)
 {
@@ -914,6 +949,9 @@ typedef void(__thiscall* OwnerFn)(Owner*, void*);
 
 // @fnv 0x00b71800
 // src: XBOX_PDB 0x00b71800
+// pdb: BSShaderLightingProperty::CreateClone | BSShaderLightingProperty.obj | retail, upstream name already matches, high
+// pdb params: arCloneData
+// pdb locals: pprop
 NewObj* __fastcall BSShaderLightingProperty_CreateClone(_Helper_00ba8b10* self, int unused, void* arg)
 {
     NewObj* o = new NewObj;
@@ -956,6 +994,9 @@ struct SelfStub
 // Allocates a NewObj, passes it with arg to FUN_00b702b0, and returns the new object.
 // @fnv 0x00bb4140
 // src: XBOX_PDB 0x00bb4140
+// pdb: GeometryDecalShaderProperty::CreateClone | GeometryDecalShaderProperty.obj | retail, upstream name already matches, high
+// pdb params: arCloneData
+// pdb locals: pprop
 NewObj* __fastcall GeometryDecalShaderProperty_CreateClone(SelfStub* self, int unused, int aiValue)
 {
     NewObj* o = new NewObj;
@@ -990,6 +1031,8 @@ extern FUN_00bb95e0_entry DAT_01201c80[];
 // Stores the eight arguments into the fields of the DAT_01201c80 entry at index i, writing e,f,g,h then a,b,c,d.
 // @fnv 0x00bb95e0
 // src: COMMUNITY 0x00bb95e0
+// pdb: Lighting30Shader::SetLight | Lighting30Shader.obj | retail, upstream name already matches, high
+// pdb params: aiOffset, akData, akColor
 void Lighting30Shader_SetLight(int aiIndex, int aiE, int aiF, int aiG, int aiH, int aiA, int aiB, int aiC, int aiD)
 {
     DAT_01201c80[aiIndex].e = aiE;
@@ -1025,14 +1068,17 @@ static inline bool Skip_b70700(ShadowSceneLight* p)
 
 // @fnv 0x00b70700
 // src: COMMUNITY 0x00b70700
-ShadowSceneLight* __stdcall BSShaderLightingProperty_GetNextActiveNonShadowLight(NiTListItem<ShadowSceneLight*>*& kPos)
+// pdb: BSShaderLightingProperty::GetNextActiveNonShadowLight | BSShaderLightingProperty.obj | debug, upstream name already matches, high
+// pdb params: aitIter
+// pdb locals: psslight
+ShadowSceneLight* __stdcall BSShaderLightingProperty_GetNextActiveNonShadowLight(NiTListItem<ShadowSceneLight*>*& aitIter)
 {
     ShadowSceneLight* p = 0;
-    if (kPos)
+    if (aitIter)
     {
-        p = GetNext_b70700(kPos);
-        while (p && kPos && Skip_b70700(p))
-            p = GetNext_b70700(kPos);
+        p = GetNext_b70700(aitIter);
+        while (p && aitIter && Skip_b70700(p))
+            p = GetNext_b70700(aitIter);
         if (p && Skip_b70700(p))
             return 0;
     }
@@ -1082,6 +1128,9 @@ extern LColorA DAT_011a9bd0;
 extern bool _DAT_011F941E;
 
 // @fnv 0x00b71130
+// pdb: BSShaderLightingProperty::SetPointLight3x | BSShaderLightingProperty.obj | debug, call graph, medium
+// pdb params: auiLightIndex, apLight, afForcedDarkness
+// pdb locals: pos, ptlight, kdata, lightradius, kcolor, klcolor, fdimmer
 void SetLightColor(unsigned int uiLightIndex, LProp* pLightProp, float fIntensity)
 {
     if (uiLightIndex >= 20)
@@ -1125,7 +1174,7 @@ struct LightingElem
 {
     unsigned char pad[0xec];
     bool bFlag;
-    void ShadowSceneLight_RemoveTriGeom(void* arg, int zero);
+    void ShadowSceneLight_RemoveTriGeom(void* apTriGeom, int akIterator);
 };
 struct LItem
 {
@@ -1196,6 +1245,9 @@ struct FUN_00b71600_S
 
 // Removes every list item after pkPos, calls FUN_00ba01a0 on each element, resets iField38 when bFlag is set, then removes pkPos itself.
 // @fnv 0x00b71600
+// pdb: BSShaderLightingProperty::RemoveFencedLights | BSShaderLightingProperty.obj | retail, call graph, low
+// pdb params: apGeometry
+// pdb locals: kiter, kpreviter, plight
 void FUN_00b71600_S::RemoveItemsAfterPos(void* arg)
 {
     if (pkPos != kList.m_pkTail)
@@ -1441,13 +1493,16 @@ class B6FC20Object : public B6FC20Base
     unsigned int m_uiType;
     NiColorA m_kFogTint;
 
-    void SaveToStream(B6FC20Stream& kStream);
+    void BSShaderNoLightingProperty_SaveBinary(B6FC20Stream& kStream);
 };
 
 // SaveBinary
 // Serializes the base data, type, name string and color to the given stream.
 // @fnv 0x00b6fc20
-void B6FC20Object::SaveToStream(B6FC20Stream& kStream)
+// src: XBOX_RETAIL_PDB 0x00b6fc20
+// pdb: BSShaderNoLightingProperty::SaveBinary | BSShaderNoLightingProperty.obj | retail, object-file gap fill, high
+// pdb params: kStream
+void B6FC20Object::BSShaderNoLightingProperty_SaveBinary(B6FC20Stream& kStream)
 {
     BSShaderProperty_SaveBinary(kStream);
     B6FC20SaveBinary(kStream, m_uiType);
@@ -1483,13 +1538,13 @@ struct ViewerRTTI
     const char* m_pcName;
     void* m_pBaseRTTI;
 };
-extern ViewerRTTI g_kFalloffRTTI;
+extern ViewerRTTI BSShaderNoLightingProperty_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011fa05c (old: g_011fa05c/g_kFalloffRTTI)
 
 struct ViewerTexture;
-ViewerTexture* ViewerTextureCast(void* pkObject);
+ViewerTexture* ViewerTextureCast(void* apTexture);
 char* CreateDebugString(const char* pcText);
-char* CreateDebugString(const char* pcPrefix, ViewerTexture* pkObj);
-char* CreateDebugString(const char* pcPrefix, void* pkObj);
+char* CreateDebugString(const char* pcPrefix, ViewerTexture* pcValue);
+char* CreateDebugString(const char* pcPrefix, void* pvValue);
 char* CreateDebugString(const char* pcPrefix, float fValue);
 
 struct TexPtr
@@ -1511,7 +1566,7 @@ struct ViewerBaseProperty
     int unk18;
     int unk1C;
     unsigned int m_uiValue1;
-    void GetViewerStrings(ViewerStringsArray* pkStrings);
+    void GetViewerStrings(ViewerStringsArray* apStrings);
 };
 
 struct FalloffProperty : ViewerBaseProperty
@@ -1539,27 +1594,30 @@ struct FalloffProperty : ViewerBaseProperty
     float m_fFalloffStopAngle;
     float m_fFalloffStartOpacity;
     float m_fFalloffStopOpacity;
-    void BSShaderNoLightingProperty_GetViewerStrings(ViewerStringsArray* pkStrings);
+    void BSShaderNoLightingProperty_GetViewerStrings(ViewerStringsArray* apStrings);
 };
 
 // Appends the falloff RTTI name, base texture and, when flag 0x40 is set, the falloff angle and opacity values to pkStrings.
 // @fnv 0x00b6ff20
 // src: XBOX_PDB 0x00b6ff20
-void FalloffProperty::BSShaderNoLightingProperty_GetViewerStrings(ViewerStringsArray* pkStrings)
+// pdb: BSShaderNoLightingProperty::GetViewerStrings | BSShaderNoLightingProperty.obj | retail, string-set bridge, high
+// pdb params: apStrings
+// pdb locals: pname
+void FalloffProperty::BSShaderNoLightingProperty_GetViewerStrings(ViewerStringsArray* apStrings)
 {
-    ViewerBaseProperty::GetViewerStrings(pkStrings);
-    pkStrings->Add(CreateDebugString(g_kFalloffRTTI.m_pcName));
+    ViewerBaseProperty::GetViewerStrings(apStrings);
+    apStrings->Add(CreateDebugString(BSShaderNoLightingProperty_ms_RTTI.m_pcName));
     ViewerTexture* pkTex = ViewerTextureCast(m_pkTexture);
     if (pkTex)
-        pkStrings->Add(CreateDebugString("base texture", pkTex));
+        apStrings->Add(CreateDebugString("base texture", pkTex));
     else
-        pkStrings->Add(CreateDebugString("base texture", m_pkTexture));
+        apStrings->Add(CreateDebugString("base texture", m_pkTexture));
     if ((m_uiValue1 & 0x40) > 0)
     {
-        pkStrings->Add(CreateDebugString("falloff start angle", m_fFalloffStartAngle));
-        pkStrings->Add(CreateDebugString("falloff stop angle", m_fFalloffStopAngle));
-        pkStrings->Add(CreateDebugString("falloff start opacity", m_fFalloffStartOpacity));
-        pkStrings->Add(CreateDebugString("falloff stop opacity", m_fFalloffStopOpacity));
+        apStrings->Add(CreateDebugString("falloff start angle", m_fFalloffStartAngle));
+        apStrings->Add(CreateDebugString("falloff stop angle", m_fFalloffStopAngle));
+        apStrings->Add(CreateDebugString("falloff start opacity", m_fFalloffStartOpacity));
+        apStrings->Add(CreateDebugString("falloff stop opacity", m_fFalloffStopOpacity));
     }
 }
 
@@ -1570,6 +1628,9 @@ struct C4
 extern const float DAT_01017d00;
 // Clears DAT_011fa070 from idx to 7 and copies the default color into slots i+18 and DAT_011a9bd0's color into slots i.
 // @fnv 0x00b704c0
+// pdb: BSShaderLightingProperty::ResetLights | BSShaderLightingProperty.obj | debug, call graph, medium
+// pdb params: aiStartIndex
+// pdb locals: i
 __declspec(dllexport) inline void __cdecl ResetColorSlots(int aiStartIndex)
 {
     static NiColorA kDef(DAT_01017d00, 0.0f, 0.0f, 0.0f);
@@ -1613,13 +1674,13 @@ typedef ViewerArray<char*> ViewerStrings;
 
 extern const char* DAT_011fa560;
 char* NiViewerStrings_NiGetViewerString_Title(const char* pcClassName);
-char* NiGetViewerString_00a7d490(const char* pcPrefix, int iValue);
+char* NiGetViewerString_00a7d490(const char* pcPrefix, int usValue);
 char* NiGetViewerString_00a7d510(const char* pcPrefix, unsigned int uiValue);
 
 class LightingPropertyBase
 {
   public:
-    void WriteToSettingArray(ViewerStrings* pkStrings);  // base GetViewerStrings
+    void WriteToSettingArray(ViewerStrings* apStrings);  // base GetViewerStrings
 };
 
 class LightingProperty : public LightingPropertyBase
@@ -1634,7 +1695,7 @@ class LightingProperty : public LightingPropertyBase
     {
         return m_uiReferenceID;
     }
-    void BSShaderLightingProperty_GetViewerStrings(ViewerStrings* pkStrings);
+    void BSShaderLightingProperty_GetViewerStrings(ViewerStrings* apStrings);
 
     char unk00[0x68];
     int m_iNumLights;  // +0x68
@@ -1645,13 +1706,15 @@ class LightingProperty : public LightingPropertyBase
 // Appends the base strings plus the class name, light counts and reference ID to the given string array.
 // @fnv 0x00b71450
 // src: XBOX_PDB 0x00b71450
-void LightingProperty::BSShaderLightingProperty_GetViewerStrings(ViewerStrings* pkStrings)
+// pdb: BSShaderLightingProperty::GetViewerStrings | BSShaderLightingProperty.obj | retail, string-set bridge, high
+// pdb params: apStrings
+void LightingProperty::BSShaderLightingProperty_GetViewerStrings(ViewerStrings* apStrings)
 {
-    LightingPropertyBase::WriteToSettingArray(pkStrings);
-    pkStrings->Add(NiViewerStrings_NiGetViewerString_Title(DAT_011fa560));
-    pkStrings->Add(NiGetViewerString_00a7d490("number of lights", GetNumLights()));
-    pkStrings->Add(NiGetViewerString_00a7d490("active lights", BSShaderLightingProperty_GetNumberofActiveLights()));
-    pkStrings->Add(NiGetViewerString_00a7d510("Reference ID", GetReferenceID()));
+    LightingPropertyBase::WriteToSettingArray(apStrings);
+    apStrings->Add(NiViewerStrings_NiGetViewerString_Title(DAT_011fa560));
+    apStrings->Add(NiGetViewerString_00a7d490("number of lights", GetNumLights()));
+    apStrings->Add(NiGetViewerString_00a7d490("active lights", BSShaderLightingProperty_GetNumberofActiveLights()));
+    apStrings->Add(NiGetViewerString_00a7d510("Reference ID", GetReferenceID()));
 }
 
 struct GeometryState;
@@ -1824,6 +1887,9 @@ class RenderProperty : public BSShaderProperty
 };
 // Selects a shader index from geometry type, texture and flags, adds a render pass, sets its mode, and caches the state in iLastRenderPassState.
 // @fnv 0x00b6f5c0
+// pdb: BSShaderNoLightingProperty::GetRenderPasses | BSShaderNoLightingProperty.obj | debug, object-file run extension, low
+// pdb params: apGeom, aiEnabledPasses, asCount, auiRenderMode, apAccumulator, abUpdateList
+// pdb locals: balpha, ppropertyState, idebugPasses, pmatprop, fnewAlpha, ambPass, ppass, pparticles, bvertexcolors, bfalloff
 BSShaderProperty__RenderPassArray* RenderProperty::BuildRenderPassList(NiGeometry* geometry, int state,
                                                                        unsigned int unused, int type,
                                                                        PassRenderer* renderer, unsigned int unused2)
@@ -1922,6 +1988,8 @@ BSShaderProperty__RenderPassArray* RenderProperty::BuildRenderPassList(NiGeometr
 void BSShaderProperty_LoadBinary();
 // @fnv 0x00b70260
 // src: XBOX_PDB 0x00b70260
+// pdb: BSShaderLightingProperty::LoadBinary | BSShaderLightingProperty.obj | debug, upstream name already matches, high
+// pdb params: kStream
 void BSShaderLightingProperty_LoadBinary()
 {
     BSShaderProperty_LoadBinary();
@@ -1954,7 +2022,7 @@ class S00b700d0_Alpha : public NiProperty
     void NiAlphaProperty_SetAlphaBlending(bool);
     void FUN_004393c0(bool);
     void NiAlphaProperty_SetDestBlendMode(int);
-    void FUN_004393e0(unsigned int);
+    void NiAlphaProperty_SetTestMode(unsigned int);
 
     unsigned short m_usFlags;
     unsigned char m_ucAlphaThreshold;
@@ -2014,6 +2082,9 @@ class S00b700d0_Shader : public BSShaderProperty
 
 // Sets shader flags, checks geometry kind and data flags, then creates and applies an S00b700d0_Alpha property from pData fields.
 // @fnv 0x00b700d0
+// pdb: BSShaderNoLightingProperty::SetupGeometry | BSShaderNoLightingProperty.obj | retail, object-file run extension, low
+// pdb params: apGeometry
+// pdb locals: pniagd, pbsagd, palpha, plocalalpha
 bool S00b700d0_Shader::ApplyAlphaProperty(NiGeometry* apGeom)
 {
     void* ptr28 = reinterpret_cast<S00b700d0_B8Ptr&>(apGeom->m_spModelData)->ptr28;
@@ -2053,7 +2124,7 @@ bool S00b700d0_Shader::ApplyAlphaProperty(NiGeometry* apGeom)
     pAlpha->FUN_004393c0((pData->usFlags >> 9) & 1);
     pAlpha->NiAlphaProperty_SetDestBlendMode((pData->usFlags >> 5) & 0xF);
     pAlpha->m_usFlags &= 0xFFE1;
-    pAlpha->FUN_004393e0((pData->usFlags >> 10) & 7);
+    pAlpha->NiAlphaProperty_SetTestMode((pData->usFlags >> 10) & 7);
     pAlpha->m_ucAlphaThreshold = pData->ucThreshold;
     apGeom->AttachProperty(reinterpret_cast<NiAlphaProperty*>(pAlpha));
     apGeom->UpdateProperties();
@@ -2127,11 +2198,11 @@ void LightSortOwner::SortShadowSceneLights(int aiMemoryContext)
         NiTListItem<ShadowSceneLight*>* pkNode = (NiTListItem<ShadowSceneLight*>*)kIter;
         ShadowSceneLight* pkLight = m_kShadowSceneLights.GetNext(kIter);
         NiTListIterator kTestIter = m_kShadowSceneLights.GetHeadPos();
-        float fKey = pkLight->ComputeFade(aiMemoryContext);
+        float fKey = pkLight->GetLuminanceToBound(aiMemoryContext);
         while (kTestIter != pkNode && kTestIter)
         {
             NiTListItem<ShadowSceneLight*>* pkTest = (NiTListItem<ShadowSceneLight*>*)kTestIter;
-            if (fKey < m_kShadowSceneLights.GetNext(kTestIter)->ComputeFade(aiMemoryContext))
+            if (fKey < m_kShadowSceneLights.GetNext(kTestIter)->GetLuminanceToBound(aiMemoryContext))
             {
                 if (pkNode != pkTest)
                 {
@@ -2315,6 +2386,9 @@ extern double DAT_01026998;
 
 // Computes water surface and deep colors from WaterStub data and shader, then emits a lighting packet via ApplyLighting30Packet and FUN_00bb95e0.
 // @fnv 0x00b70de0
+// pdb: BSShaderLightingProperty::SetDirectionalLight3x | BSShaderLightingProperty.obj | debug, call graph, medium
+// pdb params: auiLightIndex, apLight, afForcedDarkness
+// pdb locals: dirlight, klcolor, ambcol, dir, pambientColor, minamb, kdata, fdimmer, kcolor, pprop, bmodambient, ambluminance, lumscale
 void __cdecl ApplyWaterLighting(unsigned int id, WaterStub* water, float scale)
 {
     WaterStub* w = water;
@@ -2461,7 +2535,7 @@ struct Bdf3e0_list
     int unk08;
     int unk0c;
     int count;
-    void FUN_00ba9ee0(int a, int b, int c, int d, int e, int f, int g, int h);
+    void FUN_00ba9ee0(int apGeometry, int ausPassEnum, int abFirstPass, int ausNumLights, int apSceneLight, int apSceneLight1, int apSceneLight2, int apSceneLight3);
 };
 
 struct Bdf3e0_cls;
@@ -2549,14 +2623,17 @@ struct Bdf3e0_cls
     int unk38;
     Bdf3e0_list* list;
     ShadowSceneLight* BSShaderLightingProperty_GetFirstActiveNonShadowLight(int* it);
-    ShadowSceneLight* BSShaderLightingProperty_GetNextActiveNonShadowLight(int* it);
-    void BSShaderPPLightingProperty_AddLandscapePasses_2x(int a0, int a1, unsigned short* a2, char a3, char* a4, int a5, char a6);
+    ShadowSceneLight* BSShaderLightingProperty_GetNextActiveNonShadowLight(int* aitIter);
+    void BSShaderPPLightingProperty_AddLandscapePasses_2x(int apGeom, int apSunlight, unsigned short* asCount, char abUpdateList, char* abFirst, int abSpecular, char abProjShadow);
 };
 
 // Walks three node iterators past defined vectors, computes an id from vt->vEC and flags, and appends a list entry via FUN_00ba9ee0 or increments *a2.
 // @fnv 0x00bdf3e0
 // src: COMMUNITY 0x00bdf3e0
-void Bdf3e0_cls::BSShaderPPLightingProperty_AddLandscapePasses_2x(int a0, int a1, unsigned short* apCount, char acMode, char* apFlag, int a5, char acAdjust)
+// pdb: BSShaderPPLightingProperty::AddLandscapePasses_2x | BSShaderPPLightingProperty_Passes_2x.obj | retail, upstream name already matches, high
+// pdb params: apGeom, apSunlight, asCount, abUpdateList, abFirst, abSpecular, abProjShadow
+// pdb locals: plight1, kiter, bsimple, plight2, plight, itexcount, ipassoffset, ipass
+void Bdf3e0_cls::BSShaderPPLightingProperty_AddLandscapePasses_2x(int apGeom, int apSunlight, unsigned short* asCount, char abUpdateList, char* abFirst, int abSpecular, char abProjShadow)
 {
     int it = 0;
     ShadowSceneLight* p = BSShaderLightingProperty_GetFirstActiveNonShadowLight(&it);
@@ -2574,36 +2651,36 @@ void Bdf3e0_cls::BSShaderPPLightingProperty_AddLandscapePasses_2x(int a0, int a1
     if (p == 0)
     {
         int id = n * 8 + 0x1f7;
-        if (acAdjust)
+        if (abProjShadow)
             id++;
         if (f)
             id += 2;
-        if (acMode == 1)
-            list->FUN_00ba9ee0(a0, id, 1, 1, a1, 0, 0, 0);
+        if (abUpdateList == 1)
+            list->FUN_00ba9ee0(apGeom, id, 1, 1, apSunlight, 0, 0, 0);
         else
-            ++*apCount;
+            ++*asCount;
     }
     else
     {
         int id = n * 8 + 0x1fb;
-        if (acAdjust)
+        if (abProjShadow)
             id++;
         if (f)
             id += 2;
-        if (acMode == 1)
-            list->FUN_00ba9ee0(a0, id, 1, 4, a1, (int)p, (int)q, (int)r);
+        if (abUpdateList == 1)
+            list->FUN_00ba9ee0(apGeom, id, 1, 4, apSunlight, (int)p, (int)q, (int)r);
         else
-            ++*apCount;
+            ++*asCount;
     }
-    *apFlag = 0;
-    if (acMode == 1 && DAT_011f94ab != 0 && !((flags & 0x4000) > 0))
+    *abFirst = 0;
+    if (abUpdateList == 1 && DAT_011f94ab != 0 && !((flags & 0x4000) > 0))
     {
-        list->FUN_00ba9ee0(a0, 0x230, 0, 1, a1, 0, 0, 0);
+        list->FUN_00ba9ee0(apGeom, 0x230, 0, 1, apSunlight, 0, 0, 0);
         list->arr[list->count - 1]->unk0b = 9;
     }
     else
     {
-        ++*apCount;
+        ++*asCount;
     }
 }
 
@@ -2624,20 +2701,23 @@ struct S00b70680_Helper
 // Advances the iterator past inactive ShadowSceneLight entries and returns the next active light or null.
 // @fnv 0x00b70680
 // src: XBOX_PDB 0x00b70680
-ShadowSceneLight* __stdcall BSShaderLightingProperty_GetNextActiveLight(NiTListItem<ShadowSceneLight*>*& iter)
+// pdb: BSShaderLightingProperty::GetNextActiveLight | BSShaderLightingProperty.obj | debug, upstream name already matches, high
+// pdb params: aitIter
+// pdb locals: psslight
+ShadowSceneLight* __stdcall BSShaderLightingProperty_GetNextActiveLight(NiTListItem<ShadowSceneLight*>*& aitIter)
 {
-    NiTListItem<ShadowSceneLight*>* node = iter;
+    NiTListItem<ShadowSceneLight*>* node = aitIter;
     ShadowSceneLight* light = 0;
     if (node)
     {
         NiTListItem<ShadowSceneLight*>* next = node->m_pkNext;
-        iter = next;
+        aitIter = next;
         light = node->m_element;
         while (light && next && !S00b70680_Helper::Active(light))
         {
             ShadowSceneLight** pe = &next->m_element;
             next = next->m_pkNext;
-            iter = next;
+            aitIter = next;
             light = *pe;
         }
         if (light && !S00b70680_Helper::Active(light))
@@ -2788,17 +2868,21 @@ struct WatchSet
         }
     }
 
-    void AddWatcher(Watcher* pkWatcher);
+    void BSShaderLightingProperty_RemoveLight(Watcher* apSSLight);
 };
 
 // Adds pkWatcher to m_kWatchers, sets m_bValueAt0C, resets m_iTimer if the watcher has accumulation, then checks for duplicates.
 // @fnv 0x00b717a0
-void WatchSet::AddWatcher(Watcher* pkWatcher)
+// src: XBOX_RETAIL_PDB 0x00b717a0
+// pdb: BSShaderLightingProperty::RemoveLight | BSShaderLightingProperty.obj | retail, call graph, high
+// pdb params: apSSLight
+// pdb locals: kiter, plight
+void WatchSet::BSShaderLightingProperty_RemoveLight(Watcher* apSSLight)
 {
-    Watcher* light = pkWatcher;
+    Watcher* light = apSSLight;
     if (!m_iLocked)
     {
-        m_kWatchers.NiTPointerListBase_Remove(pkWatcher);
+        m_kWatchers.NiTPointerListBase_Remove(apSSLight);
         m_bValueAt0C = true;
         if (light->m_bHasAccumulation)
             m_iTimer = 0;
@@ -2889,6 +2973,7 @@ struct S
 // Calls FUN_00e7db70 and AddHead with DAT_011fa310, then stores the resulting list head in unk78.
 // @fnv 0x00b718b0
 // src: COMMUNITY 0x00b718b0
+// pdb: BSShaderLightingProperty::FenceAllLights | BSShaderLightingProperty.obj | retail, upstream name already matches, high
 void S::BSShaderLightingProperty_FenceAllLights()
 {
     void* key = &DAT_011fa310;
@@ -2958,6 +3043,9 @@ struct Obj_b71560
 
 // Moves or inserts list nodes; on the no-p78 path, sets m_b74 and clears m_38 if item->bCastShadow is set.
 // @fnv 0x00b71560
+// pdb: BSShaderLightingProperty::AttachLight | BSShaderLightingProperty.obj | retail, call graph, medium
+// pdb params: apSSLight, apObjBound
+// pdb locals: kiterator
 void Obj_b71560::InsertOrMoveNode(ShadowSceneLight* item, void* a2)
 {
     Node_b71560* p78 = m_p78;

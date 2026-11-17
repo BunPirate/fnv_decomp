@@ -2,6 +2,7 @@
 
 #include "ArchiveFile.h"
 
+// pdb: class CompressedArchiveFile, size 0x1c4 (here 0x178), bases: ArchiveFile, 7 members
 class CompressedArchiveFile : public ArchiveFile
 {
 public:
@@ -11,8 +12,8 @@ public:
                           unsigned int size, unsigned int mode);
 
     virtual ~CompressedArchiveFile();
-    virtual void SetEndianSwap(bool doSwap);
-    virtual void Seek(int offset, int mode);
+    virtual void SetEndianSwap(bool bDoSwap);
+    virtual void Seek(int aiByteCount, int aiSeekFlags);
 
     void DestroyCompressedArchiveFile();
     bool CompressedArchiveFile_Open(bool a1, bool a2);

@@ -21,6 +21,7 @@ struct CombatgroupstrategyOffset08View
 
 // @fnv 0x00990890
 // src: XBOX_PDB 0x00990890
+// pdb: CombatGroup::GetMemberCount | TESConditionFunctions.obj | debug, upstream name already matches, high
 unsigned int ActorCombatGroup::CombatGroup_GetMemberCount()
 {
     return reinterpret_cast<CombatgroupstrategyOffset08View*>(reinterpret_cast<char*>(this) + 0x18)->GetFlags();
@@ -52,13 +53,16 @@ struct FUN_00844160_holder
 
 struct FUN_00990a80_shell
 {
-    void __thiscall ForwardToHolder(int arg);
+    void __thiscall CombatGroupData_GetMeleeMember(int aiIndex);
 };
 
 // @fnv 0x00990a80
-void __thiscall FUN_00990a80_shell::ForwardToHolder(int arg)
+// src: XBOX_DEBUG_PDB 0x00990a80
+// pdb: CombatGroupData::GetMeleeMember | CombatGroupStrategy.obj | debug, call graph, high
+// pdb params: aiIndex
+void __thiscall FUN_00990a80_shell::CombatGroupData_GetMeleeMember(int aiIndex)
 {
-    ((FUN_00844160_holder*)((char*)this + 0x28))->BSSimpleArray_GroupMemberData_1024_GetAt(arg);
+    ((FUN_00844160_holder*)((char*)this + 0x28))->BSSimpleArray_GroupMemberData_1024_GetAt(aiIndex);
 }
 
 struct FUN_00844160_shell
@@ -68,7 +72,7 @@ struct FUN_00844160_shell
 
 struct FUN_00990aa0_shell
 {
-    void __thiscall CombatGroupData_GetRangedMember(int state);
+    void __thiscall CombatGroupData_GetRangedMember(int aiIndex);
 };
 
 // src: XBOX_PDB 0x00844160
@@ -77,9 +81,11 @@ void __thiscall FUN_00844160_shell::BSSimpleArray_GroupMemberData_1024_GetAt(int
 
 // @fnv 0x00990aa0
 // src: XBOX_PDB 0x00990aa0
-void __thiscall FUN_00990aa0_shell::CombatGroupData_GetRangedMember(int state)
+// pdb: CombatGroupData::GetRangedMember | CombatGroupStrategy.obj | debug, upstream name already matches, high
+// pdb params: aiIndex
+void __thiscall FUN_00990aa0_shell::CombatGroupData_GetRangedMember(int aiIndex)
 {
-    ((FUN_00844160_shell*)((char*)this + 0x18))->BSSimpleArray_GroupMemberData_1024_GetAt(state);
+    ((FUN_00844160_shell*)((char*)this + 0x18))->BSSimpleArray_GroupMemberData_1024_GetAt(aiIndex);
 }
 
 struct MarkerStruct
@@ -88,6 +94,9 @@ struct MarkerStruct
 
 // Iterates over every member of the group and calls SetElementValue with index i and value 2.
 // @fnv 0x00990bd0
+// pdb: CombatGroupStrategyFallBack::Execute | CombatGroupStrategy.obj | retail, vtable slot, high
+// pdb params: apGroup, apGroupData
+// pdb locals: i
 void CombatGroupStrategyFallBack::vf01(ActorCombatGroup* apGroup, MarkerStruct* apGroupData)
 {
     unsigned int i = 0;
@@ -99,9 +108,11 @@ void CombatGroupStrategyFallBack::vf01(ActorCombatGroup* apGroup, MarkerStruct* 
 
 // Returns true if apGroup's lookup for index 3 returns a non-null value, otherwise false.
 // @fnv 0x00990d30
+// pdb: CombatGroupStrategyAmbush::Update | CombatGroupStrategy.obj | retail, vtable slot, high
+// pdb params: apGroup
 bool CombatGroupStrategyAmbush::vf02(ActorCombatGroup* apGroup)
 {
-    if (apGroup->GetActorAtIndex(3) == 0)
+    if (apGroup->CombatGroup_FindMemberWithStrategyAssignment(3) == 0)
         return false;
     return true;
 }
@@ -133,6 +144,7 @@ struct Holder904c0
 // If the cached flag is unset, evaluates the held object's check and stores the result; returns whether the cached flag equals 1.
 // @fnv 0x009904c0
 // src: XBOX_PDB 0x009904c0
+// pdb: CombatGroupData::GetMembersTargetsIntersecting | CombatGroupStrategy.obj | retail, upstream name already matches, high
 unsigned char __thiscall Holder904c0::CombatGroupData_GetMembersTargetsIntersecting()
 {
     if (m_iValue == -1)
@@ -142,7 +154,7 @@ unsigned char __thiscall Holder904c0::CombatGroupData_GetMembersTargetsIntersect
 
 struct FUN_009905a0_shell
 {
-    void __thiscall UpdateMinProgress();
+    void __thiscall CombatGroupData_ComputeMinMaxTargetDetection();
 };
 struct FUN_00990570_shell
 {
@@ -150,10 +162,13 @@ struct FUN_00990570_shell
 };
 // @fnv 0x00990570
 // src: XBOX_PDB 0x00990570
+// pdb: CombatGroupData::ComputeMinMaxTargetDetection | CombatGroupStrategy.obj | retail, call graph (shared callers), low
+// pdb note: debug build links it to CombatGroupData::GetMemberMaximumTargetDetection
+// pdb locals: imemberCount, i, pmember, pcombatController, itargetDetection
 unsigned int __thiscall FUN_00990570_shell::CombatGroupData_GetMemberMaximumTargetDetection()
 {
     if (*(unsigned int*)((char*)this + 0x10) == 0x80000000)
-        ((FUN_009905a0_shell*)this)->UpdateMinProgress();
+        ((FUN_009905a0_shell*)this)->CombatGroupData_ComputeMinMaxTargetDetection();
     return *(unsigned int*)((char*)this + 0x10);
 }
 
@@ -161,34 +176,41 @@ extern const double DAT_01026998;
 struct DataOps
 {
     int __thiscall _ref_00726070();
-    double __thiscall GetCachedValue();
+    double __thiscall CombatGroupData_GetMemberHealthPercentage();
 };
 struct GroupOps
 {
     bool __thiscall CombatGroup_CheckGroupStrategyChosenTimeStamp(int, float);
 };
 // @fnv 0x00990b70
+// pdb: CombatGroupStrategyFallBack::CanExecute | CombatGroupStrategy.obj | retail, vtable slot, high
+// pdb params: apGroup, apGroupData
 bool CombatGroupStrategyFallBack::CanFlank(MarkerStruct* apGroup, ActorCombatGroup* apGroupData)
 {
     if (((DataOps*)apGroupData)->_ref_00726070() < 2)
         return false;
     if (!((GroupOps*)apGroup)->CombatGroup_CheckGroupStrategyChosenTimeStamp(0, 30.0f))
         return false;
-    if (((DataOps*)apGroupData)->GetCachedValue() > DAT_01026998)
+    if (((DataOps*)apGroupData)->CombatGroupData_GetMemberHealthPercentage() > DAT_01026998)
         return false;
     return true;
 }
 
 // Calls FindByValue with 2 on the group and returns true if it succeeds, otherwise false.
 // @fnv 0x00990c10
+// pdb: CombatGroupStrategyFallBack::Update | CombatGroupStrategy.obj | retail, vtable slot, high
+// pdb params: apGroup
 bool CombatGroupStrategyFallBack::vf02(ActorCombatGroup* apGroup)
 {
-    if (!apGroup->GetActorAtIndex(2))
+    if (!apGroup->CombatGroup_FindMemberWithStrategyAssignment(2))
         return false;
     return true;
 }
 
 // @fnv 0x00990cb0
+// pdb: CombatGroupStrategyAmbush::Execute | CombatGroupStrategy.obj | retail, vtable slot, high
+// pdb params: apGroup, apGroupData
+// pdb locals: ifallBackCount, i
 void __thiscall CombatGroupStrategyAmbush::vf01(ActorCombatGroup* apGroup, MarkerStruct* apGroupData)
 {
     unsigned int i;
@@ -215,6 +237,9 @@ struct FUN_00990aa0_helper
 };
 // Iterates the group data's members and calls SetElementValue on the group with each member's _4 value and 4.
 // @fnv 0x00990e70
+// pdb: CombatGroupStrategyAdvance::Execute | CombatGroupStrategy.obj | retail, vtable slot, high
+// pdb params: apGroup, apGroupData
+// pdb locals: i, pmember
 void __thiscall CombatGroupStrategyAdvance::vf01(ActorCombatGroup* apGroup, MarkerStruct* apGroupData)
 {
     int i;
@@ -228,13 +253,16 @@ void __thiscall CombatGroupStrategyAdvance::vf01(ActorCombatGroup* apGroup, Mark
 
 // Calls FindByValue with 4 on apGroup and returns true if the result is nonzero, false otherwise.
 // @fnv 0x00990ec0
+// pdb: CombatGroupStrategyAdvance::Update | CombatGroupStrategy.obj | retail, vtable slot, high
+// pdb params: apGroup
 bool __thiscall CombatGroupStrategyAdvance::vf02(ActorCombatGroup* apGroup)
 {
-    if (apGroup->GetActorAtIndex(4) == 0)
+    if (apGroup->CombatGroup_FindMemberWithStrategyAssignment(4) == 0)
         return false;
     return true;
 }
 
+// pdb: class TaskQueueInterface, size 0x10 (here 0x1), 4 members
 struct TaskQueueInterface
 {
     static void __cdecl CopyStringToBuffer(char* buffer, unsigned int size, const char* name);
@@ -248,8 +276,11 @@ extern const char* DAT_011a4ed0[4];
 
 // Copies apName into a 260-byte buffer, lowercases it, then compares it against four names and returns the matching index's value or 0.
 // @fnv 0x00990250
-// src: COMMUNITY 0x00990250
-int CombatGroupStrategy_LookupByName(const char* apName)
+// src: XBOX_DEBUG_PDB 0x00990250 (was COMMUNITY)
+// pdb: CombatGroupStrategy::GetCombatGroupStrategyByName | CombatGroupStrategy.obj | debug, call graph, high
+// pdb params: apName
+// pdb locals: psearchName, ptemp, i
+int CombatGroupStrategy_GetCombatGroupStrategyByName(const char* apName)
 {
     char psearchName[260];
     char* pChar;
@@ -280,12 +311,12 @@ struct FUN_00990a60_shell
 
 struct FUN_00990a80_member
 {
-    IntPair* __thiscall ForwardToHolder(unsigned int index);
+    IntPair* __thiscall CombatGroupData_GetMeleeMember(unsigned int aiIndex);
 };
 
 struct FUN_00990aa0_member
 {
-    IntPair* __thiscall CombatGroupData_GetRangedMember(unsigned int index);
+    IntPair* __thiscall CombatGroupData_GetRangedMember(unsigned int aiIndex);
 };
 
 struct FUN_00990640_shell
@@ -294,6 +325,9 @@ struct FUN_00990640_shell
 };
 
 // @fnv 0x00990930
+// pdb: CombatGroupStrategyFlank::Execute | CombatGroupStrategy.obj | retail, vtable slot, high
+// pdb params: apGroup, apGroupData
+// pdb locals: irangedMemberCount, itotalMemberCount, frangedPercentage, irangedFlankers, imeleeMemberCount, i, pmember
 void CombatGroupStrategyFlank::vf01(ActorCombatGroup* apGroup, MarkerStruct* apGroupData)
 {
     unsigned int irangedMemberCount;
@@ -310,7 +344,7 @@ void CombatGroupStrategyFlank::vf01(ActorCombatGroup* apGroup, MarkerStruct* apG
 
         for (i = 0; i < imeleeMemberCount; ++i)
         {
-            pmember = reinterpret_cast<FUN_00990a80_member*>(apGroupData)->ForwardToHolder(i);
+            pmember = reinterpret_cast<FUN_00990a80_member*>(apGroupData)->CombatGroupData_GetMeleeMember(i);
             apGroup->SetElementValue(pmember->_4, 1);
         }
     }
@@ -377,13 +411,16 @@ struct FUN_00990320
     FUN_00990320(ActorCombatGroup*);
 };
 // @fnv 0x00990320
-FUN_00990320::FUN_00990320(ActorCombatGroup* pGroup)
-    : group(pGroup), activeCount(0), intersectionCount(-1), minimum(0x7fffffff), maximum(0x80000000), strength(0.0f)
+// pdb: CombatGroupData::CombatGroupData | CombatGroupStrategy.obj | debug, call graph, high
+// pdb params: apCombatGroup
+// pdb locals: imemberCount, i, pmember, pcombatState
+FUN_00990320::FUN_00990320(ActorCombatGroup* apCombatGroup)
+    : group(apCombatGroup), activeCount(0), intersectionCount(-1), minimum(0x7fffffff), maximum(0x80000000), strength(0.0f)
 {
-    unsigned int count = pGroup->CombatGroup_GetMemberCount();
+    unsigned int count = apCombatGroup->CombatGroup_GetMemberCount();
     for (unsigned int index = 0; index < count; ++index)
     {
-        Actor* aActor = reinterpret_cast<Actor*>(pGroup->GetIntAt(index));
+        Actor* aActor = reinterpret_cast<Actor*>(apCombatGroup->GetIntAt(index));
         CombatMemberState* state = reinterpret_cast<MemberController*>(aActor->GetCombatController())->CombatController_GetCombatState();
         if (!state->GetByteAtOffset())
         {
@@ -401,6 +438,8 @@ struct ContNode;
 ContNode* __fastcall FUN_00726070(ContNode* node);
 
 // @fnv 0x009908b0
+// pdb: CombatGroupStrategyFlank::CanExecute | CombatGroupStrategy.obj | retail, vtable slot, high
+// pdb params: apGroup, apGroupData
 bool CombatGroupStrategyFlank::CanFlank(MarkerStruct* apGroupData, ActorCombatGroup* apGroup)
 {
     if ((int)FUN_00726070((ContNode*)apGroup) < 3)
@@ -438,18 +477,21 @@ struct CombatGroupMethods
     int FindRefInRadius(int);
 };
 // @fnv 0x00990ac0
-bool CombatGroupStrategy::CheckGroup(ActorCombatGroup* group)
+// pdb: CombatGroupStrategyFlank::Update | CombatGroupStrategy.obj | retail, vtable slot, high
+// pdb params: apGroup
+// pdb locals: bflanking, imemberCount, i, pflanker
+bool CombatGroupStrategy::CheckGroup(ActorCombatGroup* apGroup)
 {
     bool bFound = false;
-    unsigned count = group->GetCount();
+    unsigned count = apGroup->GetCount();
     for (unsigned index = 0; index < count; ++index)
     {
-        if (((CombatGroupMethods*)group)->CombatGroup_GetMemberGroupStrategyAssignment(index) == 1)
+        if (((CombatGroupMethods*)apGroup)->CombatGroup_GetMemberGroupStrategyAssignment(index) == 1)
         {
-            CombatGroupMember* pData = ((CombatGroupMethods*)group)->GetIntAt(index);
+            CombatGroupMember* pData = ((CombatGroupMethods*)apGroup)->GetIntAt(index);
             NiPoint4 position;
-            if (((CombatGroupMethods*)group)->FindRefInRadius(pData->TESObjectREFR_GetWorldLocation(&position, DAT_01050b98, 0)))
-                group->SetElementValue(index, 0);
+            if (((CombatGroupMethods*)apGroup)->FindRefInRadius(pData->TESObjectREFR_GetWorldLocation(&position, DAT_01050b98, 0)))
+                apGroup->SetElementValue(index, 0);
             else
                 bFound = true;
         }
@@ -470,25 +512,27 @@ struct FUN_00990c40_arg2
 
 struct FUN_00990c40_arg1
 {
-    bool CombatGroup_CheckGroupStrategyChosenTimeStamp(int count, float value);
+    bool CombatGroup_CheckGroupStrategyChosenTimeStamp(int aiIndex, float afMinimumTimePassed);
 };
 
 // @fnv 0x00990c40
-bool CombatGroupStrategyAmbush::CanFlank(MarkerStruct* a1, ActorCombatGroup* a2)
+// pdb: CombatGroupStrategyAmbush::CanExecute | CombatGroupStrategy.obj | retail, vtable slot, high
+// pdb params: apGroup, apGroupData
+bool CombatGroupStrategyAmbush::CanFlank(MarkerStruct* apGroup, ActorCombatGroup* apGroupData)
 {
-    if (((FUN_00990c40_arg2*)a2)->_ref_00726070() < 2)
+    if (((FUN_00990c40_arg2*)apGroupData)->_ref_00726070() < 2)
     {
         return false;
     }
-    if (!((FUN_00990c40_arg1*)a1)->CombatGroup_CheckGroupStrategyChosenTimeStamp(3, DAT_01034294))
+    if (!((FUN_00990c40_arg1*)apGroup)->CombatGroup_CheckGroupStrategyChosenTimeStamp(3, DAT_01034294))
     {
         return false;
     }
-    if (((FUN_00990c40_arg2*)a2)->CombatGroupData_GetMemberMaximumTargetDetection() <= 0)
+    if (((FUN_00990c40_arg2*)apGroupData)->CombatGroupData_GetMemberMaximumTargetDetection() <= 0)
     {
         return false;
     }
-    if (((FUN_00990c40_arg2*)a2)->CombatGroupData_GetMembersTargetsIntersecting() != 0)
+    if (((FUN_00990c40_arg2*)apGroupData)->CombatGroupData_GetMembersTargetsIntersecting() != 0)
     {
         return false;
     }
@@ -518,6 +562,9 @@ struct StrategyMemberQueries
 };
 extern const float DAT_01034294;
 // @fnv 0x00990d60
+// pdb: CombatGroupStrategyAdvance::CanExecute | CombatGroupStrategy.obj | retail, vtable slot, high
+// pdb params: apGroup, apGroupData
+// pdb locals: irangedMemberCount, i, pcombatController, ptarget, prangedMember, targetVector
 bool CombatGroupStrategyAdvance::CanFlank(MarkerStruct* apGroup, ActorCombatGroup* apGroupData)
 {
     if (((StrategyMemberQueries*)apGroupData)->CombatGroup_GetMemberCount() < 2)
@@ -569,6 +616,8 @@ struct Strategy990640
 };
 // Computes each member's target value, averages them into a centroid, then selection-sorts members by distance to that centroid.
 // @fnv 0x00990640
+// pdb: CombatGroupData::SortRangedMembers | CombatGroupStrategy.obj | debug, object-file run extension, low
+// pdb locals: irangedMemberCount, plocations, pfsquaredDistances, center, i, groupMemberData, icurrent, fminDistance, j, fdistance
 void Strategy990640::SortMembersByTargetDistance()
 {
     // i: member count; a: positions; p: centroid; h: distances.

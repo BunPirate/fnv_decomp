@@ -11,7 +11,7 @@ struct Base0
 struct Base2;
 struct Target
 {
-    void hkpWorld_addWorldPostSimulationListener(Base2* p);
+    void hkpWorld_addWorldPostSimulationListener(Base2* worldListener);
 };
 struct Base1
 {
@@ -99,9 +99,11 @@ struct S_00d65180_Obj : S_00d65180_RefObj, S_00d65180_Base2
 // Allocates and constructs an S_00d65180_Obj from arg, returning it as an S_00d65180_Base2 pointer.
 // @fnv 0x00d65180
 // src: XBOX_PDB 0x00d65180
-S_00d65180_Base2* hkpSimulationIslandViewer_create(void* arg)
+// pdb: hkpSimulationIslandViewer::create | hkpSimulationIslandViewer.obj | retail, upstream name already matches, high
+// pdb params: contexts
+S_00d65180_Base2* hkpSimulationIslandViewer_create(void* contexts)
 {
-    return new S_00d65180_Obj(arg);
+    return new S_00d65180_Obj(contexts);
 }
 
 extern int g_D651E0Value;
@@ -138,6 +140,7 @@ struct FUN_00d65220_Class
 };
 // Calls FUN_00d64ae0, then if bit 0 of flags is set, notifies the service interface with this and unk04, and returns this.
 // @fnv 0x00d65220
+// pdb: hkpSimulationIslandViewer::`scalar deleting destructor' | hkpSimulationIslandViewer.obj | retail, vtable slot, high
 FUN_00d65220_Class* FUN_00d65220_Class::FUN_00d65220(char flags)
 {
     FUN_00d64ae0();
@@ -293,6 +296,7 @@ struct FUN_00d64ae0 : FUN_00ddcc60, S_D
 };
 // Notifies each element in m24 via ClearValue, then clears the m3c and m30 arrays.
 // @fnv 0x00d64ae0
+// pdb: hkpSimulationIslandViewer::~hkpSimulationIslandViewer | hkpSimulationIslandViewer.obj | retail, object-file run extension, low
 FUN_00d64ae0::~FUN_00d64ae0() throw()
 {
     if (m24)
@@ -307,7 +311,7 @@ FUN_00d64ae0::~FUN_00d64ae0() throw()
 class RegistryOwner
 {
   public:
-    void* Register(const char* name, void (*callback)());
+    void* Register(const char* viewerName, void (*creationFunction)());
 };
 
 extern RegistryOwner* DAT_01269cd0;
@@ -318,6 +322,7 @@ extern void RegisterCallback();
 
 // @fnv 0x00d651c0
 // src: XBOX_PDB 0x00d651c0
+// pdb: hkpSimulationIslandViewer::registerViewer | hkpSimulationIslandViewer.obj | retail, string-set bridge, high
 void hkpSimulationIslandViewer_registerViewer()
 {
     DAT_01268fdc = DAT_01269cd0->Register(str_010d19d0, RegisterCallback);
@@ -331,7 +336,7 @@ class hkListenerD64A
 class hkEntityD64A
 {
   public:
-    void hkpWorld_addWorldPostSimulationListener(hkListenerD64A* pkListener) throw();
+    void hkpWorld_addWorldPostSimulationListener(hkListenerD64A* worldListener) throw();
 };
 class hkWorldD64A
 {
@@ -362,7 +367,7 @@ class hkBaseCD64A
 class FUN_00ddccb0 : public hkBaseAD64A, public hkBaseBD64A, public hkBaseCD64A
 {
   public:
-    FUN_00ddccb0(void* pkInfo) throw();
+    FUN_00ddccb0(void* contexts) throw();
     virtual ~FUN_00ddccb0() throw();
     hkWorldD64A* m_pOwningWorld;
 };
@@ -384,6 +389,8 @@ class FUN_00d64a50 : public FUN_00ddccb0, public hkListenerD64A
 };
 // After the base constructor, calls FUN_00c93920 with this on each actor entry of the owning world, if the world is set.
 // @fnv 0x00d64a50
+// pdb: hkpSimulationIslandViewer::hkpSimulationIslandViewer | hkpSimulationIslandViewer.obj | retail, object-file run extension, low
+// pdb params: contexts
 FUN_00d64a50::FUN_00d64a50(void* pkInfo) throw() : FUN_00ddccb0(pkInfo)
 {
     if (m_pOwningWorld)

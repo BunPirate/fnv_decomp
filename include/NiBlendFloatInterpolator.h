@@ -2,17 +2,18 @@
 
 #include "NiBlendInterpolator.h"
 
+// pdb: class NiBlendFloatInterpolator, size 0x34, bases: NiBlendInterpolator, 1 members
 class NiBlendFloatInterpolator : public NiBlendInterpolator
 {
 public:
-    NiBlendFloatInterpolator(bool onlyUseHighestWeight, float weightThreshold, unsigned char arraySize);
+    NiBlendFloatInterpolator(bool bManagerControlled, float fWeightThreshold, unsigned char ucArraySize);
 
-    virtual void LoadBinary(NiStream& stream);
+    virtual void LoadBinary(NiStream& kStream);
     virtual bool UpdateFloat(float time, NiObjectNET* target, float& value);
 
-    bool Update(float time, NiObjectNET* target, float& value);
-    bool UpdateAccumulatedTransform(float time, NiObjectNET* target, float& value);
-    bool UpdateSingleInterpolator(float time, NiObjectNET* target, float& value);
+    bool Update(float fTime, NiObjectNET* pkInterpTarget, float& fValue);
+    bool UpdateAccumulatedTransform(float fTime, NiObjectNET* pkInterpTarget, float& fValue);
+    bool UpdateSingleInterpolator(float fTime, NiObjectNET* pkInterpTarget, float& fValue);
 
     float m_fFloatValue;
 };

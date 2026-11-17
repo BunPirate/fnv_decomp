@@ -6,6 +6,7 @@
 class PackedTaskQueueProcessor;
 class TaskQueueInterface;
 #pragma pack(push, 4)
+// pdb: class TaskQueueInterface, size 0x10, 4 members
 class TaskQueueInterface
 {
   public:

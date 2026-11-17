@@ -20,6 +20,7 @@ extern NiMaterial* DAT_011f5e40;
 
 // @fnv 0x00a8fcc0
 // src: XBOX_PDB 0x00a8fcc0
+// pdb: NiSingleShaderMaterialLibrary::_SDMShutdown | NiSingleShaderMaterialLibrary.obj | retail, upstream name already matches, high
 void __cdecl NiSingleShaderMaterialLibrary__SDMShutdown()
 {
     NiMaterial* material = DAT_011f5e40;
@@ -29,6 +30,7 @@ void __cdecl NiSingleShaderMaterialLibrary__SDMShutdown()
 }
 
 // Local declarations pending include/NiShaderLibraryDesc.h: 0x00a9ffd0 reads count at 0x44; 0x00a9ffe0 indexes the array at 0x3C.
+// pdb: class NiShaderLibraryDesc, size 0x48 (here 0x1), bases: NiShaderRequirementDesc, 1 members
 class NiShaderLibraryDesc
 {
 public:
@@ -46,6 +48,8 @@ struct RefCountedNamedObject
 };
 // Walks the shader factory's library list, summing the material count reported by each library's descriptor, and returns the total.
 // @fnv 0x00a8fc70
+// pdb: NiSingleShaderMaterialLibrary::GetMaterialCount | NiSingleShaderMaterialLibrary.obj | retail, object-file run extension, low
+// pdb locals: pkLib, pkFactory, uiMaterialCount, pkDesc
 unsigned int NiSingleShaderMaterialLibrary::vf04()
 {
     RefCountedNamedObject* pkLib;
@@ -68,8 +72,9 @@ unsigned int NiSingleShaderMaterialLibrary::vf04()
 
 // Registers the class name string as the library name, then zeroes _c and _d.
 // @fnv 0x00a8fce0
+// pdb: NiSingleShaderMaterialLibrary::NiSingleShaderMaterialLibrary | NiSingleShaderMaterialLibrary.obj | retail, string-set bridge, high
 NiSingleShaderMaterialLibrary::NiSingleShaderMaterialLibrary()
-    : NiMaterialLibrary(NiFixedString("NiSingleShaderMaterialLibrary")), _c(0), _d(0)
+    : NiMaterialLibrary(NiFixedString("NiSingleShaderMaterialLibrary")), m_pkLastLibrary(0), m_uiLastDesc(0)
 {
 }
 
@@ -77,11 +82,12 @@ extern int DAT_0109f7b4;
 void __cdecl _delete(void*, unsigned int);
 // Sets the vfptr to DAT_0109f7b4, clears _c and _d, calls the NiMaterialLibrary destructor, and deletes this with size 0x14 when flag bit 0 is set.
 // @fnv 0x00a8fd30
+// pdb: NiSingleShaderMaterialLibrary::~NiSingleShaderMaterialLibrary | NiSingleShaderMaterialLibrary.obj | debug, object-file run extension, low
 void* NiSingleShaderMaterialLibrary::Destroy(unsigned int auiFlags)
 {
     *(void**)this = (void*)&DAT_0109f7b4;
-    _c = 0;
-    _d = 0;
+    m_pkLastLibrary = 0;
+    m_uiLastDesc = 0;
     NiMaterialLibrary::~NiMaterialLibrary();
     if (auiFlags & 1)
         _delete(this, 0x14);
@@ -89,25 +95,27 @@ void* NiSingleShaderMaterialLibrary::Destroy(unsigned int auiFlags)
 }
 
 // @fnv 0x00a8fac0
+// pdb: NiSingleShaderMaterialLibrary::GetFirstMaterialDesc | NiSingleShaderMaterialLibrary.obj | retail, object-file run extension, low
+// pdb locals: pkFactory, pkDesc
 void* NiSingleShaderMaterialLibrary::vf05()
 {
     NiShaderFactory* pkFactory = NiShaderFactory::GetInstance();
     RefCountedNamedObject* library = pkFactory->v14();
-    _c = (int)library;
-    _d = 0;
+    m_pkLastLibrary = (int)library;
+    m_uiLastDesc = 0;
     if (library)
     {
         NiShaderLibraryDesc* desc = library->w5();
         while (!desc->NiShaderLibraryDesc_GetShaderCount())
         {
-            _c = (int)pkFactory->v15();
-            _d = 0;
-            desc = ((RefCountedNamedObject*)_c)->w5();
+            m_pkLastLibrary = (int)pkFactory->v15();
+            m_uiLastDesc = 0;
+            desc = ((RefCountedNamedObject*)m_pkLastLibrary)->w5();
         }
         if (desc)
         {
             if (desc->NiShaderLibraryDesc_GetShaderCount())
-                return desc->NiShaderLibraryDesc_GetShaderDesc(_d);
+                return desc->NiShaderLibraryDesc_GetShaderDesc(m_uiLastDesc);
         }
     }
     return 0;
@@ -122,6 +130,9 @@ struct NameProvider
 };
 
 // @fnv 0x00a8fbf0
+// pdb: NiSingleShaderMaterialLibrary::GetMaterialName | NiSingleShaderMaterialLibrary.obj | retail, object-file run extension, low
+// pdb params: uiMaterial
+// pdb locals: uiCurrentIdx, pkLib, pkFactory, pkDesc, pkShaderDesc
 const char* NiSingleShaderMaterialLibrary::GetShaderNameByIndex(unsigned int uiShaderIndex)
 {
     unsigned int uiBaseIndex;
@@ -155,18 +166,20 @@ const char* NiSingleShaderMaterialLibrary::GetShaderNameByIndex(unsigned int uiS
 }
 
 // @fnv 0x00a8fb50
+// pdb: NiSingleShaderMaterialLibrary::GetNextMaterialDesc | NiSingleShaderMaterialLibrary.obj | retail, object-file run extension, low
+// pdb locals: pkLib, pkFactory, pkDesc
 void* NiSingleShaderMaterialLibrary::vf06()
 {
     NiShaderFactory* factory = NiShaderFactory::GetInstance();
     RefCountedNamedObject* lib = factory->v14();
-    if (lib != (RefCountedNamedObject*)_c)
+    if (lib != (RefCountedNamedObject*)m_pkLastLibrary)
     {
         do
         {
             lib = factory->v15();
-        } while (lib != (RefCountedNamedObject*)_c);
+        } while (lib != (RefCountedNamedObject*)m_pkLastLibrary);
     }
-    _d++;
+    m_uiLastDesc++;
     if (lib == 0)
     {
         goto L_008b;
@@ -176,20 +189,20 @@ L_0035:
     desc = lib->w5();
     if (desc != 0)
     {
-        if (desc->NiShaderLibraryDesc_GetShaderCount() > _d)
+        if (desc->NiShaderLibraryDesc_GetShaderCount() > m_uiLastDesc)
         {
             goto L_0067;
         }
     }
     lib = factory->v15();
-    _c = (int)lib;
-    _d = 0;
+    m_pkLastLibrary = (int)lib;
+    m_uiLastDesc = 0;
     if (lib != 0)
     {
         goto L_0035;
     }
 L_0067:
-    if (_c == 0)
+    if (m_pkLastLibrary == 0)
     {
         goto L_008b;
     }
@@ -198,7 +211,7 @@ L_0067:
         goto L_008b;
     }
     {
-        unsigned int idx = _d;
+        unsigned int idx = m_uiLastDesc;
         if (desc->NiShaderLibraryDesc_GetShaderCount() > idx)
         {
             return desc->NiShaderLibraryDesc_GetShaderDesc(idx);

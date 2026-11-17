@@ -19,8 +19,8 @@ class PositionKeyInterpolator : public NiAnimationKey
     {
         return reinterpret_cast<PositionKeyInterpolator*>(reinterpret_cast<char*>(this) + index * size);
     }
-    static NiPoint3 InterpolatePosition(float time, PositionKeyInterpolator* keys, KeyType type, unsigned int count,
-                                        unsigned int& lastIndex, unsigned char size);
+    static NiPoint3 InterpolatePosition(float fTime, PositionKeyInterpolator* pkKeys, KeyType eType, unsigned int uiNumKeys,
+                                        unsigned int& uiLastIdx, unsigned char ucSize);
 };
 
 typedef void(__cdecl* NiPosInterpFunction)(float, const NiAnimationKey*, const NiAnimationKey*, void*);

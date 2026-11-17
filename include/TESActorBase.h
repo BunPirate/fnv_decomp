@@ -53,12 +53,12 @@ public:
 
     virtual void InitItem();
     virtual void Revert(BGSLoadFormBuffer* buffer);
-    virtual float GetCurrentActorValue(ActorValue::Index actorValue);
+    virtual float GetCurrentActorValue(ActorValue::Index aiWhich);
 
     TESActorBase& operator=(const TESActorBase& other);
     void SetEssentialState(bool value);
     void Copy(TESForm* form);
-    bool ShouldUseDefaultAppearance(TESObjectREFR* reference);
+    bool ShouldUseDefaultAppearance(TESObjectREFR* apRef);
     SEX GetSex();
     SEX GetSex() const;
     TESClass* GetClass();
@@ -67,8 +67,8 @@ public:
     int GetHealth() const;
     // Exe/RTTI 0x005f0d00 is the boolean query in primary slot 81.
     virtual bool IsAutoCalculated() const;
-    void NotifyFormIDChanged(int flags);
-    virtual void LoadGame(BGSLoadFormBuffer* buffer);
+    void NotifyFormIDChanged(int aiChangeFlags);
+    virtual void LoadGame(BGSLoadFormBuffer* apLoadGameBuffer);
 
     int GetHealth_005f0b00();
     void SetHealth_005f0b30(int value);
@@ -77,13 +77,13 @@ public:
     bool DoesWalk();
     bool DoesFly();
     bool IsImmobile();
-    float GetDesirability(TESForm* form);
+    float GetDesirability(TESForm* apForm);
     void RemoveChange(int flags);
-    unsigned short GetSaveSize_005f16f0(unsigned int flags);
-    void SaveGame_005f18c0(unsigned int flags);
-    void LoadGame_005f1b30(unsigned int flags, unsigned int arg);
-    void SaveGame_005f1f30(unsigned int buffer);
-    void Reset3DForLoadedActors(bool value);
+    unsigned short GetSaveSize_005f16f0(unsigned int aiFlags);
+    void SaveGame_005f18c0(unsigned int aiFlags);
+    void LoadGame_005f1b30(unsigned int flags, unsigned int aiCurrentFlags);
+    void SaveGame_005f1f30(unsigned int apSaveGameBuffer);
+    void Reset3DForLoadedActors(bool acResetFlags);
     void* BGSProjectile_GetExplosion();
 
     void LimbRTTIAnchor();

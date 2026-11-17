@@ -14,12 +14,13 @@ class Animation;
 class BSAnimGroupSequence;
 #include "../../../include/ACTION_FLAGS.h"
 #include "../../../include/ANIM_GROUP_SECTION.h"
+// pdb: class Animation, size 0x13c (here 0x1), 33 members
 class Animation
 {
   public:
     BSAnimGroupSequence* Animation_GetCurrentSequence(ANIM_GROUP_SECTION section);
     BSAnimGroupSequence* GetSequenceForKey(BSAnimGroupSequence* sequence, unsigned short group);
-    bool IsGroupQueued(unsigned short group);
+    bool IsGroupQueued(unsigned short asTestGroup);
     BSAnimGroupSequence* PlayGroup(unsigned short group, ACTION_FLAGS flags, int loops, ANIM_GROUP_SECTION section);
 };
 #include "../../../include/TESAnimGroup.h"

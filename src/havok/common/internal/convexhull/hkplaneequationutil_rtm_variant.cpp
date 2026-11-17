@@ -109,13 +109,13 @@ inline void hkVector4::set(float x, float y, float z, float w)
     hkQuadReal yw = _mm_unpacklo_ps(_mm_set_ss(y), _mm_set_ss(w));
     m_vComponents = _mm_unpacklo_ps(xz, yw);
 }
-inline void hkVector4::setMul4(const hkSimdReal& r, const hkVector4& a)
+inline void hkVector4::setMul4(const hkSimdReal& r, const hkVector4& x)
 {
-    m_vComponents = _mm_mul_ps(r.broadcast(), a.m_vComponents);
+    m_vComponents = _mm_mul_ps(r.broadcast(), x.m_vComponents);
 }
-inline void hkVector4::mul4(const hkSimdReal& r)
+inline void hkVector4::mul4(const hkSimdReal& s)
 {
-    m_vComponents = _mm_mul_ps(r.broadcast(), m_vComponents);
+    m_vComponents = _mm_mul_ps(s.broadcast(), m_vComponents);
 }
 inline void hkVector4::add4(const hkVector4& a)
 {
@@ -135,9 +135,9 @@ inline void hkVector4::setNeg4(const hkVector4& a)
 {
     m_vComponents = _mm_xor_ps(a.m_vComponents, DAT_010c44d0);
 }
-inline hkSimdReal hkVector4::dot3(const hkVector4& a) const
+inline hkSimdReal hkVector4::dot3(const hkVector4& x) const
 {
-    hkQuadReal x2 = _mm_mul_ps(m_vComponents, a.m_vComponents);
+    hkQuadReal x2 = _mm_mul_ps(m_vComponents, x.m_vComponents);
     return _mm_add_ss(_mm_shuffle_ps(x2, x2, 0xaa), _mm_add_ss(_mm_shuffle_ps(x2, x2, 0x55), x2));
 }
 inline hkMatrix3::hkMatrix3()

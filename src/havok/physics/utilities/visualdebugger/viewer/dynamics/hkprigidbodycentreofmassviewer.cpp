@@ -54,6 +54,7 @@ struct View
 // Iterates entries and calls FUN_00d69c10 on each item via the owner at this-8.
 // @fnv 0x00d69f60
 // src: GUESS 0x00d69f60 (confidence: low)
+// pdb: hkpRigidBodyCentreOfMassViewer::init | hkpRigidBodyCentreOfMassViewer.obj | retail, vtable slot, high
 void View::ProcessEntries_00d69f60()
 {
     if (entries)
@@ -92,6 +93,8 @@ struct S_00d69fc0
 
 // Finds item in m_items and, if present, removes it by index.
 // @fnv 0x00d69fc0
+// pdb: hkpRigidBodyCentreOfMassViewer::entityRemovedCallback | hkpRigidBodyCentreOfMassViewer.obj | debug, vtable slot, medium
+// pdb params: entity
 void S_00d69fc0::RemoveItem(S_00d69fc0_Item* item)
 {
     int index = m_items.indexOf(item);
@@ -148,25 +151,27 @@ class D6A140Interface
 class D6A140Object : public D6A140ReferencedObject, public D6A140Interface
 {
   public:
-    __declspec(nothrow) D6A140Object(const void* info);
+    __declspec(nothrow) D6A140Object(const void* contexts);
 
     int unk0C[12];
 };
 
 // Allocates a D6A140Object with the given info and returns it as a D6A140Interface pointer.
 // @fnv 0x00d6a140
-// src: COMMUNITY 0x00d6a140
-D6A140Interface* __cdecl hkpRigidBodyCentreOfMassViewer_Create(const void* info)
+// src: XBOX_RETAIL_PDB 0x00d6a140 (was COMMUNITY)
+// pdb: hkpRigidBodyCentreOfMassViewer::create | hkpRigidBodyCentreOfMassViewer.obj | retail, object-file gap fill, high
+// pdb params: contexts
+D6A140Interface* __cdecl hkpRigidBodyCentreOfMassViewer_create(const void* contexts)
 {
-    return new D6A140Object(info);
+    return new D6A140Object(contexts);
 }
 
-extern void* DAT_01269020;
+extern void* hkpRigidBodyCentreOfMassViewer_m_tag; // src: XBOX_RETAIL_PDB 0x01269020 (old: DAT_01269020)
 // @fnv 0x00d6a1a0
 // src: GUESS 0x00d6a1a0 (confidence: low)
 void* __cdecl Object_GetDAT_01269020_00d6a1a0()
 {
-    return DAT_01269020;
+    return hkpRigidBodyCentreOfMassViewer_m_tag;
 }
 
 namespace fnv_00d6a1f0 {
@@ -193,6 +198,7 @@ Owner::~Owner()
 {}
 // Runs the Owner destructor, and if flags has bit 0 set, frees this object through the allocator obtained from FUN_00c85750 using unk04 as size; returns this.
 // @fnv 0x00d6a1f0
+// pdb: hkpRigidBodyCentreOfMassViewer::`scalar deleting destructor' | hkpRigidBodyCentreOfMassViewer.obj | retail, vtable slot, high
 void* Owner::DestroyOwner(unsigned int flags)
 {
     this->Owner::~Owner();
@@ -264,7 +270,7 @@ struct ArgOwner
     PtrItem** m_34;
     int m_38;
 
-    void Attach(void* p);
+    void Attach(void* worldListener);
     void Detach(void* p);
 };
 
@@ -288,6 +294,8 @@ struct FUN_00d69b20_cls
 
 // Attaches and detaches this object's slots on a1, then dispatches every element of a1's three lists through m_28.v08.
 // @fnv 0x00d69b20
+// pdb: hkpRigidBodyCentreOfMassViewer::removeWorld | hkpRigidBodyCentreOfMassViewer.obj | retail, object-file run extension, low
+// pdb params: world
 void FUN_00d69b20_cls::AttachAndDispatch(ArgOwner* apOwner)
 {
     apOwner->Attach(this != 0 ? (void*)&m_28 : 0);
@@ -354,7 +362,7 @@ extern const char DAT_010d224c[];
 struct FUN_00ddccb0
 {
     void* unk00;
-    FUN_00ddccb0(void* input);
+    FUN_00ddccb0(void* contexts);
 };
 struct FUN_00d6a040 : FUN_00ddccb0
 {
@@ -372,10 +380,12 @@ struct FUN_00d6a040 : FUN_00ddccb0
     volatile unsigned int unk30;
     volatile unsigned int unk34;
     volatile unsigned int unk38;
-    FUN_00d6a040(void* input);
+    FUN_00d6a040(void* contexts);
 };
 // @fnv 0x00d6a040
-FUN_00d6a040::FUN_00d6a040(void* input) : FUN_00ddccb0(input)
+// pdb: hkpRigidBodyCentreOfMassViewer::hkpRigidBodyCentreOfMassViewer | hkpRigidBodyCentreOfMassViewer.obj | retail, object-file gap fill, high
+// pdb params: contexts
+FUN_00d6a040::FUN_00d6a040(void* contexts) : FUN_00ddccb0(contexts)
 {
     unk28 = (void*)str_0102f13c;
     unk2c = (void*)DAT_010ccf7c;
@@ -392,18 +402,20 @@ FUN_00d6a040::FUN_00d6a040(void* input) : FUN_00ddccb0(input)
 class RegistryOwner
 {
   public:
-    void* Register(const char* name, void (*callback)());
+    void* Register(const char* viewerName, void (*creationFunction)());
 };
 
 extern RegistryOwner* DAT_01269cd0;
-extern void* DAT_01269020;
+extern void* hkpRigidBodyCentreOfMassViewer_m_tag; // src: XBOX_RETAIL_PDB 0x01269020 (old: DAT_01269020)
 
-extern void hkpRigidBodyCentreOfMassViewer_Create();
+extern void hkpRigidBodyCentreOfMassViewer_create();
 
 // @fnv 0x00d6a180
-void RegisterCenterOfMass()
+// src: XBOX_RETAIL_PDB 0x00d6a180
+// pdb: hkpRigidBodyCentreOfMassViewer::registerViewer | hkpRigidBodyCentreOfMassViewer.obj | retail, string-set bridge, high
+void hkpRigidBodyCentreOfMassViewer_registerViewer()
 {
-    DAT_01269020 = DAT_01269cd0->Register("Center of Mass", hkpRigidBodyCentreOfMassViewer_Create);
+    hkpRigidBodyCentreOfMassViewer_m_tag = DAT_01269cd0->Register("Center of Mass", hkpRigidBodyCentreOfMassViewer_create);
 }
 
 struct DwordList
@@ -426,7 +438,7 @@ namespace fnvc_adapt {
 GlobalHolder* __cdecl hkMemoryRouter_getInstance();
 }
 extern "C" void _ReadWriteBarrier(void);
-void __cdecl ResizeAudioStream(void* aAlloc, void* aList, unsigned int aiElemSize);
+void __cdecl ResizeAudioStream(void* mem, void* array, unsigned int sizeElem);
 
 struct FUN_00d6a000_cls
 {
@@ -434,12 +446,15 @@ struct FUN_00d6a000_cls
     int unk04;
     DwordList m_kNode;
 
-    void AppendDword(unsigned int aValue);
+    void AppendDword(unsigned int entity);
 };
 
 // Appends aValue to the DwordList, growing it via ResizeAudioStream when full, then increments the element count.
 // @fnv 0x00d6a000
-void FUN_00d6a000_cls::AppendDword(unsigned int aValue)
+// pdb: hkpRigidBodyCentreOfMassViewer::entityAddedCallback | hkpRigidBodyCentreOfMassViewer.obj | retail, vtable slot, high
+// pdb params: entity
+// pdb locals: rigidBody
+void FUN_00d6a000_cls::AppendDword(unsigned int entity)
 {
     DwordList* list = &m_kNode;
     GlobalHolder* pAllocHolder = fnvc_adapt::hkMemoryRouter_getInstance();
@@ -451,7 +466,7 @@ void FUN_00d6a000_cls::AppendDword(unsigned int aValue)
     unsigned int count = (unsigned int)list->m_iArrayLength;
     unsigned int data = (unsigned int)list->m_pData;
     unsigned int pSlot = data + count * 4u;
-    *(unsigned int*)pSlot = *(volatile unsigned int*)&aValue;
+    *(unsigned int*)pSlot = *(volatile unsigned int*)&entity;
     list->m_iArrayLength++;
 }
 
@@ -571,6 +586,7 @@ struct FUN_00d6a0a0 : Base00, Base08, Base20, Base28, Base2C
 
 // Destructor: iterates the Source's unk70 entries and calls AttachAndDispatch on each pointer in unk6C when unk24 is set.
 // @fnv 0x00d6a0a0
+// pdb: hkpRigidBodyCentreOfMassViewer::~hkpRigidBodyCentreOfMassViewer | hkpRigidBodyCentreOfMassViewer.obj | retail, object-file gap fill, high
 FUN_00d6a0a0::~FUN_00d6a0a0()
 {
     if (unk24)
@@ -718,7 +734,7 @@ struct COMViewerPart
     int unk00;
     Body** items;
     int count;
-    void hkpRigidBodyCentreOfMassViewer_postSimulationCallback(void* unused);
+    void hkpRigidBodyCentreOfMassViewer_postSimulationCallback(void* world);
 };
 
 struct COMViewer : HandlerOwner, COMViewerPart
@@ -728,9 +744,12 @@ struct COMViewer : HandlerOwner, COMViewerPart
 // For each body whose motion.FUN_00c86430() is nonzero, draws red, green and blue lines from its position along its three axes through the display handler.
 // @fnv 0x00d69d00
 // src: XBOX_PDB 0x00d69d00
-void COMViewerPart::hkpRigidBodyCentreOfMassViewer_postSimulationCallback(void* unused)
+// pdb: hkpRigidBodyCentreOfMassViewer::postSimulationCallback | hkpRigidBodyCentreOfMassViewer.obj | retail, string-set bridge, high
+// pdb params: world
+// pdb locals: zAxis, xAxis, yAxis, centreOfMass
+void COMViewerPart::hkpRigidBodyCentreOfMassViewer_postSimulationCallback(void* world)
 {
-    (void)unused;
+    (void)world;
     struct Timings
     {
         volatile unsigned int begin, computeEnd, displayBegin, finalEnd;
@@ -759,11 +778,11 @@ void COMViewerPart::hkpRigidBodyCentreOfMassViewer_postSimulationCallback(void* 
                 monEnd(DAT_010d2200, &timers.displayBegin);
                 void* id = &items[i]->idAt10;
                 static_cast<COMViewer*>(this)->handler->DisplayLine(axisLines.pos, axisLines.endX, 0xFFFF0000u, id,
-                                                                    DAT_01269020);
+                                                                    hkpRigidBodyCentreOfMassViewer_m_tag);
                 static_cast<COMViewer*>(this)->handler->DisplayLine(axisLines.pos, axisLines.endY, 0xFF008000u, id,
-                                                                    DAT_01269020);
+                                                                    hkpRigidBodyCentreOfMassViewer_m_tag);
                 static_cast<COMViewer*>(this)->handler->DisplayLine(axisLines.pos, axisLines.endZ, 0xFF0000FFu, id,
-                                                                    DAT_01269020);
+                                                                    hkpRigidBodyCentreOfMassViewer_m_tag);
                 monEnd(DAT_010c41f8, &timers.finalEnd);
             }
             ++i;
@@ -981,8 +1000,8 @@ struct Context
     int unk30;
     Record** list34;
     int count38;
-    void hkpWorld_addEntityListener(Callback* ptr);
-    void hkpWorld_addWorldPostSimulationListener(int* ptr);
+    void hkpWorld_addEntityListener(Callback* worldListener);
+    void hkpWorld_addWorldPostSimulationListener(int* worldListener);
 };
 struct CenterOfMassRemovalDispatcher
 {
@@ -1003,6 +1022,8 @@ struct CenterOfMassRemovalDispatcher
 // Passes callback28 and data2c to context, then calls callback28.deliver for each entry in the data48 lists of list28, list34 and special20.
 // @fnv 0x00d69c10
 // src: GUESS 0x00d69c10 (confidence: low)
+// pdb: hkpRigidBodyCentreOfMassViewer::addWorld | hkpRigidBodyCentreOfMassViewer.obj | retail, object-file run extension, low
+// pdb params: world
 void CenterOfMassRemovalDispatcher::ProcessEntries_00d69c10(Context* context)
 {
     context->hkpWorld_addEntityListener(this ? &callback28 : 0);

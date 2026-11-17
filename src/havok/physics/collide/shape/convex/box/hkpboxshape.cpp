@@ -42,6 +42,7 @@ __declspec(noinline) hkpBoxShape::~hkpBoxShape() throw() {}
 
 // The deleting-destructor entry receives this in ECX and flags on the stack; EDX is unused.
 // @fnv 0x00c9e1b0
+// pdb: hkpBoxShape::`scalar deleting destructor' | hkpBoxShape.obj | debug, vtable slot, medium
 void* __fastcall DeleteBoxShape(hkpBoxShape* shape, void*, unsigned char flags)
 {
     shape->hkpBoxShape::~hkpBoxShape();
@@ -51,7 +52,7 @@ void* __fastcall DeleteBoxShape(hkpBoxShape* shape, void*, unsigned char flags)
         // The shared MemoryManager has no sized allocator Free; preserve slot 2's dispatch.
         typedef void (__thiscall* SizedFree)(void*, void*, unsigned short);
         void* allocator = router->m_heap;
-        (*reinterpret_cast<SizedFree**>(allocator))[2](allocator, shape, shape->m_usMemSizeAndFlags);
+        (*reinterpret_cast<SizedFree**>(allocator))[2](allocator, shape, shape->m_memSizeAndFlags);
     }
     return shape;
 }
@@ -66,7 +67,7 @@ int __stdcall Object_Return0x30(int a1, int a2)
 
 extern "C" int DAT_01268940;
 
-void __cdecl hkReferencedObject_calcContentStatistics(int a, int* b);
+void __cdecl hkReferencedObject_calcContentStatistics(int collector, int* cls);
 
 // @fnv 0x00c9db60
 // src: HAVOK_SRC 0x00c9db60
@@ -80,24 +81,27 @@ void __cdecl ComputeAabbFromTransform(const hkTransform& transform, const hkVect
 // @fnv 0x00c9dc10
 void __thiscall hkpBoxShape::GetAabb(const hkTransform& transform, hkReal tolerance, hkAabb& out) const
 {
-    ComputeAabbFromTransform(transform, m_vHalfExtents, m_fSphereRadius + tolerance, out);
+    ComputeAabbFromTransform(transform, m_halfExtents, m_radius + tolerance, out);
 }
 
 extern void* DAT_010c70b4;
 
 // @fnv 0x00c9ddb0
+// pdb: hkpBoxShape::hkpBoxShape | hkpBoxShape.obj | debug, call graph, medium
+// pdb params: halfExtents, radius
+// pdb locals: assertBuf, ostr
 hkpBoxShape* hkpBoxShape::SetExtentsAndRadius(const hkVector4& extents, float radius)
 {
-    m_fSphereRadius = radius;
-    m_sReferenceCount = 1;
-    m_ulUserData = 0;
+    m_radius = radius;
+    m_referenceCount = 1;
+    m_userData = 0;
     *reinterpret_cast<int*>(&m_type) = 4;
     *reinterpret_cast<void**>(this) = &DAT_010c70b4;
-    memcpy(&m_vHalfExtents, &extents, sizeof(m_vHalfExtents));
+    memcpy(&m_halfExtents, &extents, sizeof(m_halfExtents));
 
-    float smaller = m_vHalfExtents.x < m_vHalfExtents.y ? m_vHalfExtents.x : m_vHalfExtents.y;
-    m_vHalfExtents.w = smaller;
-    m_vHalfExtents.w = m_vHalfExtents.z < m_vHalfExtents.w ? m_vHalfExtents.z : m_vHalfExtents.w;
+    float smaller = m_halfExtents.x < m_halfExtents.y ? m_halfExtents.x : m_halfExtents.y;
+    m_halfExtents.w = smaller;
+    m_halfExtents.w = m_halfExtents.z < m_halfExtents.w ? m_halfExtents.z : m_halfExtents.w;
     return this;
 }
 
@@ -116,7 +120,7 @@ extern float DAT_010c44d0[4];
 void __thiscall hkpBoxShape::getSupportingVertexImpl(const float* src, float* dst)
 {
     hkVector4 e;
-    memcpy(&e, &m_vHalfExtents, sizeof(e));
+    memcpy(&e, &m_halfExtents, sizeof(e));
     LocalM128 v = _mm_and_ps(_mm_load_ps(src), _mm_load_ps(DAT_010c44d0));
     v = _mm_xor_ps(v, _mm_load_ps(&e.x));
     _mm_store_ps(&e.x, v);
@@ -171,16 +175,16 @@ void __cdecl ComputeAabbFromTransform(const hkTransform& kLocalToWorld, const hk
 // @fnv 0x00c9db90
 void __thiscall hkpBoxShape::SetHalfExtents(const hkVector4& halfExtents)
 {
-    *(LocalM128*)&m_vHalfExtents = *(LocalM128*)&halfExtents;
-    m_vHalfExtents.w = (m_vHalfExtents.x < m_vHalfExtents.y) ? m_vHalfExtents.x : m_vHalfExtents.y;
-    m_vHalfExtents.w = (m_vHalfExtents.w > m_vHalfExtents.z) ? m_vHalfExtents.z : m_vHalfExtents.w;
+    *(LocalM128*)&m_halfExtents = *(LocalM128*)&halfExtents;
+    m_halfExtents.w = (m_halfExtents.x < m_halfExtents.y) ? m_halfExtents.x : m_halfExtents.y;
+    m_halfExtents.w = (m_halfExtents.w > m_halfExtents.z) ? m_halfExtents.z : m_halfExtents.w;
 }
 
 // @fnv 0x00c9dbf0
 void hkpBoxShape::GetHalfExtents(hkVector4& result) const
 {
     _mm_store_ps(reinterpret_cast<float*>(&result),
-                 _mm_load_ps(reinterpret_cast<const float*>(&m_vHalfExtents)));
+                 _mm_load_ps(reinterpret_cast<const float*>(&m_halfExtents)));
 }
 
 extern "C" LocalM128 _mm_mul_ps(LocalM128, LocalM128);
@@ -190,11 +194,14 @@ extern "C" const LocalM128 DAT_010c7030[8];
 // Multiplies the half-extents and sphere radius by DAT_010c7030 coefficients and writes the results into sphereBuffer.
 // @fnv 0x00c9dd30
 // src: HAVOK_SRC 0x00c9dd30
+// pdb: hkpBoxShape::getCollisionSpheresImpl | hkpBoxShape.obj | retail, upstream name already matches, high
+// pdb params: sphereBuffer
+// pdb locals: radius
 void* hkpBoxShape::getCollisionSpheresImpl(LocalM128* sphereBuffer) const
 {
     __declspec(align(16)) hkVector4 extents;
-    memcpy(&extents, &m_vHalfExtents, sizeof(extents));
-    extents.w = m_fSphereRadius;
+    memcpy(&extents, &m_halfExtents, sizeof(extents));
+    extents.w = m_radius;
 
     LocalM128 v = *(LocalM128*)&extents;
     int i = 3;
@@ -309,14 +316,17 @@ struct BRRayCastOutput
 
 // @fnv 0x00c9de40
 // src: HAVOK_SRC 0x00c9de40
+// pdb: hkpBoxShape::castRayImpl | hkpBoxShape.obj | retail, string-set bridge, high
+// pdb params: input, results
+// pdb locals: radiusExtents, negativeHalfExtents, hitnormal, maskiterator
 hkBool hkpBoxShape::castRayImpl(const BRRayCastInput& input, BRRayCastOutput& results) const
 {
     BRMonitorStream::GetMonitorStream().timerCommand("TtrcBox");
 
     hkVector4 tolerance4;
-    tolerance4.SetAllComponents(m_fSphereRadius);
+    tolerance4.SetAllComponents(m_radius);
     hkVector4 halfExtents;
-    halfExtents.setAdd4(tolerance4, m_vHalfExtents);
+    halfExtents.setAdd4(tolerance4, m_halfExtents);
     hkVector4 negHalfExtents;
     negHalfExtents.setNeg4(halfExtents);
 

@@ -8,6 +8,7 @@ class NiProperty;
 class SkyShaderProperty;
 
 #include "../../../include/ENUM_LOD_MULT.h"
+// pdb: class ModelLoader, size 0x30 (here 0x1), 12 members
 class ModelLoader
 {
   public:

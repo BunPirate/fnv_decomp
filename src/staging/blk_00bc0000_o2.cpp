@@ -157,17 +157,17 @@ public:
     void Unitize_004a0c10();
     float FUN_004a7290();
     float FUN_004a7290() const;
-    LocalVec3 FUN_004b3800(const LocalVec3& other) const;
+    LocalVec3 FUN_004b3800(const LocalVec3& pt) const;
     LocalVec3 ProcessAndReturnValue_0053d280(float divisor);
     float NiPoint3_XYLength();
     float NiPoint3_XYLength() const;
     void ComputeValue_0063c8a0(const LocalVec3* other);
     void ComputeValue_0063c8a0(void* other);
     void FUN_006815c0();
-    float CVec3_Distance(LocalVec3* other);
-    float CVec3_Distance(const LocalVec3& other) const;
-    LocalVec3 TransformPointByMatrix4(const Mat& matrix);
-    LocalVec3 TransformPointByMatrix4(const Matrix4* matrix);
+    float CVec3_Distance(LocalVec3* cVec);
+    float CVec3_Distance(const LocalVec3& cVec) const;
+    LocalVec3 TransformPointByMatrix4(const Mat& cTransform);
+    LocalVec3 TransformPointByMatrix4(const Matrix4* cTransform);
     void Normalize_00b12790();
     LocalVec3 Diff_00b13040(void* other);
     LocalVec3 Diff_00b13040(const LocalVec3& other) const;
@@ -279,7 +279,7 @@ __forceinline float NiPoint3::operator*(const NiPoint3& pt) const
     return y * pt.y + x * pt.x + z * pt.z;
 }
 
-extern "C" void* g_01201f5c;
+extern "C" void* BoltShader_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01201f5c (old: g_01201f5c)
 
 extern "C" void* __cdecl memcpy(void*, const void*, unsigned int);
 
@@ -354,7 +354,7 @@ inline bool IsKindOfType(const NiObject* object, const NiRTTI* type)
     {
         if (compare == type)
             return true;
-        compare = compare->m_pBaseRTTI;
+        compare = compare->m_pkBaseRTTI;
     }
     return false;
 }
@@ -363,7 +363,7 @@ inline bool IsKindOfType(const NiObject* object, const NiRTTI* type)
 // src: XBOX_PDB 0x00bc0f70
 void* __cdecl BoltShader_GetRTTI()
 {
-    return &g_01201f5c;
+    return &BoltShader_ms_RTTI;
 }
 
 extern MemoryManager g_memoryManager;
@@ -371,6 +371,7 @@ extern void* DAT_01201f4c;
 
 // @fnv 0x00bc0c50
 // src: XBOX_PDB 0x00bc0c50
+// pdb: BoltShader::ClearSegmentIndexArray | BoltShader.obj | retail, upstream name already matches, high
 void __cdecl BoltShader_ClearSegmentIndexArray()
 {
     if (DAT_01201f4c)
@@ -386,11 +387,13 @@ struct FUN_00bc1fa0_class
 };
 struct FUN_00bc2510_class : FUN_00bc1fa0_class
 {
-    void* FUN_00bc2510(int a);
+    void* BoltShaderProperty_ScalarDtor(int a);
 };
 // Calls FUN_00bc1fa0, then deletes this with size 0x190 when bit 0 of a is set, and returns this.
 // @fnv 0x00bc2510
-void* FUN_00bc2510_class::FUN_00bc2510(int aiFlags)
+// src: XBOX_RETAIL_PDB 0x00bc2510
+// pdb: BoltShaderProperty::`scalar deleting destructor' | BoltShaderProperty.obj | retail, object-file gap fill, high
+void* FUN_00bc2510_class::BoltShaderProperty_ScalarDtor(int aiFlags)
 {
     FUN_00bc1fa0();
     if (aiFlags & 1)
@@ -399,7 +402,7 @@ void* FUN_00bc2510_class::FUN_00bc2510(int aiFlags)
 }
 
 extern bool DAT_01201f70;
-void __cdecl ReleaseFadeNodeResources();
+void __cdecl BSFadeNode_KillSDM();
 void __cdecl ReleaseStringHolders();
 
 // @fnv 0x00bc2960
@@ -408,7 +411,7 @@ void __cdecl Object_UpdateFields_00bc2960()
 {
     if (DAT_01201f70)
     {
-        ReleaseFadeNodeResources();
+        BSFadeNode_KillSDM();
         ReleaseStringHolders();
         DAT_01201f70 = false;
     }
@@ -455,14 +458,16 @@ FUN_00bc3350_Class* FUN_00bc3350_Class::FUN_00bc3350(int aiFlags)
 
 struct FUN_00bc34a0_class
 {
-    void* __thiscall BSRefractionStrengthController_GetTargetFloatValue(float* out);
+    void* __thiscall BSRefractionStrengthController_GetTargetFloatValue(float* fValue);
 };
 
 // @fnv 0x00bc34a0
 // src: XBOX_PDB 0x00bc34a0
-void* __thiscall FUN_00bc34a0_class::BSRefractionStrengthController_GetTargetFloatValue(float* out)
+// pdb: BSRefractionStrengthController::GetTargetFloatValue | BSRefractionStrengthController.obj | debug, upstream name already matches, high
+// pdb params: fValue
+void* __thiscall FUN_00bc34a0_class::BSRefractionStrengthController_GetTargetFloatValue(float* fValue)
 {
-    *out = *(float*)((char*)*(void**)((char*)this + 0x2c) + 0xe0);
+    *fValue = *(float*)((char*)*(void**)((char*)this + 0x2c) + 0xe0);
     return *(void**)((char*)this + 0x2c);
 }
 
@@ -472,14 +477,16 @@ struct FUN_00bc3780_Class : BSShaderProperty
 {
     // BSShaderProperty does not yet declare its stream override.
     void __thiscall BSShaderProperty_SaveBinary(NiStream&);
-    void __thiscall VolumetricFogShaderProperty_SaveBinary(NiStream& stream);
+    void __thiscall VolumetricFogShaderProperty_SaveBinary(NiStream& kStream);
 };
 // @fnv 0x00bc3780
 // src: XBOX_PDB 0x00bc3780
-void __thiscall FUN_00bc3780_Class::VolumetricFogShaderProperty_SaveBinary(NiStream& stream)
+// pdb: VolumetricFogShaderProperty::SaveBinary | VolumetricFogShaderProperty.obj | retail, upstream name already matches, high
+// pdb params: kStream
+void __thiscall FUN_00bc3780_Class::VolumetricFogShaderProperty_SaveBinary(NiStream& kStream)
 {
-    BSShaderProperty_SaveBinary(stream);
-    ((void (__thiscall*)(NiColorA*, NiStream&))NiColorA_SaveBinary)((NiColorA*)((char*)this + 0x60), stream);
+    BSShaderProperty_SaveBinary(kStream);
+    ((void (__thiscall*)(NiColorA*, NiStream&))NiColorA_SaveBinary)((NiColorA*)((char*)this + 0x60), kStream);
 }
 
 extern void* __cdecl operator new(unsigned int);
@@ -489,10 +496,12 @@ void __fastcall FUN_00baa0e0(void*);
 struct FUN_00bc3800_Class
 {
     void* m_p;
-    void* __thiscall FUN_00bc3800(int flags);
+    void* __thiscall VolumetricFogShaderProperty_ScalarDtor(int flags);
 };
 // @fnv 0x00bc3800
-void* __thiscall FUN_00bc3800_Class::FUN_00bc3800(int flags)
+// src: XBOX_RETAIL_PDB 0x00bc3800
+// pdb: VolumetricFogShaderProperty::`scalar deleting destructor' | VolumetricFogShaderProperty.obj | retail, object-file gap fill, high
+void* __thiscall FUN_00bc3800_Class::VolumetricFogShaderProperty_ScalarDtor(int flags)
 {
     m_p = &DAT_010bab28;
     FUN_00baa0e0(this);
@@ -520,11 +529,13 @@ extern "C" void __cdecl operator delete(void* p, unsigned int size);
 
 struct FUN_00bc5980_cls
 {
-    void* __thiscall FUN_00bc5980(int flags);
+    void* __thiscall VolumetricFogShader_ScalarDtor(int flags);
 };
 
 // @fnv 0x00bc5980
-void* __thiscall FUN_00bc5980_cls::FUN_00bc5980(int flags)
+// src: XBOX_RETAIL_PDB 0x00bc5980
+// pdb: VolumetricFogShader::`scalar deleting destructor' | VolumetricFogShader.obj | retail, object-file gap fill, high
+void* __thiscall FUN_00bc5980_cls::VolumetricFogShader_ScalarDtor(int flags)
 {
     FUN_00bc5320();
     if (flags & 1)
@@ -554,10 +565,12 @@ void __cdecl FUN_00bd2c40();
 extern "C" void __cdecl operator delete(void*, unsigned int);
 struct FUN_00bd2fd0_class
 {
-    void* __thiscall FUN_00bd2fd0(int flags);
+    void* __thiscall SpeedTreeFrondShader_ScalarDtor(int flags);
 };
 // @fnv 0x00bd2fd0
-void* __thiscall FUN_00bd2fd0_class::FUN_00bd2fd0(int flags)
+// src: XBOX_RETAIL_PDB 0x00bd2fd0
+// pdb: SpeedTreeFrondShader::`scalar deleting destructor' | SpeedTreeFrondShader.obj | retail, object-file gap fill, high
+void* __thiscall FUN_00bd2fd0_class::SpeedTreeFrondShader_ScalarDtor(int flags)
 {
     FUN_00bd2c40();
     if (flags & 1)
@@ -597,6 +610,7 @@ struct FUN_00bd6ab0_Class
 // Returns 1 if the float at offset 0x70 is positive, DAT_012023d4 is set, and GetImageSpaceTexture returns non-null; otherwise 0.
 // @fnv 0x00bd6ab0
 // src: COMMUNITY 0x00bd6ab0
+// pdb: ImageSpaceEffectDepthOfField::IsActive | ImageSpaceEffectDepthOfField.obj | retail, upstream name already matches, high
 int FUN_00bd6ab0_Class::ImageSpaceEffectDepthOfField_IsActive()
 {
     if (*(float*)((char*)this + 0x70) > 0.0f && DAT_012023d4)
@@ -636,6 +650,7 @@ struct FUN_00bc0970_class : LodShaderBase
 };
 // @fnv 0x00bc0970
 // src: XBOX_PDB 0x00bc0970
+// pdb: BoltShader::RecreateRendererData | BoltShader.obj | retail, upstream name already matches, high
 void FUN_00bc0970_class::BoltShader_RecreateRendererData()
 {
     if (*(int*)((char*)this + 0x28))
@@ -661,6 +676,7 @@ struct FUN_00bc2bd0_class
 
 // @fnv 0x00bc2bd0
 // src: XBOX_PDB 0x00bc2bd0
+// pdb: BSOrderedNode::BSOrderedNode | BSOrderedNode.obj | retail, upstream name already matches, high
 int* __thiscall FUN_00bc2bd0_class::BSOrderedNode_BSOrderedNode()
 {
     FUN_00c5f570();
@@ -675,6 +691,8 @@ int* __thiscall FUN_00bc2bd0_class::BSOrderedNode_BSOrderedNode()
 
 // @fnv 0x00bc3040
 // src: XBOX_PDB 0x00bc3040
+// pdb: BSMaterialEmittanceMultController::GetTargetFloatValue | BSMaterialEmittanceMultController.obj | debug, upstream name already matches, high
+// pdb params: fValue
 void __fastcall BSMaterialEmittanceMultController_GetTargetFloatValue(void* self, int, float* out)
 {
     *out = *(float*)((char*)*(int**)((char*)self + 0x2c) + 0x40);
@@ -689,15 +707,17 @@ extern GlobalObjectO2_00a7b610 g_01201f90;
 char* __cdecl NiViewerStrings_NiGetViewerString_Title(char*);
 // @fnv 0x00bc31f0
 // src: XBOX_PDB 0x00bc31f0
-void __stdcall BSMaterialEmittanceMultController_GetViewerStrings(StrArr* pStrArr)
+// pdb: BSMaterialEmittanceMultController::GetViewerStrings | BSMaterialEmittanceMultController.obj | retail, upstream name already matches, high
+// pdb params: pkStrings
+void __stdcall BSMaterialEmittanceMultController_GetViewerStrings(StrArr* pkStrings)
 {
-    NiFloatInterpController_GetViewerStrings(pStrArr);
+    NiFloatInterpController_GetViewerStrings(pkStrings);
     char* p = NiViewerStrings_NiGetViewerString_Title(g_01201f90.pData);
-    unsigned int i = *(unsigned short*)((char*)pStrArr + 0xa);
-    unsigned int j = *(unsigned short*)((char*)pStrArr + 0x8);
+    unsigned int i = *(unsigned short*)((char*)pkStrings + 0xa);
+    unsigned int j = *(unsigned short*)((char*)pkStrings + 0x8);
     if (i >= j)
-        pStrArr->SetSize(*(unsigned short*)((char*)pStrArr + 0xe) + i);
-    pStrArr->SetAt(i, p);
+        pkStrings->SetSize(*(unsigned short*)((char*)pkStrings + 0xe) + i);
+    pkStrings->SetAt(i, p);
 }
 
 // @fnv 0x00bd9150
@@ -719,6 +739,9 @@ struct Shader_00bd9540
 // Selects a shader pass from the four bool flags and type, adds it to pPasses for type 1 or increments count otherwise, then sets out to false.
 // @fnv 0x00bd9540
 // src: COMMUNITY 0x00bd9540
+// pdb: BSShaderPPLightingProperty::AddAmbientPass_1x | BSShaderPPLightingProperty_Passes_1x.obj | retail, object-file run extension, low
+// pdb params: apGeom, apSunlight, asCount, abUpdateList, abFirst, abSkinned, abAlphaTest, abGlowMap, abTreeBranch
+// pdb locals: ppass
 int Shader_00bd9540::BSShaderProperty_AddPass_Ambient(NiGeometry* geom, ShadowSceneLight* light, unsigned short* pusCount,
                                   unsigned char type, bool* pbOut, bool a, bool b, bool c, bool d)
 {
@@ -809,6 +832,7 @@ int Shader_00bd9540::BSShaderProperty_AddPass_Ambient(NiGeometry* geom, ShadowSc
 
 struct NiTexture;
 
+// pdb: class ImageSpaceShaderParam, size 0x88 (here 0x1), bases: ImageSpaceEffectParam, 13 members
 struct ImageSpaceShaderParam
 {
     void SetShaderConstantVector4(int, float, float, float, float);
@@ -844,25 +868,30 @@ struct GlobalObjectO2_00a7b610_2
 {
     char* pData;
 };
-extern GlobalObjectO2_00a7b610_2 g_01201f9c;
+extern GlobalObjectO2_00a7b610_2 BSRefractionFirePeriodController_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01201f9c (old: g_01201f9c)
 char* __cdecl NiViewerStrings_NiGetViewerString_Title(char*);
 
 // @fnv 0x00bc3450
 // src: XBOX_PDB 0x00bc3450
-void __stdcall BSRefractionFirePeriodController_GetViewerStrings(StrArr* pArray)
+// pdb: BSRefractionFirePeriodController::GetViewerStrings | BSRefractionFirePeriodController.obj | retail, upstream name already matches, high
+// pdb params: pkStrings
+void __stdcall BSRefractionFirePeriodController_GetViewerStrings(StrArr* pkStrings)
 {
-    NiFloatInterpController_GetViewerStrings((StrArr*)pArray);
-    char* s = NiViewerStrings_NiGetViewerString_Title(g_01201f9c.pData);
-    unsigned int i = *(unsigned short*)((char*)pArray + 0xa);
-    if (i >= *(unsigned short*)((char*)pArray + 8))
-        pArray->SetSize(i + *(unsigned short*)((char*)pArray + 0xe));
-    pArray->SetAt(i, s);
+    NiFloatInterpController_GetViewerStrings((StrArr*)pkStrings);
+    char* s = NiViewerStrings_NiGetViewerString_Title(BSRefractionFirePeriodController_ms_RTTI.pData);
+    unsigned int i = *(unsigned short*)((char*)pkStrings + 0xa);
+    if (i >= *(unsigned short*)((char*)pkStrings + 8))
+        pkStrings->SetSize(i + *(unsigned short*)((char*)pkStrings + 0xe));
+    pkStrings->SetAt(i, s);
 }
 
 // Adds a pass (0x1e5 or 0x1e6 depending on a and type) to pPasses, or increments count when type is not 1; clears out and returns 0.
 // @fnv 0x00bd9e60
-// src: COMMUNITY 0x00bd9e60
-int __fastcall BSShaderProperty_AddPass_NormalsClear(Shader_00bd9540* self, int edx, NiGeometry* geom, unsigned short* count, unsigned char type,
+// src: XBOX_RETAIL_PDB 0x00bd9e60 (was COMMUNITY)
+// pdb: BSShaderPPLightingProperty::AddRenderNormalsClearPass_1x | BSShaderPPLightingProperty_Passes_1x.obj | retail, object-file gap fill, high
+// pdb params: apGeom, asCount, abUpdateList, abFirst, abSkinned
+// pdb locals: ppass
+int __fastcall BSShaderPPLightingProperty_AddRenderNormalsClearPass_1x(Shader_00bd9540* self, int edx, NiGeometry* geom, unsigned short* count, unsigned char type,
                             bool* pbOut, bool a)
 {
     if (!a)
@@ -890,38 +919,41 @@ int __fastcall BSShaderProperty_AddPass_NormalsClear(Shader_00bd9540* self, int 
 
 struct FUN_00bd9f90_class : Shader_00bd9540
 {
-    int BSShaderProperty_AddPass_ZOnly_TexEffect(NiGeometry* geom, unsigned short* count, unsigned char type, bool* out, bool a);
+    int BSShaderPPLightingProperty_AddZOnlyTextureEffectPass_1x(NiGeometry* apGeom, unsigned short* asCount, unsigned char abUpdateList, bool* abFirst, bool abSkinned);
 };
 
 // Adds geom to pPasses with pass 5 or 4 depending on a and type, or increments count when type is not 1; clears out and returns 0.
 // @fnv 0x00bd9f90
-// src: COMMUNITY 0x00bd9f90
-int FUN_00bd9f90_class::BSShaderProperty_AddPass_ZOnly_TexEffect(NiGeometry* geom, unsigned short* count, unsigned char type, bool* pbOut, bool a)
+// src: XBOX_RETAIL_PDB 0x00bd9f90 (was COMMUNITY)
+// pdb: BSShaderPPLightingProperty::AddZOnlyTextureEffectPass_1x | BSShaderPPLightingProperty_Passes_1x.obj | retail, call graph, high
+// pdb params: apGeom, asCount, abUpdateList, abFirst, abSkinned
+// pdb locals: ppass
+int FUN_00bd9f90_class::BSShaderPPLightingProperty_AddZOnlyTextureEffectPass_1x(NiGeometry* apGeom, unsigned short* asCount, unsigned char abUpdateList, bool* abFirst, bool abSkinned)
 {
-    if (a)
+    if (abSkinned)
     {
-        if (type == 1)
+        if (abUpdateList == 1)
         {
-            pPasses->Add(geom, 5, *pbOut, false, 0, 0, 0, 0);
-            *pbOut = false;
+            pPasses->Add(apGeom, 5, *abFirst, false, 0, 0, 0, 0);
+            *abFirst = false;
         }
         else
         {
-            (*count)++;
-            *pbOut = false;
+            (*asCount)++;
+            *abFirst = false;
         }
     }
     else
     {
-        if (type == 1)
+        if (abUpdateList == 1)
         {
-            pPasses->Add(geom, 4, *pbOut, false, 0, 0, 0, 0);
-            *pbOut = false;
+            pPasses->Add(apGeom, 4, *abFirst, false, 0, 0, 0, 0);
+            *abFirst = false;
         }
         else
         {
-            (*count)++;
-            *pbOut = false;
+            (*asCount)++;
+            *abFirst = false;
         }
     }
     return 0;
@@ -930,28 +962,31 @@ int FUN_00bd9f90_class::BSShaderProperty_AddPass_ZOnly_TexEffect(NiGeometry* geo
 struct Shader_00bdf650
 {
     BSShaderProperty::ShaderPassList* pPasses;
-    void BSShaderPPLightingProperty_AddDepthMapPass_2x(NiGeometry* geom, bool a, bool b, ShadowSceneLight* light);
+    void BSShaderPPLightingProperty_AddDepthMapPass_2x(NiGeometry* apGeom, bool abSkinned, bool abAlphaTest, ShadowSceneLight* apAccum);
 };
 
 // Selects a pass index from the two bool flags and adds geom to the pass list at this+0x40 with the light from light+0x1a0.
 // @fnv 0x00bdf650
 // src: XBOX_PDB 0x00bdf650
-void Shader_00bdf650::BSShaderPPLightingProperty_AddDepthMapPass_2x(NiGeometry* geom, bool abFirstFlag, bool abSecondFlag, ShadowSceneLight* light)
+// pdb: BSShaderPPLightingProperty::AddDepthMapPass_2x | BSShaderPPLightingProperty_Passes_2x.obj | retail, upstream name already matches, high
+// pdb params: apGeom, abSkinned, abAlphaTest, apAccum
+// pdb locals: pshadowmaplight
+void Shader_00bdf650::BSShaderPPLightingProperty_AddDepthMapPass_2x(NiGeometry* apGeom, bool abSkinned, bool abAlphaTest, ShadowSceneLight* apAccum)
 {
-    ShadowSceneLight* l = (ShadowSceneLight*)*(int*)((char*)light + 0x1a0);
-    if (!abFirstFlag)
+    ShadowSceneLight* l = (ShadowSceneLight*)*(int*)((char*)apAccum + 0x1a0);
+    if (!abSkinned)
     {
-        if (!abSecondFlag)
-            ((BSShaderProperty::ShaderPassList*)*(int*)((char*)this + 0x40))->Add(geom, 0x10, true, 1, l, 0, 0, 0);
+        if (!abAlphaTest)
+            ((BSShaderProperty::ShaderPassList*)*(int*)((char*)this + 0x40))->Add(apGeom, 0x10, true, 1, l, 0, 0, 0);
         else
-            ((BSShaderProperty::ShaderPassList*)*(int*)((char*)this + 0x40))->Add(geom, 0x11, true, 1, l, 0, 0, 0);
+            ((BSShaderProperty::ShaderPassList*)*(int*)((char*)this + 0x40))->Add(apGeom, 0x11, true, 1, l, 0, 0, 0);
     }
     else
     {
-        if (!abSecondFlag)
-            ((BSShaderProperty::ShaderPassList*)*(int*)((char*)this + 0x40))->Add(geom, 0x12, true, 1, l, 0, 0, 0);
+        if (!abAlphaTest)
+            ((BSShaderProperty::ShaderPassList*)*(int*)((char*)this + 0x40))->Add(apGeom, 0x12, true, 1, l, 0, 0, 0);
         else
-            ((BSShaderProperty::ShaderPassList*)*(int*)((char*)this + 0x40))->Add(geom, 0x13, true, 1, l, 0, 0, 0);
+            ((BSShaderProperty::ShaderPassList*)*(int*)((char*)this + 0x40))->Add(apGeom, 0x13, true, 1, l, 0, 0, 0);
     }
 }
 
@@ -961,6 +996,7 @@ extern unsigned int DAT_01201f50;
 // Initializes DAT_01201f50 to 75 plus 160 when DAT_011f91c0 is at least 2, then returns it.
 // @fnv 0x00bc0b40
 // src: COMMUNITY 0x00bc0b40
+// pdb: BoltShader::GetMaxSegments | BoltShader.obj | debug, upstream name already matches, high
 unsigned int __cdecl BoltShader_GetMaxSegments()
 {
     if (DAT_01201f50 == 0)
@@ -1275,16 +1311,19 @@ struct FUN_00bc1cc0_class
     int m_i184;
     int m_i188;
 
-    void __thiscall BoltShaderProperty_CleanupBolt(float f1, float f2);
+    void __thiscall BoltShaderProperty_CleanupBolt(float afTimeDelta, float afSpeed);
 };
 
 // Advances m_i78 by a remainder derived from f1 and m_i188/m_f70, clamps it, decrements m_i184 and adds f1*f2 to m_f180.
 // @fnv 0x00bc1cc0
 // src: COMMUNITY 0x00bc1cc0
-void __thiscall FUN_00bc1cc0_class::BoltShaderProperty_CleanupBolt(float f1, float f2)
+// pdb: BoltShaderProperty::CleanupBolt | BoltShaderProperty.obj | debug, upstream name already matches, high
+// pdb params: afTimeDelta, afSpeed
+// pdb locals: iremoveSegments, fMove
+void __thiscall FUN_00bc1cc0_class::BoltShaderProperty_CleanupBolt(float afTimeDelta, float afSpeed)
 {
-    float fProduct = f1 * f2;
-    int iValue = (int)(f1 * (m_i188 / m_f70));
+    float fProduct = afTimeDelta * afSpeed;
+    int iValue = (int)(afTimeDelta * (m_i188 / m_f70));
     if (!(iValue > 0))
         iValue = 1;
 
@@ -1306,20 +1345,22 @@ void __thiscall FUN_00bc1cc0_class::BoltShaderProperty_CleanupBolt(float f1, flo
 
 struct FUN_00bc3240_class
 {
-    void BSRefractionFirePeriodController_GetTargetFloatValue(float* out);
+    void BSRefractionFirePeriodController_GetTargetFloatValue(float* fValue);
 };
 // @fnv 0x00bc3240
 // src: XBOX_PDB 0x00bc3240
-void FUN_00bc3240_class::BSRefractionFirePeriodController_GetTargetFloatValue(float* out)
+// pdb: BSRefractionFirePeriodController::GetTargetFloatValue | BSRefractionFirePeriodController.obj | debug, upstream name already matches, high
+// pdb params: fValue
+void FUN_00bc3240_class::BSRefractionFirePeriodController_GetTargetFloatValue(float* fValue)
 {
-    *out = *reinterpret_cast<long*>(*reinterpret_cast<int*>(reinterpret_cast<char*>(this) + 0x2c) + 0xe4);
+    *fValue = *reinterpret_cast<long*>(*reinterpret_cast<int*>(reinterpret_cast<char*>(this) + 0x2c) + 0xe4);
 }
 
 // @fnv 0x00bc3340
 // src: XBOX_PDB 0x00bc3340
 GlobalObjectO2_00a7b610_2* __cdecl BSRefractionFirePeriodController_GetRTTI()
 {
-    return &g_01201f9c;
+    return &BSRefractionFirePeriodController_ms_RTTI;
 }
 
 struct GlobalObjectO2_00a7b610_3
@@ -1331,15 +1372,17 @@ char* __cdecl NiViewerStrings_NiGetViewerString_Title(char*);
 
 // @fnv 0x00bc3700
 // src: XBOX_PDB 0x00bc3700
-void __stdcall BSRefractionStrengthController_GetViewerStrings(StrArr* pStrArr)
+// pdb: BSRefractionStrengthController::GetViewerStrings | BSRefractionStrengthController.obj | retail, upstream name already matches, high
+// pdb params: pkStrings
+void __stdcall BSRefractionStrengthController_GetViewerStrings(StrArr* pkStrings)
 {
-    NiFloatInterpController_GetViewerStrings(pStrArr);
+    NiFloatInterpController_GetViewerStrings(pkStrings);
     char* p = NiViewerStrings_NiGetViewerString_Title(g_01201fa8.pData);
-    unsigned int idx = *(unsigned short*)((char*)pStrArr + 0xa);
-    unsigned int size = *(unsigned short*)((char*)pStrArr + 8);
+    unsigned int idx = *(unsigned short*)((char*)pkStrings + 0xa);
+    unsigned int size = *(unsigned short*)((char*)pkStrings + 8);
     if (idx >= size)
-        pStrArr->SetSize(*(unsigned short*)((char*)pStrArr + 0xe) + idx);
-    pStrArr->SetAt(idx, p);
+        pkStrings->SetSize(*(unsigned short*)((char*)pkStrings + 0xe) + idx);
+    pkStrings->SetAt(idx, p);
 }
 
 struct FUN_00bc3750_class : BSShaderProperty
@@ -1422,6 +1465,8 @@ struct FUN_00bcfa50_class : NiShader
 
 // Initializes the shader, then releases and clears all referenced objects in m_pObjects, m_pOtherObjects and the DAT_012022c0 pass array, returning true.
 // @fnv 0x00bcfa50
+// pdb: SkinShader::Initialize | SkinShader.obj | retail, object-file run extension, low
+// pdb locals: i
 bool FUN_00bcfa50_class::ReleaseAllReferences()
 {
     NiShader::Initialize();
@@ -1468,11 +1513,13 @@ bool FUN_00bcfa50_class::ReleaseAllReferences()
 struct FUN_00bd1480_t
 {
     void FUN_00bd0ce0();
-    void* FUN_00bd1480(int flags);
+    void* HairShader_ScalarDtor(int flags);
 };
 // Calls FUN_00bd0ce0, then deletes this with size 0xec when flags has bit 0 set, and returns this.
 // @fnv 0x00bd1480
-void* FUN_00bd1480_t::FUN_00bd1480(int flags)
+// src: XBOX_RETAIL_PDB 0x00bd1480
+// pdb: HairShader::`scalar deleting destructor' | HairShader.obj | retail, object-file gap fill, high
+void* FUN_00bd1480_t::HairShader_ScalarDtor(int flags)
 {
     FUN_00bd0ce0();
     if (flags & 1)
@@ -1487,22 +1534,25 @@ struct FUN_00bd5d70_Class
     unsigned short m_usMax;           // +0xe
     void* m_pData;                    // +0x10
     void* m_pDataEnd;                 // +0x14
-    char DistantLODGroup_Add(void* src, unsigned int idx);
+    char DistantLODGroup_Add(void* apInstanceData, unsigned int aiCellKey);
 };
 
 // @fnv 0x00bd5d70
 // src: COMMUNITY 0x00bd5d70
-char FUN_00bd5d70_Class::DistantLODGroup_Add(void* pSource, unsigned int uiIndex)
+// pdb: DistantLODGroup::Add | DistantLODGroup.obj | retail, upstream name already matches, high
+// pdb params: apInstanceData, aiCellKey
+// pdb locals: iinsert
+char FUN_00bd5d70_Class::DistantLODGroup_Add(void* apInstanceData, unsigned int aiCellKey)
 {
-    if (m_usMax == m_usElementCount || pSource == 0)
+    if (m_usMax == m_usElementCount || apInstanceData == 0)
         return 0;
     unsigned int off = (unsigned int)m_usMax << 4;
     char* dst = (char*)m_pData + off;
-    *(unsigned int*)(dst + 0) = *(unsigned int*)((char*)pSource + 0);
-    *(unsigned int*)(dst + 4) = *(unsigned int*)((char*)pSource + 4);
-    *(unsigned int*)(dst + 8) = *(unsigned int*)((char*)pSource + 8);
-    *(unsigned int*)(dst + 0xc) = *(unsigned int*)((char*)pSource + 0xc);
-    ((unsigned int*)m_pDataEnd)[m_usMax] = uiIndex;
+    *(unsigned int*)(dst + 0) = *(unsigned int*)((char*)apInstanceData + 0);
+    *(unsigned int*)(dst + 4) = *(unsigned int*)((char*)apInstanceData + 4);
+    *(unsigned int*)(dst + 8) = *(unsigned int*)((char*)apInstanceData + 8);
+    *(unsigned int*)(dst + 0xc) = *(unsigned int*)((char*)apInstanceData + 0xc);
+    ((unsigned int*)m_pDataEnd)[m_usMax] = aiCellKey;
     m_usMax++;
     return 1;
 }
@@ -1534,6 +1584,9 @@ struct FUN_00bd6980_class
 };
 
 // @fnv 0x00bd6980
+// pdb: Main::UpdateTextures | Main.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
+// pdb params: afTime
+// pdb locals: bdone, tempAutoEvent, icurrentTraversedCount, bstopped, it, sptexture, epriority
 void FUN_00bd6980_class::UpdateTextures(int)
 {
     int value;
@@ -1630,6 +1683,7 @@ struct ISTex
 };
 // @fnv 0x00bd9230
 // src: COMMUNITY 0x00bd9230
+// pdb: ImageSpaceEffectRefraction::IsActive | ImageSpaceEffectRefraction.obj | retail, upstream name already matches, high
 int __fastcall ImageSpaceEffectRefraction_IsActive(ISTex* p, int)
 {
     return !((ISTex*)((char*)p + 0x58))->GetTexture() ? 0 : 1;
@@ -1641,39 +1695,42 @@ struct FUN_00bd9d00_class
     char pad[0x3c];
     BSShaderProperty::ShaderPassList* pPasses;
 
-    int __thiscall BSShaderProperty_TexEffect(NiGeometry* geom, unsigned short* count, unsigned char type, bool* enabled, bool flag);
+    int __thiscall BSShaderPPLightingProperty_AddTextureEffectPass_1x(NiGeometry* apGeom, unsigned short* asCount, unsigned char abUpdateList, bool* abFirst, bool abSkinned);
 };
 
 // Adds a pass to pPasses for type 1 (0x24f when flag is set, else 0x24e), otherwise increments *count, and clears *enabled; returns 0.
 // @fnv 0x00bd9d00
-// src: COMMUNITY 0x00bd9d00
-int __thiscall FUN_00bd9d00_class::BSShaderProperty_TexEffect(NiGeometry* geom, unsigned short* count, unsigned char type,
-                                                bool* enabled, bool flag)
+// src: XBOX_RETAIL_PDB 0x00bd9d00 (was COMMUNITY)
+// pdb: BSShaderPPLightingProperty::AddTextureEffectPass_1x | BSShaderPPLightingProperty_Passes_1x.obj | retail, call graph, high
+// pdb params: apGeom, asCount, abUpdateList, abFirst, abSkinned
+// pdb locals: ppass
+int __thiscall FUN_00bd9d00_class::BSShaderPPLightingProperty_AddTextureEffectPass_1x(NiGeometry* apGeom, unsigned short* asCount, unsigned char abUpdateList,
+                                                bool* abFirst, bool abSkinned)
 {
-    if (flag)
+    if (abSkinned)
     {
-        if (type == 1)
+        if (abUpdateList == 1)
         {
-            pPasses->Add(geom, 0x24f, *enabled, 0, 0, 0, 0, 0);
-            *enabled = false;
+            pPasses->Add(apGeom, 0x24f, *abFirst, 0, 0, 0, 0, 0);
+            *abFirst = false;
         }
         else
         {
-            ++(*count);
-            *enabled = false;
+            ++(*asCount);
+            *abFirst = false;
         }
     }
     else
     {
-        if (type == 1)
+        if (abUpdateList == 1)
         {
-            pPasses->Add(geom, 0x24e, *enabled, 0, 0, 0, 0, 0);
-            *enabled = false;
+            pPasses->Add(apGeom, 0x24e, *abFirst, 0, 0, 0, 0, 0);
+            *abFirst = false;
         }
         else
         {
-            ++(*count);
-            *enabled = false;
+            ++(*asCount);
+            *abFirst = false;
         }
     }
 
@@ -1685,38 +1742,41 @@ struct FUN_00bdc030_class
     char pad[0x3c];
     BSShaderProperty::ShaderPassList* pPasses;
 
-    int __thiscall BSShaderProperty_AddPass_2x_TexEffect(NiGeometry* geometry, unsigned short* count, unsigned char type, bool* out, bool flag);
+    int __thiscall BSShaderPPLightingProperty_AddTextureEffectPass_2x(NiGeometry* apGeom, unsigned short* asCount, unsigned char abUpdateList, bool* abFirst, bool abSkinned);
 };
 
 // Adds geometry to pPasses with pass id 0x251 or 0x250 when type is 1, otherwise increments count; always clears out and returns 0.
 // @fnv 0x00bdc030
-// src: COMMUNITY 0x00bdc030
-int __thiscall FUN_00bdc030_class::BSShaderProperty_AddPass_2x_TexEffect(NiGeometry* geometry, unsigned short* count, unsigned char type,
-                                                bool* out, bool flag)
+// src: XBOX_RETAIL_PDB 0x00bdc030 (was COMMUNITY)
+// pdb: BSShaderPPLightingProperty::AddTextureEffectPass_2x | BSShaderPPLightingProperty_Passes_2x.obj | retail, call graph, high
+// pdb params: apGeom, asCount, abUpdateList, abFirst, abSkinned
+// pdb locals: ppass
+int __thiscall FUN_00bdc030_class::BSShaderPPLightingProperty_AddTextureEffectPass_2x(NiGeometry* apGeom, unsigned short* asCount, unsigned char abUpdateList,
+                                                bool* abFirst, bool abSkinned)
 {
-    if (flag)
+    if (abSkinned)
     {
-        if (type == 1)
+        if (abUpdateList == 1)
         {
-            pPasses->Add(geometry, 0x251, *out, false, 0, 0, 0, 0);
-            *out = false;
+            pPasses->Add(apGeom, 0x251, *abFirst, false, 0, 0, 0, 0);
+            *abFirst = false;
             return 0;
         }
 
-        ++(*count);
-        *out = false;
+        ++(*asCount);
+        *abFirst = false;
         return 0;
     }
 
-    if (type == 1)
+    if (abUpdateList == 1)
     {
-        pPasses->Add(geometry, 0x250, *out, false, 0, 0, 0, 0);
-        *out = false;
+        pPasses->Add(apGeom, 0x250, *abFirst, false, 0, 0, 0, 0);
+        *abFirst = false;
         return 0;
     }
 
-    ++(*count);
-    *out = false;
+    ++(*asCount);
+    *abFirst = false;
     return 0;
 }
 
@@ -1724,6 +1784,8 @@ struct FUN_00bd0f70_RefObject
 {
     // Virtual destructor for the reference object; does nothing.
 // @fnv 0x00bd0f70
+// pdb: HairShader::Initialize | HairShader.obj | retail, upstream name already matches, high
+// pdb locals: i
     virtual ~FUN_00bd0f70_RefObject()
     {}
     virtual void DeleteThis()
@@ -2014,6 +2076,7 @@ struct ShaderDesc
     }
 };
 
+// pdb: class BoltShader, size 0x194, bases: BSShader, 11 members
 struct BoltShader
 {
     void* vtbl;
@@ -2043,10 +2106,10 @@ struct BoltShader
     int unk060;
     int unk064;
     int unk068;
-    int unk06c;
-    int unk070;
-    int unk074;
-    int unk078;
+    int ePass; // src: XBOX_RETAIL_PDB +0x6c (old: unk06c)
+    int pSegmentData; // src: XBOX_RETAIL_PDB +0x70 (old: unk070)
+    int fTimer; // src: XBOX_RETAIL_PDB +0x74 (old: unk074)
+    int fTortuosity; // src: XBOX_RETAIL_PDB +0x78 (old: unk078)
     int unk07c;
     int unk080;
     int unk084;
@@ -2086,11 +2149,11 @@ struct BoltShader
     int unk10c;
     int unk110;
     int unk114;
-    int unk118;
+    int EyePosition; // src: XBOX_RETAIL_PDB +0x118 (old: unk118)
     int unk11c;
     int unk120;
     int unk124;
-    int unk128;
+    int fVars; // src: XBOX_RETAIL_PDB +0x128 (old: unk128)
     int unk12c;
     int unk130;
     int unk134;
@@ -2106,26 +2169,29 @@ struct BoltShader
     int unk15c;
     int unk160;
     int unk164;
-    int unk168;
-    int unk16c;
+    int spBoltPass; // src: XBOX_RETAIL_PDB +0x168 (old: unk168)
+    int CoreColor; // src: XBOX_RETAIL_PDB +0x16c (old: unk16c)
     int unk170;
     int unk174;
     int unk178;
-    int unk17c;
+    int GlowColor; // src: XBOX_RETAIL_PDB +0x17c (old: unk17c)
     int unk180;
     int unk184;
     int unk188;
-    StagingNiPointer<ShaderObject> m_spTreeVertexShader;
-    StagingNiPointer<ShaderObject> m_spPixelShaderVariants;
+    StagingNiPointer<ShaderObject> spBoltVertexShader; // src: XBOX_RETAIL_PDB +0x18c (old: m_spTreeVertexShader)
+    StagingNiPointer<ShaderObject> spBoltPixelShader; // src: XBOX_RETAIL_PDB +0x190 (old: m_spPixelShaderVariants)
 
-    ShaderObject* CreateVS(char* path, ShaderMacroInfo* info, const char* profile, char* name);
+    ShaderObject* CreateVS(char* apFilename, ShaderMacroInfo* apMacro, const char* apTarget, char* apCacheName);
     ShaderObject* CreatePS(char* path, ShaderMacroInfo* info, const char* profile, char* name);
-    void CreateShaders();
+    void LoadShaders();
 };
 
 // Builds the vertex and pixel shader paths and names, then creates the VS and PS and stores them in the two shader pointers.
 // @fnv 0x00bc09b0
-void BoltShader::CreateShaders()
+// src: XBOX_RETAIL_PDB 0x00bc09b0
+// pdb: BoltShader::LoadShaders | BoltShader.obj | retail, string-set bridge, high
+// pdb locals: pixelShaderParams, ptempFName, ptarget, vertexShaderParams, pcacheFName
+void BoltShader::LoadShaders()
 {
     char acPath[260];
     char acName[260];
@@ -2133,13 +2199,13 @@ void BoltShader::CreateShaders()
     ShaderDesc kVS("bolt\\v\\bolt.v.hlsl");
     FUN_00be0c00(kVS.pcFile, acPath);
     sprintf_s(acName, 260, "BOLT.vso");
-    m_spTreeVertexShader = CreateVS(acPath, &kVS.kInfo, "vs_1_1", acName);
+    spBoltVertexShader = CreateVS(acPath, &kVS.kInfo, "vs_1_1", acName);
 
     const char* pcPixelProfile = NiD3DGPUProgramCache::GetPixelShaderProfile(true);
     ShaderDesc kPS("bolt\\p\\bolt.p.hlsl");
     FUN_00be0c00(kPS.pcFile, acPath);
     sprintf_s(acName, 260, "BOLT.pso");
-    m_spPixelShaderVariants = CreatePS(acPath, &kPS.kInfo, pcPixelProfile, acName);
+    spBoltPixelShader = CreatePS(acPath, &kPS.kInfo, pcPixelProfile, acName);
 }
 
 struct BC1BA0Cell
@@ -2403,12 +2469,12 @@ void BC1C10Graph::RemoveFromEnd(int iCount)
 }
 
 // FUN_00bc1f90 : a one-line function - getter
-extern int g_target_00bc1f90;
+extern int BoltShaderProperty_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01201f68 (old: g_01201f68/g_target_00bc1f90)
 // @fnv 0x00bc1f90
 // src: XBOX_PDB 0x00bc1f90
 void* BoltShaderProperty_GetRTTI()
 {
-    return &g_target_00bc1f90;
+    return &BoltShaderProperty_ms_RTTI;
 }
 
 void* __cdecl Object_DispatchCommandFour(unsigned int size);
@@ -2429,32 +2495,38 @@ struct SpawnedObj_b10020 : SpawnedBase_b10020
 
 struct FUN_00bc2020_cls : BSShaderProperty
 {
-    SpawnedBase_b10020* BoltShaderProperty_CreateClone(unsigned int arg);
+    SpawnedBase_b10020* BoltShaderProperty_CreateClone(unsigned int arCloneData);
 };
 
 // Allocates a SpawnedObj_b10020, initializes it via FUN_00ba8b10 with arg, and returns it as a SpawnedBase_b10020 pointer.
 // @fnv 0x00bc2020
 // src: XBOX_PDB 0x00bc2020
-SpawnedBase_b10020* FUN_00bc2020_cls::BoltShaderProperty_CreateClone(unsigned int arg)
+// pdb: BoltShaderProperty::CreateClone | BoltShaderProperty.obj | retail, upstream name already matches, high
+// pdb params: arCloneData
+// pdb locals: pprop
+SpawnedBase_b10020* FUN_00bc2020_cls::BoltShaderProperty_CreateClone(unsigned int arCloneData)
 {
     SpawnedBase_b10020* obj = new SpawnedObj_b10020();
-    CopyMemberData(reinterpret_cast<BSShaderProperty*>(obj), reinterpret_cast<CloningProcess*>(arg));
+    CopyMemberData(reinterpret_cast<BSShaderProperty*>(obj), reinterpret_cast<CloningProcess*>(arCloneData));
     return obj;
 }
 
 struct FUN_00bc2540_class : BSShaderProperty
 {
-    BSShaderProperty::ShaderPassList* __thiscall BoltShaderProperty_GetRenderPasses(NiGeometry* geom, int a0C, int a10, int a14, int a18, int a1C);
+    BSShaderProperty::ShaderPassList* __thiscall BoltShaderProperty_GetRenderPasses(NiGeometry* apGeom, int aiEnabledPasses, int asCount, int auiRenderMode, int apAccumulator, int abUpdateList);
 };
 // @fnv 0x00bc2540
 // src: XBOX_PDB 0x00bc2540
-BSShaderProperty::ShaderPassList* FUN_00bc2540_class::BoltShaderProperty_GetRenderPasses(NiGeometry* geom, int a0C, int a10, int a14, int a18, int a1C)
+// pdb: BoltShaderProperty::GetRenderPasses | BoltShaderProperty.obj | retail, upstream name already matches, high
+// pdb params: apGeom, aiEnabledPasses, asCount, auiRenderMode, apAccumulator, abUpdateList
+// pdb locals: ambPass
+BSShaderProperty::ShaderPassList* FUN_00bc2540_class::BoltShaderProperty_GetRenderPasses(NiGeometry* apGeom, int aiEnabledPasses, int asCount, int auiRenderMode, int apAccumulator, int abUpdateList)
 {
     CheckCreateRenderPassArray(1);
     BSShaderProperty::ShaderPassList* passes = static_cast<BSShaderProperty::ShaderPassList*>(pRenderPassList);
     if (passes->m_uiCount == 0)
     {
-        passes->Add(geom, 0x242, true, 0, 0, 0, 0, 0);
+        passes->Add(apGeom, 0x242, true, 0, 0, 0, 0, 0);
         passes = static_cast<BSShaderProperty::ShaderPassList*>(pRenderPassList);
         BSShaderProperty::ShaderPassEntry* last = passes->m_kRenderPasses.m_pBase[passes->m_uiCount - 1];
         last->m_ucLightIndex = 1;
@@ -2563,19 +2635,22 @@ class FUN_00bc2590_cls
     unsigned char unk175;
     unsigned char unk176;
     unsigned char unk177;
-    void BoltShaderProperty_CreateSegment(int i, int cursor, int prev, int wrap);
-    void BoltShaderProperty_ExtendSegments(int count);
+    void BoltShaderProperty_CreateSegment(int aiBolt, int aiSegment, int aiLastSegment, int aiLookBackSegment);
+    void BoltShaderProperty_ExtendSegments(int aiNewSegments);
 };
 
 // Advances m_7c by count steps, wraps it at m_140, keeps m_78 in sync, sets m_174, and calls FUN_00bc20a0 for each of m_128 entries.
 // @fnv 0x00bc2590
 // src: COMMUNITY 0x00bc2590
-void FUN_00bc2590_cls::BoltShaderProperty_ExtendSegments(int count)
+// pdb: BoltShaderProperty::ExtendSegments | BoltShaderProperty.obj | retail, upstream name already matches, high
+// pdb params: aiNewSegments
+// pdb locals: isegment, icurrentSegment, ibolt, ilookBackSegment, ilastSegment
+void FUN_00bc2590_cls::BoltShaderProperty_ExtendSegments(int aiNewSegments)
 {
     int step = 1;
-    if (count > 0)
+    if (aiNewSegments > 0)
     {
-        int remaining = count;
+        int remaining = aiNewSegments;
         do
         {
             m_7c += step;
@@ -2678,22 +2753,25 @@ extern void __stdcall NiNode_OnVisible(S_00bc2ae0_Foo*);
 
 // @fnv 0x00bc2ae0
 // src: XBOX_PDB 0x00bc2ae0
-void __stdcall BSClearZNode_OnVisible(S_00bc2ae0_Foo* pFoo)
+// pdb: BSClearZNode::OnVisible | BSClearZNode.obj | retail, upstream name already matches, high
+// pdb params: arCuller
+// pdb locals: paccum, pshaderaccum
+void __stdcall BSClearZNode_OnVisible(S_00bc2ae0_Foo* arCuller)
 {
-    BSShaderAccumulator* target = pFoo->unkC4;
+    BSShaderAccumulator* target = arCuller->unkC4;
 
     if (target)
     {
         target->bAccumulate = 0;
-        target->_unverified_eAccumulationMode = BSShaderAccumulator::BSSA_ACCUMLOD;
+        target->eAccumulationMode = BSShaderAccumulator::BSSA_ACCUMLOD;
     }
 
-    NiNode_OnVisible(pFoo);
+    NiNode_OnVisible(arCuller);
 
     if (target)
     {
         target->bAccumulate = 1;
-        target->_unverified_eAccumulationMode = BSShaderAccumulator::BSSA_ACCUMNORMAL;
+        target->eAccumulationMode = BSShaderAccumulator::BSSA_ACCUMNORMAL;
     }
 }
 
@@ -2755,6 +2833,8 @@ struct FUN_00bc2c50_class
 
 // Calls ForwardToBase, then copies unkAC through unkBC from this object into destination.
 // @fnv 0x00bc2c50
+// pdb: BSOrderedNode::`scalar deleting destructor' | BSOrderedNode.obj | retail, object-file run extension, low
+// pdb note: debug build links it to BSOrderedNode::CopyMembers
 void __thiscall FUN_00bc2c50_class::CopyTailFields(FUN_00bc2c50_class* destination, int value)
 {
     ForwardToBase(destination, value);
@@ -2830,6 +2910,8 @@ struct SpawnedObj_b9965
 // Allocates and constructs a new SpawnedObj_b9965 via its operator new and returns the pointer.
 // @fnv 0x00bc2cb0
 // src: EXE 0x00bc2cb0
+// pdb: BSOrderedNode::CreateObject | BSOrderedNode.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 SpawnedObj_b9965* BSOrderedNode_CreateObject()
 {
     return new SpawnedObj_b9965();
@@ -2892,20 +2974,24 @@ struct FUN_00bc2d20_cls
     FUN_00bc2d20_sub m_ac;
     unsigned char m_bc;
     bool NiNode_IsEqual(FUN_00bc2d20_cls* other);
-    unsigned char Equals(FUN_00bc2d20_cls* other);
+    unsigned char BSOrderedNode_IsEqual(FUN_00bc2d20_cls* pkObject);
 };
 
 // Compares this object with another: checks FUN_00a5e600, m_bc equality, and if m_bc is nonzero delegates to m_ac.FUN_00a92660.
 // @fnv 0x00bc2d20
-unsigned char FUN_00bc2d20_cls::Equals(FUN_00bc2d20_cls* other)
+// src: XBOX_RETAIL_PDB 0x00bc2d20
+// pdb: BSOrderedNode::IsEqual | BSOrderedNode.obj | retail, object-file gap fill, high
+// pdb params: pkObject
+// pdb locals: bres, pobj
+unsigned char FUN_00bc2d20_cls::BSOrderedNode_IsEqual(FUN_00bc2d20_cls* pkObject)
 {
-    unsigned char ok = NiNode_IsEqual(other);
+    unsigned char ok = NiNode_IsEqual(pkObject);
     if (ok)
     {
-        if (m_bc != other->m_bc)
+        if (m_bc != pkObject->m_bc)
             return 0;
         if (m_bc != 0)
-            return m_ac.Object_HasEqualFloatComponents(&other->m_ac);
+            return m_ac.Object_HasEqualFloatComponents(&pkObject->m_ac);
         ok = 1;
     }
     return ok;
@@ -2940,16 +3026,19 @@ struct SpawnedObj_b9523 : SpawnedBase_b9523
 struct FUN_00bc3110_cls
 {
     void FUN_00a57620(SpawnedBase_b9523* p, unsigned int arg);
-    SpawnedBase_b9523* BSMaterialEmittanceMultController_CreateClone(unsigned int arg);
+    SpawnedBase_b9523* BSMaterialEmittanceMultController_CreateClone(unsigned int kCloning);
 };
 
 // Allocates a SpawnedObj_b9523, initializes it via FUN_00a57620 with arg, and returns it as a SpawnedBase_b9523 pointer.
 // @fnv 0x00bc3110
 // src: XBOX_PDB 0x00bc3110
-SpawnedBase_b9523* FUN_00bc3110_cls::BSMaterialEmittanceMultController_CreateClone(unsigned int arg)
+// pdb: BSMaterialEmittanceMultController::CreateClone | BSMaterialEmittanceMultController.obj | retail, upstream name already matches, high
+// pdb params: kCloning
+// pdb locals: pkObject
+SpawnedBase_b9523* FUN_00bc3110_cls::BSMaterialEmittanceMultController_CreateClone(unsigned int kCloning)
 {
     SpawnedBase_b9523* p = new SpawnedObj_b9523();
-    FUN_00a57620(p, arg);
+    FUN_00a57620(p, kCloning);
     return p;
 }
 
@@ -3028,6 +3117,9 @@ class BBC3370DerivedController : public BBC3370Controller
 
 // @fnv 0x00bc3370
 // src: XBOX_PDB 0x00bc3370
+// pdb: BSRefractionFirePeriodController::CreateClone | BSRefractionFirePeriodController.obj | retail, upstream name already matches, high
+// pdb params: kCloning
+// pdb locals: pkObject
 BBC3370Controller* BBC3370DerivedController::BSRefractionFirePeriodController_CreateClone(BBC3370CloningProcess& kCloning)
 {
     BBC3370DerivedController* pkClone = new BBC3370DerivedController;
@@ -3062,7 +3154,10 @@ struct Derived_00bc33f0 : Base_00a57640
 
 // Allocates a Derived_00bc33f0 object with operator new and returns it after its constructor runs.
 // @fnv 0x00bc33f0
-Derived_00bc33f0* __cdecl CreateDerived()
+// src: XBOX_RETAIL_PDB 0x00bc33f0
+// pdb: BSRefractionFirePeriodController::CreateObject | BSRefractionFirePeriodController.obj | retail, object-file gap fill, high
+// pdb locals: pkObject
+Derived_00bc33f0* __cdecl BSRefractionFirePeriodController_CreateObject()
 {
     return new Derived_00bc33f0();
 }
@@ -3116,6 +3211,9 @@ struct FUN_00bc3620_cls
 
 // Allocates a new Obj_b9218, attaches it with the given parameter, and returns the new object.
 // @fnv 0x00bc3620
+// pdb: BSRefractionStrengthController::CreateClone | BSRefractionStrengthController.obj | retail, object-file run extension, low
+// pdb params: kCloning
+// pdb locals: pkObject
 Obj_b9218* FUN_00bc3620_cls::CreateAndAttach(int p)
 {
     Obj_b9218* o = new Obj_b9218();
@@ -3128,6 +3226,8 @@ struct InterpDerivedBc36 : NiFloatInterpController
 };
 // Allocates and returns a new InterpDerivedBc36 object.
 // @fnv 0x00bc36a0
+// pdb: BSRefractionStrengthController::CreateObject | BSRefractionStrengthController.obj | retail, object-file run extension, low
+// pdb locals: pkObject
 void* __cdecl CreateInterpDerivedBc36()
 {
     return new InterpDerivedBc36;
@@ -3154,6 +3254,7 @@ struct __declspec(novtable) FUN_00bc37b0_class : BSShaderProperty
     FUN_00bc37b0_class();
 };
 // @fnv 0x00bc37b0
+// pdb: VolumetricFogShaderProperty::VolumetricFogShaderProperty | VolumetricFogShaderProperty.obj | retail, call graph, high
 FUN_00bc37b0_class::FUN_00bc37b0_class()
 {
     *reinterpret_cast<int**>(this) = &DAT_010bab28;
@@ -3197,15 +3298,19 @@ struct Bc38Owner : BSShaderProperty
     int unk64;
     int unk68;
     int unk6c;
-    FUN_00bc37b0* CreateFadeNode(int aArg);
+    FUN_00bc37b0* VolumetricFogShaderProperty_CreateClone(int arCloneData);
 };
 
 // Allocates a FUN_00bc37b0, initializes it via FUN_00ba8b10 with aArg, copies the quad at unk60 into the new object, and returns it.
 // @fnv 0x00bc3830
-FUN_00bc37b0* Bc38Owner::CreateFadeNode(int aArg)
+// src: XBOX_RETAIL_PDB 0x00bc3830
+// pdb: VolumetricFogShaderProperty::CreateClone | VolumetricFogShaderProperty.obj | retail, object-file gap fill, high
+// pdb params: arCloneData
+// pdb locals: pprop
+FUN_00bc37b0* Bc38Owner::VolumetricFogShaderProperty_CreateClone(int arCloneData)
 {
     FUN_00bc37b0* pNode = new FUN_00bc37b0();
-    CopyMemberData(pNode, reinterpret_cast<CloningProcess*>(aArg));
+    CopyMemberData(pNode, reinterpret_cast<CloningProcess*>(arCloneData));
     Bc38Quad* pQuad = (Bc38Quad*)&unk60;
     *(Bc38Quad*)&pNode->unk60 = *pQuad;
     return pNode;
@@ -3253,6 +3358,8 @@ struct SpawnedObj_b9755
 // Allocates and constructs a new SpawnedObj_b9755, returning the pointer.
 // @fnv 0x00bc38c0
 // src: EXE 0x00bc38c0
+// pdb: VolumetricFogShaderProperty::CreateObject | VolumetricFogShaderProperty.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 SpawnedObj_b9755* VolumetricFogShaderProperty_CreateObject()
 {
     return new SpawnedObj_b9755();
@@ -3273,17 +3380,19 @@ class BC3930Property : public BSShaderProperty
     bool IsEqualBase(BSShaderProperty* pkOther);
     BC3930Key m_kControlPoint;
 
-    bool VolumetricFogShaderProperty_IsEqual(BC3930Property* pkOther);
+    bool VolumetricFogShaderProperty_IsEqual(BC3930Property* pkObject);
 };
 
 // Returns false if the control-point keys differ, otherwise compares the base property.
 // @fnv 0x00bc3930
 // src: XBOX_PDB 0x00bc3930
-bool BC3930Property::VolumetricFogShaderProperty_IsEqual(BC3930Property* pkOther)
+// pdb: VolumetricFogShaderProperty::IsEqual | VolumetricFogShaderProperty.obj | debug, upstream name already matches, high
+// pdb params: pkObject
+bool BC3930Property::VolumetricFogShaderProperty_IsEqual(BC3930Property* pkObject)
 {
-    if (pkOther->m_kControlPoint != m_kControlPoint)
+    if (pkObject->m_kControlPoint != m_kControlPoint)
         return false;
-    return IsEqualBase(pkOther);
+    return IsEqualBase(pkObject);
 }
 
 extern const char* g_01201fb0;
@@ -3293,16 +3402,19 @@ char* __cdecl NiViewerStrings_NiGetViewerString_Title(const char*);
 struct Prop_bc3960 : BSShaderProperty
 {
     NiColorA m_kColor60;
-    void WriteToSettingArray(StrArr* pkStrings);
-    void AppendStrings(StrArr* pkStrings);
+    void WriteToSettingArray(StrArr* apStrings);
+    void VolumetricFogShaderProperty_GetViewerStrings(StrArr* apStrings);
 };
 
 // @fnv 0x00bc3960
-void Prop_bc3960::AppendStrings(StrArr* pkStrings)
+// src: XBOX_RETAIL_PDB 0x00bc3960
+// pdb: VolumetricFogShaderProperty::GetViewerStrings | VolumetricFogShaderProperty.obj | retail, string-set bridge, high
+// pdb params: apStrings
+void Prop_bc3960::VolumetricFogShaderProperty_GetViewerStrings(StrArr* apStrings)
 {
-    WriteToSettingArray(pkStrings);
-    pkStrings->AppendInline(NiViewerStrings_NiGetViewerString_Title(g_01201fb0));
-    pkStrings->AppendInline(((char* (__thiscall*)(NiColorA*, char*))NiColorA_FormatToBuffer)(&m_kColor60, (char*)DAT_010babec));
+    WriteToSettingArray(apStrings);
+    apStrings->AppendInline(NiViewerStrings_NiGetViewerString_Title(g_01201fb0));
+    apStrings->AppendInline(((char* (__thiscall*)(NiColorA*, char*))NiColorA_FormatToBuffer)(&m_kColor60, (char*)DAT_010babec));
 }
 
 extern "C" __declspec(dllimport) long __stdcall InterlockedIncrement(long volatile*);
@@ -3572,6 +3684,8 @@ class BC3DB0Property : public BC3DB0Base
 // CopyMemberData
 // Copies the base data, then copies m_spTexture and the color into pkDest.
 // @fnv 0x00bc3db0
+// pdb: HairShaderProperty::`scalar deleting destructor' | HairShaderProperty.obj | retail, object-file run extension, low
+// pdb note: debug build links it to HairShaderProperty::SetupGeometry
 void BC3DB0Property::CloneTo(BC3DB0Property* pkDest, BC3DB0CloningProcess& kCloning)
 {
     Lighting30ShaderProperty_CopyMembers(pkDest, kCloning);
@@ -3688,7 +3802,10 @@ struct SpawnedObj9441
 
 // Allocates and constructs a new SpawnedObj9441 via its operator new and returns the pointer.
 // @fnv 0x00bc4340
-SpawnedObj9441* CreateSpawnedObj9441()
+// src: XBOX_RETAIL_PDB 0x00bc4340
+// pdb: HairShaderProperty::CreateObject | HairShaderProperty.obj | retail, object-file gap fill, high
+// pdb locals: pkObject
+SpawnedObj9441* HairShaderProperty_CreateObject()
 {
     return new SpawnedObj9441();
 }
@@ -3904,17 +4021,21 @@ struct FUN_00bc43b0_cls
 {
     int unk00;
     void CloneTo(Spawned_t* obj, bool flag);
-    Spawned_t* CreateSpawned(bool flag);
+    Spawned_t* HairShaderProperty_CreateClone(bool arCloneData);
 };
 
 // Sets the TLS value to 0x28, allocates a Spawned_t, initializes it via CloneTo with flag, and returns it.
 // @fnv 0x00bc43b0
-Spawned_t* FUN_00bc43b0_cls::CreateSpawned(bool flag)
+// src: XBOX_RETAIL_PDB 0x00bc43b0
+// pdb: HairShaderProperty::CreateClone | HairShaderProperty.obj | retail, object-file gap fill, high
+// pdb params: arCloneData
+// pdb locals: tempMemContext, pprop
+Spawned_t* FUN_00bc43b0_cls::HairShaderProperty_CreateClone(bool arCloneData)
 {
     TlsGuard_t guard(0x28);
     Spawned_t* obj = new Spawned_t();
-    bool take = flag;
-    flag = false;
+    bool take = arCloneData;
+    arCloneData = false;
     CloneTo(obj, take);
     return obj;
 }
@@ -3923,13 +4044,16 @@ class SomeObj
 {
   public:
     unsigned int Query(unsigned int key);
-    void Apply(unsigned int value);
+    void Apply(unsigned int pkProperty);
 };
 
-unsigned char __stdcall ProbeObj(SomeObj* obj);
+unsigned char __stdcall ProbeObj(SomeObj* apGeometry);
 
 // Calls ProbeObj on obj, queries key 0xa, and applies the value if it is nonzero; returns the probe result.
 // @fnv 0x00bc45d0
+// pdb: HairShaderProperty::SetupGeometry | HairShaderProperty.obj | retail, object-file run extension, low
+// pdb params: apGeometry
+// pdb locals: ret, pvcprop
 unsigned char __stdcall ProbeAndApply(SomeObj* obj)
 {
     unsigned char result = ProbeObj(obj);
@@ -3944,6 +4068,7 @@ unsigned char __stdcall ProbeAndApply(SomeObj* obj)
 extern StagingNiPointer<NiRefObject> DAT_01201fc4;
 
 // @fnv 0x00bc4610
+// pdb: BeamShader::Initialize | BeamShader.obj | debug, object-file run extension, low
 void __cdecl ClearRefObject()
 {
     DAT_01201fc4 = static_cast<NiRefObject*>(0);
@@ -4086,6 +4211,7 @@ struct FUN_00bc4640_cls : LodShaderBase
 // If m_28 is nonzero, calls v28 on m_b8 and v22 on m_bc, then calls LodShaderBase::FUN_00e814b0.
 // @fnv 0x00bc4640
 // src: XBOX_PDB 0x00bc4640
+// pdb: BeamShader::RecreateRendererData | BeamShader.obj | retail, upstream name already matches, high
 void FUN_00bc4640_cls::BeamShader_RecreateRendererData()
 {
     if (m_28 != 0)
@@ -4185,6 +4311,8 @@ struct TargetBeam
 // Builds source and binary paths for the beam vertex and pixel shaders and assigns the compiled shader objects to vertex and pixel.
 // @fnv 0x00bc4680
 // src: COMMUNITY 0x00bc4680
+// pdb: BeamShader::LoadShaders | BeamShader.obj | retail, string-set bridge, high
+// pdb locals: pixelShaderParams, ptempFName, ptarget, vertexShaderParams, pcacheFName
 void TargetBeam::BeamShader_LoadShaders()
 {
     BeamDesc vertexDesc("beam\\v\\beam.v.hlsl");
@@ -4335,6 +4463,8 @@ struct FUN_00bc4830 : FUN_00be2200
     virtual ~FUN_00bc4830();
 };
 // @fnv 0x00bc4830
+// pdb: BeamShader::BeamShader | BeamShader.obj | retail, call graph, medium
+// pdb params: apShaderDecl
 FUN_00bc4830::FUN_00bc4830(CountedRef* pSource)
 {
     mode = 16;
@@ -4348,13 +4478,13 @@ FUN_00bc4830::FUN_00bc4830(CountedRef* pSource)
     FUN_00ec61c0(matrix, 0, 0x40);
 }
 
-extern char DAT_01201fc8;
+extern char BeamShader_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01201fc8 (old: DAT_01201fc8/g_01201fc8)
 
 // @fnv 0x00bc4970
 // src: XBOX_PDB 0x00bc4970
 void* BeamShader_GetRTTI()
 {
-    return &DAT_01201fc8;
+    return &BeamShader_ms_RTTI;
 }
 
 // FUN_00bc5030: thiscall member that calls virtual slot 0x140 and then
@@ -4449,6 +4579,7 @@ struct FUN_00bc5030_cls
 
 // @fnv 0x00bc5030
 // src: COMMUNITY 0x00bc5030
+// pdb: TileShader::LoadShaders | TileShader.obj | debug, upstream name already matches, high
 void FUN_00bc5030_cls::TileShader_LoadShaders()
 {
     v80();
@@ -4569,6 +4700,8 @@ struct FUN_00bc52f0_class
 
 // @fnv 0x00bc52f0
 // src: XBOX_PDB 0x00bc52f0
+// pdb: VolumetricFogShader::ClearPassStages | VolumetricFogShader.obj | retail, upstream name already matches, high
+// pdb locals: i
 void __thiscall FUN_00bc52f0_class::VolumetricFogShader_ClearPassStages()
 {
     int* p = &field6c;
@@ -4616,6 +4749,8 @@ struct FUN_00bc5320_Class : ShaderBase5320
 };
 // Releases the two resource slots in first and second by decrementing each object's ref count and calling Release when it reaches zero.
 // @fnv 0x00bc5320
+// pdb: VolumetricFogShader::~VolumetricFogShader | VolumetricFogShader.obj | retail, object-file run extension, low
+// pdb locals: i
 FUN_00bc5320_Class::~FUN_00bc5320_Class()
 {
     for (unsigned i = 0; i < 2; ++i)
@@ -4641,12 +4776,12 @@ FUN_00bc5320_Class::~FUN_00bc5320_Class()
 }
 
 // FUN_00bc5440 : a one-line function - getter
-extern int g_target_00bc5440;
+extern int VolumetricFogShader_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01201fd8 (old: g_01201fd8/g_target_00bc5440)
 // @fnv 0x00bc5440
 // src: XBOX_PDB 0x00bc5440
 void* VolumetricFogShader_GetRTTI()
 {
-    return &g_target_00bc5440;
+    return &VolumetricFogShader_ms_RTTI;
 }
 
 struct RefList0
@@ -4674,6 +4809,8 @@ struct FUN_00bc5450_cls
 
 // Calls FUN_00be0870, then releases and clears every entry in m_pRefs, m_pRefs2 and m_pRefs3, returning the first call's result.
 // @fnv 0x00bc5450
+// pdb: VolumetricFogShader::Initialize | VolumetricFogShader.obj | retail, object-file run extension, low
+// pdb locals: retval, i
 bool FUN_00bc5450_cls::ReleaseAllRefs()
 {
     bool b = FUN_00be0870();
@@ -4783,6 +4920,7 @@ struct FUN_00bc58a0 : FUN_00be2200
 };
 // Initializes all eight m_constants to 0.0f and sets m_shaderStage to 19.
 // @fnv 0x00bc58a0
+// pdb: VolumetricFogShader::VolumetricFogShader | VolumetricFogShader.obj | retail, call graph, high
 FUN_00bc58a0::FUN_00bc58a0()
 {
     m_constants[7] = m_constants[6] = m_constants[5] = m_constants[4] = m_constants[3] = m_constants[2] =
@@ -4791,13 +4929,13 @@ FUN_00bc58a0::FUN_00bc58a0()
 }
 }  // namespace fnv_00bc58a0
 
-extern int DAT_01202228;
+extern int GeometryDecalShader_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01202228 (old: DAT_01202228/g_01202228)
 
 // @fnv 0x00bcb450
 // src: XBOX_PDB 0x00bcb450
 void* __cdecl GeometryDecalShader_GetRTTI()
 {
-    return &DAT_01202228;
+    return &GeometryDecalShader_ms_RTTI;
 }
 
 struct BlockRecord
@@ -4936,6 +5074,9 @@ struct EventInvoker
                       unsigned int token, int unused8);
 };
 // @fnv 0x00bcb460
+// pdb: GeometryDecalShader::SetupBoneMatrices | GeometryDecalShader.obj | retail, object-file run extension, low
+// pdb params: apGeometry, apSkin, apPartition, apBuffData, apState, apEffects, aWorld, aWorldBound
+// pdb locals: pfBoneMatrices
 int EventInvoker::DispatchEvent(int unused1, BlockRecord* block, DispatchInfo* info, int unused4, int unused5,
                                 int unused6, unsigned int token, int unused8)
 {
@@ -5132,6 +5273,8 @@ struct S_00bcce10
 // Calls vf74 for each of the 33 entries in DAT_01202230.
 // @fnv 0x00bcce10
 // src: COMMUNITY 0x00bcce10
+// pdb: ParallaxShader::ClearPassStages | ParallaxShader.obj | retail, upstream name already matches, high
+// pdb locals: i
 void S_00bcce10::ParallaxShader_ClearPassStages()
 {
     for (int i = 0; i < 33; ++i)
@@ -5205,6 +5348,8 @@ struct FUN_00bcd390 : Base_bcd
 
 // Constructs the object by initializing the base with p, then sets m_i68 to 3, clears m_b64, assigns m_spA to p and m_spB to null, and m_i60 to 0.
 // @fnv 0x00bcd390
+// pdb: ParallaxShader::ParallaxShader | ParallaxShader.obj | retail, call graph, medium
+// pdb params: apShaderDecl
 FUN_00bcd390::FUN_00bcd390(RefObj_bcd* apRefObj) : Base_bcd(apRefObj, 0, 0, 0)
 {
     m_i68 = 3;
@@ -5214,12 +5359,12 @@ FUN_00bcd390::FUN_00bcd390(RefObj_bcd* apRefObj) : Base_bcd(apRefObj, 0, 0, 0)
     m_i60 = 0;
 }
 
-extern int DAT_012022b4;
+extern int ParallaxShader_ms_RTTI; // src: XBOX_RETAIL_PDB 0x012022b4 (old: DAT_012022b4/g_012022b4)
 // @fnv 0x00bcd490
 // src: COMMUNITY 0x00bcd490
 int* __cdecl ParallaxShader_GetRTTI()
 {
-    return &DAT_012022b4;
+    return &ParallaxShader_ms_RTTI;
 }
 
 namespace fnv_00bcd5d0 {
@@ -5249,6 +5394,9 @@ struct FUN_00bcd5d0_cls
 };
 
 // @fnv 0x00bcd5d0
+// pdb: ParallaxShader::Initialize | ParallaxShader.obj | retail, object-file run extension, low
+// pdb note: debug build links it to ParallaxShader::RecreateRendererData
+// pdb locals: i
 bool FUN_00bcd5d0_cls::ClearAllSlots()
 {
     FUN_00be0870();
@@ -5537,6 +5685,8 @@ struct ShaderObj
 // Creates a pass with six stages, finishes it, constructs a ShaderObj from it, runs several init calls, sets the pass and returns the object.
 // @fnv 0x00bcd680
 // src: XBOX_PDB 0x00bcd680
+// pdb: ParallaxShader::CreateShader | ParallaxShader.obj | retail, upstream name already matches, high
+// pdb locals: spShaderDecl, pshader
 ShaderObj* __cdecl ParallaxShader_CreateShader()
 {
     PassStub* pass = NiDX9ShaderDeclaration_Create(DAT_011f9508, 6, 1);
@@ -5636,12 +5786,15 @@ struct FUN_00bcf7c0_cls
     virtual void v72();
     virtual void v73();
     virtual void Dispatch(unsigned int value);
-    void DispatchAllTableEntries();
+    void SkinShader_ClearPassStages();
 };
 
 // Iterates over the 26 entries of g_b3804_table and calls Dispatch on each value.
 // @fnv 0x00bcf7c0
-void FUN_00bcf7c0_cls::DispatchAllTableEntries()
+// src: XBOX_RETAIL_PDB 0x00bcf7c0
+// pdb: SkinShader::ClearPassStages | SkinShader.obj | retail, object-file gap fill, high
+// pdb locals: i
+void FUN_00bcf7c0_cls::SkinShader_ClearPassStages()
 {
     unsigned int* p = g_b3804_table;
     while ((int)p < (int)(g_b3804_table + 26))
@@ -5707,6 +5860,8 @@ struct FUN_00bcf920 : ShaderBase
     ~FUN_00bcf920();
 };
 // @fnv 0x00bcf920
+// pdb: SkinShader::~SkinShader | SkinShader.obj | retail, object-file run extension, low
+// pdb locals: i
 FUN_00bcf920::~FUN_00bcf920()
 {
     for (unsigned i = 0; i < 26; ++i)
@@ -5836,6 +5991,7 @@ struct FUN_00bd0470_cls
 
 // @fnv 0x00bd0470
 // src: COMMUNITY 0x00bd0470
+// pdb: ShadowLightShader::LoadShaders | ShadowLightShader.obj | debug, upstream name already matches, high
 void FUN_00bd0470_cls::ShadowLightShader_LoadShaders()
 {
     v82();
@@ -5932,6 +6088,7 @@ struct FUN_00bd0490_class
 
 // @fnv 0x00bd0490
 // src: COMMUNITY 0x00bd0490
+// pdb: HairShader::ReloadShaders | HairShader.obj | debug, upstream name already matches, high
 void FUN_00bd0490_class::HairShader_ReloadShaders()
 {
     v81();
@@ -6029,6 +6186,8 @@ struct S_00bd04a0_Obj
 };
 // @fnv 0x00bd04a0
 // src: COMMUNITY 0x00bd04a0
+// pdb: HairShader::RecreateRendererData | HairShader.obj | retail, upstream name already matches, high
+// pdb locals: i
 void S_00bd04a0_Obj::HairShader_RecreateRendererData()
 {
     if (m_28)
@@ -6105,12 +6264,15 @@ struct FUN_00bd0540_class
     RefObject* m_arr94[7];
     char padb0[0x0c];
     RefObject* m_arrBC[7];
-    RefObject* __thiscall FUN_00be0fe0(void* buf, void* pField, const char* str, char* buf2);
-    void InitRefObjects();
+    RefObject* __thiscall FUN_00be0fe0(void* apFilename, void* apMacro, const char* apTarget, char* apCacheName);
+    void HairShader_LoadVertexShaders();
 };
 
 // @fnv 0x00bd0540
-void FUN_00bd0540_class::InitRefObjects()
+// src: XBOX_RETAIL_PDB 0x00bd0540
+// pdb: HairShader::LoadVertexShaders | HairShader.obj | retail, unique string literal, high
+// pdb locals: pvs1Shader, ptempFName, pvs2Shader, pcacheFName, i
+void FUN_00bd0540_class::HairShader_LoadVertexShaders()
 {
     Elem540 arrB[7];
     Elem540 arrA[7];
@@ -6343,7 +6505,7 @@ struct ShaderPassOwnerPtr
     }
 };
 void __cdecl ShaderPassHelper_e804d0(ShaderPassOwnerPtr& owner);
-void __cdecl ShaderPassSetup_be0cf0(StageReturn* pass, int index, int a, int b, int c);
+void __cdecl ShaderPassSetup_be0cf0(StageReturn* apStage, int aiStageNum, int aiAddressValue, int aiMipFilter, int abAniso);
 
 int __cdecl ShaderQuery_4dc060(int arg);
 
@@ -6400,6 +6562,8 @@ struct FUN_00bd0ae0_class : ShaderBase
 
 // @fnv 0x00bd0ae0
 // src: COMMUNITY 0x00bd0ae0
+// pdb: HairShader::LoadStagesAndPasses | HairShader.obj | retail, object-file run extension, low
+// pdb locals: ui, eshaderlevel, spStage
 bool FUN_00bd0ae0_class::HairShader_CreatePasses()
 {
     for (int i = 0; i < 2; i++)
@@ -6532,6 +6696,8 @@ class FUN_00bd0cb0_class : public FUN_00bd0cb0_base
 
 // Calls v74 on this for each int in the global range from DAT_011fdff8 up to DAT_011fe000.
 // @fnv 0x00bd0cb0
+// pdb: HairShader::ClearPassStages | HairShader.obj | retail, object-file run extension, low
+// pdb locals: i
 void __thiscall FUN_00bd0cb0_class::CallVirtualOnGlobalRange()
 {
     int* p = &DAT_011fdff8;
@@ -6548,13 +6714,13 @@ struct GlobalObjectO2_00bd0f60
 {
     char* pData;
 };
-extern GlobalObjectO2_00bd0f60 g_01202330;
+extern GlobalObjectO2_00bd0f60 HairShader_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01202330 (old: g_01202330)
 
 // @fnv 0x00bd0f60
 // src: COMMUNITY 0x00bd0f60
 GlobalObjectO2_00bd0f60* __cdecl HairShader_GetRTTI()
 {
-    return &g_01202330;
+    return &HairShader_ms_RTTI;
 }
 
 struct BdElem
@@ -6619,6 +6785,7 @@ struct FUN_00bd2b60_cls : FUN_00bd2b60_base
 
 // Zeroes the float members m_88 through m_a4, sets m_84 to 0 and m_68 to 8.
 // @fnv 0x00bd2b60
+// pdb: SpeedTreeFrondShader::SpeedTreeFrondShader | SpeedTreeFrondShader.obj | retail, call graph, medium
 FUN_00bd2b60_cls::FUN_00bd2b60_cls()
 {
     m_84 = 0;
@@ -6633,13 +6800,13 @@ FUN_00bd2b60_cls::FUN_00bd2b60_cls()
     *(volatile int*)&m_68 = 8;
 }
 
-extern int DAT_0120233c;
+extern int SpeedTreeFrondShader_ms_RTTI; // src: XBOX_RETAIL_PDB 0x0120233c (old: DAT_0120233c/g_0120233c)
 
 // @fnv 0x00bd2c30
 // src: COMMUNITY 0x00bd2c30
 void* __cdecl SpeedTreeFrondShader_GetRTTI()
 {
-    return &DAT_0120233c;
+    return &SpeedTreeFrondShader_ms_RTTI;
 }
 
 extern "C" __declspec(dllimport) long __stdcall InterlockedDecrement(volatile long* value);
@@ -6762,7 +6929,7 @@ struct ShaderPassPtr
 
 void __cdecl ShaderCreatePass(ShaderPassPtr& pass);
 void __cdecl AssignStageFromPool(StagePtr& stage);
-void __cdecl ShaderSetupStage(StageReturn* stage, int a, int b, int c, int d);
+void __cdecl ShaderSetupStage(StageReturn* apStage, int aiStageNum, int aiAddressValue, int aiMipFilter, int abAniso);
 
 struct FUN_00bd2d50_class
 {
@@ -6805,6 +6972,8 @@ struct FUN_00bd2d50_class
 
 // Creates a shader pass, builds a stage, configures it with ShaderSetupStage, assigns the stage to the pass, and sets the pass's two shader objects.
 // @fnv 0x00bd2d50
+// pdb: SpeedTreeFrondShader::LoadStagesAndPasses | SpeedTreeFrondShader.obj | retail, call graph, high
+// pdb locals: spStage
 void FUN_00bd2d50_class::CreateShaderPassWithStage()
 {
     ShaderCreatePass(m_spPass);
@@ -6902,6 +7071,8 @@ class BD4000Renderer
 
 // Registers each of the 30 shader pointers in g_apvBD4000Shaders via Register.
 // @fnv 0x00bd4000
+// pdb: SpeedTreeBranchShader::ClearPassStages | SpeedTreeBranchShader.obj | retail, object-file run extension, low
+// pdb locals: i
 void BD4000Renderer::RegisterAllShaders()
 {
     for (int i = 0; i < 30; i++)
@@ -7121,19 +7292,21 @@ struct FUN_00bd44c0 : FUN_00b79b00
 
 // Initializes the base FUN_00b79b00 with a and zeros, then sets unk68 to 5.
 // @fnv 0x00bd44c0
+// pdb: SpeedTreeBranchShader::SpeedTreeBranchShader | SpeedTreeBranchShader.obj | retail, call graph, medium
+// pdb params: apShaderDecl
 FUN_00bd44c0::FUN_00bd44c0(int a) : FUN_00b79b00(a, 0, 0, 0)
 {
     unk68 = 5;
 }
 }  // namespace fnv_00bd44c0
 
-extern int DAT_01202348;
+extern int SpeedTreeBranchShader_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01202348 (old: DAT_01202348/g_01202348)
 
 // @fnv 0x00bd4560
 // src: COMMUNITY 0x00bd4560
 void* __cdecl SpeedTreeBranchShader_GetRTTI()
 {
-    return &DAT_01202348;
+    return &SpeedTreeBranchShader_ms_RTTI;
 }
 
 namespace fnv_00bd4570 {
@@ -7215,6 +7388,8 @@ struct FUN_00bd4570 : FUN_00b79de0
     virtual ~FUN_00bd4570();
 };
 // @fnv 0x00bd4570
+// pdb: SpeedTreeBranchShader::~SpeedTreeBranchShader | SpeedTreeBranchShader.obj | retail, object-file run extension, low
+// pdb locals: i
 FUN_00bd4570::~FUN_00bd4570()
 {
     for (unsigned int i = 0; i < 30; ++i)
@@ -7262,6 +7437,9 @@ struct FUN_00bd46a0_cls
 extern FUN_00bd46a0_Item* DAT_01202350[30];
 
 // @fnv 0x00bd46a0
+// pdb: SpeedTreeBranchShader::Initialize | SpeedTreeBranchShader.obj | retail, object-file run extension, low
+// pdb note: debug build links it to SpeedTreeBranchShader::CreateConstantMaps
+// pdb locals: i
 bool __thiscall FUN_00bd46a0_cls::ClearAllReferences()
 {
     int i;
@@ -7324,6 +7502,8 @@ struct S_00bd6150_Foo
 };
 
 // @fnv 0x00bd6150
+// pdb: NiPointer<DistantLODShaderProperty>::NiPointer<DistantLODShaderProperty> | DistantLODGroup.obj | debug, object-file run extension, low
+// pdb params: pObject
 void S_00bd6150_Foo::ResetEntries()
 {
     for (int i = 0; i < (int)m_uiItemCount; ++i)
@@ -7451,6 +7631,8 @@ struct FUN_00bd6570
 };
 // Releases the three object references, detaches the owner's callback, frees allocation10 and allocation14, and calls ResetEntries.
 // @fnv 0x00bd6570
+// pdb: SystemUtilityEventNotificationCallback | Main.obj | retail, object-file run extension, low
+// pdb params: aeEventNotification
 FUN_00bd6570::~FUN_00bd6570()
 {
     additional.Reset();
@@ -7534,6 +7716,8 @@ class FUN_00bd6a30_cls
 };
 // Touches m_2c's refs, queries slots 2-4 into v, and if m_2c->m_14 is nonzero touches m_7c and queries slot 5.
 // @fnv 0x00bd6a30
+// pdb: ImageSpaceEffectDepthOfField::ReturnTextures | ImageSpaceEffectDepthOfField.obj | debug, object-file run extension, low
+// pdb locals: ptex
 void FUN_00bd6a30_cls::TouchRefsAndQuery()
 {
     m_2c->m_08->Touch();
@@ -7771,6 +7955,9 @@ struct FUN_00bd74a0 : Base_bd74a0
 
 // Destructor that clears the six m_spArr entries and the m_sp130 and m_sp13c reference-counted pointers.
 // @fnv 0x00bd74a0
+// pdb: BSCubeMapCamera::BSCubeMapCamera | BSCubeMapCamera.obj | retail, object-file run extension, low
+// pdb params: aecubemaptype
+// pdb locals: ftanangle, kfrustum, i
 FUN_00bd74a0::~FUN_00bd74a0()
 {
     for (int i = 0; i < 6; i++)
@@ -7780,13 +7967,13 @@ FUN_00bd74a0::~FUN_00bd74a0()
 }
 
 // Accessor for the global object at 0x012023e8.
-extern int DAT_012023e8;
+extern int BSCubeMapCamera_ms_RTTI; // src: XBOX_RETAIL_PDB 0x012023e8 (old: DAT_012023e8/g_012023e8)
 
 // @fnv 0x00bd7610
 // src: XBOX_PDB 0x00bd7610
 int* __cdecl BSCubeMapCamera_GetRTTI()
 {
-    return &DAT_012023e8;
+    return &BSCubeMapCamera_ms_RTTI;
 }
 
 extern float DAT_0104eb20;
@@ -7815,6 +8002,8 @@ struct FUN_00bd85b0_cls
 
 // Removes the entry at index by moving the last entry into its slot, clearing the last slot, and decrementing the count and a global counter.
 // @fnv 0x00bd85b0
+// pdb: TallGrassGroup::Add | TallGrassGroup.obj | retail, object-file run extension, low
+// pdb params: apInstanceData, alTerrainChunkSeed
 int FUN_00bd85b0_cls::RemoveEntry(unsigned short index)
 {
     if (index < m_uiItemCount)
@@ -7909,6 +8098,9 @@ struct FUN_00bd9240_cls
 
 // Copies the global Vec4 at DAT_011f91ac->m_2f8 and passes its components to m_1c->m_00->Run with flag 0, then returns true.
 // @fnv 0x00bd9240
+// pdb: ImageSpaceEffectRefraction::UpdateParams | ImageSpaceEffectRefraction.obj | retail, object-file run extension, low
+// pdb params: apParam
+// pdb locals: pparam, ambient
 bool FUN_00bd9240_cls::RunWithGlobalVector(unsigned char flag)
 {
     Vec4 tmp(Vec4::Uninitialized);
@@ -7922,7 +8114,7 @@ struct FUN_00bd92b0_mgr
     virtual void v0();
     virtual void v1(int a, int b, int c, int d);
     void SetAccumulatorAt(int idx, int val, int flag);
-    void BSTextureManager_ReturnRenderedTexture(int v);
+    void BSTextureManager_ReturnRenderedTexture(int apTexToReturn);
 };
 
 struct FUN_00bd92b0_sub
@@ -7952,15 +8144,18 @@ struct FUN_00bd92b0_class
     char unk20[0x0c];
     int* m_p2c;
 
-    void ImageSpaceEffectRefraction_Render(int a1, int a2, int a3, int a4);
+    void ImageSpaceEffectRefraction_Render(int apGeometry, int apRenderer, int apParam, int abEndFrame);
 };
 
 // @fnv 0x00bd92b0
 // src: COMMUNITY 0x00bd92b0
-void FUN_00bd92b0_class::ImageSpaceEffectRefraction_Render(int a1, int a2, int a3, int a4)
+// pdb: ImageSpaceEffectRefraction::Render | ImageSpaceEffectRefraction.obj | retail, upstream name already matches, high
+// pdb params: apGeometry, apRenderer, apParam, abEndFrame
+// pdb locals: pparam, peffect
+void FUN_00bd92b0_class::ImageSpaceEffectRefraction_Render(int apGeometry, int apRenderer, int apParam, int abEndFrame)
 {
     if (m_b5)
-        m_b5 = v7(a3);
+        m_b5 = v7(apParam);
 
     int inner = *m_p0c;
     char* base = inner ? (char*)inner - 0x6c : 0;
@@ -7976,7 +8171,7 @@ void FUN_00bd92b0_class::ImageSpaceEffectRefraction_Render(int a1, int a2, int a
     FUN_00bd92b0_sub* sub = (FUN_00bd92b0_sub*)((char*)this + 0x58);
     pMgr->SetAccumulatorAt(2, (int)sub, 0);
 
-    pMgr->v1(a1, a2, b, 1);
+    pMgr->v1(apGeometry, apRenderer, b, 1);
 
     pMgr->SetAccumulatorAt(0, 0, 0);
     pMgr->SetAccumulatorAt(1, 0, 0);
@@ -8012,94 +8207,97 @@ struct Shader9840
     void* field34;
     void* field38;
     PassArray9840* passes;
-    int __thiscall BSShaderProperty_AddPass_DiffuseDirOrPoint(NiGeometry*, ShadowSceneLight*, unsigned short*, unsigned char, bool&, bool, bool, bool,
+    int __thiscall BSShaderPPLightingProperty_AddDiffusePass_1x(NiGeometry*, ShadowSceneLight*, unsigned short*, unsigned char, bool&, bool, bool, bool,
                                 bool);
 };
 // Chooses a pass index from the boolean flags and type, calls the pass array for type 1 or increments count otherwise, then clears out and returns 0.
 // @fnv 0x00bd9840
-// src: COMMUNITY 0x00bd9840
-int Shader9840::BSShaderProperty_AddPass_DiffuseDirOrPoint(NiGeometry* geometry, ShadowSceneLight* light, unsigned short* count, unsigned char type,
-                             bool& out, bool a, bool b, bool c, bool d)
+// src: XBOX_RETAIL_PDB 0x00bd9840 (was COMMUNITY)
+// pdb: BSShaderPPLightingProperty::AddDiffusePass_1x | BSShaderPPLightingProperty_Passes_1x.obj | retail, object-file run extension, high
+// pdb params: apGeom, apLight, asCount, abUpdateList, abFirst, abSkinned, abPointLight, abMultitexture, abTreeBranch
+// pdb locals: ppass
+int Shader9840::BSShaderPPLightingProperty_AddDiffusePass_1x(NiGeometry* apGeom, ShadowSceneLight* apLight, unsigned short* asCount, unsigned char abUpdateList,
+                             bool& abFirst, bool abSkinned, bool abPointLight, bool abMultitexture, bool abTreeBranch)
 {
-    if (!a)
+    if (!abSkinned)
     {
-        if (!b)
+        if (!abPointLight)
         {
-            if (!d)
+            if (!abTreeBranch)
             {
-                if (type == 1)
+                if (abUpdateList == 1)
                 {
-                    passes->FUN_00ba9ee0(geometry, 300, out, 1, light, 0, 0, 0);
+                    passes->FUN_00ba9ee0(apGeom, 300, abFirst, 1, apLight, 0, 0, 0);
                 }
                 else
                 {
-                    ++*count;
+                    ++*asCount;
                 }
             }
             else
             {
-                if (type == 1)
+                if (abUpdateList == 1)
                 {
-                    passes->FUN_00ba9ee0(geometry, 304, out, 1, light, 0, 0, 0);
+                    passes->FUN_00ba9ee0(apGeom, 304, abFirst, 1, apLight, 0, 0, 0);
                 }
                 else
                 {
-                    ++*count;
+                    ++*asCount;
                 }
             }
         }
         else
         {
-            if (!d)
+            if (!abTreeBranch)
             {
-                if (type == 1)
+                if (abUpdateList == 1)
                 {
-                    passes->FUN_00ba9ee0(geometry, 301, out, 1, light, 0, 0, 0);
+                    passes->FUN_00ba9ee0(apGeom, 301, abFirst, 1, apLight, 0, 0, 0);
                 }
                 else
                 {
-                    ++*count;
+                    ++*asCount;
                 }
             }
             else
             {
-                if (type == 1)
+                if (abUpdateList == 1)
                 {
-                    passes->FUN_00ba9ee0(geometry, 305, out, 1, light, 0, 0, 0);
+                    passes->FUN_00ba9ee0(apGeom, 305, abFirst, 1, apLight, 0, 0, 0);
                 }
                 else
                 {
-                    ++*count;
+                    ++*asCount;
                 }
             }
         }
     }
     else
     {
-        if (!b)
+        if (!abPointLight)
         {
-            if (type == 1)
+            if (abUpdateList == 1)
             {
-                passes->FUN_00ba9ee0(geometry, 302, out, 1, light, 0, 0, 0);
+                passes->FUN_00ba9ee0(apGeom, 302, abFirst, 1, apLight, 0, 0, 0);
             }
             else
             {
-                ++*count;
+                ++*asCount;
             }
         }
         else
         {
-            if (type == 1)
+            if (abUpdateList == 1)
             {
-                passes->FUN_00ba9ee0(geometry, 303, out, 1, light, 0, 0, 0);
+                passes->FUN_00ba9ee0(apGeom, 303, abFirst, 1, apLight, 0, 0, 0);
             }
             else
             {
-                ++*count;
+                ++*asCount;
             }
         }
     }
-    out = false;
+    abFirst = false;
     return 0;
 }
 
@@ -8124,60 +8322,63 @@ struct Shader_00bd9bc0
     int unk38;
     BSShaderProperty::ShaderPassList* pPasses;
 
-    int BSShaderProperty_AddPass_Fog(NiGeometry* geom, unsigned short* count, unsigned char type, bool* enabled, bool a, bool b,
-                     bool c);
+    int BSShaderPPLightingProperty_AddFogPass_1x(NiGeometry* apGeom, unsigned short* asCount, unsigned char abUpdateList, bool* abFirst, bool abSkinned, bool abTreeBranch,
+                     bool abAlphaBlend);
 };
 
 // @fnv 0x00bd9bc0
-// src: COMMUNITY 0x00bd9bc0
-int Shader_00bd9bc0::BSShaderProperty_AddPass_Fog(NiGeometry* geom, unsigned short* count, unsigned char type, bool* enabled, bool a,
-                                  bool b, bool c)
+// src: XBOX_RETAIL_PDB 0x00bd9bc0 (was COMMUNITY)
+// pdb: BSShaderPPLightingProperty::AddFogPass_1x | BSShaderPPLightingProperty_Passes_1x.obj | retail, call graph, high
+// pdb params: apGeom, asCount, abUpdateList, abFirst, abSkinned, abTreeBranch, abAlphaBlend
+// pdb locals: ppass
+int Shader_00bd9bc0::BSShaderPPLightingProperty_AddFogPass_1x(NiGeometry* apGeom, unsigned short* asCount, unsigned char abUpdateList, bool* abFirst, bool abSkinned,
+                                  bool abTreeBranch, bool abAlphaBlend)
 {
-    if (!b)
+    if (!abTreeBranch)
     {
-        if (!a)
+        if (!abSkinned)
         {
-            if (!c)
+            if (!abAlphaBlend)
             {
-                if (type == 1)
-                    pPasses->Add(geom, 0x252, *enabled, 0, 0, 0, 0, 0);
+                if (abUpdateList == 1)
+                    pPasses->Add(apGeom, 0x252, *abFirst, 0, 0, 0, 0, 0);
                 else
-                    ++*count;
+                    ++*asCount;
             }
             else
             {
-                if (type == 1)
-                    pPasses->Add(geom, 0x253, *enabled, 0, 0, 0, 0, 0);
+                if (abUpdateList == 1)
+                    pPasses->Add(apGeom, 0x253, *abFirst, 0, 0, 0, 0, 0);
                 else
-                    ++*count;
+                    ++*asCount;
             }
         }
         else
         {
-            if (!c)
+            if (!abAlphaBlend)
             {
-                if (type == 1)
-                    pPasses->Add(geom, 0x254, *enabled, 0, 0, 0, 0, 0);
+                if (abUpdateList == 1)
+                    pPasses->Add(apGeom, 0x254, *abFirst, 0, 0, 0, 0, 0);
                 else
-                    ++*count;
+                    ++*asCount;
             }
             else
             {
-                if (type == 1)
-                    pPasses->Add(geom, 0x255, *enabled, 0, 0, 0, 0, 0);
+                if (abUpdateList == 1)
+                    pPasses->Add(apGeom, 0x255, *abFirst, 0, 0, 0, 0, 0);
                 else
-                    ++*count;
+                    ++*asCount;
             }
         }
     }
     else
     {
-        if (type == 1)
-            pPasses->Add(geom, 0x256, *enabled, 0, 0, 0, 0, 0);
+        if (abUpdateList == 1)
+            pPasses->Add(apGeom, 0x256, *abFirst, 0, 0, 0, 0, 0);
         else
-            ++*count;
+            ++*asCount;
     }
-    *enabled = false;
+    *abFirst = false;
     return 0;
 }
 
@@ -8201,7 +8402,7 @@ int ShaderPassSelection::AddAdditionalPass(NiGeometry* geometry, unsigned int un
 
 struct FUN_00ba9ee0_Class
 {
-    void __thiscall FUN_00ba9ee0(int a, int b, int c, int d, int e, int f, int g, int h);
+    void __thiscall FUN_00ba9ee0(int apGeometry, int ausPassEnum, int abFirstPass, int ausNumLights, int apSceneLight, int apSceneLight1, int apSceneLight2, int apSceneLight3);
 };
 
 struct FUN_00bda060_Class
@@ -8266,16 +8467,20 @@ struct Message
 };
 struct Shader
 {
-    Message* CreatePassMessage(void* actor, unsigned short* missed, unsigned char passType, unsigned char useAlternate,
-                               unsigned int context);
+    Message* BSShaderPPLightingProperty_AddSelfIllumAlphaPass(void* apGeom, unsigned short* asCount, unsigned char abUpdateList, unsigned char abSkinned,
+                               unsigned int abGlow);
 };
 // Checks the actor's resource key against DAT_011f4998, enables the last render pass, and returns a new Message (0x2d6/0x2d7) or increments missed.
 // @fnv 0x00bdb380
-Message* Shader::CreatePassMessage(void* actor, unsigned short* missed, unsigned char passType,
-                                   unsigned char useAlternate, unsigned int context)
+// src: XBOX_RETAIL_PDB 0x00bdb380
+// pdb: BSShaderPPLightingProperty::AddSelfIllumAlphaPass | BSShaderPPLightingProperty_Passes_1x.obj | retail, object-file gap fill, high
+// pdb params: apGeom, asCount, abUpdateList, abSkinned, abGlow
+// pdb locals: pmat, ppass, kemit, plastpass
+Message* Shader::BSShaderPPLightingProperty_AddSelfIllumAlphaPass(void* apGeom, unsigned short* asCount, unsigned char abUpdateList,
+                                   unsigned char abSkinned, unsigned int abGlow)
 {
     Message* result = 0;
-    void* resource = *reinterpret_cast<void**>(reinterpret_cast<char*>(actor) + 0xa4);
+    void* resource = *reinterpret_cast<void**>(reinterpret_cast<char*>(apGeom) + 0xa4);
     if (resource)
     {
         Key* key = *reinterpret_cast<Key**>(reinterpret_cast<char*>(resource) + 0x34);
@@ -8287,26 +8492,26 @@ Message* Shader::CreatePassMessage(void* actor, unsigned short* missed, unsigned
             BSShaderProperty::ShaderPassEntry* last = stack->Last();
             if (last)
                 last->m_bRendered = true;
-            if (!useAlternate)
+            if (!abSkinned)
             {
-                if (passType == 1)
+                if (abUpdateList == 1)
                 {
-                    result = new Message(actor, 0x2d6, 0, 0, 0);
+                    result = new Message(apGeom, 0x2d6, 0, 0, 0);
                 }
                 else
                 {
-                    ++*missed;
+                    ++*asCount;
                 }
             }
             else
             {
-                if (passType == 1)
+                if (abUpdateList == 1)
                 {
-                    result = new Message(actor, 0x2d7, 0, 0, 0);
+                    result = new Message(apGeom, 0x2d7, 0, 0, 0);
                 }
                 else
                 {
-                    ++*missed;
+                    ++*asCount;
                 }
             }
         }
@@ -8339,6 +8544,9 @@ struct ShaderTarget
 // Selects a shader pass index from the boolean flags and type, adds it to pPasses when type is 1, otherwise increments count; sets out to false and returns 0.
 // @fnv 0x00bdc0d0
 // src: COMMUNITY 0x00bdc0d0
+// pdb: BSShaderPPLightingProperty::AddAmbDiff2Pass_2x | BSShaderPPLightingProperty_Passes_2x.obj | debug, object-file run extension, low
+// pdb params: apGeom, apSunlight, apPtLight, asCount, abUpdateList, abFirst, abSkinned, abGlowMap, abFacegenBlend, abMultitexture, abProjShadow, abParallax, abTreeBranch
+// pdb locals: ppass
 int ShaderTarget::BSShaderProperty_AddPass_AD2(NiGeometry* geometry, ShadowSceneLight* light0, ShadowSceneLight* light1,
                                unsigned short* count, unsigned char type, bool* out, bool a, bool b, bool c,
                                bool unused, bool d, bool e, bool f)
@@ -8517,98 +8725,101 @@ struct PassArray
 };
 struct ShaderPassSelector : Shader_00bd9540
 {
-    int BSShaderProperty_AddPass_DiffusePoint2(NiGeometry* geom, ShadowSceneLight* light0, ShadowSceneLight* light1, unsigned short* count,
-                     unsigned char type, bool* out, bool a, bool b, bool c, bool d, bool e);
+    int BSShaderPPLightingProperty_AddDiffusePt2Pass_2x(NiGeometry* apGeom, ShadowSceneLight* apPtLight1, ShadowSceneLight* apPtLight2, unsigned short* asCount,
+                     unsigned char abUpdateList, bool* abFirst, bool abSkinned, bool abFacegenBlend, bool abMultitexture, bool abParallax, bool abTreeBranch);
 };
 // Picks a shadow pass id from the a/b/d/e flags and type, adds it via FUN_00ba9ee0 when type==1, otherwise increments *count, then clears *out.
 // @fnv 0x00bdda20
-// src: COMMUNITY 0x00bdda20
-int ShaderPassSelector::BSShaderProperty_AddPass_DiffusePoint2(NiGeometry* geom, ShadowSceneLight* light0, ShadowSceneLight* light1,
-                                     unsigned short* count, unsigned char type, bool* out, bool a, bool b, bool c,
-                                     bool d, bool e)
+// src: XBOX_RETAIL_PDB 0x00bdda20 (was COMMUNITY)
+// pdb: BSShaderPPLightingProperty::AddDiffusePt2Pass_2x | BSShaderPPLightingProperty_Passes_2x.obj | retail, object-file run extension, high
+// pdb params: apGeom, apPtLight1, apPtLight2, asCount, abUpdateList, abFirst, abSkinned, abFacegenBlend, abMultitexture, abParallax, abTreeBranch
+// pdb locals: ppass
+int ShaderPassSelector::BSShaderPPLightingProperty_AddDiffusePt2Pass_2x(NiGeometry* apGeom, ShadowSceneLight* apPtLight1, ShadowSceneLight* apPtLight2,
+                                     unsigned short* asCount, unsigned char abUpdateList, bool* abFirst, bool abSkinned, bool abFacegenBlend, bool abMultitexture,
+                                     bool abParallax, bool abTreeBranch)
 {
-    if (!a)
+    if (!abSkinned)
     {
-        if (!b)
+        if (!abFacegenBlend)
         {
-            if (!d)
+            if (!abParallax)
             {
-                if (!e)
+                if (!abTreeBranch)
                 {
-                    if (type == 1)
+                    if (abUpdateList == 1)
                     {
-                        ((PassArray*)pPasses)->FUN_00ba9ee0(geom, 0x132, *out, 2, light0, light1, 0, 0);
+                        ((PassArray*)pPasses)->FUN_00ba9ee0(apGeom, 0x132, *abFirst, 2, apPtLight1, apPtLight2, 0, 0);
                     }
                     else
                     {
-                        ++*count;
+                        ++*asCount;
                     }
                 }
                 else
                 {
-                    if (type == 1)
+                    if (abUpdateList == 1)
                     {
-                        ((PassArray*)pPasses)->FUN_00ba9ee0(geom, 0x137, *out, 2, light0, light1, 0, 0);
+                        ((PassArray*)pPasses)->FUN_00ba9ee0(apGeom, 0x137, *abFirst, 2, apPtLight1, apPtLight2, 0, 0);
                     }
                     else
                     {
-                        ++*count;
+                        ++*asCount;
                     }
                 }
             }
             else
             {
-                if (type == 1)
+                if (abUpdateList == 1)
                 {
-                    ((PassArray*)pPasses)->FUN_00ba9ee0(geom, 0x134, *out, 2, light0, light1, 0, 0);
+                    ((PassArray*)pPasses)->FUN_00ba9ee0(apGeom, 0x134, *abFirst, 2, apPtLight1, apPtLight2, 0, 0);
                 }
                 else
                 {
-                    ++*count;
+                    ++*asCount;
                 }
             }
         }
         else
         {
-            if (type == 1)
+            if (abUpdateList == 1)
             {
-                ((PassArray*)pPasses)->FUN_00ba9ee0(geom, 0x133, *out, 2, light0, light1, 0, 0);
+                ((PassArray*)pPasses)->FUN_00ba9ee0(apGeom, 0x133, *abFirst, 2, apPtLight1, apPtLight2, 0, 0);
             }
             else
             {
-                ++*count;
+                ++*asCount;
             }
         }
     }
     else
     {
-        if (!b)
+        if (!abFacegenBlend)
         {
-            if (!d)
+            if (!abParallax)
             {
-                if (type == 1)
+                if (abUpdateList == 1)
                 {
-                    ((PassArray*)pPasses)->FUN_00ba9ee0(geom, 0x135, *out, 2, light0, light1, 0, 0);
+                    ((PassArray*)pPasses)->FUN_00ba9ee0(apGeom, 0x135, *abFirst, 2, apPtLight1, apPtLight2, 0, 0);
                 }
                 else
                 {
-                    ++*count;
+                    ++*asCount;
                 }
             }
         }
         else
         {
-            if (type == 1)
+            if (abUpdateList == 1)
             {
-                ((PassArray*)pPasses)->FUN_00ba9ee0(geom, 0x136, *out, 2, light0, light1, 0, 0);
+                ((PassArray*)pPasses)->FUN_00ba9ee0(apGeom, 0x136, *abFirst, 2, apPtLight1, apPtLight2, 0, 0);
             }
             else
             {
-                ++*count;
+                ++*asCount;
             }
         }
     }
-    *out = false;
+    *abFirst = false;
     return 0;
 }
 
@@ -8621,9 +8832,9 @@ class BDD80ShadowLight;
 class BDD80RenderPassArray
 {
   public:
-    void Add(BDD80Geometry* pkGeometry, unsigned short m_usShaderPassType, bool bFirst, unsigned char m_ucLightCount,
-             BDD80ShadowLight* pkLight0, BDD80ShadowLight* pkLight1, BDD80ShadowLight* pkLight2,
-             BDD80ShadowLight* pkLight3);
+    void Add(BDD80Geometry* apGeometry, unsigned short ausPassEnum, bool abFirstPass, unsigned char ausNumLights,
+             BDD80ShadowLight* apSceneLight, BDD80ShadowLight* apSceneLight1, BDD80ShadowLight* apSceneLight2,
+             BDD80ShadowLight* apSceneLight3);
 };
 
 class BDD80ShaderPropertyBase
@@ -8654,31 +8865,35 @@ class BDD80ShaderProperty : public BDD80ShaderPropertyBase
     int unk38;
     BDD80RenderPassArray* m_pkRenderPasses;
 
-    int AddRenderPass(BDD80Geometry* pkGeometry, int iRenderMode, unsigned short* pusPassCount, unsigned char ucMode,
-                      bool* pbFirst, bool bSkip, int iArg6, int iArg7, int iArg8, int iArg9, int iArg10, bool bOverride,
-                      int iArg12);
+    int BSShaderPPLightingProperty_AddTexturePass_2x(BDD80Geometry* apGeom, int apSunlight, unsigned short* asCount, unsigned char abUpdateList,
+                      bool* abFirst, bool abSkinned, int abMultitexture, int abFacegenBlend, int abVertexColors, int abTreeBranch, int abProjShadow, bool abParallax,
+                      int abHair);
 };
 
 // @fnv 0x00bddd80
-int BDD80ShaderProperty::AddRenderPass(BDD80Geometry* pkGeometry, int iRenderMode, unsigned short* pusPassCount,
-                                       unsigned char ucMode, bool* pbFirst, bool bSkip, int iArg6, int iArg7, int iArg8,
-                                       int iArg9, int iArg10, bool bOverride, int iArg12)
+// src: XBOX_RETAIL_PDB 0x00bddd80
+// pdb: BSShaderPPLightingProperty::AddTexturePass_2x | BSShaderPPLightingProperty_Passes_2x.obj | retail, object-file run extension, high
+// pdb params: apGeom, apSunlight, asCount, abUpdateList, abFirst, abSkinned, abMultitexture, abFacegenBlend, abVertexColors, abTreeBranch, abProjShadow, abParallax, abHair
+// pdb locals: ppass
+int BDD80ShaderProperty::BSShaderPPLightingProperty_AddTexturePass_2x(BDD80Geometry* apGeom, int apSunlight, unsigned short* asCount,
+                                       unsigned char abUpdateList, bool* abFirst, bool abSkinned, int abMultitexture, int abFacegenBlend, int abVertexColors,
+                                       int abTreeBranch, int abProjShadow, bool abParallax, int abHair)
 {
-    if (bOverride)
+    if (abParallax)
     {
-        if (!bSkip)
+        if (!abSkinned)
         {
-            if (ucMode == 1)
+            if (abUpdateList == 1)
             {
-                m_pkRenderPasses->Add(pkGeometry, 0x153, *pbFirst, 0, 0, 0, 0, 0);
+                m_pkRenderPasses->Add(apGeom, 0x153, *abFirst, 0, 0, 0, 0, 0);
                 return 0;
             }
-            ++*pusPassCount;
+            ++*asCount;
         }
         return 0;
     }
-    return CreateRenderPasses(pkGeometry, iRenderMode, pusPassCount, ucMode, pbFirst, bSkip, iArg6, iArg7, iArg8, iArg9,
-                              iArg12);
+    return CreateRenderPasses(apGeom, apSunlight, asCount, abUpdateList, abFirst, abSkinned, abMultitexture, abFacegenBlend, abVertexColors, abTreeBranch,
+                              abHair);
 }
 
 struct Shader_00bdde10
@@ -8699,103 +8914,106 @@ struct Shader_00bdde10
     int unk34;
     int unk38;
     BSShaderProperty::ShaderPassList* pPasses;
-    int BSShaderProperty_AddPass_SpecularPoint2(NiGeometry* geom, ShadowSceneLight* light0, ShadowSceneLight* light1, unsigned short* count,
-                     unsigned char type, bool* enabled, bool a, bool b, bool c, bool d);
+    int BSShaderPPLightingProperty_AddSpecularPt2Pass_2x(NiGeometry* apGeom, ShadowSceneLight* apLight, ShadowSceneLight* apLight2, unsigned short* asCount,
+                     unsigned char abUpdateList, bool* abFirst, bool abSkinned, bool abParallax, bool abTreeBranch, bool abHair);
 };
 
 // @fnv 0x00bdde10
-// src: COMMUNITY 0x00bdde10
-int Shader_00bdde10::BSShaderProperty_AddPass_SpecularPoint2(NiGeometry* geom, ShadowSceneLight* light0, ShadowSceneLight* light1,
-                                  unsigned short* count, unsigned char type, bool* enabled, bool a, bool b, bool c,
-                                  bool d)
+// src: XBOX_RETAIL_PDB 0x00bdde10 (was COMMUNITY)
+// pdb: BSShaderPPLightingProperty::AddSpecularPt2Pass_2x | BSShaderPPLightingProperty_Passes_2x.obj | retail, object-file run extension, high
+// pdb params: apGeom, apLight, apLight2, asCount, abUpdateList, abFirst, abSkinned, abParallax, abTreeBranch, abHair
+// pdb locals: ppass
+int Shader_00bdde10::BSShaderPPLightingProperty_AddSpecularPt2Pass_2x(NiGeometry* apGeom, ShadowSceneLight* apLight, ShadowSceneLight* apLight2,
+                                  unsigned short* asCount, unsigned char abUpdateList, bool* abFirst, bool abSkinned, bool abParallax, bool abTreeBranch,
+                                  bool abHair)
 {
-    if (!a)
+    if (!abSkinned)
     {
-        if (!b)
+        if (!abParallax)
         {
-            if (!c)
+            if (!abTreeBranch)
             {
-                if (!d)
+                if (!abHair)
                 {
-                    if (type == 1)
+                    if (abUpdateList == 1)
                     {
-                        pPasses->Add(geom, 0x16c, *enabled, 2, light0, light1, 0, 0);
+                        pPasses->Add(apGeom, 0x16c, *abFirst, 2, apLight, apLight2, 0, 0);
                     }
                     else
                     {
-                        ++*count;
+                        ++*asCount;
                     }
                 }
                 else
                 {
-                    if (type == 1)
+                    if (abUpdateList == 1)
                     {
-                        pPasses->Add(geom, 0x16d, *enabled, 2, light0, light1, 0, 0);
+                        pPasses->Add(apGeom, 0x16d, *abFirst, 2, apLight, apLight2, 0, 0);
                     }
                     else
                     {
-                        ++*count;
+                        ++*asCount;
                     }
                 }
             }
             else
             {
-                if (type == 1)
+                if (abUpdateList == 1)
                 {
-                    pPasses->Add(geom, 0x171, *enabled, 2, light0, light1, 0, 0);
+                    pPasses->Add(apGeom, 0x171, *abFirst, 2, apLight, apLight2, 0, 0);
                 }
                 else
                 {
-                    ++*count;
+                    ++*asCount;
                 }
             }
         }
         else
         {
-            if (type == 1)
+            if (abUpdateList == 1)
             {
-                pPasses->Add(geom, 0x16e, *enabled, 2, light0, light1, 0, 0);
+                pPasses->Add(apGeom, 0x16e, *abFirst, 2, apLight, apLight2, 0, 0);
             }
             else
             {
-                ++*count;
+                ++*asCount;
             }
         }
     }
-    else if (!b)
+    else if (!abParallax)
     {
-        if (!d)
+        if (!abHair)
         {
-            if (type == 1)
+            if (abUpdateList == 1)
             {
-                pPasses->Add(geom, 0x16f, *enabled, 2, light0, light1, 0, 0);
+                pPasses->Add(apGeom, 0x16f, *abFirst, 2, apLight, apLight2, 0, 0);
             }
             else
             {
-                ++*count;
+                ++*asCount;
             }
         }
         else
         {
-            if (type == 1)
+            if (abUpdateList == 1)
             {
-                pPasses->Add(geom, 0x170, *enabled, 2, light0, light1, 0, 0);
+                pPasses->Add(apGeom, 0x170, *abFirst, 2, apLight, apLight2, 0, 0);
             }
             else
             {
-                ++*count;
+                ++*asCount;
             }
         }
     }
-    *enabled = false;
+    *abFirst = false;
     return 0;
 }
 
 struct ShadowSceneLight;
 struct RPA
 {
-    void Add(NiGeometry* geom, unsigned short pass, bool enabled, unsigned char numLights, ShadowSceneLight* l0,
-             ShadowSceneLight* l1, ShadowSceneLight* l2, ShadowSceneLight* l3);
+    void Add(NiGeometry* apGeometry, unsigned short ausPassEnum, bool abFirstPass, unsigned char ausNumLights, ShadowSceneLight* apSceneLight,
+             ShadowSceneLight* apSceneLight1, ShadowSceneLight* apSceneLight2, ShadowSceneLight* apSceneLight3);
 };
 struct Shader_bddfb0
 {
@@ -8815,71 +9033,74 @@ struct Shader_bddfb0
     int unk34;
     int unk38;
     RPA* pPasses;
-    int BSShaderProperty_AddPass_SpecularPoint3(NiGeometry* geom, ShadowSceneLight* l0, ShadowSceneLight* l1, ShadowSceneLight* l2,
-                     unsigned short* count, unsigned char type, bool* out, bool a, bool b, bool c, bool d);
+    int BSShaderPPLightingProperty_AddSpecularPt3Pass_2x(NiGeometry* apGeom, ShadowSceneLight* apLight, ShadowSceneLight* apLight2, ShadowSceneLight* apLight3,
+                     unsigned short* asCount, unsigned char abUpdateList, bool* abFirst, bool abSkinned, bool abParallax, bool abTreeBranch, bool abHair);
 };
 
 // @fnv 0x00bddfb0
-// src: COMMUNITY 0x00bddfb0
-int Shader_bddfb0::BSShaderProperty_AddPass_SpecularPoint3(NiGeometry* geom, ShadowSceneLight* pLight0, ShadowSceneLight* pLight1,
-                                ShadowSceneLight* pLight2, unsigned short* count, unsigned char type, bool* out, bool a,
-                                bool b, bool c, bool d)
+// src: XBOX_RETAIL_PDB 0x00bddfb0 (was COMMUNITY)
+// pdb: BSShaderPPLightingProperty::AddSpecularPt3Pass_2x | BSShaderPPLightingProperty_Passes_2x.obj | retail, object-file run extension, high
+// pdb params: apGeom, apLight, apLight2, apLight3, asCount, abUpdateList, abFirst, abSkinned, abParallax, abTreeBranch, abHair
+// pdb locals: ppass
+int Shader_bddfb0::BSShaderPPLightingProperty_AddSpecularPt3Pass_2x(NiGeometry* apGeom, ShadowSceneLight* apLight, ShadowSceneLight* apLight2,
+                                ShadowSceneLight* apLight3, unsigned short* asCount, unsigned char abUpdateList, bool* abFirst, bool abSkinned,
+                                bool abParallax, bool abTreeBranch, bool abHair)
 {
-    if (!a)
+    if (!abSkinned)
     {
-        if (!b)
+        if (!abParallax)
         {
-            if (!c)
+            if (!abTreeBranch)
             {
-                if (!d)
+                if (!abHair)
                 {
-                    if (type == 1)
-                        pPasses->Add(geom, 0x172, *out, 3, pLight0, pLight1, pLight2, 0);
+                    if (abUpdateList == 1)
+                        pPasses->Add(apGeom, 0x172, *abFirst, 3, apLight, apLight2, apLight3, 0);
                     else
-                        ++*count;
+                        ++*asCount;
                 }
                 else
                 {
-                    if (type == 1)
-                        pPasses->Add(geom, 0x173, *out, 3, pLight0, pLight1, pLight2, 0);
+                    if (abUpdateList == 1)
+                        pPasses->Add(apGeom, 0x173, *abFirst, 3, apLight, apLight2, apLight3, 0);
                     else
-                        ++*count;
+                        ++*asCount;
                 }
             }
             else
             {
-                if (type == 1)
-                    pPasses->Add(geom, 0x177, *out, 3, pLight0, pLight1, pLight2, 0);
+                if (abUpdateList == 1)
+                    pPasses->Add(apGeom, 0x177, *abFirst, 3, apLight, apLight2, apLight3, 0);
                 else
-                    ++*count;
+                    ++*asCount;
             }
         }
         else
         {
-            if (type == 1)
-                pPasses->Add(geom, 0x174, *out, 3, pLight0, pLight1, pLight2, 0);
+            if (abUpdateList == 1)
+                pPasses->Add(apGeom, 0x174, *abFirst, 3, apLight, apLight2, apLight3, 0);
             else
-                ++*count;
+                ++*asCount;
         }
     }
-    else if (!b)
+    else if (!abParallax)
     {
-        if (!d)
+        if (!abHair)
         {
-            if (type == 1)
-                pPasses->Add(geom, 0x175, *out, 3, pLight0, pLight1, pLight2, 0);
+            if (abUpdateList == 1)
+                pPasses->Add(apGeom, 0x175, *abFirst, 3, apLight, apLight2, apLight3, 0);
             else
-                ++*count;
+                ++*asCount;
         }
         else
         {
-            if (type == 1)
-                pPasses->Add(geom, 0x176, *out, 3, pLight0, pLight1, pLight2, 0);
+            if (abUpdateList == 1)
+                pPasses->Add(apGeom, 0x176, *abFirst, 3, apLight, apLight2, apLight3, 0);
             else
-                ++*count;
+                ++*asCount;
         }
     }
-    *out = false;
+    *abFirst = false;
     return 0;
 }
 
@@ -9013,6 +9234,7 @@ extern FUN_00bc0940_obj* DAT_01201f58;
 // Decrements the reference count of the global object at DAT_01201f58 and calls its v01() when the count reaches zero, then clears the pointer.
 // @fnv 0x00bc0940
 // src: COMMUNITY 0x00bc0940
+// pdb: BoltShader::Free | BoltShader.obj | retail, upstream name already matches, high
 void __cdecl BoltShader_Free()
 {
     if (DAT_01201f58 == 0)
@@ -9036,25 +9258,25 @@ inline bool NiTimeController::GetManagerControlled() const
     return (bool)(((m_uiObjectFlags & MANAGERCONTROLLED_MASK) >> 5) & 1);
 }
 
-extern const float g_fInvalidTimeBC3;
+extern const float NiInterpController_INVALID_TIME; // src: XBOX_RETAIL_PDB 0x01096324 (old: DAT_01096324/INVALID_TIME_A4F/g_fInvalidTimeBC3/kInvalidTime)
 
 // @fnv 0x00bc34c0
 void ShaderRefractionController::UpdateFloatController(NiUpdateData& kUpdateData)
 {
     if (GetManagerControlled())
     {
-        m_fControllerTime = g_fInvalidTimeBC3;
+        m_fScaledTime = NiInterpController_INVALID_TIME;
     }
     else if (AdvanceController(kUpdateData.fTime) &&
-             (!m_spControllerInterpolator.m_pObject || !m_spControllerInterpolator.m_pObject->AlwaysUpdate()))
+             (!m_spInterpolator.m_pObject || !m_spInterpolator.m_pObject->AlwaysUpdate()))
     {
         return;
     }
 
-    if (m_spControllerInterpolator.m_pObject)
+    if (m_spInterpolator.m_pObject)
     {
         float fValue;
-        if (m_spControllerInterpolator.m_pObject->UpdateFloat(m_fControllerTime, m_pkTarget, fValue))
+        if (m_spInterpolator.m_pObject->UpdateFloat(m_fScaledTime, m_pkTarget, fValue))
             ((BSShaderPPLightingProperty*)m_pkTarget)->SetRefractionPower(fValue);
     }
 }
@@ -9236,6 +9458,8 @@ struct FUN_00bc3bb0 : FUN_00b66f50
 };
 // Constructor: clears the effect pointers, initialises three vectors from DAT_011f426c, zeroes the floats, and sets unk1c to 9.
 // @fnv 0x00bc3bb0
+// pdb: HairShaderProperty::HairShaderProperty | HairShaderProperty.obj | retail, call graph, medium
+// pdb locals: i
 FUN_00bc3bb0::FUN_00bc3bb0()
 {
     third = 0;
@@ -9393,20 +9617,22 @@ struct TerrainShader : ShaderBase_00b690d0
     {
         return (flags24 & mask) > 0;
     }
-    void HairShaderProperty_GetViewerStrings(StrArray* arr);
+    void HairShaderProperty_GetViewerStrings(StrArray* apStrings);
 };
 
 // Appends base debug info plus height map, light flags and point-light status strings to arr.
 // @fnv 0x00bc4460
 // src: XBOX_PDB 0x00bc4460
-void TerrainShader::HairShaderProperty_GetViewerStrings(StrArray* arr)
+// pdb: HairShaderProperty::GetViewerStrings | HairShaderProperty.obj | retail, string-set bridge, high
+// pdb params: apStrings
+void TerrainShader::HairShaderProperty_GetViewerStrings(StrArray* apStrings)
 {
-    GetDebugInfo_b690d0(arr);
-    arr->Add(NiViewerStrings_NiGetViewerString_Title(g_01201fb8.pData));
-    arr->Add(NiGetViewerString_00a7d5a0("height map", m_kTerrainTexture));
-    arr->Add(NiGetViewerString("primary light is point", GetFlag(0x80)));
-    arr->Add(NiGetViewerString("second light", GetFlag(0x100)));
-    arr->Add(NiGetViewerString("third light", GetFlag(0x200)));
+    GetDebugInfo_b690d0(apStrings);
+    apStrings->Add(NiViewerStrings_NiGetViewerString_Title(g_01201fb8.pData));
+    apStrings->Add(NiGetViewerString_00a7d5a0("height map", m_kTerrainTexture));
+    apStrings->Add(NiGetViewerString("primary light is point", GetFlag(0x80)));
+    apStrings->Add(NiGetViewerString("second light", GetFlag(0x100)));
+    apStrings->Add(NiGetViewerString("third light", GetFlag(0x200)));
 }
 
 struct FUN_00bc5050_base
@@ -9503,6 +9729,7 @@ struct FUN_00bc5050_class : FUN_00bc5050_base
 
 // @fnv 0x00bc5050
 // src: XBOX_PDB 0x00bc5050
+// pdb: PrecipitationShader::ReloadShaders | PrecipitationShader.obj | retail, upstream name already matches, high
 void FUN_00bc5050_class::PrecipitationShader_ReloadShaders()
 {
     vf4f();
@@ -9572,10 +9799,13 @@ struct FUN_00bc5070_shell
     int unk74;
     StagingNiPointer<ShaderRef_bc5070> shaders[2];
     ShaderRef_bc5070* FUN_00be0fe0(const char*, unsigned int*, const char*, const char*);
-    void LoadVolumetricFogShaders();
+    void VolumetricFogShader_LoadVertexShaders();
 };
 // @fnv 0x00bc5070
-void FUN_00bc5070_shell::LoadVolumetricFogShaders()
+// src: XBOX_RETAIL_PDB 0x00bc5070
+// pdb: VolumetricFogShader::LoadVertexShaders | VolumetricFogShader.obj | retail, string-set bridge, high
+// pdb locals: pvshader, ptempFName, pvtarget, pcacheFName, i, VSHADER_PATH
+void FUN_00bc5070_shell::VolumetricFogShader_LoadVertexShaders()
 {
     const char* profileNames[2] = {"vs_2_0", "vs_3_0"};
     Config_bc5070 configs[2] = {Config_bc5070("vfog\\VolumetricFog.v.hlsl"),
@@ -9646,11 +9876,14 @@ struct VolumetricFog
     BeamPtr pixelShaders[2];
 
     RefObject* FUN_00be1750(const char*, unsigned int*, const char*, const char*);
-    void CreatePixelShaders();
+    void VolumetricFogShader_LoadPixelShaders();
 };
 
 // @fnv 0x00bc51a0
-void VolumetricFog::CreatePixelShaders()
+// src: XBOX_RETAIL_PDB 0x00bc51a0
+// pdb: VolumetricFogShader::LoadPixelShaders | VolumetricFogShader.obj | retail, unique string literal, high
+// pdb locals: ptempFName, pptarget, ppshader, pcacheFName, i, PSHADER_PATH
+void VolumetricFog::VolumetricFogShader_LoadPixelShaders()
 {
     const char* shaderTargets[2];
     shaderTargets[0] = "ps_2_a";
@@ -9776,6 +10009,8 @@ struct ShaderConfig
 };
 // @fnv 0x00bc5510
 // src: COMMUNITY 0x00bc5510
+// pdb: VolumetricFogShader::LoadStagesAndPasses | VolumetricFogShader.obj | retail, upstream name already matches, high
+// pdb locals: i, spStage
 bool ShaderConfig::VolumetricFogShader_LoadStagesAndPasses()
 {
     for (int index = 0; index < 3; ++index)
@@ -9841,6 +10076,8 @@ struct FUN_00bcb210 : ShaderBase5320
 };
 // Releases the shader's two passes, vertex/pixel pointers, three resource pointers and two global references by clearing them.
 // @fnv 0x00bcb210
+// pdb: GeometryDecalShader::~GeometryDecalShader | GeometryDecalShader.obj | debug, call graph, medium
+// pdb locals: ui
 FUN_00bcb210::~FUN_00bcb210()
 {
     resource84 = 0;
@@ -9866,6 +10103,9 @@ struct FUN_00bcd4a0 : ShaderBase
 
 // Releases the vertex and pixel shader references and clears the pass pointers.
 // @fnv 0x00bcd4a0
+// pdb: ParallaxShader::~ParallaxShader | ParallaxShader.obj | retail, object-file run extension, low
+// pdb note: debug build links it to ParallaxShader::Initialize
+// pdb locals: i
 FUN_00bcd4a0::~FUN_00bcd4a0()
 {
     for (int i = 0; i < 20; i++)
@@ -10392,13 +10632,13 @@ struct SPShaderBase
     virtual void v104();
     virtual void FinishSetup();
 
-    void SetupStage(SPGeom* apGeom, int aiStage, int aiUnk, bool abFlag);
-    void SetSamplerA(SPGeom* apGeom, int aiValue, int aiUnk);
-    void SetSamplerB(SPGeom* apGeom, int aiValue, int aiUnk);
+    void SetupStage(SPGeom* pprop, int auiStage, int auiIndex, bool abUseDefaultOnNULL);
+    void SetSamplerA(SPGeom* pprop, int auiStage, int auiIndex);
+    void SetSamplerB(SPGeom* pprop, int auiStage, int auiIndex);
     void SetTextureStage(SPGeom* apGeom, int aiStage, int aiUnk, bool abFlag);
     void SetExtraStage(SPGeom* apGeom, int aiStage, int aiUnk, bool abFlag);
-    void SetAlphaStage(int aiStage);
-    void BaseSetup(SPPassInfo* apPass);
+    void SetAlphaStage(int auiStage);
+    void BaseSetup(SPPassInfo* apState);
 };
 
 struct SPShader : SPShaderBase
@@ -10642,12 +10882,15 @@ struct FeatureManager
     int unkf0;
     FeatureObject* features[13];
     FeatureObject* __thiscall LoadFeature(char*, const char**, const char*, char*);
-    void __thiscall LoadAllFeatures();
+    void __thiscall SkinShader_LoadPixelShaders();
 };
 
 // Builds 13 feature descriptors and, when DAT_011f91c0 >= 2, loads each named feature into the features array with reference counting.
 // @fnv 0x00bcf320
-void FeatureManager::LoadAllFeatures()
+// src: XBOX_RETAIL_PDB 0x00bcf320
+// pdb: SkinShader::LoadPixelShaders | SkinShader.obj | retail, string-set bridge, high
+// pdb locals: ptempFName, ppsShader, elevel, pcacheFName, i
+void FeatureManager::SkinShader_LoadPixelShaders()
 {
 
     FeatureDescription descriptors[13];
@@ -10977,13 +11220,16 @@ class FUN_00bcf7f0
     virtual void v082();
     virtual void v083();
     virtual void v084();
-    FUN_00bcf7f0(NiD3DShaderDeclaration* apVertexDesc, NiD3DShaderDeclaration* apPixelDesc);
+    FUN_00bcf7f0(NiD3DShaderDeclaration* apShaderDecl, NiD3DShaderDeclaration* apSkinnedShaderDecl);
     char pad[0x124];
 };
 
 // Creates vertex and pixel descriptors, configures their elements, builds a shader from them, initializes it and returns the shader.
 // @fnv 0x00bcfb00
-FUN_00bcf7f0* __cdecl CreateFaceGenMorphShader()
+// src: XBOX_RETAIL_PDB 0x00bcfb00
+// pdb: SkinShader::CreateShader | SkinShader.obj | retail, call graph, high
+// pdb locals: spShaderDecl, pshader, pSkinnedShaderDecl
+FUN_00bcf7f0* __cdecl SkinShader_CreateShader()
 {
     NiD3DShaderDeclaration* pVertexDesc = NiDX9ShaderDeclaration_Create(DAT_011f9508, 6, 1);
     NiD3DShaderDeclaration* pPixelDesc = NiDX9ShaderDeclaration_Create(DAT_011f9508, 8, 1);
@@ -11028,6 +11274,8 @@ struct FUN_00bd0ce0 : ShaderBase
 
 // Releases the shader's vertex/pixel shader pointers, clears both passes and resets the remaining references to null.
 // @fnv 0x00bd0ce0
+// pdb: HairShader::~HairShader | HairShader.obj | retail, object-file run extension, low
+// pdb locals: i
 FUN_00bd0ce0::~FUN_00bd0ce0()
 {
     for (int i = 0; i < 7; ++i)
@@ -11232,6 +11480,8 @@ struct FUN_00bd12c0 : ShaderBase_bd12c0
 };
 
 // @fnv 0x00bd12c0
+// pdb: HairShader::HairShader | HairShader.obj | retail, call graph, medium
+// pdb params: apShaderDecl, apSkinnedShaderDecl
 FUN_00bd12c0::FUN_00bd12c0(Ref_bd12c0* apRefA, Ref_bd12c0* apRefB) : ShaderBase_bd12c0(apRefA, apRefB, 0, 0)
 {
     unk68 = 2;
@@ -11443,6 +11693,8 @@ struct CreatedShader
 };
 // @fnv 0x00bd14b0
 // src: COMMUNITY 0x00bd14b0
+// pdb: HairShader::CreateShader | HairShader.obj | retail, upstream name already matches, high
+// pdb locals: spShaderDecl, pshader, pSkinnedShaderDecl
 CreatedShader* __cdecl HairShader_CreateShader()
 {
     ShaderLayout* first = NiDX9ShaderDeclaration_Create(DAT_011f9508, 6, 1);
@@ -11498,6 +11750,8 @@ struct FUN_00bd2c40 : FUN_00be0f10
 
 // Destructor releases the four pixel shader and two vertex shader references held by the object.
 // @fnv 0x00bd2c40
+// pdb: SpeedTreeFrondShader::~SpeedTreeFrondShader | SpeedTreeFrondShader.obj | retail, object-file run extension, low
+// pdb locals: i
 FUN_00bd2c40::~FUN_00bd2c40()
 {
     for (unsigned int i = 0; i < 4; i++)
@@ -11905,6 +12159,8 @@ struct ShaderObj
 
 // @fnv 0x00bd2e70
 // src: COMMUNITY 0x00bd2e70
+// pdb: SpeedTreeFrondShader::CreateShader | SpeedTreeFrondShader.obj | retail, upstream name already matches, high
+// pdb locals: tempMemContext, spShaderDecl, eInput, pshader
 ShaderObj* __cdecl SpeedTreeFrondShader_CreateShader()
 {
     MemContextGuard kGuard(0x1f);
@@ -12057,7 +12313,7 @@ extern GeomStub** DAT_011f91e0;
 extern Bound DAT_011f4288;
 extern unsigned char DAT_011f91c4;
 FogStub* __cdecl BSShaderManager_GetFogProperty(int idx);
-PassOwner* __cdecl BSShaderManager_GetShader(int idx);
+PassOwner* __cdecl BSShaderManager_GetShader(int aiShaderIndex);
 struct FUN_00bd4ba0_class
 {
     virtual void v00();
@@ -12197,7 +12453,7 @@ void FUN_00bd4ba0_class::ApplyPasses(PassArg* pPassArg)
 }
 }  // namespace fnv_00bd4ba0
 
-void __cdecl FUN_00bb2f50(NiD3DShaderConstantMap* map, int count);
+void __cdecl SpeedTreeShader_SetShaderConstants(NiD3DShaderConstantMap* apVertexConstantMap, int aiStartRegister);
 
 struct FUN_00bd4d30_class
 {
@@ -12249,7 +12505,7 @@ void FUN_00bd4d30_class::InitShaderConstantMaps()
         m_spFirstShaderConstantMap = new NiD3DShaderConstantMap((GraphicsRenderer*)m_pD3DDevice, (unsigned int)2);
     m_spCurrPixelConstantMap = m_spFirstShaderConstantMap;
     m_spCurrVertexConstantMap = m_spSecondShaderConstantMap;
-    FUN_00bb2f50(m_spSecondShaderConstantMap, 0x2a);
+    SpeedTreeShader_SetShaderConstants(m_spSecondShaderConstantMap, 0x2a);
 }
 
 void* __cdecl Object_DispatchCommandFour(unsigned int);
@@ -12684,17 +12940,19 @@ struct ViewCamera
     int unk84;
     int unk88;
     NiPoint3 position;
-    void SetLookAt(const NiPoint3& position, const NiPoint3& direction);
-    void BSCubeMapCamera_SetupTransformation(unsigned int face);
+    void SetLookAt(const NiPoint3& kWorldPt, const NiPoint3& kWorldUp);
+    void BSCubeMapCamera_SetupTransformation(unsigned int aeFace);
 };
 
 // @fnv 0x00bd7200
 // src: COMMUNITY 0x00bd7200
-void ViewCamera::BSCubeMapCamera_SetupTransformation(unsigned int face)
+// pdb: BSCubeMapCamera::SetupTransformation | BSCubeMapCamera.obj | retail, upstream name already matches, high
+// pdb params: aeFace
+void ViewCamera::BSCubeMapCamera_SetupTransformation(unsigned int aeFace)
 {
     NiPoint3 direction0, position0, direction1, position1, position2;
     NiPoint3 direction3, position3, direction4, position4, direction5, position5;
-    switch (face)
+    switch (aeFace)
     {
     case 0: {
         direction0.x = -DAT_011a9478.x;
@@ -12759,25 +13017,28 @@ void ViewCamera::BSCubeMapCamera_SetupTransformation(unsigned int face)
 
 struct Bd84Owner : FUN_00bd74a0
 {
-    void RenderFaces();
+    void BSCubeMapCamera_ClickCubeMap();
     void BSCubeMapCamera_ClickCubeMapWithMask(int arg);
-    void BSCubeMapCamera_Click(int arg);
+    void BSCubeMapCamera_Click(int aiFace);
 };
 // @fnv 0x00bd84b0
 // src: XBOX_PDB 0x00bd84b0
-void Bd84Owner::BSCubeMapCamera_Click(int arg)
+// pdb: BSCubeMapCamera::Click | BSCubeMapCamera.obj | retail, upstream name already matches, high
+// pdb params: aiFace
+// pdb locals: i
+void Bd84Owner::BSCubeMapCamera_Click(int aiFace)
 {
     switch (unk114)
     {
     case 0:
-        RenderFaces();
+        BSCubeMapCamera_ClickCubeMap();
         break;
     case 1:
         goto done;
     case 2:
         goto done;
     case 3:
-        BSCubeMapCamera_ClickCubeMapWithMask(arg);
+        BSCubeMapCamera_ClickCubeMapWithMask(aiFace);
         break;
     }
 done:
@@ -12813,6 +13074,9 @@ struct Cand_bd9ac0
 // Adds a pass (0x244-0x247 selected by a/b/type) for the geometry, or increments count for non-type-1, then clears enabled and returns 0.
 // @fnv 0x00bd9ac0
 // src: COMMUNITY 0x00bd9ac0
+// pdb: BSShaderPPLightingProperty::AddEnvmapPass_1x | BSShaderPPLightingProperty_Passes_1x.obj | retail, object-file run extension, low
+// pdb params: apGeom, asCount, abUpdateList, abFirst, abSkinned, abVertexColors
+// pdb locals: ppass
 int Cand_bd9ac0::BSShaderProperty_AddPass_EnvMap(NiGeometry* geom, unsigned short* count, unsigned char type, bool* enabled, bool abFlagA,
                               bool abFlagB)
 {
@@ -12875,16 +13139,16 @@ class ShadowSceneLightBD9;
 class RenderPassArrayBD9
 {
   public:
-    void Add(NiGeometry* pkGeometry, unsigned short usPassType, bool bEnabled, unsigned char m_ucLightCount,
-             ShadowSceneLightBD9* pkLight0, ShadowSceneLightBD9* pkLight1, ShadowSceneLightBD9* pkLight2,
-             ShadowSceneLightBD9* pkLight3);
+    void Add(NiGeometry* apGeometry, unsigned short ausPassEnum, bool abFirstPass, unsigned char ausNumLights,
+             ShadowSceneLightBD9* apSceneLight, ShadowSceneLightBD9* apSceneLight1, ShadowSceneLightBD9* apSceneLight2,
+             ShadowSceneLightBD9* apSceneLight3);
 };
 
 class ShaderPropertyBD9
 {
   public:
-    int BSShaderProperty_AddPass_Normals(NiGeometry* pkGeometry, unsigned short* pusPassCount, unsigned char ucMode, bool* pbFirstPass,
-                     bool bAlpha, bool bHasAnimation);
+    int BSShaderPPLightingProperty_AddRenderNormalsPass_1x(NiGeometry* apGeom, unsigned short* asCount, unsigned char abUpdateList, bool* abFirst,
+                     bool abSkinned, bool abRefractionFire);
 
     int unk00;
     int unk04;
@@ -12905,32 +13169,35 @@ class ShaderPropertyBD9
 };
 
 // @fnv 0x00bd9da0
-// src: COMMUNITY 0x00bd9da0
-int ShaderPropertyBD9::BSShaderProperty_AddPass_Normals(NiGeometry* pkGeometry, unsigned short* pusPassCount, unsigned char ucMode,
-                                    bool* pbFirstPass, bool bAlpha, bool bHasAnimation)
+// src: XBOX_RETAIL_PDB 0x00bd9da0 (was COMMUNITY)
+// pdb: BSShaderPPLightingProperty::AddRenderNormalsPass_1x | BSShaderPPLightingProperty_Passes_1x.obj | retail, object-file gap fill, high
+// pdb params: apGeom, asCount, abUpdateList, abFirst, abSkinned, abRefractionFire
+// pdb locals: ppass
+int ShaderPropertyBD9::BSShaderPPLightingProperty_AddRenderNormalsPass_1x(NiGeometry* apGeom, unsigned short* asCount, unsigned char abUpdateList,
+                                    bool* abFirst, bool abSkinned, bool abRefractionFire)
 {
-    if (bHasAnimation)
+    if (abRefractionFire)
     {
-        if (ucMode == 1)
-            m_pkRenderPasses->Add(pkGeometry, 0x1e4, *pbFirstPass, 0, 0, 0, 0, 0);
+        if (abUpdateList == 1)
+            m_pkRenderPasses->Add(apGeom, 0x1e4, *abFirst, 0, 0, 0, 0, 0);
         else
-            (*pusPassCount)++;
+            (*asCount)++;
     }
-    else if (!bAlpha)
+    else if (!abSkinned)
     {
-        if (ucMode == 1)
-            m_pkRenderPasses->Add(pkGeometry, 0x1e2, *pbFirstPass, 0, 0, 0, 0, 0);
+        if (abUpdateList == 1)
+            m_pkRenderPasses->Add(apGeom, 0x1e2, *abFirst, 0, 0, 0, 0, 0);
         else
-            (*pusPassCount)++;
+            (*asCount)++;
     }
     else
     {
-        if (ucMode == 1)
-            m_pkRenderPasses->Add(pkGeometry, 0x1e3, *pbFirstPass, 0, 0, 0, 0, 0);
+        if (abUpdateList == 1)
+            m_pkRenderPasses->Add(apGeom, 0x1e3, *abFirst, 0, 0, 0, 0, 0);
         else
-            (*pusPassCount)++;
+            (*asCount)++;
     }
-    *pbFirstPass = false;
+    *abFirst = false;
     return 0;
 }
 
@@ -12964,6 +13231,9 @@ struct ShaderSelector
 // Chooses a pass id from the seven boolean flags and type, submits it via pPasses when type is 1, otherwise increments count; sets out to false and returns 0.
 // @fnv 0x00bda0a0
 // src: COMMUNITY 0x00bda0a0
+// pdb: BSShaderPPLightingProperty::AddAmbDiffTexPass_1x | BSShaderPPLightingProperty_Passes_1x.obj | retail, object-file run extension, low
+// pdb params: apGeom, apSunlight, asCount, abUpdateList, abFirst, abSkinned, abAlphaTest, abGlowMap, abFacegenBlend, abFog, abVertexColors, abTreeBranch
+// pdb locals: ppass
 int ShaderSelector::BSShaderProperty_AddPass_AmbDiffTex(NiGeometry* geom, ShadowSceneLight* light, unsigned short* count, unsigned char type,
                                  bool* out, bool a, bool b, bool c, bool d, bool e, bool f, bool g)
 {
@@ -13733,6 +14003,9 @@ struct Shader
 };
 // @fnv 0x00bdd050
 // src: COMMUNITY 0x00bdd050
+// pdb: BSShaderPPLightingProperty::AddAmbDiffTexPass_2x | BSShaderPPLightingProperty_Passes_2x.obj | debug, call graph, medium
+// pdb params: apGeom, apSunlight, asCount, abUpdateList, abFirst, abSkinned, abGlowMap, abFacegenBlend, abMultitexture, abProjShadow, abParallax, abModelSpaceNormals, abTreeBranch, abTreeBillboard, abHair, abAlphaTest
+// pdb locals: ppass
 int Shader::BSShaderProperty_AddPass_ADTS(NiGeometry* geom, ShadowSceneLight* light, unsigned short* count, unsigned char type,
                          bool* out, bool a, bool b, bool c, bool d, bool e, bool f, bool g, bool h)
 {
@@ -14302,12 +14575,15 @@ struct SelectShader
     int unk34;
     int unk38;
     BSShaderProperty::ShaderPassList* passes;
-    int BSShaderProperty_AddPass_ADT(NiGeometry* geom, ShadowSceneLight* light, unsigned short* count, unsigned char type, bool* out,
+    int BSShaderPPLightingProperty_AddAmbDiffTexSpecularPass_2x(NiGeometry* geom, ShadowSceneLight* light, unsigned short* count, unsigned char type, bool* out,
                      bool a, bool b, bool c, bool d, bool e, bool f, bool g, bool h, bool i, bool j, bool k);
 };
 // @fnv 0x00bde1d0
-// src: COMMUNITY 0x00bde1d0
-int SelectShader::BSShaderProperty_AddPass_ADT(NiGeometry* geom, ShadowSceneLight* light, unsigned short* count, unsigned char type,
+// src: XBOX_DEBUG_PDB 0x00bde1d0 (was COMMUNITY)
+// pdb: BSShaderPPLightingProperty::AddAmbDiffTexSpecularPass_2x | BSShaderPPLightingProperty_Passes_2x.obj | debug, call graph, high
+// pdb params: apGeom, apSunlight, asCount, abUpdateList, abFirst, abSkinned, abGlowMap, abFacegenBlend, abMultitexture, abProjShadow, abParallax, abTreeBranch, abHair
+// pdb locals: ppass
+int SelectShader::BSShaderPPLightingProperty_AddAmbDiffTexSpecularPass_2x(NiGeometry* geom, ShadowSceneLight* light, unsigned short* count, unsigned char type,
                                bool* out, bool a, bool b, bool c, bool d, bool e, bool f, bool g, bool h, bool i,
                                bool j, bool k)
 {
@@ -14928,8 +15204,8 @@ struct Pass91
     unsigned short unk06;
     unsigned char unk08, count, capacity, unk0b;
     Light91** lights;
-    void BSShaderProperty_RenderPass_ClearSceneLights();
-    void AllocateElemArray(unsigned int);
+    void BSShaderProperty_RenderPass_FreeLightArray();
+    void BSShaderProperty_RenderPass_AllocateLightArray(unsigned int);
 };
 struct Passes91
 {
@@ -14966,6 +15242,10 @@ struct Shader91
 // Builds a light pass from the shader's passes, fills its light list, and picks a pass type from the mode, light count and flags; returns the pass.
 // @fnv 0x00bde9b0
 // src: COMMUNITY 0x00bde9b0
+// pdb: BSShaderPPLightingProperty::AddAmbDiffTexSpecular10Pass_2x | BSShaderPPLightingProperty_Passes_2x.obj | retail, object-file run extension, low
+// pdb note: debug build links it to BSShaderPPLightingProperty::AddAmbDiffTexSpecular2Pass_2x
+// pdb params: apGeom, apSunlight, asCount, abUpdateList, abFirst, abSkinned, abGlowMap, abSpecular, abFaceGenBlend, abExtraLight
+// pdb locals: ilightCount, ppass, pitlight, ilight, kiter, iextralight
 Pass91* Shader91::BSShaderPPLightingProperty_AddPass_Opt(Geometry91* geometry, Light91* light, unsigned short* count, unsigned char mode,
                                bool* out, bool alternate, bool special, bool flagA, bool flagB, bool extra)
 {
@@ -14975,8 +15255,8 @@ Pass91* Shader91::BSShaderPPLightingProperty_AddPass_Opt(Geometry91* geometry, L
         passes->FUN_00ba9ee0(geometry, 0, true, 0, 0, 0, 0, 0);
         pass = passes->entries[passes->size - 1];
         pass->capacity = pass->count = BSShaderLightingProperty_GetNumberofActiveNonShadowLights() + 1;
-        pass->BSShaderProperty_RenderPass_ClearSceneLights();
-        pass->AllocateElemArray(pass->count);
+        pass->BSShaderProperty_RenderPass_FreeLightArray();
+        pass->BSShaderProperty_RenderPass_AllocateLightArray(pass->count);
         pass->lights[0] = light;
         int lights = pass->count;
         int limit = extra ? 2 : 1;
@@ -15342,6 +15622,9 @@ struct Shader98
 // If the light's color differs from DAT_011f4998, picks a pass id from the flag combination and either runs FUN_00ba9ee0 or increments *count, then clears *out.
 // @fnv 0x00bdef40
 // src: COMMUNITY 0x00bdef40
+// pdb: BSShaderPPLightingProperty::AddSpecularPass_2x | BSShaderPPLightingProperty_Passes_2x.obj | retail, object-file run extension, low
+// pdb params: apGeom, apLight, asCount, abUpdateList, abFirst, abSkinned, abMultitexture, abProjShadow, abParallax, abTreeBranch, abHair
+// pdb locals: ptlight, ppass
 int Shader98::BSShaderProperty_AddPass_Specular(NiGeometry* geom, Light98* light, unsigned short* count, unsigned char mode, bool* out,
                            bool alternate, bool unused, bool flagA, bool flagB, bool flagC, bool flagD)
 {
@@ -15768,7 +16051,10 @@ static inline unsigned int GetTableCount()
     return DAT_01201f50;
 }
 // @fnv 0x00bc0b70
-void* GetOrCreateTable()
+// src: XBOX_RETAIL_PDB 0x00bc0b70
+// pdb: BoltShader::GetSegmentIndices | BoltShader.obj | retail, call graph (shared callers), high
+// pdb locals: inumVertices, inumQuads, isegmentCount, i, fval1, vert, fval2
+void* BoltShader_GetSegmentIndices()
 {
     if (DAT_01201f4c)
         return DAT_01201f4c;
@@ -15798,6 +16084,8 @@ void* GetOrCreateTable()
 void __cdecl BSShaderProperty_RegisterStreamables();
 // @fnv 0x00bc3770
 // src: XBOX_PDB 0x00bc3770
+// pdb: BSShaderLightingProperty::RegisterStreamables | BSShaderLightingProperty.obj | debug, upstream name already matches, high
+// pdb params: kStream
 void __cdecl BSShaderLightingProperty_RegisterStreamables()
 {
     BSShaderProperty_RegisterStreamables();
@@ -15806,6 +16094,7 @@ void __cdecl BSShaderLightingProperty_RegisterStreamables()
 void __cdecl FUN_00be0870();
 // @fnv 0x00bc4600
 // src: XBOX_PDB 0x00bc4600
+// pdb: ParticleShader::Initialize | ParticleShader.obj | debug, upstream name already matches, high
 void __cdecl ParticleShader_Initialize()
 {
     FUN_00be0870();
@@ -16250,6 +16539,8 @@ struct ShaderState
 };
 // Copies source x/y/z into this state, then clears flags 0x400, 0x800 and 0x1000 on the controller, zeroing its associatedValue when each was set.
 // @fnv 0x00bd5dd0
+// pdb: DistantLODGroup::SetDistantLODParam | DistantLODGroup.obj | retail, object-file run extension, low
+// pdb params: apDistantLODParam
 void ShaderState::SetSource(const ShaderSource* source)
 {
     if (source)
@@ -16272,29 +16563,30 @@ void ShaderState::SetSource(const ShaderSource* source)
     *reinterpret_cast<volatile unsigned int*>(&state->flags) &= ~0x1000u;
 }
 
+// pdb: class ImageSpaceEffect, size 0x58, 7 members
 class ImageSpaceEffect
 {
   public:
     ImageSpaceEffect();
     virtual ~ImageSpaceEffect();
-    int unk04;
-    int unk08;
+    int bIsActive; // src: XBOX_RETAIL_PDB +0x4 (old: unk04)
+    int pEffectList; // src: XBOX_RETAIL_PDB +0x8 (old: unk08)
     int unk0C;
     int unk10;
     int unk14;
-    int unk18;
+    int pEffectParamList; // src: XBOX_RETAIL_PDB +0x18 (old: unk18)
     int unk1C;
     int unk20;
     int unk24;
-    int unk28;
+    int pTextures; // src: XBOX_RETAIL_PDB +0x28 (old: unk28)
     int unk2C;
     int unk30;
     int unk34;
-    int unk38;
+    int pEffectInputs; // src: XBOX_RETAIL_PDB +0x38 (old: unk38)
     int unk3C;
     int unk40;
     int unk44;
-    int unk48;
+    int pEffectOutput; // src: XBOX_RETAIL_PDB +0x48 (old: unk48)
     int unk4C;
     int unk50;
     int unk54;
@@ -16347,7 +16639,7 @@ extern int DAT_010bc560;
 
 struct TextureManager_9160
 {
-    void BSTextureManager_ReturnRenderedTexture(int texture);
+    void BSTextureManager_ReturnRenderedTexture(int apTexToReturn);
 };
 extern int DAT_011f91a8;
 
@@ -16433,9 +16725,9 @@ struct BlkShaderPassListView
     int unk08;
     int unk0c;
     int unk10;
-    void __thiscall FUN_00ba9ee0(NiGeometry* geometry, unsigned short pass, bool enabled, unsigned char lightCount,
-                                 ShadowSceneLight* light0, ShadowSceneLight* light1, ShadowSceneLight* light2,
-                                 ShadowSceneLight* light3);
+    void __thiscall FUN_00ba9ee0(NiGeometry* apGeometry, unsigned short ausPassEnum, bool abFirstPass, unsigned char ausNumLights,
+                                 ShadowSceneLight* apSceneLight, ShadowSceneLight* apSceneLight1, ShadowSceneLight* apSceneLight2,
+                                 ShadowSceneLight* apSceneLight3);
 };
 struct ShaderPassController
 {
@@ -16443,21 +16735,24 @@ struct ShaderPassController
     int unk20, unk24, unk28, unk2c, unk30, unk34, unk38, unk3c;
     int unk40, unk44;
     BlkShaderPassListView* passes;
-    void __thiscall SetPassEnabled(NiGeometry* geometry, bool alternate, bool enabled);
+    void __thiscall BSShaderPPLightingProperty_AddLocalMapPass_2x(NiGeometry* apGeom, bool abSkinned, bool abClear);
 };
 // If the first pass has no unk10 set, applies pass 0x1ee when enabled, else 0x1ec or 0x1ed depending on alternate.
 // @fnv 0x00bde170
-void ShaderPassController::SetPassEnabled(NiGeometry* geometry, bool alternate, bool enabled)
+// src: XBOX_RETAIL_PDB 0x00bde170
+// pdb: BSShaderPPLightingProperty::AddLocalMapPass_2x | BSShaderPPLightingProperty_Passes_2x.obj | retail, call graph, high
+// pdb params: apGeom, abSkinned, abClear
+void ShaderPassController::BSShaderPPLightingProperty_AddLocalMapPass_2x(NiGeometry* apGeom, bool abSkinned, bool abClear)
 {
     BlkShaderPassListView* pPass = passes;
     if (pPass->unk10 != 0)
         return;
-    if (enabled)
-        pPass->FUN_00ba9ee0(geometry, 0x1ee, true, 0, 0, 0, 0, 0);
-    else if (!alternate)
-        pPass->FUN_00ba9ee0(geometry, 0x1ec, true, 0, 0, 0, 0, 0);
+    if (abClear)
+        pPass->FUN_00ba9ee0(apGeom, 0x1ee, true, 0, 0, 0, 0, 0);
+    else if (!abSkinned)
+        pPass->FUN_00ba9ee0(apGeom, 0x1ec, true, 0, 0, 0, 0, 0);
     else
-        pPass->FUN_00ba9ee0(geometry, 0x1ed, true, 0, 0, 0, 0, 0);
+        pPass->FUN_00ba9ee0(apGeom, 0x1ed, true, 0, 0, 0, 0, 0);
 }
 
 extern float DAT_010ba600;
@@ -16649,6 +16944,8 @@ class hkObjBCE8 : public hkBaseBCE8
 
 // @fnv 0x00bce8f0
 // src: COMMUNITY 0x00bce8f0
+// pdb: SkinShader::RecreateRendererData | SkinShader.obj | retail, upstream name already matches, high
+// pdb locals: i
 void hkObjBCE8::SkinShader_RecreateRendererData()
 {
     for (int i = 0; i < 26; i++)
@@ -16748,11 +17045,14 @@ struct ShaderManager
     unsigned int unk88;
     StagingNiPointer<ShaderObject> m_programs[26];
     ShaderObject* FUN_00be0fe0(const char*, const char* const*, const char*, const char*);
-    void InitShaderPrograms();
+    void SkinShader_LoadVertexShaders();
 };
 // Builds a table of 26 ShaderEntry records and, when DAT_011f91c0 >= 2, creates m_programs entries via FUN_00be0fe0.
 // @fnv 0x00bce950
-void ShaderManager::InitShaderPrograms()
+// src: XBOX_RETAIL_PDB 0x00bce950
+// pdb: SkinShader::LoadVertexShaders | SkinShader.obj | retail, string-set bridge, high
+// pdb locals: ptempFName, pcacheFName, pvsShader, i
+void ShaderManager::SkinShader_LoadVertexShaders()
 {
     ShaderEntry entries[26];
     // Shader variant 0
@@ -17089,12 +17389,15 @@ class ObjBD3F
 // Gets the type-3 property of pkObj, uses it only if m_iShaderType is 10, sets m_i58 to 4, calls vf9C(pkObj) and always returns true.
 // @fnv 0x00bd3fc0
 // src: COMMUNITY 0x00bd3fc0
-bool __stdcall SpeedTreeBranchShader_SetupGeometry(ObjBD3F* pkObj)
+// pdb: SpeedTreeBranchShader::SetupGeometry | SpeedTreeBranchShader.obj | retail, upstream name already matches, high
+// pdb params: apGeometry
+// pdb locals: prop, pprop
+bool __stdcall SpeedTreeBranchShader_SetupGeometry(ObjBD3F* apGeometry)
 {
-    PropBD3F* pkProp = pkObj->FUN_00a59d30(3);
+    PropBD3F* pkProp = apGeometry->FUN_00a59d30(3);
     PropBD3F* pkShader = (pkProp ? pkProp->m_iShaderType == 10 : false) ? pkProp : 0;
     pkShader->m_i58 = 4;
-    pkShader->vf9C(pkObj);
+    pkShader->vf9C(apGeometry);
     return true;
 }
 
@@ -17415,64 +17718,68 @@ struct ShaderBdaf10
     short unk_ca;
     IterObj* __thiscall BSShaderLightingProperty_GetFirstActiveNonShadowLight(void*);
     IterObj* __thiscall BSShaderLightingProperty_GetNextActiveNonShadowLight(void*);
-    void __thiscall EmitShadowPasses(NiGeometry* geom, ShadowSceneLight* light, unsigned short* count,
-                                     unsigned char type, bool* out, bool flag6);
+    void __thiscall BSShaderPPLightingProperty_AddLandscapePasses_1x(NiGeometry* apGeom, ShadowSceneLight* apSunlight, unsigned short* asCount,
+                                     unsigned char abUpdateList, bool* abFirst, bool abProjShadow);
 };
 
 // Emits shadow rendering passes for geom and light into m_3c, or increments *count when type is not 1.
 // @fnv 0x00bdaf10
-void __thiscall ShaderBdaf10::EmitShadowPasses(NiGeometry* geom, ShadowSceneLight* light, unsigned short* count,
-                                               unsigned char type, bool* out, bool flag6)
+// src: XBOX_RETAIL_PDB 0x00bdaf10
+// pdb: BSShaderPPLightingProperty::AddLandscapePasses_1x | BSShaderPPLightingProperty_Passes_1x.obj | retail, object-file gap fill, high
+// pdb params: apGeom, apSunlight, asCount, abUpdateList, abFirst, abProjShadow
+// pdb locals: pshprop, badddiffuselights, pprop, uslandscapetex, uctex, plight, kiter
+void __thiscall ShaderBdaf10::BSShaderPPLightingProperty_AddLandscapePasses_1x(NiGeometry* apGeom, ShadowSceneLight* apSunlight, unsigned short* asCount,
+                                               unsigned char abUpdateList, bool* abFirst, bool abProjShadow)
 {
-    GeomInfo* info = geom->FUN_00a59d30(3);
-    bool* pOut = out;
+    GeomInfo* info = apGeom->FUN_00a59d30(3);
+    bool* pOut = abFirst;
     bool flag = DAT_011f91c0 <= 1;
     unsigned short n = (m_c8 < DAT_011ad828) ? m_c8 : DAT_011ad828;
     if (DAT_011f91a7)
     {
-        if (type == 1)
-            m_3c->FUN_00ba9ee0(geom, 0x93, *pOut, 0, 0, 0, 0, 0);
+        if (abUpdateList == 1)
+            m_3c->FUN_00ba9ee0(apGeom, 0x93, *pOut, 0, 0, 0, 0, 0);
         else
-            ++*count;
+            ++*asCount;
         *pOut = false;
         for (unsigned char i = 0; i < n; ++i)
         {
             if (info->m_ac[i + 1] != 0)
             {
-                if (type == 1)
+                if (abUpdateList == 1)
                 {
-                    m_3c->FUN_00ba9ee0(geom, 0x1f2, *pOut, 0, 0, 0, 0, 0);
+                    m_3c->FUN_00ba9ee0(apGeom, 0x1f2, *pOut, 0, 0, 0, 0, 0);
                     ((PassSinkBdaf10*)m_3c)->m_04[((PassSinkBdaf10*)m_3c)->m_10 - 1]->m_0b = i + 1;
                 }
                 else
                 {
-                    ++*count;
+                    ++*asCount;
                 }
             }
         }
         return;
     }
-    if (!flag6)
+    if (!abProjShadow)
     {
-        if (type == 1)
-            m_3c->FUN_00ba9ee0(geom, 0x93, *pOut, 1, light, 0, 0, 0);
+        if (abUpdateList == 1)
+            m_3c->FUN_00ba9ee0(apGeom, 0x93, *pOut, 1, apSunlight, 0, 0, 0);
         else
-            ++*count;
+            ++*asCount;
     }
     else
     {
-        if (type == 1)
-            m_3c->FUN_00ba9ee0(geom, 0x94, *pOut, 1, light, 0, 0, 0);
+        if (abUpdateList == 1)
+            m_3c->FUN_00ba9ee0(apGeom, 0x94, *pOut, 1, apSunlight, 0, 0, 0);
         else
-            ++*count;
+            ++*asCount;
     }
     *pOut = false;
     if (*info->m_b4 != 0)
     {
-        if (type == 1)
-            m_3c->FUN_00ba9ee0(geom, 0x1f1, false, 0, 0, 0, 0, 0);
+        if (abUpdateList == 1)
+            m_3c->FUN_00ba9ee0(apGeom, 0x1f1, false, 0, 0, 0, 0, 0);
         else
-            ++*count;
+            ++*asCount;
     }
     if (flag)
     {
@@ -17485,10 +17792,10 @@ void __thiscall ShaderBdaf10::EmitShadowPasses(NiGeometry* geom, ShadowSceneLigh
             SelectColor& col = obj->m_f8->m_d4;
             if (!(col.r == DAT_011f4998.r && col.g == DAT_011f4998.g && col.b == DAT_011f4998.b))
             {
-                if (type == 1)
-                    m_3c->FUN_00ba9ee0(geom, 0x1ef, *pOut, 1, (ShadowSceneLight*)obj, 0, 0, 0);
+                if (abUpdateList == 1)
+                    m_3c->FUN_00ba9ee0(apGeom, 0x1ef, *pOut, 1, (ShadowSceneLight*)obj, 0, 0, 0);
                 else
-                    ++*count;
+                    ++*asCount;
             }
             obj = BSShaderLightingProperty_GetNextActiveNonShadowLight(&cursor);
         }
@@ -17497,28 +17804,28 @@ void __thiscall ShaderBdaf10::EmitShadowPasses(NiGeometry* geom, ShadowSceneLigh
     {
         if (info->m_ac[i + 1] != 0)
         {
-            if (!flag6)
+            if (!abProjShadow)
             {
-                if (type == 1)
+                if (abUpdateList == 1)
                 {
-                    m_3c->FUN_00ba9ee0(geom, 0x1f2, *pOut, 1, light, 0, 0, 0);
+                    m_3c->FUN_00ba9ee0(apGeom, 0x1f2, *pOut, 1, apSunlight, 0, 0, 0);
                     ((PassSinkBdaf10*)m_3c)->m_04[((PassSinkBdaf10*)m_3c)->m_10 - 1]->m_0b = i + 1;
                 }
                 else
                 {
-                    ++*count;
+                    ++*asCount;
                 }
             }
             else
             {
-                if (type == 1)
+                if (abUpdateList == 1)
                 {
-                    m_3c->FUN_00ba9ee0(geom, 0x1f3, *pOut, 1, light, 0, 0, 0);
+                    m_3c->FUN_00ba9ee0(apGeom, 0x1f3, *pOut, 1, apSunlight, 0, 0, 0);
                     ((PassSinkBdaf10*)m_3c)->m_04[((PassSinkBdaf10*)m_3c)->m_10 - 1]->m_0b = i + 1;
                 }
                 else
                 {
-                    ++*count;
+                    ++*asCount;
                 }
             }
         }
@@ -17529,14 +17836,14 @@ void __thiscall ShaderBdaf10::EmitShadowPasses(NiGeometry* geom, ShadowSceneLigh
             continue;
         if (info->m_b4[i + 1] != 0)
         {
-            if (type == 1)
+            if (abUpdateList == 1)
             {
-                m_3c->FUN_00ba9ee0(geom, 0x1f4, *pOut, 0, 0, 0, 0, 0);
+                m_3c->FUN_00ba9ee0(apGeom, 0x1f4, *pOut, 0, 0, 0, 0, 0);
                 ((PassSinkBdaf10*)m_3c)->m_04[((PassSinkBdaf10*)m_3c)->m_10 - 1]->m_0b = i + 1;
             }
             else
             {
-                ++*count;
+                ++*asCount;
             }
         }
         if (flag)
@@ -17550,14 +17857,14 @@ void __thiscall ShaderBdaf10::EmitShadowPasses(NiGeometry* geom, ShadowSceneLigh
                 SelectColor& col = obj->m_f8->m_d4;
                 if (!(col.r == DAT_011f4998.r && col.g == DAT_011f4998.g && col.b == DAT_011f4998.b))
                 {
-                    if (type == 1)
+                    if (abUpdateList == 1)
                     {
-                        m_3c->FUN_00ba9ee0(geom, 0x1f5, *pOut, 1, (ShadowSceneLight*)obj, 0, 0, 0);
+                        m_3c->FUN_00ba9ee0(apGeom, 0x1f5, *pOut, 1, (ShadowSceneLight*)obj, 0, 0, 0);
                         ((PassSinkBdaf10*)m_3c)->m_04[((PassSinkBdaf10*)m_3c)->m_10 - 1]->m_0b = i + 1;
                     }
                     else
                     {
-                        ++*count;
+                        ++*asCount;
                     }
                 }
                 obj = BSShaderLightingProperty_GetNextActiveNonShadowLight(&cursor);
@@ -17591,6 +17898,9 @@ struct BDBF60_Shader
 // If type is 1, adds a pass to pPasses for geom, with the pass id and light chosen by the flags; otherwise increments *count.
 // @fnv 0x00bdbf60
 // src: COMMUNITY 0x00bdbf60
+// pdb: BSShaderPPLightingProperty::AddEnvmapPass_2x | BSShaderPPLightingProperty_Passes_2x.obj | retail, object-file run extension, low
+// pdb params: apGeom, apSunLight, apPtLight, asCount, abUpdateList, abFirst, abSkinned, abEyeReflect, abWindowReflect
+// pdb locals: ppass, usnewPassEnum
 int __thiscall BDBF60_Shader::BSShaderProperty_AddPass_2X_EnvMap(NiGeometry* geom, ShadowSceneLight* light, ShadowSceneLight* alternateLight,
                                            unsigned short* count, unsigned char type, bool* enabled, bool sharedPass,
                                            bool useAlternatePass, bool useSpecialPass)
@@ -17654,238 +17964,242 @@ struct ShaderPassOwner
     unsigned int unk38;
     BSShaderProperty::ShaderPassList* pPasses;
     typedef BSShaderProperty::ShaderPassList RPA;
-    int __thiscall AddShadowPass(NiGeometry* geom, ShadowSceneLight* l0, ShadowSceneLight* l1, ShadowSceneLight* l2,
-                                 unsigned short* count, bool flag, bool* out, bool b8, bool b9, bool b10, bool b11,
-                                 bool b12, bool b13, bool b14);
+    int __thiscall BSShaderPPLightingProperty_AddAmbDiff3Pass_2x(NiGeometry* apGeom, ShadowSceneLight* apSunlight, ShadowSceneLight* apPtLight, ShadowSceneLight* apPtLight2,
+                                 unsigned short* asCount, bool abUpdateList, bool* abFirst, bool abSkinned, bool abGlowMap, bool abFacegenBlend, bool abMultitexture,
+                                 bool abProjShadow, bool abParallax, bool abTreeBranch);
 };
 extern "C" void _ReadWriteBarrier();
 // Picks a pass id (233-250) from the b8-b14 flags and adds it to pPasses with the lights when flag is true, else increments *count; always clears *out.
 // @fnv 0x00bdc530
-int __thiscall ShaderPassOwner::AddShadowPass(NiGeometry* apGeometry, ShadowSceneLight* apLight0,
-                                              ShadowSceneLight* apLight1, ShadowSceneLight* apLight2,
-                                              unsigned short* count, bool flag, bool* out, bool b8, bool b9, bool b10,
-                                              bool b11, bool b12, bool b13, bool b14)
+// src: XBOX_DEBUG_PDB 0x00bdc530
+// pdb: BSShaderPPLightingProperty::AddAmbDiff3Pass_2x | BSShaderPPLightingProperty_Passes_2x.obj | debug, call graph, high
+// pdb params: apGeom, apSunlight, apPtLight, apPtLight2, asCount, abUpdateList, abFirst, abSkinned, abGlowMap, abFacegenBlend, abMultitexture, abProjShadow, abParallax, abTreeBranch
+// pdb locals: ppass
+int __thiscall ShaderPassOwner::BSShaderPPLightingProperty_AddAmbDiff3Pass_2x(NiGeometry* apGeom, ShadowSceneLight* apSunlight,
+                                              ShadowSceneLight* apPtLight, ShadowSceneLight* apPtLight2,
+                                              unsigned short* asCount, bool abUpdateList, bool* abFirst, bool abSkinned, bool abGlowMap, bool abFacegenBlend,
+                                              bool abMultitexture, bool abProjShadow, bool abParallax, bool abTreeBranch)
 {
-    if (!b8)
+    if (!abSkinned)
     {
-        if (!b9)
+        if (!abGlowMap)
         {
-            if (!b10)
+            if (!abFacegenBlend)
             {
-                if (!b13)
+                if (!abParallax)
                 {
-                    if (!b12)
+                    if (!abProjShadow)
                     {
-                        if (!b14)
+                        if (!abTreeBranch)
                         {
-                            if (flag == true)
+                            if (abUpdateList == true)
                             {
-                                pPasses->Add(apGeometry, 233, true, 3, apLight0, apLight1, apLight2, 0);
+                                pPasses->Add(apGeom, 233, true, 3, apSunlight, apPtLight, apPtLight2, 0);
                             }
                             else
-                                ++*count;
+                                ++*asCount;
                         }
                         else
                         {
-                            if (flag == true)
+                            if (abUpdateList == true)
                             {
-                                pPasses->Add(apGeometry, 241, true, 3, apLight0, apLight1, apLight2, 0);
+                                pPasses->Add(apGeom, 241, true, 3, apSunlight, apPtLight, apPtLight2, 0);
                             }
                             else
-                                ++*count;
+                                ++*asCount;
                         }
                     }
                     else
                     {
-                        if (!b14)
+                        if (!abTreeBranch)
                         {
-                            if (flag == true)
+                            if (abUpdateList == true)
                             {
-                                pPasses->Add(apGeometry, 242, true, 3, apLight0, apLight1, apLight2, 0);
+                                pPasses->Add(apGeom, 242, true, 3, apSunlight, apPtLight, apPtLight2, 0);
                             }
                             else
-                                ++*count;
+                                ++*asCount;
                         }
                         else
                         {
-                            if (flag == true)
+                            if (abUpdateList == true)
                             {
-                                pPasses->Add(apGeometry, 250, true, 3, apLight0, apLight1, apLight2, 0);
+                                pPasses->Add(apGeom, 250, true, 3, apSunlight, apPtLight, apPtLight2, 0);
                             }
                             else
-                                ++*count;
+                                ++*asCount;
                         }
                     }
                 }
                 else
                 {
-                    if (!b12)
+                    if (!abProjShadow)
                     {
-                        if (flag == true)
+                        if (abUpdateList == true)
                         {
-                            pPasses->Add(apGeometry, 235, true, 3, apLight0, apLight1, apLight2, 0);
+                            pPasses->Add(apGeom, 235, true, 3, apSunlight, apPtLight, apPtLight2, 0);
                         }
                         else
-                            ++*count;
+                            ++*asCount;
                     }
                     else
                     {
-                        if (flag == true)
+                        if (abUpdateList == true)
                         {
-                            pPasses->Add(apGeometry, 244, true, 3, apLight0, apLight1, apLight2, 0);
+                            pPasses->Add(apGeom, 244, true, 3, apSunlight, apPtLight, apPtLight2, 0);
                         }
                         else
-                            ++*count;
+                            ++*asCount;
                     }
                 }
             }
             else
             {
-                if (!b12)
+                if (!abProjShadow)
                 {
-                    if (flag == true)
+                    if (abUpdateList == true)
                     {
-                        pPasses->Add(apGeometry, 237, true, 3, apLight0, apLight1, apLight2, 0);
+                        pPasses->Add(apGeom, 237, true, 3, apSunlight, apPtLight, apPtLight2, 0);
                     }
                     else
-                        ++*count;
+                        ++*asCount;
                 }
                 else
                 {
-                    if (flag == true)
+                    if (abUpdateList == true)
                     {
-                        pPasses->Add(apGeometry, 246, true, 3, apLight0, apLight1, apLight2, 0);
+                        pPasses->Add(apGeom, 246, true, 3, apSunlight, apPtLight, apPtLight2, 0);
                     }
                     else
-                        ++*count;
+                        ++*asCount;
                 }
             }
         }
         else
         {
-            if (b10)
+            if (abFacegenBlend)
                 goto done;
-            if (!b13)
+            if (!abParallax)
             {
-                if (!b12)
+                if (!abProjShadow)
                 {
-                    if (flag == true)
+                    if (abUpdateList == true)
                     {
-                        pPasses->Add(apGeometry, 234, true, 3, apLight0, apLight1, apLight2, 0);
+                        pPasses->Add(apGeom, 234, true, 3, apSunlight, apPtLight, apPtLight2, 0);
                     }
                     else
-                        ++*count;
+                        ++*asCount;
                 }
                 else
                 {
-                    if (flag == true)
+                    if (abUpdateList == true)
                     {
-                        pPasses->Add(apGeometry, 243, true, 3, apLight0, apLight1, apLight2, 0);
+                        pPasses->Add(apGeom, 243, true, 3, apSunlight, apPtLight, apPtLight2, 0);
                     }
                     else
-                        ++*count;
+                        ++*asCount;
                 }
             }
             else
             {
-                if (!b12)
+                if (!abProjShadow)
                 {
-                    if (flag == true)
+                    if (abUpdateList == true)
                     {
-                        pPasses->Add(apGeometry, 236, true, 3, apLight0, apLight1, apLight2, 0);
+                        pPasses->Add(apGeom, 236, true, 3, apSunlight, apPtLight, apPtLight2, 0);
                     }
                     else
-                        ++*count;
+                        ++*asCount;
                 }
                 else
                 {
-                    if (flag == true)
+                    if (abUpdateList == true)
                     {
-                        pPasses->Add(apGeometry, 245, true, 3, apLight0, apLight1, apLight2, 0);
+                        pPasses->Add(apGeom, 245, true, 3, apSunlight, apPtLight, apPtLight2, 0);
                     }
                     else
-                        ++*count;
+                        ++*asCount;
                 }
             }
         }
     }
     else
     {
-        if (!b9)
+        if (!abGlowMap)
         {
-            if (!b10)
+            if (!abFacegenBlend)
             {
-                if (b13)
+                if (abParallax)
                     goto done;
-                if (!b12)
+                if (!abProjShadow)
                 {
-                    if (flag == true)
+                    if (abUpdateList == true)
                     {
-                        pPasses->Add(apGeometry, 238, true, 3, apLight0, apLight1, apLight2, 0);
+                        pPasses->Add(apGeom, 238, true, 3, apSunlight, apPtLight, apPtLight2, 0);
                     }
                     else
-                        ++*count;
+                        ++*asCount;
                 }
                 else
                 {
-                    if (flag == true)
+                    if (abUpdateList == true)
                     {
-                        pPasses->Add(apGeometry, 247, true, 3, apLight0, apLight1, apLight2, 0);
+                        pPasses->Add(apGeom, 247, true, 3, apSunlight, apPtLight, apPtLight2, 0);
                     }
                     else
-                        ++*count;
+                        ++*asCount;
                 }
             }
             else
             {
-                if (!b12)
+                if (!abProjShadow)
                 {
-                    if (flag == true)
+                    if (abUpdateList == true)
                     {
-                        pPasses->Add(apGeometry, 240, true, 3, apLight0, apLight1, apLight2, 0);
+                        pPasses->Add(apGeom, 240, true, 3, apSunlight, apPtLight, apPtLight2, 0);
                     }
                     else
-                        ++*count;
+                        ++*asCount;
                 }
                 else
                 {
-                    if (flag == true)
+                    if (abUpdateList == true)
                     {
-                        pPasses->Add(apGeometry, 249, true, 3, apLight0, apLight1, apLight2, 0);
+                        pPasses->Add(apGeom, 249, true, 3, apSunlight, apPtLight, apPtLight2, 0);
                     }
                     else
-                        ++*count;
+                        ++*asCount;
                 }
             }
         }
         else
         {
-            if (b10)
+            if (abFacegenBlend)
                 goto done;
-            if (b13)
+            if (abParallax)
                 goto done;
-            if (!b12)
+            if (!abProjShadow)
             {
-                if (flag == true)
+                if (abUpdateList == true)
                 {
-                    pPasses->Add(apGeometry, 239, true, 3, apLight0, apLight1, apLight2, 0);
+                    pPasses->Add(apGeom, 239, true, 3, apSunlight, apPtLight, apPtLight2, 0);
                 }
                 else
-                    ++*count;
+                    ++*asCount;
             }
             else
             {
-                if (flag == true)
+                if (abUpdateList == true)
                 {
-                    pPasses->Add(apGeometry, 248, true, 3, apLight0, apLight1, apLight2, 0);
+                    pPasses->Add(apGeom, 248, true, 3, apSunlight, apPtLight, apPtLight2, 0);
                 }
                 else
-                    ++*count;
+                    ++*asCount;
             }
         }
     }
 done:
-    *out = false;
+    *abFirst = false;
     return 0;
 }
 
@@ -17996,17 +18310,20 @@ class FUN_00bc2660_cls
     float m_180;
     int unk184;
     int m_188;
-    void BoltShaderProperty_ExtendSegments(int n);
-    void BoltShaderProperty_ExtendBolt(float a1, float a2);
+    void BoltShaderProperty_ExtendSegments(int aiNewSegments);
+    void BoltShaderProperty_ExtendBolt(float afTimeDelta, float afDesiredBoltDistance);
 };
 
 // Adds a1 to m_070, advances m_084 toward a2 in whole m_144 steps, adds the step count to m_188 and stores a clamped remainder in m_180.
 // @fnv 0x00bc2660
 // src: COMMUNITY 0x00bc2660
-void FUN_00bc2660_cls::BoltShaderProperty_ExtendBolt(float a1, float a2)
+// pdb: BoltShaderProperty::ExtendBolt | BoltShaderProperty.obj | retail, upstream name already matches, high
+// pdb params: afTimeDelta, afDesiredBoltDistance
+// pdb locals: fnewSegments, fMove
+void FUN_00bc2660_cls::BoltShaderProperty_ExtendBolt(float afTimeDelta, float afDesiredBoltDistance)
 {
-    m_070 = m_070 + a1;
-    float t1 = a2 - m_084;
+    m_070 = m_070 + afTimeDelta;
+    float t1 = afDesiredBoltDistance - m_084;
     float x = t1 / m_144;
     volatile float t3v = FUN_00ec9e10(x);
     float t3 = t3v;
@@ -18045,26 +18362,29 @@ struct FloatTarget3080
 };
 struct FloatController3080 : ShaderRefractionController
 {
-    void BSMaterialEmittanceMultController_Update(NiUpdateData& kUpdateData);
+    void BSMaterialEmittanceMultController_Update(NiUpdateData& UpdateData);
 };
 // @fnv 0x00bc3080
 // src: XBOX_PDB 0x00bc3080
-void FloatController3080::BSMaterialEmittanceMultController_Update(NiUpdateData& kUpdateData)
+// pdb: BSMaterialEmittanceMultController::Update | BSMaterialEmittanceMultController.obj | retail, upstream name already matches, high
+// pdb params: UpdateData
+// pdb locals: fValue
+void FloatController3080::BSMaterialEmittanceMultController_Update(NiUpdateData& UpdateData)
 {
     if (GetManagerControlled())
     {
-        m_fControllerTime = g_fInvalidTimeBC3;
+        m_fScaledTime = NiInterpController_INVALID_TIME;
     }
-    else if (AdvanceController(kUpdateData.fTime) &&
-             (!m_spControllerInterpolator.m_pObject || !m_spControllerInterpolator.m_pObject->AlwaysUpdate()))
+    else if (AdvanceController(UpdateData.fTime) &&
+             (!m_spInterpolator.m_pObject || !m_spInterpolator.m_pObject->AlwaysUpdate()))
     {
         return;
     }
 
-    if (m_spControllerInterpolator.m_pObject)
+    if (m_spInterpolator.m_pObject)
     {
         float fValue;
-        if (m_spControllerInterpolator.m_pObject->UpdateFloat(m_fControllerTime, m_pkTarget, fValue))
+        if (m_spInterpolator.m_pObject->UpdateFloat(m_fScaledTime, m_pkTarget, fValue))
         {
             FloatTarget3080* pkTarget = (FloatTarget3080*)m_pkTarget;
             pkTarget->m_fValue40 = fValue;
@@ -18136,27 +18456,30 @@ struct IntTargetBC3
 };
 struct IntControllerBC3 : ShaderRefractionController
 {
-    void BSRefractionFirePeriodController_Update(NiUpdateData& kUpdateData);
+    void BSRefractionFirePeriodController_Update(NiUpdateData& UpdateData);
 };
 // Advances controller time unless manager-controlled, evaluates the interpolator, and stores its value rounded half away from zero in the target's unkE4.
 // @fnv 0x00bc3290
 // src: XBOX_PDB 0x00bc3290
-void IntControllerBC3::BSRefractionFirePeriodController_Update(NiUpdateData& kUpdateData)
+// pdb: BSRefractionFirePeriodController::Update | BSRefractionFirePeriodController.obj | retail, upstream name already matches, high
+// pdb params: UpdateData
+// pdb locals: fValue
+void IntControllerBC3::BSRefractionFirePeriodController_Update(NiUpdateData& UpdateData)
 {
     if (GetManagerControlled())
     {
-        m_fControllerTime = g_fInvalidTimeBC3;
+        m_fScaledTime = NiInterpController_INVALID_TIME;
     }
-    else if (AdvanceController(kUpdateData.fTime) &&
-             (!m_spControllerInterpolator.m_pObject || !m_spControllerInterpolator.m_pObject->AlwaysUpdate()))
+    else if (AdvanceController(UpdateData.fTime) &&
+             (!m_spInterpolator.m_pObject || !m_spInterpolator.m_pObject->AlwaysUpdate()))
     {
         return;
     }
 
-    if (m_spControllerInterpolator.m_pObject)
+    if (m_spInterpolator.m_pObject)
     {
         float fValue;
-        if (m_spControllerInterpolator.m_pObject->UpdateFloat(m_fControllerTime, m_pkTarget, fValue))
+        if (m_spInterpolator.m_pObject->UpdateFloat(m_fScaledTime, m_pkTarget, fValue))
         {
             float fHalf = (fValue > 0.0f) ? 0.5f : -0.5f;
             fValue = fValue + fHalf;
@@ -18260,6 +18583,8 @@ extern TargetHolder* DAT_0126f74c;
 
 // If the event's source has a texture, stores it in the target at *DAT_0126f74c->m_ppkTarget, calls ApplyPairToState with the source flags, then FUN_00e7eb00(0).
 // @fnv 0x00bc8d40
+// pdb: BSShaderNoLighting::Initialize | BSShaderNoLighting.obj | debug, object-file run extension, low
+// pdb locals: retval
 void __stdcall OnTextureEvent(Event* pkEvent)
 {
     Target* pkTarget = *DAT_0126f74c->m_ppkTarget;
@@ -18550,6 +18875,8 @@ class TechniqueShader_ce40
 };
 
 // @fnv 0x00bcce40
+// pdb: ParallaxShader::InitPass | ParallaxShader.obj | retail, object-file run extension, low
+// pdb params: auiCurrentPass
 void TechniqueShader_ce40::SetTechniquePass(unsigned int uiTechnique)
 {
     m_pkTechniquePass = m_pkDefaultPass;
@@ -18670,7 +18997,7 @@ void TechniqueShader_ce40::SetTechniquePass(unsigned int uiTechnique)
 struct ShaderPassSetup_bce800
 {
     void SetVertexShaderSlot(int iSlot);
-    void SetPixelShaderSlot(int iSlot);
+    void SetPixelShaderSlot(int auiStage);
     void SetupDefaultPass(unsigned int uiPass);
     void SkinShader_SetupStaticTextures(unsigned int uiPass);
 };
@@ -18678,6 +19005,8 @@ struct ShaderPassSetup_bce800
 // Sets vertex/pixel shader slots (5,6 or 6,7) for some pass ids, does nothing for other listed ids, and calls SetupDefaultPass for the rest.
 // @fnv 0x00bce800
 // src: COMMUNITY 0x00bce800
+// pdb: SkinShader::Initialize | SkinShader.obj | debug, object-file run extension, low
+// pdb locals: i
 void ShaderPassSetup_bce800::SkinShader_SetupStaticTextures(unsigned int uiPass)
 {
     switch (uiPass)
@@ -18807,15 +19136,17 @@ class TechniqueShader_fd20
     PassPointer_fd20<Program_fd20> m_spPixelProgramDefault;
 
     void SelectShaderProgram(unsigned int uiTechnique);
-    void SkinShader_InitPass(unsigned int uiTechnique);
+    void SkinShader_InitPass(unsigned int auiCurrentPass);
 };
 
 // Per technique id sets the current pass and technique pass, or selects a shader and renderer technique, then picks the 0x250 or default vertex/pixel programs.
 // @fnv 0x00bcfd20
 // src: COMMUNITY 0x00bcfd20
-void TechniqueShader_fd20::SkinShader_InitPass(unsigned int uiTechnique)
+// pdb: SkinShader::InitPass | SkinShader.obj | retail, upstream name already matches, high
+// pdb params: auiCurrentPass
+void TechniqueShader_fd20::SkinShader_InitPass(unsigned int auiCurrentPass)
 {
-    switch (uiTechnique)
+    switch (auiCurrentPass)
     {
     case 0xdb:
         g_iCurrentPass_fd20 = g_aiPassIndex_fd20[0];
@@ -18875,13 +19206,13 @@ void TechniqueShader_fd20::SkinShader_InitPass(unsigned int uiTechnique)
         break;
     case 1:
     case 2:
-        SelectShaderProgram(uiTechnique);
-        GetTechniqueShader(1)->SetRenderPass(uiTechnique);
+        SelectShaderProgram(auiCurrentPass);
+        GetTechniqueShader(1)->SetRenderPass(auiCurrentPass);
         m_pkTechniquePass = m_pkPass6c;
         break;
     case 3:
-        SelectShaderProgram(uiTechnique);
-        GetTechniqueShader(1)->SetRenderPass(uiTechnique);
+        SelectShaderProgram(auiCurrentPass);
+        GetTechniqueShader(1)->SetRenderPass(auiCurrentPass);
         m_pkTechniquePass = m_pkPass70;
         break;
     case 0x100:
@@ -18933,11 +19264,11 @@ void TechniqueShader_fd20::SkinShader_InitPass(unsigned int uiTechnique)
         m_pkTechniquePass = m_pkPass70;
         break;
     default:
-        SelectShaderProgram(uiTechnique);
-        GetTechniqueShader(1)->SetRenderPass(uiTechnique);
+        SelectShaderProgram(auiCurrentPass);
+        GetTechniqueShader(1)->SetRenderPass(auiCurrentPass);
         break;
     }
-    if (uiTechnique == 0x250 || uiTechnique == 0x251)
+    if (auiCurrentPass == 0x250 || auiCurrentPass == 0x251)
     {
         m_spVertexProgram = m_spVertexProgram250;
         m_spPixelProgram = m_spPixelProgram250;
@@ -19033,6 +19364,10 @@ struct RenderShader625
     void SetShaderPasses(RenderArgument625*);
 };
 // @fnv 0x00bd02e0
+// pdb: SkinShader::SetupGeometryTextures | SkinShader.obj | retail, object-file run extension, low
+// pdb note: debug build links it to SkinShader::SetupPassTextures
+// pdb params: apState
+// pdb locals: auiCurrentPass, pprop
 void RenderShader625::SetShaderPasses(RenderArgument625* arg)
 {
     void* pass = arg->unk0c;
@@ -19111,6 +19446,9 @@ struct Shader66
 
 // Calls Run(0-2) on both shader entries from fields of DAT_011f917c and mode, Run(3) on the second if DAT_011f9410 > 0, and sets DAT_012003c4 to 3.0f.
 // @fnv 0x00bd66c0
+// pdb: UpdateTexturesRecursive | Main.obj | retail, object-file run extension, low
+// pdb params: apObj
+// pdb locals: pnode, pgeom, inumChildren, i, pchild, pstate, pprop, iflag, ptex, geomBound
 bool Shader66::UpdateShaderParameters(int unused)
 {
     float nearClip = DAT_011f917c->m_kViewFrustum.m_fNearPlane;
@@ -19221,7 +19559,7 @@ struct Culler_bd7620
     int unk08c;
     Culler_bd7620(void* vis);
     ~Culler_bd7620();
-    void SetFrustum(const Frustum_bd7620* fr);
+    void SetFrustum(const Frustum_bd7620* kFrustum);
 };
 struct Scene_bd7620
 {
@@ -19240,14 +19578,18 @@ struct Cam_bd7620 : NiCamera
     int unk134;
     int unk138;
     BSShaderAccumulator* m_p13c;
-    void CullScene(Scene_bd7620* scene);
+    void BSCubeMapCamera_RenderGeomForLight(Scene_bd7620* apLight);
 };
 
 // Sets the renderer camera, runs the accumulation camera Begin/End, and culls the scene with a frustum culler.
 // @fnv 0x00bd7620
-void Cam_bd7620::CullScene(Scene_bd7620* scene)
+// src: XBOX_RETAIL_PDB 0x00bd7620
+// pdb: BSCubeMapCamera::RenderGeomForLight | BSCubeMapCamera.obj | retail, call graph, high
+// pdb params: apLight
+// pdb locals: UpdateData, prenderer, kcullingProc
+void Cam_bd7620::BSCubeMapCamera_RenderGeomForLight(Scene_bd7620* apLight)
 {
-    if (!scene)
+    if (!apLight)
         return;
     NiPoint3 kRight;
     kRight.x = m_kWorld.m_Rotate.m_pEntry[0][2];
@@ -19269,7 +19611,7 @@ void Cam_bd7620::CullScene(Scene_bd7620* scene)
     NiCamera::Update(kData);
     kCuller.m_pkAccumulationCamera = this;
     kCuller.SetFrustum(&*(const Frustum_bd7620*)&m_kViewFrustum);
-    scene->Cull(&kCuller);
+    apLight->Cull(&kCuller);
     m_p13c->FinishAccumulating();
     if (m_p13c->m_uiRefCount < 2)
         ((NiRefObject*)m_p13c)->IncrementReferenceCount();
@@ -19284,6 +19626,9 @@ struct Shader_00bd9770 : Shader9840
 // If ucType is 1, adds a pass for the two lights (id chosen by bFirst and bSecond); otherwise increments *puiPassCount; then clears *pbEnabled.
 // @fnv 0x00bd9770
 // src: COMMUNITY 0x00bd9770
+// pdb: BSShaderPPLightingProperty::AddAmbDiffDirAndPtPass_1x | BSShaderPPLightingProperty_Passes_1x.obj | retail, object-file run extension, low
+// pdb params: apGeom, apSunlight, apPtLight, asCount, abUpdateList, abFirst, abSkinned, abTreeBranch
+// pdb locals: ppass
 int Shader_00bd9770::BSShaderProperty_AmbientDirAndPoint(NiGeometry* pkGeometry, ShadowSceneLight* pkLight0, ShadowSceneLight* pkLight1,
                                   unsigned short* puiPassCount, unsigned char ucType, bool* pbEnabled, bool bFirst,
                                   bool bSecond)
@@ -19330,39 +19675,42 @@ int Shader_00bd9770::BSShaderProperty_AmbientDirAndPoint(NiGeometry* pkGeometry,
 
 struct Shader_00bd9f00 : Shader9840
 {
-    int BSShaderProperty_AddPass_ZOnly(NiGeometry* pkGeometry, unsigned short* puiPassCount, unsigned char ucType, bool* pbEnabled,
-                     bool bFirst, bool bSecond);
+    int BSShaderPPLightingProperty_AddZOnlyPass_1x(NiGeometry* apGeom, unsigned short* asCount, unsigned char abUpdateList, bool* abFirst,
+                     bool abSkinned, bool abAlphaTest);
 };
 
 // If ucType is 1 adds pass 3 (bFirst) or 1 or 2 (bSecond) via passes->FUN_00ba9ee0, else increments *puiPassCount; then clears *pbEnabled.
 // @fnv 0x00bd9f00
-// src: COMMUNITY 0x00bd9f00
-int Shader_00bd9f00::BSShaderProperty_AddPass_ZOnly(NiGeometry* pkGeometry, unsigned short* puiPassCount, unsigned char ucType,
-                                  bool* pbEnabled, bool bFirst, bool bSecond)
+// src: XBOX_RETAIL_PDB 0x00bd9f00 (was COMMUNITY)
+// pdb: BSShaderPPLightingProperty::AddZOnlyPass_1x | BSShaderPPLightingProperty_Passes_1x.obj | retail, object-file gap fill, high
+// pdb params: apGeom, asCount, abUpdateList, abFirst, abSkinned, abAlphaTest
+// pdb locals: ppass
+int Shader_00bd9f00::BSShaderPPLightingProperty_AddZOnlyPass_1x(NiGeometry* apGeom, unsigned short* asCount, unsigned char abUpdateList,
+                                  bool* abFirst, bool abSkinned, bool abAlphaTest)
 {
-    if (bFirst)
+    if (abSkinned)
     {
-        if (ucType == 1)
+        if (abUpdateList == 1)
         {
-            passes->FUN_00ba9ee0(pkGeometry, 3, *pbEnabled, 0, 0, 0, 0, 0);
+            passes->FUN_00ba9ee0(apGeom, 3, *abFirst, 0, 0, 0, 0, 0);
         }
         else
         {
-            ++*puiPassCount;
+            ++*asCount;
         }
     }
     else
     {
-        if (ucType == 1)
+        if (abUpdateList == 1)
         {
-            passes->FUN_00ba9ee0(pkGeometry, bSecond ? 2 : 1, *pbEnabled, 0, 0, 0, 0, 0);
+            passes->FUN_00ba9ee0(apGeom, abAlphaTest ? 2 : 1, *abFirst, 0, 0, 0, 0, 0);
         }
         else
         {
-            ++*puiPassCount;
+            ++*asCount;
         }
     }
-    *pbEnabled = false;
+    *abFirst = false;
     return 0;
 }
 
@@ -19451,6 +19799,9 @@ struct FUN_00bc0c90 : FUN_00be2200
 
 // Initializes mode, flags, and source, copies DAT_011a9be0 into f16C and f17C, and allocates a zeroed BoltAllocElem array sized from DAT_01201f50.
 // @fnv 0x00bc0c90
+// pdb: BoltShader::BoltShader | BoltShader.obj | retail, call graph, medium
+// pdb params: apShaderDecl
+// pdb locals: isegmentCount
 FUN_00bc0c90::FUN_00bc0c90(CountedRef* apSource)
     : FUN_00be2200(), pt1(), pt2(), pass(), f16C(0.0f), f170(0.0f), f174(0.0f), f178(0.0f), f17C(0.0f), f180(0.0f),
       f184(0.0f), f188(0.0f), first(), second()
@@ -19622,7 +19973,7 @@ void FogShader::SetFogMode(unsigned int mode)
     if (fog)
     {
         float start = fog->nearDepth;
-        float end = fog->farDepth;
+        float end = fog->fEndDistance;
         NiColor color = fog->color;
         float density = fog->density;
         if (end == 0.0f && start == 0.0f)
@@ -19638,19 +19989,19 @@ void FogShader::SetFogMode(unsigned int mode)
     }
 }
 
-inline void BSShaderProperty::SetFlag(unsigned int mask, bool enabled)
+inline void BSShaderProperty::SetFlag(unsigned int aiFlag, bool abSetFlag)
 {
-    if (enabled)
+    if (abSetFlag)
     {
-        if (!(ulFlags[1] & mask))
+        if (!(ulFlags[1] & aiFlag))
             *static_cast<volatile int*>(&iLastRenderPassState) = 0;
-        ulFlags[1] |= mask;
+        ulFlags[1] |= aiFlag;
     }
     else
     {
-        if (ulFlags[1] & mask)
+        if (ulFlags[1] & aiFlag)
             *static_cast<volatile int*>(&iLastRenderPassState) = 0;
-        ulFlags[1] &= ~mask;
+        ulFlags[1] &= ~aiFlag;
     }
 }
 struct Settings383
@@ -19665,14 +20016,17 @@ struct Owner383
     BSShaderProperty* property;
     unsigned int unk10, unk14, unk18;
     Settings383 settings;
-    void CopySettings(const Settings383* source);
+    void TallGrassGroup_SetGrassParam(const Settings383* apGrassParam);
 };
 // Copies the Settings383 block from source into settings and mirrors its three flags onto property via SetFlag.
 // @fnv 0x00bd86a0
-void Owner383::CopySettings(const Settings383* source)
+// src: XBOX_RETAIL_PDB 0x00bd86a0
+// pdb: TallGrassGroup::SetGrassParam | TallGrassGroup.obj | retail, object-file gap fill, high
+// pdb params: apGrassParam
+void Owner383::TallGrassGroup_SetGrassParam(const Settings383* apGrassParam)
 {
-    if (source)
-        memmove(&settings, source, sizeof(settings));
+    if (apGrassParam)
+        memmove(&settings, apGrassParam, sizeof(settings));
     property->SetFlag(0x400, settings.flag400);
     property->SetFlag(0x800, settings.flag800);
     property->SetFlag(0x1000, settings.flag1000);
@@ -19680,99 +20034,102 @@ void Owner383::CopySettings(const Settings383* source)
 
 struct FUN_00bddbc0_class : Shader_00bd9540
 {
-    int BSShaderProperty_AddPass_DiffusePoint3(NiGeometry* geom, ShadowSceneLight* l0, ShadowSceneLight* l1, ShadowSceneLight* l2,
-                     unsigned short* count, unsigned char type, bool* out, bool a, bool b, bool c, bool d, bool e);
+    int BSShaderPPLightingProperty_AddDiffusePt3Pass_2x(NiGeometry* apGeom, ShadowSceneLight* apPtLight1, ShadowSceneLight* apPtLight2, ShadowSceneLight* apPtLight3,
+                     unsigned short* asCount, unsigned char abUpdateList, bool* abFirst, bool abSkinned, bool abFacegenBlend, bool abMultitexture, bool abParallax, bool abTreeBranch);
 };
 
 // If type is 1, adds a pass to pPasses for geom and the three lights (id chosen by flags a, b, d, e), else increments *count; then clears *out.
 // @fnv 0x00bddbc0
-// src: COMMUNITY 0x00bddbc0
-int FUN_00bddbc0_class::BSShaderProperty_AddPass_DiffusePoint3(NiGeometry* geom, ShadowSceneLight* l0, ShadowSceneLight* l1, ShadowSceneLight* l2,
-                                     unsigned short* count, unsigned char type, bool* out, bool abFlagA, bool abFlagB,
-                                     bool abFlagC, bool abFlagD, bool abFlagE)
+// src: XBOX_RETAIL_PDB 0x00bddbc0 (was COMMUNITY)
+// pdb: BSShaderPPLightingProperty::AddDiffusePt3Pass_2x | BSShaderPPLightingProperty_Passes_2x.obj | retail, object-file run extension, high
+// pdb params: apGeom, apPtLight1, apPtLight2, apPtLight3, asCount, abUpdateList, abFirst, abSkinned, abFacegenBlend, abMultitexture, abParallax, abTreeBranch
+// pdb locals: ppass
+int FUN_00bddbc0_class::BSShaderPPLightingProperty_AddDiffusePt3Pass_2x(NiGeometry* apGeom, ShadowSceneLight* apPtLight1, ShadowSceneLight* apPtLight2, ShadowSceneLight* apPtLight3,
+                                     unsigned short* asCount, unsigned char abUpdateList, bool* abFirst, bool abSkinned, bool abFacegenBlend,
+                                     bool abMultitexture, bool abParallax, bool abTreeBranch)
 {
-    if (!abFlagA)
+    if (!abSkinned)
     {
-        if (!abFlagB)
+        if (!abFacegenBlend)
         {
-            if (!abFlagD)
+            if (!abParallax)
             {
-                if (!abFlagE)
+                if (!abTreeBranch)
                 {
-                    if (type == 1)
+                    if (abUpdateList == 1)
                     {
-                        pPasses->Add(geom, 0x13e, *out, 3, l0, l1, l2, 0);
+                        pPasses->Add(apGeom, 0x13e, *abFirst, 3, apPtLight1, apPtLight2, apPtLight3, 0);
                     }
                     else
                     {
-                        ++*count;
+                        ++*asCount;
                     }
                 }
                 else
                 {
-                    if (type == 1)
+                    if (abUpdateList == 1)
                     {
-                        pPasses->Add(geom, 0x143, *out, 3, l0, l1, l2, 0);
+                        pPasses->Add(apGeom, 0x143, *abFirst, 3, apPtLight1, apPtLight2, apPtLight3, 0);
                     }
                     else
                     {
-                        ++*count;
+                        ++*asCount;
                     }
                 }
             }
             else
             {
-                if (type == 1)
+                if (abUpdateList == 1)
                 {
-                    pPasses->Add(geom, 0x140, *out, 3, l0, l1, l2, 0);
+                    pPasses->Add(apGeom, 0x140, *abFirst, 3, apPtLight1, apPtLight2, apPtLight3, 0);
                 }
                 else
                 {
-                    ++*count;
+                    ++*asCount;
                 }
             }
         }
         else
         {
-            if (type == 1)
+            if (abUpdateList == 1)
             {
-                pPasses->Add(geom, 0x13f, *out, 3, l0, l1, l2, 0);
+                pPasses->Add(apGeom, 0x13f, *abFirst, 3, apPtLight1, apPtLight2, apPtLight3, 0);
             }
             else
             {
-                ++*count;
+                ++*asCount;
             }
         }
     }
     else
     {
-        if (!abFlagB)
+        if (!abFacegenBlend)
         {
-            if (!abFlagD)
+            if (!abParallax)
             {
-                if (type == 1)
+                if (abUpdateList == 1)
                 {
-                    pPasses->Add(geom, 0x141, *out, 3, l0, l1, l2, 0);
+                    pPasses->Add(apGeom, 0x141, *abFirst, 3, apPtLight1, apPtLight2, apPtLight3, 0);
                 }
                 else
                 {
-                    ++*count;
+                    ++*asCount;
                 }
             }
         }
         else
         {
-            if (type == 1)
+            if (abUpdateList == 1)
             {
-                pPasses->Add(geom, 0x142, *out, 3, l0, l1, l2, 0);
+                pPasses->Add(apGeom, 0x142, *abFirst, 3, apPtLight1, apPtLight2, apPtLight3, 0);
             }
             else
             {
-                ++*count;
+                ++*asCount;
             }
         }
     }
-    *out = false;
+    *abFirst = false;
     return 0;
 }
 
@@ -20248,16 +20605,16 @@ struct S3e40_Shader
         SetBit(lightFlags, mask, on);
     }
     S3e40_Light* GetPasses(S3e40_Geom*, unsigned int, unsigned short*, int, S3e40_Light*, bool);
-    void SetPassEnabled(S3e40_Geom*, bool, int);
+    void BSShaderPPLightingProperty_AddLocalMapPass_2x(S3e40_Geom*, bool, int);
     void FUN_00ba95e0(int);
     unsigned short BSShaderLightingProperty_GetNumberofActiveNonShadowLights();
     S3e40_Light* BSShaderLightingProperty_GetFirstActiveNonShadowLight(int*);
     S3e40_Light* BSShaderLightingProperty_GetNextActiveNonShadowLight(int*);
     void BSShaderProperty_SetFlag(unsigned int, bool);
     void BSShaderPPLightingProperty_AddDepthMapPass_2x(S3e40_Geom*, bool, bool, S3e40_Light*);
-    void BSShaderProperty_TexEffect(S3e40_Geom*, unsigned short*, bool, bool*, int);
-    S3e40_Light* HairShaderProperty_GetRenderPasses(S3e40_Geom* geom, unsigned int subType, S3e40_Count counter, int passType,
-                              S3e40_Light* preferred, bool insert);
+    void BSShaderPPLightingProperty_AddTextureEffectPass_1x(S3e40_Geom*, unsigned short*, bool, bool*, int);
+    S3e40_Light* HairShaderProperty_GetRenderPasses(S3e40_Geom* apGeom, unsigned int aiEnabledPasses, S3e40_Count asCount, int auiRenderMode,
+                              S3e40_Light* apAccumulator, bool abUpdateList);
 };
 __forceinline bool S3e40_Less(const float& a, const double& b)
 {
@@ -20265,8 +20622,11 @@ __forceinline bool S3e40_Less(const float& a, const double& b)
 }
 // @fnv 0x00bc3e40
 // src: XBOX_PDB 0x00bc3e40
-S3e40_Light* S3e40_Shader::HairShaderProperty_GetRenderPasses(S3e40_Geom* geom, unsigned int subType, S3e40_Count counter, int passType,
-                                        S3e40_Light* preferred, bool insert)
+// pdb: HairShaderProperty::GetRenderPasses | HairShaderProperty.obj | retail, upstream name already matches, high
+// pdb params: apGeom, aiEnabledPasses, asCount, auiRenderMode, apAccumulator, abUpdateList
+// pdb locals: tempMemContext, idebugPasses, bRefraction, pscenenode, psunlight, plight, inumlights, plightlist, pnilight, kiter, dist, ptillum, dirillum, objbound, ptcol, dircol, balphatest, palphaprop, bskinned, pprop, bfirst
+S3e40_Light* S3e40_Shader::HairShaderProperty_GetRenderPasses(S3e40_Geom* apGeom, unsigned int aiEnabledPasses, S3e40_Count asCount, int auiRenderMode,
+                                        S3e40_Light* apAccumulator, bool abUpdateList)
 {
     TlsGuard_t guard(0x28);
     if ((renderFlags & 0x8000) > 0u)
@@ -20275,23 +20635,23 @@ S3e40_Light* S3e40_Shader::HairShaderProperty_GetRenderPasses(S3e40_Geom* geom, 
         goto delegated;
     goto regular;
 delegated:
-    return GetPasses(geom, subType, counter.ptr, passType, preferred, insert);
+    return GetPasses(apGeom, aiEnabledPasses, asCount.ptr, auiRenderMode, apAccumulator, abUpdateList);
 regular:
 
-    unsigned int key = (passType << 8) | subType;
-    if (passType == 7)
+    unsigned int key = (auiRenderMode << 8) | aiEnabledPasses;
+    if (auiRenderMode == 7)
         return pass7;
-    if (passType == 8)
+    if (auiRenderMode == 8)
         return pass8;
-    if (passType == 9)
+    if (auiRenderMode == 9)
     {
-        SetPassEnabled(geom, geom->shader != 0, 0);
+        BSShaderPPLightingProperty_AddLocalMapPass_2x(apGeom, apGeom->shader != 0, 0);
         return pass9;
     }
 
-    if (passState != key || !insert)
+    if (passState != key || !abUpdateList)
     {
-        if (insert == true)
+        if (abUpdateList == true)
         {
             FUN_00ba95e0(-1);
             passes->count = 0;
@@ -20299,29 +20659,29 @@ regular:
         }
         else
         {
-            *counter.ptr = 0;
+            *asCount.ptr = 0;
         }
 
         S3e40_Light* sceneLight = BSShaderManager_GetAccumulator()->root->currentLight;
         if (BSShaderLightingProperty_GetNumberofActiveNonShadowLights() == 0)
         {
-            if (insert == true)
+            if (abUpdateList == true)
             {
-                passes->FUN_00ba9ee0(geom, 0xc1, true, 1, sceneLight, 0, 0, 0);
+                passes->FUN_00ba9ee0(apGeom, 0xc1, true, 1, sceneLight, 0, 0, 0);
                 SetFlag(0x80, false);
                 SetFlag(0x100, false);
                 SetFlag(0x200, false);
             }
             else
             {
-                ++*counter.ptr;
+                ++*asCount.ptr;
             }
         }
         else
         {
             float dist;
-            passType = 0;
-            S3e40_Light* __restrict primary = BSShaderLightingProperty_GetFirstActiveNonShadowLight(&passType);
+            auiRenderMode = 0;
+            S3e40_Light* __restrict primary = BSShaderLightingProperty_GetFirstActiveNonShadowLight(&auiRenderMode);
             {
                 S3e40_State* ss = sceneLight->state;
                 dist = S3e40_Len(ss->dir);
@@ -20329,7 +20689,7 @@ regular:
             float quality;
             S3e40_State* ps;
             {
-                const S3e40_Xform* wp = geom->world;
+                const S3e40_Xform* wp = apGeom->world;
                 if (!wp)
                     wp = &DAT_011f4288;
                 SharedWork world(*wp);
@@ -20358,7 +20718,7 @@ regular:
                             secondLight = primary;
                             SetFlag(0x100, true);
                         }
-                        primary = BSShaderLightingProperty_GetNextActiveNonShadowLight(&passType);
+                        primary = BSShaderLightingProperty_GetNextActiveNonShadowLight(&auiRenderMode);
                         if (primary)
                         {
                             secondary = primary;
@@ -20371,7 +20731,7 @@ regular:
                         SetFlag(0x80, true);
                         if (dist > 0.0f)
                         {
-                            primary = BSShaderLightingProperty_GetNextActiveNonShadowLight(&passType);
+                            primary = BSShaderLightingProperty_GetNextActiveNonShadowLight(&auiRenderMode);
                             if (primary)
                             {
                                 secondLight = sceneLight;
@@ -20389,11 +20749,11 @@ regular:
                         }
                         else
                         {
-                            primary = BSShaderLightingProperty_GetNextActiveNonShadowLight(&passType);
+                            primary = BSShaderLightingProperty_GetNextActiveNonShadowLight(&auiRenderMode);
                             if (primary)
                             {
                                 secondLight = primary;
-                                primary = BSShaderLightingProperty_GetNextActiveNonShadowLight(&passType);
+                                primary = BSShaderLightingProperty_GetNextActiveNonShadowLight(&auiRenderMode);
                                 secondary = primary;
                                 SetFlag(0x100, true);
                                 BSShaderProperty_SetFlag(0x29, primary != 0);
@@ -20408,25 +20768,25 @@ regular:
                         }
                     }
                 }
-                if (insert == true)
-                    passes->FUN_00ba9ee0(geom, 0xc2, true, 3, work.first, secondLight, secondary, 0);
+                if (abUpdateList == true)
+                    passes->FUN_00ba9ee0(apGeom, 0xc2, true, 3, work.first, secondLight, secondary, 0);
                 else
-                    ++*counter.ptr;
+                    ++*asCount.ptr;
             }
         }
-        if (BSShaderManager_GetShadows() && insert)
+        if (BSShaderManager_GetShadows() && abUpdateList)
         {
-            S3e40_Ref* ref = geom->FUN_00a59d30(false);
+            S3e40_Ref* ref = apGeom->FUN_00a59d30(false);
             if (!ref)
-                ref = geom->fallback;
+                ref = apGeom->fallback;
             bool marked = ref && (ref->Mode() != 0);
-            BSShaderPPLightingProperty_AddDepthMapPass_2x(geom, geom->shader != 0, marked, preferred);
+            BSShaderPPLightingProperty_AddDepthMapPass_2x(apGeom, apGeom->shader != 0, marked, apAccumulator);
         }
     }
     if (callback)
     {
         bool changed = true;
-        BSShaderProperty_TexEffect(geom, counter.ptr, insert, &changed, 0);
+        BSShaderPPLightingProperty_AddTextureEffectPass_1x(apGeom, asCount.ptr, abUpdateList, &changed, 0);
     }
     return reinterpret_cast<S3e40_Light*>(passes);
 }
@@ -20526,16 +20886,17 @@ inline float NiPoint3::Length()
 }
 
 
+// pdb: structure Sphere, size 0x10, 2 members
 struct Sphere
 {
-    float center[3];
-    float radius;
+    float Center[3]; // src: XBOX_RETAIL_PDB +0x0 (old: center)
+    float fRadius; // src: XBOX_RETAIL_PDB +0xc (old: radius)
     Sphere()
     {}
     void Set(const LocalVec3& point, float value)
     {
-        memcpy(&center, &point, sizeof(center));
-        radius = value;
+        memcpy(&Center, &point, sizeof(Center));
+        fRadius = value;
     }
 };
 struct Vertex
@@ -20824,7 +21185,7 @@ struct GeometryBounds
     unsigned short m_uiItemCount;  // +0x12
     Vertex* m_pVertexData;         // +0x14
     unsigned int* m_pKeys;         // +0x18
-    void UpdateBounds();
+    void TallGrassGroup_UpdateGroupBound();
 };
 struct SavedGeometry
 {
@@ -20832,7 +21193,10 @@ struct SavedGeometry
 };
 // Computes the vertex bounding sphere and radius, then applies it to the primary or alternate SphereRenderer and updates the spatial bounds grid position.
 // @fnv 0x00bd8750
-void GeometryBounds::UpdateBounds()
+// src: XBOX_RETAIL_PDB 0x00bd8750
+// pdb: TallGrassGroup::UpdateGroupBound | TallGrassGroup.obj | retail, object-file gap fill, high
+// pdb locals: max, pbound, fbig, min, i, radius, ptrishape, pshape, center, ptristrips
+void GeometryBounds::TallGrassGroup_UpdateGroupBound()
 {
     Sphere sphere;
     float f = DAT_010bc3ec;
@@ -21042,6 +21406,7 @@ struct FUN_00bc0f80 : FUN_00be0f10
 };
 
 // @fnv 0x00bc0f80
+// pdb: BoltShader::~BoltShader | BoltShader.obj | retail, object-file run extension, low
 FUN_00bc0f80::~FUN_00bc0f80()
 {
     DAT_01201f58 = 0;
@@ -21147,18 +21512,20 @@ struct FUN_00bcf7f0 : ShaderBase
 {
     ShaderPtr<ShaderRefObject> m_aspPasses[26];
     ShaderPtr<ShaderRefObject> m_aspOtherPasses[13];
-    FUN_00bcf7f0(ShaderRefObject* pPixel, ShaderRefObject* pVertex);
+    FUN_00bcf7f0(ShaderRefObject* apShaderDecl, ShaderRefObject* apSkinnedShaderDecl);
     virtual ~FUN_00bcf7f0();
 };
 
 // Passes pPixel and pVertex to the base and stores them in the reference pointers; sets unk68 to 4, unk64 to false and unk60 to 0.
 // @fnv 0x00bcf7f0
-FUN_00bcf7f0::FUN_00bcf7f0(ShaderRefObject* pPixel, ShaderRefObject* pVertex) : ShaderBase(pPixel, pVertex, 0, 0)
+// pdb: SkinShader::SkinShader | SkinShader.obj | retail, call graph, high
+// pdb params: apShaderDecl, apSkinnedShaderDecl
+FUN_00bcf7f0::FUN_00bcf7f0(ShaderRefObject* apShaderDecl, ShaderRefObject* apSkinnedShaderDecl) : ShaderBase(apShaderDecl, apSkinnedShaderDecl, 0, 0)
 {
     unk68 = 4;
     unk64 = false;
-    m_spPixelShaderObject = pPixel;
-    m_spVertexShaderObject = pVertex;
+    m_spPixelShaderObject = apShaderDecl;
+    m_spVertexShaderObject = apSkinnedShaderDecl;
     unk60 = 0;
 }
 }  // namespace fnv_00bcf7f0
@@ -21486,59 +21853,59 @@ struct ShaderPassBuilder : DynCastHelper
     unsigned short BSShaderLightingProperty_GetNumberofActiveNonShadowLights();
     DrawLight* BSShaderLightingProperty_GetFirstActiveNonShadowLight(void**);
     DrawLight* BSShaderLightingProperty_GetNextActiveNonShadowLight(void**);
-    BSShaderProperty::ShaderPassEntry* BSShaderProperty_AddPass_ZOnly(SceneGeometry*, unsigned short*, unsigned char, bool*, bool, bool);
-    BSShaderProperty::ShaderPassEntry* BSShaderProperty_AddPass_NormalsClear(SceneGeometry*, unsigned short*, unsigned char, bool*, bool);
+    BSShaderProperty::ShaderPassEntry* BSShaderPPLightingProperty_AddZOnlyPass_1x(SceneGeometry*, unsigned short*, unsigned char, bool*, bool, bool);
+    BSShaderProperty::ShaderPassEntry* BSShaderPPLightingProperty_AddRenderNormalsClearPass_1x(SceneGeometry*, unsigned short*, unsigned char, bool*, bool);
     void BSShaderProperty_AmbientDirAndPoint(SceneGeometry*, DrawLight*, DrawLight*, unsigned short*, unsigned char, bool*, bool, bool);
     void BSShaderProperty_AddPass_Ambient(SceneGeometry*, DrawLight*, unsigned short*, unsigned char, bool*, bool, bool, bool, bool);
-    void BSShaderProperty_AddPass_DiffuseDirOrPoint(SceneGeometry*, DrawLight*, unsigned short*, unsigned char, bool*, bool, bool, bool, bool);
+    void BSShaderPPLightingProperty_AddDiffusePass_1x(SceneGeometry*, DrawLight*, unsigned short*, unsigned char, bool*, bool, bool, bool, bool);
     void BSShaderPPLightingProperty_AddTexturePass_1x(SceneGeometry*, DrawLight*, unsigned short*, unsigned char, bool*, bool, bool, bool, bool, bool,
                       bool);
     void BSShaderProperty_AddPass_SpecularAmbientDirPoint(SceneGeometry*, DrawLight*, unsigned short*, unsigned char, bool*, bool, bool, bool, bool, bool,
                       bool);
     void BSShaderProperty_AddPass_EnvMap(SceneGeometry*, unsigned short*, unsigned char, bool*, bool, bool);
-    void EmitShadowPasses(SceneGeometry*, DrawLight*, unsigned short*, unsigned char, bool*, bool);
-    void BSShaderProperty_AddPass_Fog(SceneGeometry*, unsigned short*, unsigned char, bool*, bool, bool, bool);
-    BSShaderProperty::ShaderPassEntry* BSShaderProperty_AddPass_ZOnly_TexEffect(SceneGeometry*, unsigned short*, unsigned char, bool*, bool);
-    BSShaderProperty::ShaderPassEntry* BSShaderProperty_TexEffect(SceneGeometry*, unsigned short*, unsigned char, bool*, bool);
-    void CreatePassMessage(SceneGeometry*, unsigned short*, unsigned char, bool, bool);
+    void BSShaderPPLightingProperty_AddLandscapePasses_1x(SceneGeometry*, DrawLight*, unsigned short*, unsigned char, bool*, bool);
+    void BSShaderPPLightingProperty_AddFogPass_1x(SceneGeometry*, unsigned short*, unsigned char, bool*, bool, bool, bool);
+    BSShaderProperty::ShaderPassEntry* BSShaderPPLightingProperty_AddZOnlyTextureEffectPass_1x(SceneGeometry*, unsigned short*, unsigned char, bool*, bool);
+    BSShaderProperty::ShaderPassEntry* BSShaderPPLightingProperty_AddTextureEffectPass_1x(SceneGeometry*, unsigned short*, unsigned char, bool*, bool);
+    void BSShaderPPLightingProperty_AddSelfIllumAlphaPass(SceneGeometry*, unsigned short*, unsigned char, bool, bool);
     void BSShaderProperty_AddPass_AmbDiffTex(SceneGeometry*, DrawLight*, unsigned short*, unsigned char, bool*, bool, bool, bool, bool, bool,
                       bool, bool);
-// src: COMMUNITY 0x00bd9da0
-    BSShaderProperty::ShaderPassEntry* BSShaderProperty_AddPass_Normals(SceneGeometry* geometry, unsigned short* count, unsigned char type, bool* first,
-                                  bool overlay, bool effect)
+// src: XBOX_RETAIL_PDB 0x00bd9da0 (was COMMUNITY)
+    BSShaderProperty::ShaderPassEntry* BSShaderPPLightingProperty_AddRenderNormalsPass_1x(SceneGeometry* apGeom, unsigned short* asCount, unsigned char abUpdateList, bool* abFirst,
+                                  bool abSkinned, bool abRefractionFire)
     {
-        if (effect)
+        if (abRefractionFire)
         {
-            if (type == 1)
+            if (abUpdateList == 1)
             {
-                passes->AddPass(geometry, 0x1e4, *first, 0, 0, 0, 0, 0);
-                *first = false;
+                passes->AddPass(apGeom, 0x1e4, *abFirst, 0, 0, 0, 0, 0);
+                *abFirst = false;
                 return 0;
             }
         }
-        else if (!overlay)
+        else if (!abSkinned)
         {
-            if (type == 1)
+            if (abUpdateList == 1)
             {
-                passes->AddPass(geometry, 0x1e2, *first, 0, 0, 0, 0, 0);
-                *first = false;
+                passes->AddPass(apGeom, 0x1e2, *abFirst, 0, 0, 0, 0, 0);
+                *abFirst = false;
                 return 0;
             }
         }
-        else if (type == 1)
+        else if (abUpdateList == 1)
         {
-            passes->AddPass(geometry, 0x1e3, *first, 0, 0, 0, 0, 0);
-            *first = false;
+            passes->AddPass(apGeom, 0x1e3, *abFirst, 0, 0, 0, 0, 0);
+            *abFirst = false;
             return 0;
         }
-        ++*static_cast<unsigned short*>(count);
-        *first = false;
+        ++*static_cast<unsigned short*>(asCount);
+        *abFirst = false;
         return 0;
     }
     BSShaderProperty::ShaderPassEntry* AddEffectPass(SceneGeometry* geometry, unsigned short* count, unsigned char type, bool* first,
                                    bool overlay, bool effect)
     {
-        BSShaderProperty_AddPass_Normals(geometry, count, type, first, overlay, effect);
+        BSShaderPPLightingProperty_AddRenderNormalsPass_1x(geometry, count, type, first, overlay, effect);
         return 0;
     }
     __forceinline void GenerateLightingPasses(SceneGeometry* geometry, unsigned int passMask, unsigned short* count,
@@ -21549,8 +21916,8 @@ struct ShaderPassBuilder : DynCastHelper
                                               bool blockedByEffect, bool allowFirstPass, bool specialBlend,
                                               bool hasHighFlags, bool lightingCondition, bool extraLight, bool useAlpha,
                                               bool useAlternate, DrawLight* primaryLight);
-    void BSShaderPPLightingProperty_GetRenderPasses_1x(SceneGeometry* geometry, unsigned int passMask, unsigned short* count, int mode,
-                      LightConfiguration* config, unsigned char effectType);
+    void BSShaderPPLightingProperty_GetRenderPasses_1x(SceneGeometry* apGeom, unsigned int aiEnabledPasses, unsigned short* asCount, int auiRenderMode,
+                      LightConfiguration* apAccumulator, unsigned char abUpdateList);
 };
 extern unsigned int DAT_010a91d4;
 extern unsigned char DAT_011f91a7;
@@ -21746,7 +22113,7 @@ __forceinline void ShaderPassBuilder::GenerateLightingPasses(
         return;
     }
     if ((propertyFlags & 0x40) > 0)
-        BSShaderProperty_AddPass_NormalsClear(geometry, count, effectType, &first, hasNoOverlay)->m_ucLightIndex = 7;
+        BSShaderPPLightingProperty_AddRenderNormalsClearPass_1x(geometry, count, effectType, &first, hasNoOverlay)->m_ucLightIndex = 7;
     unsigned short numLights = BSShaderLightingProperty_GetNumberofActiveNonShadowLights();
     if (allowFirstPass && (needsShadow || passMask == DAT_010a91d4))
     {
@@ -21767,14 +22134,14 @@ __forceinline void ShaderPassBuilder::GenerateLightingPasses(
                     BSShaderProperty_AddPass_Ambient(geometry, primaryLight, count, effectType, &first, hasNoOverlay, extraLight,
                                  hasRenderContext, attr0);
                 if (primaryLight->Matches(&DAT_011f4998))
-                    BSShaderProperty_AddPass_DiffuseDirOrPoint(geometry, primaryLight, count, effectType, &first, hasNoOverlay, false, false, attr0);
+                    BSShaderPPLightingProperty_AddDiffusePass_1x(geometry, primaryLight, count, effectType, &first, hasNoOverlay, false, false, attr0);
                 if (light->Matches(&DAT_011f4998))
-                    BSShaderProperty_AddPass_DiffuseDirOrPoint(geometry, light, count, effectType, &first, hasNoOverlay, true, false, attr0);
+                    BSShaderPPLightingProperty_AddDiffusePass_1x(geometry, light, count, effectType, &first, hasNoOverlay, true, false, attr0);
             }
             for (light = BSShaderLightingProperty_GetNextActiveNonShadowLight(&cursor); light; light = BSShaderLightingProperty_GetNextActiveNonShadowLight(&cursor))
             {
                 if (light->Matches(&DAT_011f4998))
-                    BSShaderProperty_AddPass_DiffuseDirOrPoint(geometry, light, count, effectType, &first, hasNoOverlay, true, false, attr0);
+                    BSShaderPPLightingProperty_AddDiffusePass_1x(geometry, light, count, effectType, &first, hasNoOverlay, true, false, attr0);
             }
             BSShaderPPLightingProperty_AddTexturePass_1x(geometry, primaryLight, count, effectType, &first, hasNoOverlay, false, needsExtraPass,
                          needsNormal, attr0, specialBlend);
@@ -21835,11 +22202,11 @@ __forceinline void ShaderPassBuilder::GenerateLightingPasses(
         {
             DrawLight* light;
             if (primaryLight->Matches(&DAT_011f4998))
-                BSShaderProperty_AddPass_DiffuseDirOrPoint(geometry, primaryLight, count, effectType, &first, hasNoOverlay, false, false, attr0);
+                BSShaderPPLightingProperty_AddDiffusePass_1x(geometry, primaryLight, count, effectType, &first, hasNoOverlay, false, false, attr0);
             void* cursor = 0;
             for (light = BSShaderLightingProperty_GetFirstActiveNonShadowLight(&cursor); light; light = BSShaderLightingProperty_GetNextActiveNonShadowLight(&cursor))
                 if (light->Matches(&DAT_011f4998))
-                    BSShaderProperty_AddPass_DiffuseDirOrPoint(geometry, light, count, effectType, &first, hasNoOverlay, true, false, attr0);
+                    BSShaderPPLightingProperty_AddDiffusePass_1x(geometry, light, count, effectType, &first, hasNoOverlay, true, false, attr0);
         }
         if (passMask & 4)
             BSShaderPPLightingProperty_AddTexturePass_1x(geometry, primaryLight, count, effectType, &first, hasNoOverlay, false, needsExtraPass,
@@ -21874,17 +22241,17 @@ __forceinline void ShaderPassBuilder::GenerateLightingPasses(
     }
 afterLighting:
     if (opaque)
-        EmitShadowPasses(geometry, primaryLight, count, effectType, &first, false);
+        BSShaderPPLightingProperty_AddLandscapePasses_1x(geometry, primaryLight, count, effectType, &first, false);
     if (passMask == DAT_010a91d4 && !needsShadow)
-        BSShaderProperty_AddPass_Fog(geometry, count, effectType, &first, hasNoOverlay, attr0, useAlpha);
+        BSShaderPPLightingProperty_AddFogPass_1x(geometry, count, effectType, &first, hasNoOverlay, attr0, useAlpha);
     if (extraContext)
     {
         if (0 != extraContext->enabled)
-            BSShaderProperty_AddPass_ZOnly_TexEffect(geometry, count, effectType, &first, hasNoOverlay)->m_ucLightIndex = 1;
-        BSShaderProperty_TexEffect(geometry, count, effectType, &first, hasNoOverlay)->m_ucLightIndex = 1;
+            BSShaderPPLightingProperty_AddZOnlyTextureEffectPass_1x(geometry, count, effectType, &first, hasNoOverlay)->m_ucLightIndex = 1;
+        BSShaderPPLightingProperty_AddTextureEffectPass_1x(geometry, count, effectType, &first, hasNoOverlay)->m_ucLightIndex = 1;
     }
     if (DAT_011f9422 && (passMask & 1))
-        CreatePassMessage(geometry, count, effectType, hasNoOverlay, hasRenderContext);
+        BSShaderPPLightingProperty_AddSelfIllumAlphaPass(geometry, count, effectType, hasNoOverlay, hasRenderContext);
     unsigned long missingPassStatus = 0;
     if (lightingCondition)
         missingPassStatus = 10;
@@ -21898,8 +22265,11 @@ afterLighting:
 }
 // @fnv 0x00bdb4a0
 // src: XBOX_PDB 0x00bdb4a0
-void ShaderPassBuilder::BSShaderPPLightingProperty_GetRenderPasses_1x(SceneGeometry* geometry, unsigned int passMask, unsigned short* count, int mode,
-                                     LightConfiguration* config, unsigned char effectType)
+// pdb: BSShaderPPLightingProperty::GetRenderPasses_1x | BSShaderPPLightingProperty_Passes_1x.obj | retail, upstream name already matches, high
+// pdb params: apGeom, aiEnabledPasses, asCount, auiRenderMode, apAccumulator, abUpdateList
+// pdb locals: bbasespecular, btreeleaf, bsinglePass, bzPrePass, balphatest, balphblend, bdecalspecular, kaccumhint, btreebranch, bLOD, pscenenode, bdrawHideSecret, psunlight, bvertexcolors, pniagd, btreefrond, blandsplat, bspecular, bskinned, palphaprop, plight, bdecal, inumlights, bRefractionFire ...
+void ShaderPassBuilder::BSShaderPPLightingProperty_GetRenderPasses_1x(SceneGeometry* apGeom, unsigned int aiEnabledPasses, unsigned short* asCount, int auiRenderMode,
+                                     LightConfiguration* apAccumulator, unsigned char abUpdateList)
 {
     const unsigned int initialFlags = renderFlags;
     bool hasNoBasePass;
@@ -21907,11 +22277,11 @@ void ShaderPassBuilder::BSShaderPPLightingProperty_GetRenderPasses_1x(SceneGeome
     bool addAdditional = (initialFlags & 0x80) > 0;
     bool basePass = hasNoBasePass;
     bool hasNoOverlay = (initialFlags & 2) > 0;
-    bool needsShadow = (initialFlags & 0x20) > 0 || mode == 3;
+    bool needsShadow = (initialFlags & 0x20) > 0 || auiRenderMode == 3;
     bool hasRenderContext = *renderContext != 0;
     bool needsExtraPass = (initialFlags & 0x400) > 0;
     bool needsNormal = false;
-    if (0 != geometry->data->normalCount)
+    if (0 != apGeom->data->normalCount)
         needsNormal = true;
     needsNormal |= (propertyFlags & 0x20) > 0;
     bool attr0 = DynamicCast(&DAT_01200788) != 0;
@@ -21927,12 +22297,12 @@ void ShaderPassBuilder::BSShaderPPLightingProperty_GetRenderPasses_1x(SceneGeome
     bool specialBlend = (activeFlags & 0x40000) > 0;
     bool hasHighFlags = ((activeFlags & 0x4000000) > 0) || ((activeFlags & 0x8000000) > 0);
     bool lightingCondition;
-    if ((geometry->state->flags & 1) == 0 &&
-        (config->category34 == 2 || (4 & propertyFlags) > 0 || (propertyFlags & 2) > 0))
+    if ((apGeom->state->flags & 1) == 0 &&
+        (apAccumulator->category34 == 2 || (4 & propertyFlags) > 0 || (propertyFlags & 2) > 0))
         lightingCondition = true;
     else
         lightingCondition = false;
-    GeometryProperty* property = static_cast<GeometryProperty*>(geometry->GetProperty(0));
+    GeometryProperty* property = static_cast<GeometryProperty*>(apGeom->GetProperty(0));
     bool extraLight = property && ((static_cast<unsigned char>(property->flags >> 9) & 1) != 0);
     bool useAlpha = (property && ((property->flags & 1) != 0)) || AlphaOrdered(alphaCutoff, 1.0f);
     if ((renderFlags & 0x20000) > 0)
@@ -21956,12 +22326,12 @@ void ShaderPassBuilder::BSShaderPPLightingProperty_GetRenderPasses_1x(SceneGeome
         bool alphaFirst = true;
         if (shadowPass)
         {
-            BSShaderProperty_AddPass_ZOnly(geometry, count, effectType, &alphaFirst, hasNoOverlay, extraLight);
+            BSShaderPPLightingProperty_AddZOnlyPass_1x(apGeom, asCount, abUpdateList, &alphaFirst, hasNoOverlay, extraLight);
             basePass = false;
         }
         needsShadow = true;
     }
-    GenerateLightingPasses(geometry, passMask, count, effectType, hasNoBasePass, addAdditional, basePass, hasNoOverlay,
+    GenerateLightingPasses(apGeom, aiEnabledPasses, asCount, abUpdateList, hasNoBasePass, addAdditional, basePass, hasNoOverlay,
                            needsShadow, hasRenderContext, needsExtraPass, needsNormal, attr0, attr1, attr2, opaque,
                            translucent, blockedByEffect, allowFirstPass, specialBlend, hasHighFlags, lightingCondition,
                            extraLight, useAlpha, useAlternate, primaryLight);
@@ -22749,38 +23119,38 @@ struct PShader
     PLight* BSShaderLightingProperty_GetNextActiveNonShadowLight(PNode**);
     PLight* FUN_00b70590(PNode**);
     PLight* BSShaderLightingProperty_GetNextActiveLight(PNode**);
-    void BSShaderProperty_AddPass_ZOnly(PGeom*, unsigned short*, unsigned char, bool*, bool, bool);
-    void BSShaderProperty_AddPass_ZOnly_TexEffect(PGeom*, unsigned short*, unsigned char, bool*, bool);
-    void BSShaderProperty_AddPass_NormalsClear(PGeom*, unsigned short*, unsigned char, bool*, bool);
-    void BSShaderProperty_AddPass_Normals(PGeom*, unsigned short*, unsigned char, bool*, bool, bool);
+    void BSShaderPPLightingProperty_AddZOnlyPass_1x(PGeom*, unsigned short*, unsigned char, bool*, bool, bool);
+    void BSShaderPPLightingProperty_AddZOnlyTextureEffectPass_1x(PGeom*, unsigned short*, unsigned char, bool*, bool);
+    void BSShaderPPLightingProperty_AddRenderNormalsClearPass_1x(PGeom*, unsigned short*, unsigned char, bool*, bool);
+    void BSShaderPPLightingProperty_AddRenderNormalsPass_1x(PGeom*, unsigned short*, unsigned char, bool*, bool, bool);
     void BSShaderProperty_AddPass_ADTS(PGeom*, PLight*, unsigned short*, unsigned char, bool*, bool, bool, bool, bool, bool, bool, bool,
                       bool);
     void BSShaderProperty_AddPass_ADTS2(PGeom*, PLight*, PLight*, unsigned short*, unsigned char, bool*, bool, bool, bool, bool, bool,
                       bool, bool, bool);
-    void BSShaderProperty_AddPass_ADT(PGeom*, PLight*, unsigned short*, unsigned char, bool*, bool, bool, bool, bool, bool, bool, bool,
+    void BSShaderPPLightingProperty_AddAmbDiffTexSpecularPass_2x(PGeom*, PLight*, unsigned short*, unsigned char, bool*, bool, bool, bool, bool, bool, bool, bool,
                       bool, bool, bool, bool);
     void SelectTwoLightPass(PGeom*, PLight*, PLight*, unsigned short*, unsigned char, bool*, bool, bool, bool, bool, bool,
                       bool, bool, bool);
     void BSShaderPPLightingProperty_AddPass_Opt(PGeom*, PLight*, unsigned short*, unsigned char, bool*, bool, bool, bool, bool, bool);
     void BSShaderProperty_AddPass_AD2(PGeom*, PLight*, PLight*, unsigned short*, unsigned char, bool*, bool, bool, bool, bool, bool,
                       bool, bool);
-    void AddShadowPass(PGeom*, PLight*, PLight*, PLight*, unsigned short*, unsigned char, bool*, bool, bool, bool, bool,
+    void BSShaderPPLightingProperty_AddAmbDiff3Pass_2x(PGeom*, PLight*, PLight*, PLight*, unsigned short*, unsigned char, bool*, bool, bool, bool, bool,
                        bool, bool, bool);
     void BSShaderProperty_AddPass_Ambient(PGeom*, PLight*, unsigned short*, unsigned char, bool*, bool, bool, bool, bool);
-    void BSShaderProperty_AddPass_DiffuseDirOrPoint(PGeom*, PLight*, unsigned short*, unsigned char, bool*, bool, bool, bool, bool);
-    void BSShaderProperty_AddPass_DiffusePoint2(PGeom*, PLight*, PLight*, unsigned short*, unsigned char, bool*, bool, bool, bool, bool, bool);
-    void BSShaderProperty_AddPass_DiffusePoint3(PGeom*, PLight*, PLight*, PLight*, unsigned short*, unsigned char, bool*, bool, bool, bool, bool,
+    void BSShaderPPLightingProperty_AddDiffusePass_1x(PGeom*, PLight*, unsigned short*, unsigned char, bool*, bool, bool, bool, bool);
+    void BSShaderPPLightingProperty_AddDiffusePt2Pass_2x(PGeom*, PLight*, PLight*, unsigned short*, unsigned char, bool*, bool, bool, bool, bool, bool);
+    void BSShaderPPLightingProperty_AddDiffusePt3Pass_2x(PGeom*, PLight*, PLight*, PLight*, unsigned short*, unsigned char, bool*, bool, bool, bool, bool,
                       bool);
-    void AddRenderPass(PGeom*, PLight*, unsigned short*, unsigned char, bool*, bool, bool, bool, bool, bool, bool, bool,
+    void BSShaderPPLightingProperty_AddTexturePass_2x(PGeom*, PLight*, unsigned short*, unsigned char, bool*, bool, bool, bool, bool, bool, bool, bool,
                       bool);
     void BSShaderProperty_AddPass_Specular(PGeom*, PLight*, unsigned short*, unsigned char, bool*, bool, bool, bool, bool, bool, bool);
-    void BSShaderProperty_AddPass_SpecularPoint3(PGeom*, PLight*, PLight*, PLight*, unsigned short*, unsigned char, bool*, bool, bool, bool, bool);
-    void BSShaderProperty_AddPass_SpecularPoint2(PGeom*, PLight*, PLight*, unsigned short*, unsigned char, bool*, bool, bool, bool, bool);
+    void BSShaderPPLightingProperty_AddSpecularPt3Pass_2x(PGeom*, PLight*, PLight*, PLight*, unsigned short*, unsigned char, bool*, bool, bool, bool, bool);
+    void BSShaderPPLightingProperty_AddSpecularPt2Pass_2x(PGeom*, PLight*, PLight*, unsigned short*, unsigned char, bool*, bool, bool, bool, bool);
     void BSShaderProperty_AddPass_2X_EnvMap(PGeom*, PLight*, PLight*, unsigned short*, unsigned char, bool*, bool, bool, bool);
     void BSShaderPPLightingProperty_AddLandscapePasses_2x(PGeom*, PLight*, unsigned short*, unsigned char, bool*, bool, bool);
-    void BSShaderProperty_AddPass_Fog(PGeom*, unsigned short*, unsigned char, bool*, bool, bool, bool);
-    void BSShaderProperty_AddPass_2x_TexEffect(PGeom*, unsigned short*, unsigned char, bool*, bool);
-    void CreatePassMessage(PGeom*, unsigned short*, unsigned char, bool, bool);
+    void BSShaderPPLightingProperty_AddFogPass_1x(PGeom*, unsigned short*, unsigned char, bool*, bool, bool, bool);
+    void BSShaderPPLightingProperty_AddTextureEffectPass_2x(PGeom*, unsigned short*, unsigned char, bool*, bool);
+    void BSShaderPPLightingProperty_AddSelfIllumAlphaPass(PGeom*, unsigned short*, unsigned char, bool, bool);
     void AddAdditionalPass(PGeom*, unsigned short*, unsigned char, bool);
 };
 extern unsigned char DAT_011f9427;
@@ -22797,20 +23167,23 @@ PContext* __cdecl BSShaderManager_GetAccumulator();
 bool __cdecl BSShaderManager_GetShadows();
 // @fnv 0x00bdf790
 // src: XBOX_PDB 0x00bdf790
-void PShader::BSShaderPPLightingProperty_GetRenderPasses_2x(PGeom* geom, int renderFlags, unsigned short* count, int mode, PRenderer* renderer,
-                           unsigned char passMode)
+// pdb: BSShaderPPLightingProperty::GetRenderPasses_2x | BSShaderPPLightingProperty_Passes_2x.obj | retail, upstream name already matches, high
+// pdb params: apGeom, aiEnabledPasses, asCount, auiRenderMode, apAccumulator, abUpdateList
+// pdb locals: bbasespecular, btreeleaf, bsinglePass, bzPrePass, balphblend, balphatest, brenderenvmap, brenderspecularsun, brenderspecular, brendertexture, kaccumhint, btreebranch, bLOD, pscenenode, brenderfog, kiter, bdrawHideSecret, beyeReflect, psunlight, bwindowReflect, bvertexcolors, pniagd, btreefrond, blandsplat ...
+void PShader::BSShaderPPLightingProperty_GetRenderPasses_2x(PGeom* apGeom, int aiEnabledPasses, unsigned short* asCount, int auiRenderMode, PRenderer* apAccumulator,
+                           unsigned char abUpdateList)
 {
     bool diffusePass = (flags & 1) > 0;
     bool ambientPass = (flags & 0x80) > 0;
     bool projected = (flags & 0x20000) > 0;
     bool flag21 = (flags & 0x200000) > 0;
     bool skinned = (flags & 2) > 0;
-    bool vertex = (flags & 0x20) > 0 || mode == 3;
+    bool vertex = (flags & 0x20) > 0 || auiRenderMode == 3;
     bool flag8 = (flags & 0x100) > 0;
     bool flag10 = (flags & 0x400) > 0;
     bool hasValue = (*value != 0) & !flag10;
     bool data = false;
-    if (geom->data->value)
+    if (apGeom->data->value)
         data = true;
     data |= ((flags2 & 0x20) > 0);
     bool special = !DAT_011f9427 && DAT_011f95e4 && (DAT_011f91d8 & 0x20) && DAT_011f91c0 >= 2 &&
@@ -22829,9 +23202,9 @@ void PShader::BSShaderPPLightingProperty_GetRenderPasses_2x(PGeom* geom, int ren
     bool enabled = !((flags & 0x100000) > 0) || DAT_011f91a7;
     bool flag18 = (flags & 0x40000) > 0;
     bool flag26 = (flags & 0x4000000) > 0 || (flags & 0x8000000) > 0;
-    bool decal = !(geom->alpha->flags & 1) && (renderer->mode == 2 || (flags2 & 4) > 0 || (flags2 & 2) > 0);
-    PAlpha** alphaPtr = &geom->alpha;
-    PAlpha* alphaProp = geom->FUN_00a59d30(0);
+    bool decal = !(apGeom->alpha->flags & 1) && (apAccumulator->mode == 2 || (flags2 & 4) > 0 || (flags2 & 2) > 0);
+    PAlpha** alphaPtr = &apGeom->alpha;
+    PAlpha* alphaProp = apGeom->FUN_00a59d30(0);
     if (!alphaProp)
         alphaProp = alphaPtr ? *alphaPtr : 0;
     bool transparent = (alphaProp && (alphaProp->flags & 1)) || alpha < 1.0 || opacity < 1.0;
@@ -22864,7 +23237,7 @@ void PShader::BSShaderPPLightingProperty_GetRenderPasses_2x(PGeom* geom, int ren
         if ((flag9 || opacity < 1.0) && !(alphaProp && (alphaProp->flags & 1)) && !((flags & 0x8000) > 0) &&
             !((flags & 0x10000) > 0))
         {
-            BSShaderProperty_AddPass_ZOnly(geom, count, passMode, &transparentFirst, skinned, alphaTest);
+            BSShaderPPLightingProperty_AddZOnlyPass_1x(apGeom, asCount, abUpdateList, &transparentFirst, skinned, alphaTest);
             if (opacity < 1.0 || alpha < 1.0)
                 passes->items[passes->count - 1]->type = 14;
             diffusePass = false;
@@ -22874,33 +23247,33 @@ void PShader::BSShaderPPLightingProperty_GetRenderPasses_2x(PGeom* geom, int ren
     bool firstPass = true;
     if (effect && effect->value)
     {
-        BSShaderProperty_AddPass_ZOnly_TexEffect(geom, count, passMode, &firstPass, skinned);
+        BSShaderPPLightingProperty_AddZOnlyTextureEffectPass_1x(apGeom, asCount, abUpdateList, &firstPass, skinned);
         passes->items[passes->count - 1]->type = 14;
     }
     unsigned short lightCount = BSShaderLightingProperty_GetNumberofActiveNonShadowLights();
-    bool doBase = (renderFlags & 1) > 0;
-    bool doDiffuse = (renderFlags & 2) > 0;
-    bool doSpecular = (renderFlags & 4) > 0;
-    bool doAmbient = (renderFlags & 8) > 0 && diffusePass;
-    bool doAmbientExtra = ambientPass && (renderFlags & 8) > 0;
+    bool doBase = (aiEnabledPasses & 1) > 0;
+    bool doDiffuse = (aiEnabledPasses & 2) > 0;
+    bool doSpecular = (aiEnabledPasses & 4) > 0;
+    bool doAmbient = (aiEnabledPasses & 8) > 0 && diffusePass;
+    bool doAmbientExtra = ambientPass && (aiEnabledPasses & 8) > 0;
     first = true;
-    bool allFlags = (DAT_010a91d4 & renderFlags) == DAT_010a91d4;
+    bool allFlags = (DAT_010a91d4 & aiEnabledPasses) == DAT_010a91d4;
     unsigned short integerLightCount = lightCount;
     unsigned int remaining = lightCount;
     if (flag15 || flag16)
     {
-        BSShaderProperty_AddPass_Normals(geom, count, passMode, &firstPass, skinned, flag16);
+        BSShaderPPLightingProperty_AddRenderNormalsPass_1x(apGeom, asCount, abUpdateList, &firstPass, skinned, flag16);
         passes->items[passes->count - 1]->type = 6;
         return;
     }
     if ((flags2 & 0x40) > 0)
     {
-        BSShaderProperty_AddPass_NormalsClear(geom, count, passMode, &firstPass, skinned);
+        BSShaderPPLightingProperty_AddRenderNormalsClearPass_1x(apGeom, asCount, abUpdateList, &firstPass, skinned);
         passes->items[passes->count - 1]->type = 7;
     }
     if (castB || castC)
     {
-        fallback(geom, renderFlags, count, renderer->extra, renderer, passMode);
+        fallback(apGeom, aiEnabledPasses, asCount, apAccumulator->extra, apAccumulator, abUpdateList);
         return;
     }
     PNode* lightPosition = 0;
@@ -22914,7 +23287,7 @@ void PShader::BSShaderPPLightingProperty_GetRenderPasses_2x(PGeom* geom, int ren
             {
                 if (light->special)
                 {
-                    passes->Add(geom, 0, true, 1, light, 0, 0, 0);
+                    passes->Add(apGeom, 0, true, 1, light, 0, 0, 0);
                     PPass* pass = passes->items[passes->count - 1];
                     int shader;
                     if (skinned)
@@ -22956,13 +23329,13 @@ void PShader::BSShaderPPLightingProperty_GetRenderPasses_2x(PGeom* geom, int ren
                     {
                         if (!lightCount)
                         {
-                            BSShaderProperty_AddPass_ADTS(geom, sceneLight, count, passMode, &firstPass, skinned, hasValue, flag10,
+                            BSShaderProperty_AddPass_ADTS(apGeom, sceneLight, asCount, abUpdateList, &firstPass, skinned, hasValue, flag10,
                                          false, special, flag11, castA, flag18);
                         }
                         else
                         {
                             PLight* light = BSShaderLightingProperty_GetFirstActiveNonShadowLight(&lightPosition);
-                            BSShaderProperty_AddPass_ADTS2(geom, sceneLight, light, count, passMode, &firstPass, skinned, hasValue,
+                            BSShaderProperty_AddPass_ADTS2(apGeom, sceneLight, light, asCount, abUpdateList, &firstPass, skinned, hasValue,
                                          flag10, false, special, flag11, castA, flag18);
                         }
                         allFlags = false;
@@ -22971,27 +23344,27 @@ void PShader::BSShaderPPLightingProperty_GetRenderPasses_2x(PGeom* geom, int ren
                 combinedNormal:
                     if (lightCount == 0)
                     {
-                        BSShaderProperty_AddPass_ADT(geom, sceneLight, count, passMode, &firstPass, skinned, hasValue, flag10, false,
+                        BSShaderPPLightingProperty_AddAmbDiffTexSpecularPass_2x(apGeom, sceneLight, asCount, abUpdateList, &firstPass, skinned, hasValue, flag10, false,
                                      special, flag11, flag12, castA, flag22, flag18, alphaTest);
                     }
                     else
                     {
                         PLight* light = BSShaderLightingProperty_GetFirstActiveNonShadowLight(&lightPosition);
-                        SelectTwoLightPass(geom, sceneLight, light, count, passMode, &firstPass, skinned, hasValue, flag10,
+                        SelectTwoLightPass(apGeom, sceneLight, light, asCount, abUpdateList, &firstPass, skinned, hasValue, flag10,
                                      false, special, flag11, castA, flag18);
                     }
                     allFlags = false;
                     goto ambientExtra;
                 materialPass:
                     int extraPass = 1;
-                    PMaterial* material = geom->material;
+                    PMaterial* material = apGeom->material;
                     if (!DAT_011ad80d ||
                         (material &&
                          !(material->alternate ? material->alternate : &material->color)->HasEqualComponents(DAT_011f4998)) ||
                         ((PSceneColors*)scene->colors)->diffuse.FUN_00439090(DAT_011f4998) || !FUN_004a2020(0x25) ||
                         (alphaProp && (alphaProp->GetMode() != 0) && opacity < 1.0) || FUN_004a2020(0x1a) ||
                         FUN_004a2020(0x1b) || FUN_004a2020(7) || FUN_004a2020(0x15) || FUN_004a2020(0x11) ||
-                        geom->unk0bc)
+                        apGeom->unk0bc)
                         extraPass = 0;
                     if (vertex || (((integerLightCount <= extraPass + 5 && !doAmbient && !flag10) ||
                                     (integerLightCount <= extraPass + 4 && !doAmbient && flag10) ||
@@ -22999,7 +23372,7 @@ void PShader::BSShaderPPLightingProperty_GetRenderPasses_2x(PGeom* geom, int ren
                                    (lightCount > 1 || diffusePass) && !flag11 && !flag18 && !special && !flag12 &&
                                    !castA && !hasValue))
                     {
-                        BSShaderPPLightingProperty_AddPass_Opt(geom, sceneLight, count, passMode, &firstPass, skinned, hasValue, doAmbient,
+                        BSShaderPPLightingProperty_AddPass_Opt(apGeom, sceneLight, asCount, abUpdateList, &firstPass, skinned, hasValue, doAmbient,
                                      flag10, extraPass != 0);
                         allFlags = false;
                         goto ambientExtra;
@@ -23013,13 +23386,13 @@ void PShader::BSShaderPPLightingProperty_GetRenderPasses_2x(PGeom* geom, int ren
                     {
                         if (!lightCount)
                         {
-                            BSShaderProperty_AddPass_ADT(geom, sceneLight, count, passMode, &firstPass, skinned, hasValue, flag10,
+                            BSShaderPPLightingProperty_AddAmbDiffTexSpecularPass_2x(apGeom, sceneLight, asCount, abUpdateList, &firstPass, skinned, hasValue, flag10,
                                          false, special, flag11, flag12, castA, flag22, flag18, alphaTest);
                         }
                         else
                         {
                             PLight* light = BSShaderLightingProperty_GetFirstActiveNonShadowLight(&lightPosition);
-                            SelectTwoLightPass(geom, sceneLight, light, count, passMode, &firstPass, skinned, hasValue,
+                            SelectTwoLightPass(apGeom, sceneLight, light, asCount, abUpdateList, &firstPass, skinned, hasValue,
                                          flag10, false, special, flag11, castA, flag18);
                         }
                         if (doAmbient)
@@ -23032,7 +23405,7 @@ void PShader::BSShaderPPLightingProperty_GetRenderPasses_2x(PGeom* geom, int ren
                         if (lightCount <= 1)
                         {
                             PLight* light = BSShaderLightingProperty_GetFirstActiveNonShadowLight(&lightPosition);
-                            BSShaderProperty_AddPass_AD2(geom, sceneLight, light, count, passMode, &firstPass, skinned, hasValue,
+                            BSShaderProperty_AddPass_AD2(apGeom, sceneLight, light, asCount, abUpdateList, &firstPass, skinned, hasValue,
                                          flag10, false, special, flag11, castA);
                             remaining = 0;
                         }
@@ -23040,7 +23413,7 @@ void PShader::BSShaderPPLightingProperty_GetRenderPasses_2x(PGeom* geom, int ren
                         {
                             PLight* light = BSShaderLightingProperty_GetFirstActiveNonShadowLight(&lightPosition);
                             PLight* light2 = BSShaderLightingProperty_GetNextActiveNonShadowLight(&lightPosition);
-                            AddShadowPass(geom, sceneLight, light, light2, count, passMode, &firstPass, skinned,
+                            BSShaderPPLightingProperty_AddAmbDiff3Pass_2x(apGeom, sceneLight, light, light2, asCount, abUpdateList, &firstPass, skinned,
                                           hasValue, flag10, false, special, flag11, castA);
                             remaining -= 2;
                         }
@@ -23049,7 +23422,7 @@ void PShader::BSShaderPPLightingProperty_GetRenderPasses_2x(PGeom* geom, int ren
                     }
                 }
             baseOnly:
-                BSShaderProperty_AddPass_Ambient(geom, sceneLight, count, passMode, &firstPass, skinned, alphaTest, hasValue, castA);
+                BSShaderProperty_AddPass_Ambient(apGeom, sceneLight, asCount, abUpdateList, &firstPass, skinned, alphaTest, hasValue, castA);
             }
         diffuseLighting:
             if (doDiffuse)
@@ -23057,7 +23430,7 @@ void PShader::BSShaderPPLightingProperty_GetRenderPasses_2x(PGeom* geom, int ren
                 PLight* light;
                 if (first)
                 {
-                    BSShaderProperty_AddPass_DiffuseDirOrPoint(geom, sceneLight, count, passMode, &firstPass, skinned, false, false, castA);
+                    BSShaderPPLightingProperty_AddDiffusePass_1x(apGeom, sceneLight, asCount, abUpdateList, &firstPass, skinned, false, false, castA);
                     light = BSShaderLightingProperty_GetFirstActiveNonShadowLight(&lightPosition);
                 }
                 else
@@ -23067,7 +23440,7 @@ void PShader::BSShaderPPLightingProperty_GetRenderPasses_2x(PGeom* geom, int ren
                     if (remaining <= 2)
                     {
                         PLight* light2 = BSShaderLightingProperty_GetNextActiveNonShadowLight(&lightPosition);
-                        BSShaderProperty_AddPass_DiffusePoint2(geom, light, light2, count, passMode, &firstPass, skinned, flag10, false, flag11,
+                        BSShaderPPLightingProperty_AddDiffusePt2Pass_2x(apGeom, light, light2, asCount, abUpdateList, &firstPass, skinned, flag10, false, flag11,
                                      castA);
                         if (remaining <= 1)
                             remaining = 0;
@@ -23078,7 +23451,7 @@ void PShader::BSShaderPPLightingProperty_GetRenderPasses_2x(PGeom* geom, int ren
                     {
                         PLight* light2 = BSShaderLightingProperty_GetNextActiveNonShadowLight(&lightPosition);
                         PLight* light3 = BSShaderLightingProperty_GetNextActiveNonShadowLight(&lightPosition);
-                        BSShaderProperty_AddPass_DiffusePoint3(geom, light, light2, light3, count, passMode, &firstPass, skinned, flag10, false,
+                        BSShaderPPLightingProperty_AddDiffusePt3Pass_2x(apGeom, light, light2, light3, asCount, abUpdateList, &firstPass, skinned, flag10, false,
                                      flag11, castA);
                         remaining -= 3;
                     }
@@ -23086,14 +23459,14 @@ void PShader::BSShaderPPLightingProperty_GetRenderPasses_2x(PGeom* geom, int ren
                 }
             }
             if (doSpecular)
-                AddRenderPass(geom, sceneLight, count, passMode, &firstPass, skinned, false, flag10, data, castA, false,
+                BSShaderPPLightingProperty_AddTexturePass_2x(apGeom, sceneLight, asCount, abUpdateList, &firstPass, skinned, false, flag10, data, castA, false,
                              flag11, flag18);
             if (doAmbient)
             {
             ambientLighting:
                 int ambientRemaining = integerLightCount;
                 if (blackAmbient)
-                    BSShaderProperty_AddPass_Specular(geom, sceneLight, count, passMode, &firstPass, skinned, false, special, flag11, castA,
+                    BSShaderProperty_AddPass_Specular(apGeom, sceneLight, asCount, abUpdateList, &firstPass, skinned, false, special, flag11, castA,
                                  flag18);
                 PLight* light = BSShaderLightingProperty_GetFirstActiveNonShadowLight(&lightPosition);
                 while (light)
@@ -23102,19 +23475,19 @@ void PShader::BSShaderPPLightingProperty_GetRenderPasses_2x(PGeom* geom, int ren
                     {
                         PLight* light2 = BSShaderLightingProperty_GetNextActiveNonShadowLight(&lightPosition);
                         PLight* light3 = BSShaderLightingProperty_GetNextActiveNonShadowLight(&lightPosition);
-                        BSShaderProperty_AddPass_SpecularPoint3(geom, light, light2, light3, count, passMode, &firstPass, skinned, flag11, castA,
+                        BSShaderPPLightingProperty_AddSpecularPt3Pass_2x(apGeom, light, light2, light3, asCount, abUpdateList, &firstPass, skinned, flag11, castA,
                                      flag18);
                         ambientRemaining -= 3;
                     }
                     else if (ambientRemaining > 1)
                     {
                         PLight* light2 = BSShaderLightingProperty_GetNextActiveNonShadowLight(&lightPosition);
-                        BSShaderProperty_AddPass_SpecularPoint2(geom, light, light2, count, passMode, &firstPass, skinned, flag11, castA, flag18);
+                        BSShaderPPLightingProperty_AddSpecularPt2Pass_2x(apGeom, light, light2, asCount, abUpdateList, &firstPass, skinned, flag11, castA, flag18);
                         ambientRemaining -= 2;
                     }
                     else if (ambientRemaining > 0)
                     {
-                        BSShaderProperty_AddPass_Specular(geom, light, count, passMode, &firstPass, skinned, false, special, flag11, castA,
+                        BSShaderProperty_AddPass_Specular(apGeom, light, asCount, abUpdateList, &firstPass, skinned, false, special, flag11, castA,
                                      flag18);
                         --ambientRemaining;
                     }
@@ -23125,14 +23498,14 @@ void PShader::BSShaderPPLightingProperty_GetRenderPasses_2x(PGeom* geom, int ren
             if (doAmbientExtra)
             {
                 PLight* light = BSShaderLightingProperty_GetFirstActiveNonShadowLight(&lightPosition);
-                BSShaderProperty_AddPass_2X_EnvMap(geom, sceneLight, light, count, passMode, &firstPass, skinned, projected, flag21);
+                BSShaderProperty_AddPass_2X_EnvMap(apGeom, sceneLight, light, asCount, abUpdateList, &firstPass, skinned, projected, flag21);
                 goto extraPass;
             }
         }
     }
     else
     {
-        BSShaderPPLightingProperty_AddLandscapePasses_2x(geom, sceneLight, count, passMode, &firstPass, diffusePass, special);
+        BSShaderPPLightingProperty_AddLandscapePasses_2x(apGeom, sceneLight, asCount, abUpdateList, &firstPass, diffusePass, special);
     }
 afterLighting:
     if (!allFlags)
@@ -23147,19 +23520,19 @@ afterLighting:
     else if (!flag14)
     {
     extraPass:
-        BSShaderProperty_AddPass_Fog(geom, count, passMode, &firstPass, skinned, castA, transparent);
+        BSShaderPPLightingProperty_AddFogPass_1x(apGeom, asCount, abUpdateList, &firstPass, skinned, castA, transparent);
     }
     if (effect)
     {
-        BSShaderProperty_AddPass_2x_TexEffect(geom, count, passMode, &firstPass, skinned);
+        BSShaderPPLightingProperty_AddTextureEffectPass_2x(apGeom, asCount, abUpdateList, &firstPass, skinned);
         passes->items[passes->count - 1]->type = 1;
     }
     if (DAT_011f9422)
     {
-        if (renderFlags & 1)
-            CreatePassMessage(geom, count, passMode, skinned, hasValue);
+        if (aiEnabledPasses & 1)
+            BSShaderPPLightingProperty_AddSelfIllumAlphaPass(apGeom, asCount, abUpdateList, skinned, hasValue);
         if (!castA && !flag22 && !flag11 && !flag12 && !flag14 && !flag18)
-            AddAdditionalPass(geom, count, passMode, skinned);
+            AddAdditionalPass(apGeom, asCount, abUpdateList, skinned);
     }
     unsigned int passType = 0;
     if (decal)
@@ -23279,17 +23652,20 @@ struct ShellBC
     int unk140;
     float unk144;
     float unk148;
-    void BoltShaderProperty_CreateSegment(int row, int col, int previous, int next);
+    void BoltShaderProperty_CreateSegment(int aiBolt, int aiSegment, int aiLastSegment, int aiLookBackSegment);
 };
 // Computes points[row*width+col] from the previous point plus a scaled direction and random x/z jitter, then pulls its x/z toward a target when beyond unk130.
 // @fnv 0x00bc20a0
 // src: XBOX_PDB 0x00bc20a0
-void ShellBC::BoltShaderProperty_CreateSegment(int row, int col, int previous, int next)
+// pdb: BoltShaderProperty::CreateSegment | BoltShaderProperty.obj | retail, upstream name already matches, high
+// pdb params: aiBolt, aiSegment, aiLastSegment, aiLookBackSegment
+// pdb locals: fprogress, diff, isegmentIndex, lastSegment, fdistance, direction, lookBackSegment, fcorrection
+void ShellBC::BoltShaderProperty_CreateSegment(int aiBolt, int aiSegment, int aiLastSegment, int aiLookBackSegment)
 {
-    int index = row * unk140 + col;
-    Point4 a = points[row * unk140 + previous];
+    int index = aiBolt * unk140 + aiSegment;
+    Point4 a = points[aiBolt * unk140 + aiLastSegment];
     int width = unk140;
-    Point4 b = points[row * width + next];
+    Point4 b = points[aiBolt * width + aiLookBackSegment];
     BoltDirection dir;
     dir.x = a.x - b.x;
     dir.y = a.y - b.y;
@@ -23302,7 +23678,7 @@ void ShellBC::BoltShaderProperty_CreateSegment(int row, int col, int previous, i
     dir.x *= speed;
     dir.y *= speed;
     dir.z *= speed;
-    float ratio = (float)col / width;
+    float ratio = (float)aiSegment / width;
     float random = (float)(rand() / 32767.0);
     points[index].x = (float)(dir.x + a.x + unk148 * random - unk148 * 0.5);
     points[index].y = dir.y + a.y;
@@ -23492,6 +23868,8 @@ struct FUN_00bd44c0 : NiMemObject
 // Creates an NiD3DShaderDeclaration via FUN_00e76700 with fixed SetEntry/SetEntryAlt entries, wraps it in a FUN_00bd44c0, calls setup methods and returns it.
 // @fnv 0x00bd4750
 // src: XBOX_PDB 0x00bd4750
+// pdb: SpeedTreeBranchShader::CreateShader | SpeedTreeBranchShader.obj | retail, upstream name already matches, high
+// pdb locals: spShaderDecl, eInput, pshader
 FUN_00bd44c0* SpeedTreeBranchShader_CreateShader()
 {
     NiD3DShaderDeclaration* pDecl = (NiD3DShaderDeclaration*)NiDX9ShaderDeclaration_Create(DAT_011f9508, 6, 1);
@@ -23538,16 +23916,19 @@ int RemovalOwnerBd8670::RemoveEntry(unsigned short index)
 
 struct Owner_bd8670 : RemovalOwnerBd8670
 {
-    int TallGrassGroup_RemoveTerrainChunk(unsigned int key);
+    int TallGrassGroup_RemoveTerrainChunk(unsigned int alTerrainChunkSeed);
 };
 
 // @fnv 0x00bd8670
 // src: COMMUNITY 0x00bd8670
-int Owner_bd8670::TallGrassGroup_RemoveTerrainChunk(unsigned int key)
+// pdb: TallGrassGroup::RemoveTerrainChunk | TallGrassGroup.obj | retail, upstream name already matches, high
+// pdb params: aplTerrainChunkSeed, asNumquad
+// pdb locals: i, j
+int Owner_bd8670::TallGrassGroup_RemoveTerrainChunk(unsigned int alTerrainChunkSeed)
 {
     for (int i = m_uiItemCount - 1; i >= 0; i--)
     {
-        if (key == m_pKeys[i])
+        if (alTerrainChunkSeed == m_pKeys[i])
             RemoveEntry(i);
     }
     return m_uiItemCount;
@@ -23562,6 +23943,9 @@ struct SingleLightPassSelector : Shader_00bd9540
 // If type is 1, adds a pass to pPasses with id 0x154-0x157 chosen by a and b; otherwise increments *count; then clears *enabled and returns 0.
 // @fnv 0x00bd99c0
 // src: COMMUNITY 0x00bd99c0
+// pdb: BSShaderPPLightingProperty::AddSpecularPass_1x | BSShaderPPLightingProperty_Passes_1x.obj | retail, object-file run extension, low
+// pdb params: apGeom, apLight, asCount, abUpdateList, abFirst, abSkinned, abPointLight, abMultitexture, abBaseSpecular, abDecalSpecular, abTreeBranch
+// pdb locals: ppass
 int SingleLightPassSelector::BSShaderProperty_AddPass_SpecularAmbientDirPoint(NiGeometry* geom, ShadowSceneLight* light, unsigned short* count,
                                           unsigned char type, bool* enabled, bool a, bool b, bool c, bool d, bool e,
                                           bool f)
@@ -23609,7 +23993,7 @@ __declspec(noinline) void __cdecl BoltShader_ClearSegmentIndexArray();
 
 struct PoolFreeStandIn
 {
-    void MemoryManager_Deallocate(void* p);
+    void MemoryManager_Deallocate(void* apMem);
 };
 
 class FUN_00bc1fa0 : public BSShaderProperty
@@ -23621,6 +24005,7 @@ class FUN_00bc1fa0 : public BSShaderProperty
 
 // Frees the m_p60 resource via the pool and calls FUN_00bc0c50 when the global count DAT_01201f64 reaches zero.
 // @fnv 0x00bc1fa0
+// pdb: BoltShaderProperty::~BoltShaderProperty | BoltShaderProperty.obj | debug, call graph, medium
 FUN_00bc1fa0::~FUN_00bc1fa0()
 {
     reinterpret_cast<PoolFreeStandIn*>(&DAT_011f6238)->MemoryManager_Deallocate(m_p60);
@@ -23628,6 +24013,7 @@ FUN_00bc1fa0::~FUN_00bc1fa0()
         BoltShader_ClearSegmentIndexArray();
 }
 
+// pdb: class BSMaterialEmittanceMultController, size 0x38, bases: NiFloatInterpController, 0 members
 struct BSMaterialEmittanceMultController : NiFloatInterpController
 {
 };
@@ -23635,6 +24021,8 @@ struct BSMaterialEmittanceMultController : NiFloatInterpController
 // Allocates and returns a new BSMaterialEmittanceMultController instance.
 // @fnv 0x00bc3190
 // src: EXE 0x00bc3190
+// pdb: BSMaterialEmittanceMultController::CreateObject | BSMaterialEmittanceMultController.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 BSMaterialEmittanceMultController* BSMaterialEmittanceMultController_CreateObject()
 {
     return new BSMaterialEmittanceMultController;
@@ -23749,6 +24137,8 @@ inline float m_kBoundMax(float a, float b)
 // Computes a bounding sphere from m_kFloatData positions (skipping z <= -2147483648.0f) and passes it to unk00's SetObjectBound and SetCount.
 // @fnv 0x00bd5e40
 // src: COMMUNITY 0x00bd5e40
+// pdb: DistantLODGroup::UpdateGroupBound | DistantLODGroup.obj | retail, upstream name already matches, high
+// pdb locals: max, pbound, fbig, min, i, radius, ptrishape, center, ptristrips
 void S_00bd6150_Foo::DistantLODGroup_UpdateGroupBound()
 {
     float limit = 5000000000.0f;
@@ -23833,7 +24223,7 @@ namespace fnv_00bc1d40 {
 
 extern int DAT_011ae61c;
 extern int DAT_01201f64;
-void __cdecl GetOrCreateTable();
+void __cdecl BoltShader_GetSegmentIndices();
 __declspec(noinline) unsigned int __cdecl BoltShader_GetMaxSegments();
 
 struct C04Vec
@@ -23880,6 +24270,9 @@ struct FUN_00bc1d40 : BSShaderProperty
 };
 // Initializes fields, allocates and zeroes a ShaderVector4 array sized by FUN_00bc0b40(), fills randomValues with rand()/32767.0, and increments DAT_01201f64.
 // @fnv 0x00bc1d40
+// pdb: BoltShaderProperty::BoltShaderProperty | BoltShaderProperty.obj | retail, call graph, low
+// pdb note: debug build links it to BoltShaderProperty::UpdateAndMoveBolt
+// pdb locals: isegmentCount, i
 FUN_00bc1d40::FUN_00bc1d40()
 {
     field084 = 0;
@@ -23910,7 +24303,7 @@ FUN_00bc1d40::FUN_00bc1d40()
     color154 = *(NiColorA*)&DAT_011a9be0;
     color164 = *(NiColorA*)&DAT_011a9be0;
     flag175 = 1;
-    GetOrCreateTable();
+    BoltShader_GetSegmentIndices();
     field178 = 0;
     unsigned int count = BoltShader_GetMaxSegments();
     field060 = (ShaderVector4*)new (DAT_011f6238) unsigned char[count][sizeof(ShaderVector4)];

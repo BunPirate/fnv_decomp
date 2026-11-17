@@ -17,6 +17,7 @@ struct Holder
     Allocator* allocator;
 };
 Holder* hkMemoryRouter_getInstance();
+// pdb: class hkaAnimationPreviewColorContainer, size 0x14 (here 0x8), bases: hkReferencedObject, 1 members
 struct hkaAnimationPreviewColorContainer
 {
     unsigned int unk00;
@@ -26,6 +27,7 @@ struct hkaAnimationPreviewColorContainer
 };
 // Calls FUN_00e41e20, and if flags has bit 0 set, frees this through the allocator from FUN_00c85750 using allocationSize; returns this.
 // @fnv 0x00dfe6b0
+// pdb: hkaAnimationPreviewColorContainer::`scalar deleting destructor' | hkaAnimationPreviewColorClass.obj | retail, vtable slot, high
 hkaAnimationPreviewColorContainer* hkaAnimationPreviewColorContainer::Destroy(unsigned int flags)
 {
     ReleaseOwnedArray();

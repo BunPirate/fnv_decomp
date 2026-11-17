@@ -2,7 +2,7 @@
 // src/gamebryo2.2/corelibs/niparticle/niparticlesdm.cpp - unit created 2026-10-16 from the whole-binary attribution (360 source path: d:/_fallout3/platforms/common/code/gamebryo2.2/corelibs/niparticle/niparticlesdm.cpp).
 // Functions are listed by their @fnv annotations; compile flags inferred from the PC code.
 
-void __cdecl NiStream_UnregisterLoader(const char* pName);
+void __cdecl NiStream_UnregisterLoader(const char* pcClassName);
 void __cdecl DestroyManager();
 extern bool g_bInitialized_012024d0;
 
@@ -61,6 +61,7 @@ __declspec(selectany) extern const char g_szShutdownEnd[] = "";
 
 // @fnv 0x00c1a7d0
 // src: COMMUNITY 0x00c1a7d0
+// pdb: NiParticleSDM::Shutdown | NiParticleSDM.obj | retail, string-set bridge, high
 void __cdecl NiParticleSDM_Shutdown()
 {
     if (!g_bInitialized_012024d0)
@@ -122,7 +123,7 @@ void __cdecl NiParticleSDM_Shutdown()
 
 #include <windows.h>
 typedef void* (*S_00c1aa00_CreateFunc)();
-void FUN_00a64900(const char* pcName, S_00c1aa00_CreateFunc pfnCreate);
+void FUN_00a64900(const char* pcName, S_00c1aa00_CreateFunc pfnFunc);
 
 void* NiMeshParticleSystem_CreateObject();
 void* CreateNiMeshPSysData();
@@ -141,7 +142,7 @@ void* NiPSysCylinderEmitter_CreateObject();
 void* NiPSysData_CreateObject();
 void* NiPSysDragFieldModifier_CreateObject();
 void* NiPSysDragModifier_CreateObject();
-void* CreateNiPSysEmitterCtlrC1C5();
+void* NiPSysEmitterCtlr_CreateObject();
 void* NiPSysEmitterCtlrData_CreateObject();
 void* NiPSysEmitterDeclinationCtlr_CreateObject();
 void* NiPSysEmitterDeclinationVarCtlr_CreateObject();
@@ -183,7 +184,9 @@ DWORD DAT_012024dc;
 
 // Registers particle system class factories with FUN_00a64900 and stores the calling thread ID in DAT_012024dc.
 // @fnv 0x00c1aa00
-void RegisterParticleSystems()
+// src: XBOX_RETAIL_PDB 0x00c1aa00
+// pdb: NiParticleSDM::Init | NiParticleSDM.obj | retail, string-set bridge, high
+void NiParticleSDM_Init()
 {
     if (DAT_012024d0)
         return;
@@ -206,7 +209,7 @@ void RegisterParticleSystems()
     FUN_00a64900("NiPSysData", NiPSysData_CreateObject);
     FUN_00a64900("NiPSysDragFieldModifier", NiPSysDragFieldModifier_CreateObject);
     FUN_00a64900("NiPSysDragModifier", NiPSysDragModifier_CreateObject);
-    FUN_00a64900("NiPSysEmitterCtlr", CreateNiPSysEmitterCtlrC1C5);
+    FUN_00a64900("NiPSysEmitterCtlr", NiPSysEmitterCtlr_CreateObject);
     FUN_00a64900("NiPSysEmitterCtlrData", NiPSysEmitterCtlrData_CreateObject);
     FUN_00a64900("NiPSysEmitterDeclinationCtlr", NiPSysEmitterDeclinationCtlr_CreateObject);
     FUN_00a64900("NiPSysEmitterDeclinationVarCtlr", NiPSysEmitterDeclinationVarCtlr_CreateObject);

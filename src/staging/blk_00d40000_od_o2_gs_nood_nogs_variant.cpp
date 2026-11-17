@@ -55,6 +55,9 @@ static __forceinline void Transform(const FloatMatrix3* m, const __m128* basis, 
 
 // @fnv 0x00d4f3d0
 // src: GUESS 0x00d4f3d0 (confidence: low)
+// pdb: hkpRagdollLimitsData::setInWorldSpace | hkpRagdollLimitsData.obj | retail, object-file run extension, low
+// pdb params: bodyATransform, bodyBTransform, twistAxisW, planeAxisW
+// pdb locals: assertBuf, ostr, constraintBaseInW
 void ConstraintBasis::ComputeValues_00d4f3d0(const FloatMatrix3* a, const FloatMatrix3* b, const __m128* axisA,
                                    const __m128* axisB)
 {
@@ -77,7 +80,7 @@ struct StubHeapHolder
     void* heap;
 };
 StubHeapHolder* hkMemoryRouter_getInstance();
-void ResizeAudioStream(void* heap, void* arr, int elemSize);
+void ResizeAudioStream(void* mem, void* array, int sizeElem);
 
 template <class T> struct StubArray
 {
@@ -138,20 +141,23 @@ struct StubOwner
 {
     int unk00;
     StubBuilder* builder;
-    int UpdateState_00d52790(unsigned char flag, StubObj* obj);
+    int hkpConstraintConstructionKit_setLinearMotor(unsigned char axis, StubObj* motor);
 };
 
 // @fnv 0x00d52790
-// src: GUESS 0x00d52790 (confidence: low)
-int StubOwner::UpdateState_00d52790(unsigned char flag, StubObj* obj)
+// src: XBOX_RETAIL_PDB 0x00d52790
+// pdb: hkpConstraintConstructionKit::setLinearMotor | hkpConstraintConstructionKit.obj | retail, object-file gap fill, high
+// pdb params: axis, motor
+// pdb locals: motorData, assertBuf, ostr
+int StubOwner::hkpConstraintConstructionKit_setLinearMotor(unsigned char axis, StubObj* motor)
 {
     builder->ops.Add(0xf);
-    builder->ops.Add(flag);
+    builder->ops.Add(axis);
     int r = builder->vecs.count;
     __m128 v = _mm_setr_ps((float)builder->refs.count, 0.0f, 0.0f, 0.0f);
-    obj->Touch();
+    motor->Touch();
     builder->vecs.Add(v);
-    builder->refs.Add(obj);
+    builder->refs.Add(motor);
     StubBuilder* b = builder;
     b->unk08 += 1;
     b->unk04 += 0x50;

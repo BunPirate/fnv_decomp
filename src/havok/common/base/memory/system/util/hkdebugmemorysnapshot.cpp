@@ -60,12 +60,13 @@ struct SnapshotAllocationInfo
 };
 
 // Both snapshot call sites use this 12-byte layout; no shared snapshot header exists yet.
+// pdb: class hkDebugMemorySnapshot, size 0xc, 3 members
 class hkDebugMemorySnapshot
 {
 public:
-    hkSnapshotAddress* m_pAddressList;
+    hkSnapshotAddress* m_pointers; // src: XBOX_RETAIL_PDB +0x0 (old: m_pAddressList)
     SnapshotAllocationInfo* m_info;
-    int m_iElementCount;
+    int m_numPointers; // src: XBOX_RETAIL_PDB +0x8 (old: m_iElementCount)
 
     void FreeBuffers();
     void Sort();
@@ -77,10 +78,10 @@ void hkDebugMemorySnapshot::subtract_00dd7090(hkDebugMemorySnapshot& other)
 {
     Sort();
     other.Sort();
-    hkSnapshotAddress* a = m_pAddressList;
-    hkSnapshotAddress* aEnd = a + m_iElementCount;
-    hkSnapshotAddress* b = other.m_pAddressList;
-    hkSnapshotAddress* pBlockBEnd = b + other.m_iElementCount;
+    hkSnapshotAddress* a = m_pointers;
+    hkSnapshotAddress* aEnd = a + m_numPointers;
+    hkSnapshotAddress* b = other.m_pointers;
+    hkSnapshotAddress* pBlockBEnd = b + other.m_numPointers;
     while (a < aEnd && b < pBlockBEnd)
     {
         if (*a == *b)
@@ -109,14 +110,14 @@ template <typename T> inline void hkDeallocateChunkDD6E(T* p, int n)
 // @fnv 0x00dd6ec0
 void hkDebugMemorySnapshot::FreeBuffers()
 {
-    if (m_pAddressList)
+    if (m_pointers)
     {
-        hkDeallocateChunkDD6E(m_pAddressList, m_iElementCount);
-        hkDeallocateChunkDD6E(m_info, m_iElementCount);
+        hkDeallocateChunkDD6E(m_pointers, m_numPointers);
+        hkDeallocateChunkDD6E(m_info, m_numPointers);
     }
-    m_pAddressList = 0;
+    m_pointers = 0;
     m_info = 0;
-    m_iElementCount = 0;
+    m_numPointers = 0;
 }
 
 DebugAllocatorRouter* __cdecl hkMemoryRouter_getInstance();
@@ -147,27 +148,27 @@ inline void hkQuickSortQ(const hkSnapshotAddress** p, int size,
 // @fnv 0x00dd6f20
 void hkDebugMemorySnapshot::Sort()
 {
-    if (m_iElementCount > 1)
+    if (m_numPointers > 1)
     {
-        const hkSnapshotAddress** sorted = hkAllocateDebug<const hkSnapshotAddress*>(m_iElementCount);
-        for (int i = 0; i < m_iElementCount; i++)
+        const hkSnapshotAddress** sorted = hkAllocateDebug<const hkSnapshotAddress*>(m_numPointers);
+        for (int i = 0; i < m_numPointers; i++)
         {
-            sorted[i] = &m_pAddressList[i];
+            sorted[i] = &m_pointers[i];
         }
-        hkQuickSortQ(sorted, m_iElementCount, LessThan);
+        hkQuickSortQ(sorted, m_numPointers, LessThan);
 
-        hkSnapshotAddress* pointers = hkAllocateDebug<hkSnapshotAddress>(m_iElementCount);
-        SnapshotAllocationInfo* info = hkAllocateDebug<SnapshotAllocationInfo>(m_iElementCount);
-        for (int i = 0; i < m_iElementCount; i++)
+        hkSnapshotAddress* pointers = hkAllocateDebug<hkSnapshotAddress>(m_numPointers);
+        SnapshotAllocationInfo* info = hkAllocateDebug<SnapshotAllocationInfo>(m_numPointers);
+        for (int i = 0; i < m_numPointers; i++)
         {
             pointers[i] = *sorted[i];
-            info[i] = m_info[sorted[i] - m_pAddressList];
+            info[i] = m_info[sorted[i] - m_pointers];
         }
 
-        hkDeallocateDebug(sorted, m_iElementCount);
-        hkDeallocateDebug(m_pAddressList, m_iElementCount);
-        hkDeallocateDebug(m_info, m_iElementCount);
-        m_pAddressList = pointers;
+        hkDeallocateDebug(sorted, m_numPointers);
+        hkDeallocateDebug(m_pointers, m_numPointers);
+        hkDeallocateDebug(m_info, m_numPointers);
+        m_pointers = pointers;
         m_info = info;
     }
 }

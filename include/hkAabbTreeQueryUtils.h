@@ -8,6 +8,7 @@ class voidWriteIterator;
 
 #include "hkArray.h"
 
+// pdb: class hkAabbTreeData, size 0x1, 0 members
 class hkAabbTreeData
 {
 public:

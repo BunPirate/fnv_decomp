@@ -8,6 +8,6 @@
 // @fnv 0x0064a290
 bool NiQuaternion::operator!=(const NiQuaternion& kOther) const
 {
-    return m_fVectorX != kOther.m_fVectorX || m_fVectorY != kOther.m_fVectorY || m_fVectorZ != kOther.m_fVectorZ ||
-           m_fScalarPart != kOther.m_fScalarPart;
+    return m_fW != kOther.m_fW || m_fX != kOther.m_fX || m_fY != kOther.m_fY ||
+           m_fZ != kOther.m_fZ;
 }

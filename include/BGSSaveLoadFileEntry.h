@@ -4,6 +4,7 @@
 #include "NiAVObject.h"
 #include "NiTexture.h"
 
+// pdb: class BGSSaveLoadFileEntry, size 0x7c (here 0x44), 16 members
 class BGSSaveLoadFileEntry
 {
 public:
@@ -40,12 +41,12 @@ public:
     };
     NiPointer<NiTexture> spScreenshot;
 
-    void ReadTypedData();
+    void LoadData();
     char* GetPlayerTitle();
     NiTexture* TileImage_GetShaderProp();
     bool IsAutoSave();
-    bool IsSaveEntryValid();
-    NiTexture* ReadScreenshotFromFile();
+    bool IsCorrupt();
+    NiTexture* GetScreenshot();
     void* GetScreenshotWidth();
     void* GetScreenshotHeight();
     void* GetScreenshotOffset();

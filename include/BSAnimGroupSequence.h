@@ -10,6 +10,7 @@ class NiControllerSequenceX;
 class TESAnimGroup;
 class TESObjectREFR;
 
+// pdb: class BSAnimGroupSequence, size 0x78, bases: NiControllerSequence, 1 members
 class BSAnimGroupSequence : public NiControllerSequence
 {
   public:
@@ -27,11 +28,11 @@ class BSAnimGroupSequence : public NiControllerSequence
     bool AttachToOwner(NiAVObject* target, int argument);
     unsigned short __thiscall GetSaveSize_004efb10();
     void SaveGameTES_004efb20(float afTime);
-    void LoadGame_004efbc0(float value);
-    void SaveGameBGS_004efc90(BGSSaveFormBuffer* buffer, float value);
-    void LoadGameBGS_004efd10(BGSLoadFormBuffer* pBuffer, float fBaseTime);
+    void LoadGame_004efbc0(float afTime);
+    void SaveGame(BGSSaveFormBuffer* apSaveGameBuffer, float afTime);
+    void LoadGameBGS_004efd10(BGSLoadFormBuffer* apLoadGameBuffer, float afTime);
 
-    static bool PlayAnimSounds(NiControllerSequence*, TESObjectREFR*);
+    static bool PlaySounds(NiControllerSequence*, TESObjectREFR*);
     static bool __cdecl PlayAnimSounds(NiControllerSequenceX*, TESObjectREFR*);
     static const NiRTTI ms_kRTTI;
 

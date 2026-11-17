@@ -26,8 +26,8 @@ struct Registry_00dd9380
     void* Register(char const*, void(__cdecl*)(void));
 };
 extern int DAT_01269cd0;
-extern void* DAT_01269008;
-void RegisterContactPointsInactive();
+extern void* hkpInactiveContactPointViewer_s_tag; // src: XBOX_RETAIL_PDB 0x01269008 (old: DAT_01269008)
+void hkpInactiveContactPointViewer_registerViewer();
 // Constructor of the class whose vftables live at 0x010d1fb0 / 0x010d1f90 /
 // 0x010d1f80 / 0x010d1f70: it calls the immediate base constructor and then
 // installs the derived vftable pointers for the four base sub-objects.
@@ -49,7 +49,7 @@ struct FUN_00d68770_cls
     int m_unk24;
     int* m_pVtbl28;
 
-    void BaseConstruct(int aParam, int aFlags);
+    void BaseConstruct(int contexts, int color);
     FUN_00d68770_cls* Construct(int aParam);
 };
 void* __stdcall hkpInactiveContactPointViewer_getIslands(char* a1);
@@ -61,12 +61,12 @@ struct FnvCpu_FUN_00d687c0_CpuBlock
     unsigned short size;
     FnvCpu_FUN_00d687c0_CpuBlock* Construct(unsigned int value);
 };
-void* __cdecl hkpInactiveContactPointViewer_create(unsigned int value);
+void* __cdecl hkpInactiveContactPointViewer_create(unsigned int contexts);
 extern "C" int DAT_010d203c;
 extern "C" int DAT_010d201c;
 extern "C" int DAT_010d200c;
 extern "C" int DAT_010d1ffc;
-void __stdcall FUN_00de29b0(int a, int b);
+void __stdcall FUN_00de29b0(int contexts, int color);
 struct FUN_00d68840_cls
 {
     void* m_p00;
@@ -86,9 +86,9 @@ struct FUN_00d68840_cls
 void* __stdcall hkpActiveContactPointViewer_getIslands(void* pObject);
 // FUN_00d688f0 : tiny global getter.
 // Reads the 4-byte global at DAT_0126900c and returns it in eax.
-extern int DAT_0126900c;
+extern int hkpActiveContactPointViewer_s_tag; // src: XBOX_RETAIL_PDB 0x0126900c (old: DAT_0126900c)
 int __cdecl Runtime_GetDAT0126900c();
-extern char DAT_0126905c;
+extern char hkpConstraintInstanceSmallArraySerializeOverrideTypeClass; // src: XBOX_RETAIL_PDB 0x0126905c (old: DAT_0126905c/g_0126905c)
 void* __cdecl Object_GetGlobalObjectAddress_00d6ade0();
 struct S_00d6adf0_Obj
 {
@@ -109,7 +109,7 @@ struct VtblForwarder
     virtual int v0(int);
 };
 int __cdecl Runtime_ForwardCall_00d6aeb0(VtblForwarder* p);
-extern int DAT_01269104;
+extern int hkpWorldCinfoClass; // src: XBOX_RETAIL_PDB 0x01269104 (old: DAT_01269104/g_01269104)
 void* __cdecl Object_GetGlobalObjectAddress_00d6aee0();
 struct ResultFlag
 {
@@ -283,7 +283,7 @@ struct FUN_00d616a0_cls
     void FUN_00d616a0(int iValue);
 };
 int __stdcall FUN_00d61680(unsigned int value);
-int __stdcall Object_ForwardCall_00d616e0(unsigned int value);
+int __stdcall Object_ForwardCall_00d616e0(unsigned int other);
 int __cdecl hkString_strLen(int s);
 struct FUN_00d61700_cls
 {
@@ -318,7 +318,7 @@ struct hkMathD618
         return x > y ? x : y;
     }
 };
-void __cdecl hkArrayUtil__reserve(hkMemoryAllocator& kAlloc, void* apvArray, int aiNumElements, int iSizeElem) throw();
+void __cdecl hkArrayUtil__reserve(hkMemoryAllocator& mem, void* array, int numElem, int sizeElem) throw();
 void __cdecl hkString_memCpy(void* pvDst, const void* pvSrc, int iNumBytes) throw();
 template <class T, int N> class hkInplaceArrayD61B
 {
@@ -380,15 +380,15 @@ struct FUN_00d61df0_cls
 };
 int __cdecl hkString_strLen(const char* pcString) throw();
 void __cdecl hkString_memCpy(void* pvDst, const void* pvSrc, int iNumBytes) throw();
-void __cdecl hkArrayUtil__reserve(hkMemoryAllocator& kAlloc, void* apvArray, int aiNumElements, int iSizeElem) throw();
+void __cdecl hkArrayUtil__reserve(hkMemoryAllocator& mem, void* array, int numElem, int sizeElem) throw();
 namespace hkRouterD620 {
 extern "C" hkMemoryRouter& __cdecl hkMemoryRouter_getInstance() throw();
 }
-void __cdecl hkArrayUtil__reserve(hkMemoryAllocator& kAlloc, void* apvArray, int aiNumElements, int iSizeElem) throw();
+void __cdecl hkArrayUtil__reserve(hkMemoryAllocator& mem, void* array, int numElem, int sizeElem) throw();
 void __cdecl hkMemUtil_memCpy_00d2caa0(void* pvDst, void* pvSrc, unsigned int uiNumBytes);
 int __cdecl hkString_strLen(int value);
 void* __cdecl hkMemoryRouter_getInstance();
-void __cdecl hkArrayUtil__reserve(int value1, int value2, int value3, int value4);
+void __cdecl hkArrayUtil__reserve(int mem, int array, int numElem, int sizeElem);
 void __cdecl hkMemUtil_memCpy_00d2caa0(void* value1, unsigned int value2, unsigned int value3);
 struct D62080_Audio
 {
@@ -464,7 +464,7 @@ class hkObjectD626
 };
 struct FUN_00ddccb0_Obj
 {
-    void FUN_00ddccb0(int a1);
+    void FUN_00ddccb0(int contexts);
 };
 struct FUN_00d62ef0_cls
 {
@@ -492,7 +492,7 @@ struct HeapBlockMetadata
     unsigned short reserved;
     HeapBlockMetadata* UpdateState_00d62ef0(void* data, unsigned int enabled);
 };
-void* __cdecl AllocateRecordWithData(void* data);
+void* __cdecl hkpWorldSnapshotViewer_createPC(void* contexts);
 struct Base1_d632c0
 {
     virtual void vfn1();
@@ -505,9 +505,9 @@ struct Base2_d632c0
 };
 struct Obj_d632c0 : Base1_d632c0, Base2_d632c0
 {
-    Obj_d632c0* hkpWorldMemoryViewer_hkpWorldMemoryViewer(int a, int b);
+    Obj_d632c0* hkpWorldMemoryViewer_hkpWorldMemoryViewer(int vtlbReg, int contexts);
 };
-Base2_d632c0* hkpWorldMemoryViewer_create(int a1);
+Base2_d632c0* hkpWorldMemoryViewer_create(int contexts);
 struct hkContainerD633
 {
     int unk00;
@@ -624,9 +624,9 @@ class FUN_00d63370_class
     hkpPhysicsContext* m_iValueAtOffset0C;
     FUN_00ddf050_cls m_pStreamWriter;
 
-    void UpdatePhysicsDebugDisplay(float fFrameTime) throw();
+    void UpdatePhysicsDebugDisplay(float frameTimeInMs) throw();
 };
-extern int DAT_01268fc8;
+extern int hkpWorldMemoryViewer_m_tag; // src: XBOX_RETAIL_PDB 0x01268fc8 (old: DAT_01268fc8)
 int __cdecl Object_GetDAT_01268fc8_00d63420();
 void* __cdecl hkMemoryRouter_getInstance();
 class FUN_00d63340
@@ -673,7 +673,7 @@ class hkBaseD642 : public hkPart0D642, public hkPart8D642, public hkPart20D642
 class FUN_00ddccb0 : public hkBaseD642
 {
   public:
-    FUN_00ddccb0(void* p) throw();
+    FUN_00ddccb0(void* contexts) throw();
 };
 class hkIfaceAD642
 {
@@ -690,7 +690,7 @@ class FUN_00d64260 : public FUN_00ddccb0, public hkIfaceAD642, public hkIfaceBD6
   public:
     hkArray<void*> m_ppData;
 
-    FUN_00d64260(void* p) throw();
+    FUN_00d64260(void* contexts) throw();
     virtual ~FUN_00d64260() throw();
     virtual void p8();
     virtual void p20();
@@ -703,9 +703,9 @@ struct FnvCpu_FUN_00d645f0_CpuBlock
 {
     unsigned int unk00;
     unsigned short size;
-    FnvCpu_FUN_00d645f0_CpuBlock* FUN_00d64260(unsigned int value);
+    FnvCpu_FUN_00d645f0_CpuBlock* FUN_00d64260(unsigned int contexts);
 };
-void* __cdecl hkpSweptTransformDisplayViewer_create(unsigned int value);
+void* __cdecl hkpSweptTransformDisplayViewer_create(unsigned int contexts);
 struct FUN_00d65250_cls
 {
     int unk00;
@@ -891,11 +891,11 @@ struct hkpTransformCollapseUtilResultsD734
     int m_iThirdResult;
     int m_iFourthResult;
 
-    void PrintResults() throw();
+    void hkpTransformCollapseUtil_Results_report() throw();
 };
 struct FnvCpu_FUN_00d76d80_CpuTarget
 {
-    void ProcessEntries_00d81340();
+    void hkgpConvexHullImpl_getOrientedBoundingBox();
 };
 struct FnvCpu_FUN_00d76d80_CpuOwner
 {
@@ -936,7 +936,7 @@ namespace hkRouterD619 {
 extern "C" hkMemoryRouter& __cdecl hkMemoryRouter_getInstance() throw();
 }
 
-void __cdecl ResizeAudioStream(hkMemoryAllocator& kAlloc, void* pArray, int iElemSize);
+void __cdecl ResizeAudioStream(hkMemoryAllocator& mem, void* array, int sizeElem);
 template <class T> __forceinline void constructWithCopyD619(T* p, int n, const T& t)
 {
     for (int i = 0; i < n; i++)
@@ -1043,7 +1043,7 @@ void __cdecl ArrayReserveImpl(void*, void*, int, int);
 namespace hkRouterD61F {
 extern "C" hkMemoryRouter& __cdecl hkMemoryRouter_getInstance() throw();
 }
-void __cdecl hkArrayUtil__reserve(hkMemoryAllocator& kAlloc, void* apvArray, int aiNumElements, int iSizeElem) throw();
+void __cdecl hkArrayUtil__reserve(hkMemoryAllocator& mem, void* array, int numElem, int sizeElem) throw();
 namespace hkRouterD62 {
 extern "C" hkMemoryRouter& __cdecl hkMemoryRouter_getInstance() throw();
 }
@@ -1104,7 +1104,7 @@ struct Node
 void __cdecl AssignNodeFlags(Node** nodes, int count, unsigned seed);
 struct FUN_00d7e740_cls
 {
-    int hkgpConvexHullImpl_generateIndexedFaces_unsigned_char_unsigned_short(int iArg0, int iArg1, bool iFlag, int iArg2);
+    int hkgpConvexHullImpl_generateIndexedFaces_unsigned_char_unsigned_short(int vpf, int vi, bool useSourceIndex, int maximizeArea);
 };
 struct FUN_00d76c20_cls
 {
@@ -1117,7 +1117,7 @@ struct FUN_00d76c20_cls
 
 
 
-void __cdecl hkArrayUtil__reserve(hkMemoryAllocator& alloc, void* array, int numElem, int sizeElem) throw();
+void __cdecl hkArrayUtil__reserve(hkMemoryAllocator& mem, void* array, int numElem, int sizeElem) throw();
 int __cdecl hkString_strLen(const char* s) throw();
 
 class InlineStorageString
@@ -1171,14 +1171,17 @@ class InlineStorageString
     }
 
     void FUN_00d61b80(const InlineStorageString* other) throw();
-    void FUN_00d61cc0() throw();
-    int FindSubstring(const char* needle, int startIndex, int endIndex) const throw();
-    void FUN_00d62080(const char* s, int len) throw();
+    void hkStringBuf_clear() throw();
+    int FindSubstring(const char* s, int startIndex, int endIndex) const throw();
+    void hkStringBuf_append(const char* s, int len) throw();
     int hkStringBuf_replace(const char* from, const char* to, int rtype);
 };
 
 // @fnv 0x00d62190
 // src: HAVOK_LIB 0x00d62190
+// pdb: hkStringBuf::replace | hkStringBuf.obj | debug, call graph, medium
+// pdb params: from, to, rtype
+// pdb locals: tmpStr
 int InlineStorageString::hkStringBuf_replace(const char* from, const char* to, int rtype)
 {
     int fromLen = hkString_strLen(from);
@@ -1187,7 +1190,7 @@ int InlineStorageString::hkStringBuf_replace(const char* from, const char* to, i
     if (toLen > fromLen)
     {
         InlineStorageString orig(*this);
-        FUN_00d61cc0();
+        hkStringBuf_clear();
         int startIndex = 0;
         int index = orig.FindSubstring(from, 0, 0x7fffffff);
         if (index >= 0)
@@ -1195,15 +1198,15 @@ int InlineStorageString::hkStringBuf_replace(const char* from, const char* to, i
             replaced = 1;
             do
             {
-                FUN_00d62080(orig.cString() + startIndex, index - startIndex);
-                FUN_00d62080(to, toLen);
+                hkStringBuf_append(orig.cString() + startIndex, index - startIndex);
+                hkStringBuf_append(to, toLen);
                 startIndex = index + fromLen;
                 if (rtype == 0)
                     break;
                 index = orig.FindSubstring(from, startIndex, 0x7fffffff);
             } while (index >= 0);
         }
-        FUN_00d62080(orig.cString() + startIndex, orig.getLength() - startIndex);
+        hkStringBuf_append(orig.cString() + startIndex, orig.getLength() - startIndex);
     }
     else
     {

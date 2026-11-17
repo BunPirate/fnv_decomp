@@ -24,30 +24,34 @@ public:
 
     PackageEventActionData_packagedatapatrol();
     void Clear();
-    void CopyFrom(PackageEventActionData_packagedatapatrol* apCopy);
-    bool IsDifferentFrom(PackageEventActionData_packagedatapatrol* apParam);
+    void Copy(PackageEventActionData_packagedatapatrol* apCopy);
+    bool Compare(PackageEventActionData_packagedatapatrol* apCompare);
     void Save(int aeChunk);
     void* GetScript();
     void InitItem(TESForm* owner);
-    void InitItem(int item);
+    void InitItem(int apOwner);
     void Load(TESFile* file);
 };
 
 // Writes the two bytes at offsets 4 and 5 of this object into the save buffer via SaveData.
 // @fnv 0x0067c5e0
+// pdb: TESPatrolPackageData::SaveGame | PackageDataPatrol.obj | retail, vtable slot, high
+// pdb params: apSaveGameBuffer
 void TESPatrolPackageData::SaveToBuffer(BGSSaveFormBuffer* apSaveGameBuffer)
 {
-    apSaveGameBuffer->SaveData(&m_bPrimaryComparisonFlag, 1, 0);
-    apSaveGameBuffer->SaveData(&m_bSecondaryComparisonFlag, 1, 0);
+    apSaveGameBuffer->SaveData(&bRepeatable, 1, 0);
+    apSaveGameBuffer->SaveData(&bStartingLocationAtLinkedRef, 1, 0);
 }
 
 
 // Reads two single bytes from the load buffer into the object at offsets 4 and 5.
 // @fnv 0x0067c620
+// pdb: TESPatrolPackageData::LoadGame | PackageDataPatrol.obj | retail, upstream name already matches, high
+// pdb params: apLoadGameBuffer
 void __thiscall TESPatrolPackageData::LoadGame(BGSLoadFormBuffer* apLoadGameBuffer)
 {
-    apLoadGameBuffer->ReadTypedData(static_cast<void*>(&m_bPrimaryComparisonFlag), 1);
-    apLoadGameBuffer->ReadTypedData(static_cast<void*>(&m_bSecondaryComparisonFlag), 1);
+    apLoadGameBuffer->ReadTypedData(static_cast<void*>(&bRepeatable), 1);
+    apLoadGameBuffer->ReadTypedData(static_cast<void*>(&bStartingLocationAtLinkedRef), 1);
 }
 
 struct FUN_0067c650_shell
@@ -59,6 +63,7 @@ struct FUN_0067c650_shell
 
 // Initializes f to 0.0f and constructs the action data.
 // @fnv 0x0067c650
+// pdb: PatrolRefData::PatrolRefData | PackageDataPatrol.obj | debug, call graph, high
 FUN_0067c650_shell::FUN_0067c650_shell() : f(0.0f), sub()
 {}
 
@@ -68,6 +73,7 @@ struct FUN_0067c670_shell
 };
 
 // @fnv 0x0067c670
+// pdb: PatrolRefData::~PatrolRefData | PackageDataPatrol.obj | debug, object-file gap fill, medium
 void FUN_0067c670_shell::CallNestedMethod()
 {
     reinterpret_cast<PackageEventActionData_packagedatapatrol*>(reinterpret_cast<char*>(this) + 4)->Clear();
@@ -92,6 +98,8 @@ struct S6450 : Base6450
 // Calls FUN_0067ad20, stores a pointer to DAT_010689e4 at offset 0 and copies v.a and v.b into bytes at offsets 4 and 5, then returns this.
 // @fnv 0x0067c450
 // src: EXE 0x0067c450
+// pdb: TESPatrolPackageData::TESPatrolPackageData | PackageDataPatrol.obj | debug, object-file gap fill, medium
+// pdb params: aPatrolData
 S6450* __thiscall S6450::TESPatrolPackageData_TESPatrolPackageData(Param6450 aParams)
 {
     FUN_0067ad20();
@@ -108,6 +116,8 @@ struct FUN_0067c690_t
     FUN_0067c690_t(void* p);
 };
 // @fnv 0x0067c690
+// pdb: PatrolRefData::PatrolRefData | PackageDataPatrol.obj | debug, object-file gap fill, medium
+// pdb params: aData
 FUN_0067c690_t::FUN_0067c690_t(void* apValue)
     : m_fPatrolValue(*static_cast<float*>(apValue)), sub()
 {}
@@ -120,10 +130,12 @@ struct Target0067c6f0
 };
 // @fnv 0x0067c6f0
 // src: COMMUNITY 0x0067c6f0
+// pdb: PatrolRefData::PatrolRefData | PackageDataPatrol.obj | retail, object-file run extension, low
+// pdb note: debug build links it to PatrolRefData::Copy
 void Target0067c6f0::PatrolRefData_Copy(Target0067c6f0* apSource)
 {
     f = apSource->f;
-    c.CopyFrom(&apSource->c);
+    c.Copy(&apSource->c);
 }
 
 struct FUN_0067c720_shell
@@ -134,9 +146,11 @@ struct FUN_0067c720_shell
 };
 // @fnv 0x0067c720
 // src: XBOX_PDB 0x0067c720
+// pdb: PatrolRefData::Compare | PackageDataPatrol.obj | retail, upstream name already matches, high
+// pdb params: apCompare
 bool FUN_0067c720_shell::PatrolRefData_Compare(const FUN_0067c720_shell* apCompare)
 {
-    if (reinterpret_cast<PackageEventActionData_packagedatapatrol*>(reinterpret_cast<char*>(this) + 4)->IsDifferentFrom(
+    if (reinterpret_cast<PackageEventActionData_packagedatapatrol*>(reinterpret_cast<char*>(this) + 4)->Compare(
             reinterpret_cast<PackageEventActionData_packagedatapatrol*>(reinterpret_cast<char*>(const_cast<FUN_0067c720_shell*>(apCompare)) + 4)))
         return true;
     if (m_fPatrolValue != apCompare->m_fPatrolValue)
@@ -150,22 +164,25 @@ struct FUN_0067c6c0_shell
     char pad[4];
     MagicCaster caster;
     PackageEventActionData_packagedatapatrol action;
-    void PatrolRefData_InitItem(int item);
+    void PatrolRefData_InitItem(int apOwner);
 };
 
 // @fnv 0x0067c6c0
 // src: XBOX_PDB 0x0067c6c0
-void FUN_0067c6c0_shell::PatrolRefData_InitItem(int item)
+// pdb: PatrolRefData::InitItem | PackageDataPatrol.obj | debug, upstream name already matches, high
+// pdb params: apOwner
+void FUN_0067c6c0_shell::PatrolRefData_InitItem(int apOwner)
 {
     caster.SetSelectedMagicItem(3);
-    reinterpret_cast<PackageEventActionData_packagedatapatrol*>(reinterpret_cast<char*>(this) + 4)->InitItem(item);
+    reinterpret_cast<PackageEventActionData_packagedatapatrol*>(reinterpret_cast<char*>(this) + 4)->InitItem(apOwner);
 }
 
 extern "C" void* __cdecl memset(void* dest, int value, unsigned int count);
+// pdb: class Date, size 0x4, 2 members
 struct Date
 {
-    unsigned char b;
-    unsigned short pad;
+    unsigned char sDate; // src: XBOX_RETAIL_PDB +0x0 (old: b)
+    unsigned short sYear; // src: XBOX_RETAIL_PDB +0x2 (old: pad)
     ~Date();
 };
 bool __cdecl TESForm_QEndianSwapOnSave();
@@ -173,11 +190,13 @@ void __cdecl AppendChunk(unsigned int id, void* p, unsigned int size);
 
 // @fnv 0x0067c570
 // src: XBOX_PDB 0x0067c570
+// pdb: TESPatrolPackageData::Save | PackageDataPatrol.obj | retail, vtable slot, high
+// pdb locals: patrolData
 void TESPatrolPackageData::Save_0067c570()
 {
     unsigned char patrolData[2];
     memset(patrolData, 0, 2);
-    patrolData[0] = m_bPrimaryComparisonFlag;
+    patrolData[0] = bRepeatable;
     if (TESForm_QEndianSwapOnSave())
         ((Date*)patrolData)->Date::~Date();
     AppendChunk(0x54504b50, patrolData, 2);
@@ -186,6 +205,7 @@ void TESPatrolPackageData::Save_0067c570()
 }
 
 // @fnv 0x0067c490
+// pdb: TESPatrolPackageData::~TESPatrolPackageData | PackageDataPatrol.obj | debug, upstream name already matches, high
 TESPatrolPackageData::~TESPatrolPackageData()
 {}
 
@@ -200,14 +220,17 @@ PackageEventActionData_packagedatapatrol::PackageEventActionData_packagedatapatr
 
 // @fnv 0x0067c500
 // src: XBOX_PDB 0x0067c500
+// pdb: TESPatrolPackageData::Compare | PackageDataPatrol.obj | retail, vtable slot, high
+// pdb params: apCompare
+// pdb locals: pcomp
 bool TESPatrolPackageData::Compare_0067c500(TESPackageData* apCompare)
 {
     TESPatrolPackageData* pcomp = dynamic_cast<TESPatrolPackageData*>(apCompare);
     if (!pcomp)
         return true;
-    if (m_bPrimaryComparisonFlag != pcomp->m_bPrimaryComparisonFlag)
+    if (bRepeatable != pcomp->bRepeatable)
         return true;
-    if (m_bSecondaryComparisonFlag != pcomp->m_bSecondaryComparisonFlag)
+    if (bStartingLocationAtLinkedRef != pcomp->bStartingLocationAtLinkedRef)
         return true;
     return false;
 }
@@ -215,12 +238,15 @@ bool TESPatrolPackageData::Compare_0067c500(TESPackageData* apCompare)
 // Copies the two boolean fields from a TESPatrolPackageData source into this TESPatrolPackageData instance.
 // @fnv 0x0067c4b0
 // src: XBOX_PDB 0x0067c4b0
+// pdb: TESPatrolPackageData::Copy | PackageDataPatrol.obj | retail, vtable slot, high
+// pdb params: apCopy
+// pdb locals: pcopy
 void TESPatrolPackageData::Copy_0067c4b0(TESPackageData* apCopy)
 {
     TESPatrolPackageData* pcopy;
     pcopy = dynamic_cast<TESPatrolPackageData*>(apCopy);
     if (!pcopy)
         return;
-    m_bPrimaryComparisonFlag = pcopy->m_bPrimaryComparisonFlag;
-    m_bSecondaryComparisonFlag = pcopy->m_bSecondaryComparisonFlag;
+    bRepeatable = pcopy->bRepeatable;
+    bStartingLocationAtLinkedRef = pcopy->bStartingLocationAtLinkedRef;
 }

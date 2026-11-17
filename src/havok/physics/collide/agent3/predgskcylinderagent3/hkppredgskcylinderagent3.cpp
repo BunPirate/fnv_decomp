@@ -73,7 +73,7 @@ struct Node
     short unk06;
     int unk08;
     int unk0c;
-    Node* Init(void* p1, void* p2, float val);
+    Node* Init(void* vertexA, void* vertexB, float val);
 };
 
 struct ExtendedRecord : FNVTypeRecord
@@ -104,7 +104,7 @@ struct __declspec(align(16)) FNVResult
 
 struct ExtendedFlags : FNVFlags
 {
-    void Init(void* p1, void* p2, void* p3);
+    void Init(void* shapeA, void* shapeB, void* aTb);
 };
 
 struct __declspec(align(16)) LocalSource
@@ -147,6 +147,9 @@ struct __declspec(align(16)) LocalSource
 
 // Copies the source, wraps flagged slots in new nodes, runs the flags init and FUN_00d41930, restores old objects, and returns result.val.
 // @fnv 0x00d40be0
+// pdb: separatingDistanceUsingCapsuleRepresentations | hkpPredGskCylinderAgent3.obj | retail, object-file run extension, low
+// pdb params: input, entry, agentData
+// pdb locals: inputLocal, originalCdBodiesLocal, cdBodiesLocal, emptyCache, temporaryCdBodiesLocal, isReplacedWithCapsuleLocal, checkForCapsuleSeparatingDistance
 float __cdecl ComputeExtendedResult(LocalSource* source, void* apArg, FNVFlags* apFlags)
 {
     LocalSource local_source;
@@ -283,15 +286,17 @@ void __fastcall FUN_00c905b0(void* selfVal);
 // For k in 0..1, if vals[k] is non-null, calls FUN_00c905b0 on **slots[k] and then stores vals[k] into *slots[k].
 // @fnv 0x00d409d0
 // src: HAVOK_LIB 0x00d409d0
-static __declspec(noinline) void restoreOriginalShapesInCdBodies(void** apValues, void** slots)
+// pdb: restoreOriginalShapesInCdBodies | hkpPredGskCylinderAgent3.obj | retail, upstream name already matches, high
+// pdb params: cdBodies, originalCdBodies
+static __declspec(noinline) void restoreOriginalShapesInCdBodies(void** cdBodies, void** originalCdBodies)
 {
     for (int k = 0; k < 2; k++)
     {
-        if (apValues[k] != 0)
+        if (cdBodies[k] != 0)
         {
-            void* obj = slots[k];
+            void* obj = originalCdBodies[k];
             FUN_00c905b0(*(void**)*(void**)obj);
-            *(void**)slots[k] = apValues[k];
+            *(void**)originalCdBodies[k] = cdBodies[k];
         }
     }
 }
@@ -350,7 +355,7 @@ struct D40A10Node
     short unk06;
     int unk08;
     int unk0c;
-    D40A10Node* FUN_00d22590(float* p1, float* p2, float val);
+    D40A10Node* FUN_00d22590(float* vertexA, float* vertexB, float val);
 };
 
 struct D40A10Entry
@@ -370,14 +375,16 @@ struct D40A10Entry
 // For i in 0..1: if a[i] is set, builds a node via FUN_00d22590 into out[i], saves the object's old record in b[i] and replaces it with out[i]; else b[i] = 0.
 // @fnv 0x00d40a10
 // src: HAVOK_LIB 0x00d40a10
-static __declspec(noinline) void replaceCylindersWithCapsulesInCdBodies(int* a, FNVTypeRecord** apRecords, FNVObject** apObjects,
-                                              D40A10Entry* out)
+// pdb: replaceCylindersWithCapsulesInCdBodies | hkpPredGskCylinderAgent3.obj | retail, upstream name already matches, high
+// pdb params: cdBodies, isReplacedWithCapsule, temporaryCdBodies, originalCdBodies
+static __declspec(noinline) void replaceCylindersWithCapsulesInCdBodies(int* cdBodies, FNVTypeRecord** isReplacedWithCapsule, FNVObject** temporaryCdBodies,
+                                              D40A10Entry* originalCdBodies)
 {
-    FNVObject**& list = apObjects;
-    D40A10Entry*& dst = out;
+    FNVObject**& list = temporaryCdBodies;
+    D40A10Entry*& dst = originalCdBodies;
     for (int i = 0; i < 2; ++dst, ++i)
     {
-        if (a[i] != 0)
+        if (cdBodies[i] != 0)
         {
             D40A10Shape* shape = (D40A10Shape*)list[i]->record->unknown0;
             D40A10Node* node = (D40A10Node*)((D40A10Holder*)hkMemoryRouter_getInstance())->heap().allocate(0x40);
@@ -388,12 +395,12 @@ static __declspec(noinline) void replaceCylindersWithCapsulesInCdBodies(int* a, 
             new (dst) D40A10Entry(list[i]->record, list[i]->record->unknown8);
             dst->m_node = pResult;
             dst->m_uiEdgeIndex = -1;
-            apRecords[i] = list[i]->record;
+            isReplacedWithCapsule[i] = list[i]->record;
             list[i]->record = (FNVTypeRecord*)dst;
         }
         else
         {
-            apRecords[i] = 0;
+            isReplacedWithCapsule[i] = 0;
         }
     }
 }

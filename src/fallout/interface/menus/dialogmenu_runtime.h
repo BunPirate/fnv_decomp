@@ -9,6 +9,7 @@ class MediaSet;
 void* operator new(unsigned int) throw();
 void operator delete(void*) throw();
 extern "C" int sprintf_s(char*, unsigned int, const char*, ...);
+// pdb: class TaskQueueInterface, size 0x10 (here 0x1), 4 members
 class TaskQueueInterface
 {
   public:
@@ -38,7 +39,7 @@ extern int DAT_011d9504;
 
 class BGSImpactDataSet;
 
-int ComputeWeightedValue(float, float, int);
+int GamePlayFormulas_GetSpeechChallengeChance(float, float, int);
 
 struct DialogMenuConditionFunction
 {
@@ -47,6 +48,7 @@ struct DialogMenuConditionFunction
     ActorValue::Index actorValue;
 };
 
+// pdb: class MenuTopic, size 0x2c, 12 members
 class MenuTopic
 {
   public:
@@ -75,12 +77,12 @@ class TopicMenuController
     bool SelectTopic(bool);
     bool AdvanceTopic();
     bool DialogMenu_SetClickedMenuItem(int);
-    bool ShouldSkipTopic(MenuTopic*);
+    bool MenuTopicManager_DoSpeechChallengeCheck(MenuTopic*);
     bool Initialize(MobileObjectView*, TESTopic*);
     bool ActiveEffect_IsActive();
-    void AddHeadIfNotNull(BSSimpleList<MenuTopic*>*);
-    void RunTopicResultScript();
-    void UpdateTopicList();
+    void MenuTopicManager_PushTopicList(BSSimpleList<MenuTopic*>*);
+    void ProcessCurrentTopic();
+    void MenuTopicManager_LoadNextTopicList();
     static void IncrementMiscStat(int);
 };
 class Date;

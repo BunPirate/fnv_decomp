@@ -13,6 +13,7 @@ class MoveVec;
 class Output052;
 class OutputValue;
 
+// pdb: class CombatProcedureMove, size 0x7c, bases: CombatProcedure, 15 members
 class CombatProcedureMove : public CombatProcedure
 {
 public:
@@ -29,10 +30,10 @@ public:
         MoveVec Position();
         void Set(const MoveVec&, int);
         void BGSWorldLocation_SaveGame(void* buffer);
-        void BGSLoadGameBuffer_LoadBGSWorldLocation(void* buffer);
+        void BGSWorldLocation_LoadGame(void* buffer);
     };
 
-    CombatProcedureMove(MoveInput* input, float speed, unsigned int flags);
+    CombatProcedureMove(MoveInput* apCombatLocation, float afTargetRadius, unsigned int aiLocation);
     virtual ~CombatProcedureMove();
 
     virtual void Unk04();
@@ -42,8 +43,8 @@ public:
     virtual void d11();
     virtual void d12();
     virtual int GetType();
-    virtual void SaveGame(BGSSaveFormBuffer* apBuffer);
-    virtual void LoadGame(BGSLoadFormBuffer* apBuffer);
+    virtual void SaveGame(BGSSaveFormBuffer* apSaveGameBuffer);
+    virtual void LoadGame(BGSLoadFormBuffer* apLoadGameBuffer);
     virtual void vf16();
 
     void FUN_009d6ba0();
@@ -51,15 +52,15 @@ public:
     void Update_009d6ca0();
     void UpdateCombatMovement();
     void ClearTargetRef(TESObjectREFR* apRef);
-    void PrintDebugInfo(DebugDisplay* display, int x, int y);
+    void PrintDebugInfo(DebugDisplay* apDebugText, int aeLocation, int aeJustify);
     void StartedPlanning();
     void FinishedPlanning();
-    void SaveGame_009d8880(BGSSaveFormBuffer* buffer);
-    void LoadGame_009d89a0(BGSLoadFormBuffer* buffer);
-    void InitLoadGame_009d8ad0(unsigned int value);
+    void SaveGame_009d8880(BGSSaveFormBuffer* apSaveGameBuffer);
+    void LoadGame_009d89a0(BGSLoadFormBuffer* apLoadGameBuffer);
+    void InitLoadGame_009d8ad0(unsigned int apLoadGameBuffer);
     float GetHidingTime();
     void UpdateOutput(OutputValue* output);
-    bool UpdateMovementRequest(Output052* output);
+    bool CreatePath(Output052* arspAvoidNodeArray);
 
     MoveRef* Actor();
     MoveRef* Target();
@@ -72,21 +73,21 @@ public:
     void Reset();
     void Avoid(MoveRequest*);
 
-    unsigned int unk10;
+    unsigned int eState; // src: XBOX_RETAIL_PDB +0x10 (old: unk10)
     Location startTransform;
-    Location currentTransform;
-    float rate;
-    unsigned int target38;
-    unsigned int mode;
-    TimeoutTimer pos40;
-    NiPoint3 pos48;
-    bool active54;
+    Location CurrentDestination; // src: XBOX_RETAIL_PDB +0x24 (old: currentTransform)
+    float fTargetRadius; // src: XBOX_RETAIL_PDB +0x34 (old: rate)
+    unsigned int pTargetRef; // src: XBOX_RETAIL_PDB +0x38 (old: target38)
+    unsigned int iLocation; // src: XBOX_RETAIL_PDB +0x3c (old: mode)
+    TimeoutTimer HidingTimer; // src: XBOX_RETAIL_PDB +0x40 (old: pos40)
+    NiPoint3 LookAtPosition; // src: XBOX_RETAIL_PDB +0x48 (old: pos48)
+    bool bReservedSecondaryLocation; // src: XBOX_RETAIL_PDB +0x54 (old: active54)
     unsigned char unk55[3];
-    GO state58;
-    bool active5C;
+    GO spQueuedPathingRequest; // src: XBOX_RETAIL_PDB +0x58 (old: state58)
+    bool bHasQueuedPathingRequest; // src: XBOX_RETAIL_PDB +0x5c (old: active5C)
     unsigned char unk5D[3];
-    int unk60;
-    TimeoutTimer state64;
-    TimeoutTimer state6C;
-    TimeoutTimer state74;
+    int iCurrentNode; // src: XBOX_RETAIL_PDB +0x60 (old: unk60)
+    TimeoutTimer CoveredMoveSearchTimer; // src: XBOX_RETAIL_PDB +0x64 (old: state64)
+    TimeoutTimer CheckCoverTimer; // src: XBOX_RETAIL_PDB +0x6c (old: state6C)
+    TimeoutTimer CheckDestinationTimer; // src: XBOX_RETAIL_PDB +0x74 (old: state74)
 };

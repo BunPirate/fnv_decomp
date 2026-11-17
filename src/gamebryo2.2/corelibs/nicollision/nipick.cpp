@@ -12,7 +12,10 @@
 #include "../../../../include/NiStream.h"
 
 // @fnv 0x00e98b40
-void NiPick::Results::InvokeCallbacks()
+// src: XBOX_RETAIL_PDB 0x00e98b40
+// pdb: NiPick::Results::SortResults | NiPick.obj | retail, call graph, high
+// pdb locals: i, pRecord0, j, pRecord1
+void NiPick::Results::SortResults()
 {
     for (unsigned int i = 0; i < m_uiValidCount; ++i)
     {
@@ -20,7 +23,7 @@ void NiPick::Results::InvokeCallbacks()
         for (unsigned int j = i + 1; j < m_uiValidCount; ++j)
         {
             Record* other = GetAt(j);
-            if (other->m_fHitDistance < record->m_fHitDistance)
+            if (other->m_fDistance < record->m_fDistance)
             {
                 SetAt(j, record);
                 SetAt(i, other);
@@ -31,33 +34,39 @@ void NiPick::Results::InvokeCallbacks()
 }
 
 // @fnv 0x00e98e20
+// pdb: NiPick::PickObjects | NiPick.obj | retail, object-file run extension, low
+// pdb params: kOrigin, kDir, bAppend
+// pdb locals: bRet
 bool NiPick::PerformPick(const NiPoint3& origin, const NiPoint3& direction, bool append)
 {
     if (!append)
         resultGrow = 0;
     if (!NiPickIntersections::FindIntersections(origin, direction, *this, GetRoot()) || !resultGrow)
         return false;
-    if (sortType != NO_SORT && intersectType != BOUND_INTERSECT && resultGrow > 1)
+    if (m_eSortType != NO_SORT && m_eIntersectType != BOUND_INTERSECT && resultGrow > 1)
     {
-        if (pickType == FIND_ALL)
-            reinterpret_cast<Results*>(&resultVtable)->InvokeCallbacks();
+        if (m_ePickType == FIND_ALL)
+            reinterpret_cast<Results*>(&m_pickResults)->SortResults();
         else
-            reinterpret_cast<Results*>(&resultVtable)->FindHighestPriorityCallback();
+            reinterpret_cast<Results*>(&m_pickResults)->FindClosest();
     }
     return true;
 }
 
 // Destructor for NiPick that calls Clear on the object's member.
 // @fnv 0x00e98fa0
+// pdb: NiPick::~NiPick | NiPick.obj | retail, upstream name already matches, high
 NiPick::~NiPick()
 {
-    reinterpret_cast<Results*>(&resultVtable)->Clear();
-    if (root)
-        static_cast<NiAVObject*>(root)->NiObjectNET::DecRefCount();
+    reinterpret_cast<Results*>(&m_pickResults)->Clear();
+    if (m_spRoot)
+        static_cast<NiAVObject*>(m_spRoot)->NiObjectNET::DecRefCount();
 }
 
 // Releases each record's two referenced objects, deallocates the records, then frees the base array.
 // @fnv 0x00e98e90
+// pdb: NiPick::Results::~Results | NiPick.obj | retail, object-file run extension, low
+// pdb locals: ui
 void NiPick::Results::Clear() throw()
 {
     m_ppVirtualMethodTable = DAT_010f16ec;
@@ -66,10 +75,10 @@ void NiPick::Results::Clear() throw()
         Record* record = m_pBase[i];
         if (record)
         {
-            if (record->m_pParentNode.m_pObject)
-                record->m_pParentNode.m_pObject->NiObjectNET::DecRefCount();
-            if (record->m_pReferencedObject.m_pObject)
-                record->m_pReferencedObject.m_pObject->NiObjectNET::DecRefCount();
+            if (record->m_spProxyParent.m_pObject)
+                record->m_spProxyParent.m_pObject->NiObjectNET::DecRefCount();
+            if (record->m_spObject.m_pObject)
+                record->m_spObject.m_pObject->NiObjectNET::DecRefCount();
             g_memoryManager.Deallocate(record);
         }
     }
@@ -79,6 +88,8 @@ void NiPick::Results::Clear() throw()
 
 // Calls Clear, then frees this object through g_memoryManager when free is set, and returns this.
 // @fnv 0x00e98fd0
+// pdb: NiPick::ClearResultsArray | NiPick.obj | debug, object-file run extension, low
+// pdb params: bDeallocateRecords
 void* __fastcall DestroyPickResults(NiPick::Results* results, void*, bool free)
 {
     results->Clear();
@@ -100,6 +111,7 @@ struct FUN_00e99300_shell
 // Increments DAT_0126fa60 and, when the previous value was zero, registers InitNiStreamCallbacks and FUN_00e99260 via FUN_00aa2080; returns this.
 // @fnv 0x00e99300
 // src: COMMUNITY 0x00e99300
+// pdb: NiCollisionSDM::NiCollisionSDM | NiCollisionSDM.obj | retail, upstream name already matches, high
 void* __thiscall FUN_00e99300_shell::NiCollisionSDM_NiCollisionSDM()
 {
     void* result = this;
@@ -126,16 +138,16 @@ void __cdecl NiHalfSpaceBV_HalfSpaceHalfSpaceTestIntersect();
 void __cdecl NiHalfSpaceBV_HalfSpaceTriTestIntersect();
 void __cdecl NiHalfSpaceBV_HalfSpaceSphereFindIntersect();
 void __cdecl NiHalfSpaceBV_HalfSpaceBoxFindIntersect();
-void __cdecl SweepCapsuleAgainstHalf();
+void __cdecl NiHalfSpaceBV_HalfSpaceCapsuleFindIntersect();
 void __cdecl IntersectPlanes();
 void __cdecl NiHalfSpaceBV_HalfSpaceTriFindIntersect();
-void __cdecl CreateBoundingVolumeAndCall();
+void __cdecl NiHalfSpaceBV_CreateFromStream();
 struct D_00e9e980;
 bool __cdecl NiUnionBV_UnionOtherTestIntersect(float, D_00e9e980*, void*, void*, void*);
-void __cdecl FindMatchingItemPair();
+void __cdecl NiUnionBV_UnionUnionTestIntersect();
 void __cdecl NiUnionBV_UnionTriTestIntersect();
-void __cdecl FindItemByPredicate();
-void __cdecl FindMatchingPair();
+void __cdecl NiUnionBV_UnionOtherFindIntersect();
+void __cdecl NiUnionBV_UnionUnionFindIntersect();
 void __cdecl NiUnionBV_UnionTriFindIntersect();
 void __cdecl NiUnionBV_CreateFromStream();
 void __cdecl NiCapsuleBV_CapsuleSphereFindIntersect();
@@ -144,10 +156,10 @@ void __cdecl SweepSphereAgainstCapsule();
 void __cdecl IsCapsuleSweptHit();
 void __cdecl CapsuleTriangleIntersect();
 void __cdecl NiCapsuleBV_CapsuleTriFindIntersect();
-void __cdecl CreateObjWithArg();
+void __cdecl NiCapsuleBV_CreateFromStream();
 void __cdecl NiBoxBV_BoxBoxTestIntersect();
 void __cdecl NiBoxBV_BoxCapsuleTestIntersect();
-void __cdecl IntersectsTriangle();
+void __cdecl NiBoxBV_BoxTriTestIntersect();
 void __cdecl NiBoxBV_BoxSphereFindIntersect();
 void __cdecl NiBoxBV_BoxCapsuleFindIntersect();
 void __cdecl NiBoxBV_BoxTriFindIntersect();
@@ -168,14 +180,16 @@ extern PFN DAT_0126fa88;
 extern PFN DAT_0126fa8c;
 extern PFN DAT_0126fa90;
 extern PFN* DAT_0126fa94;
-extern PFN* DAT_0126fa98;
-extern PFN* DAT_0126fa9c;
-extern PFN* DAT_0126faa0;
+extern PFN* NiBoundingVolume_ms_pfnFindFuncTable; // src: XBOX_RETAIL_PDB 0x0126fa98 (old: DAT_0126fa98)
+extern PFN* NiBoundingVolume_ms_pfnTriTestFuncTable; // src: XBOX_RETAIL_PDB 0x0126fa9c (old: DAT_0126fa9c)
+extern PFN* NiBoundingVolume_ms_pfnTriFindFuncTable; // src: XBOX_RETAIL_PDB 0x0126faa0 (old: DAT_0126faa0)
 extern PFN DAT_0126faa4;
 extern PFN DAT_0126faa8;
 extern PFN DAT_0126faac;
 
 // @fnv 0x00e98ff0
+// pdb: NiCollisionSDM::Init | NiCollisionSDM.obj | retail, object-file run extension, low
+// pdb locals: pFTF, uiSize, pFIF, pTIF, pTTF, uiSizeSqr
 void __cdecl InitNiStreamCallbacks()
 {
     if (DAT_0126fa5c)
@@ -183,8 +197,8 @@ void __cdecl InitNiStreamCallbacks()
     DAT_0126fa5c = true;
     NiStream::RegisterObjectLoader(g_0126fab4_arg0, Runtime_CreateNode);
     DAT_0126fa80 = NiRegisterBVStream;
-    DAT_0126fa84 = CreateObjWithArg;
-    DAT_0126fa90 = CreateBoundingVolumeAndCall;
+    DAT_0126fa84 = NiCapsuleBV_CreateFromStream;
+    DAT_0126fa90 = NiHalfSpaceBV_CreateFromStream;
     DAT_0126fa88 = ReadObjB0;
     DAT_0126fa7c = (PFN)NiSphereBV_CreateFromStream;
     DAT_0126fa8c = NiUnionBV_CreateFromStream;
@@ -218,7 +232,7 @@ void __cdecl InitNiStreamCallbacks()
     a[25] = (PFN)NiUnionBV_UnionOtherTestIntersect;
     a[26] = (PFN)NiUnionBV_UnionOtherTestIntersect;
     a[27] = 0;
-    a[28] = FindMatchingItemPair;
+    a[28] = NiUnionBV_UnionUnionTestIntersect;
     a[29] = (PFN)NiUnionBV_UnionOtherTestIntersect;
     a[30] = NiHalfSpaceBV_HalfSpaceSphereTestIntersect;
     a[31] = IsIntersectingFogPlane;
@@ -252,22 +266,22 @@ void __cdecl InitNiStreamCallbacks()
     b[21] = 0;
     b[22] = 0;
     b[23] = 0;
-    b[24] = FindItemByPredicate;
-    b[25] = FindItemByPredicate;
-    b[26] = FindItemByPredicate;
-    b[27] = FindItemByPredicate;
-    b[28] = FindMatchingPair;
-    b[29] = FindItemByPredicate;
+    b[24] = NiUnionBV_UnionOtherFindIntersect;
+    b[25] = NiUnionBV_UnionOtherFindIntersect;
+    b[26] = NiUnionBV_UnionOtherFindIntersect;
+    b[27] = NiUnionBV_UnionOtherFindIntersect;
+    b[28] = NiUnionBV_UnionUnionFindIntersect;
+    b[29] = NiUnionBV_UnionOtherFindIntersect;
     b[30] = NiHalfSpaceBV_HalfSpaceSphereFindIntersect;
     b[31] = NiHalfSpaceBV_HalfSpaceBoxFindIntersect;
-    b[32] = SweepCapsuleAgainstHalf;
+    b[32] = NiHalfSpaceBV_HalfSpaceCapsuleFindIntersect;
     b[33] = 0;
     b[34] = 0;
     b[35] = IntersectPlanes;
 
     PFN* pTableC = (PFN*)_NiMalloc(0x18);
     pTableC[0] = SphereTriangleSweepTest;
-    pTableC[1] = IntersectsTriangle;
+    pTableC[1] = NiBoxBV_BoxTriTestIntersect;
     pTableC[2] = CapsuleTriangleIntersect;
     pTableC[3] = 0;
     pTableC[4] = NiUnionBV_UnionTriTestIntersect;
@@ -282,9 +296,9 @@ void __cdecl InitNiStreamCallbacks()
     pTableD[5] = NiHalfSpaceBV_HalfSpaceTriFindIntersect;
 
     DAT_0126fa94 = a;
-    DAT_0126fa98 = b;
-    DAT_0126fa9c = pTableC;
-    DAT_0126faa0 = pTableD;
+    NiBoundingVolume_ms_pfnFindFuncTable = b;
+    NiBoundingVolume_ms_pfnTriTestFuncTable = pTableC;
+    NiBoundingVolume_ms_pfnTriFindFuncTable = pTableD;
     DAT_0126faa4 = (PFN)NiCollisionConvert_ConvertToSphereBV_Fast;
     DAT_0126faa8 = (PFN)NiCollisionConvert_ConvertToSphereBV_Safe;
     DAT_0126faac = NiCollisionConvert_ConvertToBoxBV;
@@ -296,6 +310,7 @@ struct NiStreamUnreg
 };
 // @fnv 0x00e99260
 // src: COMMUNITY 0x00e99260
+// pdb: NiCollisionSDM::Shutdown | NiCollisionSDM.obj | retail, upstream name already matches, high
 void __cdecl NiCollisionSDM_Shutdown()
 {
     if (DAT_0126fa5c)
@@ -309,13 +324,13 @@ void __cdecl NiCollisionSDM_Shutdown()
         DAT_0126fa7c = 0;
         DAT_0126fa8c = 0;
         NiFree(DAT_0126fa94);
-        NiFree(DAT_0126fa98);
-        NiFree(DAT_0126fa9c);
-        NiFree(DAT_0126faa0);
+        NiFree(NiBoundingVolume_ms_pfnFindFuncTable);
+        NiFree(NiBoundingVolume_ms_pfnTriTestFuncTable);
+        NiFree(NiBoundingVolume_ms_pfnTriFindFuncTable);
         DAT_0126fa94 = 0;
-        DAT_0126fa98 = 0;
-        DAT_0126fa9c = 0;
-        DAT_0126faa0 = 0;
+        NiBoundingVolume_ms_pfnFindFuncTable = 0;
+        NiBoundingVolume_ms_pfnTriTestFuncTable = 0;
+        NiBoundingVolume_ms_pfnTriFindFuncTable = 0;
         DAT_0126faa4 = 0;
         DAT_0126faa8 = 0;
         DAT_0126faac = 0;
@@ -323,7 +338,10 @@ void __cdecl NiCollisionSDM_Shutdown()
 }
 
 // @fnv 0x00e98be0
-void NiPick::Results::FindHighestPriorityCallback()
+// src: XBOX_RETAIL_PDB 0x00e98be0
+// pdb: NiPick::Results::FindClosest | NiPick.obj | retail, call graph, high
+// pdb locals: pRecordClosest, uiClosest, i, pRecordTest, bTestIsCloser
+void NiPick::Results::FindClosest()
 {
     if (m_uiValidCount)
     {
@@ -332,7 +350,7 @@ void NiPick::Results::FindHighestPriorityCallback()
         unsigned int uiLowestIndex = 0;
         for (unsigned int i = uiLowestIndex + 1; i < m_uiValidCount; i++)
         {
-            if (m_pBase[i]->m_fHitDistance < pLowestPriority->m_fHitDistance)
+            if (m_pBase[i]->m_fDistance < pLowestPriority->m_fDistance)
             {
                 pLowestPriority = m_pBase[i];
                 uiLowestIndex = i;
@@ -397,22 +415,25 @@ class PickRecordPool
         return uiIndex;
     }
 
-    PooledPickRecord* GetTexture(int iParam);
+    PooledPickRecord* GetTexture(int pObject);
 };
 
 // Returns the next PooledPickRecord from the pool, reusing an existing slot or allocating a new one when the pool is exhausted.
 // @fnv 0x00e99330
-PooledPickRecord* PickRecordPool::GetTexture(int iParam)
+// pdb: NiPick::Results::AddNew | NiCollisionTraversals.obj | retail, call graph (shared callers), high
+// pdb params: pObject
+// pdb locals: pkRecord
+PooledPickRecord* PickRecordPool::GetTexture(int pObject)
 {
     if (m_uiNext < m_usSize)
     {
         PooledPickRecord* pkTexture = m_pBase[m_uiNext];
-        pkTexture->SetObject(iParam);
+        pkTexture->SetObject(pObject);
         m_uiNext++;
         return pkTexture;
     }
 
-    PooledPickRecord* pkTexture = new PooledPickRecord(iParam);
+    PooledPickRecord* pkTexture = new PooledPickRecord(pObject);
     Add(pkTexture);
     m_uiNext++;
     return pkTexture;

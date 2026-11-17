@@ -102,6 +102,7 @@ MemoryManager* MemoryManager_GetSingleton()
 | `CRT_LIB` | A byte-identical function in the Visual C++ 2008 runtime or zlib 1.2.1 |
 | `COMMUNITY` | Community projects such as xNVSE and JIP LN (names only, never their code) |
 | `XBOX_PDB` | Debug symbols from an Xbox 360 development build |
+| `XBOX_RETAIL_PDB`, `XBOX_DEBUG_PDB` | The program databases of two Xbox 360 development builds (the retail build of Aug 22, 2010 and a debug build of Aug 15, 2010), linked to the PC address as [PDB_NAMES.md](PDB_NAMES.md) describes |
 | `GAMEBRYO_SRC`, `HAVOK_SRC`, `HAVOK_PDB` | Gamebryo or Havok source code or symbols (names and layouts only, never copied code) |
 | `GUESS` | No source has a name: a best guess from what the code does (its strings, the functions it calls and that call it, the fields it uses). Treat it as a description, not the original name |
 

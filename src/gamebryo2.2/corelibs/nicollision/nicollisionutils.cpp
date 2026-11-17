@@ -15,12 +15,15 @@ inline NiPoint3 NiPoint3::operator+(const NiPoint3& p) const
     return NiPoint3(x + p.x, y + p.y, z + p.z);
 }
 
-inline NiPoint3 NiPoint3::Cross(const NiPoint3& p) const
+inline NiPoint3 NiPoint3::Cross(const NiPoint3& pt) const
 {
-    return NiPoint3(y * p.z - z * p.y, z * p.x - x * p.z, x * p.y - y * p.x);
+    return NiPoint3(y * pt.z - z * pt.y, z * pt.x - x * pt.z, x * pt.y - y * pt.x);
 }
 
 // @fnv 0x00eadb90
+// pdb: NiCollisionUtils::IntersectTriangle | NiCollisionUtils.obj | retail, call graph, medium
+// pdb params: kOrigin, kDir, kV1, kV2, kV3, bCull, kIntersect, r, s, t
+// pdb locals: kEdge2, fTolerance, fDet, kPt, kEdge1, inv_det, q, kS
 bool RayTriangleIntersector::IntersectRayTriangle(const NiPoint3& aOrigin, const NiPoint3& aDirection,
                                                   const NiPoint3& aVertex0, const NiPoint3& aVertex1,
                                                   const NiPoint3& aVertex2, bool cull, NiPoint3& hit, float& t,

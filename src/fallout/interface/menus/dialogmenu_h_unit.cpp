@@ -10,5 +10,5 @@ int DialogMenu::GetClass()
 void DialogMenu::AssignTileByID(int id, Tile* tile)
 {
     if (id >= 0 && id < 4)
-        m_pTiles[id] = tile;
+        pTiles[id] = tile;
 }

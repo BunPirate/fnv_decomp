@@ -20,6 +20,7 @@ typedef hkBool hkBool_S;
 
 // Havok's debug-display singleton: forwards every draw request to the registered handlers (m_kDebugDisplayHandlers).
 // Method names: HAVOK_SRC where lower-case, our names where capitalised; non-virtual, so their order here is free.
+// pdb: class hkDebugDisplay, size 0x18, bases: hkReferencedObject, hkSingleton<hkDebugDisplay>, 2 members
 class hkDebugDisplay : public hkReferencedObject, public hkSingleton<hkDebugDisplay>  // src: HAVOK_SRC (class)
 {
     friend class hkSingleton<hkDebugDisplay>;
@@ -56,12 +57,12 @@ public:
 
     // immediate-mode primitives (world space, then the model-space forms)
     void DisplayPoint(const hkVector4_S& kAt, int iRgba, int iId, int iTag);
-    void DisplayLine(const hkVector4_S& kFrom, const hkVector4_S& kTo, int iRgba, int iId, int iTag);
+    void DisplayLine(const hkVector4_S& start, const hkVector4_S& end, int color, int id, int tag);
     void RenderLine(const hkVector4_S& kFrom, const hkVector4_S& kDir, int iRgba, int iId, int iTag);
     void displayRay(const hkVector4_S& kFrom, const hkVector4_S& kDir, int iRgba, int iId, int iTag);
     void displayStar(const hkVector4_S& kAt, hkReal_S fSize, int iRgba, int iId, int iTag);
     void DisplayPlane(const hkVector4_S& kPlane, const hkVector4_S& kOffset, hkReal_S fSize, int iRgba, int iId, int iTag);
-    void DisplayTriangle(const hkVector4_S& kA, const hkVector4_S& kB, const hkVector4_S& kC, int iRgba, int iId, int iTag);
+    void DisplayTriangle(const hkVector4_S& kA, const hkVector4_S& b, const hkVector4_S& kC, int color, int id, int tag);
     void displayLitTriangle(const hkVector4_S& kA, const hkVector4_S& kB, const hkVector4_S& kC, int iRgba);
     void displayLineModelSpace(const hkTransform_S& kModelToWorld, const hkVector4_S& kFrom, const hkVector4_S& kTo, int iRgba, int iId, int iTag);
     void displayLineModelSpace(const hkQsTransform_S& kModelToWorld, const hkVector4_S& kFrom, const hkVector4_S& kTo, int iRgba, int iId, int iTag);
@@ -85,6 +86,6 @@ public:
     void DisplayBehaviorGraph(hkArray<int>& kWordVars, hkArray<int>& kWordStack, hkArray<int>& kQuadVars, hkArray<hkVector4_S>& kQuadStack,
         hkArray<char*>& kNodes, hkArray<int>& kStates, hkArray<int>& kTransitions, hkArray<hkQsTransform_S>& kPoses);
 
-    hkArray<hkDebugDisplayHandler*> m_kDebugDisplayHandlers;
-    mutable PhysicsSimulationContext* m_pPhysicsSimulationContext;
+    hkArray<hkDebugDisplayHandler*> m_debugDisplayHandlers; // src: XBOX_RETAIL_PDB +0x8 (old: m_kDebugDisplayHandlers)
+    mutable PhysicsSimulationContext* m_arrayLock; // src: XBOX_RETAIL_PDB +0x14 (old: m_pPhysicsSimulationContext)
 };

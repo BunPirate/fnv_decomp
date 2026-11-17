@@ -8,6 +8,7 @@ class NiSourceTexture;
 class NiControllerManager;
 class NiControllerSequence;
 
+// pdb: class BlackJackMenu, size 0xe70, bases: Menu, 40 members
 class BlackJackMenu : public Menu
 {
 public:
@@ -160,11 +161,11 @@ public:
     void* __thiscall DestroyIfFlagged(unsigned int flags);
     char __thiscall BlackJackMenu_HasTiles();
     int GetAdjustedValue(int value);
-    bool LoadCardDeckResources();
-    void InitBlackjackScene();
+    bool InitCasinoData();
+    void Prepare3DElements();
     void HandleAction(int action, void* tile);
     void UpdateButtonState(int button);
-    void UpdateTileText();
+    void UpdateEarningsString();
     void DealInitialCards();
     int DrawCard(void* hand, bool useSkill, bool split);
     int DrawCard(CardHand* hand, bool useSkill, bool split);

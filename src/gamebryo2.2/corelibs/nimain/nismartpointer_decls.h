@@ -21,6 +21,7 @@ class WaitableObject
     void NiRefObject_IncRefCount();
 };
 
+// pdb: class KFModel, size 0x14 (here 0x1), 5 members
 class KFModel
 {
   public:
@@ -28,6 +29,7 @@ class KFModel
     void KFModel_IncRefCount();
 };
 
+// pdb: class LoadedFile, size 0x10 (here 0x1), bases: NiMemObject, 5 members
 class LoadedFile
 {
   public:
@@ -63,7 +65,7 @@ class KFModelLookup
   public:
     void* unknown;
     KFModelLookupTable* table;
-    KFModel* Lookup(const char* key);
+    KFModel* ModelLoader_FindKFModel(const char* apFilename);
 };
 
 class NiGPUProgramOwner

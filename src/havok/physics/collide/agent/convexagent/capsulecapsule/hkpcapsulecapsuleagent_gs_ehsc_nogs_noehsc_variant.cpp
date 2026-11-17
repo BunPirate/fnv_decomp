@@ -30,7 +30,7 @@ struct FUN_00d3b3d0_Class
 typedef void(__cdecl* HandlerFn)();
 void __cdecl hkpCapsuleCapsuleAgent_createCapsuleCapsuleAgent();
 void __cdecl hkpCapsuleCapsuleAgent_staticGetPenetrations();
-void __cdecl UpdateFields_00d3bd80();
+void __cdecl staticGetClosestPoints();
 void __cdecl Object_ProcessEntries_00daf8e0();
 struct HandlerSet
 {
@@ -43,10 +43,10 @@ struct HandlerSet
 };
 struct Registry
 {
-    void AppendRecordAndRegisterAgents(HandlerSet* apHandlers, int aiFirst, int aiSecond);
+    void AppendRecordAndRegisterAgents(HandlerSet* f, int typeA, int typeB);
 };
-void __cdecl RegisterHandlers(Registry* apRegistry);
-void __cdecl hkpCapsuleCapsuleAgent_staticGetPenetrations(const void* a, const void* b, const void* c, void* d);
+void __cdecl hkpCapsuleCapsuleAgent_registerAgent(Registry* dispatcher);
+void __cdecl hkpCapsuleCapsuleAgent_staticGetPenetrations(const void* bodyA, const void* bodyB, const void* input, void* collector);
 struct D3B6D0Agent
 {
     virtual void ForwardToHandler(const void* a, const void* b, const void* c, void* d);
@@ -143,7 +143,10 @@ template <class T> struct LazyPtr
 };
 // @fnv 0x00d3b420
 // src: XBOX_PDB 0x00d3b420
-void __cdecl hkpCapsuleCapsuleAgent_staticGetPenetrations(Capsule* pFirst, Capsule* pSecond, void* pUnused, HitHandler* pHandler)
+// pdb: hkpCapsuleCapsuleAgent::staticGetPenetrations | hkpCapsuleCapsuleAgent.obj | retail, upstream name already matches, high
+// pdb params: bodyA, bodyB, input, collector
+// pdb locals: result, pB, dA, pA, dB
+void __cdecl hkpCapsuleCapsuleAgent_staticGetPenetrations(Capsule* bodyA, Capsule* bodyB, void* input, HitHandler* collector)
 {
     ProfilerTls* pTls = (ProfilerTls*)TlsGetValue(DAT_0126835c);
     char* pCur = pTls->unk04;
@@ -157,13 +160,13 @@ void __cdecl hkpCapsuleCapsuleAgent_staticGetPenetrations(Capsule* pFirst, Capsu
     }
 
     // The point arrays of both capsules and the transform matrices.
-    const float* pSrc = pFirst->unk00;
-    const float* pSrc2 = pSecond->unk00;
+    const float* pSrc = bodyA->unk00;
+    const float* pSrc2 = bodyB->unk00;
 
     // --- the transform matrix of the first capsule ---
     // The rows are kept rotated: row 0 ends up in the last slot.
     MatSlots mat;
-    const MatRow* m = (const MatRow*)pFirst->unk08;
+    const MatRow* m = (const MatRow*)bodyA->unk08;
     const unsigned int* s = (const unsigned int*)m;
     unsigned int* d = (unsigned int*)&mat;
     mat.m3.c0 = m[0].c0;
@@ -203,7 +206,7 @@ void __cdecl hkpCapsuleCapsuleAgent_staticGetPenetrations(Capsule* pFirst, Capsu
     }
 
     // --- the transform matrix of the second capsule ---
-    m = (const MatRow*)pSecond->unk08;
+    m = (const MatRow*)bodyB->unk08;
     const unsigned int* s2 = (const unsigned int*)m;
     unsigned int* d2 = (unsigned int*)&mat;
     mat.m2.c0 = m[0].c0;
@@ -251,7 +254,7 @@ void __cdecl hkpCapsuleCapsuleAgent_staticGetPenetrations(Capsule* pFirst, Capsu
     float t = pSrc[4] + pSrc2[4];
     if (hit.distSq < t * t)
     {
-        pHandler->slot04(pFirst, pSecond);
+        collector->slot04(bodyA, bodyB);
     }
 
     // --- leave the profiler ---
@@ -299,18 +302,21 @@ struct TransformOutput
 void __cdecl hkCollideCapsuleUtilManifoldCapsVsCaps(const void*, float, const void*, float, TransformOutput*);
 // @fnv 0x00d3b6f0
 // src: XBOX_PDB 0x00d3b6f0
-static __declspec(noinline) void getThreeClosestPointsInl(Capsule* first, TransformOutput* dst, Context* context, Capsule* second)
+// pdb: getThreeClosestPointsInl | hkpCapsuleCapsuleAgent.obj | retail, upstream name already matches, high
+// pdb params: bodyA, bodyB, input, points
+// pdb locals: pB, pA
+static __declspec(noinline) void getThreeClosestPointsInl(Capsule* bodyA, TransformOutput* bodyB, Context* input, Capsule* points)
 {
-    const float* nodeA = first->unk00;
-    float scaleValue = context->scale;
-    dst->rows[0][7] = scaleValue;
-    dst->rows[1][7] = scaleValue;
-    dst->rows[2][7] = scaleValue;
-    const float* nodeB = second->unk00;
+    const float* nodeA = bodyA->unk00;
+    float scaleValue = input->scale;
+    bodyB->rows[0][7] = scaleValue;
+    bodyB->rows[1][7] = scaleValue;
+    bodyB->rows[2][7] = scaleValue;
+    const float* nodeB = points->unk00;
     Vec4 resultA[2], resultB[2];
     {
         MatRow row0, row1, row2, row3;
-        const MatRow* m = (const MatRow*)first->unk08;
+        const MatRow* m = (const MatRow*)bodyA->unk08;
         row0.c0 = m[0].c0;
         row0.c1 = m[0].c1;
         row0.c2 = m[0].c2;
@@ -342,7 +348,7 @@ static __declspec(noinline) void getThreeClosestPointsInl(Capsule* first, Transf
     }
     {
         MatRow row0, row1, row2, row3;
-        const MatRow* m = (const MatRow*)second->unk08;
+        const MatRow* m = (const MatRow*)points->unk08;
         row3.c0 = m[0].c0;
         row3.c1 = m[0].c1;
         row3.c2 = m[0].c2;
@@ -372,7 +378,7 @@ static __declspec(noinline) void getThreeClosestPointsInl(Capsule* first, Transf
             *((__m128*)resultB + i) = _mm_add_ps(_mm_add_ps(y, x), _mm_add_ps(z, r3));
         }
     }
-    hkCollideCapsuleUtilManifoldCapsVsCaps(resultA, nodeA[4], resultB, nodeB[4], dst);
+    hkCollideCapsuleUtilManifoldCapsVsCaps(resultA, nodeA[4], resultB, nodeB[4], bodyB);
 }
 Context* volatile contextSource;
 Capsule* volatile firstSource;
@@ -478,17 +484,20 @@ struct MyCallback
     virtual void invoke(unsigned short id, int unk);
 };
 
-extern "C" void __cdecl hkCollideCapsuleUtilManifoldCapsVsCaps(const Vec4* verticesA, float radiusA, const Vec4* verticesB, float radiusB,
-                                     PointResult* results);
+extern "C" void __cdecl hkCollideCapsuleUtilManifoldCapsVsCaps(const Vec4* capsAPointsIn, float capsARadius, const Vec4* capsBPoints, float capsBRadius,
+                                     PointResult* points);
 
 struct Agent : FUN_00d3b3d0_Class
 {
-    void hkpCapsuleCapsuleAgent_processCollision(const CdBody* bodyA, const CdBody* bodyB, const CollisionInput* input, Collector* collector);
+    void hkpCapsuleCapsuleAgent_processCollision(const CdBody* bodyA, const CdBody* bodyB, const CollisionInput* input, Collector* result);
 };
 
 // @fnv 0x00d3c060
 // src: HAVOK_SRC 0x00d3c060
-void Agent::hkpCapsuleCapsuleAgent_processCollision(const CdBody* bodyA, const CdBody* bodyB, const CollisionInput* input, Collector* collector)
+// pdb: hkpCapsuleCapsuleAgent::processCollision | hkpCapsuleCapsuleAgent.obj | retail, upstream name already matches, high
+// pdb params: bodyA, bodyB, input, result
+// pdb locals: points, assertBuf, ostr
+void Agent::hkpCapsuleCapsuleAgent_processCollision(const CdBody* bodyA, const CdBody* bodyB, const CollisionInput* input, Collector* result)
 {
     ProfilerTls* ms = (ProfilerTls*)TlsGetValue(DAT_0126835c);
     {
@@ -598,7 +607,7 @@ void Agent::hkpCapsuleCapsuleAgent_processCollision(const CdBody* bodyA, const C
 
     hkCollideCapsuleUtilManifoldCapsVsCaps(contacts.verticesA, capA->m_fSphereRadius, (const Vec4*)scratch.endpoints, capB->m_fSphereRadius, contacts.results);
 
-    Collector* output = collector;
+    Collector* output = result;
     PointResult* res = contacts.results;
     unsigned short* contactId = &this->unk0C;
     for (int i = 3; i != 0; --i)

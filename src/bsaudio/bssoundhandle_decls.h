@@ -4,6 +4,7 @@
 
 class NiColor;
 
+// pdb: class SystemColorManager, size 0x10 (here 0x1), 2 members
 class SystemColorManager
 {
   public:

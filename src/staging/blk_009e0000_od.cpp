@@ -23,6 +23,7 @@ struct FUN_009f91b0 : TESPackage
 };
 
 // @fnv 0x009f91b0
+// pdb: TrespassPackage::TrespassPackage | TrespassPackage.obj | debug, call graph, medium
 FUN_009f91b0::FUN_009f91b0()
 {
     *reinterpret_cast<float*>(reinterpret_cast<char*>(this) + 0x80) = 0.0f;
@@ -40,6 +41,7 @@ struct FUN_009e9c10
 };
 
 // @fnv 0x009e9c10
+// pdb: NiTPrimitiveArray<Actor *>::~NiTPrimitiveArray<Actor *> | DetailedActorPathHandler.obj | debug, object-file gap fill, medium
 void FUN_009e9c10::Call()
 {
     SetVtableAndProcessState_009e9c30();
@@ -52,13 +54,15 @@ struct FUN_009f2970_Class
     void* m_iWordAt00;
     void* m_iWordAt04;
     void* m_8;
-    void GuardActorPackageData_SetTarget(void* arg);
+    void GuardActorPackageData_SetTarget(void* apActor);
 };
 // @fnv 0x009f2970
 // src: COMMUNITY 0x009f2970
-void FUN_009f2970_Class::GuardActorPackageData_SetTarget(void* arg)
+// pdb: GuardActorPackageData::SetWarnedActor | GuardPackage.obj | debug, call graph, high
+// pdb params: apActor
+void FUN_009f2970_Class::GuardActorPackageData_SetTarget(void* apActor)
 {
-    m_8 = arg;
+    m_8 = apActor;
     ((TESObjectREFR*)m_8)->TESObjectREFR_SetTargeted(true);
 }
 
@@ -71,6 +75,7 @@ struct FUN_009f61b0
 };
 // Sets the vtable pointer to DAT_01093614 and calls ResetAndWrite with 0, 0.
 // @fnv 0x009f61b0
+// pdb: BSSimpleArray<SandBoxChoiceListItem,1024>::BSSimpleArray<SandBoxChoiceListItem,1024> | SandBoxPackage.obj | debug, object-file run extension, low
 FUN_009f61b0::FUN_009f61b0()
 {
     vtbl = &DAT_01093614;
@@ -84,10 +89,12 @@ struct GlobalObject_00869f00
 };
 struct FUN_009f61e0 : GlobalObject_00869f00
 {
-    void Init();
+    void BSSimpleArray_SandBoxChoiceListItem_1024_dtor();
 };
 // @fnv 0x009f61e0
-void FUN_009f61e0::Init()
+// src: XBOX_DEBUG_PDB 0x009f61e0
+// pdb: BSSimpleArray<SandBoxChoiceListItem,1024>::~BSSimpleArray<SandBoxChoiceListItem,1024> | SandBoxPackage.obj | debug, call graph (shared callers), high
+void FUN_009f61e0::BSSimpleArray_SandBoxChoiceListItem_1024_dtor()
 {
     *(void**)this = &DAT_01093614;
     Clear(true);
@@ -103,6 +110,7 @@ struct FUN_009e9a20_Class
 
 // Calls FUN_009e9980, then frees this via Deallocate when flags has bit 1 set, and returns this.
 // @fnv 0x009e9a20
+// pdb: BSSimpleArray<DetailedActorPathHandler::ActorAvoidanceData,1024>::`scalar deleting destructor' | DetailedActorPathHandler.obj | retail, vtable slot, high
 void* FUN_009e9a20_Class::FUN_009e9a20(unsigned int flags)
 {
     FUN_009e9980();
@@ -182,6 +190,7 @@ struct FUN_009f29a0 : ActorPackageData
 };
 // Initializes the package data fields to null.
 // @fnv 0x009f29a0
+// pdb: PatrolActorPackageData::PatrolActorPackageData | PatrolPackage.obj | debug, call graph, low
 FUN_009f29a0::FUN_009f29a0()
 {
     m_iWordAt04 = 0;
@@ -194,24 +203,27 @@ void* __cdecl FUN_00ec7230(char* dst, const char* src, unsigned int len);
 
 struct FUN_009f8fa0_Class
 {
-    void CopyElements(char* dst, char* src, unsigned int count);
+    void CopyElements(char* apDestAddr, char* apSrcAddr, unsigned int aiCount);
 };
 
 // Copies count elements of 0x34 bytes from src to dst, iterating forward when dst < src and backward otherwise to handle overlap.
 // @fnv 0x009f8fa0
-void FUN_009f8fa0_Class::CopyElements(char* apDest, char* apSource, unsigned int count)
+// pdb: BSSimpleArray<SpectatorThreatInfo,1024>::_MoveItems | SpectatorPackage.obj | debug, call graph, high
+// pdb params: apDestAddr, apSrcAddr, aiCount
+// pdb locals: i
+void FUN_009f8fa0_Class::CopyElements(char* apDestAddr, char* apSrcAddr, unsigned int aiCount)
 {
-    if (count <= 0)
+    if (aiCount <= 0)
         return;
-    if (apDest < apSource)
+    if (apDestAddr < apSrcAddr)
     {
-        for (unsigned int i = 0; i < count; ++i)
-            FUN_00ec7230(apDest + i * 0x34, apSource + i * 0x34, 0x34);
+        for (unsigned int i = 0; i < aiCount; ++i)
+            FUN_00ec7230(apDestAddr + i * 0x34, apSrcAddr + i * 0x34, 0x34);
     }
-    else if (apDest > apSource)
+    else if (apDestAddr > apSrcAddr)
     {
-        for (int i = (int)count - 1; i >= 0; --i)
-            FUN_00ec7230(apDest + i * 0x34, apSource + i * 0x34, 0x34);
+        for (int i = (int)aiCount - 1; i >= 0; --i)
+            FUN_00ec7230(apDestAddr + i * 0x34, apSrcAddr + i * 0x34, 0x34);
     }
 }
 
@@ -222,12 +234,13 @@ struct FUN_009f90f0_Class
     unsigned int m_iThirdValue;
     virtual ~FUN_009f90f0_Class();
     virtual unsigned int Write(unsigned int);
-    void ProcessEntries_009f8de0(unsigned int, unsigned int);
+    void BSSimpleArray_SpectatorThreatInfo_1024__ConstructItems(unsigned int, unsigned int);
     void BSSimpleArray_SpectatorThreatInfo_1024_Initialize(unsigned int requested, unsigned int savedSize);
 };
 
 // @fnv 0x009f90f0
 // src: COMMUNITY 0x009f90f0
+// pdb: BSSimpleArray<SpectatorThreatInfo,1024>::_DeallocateBuffer | SpectatorPackage.obj | debug, object-file run extension, low
 void FUN_009f90f0_Class::BSSimpleArray_SpectatorThreatInfo_1024_Initialize(unsigned int uiRequestedSize, unsigned int savedSize)
 {
     m_iWordAt04 = 0;
@@ -244,7 +257,7 @@ void FUN_009f90f0_Class::BSSimpleArray_SpectatorThreatInfo_1024_Initialize(unsig
     }
     if (savedSize > 0)
     {
-        ProcessEntries_009f8de0(m_iWordAt04, savedSize);
+        BSSimpleArray_SpectatorThreatInfo_1024__ConstructItems(m_iWordAt04, savedSize);
         m_8 = savedSize;
     }
 }
@@ -342,6 +355,7 @@ struct GlobalObject_009e9bb0
 
 // Calls Call(), then deallocates this when flags has bit 0 set, and returns this.
 // @fnv 0x009e9be0
+// pdb: NiTPrimitiveArray<Actor *>::`scalar deleting destructor' | DetailedActorPathHandler.obj | debug, vtable slot, medium
 void* GlobalObject_009e9bb0::ReleaseIfFlagged(unsigned int flags)
 {
     Call();
@@ -354,6 +368,7 @@ extern int DAT_01092930;
 
 // @fnv 0x009e9c30
 // src: GUESS 0x009e9c30 (confidence: low)
+// pdb: NiTArray<Actor *,NiTMallocInterface<Actor *> >::~NiTArray<Actor *,NiTMallocInterface<Actor *> > | DetailedActorPathHandler.obj | debug, object-file gap fill, medium
 void FUN_009e9c10::SetVtableAndProcessState_009e9c30()
 {
     *(void**)this = &DAT_01092930;
@@ -369,6 +384,7 @@ struct FUN_009e9c60_Class : FUN_009e9c10
 
 // Calls FUN_009e9c30, then deallocates this when flags has bit 0 set, and returns this.
 // @fnv 0x009e9c60
+// pdb: NiTArray<Actor *,NiTMallocInterface<Actor *> >::`scalar deleting destructor' | DetailedActorPathHandler.obj | debug, vtable slot, medium
 void* FUN_009e9c60_Class::FUN_009e9c60(unsigned int flags)
 {
     SetVtableAndProcessState_009e9c30();
@@ -486,6 +502,8 @@ struct S_009eb8a0_Cls
 };
 // @fnv 0x009eb8a0
 // src: COMMUNITY 0x009eb8a0
+// pdb: Crime::ShouldCrimeBeRemoved | AlarmPackage.obj | retail, upstream name already matches, high
+// pdb locals: idate, bflag, plist, bdead, pact
 bool S_009eb8a0_Cls::Crime_ShouldCrimeBeRemoved()
 {
     int now4 = (DAT_011de7b8.FUN_00867d20() << 9) | DAT_011de7b8.FUN_00867d60() | (DAT_011de7b8.Calendar_GetYear() << 13);
@@ -610,6 +628,7 @@ struct FUN_009edbc0 : TESPackage
 };
 
 // @fnv 0x009edbc0
+// pdb: DialoguePackage::DialoguePackage | DialoguePackage.obj | debug, call graph, medium
 FUN_009edbc0::FUN_009edbc0()
 {
     unka8 = 0;
@@ -654,6 +673,7 @@ struct FUN_009f0900_cls : ActorPackageData
 };
 
 // @fnv 0x009f0900
+// pdb: DialoguePackage::~DialoguePackage | DialoguePackage.obj | retail, object-file run extension, low
 FUN_009f0900_cls::FUN_009f0900_cls()
 {
     ((SpawnedMember*)&this->m_10)->SpawnedMember::SpawnedMember();
@@ -667,7 +687,7 @@ FUN_009f0900_cls::FUN_009f0900_cls()
 class CoverSearchRequest : public PathingRequest
 {
   public:
-    void SetDestination(const NiPoint3& kPos);
+    void SetDestination(const NiPoint3& apRef);
 
     unsigned char coverData[0x3C];
 };
@@ -678,7 +698,7 @@ class PathResult9F6
     int unk00;
 };
 
-void __cdecl FindNearbyTriangles(CoverSearchRequest* pkRequest, PathResult9F6* pkResult);
+void __cdecl Pathing_GetCoverPoints(CoverSearchRequest* apRequest, PathResult9F6* apReturnArray);
 
 class Pather9F6
 {
@@ -697,13 +717,15 @@ class Pather9F6
 
 // Builds a pathing request from start/end points, cell and world, sets a 1000.0 center radius, and runs it into m_kResult.
 // @fnv 0x009f6830
+// pdb: SearchPackage::FindCoverToSearch | SearchPackage.obj | debug, object-file gap fill, medium
+// pdb params: apPoint, apDest, apCell, pworld
 void Pather9F6::BuildPathRequest(NiPoint3 kStart, NiPoint3 kEnd, TESObjectCELL* pkCell,
                                  TESWorldSpace* pkWorld)
 {
     m_kRequest.SetOrigin(&PathingLocation(kStart, pkCell, pkWorld));
     m_kRequest.SetDestination(kEnd);
     m_kRequest.SetCenterRadius(1000.0f);
-    FindNearbyTriangles(&m_kRequest, &m_kResult);
+    Pathing_GetCoverPoints(&m_kRequest, &m_kResult);
 }
 
 struct GameReference
@@ -986,13 +1008,16 @@ struct ReferenceLinkController
     bool enabled;
     bool hasLinkedReference;
     void SpectatorThreatInfo_Update();
-    void SetSourceReference(GameReference* reference);
+    void SpectatorThreatInfo_SetupThreatFromActorToCombatTarget(GameReference* aSource);
 };
 // @fnv 0x009f6c20
-void ReferenceLinkController::SetSourceReference(GameReference* apSource)
+// src: XBOX_DEBUG_PDB 0x009f6c20
+// pdb: SpectatorThreatInfo::SetupThreatFromActorToCombatTarget | SpectatorPackage.obj | debug, call graph, high
+// pdb params: aSource
+void ReferenceLinkController::SpectatorThreatInfo_SetupThreatFromActorToCombatTarget(GameReference* aSource)
 {
-    source = apSource;
-    linked = apSource->GetLinkedReference();
+    source = aSource;
+    linked = aSource->GetLinkedReference();
     enabled = true;
     hasLinkedReference = linked != 0;
     source->TESObjectREFR_SetTargeted(true);
@@ -1089,6 +1114,7 @@ struct FUN_009f6c90
 };
 // If ref holds an object, notifies that object's owner with ref and then releases ref with argument 0.
 // @fnv 0x009f6c90
+// pdb: SpectatorThreatInfo::~SpectatorThreatInfo | SpectatorPackage.obj | debug, object-file gap fill, medium
 FUN_009f6c90::~FUN_009f6c90()
 {
     if (ref.Modelloader_GetReferencedThis())
@@ -1111,32 +1137,36 @@ class FUN_009f9040_cls
     void* m_iWordAt04;
     void* m_8;
     unsigned int m_iThirdValue;
-    void CopyBlock(void* dst, void* src, unsigned int count);
+    void CopyBlock(void* apDestAddr, void* apSrcAddr, unsigned int aiCount);
     void Reset();
-    void EnsureBuffer(int a1, unsigned int a2);
+    void BSSimpleArray_SpectatorThreatInfo_1024__ReallocateBuffer(int aiNewSize, unsigned int aiCopyCount);
 };
 
 // @fnv 0x009f9040
-void FUN_009f9040_cls::EnsureBuffer(int aiSize, unsigned int auiCount)
+// src: XBOX_RETAIL_PDB 0x009f9040
+// pdb: BSSimpleArray<SpectatorThreatInfo,1024>::_ReallocateBuffer | SpectatorPackage.obj | retail, call graph, high
+// pdb params: aiNewSize, aiCopyCount
+// pdb locals: pnewBuffer
+void FUN_009f9040_cls::BSSimpleArray_SpectatorThreatInfo_1024__ReallocateBuffer(int aiNewSize, unsigned int aiCopyCount)
 {
     if (m_iWordAt04 != 0)
     {
-        if (auiCount == m_iThirdValue)
+        if (aiCopyCount == m_iThirdValue)
         {
-            m_iWordAt04 = v3(m_iWordAt04, aiSize);
+            m_iWordAt04 = v3(m_iWordAt04, aiNewSize);
         }
         else
         {
-            void* pNewBuffer = v1(aiSize);
-            CopyBlock(pNewBuffer, m_iWordAt04, auiCount);
+            void* pNewBuffer = v1(aiNewSize);
+            CopyBlock(pNewBuffer, m_iWordAt04, aiCopyCount);
             Reset();
             m_iWordAt04 = pNewBuffer;
         }
     }
     else
     {
-        m_iWordAt04 = v1(aiSize);
-        m_iThirdValue = aiSize;
+        m_iWordAt04 = v1(aiNewSize);
+        m_iThirdValue = aiNewSize;
     }
 }
 
@@ -1281,6 +1311,8 @@ struct FUN_009eb660
 };
 
 // @fnv 0x009eb660
+// pdb: Crime::~Crime | AlarmPackage.obj | debug, object-file run extension, low
+// pdb locals: plist, prespond, pref, pfac, pact, pcrimelist
 FUN_009eb660::~FUN_009eb660()
 {
     if (DAT_011c3f2c != 0 && !DAT_011c3f2c->TESDataHandler_GetClearingData())
@@ -1341,20 +1373,23 @@ FUN_009eb660::~FUN_009eb660()
 void Pathing_FindPointOnNavMesh(void*, void*, NiPoint3*, float, NiPoint3*);
 // @fnv 0x009ed380
 // src: COMMUNITY 0x009ed380
-NiPoint3 BackUpPackage_CalculateBackUpPointInterior(TESObjectREFR* source, TESObjectREFR* target)
+// pdb: BackUpPackage::CalculateBackUpPointInterior | BackUpPackage.obj | retail, upstream name already matches, high
+// pdb params: apActor, aptarget
+// pdb locals: direction, loc, actloc, fdistance, fleepoint, pCell
+NiPoint3 BackUpPackage_CalculateBackUpPointInterior(TESObjectREFR* apActor, TESObjectREFR* aptarget)
 {
     NiPoint3 result = NiPoint3::ZERO;
-    if (target && source)
+    if (aptarget && apActor)
     {
-        NiPoint3 cell = *static_cast<const TESObjectREFR*>(target)->GetPos();
-        NiPoint3 distance = *static_cast<const TESObjectREFR*>(source)->GetPos();
+        NiPoint3 cell = *static_cast<const TESObjectREFR*>(aptarget)->GetPos();
+        NiPoint3 distance = *static_cast<const TESObjectREFR*>(apActor)->GetPos();
         float targetPos = 300.0f;
         NiPoint3 sourcePos = distance - cell;
         sourcePos.Unitize_004a0c10();
         sourcePos = distance + sourcePos * targetPos;
         result = sourcePos;
-        void* direction = source->GetParentCellStub();
-        Pathing_FindPointOnNavMesh(source->TESObjectREFR_GetWorldSpace(), direction, &sourcePos, 200.0f, &result);
+        void* direction = apActor->GetParentCellStub();
+        Pathing_FindPointOnNavMesh(apActor->TESObjectREFR_GetWorldSpace(), direction, &sourcePos, 200.0f, &result);
     }
     return result;
 }
@@ -1362,23 +1397,27 @@ NiPoint3 BackUpPackage_CalculateBackUpPointInterior(TESObjectREFR* source, TESOb
 namespace fnv_009ed4b0 {
 
 
-void __cdecl Pathing_FindPointOnNavMesh(TESWorldSpace* ws, ParentCellStub* cell, NiPoint3* pos, float radius, NiPoint3* out);
+void __cdecl Pathing_FindPointOnNavMesh(TESWorldSpace* apWorldSpace, ParentCellStub* apCell, NiPoint3* aLocation, float aRadius, NiPoint3* apRetPt);
 
 // @fnv 0x009ed4b0
-NiPoint3 __cdecl ComputeAdjustedTargetPosition(TESObjectREFR* target, TESObjectREFR* source)
+// src: XBOX_DEBUG_PDB 0x009ed4b0
+// pdb: BackUpPackage::CalculateBackUpPointExterior | BackUpPackage.obj | debug, call graph, high
+// pdb params: apActor, aptarget
+// pdb locals: direction, loc, actloc, fdistance, Backuppoint, pCell
+NiPoint3 __cdecl BackUpPackage_CalculateBackUpPointExterior(TESObjectREFR* apActor, TESObjectREFR* aptarget)
 {
     NiPoint3 result5 = NiPoint3::ZERO;
-    if (source && target)
+    if (aptarget && apActor)
     {
-        NiPoint3 sourcePos = *static_cast<const TESObjectREFR*>(source)->GetPos();
-        NiPoint3 targetPosX = *static_cast<const TESObjectREFR*>(target)->GetPos();
+        NiPoint3 sourcePos = *static_cast<const TESObjectREFR*>(aptarget)->GetPos();
+        NiPoint3 targetPosX = *static_cast<const TESObjectREFR*>(apActor)->GetPos();
         float distance2 = 300.0f;
         NiPoint3 _dir = targetPosX - sourcePos;
         _dir.Unitize();
         _dir = targetPosX + _dir * distance2;
         result5 = _dir;
-        ParentCellStub* cellB = target->GetParentCellStub();
-        Pathing_FindPointOnNavMesh(target->TESObjectREFR_GetWorldSpace(), cellB, &_dir, 200.0f, &result5);
+        ParentCellStub* cellB = apActor->GetParentCellStub();
+        Pathing_FindPointOnNavMesh(apActor->TESObjectREFR_GetWorldSpace(), cellB, &_dir, 200.0f, &result5);
         if (result5.HasEqualComponents(_dir))
         {
         }
@@ -1527,21 +1566,25 @@ struct Pather
     int unk190;
     Route route;
     void BuildPathRequest(NiPoint3, NiPoint3, void*, void*);
-    NiPoint3 GetPathPoint(TESObjectREFR*);
+    NiPoint3 SearchPackage_CalculateLocationToExamine(TESObjectREFR*);
 };
 // Returns a path point for ref: initialises destination when zero, advances the route waypoint index, or computes a point near destination.
 // @fnv 0x009f6900
-NiPoint3 Pather::GetPathPoint(TESObjectREFR* ref)
+// src: XBOX_DEBUG_PDB 0x009f6900
+// pdb: SearchPackage::CalculateLocationToExamine | SearchPackage.obj | debug, call graph, high
+// pdb params: apActor
+// pdb locals: point, pcoverloc
+NiPoint3 Pather::SearchPackage_CalculateLocationToExamine(TESObjectREFR* apActor)
 {
     NiPoint3 result = destination;
     if (destination.HasEqualComponents(NiPoint3::ZERO))
     {
-        destination = RandomOffsetVectorFromOrigin(*static_cast<const TESObjectREFR*>(ref)->GetPos(), 800.0f, 1000.0f, 0);
-        Pathing_FindPointOnNavMesh(ref->TESObjectREFR_GetWorldSpace(), ref->GetParentCellStub(), static_cast<const TESObjectREFR*>(ref)->GetPos(), 300.0f, &destination);
+        destination = RandomOffsetVectorFromOrigin(*static_cast<const TESObjectREFR*>(apActor)->GetPos(), 800.0f, 1000.0f, 0);
+        Pathing_FindPointOnNavMesh(apActor->TESObjectREFR_GetWorldSpace(), apActor->GetParentCellStub(), static_cast<const TESObjectREFR*>(apActor)->GetPos(), 300.0f, &destination);
         return destination;
     }
     if (route.NiTListBase_DFALL_NiTListItem_BSAnimGroupSequence_const_BSAnimGroupSequence_const_IsEmpty())
-        BuildPathRequest(*static_cast<const TESObjectREFR*>(ref)->GetPos(), destination, ref->GetParentCellStub(), ref->TESObjectREFR_GetWorldSpace());
+        BuildPathRequest(*static_cast<const TESObjectREFR*>(apActor)->GetPos(), destination, apActor->GetParentCellStub(), apActor->TESObjectREFR_GetWorldSpace());
     if (!route.NiTListBase_DFALL_NiTListItem_BSAnimGroupSequence_const_BSAnimGroupSequence_const_IsEmpty() && index < route.FUN_0044ddc0())
     {
         Waypoint waypoint(route.FUN_009a3280(index));
@@ -1551,7 +1594,7 @@ NiPoint3 Pather::GetPathPoint(TESObjectREFR* ref)
     else
     {
         result = RandomOffsetVectorFromOrigin(destination, 800.0f, 300.0f, 0);
-        Pathing_FindPointOnNavMesh(ref->TESObjectREFR_GetWorldSpace(), ref->GetParentCellStub(), &result, 300.0f, &result);
+        Pathing_FindPointOnNavMesh(apActor->TESObjectREFR_GetWorldSpace(), apActor->GetParentCellStub(), &result, 300.0f, &result);
     }
     return result;
 }
@@ -1573,6 +1616,7 @@ struct FUN_009f9450 : TESPackage
 
 // Destructor that, if _g_thePlayer is set, gets its holder via FUN_005d43c0 and calls ClearScript on this object.
 // @fnv 0x009f9450
+// pdb: TrespassPackage::~TrespassPackage | TrespassPackage.obj | debug, object-file run extension, low
 FUN_009f9450::~FUN_009f9450()
 {
     if (_g_thePlayer)
@@ -1658,6 +1702,8 @@ struct FUN_009e9d00 : FUN_009dad00
 };
 // Constructor that initializes position to zero, sets unk94 and unk98 to 0, and assigns unk9c from DAT_01012054.
 // @fnv 0x009e9d00
+// pdb: PlayerMover::PlayerMover | PlayerMover.obj | debug, object-file run extension, low
+// pdb params: apActor
 FUN_009e9d00::FUN_009e9d00(void* arg) : FUN_009dad00(arg)
 {
     position = NiPoint3::ZERO;
@@ -1708,6 +1754,8 @@ class FUN_009f3900 : public ActorPackageData
 
 // Constructor that sets the vtable, calls m_kPathingLocation.FUN_009f61b0(), initialises fields (some to -1, m_40 to 0x7f) and fills m_5c with 0x80.
 // @fnv 0x009f3900
+// pdb: SandBoxActorPackageData::SandBoxActorPackageData | SandBoxPackage.obj | debug, call graph, low
+// pdb locals: i
 FUN_009f3900::FUN_009f3900()
 {
     m_kPathingLocation.FUN_009f61b0();
@@ -1741,9 +1789,10 @@ struct FUN_009f61e0_Class : FUN_009f61e0
 
 // Initializes the object, deallocates it if the low bit of flags is set, and returns this.
 // @fnv 0x009f6430
+// pdb: BSSimpleArray<SandBoxChoiceListItem,1024>::`scalar deleting destructor' | SandBoxPackage.obj | retail, vtable slot, high
 void* FUN_009f61e0_Class::FUN_009f6430(unsigned int flags)
 {
-    Init();
+    BSSimpleArray_SandBoxChoiceListItem_1024_dtor();
     if (flags & 1)
         Deallocate(this);
     return this;

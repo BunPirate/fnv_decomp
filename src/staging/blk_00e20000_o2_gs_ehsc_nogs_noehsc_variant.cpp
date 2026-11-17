@@ -70,18 +70,18 @@ __forceinline hkCpuWorldRayCastCollector::hkCpuWorldRayCastCollector()
 {
     m_workFilter = 0;
     m_workCollection = 0;
-    m_fixedBufferRayHitFilterCollector = 0;
-    m_fHitFraction = 1.0f;
+    m_fixedBufferRayHitCollector = 0;
+    m_hitFraction = 1.0f;
     // The original initializes and reads only the hkBool byte in this shared slot.
-    *reinterpret_cast<hkBool*>(&m_bHasHit) = false;
+    *reinterpret_cast<hkBool*>(&m_hit) = false;
 }
 inline hkBool hkCpuWorldRayCastCollector::DidHit()
 {
-    return *reinterpret_cast<hkBool*>(&m_bHasHit);
+    return *reinterpret_cast<hkBool*>(&m_hit);
 }
 inline float hkCpuWorldRayCastCollector::GetHitFraction()
 {
-    return m_fHitFraction;
+    return m_hitFraction;
 }
 
 int __cdecl PackBitFields(int a, int b, int c);
@@ -94,21 +94,21 @@ struct FUN_00e39e60_class
 struct FUN_00e3f340_Class
 {
     int __thiscall FindEntryByKey(int arg);
-    void* __thiscall GetEntryByArg(int arg);
+    void* __thiscall hkxEnvironment_getVariableValue(int name);
 };
 struct FUN_00e3f900_class
 {
     int __thiscall ReturnSelf(int a);
     int __thiscall ProcessAndReturnValue_00e3f900(int a);
 };
-int __cdecl hkaSplineCompressedAnimation_packMaskAndQuantizationType(int a, int b);
+int __cdecl hkaSplineCompressedAnimation_packMaskAndQuantizationType(int a, int floatQuatization);
 struct S_00df8990_Obj;
 extern void(__cdecl* DAT_0126ec04)(void*, void*, S_00df8990_Obj*);
 void __cdecl Runtime_ProcessEntries_00e2b9b0(void*, void*, S_00df8990_Obj*);
 void __cdecl Runtime_SetDAT0126ec04();
 extern int DAT_010eb3b8[];
 extern int DAT_010eb3d0[];
-int __cdecl hkaSplineCompressedAnimation_handleEndianQuaternion(int a, int b);
+int __cdecl hkaSplineCompressedAnimation_handleEndianQuaternion(int type, int dataInOut);
 void __cdecl AlignAndAdvance(char flags, int a, int b, int* p);
 extern int DAT_010eb770;
 struct FUN_00e34800
@@ -177,7 +177,7 @@ struct SplitChunk
     int unk68;
     int unk6c;
 };
-void __cdecl InitSplitChunks(int a1, int a2, int a3, int a4, int a5, SplitChunk* out);
+void __cdecl hkKdTreeRayCastJobUtil_initializeBuildSetupJobs(int collidablesPtr, int numCollidables, int entries, int semaphore, int numJobs, SplitChunk* jobsOut);
 struct E2baaSrc
 {
     int unk00;
@@ -1172,7 +1172,7 @@ hkMemoryRouter* GetMemoryRouterStub();
 struct RefHolderE2
 {
     void* m_ptr;
-    RefHolderE2(const RefHolderE2& other);
+    RefHolderE2(const RefHolderE2& strRef);
     ~RefHolderE2();
     RefHolderE2& operator=(const RefHolderE2& other);
 };
@@ -1242,7 +1242,7 @@ unsigned short NormalizeToUShort(float fMin, float fScaledValue, float fValue);
 void __cdecl SwapBytesAndAdvance(int n, unsigned char** pp);
 void __cdecl FillInterpolatedValues(int count, float** array, float first, float last);
 unsigned int __cdecl hkaSplineCompressedAnimation_handleEndianKnots(unsigned char a1, unsigned int* a2);
-int __cdecl hkaSplineCompressedAnimation_handleEndianScalarControlPoints(unsigned char a1, unsigned int a2, unsigned int a3, unsigned int* a4);
+int __cdecl hkaSplineCompressedAnimation_handleEndianScalarControlPoints(unsigned char a1, unsigned int n, unsigned int type, unsigned int* dataInOut);
 void __cdecl Object_UpdateFields_00e31740(unsigned char flag, unsigned int a2, unsigned int* out);
 int __cdecl hkaSplineCompressedAnimation_handleEndianKnots(int a, int* c);
 void __cdecl AlignAndAdvance(int a, int result, int b, int* c);
@@ -1455,7 +1455,7 @@ class FUN_00e3dfb0_cls
     int unk34;
     int m_38;
 
-    int hkxVertexBuffer_getVertexDataPtr(FUN_00e3dfb0_arg* rec);
+    int hkxVertexBuffer_getVertexDataPtr(FUN_00e3dfb0_arg* elem);
 };
 struct FUN_00e3ec00_Class
 {
@@ -1507,7 +1507,7 @@ struct S_00e3ed00_Foo
     S_00e3ed00_Result* __thiscall hkMemoryRouter_getInstance();
     int __thiscall AppendToTraversalList(S_00e3ed00_Foo* param1, S_00e3ed00_List* param2);
 };
-void __cdecl ResizeAudioStream(int param1, S_00e3ed00_List* param2, int param3);
+void __cdecl ResizeAudioStream(int mem, S_00e3ed00_List* array, int sizeElem);
 hkMemoryRouter& GetMemoryRouter();
 inline hkRefPtrE_blk_00e20000_o2_gs_ehsc_nogs_noehsc_variant::~hkRefPtrE_blk_00e20000_o2_gs_ehsc_nogs_noehsc_variant()
 {
@@ -1658,7 +1658,7 @@ struct FUN_00e3df50_Class
 {
     FUN_00e3df50_Class* __thiscall ReturnSelf(int param);
 };
-int __cdecl hkxVertexBuffer_getVertexDataPtr(int param_1, int* param_2);
+int __cdecl hkxVertexBuffer_getVertexDataPtr(int elem, int* param_2);
 int __cdecl Object_HkxVertexBuffer_getVertexDataPtr_Thunk(int param_1, int* param_2);
 struct FNVTreeNode
 {
@@ -1731,7 +1731,7 @@ struct FUN_00e3f370_cls
     int unk04;
     FUN_00e3f370_pair* m_pItems;
     int m_iArrayLength;
-    void ReleaseItems();
+    void hkxEnvironment_clear();
 };
 
 struct Mat34
@@ -1763,17 +1763,18 @@ struct Ray
 };
 // Havok 7.1 hkpWorldRayCastCommand (hkpRayCastQueryJobs.h): m_rayInput, m_results, m_resultsCapacity,
 // m_numResultsOut, m_useCollector, m_stopAfterFirstHit; same constructor. Not the console-command Command.
+// pdb: structure hkpWorldRayCastCommand, size 0x40, 6 members
 struct hkpWorldRayCastCommand
 {
-    Ray input;
-    void* results;
-    int capacity;
-    int count;
-    hkBool useCollector, stop;
+    Ray m_rayInput; // src: XBOX_RETAIL_PDB +0x0 (old: input)
+    void* m_results; // src: XBOX_RETAIL_PDB +0x30 (old: results)
+    int m_resultsCapacity; // src: XBOX_RETAIL_PDB +0x34 (old: capacity)
+    int m_numResultsOut; // src: XBOX_RETAIL_PDB +0x38 (old: count)
+    hkBool m_useCollector, m_stopAfterFirstHit; // src: XBOX_RETAIL_PDB m_stopAfterFirstHit +0x3d (old: stop); m_useCollector +0x3c (old: useCollector)
     hkpWorldRayCastCommand()
     {
-        useCollector = false;
-        stop = false;
+        m_useCollector = false;
+        m_stopAfterFirstHit = false;
     }
 };
 struct BundleCommand
@@ -1802,6 +1803,9 @@ void __cdecl AabbTree_ForwardCall_00d1d530(const Input*, void*, int, const Task&
                           hkAabbTreeQueryUtils<hkAabbTreeData::RayQueryAabb>::Collector**, float*);
 // @fnv 0x00e2b070
 // src: GUESS 0x00e2b070 (confidence: low)
+// pdb: hkTreeRayCastJobUtil::castRayBundleAabbTree<hkAabbTreeData::hkAabbTreeAabb> | hkpRayCastQueryJobUtils.obj | retail, object-file run extension, low
+// pdb params: aabbTree, command, filter, earlyHitFractionInOut, collidableCache, shapeCache, transformCache, resultLocalArray, numResultsOut
+// pdb locals: bundleInput, collector, earlyHitFractions, treeCollectors, singleCommands
 void hkVector4_ProcessEntries_00e2b070(const Input* input, BundleCommand* src, void* filter, hkVector4& fractions, void*, void*, void*,
                   void*, int*)
 {
@@ -1815,23 +1819,23 @@ void hkVector4_ProcessEntries_00e2b070(const Input* input, BundleCommand* src, v
     hkAabbTreeQueryUtils<hkAabbTreeData::RayQueryAabb>::Collector* ptrs[4];
     for (int i = 0; i < 4; ++i)
     {
-        commands[i].results = src->results[i];
-        collectors[i].m_result = reinterpret_cast<int>(commands[i].results);
-        collectors[i].m_iFieldAfterResult = reinterpret_cast<int>(commands[i].results);
-        commands[i].input = src->input[i];
-        commands[i].stop = src->stop;
-        commands[i].capacity = 1;
-        commands[i].count = 0;
-        collectors[i].m_iFilter = reinterpret_cast<int>(filter);
-        collectors[i].m_iFieldBeforeResult = reinterpret_cast<int>(&commands[i].input);
-        collectors[i].m_iFieldAfterHasHit = reinterpret_cast<int>(&commands[i]);
+        commands[i].m_results = src->results[i];
+        collectors[i].m_result = reinterpret_cast<int>(commands[i].m_results);
+        collectors[i].m_nextFreeResult = reinterpret_cast<int>(commands[i].m_results);
+        commands[i].m_rayInput = src->input[i];
+        commands[i].m_stopAfterFirstHit = src->stop;
+        commands[i].m_resultsCapacity = 1;
+        commands[i].m_numResultsOut = 0;
+        collectors[i].m_filter = reinterpret_cast<int>(filter);
+        collectors[i].m_originalInput = reinterpret_cast<int>(&commands[i].m_rayInput);
+        collectors[i].m_command = reinterpret_cast<int>(&commands[i]);
         limits[i] = fractions(i);
         ptrs[i] = &collectors[i];
     }
     task.mask = DAT_011b3830[src->active];
     AabbTree_ForwardCall_00d1d530(input, input->data10, 0, task, ptrs, limits);
     for (int i = 0; i < 4; ++i)
-        src->counts[i] = commands[i].count;
+        src->counts[i] = commands[i].m_numResultsOut;
     fractions.set(limits[0], limits[1], limits[2], limits[3]);
 }
 

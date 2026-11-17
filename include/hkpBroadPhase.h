@@ -14,6 +14,7 @@ class hkpBroadPhaseCastCollector;
 class hkpCollidable;
 class BroadPhaseCastCollector;
 
+// pdb: class hkpBroadPhase, size 0x14 (here 0x10), bases: hkReferencedObject, 2 members
 class hkpBroadPhase : public hkReferencedObject
 {
 public:

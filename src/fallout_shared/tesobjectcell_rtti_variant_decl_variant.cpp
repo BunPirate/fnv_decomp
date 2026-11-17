@@ -256,7 +256,7 @@ class CellTES
 {
   public:
     bool FUN_004511e0(TESObjectCELL* pkCell, int iValue);
-    int TES_GetCellPriority(TESObjectCELL* pkCell, int iA, int iB);
+    int TES_GetCellPriority(TESObjectCELL* apCell, int apPos, int iB);
 };
 extern CellTES* DAT_011dea10;
 class CellPlayer
@@ -321,7 +321,7 @@ bool __fastcall FUN_00477ba0(TESObjectREFR* reference);
 void* __fastcall FUN_00568e50(TESObjectREFR* reference);
 void __fastcall TESObjectCELL_CellRefLockLeave(TESObjectCELL* cell);
 unsigned int __cdecl GetRandomNumberInRange(int low, int high);
-TESObjectREFR* __cdecl TESObjectCELL_PickRandomTeleportDoorInSpace(TESForm* source, TESForm* destination, void* context);
+TESObjectREFR* __cdecl TESObjectCELL_PickRandomTeleportDoorInSpace(TESForm* apDoorSpace, TESForm* apTargetSpace, void* appOutBackUp);
 
 struct FormGroupQuery
 {
@@ -331,24 +331,27 @@ extern unsigned int DAT_01187020;
 TESForm* TESForm_GetFormByNumericID(unsigned int);
 // @fnv 0x005434d0
 // src: XBOX_PDB 0x005434d0
-bool TESObjectCELL::SavesBefore(FormGroupQuery* group)
+// pdb: TESObjectCELL::SavesBefore | TESObjectCELL.obj | retail, vtable slot, high
+// pdb params: apForm
+// pdb locals: bretval, pcellchild, pothercell, bcheckblocks, potherworld, pworld
+bool TESObjectCELL::SavesBefore(FormGroupQuery* apGroupFORM)
 {
 
     bool matched = false;
 
-    if (group && group->tag == DAT_01187020)
+    if (apGroupFORM && apGroupFORM->tag == DAT_01187020)
     {
 
-        switch (group->kind)
+        switch (apGroupFORM->kind)
         {
 
         case 0:
-            matched = IsFormTypeBelowThreshold(group);
+            matched = IsFormTypeBelowThreshold(apGroupFORM);
             break;
 
         case 2:
 
-            if (IsCellInterior() && GetGroupBlockKey() < group->value)
+            if (IsCellInterior() && GetGroupBlockKey() < apGroupFORM->value)
 
                 matched = true;
 
@@ -356,7 +359,7 @@ bool TESObjectCELL::SavesBefore(FormGroupQuery* group)
 
         case 3:
 
-            if (IsCellInterior() && GetGroupSubBlockKey() < group->value)
+            if (IsCellInterior() && GetGroupSubBlockKey() < apGroupFORM->value)
 
                 matched = true;
 
@@ -366,7 +369,7 @@ bool TESObjectCELL::SavesBefore(FormGroupQuery* group)
         case 8:
         case 9: {
 
-            TESObjectCELL* cell = dynamic_cast<TESObjectCELL*>(TESForm_GetFormByNumericID(group->value));
+            TESObjectCELL* cell = dynamic_cast<TESObjectCELL*>(TESForm_GetFormByNumericID(apGroupFORM->value));
 
             if (cell)
 
@@ -383,7 +386,7 @@ bool TESObjectCELL::SavesBefore(FormGroupQuery* group)
                 if (FUN_005516c0())
                     matched = true;
 
-                else if (GetGroupBlockKey() < group->value)
+                else if (GetGroupBlockKey() < apGroupFORM->value)
                     matched = true;
             }
             else
@@ -399,7 +402,7 @@ bool TESObjectCELL::SavesBefore(FormGroupQuery* group)
                 if (FUN_005516c0())
                     matched = true;
 
-                else if (GetGroupSubBlockKey() < group->value)
+                else if (GetGroupSubBlockKey() < apGroupFORM->value)
                     matched = true;
             }
             else
@@ -412,7 +415,7 @@ bool TESObjectCELL::SavesBefore(FormGroupQuery* group)
             if (!IsCellInterior())
             {
 
-                TESWorldSpace* world = dynamic_cast<TESWorldSpace*>(TESForm_GetFormByNumericID(group->value));
+                TESWorldSpace* world = dynamic_cast<TESWorldSpace*>(TESForm_GetFormByNumericID(apGroupFORM->value));
 
                 if (world)
 

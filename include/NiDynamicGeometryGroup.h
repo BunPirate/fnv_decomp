@@ -28,6 +28,7 @@ public:
 
 
 
+// pdb: class NiDynamicGeometryGroup, size 0x50, bases: NiGeometryGroup, 5 members
 class NiDynamicGeometryGroup : public NiGeometryGroup
 {
 public:
@@ -35,10 +36,10 @@ public:
     virtual void Purge();
     virtual ~NiDynamicGeometryGroup();
 
-    DynamicMap<NiVBDynamicSet> sets;
-    DynamicMap<NiVBChip> chips;
+    DynamicMap<NiVBDynamicSet> m_kSets; // src: XBOX_RETAIL_PDB +0xc (old: sets)
+    DynamicMap<NiVBChip> m_kChips; // src: XBOX_RETAIL_PDB +0x1c (old: chips)
     // src: XBOX_PDB (NiTPrimitiveArray<NiVBDynamicSet *> / <NiVBChip *>); ctor 0x00e957b0.
-    NiTPrimitiveArray<NiVBDynamicSet*> streamSets;
-    NiTPrimitiveArray<NiVBChip*> streamChips;
-    unsigned int nextIndex;
+    NiTPrimitiveArray<NiVBDynamicSet*> m_kMultiStreamSets; // src: XBOX_RETAIL_PDB +0x2c (old: streamSets)
+    NiTPrimitiveArray<NiVBChip*> m_kMultiStreamChips; // src: XBOX_RETAIL_PDB +0x3c (old: streamChips)
+    unsigned int m_uiNextIndex; // src: XBOX_RETAIL_PDB +0x4c (old: nextIndex)
 };

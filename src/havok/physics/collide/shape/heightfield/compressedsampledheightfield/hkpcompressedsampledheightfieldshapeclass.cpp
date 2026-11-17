@@ -88,6 +88,8 @@ struct FUN_00e01150_cls
 };
 
 // @fnv 0x00e01150
+// pdb: hkpCompressedSampledHeightFieldShape::getHeightAtImpl | hkpCompressedSampledHeightFieldShapeClass.obj | debug, vtable slot, medium
+// pdb params: x, z
 float FUN_00e01150_cls::GetTableValue(int col, int row)
 {
     unsigned short v = m_pTable[m_i10 * row + col];
@@ -120,6 +122,7 @@ struct FUN_00e01180_cls : FUN_00e01140_cls
 };
 // Releases the buffer through the manager, resets the buffer fields, calls FUN_00d24660, and destroys the object when flags has bit 0 set.
 // @fnv 0x00e01180
+// pdb: hkpCompressedSampledHeightFieldShape::`scalar deleting destructor' | hkpCompressedSampledHeightFieldShapeClass.obj | retail, vtable slot, high
 FUN_00e01180_cls* FUN_00e01180_cls::FUN_00e01180(unsigned int flags)
 {
     BufferContext* context = hkMemoryRouter_getInstance();

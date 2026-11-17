@@ -8,6 +8,7 @@ class hkpConstraintInstance;
 struct hkpConstraintDataInfo;
 struct RuntimeInfoD4D;
 
+// pdb: class hkpConstraintData, size 0xc, bases: hkReferencedObject, 1 members
 class hkpConstraintData : public hkReferencedObject
 {
 public:
@@ -67,7 +68,7 @@ public:
             (*reinterpret_cast<void***>(this))[9])(this, wantRuntime, runtimeInfo);
     }
 
-    unsigned long m_ulUserData;
+    unsigned long m_userData; // src: XBOX_RETAIL_PDB +0x8 (old: m_ulUserData)
 
     friend class ConstraintInstance;
 };

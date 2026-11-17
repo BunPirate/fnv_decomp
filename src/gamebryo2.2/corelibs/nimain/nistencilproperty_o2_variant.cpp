@@ -17,6 +17,9 @@ struct EqBase
 };
 // @fnv 0x00a6f070
 // src: GAMEBRYO_LIB 0x00a6f070
+// pdb: NiStencilProperty::IsEqual | NiStencilProperty.obj | retail, vtable slot, high
+// pdb params: pkObject
+// pdb locals: pkStencil
 bool NiStencilProperty::IsEqual_00a6f070(NiObject* pkObject)
 {
     NiStencilProperty* pkStencil = (NiStencilProperty*)pkObject;
@@ -34,26 +37,29 @@ void* __cdecl NiMalloc(unsigned int size);
 
 // @fnv 0x00a6f2d0
 // src: XBOX_PDB 0x00a6f2d0
-char* NiStencilProperty_GetViewerString_00a6f2d0(const char* name, int stencil)
+// pdb: NiStencilProperty::GetViewerString | NiStencilProperty.obj | retail, string-set bridge, high
+// pdb params: pcPrefix, eFunc
+// pdb locals: pcString, uiLen
+char* NiStencilProperty_GetViewerString_00a6f2d0(const char* pcPrefix, int eMode)
 {
-    unsigned int length = strlen(name) + 0x16;
+    unsigned int length = strlen(pcPrefix) + 0x16;
     char* result = (char*)NiMalloc(length);
-    switch (stencil)
+    switch (eMode)
     {
     case 0:
-        NiSprintf(result, length, "%s = DRAW_CCW_OR_BOTH", name);
+        NiSprintf(result, length, "%s = DRAW_CCW_OR_BOTH", pcPrefix);
         break;
     case 1:
-        NiSprintf(result, length, "%s = DRAW_CCW", name);
+        NiSprintf(result, length, "%s = DRAW_CCW", pcPrefix);
         break;
     case 2:
-        NiSprintf(result, length, "%s = DRAW_CW", name);
+        NiSprintf(result, length, "%s = DRAW_CW", pcPrefix);
         break;
     case 3:
-        NiSprintf(result, length, "%s = DRAW_BOTH", name);
+        NiSprintf(result, length, "%s = DRAW_BOTH", pcPrefix);
         break;
     default:
-        NiSprintf(result, length, "%s = UNKNOWN!!!", name);
+        NiSprintf(result, length, "%s = UNKNOWN!!!", pcPrefix);
         break;
     }
     return result;
@@ -64,6 +70,8 @@ extern void* DAT_0101e07c;
 
 // @fnv 0x00a6f410
 // src: EXE 0x00a6f410
+// pdb: NiStencilProperty::CreateObject | NiStencilProperty.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 void* __cdecl NiStencilProperty_CreateObject()
 {
     NiStencilProperty* p = (NiStencilProperty*)BSFadeNode::operator new(0x24);
@@ -83,6 +91,7 @@ extern NiObject* DAT_011f4a14;
 extern "C" __declspec(dllimport) long __stdcall InterlockedDecrement(long volatile*);
 // @fnv 0x00a6f4d0
 // src: XBOX_PDB 0x00a6f4d0
+// pdb: NiStencilProperty::_SDMShutdown | NiStencilProperty.obj | retail, upstream name already matches, high
 void NiStencilProperty__SDMShutdown()
 {
     if (DAT_011f4a14)
@@ -98,38 +107,44 @@ char* __cdecl NiSprintf(char* dst, unsigned int size, const char* fmt, ...);
 void* __cdecl NiMalloc(unsigned int size);
 // @fnv 0x00a6f1e0
 // src: XBOX_PDB 0x00a6f1e0
-char* NiStencilProperty_GetViewerString_00a6f1e0(const char* name, int stencil)
+// pdb: NiStencilProperty::GetViewerString | NiStencilProperty.obj | retail, string-set bridge, high
+// pdb params: pcPrefix, eFunc
+// pdb locals: pcString, uiLen
+char* NiStencilProperty_GetViewerString_00a6f1e0(const char* pcPrefix, int eAct)
 {
-    unsigned int size = strlen(name) + 22;
+    unsigned int size = strlen(pcPrefix) + 22;
     char* result = (char*)NiMalloc(size);
-    switch (stencil)
+    switch (eAct)
     {
     case 0:
-        NiSprintf(result, size, "%s = ACTION_KEEP", name);
+        NiSprintf(result, size, "%s = ACTION_KEEP", pcPrefix);
         break;
     case 1:
-        NiSprintf(result, size, "%s = ACTION_ZERO", name);
+        NiSprintf(result, size, "%s = ACTION_ZERO", pcPrefix);
         break;
     case 2:
-        NiSprintf(result, size, "%s = ACTION_REPLACE", name);
+        NiSprintf(result, size, "%s = ACTION_REPLACE", pcPrefix);
         break;
     case 3:
-        NiSprintf(result, size, "%s = ACTION_INCREMENT", name);
+        NiSprintf(result, size, "%s = ACTION_INCREMENT", pcPrefix);
         break;
     case 4:
-        NiSprintf(result, size, "%s = ACTION_DECREMENT", name);
+        NiSprintf(result, size, "%s = ACTION_DECREMENT", pcPrefix);
         break;
     case 5:
-        NiSprintf(result, size, "%s = ACTION_INVERT", name);
+        NiSprintf(result, size, "%s = ACTION_INVERT", pcPrefix);
         break;
     default:
-        NiSprintf(result, size, "%s = UNKNOWN!!!", name);
+        NiSprintf(result, size, "%s = UNKNOWN!!!", pcPrefix);
         break;
     }
     return result;
 }
 
 // @fnv 0x00a6f390
+// pdb: NiStencilProperty::CreateClone | NiStencilProperty.obj | retail, vtable slot, high
+// pdb params: kCloning
+// pdb locals: pkObject
 NiObject* NiStencilProperty::MakeClone(CloningProcess& kCloning)
 {
     if (*(unsigned int*)((char*)this + 0xc))
@@ -162,38 +177,41 @@ NiObject* NiStencilProperty::MakeClone(CloningProcess& kCloning)
 
 // @fnv 0x00a6f0b0
 // src: XBOX_PDB 0x00a6f0b0
-char* NiStencilProperty_GetViewerString(const char* name, int test)
+// pdb: NiStencilProperty::GetViewerString | NiStencilProperty.obj | retail, object-file gap fill, high
+// pdb params: pcPrefix, eFunc
+// pdb locals: pcString, uiLen
+char* NiStencilProperty_GetViewerString(const char* pcPrefix, int eFunc)
 {
-    unsigned int size = strlen(name) + 22;
+    unsigned int size = strlen(pcPrefix) + 22;
     char* result = (char*)NiMalloc(size);
-    switch (test)
+    switch (eFunc)
     {
     case 0:
-        NiSprintf(result, size, "%s = TEST_NEVER", name);
+        NiSprintf(result, size, "%s = TEST_NEVER", pcPrefix);
         break;
     case 1:
-        NiSprintf(result, size, "%s = TEST_LESS", name);
+        NiSprintf(result, size, "%s = TEST_LESS", pcPrefix);
         break;
     case 2:
-        NiSprintf(result, size, "%s = TEST_EQUAL", name);
+        NiSprintf(result, size, "%s = TEST_EQUAL", pcPrefix);
         break;
     case 3:
-        NiSprintf(result, size, "%s = TEST_LESSEQUAL", name);
+        NiSprintf(result, size, "%s = TEST_LESSEQUAL", pcPrefix);
         break;
     case 4:
-        NiSprintf(result, size, "%s = TEST_GREATER", name);
+        NiSprintf(result, size, "%s = TEST_GREATER", pcPrefix);
         break;
     case 5:
-        NiSprintf(result, size, "%s = TEST_NOTEQUAL", name);
+        NiSprintf(result, size, "%s = TEST_NOTEQUAL", pcPrefix);
         break;
     case 6:
-        NiSprintf(result, size, "%s = TEST_GREATEREQUAL", name);
+        NiSprintf(result, size, "%s = TEST_GREATEREQUAL", pcPrefix);
         break;
     case 7:
-        NiSprintf(result, size, "%s = TEST_ALWAYS", name);
+        NiSprintf(result, size, "%s = TEST_ALWAYS", pcPrefix);
         break;
     default:
-        NiSprintf(result, size, "%s = UNKNOWN!!!", name);
+        NiSprintf(result, size, "%s = UNKNOWN!!!", pcPrefix);
         break;
     }
     return result;
@@ -207,6 +225,7 @@ struct Stream
         return *reinterpret_cast<Writer* const*>(reinterpret_cast<const char*>(this) + 0x250);
     }
 };
+// pdb: structure Writer, size 0x74 (here 0x10), 8 members
 struct Writer
 {
     void* handler0;
@@ -220,9 +239,11 @@ struct Base
 };
 // @fnv 0x00a6f740
 // src: XBOX_PDB 0x00a6f740
-void NiStencilProperty::SaveBinary_00a6f740(NiStream* niStream)
+// pdb: NiStencilProperty::SaveBinary | NiStencilProperty.obj | retail, vtable slot, high
+// pdb params: kStream
+void NiStencilProperty::SaveBinary_00a6f740(NiStream* kStream)
 {
-    Stream* stream = reinterpret_cast<Stream*>(niStream);
+    Stream* stream = reinterpret_cast<Stream*>(kStream);
     ((Base*)this)->NiSequenceStreamHelper_SaveBinary(stream);
     unsigned int size = 2;
     Writer* __restrict w = stream->writer();
@@ -255,28 +276,31 @@ char* __cdecl NiStencilProperty_GetViewerString_00a6f1e0(const char*, int);
 char* __cdecl NiStencilProperty_GetViewerString_00a6f2d0(const char*, int);
 // @fnv 0x00a6f7d0
 // src: XBOX_PDB 0x00a6f7d0
-void NiStencilProperty::GetViewerStrings_00a6f7d0(StrArr* strings)
+// pdb: NiStencilProperty::GetViewerStrings | NiStencilProperty.obj | retail, string-set bridge, high
+// pdb params: pcStrings
+void NiStencilProperty::GetViewerStrings_00a6f7d0(StrArr* pcStrings)
 {
-    ((FUN_00a62a40_this*)this)->AppendString(strings);
-    strings->Append(NiViewerStrings_NiGetViewerString_Title(DAT_011f4a0c));
+    ((FUN_00a62a40_this*)this)->AppendString(pcStrings);
+    pcStrings->Append(NiViewerStrings_NiGetViewerString_Title(DAT_011f4a0c));
     bool enabled = (mode & 1) != 0;
-    strings->Append(NiGetViewerString("Enabled", enabled));
+    pcStrings->Append(NiGetViewerString("Enabled", enabled));
     unsigned int ref = reference;
-    strings->Append(NiGetViewerString_00a7d510("m_uiRef", ref));
+    pcStrings->Append(NiGetViewerString_00a7d510("m_uiRef", ref));
     unsigned int m = mask;
-    strings->Append(NiGetViewerString_00a7d510("m_uiMask", m));
+    pcStrings->Append(NiGetViewerString_00a7d510("m_uiMask", m));
     int testFunc = mode >> 12;
-    strings->Append(NiStencilProperty_GetViewerString("Test Funtion", testFunc));
+    pcStrings->Append(NiStencilProperty_GetViewerString("Test Funtion", testFunc));
     int failAction = (mode >> 1) & 7;
-    strings->Append(NiStencilProperty_GetViewerString_00a6f1e0("Test Fail Action", failAction));
+    pcStrings->Append(NiStencilProperty_GetViewerString_00a6f1e0("Test Fail Action", failAction));
     int depthFailAction = (mode >> 4) & 7;
-    strings->Append(NiStencilProperty_GetViewerString_00a6f1e0("Depth Fail Action", depthFailAction));
+    pcStrings->Append(NiStencilProperty_GetViewerString_00a6f1e0("Depth Fail Action", depthFailAction));
     int passAction = (mode >> 7) & 7;
-    strings->Append(NiStencilProperty_GetViewerString_00a6f1e0("Test Pass Action", passAction));
+    pcStrings->Append(NiStencilProperty_GetViewerString_00a6f1e0("Test Pass Action", passAction));
     int drawMode = (mode >> 10) & 3;
-    strings->Append(NiStencilProperty_GetViewerString_00a6f2d0("Draw Mode", drawMode));
+    pcStrings->Append(NiStencilProperty_GetViewerString_00a6f2d0("Draw Mode", drawMode));
 }
 
+// pdb: structure Reader, size 0x3c (here 0xc), 6 members
 struct Reader
 {
     void* handler;
@@ -467,9 +491,12 @@ struct StencilLoadBase
 };
 // @fnv 0x00a6f500
 // src: XBOX_PDB 0x00a6f500
-void NiStencilProperty::LoadBinary_00a6f500(NiStream& niStream)
+// pdb: NiStencilProperty::LoadBinary | NiStencilProperty.obj | retail, vtable slot, high
+// pdb params: kStream
+// pdb locals: bEnable, eAct, eTest, eDrawMode
+void NiStencilProperty::LoadBinary_00a6f500(NiStream& kStream)
 {
-    Input& stream = reinterpret_cast<Input&>(niStream);
+    Input& stream = reinterpret_cast<Input&>(kStream);
     ((StencilLoadBase*)this)->FUN_00a5d7f0(stream);
     if (stream.version < 0x14010002)
     {
@@ -518,6 +545,7 @@ void NiStencilProperty::LoadBinary_00a6f500(NiStream& niStream)
 #include <windows.h>
 // @fnv 0x00a6f450
 // src: XBOX_PDB 0x00a6f450
+// pdb: NiStencilProperty::_SDMInit | NiStencilProperty.obj | retail, upstream name already matches, high
 void NiStencilProperty__SDMInit()
 {
     NiStencilProperty* obj = (NiStencilProperty*)BSFadeNode::operator new(0x24);

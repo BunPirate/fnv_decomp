@@ -7,6 +7,7 @@
 #include "../../../../include/CombatWorldStateArray.h"
 
 // @fnv 0x0062d990
+// pdb: TriggerEntry::QNextEntry | TESTrapListener.obj | debug, call graph, medium
 CombatWorldStateListNode* CombatWorldStateListNode::GetNext()
 {
     return reinterpret_cast<CombatWorldStateListNode*>(reinterpret_cast<BSSimpleList<UnsignedIdHandle*>*>(this)->GetNext());
@@ -56,6 +57,8 @@ bool FUN_009aad40_shell::IsFlagSet()
 void* __cdecl __memcpy(void* _Dst, const void* _Src, unsigned int _Size);
 // Copies 0x50 bytes from apWorldStateArray into this, then 0xC bytes into this+0x50 from apWorldStateArray+0x50.
 // @fnv 0x009aad80
+// pdb: CombatWorldStateArray::Copy | CombatWorldState.obj | debug, object-file run extension, low
+// pdb params: apWorldStateArray
 void __thiscall CombatWorldStateArray::CopyFrom(CombatWorldStateArray* apWorldStateArray)
 {
     __memcpy(this, apWorldStateArray, 0x50);
@@ -419,7 +422,7 @@ struct Process
 struct Caster
 {
     void* FUN_0045cd60();
-    int GetFieldOrZero(Actor*);
+    int CombatGroup_GetMemberGroupStrategyAssignment(Actor*);
     bool CombatGroup_IsSearching();
 };
 struct State
@@ -476,24 +479,28 @@ struct WorldStateManager
     void CombatWorldStateArray_ClearValues();
     void CombatWorldStateArray_SetValue(int, int);
     void SetItem(int, int);
-    void __thiscall UpdateWorldState(Context* context);
+    void __thiscall CombatWorldStateArray_Update(Context* apCombatController);
 };
 // @fnv 0x009aa4e0
-void WorldStateManager::UpdateWorldState(Context* context)
+// src: XBOX_DEBUG_PDB 0x009aa4e0
+// pdb: CombatWorldStateArray::Update | CombatWorldState.obj | debug, unique string literal, high
+// pdb params: apCombatController
+// pdb locals: pgroup, pactionProcedure, pweapon, pstrategy, ptarget, attackerWorldLoc, iatlocationValue, pcombatState, pmovementProcedure, etype, iexecutionFlags, pcoverLocation, targetWorldLoc, plocationTarget, pattacker, coverLocation, vec, pactivateProcedure, i, pcombatItem, buseItem
+void WorldStateManager::CombatWorldStateArray_Update(Context* apCombatController)
 {
     CombatWorldStateArray_ClearValues();
-    context->ValidateCurrentWeapon();
-    State* stateB = context->CombatController_GetCombatState();
-    Actor* actor15 = context->GetFieldBC();
-    Actor* target9 = context->CombatController_GetTarget();
+    apCombatController->ValidateCurrentWeapon();
+    State* stateB = apCombatController->CombatController_GetCombatState();
+    Actor* actor15 = apCombatController->GetFieldBC();
+    Actor* target9 = apCombatController->CombatController_GetTarget();
     Pos position6 = actor15->TESObjectREFR_GetWorldLocation<Pos>();
     Pos targetPositions5;
     if (target9)
         targetPositions5 = target9->TESObjectREFR_GetWorldLocation<Pos>();
-    Caster* local4 = context->FUN_004fb070();
+    Caster* local4 = apCombatController->FUN_004fb070();
     unsigned int q = 0;
-    Form* bolt9 = context->BGSProjectile_GetExplosion();
-    Form* localX = context->FUN_004fd3e0();
+    Form* bolt9 = apCombatController->BGSProjectile_GetExplosion();
+    Form* localX = apCombatController->FUN_004fd3e0();
     Entry* entry7 = stateB->GetFieldValue();
     if (entry7 && !entry7->TESTextureList_GetTextureCount())
     {
@@ -505,7 +512,7 @@ void WorldStateManager::UpdateWorldState(Context* context)
         else
         {
             NiPoint3 point4;
-            CombatUtilities_CalculateCoverPositions(context, entry7, &point4, 0);
+            CombatUtilities_CalculateCoverPositions(apCombatController, entry7, &point4, 0);
             NiPoint3 delta = point4 - *position6.FUN_006815c0();
             delta.z *= 0.10000000149011612;
             if (static_cast<const NiPoint3&>(delta).FUN_004a7290() < 1024.0)
@@ -598,7 +605,7 @@ void WorldStateManager::UpdateWorldState(Context* context)
             switch (second + 17)
             {
             case 17:
-                if (actor15->GetHealthFraction() * 100.0 < *g_011ce0b4.Setting_Int())
+                if (actor15->GetHealthPercentage() * 100.0 < *g_011ce0b4.Setting_Int())
                     usable = true;
                 break;
             case 18:
@@ -615,11 +622,11 @@ void WorldStateManager::UpdateWorldState(Context* context)
     CombatWorldStateArray_SetValue(15, stateB->CombatState_CheckShouldFlee());
     void* magicTarget3 = local4->FUN_0045cd60();
     if (magicTarget3)
-        CombatWorldStateArray_SetValue(19, local4->GetFieldOrZero(actor15));
+        CombatWorldStateArray_SetValue(19, local4->CombatGroup_GetMemberGroupStrategyAssignment(actor15));
     int flags28 = stateB->BGSExplosion_GetImpactDataSet();
     if (local4->CombatGroup_IsSearching())
         flags28 |= 65536;
-    if (context->FUN_009a0240())
+    if (apCombatController->FUN_009a0240())
         flags28 |= 131072;
     if (!target9 || !reinterpret_cast<ActorBase*>(target9->FUN_004181e0())->part.Valid())
         flags28 |= 262144;

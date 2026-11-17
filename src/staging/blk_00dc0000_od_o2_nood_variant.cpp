@@ -54,7 +54,7 @@ struct MemRouter
 };
 
 void* __cdecl hkMemoryRouter_getInstance();
-void __cdecl hkArrayUtil__reserve(MemAllocator* alloc, VecArray* arr, int newCap, int elemSize);
+void __cdecl hkArrayUtil__reserve(MemAllocator* mem, VecArray* array, int numElem, int sizeElem);
 
 static __forceinline float distanceSquared(LocalM128 a, LocalM128 b)
 {
@@ -176,7 +176,7 @@ struct Holder
 };
 
 Holder* __cdecl hkMemoryRouter_getInstance();
-void __cdecl ResizeAudioStream(Allocator* allocator, void* container, int elementSize);
+void __cdecl ResizeAudioStream(Allocator* mem, void* array, int sizeElem);
 
 template <class T> __forceinline void hkConstructWithCopy(T* p, int n, const T& t)
 {
@@ -398,7 +398,7 @@ struct Holder_00dd6c10
 };
 
 void* __cdecl hkMemoryRouter_getInstance();
-void __cdecl ResizeAudioStream(void* allocator, void* container, int elementSize);
+void __cdecl ResizeAudioStream(void* mem, void* array, int sizeElem);
 
 template <class T> struct Arr_00dd6c10
 {

@@ -5,8 +5,9 @@
 
 class BSRoomNode;
 
+// pdb: class ExtraRoom, size 0x10, bases: BSExtraData, 1 members
 class ExtraRoom : public BSExtraData
 {
 public:
-    NiPointer<BSRoomNode> m_pRoomNode;
+    NiPointer<BSRoomNode> spRoom; // src: XBOX_RETAIL_PDB +0xc (old: m_pRoomNode)
 };

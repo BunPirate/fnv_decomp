@@ -100,7 +100,7 @@ public:
     ChangeData* QueueRemoveReferenceChange(unsigned int);
     ChangeData* ChangesMap_GetChanges(TESForm*);
     bool ChangesMap_RemoveChange(TESForm*, unsigned int);
-    void* GetOrCreateNode(void*, unsigned int);
+    void* ChangesMap_AddChange(void*, unsigned int);
     void* DeleteThis(unsigned int);
 };
 
@@ -117,33 +117,45 @@ extern void* DAT_010c1740[];
 extern const char DAT_010c1748[];
 
 // @fnv 0x008551f0
-bool ChangesMap::HasFormChanges(TESForm* form, bool clear)
+// pdb: ChangesMap::RemoveChanges | TESSaveLoadGame.obj | debug, call graph (shared callers), high
+// pdb params: apForm, abForceRemove
+bool ChangesMap::HasFormChanges(TESForm* form, bool abForceRemove)
 {
-    return RemoveChanges(form->GetFormID(), clear);
+    return RemoveChanges(form->GetFormID(), abForceRemove);
 }
 // Looks up the change data under the given id and returns it, or null if absent.
 // @fnv 0x00855100
-ChangeData* SaveLoadChangesMap::QueueRemoveReferenceChange(unsigned int id)
+// pdb: ChangesMap::GetChanges | TESSaveLoadGame.obj | debug, call graph (shared callers), high
+// pdb params: aiFormID
+// pdb locals: pchange
+ChangeData* SaveLoadChangesMap::QueueRemoveReferenceChange(unsigned int aiFormID)
 {
     ChangeData* result = 0;
-    GetAt(id, result);
+    GetAt(aiFormID, result);
     return result;
 }
 // @fnv 0x00856c70
+// pdb: TESSaveLoadGame::RemoveChanges | TESSaveLoadGame.obj | debug, call graph, medium
+// pdb params: apForm, abForceRemove
 void TESSaveLoadGame::HasFormChanges(TESForm* form, bool clear)
 {
     if (!form->IsTemporary())
-        m_pChangesMap->HasFormChanges(form, clear);
+        m_pChanges->HasFormChanges(form, clear);
 }
 // Removes the given TESForm from the deferred list if it is present.
 // @fnv 0x0085a410
+// pdb: TESSaveLoadGame::RemoveFormFromDeferredDeletionList | TESSaveLoadGame.obj | debug, object-file gap fill, medium
+// pdb params: apForm
 void TESSaveLoadGame::FinalizeForm(TESForm* form)
 {
-    if (m_kDeferredDeletionList.IsInList(form))
-        m_kDeferredDeletionList.Remove(form);
+    if (m_DeferredDeleteList.IsInList(form))
+        m_DeferredDeleteList.Remove(form);
 }
 // Initializes the task manager thread: calls FUN_00c42dd0 with arg and DAT_010c1748, then stores DAT_010c1740 in table and owner in manager.
 // @fnv 0x00c3ee70
+// pdb: BSTaskManager<__int64>::BSTaskManager<__int64> | IOManager.obj | retail, unique string literal, high
+// pdb params: aiNumInterfaceThreads, aiNumTaskThreads, aiNumTaskBuckets
+// pdb locals: i
 BSTaskManagerThread::BSTaskManagerThread(void* owner, unsigned int arg)
 {
     FUN_00c42dd0(arg, DAT_010c1748);
@@ -173,6 +185,7 @@ unsigned int S006c6a60::GetIndexForKey(unsigned int key)
     return key % size;
 }
 
+// pdb: class ChangeData, size 0x8, 2 members
 struct ChangeData
 {
     ~ChangeData();
@@ -193,10 +206,12 @@ struct Chg00855220
 {
     int a;
     int b;
-    void* FUN_00854fe0(unsigned int);
+    void* ChangeData_ScalarDtor(unsigned int);
 };
 // @fnv 0x00855220
 // src: XBOX_PDB 0x00855220
+// pdb: ChangesMap::RemoveChanges | TESSaveLoadGame.obj | retail, upstream name already matches, high
+// pdb params: apForm, abForceRemove
 bool ChangesMap::RemoveChanges(unsigned int aiFormID, bool abForceRemove)
 {
     Chg00855220* pchange;
@@ -210,7 +225,7 @@ bool ChangesMap::RemoveChanges(unsigned int aiFormID, bool abForceRemove)
             RemoveAt(aiFormID);
             Chg00855220* t1 = pchange;
             Chg00855220* t2 = t1;
-            t2 ? t2->FUN_00854fe0(1) : 0;
+            t2 ? t2->ChangeData_ScalarDtor(1) : 0;
         }
         return true;
     }
@@ -225,6 +240,7 @@ struct Dummy_00863390
 
 // @fnv 0x008552b0
 // src: EXE 0x008552b0
+// pdb: InteriorCellNewReferencesMap::InteriorCellNewReferencesMap | TESSaveLoadGame.obj | retail, upstream name already matches, high
 int* __fastcall InteriorCellNewReferencesMap_InteriorCellNewReferencesMap(Dummy_00863390* apObject)
 {
     apObject->NiTPointerMap_unsigned_int_BSSimpleList_unsigned_int_NiTPointerMap(0x25);
@@ -242,6 +258,7 @@ struct Dummy_00863390
 // Calls FUN_00863390 with 0x25, stores the address of DAT_01080514 into the object, and returns the object pointer.
 // @fnv 0x008553e0
 // src: EXE 0x008553e0
+// pdb: ExteriorCellNewReferencesMap::ExteriorCellNewReferencesMap | TESSaveLoadGame.obj | retail, upstream name already matches, high
 int* __fastcall ExteriorCellNewReferencesMap_ExteriorCellNewReferencesMap(Dummy_00863390* apObject)
 {
     apObject->NiTPointerMap_unsigned_int_BSSimpleList_unsigned_int_NiTPointerMap(0x25);
@@ -260,6 +277,7 @@ struct Dummy_00863390
 // Calls FUN_00863390 with 0x25, stores the address of DAT_01080514 into the object, and returns the object pointer.
 // @fnv 0x00855550
 // src: EXE 0x00855550
+// pdb: NumericIDBufferMap::NumericIDBufferMap | TESSaveLoadGame.obj | retail, upstream name already matches, high
 int* __fastcall NumericIDBufferMap_NumericIDBufferMap(Dummy_00863390* apObject)
 {
     apObject->NiTPointerMap_unsigned_int_BSSimpleList_unsigned_int_NiTPointerMap(0x25);
@@ -355,8 +373,10 @@ struct FUN_008df040_shell
 extern TESSaveLoadGame* g_TESSaveLoadGame;
 
 // @fnv 0x007065c0
-// src: GUESS 0x007065c0 (confidence: medium)
-unsigned short __cdecl Object_GetVersionedSaveSize(void)
+// src: XBOX_DEBUG_PDB 0x007065c0
+// pdb: Interface::GetSaveSize | Interface.obj | debug, call graph, high
+// pdb locals: isize
+unsigned short __cdecl Interface_GetSaveSize(void)
 {
     unsigned short v = 0;
     v += 4;
@@ -373,6 +393,7 @@ void _Deallocate(void* p);
 
 // Calls FUN_00855310, then frees this with _Deallocate when flags has bit 0 set, and returns this.
 // @fnv 0x008552e0
+// pdb: InteriorCellNewReferencesMap::`scalar deleting destructor' | TESSaveLoadGame.obj | retail, vtable slot, high
 void* InteriorCellNewReferencesMap::FUN_008552e0(unsigned int flags)
 {
     FUN_00855310();
@@ -404,14 +425,16 @@ struct FUN_00858700
     int m_iFourthElementInteger;
     int m_usTrailingValue;
     void* m_ptr;
-    void DoIt(void* arg);
+    void DoIt(void* apBuffer);
 };
 
 // Deallocates arg via _Deallocate and sets m_ptr to null.
 // @fnv 0x00858700
-void FUN_00858700::DoIt(void* arg)
+// pdb: TESSaveLoadGame::DestroyBuffer | TESSaveLoadGame.obj | debug, call graph, high
+// pdb params: apBuffer
+void FUN_00858700::DoIt(void* apBuffer)
 {
-    _Deallocate(arg);
+    _Deallocate(apBuffer);
     m_ptr = 0;
 }
 }  // namespace fnv_00858700
@@ -420,6 +443,8 @@ extern "C" void __cdecl FUN_00ecbf20(void*, void*);
 
 // @fnv 0x00860e00
 // src: COMMUNITY 0x00860e00
+// pdb: strpbrk | TESSaveLoadGame.obj | debug, object-file gap fill, medium
+// pdb params: _Str, _Control
 void strpbrk_00860e00(void* apFirst, void* apSecond)
 {
     FUN_00ecbf20(apFirst, apSecond);
@@ -463,6 +488,7 @@ void _Deallocate(void* p);
 
 // Calls FUN_00863860, frees this with _Deallocate when flags has bit 0 set, and returns this.
 // @fnv 0x008634e0
+// pdb: NiTPointerMap<unsigned int,BSSimpleList<ExteriorCellReferenceData *> *>::`scalar deleting destructor' | TESSaveLoadGame.obj | retail, vtable slot, high
 void* FUN_008634e0::DeleteThis(unsigned int flags)
 {
     FUN_00863860();
@@ -482,6 +508,7 @@ struct FUN_00863540_class
 
 // Calls FUN_00863cd0, then deallocates this when flags has bit 0 set, and returns this.
 // @fnv 0x00863540
+// pdb: NiTPointerMap<unsigned char,BSSimpleList<LoadFormHeader *> *>::`scalar deleting destructor' | TESSaveLoadGame.obj | retail, vtable slot, high
 void* FUN_00863540_class::FUN_00863540(unsigned int flags)
 {
     FUN_00863cd0();
@@ -528,9 +555,11 @@ void __thiscall FUN_00863d60_obj::ReleaseStorage_00863d60()
 
 // @fnv 0x00855130
 // src: XBOX_PDB 0x00855130
-ChangeData* SaveLoadChangesMap::ChangesMap_GetChanges(TESForm* pForm)
+// pdb: ChangesMap::GetChanges | TESSaveLoadGame.obj | debug, call graph (shared callers), high
+// pdb params: apForm
+ChangeData* SaveLoadChangesMap::ChangesMap_GetChanges(TESForm* apForm)
 {
-    return ((SaveLoadChangesMap*)this)->QueueRemoveReferenceChange(pForm->GetFormID());
+    return ((SaveLoadChangesMap*)this)->QueueRemoveReferenceChange(apForm->GetFormID());
 }
 
 struct FUN_00863480Class
@@ -543,6 +572,7 @@ void __cdecl _Deallocate(void*);
 
 // Calls FUN_00863640, then deallocates this when flags has bit 0 set, and returns this.
 // @fnv 0x00863480
+// pdb: NiTPointerMap<unsigned int,ChangeData *>::`scalar deleting destructor' | TESSaveLoadGame.obj | retail, vtable slot, high
 void* __thiscall FUN_00863480Class::FUN_00863480(unsigned int flags)
 {
     FUN_00863640();
@@ -593,6 +623,8 @@ extern TESSaveLoadGame* g_TESSaveLoadGame;
 // Forwards the form and flag to the save/load game's FUN_008579b0 handler.
 // @fnv 0x00484ce0
 // src: XBOX_PDB 0x00484ce0
+// pdb: TESForm::SaveGameDataOLD | TESForm.obj | debug, call graph, medium
+// pdb params: apData, aiSize
 void TESSaveLoadGameHelper::TESForm_SaveGameDataOLD(void* form, int flag)
 {
     ((TESSaveLoadGameHelper*)g_TESSaveLoadGame)->TESSaveLoadGame_SaveGameDataOLD(form, flag);
@@ -602,7 +634,7 @@ void TESSaveLoadGameHelper::TESForm_SaveGameDataOLD(void* form, int flag)
 namespace fnv_00484d00 {
 struct FUN_008579e0_shell
 {
-    void __thiscall TESSaveLoadGame_LoadGameDataOLD(void* buffer, unsigned int size);
+    void __thiscall TESSaveLoadGame_LoadGameDataOLD(void* apData, unsigned int aiSize);
 };
 
 extern TESSaveLoadGame* g_TESSaveLoadGame;
@@ -623,14 +655,17 @@ void __thiscall FUN_00484d00_shell::TESForm_LoadGameDataOLD(void* buffer, unsign
 struct FUN_008586a0_class
 {
     void TESSaveLoadGame_WriteFile(int, int, int);
-    void ForwardToFUN_00857b50(int a, int b, int c);
+    void TESSaveLoadGame_SaveBuffer(int apFile, int apBuffer, int aiSize);
 };
 
 // Calls FUN_00857b50 with the three integer arguments a, b and c.
 // @fnv 0x008586a0
-void FUN_008586a0_class::ForwardToFUN_00857b50(int a, int b, int c)
+// src: XBOX_DEBUG_PDB 0x008586a0
+// pdb: TESSaveLoadGame::SaveBuffer | TESSaveLoadGame.obj | debug, call graph, high
+// pdb params: apFile, apBuffer, aiSize
+void FUN_008586a0_class::TESSaveLoadGame_SaveBuffer(int apFile, int apBuffer, int aiSize)
 {
-    TESSaveLoadGame_WriteFile(a, b, c);
+    TESSaveLoadGame_WriteFile(apFile, apBuffer, aiSize);
 }
 
 struct FUN_00862370_class
@@ -677,6 +712,7 @@ struct FUN_00862370_class
 
 // Returns m_8c, calling InitMaxValue first to initialize it if it is null.
 // @fnv 0x00862370
+// pdb: TESSaveLoadGame::GetNextSaveNumber | TESSaveLoadGame.obj | debug, call graph, medium
 int* __thiscall FUN_00862370_class::GetOrCreatePointer()
 {
     if (m_8c == 0)
@@ -693,6 +729,8 @@ struct FUN_00863360
 // Calls FUN_008635d0 with a, stores the address of DAT_01081e30 at this, and returns this.
 // @fnv 0x00863360
 // src: GUESS 0x00863360 (confidence: low)
+// pdb: NiTPointerMap<unsigned int,ChangeData *>::NiTPointerMap<unsigned int,ChangeData *> | TESSaveLoadGame.obj | debug, object-file run extension, low
+// pdb params: uiHashSize
 void* __thiscall FUN_00863360::InitializeFields_00863360(int a)
 {
     FUN_008635d0(a);
@@ -710,6 +748,8 @@ struct FUN_00863390_class
 // Calls FUN_008636d0 with a, stores the address of DAT_01081e50 in m, and returns this.
 // @fnv 0x00863390
 // src: EXE 0x00863390
+// pdb: NiTPointerMap<unsigned int,BSSimpleList<unsigned int> *>::NiTPointerMap<unsigned int,BSSimpleList<unsigned int> *> | TESSaveLoadGame.obj | debug, object-file run extension, low
+// pdb params: uiHashSize
 int __thiscall FUN_00863390_class::NiTPointerMap_unsigned_int_BSSimpleList_unsigned_int_NiTPointerMap(int a)
 {
     FUN_008636d0(a);
@@ -729,6 +769,8 @@ extern void* DAT_01081e90;
 // Calls FUN_008638f0 on a, sets p to the address of DAT_01081e90, and returns this.
 // @fnv 0x008633f0
 // src: EXE 0x008633f0
+// pdb: NiTPointerMap<unsigned int,void *>::NiTPointerMap<unsigned int,void *> | TESSaveLoadGame.obj | debug, object-file run extension, low
+// pdb params: uiHashSize
 void* FUN_008633f0_class::NiTPointerMap_unsigned_int_void_NiTPointerMap(void* apArg)
 {
     FUN_008638f0(apArg);
@@ -748,6 +790,8 @@ struct FUN_00863420_class
 // Calls FUN_008639f0 with a, sets vfn_0 to &DAT_01081eb0, and returns this.
 // @fnv 0x00863420
 // src: EXE 0x00863420
+// pdb: NiTPointerMap<unsigned char,BSSimpleList<LoadFormHeader *> *>::NiTPointerMap<unsigned char,BSSimpleList<LoadFormHeader *> *> | TESSaveLoadGame.obj | debug, object-file run extension, low
+// pdb params: uiHashSize
 FUN_00863420_class* FUN_00863420_class::NiTPointerMap_unsigned_char_BSSimpleList_LoadFormHeader_NiTPointerMap(int a)
 {
     FUN_008639f0(a);
@@ -766,6 +810,8 @@ struct FUN_00863450_Class
 
 // Calls FUN_00863e30 with a, stores the address of DAT_01081ed0 into this, and returns this.
 // @fnv 0x00863450
+// pdb: NiTMap<unsigned int,BSSimpleList<ExpiredCellData *> *>::NiTMap<unsigned int,BSSimpleList<ExpiredCellData *> *> | TESSaveLoadGame.obj | debug, object-file run extension, low
+// pdb params: uiHashSize
 int __thiscall FUN_00863450_Class::InitWithGlobal(int a)
 {
     NiTMapBase_DFALL_NiTMapItem_unsigned_int_BSSimpleList_ExpiredCellData_unsigned_int_BSSimpleList_ExpiredCellData_NiTMapBase_DFALL_NiTMapItem_unsigned_int_BSSimpleList_ExpiredCellData_unsigned_int_BSSimpleList_ExpiredCellData(a);
@@ -784,10 +830,12 @@ struct FUN_008636a0 : MyMap
     int* vtbl;
     void* data;
     void* alias;
-    void Init();
+    void NiTMapBase_NiTPointerAllocator_unsigned_int_unsigned_int_ChangeData_dtor();
 };
 // @fnv 0x008636a0
-void FUN_008636a0::Init()
+// src: XBOX_DEBUG_PDB 0x008636a0
+// pdb: NiTMapBase<NiTPointerAllocator<unsigned int>,unsigned int,ChangeData *>::~NiTMapBase<NiTPointerAllocator<unsigned int>,unsigned int,ChangeData *> | TESSaveLoadGame.obj | debug, call graph (shared callers), high
+void FUN_008636a0::NiTMapBase_NiTPointerAllocator_unsigned_int_unsigned_int_ChangeData_dtor()
 {
     vtbl = (int*)&DAT_01081ef8;
     RemoveAll();
@@ -814,6 +862,7 @@ struct FUN_00c3ea10_stub
 void ProcessEntries_00c3fce0(void*);
 // @fnv 0x00c3e380
 // src: COMMUNITY 0x00c3e380
+// pdb: IOManager::CancelAllTasks | IOManager.obj | retail, upstream name already matches, high
 void IOManager::CancelAllTasks()
 {
     ProcessEntries_00c3fce0();
@@ -881,9 +930,9 @@ struct GridArray_s
 };
 struct SLGStub
 {
-    unsigned int ClearRefrFlag(TESForm*, unsigned int);
+    unsigned int TESSaveLoadGame_CheckNewReference(TESForm*, unsigned int);
     void TESSaveLoadGame_SetCurrentVersion(unsigned char);
-    void LoadChange(TESForm*, unsigned int);
+    void TESSaveLoadGame_LoadInitialData(TESForm*, unsigned int);
     void FUN_00858700(void*);
 };
 struct BufferHeader_s
@@ -949,11 +998,14 @@ struct LoadFormHeader_s
 
 // @fnv 0x00858730
 // src: EXE 0x00858730
+// pdb: TESSaveLoadGame::LoadForm | TESSaveLoadGame.obj | debug, upstream name already matches, high
+// pdb params: apForm
+// pdb locals: pchange, ptempbuffer, ibufferOverrun, iflags, isize, loadFormHeader, brestore, bufferHeader, pmessage
 bool FUN_00858730_shell::TESSaveLoadGame_LoadForm(TESForm* apForm)
 {
     if (!((FUN_00485d50_slg*)this)->GetLoading())
         return false;
-    ChangeData* pchange2 = (ChangeData*)((SaveLoadChangesMap*)m_pChangesMap)->ChangesMap_GetChanges(apForm);
+    ChangeData* pchange2 = (ChangeData*)((SaveLoadChangesMap*)m_pChanges)->ChangesMap_GetChanges(apForm);
     if (pchange2)
     {
         void* ptempbuffer = ((GridArray_s*)pchange2)->FUN_00726070();
@@ -976,21 +1028,21 @@ bool FUN_00858730_shell::TESSaveLoadGame_LoadForm(TESForm* apForm)
                     pmessageA,
                     "Load Error: Form with ID %08X was saved with form type %s, but currently has form type %s.  Its loading will be skipped.",
                     apForm->GetFormID(), DAT_01187004[formHeader.type].pName, ((Fake440e30*)apForm)->TESForm_GetFormTypeString());
-                m_pChangesMap->HasFormChanges(apForm, true);
+                m_pChanges->HasFormChanges(apForm, true);
                 *(void**)((char*)this + 0x14) = 0;
                 g_011de494.WaitForTasksDuringRendering();
                 return false;
             }
             isize = formHeader.size;
             iflags = *(Flt*)pchange2;
-            iflags = ((SLGStub*)this)->ClearRefrFlag(apForm, iflags);
+            iflags = ((SLGStub*)this)->TESSaveLoadGame_CheckNewReference(apForm, iflags);
             ((SLGStub*)this)->TESSaveLoadGame_SetCurrentVersion(formHeader.version);
             bufferHeader4.LoadFormHeader_LoadFormHeader(&formHeader, apForm->GetFormID(), iflags);
             ((EffectSetting*)this)->SetBoltSound((TESSound*)&bufferHeader4);
             brestore = ((FUN_00485d50_slg*)this)->GetLoading();
             ((FUN_004534f0_shell*)this)->FUN_004534f0(1);
             ((FUN_0046a010_shell*)apForm)->FUN_0046a010(true);
-            ((SLGStub*)this)->LoadChange(apForm, iflags);
+            ((SLGStub*)this)->TESSaveLoadGame_LoadInitialData(apForm, iflags);
             ((FormV*)apForm)->LoadGame(iflags, 0);
             ((FUN_004534f0_shell*)this)->FUN_004534f0(brestore);
             ((EffectSetting*)this)->SetBoltSound(0);
@@ -1004,7 +1056,7 @@ bool FUN_00858730_shell::TESSaveLoadGame_LoadForm(TESForm* apForm)
             ((TESRaceForm*)pchange2)->Initialize(0);
             if (*(unsigned int*)((char*)this + 0x54))
             {
-                ((SaveLoadChangesMap*)m_pChangesMap)->ChangesMap_RemoveChange(apForm, *(unsigned int*)((char*)this + 0x54));
+                ((SaveLoadChangesMap*)m_pChanges)->ChangesMap_RemoveChange(apForm, *(unsigned int*)((char*)this + 0x54));
                 *(unsigned int*)((char*)this + 0x54) = 0;
             }
             g_011de494.WaitForTasksDuringRendering();
@@ -1024,6 +1076,8 @@ struct S8633
 // Calls FUN_008637d0 with a, sets the object's vtable pointer to DAT_01081e70, and returns this.
 // @fnv 0x008633c0
 // src: EXE 0x008633c0
+// pdb: NiTPointerMap<unsigned int,BSSimpleList<ExteriorCellReferenceData *> *>::NiTPointerMap<unsigned int,BSSimpleList<ExteriorCellReferenceData *> *> | TESSaveLoadGame.obj | debug, object-file run extension, low
+// pdb params: uiHashSize
 S8633* S8633::NiTPointerMap_unsigned_int_BSSimpleList_ExteriorCellReferenceData_NiTPointerMap(int a)
 {
     FUN_008637d0(a);
@@ -1041,9 +1095,11 @@ struct FUN_008635a0 : BaseStub
     FUN_008635a0(unsigned int, unsigned int);
 };
 // @fnv 0x008635a0
-FUN_008635a0::FUN_008635a0(unsigned int a, unsigned int b)
+// pdb: NiTLargePrimitiveArray<unsigned int>::NiTLargePrimitiveArray<unsigned int> | TESSaveLoadGame.obj | debug, call graph, high
+// pdb params: uiMaxSize, uiGrowBy
+FUN_008635a0::FUN_008635a0(unsigned int uiMaxSize, unsigned int uiGrowBy)
 {
-    FUN_00864160(a, b);
+    FUN_00864160(uiMaxSize, uiGrowBy);
     *(void**)this = (void*)&DAT_01081ef0;
 }
 
@@ -1051,13 +1107,14 @@ namespace fnv_008637a0 {
 struct MyMap
 {
     void RemoveAll();
-    void ReleaseStorage_008637a0();
+    void NiTMapBase_NiTPointerAllocator_unsigned_int_unsigned_int_BSSimpleList_unsigned_int_dtor();
 };
 void __cdecl _NiFree(void*);
 extern int DAT_01081f18;
 // @fnv 0x008637a0
-// src: GUESS 0x008637a0 (confidence: medium)
-void MyMap::ReleaseStorage_008637a0()
+// src: XBOX_DEBUG_PDB 0x008637a0
+// pdb: NiTMapBase<NiTPointerAllocator<unsigned int>,unsigned int,BSSimpleList<unsigned int> *>::~NiTMapBase<NiTPointerAllocator<unsigned int>,unsigned int,BSSimpleList<unsigned int> *> | TESSaveLoadGame.obj | debug, call graph (shared callers), high
+void MyMap::NiTMapBase_NiTPointerAllocator_unsigned_int_unsigned_int_BSSimpleList_unsigned_int_dtor()
 {
     *(void**)this = (void*)&DAT_01081f18;
     RemoveAll();
@@ -1077,11 +1134,12 @@ extern int DAT_01081f38;
 struct Holder : MyMap
 {
     void* m8;
-    void ReleaseStorage_008638c0();
+    void NiTMapBase_NiTPointerAllocator_unsigned_int_unsigned_int_BSSimpleList_ExteriorCellReferenceData_dtor();
 };
 // @fnv 0x008638c0
-// src: GUESS 0x008638c0 (confidence: medium)
-void Holder::ReleaseStorage_008638c0()
+// src: XBOX_DEBUG_PDB 0x008638c0
+// pdb: NiTMapBase<NiTPointerAllocator<unsigned int>,unsigned int,BSSimpleList<ExteriorCellReferenceData *> *>::~NiTMapBase<NiTPointerAllocator<unsigned int>,unsigned int,BSSimpleList<ExteriorCellReferenceData *> *> | TESSaveLoadGame.obj | debug, call graph (shared callers), high
+void Holder::NiTMapBase_NiTPointerAllocator_unsigned_int_unsigned_int_BSSimpleList_ExteriorCellReferenceData_dtor()
 {
     *(int*)this = (int)&DAT_01081f38;
     RemoveAll();
@@ -1091,6 +1149,7 @@ void Holder::ReleaseStorage_008638c0()
 
 // RTTI at vftable 0x01081f58 identifies this map base specialization.
 // @fnv 0x008639c0
+// pdb: NiTMapBase<NiTPointerAllocator<unsigned int>,unsigned int,void *>::~NiTMapBase<NiTPointerAllocator<unsigned int>,unsigned int,void *> | TESSaveLoadGame.obj | debug, call graph (shared callers), high
 template <>
 NiTMapBase<NiTPointerAllocator<unsigned int>, unsigned int, void*>::~NiTMapBase()
 {
@@ -1117,6 +1176,7 @@ struct FUN_00855660
 
 // Allocates a FUN_00863420_class with argument 0x25 and an SL, storing both in the object's fields.
 // @fnv 0x00855660
+// pdb: SaveStats::SaveStats | TESSaveLoadGame.obj | debug, object-file run extension, low
 FUN_00855660::FUN_00855660()
 {
     m_pVirtualFunctionTable = new FUN_00863420_class(0x25);
@@ -1124,11 +1184,13 @@ FUN_00855660::FUN_00855660()
 }
 }  // namespace fnv_00855660
 
+// pdb: class ContainerItemExtra, size 0xc (here 0x8), 5 members
 struct ContainerItemExtra
 {
     int m_iExtraID;
     char* m_pString;
 };
+// pdb: class TaskQueueInterface, size 0x10 (here 0x1), 4 members
 struct TaskQueueInterface
 {
     static void CopyStringToBuffer(char*, unsigned int, const char*);
@@ -1140,20 +1202,23 @@ struct G2
 unsigned int BSStringLength(const char*);
 struct FUN_008558a0
 {
-    void SetExtraDataString(int iExtraID, const char* pString);
+    void SetExtraDataString(int aiSize, const char* apDescription);
 };
 // @fnv 0x008558a0
-void FUN_008558a0::SetExtraDataString(int iExtraID, const char* pString)
+// pdb: SaveStats::AddExtraStat | TESSaveLoadGame.obj | retail, call graph, high
+// pdb params: aiSize, apDescription
+// pdb locals: tempMemContext, pextraStat, iDescLen
+void FUN_008558a0::SetExtraDataString(int aiSize, const char* apDescription)
 {
     AutoMemHelper kHelper4(17, true, "D:\\_Fallout3\\Platforms\\Common\\Code\\Fallout Shared\\TESSaveLoadGame.cpp",
                            615);
     ContainerItemExtra* pExtra;
     unsigned int uiSize;
     pExtra = new ContainerItemExtra;
-    pExtra->m_iExtraID = iExtraID;
-    uiSize = BSStringLength(pString) + 1;
+    pExtra->m_iExtraID = aiSize;
+    uiSize = BSStringLength(apDescription) + 1;
     pExtra->m_pString = static_cast<char*>(operator new(uiSize));
-    TaskQueueInterface::CopyStringToBuffer(pExtra->m_pString, uiSize, pString);
+    TaskQueueInterface::CopyStringToBuffer(pExtra->m_pString, uiSize, apDescription);
     ((G2*)*(int**)((char*)this + 4))->AddHead((int*)&pExtra);
 }
 
@@ -1169,6 +1234,9 @@ struct FUN_00857aa0 : FUN_00857bd0
 void* __cdecl __memcpy(void* pDest, const void* pSrc, unsigned int uiSize);
 // Copies aiSize bytes from the object's buffer into apFormID, remaps each form ID when talking, calls Init, and returns whether any nonzero ID became zero.
 // @fnv 0x00857aa0
+// pdb: TESSaveLoadGame::LoadNumericID | TESSaveLoadGame.obj | retail, call graph, high
+// pdb params: apFormID, aiSize
+// pdb locals: bforcedToZero, icount, i, iformID
 bool FUN_00857aa0::ValidateFormIDArray(unsigned int* apFormID, unsigned int aiSize)
 {
     bool bforcedToZero = false;
@@ -1196,7 +1264,7 @@ struct FUN_008558a0_class
 struct FUN_008586a0_class
 {
     void TESSaveLoadGame_WriteFile(int, void**, int);
-    void ForwardToFUN_00857b50(int, void*, int);
+    void TESSaveLoadGame_SaveBuffer(int, void*, int);
 };
 struct FUN_00858600_class
 {
@@ -1217,10 +1285,14 @@ struct FUN_009756c0_class
 extern int DAT_011e0e80;
 struct FUN_00858570_class
 {
-    void LoadTempEffectsList(int apFile);
+    void TESSaveLoadGame_SaveFinalData(int apFile);
 };
 // @fnv 0x00858570
-void FUN_00858570_class::LoadTempEffectsList(int apFile)
+// src: XBOX_RETAIL_PDB 0x00858570
+// pdb: TESSaveLoadGame::SaveFinalData | TESSaveLoadGame.obj | retail, string-set bridge, high
+// pdb params: apFile
+// pdb locals: isize, ptempBuffer
+void FUN_00858570_class::TESSaveLoadGame_SaveFinalData(int apFile)
 {
     void* ptempBuffer = ((FUN_009755b0_class*)&DAT_011e0e80)->ProcessLists_GetSaveSize();
     ((FUN_008586a0_class*)this)->TESSaveLoadGame_WriteFile(apFile, &ptempBuffer, 4);
@@ -1230,7 +1302,7 @@ void FUN_00858570_class::LoadTempEffectsList(int apFile)
             ((FUN_008558a0_class*)*(void**)((char*)this + 0x44))->FUN_008558a0(ptempBuffer, "Temp Effects List");
         void* ptempBuffer2 = ((FUN_00858600_class*)this)->TESSaveLoadGame_CreateBuffer(ptempBuffer);
         ((FUN_009756c0_class*)&DAT_011e0e80)->SaveTempEffects();
-        ((FUN_008586a0_class*)this)->ForwardToFUN_00857b50(apFile, ptempBuffer2, (int)ptempBuffer);
+        ((FUN_008586a0_class*)this)->TESSaveLoadGame_SaveBuffer(apFile, ptempBuffer2, (int)ptempBuffer);
         ((FUN_00858700_class*)this)->FUN_00858700(ptempBuffer2);
     }
 }
@@ -1245,6 +1317,8 @@ struct FUN_008616f0_shell
 };
 // @fnv 0x008616f0
 // src: XBOX_PDB 0x008616f0
+// pdb: TESSaveLoadGame::GetSavingAllowed | TESSaveLoadGame.obj | retail, upstream name already matches, high
+// pdb locals: emenuEnum
 bool __thiscall FUN_008616f0_shell::TESSaveLoadGame_GetSavingAllowed()
 {
     if (_g_thePlayer->GameSettingCollection_File() == 2 || _g_thePlayer->GameSettingCollection_File() == 1)
@@ -1276,12 +1350,15 @@ void _FNV_Warning(const char*, ...);
 
 struct FUN_00861780_StandIn
 {
-    void Add(TESForm* form);
+    void TESSaveLoadGame_AddCreatedBaseObject(TESForm* form);
 };
 
 // Warns if form is null or not created, otherwise adds its form ID to the list at offset 0x2c if not already present.
 // @fnv 0x00861780
-void FUN_00861780_StandIn::Add(TESForm* form)
+// src: XBOX_RETAIL_PDB 0x00861780
+// pdb: TESSaveLoadGame::AddCreatedBaseObject | TESSaveLoadGame.obj | retail, string-set bridge, high
+// pdb params: apForm
+void FUN_00861780_StandIn::TESSaveLoadGame_AddCreatedBaseObject(TESForm* form)
 {
     if (form == 0)
     {
@@ -1316,6 +1393,8 @@ struct FUN_00862430_cls
 };
 // Returns true if any component of v is non-finite or NaN, otherwise false.
 // @fnv 0x00862430
+// pdb: TESSaveLoadGame::IsInvalidPoint | TESSaveLoadGame.obj | debug, object-file gap fill, medium
+// pdb params: apPoint
 bool __thiscall FUN_00862430_cls::HasInvalidComponents(FUN_00862430_vec* pVec)
 {
     if (!_FNV_Finite(pVec->x) || !_FNV_Finite(pVec->y) || !_FNV_Finite(pVec->z) || _FNV_IsNaN(pVec->x) ||
@@ -1361,6 +1440,8 @@ struct FUN_00857b50_slg : TESSaveLoadGame
 
 // @fnv 0x00857b50
 // src: XBOX_PDB 0x00857b50
+// pdb: TESSaveLoadGame::WriteFile | TESSaveLoadGame.obj | retail, call graph, medium
+// pdb params: apFile, apData, aiSize
 int FUN_00857b50_slg::TESSaveLoadGame_WriteFile(BSFile* file, const char* name, unsigned int size)
 {
     if (GetLoading())
@@ -1376,16 +1457,19 @@ extern TESDataHandler* g_dataHandler;
 
 struct FUN_00861c00
 {
-    unsigned int GetID(unsigned int id);
+    unsigned int GetID(unsigned int aiFormIDIndex);
 };
 // @fnv 0x00861c00
-unsigned int FUN_00861c00::GetID(unsigned int id)
+// pdb: TESSaveLoadGame::GetNumericIDFromArray | TESSaveLoadGame.obj | debug, call graph (shared callers), high
+// pdb params: aiFormIDIndex
+// pdb locals: iformID
+unsigned int FUN_00861c00::GetID(unsigned int aiFormIDIndex)
 {
-    if (g_dataHandler->FormIDExists(id))
-        return id;
-    if (id > ((TESForm*)(*(void**)((char*)this + 0x78)))->GetFormID())
+    if (g_dataHandler->FormIDExists(aiFormIDIndex))
+        return aiFormIDIndex;
+    if (aiFormIDIndex > ((TESForm*)(*(void**)((char*)this + 0x78)))->GetFormID())
         return 0;
-    unsigned int result = *((BSSimpleArray<unsigned int,1024>*)(*(void**)((char*)this + 0x78)))->GetAtPointer(id);
+    unsigned int result = *((BSSimpleArray<unsigned int,1024>*)(*(void**)((char*)this + 0x78)))->GetAtPointer(aiFormIDIndex);
     return result;
 }
 
@@ -1399,6 +1483,9 @@ struct FUN_00861cd0Class
 // Returns 0 if index exceeds the form ID at this+0x7c, otherwise returns the element at index from the array at this+0x7c.
 // @fnv 0x00861cd0
 // src: GUESS 0x00861cd0 (confidence: medium)
+// pdb: TESSaveLoadGame::GetWorldSpaceIDFromArray | TESSaveLoadGame.obj | debug, object-file gap fill, medium
+// pdb params: aiWorldSpaceIDIndex
+// pdb locals: iformID
 unsigned int FUN_00861cd0Class::GetArrayValueChecked(unsigned short index)
 {
     if (index > ((TESForm*)(*(unsigned int*)((char*)this + 0x7c)))->GetFormID())
@@ -1423,6 +1510,8 @@ struct FUN_008635d0_t
 
 // Sets the vtable, stores iCount, allocates iCount*4 bytes and zeroes them into m_pData.
 // @fnv 0x008635d0
+// pdb: BSSimpleList<TESGlobal *>::ItemsInList | TESSaveLoadGame.obj | debug, object-file run extension, low
+// pdb locals: uiItems, plist
 FUN_008635d0_t::FUN_008635d0_t(int iCount)
 {
     m_pVTable = &DAT_01081ef8;
@@ -1449,6 +1538,7 @@ struct FUN_00863640 : public MyMap
 };
 // Destructor that calls RemoveAll to clear the map's contents.
 // @fnv 0x00863640
+// pdb: NiTPointerMap<unsigned int,ChangeData *>::~NiTPointerMap<unsigned int,ChangeData *> | TESSaveLoadGame.obj | debug, call graph, medium
 FUN_00863640::~FUN_00863640()
 {
     RemoveAll();
@@ -1523,6 +1613,7 @@ struct FUN_00863860 : FUN_008638c0_Class
 };
 // Destructor that calls RemoveAll on the map stored at the start of the object.
 // @fnv 0x00863860
+// pdb: NiTPointerMap<unsigned int,BSSimpleList<ExteriorCellReferenceData *> *>::~NiTPointerMap<unsigned int,BSSimpleList<ExteriorCellReferenceData *> *> | TESSaveLoadGame.obj | debug, call graph (shared callers), high
 FUN_00863860::~FUN_00863860()
 {
     ((MyMap*)this)->RemoveAll();
@@ -1568,6 +1659,8 @@ struct FUN_008639f0
 };
 // Sets the vtable, stores count, allocates count*4 bytes, and zeroes the buffer.
 // @fnv 0x008639f0
+// pdb: InventoryChanges::InitLoadGame | InventoryChanges.obj | retail, object-file run extension, low
+// pdb locals: plist, pchange
 FUN_008639f0::FUN_008639f0(unsigned int count)
 {
     unsigned int uiSize;
@@ -1599,6 +1692,7 @@ void __cdecl _Deallocate(void* ptr);
 
 
 // @fnv 0x00854ed0
+// pdb: ChangesMap::`scalar deleting destructor' | TESSaveLoadGame.obj | retail, vtable slot, high
 void* SaveLoadChangesMap::DeleteThis(unsigned int flags)
 {
     this->ChangesMap::~ChangesMap();
@@ -1612,13 +1706,15 @@ void* SaveLoadChangesMap::DeleteThis(unsigned int flags)
 struct FUN_00854e10
 {
     void ReleaseStorage_00854e10();
-    void* FUN_00854fe0(unsigned int flags);
+    void* ChangeData_ScalarDtor(unsigned int flags);
 };
 
 void _Deallocate(void*);
 
 // @fnv 0x00854fe0
-void* FUN_00854e10::FUN_00854fe0(unsigned int flags)
+// src: XBOX_DEBUG_PDB 0x00854fe0
+// pdb: ChangeData::`scalar deleting destructor' | TESSaveLoadGame.obj | debug, call graph (shared callers), high
+void* FUN_00854e10::ChangeData_ScalarDtor(unsigned int flags)
 {
     ReleaseStorage_00854e10();
     if (flags & 1)
@@ -1631,6 +1727,7 @@ void _Deallocate(void*);
 
 
 // @fnv 0x00855410
+// pdb: ExteriorCellNewReferencesMap::`scalar deleting destructor' | TESSaveLoadGame.obj | retail, vtable slot, high
 void* ExteriorCellNewReferencesMap::FUN_00855410(unsigned int flags)
 {
     FUN_00855440();
@@ -1647,6 +1744,7 @@ void __cdecl _Deallocate(void*);
 
 // Calls FUN_008555b0, then deallocates this when bit 0 of flags is set, and returns this.
 // @fnv 0x00855580
+// pdb: NumericIDBufferMap::`scalar deleting destructor' | TESSaveLoadGame.obj | retail, vtable slot, high
 void* NumericIDBufferMap::FUN_00855580(unsigned int flags)
 {
     FUN_008555b0();
@@ -1678,6 +1776,7 @@ struct FUN_00857320
 };
 
 // @fnv 0x00857320
+// pdb: MovedReferenceData::MovedReferenceData | TESSaveLoadGame.obj | debug, object-file run extension, low
 FUN_00857320::FUN_00857320() : m_uiFilterValue(0), m_base(), m_kMemberDescriptor()
 {}
 
@@ -1696,6 +1795,9 @@ struct FUN_008578b0_Class
 };
 
 // @fnv 0x008578b0
+// pdb: TESSaveLoadGame::CleanupLoadSave | TESSaveLoadGame.obj | debug, call graph, medium
+// pdb params: apFile, aeAction
+// pdb locals: contentData, iresult
 void FUN_008578b0_Class::ReleaseFile(BSFile* file, int type)
 {
     if (!file)
@@ -1750,7 +1852,7 @@ class FUN_008558a0
 class FUN_008586a0_class
 {
   public:
-    void ForwardToFUN_00857b50(int, int, int);
+    void TESSaveLoadGame_SaveBuffer(int, int, int);
 };
 
 extern TESDataHandler* g_dataHandler;
@@ -1759,6 +1861,9 @@ extern TESDataHandler* g_dataHandler;
 
 // @fnv 0x00858480
 // src: XBOX_PDB 0x00858480
+// pdb: TESSaveLoadGame::SaveGlobals | TESSaveLoadGame.obj | retail, string-set bridge, high
+// pdb params: apFile
+// pdb locals: pglobals, icount, isize, ptempBuffer, pglobal, iglobalID, fvalue
 void ::TESSaveLoadGame::SaveGlobals(BSFile* apFile)
 {
     GlobalListNode* pglobals4;
@@ -1792,7 +1897,7 @@ void ::TESSaveLoadGame::SaveGlobals(BSFile* apFile)
         pglobals4 = pglobals4->_ref_00726070();
     }
 
-    reinterpret_cast<fnv_anon_00858480::FUN_008586a0_class*>(this)->ForwardToFUN_00857b50(reinterpret_cast<int>(apFile),
+    reinterpret_cast<fnv_anon_00858480::FUN_008586a0_class*>(this)->TESSaveLoadGame_SaveBuffer(reinterpret_cast<int>(apFile),
                                                                        reinterpret_cast<int>(ptempBuffer2), isize9);
 
     this->FUN_00858700(ptempBuffer2);
@@ -1813,10 +1918,12 @@ public:
 };
 
 // @fnv 0x0085a3d0
+// pdb: TESSaveLoadGame::AddFormToDeferredDeletionsList | TESSaveLoadGame.obj | retail, object-file run extension, low
+// pdb params: apForm
 void SaveLoadDeferredDeletions::AddFormToList(TESForm* apForm)
 {
-    if (!m_kDeferredDeletionList.IsInList(apForm))
-        m_kDeferredDeletionList.AddHead(apForm);
+    if (!m_DeferredDeleteList.IsInList(apForm))
+        m_DeferredDeleteList.AddHead(apForm);
 }
 
 
@@ -1846,16 +1953,20 @@ int(_sprintf_s)(char*, int, char const*, ...);
 class SaveLoadNumericIDArrays : public TESSaveLoadGame
 {
 public:
-    void WriteFormIDArrays(BSFile*);
+    void TESSaveLoadGame_SaveNumericIDArrays(BSFile*);
 };
 
 // @fnv 0x00861d10
-void SaveLoadNumericIDArrays::WriteFormIDArrays(BSFile* apFile)
+// src: XBOX_RETAIL_PDB 0x00861d10
+// pdb: TESSaveLoadGame::SaveNumericIDArrays | TESSaveLoadGame.obj | retail, string-set bridge, high
+// pdb params: apFile
+// pdb locals: isize, isize2, i, iformID, ptemp
+void SaveLoadNumericIDArrays::TESSaveLoadGame_SaveNumericIDArrays(BSFile* apFile)
 {
     unsigned int isize;
     unsigned int uiCount2;
 
-    isize = ((SaveLoadFormArrayAccess*)m_pFormIDArray)->GetFormID();
+    isize = ((SaveLoadFormArrayAccess*)m_pNumericIDArray)->GetFormID();
     ((FUN_008586a0_class*)this)->TESSaveLoadGame_WriteFile(reinterpret_cast<int>(apFile), reinterpret_cast<int>(&isize), 4);
 
     {
@@ -1865,7 +1976,7 @@ void SaveLoadNumericIDArrays::WriteFormIDArrays(BSFile* apFile)
         {
             unsigned int iformID;
 
-            iformID = *((SaveLoadFormArrayAccess*)m_pFormIDArray)->GetAt(i);
+            iformID = *((SaveLoadFormArrayAccess*)m_pNumericIDArray)->GetAt(i);
             ((FUN_008586a0_class*)this)->TESSaveLoadGame_WriteFile(reinterpret_cast<int>(apFile), reinterpret_cast<int>(&iformID), 4);
         }
     }
@@ -1888,13 +1999,13 @@ void SaveLoadNumericIDArrays::WriteFormIDArrays(BSFile* apFile)
     {
         char acBuffer[260];
 
-        if (m_pSaveGameEntry)
+        if (m_pSaveLoadStats)
         {
             (_sprintf_s)(acBuffer, 0x104, "Numeric ID Array(%i)", isize);
-            ((FUN_008558a0*)m_pSaveGameEntry)->SetExtraDataString(isize * 4 + 4, acBuffer);
+            ((FUN_008558a0*)m_pSaveLoadStats)->SetExtraDataString(isize * 4 + 4, acBuffer);
 
             (_sprintf_s)(acBuffer, 0x104, "WorldSpace ID Array(%i)", uiCount2);
-            ((FUN_008558a0*)m_pSaveGameEntry)->SetExtraDataString(uiCount2 * 4 + 4, acBuffer);
+            ((FUN_008558a0*)m_pSaveLoadStats)->SetExtraDataString(uiCount2 * 4 + 4, acBuffer);
         }
     }
 }
@@ -1918,6 +2029,9 @@ __declspec(dllimport) unsigned long __stdcall GetTickCount();
 
 // @fnv 0x00861ea0
 // src: COMMUNITY 0x00861ea0
+// pdb: NiTPointerMap<unsigned char,BSSimpleList<LoadFormHeader *> *>::NiTPointerMap<unsigned char,BSSimpleList<LoadFormHeader *> *> | TESSaveLoadGame.obj | retail, object-file run extension, low
+// pdb note: debug build links it to TESSaveLoadGame::StartLoadingSequence
+// pdb params: uiHashSize
 void LLD_TESHelper::TESSaveLoadGame_StartLoadingSequence()
 {
     if (GetTickCount() > DAT_011de464 + 0xbb8)
@@ -1935,7 +2049,7 @@ struct FUN_00862150StandIn
     char padding[0x1C4];
     char* queuedWeaponPath;
 
-    void TESSaveLoadGame_SetMostRecentSaveGame(BSFile* file);
+    void TESSaveLoadGame_SetMostRecentSaveGame(BSFile* apFile);
 };
 
 void __cdecl _Deallocate(void* pointer);
@@ -1951,7 +2065,10 @@ class TaskQueueInterface
 
 // @fnv 0x00862150
 // src: COMMUNITY 0x00862150
-void FUN_00862150StandIn::TESSaveLoadGame_SetMostRecentSaveGame(BSFile* file)
+// pdb: TESSaveLoadGame::SetMostRecentSaveGame | TESSaveLoadGame.obj | retail, upstream name already matches, high
+// pdb params: apFile
+// pdb locals: fileTime
+void FUN_00862150StandIn::TESSaveLoadGame_SetMostRecentSaveGame(BSFile* apFile)
 {
     if (queuedWeaponPath)
     {
@@ -1959,11 +2076,11 @@ void FUN_00862150StandIn::TESSaveLoadGame_SetMostRecentSaveGame(BSFile* file)
         queuedWeaponPath = 0;
     }
 
-    if (file != 0)
+    if (apFile != 0)
     {
-        if (TESAnimGroup_GetDecal(reinterpret_cast<bool*>(file)) != 0)
+        if (TESAnimGroup_GetDecal(reinterpret_cast<bool*>(apFile)) != 0)
         {
-            const char* currentPath = file->FileName();
+            const char* currentPath = apFile->FileName();
             char* found = FUN_004812f0(currentPath, "\\");
 
             while (found)
@@ -1997,6 +2114,7 @@ void _Deallocate(void* ptr);
 
 // Calls FUN_00863960, then deallocates this when flags has bit 0 set, and returns this.
 // @fnv 0x00863510
+// pdb: NiTPointerMap<unsigned int,void *>::`scalar deleting destructor' | TESSaveLoadGame.obj | retail, vtable slot, high
 void* FUN_00863510Class::FUN_00863510(unsigned int flags)
 {
     FUN_00863960();
@@ -2018,6 +2136,7 @@ struct FUN_00863570_StandIn : public FUN_00863ea0_StandIn
 void __cdecl _Deallocate(void*);
 
 // @fnv 0x00863570
+// pdb: NiTMap<unsigned int,BSSimpleList<ExpiredCellData *> *>::`scalar deleting destructor' | TESSaveLoadGame.obj | debug, vtable slot, medium
 void* FUN_00863570_StandIn::FUN_00863570(unsigned int flags)
 {
     this->FUN_00863ea0();
@@ -2052,6 +2171,8 @@ void FUN_00c3ea10_holder::LockFreePriorityQueue_Clear()
 
 // Destructor that calls DeleteAllEntries before the object is destroyed.
 // @fnv 0x00854f00
+// pdb: SaveGameFile::`scalar deleting destructor' | TESSaveLoadGame.obj | retail, object-file run extension, low
+// pdb note: debug build links it to ChangesMap::~ChangesMap
 ChangesMap::~ChangesMap()
 {
     DeleteAllEntries();
@@ -2064,7 +2185,7 @@ struct Form_00855010
 struct Guard_00855010
 {
     int unk00;
-    Guard_00855010(int a, int b, const char* file, int line);
+    Guard_00855010(int memContext, int overridable, const char* file, int aiLine);
     ~Guard_00855010();
 };
 struct Node_00855010
@@ -2075,7 +2196,7 @@ struct Node_00855010
     void ChangeData_AddChange(unsigned int a);
 };
 
-Guard_00855010::Guard_00855010(int a, int b, const char* file, int line)
+Guard_00855010::Guard_00855010(int memContext, int overridable, const char* file, int aiLine)
 {}
 Guard_00855010::~Guard_00855010()
 {}
@@ -2084,7 +2205,11 @@ Node_00855010::Node_00855010()
 
 // Looks up a node for the form via FUN_00853130, creates and registers one if missing, then calls FUN_00854e40 with a2 and returns it.
 // @fnv 0x00855010
-void* SaveLoadChangesMap::GetOrCreateNode(void* pForm, unsigned int uiValue)
+// src: XBOX_DEBUG_PDB 0x00855010
+// pdb: ChangesMap::AddChange | TESSaveLoadGame.obj | debug, call graph (shared callers), high
+// pdb params: apForm, aiChange
+// pdb locals: bfound, iformID, pchange, tempMemContext
+void* SaveLoadChangesMap::ChangesMap_AddChange(void* pForm, unsigned int aiChange)
 {
     void* out = reinterpret_cast<Form_00855010*>(pForm)->GetHavokWorldObjectCountInSceneGraph_0084e3a0();
     Node_00855010* r1;
@@ -2098,7 +2223,7 @@ void* SaveLoadChangesMap::GetOrCreateNode(void* pForm, unsigned int uiValue)
             SetAt((unsigned int)out, (ChangeData*)r1);
         }
     }
-    r1->ChangeData_AddChange(uiValue);
+    r1->ChangeData_AddChange(aiChange);
     return r1;
 }
 
@@ -2110,6 +2235,8 @@ struct Cell00855310
 
 
 // @fnv 0x00855310
+// pdb: InteriorCellNewReferencesMap::~InteriorCellNewReferencesMap | TESSaveLoadGame.obj | retail, upstream name already matches, high
+// pdb locals: it, plist, iformID
 InteriorCellNewReferencesMap::~InteriorCellNewReferencesMap()
 {
     void* node7;
@@ -2136,7 +2263,7 @@ InteriorCellNewReferencesMap::~InteriorCellNewReferencesMap()
 struct ScopeLock_855970
 {
     unsigned int m_unk00;
-    ScopeLock_855970(int a, int b, const char* file, int line);
+    ScopeLock_855970(int memContext, int overridable, const char* file, int aiLine);
     ~ScopeLock_855970();
 };
 
@@ -2166,6 +2293,9 @@ struct FUN_00855970_cls
 
 // Copies the key fields from src into a local key, stores flags into its unk0a, and applies it to owner under a scope lock.
 // @fnv 0x00855970
+// pdb: SaveStats::AddStats | TESSaveLoadGame.obj | retail, object-file run extension, low
+// pdb params: apHeader, aiSize
+// pdb locals: header, tempMemContext
 void FUN_00855970_cls::ApplyKeyWithFlags(Key_855970* pSrcKey, unsigned short flags)
 {
     ScopeLock_855970 lock(0x11, 1, "D:\\_Fallout3\\Platforms\\Common\\Code\\Fallout Shared\\TESSaveLoadGame.cpp",
@@ -2195,6 +2325,7 @@ struct FUN_008572c0_cls
 // Clears m_00 and m_04 to zero, calls FUN_008572f0 on m_08, and returns this.
 // @fnv 0x008572c0
 // src: XBOX_PDB 0x008572c0
+// pdb: CreatedReferenceData::CreatedReferenceData | TESSaveLoadGame.obj | debug, upstream name already matches, high
 FUN_008572c0_cls* FUN_008572c0_cls::CreatedReferenceData_CreatedReferenceData()
 {
     m_00 = 0;
@@ -2224,13 +2355,14 @@ class FUN_008572f0_cls
 };
 
 // @fnv 0x008572f0
+// pdb: ReferenceData::ReferenceData | TESSaveLoadGame.obj | debug, call graph (shared callers), high
 FUN_008572f0_cls::FUN_008572f0_cls() : m_iArrayLength(0)
 {}
 
 class C857370
 {
   public:
-    int* __thiscall OpenSaveFile(int*, int, int);
+    int* __thiscall TESSaveLoadGame_PrepForLoadSave(int*, int, int);
 };
 class C8578b0
 {
@@ -2247,12 +2379,15 @@ void __cdecl BSSystemFile_DeleteFileA(int);
 
 // @fnv 0x00857950
 // src: GUESS 0x00857950 (confidence: low)
+// pdb: TESSaveLoadGame::DeleteSaveGame | TESSaveLoadGame.obj | debug, object-file gap fill, medium
+// pdb params: apFile, sFileName
+// pdb locals: pNewFile
 void __thiscall C857950::UpdateState_00857950(int* pObject, int b)
 {
     int* p;
     if (pObject == 0)
         return;
-    p = ((C857370*)this)->OpenSaveFile(pObject, b, 3);
+    p = ((C857370*)this)->TESSaveLoadGame_PrepForLoadSave(pObject, b, 3);
     if (p == 0)
         p = pObject;
     BSSystemFile_DeleteFileA((*(int(__thiscall**)(int*))(*(int**)p + 6))(p));
@@ -2266,25 +2401,28 @@ extern "C" int __cdecl FUN_00ec43fb(unsigned int a, unsigned int b, void* c, voi
 
 struct FUN_0085a450_cls
 {
-    int TESSaveLoadGame_GetInitialDataSaveSize(unsigned int a1, unsigned int a2);
+    int TESSaveLoadGame_GetInitialDataSaveSize(unsigned int apForm, unsigned int aiFlags);
 };
 
 // Calls FUN_00ec43fb twice with DAT_01183028 and DAT_011841cc/DAT_01183fb4, then returns a code derived from a2 and the results.
 // @fnv 0x0085a450
 // src: COMMUNITY 0x0085a450
-int FUN_0085a450_cls::TESSaveLoadGame_GetInitialDataSaveSize(unsigned int a1, unsigned int auiFlags)
+// pdb: TESSaveLoadGame::GetInitialDataSaveSize | TESSaveLoadGame.obj | retail, upstream name already matches, high
+// pdb params: apForm, aiFlags
+// pdb locals: pref, pcell
+int FUN_0085a450_cls::TESSaveLoadGame_GetInitialDataSaveSize(unsigned int apForm, unsigned int aiFlags)
 {
-    int r1 = FUN_00ec43fb(a1, 0, &DAT_01183028, &DAT_011841cc, 0);
+    int r1 = FUN_00ec43fb(apForm, 0, &DAT_01183028, &DAT_011841cc, 0);
     if (r1 == 0)
     {
-        int r2 = FUN_00ec43fb(a1, 0, &DAT_01183028, &DAT_01183fb4, 0);
+        int r2 = FUN_00ec43fb(apForm, 0, &DAT_01183028, &DAT_01183fb4, 0);
         if (r2 != 0)
         {
-            if ((auiFlags & 0) != 0)
+            if ((aiFlags & 0) != 0)
                 return 4;
             else
             {
-                if ((auiFlags & 0) != 0)
+                if ((aiFlags & 0) != 0)
                     return 6;
                 else
                     return 0;
@@ -2293,16 +2431,16 @@ int FUN_0085a450_cls::TESSaveLoadGame_GetInitialDataSaveSize(unsigned int a1, un
     }
     if (r1 != 0)
     {
-        if ((auiFlags & 0) != 0)
+        if ((aiFlags & 0) != 0)
             return 0x24;
-        if ((auiFlags & 6) != 0)
+        if ((aiFlags & 6) != 0)
         {
-            if ((auiFlags & 0) != 0)
+            if ((aiFlags & 0) != 0)
                 return 0x2c;
             else
                 return 0x1c;
         }
-        if ((auiFlags & 0) != 0)
+        if ((aiFlags & 0) != 0)
             return 4;
     }
     return 0;
@@ -2318,7 +2456,7 @@ struct FUN_0085b240_node
 };
 struct FUN_0085b240_att
 {
-    void SetExtraDataString(int iExtraID, const char* pString);
+    void SetExtraDataString(int aiSize, const char* apDescription);
 };
 struct FUN_0085b240_mgr
 {
@@ -2333,11 +2471,15 @@ struct FUN_0085b240_cls
     unsigned int m_00, m_04, m_08, m_0c, m_10, m_14, m_18, m_1c, m_20, m_24, m_28, m_2c, m_30, m_34, m_38, m_3c, m_40;
     int m_44;
     void TESSaveLoadGame_WriteFile(void* a, void* b, int c);
-    void WritePluginList(FUN_0085b240_ref* a1);
+    void TESSaveLoadGame_SavePluginList(FUN_0085b240_ref* apFile);
 };
 
 // @fnv 0x0085b240
-void FUN_0085b240_cls::WritePluginList(FUN_0085b240_ref* a1)
+// src: XBOX_RETAIL_PDB 0x0085b240
+// pdb: TESSaveLoadGame::SavePluginList | TESSaveLoadGame.obj | retail, string-set bridge, high
+// pdb params: apFile
+// pdb locals: icount, ipos, i, pfileName, pfile, ilength
+void FUN_0085b240_cls::TESSaveLoadGame_SavePluginList(FUN_0085b240_ref* apFile)
 {
     unsigned char i;
     unsigned char flag9 = DAT_011c3f2c->FUN_0051f550();
@@ -2345,23 +2487,23 @@ void FUN_0085b240_cls::WritePluginList(FUN_0085b240_ref* a1)
     unsigned char flagA;
     if (this->m_44 != 0)
     {
-        iStartPos = a1->BSFile_Tell();
+        iStartPos = apFile->BSFile_Tell();
     }
-    TESSaveLoadGame_WriteFile(a1, &flag9, 1);
+    TESSaveLoadGame_WriteFile(apFile, &flag9, 1);
     for (i = 0; i < flag9; i++)
     {
         FUN_0085b240_node* pNode = DAT_011c3f2c->FUN_00465010(i);
         {
             void* pData = pNode->FUN_00891170();
             flagA = BSstrlen(pData);
-            TESSaveLoadGame_WriteFile(a1, &flagA, 1);
-            TESSaveLoadGame_WriteFile(a1, pData, flagA);
+            TESSaveLoadGame_WriteFile(apFile, &flagA, 1);
+            TESSaveLoadGame_WriteFile(apFile, pData, flagA);
         }
     }
     if (this->m_44 != 0)
     {
         reinterpret_cast<FUN_0085b240_att*>(this->m_44)
-            ->SetExtraDataString(a1->BSFile_Tell() - iStartPos, "Plugin List");
+            ->SetExtraDataString(apFile->BSFile_Tell() - iStartPos, "Plugin List");
     }
 }
 
@@ -2409,6 +2551,9 @@ struct FUN_00861c60_shell
 };
 // @fnv 0x00861c60
 // src: GUESS 0x00861c60 (confidence: low)
+// pdb: TESSaveLoadGame::AddWorldSpaceIDToArray | TESSaveLoadGame.obj | debug, object-file gap fill, medium
+// pdb params: aiWorldSpaceID
+// pdb locals: isize, i, iformID
 unsigned short FUN_00861c60_shell::ProcessEntries_00861c60(unsigned int value)
 {
     unsigned int count = collection->GetHavokWorldObjectCountInSceneGraph_0084e3a0();
@@ -2460,18 +2605,20 @@ struct FUN_00861ee0_Class
     int unk7c;
     unsigned char unk80;
 
-    void __thiscall TESSaveLoadGame_SetCurrentVersion(unsigned char value);
+    void __thiscall TESSaveLoadGame_SetCurrentVersion(unsigned char acVersion);
 };
 
 // If value is below 0x13, calls FUN_005b5e40 with DAT_01081cf0, value and 0x13, then stores value in unk80.
 // @fnv 0x00861ee0
 // src: XBOX_PDB 0x00861ee0
-void __thiscall FUN_00861ee0_Class::TESSaveLoadGame_SetCurrentVersion(unsigned char value)
+// pdb: TESSaveLoadGame::SetCurrentVersion | TESSaveLoadGame.obj | debug, upstream name already matches, high
+// pdb params: acVersion
+void __thiscall FUN_00861ee0_Class::TESSaveLoadGame_SetCurrentVersion(unsigned char acVersion)
 {
-    if (value < 0x13)
-        Warning_005b5e40(DAT_01081cf0, value, 0x13);
+    if (acVersion < 0x13)
+        Warning_005b5e40(DAT_01081cf0, acVersion, 0x13);
 
-    unk80 = value;
+    unk80 = acVersion;
 }
 
 struct TESWorldSpace;
@@ -2485,11 +2632,14 @@ extern int DAT_011de500;
 int sprintf_s(char*, unsigned int, const char*, ...);
 
 // @fnv 0x00861f20
-void TESSaveLoadGame::TestAllCells(unsigned int aiType)
+// pdb: TESSaveLoadGame::TestAllCells | TESSaveLoadGame.obj | retail, string-set bridge, high
+// pdb params: aiControl
+// pdb locals: icount, pobject, i, pcell, pos, pref, pfileName
+void TESSaveLoadGame::TestAllCells(unsigned int aiControl)
 {
-    if (aiType == 4 || aiType == 5)
+    if (aiControl == 4 || aiControl == 5)
     {
-        if (aiType == 5)
+        if (aiControl == 5)
         {
             TESBoundObject* pObj8;
             unsigned int kUiCount;
@@ -2545,6 +2695,7 @@ struct FUN_00862110_cls
 
 // @fnv 0x00862110
 // src: XBOX_PDB 0x00862110
+// pdb: TESSaveLoadGame::UseSaveGameBlocks | TESSaveLoadGame.obj | debug, upstream name already matches, high
 bool FUN_00862110_cls::TESSaveLoadGame_UseSaveGameBlocks()
 {
     if (DAT_011de45c->FUN_008df040() >= 0x1f)
@@ -2588,6 +2739,9 @@ struct TESSL8623
 // Scans m_changes for the record whose form matches form, removes it from the map and deletes it.
 // @fnv 0x008623a0
 // src: XBOX_PDB 0x008623a0
+// pdb: TESSaveLoadGame::RemoveFormFromInitFormArray | TESSaveLoadGame.obj | debug, upstream name already matches, high
+// pdb params: apForm
+// pdb locals: isize, i, pformAndFlags
 void TESSL8623::TESSaveLoadGame_RemoveFormFromInitFormArray(void* form)
 {
     if (m_changes != 0)
@@ -2614,6 +2768,7 @@ struct FUN_008634b0_Class
 };
 // Calls FUN_00863740, then deletes this when flags has bit 0 set, and returns this.
 // @fnv 0x008634b0
+// pdb: NiTPointerMap<unsigned int,BSSimpleList<unsigned int> *>::`scalar deleting destructor' | TESSaveLoadGame.obj | retail, vtable slot, high
 void* FUN_008634b0_Class::FUN_008634b0(unsigned int flags)
 {
     FUN_00863740();
@@ -2647,6 +2802,8 @@ struct FUN_00863a60_Class
 
 // Empty inline virtual stub; the class's first vtable slot, defined with no body.
 // @fnv 0x00863a60
+// pdb: InventoryChanges::SaveGame | InventoryChanges.obj | retail, object-file run extension, low
+// pdb locals: icount, plist, itempStartPosition, iblockSize, pcount, pblockSize, iblockHeader, pchange, icurrentBufferPosition, pheader, pform, istartBufferPosition
 inline void FUN_00863a60_Class::vf00()
 {}
 inline int FUN_00863a60_Class::vf04(int)
@@ -2713,6 +2870,8 @@ struct FUN_00863b40_Class
 };
 
 // @fnv 0x00863b40
+// pdb: InventoryChanges::InitLoadGame | InventoryChanges.obj | retail, object-file run extension, low
+// pdb locals: plist, pchange
 inline void FUN_00863b40_Class::vf00()
 {}
 inline int FUN_00863b40_Class::vf04(unsigned char)
@@ -2762,6 +2921,9 @@ struct Map_00863bc0
 
 // Outputs the item's key and value, then advances item to the next chained item or the next non-empty bucket, or null.
 // @fnv 0x00863bc0
+// pdb: InventoryChanges::GetNextItem | InventoryChanges.obj | retail, upstream name already matches, high; only the method name matches, on a class other than the PDB class, so its parameter names are not applied
+// pdb params (unverified): arIterator, arpItemChange, aiIterateFlags
+// pdb locals (unverified): pcontainerObject, pbipedform, pweapon, pitemChange, icount, pboundObject
 void Map_00863bc0::GetNextItem(Item_00863bc0*& item, unsigned char& key, unsigned int& val)
 {
     Item_00863bc0* pkItem = item;
@@ -2824,6 +2986,8 @@ struct FUN_00c3e340_cls
 // Calls m_pFn if ReleaseAndCleanup returns true and m_pFn is non-null.
 // @fnv 0x00c3e340
 // src: XBOX_PDB 0x00c3e340
+// pdb: IOManager::Resume | IOManager.obj | retail, upstream name already matches, high
+// pdb locals: tempAutoEvent
 void FUN_00c3e340_cls::IOManager_Resume()
 {
     if (this->ReleaseAndCleanup() && this->m_pFn != 0)
@@ -2835,15 +2999,17 @@ void FUN_00c3e340_cls::IOManager_Resume()
 class C3E3A0Table
 {
   public:
-    int IOManager_GetBucketForKey(__int64 iKey);
+    int IOManager_GetBucketForKey(__int64 aiKey);
 };
 
 // @fnv 0x00c3e3a0
 // src: COMMUNITY 0x00c3e3a0
-int C3E3A0Table::IOManager_GetBucketForKey(__int64 iKey)
+// pdb: IOManager::GetBucketForKey | IOManager.obj | debug, upstream name already matches, high
+// pdb params: aiKey
+int C3E3A0Table::IOManager_GetBucketForKey(__int64 aiKey)
 {
-    unsigned char m_ucClipIdentifier = (unsigned char)(iKey >> 16);
-    return m_ucClipIdentifier * (((unsigned char)(iKey >> 56) + 4) % 20);
+    unsigned char m_ucClipIdentifier = (unsigned char)(aiKey >> 16);
+    return m_ucClipIdentifier * (((unsigned char)(aiKey >> 56) + 4) % 20);
 }
 
 // FUN_00c3e3f0 : thiscall member (1 stack parameter), /Od.
@@ -2858,7 +3024,7 @@ struct FUN_00c3e3f0_cls
 
 struct SpawnHeap_cls
 {
-    void __thiscall MemoryManager_Deallocate(void* pObject);
+    void __thiscall MemoryManager_Deallocate(void* apMem);
 };
 
 extern "C" char DAT_011f6238;
@@ -2884,13 +3050,16 @@ struct Container00c3e420
     virtual void v2();
     Elem00c3e420** items;
     unsigned int count;
-    bool LockFreePriorityQueue_NiPointer_IOTask_Pop(int arg);
+    bool LockFreePriorityQueue_NiPointer_IOTask_Pop(int arData);
 };
 
 // Iterates the container's items and returns true as soon as an item's FUN_00c3e490(arg) check succeeds, otherwise false.
 // @fnv 0x00c3e420
 // src: COMMUNITY 0x00c3e420
-bool Container00c3e420::LockFreePriorityQueue_NiPointer_IOTask_Pop(int arg)
+// pdb: LockFreePriorityQueue<NiPointer<IOTask> >::Pop | IOManager.obj | retail, call graph, high
+// pdb params: arData
+// pdb locals: i, bresult
+bool Container00c3e420::LockFreePriorityQueue_NiPointer_IOTask_Pop(int arData)
 {
     for (unsigned int i = 0; i < count; i++)
     {
@@ -2905,7 +3074,7 @@ bool Container00c3e420::LockFreePriorityQueue_NiPointer_IOTask_Pop(int arg)
         int src;
         int delta;
         int result;
-        bool b = items[i]->LockFreeQueue_NiPointer_IOTask_Pop_00c3e490(arg);
+        bool b = items[i]->LockFreeQueue_NiPointer_IOTask_Pop_00c3e490(arData);
         if (b)
         {
             v2();
@@ -2918,6 +3087,8 @@ bool Container00c3e420::LockFreePriorityQueue_NiPointer_IOTask_Pop(int arg)
 
 // Deletes each ChangeData entry, then clears the map.
 // @fnv 0x00854f60
+// pdb: ChangesMap::RemoveAllChanges | TESSaveLoadGame.obj | retail, vtable slot, high
+// pdb locals: it, iformID, pchange
 void ChangesMap::DeleteAllEntries()
 {
     void* pkPos = GetFirstPos();
@@ -2947,6 +3118,8 @@ struct RefListNode
 
 // Destructor: walks every entry of the map, deletes each RefItem and its RefListNode list, then clears the map.
 // @fnv 0x00855440
+// pdb: ExteriorCellNewReferencesMap::~ExteriorCellNewReferencesMap | TESSaveLoadGame.obj | retail, upstream name already matches, high
+// pdb locals: it, plist, pdatalist, iformID, pdata
 ExteriorCellNewReferencesMap::~ExteriorCellNewReferencesMap()
 {
     void* pos = GetFirstPos();
@@ -2974,6 +3147,8 @@ ExteriorCellNewReferencesMap::~ExteriorCellNewReferencesMap()
 
 
 // @fnv 0x008555b0
+// pdb: NumericIDBufferMap::~NumericIDBufferMap | TESSaveLoadGame.obj | retail, upstream name already matches, high
+// pdb locals: it, pbuffer, iformID
 NumericIDBufferMap::~NumericIDBufferMap()
 {
     void* node7;
@@ -3017,6 +3192,8 @@ struct FUN_00855730_shell
 };
 // Iterates the map's entries, deleting each list's items and the list, then deletes the map and frees the buffers in the second list.
 // @fnv 0x00855730
+// pdb: SaveStats::~SaveStats | TESSaveLoadGame.obj | debug, object-file run extension, low
+// pdb locals: plist, it, cformType, pheaderList, pdata, pextraStat
 void FUN_00855730_shell::DestroyMapAndLists()
 {
     void* posCur = m_pMapObject->GetFirstPos();
@@ -3089,6 +3266,9 @@ struct FUN_00855a20_This
 };
 
 // @fnv 0x00855a20
+// pdb: SaveStats::AddStats | TESSaveLoadGame.obj | debug, object-file run extension, low
+// pdb params: apHeader
+// pdb locals: bfound, ckey, pheaderList, tempMemContext, pheader
 void FUN_00855a20_This::AddReferenceRecord(const FUN_006815c0* apRecord)
 {
     AutoMemHelper frame9(0x11, true, DAT_010804c8, 0x286);
@@ -3269,6 +3449,8 @@ struct FUN_00856380
 };
 // Initialises the save manager singleton: allocates changes, references, forms, entries and arrays, zeroes fields, and calls FUN_008620f0 and CopyByteToOffset80.
 // @fnv 0x00856380
+// pdb: TESSaveLoadGame::TESSaveLoadGame | TESSaveLoadGame.obj | debug, call graph, high
+// pdb locals: tempMemContext
 FUN_00856380::FUN_00856380()
     : unk4(0), refs(0), forms(0), unk14(0), unk18(0), b1c(false), unk20(0), unk44(0), unk50(0), unk54(0), unk70(0),
       b74(false), b75(false), b81(true), unk84(0), unk88(0), unk8c(0), unk90(0), unk94(0), unka8(0), bac(false),
@@ -3597,30 +3779,34 @@ extern "C" __declspec(dllimport) int __stdcall CreateDirectoryA(const char*, voi
 extern "C" __declspec(dllimport) int __stdcall DeleteFileA(const char*);
 struct SaveOwner
 {
-    void BuildSaveFilename(char*);
+    void TESSaveLoadGame_GenerateSaveGameFileName(char*);
     void UpdateState_00857950(SaveFile*, int);
-    SaveFile* OpenSaveFile(SaveFile*, const char*, unsigned int);
+    SaveFile* TESSaveLoadGame_PrepForLoadSave(SaveFile*, const char*, unsigned int);
 };
 // Builds the save file path from the name and settings, rotates .bak backups, then opens or seeks a SaveFile according to mode.
 // @fnv 0x00857370
-SaveFile* SaveOwner::OpenSaveFile(SaveFile* file, const char* name, unsigned int mode)
+// src: XBOX_DEBUG_PDB 0x00857370
+// pdb: TESSaveLoadGame::PrepForLoadSave | TESSaveLoadGame.obj | debug, call graph (shared callers), high
+// pdb params: apFile, asFileName, aeAction
+// pdb locals: contentData, sFileAndPath, pNewFile, eContentAction, pdisplayName, pfileName
+SaveFile* SaveOwner::TESSaveLoadGame_PrepForLoadSave(SaveFile* apFile, const char* asFileName, unsigned int aeAction)
 {
     SaveFile* result2;
     char pathX[260];
-    if (file)
+    if (apFile)
     {
-        strcpy_s(pathX, 260, file->GetName());
+        strcpy_s(pathX, 260, apFile->GetName());
     }
     else
     {
         char basename9[260];
-        if (!name)
-            BuildSaveFilename(basename9);
+        if (!asFileName)
+            TESSaveLoadGame_GenerateSaveGameFileName(basename9);
         else
-            strcpy_s(basename9, 260, name);
+            strcpy_s(basename9, 260, asFileName);
         sprintf_s(pathX, 260, "%s%s%s.ess", BSUtilities_GetPersonalPath(), PrepareScriptMessage(g_011c3f74.String(), false),
                   basename9);
-        if (mode == 0)
+        if (aeAction == 0)
         {
             char directory6[260];
             strcpy_s(directory6, 260, BSUtilities_GetPersonalPath());
@@ -3651,23 +3837,23 @@ SaveFile* SaveOwner::OpenSaveFile(SaveFile* file, const char* name, unsigned int
             }
         }
     }
-    switch (mode)
+    switch (aeAction)
     {
     case 0:
-        if (file)
+        if (apFile)
         {
             unsigned int lengthX;
             char shortName[260];
-            char* tail2 = strrchr_0040ab30(file->GetName(), 92) + 1;
+            char* tail2 = strrchr_0040ab30(apFile->GetName(), 92) + 1;
             strcpy_s(shortName, 260, tail2);
             lengthX = BSStringLength(shortName);
             if (lengthX > 4 && !_strnicmp(shortName + lengthX - 4, ".ess", 4))
                 shortName[lengthX - 4] = 0;
-            UpdateState_00857950(file, 0);
+            UpdateState_00857950(apFile, 0);
             if (!_strnicmp(shortName, "Save ", 5) || FUN_004812f0(shortName, "autosave"))
-                result2 = OpenSaveFile(0, 0, 0);
+                result2 = TESSaveLoadGame_PrepForLoadSave(0, 0, 0);
             else
-                result2 = OpenSaveFile(0, shortName, 0);
+                result2 = TESSaveLoadGame_PrepForLoadSave(0, shortName, 0);
         }
         else
         {
@@ -3680,14 +3866,14 @@ SaveFile* SaveOwner::OpenSaveFile(SaveFile* file, const char* name, unsigned int
         break;
     }
     case 2:
-        result2 = file;
+        result2 = apFile;
         result2->Seek(0, 0);
         break;
     case 3:
-        result2 = file;
+        result2 = apFile;
         break;
     default:
-        result2 = file;
+        result2 = apFile;
         break;
     }
     return result2;
@@ -3704,24 +3890,27 @@ class C857A10Buffer
     char* m_pcCursor;
 
     bool IsSwapping() const;
-    unsigned int Swap32(unsigned int uiValue);
+    unsigned int Swap32(unsigned int aiFormID);
     void Advance(unsigned int uiBytes);
-    void TESSaveLoadGame_SaveNumericID(const unsigned int* puiData, unsigned int uiSize);
+    void TESSaveLoadGame_SaveNumericID(const unsigned int* apFormID, unsigned int aiSize);
 };
 
 // Copies uiSize>>2 32-bit values from puiData into the buffer, byte-swapping each when IsSwapping() is true and advancing the cursor by 4 per value.
 // @fnv 0x00857a10
 // src: XBOX_PDB 0x00857a10
-void C857A10Buffer::TESSaveLoadGame_SaveNumericID(const unsigned int* puiData, unsigned int uiSize)
+// pdb: TESSaveLoadGame::SaveNumericID | TESSaveLoadGame.obj | retail, upstream name already matches, high
+// pdb params: apFormID, aiSize
+// pdb locals: icount, i, iformIDIndex
+void C857A10Buffer::TESSaveLoadGame_SaveNumericID(const unsigned int* apFormID, unsigned int aiSize)
 {
-    unsigned int ItemUpdateArray = uiSize >> 2;
+    unsigned int ItemUpdateArray = aiSize >> 2;
     for (unsigned int i = 0; i < ItemUpdateArray; i++)
     {
         unsigned int uiValue;
         if (IsSwapping())
-            uiValue = Swap32(puiData[i]);
+            uiValue = Swap32(apFormID[i]);
         else
-            uiValue = puiData[i];
+            uiValue = apFormID[i];
         __memcpy(m_pcCursor, &uiValue, 4);
         Advance(4);
     }
@@ -3883,67 +4072,71 @@ struct Process
 extern TESObjectREFR* DAT_011dea3c;
 struct Changes
 {
-    unsigned int ClearRefrFlag(Form*, unsigned int);
-    unsigned int UpdateFormFlags(Form*, unsigned int);
+    unsigned int TESSaveLoadGame_CheckNewReference(Form*, unsigned int);
+    unsigned int TESSaveLoadGame_CheckFlags(Form*, unsigned int);
 };
 // Adjusts the flags of a form based on its cell or reference, clearing or setting bits for cell bounds, actor process, dialogue package and editor location.
 // @fnv 0x008591b0
-unsigned int Changes::UpdateFormFlags(Form* form, unsigned int flags)
+// src: XBOX_RETAIL_PDB 0x008591b0
+// pdb: TESSaveLoadGame::CheckFlags | TESSaveLoadGame.obj | retail, call graph, high
+// pdb params: apForm, aiFlags
+// pdb locals: pcell, pref, ixCoord, iyCoord, pactor, pdialogue, pworld, loc, icellX, icellY
+unsigned int Changes::TESSaveLoadGame_CheckFlags(Form* form, unsigned int aiFlags)
 {
-    flags = ClearRefrFlag(form, flags);
+    aiFlags = TESSaveLoadGame_CheckNewReference(form, aiFlags);
     TESObjectREFR* reference = (TESObjectREFR*)FUN_00ec43fb(form, 0, &DAT_01183028, &DAT_011841cc, 0);
     TESObjectCELL* cell = (TESObjectCELL*)FUN_00ec43fb(form, 0, &DAT_01183028, &DAT_01183fb4, 0);
     if (cell)
     {
-        if ((flags & 0x80000000) && !((SaveLoadCell*)cell)->HasSavedCellData())
-            flags &= 0x7fffffff;
+        if ((aiFlags & 0x80000000) && !((SaveLoadCell*)cell)->HasSavedCellData())
+            aiFlags &= 0x7fffffff;
         if (!cell->IsCellInterior())
         {
-            flags &= ~0u;
+            aiFlags &= ~0u;
             int x = cell->GetCellGridX();
             int y = cell->GetCellGridY();
             if (x <= 127 && x >= -128 && y <= 127 && y >= -128)
-                flags &= ~0u;
+                aiFlags &= ~0u;
             else
-                flags |= 0;
+                aiFlags |= 0;
         }
     }
     else if (reference)
     {
-        flags &= ~0u;
-        if ((flags & 0x20) && (!reference->BSFile_GetDevice() || !((Base*)reference->BSFile_GetDevice())->FUN_00418520()))
-            flags &= ~0x20u;
+        aiFlags &= ~0u;
+        if ((aiFlags & 0x20) && (!reference->BSFile_GetDevice() || !((Base*)reference->BSFile_GetDevice())->FUN_00418520()))
+            aiFlags &= ~0x20u;
         Actor* actor = (Actor*)FUN_00ec43fb(reference, 0, &DAT_011841cc, &DAT_011846d4, 0);
         if (actor)
         {
-            if (flags & 0)
+            if (aiFlags & 0)
             {
                 if (!((Process*)actor->FUN_008d8520()) || !((Process*)actor->FUN_008d8520())->v20c())
-                    flags &= ~0u;
+                    aiFlags &= ~0u;
             }
             else if (((Process*)actor->FUN_008d8520()) && ((Process*)actor->FUN_008d8520())->v20c())
-                flags |= 0;
-            flags &= ~0u;
+                aiFlags |= 0;
+            aiFlags &= ~0u;
             if (((Process*)actor->FUN_008d8520()) && ((Process*)actor->FUN_008d8520())->FUN_00859670())
-                flags |= actor->GetZero(((Process*)actor->FUN_008d8520())->FUN_00859670());
-            if (flags & 0)
+                aiFlags |= actor->GetZero(((Process*)actor->FUN_008d8520())->FUN_00859670());
+            if (aiFlags & 0)
             {
                 DialoguePackage* package = dynamic_cast<DialoguePackage*>((TESPackage*)actor->FUN_009344a0());
                 if (package)
                 {
                     if ((Actor*)package->First() != actor)
-                        flags &= ~0u;
+                        aiFlags &= ~0u;
                     else
-                        flags |= 0;
+                        aiFlags |= 0;
                 }
             }
-            if (actor->Actor_CheckShouldSaveHavokData(flags))
-                flags |= 4;
+            if (actor->Actor_CheckShouldSaveHavokData(aiFlags))
+                aiFlags |= 4;
             else if (!actor->HasHealth(false))
-                flags &= ~4u;
+                aiFlags &= ~4u;
         }
-        flags &= ~0u;
-        if (!(flags & 0) && (flags & 6) && !reference->TESObjectREFR_GetRefPersists_005653d0() && reference != DAT_011dea3c)
+        aiFlags &= ~0u;
+        if (!(aiFlags & 0) && (aiFlags & 6) && !reference->TESObjectREFR_GetRefPersists_005653d0() && reference != DAT_011dea3c)
         {
             MobileObject* movableSlot1 = 0;
             if (reference->IsActor())
@@ -3956,19 +4149,19 @@ unsigned int Changes::UpdateFormFlags(Form* form, unsigned int flags)
                 if (editorCellSlot11)
                 {
                     if (editorCellSlot11 != reference->GetParentCell())
-                        flags |= 0;
+                        aiFlags |= 0;
                 }
                 else if (worldSlot0)
                 {
                     if (worldSlot0 && worldSlot0 != (World*)reference->TESObjectREFR_GetWorldSpace())
-                        flags |= 0;
+                        aiFlags |= 0;
                     else
                     {
                         int columnSlot12 = FloatToInt(position.x) >> 12;
                         int rowSlot22 = FloatToInt(position.y) >> 12;
                         editorCellSlot11 = worldSlot0->FUN_005875a0(columnSlot12, rowSlot22);
                         if (editorCellSlot11 != reference->GetParentCell())
-                            flags |= 0;
+                            aiFlags |= 0;
                     }
                 }
             }
@@ -3982,11 +4175,11 @@ unsigned int Changes::UpdateFormFlags(Form* form, unsigned int flags)
                 worldSlot0 = (World*)reference->TESObjectREFR_GetWorldSpace();
                 editorCellSlot11 = worldSlot0->FUN_005875a0(column2Slot10, row2Slot1);
                 if (editorCellSlot11 != reference->GetParentCell())
-                    flags |= 0;
+                    aiFlags |= 0;
             }
         }
     }
-    return flags;
+    return aiFlags;
 }
 }
 
@@ -4182,20 +4375,24 @@ int BSsprintf(char*, unsigned int, const char*, ...);
 unsigned int BSstrlen(const char*);
 struct SaveFormatter
 {
-    unsigned int UpdateFormFlags(SaveForm*, unsigned int);
+    unsigned int TESSaveLoadGame_CheckFlags(SaveForm*, unsigned int);
     unsigned short TESSaveLoadGame_GetInitialDataSaveSize(SaveForm*, unsigned int);
-    void FormatChangeFlags(char*, SaveForm*, unsigned int, unsigned char, bool);
+    void TESSaveLoadGame_BuildChangesString(char*, SaveForm*, unsigned int, unsigned char, bool);
 };
 // Builds a text report of a form's save change flags, listing each set flag with its size delta or a detailed flag name.
 // @fnv 0x0085b320
-void SaveFormatter::FormatChangeFlags(char* buffer, SaveForm* form, unsigned int flags, unsigned char type,
-                                      bool details)
+// src: XBOX_RETAIL_PDB 0x0085b320
+// pdb: TESSaveLoadGame::BuildChangesString | TESSaveLoadGame.obj | retail, unique string literal, high
+// pdb params: apString, apForm, aiFlags, acFormType, abVerbose
+// pdb locals: tempString, pmob, pref, pactor, ibaseSaveSize, type, pquest, iformID, iflags, ppackage, isaveSize
+void SaveFormatter::TESSaveLoadGame_BuildChangesString(char* apString, SaveForm* form, unsigned int aiFlags, unsigned char acFormType,
+                                      bool abVerbose)
 {
-    FUN_00406d30(buffer, 500, "");
+    FUN_00406d30(apString, 500, "");
     if (form)
-        flags = UpdateFormFlags(form, flags);
+        aiFlags = TESSaveLoadGame_CheckFlags(form, aiFlags);
     unsigned short baseSize = 0;
-    if (!details && form)
+    if (!abVerbose && form)
         baseSize = form->GetSaveSize(0);
     TESObjectREFR* refr = static_cast<TESObjectREFR*>(FUN_00ec43fb(form, 0, &DAT_01183028, &DAT_011841cc, 0));
     MobileObject* mobile2 = static_cast<MobileObject*>(FUN_00ec43fb(form, 0, &DAT_01183028, &DAT_01184920, 0));
@@ -4210,57 +4407,57 @@ void SaveFormatter::FormatChangeFlags(char* buffer, SaveForm* form, unsigned int
             switch (level)
             {
             case -1:
-                if (details)
+                if (abVerbose)
                     BSsprintf(text, 50, "Process Level: None\r\n");
                 else
                     BSsprintf(text, 50, "None(%i)", baseSize);
                 break;
             case 3:
-                if (details)
+                if (abVerbose)
                     BSsprintf(text, 50, "Process Level: Low\r\n");
                 else
                     BSsprintf(text, 50, "Low(%i)", baseSize);
                 break;
             case 2:
-                if (details)
+                if (abVerbose)
                     BSsprintf(text, 50, "Process Level: Middle Low\r\n");
                 else
                     BSsprintf(text, 50, "Mid Low(%i)", baseSize);
                 break;
             case 1:
-                if (details)
+                if (abVerbose)
                     BSsprintf(text, 50, "Process Level: Middle High\r\n");
                 else
                     BSsprintf(text, 50, "Mid High(%i)", baseSize);
                 break;
             case 0:
-                if (details)
+                if (abVerbose)
                     BSsprintf(text, 50, "Process Level: High\r\n");
                 else
                     BSsprintf(text, 50, "High(%i)", baseSize);
                 break;
             }
-            if (!details)
+            if (!abVerbose)
             {
                 while (BSstrlen(text) < 25)
                     FUN_00406d50(text, 50, " ");
                 FUN_00406d50(text, 50, " ");
             }
-            FUN_00406d50(buffer, 500, text);
+            FUN_00406d50(apString, 500, text);
         }
-        else if (baseSize && !details)
+        else if (baseSize && !abVerbose)
         {
             BSsprintf(text, 50, "Base(%i)", baseSize);
 
             while (BSstrlen(text) < 25)
                 FUN_00406d50(text, 50, " ");
             FUN_00406d50(text, 50, " ");
-            FUN_00406d50(buffer, 500, text);
+            FUN_00406d50(apString, 500, text);
         }
-        if (flags & 0x1)
+        if (aiFlags & 0x1)
         {
-            if (details)
-                FUN_00406d50(buffer, 500, "CHANGE_FORM_FLAGS\r\n");
+            if (abVerbose)
+                FUN_00406d50(apString, 500, "CHANGE_FORM_FLAGS\r\n");
             else
             {
                 BSsprintf(text, 50, "Form Flags(%i)", form ? form->GetSaveSize(0x1) - baseSize : 0);
@@ -4268,15 +4465,15 @@ void SaveFormatter::FormatChangeFlags(char* buffer, SaveForm* form, unsigned int
                 while (BSstrlen(text) < 25)
                     FUN_00406d50(text, 50, " ");
                 FUN_00406d50(text, 50, " ");
-                FUN_00406d50(buffer, 500, text);
+                FUN_00406d50(apString, 500, text);
             }
         }
-        if (type == 42 || type == 43)
+        if (acFormType == 42 || acFormType == 43)
         {
-            if (flags & 0x0)
+            if (aiFlags & 0x0)
             {
-                if (details)
-                    FUN_00406d50(buffer, 500, "CHANGE_ACTOR_BASE_HEALTH\r\n");
+                if (abVerbose)
+                    FUN_00406d50(apString, 500, "CHANGE_ACTOR_BASE_HEALTH\r\n");
                 else
                 {
                     BSsprintf(text, 50, "Base Health(%i)", form ? form->GetSaveSize(0x0) - baseSize : 0);
@@ -4284,13 +4481,13 @@ void SaveFormatter::FormatChangeFlags(char* buffer, SaveForm* form, unsigned int
                     while (BSstrlen(text) < 25)
                         FUN_00406d50(text, 50, " ");
                     FUN_00406d50(text, 50, " ");
-                    FUN_00406d50(buffer, 500, text);
+                    FUN_00406d50(apString, 500, text);
                 }
             }
-            if (flags & 0x0)
+            if (aiFlags & 0x0)
             {
-                if (details)
-                    FUN_00406d50(buffer, 500, "CHANGE_ACTOR_BASE_ATTRIBUTES\r\n");
+                if (abVerbose)
+                    FUN_00406d50(apString, 500, "CHANGE_ACTOR_BASE_ATTRIBUTES\r\n");
                 else
                 {
                     BSsprintf(text, 50, "Base Attributes(%i)", form ? form->GetSaveSize(0x0) - baseSize : 0);
@@ -4298,13 +4495,13 @@ void SaveFormatter::FormatChangeFlags(char* buffer, SaveForm* form, unsigned int
                     while (BSstrlen(text) < 25)
                         FUN_00406d50(text, 50, " ");
                     FUN_00406d50(text, 50, " ");
-                    FUN_00406d50(buffer, 500, text);
+                    FUN_00406d50(apString, 500, text);
                 }
             }
-            if (flags & 0x2)
+            if (aiFlags & 0x2)
             {
-                if (details)
-                    FUN_00406d50(buffer, 500, "CHANGE_ACTOR_BASE_DATA\r\n");
+                if (abVerbose)
+                    FUN_00406d50(apString, 500, "CHANGE_ACTOR_BASE_DATA\r\n");
                 else
                 {
                     BSsprintf(text, 50, "Base Data(%i)", form ? form->GetSaveSize(0x2) - baseSize : 0);
@@ -4312,13 +4509,13 @@ void SaveFormatter::FormatChangeFlags(char* buffer, SaveForm* form, unsigned int
                     while (BSstrlen(text) < 25)
                         FUN_00406d50(text, 50, " ");
                     FUN_00406d50(text, 50, " ");
-                    FUN_00406d50(buffer, 500, text);
+                    FUN_00406d50(apString, 500, text);
                 }
             }
-            if (flags & 0x10)
+            if (aiFlags & 0x10)
             {
-                if (details)
-                    FUN_00406d50(buffer, 500, "CHANGE_ACTOR_BASE_SPELLLIST\r\n");
+                if (abVerbose)
+                    FUN_00406d50(apString, 500, "CHANGE_ACTOR_BASE_SPELLLIST\r\n");
                 else
                 {
                     BSsprintf(text, 50, "Spell List(%i)", form ? form->GetSaveSize(0x10) - baseSize : 0);
@@ -4326,13 +4523,13 @@ void SaveFormatter::FormatChangeFlags(char* buffer, SaveForm* form, unsigned int
                     while (BSstrlen(text) < 25)
                         FUN_00406d50(text, 50, " ");
                     FUN_00406d50(text, 50, " ");
-                    FUN_00406d50(buffer, 500, text);
+                    FUN_00406d50(apString, 500, text);
                 }
             }
-            if (flags & 0x0)
+            if (aiFlags & 0x0)
             {
-                if (details)
-                    FUN_00406d50(buffer, 500, "CHANGE_ACTOR_BASE_FACTIONS\r\n");
+                if (abVerbose)
+                    FUN_00406d50(apString, 500, "CHANGE_ACTOR_BASE_FACTIONS\r\n");
                 else
                 {
                     BSsprintf(text, 50, "Factions(%i)", form ? form->GetSaveSize(0x0) - baseSize : 0);
@@ -4340,13 +4537,13 @@ void SaveFormatter::FormatChangeFlags(char* buffer, SaveForm* form, unsigned int
                     while (BSstrlen(text) < 25)
                         FUN_00406d50(text, 50, " ");
                     FUN_00406d50(text, 50, " ");
-                    FUN_00406d50(buffer, 500, text);
+                    FUN_00406d50(apString, 500, text);
                 }
             }
-            if (flags & 0x0)
+            if (aiFlags & 0x0)
             {
-                if (details)
-                    FUN_00406d50(buffer, 500, "CHANGE_ACTOR_BASE_MODIFIERS\r\n");
+                if (abVerbose)
+                    FUN_00406d50(apString, 500, "CHANGE_ACTOR_BASE_MODIFIERS\r\n");
                 else
                 {
                     BSsprintf(text, 50, "Base Modifiers(%i)", form ? form->GetSaveSize(0x0) - baseSize : 0);
@@ -4354,13 +4551,13 @@ void SaveFormatter::FormatChangeFlags(char* buffer, SaveForm* form, unsigned int
                     while (BSstrlen(text) < 25)
                         FUN_00406d50(text, 50, " ");
                     FUN_00406d50(text, 50, " ");
-                    FUN_00406d50(buffer, 500, text);
+                    FUN_00406d50(apString, 500, text);
                 }
             }
-            if (flags & 0x0)
+            if (aiFlags & 0x0)
             {
-                if (details)
-                    FUN_00406d50(buffer, 500, "CHANGE_ACTOR_BASE_AIDATA\r\n");
+                if (abVerbose)
+                    FUN_00406d50(apString, 500, "CHANGE_ACTOR_BASE_AIDATA\r\n");
                 else
                 {
                     BSsprintf(text, 50, "AI Data(%i)", form ? form->GetSaveSize(0x0) - baseSize : 0);
@@ -4368,13 +4565,13 @@ void SaveFormatter::FormatChangeFlags(char* buffer, SaveForm* form, unsigned int
                     while (BSstrlen(text) < 25)
                         FUN_00406d50(text, 50, " ");
                     FUN_00406d50(text, 50, " ");
-                    FUN_00406d50(buffer, 500, text);
+                    FUN_00406d50(apString, 500, text);
                 }
             }
-            if (flags & 0x20)
+            if (aiFlags & 0x20)
             {
-                if (details)
-                    FUN_00406d50(buffer, 500, "CHANGE_ACTOR_BASE_FULLNAME\r\n");
+                if (abVerbose)
+                    FUN_00406d50(apString, 500, "CHANGE_ACTOR_BASE_FULLNAME\r\n");
                 else
                 {
                     BSsprintf(text, 50, "Full Name(%i)", form ? form->GetSaveSize(0x20) - baseSize : 0);
@@ -4382,15 +4579,15 @@ void SaveFormatter::FormatChangeFlags(char* buffer, SaveForm* form, unsigned int
                     while (BSstrlen(text) < 25)
                         FUN_00406d50(text, 50, " ");
                     FUN_00406d50(text, 50, " ");
-                    FUN_00406d50(buffer, 500, text);
+                    FUN_00406d50(apString, 500, text);
                 }
             }
-            if (type == 42)
+            if (acFormType == 42)
             {
-                if (flags & 0x200)
+                if (aiFlags & 0x200)
                 {
-                    if (details)
-                        FUN_00406d50(buffer, 500, "CHANGE_NPC_SKILLS\r\n");
+                    if (abVerbose)
+                        FUN_00406d50(apString, 500, "CHANGE_NPC_SKILLS\r\n");
                     else
                     {
                         BSsprintf(text, 50, "Skills(%i)", form ? form->GetSaveSize(0x200) - baseSize : 0);
@@ -4398,13 +4595,13 @@ void SaveFormatter::FormatChangeFlags(char* buffer, SaveForm* form, unsigned int
                         while (BSstrlen(text) < 25)
                             FUN_00406d50(text, 50, " ");
                         FUN_00406d50(text, 50, " ");
-                        FUN_00406d50(buffer, 500, text);
+                        FUN_00406d50(apString, 500, text);
                     }
                 }
-                if (flags & 0x0)
+                if (aiFlags & 0x0)
                 {
-                    if (details)
-                        FUN_00406d50(buffer, 500, "CHANGE_NPC_COMBATSTYLE\r\n");
+                    if (abVerbose)
+                        FUN_00406d50(apString, 500, "CHANGE_NPC_COMBATSTYLE\r\n");
                     else
                     {
                         BSsprintf(text, 50, "Combat Style(%i)", form ? form->GetSaveSize(0x0) - baseSize : 0);
@@ -4412,13 +4609,13 @@ void SaveFormatter::FormatChangeFlags(char* buffer, SaveForm* form, unsigned int
                         while (BSstrlen(text) < 25)
                             FUN_00406d50(text, 50, " ");
                         FUN_00406d50(text, 50, " ");
-                        FUN_00406d50(buffer, 500, text);
+                        FUN_00406d50(apString, 500, text);
                     }
                 }
-                if (flags & 0x0)
+                if (aiFlags & 0x0)
                 {
-                    if (details)
-                        FUN_00406d50(buffer, 500, "CHANGE_NPC_FAME\r\n");
+                    if (abVerbose)
+                        FUN_00406d50(apString, 500, "CHANGE_NPC_FAME\r\n");
                     else
                     {
                         BSsprintf(text, 50, "Fame(%i)", form ? form->GetSaveSize(0x0) - baseSize : 0);
@@ -4426,16 +4623,16 @@ void SaveFormatter::FormatChangeFlags(char* buffer, SaveForm* form, unsigned int
                         while (BSstrlen(text) < 25)
                             FUN_00406d50(text, 50, " ");
                         FUN_00406d50(text, 50, " ");
-                        FUN_00406d50(buffer, 500, text);
+                        FUN_00406d50(apString, 500, text);
                     }
                 }
             }
-            else if (type == 43)
+            else if (acFormType == 43)
             {
-                if (flags & 0x200)
+                if (aiFlags & 0x200)
                 {
-                    if (details)
-                        FUN_00406d50(buffer, 500, "CHANGE_CREATURE_SKILLS\r\n");
+                    if (abVerbose)
+                        FUN_00406d50(apString, 500, "CHANGE_CREATURE_SKILLS\r\n");
                     else
                     {
                         BSsprintf(text, 50, "Skills(%i)", form ? form->GetSaveSize(0x200) - baseSize : 0);
@@ -4443,13 +4640,13 @@ void SaveFormatter::FormatChangeFlags(char* buffer, SaveForm* form, unsigned int
                         while (BSstrlen(text) < 25)
                             FUN_00406d50(text, 50, " ");
                         FUN_00406d50(text, 50, " ");
-                        FUN_00406d50(buffer, 500, text);
+                        FUN_00406d50(apString, 500, text);
                     }
                 }
-                if (flags & 0x0)
+                if (aiFlags & 0x0)
                 {
-                    if (details)
-                        FUN_00406d50(buffer, 500, "CHANGE_CREATURE_COMBATSTYLE\r\n");
+                    if (abVerbose)
+                        FUN_00406d50(apString, 500, "CHANGE_CREATURE_COMBATSTYLE\r\n");
                     else
                     {
                         BSsprintf(text, 50, "Combat Style(%i)", form ? form->GetSaveSize(0x0) - baseSize : 0);
@@ -4457,17 +4654,17 @@ void SaveFormatter::FormatChangeFlags(char* buffer, SaveForm* form, unsigned int
                         while (BSstrlen(text) < 25)
                             FUN_00406d50(text, 50, " ");
                         FUN_00406d50(text, 50, " ");
-                        FUN_00406d50(buffer, 500, text);
+                        FUN_00406d50(apString, 500, text);
                     }
                 }
             }
         }
-        else if (type == 71)
+        else if (acFormType == 71)
         {
-            if (flags & 0x2)
+            if (aiFlags & 0x2)
             {
-                if (details)
-                    FUN_00406d50(buffer, 500, "CHANGE_QUEST_FLAGS\r\n");
+                if (abVerbose)
+                    FUN_00406d50(apString, 500, "CHANGE_QUEST_FLAGS\r\n");
                 else
                 {
                     BSsprintf(text, 50, "Quest Flags(%i)", form ? form->GetSaveSize(0x2) - baseSize : 0);
@@ -4475,26 +4672,26 @@ void SaveFormatter::FormatChangeFlags(char* buffer, SaveForm* form, unsigned int
                     while (BSstrlen(text) < 25)
                         FUN_00406d50(text, 50, " ");
                     FUN_00406d50(text, 50, " ");
-                    FUN_00406d50(buffer, 500, text);
+                    FUN_00406d50(apString, 500, text);
                 }
             }
-            if (flags & 0x80000000)
+            if (aiFlags & 0x80000000)
             {
-                if (details)
-                    FUN_00406d50(buffer, 500, "CHANGE_QUEST_STAGES\r\n");
+                if (abVerbose)
+                    FUN_00406d50(apString, 500, "CHANGE_QUEST_STAGES\r\n");
                 else
                 {
 
                     while (BSstrlen(text) < 25)
                         FUN_00406d50(text, 50, " ");
                     FUN_00406d50(text, 50, " ");
-                    FUN_00406d50(buffer, 500, text);
+                    FUN_00406d50(apString, 500, text);
                 }
             }
-            if (flags & 0x40000000)
+            if (aiFlags & 0x40000000)
             {
-                if (details)
-                    FUN_00406d50(buffer, 500, "CHANGE_QUEST_SCRIPT\r\n");
+                if (abVerbose)
+                    FUN_00406d50(apString, 500, "CHANGE_QUEST_SCRIPT\r\n");
                 else
                 {
                     SaveQuest* quest = static_cast<SaveQuest*>(FUN_00ec43fb(form, 0, &DAT_01183028, &DAT_01186500, 0));
@@ -4510,32 +4707,32 @@ void SaveFormatter::FormatChangeFlags(char* buffer, SaveForm* form, unsigned int
                     while (BSstrlen(text) < 25)
                         FUN_00406d50(text, 50, " ");
                     FUN_00406d50(text, 50, " ");
-                    FUN_00406d50(buffer, 500, text);
+                    FUN_00406d50(apString, 500, text);
                 }
             }
         }
-        else if (type == 70)
+        else if (acFormType == 70)
         {
-            if (flags & 0x80000000)
+            if (aiFlags & 0x80000000)
             {
-                if (details)
-                    FUN_00406d50(buffer, 500, "CHANGE_TOPIC_SAIDONCE\r\n");
+                if (abVerbose)
+                    FUN_00406d50(apString, 500, "CHANGE_TOPIC_SAIDONCE\r\n");
                 else
                 {
 
                     while (BSstrlen(text) < 25)
                         FUN_00406d50(text, 50, " ");
                     FUN_00406d50(text, 50, " ");
-                    FUN_00406d50(buffer, 500, text);
+                    FUN_00406d50(apString, 500, text);
                 }
             }
         }
-        else if (type == 73)
+        else if (acFormType == 73)
         {
-            if (flags & 0x80000000)
+            if (aiFlags & 0x80000000)
             {
-                if (details)
-                    FUN_00406d50(buffer, 500, "CHANGE_PACKAGE_NEVER_RUN\r\n");
+                if (abVerbose)
+                    FUN_00406d50(apString, 500, "CHANGE_PACKAGE_NEVER_RUN\r\n");
                 else
                 {
                     BSsprintf(text, 50, "Never Run Flag(%i)", form ? form->GetSaveSize(0x80000000) - baseSize : 0);
@@ -4543,13 +4740,13 @@ void SaveFormatter::FormatChangeFlags(char* buffer, SaveForm* form, unsigned int
                     while (BSstrlen(text) < 25)
                         FUN_00406d50(text, 50, " ");
                     FUN_00406d50(text, 50, " ");
-                    FUN_00406d50(buffer, 500, text);
+                    FUN_00406d50(apString, 500, text);
                 }
             }
-            if (flags & 0x40000000)
+            if (aiFlags & 0x40000000)
             {
-                if (details)
-                    FUN_00406d50(buffer, 500, "CHANGE_PACKAGE_WAITING\r\n");
+                if (abVerbose)
+                    FUN_00406d50(apString, 500, "CHANGE_PACKAGE_WAITING\r\n");
                 else
                 {
                     BSsprintf(text, 50, "Waiting Flag(%i)", form ? form->GetSaveSize(0x40000000) - baseSize : 0);
@@ -4557,16 +4754,16 @@ void SaveFormatter::FormatChangeFlags(char* buffer, SaveForm* form, unsigned int
                     while (BSstrlen(text) < 25)
                         FUN_00406d50(text, 50, " ");
                     FUN_00406d50(text, 50, " ");
-                    FUN_00406d50(buffer, 500, text);
+                    FUN_00406d50(apString, 500, text);
                 }
             }
         }
-        else if (type == 57)
+        else if (acFormType == 57)
         {
-            if (flags & 0x2)
+            if (aiFlags & 0x2)
             {
-                if (details)
-                    FUN_00406d50(buffer, 500, "CHANGE_CELL_FLAGS\r\n");
+                if (abVerbose)
+                    FUN_00406d50(apString, 500, "CHANGE_CELL_FLAGS\r\n");
                 else
                 {
                     BSsprintf(text, 50, "Cell Flags(%i)", form ? form->GetSaveSize(0x2) - baseSize : 0);
@@ -4574,13 +4771,13 @@ void SaveFormatter::FormatChangeFlags(char* buffer, SaveForm* form, unsigned int
                     while (BSstrlen(text) < 25)
                         FUN_00406d50(text, 50, " ");
                     FUN_00406d50(text, 50, " ");
-                    FUN_00406d50(buffer, 500, text);
+                    FUN_00406d50(apString, 500, text);
                 }
             }
-            if ((flags & 0) && (flags & 0))
+            if ((aiFlags & 0) && (aiFlags & 0))
             {
-                if (details)
-                    FUN_00406d50(buffer, 500, "CHANGE_CELL_CREATED\r\n");
+                if (abVerbose)
+                    FUN_00406d50(apString, 500, "CHANGE_CELL_CREATED\r\n");
                 else
                 {
                     BSsprintf(text, 50, "Cell Created(%i)", form ? TESSaveLoadGame_GetInitialDataSaveSize(form, 0x0) : 0);
@@ -4588,13 +4785,13 @@ void SaveFormatter::FormatChangeFlags(char* buffer, SaveForm* form, unsigned int
                     while (BSstrlen(text) < 25)
                         FUN_00406d50(text, 50, " ");
                     FUN_00406d50(text, 50, " ");
-                    FUN_00406d50(buffer, 500, text);
+                    FUN_00406d50(apString, 500, text);
                 }
             }
-            if (flags & 0x80000000)
+            if (aiFlags & 0x80000000)
             {
-                if (details)
-                    FUN_00406d50(buffer, 500, "CHANGE_CELL_SEENDATA\r\n");
+                if (abVerbose)
+                    FUN_00406d50(apString, 500, "CHANGE_CELL_SEENDATA\r\n");
                 else
                 {
                     BSsprintf(text, 50, "Seen Data(%i)", form ? form->GetSaveSize(0x80000000) - baseSize : 0);
@@ -4602,13 +4799,13 @@ void SaveFormatter::FormatChangeFlags(char* buffer, SaveForm* form, unsigned int
                     while (BSstrlen(text) < 25)
                         FUN_00406d50(text, 50, " ");
                     FUN_00406d50(text, 50, " ");
-                    FUN_00406d50(buffer, 500, text);
+                    FUN_00406d50(apString, 500, text);
                 }
             }
-            if (flags & 0x40000000)
+            if (aiFlags & 0x40000000)
             {
-                if (details)
-                    FUN_00406d50(buffer, 500, "CHANGE_CELL_DETACHTIME\r\n");
+                if (abVerbose)
+                    FUN_00406d50(apString, 500, "CHANGE_CELL_DETACHTIME\r\n");
                 else
                 {
                     BSsprintf(text, 50, "Detach Time(%i)", form ? form->GetSaveSize(0x40000000) - baseSize : 0);
@@ -4616,13 +4813,13 @@ void SaveFormatter::FormatChangeFlags(char* buffer, SaveForm* form, unsigned int
                     while (BSstrlen(text) < 25)
                         FUN_00406d50(text, 50, " ");
                     FUN_00406d50(text, 50, " ");
-                    FUN_00406d50(buffer, 500, text);
+                    FUN_00406d50(apString, 500, text);
                 }
             }
-            if (flags & 0x8)
+            if (aiFlags & 0x8)
             {
-                if (details)
-                    FUN_00406d50(buffer, 500, "CHANGE_CELL_OWNERSHIP\r\n");
+                if (abVerbose)
+                    FUN_00406d50(apString, 500, "CHANGE_CELL_OWNERSHIP\r\n");
                 else
                 {
                     BSsprintf(text, 50, "Ownership(%i)", form ? form->GetSaveSize(0x8) - baseSize : 0);
@@ -4630,13 +4827,13 @@ void SaveFormatter::FormatChangeFlags(char* buffer, SaveForm* form, unsigned int
                     while (BSstrlen(text) < 25)
                         FUN_00406d50(text, 50, " ");
                     FUN_00406d50(text, 50, " ");
-                    FUN_00406d50(buffer, 500, text);
+                    FUN_00406d50(apString, 500, text);
                 }
             }
-            if (flags & 0x4)
+            if (aiFlags & 0x4)
             {
-                if (details)
-                    FUN_00406d50(buffer, 500, "CHANGE_CELL_FULLNAME\r\n");
+                if (abVerbose)
+                    FUN_00406d50(apString, 500, "CHANGE_CELL_FULLNAME\r\n");
                 else
                 {
                     BSsprintf(text, 50, "Full Name(%i)", form ? form->GetSaveSize(0x4) - baseSize : 0);
@@ -4644,16 +4841,16 @@ void SaveFormatter::FormatChangeFlags(char* buffer, SaveForm* form, unsigned int
                     while (BSstrlen(text) < 25)
                         FUN_00406d50(text, 50, " ");
                     FUN_00406d50(text, 50, " ");
-                    FUN_00406d50(buffer, 500, text);
+                    FUN_00406d50(apString, 500, text);
                 }
             }
         }
-        else if (type == 8)
+        else if (acFormType == 8)
         {
-            if (flags & 0x2)
+            if (aiFlags & 0x2)
             {
-                if (details)
-                    FUN_00406d50(buffer, 500, "CHANGE_FACTION_FLAGS\r\n");
+                if (abVerbose)
+                    FUN_00406d50(apString, 500, "CHANGE_FACTION_FLAGS\r\n");
                 else
                 {
                     BSsprintf(text, 50, "Faction Flags(%i)", form ? form->GetSaveSize(0x2) - baseSize : 0);
@@ -4661,13 +4858,13 @@ void SaveFormatter::FormatChangeFlags(char* buffer, SaveForm* form, unsigned int
                     while (BSstrlen(text) < 25)
                         FUN_00406d50(text, 50, " ");
                     FUN_00406d50(text, 50, " ");
-                    FUN_00406d50(buffer, 500, text);
+                    FUN_00406d50(apString, 500, text);
                 }
             }
-            if (flags & 0x4)
+            if (aiFlags & 0x4)
             {
-                if (details)
-                    FUN_00406d50(buffer, 500, "CHANGE_FACTION_REACTIONS\r\n");
+                if (abVerbose)
+                    FUN_00406d50(apString, 500, "CHANGE_FACTION_REACTIONS\r\n");
                 else
                 {
                     BSsprintf(text, 50, "Faction Reactions(%i)", form ? form->GetSaveSize(0x4) - baseSize : 0);
@@ -4675,16 +4872,16 @@ void SaveFormatter::FormatChangeFlags(char* buffer, SaveForm* form, unsigned int
                     while (BSstrlen(text) < 25)
                         FUN_00406d50(text, 50, " ");
                     FUN_00406d50(text, 50, " ");
-                    FUN_00406d50(buffer, 500, text);
+                    FUN_00406d50(apString, 500, text);
                 }
             }
         }
-        else if (type == 25)
+        else if (acFormType == 25)
         {
-            if (flags & 0x20)
+            if (aiFlags & 0x20)
             {
-                if (details)
-                    FUN_00406d50(buffer, 500, "CHANGE_BOOK_TEACHES_SKILL\r\n");
+                if (abVerbose)
+                    FUN_00406d50(apString, 500, "CHANGE_BOOK_TEACHES_SKILL\r\n");
                 else
                 {
                     BSsprintf(text, 50, "Book Skill(%i)", form ? form->GetSaveSize(0x20) - baseSize : 0);
@@ -4692,17 +4889,17 @@ void SaveFormatter::FormatChangeFlags(char* buffer, SaveForm* form, unsigned int
                     while (BSstrlen(text) < 25)
                         FUN_00406d50(text, 50, " ");
                     FUN_00406d50(text, 50, " ");
-                    FUN_00406d50(buffer, 500, text);
+                    FUN_00406d50(apString, 500, text);
                 }
             }
         }
-        else if (type == 58 || type == 59 || type == 60 || type == 61 || type == 62 || type == 63 || type == 105 ||
-                 type == 64)
+        else if (acFormType == 58 || acFormType == 59 || acFormType == 60 || acFormType == 61 || acFormType == 62 || acFormType == 63 || acFormType == 105 ||
+                 acFormType == 64)
         {
-            if (flags & 0x0)
+            if (aiFlags & 0x0)
             {
-                if (details)
-                    FUN_00406d50(buffer, 500, "CHANGE_CREATED_NEW_REFERENCE\r\n");
+                if (abVerbose)
+                    FUN_00406d50(apString, 500, "CHANGE_CREATED_NEW_REFERENCE\r\n");
                 else
                 {
                     BSsprintf(text, 50, "Created(%i)", form ? TESSaveLoadGame_GetInitialDataSaveSize(form, 0x0) : 0);
@@ -4710,13 +4907,13 @@ void SaveFormatter::FormatChangeFlags(char* buffer, SaveForm* form, unsigned int
                     while (BSstrlen(text) < 25)
                         FUN_00406d50(text, 50, " ");
                     FUN_00406d50(text, 50, " ");
-                    FUN_00406d50(buffer, 500, text);
+                    FUN_00406d50(apString, 500, text);
                 }
             }
-            if (flags & 0x0)
+            if (aiFlags & 0x0)
             {
-                if (details)
-                    FUN_00406d50(buffer, 500, "CHANGEFLAG_REFR_CELL_CHANGED\r\n");
+                if (abVerbose)
+                    FUN_00406d50(apString, 500, "CHANGEFLAG_REFR_CELL_CHANGED\r\n");
                 else
                 {
                     BSsprintf(text, 50, "Cell Changed(%i)", form ? form->GetSaveSize(0x0) - baseSize : 0);
@@ -4724,13 +4921,13 @@ void SaveFormatter::FormatChangeFlags(char* buffer, SaveForm* form, unsigned int
                     while (BSstrlen(text) < 25)
                         FUN_00406d50(text, 50, " ");
                     FUN_00406d50(text, 50, " ");
-                    FUN_00406d50(buffer, 500, text);
+                    FUN_00406d50(apString, 500, text);
                 }
             }
-            if (flags & 0x2)
+            if (aiFlags & 0x2)
             {
-                if (details)
-                    FUN_00406d50(buffer, 500, "CHANGE_REFR_MOVE\r\n");
+                if (abVerbose)
+                    FUN_00406d50(apString, 500, "CHANGE_REFR_MOVE\r\n");
                 else
                 {
                     BSsprintf(text, 50, "Moved(%i)", form ? TESSaveLoadGame_GetInitialDataSaveSize(form, 0x2) : 0);
@@ -4738,16 +4935,16 @@ void SaveFormatter::FormatChangeFlags(char* buffer, SaveForm* form, unsigned int
                     while (BSstrlen(text) < 25)
                         FUN_00406d50(text, 50, " ");
                     FUN_00406d50(text, 50, " ");
-                    FUN_00406d50(buffer, 500, text);
+                    FUN_00406d50(apString, 500, text);
                 }
             }
-            if (flags & 0x4)
+            if (aiFlags & 0x4)
             {
-                if (details)
-                    FUN_00406d50(buffer, 500, "CHANGE_REFR_HAVOK_MOVE\r\n");
+                if (abVerbose)
+                    FUN_00406d50(apString, 500, "CHANGE_REFR_HAVOK_MOVE\r\n");
                 else
                 {
-                    if (flags & 2)
+                    if (aiFlags & 2)
                     {
                         BSsprintf(text, 50, "Havok Moved(%i)", form ? form->GetSaveSize(0x4) - baseSize : 0);
                     }
@@ -4760,13 +4957,13 @@ void SaveFormatter::FormatChangeFlags(char* buffer, SaveForm* form, unsigned int
                     while (BSstrlen(text) < 25)
                         FUN_00406d50(text, 50, " ");
                     FUN_00406d50(text, 50, " ");
-                    FUN_00406d50(buffer, 500, text);
+                    FUN_00406d50(apString, 500, text);
                 }
             }
-            if (flags & 0x0)
+            if (aiFlags & 0x0)
             {
-                if (details)
-                    FUN_00406d50(buffer, 500, "CHANGEFLAG_REFR_HAD_HAVOK_MOVE_FLAG\r\n");
+                if (abVerbose)
+                    FUN_00406d50(apString, 500, "CHANGEFLAG_REFR_HAD_HAVOK_MOVE_FLAG\r\n");
                 else
                 {
                     BSsprintf(text, 50, "Had Havok Move Flag(%i)", 0);
@@ -4774,16 +4971,16 @@ void SaveFormatter::FormatChangeFlags(char* buffer, SaveForm* form, unsigned int
                     while (BSstrlen(text) < 25)
                         FUN_00406d50(text, 50, " ");
                     FUN_00406d50(text, 50, " ");
-                    FUN_00406d50(buffer, 500, text);
+                    FUN_00406d50(apString, 500, text);
                 }
             }
-            if (flags & 0x0)
+            if (aiFlags & 0x0)
             {
-                if (details)
-                    FUN_00406d50(buffer, 500, "CHANGE_REFR_OBLIVION_FLAG\r\n");
+                if (abVerbose)
+                    FUN_00406d50(apString, 500, "CHANGE_REFR_OBLIVION_FLAG\r\n");
                 else
                 {
-                    if (flags & 6)
+                    if (aiFlags & 6)
                     {
                         BSsprintf(text, 50, "Oblivion Flag(0)");
                     }
@@ -4795,13 +4992,13 @@ void SaveFormatter::FormatChangeFlags(char* buffer, SaveForm* form, unsigned int
                     while (BSstrlen(text) < 25)
                         FUN_00406d50(text, 50, " ");
                     FUN_00406d50(text, 50, " ");
-                    FUN_00406d50(buffer, 500, text);
+                    FUN_00406d50(apString, 500, text);
                 }
             }
-            if (flags & 0x10000000)
+            if (aiFlags & 0x10000000)
             {
-                if (details)
-                    FUN_00406d50(buffer, 500, "CHANGE_REFR_ANIMATION\r\n");
+                if (abVerbose)
+                    FUN_00406d50(apString, 500, "CHANGE_REFR_ANIMATION\r\n");
                 else
                 {
                     BSsprintf(text, 50, "Animation(%i)", form ? form->GetSaveSize(0x10000000) - baseSize : 0);
@@ -4809,13 +5006,13 @@ void SaveFormatter::FormatChangeFlags(char* buffer, SaveForm* form, unsigned int
                     while (BSstrlen(text) < 25)
                         FUN_00406d50(text, 50, " ");
                     FUN_00406d50(text, 50, " ");
-                    FUN_00406d50(buffer, 500, text);
+                    FUN_00406d50(apString, 500, text);
                 }
             }
-            if (flags & 0x10)
+            if (aiFlags & 0x10)
             {
-                if (details)
-                    FUN_00406d50(buffer, 500, "CHANGE_REFR_SCALE\r\n");
+                if (abVerbose)
+                    FUN_00406d50(apString, 500, "CHANGE_REFR_SCALE\r\n");
                 else
                 {
                     BSsprintf(text, 50, "Scale(%i)", form ? form->GetSaveSize(0x10) - baseSize : 0);
@@ -4823,13 +5020,13 @@ void SaveFormatter::FormatChangeFlags(char* buffer, SaveForm* form, unsigned int
                     while (BSstrlen(text) < 25)
                         FUN_00406d50(text, 50, " ");
                     FUN_00406d50(text, 50, " ");
-                    FUN_00406d50(buffer, 500, text);
+                    FUN_00406d50(apString, 500, text);
                 }
             }
-            if (flags & 0x0)
+            if (aiFlags & 0x0)
             {
-                if (details)
-                    FUN_00406d50(buffer, 500, "CHANGE_REFR_ALL_EXTRA\r\n");
+                if (abVerbose)
+                    FUN_00406d50(apString, 500, "CHANGE_REFR_ALL_EXTRA\r\n");
                 else
                 {
                     BSsprintf(text, 50, "All Extra(%i)", form ? form->GetSaveSize(0x0) - baseSize : 0);
@@ -4837,13 +5034,13 @@ void SaveFormatter::FormatChangeFlags(char* buffer, SaveForm* form, unsigned int
                     while (BSstrlen(text) < 25)
                         FUN_00406d50(text, 50, " ");
                     FUN_00406d50(text, 50, " ");
-                    FUN_00406d50(buffer, 500, text);
+                    FUN_00406d50(apString, 500, text);
                 }
             }
-            if (flags & 0x0)
+            if (aiFlags & 0x0)
             {
-                if (details)
-                    FUN_00406d50(buffer, 500, "CHANGE_REFR_DISABLE_STATE\r\n");
+                if (abVerbose)
+                    FUN_00406d50(apString, 500, "CHANGE_REFR_DISABLE_STATE\r\n");
                 else
                 {
                     if (refr)
@@ -4865,13 +5062,13 @@ void SaveFormatter::FormatChangeFlags(char* buffer, SaveForm* form, unsigned int
                     while (BSstrlen(text) < 25)
                         FUN_00406d50(text, 50, " ");
                     FUN_00406d50(text, 50, " ");
-                    FUN_00406d50(buffer, 500, text);
+                    FUN_00406d50(apString, 500, text);
                 }
             }
-            if (flags & 0x0)
+            if (aiFlags & 0x0)
             {
-                if (details)
-                    FUN_00406d50(buffer, 500, "CHANGE_REFR_EXTRA_LEVELED_CREATURE\r\n");
+                if (abVerbose)
+                    FUN_00406d50(apString, 500, "CHANGE_REFR_EXTRA_LEVELED_CREATURE\r\n");
                 else
                 {
                     BSsprintf(text, 50, "Leveled Creature(%i)", form ? form->GetSaveSize(0x0) - baseSize : 0);
@@ -4879,13 +5076,13 @@ void SaveFormatter::FormatChangeFlags(char* buffer, SaveForm* form, unsigned int
                     while (BSstrlen(text) < 25)
                         FUN_00406d50(text, 50, " ");
                     FUN_00406d50(text, 50, " ");
-                    FUN_00406d50(buffer, 500, text);
+                    FUN_00406d50(apString, 500, text);
                 }
             }
-            if (flags & 0x20)
+            if (aiFlags & 0x20)
             {
-                if (details)
-                    FUN_00406d50(buffer, 500, "CHANGE_REFR_INVENTORY\r\n");
+                if (abVerbose)
+                    FUN_00406d50(apString, 500, "CHANGE_REFR_INVENTORY\r\n");
                 else
                 {
                     BSsprintf(text, 50, "Inventory(%i)", form ? form->GetSaveSize(0x20) - baseSize : 0);
@@ -4893,13 +5090,13 @@ void SaveFormatter::FormatChangeFlags(char* buffer, SaveForm* form, unsigned int
                     while (BSstrlen(text) < 25)
                         FUN_00406d50(text, 50, " ");
                     FUN_00406d50(text, 50, " ");
-                    FUN_00406d50(buffer, 500, text);
+                    FUN_00406d50(apString, 500, text);
                 }
             }
-            if (flags & 0x0)
+            if (aiFlags & 0x0)
             {
-                if (details)
-                    FUN_00406d50(buffer, 500, "CHANGE_REFR_EXTRA_SCRIPT\r\n");
+                if (abVerbose)
+                    FUN_00406d50(apString, 500, "CHANGE_REFR_EXTRA_SCRIPT\r\n");
                 else
                 {
                     BSsprintf(text, 50, "Script(%i)", form ? form->GetSaveSize(0x0) - baseSize : 0);
@@ -4907,13 +5104,13 @@ void SaveFormatter::FormatChangeFlags(char* buffer, SaveForm* form, unsigned int
                     while (BSstrlen(text) < 25)
                         FUN_00406d50(text, 50, " ");
                     FUN_00406d50(text, 50, " ");
-                    FUN_00406d50(buffer, 500, text);
+                    FUN_00406d50(apString, 500, text);
                 }
             }
-            if (flags & 0x0)
+            if (aiFlags & 0x0)
             {
-                if (details)
-                    FUN_00406d50(buffer, 500, "CHANGE_REFR_EXTRA_SAVEDMOVEMENTDATA\r\n");
+                if (abVerbose)
+                    FUN_00406d50(apString, 500, "CHANGE_REFR_EXTRA_SAVEDMOVEMENTDATA\r\n");
                 else
                 {
                     BSsprintf(text, 50, "Movement Extra(%i)", form ? form->GetSaveSize(0x0) - baseSize : 0);
@@ -4921,15 +5118,15 @@ void SaveFormatter::FormatChangeFlags(char* buffer, SaveForm* form, unsigned int
                     while (BSstrlen(text) < 25)
                         FUN_00406d50(text, 50, " ");
                     FUN_00406d50(text, 50, " ");
-                    FUN_00406d50(buffer, 500, text);
+                    FUN_00406d50(apString, 500, text);
                 }
             }
-            if (type == 59 || type == 60)
+            if (acFormType == 59 || acFormType == 60)
             {
-                if (flags & 0x0)
+                if (aiFlags & 0x0)
                 {
-                    if (details)
-                        FUN_00406d50(buffer, 500, "CHANGE_ACTOR_EQUIPMENT\r\n");
+                    if (abVerbose)
+                        FUN_00406d50(apString, 500, "CHANGE_ACTOR_EQUIPMENT\r\n");
                     else
                     {
                         BSsprintf(text, 50, "Equipment(%i)", form ? form->GetSaveSize(0x0) - baseSize : 0);
@@ -4937,13 +5134,13 @@ void SaveFormatter::FormatChangeFlags(char* buffer, SaveForm* form, unsigned int
                         while (BSstrlen(text) < 25)
                             FUN_00406d50(text, 50, " ");
                         FUN_00406d50(text, 50, " ");
-                        FUN_00406d50(buffer, 500, text);
+                        FUN_00406d50(apString, 500, text);
                     }
                 }
-                if (flags & 0x200000)
+                if (aiFlags & 0x200000)
                 {
-                    if (details)
-                        FUN_00406d50(buffer, 500, "CHANGE_ACTOR_DAMAGE_MODIFIERS\r\n");
+                    if (abVerbose)
+                        FUN_00406d50(apString, 500, "CHANGE_ACTOR_DAMAGE_MODIFIERS\r\n");
                     else
                     {
                         BSsprintf(text, 50, "Damage Modifiers(%i)",
@@ -4952,13 +5149,13 @@ void SaveFormatter::FormatChangeFlags(char* buffer, SaveForm* form, unsigned int
                         while (BSstrlen(text) < 25)
                             FUN_00406d50(text, 50, " ");
                         FUN_00406d50(text, 50, " ");
-                        FUN_00406d50(buffer, 500, text);
+                        FUN_00406d50(apString, 500, text);
                     }
                 }
-                if (flags & 0x800000)
+                if (aiFlags & 0x800000)
                 {
-                    if (details)
-                        FUN_00406d50(buffer, 500, "CHANGE_ACTOR_PERMANENT_MODIFIERS\r\n");
+                    if (abVerbose)
+                        FUN_00406d50(apString, 500, "CHANGE_ACTOR_PERMANENT_MODIFIERS\r\n");
                     else
                     {
                         BSsprintf(text, 50, "Script Modifiers(%i)",
@@ -4967,13 +5164,13 @@ void SaveFormatter::FormatChangeFlags(char* buffer, SaveForm* form, unsigned int
                         while (BSstrlen(text) < 25)
                             FUN_00406d50(text, 50, " ");
                         FUN_00406d50(text, 50, " ");
-                        FUN_00406d50(buffer, 500, text);
+                        FUN_00406d50(apString, 500, text);
                     }
                 }
-                if (flags & 0x100000)
+                if (aiFlags & 0x100000)
                 {
-                    if (details)
-                        FUN_00406d50(buffer, 500, "CHANGE_ACTOR_TEMP_MODIFIERS\r\n");
+                    if (abVerbose)
+                        FUN_00406d50(apString, 500, "CHANGE_ACTOR_TEMP_MODIFIERS\r\n");
                     else
                     {
                         BSsprintf(text, 50, "Temp Modifiers(%i)", form ? form->GetSaveSize(0x100000) - baseSize : 0);
@@ -4981,15 +5178,15 @@ void SaveFormatter::FormatChangeFlags(char* buffer, SaveForm* form, unsigned int
                         while (BSstrlen(text) < 25)
                             FUN_00406d50(text, 50, " ");
                         FUN_00406d50(text, 50, " ");
-                        FUN_00406d50(buffer, 500, text);
+                        FUN_00406d50(apString, 500, text);
                     }
                 }
-                if (flags & 0x0)
+                if (aiFlags & 0x0)
                 {
                     unsigned int packageID = 0;
                     if (actor && ((SaveProcess*)actor->FUN_008d8520()) && ((SaveProcess*)actor->FUN_008d8520())->GetRunOncePackage())
                         packageID = ((SaveProcess*)actor->FUN_008d8520())->GetRunOncePackage()->GetHavokWorldObjectCountInSceneGraph_0084e3a0();
-                    if (details)
+                    if (abVerbose)
                     {
                         BSsprintf(text, 50, "CHANGE_ACTOR_RUNONCE_PACKAGE %08X\r\n", packageID);
                     }
@@ -5002,14 +5199,14 @@ void SaveFormatter::FormatChangeFlags(char* buffer, SaveForm* form, unsigned int
                             FUN_00406d50(text, 50, " ");
                         FUN_00406d50(text, 50, " ");
                     }
-                    FUN_00406d50(buffer, 500, text);
+                    FUN_00406d50(apString, 500, text);
                 }
-                if (flags & 0x0)
+                if (aiFlags & 0x0)
                 {
                     unsigned int packageID = 0;
                     if (actor && ((SaveTrespass*)actor->BSFile_GetDevice()) && ((SaveTrespass*)actor->BSFile_GetDevice())->ExtraDataList_GetTrespassPackage())
                         packageID = ((SaveTrespass*)actor->BSFile_GetDevice())->ExtraDataList_GetTrespassPackage()->GetHavokWorldObjectCountInSceneGraph_0084e3a0();
-                    if (details)
+                    if (abVerbose)
                     {
                         BSsprintf(text, 50, "CHANGE_ACTOR_EXTRA_TRESPASS_PACKAGE %08X\r\n", packageID);
                     }
@@ -5022,14 +5219,14 @@ void SaveFormatter::FormatChangeFlags(char* buffer, SaveForm* form, unsigned int
                             FUN_00406d50(text, 50, " ");
                         FUN_00406d50(text, 50, " ");
                     }
-                    FUN_00406d50(buffer, 500, text);
+                    FUN_00406d50(apString, 500, text);
                 }
-                if (flags & 0x0)
+                if (aiFlags & 0x0)
                 {
                     unsigned int packageID = 0;
                     if (actor && ((SaveProcess*)actor->FUN_008d8520()) && ((SaveProcess*)actor->FUN_008d8520())->GetInterruptPackage())
                         packageID = ((SaveProcess*)actor->FUN_008d8520())->GetInterruptPackage()->GetHavokWorldObjectCountInSceneGraph_0084e3a0();
-                    if (details)
+                    if (abVerbose)
                     {
                         BSsprintf(text, 50, "CHANGE_ACTOR_INTERRUPT_PACKAGE %08X\r\n", packageID);
                     }
@@ -5037,7 +5234,7 @@ void SaveFormatter::FormatChangeFlags(char* buffer, SaveForm* form, unsigned int
                     {
                         char packageName2[264];
                         unsigned int packageFlags = 0;
-                        if (flags & 0)
+                        if (aiFlags & 0)
                             packageFlags = packageFlags;
                         FUN_00406d30(packageName2, 260, "Interrupt");
                         if (actor && ((SaveLoadActor*)actor)->GetPackageTypeName())
@@ -5049,12 +5246,12 @@ void SaveFormatter::FormatChangeFlags(char* buffer, SaveForm* form, unsigned int
                             FUN_00406d50(text, 50, " ");
                         FUN_00406d50(text, 50, " ");
                     }
-                    FUN_00406d50(buffer, 500, text);
+                    FUN_00406d50(apString, 500, text);
                 }
-                if (flags & 0x0)
+                if (aiFlags & 0x0)
                 {
-                    if (details)
-                        FUN_00406d50(buffer, 500, "CHANGE_ACTOR_NONSAVED_PACKAGE\r\n");
+                    if (abVerbose)
+                        FUN_00406d50(apString, 500, "CHANGE_ACTOR_NONSAVED_PACKAGE\r\n");
                     else
                     {
                         BSsprintf(text, 50, "Non-saved Package(%i)", form ? form->GetSaveSize(0x0) - baseSize : 0);
@@ -5062,13 +5259,13 @@ void SaveFormatter::FormatChangeFlags(char* buffer, SaveForm* form, unsigned int
                         while (BSstrlen(text) < 25)
                             FUN_00406d50(text, 50, " ");
                         FUN_00406d50(text, 50, " ");
-                        FUN_00406d50(buffer, 500, text);
+                        FUN_00406d50(apString, 500, text);
                     }
                 }
-                if (flags & 0x80000)
+                if (aiFlags & 0x80000)
                 {
-                    if (details)
-                        FUN_00406d50(buffer, 500, "CHANGE_ACTOR_DISPOSITION_MODIFIERS\r\n");
+                    if (abVerbose)
+                        FUN_00406d50(apString, 500, "CHANGE_ACTOR_DISPOSITION_MODIFIERS\r\n");
                     else
                     {
                         BSsprintf(text, 50, "Disp Modifiers(%i)", form ? form->GetSaveSize(0x80000) - baseSize : 0);
@@ -5076,13 +5273,13 @@ void SaveFormatter::FormatChangeFlags(char* buffer, SaveForm* form, unsigned int
                         while (BSstrlen(text) < 25)
                             FUN_00406d50(text, 50, " ");
                         FUN_00406d50(text, 50, " ");
-                        FUN_00406d50(buffer, 500, text);
+                        FUN_00406d50(apString, 500, text);
                     }
                 }
-                if (flags & 0x0)
+                if (aiFlags & 0x0)
                 {
-                    if (details)
-                        FUN_00406d50(buffer, 500, "CHANGE_ACTOR_EXTRA_OBLIVION_ENTRY\r\n");
+                    if (abVerbose)
+                        FUN_00406d50(apString, 500, "CHANGE_ACTOR_EXTRA_OBLIVION_ENTRY\r\n");
                     else
                     {
                         BSsprintf(text, 50, "Oblivion Entry(%i)", form ? form->GetSaveSize(0x0) - baseSize : 0);
@@ -5090,13 +5287,13 @@ void SaveFormatter::FormatChangeFlags(char* buffer, SaveForm* form, unsigned int
                         while (BSstrlen(text) < 25)
                             FUN_00406d50(text, 50, " ");
                         FUN_00406d50(text, 50, " ");
-                        FUN_00406d50(buffer, 500, text);
+                        FUN_00406d50(apString, 500, text);
                     }
                 }
-                if (flags & 0x0)
+                if (aiFlags & 0x0)
                 {
-                    if (details)
-                        FUN_00406d50(buffer, 500, "CHANGE_ACTOR_EXTRA_INVESTMENTGOLD\r\n");
+                    if (abVerbose)
+                        FUN_00406d50(apString, 500, "CHANGE_ACTOR_EXTRA_INVESTMENTGOLD\r\n");
                     else
                     {
                         BSsprintf(text, 50, "Investment Gold(%i)", form ? form->GetSaveSize(0x0) - baseSize : 0);
@@ -5104,29 +5301,29 @@ void SaveFormatter::FormatChangeFlags(char* buffer, SaveForm* form, unsigned int
                         while (BSstrlen(text) < 25)
                             FUN_00406d50(text, 50, " ");
                         FUN_00406d50(text, 50, " ");
-                        FUN_00406d50(buffer, 500, text);
+                        FUN_00406d50(apString, 500, text);
                     }
                 }
-                if (flags & 0x400)
+                if (aiFlags & 0x400)
                 {
-                    if (details)
-                        FUN_00406d50(buffer, 500, "CHANGE_ACTOR_LIFESTATE\r\n");
+                    if (abVerbose)
+                        FUN_00406d50(apString, 500, "CHANGE_ACTOR_LIFESTATE\r\n");
                     else
                     {
-                        unsigned int oldSize = form ? form->GetSaveSize(flags & 4) : 0;
-                        unsigned int changeFlags2 = (flags & 4) + 1024;
+                        unsigned int oldSize = form ? form->GetSaveSize(aiFlags & 4) : 0;
+                        unsigned int changeFlags2 = (aiFlags & 4) + 1024;
                         BSsprintf(text, 50, "Life State(%i)", form ? form->GetSaveSize(changeFlags2) - oldSize : 0);
 
                         while (BSstrlen(text) < 25)
                             FUN_00406d50(text, 50, " ");
                         FUN_00406d50(text, 50, " ");
-                        FUN_00406d50(buffer, 500, text);
+                        FUN_00406d50(apString, 500, text);
                     }
                 }
-                if (flags & 0x0)
+                if (aiFlags & 0x0)
                 {
-                    if (details)
-                        FUN_00406d50(buffer, 500, "CHANGE_ACTOR_EXTRA_PERSUASION\r\n");
+                    if (abVerbose)
+                        FUN_00406d50(apString, 500, "CHANGE_ACTOR_EXTRA_PERSUASION\r\n");
                     else
                     {
                         BSsprintf(text, 50, "Persuasion(%i)", form ? form->GetSaveSize(0x0) - baseSize : 0);
@@ -5134,15 +5331,15 @@ void SaveFormatter::FormatChangeFlags(char* buffer, SaveForm* form, unsigned int
                         while (BSstrlen(text) < 25)
                             FUN_00406d50(text, 50, " ");
                         FUN_00406d50(text, 50, " ");
-                        FUN_00406d50(buffer, 500, text);
+                        FUN_00406d50(apString, 500, text);
                     }
                 }
-                if (type == 59)
+                if (acFormType == 59)
                 {
-                    if (flags & 0x0)
+                    if (aiFlags & 0x0)
                     {
-                        if (details)
-                            FUN_00406d50(buffer, 500, "CHANGE_CHARACTER_EXTRA_CRIMEGOLD\r\n");
+                        if (abVerbose)
+                            FUN_00406d50(apString, 500, "CHANGE_CHARACTER_EXTRA_CRIMEGOLD\r\n");
                         else
                         {
                             BSsprintf(text, 50, "Crime Gold(%i)", form ? form->GetSaveSize(0x0) - baseSize : 0);
@@ -5150,17 +5347,17 @@ void SaveFormatter::FormatChangeFlags(char* buffer, SaveForm* form, unsigned int
                             while (BSstrlen(text) < 25)
                                 FUN_00406d50(text, 50, " ");
                             FUN_00406d50(text, 50, " ");
-                            FUN_00406d50(buffer, 500, text);
+                            FUN_00406d50(apString, 500, text);
                         }
                     }
                 }
             }
             else
             {
-                if (flags & 0x0)
+                if (aiFlags & 0x0)
                 {
-                    if (details)
-                        FUN_00406d50(buffer, 500, "CHANGE_MAPMARKER_EXTRA_FLAGS\r\n");
+                    if (abVerbose)
+                        FUN_00406d50(apString, 500, "CHANGE_MAPMARKER_EXTRA_FLAGS\r\n");
                     else
                     {
                         BSsprintf(text, 50, "Map Marker Flags(%i)", form ? form->GetSaveSize(0x0) - baseSize : 0);
@@ -5168,13 +5365,13 @@ void SaveFormatter::FormatChangeFlags(char* buffer, SaveForm* form, unsigned int
                         while (BSstrlen(text) < 25)
                             FUN_00406d50(text, 50, " ");
                         FUN_00406d50(text, 50, " ");
-                        FUN_00406d50(buffer, 500, text);
+                        FUN_00406d50(apString, 500, text);
                     }
                 }
-                if (flags & 0x0)
+                if (aiFlags & 0x0)
                 {
-                    if (details)
-                        FUN_00406d50(buffer, 500, "CHANGE_OBJECT_EXTRA_MAGIC\r\n");
+                    if (abVerbose)
+                        FUN_00406d50(apString, 500, "CHANGE_OBJECT_EXTRA_MAGIC\r\n");
                     else
                     {
                         BSsprintf(text, 50, "Extra Magic(%i)", form ? form->GetSaveSize(0x0) - baseSize : 0);
@@ -5182,13 +5379,13 @@ void SaveFormatter::FormatChangeFlags(char* buffer, SaveForm* form, unsigned int
                         while (BSstrlen(text) < 25)
                             FUN_00406d50(text, 50, " ");
                         FUN_00406d50(text, 50, " ");
-                        FUN_00406d50(buffer, 500, text);
+                        FUN_00406d50(apString, 500, text);
                     }
                 }
-                if (flags & 0x1000)
+                if (aiFlags & 0x1000)
                 {
-                    if (details)
-                        FUN_00406d50(buffer, 500, "CHANGE_OBJECT_EXTRA_LOCK\r\n");
+                    if (abVerbose)
+                        FUN_00406d50(apString, 500, "CHANGE_OBJECT_EXTRA_LOCK\r\n");
                     else
                     {
                         BSsprintf(text, 50, "Lock(%i)", form ? form->GetSaveSize(0x1000) - baseSize : 0);
@@ -5196,13 +5393,13 @@ void SaveFormatter::FormatChangeFlags(char* buffer, SaveForm* form, unsigned int
                         while (BSstrlen(text) < 25)
                             FUN_00406d50(text, 50, " ");
                         FUN_00406d50(text, 50, " ");
-                        FUN_00406d50(buffer, 500, text);
+                        FUN_00406d50(apString, 500, text);
                     }
                 }
-                if (flags & 0x0)
+                if (aiFlags & 0x0)
                 {
-                    if (details)
-                        FUN_00406d50(buffer, 500, "CHANGE_OBJECT_EXTRA_OWNER\r\n");
+                    if (abVerbose)
+                        FUN_00406d50(apString, 500, "CHANGE_OBJECT_EXTRA_OWNER\r\n");
                     else
                     {
                         BSsprintf(text, 50, "Owner(%i)", form ? form->GetSaveSize(0x0) - baseSize : 0);
@@ -5210,13 +5407,13 @@ void SaveFormatter::FormatChangeFlags(char* buffer, SaveForm* form, unsigned int
                         while (BSstrlen(text) < 25)
                             FUN_00406d50(text, 50, " ");
                         FUN_00406d50(text, 50, " ");
-                        FUN_00406d50(buffer, 500, text);
+                        FUN_00406d50(apString, 500, text);
                     }
                 }
-                if (flags & 0x0)
+                if (aiFlags & 0x0)
                 {
-                    if (details)
-                        FUN_00406d50(buffer, 500, "CHANGE_OBJECT_EXTRA_GLOBAL\r\n");
+                    if (abVerbose)
+                        FUN_00406d50(apString, 500, "CHANGE_OBJECT_EXTRA_GLOBAL\r\n");
                     else
                     {
                         BSsprintf(text, 50, "Global Owner(%i)", form ? form->GetSaveSize(0x0) - baseSize : 0);
@@ -5224,13 +5421,13 @@ void SaveFormatter::FormatChangeFlags(char* buffer, SaveForm* form, unsigned int
                         while (BSstrlen(text) < 25)
                             FUN_00406d50(text, 50, " ");
                         FUN_00406d50(text, 50, " ");
-                        FUN_00406d50(buffer, 500, text);
+                        FUN_00406d50(apString, 500, text);
                     }
                 }
-                if (flags & 0x0)
+                if (aiFlags & 0x0)
                 {
-                    if (details)
-                        FUN_00406d50(buffer, 500, "CHANGE_OBJECT_EXTRA_RANK\r\n");
+                    if (abVerbose)
+                        FUN_00406d50(apString, 500, "CHANGE_OBJECT_EXTRA_RANK\r\n");
                     else
                     {
                         BSsprintf(text, 50, "Rank Owner(%i)", form ? form->GetSaveSize(0x0) - baseSize : 0);
@@ -5238,13 +5435,13 @@ void SaveFormatter::FormatChangeFlags(char* buffer, SaveForm* form, unsigned int
                         while (BSstrlen(text) < 25)
                             FUN_00406d50(text, 50, " ");
                         FUN_00406d50(text, 50, " ");
-                        FUN_00406d50(buffer, 500, text);
+                        FUN_00406d50(apString, 500, text);
                     }
                 }
-                if (flags & 0x0)
+                if (aiFlags & 0x0)
                 {
-                    if (details)
-                        FUN_00406d50(buffer, 500, "CHANGEFLAG_OBJECT_DROPPED_NON_QUEST_ITEM\r\n");
+                    if (abVerbose)
+                        FUN_00406d50(apString, 500, "CHANGEFLAG_OBJECT_DROPPED_NON_QUEST_ITEM\r\n");
                     else
                     {
                         BSsprintf(text, 50, "Dropped Item Flag(%i)", form ? form->GetSaveSize(0x0) - baseSize : 0);
@@ -5252,13 +5449,13 @@ void SaveFormatter::FormatChangeFlags(char* buffer, SaveForm* form, unsigned int
                         while (BSstrlen(text) < 25)
                             FUN_00406d50(text, 50, " ");
                         FUN_00406d50(text, 50, " ");
-                        FUN_00406d50(buffer, 500, text);
+                        FUN_00406d50(apString, 500, text);
                     }
                 }
-                if (flags & 0x200000)
+                if (aiFlags & 0x200000)
                 {
-                    if (details)
-                        FUN_00406d50(buffer, 500, "CHANGE_OBJECT_EMPTY\r\n");
+                    if (abVerbose)
+                        FUN_00406d50(apString, 500, "CHANGE_OBJECT_EMPTY\r\n");
                     else
                     {
                         BSsprintf(text, 50, "Empty Flag(%i)", form ? form->GetSaveSize(0x200000) - baseSize : 0);
@@ -5266,15 +5463,15 @@ void SaveFormatter::FormatChangeFlags(char* buffer, SaveForm* form, unsigned int
                         while (BSstrlen(text) < 25)
                             FUN_00406d50(text, 50, " ");
                         FUN_00406d50(text, 50, " ");
-                        FUN_00406d50(buffer, 500, text);
+                        FUN_00406d50(apString, 500, text);
                     }
                 }
                 if (!refr || (refr->BGSSaveFormBuffer_GetForm() && refr->BGSSaveFormBuffer_GetForm()->FUN_00401170() == 28))
                 {
-                    if (flags & 0x20000)
+                    if (aiFlags & 0x20000)
                     {
-                        if (details)
-                            FUN_00406d50(buffer, 500, "CHANGE_DOOR_EXTRA_TELEPORT\r\n");
+                        if (abVerbose)
+                            FUN_00406d50(apString, 500, "CHANGE_DOOR_EXTRA_TELEPORT\r\n");
                         else
                         {
                             BSsprintf(text, 50, "Teleport(%i)", form ? form->GetSaveSize(0x20000) - baseSize : 0);
@@ -5282,14 +5479,14 @@ void SaveFormatter::FormatChangeFlags(char* buffer, SaveForm* form, unsigned int
                             while (BSstrlen(text) < 25)
                                 FUN_00406d50(text, 50, " ");
                             FUN_00406d50(text, 50, " ");
-                            FUN_00406d50(buffer, 500, text);
+                            FUN_00406d50(apString, 500, text);
                         }
                     }
                 }
-                if (flags & 0x800000)
+                if (aiFlags & 0x800000)
                 {
-                    if (details)
-                        FUN_00406d50(buffer, 500, "CHANGE_OPEN_STATE\r\n");
+                    if (abVerbose)
+                        FUN_00406d50(apString, 500, "CHANGE_OPEN_STATE\r\n");
                     else
                     {
                         BSsprintf(text, 50, "Open State(%i)", form ? form->GetSaveSize(0x800000) - baseSize : 0);
@@ -5297,13 +5494,13 @@ void SaveFormatter::FormatChangeFlags(char* buffer, SaveForm* form, unsigned int
                         while (BSstrlen(text) < 25)
                             FUN_00406d50(text, 50, " ");
                         FUN_00406d50(text, 50, " ");
-                        FUN_00406d50(buffer, 500, text);
+                        FUN_00406d50(apString, 500, text);
                     }
                 }
-                if (flags & 0x400000)
+                if (aiFlags & 0x400000)
                 {
-                    if (details)
-                        FUN_00406d50(buffer, 500, "CHANGE_OPEN_DEFAULT_STATE\r\n");
+                    if (abVerbose)
+                        FUN_00406d50(apString, 500, "CHANGE_OPEN_DEFAULT_STATE\r\n");
                     else
                     {
                         BSsprintf(text, 50, "Default Open State(%i)",
@@ -5312,7 +5509,7 @@ void SaveFormatter::FormatChangeFlags(char* buffer, SaveForm* form, unsigned int
                         while (BSstrlen(text) < 25)
                             FUN_00406d50(text, 50, " ");
                         FUN_00406d50(text, 50, " ");
-                        FUN_00406d50(buffer, 500, text);
+                        FUN_00406d50(apString, 500, text);
                     }
                 }
             }
@@ -5345,46 +5542,50 @@ extern unsigned int DAT_010a2480;
 int strcpy_s(char*, unsigned int, const char*);
 struct SaveMetadataReader
 {
-    SaveMetadataFile* OpenSaveFile(const char*, int, int);
+    SaveMetadataFile* TESSaveLoadGame_PrepForLoadSave(const char*, int, int);
     void ReleaseFile(SaveMetadataFile*, int);
     void* TESSaveLoadGame_LoadHeader(SaveMetadataFile*, int);
-    int ReadTexture(const char*, void*, unsigned int*, char*, unsigned short*, char*, float*, SaveTimestamp*,
+    int TESSaveLoadGame_ReadSaveGameDataOLD(const char*, void*, unsigned int*, char*, unsigned short*, char*, float*, SaveTimestamp*,
                     unsigned int*, unsigned int*);
-    int ReadSaveMetadata(const char*, unsigned int*, char*, char*, char*, char*, char*, char*, unsigned int*, bool);
+    int TESSaveLoadGame_GetSaveGameDataOLD(const char*, unsigned int*, char*, char*, char*, char*, char*, char*, unsigned int*, bool);
 };
 // Reads save metadata from a file or supplied object, formats level, time, playtime and date strings, and returns the parse result.
 // @fnv 0x008600b0
-int SaveMetadataReader::ReadSaveMetadata(const char* path, unsigned int* number, char* name, char* levelText,
-                                         char* location, char* timeText, char* dateText, char* playedText,
-                                         unsigned int* extra, bool suppliedFile)
+// src: XBOX_DEBUG_PDB 0x008600b0
+// pdb: TESSaveLoadGame::GetSaveGameDataOLD | TESSaveLoadGame.obj | debug, unique string literal, high
+// pdb params: apFile, apSaveGameNumber, apPlayerName, apLevel, apLocationName, apDay, apFileDate, apTotalPlayingTime, apScreenShotHeight, abSkipPrep
+// pdb locals: itotalPlayingTime, ptexture, isize, fgameDate, pNewFile, fileDate, ilevel, inumSeconds, inumMinutes, inumHours
+int SaveMetadataReader::TESSaveLoadGame_GetSaveGameDataOLD(const char* apFile, unsigned int* apSaveGameNumber, char* apPlayerName, char* apLevel,
+                                         char* apLocationName, char* apDay, char* apFileDate, char* apTotalPlayingTime,
+                                         unsigned int* apScreenShotHeight, bool abSkipPrep)
 {
     SaveMetadataFile* entryB = 0;
-    if (!suppliedFile)
-        entryB = OpenSaveFile(path, 0, 2);
+    if (!abSkipPrep)
+        entryB = TESSaveLoadGame_PrepForLoadSave(apFile, 0, 2);
     else
-        entryB = (SaveMetadataFile*)path;
+        entryB = (SaveMetadataFile*)apFile;
     void* object4 = 0;
     if (entryB && entryB->TESAnimGroup_GetDecal())
         object4 = TESSaveLoadGame_LoadHeader(entryB, 0);
     if (!object4)
     {
-        if (number)
-            *number = 0;
-        if (name)
-            strcpy_s(name, 300, "");
-        if (levelText)
-            strcpy_s(levelText, 300, "");
-        if (location)
-            strcpy_s(location, 300, "");
-        if (timeText)
-            strcpy_s(timeText, 300, "");
-        if (dateText)
-            strcpy_s(dateText, 300, "");
-        if (playedText)
-            strcpy_s(playedText, 300, "");
-        if (extra)
-            *extra = 0;
-        if (!suppliedFile)
+        if (apSaveGameNumber)
+            *apSaveGameNumber = 0;
+        if (apPlayerName)
+            strcpy_s(apPlayerName, 300, "");
+        if (apLevel)
+            strcpy_s(apLevel, 300, "");
+        if (apLocationName)
+            strcpy_s(apLocationName, 300, "");
+        if (apDay)
+            strcpy_s(apDay, 300, "");
+        if (apFileDate)
+            strcpy_s(apFileDate, 300, "");
+        if (apTotalPlayingTime)
+            strcpy_s(apTotalPlayingTime, 300, "");
+        if (apScreenShotHeight)
+            *apScreenShotHeight = 0;
+        if (!abSkipPrep)
             ReleaseFile(entryB, 2);
         return false;
     }
@@ -5392,24 +5593,24 @@ int SaveMetadataReader::ReadSaveMetadata(const char* path, unsigned int* number,
     float time = 0.0f;
     SaveTimestamp time6;
     unsigned int time_;
-    int result_ = ReadTexture(path, object4, number, name, &count, location, &time, &time6, &time_, extra);
-    if (levelText)
-        sprintf_s(levelText, 300, "%s %i", g_011d2028.String(), count);
-    if (timeText)
-        sprintf_s(timeText, 300, "%s %i", g_011d4624.String(), (unsigned int)time);
-    if (playedText)
+    int result_ = TESSaveLoadGame_ReadSaveGameDataOLD(apFile, object4, apSaveGameNumber, apPlayerName, &count, apLocationName, &time, &time6, &time_, apScreenShotHeight);
+    if (apLevel)
+        sprintf_s(apLevel, 300, "%s %i", g_011d2028.String(), count);
+    if (apDay)
+        sprintf_s(apDay, 300, "%s %i", g_011d4624.String(), (unsigned int)time);
+    if (apTotalPlayingTime)
     {
         unsigned int countTmp = time_ / 3600000;
         time_ -= countTmp * 3600000;
         unsigned int time4 = time_ / 60000;
         time_ -= time4 * 60000;
         unsigned int second7 = time_ / 1000;
-        sprintf_s(playedText, 300, "%02i:%02i:%02i", countTmp, time4, second7);
+        sprintf_s(apTotalPlayingTime, 300, "%02i:%02i:%02i", countTmp, time4, second7);
     }
-    if (dateText)
-        sprintf_s(dateText, 300, "%d/%d/%02d %02d:%02d", time6.month, time6.day, time6.year, time6.hour, time6.minute);
+    if (apFileDate)
+        sprintf_s(apFileDate, 300, "%d/%d/%02d %02d:%02d", time6.month, time6.day, time6.year, time6.hour, time6.minute);
     entryB->Seek(0, DAT_010a2480);
-    if (!suppliedFile)
+    if (!abSkipPrep)
         ReleaseFile(entryB, 2);
     return result_;
 }
@@ -5513,76 +5714,80 @@ struct Reader
     void FUN_00858700(void*);
     void TESSaveLoadGame_LoadGameDataOLD(void*, unsigned int);
     void FUN_00857bd0(unsigned int);
-    Texture* ReadTexture(File*, unsigned int, unsigned int*, char*, unsigned short*, char*, float*, Identity*,
+    Texture* TESSaveLoadGame_ReadSaveGameDataOLD(File*, unsigned int, unsigned int*, char*, unsigned short*, char*, float*, Identity*,
                          unsigned int*, unsigned int*);
 };
 // Reads a texture record from the file: flags, name, level, location, game time, identity and image data, builds a PixelData and returns the created Texture.
 // @fnv 0x00860390
-Texture* Reader::ReadTexture(File* file, unsigned int size, unsigned int* puiFlags, char* pcName,
-                             unsigned short* pusLevel, char* pcLocation, float* pfGameTime, Identity* identity,
-                             unsigned int* puiNumber, unsigned int* puiImageSize)
+// src: XBOX_RETAIL_PDB 0x00860390
+// pdb: TESSaveLoadGame::ReadSaveGameDataOLD | TESSaveLoadGame.obj | retail, string-set bridge, high
+// pdb params: apFile, aiSize, apSaveGameNumber, apPlayerName, apLevel, apLocationName, apGameDate, apFileDate, apTotalPlayingTime, apScreenShotHeight
+// pdb locals: itotalPlayingTime, localTime, ptexture, iscreenshotSize, clength, ptempBuffer, fgameDate, ilevel, isavegameNumber, iwidth, pixelFormat, ppixelData, prefs, iheight
+Texture* Reader::TESSaveLoadGame_ReadSaveGameDataOLD(File* apFile, unsigned int aiSize, unsigned int* apSaveGameNumber, char* apPlayerName,
+                             unsigned short* apLevel, char* apLocationName, float* apGameDate, Identity* apFileDate,
+                             unsigned int* apTotalPlayingTime, unsigned int* apScreenShotHeight)
 {
-    void* buffer5 = TESSaveLoadGame_CreateBuffer(size);
-    ReadFromStream_Thunk(file, buffer5, size);
+    void* buffer5 = TESSaveLoadGame_CreateBuffer(aiSize);
+    ReadFromStream_Thunk(apFile, buffer5, aiSize);
     if (DAT_011de45c->FUN_008df040() >= 56)
     {
         unsigned int flagsValue;
         TESSaveLoadGame_LoadGameDataOLD(&flagsValue, 4);
-        if (puiFlags)
-            *puiFlags = flagsValue;
+        if (apSaveGameNumber)
+            *apSaveGameNumber = flagsValue;
     }
-    if (DAT_011de45c->FUN_008df040() < 56 && puiFlags)
-        *puiFlags = 0;
+    if (DAT_011de45c->FUN_008df040() < 56 && apSaveGameNumber)
+        *apSaveGameNumber = 0;
     unsigned char length3;
     TESSaveLoadGame_LoadGameDataOLD(&length3, 1);
-    if (pcName)
-        TESSaveLoadGame_LoadGameDataOLD(pcName, length3);
+    if (apPlayerName)
+        TESSaveLoadGame_LoadGameDataOLD(apPlayerName, length3);
     else
         FUN_00857bd0(length3);
     unsigned short levelValue6 = 0;
     if (DAT_011de45c->FUN_008df040() >= 52)
         TESSaveLoadGame_LoadGameDataOLD(&levelValue6, 2);
-    if (pusLevel)
-        *pusLevel = levelValue6;
+    if (apLevel)
+        *apLevel = levelValue6;
     TESSaveLoadGame_LoadGameDataOLD(&length3, 1);
-    if (pcLocation)
+    if (apLocationName)
     {
         if (length3)
-            TESSaveLoadGame_LoadGameDataOLD(pcLocation, length3);
+            TESSaveLoadGame_LoadGameDataOLD(apLocationName, length3);
         else
-            FUN_00406d30(pcLocation, 300, DAT_011d4fcc.FUN_00403df0());
+            FUN_00406d30(apLocationName, 300, DAT_011d4fcc.FUN_00403df0());
     }
     else if (length3)
         FUN_00857bd0(length3);
     float time;
     TESSaveLoadGame_LoadGameDataOLD(&time, 4);
-    if (pfGameTime)
-        *pfGameTime = time;
+    if (apGameDate)
+        *apGameDate = time;
     unsigned int count3 = 0;
     if (DAT_011de45c->FUN_008df040() >= 29)
         TESSaveLoadGame_LoadGameDataOLD(&count3, 4);
-    if (puiNumber)
-        *puiNumber = count3;
+    if (apTotalPlayingTime)
+        *apTotalPlayingTime = count3;
     Identity id8;
     ourMemset(&id8, 0, 16);
     if (DAT_011de45c->FUN_008df040() >= 56)
         TESSaveLoadGame_LoadGameDataOLD(&id8, 16);
     if (DAT_011de45c->FUN_008df040() < 56)
-        id8 = file->GetLastWriteTime();
-    if (identity)
-        *identity = id8;
+        id8 = apFile->GetLastWriteTime();
+    if (apFileDate)
+        *apFileDate = id8;
     Texture* texture4 = 0;
     unsigned int dataSize;
     TESSaveLoadGame_LoadGameDataOLD(&dataSize, 4);
     if (dataSize)
     {
-        if (puiImageSize)
+        if (apScreenShotHeight)
         {
             unsigned int width;
             TESSaveLoadGame_LoadGameDataOLD(&width, 4);
             unsigned int height8;
             TESSaveLoadGame_LoadGameDataOLD(&height8, 4);
-            *puiImageSize = height8;
+            *apScreenShotHeight = height8;
             if (DAT_011de45c->FUN_008df040() < 46)
                 FUN_00857bd0(36);
             PixelFormat format = DAT_011aa2e8;
@@ -5716,16 +5921,20 @@ extern int __cdecl FUN_00456a20(const char*, int, int, int);
 struct SaveNamer
 {
     int GetOrCreatePointer();
-    void BuildSaveFilename(char*);
+    void TESSaveLoadGame_GenerateSaveGameFileName(char*);
 };
 // @fnv 0x00860ae0
-void SaveNamer::BuildSaveFilename(char* output)
+// src: XBOX_DEBUG_PDB 0x00860ae0
+// pdb: TESSaveLoadGame::GenerateSaveGameFileName | TESSaveLoadGame.obj | debug, unique string literal, high
+// pdb params: apFileName
+// pdb locals: iAttempt, bUniqueName, sMapName, sTempName, pPlayerName, sLocationName, sSuffix, itotalPlayingTime, pstring, inumSeconds, pinvalidCharacter, sFileAndPath, inumMinutes, inumHours
+void SaveNamer::TESSaveLoadGame_GenerateSaveGameFileName(char* apFileName)
 {
     char suffix_[5];
     const char* location;
     const char* name;
     char filename[260];
-    if (!output)
+    if (!apFileName)
         return;
     {
         bool available9 = true;
@@ -5774,7 +5983,7 @@ void SaveNamer::BuildSaveFilename(char* output)
             available9 = !FUN_00456a20(fullPath, 0, 0, -1);
             counter++;
         } while (!available9);
-        FUN_00406d30(output, 260, filename);
+        FUN_00406d30(apFileName, 260, filename);
     }
 }
 }  // namespace fnv_00860ae0
@@ -5789,7 +5998,7 @@ int CompareSaveName(const char*, const char*);
 extern SaveLoadPlayerCharacter* headerPlayer;
 struct CalendarHeader
 {
-    unsigned int GetGameDaysPassed();
+    unsigned int GetDaysPassed();
     double GetHours();
 };
 extern CalendarHeader g_calendar;
@@ -5869,23 +6078,27 @@ struct SaveHeader
     void Write(void*, const void*, unsigned int);
     bool GetLoading();
     unsigned int NextSave();
-    void WriteSaveHeader(void* file, const char* name);
+    void TESSaveLoadGame_SaveHeader(void* apFile, const char* apFileName);
 };
 // @fnv 0x00861130
-void SaveHeader::WriteSaveHeader(void* file, const char* name)
+// src: XBOX_RETAIL_PDB 0x00861130
+// pdb: TESSaveLoadGame::SaveHeader | TESSaveLoadGame.obj | retail, string-set bridge, high
+// pdb params: apFile, apFileName
+// pdb locals: localTime, itotalPlayingTime, iscreenshotSize, iwidth, ipixSize, isize, fgameDate, pPlayerName, ppixelData, mapname, iheight, pLocationName, cLocationNameLength, cPlayerNameLength, ilevel, inewHeight, finverseAspectRatio, inextSaveNumber, izero
+void SaveHeader::TESSaveLoadGame_SaveHeader(void* apFile, const char* apFileName)
 {
     Init();
     Reset();
-    Write(file, DAT_011a2224, BSStringLength(DAT_011a2224));
-    Write(file, &version, 1);
-    Write(file, &revision, 1);
+    Write(apFile, DAT_011a2224, BSStringLength(DAT_011a2224));
+    Write(apFile, &version, 1);
+    Write(apFile, &revision, 1);
     if (!unka8)
     {
         CoCreateGuid(&unk98);
         unka8 = revision;
     }
-    Write(file, &unk98, 16);
-    Write(file, &unka8, 4);
+    Write(apFile, &unk98, 16);
+    Write(apFile, &unka8, 4);
     const char* _c = headerPlayer->GetFullName();
     unsigned char _f = BSStringLength(_c) + 1;
     unsigned short _b2 = headerPlayer->GetLevel();
@@ -5897,7 +6110,7 @@ void SaveHeader::WriteSaveHeader(void* file, const char* name)
     unsigned char _c0 = 0;
     if (_h)
         _c0 = BSStringLength(_h) + 1;
-    float _b = g_calendar.GetGameDaysPassed() + g_calendar.GetHours() / 24.0;
+    float _b = g_calendar.GetDaysPassed() + g_calendar.GetHours() / 24.0;
     TimeHeader _n;
     GetSystemTime(&_n);
     unsigned int _image = 0;
@@ -5924,35 +6137,35 @@ void SaveHeader::WriteSaveHeader(void* file, const char* name)
     }
     unsigned int _play3 = headerPlayer->GetElapsedPlaytime();
     unsigned int _heading = _f + _c0 + _image + 36;
-    Write(file, &_heading, 4);
-    if (!GetLoading() && (!name || (!CompareSaveName(name, "quicksave") && !CompareSaveName(name, "autosave"))))
+    Write(apFile, &_heading, 4);
+    if (!GetLoading() && (!apFileName || (!CompareSaveName(apFileName, "quicksave") && !CompareSaveName(apFileName, "autosave"))))
     {
         unsigned int saveNumber = NextSave();
-        Write(file, &saveNumber, 4);
+        Write(apFile, &saveNumber, 4);
         unk8c = unk8c + 1;
     }
     else
     {
         unsigned int saveNumberZero = 0;
-        Write(file, &saveNumberZero, 4);
+        Write(apFile, &saveNumberZero, 4);
     }
-    Write(file, &_f, 1);
-    Write(file, _c, _f);
-    Write(file, &_b2, 2);
-    Write(file, &_c0, 1);
+    Write(apFile, &_f, 1);
+    Write(apFile, _c, _f);
+    Write(apFile, &_b2, 2);
+    Write(apFile, &_c0, 1);
     if (_h)
-        Write(file, _h, _c0);
-    Write(file, &_b, 4);
-    Write(file, &_play3, 4);
-    Write(file, &_n, 16);
-    Write(file, &_image, 4);
+        Write(apFile, _h, _c0);
+    Write(apFile, &_b, 4);
+    Write(apFile, &_play3, 4);
+    Write(apFile, &_n, 16);
+    Write(apFile, &_image, 4);
     if (!GetLoading())
     {
         if (_g)
         {
-            Write(file, &_ap, 4);
-            Write(file, &_cb_, 4);
-            Write(file, _g->NiPixelData_GetPixels(0, 0), _a);
+            Write(apFile, &_ap, 4);
+            Write(apFile, &_cb_, 4);
+            Write(apFile, _g->NiPixelData_GetPixels(0, 0), _a);
             delete _g;
         }
     }
@@ -5970,25 +6183,28 @@ struct NumericArray
 };
 struct FUN_00861b70_Class
 {
-    unsigned int FindOrAddValue(unsigned int value);
+    unsigned int FindOrAddValue(unsigned int aiFormID);
 };
 // @fnv 0x00861b70
-unsigned int FUN_00861b70_Class::FindOrAddValue(unsigned int value)
+// pdb: TESSaveLoadGame::AddNumericIDToArray | TESSaveLoadGame.obj | retail, call graph (shared callers), high
+// pdb params: aiFormID
+// pdb locals: isize, i, iformID
+unsigned int FUN_00861b70_Class::FindOrAddValue(unsigned int aiFormID)
 {
-    if (::g_dataHandler->FormIDExists(value))
+    if (::g_dataHandler->FormIDExists(aiFormID))
     {
-        return value;
+        return aiFormID;
     }
     unsigned int count = (*(NumericArray**)((char*)this + 0x78))->GetHavokWorldObjectCountInSceneGraph_0084e3a0();
     for (unsigned int index = 0; index < count; ++index)
     {
         unsigned int current = *(*(NumericArray**)((char*)this + 0x78))->FUN_00877a30(index);
-        if (current == value)
+        if (current == aiFormID)
         {
             return index;
         }
     }
-    return (*(NumericArray**)((char*)this + 0x78))->NiTLargePrimitiveArray_Add(value);
+    return (*(NumericArray**)((char*)this + 0x78))->NiTLargePrimitiveArray_Add(aiFormID);
 }
 
 struct FUN_004fd380_shell
@@ -5998,7 +6214,7 @@ struct FUN_004fd380_shell
 struct Stub8622Ext
 {
     void LoadSaveFiles();
-    void TESSaveLoadGame_GetSaveGameDisplayData(int a1, unsigned int* a2, int a3, int a4, int a5);
+    void TESSaveLoadGame_GetSaveGameDisplayData(int apFile, unsigned int* apSaveGameNumber, int apFileName, int apLevel, int apTotalPlayingTime);
     void DeleteAllItems();
 };
 struct Stub8622Lt
@@ -6013,6 +6229,9 @@ struct Stub8622Self : FUN_00862370_class
 };
 // Walks the node chain, tracks the largest value returned by FUN_0085fed0, then calls Init and CopyByteToOffset80 and stores nMax+1 in m_8c.
 // @fnv 0x008622a0
+// pdb: NiTMapBase<NiTPointerAllocator<unsigned int>,unsigned char,BSSimpleList<LoadFormHeader *> *>::SetAt | TESSaveLoadGame.obj | retail, object-file run extension, low
+// pdb params: key, val
+// pdb locals: pkItem, uiIndex, uiDepth
 int* Stub8622Self::InitMaxValue()
 {
     void* apTargetLight = ((FUN_004fd380_shell*)this)->EffectSetting_GetLight();
@@ -6234,7 +6453,7 @@ struct Ref624
 struct Repair624
 {
     bool HasInvalidComponents(B006815c0*);
-    void TESSaveLoadGame_SafetyCheckReferencePositionAndAngle(Ref624* reference);
+    void TESSaveLoadGame_SafetyCheckReferencePositionAndAngle(Ref624* apRef);
 };
 void __cdecl TESObjectREFR_MoveRefToNewSpace(Ref624*, void*, void*);
 void __cdecl FNV_Warning(const char*, ...);
@@ -6244,55 +6463,58 @@ extern int DAT_01183fd0;
 extern B006815c0 DAT_011f426c;
 // @fnv 0x008624e0
 // src: XBOX_PDB 0x008624e0
-void Repair624::TESSaveLoadGame_SafetyCheckReferencePositionAndAngle(Ref624* reference)
+// pdb: TESSaveLoadGame::SafetyCheckReferencePositionAndAngle | TESSaveLoadGame.obj | debug, upstream name already matches, high
+// pdb params: apRef
+// pdb locals: loc, angle, pactor, pcell, pworld, pstartingWorldOrCell
+void Repair624::TESSaveLoadGame_SafetyCheckReferencePositionAndAngle(Ref624* apRef)
 {
-    if (reference)
+    if (apRef)
     {
         B006815c0 rotation;
         B006815c0 position;
-        rotation = reference->GetPosition();
-        position = reference->FUN_00430830();
+        rotation = apRef->GetPosition();
+        position = apRef->FUN_00430830();
         if (HasInvalidComponents(&rotation))
         {
-            FNV_Warning(DAT_01081de8, reference->GetHavokWorldObjectCountInSceneGraph_0084e3a0());
+            FNV_Warning(DAT_01081de8, apRef->GetHavokWorldObjectCountInSceneGraph_0084e3a0());
             Ref624* actor = 0;
-            if (reference->IsActor())
-                actor = reference;
+            if (apRef->IsActor())
+                actor = apRef;
             if (actor && actor->HasStartingLocation())
             {
                 void* cell = actor ? actor->GetStartingCell() : 0;
                 void* world = actor ? actor->GetStartingWorld() : 0;
                 if (cell || world)
                 {
-                    reference->TESObjectREFR_SetLocationOnReference(actor->GetStartingPosition());
-                    reference->TESObjectREFR_SetAngleOnReferenceZ(actor->GetStartingAngle().z);
-                    TESObjectREFR_MoveRefToNewSpace(reference, cell, world);
+                    apRef->TESObjectREFR_SetLocationOnReference(actor->GetStartingPosition());
+                    apRef->TESObjectREFR_SetAngleOnReferenceZ(actor->GetStartingAngle().z);
+                    TESObjectREFR_MoveRefToNewSpace(apRef, cell, world);
                 }
             }
-            else if (reference->BSFile_GetDevice()->BaseExtraList_GetExtraData(15))
+            else if (apRef->BSFile_GetDevice()->BaseExtraList_GetExtraData(15))
             {
-                B006815c0 startRotation = reference->GetStartingPosition();
-                B006815c0 uiTimestamp = reference->GetStartingAngle();
-                reference->TESObjectREFR_SetLocationOnReference(startRotation);
-                reference->TESObjectREFR_SetAngleOnReference(uiTimestamp);
-                void* form = reference->BSFile_GetDevice()->ExtraDataList_GetStartingWorldOrCell();
+                B006815c0 startRotation = apRef->GetStartingPosition();
+                B006815c0 uiTimestamp = apRef->GetStartingAngle();
+                apRef->TESObjectREFR_SetLocationOnReference(startRotation);
+                apRef->TESObjectREFR_SetAngleOnReference(uiTimestamp);
+                void* form = apRef->BSFile_GetDevice()->ExtraDataList_GetStartingWorldOrCell();
                 if (form)
                 {
                     void* parentCell = (void*)FUN_00ec43fb((unsigned int)form, 0, &DAT_01183028, &DAT_01183fb4, 0);
                     void* parentWorld = (void*)FUN_00ec43fb((unsigned int)form, 0, &DAT_01183028, &DAT_01183fd0, 0);
                     if (parentCell || parentWorld)
-                        TESObjectREFR_MoveRefToNewSpace(reference, parentCell, parentWorld);
+                        TESObjectREFR_MoveRefToNewSpace(apRef, parentCell, parentWorld);
                 }
             }
             else
             {
-                reference->TESObjectREFR_SetLocationOnReference(DAT_011f426c);
+                apRef->TESObjectREFR_SetLocationOnReference(DAT_011f426c);
             }
         }
         if (HasInvalidComponents(&position))
         {
-            FNV_Warning(DAT_01081d98, reference->GetHavokWorldObjectCountInSceneGraph_0084e3a0());
-            reference->TESObjectREFR_SetAngleOnReference(DAT_011f426c);
+            FNV_Warning(DAT_01081d98, apRef->GetHavokWorldObjectCountInSceneGraph_0084e3a0());
+            apRef->TESObjectREFR_SetAngleOnReference(DAT_011f426c);
         }
     }
 }
@@ -6739,6 +6961,7 @@ class FUN_00863740 : public F3740MapBase
 
 // Destructor that calls RemoveAll to clear the hash table entries.
 // @fnv 0x00863740
+// pdb: NiTPointerMap<unsigned int,BSSimpleList<unsigned int> *>::~NiTPointerMap<unsigned int,BSSimpleList<unsigned int> *> | TESSaveLoadGame.obj | debug, call graph (shared callers), high
 FUN_00863740::~FUN_00863740()
 {
     RemoveAll();
@@ -6938,6 +7161,9 @@ class Own61
 };
 // Looks up key in m_10, scans the list for a command matching a and b, removes and deletes it, and returns its stored pointer.
 // @fnv 0x00861640
+// pdb: TESSaveLoadGame::GetCreatedExteriorCellFormID | TESSaveLoadGame.obj | debug, object-file run extension, low
+// pdb params: aiWorldSpaceID, aiCellX, aiCellY
+// pdb locals: bfound, plist, pdataList, pdata, icellID
 void* Own61::RemoveCommand(const char* key, int a, int b)
 {
     List61* list;
@@ -7110,7 +7336,7 @@ bool Worker::TryDequeue(Ptr* output)
 namespace fnv_00855150 {
 struct Chg00855220
 {
-    void* FUN_00854fe0(unsigned int);
+    void* ChangeData_ScalarDtor(unsigned int);
 };
 
 struct GlobalObj0047c850
@@ -7134,7 +7360,10 @@ struct FormCalls00855150
 
 // @fnv 0x00855150
 // src: COMMUNITY 0x00855150
-bool SaveLoadChangesMap::ChangesMap_RemoveChange(TESForm* form, unsigned int flags)
+// pdb: ChangesMap::RemoveChange | TESSaveLoadGame.obj | debug, upstream name already matches, high
+// pdb params: apForm, aiChange
+// pdb locals: pchange
+bool SaveLoadChangesMap::ChangesMap_RemoveChange(TESForm* form, unsigned int aiChange)
 {
     if (fnv_00855150::DAT_011de45c->FUN_0047c850())
     {
@@ -7143,13 +7372,13 @@ bool SaveLoadChangesMap::ChangesMap_RemoveChange(TESForm* form, unsigned int fla
     TESObjectREFR* ref = (TESObjectREFR*)ChangesMap_GetChanges(form);
     if (ref != 0)
     {
-        ((fnv_00855150::RefCalls00855150*)ref)->ChangeData_RemoveChange(flags);
+        ((fnv_00855150::RefCalls00855150*)ref)->ChangeData_RemoveChange(aiChange);
         if (((fnv_00855150::RefCalls00855150*)ref)->Modelloader_GetReferencedThis() == 0)
         {
             this->RemoveAt(((fnv_00855150::FormCalls00855150*)form)->GetHavokWorldObjectCountInSceneGraph_0084e3a0());
             TESObjectREFR* a4 = ref;
             TESObjectREFR* b = a4;
-            (void)(b ? ((fnv_00855150::Chg00855220*)b)->FUN_00854fe0(1) : (void*)0);
+            (void)(b ? ((fnv_00855150::Chg00855220*)b)->ChangeData_ScalarDtor(1) : (void*)0);
         }
         return true;
     }
@@ -7167,7 +7396,7 @@ class FormX
     void* GetGlobalPointer();
     char FUN_00401170();
     unsigned int GetHavokWorldObjectCountInSceneGraph_0084e3a0();
-    void ResetGlobalPointer();
+    void TESForm_FreeFormBuffer();
 };
 extern "C" void* __cdecl FUN_00ec43fb(void* p, long off, void* src, void* dst, int isRef);
 extern char DAT_01183028, DAT_01183108, DAT_01183060, DAT_011839b4;
@@ -7212,11 +7441,14 @@ class SelfX
     char pad2[0x44 - 0x2c - 1];
     ChangesX* m44;
     void TESSaveLoadGame_WriteFile(BufX* pBuf, void* p, unsigned int n);
-    void TESSaveLoadGame_SaveCreatedBaseObjects(BufX* pBuf);
+    void TESSaveLoadGame_SaveCreatedBaseObjects(BufX* apFile);
 };
 // @fnv 0x00861820
 // src: XBOX_PDB 0x00861820
-void SelfX::TESSaveLoadGame_SaveCreatedBaseObjects(BufX* pBuf)
+// pdb: TESSaveLoadGame::SaveCreatedBaseObjects | TESSaveLoadGame.obj | retail, string-set bridge, high
+// pdb params: apFile
+// pdb locals: icount, plist, iformID, pform, pbound, penchantable, pspell, ilength, penchant, header
+void SelfX::TESSaveLoadGame_SaveCreatedBaseObjects(BufX* apFile)
 {
     unsigned int uiCount_ggbd = 0;
     NodeX* pkNode_dhyats = &m2c;
@@ -7242,7 +7474,7 @@ void SelfX::TESSaveLoadGame_SaveCreatedBaseObjects(BufX* pBuf)
         }
         pkNode_dhyats = pkNode_dhyats->FUN_00726070();
     }
-    TESSaveLoadGame_WriteFile(pBuf, &uiCount_ggbd, 4);
+    TESSaveLoadGame_WriteFile(apFile, &uiCount_ggbd, 4);
     if (!uiCount_ggbd)
         return;
     pkNode_dhyats = &m2c;
@@ -7272,7 +7504,7 @@ void SelfX::TESSaveLoadGame_SaveCreatedBaseObjects(BufX* pBuf)
                     {
                         pkEnchItem->F2c();
                         unsigned int uiEnchSize = pkEnchItem->GetGlobalValue();
-                        TESSaveLoadGame_WriteFile(pBuf, pkEnchItem->GetGlobalPointer(), uiEnchSize);
+                        TESSaveLoadGame_WriteFile(apFile, pkEnchItem->GetGlobalPointer(), uiEnchSize);
                         if (m44)
                         {
                             EntryX kEnchEntry;
@@ -7282,12 +7514,12 @@ void SelfX::TESSaveLoadGame_SaveCreatedBaseObjects(BufX* pBuf)
                             *(unsigned int*)&kEnchEntry.c5 = 0;
                             m44->AddReferenceRecord(&kEnchEntry);
                         }
-                        pkEnchItem->ResetGlobalPointer();
+                        pkEnchItem->TESForm_FreeFormBuffer();
                     }
                 }
                 pkObj->F2c();
                 unsigned int uiSize = pkObj->GetGlobalValue();
-                TESSaveLoadGame_WriteFile(pBuf, pkObj->GetGlobalPointer(), uiSize);
+                TESSaveLoadGame_WriteFile(apFile, pkObj->GetGlobalPointer(), uiSize);
                 if (m44)
                 {
                     EntryX kEntry;
@@ -7297,7 +7529,7 @@ void SelfX::TESSaveLoadGame_SaveCreatedBaseObjects(BufX* pBuf)
                     *(unsigned int*)&kEntry.c5 = 0;
                     m44->AddReferenceRecord(&kEntry);
                 }
-                pkObj->ResetGlobalPointer();
+                pkObj->TESForm_FreeFormBuffer();
             }
         }
         pkNode_dhyats = pkNode_dhyats->FUN_00726070();
@@ -7306,6 +7538,7 @@ void SelfX::TESSaveLoadGame_SaveCreatedBaseObjects(BufX* pBuf)
 }  // namespace fnv_00861820
 
 // @fnv 0x00863960
+// pdb: NiTPointerMap<unsigned int,void *>::~NiTPointerMap<unsigned int,void *> | TESSaveLoadGame.obj | debug, call graph (shared callers), high
 template <>
 NiTPointerMap<unsigned int, void*>::~NiTPointerMap()
 {
@@ -7348,6 +7581,8 @@ extern TESDataHandler* DAT_011c3f2c;
 // Returns 2 plus eight times the value returned by the region-list entry-count method.
 // @fnv 0x004f12b0
 // src: COMMUNITY 0x004f12b0
+// pdb: TESRegion::GetSaveSize | TESRegion.obj | debug, call graph, high
+// pdb locals: plist, isize
 unsigned short TESDataHandler_RegionList_GetSaveSize()
 {
     unsigned short v = 0;
@@ -7372,16 +7607,16 @@ extern Global58030 DAT_011e0e80;
 struct Sky58030
 {
     unsigned short __thiscall Sky_GetSaveSize();
-    void __thiscall Sky_SaveGameTES();
+    void __thiscall Sky_SaveGame();
 };
 Sky58030* __cdecl FUN_0046dd00();
-unsigned short __cdecl Object_GetVersionedSaveSize();
+unsigned short __cdecl Interface_GetSaveSize();
 void __cdecl SaveMenuTabStates();
 unsigned short __cdecl TESDataHandler_RegionList_GetSaveSize();
-void __cdecl Object_ProcessEntries_004f1300();
+void __cdecl TESRegion_SaveGame();
 struct Field58030
 {
-    void __thiscall FUN_008558a0(int id, const char* name);
+    void __thiscall FUN_008558a0(int aiSize, const char* apDescription);
 };
 struct Host58030
 {
@@ -7389,17 +7624,20 @@ struct Host58030
     Field58030* f44;
     void __thiscall TESSaveLoadGame_WriteFile(int a, void* p, int n);
     void __thiscall SaveGlobals(int a);
-    int __thiscall TESSaveLoadGame_CreateBuffer(int id);
-    void __thiscall ForwardToFUN_00857b50(int a, int x, int id);
-    void __thiscall FUN_00858700(int x);
-    void __thiscall TESSaveLoadGame_SaveCreatedBaseObjects(int a);
-    void __thiscall TESSaveLoadGame_SaveGlobalData(int aParam);
+    int __thiscall TESSaveLoadGame_CreateBuffer(int aiSize);
+    void __thiscall TESSaveLoadGame_SaveBuffer(int apFile, int apBuffer, int aiSize);
+    void __thiscall FUN_00858700(int apBuffer);
+    void __thiscall TESSaveLoadGame_SaveCreatedBaseObjects(int apFile);
+    void __thiscall TESSaveLoadGame_SaveGlobalData(int apFile);
 };
 
 // Writes save data for the player, world, process lists, sky, HUD, interface, and regions into the save stream.
 // @fnv 0x00858030
 // src: XBOX_PDB 0x00858030
-void __thiscall Host58030::TESSaveLoadGame_SaveGlobalData(int aParam)
+// pdb: TESSaveLoadGame::SaveGlobalData | TESSaveLoadGame.obj | retail, upstream name already matches, high
+// pdb params: apFile
+// pdb locals: pcell, icurrentGridY, iworldspaceID, isize, inextID, icurrentGridX, itargetCount, ilocationID, playerLocation, pworld, ptempBuffer
+void __thiscall Host58030::TESSaveLoadGame_SaveGlobalData(int apFile)
 {
     int v48;
 
@@ -7420,13 +7658,13 @@ void __thiscall Host58030::TESSaveLoadGame_SaveGlobalData(int aParam)
     TESForm* pWorld;
 
     v20 = DAT_011c3f2c->GetSaveHeaderValue();
-    TESSaveLoadGame_WriteFile(aParam, &v20, 4);
+    TESSaveLoadGame_WriteFile(apFile, &v20, 4);
     v282 = ((TESForm*)DAT_011dea10->GetHitSound())->GetHavokWorldObjectCountInSceneGraph_0084e3a0();
-    TESSaveLoadGame_WriteFile(aParam, &v282, 4);
+    TESSaveLoadGame_WriteFile(apFile, &v282, 4);
     v1c = DAT_011dea10->GetSaveGridValueX();
     v2c = DAT_011dea10->GetSaveGridValueY();
-    TESSaveLoadGame_WriteFile(aParam, &v1c, 4);
-    TESSaveLoadGame_WriteFile(aParam, &v2c, 4);
+    TESSaveLoadGame_WriteFile(apFile, &v1c, 4);
+    TESSaveLoadGame_WriteFile(apFile, &v2c, 4);
 
     pWorld = (TESForm*)DAT_011dea3c->GetParentWorldSpace();
     pCell_ = (TESForm*)((TESObjectREFR*)DAT_011dea3c)->GetParentCell();
@@ -7438,81 +7676,81 @@ void __thiscall Host58030::TESSaveLoadGame_SaveGlobalData(int aParam)
     else if (pCell_ != 0)
         v14 = pCell_->GetHavokWorldObjectCountInSceneGraph_0084e3a0();
     *(NiPoint3*)vec = *((TESObjectREFR*)DAT_011dea3c)->GetPos();
-    TESSaveLoadGame_WriteFile(aParam, &v14, 4);
-    TESSaveLoadGame_WriteFile(aParam, &vec, 12);
-    SaveGlobals(aParam);
+    TESSaveLoadGame_WriteFile(apFile, &v14, 4);
+    TESSaveLoadGame_WriteFile(apFile, &vec, 12);
+    SaveGlobals(apFile);
 
     w4 = DAT_011dea10->GetSaveSize();
-    TESSaveLoadGame_WriteFile(aParam, &w4, 2);
+    TESSaveLoadGame_WriteFile(apFile, &w4, 2);
     if (w4 != 0)
     {
         if (f44 != 0)
             f44->FUN_008558a0(w4, "TES Class");
         v34 = TESSaveLoadGame_CreateBuffer(w4);
         DAT_011dea10->SaveGame();
-        ForwardToFUN_00857b50(aParam, v34, w4);
+        TESSaveLoadGame_SaveBuffer(apFile, v34, w4);
         FUN_00858700(v34);
     }
 
     w4 = DAT_011e0e80.GetTotalSize();
-    TESSaveLoadGame_WriteFile(aParam, &w4, 2);
+    TESSaveLoadGame_WriteFile(apFile, &w4, 2);
     if (w4 != 0)
     {
         if (f44 != 0)
             f44->FUN_008558a0(w4, "Process Lists Class");
         v38 = TESSaveLoadGame_CreateBuffer(w4);
         DAT_011e0e80.ProcessLists_SaveGame_Crimes();
-        ForwardToFUN_00857b50(aParam, v38, w4);
+        TESSaveLoadGame_SaveBuffer(apFile, v38, w4);
         FUN_00858700(v38);
     }
 
     w4 = FUN_0046dd00()->Sky_GetSaveSize();
-    TESSaveLoadGame_WriteFile(aParam, &w4, 2);
+    TESSaveLoadGame_WriteFile(apFile, &w4, 2);
     if (w4 != 0)
     {
         if (f44 != 0)
             f44->FUN_008558a0(w4, "Sky/Weather");
         v3c4 = TESSaveLoadGame_CreateBuffer(w4);
-        FUN_0046dd00()->Sky_SaveGameTES();
-        ForwardToFUN_00857b50(aParam, v3c4, w4);
+        FUN_0046dd00()->Sky_SaveGame();
+        TESSaveLoadGame_SaveBuffer(apFile, v3c4, w4);
         FUN_00858700(v3c4);
     }
 
     v182 = 0;
-    TESSaveLoadGame_WriteFile(aParam, &v182, 4);
-    TESSaveLoadGame_SaveCreatedBaseObjects(aParam);
+    TESSaveLoadGame_WriteFile(apFile, &v182, 4);
+    TESSaveLoadGame_SaveCreatedBaseObjects(apFile);
     w4 = 0;
-    TESSaveLoadGame_WriteFile(aParam, &w4, 2);
+    TESSaveLoadGame_WriteFile(apFile, &w4, 2);
     if (w4 != 0)
     {
         if (f44 != 0)
             f44->FUN_008558a0(w4, "HUD Reticle");
         v405 = TESSaveLoadGame_CreateBuffer(w4);
-        ForwardToFUN_00857b50(aParam, v405, w4);
+        TESSaveLoadGame_SaveBuffer(apFile, v405, w4);
         FUN_00858700(v405);
     }
 
-    w4 = Object_GetVersionedSaveSize();
-    TESSaveLoadGame_WriteFile(aParam, &w4, 2);
+    w4 = Interface_GetSaveSize();
+    TESSaveLoadGame_WriteFile(apFile, &w4, 2);
     if (w4 != 0)
     {
         if (f44 != 0)
             f44->FUN_008558a0(w4, "Interface");
         v444 = TESSaveLoadGame_CreateBuffer(w4);
         SaveMenuTabStates();
-        ForwardToFUN_00857b50(aParam, v444, w4);
+        TESSaveLoadGame_SaveBuffer(apFile, v444, w4);
         FUN_00858700(v444);
     }
 
     w4 = TESDataHandler_RegionList_GetSaveSize();
-    TESSaveLoadGame_WriteFile(aParam, &w4, 2);
+    TESSaveLoadGame_WriteFile(apFile, &w4, 2);
     if (w4 != 0)
     {
         if (f44 != 0)
             f44->FUN_008558a0(w4, "Regions");
         v48 = TESSaveLoadGame_CreateBuffer(w4);
-        Object_ProcessEntries_004f1300();
-        ForwardToFUN_00857b50(aParam, v48, w4);
+        TESRegion_SaveGame();
+        TESSaveLoadGame_SaveBuffer(apFile, v48, w4);
         FUN_00858700(v48);
     }
 }
@@ -7538,10 +7776,13 @@ struct SaveMemory
 // Allocates size bytes with operator new and calls FUN_0040fbe0 if the returned pointer is null.
 // @fnv 0x00858600
 // src: COMMUNITY 0x00858600
-void* SaveMemory::TESSaveLoadGame_CreateBuffer(unsigned int size)
+// pdb: TESSaveLoadGame::CreateBuffer | TESSaveLoadGame.obj | debug, upstream name already matches, high
+// pdb params: aiSize
+// pdb locals: tempMemContext
+void* SaveMemory::TESSaveLoadGame_CreateBuffer(unsigned int aiSize)
 {
     AutoMemContext context(MEM_CONTEXT_MEM_CONTEXT_SAVELOAD, true, DAT_010804c8, 0x103a);
-    buffer = operator new(size);
+    buffer = operator new(aiSize);
     if (!buffer)
         ProgramFlow(DAT_01080750);
     return buffer;
@@ -7823,6 +8064,9 @@ struct DeferredAdd0085a2e0
 // Checks form changes, assigns an ID, and for non-temporary non-cell forms calls methods and adds the form to deferred if absent.
 // @fnv 0x0085a2e0
 // src: XBOX_PDB 0x0085a2e0
+// pdb: TESSaveLoadGame::DeleteForm | TESSaveLoadGame.obj | retail, string-set bridge, high
+// pdb params: apForm
+// pdb locals: pcell
 void FUN_0085a2e0_Class::TESSaveLoadGame_DeleteForm(TESForm* form)
 {
     if (!reinterpret_cast<FormCall0085a2e0*>(this)->FUN_0047c850())
@@ -7911,56 +8155,59 @@ struct SaveHeaderReader
     unsigned char identifier[16];
     unsigned int identifierTail;
     unsigned int ReadFromStream(NiBinaryStream*, void*, unsigned int);
-    unsigned int TESSaveLoadGame_LoadHeader(NiBinaryStream* stream, bool loadIdentifier);
+    unsigned int TESSaveLoadGame_LoadHeader(NiBinaryStream* apFile, bool abFullLoad);
 };
 // Reads header data from the stream, may seek to 0xd000, and checks the loaded version fields.
 // @fnv 0x00860e20
 // src: XBOX_PDB 0x00860e20
-unsigned int SaveHeaderReader::TESSaveLoadGame_LoadHeader(NiBinaryStream* stream, bool loadIdentifier)
+// pdb: TESSaveLoadGame::LoadHeader | TESSaveLoadGame.obj | retail, upstream name already matches, high
+// pdb params: apFile, abFullLoad
+// pdb locals: isize, pheaderString, pmessage, iresult
+unsigned int SaveHeaderReader::TESSaveLoadGame_LoadHeader(NiBinaryStream* apFile, bool abFullLoad)
 {
     char header[260];
     fileOffset = 0;
-    if (!ReadFromStream(stream, header, BSStringLength(DAT_011a2224)))
+    if (!ReadFromStream(apFile, header, BSStringLength(DAT_011a2224)))
         return 0;
     if (header[0])
     {
         if (FUN_00ec8a19(header, DAT_01081bbc, 4) == 0)
         {
-            ((BSFile*)stream)->Seek(0xd000, DAT_010a2480);
+            ((BSFile*)apFile)->Seek(0xd000, DAT_010a2480);
             fileOffset = 0xd000;
-            ReadFromStream(stream, header, BSStringLength(DAT_011a2224));
+            ReadFromStream(apFile, header, BSStringLength(DAT_011a2224));
         }
         if (FUN_00ec8a19(header, DAT_011a2224, BSStringLength(DAT_011a2224)) != 0)
             return 0;
     }
     else
     {
-        ((BSFile*)stream)->Seek(0, DAT_010a2480);
+        ((BSFile*)apFile)->Seek(0, DAT_010a2480);
     }
     {
         unsigned int result;
-        ReadFromStream(stream, &majorVersion, 1);
-        ReadFromStream(stream, &minorVersion, 1);
+        ReadFromStream(apFile, &majorVersion, 1);
+        ReadFromStream(apFile, &minorVersion, 1);
         CopyByteToOffset80(reinterpret_cast<char*>(this));
         if (reinterpret_cast<SaveLoadManager*>(::g_TESSaveLoadGame)->FUN_008df040() >= 0x52)
         {
-            if (loadIdentifier)
+            if (abFullLoad)
             {
-                ReadFromStream(stream, identifier, 16);
-                ReadFromStream(stream, &identifierTail, 4);
+                ReadFromStream(apFile, identifier, 16);
+                ReadFromStream(apFile, &identifierTail, 4);
             }
             else
             {
-                ((BSFile*)stream)->Seek(20, DAT_010a2484);
+                ((BSFile*)apFile)->Seek(20, DAT_010a2484);
             }
         }
-        if (reinterpret_cast<SaveLoadManager*>(::g_TESSaveLoadGame)->FUN_008df040() < 0x52 && loadIdentifier)
+        if (reinterpret_cast<SaveLoadManager*>(::g_TESSaveLoadGame)->FUN_008df040() < 0x52 && abFullLoad)
         {
             ourMemset(identifier, 255, 16);
             identifierTail = -1;
         }
-        ReadFromStream(stream, &result, 4);
-        if (majorVersion || (loadIdentifier && minorVersion != 125 && minorVersion < 19))
+        ReadFromStream(apFile, &result, 4);
+        if (majorVersion || (abFullLoad && minorVersion != 125 && minorVersion < 19))
         {
             char messageBuffer[520];
             (sprintf)(messageBuffer, DAT_01081b50, majorVersion, minorVersion, 0, 125);
@@ -8134,7 +8381,10 @@ struct Cls56
 // Checks the path when saving, writes the header and plugin list, processes map entries, and releases the file when saving.
 // @fnv 0x00856ca0
 // src: XBOX_PDB 0x00856ca0
-bool Cls56::TESSaveLoadGame_SaveGame(int aiFileHandle, int apSavePath, unsigned char p2)
+// pdb: TESSaveLoadGame::SaveGame | TESSaveLoadGame.obj | retail, upstream name already matches, high
+// pdb params: pFile, apFileName, abLogStats
+// pdb locals: izero, iformCount, iseekBackOffset, inumericIDArrayOffset, tempMemContext, pNewFile, it, iformID, pchange, header, iflags, bufferHeader, pform, isize, ptempBuffer, pfileName
+bool Cls56::TESSaveLoadGame_SaveGame(int pFile, int apFileName, unsigned char abLogStats)
 {
     void* mapPos;
     FormObj* pForm;
@@ -8146,7 +8396,7 @@ bool Cls56::TESSaveLoadGame_SaveGame(int aiFileHandle, int apSavePath, unsigned 
 
     if (!((FUN_00485d50_slg*)this)->GetLoading() && !TESSaveLoadGame_GetSavingAllowed())
     {
-        if (apSavePath == 0 || BSstrcmp((const char*)apSavePath, DAT_0107fae0) != 0)
+        if (apFileName == 0 || BSstrcmp((const char*)apFileName, DAT_0107fae0) != 0)
         {
             QueueUIMessage(((SettingString*)&g_011d2364)->GetString(), 0, g_011d2cd0_arg1, 0, 2.0f, false);
             return false;
@@ -8157,16 +8407,16 @@ bool Cls56::TESSaveLoadGame_SaveGame(int aiFileHandle, int apSavePath, unsigned 
     pForm = 0;
     if (!((FUN_00485d50_slg*)this)->GetLoading())
     {
-        pForm = (FormObj*)((::SaveOwner*)this)->OpenSaveFile((::SaveFile*)aiFileHandle, (const char*)apSavePath, 0);
+        pForm = (FormObj*)((::SaveOwner*)this)->TESSaveLoadGame_PrepForLoadSave((::SaveFile*)pFile, (const char*)apFileName, 0);
     }
-    if (p2)
+    if (abLogStats)
     {
         m_44 = new Obj44();
     }
     ((::FUN_008620f0*)this)->Init();
     ::CopyByteToOffset80((char*)this);
-    ((::SaveHeader*)this)->WriteSaveHeader(pForm, (const char*)apSavePath);
-    ((::FUN_0085b240_cls*)this)->WritePluginList((::FUN_0085b240_ref*)pForm);
+    ((::SaveHeader*)this)->TESSaveLoadGame_SaveHeader(pForm, (const char*)apFileName);
+    ((::FUN_0085b240_cls*)this)->TESSaveLoadGame_SavePluginList((::FUN_0085b240_ref*)pForm);
     seekPos = 0;
     if (!((FUN_00485d50_slg*)this)->GetLoading())
     {
@@ -8217,7 +8467,7 @@ bool Cls56::TESSaveLoadGame_SaveGame(int aiFileHandle, int apSavePath, unsigned 
                 {
                     recData.b = ((FUN_00401170_s*)obj)->FUN_00401170();
                     *(int*)&recData.c0 = ((::ChangeValidation::Changes*)this)
-                                             ->UpdateFormFlags((::ChangeValidation::Form*)obj, *(int*)&recData.c0);
+                                             ->TESSaveLoadGame_CheckFlags((::ChangeValidation::Form*)obj, *(int*)&recData.c0);
                     ((::FUN_008586a0_class*)g_TESSaveLoadGame)->TESSaveLoadGame_WriteFile((int)pForm, (int)&recData, 10);
                     recs++;
                     ((EffectSetting*)this)->SetHitSound((TESSound*)&recData);
@@ -8229,7 +8479,7 @@ bool Cls56::TESSaveLoadGame_SaveGame(int aiFileHandle, int apSavePath, unsigned 
                         void* tempObj = TESSaveLoadGame_CreateBuffer(soundVal);
                         TESSaveLoadGame_SaveInitialData(obj, *(int*)&recData.c0);
                         obj->Vw(*(int*)&recData.c0);
-                        ((::FUN_008586a0_class*)this)->ForwardToFUN_00857b50((int)pForm, (int)tempObj, soundVal);
+                        ((::FUN_008586a0_class*)this)->TESSaveLoadGame_SaveBuffer((int)pForm, (int)tempObj, soundVal);
                         FUN_00858700(tempObj);
                     }
                     ((EffectSetting*)this)->SetHitSound(0);
@@ -8241,13 +8491,13 @@ bool Cls56::TESSaveLoadGame_SaveGame(int aiFileHandle, int apSavePath, unsigned 
             }
         }
     }
-    ((::fnv_00858570::FUN_00858570_class*)this)->LoadTempEffectsList((int)pForm);
+    ((::fnv_00858570::FUN_00858570_class*)this)->TESSaveLoadGame_SaveFinalData((int)pForm);
     filePos2 = 0;
     if (!((FUN_00485d50_slg*)this)->GetLoading())
     {
         filePos2 = (int)pForm->BSFile_Tell();
     }
-    ((::fnv_00861d10::SaveLoadNumericIDArrays*)this)->WriteFormIDArrays((::BSFile*)pForm);
+    ((::fnv_00861d10::SaveLoadNumericIDArrays*)this)->TESSaveLoadGame_SaveNumericIDArrays((::BSFile*)pForm);
     if (!((FUN_00485d50_slg*)this)->GetLoading())
     {
         pForm->Vf(seekPos, (int)DAT_010a2480);
@@ -8362,7 +8612,10 @@ struct SaveHandler85A520
 // When flags & 6 is nonzero, writes the parent's position, rotation, and resolved cell ID as a 28-byte record.
 // @fnv 0x0085a520
 // src: COMMUNITY 0x0085a520
-void SaveHandler85A520::TESSaveLoadGame_SaveInitialData(SaveForm85A520* form, unsigned int flags)
+// pdb: TESSaveLoadGame::SaveInitialData | TESSaveLoadGame.obj | retail, upstream name already matches, high
+// pdb params: apForm, aiFlags
+// pdb locals: pcell, refData, pref, pworld, cellData, pmob, pmagicProjectile, parrowProjectile, createdData, movedData, pactor, oblivionRefData
+void SaveHandler85A520::TESSaveLoadGame_SaveInitialData(SaveForm85A520* form, unsigned int aiFlags)
 {
     TESObjectREFR* parent = (TESObjectREFR*)_FNV_DynamicCast(form, 0, &DAT_01183028, &DAT_011841cc, 0);
     if (!parent)
@@ -8370,7 +8623,7 @@ void SaveHandler85A520::TESSaveLoadGame_SaveInitialData(SaveForm85A520* form, un
         TESObjectCELL* cell = (TESObjectCELL*)_FNV_DynamicCast(form, 0, &DAT_01183028, &DAT_01183fb4, 0);
         if (cell)
         {
-            if (flags & 0)
+            if (aiFlags & 0)
             {
                 SmallCellRecord85A520 small;
                 small.id = ProcessEntries_00861c60(((SaveForm85A520*)cell->GetParentWorldSpace())->GetHavokWorldObjectCountInSceneGraph_0084e3a0());
@@ -8378,7 +8631,7 @@ void SaveHandler85A520::TESSaveLoadGame_SaveInitialData(SaveForm85A520* form, un
                 small.y = (unsigned char)cell->GetCellGridY();
                 ((SaveStream85A520*)::DAT_011de45c)->TESSaveLoadGame_SaveGameDataOLD(&small, 4);
             }
-            else if (flags & 0)
+            else if (aiFlags & 0)
             {
                 LargeCellRecord85A520 large;
                 large.id = ProcessEntries_00861c60(((SaveForm85A520*)cell->GetParentWorldSpace())->GetHavokWorldObjectCountInSceneGraph_0084e3a0());
@@ -8415,7 +8668,7 @@ void SaveHandler85A520::TESSaveLoadGame_SaveInitialData(SaveForm85A520* form, un
     }
     savedLocation.position = *(const NiPoint3*)parent->GetPos();
     savedLocation.rotation = *(const NiPoint3*)parent->FUN_00430830();
-    if (flags & 0)
+    if (aiFlags & 0)
     {
         ReferenceRecord85A520 world;
         if (parent->BGSSaveFormBuffer_GetForm())
@@ -8444,9 +8697,9 @@ void SaveHandler85A520::TESSaveLoadGame_SaveInitialData(SaveForm85A520* form, un
         }
         ((SaveStream85A520*)::DAT_011de45c)->TESSaveLoadGame_SaveGameDataOLD(&world, 36);
     }
-    else if (flags & 6)
+    else if (aiFlags & 6)
     {
-        if (flags & 0)
+        if (aiFlags & 0)
         {
             MoveRecord85A520 cellA;
             MobileObject* actor = 0;
@@ -8483,7 +8736,7 @@ void SaveHandler85A520::TESSaveLoadGame_SaveInitialData(SaveForm85A520* form, un
         else
             ((SaveStream85A520*)::DAT_011de45c)->TESSaveLoadGame_SaveGameDataOLD(&savedLocation, 28);
     }
-    else if (flags & 0)
+    else if (aiFlags & 0)
     {
         TESObjectCELL* world = parent->GetParentCell();
         unsigned int id;
@@ -8717,7 +8970,7 @@ extern Type DAT_01187000[];
 
 struct Manager
 {
-    void FormatChangeFlags(char*, Form*, unsigned int, unsigned char, int);
+    void TESSaveLoadGame_BuildChangesString(char*, Form*, unsigned int, unsigned char, int);
 };
 extern Manager* DAT_011de45c;
 
@@ -8774,18 +9027,21 @@ struct Main
 {
     TessaveloadgameMapView* map;
     UnknownNode* others;
-    void SaveDataDebugInfo_Write(File*, const char*);
+    void SaveStats_WriteFile(File*, const char*);
     void SaveStats_PrintStats(const char*);
 };
 
 // Writes per-type form counts and size statistics, unknown-entry sizes and values, and overall totals to a file.
 // @fnv 0x00855ba0
 // src: COMMUNITY 0x00855ba0
-void Main::SaveStats_PrintStats(const char* filename)
+// pdb: SaveStats::PrintStats | TESSaveLoadGame.obj | retail, string-set bridge, high
+// pdb params: apFileName
+// pdb locals: plist, message, StatFile, totalStats, szFileName, it, header, cformType, pheaderList, stats, uiLen, pheader, string, pfullName, pname, pref, pform, pextraStat
+void Main::SaveStats_PrintStats(const char* apFileName)
 {
 
     char pathSlot0[260];
-    FUN_00406d30(pathSlot0, 260, filename);
+    FUN_00406d30(pathSlot0, 260, apFileName);
     FUN_00406d50(pathSlot0, 260, &DAT_01039788);
     if (FUN_00456a20(pathSlot0, 0, 0, -1))
         BSSystemFile_DeleteFileA(pathSlot0);
@@ -8798,7 +9054,7 @@ void Main::SaveStats_PrintStats(const char* filename)
     char buffer[520];
     BSsprintf(buffer, 520, &DAT_01080670, &DAT_01080414, &DAT_0108041c, &DAT_01044aec, &DAT_01063d04, &DAT_0105ac4c,
                  &DAT_01080428);
-    SaveDataDebugInfo_Write(&fileSlot15, buffer);
+    SaveStats_WriteFile(&fileSlot15, buffer);
 
     void* position = map->FUN_004b9ba0();
     while (position)
@@ -8818,7 +9074,7 @@ void Main::SaveStats_PrintStats(const char* filename)
 
         BSsprintf(buffer, 520, &DAT_010803e4, typeNameSlot0);
         unsigned __int64 lengthSlot33 = BSstrlen(buffer);
-        SaveDataDebugInfo_Write(&fileSlot15, buffer);
+        SaveStats_WriteFile(&fileSlot15, buffer);
         Stats statsSlot13;
 
         while (node)
@@ -8835,7 +9091,7 @@ void Main::SaveStats_PrintStats(const char* filename)
                 statsSlot13.count++;
 
                 char descriptionSlot0[500];
-                DAT_011de45c->FormatChangeFlags(descriptionSlot0, formSlot19, *(unsigned int*)&entry->flags0, entry->type,
+                DAT_011de45c->TESSaveLoadGame_BuildChangesString(descriptionSlot0, formSlot19, *(unsigned int*)&entry->flags0, entry->type,
                                            0);
                 const char* name = 0;
                 FullName* fullSlot10 = (FullName*)::SaveInitialData85A520::_FNV_DynamicCast(
@@ -8858,7 +9114,7 @@ void Main::SaveStats_PrintStats(const char* filename)
                     BSsprintf(buffer, 520, &DAT_01080648, entry->id, entry->size, *(unsigned int*)&entry->flags0,
                                  entry->version, &DAT_0108063c, descriptionSlot0);
 
-                SaveDataDebugInfo_Write(&fileSlot15, buffer);
+                SaveStats_WriteFile(&fileSlot15, buffer);
             }
 
             node = node->FUN_00726070();
@@ -8867,7 +9123,7 @@ void Main::SaveStats_PrintStats(const char* filename)
         BSsprintf(buffer, 520, &DAT_010805d8, typeNameSlot0, statsSlot13.count, typeNameSlot0, statsSlot13.total,
                      typeNameSlot0, statsSlot13.smallest, typeNameSlot0, statsSlot13.largest, typeNameSlot0,
                      (float)statsSlot13.total / statsSlot13.count);
-        SaveDataDebugInfo_Write(&fileSlot15, buffer);
+        SaveStats_WriteFile(&fileSlot15, buffer);
 
         if (statsSlot13.largest > allSlot12.largest)
             allSlot12.largest = statsSlot13.largest;
@@ -8877,7 +9133,7 @@ void Main::SaveStats_PrintStats(const char* filename)
         allSlot12.count += statsSlot13.count;
     }
 
-    SaveDataDebugInfo_Write(&fileSlot15, &DAT_010805c4);
+    SaveStats_WriteFile(&fileSlot15, &DAT_010805c4);
     UnknownNode* unknownNodeSlot24 = others;
     while (unknownNodeSlot24)
     {
@@ -8885,7 +9141,7 @@ void Main::SaveStats_PrintStats(const char* filename)
         if (unknown)
         {
             BSsprintf(buffer, 520, &DAT_01080254, unknown->size, unknown->value);
-            SaveDataDebugInfo_Write(&fileSlot15, buffer);
+            SaveStats_WriteFile(&fileSlot15, buffer);
             allSlot12.total += unknown->size;
         }
         unknownNodeSlot24 = unknownNodeSlot24->FUN_00726070();
@@ -8893,7 +9149,7 @@ void Main::SaveStats_PrintStats(const char* filename)
 
     BSsprintf(buffer, 520, &DAT_01080570, allSlot12.count, allSlot12.total, allSlot12.smallest, allSlot12.largest,
                  (float)allSlot12.total / allSlot12.count);
-    SaveDataDebugInfo_Write(&fileSlot15, buffer);
+    SaveStats_WriteFile(&fileSlot15, buffer);
 }
 
 }
@@ -9424,25 +9680,28 @@ struct Save77
 // Looks up or creates a TESForm from the record and initializes it according to its type.
 // @fnv 0x00859a90
 // src: XBOX_PDB 0x00859a90
-TESForm* Save77::TESSaveLoadGame_CreateReference(unsigned int id, Record77* record)
+// pdb: TESSaveLoadGame::CreateReference | TESSaveLoadGame.obj | debug, upstream name already matches, high
+// pdb params: aiFormID, apCreatedData
+// pdb locals: pbound, tempMemContext, pform, pref, pmagicProjectile
+TESForm* Save77::TESSaveLoadGame_CreateReference(unsigned int aiFormID, Record77* apCreatedData)
 {
     AutoMemContext scope6(static_cast<MEM_CONTEXT>(49), true, DAT_010804c8, 0x133b);
-    TESForm* pForm = (TESForm*)::TESForm_GetFormByNumericID(id);
+    TESForm* pForm = (TESForm*)::TESForm_GetFormByNumericID(aiFormID);
     TESBoundObject* bound28 = 0;
-    if (record->type != 2)
+    if (apCreatedData->type != 2)
     {
-        bound28 = dynamic_cast<TESBoundObject*>((TESForm*)::TESForm_GetFormByNumericID(record->object));
+        bound28 = dynamic_cast<TESBoundObject*>((TESForm*)::TESForm_GetFormByNumericID(apCreatedData->object));
         if (!bound28)
         {
             Warning_005b5e40("SAVELOAD: Bound object %08X no longer exists.  Reference %08X will not be created.",
-                         record->object, id);
+                         apCreatedData->object, aiFormID);
             return 0;
         }
     }
     if (pForm)
     {
         TESObjectREFR* reference = dynamic_cast<TESObjectREFR*>(pForm);
-        if (!reference || (record->type != 0 && record->type != 3) || reference->BGSSaveFormBuffer_GetForm() != bound28)
+        if (!reference || (apCreatedData->type != 0 && apCreatedData->type != 3) || reference->BGSSaveFormBuffer_GetForm() != bound28)
         {
             TESSaveLoadGame_DeleteForm(pForm);
             pForm = 0;
@@ -9450,7 +9709,7 @@ TESForm* Save77::TESSaveLoadGame_CreateReference(unsigned int id, Record77* reco
     }
     if (!pForm)
     {
-        if (record->type == 0 || record->type == 3)
+        if (apCreatedData->type == 0 || apCreatedData->type == 3)
         {
             switch (bound28->FUN_00401170())
             {
@@ -9466,19 +9725,19 @@ TESForm* Save77::TESSaveLoadGame_CreateReference(unsigned int id, Record77* reco
             }
             TESObjectREFR* reference = dynamic_cast<TESObjectREFR*>(pForm);
             reference->TESObjectREFR_SetObjectReference(bound28);
-            ((FormMethods77*)pForm)->SetID(id, 1);
+            ((FormMethods77*)pForm)->SetID(aiFormID, 1);
         }
-        else if (record->type == 1)
+        else if (apCreatedData->type == 1)
         {
             pForm = (TESForm*)new Projectile77;
             TESObjectREFR* reference = dynamic_cast<TESObjectREFR*>(pForm);
             reference->TESObjectREFR_SetObjectReference(bound28);
-            ((FormMethods77*)pForm)->SetID(id, 1);
+            ((FormMethods77*)pForm)->SetID(aiFormID, 1);
         }
-        else if (record->type == 2)
+        else if (apCreatedData->type == 2)
         {
             TESForm* projectile = 0;
-            switch (record->object)
+            switch (apCreatedData->object)
             {
             case 0:
                 projectile = (TESForm*)new Missile77;
@@ -9491,12 +9750,12 @@ TESForm* Save77::TESSaveLoadGame_CreateReference(unsigned int id, Record77* reco
                 break;
             }
             pForm = projectile;
-            ((FormMethods77*)pForm)->SetID(id, 1);
+            ((FormMethods77*)pForm)->SetID(aiFormID, 1);
         }
         else
             Warning_005b5e40(
                 "FORMS: Invalid created reference type %i for form %08X with bound object %08X in location %08X",
-                record->type, id, record->object, record->location);
+                apCreatedData->type, aiFormID, apCreatedData->object, apCreatedData->location);
     }
     if (pForm)
         ((FormMethods77*)pForm)->FUN_0046a010(1);

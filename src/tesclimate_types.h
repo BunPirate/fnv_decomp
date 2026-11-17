@@ -4,12 +4,13 @@
 
 extern int __cdecl Warning();
 extern unsigned int __cdecl SetWarningState(bool);
+// pdb: structure WeatherEntry, size 0xc, 3 members
 class WeatherEntry
 {
   public:
-    TESWeather* m_pWeatherObject;
-    unsigned int m_uiWeatherChance;
-    TESGlobal* m_pWeatherChanceGlobal;
+    TESWeather* pWeather; // src: XBOX_RETAIL_PDB +0x0 (old: m_pWeatherObject)
+    unsigned int uiChance; // src: XBOX_RETAIL_PDB +0x4 (old: m_uiWeatherChance)
+    TESGlobal* pChanceVar; // src: XBOX_RETAIL_PDB +0x8 (old: m_pWeatherChanceGlobal)
     WeatherEntry();
 };
 #include "../include/TESWeatherList.h"

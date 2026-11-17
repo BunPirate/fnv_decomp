@@ -14,7 +14,7 @@ class MersenneTwister
   public:
     MersenneTwister();
     void Init(unsigned int seed);
-    void Seed(unsigned int seed);
+    void BSRandom_Seed(unsigned int aiSeed);
     unsigned int GetRandomUInt();
     unsigned int GetRandomUInt(unsigned int bound);
     bool Bool(float chance);

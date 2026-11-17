@@ -24,7 +24,7 @@ __forceinline void hkVector4::setZero4()
 
 __forceinline hkpWorld* hkpWorldObject::getWorld() const
 {
-    return static_cast<hkpWorld*>(m_pOwningWorld);
+    return static_cast<hkpWorld*>(m_world);
 }
 
 // No shared hkQueue header exists yet; 0x00e46e80 constructs this five-field queue.
@@ -73,14 +73,17 @@ class hkpFirstPersonGunListener
 
 // hkpBallGun.h lacks reset; ECX carries the gun, and unused EDX preserves the thiscall stack.
 // @fnv 0x00e46ea0
+// pdb: hkpBallGun::reset | hkpBallGun.obj | retail, vtable slot, high
+// pdb params: world
+// pdb locals: rb
 void __fastcall resetBallGun(hkpBallGun* gun, void*, hkpWorld* pkWorld) throw()
 {
-    while (!static_cast<hkQueue<hkpRigidBody*>*>(gun->m_pBulletQueue)->isEmpty())
+    while (!static_cast<hkQueue<hkpRigidBody*>*>(gun->m_addedBodies)->isEmpty())
     {
         hkpRigidBody* pkBody;
-        static_cast<hkQueue<hkpRigidBody*>*>(gun->m_pBulletQueue)->dequeue(pkBody);
-        for (int i = gun->m_kListeners.GetLogicalSize() - 1; i >= 0; i--)
-            static_cast<hkpFirstPersonGunListener*>(gun->m_kListeners[i])->bulletDeletedCallback(pkBody);
+        static_cast<hkQueue<hkpRigidBody*>*>(gun->m_addedBodies)->dequeue(pkBody);
+        for (int i = gun->m_listeners.GetLogicalSize() - 1; i >= 0; i--)
+            static_cast<hkpFirstPersonGunListener*>(gun->m_listeners[i])->bulletDeletedCallback(pkBody);
         if (pkBody->getWorld() == pkWorld)
             pkWorld->ProcessTarget(pkBody);
         pkBody->removeReference();
@@ -98,37 +101,43 @@ extern "C" void constructFirstPersonGunBase() throw();
 typedef hkpFirstPersonGun* (__thiscall* BallGunBaseConstructor)(hkpFirstPersonGun*);
 
 // @fnv 0x00e46f90
-hkpBallGun* __fastcall constructBallGun(hkpBallGun* gun, void*, int iNumBullets) throw()
+// src: XBOX_RETAIL_PDB 0x00e46f90
+// pdb: hkpBallGun::hkpBallGun | hkpBallGun.obj | retail, string-set bridge, high
+// pdb params: flag
+hkpBallGun* __fastcall hkpBallGun_ctor(hkpBallGun* gun, void*, int iNumBullets) throw()
 {
     reinterpret_cast<BallGunBaseConstructor>(&constructFirstPersonGunBase)(gun);
     *reinterpret_cast<void***>(gun) = ballGunVtable;
-    gun->m_fBulletRadius = DAT_0101df44;
-    gun->m_fBulletVelocity = DAT_0104ef80;
-    gun->m_iBulletBatchCount = iNumBullets;
-    gun->m_fBulletSpread = gun->m_fBulletMass = DAT_0101b268;
-    gun->m_kBulletDirection.setZero4();
+    gun->m_bulletRadius = DAT_0101df44;
+    gun->m_bulletVelocity = DAT_0104ef80;
+    gun->m_maxBulletsInWorld = iNumBullets;
+    gun->m_damageMultiplier = gun->m_bulletMass = DAT_0101b268;
+    gun->m_bulletOffsetFromCenter.setZero4();
     gun->m_type = 1;
     gun->m_name = "BallGun";
-    gun->m_pBulletQueue = new hkQueue<hkpRigidBody*>();
-    static_cast<hkQueue<hkpRigidBody*>*>(gun->m_pBulletQueue)->hkQueue_hkpRigidBody_setCapacity(iNumBullets);
+    gun->m_addedBodies = new hkQueue<hkpRigidBody*>();
+    static_cast<hkQueue<hkpRigidBody*>*>(gun->m_addedBodies)->hkQueue_hkpRigidBody_setCapacity(iNumBullets);
     return gun;
 }
 
 // @fnv 0x00e47020
-void __fastcall destroyBallGun(hkpBallGun* gun, void*) throw()
+// src: XBOX_RETAIL_PDB 0x00e47020
+// pdb: hkpBallGun::~hkpBallGun | hkpBallGun.obj | retail, object-file gap fill, high
+// pdb locals: rb
+void __fastcall hkpBallGun_dtor(hkpBallGun* gun, void*) throw()
 {
     *reinterpret_cast<void***>(gun) = ballGunVtable;
-    while (!static_cast<hkQueue<hkpRigidBody*>*>(gun->m_pBulletQueue)->isEmpty())
+    while (!static_cast<hkQueue<hkpRigidBody*>*>(gun->m_addedBodies)->isEmpty())
     {
         hkpRigidBody* pkBody;
-        static_cast<hkQueue<hkpRigidBody*>*>(gun->m_pBulletQueue)->dequeue(pkBody);
-        for (int i = gun->m_kListeners.GetLogicalSize() - 1; i >= 0; i--)
-            static_cast<hkpFirstPersonGunListener*>(gun->m_kListeners[i])->bulletDeletedCallback(pkBody);
-        if (pkBody->m_pOwningWorld)
-            static_cast<hkpWorld*>(pkBody->m_pOwningWorld)->ProcessTarget(pkBody);
+        static_cast<hkQueue<hkpRigidBody*>*>(gun->m_addedBodies)->dequeue(pkBody);
+        for (int i = gun->m_listeners.GetLogicalSize() - 1; i >= 0; i--)
+            static_cast<hkpFirstPersonGunListener*>(gun->m_listeners[i])->bulletDeletedCallback(pkBody);
+        if (pkBody->m_world)
+            static_cast<hkpWorld*>(pkBody->m_world)->ProcessTarget(pkBody);
         pkBody->removeReference();
     }
-    hkQueue<hkpRigidBody*>* pkQueue = static_cast<hkQueue<hkpRigidBody*>*>(gun->m_pBulletQueue);
+    hkQueue<hkpRigidBody*>* pkQueue = static_cast<hkQueue<hkpRigidBody*>*>(gun->m_addedBodies);
     if (pkQueue)
     {
         pkQueue->~hkQueue();

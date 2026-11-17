@@ -33,6 +33,8 @@ struct FUN_00580310_t
 };
 
 // @fnv 0x00580310
+// pdb: BGSPlaceableWater::SetRefractsActors | TESWaterForm.obj | debug, object-file gap fill, medium
+// pdb params: abValue
 void __thiscall FUN_00580310_t::SetFlag400(bool abEnabled)
 {
     ((FUN_004fc990_t*)this)->BGSPlaceableWater_SetFlag(0x400, abEnabled);
@@ -50,6 +52,8 @@ struct FUN_00580540_t
 };
 
 // @fnv 0x00580540
+// pdb: BGSPlaceableWater::SetReflectsActors | TESWaterForm.obj | debug, object-file gap fill, medium
+// pdb params: abValue
 void FUN_00580540_t::SetValue(int value)
 {
     reinterpret_cast<FUN_004fc990_t*>(this)->BGSPlaceableWater_SetFlag(2, reinterpret_cast<bool&>(value));
@@ -64,6 +68,8 @@ struct FUN_004fc990_t
 };
 
 // @fnv 0x00580560
+// pdb: BGSPlaceableWater::SetReflectsNoReference | TESWaterForm.obj | debug, object-file gap fill, medium
+// pdb params: abValue
 void FUN_004fc990_t::SetFlag80(bool abEnabled)
 {
     BGSPlaceableWater_SetFlag(0x80, abEnabled);
@@ -80,6 +86,8 @@ struct FUN_00580580_t
     void SetFlag100(bool a);
 };
 // @fnv 0x00580580
+// pdb: BGSPlaceableWater::SetReflectsDeadActors | TESWaterForm.obj | debug, object-file gap fill, medium
+// pdb params: abValue
 void FUN_00580580_t::SetFlag100(bool abEnabled)
 {
     ((FUN_004fc990_t*)this)->BGSPlaceableWater_SetFlag(0x100, abEnabled);
@@ -98,6 +106,8 @@ struct FUN_005805a0_t
 };
 
 // @fnv 0x005805a0
+// pdb: BGSPlaceableWater::SetLODWater | TESWaterForm.obj | debug, object-file gap fill, medium
+// pdb params: abValue
 void FUN_005805a0_t::SetFlag8000000(bool abEnabled)
 {
     ((FUN_004fc990_t*)this)->BGSPlaceableWater_SetFlag(0x8000000, abEnabled);
@@ -123,6 +133,7 @@ struct FUN_005822a0_cls
 
 // @fnv 0x005822a0
 // src: XBOX_PDB 0x005822a0
+// pdb: BSSimpleList<TESWeather::WeatherSound *>::~BSSimpleList<TESWeather::WeatherSound *> | TESWeather.obj | debug, object-file run extension, low
 int __thiscall FUN_005822a0_cls::TESImageSpaceModifiableCountForm_6_GetFormImageSpaceModifying(int index)
 {
     return *(int*)((char*)this + index * 4 + 4);
@@ -137,6 +148,8 @@ struct FUN_00588fd0Class
 // Calls FUN_005891c0 with a, stores the address of DAT_01031fcc into this, and returns this.
 // @fnv 0x00588fd0
 // src: EXE 0x00588fd0
+// pdb: NiTMap<TESFile *,TESWorldSpace::OFFSET_DATA *>::NiTMap<TESFile *,TESWorldSpace::OFFSET_DATA *> | TESWorldSpace.obj | debug, object-file gap fill, medium
+// pdb params: uiHashSize
 int* FUN_00588fd0Class::NiTMap_TESFile_TESWorldSpace_OFFSET_DATA_NiTMap(int a)
 {
     FUN_005891c0(a);
@@ -146,14 +159,15 @@ int* FUN_00588fd0Class::NiTMap_TESFile_TESWorldSpace_OFFSET_DATA_NiTMap(int a)
 
 struct FUN_0058bc00_obj
 {
-    void __fastcall Object_ReleaseStorage();
+    void __fastcall NiTArray_BGSCameraPath_NiTMallocInterface_BGSCameraPath_dtor();
 };
 
 // @fnv 0x0058b830
 // src: GUESS 0x0058b830 (confidence: low)
+// pdb: NiTPrimitiveArray<BGSCameraPath *>::~NiTPrimitiveArray<BGSCameraPath *> | BGSCameraPathManager.obj | debug, object-file gap fill, medium
 void __fastcall Runtime_ForwardCall_0058b830(FUN_0058bc00_obj* this_ptr)
 {
-    this_ptr->Object_ReleaseStorage();
+    this_ptr->NiTArray_BGSCameraPath_NiTMallocInterface_BGSCameraPath_dtor();
 }
 
 struct FUN_0058cac0_Class
@@ -176,6 +190,7 @@ struct FUN_00573eb0_Class
 
 // @fnv 0x0058cae0
 // src: XBOX_PDB 0x0058cae0
+// pdb: NiPathInterpolator::GetFollow | BGSCameraShot.obj | debug, upstream name already matches, high
 int FUN_00573eb0_Class::NiPathInterpolator_GetFollow()
 {
     return NiPathInterpolator_GetBit(0x20);
@@ -229,6 +244,8 @@ struct FUN_0058f820_class
 };
 // @fnv 0x0058f820
 // src: GUESS 0x0058f820 (confidence: low)
+// pdb: BSMap<BGSImpactData *,BGSImpactData *>::BSMap<BGSImpactData *,BGSImpactData *> | BGSImpactDataSet.obj | debug, object-file run extension, low
+// pdb params: uiHashSize
 int __thiscall FUN_0058f820_class::ProcessAndReturnValue_0058f820(int a)
 {
     InitContainerItemExtra(a);
@@ -240,14 +257,17 @@ extern "C" char* __cdecl ___insecure_strcpy(char* dst, const char* src);
 
 struct FUN_00591a00_Class
 {
-    char* __thiscall CopyString(const char* src);
+    char* __thiscall BGSMusicType_MusicFileEntry_ctor(const char* apFilename);
 };
 
 // Copies src into the object's storage with ___insecure_strcpy and returns a pointer to that storage.
 // @fnv 0x00591a00
-char* __thiscall FUN_00591a00_Class::CopyString(const char* apSource)
+// src: XBOX_DEBUG_PDB 0x00591a00
+// pdb: BGSMusicType::MusicFileEntry::MusicFileEntry | BGSMusicType.obj | debug, call graph, high
+// pdb params: apFilename
+char* __thiscall FUN_00591a00_Class::BGSMusicType_MusicFileEntry_ctor(const char* apFilename)
 {
-    ___insecure_strcpy(reinterpret_cast<char*>(this), apSource);
+    ___insecure_strcpy(reinterpret_cast<char*>(this), apFilename);
     return reinterpret_cast<char*>(this);
 }
 
@@ -300,11 +320,13 @@ extern "C" void _NiFreeAlias(void*);
 extern int DAT_0103200c;
 struct FUN_00589190 : NiTPointerMap<int, int>
 {
-    void Init();
+    void NiTMapBase_NiTPointerAllocator_unsigned_int_unsigned_int_BSSimpleList_TESObjectREFR_dtor();
 };
 // Sets the map's vtable pointer, removes all entries, and frees the pointer stored at offset 8.
 // @fnv 0x00589190
-void FUN_00589190::Init()
+// src: XBOX_DEBUG_PDB 0x00589190
+// pdb: NiTMapBase<NiTPointerAllocator<unsigned int>,unsigned int,BSSimpleList<TESObjectREFR *> *>::~NiTMapBase<NiTPointerAllocator<unsigned int>,unsigned int,BSSimpleList<TESObjectREFR *> *> | TESWorldSpace.obj | debug, call graph (shared callers), high
+void FUN_00589190::NiTMapBase_NiTPointerAllocator_unsigned_int_unsigned_int_BSSimpleList_TESObjectREFR_dtor()
 {
     *(int*)((char*)this + 0) = (int)&DAT_0103200c;
     RemoveAll();
@@ -320,6 +342,7 @@ struct FUN_00589030_Class
 
 // Calls FUN_00589130, frees this via Deallocate when flags has bit 1 set, and returns this.
 // @fnv 0x00589030
+// pdb: NiTPointerMap<unsigned int,BSSimpleList<TESObjectREFR *> *>::`scalar deleting destructor' | TESWorldSpace.obj | retail, vtable slot, high
 void* __thiscall FUN_00589030_Class::FUN_00589030(unsigned int flags)
 {
     FUN_00589130();
@@ -331,21 +354,23 @@ void* __thiscall FUN_00589030_Class::FUN_00589030(unsigned int flags)
 struct FUN_00580680_Class
 {
     virtual ~FUN_00580680_Class();
-    virtual void TESWaterForm_SetRemappedWaterForm(int a);
+    virtual void TESWaterForm_SetRemappedWaterForm(int apWater);
 };
 
 // @fnv 0x00580680
 // src: XBOX_PDB 0x00580680
-void FUN_00580680_Class::TESWaterForm_SetRemappedWaterForm(int a)
+// pdb: TESWaterForm::SetRemappedWaterForm | TESWaterForm.obj | debug, upstream name already matches, high
+// pdb params: apWater
+void FUN_00580680_Class::TESWaterForm_SetRemappedWaterForm(int apWater)
 {
-    if (this == (FUN_00580680_Class*)a)
+    if (this == (FUN_00580680_Class*)apWater)
     {
         *(int*)((char*)this + 0x80) = 0;
         (*(void(__thiscall*)(FUN_00580680_Class*, int))(*(int**)this)[0x4c / 4])(this, 0x80000000);
     }
     else
     {
-        *(int*)((char*)this + 0x80) = a;
+        *(int*)((char*)this + 0x80) = apWater;
         (*(void(__thiscall*)(FUN_00580680_Class*, int))(*(int**)this)[0x48 / 4])(this, 0x80000000);
     }
 }
@@ -379,6 +404,7 @@ struct FUN_00582000_Class
 };
 
 // @fnv 0x00582000
+// pdb: TESImageSpaceModifiableCountForm<6>::TESImageSpaceModifiableCountForm<6> | TESWeather.obj | debug, object-file run extension, low
 void __thiscall FUN_00582000_Class::ClearArray()
 {
     for (unsigned int i = 0; i < 6; ++i)
@@ -388,10 +414,13 @@ void __thiscall FUN_00582000_Class::ClearArray()
 void __cdecl TESForm_AddChunk_00485910(int, int);
 struct FUN_00582040_Class
 {
-    void ReleaseSoundSlots();
+    void TESImageSpaceModifiableCountForm_6_Save();
 };
 // @fnv 0x00582040
-void FUN_00582040_Class::ReleaseSoundSlots()
+// src: XBOX_DEBUG_PDB 0x00582040
+// pdb: TESImageSpaceModifiableCountForm<6>::Save | TESWeather.obj | debug, call graph, high
+// pdb locals: i, uitemp
+void FUN_00582040_Class::TESImageSpaceModifiableCountForm_6_Save()
 {
     for (unsigned int i = 0; i < 6; ++i)
     {
@@ -404,12 +433,15 @@ void FUN_00582040_Class::ReleaseSoundSlots()
 }
 
 // @fnv 0x005822c0
+// pdb: TESWeatherList::TESWeatherList | TESWeatherList.obj | retail, upstream name already matches, high
 TESWeatherList::TESWeatherList()
 {
-    ClearWeatherSounds();
+    FlushList();
 }
 
 // @fnv 0x00582be0
+// pdb: BSSimpleList<WeatherEntry *>::ItemsInList | TESWeatherList.obj | debug, object-file run extension, low
+// pdb locals: uiItems, plist
 int __cdecl CompareSecondElement(unsigned int* pFirst, unsigned int* pSecond)
 {
     int iResult;
@@ -425,13 +457,15 @@ extern "C" unsigned char __cdecl TESObjectCELL_IsFormTypeCellChild(unsigned char
 // Returns 1 for characters 0x39 and 0x44, otherwise delegates to FUN_005548a0 with the same character.
 // @fnv 0x00588a60
 // src: COMMUNITY 0x00588a60
-unsigned char __cdecl TESWorldSpace_IsFormTypeWorldChild(unsigned char a)
+// pdb: TESWorldSpace::IsFormTypeWorldChild | TESWorldSpace.obj | debug, upstream name already matches, high
+// pdb params: aeType
+unsigned char __cdecl TESWorldSpace_IsFormTypeWorldChild(unsigned char aeType)
 {
-    if (a == 0x39)
+    if (aeType == 0x39)
         return 1;
-    if (a == 0x44)
+    if (aeType == 0x44)
         return 1;
-    return TESObjectCELL_IsFormTypeCellChild(a);
+    return TESObjectCELL_IsFormTypeCellChild(aeType);
 }
 
 void __cdecl Deallocate(void*);
@@ -447,6 +481,7 @@ struct FUN_00589060_t
 
 // Calls FUN_00589230 on this, then frees this with Deallocate when flags has bit 0 set, and returns this.
 // @fnv 0x00589060
+// pdb: NiTMap<TESFile *,TESWorldSpace::OFFSET_DATA *>::`scalar deleting destructor' | TESWorldSpace.obj | retail, vtable slot, high
 void* __thiscall FUN_00589060_t::FUN_00589060(unsigned int flags)
 {
     ((FUN_00589230_t*)this)->FUN_00589230();
@@ -465,6 +500,7 @@ struct FUN_00589090_Cls
     void* __thiscall FUN_00589090(unsigned int flags);
 };
 // @fnv 0x00589090
+// pdb: NiTPointerMap<int,TESObjectCELL *>::`scalar deleting destructor' | TESWorldSpace.obj | retail, vtable slot, high
 void* __thiscall FUN_00589090_Cls::FUN_00589090(unsigned int flags)
 {
     ((Helper89330*)this)->FUN_00589330();
@@ -485,6 +521,9 @@ struct FUN_005890c0
 };
 // Sets the vtable, stores size, allocates size*4 bytes with NiMalloc and zeroes them with memset.
 // @fnv 0x005890c0
+// pdb: NiTMapBase<NiTPointerAllocator<unsigned int>,unsigned int,BSSimpleList<TESObjectREFR *> *>::NiTMapBase<NiTPointerAllocator<unsigned int>,unsigned int,BSSimpleList<TESObjectREFR *> *> | TESWorldSpace.obj | debug, object-file run extension, low
+// pdb params: uiHashSize
+// pdb locals: uiSize
 FUN_005890c0::FUN_005890c0(unsigned int size)
 {
     pVTable = &DAT_0103200c;
@@ -528,6 +567,7 @@ struct FUN_00589290_Class
 };
 // @fnv 0x00589290
 // src: GUESS 0x00589290 (confidence: low)
+// pdb: NiTMapBase<DFALL<NiTMapItem<TESFile *,TESWorldSpace::OFFSET_DATA *> >,TESFile *,TESWorldSpace::OFFSET_DATA *>::~NiTMapBase<DFALL<NiTMapItem<TESFile *,TESWorldSpace::OFFSET_DATA *> >,TESFile *,TESWorldSpace::OFFSET_DATA *> | TESWorldSpace.obj | debug, call graph (shared callers), high
 void __thiscall FUN_00589290_Class::SetVtableAndProcessState_00589290()
 {
     *(void**)this = (void*)&DAT_0103202c;
@@ -580,9 +620,10 @@ struct FUN_005893c0Class
 };
 // Calls Init on this object, then frees this if bit 0 of flags is set, and returns this.
 // @fnv 0x005893c0
+// pdb: NiTMapBase<NiTPointerAllocator<unsigned int>,unsigned int,BSSimpleList<TESObjectREFR *> *>::`scalar deleting destructor' | TESWorldSpace.obj | retail, vtable slot, high
 void* __thiscall FUN_005893c0Class::InitAndMaybeFree(unsigned int flags)
 {
-    ((FUN_00589190*)this)->Init();
+    ((FUN_00589190*)this)->NiTMapBase_NiTPointerAllocator_unsigned_int_unsigned_int_BSSimpleList_TESObjectREFR_dtor();
     if (flags & 1)
         Deallocate(this);
     return this;
@@ -597,6 +638,7 @@ struct FUN_005893f0_Class
 };
 
 // @fnv 0x005893f0
+// pdb: NiTMapBase<DFALL<NiTMapItem<TESFile *,TESWorldSpace::OFFSET_DATA *> >,TESFile *,TESWorldSpace::OFFSET_DATA *>::`scalar deleting destructor' | TESWorldSpace.obj | retail, vtable slot, high
 void* __thiscall FUN_005893f0_Class::FUN_005893f0(unsigned int flags)
 {
     SetVtableAndProcessState_00589290();
@@ -612,6 +654,7 @@ struct FUN_00589420_Class
 };
 
 // @fnv 0x00589420
+// pdb: NiTMapBase<NiTPointerAllocator<unsigned int>,int,TESObjectCELL *>::`scalar deleting destructor' | TESWorldSpace.obj | retail, vtable slot, high
 void* FUN_00589420_Class::FUN_00589420(unsigned int flags)
 {
     SetVtableAndProcessState_00589390();
@@ -631,6 +674,9 @@ struct FUN_00589850_Class
 
 // @fnv 0x00589850
 // src: XBOX_PDB 0x00589850
+// pdb: AudioBuoyMarkerData::Load | AudioMarkerData.obj | retail, object-file run extension, low
+// pdb note: debug build links it to AudioMarkerData::GetLocationName
+// pdb params: apFile
 float __thiscall FUN_00589850_Class::NiPoint3_XYLength()
 {
     return NiSqrt_004579e0(this->m_iWordAt00 * this->m_iWordAt00 + this->m_cByteAtOffset1 * this->m_cByteAtOffset1);
@@ -646,6 +692,8 @@ struct FUN_00589890_Class
 };
 // @fnv 0x00589890
 // src: COMMUNITY 0x00589890
+// pdb: AudioMarkerData::SetLocationName | AudioMarkerData.obj | debug, object-file run extension, low
+// pdb params: apName
 bool FUN_00589890_Class::AudioBuoyMarker_Load(FUN_004726b0_class* apData)
 {
     if (!apData)
@@ -657,28 +705,34 @@ bool FUN_00589890_Class::AudioBuoyMarker_Load(FUN_004726b0_class* apData)
 
 struct FUN_0058b680_Class
 {
-    unsigned int __thiscall BGSCameraPath_GetIndexForChild(TESForm* form);
+    unsigned int __thiscall BGSCameraPath_GetIndexForChild(TESForm* apChild);
 };
 // @fnv 0x0058b680
 // src: COMMUNITY 0x0058b680
-unsigned int __thiscall FUN_0058b680_Class::BGSCameraPath_GetIndexForChild(TESForm* form)
+// pdb: BGSCameraPath::GetIndexForChild | BGSCameraPath.obj | debug, upstream name already matches, high
+// pdb params: apChild
+// pdb locals: iretval
+unsigned int __thiscall FUN_0058b680_Class::BGSCameraPath_GetIndexForChild(TESForm* apChild)
 {
     unsigned int result = 0xFFFFFFFF;
     if (reinterpret_cast<NiFormArray**>(reinterpret_cast<char*>(this) + 0x2C)[0])
-        result = reinterpret_cast<NiFormArray**>(reinterpret_cast<char*>(this) + 0x2C)[0]->GetIndexOfForm(form);
+        result = reinterpret_cast<NiFormArray**>(reinterpret_cast<char*>(this) + 0x2C)[0]->GetIndexOfForm(apChild);
     return result;
 }
 
 struct TESTopicInfo;
 struct FUN_0058b630_shell
 {
-    TESSound* GetCameraPathAt(unsigned int index);
+    TESSound* GetCameraPathAt(unsigned int aiIndex);
 };
 struct FUN_0058b6c0_shell
 {
     void RemoveSoundAt(unsigned int index);
 };
 // @fnv 0x0058b6c0
+// pdb: BGSCameraPath::RemoveChildAtIndex | BGSCameraPath.obj | debug, call graph, medium
+// pdb params: aiIndex
+// pdb locals: pnextpath, pprevpath
 void FUN_0058b6c0_shell::RemoveSoundAt(unsigned int index)
 {
     TESSound* next;
@@ -711,12 +765,15 @@ struct Holder730
 // If a1 and m_2c are both nonzero, calls FUN_0058b680 with a1 and passes its result to RemoveSoundAt.
 // @fnv 0x0058b730
 // src: COMMUNITY 0x0058b730
-void __thiscall Holder730::BGSCameraPath_RemoveChild(int a1)
+// pdb: BGSCameraPath::RemoveChild | BGSCameraPath.obj | debug, upstream name already matches, high
+// pdb params: apChild
+// pdb locals: iindex
+void __thiscall Holder730::BGSCameraPath_RemoveChild(int apChild)
 {
     int v;
-    if (a1 != 0 && m_2c != 0)
+    if (apChild != 0 && m_2c != 0)
     {
-        v = ((Holder680*)this)->BGSCameraPath_GetIndexForChild(a1);
+        v = ((Holder680*)this)->BGSCameraPath_GetIndexForChild(apChild);
         ((Holder6c0*)this)->RemoveSoundAt(v);
     }
 }
@@ -731,6 +788,7 @@ struct FUN_0058b770
     FUN_0058b770();
 };
 // @fnv 0x0058b770
+// pdb: BGSCameraPathManager::BGSCameraPathManager | BGSCameraPathManager.obj | debug, call graph, high
 FUN_0058b770::FUN_0058b770() : arr(0, 1)
 {}
 }  // namespace fnv_0058b770
@@ -744,9 +802,10 @@ struct FUN_0058bc60_Class
 };
 
 // @fnv 0x0058bc60
+// pdb: NiTArray<BGSCameraPath *,NiTMallocInterface<BGSCameraPath *> >::`scalar deleting destructor' | BGSCameraPathManager.obj | debug, vtable slot, medium
 void* FUN_0058bc60_Class::FUN_0058bc60(unsigned int flags)
 {
-    ((FUN_0058bc00_obj*)this)->Object_ReleaseStorage();
+    ((FUN_0058bc00_obj*)this)->NiTArray_BGSCameraPath_NiTMallocInterface_BGSCameraPath_dtor();
     if (flags & 1)
         _Deallocate(this);
     return this;
@@ -760,6 +819,7 @@ struct FUN_0058bc90_Holder
     void* __thiscall FUN_0058bc90(unsigned int flags);
 };
 // @fnv 0x0058bc90
+// pdb: NiTPrimitiveArray<BGSCameraPath *>::`scalar deleting destructor' | BGSCameraPathManager.obj | debug, vtable slot, medium
 void* __thiscall FUN_0058bc90_Holder::FUN_0058bc90(unsigned int flags)
 {
     Runtime_ForwardCall_0058b830((FUN_0058bc00_obj*)this);
@@ -817,6 +877,7 @@ struct FUN_0058f850_class
 
 // Calls FUN_0058f900, then frees this object with Deallocate when flags has bit 0 set, and returns this.
 // @fnv 0x0058f850
+// pdb: BSMap<BGSImpactData *,BGSImpactData *>::`scalar deleting destructor' | BGSImpactDataSet.obj | retail, vtable slot, high
 void* __thiscall FUN_0058f850_class::FUN_0058f850(unsigned int flags)
 {
     FUN_0058f900();
@@ -836,6 +897,8 @@ struct FUN_0058f960_Obj
 };
 // @fnv 0x0058f960
 // src: GUESS 0x0058f960 (confidence: low)
+// pdb: BSMap<BGSImpactData *,BGSImpactData *>::DeleteItem | BGSImpactDataSet.obj | debug, object-file run extension, low
+// pdb params: pkItem
 void __thiscall FUN_0058f960_Obj::UpdateFields_0058f960()
 {
     m_iWordAt00 = (int)&DAT_01033490;
@@ -853,6 +916,7 @@ struct FUN_0058f9a0_Class
 };
 // Calls FUN_0058f960, then deletes this if flags has bit 0 set, and returns this.
 // @fnv 0x0058f9a0
+// pdb: BSMapBase<BGSImpactData *,BGSImpactData *>::`scalar deleting destructor' | BGSImpactDataSet.obj | retail, vtable slot, high
 void* FUN_0058f9a0_Class::FUN_0058f9a0(unsigned int flags)
 {
     UpdateFields_0058f960();
@@ -869,10 +933,12 @@ struct FUN_00591170 : ::BSStringT<char>
 };
 // Destructor that destroys the contained condition object and the base object.
 // @fnv 0x00591170
+// pdb: MESSAGEBOX_BUTTON::~MESSAGEBOX_BUTTON | BGSMessage.obj | debug, object-file gap fill, medium
 FUN_00591170::~FUN_00591170()
 {}
 
 // @fnv 0x005912d0
+// pdb: TESSoundFile::TESSoundFile | BGSMusicType.obj | debug, upstream name already matches, high
 // m_kSoundFile is the shared BSStringT<char>: its default constructor (0x004037b0) runs as the member's
 TESSoundFile::TESSoundFile()
 {
@@ -919,6 +985,7 @@ class TESFullNameLoader
     static void LoadFullNameChunk(TESFullName* a, TESFile* f);
 };
 // Partial loader layout retained until include/ provides AudioMarkerData.
+// pdb: class AudioMarkerData, size 0x34 (here 0x2c), 8 members
 struct AudioMarkerData
 {
     unsigned int unk00;
@@ -932,10 +999,14 @@ struct AudioMarkerData
     unsigned int unk20;
     unsigned int m_24;
     char m_28;
-    bool LoadFromFile(TESFile* apFile);
+    bool Load(TESFile* apFile);
 };
 // @fnv 0x00589600
-bool AudioMarkerData::LoadFromFile(TESFile* apFile)
+// src: XBOX_RETAIL_PDB 0x00589600
+// pdb: AudioMarkerData::Load | AudioMarkerData.obj | retail, object-file run extension, high
+// pdb params: apFile
+// pdb locals: itempint
+bool AudioMarkerData::Load(TESFile* apFile)
 {
     if (!apFile)
         return false;
@@ -983,6 +1054,7 @@ bool AudioMarkerData::LoadFromFile(TESFile* apFile)
 
 void* __cdecl operator new(unsigned int size);
 void __cdecl _fnv_zlib_memset(void* dst, int val, unsigned int count);
+// pdb: class ContainerItemExtra, size 0xc (here 0x10), 5 members
 struct ContainerItemExtra
 {
     void* pVTable;
@@ -993,6 +1065,9 @@ struct ContainerItemExtra
 };
 // Sets the vtable, stores count, zeroes m_0c, and if count is nonzero allocates count*4 bytes for pItem and zero-fills them.
 // @fnv 0x0058f880
+// pdb: BSMapBase<BGSImpactData *,BGSImpactData *>::BSMapBase<BGSImpactData *,BGSImpactData *> | BGSImpactDataSet.obj | debug, object-file run extension, low
+// pdb params: uiHashSize
+// pdb locals: uiSize
 void* __thiscall ContainerItemExtra::InitContainerItemExtra(int count)
 {
     this->pVTable = &DAT_01033490;
@@ -1015,19 +1090,21 @@ struct Flt
 struct FUN_0058cb00_Class
 {
     char _pad[0x2c];
-    int NiTransformInterpolator_GetRotData(unsigned int* a, int* b, unsigned char* c);
+    int NiTransformInterpolator_GetRotData(unsigned int* uiNumKeys, int* eType, unsigned char* ucSize);
 };
 // If the field at offset 0x2c is nonzero, forwards a, b and c to FUN_0058cb60 on that object; otherwise zeroes all three outputs and returns 0.
 // @fnv 0x0058cb00
 // src: XBOX_PDB 0x0058cb00
-int FUN_0058cb00_Class::NiTransformInterpolator_GetRotData(unsigned int* puiValue, int* piValue, unsigned char* pbValue)
+// pdb: NiTransformInterpolator::GetRotData | BGSCameraShot.obj | debug, upstream name already matches, high
+// pdb params: uiNumKeys, eType, ucSize
+int FUN_0058cb00_Class::NiTransformInterpolator_GetRotData(unsigned int* uiNumKeys, int* eType, unsigned char* ucSize)
 {
     if ((unsigned int)*(Flt*)((char*)this + 0x2c))
         return ((FUN_0058cb60_Class*)(unsigned int)*(Flt*)((char*)this + 0x2c))
-            ->NiTransformData_GetRotAnim(puiValue, piValue, pbValue);
-    *puiValue = 0;
-    *piValue = 0;
-    *pbValue = 0;
+            ->NiTransformData_GetRotAnim(uiNumKeys, eType, ucSize);
+    *uiNumKeys = 0;
+    *eType = 0;
+    *ucSize = 0;
     return 0;
 }
 
@@ -1036,6 +1113,7 @@ void __cdecl _FUN_00485910(int, int);
 void __cdecl _FUN_00485910(int, float);
 
 // @fnv 0x00589560
+// pdb: AudioMarkerData::Save | AudioMarkerData.obj | debug, object-file gap fill, medium
 void TESModel::WriteToStream()
 {
     TESForm_AddChunkArray(0x4c4c5546, GetFullName(), GetModelLength() + 1);
@@ -1055,14 +1133,17 @@ extern "C" void* __cdecl FUN_00ec43fb(int input, int mode, const void* type, con
 
 struct ControllerArchive : FUN_00581fb0_Class
 {
-    void __thiscall LoadControllerArchive(int source);
+    void __thiscall LoadControllerArchive(int apCopyFC);
 };
 
 // Loads an archive from source and copies six entries into the base object via FUN_00581fb0.
 // @fnv 0x005821b0
-void ControllerArchive::LoadControllerArchive(int source)
+// pdb: TESImageSpaceModifiableCountForm<6>::CopyComponent | TESWeather.obj | retail, vtable slot, high
+// pdb params: apCopyFC
+// pdb locals: pcopy, i
+void ControllerArchive::LoadControllerArchive(int apCopyFC)
 {
-    FUN_005822a0_cls* loaded = static_cast<FUN_005822a0_cls*>(FUN_00ec43fb(source, 0, &DAT_01183040, &DAT_01186ab0, 0));
+    FUN_005822a0_cls* loaded = static_cast<FUN_005822a0_cls*>(FUN_00ec43fb(apCopyFC, 0, &DAT_01183040, &DAT_01186ab0, 0));
     if (loaded == 0)
         return;
     for (unsigned int i = 0; i < 6; ++i)
@@ -1077,13 +1158,16 @@ extern int DAT_01186ab0;
 FUN_005822a0_cls* __cdecl FUN_00ec43fb(int key, int zero, void* first, void* second, int trailing);
 struct FUN_00582220_Class : FUN_005822a0_cls
 {
-    bool __thiscall IsNotEqual(int key);
+    bool __thiscall IsNotEqual(int apCompareFC);
 };
 // Compares this object against the result of FUN_00ec43fb for the given key over six indices, returning true if any differ or no comparison exists.
 // @fnv 0x00582220
-bool FUN_00582220_Class::IsNotEqual(int key)
+// pdb: TESImageSpaceModifiableCountForm<6>::CompareComponent | TESWeather.obj | retail, vtable slot, high
+// pdb params: apCompareFC
+// pdb locals: pcompare, i
+bool FUN_00582220_Class::IsNotEqual(int apCompareFC)
 {
-    FUN_005822a0_cls* comparison = FUN_00ec43fb(key, 0, &DAT_01183040, &DAT_01186ab0, 0);
+    FUN_005822a0_cls* comparison = FUN_00ec43fb(apCompareFC, 0, &DAT_01183040, &DAT_01186ab0, 0);
     if (!comparison)
     {
         return true;
@@ -1114,6 +1198,7 @@ class FUN_00589130_cls : public MapDtorWrap_b9454
 
 // Destructor that clears all entries from the underlying NiTPointerMap by calling RemoveAll.
 // @fnv 0x00589130
+// pdb: NiTPointerMap<unsigned int,BSSimpleList<TESObjectREFR *> *>::~NiTPointerMap<unsigned int,BSSimpleList<TESObjectREFR *> *> | TESWorldSpace.obj | debug, call graph (shared callers), high
 FUN_00589130_cls::~FUN_00589130_cls()
 {
     reinterpret_cast<NiTPointerMap<int, int>*>(this)->RemoveAll();
@@ -1131,6 +1216,7 @@ struct FUN_00589230 : FUN_00589230_Base
 };
 
 // @fnv 0x00589230
+// pdb: NiTMap<TESFile *,TESWorldSpace::OFFSET_DATA *>::~NiTMap<TESFile *,TESWorldSpace::OFFSET_DATA *> | TESWorldSpace.obj | debug, call graph (shared callers), high
 FUN_00589230::~FUN_00589230()
 {
     FUN_00438af0();
@@ -1190,6 +1276,7 @@ class FUN_00589500 : public FUN_00591300
 
 // Empty destructor for the class; destroys the base subobject and the member at offset 0x2c.
 // @fnv 0x00589500
+// pdb: AudioMarkerData::~AudioMarkerData | AudioMarkerData.obj | debug, object-file gap fill, medium
 FUN_00589500::~FUN_00589500()
 {}
 
@@ -1211,18 +1298,21 @@ struct S_00589770_Class
     int unk24;
     unsigned char unk28;
 
-    void __thiscall CopyFrom(S_00589770_Class* arg);
+    void __thiscall AudioMarkerData_Copy(S_00589770_Class* apCopy);
 };
 
 // @fnv 0x00589770
-void __thiscall S_00589770_Class::CopyFrom(S_00589770_Class* pSource)
+// src: XBOX_RETAIL_PDB 0x00589770
+// pdb: AudioMarkerData::Copy | AudioMarkerData.obj | retail, object-file run extension, high
+// pdb params: apCopy
+void __thiscall S_00589770_Class::AudioMarkerData_Copy(S_00589770_Class* apCopy)
 {
-    this->pVTable[2](this, pSource);
+    this->pVTable[2](this, apCopy);
 
-    this->unk24 = pSource->unk24;
-    this->unk28 = pSource->unk28;
-    this->unk0c = pSource->unk0c;
-    this->unk10 = pSource->unk10;
+    this->unk24 = apCopy->unk24;
+    this->unk28 = apCopy->unk28;
+    this->unk0c = apCopy->unk0c;
+    this->unk10 = apCopy->unk10;
 }
 
 void __fastcall Runtime_ForwardCall_0058b830(FUN_0058bc00_obj* this_ptr);
@@ -1246,6 +1336,7 @@ struct FUN_0058b7d0 : FUN_0058b450
 };
 
 // @fnv 0x0058b7d0
+// pdb: BGSCameraPathManager::~BGSCameraPathManager | BGSCameraPathManager.obj | debug, object-file gap fill, medium
 FUN_0058b7d0::~FUN_0058b7d0()
 {
     Runtime_ForwardCall_0058b830(&m_18);
@@ -1410,6 +1501,7 @@ struct ModelComponent
     virtual void v4();
     virtual const char* Name();
 };
+// pdb: class ModelLoader, size 0x30 (here 0x1), 12 members
 class ModelLoader
 {
   public:
@@ -1431,7 +1523,7 @@ BSAudio* BSAudio_QInstance();
 class BSAudioWithSoundHandle : public BSAudio
 {
 public:
-    BSSoundHandle GetSoundHandleByEditorID(const char* editorID, unsigned int flags);
+    BSSoundHandle GetSoundHandleByEditorID(const char* apSoundName, unsigned int aiTypeFlags);
 };
 
 struct CameraState
@@ -1467,10 +1559,13 @@ struct CameraState
     NP node70;
     unsigned char unk74;
     bool active;
-    void ResetCameraState();
+    void BGSCameraShot_FreeCamera();
 };
 // @fnv 0x0058ce50
-void CameraState::ResetCameraState()
+// src: XBOX_RETAIL_PDB 0x0058ce50
+// pdb: BGSCameraShot::FreeCamera | BGSCameraShot.obj | retail, string-set bridge, high
+// pdb locals: soundHand
+void CameraState::BGSCameraShot_FreeCamera()
 {
     node60 = static_cast<void*>(0);
     node64 = static_cast<void*>(0);
@@ -1514,6 +1609,7 @@ struct FUN_00590210 : FUN_00483370, FUN_00402c20
 };
 // Initializes the object by calling FUN_00483710 and then FUN_004f15a0 with a count of 5.
 // @fnv 0x00590210
+// pdb: BGSMenuIcon::BGSMenuIcon | BGSMenuIcon.obj | retail, call graph, high
 FUN_00590210::FUN_00590210()
 {
     FUN_00483710();
@@ -1565,6 +1661,7 @@ struct FUN_00591200_cls : FUN_00591200_base0, FUN_00591200_base1
 
 // Initializes the object by calling Setup with 0x66 and then assigning g_00591200_const to m_24.
 // @fnv 0x00591200
+// pdb: BGSMusicType::BGSMusicType | BGSMusicType.obj | retail, call graph, high
 FUN_00591200_cls::FUN_00591200_cls()
 {
     Setup(0x66);
@@ -1627,6 +1724,9 @@ struct FUN_006ab360_t
 
 // @fnv 0x0059ae10
 // src: COMMUNITY 0x0059ae10
+// pdb: TESCaravanCard::SortCardsFunc | TESCaravan.obj | debug, object-file run extension, low
+// pdb params: t1, t2
+// pdb locals: i2, i1
 int __cdecl TESCaravanCard_Compare_0(void* apLeft, void* apRight)
 {
     int y;
@@ -1701,6 +1801,7 @@ struct FUN_0058bd30 : Form_58bd30, TESModel, ISMForm_58bd30
 
 // Initializes the form: sets form type 0x5b, calls Reset, clears the node pointers and unk68, and sets unk74 to 0xff with unk75/unk76 false.
 // @fnv 0x0058bd30
+// pdb: BGSCameraShot::BGSCameraShot | BGSCameraShot.obj | retail, call graph, high
 FUN_0058bd30::FUN_0058bd30() : node60(0), node64(0), node6c(0), node70(0)
 {
     SetFormType(0x5b);
@@ -1734,6 +1835,10 @@ struct FNVTokenParser
                               int* leadingCount);
 };
 // @fnv 0x00593870
+// pdb: CExpression::InfixToPostfix | Expression.obj | retail, object-file run extension, low
+// pdb note: debug build links it to CExpression::GetNextToken
+// pdb params: apInfix, auiSize
+// pdb locals: ch, pfptr, ifptr, bPrevWasValue, uiSize, token, eNewOperator, eOperator, iLen
 int __thiscall FNVTokenParser::ParseToken(char** input, char* output, unsigned int* type, unsigned char countLeading,
                                           int* leadingCount)
 {

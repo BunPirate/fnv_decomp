@@ -19,7 +19,7 @@ class BoundUpdateOperations : public NiPSysBoundUpdateModifier
 {
 public:
     void SetTargetSystem(NiParticleSystem* system);
-    void GetViewerStrings(NiViewerStringsArray* strings);
+    void GetViewerStrings(NiViewerStringsArray* pkStrings);
     void UpdateBounds(float time, NiPSysData* data);
     void UpdateMeshBounds(float time, NiPSysData* data);
     void UpdateMultiVertexBounds(float time, NiPSysData* data);
@@ -88,7 +88,7 @@ inline bool NiPSysData::IsKindOfType(const NiRTTI* type) const
     {
         if (iter == type)
             return true;
-        iter = iter->m_pBaseRTTI;
+        iter = iter->m_pkBaseRTTI;
     }
     return false;
 }
@@ -110,7 +110,7 @@ void BoundUpdateOperations::SetTargetSystem(NiParticleSystem* system)
 
 struct MM
 {
-    void _DeallocateAlias(void* p);
+    void _DeallocateAlias(void* apMem);
 };
 extern MM g_memoryManager;
 extern int DAT_010c0134;
@@ -118,6 +118,7 @@ void __cdecl _delete(void* p, unsigned int s);
 
 // Restores the vtable, releases the bounds, destroys the base, and optionally deletes this.
 // @fnv 0x00c2dca0
+// pdb: NiPSysBoundUpdateModifier::`scalar deleting destructor' | NiPSysBoundUpdateModifier.obj | retail, object-file run extension, low
 void* NiPSysBoundUpdateModifier::Destroy(unsigned int auiFlags)
 {
     void* p = m_pkBounds;
@@ -137,26 +138,31 @@ inline NiPSysBoundUpdateModifier* InitializeBoundUpdateModifier(void* memory) th
     NiPSysBoundUpdateModifier* object = static_cast<NiPSysBoundUpdateModifier*>(memory);
     *(void**)object = (void*)&DAT_010c0134;
     object->m_usUpdateSkip = 0;
-    object->m_usUpdateSkipCounter = 0;
+    object->m_usUpdateCount = 0;
     object->m_pkBounds = 0;
     return object;
 }
 
 // @fnv 0x00c2dec0
+// pdb: NiPSysBoundUpdateModifier::CreateClone | NiPSysBoundUpdateModifier.obj | retail, object-file run extension, low
+// pdb params: kCloning
+// pdb locals: pkObject
 NiObject* NiPSysBoundUpdateModifier::MakeClone(CloningProcess& kCloning)
 {
     void* memory = BSFadeNode::operator new(sizeof(NiPSysBoundUpdateModifier));
     NiPSysBoundUpdateModifier* pkObject = memory ? InitializeBoundUpdateModifier(memory) : 0;
-    CopyMemberData(pkObject, kCloning);
+    CopyMembers(pkObject, kCloning);
     pkObject->SetUpdateSkipCounter(static_cast<unsigned short>(m_usUpdateSkip));
     return (NiObject*)pkObject;
 }
 
 // @fnv 0x00c2e3f0
-void NiPSysBoundUpdateModifier::SaveBinary(NiStream& stream)
+// pdb: NiPSysBoundUpdateModifier::SaveBinary | NiPSysBoundUpdateModifier.obj | retail, upstream name already matches, high
+// pdb params: kStream
+void NiPSysBoundUpdateModifier::SaveBinary(NiStream& kStream)
 {
-    NiPSysModifier::SaveBinary(stream);
-    NiBinaryStream* __restrict out = stream.GetBinaryStream();
+    NiPSysModifier::SaveBinary(kStream);
+    NiBinaryStream* __restrict out = kStream.GetBinaryStream();
     unsigned int size = 2;
     *reinterpret_cast<unsigned int*>((char*)out + 4) +=
         (*reinterpret_cast<NiBinaryStream::WriteFunction*>((char*)out + 12))(out, &m_usUpdateSkip, 2, &size, 1);
@@ -175,6 +181,9 @@ template <class T> inline void LoadBoundUpdateValue(NiStream& kStream, T& value)
 
 // Loads the modifier base data, reads the update skip, and rebuilds the bounds array.
 // @fnv 0x00c2e370
+// pdb: NiPSysBoundUpdateModifier::LoadBinary | NiPSysBoundUpdateModifier.obj | retail, upstream name already matches, high
+// pdb params: kStream
+// pdb locals: usUpdateSkip
 void NiPSysBoundUpdateModifier::LoadBinary(NiStream& kStream)
 {
     NiPSysModifier::LoadBinary(kStream);
@@ -222,14 +231,16 @@ public:
 };
 
 extern "C" char* __cdecl NiViewerStrings_NiGetViewerString_Title(char* s);
-extern "C" char* __cdecl NiGetViewerString_00a7d450(const char* key, unsigned short value);
+extern "C" char* __cdecl NiGetViewerString_00a7d450(const char* pcPrefix, unsigned short sValue);
 
 // @fnv 0x00c2e430
-void BoundUpdateOperations::GetViewerStrings(NiViewerStringsArray* strings)
+// pdb: NiPSysBoundUpdateModifier::GetViewerStrings | NiPSysBoundUpdateModifier.obj | retail, string-set bridge, high
+// pdb params: pkStrings
+void BoundUpdateOperations::GetViewerStrings(NiViewerStringsArray* pkStrings)
 {
-    reinterpret_cast<ModifierViewerStrings*>(this)->ModifierViewerStrings::GetViewerStrings(strings);
-    reinterpret_cast<NiStrTable*>(strings)->Add(NiViewerStrings_NiGetViewerString_Title((char*)g_01202788));
-    reinterpret_cast<NiStrTable*>(strings)->Add(NiGetViewerString_00a7d450("Update Skip", m_usUpdateSkip));
+    reinterpret_cast<ModifierViewerStrings*>(this)->ModifierViewerStrings::GetViewerStrings(pkStrings);
+    reinterpret_cast<NiStrTable*>(pkStrings)->Add(NiViewerStrings_NiGetViewerString_Title((char*)g_01202788));
+    reinterpret_cast<NiStrTable*>(pkStrings)->Add(NiGetViewerString_00a7d450("Update Skip", m_usUpdateSkip));
 }
 
 extern NiBound DAT_011f4288;
@@ -294,6 +305,9 @@ struct BoundDataBlock
 
 // Merges particle bounds into the current bound slot, resets the remaining slots, and advances m_usUpdateSkipCounter cyclically.
 // @fnv 0x00c2dce0
+// pdb: NiPSysBoundUpdateModifier::UpdateMeshBounds | NiPSysBoundUpdateModifier.obj | retail, object-file run extension, low
+// pdb params: fTime, pkMeshData
+// pdb locals: pkContainer, iComputedSkip, usNumParticles, i, kTotal
 void BoundUpdateOperations::UpdateMeshBounds(float fTime, NiPSysData* pkTarget)
 {
     unsigned short usNumParticles = pkTarget->m_usActive;
@@ -315,7 +329,7 @@ void BoundUpdateOperations::UpdateMeshBounds(float fTime, NiPSysData* pkTarget)
     Particle* pFirstParticle = pkData->m_pkParticles[0];
     NiBound* pkFirstBound = pFirstParticle->m_pkBound ? pFirstParticle->m_pkBound : &DAT_011f4288;
     NiBound kBound = *pkFirstBound;
-    for (int i = m_usUpdateSkipCounter; i < iCount; i += iSkip)
+    for (int i = m_usUpdateCount; i < iCount; i += iSkip)
     {
         Particle* pkParticle = pkData->m_pkParticles[i];
         NiBound* pkParticleBound = pkParticle->m_pkBound;
@@ -326,8 +340,8 @@ void BoundUpdateOperations::UpdateMeshBounds(float fTime, NiPSysData* pkTarget)
         kBound.Merge(pkParticleBound);
     }
 
-    CopyBoundCenter(m_pkBounds[m_usUpdateSkipCounter].m_kCenter, kBound.m_kCenter);
-    m_pkBounds[m_usUpdateSkipCounter].m_fRadius = kBound.m_fRadius;
+    CopyBoundCenter(m_pkBounds[m_usUpdateCount].m_kCenter, kBound.m_kCenter);
+    m_pkBounds[m_usUpdateCount].m_fRadius = kBound.m_fRadius;
 
     for (int i = iSkip; i < m_usUpdateSkip; ++i)
     {
@@ -351,10 +365,10 @@ void BoundUpdateOperations::UpdateMeshBounds(float fTime, NiPSysData* pkTarget)
     NiBound* pkDest = pkData->m_pkBound;
     CopyBoundCenter(pkDest->m_kCenter, kBound.m_kCenter);
     pkDest->m_fRadius = fRadius;
-    m_usUpdateSkipCounter++;
-    if ((int)m_usUpdateSkipCounter >= iSkip)
+    m_usUpdateCount++;
+    if ((int)m_usUpdateCount >= iSkip)
     {
-        m_usUpdateSkipCounter = 0;
+        m_usUpdateCount = 0;
     }
 }
 
@@ -369,6 +383,9 @@ template <class T> inline T kBoundsMaximum(const T& a, const T& b)
 
 // Computes the bounding sphere for the current bound slot from position and radius data, merges it into the overall bound, and advances the current bound index.
 // @fnv 0x00c2d880
+// pdb: NiPSysBoundUpdateModifier::UpdateStripBounds | NiPSysBoundUpdateModifier.obj | retail, object-file run extension, low
+// pdb params: fTime, pkStripData
+// pdb locals: kMax, fMinY, fMaxX, fMaxZ, fFinalSize, iComputedSkip, kMin, fMinX, fMinZ, pkVerts, usNumParticles, i, kTotal, fMaxY, uspointCount, uspoint
 void BoundUpdateOperations::UpdateMultiVertexBounds(float time, NiPSysData* apBounds)
 {
     unsigned short count = apBounds->m_usActive;
@@ -382,7 +399,7 @@ void BoundUpdateOperations::UpdateMultiVertexBounds(float time, NiPSysData* apBo
     float hx = lx;
     float hy = ly;
     float fMaxZ = fMinZ;
-    for (int i = m_usUpdateSkipCounter; i < count; i += stride)
+    for (int i = m_usUpdateCount; i < count; i += stride)
     {
         unsigned short n = static_cast<MultiVertexParticleData*>(apBounds)->GetVertexCount((unsigned short)i);
         for (unsigned short j = 0; j < n; ++j)
@@ -406,17 +423,17 @@ void BoundUpdateOperations::UpdateMultiVertexBounds(float time, NiPSysData* apBo
         }
     }
     NiPoint3 center = NiPoint3(hx + lx, hy + ly, fMaxZ + fMinZ) * 0.5f;
-    CopyBoundCenter(m_pkBounds[m_usUpdateSkipCounter].m_kCenter, *reinterpret_cast<NiPoint3*>(&center));
+    CopyBoundCenter(m_pkBounds[m_usUpdateCount].m_kCenter, *reinterpret_cast<NiPoint3*>(&center));
     float rad = NiPoint3(hx - lx, hy - ly, fMaxZ - fMinZ).Length() * 0.5;
-    m_pkBounds[m_usUpdateSkipCounter].m_fRadius = rad;
+    m_pkBounds[m_usUpdateCount].m_fRadius = rad;
     for (int k = stride; k < m_usUpdateSkip; ++k)
     {
         CopyBoundCenter(m_pkBounds[k].m_kCenter, NiPoint3::ZERO);
         m_pkBounds[k].m_fRadius = 0;
     }
     NiBound kMergedBound;
-    CopyBoundCenter(kMergedBound.m_kCenter, m_pkBounds[m_usUpdateSkipCounter].m_kCenter);
-    kMergedBound.m_fRadius = m_pkBounds[m_usUpdateSkipCounter].m_fRadius;
+    CopyBoundCenter(kMergedBound.m_kCenter, m_pkBounds[m_usUpdateCount].m_kCenter);
+    kMergedBound.m_fRadius = m_pkBounds[m_usUpdateCount].m_fRadius;
     for (int k = 1; k < stride; ++k)
         if (m_pkBounds[k].m_fRadius != 0)
             kMergedBound.Merge(&m_pkBounds[k]);
@@ -424,9 +441,9 @@ void BoundUpdateOperations::UpdateMultiVertexBounds(float time, NiPSysData* apBo
     apBounds->m_kBound.m_fRadius = kMergedBound.m_fRadius;
     if (apBounds->m_kBound.m_fRadius == 0)
         apBounds->m_kBound.m_fRadius = apBounds->m_pfSizes[0] * apBounds->m_pfRadii[0];
-    ++m_usUpdateSkipCounter;
-    if (m_usUpdateSkipCounter >= stride)
-        m_usUpdateSkipCounter = 0;
+    ++m_usUpdateCount;
+    if (m_usUpdateCount >= stride)
+        m_usUpdateCount = 0;
 }
 
 // Plain arithmetic temporaries retain the original floating-point evaluation.
@@ -463,6 +480,9 @@ extern NiRTTI g_01202680;
 
 // Computes the particle system's bounding sphere from sampled positions and radii, merging previous samples and storing the result in pkData->m_kBound.
 // @fnv 0x00c2df20
+// pdb: NiPSysBoundUpdateModifier::Update | NiPSysBoundUpdateModifier.obj | retail, object-file run extension, low
+// pdb params: fTime, pkData
+// pdb locals: kMax, fMinY, fMaxX, fMaxZ, fFinalSize, iComputedSkip, kMin, fMinX, pkSizes, fMinZ, pkVerts, usNumParticles, i, pkRadii, kTotal, fMaxY
 void BoundUpdateOperations::UpdateBounds(float fTime, NiPSysData* pkData)
 {
     unsigned short usNumParticles = pkData->m_usActive;
@@ -470,7 +490,7 @@ void BoundUpdateOperations::UpdateBounds(float fTime, NiPSysData* pkData)
     {
         CopyBoundCenter(pkData->m_kBound.m_kCenter, NiPoint3::ZERO);
         pkData->m_kBound.m_fRadius = 0.0f;
-        m_usUpdateSkipCounter = 0;
+        m_usUpdateCount = 0;
         return;
     }
     if (pkData->IsKindOfType(&g_012027c0))
@@ -504,7 +524,7 @@ void BoundUpdateOperations::UpdateBounds(float fTime, NiPSysData* pkData)
     float fMaxZ = fMinZ;
     float* pkBoundEntry = pkData->m_pfRadii;
     float* y = pkData->m_pfSizes;
-    int i = m_usUpdateSkipCounter;
+    int i = m_usUpdateCount;
     int k = i * 3;
     if (i < usNumParticles)
     {
@@ -535,7 +555,7 @@ void BoundUpdateOperations::UpdateBounds(float fTime, NiPSysData* pkData)
     }
     LocalPoint3 res =
         LocalPoint3(kPointArrayBench, m_fWorldTransformCoefficient4, fMaxZ) + LocalPoint3(m_fGridOriginX, kDiff, fMinZ);
-    CopyBoundCenter(m_pkBounds[m_usUpdateSkipCounter].m_kCenter, res * 0.5);
+    CopyBoundCenter(m_pkBounds[m_usUpdateCount].m_kCenter, res * 0.5);
     LocalPoint3 afWorldOriginY;
     afWorldOriginY =
         LocalPoint3(kPointArrayBench, m_fWorldTransformCoefficient4, fMaxZ) - LocalPoint3(m_fGridOriginX, kDiff, fMinZ);
@@ -543,7 +563,7 @@ void BoundUpdateOperations::UpdateBounds(float fTime, NiPSysData* pkData)
         afWorldOriginY.x * afWorldOriginY.x + afWorldOriginY.y * afWorldOriginY.y + afWorldOriginY.z * afWorldOriginY.z;
     float fExtent = (float)sqrt(fExtentSq);
     float fRadius = (float)(fExtent * 0.5);
-    m_pkBounds[m_usUpdateSkipCounter].m_fRadius = fRadius;
+    m_pkBounds[m_usUpdateCount].m_fRadius = fRadius;
     for (int k = iStride; k < m_usUpdateSkip; ++k)
     {
         CopyBoundCenter(m_pkBounds[k].m_kCenter, NiPoint3::ZERO);
@@ -552,8 +572,8 @@ void BoundUpdateOperations::UpdateBounds(float fTime, NiPSysData* pkData)
         (*reinterpret_cast<NiBound* volatile*>(&m_pkBounds))[k].m_fRadius = 0.0f;
     }
     NiBound kBound;
-    CopyBoundCenter(kBound.m_kCenter, m_pkBounds[m_usUpdateSkipCounter].m_kCenter);
-    kBound.m_fRadius = m_pkBounds[m_usUpdateSkipCounter].m_fRadius;
+    CopyBoundCenter(kBound.m_kCenter, m_pkBounds[m_usUpdateCount].m_kCenter);
+    kBound.m_fRadius = m_pkBounds[m_usUpdateCount].m_fRadius;
     if (1 < iStride)
     {
         for (int pkPositions = 1; pkPositions < iStride; ++pkPositions)
@@ -570,8 +590,8 @@ void BoundUpdateOperations::UpdateBounds(float fTime, NiPSysData* pkData)
     {
         pkData->m_kBound.m_fRadius = *(volatile float*)pkData->m_pfRadii * pkData->m_pfSizes[0];
     }
-    if (++m_usUpdateSkipCounter >= iStride)
+    if (++m_usUpdateCount >= iStride)
     {
-        m_usUpdateSkipCounter = 0;
+        m_usUpdateCount = 0;
     }
 }

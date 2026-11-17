@@ -37,25 +37,29 @@ struct FUN_006295a0_shell
 // Calls FUN_004589c0 with DAT_0104da48 on this object and with DAT_0104e148 on the object at offset 0x10.
 // @fnv 0x006295a0
 // src: COMMUNITY 0x006295a0
+// pdb: hkAabb::setEmpty | LoadedAreaBound.obj | debug, upstream name already matches, high
 void FUN_006295a0_shell::hkAabb_setEmpty()
 {
     hkVector4_setAll(DAT_0104da48);
     ((FUN_006295a0_shell*)((char*)this + 0x10))->hkVector4_setAll(DAT_0104e148);
 }
 
-float TESHavokUtilities_GetSceneGraphMass(NiAVObject* object);
+float TESHavokUtilities_GetSceneGraphMass(NiAVObject* apObject);
 // @fnv 0x0062c300
 // src: XBOX_PDB 0x0062c300
-float TESHavokUtilities_GetSceneGraphMass(NiAVObject* object)
+// pdb: TESHavokUtilities::GetSceneGraphMass | TEShavokUtilities.obj | retail, upstream name already matches, high
+// pdb params: apObject
+// pdb locals: fmass, pbody, pcol, pnode, i
+float TESHavokUtilities_GetSceneGraphMass(NiAVObject* apObject)
 {
     float fmass = 0.0f;
-    if (object)
+    if (apObject)
     {
-        bhkCollisionObject* pCollisionObject = bhkCollisionObject::GetFromNiAVObject(object);
+        bhkCollisionObject* pCollisionObject = bhkCollisionObject::GetFromNiAVObject(apObject);
         bhkWorldObject* pWorldObject = pCollisionObject ? pCollisionObject->bhkNiCollisionObject_GetWorldObject() : 0;
         if (pWorldObject)
             fmass += pWorldObject->bhkRigidBody_GetMass();
-        NiNode* pnode = (NiNode*)object->IsSceneNode();
+        NiNode* pnode = (NiNode*)apObject->IsSceneNode();
         if (pnode && pnode->GetNumChildren())
         {
             for (unsigned int i = 0; i < pnode->GetNumChildren(); ++i)
@@ -74,6 +78,7 @@ struct FUN_0062be70_shell
 
 // @fnv 0x0062be70
 // src: GUESS 0x0062be70 (confidence: low)
+// pdb: hkpMoppBvTreeShape::getShapeCollection | TEShavokUtilities.obj | debug, object-file run extension, low
 void FUN_0062be70_shell::ForwardCall_0062be70()
 {
     m_node.FUN_00726070();
@@ -83,12 +88,15 @@ extern "C" void* __cdecl bhkUtilFunctions_GetNiAVObject(void*);
 
 // @fnv 0x0062b4e0
 // src: XBOX_PDB 0x0062b4e0
-TESObjectREFR* __cdecl TESHavokUtilities_FindCollidableRef(void* object)
+// pdb: TESHavokUtilities::FindCollidableRef | TEShavokUtilities.obj | retail, upstream name already matches, high
+// pdb params: apCol
+// pdb locals: pref, pav
+TESObjectREFR* __cdecl TESHavokUtilities_FindCollidableRef(void* apCol)
 {
     TESObjectREFR* result = 0;
-    if (object)
+    if (apCol)
     {
-        void* reference = bhkUtilFunctions_GetNiAVObject(object);
+        void* reference = bhkUtilFunctions_GetNiAVObject(apCol);
         if (reference)
             result = TESObjectREFR::GetReferenceFromNiAVObject(reference);
     }
@@ -105,12 +113,15 @@ extern Setting g_011d0f30;
 
 // @fnv 0x0062b520
 // src: COMMUNITY 0x0062b520
-float TESHavokUtilities_ScaleGameplayImpulseForce(float value, bhkWorldObject* object, bool scale)
+// pdb: TESHavokUtilities::ScaleGameplayImpulseForce | TEShavokUtilities.obj | retail, upstream name already matches, high
+// pdb params: afBaseForce, apPushedBody, abUseMinMass
+// pdb locals: colfilter, fforceScale, fmass
+float TESHavokUtilities_ScaleGameplayImpulseForce(float afBaseForce, bhkWorldObject* apPushedBody, bool abUseMinMass)
 {
-    if (!object)
-        return value;
+    if (!apPushedBody)
+        return afBaseForce;
     float fMultiplier = 1.0f;
-    bhkFilter layer = object->bhkWorldObject_GetCollisionFilter();
+    bhkFilter layer = apPushedBody->bhkWorldObject_GetCollisionFilter();
     switch (layer.CFilter_GetLayer())
     {
     case 14:
@@ -130,14 +141,14 @@ float TESHavokUtilities_ScaleGameplayImpulseForce(float value, bhkWorldObject* o
         fMultiplier *= *g_011d0d2c.Float();
         break;
     }
-    if (scale)
+    if (abUseMinMass)
     {
-        float f = object->bhkRigidBody_GetMass();
+        float f = apPushedBody->bhkRigidBody_GetMass();
         if (f < *originalRuntimeFloatSetting1038.Float())
             fMultiplier *= f / *originalRuntimeFloatSetting1038.Float();
     }
     fMultiplier *= *originalRuntimeFloatSetting1034.Float();
-    return fMultiplier * value;
+    return fMultiplier * afBaseForce;
 }
 
 struct FUN_0043b5b0_shell
@@ -159,6 +170,8 @@ struct FUN_0043b560_shell
 };
 // Calls GetReferenceFlags on this, then if non-null runs FUN_0043b5b0, GetSourceFiles and FUN_0043b5f0, returning the source files pointer.
 // @fnv 0x0043b560
+// pdb: bhkWorldObject::GetCollidable | ModelLoader.obj | debug, call graph, high
+// pdb locals: pwo, pCollide
 void* FUN_0043b560_shell::GetSourceFilesFromObject()
 {
     void* result = 0;
@@ -176,18 +189,21 @@ void* FUN_0043b560_shell::GetSourceFilesFromObject()
 
 // @fnv 0x0062bc10
 // src: XBOX_PDB 0x0062bc10
-void __cdecl TESHavokUtilities_RemoveHavokFromSceneGraph(NiAVObject* pObject)
+// pdb: TESHavokUtilities::RemoveHavokFromSceneGraph | TEShavokUtilities.obj | retail, upstream name already matches, high
+// pdb params: apObject
+// pdb locals: pcol, pnode, ui
+void __cdecl TESHavokUtilities_RemoveHavokFromSceneGraph(NiAVObject* apObject)
 {
-    if (pObject != 0)
+    if (apObject != 0)
     {
-        void* r = pObject->NiAVObject_GetCollisionObject();
+        void* r = apObject->NiAVObject_GetCollisionObject();
         if (r != 0)
         {
-            pObject->AssignCollisionObject(0);
+            apObject->AssignCollisionObject(0);
         }
-        if (pObject->IsSceneNode() != 0)
+        if (apObject->IsSceneNode() != 0)
         {
-            NiNode* self = static_cast<NiNode*>(pObject);
+            NiNode* self = static_cast<NiNode*>(apObject);
             for (unsigned int i = 0; i < self->FUN_0043b480(); i++)
             {
                 TESHavokUtilities_RemoveHavokFromSceneGraph(self->FUN_0043b4a0(i));
@@ -232,6 +248,10 @@ struct ShapeWrapper
 
 // Recursively walks an NiAVObject tree, adding collision shape counts to firstCount or secondCount depending on shape type.
 // @fnv 0x0062bd00
+// pdb: TESHavokUtilities::GetTotalBuoyancy | TEShavokUtilities.obj | retail, object-file run extension, low
+// pdb note: debug build links it to TESHavokUtilities::InspectHavokObjects
+// pdb params: apBody
+// pdb locals: fbuoyancy, pshape, fbodybuoyancy, pshapeCol, filter, icount, key
 void CountCollisionShapes(NiAVObject* object, unsigned int* firstCount, unsigned int* secondCount)
 {
     if (object)
@@ -289,6 +309,10 @@ extern Setting g_011cf2fc;
 extern float DAT_01013974;
 // Selects a factor and threshold from value against several float settings, then returns factor times a distance-scaled multiplier or zero.
 // @fnv 0x0062be90
+// pdb: TESHavokUtilities::InspectHavokObjects | TEShavokUtilities.obj | retail, object-file run extension, low
+// pdb note: debug build links it to TESHavokUtilities::GetDamageForImpact
+// pdb params: apObject, aiConvexVerticesCount, aiShapeCollectionTriCount
+// pdb locals: pcol, prb, pshape, phk, pcollection, pconvex, pmopp, pmoppCollection, pnode, ui
 float __cdecl ComputeDistanceFactor(float value, float distance)
 {
     float factor = 0.0f;
@@ -368,9 +392,11 @@ class Handle62B
 };
 
 // @fnv 0x0062bc90
-void NiAVObject::AssignCollisionObject(NiCollisionObject* pvTarget)
+// pdb: NiAVObject::SetCollisionObject | TEShavokUtilities.obj | retail, call graph, high
+// pdb params: pkCollisionObject
+void NiAVObject::AssignCollisionObject(NiCollisionObject* pkCollisionObject)
 {
-    reinterpret_cast<Handle62B&>(m_spCollisionObject).Reset(pvTarget);
+    reinterpret_cast<Handle62B&>(m_spCollisionObject).Reset(pkCollisionObject);
     if (reinterpret_cast<Handle62B&>(m_spCollisionObject).Get() && reinterpret_cast<Handle62B&>(m_spCollisionObject).Get()->GetOwner() != this)
         reinterpret_cast<Handle62B&>(m_spCollisionObject).Get()->SetOwner(this);
 }
@@ -378,7 +404,7 @@ void NiAVObject::AssignCollisionObject(NiCollisionObject* pvTarget)
 struct BGSAcousticSpace;
 struct SoundPlaybackManager
 {
-    static void __cdecl ResetAcousticSpace(BGSAcousticSpace*);
+    static void __cdecl ClearAcousticSpace(BGSAcousticSpace*);
 };
 struct MapH
 {
@@ -392,15 +418,18 @@ struct FUN_0061f890_shell
 {
     char pad[0x18];
     MapH m_map;
-    bool BGSAcousticSpaceListener_DequeueRemoval(NiAVObject* object, bool flag);
+    bool BGSAcousticSpaceListener_DequeueRemoval(NiAVObject* apRef, bool abDoRemoval);
 };
 // @fnv 0x0061f890
 // src: XBOX_PDB 0x0061f890
-bool FUN_0061f890_shell::BGSAcousticSpaceListener_DequeueRemoval(NiAVObject* object, bool flag)
+// pdb: BGSAcousticSpaceListener::DequeueRemoval | BGSAcousticSpaceListener.obj | retail, upstream name already matches, high
+// pdb params: apRef, abDoRemoval
+// pdb locals: bfound
+bool FUN_0061f890_shell::BGSAcousticSpaceListener_DequeueRemoval(NiAVObject* apRef, bool abDoRemoval)
 {
-    bool removed = m_map.RemoveAt((unsigned int)object);
-    if (removed && flag)
-        SoundPlaybackManager::ResetAcousticSpace(((Ref*)object)->GetNext());
+    bool removed = m_map.RemoveAt((unsigned int)apRef);
+    if (removed && abDoRemoval)
+        SoundPlaybackManager::ClearAcousticSpace(((Ref*)apRef)->GetNext());
     return removed;
 }
 
@@ -410,13 +439,15 @@ unsigned int GetBSXFlags(unsigned int handle, unsigned int type);
 // Returns true for an actor with health or a knocked state, or if GetBSXFlags(handle, 0x48) equals 0x48.
 // @fnv 0x0062c3c0
 // src: XBOX_PDB 0x0062c3c0
-bool TESHavokUtilities_Should3DRagDoll(TESObjectREFR* refr, unsigned int handle)
+// pdb: TESHavokUtilities::Should3DRagDoll | TEShavokUtilities.obj | retail, upstream name already matches, high
+// pdb params: apRef, ap3D
+bool TESHavokUtilities_Should3DRagDoll(TESObjectREFR* apRef, unsigned int ap3D)
 {
-    if (refr != 0 && refr->IsActor() && (refr->HasHealth(0) || refr->GetHasKnockedState()))
+    if (apRef != 0 && apRef->IsActor() && (apRef->HasHealth(0) || apRef->GetHasKnockedState()))
     {
         return true;
     }
-    if (GetBSXFlags(handle, 0x48) == 0x48)
+    if (GetBSXFlags(ap3D, 0x48) == 0x48)
     {
         return true;
     }
@@ -430,7 +461,7 @@ struct __declspec(align(16)) PhysicsTransform
     void FUN_006815c0();
     void hkVector4_sub4(unsigned int operation);
     void normalize3_0062aea0();
-    void hkVector4_mul4(void* data);
+    void hkVector4_mul4(void* s);
     void hkVector4_add4(int value);
 };
 struct __declspec(align(16)) PhysicsData
@@ -521,6 +552,9 @@ extern const float DAT_01016088;
 
 // Recursively updates the physics collision scale of a scene node and its children based on a size coefficient and material type.
 // @fnv 0x0062b660
+// pdb: TESHavokUtilities::AddExplosionImpulse | TEShavokUtilities.obj | debug, call graph, medium
+// pdb params: apObject, aLocation, afMagnitude, apHitData
+// pdb locals: pcol, pnode, prb, epart, force, fbodyScale, fadjustedMagnitude, phk, I, pchild
 void __cdecl SetCollisionScale(NiAVObject* node, unsigned int operation, float size, MaterialSelector* material)
 {
     if (node)
@@ -771,22 +805,25 @@ class VtObj
     UnkACobj* unkAC;
 };
 
-void __cdecl CollectTreeResultValues(Inner62c* a, SeqArray* b);
-void __cdecl hkpWorldOperationUtil_mergeIslands(Inner62c* a, NiSeq* b, NiSeq* c);
+void __cdecl bhkUtilFunctions_GatherRigidBodies(Inner62c* apObject, SeqArray* arBodyA);
+void __cdecl hkpWorldOperationUtil_mergeIslands(Inner62c* a, NiSeq* entityA, NiSeq* entityB);
 
 // Copies or collects entries into a local array, then compares each later entry’s owner and value with the first entry.
 // @fnv 0x0062c430
 // src: XBOX_PDB 0x0062c430
-void __cdecl TESHavokUtilities_ConsolidateSimIslands(VtObj* apVtObj)
+// pdb: TESHavokUtilities::ConsolidateSimIslands | TEShavokUtilities.obj | retail, upstream name already matches, high
+// pdb params: pActor
+// pdb locals: rbA, pw, i, pislRoot, pislCur
+void __cdecl TESHavokUtilities_ConsolidateSimIslands(VtObj* pActor)
 {
-    if (apVtObj != 0)
+    if (pActor != 0)
     {
         SeqArray arr5;
 
-        if (apVtObj->unkAC != 0)
-            apVtObj->unkAC->CopySourceArray(&arr5);
+        if (pActor->unkAC != 0)
+            pActor->unkAC->CopySourceArray(&arr5);
         else
-            CollectTreeResultValues(apVtObj->v116(), &arr5);
+            bhkUtilFunctions_GatherRigidBodies(pActor->v116(), &arr5);
 
         if (arr5.FUN_00726070() != 0)
         {

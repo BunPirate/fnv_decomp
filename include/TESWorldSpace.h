@@ -23,6 +23,7 @@ template <class T, unsigned int N> class BSSimpleArray;
 // Both names call the inherited virtual at primary vtable slot 76.
 #define GetStingerBlockFileNameHighPriority GetName
 
+// pdb: class TESWorldSpace, size 0xec, bases: TESForm, TESFullName, TESTexture, 29 members
 class TESWorldSpace : public TESForm, public TESFullName, public TESTexture
 {
 public:
@@ -42,22 +43,22 @@ public:
     virtual void vf78();
     virtual void vf79();
 
-    void GetReferencesInArea(const NiPoint3&, float, const NiPoint3&, float,
+    void EnumReferencesCloseToPoint(const NiPoint3&, float, const NiPoint3&, float,
                              bool (__cdecl*)(TESObjectREFR*, long), long);
     bool HasCell(TESObjectCELL*);
     TESObjectCELL* GetCellAtGridPosition(int, int);
     TESObjectCELL* GetCellByWorldPosition(const NiPoint3&);
     int GetCellAtGridCoord(int aiX, int aiY);
     TESObjectCELL* GetInteriorCell();
-    TESWorldSpace* GetParentWorld(PARENT_USE_FLAG flag);
+    TESWorldSpace* GetParentWorld(PARENT_USE_FLAG aeFlags);
     TESWorldSpace* GetParentWorld(int);
     PointerPairData* GetWorldSpaceData();
     WorldSpaceTarget* FUN_00825c00();
     static int __cdecl BuildCellKey(short, short);
     static int GetKeyForWorldCoord(const NiPoint3& point);
-    TESObjectCELL* GetCellByKey(unsigned int);
+    TESObjectCELL* GetCellFromKey(unsigned int);
     TESObjectCELL* LookupCellByEditorID(const char* editorID);
-    void GetCellAtPosition(NiPoint3&, bool);
+    void AdjustMapMarkerCoord(NiPoint3&, bool);
     BGSEncounterZone* FindEncounterZone() const;
     BGSTerrainManager* GetWorldTerrainManager();
     bool GetSmallWorld();
@@ -77,8 +78,8 @@ public:
     TESObjectCELL* CreatePersistentCell();
     void SetHasRegions(bool);
     void SetFlagBit0(bool);
-    void* GetOrCreateCellOffsetData(TESFile*);
-    static bool IsFormIDOwnedByFile(unsigned int, TESFile*);
+    void* CreateOffsetData(TESFile*);
+    static bool TESFile_GetTempIDCanLoadFromFile(unsigned int, TESFile*);
     void ClearWorldSpaceReferences();
     void SetWaterLODHeight(float);
     void SetDefaultLandHeight(float);
@@ -136,9 +137,9 @@ public:
     void InitializeData_00583070();
     void ClearData_00583180();
     void ClearCellMap();
-    void FreeOffsetMap();
-    void ClearAllLists();
-    void DestroyMapEntries();
+    void FreeOffsetData();
+    void ClearPersistentRefData();
+    void ClearMultiBoundRefs();
     void RemovePersistentRef(TESObjectREFR*);
     bool AddCell(TESObjectCELL*);
     void RemoveFromPersistentRefData(TESObjectREFR*);
@@ -158,35 +159,35 @@ public:
         NiTPointerMap<unsigned int, TESObjectREFR*>* cellMap;
         NiTPointerMap<unsigned int, TESObjectREFR*>* pCellNavMeshInfoMap;
     };
-    TESObjectCELL* m_pCell;
-    CellList m_kFirstTreeComponent;
+    TESObjectCELL* pPersistentCell; // src: XBOX_RETAIL_PDB +0x34 (old: m_pCell)
+    CellList TerrainLODManager; // src: XBOX_RETAIL_PDB +0x38 (old: m_kFirstTreeComponent)
     union
     {
         BGSTerrainManager* terrain;
         void* m_pThirdTreePointer;
     };
-    TESClimate* climate;
-    void* imageSpace;
-    TESImageSpace* data;
-    unsigned char flags4C;
+    TESClimate* pClimate; // src: XBOX_RETAIL_PDB +0x40 (old: climate)
+    void* pImageSpace; // src: XBOX_RETAIL_PDB +0x44 (old: imageSpace)
+    TESImageSpace* pImpactSwap; // src: XBOX_RETAIL_PDB +0x48 (old: data)
+    unsigned char cFlags; // src: XBOX_RETAIL_PDB +0x4c (old: flags4C)
     unsigned char unk4D;
-    unsigned short field4E;
-    ReferenceMap m_kSecondTreeComponent;
-    SL m_kThirdTreeComponent;
-    void* m_pFourthTreePointer;
-    ObjectPointer m_kFourthTreeComponent;
-    TESWorldSpace* parent;
-    TESWaterForm* water;
-    TESWaterForm* lodWater;
-    float field7c;
-    unsigned char unk80[0x20];
-    BoundsPoint m_kFirstPoint;
-    BoundsPoint m_kEndPoint;
+    unsigned short sParentUseFlags; // src: XBOX_RETAIL_PDB +0x4e (old: field4E)
+    ReferenceMap FixedPersistentRefMap; // src: XBOX_RETAIL_PDB +0x50 (old: m_kSecondTreeComponent)
+    SL MobilePersistentRefList; // src: XBOX_RETAIL_PDB +0x60 (old: m_kThirdTreeComponent)
+    void* pOverlappedMultiboundMap; // src: XBOX_RETAIL_PDB +0x68 (old: m_pFourthTreePointer)
+    ObjectPointer spPortalGraph; // src: XBOX_RETAIL_PDB +0x6c (old: m_kFourthTreeComponent)
+    TESWorldSpace* pParentWorld; // src: XBOX_RETAIL_PDB +0x70 (old: parent)
+    TESWaterForm* pWorldWater; // src: XBOX_RETAIL_PDB +0x74 (old: water)
+    TESWaterForm* pLODWater; // src: XBOX_RETAIL_PDB +0x78 (old: lodWater)
+    float fLODWaterHeight; // src: XBOX_RETAIL_PDB +0x7c (old: field7c)
+    unsigned char WorldMapData[0x20]; // src: XBOX_RETAIL_PDB +0x80 (old: unk80)
+    BoundsPoint MinimumCoords; // src: XBOX_RETAIL_PDB +0xa0 (old: m_kFirstPoint)
+    BoundsPoint MaximumCoords; // src: XBOX_RETAIL_PDB +0xa8 (old: m_kEndPoint)
     CellOffsetMap OffsetDataMap;
-    StrMem mapName;
-    float fC8;
-    float fCC;
-    unsigned int fieldD0;
+    StrMem cEditorID; // src: XBOX_RETAIL_PDB +0xc0 (old: mapName)
+    float fDefaultLandHeight; // src: XBOX_RETAIL_PDB +0xc8 (old: fC8)
+    float fDefaultWaterHeight; // src: XBOX_RETAIL_PDB +0xcc (old: fCC)
+    unsigned int pEncounterZone; // src: XBOX_RETAIL_PDB +0xd0 (old: fieldD0)
     TESTexture CanopyShadowTexture;
-    TESTexture m_kLeafShadowTexture;
+    TESTexture WaterNoiseTexture; // src: XBOX_RETAIL_PDB +0xe0 (old: m_kLeafShadowTexture)
 };

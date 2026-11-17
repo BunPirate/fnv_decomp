@@ -11,7 +11,7 @@ void FalloutRadio_NewCellEntered();
 void TESWaterSystem_SetPlayerForceUnderwater(unsigned char value);
 float BSAudio_GetMinDialogDist();
 float BSAudio_GetMaxDialogDist();
-void CheckWithinMultiBoundTask_CancelAttachment(unsigned int index);
+void CheckWithinMultiBoundTask_CancelAttachment(unsigned int apMoribundRef);
 
 extern "C" void* __cdecl _alloca(unsigned int);
 struct LoadFile
@@ -48,7 +48,7 @@ struct ExtraLoad
     void* Cell();
     void Clear(bool);
     void InitializeForCell(void*);
-    void Load(LoadFile*, void*);
+    void ExtraDataList_Load(LoadFile*, void*);
     struct PatrolLoad* Patrol();
 };
 struct PatrolLoad
@@ -172,11 +172,14 @@ struct RefLoad
     ExtraLoad* Extra();
     void Mark(int);
     unsigned int ID();
-    bool TESObjectREFR_Load(LoadFile* file);
+    bool TESObjectREFR_Load(LoadFile* apFile);
 };
 // @fnv 0x0055af90
 // src: XBOX_PDB 0x0055af90
-bool RefLoad::TESObjectREFR_Load(LoadFile* file)
+// pdb: TESObjectREFR::Load | TESObjectREFR.obj | retail, string-set bridge, high
+// pdb params: apFile
+// pdb locals: bGoodRef, iRefID, chunkid, bErrorFix, bBadRef, ppatrolData, posRot, ppercell, pMessage, breplaceObjectReference, pbobj, pBaseObj, refposrot, pscript, warning
+bool RefLoad::TESObjectREFR_Load(LoadFile* apFile)
 {
     int chunkID = 0;
     TransformLoad initial4;
@@ -185,7 +188,7 @@ bool RefLoad::TESObjectREFR_Load(LoadFile* file)
     bool hasBaseTmp = false;
     bool reuse = false;
     unsigned int baseIDA = 0;
-    LoadHeader(file);
+    LoadHeader(apFile);
     ClearFlags(0);
     if (Deleted())
     {
@@ -197,19 +200,19 @@ bool RefLoad::TESObjectREFR_Load(LoadFile* file)
             extras.InitializeForCell(cell);
         return GetParent() != 0;
     }
-    while (reuse || (chunkID = file->Chunk()) != 0)
+    while (reuse || (chunkID = apFile->Chunk()) != 0)
     {
         reuse = false;
         switch (chunkID)
         {
         case 0x44494445: {
-            char* editor = (char*)_alloca(file->Size());
-            file->Read(editor, 512);
+            char* editor = (char*)_alloca(apFile->Size());
+            apFile->Read(editor, 512);
             SetEditorID(editor);
             break;
         }
         case 0x444e424f:
-            LoadBounds(file);
+            LoadBounds(apFile);
             break;
         case 0x41505058:
         case 0x42475258:
@@ -287,15 +290,15 @@ bool RefLoad::TESObjectREFR_Load(LoadFile* file)
         case 0x544e4358:
         case 0x54574358:
         case 0x57544c58:
-            Extra()->Load(file, this);
+            Extra()->ExtraDataList_Load(apFile, this);
             break;
         case 0x4c435358:
-            file->ReadID(&scale);
+            apFile->ReadID(&scale);
             break;
         case 0x454d414e: {
             hasBaseTmp = true;
-            file->ReadID(&baseIDA);
-            ResolveID(&baseIDA, file);
+            apFile->ReadID(&baseIDA);
+            ResolveID(&baseIDA, apFile);
             TESForm* form3 = LookupForm(baseIDA);
             TESBoundObject* bound5 = dynamic_cast<TESBoundObject*>(form3);
             bool replace = true;
@@ -324,8 +327,8 @@ bool RefLoad::TESObjectREFR_Load(LoadFile* file)
             {
                 TransformLoad transform;
                 Reset3D(0);
-                file->Read(&transform, 24);
-                if (file->Special())
+                apFile->Read(&transform, 24);
+                if (apFile->Special())
                     transform.Convert();
                 position = transform.position;
                 rotation = transform.rotation;
@@ -335,7 +338,7 @@ bool RefLoad::TESObjectREFR_Load(LoadFile* file)
             WarnLoad("MASTERFILE: TESObjectREFR::Load abnormally terminated.\n\n");
             chunkID = 0x41544144;
         }
-        if (!file->Next())
+        if (!apFile->Next())
             break;
     }
     PatrolLoad* patrolTmp = Extra()->Patrol();

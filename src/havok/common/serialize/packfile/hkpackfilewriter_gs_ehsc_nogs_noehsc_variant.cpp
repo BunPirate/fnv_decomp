@@ -10,7 +10,7 @@
 
 // src/havok/common/serialize/packfile/hkpackfilewriter.cpp - unit created 2026-10-16 from the whole-binary attribution (360 source path: d:/projects/fallout/code/havok/source/common/serialize/packfile/hkpackfilewriter.cpp).
 // Functions are listed by their @fnv annotations; compile flags inferred from the PC code.
-void __cdecl ResizeAudioStream(void* a, void* b, int c);
+void __cdecl ResizeAudioStream(void* mem, void* array, int sizeElem);
 
 struct TaggedName
 {
@@ -113,8 +113,11 @@ struct Ragdoll
 };
 // @fnv 0x00cea810
 // src: HAVOK_LIB 0x00cea810
-Ragdoll* __cdecl hkaRagdollUtils_createRagdollInstanceFromSkeleton(Skeleton* skeleton, const hkArray<RigidBody*>& bodies,
-                              const hkArray<Constraint*>& constraints)
+// pdb: hkaRagdollUtils::createRagdollInstanceFromSkeleton | hkaRagdollUtils.obj | retail, string-set bridge, high
+// pdb params: skeleton, candidateRBs, candidateConstraints
+// pdb locals: numBones, theRigidBodies, boneToRigidBodyMap, theConstraints, bi, theRigidBody, assertBuf, ostr, theConstraint
+Ragdoll* __cdecl hkaRagdollUtils_createRagdollInstanceFromSkeleton(Skeleton* skeleton, const hkArray<RigidBody*>& candidateRBs,
+                              const hkArray<Constraint*>& candidateConstraints)
 {
     int count = skeleton->boneCount;
     LocalArray<RigidBody*> matchedBodies(count);
@@ -132,9 +135,9 @@ Ragdoll* __cdecl hkaRagdollUtils_createRagdollInstanceFromSkeleton(Skeleton* ske
             break;
         }
         RigidBody* body = 0;
-        for (int j = 0; j < bodies.m_iElementCount; ++j)
+        for (int j = 0; j < candidateRBs.m_iElementCount; ++j)
         {
-            RigidBody* candidate = bodies.m_data[j];
+            RigidBody* candidate = candidateRBs.m_data[j];
             const char* name = candidate->name.text();
             if (name && hkString_strCmp(name, bone.name.text()) == 0)
             {
@@ -159,9 +162,9 @@ Ragdoll* __cdecl hkaRagdollUtils_createRagdollInstanceFromSkeleton(Skeleton* ske
             continue;
         RigidBody* parentBody = matchedBodies.m_data[boneToBody.m_data[parent]];
         Constraint* constraint = 0;
-        for (int j = 0; j < constraints.m_iElementCount; ++j)
+        for (int j = 0; j < candidateConstraints.m_iElementCount; ++j)
         {
-            Constraint* candidate = constraints.m_data[j];
+            Constraint* candidate = candidateConstraints.m_data[j];
             RigidBody* a = candidate->bodyA;
             RigidBody* b = candidate->bodyB;
             if (a == body && b == parentBody)

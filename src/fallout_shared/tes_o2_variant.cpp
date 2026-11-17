@@ -34,7 +34,7 @@ struct FUN_004512a0_shell
 extern char DAT_01189184;
 void GridCellArray_SetRecreateCanopyShadowMaskTexture(unsigned char value);
 extern NP DAT_011f95e8;
-void BSShaderManager_SetProjectedShadowMaskTexture(void* arg);
+void BSShaderManager_SetProjectedShadowMaskTexture(void* apTexture);
 extern unsigned char DAT_011ad86c;
 void TallGrassShaderProperty_SetUseBackgroundLoading(unsigned char value);
 struct AlchemyItem;
@@ -131,7 +131,7 @@ struct FUN_00452440_shell
 };
 struct FUN_004e32c0_shell
 {
-    bool __thiscall HasFlags(int arg);
+    bool __thiscall IsFlagSet(int aeFlag);
 };
 extern unsigned char DAT_0119b8c8;
 unsigned char BSTreeManager_GetUseCanopyShadows();
@@ -212,6 +212,7 @@ struct TESObjectTREE;
 struct FileEntryList;
 struct FileEntryListCollection;
 struct ModelLoadData;
+// pdb: class ModelLoader, size 0x30, 12 members
 struct ModelLoader
 {
     void LoadModelFileList(BSFile*, bool);
@@ -312,18 +313,18 @@ struct ModelLoader
     static int GetIOFileIndexForArchiveTypeIndex(int);
     void AddModelToMap(Model*, char*);
     void* __vecDelDtor(unsigned int);
-    void* m_pLoadedModelMap;
-    void* m_pLoadedKFModelMap;
-    void* m_pQueuedReferenceMap;
-    void* m_pQueuedReferenceUpdateMap;
-    void* m_pQueuedAnimIdleMap;
-    void* m_pQueuedReplacementKFListMap;
-    void* m_pQueuedHelmetMap;
-    void* m_pDistant3DTaskQueue;
-    void* m_pQueuedTextureMap;
-    void* m_pLoadedFileMap;
-    BackgroundCloneThread* m_pBackgroundCloneThread;
-    bool m_bLoadTexturesDegraded;
+    void* pModelMap; // src: XBOX_RETAIL_PDB +0x0 (old: m_pLoadedModelMap)
+    void* pKFModelMap; // src: XBOX_RETAIL_PDB +0x4 (old: m_pLoadedKFModelMap)
+    void* pQueuedReferencesMap; // src: XBOX_RETAIL_PDB +0x8 (old: m_pQueuedReferenceMap)
+    void* pReferencesToQueueMap; // src: XBOX_RETAIL_PDB +0xc (old: m_pQueuedReferenceUpdateMap)
+    void* pQueuedAnimIdleMap; // src: XBOX_RETAIL_PDB +0x10 (old: m_pQueuedAnimIdleMap)
+    void* pQueuedReplacementKFListMap; // src: XBOX_RETAIL_PDB +0x14 (old: m_pQueuedReplacementKFListMap)
+    void* pQueuedHelmetMap; // src: XBOX_RETAIL_PDB +0x18 (old: m_pQueuedHelmetMap)
+    void* pAttachDistant3DTaskQueue; // src: XBOX_RETAIL_PDB +0x1c (old: m_pDistant3DTaskQueue)
+    void* pQueuedTextureMap; // src: XBOX_RETAIL_PDB +0x20 (old: m_pQueuedTextureMap)
+    void* pLoadedFileMap; // src: XBOX_RETAIL_PDB +0x24 (old: m_pLoadedFileMap)
+    BackgroundCloneThread* pBackgroundCloneThread; // src: XBOX_RETAIL_PDB +0x28 (old: m_pBackgroundCloneThread)
+    bool bHasDelayedFree; // src: XBOX_RETAIL_PDB +0x2c (old: m_bLoadTexturesDegraded)
     char _pad_2d[3];
 };
 typedef char _sizecheck_ModelLoader[sizeof(ModelLoader) == 48 ? 1 : -1];
@@ -332,11 +333,11 @@ struct FUN_0045a5e0_shell : public ModelLoader
     void ModelLoader_ReleaseFile(char*);
 };
 void __cdecl CreateCSDFadeNode(void);
-void __cdecl CreateSpdFadeNode(void);
-void __cdecl BGSAddonNodeSoundHandleExtra_InitTag(void);
-void __cdecl BSFaceGenAnimationData_InitTag(void);
-void __cdecl BSFaceGenModelExtraData_InitTag(void);
-void __cdecl BSFaceGenBaseMorphExtraData_InitTag(void);
+void __cdecl BSSplatterExtraData_InitSDM(void);
+void __cdecl BGSAddonNodeSoundHandleExtra_InitSDM(void);
+void __cdecl BSFaceGenAnimationData_InitSDM(void);
+void __cdecl BSFaceGenModelExtraData_InitSDM(void);
+void __cdecl BSFaceGenBaseMorphExtraData_InitSDM(void);
 void __cdecl TES_InitSDM(void);
 struct FUN_0045c650_shell
 {
@@ -349,9 +350,9 @@ struct Flt
 extern Flt g_011deb7c;
 unsigned int Main_GetWorldSceneGraph();
 struct TESObjectREFR;
-void TESObjectREFR_AddMasterParticleAddonNodes(TESObjectREFR* self);
-void TESObjectREFR_RemoveMasterParticleAddonNodes(TESObjectREFR* self);
-void TES_RangedNodeVisibilityChangedCB(TESObjectREFR* arg, bool flag);
+void TESObjectREFR_AddMasterParticleAddonNodes(TESObjectREFR* apNode);
+void TESObjectREFR_RemoveMasterParticleAddonNodes(TESObjectREFR* apNode);
+void TES_RangedNodeVisibilityChangedCB(TESObjectREFR* apNode, bool abVisible);
 extern "C" double _gModifierZero;
 struct FUN_00451cd0_shell
 {
@@ -399,12 +400,16 @@ struct ShaderBufferRecord
     char pad[0x30];
     GrassCacheMap map;
 };
+// pdb: class TallGrassShaderProperty, size 0x98 (here 0x1), bases: BSShaderLightingProperty, 6 members
 struct TallGrassShaderProperty
 {
     static GrassCacheMap* __cdecl GetCacheDataMap();
 };
 // @fnv 0x00b617b0
 // src: COMMUNITY 0x00b617b0
+// pdb: TallGrassShaderProperty::ContainsChunk | TallGrassShaderProperty.obj | debug, call graph, medium
+// pdb params: aiGrassID, alTerrainChunkSeed
+// pdb locals: pgrass
 bool __cdecl _TallGrassShaderProperty_ContainsChunk(char const* a, char const* b)
 {
     ShaderBufferRecord* pn = 0;
@@ -438,23 +443,25 @@ class C6B540Manager
     C6B540Item** m_ppkPending;
     unsigned int m_uiPendingCount;
 
-    void ProcessPending(C6B540Item** ppkItems, unsigned int ItemUpdateArray);
+    void ProcessPending(C6B540Item** apEntityA, unsigned int auiNumEntities);
     void FlushPending();
-    void UpdateA();
+    void bhkWorld_AddBatchedPhantoms();
     void UpdateB();
-    void UpdateC();
-    void bhkWorld_StopBatchingAdds(bool bProcess);
+    void bhkWorld_AddBatchedConstraints();
+    void bhkWorld_StopBatchingAdds(bool abAllowPartial);
 };
 
 // @fnv 0x00c6b540
 // src: XBOX_PDB 0x00c6b540
-void C6B540Manager::bhkWorld_StopBatchingAdds(bool bProcess)
+// pdb: bhkWorld::StopBatchingAdds | bhkWorld.obj | debug, upstream name already matches, high
+// pdb params: abAllowPartial
+void C6B540Manager::bhkWorld_StopBatchingAdds(bool abAllowPartial)
 {
     if (m_uiLockCount > 0)
     {
         if (--m_uiLockCount == 0)
         {
-            if (bProcess)
+            if (abAllowPartial)
             {
                 if (m_uiPendingCount > 0 && !g_bC6B540Processing)
                 {
@@ -472,12 +479,12 @@ void C6B540Manager::bhkWorld_StopBatchingAdds(bool bProcess)
             {
                 FlushPending();
             }
-            UpdateA();
+            bhkWorld_AddBatchedPhantoms();
             UpdateB();
-            UpdateC();
+            bhkWorld_AddBatchedConstraints();
         }
     }
-    else if (m_uiPendingCount > 0 && !bProcess)
+    else if (m_uiPendingCount > 0 && !abAllowPartial)
     {
         FlushPending();
     }
@@ -612,6 +619,8 @@ struct FUN_00b631d0_cls
 
 // @fnv 0x00b631d0
 // src: XBOX_PDB 0x00b631d0
+// pdb: BSShaderAccumulator::ClearAllQueries | BSShaderAccumulator.obj | retail, upstream name already matches, high
+// pdb locals: ddata, iter, i, pvolume
 void FUN_00b631d0_cls::BSShaderAccumulator_ClearAllQueries()
 {
     unsigned int state;
@@ -753,7 +762,7 @@ struct Manager
     int o4;
     int o8;
     Pending pending;
-    void BSTextureManager_ReturnRenderedTexture(Item* item);
+    void BSTextureManager_ReturnRenderedTexture(Item* apTexToReturn);
     template <int N> static __forceinline void ProcT(List& l, List& d, Item* p)
     {
         {
@@ -788,65 +797,68 @@ struct Manager
 };
 // @fnv 0x00b6da10
 // src: XBOX_PDB 0x00b6da10
-void Manager::BSTextureManager_ReturnRenderedTexture(Item* item)
+// pdb: BSTextureManager::ReturnRenderedTexture | BSTextureManager.obj | retail, upstream name already matches, high
+// pdb params: apTexToReturn
+// pdb locals: pfoundTexData, it, ptexData
+void Manager::BSTextureManager_ReturnRenderedTexture(Item* apTexToReturn)
 {
-    if (item)
+    if (apTexToReturn)
     {
-        if (item->type > -1)
+        if (apTexToReturn->type > -1)
         {
-            switch (item->type)
+            switch (apTexToReturn->type)
             {
             case 43: {
                 {
-                    Ref tmp(item);
+                    Ref tmp(apTexToReturn);
                     list0.FUN_00c1b4a0(tmp);
                 }
                 {
-                    Ref tmp(item);
+                    Ref tmp(apTexToReturn);
                     dest0.FUN_00b9fcc0(tmp);
                 }
                 break;
             }
             case 17: {
                 {
-                    Ref tmp(item);
+                    Ref tmp(apTexToReturn);
                     list1.FUN_00c1b4a0(tmp);
                 }
                 {
-                    Ref tmp(item);
+                    Ref tmp(apTexToReturn);
                     dest1.FUN_00b9fcc0(tmp);
                 }
                 break;
             }
             case 9: {
                 {
-                    Ref tmp(item);
+                    Ref tmp(apTexToReturn);
                     list2.FUN_00c1b4a0(tmp);
                 }
                 {
-                    Ref tmp(item);
+                    Ref tmp(apTexToReturn);
                     dest2.FUN_00b9fcc0(tmp);
                 }
                 break;
             }
             case 22: {
                 {
-                    Ref tmp(item);
+                    Ref tmp(apTexToReturn);
                     list3.FUN_00c1b4a0(tmp);
                 }
                 {
-                    Ref tmp(item);
+                    Ref tmp(apTexToReturn);
                     dest3.FUN_00b9fcc0(tmp);
                 }
                 break;
             }
             case 19: {
                 {
-                    Ref tmp(item);
+                    Ref tmp(apTexToReturn);
                     list4.FUN_00c1b4a0(tmp);
                 }
                 {
-                    Ref tmp(item);
+                    Ref tmp(apTexToReturn);
                     dest4.FUN_00b9fcc0(tmp);
                 }
                 break;
@@ -857,7 +869,7 @@ void Manager::BSTextureManager_ReturnRenderedTexture(Item* item)
         {
             Item** found = 0;
             Node* pos = pending.head;
-            pending.Find(item, pos, found);
+            pending.Find(apTexToReturn, pos, found);
             if (found)
             {
                 other.NiTPointerListBase_AddTail(found);

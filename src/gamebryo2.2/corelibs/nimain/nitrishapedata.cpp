@@ -14,6 +14,7 @@ void __fastcall FUN_00a7b8c0(void*);
 
 // Calls FUN_00a7b8c0 on pThis, then frees pThis with NiMemObject::operator delete when flags has bit 1 set, and returns pThis.
 // @fnv 0x00a7b920
+// pdb: NiTriShapeData::`scalar deleting destructor' | NiTriShapeData.obj | retail, object-file gap fill, low
 void* __fastcall FUN_00a7b920(void* pThis, int, unsigned int flags)
 {
     FUN_00a7b8c0(pThis);
@@ -27,6 +28,8 @@ void __cdecl _NiFreeAlias(void*);
 // Replaces the triangle list and updates the triangle and index counts.
 // @fnv 0x00a7b6c0
 // src: COMMUNITY 0x00a7b6c0
+// pdb: NiTriShapeData::Replace | NiTriShapeData.obj | retail, upstream name already matches, high
+// pdb params: usTriangles, pusTriList
 void __fastcall NiTriShapeData_Replace(NiTriShapeData* self, int, unsigned short ausValue, unsigned short* apusBuffer)
 {
     if (apusBuffer != self->m_pusTriList && self->m_pusTriList)
@@ -109,6 +112,7 @@ struct Blk
 
 // Frees data, recursively frees the next block, and deletes this block when flags has bit 0 set; returns this.
 // @fnv 0x00a7b880
+// pdb: NiTriShapeData::SNAMemBlock::`scalar deleting destructor' | NiTriShapeData.obj | retail, object-file run extension, low
 Blk* Blk::FreeBlock(unsigned int flags)
 {
     _NiFreeAlias(data);
@@ -147,6 +151,7 @@ void __fastcall DestroyTriBasedGeomData(NiTriBasedGeomData*);
 
 // Releases triangle data and shared-normal storage, then destroys the base geometry data.
 // @fnv 0x00a7b8c0
+// pdb: NiTriShapeData::~NiTriShapeData | NiTriShapeData.obj | retail, call graph (shared callers), low
 void __fastcall DestroyTriShapeData(NiTriShapeData* self)
 {
     *(void**)self = DAT_0109dac4;
@@ -176,6 +181,8 @@ void __cdecl AppendTrianglesInfo();
 
 // Appends the base entry, a formatted m_uiTriListLength value and a formatted m_pusTriList pointer to the StrArr.
 // @fnv 0x00a7bd60
+// pdb: NiTriShapeData::GetViewerStrings | NiTriShapeData.obj | retail, string-set bridge, high
+// pdb params: pkStrings
 void __fastcall AppendTriListInfo(NiTriShapeData* self, int, StrArr* pStrArr)
 {
     reinterpret_cast<void (__thiscall*)(NiTriBasedGeomData*, StrArr*)>(AppendTrianglesInfo)(self, pStrArr);
@@ -219,6 +226,9 @@ struct SharedNormalArrayS
 
 // Saves the triangle list length, its presence flag and data, then the shared-normal array sizes and entries to the stream.
 // @fnv 0x00a7bbe0
+// pdb: NiTriShapeData::SaveBinary | NiTriShapeData.obj | retail, upstream name already matches, high
+// pdb params: kStream
+// pdb locals: bHasList, usI, usCount
 void NiTriShapeData::SaveBinary(NiStream& stream)
 {
     NiStream* kStream = &stream;
@@ -313,6 +323,9 @@ template <class T> inline void ReadBinaryValue(NiBinaryStream& kStream, T* pValu
 
 // Loads triangle data, then the shared-normal arrays allocated from a block pool.
 // @fnv 0x00a7b940
+// pdb: NiTriShapeData::LoadBinary | NiTriShapeData.obj | retail, upstream name already matches, high
+// pdb params: kStream
+// pdb locals: bHasList, usI, usCount, pusArray, pkBlock
 void NiTriShapeData::LoadBinary(NiStream& stream)
 {
 
@@ -372,6 +385,8 @@ void NiTriShapeData::LoadBinary(NiStream& stream)
 
 // Constructs the base geometry data, sets the triangle list length to 3*m_usTriangles, stores pusTriList and zeroes three members.
 // @fnv 0x00a7b630
+// pdb: NiTriShapeData::NiTriShapeData | NiTriShapeData.obj | retail, call graph, high
+// pdb params: usVertices, pkVertex, pkNormal, pkColor, pkTexture, usNumTextureSets, eNBTMethod, usTriangles, pusTriList
 NiTriShapeData::NiTriShapeData(unsigned short usVertices, NiPoint3* pkVertex, NiPoint3* pkNormal,
                            NiColorA* pkColor, NiPoint2* pkTexture, unsigned short usNumTextureSets,
                            NiGeometryData__DataFlags eNBTMethod, unsigned short usTriangles, unsigned short* pusTriList) throw()
@@ -391,7 +406,10 @@ extern void* g_triShapeDataVtable[];
 
 // Initializes the object's pointer fields and the unsigned short field to zero.
 // @fnv 0x00a7b690
-NiTriShapeData* __fastcall InitializeTriShapeData(NiTriShapeData* self)
+// src: XBOX_RETAIL_PDB 0x00a7b690
+// pdb: NiTriShapeData::NiTriShapeData | NiTriShapeData.obj | retail, call graph, high
+// pdb params: usVertices, pkVertex, pkNormal, pkColor, pkTexture, usNumTextureSets, eNBTMethod, usTriangles, pusTriList
+NiTriShapeData* __fastcall NiTriShapeData_ctor(NiTriShapeData* self)
 {
     InitializeTriBasedGeomData(self);
     *(void**)self = g_triShapeDataVtable;
@@ -407,6 +425,9 @@ bool __cdecl MatchesTriangleCount();
 
 // @fnv 0x00a7b7e0
 // src: XBOX_PDB 0x00a7b7e0
+// pdb: NiTriShapeData::IsEqual | NiTriShapeData.obj | retail, call graph (shared callers), medium
+// pdb params: pkObject
+// pdb locals: pkData, uiQuantity
 bool NiTriShapeData::IsEqual_00a7b7e0(const NiTriShapeData* pkOther)
 {
     if (!reinterpret_cast<bool (__thiscall*)(NiTriBasedGeomData*, const NiTriShapeData*)>(MatchesTriangleCount)(this, pkOther))
@@ -551,6 +572,8 @@ class FUN_00ba3d30
 
 // Frees each non-null element of m_holder38 via DAT_011f6238, clears it, then releases m_holder48.
 // @fnv 0x00ba3d30
+// pdb: ImageSpaceEffect::~ImageSpaceEffect | ImageSpaceEffect.obj | retail, call graph, low
+// pdb locals: i
 FUN_00ba3d30::~FUN_00ba3d30()
 {
 

@@ -22,10 +22,10 @@ struct TrackAnalysis
     int sum;
     int max;
 };
-void AnalyzeTrackBits(const unsigned short* values, unsigned int count, TrackAnalysis* result);
-void AnalyzeTrackBits(const unsigned short* values, unsigned int count, TrackAnalysis* result);
-void AnalyzeTrackWithZeroCount(const unsigned short* aFirstValues, const unsigned short* values,
-                               unsigned int firstCount, unsigned int count, TrackAnalysis* result);
+void hkaTrackAnalysis_calcDynamicStatsQsTransform(const unsigned short* mask, unsigned int numTracks, TrackAnalysis* out);
+void hkaTrackAnalysis_calcDynamicStatsQsTransform(const unsigned short* mask, unsigned int numTracks, TrackAnalysis* out);
+void AnalyzeTrackWithZeroCount(const unsigned short* staticMaskT, const unsigned short* staticMaskF,
+                               unsigned int numTracksT, unsigned int numTracksF, TrackAnalysis* out);
 struct TraceSink
 {
     virtual void ReportDiagnostic();
@@ -82,7 +82,7 @@ struct TrackStatistics
     int total0;
     int total1;
     float rate;
-    void LogStatistics();
+    void hkaTrackAnalysis_AnalysisStats_displayReport();
 };
 // hkMemoryRouter is the shared router: GetMonitorStream binds to 0x00c85750
 // in hkjobqueue_ehsc_noehsc_variant.cpp; its heap pointer is at +0x10.
@@ -136,7 +136,7 @@ struct TrackBuffers_e50650
 
     void ReleaseFiveArrays();
 };
-void hkaTrackAnalysis_analyzeQsTransform(TrackBuffers_e50650* pkBuffers, void* pkArg, void* pkArgCur, hkBool bFlag);
+void hkaTrackAnalysis_analyzeQsTransform(TrackBuffers_e50650* input, void* staticMask, void* staticDOFs, hkBool displayStatsReport);
 void ExpandTrackSource(const TrackSource_e50650* pkSource, void* pkArg, void* pkArgCur);
 struct StatsB0
 {
@@ -148,13 +148,13 @@ __declspec(noinline) void __cdecl Analyze(const unsigned short* p, unsigned int 
     for (unsigned int i = 0; i < count; i++)
         s->m_1c += p[i] & 3;
 }
-__declspec(noinline) void __cdecl CountTail(const unsigned short* p, void* a1, unsigned int count, unsigned int a3,
-                                            StatsB0* s)
+__declspec(noinline) void __cdecl CountTail(const unsigned short* staticMaskT, void* staticMaskF, unsigned int numTracksT, unsigned int numTracksF,
+                                            StatsB0* out)
 {
-    Analyze(p, count, s);
-    Analyze((const unsigned short*)a1, a3, s);
+    Analyze(staticMaskT, numTracksT, out);
+    Analyze((const unsigned short*)staticMaskF, numTracksF, out);
 }
-void __cdecl hkaTrackAnalysis_calcStats(const unsigned short* p, void* a1, unsigned int count, unsigned int a3, StatsB0* s);
+void __cdecl hkaTrackAnalysis_calcStats(const unsigned short* staticMaskT, void* staticMaskF, unsigned int numTracksT, unsigned int numTracksF, StatsB0* out);
 #include <xmmintrin.h>
 #include <math.h>
 struct PerTransformIn
@@ -196,9 +196,9 @@ struct PassBool
     {}
 };
 typedef void(__cdecl* QsAnalyzeFn)(TrackBuffers_e50650*, void*, void*, PassBool);
-void __cdecl hkaTrackAnalysis_calcStatsQsTransform(const unsigned short* mask, unsigned int count, TrackStatistics* result);
-void __cdecl hkaTrackAnalysis_calcStats(const unsigned short* maskT, const unsigned short* maskF, unsigned int numT,
-                          unsigned int numF, TrackStatistics* result);
+void __cdecl hkaTrackAnalysis_calcStatsQsTransform(const unsigned short* mask, unsigned int numTracks, TrackStatistics* out);
+void __cdecl hkaTrackAnalysis_calcStats(const unsigned short* staticMaskT, const unsigned short* staticMaskF, unsigned int numTracksT,
+                          unsigned int numTracksF, TrackStatistics* out);
 struct FloatLocalArray
 {
     hkArray<float> values;
@@ -246,20 +246,20 @@ struct StatisticsResult
     float rate;
     void LogStatistics();
 };
-__declspec(noinline) void AnalyzeTrackBits(const unsigned short* values, unsigned int count, StatisticsResult* result)
+__declspec(noinline) void hkaTrackAnalysis_calcDynamicStatsQsTransform(const unsigned short* mask, unsigned int numTracks, StatisticsResult* out) // src: XBOX_RETAIL_PDB 0x00e4e570
 {
-    result->field7 = 0;
-    result->field8 = 0;
-    result->field9 = 0;
-    for (unsigned int i = 0; i < count; i++)
+    out->field7 = 0;
+    out->field8 = 0;
+    out->field9 = 0;
+    for (unsigned int i = 0; i < numTracks; i++)
     {
-        unsigned int v = values[i] >> 6;
-        result->field7 += ((v >> 2) & 1) + ((v >> 1) & 1) + (v & 1);
-        result->field8 += ((v >> 6) & 1) + ((v >> 5) & 1) + ((v >> 4) & 1) + ((v >> 3) & 1);
-        result->field9 += ((v >> 9) & 1) + ((v >> 8) & 1) + ((v >> 7) & 1);
+        unsigned int v = mask[i] >> 6;
+        out->field7 += ((v >> 2) & 1) + ((v >> 1) & 1) + (v & 1);
+        out->field8 += ((v >> 6) & 1) + ((v >> 5) & 1) + ((v >> 4) & 1) + ((v >> 3) & 1);
+        out->field9 += ((v >> 9) & 1) + ((v >> 8) & 1) + ((v >> 7) & 1);
     }
 }
-void __cdecl hkaTrackAnalysis_calcStatsQsTransform(const unsigned short* mask, unsigned int count, StatisticsResult* result);
+void __cdecl hkaTrackAnalysis_calcStatsQsTransform(const unsigned short* mask, unsigned int numTracks, StatisticsResult* out);
 
 struct SplitVector
 {
@@ -298,7 +298,10 @@ struct SplitInput
 
 // @fnv 0x00e4ecb0
 // src: HAVOK_LIB 0x00e4ecb0
-void hkaTrackAnalysis_channelSplit(const SplitInput& input, float* output)
+// pdb: hkaTrackAnalysis::channelSplit | hkaTrackAnalysis.obj | retail, upstream name already matches, high
+// pdb params: input, channelData
+// pdb locals: numT, dIdx, t
+void hkaTrackAnalysis_channelSplit(const SplitInput& input, float* channelData)
 {
     const unsigned frames = input.frameCount;
     const unsigned width = frames > input.paddedCount ? frames : input.paddedCount;
@@ -315,11 +318,11 @@ void hkaTrackAnalysis_channelSplit(const SplitInput& input, float* output)
                 if (selected & (1 << (2 - component)))
                 {
                     for (unsigned frame = 0; frame < frames; ++frame)
-                        output[channel * width + frame] =
+                        channelData[channel * width + frame] =
                             input.transforms[frame * tracks + track].getPosition()(component);
                     const unsigned last = (frames - 1) * tracks + track;
                     for (unsigned frame = frames; frame < width; ++frame)
-                        output[channel * width + frame] = input.transforms[last].getPosition()(component);
+                        channelData[channel * width + frame] = input.transforms[last].getPosition()(component);
                     ++channel;
                 }
             }
@@ -331,11 +334,11 @@ void hkaTrackAnalysis_channelSplit(const SplitInput& input, float* output)
                 if (selected & (1 << (6 - component)))
                 {
                     for (unsigned frame = 0; frame < frames; ++frame)
-                        output[channel * width + frame] =
+                        channelData[channel * width + frame] =
                             input.transforms[frame * tracks + track].getRotation()(component);
                     const unsigned last = (frames - 1) * tracks + track;
                     for (unsigned frame = frames; frame < width; ++frame)
-                        output[channel * width + frame] = input.transforms[last].getRotation()(component);
+                        channelData[channel * width + frame] = input.transforms[last].getRotation()(component);
                     ++channel;
                 }
             }
@@ -347,11 +350,11 @@ void hkaTrackAnalysis_channelSplit(const SplitInput& input, float* output)
                 if (selected & (1 << (9 - component)))
                 {
                     for (unsigned frame = 0; frame < frames; ++frame)
-                        output[channel * width + frame] =
+                        channelData[channel * width + frame] =
                             input.transforms[frame * tracks + track].getScale()(component);
                     const unsigned last = (frames - 1) * tracks + track;
                     for (unsigned frame = frames; frame < width; ++frame)
-                        output[channel * width + frame] = input.transforms[last].getScale()(component);
+                        channelData[channel * width + frame] = input.transforms[last].getScale()(component);
                     ++channel;
                 }
             }
@@ -362,10 +365,10 @@ void hkaTrackAnalysis_channelSplit(const SplitInput& input, float* output)
         if (input.masks[input.transformCount + track] == 0)
         {
             for (unsigned frame = 0; frame < frames; ++frame)
-                output[channel * width + frame] = input.floats[frame * input.floatCount + track];
+                channelData[channel * width + frame] = input.floats[frame * input.floatCount + track];
             const unsigned last = (frames - 1) * input.floatCount + track;
             for (unsigned frame = frames; frame < width; ++frame)
-                output[channel * width + frame] = input.floats[last];
+                channelData[channel * width + frame] = input.floats[last];
             ++channel;
         }
     }

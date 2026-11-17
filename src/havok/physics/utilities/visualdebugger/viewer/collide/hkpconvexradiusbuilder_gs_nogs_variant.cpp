@@ -54,7 +54,7 @@ struct CollectorStandIn
     PairArray m_kHits;
 
     void ClearField0c();
-    void hkpConvexRadiusBuilder_buildShapeDisplay(const char* pInput, const hkTransformf* pTransform, OutputStandIn* pOutput);
+    void hkpConvexRadiusBuilder_buildShapeDisplay(const char* pInput, const hkTransformf* pTransform, OutputStandIn* displayGeometries);
     void UpdateFields_00de4420(const char* pInput, OutputStandIn* pOutput);
 };
 
@@ -66,6 +66,9 @@ __declspec(noinline) void CollectorStandIn::ClearField0c()
 
 // @fnv 0x00de4420
 // src: GUESS 0x00de4420 (confidence: low)
+// pdb: hkpConvexRadiusBuilder::buildDisplayGeometries | hkpConvexRadiusBuilder.obj | retail, object-file run extension, low
+// pdb params: shape, displayGeometries
+// pdb locals: transform
 void CollectorStandIn::UpdateFields_00de4420(const char* pInput, OutputStandIn* pOutput)
 {
     hkTransformf t;

@@ -12,7 +12,7 @@ hkMemoryRouter* hkMemoryRouter_getInstance();
 inline void hkReferencedObject::operator delete(void* p)
 {
     hkReferencedObject* b = static_cast<hkReferencedObject*>(p);
-    hkMemoryRouter_getInstance()->heap().blockFree(p, b->m_usMemSizeAndFlags);
+    hkMemoryRouter_getInstance()->heap().blockFree(p, b->m_memSizeAndFlags);
 }
 
 struct FUN_00e01ac0 : hkReferencedObject
@@ -23,5 +23,6 @@ struct FUN_00e01ac0 : hkReferencedObject
 
 // Default constructor for the FUN_00e01ac0 class, which inherits from hkReferencedObject.
 // @fnv 0x00e01ac0
+// pdb: hkxSparselyAnimatedBool::`scalar deleting destructor' | hkxSparselyAnimatedBoolClass.obj | retail, vtable slot, high
 FUN_00e01ac0::FUN_00e01ac0()
 {}

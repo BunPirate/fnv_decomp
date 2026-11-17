@@ -53,30 +53,30 @@ void Object_InitializeAgentFunctionTable_00d3ab60(void* apObject)
     *(char*)((char*)apObject + 17) = 0;
 }
 
-void __cdecl CreateAllocatedObject();
+void __cdecl hkpCapsuleTriangleAgent_createTriangleCapsuleAgent();
 void __cdecl Object_UpdateFields_00d3ac80();
-void __cdecl Object_UpdateFields_00d3b1a0();
-void __cdecl Object_UpdateFields_00d3b220();
+void __cdecl hkpSymmetricAgentLinearCast_hkpCapsuleTriangleAgent_staticGetPenetrations();
+void __cdecl hkpSymmetricAgentLinearCast_hkpCapsuleTriangleAgent_staticGetClosestPoints();
 
 // @fnv 0x00d3ab90
 // src: GUESS 0x00d3ab90 (confidence: low)
 void __cdecl Hkpcapsuletriangleagent_UpdateState_00d3ab90(void** apTable)
 {
-    apTable[0] = (void*)&CreateAllocatedObject;
-    apTable[1] = (void*)&Object_UpdateFields_00d3b1a0;
-    apTable[2] = (void*)&Object_UpdateFields_00d3b220;
+    apTable[0] = (void*)&hkpCapsuleTriangleAgent_createTriangleCapsuleAgent;
+    apTable[1] = (void*)&hkpSymmetricAgentLinearCast_hkpCapsuleTriangleAgent_staticGetPenetrations;
+    apTable[2] = (void*)&hkpSymmetricAgentLinearCast_hkpCapsuleTriangleAgent_staticGetClosestPoints;
     apTable[3] = (void*)&Object_UpdateFields_00d3ac80;
     ((unsigned char*)apTable)[0x10] = 1;
     ((unsigned char*)apTable)[0x11] = 0;
 }
 
-void __cdecl CreateTriAgent2();
-void __cdecl Object_UpdateFields_00d38ac0();
-void __cdecl hkpMultiSphereTriangleAgent_UpdateState_00d38ed0();
+void __cdecl hkpMultiSphereTriangleAgent_createTriangleMultiSphereAgent();
+void __cdecl hkpSymmetricAgentLinearCast_hkpMultiSphereTriangleAgent_staticGetPenetrations();
+void __cdecl hkpSymmetricAgentLinearCast_hkpMultiSphereTriangleAgent_staticGetClosestPoints();
 void __cdecl Object_UpdateFields_00d3ac80();
 void __cdecl CreateTriAgent();
 void __cdecl hkpMultiSphereTriangleAgent_staticGetPenetrations();
-void __cdecl Object_ProcessEntries_00d386c0();
+void __cdecl hkpMultiSphereTriangleAgent_staticGetClosestPoints();
 void __cdecl Object_ProcessEntries_00daf8e0();
 
 typedef void (__cdecl *S_00d389f0_Func)();
@@ -98,14 +98,17 @@ struct S_00d389f0_Dispatcher
 
 // Registers two agent function tables with the dispatcher, one for type 3 to 0x15 and one for 0x15 to 3.
 // @fnv 0x00d389f0
-// src: GUESS 0x00d389f0 (confidence: low)
-void __cdecl hkpMultiSphereTriangleAgent_staticGetPenetrations_UpdateState_00d389f0(S_00d389f0_Dispatcher* dispatcher)
+// src: XBOX_RETAIL_PDB 0x00d389f0
+// pdb: hkpMultiSphereTriangleAgent::registerAgent | hkpMultiSphereTriangleAgent.obj | retail, call graph, high
+// pdb params: dispatcher
+// pdb locals: af
+void __cdecl hkpMultiSphereTriangleAgent_registerAgent(S_00d389f0_Dispatcher* dispatcher)
 {
     {
         S_00d389f0_AgentFuncs agentFuncs;
-        agentFuncs.m_pCreateFunc = CreateTriAgent2;
-        agentFuncs.m_pQueryPenetrationsFunc = Object_UpdateFields_00d38ac0;
-        agentFuncs.m_getClosestPointsFunc = hkpMultiSphereTriangleAgent_UpdateState_00d38ed0;
+        agentFuncs.m_pCreateFunc = hkpMultiSphereTriangleAgent_createTriangleMultiSphereAgent;
+        agentFuncs.m_pQueryPenetrationsFunc = hkpSymmetricAgentLinearCast_hkpMultiSphereTriangleAgent_staticGetPenetrations;
+        agentFuncs.m_getClosestPointsFunc = hkpSymmetricAgentLinearCast_hkpMultiSphereTriangleAgent_staticGetClosestPoints;
         agentFuncs.m_pLinearCastFunc = Object_UpdateFields_00d3ac80;
         agentFuncs.m_bIsFlipped = true;
         agentFuncs.m_bIsPredictive = false;
@@ -115,7 +118,7 @@ void __cdecl hkpMultiSphereTriangleAgent_staticGetPenetrations_UpdateState_00d38
         S_00d389f0_AgentFuncs agentFuncs;
         agentFuncs.m_pCreateFunc = CreateTriAgent;
         agentFuncs.m_pQueryPenetrationsFunc = hkpMultiSphereTriangleAgent_staticGetPenetrations;
-        agentFuncs.m_getClosestPointsFunc = Object_ProcessEntries_00d386c0;
+        agentFuncs.m_getClosestPointsFunc = hkpMultiSphereTriangleAgent_staticGetClosestPoints;
         agentFuncs.m_pLinearCastFunc = Object_ProcessEntries_00daf8e0;
         agentFuncs.m_bIsFlipped = false;
         agentFuncs.m_bIsPredictive = false;
@@ -135,18 +138,20 @@ struct NoteDispatcher {
 struct FUN_00d39930_class : ReceiverBase {
     NoteDispatcher* dispatcher;
     unsigned short receiverIds[3];
-    void __thiscall DispatchToReceivers(void* value);
+    void __thiscall DispatchToReceivers(void* constraintOwner);
 };
 // Dispatches value to each non-0xFFFF receiver id via dispatcher, then releases this if non-null.
 // @fnv 0x00d39930
-void FUN_00d39930_class::DispatchToReceivers(void* value)
+// pdb: hkpCapsuleTriangleAgent::cleanup | hkpCapsuleTriangleAgent.obj | retail, vtable slot, high
+// pdb params: constraintOwner
+void FUN_00d39930_class::DispatchToReceivers(void* constraintOwner)
 {
     unsigned short* id = receiverIds;
     int count = 3;
     do {
         unsigned int current = *id;
         if ((unsigned short)current != 0xFFFF)
-            dispatcher->Dispatch(current, value);
+            dispatcher->Dispatch(current, constraintOwner);
         ++id;
     } while (--count != 0);
     if (this)
@@ -166,14 +171,17 @@ void __cdecl staticGetClosestPoints(void* apFirst, void* apSecond, void* apThird
 
 // Builds a CallbackState with a max float, the given value and a constant pointer, then passes it to FUN_00d3a280 with the three pointers reordered.
 // @fnv 0x00d3b220
-// src: GUESS 0x00d3b220 (confidence: low)
-void __cdecl Object_UpdateFields_00d3b220(void* apOne, void* apTwo, void* apThree, int aiValue)
+// src: XBOX_RETAIL_PDB 0x00d3b220
+// pdb: hkpSymmetricAgentLinearCast<hkpCapsuleTriangleAgent>::staticGetClosestPoints | hkpCapsuleTriangleAgent.obj | retail, object-file gap fill, high
+// pdb params: bodyA, bodyB, input, collector
+// pdb locals: flip
+void __cdecl hkpSymmetricAgentLinearCast_hkpCapsuleTriangleAgent_staticGetClosestPoints(void* bodyA, void* bodyB, void* input, int collector)
 {
     CallbackState kState;
     kState.m_fFirstLightParameter = 3.40282e+38f;
-    kState.m_iValue = aiValue;
+    kState.m_iValue = collector;
     kState.m_pIntegerValue = &DAT_010ce7fc;
-    staticGetClosestPoints(apTwo, apOne, apThree, &kState);
+    staticGetClosestPoints(bodyB, bodyA, input, &kState);
 }
 
 struct AllocIface {
@@ -201,18 +209,21 @@ struct FUN_00d39980_cls {
 };
 
 // @fnv 0x00d39980
-FUN_00d39980_cls* __cdecl CreateAllocatedObject(int a1, int a2, int a3, int a4)
+// src: XBOX_RETAIL_PDB 0x00d39980
+// pdb: hkpCapsuleTriangleAgent::createTriangleCapsuleAgent | hkpCapsuleTriangleAgent.obj | retail, object-file gap fill, high
+// pdb params: bodyA, bodyB, input, mgr
+FUN_00d39980_cls* __cdecl hkpCapsuleTriangleAgent_createTriangleCapsuleAgent(int bodyA, int bodyB, int input, int mgr)
 {
     hkMemoryRouter* pAllocHolder = hkMemoryRouter_getInstance();
     FUN_00d39980_cls* pObject = (FUN_00d39980_cls*)((AllocIface*)pAllocHolder->m_heap)->Alloc(0x28);
     pObject->m_w04 = 0x28;
     pObject->m_w06 = 1;
-    pObject->m_i08 = a4;
+    pObject->m_i08 = mgr;
     pObject->m_w0C = 0xffff;
     pObject->m_w0E = 0xffff;
     pObject->m_w10 = 0xffff;
     pObject->m_vptr = DAT_010ceefc;
-    ComputeInverseLengths((void*)(*(int*)a1 + 0x20), &pObject->m_sub);
+    ComputeInverseLengths((void*)(*(int*)bodyA + 0x20), &pObject->m_sub);
     pObject->m_vptr = DAT_010cef38;
     return pObject;
 }
@@ -267,17 +278,19 @@ struct Buffer_d3b260 {
 
 struct Agent_d3b260 {
     void hkpCapsuleTriangleAgent_processCollision(int b, int a, int c, Buffer_d3b260* buf);
-    void hkpSymmetricAgentLinearCast_hkpCapsuleTriangleAgent_processCollision(int a, int b, int c, Buffer_d3b260* buf);
+    void hkpSymmetricAgentLinearCast_hkpCapsuleTriangleAgent_processCollision(int bodyA, int bodyB, int input, Buffer_d3b260* result);
 };
 
 // @fnv 0x00d3b260
 // src: XBOX_PDB 0x00d3b260
-void Agent_d3b260::hkpSymmetricAgentLinearCast_hkpCapsuleTriangleAgent_processCollision(int a, int b, int c, Buffer_d3b260* apBuffer)
+// pdb: hkpSymmetricAgentLinearCast<hkpCapsuleTriangleAgent>::processCollision | hkpCapsuleTriangleAgent.obj | retail, vtable slot, high
+// pdb params: bodyA, bodyB, input, result
+void Agent_d3b260::hkpSymmetricAgentLinearCast_hkpCapsuleTriangleAgent_processCollision(int bodyA, int bodyB, int input, Buffer_d3b260* result)
 {
-    float dist = apBuffer->m_fHitFraction;
-    Elem_d3b260* e = apBuffer->m_kRayEnd;
-    hkpCapsuleTriangleAgent_processCollision(b, a, c, apBuffer);
-    for (; e < apBuffer->m_kRayEnd; e++)
+    float dist = result->m_fHitFraction;
+    Elem_d3b260* e = result->m_kRayEnd;
+    hkpCapsuleTriangleAgent_processCollision(bodyB, bodyA, input, result);
+    for (; e < result->m_kRayEnd; e++)
     {
         hkVector4 w;
         w.setBroadcast3(e->m_dir);
@@ -286,24 +299,24 @@ void Agent_d3b260::hkpSymmetricAgentLinearCast_hkpCapsuleTriangleAgent_processCo
         e->m_pos = w;
         e->m_dir.setNeg4(e->m_dir);
     }
-    if (dist != apBuffer->m_fHitFraction)
+    if (dist != result->m_fHitFraction)
     {
-        apBuffer->m_vHitNormal.neg();
-        unsigned char n = apBuffer->m_ucLowNibble;
-        apBuffer->m_ucLowNibble = apBuffer->m_ucHighNibble;
-        apBuffer->m_ucHighNibble = n;
-        unsigned char t = apBuffer->m_kPointA;
-        apBuffer->m_kPointA = apBuffer->m_kPointB;
-        apBuffer->m_kPointB = t;
-        int idx = apBuffer->m_kPointA + apBuffer->m_kPointB - 1;
-        unsigned short w = apBuffer->m_idx[0];
-        apBuffer->m_idx[0] = apBuffer->m_idx[idx];
-        apBuffer->m_idx[idx] = w;
-        if ((apBuffer->m_kPointA & apBuffer->m_kPointB) == 2)
+        result->m_vHitNormal.neg();
+        unsigned char n = result->m_ucLowNibble;
+        result->m_ucLowNibble = result->m_ucHighNibble;
+        result->m_ucHighNibble = n;
+        unsigned char t = result->m_kPointA;
+        result->m_kPointA = result->m_kPointB;
+        result->m_kPointB = t;
+        int idx = result->m_kPointA + result->m_kPointB - 1;
+        unsigned short w = result->m_idx[0];
+        result->m_idx[0] = result->m_idx[idx];
+        result->m_idx[idx] = w;
+        if ((result->m_kPointA & result->m_kPointB) == 2)
         {
-            unsigned short usTmp = apBuffer->m_idx[1];
-            apBuffer->m_idx[1] = apBuffer->m_idx[2];
-            apBuffer->m_idx[2] = usTmp;
+            unsigned short usTmp = result->m_idx[1];
+            result->m_idx[1] = result->m_idx[2];
+            result->m_idx[2] = usTmp;
         }
     }
 }
@@ -359,6 +372,9 @@ extern "C" void __cdecl Object_ProcessEntries_00daf8e0(unsigned int second, unsi
 // Copies the input packet, XORs its direction with DAT_010c44d0, builds primary/secondary MotionCallData and calls FUN_00daf8e0.
 // @fnv 0x00d3ac80
 // src: GUESS 0x00d3ac80 (confidence: low)
+// pdb: hkpCapsuleTriangleAgent::registerAgent2 | hkpCapsuleTriangleAgent.obj | retail, object-file run extension, low
+// pdb params: dispatcher
+// pdb locals: af
 void __cdecl Object_UpdateFields_00d3ac80(unsigned int first, unsigned int second,
                            const MotionPacket* apPacket, unsigned int mode,
                            unsigned int optionalMode)
@@ -394,20 +410,23 @@ struct CallbackHost_d3b160 {
 // Builds a temporary object holding a4 and a cleared flag with a vtable, then calls FUN_00d3a620 with a2, a1, a3 and that object.
 // @fnv 0x00d3b160
 // src: XBOX_PDB 0x00d3b160
-void CallbackHost_d3b160::hkpSymmetricAgentLinearCast_hkpCapsuleTriangleAgent_getPenetrations(void* a1, void* a2, void* a3, unsigned int a4)
+// pdb: hkpSymmetricAgentLinearCast<hkpCapsuleTriangleAgent>::getPenetrations | hkpCapsuleTriangleAgent.obj | retail, vtable slot, high
+// pdb params: bodyA, bodyB, input, collector
+// pdb locals: flip
+void CallbackHost_d3b160::hkpSymmetricAgentLinearCast_hkpCapsuleTriangleAgent_getPenetrations(void* bodyA, void* bodyB, void* input, unsigned int collector)
 {
     FUN_00d3b160_tmp t;
-    t.a4 = a4;
+    t.a4 = collector;
     t.flag = 0;
     t.vt = &DAT_010ce81c;
-    hkpCapsuleTriangleAgent_getPenetrations(a2, a1, a3, &t);
+    hkpCapsuleTriangleAgent_getPenetrations(bodyB, bodyA, input, &t);
 }
 
 struct Mat4 {
     Vec4::Aligned row0, row1, row2, row3;
 };
 
-void __cdecl hkCollideCapsuleUtilCapsVsTri(void* a, float b, void* c, float d, void* e, float f, int g, int h, int i);
+void __cdecl hkCollideCapsuleUtilCapsVsTri(void* capsAPoints, float capsARadius, void* triVertices, float triBRadius, void* cache, float collisionTolerance, int searchManifold, int points, int featuresOut);
 
 static __forceinline void transform(Vec4::Aligned* out, const char* shape, int count, const Mat4* m)
 {
@@ -434,25 +453,28 @@ static __forceinline void transform(Vec4::Aligned* out, const char* shape, int c
 
 // Transforms two shapes' vertices by their matrices, then calls FUN_00cd6520 with the results, a4, a3's float at +8, a5 and a6.
 // @fnv 0x00d399f0
-void __cdecl TransformAndDispatch(char* a1, char* a2, char* pExtra, void* a4, int a5, int a6)
+// src: XBOX_RETAIL_PDB 0x00d399f0
+// pdb: hkpCapsuleTriangleAgent::getClosestPointsPublic | hkpCapsuleTriangleAgent.obj | retail, object-file gap fill, high
+// pdb params: bodyA, bodyB, input, cache, searchManifold, points
+void __cdecl hkpCapsuleTriangleAgent_getClosestPointsPublic(char* bodyA, char* bodyB, char* input, void* cache, int searchManifold, int points)
 {
-    const char* shapeA = *(const char**)a1;
-    const char* shapeB = *(const char**)a2;
+    const char* shapeA = *(const char**)bodyA;
+    const char* shapeB = *(const char**)bodyB;
 
     Vec4::Aligned aTransformedA[2] = { Vec4(Vec4::Uninitialized), Vec4(Vec4::Uninitialized) };
-    transform(aTransformedA, shapeA, 2, *(Mat4**)(a1 + 8));
+    transform(aTransformedA, shapeA, 2, *(Mat4**)(bodyA + 8));
 
     Vec4::Aligned aTransformedB[3] = { Vec4(Vec4::Uninitialized), Vec4(Vec4::Uninitialized), Vec4(Vec4::Uninitialized) };
-    transform(aTransformedB, shapeB, 3, *(Mat4**)(a2 + 8));
+    transform(aTransformedB, shapeB, 3, *(Mat4**)(bodyB + 8));
 
     hkCollideCapsuleUtilCapsVsTri(&aTransformedA[0],
                  *(float*)(shapeA + 0x10),
                  &aTransformedB[0],
                  *(float*)(shapeB + 0x10),
-                 a4,
-                 *(float*)((char*)pExtra + 8),
-                 a5,
-                 a6,
+                 cache,
+                 *(float*)((char*)input + 8),
+                 searchManifold,
+                 points,
                  0);
 }
 
@@ -477,6 +499,8 @@ static __forceinline float SqLenLane(LocalM128 x)
 
 // Computes Newton-refined inverse square roots of four vector lengths from pts and stores them plus a fifth value into out.
 // @fnv 0x00cd72a0
+// pdb: hkpCollideTriangleUtil::calcTrianglePlaneDirections | hkpCollideTriangleUtil.obj | debug, object-file run extension, low
+// pdb params: tri, cache, planeEquationsOut, normalOut
 void __cdecl ComputeInverseLengths(LocalM128* pts, float* out)
 {
     LocalM128 c = pts[2];
@@ -607,21 +631,23 @@ struct CollisionWorkspace { LocalM128 la[2]; LocalM128 lb[3]; };
 // Transforms shape vertices, runs a collision query, optionally refines the contact, and writes the result to out.
 // @fnv 0x00d39bf0
 // src: XBOX_PDB 0x00d39bf0
-int __cdecl hkpCapsuleTriangleAgent_getClosestPoint(Obj* a, Obj* b, Par* volatile apParams, void* q, Contact* apContactOut)
+// pdb: hkpCapsuleTriangleAgent::getClosestPoint | hkpCapsuleTriangleAgent.obj | retail, upstream name already matches, high
+// pdb params: bodyA, bodyB, input, cache, cpoint
+int __cdecl hkpCapsuleTriangleAgent_getClosestPoint(Obj* bodyA, Obj* bodyB, Par* volatile apParams, void* cache, Contact* cpoint)
 {
     CollisionWorkspace workspace;
     Shape* shapes[2];
-    shapes[0] = a->base;
-    shapes[1] = b->base;
+    shapes[0] = bodyA->base;
+    shapes[1] = bodyB->base;
 
-    xform(*a->xf, (const LocalM128*)shapes[0]->vertices, workspace.la, 1);
+    xform(*bodyA->xf, (const LocalM128*)shapes[0]->vertices, workspace.la, 1);
 
-    xform(*b->xf, (const LocalM128*)shapes[1]->vertices, workspace.lb, 2);
+    xform(*bodyB->xf, (const LocalM128*)shapes[1]->vertices, workspace.lb, 2);
 
     Info info[3];
     LocalM128 res[6];
     Par* input = apParams;
-    hkCollideCapsuleUtilCapsVsTri(workspace.la, shapes[0]->radius, workspace.lb, shapes[1]->radius, q, input->c, 0, (int)res, (int)info);
+    hkCollideCapsuleUtilCapsVsTri(workspace.la, shapes[0]->radius, workspace.lb, shapes[1]->radius, cache, input->c, 0, (int)res, (int)info);
 
     float fDistA = ((float*)res)[7];
     float fDistB = ((float*)res)[15];
@@ -643,13 +669,13 @@ int __cdecl hkpCapsuleTriangleAgent_getClosestPoint(Obj* a, Obj* b, Par* volatil
         t.y = source.y;
         t.z = source.z;
         t.w = source.w;
-        Xf* transformA = a->xf;
-        Xf* transformB = b->xf;
+        Xf* transformA = bodyA->xf;
+        Xf* transformB = bodyB->xf;
         int r = shapes[1]->refine(&info[idx].feature, &n, res + idx * 2, transformB, shapes[0], transformA, &t);
         if (r != 0) { if (r == 1) ((Contact*)(res + idx * 2))->SetPositionXYZ(&t); } else goto fail;
     }
 
-    *apContactOut = ((Contact*)res)[idx];
+    *cpoint = ((Contact*)res)[idx];
     return 1;
 fail:
     return 0;
@@ -699,7 +725,7 @@ struct Context
     LocalM128 triangle[3];
 };
 
-extern "C" void __cdecl hkCollideCapsuleUtilCapsVsTri(void* out1, float fx, void* out2, float fy, void* p, float afDepth, int zero, HitRec* hit, int zero2);
+extern "C" void __cdecl hkCollideCapsuleUtilCapsVsTri(void* capsAPoints, float capsARadius, void* triVertices, float triBRadius, void* cache, float collisionTolerance, int searchManifold, HitRec* points, int featuresOut);
 
 struct CollisionInput { int unk00; int unk04; float tolerance; };
 
@@ -718,6 +744,9 @@ struct CapsuleTriangleAgent {
 // Transforms capsule and triangle vertices into world space, tests for intersection, and reports a hit to the collector if found.
 // @fnv 0x00d3a620
 // src: HAVOK_SRC 0x00d3a620
+// pdb: hkpCapsuleTriangleAgent::getPenetrations | hkpCapsuleTriangleAgent.obj | retail, upstream name already matches, high
+// pdb params: bodyA, bodyB, input, collector
+// pdb locals: points
 void CapsuleTriangleAgent::hkpCapsuleTriangleAgent_getPenetrations(const hkpCdBody& bodyA, const hkpCdBody& bodyB, const CollisionInput* input, VirtObj* collector)
 {
     volatile DWORD tick;
@@ -734,9 +763,9 @@ void CapsuleTriangleAgent::hkpCapsuleTriangleAgent_getPenetrations(const hkpCdBo
 
     Context ctx;
     // Capsule and triangle vertices begin at 0x20 in their derived shape layouts.
-    const hkpConvexShape* capsuleShape = static_cast<const hkpConvexShape*>(bodyA.m_pCollisionShape);
-    const hkpConvexShape* triangleShape = static_cast<const hkpConvexShape*>(bodyB.m_pCollisionShape);
-    const ContactMatrix* transformA = (const ContactMatrix*)bodyA.m_pMotionState;
+    const hkpConvexShape* capsuleShape = static_cast<const hkpConvexShape*>(bodyA.m_shape);
+    const hkpConvexShape* triangleShape = static_cast<const hkpConvexShape*>(bodyB.m_shape);
+    const ContactMatrix* transformA = (const ContactMatrix*)bodyA.m_motion;
 
     {
         RowPair xyRows;
@@ -761,7 +790,7 @@ void CapsuleTriangleAgent::hkpCapsuleTriangleAgent_getPenetrations(const hkpCdBo
 
     }
 
-    const ContactMatrix* transformB = (const ContactMatrix*)bodyB.m_pMotionState;
+    const ContactMatrix* transformB = (const ContactMatrix*)bodyB.m_motion;
     {
         __declspec(align(16)) Vec4f d0;
         __declspec(align(16)) Vec4f d1;
@@ -784,7 +813,7 @@ void CapsuleTriangleAgent::hkpCapsuleTriangleAgent_getPenetrations(const hkpCdBo
 
     }
 
-    hkCollideCapsuleUtilCapsVsTri(ctx.capsule, capsuleShape->m_fSphereRadius, ctx.triangle, triangleShape->m_fSphereRadius, &this->unk14, input->tolerance, 0, &ctx.hit, 0);
+    hkCollideCapsuleUtilCapsVsTri(ctx.capsule, capsuleShape->m_radius, ctx.triangle, triangleShape->m_radius, &this->unk14, input->tolerance, 0, &ctx.hit, 0);
     if (ctx.hit.pt0.dist < 0.0f || ctx.hit.pt1.dist < 0.0f)
     {
         collector->Run(&bodyA, &bodyB);
@@ -815,15 +844,18 @@ typedef void (__cdecl *Call_d3a8c0)(int, int, int, LocalState_d3b1a0*);
 
 // Initialises a LocalState_d3b1a0 with param4, a zero flag and a pointer to DAT_010ce81c, then calls FUN_00d3a8c0 with param2, param1, param3 and the state.
 // @fnv 0x00d3b1a0
-// src: GUESS 0x00d3b1a0 (confidence: low)
-void __cdecl Object_UpdateFields_00d3b1a0(int param1, int param2, int param3, int aiValue) {
+// src: XBOX_RETAIL_PDB 0x00d3b1a0
+// pdb: hkpSymmetricAgentLinearCast<hkpCapsuleTriangleAgent>::staticGetPenetrations | hkpCapsuleTriangleAgent.obj | retail, object-file gap fill, high
+// pdb params: bodyA, bodyB, input, collector
+// pdb locals: flip
+void __cdecl hkpSymmetricAgentLinearCast_hkpCapsuleTriangleAgent_staticGetPenetrations(int bodyA, int bodyB, int input, int collector) {
     LocalState_d3b1a0 state;
-    state.m_iValue = aiValue;
+    state.m_iValue = collector;
     state.m_bZero = 0;
     state.m_pIntegerValue = &DAT_010ce81c;
 
     Call_d3a8c0 call = (Call_d3a8c0)Object_CollectPenetratingBodyPair;
-    call(param2, param1, param3, &state);
+    call(bodyB, bodyA, input, &state);
 }
 }  // namespace fnv_00d3b1a0
 
@@ -838,13 +870,16 @@ struct CpuObject {
 // Builds a CpuCallData from fourth, DAT_0104da48 and &DAT_010ce7fc, then calls FUN_00d39ef0 with second, first, third and that data.
 // @fnv 0x00d3b1e0
 // src: XBOX_PDB 0x00d3b1e0
-void CpuObject::hkpSymmetricAgentLinearCast_hkpCapsuleTriangleAgent_getClosestPoints(void* first, void* second, unsigned int third, unsigned int fourth)
+// pdb: hkpSymmetricAgentLinearCast<hkpCapsuleTriangleAgent>::getClosestPoints | hkpCapsuleTriangleAgent.obj | retail, vtable slot, high
+// pdb params: bodyA, bodyB, input, collector
+// pdb locals: flip
+void CpuObject::hkpSymmetricAgentLinearCast_hkpCapsuleTriangleAgent_getClosestPoints(void* bodyA, void* bodyB, unsigned int input, unsigned int collector)
 {
     CpuCallData data;
-    data.value = fourth;
+    data.value = collector;
     data.bound = DAT_0104da48;
     data.descriptor = &DAT_010ce7fc;
-    hkpCapsuleTriangleAgent_getClosestPoints(second, first, third, &data);
+    hkpCapsuleTriangleAgent_getClosestPoints(bodyB, bodyA, input, &data);
 }
 }  // namespace fnv_00d3b1e0
 
@@ -900,11 +935,14 @@ struct ContactResults { ContactRecord points[3]; };
 void __cdecl hkCollideCapsuleUtilCapsVsTri(hkVector4*,float,hkVector4*,float,void*,float,int,ContactResults*,CacheRecord*);
 struct CollisionAgent {
     unsigned int unk00,unk04,unk08,unk0c,unk10,cache14;
-    void hkpCapsuleTriangleAgent_getClosestPoints(const BodyRecord& a,const BodyRecord& b,const CollisionInput& input,Collector* output);
+    void hkpCapsuleTriangleAgent_getClosestPoints(const BodyRecord& bodyA,const BodyRecord& bodyB,const CollisionInput& input,Collector* collector);
 };
 // @fnv 0x00d39ef0
 // src: HAVOK_SRC 0x00d39ef0
-void CollisionAgent::hkpCapsuleTriangleAgent_getClosestPoints(const BodyRecord& a,const BodyRecord& b,const CollisionInput& input,Collector* output) {
+// pdb: hkpCapsuleTriangleAgent::getClosestPoints | hkpCapsuleTriangleAgent.obj | retail, upstream name already matches, high
+// pdb params: bodyA, bodyB, input, collector
+// pdb locals: event
+void CollisionAgent::hkpCapsuleTriangleAgent_getClosestPoints(const BodyRecord& bodyA,const BodyRecord& bodyB,const CollisionInput& input,Collector* collector) {
     {
         hkMonitorStream* stream=(hkMonitorStream*)TlsGetValue(DAT_0126835c);
         if(stream->m_end.m_storage < stream->m_capacityMinus16.m_storage) {
@@ -921,14 +959,14 @@ void CollisionAgent::hkpCapsuleTriangleAgent_getClosestPoints(const BodyRecord& 
     }
     {
     PointEvent event;
-    event.a=&a; event.b=&b;
+    event.a=&bodyA; event.b=&bodyB;
     TransformCacheScratch transformCache;
     hkVector4 pointsA[2];
     hkVector4 pointsB[3];
-    const CollisionShape* shapeA=a.shape;
-    const CollisionShape* shapeB=b.shape;
-    xform(*(const Xf*)a.matrix,&shapeA->points[0].m_vComponents,&pointsA[0].m_vComponents,1);
-    xform(*(const Xf*)b.matrix,&shapeB->points[0].m_vComponents,&pointsB[0].m_vComponents,2);
+    const CollisionShape* shapeA=bodyA.shape;
+    const CollisionShape* shapeB=bodyB.shape;
+    xform(*(const Xf*)bodyA.matrix,&shapeA->points[0].m_vComponents,&pointsA[0].m_vComponents,1);
+    xform(*(const Xf*)bodyB.matrix,&shapeB->points[0].m_vComponents,&pointsB[0].m_vComponents,2);
     ContactResults result;
     CacheRecord* cache=transformCache.cache;
     hkCollideCapsuleUtilCapsVsTri(pointsA,shapeA->radius,pointsB,shapeB->radius,&cache14,input.tolerance,0,&result,cache);
@@ -944,15 +982,15 @@ void CollisionAgent::hkpCapsuleTriangleAgent_getClosestPoints(const BodyRecord& 
         unsigned char flag=cache[index].flag;
         if(input.unk04 && flag>0) {
             PlainVector normal=*(const PlainVector*)&result.points[index].normal;
-            const PlainMatrix* transformA=a.matrix;
-            const PlainMatrix* transformB=b.matrix;
+            const PlainMatrix* transformA=bodyA.matrix;
+            const PlainMatrix* transformB=bodyB.matrix;
             ContactRecord* contact=&result.points[index];
             int outcome=const_cast<CollisionShape*>(shapeB)->process(&cache[index].feature,&flag,contact,transformB,shapeA,transformA,&normal);
             if(outcome==0) goto done;
             if(outcome==1) result.points[index].SetPositionXYZ(&normal);
         }
         event.contact=result.points[index];
-        output->accept(&event);
+        collector->accept(&event);
     }
     }
 done:
@@ -1019,6 +1057,9 @@ static __forceinline void mytransform2(Vec4::Aligned* out, const Shape* shape, i
 // Transforms two body shapes, tests for penetration, and adds the pair to the collector if the result normals indicate overlap.
 // @fnv 0x00d3a8c0
 // src: GUESS 0x00d3a8c0 (confidence: medium)
+// pdb: hkpCapsuleTriangleAgent::staticGetPenetrations | hkpCapsuleTriangleAgent.obj | retail, object-file run extension, low
+// pdb params: bodyA, bodyB, input, collector
+// pdb locals: points, cache
 void __cdecl Object_CollectPenetratingBodyPair(Body* apBodyA, Body* apBodyB, Input* input, PenetrationCollector* collector)
 {
     TimerPair* state = (TimerPair*)TlsGetValue(DAT_0126835c);

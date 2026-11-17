@@ -12,12 +12,14 @@ class hkProcessContext;
 class hkServerProcessHandler;
 class hkVtableClassRegistry;
 
+// pdb: structure hkVisualDebuggerClient, size 0x8, 2 members
 struct hkVisualDebuggerClient
 {
     hkSocket* m_socket;
     hkServerProcessHandler* m_processHandler;
 };
 
+// pdb: structure hkVisualDebuggerTrackedObject, size 0xc, 3 members
 struct hkVisualDebuggerTrackedObject
 {
     void* m_ptr;
@@ -28,6 +30,7 @@ struct hkVisualDebuggerTrackedObject
 typedef void(__cdecl* hkVisualDebuggerTrackedObjectCallback)(void* ptr, const hkClass* klass, hkBool wasAdded,
                                                               unsigned long tagId, void* userCallbackHandle);
 
+// pdb: class hkStopwatch, size 0x30, 7 members
 class hkStopwatch
 {
 public:
@@ -72,6 +75,7 @@ public:
     const char* m_name;
 };
 
+// pdb: class hkVisualDebugger, size 0x90, bases: hkReferencedObject, 11 members
 class hkVisualDebugger : public hkReferencedObject
 {
 public:
@@ -104,18 +108,18 @@ public:
         int m_capacityAndFlags;
     };
 
-    hkVisualDebugger(const Array<hkProcessContext*>& kContexts, const hkVtableClassRegistry* pClassReg = 0) throw();
+    hkVisualDebugger(const Array<hkProcessContext*>& contexts, const hkVtableClassRegistry* reg = 0) throw();
     virtual ~hkVisualDebugger() throw();
-    virtual void step(float fFrameTimeInMs = 0);
+    virtual void step(float frameTimeInMs = 0);
     virtual void pollForNewClients();
 
     void FUN_00cd1970();
     hkVisualDebugger* FUN_00cd1e40(unsigned int uFlags);
-    void serve(int iListenPort);
-    void capture(const char* sCaptureFilename) throw();
+    void serve(int listenPort);
+    void capture(const char* captureFilename) throw();
     void endCapture();
     void shutdown() throw();
-    void addDefaultProcess(const char* sProcessName) throw();
+    void addDefaultProcess(const char* viewerName) throw();
     void removeDefaultProcess(const char* sProcessName);
     void addTrackedObject(void* pObj, const hkClass* pKlass, const char* sGroup, unsigned long uTagId);
     void removeTrackedObject(void* pObj);
@@ -123,13 +127,13 @@ public:
     void removeTrackedObjectCallback(hkVisualDebuggerTrackedObjectCallback kCallback);
 
 protected:
-    void createClient(hkSocket* pSocket, hkStreamReader* pReader, hkStreamWriter* pWriter) throw();
-    void deleteClient(int iIndex);
-    void writeStep(int iIndex, float fTime);
+    void createClient(hkSocket* socket, hkStreamReader* reader, hkStreamWriter* writer) throw();
+    void deleteClient(int i);
+    void writeStep(int i, float fTime);
 
     // member names follow the Havok headers (offsets from the exe's constructor)
     hkSocket* m_server;  // src: HAVOK_SRC (members below)
-    bool m_suppressPollForNewClients;
+    bool s_SuppressPollForNewClients; // src: XBOX_RETAIL_PDB +0xc (old: m_suppressPollForNewClients)
     Array<hkVisualDebuggerClient> m_clients;
     Array<hkProcessContext*> m_contexts;
     Array<hkVisualDebuggerTrackedObject> m_trackedObjects;

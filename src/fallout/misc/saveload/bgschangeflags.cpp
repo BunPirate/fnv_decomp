@@ -9,7 +9,7 @@
 // @fnv 0x008c71b0
 BGSChangeFlags::BGSChangeFlags(int initial)
 {
-    uiFlags = initial;
+    iFlags = initial;
 }
 // Sets or clears bit 8 of flags according to enabled.
 // @fnv 0x0042ce50
@@ -21,6 +21,9 @@ void BGSChangeFlagsState::CombineFlags(bool enabled)
         flags &= ~8;
 }
 // @fnv 0x00841120
+// pdb: BSScrapArray<OffsetData,1024>::`scalar deleting destructor' | BGSReconstructFormsInAllFilesMap.obj | retail, object-file run extension, low
+// pdb note: debug build links it to BGSChangeFlags::GetUnrevertibleChanges
+// pdb params: this
 LocalFormChangeMask LocalFormChangeMask::HasFormChanged(LocalFormChangeMask changes, LocalFormChangeMask forced, int type, bool enabled)
 {
     ((FormChangeRecord*)&changes)->FUN_00562210(forced.Modelloader_GetReferencedThis());
@@ -42,7 +45,7 @@ LocalFormChangeMask LocalFormChangeMask::HasFormChanged(LocalFormChangeMask chan
 // @fnv 0x00841100
 void BGSChangeFlags::AddFlags(int aiFlags)
 {
-    uiFlags |= aiFlags;
+    iFlags |= aiFlags;
 }
 
 static const char kStr_Flags[] = "Flags";
@@ -466,6 +469,9 @@ extern TESDataHandler* g_dataHandler;
 
 // Builds a forced change-flags set from the form type and its flags, stores it in flags, and returns whether any forced flag is set or the form is kept.
 // @fnv 0x00840f70
+// pdb: BGSChangeFlags::ReduceToForcedChanges | BGSChangeFlags.obj | retail, call graph, low
+// pdb params: apForm
+// pdb locals: eformType, inewFlags, bcreated, pref
 bool BGSChangeFlags::TestFormChangeFlags(TESForm* apForm)
 {
     int eFormType2 = apForm->GetFormType();
@@ -518,6 +524,6 @@ bool BGSChangeFlags::TestFormChangeFlags(TESForm* apForm)
         break;
     }
 
-    uiFlags = kForced.GetFlags();
-    return uiFlags != 0 || bKeep2;
+    iFlags = kForced.GetFlags();
+    return iFlags != 0 || bKeep2;
 }

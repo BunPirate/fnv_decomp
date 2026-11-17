@@ -7,19 +7,22 @@
 #include "nipsysmodifierfloatctlr_decls.h"
 #include "../../../../include/StrArr.h"
 // @fnv 0x00c32e10
-void NiPSysModifierFloatCtlr::LinkObject(NiStream& stream)
+// pdb: NiPSysModifierFloatCtlr::LinkObject | NiPSysModifierFloatCtlr.obj | retail, upstream name already matches, high
+// pdb params: kStream
+// pdb locals: pkFloatData
+void NiPSysModifierFloatCtlr::LinkObject(NiStream& kStream)
 {
-    NiPSysModifierCtlr::LinkObject(stream);
-    if (stream.m_uiNifFileVersion < 0x0a010068)
+    NiPSysModifierCtlr::LinkObject(kStream);
+    if (kStream.m_uiNifFileVersion < 0x0a010068)
     {
-        NiFloatData* pFloatData = (NiFloatData*)stream.GetLoadedObject();
+        NiFloatData* pFloatData = (NiFloatData*)kStream.GetLoadedObject();
         NiObject* pNewInterpolator = new LocalNiFloatInterpolator(pFloatData);
-        NiObject* pOldInterpolator = m_spControllerInterpolator.m_pObject;
+        NiObject* pOldInterpolator = m_spInterpolator.m_pObject;
         if (pOldInterpolator != pNewInterpolator)
         {
             if (pOldInterpolator && !InterlockedDecrement((volatile long*)&pOldInterpolator->m_uiRefCount))
                 pOldInterpolator->DeleteThis();
-            m_spControllerInterpolator.m_pObject = (NiInterpolator*)pNewInterpolator;
+            m_spInterpolator.m_pObject = (NiInterpolator*)pNewInterpolator;
             if (pNewInterpolator)
                 InterlockedIncrement((volatile long*)&pNewInterpolator->m_uiRefCount);
         }
@@ -53,6 +56,8 @@ void __stdcall AppendModifierInfo(StrArr*);
 // Appends the string returned by _FUN_00a7d330(g_012026d8_arg1) to pkStrings, growing the array if its count reaches capacity.
 // @fnv 0x00c32f60
 // src: XBOX_PDB 0x00c32f60
+// pdb: NiPSysModifierFloatCtlr::GetViewerStrings | NiPSysModifierFloatCtlr.obj | retail, upstream name already matches, high
+// pdb params: pkStrings
 void __stdcall NiPSysModifierFloatCtlr_GetViewerStrings(StrArr* pkStrings)
 {
     AppendModifierInfo(pkStrings);
@@ -68,6 +73,9 @@ void __stdcall NiPSysModifierFloatCtlr_GetViewerStrings(StrArr* pkStrings)
 extern int g_011f3738;
 // @fnv 0x00c32e90
 // src: XBOX_PDB 0x00c32e90
+// pdb: NiPSysModifierFloatCtlr::SynchronizePoseInterpolator | NiPSysModifierFloatCtlr.obj | retail, object-file gap fill, high
+// pdb params: pkInterp, usIndex
+// pdb locals: pkFloatInterp, fValue
 void __thiscall NiPSysModifierFloatCtlr::SynchronizePoseInterpolator_00c32e90(NiObject* pkInterp, unsigned short usIndex)
 {
     NiObject* pkFloatInterp;
@@ -80,25 +88,28 @@ void __thiscall NiPSysModifierFloatCtlr::SynchronizePoseInterpolator_00c32e90(Ni
     ((LocalNiFloatInterpolator*)pkFloatInterp)->SetFloatValue(fValue);
 }
 
-extern const float DAT_01096324;
+extern const float NiInterpController_INVALID_TIME; // src: XBOX_RETAIL_PDB 0x01096324 (old: DAT_01096324/INVALID_TIME_A4F/g_fInvalidTimeBC3/kInvalidTime)
 
 // @fnv 0x00c32ee0
-void NiPSysModifierFloatCtlr::UpdateController(float& fTime)
+// pdb: NiPSysModifierFloatCtlr::Update | NiPSysModifierFloatCtlr.obj | retail, object-file gap fill, high
+// pdb params: UpdateData
+// pdb locals: fValue
+void NiPSysModifierFloatCtlr::UpdateController(float& UpdateData)
 {
     bool b = (m_uiObjectFlags & 0x20) != 0;
     if ((unsigned char)b & 1)
     {
-        m_fControllerTime = DAT_01096324;
+        m_fScaledTime = NiInterpController_INVALID_TIME;
     }
-    else if (AdvanceController(fTime))
+    else if (AdvanceController(UpdateData))
     {
-        if (!m_spControllerInterpolator.m_pObject || !m_spControllerInterpolator.m_pObject->AlwaysUpdate())
+        if (!m_spInterpolator.m_pObject || !m_spInterpolator.m_pObject->AlwaysUpdate())
             return;
     }
-    if (m_spControllerInterpolator.m_pObject)
+    if (m_spInterpolator.m_pObject)
     {
         float fVal;
-        if (m_spControllerInterpolator.m_pObject->UpdateFloat(m_fControllerTime, m_pkTarget, fVal))
+        if (m_spInterpolator.m_pObject->UpdateFloat(m_fScaledTime, m_pkTarget, fVal))
         {
             SetTargetVal61(fVal);
         }
@@ -108,6 +119,8 @@ void NiPSysModifierFloatCtlr::UpdateController(float& fTime)
 void __cdecl FUN_00a57780();
 // @fnv 0x00a44cd0
 // src: XBOX_PDB 0x00a44cd0
+// pdb: BSFrustumFOVController::RegisterStreamables | BSFrustumFOVController.obj | debug, upstream name already matches, high
+// pdb params: kStream
 void __cdecl BSFrustumFOVController_RegisterStreamables()
 {
     FUN_00a57780();

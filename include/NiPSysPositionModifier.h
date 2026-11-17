@@ -2,6 +2,7 @@
 
 #include "NiPSysModifier.h"
 
+// pdb: class NiPSysPositionModifier, size 0x18, bases: NiPSysModifier, 0 members
 class NiPSysPositionModifier : public NiPSysModifier
 {
 public:
@@ -11,7 +12,7 @@ public:
 
     virtual const NiRTTI* GetRTTI() const;
     virtual NiObject* MakeClone(CloningProcess& process);
-    virtual void LoadBinary(NiStream& stream);
+    virtual void LoadBinary(NiStream& kStream);
     virtual void LinkObject(NiStream& stream);
     virtual bool RegisterStreamables(NiStream& stream);
     virtual void SaveBinary(NiStream& stream);

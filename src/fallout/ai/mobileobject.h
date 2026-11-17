@@ -36,6 +36,6 @@ NiPoint3* MobileObject::GetPos() const
 // @fnv 0x00436aa0
 BSSimpleList<TESTopic*>* TESTopicInfo::GetAddTopicList()
 {
-    return &m_kAddTopicList;
+    return &m_listAddTopics;
 }
 #endif

@@ -30,6 +30,7 @@ template <> inline BSSimpleList<unsigned short>::~BSSimpleList()
 }
 
 // @fnv 0x00b9a490
+// pdb: BSBatchRenderer::GeometryGroup::ClearPasses | BSBatchRenderer.obj | retail, call graph, high
 void BSBatchRenderer__GeometryGroup::ClearPassTextureSlots()
 {
     BSBatchRenderer__PassList* list = &PassTextureSlotCollection;
@@ -45,6 +46,7 @@ void BSBatchRenderer__GeometryGroup::ClearPassTextureSlots()
 
 // Frees the owned object pointer if set and clears it to null.
 // @fnv 0x00b9a410
+// pdb: BSBatchRenderer::GeometryGroup::~GeometryGroup | BSBatchRenderer.obj | retail, call graph, high
 BSBatchRenderer__GeometryGroup::~BSBatchRenderer__GeometryGroup()
 {
     if (m_pGroupRenderer)
@@ -55,6 +57,9 @@ BSBatchRenderer__GeometryGroup::~BSBatchRenderer__GeometryGroup()
 }
 
 // @fnv 0x00b9a090
+// pdb: BSBatchRenderer::PrepareNextRenderPass | BSBatchRenderer.obj | retail, call graph, medium
+// pdb params: auiPass, aiBucket, abFirstPass
+// pdb locals: bret, uiindex, bisNextBucketInCurrentPass
 bool BSBatchRenderer::FindPassBucket(unsigned int& uiGroupKey, int& bucketIndex, bool& alpha)
 {
     bool result = true;
@@ -82,6 +87,9 @@ bool BSBatchRenderer::FindPassBucket(unsigned int& uiGroupKey, int& bucketIndex,
 
 // Scans the five 20-byte bucket slots of a group for a non-null pointer and stores the matching slot index in bucketIndex.
 // @fnv 0x00b98ae0
+// pdb: BSBatchRenderer::PrepareNextRenderPass_SetNextBucket | BSBatchRenderer.obj | debug, call graph, medium
+// pdb params: auiIndex, aiBucket
+// pdb locals: i
 bool BSBatchRenderer::FindBucketIndex(unsigned int groupIndex, int& bucketIndex)
 {
     int i = 0;
@@ -131,6 +139,8 @@ void BSBatchRenderer::ReleaseGeometryGroups()
 }
 
 // @fnv 0x00b99730
+// pdb: BSSimpleList<unsigned short>::RemoveHead | BSBatchRenderer.obj | debug, call graph, medium
+// pdb locals: pkNext
 template <> void BSSimpleList<unsigned short>::RemoveHead()
 {
     BSSimpleList<unsigned short>* next = m_pkNext;
@@ -184,6 +194,7 @@ void __fastcall BSSimpleList_UInt16_AddHead(Node_00b98e20* pThis, int, const uns
 // Appends a new node holding *elem to the list, reusing a free node from self[3] or allocating one, and updates head, tail and count.
 // @fnv 0x00b99840
 // src: COMMUNITY 0x00b99840
+// pdb: NiTPointerListBase<NiTPointerAllocator<unsigned int>,BSBatchRenderer::GeometryGroup *>::~NiTPointerListBase<NiTPointerAllocator<unsigned int>,BSBatchRenderer::GeometryGroup *> | BSBatchRenderer.obj | debug, object-file run extension, low
 void __fastcall PersistentPassList_AddBack(int* self, int, const int* pElement)
 {
     int* node = (int*)self[3];
@@ -283,6 +294,8 @@ extern int DAT_011ffe38;
 
 // @fnv 0x00b99a10
 // src: COMMUNITY 0x00b99a10
+// pdb: BSBatchRenderer::SortAlphaPasses | BSBatchRenderer.obj | retail, upstream name already matches, high
+// pdb params: apCamera, abGetSortByClosestPoint
 void __fastcall BSBatchRenderer_SortAlphaPasses(char* this_ptr, int, int param_1, char param_2)
 {
     DAT_011ffe38 = param_1;
@@ -299,6 +312,9 @@ struct PassGroup_Layout
 };
 
 // @fnv 0x00b99a50
+// pdb: BSBatchRenderer::PassGroup::Clear | BSBatchRenderer.obj | retail, call graph, medium
+// pdb params: abReportNotEmpty
+// pdb locals: j, cerr
 void __fastcall ClearPassGroups(PassGroup_Layout* pThis, int, bool)
 {
     for (int j = 0; j < 5; ++j)
@@ -359,6 +375,9 @@ __forceinline void NiTMapBase<TAlloc, TKEY, TVAL>::GetNext(void*& pos, TKEY& key
 
 // Clears each mapped group and removes all active pass indices.
 // @fnv 0x00b99bc0
+// pdb: BSBatchRenderer::ClearRenderPasses | BSBatchRenderer.obj | retail, call graph (shared callers), medium
+// pdb params: abReportUnrendered
+// pdb locals: uiindex, uipass, itr
 void BSBatchRenderer::ClearAllGroups(int unusedArg)
 {
     void* pItem =
@@ -406,6 +425,8 @@ struct FUN_00e879b0_holder
 extern NiRenderer* DAT_011f9508;
 // @fnv 0x00b984d0
 // src: COMMUNITY 0x00b984d0
+// pdb: BSRenderState::SetCullMode | BSRenderState_Xenon.obj | retail, upstream name already matches, high
+// pdb params: aeDrawMode, aeLock
 void __cdecl BSRenderState_SetCullMode(int aiValue)
 {
     reinterpret_cast<FUN_00e879b0_holder*>(static_cast<NiDX9Renderer*>(DAT_011f9508)->pRenderState)
@@ -450,14 +471,16 @@ extern int DAT_011ffa28;
 // If no pending count, sets a device state (0xb5 or 0x9a) based on flag and renderer mode, then adds count to DAT_011ffa28.
 // @fnv 0x00b98540
 // src: COMMUNITY 0x00b98540
-void __cdecl BSRenderState_SetAlphaToCoverageEnable(bool flag, int count)
+// pdb: BSRenderState::SetAlphaToCoverageEnable | BSRenderState_Xenon.obj | retail, upstream name already matches, high
+// pdb params: abEnabled, aeLock
+void __cdecl BSRenderState_SetAlphaToCoverageEnable(bool abEnabled, int aeLock)
 {
     if (DAT_011ffa28 == 0)
     {
         if (DAT_011f94b8 == 1)
         {
             unsigned int value;
-            if (flag)
+            if (abEnabled)
                 value = 0x434f5441;
             else
             {
@@ -465,17 +488,17 @@ void __cdecl BSRenderState_SetAlphaToCoverageEnable(bool flag, int count)
                 value = *(unsigned int*)&zero;
             }
             reinterpret_cast<FUN_00b98540_Dev*>(DAT_011f9508->pRenderState)->SetState(0xb5, value, 0, 0);
-            DAT_011ffa28 += count;
+            DAT_011ffa28 += aeLock;
             return;
         }
         if (DAT_011f94b8 == 2)
         {
-            reinterpret_cast<FUN_00b98540_Dev*>(DAT_011f9508->pRenderState)->SetState(0x9a, (flag ? 0x01000000 : 0) + 0x304d3241, 0, 0);
-            DAT_011ffa28 += count;
+            reinterpret_cast<FUN_00b98540_Dev*>(DAT_011f9508->pRenderState)->SetState(0x9a, (abEnabled ? 0x01000000 : 0) + 0x304d3241, 0, 0);
+            DAT_011ffa28 += aeLock;
             return;
         }
     }
-    DAT_011ffa28 = DAT_011ffa28 + count;
+    DAT_011ffa28 = DAT_011ffa28 + aeLock;
 }
 }  // namespace fnv_00b98540
 
@@ -597,6 +620,9 @@ struct FUN_00b99890_List
 };
 // Takes a node from the free list or pool, stores the value, and links it at the head of the list, updating tail when empty.
 // @fnv 0x00b99890
+// pdb: NiTPointerListBase<NiTPointerAllocator<unsigned int>,BSBatchRenderer::GeometryGroup *>::AddTail | BSBatchRenderer.obj | debug, object-file run extension, low
+// pdb params: element
+// pdb locals: pkNode
 void __fastcall PushFront(FUN_00b99890_List* list, int, unsigned int* value)
 {
     FUN_00b99890_Node* node = list->freeList;
@@ -637,6 +663,8 @@ FUN_00b998e0::FUN_00b998e0()
 }
 
 // @fnv 0x00b99b70
+// pdb: BSBatchRenderer::PassGroup::RemoveHead | BSBatchRenderer.obj | debug, object-file run extension, low
+// pdb params: aiBucket
 BSBatchRenderer__PassList* __fastcall DestroyPassList(BSBatchRenderer__PassList* p, int, unsigned int flags)
 {
     p->BSBatchRenderer__PassList::~BSBatchRenderer__PassList();
@@ -664,6 +692,9 @@ struct PassGroup_Layout
 
 // @fnv 0x00b9a3c0
 // src: COMMUNITY 0x00b9a3c0
+// pdb: BSBatchRenderer::SkipNextRenderPass | BSBatchRenderer.obj | retail, upstream name already matches, high
+// pdb params: auiPass, aiBucket, abFirstPass, abAlphaPass
+// pdb locals: bret, uiindex
 bool __fastcall BSBatchRenderer_SkipNextRenderPass(BSBatchRenderer* pThis, int, unsigned int& auiPass, int& aiBucket, bool& abFlag, bool)
 {
     unsigned int idx = 0;
@@ -730,6 +761,8 @@ void __cdecl ClearPassList(BSBatchRenderer__PassList*, int);
 // If flags bit 0 is set, forwards arg to ClearPassList on passList; otherwise notifies owner with (1, 0x2f1, arg); then clears owner's list and resets count to 0.
 // @fnv 0x00b9a4d0
 // src: COMMUNITY 0x00b9a4d0
+// pdb: BSBatchRenderer::GeometryGroup::Render | BSBatchRenderer.obj | retail, upstream name already matches, high
+// pdb params: abAlphaPass
 void __fastcall BSBatchRenderer_GeometryGroup_Render(FUN_00b9a4d0_Obj* self, int unused, int arg)
 {
     if ((self->flags & 1) > 0)
@@ -786,6 +819,8 @@ struct FUN_00b9a560
 
 // Initializes the object: clears b0, p8 and s2, stores p in p4, and clears passList.
 // @fnv 0x00b9a560
+// pdb: BSBatchRenderer::GeometryGroup::GeometryGroup | BSBatchRenderer.obj | retail, object-file run extension, low
+// pdb params: auiPassCount
 FUN_00b9a560::FUN_00b9a560(void* p)
 {
     b0 = 0;
@@ -888,6 +923,8 @@ struct SortPass
     SortGeom* pGeom;
 };
 // @fnv 0x00b98b20
+// pdb: BSBatchRenderer::PrepareNextRenderPass_CheckFirstPass | BSBatchRenderer.obj | debug, object-file run extension, low
+// pdb params: auiIndex, aiBucket, abFirstPass
 int __cdecl CompareSortPassesByDepth(const void* apA, const void* apB)
 {
     SortPass* pA = *(SortPass**)apA;
@@ -1001,6 +1038,9 @@ extern unsigned int DAT_011ffe30;
 extern FUN_00b99390_S* DAT_011ffe2c;
 extern bool DAT_011ad8ec;
 // @fnv 0x00b99390
+// pdb: BSBatchRenderer::QWaterRefractionPassWithinRange | BSBatchRenderer.obj | debug, object-file run extension, low
+// pdb params: aeStartRange, aeEndRange
+// pdb locals: pkList, uistart, uiend, uicurrentPass
 void __cdecl SetShaderPass(unsigned int pass, FUN_00b99390_S* shader)
 {
     BSBatchRenderer_EndPass();
@@ -1147,19 +1187,22 @@ void __cdecl DrawGeometryPass(Pass_b994f0*, bool, bool, bool);
 
 // @fnv 0x00b994f0
 // src: XBOX_PDB 0x00b994f0
-void BSBatchRenderer_RenderPassImmediately(Pass_b994f0* prenderpass, unsigned int uiPassId, bool balphaTest, bool abAlphaPass,
+// pdb: BSBatchRenderer::RenderPassImmediately | BSBatchRenderer.obj | retail, upstream name already matches, high
+// pdb params: prenderpass, uicurrentPass, balphaTest, abAlphaPass, abGeometryRenderStates
+// pdb locals: bfirstpass, pshader
+void BSBatchRenderer_RenderPassImmediately(Pass_b994f0* prenderpass, unsigned int uicurrentPass, bool balphaTest, bool abAlphaPass,
                   bool abGeometryRenderStates)
 {
-    if (prenderpass->m_usShaderPassType != uiPassId)
+    if (prenderpass->m_usShaderPassType != uicurrentPass)
         return;
-    DAT_011f91e4 = uiPassId;
+    DAT_011f91e4 = uicurrentPass;
     DAT_011f91e0 = prenderpass;
     Shader_b994f0* pshader = prenderpass->pGeom->pShader;
     bool bfirstpass = false;
-    if (DAT_011ffe30 != uiPassId || uiPassId == 0x2f6 || pshader != DAT_011ffe2c)
+    if (DAT_011ffe30 != uicurrentPass || uicurrentPass == 0x2f6 || pshader != DAT_011ffe2c)
     {
         bfirstpass = true;
-        SetShaderPass(uiPassId, pshader);
+        SetShaderPass(uicurrentPass, pshader);
     }
     if (DAT_011f9421)
     {
@@ -1188,9 +1231,9 @@ void BSBatchRenderer_RenderPassImmediately(Pass_b994f0* prenderpass, unsigned in
     if (bfirstpass && DAT_011ffe2c)
     {
         if (DAT_011ffe2c->IsLit())
-            DAT_011ffe2c->ShadowLightShader_DisableNonVolatileConstantsForPass(uiPassId);
+            DAT_011ffe2c->ShadowLightShader_DisableNonVolatileConstantsForPass(uicurrentPass);
         else if (DAT_011ffe2c->IsType11())
-            DAT_011ffe2c->Lighting30Shader_DisableNonVolatileConstantsForPass(uiPassId);
+            DAT_011ffe2c->Lighting30Shader_DisableNonVolatileConstantsForPass(uicurrentPass);
     }
 }
 }  // namespace fnv_00b994f0
@@ -1218,6 +1261,8 @@ struct FUN_00bd9150_Inst
 }  // namespace fnv_00b9aa80
 
 // @fnv 0x00b9aa80
+// pdb: BSBatchRenderer::~BSBatchRenderer | BSBatchRenderer.obj | retail, upstream name already matches, high
+// pdb locals: i
 BSBatchRenderer::~BSBatchRenderer()
 {
     ClearAllGroups(0);
@@ -1439,6 +1484,9 @@ bool __cdecl BSShaderAccumulator_IsShadowPass(unsigned int);
 
 // Sets the manager's current transform, prepares the shader for the pass id, applies optional updates, draws the geometry and finishes the shader.
 // @fnv 0x00b98e80
+// pdb: BSBatchRenderer::RenderPassImmediately_Standard | BSBatchRenderer.obj | retail, call graph, medium
+// pdb params: apRenderPass, abAlphaTest, abAlphaPass, abGeometryRenderStates
+// pdb locals: pgeometry, prenderer, ppropState, pbuffData, pshader, pgeomData, uipass
 void __cdecl DrawGeometryPass(BSShaderProperty::ShaderPassEntry* pass, bool updateB, bool updateA, bool updateAlpha)
 {
     unsigned int id = pass->m_usShaderPassType;
@@ -1756,6 +1804,9 @@ void __fastcall AddSortedGroup(BSBatchRenderer* pRenderer, int dummy, SortBound*
 // When a list value is in range, removes the head, looks up that value, and calls FUN_00b98ae0.
 // @fnv 0x00b99900
 // src: COMMUNITY 0x00b99900
+// pdb: BSBatchRenderer::PrepareNextRenderPass_SetNextPass | BSBatchRenderer.obj | retail, upstream name already matches, high
+// pdb params: auiPass, aiBucket
+// pdb locals: pklist, uiindex
 bool __fastcall BSBatchRenderer_PrepareNextRenderPass_SetNextPass(BSBatchRenderer* pThis, int, unsigned int& ruiPass, int iSubBucketIndex)
 {
     BSSimpleList<unsigned short>* pkList = &pThis->kActivePassIndexList;
@@ -2557,11 +2608,14 @@ inline bool S00b99110_IsExact(void* rtti, SkinInstance* obj)
 // Sets up the renderer and shader, then iterates skin partitions to draw geometry with optional alpha, depth, and blend state handling.
 // @fnv 0x00b99110
 // src: XBOX_PDB 0x00b99110
-void __cdecl BSBatchRenderer_RenderPassImmediately_Skinned(DrawPass* pass, bool depth, bool alpha, bool blend)
+// pdb: BSBatchRenderer::RenderPassImmediately_Skinned | BSBatchRenderer.obj | retail, upstream name already matches, high
+// pdb params: apRenderPass, abAlphaTest, abAlphaPass, abGeometryRenderStates
+// pdb locals: pgeometry, uiPartitionCount, pkPartitionExtraDataArray, prenderer, bfirstPartition, ppropState, pshader, pgeomData, pkPartitionArray, pkSkinPartition, uipass, pkSkinInstance, pkBuffData, pkDismemberSkinInstance, uiPartition, pkCurrPartition
+void __cdecl BSBatchRenderer_RenderPassImmediately_Skinned(DrawPass* apRenderPass, bool abAlphaTest, bool abAlphaPass, bool abGeometryRenderStates)
 {
-    unsigned int passId = pass->pass;
+    unsigned int passId = apRenderPass->pass;
     DrawRenderer* renderer = DAT_011f4748;
-    DrawGeometry* geometry = pass->geometry;
+    DrawGeometry* geometry = apRenderPass->geometry;
     SkinInstance* skin = geometry->skin;
     DrawData* data = geometry->data;
     DrawShader* shader = geometry->shader;
@@ -2588,11 +2642,11 @@ void __cdecl BSBatchRenderer_RenderPassImmediately_Skinned(DrawPass* pass, bool 
             {
                 shader->Begin(properties);
                 shader->State(properties);
-                if (pass->alpha && !BSShaderAccumulator_IsShadowPass(passId))
+                if (apRenderPass->alpha && !BSShaderAccumulator_IsShadowPass(passId))
                 {
-                    if (alpha)
+                    if (abAlphaPass)
                         shader->Alpha(properties);
-                    if (depth && !(passId >= 4 && passId <= 5) && !(passId >= 14 && passId <= 15))
+                    if (abAlphaTest && !(passId >= 4 && passId <= 5) && !(passId >= 14 && passId <= 15))
                         shader->Depth(properties);
                 }
                 else if (DAT_011ad8ec)
@@ -2600,8 +2654,8 @@ void __cdecl BSBatchRenderer_RenderPassImmediately_Skinned(DrawPass* pass, bool 
                     shader->Reset(properties);
                     DAT_011ad8ec = false;
                 }
-                if (blend)
-                    shader->Blend(properties, pass->alpha);
+                if (abGeometryRenderStates)
+                    shader->Blend(properties, apRenderPass->alpha);
                 first = false;
             }
             void* draw = shader->Draw(geometry, partition, vertexData, properties);
@@ -2660,6 +2714,9 @@ struct ActivePassNode
 
 // Inserts item.value into the linked list of ActivePassNode items, using cmp to find the sorted position.
 // @fnv 0x00b99770
+// pdb: BSSimpleList<unsigned short>::Insert | BSBatchRenderer.obj | debug, object-file run extension, low
+// pdb params: apNewItem, apCompareFn
+// pdb locals: pkPrev, bdone, pkCur, pkNew
 void ActivePassNode::InsertItem(ItemValue volatile item, ActivePassCompare afCompare)
 {
     unsigned int key = item.value;
@@ -2738,6 +2795,8 @@ extern "C" Node* __fastcall NiGeometry_AddProperty(void* alloc);
 
 // Allocates or reuses a free node, stores value, and prepends it to the entry's linked list, updating counts.
 // @fnv 0x00b99a90
+// pdb: BSBatchRenderer::PassGroup::AddHead | BSBatchRenderer.obj | debug, object-file run extension, low
+// pdb params: aiBucket, apRenderPass
 void Thing::AddNode(int index, int value)
 {
     Entry* entry = (Entry*)((char*)this + index * 0x14);
@@ -2797,6 +2856,8 @@ extern "C" Node* __fastcall NiGeometry_AddProperty(void* alloc);
 
 // Allocates or reuses a Node, sets its value, and appends it to the linked list at the given index.
 // @fnv 0x00b99b00
+// pdb: BSBatchRenderer::PassGroup::AddTail | BSBatchRenderer.obj | debug, object-file run extension, low
+// pdb params: aiBucket, apRenderPass
 void Thing::AppendNode(int index, int value)
 {
     Entry* entry = (Entry*)((char*)this + index * 0x14);
@@ -3267,15 +3328,18 @@ inline NiTMap_unsigned_int_unsigned_int_::NiTMap_unsigned_int_unsigned_int_(int)
 }
 
 // @fnv 0x00b9a5b0
-BSBatchRenderer::BSBatchRenderer(unsigned int aiPassCount, int mode) : RenderPassMap(0)
+// pdb: BSBatchRenderer::BSBatchRenderer | BSBatchRenderer.obj | retail, upstream name already matches, high
+// pdb params: auiPassCount, aeBatchRendererCreationType
+// pdb locals: tempMemContext
+BSBatchRenderer::BSBatchRenderer(unsigned int auiPassCount, int aeBatchRendererCreationType) : RenderPassMap(0)
 {
     fnv_00b9a5b0::MemGuard context(0x26);
     pInstanceRenderer = reinterpret_cast<BSBatchRenderer__RenderContext*>(new fnv_00b9a5b0::FUN_00bd9120);
-    pRenderPassA = new fnv_00b9a5b0::RenderPassListCollection[aiPassCount];
-    uiRenderPassCount = aiPassCount;
+    pRenderPassA = new fnv_00b9a5b0::RenderPassListCollection[auiPassCount];
+    uiRenderPassCount = auiPassCount;
     iGroupingAlphas = 0;
     ClearAllGroups(0);
-    switch (mode)
+    switch (aeBatchRendererCreationType)
     {
     case 99:
         pGeometryGroupsA[0] = new fnv_00b9a5b0::FUN_00b9a560((void*)0x2f7);
@@ -3572,6 +3636,9 @@ __forceinline void __fastcall RenderGroup(BSBatchRenderer* pThis, int, unsigned 
 // Iterates active passes in range, renders matching groups via RenderGroup, then resets renderer state.
 // @fnv 0x00b99e20
 // src: XBOX_PDB 0x00b99e20
+// pdb: BSBatchRenderer::RenderBatches | BSBatchRenderer.obj | retail, upstream name already matches, high
+// pdb params: aePass, aePassEnd, abAlphaPass
+// pdb locals: uistart, uiend, pkList, uicurrentPass, uiindex, ibucket, balphaTest, kiter, prenderpass
 void __fastcall BSBatchRenderer_RenderBatches(BSBatchRenderer* pThis, int, unsigned int uiMinPass, unsigned int uiMaxPass, int arg3)
 {
     unsigned int minPass = uiMinPass;
@@ -3681,6 +3748,9 @@ void BSBatchRenderer_RenderPassImmediately(void*, unsigned int, bool, int, int);
 // Processes a batch queue by applying state, rendering passes, and removing them until a kind change or empty queue is reached.
 // @fnv 0x00b9a120
 // src: COMMUNITY 0x00b9a120
+// pdb: BSBatchRenderer::RenderNextRenderPass | BSBatchRenderer.obj | retail, upstream name already matches, high
+// pdb params: auiPass, aiBucket, abFirstPass, abAlphaPass
+// pdb locals: bret, balphaTest, uiindex, bdone, bsavedfirstpass, prenderpass
 bool __fastcall BSBatchRenderer_RenderNextRenderPass(BSBatchRenderer* pThis, int, unsigned& key, int& bucket, bool& kind, int flags)
 {
     unsigned index = 0;

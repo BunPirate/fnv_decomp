@@ -55,8 +55,8 @@ class NiMatrix3T
   public:
     float m_afEntries[3][3];
     NiMatrix3T();
-    void SetRotationFromEulerXYZ(float fXAngle, float fYAngle, float fZAngle);
-    void GetCol(unsigned int uiCol, NiPoint3T& kCol) const;
+    void SetRotationFromEulerXYZ(float fZAngle, float fXAngle, float fYAngle);
+    void GetCol(unsigned int uiCol, NiPoint3T& col) const;
 };
 
 class hkVector4T
@@ -64,7 +64,7 @@ class hkVector4T
   public:
     __m128 m_vComponents;
     hkVector4T();
-    void mul4(const class hkSimdRealT& kScale);
+    void mul4(const class hkSimdRealT& s);
 };
 
 class hkSimdRealT
@@ -74,7 +74,7 @@ class hkSimdRealT
     hkSimdRealT(float fValue);
 };
 
-void __cdecl NI2HK(hkVector4T* pkOut, const NiPoint3T* pkIn);
+void __cdecl NI2HK(hkVector4T* arhkTran, const NiPoint3T* arNiTran);
 
 class TelekinesisTargetController
 {
@@ -87,7 +87,7 @@ class TelekinesisTarget
   public:
     float GetMass();
     TelekinesisTargetController* SetLinearVelocity(const hkVector4T& kMotionVelocity);
-    void SetVelocity(const NiPoint3T& kMotionVelocity);
+    void SetVelocity(const NiPoint3T& arVel);
 };
 
 class PlayerCameraT
@@ -108,6 +108,8 @@ extern GameSettingTableT g_kTelekinesisDistanceT;
 
 // @fnv 0x0082afa0
 // src: XBOX_PDB 0x0082afa0
+// pdb: TelekinesisEffect::RemoveSpring | TelekinesisEffect.obj | retail, upstream name already matches, high
+// pdb locals: prb, pbody, dir, angle, impulseNI, rot, impulseHK
 void TelekinesisEffect::RemoveSpring()
 {
     if (g_pkPlayerCameraT->GetGrab())

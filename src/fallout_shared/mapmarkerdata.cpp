@@ -22,6 +22,7 @@ enum
 
 // member functions matched in this unit added.
 #pragma pack(push, 4)
+// pdb: class MapMarkerData, size 0x14, 5 members
 class MapMarkerData
 {
   public:
@@ -31,7 +32,7 @@ class MapMarkerData
     unsigned short sType;               // +0xE, 2 bytes
     TESReputation* pReputationData;     // +0x10, 4 bytes
 
-    bool Load(TESFile* file);
+    bool Load(TESFile* apFile);
     bool GetVisible();
     void SetVisible(bool visible);
     bool IsTravelLocation();
@@ -50,7 +51,7 @@ FNV_STATIC_ASSERT(offsetof(MapMarkerData, pReputationData) == 16);
 // precedent.
 struct TESFileChunkData16 : public TESFile
 {
-    bool GetChunkData(unsigned short* value);
+    bool GetChunkData(unsigned short* apData);
 };
 
 struct TESFileOffsetChunk : public TESFile
@@ -60,57 +61,62 @@ struct TESFileOffsetChunk : public TESFile
 };
 
 // @fnv 0x00438ca0
-bool MapMarkerData::Load(TESFile* file)
+// pdb: MapMarkerData::Load | MapMarkerData.obj | retail, upstream name already matches, high
+// pdb params: apFile
+// pdb locals: uRewind, itempint
+bool MapMarkerData::Load(TESFile* apFile)
 {
-    if (!file)
+    if (!apFile)
         return false;
-    if (file->GetChunkID() != kMapMarkerDataChunk)
+    if (apFile->GetChunkID() != kMapMarkerDataChunk)
         return false;
-    if (!file->NextChunk())
+    if (!apFile->NextChunk())
         return false;
-    if (file->GetChunkID() == kMapMarkerTypeChunk)
+    if (apFile->GetChunkID() == kMapMarkerTypeChunk)
     {
-        file->GetChunkData(&cFlags, 1);
+        apFile->GetChunkData(&cFlags, 1);
         m_ucAdditionalFlags = cFlags;
-        if (!file->NextChunk())
+        if (!apFile->NextChunk())
             return false;
     }
-    if (file->GetChunkID() == kMapMarkerNameChunk)
+    if (apFile->GetChunkID() == kMapMarkerNameChunk)
     {
-        TESFullNameLoader::LoadFullNameChunk(&LocationName, file);
+        TESFullNameLoader::LoadFullNameChunk(&LocationName, apFile);
     }
     else
     {
         return false;
     }
-    if (!file->NextChunk())
+    if (!apFile->NextChunk())
         return false;
-    if (file->GetChunkID() == kMapMarkerTravelChunk)
+    if (apFile->GetChunkID() == kMapMarkerTravelChunk)
     {
-        ((TESFileChunkData16*)file)->GetChunkData(&sType);
+        ((TESFileChunkData16*)apFile)->GetChunkData(&sType);
     }
     else
     {
         return false;
     }
-    unsigned int chunkOffset = ((TESFileOffsetChunk*)file)->GetOffsetChunk();
-    if (!file->NextChunk())
+    unsigned int chunkOffset = ((TESFileOffsetChunk*)apFile)->GetOffsetChunk();
+    if (!apFile->NextChunk())
         return false;
-    if (file->GetChunkID() == kMapMarkerReputationChunk)
+    if (apFile->GetChunkID() == kMapMarkerReputationChunk)
     {
         unsigned int reputationID = 0;
-        file->GetChunkData(&reputationID);
+        apFile->GetChunkData(&reputationID);
         if (reputationID)
             pReputationData = (TESReputation*)reputationID;
     }
     else
     {
-        ((TESFileOffsetChunk*)file)->SetOffsetChunk(chunkOffset);
+        ((TESFileOffsetChunk*)apFile)->SetOffsetChunk(chunkOffset);
     }
     return true;
 }
 
 // @fnv 0x00438ed0
+// pdb: MapMarkerData::SetLocationName | MapMarkerData.obj | debug, object-file run extension, low
+// pdb params: apName
 bool MapMarkerData::GetVisible()
 {
     if (cFlags & 0x1)
@@ -173,6 +179,8 @@ class MapMarkerCompare : public MapMarkerData
 // Returns true if any of LocationName, cFlags, sType, or pReputationData differs from the other MapMarkerData.
 // @fnv 0x00438e40
 // src: XBOX_PDB 0x00438e40
+// pdb: MapMarkerData::Compare | MapMarkerData.obj | retail, upstream name already matches, high
+// pdb params: apCompare
 bool MapMarkerCompare::MapMarkerData_Compare(MapMarkerData* other)
 {
     if (LocationName.CompareWithBase(reinterpret_cast<BaseFormComponent*>(other)))
@@ -193,6 +201,7 @@ struct StringHolder
 };
 // @fnv 0x00438eb0
 // src: XBOX_PDB 0x00438eb0
+// pdb: MapMarkerData::GetLocationName | MapMarkerData.obj | debug, upstream name already matches, high
 const char* StringHolder::MapMarkerData_GetLocationName()
 {
     return TESModel_GetModel();

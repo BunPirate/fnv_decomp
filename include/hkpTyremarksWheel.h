@@ -4,6 +4,7 @@
 
 class hkpTyremark;
 
+// pdb: class hkpTyremarksWheel, size 0x1c (here 0x14), bases: hkReferencedObject, 3 members
 class hkpTyremarksWheel : public hkReferencedObject
 {
 public:

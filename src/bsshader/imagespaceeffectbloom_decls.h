@@ -28,6 +28,7 @@ class BloomEffectParamLocalForm
     NiTPrimitiveArray<int> m_kFilterModes;
 };
 
+// pdb: class ImageSpaceShaderParam, size 0x88, bases: ImageSpaceEffectParam, 13 members
 class ImageSpaceShaderParam : public BloomEffectParamLocalForm
 {
   public:
@@ -53,7 +54,7 @@ class ImageSpaceShaderParam : public BloomEffectParamLocalForm
     } m_kRenderStateMap;
 
     ImageSpaceShaderParam();
-    void AllocateShaderConstants(int vertexCount, int pixelCount);
+    void AllocateShaderConstants(int aiVSize, int aiPSize);
     void SetShaderConstantVector4(int index, float x, float y, float z, float w);
     static void* operator new(unsigned int size) throw()
     {
@@ -65,6 +66,7 @@ class ImageSpaceShaderParam : public BloomEffectParamLocalForm
     }
 };
 
+// pdb: class ImageSpaceEffect, size 0x58, 7 members
 class ImageSpaceEffect
 {
   public:
@@ -78,7 +80,7 @@ class ImageSpaceEffect
     struct ImageSpaceEffectInput;
     NiTPrimitiveArray<ImageSpaceEffectInput*> pEffectInputs;
     NiTPrimitiveArray<int> pEffectOutput;
-    void SetTextureArrayCount(int count);
+    void SetTextureArrayCount(int aiCount);
     void SetEffectAt(int index, ImageSpaceEffect* effect, BloomEffectParamLocalForm* param, int output);
     // No identity candidate is available for the one-input setup helper.
     void SetEffectParamAt(int effectIndex, int textureIndex, int filterMode);

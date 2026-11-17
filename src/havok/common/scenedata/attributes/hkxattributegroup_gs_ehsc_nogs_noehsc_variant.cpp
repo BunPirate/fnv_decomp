@@ -25,7 +25,7 @@ struct S00e5cb40_Os
     int unk00;
     int unk04;
     int unk08;
-    void FUN_00cb1600(char* buf, int size);
+    void FUN_00cb1600(char* buf, int bufSize);
     S00e5cb40_Os& ProcessAndReturnValue_00cc01c0(const char* s);
     S00e5cb40_Os& WriteName(const hkStringPtr& s);
     void FUN_00cc00e0();
@@ -49,6 +49,9 @@ struct S00e5cb40_Grp : hkxAttributeGroup
 
 // @fnv 0x00e5cb40
 // src: GUESS 0x00e5cb40 (confidence: low)
+// pdb: hkxAttributeGroup::getQuaternionValue | hkxAttributeGroup.obj | retail, object-file run extension, low
+// pdb params: name, warnIfNotFound, quaternionOut
+// pdb locals: assertBuf, ostr
 int S00e5cb40_Grp::ProcessAndReturnValue_00e5cb40(const char* name, bool warnIfNotFound, hkQuaternion* out)
 {
     AttributeObj* attr = Runtime_ForwardCall_00e5c670(name);

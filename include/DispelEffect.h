@@ -2,6 +2,7 @@
 
 #include "ActiveEffect.h"
 
+// pdb: class DispelEffect, size 0x48, bases: ActiveEffect, 0 members
 class DispelEffect : public ActiveEffect
 {
 public:

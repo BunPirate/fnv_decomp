@@ -45,7 +45,7 @@ public:
     PodPoint3* FUN_00439e90(PodPoint3* output, const PodPoint3* other) const;
     PodPoint3 SubtractIntoVector(const PodPoint3& other) const;
     void SubtractIntoVector();
-    PodPoint3 FUN_004b3800(const PodPoint3& axis) const;
+    PodPoint3 FUN_004b3800(const PodPoint3& pt) const;
     void Unitize_004a0c10();
     float FUN_00457910();
     float FUN_00457990() const;
@@ -76,8 +76,8 @@ struct Node
 };
 struct WorldObject
 {
-    void GetAabb(Aabb* bounds);
-    void bhkRigidBody_GetTransform(HavokTransform* transform);
+    void bhkRigidBody_GetAabbLocal(Aabb* arOut);
+    void bhkRigidBody_GetTransform(HavokTransform* arTrans);
 };
 struct CollisionObject
 {
@@ -90,11 +90,14 @@ extern PodPoint3 DAT_011f426c;
 CollisionObject* FindFirstCollisionObject(Node*);
 void FUN_00458620(PodPoint3* out, const __m128* havokPoint);
 PodPoint3* FUN_004a3760(PodPoint3* out, float scale, const PodPoint3* point);
-float FUN_00476b70(float minimum, float maximum);
+float FUN_00476b70(float afMin, float afMax);
 bool NiObject_IsKindOf(const RTTI*, WorldObject*);
-NiTransform* HK2NI_00624ad0(NiTransform* out, const HavokTransform* havok);
+NiTransform* HK2NI_00624ad0(NiTransform* out, const HavokTransform* arhkTran);
 // @fnv 0x0062bfb0
 // src: COMMUNITY 0x0062bfb0
+// pdb: TESHavokUtilities::GetLocalPointWithinCollision | TEShavokUtilities.obj | retail, upstream name already matches, high
+// pdb params: apObject
+// pdb locals: result, pcol, pb, max, abb, low, min, high, nitrans, invtrans, hktrans
 PodPoint3* TESHavokUtilities_GetLocalPointWithinCollision(PodPoint3* out, Node* node)
 {
     PodPoint3 chosen = DAT_011f426c;
@@ -106,7 +109,7 @@ PodPoint3* TESHavokUtilities_GetLocalPointWithinCollision(PodPoint3* out, Node* 
         {
             Aabb bounds;
             bounds.FUN_00437c10();
-            body->GetAabb(&bounds);
+            body->bhkRigidBody_GetAabbLocal(&bounds);
             PodPoint3 minimum;
             minimum.FUN_006815c0();
             FUN_00458620(&minimum, &bounds.minimum);

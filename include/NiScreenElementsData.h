@@ -4,6 +4,7 @@
 
 class NiScreenElementsData__Polygon;
 
+// pdb: class NiScreenElementsData, size 0x70, bases: NiTriShapeData, 10 members
 class NiScreenElementsData : public NiTriShapeData
 {
   public:
@@ -20,7 +21,7 @@ class NiScreenElementsData : public NiTriShapeData
     virtual void GetViewerStrings(NiViewerStringsArray*);
 
     void NiScreenElementsData_UpdateBound();
-    bool FUN_00a87ae0(int, int, int);
+    bool Insert(int, int, int);
     bool FUN_00a88130(int, int, float, float, float, float);
     void FUN_00a67050(int);
 
@@ -37,6 +38,6 @@ class NiScreenElementsData : public NiTriShapeData
     unsigned short m_usVGrowBy;
     unsigned short m_usMaxIQuantity;
     unsigned short m_usIGrowBy;
-    bool m_bGeometryInitialized;
+    bool m_bBoundNeedsUpdate; // src: XBOX_RETAIL_PDB +0x6e (old: m_bGeometryInitialized)
     unsigned char layoutPadding6F[1];
 };

@@ -192,7 +192,7 @@ struct Singleton
     PoolObj* pool;
 };
 Singleton* __cdecl hkMemoryRouter_getInstance();
-void __cdecl hkArrayUtil__reserve(PoolObj* pool, PtrVec* vec, int count, int elemSize);
+void __cdecl hkArrayUtil__reserve(PoolObj* mem, PtrVec* array, int numElem, int sizeElem);
 int __cdecl FUN_00cabb00(int a, int b, int c, int d);
 extern int DAT_01267e30;
 extern float DAT_01011d78;

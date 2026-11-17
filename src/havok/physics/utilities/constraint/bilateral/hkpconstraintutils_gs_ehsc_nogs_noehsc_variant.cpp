@@ -97,7 +97,7 @@ struct Instance : hkReferencedObject
 inline void* hkAlloc(int size)
 {
     hkReferencedObject* p = (hkReferencedObject*)audio()->heap().blockAlloc(size);
-    p->m_usMemSizeAndFlags = (unsigned short)size;
+    p->m_memSizeAndFlags = (unsigned short)size;
     return p;
 }
 Instance* __cdecl CloneInstanceFromSource(Instance* src);
@@ -113,7 +113,7 @@ extern FnvSink* DAT_01268360;
 class MsgWriter
 {
   public:
-    void Init(char* buf, unsigned int cap) throw();
+    void Init(char* buf, unsigned int bufSize) throw();
     void Append(const char* s) throw();
     void Finish() throw();
     unsigned int unk00;
@@ -147,7 +147,7 @@ class FnvHolder
     char unk00[0x0c];
     FnvInner* m_0c;
 };
-int hkpConstraintUtils_getConstraintPivots(FnvHolder* a0, LocalM128* a1, LocalM128* a2);
+int hkpConstraintUtils_getConstraintPivots(FnvHolder* a0, LocalM128* pivotInAOut, LocalM128* pivotInBOut);
 
 struct Ent
 {
@@ -168,9 +168,9 @@ struct Ent
     int unk190, unk194, unk198, unk19c, unk1a0, unk1a4, unk1a8, unk1ac;
     LocalM128 unk1b0;
     LocalM128 unk1c0;
-    void hkpRigidBody_setPosition(LocalM128* v);
+    void hkpRigidBody_setPosition(LocalM128* position);
     void OnTrigger(int arg);
-    void hkpRigidBody_setAngularVelocity(void* p);
+    void hkpRigidBody_setAngularVelocity(void* newVel);
 };
 
 struct FnvHolder2 : FnvHolder
@@ -215,6 +215,9 @@ extern "C"
 
 // @fnv 0x00e5af80
 // src: XBOX_PDB 0x00e5af80
+// pdb: hkpConstraintUtils::checkAndFixConstraint | hkpConstraintUtils.obj | retail, upstream name already matches, high
+// pdb params: constraint, maxAllowedError, relativeFixupOnError
+// pdb locals: parentPivotInWorld, childPivotInChild, childPivotInWorld, parentPivotInParent, assertBuf, ostr, newChildPositionInWorld
 bool* hkpConstraintUtils_checkAndFixConstraint(bool* out, FnvHolder2* h, float t, float t2)
 {
     float d;

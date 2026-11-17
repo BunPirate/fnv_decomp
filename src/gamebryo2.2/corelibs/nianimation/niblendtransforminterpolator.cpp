@@ -7,15 +7,18 @@
 class NiRTTI;
 
 // @fnv 0x00a41110
-bool NiBlendTransformInterpolator::Update(float fTime, NiObjectNET* pkObject, NiQuatTransform& kTransform)
+// pdb: NiBlendTransformInterpolator::Update | NiBlendTransformInterpolator.obj | retail, upstream name already matches, high
+// pdb params: fTime, pkInterpTarget, kValue
+// pdb locals: bReturnValue
+bool NiBlendTransformInterpolator::Update(float fTime, NiObjectNET* pkInterpTarget, NiQuatTransform& kValue)
 {
     bool bSuccess = false;
     if (m_ucInterpCount == 1)
-        bSuccess = UpdateAccumulatedTransform(fTime, pkObject, kTransform);
+        bSuccess = UpdateAccumulatedTransform(fTime, pkInterpTarget, kValue);
     else if (m_ucInterpCount > 0)
     {
         NormalizeWeights();
-        bSuccess = UpdateSingleInterpolator(fTime, pkObject, kTransform);
+        bSuccess = UpdateSingleInterpolator(fTime, pkInterpTarget, kValue);
     }
     m_fLastTime = fTime;
     return bSuccess;
@@ -47,6 +50,8 @@ struct FUN_00a36fd0_tgt
 
 // @fnv 0x00a40a20
 // src: XBOX_PDB 0x00a40a20
+// pdb: NiBlendTransformInterpolator::IsEqual | NiBlendTransformInterpolator.obj | retail, upstream name already matches, high
+// pdb params: pkObject
 bool FUN_00a40a20_shell::NiBlendTransformInterpolator_IsEqual(NiObject* pkObject)
 {
     return ((FUN_00a36fd0_tgt*)this)->NiBlendInterpolator_IsEqual(pkObject);
@@ -69,6 +74,9 @@ class FUN_00a40980 : public FUN_00a40980_base
 
 // Forwards the three constructor arguments to the base class constructor.
 // @fnv 0x00a40980
+// pdb: NiBlendTransformInterpolator::NiBlendTransformInterpolator | NiBlendTransformInterpolator.obj | retail, call graph, medium
+// pdb note: debug build links it to NiBlendFloatInterpolator::`scalar deleting destructor'
+// pdb params: bManagerControlled, fWeightThreshold, ucArraySize
 FUN_00a40980::FUN_00a40980(int a, float b, int c) : FUN_00a40980_base(a, b, c)
 {}
 
@@ -92,7 +100,7 @@ struct NiBlendObjectDerived_b9169 : NiBlendObject_b9169
 
 struct NiUpdateOwner_b9169
 {
-    void NiBlendInterpolator_CopyMembers(NiBlendObject_b9169* p, int a);
+    void NiBlendInterpolator_CopyMembers(NiBlendObject_b9169* pkDest, int kCloning);
 };
 
 struct FUN_00a40a50_cls : NiUpdateOwner_b9169
@@ -101,6 +109,9 @@ struct FUN_00a40a50_cls : NiUpdateOwner_b9169
 };
 
 // @fnv 0x00a40a50
+// pdb: NiBlendTransformInterpolator::CreateClone | NiBlendTransformInterpolator.obj | debug, object-file run extension, low
+// pdb params: kCloning
+// pdb locals: pkObject
 NiBlendObject_b9169* FUN_00a40a50_cls::CreateBlendObject(int aiValue)
 {
     NiBlendObject_b9169* p = new NiBlendObjectDerived_b9169();
@@ -117,7 +128,7 @@ extern unsigned int DAT_011f370c;
 extern unsigned int DAT_011f3710;
 extern float DAT_01096b8c;
 
-void __stdcall NiBlendInterpolator_LoadBinary(void* a1);
+void __stdcall NiBlendInterpolator_LoadBinary(void* kStream);
 
 class FUN_00a40ab0_obj
 {
@@ -190,15 +201,18 @@ class QuatBlockArg
     unsigned int m_14;
     unsigned int m_18;
     unsigned int m_1C;
-    void Apply(FUN_00a40ab0_obj* apObj);
+    void Apply(FUN_00a40ab0_obj* kStream);
 };
 
 // @fnv 0x00a40ab0
 // src: XBOX_PDB 0x00a40ab0
-void __stdcall NiBlendTransformInterpolator_LoadBinary(FUN_00a40ab0_obj* a1)
+// pdb: NiBlendTransformInterpolator::LoadBinary | NiBlendTransformInterpolator.obj | retail, upstream name already matches, high
+// pdb params: kStream
+// pdb locals: kValue
+void __stdcall NiBlendTransformInterpolator_LoadBinary(FUN_00a40ab0_obj* kStream)
 {
-    NiBlendInterpolator_LoadBinary(a1);
-    if (a1->m_uiD8 < 0xa01006e)
+    NiBlendInterpolator_LoadBinary(kStream);
+    if (kStream->m_uiD8 < 0xa01006e)
     {
         QuatBlockArg b;
         *(volatile float*)&b.m_1C = DAT_01096b8c;
@@ -209,7 +223,7 @@ void __stdcall NiBlendTransformInterpolator_LoadBinary(FUN_00a40ab0_obj* a1)
         b.m_10 = DAT_011f3708;
         b.m_14 = DAT_011f370c;
         b.m_18 = DAT_011f3710;
-        b.Apply(a1);
+        b.Apply(kStream);
     }
 }
 
@@ -231,6 +245,8 @@ const char* __cdecl NiViewerStrings_NiGetViewerString_Title(const char* pcText);
 
 // @fnv 0x00a41170
 // src: XBOX_PDB 0x00a41170
+// pdb: NiBlendTransformInterpolator::GetViewerStrings | NiBlendTransformInterpolator.obj | retail, upstream name already matches, high
+// pdb params: pkStrings
 void __stdcall NiBlendTransformInterpolator_GetViewerStrings(AGViewerStrings* pkStrings)
 {
     NiBlendInterpolator_GetViewerStrings(pkStrings);
@@ -241,6 +257,8 @@ void __cdecl NiBlendInterpolator_CopyMembers();
 
 // @fnv 0x00a40aa0
 // src: XBOX_PDB 0x00a40aa0
+// pdb: NiBlendTransformInterpolator::CreateCloneInPlace | NiBlendTransformInterpolator.obj | debug, upstream name already matches, high
+// pdb params: pkClone, kCloning
 void __cdecl NiBlendTransformInterpolator_CreateCloneInPlace()
 {
     NiBlendInterpolator_CopyMembers();
@@ -356,16 +374,19 @@ struct BlendTransformInterpolator : NiBlendTransformInterpolator
     {
         if (item.normalizedWeight == 0.0f)
             return false;
-        if (m_uiObjectFlags & 1)
+        if (m_uFlags & 1)
             time = item.updateTime;
         return time != DAT_0109696c;
     }
-    bool NiBlendTransformInterpolator_BlendValues(float time, NiObjectNET* object, BlendTransform& output);
+    bool NiBlendTransformInterpolator_BlendValues(float fTime, NiObjectNET* pkInterpTarget, BlendTransform& kValue);
 };
 // Blends available interpolator components into output, normalizing translation and scale by their weights and rotation by its length.
 // @fnv 0x00a40c10
 // src: XBOX_PDB 0x00a40c10
-bool BlendTransformInterpolator::NiBlendTransformInterpolator_BlendValues(float time, NiObjectNET* object, BlendTransform& output)
+// pdb: NiBlendTransformInterpolator::BlendValues | NiBlendTransformInterpolator.obj | retail, upstream name already matches, high
+// pdb params: fTime, pkInterpTarget, kValue
+// pdb locals: kFinalTranslate, bTransChanged, kFinalRotate, fFinalScale, fTotalScaleWeight, bRotChanged, bFirstRotation, bScaleChanged, fTotalTransWeight, uc, kItem, fUpdateTime, kTransform, bSuccess, kRotValue, fCos
+bool BlendTransformInterpolator::NiBlendTransformInterpolator_BlendValues(float fTime, NiObjectNET* pkInterpTarget, BlendTransform& kValue)
 {
     float translationWeight = 1.0f;
     float scaleWeight = 1.0f;
@@ -378,10 +399,10 @@ bool BlendTransformInterpolator::NiBlendTransformInterpolator_BlendValues(float 
     bool firstRotation = true;
     for (unsigned char iIndex = 0; iIndex < m_ucArraySize; ++iIndex)
     {
-        NiBlendInterpolator__InterpArrayItem& item = m_pInterpArray[iIndex];
+        NiBlendInterpolator__InterpArrayItem& item = m_pkInterpArray[iIndex];
         if (item.interpolator && item.normalizedWeight > 0.0f)
         {
-            float updateTime = time;
+            float updateTime = fTime;
             if (!GetTime(item, updateTime))
             {
                 translationWeight -= item.normalizedWeight;
@@ -389,7 +410,7 @@ bool BlendTransformInterpolator::NiBlendTransformInterpolator_BlendValues(float 
                 continue;
             }
             BlendTransform value;
-            if (item.interpolator->UpdateTransform(updateTime, object, *reinterpret_cast<NiQuatTransform*>(&value)))
+            if (item.interpolator->UpdateTransform(updateTime, pkInterpTarget, *reinterpret_cast<NiQuatTransform*>(&value)))
             {
                 if (value.m_kTranslate.x != -3.4028234663852886e+38)
                 {
@@ -439,7 +460,7 @@ bool BlendTransformInterpolator::NiBlendTransformInterpolator_BlendValues(float 
             }
         }
     }
-    BlendTransform* __restrict result = &output;
+    BlendTransform* __restrict result = &kValue;
     result->m_kTranslate.x = DAT_01015f5c;
     result->m_kRotate.m_fVectorY = DAT_01015f5c;
     result->m_fScale = DAT_01015f5c;

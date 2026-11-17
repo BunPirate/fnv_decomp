@@ -2,6 +2,7 @@
 
 #include "NiPSysModifierFloatCtlr.h"
 
+// pdb: class NiPSysAirFieldAirFrictionCtlr, size 0x40, bases: NiPSysModifierFloatCtlr, 0 members
 class NiPSysAirFieldAirFrictionCtlr : public NiPSysModifierFloatCtlr
 {
 public:

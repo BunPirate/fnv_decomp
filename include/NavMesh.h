@@ -36,6 +36,7 @@ class OutArr;
 class ParentChildLinks;
 class TESObjectCELL;
 
+// pdb: class NavMesh, size 0x108, bases: TESForm, TESChildCell, NiRefObject, 15 members
 class NavMesh : public TESForm, public TESChildCell, public NiRefObject
 {
 public:
@@ -54,21 +55,21 @@ public:
     // The explicit base cleanup entry takes the NiRefObject subobject as this.
     void __thiscall Animation_ResetVtableAndFinishScriptRunLock();
 
-    void ForceSetFormID(unsigned int formID);
+    void ForceSetFormID(unsigned int aiID);
     void CopyNavMeshDataTo(NavMeshPtr&);
     void SetDeletionState(bool);
     void InitializeNavMeshData();
     void RebuildTriangleList();
     unsigned int CollectTriangleCells(unsigned short tri, OutArr& out);
     void BuildPortalPOVs();
-    void ComputeBounds(NiPoint3& outMin, NiPoint3& outMax);
-    bool Validate(int);
+    void ComputeBounds(NiPoint3& apRetMin, NiPoint3& apRetMax);
+    bool CheckNavMesh(int);
     void GetTriangleVertexPositions(unsigned short, unsigned int*, unsigned int*, unsigned int*);
     void AddAvoidNode(void* source, unsigned short triangle, float radius, float cost);
     TESObjectCELL* GetParentCell();
     NavMeshTriangle* GetTriangle(unsigned short);
     NiPoint3 GetNavMeshData(unsigned short);
-    NavMeshStaticAvoidNode* GetStaticAvoidNodeData();
+    NavMeshStaticAvoidNode* NavMeshPtr_ctor();
     EdgeExtraInfo* GetEdgeInfo(unsigned short, int);
     NavMeshEdgeVertexPair GetEdgeVertices(unsigned short, int);
     void GetEdgeVertices(unsigned short, int, NiPoint3&, NiPoint3&);
@@ -77,7 +78,7 @@ public:
     bool AddDoorObstacle(unsigned int, ObstacleData*);
     NavMeshClosedDoorInfo* GetClosedDoorInfo(unsigned short);
     bool FindHeightOnTriangle(unsigned short, const NiPoint3&, float&, float, float);
-    bool Search(const NiPointer<ObstacleData>&, ParentChildLinks&);
+    bool GetObstaclePOVsForTriangle(const NiPointer<ObstacleData>&, ParentChildLinks&);
     bool RemoveObstacleAndUpdateLinks(const NiPointer<ObstacleData>&, ParentChildLinks&);
     bool RemoveDoorObstacle(unsigned int);
     NavMeshEdgeExtra* GetEdge(unsigned short);
@@ -87,10 +88,10 @@ public:
     bool GetMatchingEdge_1(const NavMeshEdgeRef*, NavMeshEdgeOut*);
     bool GetMatchingEdge(unsigned short, int, NiPointer<NavMesh>&, int, int);
     unsigned short FindTriangleForLocation(const NiPoint3&, FindTriangleForLocationFilter*);
-    int FindCrossedEdge(unsigned short, int, const NiPoint3&, const NiPoint3&);
+    int FindIntersectingEdgeFast(unsigned short, int, const NiPoint3&, const NiPoint3&);
     bool MatchNavMesh(const NavMeshEdgeData&, NavMeshEdgeData&);
     unsigned int GetCurrentMoveModeType();
-    bool GetTriangleHeightAtPoint(unsigned short, const NiPoint3&, float, float, float&);
+    bool ComputeTriangleZForLocation(unsigned short, const NiPoint3&, float, float, float&);
     static void operator delete(void*, unsigned int);
     static void Deallocate(void*);
 
@@ -98,10 +99,10 @@ public:
     bool TestPointOnTriangle(unsigned short, const NiPoint3&, float&, FindTriangleForLocationFilter*);
     bool TestPointOnTriangle(unsigned short, const NiPoint3*, float*, int);
     int CollectTrianglePOVs(unsigned short, BSSimpleArray<unsigned short, 1024>*);
-    bool GetTriangleHeightAtPoint(unsigned short, const NiPoint3&, float, float, float*);
-    bool FindTriangleZ(const NiPoint3&, float, float, float*);
-    int FindCrossedEdge(unsigned short, int, const NiPoint3*, const NiPoint3*);
-    NavEdgeHit FindEdgeIntersection(unsigned short, int, const NiPoint3&, const NiPoint3&);
+    bool ComputeTriangleZForLocation(unsigned short, const NiPoint3&, float, float, float*);
+    bool ComputeNavMeshZForLocation(const NiPoint3&, float, float, float*);
+    int FindIntersectingEdgeFast(unsigned short, int, const NiPoint3*, const NiPoint3*);
+    NavEdgeHit FindInterectingEdge2(unsigned short, int, const NiPoint3&, const NiPoint3&);
     NiPoint3 AdjustPointToNavMesh(const NiPoint3&, float);
     EdgeExtraInfo* GetOrCreateEdgeInfo(unsigned short, int);
     unsigned short AddEdgeInfo(const EdgeExtraInfo&);
@@ -154,7 +155,7 @@ public:
     void FindAdjacentEdge(unsigned short, int, NavMesh*&, unsigned short&, int&);
     bool FUN_00460340();
     bool FUN_00440d80();
-    void FUN_006986d0();
+    void UpdateNavMeshInfo();
     void PathingRequestCoveredMove_SetCombatCoverLocation(NavMeshInfo*);
     void PathingRequestCoveredMove_SetCombatCoverLocation(b9_big*);
     void ForwardToStub(int);
@@ -163,21 +164,21 @@ public:
     int GetUndoDataIndexForObstacle(int, unsigned int*);
     unsigned int GetHavokWorldObjectCountInSceneGraph_0084e3a0();
     NavMesh* NavMeshPtr_NavMeshPtr_00464ff0(int);
-    bool FUN_006997b0(unsigned short);
+    bool GetObstacleForTriangle(unsigned short);
 
-    TESObjectCELL* m_pOwningCell; // 0x24
+    TESObjectCELL* pParentCell; // 0x24 // src: XBOX_RETAIL_PDB +0x24 (old: m_pOwningCell)
     BSSimpleArray<NavMeshVertex, 1024> Vertices; // 0x28
     BSSimpleArray<NavMeshTriangle, 1024> Triangles; // 0x38
-    BSSimpleArray<EdgeExtraInfo, 1024> m_kEdgeExtraInfo; // 0x48
-    BSSimpleArray<NavMeshTriangleDoorPortal, 1024> m_kDoorPortals; // 0x58
-    BSSimpleArray<NavMeshClosedDoorInfo, 1024> m_kClosedDoorInfo; // 0x68
-    BSSimpleArray<unsigned short, 1024> m_kIndexList; // 0x78
-    NiTMap<unsigned short, NavMeshPOVData> POVPointerArray; // 0x88
-    BSSimpleArray<unsigned short, 1024> m_kAdditionalIndexList; // 0x98
-    NavMeshGrid m_kGrid; // 0xA8
-    BSSimpleArray<NiPointer<ObstacleUndoData>, 1024> m_kObstacleUndoData; // 0xD0
+    BSSimpleArray<EdgeExtraInfo, 1024> ExtraEdgeInfo; // 0x48 // src: XBOX_RETAIL_PDB +0x48 (old: m_kEdgeExtraInfo)
+    BSSimpleArray<NavMeshTriangleDoorPortal, 1024> DoorPortals; // 0x58 // src: XBOX_RETAIL_PDB +0x58 (old: m_kDoorPortals)
+    BSSimpleArray<NavMeshClosedDoorInfo, 1024> ClosedDoors; // 0x68 // src: XBOX_RETAIL_PDB +0x68 (old: m_kClosedDoorInfo)
+    BSSimpleArray<unsigned short, 1024> CoverArray; // 0x78 // src: XBOX_RETAIL_PDB +0x78 (old: m_kIndexList)
+    NiTMap<unsigned short, NavMeshPOVData> POVs; // 0x88 // src: XBOX_RETAIL_PDB +0x88 (old: POVPointerArray)
+    BSSimpleArray<unsigned short, 1024> ClosestPOVs; // 0x98 // src: XBOX_RETAIL_PDB +0x98 (old: m_kAdditionalIndexList)
+    NavMeshGrid MeshGrid; // 0xA8 // src: XBOX_RETAIL_PDB +0xa8 (old: m_kGrid)
+    BSSimpleArray<NiPointer<ObstacleUndoData>, 1024> Obstacles; // 0xD0 // src: XBOX_RETAIL_PDB +0xd0 (old: m_kObstacleUndoData)
     NiTMap<unsigned short, NiPointer<ObstacleData> >* pTriangleToObstacleMap; // 0xE0
-    BSSimpleArray<unsigned short, 1024> m_kAdditionalData; // 0xE4
-    BSSimpleArray<NavMeshStaticAvoidNode, 1024> m_kStaticAvoidNodes; // 0xF4
-    NavMeshInfo* m_pNavigationMesh; // 0x104
+    BSSimpleArray<unsigned short, 1024> ObstaclePOVs; // 0xE4 // src: XBOX_RETAIL_PDB +0xe4 (old: m_kAdditionalData)
+    BSSimpleArray<NavMeshStaticAvoidNode, 1024> StaticAvoidNodes; // 0xF4 // src: XBOX_RETAIL_PDB +0xf4 (old: m_kStaticAvoidNodes)
+    NavMeshInfo* pNavMeshInfo; // 0x104 // src: XBOX_RETAIL_PDB +0x104 (old: m_pNavigationMesh)
 };

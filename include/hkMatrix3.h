@@ -8,6 +8,7 @@ class hkRotation;
 class hkSimdReal;
 enum hkResult;
 
+// pdb: class hkMatrix3, size 0x30, 3 members
 class hkMatrix3
 {
 public:
@@ -32,7 +33,7 @@ public:
     void SetDiagonalElements(const hkVector4& r) throw();
     void transpose() throw();
     void _setTranspose(const hkMatrix3& s);
-    void SetProduct(const hkMatrix3& a, const hkMatrix3& b) throw();
+    void SetProduct(const hkMatrix3& aTb, const hkMatrix3& bTc) throw();
     void setMul2(const hkMatrix3& a, const hkMatrix3& b);
     void _setMul(const hkMatrix3& aTb, const hkMatrix3& bTc);
     void add(const hkMatrix3& a);

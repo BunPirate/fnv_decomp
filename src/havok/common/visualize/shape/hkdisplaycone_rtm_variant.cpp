@@ -161,7 +161,7 @@ struct Cls
     int m_uiItemCount;
     float m_fConeAngle;
     float m_step;
-    void __thiscall hkDisplayCone_generateConeVertices(ArrayRef output);
+    void __thiscall hkDisplayCone_generateConeVertices(ArrayRef conePoints);
 };
 static __forceinline ::__m128 rot(const Q& quaternion, const Q& vector)
 {
@@ -202,13 +202,16 @@ __forceinline void Q::SetRotatedDirection(const Q& quaternion, const Q& vector)
 }
 // @fnv 0x00de54b0
 // src: XBOX_PDB 0x00de54b0
-void __thiscall Cls::hkDisplayCone_generateConeVertices(ArrayRef output)
+// pdb: hkDisplayCone::generateConeVertices | hkDisplayCone.obj | retail, upstream name already matches, high
+// pdb params: conePoints
+// pdb locals: rotationFromNormal, rotationAboutAxis, perpVector
+void __thiscall Cls::hkDisplayCone_generateConeVertices(ArrayRef conePoints)
 {
     int count = m_uiItemCount;
     ::GlobalContext* context = ::hkMemoryRouter_getInstance();
     ::Allocator* ctx = context->allocator;
     _ReadWriteBarrier();
-    HArr* arr = output.value;
+    HArr* arr = conePoints.value;
     int capacity = arr->m_cap & 0x3fffffff;
     if (capacity < count)
     {

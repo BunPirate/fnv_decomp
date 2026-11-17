@@ -23,6 +23,8 @@ struct FUN_00b60640 : QueuedFileEntry
 };
 
 // @fnv 0x00b60640
+// pdb: GrassLoadTask::GrassLoadTask | TallGrassShaderProperty.obj | retail, call graph, medium
+// pdb params: apName
 FUN_00b60640::FUN_00b60640(char const* filename) : QueuedFileEntry(2)
 {
     SetFileName_00c3cee0(filename);

@@ -2,13 +2,14 @@
 
 #include "BGSEntryPointFunctionData.h"
 
+// pdb: class BGSEntryPointFunctionDataTwoValue, size 0xc, bases: BGSEntryPointFunctionData, 2 members
 class BGSEntryPointFunctionDataTwoValue : public BGSEntryPointFunctionData
 {
 public:
     BGSEntryPointFunctionDataTwoValue();
 
-    float EntryPointTwoValueFunctionData;
-    float fSecondFunctionValue;
+    float fValue1; // src: XBOX_RETAIL_PDB +0x4 (old: EntryPointTwoValueFunctionData)
+    float fValue2; // src: XBOX_RETAIL_PDB +0x8 (old: fSecondFunctionValue)
 
     float ReadValueA();
     float ReadValueB();

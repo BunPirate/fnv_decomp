@@ -12,19 +12,20 @@ class NiColorA;
 class NiGeometryProperties;
 class GeomInfo;
 
+// pdb: class NiGeometry, size 0xf0 (here 0xc4), bases: NiAVObject, 4 members
 class NiGeometry : public NiAVObject
 {
   public:
     NiGeometry();
-    NiGeometry(NiGeometryData* data);
+    NiGeometry(NiGeometryData* pkModelData);
     virtual void LoadBinary(NiStream& stream);
-    virtual void LinkObject(NiStream& stream);
-    virtual void ProcessClone(CloningProcess& process);
+    virtual void LinkObject(NiStream& kStream);
+    virtual void ProcessClone(CloningProcess& kCloning);
     virtual void SetSelectiveUpdateFlags(bool& selectiveUpdate, bool transforms, bool& rigid);
-    virtual void UpdatePropertiesDownwardPass(NiPropertyState* state);
+    virtual void UpdatePropertiesDownwardPass(NiPropertyState* pkParentState);
     virtual void UpdateWorldBound();
-    virtual void OnVisible(NiCullingProcess& process);
-    virtual void PurgeRendererData(NiRenderer* renderer);
+    virtual void OnVisible(NiCullingProcess& kCuller);
+    virtual void PurgeRendererData(NiRenderer* apkRenderer);
 
     virtual void RenderImmediate(NiRenderer* renderer);
     virtual void RenderWithRenderer(NiRenderer* renderer);
@@ -47,15 +48,15 @@ class NiGeometry : public NiAVObject
     using NiAVObject::GetRTTI;
     virtual bool RegisterStreamables(NiStream& stream);
     using NiAVObject::RegisterStreamables;
-    virtual void SaveBinary(NiStream& stream);
+    virtual void SaveBinary(NiStream& kStream);
     using NiAVObject::SaveBinary;
-    virtual bool IsEqual(NiObject* object) const;
+    virtual bool IsEqual(NiObject* pkObject) const;
     using NiAVObject::IsEqual;
-    virtual void GetViewerStrings(NiViewerStringsArray* strings);
+    virtual void GetViewerStrings(NiViewerStringsArray* pkStrings);
     using NiAVObject::GetViewerStrings;
     using NiAVObject::IsGeometry;
     using NiAVObject::SetObjectBound;
-    virtual void ApplyTransform(const NiMatrix3& rotation, const NiPoint3& position, bool onLeft);
+    virtual void ApplyTransform(const NiMatrix3& kMat, const NiPoint3& kTrn, bool onLeft);
     using NiAVObject::ApplyTransform;
     using NiAVObject::PostLinkObject;
     void RenderImmediate();
@@ -69,13 +70,13 @@ class NiGeometry : public NiAVObject
     unsigned short GetVertexCount() const;
     NiPoint3* GetVertices();
     void SetActiveVertexQuantity(unsigned short quantity);
-    unsigned short GetActiveVertexQuantity();
+    unsigned short NiTriBasedGeom_GetTriangleCount();
     void SetDynamicData(bool dynamic);
     NiPoint3* GetNormals();
     int GetNormalBinormalTangentMethod();
     void StoreNormalBinormalTangent(int method);
     void SetModelBound(void* bound);
-    void SetModelBound(const NiBound& bound);
+    void SetModelBound(const NiBound& kBound);
     NiBound* GetModelBound();
     void CreateColors(bool create);
     NiColorA* GetColors();
@@ -85,7 +86,7 @@ class NiGeometry : public NiAVObject
     NiPoint2* GetTextureSet(unsigned short index);
     void AppendTextureSet(NiPoint2* textures);
     NiSkinInstance* GetSkinInstance();
-    void SetSkinInstance(NiSkinInstance* instance);
+    void SetSkinInstance(NiSkinInstance* pSkinInstance);
     NiAdditionalGeometryData* GetAdditionalGeometryData();
     void AssignAdditionalGeometryData(NiAdditionalGeometryData* data);
     void SetSortObject(bool sort);

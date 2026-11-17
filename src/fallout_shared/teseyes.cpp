@@ -12,6 +12,7 @@
 
 
 // @fnv 0x005fc050
+// pdb: TESEyes::TESEyes | TESEyes.obj | retail, upstream name already matches, high
 TESEyes::TESEyes()
 {
     SetFormType((ENUM_FORM_ID)0xb);
@@ -52,10 +53,13 @@ bool TESEyes::IsFlag4Clear()
 
 struct FUN_005e79a0_t
 {
-    bool TESForm_CompareAllComponents(TESForm* apForm);
+    bool TESForm_CompareAllComponents(TESForm* apCompare);
 };
 
 // @fnv 0x005fc420
+// pdb: TESEyes::Compare | TESEyes.obj | retail, vtable slot, high
+// pdb params: apCompare
+// pdb locals: pcomp
 bool TESEyes::IsNotEqual(TESForm* apCompare)
 {
     TESEyes* pcomp = dynamic_cast<TESEyes*>(apCompare);
@@ -78,6 +82,7 @@ bool TESEyes::IsNotEqual(TESForm* apCompare)
 void _Deallocate(void*);
 // Calls Destroy, then deallocates this if bit 0 of flags is set, and returns this.
 // @fnv 0x005fc0f0
+// pdb: TESEyes::`scalar deleting destructor' | TESEyes.obj | retail, vtable slot, high
 void* TESEyes::ReleaseIfFlagged(unsigned int flags)
 {
     Destroy();
@@ -88,6 +93,7 @@ void* TESEyes::ReleaseIfFlagged(unsigned int flags)
 
 void __cdecl TESForm_AddChunk_3(unsigned int, unsigned char);
 // @fnv 0x005fc1d0
+// pdb: TESEyes::Save | TESEyes.obj | retail, vtable slot, high
 void TESEyes::SaveEyes()
 {
     TESForm::BeginFormRecord();
@@ -102,6 +108,9 @@ struct FUN_005e78f0_t
     void TESForm_CopyAllComponents(TESForm* apForm);
 };
 // @fnv 0x005fc3a0
+// pdb: TESEyes::Copy | TESEyes.obj | retail, vtable slot, high
+// pdb params: apCopy
+// pdb locals: pcopy
 void TESEyes::CopyFromEyes(TESForm* apCopy)
 {
     TESEyes* eyes = dynamic_cast<TESEyes*>(apCopy);
@@ -118,6 +127,9 @@ struct LH
     bool IsInList(TESNPC*&);
 };
 // @fnv 0x005fc5f0
+// pdb: TESFaction::AddRankData | TESFaction.obj | retail, object-file run extension, low
+// pdb note: debug build links it to TESEyes::CanBeEyesForNPC
+// pdb locals: plist, iindex, pdata, plastlist
 bool TESEyes::CanBeNPC(TESNPC* npc)
 {
     bool result = false;
@@ -154,6 +166,7 @@ void TESEyes::SetMale(bool aFlag)
 
 // Clears bit 4 of cFlags when aFlag is true, otherwise sets bit 4.
 // @fnv 0x005fc5b0
+// pdb: RANK_DATA::RANK_DATA | TESFaction.obj | retail, object-file run extension, low
 void TESEyes::SetFemale(bool aFlag)
 {
     if (aFlag)
@@ -164,6 +177,9 @@ void TESEyes::SetFemale(bool aFlag)
 
 // Loads a TESEyes record from the file, handling EDID, OBND, FULL, ICON and DATA chunks, and returns false if the record type is not 0xb.
 // @fnv 0x005fc220
+// pdb: TESEyes::Load | TESEyes.obj | retail, upstream name already matches, high
+// pdb params: apFile
+// pdb locals: chunkid, pMessage
 bool TESEyes::Load(TESFile* apFile)
 {
     // GetTESForm (0x00472660): this caller compares the full EAX result; preserve its int return view.

@@ -65,55 +65,73 @@ public:
 };
 // Constructs a CombatActionIgnoreBlockedTarget by initializing the base CombatAction with the given action and calling AddEffect(6, 0).
 // @fnv 0x0097cc80
-CombatActionIgnoreBlockedTarget::CombatActionIgnoreBlockedTarget(COMBAT_ACTION action) : CombatAction(action)
+// pdb: CombatActionIgnoreBlockedTarget::CombatActionIgnoreBlockedTarget | CombatActions.obj | retail, upstream name already matches, high
+// pdb params: aeType
+CombatActionIgnoreBlockedTarget::CombatActionIgnoreBlockedTarget(COMBAT_ACTION aeType) : CombatAction(aeType)
 {
     AddEffect(6, 0);
 }
 // Ensures the list at DAT_011f13d0[index] exists, then appends action to it.
 // @fnv 0x0097ab30
-void CombatActionAttackRangedExplosive::Execute(int index, CombatAction* action)
+// pdb: CombatActionAttackRangedExplosive::Execute | CombatActions.obj | debug, upstream name already matches, high
+// pdb params: apCombatController, aiActionValue
+void CombatActionAttackRangedExplosive::Execute(int apCombatController, CombatAction* aiActionValue)
 {
-    if (!DAT_011f13d0[index])
+    if (!DAT_011f13d0[apCombatController])
     {
-        DAT_011f13d0[index] = new BSSimpleList<CombatAction*>;
+        DAT_011f13d0[apCombatController] = new BSSimpleList<CombatAction*>;
     }
-    DAT_011f13d0[index]->AddTail(action);
+    DAT_011f13d0[apCombatController]->AddTail(aiActionValue);
 }
 // Forwards the state and value to Effects.AddSoundEntry.
 // @fnv 0x0097adc0
-void CombatAction::AddEffect(int state, int value)
+// pdb: CombatAction::AddEffect | CombatActions.obj | debug, upstream name already matches, high
+// pdb params: aeState, aiValue
+void CombatAction::AddEffect(int aeState, int aiValue)
 {
-    Effects.AddSoundEntry(state, value);
+    Effects.CombatWorldStateList_AddWorldState(aeState, aiValue);
 }
 // Forwards the state and value arguments to AddSoundEntry on the member object.
 // @fnv 0x0097ade0
+// pdb: CombatAction::AddExecutionCondition | CombatActions.obj | debug, call graph, medium
+// pdb params: aeState, aiValue
 void CombatAction::AddFirstSoundEntry(int state, int value)
 {
-    m_kFirstSoundEntryNode.AddSoundEntry(state, value);
+    ExecutionConditions.CombatWorldStateList_AddWorldState(state, value);
 }
 // Forwards state and value to AddSoundEntry on the member object.
 // @fnv 0x0097bc60
+// pdb: CombatAction::AddPossibleEffect | CombatActions.obj | debug, call graph, medium
+// pdb params: aeState, aiValue
 void CombatAction::AddSecondSoundEntry(int state, int value)
 {
-    m_kSecondSoundEntryNode.AddSoundEntry(state, value);
+    PossibleEffects.CombatWorldStateList_AddWorldState(state, value);
 }
 // @fnv 0x0097c070
+// pdb: CombatAction::RemovePrecondition | CombatActions.obj | debug, call graph, medium
+// pdb params: aeState
 void CombatAction::RemoveActionWorldStateByOwner(int state)
 {
-    m_kActionWorldStateNode.RemoveItemByOwner(state);
+    Preconditions.CombatWorldStateList_RemoveWorldState(state);
 }
 // @fnv 0x0097c240
+// pdb: CombatAction::RemoveEffect | CombatActions.obj | debug, call graph, medium
+// pdb params: aeState
 void CombatAction::RemoveEffectByOwner(int state)
 {
-    Effects.RemoveItemByOwner(state);
+    Effects.CombatWorldStateList_RemoveWorldState(state);
 }
 // @fnv 0x0097c260
+// pdb: CombatAction::RemoveExecutionCondition | CombatActions.obj | debug, call graph, medium
+// pdb params: aeState
 void CombatAction::RemoveFirstSoundEntryByOwner(int state)
 {
-    m_kFirstSoundEntryNode.RemoveItemByOwner(state);
+    ExecutionConditions.CombatWorldStateList_RemoveWorldState(state);
 }
 // @fnv 0x0097ad10
-CombatActionAttackRanged::CombatActionAttackRanged(COMBAT_ACTION action) : CombatAction(action)
+// pdb: CombatActionAttackRanged::CombatActionAttackRanged | CombatActions.obj | retail, upstream name already matches, high
+// pdb params: aeType
+CombatActionAttackRanged::CombatActionAttackRanged(COMBAT_ACTION aeType) : CombatAction(aeType)
 {
     AddFirstSoundEntry(3, 0);
     AddActionWorldState(5, 1);
@@ -123,7 +141,9 @@ CombatActionAttackRanged::CombatActionAttackRanged(COMBAT_ACTION action) : Comba
     AddEffect(0, 1);
 }
 // @fnv 0x0097aeb0
-CombatActionAttackRangedFromCover::CombatActionAttackRangedFromCover(COMBAT_ACTION action) : CombatAction(action)
+// pdb: CombatActionAttackRangedFromCover::CombatActionAttackRangedFromCover | CombatActions.obj | retail, upstream name already matches, high
+// pdb params: aeType
+CombatActionAttackRangedFromCover::CombatActionAttackRangedFromCover(COMBAT_ACTION aeType) : CombatAction(aeType)
 {
     AddFirstSoundEntry(18, 0);
     AddFirstSoundEntry(18, 17);
@@ -135,7 +155,9 @@ CombatActionAttackRangedFromCover::CombatActionAttackRangedFromCover(COMBAT_ACTI
     AddEffect(0, 1);
 }
 // @fnv 0x0097b0b0
-CombatActionAttackRangedExplosive::CombatActionAttackRangedExplosive(COMBAT_ACTION action) : CombatAction(action)
+// pdb: CombatActionAttackRangedExplosive::CombatActionAttackRangedExplosive | CombatActions.obj | retail, upstream name already matches, high
+// pdb params: aeType
+CombatActionAttackRangedExplosive::CombatActionAttackRangedExplosive(COMBAT_ACTION aeType) : CombatAction(aeType)
 {
     AddFirstSoundEntry(3, 0);
     AddFirstSoundEntry(8, 0);
@@ -146,8 +168,10 @@ CombatActionAttackRangedExplosive::CombatActionAttackRangedExplosive(COMBAT_ACTI
     AddEffect(0, 1);
 }
 // @fnv 0x0097b280
-CombatActionAttackRangedExplosiveFromCover::CombatActionAttackRangedExplosiveFromCover(COMBAT_ACTION action)
-    : CombatAction(action)
+// pdb: CombatActionAttackRangedExplosiveFromCover::CombatActionAttackRangedExplosiveFromCover | CombatActions.obj | retail, upstream name already matches, high
+// pdb params: aeType
+CombatActionAttackRangedExplosiveFromCover::CombatActionAttackRangedExplosiveFromCover(COMBAT_ACTION aeType)
+    : CombatAction(aeType)
 {
     AddFirstSoundEntry(18, 0);
     AddFirstSoundEntry(18, 17);
@@ -160,7 +184,9 @@ CombatActionAttackRangedExplosiveFromCover::CombatActionAttackRangedExplosiveFro
     AddEffect(0, 1);
 }
 // @fnv 0x0097b350
-CombatActionAttackMelee::CombatActionAttackMelee(COMBAT_ACTION action) : CombatAction(action)
+// pdb: CombatActionAttackMelee::CombatActionAttackMelee | CombatActions.obj | retail, upstream name already matches, high
+// pdb params: aeType
+CombatActionAttackMelee::CombatActionAttackMelee(COMBAT_ACTION aeType) : CombatAction(aeType)
 {
     AddFirstSoundEntry(18, 17);
     AddFirstSoundEntry(3, 0);
@@ -171,7 +197,9 @@ CombatActionAttackMelee::CombatActionAttackMelee(COMBAT_ACTION action) : CombatA
     AddEffect(0, 1);
 }
 // @fnv 0x0097b4e0
-CombatActionAttackHandToHand::CombatActionAttackHandToHand(COMBAT_ACTION action) : CombatAction(action)
+// pdb: CombatActionAttackHandToHand::CombatActionAttackHandToHand | CombatActions.obj | retail, upstream name already matches, high
+// pdb params: aeType
+CombatActionAttackHandToHand::CombatActionAttackHandToHand(COMBAT_ACTION aeType) : CombatAction(aeType)
 {
     AddFirstSoundEntry(18, 17);
     AddFirstSoundEntry(3, 0);
@@ -182,7 +210,9 @@ CombatActionAttackHandToHand::CombatActionAttackHandToHand(COMBAT_ACTION action)
     AddEffect(0, 1);
 }
 // @fnv 0x0097b620
-CombatActionAttackGrenade::CombatActionAttackGrenade(COMBAT_ACTION action) : CombatAction(action)
+// pdb: CombatActionAttackGrenade::CombatActionAttackGrenade | CombatActions.obj | retail, upstream name already matches, high
+// pdb params: aeType
+CombatActionAttackGrenade::CombatActionAttackGrenade(COMBAT_ACTION aeType) : CombatAction(aeType)
 {
     AddFirstSoundEntry(3, 0);
     AddFirstSoundEntry(8, 0);
@@ -192,7 +222,9 @@ CombatActionAttackGrenade::CombatActionAttackGrenade(COMBAT_ACTION action) : Com
     AddEffect(0, 1);
 }
 // @fnv 0x0097b7a0
-CombatActionAttackGrenadeFlushTarget::CombatActionAttackGrenadeFlushTarget(COMBAT_ACTION action) : CombatAction(action)
+// pdb: CombatActionAttackGrenadeFlushTarget::CombatActionAttackGrenadeFlushTarget | CombatActions.obj | retail, upstream name already matches, high
+// pdb params: aeType
+CombatActionAttackGrenadeFlushTarget::CombatActionAttackGrenadeFlushTarget(COMBAT_ACTION aeType) : CombatAction(aeType)
 {
     AddFirstSoundEntry(8, 0);
     AddFirstSoundEntry(7, 0);
@@ -201,7 +233,9 @@ CombatActionAttackGrenadeFlushTarget::CombatActionAttackGrenadeFlushTarget(COMBA
     AddEffect(9, 1);
 }
 // @fnv 0x0097b9e0
-CombatActionAttackGrenadeFromCover::CombatActionAttackGrenadeFromCover(COMBAT_ACTION action) : CombatAction(action)
+// pdb: CombatActionAttackGrenadeFromCover::CombatActionAttackGrenadeFromCover | CombatActions.obj | retail, upstream name already matches, high
+// pdb params: aeType
+CombatActionAttackGrenadeFromCover::CombatActionAttackGrenadeFromCover(COMBAT_ACTION aeType) : CombatAction(aeType)
 {
     AddFirstSoundEntry(18, 0);
     AddFirstSoundEntry(18, 17);
@@ -214,7 +248,9 @@ CombatActionAttackGrenadeFromCover::CombatActionAttackGrenadeFromCover(COMBAT_AC
     AddEffect(0, 1);
 }
 // @fnv 0x0097bbd0
-CombatActionMove::CombatActionMove(COMBAT_ACTION action) : CombatAction(action)
+// pdb: CombatActionMove::CombatActionMove | CombatActions.obj | retail, upstream name already matches, high
+// pdb params: aeType
+CombatActionMove::CombatActionMove(COMBAT_ACTION aeType) : CombatAction(aeType)
 {
     AddFirstSoundEntry(18, 17);
     AddActionWorldState(10, -65512);
@@ -222,7 +258,9 @@ CombatActionMove::CombatActionMove(COMBAT_ACTION action) : CombatAction(action)
     AddSecondSoundEntry(6, 0);
 }
 // @fnv 0x0097bfe0
-CombatActionMoveAndSwitchToMelee::CombatActionMoveAndSwitchToMelee(COMBAT_ACTION action) : CombatActionMove(action)
+// pdb: CombatActionMoveAndSwitchToMelee::CombatActionMoveAndSwitchToMelee | CombatActions.obj | retail, upstream name already matches, high
+// pdb params: aeType
+CombatActionMoveAndSwitchToMelee::CombatActionMoveAndSwitchToMelee(COMBAT_ACTION aeType) : CombatActionMove(aeType)
 {
     RemoveActionWorldStateByOwner(10);
     AddFirstSoundEntry(12, 2);
@@ -230,8 +268,10 @@ CombatActionMoveAndSwitchToMelee::CombatActionMoveAndSwitchToMelee(COMBAT_ACTION
     AddSecondSoundEntry(10, 2);
 }
 // @fnv 0x0097c170
-CombatActionMoveAndAttackRanged::CombatActionMoveAndAttackRanged(COMBAT_ACTION action)
-    : CombatActionAttackRanged(action)
+// pdb: CombatActionMoveAndAttackRanged::CombatActionMoveAndAttackRanged | CombatActions.obj | retail, upstream name already matches, high
+// pdb params: aeType
+CombatActionMoveAndAttackRanged::CombatActionMoveAndAttackRanged(COMBAT_ACTION aeType)
+    : CombatActionAttackRanged(aeType)
 {
     RemoveFirstSoundEntryByOwner(3);
     RemoveFirstSoundEntryByOwner(18);
@@ -245,8 +285,10 @@ CombatActionMoveAndAttackRanged::CombatActionMoveAndAttackRanged(COMBAT_ACTION a
     AddSecondSoundEntry(6, 0);
 }
 // @fnv 0x0097c3a0
-CombatActionMoveAndAttackRangedExplosive::CombatActionMoveAndAttackRangedExplosive(COMBAT_ACTION action)
-    : CombatActionAttackRangedExplosive(action)
+// pdb: CombatActionMoveAndAttackRangedExplosive::CombatActionMoveAndAttackRangedExplosive | CombatActions.obj | retail, upstream name already matches, high
+// pdb params: aeType
+CombatActionMoveAndAttackRangedExplosive::CombatActionMoveAndAttackRangedExplosive(COMBAT_ACTION aeType)
+    : CombatActionAttackRangedExplosive(aeType)
 {
     RemoveFirstSoundEntryByOwner(3);
     RemoveFirstSoundEntryByOwner(18);
@@ -260,8 +302,10 @@ CombatActionMoveAndAttackRangedExplosive::CombatActionMoveAndAttackRangedExplosi
     AddSecondSoundEntry(6, 0);
 }
 // @fnv 0x0097c560
-CombatActionMoveAndAttackGrenade::CombatActionMoveAndAttackGrenade(COMBAT_ACTION action)
-    : CombatActionAttackGrenade(action)
+// pdb: CombatActionMoveAndAttackGrenade::CombatActionMoveAndAttackGrenade | CombatActions.obj | retail, upstream name already matches, high
+// pdb params: aeType
+CombatActionMoveAndAttackGrenade::CombatActionMoveAndAttackGrenade(COMBAT_ACTION aeType)
+    : CombatActionAttackGrenade(aeType)
 {
     RemoveFirstSoundEntryByOwner(3);
     RemoveActionWorldStateByOwner(1);
@@ -274,7 +318,9 @@ CombatActionMoveAndAttackGrenade::CombatActionMoveAndAttackGrenade(COMBAT_ACTION
     AddSecondSoundEntry(6, 0);
 }
 // @fnv 0x0097c700
-CombatActionDrawWeapon::CombatActionDrawWeapon(COMBAT_ACTION action) : CombatAction(action)
+// pdb: CombatActionDrawWeapon::CombatActionDrawWeapon | CombatActions.obj | retail, upstream name already matches, high
+// pdb params: aeType
+CombatActionDrawWeapon::CombatActionDrawWeapon(COMBAT_ACTION aeType) : CombatAction(aeType)
 {
     AddFirstSoundEntry(12, -1);
     AddFirstSoundEntry(10, 7);
@@ -282,35 +328,45 @@ CombatActionDrawWeapon::CombatActionDrawWeapon(COMBAT_ACTION action) : CombatAct
     AddEffect(10, -1);
 }
 // @fnv 0x0097c850
-CombatActionSwitchWeapon::CombatActionSwitchWeapon(COMBAT_ACTION action) : CombatAction(action)
+// pdb: CombatActionSwitchWeapon::CombatActionSwitchWeapon | CombatActions.obj | retail, upstream name already matches, high
+// pdb params: aeType
+CombatActionSwitchWeapon::CombatActionSwitchWeapon(COMBAT_ACTION aeType) : CombatAction(aeType)
 {
     AddFirstSoundEntry(12, -1);
     AddEffect(11, -1);
     AddEffect(10, -1);
 }
 // @fnv 0x0097c9d0
-CombatActionAvoidThreat::CombatActionAvoidThreat(COMBAT_ACTION action) : CombatAction(action)
+// pdb: CombatActionAvoidThreat::CombatActionAvoidThreat | CombatActions.obj | retail, upstream name already matches, high
+// pdb params: aeType
+CombatActionAvoidThreat::CombatActionAvoidThreat(COMBAT_ACTION aeType) : CombatAction(aeType)
 {
     AddFirstSoundEntry(18, 17);
     AddActionWorldState(1, 14);
     AddEffect(14, 0);
 }
 // @fnv 0x0097ca60
-CombatActionSearch::CombatActionSearch(COMBAT_ACTION action) : CombatAction(action)
+// pdb: CombatActionSearch::CombatActionSearch | CombatActions.obj | retail, upstream name already matches, high
+// pdb params: aeType
+CombatActionSearch::CombatActionSearch(COMBAT_ACTION aeType) : CombatAction(aeType)
 {
     AddFirstSoundEntry(18, 17);
     AddActionWorldState(10, -65512);
     AddEffect(3, 0);
 }
 // @fnv 0x0097cb70
-CombatActionInvestigate::CombatActionInvestigate(COMBAT_ACTION action) : CombatAction(action)
+// pdb: CombatActionInvestigate::CombatActionInvestigate | CombatActions.obj | retail, upstream name already matches, high
+// pdb params: aeType
+CombatActionInvestigate::CombatActionInvestigate(COMBAT_ACTION aeType) : CombatAction(aeType)
 {
     AddActionWorldState(10, -65512);
     AddActionWorldState(1, 15);
     AddEffect(3, 0);
 }
 // @fnv 0x0097cc00
-CombatActionDodge::CombatActionDodge(COMBAT_ACTION action) : CombatAction(action)
+// pdb: CombatActionDodge::CombatActionDodge | CombatActions.obj | retail, upstream name already matches, high
+// pdb params: aeType
+CombatActionDodge::CombatActionDodge(COMBAT_ACTION aeType) : CombatAction(aeType)
 {
     AddActionWorldState(1, 3);
     AddEffect(6, 0);
@@ -323,6 +379,8 @@ CombatActor* CombatController::GetFieldBC()
 }
 
 // @fnv 0x0097d130
+// pdb: CombatActionApproachTarget::CombatActionApproachTarget | CombatActions.obj | retail, upstream name already matches, high
+// pdb params: aeType
 CombatActionApproachTarget::CombatActionApproachTarget(CombatAction::COMBAT_ACTION aeType) : CombatAction(aeType)
 {
     AddFirstSoundEntry(3, 0);
@@ -332,6 +390,8 @@ CombatActionApproachTarget::CombatActionApproachTarget(CombatAction::COMBAT_ACTI
 }
 
 // @fnv 0x0097d1c0
+// pdb: CombatActionAcquireLineOfSight::CombatActionAcquireLineOfSight | CombatActions.obj | retail, upstream name already matches, high
+// pdb params: aeType
 CombatActionAcquireLineOfSight::CombatActionAcquireLineOfSight(CombatAction::COMBAT_ACTION aeType) : CombatAction(aeType)
 {
     AddFirstSoundEntry(3, 0);
@@ -342,6 +402,8 @@ CombatActionAcquireLineOfSight::CombatActionAcquireLineOfSight(CombatAction::COM
 extern int DAT_0108cdd4;
 // Constructs a CombatAction of the given type, then calls AddActionWorldState(1, 10) and AddEffect(0x11, -1).
 // @fnv 0x0097d250
+// pdb: CombatActionHide::CombatActionHide | CombatActions.obj | retail, upstream name already matches, high
+// pdb params: aeType
 CombatActionHide::CombatActionHide(CombatAction::COMBAT_ACTION aeType) : CombatAction(aeType)
 {
     AddActionWorldState(1, 10);
@@ -350,13 +412,17 @@ CombatActionHide::CombatActionHide(CombatAction::COMBAT_ACTION aeType) : CombatA
 
 // Forwards aeState and aiValue to AddSoundEntry on the object at offset 0xc of this combat action.
 // @fnv 0x00984390
+// pdb: CombatAction::AddPrecondition | CombatActions.obj | debug, call graph, medium
+// pdb params: aeState, aiValue
 void CombatAction::AddActionWorldState(int aeState, int aiValue)
 {
-    m_kActionWorldStateNode.AddSoundEntry(aeState, aiValue);
+    Preconditions.CombatWorldStateList_AddWorldState(aeState, aiValue);
 }
 
 // Constructs a CombatAction with the given action type, then calls AddActionWorldState(1, 0xc) and AddEffect(0xf, 0).
 // @fnv 0x0097cd30
+// pdb: CombatActionFlee::CombatActionFlee | CombatActions.obj | retail, upstream name already matches, high
+// pdb params: aeType
 CombatActionFlee::CombatActionFlee(CombatAction::COMBAT_ACTION aeType) : CombatAction(aeType)
 {
     AddActionWorldState(1, 0xc);
@@ -365,6 +431,8 @@ CombatActionFlee::CombatActionFlee(CombatAction::COMBAT_ACTION aeType) : CombatA
 
 // Constructs the combat action with aeType, then calls AddActionWorldState(1, -1) and AddEffect(13, -1).
 // @fnv 0x0097ce90
+// pdb: CombatActionActivateCombatItem::CombatActionActivateCombatItem | CombatActions.obj | retail, upstream name already matches, high
+// pdb params: aeType
 CombatActionActivateCombatItem::CombatActionActivateCombatItem(COMBAT_ACTION aeType) : CombatAction(aeType)
 {
     AddActionWorldState(1, -1);
@@ -372,6 +440,8 @@ CombatActionActivateCombatItem::CombatActionActivateCombatItem(COMBAT_ACTION aeT
 }
 
 // @fnv 0x0097cfe0
+// pdb: CombatActionUseCombatItem::CombatActionUseCombatItem | CombatActions.obj | retail, upstream name already matches, high
+// pdb params: aeType
 CombatActionUseCombatItem::CombatActionUseCombatItem(CombatAction::COMBAT_ACTION aeType) : CombatAction(aeType)
 {
     AddActionWorldState(0xd, -1);
@@ -397,6 +467,8 @@ double __cdecl GetWeaponDPSDeficit(CombatController*, int);
 // Returns the sum of FUN_00979e40(apCombatController, aiActionValue) and GetWeaponDPSDeficit(apCombatController, 1).
 // @fnv 0x0097b070
 // src: XBOX_PDB 0x0097b070
+// pdb: CombatActionAttackRangedFromCover::GetCost | CombatActions.obj | retail, vtable slot, high
+// pdb params: apCombatController, aiActionValue
 float CombatActionAttackRangedFromCover::GetCost_0097b070(CombatController* apCombatController, int aiActionValue)
 {
     return GetCost_00979e40(apCombatController, aiActionValue) + GetWeaponDPSDeficit(apCombatController, 1);
@@ -408,9 +480,11 @@ float __cdecl GetWeaponDPSDeficit(CombatController*, int);
 
 // @fnv 0x0097b240
 // src: COMMUNITY 0x0097b240
-float CombatActionAttackRangedExplosive::GetCost_0097b240(CombatController* apController, int v)
+// pdb: CombatActionAttackRangedExplosive::GetCost | CombatActions.obj | retail, vtable slot, high
+// pdb params: apCombatController, aiActionValue
+float CombatActionAttackRangedExplosive::GetCost_0097b240(CombatController* apCombatController, int aiActionValue)
 {
-    return GetCost_00979e40(apController, v) + fnv_0097b240::GetWeaponDPSDeficit(apController, 0);
+    return GetCost_00979e40(apCombatController, aiActionValue) + fnv_0097b240::GetWeaponDPSDeficit(apCombatController, 0);
 }
 
 namespace fnv_0097b4a0 {
@@ -420,9 +494,11 @@ float __cdecl GetWeaponDPSDeficit(CombatController*, int);
 // Returns the sum of FUN_00979e40(c, v) and fnv_0097b4a0::GetWeaponDPSDeficit(c, 2).
 // @fnv 0x0097b4a0
 // src: XBOX_PDB 0x0097b4a0
-float CombatActionAttackMelee::GetCost_0097b4a0(CombatController* apController, int v)
+// pdb: CombatActionAttackMelee::GetCost | CombatActions.obj | retail, vtable slot, high
+// pdb params: apCombatController, aiActionValue
+float CombatActionAttackMelee::GetCost_0097b4a0(CombatController* apCombatController, int aiActionValue)
 {
-    return GetCost_00979e40(apController, v) + fnv_0097b4a0::GetWeaponDPSDeficit(apController, 2);
+    return GetCost_00979e40(apCombatController, aiActionValue) + fnv_0097b4a0::GetWeaponDPSDeficit(apCombatController, 2);
 }
 
 namespace fnv_0097b5a0 {
@@ -432,21 +508,25 @@ float __cdecl GetWeaponDPSDeficit(CombatController*, int);
 
 // @fnv 0x0097b5a0
 // src: XBOX_PDB 0x0097b5a0
-float CombatActionAttackHandToHand::GetCost_0097b5a0(CombatController* c, int iValue)
+// pdb: CombatActionAttackHandToHand::GetCost | CombatActions.obj | retail, vtable slot, high
+// pdb params: apCombatController, aiActionValue
+float CombatActionAttackHandToHand::GetCost_0097b5a0(CombatController* apCombatController, int aiActionValue)
 {
-    if (c->GetFieldBC() && reinterpret_cast<Actor*>(c->GetFieldBC())->IsPlayerTeammate() &&
-        reinterpret_cast<Actor*>(c->GetFieldBC())->GetActiveWeapon())
+    if (apCombatController->GetFieldBC() && reinterpret_cast<Actor*>(apCombatController->GetFieldBC())->IsPlayerTeammate() &&
+        reinterpret_cast<Actor*>(apCombatController->GetFieldBC())->GetActiveWeapon())
         return fnv_0097b5a0::DAT_0108cb10;
-    return GetCost_00979e40(c, iValue) + fnv_0097b5a0::GetWeaponDPSDeficit(c, 6);
+    return GetCost_00979e40(apCombatController, aiActionValue) + fnv_0097b5a0::GetWeaponDPSDeficit(apCombatController, 6);
 }
 
 // @fnv 0x0097b840
 // src: XBOX_PDB 0x0097b840
-bool CombatActionAttackGrenadeFlushTarget::CanExecute_0097b840(CombatController* apController, CombatWorldStateArray* w, int aiValue)
+// pdb: CombatActionAttackGrenadeFlushTarget::CanExecute | CombatActions.obj | retail, vtable slot, high
+// pdb params: apCombatController, apWorldStateArray, aiActionValue
+bool CombatActionAttackGrenadeFlushTarget::CanExecute_0097b840(CombatController* apCombatController, CombatWorldStateArray* apWorldStateArray, int aiActionValue)
 {
-    if (!CanExecute(apController, w, aiValue))
+    if (!CanExecute(apCombatController, apWorldStateArray, aiActionValue))
         return false;
-    return static_cast<Tile*>(static_cast<CombatControllerAccess*>(apController)->GetCombatState(0xb))->FindCombatLocation_0099ac20();
+    return static_cast<Tile*>(static_cast<CombatControllerAccess*>(apCombatController)->GetCombatState(0xb))->FindCombatLocation_0099ac20();
 }
 
 struct B006815c0
@@ -461,6 +541,7 @@ struct FUN_0097b940_shell
 
 // @fnv 0x0097b940
 // src: XBOX_PDB 0x0097b940
+// pdb: CombatLocation::GetPoint | CombatActions.obj | debug, upstream name already matches, high
 void FUN_0097b940_shell::CombatLocation_GetPoint()
 {
     reinterpret_cast<B006815c0*>(this)->_ref_006815c0();
@@ -480,12 +561,15 @@ float __cdecl GetWeaponDPSDeficit(CombatController*, int);
 
 // @fnv 0x0097b980
 // src: XBOX_PDB 0x0097b980
-float CombatActionAttackGrenadeFlushTarget::GetCost_0097b980(CombatController* apCombatController, int v)
+// pdb: CombatActionAttackGrenadeFlushTarget::GetCost | CombatActions.obj | retail, vtable slot, high
+// pdb params: apCombatController, aiActionValue
+// pdb locals: fattackCost
+float CombatActionAttackGrenadeFlushTarget::GetCost_0097b980(CombatController* apCombatController, int aiActionValue)
 {
     float attack = fnv_0097b980::GetWeaponDPSDeficit(apCombatController, 3);
     if (attack >= fnv_0097b980::DAT_0108cb10)
         return fnv_0097b980::DAT_0108cb10;
-    return GetCost_00979e40(apCombatController, v) + attack;
+    return GetCost_00979e40(apCombatController, aiActionValue) + attack;
 }
 
 namespace fnv_0097bb90 {
@@ -495,9 +579,11 @@ float __cdecl GetWeaponDPSDeficit(CombatController*, int);
 // Returns the sum of FUN_00979e40(c, v) and fnv_0097bb90::GetWeaponDPSDeficit(c, 3).
 // @fnv 0x0097bb90
 // src: COMMUNITY 0x0097bb90
-float CombatActionAttackGrenadeFromCover::CombatActionAttackGrenade_GetCost(CombatController* apCombatController, int v)
+// pdb: CombatActionAttackGrenade::GetCost | CombatActions.obj | retail, upstream name already matches, high
+// pdb params: apCombatController, aiActionValue
+float CombatActionAttackGrenadeFromCover::CombatActionAttackGrenade_GetCost(CombatController* apCombatController, int aiActionValue)
 {
-    return GetCost_00979e40(apCombatController, v) + fnv_0097bb90::GetWeaponDPSDeficit(apCombatController, 3);
+    return GetCost_00979e40(apCombatController, aiActionValue) + fnv_0097bb90::GetWeaponDPSDeficit(apCombatController, 3);
 }
 
 bool __cdecl IsCombatActionValid(CombatController*, int);
@@ -505,6 +591,8 @@ bool __cdecl IsCombatActionValid(CombatController*, int);
 
 // @fnv 0x0097bc80
 // src: XBOX_PDB 0x0097bc80
+// pdb: CombatActionMove::CheckIdentical | CombatActions.obj | debug, upstream name already matches, high
+// pdb params: apCombatController, aiActionValue
 bool CombatActionMove::CheckIdentical(CombatController* apCombatController, int aiActionValue)
 {
     return IsCombatActionValid(apCombatController, aiActionValue);
@@ -517,6 +605,8 @@ void __cdecl CombatActionMove_StartMovementProcedure(CombatController*, int);
 
 // @fnv 0x0097bca0
 // src: XBOX_PDB 0x0097bca0
+// pdb: CombatActionMove::Execute | CombatActions.obj | debug, vtable slot, medium
+// pdb params: apCombatController, aiActionValue
 void CombatActionMove::Execute_0097bca0(CombatController* apCombatController, int aiActionValue)
 {
     fnv_0097bca0::CombatActionMove_StartMovementProcedure(apCombatController, aiActionValue);
@@ -528,10 +618,13 @@ struct Sub
 };
 // @fnv 0x0097bcc0
 // src: XBOX_PDB 0x0097bcc0
-float CombatActionMove::GetCost_0097bcc0(CombatController* apController, int v)
+// pdb: CombatActionMove::GetCost | CombatActions.obj | retail, vtable slot, high
+// pdb params: apCombatController, aiActionValue
+// pdb locals: fcost
+float CombatActionMove::GetCost_0097bcc0(CombatController* apCombatController, int aiActionValue)
 {
-    float cost = GetCost_00979e40(apController, v);
-    cost += static_cast<CombatControllerAccess*>(apController)->Get(v)->CombatPlannerData_GetCombatLocationCost();
+    float cost = GetCost_00979e40(apCombatController, aiActionValue);
+    cost += static_cast<CombatControllerAccess*>(apCombatController)->Get(aiActionValue)->CombatPlannerData_GetCombatLocationCost();
     return cost;
 }
 
@@ -566,11 +659,13 @@ void CombatActionMoveAndAttackRangedExplosive::FUN_0097c470()
 bool __cdecl CombatController_FindCombatLocation(CombatController*, CombatWorldStateArray*, int);
 // @fnv 0x0097c490
 // src: XBOX_PDB 0x0097c490
-bool CombatActionMoveAndAttackRangedExplosive::CombatActionMove_CanExecute(CombatController* apController, CombatWorldStateArray* w, int aiValue)
+// pdb: CombatActionMoveAndAttackRanged::CanExecute | CombatActions.obj | retail, vtable slot, high
+// pdb params: apCombatController, apWorldStateArray, aiActionValue
+bool CombatActionMoveAndAttackRangedExplosive::CombatActionMove_CanExecute(CombatController* apCombatController, CombatWorldStateArray* apWorldStateArray, int aiActionValue)
 {
-    if (!CanExecute(apController, w, aiValue))
+    if (!CanExecute(apCombatController, apWorldStateArray, aiActionValue))
         return false;
-    return CombatController_FindCombatLocation(apController, w, aiValue);
+    return CombatController_FindCombatLocation(apCombatController, apWorldStateArray, aiActionValue);
 }
 
 namespace fnv_0097c4d0 {
@@ -581,20 +676,24 @@ float __cdecl GetWeaponDPSDeficit(CombatController*, int);
 // Returns DAT_0108cb10 if fnv_0097c4d0::GetWeaponDPSDeficit(c, 0) is at least DAT_0108cb10, otherwise returns FUN_00979e40(c, v).
 // @fnv 0x0097c4d0
 // src: XBOX_PDB 0x0097c4d0
-float CombatActionMoveAndAttackRangedExplosive::GetCost_0097c4d0(CombatController* c, int iValue)
+// pdb: CombatActionMoveAndAttackRangedExplosive::GetCost | CombatActions.obj | retail, vtable slot, high
+// pdb params: apCombatController, aiActionValue
+float CombatActionMoveAndAttackRangedExplosive::GetCost_0097c4d0(CombatController* apCombatController, int aiActionValue)
 {
-    if (fnv_0097c4d0::GetWeaponDPSDeficit(c, 0) >= fnv_0097c4d0::DAT_0108cb10)
+    if (fnv_0097c4d0::GetWeaponDPSDeficit(apCombatController, 0) >= fnv_0097c4d0::DAT_0108cb10)
         return fnv_0097c4d0::DAT_0108cb10;
-    return GetCost_00979e40(c, iValue);
+    return GetCost_00979e40(apCombatController, aiActionValue);
 }
 
 extern const char* DAT_011a5700[];
 int _sprintf_s(char*, unsigned int, const char*, ...);
 // @fnv 0x0097c520
 // src: XBOX_PDB 0x0097c520
-void CombatActionMoveAndAttackRangedExplosive::CombatActionActivateCombatItem_GetDebugText(char* pcBuffer, unsigned int size, int v)
+// pdb: CombatActionMove::GetDebugText | CombatActions.obj | retail, vtable slot, high
+// pdb params: apDebugText, aiMaxLength, aiActionValue
+void CombatActionMoveAndAttackRangedExplosive::CombatActionActivateCombatItem_GetDebugText(char* apDebugText, unsigned int aiMaxLength, int aiActionValue)
 {
-    _sprintf_s(pcBuffer, size, "%s: %s", GetCombatActionName(), DAT_011a5700[v & 0xffff]);
+    _sprintf_s(apDebugText, aiMaxLength, "%s: %s", GetCombatActionName(), DAT_011a5700[aiActionValue & 0xffff]);
 }
 
 namespace fnv_0097c6b0 {
@@ -605,11 +704,13 @@ float __cdecl GetWeaponDPSDeficit(CombatController*, int);
 // Returns DAT_0108cb10 if fnv_0097c6b0::GetWeaponDPSDeficit(c, 3) reaches it, otherwise returns FUN_00979e40(c, v).
 // @fnv 0x0097c6b0
 // src: XBOX_PDB 0x0097c6b0
-float CombatActionMoveAndAttackGrenade::GetCost_0097c6b0(CombatController* c, int v)
+// pdb: CombatActionMoveAndAttackGrenade::GetCost | CombatActions.obj | retail, vtable slot, high
+// pdb params: apCombatController, aiActionValue
+float CombatActionMoveAndAttackGrenade::GetCost_0097c6b0(CombatController* apCombatController, int aiActionValue)
 {
-    if (fnv_0097c6b0::GetWeaponDPSDeficit(c, 3) >= fnv_0097c6b0::DAT_0108cb10)
+    if (fnv_0097c6b0::GetWeaponDPSDeficit(apCombatController, 3) >= fnv_0097c6b0::DAT_0108cb10)
         return fnv_0097c6b0::DAT_0108cb10;
-    return GetCost_00979e40(c, v);
+    return GetCost_00979e40(apCombatController, aiActionValue);
 }
 
 int __cdecl _sprintf_s(char*, unsigned int, const char*, ...);
@@ -619,6 +720,8 @@ extern const char* DAT_0118a8a8[];
 // Writes "%s: %s" into apDebugText using GetCombatActionName() and DAT_0118a8a8[aiActionValue].
 // @fnv 0x0097c990
 // src: XBOX_PDB 0x0097c990
+// pdb: CombatActionDrawWeapon::GetDebugText | CombatActions.obj | retail, vtable slot, high
+// pdb params: apDebugText, aiMaxLength, aiActionValue
 void CombatActionDrawWeapon::GetDebugText_0097c990(char* apDebugText, unsigned int aiMaxLength, int aiActionValue)
 {
     _sprintf_s(apDebugText, aiMaxLength, "%s: %s", GetCombatActionName(), DAT_0118a8a8[aiActionValue]);
@@ -630,6 +733,8 @@ namespace fnv_0097ccf0 {
 
 // @fnv 0x0097ccf0
 // src: XBOX_PDB 0x0097ccf0
+// pdb: CombatActionIgnoreBlockedTarget::Execute | CombatActions.obj | debug, vtable slot, medium
+// pdb params: apCombatController, aiActionValue
 void CombatActionIgnoreBlockedTarget::Execute_0097ccf0(CombatController* apCombatController, int aiActionValue)
 {
     static_cast<CombatState*>(static_cast<CombatControllerAccess*>(apCombatController)->GetCombatState())->SetTargetBlocked(static_cast<unsigned char>(0));
@@ -655,6 +760,8 @@ int __cdecl _sprintf_s(char*, unsigned int, const char*, ...);
 // Writes "<name>: <value>" into apDebugText using _sprintf_s, with the name from GetCombatActionName and aiActionValue.
 // @fnv 0x0097d370
 // src: XBOX_PDB 0x0097d370
+// pdb: CombatActionHide::GetDebugText | CombatActions.obj | retail, string-set bridge, high
+// pdb params: apDebugText, aiMaxLength, aiActionValue
 void CombatActionHide::GetDebugText_0097d370(char* apDebugText, unsigned int aiMaxLength, int aiActionValue)
 {
     _sprintf_s(apDebugText, aiMaxLength, "%s: %i", GetCombatActionName(), aiActionValue);
@@ -668,9 +775,11 @@ struct FUN_009d8b60
 // Allocates a new FUN_009d8b60 and passes it to c->FUN_009801b0; v is unused.
 // @fnv 0x0097caf0
 // src: XBOX_PDB 0x0097caf0
-void CombatActionSearch::Execute_0097caf0(CombatController* c, int aiValue)
+// pdb: CombatActionSearch::Execute | CombatActions.obj | retail, vtable slot, high
+// pdb params: apCombatController, aiActionValue
+void CombatActionSearch::Execute_0097caf0(CombatController* apCombatController, int aiActionValue)
 {
-    c->SetMovementProcedure(reinterpret_cast<CombatProcedure*>(new FUN_009d8b60));
+    apCombatController->SetMovementProcedure(reinterpret_cast<CombatProcedure*>(new FUN_009d8b60));
 }
 
 namespace fnv_0097ae00 {
@@ -685,6 +794,8 @@ extern float DAT_0108cb10;
 
 // @fnv 0x0097ae00
 // src: XBOX_PDB 0x0097ae00
+// pdb: CombatActionAttackRanged::GetCost | CombatActions.obj | retail, vtable slot, high
+// pdb params: apCombatController, aiActionValue
 float CombatActionAttackRanged::GetCost_0097ae00(CombatController* apCombatController, int aiActionValue)
 {
     if (apCombatController->GetFieldBC() &&
@@ -719,6 +830,8 @@ struct FUN_009d2440
 // Creates a FUN_009d0890 and a FUN_009d2440 from GetFieldValue of the controller's combat state, passing both to the controller's FUN_00980110 and FUN_009801b0.
 // @fnv 0x0097af70
 // src: XBOX_PDB 0x0097af70
+// pdb: CombatActionAttackRangedFromCover::Execute | CombatActions.obj | retail, vtable slot, high
+// pdb params: apCombatController, aiActionValue
 void CombatActionAttackRangedFromCover::Execute_0097af70(CombatController* apCombatController, int aiActionValue)
 {
     apCombatController->SetActionProcedure(reinterpret_cast<CombatProcedure*>(new fnv_0097af70::FUN_009d0890()));
@@ -746,6 +859,8 @@ struct FUN_009d3a00
 // Allocates a FUN_009d0890 and a FUN_009d3a00 and passes them to FUN_00980110 and FUN_009801b0 on the combat controller.
 // @fnv 0x0097b170
 // src: COMMUNITY 0x0097b170
+// pdb: CombatActionAttackRanged::Execute | CombatActions.obj | retail, vtable slot, high
+// pdb params: apCombatController, aiActionValue
 void CombatActionAttackRangedExplosive::CombatActionAttackRanged_AddProcedureToController(CombatController* apCombatController, int aiActionValue)
 {
     apCombatController->SetActionProcedure(reinterpret_cast<CombatProcedure*>(new fnv_0097b170::FUN_009d0890()));
@@ -766,6 +881,8 @@ struct FUN_009cc0c0
 // Allocates a FUN_009cc0c0 object and passes it to the combat controller's FUN_00980110 method.
 // @fnv 0x0097b410
 // src: COMMUNITY 0x0097b410
+// pdb: CombatActionAttackMelee::Execute | CombatActions.obj | retail, vtable slot, high
+// pdb params: apCombatController, aiActionValue
 void CombatActionAttackMelee::AddProcedureToController(CombatController* apCombatController, int aiActionValue)
 {
     apCombatController->SetActionProcedure(reinterpret_cast<CombatProcedure*>(new fnv_0097b410::FUN_009cc0c0));
@@ -791,6 +908,8 @@ struct FUN_009d3a00
 // Allocates a FUN_009cadf0 and a FUN_009d3a00 and passes each to the combat controller's FUN_00980110 and FUN_009801b0 methods.
 // @fnv 0x0097b6d0
 // src: XBOX_PDB 0x0097b6d0
+// pdb: CombatActionAttackGrenade::Execute | CombatActions.obj | retail, vtable slot, high
+// pdb params: apCombatController, aiActionValue
 void CombatActionAttackGrenade::Execute_0097b6d0(CombatController* apCombatController, int aiActionValue)
 {
     apCombatController->SetActionProcedure(reinterpret_cast<CombatProcedure*>(new fnv_0097b6d0::FUN_009cadf0()));
@@ -819,6 +938,9 @@ struct FUN_009caee0
 
 // @fnv 0x0097b880
 // src: XBOX_PDB 0x0097b880
+// pdb: CombatActionAttackGrenadeFlushTarget::Execute | CombatActions.obj | retail, vtable slot, high
+// pdb params: apCombatController, aiActionValue
+// pdb locals: pcombatState, pcombatLocation
 void CombatActionAttackGrenadeFlushTarget::Execute_0097b880(CombatController* apCombatController, int aiActionValue)
 {
     CombatState* pcombatState = (CombatState*)static_cast<CombatControllerAccess*>(apCombatController)->GetCombatState();
@@ -850,6 +972,8 @@ struct FUN_009d2440
 
 // @fnv 0x0097bab0
 // src: XBOX_PDB 0x0097bab0
+// pdb: CombatActionAttackGrenadeFromCover::Execute | CombatActions.obj | retail, vtable slot, high
+// pdb params: apCombatController, aiActionValue
 void CombatActionAttackGrenadeFromCover::Execute_0097bab0(CombatController* apCombatController, int aiActionValue)
 {
     apCombatController->SetActionProcedure(reinterpret_cast<CombatProcedure*>(new fnv_0097bab0::FUN_009cadf0()));
@@ -871,6 +995,9 @@ struct FUN_009da720
 
 // @fnv 0x0097c090
 // src: XBOX_PDB 0x0097c090
+// pdb: CombatActionMoveAndSwitchToMelee::Execute | CombatActions.obj | retail, vtable slot, high
+// pdb params: apCombatController, aiActionValue
+// pdb locals: pweapon
 void CombatActionMoveAndSwitchToMelee::Execute_0097c090(CombatController* apCombatController, int aiActionValue)
 {
     Execute_0097bca0(apCombatController, aiActionValue);
@@ -895,6 +1022,8 @@ void __cdecl CombatActionMove_StartMovementProcedure(CombatController*, int);
 // Allocates a FUN_009d0890 object, passes it to the combat controller's FUN_00980110, then calls FUN_0097bed0 with the action value.
 // @fnv 0x0097c280
 // src: COMMUNITY 0x0097c280
+// pdb: CombatActionMoveAndAttackRanged::Execute | CombatActions.obj | retail, vtable slot, high
+// pdb params: apCombatController, aiActionValue
 void CombatActionMoveAndAttackRanged::AddProcedureToController_0097c280(CombatController* apCombatController, int aiActionValue)
 {
     apCombatController->SetActionProcedure(reinterpret_cast<CombatProcedure*>(new fnv_0097c280::FUN_009d0890));
@@ -914,6 +1043,8 @@ extern float DAT_0108cb10;
 // Returns DAT_0108cb10 when GetWeaponDPSDeficit reaches it or the actor is a teammate with CombatStyleMelee 1.0, otherwise FUN_00979e40's result.
 // @fnv 0x0097c310
 // src: XBOX_PDB 0x0097c310
+// pdb: CombatActionMoveAndAttackRanged::GetCost | CombatActions.obj | retail, vtable slot, high
+// pdb params: apCombatController, aiActionValue
 float CombatActionMoveAndAttackRanged::GetCost_0097c310(CombatController* apCombatController, int aiActionValue)
 {
     if (fnv_0097c310::GetWeaponDPSDeficit(apCombatController, 1) >= fnv_0097c310::DAT_0108cb10)
@@ -945,6 +1076,8 @@ void __cdecl CombatActionMove_StartMovementProcedure(CombatController*, int);
 // Allocates a FUN_009cadf0 object, passes it to FUN_00980110 on the controller, then calls FUN_0097bed0 with the action value.
 // @fnv 0x0097c620
 // src: XBOX_PDB 0x0097c620
+// pdb: CombatActionMoveAndAttackGrenade::Execute | CombatActions.obj | retail, vtable slot, high
+// pdb params: apCombatController, aiActionValue
 void CombatActionMoveAndAttackGrenade::Execute_0097c620(CombatController* apCombatController, int aiActionValue)
 {
     apCombatController->SetActionProcedure(reinterpret_cast<CombatProcedure*>(new fnv_0097c620::FUN_009cadf0));
@@ -965,6 +1098,9 @@ struct FUN_009da720
 
 // @fnv 0x0097c790
 // src: COMMUNITY 0x0097c790
+// pdb: CombatActionDrawWeapon::Execute | CombatActions.obj | retail, vtable slot, high
+// pdb params: apCombatController, aiActionValue
+// pdb locals: pweapon, ecombatWeaponType
 void CombatActionDrawWeapon::AddProcedureToController_0097c790(CombatController* apCombatController, int aiActionValue)
 {
     TESObjectWEAP* pweapon = 0;
@@ -988,6 +1124,9 @@ bool __fastcall TESObjectWEAP_IsMeleeWeapon(TESObjectWEAP*);
 
 // @fnv 0x0097c8e0
 // src: XBOX_PDB 0x0097c8e0
+// pdb: CombatActionSwitchWeapon::GetCost | CombatActions.obj | retail, vtable slot, high
+// pdb params: apCombatController, aiActionValue
+// pdb locals: pweapon, ecombatWeaponType
 float CombatActionSwitchWeapon::GetCost_0097c8e0(CombatController* apCombatController, int aiActionValue)
 {
     if (apCombatController->GetFieldBC() &&
@@ -1025,6 +1164,8 @@ struct FUN_009d6030
 
 // @fnv 0x0097cdb0
 // src: XBOX_PDB 0x0097cdb0
+// pdb: CombatActionFlee::Execute | CombatActions.obj | retail, vtable slot, high
+// pdb params: apCombatController, aiActionValue
 void CombatActionFlee::Execute_0097cdb0(CombatController* apCombatController, int aiActionValue)
 {
     ((BSFaceGenNiNode*)static_cast<CombatControllerAccess*>(apCombatController)->GetCombatState())->SetApplyRotToParent(2);
@@ -1055,6 +1196,9 @@ struct FUN_009ca5f0
 
 // @fnv 0x0097cf10
 // src: XBOX_PDB 0x0097cf10
+// pdb: CombatActionActivateCombatItem::Execute | CombatActions.obj | retail, vtable slot, high
+// pdb params: apCombatController, aiActionValue
+// pdb locals: pcombatItem
 void CombatActionActivateCombatItem::Execute_0097cf10(CombatController* apCombatController, int aiActionValue)
 {
     fnv_0097cf10::CombatReferenceEntry* pcombatItem =
@@ -1082,6 +1226,9 @@ struct FUN_009daa10
 // Looks up a TESBoundObject for the given action value minus 17 and, if found, passes a new FUN_009daa10 wrapping it to the combat controller.
 // @fnv 0x0097d060
 // src: XBOX_PDB 0x0097d060
+// pdb: CombatActionUseCombatItem::Execute | CombatActions.obj | retail, vtable slot, high
+// pdb params: apCombatController, aiActionValue
+// pdb locals: pitem
 void CombatActionUseCombatItem::Execute_0097d060(CombatController* apCombatController, int aiActionValue)
 {
     ::TESBoundObject* pitem =
@@ -1108,6 +1255,8 @@ struct FUN_009d6030
 // Allocates a FUN_009d6030 from the combat controller's combat state and aiActionValue, then passes it to FUN_009801b0.
 // @fnv 0x0097d2d0
 // src: XBOX_PDB 0x0097d2d0
+// pdb: CombatActionHide::Execute | CombatActions.obj | retail, vtable slot, high
+// pdb params: apCombatController, aiActionValue
 void CombatActionHide::Execute_0097d2d0(CombatController* apCombatController, int aiActionValue)
 {
     apCombatController
@@ -1143,6 +1292,9 @@ int __fastcall GetField18C(char*);
 
 // @fnv 0x0097bed0
 // src: XBOX_PDB 0x0097bed0
+// pdb: CombatActionMove::StartMovementProcedure | CombatActions.obj | retail, upstream name already matches, high
+// pdb params: apCombatController, aiLocation
+// pdb locals: pmovementProcedure, pcombatLocation
 void CombatActionMove_StartMovementProcedure(CombatController* apCombatController, int aiLocation)
 {
     CombatProcedure* pmovementProcedure = 0;

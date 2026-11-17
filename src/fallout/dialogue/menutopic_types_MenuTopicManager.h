@@ -43,7 +43,7 @@ class TopicMenuController
     // TopicMenuController& __cdecl TopicMenuController::*(const TopicMenuController&)
     // void* __cdecl TopicMenuController::*(unsigned int)
     BSSimpleList<MenuTopic*>* MenuTopicManager_GetCurrentTopicList();
-    bool SelectTopic(bool advance);
+    bool SelectTopic(bool abSkipGreeting);
     bool AdvanceTopic();
     MenuTopic* GetSelectedTopic();
     MenuTopic* GetFirstTopic();
@@ -53,7 +53,7 @@ class TopicMenuController
     void BuildTopicList(BSSimpleList<TESTopic*>*, bool, bool, TESTopic*);
     TopicMenuController();
     static TopicMenuController* GetInstance();
-    void RunTopicResultScript();
+    void ProcessCurrentTopic();
 };
 #pragma pack(pop)
 extern TopicMenuController* g_011ddde4;

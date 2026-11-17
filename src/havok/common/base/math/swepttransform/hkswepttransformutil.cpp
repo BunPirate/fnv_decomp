@@ -384,7 +384,7 @@ struct S_00cf10f0_Ctx
 hkMemoryRouter* hkMemoryRouter_getInstance() throw();
 
 struct S_00cf10f0_Arr4;
-void __cdecl hkArrayUtil__reserve(hkMemoryAllocator* heap, S_00cf10f0_Arr4* arr, int n, int elemSize);
+void __cdecl hkArrayUtil__reserve(hkMemoryAllocator* mem, S_00cf10f0_Arr4* array, int numElem, int sizeElem);
 
 struct S_00cf10f0_Arr4
 {
@@ -416,16 +416,19 @@ struct S_00cf10f0_Arr4
 
 // Reads a count from the stream, resets arr, reserves n elements, loads n ints into arr->m_data and returns n*4 bytes.
 // @fnv 0x00cf10f0
-int __cdecl LoadIntArray(S_00cf10f0_Stream* kStream, S_00cf10f0_Arr4* pArray)
+// pdb: bhkStream::LoadBinary | bhkStream.obj | retail, object-file gap fill, high
+// pdb params: arStream, arArray
+// pdb locals: isize, ielements, tempMemContext, I
+int __cdecl LoadIntArray(S_00cf10f0_Stream* arStream, S_00cf10f0_Arr4* arArray)
 {
     S_00cf10f0_Ctx guard(0x10);
     int n = 0;
-    BinaryStreamLoad(*kStream->unk24c, &n, 1);
-    pArray->_clearAndDeallocate(hkMemoryRouter_getInstance()->heap());
-    pArray->SetSizeAndGrow(n);
+    BinaryStreamLoad(*arStream->unk24c, &n, 1);
+    arArray->_clearAndDeallocate(hkMemoryRouter_getInstance()->heap());
+    arArray->SetSizeAndGrow(n);
     int bytes = n * 4;
     for (int iIndex = 0; iIndex < n; iIndex++)
-        BinaryStreamLoad(*kStream->unk24c, &pArray->m_data[iIndex], 1);
+        BinaryStreamLoad(*arStream->unk24c, &arArray->m_data[iIndex], 1);
     return bytes;
 }
 
@@ -454,7 +457,7 @@ inline hkMemoryRouter* audio()
     return hkMemoryRouter_getInstance();
 }
 
-__declspec(nothrow) void __cdecl hkArrayUtil__reserve(hkMemoryAllocator& alloc, void* arr, int numElem, int sizeElem);
+__declspec(nothrow) void __cdecl hkArrayUtil__reserve(hkMemoryAllocator& mem, void* array, int numElem, int sizeElem);
 
 struct BlobStream
 {
@@ -529,29 +532,32 @@ struct BlobObject
 };
 
 // @fnv 0x00cf1270
-int __cdecl ReadBlobObject(BlobStream* stream, BlobObject** ppOut)
+// pdb: bhkStream::LoadBinary | bhkStream.obj | retail, call graph, high
+// pdb params: arStream, arArray
+// pdb locals: isize, ielements, tempMemContext, I
+int __cdecl ReadBlobObject(BlobStream* arStream, BlobObject** arMoppCode)
 {
     HeapContextGuard guard(0x10);
     BlobObject* obj = (BlobObject*)audio()->heap().blockAlloc(0x30);
     obj->Init();
-    *ppOut = obj;
+    *arMoppCode = obj;
     int count = 0;
-    BinaryStreamLoad(*stream->istr, &count, 1);
-    stream->istr->BinaryRead(&(*ppOut)->m_kHeader, 0x10, static_cast<unsigned int*>(0), 0);
-    if (stream->unk04 < 6 && count)
+    BinaryStreamLoad(*arStream->istr, &count, 1);
+    arStream->istr->BinaryRead(&(*arMoppCode)->m_kHeader, 0x10, static_cast<unsigned int*>(0), 0);
+    if (arStream->unk04 < 6 && count)
     {
         count -= 0x30;
         int skip[8];
-        BinaryStreamLoad(*stream->istr, skip, 8);
+        BinaryStreamLoad(*arStream->istr, skip, 8);
     }
     if (count)
     {
-        (*ppOut)->m_data.SetSizeAndGrow(count);
-        stream->istr->BinaryRead((*ppOut)->m_data.m_data, count, static_cast<unsigned int*>(0), 0);
+        (*arMoppCode)->m_data.SetSizeAndGrow(count);
+        arStream->istr->BinaryRead((*arMoppCode)->m_data.m_data, count, static_cast<unsigned int*>(0), 0);
     }
-    if (stream->unk1e5 != 1)
+    if (arStream->unk1e5 != 1)
     {
-        BlobVec& v = (*ppOut)->m_kHeader;
+        BlobVec& v = (*arMoppCode)->m_kHeader;
         Swap32(v.x);
         Swap32(v.y);
         Swap32(v.z);
@@ -598,13 +604,17 @@ struct Obj
 struct Calc
 {
     __declspec(align(16)) F4 res;
-    void __thiscall mul(Obj* o, F4* v);
+    void __thiscall mul(Obj* quat, F4* direction);
 };
 
 extern const __m128 g_mask;
 
 // Subtracts b->m80 from a, stores a in b->m80, passes the difference to Calc, then adds a masked result to b->m40 and b->m50.
 // @fnv 0x00cf14a0
+// pdb: hkSweptTransformUtil::setCentreOfRotationLocal | hkSweptTransformUtil.obj | retail, object-file run extension, low
+// pdb note: debug build links it to hkSweptTransformUtil::calcTransAtT1
+// pdb params: newCenterOfRotation, motionState
+// pdb locals: offset, offsetWs
 void ApplyDelta(__m128* apDelta, Obj* apObj)
 {
     __m128 vDelta = *apDelta;
@@ -668,16 +678,20 @@ __forceinline void interpolate(__m128& dst, __m128 a, __m128 b, float w)
 }
 // Clamps time, interpolates and normalizes the rotation quaternions, interpolates com0/com1, then recomputes translation from comLocal and rotation columns.
 // @fnv 0x00cf1d50
-void __cdecl UpdateRotationInterpolation(float time, FUN_008cd6a0_Class* apTransform)
+// src: XBOX_RETAIL_PDB 0x00cf1d50
+// pdb: hkSweptTransformUtil::freezeMotionState | hkSweptTransformUtil.obj | retail, call graph, high
+// pdb params: time, motionState
+// pdb locals: t, assertBuf, ostr
+void __cdecl hkSweptTransformUtil_freezeMotionState(float time, FUN_008cd6a0_Class* motionState)
 {
-    float t0 = apTransform->com0.q.m128_f32[3];
+    float t0 = motionState->com0.q.m128_f32[3];
     if (!(time > t0))
         time = t0;
 
-    float alpha = (time - apTransform->com0.q.m128_f32[3]) * apTransform->com1.q.m128_f32[3];
+    float alpha = (time - motionState->com0.q.m128_f32[3]) * motionState->com1.q.m128_f32[3];
 
-    __m128 q0 = apTransform->rot0.q;
-    __m128 q1 = apTransform->rot1.q;
+    __m128 q0 = motionState->rot0.q;
+    __m128 q1 = motionState->rot1.q;
     __m128 sum = _mm_add_ps(q0, q1);
     __m128 x2 = _mm_mul_ps(sum, sum);
     __m128 qShuffled = _mm_shuffle_ps(x2, x2, 0x4E);
@@ -686,45 +700,45 @@ void __cdecl UpdateRotationInterpolation(float time, FUN_008cd6a0_Class* apTrans
     float fComponentSum;
     _mm_store_ss(&fComponentSum, qDotProduct);
     double product = DAT_010924a8 * fComponentSum;
-    apTransform->rot1.q = sum;
+    motionState->rot1.q = sum;
     float a = (float)(DAT_0101de30 - product);
     double halfLen = DAT_01011588 * fComponentSum;
     float fPolynomial = (float)(a * (DAT_01016ff0 - a * (a * halfLen)));
     double half = DAT_01016248;
-    __m128& qScaled = apTransform->rot1.q;
+    __m128& qScaled = motionState->rot1.q;
     qScaled = _mm_mul_ps(_mm_shuffle_ps(_mm_load_ss(&fPolynomial), _mm_load_ss(&fPolynomial), 0), sum);
 
     if (half > alpha)
     {
         float w = alpha + alpha;
-        interpolate(apTransform->rot1.q, q0, qScaled, w);
+        interpolate(motionState->rot1.q, q0, qScaled, w);
     }
     else
     {
         float w = (alpha + alpha) - 1.0;
-        interpolate(apTransform->rot1.q, qScaled, q1, w);
+        interpolate(motionState->rot1.q, qScaled, q1, w);
     }
-    normalize4(apTransform->rot1.q);
-    apTransform->rot0.q = apTransform->rot1.q;
+    normalize4(motionState->rot1.q);
+    motionState->rot0.q = motionState->rot1.q;
 
     __m128 qAlpha = _mm_load_ss(&alpha);
     qAlpha = _mm_shuffle_ps(qAlpha, qAlpha, 0);
-    __m128 com = _mm_add_ps(_mm_mul_ps(_mm_sub_ps(_mm_load_ps(DAT_010ec7f0), qAlpha), apTransform->com0.q),
-                            _mm_mul_ps(qAlpha, apTransform->com1.q));
-    apTransform->com0.q = com;
-    apTransform->com0.q.m128_f32[3] = time;
-    apTransform->com1.q = com;
-    apTransform->com1.q.m128_f32[3] = 0.0f;
+    __m128 com = _mm_add_ps(_mm_mul_ps(_mm_sub_ps(_mm_load_ps(DAT_010ec7f0), qAlpha), motionState->com0.q),
+                            _mm_mul_ps(qAlpha, motionState->com1.q));
+    motionState->com0.q = com;
+    motionState->com0.q.m128_f32[3] = time;
+    motionState->com1.q = com;
+    motionState->com1.q.m128_f32[3] = 0.0f;
 
-    apTransform->hkRotation_set(&apTransform->rot1);
+    motionState->hkRotation_set(&motionState->rot1);
 
-    __m128 v = apTransform->comLocal.q;
+    __m128 v = motionState->comLocal.q;
     __m128 y = _mm_shuffle_ps(v, v, 0x55);
     __m128 x = _mm_shuffle_ps(v, v, 0x00);
     __m128 z = _mm_shuffle_ps(v, v, 0xAA);
-    __m128 rot = _mm_add_ps(_mm_add_ps(_mm_mul_ps(y, apTransform->col1.q), _mm_mul_ps(x, apTransform->col0.q)),
-                            _mm_mul_ps(z, apTransform->col2.q));
-    apTransform->translation.q = _mm_sub_ps(apTransform->com1.q, rot);
+    __m128 rot = _mm_add_ps(_mm_add_ps(_mm_mul_ps(y, motionState->col1.q), _mm_mul_ps(x, motionState->col0.q)),
+                            _mm_mul_ps(z, motionState->col2.q));
+    motionState->translation.q = _mm_sub_ps(motionState->com1.q, rot);
 }
 
 void hkSweptTransformUtil_setTimeInformation(float a, float b, int* c);
@@ -764,6 +778,8 @@ struct __declspec(align(16)) MotionState_cls
 
 // Copies the transform into m_kMotionTransform, derives rotation via MotionRotSet_cls, and computes m_com0/m_com1 from m_comLocal.
 // @fnv 0x00cf2020
+// pdb: hkSweptTransformUtil::warpTo | hkSweptTransformUtil.obj | retail, object-file run extension, low
+// pdb params: position, rotation, ms
 void SetMotionState(const MotionMat4* transform, MotionState_cls* apMotionState)
 {
     MotionVec4 q;
@@ -844,6 +860,8 @@ struct Obj_t
 // Applies a 3x3 matrix (m00, m10, m20) times a vector (m80) plus translation (first) to produce m40 and m50, preserving the w component of m40.
 // @fnv 0x00cf1f80
 // src: COMMUNITY 0x00cf1f80
+// pdb: hkSweptTransformUtil::warpTo | hkSweptTransformUtil.obj | retail, object-file run extension, low
+// pdb params: position, rotation, ms
 void __cdecl hkSweptTransformUtil_warpTo(const __m128& apTranslation, const __m128& second, Obj_t* obj)
 {
     obj->m90 = _mm_setzero_ps();
@@ -885,9 +903,9 @@ __forceinline void hkVector4::setAdd4(const hkVector4& a, const hkVector4& b)
 {
     m_vComponents = _mm_add_ps(a.m_vComponents, b.m_vComponents);
 }
-__forceinline void hkVector4::setMul4(const hkSimdReal& s, const hkVector4& v)
+__forceinline void hkVector4::setMul4(const hkSimdReal& r, const hkVector4& x)
 {
-    m_vComponents = _mm_mul_ps(s.broadcast(), v.m_vComponents);
+    m_vComponents = _mm_mul_ps(r.broadcast(), x.m_vComponents);
 }
 __forceinline float hkVector4::lengthSquared4() const
 {
@@ -934,15 +952,17 @@ struct OutputArg
 };
 // Interpolates a swept transform's rotation and position at time t, writing the result into out and adjusting its translation by the local center of mass.
 // @fnv 0x00cf1920
-// src: GUESS 0x00cf1920 (confidence: medium)
-void __cdecl Object_InterpolateSweptTransform(const hkSweptTransform* sweptTrans, float afTime, FUN_008cd6a0_Class* apTransform, ...)
+// src: XBOX_RETAIL_PDB 0x00cf1920
+// pdb: hkSweptTransformUtil::lerp2Rel | hkSweptTransformUtil.obj | retail, object-file gap fill, high
+// pdb params: sweptTrans, r, transformOut
+void __cdecl hkSweptTransformUtil_lerp2Rel(const hkSweptTransform* sweptTrans, float afTime, FUN_008cd6a0_Class* transformOut, ...)
 {
     hkVector4 qResult;
     {
         hkVector4 q0;
-        q0.m_vComponents = reinterpret_cast<const hkVector4&>(sweptTrans->m_qRotation0).m_vComponents;
+        q0.m_vComponents = reinterpret_cast<const hkVector4&>(sweptTrans->m_rotation0).m_vComponents;
         hkVector4 q1;
-        q1.m_vComponents = reinterpret_cast<const hkVector4&>(sweptTrans->m_qRotation1).m_vComponents;
+        q1.m_vComponents = reinterpret_cast<const hkVector4&>(sweptTrans->m_rotation1).m_vComponents;
         qResult.setAdd4(q0, q1);
         float fLengthSquared = qResult.lengthSquared4();
         float r = (float)(0.75 - DAT_010924a8 * fLengthSquared);
@@ -959,12 +979,12 @@ void __cdecl Object_InterpolateSweptTransform(const hkSweptTransform* sweptTrans
         }
         qResult.normalize4();
     }
-    FUN_008cd6a0_Class* pTransform = apTransform;
+    FUN_008cd6a0_Class* pTransform = transformOut;
     pTransform->hkRotation_set(&qResult);
 
     hkVector4& vTranslation = *((hkVector4*)&pTransform->translation);
     __m128 vTimeWeight = _mm_load_ss(&afTime);
-    __m128 vStartPosition = sweptTrans->m_vCenterOfMass0.m_vComponents;
+    __m128 vStartPosition = sweptTrans->m_centerOfMass0.m_vComponents;
     __m128 vOnes = _mm_load_ps(DAT_010ec7f0);
     vTimeWeight = _mm_shuffle_ps(vTimeWeight, vTimeWeight, 0);
     __m128 vStartTerm = _mm_mul_ps(_mm_sub_ps(vOnes, vTimeWeight), vStartPosition);
@@ -972,7 +992,7 @@ void __cdecl Object_InterpolateSweptTransform(const hkSweptTransform* sweptTrans
     vTranslation.m_vComponents = _mm_add_ps(vStartTerm, vEndTerm);
     hkVector4 vCenterShift;
     hkVector4 vCenterLocal;
-    vCenterLocal.m_vComponents = sweptTrans->m_vCenterOfMassLocal.m_vComponents;
+    vCenterLocal.m_vComponents = sweptTrans->m_centerOfMassLocal.m_vComponents;
     SetRotatedDirection(vCenterShift, *(hkMatrix3*)&pTransform->col0, vCenterLocal);
     ((hkVector4*)&pTransform->translation)->sub4(vCenterShift);
 }
@@ -987,49 +1007,52 @@ struct MotionExtR : FUN_008cd6a0_Class
 // Computes values from time and com0/com1, then updates rot1, com1, deltaAngle, and translation.
 // @fnv 0x00cf1b10
 // src: XBOX_PDB 0x00cf1b10
-void __cdecl hkSweptTransformUtil_backStepMotionState(float time, FUN_008cd6a0_Class* self)
+// pdb: hkSweptTransformUtil::backStepMotionState | hkSweptTransformUtil.obj | retail, upstream name already matches, high
+// pdb params: time, motionState
+// pdb locals: t
+void __cdecl hkSweptTransformUtil_backStepMotionState(float time, FUN_008cd6a0_Class* motionState)
 {
-    float t0 = (time - self->com0.q.m128_f32[3]) * self->com1.q.m128_f32[3];
+    float t0 = (time - motionState->com0.q.m128_f32[3]) * motionState->com1.q.m128_f32[3];
     float w = (DAT_0104da4c < t0) ? t0 : DAT_0104da4c;
 
-    __m128 vRot0 = self->rot0.q;
-    __m128 vRot1 = self->rot1.q;
+    __m128 vRot0 = motionState->rot0.q;
+    __m128 vRot1 = motionState->rot1.q;
     __m128 sum = _mm_add_ps(vRot1, vRot0);
     __m128 vSq = _mm_mul_ps(sum, sum);
     __m128 s = _mm_add_ps(vSq, _mm_shuffle_ps(vSq, vSq, 0x4E));
     s = _mm_add_ps(s, _mm_shuffle_ps(s, s, 0xB1));
     float d;
     _mm_store_ss(&d, s);
-    self->rot1.q = sum;
+    motionState->rot1.q = sum;
     float y = 0.75 - d * 0.125;
     float inv = (1.5 - d * 0.5 * y * y) * y;
     __m128 vInv = _mm_load_ss(&inv);
     vInv = _mm_shuffle_ps(vInv, vInv, 0);
-    self->rot1.q = _mm_mul_ps(vInv, sum);
+    motionState->rot1.q = _mm_mul_ps(vInv, sum);
 
     float a = w;
     if (w < 0.5f)
     {
-        interpolate(self->rot1.q, vRot0, self->rot1.q, a + w);
+        interpolate(motionState->rot1.q, vRot0, motionState->rot1.q, a + w);
     }
     else
     {
-        interpolate(self->rot1.q, self->rot1.q, vRot1, (a + w) - 1.0);
+        interpolate(motionState->rot1.q, motionState->rot1.q, vRot1, (a + w) - 1.0);
     }
-    normalize4(self->rot1.q);
+    normalize4(motionState->rot1.q);
 
-    float& wRef = self->com1.q.m128_f32[3];
+    float& wRef = motionState->com1.q.m128_f32[3];
     float oldW = wRef;
-    interpolate(self->com1.q, self->com0.q, self->com1.q, w);
+    interpolate(motionState->com1.q, motionState->com0.q, motionState->com1.q, w);
     wRef = oldW / w;
     __m128 wb = _mm_load_ss(&w);
     wb = _mm_shuffle_ps(wb, wb, 0);
-    ((MotionExtR*)self)->deltaAngle.q = _mm_mul_ps(wb, ((MotionExtR*)self)->deltaAngle.q);
-    self->hkRotation_set(&self->rot1);
+    ((MotionExtR*)motionState)->deltaAngle.q = _mm_mul_ps(wb, ((MotionExtR*)motionState)->deltaAngle.q);
+    motionState->hkRotation_set(&motionState->rot1);
 
-    __m128 vComLocal = self->comLocal.q;
-    __m128 vRy = _mm_mul_ps(_mm_shuffle_ps(vComLocal, vComLocal, 0x55), self->col1.q);
-    __m128 vRx = _mm_mul_ps(_mm_shuffle_ps(vComLocal, vComLocal, 0x00), self->col0.q);
-    __m128 vRz = _mm_mul_ps(_mm_shuffle_ps(vComLocal, vComLocal, 0xAA), self->col2.q);
-    self->translation.q = _mm_sub_ps(self->com1.q, _mm_add_ps(_mm_add_ps(vRy, vRx), vRz));
+    __m128 vComLocal = motionState->comLocal.q;
+    __m128 vRy = _mm_mul_ps(_mm_shuffle_ps(vComLocal, vComLocal, 0x55), motionState->col1.q);
+    __m128 vRx = _mm_mul_ps(_mm_shuffle_ps(vComLocal, vComLocal, 0x00), motionState->col0.q);
+    __m128 vRz = _mm_mul_ps(_mm_shuffle_ps(vComLocal, vComLocal, 0xAA), motionState->col2.q);
+    motionState->translation.q = _mm_sub_ps(motionState->com1.q, _mm_add_ps(_mm_add_ps(vRy, vRx), vRz));
 }

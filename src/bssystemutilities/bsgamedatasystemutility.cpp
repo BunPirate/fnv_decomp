@@ -4,6 +4,7 @@
 #include "../../include/MemoryManager.h"
 
 // @fnv 0x00af3a00
+// pdb: BSGameDataSystemUtility::Destroy | BSGameDataSystemUtility.obj | debug, upstream name already matches, high
 void BSGameDataSystemUtility::Destroy()
 {}
 
@@ -38,6 +39,7 @@ struct FUN_00af3a10_Class
     void* FUN_00af3a10(unsigned int);
 };
 // @fnv 0x00af3a10
+// pdb: BSGameDataSystemUtility::`scalar deleting destructor' | BSGameDataSystemUtility.obj | debug, object-file run extension, low
 void* FUN_00af3a10_Class::FUN_00af3a10(unsigned int flags)
 {
     SetVirtualTable_00af39c0();

@@ -6,6 +6,7 @@
 #include "TESTexture.h"
 #include "EndianConvertibleData.h"
 
+// pdb: class TESCasino, size 0x220, bases: TESForm, TESFullName, 3 members
 class TESCasino : public TESForm, public TESFullName
 {
 public:
@@ -16,7 +17,7 @@ public:
     bool LoadForm(TESFile* file);
     void ReadTypedData(TESFile* apFile, void* apData, unsigned short ausSize);
 
-    TESModelTextureSwap m_kModelTextureSwaps[10];
-    TESTexture m_kIconTextures[11];
+    TESModelTextureSwap modelArrayList[10]; // src: XBOX_RETAIL_PDB +0x24 (old: m_kModelTextureSwaps)
+    TESTexture textureArrayList[11]; // src: XBOX_RETAIL_PDB +0x164 (old: m_kIconTextures)
     EndianConvertibleData data;
 };

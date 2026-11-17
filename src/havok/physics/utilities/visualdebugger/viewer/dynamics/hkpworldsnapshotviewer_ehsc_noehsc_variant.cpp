@@ -29,14 +29,14 @@ struct FUN_00d63210_class
 typedef void(__cdecl* SnapshotFn)();
 struct ProfileRegistry
 {
-    int hkProcessFactory_registerProcess(const char* apName, SnapshotFn apfnHandler);
+    int hkProcessFactory_registerProcess(const char* viewerName, SnapshotFn creationFunction);
 };
 extern ProfileRegistry* DAT_01269cd0;
 extern int DAT_01268fc4;
 extern int DAT_01268fc0;
 void __cdecl hkpWorldSnapshotViewer_createNative();
-void __cdecl AllocateRecordWithData();
-void __cdecl RegisterSnapshotCommands();
+void __cdecl hkpWorldSnapshotViewer_createPC();
+void __cdecl hkpWorldSnapshotViewer_registerViewer();
 struct FUN_00c7be20_cls;
 struct FUN_00c7be20_src
 {
@@ -94,7 +94,7 @@ extern int DAT_010d1774;
 extern int DAT_010d1764;
 struct SubObject
 {
-    void Init(int a, int b);
+    void Init(int vtblReg, int memSize);
 };
 struct FUN_00d63280_cls
 {
@@ -110,8 +110,8 @@ struct FUN_00d63280_cls
     int unk24;
     SubObject m_sub28;
 
-    void Setup(int b);
-    FUN_00d63280_cls* hkpWorldMemoryViewer_hkpWorldMemoryViewer(int a, int b);
+    void Setup(int contexts);
+    FUN_00d63280_cls* hkpWorldMemoryViewer_hkpWorldMemoryViewer(int vtlbReg, int contexts);
 };
 
 
@@ -169,9 +169,10 @@ extern int DAT_01268fc4;
 hkBool __cdecl hkpHavokSnapshot_save_00cc0d60(hkpWorld* world, hkArrayStreamWriter* writer, hkBool binary,
                             const StructureLayoutRules* rules, int aiFlags);
 
+// pdb: class hkDisplaySerializeOStream, size 0x10 (here 0x1), bases: hkOArchive, 0 members
 struct hkDisplaySerializeOStream
 {
-    void hkOArchive_write32u(int n);
+    void hkOArchive_write32u(int u);
     void hkOArchive_write8u(unsigned int b);
     void WriteInt(int n);
     void hkOArchive_writeRaw(const char* buf, int n);
@@ -204,6 +205,9 @@ struct FUN_00d63040_cls
 
 // @fnv 0x00d63040
 // src: HAVOK_LIB 0x00d63040
+// pdb: hkpWorldSnapshotViewer::step | hkpWorldSnapshotViewer.obj | retail, upstream name already matches, high
+// pdb params: frameTimeInMs
+// pdb locals: sw, storage
 void FUN_00d63040_cls::hkpWorldSnapshotViewer_step(float frameTimeInMs)
 {
     if (m_pDisplayStream)

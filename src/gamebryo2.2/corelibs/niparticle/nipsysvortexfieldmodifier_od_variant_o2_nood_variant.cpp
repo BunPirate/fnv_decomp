@@ -153,6 +153,9 @@ struct TFieldModifier
 
 // @fnv 0x00c26de0
 // src: XBOX_PDB 0x00c26de0
+// pdb: NiPSysVortexFieldModifier::Update | NiPSysVortexFieldModifier.obj | retail, upstream name already matches, high
+// pdb params: fTime, pkData
+// pdb locals: kVortexToPSys, kInvPSys, kPosition, kDirection, kPSys, kVortex, us, pkCurrentParticle, fDeltaT, kParticlePosition, fDistance, kDeltaV
 void TFieldModifier::NiPSysVortexFieldModifier_Update(float fTime, TPSysData* pkData)
 {
     if (m_fInfluence == 0.0f)

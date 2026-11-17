@@ -3,6 +3,8 @@
 #include "volumetricfogshader_decls.h"
 
 // @fnv 0x00bc59b0
+// pdb: VolumetricFogShader::CreateShader | VolumetricFogShader.obj | retail, upstream name already matches, high
+// pdb locals: spShaderDecl, pshader
 BSShader* VolumetricFogShader::CreateShader()
 {
     NiD3DVertexDeclaration* declaration = NiD3DVertexDeclaration::Create(DAT_011f9508, 2, 1);
@@ -23,7 +25,10 @@ BSShader* VolumetricFogShader::CreateShader()
 }
 
 // @fnv 0x00bc5a80
-void VolumetricFogShader::UpdateShaderConstants()
+// src: XBOX_RETAIL_PDB 0x00bc5a80
+// pdb: VolumetricFogShader::CreateConstantMaps | VolumetricFogShader.obj | retail, string-set bridge, high
+// pdb locals: uiDefinedMatrixFlags, uiConstantPoint4Flags
+void VolumetricFogShader::CreateConstantMaps()
 {
     if (!m_spFirstShaderConstantMap.m_pObject)
     {

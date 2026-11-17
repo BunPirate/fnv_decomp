@@ -317,7 +317,7 @@ extern SettingT<GameSettingCollection> originalRuntimeFloatSetting77;
 extern const char runtimeFloatSettingKey77[];
 extern const float runtimeFloatSettingDefault77;
 void DestroyOriginalRuntimeFloatSetting77();
-extern SettingT<GameSettingCollection> originalRuntimeFloatSetting78;
+extern SettingT<GameSettingCollection> Sky_fDaytimeColorExtension; // src: XBOX_RETAIL_PDB 0x011ccbd8 (old: originalRuntimeFloatSetting78)
 extern const char runtimeFloatSettingKey78[];
 extern const float runtimeFloatSettingDefault78;
 void DestroyOriginalRuntimeFloatSetting78();
@@ -3325,7 +3325,7 @@ extern SettingT<GameSettingCollection> originalRuntimeFloatSetting829;
 extern const char runtimeFloatSettingKey829[];
 extern const float runtimeFloatSettingDefault829;
 void DestroyOriginalRuntimeFloatSetting829();
-extern SettingT<GameSettingCollection> originalRuntimeFloatSetting830;
+extern SettingT<GameSettingCollection> fMoveRunMult; // src: XBOX_RETAIL_PDB 0x011d0898 (old: originalRuntimeFloatSetting830)
 extern const char runtimeFloatSettingKey830[];
 extern const float runtimeFloatSettingDefault830;
 void DestroyOriginalRuntimeFloatSetting830();

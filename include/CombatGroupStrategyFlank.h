@@ -5,6 +5,7 @@
 class MarkerStruct;
 class ActorCombatGroup;
 
+// pdb: class CombatGroupStrategyFlank, size 0x8, bases: CombatGroupStrategy, 0 members
 class CombatGroupStrategyFlank : public CombatGroupStrategy
 {
 public:

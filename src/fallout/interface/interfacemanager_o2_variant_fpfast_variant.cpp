@@ -144,8 +144,8 @@ struct Owner
     Sub1e0* field_1e0;
     unsigned int u1E4, u1E8, u1EC, u1F0, u1F4, u1F8;
     bool flag_1fc;
-    void FUN_00b5cd00(Item*);
-    void FUN_00b5eca0(Item*);
+    void ShadowSceneNode_AddQueuedShadowLight(Item*);
+    void ShadowSceneNode_AddQueuedLight(Item*);
     void ShadowSceneNode_UpdateQueuedDynamicLight(Item*);
     void FUN_00b5d300(Item*);
     void ShadowSceneNode_RemoveQueuedLight(NiPointer<Item>&);
@@ -154,6 +154,8 @@ struct Owner
 void ShadowSceneNode_UpdateQueuedObjectLightingStart(Item*, Owner*, int, bool);
 // @fnv 0x00b5fd60
 // src: XBOX_PDB 0x00b5fd60
+// pdb: ShadowSceneNode::ProcessQueuedLights | ShadowSceneNode.obj | retail, upstream name already matches, high
+// pdb locals: iobjIter, tempAutoEvent, ilightIter, plight, pobj
 void Owner::ShadowSceneNode_ProcessQueuedLights()
 {
     DAT_011f9ea0.Lock(0);
@@ -164,9 +166,9 @@ void Owner::ShadowSceneNode_ProcessQueuedLights()
         if (item)
         {
             if (item->flag_ec)
-                FUN_00b5cd00(item);
+                ShadowSceneNode_AddQueuedShadowLight(item);
             else
-                FUN_00b5eca0(item);
+                ShadowSceneNode_AddQueuedLight(item);
         }
     }
     pos = list0fc.GetHeadPos();

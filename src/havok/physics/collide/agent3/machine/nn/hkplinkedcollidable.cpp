@@ -24,17 +24,19 @@ void __cdecl QuickSortPairs(FUN_00d08210_Pair*, int, int,
                             int(__cdecl*)(const FUN_00d08210_Pair*, const FUN_00d08210_Pair*));
 struct FUN_00d08210_Collidable : hkpLinkedCollidable
 {
-    void UpdateCollisionIndices();
+    void hkpLinkedCollidable_sortEntries();
 };
 // @fnv 0x00d08210
-void FUN_00d08210_Collidable::UpdateCollisionIndices()
+// src: XBOX_RETAIL_PDB 0x00d08210
+// pdb: hkpLinkedCollidable::sortEntries | hkpLinkedCollidable.obj | retail, call graph, high
+void FUN_00d08210_Collidable::hkpLinkedCollidable_sortEntries()
 {
-    if (m_kCollisionEntries.m_iElementCount > 1)
-        QuickSortPairs((FUN_00d08210_Pair*)m_kCollisionEntries.m_data, 0, m_kCollisionEntries.m_iElementCount - 1,
+    if (m_collisionEntries.m_iElementCount > 1)
+        QuickSortPairs((FUN_00d08210_Pair*)m_collisionEntries.m_data, 0, m_collisionEntries.m_iElementCount - 1,
                        CompareByNestedValue);
-    for (int index = 0; index < m_kCollisionEntries.m_iElementCount; ++index)
+    for (int index = 0; index < m_collisionEntries.m_iElementCount; ++index)
     {
-        volatile FUN_00d08210_Pair* pair = ((volatile FUN_00d08210_Pair*)m_kCollisionEntries.m_data) + index;
+        volatile FUN_00d08210_Pair* pair = ((volatile FUN_00d08210_Pair*)m_collisionEntries.m_data) + index;
         FUN_00d08210_Entry* entry = pair->entry;
         entry->collisionIndices[this == entry->owner] = (unsigned short)index;
     }
@@ -119,14 +121,17 @@ class ContainerD082
     int unkBC, unkC0, unkC4, unkC8, unkCC, unkD0, unkD4, unkD8, unkDC, unkE0, unkE4;
     unsigned char m_aucTypes[8];
 
-    void CopyAndSortGeometryList(hkArray<ItemD082>& kOut) const;
+    void hkpLinkedCollidable_getCollisionEntriesSorted(hkArray<ItemD082>& entries) const;
 };
 
 // Copies m_kUnsortedGeometryList into kOut and quick-sorts it by nested value when m_aucTypes[m_cIndex] is 5.
 // @fnv 0x00d08260
-void ContainerD082::CopyAndSortGeometryList(hkArray<ItemD082>& kOut) const
+// src: XBOX_RETAIL_PDB 0x00d08260
+// pdb: hkpLinkedCollidable::getCollisionEntriesSorted | hkpLinkedCollidable.obj | retail, call graph, high
+// pdb params: entries
+void ContainerD082::hkpLinkedCollidable_getCollisionEntriesSorted(hkArray<ItemD082>& entries) const
 {
-    kOut = m_kUnsortedGeometryList;
+    entries = m_kUnsortedGeometryList;
     if (m_aucTypes[m_cIndex] == 5)
-        quickSortD082(kOut.begin(), kOut.GetLogicalSize(), CompareByNestedValue);
+        quickSortD082(entries.begin(), entries.GetLogicalSize(), CompareByNestedValue);
 }

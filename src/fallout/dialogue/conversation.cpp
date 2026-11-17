@@ -11,14 +11,15 @@
 
 // No shared Conversation header exists yet. Its list prefix and current node are
 // shared by the methods bound at 0x0083b850, 0x0083ba50 and 0x0083c8a0.
+// pdb: class Conversation, size 0xc, 2 members
 class Conversation
 {
   public:
-    BSSimpleList<DialogueItem*> m_kDialogueItems;
-    BSSimpleList<DialogueItem*>* m_pCurrentDialogueNode;
+    BSSimpleList<DialogueItem*> lDialogueItems; // src: XBOX_RETAIL_PDB +0x0 (old: m_kDialogueItems)
+    BSSimpleList<DialogueItem*>* pCurrentItem; // src: XBOX_RETAIL_PDB +0x8 (old: m_pCurrentDialogueNode)
 
     Conversation(Character*, PlayerCharacter*, TESTopic*);
-    short GetDialogueItemIndex(DialogueItem* item);
+    short GetDialogueItemIndex(DialogueItem* apDialogueItem);
     DialogueItem* GetDialogueItemByIndex(unsigned short);
     unsigned short GetSaveSize_0083bb30();
     void SaveConversation();
@@ -31,10 +32,11 @@ class Conversation
 };
 
 // @fnv 0x0083c7b0
+// pdb: DialogueItem::FirstResponse | DialogueItem.obj | debug, call graph, high
 bool DialogueItem::SelectDefaultResponseList()
 {
-    m_pCurrentResponseList = &m_kResponseList;
-    return m_pCurrentResponseList->GetItem() != 0;
+    pCurrentResponse = &lResponses;
+    return pCurrentResponse->GetItem() != 0;
 }
 
 // Methods missing from the shared header use local declarations with the original call ABI.
@@ -42,9 +44,11 @@ void __fastcall ResolveDialogueItemSpeaker(DialogueItem*);
 // Resolves each dialogue item speaker until the list is empty or ends.
 // @fnv 0x0083c220
 // src: COMMUNITY 0x0083c220
+// pdb: Conversation::InitLoadGame | Conversation.obj | debug, object-file gap fill, medium
+// pdb locals: plist, pdialogueItem
 void Conversation::InitLoadGameTES_0083c220()
 {
-    BSSimpleList<DialogueItem*>* current = &m_kDialogueItems;
+    BSSimpleList<DialogueItem*>* current = &lDialogueItems;
     while (current && !current->IsEmpty())
     {
         DialogueItem* item = current->GetItem();
@@ -56,15 +60,17 @@ void Conversation::InitLoadGameTES_0083c220()
 // Iterates the dialogue item list and calls each item's load function with the buffer.
 // @fnv 0x0083c420
 // src: XBOX_PDB 0x0083c420
-void Conversation::InitLoadGame_0083c420(BGSLoadFormBuffer* pBuffer)
+// pdb: Conversation::InitLoadGame | Conversation.obj | retail, object-file run extension, high
+// pdb locals: plist, pdialogueItem
+void Conversation::InitLoadGame_0083c420(BGSLoadFormBuffer* apLoadGameBuffer)
 {
-    BSSimpleList<DialogueItem*>* pCurrentElementNext = &m_kDialogueItems;
+    BSSimpleList<DialogueItem*>* pCurrentElementNext = &lDialogueItems;
     while (pCurrentElementNext)
     {
         DialogueItem* pdialogueItem = pCurrentElementNext->GetItem();
         if (pdialogueItem)
         {
-            pdialogueItem->RefreshObjectRef(pBuffer);
+            pdialogueItem->RefreshObjectRef(apLoadGameBuffer);
         }
         pCurrentElementNext = pCurrentElementNext->GetNext();
     }
@@ -75,13 +81,16 @@ void __cdecl _FNV_Warning(const char*);
 // Walks the dialogue item list looking for item and returns its index, warning and returning 0 if not found.
 // @fnv 0x0083ba50
 // src: XBOX_PDB 0x0083ba50
-short Conversation::GetDialogueItemIndex(DialogueItem* item)
+// pdb: Conversation::GetDialogueItemIndex | Conversation.obj | debug, upstream name already matches, high
+// pdb params: apDialogueItem
+// pdb locals: plist, iindex
+short Conversation::GetDialogueItemIndex(DialogueItem* apDialogueItem)
 {
     short index = 0;
-    BSSimpleList<DialogueItem*>* node = &m_kDialogueItems;
+    BSSimpleList<DialogueItem*>* node = &lDialogueItems;
     while (node && !node->IsEmpty())
     {
-        if (item == node->GetItem())
+        if (apDialogueItem == node->GetItem())
             return index;
         ++index;
         node = node->GetNext();
@@ -98,13 +107,15 @@ struct FormRecordMetadata
     unsigned char iFlags[4];
     unsigned char cVersion;
 };
-void __fastcall LoadDialogueItemFromSave(DialogueItem*);
+void __fastcall DialogueItem_LoadGame(DialogueItem*);
 extern TESSaveLoadGame* g_TESSaveLoadGame;
 TESForm* TESForm_GetFormByNumericID(unsigned int);
 void FNV_Warning(const char*, ...);
 
 // Reads a save block header and dialogue item count, creates and appends DialogueItem objects, sets the current item, and warns on buffer overrun or underrun.
 // @fnv 0x0083bec0
+// pdb: Conversation::LoadGame | Conversation.obj | retail, string-set bridge, high
+// pdb locals: icount, istartBufferPosition, iblockSize, icurrentItem, iblockHeader, pheader, pform, i, pdialogueItem, icurrentBufferPosition
 void Conversation::LoadFromSave()
 {
     unsigned short usBlockSize = 0;
@@ -142,15 +153,15 @@ void Conversation::LoadFromSave()
     for (unsigned int i = 0; i < icount; i++)
     {
         DialogueItem* pdialogueItem = new DialogueItem;
-        LoadDialogueItemFromSave(pdialogueItem);
-        m_kDialogueItems.AddTail(pdialogueItem);
+        DialogueItem_LoadGame(pdialogueItem);
+        lDialogueItems.AddTail(pdialogueItem);
     }
     short sCurrentItemIndex;
     g_TESSaveLoadGame->ReadTypedData(&sCurrentItemIndex, 2);
     if (sCurrentItemIndex != -1)
         FUN_0083c8a0(GetDialogueItemByIndex(sCurrentItemIndex));
     else
-        m_pCurrentDialogueNode = 0;
+        pCurrentItem = 0;
     if (g_TESSaveLoadGame->TESSaveLoadGame_UseSaveGameBlocks())
     {
         unsigned int uiCurrentBufferPosition = g_TESSaveLoadGame->GetTimeStamp();
@@ -195,10 +206,13 @@ void Conversation::LoadFromSave()
 // Walks the dialogue item list until the entry at aiIndex is found and returns its item, warning and returning 0 if the index is out of range.
 // @fnv 0x0083bac0
 // src: XBOX_PDB 0x0083bac0
+// pdb: Conversation::GetDialogueItemByIndex | Conversation.obj | debug, upstream name already matches, high
+// pdb params: aiIndex
+// pdb locals: plist, iindex
 DialogueItem* Conversation::GetDialogueItemByIndex(unsigned short aiIndex)
 {
     short iElementIndex = 0;
-    BSSimpleList<DialogueItem*>* pCurrentElementNext = &m_kDialogueItems;
+    BSSimpleList<DialogueItem*>* pCurrentElementNext = &lDialogueItems;
     while (pCurrentElementNext && !pCurrentElementNext->IsEmpty())
     {
         if (iElementIndex == (short)aiIndex)
@@ -213,6 +227,9 @@ DialogueItem* Conversation::GetDialogueItemByIndex(unsigned short aiIndex)
 
 // @fnv 0x0083c330
 // src: COMMUNITY 0x0083c330
+// pdb: Conversation::SaveGame | Conversation.obj | retail, object-file run extension, low
+// pdb note: debug build links it to Conversation::LoadGame
+// pdb locals: icount, plist, itempStartPosition, iblockSize, pcount, icurrentItem, pblockSize, iblockHeader, pdialogueItem, icurrentBufferPosition, pheader, pform, istartBufferPosition
 void Conversation::LoadGameBGS_0083c330(BGSLoadFormBuffer* buffer)
 {
     short count;
@@ -222,8 +239,8 @@ void Conversation::LoadGameBGS_0083c330(BGSLoadFormBuffer* buffer)
     for (; index < currentItem; ++index)
     {
         DialogueItem* item = new DialogueItem;
-        item->LoadDialogueItem(buffer);
-        m_kDialogueItems.AddTail(item);
+        item->LoadGame(buffer);
+        lDialogueItems.AddTail(item);
     }
 
     count = -1;
@@ -236,13 +253,14 @@ void Conversation::LoadGameBGS_0083c330(BGSLoadFormBuffer* buffer)
     }
 }
 
-void __cdecl GenerateConversation(Character*, PlayerCharacter*, Conversation*, TESTopic*);
+void __cdecl TESTopic_CreateConversation(Character*, PlayerCharacter*, Conversation*, TESTopic*);
 
 // @fnv 0x0083b850
-Conversation::Conversation(Character* pvA, PlayerCharacter* pvB, TESTopic* pvC)
+// pdb: Conversation::Conversation | Conversation.obj | retail, upstream name already matches, high
+Conversation::Conversation(Character* apSpeaker, PlayerCharacter* apTarget, TESTopic* apStartingTopic)
 {
-    m_pCurrentDialogueNode = 0;
-    GenerateConversation(pvA, pvB, this, pvC);
+    pCurrentItem = 0;
+    TESTopic_CreateConversation(apSpeaker, apTarget, this, apStartingTopic);
 }
 
 struct FormIDEntry
@@ -266,6 +284,8 @@ static const char kSaveSizeFormat[] = "GetSaveSize(): %-5i ending at line %i in 
 
 // @fnv 0x0083bb30
 // src: XBOX_PDB 0x0083bb30
+// pdb: Conversation::GetSaveSize | Conversation.obj | retail, call graph (shared callers), high
+// pdb locals: isize, itempStartSize, plist, pdialogueItem, pheader, pform
 unsigned short Conversation::GetSaveSize_0083bb30()
 {
     unsigned short size3 = 0;
@@ -276,7 +296,7 @@ unsigned short Conversation::GetSaveSize_0083bb30()
         size3 += 2;
     }
     size3 += 2;
-    BSSimpleList<DialogueItem*>* node5 = &m_kDialogueItems;
+    BSSimpleList<DialogueItem*>* node5 = &lDialogueItems;
     while (node5 && !node5->IsEmpty())
     {
         DialogueItem* item8 = node5->GetItem();
@@ -308,28 +328,31 @@ struct DialogueSaveBufferArgument
 {
     BGSSaveFormBuffer* buffer;
 };
-void __fastcall SaveDialogueItemToBuffer(DialogueItem*, DialogueSaveBufferArgument);
+void __fastcall DialogueItem_SaveGame(DialogueItem*, DialogueSaveBufferArgument);
 
 // Begins a chunk, saves each non-null item in the node list, ends the chunk, then saves the current node's item index (or -1).
 // @fnv 0x0083c270
 // src: COMMUNITY 0x0083c270
+// pdb: Conversation::InitLoadGame | Conversation.obj | retail, object-file run extension, low
+// pdb note: debug build links it to Conversation::SaveGame
+// pdb locals: plist, pdialogueItem
 void Conversation::SaveGameBGS_0083c270(BGSSaveFormBuffer* pkBuffer)
 {
     int iCount7 = 0;
     unsigned int uiChunk = pkBuffer->StartVariableSizedValue();
-    BSSimpleList<DialogueItem*>* pkNode4 = &m_kDialogueItems;
+    BSSimpleList<DialogueItem*>* pkNode4 = &lDialogueItems;
     while (pkNode4)
     {
         DialogueItem* pkItem = pkNode4->GetItem();
         if (pkItem)
         {
-            SaveDialogueItemToBuffer(pkItem, *reinterpret_cast<DialogueSaveBufferArgument*>(&pkBuffer));
+            DialogueItem_SaveGame(pkItem, *reinterpret_cast<DialogueSaveBufferArgument*>(&pkBuffer));
             iCount7++;
         }
         pkNode4 = pkNode4->GetNext();
     }
     pkBuffer->SaveVariableSizedValue_00865ff0(iCount7, uiChunk);
-    short sIndex3 = m_pCurrentDialogueNode ? GetDialogueItemIndex(m_pCurrentDialogueNode->GetItem()) : -1;
+    short sIndex3 = pCurrentItem ? GetDialogueItemIndex(pCurrentItem->GetItem()) : -1;
     pkBuffer->SaveData(&sIndex3, 2, 0);
 }
 
@@ -343,6 +366,8 @@ void __cdecl ProgramFlow(const char* fmt, ...);
 void __cdecl Warning_005b5e40(const char* fmt, const char* file, int line);
 
 // @fnv 0x0083bc80
+// pdb: Conversation::SaveGame | Conversation.obj | retail, object-file run extension, high
+// pdb locals: icount, plist, itempStartPosition, iblockSize, pcount, icurrentItem, pblockSize, iblockHeader, pdialogueItem, icurrentBufferPosition, pheader, pform, istartBufferPosition
 void Conversation::SaveConversation()
 {
     short sCount_ = 0;                                  // slot -0x10
@@ -360,7 +385,7 @@ void Conversation::SaveConversation()
     short sIndex5 = 0;                                  // slot -0x1c
     short* sVer7 = (short*)g_TESSaveLoadGame->GetTimeStamp();  // slot -0x0c
     g_TESSaveLoadGame->TESSaveLoadGame_SaveGameDataOLD(&sIndex5, 2);
-    BSSimpleList<DialogueItem*>* uiStartTime4 = &m_kDialogueItems;  // slot -0x18
+    BSSimpleList<DialogueItem*>* uiStartTime4 = &lDialogueItems;  // slot -0x18
     while (uiStartTime4 && !uiStartTime4->IsEmpty())
     {
         DialogueItem* pItem = uiStartTime4->GetItem();  // slot -0x24
@@ -370,8 +395,8 @@ void Conversation::SaveConversation()
     }
     *sVer7 = sIndex5;
     short pNode2 = -1;  // slot -0x08
-    if (m_pCurrentDialogueNode)
-        pNode2 = GetDialogueItemIndex(m_pCurrentDialogueNode->GetItem());
+    if (pCurrentItem)
+        pNode2 = GetDialogueItemIndex(pCurrentItem->GetItem());
     g_TESSaveLoadGame->TESSaveLoadGame_SaveGameDataOLD(&pNode2, 2);
     if (*g_011de4e8.Bool())
     {

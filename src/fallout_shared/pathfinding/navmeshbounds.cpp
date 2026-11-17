@@ -6,6 +6,7 @@ int __cdecl FUN_00ec3bad(int);
 // Replaces the integer pointed to by p with the result of calling FUN_00ec3bad on its current value.
 // @fnv 0x00401080
 // src: XBOX_PDB 0x00401080
+// pdb: BGSDehydrationStageData::BGSDehydrationStageData | BGSDehydration.obj | debug, object-file run extension, low
 void BSEndian_00401080(int* piValue)
 {
     int* q = piValue;
@@ -69,6 +70,9 @@ struct Owner69c4c0
 };
 
 // @fnv 0x0069c4c0
+// pdb: NavMeshBounds::FillBoundsChunk | NavMeshBounds.obj | debug, object-file gap fill, medium
+// pdb params: apChunkBuffer
+// pdb locals: temppoint, stempshort, ptriarray, itempsize, pptarray, itempcount, i, j
 void Owner69c4c0::WriteToBuffer(char* apBuffer)
 {
     unsigned short w;

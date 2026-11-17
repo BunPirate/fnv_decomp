@@ -14,6 +14,7 @@ struct ChunkPtr
 };
 
 #pragma pack(push, 4)
+// pdb: class BGSTerrainChunkLoadTask, size 0x60 (here 0x5c), bases: QueuedFileEntry, 11 members
 class BGSTerrainChunkLoadTask : public QueuedFileEntry
 {
 public:

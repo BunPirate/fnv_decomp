@@ -1,6 +1,7 @@
 #pragma once
 
 
+// pdb: class BSSysInfoSystemUtility, size 0x48, 2 members
 class BSSysInfoSystemUtility
 {
 public:
@@ -30,8 +31,8 @@ public:
     virtual void Initialize();
     virtual void Destroy();
 
-    LANGUAGE m_eLanguage;
-    unsigned int SystemUtilityData[16];
+    LANGUAGE eLanguage; // src: XBOX_RETAIL_PDB +0x4 (old: m_eLanguage)
+    unsigned int uiGamepadButtonAssignment[16]; // src: XBOX_RETAIL_PDB +0x8 (old: SystemUtilityData)
 
     static unsigned int GetRandomGenerator();
 };

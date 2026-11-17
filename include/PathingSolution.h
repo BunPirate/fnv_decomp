@@ -54,6 +54,7 @@ public:
     void* GetAt(int);
 };
 
+// pdb: class PathingSolution, size 0x44, bases: NiRefObject, 6 members
 class PathingSolution : public NiRefObject
 {
 public:
@@ -61,7 +62,7 @@ public:
     virtual ~PathingSolution();
 
     void LoadGame(BGSLoadFormBuffer*);
-    float CalculatePathLength();
+    float ComputeVirtualPathLength();
     unsigned int GetVirtualNodeCount();
     PacketNodeRecord* GetVirtualNode(unsigned int);
     unsigned int GetNodeCount();
@@ -76,8 +77,8 @@ public:
     void SetByteAtOffset40(int);
     void ConstructThing(void*);
     void CreatePathNode(const PathingLocation&, int);
-    void AddPathingItem(void*, void*);
-    unsigned int AddPathingItem(void*, TESObjectREFR*);
+    void AddVirtualPathingNode(void*, void*);
+    unsigned int AddVirtualPathingNode(void*, TESObjectREFR*);
     void ReserveIndex(const PathingLocation&, const NiPoint3&);
     void Clear(bool);
     void TrimNodes(int);
@@ -132,7 +133,7 @@ public:
             unsigned int unk3c;
         };
     };
-    bool m_bHasValidPath;
+    bool bIncompletePath; // src: XBOX_RETAIL_PDB +0x40 (old: m_bHasValidPath)
     unsigned char unk41;
     unsigned short unk42;
 };

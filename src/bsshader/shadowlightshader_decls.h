@@ -7,6 +7,7 @@
 #include "../../include/NiPointer.h"
 #include "../../include/NiD3DShaderConstantMap.h"
 FNV_STATIC_ASSERT(sizeof(NiD3DShaderConstantMap) == 0x44);
+// pdb: class ShadowLightShader, size 0x8c, bases: BSShader, 8 members
 class ShadowLightShader
 {
   public:
@@ -17,10 +18,10 @@ class ShadowLightShader
     NiPointer<NiD3DShaderConstantMap> m_spSecondShaderConstantMap;
     unsigned char layoutPadding38[0x44];
     NiPointer<NiD3DShaderConstantMap> m_spFillColorConstantMap;
-    NiPointer<NiD3DShaderConstantMap> m_spFogConstantMap;
-    NiPointer<NiD3DShaderConstantMap> m_spFirstPassConstantMap;
-    NiPointer<NiD3DShaderConstantMap> m_spSecondPassConstantMap;
-    void UpdateShaderConstants();
+    NiPointer<NiD3DShaderConstantMap> spTexEffectVConstantMap; // src: XBOX_RETAIL_PDB +0x80 (old: m_spFogConstantMap)
+    NiPointer<NiD3DShaderConstantMap> spDefaultPixelConstantMap; // src: XBOX_RETAIL_PDB +0x84 (old: m_spFirstPassConstantMap)
+    NiPointer<NiD3DShaderConstantMap> spDefaultVertexConstantMap; // src: XBOX_RETAIL_PDB +0x88 (old: m_spSecondPassConstantMap)
+    void CreateConstantMaps();
 };
 FNV_STATIC_ASSERT(sizeof(ShadowLightShader) == 0x8c);
 FNV_STATIC_ASSERT(offsetof(ShadowLightShader, m_spSecondShaderConstantMap) == 0x34);

@@ -20,7 +20,10 @@ void __cdecl operator delete(void* object);
 
 // Formats a NIF path into apOutput from the world's high-priority stinger block file name, level and cell coordinates.
 // @fnv 0x006f5730
-void __cdecl FormatStingerBlockPath(char* apOutput, TESWorldSpace* apWorld, int aiLevel, short asCellX, short asCellY)
+// src: XBOX_RETAIL_PDB 0x006f5730
+// pdb: BGSDistantObjectBlock::BuildStingerBlockFileNameHighPriority | BGSDistantObjectBlock.obj | retail, string-set bridge, high
+// pdb params: apOutput, apWorld, aiLevel, asCellX, asCellY
+void __cdecl BGSDistantObjectBlock_BuildStingerBlockFileNameHighPriority(char* apOutput, TESWorldSpace* apWorld, int aiLevel, short asCellX, short asCellY)
 {
     _sprintf_s(apOutput, 0x104, "Data\\Meshes\\Landscape\\LOD\\%s\\Stinger\\%s.Level%i.High.X%i.Y%i.NIF",
                apWorld->GetName(), apWorld->GetName(), aiLevel,
@@ -53,6 +56,7 @@ extern void __cdecl _Deallocate(void*);
 
 // Destroys the task, deallocates it if flags has bit 0 set, and returns this.
 // @fnv 0x006f6fb0
+// pdb: BGSDistantObjectBlockLoadTask::`scalar deleting destructor' | BGSDistantObjectBlock.obj | retail, vtable slot, high
 void* BGSDistantObjectBlockLoadTask::FUN_006f6fb0(unsigned int flags)
 {
     this->BGSDistantObjectBlockLoadTask::~BGSDistantObjectBlockLoadTask();
@@ -63,14 +67,16 @@ void* BGSDistantObjectBlockLoadTask::FUN_006f6fb0(unsigned int flags)
 
 // If the byte at offset 0x50 is unset, sets it to 1 and calls FUN_00c3cb70 with the task state and owner; otherwise does nothing.
 // @fnv 0x006f71a0
+// pdb: BGSDistantObjectBlockLoadTask::Cancel | BGSDistantObjectBlock.obj | debug, vtable slot, medium
+// pdb params: aePreviousState, apTaskOwner
 void BGSDistantObjectBlockLoadTask::RunOnce(void* apTaskState, void* apTaskOwner)
 {
-    if (m_bLoadComplete)
+    if (bCanceled)
     {
     }
     else
     {
-        m_bLoadComplete = 1;
+        bCanceled = 1;
         this->QueuedFile_Cancel(apTaskState, apTaskOwner);
     }
 }
@@ -88,7 +94,10 @@ void FUN_006f73b0_shell::SetFlag()
 
 // Formats a landscape LOD block NIF path from the worldspace's stinger block file name, level and cell coordinates into apOutput.
 // @fnv 0x006f55f0
-void FormatLODBlockFileName(char* apOutput, TESWorldSpace* apWorld, int aiLevel, short asCellX, short asCellY)
+// src: XBOX_RETAIL_PDB 0x006f55f0
+// pdb: BGSDistantObjectBlock::BuildBlockFileName | BGSDistantObjectBlock.obj | retail, string-set bridge, high
+// pdb params: apOutput, apWorld, aiLevel, asCellX, asCellY
+void BGSDistantObjectBlock_BuildBlockFileName(char* apOutput, TESWorldSpace* apWorld, int aiLevel, short asCellX, short asCellY)
 {
     _sprintf_s(apOutput, 0x104, "Data\\Meshes\\Landscape\\LOD\\%s\\Blocks\\%s.Level%i.X%i.Y%i.NIF",
                apWorld->GetName(), apWorld->GetName(), aiLevel,
@@ -97,7 +106,10 @@ void FormatLODBlockFileName(char* apOutput, TESWorldSpace* apWorld, int aiLevel,
 
 // Formats a landscape LOD block NIF path from the worldspace's stinger block file name, level, and cell coordinates into apOutput.
 // @fnv 0x006f5640
-void __cdecl BuildLODBlockFilePath(char* apOutput, TESWorldSpace* apWorld, int aiLevel, short asCellX, short asCellY)
+// src: XBOX_RETAIL_PDB 0x006f5640
+// pdb: BGSDistantObjectBlock::BuildBlockFileNameHighPriority | BGSDistantObjectBlock.obj | retail, string-set bridge, high
+// pdb params: apOutput, apWorld, aiLevel, asCellX, asCellY
+void __cdecl BGSDistantObjectBlock_BuildBlockFileNameHighPriority(char* apOutput, TESWorldSpace* apWorld, int aiLevel, short asCellX, short asCellY)
 {
     _sprintf_s(apOutput, 0x104, "Data\\Meshes\\Landscape\\LOD\\%s\\Blocks\\%s.Level%i.High.X%i.Y%i.NIF",
                apWorld->GetName(), apWorld->GetName(), aiLevel,
@@ -106,7 +118,10 @@ void __cdecl BuildLODBlockFilePath(char* apOutput, TESWorldSpace* apWorld, int a
 
 // Formats a landscape LOD block NIF path into apOutput from the worldspace's stinger block file name, level, and cell coordinates.
 // @fnv 0x006f5690
-void __cdecl BuildLODBlockFileName(char* apOutput, TESWorldSpace* apWorld, int aiLevel, short asCellX, short asCellY)
+// src: XBOX_RETAIL_PDB 0x006f5690
+// pdb: BGSDistantObjectBlock::BuildBlockFileNamePA | BGSDistantObjectBlock.obj | retail, string-set bridge, high
+// pdb params: apOutput, apWorld, aiLevel, asCellX, asCellY
+void __cdecl BGSDistantObjectBlock_BuildBlockFileNamePA(char* apOutput, TESWorldSpace* apWorld, int aiLevel, short asCellX, short asCellY)
 {
     _sprintf_s(apOutput, 0x104, "Data\\Meshes\\Landscape\\LOD\\%s\\Blocks\\%s.Level%i.X%i.Y%i.PostApocalypse.NIF",
                apWorld->GetName(), apWorld->GetName(), aiLevel,
@@ -115,6 +130,8 @@ void __cdecl BuildLODBlockFileName(char* apOutput, TESWorldSpace* apWorld, int a
 
 // @fnv 0x006f57c0
 // src: XBOX_PDB 0x006f57c0
+// pdb: BGSDistantObjectBlock::BuildBlockNormalTextureFileName | BGSDistantObjectBlock.obj | retail, string-set bridge, high
+// pdb params: apOutput, apWorld
 void __cdecl BGSDistantObjectBlock_BuildBlockNormalTextureFileName(char* apOutput, TESWorldSpace* apWorld)
 {
     _sprintf_s(apOutput, 0x104, "Data\\Textures\\Landscape\\LOD\\%s\\Blocks\\%s.Buildings_n.dds",
@@ -133,6 +150,8 @@ struct FUN_006f5800_shell
 
 // Returns the value at offset 0x10 when abFlag is set, otherwise the value at offset 8.
 // @fnv 0x006f5800
+// pdb: BGSDistantObjectBlock::GetNode | BGSDistantObjectBlock.obj | debug, call graph, low
+// pdb params: abStingerVersion
 unsigned int __thiscall FUN_006f5800_shell::GetSelectedValue(bool abFlag)
 {
     Flt* pFlt = abFlag ? (Flt*)((char*)this + 0x10) : (Flt*)((char*)this + 8);
@@ -141,6 +160,7 @@ unsigned int __thiscall FUN_006f5800_shell::GetSelectedValue(bool abFlag)
 
 // placeholder declarations
 
+// pdb: class Model, size 0x10 (here 0x1), 4 members
 struct Model
 {
     NiNode* GetObject3D(void);
@@ -160,6 +180,8 @@ extern GlobalObject2_0096a2d0 g_011d8524;
 
 // @fnv 0x006f5840
 // src: COMMUNITY 0x006f5840
+// pdb: BGSDistantObjectBlock::EnableBlockVisibility | BGSDistantObjectBlock.obj | debug, object-file run extension, low
+// pdb locals: pkList, item, pmesh
 void __cdecl BGSDistantObjectBlock_ResetCullResults(void)
 {
     GlobalObject2_0096a2d0* pEntry = &g_011d8524;
@@ -212,7 +234,10 @@ void FUN_006f6090_shell::AddSelfToGlobalList()
 
 // Formats a landscape LOD stinger NIF path from the worldspace's stinger block file name, level and cell coordinates into apOutput.
 // @fnv 0x006f56e0
-void BuildStingerNifPath(char* apOutput, TESWorldSpace* apWorld, int aiLevel, short asCellX, short asCellY)
+// src: XBOX_RETAIL_PDB 0x006f56e0
+// pdb: BGSDistantObjectBlock::BuildStingerBlockFileName | BGSDistantObjectBlock.obj | retail, string-set bridge, high
+// pdb params: apOutput, apWorld, aiLevel, asCellX, asCellY
+void BGSDistantObjectBlock_BuildStingerBlockFileName(char* apOutput, TESWorldSpace* apWorld, int aiLevel, short asCellX, short asCellY)
 {
     _sprintf_s(apOutput, 0x104, "Data\\Meshes\\Landscape\\LOD\\%s\\Stinger\\%s.Level%i.X%i.Y%i.NIF",
                apWorld->GetName(), apWorld->GetName(), aiLevel,
@@ -221,7 +246,10 @@ void BuildStingerNifPath(char* apOutput, TESWorldSpace* apWorld, int aiLevel, sh
 
 // Formats a DDS path for the worldspace's high-priority stinger block buildings LOD texture into apOutput.
 // @fnv 0x006f5780
-void __cdecl FormatBuildingsLODTexturePath(char* apOutput, TESWorldSpace* apWorld)
+// src: XBOX_RETAIL_PDB 0x006f5780
+// pdb: BGSDistantObjectBlock::BuildBlockDiffuseTextureFileName | BGSDistantObjectBlock.obj | retail, string-set bridge, high
+// pdb params: apOutput, apWorld
+void __cdecl BGSDistantObjectBlock_BuildBlockDiffuseTextureFileName(char* apOutput, TESWorldSpace* apWorld)
 {
     _sprintf_s(apOutput, 0x104, "Data\\Textures\\Landscape\\LOD\\%s\\Blocks\\%s.Buildings.dds",
                apWorld->GetName(), apWorld->GetName());
@@ -269,6 +297,8 @@ int __cdecl _sprintf_s(char*, unsigned int, const char*, ...);
 
 // Formats the block's X, Y and level into apDescription with _sprintf_s and returns true.
 // @fnv 0x006f74b0
+// pdb: BGSDistantObjectBlockLoadTask::GetDescription | BGSDistantObjectBlock.obj | retail, string-set bridge, high
+// pdb params: apDescription, aiBufferSize
 bool BGSDistantObjectBlockLoadTask::GetDescription(char* apDescription, unsigned int aiBufferSize)
 {
     _sprintf_s(apDescription, aiBufferSize, "Object LOD Task for block ( %i, %i ) at level ( %i )", iX, iY, iLevel);
@@ -294,6 +324,9 @@ struct LodObject
 
 // Recursively sets the app-culled flag on obj and all child LodObjects to the inverse of bShow.
 // @fnv 0x006f58e0
+// pdb: BGSDistantObjectBlock::EnableStingerRenderAll | BGSDistantObjectBlock.obj | debug, object-file run extension, low
+// pdb params: apGeom, abEnable
+// pdb locals: pNode, child_iter
 void __cdecl SetObjectVisible(LodObject* obj, bool bShow)
 {
     if (obj)
@@ -357,6 +390,9 @@ struct LodVisitor
 
 // Recursively walks the object's children, or for a leaf finds the cell at its world position and sets its visibility flag based on the cell check.
 // @fnv 0x006f5970
+// pdb: BGSDistantObjectBlock::UpdateStingerVisibility | BGSDistantObjectBlock.obj | debug, object-file run extension, low
+// pdb params: apGeomNode, aiLODLevel, aiBaseCellx, aiBaseCelly
+// pdb locals: pNode, child_iter, pGeom, vGeom, pCell
 void LodVisitor::UpdateLodVisibility(LodObject* obj, int a, unsigned short b, unsigned short c)
 {
     if (obj->IsSceneNode())
@@ -397,6 +433,9 @@ struct NodeVisitor
 };
 
 // @fnv 0x006f5a70
+// pdb: BGSDistantObjectBlock::EnableAllStingerVisibility | BGSDistantObjectBlock.obj | debug, object-file run extension, low
+// pdb params: apGeomNode
+// pdb locals: pNode, child_iter
 void NodeVisitor::VisitNodeTree(SceneNode* apNode)
 {
     if (apNode != 0)
@@ -509,6 +548,7 @@ struct Block
 // Calls RunLoop, decrements DAT_011d8510 if scenes are set, detaches them from the parent node, clears the scene and task refs, and sets active to false.
 // @fnv 0x006f5af0
 // src: COMMUNITY 0x006f5af0
+// pdb: BGSDistantObjectBlock::Detach | BGSDistantObjectBlock.obj | retail, upstream name already matches, high
 void Block::BGSDistantObjectBlock_Detach()
 {
     RunLoop();
@@ -591,10 +631,11 @@ void Owner::UpdateReferences(bool update)
 
 // Clears the loaded node references before destroying the queued file entry.
 // @fnv 0x006f6fe0
+// pdb: BGSDistantObjectBlockLoadTask::~BGSDistantObjectBlockLoadTask | BGSDistantObjectBlock.obj | retail, upstream name already matches, high
 BGSDistantObjectBlockLoadTask::~BGSDistantObjectBlockLoadTask()
 {
-    m_spNode = 0;
-    m_spLand = 0;
+    spMesh = 0;
+    spNode = 0;
 }
 
 namespace fnv_006f71e0 {
@@ -619,6 +660,8 @@ struct BlockTask
 // Preserve the original stack protection for the stream object.
 #pragma strict_gs_check(on)
 // @fnv 0x006f71e0
+// pdb: BGSDistantObjectBlockLoadTask::Run | BGSDistantObjectBlock.obj | retail, vtable slot, high
+// pdb locals: pfile, iload, tempMemContext, stream, pobj
 void BGSDistantObjectBlockLoadTask::LoadDistantObjectBlock()
 {
     AutoMemContext mode(
@@ -634,21 +677,21 @@ void BGSDistantObjectBlockLoadTask::LoadDistantObjectBlock()
     if (canLoad && stream.BSStream_Load(
             (this->*reinterpret_cast<char* (QueuedFileEntry::*)(int)>(&QueuedFileEntry::GetFileName))(memory)))
     {
-        fnv_006f71e0::Node* node = (fnv_006f71e0::Node*)stream.GetStringAt(0);
+        fnv_006f71e0::Node* node = (fnv_006f71e0::Node*)stream.NiStream_GetObjectAt(0);
         if (node->AsNode())
         {
-            m_spLand = (NiAVObject*)stream.GetStringAt(0);
-            m_spNode = (NiAVObject*)((fnv_006f71e0::Node*)(NiAVObject*)m_spLand)->NiNode_GetAtChecked(0);
+            spNode = (NiAVObject*)stream.NiStream_GetObjectAt(0);
+            spMesh = (NiAVObject*)((fnv_006f71e0::Node*)(NiAVObject*)spNode)->NiNode_GetAtChecked(0);
         }
         else
         {
-            m_spNode = (NiAVObject*)stream.GetStringAt(0);
+            spMesh = (NiAVObject*)stream.NiStream_GetObjectAt(0);
         }
     }
     else
     {
-        if (((fnv_006f71e0::BlockTask*)m_pParent)->GetByteAtOffset35())
-            ((fnv_006f71e0::BlockTask*)m_pParent)->SetFlag();
+        if (((fnv_006f71e0::BlockTask*)pBlock)->GetByteAtOffset35())
+            ((fnv_006f71e0::BlockTask*)pBlock)->SetFlag();
     }
 }
 #pragma strict_gs_check(off)
@@ -821,6 +864,7 @@ struct FUN_006f5ca0_cls
 
 // @fnv 0x006f5ca0
 // src: COMMUNITY 0x006f5ca0
+// pdb: BGSDistantObjectBlock::Attach | BGSDistantObjectBlock.obj | retail, upstream name already matches, high
 void FUN_006f5ca0_cls::BGSDistantObjectBlock_Attach()
 {
     if (((C_00559450*)&m_04)->Modelloader_GetReferencedThis() == 0 && ((C_00559450*)&m_10)->Modelloader_GetReferencedThis() == 0)
@@ -965,7 +1009,7 @@ struct ScopeLock : FUN_00404ee0_shell
 {
     void FUN_00404eb0_unused();
     unsigned int unk00;
-    ScopeLock(unsigned int a, int b, const char* c, unsigned int d);
+    ScopeLock(unsigned int memContext, int overridable, const char* c, unsigned int aiLine);
     __forceinline ~ScopeLock()
     {
         FUN_00404ee0();
@@ -1002,7 +1046,7 @@ void BlockLoader::BGSDistantObjectBlock_CreateApocalypseTask(void* apOutput, voi
 struct S_006f6370_AutoMem
 {
     int unk00;
-    S_006f6370_AutoMem(int context, bool push, const char* file, int line);
+    S_006f6370_AutoMem(int memContext, bool overridable, const char* file, int aiLine);
     ~S_006f6370_AutoMem();
 };
 
@@ -1033,7 +1077,7 @@ struct S_006f6370_Mgr;
 
 struct S_006f6370_Streamer
 {
-    void BSTaskManager_CancelTask(S_006f6370_Obj* task, int flag);
+    void BSTaskManager_CancelTask(S_006f6370_Obj* apTask, int apTaskOwner);
 };
 
 struct S_006f6370_Player
@@ -1133,7 +1177,7 @@ struct ScopeLock : FUN_00404ee0_shell
 {
     void FUN_00404eb0_unused();
     unsigned int unk00;
-    ScopeLock(unsigned int a, int b, const char* c, unsigned int d);
+    ScopeLock(unsigned int memContext, int overridable, const char* c, unsigned int aiLine);
     __forceinline ~ScopeLock()
     {
         FUN_00404ee0();
@@ -1144,7 +1188,7 @@ struct ScopeLock : FUN_00404ee0_shell
 
 struct FUN_0044ac40_owner
 {
-    void BSTaskManager_CancelTask(VObj* a, int b);
+    void BSTaskManager_CancelTask(VObj* apTask, int apTaskOwner);
 };
 extern FUN_0044ac40_owner* DAT_01202d98;
 
@@ -1165,12 +1209,15 @@ struct FUN_006f6540_cls
     unsigned int unk24;
     unsigned int m_28;
 
-    void BGSDistantObjectBlock_SwitchToHigh(void* apOutput, void* apWorld, short asX, short asY);
+    void BGSDistantObjectBlock_SwitchToHigh(void* apOutput, void* aiLevel, short asCellX, short asCellY);
 };
 
 // @fnv 0x006f6540
 // src: COMMUNITY 0x006f6540
-void FUN_006f6540_cls::BGSDistantObjectBlock_SwitchToHigh(void* apOutput, void* apWorld, short asX, short asY)
+// pdb: BGSDistantObjectBlock::SwitchToHigh | BGSDistantObjectBlock.obj | retail, upstream name already matches, high
+// pdb params: apWorld, aiLevel, asCellX, asCellY
+// pdb locals: tempMemContext
+void FUN_006f6540_cls::BGSDistantObjectBlock_SwitchToHigh(void* apOutput, void* aiLevel, short asCellX, short asCellY)
 {
     ScopeLock lock(0x24, 1, str_0106da18, 0x272);
     ((FUN_006e5cc0_shell*)&unk0C)->FUN_006e5cc0(&m_04);
@@ -1185,7 +1232,7 @@ void FUN_006f6540_cls::BGSDistantObjectBlock_SwitchToHigh(void* apOutput, void* 
         DAT_01202d98->BSTaskManager_CancelTask(((FUN_00559450_shell*)&unk1C)->Modelloader_GetReferencedThis(), 0);
         ((FUN_00559450_shell*)&unk1C)->AssignTaskReference(0);
     }
-    ((FUN_00559450_shell*)&unk18)->AssignTaskReference(new BGSDistantObjectBlockLoadTask(this, apOutput, asX, asY, apWorld, 0, 1, 0));
+    ((FUN_00559450_shell*)&unk18)->AssignTaskReference(new BGSDistantObjectBlockLoadTask(this, apOutput, asCellX, asCellY, aiLevel, 0, 1, 0));
     m_28 = 0;
     ((FUN_00559450_shell*)&unk18)->Modelloader_GetReferencedThis()->V8();
     m_20 = 0;
@@ -1249,7 +1296,7 @@ struct MmTexturing
     virtual void v043();
 
     virtual MmTexturing* Clone(MmNode* pkNode, int a2, int a3);
-    void BSShaderProperty_SetFlag(int iFlag, int iValue);
+    void BSShaderProperty_SetFlag(int aiFlag, int abSetFlag);
     void* FUN_006286d0();
 };
 
@@ -1265,10 +1312,10 @@ struct MmAlpha
         MmFree(pvMem);
     }
     int unk00[7];
-    void FUN_004393c0(int i);
+    void FUN_004393c0(int bAlpha);
     void NiAlphaProperty_SetAlphaBlending(int i);
     void NiAlphaProperty_SetTestRef(int i);
-    void FUN_004393e0(int i);
+    void NiAlphaProperty_SetTestMode(int eTestFunc);
 };
 
 struct MmWorldBound
@@ -1419,7 +1466,7 @@ struct MmScene
 MmScene* __cdecl NiXenonRenderer_GetRenderer();
 int __cdecl MagicSystem_CheckEffectFlares();
 void* __cdecl NiShadeProperty_GetType();
-void* __cdecl BSShaderManager_GetShader(void* pkData);
+void* __cdecl BSShaderManager_GetShader(void* aiShaderIndex);
 
 struct MmTransform
 {
@@ -1429,7 +1476,7 @@ struct MmTransform
 
 struct MmNode
 {
-    void NiAVObject_RemoveProperty(int i);
+    void NiAVObject_RemoveProperty(int iType);
     void NiAVObject_AttachProperty(void* pkProperty);
     MmTexturing* FUN_00a59d30(void* pkType);
     void FUN_00874460(void* pkData);
@@ -1448,7 +1495,7 @@ template <class T> struct MmPtr
 
 struct MmOwner
 {
-    void BGSTerrainNode_UpdateBlockVisibility(int i);
+    void BGSTerrainNode_UpdateBlockVisibility(int abDebugOutput);
 };
 
 struct MenuModelImpl
@@ -1468,6 +1515,8 @@ struct MenuModelImpl
 };
 
 // @fnv 0x006f66e0
+// pdb: BGSDistantObjectBlock::Prepare | BGSDistantObjectBlock.obj | debug, object-file gap fill, medium
+// pdb locals: bprepare, bprepareStinger, pnewbssprop, palpha, pshadeProp, foo
 void MenuModelImpl::UpdateMenuNodes()
 {
     bool bRebuildNodeA =
@@ -1481,7 +1530,7 @@ void MenuModelImpl::UpdateMenuNodes()
         pkAlphaPtr->FUN_004393c0(1);
         pkAlphaPtr->NiAlphaProperty_SetAlphaBlending(0);
         pkAlphaPtr->NiAlphaProperty_SetTestRef(0x80);
-        pkAlphaPtr->FUN_004393e0(4);
+        pkAlphaPtr->NiAlphaProperty_SetTestMode(4);
         m_spNodeA.Modelloader_GetReferencedThis()->NiAVObject_AttachProperty(pkAlphaPtr);
         MmTexturing* pkTexX = m_spNodeA.Modelloader_GetReferencedThis()->FUN_00a59d30(NiShadeProperty_GetType());
         pkTexX->BSShaderProperty_SetFlag(0x22, 1);
@@ -1536,7 +1585,7 @@ struct GtAVObject
 struct GtNode : GtAVObject
 {
     unsigned int NiNode_GetChildCount();
-    GtAVObject* NiNode_GetAtChecked(unsigned int uiIndex);
+    GtAVObject* NiNode_GetAtChecked(unsigned int i);
 };
 struct GtFlags
 {
@@ -1550,10 +1599,10 @@ struct GtProperty
     static void* operator new(unsigned int uiSize);
     static void operator delete(void*, unsigned int);
     GtProperty();
-    void FUN_004393c0(int i);
+    void FUN_004393c0(int bAlpha);
     void NiAlphaProperty_SetAlphaBlending(int i);
     void NiAlphaProperty_SetTestRef(int i);
-    void FUN_004393e0(int i);
+    void NiAlphaProperty_SetTestMode(int eTestFunc);
 };
 struct GtShaderProp
 {
@@ -1603,14 +1652,14 @@ struct GtShaderProp
     virtual void v043();
 
     virtual GtShaderProp* FUN_vb0(GtGeometry* pkGeomA, int i, int j);
-    void BSShaderProperty_SetFlag(int iFlag, int iValue);
+    void BSShaderProperty_SetFlag(int aiFlag, int abSetFlag);
     int FUN_006286d0();
 };
 struct GtGeometry : GtAVObject
 {
     GtShaderProp* FUN_00a59d30(int iType);
     void NiAVObject_RemoveProperty(int iType);
-    void NiAVObject_AttachProperty(void* pkPropW);
+    void NiAVObject_AttachProperty(void* pkProperty);
     void FUN_00874460(int i);
     void UpdateProperties();
     void NiAVObject_Update(GtPoint3* pkPt);
@@ -1756,11 +1805,11 @@ struct GtAccum
 };
 struct GtOwner
 {
-    void BGSTerrainNode_UpdateBlockVisibility(int i);
+    void BGSTerrainNode_UpdateBlockVisibility(int abDebugOutput);
 };
 int __cdecl NiShadeProperty_GetType();
 int __cdecl MagicSystem_CheckEffectFlares();
-int __cdecl BSShaderManager_GetShader(int i);
+int __cdecl BSShaderManager_GetShader(int aiShaderIndex);
 GtAccum* __cdecl NiXenonRenderer_GetRenderer();
 
 struct FUN_006f6a90_Owner
@@ -1770,6 +1819,9 @@ struct FUN_006f6a90_Owner
 };
 
 // @fnv 0x006f6a90
+// pdb: BGSDistantObjectBlock::PrepareStingerObject | BGSDistantObjectBlock.obj | debug, object-file gap fill, medium
+// pdb params: apGeom
+// pdb locals: pNode, child_iter, pLightProp, palpha, pGeom, pshadeProp, foo, pnewbssprop
 void FUN_006f6a90_Owner::ApplyShaderSetup(GtAVObject* pkObject)
 {
     if (!pkObject)
@@ -1790,7 +1842,7 @@ void FUN_006f6a90_Owner::ApplyShaderSetup(GtAVObject* pkObject)
         pkPropW->FUN_004393c0(1);
         pkPropW->NiAlphaProperty_SetAlphaBlending(0);
         pkPropW->NiAlphaProperty_SetTestRef(0x80);
-        pkPropW->FUN_004393e0(4);
+        pkPropW->NiAlphaProperty_SetTestMode(4);
         pkGeomA->NiAVObject_AttachProperty(pkPropW);
         pkShaderZ->BSShaderProperty_SetFlag(0x22, 1);
         pkShaderZ->BSShaderProperty_SetFlag(0x37, 1);
@@ -1820,48 +1872,51 @@ struct TaskPlayer
 };
 extern TaskPlayer* g_thePlayer_011dea3c;
 
-void __cdecl BuildLODBlockFilePath(char* pcPath, int iWorld, int iLevel, unsigned short usX, unsigned short usY);
-void __cdecl FormatLODBlockFileName(char* pcPath, int iWorld, int iLevel, unsigned short usX, unsigned short usY);
-void __cdecl BuildLODBlockFileName(char* pcPath, int iWorld, int iLevel, unsigned short usX, unsigned short usY);
-void __cdecl FormatStingerBlockPath(char* pcPath, int iWorld, int iLevel, unsigned short usX, unsigned short usY);
-void __cdecl BuildStingerNifPath(char* pcPath, int iWorld, int iLevel, unsigned short usX, unsigned short usY);
-int __cdecl FUN_00456a20(const char* pcPath, int a2, int a3, int a4);
+void __cdecl BGSDistantObjectBlock_BuildBlockFileNameHighPriority(char* pcPath, int iWorld, int iLevel, unsigned short usX, unsigned short usY);
+void __cdecl BGSDistantObjectBlock_BuildBlockFileName(char* pcPath, int iWorld, int iLevel, unsigned short usX, unsigned short usY);
+void __cdecl BGSDistantObjectBlock_BuildBlockFileNamePA(char* pcPath, int iWorld, int iLevel, unsigned short usX, unsigned short usY);
+void __cdecl BGSDistantObjectBlock_BuildStingerBlockFileNameHighPriority(char* pcPath, int iWorld, int iLevel, unsigned short usX, unsigned short usY);
+void __cdecl BGSDistantObjectBlock_BuildStingerBlockFileName(char* pcPath, int iWorld, int iLevel, unsigned short usX, unsigned short usY);
+int __cdecl FUN_00456a20(const char* apName, int apFilePath, int aiFlags, int aiArchiveType);
 
 // @fnv 0x006f6d10
-BGSDistantObjectBlockLoadTask::BGSDistantObjectBlockLoadTask(int iParent, int iWorld, int iX, int iY, int iLevel, bool bForce, bool bAlt, bool abLOD)
-    : QueuedFileEntry(3), m_bDone(0), m_iX(iX), m_iY(iY), m_iZ(iLevel), m_pParent((BGSDistantObjectBlock*)iParent), m_pContainingWorldspace((TESWorldSpace*)iWorld),
-      m_spNode(0), m_spLand(0), m_bLoadComplete(0), m_bLOD(abLOD)
+// pdb: BGSDistantObjectBlockLoadTask::BGSDistantObjectBlockLoadTask | BGSDistantObjectBlock.obj | retail, upstream name already matches, high
+// pdb params: apBlock, apWorld, aiX, aiY, aiLevel, abPostApocalypse, abHighPriority, abStingerVersion
+// pdb locals: pmeshFileName
+BGSDistantObjectBlockLoadTask::BGSDistantObjectBlockLoadTask(int apBlock, int apWorld, int aiX, int aiY, int aiLevel, bool abPostApocalypse, bool abHighPriority, bool abStingerVersion)
+    : QueuedFileEntry(3), m_bDone(0), m_iX(aiX), m_iY(aiY), m_iZ(aiLevel), pBlock((BGSDistantObjectBlock*)apBlock), pWorldSpace((TESWorldSpace*)apWorld),
+      spMesh(0), spNode(0), bCanceled(0), m_bLOD(abStingerVersion)
 {
     char acPath[0x104];
-    if (!abLOD)
+    if (!abStingerVersion)
     {
-        if (!bForce && !g_thePlayer_011dea3c->GetByteAtOffset())
+        if (!abPostApocalypse && !g_thePlayer_011dea3c->GetByteAtOffset())
         {
-            if (bAlt)
-                BuildLODBlockFilePath(acPath, (int)m_pContainingWorldspace, iLevel, (unsigned short)iX, (unsigned short)iY);
+            if (abHighPriority)
+                BGSDistantObjectBlock_BuildBlockFileNameHighPriority(acPath, (int)pWorldSpace, aiLevel, (unsigned short)aiX, (unsigned short)aiY);
             else
-                FormatLODBlockFileName(acPath, (int)m_pContainingWorldspace, iLevel, (unsigned short)iX, (unsigned short)iY);
+                BGSDistantObjectBlock_BuildBlockFileName(acPath, (int)pWorldSpace, aiLevel, (unsigned short)aiX, (unsigned short)aiY);
         }
         else
         {
-            if (bAlt)
+            if (abHighPriority)
             {
-                BuildLODBlockFilePath(acPath, (int)m_pContainingWorldspace, iLevel, (unsigned short)iX, (unsigned short)iY);
+                BGSDistantObjectBlock_BuildBlockFileNameHighPriority(acPath, (int)pWorldSpace, aiLevel, (unsigned short)aiX, (unsigned short)aiY);
             }
             else
             {
-                BuildLODBlockFileName(acPath, (int)m_pContainingWorldspace, iLevel, (unsigned short)iX, (unsigned short)iY);
+                BGSDistantObjectBlock_BuildBlockFileNamePA(acPath, (int)pWorldSpace, aiLevel, (unsigned short)aiX, (unsigned short)aiY);
                 if (!FUN_00456a20(acPath, 0, 0, -1))
-                    FormatLODBlockFileName(acPath, (int)m_pContainingWorldspace, iLevel, (unsigned short)iX, (unsigned short)iY);
+                    BGSDistantObjectBlock_BuildBlockFileName(acPath, (int)pWorldSpace, aiLevel, (unsigned short)aiX, (unsigned short)aiY);
             }
         }
     }
     else
     {
-        if (bAlt)
-            FormatStingerBlockPath(acPath, (int)m_pContainingWorldspace, iLevel, (unsigned short)iX, (unsigned short)iY);
+        if (abHighPriority)
+            BGSDistantObjectBlock_BuildStingerBlockFileNameHighPriority(acPath, (int)pWorldSpace, aiLevel, (unsigned short)aiX, (unsigned short)aiY);
         else
-            BuildStingerNifPath(acPath, (int)m_pContainingWorldspace, iLevel, (unsigned short)iX, (unsigned short)iY);
+            BGSDistantObjectBlock_BuildStingerBlockFileName(acPath, (int)pWorldSpace, aiLevel, (unsigned short)aiX, (unsigned short)aiY);
     }
     SetFileName_00c3cee0(acPath + 5);
     LookupFileEntryByArchive(0);
@@ -1875,15 +1930,17 @@ struct F7070ModelLoader
 extern F7070ModelLoader* g_pModelLoader;
 
 // @fnv 0x006f7070
+// pdb: BGSDistantObjectBlockLoadTask::QueueMe | BGSDistantObjectBlock.obj | retail, vtable slot, high
+// pdb locals: pdiffuseTextureFileName, pnormalTextureFileName
 void BGSDistantObjectBlockLoadTask::QueueLODModelLoads()
 {
     char acFirstPath[260];
     char acSecondPath3[260];
     if (!bSkipLoad)
     {
-        FormatBuildingsLODTexturePath(acFirstPath, m_pContainingWorldspace);
+        BGSDistantObjectBlock_BuildBlockDiffuseTextureFileName(acFirstPath, pWorldSpace);
         g_pModelLoader->QueueTask(acFirstPath, IOTask_GetIOTaskPriority(), this);
-        BGSDistantObjectBlock_BuildBlockNormalTextureFileName(acSecondPath3, m_pContainingWorldspace);
+        BGSDistantObjectBlock_BuildBlockNormalTextureFileName(acSecondPath3, pWorldSpace);
         g_pModelLoader->QueueTask(acSecondPath3, IOTask_GetIOTaskPriority(), this);
     }
     bFadeQueuedCur = true;
@@ -1940,16 +1997,18 @@ struct FnvDistantBlock
 void __cdecl FNV_Warning(const char* apFormat, ...);
 
 // @fnv 0x006f73d0
+// pdb: BGSDistantObjectBlockLoadTask::Finish | BGSDistantObjectBlock.obj | retail, vtable slot, high
+// pdb locals: pname
 void BGSDistantObjectBlockLoadTask::UpdateLoadingState()
 {
-    if ((NiAVObject*)m_spNode != 0)
+    if ((NiAVObject*)spMesh != 0)
     {
-        if (m_bLoadComplete == 0)
+        if (bCanceled == 0)
         {
-            ((FnvDistantBlock*)m_pParent)->SetLoading(1);
-            ((FnvDistantBlock*)m_pParent)->Get()->Get()->SetSegmented(1);
+            ((FnvDistantBlock*)pBlock)->SetLoading(1);
+            ((FnvDistantBlock*)pBlock)->Get()->Get()->SetSegmented(1);
 
-            if (((NiAVObject*)m_spNode)->IsSegmentedTriShape() == 0)
+            if (((NiAVObject*)spMesh)->IsSegmentedTriShape() == 0)
             {
                 FNV_Warning("MODELS: Found a distant object block for %i:%i,%i but it is not segmented.", iLevel, iX,
                             iY);
@@ -1957,15 +2016,15 @@ void BGSDistantObjectBlockLoadTask::UpdateLoadingState()
         }
         else
         {
-            m_spNode = 0;
-            m_spLand = 0;
+            spMesh = 0;
+            spNode = 0;
         }
     }
     else
     {
-        if (m_bLoadComplete == 0 && m_pParent != 0)
+        if (bCanceled == 0 && pBlock != 0)
         {
-            ((FnvDistantBlock*)m_pParent)->SetLoading(0);
+            ((FnvDistantBlock*)pBlock)->SetLoading(0);
         }
     }
 }

@@ -12,41 +12,48 @@
 #include "../../../include/BGSLoadFormBuffer.h"
 
 // @fnv 0x00827bd0
-void ScriptEffect::Update(float elapsed)
+// pdb: ScriptEffect::Update | ScriptEffect.obj | retail, upstream name already matches, high
+// pdb params: afSecondsElapsed
+void ScriptEffect::Update(float afSecondsElapsed)
 {
     if (pScript)
     {
-        pScript->AdvanceScript(FUN_0059bb30()->GetMagicTargetReference(), m_pScriptLocals, elapsed);
+        pScript->RunScriptEffectUpdate(FUN_0059bb30()->GetMagicTargetReference(), pEffectLocals, afSecondsElapsed);
     }
 }
 // Loads the script effect's saved state: reads a has-locals flag, then loads script locals into the cached ScriptLocals or a temporary one.
 // @fnv 0x00827e60
-void ScriptEffect::LoadGame(BGSLoadFormBuffer* buffer)
+// pdb: ScriptEffect::LoadGame | ScriptEffect.obj | retail, vtable slot, high
+// pdb params: apActor
+// pdb locals: isize
+void ScriptEffect::LoadGame(BGSLoadFormBuffer* apLoadGameBuffer)
 {
-    ActiveEffect::LoadGame(buffer);
+    ActiveEffect::LoadGame(apLoadGameBuffer);
     unsigned char hasLocals = 0;
-    buffer->ReadTypedData(&hasLocals, 1);
+    apLoadGameBuffer->ReadTypedData(&hasLocals, 1);
     if (hasLocals)
     {
-        if (!m_pScriptLocals)
-            m_pScriptLocals = pScript->GetOrCreateScriptLocals();
-        if (m_pScriptLocals)
-            m_pScriptLocals->LoadGame(buffer);
+        if (!pEffectLocals)
+            pEffectLocals = pScript->GetOrCreateScriptLocals();
+        if (pEffectLocals)
+            pEffectLocals->LoadGame(apLoadGameBuffer);
         else
         {
             ScriptLocals locals;
-            locals.LoadGame(buffer);
+            locals.LoadGame(apLoadGameBuffer);
         }
     }
 }
 
 // Reverts the form, then resets the cached script locals when present.
 // @fnv 0x00827de0
+// pdb: ScriptEffect::Revert | ScriptEffect.obj | retail, upstream name already matches, high
+// pdb params: apActor
 void ScriptEffect::Revert(Actor* apActor)
 {
     ActiveEffect::Revert(apActor);
-    if (m_pScriptLocals)
-        m_pScriptLocals->LoadGame();
+    if (pEffectLocals)
+        pEffectLocals->LoadGame();
 }
 
 void* __cdecl operator new(unsigned int);
@@ -67,6 +74,9 @@ struct ScriptEventListStub
 };
 
 // @fnv 0x00827930
+// pdb: ScriptEffect::CopyData | ScriptEffect.obj | retail, upstream name already matches, high
+// pdb params: apDestination
+// pdb locals: pse, plist
 void ScriptEffect::CopyData(ActiveEffect* apDestination)
 {
     ActiveEffect::CopyData(apDestination);
@@ -74,53 +84,62 @@ void ScriptEffect::CopyData(ActiveEffect* apDestination)
     if (pse)
     {
         pse->pScript = pScript;
-        if (pScript && m_pScriptLocals)
+        if (pScript && pEffectLocals)
         {
-            pse->m_pScriptLocals = pScript->GetOrCreateScriptLocals();
-            pse->m_pScriptLocals->CopyActionListFrom(m_pScriptLocals);
-            SCRIPT_LOCAL_LIST* pLocalEntry = (SCRIPT_LOCAL_LIST*)m_pScriptLocals->GetLocalList();
+            pse->pEffectLocals = pScript->GetOrCreateScriptLocals();
+            pse->pEffectLocals->CopyActionListFrom(pEffectLocals);
+            SCRIPT_LOCAL_LIST* pLocalEntry = (SCRIPT_LOCAL_LIST*)pEffectLocals->GetLocalList();
             while (pLocalEntry && !pLocalEntry->FUN_008256d0())
             {
-                pse->m_pScriptLocals->SetVariable(pLocalEntry->FUN_006815c0()->uiID, pLocalEntry->FUN_006815c0()->fValue);
+                pse->pEffectLocals->SetVariable(pLocalEntry->FUN_006815c0()->uiID, pLocalEntry->FUN_006815c0()->fValue);
                 pLocalEntry = pLocalEntry->FUN_00726070();
             }
-            if (m_pScriptLocals->m_pExtendedLocals)
-                pse->m_pScriptLocals->m_pExtendedLocals = reinterpret_cast<ScriptDefinition*>(new ScriptEventListStub);
+            if (pEffectLocals->m_pScriptEffectData)
+                pse->pEffectLocals->m_pScriptEffectData = reinterpret_cast<ScriptDefinition*>(new ScriptEventListStub);
         }
     }
 }
 
 // Deletes the cached script locals before destroying the active-effect base.
 // @fnv 0x008277f0
+// pdb: ScriptEffect::~ScriptEffect | ScriptEffect.obj | debug, upstream name already matches, high
 ScriptEffect::~ScriptEffect()
 {
-    if (m_pScriptLocals)
-        delete m_pScriptLocals;
+    if (pEffectLocals)
+        delete pEffectLocals;
 }
 
 // Allocates and constructs a ScriptEffect from the caster, magic item and effect item.
 // @fnv 0x00827a40
-ScriptEffect* CreateScriptEffect(MagicCaster* apCaster, MagicItem* apItem, EffectItem* apEffect)
+// src: XBOX_RETAIL_PDB 0x00827a40
+// pdb: ScriptEffect::Instantiate | ScriptEffect.obj | retail, object-file run extension, high
+// pdb params: apCaster, apSpell, apEffect
+ScriptEffect* ScriptEffect_Instantiate(MagicCaster* apCaster, MagicItem* apSpell, EffectItem* apEffect)
 {
-    return new ScriptEffect(apCaster, apItem, apEffect);
+    return new ScriptEffect(apCaster, apSpell, apEffect);
 }
 
 extern TESSaveLoadGame* g_TESSaveLoadGame;
 // @fnv 0x00827c20
+// pdb: ScriptEffect::GetSaveSize | ScriptEffect.obj | retail, upstream name already matches, high
+// pdb params: apActor
+// pdb locals: isize
 unsigned short ScriptEffect::GetSaveSize(Actor* apActor)
 {
     unsigned short usSaveSize = 0;
     usSaveSize += ActiveEffect::GetSaveSize(apActor);
     if (g_TESSaveLoadGame->FUN_008df040() >= 0x2a)
         usSaveSize += 2;
-    if (m_pScriptLocals)
-        usSaveSize += m_pScriptLocals->GetSaveSize();
+    if (pEffectLocals)
+        usSaveSize += pEffectLocals->GetSaveSize();
     return usSaveSize;
 }
 
 extern unsigned int _data_011c16bc;
 
 // @fnv 0x00827880
+// pdb: ScriptEffect::Copy | ScriptEffect.obj | retail, upstream name already matches, high
+// pdb locals: presult
 ActiveEffect* ScriptEffect::Copy()
 {
     ScriptEffect* pEffect = new ScriptEffect(m_pEffectInstance, pSpell, this->pEffect);
@@ -132,7 +151,7 @@ ActiveEffect* ScriptEffect::Copy()
 
 struct ScriptExtended
 {
-    void RunScriptOnTarget(TESObjectREFR*);
+    void RunScriptEffectStart(TESObjectREFR*);
 };
 struct TargetContext
 {
@@ -141,12 +160,13 @@ struct TargetContext
 };
 // If pScript is set, gets its ScriptLocals and passes the actor from the target context to ScriptExtended::RunScriptOnTarget.
 // @fnv 0x00827ac0
+// pdb: ScriptEffect::Start | ScriptEffect.obj | retail, upstream name already matches, high
 void ScriptEffect::Start()
 {
     if (pScript != 0)
     {
-        m_pScriptLocals = pScript->GetOrCreateScriptLocals();
-        ((ScriptExtended*)pScript)->RunScriptOnTarget(((TargetContext*)FUN_0059bb30())->GetActor(m_pScriptLocals));
+        pEffectLocals = pScript->GetOrCreateScriptLocals();
+        ((ScriptExtended*)pScript)->RunScriptEffectStart(((TargetContext*)FUN_0059bb30())->GetActor(pEffectLocals));
     }
 }
 
@@ -154,15 +174,18 @@ void ScriptEffect::Start()
 void __fastcall WriteScriptLocals(ScriptLocals* locals);
 
 // @fnv 0x00827ca0
+// pdb: ScriptEffect::SaveGame | ScriptEffect.obj | retail, vtable slot, high
+// pdb params: apActor
+// pdb locals: isize
 void ScriptEffect::SaveGame(Actor* apActor)
 {
     ActiveEffect::SaveGame(apActor);
     unsigned short count = 0;
     if (g_TESSaveLoadGame->FUN_008df040() >= 0x2a)
     {
-        if (m_pScriptLocals)
+        if (pEffectLocals)
         {
-            count = m_pScriptLocals->GetSaveSize();
+            count = pEffectLocals->GetSaveSize();
         }
         g_TESSaveLoadGame->TESSaveLoadGame_SaveGameDataOLD(&count, 2u);
     }
@@ -172,11 +195,14 @@ void ScriptEffect::SaveGame(Actor* apActor)
     }
     if (count)
     {
-        WriteScriptLocals(m_pScriptLocals);
+        WriteScriptLocals(pEffectLocals);
     }
 }
 
 // @fnv 0x00827d30
+// pdb: ScriptEffect::LoadGame | ScriptEffect.obj | retail, vtable slot, high
+// pdb params: apActor
+// pdb locals: isize
 void ScriptEffect::LoadGame(Actor* apActor)
 {
     ActiveEffect::LoadGame(apActor);
@@ -191,13 +217,13 @@ void ScriptEffect::LoadGame(Actor* apActor)
     }
     if (flag)
     {
-        if (m_pScriptLocals == 0)
+        if (pEffectLocals == 0)
         {
-            m_pScriptLocals = pScript->GetOrCreateScriptLocals();
+            pEffectLocals = pScript->GetOrCreateScriptLocals();
         }
-        if (m_pScriptLocals != 0)
+        if (pEffectLocals != 0)
         {
-            m_pScriptLocals->SaveGame();
+            pEffectLocals->SaveGame();
         }
         else
         {
@@ -208,15 +234,18 @@ void ScriptEffect::LoadGame(Actor* apActor)
 
 // Saves the base effect and the cached locals when present.
 // @fnv 0x00827e10
-void ScriptEffect::SaveGame(BGSSaveFormBuffer* apBuffer)
+// pdb: ScriptEffect::SaveGame | ScriptEffect.obj | retail, vtable slot, high
+// pdb params: apActor
+// pdb locals: isize
+void ScriptEffect::SaveGame(BGSSaveFormBuffer* apSaveGameBuffer)
 {
-    ActiveEffect::SaveGame(apBuffer);
+    ActiveEffect::SaveGame(apSaveGameBuffer);
 
-    bool bValue = m_pScriptLocals;
-    apBuffer->FUN_00865e50(&bValue, 1, 0);
+    bool bValue = pEffectLocals;
+    apSaveGameBuffer->FUN_00865e50(&bValue, 1, 0);
 
     if (bValue)
-        m_pScriptLocals->SaveGame(apBuffer);
+        pEffectLocals->SaveGame(apSaveGameBuffer);
 }
 
 struct Cell827b
@@ -226,19 +255,20 @@ struct Cell827b
 };
 struct FUN_005ac380_t
 {
-    void FUN_005ac380(void*);
+    void Script_RunScriptEffectFinish(void*);
 };
 // @fnv 0x00827b20
+// pdb: ScriptEffect::Finish | ScriptEffect.obj | retail, upstream name already matches, high
 void ScriptEffect::Finish()
 {
     if (pScript && (!g_TESSaveLoadGame->FUN_0047c850() ||
                     g_TESSaveLoadGame->FUN_0047c850()))
     {
-        ((FUN_005ac380_t*)pScript)->FUN_005ac380(((Cell827b*)FUN_0059bb30())->v01(m_pScriptLocals));
+        ((FUN_005ac380_t*)pScript)->Script_RunScriptEffectFinish(((Cell827b*)FUN_0059bb30())->v01(pEffectLocals));
     }
-    if (m_pScriptLocals)
+    if (pEffectLocals)
     {
-        delete m_pScriptLocals;
-        m_pScriptLocals = 0;
+        delete pEffectLocals;
+        pEffectLocals = 0;
     }
 }

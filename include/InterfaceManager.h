@@ -33,6 +33,7 @@ class Tile;
 class TileImage;
 class ViewCaster;
 
+// pdb: class InterfaceManager, size 0x478 (here 0x580), 104 members
 class InterfaceManager
 {
 public:
@@ -190,7 +191,7 @@ public:
     // Declarations the units bind (union of their copies); FUN_ names are placeholders.
     void Accumulate();
     int AddMenuStackEntry(int, bool);
-    void AddTileIfAbsent(Tile*);
+    void AddTileToUpdateList(Tile*);
     void CalculateConsolePickRefs();
     void ClearActivatePickResults();
     void ClearCurrentFocusTarget();
@@ -377,7 +378,7 @@ public:
     void SetMenuFocusEnabled(bool);
     void SetMouseHeldTime(float);
     void SetNamedMenuOption(char*, bool);
-    void SetNamedMenuOption(int);
+    void MenuConsole_ScrollBy(int);
     void SetPickDistance(int);
     void SetPickedREFR(TESObjectREFR*);
     void SetPipboyPickResults(bool, float, float, int);
@@ -400,7 +401,7 @@ public:
     void UncullPipboyMenus();
     static void UnregisterListBox(ListBoxBase*);
     void UpdateAllTimers();
-    static void UpdateContainerMenu(Tile*, Tile*, Tile*, InventoryStackRecord*, bool);
+    static void UpdatePipBoyInventoryEffects(Tile*, Tile*, Tile*, InventoryStackRecord*, bool);
     static float UpdateInterfaceState();
     void UpdateInventoryPageNumber(char);
     void UpdateMagicPageNumber(char);

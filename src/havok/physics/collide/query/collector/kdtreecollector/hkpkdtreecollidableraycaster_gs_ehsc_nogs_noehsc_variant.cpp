@@ -120,6 +120,7 @@ void __cdecl operator delete(void* pvMem);
 class FUN_00d979a0
 {
 // @fnv 0x00d979a0
+// pdb: hkKdTreeBundleCastCollector::`scalar deleting destructor' | hkpKdTreeCollidableRaycaster.obj | retail, vtable slot, high
   public:
     FUN_00d979a0()
     {}
@@ -353,18 +354,21 @@ struct ThisCls
     SubObj* sub;
     int m_0c;
     DestEnt* dest;
-    void hkKdTreeCollidableRayBundleCaster_addMidPhaseHit(Arg0* a0, __m128* a1);
+    void hkKdTreeCollidableRayBundleCaster_addMidPhaseHit(Arg0* primId, __m128* a1);
 };
 // @fnv 0x00d97c90
 // src: HAVOK_SRC 0x00d97c90
-void ThisCls::hkKdTreeCollidableRayBundleCaster_addMidPhaseHit(Arg0* a0, __m128* a1)
+// pdb: hkKdTreeCollidableRayBundleCaster::addMidPhaseHit | hkpKdTreeCollidableRaycaster.obj | retail, upstream name already matches, high
+// pdb params: primId, mask
+// pdb locals: filteredMask, bundleOutput, shapeInput, filterVec
+void ThisCls::hkKdTreeCollidableRayBundleCaster_addMidPhaseHit(Arg0* primId, __m128* a1)
 {
-    HeadObj* head = a0->head;
+    HeadObj* head = primId->head;
     if (head == 0)
         return;
     {
         __declspec(align(16)) CandF cands[4];
-        Mat4* mat = a0->mat;
+        Mat4* mat = primId->mat;
         float one = 1.0f;
         PtsBlockF pts;
         pts.t60 = 0;
@@ -377,7 +381,7 @@ void ThisCls::hkKdTreeCollidableRayBundleCaster_addMidPhaseHit(Arg0* a0, __m128*
             {
                 int mask = _mm_movemask_ps(*a1);
                 char outb;
-                if ((DAT_010c92e0[i] & mask) != 0 && *sub->Query(&outb, &entries[i], a0) != 0)
+                if ((DAT_010c92e0[i] & mask) != 0 && *sub->Query(&outb, &entries[i], primId) != 0)
                     vals[i] = one;
                 else
                     vals[i] = -1.0f;
@@ -440,7 +444,7 @@ void ThisCls::hkKdTreeCollidableRayBundleCaster_addMidPhaseHit(Arg0* a0, __m128*
             if (cands[i].score < one && cands[i].score < dest[i].c.score)
             {
                 dest[i].Copy(*static_cast<DestEnt*>(static_cast<void*>(&cands[i])));
-                dest[i].owner = a0;
+                dest[i].owner = primId;
                 *reinterpret_cast<__m128*>(dest[i].c.v0) = Rotate(*mat, _mm_load_ps(cands[i].v0));
             }
         }

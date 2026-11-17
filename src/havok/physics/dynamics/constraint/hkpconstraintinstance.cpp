@@ -22,65 +22,78 @@ typedef union __declspec(intrin_type) __declspec(align(16)) {
 #include "../../../../../include/hkStringPtr.h"
 #include "../../../../../include/hkpModifierConstraintAtom.h"
 
-void __cdecl EnableConstraintsAndZeroArrays(void* a, void* b);
+void __cdecl hkpResponseModifier_enableConstraint(void* instance, void* constraintOwner);
 
 // @fnv 0x00cf3d90
 // src: COMMUNITY 0x00cf3d90
+// pdb: hkpConstraintInstance::enable | hkpConstraintInstance.obj | debug, upstream name already matches, high
+// pdb locals: assertBuf, ostr
 __declspec(noinline) void __fastcall hkpConstraintInstance_enable(hkpConstraintInstance* self)
 {
-    EnableConstraintsAndZeroArrays(self, self->m_pOwnerObject);
+    hkpResponseModifier_enableConstraint(self, self->m_owner);
 }
 
 // @fnv 0x00cf3070
 void __fastcall SetActive(hkpConstraintInstance* self, int, bool active)
 {
     self->m_priority = active;
-    void* p = self->m_pConstraintInternal;
+    void* p = self->m_internal;
     if (p)
         *(char*)((char*)p + 0x13) = active;
 }
 
-void __cdecl hkpWorldOperationUtil_removeConstraintImmediately(void* a, void* b, int c);
+void __cdecl hkpWorldOperationUtil_removeConstraintImmediately(void* a, void* constraint, int c);
 
 // If the owner is set, calls FUN_00cb3dd0 with the pointer at arg+8, this, and 1.
 // @fnv 0x00cf3090
+// pdb: hkpConstraintInstance::entityRemovedCallback | hkpConstraintInstance.obj | debug, vtable slot, medium
+// pdb params: entity
+// pdb locals: assertBuf, ostr
 void hkpConstraintInstance::vf04(void* arg)
 {
-    if (m_pOwnerObject)
+    if (m_owner)
         hkpWorldOperationUtil_removeConstraintImmediately(*(void**)((char*)arg + 8), this, 1);
 }
 
 void __cdecl hkpResponseModifier_disableConstraint(void*, void*);
 // @fnv 0x00cf3da0
 // src: COMMUNITY 0x00cf3da0
+// pdb: hkpConstraintInstance::disable | hkpConstraintInstance.obj | debug, upstream name already matches, high
+// pdb locals: assertBuf, ostr
 __declspec(noinline) void __fastcall hkpConstraintInstance_disable(hkpConstraintInstance* self)
 {
-    hkpResponseModifier_disableConstraint(self, self->m_pOwnerObject);
+    hkpResponseModifier_disableConstraint(self, self->m_owner);
 }
 
 // @fnv 0x00cf3000
+// pdb: hkpConstraintInstance::replaceEntity | hkpConstraintInstance.obj | retail, object-file run extension, low
+// pdb params: oldEntity, newEntity
+// pdb locals: assertBuf, ostr
 void __fastcall ReplaceReference(hkpConstraintInstance* self, int, void* apOldRef, void* apNewRef)
 {
-    int idx = (apOldRef != self->m_kActorEntries[0]) ? 1 : 0;
+    int idx = (apOldRef != self->m_entities[0]) ? 1 : 0;
     ((hkReferencedObject*)apNewRef)->addReference();
     if (apOldRef)
         ((hkReferencedObject*)apOldRef)->removeReference();
-    self->m_kActorEntries[idx] = static_cast<hkpEntity*>(apNewRef);
+    self->m_entities[idx] = static_cast<hkpEntity*>(apNewRef);
 }
 
 namespace fnv_00cf3040 {
 
 // Scans two pointers at this+0x14 and, when one matches the pointer at arg+0x24, calls removeReference on it and clears that slot.
 // @fnv 0x00cf3040
+// pdb: hkpConstraintInstance::setFixedRigidBodyPointersToZero | hkpConstraintInstance.obj | retail, object-file run extension, low
+// pdb params: world
+// pdb locals: assertBuf, ostr
 void __fastcall RemoveReferenceFromSlots(hkpConstraintInstance* self, int, void* arg)
 {
     for (int i = 0; i < 2; ++i)
     {
-        hkReferencedObject* p = (hkReferencedObject*)*(reinterpret_cast<void**>(self->m_kActorEntries) + i);
+        hkReferencedObject* p = (hkReferencedObject*)*(reinterpret_cast<void**>(self->m_entities) + i);
         if (p == *(hkReferencedObject**)((char*)arg + 0x24))
         {
             p->removeReference();
-            self->m_kActorEntries[i] = 0;
+            self->m_entities[i] = 0;
         }
     }
 }
@@ -90,15 +103,16 @@ namespace fnv_00cf3e60 {
 
 // @fnv 0x00cf3e60
 // src: HAVOK_LIB 0x00cf3e60
+// pdb: hkpConstraintInstance::pointNullsToFixedRigidBody | hkpConstraintInstance.obj | retail, upstream name already matches, high
 void __fastcall hkpConstraintInstance_pointNullsToFixedRigidBody(hkpConstraintInstance* self)
 {
     for (int i = 0; i < 2; ++i)
     {
-        if (self->m_kActorEntries[i] == 0)
+        if (self->m_entities[i] == 0)
         {
-            void* other = reinterpret_cast<void*>(reinterpret_cast<unsigned int>(self->m_kActorEntries[1]) ^
-                                                  reinterpret_cast<unsigned int>(self->m_kActorEntries[0]) ^
-                                                  reinterpret_cast<unsigned int>(self->m_kActorEntries[i]));
+            void* other = reinterpret_cast<void*>(reinterpret_cast<unsigned int>(self->m_entities[1]) ^
+                                                  reinterpret_cast<unsigned int>(self->m_entities[0]) ^
+                                                  reinterpret_cast<unsigned int>(self->m_entities[i]));
 
             if (other != 0)
             {
@@ -108,7 +122,7 @@ void __fastcall hkpConstraintInstance_pointNullsToFixedRigidBody(hkpConstraintIn
                 {
                     void* referenced = *reinterpret_cast<void**>(reinterpret_cast<unsigned char*>(constraint) + 0x24);
 
-                    self->m_kActorEntries[i] = static_cast<hkpEntity*>(referenced);
+                    self->m_entities[i] = static_cast<hkpEntity*>(referenced);
                     reinterpret_cast<hkReferencedObject*>(referenced)->addReference();
                 }
             }
@@ -119,11 +133,17 @@ void __fastcall hkpConstraintInstance_pointNullsToFixedRigidBody(hkpConstraintIn
 
 // @fnv 0x00cf2f90
 // src: COMMUNITY 0x00cf2f90
+// pdb: hkpConstraintInstance::entityAddedCallback | hkpConstraintInstance.obj | debug, vtable slot, medium
+// pdb params: entity
+// pdb locals: assertBuf, ostr
 void __stdcall nullsub_55(int)
 {}
 
 // @fnv 0x00cf2fa0
 // src: COMMUNITY 0x00cf2fa0
+// pdb: hkpConstraintInstance::entityDeletedCallback | hkpConstraintInstance.obj | debug, vtable slot, medium
+// pdb params: entity
+// pdb locals: assertBuf, ostr
 void __stdcall nullsub_56(int)
 {}
 
@@ -131,9 +151,9 @@ void __stdcall nullsub_56(int)
 // src: HAVOK_LIB 0x00cf2fb0
 __declspec(noinline) hkBool hkpConstraintInstance::isConstrainedToWorld() const throw()
 {
-    return m_kActorEntries[1] == 0 ||
-           (m_kActorEntries[0]->m_pOwningWorld &&
-            m_kActorEntries[1] == static_cast<hkpWorld*>(m_kActorEntries[0]->m_pOwningWorld)->m_pFixedRigidBody);
+    return m_entities[1] == 0 ||
+           (m_entities[0]->m_world &&
+            m_entities[1] == static_cast<hkpWorld*>(m_entities[0]->m_world)->m_fixedRigidBody);
 }
 
 namespace fnv_00cf2fe0 {
@@ -142,6 +162,7 @@ int __cdecl FindModifierConstraintAtom(const void* pvObject, int iType);
 
 // @fnv 0x00cf2fe0
 // src: HAVOK_LIB 0x00cf2fe0
+// pdb: hkpConstraintInstance::isEnabled | hkpConstraintInstance.obj | retail, upstream name already matches, high
 hkBool* __fastcall hkpConstraintInstance_isEnabled(const hkpConstraintInstance* self, int, hkBool* result)
 {
     result->m_cBooleanValue = FindModifierConstraintAtom(self, 0x1b) == 0;
@@ -151,9 +172,9 @@ hkBool* __fastcall hkpConstraintInstance_isEnabled(const hkpConstraintInstance* 
 
 static inline int FindListenerIndex(const hkpConstraintInstance* self, void* item)
 {
-    for (int i = 0; i < self->m_kListeners.m_iElementCount; ++i)
+    for (int i = 0; i < self->m_listeners.m_iElementCount; ++i)
     {
-        if (static_cast<void**>(self->m_kListeners.m_data)[i] == item)
+        if (static_cast<void**>(self->m_listeners.m_data)[i] == item)
             return i;
     }
     return -1;
@@ -162,25 +183,28 @@ static inline int FindListenerIndex(const hkpConstraintInstance* self, void* ite
 // Clears the matching listener slot.
 // @fnv 0x00cf30b0
 // src: HAVOK_LIB 0x00cf30b0
+// pdb: hkpConstraintInstance::removeConstraintListener | hkpConstraintInstance.obj | debug, upstream name already matches, high
+// pdb params: listener
+// pdb locals: assertBuf, ostr
 void __fastcall hkpConstraintInstance_removeConstraintListener(hkpConstraintInstance* self, int, void* apItem)
 {
-    static_cast<void**>(self->m_kListeners.m_data)[FindListenerIndex(self, apItem)] = 0;
+    static_cast<void**>(self->m_listeners.m_data)[FindListenerIndex(self, apItem)] = 0;
 }
 
 // @fnv 0x00cf3dd0
 // src: HAVOK_LIB 0x00cf3dd0
 int __fastcall hkpConstraintInstance_getSimulationIsland(const hkpConstraintInstance* self)
 {
-    const hkpEntity* pkEntity = self->m_kActorEntries[0];
-    if (*reinterpret_cast<const unsigned char*>(&pkEntity->m_pMotionState.m_type) != 5)
-        return reinterpret_cast<int>(pkEntity->m_pSimulationIsland);
-    return reinterpret_cast<int>(self->m_kActorEntries[1]->m_pSimulationIsland);
+    const hkpEntity* pkEntity = self->m_entities[0];
+    if (*reinterpret_cast<const unsigned char*>(&pkEntity->m_motion.m_type) != 5)
+        return reinterpret_cast<int>(pkEntity->m_simulationIsland);
+    return reinterpret_cast<int>(self->m_entities[1]->m_simulationIsland);
 }
 
 // The per-thread router at 0x00c85750 is shared as hkMemoryRouter; its heap is at +0x10.
 
-hkpConstraintData* __cdecl hkpConstraintDataCloningUtil_deepClone(const hkpConstraintData* pkData) throw();
-hkpConstraintData* __cdecl hkpConstraintDataCloningUtil_cloneIfCanHaveMotors(const hkpConstraintData* pkData) throw();
+hkpConstraintData* __cdecl hkpConstraintDataCloningUtil_deepClone(const hkpConstraintData* data) throw();
+hkpConstraintData* __cdecl hkpConstraintDataCloningUtil_cloneIfCanHaveMotors(const hkpConstraintData* data) throw();
 
 class FUN_00cf3ea0 : public hkpConstraintInstance
 {
@@ -205,22 +229,25 @@ static inline hkpConstraintData* getCloneData(const hkpConstraintInstance* insta
 // Creates a new constraint instance from this one according to eMode, copying the name and returning the new instance.
 // @fnv 0x00cf3fa0
 // src: HAVOK_LIB 0x00cf3fa0
-hkpConstraintInstance* hkpConstraintInstance::clone_00cf3fa0(hkpEntity* pkEntityA, hkpEntity* pkEntityB,
-                                                               int eCloneMode) const throw()
+// pdb: hkpConstraintInstance::clone | hkpConstraintInstance.obj | retail, call graph (shared callers), high
+// pdb params: newEntityA, newEntityB, mode
+// pdb locals: assertBuf, ostr
+hkpConstraintInstance* hkpConstraintInstance::clone_00cf3fa0(hkpEntity* newEntityA, hkpEntity* newEntityB,
+                                                               int mode) const throw()
 {
     hkpConstraintInstance* pkInstance;
-    if (eCloneMode == CLONE_INSTANCES_ONLY)
+    if (mode == CLONE_INSTANCES_ONLY)
     {
         if (isConstrainedToWorld().m_cBooleanValue)
         {
             hkpConstraintData* pkData = hkpConstraintDataCloningUtil_deepClone(getCloneData(this));
-            pkInstance = new FUN_00cf3ea0(pkEntityA, 0, pkData, getPriority());
+            pkInstance = new FUN_00cf3ea0(newEntityA, 0, pkData, getPriority());
             pkData->removeReference();
         }
         else
-            pkInstance = new FUN_00cf3ea0(pkEntityA, pkEntityB, getCloneData(this), getPriority());
+            pkInstance = new FUN_00cf3ea0(newEntityA, newEntityB, getCloneData(this), getPriority());
     }
-    else if (eCloneMode == CLONE_DATAS_WITH_MOTORS)
+    else if (mode == CLONE_DATAS_WITH_MOTORS)
     {
         hkpConstraintData* pkData = hkpConstraintDataCloningUtil_cloneIfCanHaveMotors(getCloneData(this));
         if (!pkData)
@@ -228,12 +255,12 @@ hkpConstraintInstance* hkpConstraintInstance::clone_00cf3fa0(hkpEntity* pkEntity
             pkData = getCloneData(this);
             pkData->FUN_00c90510();
         }
-        pkInstance = new FUN_00cf3ea0(pkEntityA, pkEntityB, pkData, getPriority());
+        pkInstance = new FUN_00cf3ea0(newEntityA, newEntityB, pkData, getPriority());
         pkData->removeReference();
     }
     else
-        pkInstance = new FUN_00cf3ea0(pkEntityA, pkEntityB, getCloneData(this), getPriority());
-    pkInstance->m_name.Assign((const char*)((hkUlong)m_name.m_pcText & ~1));
+        pkInstance = new FUN_00cf3ea0(newEntityA, newEntityB, getCloneData(this), getPriority());
+    pkInstance->m_name.Assign((const char*)((hkUlong)m_name.m_stringAndFlag & ~1));
     return pkInstance;
 }
 
@@ -248,16 +275,18 @@ static inline void hkDeallocate(void* p, int size) throw()
 }
 
 // @fnv 0x00cf40b0
-// src: GUESS 0x00cf40b0 (confidence: low)
-__declspec(noinline) void __fastcall hkpConstraintInstance_ProcessEntries_00cf40b0(hkpConstraintInstance* self)
+// src: XBOX_RETAIL_PDB 0x00cf40b0
+// pdb: hkpConstraintInstance::~hkpConstraintInstance | hkpConstraintInstance.obj | retail, call graph (shared callers), high
+// pdb locals: assertBuf, ostr
+__declspec(noinline) void __fastcall hkpConstraintInstance_dtor(hkpConstraintInstance* self)
 {
     *(void**)self = &DAT_010cc040;
     hkpConstraintCallbackUtil_fireConstraintDeleted(self);
-    if (self->m_kActorEntries[0])
-        reinterpret_cast<hkReferencedObject*>(self->m_kActorEntries[0])->removeReference();
-    if (self->m_kActorEntries[1])
-        reinterpret_cast<hkReferencedObject*>(self->m_kActorEntries[1])->removeReference();
-    hkpModifierConstraintAtom* mod = self->m_pConstraintModifier;
+    if (self->m_entities[0])
+        reinterpret_cast<hkReferencedObject*>(self->m_entities[0])->removeReference();
+    if (self->m_entities[1])
+        reinterpret_cast<hkReferencedObject*>(self->m_entities[1])->removeReference();
+    hkpModifierConstraintAtom* mod = self->m_constraintModifiers;
     if (mod != 0 && mod->m_type >= 0x17)
     {
         do
@@ -270,10 +299,10 @@ __declspec(noinline) void __fastcall hkpConstraintInstance_ProcessEntries_00cf40
     if (self->m_data)
         self->m_data->removeReference();
     self->m_name.release();
-    if ((self->m_kListeners.m_iCapacityState & 0x8000) == 0)
+    if ((self->m_listeners.m_iCapacityState & 0x8000) == 0)
     {
-        int capacity = self->m_kListeners.m_iCapacityState & 0x3fff;
-        hkDeallocate(self->m_kListeners.m_data, capacity * 4);
+        int capacity = self->m_listeners.m_iCapacityState & 0x3fff;
+        hkDeallocate(self->m_listeners.m_data, capacity * 4);
     }
     *(void**)self = &DAT_0102e388;
 }
@@ -283,11 +312,12 @@ namespace fnv_00cf4160 {
 
 // Destructs the object, then frees it via operator delete when uiFlags has bit 0 set, and returns this.
 // @fnv 0x00cf4160
+// pdb: hkpConstraintInstance::`scalar deleting destructor' | hkpConstraintInstance.obj | retail, vtable slot, high
 hkpConstraintInstance* __fastcall FUN_00cf4160(hkpConstraintInstance* self, int, unsigned int uiFlags) throw()
 {
-    fnv_00cf40b0::hkpConstraintInstance_ProcessEntries_00cf40b0(self);
+    fnv_00cf40b0::hkpConstraintInstance_dtor(self);
     if (uiFlags & 1)
-        hkMemoryRouter::getInstance().heap().blockFree(self, self->m_usMemSizeAndFlags);
+        hkMemoryRouter::getInstance().heap().blockFree(self, self->m_memSizeAndFlags);
     return self;
 }
 }  // namespace fnv_00cf4160
@@ -297,7 +327,7 @@ hkpConstraintInstance* __fastcall FUN_00cf4160(hkpConstraintInstance* self, int,
 hkpModifierConstraintAtom* __cdecl FindModifierConstraintAtom(hkpConstraintInstance* aConstraintInstance,
                                                               unsigned int type)
 {
-    hkpModifierConstraintAtom* atom = aConstraintInstance->m_pConstraintModifier;
+    hkpModifierConstraintAtom* atom = aConstraintInstance->m_constraintModifiers;
     if (!atom)
         return 0;
 
@@ -310,7 +340,7 @@ hkpModifierConstraintAtom* __cdecl FindModifierConstraintAtom(hkpConstraintInsta
     return atom;
 }
 
-extern "C" void __cdecl hkSmallArrayUtil__reserveMore(void* apvArray, int iSizeElem);
+extern "C" void __cdecl hkSmallArrayUtil__reserveMore(void* array, int sizeElem);
 extern "C" void _ReadWriteBarrier();
 
 static __forceinline void PutListener(hkpConstraintInstanceSmallArraySerializeOverrideType* array, void* a)
@@ -347,7 +377,7 @@ static __forceinline void PutListener(hkpConstraintInstanceSmallArraySerializeOv
 // @fnv 0x00cf3df0
 void __fastcall AddListener(hkpConstraintInstance* self, int, void* apItem)
 {
-    PutListener(&self->m_kListeners, apItem);
+    PutListener(&self->m_listeners, apItem);
 }
 
 extern "C" LocalM128 _mm_load_ps(const float*);
@@ -440,6 +470,9 @@ static __forceinline void copyTransform(Matrix4f& d, const Matrix4f& s)
 // Applies the given Matrix4f transform to the constraint data referenced by this instance, dispatching on the constraint type.
 // @fnv 0x00cf30f0
 // src: GUESS 0x00cf30f0 (confidence: medium)
+// pdb: hkpConstraintInstance::transform | hkpConstraintInstance.obj | debug, object-file run extension, low
+// pdb params: transformation
+// pdb locals: assertBuf, ostr, aTransform, axisB, bTransform, axisA, axisBPerp, axisAPerp, pivotB, normalB, pivotA, axisPerpA, axisPerpB, suspensionAxisB, axleB, steeringAxisB, axleA
 void CInstance::ApplyTransformToWorldConstraint(Matrix4f* apTransform)
 {
     if (!isConstrainedToWorld())
@@ -562,20 +595,23 @@ class FUN_00cf3c90_cls
     TargetObj* m_target14;
     TargetObj* m_target18;
 
-    void hkpConstraintInstance_getPivotsInWorld(ReceiverObj* first, ReceiverObj* second);
+    void hkpConstraintInstance_getPivotsInWorld(ReceiverObj* pivotAinW, ReceiverObj* pivotBinW);
 };
 
 // Copies two vectors obtained from m_obj0C, then calls FUN_00c7f640 on first and second with m_target14->unk18 and m_target18->unk18 and the matching vector.
 // @fnv 0x00cf3c90
 // src: XBOX_PDB 0x00cf3c90
-void FUN_00cf3c90_cls::hkpConstraintInstance_getPivotsInWorld(ReceiverObj* apFirstReceiver, ReceiverObj* apSecondReceiver)
+// pdb: hkpConstraintInstance::getPivotsInWorld | hkpConstraintInstance.obj | retail, upstream name already matches, high
+// pdb params: pivotAinW, pivotBinW
+// pdb locals: pivotB, pivotA
+void FUN_00cf3c90_cls::hkpConstraintInstance_getPivotsInWorld(ReceiverObj* pivotAinW, ReceiverObj* pivotBinW)
 {
     LocalM128 vFirstVec = *(LocalM128*)GetDispatchTarget(m_obj0C);
     LocalM128 vSecondVec = *(LocalM128*)GetShapeData(m_obj0C);
 
     void* pSecondTargetPtr = m_target18->unk18;
-    apFirstReceiver->setTransformedPos_00c7f640(m_target14->unk18, reinterpret_cast<hkVector4*>(&vFirstVec));
-    apSecondReceiver->setTransformedPos_00c7f640(pSecondTargetPtr, reinterpret_cast<hkVector4*>(&vSecondVec));
+    pivotAinW->setTransformedPos_00c7f640(m_target14->unk18, reinterpret_cast<hkVector4*>(&vFirstVec));
+    pivotBinW->setTransformedPos_00c7f640(pSecondTargetPtr, reinterpret_cast<hkVector4*>(&vSecondVec));
 }
 
 union FUN_00cf3d00_Vec4
@@ -624,7 +660,11 @@ void __cdecl hkpWorldConstraintUtil_addModifier(void* a, void* b, void* c);
 
 // Stores a and b in unk20 and unk30 of the atom found by FindModifierConstraintAtom(static_cast<void*>(self), 0x18), or of a new 0x40-byte buffer passed to FUN_00d27960.
 // @fnv 0x00cf3d00
-void __fastcall SetVec4Pair(hkpConstraintInstance* self, int, FUN_00cf3d00_Vec4* a, FUN_00cf3d00_Vec4* b)
+// src: XBOX_RETAIL_PDB 0x00cf3d00
+// pdb: hkpConstraintInstance::setVirtualMassInverse | hkpConstraintInstance.obj | retail, object-file run extension, high
+// pdb params: invMassA, invMassB
+// pdb locals: assertBuf, ostr
+void __fastcall hkpConstraintInstance_setVirtualMassInverse(hkpConstraintInstance* self, int, FUN_00cf3d00_Vec4* a, FUN_00cf3d00_Vec4* b)
 {
     FUN_00cf3d00_Alloc* pAtom = (FUN_00cf3d00_Alloc*)FindModifierConstraintAtom(static_cast<void*>(self), 0x18);
 
@@ -651,7 +691,7 @@ void __fastcall SetVec4Pair(hkpConstraintInstance* self, int, FUN_00cf3d00_Vec4*
     buf->unk20.m = a->m;
     buf->unk30.m = b->m;
 
-    hkpWorldConstraintUtil_addModifier(self, self->m_pOwnerObject, buf);
+    hkpWorldConstraintUtil_addModifier(self, self->m_owner, buf);
 }
 
 extern char DAT_010cc040;
@@ -659,24 +699,26 @@ extern char DAT_010cc040;
 // Sets the vtable pointer, zeroes most fields, sets m_6 to 1, m_1c to flag, m_1d to 1, m_26 to 0x8000, m_34 to -16, and calls m_28.Init().
 // @fnv 0x00cf3f40
 // src: HAVOK_LIB 0x00cf3f40
+// pdb: hkpConstraintInstance::hkpConstraintInstance | hkpConstraintInstance.obj | retail, call graph, high
+// pdb params: f
 hkpConstraintInstance* __fastcall hkpConstraintInstance_hkpConstraintInstance(hkpConstraintInstance* self, int, bool flag)
 {
     int z = 0;
     *(void* volatile*)&*reinterpret_cast<void**>(self) = (void*)&DAT_010cc040;
-    self->m_pOwnerObject = 0;
-    self->m_pConstraintModifier = 0;
-    *(volatile short*)&self->m_sReferenceCount = 1;
+    self->m_owner = 0;
+    self->m_constraintModifiers = 0;
+    *(volatile short*)&self->m_referenceCount = 1;
     *(volatile unsigned char*)&self->m_priority = flag;
-    *(volatile unsigned char*)&self->m_bWantRuntime = 1;
-    *(volatile unsigned char*)&self->m_eDestructionRemapInfo = z;
+    *(volatile unsigned char*)&self->m_wantRuntime = 1;
+    *(volatile unsigned char*)&self->m_destructionRemapInfo = z;
     _ReadWriteBarrier();
-    *(volatile int*)&self->m_kListeners.m_data = z;
-    self->m_kListeners.m_iElementCount = 0;
-    self->m_kListeners.m_iCapacityState = 0x8000;
+    *(volatile int*)&self->m_listeners.m_data = z;
+    self->m_listeners.m_iElementCount = 0;
+    self->m_listeners.m_iCapacityState = 0x8000;
     self->m_name.Init();
-    self->m_ulUserData = z;
-    self->m_pConstraintInternal = 0;
-    self->m_uiUniqueId = -16;
+    self->m_userData = z;
+    self->m_internal = 0;
+    self->m_uid = -16;
     return self;
 }
 

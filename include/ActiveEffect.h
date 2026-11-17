@@ -30,6 +30,7 @@ enum MagicSystem__SpellType
     MagicSystem__SpellType_SPELL_TYPE_COUNT = 11
 };
 
+// pdb: class ActiveEffect, size 0x48, 18 members
 class ActiveEffect
 {
 public:
@@ -42,15 +43,15 @@ public:
     virtual void SaveGame(Actor* apActor);                      // 18
     virtual void SaveGame(BGSSaveFormBuffer* apBuffer);          // 14
     virtual void LoadGame(Actor* apActor);                      // 20
-    virtual void LoadGame(BGSLoadFormBuffer* apBuffer);          // 1C
+    virtual void LoadGame(BGSLoadFormBuffer* apLoadGameBuffer);          // 1C
     virtual void InitLoadGame(Actor* apActor);                  // 28
-    virtual void InitLoadGame(BGSLoadFormBuffer* apBuffer);      // 24
+    virtual void InitLoadGame(BGSLoadFormBuffer* apLoadGameBuffer);      // 24
     virtual void FinishLoadGameTES(Actor* apActor);             // 2C
     virtual void Revert(Actor* apActor);                        // 34
     virtual void Revert(BGSLoadFormBuffer* apBuffer);            // 30
     virtual bool CanApply(MagicCaster* apCaster);               // 38
     virtual bool CanFinish();                                  // 3C
-    virtual void ApplyLoadBuffer(BGSLoadFormBuffer* apBuffer);   // 40
+    virtual void ApplyLoadBuffer(BGSLoadFormBuffer* apLoadGameBuffer);   // 40
     virtual void CopyData(ActiveEffect* apOther);               // 44
     virtual bool CanCast(MagicCaster* apCaster);                // 48
     virtual bool IsEffectValid(MagicTarget* apTarget);          // 4C
@@ -89,7 +90,7 @@ public:
     float GetFloatAtOffset1C();
     EffectSetting* GetEffectSetting();
     EffectSetting* GetEffectSetting() const;
-    void ResetEffectState();
+    void StartSound();
     bool IsDone();
     bool IsDone() const;
     float GetDuration() const;
@@ -118,6 +119,6 @@ public:
     bool FUN_00705cf0();
 
     static void LoadActiveEffectList(BGSLoadFormBuffer*, BSSimpleList<ActiveEffect*>*);
-    static ActiveEffect* ReadActiveEffect(BGSLoadFormBuffer*);
-    static void __cdecl WriteActiveEffectList(BGSLoadFormBuffer*, BSSimpleList<ActiveEffect*>*);
+    static ActiveEffect* LoadActiveEffect(BGSLoadFormBuffer*);
+    static void __cdecl FinishLoadActiveEffectList(BGSLoadFormBuffer*, BSSimpleList<ActiveEffect*>*);
 };

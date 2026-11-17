@@ -36,16 +36,16 @@ inline hkSimdReal::operator float() const
 inline hkMatrix3::hkMatrix3()
 {}
 
-__forceinline hkSimdReal hkVector4::dot3(const hkVector4& a) const
+__forceinline hkSimdReal hkVector4::dot3(const hkVector4& x) const
 {
-    __m128 x2 = _mm_mul_ps(m_vComponents, a.m_vComponents);
+    __m128 x2 = _mm_mul_ps(m_vComponents, x.m_vComponents);
     __m128 res = _mm_add_ss(_mm_shuffle_ps(x2, x2, 0xAA), _mm_add_ss(_mm_shuffle_ps(x2, x2, 0x55), x2));
     return res;
 }
 
-inline void hkVector4::setMul4(const hkSimdReal& r, const hkVector4& a)
+inline void hkVector4::setMul4(const hkSimdReal& r, const hkVector4& x)
 {
-    m_vComponents = _mm_mul_ps(_mm_shuffle_ps(r.m_vValue, r.m_vValue, 0), a.m_vComponents);
+    m_vComponents = _mm_mul_ps(_mm_shuffle_ps(r.m_vValue, r.m_vValue, 0), x.m_vComponents);
 }
 
 struct TimeInterval
@@ -92,7 +92,7 @@ struct Motion
 inline void StepMotion(hkpRigidBody* rb, float dt, const hkVector4& t)
 {
     rb->activate_00c9c1d0();
-    reinterpret_cast<Motion*>(&rb->m_pMotionState)->StepMotion(dt, t);
+    reinterpret_cast<Motion*>(&rb->m_motion)->StepMotion(dt, t);
 }
 
 // The shared hkpMotorAction does not yet declare this entry point.
@@ -103,25 +103,28 @@ struct MotorAction : hkpMotorAction
 
 // @fnv 0x00d4d860
 // src: HAVOK_SRC 0x00d4d860
+// pdb: hkpMotorAction::applyAction | hkpMotorAction.obj | retail, upstream name already matches, high
+// pdb params: stepInfo
+// pdb locals: m, newTorque
 void MotorAction::hkpMotorAction_applyAction(const TimeInterval& stepInfo)
 {
-    if (!m_bSlotEnabled)
+    if (!m_active)
         return;
-    hkpRigidBody* rb = static_cast<hkpRigidBody*>(m_pEntity);
+    hkpRigidBody* rb = static_cast<hkpRigidBody*>(m_entity);
 
     hkVector4 currentAngVel;
     const hkRotation& rotation = reinterpret_cast<const hkRotation&>(
-        rb->m_pMotionState.m_kMotionState.m_kMotionTransform);
-    currentAngVel.hkVector4_setRotatedInverseDir(rotation, rb->m_pMotionState.m_kAngularVelocity);
+        rb->m_motion.m_kMotionState.m_transform);
+    currentAngVel.hkVector4_setRotatedInverseDir(rotation, rb->m_motion.m_kAngularVelocity);
 
-    const hkVector4& axis = m_kAxisEndPoints;
+    const hkVector4& axis = m_axis;
     float currentRate = currentAngVel.dot3(axis);
-    float deltaRate = m_fSpinRate - currentRate;
+    float deltaRate = m_spinRate - currentRate;
     hkVector4 angularDelta;
-    angularDelta.setMul4(hkSimdReal(deltaRate * m_fGain), axis);
+    angularDelta.setMul4(hkSimdReal(deltaRate * m_gain), axis);
 
     __declspec(align(16)) hkMatrix3 worldInertia;
-    reinterpret_cast<const Motion*>(&rb->m_pMotionState)->GetInertiaLocal(worldInertia);
+    reinterpret_cast<const Motion*>(&rb->m_motion)->GetInertiaLocal(worldInertia);
 
     angularDelta.hkVector4_setMul3(worldInertia, angularDelta);
     angularDelta.hkVector4_setRotatedDir(rotation, angularDelta);

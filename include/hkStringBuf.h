@@ -2,6 +2,7 @@
 
 #include "hkArray.h"
 
+// pdb: class hkStringBuf, size 0x8c, 1 members
 class hkStringBuf
 {
 public:
@@ -17,27 +18,27 @@ public:
     hkStringBuf() throw();
     ~hkStringBuf() throw();
 
-    void InitBuffer() throw();
-    __declspec(noinline) void UpdateFields_00cbbd40() throw();
-    void FUN_00d61c10(const char* pcString) throw();
+    void hkStringBuf_ctor() throw();
+    __declspec(noinline) void Writer_MemberWriteFlags_dtor() throw();
+    void FUN_00d61c10(const char* s) throw();
 
-    int indexOf(const char* needle, int start, int end) const throw();
+    int indexOf(const char* s, int startIndex, int endIndex) const throw();
     int indexOf(char c, int start, int end) const;
-    int lastIndexOf(char c, int start, int end) const;
-    int startsWithCase(const char* other) const;
+    int lastIndexOf(char needle, int start, int end) const;
+    int startsWithCase(const char* s) const;
     void pathBasename();
-    int replace(char from, char to, ReplaceType replaceType);
+    int replace(char from, char to, ReplaceType rtype);
     void lowerCase();
     void upperCase();
-    void appendJoin(const char* a, const char* b = 0, const char* c = 0,
-                    const char* d = 0, const char* e = 0, const char* f = 0) throw();
-    void set(const char* src, int len);
-    int split(int c, hkArray<const char*, hkContainerTempAllocator>& bits);
+    void appendJoin(const char* s0, const char* s1 = 0, const char* s2 = 0,
+                    const char* s3 = 0, const char* s4 = 0, const char* s5 = 0) throw();
+    void set(const char* s, int len);
+    int split(int sep, hkArray<const char*, hkContainerTempAllocator>& bits);
     void chompStart(int n);
     void chompEnd(int n);
-    void slice(int offset, int length);
+    void slice(int startOffset, int length);
     hkStringBuf& operator=(const char* s);
-    hkStringBuf& operator+=(const char* s) throw();
+    hkStringBuf& operator+=(const char* other) throw();
 
     int getLength() const { return m_string.m_iElementCount - 1; }
     int getCapacity() const { return m_string.getCapacity(); }

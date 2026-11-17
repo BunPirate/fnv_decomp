@@ -2,6 +2,7 @@
 
 #include "IMemoryManagerFile.h"
 
+// pdb: class MemoryManagerFile, size 0x2c (here 0x4), bases: IMemoryManagerFile, 1 members
 class MemoryManagerFile : public IMemoryManagerFile
 {
 public:

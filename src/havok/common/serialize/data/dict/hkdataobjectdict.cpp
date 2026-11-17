@@ -74,27 +74,31 @@ struct FUN_00dc72e0_class
     void* m_p5;
     void* m_p6;
     void* m_p7;
-    void hkDataWorldDict_setClassVersion(void* pArg, void* pVal);
+    void hkDataWorldDict_setClassVersion(void* klass, void* newVersion);
 };
 
 // @fnv 0x00dc72e0
 // src: XBOX_PDB 0x00dc72e0
-void FUN_00dc72e0_class::hkDataWorldDict_setClassVersion(void* pArg, void* apValue)
+// pdb: hkDataWorldDict::setClassVersion | hkDataObjectDict.obj | debug, upstream name already matches, high
+// pdb params: klass, newVersion
+void FUN_00dc72e0_class::hkDataWorldDict_setClassVersion(void* klass, void* newVersion)
 {
-    ((void**)(*(void***)pArg))[5] = apValue;
+    ((void**)(*(void***)klass))[5] = newVersion;
 }
 
 struct FUN_00dc8a60_class
 {
     char m_data[0x28];
-    char* ArrayOfTuplesImplementation_asArray(int arg);
+    char* ArrayOfTuplesImplementation_asArray(int idx);
 };
 
 // @fnv 0x00dc8a60
 // src: XBOX_PDB 0x00dc8a60
-char* FUN_00dc8a60_class::ArrayOfTuplesImplementation_asArray(int aiScale)
+// pdb: ArrayOfTuplesImplementation::asArray | hkDataObjectDict.obj | debug, upstream name already matches, high
+// pdb params: idx
+char* FUN_00dc8a60_class::ArrayOfTuplesImplementation_asArray(int idx)
 {
-    *(int*)((char*)this + 0x1c) = *(int*)((char*)this + 0x24) * aiScale;
+    *(int*)((char*)this + 0x1c) = *(int*)((char*)this + 0x24) * idx;
     return (char*)this + 0xc;
 }
 
@@ -120,15 +124,17 @@ void FUN_00dc8fc0_Class::Reset()
 
 struct FUN_00dc9540_class
 {
-    int __thiscall hkDataObjectDict_getMemberName(int a);
+    int __thiscall hkDataObjectDict_getMemberName(int it);
 };
 
 // @fnv 0x00dc9540
 // src: XBOX_PDB 0x00dc9540
-int __thiscall FUN_00dc9540_class::hkDataObjectDict_getMemberName(int aiIndex)
+// pdb: hkDataObjectDict::getMemberName | hkDataObjectDict.obj | debug, upstream name already matches, high
+// pdb params: it
+int __thiscall FUN_00dc9540_class::hkDataObjectDict_getMemberName(int it)
 {
     int* p = *(int**)((char*)this + 0x10);
-    return p[aiIndex * 4];
+    return p[it * 4];
 }
 
 struct FUN_00dc9550_Class
@@ -143,6 +149,8 @@ struct FUN_00dc9550_Class
 
 // @fnv 0x00dc9550
 // src: XBOX_PDB 0x00dc9550
+// pdb: hkDataObjectDict::getMemberValue | hkDataObjectDict.obj | debug, upstream name already matches, high
+// pdb params: it
 void FUN_00dc9550_Class::hkDataObjectDict_getMemberValue(void** out, int aiIndex)
 {
     out[0] = this;
@@ -152,14 +160,16 @@ void FUN_00dc9550_Class::hkDataObjectDict_getMemberValue(void** out, int aiIndex
 
 struct FUN_00dc9ab0_class
 {
-    int* __thiscall VecArrayImplementation_asVec(int a);
+    int* __thiscall VecArrayImplementation_asVec(int index);
 };
 
 // @fnv 0x00dc9ab0
 // src: XBOX_PDB 0x00dc9ab0
-int* __thiscall FUN_00dc9ab0_class::VecArrayImplementation_asVec(int aiIndex)
+// pdb: VecArrayImplementation::asVec | hkDataObjectDict.obj | debug, upstream name already matches, high
+// pdb params: index
+int* __thiscall FUN_00dc9ab0_class::VecArrayImplementation_asVec(int index)
 {
-    return *(int**)((char*)this + 0xc) + *(int*)((char*)this + 0x18) * aiIndex;
+    return *(int**)((char*)this + 0xc) + *(int*)((char*)this + 0x18) * index;
 }
 
 extern int DAT_010d707c;
@@ -197,6 +207,8 @@ struct FUN_00dca1f0
 };
 
 // @fnv 0x00dca1f0
+// pdb: ByteArrayImplementation::setInt | hkDataObjectDict.obj | debug, vtable slot, medium
+// pdb params: i, val
 void __thiscall FUN_00dca1f0::Set(char* pcBuffer, char cValue)
 {
     pcBuffer[mc] = cValue;
@@ -208,6 +220,8 @@ struct FUN_00dca5d0_Class
 };
 
 // @fnv 0x00dca5d0
+// pdb: RealArrayImplementation::setReal | hkDataObjectDict.obj | debug, vtable slot, medium
+// pdb params: i, val
 float* FUN_00dca5d0_Class::SetFloatAt(int index, float value)
 {
     float* p = *(float**)((char*)this + 0xc);
@@ -219,12 +233,12 @@ float* FUN_00dca5d0_Class::SetFloatAt(int index, float value)
 // @fnv 0x00dcad80
 int hkDataClassDict::getNumMembers() const
 {
-    const hkDataClassDict* node = parent;
+    const hkDataClassDict* node = m_parent;
     int count = this->count;
     while (node)
     {
         count += node->count;
-        node = node->parent;
+        node = node->m_parent;
     }
     return count;
 }
@@ -273,9 +287,11 @@ struct FUN_00dcb490_Class
 
 // @fnv 0x00dcb490
 // src: XBOX_PDB 0x00dcb490
-int __thiscall FUN_00dcb490_Class::StructArrayImplementation_swizzleObjectMember(int a)
+// pdb: StructArrayImplementation::swizzleObjectMember | hkDataObjectDict.obj | retail, upstream name already matches, high
+// pdb params: name
+int __thiscall FUN_00dcb490_Class::StructArrayImplementation_swizzleObjectMember(int name)
 {
-    int i = ((FUN_00dcb2b0_StandIn*)this)->StructArrayImplementation__find(a);
+    int i = ((FUN_00dcb2b0_StandIn*)this)->StructArrayImplementation__find(name);
     return ((int*)m_0c)[i * 2 + 1];
 }
 
@@ -309,18 +325,24 @@ struct FUN_00dca5c0_Class
     float* m_p4;
     float* m_p8;
     float* m_pc;
-    float RealArrayImplementation_asReal(int index);
+    float RealArrayImplementation_asReal(int i);
 };
 
 // @fnv 0x00dca5c0
 // src: HAVOK_LIB 0x00dca5c0
-float FUN_00dca5c0_Class::RealArrayImplementation_asReal(int index)
+// pdb: RealArrayImplementation::asReal | hkDataObjectDict.obj | debug, upstream name already matches, high
+// pdb params: i
+float FUN_00dca5c0_Class::RealArrayImplementation_asReal(int i)
 {
-    return m_pc[index];
+    return m_pc[i];
 }
 
 
 // @fnv 0x00dc8e50
+// pdb: hkDataClassDict::getMemberInfoByIndex | hkDataObjectDict.obj | retail, object-file run extension, low
+// pdb note: debug build links it to hkDataClassDict::getMemberInfoByName
+// pdb params: memberIndex
+// pdb locals: assertBuf, ostr
 hkDataMemberInfo* hkDataClassDict::FindEntry(const char* value)
 {
     hkDataClassDict* dict = this;
@@ -332,7 +354,7 @@ hkDataMemberInfo* hkDataClassDict::FindEntry(const char* value)
             if (dict->members[i].name == value)
                 return dict->members + i;
         }
-        dict = dict->parent;
+        dict = dict->m_parent;
     }
     return 0;
 }
@@ -343,14 +365,16 @@ struct FUN_00dca2b0_Class
     int m_iWordAt04;
     int m_8;
     __int64* m_iThirdValue;
-    __int64 __thiscall IntArrayImplementation_asInt64(int index);
+    __int64 __thiscall IntArrayImplementation_asInt64(int i);
 };
 
 // @fnv 0x00dca2b0
 // src: XBOX_PDB 0x00dca2b0
-__int64 FUN_00dca2b0_Class::IntArrayImplementation_asInt64(int index)
+// pdb: IntArrayImplementation::asInt64 | hkDataObjectDict.obj | debug, upstream name already matches, high
+// pdb params: i
+__int64 FUN_00dca2b0_Class::IntArrayImplementation_asInt64(int i)
 {
-    return m_iThirdValue[index];
+    return m_iThirdValue[i];
 }
 
 struct FUN_00dcb0c0_class
@@ -387,15 +411,17 @@ struct FUN_00dcb190_Class
     void* m4;
     void* m8;
     FUN_00dcb190_Inner* m_iThirdValue;
-    void* __thiscall StructArrayImplementation_Object_getMemberName(int index);
+    void* __thiscall StructArrayImplementation_Object_getMemberName(int it);
 };
 
 // Returns the m0 pointer of the element at the given index in the inner object's m_data array.
 // @fnv 0x00dcb190
 // src: XBOX_PDB 0x00dcb190
-void* FUN_00dcb190_Class::StructArrayImplementation_Object_getMemberName(int index)
+// pdb: StructArrayImplementation::Object::getMemberName | hkDataObjectDict.obj | debug, upstream name already matches, high
+// pdb params: it
+void* FUN_00dcb190_Class::StructArrayImplementation_Object_getMemberName(int it)
 {
-    return m_iThirdValue->m_data[index].m0;
+    return m_iThirdValue->m_data[it].m0;
 }
 
 struct FUN_00dc6fd0_VTable
@@ -488,15 +514,17 @@ struct FUN_00dc6ff0_class
     FUN_00dc6ff0_Wrapper* m0c;
     unsigned char* m10;
 
-    void ArrayOfTuplesImplementation_View_setAll(const unsigned char* data, int count);
+    void ArrayOfTuplesImplementation_View_setAll(const unsigned char* v, int n);
 };
 
 // @fnv 0x00dc6ff0
 // src: XBOX_PDB 0x00dc6ff0
-void FUN_00dc6ff0_class::ArrayOfTuplesImplementation_View_setAll(const unsigned char* data, int count)
+// pdb: ArrayOfTuplesImplementation::View::setAll | hkDataObjectDict.obj | retail, vtable slot, high
+// pdb params: v, n
+void FUN_00dc6ff0_class::ArrayOfTuplesImplementation_View_setAll(const unsigned char* v, int n)
 {
-    for (int i = 0; i < count; ++i)
-        m0c->m20->call(m10 + i, data[i]);
+    for (int i = 0; i < n; ++i)
+        m0c->m20->call(m10 + i, v[i]);
 }
 
 struct FUN_00dc7030_Target
@@ -538,16 +566,18 @@ struct FUN_00dc7030_StandIn
     FUN_00dc7030_Holder* m0c;
     unsigned char* m10;
 
-    void __thiscall ArrayOfTuplesImplementation_View_setAll_00dc7030(float* values, int count);
+    void __thiscall ArrayOfTuplesImplementation_View_setAll_00dc7030(float* v, int n);
 };
 
 // @fnv 0x00dc7030
 // src: XBOX_PDB 0x00dc7030
-void FUN_00dc7030_StandIn::ArrayOfTuplesImplementation_View_setAll_00dc7030(float* values, int count)
+// pdb: ArrayOfTuplesImplementation::View::setAll | hkDataObjectDict.obj | retail, vtable slot, high
+// pdb params: v, n
+void FUN_00dc7030_StandIn::ArrayOfTuplesImplementation_View_setAll_00dc7030(float* v, int n)
 {
-    for (int i = 0; i < count; ++i)
+    for (int i = 0; i < n; ++i)
     {
-        m0c->m20->FUN_00dc7030_virtual(m10 + i, values[i]);
+        m0c->m20->FUN_00dc7030_virtual(m10 + i, v[i]);
     }
 }
 
@@ -979,6 +1009,7 @@ struct FUN_00dc72a0_class
 };
 
 // @fnv 0x00dc72a0
+// pdb: hkDataWorldDict::getContents | hkDataObjectDict.obj | retail, vtable slot, high
 void* FUN_00dc72a0_class::ForwardToReceiver(Receiver* m_pReceiver)
 {
     m_pReceiver->FUN_009ba760(m_08->m_2c);
@@ -992,6 +1023,8 @@ struct Receiver
 };
 
 // @fnv 0x00dc72c0
+// pdb: hkDataWorldDict::findObject | hkDataObjectDict.obj | retail, vtable slot, high
+// pdb params: handle
 void* __stdcall DispatchToReceiver(void* pObject, void** pValue)
 {
     Receiver* m_pReceiver = static_cast<Receiver*>(pObject);
@@ -1026,18 +1059,20 @@ struct FUN_00dc7cc0_VtblObj
 
 struct FUN_00dc7cc0_Class
 {
-    void AssignRefCountedSlot(void** a, void** b);
+    void AssignRefCountedSlot(void** klass, void** parent);
 };
 
 // Increments the new reference's count, releases the old one at offset 0x18, stores the new pointer, then calls FUN_00dcaaf0 with the object's get() result.
 // @fnv 0x00dc7cc0
-void FUN_00dc7cc0_Class::AssignRefCountedSlot(void** a, void** apNewRef)
+// pdb: hkDataWorldDict::setClassParent | hkDataObjectDict.obj | retail, object-file gap fill, high
+// pdb params: klass, parent
+void FUN_00dc7cc0_Class::AssignRefCountedSlot(void** klass, void** parent)
 {
-    FUN_00dc7cc0_VtblObj* obj = *(FUN_00dc7cc0_VtblObj**)a;
+    FUN_00dc7cc0_VtblObj* obj = *(FUN_00dc7cc0_VtblObj**)klass;
     void* result = obj->get();
 
-    FUN_00dc7cc0_RefCounted** ppRefSlot = (FUN_00dc7cc0_RefCounted**)((char*)*(void**)a + 0x18);
-    FUN_00dc7cc0_RefCounted* newRef = *(FUN_00dc7cc0_RefCounted**)apNewRef;
+    FUN_00dc7cc0_RefCounted** ppRefSlot = (FUN_00dc7cc0_RefCounted**)((char*)*(void**)klass + 0x18);
+    FUN_00dc7cc0_RefCounted* newRef = *(FUN_00dc7cc0_RefCounted**)parent;
 
     if (newRef)
         newRef->m_refcount++;
@@ -1051,7 +1086,7 @@ void FUN_00dc7cc0_Class::AssignRefCountedSlot(void** a, void** apNewRef)
     *ppRefSlot = newRef;
 
     FUN_00dcaaf0_Class* self = *(FUN_00dcaaf0_Class**)((char*)this + 8);
-    self->UpdateObjectKeyMapping(result, *(void**)a);
+    self->UpdateObjectKeyMapping(result, *(void**)klass);
 }
 
 struct FUN_00dc89d0_vt
@@ -1073,6 +1108,7 @@ struct FUN_00dc89d0
     int __thiscall getType();
 };
 // @fnv 0x00dc89d0
+// pdb: ArrayOfTuplesImplementation::getType | hkDataObjectDict.obj | retail, vtable slot, high
 int FUN_00dc89d0::getType()
 {
     return ((FUN_00dc89d0_vt*)m20)->v1() | 0x20;
@@ -1166,6 +1202,7 @@ struct FUN_00dc8a40_Class
 
 // @fnv 0x00dc8a40
 // src: XBOX_PDB 0x00dc8a40
+// pdb: ArrayOfTuplesImplementation::getSize | hkDataObjectDict.obj | retail, upstream name already matches, high
 int FUN_00dc8a40_Class::ArrayOfTuplesImplementation_getSize()
 {
     int r = m_p20->FUN_00dc8a40_f();
@@ -1200,6 +1237,7 @@ struct FUN_00dc9a20_class
 };
 
 // @fnv 0x00dc9a20
+// pdb: hkDataObjectDict::`scalar deleting destructor' | hkDataObjectDict.obj | retail, vtable slot, high
 unsigned long* __thiscall FUN_00dc9a20_class::FUN_00dc9a20(unsigned long flags)
 {
     FUN_00dc96a0();
@@ -1225,6 +1263,8 @@ struct FUN_00dc9ad0_class
 
 // Copies m_18 floats from source into the row at index multiplier of the float array m_p0c.
 // @fnv 0x00dc9ad0
+// pdb: VecArrayImplementation::setVec | hkDataObjectDict.obj | debug, vtable slot, medium
+// pdb params: index, val
 void __thiscall FUN_00dc9ad0_class::CopyRow(int aiRowIndex, const float* source)
 {
     for (int i = 0; i < m_18; ++i)
@@ -1233,8 +1273,9 @@ void __thiscall FUN_00dc9ad0_class::CopyRow(int aiRowIndex, const float* source)
 
 namespace fnv_00dc9b20 {
 void* __cdecl _D1A0E0GetMemoryRouter();
-void __cdecl _FUN_00c908c0(void* alloc, void* ptr, int size, int align);
+void __cdecl _FUN_00c908c0(void* mem, void* array, int numElem, int sizeElem);
 
+// pdb: structure VecArrayImplementation, size 0x1c, bases: hkDataArrayImpl, 2 members
 struct VecArrayImplementation
 {
     void reserve_00dc9b20(int n);
@@ -1243,9 +1284,11 @@ struct VecArrayImplementation
 // Ensures the array's capacity (low 30 bits of the third int at offset 0xc) is at least elementSize*n, doubling or growing it via the memory router's allocator.
 // @fnv 0x00dc9b20
 // src: XBOX_PDB 0x00dc9b20
-void VecArrayImplementation::reserve_00dc9b20(int aiCount)
+// pdb: VecArrayImplementation::reserve | hkDataObjectDict.obj | retail, vtable slot, high
+// pdb params: n
+void VecArrayImplementation::reserve_00dc9b20(int n)
 {
-    int size = *(int*)((char*)this + 0x18) * aiCount;
+    int size = *(int*)((char*)this + 0x18) * n;
     int* p = (int*)((char*)this + 0xc);
     void* router = _D1A0E0GetMemoryRouter();
     void* alloc = *(void**)((char*)router + 0x10);
@@ -1274,9 +1317,11 @@ struct VecArrayImplementation
 };
 
 void* __cdecl _D1A0E0GetMemoryRouter();
-void __cdecl _FUN_00c908c0(void* allocator, void* array, int size, int align);
+void __cdecl _FUN_00c908c0(void* mem, void* array, int numElem, int sizeElem);
 
 // @fnv 0x00dc9b60
+// pdb: VecArrayImplementation::setSize | hkDataObjectDict.obj | retail, vtable slot, high
+// pdb params: n
 void VecArrayImplementation::Resize(int count)
 {
     int total = m_iElementIndex * count;
@@ -1308,7 +1353,7 @@ void VecArrayImplementation::Resize(int count)
 
 namespace fnv_00dc9cd0 {
 void* __cdecl _D1A0E0GetMemoryRouter();
-void __cdecl _FUN_00c908c0(void* alloc, void* arr, int count, int flag);
+void __cdecl _FUN_00c908c0(void* mem, void* array, int numElem, int sizeElem);
 
 struct FUN_00dc9cd0_Class
 {
@@ -1318,23 +1363,25 @@ struct FUN_00dc9cd0_Class
     int m_iThirdValue;
     int m_10;
     int m_14;
-    void BasicArrayImplementation_unsigned_char_1_reserve(int count);
+    void BasicArrayImplementation_unsigned_char_1_reserve(int n);
 };
 
 // Grows the array at offset 0xc to hold at least count elements, doubling capacity or using count, via the memory router's allocator.
 // @fnv 0x00dc9cd0
 // src: XBOX_PDB 0x00dc9cd0
-void FUN_00dc9cd0_Class::BasicArrayImplementation_unsigned_char_1_reserve(int count)
+// pdb: BasicArrayImplementation<unsigned char,1>::reserve | hkDataObjectDict.obj | retail, vtable slot, high
+// pdb params: n
+void FUN_00dc9cd0_Class::BasicArrayImplementation_unsigned_char_1_reserve(int n)
 {
     int* arr = (int*)((char*)this + 0xc);
     void* router = _D1A0E0GetMemoryRouter();
     int alloc = *(int*)((char*)router + 0x10);
     int cap = arr[2] & 0x3fffffff;
-    if (cap < count)
+    if (cap < n)
     {
         int newcap = cap * 2;
-        if (count >= newcap)
-            newcap = count;
+        if (n >= newcap)
+            newcap = n;
         _FUN_00c908c0((void*)alloc, arr, newcap, 1);
     }
 }
@@ -1342,7 +1389,7 @@ void FUN_00dc9cd0_Class::BasicArrayImplementation_unsigned_char_1_reserve(int co
 
 namespace fnv_00dc9d70 {
 void* __cdecl _D1A0E0GetMemoryRouter();
-void __cdecl _FUN_00c908c0(void* allocator, void* array, int newCap, int elemSize);
+void __cdecl _FUN_00c908c0(void* mem, void* array, int numElem, int sizeElem);
 
 struct FUN_00dc9d70_Class
 {
@@ -1352,23 +1399,25 @@ struct FUN_00dc9d70_Class
     int m_iThirdValue;
     int m_10;
     int m_14;
-    void BasicArrayImplementation_int64_2_reserve(int newCap);
+    void BasicArrayImplementation_int64_2_reserve(int n);
 };
 
 // Grows the array at offset 0xc to hold newCap elements, doubling the current capacity unless newCap is smaller, then reallocates via the memory router.
 // @fnv 0x00dc9d70
 // src: XBOX_PDB 0x00dc9d70
-void FUN_00dc9d70_Class::BasicArrayImplementation_int64_2_reserve(int newCap)
+// pdb: BasicArrayImplementation<__int64,2>::reserve | hkDataObjectDict.obj | retail, vtable slot, high
+// pdb params: n
+void FUN_00dc9d70_Class::BasicArrayImplementation_int64_2_reserve(int n)
 {
     int* arr = (int*)((char*)this + 0xc);
     void* router = _D1A0E0GetMemoryRouter();
     void* alloc = *(void**)((char*)router + 0x10);
     int cap = arr[2] & 0x3fffffff;
-    if (cap < newCap)
+    if (cap < n)
     {
         int iDoubledCapacity = cap + cap;
-        if (!(newCap < iDoubledCapacity))
-            cap = newCap;
+        if (!(n < iDoubledCapacity))
+            cap = n;
         else
             cap = iDoubledCapacity;
         _FUN_00c908c0(alloc, arr, cap, 8);
@@ -1421,13 +1470,15 @@ struct FUN_00dca280_Class
     int m_iWordAt04;
     int m_8;
     __int64* m_iThirdValue;
-    int __thiscall IntArrayImplementation_asInt(int index);
+    int __thiscall IntArrayImplementation_asInt(int i);
 };
 // @fnv 0x00dca280
 // src: HAVOK_LIB 0x00dca280
-int __thiscall FUN_00dca280_Class::IntArrayImplementation_asInt(int index)
+// pdb: IntArrayImplementation::asInt | hkDataObjectDict.obj | debug, upstream name already matches, high
+// pdb params: i
+int __thiscall FUN_00dca280_Class::IntArrayImplementation_asInt(int i)
 {
-    return (int)m_iThirdValue[index];
+    return (int)m_iThirdValue[i];
 }
 
 struct FUN_00dca290_StandIn
@@ -1436,47 +1487,51 @@ struct FUN_00dca290_StandIn
     void* m_04;
     void* m_08;
     __int64* m_0c;
-    void __thiscall IntArrayImplementation_setInt(int index, int value);
+    void __thiscall IntArrayImplementation_setInt(int i, int val);
 };
 
 // @fnv 0x00dca290
 // src: XBOX_PDB 0x00dca290
-void FUN_00dca290_StandIn::IntArrayImplementation_setInt(int index, int value)
+// pdb: IntArrayImplementation::setInt | hkDataObjectDict.obj | debug, upstream name already matches, high
+// pdb params: i, val
+void FUN_00dca290_StandIn::IntArrayImplementation_setInt(int i, int val)
 {
-    m_0c[index] = value;
+    m_0c[i] = val;
 }
 
 namespace fnv_00dca4e0 {
 void* __cdecl _D1A0E0GetMemoryRouter();
-void __cdecl _FUN_00c908c0(void* router, void* array, int count, int size);
+void __cdecl _FUN_00c908c0(void* mem, void* array, int numElem, int sizeElem);
 
 struct FUN_00dca4e0_Class
 {
     void* m_iWordAt00;
     int m_iWordAt04;
     int m_8;
-    void AssignIntArray(int* src, int count);
+    void AssignIntArray(int* vals, int n);
 };
 
 // Grows the array at this+0xc to hold count 8-byte elements, sets its size, then copies each int from src widened to 64 bits.
 // @fnv 0x00dca4e0
-void FUN_00dca4e0_Class::AssignIntArray(int* src, int count)
+// pdb: IntArrayImplementation::setAll | hkDataObjectDict.obj | retail, vtable slot, high
+// pdb params: vals, n
+void FUN_00dca4e0_Class::AssignIntArray(int* vals, int n)
 {
     char* base = (char*)this + 0xc;
     void* router = _D1A0E0GetMemoryRouter();
     int* alloc = *(int**)((char*)router + 0x10);
     int cap = *(int*)(base + 8) & 0x3fffffff;
-    if (cap < count)
+    if (cap < n)
     {
         int newCap = cap + cap;
-        if (count >= newCap)
-            newCap = count;
+        if (n >= newCap)
+            newCap = n;
         _FUN_00c908c0(alloc, base, newCap, 8);
     }
-    *(int*)(base + 4) = count;
-    for (int i = 0; i < count; ++i)
+    *(int*)(base + 4) = n;
+    for (int i = 0; i < n; ++i)
     {
-        __int64 v = src[i];
+        __int64 v = vals[i];
         ((__int64*)*(void**)base)[i] = v;
     }
 }
@@ -1563,6 +1618,7 @@ struct FUN_00dca720_class
 
 // Calls FUN_00dca6b0, then if bit 0 of flag is set frees this through the memory router's manager, and returns this.
 // @fnv 0x00dca720
+// pdb: CstringArrayImplementation::`scalar deleting destructor' | hkDataObjectDict.obj | retail, vtable slot, high
 void* FUN_00dca720_class::DestroyIfFlagged(unsigned char flag)
 {
     FUN_00dca6b0();
@@ -1592,6 +1648,8 @@ struct FUN_00dcb0e0_Allocator
 {
     // Virtual destructor for the allocator stand-in; does nothing.
 // @fnv 0x00dcb0e0
+// pdb: StructArrayImplementation::asObject | hkDataObjectDict.obj | retail, upstream name already matches, high
+// pdb params: i
     virtual ~FUN_00dcb0e0_Allocator()
     {}
     virtual FUN_00dcb0e0_Object* FUN_00dcb0e0_alloc(unsigned int size);
@@ -1611,11 +1669,11 @@ extern FUN_00dcb0e0_Router* __cdecl _D1A0E0GetMemoryRouter();
 
 struct FUN_00dcb0e0_class
 {
-    void* __thiscall StructArrayImplementation_asObject(void* arg);
+    void* __thiscall StructArrayImplementation_asObject(void* i);
 };
 
 // src: XBOX_PDB 0x00dcb0e0
-void* FUN_00dcb0e0_class::StructArrayImplementation_asObject(void* arg)
+void* FUN_00dcb0e0_class::StructArrayImplementation_asObject(void* i)
 {
     FUN_00dcb0e0_Router* router = _D1A0E0GetMemoryRouter();
     FUN_00dcb0e0_Object* object = router->m_10->FUN_00dcb0e0_alloc(0x14);
@@ -1625,7 +1683,7 @@ void* FUN_00dcb0e0_class::StructArrayImplementation_asObject(void* arg)
     object->m_flag = 0;
     object->m_zero = 0;
     object->vtable = &DAT_010d7494;
-    object->m_arg = arg;
+    object->m_arg = i;
 
     return object;
 }
@@ -1651,16 +1709,19 @@ struct FUN_00dcb120_Class
     void* m4;
     void* m8;
     FUN_00dcb120_Inner* m_iThirdValue;
-    int __thiscall HasMember(int member);
+    int __thiscall HasMember(int name);
 };
 
 // Interns the given member name via a virtual call, then scans the inner array of up to m_10 entries for a matching id and returns 1 if found, else 0.
 // @fnv 0x00dcb120
-int FUN_00dcb120_Class::HasMember(int member)
+// pdb: StructArrayImplementation::Object::hasMember | hkDataObjectDict.obj | retail, vtable slot, high
+// pdb params: name
+// pdb locals: internedMemberName
+int FUN_00dcb120_Class::HasMember(int name)
 {
     FUN_00dcb120_InternedString internedName;
     ((void(__thiscall*)(FUN_00dcb120_Class*, FUN_00dcb120_InternedString*, int)) *
-     (void**)((char*)m0 + 0x60))(this, &internedName, member);
+     (void**)((char*)m0 + 0x60))(this, &internedName, name);
     FUN_00dcb120_Inner* inner = m_iThirdValue;
     int count = inner->m_10;
     int i = 0;
@@ -1701,14 +1762,16 @@ struct FUN_00dcb250_class
     FUN_00dcb250_entry* m_iThirdValue;
     int m_10;
 
-    void CallItems(void* arg);
+    void CallItems(void* n);
 };
 
 // @fnv 0x00dcb250
-void FUN_00dcb250_class::CallItems(void* arg)
+// pdb: StructArrayImplementation::reserve | hkDataObjectDict.obj | retail, vtable slot, high
+// pdb params: n
+void FUN_00dcb250_class::CallItems(void* n)
 {
     for (int i = 0; i < m_10; ++i)
-        m_iThirdValue[i].m_iWordAt04->FUN_00dcb250_item_call(arg);
+        m_iThirdValue[i].m_iWordAt04->FUN_00dcb250_item_call(n);
 }
 
 struct FUN_00dcb280_Elem
@@ -1737,17 +1800,19 @@ struct FUN_00dcb280_Class
     int m_18;
     int m_1c;
 
-    void StructArrayImplementation_setSize(int value);
+    void StructArrayImplementation_setSize(int n);
 };
 
 // Stores value in m_1c, then forwards it to the element of each of the m_10 items in m_0c.
 // @fnv 0x00dcb280
 // src: XBOX_PDB 0x00dcb280
-void FUN_00dcb280_Class::StructArrayImplementation_setSize(int value)
+// pdb: StructArrayImplementation::setSize | hkDataObjectDict.obj | retail, upstream name already matches, high
+// pdb params: n
+void FUN_00dcb280_Class::StructArrayImplementation_setSize(int n)
 {
-    m_1c = value;
+    m_1c = n;
     for (int i = 0; i < m_10; ++i)
-        m_0c[i].m_04->FUN_00dcb280_4(value);
+        m_0c[i].m_04->FUN_00dcb280_4(n);
 }
 
 struct FUN_00dc9570_StandIn
@@ -1765,6 +1830,8 @@ struct FUN_00dcb320_Class
 };
 
 // @fnv 0x00dcb320
+// pdb: StructArrayImplementation::Object::intern | hkDataObjectDict.obj | retail, vtable slot, high
+// pdb params: name
 int FUN_00dcb320_Class::CallWithArgs(int aiArg1, int aiArg2)
 {
     FUN_00dc9570_StandIn* p = *(FUN_00dc9570_StandIn**)(m_0c + 0x18);
@@ -1838,14 +1905,16 @@ struct FUN_00dcb3a0_class
     FUN_00dcb2b0_StandIn* m_iThirdValue;
     int m_10;
 
-    int __thiscall StructArrayImplementation_Object_asArray(int index);
+    int __thiscall StructArrayImplementation_Object_asArray(int name);
 };
 
 // @fnv 0x00dcb3a0
 // src: XBOX_PDB 0x00dcb3a0
-int __thiscall FUN_00dcb3a0_class::StructArrayImplementation_Object_asArray(int index)
+// pdb: StructArrayImplementation::Object::asArray | hkDataObjectDict.obj | retail, upstream name already matches, high
+// pdb params: name
+int __thiscall FUN_00dcb3a0_class::StructArrayImplementation_Object_asArray(int name)
 {
-    int result = m_iThirdValue->StructArrayImplementation__find(index);
+    int result = m_iThirdValue->StructArrayImplementation__find(name);
 
     int* entries = *reinterpret_cast<int**>(reinterpret_cast<char*>(m_iThirdValue) + 0xc);
 
@@ -1887,9 +1956,11 @@ struct FUN_00dcb3d0_class
 
 // Looks up the element at index via m_0c, fetches the object pointer from the element array, and calls its virtual slot 16 with m_10.
 // @fnv 0x00dcb3d0
-__int64 __thiscall FUN_00dcb3d0_class::CallVirtualOnElement(int index)
+// pdb: StructArrayImplementation::Object::asInt | hkDataObjectDict.obj | retail, vtable slot, high
+// pdb params: name
+__int64 __thiscall FUN_00dcb3d0_class::CallVirtualOnElement(int name)
 {
-    int element = m_0c->StructArrayImplementation__find(index);
+    int element = m_0c->StructArrayImplementation__find(name);
     void** elements = *reinterpret_cast<void***>(reinterpret_cast<char*>(m_0c) + 0x0c);
     void* object = *reinterpret_cast<void**>(reinterpret_cast<char*>(elements) + element * 8 + 4);
     FUN_00dcb3d0_virtual* virtualObject = reinterpret_cast<FUN_00dcb3d0_virtual*>(object);
@@ -1920,14 +1991,16 @@ struct FUN_00dcb400_Class
     void* m_08;
     FUN_00dcb2b0_StandIn* m_0c;
     int m_10;
-    void __thiscall DispatchToIndexedTarget(int value);
+    void __thiscall DispatchToIndexedTarget(int name);
 };
 
 // Looks up an index via m_0c, fetches a target pointer from the table at that index, and calls its target method with m_10.
 // @fnv 0x00dcb400
-void __thiscall FUN_00dcb400_Class::DispatchToIndexedTarget(int value)
+// pdb: StructArrayImplementation::Object::asReal | hkDataObjectDict.obj | retail, vtable slot, high
+// pdb params: name
+void __thiscall FUN_00dcb400_Class::DispatchToIndexedTarget(int name)
 {
-    int index = m_0c->StructArrayImplementation__find(value);
+    int index = m_0c->StructArrayImplementation__find(name);
 
     void* table = *(void**)((char*)m_0c + 0x0c);
     FUN_00dcb400_Target* target = *(FUN_00dcb400_Target**)((char*)table + index * 8 + 4);
@@ -1938,6 +2011,8 @@ void __thiscall FUN_00dcb400_Class::DispatchToIndexedTarget(int value)
 struct FUN_00dcb6f0_Object
 {
 // @fnv 0x00dcb6f0
+// pdb: StructArrayImplementation::Object::assign | hkDataObjectDict.obj | retail, vtable slot, high
+// pdb params: name, valueIn
     virtual void FUN_00dcb6f0_0()
     {}
     virtual void FUN_00dcb6f0_1()
@@ -1990,10 +2065,10 @@ struct FUN_00dcb6f0_Class
 };
 
 // src: XBOX_PDB 0x00dcb6f0
-void __thiscall FUN_00dcb6f0_Class::StructArrayImplementation_Object_assign_00dcb6f0(int arg0, int arg1)
+void __thiscall FUN_00dcb6f0_Class::StructArrayImplementation_Object_assign_00dcb6f0(int name, int valueIn)
 {
-    int index = m_iThirdValue->StructArrayImplementation__findOrAdd(arg0);
-    m_iThirdValue->m_iThirdValue[index].m_p4->FUN_00dcb6f0_11(m_10, arg1);
+    int index = m_iThirdValue->StructArrayImplementation__findOrAdd(name);
+    m_iThirdValue->m_iThirdValue[index].m_p4->FUN_00dcb6f0_11(m_10, valueIn);
 }
 
 struct FUN_00dcb790_Element;
@@ -2036,7 +2111,7 @@ struct FUN_00dcb5d0_class
     FUN_00dcb790_Pair* m_iThirdValue;
 
 // src: XBOX_PDB 0x00dcb5d0
-    __declspec(noinline) int __thiscall StructArrayImplementation__findOrAdd(int a)
+    __declspec(noinline) int __thiscall StructArrayImplementation__findOrAdd(int name)
     {
         return 0;
     }
@@ -2050,14 +2125,16 @@ struct FUN_00dcb790_class
     FUN_00dcb5d0_class* m_iThirdValue;
     int m_10;
 
-    void __thiscall DispatchToElement(int a, int b, int c);
+    void __thiscall DispatchToElement(int name, int valueIn, int nreal);
 };
 
 // @fnv 0x00dcb790
-void __thiscall FUN_00dcb790_class::DispatchToElement(int a, int b, int aiUnused)
+// pdb: StructArrayImplementation::Object::assign | hkDataObjectDict.obj | retail, vtable slot, high
+// pdb params: name, valueIn
+void __thiscall FUN_00dcb790_class::DispatchToElement(int name, int valueIn, int nreal)
 {
-    int index = m_iThirdValue->StructArrayImplementation__findOrAdd(a);
-    m_iThirdValue->m_iThirdValue[index].m_iWordAt04->f9(m_10, b);
+    int index = m_iThirdValue->StructArrayImplementation__findOrAdd(name);
+    m_iThirdValue->m_iThirdValue[index].m_iWordAt04->f9(m_10, valueIn);
 }
 
 namespace fnv_00dcb960 {
@@ -2090,6 +2167,7 @@ struct StructArrayImplementation
 };
 
 // @fnv 0x00dcb960
+// pdb: StructArrayImplementation::`scalar deleting destructor' | hkDataObjectDict.obj | retail, vtable slot, high
 void* __thiscall StructArrayImplementation::FUN_00dcb960(unsigned int flags)
 {
     ProcessEntries_00dcb890();
@@ -2138,6 +2216,7 @@ struct FUN_00dcbf90_class : FUN_00dc8080_Class
 
 // Calls FUN_00dc8080, then if flags bit 0 is set, passes this and m_04 to the memory router's virtual function, and returns this.
 // @fnv 0x00dcbf90
+// pdb: hkDataWorldDict::`scalar deleting destructor' | hkDataObjectDict.obj | retail, vtable slot, high
 FUN_00dcbf90_class* FUN_00dcbf90_class::FUN_00dcbf90(char flags)
 {
     ReleaseStorage_00dc8080();
@@ -2650,7 +2729,7 @@ void* DC7300Owner::hkDataWorldDict_findClass(void* p)
 
 struct FUN_00dc92d0_Obj
 {
-    int __thiscall CollectShapes(int a, int b, int c, int* d);
+    int __thiscall CollectShapes(int className, int baseClass, int addStructs, int* objectsOut);
 };
 
 struct FUN_00dc73a0_Holder
@@ -2762,7 +2841,7 @@ __forceinline void hkArrayUtil::constructWithCopy(T* p, int n, const T& e, hkTyp
         p[i] = e;
 }
 
-void __cdecl ResizeAudioStream(hkMemoryAllocator* allocator, void* array, int elementSize);
+void __cdecl ResizeAudioStream(hkMemoryAllocator* mem, void* array, int sizeElem);
 template <typename T>
 __forceinline void hkArrayBase<T>::_pushBack(hkMemoryAllocator& kAlloc, const T& e)
 {
@@ -2795,7 +2874,7 @@ class FUN_00d47a80_class
 {
   public:
     void* GetValue(const void* pvKey, int iDefault) throw();
-    void hkCachedHashMap_hkStringMapOperations_hkContainerHeapAllocator_insert(const char* pcKey, const void* pvValue) throw();
+    void hkCachedHashMap_hkStringMapOperations_hkContainerHeapAllocator_insert(const char* key, const void* val) throw();
 };
 
 // Calls 0x00dc9470, the concrete class dictionary member remover, not hkDataClassImpl.
@@ -2805,14 +2884,14 @@ class FUN_00d47a80_class
 class ObjectDictionaryMemberRemoval
 {
   public:
-    void RemoveEntryAndCompact(const char* pcName) throw();
+    void RemoveEntryAndCompact(const char* name) throw();
 };
 
 // Calls 0x00dc8ea0, which removes an 8-byte named array column, not a generic hkDataArrayImpl operation.
 class StructArrayMemberRemoval
 {
   public:
-    void RemoveKeyedEntry(const char* pcName) throw();
+    void RemoveKeyedEntry(const char* s) throw();
 };
 
 class FUN_00dba680_cls
@@ -2829,10 +2908,10 @@ class DictionaryMemberRemovalTracker
     int m_00[0x13];
     FUN_00d47a80_class m_stringPool;
 
-    void CollectShapes(const void* pvClass, int iRecurse, int iUnk,
-                       hkArray<ObjectDictionaryMemberRemoval*>& kObjectsOut) throw();
-    void CollectSlotIdsRecursively(hkDataClassDict* pkClass, int iRecurse,
-                      hkArray<StructArrayMemberRemoval*>& kArraysOut) throw();
+    void CollectShapes(const void* className, int baseClass, int addStructs,
+                       hkArray<ObjectDictionaryMemberRemoval*>& objectsOut) throw();
+    void CollectSlotIdsRecursively(hkDataClassDict* c, int baseClass,
+                      hkArray<StructArrayMemberRemoval*>& arraysOut) throw();
 
     const char* InternString(const char* pcStr)
     {
@@ -2863,17 +2942,20 @@ class DictionaryWorldMemberRemoval
     int m_04;
     DictionaryMemberRemovalTracker* m_pClassImpl;
 
-    void ProcessEntries_00dc7600(FUN_00dba680_cls& kClass, const char* pcName) throw();
+    void ProcessEntries_00dc7600(FUN_00dba680_cls& klass, const char* name) throw();
 };
 
 // @fnv 0x00dc7600
 // src: GUESS 0x00dc7600 (confidence: low)
-void DictionaryWorldMemberRemoval::ProcessEntries_00dc7600(FUN_00dba680_cls& kClass, const char* pcName) throw()
+// pdb: hkDataWorldDict::removeClassMember | hkDataObjectDict.obj | retail, object-file gap fill, high
+// pdb params: klass, name
+// pdb locals: objs, arrays, internedName
+void DictionaryWorldMemberRemoval::ProcessEntries_00dc7600(FUN_00dba680_cls& klass, const char* name) throw()
 {
-    hkDataClassDict* pkClassImpl = kClass.m_pClassImpl;
-    const char* pcNewName = m_pClassImpl->InternString(pcName);
+    hkDataClassDict* pkClassImpl = klass.m_pClassImpl;
+    const char* pcNewName = m_pClassImpl->InternString(name);
     hkArray<ObjectDictionaryMemberRemoval*> kObjects;
-    m_pClassImpl->GetObjectsOfClass(kClass.hkDataClass_getName(), kObjects);
+    m_pClassImpl->GetObjectsOfClass(klass.hkDataClass_getName(), kObjects);
     for (int i = 0; i < kObjects.GetLogicalSize(); i++)
         kObjects[i]->RemoveEntryAndCompact(pcNewName);
     hkArray<StructArrayMemberRemoval*> kArrays;
@@ -2895,13 +2977,15 @@ struct FUN_00dc7dc0_StandIn
     int m0;
     int m4;
     int m8;
-    void __thiscall hkDataWorldDict_castObject(int a, int b);
+    void __thiscall hkDataWorldDict_castObject(int obj, int castClass);
 };
 // @fnv 0x00dc7dc0
 // src: XBOX_PDB 0x00dc7dc0
-void FUN_00dc7dc0_StandIn::hkDataWorldDict_castObject(int piA, int piB)
+// pdb: hkDataWorldDict::castObject | hkDataObjectDict.obj | debug, upstream name already matches, high
+// pdb params: obj, castClass
+void FUN_00dc7dc0_StandIn::hkDataWorldDict_castObject(int obj, int castClass)
 {
-    ((FUN_00dcab50_StandIn*)*(int**)((char*)this + 8))->RenameMappedObject(*(int*)piA, *(int*)piB);
+    ((FUN_00dcab50_StandIn*)*(int**)((char*)this + 8))->RenameMappedObject(*(int*)obj, *(int*)castClass);
 }
 
 namespace fnv_00dc8030 {
@@ -2932,6 +3016,7 @@ struct FUN_00dc8030_Class
 // Sets refCount to 1 and the vtable, then allocates 0x88 bytes and stores the constructed object in owned.
 // @fnv 0x00dc8030
 // src: XBOX_PDB 0x00dc8030
+// pdb: hkDataWorldDict::hkDataWorldDict | hkDataObjectDict.obj | retail, upstream name already matches, high
 FUN_00dc8030_Class* __thiscall FUN_00dc8030_Class::hkDataWorldDict_hkDataWorldDict()
 {
     refCount = 1;
@@ -2979,7 +3064,7 @@ struct FUN_00d47a80_class
     int m_08;
     int m_0c;
     void* GetValue(void* key, int def) throw();
-    void hkCachedHashMap_hkStringMapOperations_hkContainerHeapAllocator_insert(const char* key, int value) throw();
+    void hkCachedHashMap_hkStringMapOperations_hkContainerHeapAllocator_insert(const char* key, int val) throw();
 };
 
 struct SkShared
@@ -3019,7 +3104,7 @@ struct SkStore
     int unk48;
     FUN_00d47a80_class m_ppNames;
 
-    void RegisterObject(hkDataClassDict* item);
+    void RegisterObject(hkDataClassDict* klass);
     SkRefPtr* FindOrCreateTypeEntry(SkRefPtr* out, void* key) throw();
 
     char* Intern(char* str)
@@ -3062,23 +3147,25 @@ struct SkOwner
     int unk04;
     SkStore* m_store;
 
-    hkDataClassDict* CreateItem(SkDesc* desc);
+    hkDataClassDict* CreateItem(SkDesc* cinfo);
 };
 
 // Allocates a hkDataClassDict from desc, resolves and reference-counts its shared object, registers it in the store, then adds each desc entry via Intern and FUN_00dc8d70.
 // @fnv 0x00dc80c0
-hkDataClassDict* SkOwner::CreateItem(SkDesc* desc)
+// pdb: hkDataWorldDict::newClass | hkDataObjectDict.obj | retail, vtable slot, high
+// pdb params: cinfo
+hkDataClassDict* SkOwner::CreateItem(SkDesc* cinfo)
 {
     hkDataClassDict* mem = AllocateDataClassDict(sizeof(hkDataClassDict));
-    hkDataClassDict* item = reinterpret_cast<hkDataClassDict* (__thiscall*)(hkDataClassDict*, hkDataWorldDict*, const char*, int)>(ConstructDataClassDict)(mem, reinterpret_cast<hkDataWorldDict*>(this), reinterpret_cast<const char*>(desc->unk00), desc->unk04);
-    if (desc->shared)
+    hkDataClassDict* item = reinterpret_cast<hkDataClassDict* (__thiscall*)(hkDataClassDict*, hkDataWorldDict*, const char*, int)>(ConstructDataClassDict)(mem, reinterpret_cast<hkDataWorldDict*>(this), reinterpret_cast<const char*>(cinfo->unk00), cinfo->unk04);
+    if (cinfo->shared)
     {
-        SkShared* shared = (SkShared*)m_store->m_map.GetValue(desc->shared, 0);
+        SkShared* shared = (SkShared*)m_store->m_map.GetValue(cinfo->shared, 0);
         if (shared)
         {
             shared->m_iObjectReferenceCount++;
         }
-        SkShared* old = reinterpret_cast<SkShared*>(item->parent);
+        SkShared* old = reinterpret_cast<SkShared*>(item->m_parent);
         if (old)
         {
             if (--old->m_iObjectReferenceCount == 0)
@@ -3086,13 +3173,13 @@ hkDataClassDict* SkOwner::CreateItem(SkDesc* desc)
                 old->Release(1);
             }
         }
-        item->parent = reinterpret_cast<hkDataClassDict*>(shared);
+        item->m_parent = reinterpret_cast<hkDataClassDict*>(shared);
     }
     item->m_count++;
     m_store->RegisterObject(item);
-    for (int i = 0; i < desc->count; i++)
+    for (int i = 0; i < cinfo->count; i++)
     {
-        SkEntry* entry = &desc->entries[i];
+        SkEntry* entry = &cinfo->entries[i];
         char* name = m_store->Intern(entry->name);
         SkRefPtr ref;
         item->FUN_00dc9f20(name, entry->unk04, *reinterpret_cast<const hkRefPtrDC82<hkRefObjDC82>*>(m_store->FindOrCreateTypeEntry(&ref, entry->key)), entry->unk08);
@@ -3121,7 +3208,7 @@ struct FUN_00dba650 : public FUN_00dba660
 
 struct FUN_00dcbdd0_cls
 {
-    void hkDataWorldDict_ObjectTracker_untrackClass(hkRefObjDC88* p);
+    void hkDataWorldDict_ObjectTracker_untrackClass(hkRefObjDC88* klass);
 };
 
 struct hkObjDC88
@@ -3130,17 +3217,19 @@ struct hkObjDC88
     int unk04;
     FUN_00dcbdd0_cls* m_08;
 
-    void ReleaseRef(FUN_00dba660& handle);
+    void ReleaseRef(FUN_00dba660& klass);
 };
 
 // Clears the handle, notifies m_08 with the old pointer, and destroys the referenced object when its reference count reaches zero.
 // @fnv 0x00dc8870
-void hkObjDC88::ReleaseRef(FUN_00dba660& handle)
+// pdb: hkDataWorldDict::removeClass | hkDataObjectDict.obj | retail, object-file gap fill, high
+// pdb params: klass
+void hkObjDC88::ReleaseRef(FUN_00dba660& klass)
 {
-    hkRefObjDC88* p = handle.m_ptr;
+    hkRefObjDC88* p = klass.m_ptr;
     {
         FUN_00dba650 empty(0);
-        handle = empty;
+        klass = empty;
     }
     m_08->hkDataWorldDict_ObjectTracker_untrackClass(p);
     if (--p->m_iObjectReferenceCount == 0)
@@ -3166,7 +3255,7 @@ struct hkMemoryRouterDC88
 };
 extern "C" hkMemoryRouterDC88* __cdecl hkMemoryRouter_getInstance();
 
-void hkString_strFree(int iString);
+void hkString_strFree(int s);
 
 union hkDataValueDC88
 {
@@ -3177,46 +3266,48 @@ union hkDataValueDC88
 };
 
 // @fnv 0x00dc88c0
-void __cdecl ReleaseDataValues(int iType, hkDataValueDC88* pkValues, int iCount)
+// pdb: `anonymous namespace'::Union::clearArray | hkDataObjectDict.obj | retail, call graph, high
+// pdb params: typeIn, u, n
+void __cdecl ReleaseDataValues(int typeIn, hkDataValueDC88* u, int n)
 {
-    if (iType & 0x30)
+    if (typeIn & 0x30)
     {
-        hkDataRefCounted* pkArray = pkValues->m_pkRef;
+        hkDataRefCounted* pkArray = u->m_pkRef;
         if (pkArray)
             pkArray->removeReference();
         return;
     }
-    switch (iType)
+    switch (typeIn)
     {
     case 4:
     case 6:
     case 7:
-        for (int i = 0; i < iCount; i++)
+        for (int i = 0; i < n; i++)
         {
-            void* pvData = pkValues[i].m_pResource;
+            void* pvData = u[i].m_pResource;
             if (pvData)
             {
-                hkMemoryRouter_getInstance()->heap().ReleaseBlock(pvData, (iType - 3) << 4);
-                pkValues[i].m_pResource = 0;
+                hkMemoryRouter_getInstance()->heap().ReleaseBlock(pvData, (typeIn - 3) << 4);
+                u[i].m_pResource = 0;
             }
         }
         break;
     case 8:
     case 9:
-        for (int i = 0; i < iCount; i++)
+        for (int i = 0; i < n; i++)
         {
-            if (pkValues[i].m_pkRef)
+            if (u[i].m_pkRef)
             {
-                pkValues[i].m_pkRef->removeReference();
-                pkValues[i].m_pkRef = 0;
+                u[i].m_pkRef->removeReference();
+                u[i].m_pkRef = 0;
             }
         }
         break;
     case 10:
-        for (int i = 0; i < iCount; i++)
+        for (int i = 0; i < n; i++)
         {
-            hkString_strFree(pkValues[i].m_iString);
-            pkValues[i].m_iString = 0;
+            hkString_strFree(u[i].m_iString);
+            u[i].m_iString = 0;
         }
         break;
     }
@@ -3233,7 +3324,7 @@ struct FUN_00d47a80_class
 
 struct FUN_00d874d0_s : public FUN_00d47a80_class
 {
-    void hkCachedHashMap_hkStringMapOperations_hkContainerHeapAllocator_insert(const char* key, int value);
+    void hkCachedHashMap_hkStringMapOperations_hkContainerHeapAllocator_insert(const char* key, int val);
 };
 
 struct hkPooledStringDC8D
@@ -3266,20 +3357,22 @@ struct hkObjDC8D
     int unk48;
     FUN_00d874d0_s m_kNodePool;
 
-    hkPooledStringDC8D GetPooledString(const char* name);
+    hkPooledStringDC8D GetPooledString(const char* sin);
 };
 
 // Looks up name in the string pool, inserting it via FUN_00cb1410 if absent, and returns a pooled string holding the result (or null when name is null).
 // @fnv 0x00dc8d20
-hkPooledStringDC8D hkObjDC8D::GetPooledString(const char* name)
+// pdb: hkDataWorldDict::ObjectTracker::intern | hkDataObjectDict.obj | retail, object-file gap fill, high
+// pdb params: sin
+hkPooledStringDC8D hkObjDC8D::GetPooledString(const char* sin)
 {
     hkPooledStringDC8D result;
-    if (name)
+    if (sin)
     {
-        char* s = (char*)m_kNodePool.GetValue((void*)name, 0);
+        char* s = (char*)m_kNodePool.GetValue((void*)sin, 0);
         if (!s)
         {
-            s = hkString_strDup_00cb1410(name);
+            s = hkString_strDup_00cb1410(sin);
             m_kNodePool.hkCachedHashMap_hkStringMapOperations_hkContainerHeapAllocator_insert(s, (int)s);
         }
         result.m_kStringBuffer = s;
@@ -3310,6 +3403,9 @@ int __stdcall LookupWithDefault(void* key);
 
 // @fnv 0x00dc8fe0
 // src: XBOX_PDB 0x00dc8fe0
+// pdb: hkSerializeMultiMap<hkDataClassDict *,hkDataClassDict *>::removeByValue | hkDataObjectDict.obj | retail, call graph, medium
+// pdb params: key, v
+// pdb locals: assertBuf, ostr
 void FUN_00dc8fe0_class::hkSerializeMultiMap_hkDataClassDict_hkDataClassDict_removeByValue(void* key, int* piValue)
 {
     int index = LookupWithDefault(key);
@@ -3368,6 +3464,8 @@ class hkMultiMapDC90
 
 // Looks up key in the map, unlinks its entry, and moves the entry's chain to the front of the free list.
 // @fnv 0x00dc9030
+// pdb: hkSerializeMultiMap<hkDataClassDict *,hkDataClassDict *>::removeKey | hkDataObjectDict.obj | retail, call graph (shared callers), high
+// pdb params: key
 void hkMultiMapDC90::RemoveKey(int key)
 {
     int it = m_pHashFunction.FindSlot(key);
@@ -3439,6 +3537,7 @@ class FUN_00dc96a0 : public hkBaseDC96
 
 // Releases the entry array, decrements the reference count and deletes the referenced object when it reaches zero, then clears m_ref.
 // @fnv 0x00dc96a0
+// pdb: hkDataObjectDict::~hkDataObjectDict | hkDataObjectDict.obj | retail, object-file gap fill, high
 FUN_00dc96a0::~FUN_00dc96a0() throw()
 {
     selfDestruct();
@@ -3454,7 +3553,7 @@ FUN_00dc96a0::~FUN_00dc96a0() throw()
 
 struct FUN_00dc9710_Obj
 {
-    void __thiscall hkDataObjectDict__writeAccess(int* out, int value, int count);
+    void __thiscall hkDataObjectDict__writeAccess(int* name, int type, int count);
 };
 
 struct FUN_00dc97f0_Class : public FUN_00dc9710_Obj
@@ -3465,11 +3564,14 @@ struct FUN_00dc97f0_Class : public FUN_00dc9710_Obj
     void* m_0c;
     void* m_10;
 
-    void __thiscall SetSlotValue(int index, void* value);
+    void __thiscall SetSlotValue(int nameIn, void* value);
 };
 
 // @fnv 0x00dc97f0
-void FUN_00dc97f0_Class::SetSlotValue(int index, void* value)
+// pdb: hkDataObjectDict::assign | hkDataObjectDict.obj | retail, vtable slot, high
+// pdb params: nameIn, value
+// pdb locals: mem
+void FUN_00dc97f0_Class::SetSlotValue(int nameIn, void* value)
 {
     int local[2];
 
@@ -3478,7 +3580,7 @@ void FUN_00dc97f0_Class::SetSlotValue(int index, void* value)
         ++(*(int*)((char*)value + 8));
     }
 
-    hkDataObjectDict__writeAccess(local, index, 8);
+    hkDataObjectDict__writeAccess(local, nameIn, 8);
 
     *(int*)((char*)m_10 + local[1] * 16 + 8) = (int)value;
 }
@@ -3504,20 +3606,23 @@ struct FUN_00dc9830_Class
     void* m_0c;
     void* m_10;
 
-    void __thiscall hkDataObjectDict__writeAccess(void* a, int b, int c);
-    void __thiscall AddObjectToSlot(int value, FUN_00dc9830_Object* obj);
+    void __thiscall hkDataObjectDict__writeAccess(void* name, int type, int c);
+    void __thiscall AddObjectToSlot(int nameIn, FUN_00dc9830_Object* obj);
 };
 
 // Increments obj's counter, calls obj->vf04(), runs FUN_00dc9710 with value and result|0x10, then stores obj in m_10 at the slot indexed by local.unk04.
 // @fnv 0x00dc9830
-void __thiscall FUN_00dc9830_Class::AddObjectToSlot(int value, FUN_00dc9830_Object* pObject)
+// pdb: hkDataObjectDict::assign | hkDataObjectDict.obj | retail, vtable slot, high
+// pdb params: nameIn, value
+// pdb locals: mem
+void __thiscall FUN_00dc9830_Class::AddObjectToSlot(int nameIn, FUN_00dc9830_Object* pObject)
 {
     ++*(int*)((char*)pObject + 8);
 
     int result = pObject->vf04();
 
     FUN_00dc9830_Local local;
-    hkDataObjectDict__writeAccess(&local, value, result | 0x10);
+    hkDataObjectDict__writeAccess(&local, nameIn, result | 0x10);
 
     *(int*)((char*)m_10 + (local.unk04 << 4) + 8) = (int)pObject;
 }
@@ -3550,15 +3655,18 @@ class hkObjDC98
     int m_0c;
     ObjectStringMemberStorage* m_entries;
 
-    hkResultDC98 hkDataObjectDict__writeAccess(int iKey, int iType) throw();
-    void SetStringEntry(int iKey, const char* pcValue) throw();
+    hkResultDC98 hkDataObjectDict__writeAccess(int name, int type) throw();
+    void SetStringEntry(int nameIn, const char* value) throw();
 };
 
 // @fnv 0x00dc9880
-void hkObjDC98::SetStringEntry(int iKey, const char* pcValue) throw()
+// pdb: hkDataObjectDict::assign | hkDataObjectDict.obj | retail, vtable slot, high
+// pdb params: nameIn, value
+// pdb locals: mem
+void hkObjDC98::SetStringEntry(int nameIn, const char* value) throw()
 {
-    hkResultDC98 kRes = hkDataObjectDict__writeAccess(iKey, 10);
-    m_entries[kRes.m_uiEdgeIndex].m_uiFilterValue = pcValue ? hkString_strDup_00cb1410(pcValue) : 0;
+    hkResultDC98 kRes = hkDataObjectDict__writeAccess(nameIn, 10);
+    m_entries[kRes.m_uiEdgeIndex].m_uiFilterValue = value ? hkString_strDup_00cb1410(value) : 0;
 }
 
 struct FUN_00dc98d0_Local
@@ -3575,19 +3683,22 @@ struct FUN_00dc98d0_StandIn
     void* mc;
     void* m10;
 
-    void hkDataObjectDict__writeAccess(float* out, int a, int b);
-    void SetValueAt(int index, float value);
+    void hkDataObjectDict__writeAccess(float* name, int type, int b);
+    void SetValueAt(int nameIn, float r);
 };
 
 // Looks up the slot for index via FUN_00dc9710 and writes value into the float at offset 8 of that slot in m10.
 // @fnv 0x00dc98d0
-void FUN_00dc98d0_StandIn::SetValueAt(int index, float value)
+// pdb: hkDataObjectDict::assign | hkDataObjectDict.obj | retail, vtable slot, high
+// pdb params: nameIn, value
+// pdb locals: mem
+void FUN_00dc98d0_StandIn::SetValueAt(int nameIn, float r)
 {
     FUN_00dc98d0_Local result;
 
-    this->hkDataObjectDict__writeAccess(&result.value, index, 3);
+    this->hkDataObjectDict__writeAccess(&result.value, nameIn, 3);
 
-    *reinterpret_cast<float*>(reinterpret_cast<char*>(this->m10) + result.index * 16 + 8) = value;
+    *reinterpret_cast<float*>(reinterpret_cast<char*>(this->m10) + result.index * 16 + 8) = r;
 }
 
 struct hkHalfDC99
@@ -3626,16 +3737,19 @@ class hkObjDC99
     int m_0c;
     ObjectRealMemberStorage* m_entries;
 
-    hkResultDC99 hkDataObjectDict__writeAccess(int iKey, int iType) throw();
-    void SetEntryValue(int iKey, hkHalfDC99 kValue) throw();
+    hkResultDC99 hkDataObjectDict__writeAccess(int name, int type) throw();
+    void SetEntryValue(int nameIn, hkHalfDC99 r) throw();
 };
 
 // Looks up the entry for iKey with type 3 and stores kValue into that entry's float field.
 // @fnv 0x00dc9910
-void hkObjDC99::SetEntryValue(int iKey, hkHalfDC99 kValue) throw()
+// pdb: hkDataObjectDict::assign | hkDataObjectDict.obj | retail, vtable slot, high
+// pdb params: nameIn, value
+// pdb locals: mem
+void hkObjDC99::SetEntryValue(int nameIn, hkHalfDC99 r) throw()
 {
-    hkResultDC99 kRes = hkDataObjectDict__writeAccess(iKey, 3);
-    m_entries[kRes.m_uiEdgeIndex].m_uiFilterValue = kValue;
+    hkResultDC99 kRes = hkDataObjectDict__writeAccess(nameIn, 3);
+    m_entries[kRes.m_uiEdgeIndex].m_uiFilterValue = r;
 }
 
 struct hkMemberInfoDC99
@@ -3676,26 +3790,29 @@ class hkObjDC99C
     int m_0c;
     IntegerOrRealMemberData* m_entries;
 
-    hkResultDC99C hkDataObjectDict__writeAccess(int iKey, int iType) throw();
-    void hkDataObjectDict_assign_00dc99c0(int iKey, __int64 iValue) throw();
+    hkResultDC99C hkDataObjectDict__writeAccess(int name, int type) throw();
+    void hkDataObjectDict_assign_00dc99c0(int nameIn, __int64 valueIn) throw();
 };
 
 // Looks up the entry for iKey, then stores iValue into it as an integer or float depending on the member type.
 // @fnv 0x00dc99c0
 // src: XBOX_PDB 0x00dc99c0
-void hkObjDC99C::hkDataObjectDict_assign_00dc99c0(int iKey, __int64 iValue) throw()
+// pdb: hkDataObjectDict::assign | hkDataObjectDict.obj | retail, vtable slot, high
+// pdb params: nameIn, value
+// pdb locals: mem
+void hkObjDC99C::hkDataObjectDict_assign_00dc99c0(int nameIn, __int64 valueIn) throw()
 {
-    hkResultDC99C kRes = hkDataObjectDict__writeAccess(iKey, 0);
+    hkResultDC99C kRes = hkDataObjectDict__writeAccess(nameIn, 0);
     IntegerOrRealMemberData& kEntry = m_entries[kRes.m_uiEdgeIndex];
     int iType = kRes.m_item->m_type;
     switch (iType)
     {
     case 1:
     case 2:
-        kEntry.m_int = iValue;
+        kEntry.m_int = valueIn;
         break;
     case 3:
-        kEntry.m_vValue = static_cast<float>(iValue);
+        kEntry.m_vValue = static_cast<float>(valueIn);
         break;
     }
 }
@@ -3718,13 +3835,13 @@ class FUN_00dc9a50 : public hkBaseDC9A
     FUN_00dc9a50(int iArg) throw();
     virtual ~FUN_00dc9a50() throw();
 
-    hkArray<int> m_ppData;
-    int m_18;
+    hkArray<int> m_data; // src: XBOX_RETAIL_PDB +0xc (old: m_ppData)
+    int m_numReal; // src: XBOX_RETAIL_PDB +0x18 (old: m_18)
 };
 
 // Constructs the object, storing iArg into m_18; the base and array members are default-initialised.
 // @fnv 0x00dc9a50
-FUN_00dc9a50::FUN_00dc9a50(int iArg) throw() : m_18(iArg)
+FUN_00dc9a50::FUN_00dc9a50(int iArg) throw() : m_numReal(iArg)
 {}
 
 struct FUN_00dc9a80_cls
@@ -3742,6 +3859,7 @@ struct FUN_00dc9a80_cls
 
 // Maps m_type (4, 12, 16) to 4, 6, 7 respectively, returning 0 for any other value.
 // @fnv 0x00dc9a80
+// pdb: VecArrayImplementation::getType | hkDataObjectDict.obj | debug, vtable slot, medium
 int FUN_00dc9a80_cls::GetTypeCode() const
 {
     switch (m_type)
@@ -3816,7 +3934,7 @@ struct FnvRefCounted
     int unk04;
     int m_refs;
 };
-FnvRefCounted* __cdecl hkDataArrayDict_create(void* context, void* key, int flags);
+FnvRefCounted* __cdecl hkDataArrayDict_create(void* t, void* c, int tupleCount);
 struct FnvObjectHolder
 {
     int unk00;
@@ -3828,6 +3946,8 @@ struct FnvObjectHolder
 };
 // Appends an entry for node to m_entries, creating a ref-counted object from the node's key source and context, and returns the new entry index.
 // @fnv 0x00dc9c20
+// pdb: StructArrayImplementation::_addMember | hkDataObjectDict.obj | retail, object-file run extension, low
+// pdb params: mi
 int FnvObjectHolder::AddNodeEntry(FnvNode* node)
 {
     if (!node->m_iValueAtOffset0C)
@@ -3919,9 +4039,11 @@ class hkObjDC9D
 
 // Resizes the m_pairs array to n elements, zero-initialising any newly added pairs.
 // @fnv 0x00dc9db0
-void hkObjDC9D::SetPairCount(int aiCount)
+// pdb: BasicArrayImplementation<__int64,2>::setSize | hkDataObjectDict.obj | retail, vtable slot, high
+// pdb params: n
+void hkObjDC9D::SetPairCount(int n)
 {
-    SetZeroedPairCount(m_pairs, aiCount);
+    SetZeroedPairCount(m_pairs, n);
 }
 
 class hkMemoryAllocatorDC9F
@@ -3979,6 +4101,8 @@ class hkBufferDC9F : public hkRefObjDC9F
 
 // Clears m_data, destroys the hkRefObjDC9F base, and frees this via operator delete when uiFlags has bit 0 set; returns this.
 // @fnv 0x00dc9fd0
+// pdb: VecArrayImplementation::`scalar deleting destructor' | hkDataObjectDict.obj | retail, vtable slot, high
+// pdb params: this
 hkBufferDC9F* hkBufferDC9F::FUN_00dc9fd0(unsigned int uiFlags) throw()
 {
     m_data._clearAndDeallocate(reinterpret_cast<hkMemoryAllocator&>(hkRouterDC9F::hkMemoryRouter_getInstance().heap()));
@@ -3997,18 +4121,20 @@ class hkHolderDCA0
     int unk08;
     hkDataRefCounted** m_kTrackedObjects;
 
-    void SetElement(int i, hkDataRefCounted* p);
+    void SetElement(int i, hkDataRefCounted* val);
 };
 
 // Adds a reference to p, releases the element currently stored at index i, then stores p in the array at index i.
 // @fnv 0x00dca090
-void hkHolderDCA0::SetElement(int aiIndex, hkDataRefCounted* apRef)
+// pdb: PointerArrayImplementation::setObject | hkDataObjectDict.obj | retail, vtable slot, high
+// pdb params: i, val
+void hkHolderDCA0::SetElement(int i, hkDataRefCounted* val)
 {
-    if (apRef)
-        apRef->addReference();
-    if (m_kTrackedObjects[aiIndex])
-        m_kTrackedObjects[aiIndex]->removeReference();
-    m_kTrackedObjects[aiIndex] = apRef;
+    if (val)
+        val->addReference();
+    if (m_kTrackedObjects[i])
+        m_kTrackedObjects[i]->removeReference();
+    m_kTrackedObjects[i] = val;
 }
 
 namespace fnv_00dca0f0 {
@@ -4052,6 +4178,7 @@ class FUN_00dca0f0 : public hkDataRefCounted
 
 // Releases references held by each member in m_members and by m_class, then clears m_class.
 // @fnv 0x00dca0f0
+// pdb: PointerArrayImplementation::~PointerArrayImplementation | hkDataObjectDict.obj | retail, object-file gap fill, high
 FUN_00dca0f0::~FUN_00dca0f0() throw()
 {
     for (int i = 0; i < m_members.m_iElementCount; i++)
@@ -4105,6 +4232,7 @@ struct FUN_00dca190_class : public FUN_00dca190_Base
 };
 
 // @fnv 0x00dca190
+// pdb: PointerArrayImplementation::`scalar deleting destructor' | hkDataObjectDict.obj | retail, vtable slot, high
 void* __thiscall FUN_00dca190_class::FUN_00dca190(unsigned char flags)
 {
     FUN_00dca0f0();
@@ -4126,13 +4254,15 @@ struct FUN_00dca1e0_class
     int unk04;
     int unk08;
     unsigned char* unk0C;
-    unsigned int ByteArrayImplementation_asInt(int index);
+    unsigned int ByteArrayImplementation_asInt(int i);
 };
 // @fnv 0x00dca1e0
 // src: HAVOK_LIB 0x00dca1e0
-unsigned int FUN_00dca1e0_class::ByteArrayImplementation_asInt(int index)
+// pdb: ByteArrayImplementation::asInt | hkDataObjectDict.obj | debug, upstream name already matches, high
+// pdb params: i
+unsigned int FUN_00dca1e0_class::ByteArrayImplementation_asInt(int i)
 {
-    return unk0C[index];
+    return unk0C[i];
 }
 
 namespace fnv_00dca210 {
@@ -4152,7 +4282,7 @@ struct hkMemoryRouterDCA2
 };
 
 extern "C" hkMemoryRouterDCA2& __cdecl hkMemoryRouter_getInstance() throw();
-void __cdecl hkArrayUtil__reserve(hkMemoryAllocatorDCA2& kAlloc, void* apvArray, int aiNumElements, int iSizeElem) throw();
+void __cdecl hkArrayUtil__reserve(hkMemoryAllocatorDCA2& mem, void* array, int numElem, int sizeElem) throw();
 void __cdecl hkString_memCpy(void* pvDst, const void* pvSrc, int iNumBytes) throw();
 
 class hkObjDCA2
@@ -4163,15 +4293,17 @@ class hkObjDCA2
     int unk08;
     hkArray<char> m_data;
 
-    void AssignFromBuffer(const void* src, int n);
+    void AssignFromBuffer(const void* vals, int n);
 };
 
 // Resizes m_data to n elements and copies n bytes from src into it.
 // @fnv 0x00dca210
-void hkObjDCA2::AssignFromBuffer(const void* src, int iCount)
+// pdb: ByteArrayImplementation::setAll | hkDataObjectDict.obj | retail, vtable slot, high
+// pdb params: vals, n
+void hkObjDCA2::AssignFromBuffer(const void* vals, int n)
 {
-    m_data.setSize(iCount);
-    hkString_memCpy(m_data.m_data, src, iCount);
+    m_data.setSize(n);
+    hkString_memCpy(m_data.m_data, vals, n);
 }
 }  // namespace fnv_00dca210
 
@@ -4190,14 +4322,16 @@ class hkObjDCA2
     int unk08;
     TwoWordArrayValue* m_entries;
 
-    void IntArrayImplementation_setInt64(int i, TwoWordArrayValue e);
+    void IntArrayImplementation_setInt64(int i, TwoWordArrayValue val);
 };
 
 // @fnv 0x00dca2d0
 // src: XBOX_PDB 0x00dca2d0
-void hkObjDCA2::IntArrayImplementation_setInt64(int aiIndex, TwoWordArrayValue aEntry)
+// pdb: IntArrayImplementation::setInt64 | hkDataObjectDict.obj | debug, upstream name already matches, high
+// pdb params: i, val
+void hkObjDCA2::IntArrayImplementation_setInt64(int i, TwoWordArrayValue val)
 {
-    m_entries[aiIndex] = aEntry;
+    m_entries[i] = val;
 }
 
 class hkMemoryAllocatorDCA3;
@@ -4228,15 +4362,17 @@ class hkObjDCA3
     int unk08;
     hkArray<__int64> m_iSlotIds;
 
-    void CopyBoolArray(const hkBool* src, int n);
+    void CopyBoolArray(const hkBool* vals, int n);
 };
 
 // @fnv 0x00dca2f0
-void hkObjDCA3::CopyBoolArray(const hkBool* src, int aiCount)
+// pdb: IntArrayImplementation::setAll | hkDataObjectDict.obj | retail, vtable slot, high
+// pdb params: vals, n
+void hkObjDCA3::CopyBoolArray(const hkBool* vals, int n)
 {
-    m_iSlotIds.setSize(aiCount);
-    for (int i = 0; i < aiCount; i++)
-        m_iSlotIds.m_data[i] = src[i];
+    m_iSlotIds.setSize(n);
+    for (int i = 0; i < n; i++)
+        m_iSlotIds.m_data[i] = vals[i];
 }
 
 namespace fnv_00dca360 {
@@ -4255,7 +4391,7 @@ struct hkMemoryRouterDCA3
     }
 };
 extern "C" hkMemoryRouterDCA3& __cdecl hkMemoryRouter_getInstance();
-void __cdecl hkArrayUtil__reserve(hkMemoryAllocatorDCA3& kAlloc, void* apvArray, int aiNumElements, int iSizeElem) throw();
+void __cdecl hkArrayUtil__reserve(hkMemoryAllocatorDCA3& mem, void* array, int numElem, int sizeElem) throw();
 
 class hkInt64ArrayDCA3
 {
@@ -4265,16 +4401,18 @@ class hkInt64ArrayDCA3
     int unk08;
     hkArray<__int64> m_iSlotIds;
 
-    void AssignFromByteArray(const signed char* pSrc, int iCount);
+    void AssignFromByteArray(const signed char* vals, int n);
 };
 
 // Resizes the embedded int64 array to iCount and copies each byte of pSrc into it as an element.
 // @fnv 0x00dca360
-void hkInt64ArrayDCA3::AssignFromByteArray(const signed char* pSrc, int iCount)
+// pdb: IntArrayImplementation::setAll | hkDataObjectDict.obj | retail, vtable slot, high
+// pdb params: vals, n
+void hkInt64ArrayDCA3::AssignFromByteArray(const signed char* vals, int n)
 {
-    m_iSlotIds.setSize(iCount);
-    for (int i = 0; i < iCount; i++)
-        m_iSlotIds[i] = pSrc[i];
+    m_iSlotIds.setSize(n);
+    for (int i = 0; i < n; i++)
+        m_iSlotIds[i] = vals[i];
 }
 }  // namespace fnv_00dca360
 
@@ -4294,7 +4432,7 @@ struct hkMemoryRouterDCA4
     }
 };
 extern "C" hkMemoryRouterDCA4& __cdecl hkMemoryRouter_getInstance();
-void __cdecl hkArrayUtil__reserve(hkMemoryAllocatorDCA4& kAlloc, void* apvArray, int aiNumElements, int iSizeElem) throw();
+void __cdecl hkArrayUtil__reserve(hkMemoryAllocatorDCA4& mem, void* array, int numElem, int sizeElem) throw();
 
 class hkInt64ArrayDCA4
 {
@@ -4304,17 +4442,19 @@ class hkInt64ArrayDCA4
     int unk08;
     hkArray<__int64> m_iSlotIds;
 
-    void IntArrayImplementation_setAll(const unsigned char* pSrc, int iCount);
+    void IntArrayImplementation_setAll(const unsigned char* vals, int n);
 };
 
 // Reserves room for iCount elements in the array and copies each byte of pSrc into it as an __int64 element.
 // @fnv 0x00dca3c0
 // src: XBOX_PDB 0x00dca3c0
-void hkInt64ArrayDCA4::IntArrayImplementation_setAll(const unsigned char* pSrc, int iCount)
+// pdb: IntArrayImplementation::setAll | hkDataObjectDict.obj | retail, vtable slot, high
+// pdb params: vals, n
+void hkInt64ArrayDCA4::IntArrayImplementation_setAll(const unsigned char* vals, int n)
 {
-    m_iSlotIds.setSize(iCount);
-    for (int i = 0; i < iCount; i++)
-        m_iSlotIds[i] = pSrc[i];
+    m_iSlotIds.setSize(n);
+    for (int i = 0; i < n; i++)
+        m_iSlotIds[i] = vals[i];
 }
 }  // namespace fnv_00dca3c0
 
@@ -4336,7 +4476,7 @@ struct hkMemoryRouterDCA4
 namespace hkRouterDCA4 {
 extern "C" hkMemoryRouterDCA4& __cdecl hkMemoryRouter_getInstance() throw();
 }
-void __cdecl hkArrayUtil__reserve(hkMemoryAllocatorDCA4& kAlloc, void* apvArray, int aiNumElements, int iSizeElem) throw();
+void __cdecl hkArrayUtil__reserve(hkMemoryAllocatorDCA4& mem, void* array, int numElem, int sizeElem) throw();
 
 class hkObjDCA4
 {
@@ -4346,16 +4486,18 @@ class hkObjDCA4
     int unk08;
     hkArray<__int64> m_iSlotIds;
 
-    void CopyShortsToArray(const short* src, int n);
+    void CopyShortsToArray(const short* vals, int n);
 };
 
 // Resizes the array to n elements, then copies n shorts from src into it as 64-bit values.
 // @fnv 0x00dca420
-void hkObjDCA4::CopyShortsToArray(const short* src, int n)
+// pdb: IntArrayImplementation::setAll | hkDataObjectDict.obj | retail, vtable slot, high
+// pdb params: vals, n
+void hkObjDCA4::CopyShortsToArray(const short* vals, int n)
 {
     m_iSlotIds.setSize(n);
     for (int i = 0; i < n; i++)
-        m_iSlotIds.m_data[i] = src[i];
+        m_iSlotIds.m_data[i] = vals[i];
 }
 
 namespace fnv_00dca5f0 {
@@ -4368,7 +4510,7 @@ struct C85750Router
     void* allocator;
 };
 C85750Router* hkMemoryRouter_getInstance();
-void __cdecl hkArrayUtil__reserve(void* allocator, void* array, int newCapacity, int itemSize);
+void __cdecl hkArrayUtil__reserve(void* mem, void* array, int numElem, int sizeElem);
 void __cdecl hkString_memCpy(void* dst, const void* src, unsigned int bytes);
 struct DCA5F0Array
 {
@@ -4382,29 +4524,31 @@ struct DCA5F0Owner
     int unk04;
     int unk08;
     DCA5F0Array elements;
-    void AssignElements(const void* source, int count);
+    void AssignElements(const void* vals, int n);
 };
 // Grows the elements array if its capacity is below count, sets count, then copies count 4-byte items from source into the array data.
 // @fnv 0x00dca5f0
-void DCA5F0Owner::AssignElements(const void* source, int count)
+// pdb: RealArrayImplementation::setAll | hkDataObjectDict.obj | retail, vtable slot, high
+// pdb params: vals, n
+void DCA5F0Owner::AssignElements(const void* vals, int n)
 {
     DCA5F0Array* array = &elements;
     C85750Router* router = hkMemoryRouter_getInstance();
     void* allocator = router->allocator;
     int capacity = array->capacityAndFlags & 0x3fffffff;
-    if (capacity < count)
+    if (capacity < n)
     {
         int grown = capacity * 2;
-        if (count >= grown)
-            grown = count;
+        if (n >= grown)
+            grown = n;
         hkArrayUtil__reserve(allocator, array, grown, 4);
     }
-    array->count = count;
-    hkString_memCpy(array->data, source, count * 4);
+    array->count = n;
+    hkString_memCpy(array->data, vals, n * 4);
 }
 }  // namespace fnv_00dca5f0
 
-void __cdecl hkString_strFree(int iString);
+void __cdecl hkString_strFree(int s);
 extern "C" char* __cdecl hkString_strDup_00cb1410(const char* pcString);
 
 class hkObjDCA6
@@ -4415,14 +4559,16 @@ class hkObjDCA6
     int unk08;
     char** m_pStringFunctions;
 
-    void SetStringAt(int i, const char* pcValue);
+    void SetStringAt(int i, const char* val);
 };
 
 // @fnv 0x00dca670
-void hkObjDCA6::SetStringAt(int i, const char* pcValue)
+// pdb: CstringArrayImplementation::setString | hkDataObjectDict.obj | retail, vtable slot, high
+// pdb params: i, val
+void hkObjDCA6::SetStringAt(int i, const char* val)
 {
     hkString_strFree(reinterpret_cast<int>(m_pStringFunctions[i]));
-    m_pStringFunctions[i] = pcValue ? hkString_strDup_00cb1410(pcValue) : 0;
+    m_pStringFunctions[i] = val ? hkString_strDup_00cb1410(val) : 0;
 }
 
 class hkMemoryAllocatorDCA6
@@ -4460,7 +4606,7 @@ class hkRefObjDCA6
     short m_sReferenceCount;
 };
 
-void __cdecl hkString_strFree(int p) throw();
+void __cdecl hkString_strFree(int s) throw();
 
 class FUN_00dca6b0 : public hkRefObjDCA6
 {
@@ -4472,6 +4618,7 @@ class FUN_00dca6b0 : public hkRefObjDCA6
 };
 
 // @fnv 0x00dca6b0
+// pdb: CstringArrayImplementation::~CstringArrayImplementation | hkDataObjectDict.obj | retail, object-file gap fill, high
 FUN_00dca6b0::~FUN_00dca6b0() throw()
 {
     for (int i = 0; i < m_pStringFunctions.m_iElementCount; i++)
@@ -4534,6 +4681,7 @@ class hkBufferDCA7 : public hkRefObjDCA7
 
 // Clears m_data, destroys the hkRefObjDCA7 base, and if uiFlags has bit 0 set, frees this via operator delete; returns this.
 // @fnv 0x00dca750
+// pdb: ByteArrayImplementation::`scalar deleting destructor' | hkDataObjectDict.obj | retail, vtable slot, high
 hkBufferDCA7* hkBufferDCA7::FUN_00dca750(unsigned int uiFlags) throw()
 {
     m_data._clearAndDeallocate(reinterpret_cast<hkMemoryAllocator&>(hkRouterDCA7::hkMemoryRouter_getInstance().heap()));
@@ -4598,6 +4746,7 @@ class hkBufferDCB7 : public hkRefObjDCB7
 
 // Clears m_data, destroys the hkRefObjDCB7 base, and frees this via operator delete when uiFlags has bit 0 set; returns this.
 // @fnv 0x00dca7b0
+// pdb: IntArrayImplementation::`scalar deleting destructor' | hkDataObjectDict.obj | retail, vtable slot, high
 hkBufferDCB7* hkBufferDCB7::FUN_00dca7b0(unsigned int uiFlags) throw()
 {
     m_data._clearAndDeallocate(reinterpret_cast<hkMemoryAllocator&>(hkRouterDCB7::hkMemoryRouter_getInstance().heap()));
@@ -4640,10 +4789,10 @@ hkDataClassDict* __fastcall ConstructDataClassDict(hkDataClassDict* pkClass, voi
     pkClass->m_pOwningWorld = pkOwner;
     reinterpret_cast<hkTypeOwnerDCAB*>(pkOwner)->m_registry->FindOrCreateTypeEntry(&pkClass->unk10, reinterpret_cast<int>(pcName));
     pkClass->m_version = iFlags;
-    pkClass->parent = 0;
-    InitializeClassArray(*reinterpret_cast<hkArrayBase<int>*>(&pkClass->unk1c));
+    pkClass->m_parent = 0;
+    InitializeClassArray(*reinterpret_cast<hkArrayBase<int>*>(&pkClass->m_enums));
     InitializeClassArray(*reinterpret_cast<hkArrayBase<int>*>(&pkClass->members));
-    InitializeClassArray(*reinterpret_cast<hkArrayBase<int>*>(&pkClass->unk34));
+    InitializeClassArray(*reinterpret_cast<hkArrayBase<int>*>(&pkClass->m_hiddenMemberInfo));
     return pkClass;
 }
 
@@ -4686,15 +4835,17 @@ struct hkTrackerDCAC
 
 // Copies the entry at iIndex into kOut, resolving its object through the registry lookup.
 // @fnv 0x00dcac20
+// pdb: hkDataClassDict::getDeclaredMemberInfo | hkDataObjectDict.obj | retail, upstream name already matches, high
+// pdb params: i, info
 }  // namespace fnv_00dcac20
-void hkDataClassDict::getDeclaredMemberInfo(int iIndex, hkDataClassMemberInfo& kOut) const
+void hkDataClassDict::getDeclaredMemberInfo(int i, hkDataClassMemberInfo& info) const
 {
-    const fnv_00dcac20::DictionaryMemberDeclaration& kEntry = reinterpret_cast<const fnv_00dcac20::DictionaryMemberDeclaration*>(members)[iIndex];
-    kOut.m_key = kEntry.m_key;
-    kOut.m_table = this;
-    kOut.m_object = reinterpret_cast<fnv_00dcac20::hkTrackerDCAC*>(m_pOwningWorld)->m_registry->lookup(kEntry.m_ref->m_object);
-    kOut.m_uiFilterValue = kEntry.m_uiFilterValue;
-    kOut.m_flags = kEntry.m_flags;
+    const fnv_00dcac20::DictionaryMemberDeclaration& kEntry = reinterpret_cast<const fnv_00dcac20::DictionaryMemberDeclaration*>(members)[i];
+    info.m_key = kEntry.m_key;
+    info.m_table = this;
+    info.m_object = reinterpret_cast<fnv_00dcac20::hkTrackerDCAC*>(m_pOwningWorld)->m_registry->lookup(kEntry.m_ref->m_object);
+    info.m_uiFilterValue = kEntry.m_uiFilterValue;
+    info.m_flags = kEntry.m_flags;
 }
 
 namespace fnv_00dcad10 {
@@ -4755,10 +4906,13 @@ struct OuterContext
 
 // Interns name through the context, then scans m_items for a matching key and returns its index, or -1 if not found.
 // @fnv 0x00dcad10
+// pdb: hkDataClassDict::getDeclaredMemberIndexByName | hkDataObjectDict.obj | retail, upstream name already matches, high
+// pdb params: nameIn
+// pdb locals: internedMemberName
 }  // namespace fnv_00dcad10
-int hkDataClassDict::getDeclaredMemberIndexByName(const char* name) const
+int hkDataClassDict::getDeclaredMemberIndexByName(const char* nameIn) const
 {
-    void* key = reinterpret_cast<fnv_00dcad10::OuterContext*>(m_pOwningWorld)->inner->Intern(name);
+    void* key = reinterpret_cast<fnv_00dcad10::OuterContext*>(m_pOwningWorld)->inner->Intern(nameIn);
 
     for (int i = 0; i < count; ++i)
     {
@@ -4808,22 +4962,25 @@ struct hkTrackerDCAE
 
 
 // @fnv 0x00dcae30
+// pdb: hkDataClassDict::getMemberInfo | hkDataObjectDict.obj | retail, upstream name already matches, high
+// pdb params: memberIndex, info
+// pdb locals: assertBuf, ostr
 }  // namespace fnv_00dcae30
-void hkDataClassDict::getMemberInfo(int iKey, hkDataClassMemberInfo& kOut) const
+void hkDataClassDict::getMemberInfo(int memberIndex, hkDataClassMemberInfo& info) const
 {
     const hkDataClassDict* pkTable = this;
-    int iIndex = iKey - getNumMembers();
-    for (; pkTable; pkTable = pkTable->parent)
+    int iIndex = memberIndex - getNumMembers();
+    for (; pkTable; pkTable = pkTable->m_parent)
     {
         iIndex += pkTable->count;
         if (iIndex >= 0)
         {
             const fnv_00dcae30::DictionaryMemberDeclaration& kEntry = reinterpret_cast<const fnv_00dcae30::DictionaryMemberDeclaration*>(pkTable->members)[iIndex];
-            kOut.m_key = kEntry.m_key;
-            kOut.m_table = this;
-            kOut.m_uiFilterValue = kEntry.m_uiFilterValue;
-            kOut.m_object = reinterpret_cast<fnv_00dcae30::hkTrackerDCAE*>(m_pOwningWorld)->m_registry->lookup(kEntry.m_ref->m_object);
-            kOut.m_flags = kEntry.m_flags;
+            info.m_key = kEntry.m_key;
+            info.m_table = this;
+            info.m_uiFilterValue = kEntry.m_uiFilterValue;
+            info.m_object = reinterpret_cast<fnv_00dcae30::hkTrackerDCAE*>(m_pOwningWorld)->m_registry->lookup(kEntry.m_ref->m_object);
+            info.m_flags = kEntry.m_flags;
             return;
         }
     }
@@ -4855,6 +5012,7 @@ struct Cls00dcb210
 
 // @fnv 0x00dcb210
 // src: XBOX_PDB 0x00dcb210
+// pdb: StructArrayImplementation::clear | hkDataObjectDict.obj | retail, upstream name already matches, high
 void Cls00dcb210::StructArrayImplementation_clear()
 {
     int i = 0;
@@ -4901,7 +5059,7 @@ class hkImplDCB3
     int m_08;
     hkMemberDCB3* m_members;
 
-    int StructArrayImplementation__find(int iName) throw();
+    int StructArrayImplementation__find(int nameIn) throw();
 };
 
 class hkObjDCB3
@@ -4913,14 +5071,16 @@ class hkObjDCB3
     hkImplDCB3* m_pClassImpl;
     int m_10;
 
-    int GetMemberInt(int iName, int iUnused) throw();
+    int GetMemberInt(int nameIn, int n) throw();
 };
 
 // Looks up the member index by name in the implementation and returns the accessor's int value for m_10.
 // @fnv 0x00dcb340
-int hkObjDCB3::GetMemberInt(int iName, int iUnused) throw()
+// pdb: StructArrayImplementation::Object::asVec | hkDataObjectDict.obj | retail, vtable slot, high
+// pdb params: nameIn, n
+int hkObjDCB3::GetMemberInt(int nameIn, int n) throw()
 {
-    int idx = m_pClassImpl->StructArrayImplementation__find(iName);
+    int idx = m_pClassImpl->StructArrayImplementation__find(nameIn);
     return m_pClassImpl->m_members[idx].m_accessor->getInt(m_10);
 }
 
@@ -4954,7 +5114,7 @@ struct hkTableDCB3
     int m_08;
     IntegerAccessorBinding* m_entries;
 
-    int StructArrayImplementation__find(int iKey);
+    int StructArrayImplementation__find(int nameIn);
 };
 
 class hkOwnerDCB3
@@ -4966,15 +5126,17 @@ class hkOwnerDCB3
     hkTableDCB3* m_table;
     int m_10;
 
-    int StructArrayImplementation_Object_asString(int iKey);
+    int StructArrayImplementation_Object_asString(int name);
 };
 
 // Looks up the table entry for iKey and returns the object's V10 result for m_10.
 // @fnv 0x00dcb370
 // src: XBOX_PDB 0x00dcb370
-int hkOwnerDCB3::StructArrayImplementation_Object_asString(int iKey)
+// pdb: StructArrayImplementation::Object::asString | hkDataObjectDict.obj | retail, upstream name already matches, high
+// pdb params: name
+int hkOwnerDCB3::StructArrayImplementation_Object_asString(int name)
 {
-    int iIndex = m_table->StructArrayImplementation__find(iKey);
+    int iIndex = m_table->StructArrayImplementation__find(name);
     return m_table->m_entries[iIndex].m_object->V10(m_10);
 }
 
@@ -5020,7 +5182,7 @@ class hkImplDCB4
     int m_08;
     hkMemberDCB4* m_members;
 
-    int StructArrayImplementation__find(int iName) throw();
+    int StructArrayImplementation__find(int nameIn) throw();
 };
 
 class hkObjDCB4
@@ -5032,14 +5194,16 @@ class hkObjDCB4
     hkImplDCB4* m_pClassImpl;
     int m_10;
 
-    hkValueDCB4 GetMemberValue(int iName) throw();
+    hkValueDCB4 GetMemberValue(int name) throw();
 };
 
 // Looks up the member index for iName in the implementation and returns the value its accessor reads from m_10.
 // @fnv 0x00dcb430
-hkValueDCB4 hkObjDCB4::GetMemberValue(int iName) throw()
+// pdb: StructArrayImplementation::Object::asHalf | hkDataObjectDict.obj | retail, vtable slot, high
+// pdb params: name
+hkValueDCB4 hkObjDCB4::GetMemberValue(int name) throw()
 {
-    int idx = m_pClassImpl->StructArrayImplementation__find(iName);
+    int idx = m_pClassImpl->StructArrayImplementation__find(name);
     return m_pClassImpl->m_members[idx].m_accessor->getValue(m_10);
 }
 
@@ -5052,7 +5216,7 @@ struct hkPairDCB6
 class hkAccessorDCB6
 {
   public:
-    void hkDataArrayImpl_set(int obj, hkPairDCB6 v) throw();
+    void hkDataArrayImpl_set(int index, hkPairDCB6 val) throw();
 };
 
 struct hkMemberDCB6
@@ -5069,7 +5233,7 @@ class hkImplDCB6
     int m_08;
     hkMemberDCB6* m_members;
 
-    int StructArrayImplementation__findOrAdd(int iName) throw();
+    int StructArrayImplementation__findOrAdd(int name) throw();
 };
 
 class hkObjDCB6
@@ -5081,16 +5245,18 @@ class hkObjDCB6
     hkImplDCB6* m_pClassImpl;
     int m_10;
 
-    void StructArrayImplementation_Object_assign(int iName, const hkPairDCB6& v) throw();
+    void StructArrayImplementation_Object_assign(int name, const hkPairDCB6& valueIn) throw();
 };
 
 // Looks up the member index for iName in the implementation and passes m_10 and v to that member's accessor.
 // @fnv 0x00dcb650
 // src: XBOX_PDB 0x00dcb650
-void hkObjDCB6::StructArrayImplementation_Object_assign(int iName, const hkPairDCB6& v) throw()
+// pdb: StructArrayImplementation::Object::assign | hkDataObjectDict.obj | retail, vtable slot, high
+// pdb params: name, valueIn
+void hkObjDCB6::StructArrayImplementation_Object_assign(int name, const hkPairDCB6& valueIn) throw()
 {
-    int idx = m_pClassImpl->StructArrayImplementation__findOrAdd(iName);
-    m_pClassImpl->m_members[idx].m_accessor->hkDataArrayImpl_set(m_10, v);
+    int idx = m_pClassImpl->StructArrayImplementation__findOrAdd(name);
+    m_pClassImpl->m_members[idx].m_accessor->hkDataArrayImpl_set(m_10, valueIn);
 }
 
 struct FUN_00dcb690_Object
@@ -5125,13 +5291,15 @@ struct FUN_00dcb690_Class
     void* m_p8;
     FUN_00dcb5d0_Class* m_iThirdValue;
     int m_10;
-    void __thiscall DispatchToIndexedObject(int a, int b);
+    void __thiscall DispatchToIndexedObject(int name, int valueIn);
 };
 // @fnv 0x00dcb690
-void __thiscall FUN_00dcb690_Class::DispatchToIndexedObject(int arg0, int arg1)
+// pdb: StructArrayImplementation::Object::assign | hkDataObjectDict.obj | retail, vtable slot, high
+// pdb params: name, valueIn
+void __thiscall FUN_00dcb690_Class::DispatchToIndexedObject(int name, int valueIn)
 {
-    int index = m_iThirdValue->StructArrayImplementation__findOrAdd(arg0);
-    reinterpret_cast<FUN_00dcb690_Object*>(m_iThirdValue->m_iThirdValue[index].m_p4)->vf21(m_10, arg1);
+    int index = m_iThirdValue->StructArrayImplementation__findOrAdd(name);
+    reinterpret_cast<FUN_00dcb690_Object*>(m_iThirdValue->m_iThirdValue[index].m_p4)->vf21(m_10, valueIn);
 }
 
 struct FUN_00dcb6c0_Target
@@ -5206,7 +5374,7 @@ struct FUN_00dcb5d0_Obj
     void* m_p8;
     FUN_00dcb6c0_Array* m_pC;
 
-    int __thiscall StructArrayImplementation__findOrAdd(int a);
+    int __thiscall StructArrayImplementation__findOrAdd(int name);
 };
 
 struct FUN_00dcb6c0_Obj
@@ -5217,17 +5385,19 @@ struct FUN_00dcb6c0_Obj
     FUN_00dcb5d0_Obj* m_pC;
     int m_p10;
 
-    void __thiscall StructArrayImplementation_Object_assign_00dcb6c0(int a, int b);
+    void __thiscall StructArrayImplementation_Object_assign_00dcb6c0(int name, int valueIn);
 };
 
 // Looks up an index from m_pC, gets the target element at that index, and calls its FUN_00dcb650 with m_p10 and b.
 // @fnv 0x00dcb6c0
 // src: XBOX_PDB 0x00dcb6c0
-void __thiscall FUN_00dcb6c0_Obj::StructArrayImplementation_Object_assign_00dcb6c0(int a, int b)
+// pdb: StructArrayImplementation::Object::assign | hkDataObjectDict.obj | retail, vtable slot, high
+// pdb params: name, valueIn
+void __thiscall FUN_00dcb6c0_Obj::StructArrayImplementation_Object_assign_00dcb6c0(int name, int valueIn)
 {
-    int index = m_pC->StructArrayImplementation__findOrAdd(a);
+    int index = m_pC->StructArrayImplementation__findOrAdd(name);
     FUN_00dcb6c0_Target* target = (&m_pC->m_pC->m_p4)[index].m_p0;
-    target->StructArrayImplementation_Object_assign(m_p10, b);
+    target->StructArrayImplementation_Object_assign(m_p10, valueIn);
 }
 
 class hkAccessorXdcb720
@@ -5263,7 +5433,7 @@ class hkImplXdcb720
     int m_08;
     hkMemberXdcb720* m_members;
 
-    int StructArrayImplementation__findOrAdd(int iName) throw();
+    int StructArrayImplementation__findOrAdd(int name) throw();
 };
 
 class hkObjXdcb720
@@ -5275,16 +5445,18 @@ class hkObjXdcb720
     hkImplXdcb720* m_pClassImpl;
     int m_10;
 
-    void StructArrayImplementation_Object_assign_00dcb720(int iName, float v) throw();
+    void StructArrayImplementation_Object_assign_00dcb720(int name, float valueIn) throw();
 };
 
 // Looks up a member by name in the implementation and forwards the value to that member's accessor target.
 // @fnv 0x00dcb720
 // src: XBOX_PDB 0x00dcb720
-void hkObjXdcb720::StructArrayImplementation_Object_assign_00dcb720(int iName, float v) throw()
+// pdb: StructArrayImplementation::Object::assign | hkDataObjectDict.obj | retail, vtable slot, high
+// pdb params: name, valueIn
+void hkObjXdcb720::StructArrayImplementation_Object_assign_00dcb720(int name, float valueIn) throw()
 {
-    int idx = m_pClassImpl->StructArrayImplementation__findOrAdd(iName);
-    m_pClassImpl->m_members[idx].m_accessor->target(m_10, v);
+    int idx = m_pClassImpl->StructArrayImplementation__findOrAdd(name);
+    m_pClassImpl->m_members[idx].m_accessor->target(m_10, valueIn);
 }
 
 class hkAccessorXdcb760
@@ -5322,7 +5494,7 @@ class hkImplXdcb760
     int m_08;
     hkMemberXdcb760* m_members;
 
-    int StructArrayImplementation__findOrAdd(int iName) throw();
+    int StructArrayImplementation__findOrAdd(int name) throw();
 };
 
 class hkObjXdcb760
@@ -5334,16 +5506,18 @@ class hkObjXdcb760
     hkImplXdcb760* m_pClassImpl;
     int m_10;
 
-    void StructArrayImplementation_Object_assign_00dcb760(int iName, int v) throw();
+    void StructArrayImplementation_Object_assign_00dcb760(int name, int valueIn) throw();
 };
 
 // Looks up the member index for iName in the implementation and forwards the value to that member's accessor target with m_10.
 // @fnv 0x00dcb760
 // src: XBOX_PDB 0x00dcb760
-void hkObjXdcb760::StructArrayImplementation_Object_assign_00dcb760(int iName, int iValue) throw()
+// pdb: StructArrayImplementation::Object::assign | hkDataObjectDict.obj | retail, vtable slot, high
+// pdb params: name, valueIn
+void hkObjXdcb760::StructArrayImplementation_Object_assign_00dcb760(int name, int valueIn) throw()
 {
-    int idx = m_pClassImpl->StructArrayImplementation__findOrAdd(iName);
-    m_pClassImpl->m_members[idx].m_accessor->target(m_10, iValue);
+    int idx = m_pClassImpl->StructArrayImplementation__findOrAdd(name);
+    m_pClassImpl->m_members[idx].m_accessor->target(m_10, valueIn);
 }
 
 struct FUN_00dcb7c0_Object
@@ -5374,13 +5548,15 @@ struct FUN_00dcb7c0_Class
     void* m_p8;
     FUN_00dcb5d0_Class* m_iThirdValue;
     int m_10;
-    void __thiscall CallObjectVirtual(int arg0, int arg1);
+    void __thiscall CallObjectVirtual(int name, int valueIn);
 };
 // @fnv 0x00dcb7c0
-void __thiscall FUN_00dcb7c0_Class::CallObjectVirtual(int arg0, int aiValue)
+// pdb: StructArrayImplementation::Object::assign | hkDataObjectDict.obj | retail, vtable slot, high
+// pdb params: name, valueIn
+void __thiscall FUN_00dcb7c0_Class::CallObjectVirtual(int name, int valueIn)
 {
-    int index = m_iThirdValue->StructArrayImplementation__findOrAdd(arg0);
-    reinterpret_cast<FUN_00dcb7c0_Object*>(m_iThirdValue->m_iThirdValue[index].m_p4)->FUN_00dcb7c0_17(m_10, (signed char)aiValue);
+    int index = m_iThirdValue->StructArrayImplementation__findOrAdd(name);
+    reinterpret_cast<FUN_00dcb7c0_Object*>(m_iThirdValue->m_iThirdValue[index].m_p4)->FUN_00dcb7c0_17(m_10, (signed char)valueIn);
 }
 
 class hkAccessorXdcb7f0
@@ -5420,7 +5596,7 @@ class hkImplXdcb7f0
     int m_08;
     hkMemberXdcb7f0* m_members;
 
-    int StructArrayImplementation__findOrAdd(int iName) throw();
+    int StructArrayImplementation__findOrAdd(int name) throw();
 };
 
 class hkObjXdcb7f0
@@ -5432,16 +5608,18 @@ class hkObjXdcb7f0
     hkImplXdcb7f0* m_pClassImpl;
     int m_10;
 
-    void StructArrayImplementation_Object_assign_00dcb7f0(int iName, short v) throw();
+    void StructArrayImplementation_Object_assign_00dcb7f0(int name, short valueIn) throw();
 };
 
 // Looks up the member index by name and forwards the value to that member's accessor target with m_10.
 // @fnv 0x00dcb7f0
 // src: XBOX_PDB 0x00dcb7f0
-void hkObjXdcb7f0::StructArrayImplementation_Object_assign_00dcb7f0(int iName, short asValue) throw()
+// pdb: StructArrayImplementation::Object::assign | hkDataObjectDict.obj | retail, vtable slot, high
+// pdb params: name, valueIn
+void hkObjXdcb7f0::StructArrayImplementation_Object_assign_00dcb7f0(int name, short valueIn) throw()
 {
-    int idx = m_pClassImpl->StructArrayImplementation__findOrAdd(iName);
-    m_pClassImpl->m_members[idx].m_accessor->target(m_10, asValue);
+    int idx = m_pClassImpl->StructArrayImplementation__findOrAdd(name);
+    m_pClassImpl->m_members[idx].m_accessor->target(m_10, valueIn);
 }
 
 class hkAccessorXdcb820
@@ -5481,7 +5659,7 @@ class hkImplXdcb820
     int m_08;
     hkMemberXdcb820* m_members;
 
-    int StructArrayImplementation__findOrAdd(int iName) throw();
+    int StructArrayImplementation__findOrAdd(int name) throw();
 };
 
 class hkObjXdcb820
@@ -5493,16 +5671,18 @@ class hkObjXdcb820
     hkImplXdcb820* m_pClassImpl;
     int m_10;
 
-    void StructArrayImplementation_Object_assign_00dcb820(int iName, int v) throw();
+    void StructArrayImplementation_Object_assign_00dcb820(int name, int valueIn) throw();
 };
 
 // Looks up the member index by name and forwards the value to that member's accessor target with m_10.
 // @fnv 0x00dcb820
 // src: XBOX_PDB 0x00dcb820
-void hkObjXdcb820::StructArrayImplementation_Object_assign_00dcb820(int iName, int iValue) throw()
+// pdb: StructArrayImplementation::Object::assign | hkDataObjectDict.obj | retail, vtable slot, high
+// pdb params: name, valueIn
+void hkObjXdcb820::StructArrayImplementation_Object_assign_00dcb820(int name, int valueIn) throw()
 {
-    int idx = m_pClassImpl->StructArrayImplementation__findOrAdd(iName);
-    m_pClassImpl->m_members[idx].m_accessor->target(m_10, iValue);
+    int idx = m_pClassImpl->StructArrayImplementation__findOrAdd(name);
+    m_pClassImpl->m_members[idx].m_accessor->target(m_10, valueIn);
 }
 
 class hkObjectDCB8
@@ -5544,7 +5724,7 @@ struct hkTableDCB8
     int m_08;
     DispatchAccessorBinding* m_entries;
 
-    int StructArrayImplementation__findOrAdd(int iKey);
+    int StructArrayImplementation__findOrAdd(int name);
 };
 
 class hkOwnerDCB8
@@ -5556,15 +5736,17 @@ class hkOwnerDCB8
     hkTableDCB8* m_table;
     int m_10;
 
-    int DispatchToEntryObject(int iKey, int iArg0, int iArg1);
+    int DispatchToEntryObject(int name, int valueIn, int nreal);
 };
 
 // Looks up iKey in m_table and forwards iArg0/iArg1 to the entry object's V19 with m_10 as owner.
 // @fnv 0x00dcb850
-int hkOwnerDCB8::DispatchToEntryObject(int iKey, int iArg0, int iArg1)
+// pdb: StructArrayImplementation::Object::assign | hkDataObjectDict.obj | retail, vtable slot, high
+// pdb params: name, valueIn
+int hkOwnerDCB8::DispatchToEntryObject(int name, int valueIn, int nreal)
 {
-    int iIndex = m_table->StructArrayImplementation__findOrAdd(iKey);
-    return m_table->m_entries[iIndex].m_object->V19(m_10, iArg0, iArg1);
+    int iIndex = m_table->StructArrayImplementation__findOrAdd(name);
+    return m_table->m_entries[iIndex].m_object->V19(m_10, valueIn, nreal);
 }
 
 struct FUN_00dcba40_class
@@ -5574,17 +5756,20 @@ struct FUN_00dcba40_class
     int m_08;
     int m_0c;
     int m_10;
-    int hkDataObjectDict__readAccess(int* out, int a, int b);
-    int hkDataObjectDict_asArray(int a);
+    int hkDataObjectDict__readAccess(int* name, int type, int b);
+    int hkDataObjectDict_asArray(int nameIn);
 };
 
 // Calls FUN_00dcba40 with a and 0x10, then returns the int at index out[1]*4+2 in the array at m_10.
 // @fnv 0x00dcbbf0
 // src: XBOX_PDB 0x00dcbbf0
-int FUN_00dcba40_class::hkDataObjectDict_asArray(int a)
+// pdb: hkDataObjectDict::asArray | hkDataObjectDict.obj | retail, upstream name already matches, high
+// pdb params: nameIn
+// pdb locals: mem
+int FUN_00dcba40_class::hkDataObjectDict_asArray(int nameIn)
 {
     int out[2];
-    hkDataObjectDict__readAccess(out, a, 0x10);
+    hkDataObjectDict__readAccess(out, nameIn, 0x10);
     return ((int*)m_10)[out[1] * 4 + 2];
 }
 
@@ -5614,15 +5799,18 @@ class hkObjDCB
     int m_0c;
     ScalarMemberData* m_entries;
 
-    hkResultDCB hkDataObjectDict__readAccess(int iKey, int iType) throw();
-    int hkDataObjectDict_asString(int iKey) throw();
+    hkResultDCB hkDataObjectDict__readAccess(int name, int type) throw();
+    int hkDataObjectDict_asString(int nameIn) throw();
 };
 
 // @fnv 0x00dcbc20
 // src: XBOX_PDB 0x00dcbc20
-int hkObjDCB::hkDataObjectDict_asString(int iKey) throw()
+// pdb: hkDataObjectDict::asString | hkDataObjectDict.obj | retail, upstream name already matches, high
+// pdb params: nameIn
+// pdb locals: mem
+int hkObjDCB::hkDataObjectDict_asString(int nameIn) throw()
 {
-    hkResultDCB kRes = hkDataObjectDict__readAccess(iKey, 10);
+    hkResultDCB kRes = hkDataObjectDict__readAccess(nameIn, 10);
     return m_entries[kRes.m_uiEdgeIndex].m_uiFilterValue;
 }
 
@@ -5656,11 +5844,13 @@ struct FUN_00dcbc50_Class
     int unk0c;
     FUN_00dcbc50_Item* items;
 
-    void hkDataObjectDict__readAccess(FUN_00dcbc50_Result* result, FUN_00dcbc50_Argument* argument, int mode);
+    void hkDataObjectDict__readAccess(FUN_00dcbc50_Result* name, FUN_00dcbc50_Argument* type, int mode);
     __int64 GetItemValue(FUN_00dcbc50_Argument* argument);
 };
 
 // @fnv 0x00dcbc50
+// pdb: ItemChange::GetItemValue | InventoryChanges.obj | retail, upstream name already matches, high
+// pdb locals: pWeap, fvalue, cSlots
 __int64 FUN_00dcbc50_Class::GetItemValue(FUN_00dcbc50_Argument* argument)
 {
     FUN_00dcbc50_Result result;
@@ -5699,15 +5889,18 @@ class hkObjDCB
     int m_0c;
     ScalarMemberData* m_entries;
 
-    hkResultDCB hkDataObjectDict__readAccess(int iKey, int iType) throw();
-    int hkDataObjectDict_asObject(int iKey) throw();
+    hkResultDCB hkDataObjectDict__readAccess(int name, int type) throw();
+    int hkDataObjectDict_asObject(int nameIn) throw();
 };
 
 // @fnv 0x00dcbca0
 // src: XBOX_PDB 0x00dcbca0
-int hkObjDCB::hkDataObjectDict_asObject(int iKey) throw()
+// pdb: hkDataObjectDict::asObject | hkDataObjectDict.obj | retail, upstream name already matches, high
+// pdb params: nameIn
+// pdb locals: mem
+int hkObjDCB::hkDataObjectDict_asObject(int nameIn) throw()
 {
-    hkResultDCB kRes = hkDataObjectDict__readAccess(iKey, 8);
+    hkResultDCB kRes = hkDataObjectDict__readAccess(nameIn, 8);
     return m_entries[kRes.m_uiEdgeIndex].m_uiFilterValue;
 }
 }  // namespace fnv_00dcbca0
@@ -5739,15 +5932,18 @@ class hkObjDCB
     int m_0c;
     ScalarMemberData* m_entries;
 
-    hkResultDCB hkDataObjectDict__readAccess(int iKey, int iType) throw();
-    float GetEntryFloat(int iKey) throw();
+    hkResultDCB hkDataObjectDict__readAccess(int name, int type) throw();
+    float GetEntryFloat(int nameIn) throw();
 };
 
 // Looks up iKey with type 3 and returns the float field of the resulting entry.
 // @fnv 0x00dcbd10
-float hkObjDCB::GetEntryFloat(int iKey) throw()
+// pdb: hkDataObjectDict::asReal | hkDataObjectDict.obj | retail, vtable slot, high
+// pdb params: nameIn
+// pdb locals: mem
+float hkObjDCB::GetEntryFloat(int nameIn) throw()
 {
-    hkResultDCB kRes = hkDataObjectDict__readAccess(iKey, 3);
+    hkResultDCB kRes = hkDataObjectDict__readAccess(nameIn, 3);
     return m_entries[kRes.m_uiEdgeIndex].m_uiFilterValue;
 }
 }  // namespace fnv_00dcbd10
@@ -5828,13 +6024,14 @@ template <class T> __forceinline void DestroyClassArray(hkArrayBase<T>& array)
 }
 
 // @fnv 0x00dcbfc0
+// pdb: hkDataClassDict::~hkDataClassDict | hkDataObjectDict.obj | retail, upstream name already matches, high
 hkDataClassDict::~hkDataClassDict()
 {
     reinterpret_cast<void (__thiscall*)(hkDataClassDict*)>(ClearDataClassDict)(this);
-    DestroyClassArray(*reinterpret_cast<hkArrayBase<fnv_00dcbfc0::EntryDCBF>*>(&unk34));
+    DestroyClassArray(*reinterpret_cast<hkArrayBase<fnv_00dcbfc0::EntryDCBF>*>(&m_hiddenMemberInfo));
     DestroyClassArray(*reinterpret_cast<hkArrayBase<fnv_00dcbfc0::EntryDCBF>*>(&members));
-    DestroyClassArray(*reinterpret_cast<hkArrayBase<int>*>(&unk1c));
-    reinterpret_cast<fnv_00dcbfc0::hkSharedPtrDCBF<hkDataRefCounted>*>(&parent)->~hkSharedPtrDCBF();
+    DestroyClassArray(*reinterpret_cast<hkArrayBase<int>*>(&m_enums));
+    reinterpret_cast<fnv_00dcbfc0::hkSharedPtrDCBF<hkDataRefCounted>*>(&m_parent)->~hkSharedPtrDCBF();
     reinterpret_cast<fnv_00dcbfc0::hkRefPtrDCBF<hkReferencedObject>*>(&m_name)->~hkRefPtrDCBF();
 }
 
@@ -5875,7 +6072,7 @@ char* __cdecl StrDup7320(const char* pcString);
 struct StringMap7320
 {
     void* FindValueForKey(const char* pcKey, void* pvDefault) const;
-    void insert(const char* pcKey, void* pvValue);
+    void insert(const char* key, void* val);
     int unk00;
     int unk04;
     int unk08;
@@ -5926,7 +6123,7 @@ struct ClassInfo7320
 class Owner7320
 {
   public:
-    void hkDataWorldDict_renameClass(const ClassInfo7320* pkClass, const char* pcNewName);
+    void hkDataWorldDict_renameClass(const ClassInfo7320* klass, const char* newName);
     int unk00;
     int unk04;
     Registry7320* m_pkRegistry;
@@ -5935,12 +6132,15 @@ class Owner7320
 // Renames the class in the registry from its current name to pcNewName, pooling the old name first if it is not already pooled.
 // @fnv 0x00dc7320
 // src: XBOX_PDB 0x00dc7320
-void Owner7320::hkDataWorldDict_renameClass(const ClassInfo7320* pkClass, const char* pcNewName)
+// pdb: hkDataWorldDict::renameClass | hkDataObjectDict.obj | retail, upstream name already matches, high
+// pdb params: klass, newName
+// pdb locals: oldName
+void Owner7320::hkDataWorldDict_renameClass(const ClassInfo7320* klass, const char* newName)
 {
-    const char* pcName = pkClass->GetName();
+    const char* pcName = klass->GetName();
     Registry7320* pkRegistry = m_pkRegistry;
     const char* pcPooled = pcName ? pkRegistry->GetPooled(pcName) : 0;
-    m_pkRegistry->Rename(pcPooled, pcNewName);
+    m_pkRegistry->Rename(pcPooled, newName);
 }
 
 // @fnv 0x00dc73e0
@@ -6059,7 +6259,7 @@ struct ShapeE7DE0 : public Shape7DE0
 };
 struct ShapeF7DE0 : public Shape7DE0
 {
-    ShapeF7DE0(int iArg) throw();
+    ShapeF7DE0(int klass) throw();
     int unk0C;
     int unk10;
     int unk14;
@@ -6077,14 +6277,16 @@ struct ShapeG7DE0 : public Shape7DE0
 // Creates a Shape7DE0 subclass based on uiType, wrapping the result in Wrapper7DE0 when the 0x20 flag is set.
 // @fnv 0x00dc7de0
 // src: XBOX_PDB 0x00dc7de0
-Shape7DE0* hkDataArrayDict_create(unsigned int uiType, int iArg, int iData)
+// pdb: hkDataArrayDict_create | hkDataObjectDict.obj | retail, upstream name already matches, high
+// pdb params: t, c, tupleCount
+Shape7DE0* hkDataArrayDict_create(unsigned int t, int c, int tupleCount)
 {
-    if (uiType & 0x20)
+    if (t & 0x20)
     {
-        Shape7DE0* pkChild = hkDataArrayDict_create(uiType & ~0x20, iArg, 0);
-        return new Wrapper7DE0(pkChild, iData);
+        Shape7DE0* pkChild = hkDataArrayDict_create(t & ~0x20, c, 0);
+        return new Wrapper7DE0(pkChild, tupleCount);
     }
-    switch (uiType & 0xf)
+    switch (t & 0xf)
     {
     case 1:
         return new ShapeA7DE0;
@@ -6099,9 +6301,9 @@ Shape7DE0* hkDataArrayDict_create(unsigned int uiType, int iArg, int iData)
     case 7:
         return new ShapeD7DE0(0x10);
     case 8:
-        return new ShapeE7DE0(iArg);
+        return new ShapeE7DE0(c);
     case 9:
-        return new ShapeF7DE0(iArg);
+        return new ShapeF7DE0(c);
     case 10:
         return new ShapeG7DE0;
     }
@@ -6159,30 +6361,32 @@ struct hkDescDC82
     void* m_target;
 };
 
-hkObjDC82* __cdecl hkDataArrayDict_create(unsigned int flags, void* type, void* owner);
+hkObjDC82* __cdecl hkDataArrayDict_create(unsigned int t, void* c, void* tupleCount);
 
 // Creates an object from desc->m_type, sets its target, and registers it in ctx->m_registry under desc->m_key.
 // @fnv 0x00dc8210
-hkObjDC82* __stdcall CreateAndRegisterObject(hkCtxDC82* ctx, hkDescDC82* desc)
+// pdb: hkDataWorldDict::newArray | hkDataObjectDict.obj | retail, vtable slot, high
+// pdb params: obj, minfo
+hkObjDC82* __stdcall CreateAndRegisterObject(hkCtxDC82* ctx, hkDescDC82* minfo)
 {
-    unsigned int flags = desc->m_flags;
+    unsigned int flags = minfo->m_flags;
     void* owner;
     void* target;
     if (flags & 0x10)
     {
-        owner = desc->m_target;
+        owner = minfo->m_target;
         flags &= ~0x10;
         target = 0;
     }
     else
     {
-        target = desc->m_target;
+        target = minfo->m_target;
         flags &= ~0x20;
         owner = 0;
     }
-    hkObjDC82* obj = hkDataArrayDict_create(flags, desc->m_type, owner);
+    hkObjDC82* obj = hkDataArrayDict_create(flags, minfo->m_type, owner);
     obj->setTarget(target);
-    ctx->m_registry->registerObject(desc->m_key, obj);
+    ctx->m_registry->registerObject(minfo->m_key, obj);
     return obj;
 }
 
@@ -6247,13 +6451,15 @@ struct DC8A80
     int m_1c;
     int m_20;
     int m_24;
-    void __thiscall CopyFromSource(int a, Src80* src);
+    void __thiscall CopyFromSource(int idx, Src80* src);
 };
 // Copies m_24 elements from src into m_0c using the setter matching src's type, and stores m_24 * a in m_1c.
 // @fnv 0x00dc8a80
-void __thiscall DC8A80::CopyFromSource(int a, Src80* src)
+// pdb: ArrayOfTuplesImplementation::setArray | hkDataObjectDict.obj | retail, vtable slot, high
+// pdb params: idx, src
+void __thiscall DC8A80::CopyFromSource(int idx, Src80* src)
 {
-    m_1c = m_24 * a;
+    m_1c = m_24 * idx;
     int type = src->GetType();
     switch (type)
     {
@@ -6388,6 +6594,7 @@ class hkObjDC8C : public hkRefObjDC8C
 
 // Calls the hkObjDC8C destructor and, when the low bit of flags is set, frees the object via operator delete, then returns this.
 // @fnv 0x00dc8cd0
+// pdb: ArrayOfTuplesImplementation::`scalar deleting destructor' | hkDataObjectDict.obj | retail, vtable slot, high
 hkObjDC8C* hkObjDC8C::FUN_00dc8cd0(unsigned int flags)
 {
     this->hkObjDC8C::~hkObjDC8C();
@@ -6401,8 +6608,8 @@ char* __cdecl hkString_strDup_00cb1410(const char* pcString);
 struct StringMapDC8F20
 {
     void* FindValueForKey(const char* pcKey, void* pvDefault) const;
-    void remove(const char* pcKey);
-    void insert(const char* pcKey, void* pvValue);
+    void remove(const char* key);
+    void insert(const char* key, void* val);
 
     void* m_kPrimitiveElement;
     int m_iCapacityFlags;
@@ -6454,6 +6661,8 @@ struct NameRegistryDC8F20
 // Renames a registered entry from pcOldName to pcNewName, updating m_entries and m_iSlotIds with the pooled new name.
 // @fnv 0x00dc8f20
 // src: GUESS 0x00dc8f20 (confidence: medium)
+// pdb: hkDataWorldDict::ObjectTracker::retrackRenamedClass | hkDataObjectDict.obj | retail, object-file run extension, low
+// pdb params: oldName, newName
 void NameRegistryDC8F20::RenameRegisteredEntry(const char* pcOldName, const char* pcNewName)
 {
     void* pvValue = pcOldName ? m_iSlotIds.FindValueForKey(pcOldName, 0) : 0;
@@ -6483,7 +6692,7 @@ struct Metadata_dc90f0
 };
 
 
-void __cdecl ReleaseDataValues(void* type, __int64* value, int count);
+void __cdecl ReleaseDataValues(void* typeIn, __int64* u, int n);
 
 struct Object_dc90f0
 {
@@ -6492,13 +6701,15 @@ struct Object_dc90f0
     Entry_dc90f0* entries;
     int count;
 
-    void RemoveEntryAndCompact(int key);
+    void RemoveEntryAndCompact(int name);
 };
 
 // Finds the matching entry, releases its value when metadata exists, decrements count, and copies the last entry into its position when needed.
 // @fnv 0x00dc90f0
 // src: GUESS 0x00dc90f0 (confidence: medium)
-void Object_dc90f0::RemoveEntryAndCompact(int key)
+// pdb: hkDataObjectDict::removeMember | hkDataObjectDict.obj | retail, object-file gap fill, high
+// pdb params: name
+void Object_dc90f0::RemoveEntryAndCompact(int name)
 {
     const int n = count;
     int i = 0;
@@ -6508,7 +6719,7 @@ void Object_dc90f0::RemoveEntryAndCompact(int key)
         Entry_dc90f0* current = base;
         do
         {
-            if (current->key == key)
+            if (current->key == name)
             {
                 const unsigned int byteOffset = i * sizeof(Entry_dc90f0);
                 Metadata_dc90f0* metadata = reinterpret_cast<Metadata_dc90f0*>(registry->FindEntry(
@@ -6554,7 +6765,7 @@ struct hkMemoryRouterDC92
 namespace hkRouterDC92 {
 extern "C" hkMemoryRouterDC92& __cdecl hkMemoryRouter_getInstance() throw();
 }
-void __cdecl ResizeAudioStream(void* alloc, void* arr, int elemSize) throw();
+void __cdecl ResizeAudioStream(void* mem, void* array, int sizeElem) throw();
 
 class hkMapDC92
 {
@@ -6570,17 +6781,19 @@ class hkMapDC92
     int hkCachedHashMap_hkStringMapOperations_hkContainerHeapAllocator_getValue(int it);
     int FindNextUsedSlot(int it);
 
-    void hkDataWorldDict_ObjectTracker_findTrackedClasses(hkArray<int>& out);
+    void hkDataWorldDict_ObjectTracker_findTrackedClasses(hkArray<int>& classesOut);
 };
 
 // Iterates over all used slots in the map and appends each slot's value to the output array.
 // @fnv 0x00dc9240
 // src: XBOX_PDB 0x00dc9240
-void hkMapDC92::hkDataWorldDict_ObjectTracker_findTrackedClasses(hkArray<int>& apUsedValues)
+// pdb: hkDataWorldDict::ObjectTracker::findTrackedClasses | hkDataObjectDict.obj | retail, upstream name already matches, high
+// pdb params: classesOut
+void hkMapDC92::hkDataWorldDict_ObjectTracker_findTrackedClasses(hkArray<int>& classesOut)
 {
     for (int it = hkCachedHashMap_hkStringMapOperations_hkContainerHeapAllocator_getIterator(); isValid(it); it = FindNextUsedSlot(it))
     {
-        apUsedValues.pushBack(hkCachedHashMap_hkStringMapOperations_hkContainerHeapAllocator_getValue(it));
+        classesOut.pushBack(hkCachedHashMap_hkStringMapOperations_hkContainerHeapAllocator_getValue(it));
     }
 }
 
@@ -6594,7 +6807,7 @@ struct hkMemoryRouterDC9
     hkMemoryAllocatorDC9* m_pStreamAllocator;
 };
 hkMemoryRouterDC9* __cdecl GetMemoryRouterDC9() throw();
-void __cdecl ReserveMoreDC9(hkMemoryAllocatorDC9* pkHeap, void* pkArray, int iElemSize);
+void __cdecl ReserveMoreDC9(hkMemoryAllocatorDC9* mem, void* array, int sizeElem);
 
 template <typename T> inline void ConstructWithCopyDC9(T* pDst, int iCount, const T& kItem)
 {
@@ -6660,7 +6873,7 @@ template <class T> struct MultiMapDC9
 class ShapeRegistryDC9
 {
   public:
-    void CollectShapes(KeyDC9* pkKey, int bRecurse, int bGroups, hkArray<ShapeDC9*>* pkShapesOut);
+    void CollectShapes(KeyDC9* className, int baseClass, int addStructs, hkArray<ShapeDC9*>* objectsOut);
     int unk00;
     int unk04;
     int unk08;
@@ -6693,19 +6906,21 @@ class ShapeRegistryDC9
 
 // Collects ShapeDC9 pointers for pkKey's owner into pkShapesOut, optionally including object groups and recursing through linked keys.
 // @fnv 0x00dc92d0
-void ShapeRegistryDC9::CollectShapes(KeyDC9* pkKey, int bRecurse, int bGroups, hkArray<ShapeDC9*>* pkShapesOut)
+// pdb: hkDataWorldDict::ObjectTracker::findTrackedObjectsByBase | hkDataObjectDict.obj | retail, call graph (shared callers), high
+// pdb params: className, baseClass, addStructs, objectsOut
+void ShapeRegistryDC9::CollectShapes(KeyDC9* className, int baseClass, int addStructs, hkArray<ShapeDC9*>* objectsOut)
 {
-    if (!pkKey)
+    if (!className)
         return;
-    OwnerDC9* pkOwner = FindOwnerDC9(pkKey, 0);
+    OwnerDC9* pkOwner = FindOwnerDC9(className, 0);
     if (!pkOwner)
         return;
     for (int i = m_kShapes.Find(pkOwner); i != -1; i = m_kShapes.m_pkEntryArray[i].m_iNext)
     {
         ShapeDC9* pkShape = m_kShapes.m_pkEntryArray[i].m_kValue;
-        PushBackDC9(*pkShapesOut, pkShape);
+        PushBackDC9(*objectsOut, pkShape);
     }
-    if (bGroups)
+    if (addStructs)
     {
         for (int i = m_kObjectGroups.Find(pkOwner); i != -1; i = m_kObjectGroups.m_pkEntryArray[i].m_iNext)
         {
@@ -6713,16 +6928,16 @@ void ShapeRegistryDC9::CollectShapes(KeyDC9* pkKey, int bRecurse, int bGroups, h
             for (int j = 0; j < pkGroup->GetNumShapes(); j++)
             {
                 ShapeDC9* pkShape = pkGroup->GetShape(j);
-                PushBackDC9(*pkShapesOut, pkShape);
+                PushBackDC9(*objectsOut, pkShape);
             }
         }
     }
-    if (bRecurse)
+    if (baseClass)
     {
         for (int i = m_kLinks.Find(pkOwner); i != -1; i = m_kLinks.m_pkEntryArray[i].m_iNext)
         {
             LinkDC9* pkLink = m_kLinks.m_pkEntryArray[i].m_kValue;
-            CollectShapes(pkLink->GetKey(), bRecurse, bGroups, pkShapesOut);
+            CollectShapes(pkLink->GetKey(), baseClass, addStructs, objectsOut);
         }
     }
 }
@@ -6732,7 +6947,7 @@ char* __cdecl StrDup9570(const char* pcString);
 struct StringMap9570
 {
     void* FindValueForKey(const char* pcKey, void* pvDefault) const;
-    void insert(const char* pcKey, void* pvValue);
+    void insert(const char* key, void* val);
     int unk00;
     int unk04;
     int unk08;
@@ -6803,6 +7018,8 @@ class Owner9570
 // Returns a PooledName9570 wrapping the pooled string from the registry for pcName, or an empty PooledName9570 if pcName is null.
 // @fnv 0x00dc9570
 // src: GUESS 0x00dc9570 (confidence: high)
+// pdb: hkDataObjectDict::intern | hkDataObjectDict.obj | debug, object-file run extension, low
+// pdb params: name
 PooledName9570 Owner9570::GetPooledNameOrEmpty(const char* pcName)
 {
     Registry9570* pkRegistry = m_pkHolder->m_pkRegistry;
@@ -6864,6 +7081,9 @@ class OwnerDC9E
 // Looks up an existing entry for key, allocates a slot, links the new entry to the old one, and stores the slot index in m_kFormatEntries.
 // @fnv 0x00dc9ec0
 // src: XBOX_PDB 0x00dc9ec0
+// pdb: hkSerializeMultiMap<char const *,int>::insert | hkVersionPatchManager.obj | retail, call graph, low
+// pdb note: debug build links it to hkArray<hkDataClassDict::MemberInfo,hkContainerHeapAllocator>::clearAndDeallocate
+// pdb params: k, value
 void OwnerDC9E::hkSerializeMultiMap_hkDataClassDict_hkDataClassDict_insert(unsigned long key, const KeyDC9E* pkVal)
 {
     unsigned long uiOldIndex = m_kFormatEntries.LookupHashEntry(key, (unsigned long)-1);
@@ -6926,7 +7146,7 @@ struct hkMemoryRouterDCA5
 namespace fnvc_adapt {
 extern "C" hkMemoryRouterDCA5& __cdecl hkMemoryRouter_getInstance() throw();
 }
-void __cdecl hkArrayUtil__reserve(hkMemoryAllocatorDCA5& kAlloc, void* apvArray, int aiNumElements, int iSizeElem) throw();
+void __cdecl hkArrayUtil__reserve(hkMemoryAllocatorDCA5& mem, void* array, int numElem, int sizeElem) throw();
 
 class hkObjDCA5
 {
@@ -6936,16 +7156,18 @@ class hkObjDCA5
     int unk08;
     hkArray<__int64> m_data;
 
-    void CopyFrom(const __int64* src, int n);
+    void CopyFrom(const __int64* vals, int n);
 };
 
 // Sets m_data to n elements, then stores each source value after converting it to int.
 // @fnv 0x00dca540
-void hkObjDCA5::CopyFrom(const __int64* src, int aiCount)
+// pdb: IntArrayImplementation::setAll | hkDataObjectDict.obj | retail, vtable slot, high
+// pdb params: vals, n
+void hkObjDCA5::CopyFrom(const __int64* vals, int n)
 {
-    m_data.setSize(aiCount);
-    for (int i = 0; i < aiCount; i++)
-        m_data.m_data[i] = (int)src[i];
+    m_data.setSize(n);
+    for (int i = 0; i < n; i++)
+        m_data.m_data[i] = (int)vals[i];
 }
 
 class Obj
@@ -6975,13 +7197,15 @@ struct Registry
     int a, b, c, d;
     HkdataobjectdictMapView map;
     int FindStringKey(const char*);
-    void RegisterObject(Obj* volatile obj);
+    void RegisterObject(Obj* volatile klass);
 };
 // Looks up the object's name and, if absent, calls the add routine and adds it to the map when its iterator key is non-null.
 // @fnv 0x00dca820
-void Registry::RegisterObject(Obj* volatile apObject)
+// pdb: hkDataWorldDict::ObjectTracker::trackClass | hkDataObjectDict.obj | retail, call graph, high
+// pdb params: klass
+void Registry::RegisterObject(Obj* volatile klass)
 {
-    Obj* const current = apObject;
+    Obj* const current = klass;
     void* key = current->GetIteratorKey();
     const char* name = current->getName();
     int it = FindStringKey(name);
@@ -6992,7 +7216,7 @@ void Registry::RegisterObject(Obj* volatile apObject)
         const char* pName2 = current->getName();
         reinterpret_cast<Add*>(this)->hkCachedHashMap_hkStringMapOperations_hkContainerHeapAllocator_insert(pName2, (int)current);
         if (key)
-            map.hkSerializeMultiMap_hkDataClassDict_hkDataClassDict_insert(key, const_cast<Obj**>(&apObject));
+            map.hkSerializeMultiMap_hkDataClassDict_hkDataClassDict_insert(key, const_cast<Obj**>(&klass));
     }
 }
 
@@ -7052,7 +7276,7 @@ char* __cdecl StrDupDCAC(const char* pcString);
 struct StringMapDCAC
 {
     void* FindValueForKey(const char* pcKey, void* pvDefault) const;
-    void insert(const char* pcKey, void* pvValue);
+    void insert(const char* key, void* val);
     int unk00;
     int unk04;
     int unk08;
@@ -7112,9 +7336,11 @@ struct NameHolderDCAC
 
 // Walks the class hierarchy, pooling each name and comparing it with the retained name.
 // @fnv 0x00dcac80
-hkBool hkDataClassDict::isSuperClass(const hkDataClassImpl* pkClass) const
+// pdb: hkDataClassDict::isSuperClass | hkDataObjectDict.obj | retail, upstream name already matches, high
+// pdb params: k
+hkBool hkDataClassDict::isSuperClass(const hkDataClassImpl* k) const
 {
-    for (const hkDataClassImpl* pClass = pkClass; pClass; pClass = pClass->getParent())
+    for (const hkDataClassImpl* pClass = k; pClass; pClass = pClass->getParent())
     {
         const char* pcName = pClass->getName();
         RegistryDCAC* pkRegistry = reinterpret_cast<RegistryHolderDCAC*>(m_pOwningWorld)->m_pkRegistry;
@@ -7130,7 +7356,7 @@ char* __cdecl StrDupADA0(const char* pcString);
 struct StringMapADA0
 {
     void* FindValueForKey(const char* pcKey, void* pvDefault) const;
-    void insert(const char* pcKey, void* pvValue);
+    void insert(const char* key, void* val);
     int unk00;
     int unk04;
     int unk08;
@@ -7182,11 +7408,14 @@ struct RegistryHolderADA0
 
 // Searches the class hierarchy for a member by name and returns its computed index, or -1 if not found.
 // @fnv 0x00dcada0
-int hkDataClassDict::getMemberIndexByName(const char* pcName) const
+// pdb: hkDataClassDict::getMemberIndexByName | hkDataObjectDict.obj | retail, upstream name already matches, high
+// pdb params: nameIn
+// pdb locals: internedMemberName
+int hkDataClassDict::getMemberIndexByName(const char* nameIn) const
 {
     RegistryADA0* pkRegistry = reinterpret_cast<RegistryHolderADA0*>(m_pOwningWorld)->m_pkRegistry;
-    const char* pcPooled = pcName ? pkRegistry->GetPooled(pcName) : 0;
-    for (const hkDataClassDict* pkClass = this; pkClass; pkClass = pkClass->parent)
+    const char* pcPooled = nameIn ? pkRegistry->GetPooled(nameIn) : 0;
+    for (const hkDataClassDict* pkClass = this; pkClass; pkClass = pkClass->m_parent)
     {
         for (int i = 0; i < pkClass->count; i++)
         {
@@ -7209,7 +7438,7 @@ class SourceDCB1
 class TargetDCB1
 {
   public:
-    void hkDataArrayImpl_set(void* pArg, Pair kPair);
+    void hkDataArrayImpl_set(void* index, Pair val);
 };
 
 struct EntryDCB1
@@ -7227,18 +7456,20 @@ class FUN_00dcb1c0_C
     EntryDCB1* m_pEntries;
     int m_iNumEntries;
 
-    void ApplySourceToEntries(void* pArg, SourceDCB1* pkSource);
+    void ApplySourceToEntries(void* index, SourceDCB1* val);
 };
 
 // Iterates m_pEntries, calling each entry's target with the source's value for that entry's key.
 // @fnv 0x00dcb1c0
-void FUN_00dcb1c0_C::ApplySourceToEntries(void* pArg, SourceDCB1* pkSource)
+// pdb: StructArrayImplementation::setObject | hkDataObjectDict.obj | retail, vtable slot, high
+// pdb params: index, val
+void FUN_00dcb1c0_C::ApplySourceToEntries(void* index, SourceDCB1* val)
 {
     for (int i = 0; i < m_iNumEntries; i++)
     {
         EntryDCB1& kEntry = m_pEntries[i];
         int iKey = kEntry.iKey;
-        kEntry.pkTarget->hkDataArrayImpl_set(pArg, pkSource->v03(iKey));
+        kEntry.pkTarget->hkDataArrayImpl_set(index, val->v03(iKey));
     }
 }
 
@@ -7247,7 +7478,7 @@ char* __cdecl StrDupB2B0(const char* pcString);
 struct StringMapB2B0
 {
     void* FindValueForKey(const char* pcKey, void* pvDefault) const;
-    void insert(const char* pcKey, void* pvValue);
+    void insert(const char* key, void* val);
     int unk00;
     int unk04;
     int unk08;
@@ -7313,7 +7544,7 @@ struct EntryB2B0
 class TableB2B0
 {
   public:
-    int StructArrayImplementation__find(const char* pcName);
+    int StructArrayImplementation__find(const char* nameIn);
     int unk00;
     int unk04;
     int unk08;
@@ -7326,10 +7557,12 @@ class TableB2B0
 // Pools pcName via m_pkContext's registry and returns the index of the matching entry in m_pkEntryArray, or -1 if not found.
 // @fnv 0x00dcb2b0
 // src: XBOX_PDB 0x00dcb2b0
-int TableB2B0::StructArrayImplementation__find(const char* pcName)
+// pdb: StructArrayImplementation::_find | hkDataObjectDict.obj | retail, upstream name already matches, high
+// pdb params: s
+int TableB2B0::StructArrayImplementation__find(const char* nameIn)
 {
     RegistryB2B0* pkRegistry = m_pkContext->m_pkHolder->m_pkRegistry;
-    const char* pcPooled = pcName ? pkRegistry->GetPooled(pcName) : 0;
+    const char* pcPooled = nameIn ? pkRegistry->GetPooled(nameIn) : 0;
     for (int i = 0; i < m_iNumEntries; i++)
     {
         if (m_pkEntryArray[i].m_pcName == pcPooled)
@@ -7411,19 +7644,20 @@ extern hkReferencedObject g_kDefaultDCB990;
 
 // Clears class members and owned objects, then resets the retained name handle.
 // @fnv 0x00dcb990
+// pdb: hkDataClassDict::selfDestruct | hkDataObjectDict.obj | retail, call graph (shared callers), high
 void __fastcall ClearDataClassDict(hkDataClassDict* pkClass, void*)
 {
     reinterpret_cast<ArrayDCB990LocalForm<EntryDCB990>*>(&pkClass->members)[0].clear();
-    for (int i = 0; i < reinterpret_cast<ArrayDCB990LocalForm<ObjectDCB990*>*>(&pkClass->unk1c)[0].m_iElementCount; i++)
-        delete reinterpret_cast<ArrayDCB990LocalForm<ObjectDCB990*>*>(&pkClass->unk1c)[0].m_data[i];
-    reinterpret_cast<ArrayDCB990LocalForm<ObjectDCB990*>*>(&pkClass->unk1c)[0].m_iElementCount = 0;
+    for (int i = 0; i < reinterpret_cast<ArrayDCB990LocalForm<ObjectDCB990*>*>(&pkClass->m_enums)[0].m_iElementCount; i++)
+        delete reinterpret_cast<ArrayDCB990LocalForm<ObjectDCB990*>*>(&pkClass->m_enums)[0].m_data[i];
+    reinterpret_cast<ArrayDCB990LocalForm<ObjectDCB990*>*>(&pkClass->m_enums)[0].m_iElementCount = 0;
     reinterpret_cast<RefPtrDCB990<hkReferencedObject>*>(&pkClass->m_name)[0] = &g_kDefaultDCB990;
 }
 
 struct StringMapDC7
 {
     void* GetValue(const char* pcKey, void* pvDefault) const;
-    void hkCachedHashMap_hkStringMapOperations_hkContainerHeapAllocator_insert(const char* pcKey, void* pvValue) throw();
+    void hkCachedHashMap_hkStringMapOperations_hkContainerHeapAllocator_insert(const char* key, void* val) throw();
     int unk00;
     int unk04;
     int unk08;
@@ -7466,9 +7700,9 @@ struct RegistryDC7
         }
         return pcPooled;
     }
-    void CollectShapes(const char* pcName, int iRecurse, int iFlags,
-                       hkArray<hkDataObjectDictDC7*>& kObjectsOut) throw();
-    void CollectSlotIdsRecursively(hkDataClassDict* pkClass, int iRecurse, hkArray<hkDataArrayDictDC7*>& kArraysOut) throw();
+    void CollectShapes(const char* className, int baseClass, int addStructs,
+                       hkArray<hkDataObjectDictDC7*>& objectsOut) throw();
+    void CollectSlotIdsRecursively(hkDataClassDict* c, int baseClass, hkArray<hkDataArrayDictDC7*>& arraysOut) throw();
 };
 
 struct ObjectMemberDC7
@@ -7524,7 +7758,7 @@ class hkDataClassDC7
 class hkDataWorldDictDC7
 {
   public:
-    void RenameClassMember(hkDataClassDC7& kClass, const char* pcOldName, const char* pcNewName) throw();
+    void RenameClassMember(hkDataClassDC7& klass, const char* oldName, const char* newName) throw();
     unsigned int unk00;
     unsigned int unk04;
     RegistryDC7* m_registry;
@@ -7533,16 +7767,19 @@ class hkDataWorldDictDC7
 // Renames a member from pcOldName to pcNewName in object, array, and class member declarations of the given class.
 // @fnv 0x00dc73f0
 // src: GUESS 0x00dc73f0 (confidence: medium)
-void hkDataWorldDictDC7::RenameClassMember(hkDataClassDC7& kClass, const char* pcOldName, const char* pcNewName)
+// pdb: hkDataWorldDict::renameClassMember | hkDataObjectDict.obj | retail, call graph, high
+// pdb params: klass, oldName, newName
+// pdb locals: objs, internedNewName, arrays, internedOldName
+void hkDataWorldDictDC7::RenameClassMember(hkDataClassDC7& klass, const char* oldName, const char* newName)
 {
-    hkDataClassDict* pkClass = kClass.m_pClassImpl;
+    hkDataClassDict* pkClass = klass.m_pClassImpl;
     RegistryDC7* pkReg = m_registry;
-    const char* pcOld = pcOldName ? pkReg->GetPooled(pcOldName) : 0;
+    const char* pcOld = oldName ? pkReg->GetPooled(oldName) : 0;
     pkReg = m_registry;
-    const char* pcNew = pcNewName ? pkReg->GetPooled(pcNewName) : 0;
+    const char* pcNew = newName ? pkReg->GetPooled(newName) : 0;
 
     hkArray<hkDataObjectDictDC7*> kObjects;
-    const char* pcClassName = kClass.hkDataClass_getName();
+    const char* pcClassName = klass.hkDataClass_getName();
     kObjects.m_iElementCount = 0;
     m_registry->CollectShapes(pcClassName, 1, 0, kObjects);
     for (int i = 0; i < kObjects.GetLogicalSize(); i++)
@@ -7643,15 +7880,17 @@ struct Builder_dc7c
 {
     int unk00, unk04;
     Registry_dc7c* m_registry;
-    Node_dc7c* hkDataWorldDict_newObject(RefCounted_dc7c* const& parent);
+    Node_dc7c* hkDataWorldDict_newObject(RefCounted_dc7c* const& klass);
 };
 
 // Allocates a Node_dc7c under parent, registers it in the registry's NameMap by name, and sets it as the head node if the registry is empty.
 // @fnv 0x00dc7c40
 // src: HAVOK_SRC 0x00dc7c40
-Node_dc7c* Builder_dc7c::hkDataWorldDict_newObject(RefCounted_dc7c* const& parent)
+// pdb: hkDataWorldDict::newObject | hkDataObjectDict.obj | retail, upstream name already matches, high
+// pdb params: klass
+Node_dc7c* Builder_dc7c::hkDataWorldDict_newObject(RefCounted_dc7c* const& klass)
 {
-    Node_dc7c* node = new Node_dc7c(parent);
+    Node_dc7c* node = new Node_dc7c(klass);
     node->RetainReference();
     Registry_dc7c* registry = m_registry;
     {
@@ -7689,7 +7928,7 @@ class DataType_dc8d : public hkReferencedObject
 struct Map_dc8d
 {
     void* GetValue(const char* name, const void* value) throw();
-    void hkCachedHashMap_hkStringMapOperations_hkContainerHeapAllocator_insert(const char* name, void* value) throw();
+    void hkCachedHashMap_hkStringMapOperations_hkContainerHeapAllocator_insert(const char* key, void* val) throw();
 };
 
 struct RegistryLayout_dc8d
@@ -7722,7 +7961,7 @@ struct RegistryLayout_dc8d
 
 struct RegistryImpl_dc8d
 {
-    StringPtr_dc8d* GetPooledString(StringPtr_dc8d* out, const char* name) throw();
+    StringPtr_dc8d* GetPooledString(StringPtr_dc8d* sin, const char* name) throw();
 };
 
 struct Registry_dc8d
@@ -7733,6 +7972,8 @@ struct Registry_dc8d
 // For a nonzero type-name pointer, looks up or creates a registry entry and stores it in pvHandleOut.
 // @fnv 0x00dc8d70
 // src: GUESS 0x00dc8d70 (confidence: medium)
+// pdb: hkDataWorldDict::ObjectTracker::internClassNameHandle | hkDataObjectDict.obj | retail, call graph, high
+// pdb params: sin
 void* Registry_dc8d::FindOrCreateTypeEntry(void* pvDataTypeOut, int pcTypeName) throw()
 {
     RegistryLayout_dc8d* registry = reinterpret_cast<RegistryLayout_dc8d*>(this);
@@ -7758,10 +7999,10 @@ void* Registry_dc8d::FindOrCreateTypeEntry(void* pvDataTypeOut, int pcTypeName) 
             DataType_dc8d* dataType = reinterpret_cast<DataType_dc8d*>(allocator->AllocateMemoryBlock(12));
 
             StringPtr_dc8d local;
-            dataType->m_usMemSizeAndFlags = 12;
+            dataType->m_memSizeAndFlags = 12;
             StringPtr_dc8d* result = impl->GetPooledString(&local, name);
 
-            dataType->m_sReferenceCount = 1;
+            dataType->m_referenceCount = 1;
             *reinterpret_cast<void**>(dataType) = &DAT_010d6da0;
 
             const char* typeName = result->m_kStringBuffer;
@@ -7806,19 +8047,21 @@ struct S00dc8ea0_Obj
     int m_08;
     Pair* m_data;
     int m_iElementCount;
-    void RemoveKeyedEntry(int key);
+    void RemoveKeyedEntry(int s);
 };
 
 // Finds the Pair entry with the given key, releases its reference, shifts the remaining entries down, and decrements the count.
 // @fnv 0x00dc8ea0
 // src: GUESS 0x00dc8ea0 (confidence: medium)
-void S00dc8ea0_Obj::RemoveKeyedEntry(int key)
+// pdb: StructArrayImplementation::removeMember | hkDataObjectDict.obj | retail, call graph, high
+// pdb params: s
+void S00dc8ea0_Obj::RemoveKeyedEntry(int s)
 {
     int count = m_iElementCount;
     for (int i = 0; i < count; i++)
     {
         Pair& pair = m_data[i];
-        if (pair.a == key)
+        if (pair.a == s)
         {
             reinterpret_cast<hkRefObj_dc8e*>(pair.b)->removeReference();
             --m_iElementCount;
@@ -7828,7 +8071,7 @@ void S00dc8ea0_Obj::RemoveKeyedEntry(int key)
     }
 }
 
-void __cdecl ResizeAudioStream(hkAllocatorDC76* alloc, void* array, int sizeOfElement);
+void __cdecl ResizeAudioStream(hkAllocatorDC76* mem, void* array, int sizeElem);
 
 struct MultiMapEntry_dc91
 {
@@ -7849,20 +8092,22 @@ struct Registry_dc91
     int unk14, unk18, unk1C, unk20, unk24, unk28, unk2C, unk30, unk34, unk38, unk3C;
     int unk40, unk44, unk48, unk4C, unk50, unk54, unk58, unk5C, unk60, unk64, unk68;
     MultiMap_dc91 m_iSlotIds;
-    void CollectSlotIdsRecursively(const void* key, int recurse, hkArray<void*>& out);
+    void CollectSlotIdsRecursively(const void* c, int baseClass, hkArray<void*>& arraysOut);
 };
 
 // Collects slot IDs for a key from m_iSlotIds into out, and if recurse is set, recurses into m_children to gather their slot IDs as well.
 // @fnv 0x00dc9180
 // src: GUESS 0x00dc9180 (confidence: medium)
-void Registry_dc91::CollectSlotIdsRecursively(const void* key, int recurse, hkArray<void*>& out)
+// pdb: hkDataWorldDict::ObjectTracker::getTrackedStructArrays | hkDataObjectDict.obj | retail, object-file gap fill, high
+// pdb params: c, baseClass, arraysOut
+void Registry_dc91::CollectSlotIdsRecursively(const void* c, int baseClass, hkArray<void*>& arraysOut)
 {
-    for (int i = m_iSlotIds.LookupWithDefault(key); i != -1; i = m_iSlotIds.m_data[i].m_next)
-        out.pushBack(m_iSlotIds.m_data[i].m_uiFilterValue);
-    if (recurse)
+    for (int i = m_iSlotIds.LookupWithDefault(c); i != -1; i = m_iSlotIds.m_data[i].m_next)
+        arraysOut.pushBack(m_iSlotIds.m_data[i].m_uiFilterValue);
+    if (baseClass)
     {
-        for (int j = m_children.LookupWithDefault(key); j != -1; j = m_children.m_data[j].m_next)
-            CollectSlotIdsRecursively(m_children.m_data[j].m_uiFilterValue, recurse, out);
+        for (int j = m_children.LookupWithDefault(c); j != -1; j = m_children.m_data[j].m_next)
+            CollectSlotIdsRecursively(m_children.m_data[j].m_uiFilterValue, baseClass, arraysOut);
     }
 }
 
@@ -7923,6 +8168,9 @@ template <class T> struct hkArrDCLocalForm
 // Searches backward for name, passes the matching index or -1 to removeAtAndCopy, then returns whether FindEntry finds name.
 // The shared method returns void; this helper retains the game's computed EAX result.
 // @fnv 0x00dc9470
+// pdb: hkDataClassDict::removeMember | hkDataObjectDict.obj | retail, call graph (shared callers), medium
+// pdb params: name
+// pdb locals: assertBuf, ostr
 int __fastcall RemoveClassMember(hkDataClassDict* pkClass, void*, const char* name)
 {
     int idx;
@@ -7973,23 +8221,26 @@ struct S00dc9950_cls
     int m_8;
     int m_iThirdValue;
     char* m_10;
-    void __thiscall hkDataObjectDict_assign(int a, int b, int c);
+    void __thiscall hkDataObjectDict_assign(int nameIn, int r, int nreal);
 };
 struct S00dc9950_9710
 {
     int m_iWordAt00;
-    void __thiscall hkDataObjectDict__writeAccess(void* out, int a, void* b);
+    void __thiscall hkDataObjectDict__writeAccess(void* name, int type, void* b);
 };
 // Calls FUN_00dc9710, allocates c*4 bytes, copies b there, and stores the pointer through m_10 at an indexed offset.
 // @fnv 0x00dc9950
 // src: XBOX_PDB 0x00dc9950
-void __thiscall S00dc9950_cls::hkDataObjectDict_assign(int a, int apSource, int aiCount)
+// pdb: hkDataObjectDict::assign | hkDataObjectDict.obj | retail, vtable slot, high
+// pdb params: nameIn, value
+// pdb locals: mem
+void __thiscall S00dc9950_cls::hkDataObjectDict_assign(int nameIn, int r, int nreal)
 {
     S00dc9950_pair out;
-    ((S00dc9950_9710*)this)->hkDataObjectDict__writeAccess(&out, a, Object_ComputeValue_00dc73e0(aiCount));
+    ((S00dc9950_9710*)this)->hkDataObjectDict__writeAccess(&out, nameIn, Object_ComputeValue_00dc73e0(nreal));
     hkAllocatorDC76& kAlloc = hkMemoryRouter_getInstance()->heap();
-    void* data = ((S00dc9950_heap*)&kAlloc)->alloc(aiCount * 4);
-    hkString_memCpy(data, (void*)apSource, aiCount * 4);
+    void* data = ((S00dc9950_heap*)&kAlloc)->alloc(nreal * 4);
+    hkString_memCpy(data, (void*)r, nreal * 4);
     *(void**)(this->m_10 + out.m_iWordAt04 * 16 + 8) = data;
 }
 
@@ -8077,6 +8328,9 @@ inline void* operator new(unsigned int, void* p) throw()
 
 // Adds a class member declaration with its retained type and tuple information.
 // @fnv 0x00dc9f20
+// pdb: hkDataClassDict::addMember | hkDataObjectDict.obj | retail, call graph, medium
+// pdb params: name, type, typeName, tupleCount
+// pdb locals: m, assertBuf, ostr
 // The game takes its key by value here; keep that ABI in a free helper over the shared class.
 void __fastcall AddClassMember(hkDataClassDict* pkClass, void*, KeyX key, int aiInfo10, RefPtrX& ref, int aiInfo14)
 {
@@ -8093,23 +8347,25 @@ void __fastcall AddClassMember(hkDataClassDict* pkClass, void*, KeyX key, int ai
 }
 }  // namespace fnv_00dc9f20
 
-void __cdecl hkArrayUtil__reserve(hkMemoryAllocator* mem, void* array, int numElements, int sizeOfElement);
+void __cdecl hkArrayUtil__reserve(hkMemoryAllocator* mem, void* array, int numElem, int sizeElem);
 
 struct Table_dca4
 {
     int unk00, unk04, unk08;
     hkArray<__int64> m_iSlotIds;
-    void IntArrayImplementation_setAll_00dca480(const unsigned short* src, int n);
+    void IntArrayImplementation_setAll_00dca480(const unsigned short* vals, int n);
 };
 
 // Grows m_iSlotIds to n elements and copies n unsigned short values from src into it.
 // @fnv 0x00dca480
 // src: XBOX_PDB 0x00dca480
-void Table_dca4::IntArrayImplementation_setAll_00dca480(const unsigned short* src, int aiCount)
+// pdb: IntArrayImplementation::setAll | hkDataObjectDict.obj | retail, vtable slot, high
+// pdb params: vals, n
+void Table_dca4::IntArrayImplementation_setAll_00dca480(const unsigned short* vals, int n)
 {
-    m_iSlotIds.setSize(aiCount);
-    for (int i = 0; i < aiCount; i++)
-        m_iSlotIds[i] = src[i];
+    m_iSlotIds.setSize(n);
+    for (int i = 0; i < n; i++)
+        m_iSlotIds[i] = vals[i];
 }
 
 struct DCAB_Object
@@ -8242,12 +8498,14 @@ struct FUN_00dcaeb0 : DcaeBase2
     void* m1c;
 
     void AddNodeEntry(void* p);
-    FUN_00dcaeb0(hkDataClassDict* p);
+    FUN_00dcaeb0(hkDataClassDict* klass);
 };
 
 // Initializes entries from the retained node, then passes this object and a value to a function reached through the retained node.
 // @fnv 0x00dcaeb0
-FUN_00dcaeb0::FUN_00dcaeb0(hkDataClassDict* apNode) : m18(apNode), m1c(0)
+// pdb: StructArrayImplementation::StructArrayImplementation | hkDataObjectDict.obj | retail, object-file gap fill, high
+// pdb params: klass
+FUN_00dcaeb0::FUN_00dcaeb0(hkDataClassDict* klass) : m18(klass), m1c(0)
 {
     for (int index = 0; index < m18->getNumMembers(); index++)
     {
@@ -8259,7 +8517,7 @@ FUN_00dcaeb0::FUN_00dcaeb0(hkDataClassDict* apNode) : m18(apNode), m1c(0)
             position += current->count;
             if (position >= 0)
                 break;
-            current = current->parent;
+            current = current->m_parent;
         } while (current != 0);
         char* element;
         if (position >= 0)
@@ -8326,46 +8584,48 @@ class AF70Owner
     virtual void Set54(int idx, void* v) throw();
     virtual void v58();
     virtual void Set5c(int idx, void* v) throw();
-    void hkDataArrayImpl_set(int idx, AF70Variant v) throw();
+    void hkDataArrayImpl_set(int index, AF70Variant val) throw();
 };
 // Stores an AF70Variant value at index idx by dispatching on GetType() to the matching SetXX accessor.
 // @fnv 0x00dcaf70
 // src: XBOX_PDB 0x00dcaf70
-void AF70Owner::hkDataArrayImpl_set(int aiIndex, AF70Variant avVariant)
+// pdb: hkDataArrayImpl::set | hkDataObjectDict.obj | retail, upstream name already matches, high
+// pdb params: index, val
+void AF70Owner::hkDataArrayImpl_set(int index, AF70Variant val)
 {
     if (GetType() & 0x20)
     {
         FUN_00dbab70 t;
-        FUN_00dbab70* r = avVariant.GetResult(&t);
-        Set5c(aiIndex, r->m_p);
+        FUN_00dbab70* r = val.GetResult(&t);
+        Set5c(index, r->m_p);
         return;
     }
     switch (GetType())
     {
     case 1:
     case 2:
-        Set44(aiIndex, avVariant.ForwardCall_00dba990());
+        Set44(index, val.ForwardCall_00dba990());
         break;
     case 3:
-        Set34(aiIndex, avVariant.InvokeVirtualMethod_00dbaa00());
+        Set34(index, val.InvokeVirtualMethod_00dbaa00());
         break;
     case 4:
     case 5:
     case 6:
     case 7: {
         int t = GetType();
-        Set24(aiIndex, avVariant.DispatchToInterface(t * 4 - 12));
+        Set24(index, val.DispatchToInterface(t * 4 - 12));
     }
     break;
     case 8:
     case 9: {
         FUN_00dba7f0 t;
-        FUN_00dba7f0* r = avVariant.GetWrappedDataObject(&t);
-        Set54(aiIndex, r->m_p);
+        FUN_00dba7f0* r = val.GetWrappedDataObject(&t);
+        Set54(index, r->m_p);
     }
     break;
     case 10:
-        Set2c(aiIndex, avVariant.hkDataObject_Value_asString());
+        Set2c(index, val.hkDataObject_Value_asString());
         break;
     }
 }
@@ -8378,6 +8638,8 @@ struct hkSerializeMultiMapDC90 : hkMultiMapDC90
 // Removes the entry at index from its hash chain, adds it to the free list, and returns the next chain index.
 // @fnv 0x00dcb4b0
 // src: XBOX_PDB 0x00dcb4b0
+// pdb: hkDataWorldDict::ObjectTracker::untrackStructArray | hkDataObjectDict.obj | retail, object-file gap fill, high
+// pdb params: a
 int hkSerializeMultiMapDC90::hkSerializeMultiMap_hkDataClassDict_hkDataArrayImpl_removeByIndex(int key, int index)
 {
     int next = m_ppLinks[index].m_next;
@@ -8426,15 +8688,18 @@ __declspec(noinline) static int Object_ComputeValue_00dc73e0(int x)
 
 struct MyObj : hkObjDCB
 {
-    int hkDataObjectDict_asVec(int iKey, int iType);
+    int hkDataObjectDict_asVec(int nameIn, int nreal);
 };
 
 // @fnv 0x00dcbcd0
 // src: XBOX_PDB 0x00dcbcd0
-int MyObj::hkDataObjectDict_asVec(int iKey, int iType)
+// pdb: hkDataObjectDict::asVec | hkDataObjectDict.obj | retail, upstream name already matches, high
+// pdb params: nameIn, nreal
+// pdb locals: mem
+int MyObj::hkDataObjectDict_asVec(int nameIn, int nreal)
 {
-    int mode = Object_ComputeValue_00dc73e0(iType);
-    hkResultDCB res = hkDataObjectDict__readAccess(iKey, mode);
+    int mode = Object_ComputeValue_00dc73e0(nreal);
+    hkResultDCB res = hkDataObjectDict__readAccess(nameIn, mode);
     return m_entries[res.m_uiEdgeIndex].m_uiFilterValue;
 }
 }  // namespace fnv_00dcbcd0
@@ -8464,6 +8729,9 @@ struct Format_dcca
 // Seeks to offset 16, reads 16 bytes of magic, and returns a Format_dcca indicating which magic pair matched.
 // @fnv 0x00dcca60
 // src: XBOX_PDB 0x00dcca60
+// pdb: hkTagfileReader::detectFormat | hkTagfileReader.obj | retail, upstream name already matches, high
+// pdb params: stream
+// pdb locals: buf, assertBuf, ostr
 Format_dcca __cdecl hkTagfileReader_detectFormat(Stream_dcca* stream)
 {
     unsigned int magicBytes[4];
@@ -8534,9 +8802,11 @@ struct Crux53_Owner
 // Interns key, scans entries for a matching key, returns its index if found, otherwise calls SetItemContextByKey and returns its result.
 // @fnv 0x00dcb5d0
 // src: XBOX_PDB 0x00dcb5d0
-int Crux53_Owner::StructArrayImplementation__findOrAdd(const char* key)
+// pdb: StructArrayImplementation::_findOrAdd | hkDataObjectDict.obj | retail, upstream name already matches, high
+// pdb params: name
+int Crux53_Owner::StructArrayImplementation__findOrAdd(const char* name)
 {
-    void* value = outer->a0c->a08->InternString(key);
+    void* value = outer->a0c->a08->InternString(name);
     int i = 0;
     if (count > 0)
     {
@@ -8556,7 +8826,7 @@ int Crux53_Owner::StructArrayImplementation__findOrAdd(const char* key)
     return SetItemContextByKey(value);
 }
 
-void ResizeAudioStream(void* mem, void* arr, int elemSize) throw();
+void ResizeAudioStream(void* mem, void* array, int sizeElem) throw();
 
 struct FUN_00d479e0_class
 {
@@ -8706,28 +8976,31 @@ struct ManagerClass : public FUN_00d479e0_class
     Multimap m_multimap;
     FUN_00d479e0_class m_map5c;
 
-    void hkDataWorldDict_ObjectTracker_untrackClass(Node* arg0) throw();
-    void hkDataWorldDict_ObjectTracker_removeClassContent(Node* arg0) throw();
+    void hkDataWorldDict_ObjectTracker_untrackClass(Node* klass) throw();
+    void hkDataWorldDict_ObjectTracker_removeClassContent(Node* klass) throw();
 };
 
 // Recursively removes a Node from the multimap and reference maps, releasing child nodes and their references.
 // @fnv 0x00dcbdd0
 // src: XBOX_PDB 0x00dcbdd0
-void ManagerClass::hkDataWorldDict_ObjectTracker_untrackClass(Node* apNode) throw()
+// pdb: hkDataWorldDict::ObjectTracker::untrackClass | hkDataObjectDict.obj | retail, upstream name already matches, high
+// pdb params: klass
+// pdb locals: classes, derived, assertBuf, ostr
+void ManagerClass::hkDataWorldDict_ObjectTracker_untrackClass(Node* klass) throw()
 {
-    void* target = apNode->GetTarget();
+    void* target = klass->GetTarget();
     TargetInfo* targetInfo = target ? (TargetInfo*)this->GetValue(target, 0) : 0;
-    this->hkDataWorldDict_ObjectTracker_removeClassContent(apNode);
+    this->hkDataWorldDict_ObjectTracker_removeClassContent(klass);
     void* subTarget = targetInfo->GetSubTarget();
     if (subTarget != 0)
     {
-        this->m_multimap.hkSerializeMultiMap_hkDataClassDict_hkDataClassDict_removeByValue(subTarget, apNode);
+        this->m_multimap.hkSerializeMultiMap_hkDataClassDict_hkDataClassDict_removeByValue(subTarget, klass);
     }
-    apNode->ClearEntries();
+    klass->ClearEntries();
 
     {
         StackAllocatedArray<Node*> stackNodes(64);
-        int it = this->m_multimap.LookupWithDefault(apNode);
+        int it = this->m_multimap.LookupWithDefault(klass);
         bool hasKey = (it != -1);
         if (hasKey)
         {
@@ -8747,7 +9020,7 @@ void ManagerClass::hkDataWorldDict_ObjectTracker_untrackClass(Node* apNode) thro
 
         if (hasKey)
         {
-            this->m_multimap.RemoveKey(apNode);
+            this->m_multimap.RemoveKey(klass);
         }
     }
 
@@ -8757,6 +9030,7 @@ void ManagerClass::hkDataWorldDict_ObjectTracker_untrackClass(Node* apNode) thro
     this->ProcessAndReturnValue_00d87820(target);
 }
 
+// pdb: class hkDataObjectImpl, size 0xc, bases: hkDataRefCounted, 0 members
 struct hkDataObjectImpl : hkDataRefCounted
 {
 };
@@ -8776,31 +9050,33 @@ struct hkDataMemberValue
     hkDataValue value;
 };
 
-void __cdecl ReleaseDataValues(int type, hkDataValue* values, int count);
+void __cdecl ReleaseDataValues(int typeIn, hkDataValue* u, int n);
+// pdb: class hkDataObjectDict, size 0x1c, bases: hkDataObjectImpl, 2 members
 struct hkDataObjectDict : hkDataObjectImpl
 {
-    hkDataClassDict* pClassInfo;
-    hkArray<hkDataMemberValue> members;
+    hkDataClassDict* m_class; // src: XBOX_RETAIL_PDB +0xc (old: pClassInfo)
+    hkArray<hkDataMemberValue> m_memberData; // src: XBOX_RETAIL_PDB +0x10 (old: members)
     void selfDestruct();
 };
 // Iterates over each member in the hkArray, releases its data value using the type from the class dictionary, then clears the array.
 // @fnv 0x00dc90a0
 // src: XBOX_PDB 0x00dc90a0
+// pdb: hkDataObjectDict::selfDestruct | hkDataObjectDict.obj | retail, upstream name already matches, high
 void hkDataObjectDict::selfDestruct()
 {
     int index = 0;
-    if (members.GetLogicalSize() > index)
+    if (m_memberData.GetLogicalSize() > index)
     {
         do
         {
-            hkDataMemberValue* entry = (members.m_data + index);
-            hkDataMemberInfo* metadata = pClassInfo->FindEntry((members.m_data + index)->name);
+            hkDataMemberValue* entry = (m_memberData.m_data + index);
+            hkDataMemberInfo* metadata = m_class->FindEntry((m_memberData.m_data + index)->name);
             if (metadata)
                 ReleaseDataValues(metadata->type, &entry->value, 1);
             ++index;
-        } while (index < members.GetLogicalSize());
+        } while (index < m_memberData.GetLogicalSize());
     }
-    members.clear();
+    m_memberData.clear();
 }
 
 extern "C" void _ReadBarrier();
@@ -8859,7 +9135,7 @@ template <typename T> struct hkLocalArrayDCA : public hkArray<T>
 class hkOstreamDCA
 {
   public:
-    hkOstreamDCA(void* pvBuffer, int iSize) throw();
+    hkOstreamDCA(void* buf, int bufSize) throw();
     ~hkOstreamDCA() throw();
     hkOstreamDCA& operator<<(const char* pcString) throw();
     hkOstreamDCA& operator<<(int i) throw();
@@ -8921,7 +9197,7 @@ class hkDataWorldDictTrackerDCA
 {
   public:
     int getClassKey(const hkDataClassImpl* pkClass, int iDefault) const throw();
-    void hkDataWorldDict_ObjectTracker_removeClassContent(DictionaryObjectRemovalTarget* pkObject) throw();
+    void hkDataWorldDict_ObjectTracker_removeClassContent(DictionaryObjectRemovalTarget* klass) throw();
 
     hkPointerMapDCA m_kLookupMap;
     unsigned int unk0c;
@@ -8934,12 +9210,15 @@ class hkDataWorldDictTrackerDCA
 // Recursively removes pkObject and its children from the tracker, clearing members and releasing references while warning about external references.
 // @fnv 0x00dca890
 // src: XBOX_PDB 0x00dca890
-void hkDataWorldDictTrackerDCA::hkDataWorldDict_ObjectTracker_removeClassContent(DictionaryObjectRemovalTarget* pkObject) throw()
+// pdb: hkDataWorldDict::ObjectTracker::removeClassContent | hkDataObjectDict.obj | retail, upstream name already matches, high
+// pdb params: klass
+// pdb locals: objs, obj, assertBuf, ostr
+void hkDataWorldDictTrackerDCA::hkDataWorldDict_ObjectTracker_removeClassContent(DictionaryObjectRemovalTarget* klass) throw()
 {
-    hkDataClassImpl* pkClass = pkObject->GetVariantValue();
+    hkDataClassImpl* pkClass = klass->GetVariantValue();
     int iClassKey = pkClass ? getClassKey(pkClass, 0) : 0;
 
-    for (int i = m_children.getFirstIndex(pkObject); i != -1; i = m_children.GetNextChainIndex(i))
+    for (int i = m_children.getFirstIndex(klass); i != -1; i = m_children.GetNextChainIndex(i))
     {
         hkDataWorldDict_ObjectTracker_removeClassContent(m_children.getValue(i));
     }
@@ -8986,7 +9265,7 @@ namespace fnv_00dc95d0 {
 
 struct FUN_00d874d0_s
 {
-    void hkCachedHashMap_hkStringMapOperations_hkContainerHeapAllocator_insert(char const* name, int value);
+    void hkCachedHashMap_hkStringMapOperations_hkContainerHeapAllocator_insert(char const* key, int val);
 };
 
 struct FUN_00d479e0_class : FUN_00d874d0_s
@@ -9050,7 +9329,7 @@ struct Ctx_dc95d0
     ChainA_dc95d0* m_0c;
     Entry_dc95d0* m_10;
     int m_14;
-    int hkDataObjectDict_hasMember(void const* key);
+    int hkDataObjectDict_hasMember(void const* name);
 };
 
 extern "C" void* hkString_strDup_00cb1410(void const* key);
@@ -9075,9 +9354,11 @@ inline void* Intern_dc95d0(Holder_dc95d0* holder, const void* key)
 // Interns the key via Intern_dc95d0 and returns 1 if the interned value matches any entry key in the m_10 array, else 0.
 // @fnv 0x00dc95d0
 // src: XBOX_PDB 0x00dc95d0
-int Ctx_dc95d0::hkDataObjectDict_hasMember(void const* key)
+// pdb: hkDataObjectDict::hasMember | hkDataObjectDict.obj | retail, upstream name already matches, high
+// pdb params: name
+int Ctx_dc95d0::hkDataObjectDict_hasMember(void const* name)
 {
-    void* value = Intern_dc95d0(m_0c->m_0c->m_08, key);
+    void* value = Intern_dc95d0(m_0c->m_0c->m_08, name);
     int count = m_14;
     for (int i = 0; i < count; i++)
     {
@@ -9092,7 +9373,7 @@ namespace fnv_00dc9640 {
 struct FUN_00d47a80_class
 {
     void* GetValue(void* key, int def);
-    void hkCachedHashMap_hkStringMapOperations_hkContainerHeapAllocator_insert(const char* key, int value);
+    void hkCachedHashMap_hkStringMapOperations_hkContainerHeapAllocator_insert(const char* key, int val);
 };
 
 extern "C" char* __cdecl hkString_strDup_00cb1410(const char* s);
@@ -9173,6 +9454,9 @@ class hkNameDC96
 // Interns the given name string in the owning world and returns a hkNameRefDC96 pointing to this hkNameDC96.
 // @fnv 0x00dc9640
 // src: XBOX_PDB 0x00dc9640
+// pdb: hkDataObjectDict::accessByName | hkDataObjectDict.obj | retail, upstream name already matches, high
+// pdb params: name
+// pdb locals: internedName
 hkNameRefDC96 hkNameDC96::hkDataObjectDict_accessByName(const char* name)
 {
     hkWorldDC96* world = m_pOwnerObject->m_holder->m_pOwningWorld;
@@ -9202,7 +9486,7 @@ struct hkMemoryRouterDC9D
     }
 };
 extern "C" hkMemoryRouterDC9D& __cdecl hkMemoryRouter_getInstance();
-void __cdecl hkArrayUtil__reserve(hkMemoryAllocatorDC9D& kAlloc, void* apvArray, int aiNumElements, int iSizeElem) throw();
+void __cdecl hkArrayUtil__reserve(hkMemoryAllocatorDC9D& mem, void* array, int numElem, int sizeElem) throw();
 
 __forceinline void SetByteBufferSize(hkArray<char>& array, int n, const char& fill)
 {
@@ -9223,15 +9507,17 @@ class hkStreamBufferDC9D
     int unk08;
     hkArray<char> m_buffer;
 
-    void BasicArrayImplementation_unsigned_char_1_setSize(int iSize);
+    void BasicArrayImplementation_unsigned_char_1_setSize(int n);
 };
 
 // Sets the buffer size to iSize, zero-filling any newly added bytes.
 // @fnv 0x00dc9d10
 // src: XBOX_PDB 0x00dc9d10
-void hkStreamBufferDC9D::BasicArrayImplementation_unsigned_char_1_setSize(int iSize)
+// pdb: BasicArrayImplementation<unsigned char,1>::setSize | hkDataObjectDict.obj | retail, vtable slot, high
+// pdb params: n
+void hkStreamBufferDC9D::BasicArrayImplementation_unsigned_char_1_setSize(int n)
 {
-    SetByteBufferSize(m_buffer, iSize, 0);
+    SetByteBufferSize(m_buffer, n, 0);
 }
 }  // namespace fnv_00dc9d10
 
@@ -9298,6 +9584,7 @@ struct FUN_00dcb890_cls
 // Releases the pair array, decrements refcounts on contained refs and unk18, and unlinks this object from the owning table.
 // @fnv 0x00dcb890
 // src: GUESS 0x00dcb890 (confidence: low)
+// pdb: StructArrayImplementation::~StructArrayImplementation | hkDataObjectDict.obj | retail, object-file gap fill, high
 void FUN_00dcb890_cls::ProcessEntries_00dcb890()
 {
     unk00 = &DAT_010d73fc;
@@ -9348,7 +9635,7 @@ struct MemberReset
 {
     void Reset();
 };
-void ResizeAudioStream(void* allocator, void* array, int elementSize);
+void ResizeAudioStream(void* mem, void* array, int sizeElem);
 struct TypeInfo
 {
     virtual void slot00();
@@ -9472,9 +9759,9 @@ struct StringStream
     void* buffer;
     int position;
     int capacity;
-    void FUN_00cb1600(void* buffer, int length);
+    void FUN_00cb1600(void* buf, int bufSize);
     StringStream& ProcessAndReturnValue_00cc01c0(const char* text);
-    StringStream& WriteInt(int value);
+    StringStream& WriteInt(int i);
     void FUN_00cc00e0();
 };
 struct ErrorReporter
@@ -9485,7 +9772,7 @@ struct ErrorReporter
     virtual void report(int severity, int id, const char* text, const char* file, int line);
 };
 extern ErrorReporter* DAT_01268360;
-void hkString_strFree(ReferencedObject* object);
+void hkString_strFree(ReferencedObject* s);
 struct WorldData
 {
     ObjectMap objects;
@@ -9503,6 +9790,8 @@ struct WorldData
 // Processes pending objects and clears the value, reference, string, chain, member, and object containers.
 // @fnv 0x00dc7750
 // src: GUESS 0x00dc7750 (confidence: medium)
+// pdb: hkDataWorldDict::ObjectTracker::~ObjectTracker | hkDataObjectDict.obj | retail, object-file gap fill, high
+// pdb locals: objs, classes, c, obj, assertBuf, ostr
 void WorldData::ClearWorldContainers()
 {
     {
@@ -9680,20 +9969,23 @@ struct VarSet
 // Looks up a VarRecord by key, adds a new VarEntry to m_kEntries if missing, and returns a VarResult with the record and entry index.
 // @fnv 0x00dcba40
 // src: XBOX_PDB 0x00dcba40
-VarResult VarSet::hkDataObjectDict__readAccess(int iKey, int iType)
+// pdb: hkDataObjectDict::_readAccess | hkDataObjectDict.obj | retail, upstream name already matches, high
+// pdb params: name, type
+// pdb locals: assertBuf, ostr
+VarResult VarSet::hkDataObjectDict__readAccess(int name, int type)
 {
-    VarRecord* pkRecord = (VarRecord*)m_pkLookup->FindEntry(reinterpret_cast<const char*>(iKey));
+    VarRecord* pkRecord = (VarRecord*)m_pkLookup->FindEntry(reinterpret_cast<const char*>(name));
     if (pkRecord)
     {
         int iIndex = -1;
         for (int i = 0; i < m_kEntries.m_iElementCount; i++)
-            if (m_kEntries.m_data[i].m_iKey == iKey)
+            if (m_kEntries.m_data[i].m_iKey == name)
                 iIndex = i;
         if (iIndex == -1)
         {
             iIndex = m_kEntries.m_iElementCount;
             VarEntry& e = m_kEntries.AllocatePair();
-            e.m_iKey = *(volatile int*)&iKey;
+            e.m_iKey = *(volatile int*)&name;
             unsigned int uiFlags = pkRecord->m_iFlags;
             if (uiFlags & 0x10)
             {
@@ -9836,21 +10128,24 @@ struct S00dcbd40_Destination
 
     S00dcbd40_Array entries;
 
-    S00dcbd40_Result __thiscall hkDataObjectDict__writeAccess(S00dcbd40_Handle ref, int flags) throw();
+    S00dcbd40_Result __thiscall hkDataObjectDict__writeAccess(S00dcbd40_Handle name, int type) throw();
 
-    S00dcbd40_Result __thiscall hkDataObjectDict__readAccess(S00dcbd40_Handle key, int flags) throw();
+    S00dcbd40_Result __thiscall hkDataObjectDict__readAccess(S00dcbd40_Handle name, int type) throw();
 
-    void __thiscall hkDataObjectDict_assign_00dcbd40(int target, S00dcbd40_Id* id) throw();
+    void __thiscall hkDataObjectDict_assign_00dcbd40(int nameIn, S00dcbd40_Id* value) throw();
 };
 
 // Copies source entry data into a destination entry and increments its object reference count when flags & 0x18 is nonzero.
 // @fnv 0x00dcbd40
 // src: XBOX_PDB 0x00dcbd40
-void S00dcbd40_Destination::hkDataObjectDict_assign_00dcbd40(int target, S00dcbd40_Id* apSourceId)
+// pdb: hkDataObjectDict::assign | hkDataObjectDict.obj | retail, vtable slot, high
+// pdb params: nameIn, value
+// pdb locals: mem
+void S00dcbd40_Destination::hkDataObjectDict_assign_00dcbd40(int nameIn, S00dcbd40_Id* value)
 
 {
 
-    S00dcbd40_Destination* src = apSourceId->dictionary;
+    S00dcbd40_Destination* src = value->dictionary;
 
     int iSourceIndex;
 
@@ -9858,7 +10153,7 @@ void S00dcbd40_Destination::hkDataObjectDict_assign_00dcbd40(int target, S00dcbd
 
     {
 
-        S00dcbd40_Result r = src->hkDataObjectDict__readAccess(apSourceId->id, 0);
+        S00dcbd40_Result r = src->hkDataObjectDict__readAccess(value->id, 0);
 
         iSourceIndex = r.index;
 
@@ -9875,7 +10170,7 @@ void S00dcbd40_Destination::hkDataObjectDict_assign_00dcbd40(int target, S00dcbd
 
     {
 
-        S00dcbd40_Result result = hkDataObjectDict__writeAccess(target, info->flags);
+        S00dcbd40_Result result = hkDataObjectDict__writeAccess(nameIn, info->flags);
 
         int dst = result.index;
 
@@ -9886,15 +10181,15 @@ void S00dcbd40_Destination::hkDataObjectDict_assign_00dcbd40(int target, S00dcbd
 }
 
 // src: XBOX_PDB 0x00dc9710
-S00dcbd40_Result S00dcbd40_Destination::hkDataObjectDict__writeAccess(S00dcbd40_Handle key, int flags)
+S00dcbd40_Result S00dcbd40_Destination::hkDataObjectDict__writeAccess(S00dcbd40_Handle name, int type)
 {
-    S00dcbd40_Info* info = reinterpret_cast<S00dcbd40_Info*>(pClassInfo->FindEntry(reinterpret_cast<const char*>(key.v)));
+    S00dcbd40_Info* info = reinterpret_cast<S00dcbd40_Info*>(pClassInfo->FindEntry(reinterpret_cast<const char*>(name.v)));
     if (!info)
         return S00dcbd40_Result(0, -1);
     int index = 0;
     for (; index < entries.size; ++index)
     {
-        if (entries.data[index].key == key.v)
+        if (entries.data[index].key == name.v)
         {
             ReleaseDataValues(info->flags, &entries.data[index].data, 1);
             return S00dcbd40_Result(info, index);
@@ -9906,7 +10201,7 @@ S00dcbd40_Result S00dcbd40_Destination::hkDataObjectDict__writeAccess(S00dcbd40_
         ResizeAudioStream(router->m_pkHeap, &entries, sizeof(S00dcbd40_Entry));
     S00dcbd40_Entry* entry = new (entries.data + entries.size) S00dcbd40_Entry;
     ++entries.size;
-    entry->key = key.v;
+    entry->key = name.v;
     entry->data.object = 0;
     entry->data.value = 0;
     return S00dcbd40_Result(info, oldSize);
@@ -9922,8 +10217,8 @@ struct MemberInfoDC97
     int type;
     int tupleSize;
 };
-void __cdecl ResizeAudioStream(void* allocator, void* array, int stride);
-void __cdecl ReleaseDataValues(int type, void* target, int count);
+void __cdecl ResizeAudioStream(void* mem, void* array, int sizeElem);
+void __cdecl ReleaseDataValues(int typeIn, void* u, int n);
 struct EntryDC97
 {
     int key, flags, next, previous;
@@ -9946,25 +10241,28 @@ struct DictWriteAccessDC97
     void* extra;
     hkDataClassDict* finder;
     EntryArrayDC97 entries;
-    FindResultDC97* __thiscall hkDataObjectDict__writeAccess(FindResultDC97* result, int key, int option);
+    FindResultDC97* __thiscall hkDataObjectDict__writeAccess(FindResultDC97* name, int type, int option);
 };
 // If the finder returns a node, searches entries, copies its type into a match or appends one; otherwise returns index -1.
 // @fnv 0x00dc9710
 // src: XBOX_PDB 0x00dc9710
-FindResultDC97* DictWriteAccessDC97::hkDataObjectDict__writeAccess(FindResultDC97* result, int key, int option)
+// pdb: hkDataObjectDict::_writeAccess | hkDataObjectDict.obj | retail, upstream name already matches, high
+// pdb params: name, type
+// pdb locals: assertBuf, ostr
+FindResultDC97* DictWriteAccessDC97::hkDataObjectDict__writeAccess(FindResultDC97* name, int type, int option)
 {
-    int* node = reinterpret_cast<int*>(finder->FindEntry(reinterpret_cast<const char*>(key)));
+    int* node = reinterpret_cast<int*>(finder->FindEntry(reinterpret_cast<const char*>(type)));
     if (node)
     {
         int count = entries.size;
         for (int i = 0; i < count; ++i)
         {
-            if (entries.data[i].key == key)
+            if (entries.data[i].key == type)
             {
                 ReleaseDataValues(reinterpret_cast<MemberInfoDC97*>(node)->type, &entries.data[i].next, 1);
-                result->index = i;
-                result->node = node;
-                return result;
+                name->index = i;
+                name->node = node;
+                return name;
             }
         }
         EntryArrayDC97* array = &entries;
@@ -9977,14 +10275,14 @@ FindResultDC97* DictWriteAccessDC97::hkDataObjectDict__writeAccess(FindResultDC9
         if (slot)
             slot->key = 0;
         slot = array->data + array->size++;
-        slot->key = key;
+        slot->key = type;
         slot->next = 0;
         slot->previous = 0;
-        result->index = count;
-        result->node = node;
-        return result;
+        name->index = count;
+        name->node = node;
+        return name;
     }
-    result->node = 0;
-    result->index = -1;
-    return result;
+    name->node = 0;
+    name->index = -1;
+    return name;
 }

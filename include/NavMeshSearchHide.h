@@ -22,6 +22,7 @@ struct TriRef20
     NiPoint3 m_kPt;
 };
 
+// pdb: class NavMeshSearchHide, size 0x20d8, bases: NavMeshSearch, 5 members
 class NavMeshSearchHide : public NavMeshSearch
 {
 public:
@@ -29,29 +30,29 @@ public:
     virtual bool CollectConnections(const SearchNode*, BSSimpleArray<SearchNode*, 1024>*);
     virtual bool HasReachedGoal(const SearchNode*);
 
-    void UpdateFields_006a9d60();
+    void NavMeshSearchHide_dtor();
     void* DestroyIfFlagged(unsigned int flags);
 
-    void InitEntry(SearchNode* pkEntry, NavMesh* pkMesh, unsigned short usNode);
+    void SetNodeData(SearchNode* apNode, NavMesh* apNavMesh, unsigned short aiTriangle);
     void InitEntry(NavSearchNode* pNode, NavMeshStandIn* pMesh, unsigned short usTri);
-    bool ExpandNeighbors(NavSearchNodeInfo* pkInfo, NavSearchNodeList* pkList);
-    int SetupActorTarget(ActorX* pkActor, TriRef20* pkInfo, ParamX* pkObj, int iArg);
-    bool IsGoalNode(NavData6aa4* pkData);
+    bool ExpandNeighbors(NavSearchNodeInfo* apNode, NavSearchNodeList* apRetNodes);
+    int BuildNodePath(ActorX* apRequest, TriRef20* aStartNode, ParamX* apReturnNodeArray, int apReturnLinkArray);
+    bool IsGoalNode(NavData6aa4* apNode);
 
     int GetKeyForNode_006a94f0(NavMeshStandIn* pMesh, unsigned short usTri,
                      float m_fPathingCostCur, NavSearchNode** ppNode);
     int GetKeyForNode_006a94f0(MeshX* pMesh, unsigned short usTri);
-    int FUN_006a7e00(int iResult);
-    void FUN_006a7c90(int iPacked, InfoF* pkInfo, float fVal);
-    void FUN_006a7d60(ParamX* pkObj, int iArg, int iOne);
+    int FUN_006a7e00(int aiKey);
+    void FUN_006a7c90(int aiKey, InfoF* aNodeData, float afHeuristic);
+    void FUN_006a7d60(ParamX* apReturnArray, int apReturnLinkArray, int abReturnBestPathIfFailed);
 
     union
     {
         ActorX* m_pActor;
         Range6aa4* m_pkActor;
     };
-    TriRef20 m_kInfo;
-    NiPoint3 m_kStartPoint;
-    float m_fFirstLightParameter;
-    NiPoint3 m_kTargetPos;
+    TriRef20 StartNode; // src: XBOX_RETAIL_PDB +0x20a8 (old: m_kInfo)
+    NiPoint3 AvoidNodeCenter; // src: XBOX_RETAIL_PDB +0x20bc (old: m_kStartPoint)
+    float fDistanceUpperBound; // src: XBOX_RETAIL_PDB +0x20c8 (old: m_fFirstLightParameter)
+    NiPoint3 ThreatLocation; // src: XBOX_RETAIL_PDB +0x20cc (old: m_kTargetPos)
 };

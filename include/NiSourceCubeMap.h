@@ -9,10 +9,11 @@ class Pixels;
 
 bool __stdcall NiSourceCubeMap_RegisterStreamables(NiStream&);
 
+// pdb: class NiSourceCubeMap, size 0x4c, bases: NiSourceTexture, 1 members
 class NiSourceCubeMap : public NiSourceTexture
 {
   public:
-    NiSourceCubeMap() throw() { m_uiFace = 0; }
+    NiSourceCubeMap() throw() { m_eFace = 0; }
     virtual ~NiSourceCubeMap();
 
 
@@ -33,5 +34,5 @@ class NiSourceCubeMap : public NiSourceTexture
     void* FUN_00a61250(unsigned int);
     void LoadFromPixelData(Pixels*, Pixels*, Pixels*, Pixels*, Pixels*, Pixels*);
 
-    unsigned int m_uiFace;
+    unsigned int m_eFace; // src: XBOX_RETAIL_PDB +0x48 (old: m_uiFace)
 };

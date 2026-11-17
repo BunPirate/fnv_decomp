@@ -269,7 +269,7 @@ __declspec(align(16)) struct QueryBuffer
 };
 int hkpMeshWeldingUtility_calcBitcodeForTriangleEdge(Iface* self, void* a, void* b, int idx, int zero, int* out);
 bool* CheckSubQueries(bool* result, void* key, Iface* self);
-void* hkArrayUtil__reserve(void* alloc, void* arr, int numElems, int elemSize);
+void* hkArrayUtil__reserve(void* mem, void* array, int numElem, int sizeElem);
 void hkMemUtil_memMove(void* dst, const void* src, int numBytes);
 inline void* operator new(unsigned int, void* p)
 {
@@ -449,7 +449,7 @@ struct S_00ddecf0_Heap
 };
 extern const double DAT_010290b8;
 __declspec(nothrow) S_00ddecf0_Router* hkMemoryRouter_getInstance();
-void __cdecl ResizeAudioStream(void* heap, void* arr, int elemSize) throw();
+void __cdecl ResizeAudioStream(void* mem, void* array, int sizeElem) throw();
 struct KeyLess
 {
 };
@@ -591,9 +591,9 @@ inline void hkVector4::setCross(const hkVector4& v0, const hkVector4& v1)
                         _mm_shuffle_ps(v1.m_vComponents, v1.m_vComponents, 0xc9));
     m_vComponents = _mm_sub_ps(cross0, cross1);
 }
-inline hkSimdReal hkVector4::dot3(const hkVector4& a) const
+inline hkSimdReal hkVector4::dot3(const hkVector4& x) const
 {
-    LocalM128 x2 = _mm_mul_ps(m_vComponents, a.m_vComponents);
+    LocalM128 x2 = _mm_mul_ps(m_vComponents, x.m_vComponents);
     LocalM128 xySum = _mm_add_ss(_mm_shuffle_ps(x2, x2, 0x55), x2);
     return _mm_add_ss(_mm_shuffle_ps(x2, x2, 0xaa), xySum);
 }
@@ -862,12 +862,12 @@ __declspec(noinline) void __cdecl hkpMeshWeldingUtility_calcAntiClockwiseTriangl
     normal.normalize3();
 }
 hkBool __cdecl Object_TestTriangleVertexProximity(const hkVector4& v0, const hkVector4& v1, const hkpTriangleShapeW* triangle);
-float __cdecl hkpMeshWeldingUtility_calcAngleForEdge(const hkVector4& normal, const hkVector4& perp, const hkVector4& otherNormal);
+float __cdecl hkpMeshWeldingUtility_calcAngleForEdge(const hkVector4& edgeNormal, const hkVector4& edgeOrtho, const hkVector4& triangleNormal);
 void __cdecl GenerateTrianglePlanes(hkVector4* planes, const hkpTriangleShapeW* triangle, float tolerance);
-hkBool __cdecl hkClipEdgeAgainstPlanes(const hkVector4& a, const hkVector4& b, int numPlanes, const hkVector4* planes,
-                             float& tmin, float& tmax);
+hkBool __cdecl hkClipEdgeAgainstPlanes(const hkVector4& v0, const hkVector4& v1, int numPlanes, const hkVector4* planeEquations,
+                             float& lo, float& hi);
 int __cdecl FindAngleIndex(float angle);
-unsigned int __cdecl hkpMeshWeldingUtility_modifyCombinedEdgesBitcode(unsigned int combined, int edgeIndex, unsigned int code);
+unsigned int __cdecl hkpMeshWeldingUtility_modifyCombinedEdgesBitcode(unsigned int combinedBitcode, int edgeIndex, unsigned int bitcode);
 
 // hkIsEdgeInTrianglePlane
 __declspec(noinline) hkBool __cdecl IsDotProductBelowThreshold(const hkVector4& edge, const hkVector4& normal)
@@ -883,14 +883,17 @@ __declspec(noinline) hkBool __cdecl IsDotProductBelowThreshold(const hkVector4& 
 
 // @fnv 0x00dddcd0
 // src: XBOX_PDB 0x00dddcd0
-void __cdecl hkpMeshWeldingUtility_computeWeldingInfoMultiShape(const Transform& transform, hkpShapeCollectionW* collection, int weldingType,
+// pdb: hkpMeshWeldingUtility::computeWeldingInfoMultiShape | hkpMeshWeldingUtility.obj | retail, string-set bridge, high
+// pdb params: meshTransform, mesh, weldingType, allShapes, weldOpenEdges
+// pdb locals: assertBuf, ostr, key, buffer, combinedEdgeBitcodes, edgeHistogram, collectedKeysAdjacentToEdge, localVertex2, toLocalSpace, localVertex1, localTriangleNormal, localVertex0, aabb, adjacentBuffer, adjacentTriangleNormal, localEdgeOrtho, hi, planeEquations, lo
+void __cdecl hkpMeshWeldingUtility_computeWeldingInfoMultiShape(const Transform& meshTransform, hkpShapeCollectionW* mesh, int weldingType,
                           hkShapeInfoArrayW& allShapes, bool weldOpenEdges)
 {
-    if (collection->m_eCollectionType != COLLECTION_LIST_W &&
-        collection->m_eCollectionType != COLLECTION_EXTENDED_MESH_W &&
-        collection->m_eCollectionType != COLLECTION_SIMPLE_MESH_W &&
-        collection->m_eCollectionType != COLLECTION_TRISAMPLED_HEIGHTFIELD_W &&
-        collection->m_eCollectionType != COLLECTION_USER_W)
+    if (mesh->m_eCollectionType != COLLECTION_LIST_W &&
+        mesh->m_eCollectionType != COLLECTION_EXTENDED_MESH_W &&
+        mesh->m_eCollectionType != COLLECTION_SIMPLE_MESH_W &&
+        mesh->m_eCollectionType != COLLECTION_TRISAMPLED_HEIGHTFIELD_W &&
+        mesh->m_eCollectionType != COLLECTION_USER_W)
     {
         QueryBuffer messageStorage;
         char* message = reinterpret_cast<char*>(&messageStorage);
@@ -902,11 +905,11 @@ void __cdecl hkpMeshWeldingUtility_computeWeldingInfoMultiShape(const Transform&
         return;
     }
 
-    collection->SetWeldingMode(weldingType);
+    mesh->SetWeldingMode(weldingType);
     if (weldingType == 6)
         return;
-    collection->m_bDisableWelding = true;
-    hkpShapeCollectionContainerW* container = &collection->m_container;
+    mesh->m_bDisableWelding = true;
+    hkpShapeCollectionContainerW* container = &mesh->m_container;
     for (int key = container->GetFirstKey(); key != -1; key = container->GetNextShapeKey(key))
     {
         QueryBuffer buffer;
@@ -930,7 +933,7 @@ void __cdecl hkpMeshWeldingUtility_computeWeldingInfoMultiShape(const Transform&
                 const hkShapeInfoW& info = allShapes[shapeIndex];
                 const hkpBvTreeShapeW* bvTree = allShapes[shapeIndex].m_pCollisionShape;
                 __declspec(align(16)) Transform t;
-                t.hkTransform_setMulInverseMul(info.m_kMotionTransform, transform);
+                t.hkTransform_setMulInverseMul(info.m_kMotionTransform, meshTransform);
 
                 hkVector4 normal;
                 normal._setRotatedDir(*reinterpret_cast<const hkRotation*>(t.r), triangleNormal);
@@ -981,6 +984,6 @@ void __cdecl hkpMeshWeldingUtility_computeWeldingInfoMultiShape(const Transform&
             }
             weldingInfo = (unsigned short)hkpMeshWeldingUtility_modifyCombinedEdgesBitcode(weldingInfo, edgeIndex, FindAngleIndex(histogram.hkHistogram_evaluate()));
         }
-        collection->SetWeldingInfo(key, weldingInfo);
+        mesh->SetWeldingInfo(key, weldingInfo);
     }
 }

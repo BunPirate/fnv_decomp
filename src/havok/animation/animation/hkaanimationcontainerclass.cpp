@@ -26,6 +26,7 @@ struct CpuObject
 };
 // Calls ReleaseAllBucketsAndReset, then if flags has bit 0 set, invokes the allocator from FUN_00c85750 on this with size, and returns this.
 // @fnv 0x00dfe940
+// pdb: hkaAnimationContainer::`scalar deleting destructor' | hkaAnimationContainerClass.obj | retail, vtable slot, high
 CpuObject* CpuObject::FUN_00dfe940(unsigned int flags)
 {
     ReleaseAllBucketsAndReset();
@@ -103,6 +104,7 @@ __forceinline static void ReleaseBucket(CpuBucket& b)
 
 // Releases buckets 4 through 0 via ReleaseBucket, then placement-constructs a CpuVtableHolder over this.
 // @fnv 0x00dfe720
+// pdb: hkaAnimationContainer::~hkaAnimationContainer | hkaAnimationContainerClass.obj | retail, object-file run extension, low
 void CpuObject::ReleaseAllBucketsAndReset()
 {
     CpuBody* self = reinterpret_cast<CpuBody*>(this);

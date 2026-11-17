@@ -57,17 +57,20 @@ class Value;
 }
 class BGSBodyPart;
 class BGSReconstructFormsMap;
+// pdb: structure OffsetData, size 0x8, 2 members
 class OffsetData
 {
   public:
     unsigned int iOffset;
     BGSReconstructFormsMap* m_pFormLookupMap;
 };
+// pdb: structure ScrapHeapBuffer, size 0x8 (here 0x1), 2 members
 class ScrapHeapBuffer
 {
   public:
     void Deallocate(void* memory);
 };
+// pdb: structure ButtonIcon, size 0x20, 5 members
 class ButtonIcon
 {
   public:

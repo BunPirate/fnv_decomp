@@ -24,6 +24,8 @@ struct TypeNode
 };
 // Walks a type node and its members, skipping nodes whose visited flags intersect mask, marking them visited, and invoking callback on each member.
 // @fnv 0x00e04af0
+// pdb: `anonymous namespace'::walkMembers | hkClassUpdate.obj | retail, object-file run extension, low
+// pdb params: klass, updateFlagFromClass, walkingFlag, memberCallback
 void __cdecl VisitTypeMembers(TypeNode* node, VisitMap* visited, unsigned int mask, void(__cdecl* callback)(Member*))
 {
     for (;;)
@@ -76,21 +78,24 @@ struct Property
 };
 struct Registry
 {
-    Property* FUN_00d46fe0(const char*);
+    Property* hkClass_getMemberByName(const char*);
 };
 extern Registry DAT_0126ed90;
 extern char DAT_010ea4cc[], DAT_010e5210[];
 // Marks a type node as visited, resets an offset field up the ancestor chain, bumps a count, then recurses into member types and the parent node.
 // @fnv 0x00e04bb0
-void VisitTypeNode(TypeNode* node, VisitMap* visited)
+// src: XBOX_RETAIL_PDB 0x00e04bb0
+// pdb: `anonymous namespace'::updateClassVersion1Inplace | hkClassUpdate.obj | retail, unique string literal, high
+// pdb params: classInOut, updateFlagFromClass
+void anonymous_namespace_updateClassVersion1Inplace(TypeNode* classInOut, VisitMap* updateFlagFromClass)
 {
-    unsigned int flags = visited->LookupHashEntry(node, 0);
+    unsigned int flags = updateFlagFromClass->LookupHashEntry(classInOut, 0);
     if (!(flags & 1))
     {
         BSAudio* audio = hkMemoryRouter_getInstance();
-        visited->hkMapBase_unsigned_long_unsigned_long_hkMapOperations_unsigned_long_insert(reinterpret_cast<Allocator*>(audio->pListener), node, flags | 1);
-        unsigned int offset = DAT_0126ed90.FUN_00d46fe0(DAT_010ea4cc)->offset;
-        TypeNode* ancestor = node;
+        updateFlagFromClass->hkMapBase_unsigned_long_unsigned_long_hkMapOperations_unsigned_long_insert(reinterpret_cast<Allocator*>(audio->pListener), classInOut, flags | 1);
+        unsigned int offset = DAT_0126ed90.hkClass_getMemberByName(DAT_010ea4cc)->offset;
+        TypeNode* ancestor = classInOut;
         while (ancestor->hkClass_getParent())
         {
             *reinterpret_cast<int*>(reinterpret_cast<char*>(ancestor) + offset) = 0;
@@ -98,23 +103,23 @@ void VisitTypeNode(TypeNode* node, VisitMap* visited)
         }
         if (*reinterpret_cast<unsigned char*>(reinterpret_cast<char*>(ancestor) + offset))
         {
-            unsigned int countOffset = DAT_0126ed90.FUN_00d46fe0(DAT_010e5210)->offset;
+            unsigned int countOffset = DAT_0126ed90.hkClass_getMemberByName(DAT_010e5210)->offset;
             ++*reinterpret_cast<int*>(reinterpret_cast<char*>(ancestor) + countOffset);
         }
         *reinterpret_cast<int*>(reinterpret_cast<char*>(ancestor) + offset) = 0;
-        for (int i = 0; i < node->FUN_00d46f70(); ++i)
+        for (int i = 0; i < classInOut->FUN_00d46f70(); ++i)
         {
-            Member* member = node->FUN_00d46f80(i);
+            Member* member = classInOut->FUN_00d46f80(i);
             if (member->type)
-                VisitTypeNode(member->FUN_00d86910(), visited);
+                anonymous_namespace_updateClassVersion1Inplace(member->FUN_00d86910(), updateFlagFromClass);
         }
-        if (node->hkClass_getParent())
-            VisitTypeNode(node->hkClass_getParent(), visited);
+        if (classInOut->hkClass_getParent())
+            anonymous_namespace_updateClassVersion1Inplace(classInOut->hkClass_getParent(), updateFlagFromClass);
     }
 }
 }  // namespace fnv_00e04bb0
 
-void __cdecl VisitTypeNode(void* registry, void* context);
+void __cdecl anonymous_namespace_updateClassVersion1Inplace(void* classInOut, void* updateFlagFromClass);
 void __cdecl VisitTypeMembers(void* registry, void* context, int size, void(__cdecl* func)(void*));
 void __cdecl Object_UpdateFields_00e04a60(void* data);
 void __cdecl UpdateStateFlags(void* data);
@@ -130,11 +135,13 @@ static __declspec(noinline) void E04D30Finish(void* registry)
 
 // Registers context handlers by level: at level 1 runs VisitTypeNode and records registry, and below 4/5 registers size-2 and size-8 handlers.
 // @fnv 0x00e04d30
+// pdb: hkClass::updateMetadataInplace | hkClassUpdate.obj | retail, object-file run extension, low
+// pdb params: c, updated, sourceVersion
 void __cdecl RegisterContextHandlers(void* registry, void* context, int level)
 {
     if (level == 1)
     {
-        VisitTypeNode(registry, context);
+        anonymous_namespace_updateClassVersion1Inplace(registry, context);
         E04D30Finish(registry);
     }
     if (level < 4)
@@ -159,7 +166,7 @@ struct TypeDefinition
 };
 struct TypeRegistry
 {
-    TypeDefinition* getMember(int index);
+    TypeDefinition* getMember(int memberIndex);
 };
 extern TypeRegistry DAT_0126ca58;
 extern const char DAT_010d27bc[];
@@ -168,6 +175,8 @@ int __cdecl hkString_strCmp(const char*, const char*);
 // Marks the node visited and, when its name matches DAT_010d27bc, writes 0x19 at the selected member offset.
 // @fnv 0x00e04cc0
 // src: GUESS 0x00e04cc0 (confidence: low)
+// pdb: `anonymous namespace'::updateConstraintInstance300 | hkClassUpdate.obj | retail, object-file run extension, low
+// pdb params: classInOut, updateFlagFromClass
 static __declspec(noinline) void __cdecl Object_UpdateFields_00e04cc0(TraverseNode* node, VisitMap* visited)
 {
     unsigned int flags = visited->LookupHashEntry(reinterpret_cast<TypeNode*>(node), 0);

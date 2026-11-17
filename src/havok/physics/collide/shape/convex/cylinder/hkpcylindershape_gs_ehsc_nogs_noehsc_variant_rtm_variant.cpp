@@ -32,7 +32,7 @@ int __cdecl hkpCylinderShape_ReturnConstant_0x12();
 // which is hkpCylinderShape::m_fCylinderRadius in the pack's layout
 //  m_type 0xC, m_fSphereRadius 0x10, m_fCylinderRadius 0x14).
 extern char DAT_01268940[];
-void __cdecl hkReferencedObject_calcContentStatistics(void* item, const char* type);
+void __cdecl hkReferencedObject_calcContentStatistics(void* collector, const char* cls);
 void __cdecl hkpCylinderShape_calcContentStatistics(void* item, const char*);
 
 #include "fnv_asm_helpers.h"   // project x87 helpers (fnv_SinCos, fnv_FloatToInt), kept last so earlier code is unchanged
@@ -77,6 +77,8 @@ static inline float CylSqrt(float r) { return (float)sqrt(r); }
 
 // @fnv 0x00d576d0
 // src: XBOX_PDB 0x00d576d0
+// pdb: hkpCylinderShape::convertVertexIdsToVerticesImpl | hkpCylinderShape.obj | retail, upstream name already matches, high
+// pdb params: ids, numIds, verticesOut
 void CylShapeAdapter::hkpCylinderShape_convertVertexIdsToVerticesImpl(const unsigned short* ids, int numIds, CylVec4* verticesOut) const
 {
     for (int i = numIds - 1; i >= 0;)
@@ -106,9 +108,9 @@ void CylShapeAdapter::hkpCylinderShape_convertVertexIdsToVerticesImpl(const unsi
         if (!cosSign) cosValue = -cosValue;
 
         --i;
-        __m128 tmp = _mm_add_ps(_mm_mul_ps(CylSimd(sinValue).broadcast(), reinterpret_cast<const __m128&>(m_kPerpendicular2)), _mm_mul_ps(CylSimd(cosValue).broadcast(), reinterpret_cast<const __m128&>(m_kPerpendicular1)));
+        __m128 tmp = _mm_add_ps(_mm_mul_ps(CylSimd(sinValue).broadcast(), reinterpret_cast<const __m128&>(m_perpendicular2)), _mm_mul_ps(CylSimd(cosValue).broadcast(), reinterpret_cast<const __m128&>(m_perpendicular1)));
         CylVec4& vertex = *verticesOut;
-        vertex.m_vComponents = _mm_add_ps(_mm_mul_ps(tmp, CylSimd(m_fCylinderRadius).broadcast()), reinterpret_cast<const __m128&>((&m_kVertexA)[1 - isBaseA]));
+        vertex.m_vComponents = _mm_add_ps(_mm_mul_ps(tmp, CylSimd(m_cylRadius).broadcast()), reinterpret_cast<const __m128&>((&m_vertexA)[1 - isBaseA]));
         vertex.setInt24W(id);
         ++verticesOut;
         ids++;
@@ -123,17 +125,17 @@ static inline __m128 scalar(float value) { return _mm_load_ss(&value); }
 
 class CylVertices : public hkpCylinderShape {
 public:
-    hkVector4* hkpCylinderShape_getCollisionSpheresImpl(VertexOutput output);
+    hkVector4* hkpCylinderShape_getCollisionSpheresImpl(VertexOutput sphereBuffer);
     hkVector4* prime(VertexOutput output);
 };
 
 hkVector4* CylVertices::prime(VertexOutput output)
 {
     __m128 offA, sC, kA, kB;
-    hkVector4* v = &m_kVertexA;
-    float cylRadius = m_fCylinderRadius;
-    __m128 vA = _mm_load_ps(&m_kVertexA.x);
-    __m128 vB = _mm_load_ps(&m_kVertexB.x);
+    hkVector4* v = &m_vertexA;
+    float cylRadius = m_cylRadius;
+    __m128 vA = _mm_load_ps(&m_vertexA.x);
+    __m128 vB = _mm_load_ps(&m_vertexB.x);
     __m128 diff = _mm_sub_ps(vB, vA);
     __m128 sq = _mm_mul_ps(diff, diff);
     __m128 t1 = _mm_shuffle_ps(sq, sq, 0x55);
@@ -147,21 +149,21 @@ hkVector4* CylVertices::prime(VertexOutput output)
     float c = 0.0f;
     if (lenSq >= cylRadius * 4.0 * cylRadius) {
         c = cylRadius;
-        s = cylRadius * m_fCylinderRadiusSquared;
+        s = cylRadius * m_cylBaseRadiusFactorForHeightFieldCollisions;
     }
 
-    __m128 p2 = _mm_load_ps(&m_kPerpendicular2.x);
+    __m128 p2 = _mm_load_ps(&m_perpendicular2.x);
     __m128 mask = _mm_load_ps((const float*)g_wClearMask);
-    __m128 p2c = _mm_load_ps(&m_kPerpendicular2.x);
+    __m128 p2c = _mm_load_ps(&m_perpendicular2.x);
     float k = (float)(s * 0.7071067690849304);
     kA = scalar((float)(k));
     __m128 kAs = _mm_shuffle_ps(kA,kA,0);
     kB = scalar((float)(0.7071067690849304 * s));
-    float radius = m_fSphereRadius;
+    float radius = m_radius;
     __m128 s0 = _mm_load_ss(&s);
     sC = s0;
     __m128 sA = sC;
-    __m128 p1 = _mm_load_ps(&m_kPerpendicular1.x);
+    __m128 p1 = _mm_load_ps(&m_perpendicular1.x);
     __m128 kBs = _mm_shuffle_ps(kB,kB,0);
     offA = _mm_mul_ps(_mm_shuffle_ps(sA,sA,0),p1);
     p2c = _mm_add_ps(p1,p2c);
@@ -195,8 +197,8 @@ hkVector4* CylVertices::prime(VertexOutput output)
         --i;
     } while (i != 0);
 
-    __m128 q2 = _mm_load_ps(&m_kPerpendicular2.x);
-    __m128 q1 = _mm_load_ps(&m_kPerpendicular1.x);
+    __m128 q2 = _mm_load_ps(&m_perpendicular2.x);
+    __m128 q1 = _mm_load_ps(&m_perpendicular1.x);
     __m128 lhs = _mm_shuffle_ps(q1, q1, 0xc9);
     __m128 rhs = _mm_shuffle_ps(q2, q2, 0xd2);
     lhs = _mm_mul_ps(rhs, lhs);
@@ -207,13 +209,13 @@ hkVector4* CylVertices::prime(VertexOutput output)
     float nc = -c;
     __m128 c0 = _mm_load_ss(&c);
     __m128 c1 = _mm_shuffle_ps(c0, c0, 0);
-    __m128 a0 = _mm_load_ps(&m_kVertexA.x);
+    __m128 a0 = _mm_load_ps(&m_vertexA.x);
     __m128 e1 = _mm_mul_ps(c1, cross);
     e1 = _mm_add_ps(e1, a0);
     _mm_store_ps(&out[16].x, e1);
     __m128 n0 = _mm_load_ss(&nc);
     __m128 n1 = _mm_shuffle_ps(n0, n0, 0);
-    __m128 b0 = _mm_load_ps(&m_kVertexB.x);
+    __m128 b0 = _mm_load_ps(&m_vertexB.x);
     __m128 e2 = _mm_mul_ps(n1, cross);
     e2 = _mm_add_ps(e2, b0);
     _mm_store_ps(&out[17].x, e2);
@@ -223,13 +225,16 @@ hkVector4* CylVertices::prime(VertexOutput output)
 }
 // @fnv 0x00d57890
 // src: XBOX_PDB 0x00d57890
-hkVector4* CylVertices::hkpCylinderShape_getCollisionSpheresImpl(VertexOutput output)
+// pdb: hkpCylinderShape::getCollisionSpheresImpl | hkpCylinderShape.obj | retail, upstream name already matches, high
+// pdb params: sphereBuffer
+// pdb locals: cylRadiusForBaseSpheres, largeSphereDisplacement, baseCenter, assertBuf, ostr
+hkVector4* CylVertices::hkpCylinderShape_getCollisionSpheresImpl(VertexOutput sphereBuffer)
 {
     __m128 offA, sC, kA, kB;
-    hkVector4* v = &m_kVertexA;
-    float cylRadius = m_fCylinderRadius;
-    __m128 vA = _mm_load_ps(&m_kVertexA.x);
-    __m128 vB = _mm_load_ps(&m_kVertexB.x);
+    hkVector4* v = &m_vertexA;
+    float cylRadius = m_cylRadius;
+    __m128 vA = _mm_load_ps(&m_vertexA.x);
+    __m128 vB = _mm_load_ps(&m_vertexB.x);
     __m128 diff = _mm_sub_ps(vB, vA);
     __m128 sq = _mm_mul_ps(diff, diff);
     __m128 t1 = _mm_shuffle_ps(sq, sq, 0x55);
@@ -243,21 +248,21 @@ hkVector4* CylVertices::hkpCylinderShape_getCollisionSpheresImpl(VertexOutput ou
     float c = 0.0f;
     if (lenSq >= cylRadius * 4.0 * cylRadius) {
         c = cylRadius;
-        s = cylRadius * m_fCylinderRadiusSquared;
+        s = cylRadius * m_cylBaseRadiusFactorForHeightFieldCollisions;
     }
 
-    __m128 p2 = _mm_load_ps(&m_kPerpendicular2.x);
+    __m128 p2 = _mm_load_ps(&m_perpendicular2.x);
     __m128 mask = _mm_load_ps((const float*)g_wClearMask);
-    __m128 p2c = _mm_load_ps(&m_kPerpendicular2.x);
+    __m128 p2c = _mm_load_ps(&m_perpendicular2.x);
     float k = (float)(s * 0.7071067690849304);
     kA = scalar((float)(k));
     __m128 kAs = _mm_shuffle_ps(kA,kA,0);
     kB = scalar((float)(0.7071067690849304 * s));
-    float radius = m_fSphereRadius;
+    float radius = m_radius;
     __m128 s0 = _mm_load_ss(&s);
     sC = s0;
     __m128 sA = sC;
-    __m128 p1 = _mm_load_ps(&m_kPerpendicular1.x);
+    __m128 p1 = _mm_load_ps(&m_perpendicular1.x);
     __m128 kBs = _mm_shuffle_ps(kB,kB,0);
     offA = _mm_mul_ps(_mm_shuffle_ps(sA,sA,0),p1);
     p2c = _mm_add_ps(p1,p2c);
@@ -271,7 +276,7 @@ hkVector4* CylVertices::hkpCylinderShape_getCollisionSpheresImpl(VertexOutput ou
     __m128 offD = _mm_mul_ps(kBs,dif);
     offD = _mm_and_ps(offD,mask);
 
-    hkVector4* out = output.p;
+    hkVector4* out = sphereBuffer.p;
     hkVector4* o = out + 2;
     int i = 2;
     do {
@@ -291,8 +296,8 @@ hkVector4* CylVertices::hkpCylinderShape_getCollisionSpheresImpl(VertexOutput ou
         --i;
     } while (i != 0);
 
-    __m128 q2 = _mm_load_ps(&m_kPerpendicular2.x);
-    __m128 q1 = _mm_load_ps(&m_kPerpendicular1.x);
+    __m128 q2 = _mm_load_ps(&m_perpendicular2.x);
+    __m128 q1 = _mm_load_ps(&m_perpendicular1.x);
     __m128 lhs = _mm_shuffle_ps(q1, q1, 0xc9);
     __m128 rhs = _mm_shuffle_ps(q2, q2, 0xd2);
     lhs = _mm_mul_ps(rhs, lhs);
@@ -303,13 +308,13 @@ hkVector4* CylVertices::hkpCylinderShape_getCollisionSpheresImpl(VertexOutput ou
     float nc = -c;
     __m128 c0 = _mm_load_ss(&c);
     __m128 c1 = _mm_shuffle_ps(c0, c0, 0);
-    __m128 a0 = _mm_load_ps(&m_kVertexA.x);
+    __m128 a0 = _mm_load_ps(&m_vertexA.x);
     __m128 e1 = _mm_mul_ps(c1, cross);
     e1 = _mm_add_ps(e1, a0);
     _mm_store_ps(&out[16].x, e1);
     __m128 n0 = _mm_load_ss(&nc);
     __m128 n1 = _mm_shuffle_ps(n0, n0, 0);
-    __m128 b0 = _mm_load_ps(&m_kVertexB.x);
+    __m128 b0 = _mm_load_ps(&m_vertexB.x);
     __m128 e2 = _mm_mul_ps(n1, cross);
     e2 = _mm_add_ps(e2, b0);
     _mm_store_ps(&out[17].x, e2);
@@ -372,7 +377,7 @@ void hkpCylinderShape::CalculateAabb(const hkTransform& localToWorld, hkReal tol
 
     __declspec(align(16)) hkVector4A transVertices[2];
 
-    const hkVector4* vertices = &m_kVertexA;
+    const hkVector4* vertices = &m_vertexA;
     for (int i = 1; i >= 0; --i)
     {
         __m128 vb = *(__m128*)&vertices[i];
@@ -416,8 +421,8 @@ void hkpCylinderShape::CalculateAabb(const hkTransform& localToWorld, hkReal tol
     float dz = (float)((double)1.01f - normDir.at(2) * normDir.at(2));
     normDir.at(2) = (float)sqrt(dz);
 
-    normDir.scale(Lane61(m_fCylinderRadius));
-    float total = m_fSphereRadius + tolerance;
+    normDir.scale(Lane61(m_cylRadius));
+    float total = m_radius + tolerance;
     Vector61 expansion;
     expansion.sum(Lane61(total), normDir);
 
@@ -462,20 +467,23 @@ struct CylinderSupportStore : CylinderSupportArithmetic {
 };
 class CylinderSupportShape : public hkpCylinderShape {
 public:
-    void hkpCylinderShape_getSupportingVertexImpl(const hkVector4& direction, CylinderSupportStore& output) const;
+    void hkpCylinderShape_getSupportingVertexImpl(const hkVector4& direction, CylinderSupportStore& supportingVertexOut) const;
 };
 
 // @fnv 0x00d57400
 // src: XBOX_PDB 0x00d57400
-void CylinderSupportShape::hkpCylinderShape_getSupportingVertexImpl(const hkVector4& direction, CylinderSupportStore& output) const
+// pdb: hkpCylinderShape::getSupportingVertexImpl | hkpCylinderShape.obj | retail, upstream name already matches, high
+// pdb params: direction, supportingVertexOut
+// pdb locals: assertBuf, ostr
+void CylinderSupportShape::hkpCylinderShape_getSupportingVertexImpl(const hkVector4& direction, CylinderSupportStore& supportingVertexOut) const
 {
     int vertexId;
     {
     const float eps = 1.19209290e-7f;
     const CylinderSupportArithmetic& dir = *reinterpret_cast<const CylinderSupportArithmetic*>(&direction);
-    __m128 axis = _mm_sub_ps(_mm_load_ps(&m_kVertexB.x), _mm_load_ps(&m_kVertexA.x));
-    float u = dir.dot(*reinterpret_cast<const CylinderSupportArithmetic*>(&m_kPerpendicular1));
-    float v = dir.dot(*reinterpret_cast<const CylinderSupportArithmetic*>(&m_kPerpendicular2));
+    __m128 axis = _mm_sub_ps(_mm_load_ps(&m_vertexB.x), _mm_load_ps(&m_vertexA.x));
+    float u = dir.dot(*reinterpret_cast<const CylinderSupportArithmetic*>(&m_perpendicular1));
+    float v = dir.dot(*reinterpret_cast<const CylinderSupportArithmetic*>(&m_perpendicular2));
     float len2 = u * u + v * v;
 
     if (len2 >= eps * eps)
@@ -543,13 +551,13 @@ void CylinderSupportShape::hkpCylinderShape_getSupportingVertexImpl(const hkVect
     __m128 uLoad = _mm_load_ss(&u);
     __m128 vLoad = _mm_load_ss(&v);
     __m128 radial = _mm_add_ps(
-        _mm_mul_ps(_mm_shuffle_ps(vLoad,vLoad,0), _mm_load_ps(&m_kPerpendicular2.x)),
-        _mm_mul_ps(_mm_shuffle_ps(uLoad, uLoad, 0), _mm_load_ps(&m_kPerpendicular1.x)));
-    __m128 scaled = _mm_mul_ps(radial, _mm_shuffle_ps(_mm_load_ss(&m_fCylinderRadius), _mm_load_ss(&m_fCylinderRadius), 0));
+        _mm_mul_ps(_mm_shuffle_ps(vLoad,vLoad,0), _mm_load_ps(&m_perpendicular2.x)),
+        _mm_mul_ps(_mm_shuffle_ps(uLoad, uLoad, 0), _mm_load_ps(&m_perpendicular1.x)));
+    __m128 scaled = _mm_mul_ps(radial, _mm_shuffle_ps(_mm_load_ss(&m_cylRadius), _mm_load_ss(&m_cylRadius), 0));
     int slot = 3 - baseBit;
     const hkVector4* vecs = reinterpret_cast<const hkVector4*>(this);
     __m128 support = _mm_add_ps(scaled, _mm_load_ps(&vecs[slot].x));
-    output.assign(support,vertexId);
+    supportingVertexOut.assign(support,vertexId);
 }
 
 #include <math.h>
@@ -723,15 +731,18 @@ struct ShapeRayCastQuery
 {
 hkVector4_S m_vFrom;
 // @fnv 0x00d57d50
+// pdb: hkpCylinderShape::castRayImpl | hkpCylinderShape.obj | retail, vtable slot, high
+// pdb params: input, results
+// pdb locals: vertex0, vertex1, t, infInfDistSquared, dA, q, ipT, u, res, dB, p, hitFract, axisSign
 hkVector4_S m_vTo;};hkBool hkpCylinderShape::IntersectRayWithShape(const ShapeRayCastQuery&input,ShapeRayCastOutput&results)const
 {
 const hkpCylinderShape*thisObj=this;
 {hkMonitorStream&mStream=hkMonitorStream::getInstance();if(mStream.memoryAvailable()){hkMonitorStream::TimerCommand*h=reinterpret_cast<hkMonitorStream::TimerCommand*>(mStream.getEnd());h->m_commandAndMonitor="T" "t" "rcCylinder";h->setTime();mStream.setEnd((char*)(h+1));}};
-hkVector4_S radiusAxis;radiusAxis.setCross(reinterpret_cast<const hkVector4_S&>(thisObj->m_kPerpendicular2),reinterpret_cast<const hkVector4_S&>(thisObj->m_kPerpendicular1));
-radiusAxis.mul4(thisObj->m_fSphereRadius);
+hkVector4_S radiusAxis;radiusAxis.setCross(reinterpret_cast<const hkVector4_S&>(thisObj->m_perpendicular2),reinterpret_cast<const hkVector4_S&>(thisObj->m_perpendicular1));
+radiusAxis.mul4(thisObj->m_radius);
 hkVector4_S vertex0;vertex0.setAdd4(reinterpret_cast<const hkVector4_S&>(thisObj->getVertex(0)),radiusAxis);
 hkVector4_S vertex1;vertex1.setSub4(reinterpret_cast<const hkVector4_S&>(thisObj->getVertex(1)),radiusAxis);
-hkReal_S cylTotalRadius=thisObj->m_fSphereRadius+thisObj->m_fCylinderRadius;
+hkReal_S cylTotalRadius=thisObj->m_radius+thisObj->m_cylRadius;
 {
 hkVector4_S res;CapsuleClosestPointOnLineSegment(input.m_vFrom,vertex0,vertex1,res);
 hkVector4_S join;join.setSub4(input.m_vFrom,res);

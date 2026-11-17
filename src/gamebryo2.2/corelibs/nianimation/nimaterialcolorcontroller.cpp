@@ -32,6 +32,8 @@ extern int DAT_01098a14;
 // Allocates a 0x3c-byte BSFadeNode, runs its constructor, zeroes the field at offset 0x38, sets its vtable, and returns the object or null.
 // @fnv 0x00a4b790
 // src: EXE 0x00a4b790
+// pdb: NiMaterialColorController::CreateObject | NiMaterialColorController.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 void* __cdecl NiMaterialColorController_CreateObject()
 {
     void* p = BSFadeNode::operator new(0x3c);
@@ -58,6 +60,8 @@ char* __cdecl NiViewerStrings_NiGetViewerString_Title(char const*);
 // Appends the controller name, growing the string array when needed.
 // @fnv 0x00a4b880
 // src: XBOX_PDB 0x00a4b880
+// pdb: NiMaterialColorController::GetViewerStrings | NiMaterialColorController.obj | retail, upstream name already matches, high
+// pdb params: pkStrings
 void __stdcall NiMaterialColorController_GetViewerStrings(StrArr* pkStrings)
 {
     NiPoint3InterpController_GetViewerStrings(pkStrings);
@@ -72,13 +76,13 @@ void __stdcall NiMaterialColorController_GetViewerStrings(StrArr* pkStrings)
 }
 }  // namespace fnv_00a4b880
 
-extern "C" void* g_01201f74;
+extern "C" void* BSClearZNode_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01201f74 (old: g_01201f74)
 
 // @fnv 0x00bc29d0
 // src: XBOX_PDB 0x00bc29d0
 void* __cdecl BSClearZNode_GetRTTI()
 {
-    return &g_01201f74;
+    return &BSClearZNode_ms_RTTI;
 }
 
 extern unsigned int DAT_011f4998;
@@ -102,12 +106,12 @@ void __fastcall GetMaterialColor(NiMaterialColorController* self, void*, float* 
         *(unsigned int*)&blue = DAT_011f49a0;
         break;
     case 2:
-        *(unsigned int*)&red = source->unk1c;
+        *(unsigned int*)&red = source->m_spec;
         *(unsigned int*)&green = source->unk20;
         *(unsigned int*)&blue = source->unk24;
         break;
     case 3: {
-        unsigned int* selected = source->unk34 ? reinterpret_cast<unsigned int*>(source->unk34) : reinterpret_cast<unsigned int*>(&source->unk28);
+        unsigned int* selected = source->m_external_emit ? reinterpret_cast<unsigned int*>(source->m_external_emit) : reinterpret_cast<unsigned int*>(&source->m_emit);
         *(unsigned int*)&red = selected[0];
         *(unsigned int*)&green = selected[1];
         *(unsigned int*)&blue = selected[2];
@@ -121,6 +125,7 @@ void __fastcall GetMaterialColor(NiMaterialColorController* self, void*, float* 
 
 // Returns the name string selected by the low 3 bits of the flags field at offset 0x38.
 // @fnv 0x00a4b470
+// pdb: NiMaterialColorController::GetCtlrID | NiMaterialColorController.obj | debug, unique string literal, high
 const char* NiMaterialColorController::GetChannelName()
 {
     unsigned short flags = m_uiObjectFlags;
@@ -172,6 +177,9 @@ static __forceinline NiPoint3Interpolator* CreateMaterialInterpolator(NiPosData*
 // The shared class has no declaration for this legacy material linker.
 // An explicit ECX object parameter preserves its original member-function ABI.
 // @fnv 0x00a4b4b0
+// pdb: NiMaterialColorController::LinkObject | NiMaterialColorController.obj | retail, object-file run extension, low
+// pdb params: kStream
+// pdb locals: pkPosData
 void __fastcall LinkMaterialColor(NiMaterialColorController* self, void*, NiStream* apStream)
 {
     self->NiInterpController::LinkObject(*apStream);
@@ -179,13 +187,16 @@ void __fastcall LinkMaterialColor(NiMaterialColorController* self, void*, NiStre
     if (*(unsigned int*)((char*)apStream + 0xd8) < 0xa010068)
     {
         NiPosData* pSource = (NiPosData*)apStream->GetLoadedObject();
-        self->m_spControllerInterpolator = CreateMaterialInterpolator(pSource);
-        self->m_spControllerInterpolator.m_pObject->Collapse();
+        self->m_spInterpolator = CreateMaterialInterpolator(pSource);
+        self->m_spInterpolator.m_pObject->Collapse();
     }
 }
 
 // Compares the base controller and the low three material-channel flag bits.
 // @fnv 0x00a4b540
+// pdb: NiMaterialColorController::IsEqual | NiMaterialColorController.obj | retail, upstream name already matches, high
+// pdb params: pkObject
+// pdb locals: pkCtrl
 bool NiMaterialColorController::IsEqual(NiObject* pkObject) const
 {
     if (!NiSingleInterpController::IsEqual(pkObject))
@@ -193,7 +204,7 @@ bool NiMaterialColorController::IsEqual(NiObject* pkObject) const
     return ((unsigned char)((NiMaterialColorController*)pkObject)->m_uiObjectFlags ^ (unsigned char)m_uiObjectFlags) & 7 ? false : true;
 }
 
-extern const float DAT_01096324;
+extern const float NiInterpController_INVALID_TIME; // src: XBOX_RETAIL_PDB 0x01096324 (old: DAT_01096324/INVALID_TIME_A4F/g_fInvalidTimeBC3/kInvalidTime)
 
 // NiColor is the three-float RGB type; NiColorA has a fourth alpha component.
 inline NiColor::NiColor()
@@ -222,13 +233,13 @@ static __forceinline void SetDiffuseColor(NiMaterialProperty*, const NiColor&)
 {}
 static __forceinline void SetSpecularColor(NiMaterialProperty* material, const NiColor& color)
 {
-    *reinterpret_cast<NiColor*>(&material->unk1c) = color;
-    ++reinterpret_cast<unsigned int&>(material->unk44);
+    *reinterpret_cast<NiColor*>(&material->m_spec) = color;
+    ++reinterpret_cast<unsigned int&>(material->m_uiRevID);
 }
 static __forceinline void SetEmittance(NiMaterialProperty* material, const NiColor& color)
 {
-    *reinterpret_cast<NiColor*>(&material->unk28) = color;
-    ++reinterpret_cast<unsigned int&>(material->unk44);
+    *reinterpret_cast<NiColor*>(&material->m_emit) = color;
+    ++reinterpret_cast<unsigned int&>(material->m_uiRevID);
 }
 
 inline bool NiTimeController::GetManagerControlled() const
@@ -238,22 +249,25 @@ inline bool NiTimeController::GetManagerControlled() const
 
 // Sets controller time for manager-controlled updates, then may evaluate the interpolator and update a material color channel.
 // @fnv 0x00a4b580
+// pdb: NiMaterialColorController::Update | NiMaterialColorController.obj | retail, object-file run extension, low
+// pdb params: UpdateData
+// pdb locals: kValue, kColor, pkMaterial
 void __fastcall UpdateMaterialColor(NiMaterialColorController* self, void*, NiUpdateData& kUpdateData)
 {
     if (self->GetManagerControlled())
     {
-        self->m_fControllerTime = DAT_01096324;
+        self->m_fScaledTime = NiInterpController_INVALID_TIME;
     }
     else if (self->DontDoUpdate(kUpdateData.fTime) &&
-             (!((NiPoint3Interpolator*)self->m_spControllerInterpolator.m_pObject) || !((NiPoint3Interpolator*)self->m_spControllerInterpolator.m_pObject)->AlwaysUpdate()))
+             (!((NiPoint3Interpolator*)self->m_spInterpolator.m_pObject) || !((NiPoint3Interpolator*)self->m_spInterpolator.m_pObject)->AlwaysUpdate()))
     {
         return;
     }
 
-    if (((NiPoint3Interpolator*)self->m_spControllerInterpolator.m_pObject))
+    if (((NiPoint3Interpolator*)self->m_spInterpolator.m_pObject))
     {
         NiPoint3 kValue;
-        if (((NiPoint3Interpolator*)self->m_spControllerInterpolator.m_pObject)->UpdatePoint3(self->m_fControllerTime, ((NiMaterialProperty*)self->m_pkTarget), kValue))
+        if (((NiPoint3Interpolator*)self->m_spInterpolator.m_pObject)->UpdatePoint3(self->m_fScaledTime, ((NiMaterialProperty*)self->m_pkTarget), kValue))
         {
             NiMaterialProperty* pkMat = ((NiMaterialProperty*)self->m_pkTarget);
             NiColor kColor;
@@ -295,10 +309,11 @@ struct BaseB
 
 // Sets the vtable pointer, decrements p->m_ref and calls p->f1() at zero, calls FUN_00a6d290, then conditionally deletes this.
 // @fnv 0x00a4b6f0
+// pdb: NiMaterialColorController::`scalar deleting destructor' | NiMaterialColorController.obj | retail, object-file run extension, low
 void* __fastcall ReleaseMaterialColor(NiMaterialColorController* self, void*, unsigned int uiFlags)
 {
     *(void* volatile*)self = (void*)&DAT_01098a14;
-    RefObj* p = (RefObj* volatile&)self->m_spControllerInterpolator.m_pObject;
+    RefObj* p = (RefObj* volatile&)self->m_spInterpolator.m_pObject;
     if (p)
     {
         if (InterlockedDecrement((volatile long*)&p->m_ref) == 0)
@@ -312,6 +327,10 @@ void* __fastcall ReleaseMaterialColor(NiMaterialColorController* self, void*, un
 
 // Allocates a new NiMaterialColorController, initializes it, copies member data from this, and returns the new object.
 // @fnv 0x00a4b740
+// pdb: NiMaterialColorController::CreateClone | NiMaterialColorController.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiMaterialColorController::CopyMembers
+// pdb params: kCloning
+// pdb locals: pkObject
 NiMaterialColorController* NiMaterialColorController::Clone(CloningProcess& kCloning)
 {
     NiMaterialColorController* pkObject = (NiMaterialColorController*)BSFadeNode::operator new(0x3c);
@@ -343,6 +362,8 @@ inline unsigned short NiStream::savedFlags() { return *(unsigned short*)((char*)
 void __stdcall FUN_00a57c70(NiStream*);
 
 // @fnv 0x00a4b7c0
+// pdb: NiMaterialColorController::LoadBinary | NiMaterialColorController.obj | retail, object-file run extension, low
+// pdb params: kStream
 void __fastcall LoadMaterialColor(NiMaterialColorController* self, void*, NiStream* stream)
 {
     unsigned int value;
@@ -375,6 +396,7 @@ struct FUN_00bc2980 : NiNode
 };
 // Constructs a NiNode-derived object, sets m_b4 to 100.0f, m_b0 to DAT_010ba600, m_ad and m_ac to 0, and sets the vtable pointer to DAT_010ba608.
 // @fnv 0x00bc2980
+// pdb: BSClearZNode::BSClearZNode | BSClearZNode.obj | debug, call graph, medium
 FUN_00bc2980::FUN_00bc2980() : NiNode(0)
 {
     m_b4 = 100.0f;
@@ -388,6 +410,8 @@ void __cdecl NiNode_GetViewerStrings();
 
 // @fnv 0x00bc29c0
 // src: XBOX_PDB 0x00bc29c0
+// pdb: BSClearZNode::GetViewerStrings | BSClearZNode.obj | debug, upstream name already matches, high
+// pdb params: pkStrings
 void __cdecl BSClearZNode_GetViewerStrings()
 {
     NiNode_GetViewerStrings();

@@ -21,7 +21,7 @@ struct Holder
 extern int DAT_0109e47c;
 struct P03MM
 {
-    void __thiscall _DeallocateAlias(void* p);
+    void __thiscall _DeallocateAlias(void* apMem);
 };
 extern P03MM g_memoryManager;
 struct S : NiRefObject
@@ -109,7 +109,7 @@ struct FUN_00a81ff0_elem
     int m_20;
     int m_24;
     int m_28;
-    bool NiSkinPartition_Partition_IsEqual(const FUN_00a81ff0_elem* other);
+    bool NiSkinPartition_Partition_IsEqual(const FUN_00a81ff0_elem* kPartition);
 };
 struct FUN_00a81ff0_cls
 {
@@ -117,7 +117,7 @@ struct FUN_00a81ff0_cls
     int m_04;
     unsigned int m_uiItemCount;
     FUN_00a81ff0_elem* m_pElements;
-    bool IsSameAs(const FUN_00a81ff0_cls* other);
+    bool IsSameAs(const FUN_00a81ff0_cls* pObject);
     bool Equals(const FUN_00a81ff0_cls* other);
 };
 struct S_00a82050_Node
@@ -321,7 +321,7 @@ __forceinline bool EqualBuffers(const void* right, const void* left, unsigned in
 }
 struct PartitionCompare : NiSkinPartition::Partition
 {
-    bool NiSkinPartition_Partition_IsEqual(const PartitionCompare* other);
+    bool NiSkinPartition_Partition_IsEqual(const PartitionCompare* kPartition);
 };
 struct CA82250IndexArray
 {
@@ -558,9 +558,9 @@ struct SkinBuilder
     int unk00;
     int unk04;
     unsigned int count;
-    __declspec(nothrow) void BuildBoneLODControllerSets(SkinGeom*, void*, SkinItems*, int*) throw();
+    __declspec(nothrow) void NiSkinPartition_CreateInitialBoneSets(SkinGeom*, void*, SkinItems*, int*) throw();
     __declspec(nothrow) void NiSkinPartition_MergeBoneSets(unsigned int, SkinItems*) throw();
-    bool BuildTriangleSetMapping(SkinGeom*, void*, unsigned int, void*, SkinItems*, int**, int*) throw();
+    bool NiSkinPartition_MakeBoneSets(SkinGeom*, void*, unsigned int, void*, SkinItems*, int**, int*) throw();
 };
 template <class T> class SkinTArray
 {
@@ -796,16 +796,19 @@ struct LBSkinPartition : LBObject
     unsigned int m_uiPartitionCount;
     LBPartition* m_pPartitions;
 
-    void NiSkinPartition_LoadBinary(NiStream& arStream);
+    void NiSkinPartition_LoadBinary(NiStream& kStream);
 };
 
 // @fnv 0x00a83c30
 // src: XBOX_PDB 0x00a83c30
-void LBSkinPartition::NiSkinPartition_LoadBinary(NiStream& arStream)
+// pdb: NiSkinPartition::LoadBinary | NiSkinPartition.obj | retail, upstream name already matches, high
+// pdb params: kStream
+// pdb locals: i
+void LBSkinPartition::NiSkinPartition_LoadBinary(NiStream& kStream)
 {
-    LBObject::LoadBinary(arStream);
-    LBStreamLoadBinary(arStream, m_uiPartitionCount);
+    LBObject::LoadBinary(kStream);
+    LBStreamLoadBinary(kStream, m_uiPartitionCount);
     m_pPartitions = new LBPartition[m_uiPartitionCount];
     for (unsigned int i = 0; i < m_uiPartitionCount; i++)
-        m_pPartitions[i].LoadBinary(arStream);
+        m_pPartitions[i].LoadBinary(kStream);
 }

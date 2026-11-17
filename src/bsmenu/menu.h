@@ -10,6 +10,7 @@ class MenuValueDescriptor
     ~MenuValueDescriptor();
 };
 // @fnv 0x00a0be70
+// pdb: XMLStorage::~XMLStorage | Tile.obj | debug, object-file run extension, low
 MenuValueDescriptor::~MenuValueDescriptor()
 {
     if (m_pName)

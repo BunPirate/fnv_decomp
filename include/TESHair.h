@@ -7,14 +7,15 @@
 
 class TESNPC;
 
+// pdb: class TESHair, size 0x4c, bases: TESForm, TESFullName, TESModel, TESTexture, 1 members
 class TESHair : public TESForm, public TESFullName, public TESModel, public TESTexture
 {
 public:
     TESHair();
 
-    bool Load(TESFile* file);
+    bool Load(TESFile* apFile);
     // TESForm vtable slot 8 (vftable 0x1049b9c slot 8 = 0x5fdcb0)
-    bool LoadForm(TESFile* file);
+    bool LoadForm(TESFile* apFile);
     bool IsValidForNPC(TESNPC* npc);
     bool IsHairValidForNPC(TESNPC* npc);
     void ResetFormData();

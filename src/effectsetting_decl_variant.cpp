@@ -31,6 +31,8 @@ void __cdecl TESForm_AddChunk_00485910(unsigned int, unsigned int);
 
 // @fnv 0x00407300
 // src: COMMUNITY 0x00407300
+// pdb: EffectSetting::Save | EffectSetting.obj | retail, vtable slot, high
+// pdb locals: psaveLight, psetting, psaveEffectShader, psaveCastSound, psaveBoltSound, psaveAreaSound, psaveItem, psaveEnchantEffect, psaveHitSound, pnode
 void EffectSetting::SaveAlt()
 {
     BeginFormRecord();

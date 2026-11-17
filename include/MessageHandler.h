@@ -2,6 +2,7 @@
 
 #include "BSCoreMessage.h"
 
+// pdb: class MessageHandler, size 0x8, bases: BSCoreMessage, 1 members
 class MessageHandler : public BSCoreMessage
 {
 public:

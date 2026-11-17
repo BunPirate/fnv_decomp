@@ -11,6 +11,7 @@ class CombatVec3;
 class MeleeDebugOutput;
 class NiPoint3;
 
+// pdb: class CombatProcedureAttackMelee, size 0x88, bases: CombatProcedure, 16 members
 class CombatProcedureAttackMelee : public CombatProcedure
 {
 public:
@@ -27,8 +28,8 @@ public:
     virtual void Unk0c();
     virtual void d05();
     virtual int GetType();
-    virtual void SaveGame(BGSSaveFormBuffer* apBuffer);
-    virtual void LoadGame(BGSLoadFormBuffer* apBuffer);
+    virtual void SaveGame(BGSSaveFormBuffer* apSaveGameBuffer);
+    virtual void LoadGame(BGSLoadFormBuffer* apLoadGameBuffer);
     virtual void vf16();
 
     int ChooseMeleeAttack(bool abMidAttack, float afDistance, float afReach,
@@ -92,22 +93,22 @@ public:
     int GetSection();
     int GetAudioBackendData();
 
-    int unk10;
-    int unk14;
-    int unk18;
-    int unk1C;
-    TimeoutTimer pt20;
-    TimeoutTimer pt28;
-    TimeoutTimer pt30;
-    TimeoutTimer pt38;
-    TimeoutTimer pt40;
-    TimeoutTimer pt48;
-    bool unk50;
+    int eManeuverState; // src: XBOX_RETAIL_PDB +0x10 (old: unk10)
+    int eCombatState; // src: XBOX_RETAIL_PDB +0x14 (old: unk14)
+    int eLastCombatState; // src: XBOX_RETAIL_PDB +0x18 (old: unk18)
+    int eCurrentAttack; // src: XBOX_RETAIL_PDB +0x1c (old: unk1C)
+    TimeoutTimer MeleeTimer; // src: XBOX_RETAIL_PDB +0x20 (old: pt20)
+    TimeoutTimer ManeuverTimer; // src: XBOX_RETAIL_PDB +0x28 (old: pt28)
+    TimeoutTimer DodgeTimer; // src: XBOX_RETAIL_PDB +0x30 (old: pt30)
+    TimeoutTimer AdvanceTimer; // src: XBOX_RETAIL_PDB +0x38 (old: pt38)
+    TimeoutTimer CloseTimer; // src: XBOX_RETAIL_PDB +0x40 (old: pt40)
+    TimeoutTimer TargetUnreachableTimer; // src: XBOX_RETAIL_PDB +0x48 (old: pt48)
+    bool bRangedAllyWantsToShoot; // src: XBOX_RETAIL_PDB +0x50 (old: unk50)
     unsigned char unk51[3];
-    int unk54;
-    float unk58;
-    float unk5C;
-    CombatTargetTimestamp val60;
-    CombatMeleeData data64;
+    int iAdvanceMoveMode; // src: XBOX_RETAIL_PDB +0x54 (old: unk54)
+    float fCurrentAttackReach; // src: XBOX_RETAIL_PDB +0x58 (old: unk58)
+    float fFacingTargetDistance; // src: XBOX_RETAIL_PDB +0x5c (old: unk5C)
+    CombatTargetTimestamp fAttackPickFailedTimestamp; // src: XBOX_RETAIL_PDB +0x60 (old: val60)
+    CombatMeleeData MovementRestrictions; // src: XBOX_RETAIL_PDB +0x64 (old: data64)
     unsigned char unk68[0x20];
 };

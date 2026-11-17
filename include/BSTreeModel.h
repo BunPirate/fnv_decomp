@@ -15,6 +15,7 @@ class TreeLeafRef;
 class TreeModelInput;
 class LoaderX;
 
+// pdb: class BSTreeModel, size 0x50, bases: NiRefObject, 18 members
 class BSTreeModel : public NiRefObject
 {
   public:
@@ -28,7 +29,7 @@ class BSTreeModel : public NiRefObject
         CSpeedTreeRT* m_pTreeRuntime;
         CSpeedTreeRT* runtime;
     };
-    NiPointer<BSTreeModel> source;
+    NiPointer<BSTreeModel> spTreeParent; // src: XBOX_RETAIL_PDB +0x10 (old: source)
     union
     {
         NiPointer<NiTriStripsData>* pLeafGeometry;
@@ -39,8 +40,8 @@ class BSTreeModel : public NiRefObject
         NiPointer<NiTriStripsData>* leafGeometry;
         NiPointer<NiTriStripsData>* m_pspLeafGeometry;
     };
-    NiPointer<NiNode> billboard;
-    NiPointer<NiAVObject> unk20;
+    NiPointer<NiNode> spBillboard; // src: XBOX_RETAIL_PDB +0x1c (old: billboard)
+    NiPointer<NiAVObject> spLeafShaderData; // src: XBOX_RETAIL_PDB +0x20 (old: unk20)
     union
     {
         NiPointer<NiTriStrips>* pLeafShapes;
@@ -51,18 +52,18 @@ class BSTreeModel : public NiRefObject
         NiPointer<NiTriStrips>* leafNodes;
         NiPointer<NiTriStrips>* m_pspLeafShaders;
     };
-    NiPointer<NiTexture> unk2c;
-    NiPointer<NiTexture> unk30;
-    NiPointer<NiTexture> unk34;
-    NiPointer<NiNode> collision;
+    NiPointer<NiTexture> spBranchTextureSet; // src: XBOX_RETAIL_PDB +0x2c (old: unk2c)
+    NiPointer<NiTexture> spLeafFrondTexture; // src: XBOX_RETAIL_PDB +0x30 (old: unk30)
+    NiPointer<NiTexture> spBillboardTextureSet; // src: XBOX_RETAIL_PDB +0x34 (old: unk34)
+    NiPointer<NiNode> spRigidBody; // src: XBOX_RETAIL_PDB +0x38 (old: collision)
     union
     {
         float unk3c;
         float m_fLeafScale;
         float scale;
     };
-    unsigned int unk40;
-    bool unk44;
+    unsigned int iSeed; // src: XBOX_RETAIL_PDB +0x40 (old: unk40)
+    bool bInitialized; // src: XBOX_RETAIL_PDB +0x44 (old: unk44)
     unsigned char unk45[3];
     union
     {

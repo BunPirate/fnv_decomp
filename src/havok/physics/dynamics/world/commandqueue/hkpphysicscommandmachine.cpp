@@ -35,7 +35,7 @@ struct CommandRecord
     int unk0C;
 };
 
-void Object_NotifyAndDetachRecord(int, CommandObject*);
+void hkpWorldOperationUtil_removeConstraintFromCriticalLockedIsland(int, CommandObject*);
 void hkpWorldOperationUtil_addConstraintToCriticalLockedIsland(int, CommandObject*);
 static __declspec(noinline) void SetOwnerStateFlags(int a, CommandObject* x, int b)
 {
@@ -50,27 +50,30 @@ static __forceinline void AddFwd(int a, const volatile int& y, CommandObject* x)
 // Iterates a range of CommandRecord entries and dispatches each by tag to AddFwd or FUN_00cb3da0, stopping on an unknown tag.
 // @fnv 0x00df25f0
 // src: HAVOK_LIB 0x00df25f0
-void hkPhysicsCommandMachineProcess(int aiContext, CommandRecord* apRecords, int c)
+// pdb: hkPhysicsCommandMachineProcess | hkpPhysicsCommandMachine.obj | retail, upstream name already matches, high
+// pdb params: world, begin, size
+// pdb locals: assertBuf, ostr
+void hkPhysicsCommandMachineProcess(int world, CommandRecord* begin, int size)
 {
-    CommandRecord* pEnd = (CommandRecord*)((char*)apRecords + c);
-    if (apRecords < pEnd)
+    CommandRecord* pEnd = (CommandRecord*)((char*)begin + size);
+    if (begin < pEnd)
     {
-        int ctx = *(volatile int*)&aiContext;
+        int ctx = *(volatile int*)&world;
         do
         {
-            switch (apRecords->tag)
+            switch (begin->tag)
             {
             case 0: {
                 CommandObject* x;
-                AddFwd(ctx, apRecords->y, x = apRecords->x);
+                AddFwd(ctx, begin->y, x = begin->x);
             }
             break;
             case 1:
-                Object_NotifyAndDetachRecord(ctx, apRecords->x);
+                hkpWorldOperationUtil_removeConstraintFromCriticalLockedIsland(ctx, begin->x);
                 break;
             default:
                 return;
             }
-        } while (++apRecords < pEnd);
+        } while (++begin < pEnd);
     }
 }

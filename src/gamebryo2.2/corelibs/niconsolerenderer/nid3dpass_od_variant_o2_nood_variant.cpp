@@ -805,14 +805,17 @@ class FUN_00b7c750_cls
     unsigned int unk14;
     S00b7c750_Camera* m_pkAccumulationCamera;
 
-    long ShadowLightShader_SetupGeometryOpt_WorldViewProj(unsigned int uiUnused, unsigned int auiCameraValue);
+    long ShadowLightShader_SetupGeometryOpt_WorldViewProj(unsigned int apGeometry, unsigned int aWorld);
 };
 
 // @fnv 0x00b7c750
 // src: COMMUNITY 0x00b7c750
-long FUN_00b7c750_cls::ShadowLightShader_SetupGeometryOpt_WorldViewProj(unsigned int uiUnused, unsigned int auiCameraValue)
+// pdb: ShadowLightShader::SetupGeometryOpt_WorldViewProj | ShadowLightShader.obj | retail, upstream name already matches, high
+// pdb params: apGeometry, aWorld
+// pdb locals: mat
+long FUN_00b7c750_cls::ShadowLightShader_SetupGeometryOpt_WorldViewProj(unsigned int apGeometry, unsigned int aWorld)
 {
-    m_pkAccumulationCamera->NiDX9Renderer_SetModelTransform(auiCameraValue, 0);
+    m_pkAccumulationCamera->NiDX9Renderer_SetModelTransform(aWorld, 0);
     S00b7c750_Matrix kViewProj;
     D3DXMatrixMultiplyTranspose_00ee6dfe(&kViewProj, &m_pkAccumulationCamera->m_kView, &m_pkAccumulationCamera->m_kProj);
     S00b7c750_Renderer* pkRenderer = DAT_0126f74c->m_pOwnerShader;

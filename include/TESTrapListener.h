@@ -3,6 +3,7 @@
 #include "BGSZoneTargetListener.h"
 #include "bhkTrapListener.h"
 
+// pdb: class TESTrapListener, size 0x24 (here 0x10), bases: BGSZoneTargetListener, bhkTrapListener, 1 members
 class TESTrapListener : public BGSZoneTargetListener, public bhkTrapListener
 {
 public:

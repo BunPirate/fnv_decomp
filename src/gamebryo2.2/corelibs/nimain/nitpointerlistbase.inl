@@ -92,6 +92,9 @@ inline void NiTPointerListBase<NiTPointerAllocator<unsigned int>, char*>::Delete
 
 #pragma optimize("", off)
 // @fnv 0x0057c730
+// pdb: NiTPointerListBase<NiTPointerAllocator<unsigned int>,Tile *>::Remove | Interface.obj | debug, call graph, medium
+// pdb params: element
+// pdb locals: kPos
 template <>
 Script* NiTPointerListBase<NiTPointerAllocator<unsigned int>,Script*>::Remove(Script* const& element)
 {
@@ -103,6 +106,8 @@ Script* NiTPointerListBase<NiTPointerAllocator<unsigned int>,Script*>::Remove(Sc
 
 // Explicit instantiation selects the original optimized NiPointer consumer.
 // @fnv 0x00e74d40
+// pdb: NiTPointerListBase<NiTPointerAllocator<unsigned int>,NiPointer<NiProperty> >::RemoveAll | BSTempEffectSimpleDecal.obj | retail, call graph, medium
+// pdb locals: pkCurr, pkDel
 template void NiTPointerListBase<NiTPointerAllocator<unsigned int>,NiPointer<NiProperty> >::RemoveAll();
 
 // char* member specializations.
@@ -140,6 +145,7 @@ char* NiTPointerListBase<NiTPointerAllocator<unsigned int>, char*>::RemoveHead()
 }
 
 // @fnv 0x00e7d7f0
+// pdb: NiXenonExplicitBuffersData::~NiXenonExplicitBuffersData | NiXenon2DBufferData.obj | debug, object-file run extension, low
 template <>
 char* NiTPointerListBase<NiTPointerAllocator<unsigned int>, char*>::RemovePos(void*& position)
 {
@@ -184,6 +190,8 @@ char* NiTPointerListBase<NiTPointerAllocator<unsigned int>, char*>::Remove(char*
 }
 #pragma optimize("", off)
 // @fnv 0x004edf00
+// pdb: NiTPointerListBase<NiTPointerAllocator<unsigned int>,Tile *>::RemoveTail | Interface.obj | debug, call graph, medium
+// pdb locals: pkNode, element
 template <>
 Script* NiTPointerListBase<NiTPointerAllocator<unsigned int>,Script*>::RemoveTail()
 {
@@ -199,6 +207,9 @@ Script* NiTPointerListBase<NiTPointerAllocator<unsigned int>,Script*>::RemoveTai
 #pragma optimize("", on)
 
 // @fnv 0x00a5a310
+// pdb: NiTPointerListBase<NiTPointerAllocator<unsigned int>,NiPointer<BSTempEffectSimpleDecal> >::AddTail | BGSDecalManager.obj | retail, call graph, medium
+// pdb params: element
+// pdb locals: pkNode
 template <>
 void NiTPointerListBase<NiTPointerAllocator<unsigned int>,NiPointer<BSMultiBound> >::AddTail(const NiPointer<BSMultiBound>& element)
 {
@@ -243,6 +254,9 @@ template<> NiPointer<ObstacleData> NiTPointerListBase<NiTPointerAllocator<unsign
 #pragma optimize("", off)
 template<>
 // @fnv 0x004a4500
+// pdb: NiTPointerListBase<NiTPointerAllocator<unsigned int>,NiPointer<BSTempEffectSimpleDecal> >::RemovePos | BGSDecalManager.obj | debug, object-file run extension, low
+// pdb params: kPos
+// pdb locals: pkNode, pkPrev, element, pkNext
 NiPointer<ObstacleData> NiTPointerListBase<NiTPointerAllocator<unsigned int>,NiPointer<ObstacleData> >::RemovePos(void*& position)
 {
     NiTListItem<NiPointer<ObstacleData> >* item = static_cast<NiTListItem<NiPointer<ObstacleData> >*>(position);

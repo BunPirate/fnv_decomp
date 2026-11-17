@@ -69,7 +69,7 @@ typedef char NiAlphaPropertySizeCheck[sizeof(NiAlphaProperty) == 0x1C ? 1 : -1];
 extern ImageSpaceManager* DAT_011f91ac;
 
 // Keep the original inline bodies with the shared class declarations.
-inline NiAlphaProperty::NiAlphaProperty() : m_usAlphaArg(0xEC), m_ucAlphaArg2(0)
+inline NiAlphaProperty::NiAlphaProperty() : m_uFlags(0xEC), m_ucAlphaTestRef(0)
 {}
 
 inline void NiObjectNET::DecRefCount()
@@ -125,15 +125,17 @@ inline float LocalPt3::Length() const
 
 
 // @fnv 0x00b4e270
+// pdb: BSFadeNode::InitSDM | BSFadeNode.obj | retail, string-set bridge, high
 void BSFadeNode::InitializeMultiBounds()
 {
     ms_pAlphaProperty = new NiAlphaProperty;
-    ms_pAlphaProperty->m_usAlphaArg |= 1;
+    ms_pAlphaProperty->m_uFlags |= 1;
     ms_pFadeNodeAnimationName = new NiFixedString("FadeNode Anim");
 }
 
 // Allocates and returns a new BSFadeNode instance.
 // @fnv 0x00b4eaa0
+// pdb: BSFadeNode::CreateObject | BSFadeNode.obj | retail, upstream name already matches, high
 NiObject* BSFadeNode::CreateObject()
 {
     return new BSFadeNode;
@@ -141,22 +143,26 @@ NiObject* BSFadeNode::CreateObject()
 
 // Clamps nearDistance to the INI setting's integer value and raises farDistance to twice that minimum, then stores both into fNearDistSqr and fFarDistSqr.
 // @fnv 0x00b4dfd0
-void BSFadeNode::SetRange(float nearDistance, float farDistance)
+// pdb: BSFadeNode::SetRange | BSFadeNode.obj | debug, upstream name already matches, high
+// pdb params: afNearDist, afFarDist
+// pdb locals: iminNear
+void BSFadeNode::SetRange(float afNearDist, float afFarDist)
 {
     float minDistance =
         (float)reinterpret_cast<const volatile int&>(
             static_cast<const volatile SettingT<INISettingCollection>&>(ms_kMinimumFadeDistanceSetting).uValue);
-    if (nearDistance < minDistance)
+    if (afNearDist < minDistance)
     {
-        nearDistance = minDistance;
-        if (farDistance < minDistance * 2.0f)
-            farDistance = minDistance * 2.0f;
+        afNearDist = minDistance;
+        if (afFarDist < minDistance * 2.0f)
+            afFarDist = minDistance * 2.0f;
     }
-    fNearDistSqr = nearDistance;
-    fFarDistSqr = farDistance;
+    fNearDistSqr = afNearDist;
+    fFarDistSqr = afFarDist;
 }
 
 // @fnv 0x00b4f530
+// pdb: BSShaderManager::GetSceneDepthRenderedTexture | BSShaderManager.obj | debug, upstream name already matches, high
 BSRenderedTexture* BSShaderManager::GetSceneDepthRenderedTexture()
 {
     return DAT_011f91ac->GetDepthRenderedTexture();
@@ -175,6 +181,8 @@ struct FUN_00a5e5b0_helper
 
 // @fnv 0x00b4def0
 // src: XBOX_PDB 0x00b4def0
+// pdb: BSFadeNode::RegisterStreamables | BSFadeNode.obj | debug, upstream name already matches, high
+// pdb params: arStream
 bool FUN_00b4def0_shell::BSFadeNode_RegisterStreamables(NiStream* arStream)
 {
     if (!((FUN_00a5e5b0_helper*)this)->RegisterChildStreamables(arStream))
@@ -192,6 +200,7 @@ struct Dummy
 };
 
 // @fnv 0x00b4dfb0
+// pdb: BSSimpleList<BSMultiBoundRoom *>::~BSSimpleList<BSMultiBoundRoom *> | BSFadeNode.obj | debug, object-file run extension, low
 void __cdecl SetFlagOnVirtualResult(Dummy* apDummy)
 {
     if (apDummy)
@@ -235,6 +244,7 @@ double(__cdecl* DAT_011f9134)(void*);
 // Returns the result of calling the DAT_011f9134 function pointer on param_1, or 1.0f if the pointer is null.
 // @fnv 0x00b4df80
 // src: COMMUNITY 0x00b4df80
+// pdb: BSFadeNode::GetMaxAlpha | BSFadeNode.obj | debug, upstream name already matches, high
 float __fastcall BSFadeNode_GetMaxAlpha(void* param_1)
 {
     float f;
@@ -259,6 +269,9 @@ void FUN_00b4dec0_shell::BSFadeNode_SetLODMultType(int aeMultType)
 
 // @fnv 0x00b4e3f0
 // src: XBOX_PDB 0x00b4e3f0
+// pdb: BSFadeNode::CreateClone | BSFadeNode.obj | retail, upstream name already matches, high
+// pdb params: arCloneData
+// pdb locals: pNode
 void* __fastcall BSFadeNode_CreateClone(void* apSource, int dummy, void* kCloning)
 {
     BSFadeNode* pFadeNode = new BSFadeNode();
@@ -273,12 +286,14 @@ void* __fastcall BSFadeNode_CreateClone(void* apSource, int dummy, void* kClonin
 struct FUN_00b4ed40_t
 {
     void FUN_00b4e1e0();
-    FUN_00b4ed40_t* FUN_00b4ed40(unsigned char flags);
+    FUN_00b4ed40_t* BSFadeNode_ScalarDtor(unsigned char flags);
 };
 void __cdecl __Dummy_00b6fef0(void* p, unsigned int size);
 // Calls FUN_00b4e1e0, then if bit 0 of flags is set calls __Dummy_00b6fef0 on this with size 0xe4, and returns this.
 // @fnv 0x00b4ed40
-FUN_00b4ed40_t* FUN_00b4ed40_t::FUN_00b4ed40(unsigned char flags)
+// src: XBOX_RETAIL_PDB 0x00b4ed40
+// pdb: BSFadeNode::`scalar deleting destructor' | BSFadeNode.obj | retail, object-file gap fill, high
+FUN_00b4ed40_t* FUN_00b4ed40_t::BSFadeNode_ScalarDtor(unsigned char flags)
 {
     FUN_00b4e1e0();
     if (flags & 1)
@@ -287,7 +302,9 @@ FUN_00b4ed40_t* FUN_00b4ed40_t::FUN_00b4ed40(unsigned char flags)
 }
 
 // @fnv 0x00b4e380
-void __cdecl ReleaseFadeNodeResources()
+// src: XBOX_RETAIL_PDB 0x00b4e380
+// pdb: BSFadeNode::KillSDM | BSFadeNode.obj | retail, object-file run extension, high
+void __cdecl BSFadeNode_KillSDM()
 {
     if (BSFadeNode::ms_pAlphaProperty.m_pObject)
     {
@@ -306,7 +323,7 @@ void __cdecl ReleaseFadeNodeResources()
 extern unsigned char DAT_011ad7b4;
 extern int DAT_011f36ac;
 
-bool __cdecl FUN_00b4ea20_probe(void* obj);
+bool __cdecl HasActiveRB(void* apScene);
 
 struct FUN_00b4ea20_child
 {
@@ -334,20 +351,23 @@ class FUN_00b4ea20_cls
     unsigned short m_uA6;
     unsigned char unkA8[0x18];
     float m_fC0;
-    void Tail(float* p, int v);
-    void BSFadeNode_UpdateSelectedDownwardPass(float* p, int v);
+    void Tail(float* UpdateData, int uFlags);
+    void BSFadeNode_UpdateSelectedDownwardPass(float* UpdateData, int uFlags);
 };
 
 // @fnv 0x00b4ea20
 // src: XBOX_PDB 0x00b4ea20
-void FUN_00b4ea20_cls::BSFadeNode_UpdateSelectedDownwardPass(float* apValue, int aiValue)
+// pdb: BSFadeNode::UpdateSelectedDownwardPass | BSFadeNode.obj | retail, upstream name already matches, high
+// pdb params: UpdateData, uFlags
+// pdb locals: btestFrustum, pchild, pmanager, pcont
+void FUN_00b4ea20_cls::BSFadeNode_UpdateSelectedDownwardPass(float* UpdateData, int uFlags)
 {
     if (DAT_011ad7b4 == 0)
     {
-        m_fC0 = *apValue;
-        if (*apValue > 0.0f)
+        m_fC0 = *UpdateData;
+        if (*UpdateData > 0.0f)
         {
-            bool notSet = (FUN_00b4ea20_probe(this) == false);
+            bool notSet = (HasActiveRB(this) == false);
             if (notSet)
             {
                 if (m_uA6 > 0 && notSet)
@@ -365,7 +385,7 @@ void FUN_00b4ea20_cls::BSFadeNode_UpdateSelectedDownwardPass(float* apValue, int
             }
         }
     }
-    Tail(apValue, aiValue);
+    Tail(UpdateData, uFlags);
 }
 
 struct Strings
@@ -471,17 +491,20 @@ struct FadeViewer
     int multType, frameCounter;
     void NiNode_GetViewerStrings(Strings*);
     Extra* FUN_00a5bdd0(void*);
-    void BSFadeNode_GetViewerStrings(Strings* strings);
+    void BSFadeNode_GetViewerStrings(Strings* pkStrings);
 };
 // Appends formatted fade-viewer fields and bit flags from field30 to the strings list, then forwards to an Extra viewer if found.
 // @fnv 0x00b4ed70
 // src: XBOX_PDB 0x00b4ed70
-void FadeViewer::BSFadeNode_GetViewerStrings(Strings* strings)
+// pdb: BSFadeNode::GetViewerStrings | BSFadeNode.obj | retail, string-set bridge, high
+// pdb params: pkStrings
+// pdb locals: message, ftestFarDist, ftestNearDist, pextraData
+void FadeViewer::BSFadeNode_GetViewerStrings(Strings* pkStrings)
 {
-    NiNode_GetViewerStrings(strings);
+    NiNode_GetViewerStrings(pkStrings);
     {
         char* text = NiViewerStrings_NiGetViewerString_Title(DAT_011f9140);
-        strings->Add(text);
+        pkStrings->Add(text);
         float fNearDist = nearDist;
         float fFarDist = farDist;
         text = (char*)g_memoryManager.Allocate(64);
@@ -489,64 +512,66 @@ void FadeViewer::BSFadeNode_GetViewerStrings(Strings* strings)
             BSsprintf(text, 64, "fNearDistSqr = DISABLED");
         else
             BSsprintf(text, 64, "fNearDistSqr = %.2f", fNearDist);
-        strings->Add(text);
+        pkStrings->Add(text);
         text = (char*)g_memoryManager.Allocate(64);
         if (fFarDist == 3.4028234663852886e38)
             BSsprintf(text, 64, "fFarDistSqr = DISABLED");
         else
             BSsprintf(text, 64, "fFarDistSqr = %.2f", fFarDist);
-        strings->Add(text);
+        pkStrings->Add(text);
         text = (char*)g_memoryManager.Allocate(64);
         BSsprintf(text, 64, "eMultType = %d", multType);
-        strings->Add(text);
+        pkStrings->Add(text);
         text = NiGetViewerString_00a7d550("fLastFade", lastFade);
-        strings->Add(text);
+        pkStrings->Add(text);
         text = NiGetViewerString_00a7d550("fCurrentFade", currentFade);
-        strings->Add(text);
+        pkStrings->Add(text);
         text = NiGetViewerString_00a7d550("fTimeSinceUpdate", timeSinceUpdate);
-        strings->Add(text);
+        pkStrings->Add(text);
         text = NiGetViewerString_00a7d4d0("iFrameCounter", frameCounter);
-        strings->Add(text);
+        pkStrings->Add(text);
     }
     {
         ViewerBool flag;
         flag.value = (field30 >> 14) & 1;
         char* text = FlagString("bFadedIn", flag);
-        strings->Add(text);
+        pkStrings->Add(text);
     }
     {
         ViewerBool flag;
         flag.value = (field30 >> 15) & 1;
         char* text = FlagString("bIgnoreFade", flag);
-        strings->Add(text);
+        pkStrings->Add(text);
     }
     {
         ViewerBool flag;
         flag.value = (field30 >> 16) & 1;
         char* text = FlagString("bLODFadingOut", flag);
-        strings->Add(text);
+        pkStrings->Add(text);
     }
     {
         ViewerBool flag;
         flag.value = (field30 >> 17) & 1;
         char* text = FlagString("bHasMovingSound", flag);
-        strings->Add(text);
+        pkStrings->Add(text);
     }
     {
         ViewerBool flag;
         flag.value = (field30 >> 24) & 1;
         char* text = FlagString("bHighDetail", flag);
-        strings->Add(text);
+        pkStrings->Add(text);
     }
     Extra* extra = FUN_00a5bdd0(DAT_01202ddc);
     if (extra)
-        extra->Viewer(strings);
+        extra->Viewer(pkStrings);
 }
 
 void FUN_00a5dd70();
 
 // @fnv 0x00b4ded0
 // src: XBOX_PDB 0x00b4ded0
+// pdb: BSFadeNode::UpdateDownwardPass | BSFadeNode.obj | debug, upstream name already matches, high
+// pdb params: arUpdateData, aiFlags
 void BSFadeNode_UpdateDownwardPass()
 {
     FUN_00a5dd70();
@@ -555,6 +580,8 @@ void BSFadeNode_UpdateDownwardPass()
 void NiNode_LoadBinary();
 // @fnv 0x00b4dee0
 // src: XBOX_PDB 0x00b4dee0
+// pdb: BSFadeNode::LoadBinary | BSFadeNode.obj | debug, upstream name already matches, high
+// pdb params: arStream
 void BSFadeNode_LoadBinary()
 {
     NiNode_LoadBinary();
@@ -563,14 +590,17 @@ void BSFadeNode_LoadBinary()
 struct Cls00b4df20
 {
     bool NiNode_IsEqual(Cls00b4df20* other);
-    bool BSFadeNode_IsEqual(Cls00b4df20* other);
+    bool BSFadeNode_IsEqual(Cls00b4df20* apObject);
 };
 
 // @fnv 0x00b4df20
 // src: XBOX_PDB 0x00b4df20
-bool Cls00b4df20::BSFadeNode_IsEqual(Cls00b4df20* other)
+// pdb: BSFadeNode::IsEqual | BSFadeNode.obj | debug, upstream name already matches, high
+// pdb params: apObject
+// pdb locals: bres
+bool Cls00b4df20::BSFadeNode_IsEqual(Cls00b4df20* apObject)
 {
-    return NiNode_IsEqual(other);
+    return NiNode_IsEqual(apObject);
 }
 
 struct Fade
@@ -644,24 +674,28 @@ struct Fade
     int unk108;
     int unk10c;
     float unk110;
-    bool UpdateFade(Fade* camera, int unused);
+    bool BSFadeNode_CheckFadeRadius(Fade* apCamera, int abNoFade);
 };
 extern unsigned char DAT_011ad7b4;
 extern float DAT_011ad7b8[];
 extern int DAT_011f9138;
 extern float DAT_011ad7f4, DAT_011ad7f0;
-void FUN_00b6bb30(Fade*, float);
+void RecursiveSetPropertyFadeAlpha(Fade*, float);
 // @fnv 0x00b4eb10
-bool Fade::UpdateFade(Fade* camera, int unused)
+// src: XBOX_RETAIL_PDB 0x00b4eb10
+// pdb: BSFadeNode::CheckFadeRadius | BSFadeNode.obj | retail, object-file gap fill, high
+// pdb params: apCamera, abNoFade
+// pdb locals: fFadePercent, ftestFarDist, ffadeAdjust, ftestNearDist, fdiff, kDiff, fSqrDist, fmult, fFadeDist
+bool Fade::BSFadeNode_CheckFadeRadius(Fade* apCamera, int abNoFade)
 {
     float alpha = 1.0f;
     if (DAT_011ad7b4)
     {
-        float scale = camera->unk110;
+        float scale = apCamera->unk110;
         NiPoint3 vDelta;
-        vDelta.x = unk8c - camera->unk8c;
-        vDelta.y = unk90 - camera->unk90;
-        vDelta.z = unk94 - camera->unk94;
+        vDelta.x = unk8c - apCamera->unk8c;
+        vDelta.y = unk90 - apCamera->unk90;
+        vDelta.z = unk94 - apCamera->unk94;
         float mult = 1.0f;
         if (unkc4 > 0 && unkc4 < 11)
             mult = DAT_011ad7b8[unkc4];
@@ -715,13 +749,13 @@ bool Fade::UpdateFade(Fade* camera, int unused)
         {
             unk30 |= 0x4000;
             unkb4 = unkb8 = 1.0f;
-            FUN_00b6bb30(this, 1.0f);
+            RecursiveSetPropertyFadeAlpha(this, 1.0f);
             return true;
         }
     }
     unk30 |= 0x4000;
     unkb4 = unkb8 = alpha;
-    FUN_00b6bb30(this, alpha);
+    RecursiveSetPropertyFadeAlpha(this, alpha);
     return true;
 }
 
@@ -738,6 +772,9 @@ extern float DAT_011ad7f4;
 
 // Checks whether the camera is within the node's fade distance, adjusted by a per-state factor, and returns true if the scaled distance is below the fade limit.
 // @fnv 0x00b4e030
+// pdb: BSFadeNode::ShouldUpdate | BSFadeNode.obj | debug, call graph, medium
+// pdb params: apCamera, afDistMult
+// pdb locals: ffadeAdjust, fdiff, kDiff, fSqrDist, fadeMult
 bool FUN_00b4e030_shell::IsWithinFadeDistance(NiCamera* apCamera, float afDistMult)
 {
     float ffadeAdjust = *(float*)((char*)apCamera + 0x110);
@@ -866,7 +903,7 @@ extern float DAT_011ad7f8;
 extern float DAT_011f63a0;
 extern int DAT_011f9138;
 extern FadeQueueHolder* DAT_011f4748;
-extern int DAT_011fa000;
+extern int BSShaderAccumulator_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011fa000 (old: DAT_011fa000/g_011fa000)
 extern char DAT_011f4288[];
 
 float BSMIN(float a, float b);
@@ -874,7 +911,7 @@ float BSMAX_00404010(float a, float b);
 bool NiObject_IsKindOf(void* list, FadeQueue* q);
 
 struct FadeNodeObj;
-void FUN_00b6bb30(FadeNodeObj* node, float fade);
+void RecursiveSetPropertyFadeAlpha(FadeNodeObj* apNode, float afAlpha);
 
 struct FadeNodeObj
 {
@@ -942,17 +979,20 @@ struct FadeNodeObj
     }
     void NiNode_OnVisible(FadeCuller& culler);
     float BSFadeNode_GetMaxAlpha();
-    void BSFadeNode_OnVisible(FadeCuller& culler);
+    void BSFadeNode_OnVisible(FadeCuller& arCuller);
 };
 
 // Updates the fade state of a FadeNodeObj based on camera distance and fade thresholds, queueing a batch render when the fade target is in progress.
 // @fnv 0x00b4e490
 // src: XBOX_PDB 0x00b4e490
-void FadeNodeObj::BSFadeNode_OnVisible(FadeCuller& culler)
+// pdb: BSFadeNode::OnVisible | BSFadeNode.obj | retail, upstream name already matches, high
+// pdb params: arCuller
+// pdb locals: diff, fadjusteddist, ftestnear, bspecialAlphaGroup, fdistance, ffadeperc, ftestfar, apCamera, ffadeadjust, fmaxA, fmult, paccum, pbsAccum
+void FadeNodeObj::BSFadeNode_OnVisible(FadeCuller& arCuller)
 {
     if (!DAT_011ad7b4 || IsCulledFlag())
     {
-        NiNode_OnVisible(culler);
+        NiNode_OnVisible(arCuller);
         return;
     }
     float fFadeAmount;
@@ -962,17 +1002,17 @@ void FadeNodeObj::BSFadeNode_OnVisible(FadeCuller& culler)
         {
             fFadeAmount = BSMIN(1.0f, BSMIN(DAT_011f63a0 / DAT_011ad7e4, DAT_011ad7f8) + fCurrentFade);
             fCurrentFade = fFadeAmount;
-            FUN_00b6bb30(this, fFadeAmount);
+            RecursiveSetPropertyFadeAlpha(this, fFadeAmount);
             fLastFade = fCurrentFade;
             if (fCurrentFade >= 1.0f)
                 m_uiValue1 |= 0x4000;
         }
-        NiNode_OnVisible(culler);
+        NiNode_OnVisible(arCuller);
         return;
     }
 
     float fMult = DAT_011ad7b8[eMultType];
-    FadeCamera* pCamera = culler.m_pCamera;
+    FadeCamera* pCamera = arCuller.m_pCamera;
     float fDist;
     LocalPt3 kDiff;
     if (fMult > 0.0f)
@@ -984,7 +1024,7 @@ void FadeNodeObj::BSFadeNode_OnVisible(FadeCuller& culler)
         fDist = 0.2f;
         m_uiValue1 |= 0x4000;
         fLastFade = fCurrentFade = 1.0f;
-        FUN_00b6bb30(this, *(volatile float*)&fCurrentFade);
+        RecursiveSetPropertyFadeAlpha(this, *(volatile float*)&fCurrentFade);
     }
 
     kDiff = m_kWorldTranslate - pCamera->m_kWorldTranslate;
@@ -1008,13 +1048,13 @@ void FadeNodeObj::BSFadeNode_OnVisible(FadeCuller& culler)
     {
         if (fFadeAmount > DAT_011ad7ec || (IsFadedIn() && fFadeAmount > DAT_011ad7f0))
         {
-            FUN_00b6bb30(this, 1.0f);
+            RecursiveSetPropertyFadeAlpha(this, 1.0f);
             fLastFade = fCurrentFade = 1.0f;
             m_uiValue1 |= 0x4000;
         }
         else
         {
-            FUN_00b6bb30(this, 0.0f);
+            RecursiveSetPropertyFadeAlpha(this, 0.0f);
             fLastFade = fCurrentFade = 0.0f;
             m_uiValue1 &= ~0x4000;
         }
@@ -1026,11 +1066,11 @@ void FadeNodeObj::BSFadeNode_OnVisible(FadeCuller& culler)
     if (IsFadedIn() && fTarget > 0.0f && fTarget < 1.0f)
     {
         FadeQueue* m_pPrimaryTaskProcessor = DAT_011f4748->m_pQueue;
-        if (NiObject_IsKindOf(&DAT_011fa000, m_pPrimaryTaskProcessor))
+        if (NiObject_IsKindOf(&BSShaderAccumulator_ms_RTTI, m_pPrimaryTaskProcessor))
         {
             m_pPrimaryTaskProcessor->RenderBound(m_pcName ? m_pcName : DAT_011f4288, 1);
             bFadeQueuedCur = true;
-            FUN_00b6bb30(this, fTarget);
+            RecursiveSetPropertyFadeAlpha(this, fTarget);
             fLastFade = fCurrentFade = fTarget;
         }
     }
@@ -1039,7 +1079,7 @@ void FadeNodeObj::BSFadeNode_OnVisible(FadeCuller& culler)
     {
         fFadeAmount = BSMIN(1.0f, BSMIN(DAT_011f63a0 / DAT_011ad7e4, DAT_011ad7f8) + fCurrentFade);
         fCurrentFade = fFadeAmount;
-        FUN_00b6bb30(this, fFadeAmount);
+        RecursiveSetPropertyFadeAlpha(this, fFadeAmount);
         fLastFade = fCurrentFade;
         if (fCurrentFade >= 1.0f)
             m_uiValue1 |= 0x4000;
@@ -1048,20 +1088,22 @@ void FadeNodeObj::BSFadeNode_OnVisible(FadeCuller& culler)
              (fCurrentFade < 1.0f && fCurrentFade > 0.0f && fFadeAmount < DAT_011ad7f0))
     {
         fCurrentFade = BSMAX_00404010(0.0f, fCurrentFade - BSMIN(DAT_011f63a0 / DAT_011ad7e8, DAT_011ad7f8));
-        FUN_00b6bb30(this, fCurrentFade);
+        RecursiveSetPropertyFadeAlpha(this, fCurrentFade);
         fLastFade = fCurrentFade;
         if (fCurrentFade <= 0.0f)
             m_uiValue1 &= ~0x4000;
     }
 
     if (fCurrentFade > 0.0f && fTarget != 0.0f)
-        NiNode_OnVisible(culler);
+        NiNode_OnVisible(arCuller);
     if (bFadeQueuedCur)
         DAT_011f4748->m_pQueue->DispatchBatchRenderer();
 }
 }  // namespace fnv_00b4e490
 
 // @fnv 0x00b4df10
+// pdb: BSFadeNode::SaveBinary | BSFadeNode.obj | debug, upstream name already matches, high
+// pdb params: arStream
 extern "C" void __cdecl NiNode_SaveBinary();
 // src: XBOX_PDB 0x00b4df10
 void __cdecl BSFadeNode_SaveBinary()

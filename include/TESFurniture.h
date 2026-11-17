@@ -3,6 +3,7 @@
 #include "TESObjectACTI.h"
 #include "NiPoint3.h"
 
+// pdb: class TESFurniture, size 0x94, bases: TESObjectACTI, 1 members
 class TESFurniture : public TESObjectACTI
 {
 public:
@@ -17,7 +18,7 @@ public:
     virtual bool Compare(TESForm* form);
 
     void ResetFormData();
-    bool Load(TESFile* file);
+    bool Load(TESFile* apFile);
     bool GetCanSitOn();
     void SetCanSitOn(bool bSit);
     bool GetCanSleepOn();
@@ -30,9 +31,9 @@ public:
     static bool __cdecl IsFurnitureSitMarker(unsigned int auMarker);
     static bool __cdecl IsFurnitureSleepMarker(unsigned int auMarker);
     void InitializeMarkerFlags();
-    NiPoint3 GetMarkerOffset(unsigned int auMarker, float afScale);
+    NiPoint3 GetMarkerOffset(unsigned int aiIndex, float afScale);
     float GetMarkerRotation(unsigned int auMarker);
-    NiPoint3 FUN_00509920(unsigned int auMarker, float afScale);
+    NiPoint3 FUN_00509920(unsigned int aiIndex, float afScale);
     float GetFurnitureHeading(unsigned int auMarker);
     int _FNV_GetFormType();
 

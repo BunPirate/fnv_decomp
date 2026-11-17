@@ -11,6 +11,8 @@
 
 // @fnv 0x009cbfd0
 // src: XBOX_PDB 0x009cbfd0
+// pdb: CombatProcedureAttackLow::SaveGame | CombatProcedureAttackLow.obj | retail, vtable slot, high
+// pdb params: apSaveGameBuffer
 void CombatProcedureAttackLow::SaveGame_009cbfd0(BGSSaveFormBuffer* apSaveGameBuffer)
 {
     CombatProcedure::SaveGame(apSaveGameBuffer);
@@ -38,6 +40,7 @@ struct FUN_009cbb50_shell
 
 // @fnv 0x009cbb50
 // src: GUESS 0x009cbb50 (confidence: low)
+// pdb: CombatProcedureAttackLow::~CombatProcedureAttackLow | CombatProcedureAttackLow.obj | debug, object-file gap fill, medium
 void FUN_009cbb50_shell::SetVtableAndProcessState_009cbb50()
 {
     *(int*)this = (int)&DAT_01090aec;
@@ -51,6 +54,7 @@ struct FUN_009cbb20_shell
 };
 // Calls FUN_009cbb50, then deletes this when flags has bit 0 set, and returns this.
 // @fnv 0x009cbb20
+// pdb: CombatProcedureAttackLow::`scalar deleting destructor' | CombatProcedureAttackLow.obj | debug, vtable slot, medium
 void* FUN_009cbb20_shell::DestroyIfFlagged(unsigned int flags)
 {
     SetVtableAndProcessState_009cbb50();
@@ -71,6 +75,8 @@ struct FUN_009cbf10_shell : CombatProcedureAttackLow
 
 // Displays debug text for the combat procedure's state at offset 0x10, showing weapon full name and a float value when the state is 1.
 // @fnv 0x009cbf10
+// pdb: CombatProcedureAttackLow::DisplayDebugText | CombatProcedureAttackLow.obj | retail, string-set bridge, high
+// pdb params: apDebugText, aeLocation, aeJustify
 void FUN_009cbf10_shell::DisplayAttackDebugText(IDebugText* apDebugText, DEBUGTEXT_LOCATION aeLocation,
                                                 DEBUGTEXT_JUSTIFY aeJustify)
 {
@@ -116,6 +122,8 @@ struct FUN_009cc040_shell
 
 // @fnv 0x009cc040
 // src: XBOX_PDB 0x009cc040
+// pdb: CombatProcedureAttackLow::LoadGame | CombatProcedureAttackLow.obj | retail, upstream name already matches, high
+// pdb params: apLoadGameBuffer
 void FUN_009cc040_shell::CombatProcedureAttackLow_LoadGame(BGSLoadFormBuffer* apLoadGameBuffer)
 {
     reinterpret_cast<CombatProcedure_Helper*>(this)->LoadGame(apLoadGameBuffer);
@@ -260,9 +268,9 @@ struct FUN_009cbb70_actorbase
 struct FUN_009cbb70_actor : FUN_009cbb70_actorbase, FUN_00645d00_base
 {
     int TESObjectREFR_GetSpace();
-    FUN_004459e0* TESObjectREFR_GetInventoryItem_00576260(TESObjectWEAP* apWeapon, int aiFlag);
+    FUN_004459e0* TESObjectREFR_GetInventoryItem_00576260(TESObjectWEAP* apObject, int aId);
     bool Actor_IsFleeing(int aiFlag);
-    void Actor_HitMe(AnimIdle* apPackage, int aiFlag);
+    void Actor_HitMe(AnimIdle* apData, int cMeleeEffect);
     bool Actor_ShouldUseAmmo(TESObjectWEAP* apWeapon);
     int FUN_00575610(void* apAmmo);
 };
@@ -307,6 +315,8 @@ struct FUN_009cbb70_shell
 
 // @fnv 0x009cbb70
 // src: XBOX_PDB 0x009cbb70
+// pdb: CombatProcedureAttackLow::Update | CombatProcedureAttackLow.obj | retail, string-set bridge, high
+// pdb locals: eweaponType, ptarget, pcombatState, fhitPercent, pattacker, pweaponItem, spdata, pammo, iammoUsed, iammoCount
 void FUN_009cbb70_shell::CombatProcedureAttackLow_Update()
 {
     FUN_009cbb70_actor* kActor = CombatProcedure_GetAttacker();

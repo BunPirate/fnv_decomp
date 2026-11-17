@@ -34,8 +34,8 @@ public:
     virtual void SaveGameLegacy(unsigned int changedFlags);
     virtual void LoadGameLegacy(unsigned int changedFlags, unsigned int currentFlags);
     virtual void InitItem(void);
-    virtual void CopyFrom(const TESForm* form);
-    virtual bool Compare(TESForm* form);
+    virtual void CopyFrom(const TESForm* apCopy);
+    virtual bool Compare(TESForm* apCompare);
     virtual bool Unk_49(void* arg0, void* arg1, void* arg2, void* arg3, void* arg4);
     virtual TESWaterForm* GetAssociatedWaterForm() const;
 
@@ -43,9 +43,9 @@ public:
 
     void ResetFormData();
     // Alternate name for LoadForm; it must not add a virtual slot.
-    bool Load(TESFile* file);
+    bool Load(TESFile* apFile);
     void SetLoopingSound(TESSound* sound);
-    void SetActivationPrompt(BSStringT<char> prompt);
+    void SetActivationPrompt(BSStringT<char> ActivateTextOverrideInput);
     void SetActivateSound(TESSound* sound);
     StringX GetActivateText();
 

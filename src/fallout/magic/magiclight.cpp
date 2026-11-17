@@ -31,7 +31,7 @@ void FUN_0081c470_shell::MagicLight_Fade(bool abIn, float afTime)
 class MagicLightFormOperations : public TESObjectLIGH
 {
   public:
-    void UpdatePointLight(GO* pData, int iFlag);
+    void UpdatePointLight(GO* apLight, int apExtra);
 };
 
 extern double _DAT_01012060;
@@ -46,11 +46,15 @@ struct MagicEffectCollection
     float m_fFadeOutTime;
     bool bFadeInActive;
 
-    void UpdateLightFade(float fTimeSinceScaleStart);
+    void MagicLight_Update(float afDelta);
 };
 
 // @fnv 0x0081c320
-void MagicEffectCollection::UpdateLightFade(float fTimeSinceScaleStart)
+// src: XBOX_RETAIL_PDB 0x0081c320
+// pdb: MagicLight::Update | MagicLight.obj | retail, call graph (shared callers), high
+// pdb params: afDelta
+// pdb locals: flightScale, ucolor, color
+void MagicEffectCollection::MagicLight_Update(float afDelta)
 {
     float flightScale;
     unsigned int ucolor;
@@ -61,7 +65,7 @@ void MagicEffectCollection::UpdateLightFade(float fTimeSinceScaleStart)
     {
         if (m_fFadeOutTime > _DAT_01012060)
         {
-            m_fFadeInTime += fTimeSinceScaleStart;
+            m_fFadeInTime += afDelta;
 
             ucolor = m_pFadeTarget->GetColor();
 
@@ -128,6 +132,8 @@ class FUN_0081bf80 : public S4ee810
 
 // Initialises the base with 0, clears the solution reference, sets scale to 1.0, clears the done flag and values, then calls Init(a, b).
 // @fnv 0x0081bf80
+// pdb: MagicLight::MagicLight | MagicLight.obj | retail, call graph (shared callers), medium
+// pdb params: aiLightID, apRef
 FUN_0081bf80::FUN_0081bf80(int a, int b) : S4ee810(0)
 {
     m_iFadeIndex = 0;
@@ -175,6 +181,9 @@ struct MagicLightObject
 };
 
 // @fnv 0x0081c030
+// pdb: MagicLight::Init | MagicLight.obj | retail, object-file run extension, low
+// pdb params: aiLightID, apObj
+// pdb locals: plightForm, pnode, ucolor, fakeSpecular, color
 void MagicLightObject::CreatePointLight(unsigned int auiFormID, NiNode* apNode)
 {
     TESForm* pForm2 = MLLookupFormByID(auiFormID);
@@ -216,6 +225,8 @@ class FUN_0081c240
 };
 // Calls the referenced object's virtual method and the shadow scene node with m_spNode, then clears the members.
 // @fnv 0x0081c240
+// pdb: MagicLight::~MagicLight | MagicLight.obj | retail, object-file run extension, low
+// pdb locals: pnode
 FUN_0081c240::~FUN_0081c240()
 {
     if (m_pReferencedObject)

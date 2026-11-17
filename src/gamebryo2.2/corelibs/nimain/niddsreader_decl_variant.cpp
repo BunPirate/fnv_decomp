@@ -52,6 +52,9 @@ class FUN_00a779b0_info
 
 // @fnv 0x00a8c6e0
 // src: GAMEBRYO_LIB 0x00a8c6e0
+// pdb: NiDDSReader::Read24Bit | NiDDSReader.obj | retail, upstream name already matches, high
+// pdb params: kIst, pkDest, kSrcFmt, kDestFmt, uiMipMapIdx, uiFaceIdx, bEndianConverted
+// pdb locals: uiHeight, uiWidth, uiSize, kSrcBits, pucDest, pucSrc, y, x, ucG, ucB, ucR
 void __cdecl NiDDSReader_Read24Bit(ReadCtx* ctx, ImgObj* self, NiPixelFormat fmtA, NiPixelFormat fmtB, unsigned int idx,
                           unsigned int scale)
 {

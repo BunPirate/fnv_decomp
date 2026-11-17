@@ -4,12 +4,13 @@
 
 class NiAVObject;
 
+// pdb: class TileRect, size 0x3c, bases: Tile, 1 members
 class TileRect : public Tile
 {
   public:
     TileRect();
     virtual ~TileRect();
-    virtual void Init(Tile* parent, const char* name, Tile* replacedChild);
+    virtual void Init(Tile* apParent, const char* apName, Tile* apReplacedTile);
     virtual NiNode* CalculateNode();
     virtual int GetType();
     virtual const char* GetTypeStr();
@@ -20,6 +21,6 @@ class TileRect : public Tile
     NiAVObject* GetExtraDataModel() const;
     const char* FUN_00709970();
 
-    bool m_bTextureLoaded;
+    bool bIsScissor; // src: XBOX_RETAIL_PDB +0x38 (old: m_bTextureLoaded)
     unsigned char layoutPadding39[3];
 };

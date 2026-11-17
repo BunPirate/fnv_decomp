@@ -13,14 +13,18 @@ inline NiDepthStencilBuffer::NiDepthStencilBuffer() throw()
 
 // Creates a NiDepthStencilBuffer when its format is depth/stencil, sets width/height, and returns it or 0 if CreateRendererData fails.
 // @fnv 0x00a9fe90
+// pdb: NiDepthStencilBuffer::Create | NiDepthStencilBuffer.obj | retail, upstream name already matches, medium
+// pdb note: debug build links it to NiShaderLibraryDesc::NiShaderLibraryDesc
+// pdb params: uiWidth, uiHeight, pkRenderer, kFormat, eMSAAPref
+// pdb locals: pkBuffer, ioverhead
 NiDepthStencilBuffer* NiDepthStencilBuffer::Create(unsigned int width, unsigned int height, NiRenderer*,
                                                    const NiPixelFormat& format, unsigned int samples)
 {
     if (format.m_eFormat != NiPixelFormat::FORMAT_DEPTH_STENCIL)
         return 0;
     NiDepthStencilBuffer* buffer = new NiDepthStencilBuffer;
-    buffer->m_uiImageWidth = width;
-    buffer->m_uiImageHeight = height;
+    buffer->m_uiWidth = width;
+    buffer->m_uiHeight = height;
     if (!buffer->CreateRendererData(format, samples))
     {
         delete buffer;
@@ -29,13 +33,13 @@ NiDepthStencilBuffer* NiDepthStencilBuffer::Create(unsigned int width, unsigned 
     return buffer;
 }
 
-extern "C" void* g_011f6048;
+extern "C" void* NiSingleShaderMaterial_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f6048 (old: g_011f6048)
 
 // @fnv 0x00aa06e0
 // src: GUESS 0x00aa06e0 (confidence: low)
 void* NiSingleShaderMaterial::GetGlobalObjectAddress_00aa06e0()
 {
-    return &g_011f6048;
+    return &NiSingleShaderMaterial_ms_RTTI;
 }
 
 // Returns true if pkShader is non-null and its filename string equals the string stored at this+0x0C; otherwise false.
@@ -46,23 +50,25 @@ bool __thiscall NiSingleShaderMaterial::MatchesShaderFilename(NiShader* pkShader
                                                           const NiDynamicEffectState* pkDynamicEffectState,
                                                           unsigned int uiMaterialExtraData)
 {
-    if (pkShader && pkShader->GetFilename().m_kHandle == m_kShaderFilename.m_kHandle)
+    if (pkShader && pkShader->GetFilename().m_kHandle == m_kShaderName.m_kHandle)
         return true;
     return false;
 }
 
 // If not manual, decrements the shader's reference count, calls its release when it hits zero, and clears m_sp.
 // @fnv 0x00aa0830
+// pdb: NiSingleShaderMaterial::`scalar deleting destructor' | NiSingleShaderMaterial.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiSingleShaderMaterial::UnloadShaders
 void NiSingleShaderMaterial::ReleaseShader()
 {
-    if (!m_bManual)
+    if (!m_bManualShaderManagement)
     {
-        NiShader* pShader = m_sp;
+        NiShader* pShader = m_spCachedShader;
         if (pShader)
         {
             if (InterlockedDecrement(reinterpret_cast<long volatile*>(&pShader->m_uiRefCount)) == 0)
                 pShader->DeleteThis();
-            m_sp = 0;
+            m_spCachedShader = 0;
         }
     }
 }
@@ -83,15 +89,15 @@ NiSingleShaderMaterial* NiSingleShaderMaterial::NiSingleShaderMaterial_00aa06f0(
 
     if (!apcString)
     {
-        m_kShaderFilename.m_kHandle = NiGlobalStringTable::ms_pcEmptyString;
+        m_kShaderName.m_kHandle = NiGlobalStringTable::ms_pcEmptyString;
     }
     else
     {
-        m_kShaderFilename.m_kHandle = NiGlobalStringTable::AddString(apcString);
+        m_kShaderName.m_kHandle = NiGlobalStringTable::AddString(apcString);
     }
 
-    m_sp = 0;
-    m_bManual = false;
+    m_spCachedShader = 0;
+    m_bManualShaderManagement = false;
 
     if (abCreateShader)
     {
@@ -117,30 +123,33 @@ int __fastcall NiShader_GetImplementation(NiShader* shader);
 // Returns a compatible cached shader, or creates and initializes one through the shader factory.
 // @fnv 0x00aa07a0
 // src: XBOX_PDB 0x00aa07a0
-NiShader* NiSingleShaderMaterial::GetCurrentShader(int aiArg1, int aiArg2, int aiArg3, int aiArg4, int key)
+// pdb: NiSingleShaderMaterial::GetCurrentShader | NiSingleShaderMaterial.obj | retail, upstream name already matches, high
+// pdb params: pkGeom, pkSkin, pkPropState, pkEffectState, uiMaterialExtraData
+// pdb locals: pkShaderFactory, pkShader
+NiShader* NiSingleShaderMaterial::GetCurrentShader(int pkGeom, int pkSkin, int pkPropState, int pkEffectState, int uiMaterialExtraData)
 {
     NiShaderFactory* pManager = NiShaderFactory::GetInstance();
-    if (m_sp)
+    if (m_spCachedShader)
     {
-        if (NiShader_GetImplementation(m_sp) == key)
-            return m_sp;
-        if (key == -1)
+        if (NiShader_GetImplementation(m_spCachedShader) == uiMaterialExtraData)
+            return m_spCachedShader;
+        if (uiMaterialExtraData == -1)
         {
             if (pManager)
             {
-                NiShader* pCached = m_sp;
+                NiShader* pCached = m_spCachedShader;
                 // The shared factory's slot 0x24 lacks the shader-validation signature.
                 typedef bool (__thiscall* ValidateShader)(NiShaderFactory*, NiShader*);
                 if (reinterpret_cast<ValidateShader>((*reinterpret_cast<void***>(pManager))[9])(pManager, pCached))
-                    return m_sp;
+                    return m_spCachedShader;
             }
         }
     }
     NiShader* pResult = 0;
     if (pManager)
     {
-        const char* h = m_kShaderFilename.m_kHandle;
-        pResult = reinterpret_cast<NiShader*>(pManager->Create(h, key, 1));
+        const char* h = m_kShaderName.m_kHandle;
+        pResult = reinterpret_cast<NiShader*>(pManager->Create(h, uiMaterialExtraData, 1));
     }
     if (pResult && (pResult->IsFormInitialized() || pResult->Initialize()))
         return pResult;
@@ -151,11 +160,13 @@ void __cdecl FUN_00aa1460(void* apMemory, unsigned int auiSize);
 
 // Releases the shader reference and string buffer, runs base cleanup, and optionally frees the 0x18-byte object.
 // @fnv 0x00aa0870
+// pdb: NiSingleShaderMaterial::SetCachedShader | NiSingleShaderMaterial.obj | debug, object-file run extension, low
+// pdb params: pkShader
 NiSingleShaderMaterial* NiSingleShaderMaterial::Destroy(unsigned char acFlags)
 {
     long(__stdcall * pfnRelease)(long volatile*) = InterlockedDecrement;
     *(int volatile*)this = (int)&DAT_010a21dc;
-    NiShader* sp = *(NiShader* volatile*)&m_sp;
+    NiShader* sp = *(NiShader* volatile*)&m_spCachedShader;
     if (sp != 0)
     {
         if (pfnRelease(reinterpret_cast<long volatile*>(&sp->m_uiRefCount)) == 0)
@@ -163,9 +174,9 @@ NiSingleShaderMaterial* NiSingleShaderMaterial::Destroy(unsigned char acFlags)
             sp->DeleteThis();
         }
     }
-    if (m_kShaderFilename.m_kHandle != NiGlobalStringTable::ms_pcEmptyString)
+    if (m_kShaderName.m_kHandle != NiGlobalStringTable::ms_pcEmptyString)
     {
-        pfnRelease((long volatile*)((char*)m_kShaderFilename.m_kHandle - 8));
+        pfnRelease((long volatile*)((char*)m_kShaderName.m_kHandle - 8));
     }
     BaseCleanup();
     if (acFlags & 1)

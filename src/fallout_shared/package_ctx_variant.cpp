@@ -172,6 +172,8 @@ class PackageInit
 };
 // @fnv 0x00674930
 // src: XBOX_PDB 0x00674930
+// pdb: TESPackage::InitItem | Package.obj | retail, string-set bridge, high
+// pdb locals: itempint, iwarncount, pdata, ploc
 void PackageInit::TESPackage_InitItem()
 {
     if (FUN_004013e0())

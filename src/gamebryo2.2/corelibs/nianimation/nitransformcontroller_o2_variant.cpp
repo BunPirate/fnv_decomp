@@ -70,6 +70,8 @@ struct FakeTransformController : NiSingleInterpController
 };
 // @fnv 0x00a36190
 // src: XBOX_PDB 0x00a36190
+// pdb: NiTransformController::LoadBinary | NiTransformController.obj | retail, upstream name already matches, high
+// pdb params: kStream
 void FakeTransformController::NiTransformController_LoadBinary(NiStream& kStream)
 {
     NiSingleInterpController::LoadBinary(kStream);
@@ -77,16 +79,16 @@ void FakeTransformController::NiTransformController_LoadBinary(NiStream& kStream
         kStream.ResetStreamState();
 }
 
-extern int g_011f371c;
+extern int NiBlendAccumTransformInterpolator_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f371c (old: g_011f371c)
 
 // @fnv 0x00a36480
 // src: COMMUNITY 0x00a36480
 int* __cdecl NiBlendAccumTransformInterpolator_GetRTTI()
 {
-    return &g_011f371c;
+    return &NiBlendAccumTransformInterpolator_ms_RTTI;
 }
 
-void __fastcall NiBlendAccumTransformInterpolator_ReleaseStorage_00a39290(void*);
+void __fastcall NiBlendAccumTransformInterpolator_dtor(void*);
 void __cdecl _delete(void*, unsigned int);
 struct S_00a36490
 {
@@ -95,7 +97,7 @@ struct S_00a36490
 // @fnv 0x00a36490
 void* __thiscall S_00a36490::FUN_00a36490(unsigned int flag)
 {
-    NiBlendAccumTransformInterpolator_ReleaseStorage_00a39290(this);
+    NiBlendAccumTransformInterpolator_dtor(this);
     if (flag & 1)
         _delete(this, 0x58);
     return this;
@@ -116,6 +118,8 @@ char* __cdecl NiViewerStrings_NiGetViewerString_Title(const char*);
 extern const char* g_011f36ec;
 // @fnv 0x00a36840
 // src: XBOX_PDB 0x00a36840
+// pdb: NiTransformController::GetViewerStrings | NiTransformController.obj | retail, upstream name already matches, high
+// pdb params: pkStrings
 void __stdcall NiTransformController_GetViewerStrings(StrArr* pkStrings)
 {
     FUN_00a390a0(pkStrings);
@@ -150,15 +154,18 @@ struct S00a36100
 
 // @fnv 0x00a36100
 // src: XBOX_PDB 0x00a36100
+// pdb: NiTransformController::CreatePoseInterpolator | NiTransformController.obj | retail, upstream name already matches, high
+// pdb params: usIndex
+// pdb locals: kTransform, pkTarget, kRotate
 NiTransformInterpolator* S00a36100::NiTransformController_CreatePoseInterpolator(unsigned short usIndex)
 {
     NiAVObject* pkTarget = m_spReferencedObject;
     NiQuaternion kRotate;
     kRotate.FromRotationMatrix(pkTarget->m_kLocal.m_Rotate);
     NiQuatTransform kTransform;
-    kTransform.scale = pkTarget->m_kLocal.m_fScale;
-    *reinterpret_cast<Point3Words*>(&kTransform.x) = *reinterpret_cast<const Point3Words*>(&pkTarget->m_kLocal.m_Translate);
-    *reinterpret_cast<QuatWords*>(&kTransform.qx) = *reinterpret_cast<const QuatWords*>(&kRotate);
+    kTransform.m_fScale = pkTarget->m_kLocal.m_fScale;
+    *reinterpret_cast<Point3Words*>(&kTransform.m_kTranslate) = *reinterpret_cast<const Point3Words*>(&pkTarget->m_kLocal.m_Translate);
+    *reinterpret_cast<QuatWords*>(&kTransform.m_kRotate) = *reinterpret_cast<const QuatWords*>(&kRotate);
 
     return new NiTransformInterpolator(kTransform);
 }
@@ -176,6 +183,8 @@ struct FUN_00a38ef0_Class : NiInterpController
 
 // @fnv 0x00a38ef0
 // src: GAMEBRYO_LIB 0x00a38ef0
+// pdb: NiSingleInterpController::CopyMembers | NiSingleInterpController.obj | retail, upstream name already matches, high
+// pdb params: pkDest, kCloning
 void FUN_00a38ef0_Class::NiSingleInterpController_CopyMembers(FUN_00a38ef0_Class* pkDest, CloningProcess& kCloning)
 {
     ((FUN_00a2f8a0_Holder*)this)->BSMultiTargetTreadTransfController_CopyMembers(pkDest, kCloning);
@@ -208,6 +217,7 @@ struct S_00a36560
 };
 // @fnv 0x00a36560
 // src: EXE 0x00a36560
+// pdb: NiTransformController::NiTransformController | NiTransformController.obj | retail, upstream name already matches, high
 void* S_00a36560::NiTransformController_NiTransformController()
 {
     ((NiTimeController_Call*)this)->SetControllerActive();
@@ -235,7 +245,7 @@ struct NiSingleInterpControllerBase
 };
 struct FUN_00a35a80_Obj
 {
-    void BSMultiTargetTreadTransfController_AllocateStorage(int a1, int a2);
+    void BSMultiTargetTreadTransfController_AllocateStorage(int usCount, int ausLinkCount);
 };
 struct FUN_00a36070 : NiSingleInterpControllerBase
 {
@@ -246,6 +256,8 @@ struct FUN_00a36070 : NiSingleInterpControllerBase
     FUN_00a36070(int a1, int a2);
 };
 // @fnv 0x00a36070
+// pdb: NiTransformController::SaveBinary | NiTransformController.obj | debug, object-file run extension, low
+// pdb params: kStream
 FUN_00a36070::FUN_00a36070(int a1, int a2)
 {
     m_spControllerInterpolator = 0;
@@ -261,9 +273,9 @@ extern "C" void _ReadWriteBarrier(void);
 
 struct Tgt
 {
-    void FUN_00a4e2e0(unsigned int a, unsigned int b, unsigned int c);
-    void FUN_00a4e3b0(unsigned int a, unsigned int b, unsigned int c);
-    void FUN_00a4e350(unsigned int a, unsigned int b, unsigned int c);
+    void ReplaceRotAnim(unsigned int pkKeys, unsigned int uiNumKeys, unsigned int eType);
+    void ReplaceScaleAnim(unsigned int pkKeys, unsigned int uiNumKeys, unsigned int eType);
+    void ReplacePosAnim(unsigned int pkKeys, unsigned int uiNumKeys, unsigned int eType);
 };
 
 struct V3
@@ -288,6 +300,8 @@ struct FUN_00a364b0_cls
 
 // @fnv 0x00a364b0
 // src: XBOX_PDB 0x00a364b0
+// pdb: NiTransformInterpolator::SetPoseValue | NiTransformController.obj | retail, upstream name already matches, high
+// pdb params: kPoseValue
 void FUN_00a364b0_cls::NiTransformInterpolator_SetPoseValue(V3 aT0, V4 aR0, float fScale)
 {
     if (aR0.f1 != DAT_010241b0)
@@ -295,20 +309,20 @@ void FUN_00a364b0_cls::NiTransformInterpolator_SetPoseValue(V3 aT0, V4 aR0, floa
         memcpy(&m_r, &aR0, sizeof(m_r));
         _ReadWriteBarrier();
         if (unk2c)
-            unk2c->FUN_00a4e2e0(0, 0, 0);
+            unk2c->ReplaceRotAnim(0, 0, 0);
     }
     if (fScale != DAT_010241b0)
     {
         unk28 = fScale;
         if (unk2c)
-            unk2c->FUN_00a4e3b0(0, 0, 0);
+            unk2c->ReplaceScaleAnim(0, 0, 0);
     }
     if (aT0.f0 != DAT_010241b0)
     {
         m_t = aT0;
         _ReadWriteBarrier();
         if (unk2c)
-            unk2c->FUN_00a4e350(0, 0, 0);
+            unk2c->ReplacePosAnim(0, 0, 0);
     }
 }
 
@@ -344,7 +358,7 @@ struct A36590Quaternion
     float m_fVectorY;
     float m_fVectorZ;
     float m_fScalarPart;
-    void FromRotationMatrix(const A36590Matrix3& kRot);
+    void FromRotationMatrix(const A36590Matrix3& rot);
 };
 
 struct A36590QuatTransform
@@ -382,14 +396,17 @@ class A36590Controller
     int unk28;
     NiAVObject* m_pkSource;
 
-    void NiTransformController_SynchronizePoseInterpolator(A36590Object* pkObject, int iUnused);
+    void NiTransformController_SynchronizePoseInterpolator(A36590Object* pkInterp, int usIndex);
 };
 
 // @fnv 0x00a36590
 // src: XBOX_PDB 0x00a36590
-void A36590Controller::NiTransformController_SynchronizePoseInterpolator(A36590Object* pkObject, int iUnused)
+// pdb: NiTransformController::SynchronizePoseInterpolator | NiTransformController.obj | retail, upstream name already matches, high
+// pdb params: pkInterp, usIndex
+// pdb locals: kTransform, pkTransformInterp, pkTarget, kRotate
+void A36590Controller::NiTransformController_SynchronizePoseInterpolator(A36590Object* pkInterp, int usIndex)
 {
-    A36590Node* pkNode = !pkObject ? 0 : (A36590Node*)pkObject->DynamicCast(&g_kA36590NodeRTTI);
+    A36590Node* pkNode = !pkInterp ? 0 : (A36590Node*)pkInterp->DynamicCast(&g_kA36590NodeRTTI);
     NiAVObject* pkSource = m_pkSource;
 
     A36590Quaternion kRotate;
@@ -426,15 +443,17 @@ class NiTransformInitB
 
 // @fnv 0x00a36620
 // src: XBOX_PDB 0x00a36620
-void* __stdcall NiTransformController_CreateBlendInterpolator(int a1, int a2, unsigned char a3, float a4, int a5)
+// pdb: NiTransformController::CreateBlendInterpolator | NiTransformController.obj | retail, upstream name already matches, high
+// pdb params: usIndex, bManagerControlled, bAccumulateAnimations, fWeightThreshold, ucArraySize
+void* __stdcall NiTransformController_CreateBlendInterpolator(int usIndex, int bManagerControlled, unsigned char bAccumulateAnimations, float fWeightThreshold, int ucArraySize)
 {
     void* obj;
-    if (a3 != 0)
+    if (bAccumulateAnimations != 0)
     {
         obj = NiTransformInitA::operator new(0x58);
         if (obj != 0)
         {
-            return ((NiTransformInitA*)obj)->InitA(a2, a4, a5);
+            return ((NiTransformInitA*)obj)->InitA(bManagerControlled, fWeightThreshold, ucArraySize);
         }
     }
     else
@@ -442,7 +461,7 @@ void* __stdcall NiTransformController_CreateBlendInterpolator(int a1, int a2, un
         obj = NiTransformInitB::operator new(0x30);
         if (obj != 0)
         {
-            return ((NiTransformInitB*)obj)->InitB(a2, a4, a5);
+            return ((NiTransformInitB*)obj)->InitB(bManagerControlled, fWeightThreshold, ucArraySize);
         }
     }
     return 0;
@@ -519,7 +538,7 @@ struct QuatXf_00a36680
 extern NiPoint3 DAT_011a8400;
 extern NiQuaternion DAT_011f3704;
 extern float DAT_01096b8c;
-extern const float DAT_01096324;
+extern const float NiInterpController_INVALID_TIME; // src: XBOX_RETAIL_PDB 0x01096324 (old: DAT_01096324/INVALID_TIME_A4F/g_fInvalidTimeBC3/kInvalidTime)
 struct Flags_00a36680
 {
     bool b0 : 1;
@@ -545,12 +564,15 @@ struct TransformCtl_t : NiTimeController
 
 // @fnv 0x00a36680
 // src: XBOX_PDB 0x00a36680
+// pdb: NiTransformController::Update | NiTransformController.obj | retail, upstream name already matches, high
+// pdb params: UpdateData
+// pdb locals: kTransform, pkTarget
 void TransformCtl_t::NiTransformController_Update(UpdData_00a36680& UpdateData)
 {
     Interp_00a36680*& spInterp = *(Interp_00a36680**)((char*)this + 0x34);
     if (GetManagerControlled())
     {
-        *(float*)((char*)this + 0x28) = DAT_01096324;
+        *(float*)((char*)this + 0x28) = NiInterpController_INVALID_TIME;
     }
     else if (AdvanceController(UpdateData.fTime) && (!spInterp || !spInterp->AlwaysUpdate()))
     {
@@ -567,7 +589,7 @@ void TransformCtl_t::NiTransformController_Update(UpdData_00a36680& UpdateData)
             NiAVObject* pkTarget = *(NiAVObject**)((char*)this + 0x2c);
             if (kTransform.m_kTranslate.x != -3.4028234663852886e+38)
                 pkTarget->m_kLocal.m_Translate = kTransform.m_kTranslate;
-            if (kTransform.m_kRotate.m_fVectorY != -3.4028234663852886e+38)
+            if (kTransform.m_kRotate.m_fX != -3.4028234663852886e+38)
                 kTransform.m_kRotate.ToRotationMatrix(pkTarget->m_kLocal.m_Rotate);
             if (kTransform.m_fScale != -3.4028234663852886e+38)
                 pkTarget->m_kLocal.m_fScale = fabs(kTransform.m_fScale);

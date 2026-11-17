@@ -56,7 +56,10 @@ inline void hkTransform::setIdentity()
 
 // Computes the support point of the shape's AABB along kDirection and returns its dot product with kDirection.
 // @fnv 0x00c9e560
-float hkpShape::getMaximumProjection(const hkVector4& kDirection) const
+// pdb: hkpShape::getMaximumProjection | hkpShape.obj | retail, upstream name already matches, high
+// pdb params: direction
+// pdb locals: localToWorld, aabb
+float hkpShape::getMaximumProjection(const hkVector4& direction) const
 {
     hkTransform kLocalToWorld;
     kLocalToWorld.setIdentity();
@@ -72,9 +75,9 @@ float hkpShape::getMaximumProjection(const hkVector4& kDirection) const
     LocalM128 kHalfExtent = _mm_sub_ps(kAabb.m_kMaximumCorner.m_vComponents, kAabb.m_kMinimumCorner.m_vComponents);
     kHalfExtent = _mm_mul_ps(kHalfExtent, DAT_010c71d0);
 
-    LocalM128 kSupport = _mm_xor_ps(kHalfExtent, _mm_and_ps(kDirection.m_vComponents, DAT_010c44d0));
+    LocalM128 kSupport = _mm_xor_ps(kHalfExtent, _mm_and_ps(direction.m_vComponents, DAT_010c44d0));
     kSupport = _mm_add_ps(kSupport, kTargetCenter);
-    const LocalM128 x2 = _mm_mul_ps(kSupport, kDirection.m_vComponents);
+    const LocalM128 x2 = _mm_mul_ps(kSupport, direction.m_vComponents);
     const LocalM128 xySum = _mm_add_ss(_mm_shuffle_ps(x2, x2, 0x55), x2);
     float result;
     _mm_store_ss(&result, _mm_add_ss(_mm_shuffle_ps(x2, x2, 0xaa), xySum));

@@ -19,12 +19,13 @@ void __fastcall ResetMagicHitEffectTarget(MagicHitEffect* apEffect)
 }
 // Constructs a MagicHitEffect: stores the target and effect, derives the cell from the target, and initialises the float and bool members.
 // @fnv 0x0081b700
-MagicHitEffect::MagicHitEffect(TESObjectREFR* target, ActiveEffect* effect) : BSTempEffect(0, 0.0f)
+// pdb: MagicHitEffect::MagicHitEffect | MagicHitEffect.obj | retail, call graph (shared callers), high
+MagicHitEffect::MagicHitEffect(TESObjectREFR* apTarget, ActiveEffect* apEffect) : BSTempEffect(0, 0.0f)
 {
-    pTarget = target;
+    pTarget = apTarget;
     if (pTarget)
         pCell = pTarget->GetTarget();
-    pEffect = effect;
+    pEffect = apEffect;
     m_fFirstFloatValue = 0.0f;
     m_fParticleParameter5 = 3.402823466e+38f;
     bWasPlaying = false;
@@ -38,6 +39,8 @@ struct ActiveEffectHitEffectAccess : ActiveEffect
 };
 
 // @fnv 0x0081b830
+// pdb: ActiveEffect::RemoveHitEffect | MagicHitEffect.obj | debug, call graph, medium
+// pdb params: apHitEffect
 void ActiveEffectHitEffectAccess::RemoveHitEffect(BSTempEffect* apHitEffect)
 {
     if (pHitEffectList != 0)
@@ -76,6 +79,7 @@ struct FUN_0081b6d0_s
 };
 
 // @fnv 0x0081b6d0
+// pdb: MagicHitEffect::`scalar deleting destructor' | MagicHitEffect.obj | debug, object-file run extension, low
 void* FUN_0081b6d0_s::FUN_0081b6d0(unsigned int flags)
 {
     FUN_0081b7b0();
@@ -94,6 +98,7 @@ struct FUN_0081b7b0 : BSTempEffect
 
 // Clears pTarget, notifies pEffect via ForwardArgToSubobject if set, then clears pEffect.
 // @fnv 0x0081b7b0
+// pdb: MagicHitEffect::~MagicHitEffect | MagicHitEffect.obj | debug, call graph, high
 FUN_0081b7b0::~FUN_0081b7b0()
 {
     pTarget = 0;
@@ -114,6 +119,8 @@ struct FUN_0081bd30_s
 
 // Returns the save size for an active effect: 5 bytes, plus 4 more when the save version is at least 0x72.
 // @fnv 0x0081bd30
+// pdb: MagicHitEffect::~MagicHitEffect | MagicHitEffect.obj | retail, object-file run extension, low
+// pdb note: debug build links it to MagicHitEffect::GetSaveSize
 unsigned short FUN_0081bd30_s::GetSaveSize(ActiveEffect* apEffect, TESObjectREFR* apTarget)
 {
     unsigned short isize = 0;
@@ -136,6 +143,8 @@ struct FUN_0081bd80_s
 
 // @fnv 0x0081bd80
 // src: COMMUNITY 0x0081bd80
+// pdb: MagicHitEffect::`scalar deleting destructor' | MagicHitEffect.obj | retail, object-file run extension, low
+// pdb note: debug build links it to MagicHitEffect::SaveGame
 void FUN_0081bd80_s::MagicHitEffect_SaveGame(ActiveEffect* apEffect, TESObjectREFR* apTarget)
 {
     g_TESSaveLoadGame->TESSaveLoadGame_SaveGameDataOLD((char*)this + 0x20, 4);
@@ -153,6 +162,8 @@ struct FUN_0081be50_s
 
 // If apTarget is non-null, stores the cell returned by apTarget->GetTarget() at offset 0xc of this object.
 // @fnv 0x0081be50
+// pdb: MagicHitEffect::InitLoadGame | MagicHitEffect.obj | debug, object-file run extension, low
+// pdb params: apEffect, apTarget
 void FUN_0081be50_s::SetTargetCell(ActiveEffect* apEffect, TESObjectREFR* apTarget)
 {
     if (apTarget)
@@ -173,6 +184,8 @@ struct FUN_0081be80_s : FUN_00682a30_base
 // Calls the base save, writes the 4-byte field at 0x20 and the byte at 0x24, then saves the TESObjectREFR pointer at 0x1c.
 // @fnv 0x0081be80
 // src: COMMUNITY 0x0081be80
+// pdb: MagicHitEffect::SaveGame | MagicHitEffect.obj | debug, object-file run extension, low
+// pdb params: apSaveGameBuffer
 void FUN_0081be80_s::MagicHitEffect_SaveGameBGS(BGSSaveFormBuffer* apSaveGameBuffer)
 {
     FUN_00682a30(apSaveGameBuffer);
@@ -192,6 +205,8 @@ struct FUN_0081bed0_s : FUN_00682a80_shell
 };
 
 // @fnv 0x0081bed0
+// pdb: MagicHitEffect::LoadGame | MagicHitEffect.obj | debug, object-file run extension, low
+// pdb params: apLoadGameBuffer
 void FUN_0081bed0_s::LoadFormData(BGSLoadFormBuffer* apLoadGameBuffer)
 {
     FUN_00682a80(apLoadGameBuffer);
@@ -218,6 +233,8 @@ struct FUN_0081bde0_shell
 };
 
 // @fnv 0x0081bde0
+// pdb: MagicHitEffect::LoadGame | MagicHitEffect.obj | debug, object-file run extension, low
+// pdb params: apEffect, apTarget
 void __thiscall FUN_0081bde0_shell::SaveLoad(ActiveEffect* apActiveEffect, TESObjectREFR* apTarget)
 {
     g_TESSaveLoadGame->ReadTypedData(reinterpret_cast<char*>(this) + 0x20, 4);
@@ -359,13 +376,15 @@ struct FUN_00440d80_shell
 
 struct FUN_0081b860_cls : MagicHitEffect
 {
-    bool UpdateMagicHitEffect(float afDelta);
+    bool UpdateMagicHitEffect(float afTimeDelta);
 };
 
 // @fnv 0x0081b860
-bool FUN_0081b860_cls::UpdateMagicHitEffect(float afDelta)
+// pdb: MagicHitEffect::Update | MagicHitEffect.obj | retail, call graph (shared callers), high
+// pdb params: afTimeDelta
+bool FUN_0081b860_cls::UpdateMagicHitEffect(float afTimeDelta)
 {
-    m_fFirstFloatValue += afDelta;
+    m_fFirstFloatValue += afTimeDelta;
     if (pTarget == 0 || reinterpret_cast<FUN_0081b860_vt*>(pTarget)->vf116() == 0 ||
         reinterpret_cast<FUN_00440d80_shell*>(pTarget)->FUN_00440d80() != 0)
     {
@@ -453,24 +472,27 @@ struct FUN_0081bc70_s
     Node* FUN_00441110();
     Node* GetHavokWorldObjectCountInSceneGraph_0084e3a0();
     void FUN_0041fd00(void* apNode);
-    void MagicHitEffect_UpdateParentCell(Node* apArg);
+    void MagicHitEffect_UpdateParentCell(Node* apRoot);
 };
 
 // @fnv 0x0081bc70
 // src: COMMUNITY 0x0081bc70
-void FUN_0081bc70_s::MagicHitEffect_UpdateParentCell(Node* apArg)
+// pdb: MagicHitEffect::UpdateParentCell | MagicHitEffect.obj | retail, upstream name already matches, high
+// pdb params: apRoot
+// pdb locals: pparentnode
+void FUN_0081bc70_s::MagicHitEffect_UpdateParentCell(Node* apRoot)
 {
     if (FUN_00441110())
     {
         FUN_0041fd00(FUN_00441110()->FUN_008d6f30());
-        if (apArg)
+        if (apRoot)
         {
             if (GetHavokWorldObjectCountInSceneGraph_0084e3a0() && GetHavokWorldObjectCountInSceneGraph_0084e3a0()->Get3D_00545cb0())
             {
-                if (!apArg->NiAVObject_GetParent() || GetHavokWorldObjectCountInSceneGraph_0084e3a0()->Get3D_00545cb0() != apArg->NiAVObject_GetParent()->NiAVObject_GetParent())
+                if (!apRoot->NiAVObject_GetParent() || GetHavokWorldObjectCountInSceneGraph_0084e3a0()->Get3D_00545cb0() != apRoot->NiAVObject_GetParent()->NiAVObject_GetParent())
                 {
                     VObj* m = GetHavokWorldObjectCountInSceneGraph_0084e3a0()->FUN_005497a0();
-                    m->v55(apArg, 1);
+                    m->v55(apRoot, 1);
                 }
             }
         }
@@ -507,6 +529,8 @@ class BF20RefFormCall : public BF20FormCall
 // Reverts the base form call with uiFlags, then re-resolves m_pkTarget through BF20ResolveForm or clears it if null.
 // @fnv 0x0081bf20
 // src: COMMUNITY 0x0081bf20
+// pdb: MagicHitEffect::InitLoadGame | MagicHitEffect.obj | debug, object-file run extension, low
+// pdb params: apLoadGameBuffer
 void BF20RefFormCall::MagicHitEffect_SetTarget(unsigned int uiFlags)
 {
     BF20FormCall::Revert(uiFlags);
@@ -559,18 +583,22 @@ extern Setting DAT_011df7f8;
 class MgrX
 {
   public:
-    void ProcessLists_AddTempEffect(EffBase* p);
+    void ProcessLists_AddTempEffect(EffBase* apTempEffect);
 };
 extern MgrX DAT_011e0e80;
 
 // Creates effect instances for an ActiveEffect, links successful instances, and may return early based on a setting.
 // @fnv 0x0081b8e0
-FUN_00470440* __cdecl CreateEffectEntries(ActiveEffect* pEffect)
+// src: XBOX_DEBUG_PDB 0x0081b8e0
+// pdb: MagicHitEffect::InstantiateHitEffects | MagicHitEffect.obj | debug, call graph (shared callers), high
+// pdb params: apEffect
+// pdb locals: plist, bgoreCheck, peffect, pcharacter, pcreature
+FUN_00470440* __cdecl MagicHitEffect_InstantiateHitEffects(ActiveEffect* apEffect)
 {
-    if (pEffect->FUN_0059bb30()->FUN_00822b40())
+    if (apEffect->FUN_0059bb30()->FUN_00822b40())
     {
-        TESCreature* pCreature = dynamic_cast<TESCreature*>(pEffect->FUN_0059bb30()->FUN_00822b40()->GetActorBase());
-        Character* pCharacter = dynamic_cast<Character*>(pEffect->FUN_0059bb30()->FUN_00822b40());
+        TESCreature* pCreature = dynamic_cast<TESCreature*>(apEffect->FUN_0059bb30()->FUN_00822b40()->GetActorBase());
+        Character* pCharacter = dynamic_cast<Character*>(apEffect->FUN_0059bb30()->FUN_00822b40());
         if ((!pCreature || !pCreature->IsHumanoidCreature()) && pCharacter)
             pCharacter->IsCharacter();
     }
@@ -579,12 +607,12 @@ FUN_00470440* __cdecl CreateEffectEntries(ActiveEffect* pEffect)
     if (0)
     {
     }
-    bool bSkip = pEffect->GetEffectSetting()->IsFlagSet(0x1000) && *DAT_011df7f8.Bool();
+    bool bSkip = apEffect->GetEffectSetting()->IsFlagSet(0x1000) && *DAT_011df7f8.Bool();
     if (bSkip)
         return c;
-    if (!pEffect->HasFlag(4) && !Main_GetSceneIsComplex())
+    if (!apEffect->HasFlag(4) && !Main_GetSceneIsComplex())
     {
-        a = new FUN_0081c630(reinterpret_cast<CasterX*>(pEffect->FUN_0059bb30())->V04(pEffect));
+        a = new FUN_0081c630(reinterpret_cast<CasterX*>(apEffect->FUN_0059bb30())->V04(apEffect));
         if (a->VC4())
         {
             DAT_011e0e80.ProcessLists_AddTempEffect(a);
@@ -595,9 +623,9 @@ FUN_00470440* __cdecl CreateEffectEntries(ActiveEffect* pEffect)
             delete a;
         }
     }
-    if (!pEffect->HasFlag(2))
+    if (!apEffect->HasFlag(2))
     {
-        a = new FUN_0081f350(reinterpret_cast<CasterX*>(pEffect->FUN_0059bb30())->V04(pEffect));
+        a = new FUN_0081f350(reinterpret_cast<CasterX*>(apEffect->FUN_0059bb30())->V04(apEffect));
         if (a->VC4())
         {
             DAT_011e0e80.ProcessLists_AddTempEffect(a);

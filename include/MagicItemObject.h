@@ -3,6 +3,7 @@
 #include "TESBoundObject.h"
 #include "MagicItem.h"
 
+// pdb: class MagicItemObject, size 0x4c, bases: TESBoundObject, MagicItem, 0 members
 class MagicItemObject : public TESBoundObject, public MagicItem
 {
 public:
@@ -16,7 +17,7 @@ public:
 
     // Alternate names for inherited virtual slots.
     void ResetFormData();
-    bool Load(TESFile* file);
+    bool Load(TESFile* apFile);
 
     bool IsFormInitialized() const;
 };

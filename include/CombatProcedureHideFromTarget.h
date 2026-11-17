@@ -6,6 +6,7 @@
 class Hiding;
 class Output;
 
+// pdb: class CombatProcedureHideFromTarget, size 0x40, bases: CombatProcedure, 8 members
 class CombatProcedureHideFromTarget : public CombatProcedure
 {
 public:
@@ -21,22 +22,22 @@ public:
         float FUN_00435e00();
         float CombatTimer_GetTargetTime();
         void FUN_009a5eb0(BGSSaveFormBuffer* buffer);
-        void FUN_009a5f20(BGSLoadFormBuffer* buffer);
+        void FUN_009a5f20(BGSLoadFormBuffer* apLoadGameBuffer);
     };
 
-    CombatProcedureHideFromTarget(int aiValue, float afValue, bool abFlag1, bool abFlag2);
+    CombatProcedureHideFromTarget(int apCombatCoverLocation, float afNumSeconds, bool abIgnoreLOS, bool abClearCoverWhenFinished);
 
     virtual ~CombatProcedureHideFromTarget();
     virtual void Unk04();
     virtual void d05();
     virtual int GetType();
-    virtual void SaveGame(BGSSaveFormBuffer* apBuffer);
-    virtual void LoadGame(BGSLoadFormBuffer* apBuffer);
+    virtual void SaveGame(BGSSaveFormBuffer* apSaveGameBuffer);
+    virtual void LoadGame(BGSLoadFormBuffer* apLoadGameBuffer);
     virtual void vf16();
 
     COMBAT_PROCEDURES GetType_009d60e0();
     void Update();
-    void PrintState(Output* out, int x, int y);
+    void PrintState(Output* apDebugText, int aeLocation, int aeJustify);
     void SetMoveMode_00996e20(int mode);
     void SetLookAtPoint(const NiPoint3& point, unsigned char mode);
     void CombatProcedure_SetFailed(const char* message);
@@ -53,9 +54,9 @@ public:
         float duration;
         float m_14;
     };
-    Clock clock;
-    NiPoint3 destination;
-    NiPoint3 rotation;
+    Clock HidingTimer; // src: XBOX_RETAIL_PDB +0x18 (old: clock)
+    NiPoint3 HidePosition; // src: XBOX_RETAIL_PDB +0x20 (old: destination)
+    NiPoint3 LookAtPosition; // src: XBOX_RETAIL_PDB +0x2c (old: rotation)
     union
     {
         Hiding* hiding;

@@ -3,6 +3,7 @@
 enum DEBUGTEXT_LOCATION;
 enum DEBUGTEXT_JUSTIFY;
 
+// pdb: class IDebugText, size 0x4, 0 members
 class IDebugText
 {
 public:

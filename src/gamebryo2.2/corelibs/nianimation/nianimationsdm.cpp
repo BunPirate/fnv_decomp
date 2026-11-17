@@ -2,7 +2,7 @@
 // src/gamebryo2.2/corelibs/nianimation/nianimationsdm.cpp - unit created 2026-10-16 from the whole-binary attribution (360 source path: d:/_fallout3/platforms/common/code/gamebryo2.2/corelibs/nianimation/nianimationsdm.cpp).
 // Functions are listed by their @fnv annotations; compile flags inferred from the PC code.
 
-void __cdecl NiStream_UnregisterLoader(const char* pName);
+void __cdecl NiStream_UnregisterLoader(const char* pcClassName);
 void __cdecl RemovePostProcess(void(__cdecl* pfnCallback)());
 void __cdecl NiOldAnimationConverter_Convert();
 void __cdecl ClearNodeList();
@@ -170,7 +170,7 @@ extern bool DAT_011f369d;
 void FUN_00a64900(const char*, void (*)());
 void FUN_00a64920(void (*)());
 void NiOldAnimationConverter_Convert();
-void FUN_00a421c0();
+void NiActorManager__SDMInit();
 extern const char DAT_01096060[];  // NiAlphaController
 void CreateFloatInterpController();
 extern const char DAT_0109603c[];  // NiBlendAccumTransformInterpolator
@@ -192,7 +192,7 @@ void CreateBoneLODController();
 extern const char DAT_01095f70[];  // NiBoolData
 void NiBoolData_CreateObject();
 extern const char DAT_01095f5c[];  // NiBoolInterpolator
-void CreateNiKeyBasedInterpolator();
+void NiBoolInterpolator_CreateObject();
 extern const char DAT_01095f40[];  // NiBoolTimelineInterpolator
 void CreateBoolInterpolator();
 extern const char DAT_01095f2c[];  // NiBSplineBasisData
@@ -315,6 +315,7 @@ extern const char DAT_01095a04[];  // NiVisData
 void NiBoolData_CreateObject();
 // @fnv 0x00a2d8a0
 // src: COMMUNITY 0x00a2d8a0
+// pdb: NiAnimationSDM::Init | NiAnimationSDM.obj | retail, upstream name already matches, high
 void NiAnimationSDM_Init()
 {
     if (!DAT_011f369d)
@@ -330,7 +331,7 @@ void NiAnimationSDM_Init()
         FUN_00a64900(DAT_01095f90, NiBlendTransformInterpolator_CreateObject);
         FUN_00a64900(DAT_01095f7c, CreateBoneLODController);
         FUN_00a64900(DAT_01095f70, NiBoolData_CreateObject);
-        FUN_00a64900(DAT_01095f5c, CreateNiKeyBasedInterpolator);
+        FUN_00a64900(DAT_01095f5c, NiBoolInterpolator_CreateObject);
         FUN_00a64900(DAT_01095f40, CreateBoolInterpolator);
         FUN_00a64900(DAT_01095f2c, CreateNiSplineImpl);
         FUN_00a64900(DAT_01095f1c, NiBSplineData_CreateObject);
@@ -392,6 +393,6 @@ void NiAnimationSDM_Init()
         FUN_00a64900(DAT_01095a10, BSFrustumFOVController_CreateObject);
         FUN_00a64900(DAT_01095a04, NiBoolData_CreateObject);
         FUN_00a64920(NiOldAnimationConverter_Convert);
-        FUN_00a421c0();
+        NiActorManager__SDMInit();
     }
 }

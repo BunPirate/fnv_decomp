@@ -840,7 +840,10 @@ __forceinline UserBuilders& UserBuilders::GetMonitorStream()
 
 // @fnv 0x00ddfd10
 // src: XBOX_PDB 0x00ddfd10
-void Node::hkpShapeDisplayBuilder_buildShapeDisplay(const BaseShape* shape, const Transform& mat, Array<Display*>& out)
+// pdb: hkpShapeDisplayBuilder::buildShapeDisplay | hkpShapeDisplayBuilder.obj | retail, upstream name already matches, high
+// pdb params: shape, transform, displayGeometries
+// pdb locals: sphere, perpToNorm, c, localAabb, ext, top, bottom, tst, T, buffer, ext0, ext1, ext2, transformedVertices, vertices, buffer2, p00, p10, p01, p11
+void Node::hkpShapeDisplayBuilder_buildShapeDisplay(const BaseShape* shape, const Transform& transform, Array<Display*>& displayGeometries)
 {
     switch (shape->getType())
     {
@@ -850,8 +853,8 @@ void Node::hkpShapeDisplayBuilder_buildShapeDisplay(const BaseShape* shape, cons
         zero.setZero4();
         SphereRec sphere(zero, s->getRadius());
         FUN_00e0af50* g = new FUN_00e0af50(sphere, m_kEnvironment.m_iSecondValue, m_kEnvironment.m_iFirstValue);
-        g->getTransform() = mat;
-        out.AddBack(g);
+        g->getTransform() = transform;
+        displayGeometries.AddBack(g);
         break;
     }
     case 21: {
@@ -863,7 +866,7 @@ void Node::hkpShapeDisplayBuilder_buildShapeDisplay(const BaseShape* shape, cons
             FUN_00e0af50* g = new FUN_00e0af50(sphere, m_kEnvironment.m_iSecondValue, m_kEnvironment.m_iFirstValue);
             g->getTransform().setIdentity();
             g->getTransform().setTranslation(points[i]);
-            out.AddBack(g);
+            displayGeometries.AddBack(g);
         }
         break;
     }
@@ -881,31 +884,31 @@ void Node::hkpShapeDisplayBuilder_buildShapeDisplay(const BaseShape* shape, cons
         DisplayVectorCallLocal_00ddfd10 center(ext);
         center.add4(*reinterpret_cast<const DisplayVectorCallLocal_00ddfd10*>(&bounds.m_kMinimumCorner.x));
         FUN_00de4f20* g = new FUN_00de4f20(plane, axis, center, ext);
-        g->getTransform() = mat;
-        out.AddBack(g);
+        g->getTransform() = transform;
+        displayGeometries.AddBack(g);
         break;
     }
     case 5: {
         const CapsuleShape* s = static_cast<const CapsuleShape*>(shape);
         FUN_00d22dc0* g = new FUN_00d22dc0(s->getVertex(1), s->getVertex(0), s->getRadius(), 6, 1);
-        g->getTransform() = mat;
-        out.AddBack(g);
+        g->getTransform() = transform;
+        displayGeometries.AddBack(g);
         break;
     }
     case 2: {
         const CylinderShape* s = static_cast<const CylinderShape*>(shape);
         DisplayVectorCallLocal_00ddfd10 a;
-        a.SetTransformedPoint(mat, s->getVertex(1));
+        a.SetTransformedPoint(transform, s->getVertex(1));
         DisplayVectorCallLocal_00ddfd10 b;
-        b.SetTransformedPoint(mat, s->getVertex(0));
+        b.SetTransformedPoint(transform, s->getVertex(0));
         FUN_00d58510* g = new FUN_00d58510(a, b, s->FUN_00d571a0(), 9, 1);
-        g->getTransform() = mat;
-        out.AddBack(g);
+        g->getTransform() = transform;
+        displayGeometries.AddBack(g);
         break;
     }
     case 24: {
         const RayShape* s = static_cast<const RayShape*>(shape);
-        Display* display = GetCurrentDisplay(out);
+        Display* display = GetCurrentDisplay(displayGeometries);
         Mesh* mesh = display->getGeometry();
         int base = 0;
         for (int i = 0; i < s->getRays().GetLogicalSize(); ++i)
@@ -913,7 +916,7 @@ void Node::hkpShapeDisplayBuilder_buildShapeDisplay(const BaseShape* shape, cons
             RayShape::Ray ray = s->getRays()[i];
             DisplayVectorCallLocal_00ddfd10* a = mesh->m_kVertices.expandBy(1);
             *a = ray.m_kRayStart;
-            a->SetTransformedPoint(mat, *a);
+            a->SetTransformedPoint(transform, *a);
             DisplayVectorCallLocal_00ddfd10* b = mesh->m_kVertices.expandBy(1);
             *b = ray.m_kRayStart;
             DisplayVectorCallLocal_00ddfd10 offset;
@@ -921,7 +924,7 @@ void Node::hkpShapeDisplayBuilder_buildShapeDisplay(const BaseShape* shape, cons
             b->add4(offset);
             DisplayVectorCallLocal_00ddfd10* c = mesh->m_kVertices.expandBy(1);
             *c = ray.m_kRayEnd;
-            c->SetTransformedPoint(mat, *c);
+            c->SetTransformedPoint(transform, *c);
             Mesh::Triangle* t = mesh->m_uiTriangleCount.expandBy(1);
             t->set(base, base + 1, base + 2);
             base += 3;
@@ -931,8 +934,8 @@ void Node::hkpShapeDisplayBuilder_buildShapeDisplay(const BaseShape* shape, cons
     case 4: {
         const CenteredPointBounds* s = static_cast<const CenteredPointBounds*>(shape);
         FUN_00de1f50* g = new FUN_00de1f50(s->getHalfExtents());
-        g->getTransform() = mat;
-        out.AddBack(g);
+        g->getTransform() = transform;
+        displayGeometries.AddBack(g);
         break;
     }
     case 11: {
@@ -941,26 +944,26 @@ void Node::hkpShapeDisplayBuilder_buildShapeDisplay(const BaseShape* shape, cons
         local.setIdentity();
         local.setTranslation(s->getTranslation());
         __declspec(align(16)) Transform result;
-        result.SetProduct(mat, local);
-        hkpShapeDisplayBuilder_buildShapeDisplay(s->GetShapeForKey(), result, out);
+        result.SetProduct(transform, local);
+        hkpShapeDisplayBuilder_buildShapeDisplay(s->GetShapeForKey(), result, displayGeometries);
         break;
     }
     case 12: {
         const ConvexTransformShape* s = static_cast<const ConvexTransformShape*>(shape);
         __declspec(align(16)) Transform result;
-        result.SetProduct(mat, s->getTransform());
-        hkpShapeDisplayBuilder_buildShapeDisplay(s->GetShapeForKey(), result, out);
+        result.SetProduct(transform, s->getTransform());
+        hkpShapeDisplayBuilder_buildShapeDisplay(s->GetShapeForKey(), result, displayGeometries);
         break;
     }
     case 15: {
         const TransformShape* s = static_cast<const TransformShape*>(shape);
         __declspec(align(16)) Transform result;
-        result.SetProduct(mat, s->getTransform());
-        hkpShapeDisplayBuilder_buildShapeDisplay(s->GetShapeForKey(), result, out);
+        result.SetProduct(transform, s->getTransform());
+        hkpShapeDisplayBuilder_buildShapeDisplay(s->GetShapeForKey(), result, displayGeometries);
         break;
     }
     case 27:
-        hkpShapeDisplayBuilder_buildShapeDisplay(static_cast<const BoundingShape*>(shape)->getBoundingVolumeShape(), mat, out);
+        hkpShapeDisplayBuilder_buildShapeDisplay(static_cast<const BoundingShape*>(shape)->getBoundingVolumeShape(), transform, displayGeometries);
         break;
     case 8:
     case 10: {
@@ -969,7 +972,7 @@ void Node::hkpShapeDisplayBuilder_buildShapeDisplay(const BaseShape* shape, cons
         for (unsigned int key = c->GetFirstKey(); key != 0xffffffff; key = c->GetNextShapeKey(key))
         {
             const BaseShape* child = c->GetShapeForKey(key, buffer);
-            hkpShapeDisplayBuilder_buildShapeDisplay(child, mat, out);
+            hkpShapeDisplayBuilder_buildShapeDisplay(child, transform, displayGeometries);
         }
         break;
     }
@@ -978,7 +981,7 @@ void Node::hkpShapeDisplayBuilder_buildShapeDisplay(const BaseShape* shape, cons
         for (unsigned int key = s->GetFirstKey(); key != 0xffffffff; key = s->GetNextShapeKey(key))
         {
             const BaseShape* child = s->getChildShapeInl(key);
-            hkpShapeDisplayBuilder_buildShapeDisplay(child, mat, out);
+            hkpShapeDisplayBuilder_buildShapeDisplay(child, transform, displayGeometries);
         }
         break;
     }
@@ -992,18 +995,18 @@ void Node::hkpShapeDisplayBuilder_buildShapeDisplay(const BaseShape* shape, cons
         for (unsigned int key = c->GetFirstKey(); key != 0xffffffff; key = c->GetNextShapeKey(key))
         {
             const BaseShape* child = c->GetShapeForKey(key, buffer);
-            hkpShapeDisplayBuilder_buildShapeDisplay(child, mat, out);
+            hkpShapeDisplayBuilder_buildShapeDisplay(child, transform, displayGeometries);
         }
         break;
     }
     case 3: {
         const TriangleShape* s = static_cast<const TriangleShape*>(shape);
-        Mesh* mesh = GetCurrentDisplay(out)->getGeometry();
+        Mesh* mesh = GetCurrentDisplay(displayGeometries)->getGeometry();
         int base = mesh->m_kVertices.GetLogicalSize();
         DisplayVectorCallLocal_00ddfd10* v = mesh->m_kVertices.expandBy(3);
-        v[0].SetTransformedPoint(mat, s->getVertex(0));
-        v[1].SetTransformedPoint(mat, s->getVertex(1));
-        v[2].SetTransformedPoint(mat, s->getVertex(2));
+        v[0].SetTransformedPoint(transform, s->getVertex(0));
+        v[1].SetTransformedPoint(transform, s->getVertex(1));
+        v[2].SetTransformedPoint(transform, s->getVertex(2));
         Mesh::Triangle* t = mesh->m_uiTriangleCount.expandBy(1);
         t->set(base, base + 1, base + 2);
         if (s->getExtrusion().length3() > 0)
@@ -1015,9 +1018,9 @@ void Node::hkpShapeDisplayBuilder_buildShapeDisplay(const BaseShape* shape, cons
             DisplayVectorCallLocal_00ddfd10 c;
             c.setAdd4(s->getVertex(2), s->getExtrusion());
             DisplayVectorCallLocal_00ddfd10* e = mesh->m_kVertices.expandBy(3);
-            e[0].SetTransformedPoint(mat, a);
-            e[1].SetTransformedPoint(mat, b);
-            e[2].SetTransformedPoint(mat, c);
+            e[0].SetTransformedPoint(transform, a);
+            e[1].SetTransformedPoint(transform, b);
+            e[2].SetTransformedPoint(transform, c);
             Mesh::Triangle* et = mesh->m_uiTriangleCount.expandBy(7);
             et[0].set(base + 3, base + 1, base);
             et[1].set(base + 3, base + 4, base + 1);
@@ -1038,11 +1041,11 @@ void Node::hkpShapeDisplayBuilder_buildShapeDisplay(const BaseShape* shape, cons
         Array<DisplayVectorCallLocal_00ddfd10> transformed;
         transformed.SetSizeAndGrow(count);
         for (int i = 0; i < count; ++i)
-            transformed.data[i].SetTransformedPoint(mat, p[i].getPosition());
+            transformed.data[i].SetTransformedPoint(transform, p[i].getPosition());
         Mesh* mesh = new Mesh;
         MeshUtility::ConvertStridedToMesh(transformed, *mesh);
         FUN_00de1d20* g = new FUN_00de1d20(mesh);
-        out.AddBack(g);
+        displayGeometries.AddBack(g);
         break;
     }
     case 20: {
@@ -1059,16 +1062,16 @@ void Node::hkpShapeDisplayBuilder_buildShapeDisplay(const BaseShape* shape, cons
             for (int j = 0; j < 3; ++j)
             {
                 DisplayVectorCallLocal_00ddfd10* v = mesh->m_kVertices.expandBy(1);
-                v->SetTransformedPoint(mat, child->getVertex(j));
+                v->SetTransformedPoint(transform, child->getVertex(j));
             }
         }
         FUN_00de1d20* g = new FUN_00de1d20(mesh);
-        out.AddBack(g);
+        displayGeometries.AddBack(g);
         break;
     }
     case 13: {
         const HeightShape* s = static_cast<const HeightShape*>(shape);
-        Mesh* mesh = GetCurrentDisplay(out)->getGeometry();
+        Mesh* mesh = GetCurrentDisplay(displayGeometries)->getGeometry();
         DisplayVectorCallLocal_00ddfd10 scale = s->m_kHeightScaleVector;
         for (int i = 0; i < s->m_iXResolution - 1; ++i)
             for (int j = 0; j < s->m_iZResolution - 1; ++j)
@@ -1087,10 +1090,10 @@ void Node::hkpShapeDisplayBuilder_buildShapeDisplay(const BaseShape* shape, cons
                 d.mul4(scale);
                 int base = mesh->m_kVertices.GetLogicalSize();
                 DisplayVectorCallLocal_00ddfd10* v = mesh->m_kVertices.expandBy(4);
-                v[0].SetTransformedPoint(mat, a);
-                v[1].SetTransformedPoint(mat, b);
-                v[2].SetTransformedPoint(mat, c);
-                v[3].SetTransformedPoint(mat, d);
+                v[0].SetTransformedPoint(transform, a);
+                v[1].SetTransformedPoint(transform, b);
+                v[2].SetTransformedPoint(transform, c);
+                v[3].SetTransformedPoint(transform, d);
                 if (s->getTriangleFlip())
                 {
                     Mesh::Triangle* t = mesh->m_uiTriangleCount.expandBy(2);
@@ -1109,7 +1112,7 @@ void Node::hkpShapeDisplayBuilder_buildShapeDisplay(const BaseShape* shape, cons
     default:
         for (int i = 0; i < UserBuilders::GetMonitorStream().m_kBuilderEntries.GetLogicalSize(); ++i)
             if (UserBuilders::GetMonitorStream().m_kBuilderEntries[i].type == shape->getType())
-                UserBuilders::GetMonitorStream().m_kBuilderEntries[i].f(shape, mat, out, this);
+                UserBuilders::GetMonitorStream().m_kBuilderEntries[i].f(shape, transform, displayGeometries, this);
         break;
     }
 }

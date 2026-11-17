@@ -3,6 +3,7 @@
 #include "hkStringPtr.h"
 #include "hkBool.h"
 
+// pdb: class hkaBone, size 0x8, 2 members
 class hkaBone
 {
 public:

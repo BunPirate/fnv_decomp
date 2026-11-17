@@ -2,6 +2,7 @@
 
 #include "hkpKeyframedRigidMotion.h"
 
+// pdb: class hkpMaxSizeMotion, size 0x120, bases: hkpKeyframedRigidMotion, 0 members
 class hkpMaxSizeMotion : public hkpKeyframedRigidMotion
 {
 public:

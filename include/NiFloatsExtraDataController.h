@@ -3,10 +3,11 @@
 #include "NiExtraDataController.h"
 #include "NiFixedString.h"
 
+// pdb: class NiFloatsExtraDataController, size 0x48, bases: NiExtraDataController, 2 members
 class NiFloatsExtraDataController : public NiExtraDataController
 {
 public:
-    virtual bool IsEqual(NiObject* object) const;
+    virtual bool IsEqual(NiObject* pkObject) const;
 
     void ApplyInterpolatorValue(NiInterpolator* interpolator, unsigned short index);
 

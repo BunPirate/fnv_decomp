@@ -57,9 +57,10 @@ struct FUN_0064df10_helper
     void* p;
     void __thiscall deallocate(void* a, unsigned int b);
 };
+// pdb: class Date, size 0x4, 2 members
 struct Date
 {
-    void* p;
+    void* sDate; // src: XBOX_RETAIL_PDB +0x0 (old: p)
     ~Date();
 };
 struct FUN_0065d6e0_class : Date
@@ -70,7 +71,7 @@ struct FUN_0065d6e0_class : Date
 // @fnv 0x0065d6e0
 FUN_0065d6e0_class::~FUN_0065d6e0_class()
 {
-    ((FUN_0064df10_helper*)((char*)this + 4))->deallocate(p, 1);
+    ((FUN_0064df10_helper*)((char*)this + 4))->deallocate(sDate, 1);
 }
 
 unsigned int __cdecl FUN_00ec7c56(void);
@@ -86,6 +87,7 @@ struct FUN_00b1db00_class
 // Bounds-checks index a against (i10 - ic) / 56, calls FUN_00ec7c56 if out of range, and returns ic + a * 56.
 // @fnv 0x00b1db00
 // src: GUESS 0x00b1db00 (confidence: low)
+// pdb: std::vector<SFrondGuide,std::allocator<SFrondGuide> >::end | FrondEngine.obj | debug, object-file run extension, low
 unsigned int __thiscall FUN_00b1db00_class::GetElementAddress38_00b1db00(unsigned int uiIndex)
 {
     if (uiIndex >= (unsigned int)((i10 - ic) / 56))
@@ -124,6 +126,8 @@ struct FUN_00b30fd0_class
 // Doubles n, bounds-checks it against the element count in the array at this+0x100, and returns the address of the element at that index.
 // @fnv 0x00b30fd0
 // src: GUESS 0x00b30fd0 (confidence: medium)
+// pdb: CIndexedGeometry::GetVertexTexCoord0 | IndexedGeometry.obj | debug, object-file gap fill, medium
+// pdb params: nVertexIndex
 unsigned int FUN_00b30fd0_class::GetDoubledIndexElementChecked(unsigned int uiIndex)
 {
     unsigned int count = uiIndex << 1;
@@ -470,6 +474,9 @@ struct Frame00b1d5d0
 // Copy-assigns rhs into this, reusing existing storage when it is large enough and otherwise reallocating and copying the elements.
 // @fnv 0x00b1d5d0
 // src: GUESS 0x00b1d5d0 (confidence: medium)
+// pdb: std::vector<float,std::allocator<float> >::operator= | FrondEngine.obj | debug, call graph, medium
+// pdb params: _Right
+// pdb locals: _Ptr
 C00b1d5d0& C00b1d5d0::AssignVectorContents(const C00b1d5d0& rhs)
 {
     Frame00b1d5d0 f;
@@ -713,17 +720,20 @@ struct FUN_0044a4c0_Str
 // Formats variadic arguments into a local buffer using fmt, then assigns the result to out and returns out.
 // @fnv 0x00b18860
 // src: XBOX_PDB 0x00b18860
-FUN_0044a4c0_Str* __cdecl IdvFormatString(FUN_0044a4c0_Str* out, char const* fmt, ...)
+// pdb: IdvFormatString | FrondEngine.obj | retail, upstream name already matches, high
+// pdb params: pField, szBuffer
+// pdb locals: vlArgs
+FUN_0044a4c0_Str* __cdecl IdvFormatString(FUN_0044a4c0_Str* pField, char const* szBuffer, ...)
 {
     FmtCtx ctx;
     char buf2[0x400];
     char* ap4;
     ctx.flags = 0;
-    ap4 = reinterpret_cast<char*>(&fmt) + sizeof(fmt);
-    FUN_00ec6cc4(buf2, fmt, ap4);
-    out->FUN_0044a4c0(buf2);
+    ap4 = reinterpret_cast<char*>(&szBuffer) + sizeof(szBuffer);
+    FUN_00ec6cc4(buf2, szBuffer, ap4);
+    pField->FUN_0044a4c0(buf2);
     ctx.flags |= 1;
-    return out;
+    return pField;
 }
 
 void __cdecl _memmove(void*, const void*, unsigned int);
@@ -747,18 +757,21 @@ struct Geo_00b1c6d0
     char pad24[0x64];
     Vec_00b1c6d0 m_ppIndices;
 
-    void CIndexedGeometry_ChangeTexCoord(char cTex, const float* afCoords);
+    void CIndexedGeometry_ChangeTexCoord(char chChangedMapIndex, const float* pNewTexCoords);
 };
 
 struct Class_00b1c6d0
 {
-    void CFrondEngine_SetTextureCoords(Geo_00b1c6d0* geo, char cTex, const float* pTexCoords, bool bFlip);
+    void CFrondEngine_SetTextureCoords(Geo_00b1c6d0* pGeometry, char nFrondMapIndex, const float* pTexCoords, bool bFlip);
 };
 
 // Copies pTexCoords into afCoords, negates odd-indexed values when bFlip is set, then calls FUN_00b31070 once per triangle in m_ppIndices.
 // @fnv 0x00b1c6d0
 // src: COMMUNITY 0x00b1c6d0
-void Class_00b1c6d0::CFrondEngine_SetTextureCoords(Geo_00b1c6d0* geo, char cTex, const float* pTexCoords, bool bFlip)
+// pdb: CFrondEngine::SetTextureCoords | FrondEngine.obj | retail, upstream name already matches, high
+// pdb params: pGeometry, nFrondMapIndex, pTexCoords, bFlip
+// pdb locals: chIndex, afCoords, i
+void Class_00b1c6d0::CFrondEngine_SetTextureCoords(Geo_00b1c6d0* pGeometry, char nFrondMapIndex, const float* pTexCoords, bool bFlip)
 {
     float afCoords[8];
     _memmove(afCoords, pTexCoords, 32);
@@ -769,16 +782,16 @@ void Class_00b1c6d0::CFrondEngine_SetTextureCoords(Geo_00b1c6d0* geo, char cTex,
             afCoords[i] = -afCoords[i];
         }
     }
-    char chIndex = cTex;
-    geo->m_usTriCount = 0;
+    char chIndex = nFrondMapIndex;
+    pGeometry->m_usTriCount = 0;
     {
         int j_;
         const Vec_00b1c6d0* p2;
-        for (j_ = 0; j_ < (unsigned short)(((unsigned int)((p2 = &geo->m_ppIndices)->_Mylast - p2->_Myfirst)) / 3);
+        for (j_ = 0; j_ < (unsigned short)(((unsigned int)((p2 = &pGeometry->m_ppIndices)->_Mylast - p2->_Myfirst)) / 3);
              ++j_)
         {
-            geo->CIndexedGeometry_ChangeTexCoord(chIndex, afCoords);
-            geo->m_usTriCount++;
+            pGeometry->CIndexedGeometry_ChangeTexCoord(chIndex, afCoords);
+            pGeometry->m_usTriCount++;
         }
     }
 }
@@ -838,6 +851,8 @@ struct S00b1dd80_Obj
 // Shifts the 0x38-byte elements after q down, drops the last one (p10 -= 0x38), and returns out holding i0 and q; calls FUN_00ec7c56 if q is out of range.
 // @fnv 0x00b1dd80
 // src: GUESS 0x00b1dd80 (confidence: medium)
+// pdb: std::vector<SFrondGuide,std::allocator<SFrondGuide> >::erase | FrondEngine.obj | debug, object-file run extension, low
+// pdb params: _Where
 int* __thiscall S00b1dd80_Obj::EraseElement38(int* out, int* p, unsigned int q)
 {
     int u0;
@@ -1389,6 +1404,7 @@ struct FUN_00b18970 : Base
 
 // Default constructor: zeroes f18, f1c, c20, f24, f28, f2c, i30 and i34 after the Base constructor.
 // @fnv 0x00b18970
+// pdb: SFrondVertex::SFrondVertex | FrondEngine.obj | debug, call graph, high
 FUN_00b18970::FUN_00b18970()
 {
     FUN_00b18970_local local;

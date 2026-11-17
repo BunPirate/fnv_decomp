@@ -123,8 +123,8 @@ struct SphereBuildGeometry
     SphereBuildFaces faces;
 };
 
-extern "C" void __cdecl hkArrayUtil__reserve(SphereBuildAllocator* ctx, void* arr, int newCap, int stride);
-void __cdecl _subdivideRecursive(void* obj, int idx, float v, float f2);
+extern "C" void __cdecl hkArrayUtil__reserve(SphereBuildAllocator* mem, void* array, int numElem, int sizeElem);
+void __cdecl _subdivideRecursive(void* geometry, int triIndex, float radius, float recursionsLeft);
 
 struct SphereMeshBuilder
 {
@@ -161,6 +161,7 @@ struct SphereMeshBuilder
 
 // @fnv 0x00e0b360
 // src: HAVOK_SRC 0x00e0b360
+// pdb: hkDisplaySphere::buildGeometry | hkDisplaySphere.obj | retail, upstream name already matches, high
 __declspec(noinline) void SphereMeshBuilder::hkDisplaySphere_buildGeometry()
 {
     SphereBuildMemory* holder = hkMemoryRouter_getInstance();

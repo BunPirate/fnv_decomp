@@ -2,35 +2,41 @@
 
 #include "teleportdoorsearch_decls.h"
 // @fnv 0x006f3b00
-bool TeleportDoorSearch::HasReachedGoal(const AStarNode<ParentSpaceNode, TeleportLink>* node)
+// pdb: TeleportDoorSearch::IsGoalNode | TeleportDoorSearch.obj | retail, vtable slot, high
+// pdb params: apNode
+// pdb locals: pworlddata, pworld
+bool TeleportDoorSearch::HasReachedGoal(const AStarNode<ParentSpaceNode, TeleportLink>* apNode)
 {
-    if (restriction == 3)
+    if (Restrictions == 3)
     {
-        TESWorldSpace* w = node->world;
+        TESWorldSpace* w = apNode->world;
         PointerPairData* data = w ? w->GetWorldSpaceData() : 0;
-        return node->exterior && data && data->a && data->b;
+        return apNode->exterior && data && data->a && data->b;
     }
     else
     {
-        if (node->exterior != exterior)
+        if (apNode->exterior != GoalNode)
             return false;
-        if (node->cell != cell)
+        if (apNode->cell != cell)
             return false;
-        if (node->world != world)
+        if (apNode->world != world)
             return false;
         return true;
     }
 }
 // @fnv 0x006f36d0
-bool TeleportDoorSearch::CollectConnections(const AStarNode<ParentSpaceNode, TeleportLink>* node,
-                                            BSSimpleArray<AStarNode<ParentSpaceNode, TeleportLink>*, 1024>* output)
+// pdb: TeleportDoorSearch::GetNodeConnections | TeleportDoorSearch.obj | retail, vtable slot, high
+// pdb params: apNode, apRetNodes
+// pdb locals: i, ikey, fdistToDoor, doorLock, ptelCell, bcanOpenLock, doorLocInThisSpace, bmustPick, fcost, pnode, pdoor, fdoorAdditionalCost
+bool TeleportDoorSearch::CollectConnections(const AStarNode<ParentSpaceNode, TeleportLink>* apNode,
+                                            BSSimpleArray<AStarNode<ParentSpaceNode, TeleportLink>*, 1024>* apRetNodes)
 {
-    reinterpret_cast<BSSimpleArray<SandboxProcedureData, 1024>*>(&doors)->Clear(false);
-    if (node->exterior)
-        node->world->BuildTeleportDoorList(doors);
+    reinterpret_cast<BSSimpleArray<SandboxProcedureData, 1024>*>(&DoorList)->Clear(false);
+    if (apNode->exterior)
+        apNode->world->BuildTeleportDoorList(DoorList);
     else
-        node->cell->AppendCellReferences(doors);
-    if (disposition == 1 || disposition == 3 || lockData)
+        apNode->cell->AppendCellReferences(DoorList);
+    if (DoorLockDisposition == 1 || DoorLockDisposition == 3 || pLockData)
     {
         // Local names and declaration order preserve MSVC9 stack-slot allocation.
         // a03 index, a06 lock penalty, a00 door, a08 result node.
@@ -46,16 +52,16 @@ bool TeleportDoorSearch::CollectConnections(const AStarNode<ParentSpaceNode, Tel
         TESObjectCELL* a07;
         bool a05;
         unsigned int a03;
-        for (a03 = 0; a03 < reinterpret_cast<BSSimpleArray<ParentSpaceNode, 1024>*>(&doors)->GetSize(); ++a03)
+        for (a03 = 0; a03 < reinterpret_cast<BSSimpleArray<ParentSpaceNode, 1024>*>(&DoorList)->GetSize(); ++a03)
         {
-            a00 = reinterpret_cast<TESObjectREFR*>(reinterpret_cast<NiFormArray*>(&doors)->FUN_00877a30(a03));
+            a00 = reinterpret_cast<TESObjectREFR*>(reinterpret_cast<NiFormArray*>(&DoorList)->FUN_00877a30(a03));
             if (a00->GetDisabled())
                 continue;
             void* b01 =
                 reinterpret_cast<ExtraLock*>(a00->GetExtraRadioData())->FUN_0043a320()
                     ? reinterpret_cast<void*>(reinterpret_cast<ExtraLock*>(a00->GetExtraRadioData())->FUN_0043a320())
                     : reinterpret_cast<void*>(a00->GetExtraRadioData()->DoorTeleportData_GetTeleportCell());
-            switch (restriction)
+            switch (Restrictions)
             {
             case 2:
                 if (reinterpret_cast<ExtraLock*>(a00->GetExtraRadioData())->FUN_0043a320())
@@ -69,11 +75,11 @@ bool TeleportDoorSearch::CollectConnections(const AStarNode<ParentSpaceNode, Tel
                 break;
             }
             DoorAccessData b02(a00);
-            a05 = b02.CanUnlockDoor(lockData, a00, a02);
+            a05 = b02.CanUnlockDoor(pLockData, a00, a02);
             a06 = 0.0f;
             if (!a05 || a02)
             {
-                switch (disposition)
+                switch (DoorLockDisposition)
                 {
                 case 1:
                 case 3:
@@ -85,18 +91,18 @@ bool TeleportDoorSearch::CollectConnections(const AStarNode<ParentSpaceNode, Tel
                     continue;
                 }
             }
-            if (reinterpret_cast<TESObjectDOOR*>(a00->GetObjectReference())->IsTeleportDoor() && disposition != 3)
+            if (reinterpret_cast<TESObjectDOOR*>(a00->GetObjectReference())->IsTeleportDoor() && DoorLockDisposition != 3)
                 a06 = 409600.0f;
             reinterpret_cast<NiPoint3&>(a04) = *static_cast<const TESObjectREFR*>(a00)->GetPos();
             float b00;
-            if (reinterpret_cast<ActorMover*>(const_cast<AStarNode<ParentSpaceNode, TeleportLink>*>(node))
+            if (reinterpret_cast<ActorMover*>(const_cast<AStarNode<ParentSpaceNode, TeleportLink>*>(apNode))
                     ->GetCurrentMoveModeType())
-                b00 = static_cast<const NiPoint3&>(node->pos - reinterpret_cast<const NiPoint3&>(a04)).Length();
+                b00 = static_cast<const NiPoint3&>(apNode->pos - reinterpret_cast<const NiPoint3&>(a04)).Length();
             else
-                b00 = static_cast<const NiPoint3&>(location.FUN_005c3420() - reinterpret_cast<const NiPoint3&>(a04)).Length();
-            if (maxCost != 0.0 && node->cost + b00 > maxCost)
+                b00 = static_cast<const NiPoint3&>(StartLocation.FUN_005c3420() - reinterpret_cast<const NiPoint3&>(a04)).Length();
+            if (fMaxDist != 0.0 && apNode->cost + b00 > fMaxDist)
                 continue;
-            a01 = node->cost + b00 + a06;
+            a01 = apNode->cost + b00 + a06;
             a07 = a00->GetExtraRadioData()->DoorTeleportData_GetTeleportCell();
             switch (InsertOrUpdateNode(b01, a01, a08))
             {
@@ -119,7 +125,7 @@ bool TeleportDoorSearch::CollectConnections(const AStarNode<ParentSpaceNode, Tel
                 a08->door = a00;
                 a08->pos = *reinterpret_cast<NiPoint3*>(
                     reinterpret_cast<QuestDialogueInfo*>(a00->GetExtraRadioData())->GetInfoArray());
-                reinterpret_cast<BSSimpleArray<TESIdleForm*, 1024>*>(output)->Add(reinterpret_cast<TESIdleForm*&>(a08));
+                reinterpret_cast<BSSimpleArray<TESIdleForm*, 1024>*>(apRetNodes)->Add(reinterpret_cast<TESIdleForm*&>(a08));
             }
         }
     }
@@ -127,6 +133,7 @@ bool TeleportDoorSearch::CollectConnections(const AStarNode<ParentSpaceNode, Tel
 }
 
 // @fnv 0x006f3460
+// pdb: TeleportDoorSearch::~TeleportDoorSearch | TeleportDoorSearch.obj | retail, upstream name already matches, high
 TeleportDoorSearch::~TeleportDoorSearch()
 {
 }
@@ -152,6 +159,9 @@ struct FUN_006f4430_shell
 };
 
 // @fnv 0x006f3e30
+// pdb: AStarSearch<ParentSpaceNode,TeleportLink>::GetOrCreateAStarNode | TeleportDoorSearch.obj | debug, call graph, high
+// pdb params: aiKey, afCost, aRetNode
+// pdb locals: pBuckHead, pcurrent, pprev
 int TeleportDoorSearch::InsertOrUpdateNode(void* aiKey, float afCost, AStarNode<ParentSpaceNode, TeleportLink>*& aRetNode)
 {
     AStarNodeTD** pBucketHead = (AStarNodeTD**)((char*)this + 0x14) + reinterpret_cast<FUN_00996840_shell*>(reinterpret_cast<char*>(this) + 0x14)->AStarNodeMap_GetBucketIndex(reinterpret_cast<unsigned int>(aiKey));
@@ -227,55 +237,59 @@ struct DoorSearchInit : TeleportDoorSearch
 {
     void AStarSearch_ParentSpaceNode_TeleportLink_AddStartNode(void*, SearchState*, float);
     bool FindPath(SearchResult*, ResultSub*, bool);
-    bool InitDoorSearch(PathingLocation*, PathingLocation*, SearchResult*, int, float, void*, int);
+    bool TeleportDoorSearch_BuildNodePath(PathingLocation*, PathingLocation*, SearchResult*, int, float, void*, int);
 };
 // @fnv 0x006f34e0
-bool DoorSearchInit::InitDoorSearch(PathingLocation* start, PathingLocation* goal, SearchResult* result, int mode,
-                                    float cost, void* locks, int disp)
+// src: XBOX_RETAIL_PDB 0x006f34e0
+// pdb: TeleportDoorSearch::BuildNodePath | TeleportDoorSearch.obj | retail, call graph, high
+// pdb params: aStartLocation, aGoalLocation, apRetPath, aRestrictions, afMaxDist, apLockData, aDisposition
+// pdb locals: istartKey
+bool DoorSearchInit::TeleportDoorSearch_BuildNodePath(PathingLocation* aStartLocation, PathingLocation* aGoalLocation, SearchResult* apRetPath, int aRestrictions,
+                                    float afMaxDist, void* apLockData, int aDisposition)
 {
-    location = *start;
+    StartLocation = *aStartLocation;
     void* a;
-    if (start->FUN_00441110())
+    if (aStartLocation->FUN_00441110())
     {
-        reinterpret_cast<SearchState*>(reinterpret_cast<char*>(this) + 0x2058)->world = start->FUN_00441110();
+        reinterpret_cast<SearchState*>(reinterpret_cast<char*>(this) + 0x2058)->world = aStartLocation->FUN_00441110();
         reinterpret_cast<SearchState*>(reinterpret_cast<char*>(this) + 0x2058)->exterior = true;
         reinterpret_cast<SearchState*>(reinterpret_cast<char*>(this) + 0x2058)->cell = 0;
         a = reinterpret_cast<SearchState*>(reinterpret_cast<char*>(this) + 0x2058)->world;
     }
-    else if (start->FUN_006dd4f0())
+    else if (aStartLocation->FUN_006dd4f0())
     {
-        reinterpret_cast<SearchState*>(reinterpret_cast<char*>(this) + 0x2058)->cell = start->FUN_006dd4f0();
+        reinterpret_cast<SearchState*>(reinterpret_cast<char*>(this) + 0x2058)->cell = aStartLocation->FUN_006dd4f0();
         reinterpret_cast<SearchState*>(reinterpret_cast<char*>(this) + 0x2058)->exterior = false;
         reinterpret_cast<SearchState*>(reinterpret_cast<char*>(this) + 0x2058)->world = 0;
         a = reinterpret_cast<SearchState*>(reinterpret_cast<char*>(this) + 0x2058)->cell;
     }
     else
         return false;
-    restriction = mode;
-    if (reinterpret_cast<SearchState*>(reinterpret_cast<char*>(this) + 0x2058)->world && mode == 2)
+    Restrictions = aRestrictions;
+    if (reinterpret_cast<SearchState*>(reinterpret_cast<char*>(this) + 0x2058)->world && aRestrictions == 2)
         return false;
-    maxCost = cost;
-    disposition = disp;
-    if (restriction != 3)
+    fMaxDist = afMaxDist;
+    DoorLockDisposition = aDisposition;
+    if (Restrictions != 3)
     {
-        if (goal->FUN_00441110())
+        if (aGoalLocation->FUN_00441110())
         {
-            world = goal->FUN_00441110();
-            exterior = true;
+            world = aGoalLocation->FUN_00441110();
+            GoalNode = true;
             cell = 0;
         }
-        else if (goal->FUN_006dd4f0())
+        else if (aGoalLocation->FUN_006dd4f0())
         {
-            cell = goal->FUN_006dd4f0();
-            exterior = false;
+            cell = aGoalLocation->FUN_006dd4f0();
+            GoalNode = false;
             world = 0;
         }
     }
-    lockData = static_cast<const PathingActorData*>(locks);
-    result->start = start->FUN_005c3420();
-    result->finish = goal->FUN_005c3420();
+    pLockData = static_cast<const PathingActorData*>(apLockData);
+    apRetPath->start = aStartLocation->FUN_005c3420();
+    apRetPath->finish = aGoalLocation->FUN_005c3420();
     AStarSearch_ParentSpaceNode_TeleportLink_AddStartNode(a, reinterpret_cast<SearchState*>(reinterpret_cast<char*>(this) + 0x2058), 1.0f);
-    if (!FindPath(result, &result->sub, true))
+    if (!FindPath(apRetPath, &apRetPath->sub, true))
         return false;
     return true;
 }

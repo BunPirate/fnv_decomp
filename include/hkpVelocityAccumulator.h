@@ -4,6 +4,7 @@
 #include "hkVector4.h"
 #include "hkMatrix3.h"
 
+// pdb: class hkpVelocityAccumulator, size 0x80, 8 members
 class hkpVelocityAccumulator
 {
 public:

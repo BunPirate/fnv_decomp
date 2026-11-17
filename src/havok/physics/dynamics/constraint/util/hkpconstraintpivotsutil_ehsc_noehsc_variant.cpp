@@ -398,6 +398,9 @@ struct hkpWorldq
 
 // @fnv 0x00d85160
 // src: GUESS 0x00d85160 (confidence: low)
+// pdb: hkpConstraintPivotsUtil::findClosestShapeKey | hkpConstraintPivotsUtil.obj | retail, object-file run extension, low
+// pdb params: world, shape, pivotInBodySpace
+// pdb locals: sphere, collector, transform, cdBodyB, cdBodyA, input, filter
 unsigned int hkpWorldq_ProcessAndReturnValue_00d85160(hkpWorldq* world, const hkpShapeq* shape, const hkVector4q& position)
 {
     hkpSphereShapeq sphere(0.01f);

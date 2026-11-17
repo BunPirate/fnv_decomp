@@ -5,14 +5,15 @@
 
 class EntryPointScriptOperations;
 
+// pdb: class BGSEntryPointFunctionDataActivateChoice, size 0x60, bases: BGSEntryPointFunctionData, 3 members
 class BGSEntryPointFunctionDataActivateChoice : public BGSEntryPointFunctionData
 {
 public:
     BGSEntryPointFunctionDataActivateChoice();
     virtual ~BGSEntryPointFunctionDataActivateChoice();
-    virtual void InitItem(TESForm* form);
+    virtual void InitItem(TESForm* apOwner);
 
-    char* choiceText;
+    char* pActivateChoiceLabel; // src: XBOX_RETAIL_PDB +0x4 (old: choiceText)
     union
     {
         struct
@@ -44,14 +45,14 @@ public:
             unsigned int unk58;
         };
     };
-    unsigned short flags;
+    unsigned short cFlags; // src: XBOX_RETAIL_PDB +0x5c (old: flags)
     unsigned short unk5E;
 
     void InitializeComponent();
     void FUN_005e6c30();
-    void SetLabel(const char* text);
+    void SetLabel(const char* apLabel);
     BGSEntryPointFunctionData* Duplicate_005e6cd0();
-    bool Compare_005e6d80(BGSEntryPointFunctionData* other);
+    bool Compare_005e6d80(BGSEntryPointFunctionData* apCompare);
     void Save_005e6e50();
     void FUN_005e6600();
     void* FUN_005e65d0(unsigned int flags);

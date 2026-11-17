@@ -59,6 +59,7 @@ template <class T> struct LevelUpOwnedList
     ~LevelUpOwnedList();
 };
 
+// pdb: class LevelUpMenu, size 0xcc, bases: Menu, 7 members
 class LevelUpMenu : public Menu
 {
 public:
@@ -103,7 +104,7 @@ public:
             int unk60;
         };
     };
-    Member64 unk64;
-    Member94 unk94;
-    LevelUpOwnedList<void*> unkC4;
+    Member64 lbSkillsList; // src: XBOX_RETAIL_PDB +0x64 (old: unk64)
+    Member94 lbPerksList; // src: XBOX_RETAIL_PDB +0x94 (old: unk94)
+    LevelUpOwnedList<void*> AvailablePerks; // src: XBOX_RETAIL_PDB +0xc4 (old: unkC4)
 };

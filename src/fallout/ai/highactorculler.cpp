@@ -25,9 +25,12 @@ extern TES* g_TES;
 #pragma intrinsic(memcpy)
 
 // @fnv 0x008d6d40
-void HighActorCuller::Operate(MobileObject* mobile)
+// pdb: HighActorCuller::Operate | HighActorCuller.obj | retail, upstream name already matches, high
+// pdb params: apMob
+// pdb locals: pobj, pn, pgraph, kbound, kiter, poccluders, poccluder
+void HighActorCuller::Operate(MobileObject* apMob)
 {
-    NiAVObject* object = mobile->Get3DSimple();
+    NiAVObject* object = apMob->Get3DSimple();
     if (object)
     {
         m_kFadeNodeCuller.Process(object);

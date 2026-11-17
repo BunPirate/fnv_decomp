@@ -10,6 +10,7 @@ class TESFile;
 class TESCreature;
 enum CREATURE_SOUND_TYPE;
 
+// pdb: class CreatureSounds, size 0x58, 1 members
 class CreatureSounds
 {
 public:
@@ -19,13 +20,13 @@ public:
     bool SetSoundName(const char*);
     void ClearSounds();
     void FreeAllCreatureSoundLists();
-    void* DeleteThis(unsigned int);
+    void* CreatureSounds_ScalarDtor(unsigned int);
     void AddSoundForType(SoundListEntry*, CREATURE_SOUND_TYPE);
     BSSimpleList<SoundListEntry*>* GetSoundListForType(CREATURE_SOUND_TYPE);
-    bool LoadSoundsFromFile(TESFile*, CREATURE_SOUND_TYPE, TESCreature*);
-    SoundOps* GetRandomCreatureSound(int);
+    bool LoadCreatureSound(TESFile*, CREATURE_SOUND_TYPE, TESCreature*);
+    SoundOps* PickCreatureSound(int);
     void Copy(CreatureSounds*);
-    bool IsDifferentFrom(CreatureSounds* other);
+    bool Compare(CreatureSounds* other);
 
     union
     {

@@ -22,12 +22,14 @@ unsigned int bhkHingeConstraint::GetInstanceSize()
     return 20;
 }
 // @fnv 0x00afc0c0
+// pdb: CompressedArchiveFile::GetFileSize | Archive.obj | debug, object-file gap fill, medium
 char* FUN_00afc0c0_Owner::GetName168() const
 {
     return m_pName168;
 }
 // BSFile vftable slot 7 (0x010a4764 + 0x1c): computes the size through slot 10 (GetSize) on first use.
 // @fnv 0x00aff610
+// pdb: BSFile::GetFileSize | BSFile.obj | retail, upstream name already matches, high
 unsigned int BSFile::GetFileSize()
 {
     if (!m_uiValueId)

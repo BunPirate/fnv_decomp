@@ -91,7 +91,7 @@ struct CtxRec {
     void* m_78;
 };
 
-void __cdecl hkpEntityAabbUtil_entityBatchRecalcAabb(void* mgr, OutSlot* out, int flag);
+void __cdecl hkpEntityAabbUtil_entityBatchRecalcAabb(void* collisionInput, OutSlot* entityBatch, int numEntities);
 
 class ListWalker {
 public:
@@ -103,6 +103,9 @@ public:
 };
 
 // @fnv 0x00d9df50
+// pdb: hkpCollidableMediator::hkpCollidableMediator | hkpCollidableMediator.obj | retail, call graph, medium
+// pdb params: collidables, world
+// pdb locals: entity, aabb, assertBuf, ostr
 ListWalker* ListWalker::InitWalker(ItemListRec* list, CtxRec* ctx)
 {
     m_06 = 1;
@@ -137,15 +140,17 @@ struct FUN_00d9e010_cls {
     unsigned int unk00;
     unsigned int unk04;
     Child* child;
-    unsigned int hkpCollidableMediator_getPrimitiveId(unsigned int index);
+    unsigned int hkpCollidableMediator_getPrimitiveId(unsigned int primitiveIdx);
 };
 
 // @fnv 0x00d9e010
 // src: HAVOK_LIB 0x00d9e010
-unsigned int FUN_00d9e010_cls::hkpCollidableMediator_getPrimitiveId(unsigned int index)
+// pdb: hkpCollidableMediator::getPrimitiveId | hkpCollidableMediator.obj | debug, upstream name already matches, high
+// pdb params: primitiveIdx
+unsigned int FUN_00d9e010_cls::hkpCollidableMediator_getPrimitiveId(unsigned int primitiveIdx)
 {
     unsigned int* table = (unsigned int*)child->unk00;
-    return table[index];
+    return table[primitiveIdx];
 }
 
 #include "fnv_asm_helpers.h"   // project x87 helpers (fnv_SinCos, fnv_FloatToInt), kept last so earlier code is unchanged

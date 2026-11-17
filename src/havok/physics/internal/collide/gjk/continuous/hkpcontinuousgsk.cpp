@@ -129,7 +129,7 @@ struct S_00db4b50_Out
     int unk12c;
 };
 
-void hkSweptTransform_ComputeValues_00cf1710(void* a, float b, float c, void* out);
+void hkSweptTransformUtil_lerp2Ha(void* a, float b, float tAddOn, void* out);
 __forceinline void S_rotInv(const __m128* r, const __m128* in, int n, __m128* out)
 {
     __m128 a0 = r[0], a1 = r[1], a2 = r[2];
@@ -155,8 +155,8 @@ void hkTransform_setMulInverseMul_UpdateState_00db4b50(S_00db4b50_A* a, float f,
 {
     S_00db4b50_B* b = a->unk40;
     float t = b->unk08 * f;
-    hkSweptTransform_ComputeValues_00cf1710(a->unk00 + 0x40, b->unk00, t, out);
-    hkSweptTransform_ComputeValues_00cf1710(a->unk04 + 0x40, b->unk00, t, &out->unk40);
+    hkSweptTransformUtil_lerp2Ha(a->unk00 + 0x40, b->unk00, t, out);
+    hkSweptTransformUtil_lerp2Ha(a->unk04 + 0x40, b->unk00, t, &out->unk40);
     void* m = &out->unk80;
     ((Transform*)m)->hkTransform_setMulInverseMul(out, &out->unk40);
     ((Vec4*)&out->unkc0)->hkVector4_setRotatedDir(m, *(const Vec4*)&a->unk20);
@@ -304,6 +304,9 @@ static __forceinline void calculate(Vec4& output, const Transform& frame, LocalM
 }
 // @fnv 0x00db52c0
 // src: GUESS 0x00db52c0 (confidence: low)
+// pdb: hk4dGskCalcSeparatingNormal | hkpContinuousGsk.obj | retail, object-file run extension, low
+// pdb params: tA, tB, shapeA, shapeB, gsk, separatingNormalOut, pointOnBInB
+// pdb locals: separatingNormalA, aTb
 static __declspec(noinline) void Object_UpdateFields_00db52c0(Shape* obj, const Transform* mat, const Transform* other, GskConvexShape* apPairA,
                                               GskConvexShape* apPairB, OutArg a3, Vec4* apResult)
 {
@@ -542,6 +545,8 @@ struct Out
 // Fills out from in: stores both p8 pointers and the f10 sum, reserves v*16 bytes (rounded to 128) from FUN_00c85750's cursor, and computes f18 and f1c.
 // @fnv 0x00db53f0
 // src: GUESS 0x00db53f0 (confidence: low)
+// pdb: hk4dGskCollPInputInitialize | hkpContinuousGsk.obj | retail, object-file run extension, low
+// pdb params: in3, collPInput
 static __declspec(noinline) void hkMemoryRouter_getInstance_UpdateState_00db53f0(In* in, Out* out)
 {
     ObjA* a = in->a;

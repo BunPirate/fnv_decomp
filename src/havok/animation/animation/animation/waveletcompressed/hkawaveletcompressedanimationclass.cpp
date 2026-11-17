@@ -35,13 +35,16 @@ struct DFB610ChunkCache;
 
 struct DFB610Animation
 {
-    void SamplePartialPose(float time, int maxNumTracks, DFB610QsTransform* transformOut, int maxNumFloatTracks,
+    void SamplePartialPose(float time, int maxNumTransformTracks, DFB610QsTransform* transformTracksOut, int maxNumFloatTracks,
                            float* floatTracksOut, DFB610ChunkCache* cache) const;
 };
 
 // Reports an assertion that samplePartialPose is not implemented for this animation type, then releases the error stream.
 // @fnv 0x00dfb610
-void DFB610Animation::SamplePartialPose(float time, int maxNumTracks, DFB610QsTransform* transformOut,
+// pdb: hkaAnimation::samplePartialTracks | hkaWaveletCompressedAnimationClass.obj | retail, string-set bridge, high
+// pdb params: time, maxNumTransformTracks, transformTracksOut, maxNumFloatTracks, floatTracksOut, cache
+// pdb locals: assertBuf, ostr
+void DFB610Animation::SamplePartialPose(float time, int maxNumTransformTracks, DFB610QsTransform* transformTracksOut,
                                         int maxNumFloatTracks, float* floatTracksOut, DFB610ChunkCache* cache) const
 {
     int assertBuf[128];
@@ -69,14 +72,17 @@ struct HkStringBuf
     char* m_pBuffer;
     int m_iCapacity;
     int m_iReferenceCount;
-    HkStringBuf(char* apBuffer, unsigned int auiCapacity);
+    HkStringBuf(char* buf, unsigned int bufSize);
     void Append(const char* apText);
     void Release();
 };
 
 // Builds a fixed message about getDataChunks being unimplemented, reports it via g_01268360->Message and breaks if it returns nonzero.
 // @fnv 0x00dfb670
-void __stdcall ReportGetDataChunksNotImplemented(int a1, int a2, int a3, int a4)
+// pdb: hkaAnimation::getDataChunks | hkaWaveletCompressedAnimationClass.obj | retail, string-set bridge, high
+// pdb params: frame, delta, dataChunks, numDataChunks
+// pdb locals: assertBuf, ostr
+void __stdcall ReportGetDataChunksNotImplemented(int frame, int delta, int dataChunks, int numDataChunks)
 {
     unsigned int auBuffer[128];
     HkStringBuf buf((char*)auBuffer, sizeof(auBuffer));
@@ -166,6 +172,7 @@ struct __declspec(novtable) FUN_00dfb720 : S_00dfb720_Base
 };
 // Destructor of FUN_00dfb720; the body is empty, member destructors run implicitly.
 // @fnv 0x00dfb720
+// pdb: hkaAnimation::~hkaAnimation | hkaWaveletCompressedAnimationClass.obj | retail, call graph (shared callers), high
 FUN_00dfb720::~FUN_00dfb720() throw()
 {}
 
@@ -225,6 +232,7 @@ struct Record : Container
 };
 // Releases data64 through the manager callback, resets state6c and unk68, calls FUN_00dfb720, and notifies the callback when flags bit 0 is set.
 // @fnv 0x00dfb7e0
+// pdb: hkaWaveletCompressedAnimation::`scalar deleting destructor' | hkaWaveletCompressedAnimationClass.obj | retail, vtable slot, high
 Record* Record::ClearAndNotify(unsigned int flags)
 {
     Manager* manager = hkMemoryRouter_getInstance();
@@ -317,6 +325,7 @@ struct Owner
 };
 // Calls FUN_00dfb720, and if flags has bit 0 set, releases this object via the BSAudio allocator using size4 bytes, then returns this.
 // @fnv 0x00dfb7b0
+// pdb: hkaAnimation::`scalar deleting destructor' | hkaWaveletCompressedAnimationClass.obj | retail, vtable slot, high
 Owner* Owner::FUN_00dfb7b0(unsigned int flags)
 {
     FUN_00dfb720();

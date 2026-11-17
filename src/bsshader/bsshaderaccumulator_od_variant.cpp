@@ -20,6 +20,7 @@ class FUN_00c4ed40_cls
 
 // @fnv 0x00c4ed40
 // src: GUESS 0x00c4ed40 (confidence: low)
+// pdb: BSOcclusionQuery::~BSOcclusionQuery | BSOcclusionQuery.obj | debug, object-file run extension, low
 void FUN_00c4ed40_cls::ProcessState_00c4ed40()
 {
     if (m_00 != 0)

@@ -6,6 +6,7 @@ extern "C" __declspec(dllimport) unsigned long __stdcall WaitForSingleObject(voi
 
 // @fnv 0x00d04380
 // src: XBOX_PDB 0x00d04380
+// pdb: hkSemaphore::acquire | hkWin32Semaphore.obj | debug, upstream name already matches, high
 int __fastcall hkSemaphore_acquire(void* h, int)
 {
     return WaitForSingleObject(*(void**)h, (unsigned long)-1);
@@ -41,6 +42,9 @@ struct FUN_00d97970_cls
 };
 
 // @fnv 0x00d97970
+// pdb: hkKdTree::hkKdTree | hkKdTree.obj | retail, object-file run extension, low
+// pdb params: prealloc
+// pdb locals: assertBuf, ostr
 FUN_00d97970_cls* FUN_00d97970_cls::Init(unsigned int aValue)
 {
     volatile unsigned int* pWords = (volatile unsigned int*)this;
@@ -58,13 +62,16 @@ FUN_00d97970_cls* FUN_00d97970_cls::Init(unsigned int aValue)
 struct FUN_00d04350_cls
 {
     void* handle;
-    FUN_00d04350_cls* Create(long initialCount, long maximumCount);
+    FUN_00d04350_cls* hkSemaphore_ctor(long initialCount, long maxCount);
 };
 
 // @fnv 0x00d04350
-FUN_00d04350_cls* FUN_00d04350_cls::Create(long initialCount, long maximumCount)
+// src: XBOX_RETAIL_PDB 0x00d04350
+// pdb: hkSemaphore::hkSemaphore | hkWin32Semaphore.obj | retail, call graph (shared callers), high
+// pdb params: initialCount, maxCount
+FUN_00d04350_cls* FUN_00d04350_cls::hkSemaphore_ctor(long initialCount, long maxCount)
 {
-    handle = CreateSemaphoreA(0, initialCount, maximumCount, 0);
+    handle = CreateSemaphoreA(0, initialCount, maxCount, 0);
     return this;
 }
 

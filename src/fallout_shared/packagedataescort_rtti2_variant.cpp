@@ -5,32 +5,35 @@
 
 struct EscortLocationComparison
 {
-    bool __thiscall IsDifferentFrom(LocationDescriptor* compare);
+    bool __thiscall PackageLocation_Compare(LocationDescriptor* apCompare);
 };
 
 // The shared class does not yet declare this comparison method.
 struct EscortComparison : TESEscortPackageData
 {
-    bool __thiscall TESEscortPackageData_Compare(TESPackageData* compare);
+    bool __thiscall TESEscortPackageData_Compare(TESPackageData* apCompare);
 };
 
 // @fnv 0x0067be40
 // src: XBOX_PDB 0x0067be40
-bool EscortComparison::TESEscortPackageData_Compare(TESPackageData* compare)
+// pdb: TESEscortPackageData::Compare | PackageDataEscort.obj | retail, upstream name already matches, high
+// pdb params: apCompare
+// pdb locals: pcomp
+bool EscortComparison::TESEscortPackageData_Compare(TESPackageData* apCompare)
 {
-    TESEscortPackageData* other = dynamic_cast<TESEscortPackageData*>(compare);
+    TESEscortPackageData* other = dynamic_cast<TESEscortPackageData*>(apCompare);
     if (!other)
         return true;
-    if (m_pPackageTarget)
+    if (pSearchLocation)
     {
-        if (reinterpret_cast<EscortLocationComparison*>(m_pPackageTarget)->IsDifferentFrom(other->m_pPackageTarget))
+        if (reinterpret_cast<EscortLocationComparison*>(pSearchLocation)->PackageLocation_Compare(other->pSearchLocation))
             return true;
     }
-    else if (other->m_pPackageTarget)
+    else if (other->pSearchLocation)
     {
         return true;
     }
-    if (m_iValue != other->m_iValue)
+    if (iFollowPackRadius != other->iFollowPackRadius)
         return true;
     return false;
 }

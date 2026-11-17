@@ -25,17 +25,20 @@ extern void(__cdecl* DAT_011f3ca8[])(float, NiAnimationKey const*, NiAnimationKe
 
 // Interpolates between two path keys using the key type and stride from NiPosData.
 // @fnv 0x00a49e10
+// pdb: NiPathController::GenPathInterp | NiPathController.obj | retail, object-file run extension, low
+// pdb params: iI1, iI2, fNormTime
+// pdb locals: kResult, uiNumPathKeys, pkPathKeys, pfnInterp, ePathType, ucSize
 void* NiPathController::InvokeIndexedCallback(void* a1, int iIndexA, int iIndexB, float fValue)
 {
-    NiPosData* pInner = reinterpret_cast<NiPosData*>(m_pPathObject.m_pObject);
+    NiPosData* pInner = reinterpret_cast<NiPosData*>(m_spPathData.m_pObject);
     int idx;
     NiAnimationKey const* base;
     unsigned char sz;
     if (pInner)
     {
-        idx = pInner->m_eRequestType;
-        sz = pInner->m_ucKeyDataSize;
-        base = reinterpret_cast<NiAnimationKey const*>(pInner->m_pKeyArray);
+        idx = pInner->m_eType;
+        sz = pInner->m_ucKeySize;
+        base = reinterpret_cast<NiAnimationKey const*>(pInner->m_pkKeys);
     }
     else
     {
@@ -53,6 +56,7 @@ void __cdecl _delete(void*, int);
 
 // Calls FUN_00a49d60, then deletes this with size 100 if flags has bit 1 set, and returns this.
 // @fnv 0x00a4a8c0
+// pdb: NiPathController::`scalar deleting destructor' | NiPathController.obj | retail, object-file gap fill, high
 // Scalar deleting destructor: ECX is this and the unused EDX slot models the original __thiscall ABI.
 void* __fastcall DeletePathController(NiPathController* controller, void*, unsigned int flags)
 {
@@ -67,6 +71,8 @@ char* __cdecl _FUN_00a7d330(const char*);
 
 // Appends a string obtained from g_011f3f80 to pkStrings, growing the array by its capacity step when it is full.
 // @fnv 0x00a4b2e0
+// pdb: NiPathController::GetViewerStrings | NiPathController.obj | retail, object-file run extension, low
+// pdb params: pkStrings
 void NiPathController::AppendString(StrArr* pkStrings)
 {
     FUN_00a6d830(pkStrings);
@@ -78,26 +84,30 @@ void NiPathController::AppendString(StrArr* pkStrings)
 }
 
 // @fnv 0x00a49c80
+// pdb: NiPathController::ProcessClone | NiPathController.obj | retail, upstream name already matches, high
+// pdb params: kCloning
 void NiPathController::ProcessClone(CloningProcess& kCloning)
 {
     NiTimeController::ProcessClone(kCloning);
-    NiTimeController* pkPathData = m_pPathObject.m_pObject;
+    NiTimeController* pkPathData = m_spPathData.m_pObject;
     if (pkPathData)
         pkPathData->ProcessClone(kCloning);
-    NiTimeController* pkPctData = m_pPathInterp.m_pObject;
+    NiTimeController* pkPctData = m_spPctData.m_pObject;
     if (pkPctData)
         pkPctData->ProcessClone(kCloning);
 }
 
 // @fnv 0x00a49cc0
+// pdb: NiPathController::RegisterStreamables | NiPathController.obj | retail, upstream name already matches, high
+// pdb params: kStream
 bool NiPathController::RegisterStreamables(NiStream& kStream)
 {
     if (!NiTimeController::RegisterStreamables(kStream))
         return false;
-    NiTimeController* pkPath = m_pPathObject.m_pObject;
+    NiTimeController* pkPath = m_spPathData.m_pObject;
     if (pkPath)
         pkPath->RegisterStreamables(kStream);
-    NiTimeController* pkPct = m_pPathInterp.m_pObject;
+    NiTimeController* pkPct = m_spPctData.m_pObject;
     if (pkPct)
         pkPct->RegisterStreamables(kStream);
     return true;
@@ -109,15 +119,18 @@ extern float DAT_011a8b2c[5];
 // Sums five weighted samples of GetKeyDerivativeLength at offsets scaled by a3, then multiplies the total by a3.
 // @fnv 0x00a4a6a0
 // src: XBOX_PDB 0x00a4a6a0
-float NiPathController::PathLength(int a1, int a2, float afScale)
+// pdb: NiPathController::PathLength | NiPathController.obj | retail, upstream name already matches, high
+// pdb params: iI0, iI1, fTime
+// pdb locals: iDegree, fResult, i
+float NiPathController::PathLength(int iI0, int iI1, float fTime)
 {
     float sum = 0.0f;
     for (int i = 0; i < 5; i++)
     {
-        float t = DAT_011a8b40[i] * afScale;
-        sum += GetKeyDerivativeLength(a1, a2, t) * DAT_011a8b2c[i];
+        float t = DAT_011a8b40[i] * fTime;
+        sum += PathSpeed(iI0, iI1, t) * DAT_011a8b2c[i];
     }
-    return sum * afScale;
+    return sum * fTime;
 }
 
 void __stdcall FUN_00a6d730(StrArr*);
@@ -151,8 +164,8 @@ void NiPathController::LoadFromStream(NiStream& kStream)
         NiBinaryStream* src = kStream.m_pkOstr;
         src->m_uiAbsoluteCurrentPos += WriteStreamComponent(src, &axis, 2);
     }
-    kStream.SaveLinkID(m_pPathObject.m_pObject);
-    kStream.SaveLinkID(m_pPathInterp.m_pObject);
+    kStream.SaveLinkID(m_spPathData.m_pObject);
+    kStream.SaveLinkID(m_spPctData.m_pObject);
 }
 
 void* __cdecl Object_DispatchCommandFour(unsigned int size) throw();
@@ -162,6 +175,8 @@ extern float DAT_01012054;
 // Allocates a NiPathController, constructs its base, and initializes its fields; returns null on allocation failure.
 // @fnv 0x00a4b270
 // src: EXE 0x00a4b270
+// pdb: NiPathController::CreateObject | NiPathController.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 NiPathController* __cdecl NiPathController_CreateObject() throw()
 {
     NiPathController* p = (NiPathController*)Object_DispatchCommandFour(0x64);
@@ -169,8 +184,8 @@ NiPathController* __cdecl NiPathController_CreateObject() throw()
     {
         p->NiTimeController::NiTimeController();
         *(void* volatile*)p = (void*)&DAT_0109893c;
-        *(int volatile*)&p->m_pPathObject.m_pObject = 0;
-        *(int volatile*)&p->m_pPathInterp.m_pObject = 0;
+        *(int volatile*)&p->m_spPathData.m_pObject = 0;
+        *(int volatile*)&p->m_spPctData.m_pObject = 0;
         *(float volatile*)&p->m50 = 0.0f;
         *(float volatile*)&p->m54 = 0.0f;
         *(float volatile*)&p->m5c = 0.0f;
@@ -191,11 +206,14 @@ void* __cdecl _NiMalloc_00aa1070(unsigned int size);
 
 // If totalLength is negative, rebuilds the lengths array from segment lengths and caches the total; returns totalLength.
 // @fnv 0x00a4a8e0
-float NiPathController::GetTotalLength()
+// src: XBOX_RETAIL_PDB 0x00a4a8e0
+// pdb: NiPathController::GetTotalPathLength | NiPathController.obj | retail, object-file gap fill, high
+// pdb locals: uiNumPathKeys, pkPathKeys, ePathType, ucSize, ui0, ui1, fLength
+float NiPathController::GetTotalPathLength()
 {
     if (totalLength < 0.0f)
     {
-        unsigned int count = m_pPathObject ? reinterpret_cast<NiPosData*>(m_pPathObject.m_pObject)->m_uiNumKeys : 0;
+        unsigned int count = m_spPathData ? reinterpret_cast<NiPosData*>(m_spPathData.m_pObject)->m_uiNumKeys : 0;
         NiFree(lengths);
         lengths = (float*)_NiMalloc_00aa1070(count * sizeof(float));
         lengths[0] = 0.0f;
@@ -210,7 +228,7 @@ float NiPathController::GetTotalLength()
     return totalLength;
 }
 
-void __stdcall func_0x00a6d5e0(NiStream* stream);
+void __stdcall func_0x00a6d5e0(NiStream* kStream);
 void __fastcall ReadLinkID(NiStream* stream);
 inline void NiBinaryStream::ReadScalar(void* dst, unsigned int n)
 {
@@ -224,6 +242,9 @@ template <class T> inline void StreamRead(NiStream& stream, T& dst)
 }
 
 // @fnv 0x00a4acb0
+// pdb: NiPathController::LoadBinary | NiPathController.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiPathController::GenPathInterp
+// pdb params: kStream
 void NiPathController::ReadFromStream(NiStream* stream)
 {
     func_0x00a6d5e0(stream);
@@ -256,31 +277,34 @@ inline float PathRemainder(float x, float y)
 // Adjusts time to the unit interval, then finds the path segment and refines its local parameter for that distance.
 // @fnv 0x00a4a980
 // src: XBOX_PDB 0x00a4a980
-void NiPathController::GetPercentLoc_00a4a980(float time, unsigned int* apFirstKey, unsigned int* apSecondKey, float* apLocalParam)
+// pdb: NiPathController::GetPercentLoc | NiPathController.obj | retail, object-file gap fill, high
+// pdb params: fPercent, uiI1, uiI2, fNormTime
+// pdb locals: uiNumPathKeys, pkPathKeys, iMaxIterations, fDist, fTime, ui0, ePathType, ucSize, fLength, ui1, i, fDiff, fTolerance
+void NiPathController::GetPercentLoc_00a4a980(float fPercent, unsigned int* uiI1, unsigned int* uiI2, float* fNormTime)
 {
-    unsigned int count = m_pPathObject ? reinterpret_cast<NiPosData*>(m_pPathObject.m_pObject)->m_uiNumKeys : 0;
-    if (time == 0.0f)
+    unsigned int count = m_spPathData ? reinterpret_cast<NiPosData*>(m_spPathData.m_pObject)->m_uiNumKeys : 0;
+    if (fPercent == 0.0f)
     {
-        *apFirstKey = 0;
-        *apSecondKey = 1;
-        *apLocalParam = 0.0f;
+        *uiI1 = 0;
+        *uiI2 = 1;
+        *fNormTime = 0.0f;
         return;
     }
-    if (time < 0.0f)
-        time = PathRemainder(time, 1.0f) + 1.0f;
-    if (time == 1.0f)
+    if (fPercent < 0.0f)
+        fPercent = PathRemainder(fPercent, 1.0f) + 1.0f;
+    if (fPercent == 1.0f)
     {
-        *apFirstKey = count - 2;
-        *apSecondKey = count - 1;
-        *apLocalParam = 1.0f;
+        *uiI1 = count - 2;
+        *uiI2 = count - 1;
+        *fNormTime = 1.0f;
         return;
     }
-    if (time > 1.0f)
+    if (fPercent > 1.0f)
     {
-        volatile float remainder = PathRemainder(time, 1.0f);
-        time = remainder;
+        volatile float remainder = PathRemainder(fPercent, 1.0f);
+        fPercent = remainder;
     }
-    float distance = time * totalLength;
+    float distance = fPercent * totalLength;
     unsigned int i = 0;
     unsigned int uiSecondKey = 1;
     float base = 0.0f;
@@ -300,12 +324,12 @@ void NiPathController::GetPercentLoc_00a4a980(float time, unsigned int* apFirstK
         float error = PathLength((int)i, (int)uiSecondKey, t) - base;
         if ((float)fabs(error) <= DAT_01032980)
             break;
-        t = t - (double)error / GetKeyDerivativeLength((int)i, (int)uiSecondKey, t);
+        t = t - (double)error / PathSpeed((int)i, (int)uiSecondKey, t);
         ++iteration;
     } while (iteration < 32);
-    *apFirstKey = i;
-    *apSecondKey = uiSecondKey;
-    *apLocalParam = t;
+    *uiI1 = i;
+    *uiI2 = uiSecondKey;
+    *fNormTime = t;
 }
 
 struct PathIndices
@@ -317,9 +341,9 @@ struct PathIndices
 inline void* GetKeyData(const NiPosData* data, unsigned int& count, int& type, unsigned char& size)
 {
     count = data->m_uiNumKeys;
-    type = data->m_eRequestType;
-    size = data->m_ucKeyDataSize;
-    return data->m_pKeyArray;
+    type = data->m_eType;
+    size = data->m_ucKeySize;
+    return data->m_pkKeys;
 }
 inline bool NiPathController::GetFollow() const
 {
@@ -331,26 +355,29 @@ float __cdecl InterpolateKey(float fTime, void* pkKeys, int eType, unsigned int 
 
 // Evaluates the percent and path keys at controller time, writes translation to m_pkTarget, and writes rotation when follow is enabled.
 // @fnv 0x00a4afa0
+// pdb: NiPathController::Update | NiPathController.obj | retail, object-file run extension, low
+// pdb params: UpdateData
+// pdb locals: fNormTime, uiNumPathKeys, pkPathKeys, uiNumPctKeys, ui2, pkPctKeys, fPct, ePctType, kPos, ePathType, ucPctSize, ucPathSize, ui1, kRefFrame
 void NiPathController::UpdatePathTarget(float* apfTime)
 {
-    if (!m_pPathInterp)
+    if (!m_spPctData)
         return;
     unsigned int uiNumPctKeys;
     int ePctType;
     unsigned char ucPctSize;
-    void* pkPctKeys = GetKeyData(reinterpret_cast<NiPosData*>(m_pPathInterp.m_pObject), uiNumPctKeys, ePctType, ucPctSize);
-    if (!pkPctKeys || !m_pPathObject)
+    void* pkPctKeys = GetKeyData(reinterpret_cast<NiPosData*>(m_spPctData.m_pObject), uiNumPctKeys, ePctType, ucPctSize);
+    if (!pkPctKeys || !m_spPathData)
         return;
     unsigned int uiNumPathKeys;
     int ePathType;
     unsigned char ucPathSize;
-    void* pkPathKeys = GetKeyData(reinterpret_cast<NiPosData*>(m_pPathObject.m_pObject), uiNumPathKeys, ePathType, ucPathSize);
+    void* pkPathKeys = GetKeyData(reinterpret_cast<NiPosData*>(m_spPathData.m_pObject), uiNumPathKeys, ePathType, ucPathSize);
     if (!pkPathKeys)
         return;
     if (DontDoUpdate(*apfTime))
         return;
 
-    float fPct = InterpolateKey(m_fControllerTime, pkPctKeys, ePctType, uiNumPctKeys, m_uiPercentKeyCount, ucPathSize);
+    float fPct = InterpolateKey(m_fScaledTime, pkPctKeys, ePctType, uiNumPctKeys, m_uiPercentKeyCount, ucPathSize);
     {
         PathIndices stIndices;
         GetLoc(fPct, (int*)&stIndices.first, (int*)&stIndices.second, &fPct);
@@ -372,17 +399,21 @@ extern void(__cdecl* DAT_011f3c18[])(float, NiAnimationKey const*, NiAnimationKe
 
 // Computes the length of the derivative vector between two animation keys at a given time using a type-specific function pointer.
 // @fnv 0x00a4a610
-float NiPathController::GetKeyDerivativeLength(unsigned int uiKey1, unsigned int uiKey2, float fTime)
+// src: XBOX_DEBUG_PDB 0x00a4a610
+// pdb: NiPathController::PathSpeed | NiPathController.obj | debug, call graph (shared callers), high
+// pdb params: iI0, iI1, fTime
+// pdb locals: uiNumPathKeys, pkPathKeys, ePathType, interpD1, ucSize, deriv
+float NiPathController::PathSpeed(unsigned int iI0, unsigned int iI1, float fTime)
 {
     unsigned int uiRequestType;
     unsigned char ucSize;
     NiAnimationKey* pkKeys;
-    NiPosData* pkData = reinterpret_cast<NiPosData*>(m_pPathObject.m_pObject);
+    NiPosData* pkData = reinterpret_cast<NiPosData*>(m_spPathData.m_pObject);
     if (pkData)
     {
-        uiRequestType = pkData->m_eRequestType;
-        ucSize = pkData->m_ucKeyDataSize;
-        pkKeys = reinterpret_cast<NiAnimationKey*>(pkData->m_pKeyArray);
+        uiRequestType = pkData->m_eType;
+        ucSize = pkData->m_ucKeySize;
+        pkKeys = reinterpret_cast<NiAnimationKey*>(pkData->m_pkKeys);
     }
     else
     {
@@ -392,8 +423,8 @@ float NiPathController::GetKeyDerivativeLength(unsigned int uiKey1, unsigned int
     }
 
     NiPoint3 kDeriv;
-    DAT_011f3c18[uiRequestType](fTime, (NiAnimationKey*)((char*)pkKeys + uiKey1 * ucSize),
-                                (NiAnimationKey*)((char*)pkKeys + uiKey2 * ucSize), &kDeriv);
+    DAT_011f3c18[uiRequestType](fTime, (NiAnimationKey*)((char*)pkKeys + iI0 * ucSize),
+                                (NiAnimationKey*)((char*)pkKeys + iI1 * ucSize), &kDeriv);
     float fLengthSquared = kDeriv.x * kDeriv.x + kDeriv.y * kDeriv.y + kDeriv.z * kDeriv.z;
     return (float)sqrt(fLengthSquared);
 }
@@ -415,6 +446,9 @@ __forceinline NiPathController::NiPathController()
 
 // Allocates and initializes a NiPathController, then copies this controller into it.
 // @fnv 0x00a4b330
+// pdb: NiPathController::CreateClone | NiPathController.obj | retail, object-file run extension, low
+// pdb params: kCloning
+// pdb locals: pkObject
 NiPathController* NiPathController::CreatePathObject(int value)
 {
     NiPathController* object = (NiPathController*)Object_DispatchCommandFour(0x64);
@@ -454,6 +488,9 @@ inline bool NiPathController::GetBit(int n) const
 // Compares this NiPathController with pkObject, checking path, interpolation, part lengths, and various flags and fields for equality.
 // @fnv 0x00a4a710
 // src: XBOX_PDB 0x00a4a710
+// pdb: NiPathController::IsEqual | NiPathController.obj | retail, object-file gap fill, high
+// pdb params: pkObject
+// pdb locals: pkCtrl, uiNumPathKeys, pkPathKeys, uiCount, ePathType, ucSize
 bool NiPathController::IsEqual_00a4a710(NiObject* pkObject)
 {
     if (!reinterpret_cast<bool (__thiscall*)(NiTimeController*, NiObject*)>(&TimeControllerIsEqual)(this, pkObject))
@@ -461,9 +498,9 @@ bool NiPathController::IsEqual_00a4a710(NiObject* pkObject)
 
     NiPathController* pkOther = (NiPathController*)pkObject;
 
-    if (!m_pPathObject->IsEqual(pkOther->m_pPathObject))
+    if (!m_spPathData->IsEqual(pkOther->m_spPathData))
         return false;
-    if (!m_pPathInterp->IsEqual(pkOther->m_pPathInterp))
+    if (!m_spPctData->IsEqual(pkOther->m_spPctData))
         return false;
 
     if (m_pkPartLengths && !pkOther->m_pkPartLengths)
@@ -505,12 +542,15 @@ extern float(__cdecl* DAT_011f3d38[])(const void*, unsigned int);
 
 // Links the two key-data objects and updates the cached path length and curvature.
 // @fnv 0x00a4adc0
+// pdb: NiPathController::LinkObject | NiPathController.obj | retail, object-file run extension, low
+// pdb params: kStream
+// pdb locals: uiNumPathKeys, pkPathKeys, ePathType, ucSize, pfnCF
 void NiPathController::SetSpawnedArgs(SpawnedArg* apSpawnedArg)
 {
     FUN_00a6d500(apSpawnedArg);
 
     NiPosData* p = static_cast<NiPosData*>(reinterpret_cast<NiStream*>(apSpawnedArg)->FUN_00a63430());
-    NiPosData* old = reinterpret_cast<NiPosData*>(m_pPathObject.m_pObject);
+    NiPosData* old = reinterpret_cast<NiPosData*>(m_spPathData.m_pObject);
     if (old != p)
     {
         if (old != 0)
@@ -520,7 +560,7 @@ void NiPathController::SetSpawnedArgs(SpawnedArg* apSpawnedArg)
                 old->DeleteThis();
             }
         }
-        m_pPathObject.m_pObject = reinterpret_cast<NiTimeController*>(p);
+        m_spPathData.m_pObject = reinterpret_cast<NiTimeController*>(p);
         if (p != 0)
         {
             InterlockedIncrement(reinterpret_cast<volatile long*>(&p->m_uiRefCount));
@@ -528,7 +568,7 @@ void NiPathController::SetSpawnedArgs(SpawnedArg* apSpawnedArg)
     }
 
     p = static_cast<NiPosData*>(reinterpret_cast<NiStream*>(apSpawnedArg)->FUN_00a63430());
-    old = reinterpret_cast<NiPosData*>(m_pPathInterp.m_pObject);
+    old = reinterpret_cast<NiPosData*>(m_spPctData.m_pObject);
     if (old != p)
     {
         if (old != 0)
@@ -538,7 +578,7 @@ void NiPathController::SetSpawnedArgs(SpawnedArg* apSpawnedArg)
                 old->DeleteThis();
             }
         }
-        m_pPathInterp.m_pObject = reinterpret_cast<NiTimeController*>(p);
+        m_spPctData.m_pObject = reinterpret_cast<NiTimeController*>(p);
         if (p != 0)
         {
             InterlockedIncrement(reinterpret_cast<volatile long*>(&p->m_uiRefCount));
@@ -550,15 +590,15 @@ void NiPathController::SetSpawnedArgs(SpawnedArg* apSpawnedArg)
     unsigned char hi = (unsigned char)(m_34 >> 4);
     if ((hi & bit) != 0 && ((unsigned char)m_34 & bit) != 0)
     {
-        m_4c = GetTotalLength();
+        m_4c = GetTotalPathLength();
         m_34 &= ~bit;
     }
 
-    NiPosData* t = reinterpret_cast<NiPosData*>(m_pPathObject.m_pObject);
+    NiPosData* t = reinterpret_cast<NiPosData*>(m_spPathData.m_pObject);
     if (t != 0)
     {
         unsigned int count = t->m_uiNumKeys;
-        SampleData sample = {t->m_eRequestType, t->m_pKeyArray};
+        SampleData sample = {t->m_eType, t->m_pkKeys};
         if (count > 0)
         {
             float(__cdecl * pfnSample)(const void*, unsigned int) = DAT_011f3d38[sample.index];
@@ -608,7 +648,7 @@ inline void NiPathController::SetConstVelocity(bool b)
     SetBit(b, 0x10);
     if (b && GetBit(0))
     {
-        m_fTotalPathLength = GetTotalLength();
+        m_fTotalPathLength = GetTotalPathLength();
         m_usFlags &= ~1;
     }
 }
@@ -616,15 +656,18 @@ inline void NiPathController::SetConstVelocity(bool b)
 // Copies controller state into pDest, cloning the key data and duplicating the path-length array.
 // @fnv 0x00a4b0b0
 // src: XBOX_PDB 0x00a4b0b0
+// pdb: NiPathController::CopyMembers | NiPathController.obj | retail, object-file run extension, low
+// pdb params: pkDest, kCloning
+// pdb locals: uiNumPathKeys, pkPathKeys, ePathType, ucSize, uiDestSize
 void NiPathController::CopyMembers_00a4b0b0(NiPathController* pDest, void* kCloning)
 {
     reinterpret_cast<void (__thiscall*)(NiTimeController*, NiTimeController*, void*)>(&CopyTimeController)(this, pDest, kCloning);
     pDest->m_uiObjectFlags = m_uiObjectFlags;
 
-    if (m_pPathObject)
-        pDest->m_pPathObject = static_cast<NiTimeController*>(m_pPathObject->MakeClone(*static_cast<CloningProcess*>(kCloning)));
-    if (m_pPathInterp)
-        pDest->m_pPathInterp = static_cast<NiTimeController*>(m_pPathInterp->MakeClone(*static_cast<CloningProcess*>(kCloning)));
+    if (m_spPathData)
+        pDest->m_spPathData = static_cast<NiTimeController*>(m_spPathData->MakeClone(*static_cast<CloningProcess*>(kCloning)));
+    if (m_spPctData)
+        pDest->m_spPctData = static_cast<NiTimeController*>(m_spPctData->MakeClone(*static_cast<CloningProcess*>(kCloning)));
 
     pDest->SetBit(GetBit(2), 4);
     pDest->SetBit(GetBit(3), 8);
@@ -639,7 +682,7 @@ void NiPathController::CopyMembers_00a4b0b0(NiPathController* pDest, void* kClon
 
     if (m_pfPathLengths)
     {
-        unsigned int uiSize = (m_pPathObject ? reinterpret_cast<NiPosData*>(m_pPathObject.m_pObject)->m_uiNumKeys : 0) * sizeof(float);
+        unsigned int uiSize = (m_spPathData ? reinterpret_cast<NiPosData*>(m_spPathData.m_pObject)->m_uiNumKeys : 0) * sizeof(float);
         pDest->m_pfPathLengths = (float*)NiMalloc(uiSize);
         memcpy(pDest->m_pfPathLengths, m_pfPathLengths, uiSize);
     }
@@ -648,9 +691,9 @@ void NiPathController::CopyMembers_00a4b0b0(NiPathController* pDest, void* kClon
 
 #include <math.h>
 inline NiPoint3::NiPoint3(float a, float b, float c) : x(a), y(b), z(c) {}
-__declspec(noinline) NiPoint3 NiPoint3::FUN_0053d1a0(const NiPoint3& v) const
+__declspec(noinline) NiPoint3 NiPoint3::FUN_0053d1a0(const NiPoint3& pt) const
 {
-    NiPoint3 r(y * v.z - z * v.y, z * v.x - x * v.z, x * v.y - y * v.x);
+    NiPoint3 r(y * pt.z - z * pt.y, z * pt.x - x * pt.z, x * pt.y - y * pt.x);
     float len = (float)sqrt(r.x * r.x + r.y * r.y + r.z * r.z);
     if (len != 0.0f) { r.x /= len; r.y /= len; r.z /= len; }
     return r;
@@ -734,11 +777,14 @@ inline bool NiPathController::IsFlag1() const { return (m_usFlags & 2) >> 1; }
 // Evaluates the path at time t between keys first and second, applying smoothing, axis, reverse, and bank to produce the output matrix.
 // @fnv 0x00a49e70
 // src: XBOX_PDB 0x00a49e70
-void NiPathController::CalcRefFrame(unsigned aiFirstKey, unsigned aiSecondKey, float afTime, NiMatrix3& outputMatrix)
+// pdb: NiPathController::CalcRefFrame | NiPathController.obj | retail, upstream name already matches, high
+// pdb params: ui1, ui2, fNormTime, kRefFrame
+// pdb locals: uiNumPathKeys, pkPathKeys, kTmp2, kTm, kNormal, ePathType, kBinormal, ucSize, kTmp, fCurvature, kTangent, fA1, kNormal1, fA0, kTmpTan, fCurvature1, ui2a, ui1a, right, up, kTemp, kBankMat, fBankAmt
+void NiPathController::CalcRefFrame(unsigned ui1, unsigned ui2, float fNormTime, NiMatrix3& kRefFrame)
 {
     using namespace fnv_00a49e70;
-    PathMatrix& output = reinterpret_cast<PathMatrix&>(outputMatrix);
-    NiPosData* data = reinterpret_cast<NiPosData*>(m_pPathObject.m_pObject);
+    PathMatrix& output = reinterpret_cast<PathMatrix&>(kRefFrame);
+    NiPosData* data = reinterpret_cast<NiPosData*>(m_spPathData.m_pObject);
     NiPoint3 vTangent;
     PathMatrix result;
     NiPoint3 position;
@@ -747,9 +793,9 @@ void NiPathController::CalcRefFrame(unsigned aiFirstKey, unsigned aiSecondKey, f
     if (data)
     {
         unsigned count = data->m_uiNumKeys;
-        int type = data->m_eRequestType;
-        unsigned char size = data->m_ucKeyDataSize;
-        const NiAnimationKey* base = reinterpret_cast<NiAnimationKey const*>(data->m_pKeyArray);
+        int type = data->m_eType;
+        unsigned char size = data->m_ucKeySize;
+        const NiAnimationKey* base = reinterpret_cast<NiAnimationKey const*>(data->m_pkKeys);
         if (count < 2)
         {
             output = result;
@@ -760,8 +806,8 @@ void NiPathController::CalcRefFrame(unsigned aiFirstKey, unsigned aiSecondKey, f
         if (IsFollow())
         {
             float otherCurvature;
-            ComputeFrenetFrame(afTime, (const NiAnimationKey*)((const char*)base + size * aiFirstKey),
-                               (const NiAnimationKey*)((const char*)base + size * aiSecondKey), type, &position,
+            ComputeFrenetFrame(fNormTime, (const NiAnimationKey*)((const char*)base + size * ui1),
+                               (const NiAnimationKey*)((const char*)base + size * ui2), type, &position,
                                &vTangent, &normal, &curvature);
             if (smoothing != 0.0f)
             {
@@ -769,16 +815,16 @@ void NiPathController::CalcRefFrame(unsigned aiFirstKey, unsigned aiSecondKey, f
                 float w0;
                 NiPoint3 vScratch, vOther;
 
-                if (afTime >= 1.0f - smoothing)
+                if (fNormTime >= 1.0f - smoothing)
                 {
-                    adjacent = !IsFlag1() && aiSecondKey == count - 1 ? 0 : aiSecondKey;
+                    adjacent = !IsFlag1() && ui2 == count - 1 ? 0 : ui2;
                     if (adjacent < count - 1)
                     {
-                        w0 = (1.0f - afTime + smoothing) / (smoothing * 2.0f);
+                        w0 = (1.0f - fNormTime + smoothing) / (smoothing * 2.0f);
                         w1 = 1.0f - w0;
                         float u = 1.0f - smoothing;
-                        ComputeFrenetFrame(u, (const NiAnimationKey*)((const char*)base + size * aiFirstKey),
-                                           (const NiAnimationKey*)((const char*)base + size * aiSecondKey), type,
+                        ComputeFrenetFrame(u, (const NiAnimationKey*)((const char*)base + size * ui1),
+                                           (const NiAnimationKey*)((const char*)base + size * ui2), type,
                                            &vScratch, &vTangent, &normal, &curvature);
                         ComputeFrenetFrame(smoothing, (const NiAnimationKey*)((const char*)base + size * adjacent),
                                            (const NiAnimationKey*)((const char*)base + size * (adjacent + 1)), type,
@@ -789,15 +835,15 @@ void NiPathController::CalcRefFrame(unsigned aiFirstKey, unsigned aiSecondKey, f
                         normal = position.Cross(vTangent);
                     }
                 }
-                else if (afTime <= smoothing)
+                else if (fNormTime <= smoothing)
                 {
-                    adjacent = !IsFlag1() && aiFirstKey == 0 ? count - 1 : aiFirstKey;
+                    adjacent = !IsFlag1() && ui1 == 0 ? count - 1 : ui1;
                     if (adjacent >= 1)
                     {
-                        w1 = (smoothing - afTime) / (smoothing * 2.0f);
+                        w1 = (smoothing - fNormTime) / (smoothing * 2.0f);
                         w0 = 1.0f - w1;
-                        ComputeFrenetFrame(smoothing, (const NiAnimationKey*)((const char*)base + size * aiFirstKey),
-                                           (const NiAnimationKey*)((const char*)base + size * aiSecondKey), type,
+                        ComputeFrenetFrame(smoothing, (const NiAnimationKey*)((const char*)base + size * ui1),
+                                           (const NiAnimationKey*)((const char*)base + size * ui2), type,
                                            &vScratch, &vTangent, &normal, &curvature);
                         float u = 1.0f - smoothing;
                         ComputeFrenetFrame(u, (const NiAnimationKey*)((const char*)base + size * (adjacent - 1)),
@@ -816,8 +862,8 @@ void NiPathController::CalcRefFrame(unsigned aiFirstKey, unsigned aiSecondKey, f
         }
         else
         {
-            ComputeFrenetFrame(afTime, (const NiAnimationKey*)((const char*)base + size * aiFirstKey),
-                               (const NiAnimationKey*)((const char*)base + size * aiSecondKey), type, &position,
+            ComputeFrenetFrame(fNormTime, (const NiAnimationKey*)((const char*)base + size * ui1),
+                               (const NiAnimationKey*)((const char*)base + size * ui2), type, &position,
                                &vTangent, &normal, &curvature);
             result.Set0(position);
             NiPoint3 vUp = DAT_011a9484.FUN_0053d1a0(position);
@@ -887,19 +933,22 @@ struct PositionKey : TimeKey
 // Selects two key indices and a fraction for t, using path-distance lookup when follow is enabled.
 // @fnv 0x00a4ab50
 // src: XBOX_PDB 0x00a4ab50
-void NiPathController::GetLoc(float afTime, unsigned int& aiKey0, unsigned int& aiKey1, float& frac)
+// pdb: NiPathController::GetLoc | NiPathController.obj | retail, upstream name already matches, high
+// pdb params: fTime, uiI1, uiI2, fNormTime
+// pdb locals: uiNumPathKeys, pkPathKeys, bFound, bFirstLoop, ui2, ePathType, ucSize, ui1
+void NiPathController::GetLoc(float fTime, unsigned int& uiI1, unsigned int& uiI2, float& fNormTime)
 {
     if (GetBit(4))
     {
-        GetPercentLoc_00a4a980(afTime, aiKey0, aiKey1, frac);
-        lastIdx = aiKey0;
+        GetPercentLoc_00a4a980(fTime, uiI1, uiI2, fNormTime);
+        lastIdx = uiI1;
         return;
     }
     unsigned int n;
     int kind;
     unsigned char sz;
     PositionKey* keys;
-    NiPosData* d = reinterpret_cast<NiPosData*>(m_pPathObject.m_pObject);
+    NiPosData* d = reinterpret_cast<NiPosData*>(m_spPathData.m_pObject);
     if (d)
     {
         keys = (PositionKey*)GetKeyData(d, n, kind, sz);
@@ -911,18 +960,18 @@ void NiPathController::GetLoc(float afTime, unsigned int& aiKey0, unsigned int& 
         keys = 0;
         sz = 0;
     }
-    if (afTime <= keys->At(0, sz)->Time())
+    if (fTime <= keys->At(0, sz)->Time())
     {
-        aiKey0 = 0;
-        aiKey1 = 1;
-        frac = 0.0f;
+        uiI1 = 0;
+        uiI2 = 1;
+        fNormTime = 0.0f;
         return;
     }
-    if (afTime >= keys->At(n - 1, sz)->Time())
+    if (fTime >= keys->At(n - 1, sz)->Time())
     {
-        aiKey0 = n - 2;
-        aiKey1 = n - 1;
-        frac = 1.0f;
+        uiI1 = n - 2;
+        uiI2 = n - 1;
+        fNormTime = 1.0f;
         return;
     }
     bool found = false;
@@ -931,14 +980,14 @@ void NiPathController::GetLoc(float afTime, unsigned int& aiKey0, unsigned int& 
     unsigned int next = 0;
     while (idx < n - 1)
     {
-        if (afTime == keys->At(idx, sz)->Time())
+        if (fTime == keys->At(idx, sz)->Time())
         {
             lastIdx = idx;
             next = idx + 1;
             found = true;
             break;
         }
-        else if (keys->At(idx, sz)->Time() < afTime && afTime < keys->At(idx + 1, sz)->Time())
+        else if (keys->At(idx, sz)->Time() < fTime && fTime < keys->At(idx + 1, sz)->Time())
         {
             lastIdx = idx;
             next = idx + 1;
@@ -955,7 +1004,7 @@ void NiPathController::GetLoc(float afTime, unsigned int& aiKey0, unsigned int& 
             idx++;
         }
     }
-    frac = (afTime - keys->At(idx, sz)->Time()) / (keys->At(next, sz)->Time() - keys->At(idx, sz)->Time());
-    aiKey0 = idx;
-    aiKey1 = next;
+    fNormTime = (fTime - keys->At(idx, sz)->Time()) / (keys->At(next, sz)->Time() - keys->At(idx, sz)->Time());
+    uiI1 = idx;
+    uiI2 = next;
 }

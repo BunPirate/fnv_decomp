@@ -5,6 +5,7 @@
 
 class ZoneEntry;
 
+// pdb: class TrapTargetEntry, size 0x50 (here 0x10), bases: TargetEntry, 0 members
 class TrapTargetEntry : public TargetEntry
 {
 public:

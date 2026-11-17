@@ -46,6 +46,9 @@ struct Vec4Dst
 
 // @fnv 0x00891060
 // src: GUESS 0x00891060 (confidence: low)
+// pdb: operator* | Actor.obj | debug, object-file gap fill, medium
+// pdb params: v0, v1
+// pdb locals: res
 Vec4Dst* __cdecl Object_ProcessAndReturnValue_00891060(Vec4Dst* out, Vec4Src* b, Vec4Src* a)
 {
     out->SetVec(_mm_mul_ss(*b->GetVec(), *a->GetVec()));

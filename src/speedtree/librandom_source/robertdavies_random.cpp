@@ -9,26 +9,29 @@
 extern "C" double __cdecl fabs(double);
 extern "C" double __cdecl exp(double);
 extern double RandomSeed;
-extern "C" int randomInitCount;
+extern "C" int Normal_count; // src: XBOX_RETAIL_PDB 0x011f912c (old: randomInitCount)
 extern "C" float randomXi;
 extern "C" float* randomSx;
 extern "C" float* randomSfx;
 extern "C" float randomSamples[128];
 
 // @fnv 0x00b43630
+// pdb: PosGen::PosGen | RobertDavies_Random.obj | debug, upstream name already matches, high
 PosGen::PosGen()
 {
     NotReady = true;
     xi = 0.0f;
     sx = 0;
-    m_pYValues = 0;
+    sfx = 0;
 }
 
 // Returns the standard normal density of value, or 0 when |value| exceeds 8.
 // @fnv 0x00b43ce0
-float Normal::Density(volatile float value) const
+// pdb: Normal::Density | RobertDavies_Random.obj | retail, upstream name already matches, high
+// pdb params: x
+float Normal::Density(volatile float x) const
 {
-    return (float)fabs(value) > 8.0 ? 0.0 : 0.3989422917366028 * (float)exp((float)((double)value * -value / 2.0));
+    return (float)fabs(x) > 8.0 ? 0.0 : 0.3989422917366028 * (float)exp((float)((double)x * -x / 2.0));
 }
 
 // @fnv 0x00b43310
@@ -46,32 +49,36 @@ float Random::Raw()
 }
 
 // @fnv 0x00b43ae0
+// pdb: Normal::Normal | RobertDavies_Random.obj | retail, upstream name already matches, high
 Normal::Normal()
 {
-    if (randomInitCount != 0)
+    if (Normal_count != 0)
     {
         NotReady = false;
         xi = randomXi;
         sx = randomSx;
-        m_pYValues = randomSfx;
+        sfx = randomSfx;
     }
     else
     {
         Build(true);
         randomXi = xi;
         randomSx = sx;
-        randomSfx = m_pYValues;
+        randomSfx = sfx;
     }
-    ++randomInitCount;
+    ++Normal_count;
 }
 
 // Validates that value is in (0,1), stores it scaled by 2147483648 into RandomSeed, then refills 128 randomSamples via Raw().
 // @fnv 0x00b43510
-void Random::Set(double adSeed)
+// pdb: Random::Set | RobertDavies_Random.obj | retail, string-set bridge, high
+// pdb params: s
+// pdb locals: i
+void Random::Set(double s)
 {
-    if (adSeed >= 1.0 || adSeed <= 0.0)
+    if (s >= 1.0 || s <= 0.0)
         throw std::logic_error("Newran: seed out of range");
-    RandomSeed = (long)(adSeed * 2147483648L);
+    RandomSeed = (long)(s * 2147483648L);
     for (int i = 0; i < 128; i++)
         randomSamples[i] = Raw();
 }
@@ -79,20 +86,23 @@ void Random::Set(double adSeed)
 extern const double runtimeInitializationDouble2;
 
 // @fnv 0x00b43710
-void PosGen::Build(bool symmetric)
+// pdb: PosGen::Build | RobertDavies_Random.obj | retail, string-set bridge, high
+// pdb params: sym
+// pdb locals: sxi, inc, i, f1
+void PosGen::Build(bool sym)
 {
     int count;
     float a, x, f;  // x is the sampling area increment; a is the coordinate.
     NotReady = false;
     sx = new float[60];
-    m_pYValues = new float[60];
+    sfx = new float[60];
     a = 0.0f;
-    x = symmetric ? 0.01f : 0.02f;
+    x = sym ? 0.01f : 0.02f;
     for (count = 0; count < 60; count++)
     {
         sx[count] = a;
         f = Density(a);
-        m_pYValues[count] = f;
+        sfx[count] = f;
         if (f <= 0.0)
             goto complete;
         a = x / f + a;
@@ -101,7 +111,7 @@ void PosGen::Build(bool symmetric)
 complete:
     if (count < 50)
         throw std::runtime_error("Newran: area too small");
-    xi = symmetric ? count * runtimeInitializationDouble2 : count;
+    xi = sym ? count * runtimeInitializationDouble2 : count;
 }
 
 // @fnv 0x00b43390
@@ -112,10 +122,13 @@ float Random::Density(float) const
 
 // Stores value as RandomSeed, then fills randomSamples with 128 values from Random::Raw().
 // @fnv 0x00b435f0
-void Random::SetLong(long alSeed)
+// pdb: Random::SetLong | RobertDavies_Random.obj | debug, upstream name already matches, high
+// pdb params: s
+// pdb locals: i
+void Random::SetLong(long s)
 {
     int i;
-    RandomSeed = (double)alSeed;
+    RandomSeed = (double)s;
     for (i = 0; i < 128; ++i)
     {
         randomSamples[i] = Random::Raw();
@@ -124,6 +137,7 @@ void Random::SetLong(long alSeed)
 
 // Sets the first float and the following int of the given buffer to zero and returns the buffer.
 // @fnv 0x00b43bc0
+// pdb: Normal::Mean | RobertDavies_Random.obj | debug, vtable slot, medium
 FloatIntPair* Normal::vf04(FloatIntPair* afBuffer)
 {
     *reinterpret_cast<int*>(reinterpret_cast<float*>(afBuffer) + 1) = 0;
@@ -135,6 +149,7 @@ extern "C" void __cdecl Deallocate(void*);
 
 // Stores 0 in the int at p+1 and 1.0f at p[0], then returns p.
 // @fnv 0x00b43bf0
+// pdb: Normal::Variance | RobertDavies_Random.obj | debug, vtable slot, medium
 FloatIntPair* Normal::vf05(FloatIntPair* p)
 {
     *(int*)(reinterpret_cast<float*>(p) + 1) = 0;
@@ -162,6 +177,8 @@ extern "C" void __cdecl DoNothing(int);
 
 // Throws if RandomSeed is zero, picks an index from Random::Raw()*128, refills that sample slot with a new raw value and returns the old sample.
 // @fnv 0x00b433a0
+// pdb: Random::Next | RobertDavies_Random.obj | retail, string-set bridge, high
+// pdb locals: f, i
 float Random::Next()
 {
     if (RandomSeed == 0.0)
@@ -176,6 +193,8 @@ float Random::Next()
 
 // Throws a std::logic_error with the message "Newran: illegal combination".
 // @fnv 0x00b43490
+// pdb: Random::load | RobertDavies_Random.obj | retail, string-set bridge, high
+// pdb params: __formal, __formal, __formal
 void Random::vf08(int a, int b, int c)
 {
     throw std::logic_error("Newran: illegal combination");
@@ -202,24 +221,28 @@ FloatIntPair* PosGen::vf04(FloatIntPair* pValue)
 class __declspec(novtable) SymGen;
 
 // @fnv 0x00b43c50
+// pdb: SymGen::~SymGen | RobertDavies_Random.obj | debug, upstream name already matches, high
 inline SymGen::~SymGen()
 {}
 
 inline Random::~Random()
 {}
 // @fnv 0x00b436b0
+// pdb: PosGen::~PosGen | RobertDavies_Random.obj | debug, upstream name already matches, high
 PosGen::~PosGen()
 {
     if (!NotReady)
     {
         float* bufferA = sx;
         Deallocate(bufferA);
-        float* bufferB = m_pYValues;
+        float* bufferB = sfx;
         Deallocate(bufferB);
     }
 }
 
 // @fnv 0x00b43910
+// pdb: PosGen::Next | RobertDavies_Random.obj | retail, upstream name already matches, high
+// pdb locals: ak, y, ir, sxi, r1
 float PosGen::Next()
 {
     int idx3;
@@ -238,12 +261,14 @@ float PosGen::Next()
         idx3 = (int)(r * xi);
         lo5 = sx[idx3];
         y3 = (float)((double)(sx[idx3 + 1] - lo5) * Random::Next() + lo5);
-        zTmp = m_pYValues[idx3] * Random::Next();
-    } while (zTmp >= m_pYValues[idx3 + 1] && zTmp >= Density(y3));
+        zTmp = sfx[idx3] * Random::Next();
+    } while (zTmp >= sfx[idx3 + 1] && zTmp >= Density(y3));
     return y3;
 }
 
 // @fnv 0x00b439e0
+// pdb: SymGen::Next | RobertDavies_Random.obj | retail, upstream name already matches, high
+// pdb locals: ak, s, y, ir, sxi, r1
 float SymGen::Next()
 {
     int idx3;
@@ -268,16 +293,17 @@ float SymGen::Next()
         idx3 = (int)(fSample * xi);
         float fLow = sx[idx3];
         y3 = (float)((double)(sx[idx3 + 1] - fLow) * Random::Next() + fLow);
-        zTmp = m_pYValues[idx3] * Random::Next();
-    } while (zTmp >= m_pYValues[idx3 + 1] && zTmp >= Density(y3));
+        zTmp = sfx[idx3] * Random::Next();
+    } while (zTmp >= sfx[idx3 + 1] && zTmp >= Density(y3));
     return aA * y3;
 }
 
 // Retains the shared sampling buffers while another Normal instance remains.
 // @fnv 0x00b43ca0
+// pdb: Normal::~Normal | RobertDavies_Random.obj | retail, upstream name already matches, high
 Normal::~Normal()
 {
-    if (--randomInitCount != 0)
+    if (--Normal_count != 0)
     {
         NotReady = true;
     }

@@ -100,7 +100,7 @@ class MenuOperations : public Menu
 public:
     void FinishShow();
     void FinishHide();
-    void AddTileTemplate(Tile__TileTemplate*);
+    void Menu_AddTemplate(Tile__TileTemplate*);
     void* DeleteThis(unsigned int);
 };
 
@@ -115,22 +115,27 @@ extern MenuClassArray g_menuByClassArray;
 extern unsigned short g_menuByClassCount;
 
 // @fnv 0x00a1c4a0
+// pdb: Menu::Menu | Menu.obj | debug, upstream name already matches, high
 Menu::Menu()
 {
     pMenu = 0;
-    m_pMenuTile = 0;
-    m_iModalMenuId = 0;
-    m_eFadeState = Interface::FADE_HIDDEN;
-    m_bVisible = true;
-    m_iSecondaryValue = 0;
-    m_bIsSpecial = false;
+    pLastTile = 0;
+    iIsModal = 0;
+    xFadeState = Interface::FADE_HIDDEN;
+    bDeleteTemplates = true;
+    iMenuThickness = 0;
+    bRenderedMenu = false;
 }
 
 // Returns the file name portion of apPath after the last backslash, or apPath itself if there is none.
 // @fnv 0x00a1c970
-const char* Menu::GetMenuPath(const char* apPath)
+// src: XBOX_DEBUG_PDB 0x00a1c970
+// pdb: Menu::StripFileName | Menu.obj | debug, call graph, high
+// pdb params: apFilename
+// pdb locals: pshort, plastBackslash, pstart
+const char* Menu::StripFileName(const char* apFilename)
 {
-    const char* pRequestedMenuPath = apPath;
+    const char* pRequestedMenuPath = apFilename;
     const char* pBaseName = pRequestedMenuPath;
     const char* pLastSlash = strrchr(pRequestedMenuPath, '\\');
     if (pLastSlash)
@@ -139,6 +144,8 @@ const char* Menu::GetMenuPath(const char* apPath)
 }
 
 // @fnv 0x00483080
+// pdb: TESDescription::SetDescription | TESDescription.obj | debug, object-file run extension, low
+// pdb params: apDescription
 void Menu::ParseMenuXML(const char* apXML)
 {
     g_menuParsedXML.Set(apXML, 0);
@@ -146,6 +153,9 @@ void Menu::ParseMenuXML(const char* apXML)
 
 // Stores apTile in g_menuByClassArray at index aiClass - 0x3E9 when that index is within g_menuByClassCount.
 // @fnv 0x00a1e130
+// pdb: Menu::SetMenuByClass | Menu.obj | retail, call graph, high
+// pdb params: aiClass, apTile
+// pdb locals: iindex
 void Menu::SetMenuRootTile(int aiClass, Tile* apTile)
 {
     int iIndex = aiClass - 0x3E9;
@@ -154,11 +164,13 @@ void Menu::SetMenuRootTile(int aiClass, Tile* apTile)
 }
 
 // @fnv 0x00a1dc20
-void Menu::SetMenuVisibility(bool abVisible)
+// pdb: Menu::PrepForVisibility | Menu.obj | retail, call graph, high
+// pdb params: abStayHidden
+void Menu::SetMenuVisibility(bool abStayHidden)
 {
     TileMenu* pTileMenu = pMenu;
     pTileMenu->Set(0xFA3, 0.0f, true);
-    if (!abVisible)
+    if (!abStayHidden)
         UnloadMenuData();
     ClearInterfaceState(0);
     (void)GetMenuScale();
@@ -173,6 +185,7 @@ extern NiFixedString* DAT_011f34cc;
 // Allocates a NiFixedString from the literal "Tileptr" and stores it in DAT_011f34cc.
 // @fnv 0x00a1c6f0
 // src: COMMUNITY 0x00a1c6f0
+// pdb: Menu::InitSDM | Menu.obj | retail, upstream name already matches, high
 void __cdecl Menu_InitSDM()
 {
     DAT_011f34cc = new NiFixedString("Tileptr");
@@ -202,9 +215,13 @@ void __fastcall NiTStringPointerMap_XMLStorage_SetAt(void*, const char*, MenuVal
 
 // Looks up an XML file by name in DAT_011f34e0; if missing, loads it via LoadCompressedXML and optionally inserts it into the map.
 // @fnv 0x00a1c9b0
-MenuValueDescriptor* __cdecl GetOrLoadXML(const char* apFilename, bool abAdd)
+// src: XBOX_RETAIL_PDB 0x00a1c9b0
+// pdb: Menu::GetXML | Menu.obj | retail, call graph, high
+// pdb params: apFilename, abAdd
+// pdb locals: foundXML, pfilename
+MenuValueDescriptor* __cdecl Menu_GetXML(const char* apFilename, bool abAdd)
 {
-    const char* pfilename = Menu::GetMenuPath(apFilename);
+    const char* pfilename = Menu::StripFileName(apFilename);
     MenuValueDescriptor* foundXML = 0;
     int pad[12];
     DAT_011f34e0.GetAt((unsigned long)pfilename, (ScrapHeapBuffer*&)foundXML);
@@ -225,6 +242,8 @@ void __cdecl Interface_NewTimer(Menu* m, float f);
 void __cdecl Interface_PopFromEnterStack(int a, int b);
 void __cdecl Interface_UpdateAllTimers();
 // @fnv 0x00a1d910
+// pdb: Menu::StartFadeOut | Menu.obj | retail, call graph (shared callers), high
+// pdb locals: ffade
 void Menu::LoadMenuData()
 {
     Tile* t = pMenu;
@@ -235,13 +254,13 @@ void Menu::LoadMenuData()
     if (ffade == _gModifierZero)
         ffade = pMenu->GetFloat(0xfc2);
     Interface_NewTimer(this, ffade);
-    m_eFadeState = Interface::FADING_OUT;
-    if (m_iModalMenuId)
+    xFadeState = Interface::FADING_OUT;
+    if (iIsModal)
     {
         Tile* t2 = pMenu;
         if (t2->ContainsTrait(0x1772))
         {
-            Interface_PopFromEnterStack(m_iModalMenuId, 0);
+            Interface_PopFromEnterStack(iIsModal, 0);
             ClearInterfaceState(0);
         }
     }
@@ -252,25 +271,30 @@ void __cdecl Interface_NewTimer(Menu* apMenu, float afFade);
 void __cdecl Interface_UpdateAllTimers();
 
 // @fnv 0x00a1db20
+// pdb: Menu::StartFadeIn | Menu.obj | debug, call graph, medium
+// pdb locals: ffade
 void Menu::UnloadMenuData()
 {
     float ffade = pMenu ? pMenu->GetFloat(0xfc1) : 0.25f;
     if (ffade == 0.0)
         ffade = pMenu->GetFloat(0xfc2);
     Interface_NewTimer(this, ffade);
-    m_eFadeState = Interface::FADING_IN;
+    xFadeState = Interface::FADING_IN;
     Interface_UpdateAllTimers();
 }
 
 // @fnv 0x00a1dd80
-void MenuOperations::AddTileTemplate(Tile__TileTemplate* apTemplate)
+// src: XBOX_RETAIL_PDB 0x00a1dd80
+// pdb: Menu::AddTemplate | Menu.obj | retail, call graph, high
+// pdb params: apTemplate
+void MenuOperations::Menu_AddTemplate(Tile__TileTemplate* apTemplate)
 {
     int u1;
     int u2;
     int u3;
     if (apTemplate != 0)
     {
-        m_kTileTemplateList.AddHead(apTemplate);
+        xTemplates.AddHead(apTemplate);
     }
 }
 
@@ -280,7 +304,7 @@ struct MenuValueDescriptor;
 // 0x00a0be10 deletes the 8-byte XML buffer (length +0, data +4); no shared XMLStorage header exists yet.
 struct XMLStorage
 {
-    MenuValueDescriptor* FUN_00a0be10(unsigned int);
+    MenuValueDescriptor* XMLStorage_ScalarDtor(unsigned int);
 };
 }
 struct MapX_00a1e240
@@ -311,14 +335,18 @@ struct BuildStorageX
     }
 };
 // @fnv 0x00a1ca20
-void RemoveMenuEntries(const char* apFilename, Menu* apMenu)
+// src: XBOX_RETAIL_PDB 0x00a1ca20
+// pdb: Menu::RemoveFromXMLArchive | Menu.obj | retail, call graph (shared callers), high
+// pdb params: apFilename, apMenu
+// pdb locals: pFilename, ptempval2, ptempval
+void Menu_RemoveFromXMLArchive(const char* apFilename, Menu* apMenu)
 {
     ScrapHeapBuffer* pXmlStorage;
     {
         ScrapHeapBuffer* pBuildStorage;
         {
             const char* pFilename;
-            pFilename = Menu::GetMenuPath(apFilename);
+            pFilename = Menu::StripFileName(apFilename);
             pXmlStorage = 0;
             DAT_011f34e0.GetAt((unsigned long)pFilename, pXmlStorage);
             if (pXmlStorage)
@@ -328,7 +356,7 @@ void RemoveMenuEntries(const char* apFilename, Menu* apMenu)
                     fnv_00a0be10::XMLStorage* t1;
                     t1 = (fnv_00a0be10::XMLStorage*)pXmlStorage;
                     t2 = t1;
-                    t2 ? t2->FUN_00a0be10(1) : 0;
+                    t2 ? t2->XMLStorage_ScalarDtor(1) : 0;
                 }
                 pXmlStorage = 0;
             }
@@ -340,7 +368,7 @@ void RemoveMenuEntries(const char* apFilename, Menu* apMenu)
                 if (apMenu && ((BuildStorageX*)pBuildStorage)->bFlag)
                 {
                     ((BuildStorageX*)pBuildStorage)->bFlag = false;
-                    apMenu->m_bVisible = true;
+                    apMenu->bDeleteTemplates = true;
                 }
                 BuildStorageX* t4;
                 {
@@ -367,6 +395,8 @@ Menu* GetFieldD0();
 void Interface_SetOverTileMenu(Menu*);
 
 // @fnv 0x00a1dc70
+// pdb: Menu::SetMenuTile | Menu.obj | retail, call graph, medium
+// pdb params: apMenu, abDontAddToStack
 void Menu::SetTileMenu(TileMenu* apMenu, bool abDontAddToStack)
 {
     pMenu = apMenu;
@@ -375,7 +405,7 @@ void Menu::SetTileMenu(TileMenu* apMenu, bool abDontAddToStack)
         if (apMenu->GetFloat(0xfa7) == 102.0 || apMenu->GetFloat(0xfa7) == 6006.0 ||
             apMenu->GetFloat(0xfa7) == 103.0 || apMenu->GetFloat(0xfa7) == 6007.0)
         {
-            m_iModalMenuId = GetClass();
+            iIsModal = GetClass();
             if (!abDontAddToStack)
                 Interface_AddToEnterStack(GetClass(), 0);
             if (GetFieldD0() != this)
@@ -420,9 +450,10 @@ inline void operator delete[](void* apMem)
 {
     g_memoryManager._DeallocateAlias(apMem);
 }
+// pdb: class FileFinder, size 0x10 (here 0x1), 1 members
 struct FileFinder
 {
-    static NiFile* __cdecl GetFile(const char* apName, int aeMode, unsigned int auiBufferSize, unsigned int auiUnk);
+    static NiFile* __cdecl GetFile(const char* apName, int aeMode, unsigned int aiSize, unsigned int aiArchiveType);
 };
 
 struct CompressedXML
@@ -433,6 +464,9 @@ struct CompressedXML
     {}
 };
 // @fnv 0x00a1ce70
+// pdb: Menu::CompressAndStoreXML | Menu.obj | debug, object-file gap fill, medium
+// pdb params: apFilename, apFileData
+// pdb locals: bnewline, ipos, pfileData, c2, bdeletefiledata, c1, ilinelen, bnewline_now, pbuf, bcomment, c3, ifileSize, pfile, ptemp, a
 CompressedXML* LoadCompressedXML(const char* apFilename, const char* apFileData)
 {
     char* pbuf = 0;
@@ -538,21 +572,24 @@ extern int DAT_011f34f4;
 
 // @fnv 0x00a1cb60
 // src: COMMUNITY 0x00a1cb60
-void __cdecl Menu_SetParsedXML(char const* a1, int aiValue)
+// pdb: Menu::SetParsedXML | Menu.obj | debug, upstream name already matches, high
+// pdb params: apFilename, apBuild
+void __cdecl Menu_SetParsedXML(char const* apFilename, int apBuild)
 {
     int v4[10];
-    ((FUN_00a0c900_shell*)&DAT_011f34f4)->NiTStringPointerMap_XMLStorage_SetAt(a1, aiValue);
+    ((FUN_00a0c900_shell*)&DAT_011f34f4)->NiTStringPointerMap_XMLStorage_SetAt(apFilename, apBuild);
 }
 
-void Interface_ClearTimer(Menu* apMenu);
-void Interface_RecursiveFade(void* apTile, float a, float b);
+void Interface_ClearTimer(Menu* apPointer);
+void Interface_RecursiveFade(void* apNode, float afAmount, float afLastAlpha);
 void __cdecl Interface_PopFromEnterStack(int a, int b);
 
 // @fnv 0x00a1d9e0
 // src: XBOX_PDB 0x00a1d9e0
+// pdb: Menu::InstantFadeOut | Menu.obj | retail, upstream name already matches, high
 void Menu::InstantFadeOut()
 {
-    if (m_eFadeState != 4)
+    if (xFadeState != 4)
     {
         TileMenu* pTile_d;
         TileMenu* pTile_a;
@@ -561,15 +598,15 @@ void Menu::InstantFadeOut()
         pTile_c = pMenu;
         pTile_c->Set(0xfa3, 0.0f, true);
         pTile_b = pMenu;
-        pTile_a = (TileMenu*)pTile_b->m_pRenderedNodeEntry.m_pObject;
+        pTile_a = (TileMenu*)pTile_b->spModel.m_pObject;
         Interface_RecursiveFade(pTile_a, 1.0f, 0.0f);
-        m_eFadeState = Interface::FADING_OUT;
-        if (m_iModalMenuId)
+        xFadeState = Interface::FADING_OUT;
+        if (iIsModal)
         {
             pTile_d = pMenu;
             if (pTile_d->ContainsTrait(0x1772))
             {
-                Interface_PopFromEnterStack(m_iModalMenuId, 0);
+                Interface_PopFromEnterStack(iIsModal, 0);
                 ClearInterfaceState(0);
             }
         }
@@ -577,13 +614,14 @@ void Menu::InstantFadeOut()
     }
 }
 
-void Interface_ClearTimer(Menu* apMenu);
-void Interface_RecursiveFade(void* apTile_c, float a, float b);
+void Interface_ClearTimer(Menu* apPointer);
+void Interface_RecursiveFade(void* apNode, float afAmount, float afLastAlpha);
 
 // @fnv 0x00a1daa0
+// pdb: Menu::CancelFadeOut | Menu.obj | debug, object-file gap fill, medium
 void MenuOperations::FinishShow()
 {
-    if (m_eFadeState == 2)
+    if (xFadeState == 2)
     {
         void* pTile_a;
         TileMenu* pTile_b;
@@ -591,20 +629,21 @@ void MenuOperations::FinishShow()
         pTile_c = pMenu;
         pTile_c->Set(0xfa3, 1.0f, true);
         pTile_b = pMenu;
-        pTile_a = pTile_b->m_pRenderedNodeEntry.m_pObject;
+        pTile_a = pTile_b->spModel.m_pObject;
         Interface_RecursiveFade(pTile_a, 1.0f, 0.0f);
-        m_eFadeState = Interface::FADE_SHOWN;
+        xFadeState = Interface::FADE_SHOWN;
         Interface_ClearTimer(this);
     }
 }
 
-void Interface_ClearTimer(Menu* apMenu);
-void Interface_RecursiveFade(void* apTile_c, float a, float b);
+void Interface_ClearTimer(Menu* apPointer);
+void Interface_RecursiveFade(void* apNode, float afAmount, float afLastAlpha);
 
 // @fnv 0x00a1dba0
+// pdb: Menu::CancelFadeIn | Menu.obj | debug, object-file gap fill, medium
 void MenuOperations::FinishHide()
 {
-    if (m_eFadeState == 8)
+    if (xFadeState == 8)
     {
         void* pTile_a;
         TileMenu* pTile_b;
@@ -612,9 +651,9 @@ void MenuOperations::FinishHide()
         pTile_c = pMenu;
         pTile_c->Set(0xfa3, 0.0f, true);
         pTile_b = pMenu;
-        pTile_a = pTile_b->m_pRenderedNodeEntry.m_pObject;
+        pTile_a = pTile_b->spModel.m_pObject;
         Interface_RecursiveFade(pTile_a, 1.0f, 0.0f);
-        m_eFadeState = Interface::FADE_HIDDEN;
+        xFadeState = Interface::FADE_HIDDEN;
         Interface_ClearTimer(this);
     }
 }
@@ -623,6 +662,7 @@ extern MemoryManager g_memoryManager;
 
 // Destructs Menu and, if flags has bit 0 set, deallocates this object, then returns this.
 // @fnv 0x00a1e170
+// pdb: Menu::`scalar deleting destructor' | Menu.obj | retail, vtable slot, high
 void* MenuOperations::DeleteThis(unsigned int flags)
 {
     this->Menu::~Menu();
@@ -643,6 +683,8 @@ struct FUN_00a1e4d0_shell
 // Grows the array if uiIndex is beyond m_usMaxSize, stores element at uiIndex via SetAt, and returns uiIndex.
 // @fnv 0x00a1e4d0
 // src: GUESS 0x00a1e4d0 (confidence: high)
+// pdb: NiTArray<XMLStorage *,NiTMallocInterface<XMLStorage *> >::Add | Menu.obj | debug, call graph, medium
+// pdb params: element
 unsigned int FUN_00a1e4d0_shell::SetAtWithGrowth(unsigned int uiIndex, Tile*& element)
 {
     unsigned int a;
@@ -664,12 +706,16 @@ template <class K, class V> class BSMapBase
 extern int DAT_011f34f4;
 // Looks up auKey in the map at DAT_011f34f4 and returns the stored pointer, or null if not found.
 // @fnv 0x00a1cb30
-ScrapHeapBuffer* LookupByKey(unsigned long auKey)
+// src: XBOX_RETAIL_PDB 0x00a1cb30
+// pdb: Menu::GetParsedXML | Menu.obj | retail, object-file run extension, high
+// pdb params: apFilename
+// pdb locals: foundXML
+ScrapHeapBuffer* Menu_GetParsedXML(unsigned long apFilename)
 {
     int iPad1;
     int iPad2;
     ScrapHeapBuffer* pkHeap = 0;
-    ((BSMapBase<unsigned long, ScrapHeapBuffer*>*)&DAT_011f34f4)->GetAt(auKey, pkHeap);
+    ((BSMapBase<unsigned long, ScrapHeapBuffer*>*)&DAT_011f34f4)->GetAt(apFilename, pkHeap);
     return pkHeap;
 }
 }  // namespace fnv_00a1cb30
@@ -703,12 +749,14 @@ struct XMLEntry
     }
 };
 BSFile* __cdecl FileFinder_GetFile_(const char* apPath, int a, int b);
-int __cdecl Tile_ParseFile(const char* apName, const char* apData, unsigned int auLength);
-void __cdecl Menu_SetParsedXML(const char* apName, int aiValue);
+int __cdecl Tile_ParseFile(const char* apName, const char* apData, unsigned int apSize);
+void __cdecl Menu_SetParsedXML(const char* apFilename, int apBuild);
 void __cdecl Tile_DeleteGlobalItems();
 
 // @fnv 0x00a1d280
 // src: COMMUNITY 0x00a1d280
+// pdb: Menu::LoadFinalMasterXML | Menu.obj | retail, upstream name already matches, high
+// pdb locals: hdr, pfileName, pfile, bgood, iread, pBuffer, ptempBuffer, I, pnewdata, pbufferEntry
 bool Menu_LoadFinalMasterXML()
 {
     bool bSuccess = false;
@@ -773,7 +821,7 @@ struct InterfaceRoot
 };
 
 Tile* __cdecl GetNextTile();
-inline int GetMenuThickness(Menu* menu) { return menu->m_iSecondaryValue; }
+inline int GetMenuThickness(Menu* menu) { return menu->iMenuThickness; }
 inline void SetTileMenuOwner(TileMenu* tile, Menu* owner) { tile->pMenu = owner; }
 inline float NiMaxF(float a, float b)
 {
@@ -784,6 +832,8 @@ extern double DAT_0106f290;
 
 // @fnv 0x00a1dfb0
 // src: XBOX_PDB 0x00a1dfb0
+// pdb: Menu::GetMaxDepth | Menu.obj | retail, upstream name already matches, high
+// pdb locals: xelem, fmaxdepth, z, proot, ptile, fdepth, xyz, pcursor
 float Menu_GetMaxDepth()
 {
     void* xelem;
@@ -809,9 +859,9 @@ float Menu_GetMaxDepth()
         NiPoint3 xyz;
         Tile* pcursor = GetNextTile();
         // Preserve the original trivial copies independently of NiPoint3 copy operators.
-        *(blob12*)&xyz = *(blob12*)((char*)pcursor->m_pRenderedNodeEntry.operator->() + 0x58);
+        *(blob12*)&xyz = *(blob12*)((char*)pcursor->spModel.operator->() + 0x58);
         xyz.y = z * DAT_0106f290;
-        *(blob12*)((char*)pcursor->m_pRenderedNodeEntry.operator->() + 0x58) = *(blob12*)&xyz;
+        *(blob12*)((char*)pcursor->spModel.operator->() + 0x58) = *(blob12*)&xyz;
     }
     return fmaxdepth + 2.0;
 }
@@ -878,19 +928,22 @@ struct FUN_00a0ac80 : public FUN_00a0ad40
 
 extern FUN_00a0ac80* DAT_011f32d0;
 
-Tile* __fastcall CreateMenuTiles(Tile*, void*);
+Tile* __fastcall Tile_BuildAndNameTree(Tile*, void*);
 
 void __fastcall ApplyTileTemplate(Tile*, Tile__TileTemplate*);
 
 // Looks up a tile template by name in a linked list, builds a tile from it under apParent, and returns the new tile or null.
 // @fnv 0x00a1ddb0
+// pdb: Menu::RenderTemplate | Menu.obj | retail, call graph, high
+// pdb params: apParent, axName, apLast
+// pdb locals: plist, nm, ptemplate, preturn_val, pbuild
 Tile* Menu::CreateTileFromTemplate(Tile* apParent, const char* axName, Tile* apLast)
 {
     Tile* preturn_val = 0;
     if (apLast)
-        m_pMenuTile = apLast;
+        pLastTile = apLast;
     Tile__TileTemplate* ptemplate = 0;
-    BSSimpleList<Tile__TileTemplate*>* pCurrentElementNext = &m_kTileTemplateList;
+    BSSimpleList<Tile__TileTemplate*>* pCurrentElementNext = &xTemplates;
     NiFixedString nm(axName);
     while (pCurrentElementNext)
     {
@@ -904,7 +957,7 @@ Tile* Menu::CreateTileFromTemplate(Tile* apParent, const char* axName, Tile* apL
         FUN_00a0ac80* pbuild = DAT_011f32d0;
         DAT_011f32d0 = new FUN_00a0ac80;
         ((Tile__BuildStorage*)DAT_011f32d0)->SetTileTemplate(ptemplate);
-        preturn_val = ((Tile*(__thiscall*)(Tile*, void*)) &CreateMenuTiles)(apParent, ptemplate);
+        preturn_val = ((Tile*(__thiscall*)(Tile*, void*)) &Tile_BuildAndNameTree)(apParent, ptemplate);
         ((void(__thiscall*)(Tile*, Tile__TileTemplate*)) &ApplyTileTemplate)(preturn_val, ptemplate);
         DAT_011f32d0->pTemplate = 0;
         delete DAT_011f32d0;
@@ -989,30 +1042,30 @@ extern "C" void* __cdecl fnv_zlib_memset(void* dst, int val, unsigned int size);
 extern MemoryPool* DAT_011f63b8[256];
 }  // namespace fnv_00a1cb80
 
-inline void MemoryManager::DeallocateAlias(void* pvBuffer)
+inline void MemoryManager::DeallocateAlias(void* apMem)
 {
-    if (!pvBuffer) return;
+    if (!apMem) return;
     if (!bInitialized)
     {
-        FreePointer(pvBuffer, 0);
+        FreePointer(apMem, 0);
         return;
     }
     IMemoryHeap* heap = pHeapsByContextA[65];
     if (!heap)
     {
-        FreePointer(pvBuffer, 0);
+        FreePointer(apMem, 0);
         return;
     }
-    MemoryPool* pool = fnv_00a1cb80::DAT_011f63b8[(unsigned int)pvBuffer >> 24];
-    if (pool && (unsigned int)pvBuffer >= (unsigned int)pool->m_pPoolBase &&
-        (unsigned int)pvBuffer < (unsigned int)pool->m_pPoolBase + pool->m_uiPoolSize)
+    MemoryPool* pool = fnv_00a1cb80::DAT_011f63b8[(unsigned int)apMem >> 24];
+    if (pool && (unsigned int)apMem >= (unsigned int)pool->m_pPoolBase &&
+        (unsigned int)apMem < (unsigned int)pool->m_pPoolBase + pool->m_uiPoolSize)
     {
-        pool->Free(pvBuffer);
+        pool->Free(apMem);
         return;
     }
-    IMemoryHeap* owner = GetHeapForPointer((const void*)pvBuffer);
-    if (owner) owner->Deallocate(pvBuffer, false);
-    else FreePointer(pvBuffer, 0);
+    IMemoryHeap* owner = GetHeapForPointer((const void*)apMem);
+    if (owner) owner->Deallocate(apMem, false);
+    else FreePointer(apMem, 0);
 }
 namespace fnv_00a1cb80 {
 
@@ -1021,7 +1074,7 @@ extern MemoryManager _g_memoryManager;
 class FileFinder
 {
   public:
-    static BSFile* GetFile(const char* apPath, int aiMode, unsigned int auiBufferSize, unsigned int auiAccess);
+    static BSFile* GetFile(const char* apName, int aeMode, unsigned int aiSize, unsigned int aiArchiveType);
 };
 
 struct CompressedXML;
@@ -1076,6 +1129,8 @@ extern FUN_00a0c900_shell DAT_011f34e0;
 
 // Reads Data\Menus\master_menu_file.txt, parses each @#$%-separated entry into a path and XML, registers them in DAT_011f34e0, and returns the entry count.
 // @fnv 0x00a1cb80
+// pdb: Menu::LoadMasterXMLFile | Menu.obj | debug, object-file gap fill, medium
+// pdb locals: icount, data, isize, pend, ilength, pstart, pname, pinput, pnewdata, pnamestart, pnameend, pfname
 int LoadMasterMenuFiles()
 {
     BSFile* pFile7 = FileFinder::GetFile("Data\\Menus\\master_menu_file.txt", 0, 0x4000, 4);
@@ -1126,7 +1181,7 @@ int LoadMasterMenuFiles()
         *found9 = 0;
 
         pXML2 = LoadCompressedXML(pathBuffer6, _cur_ptr);
-        stripped2 = Menu::GetMenuPath(pathBuffer6);
+        stripped2 = Menu::StripFileName(pathBuffer6);
         DAT_011f34e0.NiTStringPointerMap_XMLStorage_SetAt(stripped2, (int)pXML2);
 
         count7++;
@@ -1157,7 +1212,7 @@ extern int DAT_0103d420;
 extern int DAT_0103d418;
 extern const char DAT_01095548[];
 extern const char DAT_01095528[];
-void __cdecl Tile_InsertIncludedFiles(CompressedEntry* apEntry);
+void __cdecl Tile_InsertIncludedFiles(CompressedEntry* apFile);
 void __cdecl BSsprintf(char* apBuffer, unsigned int auiSize, const char* apFormat, const char* apName,
                           unsigned int auiLength);
 void __cdecl ProgramFlow(const char* apText);
@@ -1278,7 +1333,10 @@ struct FileHeader
 };
 
 // @fnv 0x00a1d410
-bool WriteCompressedEntryArchive()
+// src: XBOX_DEBUG_PDB 0x00a1d410
+// pdb: Menu::CreateFinalMasterXMLFile | Menu.obj | debug, unique string literal, high
+// pdb locals: xelem, NameArray, DataArray, pfile, filehdr, bgood, iwritten, pxmlname, pstorage, ptemp, I, fullname
+bool Menu_CreateFinalMasterXMLFile()
 {
     unsigned int a;
     {
@@ -1408,21 +1466,23 @@ using fnv_00a1c520::Interface_GetTopMenuID;
 using fnv_00a1c520::g_osGlobals;
 // Clears the menu class, deletes its tiles, and removes template-list nodes.
 // @fnv 0x00a1c520
+// pdb: Menu::~Menu | Menu.obj | retail, upstream name already matches, high
+// pdb locals: plist, ptemp
 Menu::~Menu()
 {
-    ClearMenuClass(m_iMenuId);
-    if (m_iModalMenuId)
-        Interface_PopFromEnterStack(m_iModalMenuId, 1);
-    FUN_00a1e130(m_iMenuId, 0);
+    ClearMenuClass(iClass);
+    if (iIsModal)
+        Interface_PopFromEnterStack(iIsModal, 1);
+    FUN_00a1e130(iClass, 0);
     if (pMenu)
     {
         SetTileMenuOwner(pMenu, 0);
         delete pMenu;
     }
     pMenu = 0;
-    if (m_bVisible)
+    if (bDeleteTemplates)
     {
-        BSSimpleList<Tile__TileTemplate*>* item = &m_kTileTemplateList;
+        BSSimpleList<Tile__TileTemplate*>* item = &xTemplates;
         while (item)
         {
             TileCollection* value = (TileCollection*)item->m_item;
@@ -1431,7 +1491,7 @@ Menu::~Menu()
             item = item->m_pkNext;
         }
     }
-    m_kTileTemplateList.RemoveAll();
+    xTemplates.RemoveAll();
     if (!Interface_GetTopMenuID() && g_osGlobals->Main_GetControls()->Controls_GetUserAction(14, 0))
         g_osGlobals->Main_GetControls()->SetFlag(8);
 }

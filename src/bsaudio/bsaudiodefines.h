@@ -44,6 +44,8 @@ class BSAudioDefinition
     unsigned int m_uiSoundParameter6;  // +0x238, 4 bytes
 
 // @fnv 0x00ae8770
+// pdb: BSSoundMessage::SetSPData | BSAudioManager.obj | retail, object-file run extension, low
+// pdb params: aspIn
     BSAudioDefinition()
     {
         Name[0] = 0;
@@ -62,6 +64,8 @@ class BSAudioDefinition
     }
 
 // @fnv 0x00ae8830
+// pdb: BSSoundMessage::Set | BSAudioManager.obj | retail, object-file run extension, low
+// pdb params: m, i, d, p, sp, vec
     ~BSAudioDefinition()
     {
         pName = 0;
@@ -122,6 +126,7 @@ FNV_STATIC_ASSERT(offsetof(BSAudioDefinition, m_uiSoundParameterB) == 564);
 FNV_STATIC_ASSERT(offsetof(BSAudioDefinition, m_uiSoundParameter6) == 568);
 
 #pragma pack(push, 4)
+// pdb: class BSSoundInfo, size 0x254, 7 members
 class BSSoundInfo
 {
   public:
@@ -135,18 +140,20 @@ class BSSoundInfo
     BSAudioDefinition m_kAudioDefinition;  // +0x18, 572 bytes
 
 // @fnv 0x00ae8a40
-    BSSoundInfo(BSSoundInfo* aCopy)
+// pdb: BSSoundInfo::BSSoundInfo | BSAudioManager.obj | retail, upstream name already matches, high
+    BSSoundInfo(BSSoundInfo* si)
     {
-        m_uiSoundID = aCopy->m_uiSoundID;
-        m_fSoundVolume = aCopy->m_fSoundVolume;
-        m_fFadeDuration = aCopy->m_fFadeDuration;
-        m_uiValueAt0C = aCopy->m_uiValueAt0C;
-        m_uiPlaybackFlags = aCopy->m_uiPlaybackFlags;
-        m_bValueAt14 = aCopy->m_bValueAt14;
-        m_kAudioDefinition = aCopy->m_kAudioDefinition;
+        m_uiSoundID = si->m_uiSoundID;
+        m_fSoundVolume = si->m_fSoundVolume;
+        m_fFadeDuration = si->m_fFadeDuration;
+        m_uiValueAt0C = si->m_uiValueAt0C;
+        m_uiPlaybackFlags = si->m_uiPlaybackFlags;
+        m_bValueAt14 = si->m_bValueAt14;
+        m_kAudioDefinition = si->m_kAudioDefinition;
     }
 
 // @fnv 0x00ae8af0
+// pdb: BSSoundInfo::~BSSoundInfo | BSAudioManager.obj | debug, upstream name already matches, high
     ~BSSoundInfo()
     {
         m_uiSoundID = 0;
@@ -169,6 +176,9 @@ FNV_STATIC_ASSERT(offsetof(BSSoundInfo, m_kAudioDefinition) == 24);
 
 template <class Allocator, class T>
 // @fnv 0x00ae7f90
+// pdb: NiTPointerListBase<NiTPointerAllocator<unsigned int>,RaceSexMenu::MenuOption *>::RemoveHead | RaceSexMenu.obj | retail, call graph, low
+// pdb note: debug build links it to NiTPointerListBase<NiTPointerAllocator<unsigned int>,BSSoundMessage *>::RemoveHead
+// pdb locals: pkNode, element
 T NiTPointerListBase<Allocator, T>::RemoveHead()
 {
     NiTListItem<T>* pOldHead;
@@ -190,6 +200,7 @@ T NiTPointerListBase<Allocator, T>::RemoveHead()
 }
 
 // @fnv 0x00ae86d0
+// pdb: BSSoundMessage::~BSSoundMessage | BSAudioManager.obj | retail, call graph, high
 SoundMessageRecord::~SoundMessageRecord()
 {
     if (pObject)

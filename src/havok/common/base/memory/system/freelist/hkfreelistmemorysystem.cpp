@@ -7,14 +7,16 @@
 
 struct FUN_00cd06c0_t
 {
-    void __thiscall hkFreeListMemorySystem_setAllocator(int v);
+    void __thiscall hkFreeListMemorySystem_setAllocator(int a);
 };
 // @fnv 0x00cd06c0
 // src: XBOX_PDB 0x00cd06c0
-void __thiscall FUN_00cd06c0_t::hkFreeListMemorySystem_setAllocator(int v)
+// pdb: hkFreeListMemorySystem::setAllocator | hkFreeListMemorySystem.obj | debug, upstream name already matches, high
+// pdb params: a
+void __thiscall FUN_00cd06c0_t::hkFreeListMemorySystem_setAllocator(int a)
 {
-    *(int*)((char*)this + 4) = v;
-    *(int*)((char*)this + 0x18) = v;
+    *(int*)((char*)this + 4) = a;
+    *(int*)((char*)this + 0x18) = a;
 }
 
 extern int DAT_010cacd0;
@@ -28,6 +30,7 @@ struct FUN_00cd06a0
 };
 
 // @fnv 0x00cd06a0
+// pdb: hkThreadMemory::`scalar deleting destructor' | hkFreeListMemorySystem.obj | retail, vtable slot, high
 FUN_00cd06a0::FUN_00cd06a0(int aiArg)
 {
     m_p00 = &DAT_010cacd0;
@@ -94,36 +97,38 @@ struct FUN_00cd0940_iface
 };
 struct FUN_00cd0940_shell
 {
-    void __thiscall ResetRecordState(int* param, unsigned char mode);
+    void __thiscall ResetRecordState(int* router, unsigned char flags);
 };
 // @fnv 0x00cd0940
-void __thiscall FUN_00cd0940_shell::ResetRecordState(int* aiParams, unsigned char mode)
+// pdb: hkFreeListMemorySystem::threadQuit | hkFreeListMemorySystem.obj | retail, vtable slot, high
+// pdb params: router, flags
+void __thiscall FUN_00cd0940_shell::ResetRecordState(int* router, unsigned char flags)
 {
-    FUN_00cd0940_record* record = (FUN_00cd0940_record*)((unsigned char*)this + aiParams[8] * 0x138 + 0xc6c);
-    if ((mode & 2) != 0)
+    FUN_00cd0940_record* record = (FUN_00cd0940_record*)((unsigned char*)this + router[8] * 0x138 + 0xc6c);
+    if ((flags & 2) != 0)
     {
         if (*(int*)((unsigned char*)record + 0x130) != 0)
         {
-            int start = aiParams[1];
-            int length = aiParams[2] - start;
+            int start = router[1];
+            int length = router[2] - start;
             if (length != 0)
             {
                 ((FUN_00cd0940_iface*)((unsigned char*)this + 0x1c))->slot02(start, length);
-                aiParams[1] = 0;
-                aiParams[0] = 0;
-                aiParams[2] = 0;
+                router[1] = 0;
+                router[0] = 0;
+                router[2] = 0;
             }
         }
         record->slot13();
-        aiParams[3] = 0;
-        aiParams[6] = 0;
+        router[3] = 0;
+        router[6] = 0;
     }
-    if ((mode & 1) != 0)
+    if ((flags & 1) != 0)
     {
         record->slot13();
         *(volatile int*)((unsigned char*)record + 0x128) = 0;
         *(volatile unsigned char*)((unsigned char*)record + 0x12c) = 0;
-        hkMemUtil_memSet(aiParams, 0, 0x24);
+        hkMemUtil_memSet(router, 0, 0x24);
     }
 }
 
@@ -163,6 +168,7 @@ struct FUN_00cd0c80
 
 // Destructor stub for a structure holding two PtrArrayMember members; the members' destructors run after this body.
 // @fnv 0x00cd0c80
+// pdb: hkMemorySystem::_PrintStatisticsInput::~_PrintStatisticsInput | hkFreeListMemorySystem.obj | retail, call graph, high
 FUN_00cd0c80::~FUN_00cd0c80() throw()
 {}
 
@@ -194,6 +200,8 @@ struct FUN_00cd06f0_cls
 
 // Iterates 0x20 entries, adding each active entry's Compute() result and value into out[1] and out[0], then sets out[2] to 0.
 // @fnv 0x00cd06f0
+// pdb: hkFreeListMemorySystem::getMemoryStatistics | hkFreeListMemorySystem.obj | retail, vtable slot, high
+// pdb params: out
 void FUN_00cd06f0_cls::AccumulateSpawnedSubTotals(int* out)
 {
     char* elem = (char*)this + 0xd9c;
@@ -300,7 +308,7 @@ struct Sub0b0c
 
 struct FUN_00d5e960_t
 {
-    void __thiscall InitStream(int v);
+    void __thiscall hkSolverAllocator_setBuffer(int vbuffer);
 };
 
 struct Owner
@@ -329,27 +337,30 @@ struct Owner
     int unk0b08;
     Sub0b0c sub0b0c;
     FUN_00d5e960_t cnt0b30;
-    Sub0b0c* hkFreeListMemorySystem_mainInit(const Pair* p, Flags flags);
+    Sub0b0c* hkFreeListMemorySystem_mainInit(const Pair* info, Flags flags);
 };
 
 // Stores p->a and p->b into f0b00/f0b04, optionally calls v3 on sub0b0c and svc->s1 then cnt0b30, and returns &sub0b0c.
 // @fnv 0x00cd0740
 // src: HAVOK_LIB 0x00cd0740
-Sub0b0c* Owner::hkFreeListMemorySystem_mainInit(const Pair* apPair, Flags flags)
+// pdb: hkFreeListMemorySystem::mainInit | hkFreeListMemorySystem.obj | retail, upstream name already matches, high
+// pdb params: info, flags
+// pdb locals: assertBuf, ostr
+Sub0b0c* Owner::hkFreeListMemorySystem_mainInit(const Pair* info, Flags flags)
 {
-    f0b00 = apPair->a;
-    f0b04 = apPair->b;
+    f0b00 = info->a;
+    f0b04 = info->b;
     if (flags.bits & 1)
     {
         v3(&sub0b0c, str_01094d90, flags.bits);
     }
     if (flags.bits & 2)
     {
-        int b = apPair->b;
+        int b = info->b;
         if (b)
         {
             int r = svc->s1(b, b);
-            cnt0b30.InitStream(r);
+            cnt0b30.hkSolverAllocator_setBuffer(r);
         }
     }
     return &sub0b0c;
@@ -1052,7 +1063,7 @@ struct S_00cd0a60_sub1c
     int unka90;
     int unka94;
     int unka98;
-    void hkFreeListAllocator_00d60270(S_00cd0a60_sub8* a1);
+    void hkFreeListAllocator_00d60270(S_00cd0a60_sub8* server);
     __forceinline S_00cd0a60_sub1c(S_00cd0a60_sub8* a1)
     {
         hkFreeListAllocator_00d60270(a1);
@@ -1098,10 +1109,10 @@ struct S_00cd0a60_sub0ad0
     int unk24;
     int unk28;
     int unk2c;
-    void ProcessAndReturnValue_00cf6da0(int a1);
+    void hkCriticalSection_ctor(int a1);
     __forceinline S_00cd0a60_sub0ad0()
     {
-        ProcessAndReturnValue_00cf6da0(0);
+        hkCriticalSection_ctor(0);
     }
 };
 
@@ -1341,6 +1352,7 @@ struct FUN_00cd0a60
 
 // Initializes unk04 to 0, links m1c to m08, stores the address of m1c in DAT_012686cc and in m0b00.unk08.
 // @fnv 0x00cd0a60
+// pdb: hkFreeListMemorySystem::hkFreeListMemorySystem | hkFreeListMemorySystem.obj | retail, object-file gap fill, high
 FUN_00cd0a60::FUN_00cd0a60() : unk04(0), m1c(&m08)
 {
     unsigned int r = (unsigned int)&m1c;
@@ -1362,6 +1374,7 @@ struct FUN_00cd0c70_cls
 
 // @fnv 0x00cd0c70
 // src: GUESS 0x00cd0c70 (confidence: low)
+// pdb: hkFreeListMemorySystem::`scalar deleting destructor' | hkFreeListMemorySystem.obj | retail, vtable slot, high
 FUN_00cd0c70_cls* FUN_00cd0c70_cls::EvaluateValue_00cd0c70(int aiUnused)
 {
     ((Helper*)this)->FUN_00cd09d0();
@@ -1403,7 +1416,7 @@ struct CD07B0_Buffer
     {
         return m_pRecordEnd - m_pBegin;
     }
-    void InitStream(int a1, int a2);
+    void hkSolverAllocator_setBuffer(int vbuffer, int bufferSize);
 };
 struct FUN_00cd07b0_cls
 {
@@ -1445,24 +1458,26 @@ struct FUN_00cd07b0_cls
     int unkb08;
     Sub0b0c m_kSub;
     CD07B0_Buffer m_kBuffer;
-    int Cleanup(Flags akFlags);
+    int Cleanup(Flags flags);
 };
 
 // Frees the buffer bytes and detaches the sub-object when the corresponding flag bits are set, then nulls the allocator pointer.
 // @fnv 0x00cd07b0
-int FUN_00cd07b0_cls::Cleanup(Flags akFlags)
+// pdb: hkFreeListMemorySystem::mainQuit | hkFreeListMemorySystem.obj | retail, vtable slot, high
+// pdb params: flags
+int FUN_00cd07b0_cls::Cleanup(Flags flags)
 {
-    if (akFlags.bits & 2)
+    if (flags.bits & 2)
     {
         if (m_kBuffer.Size())
         {
             m_pAllocator->FreeBytes(m_kBuffer.m_pBegin, m_kBuffer.Size());
-            m_kBuffer.InitStream(0, 0);
+            m_kBuffer.hkSolverAllocator_setBuffer(0, 0);
         }
     }
-    if (akFlags.bits & 1)
+    if (flags.bits & 1)
     {
-        Detach(&m_kSub, akFlags);
+        Detach(&m_kSub, flags);
         m_kObj1c.Release();
     }
     m_pAllocator = 0;
@@ -1483,12 +1498,14 @@ struct Slot_1c_t
 
 struct FUN_00cd0830_cls
 {
-    void AcquireSlot(unsigned int* out, unsigned int a2, unsigned int flags);
+    void AcquireSlot(unsigned int* router, unsigned int name, unsigned int flags);
 };
 
 // When flags bit 0 is set, scans up to 32 entries, marks a zero byte, and writes slot-related values; bit 1 writes additional values.
 // @fnv 0x00cd0830
-void FUN_00cd0830_cls::AcquireSlot(unsigned int* out, unsigned int a2, unsigned int flags)
+// pdb: hkFreeListMemorySystem::threadInit | hkFreeListMemorySystem.obj | retail, vtable slot, high
+// pdb params: router, name, flags
+void FUN_00cd0830_cls::AcquireSlot(unsigned int* router, unsigned int name, unsigned int flags)
 {
     char* self = (char*)this;
     int iSlotIndex;
@@ -1513,20 +1530,20 @@ void FUN_00cd0830_cls::AcquireSlot(unsigned int* out, unsigned int a2, unsigned 
         LeaveCriticalSection((LPCRITICAL_SECTION)(self + 0x336c));
 
         char* slot = self + iSlotIndex * 0x138 + 0xc6c;
-        *(unsigned int*)(slot + 0x128) = a2;
+        *(unsigned int*)(slot + 0x128) = name;
         unsigned int uiValue = *(unsigned int*)(self + 0xb08);
         ((FUN_00d2c3a0_t*)slot)->hkThreadMemory_setMemory(uiValue, 8);
 
         uiZero = 0;
-        out[3] = uiZero;
-        out[4] = (unsigned int)slot;
-        out[7] = *(unsigned int*)(self + 0xb08);
-        out[5] = *(unsigned int*)(self + 4);
-        out[6] = uiZero;
-        out[8] = iSlotIndex;
-        out[1] = uiZero;
-        out[0] = uiZero;
-        out[2] = uiZero;
+        router[3] = uiZero;
+        router[4] = (unsigned int)slot;
+        router[7] = *(unsigned int*)(self + 0xb08);
+        router[5] = *(unsigned int*)(self + 4);
+        router[6] = uiZero;
+        router[8] = iSlotIndex;
+        router[1] = uiZero;
+        router[0] = uiZero;
+        router[2] = uiZero;
     }
     else
     {
@@ -1535,20 +1552,20 @@ void FUN_00cd0830_cls::AcquireSlot(unsigned int* out, unsigned int a2, unsigned 
 
     if (flags & 2)
     {
-        iSlotIndex = out[8];
+        iSlotIndex = router[8];
         unsigned int ebp = *(unsigned int*)(self + 0xb00);
         char* slot = self + iSlotIndex * 0x138 + 0xc6c;
         if (ebp != uiZero)
         {
             int r = ((Slot_1c_t*)(self + 0x1c))->v1(ebp);
-            out[1] = r;
-            out[0] = r;
-            out[2] = r + ebp;
+            router[1] = r;
+            router[0] = r;
+            router[2] = r + ebp;
             *(unsigned int*)(slot + 0x130) = ebp;
-            *(unsigned int*)(slot + 0x134) = (unsigned int)out;
+            *(unsigned int*)(slot + 0x134) = (unsigned int)router;
         }
-        out[3] = (unsigned int)slot;
-        out[6] = (unsigned int)(self + 0xb30);
+        router[3] = (unsigned int)slot;
+        router[6] = (unsigned int)(self + 0xb30);
     }
 }
 
@@ -1571,6 +1588,7 @@ struct FUN_00cd0c50_cls
 };
 
 // @fnv 0x00cd0c50
+// pdb: hkLeakDetectAllocator::`scalar deleting destructor' | hkFreeListMemorySystem.obj | debug, vtable slot, medium
 FUN_00cd0c50_cls* FUN_00cd0c50_cls::Destroy(int a1)
 {
     DeleteCriticalSection((LPCRITICAL_SECTION)((char*)this + 0x18));
@@ -1583,7 +1601,7 @@ extern "C" char str_010cade0;
 extern "C" char str_010cadb4;
 
 hkMemoryRouter* __cdecl hkMemoryRouter_getInstance();
-void __cdecl ResizeAudioStream(void* pAllocator, void* pArray, unsigned int auiNewSize);
+void __cdecl ResizeAudioStream(void* mem, void* array, unsigned int sizeElem);
 
 struct Target_cc01
 {
@@ -1631,18 +1649,21 @@ struct CtorLocal
 
 struct FUN_00cd0b30_cls
 {
-    void hkMemorySystem__printStatistics(int a1, CtorLocal* pLocal);
-    void hkFreeListMemorySystem_printStatistics(int a1);
+    void hkMemorySystem__printStatistics(int a1, CtorLocal* input);
+    void hkFreeListMemorySystem_printStatistics(int ostr);
 };
 
 // Calls FUN_00cc01c0 twice, collects slot pointers and values, passes the local to FUN_00cbc220, then calls its FUN_00cd0c80 method.
 // @fnv 0x00cd0b30
 // src: HAVOK_LIB 0x00cd0b30
-void FUN_00cd0b30_cls::hkFreeListMemorySystem_printStatistics(int apTarget)
+// pdb: hkFreeListMemorySystem::printStatistics | hkFreeListMemorySystem.obj | retail, string-set bridge, high
+// pdb params: ostr
+// pdb locals: input
+void FUN_00cd0b30_cls::hkFreeListMemorySystem_printStatistics(int ostr)
 {
     char* self = (char*)this;
-    ((Target_cc01*)apTarget)->ProcessAndReturnValue_00cc01c0(&str_010cade0);
-    ((Target_cc01*)apTarget)->ProcessAndReturnValue_00cc01c0(&str_010cadb4);
+    ((Target_cc01*)ostr)->ProcessAndReturnValue_00cc01c0(&str_010cade0);
+    ((Target_cc01*)ostr)->ProcessAndReturnValue_00cc01c0(&str_010cadb4);
 
     CtorLocal localData;
     localData.m_cA = 0x80000000u;
@@ -1682,7 +1703,7 @@ void FUN_00cd0b30_cls::hkFreeListMemorySystem_printStatistics(int apTarget)
         p += 0x138;
     }
 
-    this->hkMemorySystem__printStatistics(apTarget, &localData);
+    this->hkMemorySystem__printStatistics(ostr, &localData);
     localData.FUN_00cd0c80();
 }
 }  // namespace fnv_00cd0b30

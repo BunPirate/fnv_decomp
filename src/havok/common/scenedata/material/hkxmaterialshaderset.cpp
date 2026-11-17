@@ -27,6 +27,7 @@ struct FnvCpu_FUN_00e4af10_CpuObject
     FnvCpu_FUN_00e4af10_CpuObject* FUN_00e4af10(unsigned int flags);
 };
 // @fnv 0x00e4af10
+// pdb: hkxMaterialShaderSet::`scalar deleting destructor' | hkxMaterialShaderSet.obj | retail, vtable slot, high
 FnvCpu_FUN_00e4af10_CpuObject* FnvCpu_FUN_00e4af10_CpuObject::FUN_00e4af10(unsigned int flags)
 {
     ProcessEntries_00e4ae90();

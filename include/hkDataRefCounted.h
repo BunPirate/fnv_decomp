@@ -4,6 +4,7 @@
 // 12 bytes: the class allocator records the allocation size at +4 and the reference count is at +8 (hkDataClassNative,
 // 0x14 bytes, keeps its hkClass* at +0xc).
 // src: HAVOK_SRC (hkDataObjectImpl.h: hkDataRefCounted members and reference counting)
+// pdb: class hkDataRefCounted, size 0xc, 3 members
 class hkDataRefCounted
 {
 public:

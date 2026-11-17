@@ -22,6 +22,7 @@
 class ScriptParameter;
 #include "../../include/OBJECT_ACTION.h"
 class BGSMusicType;
+// pdb: class FalloutAudioMedia, size 0x1, 0 members
 class FalloutAudioMedia
 {
   public:
@@ -125,7 +126,7 @@ class PickWorldC4
 {
   public:
     bool IsInWorld(const NiPoint3C4* pkPoint);
-    void* Pick(PickQueryC4& kQuery);
+    void* Pick(PickQueryC4& arResult);
 };
 extern PickWorldC4* g_pkPickWorldC4;
 
@@ -531,8 +532,8 @@ class RefC4
     const NiPoint3C4& GetAngle();
     void* GetContainingCell();
     void* GetParentWorldspace();
-    int GetLevel(int iValue);
-    void SetScaleC4(float fScale);
+    int GetLevel(int abAllowShift);
+    void SetScaleC4(float afVal);
 };
 
 class DataHandlerC4
@@ -569,7 +570,7 @@ class LevResultC4
 class LevListC4
 {
   public:
-    void CalculateLeveled(unsigned short usLevel, unsigned short m_usPassCountLocal, LevResultC4& kResult, int iFlags);
+    void CalculateCurrentFormList(unsigned short asLevel, unsigned short asCount, LevResultC4& apOutCont, int aiAllBelowForce);
 };
 
 
@@ -606,6 +607,9 @@ CountC4* __cdecl GetHealthForm(BoundC4* pkBound);
 
 // @fnv 0x005c4b30
 // src: COMMUNITY 0x005c4b30
+// pdb: Script::PlaceAtMeFunctionBase | TESScriptFunctions.obj | debug, object-file run extension, low
+// pdb params: apPlaceAtRef, apObject, aiCount, aiDistance, aiDirection, afHealthPerc
+// pdb locals: pplacedref, pos, rotation, index, pointArray, ang, obj3D, moveVec, rotMatrix, i, pcontlist, tempcont, icalclevel, plevcrea, plevchar, pCO, pActor, phealthform, pboundobj, bunloadedref, from, fltr, to, pd ...
 RefC4* __cdecl PlaceAtMe(RefC4* pkRef, TESForm* pkForm, int iCount, int iDistance, int iMode, float fScale)
 {
     RefC4* pkNew = 0;
@@ -667,12 +671,12 @@ RefC4* __cdecl PlaceAtMe(RefC4* pkRef, TESForm* pkForm, int iCount, int iDistanc
             if (pkForm->GetFormType() == 0x2c)
             {
                 LevCreatureC4* pkLev = (LevCreatureC4*)pkForm;
-                pkLev->m_kList.CalculateLeveled(iLevel, iCount, kResult, 0);
+                pkLev->m_kList.CalculateCurrentFormList(iLevel, iCount, kResult, 0);
             }
             else
             {
                 LevCharacterC4* pkLev = (LevCharacterC4*)pkForm;
-                pkLev->m_kList.CalculateLeveled(iLevel, iCount, kResult, 0);
+                pkLev->m_kList.CalculateCurrentFormList(iLevel, iCount, kResult, 0);
             }
             LevNodeC4* pkIter = kResult.GetHead();
             while (pkIter && !pkIter->IsEmpty())
@@ -780,13 +784,13 @@ class NiMatrix3DB
     void ExtractEulerAnglesXYZ(float& fX, float& fY, float& fZ);
     float m_afEntries[3][3];
 };
-NiMatrix3DB __cdecl BSUtilities_GetRotationZToVectorTranspose(NiPoint3DB kNormal);
+NiMatrix3DB __cdecl BSUtilities_GetRotationZToVectorTranspose(NiPoint3DB apVector);
 
 class NodeDB;
 class SceneNodeDB
 {
   public:
-    void AddChildRef(void* pvRef);
+    void AddChildRef(void* apRef);
 };
 
 class HitFlagDB
@@ -832,9 +836,9 @@ class CollObjDB
 {
   public:
     bool IsHavokFlag(unsigned int uiFlag);
-    bool IsKeyFlag(int iKey, unsigned int uiFlag);
+    bool IsKeyFlag(int aiKey, unsigned int aeType);
 };
-CollObjDB* __cdecl bhkShape_Getbhk(ShapeDB* pkShape);
+CollObjDB* __cdecl bhkShape_Getbhk(ShapeDB* apShape);
 
 class CollidableDB
 {
@@ -881,7 +885,7 @@ class PickQueryDB
 class PickWorldDB
 {
   public:
-    void* Pick(PickQueryDB& kQuery);
+    void* Pick(PickQueryDB& arResult);
 };
 extern PickWorldDB* g_pkPickWorldDB;
 
@@ -1028,7 +1032,7 @@ class RefDB
     SceneNodeDB* GetLinkNode();
     void* GetContainingCell();
     void* GetParentWorldspace();
-    void SetDisabledDB(bool bDisabled);
+    void SetDisabledDB(bool abVal);
     void SetPersistDB(bool bPersist);
     void SetFlagDB(bool bFlag);
 };
@@ -1327,7 +1331,7 @@ class PickQueryDF
 class PickWorldDF
 {
   public:
-    void* Pick(PickQueryDF& kQuery);
+    void* Pick(PickQueryDF& arResult);
 };
 extern PickWorldDF* g_pkPickWorldDF;
 
@@ -1342,6 +1346,9 @@ void __cdecl FUN_005acc70(unsigned int* puiID, double& rdResult);
 
 // @fnv 0x005df5d0
 // src: EXE 0x005df5d0
+// pdb: Script::ObjectUnderReticleFunction | TESScriptFunctions.obj | debug, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: iCount, rotMod, fMaxDistance, fltr, cameraRow, icolFilter, origPoint, phitRef, pItem, fMinDistance, phit, pickData, destPoint, pcamera, cameraRot, iid
 bool __cdecl Cmd_ObjectUnderReticle_Execute(const ScriptParameter* paramInfo, const char* scriptData, TESObjectREFR* thisObj,
                           TESObjectREFR* containingObj, Script* scriptObj, ScriptLocals* eventList, double& result,
                           unsigned int& opcodeOffsetPtr)

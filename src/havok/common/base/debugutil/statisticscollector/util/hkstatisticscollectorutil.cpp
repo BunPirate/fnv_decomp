@@ -62,13 +62,16 @@ class Handler
 
 // If s is non-null, computes its length plus one, hashes it via the audio hasher, and emits it through h with kind 1 and *a.
 // @fnv 0x00cf5fe0
-extern "C" void __cdecl EmitStringWithHash(int* pValue, const char* pString, Handler* pHandler)
+// src: XBOX_RETAIL_PDB 0x00cf5fe0
+// pdb: hkStatisticsCollectorUtil::_addCstring | hkStatisticsCollectorUtil.obj | retail, call graph, high
+// pdb params: mem, string, collector
+extern "C" void __cdecl hkStatisticsCollectorUtil__addCstring(int* mem, const char* string, Handler* collector)
 {
-    if (pString)
+    if (string)
     {
-        int len = hkString_strLen(pString) + 1;
-        int hash = hkMemoryRouter_getInstance()->GetHasher().Hash(pString, len);
-        pHandler->Emit(1, *pValue, pString, len, hash);
+        int len = hkString_strLen(string) + 1;
+        int hash = hkMemoryRouter_getInstance()->GetHasher().Hash(string, len);
+        collector->Emit(1, *mem, string, len, hash);
     }
 }
 
@@ -81,15 +84,18 @@ struct Destination
     virtual void WriteFormatted(const hkClass*, void*, unsigned int, int);
 };
 // @fnv 0x00cf6030
-void __cdecl WriteToDestination(void* data, unsigned int size, const hkClass* format, Destination* destination)
+// src: XBOX_RETAIL_PDB 0x00cf6030
+// pdb: hkStatisticsCollectorUtil::_addObject | hkStatisticsCollectorUtil.obj | retail, call graph (shared callers), high
+// pdb params: fieldName, obj, cls, collector
+void __cdecl hkStatisticsCollectorUtil__addObject(void* fieldName, unsigned int obj, const hkClass* cls, Destination* collector)
 {
-    unsigned int originalSize = size;
+    unsigned int originalSize = obj;
     if (originalSize)
     {
-        if (format->GetLastNodeFlag())
-            destination->WriteDirect(data, originalSize, 0);
+        if (cls->GetLastNodeFlag())
+            collector->WriteDirect(fieldName, originalSize, 0);
         else
-            destination->WriteFormatted(format, data, originalSize, 0);
+            collector->WriteFormatted(cls, fieldName, originalSize, 0);
     }
 }
 
@@ -135,10 +141,12 @@ struct S_00cf6080_Listener
 
 // @fnv 0x00cf6080
 // src: HAVOK_LIB 0x00cf6080
-void hkStatisticsCollectorUtil__addArrayData(int a, void* p, int aiOldCount, int newCount, int elemSize, S_00cf6080_Listener* listener)
+// pdb: hkStatisticsCollectorUtil::_addArrayData | hkStatisticsCollectorUtil.obj | retail, upstream name already matches, high
+// pdb params: fieldName, data, size, capacity, objSize, collector
+void hkStatisticsCollectorUtil__addArrayData(int fieldName, void* data, int size, int capacity, int objSize, S_00cf6080_Listener* collector)
 {
-    void* result = hkMemoryRouter_getInstance()->heap()->vfn_2C(p, newCount * elemSize);
-    listener->vfn_14(3, a, p, aiOldCount * elemSize, result);
+    void* result = hkMemoryRouter_getInstance()->heap()->vfn_2C(data, capacity * objSize);
+    collector->vfn_14(3, fieldName, data, size * objSize, result);
 }
 }  // namespace fnv_00cf6080
 
@@ -156,9 +164,12 @@ TypeInfo* __cdecl hkClassMember_getClassMemberTypeProperties(int aiType);
 
 // Reads the type from apThing, looks up its TypeInfo, and returns m_sValue if positive, else the result of FUN_00d470d0 for kind 0x19, otherwise -1.
 // @fnv 0x00cf61c0
-__declspec(noinline) int __cdecl GetThingValue(const hkClassMember* apThing)
+// src: XBOX_RETAIL_PDB 0x00cf61c0
+// pdb: hkStatisticsCollectorUtil::_getArrayElementSize | hkStatisticsCollectorUtil.obj | retail, call graph, high
+// pdb params: mem
+__declspec(noinline) int __cdecl hkStatisticsCollectorUtil__getArrayElementSize(const hkClassMember* mem)
 {
-    unsigned char ucType = apThing->m_eSubtype;
+    unsigned char ucType = mem->m_subtype;
     if (ucType == 0)
         return -1;
 
@@ -168,22 +179,24 @@ __declspec(noinline) int __cdecl GetThingValue(const hkClassMember* apThing)
         return sValue;
 
     if (pInfo->m_ucKind == 0x19)
-        return GetObjectSize(apThing->GetClass());
+        return GetObjectSize(mem->GetClass());
 
     return -1;
 }
 
-__declspec(nothrow) hkBool __cdecl GetFlagByState(const hkClassMember* s);
+__declspec(nothrow) hkBool __cdecl hkStatisticsCollectorUtil_isMemberSimple(const hkClassMember* s);
 
 // Calls FUN_00d46f70 for a count, then GetFlagByState on each shape from FUN_00d46f80, returning false on the first failure and true otherwise.
 // @fnv 0x00cf6330
 // src: HAVOK_LIB 0x00cf6330
-hkBool __cdecl hkStatisticsCollectorUtil__isClassSimple(const hkClass* apContainer)
+// pdb: hkStatisticsCollectorUtil::_isClassSimple | hkStatisticsCollectorUtil.obj | retail, upstream name already matches, high
+// pdb params: cls
+hkBool __cdecl hkStatisticsCollectorUtil__isClassSimple(const hkClass* cls)
 {
-    int n = apContainer->GetNumDeclaredMembers();
+    int n = cls->GetNumDeclaredMembers();
     for (int i = 0; i < n; i++)
     {
-        if (!GetFlagByState(&apContainer->GetDeclaredMember(i)))
+        if (!hkStatisticsCollectorUtil_isMemberSimple(&cls->GetDeclaredMember(i)))
             return false;
     }
     return true;
@@ -208,23 +221,25 @@ struct FNV_C60d0_Sink
 
 // @fnv 0x00cf60d0
 // src: HAVOK_LIB 0x00cf60d0
-extern "C" void __cdecl hkStatisticsCollectorUtil__addObjectContents(void* pA0, void* pA1, const hkClass* pWalker, FNV_C60d0_Sink* pSink)
+// pdb: hkStatisticsCollectorUtil::_addObjectContents | hkStatisticsCollectorUtil.obj | retail, upstream name already matches, high
+// pdb params: fieldName, obj, cls, collector
+extern "C" void __cdecl hkStatisticsCollectorUtil__addObjectContents(void* fieldName, void* obj, const hkClass* cls, FNV_C60d0_Sink* collector)
 {
-    void* p = pA1;
+    void* p = obj;
     if (p)
     {
-        if (pWalker->GetLastNodeFlag())
+        if (cls->GetLastNodeFlag())
         {
-            pSink->v3(pA0, p, 1);
+            collector->v3(fieldName, p, 1);
         }
         else
         {
-            pSink->v4(pWalker, pA0, p, 1);
+            collector->v4(cls, fieldName, p, 1);
         }
     }
 }
 
-void* __cdecl hkStatisticsCollectorUtil__addObjectContents(void* context, const void* a, const void* b, const void* c);
+void* __cdecl hkStatisticsCollectorUtil__addObjectContents(void* fieldName, const void* obj, const void* cls, const void* collector);
 
 // @fnv 0x00cf6120
 void* __cdecl CallWithNullContext(const void* a, const void* b, const void* c)
@@ -237,7 +252,7 @@ struct SpawnedObject
     int CalleeA(int aiArg);
 };
 
-void __cdecl CalleeB_00cf60d0(int aiA, int aiB, int aiC, int aiD);
+void __cdecl CalleeB_00cf60d0(int fieldName, int obj, int cls, int collector);
 
 // Calls CalleeA on the object at aiSecond with aiFirst; if it returns nonzero, passes 0, aiFirst, the result and aiSecond to CalleeB_00cf60d0.
 // @fnv 0x00cf6140
@@ -255,6 +270,8 @@ extern hkClass DAT_01268748;
 
 // @fnv 0x00cf6170
 // src: HAVOK_LIB 0x00cf6170
+// pdb: hkStatisticsCollectorUtil::hasContents | hkStatisticsCollectorUtil.obj | retail, upstream name already matches, high
+// pdb params: clsIn
 unsigned char* hkStatisticsCollectorUtil_hasContents(unsigned char* result, const hkClass* object)
 {
     if (object != 0)
@@ -278,10 +295,12 @@ unsigned char* hkStatisticsCollectorUtil_hasContents(unsigned char* result, cons
     return result;
 }
 
-unsigned char* hkStatisticsCollectorUtil__isClassSimple(const hkClass** where, const hkClass* node);
+unsigned char* hkStatisticsCollectorUtil__isClassSimple(const hkClass** cls, const hkClass* node);
 
 // @fnv 0x00cf6380
 // src: HAVOK_LIB 0x00cf6380
+// pdb: hkStatisticsCollectorUtil::isClassSimple | hkStatisticsCollectorUtil.obj | retail, upstream name already matches, high
+// pdb params: cls
 unsigned char* hkStatisticsCollectorUtil_isClassSimple(unsigned char* pResult, const hkClass* pStartNode)
 {
     const hkClass* cur = pStartNode;
@@ -311,20 +330,23 @@ struct CF63C0Writer
 };
 
 // @fnv 0x00cf63c0
-void __cdecl WriteObjectArray(void* context, const hkClass& pClassInfo, const void* data, int count,
-                              CF63C0Writer& writer)
+// src: XBOX_RETAIL_PDB 0x00cf63c0
+// pdb: hkStatisticsCollectorUtil::_addHomogeneousArrayContents | hkStatisticsCollectorUtil.obj | retail, object-file gap fill, high
+// pdb params: fieldName, cls, data, size, collector
+void __cdecl hkStatisticsCollectorUtil__addHomogeneousArrayContents(void* fieldName, const hkClass& cls, const void* data, int count,
+                              CF63C0Writer& collector)
 {
     if (count)
     {
-        if (!hkStatisticsCollectorUtil_isClassSimple(pClassInfo))
+        if (!hkStatisticsCollectorUtil_isClassSimple(cls))
         {
             const char* cur = static_cast<const char*>(data);
-            int size = GetObjectSize(&pClassInfo);
-            if (pClassInfo.GetLastNodeFlag())
+            int size = GetObjectSize(&cls);
+            if (cls.GetLastNodeFlag())
             {
                 for (int i = 0; i < count; i++)
                 {
-                    writer.writeObjectWithVtable(context, cur, true);
+                    collector.writeObjectWithVtable(fieldName, cur, true);
                     cur += size;
                 }
             }
@@ -332,7 +354,7 @@ void __cdecl WriteObjectArray(void* context, const hkClass& pClassInfo, const vo
             {
                 for (int i = 0; i < count; i++)
                 {
-                    writer.WriteObjectWithClass(pClassInfo, context, cur, true);
+                    collector.WriteObjectWithClass(cls, fieldName, cur, true);
                     cur += size;
                 }
             }
@@ -340,19 +362,21 @@ void __cdecl WriteObjectArray(void* context, const hkClass& pClassInfo, const vo
     }
 }
 
-void __cdecl WriteReflectedMembers(void* a, const hkClass* b, void* c);
+void __cdecl hkStatisticsCollectorUtil_addClassContents(void* obj, const hkClass* cls, void* collector);
 
 // If a1 is non-null, walks the linked list starting at a2, calling WriteReflectedMembers(a1, p, a3) for each node.
 // @fnv 0x00cf6920
 // src: HAVOK_LIB 0x00cf6920
-void __cdecl hkStatisticsCollectorUtil_addClassContentsAll(void* a1, const hkClass* apNode, void* apArg)
+// pdb: hkStatisticsCollectorUtil::addClassContentsAll | hkStatisticsCollectorUtil.obj | retail, call graph, high
+// pdb params: obj, cls, collector
+void __cdecl hkStatisticsCollectorUtil_addClassContentsAll(void* obj, const hkClass* cls, void* collector)
 {
-    if (a1 == 0)
+    if (obj == 0)
         return;
-    const hkClass* p = apNode;
+    const hkClass* p = cls;
     do
     {
-        WriteReflectedMembers(a1, p, apArg);
+        hkStatisticsCollectorUtil_addClassContents(obj, p, collector);
         p = GetParent(p);
     } while (p != 0);
 }
@@ -374,7 +398,10 @@ void __cdecl hkStatisticsCollectorUtil_addClassContentsAll(void* a1, const hkCla
 extern "C" void __cdecl FUN_cf62b0_next(unsigned char* out, const hkClass* node);
 
 // @fnv 0x00cf62b0
-unsigned char* GetFlagByState(unsigned char* pucOut, const hkClassMember* pObj)
+// src: XBOX_RETAIL_PDB 0x00cf62b0
+// pdb: hkStatisticsCollectorUtil::isMemberSimple | hkStatisticsCollectorUtil.obj | retail, object-file gap fill, high
+// pdb params: mem
+unsigned char* hkStatisticsCollectorUtil_isMemberSimple(unsigned char* pucOut, const hkClassMember* pObj)
 {
     bool bFlagSet = ((pObj->m_flags >> 9) & 1) != 0;
     if (bFlagSet)
@@ -480,128 +507,132 @@ struct Writer64
     virtual void End();
     int unk04, unk08, unk0c;
     unsigned char includeStorage;
-    void EmitString(const char*, const char*);
+    void hkStatisticsCollector_addStringPtr(const char*, const char*);
 };
 int __cdecl MemberSize64(const hkClassMember*);
-void __cdecl EmitStringWithHash(const hkClassMember*, const char*, Writer64*);
+void __cdecl hkStatisticsCollectorUtil__addCstring(const hkClassMember*, const char*, Writer64*);
 void __cdecl hkStatisticsCollectorUtil__addArrayData(const char*, void*, int, int, int, Writer64*);
 void __cdecl hkStatisticsCollectorUtil__addArrayContents(const hkClassMember*, void*, int, Writer64*);
-void __cdecl WriteObjectArray(const char*, const hkClass*, void*, int, Writer64*);
-void __cdecl WriteToDestination(const char*, void*, const hkClass*, Writer64*);
+void __cdecl hkStatisticsCollectorUtil__addHomogeneousArrayContents(const char*, const hkClass*, void*, int, Writer64*);
+void __cdecl hkStatisticsCollectorUtil__addObject(const char*, void*, const hkClass*, Writer64*);
 void __cdecl hkStatisticsCollectorUtil__addObjectContents(const char*, void*, const hkClass*, Writer64*);
-int __cdecl GetThingValue(const hkClassMember*);
+int __cdecl hkStatisticsCollectorUtil__getArrayElementSize(const hkClassMember*);
 
 // @fnv 0x00cf6580
-void __cdecl WriteReflectedMembers(void* base, const hkClass* apMeta, Writer64* writer)
+// src: XBOX_RETAIL_PDB 0x00cf6580
+// pdb: hkStatisticsCollectorUtil::addClassContents | hkStatisticsCollectorUtil.obj | retail, call graph, high
+// pdb params: obj, cls, collector
+// pdb locals: accessor, assertBuf, ostr, array
+void __cdecl hkStatisticsCollectorUtil_addClassContents(void* obj, const hkClass* cls, Writer64* collector)
 {
-    if (!base)
+    if (!obj)
         return;
-    int count = apMeta->GetNumDeclaredMembers();
+    int count = cls->GetNumDeclaredMembers();
     for (int i = 0; i < count; ++i)
     {
-        const hkClassMember* m = &apMeta->GetDeclaredMember(i);
+        const hkClassMember* m = &cls->GetDeclaredMember(i);
         if (((unsigned char)(m->m_flags >> 9) & 1) != 0)
             continue;
         switch (m->m_type)
         {
         case 29: {
-            Access64 value(base, m);
+            Access64 value(obj, m);
             int n = GetCArraySize(m);
             if (n <= 1)
-                EmitStringWithHash(m, *value.hkClassMemberAccessor_asCstring(0), writer);
+                hkStatisticsCollectorUtil__addCstring(m, *value.hkClassMemberAccessor_asCstring(0), collector);
             else
                 for (int j = 0; j < n; ++j)
-                    EmitStringWithHash(m, *value.hkClassMemberAccessor_asCstring(j), writer);
+                    hkStatisticsCollectorUtil__addCstring(m, *value.hkClassMemberAccessor_asCstring(j), collector);
             break;
         }
         case 33: {
-            Access64 value(base, m);
+            Access64 value(obj, m);
             int n = GetCArraySize(m);
             if (n <= 1)
             {
                 const char* name = m->m_name;
-                writer->EmitString(name, value.hkClassMemberAccessor_asStringPtr(0));
+                collector->hkStatisticsCollector_addStringPtr(name, value.hkClassMemberAccessor_asStringPtr(0));
             }
             else
                 for (int j = 0; j < n; ++j)
                 {
                     const char* name = m->m_name;
-                    writer->EmitString(name, value.hkClassMemberAccessor_asStringPtr(j));
+                    collector->hkStatisticsCollector_addStringPtr(name, value.hkClassMemberAccessor_asStringPtr(j));
                 }
             break;
         }
         case 22: {
-            Array64* a = (Array64*)((char*)base + m->m_offset);
-            if ((a->capacity & 0x80000000u) && !writer->includeStorage)
+            Array64* a = (Array64*)((char*)obj + m->m_offset);
+            if ((a->capacity & 0x80000000u) && !collector->includeStorage)
                 break;
             int length = a->count;
             int capacity = a->capacity & 0x3fffffff;
-            int size = GetThingValue(m);
+            int size = hkStatisticsCollectorUtil__getArrayElementSize(m);
             if (size < 0)
                 break;
-            bool pointers = m->m_eSubtype == 20;
+            bool pointers = m->m_subtype == 20;
             const char* name;
             if (pointers)
             {
-                writer->Begin(m->m_name);
+                collector->Begin(m->m_name);
                 name = "array";
             }
             else
                 name = m->m_name;
-            hkStatisticsCollectorUtil__addArrayData(name, a->data, length, capacity, size, writer);
-            hkStatisticsCollectorUtil__addArrayContents(m, a->data, length, writer);
+            hkStatisticsCollectorUtil__addArrayData(name, a->data, length, capacity, size, collector);
+            hkStatisticsCollectorUtil__addArrayContents(m, a->data, length, collector);
             if (pointers)
-                writer->End();
+                collector->End();
             break;
         }
         case 26: {
-            Access64 value(base, m);
+            Access64 value(obj, m);
             Pair64 a = *value.hkClassMemberAccessor_asSimpleArray(0);
             void* data = a.data;
             int length = a.count;
-            int size = GetThingValue(m);
+            int size = hkStatisticsCollectorUtil__getArrayElementSize(m);
             if (size < 0)
                 break;
-            writer->Begin(m->m_name);
-            hkStatisticsCollectorUtil__addArrayData(m->m_name, data, length, length, size, writer);
-            hkStatisticsCollectorUtil__addArrayContents(m, data, length, writer);
-            writer->End();
+            collector->Begin(m->m_name);
+            hkStatisticsCollectorUtil__addArrayData(m->m_name, data, length, length, size, collector);
+            hkStatisticsCollectorUtil__addArrayContents(m, data, length, collector);
+            collector->End();
             break;
         }
         case 27: {
-            Access64 value(base, m);
+            Access64 value(obj, m);
             Homogeneous64 a = *value.hkClassMemberAccessor_asHomogeneousArray(0);
             const hkClass* itemClass = a.pClassInfo;
             void* data = a.data;
             int length = a.count;
             if (length > 0 && itemClass && data)
             {
-                writer->Begin(m->m_name);
+                collector->Begin(m->m_name);
                 const char* name = m->m_name;
-                hkStatisticsCollectorUtil__addArrayData(name, data, length, length, GetObjectSize(itemClass), writer);
-                WriteObjectArray(m->m_name, itemClass, data, length, writer);
-                writer->End();
+                hkStatisticsCollectorUtil__addArrayData(name, data, length, length, GetObjectSize(itemClass), collector);
+                hkStatisticsCollectorUtil__addHomogeneousArrayContents(m->m_name, itemClass, data, length, collector);
+                collector->End();
             }
             break;
         }
         case 20:
-            if (m->m_eSubtype == 25)
+            if (m->m_subtype == 25)
             {
-                void* data = *(void**)((char*)base + m->m_offset);
+                void* data = *(void**)((char*)obj + m->m_offset);
                 const char* name = m->m_name;
-                WriteToDestination(name, data, m->GetClass(), writer);
+                hkStatisticsCollectorUtil__addObject(name, data, m->GetClass(), collector);
             }
             break;
         case 28: {
-            Variant64* a = (Variant64*)((char*)base + m->m_offset);
+            Variant64* a = (Variant64*)((char*)obj + m->m_offset);
             if (a->object && a->pClassInfo)
-                WriteToDestination(m->m_name, a->object, a->pClassInfo, writer);
+                hkStatisticsCollectorUtil__addObject(m->m_name, a->object, a->pClassInfo, collector);
             break;
         }
         case 25: {
             const char* name = m->m_name;
-            void* data = (char*)base + m->m_offset;
-            hkStatisticsCollectorUtil__addObjectContents(name, data, m->GetClass(), writer);
+            void* data = (char*)obj + m->m_offset;
+            hkStatisticsCollectorUtil__addObjectContents(name, data, m->GetClass(), collector);
             break;
         }
         }
@@ -614,7 +645,7 @@ struct StringArrayAccessor
     void* m_pTargetObject;
     const hkClassMember* m_kMemberDescriptor;
 
-    StringArrayAccessor(const void* object, const hkClassMember* member);
+    StringArrayAccessor(const void* obj, const hkClassMember* mem);
     const char*& GetStringPointerAt(int index);
     hkStringPtr& GetStringPtr(int index);
 };
@@ -624,12 +655,15 @@ int __cdecl hkString_strCmp(const char* a, const char* b);
 // Finds the declared member named "name" in pClassInfo and returns its string value, or "unnamed" when the pointer is null.
 // @fnv 0x00cf6210
 // src: HAVOK_LIB 0x00cf6210
-static __declspec(noinline) const char* _findObjectName(const void* object, const hkClass& pClassInfo)
+// pdb: _findObjectName | hkStatisticsCollectorUtil.obj | retail, upstream name already matches, high
+// pdb params: object, klass
+// pdb locals: accessor
+static __declspec(noinline) const char* _findObjectName(const void* object, const hkClass& klass)
 {
-    const int n = pClassInfo.GetNumDeclaredMembers();
+    const int n = klass.GetNumDeclaredMembers();
     for (int i = 0; i < n; i++)
     {
-        const hkClassMember& member = pClassInfo.GetDeclaredMember(i);
+        const hkClassMember& member = klass.GetDeclaredMember(i);
         const char* name = member.m_name;
         if (hkString_strCmp(name, "name") != 0)
             continue;
@@ -638,12 +672,12 @@ static __declspec(noinline) const char* _findObjectName(const void* object, cons
         {
         case 0x1d: {
             const char* s = accessor.GetStringPointerAt(0);
-            if (&pClassInfo)
+            if (&klass)
                 return s ? s : "unnamed";
             return s ? s : "unnamed";
         }
         case 0x21: {
-            const char* s = (const char*)((unsigned int)accessor.GetStringPtr(0).m_pcText & ~1u);
+            const char* s = (const char*)((unsigned int)accessor.GetStringPtr(0).m_stringAndFlag & ~1u);
             return s ? s : "unnamed";
         }
         }
@@ -667,7 +701,7 @@ struct TaggedString64
     unsigned int bits;
 };
 // src: HAVOK_LIB 0x00cf6210
-static __declspec(noinline) const char* _findObjectName(const hkClass* pClassInfo, void* object)
+static __declspec(noinline) const char* _findObjectName(const hkClass* pClassInfo, void* klass)
 {
     if (!pClassInfo)
         return 0;
@@ -677,7 +711,7 @@ static __declspec(noinline) const char* _findObjectName(const hkClass* pClassInf
         const hkClassMember* m = &pClassInfo->GetDeclaredMember(i);
         if (hkString_strCmp(m->m_name, DAT_01094398) == 0)
         {
-            Access64 access(object, m);
+            Access64 access(klass, m);
             switch (m->m_type)
             {
             case 0x21: {
@@ -698,39 +732,41 @@ static __declspec(noinline) const char* _findObjectName(const hkClass* pClassInf
 // Processes each element according to member subtype, calling the corresponding writer or helper for recognized subtypes.
 // @fnv 0x00cf6460
 // src: HAVOK_LIB 0x00cf6460
-void __cdecl hkStatisticsCollectorUtil__addArrayContents(const hkClassMember* member, void* elements, int count, Writer64* writer)
+// pdb: hkStatisticsCollectorUtil::_addArrayContents | hkStatisticsCollectorUtil.obj | retail, upstream name already matches, high
+// pdb params: mem, data, size, collector
+void __cdecl hkStatisticsCollectorUtil__addArrayContents(const hkClassMember* mem, void* data, int size, Writer64* collector)
 {
-    if (count <= 0)
+    if (size <= 0)
         return;
-    switch (member->m_eSubtype)
+    switch (mem->m_subtype)
     {
     case 0x14: {
-        const hkClass* meta = member->GetClass();
+        const hkClass* meta = mem->GetClass();
         if (!meta)
             return;
-        for (int i = 0; i < count; ++i)
+        for (int i = 0; i < size; ++i)
         {
-            const char* name = _findObjectName(meta, ((void**)elements)[i]);
+            const char* name = _findObjectName(meta, ((void**)data)[i]);
             if (!name)
-                name = member->m_name;
-            WriteToDestination(name, ((void**)elements)[i], meta, writer);
+                name = mem->m_name;
+            hkStatisticsCollectorUtil__addObject(name, ((void**)data)[i], meta, collector);
         }
         return;
     }
     case 0x19: {
-        const hkClass* meta = member->GetClass();
+        const hkClass* meta = mem->GetClass();
         if (!meta)
             return;
-        WriteObjectArray(member->m_name, meta, elements, count, writer);
+        hkStatisticsCollectorUtil__addHomogeneousArrayContents(mem->m_name, meta, data, size, collector);
         return;
     }
     case 0x1d:
-        for (int i = 0; i < count; ++i)
-            EmitStringWithHash(member, ((const char**)elements)[i], writer);
+        for (int i = 0; i < size; ++i)
+            hkStatisticsCollectorUtil__addCstring(mem, ((const char**)data)[i], collector);
         return;
     case 0x21: {
-        for (int i = 0; i < count; ++i)
-            writer->EmitString(member->m_name, (const char*)((const char**)elements + i));
+        for (int i = 0; i < size; ++i)
+            collector->hkStatisticsCollector_addStringPtr(mem->m_name, (const char*)((const char**)data + i));
         return;
     }
     }

@@ -31,6 +31,7 @@ int __cdecl TraitSelectMenu_GetMenuID_0()
 
 // @fnv 0x007e8840
 // src: XBOX_PDB 0x007e8840
+// pdb: TraitSelectMenu::ClearCheckBox | TraitSelectMenu.obj | retail, upstream name already matches, high
 void __thiscall TraitSelectMenu::ClearCheckBox()
 {
     HandleTraitSelection(-1, 0);
@@ -39,6 +40,7 @@ void __thiscall TraitSelectMenu::ClearCheckBox()
 
 // @fnv 0x007e7da0
 // src: COMMUNITY 0x007e7da0
+// pdb: TraitSelectMenu::TraitSelectMenu | TraitSelectMenu.obj | retail, object-file run extension, low
 bool __thiscall TraitSelectMenu::HasTiles_007e7da0()
 {
     for (int i = 0; i < 0x12; ++i)
@@ -50,9 +52,11 @@ bool __thiscall TraitSelectMenu::HasTiles_007e7da0()
 }
 
 // @fnv 0x007e7b00: compiler-generated scalar deleting destructor.
+// pdb: TraitSelectMenu::`scalar deleting destructor' | TraitSelectMenu.obj | retail, vtable slot, high
 
 extern int DAT_011db00c;
 // @fnv 0x007e7b30
+// pdb: TraitSelectMenu::~TraitSelectMenu | TraitSelectMenu.obj | debug, upstream name already matches, high
 TraitSelectMenu::~TraitSelectMenu()
 {
     DAT_011db00c = 0;
@@ -61,19 +65,20 @@ TraitSelectMenu::~TraitSelectMenu()
 namespace fnv_007e7de0 {
 struct FUN_00975d10_host
 {
-    void UpdateActor3D();
+    void ProcessLists_Update3DAfterResting();
 };
 extern Menu* DAT_011db00c;
 extern BGSSaveLoadGame* g_BGSSaveLoadGame;
 extern FUN_00975d10_host DAT_011e0e80;
 // @fnv 0x007e7de0
 // src: XBOX_PDB 0x007e7de0
+// pdb: TraitSelectMenu::Close | TraitSelectMenu.obj | retail, upstream name already matches, high
 void TraitSelectMenu_Close()
 {
     if (DAT_011db00c)
     {
         if (!g_BGSSaveLoadGame->BGSSaveLoadGame_GetSaveGameLoading())
-            DAT_011e0e80.UpdateActor3D();
+            DAT_011e0e80.ProcessLists_Update3DAfterResting();
         DAT_011db00c->GetTile()->Set(0x1772, 1);
         DAT_011db00c->LoadMenuData();
     }
@@ -89,6 +94,8 @@ extern float const runtimeFloatSettingDefault275;
 // Reads a value from FUN_004b7210 and calls FUN_007e8310 with 0.05f when it is negative or with runtimeFloatSettingDefault275 when it is positive.
 // @fnv 0x007e82b0
 // src: XBOX_PDB 0x007e82b0
+// pdb: TraitSelectMenu::DoWheelMove | TraitSelectMenu.obj | retail, vtable slot, high
+// pdb params: aiID, apTarget
 void __thiscall TraitSelectMenu::DoWheelMove_007e82b0(int, int)
 {
     if (((FUN_0070ec70_This*)InterfaceManager_GetSingleton())->InterfaceManager_GetMouseWheel() < 0)
@@ -100,12 +107,14 @@ void __thiscall TraitSelectMenu::DoWheelMove_007e82b0(int, int)
 
 // @fnv 0x007e8860
 // src: XBOX_PDB 0x007e8860
-void TraitSelectMenu::ToggleCheckBox(int tile)
+// pdb: TraitSelectMenu::ToggleCheckBox | TraitSelectMenu.obj | debug, upstream name already matches, high
+// pdb params: aiID
+void TraitSelectMenu::ToggleCheckBox(int aiID)
 {
-    if (iCurrentID == tile)
+    if (iCurrentID == aiID)
         ClearCheckBox();
     else
-        SelectTrait(tile, 0);
+        SelectTrait(aiID, 0);
 }
 
 // @fnv 0x007e7ad0
@@ -131,6 +140,8 @@ void __cdecl InterfaceManager_PlayMenuSound(int);
 
 // @fnv 0x007e7e30
 // src: XBOX_PDB 0x007e7e30
+// pdb: TraitSelectMenu::DoClick | TraitSelectMenu.obj | retail, vtable slot, high
+// pdb params: aiID, apTarget
 void TraitSelectMenu::DoClick_007e7e30(int aiID, Tile* apTarget)
 {
     if (apTarget == 0 && aiID >= 0 && aiID < 0x12)
@@ -164,10 +175,13 @@ void TraitSelectMenu::DoClick_007e7e30(int aiID, Tile* apTarget)
 
 
 // @fnv 0x007e81b0
-bool TraitSelectMenu::HandleKeyInput(int iKey, int iUnused)
+// pdb: TraitSelectMenu::DoGamepad | TraitSelectMenu.obj | retail, vtable slot, high
+// pdb params: aiButton, afValue
+// pdb locals: bhandled
+bool TraitSelectMenu::HandleKeyInput(int aiButton, int afValue)
 {
     bool bHandled = false;
-    switch (iKey)
+    switch (aiButton)
     {
     case 9:
         if (m_iSelected >= 0 && m_iSelected <= 0xc)
@@ -193,6 +207,8 @@ bool TraitSelectMenu::HandleKeyInput(int iKey, int iUnused)
 
 
 // @fnv 0x007e85c0
+// pdb: TraitSelectMenu::Navigate | TraitSelectMenu.obj | debug, call graph, medium
+// pdb params: bUp
 void TraitSelectMenu::ChangePage(bool bPrevious)
 {
     if (bPrevious)
@@ -259,9 +275,11 @@ unsigned int gm_GetTickCount();
 static const char kErase[] = "UITraitSelectErase";
 
 // @fnv 0x007e86c0
-void TraitSelectMenu::SelectTrait(int aiID, bool abForce)
+// pdb: TraitSelectMenu::SetBoxAsChecked | TraitSelectMenu.obj | retail, string-set bridge, high
+// pdb params: aiID, bForceRefresh
+void TraitSelectMenu::SelectTrait(int aiID, bool bForceRefresh)
 {
-    if (!abForce && iCurrentID == aiID)
+    if (!bForceRefresh && iCurrentID == aiID)
         return;
     uiLastTick = gm_GetTickCount();
     if (pCheckTile)
@@ -302,6 +320,8 @@ void Warning(const char*);
 float DefaultDepth();
 // @fnv 0x007e7b60
 // src: COMMUNITY 0x007e7b60
+// pdb: TraitSelectMenu::Create | TraitSelectMenu.obj | retail, upstream name already matches, high
+// pdb locals: pin, ptile, pold_menu_tile
 Tile* __cdecl TraitSelectMenu_Create()
 {
     ManagerOpen* pManager = (ManagerOpen*)InterfaceManager_GetSingleton();
@@ -355,6 +375,8 @@ struct TraitScrollTile : FUN_00a012d0_t
     float FUN_00a011b0(int id);
 };
 // @fnv 0x007e7ea0
+// pdb: TraitSelectMenu::DoIdle | TraitSelectMenu.obj | retail, vtable slot, high
+// pdb locals: fLInputY, fRInputY, bSufficientLStickMagnitude, bSufficientRStickMagnitude, iUT_CurrentValue, iy, ix, pcontrols, nCheckMarkTimer, nDeltaTime, fScrollDelta, fMaxScrollChange
 void TraitSelectMenu::UpdateScrollAnimation()
 {
     if (scrollTile)
@@ -435,9 +457,12 @@ struct TraitPokeTile
 // Clamps currentPosition to [0,1], updates scroll tile position and value display, and sets _SetInCode on the scroll tile.
 // @fnv 0x007e8310
 // src: XBOX_PDB 0x007e8310
-void TraitSelectMenu::ScrollForm(float afDelta)
+// pdb: TraitSelectMenu::ScrollForm | TraitSelectMenu.obj | retail, upstream name already matches, high
+// pdb params: afDeltaY
+// pdb locals: ptile, fScrollButtonHeight, fMenuTop, fScrollNubHeight, fMainRectYAdjust, fScrollPaperDist, fMenuBottom, fYInScrollBarSpace, iUT_CurrentValue
+void TraitSelectMenu::ScrollForm(float afDeltaY)
 {
-    this->currentPosition += afDelta;
+    this->currentPosition += afDeltaY;
     if (this->currentPosition > 1.0)
         this->currentPosition = 1.0f;
     if (this->currentPosition < 0.0)
@@ -471,6 +496,9 @@ extern double const _DAT_01012060;
 // Selects a trait tile by clearing the previous selection, marking the new one, and computing m_fRatio from the selected and initial setting values.
 // @fnv 0x007e8470
 // src: COMMUNITY 0x007e8470
+// pdb: TraitSelectMenu::SetButtonAsHighlighted | TraitSelectMenu.obj | debug, call graph, medium
+// pdb params: aiID, bForceRefresh
+// pdb locals: ptile, fCheckBoxPos, fScrollPaperDist, fPaperHeight
 void __thiscall TraitSelectMenu::SetScroll(int aiID, bool abForce)
 {
     Tile* settings;

@@ -36,7 +36,7 @@ struct FUN_005631e0_shell
 float __cdecl NI2HK_004a3e90(float);
 struct FUN_0062e710_shell
 {
-    void __thiscall SetValueAt(float f, int a, int b);
+    void __thiscall TESWaterListener_SetWaterHeight(float afWaterHeight, int auX, int auY);
 };
 struct BSSimpleList_Ragdoll
 {
@@ -49,14 +49,17 @@ struct FUN_006310c0_shell
 
 struct FUN_00c9a460_shell
 {
-    void __thiscall AddObject(int a);
-    void __thiscall bhkEntityListener_entityAddedCallback(int a);
+    void __thiscall bhkEntityListener_AddEntity(int apEntity);
+    void __thiscall bhkEntityListener_entityAddedCallback(int apEntity);
 };
 
 // @fnv 0x00c9a600
 // src: XBOX_PDB 0x00c9a600
-void __thiscall FUN_00c9a460_shell::bhkEntityListener_entityAddedCallback(int a)
+// pdb: bhkEntityListener::entityAddedCallback | bhkEntityListener.obj | retail, upstream name already matches, high
+// pdb params: apEntity
+// pdb locals: pb
+void __thiscall FUN_00c9a460_shell::bhkEntityListener_entityAddedCallback(int apEntity)
 {
-    int r = ((int(__thiscall*)(void*, int))(*reinterpret_cast<void***>(this))[9])(this, a);
-    AddObject(r);
+    int r = ((int(__thiscall*)(void*, int))(*reinterpret_cast<void***>(this))[9])(this, apEntity);
+    bhkEntityListener_AddEntity(r);
 }

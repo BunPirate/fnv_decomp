@@ -6,6 +6,7 @@
 struct FUN_00d1f1e0_class
 {
 // @fnv 0x00d1f1e0
+// pdb: hkpShapeContainer::getNumChildShapes | hkpShapeContainer.obj | retail, upstream name already matches, high
     virtual void FUN_00d1f1e0_0()
     {}
     virtual void FUN_00d1f1e0_1()
@@ -46,6 +47,9 @@ struct FUN_00d1f210_cls
 
 // @fnv 0x00d1f210
 // src: COMMUNITY 0x00d1f210
+// pdb: hkpSingleShapeContainer::getChildShape | hkpShapeContainer.obj | debug, vtable slot, medium
+// pdb params: key, buffer
+// pdb locals: assertBuf, ostr
 int FUN_00d1f210_cls::hkpShapeContainer_getChildShape(int a1, int a2)
 {
     return m_04;

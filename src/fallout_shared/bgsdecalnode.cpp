@@ -32,6 +32,7 @@ GlobalObject_00a7b610* FUN_004ee0d0_shell::GetGlobalObject()
 
 // Calls FUN_004ee1e0 on this, frees the node with operator delete when flags has bit 0 set, and returns this.
 // @fnv 0x004ee0e0
+// pdb: BGSDecalNode::`scalar deleting destructor' | BGSDecalNode.obj | retail, vtable slot, high
 void* BGSDecalNode::DestroyDecalNode(unsigned int flags)
 {
     this->FUN_004ee1e0();
@@ -42,6 +43,8 @@ void* BGSDecalNode::DestroyDecalNode(unsigned int flags)
 
 // @fnv 0x004ee4d0
 // src: XBOX_PDB 0x004ee4d0
+// pdb: BGSDecalNode::AttachChild | BGSDecalNode.obj | debug, vtable slot, medium
+// pdb params: apAVObj, bFirstAvail
 void BGSDecalNode::AttachChild_004ee4d0(NiAVObject* apAVObj, bool abFirstAvailableSlot)
 {
     NiNode::AttachChildInAvailableSlot(apAVObj, abFirstAvailableSlot);
@@ -49,6 +52,9 @@ void BGSDecalNode::AttachChild_004ee4d0(NiAVObject* apAVObj, bool abFirstAvailab
 
 // @fnv 0x004ee560
 // src: GUESS 0x004ee560 (confidence: low)
+// pdb: BGSDecalNode::DetachChild | BGSDecalNode.obj | debug, object-file gap fill, medium
+// pdb params: apDecal
+// pdb locals: spobject
 void BGSDecalNode::ProcessState_004ee560(int aiValue)
 {
     GO g(0);
@@ -57,14 +63,17 @@ void BGSDecalNode::ProcessState_004ee560(int aiValue)
 
 // @fnv 0x004ee450
 // src: XBOX_PDB 0x004ee450
-void BGSDecalNode::AttachChild(BSTempEffect* apAVObj, bool abFlag)
+// pdb: BGSDecalNode::AttachChild | BGSDecalNode.obj | retail, upstream name already matches, high
+// pdb params: apDecal, bFirstAvail
+// pdb locals: pprop
+void BGSDecalNode::AttachChild(BSTempEffect* apDecal, bool bFirstAvail)
 {
-    void* prop = apAVObj->Get3D()->GetProperty(3);
+    void* prop = apDecal->Get3D()->GetProperty(3);
     if (prop != 0)
     {
         ((EffectSetting*)prop)->BSShaderProperty_SetDepthBias(1.0f);
     }
-    NiNode::AttachChildInAvailableSlot(apAVObj->Get3D(), abFlag);
+    NiNode::AttachChildInAvailableSlot(apDecal->Get3D(), bFirstAvail);
 }
 
 struct S2
@@ -115,6 +124,8 @@ struct VirtParam
 };
 // Calls RemoveEffect with a, then calls FUN_00a5e780 with the result of a->v38(b).
 // @fnv 0x004ee5d0
+// pdb: BGSDecalNode::DetachChild | BGSDecalNode.obj | debug, object-file gap fill, medium
+// pdb params: apDecal, aspAVObject
 void BGSDecalNode::InsertChild(BSTempEffect* pEffect, void* b)
 {
     RemoveEffect(pEffect);
@@ -123,6 +134,8 @@ void BGSDecalNode::InsertChild(BSTempEffect* pEffect, void* b)
 
 // Removes the given effect from the list stored at offset 0xac of this node.
 // @fnv 0x004ee4f0
+// pdb: BGSDecalNode::RemoveFromDecalList | BGSDecalNode.obj | debug, object-file gap fill, medium
+// pdb params: apDecal
 void BGSDecalNode::RemoveEffect(void* apEffect)
 {
     GO tmp((int)apEffect);
@@ -141,6 +154,7 @@ NiFixedString const& FixedStrings_QDecalNode();
 
 // Allocates a GlobalObject_004ee810 and sets the object's name from one of two fixed strings depending on flag.
 // @fnv 0x004ee390
+// pdb: BGSDecalNode::Init | BGSDecalNode.obj | debug, object-file run extension, low
 void BGSDecalNode::InitNameAndData()
 {
     pList = reinterpret_cast<BSSimpleList<GO>*>(new GlobalObject_004ee810);
@@ -156,6 +170,9 @@ extern int _data_011c16bc;
 
 // Allocates and constructs a new BGSDecalNode and returns it as a NiObject pointer.
 // @fnv 0x004ee6f0
+// pdb: BGSDecalNode::CreateClone | BGSDecalNode.obj | retail, vtable slot, high
+// pdb params: arCloneData
+// pdb locals: pNode
 NiObject* BGSDecalNode::MakeClone(CloningProcess& arCloneData)
 {
     BGSDecalNode* pNewNode = new BGSDecalNode;
@@ -228,6 +245,9 @@ struct EffectsList
 };
 extern EffectsList g_011c7d20;
 // @fnv 0x004ee120
+// pdb: BSSimpleList<NiPointer<BSTempEffect> >::RemoveHead | BGSDecalNode.obj | retail, object-file run extension, low
+// pdb note: debug build links it to BGSDecalNode::BGSDecalNode
+// pdb locals: pkNext
 BGSDecalNode::BGSDecalNode(NiNode* parent, unsigned char flag) : NiNode(0)
 {
     this->flag = flag;
@@ -256,7 +276,10 @@ struct FUN_004ee610_node
 
 // @fnv 0x004ee610
 // src: XBOX_PDB 0x004ee610
-void BGSDecalNode::OnVisible_004ee610(int a1)
+// pdb: BGSDecalNode::OnVisible | BGSDecalNode.obj | retail, vtable slot, high
+// pdb params: arCuller
+// pdb locals: plist, pdecal
+void BGSDecalNode::OnVisible_004ee610(int arCuller)
 {
     if (IsVisualObject())
     {
@@ -268,7 +291,7 @@ void BGSDecalNode::OnVisible_004ee610(int a1)
                 if (reinterpret_cast<FUN_004ee610_view*>(&local)->Modelloader_GetReferencedThis())
                 {
                     reinterpret_cast<FUN_004ee610_view*>(reinterpret_cast<FUN_004ee610_view*>(&local)->Modelloader_GetReferencedThis())
-                        ->FUN_00a59e00(a1);
+                        ->FUN_00a59e00(arCuller);
                 }
                 node = node->FUN_00726070();
             }
@@ -292,6 +315,8 @@ struct DecalListManager
 };
 // Removes the head node from the list, frees it, or calls FUN_0066b0d0(0) when the list is empty.
 // @fnv 0x004ee8a0
+// pdb: BSSimpleList<NiPointer<BSTempEffect> >::RemoveHead | BGSDecalNode.obj | debug, call graph, high
+// pdb locals: pkNext
 void DecalListManager::PopHead()
 {
     if (head != 0)
@@ -320,6 +345,7 @@ extern NodeList DAT_011c7d20;
 }
 
 // @fnv 0x004ee050
+// pdb: BGSDecalNode::BGSDecalNode | BGSDecalNode.obj | retail, upstream name already matches, high
 BGSDecalNode::BGSDecalNode() : NiNode(0)
 {
     InitNameAndData();

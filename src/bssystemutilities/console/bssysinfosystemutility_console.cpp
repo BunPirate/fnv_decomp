@@ -14,6 +14,8 @@ extern "C" int __cdecl _strnicmp(const char* left, const char* right, unsigned i
 
 // Returns the cached language code, detecting it once by comparing gSystemLocaleState.language against ENGLISH, FRENCH, ITALIAN, GERMAN and SPANISH.
 // @fnv 0x00a22cb0
+// pdb: Controls::RemappableData::RemappableData | XControls.obj | retail, object-file run extension, low
+// pdb locals: eua
 unsigned int BSSysInfoSystemUtility::GetRandomGenerator(void)
 {
     if (gCachedLanguage == 0xffffffff)

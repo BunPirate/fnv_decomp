@@ -14,12 +14,13 @@ class TESFileFormVersion
     unsigned short GetFormVersion();
 };
 
+// pdb: class ContainerItemExtra, size 0xc, 5 members
 class ContainerItemExtra
 {
   public:
-    unsigned int opaque0;
+    unsigned int pOwnerForm; // src: XBOX_RETAIL_PDB +0x0 (old: opaque0)
     unsigned int opaque4;
-    unsigned int opaque8;
+    unsigned int fHealthMult; // src: XBOX_RETAIL_PDB +0x8 (old: opaque8)
     ContainerItemExtra();
     bool Load(TESFile*);
 };

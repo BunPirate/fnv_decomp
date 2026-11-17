@@ -11,7 +11,7 @@ CIdvCamera& CIdvCamera::AssignFields_00b3f0c0(const CIdvCamera& other)
 {
     if (&other != this)
     {
-        m_kTranslation = other.m_kTranslation;
+        m_cPosition = other.m_cPosition;
     }
     return *this;
 }

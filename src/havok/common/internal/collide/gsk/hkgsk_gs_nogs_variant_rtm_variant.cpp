@@ -63,6 +63,10 @@ struct Simplex
 };
 // @fnv 0x00e4c230
 // src: GUESS 0x00e4c230 (confidence: low)
+// pdb: hkGsk::handlePenetration | hkGsk.obj | retail, object-file run extension, low
+// pdb note: debug build links it to hkGsk::processEdgeTriangle
+// pdb params: shapeA, shapeB, aTb, dimA, dimB, output
+// pdb locals: penDepth, simplex
 void Simplex::ProcessEntries_00e4c230(const void* shapeA, const void* shapeB, const Transform* transform, int* countA, int* countB,
                            hkVector4* output)
 {

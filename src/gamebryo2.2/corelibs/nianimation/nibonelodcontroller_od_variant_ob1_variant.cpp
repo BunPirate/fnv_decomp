@@ -230,6 +230,9 @@ class FUN_00c53d70 : public FUN_00a6d220
 };
 
 // @fnv 0x00c53d70
+// pdb: NiTPrimitiveArray<NiTPrimitiveSet<NiNode *> *>::NiTPrimitiveArray<NiTPrimitiveSet<NiNode *> *> | NiBSBoneLODController.obj | retail, call graph (shared callers), low
+// pdb note: debug build links it to NiBSBoneLODController::NiBSBoneLODController
+// pdb params: uiMaxSize, uiGrowBy
 FUN_00c53d70::FUN_00c53d70() : m_iIndex(-1), m_iArrayLength(0)
 {}
 
@@ -276,6 +279,7 @@ class FUN_00c53e40 : public ControllerBase
 };
 
 // @fnv 0x00c53e40
+// pdb: NiBSBoneLODController::~NiBSBoneLODController | NiBSBoneLODController.obj | debug, call graph, medium
 FUN_00c53e40::~FUN_00c53e40()
 {
     ClearGroups();
@@ -333,7 +337,7 @@ struct TargetW
     int m_i34;
     char pad2[0x3c - 0x38];
     TArrW m_kArr;
-    void NiBSBoneLODController_SetBoneLOD(int i);
+    void NiBSBoneLODController_SetBoneLOD(int iLOD);
 };
 struct ObjW;
 struct MapW
@@ -352,19 +356,22 @@ class SelfW
     unsigned short m44;
     unsigned short m_usElementCount;
     void FUN_00a6d0c0(StreamW* p);
-    void NiBSBoneLODController_ProcessClone(StreamW* pkStream);
+    void NiBSBoneLODController_ProcessClone(StreamW* arCloneData);
 };
 // @fnv 0x00c53430
 // src: XBOX_PDB 0x00c53430
-void SelfW::NiBSBoneLODController_ProcessClone(StreamW* pkStream)
+// pdb: NiBSBoneLODController::ProcessClone | NiBSBoneLODController.obj | retail, upstream name already matches, high
+// pdb params: arCloneData
+// pdb locals: pkDest, ui, bSuccess, iLOD, pkOldSet, pkNewSet, uj, pkOldBone, bCloned, pkNewBone
+void SelfW::NiBSBoneLODController_ProcessClone(StreamW* arCloneData)
 {
     int iSaved;
     {
         unsigned int i;
-        FUN_00a6d0c0(pkStream);
+        FUN_00a6d0c0(arCloneData);
         {
             TargetW* pkTarget = 0;
-            pkStream->m_pTaskMap->FUN_00a53c30(this, &pkTarget);
+            arCloneData->m_pTaskMap->FUN_00a53c30(this, &pkTarget);
             for (i = 0; i < m_usElementCount; i++)
             {
                 ArrW* pkSrc = m_ppkArr[i];
@@ -378,7 +385,7 @@ void SelfW::NiBSBoneLODController_ProcessClone(StreamW* pkStream)
                         if (pkObj)
                         {
                             void* pkLinked = 0;
-                            bool bFound = pkStream->m_pTaskMap->FUN_00a53c30(pkObj, &pkLinked);
+                            bool bFound = arCloneData->m_pTaskMap->FUN_00a53c30(pkObj, &pkLinked);
                             if (bFound)
                                 pkNew->AppendLinkID(pkLinked);
                             else
@@ -438,15 +445,18 @@ struct FUN_00c53af0
         return n;
     }
     bool NiTimeController_IsEqual(FUN_00c53af0* pkObj);
-    bool IsEqual(FUN_00c53af0* pkObj);
+    bool IsEqual(FUN_00c53af0* pkObject);
 };
 // @fnv 0x00c53af0
-bool FUN_00c53af0::IsEqual(FUN_00c53af0* pkObj)
+// pdb: NiBSBoneLODController::IsEqual | NiBSBoneLODController.obj | retail, vtable slot, high
+// pdb params: pkObject
+// pdb locals: pkCtlr, ui, pkSet0, pkSet1, uj
+bool FUN_00c53af0::IsEqual(FUN_00c53af0* pkObject)
 {
     unsigned int i;
-    if (!NiTimeController_IsEqual(pkObj))
+    if (!NiTimeController_IsEqual(pkObject))
         return false;
-    FUN_00c53af0* pkOther = pkObj;
+    FUN_00c53af0* pkOther = pkObject;
     if (m_i34 != pkOther->m_i34 || m_i38 != pkOther->m_i38 || GetCount() != pkOther->m_usElementCount)
         return false;
     for (i = 0; i < m_usElementCount; i++)
@@ -804,6 +814,9 @@ class BoneLODController : public TimeController
 
 // @fnv 0x00c53870
 // src: XBOX_PDB 0x00c53870
+// pdb: NiBSBoneLODController::LoadBinary | NiBSBoneLODController.obj | retail, upstream name already matches, high
+// pdb params: kStream
+// pdb locals: uiBoneArraySize, ui, uiSetSize, pkSet, uj
 void BoneLODController::NiBSBoneLODController_LoadBinary(NiStreamLoader& kStream)
 {
     TimeController::FUN_00a6d5e0(kStream);
@@ -858,14 +871,17 @@ class FUN_00c53d70 : public NiBSBoneLODController
 class CloneOwner_c53360 : public CloneableObj
 {
   public:
-    NiBSBoneLODController* NiBSBoneLODController_CreateClone(CloningProcess* process);
+    NiBSBoneLODController* NiBSBoneLODController_CreateClone(CloningProcess* arCloneData);
 };
 // @fnv 0x00c53360
 // src: XBOX_PDB 0x00c53360
-NiBSBoneLODController* CloneOwner_c53360::NiBSBoneLODController_CreateClone(CloningProcess* process)
+// pdb: NiBSBoneLODController::CreateClone | NiBSBoneLODController.obj | retail, upstream name already matches, high
+// pdb params: arCloneData
+// pdb locals: pkCtlr
+NiBSBoneLODController* CloneOwner_c53360::NiBSBoneLODController_CreateClone(CloningProcess* arCloneData)
 {
     NiBSBoneLODController* result = new FUN_00c53d70;
-    this->NiBSBoneLODController_CopyMembers(result, process);
+    this->NiBSBoneLODController_CopyMembers(result, arCloneData);
     return result;
 }
 }  // namespace fnv_00c53360
@@ -903,6 +919,7 @@ struct FUN_00c53d70
 };
 // @fnv 0x00c537f0
 // src: EXE 0x00c537f0
+// pdb: NiBSBoneLODController::CreateObject | NiBSBoneLODController.obj | retail, upstream name already matches, high
 FUN_00c53d70* __cdecl NiBSBoneLODController_CreateObject()
 {
     return new FUN_00c53d70;

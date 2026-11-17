@@ -332,10 +332,13 @@ static __forceinline void CopyQuads(void* destination, const void* source, int c
 
 // @fnv 0x00d1a330
 // src: XBOX_PDB 0x00d1a330
-extern "C" void hkpEntityAabbUtil_entityBatchRecalcAabb(const CollisionContext* context,EntityNode*const* objects,int count) {
-    const float slack=(float)((double)context->getTolerance()*DAT_01011588);
-    for(int at=0;at<count;++at) {
-        EntityNode* object=objects[at];
+// pdb: hkpEntityAabbUtil::entityBatchRecalcAabb | hkpEntityAabbUtil.obj | retail, upstream name already matches, high
+// pdb params: collisionInput, entityBatch, numEntities
+// pdb locals: entityIndex, collidable, input, shapeBuffer, rootAabb, rootSweptAabb, aabb, sweptAabb, assertBuf, ostr
+extern "C" void hkpEntityAabbUtil_entityBatchRecalcAabb(const CollisionContext* collisionInput,EntityNode*const* entityBatch,int numEntities) {
+    const float slack=(float)((double)collisionInput->getTolerance()*DAT_01011588);
+    for(int at=0;at<numEntities;++at) {
+        EntityNode* object=entityBatch[at];
         const EntityNode* collider=object->getCollidable();
         const Shape* geometry=collider->getShape();
         int allocated=collider->capacityBounds;
@@ -369,9 +372,9 @@ extern "C" void hkpEntityAabbUtil_entityBatchRecalcAabb(const CollisionContext* 
                 total.maximum.upper(total.maximum,box.maximum);
                 totalSweep.minimum.lower(totalSweep.minimum,expandedBox.minimum);
                 totalSweep.maximum.upper(totalSweep.maximum,expandedBox.maximum);
-                ConvertAabb(box,context->quantization.low,context->quantization.high,context->quantization.scale,*cursor);
+                ConvertAabb(box,collisionInput->quantization.low,collisionInput->quantization.high,collisionInput->quantization.scale,*cursor);
                 BoundsRecord expanded;
-                ConvertAabb(expandedBox,context->quantization.low,context->quantization.high,context->quantization.scale,expanded);
+                ConvertAabb(expandedBox,collisionInput->quantization.low,collisionInput->quantization.high,collisionInput->quantization.scale,expanded);
                 CompressExpanded(expanded,*cursor);
                 cursor->maxExtra.bytes.key=(unsigned char)key;
                 *keyCursor=key;
@@ -380,9 +383,9 @@ extern "C" void hkpEntityAabbUtil_entityBatchRecalcAabb(const CollisionContext* 
             }
             const_cast<EntityNode*>(collider)->numBounds=(unsigned short)(keyCursor-keys);
             BoundsRecord* output=reinterpret_cast<BoundsRecord*>(&const_cast<EntityNode*>(collider)->bounds);
-            ConvertAabb(total,context->quantization.low,context->quantization.high,context->quantization.scale,*output);
+            ConvertAabb(total,collisionInput->quantization.low,collisionInput->quantization.high,collisionInput->quantization.scale,*output);
             BoundsRecord expanded;
-            ConvertAabb(totalSweep,context->quantization.low,context->quantization.high,context->quantization.scale,expanded);
+            ConvertAabb(totalSweep,collisionInput->quantization.low,collisionInput->quantization.high,collisionInput->quantization.scale,expanded);
             CompressExpanded(expanded,*output);
             if (n) {
                 stack = (int*)hkMemoryRouter_getInstance();
@@ -422,9 +425,9 @@ extern "C" void hkpEntityAabbUtil_entityBatchRecalcAabb(const CollisionContext* 
             FloatBounds expandedBox;
             SweepSingle(object->m_pMotionState.GetMotionState(),slack,box,expandedBox);
             BoundsRecord* output=reinterpret_cast<BoundsRecord*>(&const_cast<EntityNode*>(collider)->bounds);
-            ConvertAabb(box,context->quantization.low,context->quantization.high,context->quantization.scale,*output);
+            ConvertAabb(box,collisionInput->quantization.low,collisionInput->quantization.high,collisionInput->quantization.scale,*output);
             BoundsRecord expanded;
-            ConvertAabb(expandedBox,context->quantization.low,context->quantization.high,context->quantization.scale,expanded);
+            ConvertAabb(expandedBox,collisionInput->quantization.low,collisionInput->quantization.high,collisionInput->quantization.scale,expanded);
             CompressExpanded(expanded,*output);
         }
     }

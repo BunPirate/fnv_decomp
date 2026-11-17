@@ -140,7 +140,7 @@ static __forceinline void HfCollide_e49530(const HfShape_e49530& hf, const HfInp
         HfVec_e49530& output = *outputArray;
         output.m_vComponents = defaultOut.m_vComponents;
 
-        const HfVec_e49530& scale = HfQ_e49530(hf.m_kInverseScale);
+        const HfVec_e49530& scale = HfQ_e49530(hf.m_floatToIntScale);
         HfVec_e49530 sc;
         sc.m_vComponents = scale.m_vComponents;
         const HfVec_e49530& pos = *sphere;
@@ -151,7 +151,7 @@ static __forceinline void HfCollide_e49530(const HfShape_e49530& hf, const HfInp
             HfVec_e49530 v;
             unsigned int u[4];
         } fc;
-        fc.v.setAdd4(pos, HfQ_e49530(hf.m_kOffset));
+        fc.v.setAdd4(pos, HfQ_e49530(hf.m_floatToIntOffsetFloorCorrected));
         fc.v.mul4(sc);
         fc.v.add4(DAT_011b1bd0);
         struct
@@ -163,7 +163,7 @@ static __forceinline void HfCollide_e49530(const HfShape_e49530& hf, const HfInp
         int x = out.a;
         int z = out.c;
 
-        if (x >= hf.m_iXResolution - 1 || z >= hf.m_iZResolution - 1)
+        if (x >= hf.m_xRes - 1 || z >= hf.m_zRes - 1)
         {
             continue;
         }
@@ -233,9 +233,9 @@ static __forceinline void HfCollide_e49530(const HfShape_e49530& hf, const HfInp
         _mm_store_ps(&output(0), normal.m_vComponents);
 
         float dist;
-        if (!hf.m_bUseProjectionBasedHeight)
+        if (!hf.m_useProjectionBasedHeight)
         {
-            dist = (localPos(1) - height) * hf.m_kHeightScaleVector.y - (*sphere)(3);
+            dist = (localPos(1) - height) * hf.m_intToFloatScale.y - (*sphere)(3);
         }
         else
         {
@@ -243,7 +243,7 @@ static __forceinline void HfCollide_e49530(const HfShape_e49530& hf, const HfInp
             corner.set((float)cornerX, cornerH, (float)z, 0.0f);
             HfVec_e49530 d;
             d.setSub4(localPos, corner);
-            d.mul4(HfQ_e49530(hf.m_kHeightScaleVector));
+            d.mul4(HfQ_e49530(hf.m_intToFloatScale));
             dist = d.dot3(normal) - (*sphere)(3);
         }
         output(3) = dist;
@@ -252,13 +252,15 @@ static __forceinline void HfCollide_e49530(const HfShape_e49530& hf, const HfInp
 
 // Delegates sphere-vs-heightfield collision to HfCollide_e49530, writing per-sphere contact results into outputArray.
 // @fnv 0x00e49530
+// pdb: hkpCompressedSampledHeightFieldShape::collideSpheres | hkpCompressedSampledHeightFieldShape.obj | retail, vtable slot, high
+// pdb params: input, outputArray
 void HfShape_e49530::Collide(const HfInput_e49530& input, HfVec_e49530* outputArray) const
 {
     HfCollide_e49530(*this, input, outputArray);
 }
 
 extern "C" void* __cdecl hkMemoryRouter_getInstance();
-extern "C" void __cdecl hkArrayUtil__reserve(void* alloc, void* array, int capacity, int elemSize);
+extern "C" void __cdecl hkArrayUtil__reserve(void* mem, void* array, int numElem, int sizeElem);
 extern int DAT_010e901c;
 
 struct hkBoolR_e499
@@ -342,36 +344,38 @@ class Compressed_e499 : public hkpCompressedSampledHeightFieldShape
 // Initializes a compressed heightfield from a source heightfield by copying parameters, computing height range, and storing scaled 16-bit heights.
 // @fnv 0x00e499d0
 // src: GUESS 0x00e499d0 (confidence: low)
+// pdb: hkpCompressedSampledHeightFieldShape::hkpCompressedSampledHeightFieldShape | hkpCompressedSampledHeightFieldShape.obj | retail, object-file run extension, low
+// pdb params: info, samples, quantizationOffset, quantizationScale
 Compressed_e499* Compressed_e499::InitializeFields_00e499d0(const HfSrc_e499* apSourceHeightField)
 {
-    m_sReferenceCount = 1;
-    m_ulUserData = 0;
+    m_referenceCount = 1;
+    m_userData = 0;
     m_type = (hkpShapeType)0xd;
     *(int**)this = &DAT_010e901c;
-    hkArrayBase<hkUint16>& st = (hkArrayBase<hkUint16>&)m_kStorage;
+    hkArrayBase<hkUint16>& st = (hkArrayBase<hkUint16>&)m_storage;
     st.m_data = 0;
     st.m_iElementCount = 0;
     st.m_iCapacityState = 0x80000000;
-    m_ucHeightFieldType = HEIGHTFIELD_COMPRESSED;
-    m_iXResolution = apSourceHeightField->m_iXResolution;
-    m_iZResolution = apSourceHeightField->m_iZResolution;
+    m_heightfieldType = HEIGHTFIELD_COMPRESSED;
+    m_xRes = apSourceHeightField->m_xRes;
+    m_zRes = apSourceHeightField->m_zRes;
     {
         hkBool flip = apSourceHeightField->IsTriangleWindingFlipped();
-        m_bFlipTriangleOrder.m_cBooleanValue = flip.m_cBooleanValue;
+        m_triangleFlip.m_cBooleanValue = flip.m_cBooleanValue;
     }
-    m_fHeightScale = apSourceHeightField->m_fHeightScale;
-    *(LocalM128*)&m_kHeightScaleVector = *(const LocalM128*)&apSourceHeightField->m_kHeightScaleVector;
-    *(LocalM128*)&m_kInverseScale = *(const LocalM128*)&apSourceHeightField->m_kInverseScale;
-    *(LocalM128*)&m_kOffset = *(const LocalM128*)&apSourceHeightField->m_kOffset;
-    *(LocalM128*)&SetCenterPosition = *(const LocalM128*)&apSourceHeightField->SetCenterPosition;
+    m_heightCenter = apSourceHeightField->m_heightCenter;
+    *(LocalM128*)&m_intToFloatScale = *(const LocalM128*)&apSourceHeightField->m_intToFloatScale;
+    *(LocalM128*)&m_floatToIntScale = *(const LocalM128*)&apSourceHeightField->m_floatToIntScale;
+    *(LocalM128*)&m_floatToIntOffsetFloorCorrected = *(const LocalM128*)&apSourceHeightField->m_floatToIntOffsetFloorCorrected;
+    *(LocalM128*)&m_extents = *(const LocalM128*)&apSourceHeightField->m_extents;
 
-    Arr16_e499_SetSizeAndGrow(st, m_iXResolution * m_iZResolution);
+    Arr16_e499_SetSizeAndGrow(st, m_xRes * m_zRes);
 
     float fMinHeight = 3.40282e+38f;
     float maxv = -3.40282e+38f;
-    for (int z = 0; z < m_iZResolution; z++)
+    for (int z = 0; z < m_zRes; z++)
     {
-        for (int x = 0; x < m_iXResolution; x++)
+        for (int x = 0; x < m_xRes; x++)
         {
             float h = apSourceHeightField->GetHeightAtGridPoint(x, z);
             if (h < fMinHeight)
@@ -382,12 +386,12 @@ Compressed_e499* Compressed_e499::InitializeFields_00e499d0(const HfSrc_e499* ap
     }
     m_offset = fMinHeight;
     m_vScale = (float)((maxv - fMinHeight) / 65535.0);
-    for (int z = 0; z < m_iZResolution; z++)
+    for (int z = 0; z < m_zRes; z++)
     {
-        for (int x = 0; x < m_iXResolution; x++)
+        for (int x = 0; x < m_xRes; x++)
         {
             float h = apSourceHeightField->GetHeightAtGridPoint(x, z);
-            m_kStorage.m_data[z * m_iXResolution + x] = (hkUint16)(int)((h - m_offset) / m_vScale);
+            m_storage.m_data[z * m_xRes + x] = (hkUint16)(int)((h - m_offset) / m_vScale);
         }
     }
     return this;

@@ -2,6 +2,7 @@
 
 #include "hkpMotion.h"
 
+// pdb: class hkpCharacterMotion, size 0x120, bases: hkpMotion, 0 members
 class hkpCharacterMotion : public hkpMotion
 {
 public:

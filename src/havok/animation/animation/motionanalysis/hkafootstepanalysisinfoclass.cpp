@@ -29,6 +29,7 @@ struct FUN_00dfe4b0_Class
 };
 // Calls ClearItems, and if bit 0 of flags is set, deallocates this through the global allocator; returns this.
 // @fnv 0x00dfe4b0
+// pdb: hkaFootstepAnalysisInfoContainer::`scalar deleting destructor' | hkaFootstepAnalysisInfoClass.obj | retail, vtable slot, high
 void* FUN_00dfe4b0_Class::DestroyOrReturnSelf(unsigned char flags)
 {
     ClearItems();

@@ -58,6 +58,7 @@ void InitializeRuntimeFloatReciprocal11()
     runtimeInitializationFloat2098 = kRuntimeInitializerUnit / runtimeInitializationFloat646;
 }
 // @fnv 0x00f37ef0
+// pdb: `dynamic initializer for 'NiStepRotKeyregisterloaderreturn'' | ModelLoader.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatReciprocal12()
 {
     runtimeInitializationFloat2099 = kRuntimeInitializerUnit / runtimeInitializationFloat650;
@@ -68,6 +69,7 @@ void InitializeRuntimeFloatReciprocal13()
     runtimeInitializationFloat2100 = kRuntimeInitializerUnit / runtimeInitializationFloat654;
 }
 // @fnv 0x00f38240
+// pdb: `dynamic initializer for 'NiStepRotKeyregisterloaderreturn'' | TES.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatReciprocal14()
 {
     runtimeInitializationFloat2101 = kRuntimeInitializerUnit / runtimeInitializationFloat40;
@@ -78,6 +80,7 @@ void InitializeRuntimeFloatReciprocal15()
     runtimeInitializationFloat2102 = kRuntimeInitializerUnit / runtimeInitializationFloat660;
 }
 // @fnv 0x00f38e10
+// pdb: `dynamic initializer for 'NiStepPosKeyregisterloaderreturn'' | TESDataHandler.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatReciprocal16()
 {
     runtimeInitializationFloat2103 = kRuntimeInitializerUnit / runtimeInitializationFloat44;
@@ -308,6 +311,7 @@ void InitializeRuntimeFloatReciprocal61()
     runtimeInitializationFloat2771 = kRuntimeInitializerUnit / runtimeInitializationFloat1090;
 }
 // @fnv 0x00f3e910
+// pdb: `dynamic initializer for 'NiStepRotKeyregisterloaderreturn'' | BipedAnim.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatReciprocal62()
 {
     runtimeInitializationFloat2126 = kRuntimeInitializerUnit / runtimeInitializationFloat818;
@@ -343,6 +347,7 @@ void InitializeRuntimeFloatReciprocal68()
     runtimeInitializationFloat2129 = kRuntimeInitializerUnit / runtimeInitializationFloat836;
 }
 // @fnv 0x00f86530
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | BSTempEffectSimpleDecal.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatReciprocal69()
 {
     runtimeInitializationFloat2776 = kRuntimeInitializerUnit / runtimeInitializationFloat330;
@@ -623,21 +628,25 @@ void InitializeRuntimeFloatReciprocal124()
     runtimeInitializationFloat2138 = kRuntimeInitializerUnit / runtimeInitializationFloat855;
 }
 // @fnv 0x00f88e50
+// pdb: `dynamic initializer for 'NiRotKeyregisterloaderreturn'' | PathBuilder.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatReciprocal125()
 {
     runtimeInitializationFloat2904 = kRuntimeInitializerUnit / runtimeInitializationFloat1621;
 }
 // @fnv 0x00f88f30
+// pdb: `dynamic initializer for 'NiLinFloatKeyregisterloaderreturn'' | PathBuilder.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatReciprocal126()
 {
     runtimeInitializationFloat2903 = kRuntimeInitializerUnit / runtimeInitializationFloat1193;
 }
 // @fnv 0x00f88fb0
+// pdb: `dynamic initializer for 'NiTCBRotKeyregisterloaderreturn'' | PathBuilder.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatReciprocal127()
 {
     runtimeInitializationFloat2911 = kRuntimeInitializerUnit / runtimeInitializationFloat1624;
 }
 // @fnv 0x00f89090
+// pdb: `dynamic initializer for 'NiStepRotKeyregisterloaderreturn'' | PathBuilder.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatReciprocal128()
 {
     runtimeInitializationFloat2910 = kRuntimeInitializerUnit / runtimeInitializationFloat1194;
@@ -1198,6 +1207,7 @@ void InitializeRuntimeFloatReciprocal239()
     runtimeInitializationFloat3180 = kRuntimeInitializerUnit / runtimeInitializationFloat1244;
 }
 // @fnv 0x00f90ed0
+// pdb: `dynamic initializer for 'NiStepPosKeyregisterloaderreturn'' | MapMenu.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatReciprocal240()
 {
     runtimeInitializationFloat3181 = kRuntimeInitializerUnit / runtimeInitializationFloat1717;
@@ -1238,6 +1248,7 @@ void InitializeRuntimeFloatReciprocal247()
     runtimeInitializationFloat3197 = kRuntimeInitializerUnit / runtimeInitializationFloat1247;
 }
 // @fnv 0x00f4b6d0
+// pdb: `dynamic initializer for 'NiStepPosKeyregisterloaderreturn'' | TESObjectCELL.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatReciprocal248()
 {
     runtimeInitializationFloat2386 = kRuntimeInitializerUnit / runtimeInitializationFloat1461;
@@ -1393,6 +1404,7 @@ void InitializeRuntimeFloatReciprocal278()
     runtimeInitializationFloat2490 = kRuntimeInitializerUnit / runtimeInitializationFloat918;
 }
 // @fnv 0x00f93fc0
+// pdb: `dynamic initializer for 'NiStepPosKeyregisterloaderreturn'' | VATSMenu.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatReciprocal279()
 {
     runtimeInitializationFloat3254 = kRuntimeInitializerUnit / runtimeInitializationFloat1738;
@@ -1463,6 +1475,7 @@ void InitializeRuntimeFloatReciprocal292()
     runtimeInitializationFloat2527 = kRuntimeInitializerUnit / runtimeInitializationFloat927;
 }
 // @fnv 0x00f95790
+// pdb: `dynamic initializer for 'NiStepRotKeyregisterloaderreturn'' | FOVATSEffectManager.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatReciprocal293()
 {
     runtimeInitializationFloat3276 = kRuntimeInitializerUnit / runtimeInitializationFloat1264;
@@ -1963,6 +1976,7 @@ void InitializeRuntimeFloatReciprocal392()
     runtimeInitializationFloat3487 = kRuntimeInitializerUnit / runtimeInitializationFloat1315;
 }
 // @fnv 0x00f9db70
+// pdb: `dynamic initializer for 'NiStepRotKeyregisterloaderreturn'' | FalloutAudio.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatReciprocal393()
 {
     runtimeInitializationFloat3491 = kRuntimeInitializerUnit / runtimeInitializationFloat1316;
@@ -2013,6 +2027,7 @@ void InitializeRuntimeFloatReciprocal402()
     runtimeInitializationFloat3526 = kRuntimeInitializerUnit / runtimeInitializationFloat1811;
 }
 // @fnv 0x00f5d800
+// pdb: `dynamic initializer for 'NiStepRotKeyregisterloaderreturn'' | CombatFormulas.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatReciprocal403()
 {
     runtimeInitializationFloat2740 = kRuntimeInitializerUnit / runtimeInitializationFloat975;
@@ -2048,6 +2063,7 @@ void InitializeRuntimeFloatReciprocal409()
     runtimeInitializationFloat3560 = kRuntimeInitializerUnit / runtimeInitializationFloat1330;
 }
 // @fnv 0x00fa04b0
+// pdb: `dynamic initializer for 'NiStepPosKeyregisterloaderreturn'' | BGSSaveLoadManager.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatReciprocal410()
 {
     runtimeInitializationFloat3561 = kRuntimeInitializerUnit / runtimeInitializationFloat1823;
@@ -2138,6 +2154,7 @@ void InitializeRuntimeFloatReciprocal427()
     runtimeInitializationFloat3640 = kRuntimeInitializerUnit / runtimeInitializationFloat1345;
 }
 // @fnv 0x00fa3f40
+// pdb: `dynamic initializer for 'NiStepPosKeyregisterloaderreturn'' | TaskQueueInterface.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatReciprocal428()
 {
     runtimeInitializationFloat3641 = kRuntimeInitializerUnit / runtimeInitializationFloat1849;
@@ -2148,6 +2165,7 @@ void InitializeRuntimeFloatReciprocal429()
     runtimeInitializationFloat3647 = kRuntimeInitializerUnit / runtimeInitializationFloat1346;
 }
 // @fnv 0x00fa42a0
+// pdb: `dynamic initializer for 'NiStepPosKeyregisterloaderreturn'' | Actor.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatReciprocal430()
 {
     runtimeInitializationFloat3648 = kRuntimeInitializerUnit / runtimeInitializationFloat1852;
@@ -2173,6 +2191,7 @@ void InitializeRuntimeFloatReciprocal434()
     runtimeInitializationFloat3672 = kRuntimeInitializerUnit / runtimeInitializationFloat1350;
 }
 // @fnv 0x00fa52f0
+// pdb: `dynamic initializer for 'NiStepPosKeyregisterloaderreturn'' | AILinearTaskThreadManager.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatReciprocal435()
 {
     runtimeInitializationFloat3673 = kRuntimeInitializerUnit / runtimeInitializationFloat1861;
@@ -2253,21 +2272,25 @@ void InitializeRuntimeFloatReciprocal450()
     runtimeInitializationFloat3737 = kRuntimeInitializerUnit / runtimeInitializationFloat1364;
 }
 // @fnv 0x00fa7970
+// pdb: `dynamic initializer for 'NiStepColorKeyregisterloaderreturn'' | LowProcess.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatReciprocal451()
 {
     runtimeInitializationFloat3741 = kRuntimeInitializerUnit / runtimeInitializationFloat1365;
 }
 // @fnv 0x00fa79b0
+// pdb: `dynamic initializer for 'NiStepPosKeyregisterloaderreturn'' | LowProcess.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatReciprocal452()
 {
     runtimeInitializationFloat3742 = kRuntimeInitializerUnit / runtimeInitializationFloat1882;
 }
 // @fnv 0x00fa7c90
+// pdb: `dynamic initializer for 'NiStepRotKeyregisterloaderreturn'' | MiddleHighProcess.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatReciprocal453()
 {
     runtimeInitializationFloat3748 = kRuntimeInitializerUnit / runtimeInitializationFloat1366;
 }
 // @fnv 0x00fa7fe0
+// pdb: `dynamic initializer for 'NiStepRotKeyregisterloaderreturn'' | MiddleLowProcess.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatReciprocal454()
 {
     runtimeInitializationFloat3752 = kRuntimeInitializerUnit / runtimeInitializationFloat1367;
@@ -2278,6 +2301,7 @@ void InitializeRuntimeFloatReciprocal455()
     runtimeInitializationFloat3756 = kRuntimeInitializerUnit / runtimeInitializationFloat1368;
 }
 // @fnv 0x00fa82a0
+// pdb: `dynamic initializer for 'NiStepPosKeyregisterloaderreturn'' | MobileObject.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatReciprocal456()
 {
     runtimeInitializationFloat3757 = kRuntimeInitializerUnit / runtimeInitializationFloat1887;
@@ -2288,6 +2312,7 @@ void InitializeRuntimeFloatReciprocal457()
     runtimeInitializationFloat3765 = kRuntimeInitializerUnit / runtimeInitializationFloat1369;
 }
 // @fnv 0x00fa8680
+// pdb: `dynamic initializer for 'NiStepPosKeyregisterloaderreturn'' | PlayerCharacter.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatReciprocal458()
 {
     runtimeInitializationFloat3766 = kRuntimeInitializerUnit / runtimeInitializationFloat1891;
@@ -2303,6 +2328,7 @@ void InitializeRuntimeFloatReciprocal460()
     runtimeInitializationFloat3776 = kRuntimeInitializerUnit / runtimeInitializationFloat1371;
 }
 // @fnv 0x00fa9740
+// pdb: `dynamic initializer for 'NiStepPosKeyregisterloaderreturn'' | ProcessLists.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatReciprocal461()
 {
     runtimeInitializationFloat3777 = kRuntimeInitializerUnit / runtimeInitializationFloat1895;
@@ -2338,6 +2364,7 @@ void InitializeRuntimeFloatReciprocal467()
     runtimeInitializationFloat3802 = kRuntimeInitializerUnit / runtimeInitializationFloat1376;
 }
 // @fnv 0x00faa500
+// pdb: `dynamic initializer for 'NiStepPosKeyregisterloaderreturn'' | CombatController.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatReciprocal468()
 {
     runtimeInitializationFloat3803 = kRuntimeInitializerUnit / runtimeInitializationFloat1904;
@@ -2358,6 +2385,7 @@ void InitializeRuntimeFloatReciprocal471()
     runtimeInitializationFloat3816 = kRuntimeInitializerUnit / runtimeInitializationFloat1378;
 }
 // @fnv 0x00faac50
+// pdb: `dynamic initializer for 'NiStepPosKeyregisterloaderreturn'' | CombatDialogueManager.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatReciprocal472()
 {
     runtimeInitializationFloat3817 = kRuntimeInitializerUnit / runtimeInitializationFloat1910;
@@ -2378,6 +2406,7 @@ void InitializeRuntimeFloatReciprocal475()
     runtimeInitializationFloat3832 = kRuntimeInitializerUnit / runtimeInitializationFloat1380;
 }
 // @fnv 0x00fab390
+// pdb: `dynamic initializer for 'NiStepPosKeyregisterloaderreturn'' | CombatGroupStrategy.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatReciprocal476()
 {
     runtimeInitializationFloat3833 = kRuntimeInitializerUnit / runtimeInitializationFloat1917;
@@ -2388,6 +2417,7 @@ void InitializeRuntimeFloatReciprocal477()
     runtimeInitializationFloat3839 = kRuntimeInitializerUnit / runtimeInitializationFloat3840;
 }
 // @fnv 0x00fab680
+// pdb: `dynamic initializer for 'NiStepPosKeyregisterloaderreturn'' | CombatManager.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatReciprocal478()
 {
     runtimeInitializationFloat3841 = kRuntimeInitializerUnit / runtimeInitializationFloat1921;
@@ -2463,6 +2493,7 @@ void InitializeRuntimeFloatReciprocal492()
     runtimeInitializationFloat3916 = kRuntimeInitializerUnit / runtimeInitializationFloat3917;
 }
 // @fnv 0x00fadb90
+// pdb: `dynamic initializer for 'NiStepRotKeyregisterloaderreturn'' | Projectile.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatReciprocal493()
 {
     runtimeInitializationFloat3921 = kRuntimeInitializerUnit / runtimeInitializationFloat3922;
@@ -2478,6 +2509,7 @@ void InitializeRuntimeFloatReciprocal495()
     runtimeInitializationFloat3931 = kRuntimeInitializerUnit / runtimeInitializationFloat3932;
 }
 // @fnv 0x00fae120
+// pdb: `dynamic initializer for 'NiStepPosKeyregisterloaderreturn'' | VATS.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatReciprocal496()
 {
     runtimeInitializationFloat3933 = kRuntimeInitializerUnit / runtimeInitializationFloat1961;
@@ -2608,6 +2640,7 @@ void InitializeRuntimeFloatReciprocal521()
     runtimeInitializationFloat4041 = kRuntimeInitializerUnit / runtimeInitializationFloat4042;
 }
 // @fnv 0x00fb0ca0
+// pdb: `dynamic initializer for 'NiStepPosKeyregisterloaderreturn'' | DetailedActorPathHandler.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatReciprocal522()
 {
     runtimeInitializationFloat4043 = kRuntimeInitializerUnit / runtimeInitializationFloat2013;
@@ -2688,6 +2721,7 @@ void InitializeRuntimeFloatReciprocal537()
     runtimeInitializationFloat4110 = kRuntimeInitializerUnit / runtimeInitializationFloat2043;
 }
 // @fnv 0x00fb2ea0
+// pdb: `dynamic initializer for 'NiStepRotKeyregisterloaderreturn'' | SpectatorPackage.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatReciprocal538()
 {
     runtimeInitializationFloat4116 = kRuntimeInitializerUnit / runtimeInitializationFloat4117;

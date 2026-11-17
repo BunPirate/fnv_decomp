@@ -16,7 +16,7 @@ struct FUN_00e43060
 };
 struct FUN_00e43010
 {
-    int __thiscall ConvertReferences(int numVehicles);
+    int __thiscall ConvertReferences(int numJobs);
 };
 struct FUN_00e42fe0_counted
 {
@@ -83,7 +83,7 @@ struct HkArr
 		m_iElementCount = n;
 	}
 };
-extern "C" int __cdecl hkArrayUtil__reserve(AllocV &owner, void *arr, int newCap, int stride);
+extern "C" int __cdecl hkArrayUtil__reserve(AllocV &mem, void *array, int numElem, int sizeElem);
 inline void HkArr::reserve(AllocV &a, int n)
 {
 	if (getCapacity() < n)
@@ -185,7 +185,7 @@ struct S00e43320_Mgr
 	Vehicle433 **m_ppVehicles;
 	int m_uiItemCount;
 	void FUN_00e43060(void *a, void *b, Out433 *out);
-	void hkpVehicleLinearCastBatchingManager_stepVehiclesUsingCastResults(void* param1, void* param2, void* param3);
+	void hkpVehicleLinearCastBatchingManager_stepVehiclesUsingCastResults(void* stepInfo, void* numJobs, void* buffer);
 };
 
 extern "C" __declspec(dllimport) void* __stdcall TlsGetValue(unsigned long);
@@ -445,6 +445,9 @@ static inline void E430B0Timer(hkMonitorStream* mon, const char* name)
 
 // @fnv 0x00e430b0
 // src: HAVOK_SRC 0x00e430b0
+// pdb: hkpVehicleLinearCastBatchingManager::buildAndAddCastJobs | hkpVehicleLinearCastBatchingManager.obj | retail, string-set bridge, high
+// pdb params: world, filterSize, numJobs, jobQueue, semaphore, buffer
+// pdb locals: batch, commandsPerJob, assertBuf, ostr, unevenOffset, commandPtr, headerPtr, i, pairLinearCastJob
 int __thiscall E430B0Mgr::hkpVehicleLinearCastBatchingManager_buildAndAddCastJobs(E430B0World* world, int filterSize, int numJobs, FUN_00d04b90_class* jobQueue, void* semaphore, void* buffer)
 {
 

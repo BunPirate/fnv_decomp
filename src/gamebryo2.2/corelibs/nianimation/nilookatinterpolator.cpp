@@ -24,6 +24,7 @@ extern "C" void __cdecl FUN_00a4be20();
 extern "C" void __cdecl __Dummy_00b6fef0(void* p, unsigned int flags);
 
 // @fnv 0x00a4c5c0
+// pdb: NiLookAtInterpolator::`scalar deleting destructor' | NiLookAtInterpolator.obj | retail, object-file gap fill, high
 void* __thiscall NiLookAtInterpolator::FUN_00a4c5c0(unsigned int flags)
 {
     FUN_00a4be20();
@@ -35,11 +36,12 @@ void* __thiscall NiLookAtInterpolator::FUN_00a4c5c0(unsigned int flags)
 }
 
 // @fnv 0x00a4b8d0
+// pdb: NiMaterialColorController::`scalar deleting destructor' | NiMaterialColorController.obj | debug, object-file run extension, low
 bool NiLookAtInterpolator::ResolveTargetObject(NiAVObjectPalette* pkPalette)
 {
     if (m_pkLookAt)
         return true;
-    NiAVObject* pkTarget = (NiAVObject*)pkPalette->FindAVObject((const NiFixedString&)m_kTargetNodeName);
+    NiAVObject* pkTarget = (NiAVObject*)pkPalette->FindAVObject((const NiFixedString&)m_kLookAtName);
     if (pkTarget)
     {
         m_pkLookAt = pkTarget;
@@ -55,6 +57,9 @@ struct CloningProcess
 };
 
 // @fnv 0x00a4bb80
+// pdb: NiLookAtInterpolator::ProcessClone | NiLookAtInterpolator.obj | retail, upstream name already matches, high
+// pdb params: kCloning
+// pdb locals: bCloned, pkClone, pkDest
 void __thiscall NiLookAtInterpolator::ProcessClone(CloningProcess& kCloning)
 {
     bool bCloned;
@@ -102,6 +107,9 @@ struct BaseInterp
 };
 
 // @fnv 0x00a4bbe0
+// pdb: NiLookAtInterpolator::RegisterStreamables | NiLookAtInterpolator.obj | retail, upstream name already matches, high
+// pdb params: kStream
+// pdb locals: ui
 bool __thiscall NiLookAtInterpolator::RegisterStreamables(NiStream& arStream)
 {
     NiStream* kStream = &arStream;
@@ -110,14 +118,14 @@ bool __thiscall NiLookAtInterpolator::RegisterStreamables(NiStream& arStream)
         return false;
     for (ui = 0; ui < 3; ++ui)
     {
-        ObjType* pkObj = ((ObjType**)m_pItems)[ui];
+        ObjType* pkObj = ((ObjType**)m_aspInterpolators)[ui];
         if (pkObj)
         {
             if (!pkObj->RegisterStreamables(kStream))
                 return false;
         }
     }
-    kStream->RegisterFixedString(m_kTargetNodeName);
+    kStream->RegisterFixedString(m_kLookAtName);
     return true;
 }
 
@@ -126,6 +134,8 @@ inline void* operator new(unsigned int, NiLookAtInterpolator* p) throw() { retur
 
 // @fnv 0x00a4c5a0
 // src: EXE 0x00a4c5a0
+// pdb: NiLookAtInterpolator::CreateObject | NiLookAtInterpolator.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 void* __cdecl NiLookAtInterpolator_CreateObject()
 {
     void* p = NiLookAtInterpolator::operator new(0x44);
@@ -136,10 +146,12 @@ void* __cdecl NiLookAtInterpolator_CreateObject()
 
 // Iterates three pointers starting at offset 0x38 and calls v47 on each non-null one.
 // @fnv 0x00a4b900
+// pdb: NiLookAtInterpolator::Collapse | NiLookAtInterpolator.obj | retail, upstream name already matches, high
+// pdb locals: ui
 void NiLookAtInterpolator::Collapse()
 {
     unsigned int ui;
-    NiInterpolator** pp = m_pItems;
+    NiInterpolator** pp = m_aspInterpolators;
     for (ui = 3; ui > 0; --ui)
     {
         NiInterpolator* p = *pp;
@@ -151,14 +163,17 @@ void NiLookAtInterpolator::Collapse()
 
 // Calls the two-float virtual method on each of the three NiInterpolator pointers stored at offset 0x38, skipping null entries.
 // @fnv 0x00a4b9f0
-void __thiscall NiLookAtInterpolator::SetActiveTimeRange(float afValue1, float afValue2)
+// pdb: NiLookAtInterpolator::GuaranteeTimeRange | NiLookAtInterpolator.obj | retail, object-file gap fill, high
+// pdb params: fStartTime, fEndTime
+// pdb locals: ui
+void __thiscall NiLookAtInterpolator::SetActiveTimeRange(float fStartTime, float fEndTime)
 {
     unsigned int ui;
     for (ui = 0; ui < 3; ui++)
     {
-        NiInterpolator* p = m_pItems[ui];
+        NiInterpolator* p = m_aspInterpolators[ui];
         if (p)
-            p->SetActiveTimeRange(afValue1, afValue2);
+            p->SetActiveTimeRange(fStartTime, fEndTime);
     }
 }
 
@@ -168,13 +183,16 @@ extern "C" const double g_010231b0;
 extern "C" const double g_010241b0;
 
 // @fnv 0x00a4b930
-void __thiscall NiLookAtInterpolator::GetItemsRange(float* pfMin, float* pfMax)
+// pdb: NiLookAtInterpolator::GetActiveTimeRange | NiLookAtInterpolator.obj | retail, object-file gap fill, high
+// pdb params: fBeginKeyTime, fEndKeyTime
+// pdb locals: ui, fBegin, fEnd
+void __thiscall NiLookAtInterpolator::GetItemsRange(float* fBeginKeyTime, float* fEndKeyTime)
 {
     float a;
     float b;
-    *pfMin = g_01098b04;
-    *pfMax = g_01015f5c;
-    NiInterpolator** pp = m_pItems;
+    *fBeginKeyTime = g_01098b04;
+    *fEndKeyTime = g_01015f5c;
+    NiInterpolator** pp = m_aspInterpolators;
     unsigned int n = 3;
     do
     {
@@ -184,18 +202,18 @@ void __thiscall NiLookAtInterpolator::GetItemsRange(float* pfMin, float* pfMax)
             item->GetInterpolatorTimeRange(a, b);
             if (a != b)
             {
-                if (*pfMin > a)
-                    *pfMin = a;
-                if (*pfMax < b)
-                    *pfMax = b;
+                if (*fBeginKeyTime > a)
+                    *fBeginKeyTime = a;
+                if (*fEndKeyTime < b)
+                    *fEndKeyTime = b;
             }
         }
         ++pp;
     } while (--n != 0);
-    if (*pfMin == g_010231b0 && *pfMax == g_010241b0)
+    if (*fBeginKeyTime == g_010231b0 && *fEndKeyTime == g_010241b0)
     {
-        *pfMin = 0.0f;
-        *pfMax = 0.0f;
+        *fBeginKeyTime = 0.0f;
+        *fEndKeyTime = 0.0f;
     }
 }
 
@@ -213,6 +231,8 @@ struct RegObj
 };
 
 // @fnv 0x00a4bae0
+// pdb: NiLookAtInterpolator::SetUpDependencies | NiLookAtInterpolator.obj | retail, object-file gap fill, high
+// pdb locals: pcName
 bool __fastcall ResolveLookAtName(NiLookAtInterpolator* self)
 {
     RegObj* pRegObj = (RegObj*)self->m_pkLookAt;
@@ -221,13 +241,13 @@ bool __fastcall ResolveLookAtName(NiLookAtInterpolator* self)
     {
         char* pNewHandle = (char*)FUN_00a5b690(p);
         long(__stdcall * pfnDecrement)(volatile long*) = InterlockedDecrement;
-        if (self->m_kTargetNodeName.m_kHandle != pNewHandle)
+        if (self->m_kLookAtName.m_kHandle != pNewHandle)
         {
             if (pNewHandle != g_0109b220)
                 (void)InterlockedIncrement((volatile long*)((char*)pNewHandle - 8));
-            if (self->m_kTargetNodeName.m_kHandle != g_0109b220)
-                (void)pfnDecrement((volatile long*)((char*)self->m_kTargetNodeName.m_kHandle - 8));
-            self->m_kTargetNodeName.m_kHandle = pNewHandle;
+            if (self->m_kLookAtName.m_kHandle != g_0109b220)
+                (void)pfnDecrement((volatile long*)((char*)self->m_kLookAtName.m_kHandle - 8));
+            self->m_kLookAtName.m_kHandle = pNewHandle;
         }
         if (pNewHandle != g_0109b220)
             (void)pfnDecrement((volatile long*)((char*)pNewHandle - 8));
@@ -235,13 +255,13 @@ bool __fastcall ResolveLookAtName(NiLookAtInterpolator* self)
         return true;
     }
     char* pFallbackHandle = (char*)g_011f49e0;
-    if (self->m_kTargetNodeName.m_kHandle != pFallbackHandle)
+    if (self->m_kLookAtName.m_kHandle != pFallbackHandle)
     {
         if (pFallbackHandle != g_0109b220)
             (void)InterlockedIncrement((volatile long*)((char*)pFallbackHandle - 8));
-        if (self->m_kTargetNodeName.m_kHandle != g_0109b220)
-            (void)InterlockedDecrement((volatile long*)((char*)self->m_kTargetNodeName.m_kHandle - 8));
-        self->m_kTargetNodeName.m_kHandle = pFallbackHandle;
+        if (self->m_kLookAtName.m_kHandle != g_0109b220)
+            (void)InterlockedDecrement((volatile long*)((char*)self->m_kLookAtName.m_kHandle - 8));
+        self->m_kLookAtName.m_kHandle = pFallbackHandle;
     }
     return false;
 }
@@ -264,10 +284,13 @@ struct A4BC40Transform
 class A4BC40Base
 {
   public:
-    bool BaseIsEqual(NiObject* pkObject);
+    bool BaseIsEqual(NiObject* apObject);
 };
 
 // @fnv 0x00a4bc40
+// pdb: NiLookAtInterpolator::IsEqual | NiLookAtInterpolator.obj | retail, upstream name already matches, high
+// pdb params: pkObject
+// pdb locals: pkDest, ui, pkDestInterp, pkInterp
 bool NiLookAtInterpolator::IsEqual(NiObject* apObject) const
 {
     NiObject* pkObject = apObject;
@@ -275,7 +298,7 @@ bool NiLookAtInterpolator::IsEqual(NiObject* apObject) const
         return false;
 
     const NiLookAtInterpolator* pkData = (const NiLookAtInterpolator*)pkObject;
-    if (m_usFlags != pkData->m_usFlags)
+    if (m_uFlags != pkData->m_uFlags)
         return false;
 
     if ((m_pkLookAt && !pkData->m_pkLookAt) || (!m_pkLookAt && pkData->m_pkLookAt))
@@ -283,13 +306,13 @@ bool NiLookAtInterpolator::IsEqual(NiObject* apObject) const
     if (m_pkLookAt && pkData->m_pkLookAt && !((const NiObject*)m_pkLookAt)->IsEqual((NiObject*)pkData->m_pkLookAt))
         return false;
 
-    if (!((const A4BC40Transform&)m_kTransform == (const A4BC40Transform&)pkData->m_kTransform))
+    if (!((const A4BC40Transform&)m_kTransformValue == (const A4BC40Transform&)pkData->m_kTransformValue))
         return false;
 
     for (unsigned int i = 0; i < 3; i++)
     {
-        const NiObject* pkKey = m_pItems[i];
-        NiObject* pkOtherKey = pkData->m_pItems[i];
+        const NiObject* pkKey = m_aspInterpolators[i];
+        NiObject* pkOtherKey = pkData->m_aspInterpolators[i];
         if ((pkKey && !pkOtherKey) || (!pkKey && pkOtherKey))
             return false;
         if (pkKey && pkOtherKey && !pkKey->IsEqual(pkOtherKey))
@@ -299,6 +322,9 @@ bool NiLookAtInterpolator::IsEqual(NiObject* apObject) const
 }
 
 // @fnv 0x00a4c5e0
+// pdb: NiLookAtInterpolator::CreateClone | NiLookAtInterpolator.obj | retail, object-file gap fill, high
+// pdb params: kCloning
+// pdb locals: pkObject
 NiObject* NiLookAtInterpolator::MakeClone(CloningProcess& kCloning)
 {
     NiLookAtInterpolator* allocated = static_cast<NiLookAtInterpolator*>(NiLookAtInterpolator::operator new(0x44));
@@ -356,12 +382,15 @@ struct Obj_b9286
 
 extern "C" void* g_011f3f90;
 extern "C" void* __cdecl NiViewerStrings_NiGetViewerString_Title(void* p);
-extern "C" void* __cdecl NiGetViewerString_00a7d5a0(const char* s, void* p);
+extern "C" void* __cdecl NiGetViewerString_00a7d5a0(const char* pcPrefix, void* pvValue);
 
 // @fnv 0x00a4c780
-void NiLookAtInterpolator::GetViewerStrings(NiViewerStringsArray* apStrings)
+// pdb: NiLookAtInterpolator::GetViewerStrings | NiLookAtInterpolator.obj | retail, string-set bridge, high
+// pdb params: pkStrings
+// pdb locals: ui
+void NiLookAtInterpolator::GetViewerStrings(NiViewerStringsArray* pkStrings)
 {
-    Arg_b9286* a = (Arg_b9286*)apStrings;
+    Arg_b9286* a = (Arg_b9286*)pkStrings;
     ((Holder_b9286*)this)->NiInterpolator_GetViewerStrings(a);
     void* p = NiViewerStrings_NiGetViewerString_Title(g_011f3f90);
     unsigned int b = a->m0a;
@@ -379,8 +408,8 @@ void NiLookAtInterpolator::GetViewerStrings(NiViewerStringsArray* apStrings)
         a->FUN_0096ad30((unsigned int)a->m0e + b);
     }
     a->FUN_0096ae90(b, &p);
-    reinterpret_cast<Holder_b9286*>(&m_kTransform)->NiQuatTransform_GetViewerStrings(a);
-    Obj_b9286** pp = (Obj_b9286**)m_pItems;
+    reinterpret_cast<Holder_b9286*>(&m_kTransformValue)->NiQuatTransform_GetViewerStrings(a);
+    Obj_b9286** pp = (Obj_b9286**)m_aspInterpolators;
     for (unsigned int i = 3; i != 0; --i)
     {
         Obj_b9286* o = *pp;
@@ -398,17 +427,19 @@ using fnv_00eea6d0::EmptyFS;
 // Assigns kName's handle to the interpolator's name field, incrementing the new string's refcount and decrementing the old one's.
 // @fnv 0x00eea6d0
 // src: COMMUNITY 0x00eea6d0
+// pdb: NiLookAtInterpolator::SetLookAtName | NiLookAtInterpolator.obj | debug, upstream name already matches, high
+// pdb params: kName
 void NiLookAtInterpolator::SetLookAtName(const NiFixedString& kName)
 {
     char* pcNewHandle = kName.m_kHandle;
-    if (m_kTargetNodeName.m_kHandle != pcNewHandle)
+    if (m_kLookAtName.m_kHandle != pcNewHandle)
     {
         if (pcNewHandle != EmptyFS)
             InterlockedIncrement((long*)(pcNewHandle - 8));
-        char* pcOldHandle = m_kTargetNodeName.m_kHandle;
+        char* pcOldHandle = m_kLookAtName.m_kHandle;
         if (pcOldHandle != EmptyFS)
             InterlockedDecrement((long*)(pcOldHandle - 8));
-        m_kTargetNodeName.m_kHandle = pcNewHandle;
+        m_kLookAtName.m_kHandle = pcNewHandle;
     }
 }
 
@@ -496,21 +527,24 @@ inline WriteStream* NiStream::GetWriter()
 
 // Loads the blend from the stream: base interpolator data, flags, target, name (version-dependent), transform, and three ref objects.
 // @fnv 0x00a4c630
+// pdb: NiLookAtInterpolator::LoadBinary | NiLookAtInterpolator.obj | retail, upstream name already matches, high
+// pdb params: kStream
+// pdb locals: ui
 void NiLookAtInterpolator::LoadBinary(NiStream& arStream)
 {
     NiStream& kStream = arStream;
     NiInterpolator::LoadBinary(kStream);
 
-    C630LoadBinary(*(C630BinaryStream*)kStream.GetBinaryStream(), m_usFlags);
+    C630LoadBinary(*(C630BinaryStream*)kStream.GetBinaryStream(), m_uFlags);
     m_pkLookAt = (NiAVObject*)kStream.DeserializeObject();
     if (kStream.GetFileVersion() < 0x14010001)
-        kStream.ReadFixedString(m_kTargetNodeName);
+        kStream.ReadFixedString(m_kLookAtName);
     else
-        kStream.ReadStringTableEntry(m_kTargetNodeName);
-    m_kTransform.LoadBinary(kStream);
+        kStream.ReadStringTableEntry(m_kLookAtName);
+    m_kTransformValue.LoadBinary(kStream);
 
     for (unsigned int i = 0; i < 3; i++)
-        ((C630Pointer<C630RefObject>*)m_pItems)[i] = (C630RefObject*)kStream.DeserializeObject();
+        ((C630Pointer<C630RefObject>*)m_aspInterpolators)[i] = (C630RefObject*)kStream.DeserializeObject();
 }
 
 struct BinaryOutput341
@@ -539,16 +573,19 @@ struct Interpolator341
 
 // Serializes the LookAt's flags, target link, target name, transform and three interpolator links to the stream.
 // @fnv 0x00a4c700
-void NiLookAtInterpolator::SaveBinary(NiStream& arStream)
+// pdb: NiLookAtInterpolator::SaveBinary | NiLookAtInterpolator.obj | retail, upstream name already matches, high
+// pdb params: kStream
+// pdb locals: ui
+void NiLookAtInterpolator::SaveBinary(NiStream& kStream)
 {
-    NiStream* stream = &arStream;
+    NiStream* stream = &kStream;
     ((Interpolator341*)this)->NiInterpolator_LinkObject(stream);
-    SaveBinary341(*(BinaryOutput341*)stream->GetWriter(), m_usFlags);
+    SaveBinary341(*(BinaryOutput341*)stream->GetWriter(), m_uFlags);
     stream->SaveLinkID(reinterpret_cast<const NiObject*>(m_pkLookAt));
-    stream->SerializeString((const char*)&m_kTargetNodeName);
-    m_kTransform.SaveBinary(stream);
+    stream->SerializeString((const char*)&m_kLookAtName);
+    m_kTransformValue.SaveBinary(stream);
     for (unsigned int i = 0; i < 3; ++i)
-        stream->SaveLinkID(reinterpret_cast<const NiObject*>(m_pItems[i]));
+        stream->SaveLinkID(reinterpret_cast<const NiObject*>(m_aspInterpolators[i]));
 }
 
 #include <windows.h>
@@ -586,13 +623,16 @@ struct S_00a4ba30_Ptr
 
 // Calls FUN_00a57050 with the two floats, then assigns each non-null unk38[i] entry's v50 result to the corresponding entry in r.
 // @fnv 0x00a4ba30
-NiInterpolator* __thiscall NiLookAtInterpolator::CloneForTimeRange(float a, float b)
+// pdb: NiLookAtInterpolator::GetSequenceInterpolator | NiLookAtInterpolator.obj | retail, object-file gap fill, high
+// pdb params: fStartTime, fEndTime
+// pdb locals: pkSeqInterp, ui
+NiInterpolator* __thiscall NiLookAtInterpolator::CloneForTimeRange(float fStartTime, float fEndTime)
 {
-    NiLookAtInterpolator* pResult = (NiLookAtInterpolator*)NiInterpolator::CloneForTimeRange(a, b);
+    NiLookAtInterpolator* pResult = (NiLookAtInterpolator*)NiInterpolator::CloneForTimeRange(fStartTime, fEndTime);
     for (int i = 0; i < 3; i++)
     {
-        if (((S_00a4ba30_Ptr*)m_pItems)[i])
-            ((S_00a4ba30_Ptr*)pResult->m_pItems)[i] = (S_00a4ba30_Ref*)((NiInterpolator*)((S_00a4ba30_Ptr*)m_pItems)[i])->CloneForTimeRange(a, b);
+        if (((S_00a4ba30_Ptr*)m_aspInterpolators)[i])
+            ((S_00a4ba30_Ptr*)pResult->m_aspInterpolators)[i] = (S_00a4ba30_Ref*)((NiInterpolator*)((S_00a4ba30_Ptr*)m_aspInterpolators)[i])->CloneForTimeRange(fStartTime, fEndTime);
     }
     return pResult;
 }
@@ -645,29 +685,31 @@ struct SmartPtr
 // Preserve the bitwise default values used by the look-at constructor.
 __declspec(nothrow) inline NiQuatTransform::NiQuatTransform()
 {
-    *(int*)&x = DAT_011a8400;
+    *(int*)&m_kTranslate = DAT_011a8400;
     *(int*)&y = DAT_011a8404;
     *(int*)&z = DAT_011a8408;
-    *(int*)&qx = DAT_011f3704;
+    *(int*)&m_kRotate = DAT_011f3704;
     *(int*)&qy = DAT_011f3708;
     *(int*)&qz = DAT_011f370c;
     *(int*)&qw = DAT_011f3710;
-    scale = DAT_01096b8c;
+    m_fScale = DAT_01096b8c;
 }
 
 // @fnv 0x00a4bcf0
+// pdb: NiLookAtInterpolator::NiLookAtInterpolator | NiLookAtInterpolator.obj | retail, upstream name already matches, high
+// pdb params: pkLookAt, eAxis, bFlip
 NiLookAtInterpolator::NiLookAtInterpolator(unsigned int pkLookAt, unsigned int eAxis, bool bFlip)
-    : m_usFlags(0), m_pkLookAt((NiAVObject*)pkLookAt)
+    : m_uFlags(0), m_pkLookAt((NiAVObject*)pkLookAt)
 {
-    memset(m_pItems, 0, sizeof(m_pItems));
+    memset(m_aspInterpolators, 0, sizeof(m_aspInterpolators));
     if (bFlip)
-        m_usFlags |= 1;
+        m_uFlags |= 1;
     else
-        m_usFlags &= 0xFFFE;
-    m_usFlags = (m_usFlags & 0xFFF9) | (eAxis * 2);
-    ((SmartPtr*)m_pItems)[0] = 0;
-    ((SmartPtr*)m_pItems)[1] = 0;
-    ((SmartPtr*)m_pItems)[2] = 0;
+        m_uFlags &= 0xFFFE;
+    m_uFlags = (m_uFlags & 0xFFF9) | (eAxis * 2);
+    ((SmartPtr*)m_aspInterpolators)[0] = 0;
+    ((SmartPtr*)m_aspInterpolators)[1] = 0;
+    ((SmartPtr*)m_aspInterpolators)[2] = 0;
 }
 
 extern "C" void _ReadWriteBarrier(void);
@@ -837,39 +879,42 @@ extern const LookVector DAT_011a9478, DAT_011a9484;
 
 inline void NiQuatTransform::MakeInvalid()
 {
-    x = DAT_01015f5c;
+    m_kTranslate = DAT_01015f5c;
     qy = DAT_01015f5c;
-    scale = DAT_01015f5c;
+    m_fScale = DAT_01015f5c;
 }
 inline bool NiQuatTransform::IsInvalid() const
 {
-    return scale == DAT_010241b0 && qy == DAT_010241b0 && x == DAT_010241b0;
+    return m_fScale == DAT_010241b0 && qy == DAT_010241b0 && m_kTranslate == DAT_010241b0;
 }
 
 // Computes the look-at transform for a node by calculating world position, orientation toward target, and optional roll/scale, storing the result in output.
 // @fnv 0x00a4bec0
-bool NiLookAtInterpolator::UpdateTransform(float time, NiObjectNET* apTarget, NiQuatTransform& arValue)
+// pdb: NiLookAtInterpolator::Update | NiLookAtInterpolator.obj | retail, object-file gap fill, high
+// pdb params: fTime, pkInterpTarget, kValue
+// pdb locals: kParentWorldRot, kTargetWorldPos, pkParent, kLocalTranslate, pkScaleInterp, pkTranslateInterp, kQuatValue, kMyWorldPos, pkTarget, kRot, kAt, pkRollInterp, kRight, kUp, fDot, fRoll, roll, fScale
+bool NiLookAtInterpolator::UpdateTransform(float fTime, NiObjectNET* pkInterpTarget, NiQuatTransform& kValue)
 {
-    LookNode* apNode = (LookNode*)apTarget;
-    LookTransform& apTransform = (LookTransform&)arValue;
+    LookNode* apNode = (LookNode*)pkInterpTarget;
+    LookTransform& apTransform = (LookTransform&)kValue;
     LookNode* target = (LookNode*)m_pkLookAt;
     if (!target)
     {
         apTransform.Invalid();
-        m_kTransform.MakeInvalid();
+        m_kTransformValue.MakeInvalid();
         return false;
     }
     LookVector vTargetPosition = target->worldPosition;
     LookNode* parent = apNode->parent;
     LookVector localPosition;
-    if (m_pItems[0])
+    if (m_aspInterpolators[0])
     {
-        if (!m_pItems[0]->UpdatePoint3(time, (NiObjectNET*)apNode, (NiPoint3&)localPosition))
+        if (!m_aspInterpolators[0]->UpdatePoint3(fTime, (NiObjectNET*)apNode, (NiPoint3&)localPosition))
         {
-            m_kTransform.MakeInvalid();
+            m_kTransformValue.MakeInvalid();
             return false;
         }
-        (LookVector&)m_kTransform.x = localPosition;
+        (LookVector&)m_kTransformValue.m_kTranslate = localPosition;
     }
     else
         localPosition = apNode->localPosition;
@@ -908,12 +953,12 @@ bool NiLookAtInterpolator::UpdateTransform(float time, NiObjectNET* apTarget, Ni
         }
         vUp -= vDirection * projection;
         vUp.Unitize_004a0c10();
-        if (!bool(m_usFlags & 1))
+        if (!bool(m_uFlags & 1))
             vDirection = -vDirection;
 
         LookVector vRight;
         vRight = vUp.Cross(vDirection);
-        switch ((m_usFlags >> 1) & 3)
+        switch ((m_uFlags >> 1) & 3)
         {
         case 0:
             rotation.Column0(vDirection);
@@ -932,12 +977,12 @@ bool NiLookAtInterpolator::UpdateTransform(float time, NiObjectNET* apTarget, Ni
             break;
         }
         rotation = mParentRotation.FUN_00a588a0(rotation);
-        if (m_pItems[1])
+        if (m_aspInterpolators[1])
         {
             float angle;
-            if (!m_pItems[1]->UpdateFloat(time, (NiObjectNET*)apNode, angle))
+            if (!m_aspInterpolators[1]->UpdateFloat(fTime, (NiObjectNET*)apNode, angle))
             {
-                m_kTransform.MakeInvalid();
+                m_kTransformValue.MakeInvalid();
                 return false;
             }
             LookMatrix mRollRotation;
@@ -947,25 +992,25 @@ bool NiLookAtInterpolator::UpdateTransform(float time, NiObjectNET* apTarget, Ni
     }
     LookQuaternion qRotation;
     qRotation.FUN_00a6df40(rotation);
-    (LookQuaternion&)m_kTransform.qx = qRotation;
+    (LookQuaternion&)m_kTransformValue.m_kRotate = qRotation;
     _ReadWriteBarrier();
-    if (m_pItems[2])
+    if (m_aspInterpolators[2])
     {
         float amount;
-        if (!m_pItems[2]->UpdateFloat(time, (NiObjectNET*)apNode, amount))
+        if (!m_aspInterpolators[2]->UpdateFloat(fTime, (NiObjectNET*)apNode, amount))
         {
-            m_kTransform.MakeInvalid();
+            m_kTransformValue.MakeInvalid();
             return false;
         }
-        m_kTransform.scale = amount;
+        m_kTransformValue.m_fScale = amount;
     }
-    if (m_kTransform.IsInvalid())
+    if (m_kTransformValue.IsInvalid())
     {
         apTransform.Invalid();
         return false;
     }
-    apTransform = (const LookTransform&)m_kTransform;
-    m_fLastTime = time;
+    apTransform = (const LookTransform&)m_kTransformValue;
+    m_fLastTime = fTime;
     return true;
 }
 
@@ -1028,32 +1073,35 @@ using namespace fnv_00a4c4b0;
 
 // @fnv 0x00a4c4b0
 // src: XBOX_PDB 0x00a4c4b0
-void __thiscall NiLookAtInterpolator::CopyMembers_00a4c4b0(NiLookAtInterpolator* dest, CloningProcess& c)
+// pdb: NiLookAtInterpolator::CopyMembers | NiLookAtInterpolator.obj | retail, object-file gap fill, high
+// pdb params: pkDest, kCloning
+// pdb locals: ui
+void __thiscall NiLookAtInterpolator::CopyMembers_00a4c4b0(NiLookAtInterpolator* pkDest, CloningProcess& kCloning)
 {
-    ((NiObject*)this)->CopyMemberData(dest, c);
-    unsigned int f = m_usFlags;
-    dest->m_usFlags = f;
-    dest->m_usFlags = (m_usFlags & 1) ? (f | 1) : (f & 0xfffe);
+    ((NiObject*)this)->CopyMemberData(pkDest, kCloning);
+    unsigned int f = m_uFlags;
+    pkDest->m_uFlags = f;
+    pkDest->m_uFlags = (m_uFlags & 1) ? (f | 1) : (f & 0xfffe);
     {
-        S_00a4c4b0_Flags* pDestFlags = (S_00a4c4b0_Flags*)&dest->m_usFlags;
-        pDestFlags->f.mid = ((S_00a4c4b0_Flags*)&m_usFlags)->f.mid;
+        S_00a4c4b0_Flags* pDestFlags = (S_00a4c4b0_Flags*)&pkDest->m_uFlags;
+        pDestFlags->f.mid = ((S_00a4c4b0_Flags*)&m_uFlags)->f.mid;
     }
-    dest->m_pkLookAt = m_pkLookAt;
+    pkDest->m_pkLookAt = m_pkLookAt;
     char* s = fnv_00a4c4b0::DAT_011f49e0;
-    if (dest->m_kTargetNodeName.m_kHandle != s)
+    if (pkDest->m_kLookAtName.m_kHandle != s)
     {
         if (s != fnv_00a4c4b0::DAT_0109b220)
             InterlockedIncrement((volatile LONG*)(s - 8));
-        char* o = dest->m_kTargetNodeName.m_kHandle;
+        char* o = pkDest->m_kLookAtName.m_kHandle;
         if (o != fnv_00a4c4b0::DAT_0109b220)
             InterlockedDecrement((volatile LONG*)(o - 8));
-        dest->m_kTargetNodeName.m_kHandle = s;
+        pkDest->m_kLookAtName.m_kHandle = s;
     }
-    (S_00a4c4b0_Xform&)dest->m_kTransform = (const S_00a4c4b0_Xform&)m_kTransform;
+    (S_00a4c4b0_Xform&)pkDest->m_kTransformValue = (const S_00a4c4b0_Xform&)m_kTransformValue;
     for (int i = 0; i < 3; i++)
     {
-        if (m_pItems[i])
-            ((S_00a4c4b0_Ptr*)dest->m_pItems)[i] = ((S_00a4c4b0_Ref*)m_pItems[i])->FUN_00a5d680();
+        if (m_aspInterpolators[i])
+            ((S_00a4c4b0_Ptr*)pkDest->m_aspInterpolators)[i] = ((S_00a4c4b0_Ref*)m_aspInterpolators[i])->FUN_00a5d680();
     }
 }
 

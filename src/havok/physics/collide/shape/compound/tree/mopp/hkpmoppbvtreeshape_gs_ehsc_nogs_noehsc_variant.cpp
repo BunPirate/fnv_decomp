@@ -33,7 +33,7 @@ __forceinline void initMoppCode(hkpMoppCode* code, const hkVector4_X& offset, co
     code->m_info.m_offset.m_vComponents = offset.m_vComponents;
     code->m_data.setOwnedData((unsigned char*)data, size, size);
     // hkEnum's shared declaration exposes no value setter; its storage is one signed byte.
-    reinterpret_cast<hkInt8&>(code->m_eBuildType) = hkpMoppCode::BUILD_NOT_SET;
+    reinterpret_cast<hkInt8&>(code->m_buildType) = hkpMoppCode::BUILD_NOT_SET;
 }
 
 // 0x00DD1DA0 is the scalar MOPP AABB query; its 0x40-byte workspace starts with the hit-array pointer.
@@ -56,23 +56,26 @@ struct MoppAabbQueryMachine
     int unk38;
     int unk3C;
 
-    void hkpMoppObbVirtualMachine_queryAabb(const hkpMoppCode* code, const hkAabb* aabb, hkArray<unsigned int>* hits) throw();
+    void hkpMoppObbVirtualMachine_queryAabb(const hkpMoppCode* code, const hkAabb* aabb, hkArray<unsigned int>* primitives_out) throw();
 };
 
 extern double DAT_01091c00;
 
 // @fnv 0x00d54810
 // src: XBOX_PDB 0x00d54810
+// pdb: hkMoppBvTreeShapeBase::queryAabbImpl | hkpMoppBvTreeShape.obj | retail, upstream name already matches, high
+// pdb params: aabb, hits, maxNumKeys
+// pdb locals: obbMachine, codePtrBuffer, newAabb, hitArray, w, assertBuf, ostr
 int hkMoppBvTreeShapeBase::queryAabbImpl(const hkAabb& aabbIn, unsigned int* hits, int maxNumKeys) const
 {
-    const hkVector4_X& offset = m_kMoppCodeInfo;
+    const hkVector4_X& offset = m_codeInfoCopy;
 
     __m128 aabbStorage[2];
     hkAabb& aabb = *reinterpret_cast<hkAabb*>(aabbStorage);
     int buffer[16];
     hkpMoppCode* code = (hkpMoppCode*)(((unsigned int)buffer + 15) & ~15u);
-    initMoppCode(code, offset, m_pMoppData, m_uiMoppDataSize);
-    float extent = (float)(DAT_01091c00 / m_kMoppCodeInfo.m_vComponents.m128_f32[3]);
+    initMoppCode(code, offset, m_moppData, m_moppDataSize);
+    float extent = (float)(DAT_01091c00 / m_codeInfoCopy.m_vComponents.m128_f32[3]);
     aabb.m_kMinimumCorner.m_vComponents = _mm_max_ps(offset.m_vComponents, aabbIn.m_kMinimumCorner.m_vComponents);
     aabb.m_kMaximumCorner.m_vComponents =
         _mm_min_ps(_mm_add_ps(_mm_set_ps1(extent), offset.m_vComponents), aabbIn.m_kMaximumCorner.m_vComponents);
@@ -87,15 +90,16 @@ int hkMoppBvTreeShapeBase::queryAabbImpl(const hkAabb& aabbIn, unsigned int* hit
 inline hkpShapeContainer::~hkpShapeContainer() {}
 inline hkpSingleShapeContainer::~hkpSingleShapeContainer()
 {
-    if (m_pContainedShape)
-        const_cast<hkpShape*>(m_pContainedShape)->removeReference();
+    if (m_childShape)
+        const_cast<hkpShape*>(m_childShape)->removeReference();
 }
 
 inline hkMoppBvTreeShapeBase::~hkMoppBvTreeShapeBase() throw()
 {
-    const_cast<hkpMoppCode*>(m_pMoppCode)->removeReference();
+    const_cast<hkpMoppCode*>(m_code)->removeReference();
 }
 
 // @fnv 0x00d543e0
+// pdb: hkpMoppBvTreeShape::~hkpMoppBvTreeShape | hkpMoppBvTreeShape.obj | retail, upstream name already matches, high
 __declspec(noinline) hkpMoppBvTreeShape::~hkpMoppBvTreeShape() throw()
 {}

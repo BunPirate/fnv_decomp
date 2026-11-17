@@ -111,17 +111,17 @@ public:
     void Unitize_004a0c10();
     float FUN_004a7290();
     float FUN_004a7290() const;
-    LocalVec3 FUN_004b3800(const LocalVec3& other) const;
+    LocalVec3 FUN_004b3800(const LocalVec3& pt) const;
     LocalVec3 ProcessAndReturnValue_0053d280(float divisor);
     float NiPoint3_XYLength();
     float NiPoint3_XYLength() const;
     void ComputeValue_0063c8a0(const LocalVec3* other);
     void ComputeValue_0063c8a0(void* other);
     void FUN_006815c0();
-    float CVec3_Distance(LocalVec3* other);
-    float CVec3_Distance(const LocalVec3& other) const;
-    LocalVec3 TransformPointByMatrix4(const Mat& matrix);
-    LocalVec3 TransformPointByMatrix4(const Matrix4* matrix);
+    float CVec3_Distance(LocalVec3* cVec);
+    float CVec3_Distance(const LocalVec3& cVec) const;
+    LocalVec3 TransformPointByMatrix4(const Mat& cTransform);
+    LocalVec3 TransformPointByMatrix4(const Matrix4* cTransform);
     void Normalize_00b12790();
     LocalVec3 Diff_00b13040(void* other);
     LocalVec3 Diff_00b13040(const LocalVec3& other) const;
@@ -194,7 +194,7 @@ LocalVec3 LocalVec3::AddVector(const LocalVec3& v) const
     return r;
 }
 // src: COMMUNITY 0x00b04d40
-float LocalVec3::CVec3_Distance(const LocalVec3& v) const
+float LocalVec3::CVec3_Distance(const LocalVec3& cVec) const
 {
     union FloatBits
     {
@@ -202,7 +202,7 @@ float LocalVec3::CVec3_Distance(const LocalVec3& v) const
         int bits;
     };
     FloatBits squared;
-    squared.value = (v.z - z) * (v.z - z) + ((v.y - y) * (v.y - y) + (v.x - x) * (v.x - x));
+    squared.value = (cVec.z - z) * (cVec.z - z) + ((cVec.y - y) * (cVec.y - y) + (cVec.x - x) * (cVec.x - x));
     FloatBits estimate;
     estimate.bits = (squared.bits >> 1) + 0x1fc00000;
     return estimate.value;
@@ -258,8 +258,8 @@ struct Context
     unsigned int unknown60, unknown64, unknown68, unknown6C, unknown70, unknown74, unknown78, unknown7C;
     unsigned int unknown80, unknown84;
     VecRange points;
-    const float* CIndexedGeometry_GetVertexCoord(unsigned short index);
-    void CIndexedGeometry_AddVertexTexCoord1(Vec2* uv);
+    const float* CIndexedGeometry_GetVertexCoord(unsigned short nVertexIndex);
+    void CIndexedGeometry_AddVertexTexCoord1(Vec2* pTexCoord);
 };
 struct Scr
 {
@@ -294,38 +294,41 @@ struct Scr
 struct Agent
 {
     LocalVec3 first, second;
-    LocalVec3 ProjectOntoLine(const LocalVec3& start, const LocalVec3& end, const LocalVec3& point);
+    LocalVec3 CProjectedShadow_ClosestPoint(const LocalVec3& start, const LocalVec3& end, const LocalVec3& point);
     void CProjectedShadow_ComputeTexCoords(Context*, LocalVec3, float, ShadowUVRect*);
 };
 // @fnv 0x00b3ea10
 // src: COMMUNITY 0x00b3ea10
-void Agent::CProjectedShadow_ComputeTexCoords(Context* context, LocalVec3 point, float extent, ShadowUVRect* bounds)
+// pdb: CProjectedShadow::ComputeTexCoords | ProjectedShadow.obj | retail, upstream name already matches, high
+// pdb params: pGeometry, cCenter, fRadius, pShadowCoords
+// pdb locals: cStartS, cEndS, cStartT, cEndT, i, cBisectorT, cVertex, pTexCoords, pVertex, cBisectorS
+void Agent::CProjectedShadow_ComputeTexCoords(Context* pGeometry, LocalVec3 cCenter, float fRadius, ShadowUVRect* pShadowCoords)
 {
-    LocalVec3 lowerAA = point.Diff_00b13040(static_cast<const LocalVec3&>(first).ScaleSwizzled(extent));
-    LocalVec3 kUpperA = point.AddVector(static_cast<const LocalVec3&>(first).ScaleSwizzled(extent));
-    LocalVec3 lowerB6 = point.Diff_00b13040(static_cast<const LocalVec3&>(second).ScaleSwizzled(extent));
-    LocalVec3 upperB4 = point.AddVector(static_cast<const LocalVec3&>(second).ScaleSwizzled(extent));
+    LocalVec3 lowerAA = cCenter.Diff_00b13040(static_cast<const LocalVec3&>(first).ScaleSwizzled(fRadius));
+    LocalVec3 kUpperA = cCenter.AddVector(static_cast<const LocalVec3&>(first).ScaleSwizzled(fRadius));
+    LocalVec3 lowerB6 = cCenter.Diff_00b13040(static_cast<const LocalVec3&>(second).ScaleSwizzled(fRadius));
+    LocalVec3 upperB4 = cCenter.AddVector(static_cast<const LocalVec3&>(second).ScaleSwizzled(fRadius));
     Scr::Touch();
-    context->count = 0;
-    for (unsigned short index3 = 0; index3 < (unsigned short)(context->points.Size() / 3); ++index3)
+    pGeometry->count = 0;
+    for (unsigned short index3 = 0; index3 < (unsigned short)(pGeometry->points.Size() / 3); ++index3)
     {
-        const float* input = context->CIndexedGeometry_GetVertexCoord(index3);
+        const float* input = pGeometry->CIndexedGeometry_GetVertexCoord(index3);
         LocalVec3 value2;
         Fill(&value2, input);
-        LocalVec3 projectedA7 = ProjectOntoLine(lowerAA, kUpperA, value2);
+        LocalVec3 projectedA7 = CProjectedShadow_ClosestPoint(lowerAA, kUpperA, value2);
         Vec2 uv5;
-        uv5.x = lowerAA.CVec3_Distance(projectedA7) / (extent * 2.0f);
-        if (bounds)
+        uv5.x = lowerAA.CVec3_Distance(projectedA7) / (fRadius * 2.0f);
+        if (pShadowCoords)
         {
-            uv5.x = bounds->MapX(uv5.x);
+            uv5.x = pShadowCoords->MapX(uv5.x);
         }
-        LocalVec3 projectedB2 = ProjectOntoLine(lowerB6, upperB4, value2);
-        uv5.y = lowerB6.CVec3_Distance(projectedB2) / (extent * 2.0f);
-        if (bounds)
+        LocalVec3 projectedB2 = CProjectedShadow_ClosestPoint(lowerB6, upperB4, value2);
+        uv5.y = lowerB6.CVec3_Distance(projectedB2) / (fRadius * 2.0f);
+        if (pShadowCoords)
         {
-            uv5.y = bounds->MapY(uv5.y);
+            uv5.y = pShadowCoords->MapY(uv5.y);
         }
-        context->CIndexedGeometry_AddVertexTexCoord1(&uv5);
+        pGeometry->CIndexedGeometry_AddVertexTexCoord1(&uv5);
     }
 }
 
@@ -358,7 +361,7 @@ inline IdvFileError::IdvFileError(const std::string& message, bool system)
 
 struct NarrowString : std::string
 {
-    NarrowString(std::string s) : std::string(s)
+    NarrowString(std::string strFilename) : std::string(strFilename)
     {}
     std::string ProcessEntries_00b09f90();
 };
@@ -376,35 +379,38 @@ struct FrondInfo
 {
     NiPoint3 p0, p1, p2;
     std::string name;
-    void ProcessEntries_00b3e750(ChunkReader*);
+    void CProjectedShadow_Parse(ChunkReader*);
 };
 
 // @fnv 0x00b3e750
-// src: GUESS 0x00b3e750 (confidence: low)
-void FrondInfo::ProcessEntries_00b3e750(ChunkReader* reader)
+// src: XBOX_RETAIL_PDB 0x00b3e750
+// pdb: CProjectedShadow::Parse | ProjectedShadow.obj | retail, string-set bridge, high
+// pdb params: cFile
+// pdb locals: nToken, cFilename
+void FrondInfo::CProjectedShadow_Parse(ChunkReader* cFile)
 {
-    int token = reader->GetNextElement();
+    int token = cFile->GetNextElement();
     do
     {
         switch (token)
         {
         case 0x4652:
-            AssignPoint3(p0, reader->GetVector3());
+            AssignPoint3(p0, cFile->GetVector3());
             break;
         case 0x4653:
-            AssignPoint3(p1, reader->GetVector3());
+            AssignPoint3(p1, cFile->GetVector3());
             break;
         case 0x4654:
-            AssignPoint3(p2, reader->GetVector3());
+            AssignPoint3(p2, cFile->GetVector3());
             break;
         case 0x4655: {
-            NarrowString text(reader->CTreeFileAccess_ParseString());
+            NarrowString text(cFile->CTreeFileAccess_ParseString());
             name = text.ProcessEntries_00b09f90();
             break;
         }
         default:
             throw IdvFileError(IdvFormatString("malformed frond info (token %d)", token), false);
         }
-        token = reader->GetNextElement();
+        token = cFile->GetNextElement();
     } while (token != 0x4651);
 }

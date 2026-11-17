@@ -12,6 +12,7 @@ struct FUN_006234d0
     ~FUN_006234d0();
 };
 // @fnv 0x006234d0
+// pdb: bhkContactListener::~bhkContactListener | FOCollisionListener.obj | debug, call graph (shared callers), medium
 FUN_006234d0::~FUN_006234d0()
 {
     *(int*)this = (int)&DAT_0104dd5c;
@@ -54,6 +55,7 @@ struct FUN_00623590_class
 };
 // Calls FUN_006235c0, then deletes this if flags has bit 0 set, and returns this.
 // @fnv 0x00623590
+// pdb: FOCollisionListener::`scalar deleting destructor' | FOCollisionListener.obj | retail, vtable slot, high
 void* __thiscall FUN_00623590_class::FUN_00623590(unsigned int flags)
 {
     FUN_006235c0();
@@ -69,6 +71,7 @@ struct FUN_00623820_class
     void* __thiscall FUN_00623820(unsigned int flags);
 };
 // @fnv 0x00623820
+// pdb: FOCollisionListener::ObjectDamageImpactData::`scalar deleting destructor' | FOCollisionListener.obj | debug, call graph, high
 void* __thiscall FUN_00623820_class::FUN_00623820(unsigned int flags)
 {
     FUN_00623850();
@@ -90,6 +93,7 @@ struct FUN_00623850
 };
 // Empty destructor for the structure; destroys its members GO and FUN_0042f760.
 // @fnv 0x00623850
+// pdb: FOCollisionListener::ObjectDamageImpactData::~ObjectDamageImpactData | FOCollisionListener.obj | debug, object-file gap fill, medium
 FUN_00623850::~FUN_00623850()
 {}
 
@@ -98,6 +102,7 @@ struct FUN_00623510_class
     void* FUN_00623510(unsigned int flags);
 };
 // @fnv 0x00623510
+// pdb: hkpContactListener::`scalar deleting destructor' | FOCollisionListener.obj | retail, vtable slot, high
 void* FUN_00623510_class::FUN_00623510(unsigned int flags)
 {
     ((FUN_006234d0*)this)->SetVtableAndProcessState_006234f0();
@@ -133,6 +138,7 @@ struct FUN_006235c0 : BaseObject
 
 // Clears DAT_011cc224 to 0 and then calls ProcessPendingRequests before the object is destroyed.
 // @fnv 0x006235c0
+// pdb: FOCollisionListener::~FOCollisionListener | FOCollisionListener.obj | debug, object-file gap fill, medium
 FUN_006235c0::~FUN_006235c0()
 {
     DAT_011cc224 = 0;
@@ -180,6 +186,8 @@ struct Processor
 };
 // Drains the request list, applying each positive-amount request to its resolved actor and deleting the request.
 // @fnv 0x00623640
+// pdb: FOCollisionListener::DealObjectDamage | FOCollisionListener.obj | debug, call graph, high
+// pdb locals: plist, pdata, pbody, pcol, pav, pref
 void Processor::ProcessRequests()
 {
     RequestList* pRequests = &requests;
@@ -408,7 +416,7 @@ struct S_006240f0_Form
 };
 struct S_006240f0_Char : S_006240f0_Form
 {
-    void HandleContactHit(int a);
+    void HandleContactHit(int arEvent);
 };
 struct S_006240f0
 {
@@ -417,6 +425,9 @@ struct S_006240f0
 
 // If form is an actor of kind 3, casts it to a character and calls HandleContactHit with arg.
 // @fnv 0x006240f0
+// pdb: FOCollisionListener::ReportProjectileImpact | FOCollisionListener.obj | debug, call graph, medium
+// pdb params: apCollidingRef, arEvent
+// pdb locals: pprojectile, pgrenade
 void S_006240f0::ApplyToCharacter(S_006240f0_Form* form, int arg)
 {
     if (form && form->IsActor())
@@ -435,7 +446,7 @@ struct HitForm
     float hkpRigidBody_getMass();
 };
 struct HitRefTarget;
-HitRefTarget* __cdecl bhkEntity_Getbhk(HitForm* pkForm);
+HitRefTarget* __cdecl bhkEntity_Getbhk(HitForm* apEnt);
 float __cdecl NiAbs_00408820(float f);
 float __cdecl ComputeDistanceFactor(float fScale, float fAmount);
 
@@ -619,45 +630,48 @@ struct HitTrackerImpl
 {
     int unk00;
     HitList m_kEntries;
-    void AddHitEntries(float fAmount, HitForm* pkFormA, HitForm* pkFormB, HitActor* pkActorA, HitActor* pkActorB);
+    void AddHitEntries(float afProjectedVelocity, HitForm* apBodyA, HitForm* apBodyB, HitActor* apRefA, HitActor* apRefB);
 };
 
 // @fnv 0x006238b0
-void HitTrackerImpl::AddHitEntries(float fAmount, HitForm* pkFormA, HitForm* pkFormB, HitActor* pkActorA,
-                                   HitActor* pkActorB)
+// pdb: FOCollisionListener::StoreObjectDamage | FOCollisionListener.obj | debug, call graph, high
+// pdb params: afProjectedVelocity, apBodyA, apBodyB, apRefA, apRefB
+// pdb locals: fvelocity, fdamage, fmass, pdata
+void HitTrackerImpl::AddHitEntries(float afProjectedVelocity, HitForm* apBodyA, HitForm* apBodyB, HitActor* apRefA,
+                                   HitActor* apRefB)
 {
-    float fAbs = NiAbs_00408820(fAmount);
+    float fAbs = NiAbs_00408820(afProjectedVelocity);
     if (fAbs < *g_s_011ce75c.Setting_Float_00403e20())
         return;
-    if (pkActorA && pkActorA->TESForm_GetDestructible() && !pkActorA->FUN_00477ba0() && !pkActorA->IsDead() &&
-        (!pkActorB || !pkActorB->IsDead()))
+    if (apRefA && apRefA->TESForm_GetDestructible() && !apRefA->FUN_00477ba0() && !apRefA->IsDead() &&
+        (!apRefB || !apRefB->IsDead()))
     {
-        float fScaleX = pkFormB->hkpRigidBody_getMass();
+        float fScaleX = apBodyB->hkpRigidBody_getMass();
         if (fScaleX == 0.0)
             fScaleX = 10000.0f;
         float fValueVal2 = ComputeDistanceFactor(fScaleX, fAbs);
         if (fValueVal2 > 0.0)
         {
             HitEntry* pkEntry = new HitEntry;
-            pkEntry->m_spReferencedObject.FUN_0066b0d0(bhkEntity_Getbhk(pkFormA));
+            pkEntry->m_spReferencedObject.FUN_0066b0d0(bhkEntity_Getbhk(apBodyA));
             pkEntry->m_fAmount = fValueVal2;
-            pkEntry->m_kSource.AssignRetainedObject(pkActorB ? pkActorB->GetHandle() : 0);
+            pkEntry->m_kSource.AssignRetainedObject(apRefB ? apRefB->GetHandle() : 0);
             m_kEntries.FUN_005ae3d0(pkEntry);
         }
     }
-    if (pkActorB && pkActorB->TESForm_GetDestructible() && !pkActorB->FUN_00477ba0() && !pkActorB->IsDead() &&
-        (!pkActorA || !pkActorA->IsDead()))
+    if (apRefB && apRefB->TESForm_GetDestructible() && !apRefB->FUN_00477ba0() && !apRefB->IsDead() &&
+        (!apRefA || !apRefA->IsDead()))
     {
-        float fScale2 = pkFormA->hkpRigidBody_getMass();
+        float fScale2 = apBodyA->hkpRigidBody_getMass();
         if (fScale2 == 0.0)
             fScale2 = 10000.0f;
         float fSecondFunctionValue = ComputeDistanceFactor(fScale2, fAbs);
         if (fSecondFunctionValue > 0.0)
         {
             HitEntry* pkEntry2 = new HitEntry;
-            pkEntry2->m_spReferencedObject.FUN_0066b0d0(bhkEntity_Getbhk(pkFormB));
+            pkEntry2->m_spReferencedObject.FUN_0066b0d0(bhkEntity_Getbhk(apBodyB));
             pkEntry2->m_fAmount = fSecondFunctionValue;
-            pkEntry2->m_kSource.AssignRetainedObject(pkActorA ? pkActorA->GetHandle() : 0);
+            pkEntry2->m_kSource.AssignRetainedObject(apRefA ? apRefA->GetHandle() : 0);
             m_kEntries.FUN_005ae3d0(pkEntry2);
         }
     }
@@ -691,6 +705,7 @@ struct FUN_00623bd0 : BaseNoVtable
 
 // Initializes the base and helper subobjects with 0, calls FUN_0066b0d0(0), sets m_04 to 0.0f and calls FUN_0042f780(0) on m_08.
 // @fnv 0x00623bd0
+// pdb: FOCollisionListener::ObjectDamageImpactData::ObjectDamageImpactData | FOCollisionListener.obj | debug, call graph, high
 FUN_00623bd0::FUN_00623bd0() : BaseNoVtable(0), m_08(0)
 {
     FUN_0066b0d0(0);
@@ -704,6 +719,7 @@ struct RequestEntry
 };
 
 // @fnv 0x00623c50
+// pdb: FOCollisionListener::ClearDamageImpacts | FOCollisionListener.obj | debug, object-file gap fill, medium
 void FUN_006235c0::ProcessPendingRequests()
 {
     while (!((RequestList*)&m_kSub)->FUN_008256d0())
@@ -770,20 +786,23 @@ struct CollisionBodyResults
 struct Owner_623cb0
 {
     int m_00;
-    void ProcessHit(Rec_623cb0* a1);
-    void AddHitEntries(float f, void* a, void* b, void* c, void* d);
+    void ProcessHit(Rec_623cb0* arEvent);
+    void AddHitEntries(float afProjectedVelocity, void* apBodyA, void* apBodyB, void* apRefA, void* apRefB);
 };
 
-unsigned char TESHavokUtilities_GetMaterial(void* obj, void* ctx);
+unsigned char TESHavokUtilities_GetMaterial(void* arBody, void* arPosition);
 void FUN_00458620(Ctx_623cb0* ctx, void* req);
 float HK2NI(float v);
 float NiAbs_00408820(float v);
-void ImpactMixer_PlayCollisionSound(Ctx_623cb0* ctx);
+void ImpactMixer_PlayCollisionSound(Ctx_623cb0* arDataIn);
 void* hkpGetRigidBody(void* obj);
 
 // Does nothing if a1->m_20 is set; unless early checks return, calls AddHitEntries with a1->m_1c and the two nodes, then ApplyToCharacter for both.
 // @fnv 0x00623cb0
-void Owner_623cb0::ProcessHit(Rec_623cb0* apHitRecord)
+// pdb: FOCollisionListener::contactPointAddedCallback | FOCollisionListener.obj | retail, vtable slot, high
+// pdb params: arEvent
+// pdb locals: pbodyA, pcolA, pcb, prefA, prefB, pavA, pca, pavB, pbodyB, pcolB, soundInfo, ifa, ifb, prb
+void Owner_623cb0::ProcessHit(Rec_623cb0* arEvent)
 {
     void* node;
     Form* item;
@@ -803,14 +822,14 @@ void Owner_623cb0::ProcessHit(Rec_623cb0* apHitRecord)
     void* mid;
     void* node1;
 
-    if (apHitRecord->m_20 != 0)
+    if (arEvent->m_20 != 0)
     {
         return;
     }
     ctx2.BGSPrimitive_EvaluateValue_006240d0();
-    cur = NiAbs_00408820(HK2NI(apHitRecord->m_1c));
-    keyTmp = ((Gen_623cb0*)apHitRecord->m_00)->GetLastNode();
-    entry = ((Gen_623cb0*)apHitRecord->m_04)->GetLastNode();
+    cur = NiAbs_00408820(HK2NI(arEvent->m_1c));
+    keyTmp = ((Gen_623cb0*)arEvent->m_00)->GetLastNode();
+    entry = ((Gen_623cb0*)arEvent->m_04)->GetLastNode();
 
     if (cur >= ((Gen_623cb0*)&DAT_011cc270)->FUN_00450410() && cur >= DAT_01012070)
     {
@@ -842,10 +861,10 @@ void Owner_623cb0::ProcessHit(Rec_623cb0* apHitRecord)
                 }
             }
         }
-        FUN_00458620(&ctx2, ((RequestList*)apHitRecord->m_10)->FUN_006815c0());
-        extra = apHitRecord->m_18 ? ((Gen_623cb0*)((char*)apHitRecord->m_18 + 8))->hkContactPointMaterial_getFriction() : DAT_01017870;
-        fval.a = TESHavokUtilities_GetMaterial(apHitRecord->m_00, &ctx2);
-        fval.b = TESHavokUtilities_GetMaterial(apHitRecord->m_04, &ctx2);
+        FUN_00458620(&ctx2, ((RequestList*)arEvent->m_10)->FUN_006815c0());
+        extra = arEvent->m_18 ? ((Gen_623cb0*)((char*)arEvent->m_18 + 8))->hkContactPointMaterial_getFriction() : DAT_01017870;
+        fval.a = TESHavokUtilities_GetMaterial(arEvent->m_00, &ctx2);
+        fval.b = TESHavokUtilities_GetMaterial(arEvent->m_04, &ctx2);
         mid = 0;
         node1 = 0;
         if (keyTmp != 0 && ((Gen_623cb0*)keyTmp)->hkpCollidable_getType() == 1)
@@ -876,9 +895,9 @@ void Owner_623cb0::ProcessHit(Rec_623cb0* apHitRecord)
     idx = cell2 ? FUN_004b5a20(cell2) : 0;
     key2 = idx ? idx->FUN_0044ddc0() : 0;
     hold = key2 ? TESObjectREFR_FindReferenceFor3D(key2) : 0;
-    AddHitEntries(apHitRecord->m_1c, node, cell2, cell3, hold);
-    ((S_006240f0*)this)->ApplyToCharacter((S_006240f0_Form*)cell3, (int)apHitRecord);
-    ((S_006240f0*)this)->ApplyToCharacter((S_006240f0_Form*)hold, (int)apHitRecord);
+    AddHitEntries(arEvent->m_1c, node, cell2, cell3, hold);
+    ((S_006240f0*)this)->ApplyToCharacter((S_006240f0_Form*)cell3, (int)arEvent);
+    ((S_006240f0*)this)->ApplyToCharacter((S_006240f0_Form*)hold, (int)arEvent);
 }
 
 struct FUN_00623540 : FUN_006234d0
@@ -886,5 +905,6 @@ struct FUN_00623540 : FUN_006234d0
     virtual ~FUN_00623540();
 };
 // @fnv 0x00623540
+// pdb: bhkContactListener::`scalar deleting destructor' | FOCollisionListener.obj | debug, vtable slot, medium
 FUN_00623540::~FUN_00623540()
 {}

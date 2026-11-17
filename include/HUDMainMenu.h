@@ -18,6 +18,7 @@ class HUDMainMenu__XPUpdate;
 class HUDMainMenu__RadiationUpdate;
 
 
+// pdb: class HUDMainMenu, size 0x278, bases: Menu, 36 members
 class HUDMainMenu : public Menu
 {
 public:
@@ -56,55 +57,55 @@ public:
     virtual void AssignTileByID(int aTileID, Tile* apTile);
     virtual int GetClass();
 
-    Tile* m_pTiles[87];
-    Tile* m_pAdditionalHudTile;
-    float m_fMessageDisplayTimer;
-    BSSimpleList<HUDMainMenu__MessageData*> m_kMessageList;
-    unsigned int m_uiMessageCount;
-    BSSimpleArray<HUDMainMenu__SubtitleData*, 1024> m_kSubtitleArray;
-    HUDMainMenu__SubtitleData* m_pCurrentSubtitle;
-    BSSoundHandle m_kTargetDisplayData;
-    TESObjectREFR* m_pCrosshairReference;
-    int m_iHudValueFirstBeforeMode;
-    int m_iHudValueSecondBeforeMode;
-    HUD_MENU_MODE m_eHudMenuMode;
-    HotkeyWheelDisplay m_kMenuData;
-    bool m_bHudModeActive;
+    Tile* pTiles[87]; // src: XBOX_RETAIL_PDB +0x28 (old: m_pTiles)
+    Tile* pActive; // src: XBOX_RETAIL_PDB +0x184 (old: m_pAdditionalHudTile)
+    float fSeenLevel; // src: XBOX_RETAIL_PDB +0x188 (old: m_fMessageDisplayTimer)
+    BSSimpleList<HUDMainMenu__MessageData*> xMessages; // src: XBOX_RETAIL_PDB +0x18c (old: m_kMessageList)
+    unsigned int uiMessageStartTime; // src: XBOX_RETAIL_PDB +0x194 (old: m_uiMessageCount)
+    BSSimpleArray<HUDMainMenu__SubtitleData*, 1024> xSubtitles; // src: XBOX_RETAIL_PDB +0x198 (old: m_kSubtitleArray)
+    HUDMainMenu__SubtitleData* pCurrSubtitle; // src: XBOX_RETAIL_PDB +0x1a8 (old: m_pCurrentSubtitle)
+    BSSoundHandle GeigerSound; // src: XBOX_RETAIL_PDB +0x1ac (old: m_kTargetDisplayData)
+    TESObjectREFR* pLastObject; // src: XBOX_RETAIL_PDB +0x1b8 (old: m_pCrosshairReference)
+    int iHUDVisibilityMenuModeFlags; // src: XBOX_RETAIL_PDB +0x1bc (old: m_iHudValueFirstBeforeMode)
+    int iHUDVisibilityUserSettings; // src: XBOX_RETAIL_PDB +0x1c0 (old: m_iHudValueSecondBeforeMode)
+    HUD_MENU_MODE eMenuMode; // src: XBOX_RETAIL_PDB +0x1c4 (old: m_eHudMenuMode)
+    HotkeyWheelDisplay HKWheel; // src: XBOX_RETAIL_PDB +0x1c8 (old: m_kMenuData)
+    bool bScopeVisible; // src: XBOX_RETAIL_PDB +0x1fc (old: m_bHudModeActive)
     unsigned char layoutPadding1FD[3];
-    NiControllerSequence* m_pHudAnimationSequence;
-    bool m_bSequenceActive;
-    bool m_bHudAnimationActive;
+    NiControllerSequence* pBreathMeterAnim; // src: XBOX_RETAIL_PDB +0x200 (old: m_pHudAnimationSequence)
+    bool bXPMeterFinishedMoving; // src: XBOX_RETAIL_PDB +0x204 (old: m_bSequenceActive)
+    bool bForceObjectiveReminders; // src: XBOX_RETAIL_PDB +0x205 (old: m_bHudAnimationActive)
     unsigned char layoutPadding206[2];
-    unsigned int m_uiHudAnimationCounter;
-    BSSimpleList<RegionObjectEntry*>* m_pRegionObjectListObj;
-    int m_iHudValueFirstAfterUpdateList;
-    int m_iHudValueSecondAfterUpdateList;
-    int m_iHudValueThirdAfterUpdateList;
-    Actor* m_pTargetActor;
-    bool m_bTargetActorVisible;
+    unsigned int uiKillRegionDisplay; // src: XBOX_RETAIL_PDB +0x208 (old: m_uiHudAnimationCounter)
+    BSSimpleList<RegionObjectEntry*>* pQuestList; // src: XBOX_RETAIL_PDB +0x20c (old: m_pRegionObjectListObj)
+    int iCompassImageWidth; // src: XBOX_RETAIL_PDB +0x210 (old: m_iHudValueFirstAfterUpdateList)
+    int iCompassDisplayWidth; // src: XBOX_RETAIL_PDB +0x214 (old: m_iHudValueSecondAfterUpdateList)
+    int iCompassHalfAngle; // src: XBOX_RETAIL_PDB +0x218 (old: m_iHudValueThirdAfterUpdateList)
+    Actor* pCurrentEnemy; // src: XBOX_RETAIL_PDB +0x21c (old: m_pTargetActor)
+    bool bWasSneaking; // src: XBOX_RETAIL_PDB +0x220 (old: m_bTargetActorVisible)
     unsigned char layoutPadding221[3];
-    GameTimerRecord m_cBuffer;
-    unsigned int m_uiHudValueFirstAfterActor;
-    unsigned int m_uiHudValueSecondAfterActor;
-    int m_iHudValueFirstAfterUnsignedValues;
-    int m_iHudValueSecondAfterUnsignedValues;
-    bool m_bQuestObjectiveUpdatesEnabled;
+    GameTimerRecord HudTimer; // src: XBOX_RETAIL_PDB +0x224 (old: m_cBuffer)
+    unsigned int iEnemyHealthTimer; // src: XBOX_RETAIL_PDB +0x244 (old: m_uiHudValueFirstAfterActor)
+    unsigned int uiQuestReminderTimer; // src: XBOX_RETAIL_PDB +0x248 (old: m_uiHudValueSecondAfterActor)
+    int uiDDTdisplayTimer; // src: XBOX_RETAIL_PDB +0x24c (old: m_iHudValueFirstAfterUnsignedValues)
+    int uiEnemyDDTdisplayTimer; // src: XBOX_RETAIL_PDB +0x250 (old: m_iHudValueSecondAfterUnsignedValues)
+    bool bKillQuestUpdates; // src: XBOX_RETAIL_PDB +0x254 (old: m_bQuestObjectiveUpdatesEnabled)
     unsigned char layoutPadding255[3];
-    BSSimpleList<HUDMainMenu__QuestObjective*> m_kQuestObjectives;
-    bool m_bQuestObjectiveUpdatePending;
-    bool m_bXPUpdatePending;
+    BSSimpleList<HUDMainMenu__QuestObjective*> xQuestObjectives; // src: XBOX_RETAIL_PDB +0x258 (old: m_kQuestObjectives)
+    bool bQuestNameShowing; // src: XBOX_RETAIL_PDB +0x260 (old: m_bQuestObjectiveUpdatePending)
+    bool bObjectiveNameShowing; // src: XBOX_RETAIL_PDB +0x261 (old: m_bXPUpdatePending)
     unsigned char layoutPadding262[2];
-    BSSimpleList<HUDMainMenu__XPUpdate*> m_kXPUpdates;
-    BSSimpleList<HUDMainMenu__RadiationUpdate*> m_kRadiationUpdates;
-    float m_fRadiationUpdateTimer;
+    BSSimpleList<HUDMainMenu__XPUpdate*> xXPUpdates; // src: XBOX_RETAIL_PDB +0x264 (old: m_kXPUpdates)
+    BSSimpleList<HUDMainMenu__RadiationUpdate*> xRadiationUpdates; // src: XBOX_RETAIL_PDB +0x26c (old: m_kRadiationUpdates)
+    float fShake; // src: XBOX_RETAIL_PDB +0x274 (old: m_fRadiationUpdateTimer)
 
     void HUDMainMenu_KillQuestUpdates();
 
     static HUDMainMenu* g_pHudMainMenuInstance;
-    static void SetCrosshairTarget(TESObjectREFR*, bool);
-    static void SetHUDVisible(bool);
+    static void SetTargetType(TESObjectREFR*, bool);
+    static void SetGunScopeVisible(bool);
     static bool UpdateTargetReference(TESObjectREFR*, bool, bool);
     bool RefreshTargetDisplay();
-    static void UpdateTargetActor(Actor* actor);
-    static void UpdateVisibilityState(int state);
+    static void UpdateTargetActor(Actor* apActor);
+    static void UpdateVisibilityState(int aeMenuMode);
 };

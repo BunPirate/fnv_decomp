@@ -7,6 +7,7 @@
 class NiRotData;
 class TimedRotationKey;
 
+// pdb: class NiQuaternionInterpolator, size 0x24, bases: NiKeyBasedInterpolator, 3 members
 class NiQuaternionInterpolator : public NiKeyBasedInterpolator
 {
   public:
@@ -20,7 +21,7 @@ class NiQuaternionInterpolator : public NiKeyBasedInterpolator
     virtual bool RegisterStreamables(NiStream& arStream);
     virtual void SaveBinary(NiStream& arStream);
     virtual bool IsEqual(NiObject* apObject) const;
-    virtual void GetViewerStrings(NiViewerStringsArray* apStrings);
+    virtual void GetViewerStrings(NiViewerStringsArray* pkStrings);
     virtual bool UpdateQuaternion(float afTime, NiObjectNET* apTarget, NiQuaternion& arValue);
     virtual bool IsQuaternionValueSupported() const;
     virtual void Collapse();
@@ -45,5 +46,5 @@ class NiQuaternionInterpolator : public NiKeyBasedInterpolator
 
     NiQuaternion m_kQuaternionValue;
     NiPointer<NiRotData> m_spQuaternionData;
-    unsigned int m_uiLastKeyIndex;
+    unsigned int m_uiLastIdx; // src: XBOX_RETAIL_PDB +0x20 (old: m_uiLastKeyIndex)
 };

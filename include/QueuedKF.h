@@ -4,6 +4,7 @@
 
 class KFModel;
 
+// pdb: class QueuedKF, size 0x38 (here 0x30), bases: QueuedFileEntry, 2 members
 class QueuedKF : public QueuedFileEntry
 {
 public:

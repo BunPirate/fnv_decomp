@@ -113,7 +113,7 @@ inline const __m128& hkVector4::getQuad() const { return m_vComponents; }
 inline hkReal& hkVector4::operator()(int index) { return reinterpret_cast<hkReal*>(&m_vComponents)[index]; }
 inline const hkReal& hkVector4::operator()(int index) const { return reinterpret_cast<const hkReal*>(&m_vComponents)[index]; }
 __forceinline void hkVector4::setZero4() { m_vComponents=_mm_setzero_ps(); }
-__forceinline void hkVector4::setMul4(const hkSimdReal& scalar,const hkVector4& v) { m_vComponents=_mm_mul_ps(scalar.broadcast(),v.m_vComponents); }
+__forceinline void hkVector4::setMul4(const hkSimdReal& r,const hkVector4& x) { m_vComponents=_mm_mul_ps(r.broadcast(),x.m_vComponents); }
 __forceinline void hkVector4::setMin4(const hkVector4& a,const hkVector4& b) { m_vComponents=_mm_min_ps(a.getQuad(),b.getQuad()); }
 __forceinline void hkVector4::setMax4(const hkVector4& a,const hkVector4& b) { m_vComponents=_mm_max_ps(a.getQuad(),b.getQuad()); }
 
@@ -190,7 +190,7 @@ m_time0=ticks;
 }
 __forceinline const hkTransform&hkMotionState::getTransform()const
 {
-return m_kMotionTransform;
+return m_transform;
 }
 __forceinline const hkSweptTransform&hkMotionState::getSweptTransform()const
 {
@@ -209,15 +209,15 @@ CalculateAabb(localToWorld,tolerance,out);
 __forceinline const hkTransform&hkpCdBody::getTransform()const
 {
 ;
-return*static_cast<const hkTransform*>(m_pMotionState);
+return*static_cast<const hkTransform*>(m_motion);
 }
 __forceinline const hkMotionState*hkpCdBody::GetMotionState()const
 {
-return static_cast<const hkMotionState*>(m_pMotionState);
+return static_cast<const hkMotionState*>(m_motion);
 }
 __forceinline const hkpShape*hkpCdBody::getShape()const
 {
-return m_pCollisionShape;
+return m_shape;
 }
 
 struct AgentSubtypeMarker:public hkpAgent3Input
@@ -252,6 +252,7 @@ public:
 hkStepInfo m_pStepInfo;
 mutable hkPadSpu<hkpCollisionQualityInfo*>m_pCollisionQualityInfo;
 mutable hkpAgent1nSector*m_pAgent1nSector;};
+// pdb: class hkpBvTreeAgent, size 0x40, bases: hkpCollisionAgent, 2 members
 class hkpBvTreeAgent:public hkpCollisionAgent
 {
 public:
@@ -294,8 +295,8 @@ hkpCollisionAgent*m_pCollisionAgent;
 hkpShapeKey&GetIteratorKey(){return m_key;}
 void setKey(hkpShapeKey&key){m_key=key;}
 };
-hkArray<BvTreeAgentTrack>m_kEntries;
-hkAabb m_kBoundingBox;
+hkArray<BvTreeAgentTrack>m_collisionPartners; // src: XBOX_RETAIL_PDB +0xc (old: m_kEntries)
+hkAabb m_cachedAabb; // src: XBOX_RETAIL_PDB +0x20 (old: m_kBoundingBox)
 static hkBool ms_bUseAabbCache;
 static hkpCollisionAgent*__cdecl createShapeBvAgent(const hkpCdBody&bodyA,const hkpCdBody&bodyB,const CollisionAgentContext&input,hkpContactMgr*mgr);
 static hkpCollisionAgent*__cdecl createBvTreeShapeAgent(const hkpCdBody&bodyA,const hkpCdBody&bodyB,const CollisionAgentContext&input,hkpContactMgr*mgr);
@@ -311,13 +312,13 @@ void __cdecl MotionUtilities::calcTimInfo(const hkMotionState&ms0,const hkMotion
 {
 const hkSweptTransform&st0=ms0.getSweptTransform();
 const hkSweptTransform&st1=ms1.getSweptTransform();
-hkVector4 diff0;diff0.setSub4(st0.m_vCenterOfMass0,st0.m_vCenterOfMass1);
-hkVector4 diff1;diff1.setSub4(st1.m_vCenterOfMass1,st1.m_vCenterOfMass0);
+hkVector4 diff0;diff0.setSub4(st0.m_centerOfMass0,st0.m_vCenterOfMass1);
+hkVector4 diff1;diff1.setSub4(st1.m_vCenterOfMass1,st1.m_centerOfMass0);
 hkReal f0=deltaTime*st0.getInvDeltaTime();
 hkReal f1=deltaTime*st1.getInvDeltaTime();
 timOut.setMul4(hkSimdReal(f0),diff0);
 timOut.addMul4(f1,diff1);
-timOut(3)=f0*ms0.m_kDeltaAngle(3)*ms0.m_fObjectRadius+f1*ms1.m_kDeltaAngle(3)*ms1.m_fObjectRadius;}
+timOut(3)=f0*ms0.m_deltaAngle(3)*ms0.m_objectRadius+f1*ms1.m_deltaAngle(3)*ms1.m_objectRadius;}
 namespace AlgorithmUtilities
 {template<typename T>
 class less
@@ -366,16 +367,16 @@ const hkMotionState*msA=bodyA.GetMotionState();
 const hkMotionState*msB=bodyB.GetMotionState();
 hkVector4 timInfo;setRotatedInverseDir(timInfo,bodyB.getTransform().getRotation(),linearTimInfo);
 hkVector4 aabbExtents;
-if(input.m_pCollisionQualityInfo->m_iQualityInfoValue10.val())
+if(input.m_pCollisionQualityInfo->m_useContinuousPhysics.val())
 {
-const hkReal secOrdErrA=(msA->m_kDeltaAngle(3)+msB->m_kDeltaAngle(3))*msA->m_fObjectRadius;
-const hkReal secOrdErrB=msB->m_kDeltaAngle(3)*msB->m_kDeltaAngle(3)*msB->m_fObjectRadius;
+const hkReal secOrdErrA=(msA->m_deltaAngle(3)+msB->m_deltaAngle(3))*msA->m_objectRadius;
+const hkReal secOrdErrB=msB->m_deltaAngle(3)*msB->m_deltaAngle(3)*msB->m_objectRadius;
 const hkReal checkEpsilon=input.m_fScalar*0.5+(secOrdErrA+secOrdErrB);
 bodyA.getShape()->getAabb(bTa,checkEpsilon,aabb);
 hkVector4 massCenterAinB;
 {
 hkVector4 radius4;
-setAllComponents(radius4,input.m_fScalar*0.5+msA->m_fObjectRadius+secOrdErrB);
+setAllComponents(radius4,input.m_fScalar*0.5+msA->m_objectRadius+secOrdErrB);
 setTransformedInversePos(massCenterAinB,bodyB.getTransform(),msA->getSweptTransform().m_vCenterOfMass1);
 hkVector4 maxR;maxR.setAdd4(massCenterAinB,radius4);
 hkVector4 minR;minR.setSub4(massCenterAinB,radius4);
@@ -384,11 +385,11 @@ aabb.m_kMaximumCorner.setMin4(aabb.m_kMaximumCorner,maxR);
 }
 aabbExtents.setSub4(aabb.m_kMaximumCorner,aabb.m_kMinimumCorner);
 {
-if(msB->m_kDeltaAngle(3)>0.0)
+if(msB->m_deltaAngle(3)>0.0)
 {
-hkVector4 relPos;relPos.setSub4(massCenterAinB,msB->getSweptTransform().m_vCenterOfMassLocal);
-hkVector4 offsetOut;offsetOut.setCross(relPos,msB->m_kDeltaAngle);
-hkReal f=input.m_pStepInfo.m_fTimeStep*msB->getSweptTransform().getInvDeltaTime();
+hkVector4 relPos;relPos.setSub4(massCenterAinB,msB->getSweptTransform().m_centerOfMassLocal);
+hkVector4 offsetOut;offsetOut.setCross(relPos,msB->m_deltaAngle);
+hkReal f=input.m_pStepInfo.m_deltaTime*msB->getSweptTransform().getInvDeltaTime();
 timInfo.addMul4(f,offsetOut);
 }
 hkVector4 zero;zero.setZero4();
@@ -434,31 +435,34 @@ const hkpBvTreeShape*bvB=static_cast<const hkpBvTreeShape*>(bodyB.getShape());
 bvB->GetAabbHits(aabb,hitListOut);
 return HK_SUCCESS;}
 // @fnv 0x00d2df90
+// pdb: hkpBvTreeStreamAgent::processCollision | hkpBvTreeStreamAgent.obj | retail, vtable slot, high
+// pdb params: bodyA, bodyB, input, output
+// pdb locals: in3, hitList, bTa, assertBuf, ostr
 void hkpBvTreeStreamAgent::vf06(const hkpCdBody&bodyA,const hkpCdBody&bodyB,const GskAgentInput&input,WorldOperationEntry&output)
 {
 {hkMonitorStream&mStream=hkMonitorStream::getInstance();if(mStream.memoryAvailable()){hkMonitorStream::TimerBeginListCommand*h=reinterpret_cast<hkMonitorStream::TimerBeginListCommand*>(mStream.getEnd());h->m_commandAndMonitor="L" "t" "BvTree3";h->m_nameOfFirstSplit="S" "t" "QueryTree";h->setTime();mStream.setEnd((char*)(h+1));}};
 AgentSubtypeMarker in3;
 {
-in3.m_pBodyA=&bodyA;
-in3.m_pBodyB=&bodyB;
-in3.m_pContactManager=m_pContactManager;
-in3.m_pRayCastInput=reinterpret_cast<const hkpProcessCollisionInput*>(&input);
+in3.m_bodyA=&bodyA;
+in3.m_bodyB=&bodyB;
+in3.m_contactMgr=m_contactMgr;
+in3.m_input=reinterpret_cast<const hkpProcessCollisionInput*>(&input);
 const hkMotionState*msA=bodyA.GetMotionState();
 const hkMotionState*msB=bodyB.GetMotionState();
-MotionUtilities::calcTimInfo(*msA,*msB,input.m_pStepInfo.m_fTimeStep,in3.m_vSubtypePosition);
-in3.m_kTransform.SetMulInverse(msA->getTransform(),msB->getTransform());
+MotionUtilities::calcTimInfo(*msA,*msB,input.m_pStepInfo.m_deltaTime,in3.m_vSubtypePosition);
+in3.m_aTb.SetMulInverse(msA->getTransform(),msB->getTransform());
 }
 hkInplaceArray<hkpShapeKey,128>hitList;
 hitList.pushBackUnchecked(0xffffffff);
 hkResult prepareSuccessful;
 {
-hkTransform bTa;bTa.SetConjugate(in3.m_kTransform);
-prepareSuccessful=hkpBvTreeAgent::BuildCollisionHitList(bodyA,bodyB,bTa,in3.m_vSubtypePosition,input,&m_kBoundingBox,hitList);
+hkTransform bTa;bTa.SetConjugate(in3.m_aTb);
+prepareSuccessful=hkpBvTreeAgent::BuildCollisionHitList(bodyA,bodyB,bTa,in3.m_vSubtypePosition,input,&m_cachedAabb,hitList);
 }
 {hkMonitorStream&mStream=hkMonitorStream::getInstance();if(mStream.memoryAvailable()){hkMonitorStream::TimerCommand*h=reinterpret_cast<hkMonitorStream::TimerCommand*>(mStream.getEnd());h->m_commandAndMonitor=str_010ce7d4;h->setTime();mStream.setEnd((char*)(h+1));}};
 if(prepareSuccessful==HK_SUCCESS)
 {
-int newMemNeeded=(hitList.GetLogicalSize()/ 4+1-getLogicalSize(m_kAgentNnTrack.m_kSectors))*hkpAgent1nSector::SECTOR_SIZE;
+int newMemNeeded=(hitList.GetLogicalSize()/ 4+1-getLogicalSize(m_agentTrack.m_kSectors))*hkpAgent1nSector::SECTOR_SIZE;
 if(!hkHasMemoryAvailable(3,newMemNeeded))
 {
 SetMemoryState(hkMemoryAllocator::MEMORY_STATE_OUT_OF_MEMORY);
@@ -469,13 +473,13 @@ AlgorithmUtilities::quickSort(hitList.begin(),hitList.GetLogicalSize());
 ;
 const hkpBvTreeShape*bvB=static_cast<const hkpBvTreeShape*>(bodyB.getShape());
 const hkpShapeContainer*shapeContainer=bvB->GetShapeContainer();
-BuildShapeCollectionBWorldOperations(m_kAgentNnTrack,in3,shapeContainer,hitList.begin(),output);
+BuildShapeCollectionBWorldOperations(m_agentTrack,in3,shapeContainer,hitList.begin(),output);
 }
 else
 {
 const hkpBvTreeShape*bvB=static_cast<const hkpBvTreeShape*>(bodyB.getShape());
 const hkpShapeContainer*shapeContainer=bvB->GetShapeContainer();
-BuildShapeCollectionBWorldOperations(m_kAgentNnTrack,in3,shapeContainer,0,output);
+BuildShapeCollectionBWorldOperations(m_agentTrack,in3,shapeContainer,0,output);
 }
 {hkMonitorStream&mStream=hkMonitorStream::getInstance();if(mStream.memoryAvailable()){hkMonitorStream::TimerCommand*h=reinterpret_cast<hkMonitorStream::TimerCommand*>(mStream.getEnd());h->m_commandAndMonitor="l" "t" "";h->setTime();mStream.setEnd((char*)(h+1));}};
 }

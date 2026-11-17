@@ -23,7 +23,7 @@ public:
     void PlayerCharacter_SetIsAMurderer();
     void PlayerCharacter_RewardKarma(int);
     float TESObjectREFR_GetScale_00567400();
-    void PlayActorSound(TESBoundObject* o, int a1, int a2);
+    void PlayActorSound(TESBoundObject* apobjREFR, int abPickUp, int abUse);
     void SyncHolderValue();
 };
 #include "../../../../include/TESBipedModelForm.h"
@@ -64,8 +64,8 @@ extern ContainerMenu* DAT_011d93f8;
 extern PlayerCharacter* g_thePlayer;
 extern int DAT_011f2250;
 extern const char DAT_01072278[];
-extern void __cdecl StartDialogueForTopic(int);
-extern void __cdecl FUN_00778b10();
+extern void __cdecl DialogMenu_ServiceEnd(int);
+extern void __cdecl HUDMainMenu_RefreshInfoForRef();
 class CloseVirtualSlots
 {
   public:
@@ -366,7 +366,7 @@ class CloseVirtualSlots
 class SaveLoadFile
 {
   public:
-    void SetFilePosition(int);
+    void SeekSet(int);
     unsigned Read(void*, unsigned);
     unsigned GetFilePosition();
 };
@@ -403,9 +403,12 @@ int BSstrcmp(const char*, const char*);
 #include "../../../../include/TESResponse.h"
 // Reads a save-file signature and header fields from the file into headerArg, returning early if the signature matches DAT_011a2224.
 // @fnv 0x0084dab0
+// pdb: BGSSaveLoadFileEntry::BGSSaveLoadFileEntry | BGSSaveLoadFile.obj | debug, call graph, medium
+// pdb params: apFileName, aiDeviceID
+// pdb locals: ilength
 void ReadSaveFileHeader(void* pFile, void* pHeader)
 {
-    ((SaveLoadFile*)pFile)->SetFilePosition(0);
+    ((SaveLoadFile*)pFile)->SeekSet(0);
     char signature[260];
     signature[0] = 0;
     fnv_zlib_memset(signature + 1, 0, 259);
@@ -464,6 +467,8 @@ void ReadSaveFileHeader(void* pFile, void* pHeader)
 }
 
 // @fnv 0x0075b750
+// pdb: ContainerMenu::Close | ContainerMenu.obj | retail, string-set bridge, high
+// pdb locals: pactor, bstartedWithWeapon, pcreature, pnpc
 void ContainerMenu::Close()
 {
     if (DAT_011d93f8)
@@ -520,7 +525,7 @@ void ContainerMenu::Close()
             {
                 BSAudio::GetSingleton()->GetSoundHandleByEditorID(DAT_01072278, 0x121).Play(false);
             }
-            StartDialogueForTopic(0);
+            DialogMenu_ServiceEnd(0);
             break;
         }
         }
@@ -530,7 +535,7 @@ void ContainerMenu::Close()
         DAT_011d93f8->LoadMenuData();
         if (((CloseVirtualSlots*)((Actor*)g_thePlayer)->GetProcess())->vfn_474(true))
             g_thePlayer->UpdatePlayerControls();
-        FUN_00778b10();
+        HUDMainMenu_RefreshInfoForRef();
     }
 }
 
@@ -580,6 +585,8 @@ int __cdecl _mbscmp(unsigned char const*, unsigned char const*);
 // Compares the strings returned by FUN_00a011f0(0xfc4) on both items using _mbscmp and returns the result.
 // @fnv 0x0075d130
 // src: XBOX_PDB 0x0075d130
+// pdb: ContainerMenu::SortFunc | ContainerMenu.obj | retail, upstream name already matches, high
+// pdb params: apItem1, apItem2
 int ContainerMenu_SortFunc(Tile** apItem1, Tile** apItem2)
 {
     return _mbscmp((unsigned char const*)(*apItem1)->Tile_GetString(0xfc4),
@@ -589,6 +596,9 @@ int ContainerMenu_SortFunc(Tile** apItem1, Tile** apItem2)
 void __cdecl _Deallocate(void*);
 // Handles key 0x20 by closing ContainerMenu and reports whether the key was handled.
 // @fnv 0x0075c250
+// pdb: ContainerMenu::DoKey | ContainerMenu.obj | retail, vtable slot, high
+// pdb params: aiKey
+// pdb locals: bhandled
 bool ContainerMenu::HandleKeyboardInput(unsigned int aiKey)
 {
     bool bhandled = false;
@@ -604,6 +614,8 @@ bool ContainerMenu::HandleKeyboardInput(unsigned int aiKey)
 
 // Sets the value 0xFA3 to 0 on the Tile objects at offsets 0x5C, 0x58 and 0x4C of this object.
 // @fnv 0x0075cf70
+// pdb: ContainerMenu::DoLeave | ContainerMenu.obj | retail, vtable slot, high
+// pdb params: aiID, apTarget
 void ContainerMenu::HandleMouseoverTileAlt(unsigned int aiID, Tile* apTarget)
 {
     m_pTiles[13]->Set(0xFA3, 0);
@@ -625,6 +637,7 @@ bool __thiscall ContainerMenu::HasTiles()
 }
 
 // @fnv 0x0075b270
+// pdb: ContainerMenu::~ContainerMenu | ContainerMenu.obj | retail, upstream name already matches, high
 ContainerMenu::~ContainerMenu()
 {
     DAT_011d93f8 = 0;
@@ -646,31 +659,35 @@ struct FUN_0075cc90_Node
 
 struct FUN_0075cc90_Obj
 {
-    void Attach(void* a, FUN_0075cc90_Local* l);
+    void InventoryChanges_GetItemGroup(void* apObj, FUN_0075cc90_Local* apReturnList);
     int Query(int a, int b);
 };
 
 struct FUN_0075cc90_Sink
 {
     void Deliver(void* a);
-    void Apply(void* v, int r);
+    void Apply(void* aAssociatedData, int apcItemString);
 };
 
 
 // If a1, a2 and a3 are non-null, attaches a1 to a2, delivers a1 to a3, then applies each node value from the local list to a3 and clears the list.
 // @fnv 0x0075cc90
-void ContainerMenu::AttachAndDeliver(void* a1, void* apObj, void* apSink)
+// src: XBOX_DEBUG_PDB 0x0075cc90
+// pdb: ContainerMenu::UpdateItemInList | ContainerMenu.obj | debug, call graph, high
+// pdb params: apObj, apInventory, apListbox
+// pdb locals: pnewItemGroup, pcurrItemObj
+void ContainerMenu::UpdateItemInList(void* a1, void* apInventory, void* apListbox)
 {
     FUN_0075cc90_Local pad;
     unsigned int list;
-    if (apObj != 0 && a1 != 0 && apSink != 0)
+    if (apInventory != 0 && a1 != 0 && apListbox != 0)
     {
-        ((FUN_0075cc90_Obj*)apObj)->Attach(a1, &pad);
-        ((FUN_0075cc90_Sink*)apSink)->Deliver(a1);
+        ((FUN_0075cc90_Obj*)apInventory)->InventoryChanges_GetItemGroup(a1, &pad);
+        ((FUN_0075cc90_Sink*)apListbox)->Deliver(a1);
         FUN_0075cc90_Node* p;
         for (p = (FUN_0075cc90_Node*)&pad; p != 0 && *p->Value() != 0; p = p->Next())
         {
-            ((FUN_0075cc90_Sink*)apSink)->Apply(*p->Value(), ((FUN_0075cc90_Obj*)*p->Value())->Query(0, 0));
+            ((FUN_0075cc90_Sink*)apListbox)->Apply(*p->Value(), ((FUN_0075cc90_Obj*)*p->Value())->Query(0, 0));
         }
         pad.Clear();
     }
@@ -695,6 +712,9 @@ class RefEx : public TESObjectREFR
 
 
 // @fnv 0x0075cfc0
+// pdb: ContainerMenu::FirstPassFilterFunc | ContainerMenu.obj | debug, object-file gap fill, medium
+// pdb params: apItem
+// pdb locals: bisFiltered, pobj, pweap, pbipedForm, pammo, pfull
 bool IsRefBaseObjectUnplayable(RefEx* apRef)
 {
     bool bResult = false;
@@ -745,26 +765,29 @@ struct ContainerLikeObj
 
 // @fnv 0x0075d160
 // src: XBOX_PDB 0x0075d160
-void __cdecl ContainerMenu_InitFunc(void* param1, void* param2)
+// pdb: ContainerMenu::InitFunc | ContainerMenu.obj | retail, upstream name already matches, high
+// pdb params: apTile, apItem
+// pdb locals: strtemp
+void __cdecl ContainerMenu_InitFunc(void* apTile, void* apItem)
 {
     char buf[0x80];
 
-    if (((ContainerLikeObj*)param2)->ItemChange_GetWorn(0))
+    if (((ContainerLikeObj*)apItem)->ItemChange_GetWorn(0))
     {
-        (*(ContainerLikeObj**)((ContainerLikeObj*)((char*)param1 + 4))->NiTPointerListBase_NiTPointerAllocator_unsigned_int_Tile_GetHead(0xfa3, 1))->FUN_00700320();
+        (*(ContainerLikeObj**)((ContainerLikeObj*)((char*)apTile + 4))->NiTPointerListBase_NiTPointerAllocator_unsigned_int_Tile_GetHead(0xfa3, 1))->FUN_00700320();
     }
 
-    if (((ContainerLikeObj*)param2)->FUN_00726070() > 1)
+    if (((ContainerLikeObj*)apItem)->FUN_00726070() > 1)
     {
-        BSsprintf(buf, 0x80, "%s (%d)", ((ContainerLikeObj*)param2)->GetTargetFullName(),
-                     ((ContainerLikeObj*)param2)->FUN_00726070());
-        ((ContainerLikeObj*)param1)->Tile_Set_00a01350(0xfc4, buf, 1);
+        BSsprintf(buf, 0x80, "%s (%d)", ((ContainerLikeObj*)apItem)->GetTargetFullName(),
+                     ((ContainerLikeObj*)apItem)->FUN_00726070());
+        ((ContainerLikeObj*)apTile)->Tile_Set_00a01350(0xfc4, buf, 1);
     }
 
-    ((ContainerLikeObj*)param1)->FUN_00707e10(((ContainerLikeObj*)param2)->GetTargetFullName());
-    (*(ContainerLikeObj**)((ContainerLikeObj*)((char*)param1 + 4))->FUN_007b5370(0xfc4))
-        ->Tile_Set_00a01350(((ContainerLikeObj*)param1)->Tile_GetString(0xfc4, 1));
-    ((ContainerLikeObj*)param1)->Tile_Set(0xfb0, 0.0f, 1);
+    ((ContainerLikeObj*)apTile)->FUN_00707e10(((ContainerLikeObj*)apItem)->GetTargetFullName());
+    (*(ContainerLikeObj**)((ContainerLikeObj*)((char*)apTile + 4))->FUN_007b5370(0xfc4))
+        ->Tile_Set_00a01350(((ContainerLikeObj*)apTile)->Tile_GetString(0xfc4, 1));
+    ((ContainerLikeObj*)apTile)->Tile_Set(0xfb0, 0.0f, 1);
 }
 
 
@@ -772,16 +795,19 @@ void __cdecl ContainerMenu_InitFunc(void* param1, void* param2)
 extern void __cdecl FUN_0075b750();
 
 // @fnv 0x0075d430
-bool ContainerMenu::HandleControllerInput(int param1, Tile* apUnused)
+// pdb: ContainerMenu::DoGamepadUpEvent | ContainerMenu.obj | retail, vtable slot, high
+// pdb params: aiButton, afValue
+// pdb locals: bhandled
+bool ContainerMenu::HandleControllerInput(int aiButton, Tile* afValue)
 {
     bool result = false;
 
-    if (param1 == 0x0b && m_eContainerMenuMode != 4 && m_eContainerMenuMode != 3 && m_eFadeState == 1)
+    if (aiButton == 0x0b && m_eContainerMenuMode != 4 && m_eContainerMenuMode != 3 && xFadeState == 1)
     {
         HandleSelection(0x0a, 0);
         result = true;
     }
-    else if (param1 == 0x0a)
+    else if (aiButton == 0x0a)
     {
         Close();
         result = true;
@@ -803,14 +829,16 @@ InputDeviceState* __cdecl GetInputDeviceState();
 
 // For actions 1 and 6, sets the menu state based on whether the input device state is negative.
 // @fnv 0x0075d4a0
-void ContainerMenu::HandleMousewheel(unsigned int iAction, Tile* apUnused)
+// pdb: ContainerMenu::DoWheelMove | ContainerMenu.obj | retail, vtable slot, high
+// pdb params: aiID, apTarget
+void ContainerMenu::HandleMousewheel(unsigned int aiID, Tile* apTarget)
 {
-    if (iAction == 1 || iAction == 6)
+    if (aiID == 1 || aiID == 6)
     {
         if (GetInputDeviceState()->GetState() < 0)
-            HandleSelection(iAction == 1 ? 0 : 5, 0);
+            HandleSelection(aiID == 1 ? 0 : 5, 0);
         else
-            HandleSelection(iAction == 1 ? 2 : 7, 0);
+            HandleSelection(aiID == 1 ? 2 : 7, 0);
     }
 }
 
@@ -823,7 +851,7 @@ struct SourceForm
 {
     int FUN_00401170();
     bool TESObjectWEAP_IsThrownWeapon();
-    CurrentItem* GetOrFallback(Actor* actor);
+    CurrentItem* GetOrFallback(Actor* apWeaponHolder);
 };
 struct InventoryEntry
 {
@@ -839,20 +867,23 @@ struct ExpectedReference
 };
 extern ExpectedReference* DAT_011dea3c;
 // @fnv 0x0075d510
+// pdb: ContainerMenu::IsPlacingMine | ContainerMenu.obj | retail, upstream name already matches, high
+// pdb params: apItem, apRefFrom, apRefTo
+// pdb locals: pweapon, ptoActor
 // The shared ContainerMenu declaration still uses the opaque ActorView parameter.
 // src: XBOX_PDB 0x0075d510
-bool ContainerMenu::IsPlacingMine(InventoryEntry* entry, ExpectedReference* reference, ActorView* actor)
+bool ContainerMenu::IsPlacingMine(InventoryEntry* apItem, ExpectedReference* apRefFrom, ActorView* apRefTo)
 {
     if (m_eContainerMenuMode == 2 &&
         m_pCurrentList == &m_kFirstItemChangeList &&
-        reference == DAT_011dea3c && DAT_011dea3c->FUN_004997b0() && reinterpret_cast<Actor*>(actor)->IsActor() && !reinterpret_cast<Actor*>(actor)->HasHealth(false) &&
-        !reinterpret_cast<Actor*>(actor)->GetIsChildSize(false) && entry->FUN_0044ddc0()->FUN_00401170() == 0x28 &&
+        apRefFrom == DAT_011dea3c && DAT_011dea3c->FUN_004997b0() && reinterpret_cast<Actor*>(apRefTo)->IsActor() && !reinterpret_cast<Actor*>(apRefTo)->HasHealth(false) &&
+        !reinterpret_cast<Actor*>(apRefTo)->GetIsChildSize(false) && apItem->FUN_0044ddc0()->FUN_00401170() == 0x28 &&
         reinterpret_cast<ActiveList*>(&m_kContainerItems)->FUN_008256d0())
     {
         Actor* a = 0;
-        if (reinterpret_cast<Actor*>(actor)->IsActor())
+        if (reinterpret_cast<Actor*>(apRefTo)->IsActor())
         {
-            a = reinterpret_cast<Actor*>(actor);
+            a = reinterpret_cast<Actor*>(apRefTo);
             if (a->GetEssential())
                 return false;
             if (a->GetProcess())
@@ -861,7 +892,7 @@ bool ContainerMenu::IsPlacingMine(InventoryEntry* entry, ExpectedReference* refe
                     return false;
             }
         }
-        SourceForm* b = entry->FUN_0044ddc0();
+        SourceForm* b = apItem->FUN_0044ddc0();
         if (b->TESObjectWEAP_IsThrownWeapon())
         {
             if (b->GetOrFallback(a))
@@ -888,25 +919,29 @@ struct ItemEntry
 };
 extern "C" int __cdecl TruncateFloatToInt(float);
 // @fnv 0x0075e240
-int ContainerMenu::GetContainerValue(ItemEntry* entry, int amount, bool includeUnowned)
+// src: XBOX_RETAIL_PDB 0x0075e240
+// pdb: ContainerMenu::GetStolenValue | ContainerMenu.obj | retail, call graph, high
+// pdb params: apItem, aiAmountTaken, abDefaultStolen
+// pdb locals: powner, ireturnVal, iitemValue, iamountCounter, pextraObj, pextraOwner
+int ContainerMenu::GetStolenValue(ItemEntry* apItem, int aiAmountTaken, bool abDefaultStolen)
 {
     TESForm* owner = 0;
-    int value = TruncateFloatToInt(entry->FUN_004bd400());
-    int count = amount;
+    int value = TruncateFloatToInt(apItem->FUN_004bd400());
+    int count = aiAmountTaken;
     int total = 0;
     if (((CloseVirtualSlots*)m_pContainer)->IsActor())
         owner = (TESForm*)m_pContainer;
     else
         owner = m_pContainer->GetOwner();
-    for (ItemNode* node = entry->Modelloader_GetReferencedThis(); count > 0 && node && *node->FUN_006815c0();
+    for (ItemNode* node = apItem->Modelloader_GetReferencedThis(); count > 0 && node && *node->FUN_006815c0();
          node = node->FUN_00726070())
     {
         TESForm* itemOwner = (*node->FUN_006815c0())->GetOwner();
-        if ((!itemOwner && includeUnowned) || (itemOwner && (*node->FUN_006815c0())->GetOwner() == owner))
+        if ((!itemOwner && abDefaultStolen) || (itemOwner && (*node->FUN_006815c0())->GetOwner() == owner))
             total += (*node->FUN_006815c0())->ExtraDataList_GetCount() * value;
         count -= (*node->FUN_006815c0())->ExtraDataList_GetCount();
     }
-    if (includeUnowned)
+    if (abDefaultStolen)
         total += count * value;
     return total;
 }
@@ -1243,11 +1278,14 @@ extern InventoryMenuSetting DAT_011d4378, DAT_011d2d0c, DAT_011d33fc, DAT_011d2c
 // Loads container_menu.xml, validates the container menu, initializes its lists and title tiles, stores the reference and mode, and returns the menu tile.
 // @fnv 0x0075b310
 // src: COMMUNITY 0x0075b310
-Tile* ContainerMenu_Create(TESObjectREFR* reference, int mode)
+// pdb: ContainerMenu::Create | ContainerMenu.obj | retail, upstream name already matches, high
+// pdb params: apContainer, aeContainerMode
+// pdb locals: pim, ptile, pold_menu_tile, pTile
+Tile* ContainerMenu_Create(TESObjectREFR* apContainer, int aeContainerMode)
 {
     MenuSystem* tile = InterfaceManager_GetSingleton();
     InterfaceManager_SetContainerMenuQueued(0);
-    if (!reference && mode != 4)
+    if (!apContainer && aeContainerMode != 4)
         return 0;
     Menu* old = Tile_GetMenuByClass(ContainerMenu_GetMenuID());
     if (old)
@@ -1273,8 +1311,8 @@ Tile* ContainerMenu_Create(TESObjectREFR* reference, int mode)
         Tile* title = Tile_GetTileByName(DAT_011d93f8->FUN_00726070(), "CM_Subtitle");
         if (title)
             title->Set(4036, "", true);
-        DAT_011d93f8->m_pContainer = reference;
-        DAT_011d93f8->m_eContainerMenuMode = static_cast<Interface__CONTAINER_MENU_MODE>(mode);
+        DAT_011d93f8->m_pContainer = apContainer;
+        DAT_011d93f8->m_eContainerMenuMode = static_cast<Interface__CONTAINER_MENU_MODE>(aeContainerMode);
         DAT_011d93f8->InitContainerMode();
         int subtitle = Tile_TextToTrait("_Title");
         if (DAT_011d93f8->m_pTiles[14])
@@ -1307,22 +1345,25 @@ TESSound* __fastcall GetContainerCloseSound(TESObjectCONT* container);
 
 // @fnv 0x0075baf0
 // src: XBOX_PDB 0x0075baf0
-void ContainerMenu::PlayContainerSound(TESObjectREFR* apRef, bool abOpen)
+// pdb: ContainerMenu::PlayContainerSound | ContainerMenu.obj | retail, string-set bridge, high
+// pdb params: apContainer, abOpenSound
+// pdb locals: psound
+void ContainerMenu::PlayContainerSound(TESObjectREFR* apContainer, bool abOpenSound)
 {
     TESSound* SoundAssetTmp = 0;
-    if (!apRef)
+    if (!apContainer)
         return;
-    switch (apRef->GetObjectReference()->GetFormType())
+    switch (apContainer->GetObjectReference()->GetFormType())
     {
     case 0x1b:
-        if (abOpen)
-            SoundAssetTmp = GetContainerOpenSound(static_cast<TESObjectCONT*>(apRef->GetObjectReference()));
+        if (abOpenSound)
+            SoundAssetTmp = GetContainerOpenSound(static_cast<TESObjectCONT*>(apContainer->GetObjectReference()));
         else
-            SoundAssetTmp = GetContainerCloseSound(static_cast<TESObjectCONT*>(apRef->GetObjectReference()));
+            SoundAssetTmp = GetContainerCloseSound(static_cast<TESObjectCONT*>(apContainer->GetObjectReference()));
         break;
     case 0x2a:
     case 0x2b:
-        if (abOpen)
+        if (abOpenSound)
             BSAudio::GetSingleton()->GetSoundHandleByEditorID("DRSBodyGenericOpen", 0x121).Play(false);
         else
             BSAudio::GetSingleton()->GetSoundHandleByEditorID("DRSBodyGenericClose", 0x121).Play(false);
@@ -1352,7 +1393,7 @@ struct Menu75d250Pane
     int unk2C;
     unsigned GetCount();
     void Reset();
-    void SetActive(int abActive);
+    void SetActive(int abPlayFocusSound);
 };
 
 
@@ -1360,12 +1401,15 @@ bool __cdecl Interface_IsTopMenuID(int aiID);
 
 // Handles menu actions 13/14 by switching between the two panes and actions 3/4 by resetting the active pane and setting state, returning whether handled.
 // @fnv 0x0075d250
-bool ContainerMenu::HandleMenuInput(int aiAction, float afUnused)
+// pdb: ContainerMenu::DoGamepad | ContainerMenu.obj | retail, vtable slot, high
+// pdb params: aiButton, afValue
+// pdb locals: bresult
+bool ContainerMenu::HandleMenuInput(int aiButton, float afValue)
 {
     bool bHandled = false;
     if (Interface_IsTopMenuID(0x3f0))
     {
-        switch (aiAction)
+        switch (aiButton)
         {
         case 13:
             if (!reinterpret_cast<Menu75d250Pane&>(m_kFirstItemChangeList).IsBusy() && reinterpret_cast<Menu75d250Pane&>(m_kFirstItemChangeList).GetCount() > 0)
@@ -1392,13 +1436,13 @@ bool ContainerMenu::HandleMenuInput(int aiAction, float afUnused)
                 if (m_pCurrentList == &m_kFirstItemChangeList)
                 {
                     reinterpret_cast<Menu75d250Pane&>(m_kFirstItemChangeList).Reset();
-                    HandleSelection(aiAction == 4 ? 0 : 2, 0);
+                    HandleSelection(aiButton == 4 ? 0 : 2, 0);
                     reinterpret_cast<Menu75d250Pane&>(m_kFirstItemChangeList).SetActive(0);
                 }
                 else
                 {
                     reinterpret_cast<Menu75d250Pane&>(m_kSecondItemChangeList).Reset();
-                    HandleSelection(aiAction == 4 ? 5 : 7, 0);
+                    HandleSelection(aiButton == 4 ? 5 : 7, 0);
                     reinterpret_cast<Menu75d250Pane&>(m_kSecondItemChangeList).SetActive(0);
                 }
                 bHandled = true;
@@ -1679,8 +1723,8 @@ struct Ref_0075d6b0
     virtual void v3c8();
     virtual void v3cc();
     virtual void FUN_3d0(XRef_0075d6b0* ref, bool a2, bool a3);
-    Entry_0075d6b0* PlayerCharacter_RemoveRockItAmmo(SourceForm* item, XList_0075d6b0* extra, int count, bool a4);
-    void PlayerCharacter_AddRockItAmmo(SourceForm* item, XList_0075d6b0* extra, int count);
+    Entry_0075d6b0* PlayerCharacter_RemoveRockItAmmo(SourceForm* apObj, XList_0075d6b0* extra, int aiNumRemoved, bool abReturnRemovedItem);
+    void PlayerCharacter_AddRockItAmmo(SourceForm* apObj, XList_0075d6b0* apExtra, int aiNumAdded);
 };
 struct List_0075d6b0
 {
@@ -1692,25 +1736,29 @@ void __cdecl BGSProjectile_InitLiveGrenade(CurrentItem* item, Ref_0075d6b0* to, 
 // This extension adds that operation without duplicating the menu layout.
 struct ContainerItemTransfer : ContainerMenu
 {
-    void TransferItem(void* a1, Entry_0075d6b0* entry, int count);
+    void ContainerMenu_SwitchContainer(void* apTile, Entry_0075d6b0* apItem, int aiAmountSwitched);
 };
 // Moves count of an entry's item between the container's two references, handling the special container and splitting stacks when needed.
 // @fnv 0x0075d6b0
-void ContainerItemTransfer::TransferItem(void* a1, Entry_0075d6b0* entry, int count)
+// src: XBOX_RETAIL_PDB 0x0075d6b0
+// pdb: ContainerMenu::SwitchContainer | ContainerMenu.obj | retail, object-file run extension, high
+// pdb params: apTile, apItem, aiAmountSwitched
+// pdb locals: prefTo, bisPlacingMine, pextraFrom, prefFrom, iswitchCounter, pextraObj, iamountToSwitch, pextra, premovedItem
+void ContainerItemTransfer::ContainerMenu_SwitchContainer(void* apTile, Entry_0075d6b0* apItem, int aiAmountSwitched)
 {
-    if (!entry || !a1)
+    if (!apItem || !apTile)
         return;
     Ref_0075d6b0* from4 = (m_pCurrentList == &m_kFirstItemChangeList) ? (Ref_0075d6b0*)m_pContainer
                                                                                 : (Ref_0075d6b0*)DAT_011dea3c;
     Ref_0075d6b0* to8 = (m_pCurrentList == &m_kFirstItemChangeList) ? (Ref_0075d6b0*)DAT_011dea3c
                                                                               : (Ref_0075d6b0*)m_pContainer;
-    bool ok = IsPlacingMine(reinterpret_cast<InventoryEntry*>(entry), reinterpret_cast<ExpectedReference*>(to8), reinterpret_cast<ActorView*>(from4));
-    XList_0075d6b0* extra = entry->Modelloader_GetReferencedThis() ? *entry->Modelloader_GetReferencedThis()->FUN_006815c0() : 0;
+    bool ok = IsPlacingMine(reinterpret_cast<InventoryEntry*>(apItem), reinterpret_cast<ExpectedReference*>(to8), reinterpret_cast<ActorView*>(from4));
+    XList_0075d6b0* extra = apItem->Modelloader_GetReferencedThis() ? *apItem->Modelloader_GetReferencedThis()->FUN_006815c0() : 0;
     if (ok)
     {
-        BGSProjectile_InitLiveGrenade(entry->FUN_0044ddc0()->GetOrFallback(0), to8, from4, entry->FUN_0044ddc0());
-        ((List_0075d6b0*)&m_kContainerItems)->FUN_005ae3d0(entry->FUN_0044ddc0());
-        to8->FUN_17c(entry->FUN_0044ddc0(), extra, count, 0, 0, 0, 0, 0, 1, 0);
+        BGSProjectile_InitLiveGrenade(apItem->FUN_0044ddc0()->GetOrFallback(0), to8, from4, apItem->FUN_0044ddc0());
+        ((List_0075d6b0*)&m_kContainerItems)->FUN_005ae3d0(apItem->FUN_0044ddc0());
+        to8->FUN_17c(apItem->FUN_0044ddc0(), extra, aiAmountSwitched, 0, 0, 0, 0, 0, 1, 0);
         return;
     }
     if (extra && extra->ExtraDataList_GetItemDropper() && !extra->ExtraDataList_GetItemDropper()->FUN_00440da0() &&
@@ -1721,8 +1769,8 @@ void ContainerItemTransfer::TransferItem(void* a1, Entry_0075d6b0* entry, int co
     }
     if (m_eContainerMenuMode == 4)
     {
-        int remaining = count;
-        Node_0075d6b0* nodeB = entry->Modelloader_GetReferencedThis();
+        int remaining = aiAmountSwitched;
+        Node_0075d6b0* nodeB = apItem->Modelloader_GetReferencedThis();
         while (remaining > 0)
         {
             XList_0075d6b0* x4 = nodeB ? *nodeB->FUN_006815c0() : 0;
@@ -1730,25 +1778,25 @@ void ContainerItemTransfer::TransferItem(void* a1, Entry_0075d6b0* entry, int co
             n7 = MinInt(n7, remaining);
             if (from4 == (Ref_0075d6b0*)DAT_011dea3c)
             {
-                Entry_0075d6b0* movedB = ((Ref_0075d6b0*)DAT_011dea3c)->PlayerCharacter_RemoveRockItAmmo(entry->FUN_0044ddc0(), x4, n7, 1);
+                Entry_0075d6b0* movedB = ((Ref_0075d6b0*)DAT_011dea3c)->PlayerCharacter_RemoveRockItAmmo(apItem->FUN_0044ddc0(), x4, n7, 1);
                 ((Ref_0075d6b0*)DAT_011dea3c)
                     ->FUN_190(movedB->FUN_0044ddc0(),
                               movedB->Modelloader_GetReferencedThis() ? *movedB->Modelloader_GetReferencedThis()->FUN_006815c0() : 0,
                               movedB->FUN_00726070());
                 delete movedB;
-                nodeB = entry->Modelloader_GetReferencedThis();
+                nodeB = apItem->Modelloader_GetReferencedThis();
             }
             else if (to8 == (Ref_0075d6b0*)DAT_011dea3c)
             {
-                ((Ref_0075d6b0*)DAT_011dea3c)->PlayerCharacter_AddRockItAmmo(entry->FUN_0044ddc0(), x4, n7);
-                to8->FUN_17c(entry->FUN_0044ddc0(), x4, n7, 0, 0, 0, 0, 0, 1, 0);
+                ((Ref_0075d6b0*)DAT_011dea3c)->PlayerCharacter_AddRockItAmmo(apItem->FUN_0044ddc0(), x4, n7);
+                to8->FUN_17c(apItem->FUN_0044ddc0(), x4, n7, 0, 0, 0, 0, 0, 1, 0);
                 nodeB = nodeB ? nodeB->FUN_00726070() : 0;
             }
             remaining -= n7;
         }
         return;
     }
-    to8->FUN_17c(entry->FUN_0044ddc0(), extra, count, m_eContainerMenuMode == 2, 0, from4, 0, 0, 1, 0);
+    to8->FUN_17c(apItem->FUN_0044ddc0(), extra, aiAmountSwitched, m_eContainerMenuMode == 2, 0, from4, 0, 0, 1, 0);
 }
 
 namespace fnv_0075e0b0 {
@@ -1770,14 +1818,17 @@ unsigned int __cdecl TESActorBaseData_GetAlignmentForKarma(float);
 
 // @fnv 0x0075e0b0
 // src: XBOX_PDB 0x0075e0b0
-bool ContainerMenu::PickpocketCheck(Actor* actor, int amount)
+// pdb: ContainerMenu::PickpocketCheck | ContainerMenu.obj | retail, upstream name already matches, high
+// pdb params: apActor, aiStealValue
+// pdb locals: bsuccess, ealign, isuccessChance
+bool ContainerMenu::PickpocketCheck(Actor* apActor, int aiStealValue)
 {
     bool success = true;
-    if (actor && amount > 0 && !actor->GetHasKnockedState())
+    if (apActor && aiStealValue > 0 && !apActor->GetHasKnockedState())
     {
         int chance = fnv_0075e0b0::ComputeClampedSettingSum(
             fnv_0075e0b0::DAT_011dea3c->GetActorValueAsInteger(static_cast<ActorValue::Index>(42)),
-            actor->GetActorValue(static_cast<ActorValue::Index>(42)), (float)amount);
+            apActor->GetActorValue(static_cast<ActorValue::Index>(42)), (float)aiStealValue);
         // Actor::Unk_11F has no arguments in the shared header; this call uses two stack arguments.
         reinterpret_cast<void (__thiscall*)(Actor*, int, int)>(
             (*reinterpret_cast<void***>(fnv_0075e0b0::DAT_011dea3c))[0x11F])(
@@ -1792,13 +1843,13 @@ bool ContainerMenu::PickpocketCheck(Actor* actor, int amount)
         }
         else
         {
-            fnv_0075e0b0::DAT_011dea3c->PickpocketAlarm(actor, 0, 0);
+            fnv_0075e0b0::DAT_011dea3c->PickpocketAlarm(apActor, 0, 0);
             fnv_0075e0b0::DispatchMessageToSink(fnv_0075e0b0::DAT_011d3f94.FUN_00403df0(), 2, 0, 0, 2.0f, false);
             success = false;
             m_bSecondContainerFlag = true;
         }
-        actor->GetActorBase();
-        unsigned int type = fnv_0075e0b0::TESActorBaseData_GetAlignmentForKarma(actor->GetActorBase()->GetCurrentActorValue(static_cast<ActorValue::Index>(23)));
+        apActor->GetActorBase();
+        unsigned int type = fnv_0075e0b0::TESActorBaseData_GetAlignmentForKarma(apActor->GetActorBase()->GetCurrentActorValue(static_cast<ActorValue::Index>(23)));
         if (type != 2 && type != 4)
         {
             static_cast<PlayerCharacter*>(fnv_0075e0b0::DAT_011dea3c)->ModifyKarmaForTheft((int)*fnv_0075e0b0::DAT_011cde20.Setting_Float_00403e20());
@@ -1923,13 +1974,17 @@ int FUN_00406d50(char*, unsigned int, const char*);
 void* __cdecl operator new(unsigned int);
 void __cdecl operator delete(void*);
 // @fnv 0x0075e8c0
-void ContainerMenu::SetLabelText(const char* text)
+// src: XBOX_RETAIL_PDB 0x0075e8c0
+// pdb: ContainerMenu::SetContainerTitle | ContainerMenu.obj | retail, call graph (shared callers), high
+// pdb params: astrTitle
+// pdb locals: ifontNum, stringDims, fmaxWidth, newTitle, plettersA, icurrIndex, fnewWidth
+void ContainerMenu::SetContainerTitle(const char* astrTitle)
 {
-    if (!text || !text[0])
+    if (!astrTitle || !astrTitle[0])
         return;
     int font8 = (int)m_pTiles[6]->FUN_00a011b0(4025);
     float dimensions9[3];
-    FUN_005bd5b0()->FUN_00a1b020(dimensions9, text, font8, DAT_01016970, 0);
+    FUN_005bd5b0()->FUN_00a1b020(dimensions9, astrTitle, font8, DAT_01016970, 0);
     float widthTmp = m_pTiles[6]->FUN_0045cd60()->FUN_00a011b0(4017) - DAT_01072310;
     if (m_pTiles[5]->IsTraitNonZero(4003))
         widthTmp -= DAT_010356b0;
@@ -1943,8 +1998,8 @@ void ContainerMenu::SetLabelText(const char* text)
         total2 += (letters[46].leading + letters[46].width + letters[46].spacing) * DAT_01021928;
         while (total2 <= widthTmp && index < 260)
         {
-            buffer[index] = text[index];
-            total2 += letters[text[index]].leading + letters[text[index]].width + letters[text[index]].spacing;
+            buffer[index] = astrTitle[index];
+            total2 += letters[astrTitle[index]].leading + letters[astrTitle[index]].width + letters[astrTitle[index]].spacing;
             index++;
         }
         FUN_00406d50(buffer, 260, "...");
@@ -1952,7 +2007,7 @@ void ContainerMenu::SetLabelText(const char* text)
         delete[] buffer;
     }
     else
-        m_pTiles[6]->Tile_Set_00a01350(4036, text, true);
+        m_pTiles[6]->Tile_Set_00a01350(4036, astrTitle, true);
 }
 
 extern const char str_010721f4[];
@@ -1962,11 +2017,11 @@ extern void* DAT_011d93fc;
 
 
 unsigned __cdecl Cmd_GetSessionTime_Execute();
-void* __cdecl Tile_GetTileByName(void* obj, const char* name);
+void* __cdecl Tile_GetTileByName(void* apTarget, const char* apName);
 unsigned __fastcall GetRaceCount(char* buf);
 void* __fastcall FUN_0044ddc0(void* obj);
 int __fastcall FUN_00401170(void* obj);
-void __cdecl UpdateAnimationTileFade(int a, int b, int c, void* d, int e);
+void __cdecl InterfaceManager_UpdatePipBoyInventoryEffects(int pTileFade1, int pTileFade2, int pTilePulseSTR, void* pItemPulseSTRREQ, int abSkill);
 
 
 
@@ -1980,6 +2035,8 @@ struct RefObj
 extern ContainerMenu* DAT_011d93f8;
 
 // @fnv 0x0075eac0
+// pdb: ContainerMenu::DoIdle | ContainerMenu.obj | retail, vtable slot, high
+// pdb locals: pTile
 void ContainerMenu::UpdateDialog()
 {
     if (m_uiCurrentItemIndex != 0 && Cmd_GetSessionTime_Execute() > (unsigned int)m_uiCurrentItemIndex)
@@ -1995,11 +2052,11 @@ void ContainerMenu::UpdateDialog()
     {
         if (DAT_011d93fc != 0 && FUN_00401170(FUN_0044ddc0(DAT_011d93fc)) == 0x28)
         {
-            UpdateAnimationTileFade((int)m_pTiles[14], (int)m_pTiles[15], (int)m_pTiles[16], DAT_011d93fc, 0);
+            InterfaceManager_UpdatePipBoyInventoryEffects((int)m_pTiles[14], (int)m_pTiles[15], (int)m_pTiles[16], DAT_011d93fc, 0);
         }
         else if (DAT_011d93fc != 0 && FUN_00401170(FUN_0044ddc0(DAT_011d93fc)) == 0x18)
         {
-            UpdateAnimationTileFade(
+            InterfaceManager_UpdatePipBoyInventoryEffects(
                 (DAT_011d93fc != 0 && ((RefObj*)FUN_0044ddc0(DAT_011d93fc))->TESObjectARMO_GetArmorRating() != 0.0) ? (int)m_pTiles[17] : 0,
                 (DAT_011d93fc != 0 && ((RefObj*)FUN_0044ddc0(DAT_011d93fc))->TESObjectARMO_GetDamageThreshold() != 0.0) ? (int)m_pTiles[18] : 0, 0,
                 DAT_011d93fc, 0);
@@ -2024,6 +2081,7 @@ struct FUN_0071f240 : Base0071
 };
 // Sets the vtable, zeroes the 0x20-byte block at unk28, and clears unk4c, unk48 and unk50.
 // @fnv 0x0071f240
+// pdb: TutorialMenu::TutorialMenu | MenuManager.obj | debug, call graph, high
 FUN_0071f240::FUN_0071f240()
 {
     vtable = &DAT_0106ff84;
@@ -2051,7 +2109,7 @@ struct RetObj75
     const char* GetIconFilename(int arg);
 };
 
-void __cdecl Interface_PopulateItemStatsDisplay(void* a, void* b);
+void __cdecl Interface_PopulateItemStatsDisplay(void* apCurrItem, void* apDisplayTile);
 
 struct Emb75
 {
@@ -2061,14 +2119,16 @@ struct Emb75
 
 // Handles tile index 0x14-0x16: switches the active state between a98 and b0, updates tiles from the state object, and sets DAT_011a002c.
 // @fnv 0x0075cd70
-void ContainerMenu::HandleMouseover(unsigned int iTileIndex, Tile* pProcess)
+// pdb: ContainerMenu::DoEnter | ContainerMenu.obj | retail, vtable slot, high
+// pdb params: aiID, apTarget
+void ContainerMenu::HandleMouseover(unsigned int aiID, Tile* apTarget)
 {
-    if (pProcess == 0 && static_cast<int>(iTileIndex) >= 0 && static_cast<int>(iTileIndex) < 0x13)
+    if (apTarget == 0 && static_cast<int>(aiID) >= 0 && static_cast<int>(aiID) < 0x13)
     {
-        pProcess = m_pTiles[iTileIndex];
+        apTarget = m_pTiles[aiID];
     }
 
-    switch (iTileIndex)
+    switch (aiID)
     {
     case 0x15:
         HandleMouseoverTileAlt(0x14, 0);
@@ -2081,16 +2141,16 @@ void ContainerMenu::HandleMouseover(unsigned int iTileIndex, Tile* pProcess)
         m_pCurrentList = &m_kSecondItemChangeList;
         break;
     case 0x14:
-        if (pProcess)
+        if (apTarget)
         {
             DAT_011a002c = 1;
-            if (m_pCurrentList != &m_kFirstItemChangeList && reinterpret_cast<HighProcess*>(pProcess)->GetProcessLevel() == (int)m_pTiles[4])
+            if (m_pCurrentList != &m_kFirstItemChangeList && reinterpret_cast<HighProcess*>(apTarget)->GetProcessLevel() == (int)m_pTiles[4])
             {
                 HandleMouseover(0x15, 0);
             }
             else
             {
-                if (m_pCurrentList != &m_kSecondItemChangeList && reinterpret_cast<HighProcess*>(pProcess)->GetProcessLevel() == (int)m_pTiles[8])
+                if (m_pCurrentList != &m_kSecondItemChangeList && reinterpret_cast<HighProcess*>(apTarget)->GetProcessLevel() == (int)m_pTiles[8])
                 {
                     HandleMouseover(0x16, 0);
                 }
@@ -2122,10 +2182,10 @@ struct FloatSrc75
 };
 bool __fastcall PlayerCharacter_IsHardcore(void* player);
 
-float __cdecl FUN_0048ebc0(int a, bool b);
+float __cdecl FUN_0048ebc0(int apForm, bool abIsHardcore);
 struct Sound75
 {
-    double TESObjectREFR_GetWeightInContainer(int a);
+    double TESObjectREFR_GetWeightInContainer(int abIsHardcore);
 };
 struct StrThis75
 {
@@ -2143,7 +2203,7 @@ struct Msg75
 };
 
 
-TESForm* __cdecl FUN_00483a00(void* a1);
+TESForm* __cdecl FUN_00483a00(void* apSearchID);
 
 extern char DAT_010722dc;
 extern int DAT_01183028;
@@ -2159,7 +2219,7 @@ struct Form75
 void* __fastcall BGSSaveFormBuffer_GetForm(void* p);
 struct PlayerAct75
 {
-    void PlayActorSound(void* a1, int a2, int a3);
+    void PlayActorSound(void* apobjREFR, int abPickUp, int abUse);
 };
 struct ActorProc75
 {
@@ -2266,7 +2326,11 @@ struct Inv75
 };
 
 // @fnv 0x0075dc80
-void __cdecl HandleContainerMenuActivate(int aiCount)
+// src: XBOX_RETAIL_PDB 0x0075dc80
+// pdb: ContainerMenu::ItemSelectCallback | ContainerMenu.obj | retail, string-set bridge, high
+// pdb params: aiAmountSelected
+// pdb locals: bcancelTransfer, pcurrTile, pactor, prefFrom, pTopic, strtemp, bfromContainer, istealValue, pcurrItemObj, pammo
+void __cdecl ContainerMenu_ItemSelectCallback(int aiAmountSelected)
 {
     void* expected;
     void* refObj;
@@ -2283,7 +2347,7 @@ void __cdecl HandleContainerMenuActivate(int aiCount)
             expected = (DAT_011d93f8->m_pCurrentList == &DAT_011d93f8->m_kFirstItemChangeList)
                            ? (void*)DAT_011dea3c
                            : (void*)DAT_011d93f8->m_pContainer;
-            if (aiCount == 0 || DAT_011d93fc == 0 || entry == 0)
+            if (aiAmountSelected == 0 || DAT_011d93fc == 0 || entry == 0)
                 flag = true;
             if (((FloatSrc75*)*(void**)((ContainerLikeObj*)((int*)entry + 1))->FUN_007b5370(4009))->FUN_00a011b0() ==
                 128.0)
@@ -2292,7 +2356,7 @@ void __cdecl HandleContainerMenuActivate(int aiCount)
                 DAT_011d93f8->m_pCurrentList == &DAT_011d93f8->m_kFirstItemChangeList && refObj != 0)
             {
                 if (((Sound75*)refObj)->TESObjectREFR_GetWeightInContainer(0) +
-                        FUN_0048ebc0((int)FUN_0044ddc0(DAT_011d93fc), PlayerCharacter_IsHardcore((void*)DAT_011dea3c)) * aiCount >=
+                        FUN_0048ebc0((int)FUN_0044ddc0(DAT_011d93fc), PlayerCharacter_IsHardcore((void*)DAT_011dea3c)) * aiAmountSelected >=
                     ((FloatThis75*)refObj)->Actor_GetMaxCarryWeight())
                 {
                     BSsprintf(msgtext, 260, DAT_01012058, (char*)((Name75*)refObj)->TESObjectREFR_GetFullName(),
@@ -2313,7 +2377,7 @@ void __cdecl HandleContainerMenuActivate(int aiCount)
                 int stolenDelta;
                 bool isC8 = (DAT_011d93f8->m_pCurrentList == &DAT_011d93f8->m_kSecondItemChangeList);
                 stolenDelta =
-                    DAT_011d93f8->GetContainerValue((ItemEntry*)DAT_011d93fc, aiCount, isC8) *
+                    DAT_011d93f8->GetStolenValue((ItemEntry*)DAT_011d93fc, aiAmountSelected, isC8) *
                     (isC8 ? 1 : -1);
                 DAT_011d93f8->m_iStolenItemCount += stolenDelta;
                 if (!isC8)
@@ -2334,7 +2398,7 @@ void __cdecl HandleContainerMenuActivate(int aiCount)
             void* pCachedForm = (void*)FUN_0044ddc0(DAT_011d93fc);
             processBaseObject = ((ProcGet75*)DAT_011dea3c)->FUN_008d8520()->vfn_014c();
             ((PlayerAct75*)DAT_011dea3c)->PlayActorSound(pCachedForm, 1, 0);
-            static_cast<ContainerItemTransfer*>(DAT_011d93f8)->TransferItem(entry, static_cast<Entry_0075d6b0*>(DAT_011d93fc), aiCount);
+            static_cast<ContainerItemTransfer*>(DAT_011d93f8)->ContainerMenu_SwitchContainer(entry, static_cast<Entry_0075d6b0*>(DAT_011d93fc), aiAmountSelected);
             DAT_011d93f8->ContainerMenu_UpdateLists((int)pCachedForm);
             if (processBaseObject != 0)
             {
@@ -2421,16 +2485,19 @@ struct S650Global
 };
 struct S650
 {
-    static bool ContainerMenu_FilterModeFunc(S650Ref* arg);
+    static bool ContainerMenu_FilterModeFunc(S650Ref* apItem);
 };
 // Looks up the ref in list1/list2, applies a type-based filter switch, then adds group, form and mode checks to return whether the ref passes.
 // @fnv 0x0075e650
 // src: XBOX_PDB 0x0075e650
-bool S650::ContainerMenu_FilterModeFunc(S650Ref* pRef)
+// pdb: ContainerMenu::FilterModeFunc | ContainerMenu.obj | retail, upstream name already matches, high
+// pdb params: apItem
+// pdb locals: emode, eid, pcurrTile, bfromPlayer, bisFiltered, pammo, pList
+bool S650::ContainerMenu_FilterModeFunc(S650Ref* apItem)
 {
     bool result2 = false;
-    int type6 = pRef->FUN_0044ddc0()->FUN_00401170();
-    void* found8 = (*(S650Global**)&DAT_011D93F8)->list1.FindItemData(&pRef);
+    int type6 = apItem->FUN_0044ddc0()->FUN_00401170();
+    void* found8 = (*(S650Global**)&DAT_011D93F8)->list1.FindItemData(&apItem);
     int filterVal = 0;
     bool firstB = true;
     if (found8)
@@ -2439,7 +2506,7 @@ bool S650::ContainerMenu_FilterModeFunc(S650Ref* pRef)
     }
     else
     {
-        found8 = (*(S650Global**)&DAT_011D93F8)->list2.FindItemData(&pRef);
+        found8 = (*(S650Global**)&DAT_011D93F8)->list2.FindItemData(&apItem);
         filterVal = (*(S650Global**)&DAT_011D93F8)->second;
         firstB = false;
     }
@@ -2465,7 +2532,7 @@ bool S650::ContainerMenu_FilterModeFunc(S650Ref* pRef)
     if (type6 == 0x29)
     {
         S650Group* group = FUN_00483a00(&DAT_010722f4);
-        S650Form* form = pRef->FUN_0044ddc0();
+        S650Form* form = apItem->FUN_0044ddc0();
         if (group && group->GetConditionIndex(form) >= 0)
             result2 = true;
         if (form && !form->FUN_004c94d0())
@@ -2473,11 +2540,11 @@ bool S650::ContainerMenu_FilterModeFunc(S650Ref* pRef)
     }
     if (firstB)
     {
-        result2 = result2 || type6 == 0x2e || pRef->FUN_0044ddc0()->v37();
+        result2 = result2 || type6 == 0x2e || apItem->FUN_0044ddc0()->v37();
     }
     else if ((*(S650Global**)&DAT_011D93F8)->mode == 2)
     {
-        result2 = result2 || pRef->ItemChange_GetWorn(false);
+        result2 = result2 || apItem->ItemChange_GetWorn(false);
     }
     return result2;
 }
@@ -2701,6 +2768,10 @@ class PlaybackDialogue
 };
 // Selects a topic info for the current actor, begins a dialogue, and plays the current response's sound or voice, then updates the menu.
 // @fnv 0x0075ec60
+// pdb: ContainerMenu::DisplayContainerMenuSubtitle | ContainerMenu.obj | retail, object-file run extension, low
+// pdb note: debug build links it to ContainerMenu::PlayReactivityBark
+// pdb params: asText, ahSound
+// pdb locals: fSubtitleDuration, pTile
 void ContainerMenu::PlaySelectedTopicInfo(PlaybackTopic* topic)
 {
     PlaybackTopicInfo* _item = 0;
@@ -2755,6 +2826,10 @@ struct ActorAccess539
     bool BSSoundHandle_BSSoundHandle_008c1bc0();
 };
 // @fnv 0x0075eea0
+// pdb: ContainerMenu::PlayReactivityBark | ContainerMenu.obj | retail, object-file run extension, low
+// pdb note: debug build links it to ContainerMenu::DisplayContainerMenuSubtitle
+// pdb params: aRelatedTopic
+// pdb locals: pActionActor, pInfo, pactor, pResponse, Exchange, isoundFileID, fdelay
 void ContainerMenu::ShowMessageWithSound(StrMem strMessage, BSSoundHandle soundHandle)
 {
     float duration3 = 0.0f;
@@ -3161,34 +3236,37 @@ extern xPlayer* xThePlayer;
 // Activates a valid referenced item; otherwise may transfer it, update menu state, and call AddItem.
 // @fnv 0x0075da60
 // src: XBOX_PDB 0x0075da60
-void ContainerMenu_TakeAllFn(xTile* pTile, xItem* pItem)
+// pdb: ContainerMenu::TakeAllFn | ContainerMenu.obj | retail, upstream name already matches, high
+// pdb params: apTile, apItem
+// pdb locals: pextraFrom, pactor, istealValue
+void ContainerMenu_TakeAllFn(xTile* apTile, xItem* apItem)
 {
-    if (!pItem || !xContMenu || !pTile || xContMenu->m_bSecondContainerFlag)
+    if (!apItem || !xContMenu || !apTile || xContMenu->m_bSecondContainerFlag)
         return;
     xExtra* qfTOqo = 0;
-    if (pItem->Get())
-        qfTOqo = *pItem->Get()->First();
+    if (apItem->Get())
+        qfTOqo = *apItem->Get()->First();
     if (qfTOqo && qfTOqo->GetRef() && !qfTOqo->GetRef()->IsDisabled() && !qfTOqo->GetRef()->IsDeleted())
     {
         xThePlayer->Activate(qfTOqo->GetRef(), 1, 0);
         return;
     }
-    if (pTile->m_kFormatEntries.Find(0xfa9)->GetFloat() == 128.0)
+    if (apTile->m_kFormatEntries.Find(0xfa9)->GetFloat() == 128.0)
         return;
     if (xContMenu->m_eContainerMenuMode == 2)
     {
         xCont* pActor = reinterpret_cast<xCont*>(xContMenu->m_pContainer)->IsActorX() ? reinterpret_cast<xCont*>(xContMenu->m_pContainer) : 0;
-        int iTransferred = xContMenu->GetContainerValue(reinterpret_cast<ItemEntry*>(pItem), pItem->GetCount(), true);
+        int iTransferred = xContMenu->GetStolenValue(reinterpret_cast<ItemEntry*>(apItem), apItem->GetCount(), true);
         xContMenu->m_iStolenItemCount += iTransferred;
         xContMenu->m_bSecondContainerFlag = !xContMenu->PickpocketCheck(reinterpret_cast<Actor*>(pActor), iTransferred);
     }
-    reinterpret_cast<xCont*>(xContMenu->m_pContainer)->AddItem(pItem->GetFlags(), pItem->Get() ? *pItem->Get()->First() : 0, pItem->GetCount(),
+    reinterpret_cast<xCont*>(xContMenu->m_pContainer)->AddItem(apItem->GetFlags(), apItem->Get() ? *apItem->Get()->First() : 0, apItem->GetCount(),
                                  xContMenu->m_eContainerMenuMode == 2, 0, xThePlayer, 0, 0, 1, 0);
 }
 
 extern "C" void* __cdecl FUN_00ec43fb(void* p, long off, void* src, void* dst, int isRef);
 
-TESForm* FUN_00483a00(const char* pcName);
+TESForm* FUN_00483a00(const char* apSearchID);
 void DialogMenu_ServiceStart();
 struct RefX
 {
@@ -3226,6 +3304,8 @@ struct HudX
 // Switches on m80 to update labels, play the trader sound and selected topic info, or set tile traits to zero.
 // @fnv 0x0075bc80
 // src: XBOX_PDB 0x0075bc80
+// pdb: ContainerMenu::InitContainerMode | ContainerMenu.obj | retail, string-set bridge, high
+// pdb locals: pTopic
 void ContainerMenu::InitContainerMode()
 {
     switch (m_eContainerMenuMode)
@@ -3234,14 +3314,14 @@ void ContainerMenu::InitContainerMode()
     case 2:
         if (m_pContainer)
         {
-            SetLabelText(reinterpret_cast<const char*>(reinterpret_cast<RefX*>(m_pContainer)->TESObjectREFR_GetFullName()));
+            SetContainerTitle(reinterpret_cast<const char*>(reinterpret_cast<RefX*>(m_pContainer)->TESObjectREFR_GetFullName()));
             PlayContainerSound(m_pContainer, true);
         }
         break;
     case 3:
         if (m_pContainer)
         {
-            SetLabelText(reinterpret_cast<const char*>(reinterpret_cast<RefX*>(m_pContainer)->TESObjectREFR_GetFullName()));
+            SetContainerTitle(reinterpret_cast<const char*>(reinterpret_cast<RefX*>(m_pContainer)->TESObjectREFR_GetFullName()));
             BSAudio::GetSingleton()->GetSoundHandleByEditorID("DRSTraderOpen", 0x121).Play(false);
             DialogMenu_ServiceStart();
             TESTopic* pkForm = dynamic_cast<TESTopic*>(FUN_00483a00("FollowersTrade"));
@@ -3252,7 +3332,7 @@ void ContainerMenu::InitContainerMode()
     case 4:
         m_pTiles[1]->Set(0xfc4, reinterpret_cast<const char*>(DAT_011d3c40.FUN_00403df0(1)));
         if (((HudX*)DAT_011dea3c)->Actor_GetCurrentWeapon())
-            SetLabelText(reinterpret_cast<const char*>(((HudX*)DAT_011dea3c)->Actor_GetCurrentWeapon()->kSub.TESModel_GetModel()));
+            SetContainerTitle(reinterpret_cast<const char*>(((HudX*)DAT_011dea3c)->Actor_GetCurrentWeapon()->kSub.TESModel_GetModel()));
         m_pTiles[10]->FUN_00700320(0xfa3, 0);
         m_pTiles[0]->FUN_00700320(0xfa3, 0);
         m_pTiles[2]->FUN_00700320(0xfa3, 0);
@@ -3294,8 +3374,8 @@ struct Setting75
     int* Int();
 };
 extern Setting75 g_011d2418;
-void HandleContainerMenuActivate(int);
-void CreateQuantityMenu(int, void (*)(int), int);
+void ContainerMenu_ItemSelectCallback(int);
+void QuantityMenu_Create(int, void (*)(int), int);
 void ContainerMenu_TakeAllFn(void*, void*);
 void ContainerMenu_FilterModeFunc(void*, void*);
 void Interface_PlayMenuSound(int);
@@ -3309,11 +3389,14 @@ struct List75
 };
 // Handles container menu activation by ID, cycling item lists or triggering take-all and quantity menu actions.
 // @fnv 0x0075be80
-void ContainerMenu::HandleSelection(int aiActionId, Tile* tile)
+// pdb: ContainerMenu::DoClick | ContainerMenu.obj | retail, string-set bridge, high
+// pdb params: aiID, apTarget
+// pdb locals: bskipQuantityCheck
+void ContainerMenu::HandleSelection(int aiID, Tile* apTarget)
 {
-    if (!tile && aiActionId >= 0 && aiActionId < 19)
-        tile = m_pTiles[aiActionId];
-    switch (aiActionId)
+    if (!apTarget && aiID >= 0 && aiID < 19)
+        apTarget = m_pTiles[aiID];
+    switch (aiID)
     {
     case 20:
         if (g_011d93fc)
@@ -3327,12 +3410,12 @@ void ContainerMenu::HandleSelection(int aiActionId, Tile* tile)
             {
                 reinterpret_cast<List75*>(m_pCurrentList)->FUN_007312e0();
                 reinterpret_cast<List75*>(m_pCurrentList)->reset(0);
-                CreateQuantityMenu(g_011d93fc->FUN_00726070(), HandleContainerMenuActivate, 0x7fffffff);
+                QuantityMenu_Create(g_011d93fc->FUN_00726070(), ContainerMenu_ItemSelectCallback, 0x7fffffff);
             }
             else if (take)
-                HandleContainerMenuActivate(g_011d93fc->FUN_00726070());
+                ContainerMenu_ItemSelectCallback(g_011d93fc->FUN_00726070());
             else
-                HandleContainerMenuActivate(1);
+                ContainerMenu_ItemSelectCallback(1);
         }
         break;
     case 10:
@@ -3349,12 +3432,12 @@ void ContainerMenu::HandleSelection(int aiActionId, Tile* tile)
         Interface_PlayMenuSound(m_eMenuSounds);
         do
         {
-            reinterpret_cast<int&>(m_eFilterMode) += aiActionId == 0 ? -1 : 1;
+            reinterpret_cast<int&>(m_eFilterMode) += aiID == 0 ? -1 : 1;
             if (reinterpret_cast<int&>(m_eFilterMode) < 0)
                 reinterpret_cast<int&>(m_eFilterMode) = 5;
             else if (reinterpret_cast<int&>(m_eFilterMode) > 5)
                 reinterpret_cast<int&>(m_eFilterMode) = 0;
-            UpdatePaneTitle(reinterpret_cast<TileObj*>(m_pTiles[1]));
+            SetFilterModeTitle(reinterpret_cast<TileObj*>(m_pTiles[1]));
             reinterpret_cast<List75&>(m_kFirstItemChangeList).ApplyFilter(ContainerMenu_FilterModeFunc);
         } while (!reinterpret_cast<List75&>(m_kFirstItemChangeList).ListBox_ItemChange_NumUnfiltered() && reinterpret_cast<int&>(m_eFilterMode) != 0);
         break;
@@ -3364,12 +3447,12 @@ void ContainerMenu::HandleSelection(int aiActionId, Tile* tile)
         Interface_PlayMenuSound(m_eMenuSounds);
         do
         {
-            reinterpret_cast<int&>(m_eSecondFilterMode) += aiActionId == 5 ? -1 : 1;
+            reinterpret_cast<int&>(m_eSecondFilterMode) += aiID == 5 ? -1 : 1;
             if (reinterpret_cast<int&>(m_eSecondFilterMode) < 0)
                 reinterpret_cast<int&>(m_eSecondFilterMode) = 5;
             else if (reinterpret_cast<int&>(m_eSecondFilterMode) > 5)
                 reinterpret_cast<int&>(m_eSecondFilterMode) = 0;
-            UpdatePaneTitle(reinterpret_cast<TileObj*>(m_pTiles[6]));
+            SetFilterModeTitle(reinterpret_cast<TileObj*>(m_pTiles[6]));
             reinterpret_cast<List75&>(m_kSecondItemChangeList).ApplyFilter(ContainerMenu_FilterModeFunc);
         } while (!reinterpret_cast<List75&>(m_kSecondItemChangeList).ListBox_ItemChange_NumUnfiltered() && reinterpret_cast<int&>(m_eSecondFilterMode) != 0);
         break;
@@ -3383,7 +3466,7 @@ struct CategoryNameReference
 extern InventoryMenuSetting DAT_011c3cb4;
 extern InventoryMenuSetting DAT_011d29b8, DAT_011d4d50, DAT_011d40b4, DAT_011d2acc, DAT_011d4918;
 int __cdecl FUN_00406d30(char* buffer, unsigned int length, const char* source);
-void __cdecl BSstrupr(char* buffer, int length);
+void __cdecl BSstrupr(char* apString1, int length);
 enum CategoryFilter
 {
     FILTER_ALL = 0,
@@ -3398,27 +3481,31 @@ enum CategoryFilter
 // Every valid path that uses title below first initializes the real buffer.
 // Sets pane title text from the selected category and calls FUN_00730490 when the setting equals "ENGLISH".
 // @fnv 0x0075e380
-void ContainerMenu::UpdatePaneTitle(TileObj* pane)
+// src: XBOX_RETAIL_PDB 0x0075e380
+// pdb: ContainerMenu::SetFilterModeTitle | ContainerMenu.obj | retail, object-file run extension, high
+// pdb params: apTitleTile
+// pdb locals: bFIGS, emode, strtemp
+void ContainerMenu::SetFilterModeTitle(TileObj* apTitleTile)
 {
     bool nonEnglish;
-    CategoryFilter category5 = reinterpret_cast<Tile*>(pane) == m_pTiles[1] ? static_cast<CategoryFilter>(m_eFilterMode) : static_cast<CategoryFilter>(m_eSecondFilterMode);
+    CategoryFilter category5 = reinterpret_cast<Tile*>(apTitleTile) == m_pTiles[1] ? static_cast<CategoryFilter>(m_eFilterMode) : static_cast<CategoryFilter>(m_eSecondFilterMode);
     nonEnglish = BSstrcmp(DAT_011c3cb4.FUN_00403df0(), "ENGLISH") != 0;
     char title[260];
-    if (!m_pContainer || !pane)
+    if (!m_pContainer || !apTitleTile)
         return;
     switch (category5)
     {
     case 0:
-        if (reinterpret_cast<Tile*>(pane) == m_pTiles[1])
+        if (reinterpret_cast<Tile*>(apTitleTile) == m_pTiles[1])
         {
             FUN_00406d30(title, 260, DAT_011d4378.FUN_00403df0());
             if (!nonEnglish)
                 BSstrupr(title, 260);
-            reinterpret_cast<Tile*>(pane)->Tile_Set_00a01350(0xfc4, title, true);
+            reinterpret_cast<Tile*>(apTitleTile)->Tile_Set_00a01350(0xfc4, title, true);
         }
         else
         {
-            SetLabelText(reinterpret_cast<CategoryNameReference*>(m_pContainer)->TESObjectREFR_GetFullName());
+            SetContainerTitle(reinterpret_cast<CategoryNameReference*>(m_pContainer)->TESObjectREFR_GetFullName());
         }
         break;
     case 1:
@@ -3448,7 +3535,7 @@ void ContainerMenu::UpdatePaneTitle(TileObj* pane)
         break;
     }
     if (category5)
-        reinterpret_cast<Tile*>(pane)->Tile_Set_00a01350(0xfc4, title, true);
+        reinterpret_cast<Tile*>(apTitleTile)->Tile_Set_00a01350(0xfc4, title, true);
 }
 
 namespace fnv_0075c280 {
@@ -3640,7 +3727,7 @@ struct MenuReference
     bool TESForm_GetDisabledOrDeleted();
     MenuForm* BGSSaveFormBuffer_GetForm();
     float TESObjectREFR_GetHealth();
-    void GetTwoValues(float*, float*);
+    void PlayerCharacter_GetInventoryEncumbrance(float*, float*);
 };
 struct MenuForm
 {
@@ -3710,7 +3797,10 @@ struct MenuRoot
 // Populates m_kList and otherList with inventory items, applies filters and sorting, and updates the active list selection and weight/capacity display.
 // @fnv 0x0075c280
 // src: XBOX_PDB 0x0075c280
-void InventoryMenu::ContainerMenu_UpdateLists(MenuForm* filter)
+// pdb: ContainerMenu::UpdateLists | ContainerMenu.obj | retail, upstream name already matches, high
+// pdb params: apUpdateObj
+// pdb locals: pnewHighlight, fMaxWeight, fCurrWeight, strtemp, prockItLauncherItems, iitemCt, pammoObj, pplayerInventory, pcontainerInventory, pmineObj, pnewItem, pmineTile, pref, pnewTile, pextra
+void InventoryMenu::ContainerMenu_UpdateLists(MenuForm* apUpdateObj)
 {
     int unused4 = 0;
     float weight7, capacity4;
@@ -3725,26 +3815,26 @@ void InventoryMenu::ContainerMenu_UpdateLists(MenuForm* filter)
         for (unsigned int iA = 0; iA < _inventory->FUN_0044ddc0(); iA++)
             otherList.ListBox_ItemChange_AddItem((InventoryStackRecord*)*_inventory->BSSimpleArray_NiAVObject_1024_GetAt(iA), (*_inventory->BSSimpleArray_NiAVObject_1024_GetAt(iA))->GetTargetFullName(),
                                    0, 0);
-        if (filter)
-            AttachAndDeliver(filter, fnv_0075c280::FUN_004bf220(fnv_0075c280::DAT_011dea3c), &m_kList);
+        if (apUpdateObj)
+            UpdateItemInList(apUpdateObj, fnv_0075c280::FUN_004bf220(fnv_0075c280::DAT_011dea3c), &m_kList);
         else
             m_kList.PopulateInventoryList(fnv_0075c280::DAT_011dea3c, fnv_0075c280::IsRefBaseObjectUnplayable, 0, 0, 0, 0);
     }
-    else if (filter)
+    else if (apUpdateObj)
     {
         void* playerInventory4 = fnv_0075c280::FUN_004bf220(fnv_0075c280::DAT_011dea3c);
         void* otherInventory = container ? fnv_0075c280::FUN_004bf220(container) : 0;
-        MenuForm* ammo4 = filter->FUN_00401170() == 40 ? filter->TESObjectWEAP_GetCurrentAmmo(container->IsActor() ? container : 0) : 0;
-        AttachAndDeliver(filter, playerInventory4, &m_kList);
+        MenuForm* ammo4 = apUpdateObj->FUN_00401170() == 40 ? apUpdateObj->TESObjectWEAP_GetCurrentAmmo(container->IsActor() ? container : 0) : 0;
+        UpdateItemInList(apUpdateObj, playerInventory4, &m_kList);
         if (ammo4)
-            AttachAndDeliver(ammo4, playerInventory4, &m_kList);
+            UpdateItemInList(ammo4, playerInventory4, &m_kList);
         if (mode == 3)
             otherList.PopulateInventoryList(container, fnv_0075c280::IsRefBaseObjectUnplayable, 0, 0, 0, 0);
         else
         {
-            AttachAndDeliver(filter, otherInventory, &otherList);
+            UpdateItemInList(apUpdateObj, otherInventory, &otherList);
             if (ammo4)
-                AttachAndDeliver(ammo4, otherInventory, &otherList);
+                UpdateItemInList(ammo4, otherInventory, &otherList);
         }
     }
     else
@@ -3754,7 +3844,7 @@ void InventoryMenu::ContainerMenu_UpdateLists(MenuForm* filter)
     }
     for (MenuFormList* node9 = &forms; node9 && *node9->FUN_006815c0(); node9 = node9->FUN_00726070())
     {
-        if (!filter || filter == *node9->FUN_006815c0())
+        if (!apUpdateObj || apUpdateObj == *node9->FUN_006815c0())
         {
             fnv_0075c280::FUN_004bc550* entry2 = new fnv_0075c280::FUN_004bc550((TESBoundObject*)*node9->FUN_006815c0(), 1);
             StrMem name;
@@ -3767,7 +3857,7 @@ void InventoryMenu::ContainerMenu_UpdateLists(MenuForm* filter)
     if (container && container->IsActor() && container->IsDead(0))
     {
         MenuReference* weapon = container->BSFile_GetDevice()->ExtraDataList_GetDroppedWeapon();
-        if (weapon && !weapon->TESForm_GetDisabledOrDeleted() && (!filter || filter == weapon->BGSSaveFormBuffer_GetForm()))
+        if (weapon && !weapon->TESForm_GetDisabledOrDeleted() && (!apUpdateObj || apUpdateObj == weapon->BGSSaveFormBuffer_GetForm()))
         {
             fnv_0075c280::FUN_004bc550* weaponEntry = new fnv_0075c280::FUN_004bc550((TESBoundObject*)weapon->BGSSaveFormBuffer_GetForm(), 1);
             MenuEntry* weaponTile3 = 0;
@@ -3789,7 +3879,7 @@ void InventoryMenu::ContainerMenu_UpdateLists(MenuForm* filter)
     otherList.ListBox_ItemChange_Traverse(fnv_0075c280::ContainerMenu_InitFunc, 0, 0x7fffffff);
     otherList.ApplyFilter(fnv_0075c280::ContainerMenu_FilterModeFunc);
     otherList.Sort(ContainerMenu_SortFunc);
-    fnv_0075c280::DAT_011dea3c->GetTwoValues(&weight7, &capacity4);
+    fnv_0075c280::DAT_011dea3c->PlayerCharacter_GetInventoryEncumbrance(&weight7, &capacity4);
     fnv_0075c280::BSsprintf(label5, 64, fnv_0075c280::DAT_010722d0, fnv_0075c280::DAT_011d1e60.FUN_00403df0(), fnv_0075c280::FloatToInt(fnv_0075c280::FUN_004bd510(weight7, 1.0f)),
                  fnv_0075c280::FloatToInt(fnv_0075c280::FUN_004bd510(capacity4, 1.0f)));
     ((fnv_0075c280::MenuRoot*)DAT_011d93f8)->tile->Tile_Set_00a01350(0xfc4, label5, true);
@@ -3829,9 +3919,9 @@ struct ObjRaw
 };
 struct InvChg
 {
-    ObjRef* FindEntryWithExtraListType(int a1);
-    void ClearExtraForSlot(ObjRef* b, int a2);
-    void SetInventorySlotExtraData(ObjRef* p, int v, int a3);
+    ObjRef* InventoryChanges_GetHotKeyItem(int aiKey);
+    void InventoryChanges_RemoveHotKeyItem(ObjRef* apItem, int aiHotkey);
+    void InventoryChanges_SetHotKeyItem(ObjRef* apItem, int apExtra, int aiKey);
 };
 struct Loader
 {
@@ -3840,7 +3930,7 @@ struct Loader
 };
 extern Loader* DAT_011c3b3c;
 InvChg* __cdecl FUN_004bf220(void* arg);
-TESModelTextureSwap* __cdecl GetBipedModelTextureSwap(TESBoundObject* o, void* player);
+TESModelTextureSwap* __cdecl TESBipedModelForm_GetBipedTESModel(TESBoundObject* apObj, void* apRef);
 
 struct ThiS
 {
@@ -3856,51 +3946,54 @@ struct ThiS
     unsigned char f24;
     int f28;
     void HotKeysWheel_UpdateHotkeyList();
-    void HotKeysWheel_SetHotkeyItem(ObjRef* p1);
+    void HotKeysWheel_SetHotkeyItem(ObjRef* apHotkeyItem);
 };
 
 // Calls inventory change routines, passes texture swap names to loader routines, updates a player object, and clears a field.
 // @fnv 0x007019e0
 // src: XBOX_PDB 0x007019e0
-void ThiS::HotKeysWheel_SetHotkeyItem(ObjRef* apObjRef)
+// pdb: HotKeysWheel::SetHotkeyItem | HotKeysWheel.obj | retail, upstream name already matches, high
+// pdb params: apHotkeyItem
+// pdb locals: pinventory, poldHotkeyItem, pextra, pmodel
+void ThiS::HotKeysWheel_SetHotkeyItem(ObjRef* apHotkeyItem)
 {
     InvChg* aX = FUN_004bf220(DAT_011dea3c);
-    if (!(apObjRef != 0 && f24 != 0 && aX != 0))
+    if (!(apHotkeyItem != 0 && f24 != 0 && aX != 0))
         return;
-    ObjRef* b = aX->FindEntryWithExtraListType(f28);
-    int v4 = apObjRef->Modelloader_GetReferencedThis() ? *(int*)((ObjRaw*)apObjRef->Modelloader_GetReferencedThis())->FUN_006815c0() : 0;
+    ObjRef* b = aX->InventoryChanges_GetHotKeyItem(f28);
+    int v4 = apHotkeyItem->Modelloader_GetReferencedThis() ? *(int*)((ObjRaw*)apHotkeyItem->Modelloader_GetReferencedThis())->FUN_006815c0() : 0;
     TESModelTextureSwap* c_;
     TESModelTextureSwap* d;
     if (b != 0)
     {
-        aX->ClearExtraForSlot(b, f28);
+        aX->InventoryChanges_RemoveHotKeyItem(b, f28);
         if (b->FUN_0044ddc0() != 0)
         {
-            c_ = GetBipedModelTextureSwap(b->FUN_0044ddc0(), DAT_011dea3c);
+            c_ = TESBipedModelForm_GetBipedTESModel(b->FUN_0044ddc0(), DAT_011dea3c);
             if (c_ == 0)
                 c_ = dynamic_cast<TESModelTextureSwap*>(b->FUN_0044ddc0());
             if (c_ != 0)
                 DAT_011c3b3c->ModelLoader_ReleaseFile(const_cast<char*>(c_->GetModelFilePath()));
         }
     }
-    aX->SetInventorySlotExtraData(apObjRef, v4, f28);
-    if (apObjRef->FUN_0044ddc0() != 0)
+    aX->InventoryChanges_SetHotKeyItem(apHotkeyItem, v4, f28);
+    if (apHotkeyItem->FUN_0044ddc0() != 0)
     {
-        d = GetBipedModelTextureSwap(apObjRef->FUN_0044ddc0(), DAT_011dea3c);
+        d = TESBipedModelForm_GetBipedTESModel(apHotkeyItem->FUN_0044ddc0(), DAT_011dea3c);
         if (d == 0)
-            d = dynamic_cast<TESModelTextureSwap*>(apObjRef->FUN_0044ddc0());
+            d = dynamic_cast<TESModelTextureSwap*>(apHotkeyItem->FUN_0044ddc0());
         if (d != 0)
             DAT_011c3b3c->ModelLoader_LoadFile(const_cast<char*>(d->GetModelFilePath()), 0, 1, 0, 0, 0);
     }
     HotKeysWheel_UpdateHotkeyList();
-    ((PlayerObj_containermenu*)DAT_011dea3c)->PlayActorSound(apObjRef->FUN_0044ddc0(), 1, 0);
+    ((PlayerObj_containermenu*)DAT_011dea3c)->PlayActorSound(apHotkeyItem->FUN_0044ddc0(), 1, 0);
     f24 = 0;
     ObjRef* aRef = b;
     ObjRef* aCopyP = aRef;
     (void)(aCopyP ? aCopyP->FUN_004459e0(1) : 0);
 }
 
-void __cdecl _FUN_00755270(int);
+void __cdecl CompanionWheelMenu_Close(int);
 
 struct CompanionWheelInventory : Menu
 {
@@ -3929,9 +4022,10 @@ struct CompanionWheelInventory : Menu
 // Looks up the FollowersTrade topic and, when pCompanion is non-null, passes it to FUN_007573d0 and FUN_007575b0.
 // @fnv 0x007568d0
 // src: XBOX_PDB 0x007568d0
+// pdb: CompanionWheelMenu::Do_OpenInventory | CompanionWheelMenu.obj | retail, upstream name already matches, high
 void CompanionWheelInventory::CompanionWheelMenu_Do_OpenInventory()
 {
-    _FUN_00755270(1);
+    CompanionWheelMenu_Close(1);
     TESTopic* topic = dynamic_cast<TESTopic*>(FUN_00483a00("FollowersTrade"));
     if (pCompanion != 0)
     {

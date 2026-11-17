@@ -65,20 +65,24 @@ char* __cdecl FUN_00ec7690(const char* s, int c);
 
 struct FUN_0071dca0_cls
 {
-    bool HasMenusPath(PathSource* src);
+    bool MenuConsole_IsMenuTexture(PathSource* apTexture);
 };
 
 // Checks whether the path string returned by src->v9C()->FUN_0043b1b0() contains a "\menus" segment, scanning backslash-delimited parts.
 // @fnv 0x0071dca0
-bool FUN_0071dca0_cls::HasMenusPath(PathSource* src)
+// src: XBOX_RETAIL_PDB 0x0071dca0
+// pdb: MenuConsole::IsMenuTexture | MenuConsole.obj | retail, string-set bridge, high
+// pdb params: apTexture
+// pdb locals: bretval, pslash
+bool FUN_0071dca0_cls::MenuConsole_IsMenuTexture(PathSource* apTexture)
 {
     bool bFound = false;
     {
-        if (src != 0)
+        if (apTexture != 0)
         {
-            if (src->v9C()->FUN_0043b1b0() != 0)
+            if (apTexture->v9C()->FUN_0043b1b0() != 0)
             {
-                char* pSegment = FUN_00ec7690(src->v9C()->FUN_0043b1b0(), 0x5c);
+                char* pSegment = FUN_00ec7690(apTexture->v9C()->FUN_0043b1b0(), 0x5c);
                 while (pSegment != 0)
                 {
                     if (FUN_00ec7ec0(pSegment, "\\menus", 6) == 0)

@@ -7,6 +7,7 @@ class SaveLoadHeader;
 template <class T> class BSSimpleList;
 #include "BSSaveDataSystemUtility.h"
 
+// pdb: class BGSSaveLoadManager, size 0x30 (here 0x38), 17 members
 class BGSSaveLoadManager
 {
 public:
@@ -36,20 +37,20 @@ public:
     bool LoadGame(const char*, int, bool, bool);
     bool LoadGame(char*, int, bool, bool);
     bool CanLoadSaveGame(SaveLoadFile*);
-    void FinishLoadingGame();
-    void ProcessQueuedLoads();
+    void EndLoadGame();
+    void StartLoadGame();
     void ProcessQueuedSaveLoad();
     void Autosave();
     void GetFullPath(char*, char*, bool);
     void SetSaveFileName(char*, int);
     static void GetSaveDirectory(char* output);
-    bool IsQuickSaveFileName(const char* name);
+    bool IsQuickSaveFileName(const char* apSaveFileName);
     bool IsAutoSaveFileName(const char* name);
-    void SanitizeSaveFileName(char* name);
-    void GetFNVVersionInfo(char* output, unsigned int capacity);
+    void ScrubFileName(char* apFileName);
+    void GetVersionInfo(char* apVersionInfo, unsigned int aiSize);
     bool CanSave(bool);
-    bool IsSaveFileNameDefault(const char*);
-    bool IsSaveFileNameLegacyAutosave(const char*);
+    bool IsSaveFileNameGenerated(const char*);
+    bool IsSaveFileNameAutosave(const char*);
     bool IsSaveFileNameCustom(const char*);
     void UpdateSaveTimestamp();
     static void BuildAutosaveName(char*);
@@ -60,12 +61,12 @@ public:
     bool SaveGame_008503b0(const char*, int, bool);
     void SystemSave();
     void QueueAutosave();
-    void EnsureFosExtension(char*, char*);
+    void GetFullFileName(char*, char*);
     void LoadQuickSave();
-    void BuildSaveFileName(char*, bool, bool);
-    void BuildSaveFileName(char*, int, int);
-    void CopyPlayerName(char*);
-    void FormatPlayTime(char*, bool);
+    void GenerateSaveFileName(char*, bool, bool);
+    void GenerateSaveFileName(char*, int, int);
+    void GetPlayerLocationName(char*);
+    void GetPlayTimeString(char*, bool);
     int GetConstant27();
     bool IsField5Set();
     void SetFlagByte();

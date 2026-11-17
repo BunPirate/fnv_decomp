@@ -98,7 +98,7 @@ public:
 class HighlightValue_mapmenu
 {
 public:
-    void Tile_Value_AddRefValueAction(int trait, Tile* tile, int sourceTrait);
+    void Tile_Value_AddRefValueAction(int aiActionType, Tile* apSourceTile, int aeSourceTrait);
     void Tile_Value_AddRefValueAction(int trait, void* source, int sourceTrait);
     void Tile_Value_SetFloat(int value);
 };
@@ -167,7 +167,7 @@ class MapInterface
     static FOPipboyManager* GetPipboyManagerInstance();
     FOPipboyManager* GetPipboyManager();
     static void PlayUISound(int);
-    static void __cdecl SetTileFormattedText(Tile*, int, const char*, ...);
+    static void __cdecl Interface_InitializeTabline(Tile*, int, const char*, ...);
     static bool __cdecl ShowButtonDialog(const char*, const char*, const char*, void (*)(), int, int, float, float,
                                          ...);
     static bool ShowMessage(const char*, int, const char*, const char*, float, bool);
@@ -181,6 +181,7 @@ unsigned int NiShadeProperty_GetType();
 
 // The approved NiNode header does not declare the original child-count accessor.
 unsigned int __fastcall GetMapNodeChildCount(NiNode*);
+// pdb: class MapMarkerData, size 0x14 (here 0x1), 5 members
 class MapMarkerData
 {
   public:
@@ -195,16 +196,18 @@ class RegionObjectEntry
     PathingPath* GetTeleportPath();
     TESObjectREFR* GetReference(bool);
 };
+// pdb: class DialogueResponse, size 0x2c (here 0x1), 9 members
 class DialogueResponse
 {
   public:
     BSStringT<char>* GetVoiceFilePath();
     BSStringT<char>& GetDialogueText();
 };
+// pdb: class Conversation, size 0xc, 2 members
 class Conversation
 {
   public:
-    char data[12];
+    char lDialogueItems[12]; // src: XBOX_RETAIL_PDB +0x0 (old: data)
     ~Conversation();
     Conversation(Character*, PlayerCharacter*, TESTopic*);
     bool FirstItem();
@@ -216,6 +219,7 @@ template <> void ListBox<TESQuest*>::ClearSelection(bool);
 
 extern const double DAT_01074f68, DAT_010301a8;
 void MapMenu_RenderLocalMapGrid(bool);
+// pdb: class Calendar, size 0x1c (here 0x1), 7 members
 class Calendar
 {
   public:
@@ -269,29 +273,35 @@ template <> void ListBox<TESQuest*>::ClearSelection(bool notify)
 }
 
 // @fnv 0x00a20610
-void TileImage::SetTexture(NiAVObject* image)
+// src: XBOX_DEBUG_PDB 0x00a20610
+// pdb: TileImage::SetSourceTexture | TileImage.obj | debug, call graph, high
+// pdb params: apTexture
+void TileImage::SetSourceTexture(NiAVObject* apTexture)
 {
     int unused1, unused2;
     Set(0xfcc, "", true);
-    reinterpret_cast<NiPointer<NiAVObject>&>(spTexture) = image;
+    reinterpret_cast<NiPointer<NiAVObject>&>(spTexture) = apTexture;
     SetImageFlags(0x30);
 }
 
 // @fnv 0x0079f640
+// pdb: MapMenu::SetPlayerMarker | MapMenu.obj | debug, object-file run extension, low
 void MapMenu::SetMapPositionToPlayer()
 {
     if (DAT_011da368 && g_thePlayer->QPlayerMapMarker())
     {
         TESObjectREFR* ref = g_thePlayer->QPlayerMapMarker();
-        DAT_011da368->m_kPlayerWorldPosition = *static_cast<const TESObjectREFR*>(ref)->GetPos();
-        DAT_011da368->m_pCurrentMapSpace = g_thePlayer->QPlayerMapMarker()->GetParentWorldSpace();
-        if (!DAT_011da368->m_pCurrentMapSpace)
-            DAT_011da368->m_pCurrentMapSpace = g_thePlayer->QPlayerMapMarker()->GetParentCell();
+        DAT_011da368->PlayerMarkerPos = *static_cast<const TESObjectREFR*>(ref)->GetPos();
+        DAT_011da368->PlayerMarkerSpace = g_thePlayer->QPlayerMapMarker()->GetParentWorldSpace();
+        if (!DAT_011da368->PlayerMarkerSpace)
+            DAT_011da368->PlayerMarkerSpace = g_thePlayer->QPlayerMapMarker()->GetParentCell();
     }
 }
 
 // @fnv 0x00798bf0
-void MapMenu::StopMapMenuSounds()
+// src: XBOX_RETAIL_PDB 0x00798bf0
+// pdb: MapMenu::ClearAudioLogSubtites | MapMenu.obj | retail, object-file run extension, high
+void MapMenu::ClearAudioLogSubtites()
 {
     if (DAT_011da368)
     {
@@ -300,16 +310,18 @@ void MapMenu::StopMapMenuSounds()
         DAT_011da368->m_kSoundList.RemoveAll();
         DAT_011da368->SubtitlesToShow.Clear(true);
         DAT_011da368->m_pkActiveSoundList = 0;
-        DAT_011da368->m_fMapZoom = 0.0f;
-        DAT_011da368->m_iMapSelectionIndex = 0;
-        DAT_011da368->m_bMapListUpdatePending = false;
+        DAT_011da368->fSoundDurationMillis = 0.0f;
+        DAT_011da368->iSoundPlayStartTime = 0;
+        DAT_011da368->bSoundsLoading = false;
     }
 }
 
 // @fnv 0x007a1670
+// pdb: ListBox<TESQuest *>::ListBox<TESQuest *> | MapMenu.obj | retail, object-file run extension, low
+// pdb note: debug build links it to MapMenu::ClearWorldMapTexture
 void MapMenu::OpenMap()
 {
-    if (MapInterface::GetSelectedTargetIndex(MapInterface::Map) && DAT_011da368->m_iMapDisplayMode == 33)
+    if (MapInterface::GetSelectedTargetIndex(MapInterface::Map) && DAT_011da368->iCurrentPage == 33)
         return;
     if (DAT_011da368)
     {
@@ -327,6 +339,8 @@ void MapMenu::OpenMap()
 }
 
 // @fnv 0x007a1490
+// pdb: MapMenu::ClearMapMemory | MapMenu.obj | retail, call graph (shared callers), high
+// pdb locals: pavObj, ptsp, pnode, a, pobj
 void MapMenu::UpdateMapPosition()
 {
     if (DAT_011da368)
@@ -347,10 +361,10 @@ void MapMenu::UpdateMapPosition()
         DAT_011da368->LocalMapMarkerList.RemoveAll();
         DAT_011da368->m_pTiles[4]->ResetImage();
         DAT_011da368->m_pTiles[5]->UpdateTrait(0xff5);
-        DAT_011da368->m_kMapMarkerList.RemoveAll();
-        DAT_011da368->m_kMapMarkerTiles.Clear(true);
-        DAT_011da368->m_uiMapMarkerCount = 0;
-        DAT_011da368->m_pMapTile = 0;
+        DAT_011da368->WorldMapMarkerList.RemoveAll();
+        DAT_011da368->debugWaypoints.Clear(true);
+        DAT_011da368->uiNextLocalMapGrid = 0;
+        DAT_011da368->pMapTile = 0;
         NiAVObject* node = DAT_011da368->m_pTiles[16]->GetModel_0056c7f0()
                                ? DAT_011da368->m_pTiles[16]->GetModel_0056c7f0()->NiNode_GetAtChecked(0)
                                : 0;
@@ -367,6 +381,7 @@ void MapMenu::UpdateMapPosition()
 
 // Initializes the MapMenu by caching tile IDs for its UI elements and resetting its member fields to default values.
 // @fnv 0x00796740
+// pdb: MapMenu::MapMenu | MapMenu.obj | retail, upstream name already matches, high
 MapMenu::MapMenu()
 {
     DAT_011da354 = Tile::GetTraitID("_Title");
@@ -377,28 +392,28 @@ MapMenu::MapMenu()
     DAT_011da350 = Tile::GetTraitID("_x");
     DAT_011da34c = Tile::GetTraitID("_y");
     DAT_011da35c = Tile::GetTraitID("_Magnification");
-    m_fMapRotation = 0.0f;
-    m_bMapMenuActive = true;
+    fWaveformAnimationStartTime = 0.0f;
+    bShowingAllNotes = true;
     m_pkActiveSoundList = 0;
-    m_bMapListUpdatePending = false;
-    m_pSecondMapReference = 0;
-    m_iMapDisplayMode = 36;
-    reinterpret_cast<MapPoint3&>(m_kPlayerWorldPosition) = MapPoint3::ZERO;
-    m_pCurrentMapSpace = 0;
-    m_pCurrentMapForm = 0;
-    m_pMapTile = 0;
-    m_pSelectedQuest = 0;
+    bSoundsLoading = false;
+    pFastTravelMarker = 0;
+    iCurrentPage = 36;
+    reinterpret_cast<MapPoint3&>(PlayerMarkerPos) = MapPoint3::ZERO;
+    PlayerMarkerSpace = 0;
+    pMapSpace = 0;
+    pMapTile = 0;
+    pDisplayedQuest = 0;
     m_pSelectedNote = 0;
     pAdjustNorthRotationCell = 0;
-    m_pSelectedMarkerTile = 0;
-    m_uiMapState = 0;
-    m_fSavedMusicVolume = BSAudio::GetSingleton()->GetMusicVolume();
-    m_pSelectedMapMarkerInfo = 0;
-    m_uiMapMarkerCount = 0;
-    m_pFirstMapReference = 0;
-    m_bNeedsMapUpdate = true;
-    m_pCurrentWorldspace = 0;
-    m_bLocalMapMode = false;
+    pHighlightedMapMarker = 0;
+    uiNoteEnterStartTime = 0;
+    fOldPipboyRadioVolume = BSAudio::GetSingleton()->GetMusicVolume();
+    pDisplayedQuestTarget = 0;
+    uiNextLocalMapGrid = 0;
+    pMapPlayerRef = 0;
+    bFogOfWarEnabled = true;
+    pRootMapSpace = 0;
+    bRootSpaceChanged = false;
 }
 
 // @fnv 0x00796a40
@@ -425,6 +440,7 @@ TESObjectREFR* PlayerCharacter::QPlayerMapMarker()
 // Clears the float at offset 0x88 and sets the tile at offset 0x68 to value 0xfa3 with 0.
 // @fnv 0x0079c090
 // src: XBOX_PDB 0x0079c090
+// pdb: MapMenu::ResetWaveform | MapMenu.obj | debug, upstream name already matches, high
 void MapMenu::ResetWaveform()
 {
     *reinterpret_cast<float*>(reinterpret_cast<char*>(this) + 0x88) = 0.0f;
@@ -434,6 +450,8 @@ void MapMenu::ResetWaveform()
 // If DAT_011da368 is set, calls Set on the Tile at offset 0x30 with DAT_011da35c and afMagnification.
 // @fnv 0x007a1820
 // src: COMMUNITY 0x007a1820
+// pdb: MapMenu::SetLocalMapMagnification | MapMenu.obj | debug, upstream name already matches, high
+// pdb params: afMagnification
 void __cdecl MapMenu_SetLocalMapMagnification(float afMagnification)
 {
     if (DAT_011da368)
@@ -445,6 +463,8 @@ void __cdecl MapMenu_SetLocalMapMagnification(float afMagnification)
 // If DAT_011da368 is set, calls Set on the Tile at offset 0x38 with DAT_011da35c and afMagnification.
 // @fnv 0x007a1850
 // src: COMMUNITY 0x007a1850
+// pdb: MapMenu::SetWorldMapMagnification | MapMenu.obj | debug, upstream name already matches, high
+// pdb params: afMagnification
 void __cdecl MapMenu_SetWorldMapMagnification(float afMagnification)
 {
     if (DAT_011da368)
@@ -464,6 +484,7 @@ struct Dummy_007a1a70
 // Sets the object's vtable to DAT_01075530 and calls FUN_007a63f0 with 0, 0, returning the object.
 // @fnv 0x007a1a70
 // src: EXE 0x007a1a70
+// pdb: BSSimpleArray<BSStringT<char>,1024>::BSSimpleArray<BSStringT<char>,1024> | MapMenu.obj | debug, object-file run extension, low
 Dummy_007a1a70* __fastcall BSSimpleArray_BSStringT_char_1024_BSSimpleArray(Dummy_007a1a70* pThis)
 {
     pThis->vtable = &DAT_01075530;
@@ -473,13 +494,14 @@ Dummy_007a1a70* __fastcall BSSimpleArray_BSStringT_char_1024_BSSimpleArray(Dummy
 
 // @fnv 0x009c8640
 // src: XBOX_PDB 0x009c8640
+// pdb: BGSCameraShot::GetLocationNode | DebugTextVATS.obj | debug, upstream name already matches, high
 NiTexture* TileShaderProperty::BGSCameraShot_GetLocationNode()
 {
-    return m_spTexture;
+    return spTileTexture;
 }
 
-void __fastcall UpdateWaveAnimation(MapMenu*);
-void __fastcall UpdateHolotapePlayback(MapMenu*);
+void __fastcall MapMenu_UpdateWaveform(MapMenu*);
+void __fastcall MapMenu_UpdatePlayingSounds(MapMenu*);
 struct A7d
 {
     float GetTotalFloat();
@@ -496,6 +518,8 @@ extern double _gModifierZero;
 
 // Updates the map menu: toggles the playing item, handles map input modes, moves the highlight, marks notes read, and refreshes the menu.
 // @fnv 0x0079a130
+// pdb: MapMenu::DoIdle | MapMenu.obj | retail, vtable slot, high
+// pdb locals: i, fhighlightX, fhighlightY, pcurrNote, pcurrTile
 void MapMenu::UpdateDialog()
 {
     unsigned int i;
@@ -517,7 +541,7 @@ void MapMenu::UpdateDialog()
     {
         reinterpret_cast<BSSoundHandle&>(m_pkActiveSoundList->GetItem()).Play(false);
         DAT_011da36f = false;
-        m_iMapSelectionIndex += g_timeGlobal.GetTimeStamp() - DAT_011da40c;
+        iSoundPlayStartTime += g_timeGlobal.GetTimeStamp() - DAT_011da40c;
     }
 
     if (!MapInterface::GetPipboyManagerInstance()->IsUnk28Set())
@@ -525,12 +549,12 @@ void MapMenu::UpdateDialog()
 
     if (MapInterface::GetSelectedTargetIndex(MapInterface::Map))
     {
-        switch (DAT_011da368->m_iMapDisplayMode)
+        switch (DAT_011da368->iCurrentPage)
         {
         case 0x20:
             if (DAT_011da3b8.Bool()[0] && MapInterface::GetPipboyManagerInstance()->GetByteAtOffsetB9())
             {
-                DAT_011da368->m_uiMapMarkerCount = 0;
+                DAT_011da368->uiNextLocalMapGrid = 0;
                 for (i = 0; i < 25; i++)
                     MapMenu_RenderLocalMapGrid(false);
             }
@@ -560,41 +584,41 @@ void MapMenu::UpdateDialog()
             }
             break;
         case 0x23:
-            if (m_uiMapState)
+            if (uiNoteEnterStartTime)
             {
-                if (g_timeGlobal.GetTimeStamp() - m_uiMapState >= DAT_011d47bc.Float()->f * 1000.0)
+                if (g_timeGlobal.GetTimeStamp() - uiNoteEnterStartTime >= DAT_011d47bc.Float()->f * 1000.0)
                 {
                     pcurrNote = m_pSelectedNote;
                     pcurrTile = 0;
                     if (InterfaceManager_Has360Controller() || !m_pSelectedNote)
-                        pcurrNote = m_kNoteListBox.GetSelectedData();
-                    pcurrTile = m_kNoteListBox.GetTileForData(pcurrNote);
+                        pcurrNote = lbNotesList.GetSelectedData();
+                    pcurrTile = lbNotesList.GetTileForData(pcurrNote);
                     if (pcurrNote && pcurrTile)
                     {
                         pcurrTile->Set(DAT_011da344, 128.0f, true);
                         ((NoteReadState*)pcurrNote)->SetRead(true);
-                        m_uiMapState = 0;
+                        uiNoteEnterStartTime = 0;
                     }
                 }
             }
             break;
         case 0x24:
             if (FalloutRadio_IsPipboyRadioEnabled())
-                UpdateWaveAnimation(this);
+                MapMenu_UpdateWaveform(this);
             else
                 ResetWaveform();
             break;
         }
         DAT_011da408 = false;
     }
-    else if (!DAT_011da408 && !InterfaceManager_Has360Controller() && m_iMapDisplayMode <= 0x21)
+    else if (!DAT_011da408 && !InterfaceManager_Has360Controller() && iCurrentPage <= 0x21)
     {
         InterfaceManager_GetSingleton()->GetParent()->Set(0xfa9, 255.0f, true);
         DAT_011da408 = true;
     }
 
-    if (m_bMapListUpdatePending || m_pkActiveSoundList)
-        UpdateHolotapePlayback(this);
+    if (bSoundsLoading || m_pkActiveSoundList)
+        MapMenu_UpdatePlayingSounds(this);
 }
 
 struct FUN_007240c0
@@ -682,6 +706,9 @@ struct FUN_007a5730_shell
 
 
 // @fnv 0x00796fd0
+// pdb: MapMenu::DoClick | MapMenu.obj | retail, unique string literal, high
+// pdb params: aiID, apTarget
+// pdb locals: hsndHandle, pnote, bisSoundNote, bnoteMatch, poldSelectedTile, bsoundStopped, pVoiceNoteNPC, pVoiceNoteConvo, pcurrTile, bunselected, ptargetRef, centerPoint, imarkerCt, pcurrMarker, strtemp
 void MapMenu::HandleSelection(int aiID, Tile* apTarget)
 {
     if (apTarget == 0 && aiID >= 0 && aiID < 22)
@@ -690,9 +717,9 @@ void MapMenu::HandleSelection(int aiID, Tile* apTarget)
     switch (aiID)
     {
     case 23:
-        if (m_kQuestListBox.GetSelectedData() && !m_kQuestListBox.GetSelectedData()->GetCompleted())
+        if (lbQuestsList.GetSelectedData() && !lbQuestsList.GetSelectedData()->GetCompleted())
         {
-            g_thePlayer->SetActiveQuest(m_kQuestListBox.GetSelectedData());
+            g_thePlayer->SetActiveQuest(lbQuestsList.GetSelectedData());
             MapInterface::PlayUISound(3);
             UpdateSelectedQuestMarkers();
         }
@@ -701,14 +728,14 @@ void MapMenu::HandleSelection(int aiID, Tile* apTarget)
         if (!DAT_011da36d)
         {
             BSSoundHandle hsndHandle;
-            BGSNote* pnote = m_kNoteListBox.GetSelectedData(apTarget);
+            BGSNote* pnote = lbNotesList.GetSelectedData(apTarget);
             bool bisSoundNote = pnote->GetNoteType() == 0 || pnote->GetNoteType() == 3;
             if (pnote && (!InterfaceManager_Has360Controller() || bisSoundNote))
             {
                 bool bnoteMatch = pnote == m_pSelectedNote;
                 Tile* poldSelectedTile;
                 bool bsoundStopped = false;
-                poldSelectedTile = m_kNoteListBox.GetTileForData(m_pSelectedNote);
+                poldSelectedTile = lbNotesList.GetTileForData(m_pSelectedNote);
                 if (poldSelectedTile)
                     poldSelectedTile->Set(DAT_011da348, 0);
                 if (!bnoteMatch || (bisSoundNote && !m_pkActiveSoundList))
@@ -740,7 +767,7 @@ void MapMenu::HandleSelection(int aiID, Tile* apTarget)
                         ((FUN_007a19a0_shell*)&m_kSoundList)
                             ->BSSimpleList_BSSoundHandle_AddTail(reinterpret_cast<const BSSoundHandle&>(BSAudio::GetSingleton()->GetSoundHandleByFormID(
                                 reinterpret_cast<TESForm*>(pnote->GetNoteSound())->GetFormID(), 0x101)));
-                        m_bMapListUpdatePending = true;
+                        bSoundsLoading = true;
                     }
                     else if (pnote->GetNoteType() == 3 && pnote->GetNoteTopic() && pnote->GetNoteSpeaker())
                     {
@@ -765,13 +792,13 @@ void MapMenu::HandleSelection(int aiID, Tile* apTarget)
                                 hsndHandle.SetVolume(0.9f);
                                 ((FUN_007a19a0_shell*)&m_kSoundList)->BSSimpleList_BSSoundHandle_AddTail(hsndHandle);
                                 pVoiceNoteConvo->GetCurrentItem()->GetInfo()->RunResultScript(1, pVoiceNoteNPC);
-                                m_bMapListUpdatePending = true;
+                                bSoundsLoading = true;
                             } while (pVoiceNoteConvo->GetCurrentItem()->NextResponse());
                         }
                         delete pVoiceNoteConvo;
                         delete pVoiceNoteNPC;
                     }
-                    if (m_bMapListUpdatePending)
+                    if (bSoundsLoading)
                     {
                         BSAudio::GetSingleton()->GetSoundHandleByEditorID("UIPipBoyHolotapeStart", 0x121).Play(false);
                         BSAudio::EnableAudio();
@@ -782,18 +809,18 @@ void MapMenu::HandleSelection(int aiID, Tile* apTarget)
         }
         break;
     case 25: {
-        Tile* pcurrTile = m_kMapMarkerListBox.GetHighlightedItem();
+        Tile* pcurrTile = lbRadioStationsList.GetHighlightedItem();
         if (pcurrTile->GetFloat(DAT_011da344) == 255.0)
         {
             bool bunselected = !pcurrTile->ContainsTrait(DAT_011da348);
             ResetWaveform();
-            m_kMapMarkerListBox.Traverse(SetMapMenuTraitUnselected, 0, 0x7fffffff);
+            lbRadioStationsList.Traverse(SetMapMenuTraitUnselected, 0, 0x7fffffff);
             if (FalloutRadio_IsPipboyRadioEnabled())
                 FalloutRadio::SetRadioEnabled(false);
             if (bunselected)
             {
                 FalloutRadio::SetRadioEnabled(true);
-                FalloutRadio_TunePipboyToStation(m_kMapMarkerListBox.GetSelectedData(), false);
+                FalloutRadio_TunePipboyToStation(lbRadioStationsList.GetSelectedData(), false);
                 pcurrTile->Set(DAT_011da348, 1);
             }
             UpdateSelectedQuestMarkers();
@@ -802,25 +829,25 @@ void MapMenu::HandleSelection(int aiID, Tile* apTarget)
     break;
         break;
     case 18:
-        if (m_iMapDisplayMode == 0x23)
+        if (iCurrentPage == 0x23)
             SetMapDisplayMode(true);
         break;
     case 12:
-        switch (m_iMapDisplayMode)
+        switch (iCurrentPage)
         {
         case 0x23:
             if (!DAT_011da36d)
             {
-                m_bMapMenuActive = !m_bMapMenuActive;
-                ((FUN_007a2e30_shell*)&m_kNoteListBox)->ApplyNoteFilter(MapMenu_ShouldHideNote);
+                bShowingAllNotes = !bShowingAllNotes;
+                ((FUN_007a2e30_shell*)&lbNotesList)->ApplyNoteFilter(MapMenu_ShouldHideNote);
                 m_pTiles[13]->Set(0xfa3, 0);
-                m_pTiles[12]->Set(Tile::GetTraitID("_ShowingAllNotes"), m_bMapMenuActive);
+                m_pTiles[12]->Set(Tile::GetTraitID("_ShowingAllNotes"), bShowingAllNotes);
             }
             else
             {
                 if (++DAT_011da36e > 2)
                     DAT_011da36e = 0;
-                ((FUN_007a5730_shell*)&m_kChallengeListBox)->ListBox_TESChallenge_Filter(MapMenu_ChallengeFilterFunc);
+                ((FUN_007a5730_shell*)&lbChallengeList)->ListBox_TESChallenge_Filter(MapMenu_ChallengeFilterFunc);
                 m_pTiles[21]->Set(0xfc4, DAT_011a03e4[DAT_011da36e]->String(), true);
                 m_pTiles[20]->Set(0xfa3, 0);
                 m_pTiles[13]->Set(0xfa3, 0);
@@ -828,40 +855,40 @@ void MapMenu::HandleSelection(int aiID, Tile* apTarget)
             break;
         case 0x20:
         case 0x21:
-            if (m_pMapTile)
+            if (pMapTile)
             {
                 if (InterfaceManager_Has360Controller())
                 {
-                    reinterpret_cast<MapPoint3&>(m_kPlayerWorldPosition) =
-                        MapPoint3(m_pMapTile->GetParent()->GetFloat(0xfb1) / 2.0 - m_pMapTile->GetFloat(0xfa1),
-                                 m_pMapTile->GetParent()->GetFloat(0xfb0) / 2.0 - m_pMapTile->GetFloat(0xfa2), 0.0f);
+                    reinterpret_cast<MapPoint3&>(PlayerMarkerPos) =
+                        MapPoint3(pMapTile->GetParent()->GetFloat(0xfb1) / 2.0 - pMapTile->GetFloat(0xfa1),
+                                 pMapTile->GetParent()->GetFloat(0xfb0) / 2.0 - pMapTile->GetFloat(0xfa2), 0.0f);
                 }
                 else
                 {
-                    reinterpret_cast<MapPoint3&>(m_kPlayerWorldPosition) =
+                    reinterpret_cast<MapPoint3&>(PlayerMarkerPos) =
                         MapPoint3(InterfaceManager_GetSingleton()->InterfaceManager_GetPipboyMouseX(), InterfaceManager_GetSingleton()->GetScaledValue(), 0.0f);
-                    reinterpret_cast<MapPoint3&>(m_kPlayerWorldPosition).x -= m_pMapTile->GetScreenX();
-                    reinterpret_cast<MapPoint3&>(m_kPlayerWorldPosition).y -= m_pMapTile->GetScreenY();
+                    reinterpret_cast<MapPoint3&>(PlayerMarkerPos).x -= pMapTile->GetScreenX();
+                    reinterpret_cast<MapPoint3&>(PlayerMarkerPos).y -= pMapTile->GetScreenY();
                 }
-                if (m_iMapDisplayMode == 0x20)
+                if (iCurrentPage == 0x20)
                 {
-                    m_pCurrentMapSpace = m_pCurrentMapForm;
-                    reinterpret_cast<MapPoint3&>(m_kPlayerWorldPosition) = MapToWorldPosition(
-                        ((const FUN_0053d280_shell*)&reinterpret_cast<MapPoint3&>(m_kPlayerWorldPosition))->ProcessAndReturnValue_0053d280(m_pMapTile->GetFloat(0xfb1)),
-                        m_pCurrentMapSpace->GetFormType() == ENUM_FORM_ID_WRLD_ID ? (TESWorldSpace*)m_pCurrentMapSpace : 0);
-                    reinterpret_cast<MapPoint3&>(m_kPlayerWorldPosition) = reinterpret_cast<MapPoint3&>(m_kPlayerWorldPosition);
+                    PlayerMarkerSpace = pMapSpace;
+                    reinterpret_cast<MapPoint3&>(PlayerMarkerPos) = MapToWorldCoord(
+                        ((const FUN_0053d280_shell*)&reinterpret_cast<MapPoint3&>(PlayerMarkerPos))->ProcessAndReturnValue_0053d280(pMapTile->GetFloat(0xfb1)),
+                        PlayerMarkerSpace->GetFormType() == ENUM_FORM_ID_WRLD_ID ? (TESWorldSpace*)PlayerMarkerSpace : 0);
+                    reinterpret_cast<MapPoint3&>(PlayerMarkerPos) = reinterpret_cast<MapPoint3&>(PlayerMarkerPos);
                 }
                 else
                 {
-                    reinterpret_cast<MapPoint3&>(m_kPlayerWorldPosition) = MapToWorldPosition(
-                        ((const FUN_0053d280_shell*)&reinterpret_cast<MapPoint3&>(m_kPlayerWorldPosition))->ProcessAndReturnValue_0053d280(m_pMapTile->GetFloat(0xfb1)),
+                    reinterpret_cast<MapPoint3&>(PlayerMarkerPos) = MapToWorldCoord(
+                        ((const FUN_0053d280_shell*)&reinterpret_cast<MapPoint3&>(PlayerMarkerPos))->ProcessAndReturnValue_0053d280(pMapTile->GetFloat(0xfb1)),
                         0);
-                    m_pCurrentMapSpace = CalculatePlayerMarkerSpace(reinterpret_cast<MapPoint3&>(m_kPlayerWorldPosition));
-                    if (m_pCurrentMapSpace)
-                        ((TESWorldSpace*)m_pCurrentMapSpace)->GetCellAtPosition(reinterpret_cast<NiPoint3&>(reinterpret_cast<MapPoint3&>(m_kPlayerWorldPosition)), true);
+                    PlayerMarkerSpace = CalculatePlayerMarkerSpace(reinterpret_cast<MapPoint3&>(PlayerMarkerPos));
+                    if (PlayerMarkerSpace)
+                        ((TESWorldSpace*)PlayerMarkerSpace)->AdjustMapMarkerCoord(reinterpret_cast<NiPoint3&>(reinterpret_cast<MapPoint3&>(PlayerMarkerPos)), true);
                 }
                 if (pAdjustNorthRotationCell)
-                    pAdjustNorthRotationCell->AdjustCoordForNorthRotation(reinterpret_cast<NiPoint3&>(reinterpret_cast<MapPoint3&>(m_kPlayerWorldPosition)), reinterpret_cast<NiPoint3&>(reinterpret_cast<MapPoint3&>(m_kPlayerWorldPosition)), false);
+                    pAdjustNorthRotationCell->AdjustCoordForNorthRotation(reinterpret_cast<NiPoint3&>(reinterpret_cast<MapPoint3&>(PlayerMarkerPos)), reinterpret_cast<NiPoint3&>(reinterpret_cast<MapPoint3&>(PlayerMarkerPos)), false);
                 m_pTiles[6]->Set(0xfa3, 0);
                 BSAudio::GetSingleton()->GetSoundHandleByEditorID("UIPopUpMapMarkerAdded ", 0x121).Play(false);
                 if (g_thePlayer->QPlayerMapMarker())
@@ -873,21 +900,21 @@ void MapMenu::HandleSelection(int aiID, Tile* apTarget)
             }
             break;
         case 0x22:
-            if (m_pSelectedMapMarkerInfo)
+            if (pDisplayedQuestTarget)
             {
                 HandleSelection(0x21, 0);
-                TESObjectREFR* ptargetRef = GetTeleportDestination(m_pSelectedMapMarkerInfo->GetReference(true),
-                                                                   m_pSelectedMapMarkerInfo->GetTeleportPath());
-                if (ptargetRef && m_pMapTile)
+                TESObjectREFR* ptargetRef = GetTeleportDestination(pDisplayedQuestTarget->GetReference(true),
+                                                                   pDisplayedQuestTarget->GetTeleportPath());
+                if (ptargetRef && pMapTile)
                 {
                     MapPoint3 centerPoint = WorldToMapPosition(reinterpret_cast<const MapPoint3&>(*static_cast<const TESObjectREFR*>(ptargetRef)->GetPos()), ptargetRef->GetParentWorldSpace());
-                    m_pMapTile->Set(0xfa1,
-                                    m_pMapTile->GetParent()->GetFloat(0xfb1) / 2.0 -
-                                        m_pMapTile->GetFloat(0xfb1) * centerPoint.x,
+                    pMapTile->Set(0xfa1,
+                                    pMapTile->GetParent()->GetFloat(0xfb1) / 2.0 -
+                                        pMapTile->GetFloat(0xfb1) * centerPoint.x,
                                     false);
-                    m_pMapTile->Set(0xfa2,
-                                    m_pMapTile->GetParent()->GetFloat(0xfb0) / 2.0 -
-                                        m_pMapTile->GetFloat(0xfb0) * centerPoint.y,
+                    pMapTile->Set(0xfa2,
+                                    pMapTile->GetParent()->GetFloat(0xfb0) / 2.0 -
+                                        pMapTile->GetFloat(0xfb0) * centerPoint.y,
                                     false);
                 }
             }
@@ -895,36 +922,36 @@ void MapMenu::HandleSelection(int aiID, Tile* apTarget)
         }
         break;
     case 26:
-        if (m_iMapDisplayMode == 0x21 &&
-            (InterfaceManager_Has360Controller() || (m_pMapTile && m_kMapOffset.x == m_pMapTile->GetFloat(0xfa1) &&
-                                m_kMapOffset.y == m_pMapTile->GetFloat(0xfa2))) &&
+        if (iCurrentPage == 0x21 &&
+            (InterfaceManager_Has360Controller() || (pMapTile && WorldMapDragStart.x == pMapTile->GetFloat(0xfa1) &&
+                                WorldMapDragStart.y == pMapTile->GetFloat(0xfa2))) &&
             m_pTiles[11]->ContainsTrait(0xfaf) && g_thePlayer->IsFastTravelAllowed())
         {
             int imarkerCt = 0;
             BSSimpleList<TESObjectREFR*>* pcurrMarker;
-            for (pcurrMarker = &m_kMapMarkerList; pcurrMarker && pcurrMarker->GetItem() &&
+            for (pcurrMarker = &WorldMapMarkerList; pcurrMarker && pcurrMarker->GetItem() &&
                                                   imarkerCt <= apTarget->GetFloat(GetTileValueID("_MarkerIndex", -1));
                  pcurrMarker = pcurrMarker->GetNext())
             {
-                m_pSecondMapReference = pcurrMarker->GetItem();
+                pFastTravelMarker = pcurrMarker->GetItem();
                 imarkerCt++;
             }
-            if (m_pSecondMapReference->GetMapMarkerData()->IsTravelLocation())
+            if (pFastTravelMarker->GetMapMarkerData()->IsTravelLocation())
             {
                 char strtemp[256];
                 HandleMouseoverTileAlt(aiID, apTarget);
                 sprintf_s(strtemp, 256, "%s %s?", g_011d4a38.String(),
-                          m_pSecondMapReference->GetMapMarkerData()->GetMapLabel());
+                          pFastTravelMarker->GetMapMarkerData()->GetMapLabel());
                 m_pTiles[6]->Set(0xfa3, 0);
                 MapInterface::ShowButtonDialog(strtemp, 0, 0, OnPCFastTravel, 0, 0x17, 0.0f, 0.0f, g_011d34f8.String(),
                                             g_011d3684.String(), 0);
             }
             else
             {
-                m_pSecondMapReference = 0;
+                pFastTravelMarker = 0;
             }
         }
-        else if (m_iMapDisplayMode == 0x21 && !m_pTiles[11]->ContainsTrait(0xfaf) &&
+        else if (iCurrentPage == 0x21 && !m_pTiles[11]->ContainsTrait(0xfaf) &&
                  _stricmp(apTarget->GetString(GetTileValueID("_LocationName", -1)), "Companion"))
         {
             MapInterface::ShowMessage(g_011d48e8.String(), 2, 0, 0, 2.0f, false);
@@ -932,8 +959,8 @@ void MapMenu::HandleSelection(int aiID, Tile* apTarget)
         break;
     case 2:
     case 4:
-        if (m_pSelectedMarkerTile)
-            HandleSelection(0x1a, m_pSelectedMarkerTile);
+        if (pHighlightedMapMarker)
+            HandleSelection(0x1a, pHighlightedMapMarker);
         break;
     case 32:
     case 33:
@@ -941,15 +968,15 @@ void MapMenu::HandleSelection(int aiID, Tile* apTarget)
     case 35:
     case 36:
         m_pTiles[17]->Set(DAT_011da360, aiID - 0x20);
-        m_iMapDisplayMode = aiID;
+        iCurrentPage = aiID;
         ((MapInterface*)InterfaceManager_GetSingleton())
             ->GetPipboyManager()
-            ->StartBurst(g_011db458.Float()->f, g_011db37c.Float()->f, 0.5f);
+            ->TriggerBurst(g_011db458.Float()->f, g_011db37c.Float()->f, 0.5f);
         if (!Interface_Has360Controller() && aiID != 0x20 && aiID != 0x21)
             InterfaceManager_GetSingleton()->GetParent()->Set(0xfa9, 255.0f, true);
         m_pTiles[13]->Set(0xfa3, 0);
         m_pTiles[12]->Set(0xfaf, 1);
-        MenuDepthController();
+        UpdateMenu();
         if (((MapInterface*)InterfaceManager_GetSingleton())->GetPipboyManager()->IsUnk28Set())
             MapMenu_SetKnobPosition(true);
         break;
@@ -1010,6 +1037,7 @@ extern MapMenu* DAT_011da368;
 
 // Returns the float setting at DAT_011da35c from DAT_011da368's tile, or 1.0f when DAT_011da368 is null.
 // @fnv 0x007a17a0
+// pdb: MapMenu::GetLocalMapMagnification | MapMenu.obj | debug, object-file gap fill, medium
 float __cdecl GetMapMenuFloatSetting()
 {
     float result;
@@ -1023,7 +1051,7 @@ float __cdecl GetMapMenuFloatSetting()
 // @fnv 0x00798420
 bool BGSNote::GetUnk7d()
 {
-    return m_bIsRead;
+    return bHasBeenRead;
 }
 
 extern float DAT_01074f70;
@@ -1032,6 +1060,8 @@ extern float DAT_01074f74;
 
 // When a 360 controller is present, sets tiles 0xFA1 and 0xFA2 on m_tile to the two global float values.
 // @fnv 0x0079a610
+// pdb: MapMenu::DoControllerSwitch | MapMenu.obj | retail, vtable slot, high
+// pdb params: abHas360Controller
 void MapMenu::HandleControllerConnectOrDisconnect(bool abHas360Controller)
 {
     if (abHas360Controller)
@@ -1076,6 +1106,7 @@ struct S
 };
 // Returns the float at offset 0x4B0 multiplied by DAT_0106e7f8 and divided by the result of FUN_004dc200().
 // @fnv 0x007983c0
+// pdb: InterfaceManager::GetPipboyMouseY | MapMenu.obj | debug, object-file run extension, low
 float S::GetScaledValue()
 {
     return (float)(*(float*)((char*)this + 0x4B0) * DAT_0106e7f8 / Renderer_GetScreenHeight());
@@ -1083,6 +1114,8 @@ float S::GetScaledValue()
 
 // For ID 4, reads floats 4001 and 4002 from the Tile at offset 0x38 and stores them at offsets 0x120 and 0x124.
 // @fnv 0x00798480
+// pdb: MapMenu::DoDownClick | MapMenu.obj | retail, vtable slot, high
+// pdb params: aiID, apTarget
 void MapMenu::HandleMouseoverTileAlt(unsigned int aiID, Tile* apTarget)
 {
     if (aiID == 4)
@@ -1107,38 +1140,44 @@ struct RefH
     bool GetDisabled();
 };
 void* __fastcall _FNV_GetObjectReference(RefH*);
-bool __cdecl IsRadioStationTalkingActivator(void*, int);
+bool __cdecl BGSTalkingActivator_IsNonPipboyRadioStation(void*, int);
 // Returns true if p is null, disabled, or its object reference passes IsRadioStationTalkingActivator with 0.
 // @fnv 0x0079be30
 // src: COMMUNITY 0x0079be30
-bool MapMenu_RadioFilterFunc(RefH* apRef)
+// pdb: MapMenu::RadioFilterFunc | MapMenu.obj | retail, upstream name already matches, high
+// pdb params: pcurrStation
+bool MapMenu_RadioFilterFunc(RefH* pcurrStation)
 {
-    return apRef == 0 || apRef->GetDisabled() || IsRadioStationTalkingActivator(_FNV_GetObjectReference(apRef), 0);
+    return pcurrStation == 0 || pcurrStation->GetDisabled() || BGSTalkingActivator_IsNonPipboyRadioStation(_FNV_GetObjectReference(pcurrStation), 0);
 }
 
 // If DAT_011da368 is set, calls SetValue on the PipboyManager with the value at DAT_011da368+0x80 minus 0x20 and a.
 // @fnv 0x0079c340
 // src: XBOX_PDB 0x0079c340
-void MapMenu_SetKnobPosition(bool a)
+// pdb: MapMenu::SetKnobPosition | MapMenu.obj | debug, upstream name already matches, high
+// pdb params: abPlaySounds
+void MapMenu_SetKnobPosition(bool abPlaySounds)
 {
     if (DAT_011da368)
         ((MapInterface*)InterfaceManager_GetSingleton())->GetPipboyManager()
-            ->SetValue(*(int*)((char*)DAT_011da368 + 0x80) - 0x20, a);
+            ->SetTabKnobPosition(*(int*)((char*)DAT_011da368 + 0x80) - 0x20, abPlaySounds);
 }
 
 extern SettingT_GameSettingCollection_ g_011c63cc;
 extern MapMenu* _DAT_011da368;
 // @fnv 0x007a1750
 // src: XBOX_PDB 0x007a1750
+// pdb: MapMenu::ShouldRenderLocalMap | MapMenu.obj | debug, upstream name already matches, high
 bool MapMenu_ShouldRenderLocalMap()
 {
-    return _DAT_011da368 != 0 && _DAT_011da368->m_uiMapMarkerCount < *reinterpret_cast<int*>(g_011c63cc.Int()) * *reinterpret_cast<int*>(g_011c63cc.Int());
+    return _DAT_011da368 != 0 && _DAT_011da368->uiNextLocalMapGrid < *reinterpret_cast<int*>(g_011c63cc.Int()) * *reinterpret_cast<int*>(g_011c63cc.Int());
 }
 
 namespace fnv_007a17e0 {
 extern MapMenu* _DAT_011da368;
 // Returns the tile's float value for DAT_011da35c when _DAT_011da368 is set, otherwise returns 1.0f.
 // @fnv 0x007a17e0
+// pdb: MapMenu::GetWorldMapMagnification | MapMenu.obj | debug, object-file gap fill, medium
 float GetTileFloatOrDefault()
 {
     float fValue;
@@ -1178,12 +1217,15 @@ struct S007a6280
 // Returns v5 called with the result of FUN_007a7830(0) minus one.
 // @fnv 0x007a6280
 // src: XBOX_PDB 0x007a6280
+// pdb: ListBox<BGSQuestObjective *>::GetLastItem | MapMenu.obj | debug, call graph, medium
 unsigned int S007a6280::ListBox_BGSQuestObjective_GetLastItem()
 {
     return v5(ListBox_BGSQuestObjective_NumUnfiltered(0) - 1);
 }
 
 // @fnv 0x007312e0
+// pdb: ListBox<BGSNote *>::SaveListState | MapMenu.obj | retail, call graph, low
+// pdb note: debug build links it to ListBox<ItemChange *>::SaveListState
 void __fastcall CacheListBoxScrollPosition(void* listBox)
 {
     *(float*)((char*)listBox + 0x24) = *(Tile**)((char*)listBox + 0x10)
@@ -1205,12 +1247,13 @@ extern int DAT_01075530;
 
 struct FUN_007a1aa0_shell : public MapArray<BSStringT<char>, 1024>
 {
-    void ResetVirtualTableAndClear_007a1aa0();
+    void BSSimpleArray_BSStringT_char_1024_dtor();
 };
 
 // @fnv 0x007a1aa0
-// src: GUESS 0x007a1aa0 (confidence: medium)
-void FUN_007a1aa0_shell::ResetVirtualTableAndClear_007a1aa0()
+// src: XBOX_RETAIL_PDB 0x007a1aa0
+// pdb: BSSimpleArray<BSStringT<char>,1024>::~BSSimpleArray<BSStringT<char>,1024> | MapMenu.obj | retail, call graph (shared callers), high
+void FUN_007a1aa0_shell::BSSimpleArray_BSStringT_char_1024_dtor()
 {
     *reinterpret_cast<int**>(this) = &DAT_01075530;
     Clear(true);
@@ -1222,6 +1265,7 @@ extern int DAT_011da4ac;
 
 
 // @fnv 0x007a7830
+// pdb: ListBox<BGSQuestObjective *>::NumUnfiltered | MapMenu.obj | retail, object-file run extension, high
 
 // src: XBOX_PDB 0x007a7830
 int VATSMenu::ListBox_BGSQuestObjective_NumUnfiltered()
@@ -1230,7 +1274,7 @@ int VATSMenu::ListBox_BGSQuestObjective_NumUnfiltered()
 
     static int numFiltered = GetTileValueID("_num_filtered", -1);
 
-    return GetSelectedTargetIndex() - (unsigned int)reinterpret_cast<Tile*>(m_kTileTemplateList.m_pkNext)->GetFloat(numFiltered);
+    return GetSelectedTargetIndex() - (unsigned int)reinterpret_cast<Tile*>(xTemplates.m_pkNext)->GetFloat(numFiltered);
 
 }
 
@@ -1389,6 +1433,8 @@ struct S006949d0
 }  // namespace fnv_006f49c0
 
 // @fnv 0x006f49c0
+// pdb: TeleportPath::ComputeLength | TeleportPath.obj | retail, call graph (shared callers), high
+// pdb locals: ftotalLength, i
 float PathingPath::CalculatePathDistance()
 {
     using namespace fnv_006f49c0;
@@ -1425,19 +1471,22 @@ struct MapPlayerTargetExtension : PlayerCharacter
 };
 // @fnv 0x00798a00
 // src: XBOX_PDB 0x00798a00
+// pdb: MapMenu::StartFastTravel | MapMenu.obj | retail, upstream name already matches, high
+// pdb locals: ploc
 void MapMenu_StartFastTravel()
 {
-    if (_DAT_011da368 && reinterpret_cast<PlayerTargetLocation*>(_DAT_011da368->m_pSecondMapReference))
+    if (_DAT_011da368 && reinterpret_cast<PlayerTargetLocation*>(_DAT_011da368->pFastTravelMarker))
     {
         FUN_00456540_shell* loc = new FUN_00456540_shell;
-        *(PlayerTargetLocation**)(loc->data + 0x30) = reinterpret_cast<PlayerTargetLocation*>(_DAT_011da368->m_pSecondMapReference);
+        *(PlayerTargetLocation**)(loc->data + 0x30) = reinterpret_cast<PlayerTargetLocation*>(_DAT_011da368->pFastTravelMarker);
         static_cast<MapPlayerTargetExtension*>(_g_thePlayer)->SetMapTargetLocation(loc);
-        _DAT_011da368->m_pSecondMapReference = 0;
+        _DAT_011da368->pFastTravelMarker = 0;
     }
 }
 }  // namespace fnv_00798a00
 
 // @fnv 0x00798ad0
+// pdb: MapMenu::StopNoteSound | MapMenu.obj | retail, string-set bridge, high
 void MapMenu::RefreshMapData()
 {
     if (m_pkActiveSoundList && reinterpret_cast<BSSoundHandle&>(m_pkActiveSoundList->GetItem()).IsPlaying())
@@ -1445,9 +1494,9 @@ void MapMenu::RefreshMapData()
     m_kSoundList.RemoveAll();
     SubtitlesToShow.Clear(true);
     m_pkActiveSoundList = 0;
-    m_fMapZoom = 0.0f;
-    m_iMapSelectionIndex = 0;
-    m_bMapListUpdatePending = false;
+    fSoundDurationMillis = 0.0f;
+    iSoundPlayStartTime = 0;
+    bSoundsLoading = false;
     BSAudio::GetSingleton()->GetSoundHandleByEditorID("UIPipBoyHolotapeStop", 0x121).Play(false);
     DeactivateMapDialogAudio(BSAudio::GetSingleton());
     BSAudio::DeactivateAudio();
@@ -1485,12 +1534,14 @@ struct ListBoxS
     virtual void V7();
     virtual void V8(bool(__cdecl*)(void*));
     Tile* MapMenuObjectivesList_Append(BGSQuestObjective*, const char*, int, int);
-    Tile* InsertTileFromTemplate(TESQuest*, const char*, int, int);
+    Tile* ListBox_TESQuest_AddItem(TESQuest*, const char*, int, int);
     void ListBox_TESQuest_SetEnabled(bool);
     void ApplyObjectiveFilter(bool(__cdecl*)(BGSQuestObjective*));
 };
 
 // @fnv 0x0079b8e0
+// pdb: MapMenu::UpdateQuests | MapMenu.obj | retail, string-set bridge, high
+// pdb locals: pobjectiveList, pcurrQuest, pnewTile, pactiveQuestTile
 }  // namespace fnv_0079b8e0
 
 void MapMenu::UpdateQuestObjectiveList()
@@ -1532,7 +1583,7 @@ void MapMenu::UpdateQuestObjectiveList()
             if (!((ListBox<BGSNote*>*)((char*)this + 0x130))->GetTileForData((BGSNote*&)pQuest))
             {
                 Tile* pTile = ((fnv_0079b8e0::ListBoxS*)((char*)this + 0x130))
-                                  ->InsertTileFromTemplate(
+                                  ->ListBox_TESQuest_AddItem(
                                       pQuest, (const char*)((TESFullName*)((char*)pQuest + 0x30))->GetFullName(), 0, 0);
                 pTile->Set(0xfaa, 0x17);
                 pTile->Set(DAT_011da344, pQuest->GetCompleted() ? 128.0f : 255.0f, true);
@@ -1588,20 +1639,23 @@ float __fastcall GetMapCellNorthRotation(TESObjectCELL*);
 
 // @fnv 0x00555b10
 // src: XBOX_PDB 0x00555b10
-void TESObjectCELL::AdjustCoordForNorthRotation(NiPoint3& source, NiPoint3& destination, bool invert)
+// pdb: TESObjectCELL::AdjustCoordForNorthRotation | TESObjectCELL.obj | retail, upstream name already matches, high
+// pdb params: aStartCoord, aOutCoord, abClockwise
+// pdb locals: frot, rotmat
+void TESObjectCELL::AdjustCoordForNorthRotation(NiPoint3& aStartCoord, NiPoint3& aOutCoord, bool abClockwise)
 {
     FUN_004a0c90_shell shell;
-    float f = GetMapCellNorthRotation(this) * (invert ? -1.0f : 1.0f);
+    float f = GetMapCellNorthRotation(this) * (abClockwise ? -1.0f : 1.0f);
 
     if (f != 0.0)
     {
         shell = DAT_011a9448;
         shell.FUN_004a0c90(f);
-        destination = NiPoint3_TransformByMatrix3(source, reinterpret_cast<float const*>(&shell));
+        aOutCoord = NiPoint3_TransformByMatrix3(aStartCoord, reinterpret_cast<float const*>(&shell));
     }
     else
     {
-        destination = source;
+        aOutCoord = aStartCoord;
     }
 }
 
@@ -1624,6 +1678,8 @@ extern SettingT_GameSettingCollection_ g_011cbd84;
 
 // Looks up the positive and negative reputation indices and returns the title string from the 4x4 table of game settings.
 // @fnv 0x00616710
+// pdb: TESReputation::GetReputationTitle | TESReputation.obj | debug, call graph, high
+// pdb locals: cPosIndex, cNegIndex, pRepTitles
 const char* TESReputation::GetReputationName()
 {
     char cPosIndex;
@@ -1650,6 +1706,7 @@ struct S006949d0
 
 // @fnv 0x006cedb0
 // src: XBOX_PDB 0x006cedb0
+// pdb: BSSimpleArray<TeleportLink,1024>::GetLast | PathBuilder.obj | debug, call graph (shared callers), medium
 void S006949d0::BSSimpleArray_TeleportLink_1024_GetLast()
 {
     GetAt(count - 1);
@@ -1678,14 +1735,17 @@ extern MapMenu* _DAT_011da368;
 extern signed char DAT_011da36e;
 
 // @fnv 0x0079b460
+// pdb: MapMenu::ToggleNotesChallengeMode | MapMenu.obj | retail, string-set bridge, high
+// pdb params: bChange
+// pdb locals: pchallengeText
 }  // namespace fnv_0079b460
 
 // src: XBOX_PDB 0x0079b460
-void MapMenu::ToggleNotesChallengeMode(bool abToggle)
+void MapMenu::ToggleNotesChallengeMode(bool bChange)
 {
     Tile* pchallengeText;
 
-    if (abToggle)
+    if (bChange)
         DAT_011da36d = !DAT_011da36d;
 
     reinterpret_cast<fnv_0079b460::FUN_007a59a0_Host*>(reinterpret_cast<char*>(this) + 0x1f0)->ListBox_TESChallenge_SetEnabled(DAT_011da36d);
@@ -1696,7 +1756,7 @@ void MapMenu::ToggleNotesChallengeMode(bool abToggle)
 
     (*reinterpret_cast<Tile**>(reinterpret_cast<char*>(this) + 0x5c))->Set(0xfa3, 1);
 
-    if (abToggle)
+    if (bChange)
     {
         pchallengeText =
             (*reinterpret_cast<Tile**>(reinterpret_cast<char*>(this) + 0x5c))->GetNamedChild("MM_DataText");
@@ -1719,7 +1779,7 @@ void MapMenu::ToggleNotesChallengeMode(bool abToggle)
         (*reinterpret_cast<Tile**>(reinterpret_cast<char*>(fnv_0079b460::_DAT_011da368) + 0x7c))->Set(0xfa3, 0);
     }
 
-    if (abToggle)
+    if (bChange)
         UpdateSelectedQuestMarkers();
 }
 
@@ -1733,6 +1793,9 @@ extern signed char DAT_011da36e;
 
 // @fnv 0x0079b720
 // src: XBOX_PDB 0x0079b720
+// pdb: MapMenu::UpdateRadioList | MapMenu.obj | retail, object-file run extension, low
+// pdb note: debug build links it to MapMenu::ChallengeFilterFunc
+// pdb locals: inRangeStationList, pcurrStation, pstationTile
 bool __cdecl MapMenu_ChallengeFilterFunc(TESChallenge* challenge)
 {
     bool result = true;
@@ -1789,6 +1852,9 @@ struct FUN_0079bd70_data
 int __cdecl BSstrcmp(char const*, char const*);
 
 // @fnv 0x0079bd70
+// pdb: MapMenu::RadioSortFunc | MapMenu.obj | retail, object-file run extension, low
+// pdb params: apItem1, apItem2
+// pdb locals: iresult
 int __cdecl CompareMobileObjects(FUN_0079bd70_data* pFirst, FUN_0079bd70_data* pSecond)
 {
     int result = 0;
@@ -1814,20 +1880,23 @@ extern double DAT_01075010;
 
 
 // @fnv 0x0079c380
-MapPoint3 MapMenu::WorldToMapPosition(MapPoint3 position, TESWorldSpace* worldSpace)
+// pdb: MapMenu::WorldToMapCoord | MapMenu.obj | retail, call graph, high
+// pdb params: aWorldCoord, apWorldspace
+// pdb locals: MapCoord
+MapPoint3 MapMenu::WorldToMapPosition(MapPoint3 aWorldCoord, TESWorldSpace* apWorldspace)
 {
     MapPoint3 markerPosition;
 
-    if (worldSpace != 0 && *reinterpret_cast<unsigned int*>(reinterpret_cast<unsigned char*>(this) + 0x80) == 0x21)
+    if (apWorldspace != 0 && *reinterpret_cast<unsigned int*>(reinterpret_cast<unsigned char*>(this) + 0x80) == 0x21)
     {
-        worldSpace->GetCellAtPosition(reinterpret_cast<NiPoint3&>(position), false);
+        apWorldspace->AdjustMapMarkerCoord(reinterpret_cast<NiPoint3&>(aWorldCoord), false);
     }
 
-    markerPosition.x = (position.x - *reinterpret_cast<float*>(reinterpret_cast<unsigned char*>(this) + 0xe8)) /
+    markerPosition.x = (aWorldCoord.x - *reinterpret_cast<float*>(reinterpret_cast<unsigned char*>(this) + 0xe8)) /
                        (*reinterpret_cast<float*>(reinterpret_cast<unsigned char*>(this) + 0xf0) -
                         *reinterpret_cast<float*>(reinterpret_cast<unsigned char*>(this) + 0xe8));
 
-    markerPosition.y = (position.y - *reinterpret_cast<float*>(reinterpret_cast<unsigned char*>(this) + 0xec)) /
+    markerPosition.y = (aWorldCoord.y - *reinterpret_cast<float*>(reinterpret_cast<unsigned char*>(this) + 0xec)) /
                        (*reinterpret_cast<float*>(reinterpret_cast<unsigned char*>(this) + 0xf4) -
                         *reinterpret_cast<float*>(reinterpret_cast<unsigned char*>(this) + 0xec));
 
@@ -1923,6 +1992,8 @@ struct FUN_007a4c50_shell
 
 // Sets the _enabled trait on the Tile to abVal using the cached trait index.
 // @fnv 0x007a4c50
+// pdb: ListBox<BGSQuestObjective *>::SetEnabled | MapMenu.obj | retail, call graph, high
+// pdb params: abVal
 void FUN_007a4c50_shell::SetEnabledTrait(bool abVal)
 {
     static int enabledTrait = GetTileValueID("_enabled", -1);
@@ -1930,10 +2001,11 @@ void FUN_007a4c50_shell::SetEnabledTrait(bool abVal)
 }
 
 // @fnv 0x007a6a50
+// pdb: ListBox<BGSNote *>::NumUnfiltered | MapMenu.obj | retail, call graph (shared callers), high
 unsigned int VATSMenu::GetUnfilteredCount()
 {
     static int numFiltered = GetTileValueID("_num_filtered", -1);
-    return GetSelectedTargetIndex() - (unsigned int)reinterpret_cast<Tile*>(m_kTileTemplateList.m_pkNext)->GetFloat(numFiltered);
+    return GetSelectedTargetIndex() - (unsigned int)reinterpret_cast<Tile*>(xTemplates.m_pkNext)->GetFloat(numFiltered);
 }
 
 
@@ -1957,25 +2029,29 @@ struct FNVElement
 };
 struct FNVEmitter
 {
-    FNVEmitter* FUN_00586390(int type);
+    FNVEmitter* FUN_00586390(int aeFlags);
     void GetCurrentCellMarkerDataRefs(FNVElement* element);
-    FNVElement* GetOrCreateElement(bool createNew);
+    FNVElement* TESWorldSpace_BuildMapMarkerList(bool abLocalOnly);
 };
 
 // Returns an existing element from the type-2 emitter when not creating new, otherwise allocates one, registers it, and propagates it to linked emitters.
 // @fnv 0x005882a0
-FNVElement* FNVEmitter::GetOrCreateElement(bool createNew)
+// src: XBOX_RETAIL_PDB 0x005882a0
+// pdb: TESWorldSpace::BuildMapMarkerList | TESWorldSpace.obj | retail, call graph (shared callers), high
+// pdb params: abLocalOnly
+// pdb locals: pretlist, plist, pworld
+FNVElement* FNVEmitter::TESWorldSpace_BuildMapMarkerList(bool abLocalOnly)
 {
     FNVElement* result = 0;
-    if (FUN_00586390(2) && !createNew)
+    if (FUN_00586390(2) && !abLocalOnly)
     {
-        result = FUN_00586390(2)->GetOrCreateElement(false);
+        result = FUN_00586390(2)->TESWorldSpace_BuildMapMarkerList(false);
     }
     else
     {
         result = new FNVElement;
         GetCurrentCellMarkerDataRefs(result);
-        if (!createNew)
+        if (!abLocalOnly)
         {
             FNVLinkedNode* node = DAT_011c3f2c->TESDataHandler_GetWorldSpaceList();
             while (node)
@@ -2019,6 +2095,9 @@ struct QueueOwner
 };
 // Deletes every node in the linked list, nulling each node's next pointer, then calls FUN_00418900 with a HandlerArgument(0).
 // @fnv 0x0076b7a0
+// pdb: HackingMenu::GridRow::GetMaxTally | HackingMenu.obj | retail, object-file run extension, low
+// pdb note: debug build links it to BSSimpleList<BSSoundHandle>::AddHead
+// pdb locals: ucMaxTally, TALLY_SIZE, ucTally, col, i
 void QueueOwner::ClearQueue()
 {
     while (first != 0)
@@ -2032,6 +2111,7 @@ void QueueOwner::ClearQueue()
 }
 
 // @fnv 0x00796a80
+// pdb: MapMenu::~MapMenu | MapMenu.obj | retail, upstream name already matches, high
 MapMenu::~MapMenu()
 {
     DAT_011da368 = 0;
@@ -2040,13 +2120,13 @@ MapMenu::~MapMenu()
 class B799100SpellList
 {
   public:
-    bool FUN_00680c30(void* pvSpell);
+    bool FUN_00680c30(void* apActionRef);
 };
 
 class B799100ActiveEffect
 {
   public:
-    void* GetSpell(int iUnk1, int iUnk2);
+    void* GetSpell(int abAllowPickUpActor, int iUnk2);
     B799100SpellList* GetSpellList();
 };
 
@@ -2126,11 +2206,14 @@ extern B799100State* g_pkB799100State;
 
 // @fnv 0x00799100
 // src: XBOX_PDB 0x00799100
-void __cdecl MapMenu_FindQuestObjectiveTargetFunc(void* pvUnused, B799100MagicTarget* pkTarget)
+// pdb: MapMenu::FindQuestObjectiveTargetFunc | MapMenu.obj | retail, upstream name already matches, high
+// pdb params: apTile, apObjective
+// pdb locals: ptargetObj, ptarget
+void __cdecl MapMenu_FindQuestObjectiveTargetFunc(void* apTile, B799100MagicTarget* apObjective)
 {
-    if (!g_pkB799100State->m_pkFoundEffect && pkTarget && !pkTarget->FUN_005a5dc0())
+    if (!g_pkB799100State->m_pkFoundEffect && apObjective && !apObjective->FUN_005a5dc0())
     {
-        for (B799100EffectNode* pkIter = pkTarget->GetActiveEffectList();
+        for (B799100EffectNode* pkIter = apObjective->GetActiveEffectList();
              !g_pkB799100State->m_pkFoundEffect && pkIter && *pkIter->GetItem(); pkIter = pkIter->GetNext())
         {
             B799100ActiveEffect* pkEffect = *pkIter->GetItem();
@@ -2169,6 +2252,9 @@ int __cdecl BSstrcmp(const char* pcA, const char* pcB);
 
 // Compares two items by a tile float value (128/255 ordering) or, otherwise, by their sound file names via FUN_00408b20.
 // @fnv 0x0079b820
+// pdb: MapMenu::ChallengeSortFunc | MapMenu.obj | debug, object-file run extension, low
+// pdb params: apItem1, apItem2
+// pdb locals: falpha2, falpha1, iresult
 int __cdecl CompareItems(B79B820Item* pkA, B79B820Item* pkB)
 {
     int iResult = 0;
@@ -2189,6 +2275,10 @@ extern double DAT_0101e568;
 // Compares two objects by a value at DAT_011da344, falling back to the value at 0xfac, returning -1, 0 or 1.
 // @fnv 0x0079bc90
 // src: COMMUNITY 0x0079bc90
+// pdb: MapMenu::QuestSortFunc | MapMenu.obj | retail, object-file run extension, low
+// pdb note: debug build links it to MapMenu::QuestObjectiveSortFunc
+// pdb params: apItem1, apItem2
+// pdb locals: falpha2, falpha1, iresult, findex1, findex2
 int __cdecl MapMenu_Quest_CompareForSorting(Tile** apFirst, Tile** apSecond)
 {
     int result2 = 0;
@@ -2223,9 +2313,13 @@ extern const double DAT_01075018;
 
 
 // @fnv 0x0079c450
-MapPoint3 MapMenu::MapToWorldPosition(MapPoint3 position, TESWorldSpace* worldSpace)
+// src: XBOX_RETAIL_PDB 0x0079c450
+// pdb: MapMenu::MapToWorldCoord | MapMenu.obj | retail, object-file run extension, high
+// pdb params: aMapCoord, apWorldspace
+// pdb locals: ScaledMapCoord, WorldCoord
+MapPoint3 MapMenu::MapToWorldCoord(MapPoint3 aMapCoord, TESWorldSpace* apWorldspace)
 {
-    MapPoint3 pos = position;
+    MapPoint3 pos = aMapCoord;
     MapPoint3 result;
 
     if (*(int*)((char*)this + 0x80) == 0x21)
@@ -2234,13 +2328,13 @@ MapPoint3 MapMenu::MapToWorldPosition(MapPoint3 position, TESWorldSpace* worldSp
         pos.y = (float)(pos.y * DAT_01075020 - DAT_01075018);
     }
 
-    result.x = (m_kMapMaximumPoint.x - m_kMapMinimumPoint.x) * pos.x + m_kMapMinimumPoint.x;
-    result.y = (m_kMapMaximumPoint.y - m_kMapMinimumPoint.y) * pos.y + m_kMapMinimumPoint.y;
+    result.x = (MapSECorner.x - MapNWCorner.x) * pos.x + MapNWCorner.x;
+    result.y = (MapSECorner.y - MapNWCorner.y) * pos.y + MapNWCorner.y;
     result.z = 0.0f;
 
-    if (worldSpace != 0 && *(int*)((char*)this + 0x80) == 0x21)
+    if (apWorldspace != 0 && *(int*)((char*)this + 0x80) == 0x21)
     {
-        worldSpace->GetCellAtPosition(reinterpret_cast<NiPoint3&>(result), true);
+        apWorldspace->AdjustMapMarkerCoord(reinterpret_cast<NiPoint3&>(result), true);
     }
 
     return result;
@@ -2250,7 +2344,7 @@ struct FUN_007a1ac0_Entry
 {
     unsigned int unk00;
     unsigned int unk04;
-    void CallAndReturnSelf(BSStringT<char>& s);
+    void CallAndReturnSelf(BSStringT<char>& arString);
 };
 
 struct FUN_007a1ac0_cls
@@ -2265,6 +2359,9 @@ struct FUN_007a1ac0_cls
 // Gets an index, marks the entry at m_04[idx] with flag 1, stores s into that entry, and returns the index.
 // @fnv 0x007a1ac0
 // src: COMMUNITY 0x007a1ac0
+// pdb: BSSimpleArray<BSStringT<char>,1024>::Add | MapMenu.obj | debug, object-file run extension, low
+// pdb params: aValue
+// pdb locals: iindex
 unsigned int FUN_007a1ac0_cls::BSSimpleArray_BSStringT_char_1024_Add(BSStringT<char>& aString)
 {
     unsigned int uiIndex = BSSimpleArray_NiPoint2_1024_AddUninitialized();
@@ -2278,7 +2375,7 @@ struct SpawnedSub
     ~SpawnedSub();
 };
 
-void __cdecl SpawnedFree(void* p);
+void __cdecl SpawnedFree(void* apLB);
 
 struct FUN_007a1d60_cls
 {
@@ -2289,6 +2386,7 @@ struct FUN_007a1d60_cls
 
 // Runs Cleanup, then frees the object with SpawnedFree.
 // @fnv 0x007a1d60
+// pdb: ListBox<TESQuest *>::~ListBox<TESQuest *> | MapMenu.obj | debug, call graph (shared callers), medium
 FUN_007a1d60_cls::~FUN_007a1d60_cls()
 {
     Cleanup();
@@ -2345,7 +2443,7 @@ struct LBox
     const char* templateName;
     unsigned short itemCount;
     bool ListBox_unsigned_int_GetFlag(unsigned int);
-    int* InitSceneNodes();
+    int* ListBox_TESChallenge_Synchronize();
     void AccumulateTileHeight(Tile*);
     void ListBox_TESChallenge_SetTotalListHeight();
     int GetRaceCount();
@@ -2353,6 +2451,9 @@ struct LBox
 };
 
 // @fnv 0x007a5230
+// pdb: ListBox<TESChallenge *>::AddItem | MapMenu.obj | debug, object-file run extension, low
+// pdb params: aAssociatedData, apcItemString, apCompareFn, apcTemplateName
+// pdb locals: pnew, pheight
 Tile* LBox::AddItem(int item, const char* text, int (*sortFunc)(LBItem*, LBItem*), const char* altTemplate)
 {
     if (parentTile && (templateName || altTemplate))
@@ -2367,7 +2468,7 @@ Tile* LBox::AddItem(int item, const char* text, int (*sortFunc)(LBItem*, LBItem*
         {
             list.BSSimpleList_ActiveEffect_Insert(new LBItem(newTile, &item), sortFunc);
             if (ListBox_unsigned_int_GetFlag(0))
-                InitSceneNodes();
+                ListBox_TESChallenge_Synchronize();
         }
         else
         {
@@ -2402,7 +2503,7 @@ int __cdecl Tile_AddUserTrait(const char* pcName, int iDefault);
 
 
 
-HighlightTile_mapmenu* __cdecl Tile_GetTileByName(Tile* apParent, const char* pcName);
+HighlightTile_mapmenu* __cdecl Tile_GetTileByName(Tile* apTarget, const char* apName);
 
 // This alternate highlight routine is absent from the shared method declarations.
 class MapHighlightList : public HighlightList_mapmenu
@@ -2413,6 +2514,8 @@ public:
 
 // Updates the container highlight traits and toggles its box edges for the selected tile.
 // @fnv 0x007a6c80
+// pdb: ListBox<BGSNote *>::UpdateHighlightBoxPos | MapMenu.obj | retail, call graph, high
+// pdb locals: phighlightY, pselectedHeight, hlBox, tmp
 void MapHighlightList::UpdateHighlightBox()
 {
     static int iHighlightY = Tile_AddUserTrait("_highlight_y", -1);
@@ -2506,6 +2609,8 @@ struct ScrollListHost
 // Computes a scroll count from the list tile's float value and total height, sets _scroll_delta on the list tile and _number_of_items on the count tile.
 // @fnv 0x007a7080
 // src: XBOX_PDB 0x007a7080
+// pdb: ListBox<BGSNote *>::SetTotalListHeight | MapMenu.obj | retail, call graph, high
+// pdb locals: inumPages, flistHeight
 void ScrollListHost::ListBox_BGSNote_SetTotalListHeight()
 {
     if (pListTile)
@@ -2563,15 +2668,18 @@ struct FUN_007a78e0_cls
     unsigned short m_1c;
     float m_20;
 
-    void Notify2(EntryTarget* target);
+    void Notify2(EntryTarget* apNewTile);
     void Finish1();
     void Finish2();
-    void ProcessEntries();
+    void ListBox_BGSQuestObjective_Synchronize();
 };
 
 // Resets m_1c and m_20, then for each entry with flag 0 notifies its target with 0xfac and an incrementing count, calls Notify2, then Finish1 and Finish2.
 // @fnv 0x007a78e0
-void FUN_007a78e0_cls::ProcessEntries()
+// src: XBOX_RETAIL_PDB 0x007a78e0
+// pdb: ListBox<BGSQuestObjective *>::Synchronize | MapMenu.obj | retail, call graph, high
+// pdb locals: pnode
+void FUN_007a78e0_cls::ListBox_BGSQuestObjective_Synchronize()
 {
     m_1c = 0;
     m_20 = 0.0f;
@@ -2608,6 +2716,8 @@ struct ListScrollHost
 
 // @fnv 0x007a8580
 // src: XBOX_PDB 0x007a8580
+// pdb: ListBox<TESChallenge *>::SetTotalListHeight | MapMenu.obj | retail, call graph, high
+// pdb locals: inumPages, flistHeight
 void ListScrollHost::ListBox_TESChallenge_SetTotalListHeight()
 {
     if (scrollBar)
@@ -2642,6 +2752,8 @@ template <> void ListBox<BGSNote*>::ClearSelection(bool);
 // Loads map_menu.xml, stores the resulting MapMenu in DAT_011da368, initializes its marker lists and tiles, and returns the menu tile or 0 on failure.
 // @fnv 0x00796b90
 // src: XBOX_PDB 0x00796b90
+// pdb: MapMenu::Create | MapMenu.obj | retail, upstream name already matches, high
+// pdb locals: pin, ptile, pold_menu_tile, pavObj, ptsp
 Tile* __cdecl MapMenu_Create()
 {
     InterfaceManager* interfaceManager = InterfaceManager_GetSingleton();
@@ -2652,7 +2764,7 @@ Tile* __cdecl MapMenu_Create()
     }
     Tile* menuTile = interfaceManager->CombatController_GetCombatState()->ReadFile("Data\\Menus\\Main\\map_menu.xml");
     DAT_011da368 = (MapMenu*)menuTile->GetMenu();
-    Menu::ReadMenuDefinition("Data\\Menus\\Main\\map_menu.xml", DAT_011da368);
+    Menu::RemoveFromXMLArchive("Data\\Menus\\Main\\map_menu.xml", DAT_011da368);
     if (DAT_011da368 && DAT_011da368->GetClass() == 0x3ff)
     {
         DAT_011da368->Menu_SetRenderedMenu();
@@ -2666,16 +2778,16 @@ Tile* __cdecl MapMenu_Create()
         if (menuTile->GetFloat(0xfa7) == 6006.0 || menuTile->GetFloat(0xfa7) == 102.0)
             menuTile->Set(0xfad, Tile::GetInterfaceScale(), true);
         InterfaceManager_GetSingleton()->kTutorialManager.ShowMessage(0x1a, MapMenu_GetClassStatic(), 0x200);
-        MapInterface::SetTileFormattedText(DAT_011da368->m_pTiles[17], 0x20, DAT_011d38ac.String(), DAT_011d204c.String(),
+        MapInterface::Interface_InitializeTabline(DAT_011da368->m_pTiles[17], 0x20, DAT_011d38ac.String(), DAT_011d204c.String(),
                                         DAT_011d5020.String(), DAT_011d28a4.String(), DAT_011d4aec.String(), 0);
-        DAT_011da368->m_kQuestListBox.Initialize(DAT_011da368->m_pTiles[7], "MM_ListMarkerTemplate");
-        DAT_011da368->m_kQuestListBox.ClearSelection(false);
-        DAT_011da368->m_kObjectiveListBox.Initialize(DAT_011da368->m_pTiles[15], "MM_ListMarkerTemplate");
-        DAT_011da368->m_kObjectiveListBox.ClearSelection(false);
-        DAT_011da368->m_kNoteListBox.Initialize(DAT_011da368->m_pTiles[8], "MM_ListMarkerTemplate");
-        DAT_011da368->m_kNoteListBox.ClearSelection(false);
-        DAT_011da368->m_kChallengeListBox.Initialize(DAT_011da368->m_pTiles[19], "MM_ListMarkerTemplate");
-        DAT_011da368->m_kMapMarkerListBox.Initialize(DAT_011da368->m_pTiles[10], "MM_ListMarkerTemplate");
+        DAT_011da368->lbQuestsList.Initialize(DAT_011da368->m_pTiles[7], "MM_ListMarkerTemplate");
+        DAT_011da368->lbQuestsList.ClearSelection(false);
+        DAT_011da368->lbQuestObjectivesList.Initialize(DAT_011da368->m_pTiles[15], "MM_ListMarkerTemplate");
+        DAT_011da368->lbQuestObjectivesList.ClearSelection(false);
+        DAT_011da368->lbNotesList.Initialize(DAT_011da368->m_pTiles[8], "MM_ListMarkerTemplate");
+        DAT_011da368->lbNotesList.ClearSelection(false);
+        DAT_011da368->lbChallengeList.Initialize(DAT_011da368->m_pTiles[19], "MM_ListMarkerTemplate");
+        DAT_011da368->lbRadioStationsList.Initialize(DAT_011da368->m_pTiles[10], "MM_ListMarkerTemplate");
         NiAVObject* object = DAT_011da368->m_pTiles[16]->GetModel_0056c7f0()
                                  ? DAT_011da368->m_pTiles[16]->GetModel_0056c7f0()->NiNode_GetAtChecked(0)
                                  : 0;
@@ -2707,6 +2819,7 @@ struct MenuInterfaceCalls
 
 // @fnv 0x00798710
 // src: COMMUNITY 0x00798710
+// pdb: MapMenu::FastTravelCallback | MapMenu.obj | debug, object-file gap fill, medium
 void __cdecl OnPCFastTravel()
 {
     if (!ConsumeByteAtE4())
@@ -2715,7 +2828,7 @@ void __cdecl OnPCFastTravel()
     }
     else
     {
-        DAT_011da368->m_pSecondMapReference = 0;
+        DAT_011da368->pFastTravelMarker = 0;
     }
     if (!InterfaceManager_Has360Controller())
     {
@@ -2736,18 +2849,20 @@ char ConsumeByteAtE4();
 struct MapMenuMarkerCalls : public MapMenu
 {
     void MapMenu_DeletePlayerMarker();
-    void UpdateQuestMarker();
+    void MapMenu_CreatePlayerMarker();
 };
 
 struct PlayerMarkerCalls : public PlayerCharacter
 {
-    void PlaceMarker(MapPoint3 pos, TESForm* space);
-    void ClearHelper();
+    void PlaceMarker(MapPoint3 aLocation, TESForm* apSpace);
+    void PlayerCharacter_RemovePlayerMapMarker();
 };
 
 // Reads a mode, updates the player/map marker accordingly, resets the marker position, and repositions the marker element unless a condition holds.
 // @fnv 0x00798840
 // src: COMMUNITY 0x00798840
+// pdb: MapMenu::SetPlayerMarkerCallback | MapMenu.obj | retail, upstream name already matches, high
+// pdb locals: cresult
 void MapMenu_SetPlayerMarkerCallback()
 {
     char cMode = ConsumeByteAtE4();
@@ -2756,18 +2871,18 @@ void MapMenu_SetPlayerMarkerCallback()
     case 0:
     case 3:
         ((PlayerMarkerCalls*)g_thePlayer)
-            ->PlaceMarker(reinterpret_cast<MapPoint3&>(DAT_011da368->m_kPlayerWorldPosition), DAT_011da368->m_pCurrentMapSpace);
+            ->PlaceMarker(reinterpret_cast<MapPoint3&>(DAT_011da368->PlayerMarkerPos), DAT_011da368->PlayerMarkerSpace);
         if (cMode == 0)
             ((MapMenuMarkerCalls*)DAT_011da368)->MapMenu_DeletePlayerMarker();
-        ((MapMenuMarkerCalls*)DAT_011da368)->UpdateQuestMarker();
+        ((MapMenuMarkerCalls*)DAT_011da368)->MapMenu_CreatePlayerMarker();
         break;
     case 1:
-        ((PlayerMarkerCalls*)g_thePlayer)->ClearHelper();
+        ((PlayerMarkerCalls*)g_thePlayer)->PlayerCharacter_RemovePlayerMapMarker();
         ((MapMenuMarkerCalls*)DAT_011da368)->MapMenu_DeletePlayerMarker();
         break;
     }
-    reinterpret_cast<MapPoint3&>(DAT_011da368->m_kPlayerWorldPosition) = MapPoint3::ZERO;
-    DAT_011da368->m_pCurrentMapSpace = 0;
+    reinterpret_cast<MapPoint3&>(DAT_011da368->PlayerMarkerPos) = MapPoint3::ZERO;
+    DAT_011da368->PlayerMarkerSpace = 0;
     if (!InterfaceManager_Has360Controller())
     {
         DAT_011da368->m_pTiles[6]->Set(0xfa1,
@@ -2796,12 +2911,16 @@ public:
 
 struct MapMenu_Shell : public MapMenu
 {
-    void UpdateChallengeText(TESChallenge* apChallenge);
+    void MapMenu_LoadChallenge(TESChallenge* apChallenge);
 };
 
 // Fills the MM_DataText tile with the challenge's name, progress/threshold and description, then sizes the MM_TextScrollbar from the text height.
 // @fnv 0x007991b0
-void MapMenu_Shell::UpdateChallengeText(TESChallenge* apChallenge)
+// src: XBOX_RETAIL_PDB 0x007991b0
+// pdb: MapMenu::LoadChallenge | MapMenu.obj | retail, string-set bridge, high
+// pdb params: apChallenge
+// pdb locals: fheightDifference, pchallengeText, pscrollbar, fscrollDelta, sChallengeText, ftextHeight
+void MapMenu_Shell::MapMenu_LoadChallenge(TESChallenge* apChallenge)
 {
     float height8;
     char buffer_[512];
@@ -2910,7 +3029,10 @@ extern const char DAT_01070250[];
 
 // Handles a UI input command: updates property widgets from world input, adjusts the current tile, and dispatches mode changes and history actions.
 // @fnv 0x00799790
-bool MapMenu::HandleControllerInput(int command, Tile* ignored)
+// pdb: MapMenu::DoGamepad | MapMenu.obj | retail, vtable slot, high
+// pdb params: aiButton, afValue
+// pdb locals: bresult, iyAxis, pcontrols, cimaxAxisValue, ixAxis, fyscale, pscrollbar, iscrollDelta, icurrScrollbarValue, iUT_CurrentValue, xelem, pcurrTile
+bool MapMenu::HandleControllerInput(int aiButton, Tile* afValue)
 {
     if (!Interface_IsTopMenuID(0x3ff) || !Interface_GetPipboy()->IsUnk28Set())
         return false;
@@ -2924,7 +3046,7 @@ bool MapMenu::HandleControllerInput(int command, Tile* ignored)
             int valueY = 0x7fff;
             int valueX = 0;
             int selected = 0;
-            if (m_iMapDisplayMode == 0x20 || m_iMapDisplayMode == 0x21)
+            if (iCurrentPage == 0x20 || iCurrentPage == 0x21)
             {
                 float value = 0.0f;
                 selected = DAT_011dea0c->Main_GetControls(0, 8)->GetAxisState();
@@ -2943,24 +3065,24 @@ bool MapMenu::HandleControllerInput(int command, Tile* ignored)
                 valueX = 0;
             if (NiAbs_00408820((float)selected) <= DAT_010745f8)
                 selected = 0;
-            switch (m_iMapDisplayMode)
+            switch (iCurrentPage)
             {
             case 0x20:
             case 0x21:
-                if (reinterpret_cast<WidgetTile*>(m_pMapTile))
+                if (reinterpret_cast<WidgetTile*>(pMapTile))
                 {
                     if (valueX || selected)
                     {
-                        reinterpret_cast<WidgetTile*>(m_pMapTile)->Tile_Set(0xfea, 1.0f, 1);
-                        reinterpret_cast<WidgetTile*>(m_pMapTile)->Tile_Set(0xfeb, 1.0f, 1);
-                        reinterpret_cast<WidgetTile*>(m_pMapTile)->SetTraitFloat(0xfee, (float)((double)valueX * DAT_01074f30 / DAT_01029790));
-                        reinterpret_cast<WidgetTile*>(m_pMapTile)->SetTraitFloat(0xfef, (float)((double)selected * DAT_0102fc70 / DAT_01029790));
+                        reinterpret_cast<WidgetTile*>(pMapTile)->Tile_Set(0xfea, 1.0f, 1);
+                        reinterpret_cast<WidgetTile*>(pMapTile)->Tile_Set(0xfeb, 1.0f, 1);
+                        reinterpret_cast<WidgetTile*>(pMapTile)->SetTraitFloat(0xfee, (float)((double)valueX * DAT_01074f30 / DAT_01029790));
+                        reinterpret_cast<WidgetTile*>(pMapTile)->SetTraitFloat(0xfef, (float)((double)selected * DAT_0102fc70 / DAT_01029790));
                         changed = true;
                     }
                     else
                     {
-                        reinterpret_cast<WidgetTile*>(m_pMapTile)->Tile_Set(0xfea, DAT_01012054, 1);
-                        reinterpret_cast<WidgetTile*>(m_pMapTile)->Tile_Set(0xfeb, DAT_01012054, 1);
+                        reinterpret_cast<WidgetTile*>(pMapTile)->Tile_Set(0xfea, DAT_01012054, 1);
+                        reinterpret_cast<WidgetTile*>(pMapTile)->Tile_Set(0xfeb, DAT_01012054, 1);
                     }
                     UpdateMapHighlight();
                 }
@@ -2968,7 +3090,7 @@ bool MapMenu::HandleControllerInput(int command, Tile* ignored)
             case 0x22:
             case 0x23: {
                 WidgetTile* item =
-                    m_iMapDisplayMode == 0x22 ? (WidgetTile*)reinterpret_cast<Clock&>(m_kObjectiveListBox).FUN_00825c00() : reinterpret_cast<WidgetSource*>(m_pTiles[13])->Tile_GetChildByName(DAT_01074ec8);
+                    iCurrentPage == 0x22 ? (WidgetTile*)reinterpret_cast<Clock&>(lbQuestObjectivesList).FUN_00825c00() : reinterpret_cast<WidgetSource*>(m_pTiles[13])->Tile_GetChildByName(DAT_01074ec8);
                 if (item && item->FUN_00a011b0(0xfa3) != DAT_01012060)
                 {
                     int direction = 0;
@@ -2995,7 +3117,7 @@ bool MapMenu::HandleControllerInput(int command, Tile* ignored)
             }
             }
         }
-        switch (command)
+        switch (aiButton)
         {
         case 0xd:
             InterfaceManager_PlayMenuSound(0x24);
@@ -3008,7 +3130,7 @@ bool MapMenu::HandleControllerInput(int command, Tile* ignored)
             changed = true;
             break;
         case 9:
-            if (m_iMapDisplayMode == 0x21)
+            if (iCurrentPage == 0x21)
             {
                 int cursor = reinterpret_cast<CollectionHolder*>(m_pTiles[4])->list.Modelloader_GetReferencedThis();
                 while (cursor != 0)
@@ -3025,18 +3147,18 @@ bool MapMenu::HandleControllerInput(int command, Tile* ignored)
             break;
         case 0xf:
         case 0x10:
-            if (m_iMapDisplayMode == 0x20 || m_iMapDisplayMode == 0x21)
+            if (iCurrentPage == 0x20 || iCurrentPage == 0x21)
             {
-                static_cast<ZoomMenu*>(this)->MapMenu_ZoomMap(command == 0x10, DAT_01018204);
+                static_cast<ZoomMenu*>(this)->MapMenu_ZoomMap(aiButton == 0x10, DAT_01018204);
                 changed = true;
             }
             break;
         case 3:
         case 4: {
-            m_iMapDisplayMode += (command == 4) ? -1 : 1;
-            m_iMapDisplayMode = m_iMapDisplayMode > 0x24 ? 0x20 : m_iMapDisplayMode;
-            m_iMapDisplayMode = m_iMapDisplayMode < 0x20 ? 0x24 : m_iMapDisplayMode;
-            HandleSelection(m_iMapDisplayMode, 0);
+            iCurrentPage += (aiButton == 4) ? -1 : 1;
+            iCurrentPage = iCurrentPage > 0x24 ? 0x20 : iCurrentPage;
+            iCurrentPage = iCurrentPage < 0x20 ? 0x24 : iCurrentPage;
+            HandleSelection(iCurrentPage, 0);
             changed = true;
             break;
         }
@@ -3048,7 +3170,7 @@ bool MapMenu::HandleControllerInput(int command, Tile* ignored)
 struct DateCalendar
 {
     float GetGameTime();
-    BSStringT<char> FormatDate();
+    BSStringT<char> Calendar_GetDateString();
 };
 extern DateCalendar calendarState;
 struct RenderState
@@ -3060,14 +3182,17 @@ extern SettingT_GameSettingCollection_ localeSetting;
 extern SettingT_GameSettingCollection_ g_011d4aec;
 int TraitID(const char*);
 // @fnv 0x0079aba0
-void MapMenu::MenuDepthController()
+// src: XBOX_RETAIL_PDB 0x0079aba0
+// pdb: MapMenu::UpdateMenu | MapMenu.obj | retail, unique string literal, high
+// pdb locals: iMinute, fHour, strtemp
+void MapMenu::UpdateMenu()
 {
     if (DAT_011da368 && GetRenderState()->IsReady())
     {
         BSStringT<char> text;
         float hour = calendarState.GetGameTime();
         int minutes = (hour - (int)hour) * 60.0;
-        text.PrintfString("%s, %d:%02d", (const char*)calendarState.FormatDate(), (int)hour, minutes);
+        text.PrintfString("%s, %d:%02d", (const char*)calendarState.Calendar_GetDateString(), (int)hour, minutes);
         DAT_011da368->m_pTiles[1]->Set(0xfc4, (const char*)text, true);
         g_thePlayer->SetDateTimeText(text);
         DAT_011da368->m_pTiles[0]->Set(0xfc4, (const char*)text, true);
@@ -3109,14 +3234,14 @@ class NotesListBox
     virtual void vfn_14();
     virtual void vfn_18();
     virtual void FreeAllTiles();  // +0x1c
-    NoteTile* CreateListItem(BGSNote* pkNote, const char* pcText, int iUnk1, int iUnk2);
+    NoteTile* ListBox_BGSNote_AddItem(BGSNote* aAssociatedData, const char* apcItemString, int apCompareFn, int apcTemplateName);
     void ListBox_BGSNote_SetEnabled(bool bUnk);
-    void ApplyNoteFilter(bool (*pfnFilter)(BGSNote*));
+    void ApplyNoteFilter(bool (*apFilterFn)(BGSNote*));
 };
 class NoteSource
 {
   public:
-    int PlayerCharacter_GetNumNotes();
+    int PlayerCharacter_GetNumberofNotes();
     BGSNote* GetItemAt(int iIndex);
     void* PlayerCharacter_GetActiveQuest();
 };
@@ -3125,22 +3250,25 @@ int __cdecl Tile_TextToTrait(const char* pcTrait);
 
 
 // @fnv 0x0079b240
-void MapMenu::RefreshNotesList()
+// src: XBOX_DEBUG_PDB 0x0079b240
+// pdb: MapMenu::UpdateNotes | MapMenu.obj | debug, call graph, high
+// pdb locals: inextY, inoteCt, pcurrNote, pnewTile
+void MapMenu::UpdateNotes()
 {
     if (DAT_011da368)
     {
         int iUnusedCount = 0;
-        reinterpret_cast<NotesListBox&>(m_kNoteListBox).FreeAllTiles();
-        for (int i = 0; i < DAT_011dea3c->PlayerCharacter_GetNumNotes(); i++)
+        reinterpret_cast<NotesListBox&>(lbNotesList).FreeAllTiles();
+        for (int i = 0; i < DAT_011dea3c->PlayerCharacter_GetNumberofNotes(); i++)
         {
             BGSNote* pkNote = DAT_011dea3c->GetItemAt(i);
-            NoteTile* pkTile2 = reinterpret_cast<NotesListBox&>(m_kNoteListBox).CreateListItem(pkNote, pkNote->TESFullName::GetFullName(), 0, 0);
+            NoteTile* pkTile2 = reinterpret_cast<NotesListBox&>(lbNotesList).ListBox_BGSNote_AddItem(pkNote, pkNote->TESFullName::GetFullName(), 0, 0);
             pkTile2->FUN_00700320(0xfaa, 0x18);
             pkTile2->Tile_Set(DAT_011da344, pkNote->GetUnk7d() ? 128.0f : 255.0f, true);
         }
-        reinterpret_cast<NotesListBox&>(m_kNoteListBox).ListBox_BGSNote_SetEnabled(true);
-        reinterpret_cast<NotesListBox&>(m_kNoteListBox).ApplyNoteFilter(MapMenu_ShouldHideNote);
-        reinterpret_cast<NoteTile*>(m_pTiles[12])->FUN_00700320(Tile_TextToTrait("_ShowingAllNotes"), m_bMapMenuActive);
+        reinterpret_cast<NotesListBox&>(lbNotesList).ListBox_BGSNote_SetEnabled(true);
+        reinterpret_cast<NotesListBox&>(lbNotesList).ApplyNoteFilter(MapMenu_ShouldHideNote);
+        reinterpret_cast<NoteTile*>(m_pTiles[12])->FUN_00700320(Tile_TextToTrait("_ShowingAllNotes"), bShowingAllNotes);
         reinterpret_cast<NoteTile*>(m_pTiles[12])->FUN_00700320(0xfaf, DAT_011dea3c->PlayerCharacter_GetActiveQuest() != 0);
     }
 }
@@ -3174,10 +3302,13 @@ extern MapMenu* g_pkMenu79B;
 // Returns false if the menu is hidden or if the target's quest list contains the player's active quest; otherwise returns true.
 // @fnv 0x0079b390
 // src: COMMUNITY 0x0079b390
+// pdb: MapMenu::NotesFilterFunc | MapMenu.obj | debug, object-file run extension, low
+// pdb params: pcurrNote
+// pdb locals: bresult, pcurrQuest
 bool __cdecl MapMenu_ShouldHideNote(Target79B* pkTarget)
 {
     bool bResult = true;
-    if (g_pkMenu79B && !g_pkMenu79B->m_bMapMenuActive)
+    if (g_pkMenu79B && !g_pkMenu79B->bShowingAllNotes)
     {
         for (QuestNode79B* pkNode = pkTarget->GetQuestList(); pkNode && *pkNode->GetItem(); pkNode = pkNode->GetNext())
         {
@@ -3185,7 +3316,7 @@ bool __cdecl MapMenu_ShouldHideNote(Target79B* pkTarget)
                 bResult = false;
         }
     }
-    else if (g_pkMenu79B && g_pkMenu79B->m_bMapMenuActive)
+    else if (g_pkMenu79B && g_pkMenu79B->bShowingAllNotes)
     {
         bResult = false;
     }
@@ -3228,9 +3359,12 @@ struct List600
     void ListBox_TESChallenge_Filter(bool(__cdecl*)(TESChallenge*));
 };
 // @fnv 0x0079b600
-void MapMenu::RefreshChallengeList()
+// src: XBOX_RETAIL_PDB 0x0079b600
+// pdb: MapMenu::UpdateChallenges | MapMenu.obj | retail, call graph, high
+// pdb locals: pChallenges, pItem, pnewTile
+void MapMenu::UpdateChallenges()
 {
-    reinterpret_cast<List600&>(m_kChallengeListBox).Clear();
+    reinterpret_cast<List600&>(lbChallengeList).Clear();
     Node600* node = g_dataHandler->FUN_00461150();
     Challenge600* item = 0;
     while (node)
@@ -3238,14 +3372,14 @@ void MapMenu::RefreshChallengeList()
         item = node->FUN_006815c0();
         if (item && (!item->FUN_005f5930() || item->TESChallenge_GetUnlocked()))
         {
-            Tile* tile = reinterpret_cast<List600&>(m_kChallengeListBox).AddItem(item, item->name.GetFullName(), 0, 0);
+            Tile* tile = reinterpret_cast<List600&>(lbChallengeList).AddItem(item, item->name.GetFullName(), 0, 0);
             tile->FUN_00700320(0xfaa, 0x18);
             tile->Tile_Set(DAT_011da344, item->TESChallenge_GetCompleted() ? 128.0f : 255.0f, true);
         }
         node = node->FUN_00726070();
     }
-    reinterpret_cast<List600&>(m_kChallengeListBox).ListBox_TESChallenge_Filter(MapMenu_ChallengeFilterFunc);
-    reinterpret_cast<List600&>(m_kChallengeListBox).Sort(CompareItems);
+    reinterpret_cast<List600&>(lbChallengeList).ListBox_TESChallenge_Filter(MapMenu_ChallengeFilterFunc);
+    reinterpret_cast<List600&>(lbChallengeList).Sort(CompareItems);
 }
 
 namespace fnv_0079bea0 {
@@ -3289,19 +3423,19 @@ void MapMenu::RefreshRadioList()
 {
     fnv_0079bea0::UIRecord record;
     fnv_0079bea0::FUN_004ff1a0(fnv_0079bea0::DAT_011dea3c, &record, 0);
-    ((fnv_0079bea0::RadioMethod)((fnv_0079bea0::RadioList*)&m_kMapMarkerListBox)->vtable[7])((fnv_0079bea0::RadioList*)&m_kMapMarkerListBox);
+    ((fnv_0079bea0::RadioMethod)((fnv_0079bea0::RadioList*)&lbRadioStationsList)->vtable[7])((fnv_0079bea0::RadioList*)&lbRadioStationsList);
     for (BSSimpleList<unsigned int>* node = fnv_0079bea0::FalloutRadio_GetDiscoveredStationsList(); node && node->GetItem(); node = node->GetNext())
     {
         fnv_0079bea0::RadioTile* tile =
-            (fnv_0079bea0::RadioTile*)((fnv_0079bea0::RadioList*)&m_kMapMarkerListBox)
+            (fnv_0079bea0::RadioTile*)((fnv_0079bea0::RadioList*)&lbRadioStationsList)
                 ->ListBox_TESObjectREFR_AddItem((fnv_0079bea0::RadioEntry*)node->GetItem(), ((fnv_0079bea0::RadioEntry*)node->GetItem())->TESObjectREFR_GetFullName(), 0, 0);
         tile->Set(0xfaa, 0x19);
         tile->FUN_00707e10(((fnv_0079bea0::RadioEntry*)node->GetItem())->TESObjectREFR_GetFullName());
         tile->Set(fnv_0079bea0::DAT_011da348, fnv_0079bea0::GetPipboyRadio() && node->GetItem() == *(unsigned int*)fnv_0079bea0::GetPipboyRadio());
         tile->Set(fnv_0079bea0::DAT_011da344, record.BSSimpleList_TESLevSpell_IsInList(&node->GetItem()) ? fnv_0079bea0::DAT_01023cd8 : fnv_0079bea0::DAT_0101e704, true);
     }
-    ((fnv_0079bea0::RadioList*)&m_kMapMarkerListBox)->ListBox_TESObjectREFR_Filter(&fnv_0079bea0::MapMenu_RadioFilterFunc);
-    ((fnv_0079bea0::RadioCallback)((fnv_0079bea0::RadioList*)&m_kMapMarkerListBox)->vtable[8])((fnv_0079bea0::RadioList*)&m_kMapMarkerListBox,
+    ((fnv_0079bea0::RadioList*)&lbRadioStationsList)->ListBox_TESObjectREFR_Filter(&fnv_0079bea0::MapMenu_RadioFilterFunc);
+    ((fnv_0079bea0::RadioCallback)((fnv_0079bea0::RadioList*)&lbRadioStationsList)->vtable[8])((fnv_0079bea0::RadioList*)&lbRadioStationsList,
                                                                    (void*)&fnv_0079bea0::CompareMobileObjects);
     record.FUN_00470470();
 }
@@ -3327,7 +3461,10 @@ int formatText(char*, unsigned int, const char*, ...);
 int CopyMapWaveText(char*, unsigned int, const char*);
 // Drives a wave property's animation over 750ms, stepping DAT_011da414 every 10ms and picking a random direction label when done.
 // @fnv 0x0079c0c0
-void __fastcall UpdateWaveAnimation(MapMenu* menu)
+// src: XBOX_RETAIL_PDB 0x0079c0c0
+// pdb: MapMenu::UpdateWaveform | MapMenu.obj | retail, string-set bridge, high
+// pdb locals: cianimUpdateDelta, pavObj, cianimLength, ptsp, strtemp, spNewTexture, irand
+void __fastcall MapMenu_UpdateWaveform(MapMenu* menu)
 {
     const int duration9 = 750;
     const int interval5 = 10;
@@ -3337,12 +3474,12 @@ void __fastcall UpdateWaveAnimation(MapMenu* menu)
     WaveProperty* property = object ? (WaveProperty*)object->GetProperty(NiShadeProperty_GetType()) : 0;
     if (!property)
         return;
-    if (menu->m_fMapRotation == 0.0)
+    if (menu->fWaveformAnimationStartTime == 0.0)
     {
         AnimationRef reference2(0);
         formatText(buffer_, 64, g_011d505c.String(), menu->m_pTiles[16]->GetString(0xfd2));
         DAT_011da368->m_pTiles[16]->Set(0xfcc, buffer_, true);
-        menu->m_fMapRotation = (float)gm_GetTickCount();
+        menu->fWaveformAnimationStartTime = (float)gm_GetTickCount();
         menu->m_pTiles[16]->Set(0xfa3, 1);
     }
     if (gm_GetTickCount() - DAT_011da418 >= interval5)
@@ -3353,7 +3490,7 @@ void __fastcall UpdateWaveAnimation(MapMenu* menu)
             DAT_011da414 = DAT_011da414 - 1.0;
         DAT_011da418 = gm_GetTickCount();
     }
-    if ((float)gm_GetTickCount() - menu->m_fMapRotation >= duration9)
+    if ((float)gm_GetTickCount() - menu->fWaveformAnimationStartTime >= duration9)
     {
         unsigned int directionTmp = DialogueRandom() % 3;
         if (directionTmp == 0)
@@ -3363,7 +3500,7 @@ void __fastcall UpdateWaveAnimation(MapMenu* menu)
         else
             CopyMapWaveText(buffer_, 64, "Left");
         menu->m_pTiles[16]->Set(0xfd2, buffer_, true);
-        menu->m_fMapRotation = 0.0f;
+        menu->fWaveformAnimationStartTime = 0.0f;
     }
 }
 
@@ -3443,32 +3580,35 @@ extern ZoomSetting originalRuntimeFloatSetting1257;
 // Zooms the map tile by a factor, updates its scale and position, rescales grid children on page 32, plays the zoom sound and finishes the menu.
 // @fnv 0x0079c5a0
 // src: XBOX_PDB 0x0079c5a0
-void ZoomMenu::MapMenu_ZoomMap(bool inward, float factor)
+// pdb: MapMenu::ZoomMap | MapMenu.obj | retail, upstream name already matches, high
+// pdb params: abZoomIn, afZoomDelta
+// pdb locals: MapCenter, bmagnificationChange, fnewMagnification, fmagnificationRatio, pmapModel, uimapside, isubmapCt, ptri, fnewTrisize, upd, fnewTilesize, fzoomRateRatio
+void ZoomMenu::MapMenu_ZoomMap(bool abZoomIn, float afZoomDelta)
 {
-    if (!m_pMapTile || (m_iMapDisplayMode == 32 && MapMenu_ShouldRenderLocalMap()))
+    if (!pMapTile || (iCurrentPage == 32 && MapMenu_ShouldRenderLocalMap()))
         return;
     bool _changed = true;
-    float scale2 = (inward ? factor : 1.0 / factor) * m_pMapTile->GetFloat(DAT_011da35c);
-    ZoomPoint centerVal(m_pMapTile->GetParent()->GetFloat(0xfb1) / 2.0 - m_pMapTile->GetFloat(0xfa1),
-                        m_pMapTile->GetParent()->GetFloat(0xfb0) / 2.0 - m_pMapTile->GetFloat(0xfa2));
-    if (m_iMapDisplayMode == 32)
+    float scale2 = (abZoomIn ? afZoomDelta : 1.0 / afZoomDelta) * pMapTile->GetFloat(DAT_011da35c);
+    ZoomPoint centerVal(pMapTile->GetParent()->GetFloat(0xfb1) / 2.0 - pMapTile->GetFloat(0xfa1),
+                        pMapTile->GetParent()->GetFloat(0xfb0) / 2.0 - pMapTile->GetFloat(0xfa2));
+    if (iCurrentPage == 32)
     {
         float fraction7 = 0.0f;
         scale2 = BSMAX_00404010(BSMIN(scale2, *originalRuntimeFloatSetting1251.Float()),
                               *originalRuntimeFloatSetting1250.Float());
         fraction7 = (scale2 - *originalRuntimeFloatSetting1250.Float()) /
                     (*originalRuntimeFloatSetting1251.Float() - *originalRuntimeFloatSetting1250.Float());
-        m_pMapTile->Set(4100,
+        pMapTile->Set(4100,
                   (double)*originalRuntimeFloatSetting1252.Float() +
                       ((double)*originalRuntimeFloatSetting1253.Float() - *originalRuntimeFloatSetting1252.Float()) *
                           fraction7,
                   true);
-        m_pMapTile->Set(4101,
+        pMapTile->Set(4101,
                   (double)*originalRuntimeFloatSetting1254.Float() +
                       ((double)*originalRuntimeFloatSetting1255.Float() - *originalRuntimeFloatSetting1254.Float()) *
                           fraction7,
                   true);
-        m_pMapTile->Set(4102,
+        pMapTile->Set(4102,
                   (double)*originalRuntimeFloatSetting1256.Float() +
                       ((double)*originalRuntimeFloatSetting1257.Float() - *originalRuntimeFloatSetting1256.Float()) *
                           fraction7,
@@ -3481,28 +3621,28 @@ void ZoomMenu::MapMenu_ZoomMap(bool inward, float factor)
                               *originalRuntimeFloatSetting1242.Float());
         unusedDimension = (scale2 - *originalRuntimeFloatSetting1242.Float()) /
                           (*originalRuntimeFloatSetting1243.Float() - *originalRuntimeFloatSetting1242.Float());
-        m_pMapTile->Set(4100,
+        pMapTile->Set(4100,
                   (double)*originalRuntimeFloatSetting1244.Float() +
                       ((double)*originalRuntimeFloatSetting1245.Float() - *originalRuntimeFloatSetting1244.Float()) *
                           unusedDimension,
                   true);
-        m_pMapTile->Set(4101,
+        pMapTile->Set(4101,
                   (double)*originalRuntimeFloatSetting1246.Float() +
                       ((double)*originalRuntimeFloatSetting1247.Float() - *originalRuntimeFloatSetting1246.Float()) *
                           unusedDimension,
                   true);
-        m_pMapTile->Set(4102,
+        pMapTile->Set(4102,
                   (double)*originalRuntimeFloatSetting1248.Float() +
                       ((double)*originalRuntimeFloatSetting1249.Float() - *originalRuntimeFloatSetting1248.Float()) *
                           unusedDimension,
                   true);
     }
-    _changed = scale2 != m_pMapTile->GetFloat(DAT_011da35c);
-    centerVal.Scale(m_pMapTile->GetFloat(0xfcd) * scale2 / m_pMapTile->GetFloat(0xfb1));
-    m_pMapTile->Set(DAT_011da35c, scale2, true);
-    if (m_iMapDisplayMode == 32)
+    _changed = scale2 != pMapTile->GetFloat(DAT_011da35c);
+    centerVal.Scale(pMapTile->GetFloat(0xfcd) * scale2 / pMapTile->GetFloat(0xfb1));
+    pMapTile->Set(DAT_011da35c, scale2, true);
+    if (iCurrentPage == 32)
     {
-        ZoomNode* nodeB = reinterpret_cast<ZoomNode*>(m_pMapTile->GetModel_0056c7f0());
+        ZoomNode* nodeB = reinterpret_cast<ZoomNode*>(pMapTile->GetModel_0056c7f0());
         unsigned int gridA = *zoomGrid.Int();
         for (unsigned int index_ = 0; nodeB && index_ < gridA * gridA; index_++)
         {
@@ -3520,12 +3660,12 @@ void ZoomMenu::MapMenu_ZoomMap(bool inward, float factor)
             }
         }
     }
-    m_pMapTile->Set(0xfa1, m_pMapTile->GetParent()->GetFloat(0xfb1) / 2.0 - centerVal.x - m_pMapTile->GetFloat(0xfee), false);
-    m_pMapTile->Set(0xfa2, m_pMapTile->GetParent()->GetFloat(0xfb0) / 2.0 - centerVal.y - m_pMapTile->GetFloat(0xfef), false);
+    pMapTile->Set(0xfa1, pMapTile->GetParent()->GetFloat(0xfb1) / 2.0 - centerVal.x - pMapTile->GetFloat(0xfee), false);
+    pMapTile->Set(0xfa2, pMapTile->GetParent()->GetFloat(0xfb0) / 2.0 - centerVal.y - pMapTile->GetFloat(0xfef), false);
     if (_changed)
     {
-        float amount5 = (factor - 1.0) / 0.14300000667572021;
-        GetInterface()->Pip()->Animate(0, inward ? -*zoomSound.Float() * amount5 : *zoomSound.Float() * amount5,
+        float amount5 = (afZoomDelta - 1.0) / 0.14300000667572021;
+        GetInterface()->Pip()->Animate(0, abZoomIn ? -*zoomSound.Float() * amount5 : *zoomSound.Float() * amount5,
                                        *zoomSpeed.Float() * 2, true);
     }
     Finish();
@@ -3573,6 +3713,8 @@ struct MapView : MapMenu
 };
 // Computes the local map's world bounds from the player position or parent cell, updates the map view, and places door markers on the map tile.
 // @fnv 0x0079d410
+// pdb: MapMenu::UpdateLocalMap | MapMenu.obj | retail, string-set bridge, high
+// pdb locals: playerLoc, pworld, pplayerCell, icellx, icelly, SECellCoord, playerIntLoc, NWCellCoord, pcurrMarkerObj, pcurrMarker, markerPos, falpha, markerTilePos, pcurrDoor, pmarkerTile, pteleportData, strDoorDestinationName
 void MapMenu::UpdateLocalMap()
 {
     TESWorldSpace* b = ((PlayerMapView*)g_thePlayer)->TESObjectREFR_GetWorldSpace();
@@ -3587,8 +3729,8 @@ void MapMenu::UpdateLocalMap()
         int d = ((TruncateFloatToInt(b.y) - 2048) >> 12) - (*reinterpret_cast<int*>(g_011c63cc.Int()) >> 1);
         MapPoint3 a((float)((e << 12) + 2048), (float)(((d + *reinterpret_cast<int*>(g_011c63cc.Int()) - 1) << 12) + 2048), 0.0f);
         MapPoint3 c((float)(((e + *reinterpret_cast<int*>(g_011c63cc.Int()) - 1) << 12) + 2048), (float)((d << 12) + 2048), 0.0f);
-        m_kMapMinimumPoint = NiPoint2(a.x, a.y + 4096.0);
-        m_kMapMaximumPoint = NiPoint2(c.x + 4096.0, c.y);
+        MapNWCorner = NiPoint2(a.x, a.y + 4096.0);
+        MapSECorner = NiPoint2(c.x + 4096.0, c.y);
     }
     else
     {
@@ -3596,15 +3738,15 @@ void MapMenu::UpdateLocalMap()
         int d = ((TruncateFloatToInt(c.y)) >> 12) - (*reinterpret_cast<int*>(g_011c63cc.Int()) >> 1);
         MapPoint3 a((float)(e << 12), (float)((d + *reinterpret_cast<int*>(g_011c63cc.Int()) - 1) << 12), 0.0f);
         MapPoint3 b((float)((e + *reinterpret_cast<int*>(g_011c63cc.Int()) - 1) << 12), (float)(d << 12), 0.0f);
-        m_kMapMinimumPoint = NiPoint2(a.x, a.y + 4096.0);
-        m_kMapMaximumPoint = NiPoint2(b.x + 4096.0, b.y);
+        MapNWCorner = NiPoint2(a.x, a.y + 4096.0);
+        MapSECorner = NiPoint2(b.x + 4096.0, b.y);
     }
     static_cast<MapView*>(this)->MapMenu_ZoomMap(true, 1.0f);
     if (b)
-        m_pCurrentMapForm = b;
+        pMapSpace = b;
     else
-        m_pCurrentMapForm = a;
-    if (m_pCurrentMapForm)
+        pMapSpace = a;
+    if (pMapSpace)
     {
         if (((MarkerTileView*)m_pTiles[2])->children.NiTListBase_DFALL_NiTListItem_BSAnimGroupSequence_const_BSAnimGroupSequence_const_IsEmpty())
         {
@@ -3620,7 +3762,7 @@ void MapMenu::UpdateLocalMap()
                     pAdjustNorthRotationCell->AdjustCoordForNorthRotation(reinterpret_cast<NiPoint3&>(d), reinterpret_cast<NiPoint3&>(d), true);
                 float c = 255.0f;
                 MapPoint3 b = static_cast<MapView*>(this)->GetMarkerPosition(d, 0);
-                if (m_bNeedsMapUpdate)
+                if (bFogOfWarEnabled)
                     c = (float)(TESObjectCELL_GetSeenValue(d) / 4.0 * c);
                 if (c > 0.0 && b.x >= 0.0 && b.x <= 1.0 && b.y >= 0.0 && b.y <= 1.0)
                 {
@@ -4282,36 +4424,38 @@ extern const double DAT_010290d0, DAT_01011590;
 }
 
 // @fnv 0x0079dbb0
+// pdb: MapMenu::AddMapIcons | MapMenu.obj | retail, call graph, high
+// pdb locals: playerMapPos, parrowTile, playerLockData, pathToTarget, frotationAngle, playerWorldPos
 void MapMenu::UpdatePlayerMapMarker()
 {
     using namespace MapMarkerUpdate;
-    Tile* tile = m_iMapDisplayMode == 33 ? m_pTiles[5] : m_pTiles[3];
+    Tile* tile = iCurrentPage == 33 ? m_pTiles[5] : m_pTiles[3];
     {
         NiPoint3 point(DAT_01016248, DAT_01016248, 0.0f);
-        if (m_iMapDisplayMode == 33 && MapMarkerUpdate::DAT_011dea3c->TESObjectREFR_GetInterior())
+        if (iCurrentPage == 33 && MapMarkerUpdate::DAT_011dea3c->TESObjectREFR_GetInterior())
         {
-            (*reinterpret_cast<Reference**>(&m_pFirstMapReference)) = MapMarkerUpdate::DAT_011dea3c->marker;
-            if (!(*reinterpret_cast<Reference**>(&m_pFirstMapReference)))
+            (*reinterpret_cast<Reference**>(&pMapPlayerRef)) = MapMarkerUpdate::DAT_011dea3c->marker;
+            if (!(*reinterpret_cast<Reference**>(&pMapPlayerRef)))
             {
                 SearchResults results;
                 Origin origin(MapMarkerUpdate::DAT_011dea3c);
                 if (Pathing_BuildTeleportDoorPath(Query(MapMarkerUpdate::DAT_011dea3c), Query(), &results, 3, 0.0f, &origin, 2))
                 {
                     if (results.hits.FUN_0044ddc0() > 0)
-                        (*reinterpret_cast<Reference**>(&m_pFirstMapReference)) = (*results.hits.BSSimpleArray_TeleportLink_1024_GetLast())->FUN_00568e50()->Modelloader_GetReferencedThis();
-                    if (!(*reinterpret_cast<Reference**>(&m_pFirstMapReference)))
-                        (*reinterpret_cast<Reference**>(&m_pFirstMapReference)) = MapMarkerUpdate::DAT_011dea3c;
+                        (*reinterpret_cast<Reference**>(&pMapPlayerRef)) = (*results.hits.BSSimpleArray_TeleportLink_1024_GetLast())->FUN_00568e50()->Modelloader_GetReferencedThis();
+                    if (!(*reinterpret_cast<Reference**>(&pMapPlayerRef)))
+                        (*reinterpret_cast<Reference**>(&pMapPlayerRef)) = MapMarkerUpdate::DAT_011dea3c;
                 }
             }
         }
         else
-            (*reinterpret_cast<Reference**>(&m_pFirstMapReference)) = MapMarkerUpdate::DAT_011dea3c;
-        if ((*reinterpret_cast<Reference**>(&m_pFirstMapReference)))
+            (*reinterpret_cast<Reference**>(&pMapPlayerRef)) = MapMarkerUpdate::DAT_011dea3c;
+        if ((*reinterpret_cast<Reference**>(&pMapPlayerRef)))
         {
-            NiPoint3 position = (*reinterpret_cast<Reference**>(&m_pFirstMapReference))->Position();
+            NiPoint3 position = (*reinterpret_cast<Reference**>(&pMapPlayerRef))->Position();
             if ((*reinterpret_cast<World**>(&pAdjustNorthRotationCell)))
                 (*reinterpret_cast<World**>(&pAdjustNorthRotationCell))->AdjustCoordForNorthRotation(position, position, 1);
-            point = Menu::GetMarkerPosition(position, (*reinterpret_cast<Reference**>(&m_pFirstMapReference))->TESObjectREFR_GetWorldSpace());
+            point = Menu::GetMarkerPosition(position, (*reinterpret_cast<Reference**>(&pMapPlayerRef))->TESObjectREFR_GetWorldSpace());
             tile->FUN_00700320(4003, 1);
             tile->Tile_Set(MapMarkerUpdate::DAT_011da350, point.x, 1);
             tile->Tile_Set(MapMarkerUpdate::DAT_011da34c, point.y, 1);
@@ -4323,16 +4467,16 @@ void MapMenu::UpdatePlayerMapMarker()
             tile->FUN_00700320(4003, 0);
         if (!tile->Tile_HasFadeControl(4085))
             tile->StartFade(4085, DAT_0101e704, DAT_01023cd8, 1.0f, 1);
-        m_pMapTile->Tile_Set(
-            4001, m_pMapTile->FUN_0045cd60()->FUN_00a011b0(4017) / DAT_01011590 - m_pMapTile->FUN_00a011b0(4017) * point.x, 0);
-        m_pMapTile->Tile_Set(
-            4002, m_pMapTile->FUN_0045cd60()->FUN_00a011b0(4016) / DAT_01011590 - m_pMapTile->FUN_00a011b0(4016) * point.y, 0);
+        pMapTile->Tile_Set(
+            4001, pMapTile->FUN_0045cd60()->FUN_00a011b0(4017) / DAT_01011590 - pMapTile->FUN_00a011b0(4017) * point.x, 0);
+        pMapTile->Tile_Set(
+            4002, pMapTile->FUN_0045cd60()->FUN_00a011b0(4016) / DAT_01011590 - pMapTile->FUN_00a011b0(4016) * point.y, 0);
         MapMenu_AddQuestMarkers();
         UpdateMapMarkers();
         if (MapMarkerUpdate::DAT_011dea3c->QPlayerMapMarker())
         {
             MapMenu_DeletePlayerMarker();
-            UpdateQuestMarker();
+            MapMenu_CreatePlayerMarker();
         }
     }
 }
@@ -4354,7 +4498,7 @@ struct QuestTargetOps
 {
     TESObjectREFR* FUN_006101b0(bool);
     PathingPath* TESDataHandler_GetWorldSpaceList();
-    TESObjectREFR* TESQuestTarget_GetTrackingRef();
+    TESObjectREFR* TESQuestTarget_QTrackingRef();
 };
 struct QuestNode
 {
@@ -4363,7 +4507,7 @@ struct QuestNode
 };
 struct PlayerQuestOps
 {
-    QuestNode* PlayerCharacter_GetCurrentQuestTargets();
+    QuestNode* PlayerCharacter_GetCurrentTargetList();
 };
 struct RefMapOps
 {
@@ -4397,38 +4541,40 @@ struct MarkerMap : MapMenu
 };
 // @fnv 0x0079e0a0
 // src: XBOX_PDB 0x0079e0a0
+// pdb: MapMenu::AddQuestMarkers | MapMenu.obj | retail, string-set bridge, high
+// pdb locals: premove, pcurrQuestTarget, ptargetMapRef, ptargetRef, markerPos, markerTilePos, pbrightness, psubMarkerTile
 void MarkerMap::MapMenu_AddQuestMarkers()
 {
-    MarkerTile* tile = ((MarkerTile*)m_pMapTile)->Tile_GetChildByID(27);
+    MarkerTile* tile = ((MarkerTile*)pMapTile)->Tile_GetChildByID(27);
     while (tile)
     {
-        ((MarkerTile*)m_pMapTile)->children.FUN_0057c730(tile);
+        ((MarkerTile*)pMapTile)->children.FUN_0057c730(tile);
         tile->Tile_Release();
         delete tile;
-        tile = ((MarkerTile*)m_pMapTile)->Tile_GetChildByID(27);
+        tile = ((MarkerTile*)pMapTile)->Tile_GetChildByID(27);
     }
-    tile = ((MarkerTile*)m_pMapTile)->Tile_GetChildByID(29);
+    tile = ((MarkerTile*)pMapTile)->Tile_GetChildByID(29);
     while (tile)
     {
-        ((MarkerTile*)m_pMapTile)->children.FUN_0057c730(tile);
+        ((MarkerTile*)pMapTile)->children.FUN_0057c730(tile);
         tile->Tile_Release();
         delete tile;
-        tile = ((MarkerTile*)m_pMapTile)->Tile_GetChildByID(29);
+        tile = ((MarkerTile*)pMapTile)->Tile_GetChildByID(29);
     }
-    for (QuestNode* node = ((PlayerQuestOps*)g_thePlayer)->PlayerCharacter_GetCurrentQuestTargets();
+    for (QuestNode* node = ((PlayerQuestOps*)g_thePlayer)->PlayerCharacter_GetCurrentTargetList();
          g_011e07f0.FUN_00408d60()->b && node && *node->FUN_006815c0(); node = node->FUN_00726070())
     {
         TESObjectREFR* reference = (*node->FUN_006815c0())->FUN_006101b0(true);
-        TESObjectREFR* target = m_iMapDisplayMode == 33
+        TESObjectREFR* target = iCurrentPage == 33
                                     ? SelectTarget(reference, (*node->FUN_006815c0())->TESDataHandler_GetWorldSpaceList())
-                                    : (*node->FUN_006815c0())->TESQuestTarget_GetTrackingRef();
+                                    : (*node->FUN_006815c0())->TESQuestTarget_QTrackingRef();
         if (target)
         {
-            if (m_iMapDisplayMode == 33)
-                MapMenu_CreateWaypointPath(m_pFirstMapReference, target, (*node->FUN_006815c0())->TESDataHandler_GetWorldSpaceList(), 29);
+            if (iCurrentPage == 33)
+                MapMenu_CreateWaypointPath(pMapPlayerRef, target, (*node->FUN_006815c0())->TESDataHandler_GetWorldSpaceList(), 29);
         }
-        else if (reference && ((m_iMapDisplayMode == 33 && !((RefMapOps*)reference)->TESObjectREFR_GetInterior()) ||
-                               (m_iMapDisplayMode == 32 && reference->GetParentCell() == g_thePlayer->GetParentCell())))
+        else if (reference && ((iCurrentPage == 33 && !((RefMapOps*)reference)->TESObjectREFR_GetInterior()) ||
+                               (iCurrentPage == 32 && reference->GetParentCell() == g_thePlayer->GetParentCell())))
         {
             target = (*node->FUN_006815c0())->FUN_006101b0(true);
         }
@@ -4441,17 +4587,17 @@ void MarkerMap::MapMenu_AddQuestMarkers()
             mapPosition = GetMarkerPosition(position, ((RefMapOps*)target)->TESObjectREFR_GetWorldSpace());
             {
                 Tile* value = 0;
-                if (m_iMapDisplayMode == 33)
-                    value = ((MarkerMap*)DAT_011da368)->FUN_00a1ddb0(m_pMapTile, markerWorld, 0);
+                if (iCurrentPage == 33)
+                    value = ((MarkerMap*)DAT_011da368)->FUN_00a1ddb0(pMapTile, markerWorld, 0);
                 else
-                    value = ((MarkerMap*)DAT_011da368)->FUN_00a1ddb0(m_pMapTile, markerLocal, 0);
+                    value = ((MarkerMap*)DAT_011da368)->FUN_00a1ddb0(pMapTile, markerLocal, 0);
                 value->Set(DAT_011da350, mapPosition.x, true);
                 value->Set(DAT_011da34c, mapPosition.y, true);
                 value->Set(0xfcc, markerTexture, true);
                 ((MarkerTileOps*)value)->FUN_00700320(0xfaa, 27);
                 MarkerValue* marker = ((MarkerTileOps*)value)->Tile_GetValue(0xff5);
                 marker->RemoveFromReactions();
-                marker->Tile_Value_AddRefValueAction(2000, m_iMapDisplayMode == 33 ? m_pTiles[5] : m_pTiles[3], 0xff5);
+                marker->Tile_Value_AddRefValueAction(2000, iCurrentPage == 33 ? m_pTiles[5] : m_pTiles[3], 0xff5);
                 marker->Tile_Value_SetFloat(0);
             }
         }
@@ -4499,18 +4645,18 @@ void MarkerMenu::UpdateQuestMarkers()
     {
         MarkerReference* aMap = (MarkerReference*)p->GetItem();
         PathingPath aArea;
-        if (m_iMapDisplayMode == 33)
+        if (iCurrentPage == 33)
             ((MarkerPlayer*)g_thePlayer)->PlayerCharacter_BuildPathToTarget(aMap, &aArea, 1);
-        MarkerReference* aFirst = m_iMapDisplayMode == 33 ? (MarkerReference*)SelectTarget(aMap, &aArea) : aMap;
-        a = aFirst ? ((MarkerTile*)m_pMapTile)->Tile_GetChildByName(aFirst->GetFullName()) : 0;
+        MarkerReference* aFirst = iCurrentPage == 33 ? (MarkerReference*)SelectTarget(aMap, &aArea) : aMap;
+        a = aFirst ? ((MarkerTile*)pMapTile)->Tile_GetChildByName(aFirst->GetFullName()) : 0;
         if (a && a->GetString(0xfc4) && !BSstricmp(aMap->GetFullName(), a->GetString(0xfc4)))
         {
             char markerName[64];
             sprintf(markerName, "%s Marker", aFirst ? aFirst->GetFullName() : 0);
-            MarkerTile* aB = aFirst ? ((MarkerTile*)m_pMapTile)->Tile_GetChildByName(markerName) : 0;
+            MarkerTile* aB = aFirst ? ((MarkerTile*)pMapTile)->Tile_GetChildByName(markerName) : 0;
             MapPoint3 _point2 = reinterpret_cast<const MapPoint3&>(*static_cast<const TESObjectREFR*>(aFirst)->GetPos());
             MapPoint3 _pos2 = _point2;
-            if (m_iMapDisplayMode == 33)
+            if (iCurrentPage == 33)
                 _pos2.y -= 1024.0;
             else
                 _pos2.y -= 128.0;
@@ -4520,8 +4666,8 @@ void MarkerMenu::UpdateQuestMarkers()
                 pAdjustNorthRotationCell->AdjustCoordForNorthRotation(reinterpret_cast<NiPoint3&>(_point2), reinterpret_cast<NiPoint3&>(_point2), true);
             aCollision = GetMarkerPosition(_point2, aFirst->TESObjectREFR_GetWorldSpace());
             aOffset = GetMarkerPosition(_pos2, aFirst->TESObjectREFR_GetWorldSpace());
-            float _target = ((MarkerTile*)m_pMapTile)->FUN_00a011b0(0xfb1);
-            float _scale = ((MarkerTile*)m_pMapTile)->FUN_00a011b0(0xfb0);
+            float _target = ((MarkerTile*)pMapTile)->FUN_00a011b0(0xfb1);
+            float _scale = ((MarkerTile*)pMapTile)->FUN_00a011b0(0xfb0);
             _target *= aOffset.x;
             _scale *= aOffset.y;
             float fX7 = _target;
@@ -4595,22 +4741,22 @@ struct MapMenuExt : public MapMenu
 void MapMenuExt::UpdateMapMarkers()
 {
     BSSimpleList<TESObjectREFR*>* headX;
-    Tile* element = m_pMapTile->GetChildById(0x25);
+    Tile* element = pMapTile->GetChildById(0x25);
     while (element)
     {
-        reinterpret_cast<TileChildrenList&>(m_pMapTile->m_kChildTileList).FUN_0057c730(&element);
+        reinterpret_cast<TileChildrenList&>(pMapTile->xChildren).FUN_0057c730(&element);
         element->Release();
         delete element;
-        element = m_pMapTile->GetChildById(0x25);
+        element = pMapTile->GetChildById(0x25);
     }
 
-    element = m_pMapTile->GetChildById(0x26);
+    element = pMapTile->GetChildById(0x26);
     while (element)
     {
-        reinterpret_cast<TileChildrenList&>(m_pMapTile->m_kChildTileList).FUN_0057c730(&element);
+        reinterpret_cast<TileChildrenList&>(pMapTile->xChildren).FUN_0057c730(&element);
         element->Release();
         delete element;
-        element = m_pMapTile->GetChildById(0x26);
+        element = pMapTile->GetChildById(0x26);
     }
 
     headX = ((PlayerCharacterExt*)g_thePlayer)->GetMapMarkers();
@@ -4619,15 +4765,15 @@ void MapMenuExt::UpdateMapMarkers()
         TESObjectREFR* kPRef = headX->GetItem();
         PathingPath pathX;
 
-        if (m_iMapDisplayMode == 0x21)
+        if (iCurrentPage == 0x21)
         {
             ((PlayerCharacterExt*)g_thePlayer)->PlayerCharacter_BuildPathToTarget(kPRef, &pathX, 1);
         }
 
-        TESObjectREFR* dest = (m_iMapDisplayMode == 0x21) ? GetTeleportDestination(kPRef, (PathingPath*)&pathX) : kPRef;
+        TESObjectREFR* dest = (iCurrentPage == 0x21) ? GetTeleportDestination(kPRef, (PathingPath*)&pathX) : kPRef;
 
         if ((dest == 0 || ((TESObjectREFRExt*)dest)->HasHealth(false)) ||
-            (m_iMapDisplayMode == 0x20 && kPRef->GetParentCell() != g_thePlayer->GetParentCell() &&
+            (iCurrentPage == 0x20 && kPRef->GetParentCell() != g_thePlayer->GetParentCell() &&
              TESObjectREFR_GetWorldSpace(kPRef) != TESObjectREFR_GetWorldSpace(g_thePlayer)))
         {
             headX = headX->GetNext();
@@ -4635,7 +4781,7 @@ void MapMenuExt::UpdateMapMarkers()
         }
 
         float deltaA = ((TESObjectREFRExt*)kPRef)->TESObjectREFR_GetDistanceFromReference(g_thePlayer, 0, 0);
-        if (deltaA < DAT_01016968 && m_iMapDisplayMode == 0x21)
+        if (deltaA < DAT_01016968 && iCurrentPage == 0x21)
         {
             headX = headX->GetNext();
             continue;
@@ -4643,8 +4789,8 @@ void MapMenuExt::UpdateMapMarkers()
 
         if (kPRef != 0)
         {
-            if ((m_iMapDisplayMode == 0x21 && !((TESObjectREFRExt*)kPRef)->TESObjectREFR_GetInterior()) ||
-                (m_iMapDisplayMode == 0x20 && kPRef->GetParentCell() == g_thePlayer->GetParentCell()))
+            if ((iCurrentPage == 0x21 && !((TESObjectREFRExt*)kPRef)->TESObjectREFR_GetInterior()) ||
+                (iCurrentPage == 0x20 && kPRef->GetParentCell() == g_thePlayer->GetParentCell()))
             {
                 dest = kPRef;
             }
@@ -4654,7 +4800,7 @@ void MapMenuExt::UpdateMapMarkers()
         {
             MapPoint3 kPos12 = reinterpret_cast<const MapPoint3&>(*static_cast<const TESObjectREFR*>(dest)->GetPos());
             MapPoint3 pos2B = kPos12;
-            if (m_iMapDisplayMode == 0x21)
+            if (iCurrentPage == 0x21)
             {
                 pos2B.y -= 1024.0;
             }
@@ -4674,17 +4820,17 @@ void MapMenuExt::UpdateMapMarkers()
             pt1A = WorldToMapPosition(kPos12, dest->GetParentWorldSpace());
             kPt22 = WorldToMapPosition(pos2B, dest->GetParentWorldSpace());
 
-            Tile* pStyleVal = (m_iMapDisplayMode == 0x21) ? m_pTiles[5] : m_pTiles[3];
+            Tile* pStyleVal = (iCurrentPage == 0x21) ? m_pTiles[5] : m_pTiles[3];
             Tile* ui_ = 0;
             Tile* newTile = 0;
 
-            if (m_iMapDisplayMode == 0x21)
+            if (iCurrentPage == 0x21)
             {
-                ui_ = ((MapMenuExt*)DAT_011da368)->FUN_00a1ddb0(m_pMapTile, "WorldMapQuestMarkerTemplate", 0);
+                ui_ = ((MapMenuExt*)DAT_011da368)->FUN_00a1ddb0(pMapTile, "WorldMapQuestMarkerTemplate", 0);
             }
             else
             {
-                ui_ = ((MapMenuExt*)DAT_011da368)->FUN_00a1ddb0(m_pMapTile, "LocalMapQuestMarkerTemplate", 0);
+                ui_ = ((MapMenuExt*)DAT_011da368)->FUN_00a1ddb0(pMapTile, "LocalMapQuestMarkerTemplate", 0);
             }
 
             ui_->Set(DAT_011da350, pt1A.x, true);
@@ -4705,13 +4851,13 @@ void MapMenuExt::UpdateMapMarkers()
             val_ec->Tile_Value_AddRefValueAction(0x7d0, pStyleVal, 0xff5);
             val_ec->Tile_Value_SetFloat(0);
 
-            float fadeXX = m_pMapTile->GetFloat(0xfb1);
-            float kScaleY = m_pMapTile->GetFloat(0xfb0);
+            float fadeXX = pMapTile->GetFloat(0xfb1);
+            float kScaleY = pMapTile->GetFloat(0xfb0);
             fadeXX *= kPt22.x;
             kScaleY *= kPt22.y;
 
             newTile = Tile_CreateByID(0x387);
-            newTile->Init(m_pMapTile, ((TESObjectREFRExt*)kPRef)->GetFullName(), 0);
+            newTile->Init(pMapTile, ((TESObjectREFRExt*)kPRef)->GetFullName(), 0);
             newTile->Set(DAT_011da350, kPt22.x, true);
             newTile->Set(DAT_011da34c, kPt22.y, true);
             newTile->SetName(((TESObjectREFRExt*)dest)->GetFullName());
@@ -4752,7 +4898,7 @@ void MapMenuExt::UpdateMapMarkers()
 
 struct QuestMapPlayer : PlayerCharacter
 {
-    TESObjectREFR* GetFirstOrFallback();
+    TESObjectREFR* PlayerCharacter_QPlayerMarkerTrackingRef();
     void* FUN_008d6f30();
     TESWorldSpace* TESObjectREFR_GetWorldSpace();
 };
@@ -4767,24 +4913,27 @@ struct QuestMapMenu : MapMenu
     void MapMenu_CreateWaypointPath(TESObjectREFR*, TESObjectREFR*, void*, int);
     TESObjectREFR* SelectTarget(TESObjectREFR*, PathingPath*);
     MapPoint3 GetMarkerPosition(MapPoint3, TESWorldSpace*);
-    void UpdateQuestMarker();
+    void MapMenu_CreatePlayerMarker();
 };
 // @fnv 0x0079f360
-void QuestMapMenu::UpdateQuestMarker()
+// src: XBOX_RETAIL_PDB 0x0079f360
+// pdb: MapMenu::CreatePlayerMarker | MapMenu.obj | retail, string-set bridge, high
+// pdb locals: ptarget, markerWorldPos, markerTilePos, pbrightness, psubMarkerTile, parrowTile
+void QuestMapMenu::MapMenu_CreatePlayerMarker()
 {
-    TESObjectREFR* reference = m_iMapDisplayMode == 33
+    TESObjectREFR* reference = iCurrentPage == 33
                                    ? SelectTarget(g_thePlayer->QPlayerMapMarker(),
                                                   (PathingPath*)GetPlayerMapMarkerPath(g_thePlayer))
-                                   : ((QuestMapPlayer*)g_thePlayer)->GetFirstOrFallback();
+                                   : ((QuestMapPlayer*)g_thePlayer)->PlayerCharacter_QPlayerMarkerTrackingRef();
     if (reference)
     {
-        if (m_iMapDisplayMode == 33)
-            MapMenu_CreateWaypointPath(m_pFirstMapReference, reference, GetPlayerMapMarkerPath(g_thePlayer), 30);
+        if (iCurrentPage == 33)
+            MapMenu_CreateWaypointPath(pMapPlayerRef, reference, GetPlayerMapMarkerPath(g_thePlayer), 30);
     }
     else if (g_thePlayer->QPlayerMapMarker())
     {
-        if ((m_iMapDisplayMode == 33 && !((QuestMapReference*)g_thePlayer->QPlayerMapMarker())->TESObjectREFR_GetInterior()) ||
-            (m_iMapDisplayMode == 32 && ((QuestMapReference*)g_thePlayer->QPlayerMapMarker())->FUN_008d6f30() ==
+        if ((iCurrentPage == 33 && !((QuestMapReference*)g_thePlayer->QPlayerMapMarker())->TESObjectREFR_GetInterior()) ||
+            (iCurrentPage == 32 && ((QuestMapReference*)g_thePlayer->QPlayerMapMarker())->FUN_008d6f30() ==
                                             ((QuestMapPlayer*)g_thePlayer)->FUN_008d6f30()))
             reference = g_thePlayer->QPlayerMapMarker();
     }
@@ -4797,15 +4946,15 @@ void QuestMapMenu::UpdateQuestMarker()
             pAdjustNorthRotationCell->AdjustCoordForNorthRotation(reinterpret_cast<NiPoint3&>(position), reinterpret_cast<NiPoint3&>(position), true);
         mapPosition = GetMarkerPosition(position, ((QuestMapReference*)reference)->TESObjectREFR_GetWorldSpace());
         {
-            Tile* parent = m_iMapDisplayMode == 33 ? m_pTiles[5] : m_pTiles[3];
+            Tile* parent = iCurrentPage == 33 ? m_pTiles[5] : m_pTiles[3];
             {
                 Tile* marker = 0;
-                if (m_iMapDisplayMode == 33)
+                if (iCurrentPage == 33)
                     marker =
-                        ((LBMenu*)DAT_011da368)->FUN_00a1ddb0((LBTile*)m_pMapTile, "WorldMapQuestMarkerTemplate", 0);
+                        ((LBMenu*)DAT_011da368)->FUN_00a1ddb0((LBTile*)pMapTile, "WorldMapQuestMarkerTemplate", 0);
                 else
                     marker =
-                        ((LBMenu*)DAT_011da368)->FUN_00a1ddb0((LBTile*)m_pMapTile, "LocalMapQuestMarkerTemplate", 0);
+                        ((LBMenu*)DAT_011da368)->FUN_00a1ddb0((LBTile*)pMapTile, "LocalMapQuestMarkerTemplate", 0);
                 marker->Set(DAT_011da350, mapPosition.x, true);
                 marker->Set(DAT_011da34c, mapPosition.y, true);
                 marker->Set(0xfcc, "glow_hud_compass_pc_marker.dds", true);
@@ -4924,26 +5073,29 @@ class F7E0Picker
     int unk110;
     F7E0Ref* m_pkDefault;
 
-    F7E0Ref* SelectTarget(F7E0Ref* pkRef, PathingPath* pkData);
+    F7E0Ref* SelectTarget(F7E0Ref* apRef, PathingPath* apPathToRef);
 };
 
 // Returns the last flagged target from pkData's target list when pkRef is persistent, else m_pkDefault or pkRef; returns 0 for empty data.
 // @fnv 0x0079f7e0
-F7E0Ref* F7E0Picker::SelectTarget(F7E0Ref* pkRef, PathingPath* pkData)
+// pdb: MapMenu::GetWorldMapTrackingRef | MapMenu.obj | retail, call graph (shared callers), high
+// pdb params: apRef, apPathToRef
+// pdb locals: ptrackingRef, bfound, ispaceCt
+F7E0Ref* F7E0Picker::SelectTarget(F7E0Ref* apRef, PathingPath* apPathToRef)
 {
     F7E0Ref* pkResult = 0;
-    if (!pkData || (!reinterpret_cast<F7E0FlagList*>(&pkData->Spaces)->GetSize() && !(*reinterpret_cast<F7E0TargetList*>(&pkData->Doors)).GetSize()))
+    if (!apPathToRef || (!reinterpret_cast<F7E0FlagList*>(&apPathToRef->Spaces)->GetSize() && !(*reinterpret_cast<F7E0TargetList*>(&apPathToRef->Doors)).GetSize()))
     {
         pkResult = 0;
     }
-    else if (pkRef && pkRef->IsPersistent())
+    else if (apRef && apRef->IsPersistent())
     {
         bool bFound = false;
-        for (int i = reinterpret_cast<F7E0FlagList*>(&pkData->Spaces)->GetSize() - 1; !bFound && i >= 0; i--)
+        for (int i = reinterpret_cast<F7E0FlagList*>(&apPathToRef->Spaces)->GetSize() - 1; !bFound && i >= 0; i--)
         {
-            if (reinterpret_cast<F7E0FlagList*>(&pkData->Spaces)->GetAt(i)->m_bEnableState && (unsigned int)i < (*reinterpret_cast<F7E0TargetList*>(&pkData->Doors)).GetSize())
+            if (reinterpret_cast<F7E0FlagList*>(&apPathToRef->Spaces)->GetAt(i)->m_bEnableState && (unsigned int)i < (*reinterpret_cast<F7E0TargetList*>(&apPathToRef->Doors)).GetSize())
             {
-                pkResult = (*reinterpret_cast<F7E0TargetList*>(&pkData->Doors)).GetAt(i);
+                pkResult = (*reinterpret_cast<F7E0TargetList*>(&apPathToRef->Doors)).GetAt(i);
                 bFound = true;
             }
         }
@@ -4952,7 +5104,7 @@ F7E0Ref* F7E0Picker::SelectTarget(F7E0Ref* pkRef, PathingPath* pkData)
     }
     else
     {
-        pkResult = pkRef;
+        pkResult = apRef;
     }
     return pkResult;
 }
@@ -4983,69 +5135,72 @@ struct Map053 : MapMenu
 };
 // @fnv 0x0079f8d0
 // src: XBOX_PDB 0x0079f8d0
-void Map053::MapMenu_CreateWaypointPath(TESObjectREFR* start, TESObjectREFR* end, PathingPath* path, int id)
+// pdb: MapMenu::CreateWaypointPath | MapMenu.obj | retail, string-set bridge, high
+// pdb params: apStartRef, apTargetRef, apPathToTarget, aiID
+// pdb locals: startLoc, istartDoorIndex, ptargetTile, targetLoc, pstartTile, fmapWidth, iendDoorIndex, fmapHeight, waypointList, idoorCt, pdoorRef, pwaypointTile, markerTilePos, pwaypointObj, waypoint1, plineTile, waypoint2
+void Map053::MapMenu_CreateWaypointPath(TESObjectREFR* apStartRef, TESObjectREFR* apTargetRef, PathingPath* apPathToTarget, int aiID)
 {
-    if (!start || !end || !path)
+    if (!apStartRef || !apTargetRef || !apPathToTarget)
         return;
     BSSimpleList<Tile*> first;
-    MapPoint3 endPos = WorldToMapPosition(reinterpret_cast<const MapPoint3&>(*static_cast<const TESObjectREFR*>(start)->GetPos()), start->GetParentWorldSpace());
+    MapPoint3 endPos = WorldToMapPosition(reinterpret_cast<const MapPoint3&>(*static_cast<const TESObjectREFR*>(apStartRef)->GetPos()), apStartRef->GetParentWorldSpace());
     Tile* width;
-    MapPoint3 height = WorldToMapPosition(reinterpret_cast<const MapPoint3&>(*static_cast<const TESObjectREFR*>(end)->GetPos()), end->GetParentWorldSpace());
+    MapPoint3 height = WorldToMapPosition(reinterpret_cast<const MapPoint3&>(*static_cast<const TESObjectREFR*>(apTargetRef)->GetPos()), apTargetRef->GetParentWorldSpace());
     Tile* startPos = 0;
     width = 0;
-    startPos = DAT_011da368->CreateTileFromTemplate(m_pMapTile, "WaypointTemplate", 0);
+    startPos = DAT_011da368->CreateTileFromTemplate(pMapTile, "WaypointTemplate", 0);
     startPos->Set(DAT_011da350, endPos.x, true);
     startPos->Set(DAT_011da34c, endPos.y, true);
-    startPos->Set(0xfaa, id);
+    startPos->Set(0xfaa, aiID);
     startPos->Set(0xfa9, 0.0f, true);
-    if (((TESForm*)_FNV_GetObjectReference((RefH*)start))->GetFormType() == 0x1c &&
-        ((Ref053*)((Ref053*)start)->FUN_00568e50()->Modelloader_GetReferencedThis())->TESObjectREFR_GetInterior())
+    if (((TESForm*)_FNV_GetObjectReference((RefH*)apStartRef))->GetFormType() == 0x1c &&
+        ((Ref053*)((Ref053*)apStartRef)->FUN_00568e50()->Modelloader_GetReferencedThis())->TESObjectREFR_GetInterior())
         startPos->Set(0x1004, 1);
     first.AddTail(startPos);
     int waypoints = 0;
     float last;
-    int begin = (*reinterpret_cast<PathArray053*>(&path->Doors)).FUN_0044ddc0() - 1;
-    for (unsigned int i = 0; i < (*reinterpret_cast<PathArray053*>(&path->Doors)).FUN_0044ddc0(); i++)
+    int begin = (*reinterpret_cast<PathArray053*>(&apPathToTarget->Doors)).FUN_0044ddc0() - 1;
+    for (unsigned int i = 0; i < (*reinterpret_cast<PathArray053*>(&apPathToTarget->Doors)).FUN_0044ddc0(); i++)
     {
-        if ((*reinterpret_cast<PathArray053*>(&path->Doors)).GetElementAddress16(i) == start ||
-            ((Ref053*)(*reinterpret_cast<PathArray053*>(&path->Doors)).GetElementAddress16(i))->FUN_00568e50()->Modelloader_GetReferencedThis() == start)
+        if ((*reinterpret_cast<PathArray053*>(&apPathToTarget->Doors)).GetElementAddress16(i) == apStartRef ||
+            ((Ref053*)(*reinterpret_cast<PathArray053*>(&apPathToTarget->Doors)).GetElementAddress16(i))->FUN_00568e50()->Modelloader_GetReferencedThis() == apStartRef)
             waypoints = i + 1;
-        if ((*reinterpret_cast<PathArray053*>(&path->Doors)).GetElementAddress16(i) == end ||
-            ((Ref053*)(*reinterpret_cast<PathArray053*>(&path->Doors)).GetElementAddress16(i))->FUN_00568e50()->Modelloader_GetReferencedThis() == end)
+        if ((*reinterpret_cast<PathArray053*>(&apPathToTarget->Doors)).GetElementAddress16(i) == apTargetRef ||
+            ((Ref053*)(*reinterpret_cast<PathArray053*>(&apPathToTarget->Doors)).GetElementAddress16(i))->FUN_00568e50()->Modelloader_GetReferencedThis() == apTargetRef)
             begin = i - 1;
     }
     for (int j = waypoints; j <= begin; j++)
     {
-        TESObjectREFR* ref = !((Ref053*)(*reinterpret_cast<PathArray053*>(&path->Doors)).GetElementAddress16(j))->TESObjectREFR_GetInterior() ? (*reinterpret_cast<PathArray053*>(&path->Doors)).GetElementAddress16(j) : 0;
+        TESObjectREFR* ref = !((Ref053*)(*reinterpret_cast<PathArray053*>(&apPathToTarget->Doors)).GetElementAddress16(j))->TESObjectREFR_GetInterior() ? (*reinterpret_cast<PathArray053*>(&apPathToTarget->Doors)).GetElementAddress16(j) : 0;
         if (!ref)
-            ref = ((Ref053*)(*reinterpret_cast<PathArray053*>(&path->Doors)).GetElementAddress16(j))->FUN_00568e50()->Modelloader_GetReferencedThis();
+            ref = ((Ref053*)(*reinterpret_cast<PathArray053*>(&apPathToTarget->Doors)).GetElementAddress16(j))->FUN_00568e50()->Modelloader_GetReferencedThis();
         if (ref && !((Ref053*)ref)->TESObjectREFR_GetInterior())
         {
-            Tile* middle = DAT_011da368->CreateTileFromTemplate(m_pMapTile, "WaypointTemplate", 0);
+            Tile* middle = DAT_011da368->CreateTileFromTemplate(pMapTile, "WaypointTemplate", 0);
             MapPoint3 middlePos = WorldToMapPosition(reinterpret_cast<const MapPoint3&>(*static_cast<const TESObjectREFR*>(ref)->GetPos()), ref->GetParentWorldSpace());
             middle->Set(DAT_011da350, middlePos.x, true);
             middle->Set(DAT_011da34c, middlePos.y, true);
-            middle->Set(0xfaa, id);
-            if (((Ref053*)((Ref053*)(*reinterpret_cast<PathArray053*>(&path->Doors)).GetElementAddress16(j))->FUN_00568e50()->Modelloader_GetReferencedThis())->TESObjectREFR_GetInterior())
+            middle->Set(0xfaa, aiID);
+            if (((Ref053*)((Ref053*)(*reinterpret_cast<PathArray053*>(&apPathToTarget->Doors)).GetElementAddress16(j))->FUN_00568e50()->Modelloader_GetReferencedThis())->TESObjectREFR_GetInterior())
                 middle->Set(0x1004, 1);
             first.AddTail(middle);
         }
     }
-    width = DAT_011da368->CreateTileFromTemplate(m_pMapTile, "WaypointTemplate", 0);
+    width = DAT_011da368->CreateTileFromTemplate(pMapTile, "WaypointTemplate", 0);
     width->Set(DAT_011da350, height.x, true);
     width->Set(DAT_011da34c, height.y, true);
-    width->Set(0xfaa, id);
+    width->Set(0xfaa, aiID);
     width->Set(0xfa9, 0.0f, true);
     first.AddTail(width);
-    last = m_pMapTile ? m_pMapTile->GetFloat(0xfcd) : 0.0f;
-    float finish = m_pMapTile ? m_pMapTile->GetFloat(0xfce) : 0.0f;
+    last = pMapTile ? pMapTile->GetFloat(0xfcd) : 0.0f;
+    float finish = pMapTile ? pMapTile->GetFloat(0xfce) : 0.0f;
     for (BSSimpleList<Tile*>* node = &first; node && node->GetItem() && node->GetNext(); node = node->GetNext())
     {
         Tile* line = DAT_011da368->CreateTileFromTemplate(node->GetItem(), "PathLineTemplate", 0);
         NiPoint2 b(node->GetItem()->GetFloat(DAT_011da350), node->GetItem()->GetFloat(DAT_011da34c));
         NiPoint2 a(node->GetNext()->GetItem()->GetFloat(DAT_011da350),
                           node->GetNext()->GetItem()->GetFloat(DAT_011da34c));
-        line->Set(0xfaa, id);
+        line->Set(0xfaa, aiID);
         line->Set(0x1004,
                   NiSqrt_004579e0(ForwardFloatAndInt((a.x - b.x) * last, 2) + ForwardFloatAndInt((a.y - b.y) * finish, 2)),
                   true);
@@ -5104,33 +5259,37 @@ struct ListInserter
     const char* templateName;
     unsigned short nextID, unk1e;
     bool ListBox_unsigned_int_GetFlag(unsigned int);
-    void ProcessEntries_007a6480();
+    void ListBox_TESQuest_Synchronize();
     void AccumulateTileHeight(InsertTile*);
     void UpdateScrollTraits_007a6920();
     int GetRaceCount();
-    InsertTile* InsertTileFromTemplate(void*, const char*, InsertCompare, const char*);
+    InsertTile* ListBox_TESQuest_AddItem(void*, const char*, InsertCompare, const char*);
 };
 // @fnv 0x007a1dd0
-InsertTile* ListInserter::InsertTileFromTemplate(void* data, const char* text, InsertCompare compare,
-                                                 const char* source)
+// src: XBOX_DEBUG_PDB 0x007a1dd0
+// pdb: ListBox<TESQuest *>::AddItem | MapMenu.obj | debug, call graph, high
+// pdb params: aAssociatedData, apcItemString, apCompareFn, apcTemplateName
+// pdb locals: pnew, pheight
+InsertTile* ListInserter::ListBox_TESQuest_AddItem(void* aAssociatedData, const char* apcItemString, InsertCompare apCompareFn,
+                                                 const char* apcTemplateName)
 {
-    if (root && (templateName || source))
+    if (root && (templateName || apcTemplateName))
     {
-        InsertTile* pTile = root->Tile_GetMenu(root, source ? source : templateName, 0)->FUN_00a1ddb0();
+        InsertTile* pTile = root->Tile_GetMenu(root, apcTemplateName ? apcTemplateName : templateName, 0)->FUN_00a1ddb0();
         InsertAction* action;
         if (!pTile->Tile_GetValue(0xfaa))
             pTile->FUN_00700320(0xfaa, -1);
-        if (text)
-            pTile->Tile_Set_00a01350(0xfc4, text, true);
-        if (compare)
+        if (apcItemString)
+            pTile->Tile_Set_00a01350(0xfc4, apcItemString, true);
+        if (apCompareFn)
         {
-            items.BSSimpleList_ActiveEffect_Insert(new FUN_007a62e0(pTile, data), compare);
+            items.BSSimpleList_ActiveEffect_Insert(new FUN_007a62e0(pTile, aAssociatedData), apCompareFn);
             if (ListBox_unsigned_int_GetFlag(0))
-                ProcessEntries_007a6480();
+                ListBox_TESQuest_Synchronize();
         }
         else
         {
-            items.FUN_00905820(new FUN_007a62e0(pTile, data));
+            items.FUN_00905820(new FUN_007a62e0(pTile, aAssociatedData));
             if (ListBox_unsigned_int_GetFlag(0))
             {
                 AccumulateTileHeight(pTile);
@@ -5205,32 +5364,36 @@ struct MyBox
     unsigned short itemCount;
     bool ListBox_unsigned_int_GetFlag(unsigned int);
     void AccumulateTileHeight(MyTile*);
-    void AssignTileIndices();
+    void ListBox_BGSNote_Synchronize();
     void ListBox_BGSNote_SetTotalListHeight();
     int GetRaceCount();
-    MyTile* CreateListItem(int item, const char* text, int (*sortFunc)(MyItem*, MyItem*), const char* altTemplate);
+    MyTile* ListBox_BGSNote_AddItem(int aAssociatedData, const char* apcItemString, int (*apCompareFn)(MyItem*, MyItem*), const char* apcTemplateName);
 };
 
 // @fnv 0x007a2930
-MyTile* MyBox::CreateListItem(int item, const char* text, int (*sortFunc)(MyItem*, MyItem*), const char* altTemplate)
+// src: XBOX_DEBUG_PDB 0x007a2930
+// pdb: ListBox<BGSNote *>::AddItem | MapMenu.obj | debug, call graph, high
+// pdb params: aAssociatedData, apcItemString, apCompareFn, apcTemplateName
+// pdb locals: pnew, pheight
+MyTile* MyBox::ListBox_BGSNote_AddItem(int aAssociatedData, const char* apcItemString, int (*apCompareFn)(MyItem*, MyItem*), const char* apcTemplateName)
 {
-    if (parentTile && (templateName || altTemplate))
+    if (parentTile && (templateName || apcTemplateName))
     {
         MyTile* tile_2 =
-            parentTile->Tile_GetMenu(parentTile, altTemplate ? altTemplate : templateName, 0)->FUN_00a1ddb0();
+            parentTile->Tile_GetMenu(parentTile, apcTemplateName ? apcTemplateName : templateName, 0)->FUN_00a1ddb0();
         if (!tile_2->Tile_GetValue(4010))
             tile_2->FUN_00700320(4010, -1);
-        if (text)
-            tile_2->Tile_Set_00a01350(4036, text, 1);
-        if (sortFunc)
+        if (apcItemString)
+            tile_2->Tile_Set_00a01350(4036, apcItemString, 1);
+        if (apCompareFn)
         {
-            list.BSSimpleList_ActiveEffect_Insert(new MyItem(tile_2, &item), sortFunc);
+            list.BSSimpleList_ActiveEffect_Insert(new MyItem(tile_2, &aAssociatedData), apCompareFn);
             if (ListBox_unsigned_int_GetFlag(0))
-                AssignTileIndices();
+                ListBox_BGSNote_Synchronize();
         }
         else
         {
-            list.AddTail(new MyItem(tile_2, &item));
+            list.AddTail(new MyItem(tile_2, &aAssociatedData));
             if (ListBox_unsigned_int_GetFlag(0))
             {
                 AccumulateTileHeight(tile_2);
@@ -5290,10 +5453,13 @@ struct NoteFilterBox : NoteFilterList
     void ListBox_BGSNote_SetTotalListHeight();
     NoteFilterTile* ListBox_BGSNote_GetLastItem();
     void UpdateHighlightBox();
-    void ApplyNoteFilter(bool (*filter)(BGSNote*));
+    void ApplyNoteFilter(bool (*apFilterFn)(BGSNote*));
 };
 // @fnv 0x007a2e30
-void NoteFilterBox::ApplyNoteFilter(bool (*filter)(BGSNote*))
+// pdb: ListBox<BGSNote *>::Filter | MapMenu.obj | retail, call graph, high
+// pdb params: apFilterFn
+// pdb locals: isaveHLIndex, uifilterCount, pnode
+void NoteFilterBox::ApplyNoteFilter(bool (*apFilterFn)(BGSNote*))
 {
     int filteredCount = 0;
     int selectedIndex = -1;
@@ -5302,7 +5468,7 @@ void NoteFilterBox::ApplyNoteFilter(bool (*filter)(BGSNote*))
     height = 0.0f;
     for (NoteFilterList* node = this; node && node->FUN_006815c0(); node = node->FUN_00726070())
     {
-        node->FUN_006815c0()->filtered = filter && filter(node->FUN_006815c0()->note);
+        node->FUN_006815c0()->filtered = apFilterFn && apFilterFn(node->FUN_006815c0()->note);
         if (node->FUN_006815c0()->filtered)
         {
             if (node->FUN_006815c0()->tile == selected)
@@ -5346,6 +5512,8 @@ class MenuItem7A3
 // Sets the _enabled trait on the menu item's tile to the given boolean value.
 // @fnv 0x007a30e0
 // src: XBOX_PDB 0x007a30e0
+// pdb: ListBox<BGSNote *>::SetEnabled | MapMenu.obj | retail, call graph (shared callers), medium
+// pdb params: abVal
 void MenuItem7A3::ListBox_BGSNote_SetEnabled(bool bEnabled)
 {
     static int s_iEnabledTrait = Tile_AddUserTrait("_enabled", -1);
@@ -5381,11 +5549,14 @@ struct ListBoxStandIn_7a3580
     float fScrollValue;
 
     unsigned int GetCount(int aiArg);
-    void UpdateScrollSelection(bool abArg);
+    void UpdateScrollSelection(bool abPlayFocusSound);
 };
 
 // @fnv 0x007a3580
-void ListBoxStandIn_7a3580::UpdateScrollSelection(bool abArg)
+// pdb: ListBox<BGSNote *>::RestoreListState | MapMenu.obj | retail, call graph, high
+// pdb params: abPlayFocusSound
+// pdb locals: pnewHighlight
+void ListBoxStandIn_7a3580::UpdateScrollSelection(bool abPlayFocusSound)
 {
     Tile* pTile = 0;
     if (pListTile && m_pHighlightedTile)
@@ -5393,7 +5564,7 @@ void ListBoxStandIn_7a3580::UpdateScrollSelection(bool abArg)
         m_pHighlightedTile->Set(Tile_TextToTrait("_current_value"), fScrollValue, false);
         m_pHighlightedTile->SetTraitFloat(Tile_TextToTrait("_SetInCode"), 1.0f);
         pTile = GetTileAt((unsigned int)BSMIN(fScrollPos, GetCount(0) - 1.0));
-        GetInterfaceManager_7a3580()->InterfaceManager_SetCurrentFocusTarget(pTile, 0xfc3, abArg);
+        GetInterfaceManager_7a3580()->InterfaceManager_SetCurrentFocusTarget(pTile, 0xfc3, abPlayFocusSound);
         SetSelected(pTile);
         if (!IsMenuMode_7a3580())
         {
@@ -5419,12 +5590,15 @@ struct InsertBox
     void AccumulateTileHeight(Tile*);
     int GetRaceCount();
     void ProcessEntries_007a7260();
-    void UpdateScrollTraits_007a7700();
+    void ListBox_TESObjectREFR_SetTotalListHeight();
     Tile* ListBox_TESObjectREFR_AddItem(int item, const char* text, int (*sortFunc)(LBItem*, LBItem*), const char* altTemplate);
 };
 // Creates a tile for an item via the parent menu, sets its text and value, adds it to the list (sorted or appended), and updates the filtered-count value.
 // @fnv 0x007a3820
 // src: COMMUNITY 0x007a3820
+// pdb: ListBox<TESObjectREFR *>::AddItem | MapMenu.obj | debug, object-file run extension, low
+// pdb params: aAssociatedData, apcItemString, apCompareFn, apcTemplateName
+// pdb locals: pnew, pheight
 Tile* InsertBox::ListBox_TESObjectREFR_AddItem(int item, const char* text, int (*sortFunc)(LBItem*, LBItem*), const char* altTemplate)
 {
     if (parentTile && (templateName || altTemplate))
@@ -5447,7 +5621,7 @@ Tile* InsertBox::ListBox_TESObjectREFR_AddItem(int item, const char* text, int (
             if (ListBox_unsigned_int_GetFlag(0))
             {
                 AccumulateTileHeight(tile);
-                UpdateScrollTraits_007a7700();
+                ListBox_TESObjectREFR_SetTotalListHeight();
             }
             tile->Set(0xfac, itemCount++);
         }
@@ -5470,12 +5644,15 @@ Tile* InsertBox::ListBox_TESObjectREFR_AddItem(int item, const char* text, int (
 namespace fnv_007a44e0 {
 struct InsertBox : LBox
 {
-    void ProcessEntries();
+    void ListBox_BGSQuestObjective_Synchronize();
     void ListBox_BGSQuestObjective_SetTotalListHeight();
     Tile* MapMenuObjectivesList_Append(int object, const char* text, int (*sort)(LBItem*, LBItem*), const char* alt);
 };
 // @fnv 0x007a44e0
 // src: COMMUNITY 0x007a44e0
+// pdb: ListBox<BGSQuestObjective *>::AddItem | MapMenu.obj | debug, object-file run extension, low
+// pdb params: aAssociatedData, apcItemString, apCompareFn, apcTemplateName
+// pdb locals: pnew, pheight
 Tile* InsertBox::MapMenuObjectivesList_Append(int object, const char* text, int (*sort)(LBItem*, LBItem*), const char* alt)
 {
     if (parentTile && (templateName || alt))
@@ -5490,7 +5667,7 @@ Tile* InsertBox::MapMenuObjectivesList_Append(int object, const char* text, int 
         {
             list.BSSimpleList_ActiveEffect_Insert(new LBItem(tile_2, &object), sort);
             if (ListBox_unsigned_int_GetFlag(0))
-                ProcessEntries();
+                ListBox_BGSQuestObjective_Synchronize();
         }
         else
         {
@@ -5557,7 +5734,7 @@ struct FilterHost : FilterVirtual, FilterNode
     void ListBox_BGSQuestObjective_SetTotalListHeight();
     LBTile* ListBox_BGSQuestObjective_GetLastItem();
     void UpdateSelectionState();
-    void ApplyObjectiveFilter(bool (*predicate)(BGSQuestObjective*));
+    void ApplyObjectiveFilter(bool (*apFilterFn)(BGSQuestObjective*));
 };
 struct FilterItemTile
 {
@@ -5565,7 +5742,10 @@ struct FilterItemTile
 };
 // Marks each item filtered by predicate, hides filtered tiles, renumbers visible ones, updates the filtered count and reselects a tile.
 // @fnv 0x007a49e0
-void FilterHost::ApplyObjectiveFilter(bool (*predicate)(BGSQuestObjective*))
+// pdb: ListBox<BGSQuestObjective *>::Filter | MapMenu.obj | retail, call graph, high
+// pdb params: apFilterFn
+// pdb locals: isaveHLIndex, uifilterCount, pnode
+void FilterHost::ApplyObjectiveFilter(bool (*apFilterFn)(BGSQuestObjective*))
 {
     int filteredCount = 0;
     int selectedIndex = -1;
@@ -5574,7 +5754,7 @@ void FilterHost::ApplyObjectiveFilter(bool (*predicate)(BGSQuestObjective*))
     height = 0.0f;
     for (FilterNode* node = this; node && node->FUN_006815c0(); node = node->FUN_00726070())
     {
-        node->FUN_006815c0()->filtered = predicate && predicate(node->FUN_006815c0()->object);
+        node->FUN_006815c0()->filtered = apFilterFn && apFilterFn(node->FUN_006815c0()->object);
         if (node->FUN_006815c0()->filtered)
         {
             if (node->FUN_006815c0()->tile == selected)
@@ -5643,7 +5823,10 @@ int __cdecl LookupSetting(const char*, int);
 // Applies filter to each item, marks filtered items, updates selection and counts, then refreshes and finishes the list.
 // @fnv 0x007a5730
 // src: XBOX_PDB 0x007a5730
-void FUN_007a5730_shell::ListBox_TESChallenge_Filter(bool (*filter)(TESChallenge*))
+// pdb: ListBox<TESChallenge *>::Filter | MapMenu.obj | retail, call graph (shared callers), high
+// pdb params: apFilterFn
+// pdb locals: isaveHLIndex, uifilterCount, pnode
+void FUN_007a5730_shell::ListBox_TESChallenge_Filter(bool (*apFilterFn)(TESChallenge*))
 {
     int filteredCount = 0;
     int selIdx = -1;
@@ -5654,7 +5837,7 @@ void FUN_007a5730_shell::ListBox_TESChallenge_Filter(bool (*filter)(TESChallenge
     for (; node && *node->Slot(); node = node->Next())
     {
         ((FUN_007a5730_item*)*node->Slot())->filtered =
-            (filter && filter((TESChallenge*)((FUN_007a5730_item*)*node->Slot())->object)) ? 1 : 0;
+            (apFilterFn && apFilterFn((TESChallenge*)((FUN_007a5730_item*)*node->Slot())->object)) ? 1 : 0;
         if (((FUN_007a5730_item*)*node->Slot())->filtered)
         {
             if (((FUN_007a5730_item*)*node->Slot())->tile == ((FUN_007a5730_self*)this)->selected)
@@ -5695,14 +5878,17 @@ struct FUN_007a6b00_listNode : SL
 };
 struct FUN_007a6b00_shell : FUN_007a1c90
 {
-    void AssignTileIndices();
+    void ListBox_BGSNote_Synchronize();
     void AccumulateTileHeight(Tile*);
     void ListBox_BGSNote_SetTotalListHeight();
     void UpdateHighlightBox();
 };
 // Resets f1c and f20, assigns sequential indices to active display tiles via Set(0xfac, ...), then calls FUN_007a7080 and UpdateHighlightBox.
 // @fnv 0x007a6b00
-void FUN_007a6b00_shell::AssignTileIndices()
+// src: XBOX_RETAIL_PDB 0x007a6b00
+// pdb: ListBox<BGSNote *>::Synchronize | MapMenu.obj | retail, call graph, high
+// pdb locals: pnode
+void FUN_007a6b00_shell::ListBox_BGSNote_Synchronize()
 {
     f1c = 0;
     f20 = 0.0f;
@@ -5730,12 +5916,14 @@ struct FUN_007a7700_Menu
     char pad18[8];
     float fScrollRange;
     unsigned int GetUnfilteredRaceCount();
-    void UpdateScrollTraits_007a7700();
+    void ListBox_TESObjectREFR_SetTotalListHeight();
 };
 // Computes the scroll page count from fScrollRange and the tile's page size, then stores _scroll_delta and _number_of_items on the tiles.
 // @fnv 0x007a7700
-// src: GUESS 0x007a7700 (confidence: medium)
-void FUN_007a7700_Menu::UpdateScrollTraits_007a7700()
+// src: XBOX_RETAIL_PDB 0x007a7700
+// pdb: ListBox<TESObjectREFR *>::SetTotalListHeight | MapMenu.obj | retail, call graph, high
+// pdb locals: inumPages, flistHeight
+void FUN_007a7700_Menu::ListBox_TESObjectREFR_SetTotalListHeight()
 {
     if (m_pHighlightedTile)
     {
@@ -5783,6 +5971,8 @@ struct SelectionList
 };
 // Updates the root tile's actions and child tiles based on whether a selected tile exists and whether it is enabled.
 // @fnv 0x007a7a60
+// pdb: ListBox<BGSQuestObjective *>::UpdateHighlightBoxPos | MapMenu.obj | retail, call graph, high
+// pdb locals: phighlightY, pselectedHeight, hlBox, tmp
 void SelectionList::UpdateSelectionState()
 {
     static int DAT_011da4bc = Tile_AddUserTrait(DAT_0106f8c0, -1);
@@ -5876,6 +6066,8 @@ struct ScrollList
 // Computes a scroll delta from the tile's float value and total height, stores it on the tile, and sets the item count on pItemCount.
 // @fnv 0x007a7d80
 // src: XBOX_PDB 0x007a7d80
+// pdb: ListBox<BGSQuestObjective *>::SetTotalListHeight | MapMenu.obj | retail, call graph, medium
+// pdb locals: inumPages, flistHeight
 void ScrollList::ListBox_BGSQuestObjective_SetTotalListHeight()
 {
     if (m_pHighlightedTile)
@@ -5913,17 +6105,21 @@ typedef FUN_006f48b0 D6200Obj;
 bool __cdecl BuildPathWithDoors(void* a, void* b, D6200Obj* o, int c, int d);
 // Builds a D6200Obj via BuildPathWithDoors; on success writes o.GetPathLength() to out and returns true, otherwise writes 0.0f and returns false.
 // @fnv 0x006d6200
-bool __cdecl GetObjectFloat(void* apFirst, void* apSecond, float* pfResult)
+// src: XBOX_RETAIL_PDB 0x006d6200
+// pdb: Pathing::ComputeLowPathDistance | Pathfind.obj | retail, call graph, high
+// pdb params: aStartLocation, aGoalLocation, apReturnDistance
+// pdb locals: tp
+bool __cdecl Pathing_ComputeLowPathDistance(void* aStartLocation, void* aGoalLocation, float* apReturnDistance)
 {
     D6200Obj o;
-    if (BuildPathWithDoors(apFirst, apSecond, &o, 0, 1))
+    if (BuildPathWithDoors(aStartLocation, aGoalLocation, &o, 0, 1))
     {
-        *pfResult = o.GetPathLength();
+        *apReturnDistance = o.GetPathLength();
         return true;
     }
     else
     {
-        *pfResult = 0.0f;
+        *apReturnDistance = 0.0f;
         return false;
     }
 }
@@ -5942,27 +6138,29 @@ struct Mgr
 {
     int m_iWordAt00;
     ItemList m_kNode;
-    Item* Tile_GetChildByID(int type);
+    Item* Tile_GetChildByID(int aiID);
 };
 }
 // @fnv 0x0079f6f0
 // src: XBOX_PDB 0x0079f6f0
+// pdb: MapMenu::DeletePlayerMarker | MapMenu.obj | retail, upstream name already matches, high
+// pdb locals: premove
 void Menu::MapMenu_DeletePlayerMarker()
 {
-    n79::Item* p = reinterpret_cast<n79::Mgr*>(static_cast<MapMenu*>(this)->m_pMapTile)->Tile_GetChildByID(0x1c);
+    n79::Item* p = reinterpret_cast<n79::Mgr*>(static_cast<MapMenu*>(this)->pMapTile)->Tile_GetChildByID(0x1c);
     if (p)
     {
-        reinterpret_cast<n79::Mgr*>(static_cast<MapMenu*>(this)->m_pMapTile)->m_kNode.FUN_0057c730(&p);
+        reinterpret_cast<n79::Mgr*>(static_cast<MapMenu*>(this)->pMapTile)->m_kNode.FUN_0057c730(&p);
         p->Tile_Release();
         delete p;
     }
-    p = reinterpret_cast<n79::Mgr*>(static_cast<MapMenu*>(this)->m_pMapTile)->Tile_GetChildByID(0x1e);
+    p = reinterpret_cast<n79::Mgr*>(static_cast<MapMenu*>(this)->pMapTile)->Tile_GetChildByID(0x1e);
     while (p)
     {
-        reinterpret_cast<n79::Mgr*>(static_cast<MapMenu*>(this)->m_pMapTile)->m_kNode.FUN_0057c730(&p);
+        reinterpret_cast<n79::Mgr*>(static_cast<MapMenu*>(this)->pMapTile)->m_kNode.FUN_0057c730(&p);
         p->Tile_Release();
         delete p;
-        p = reinterpret_cast<n79::Mgr*>(static_cast<MapMenu*>(this)->m_pMapTile)->Tile_GetChildByID(0x1e);
+        p = reinterpret_cast<n79::Mgr*>(static_cast<MapMenu*>(this)->pMapTile)->Tile_GetChildByID(0x1e);
     }
 }
 
@@ -5972,16 +6170,18 @@ struct ListBoxEnable
     int unk04;
     int unk08;
     Tile* pParentTile;
-    void ListBox_TESQuest_SetEnabled(bool bEnabled);
+    void ListBox_TESQuest_SetEnabled(bool abVal);
 };
 
 // Stores bEnabled into pParentTile under the _enabled trait key.
 // @fnv 0x007a2350
 // src: XBOX_PDB 0x007a2350
-void ListBoxEnable::ListBox_TESQuest_SetEnabled(bool bEnabled)
+// pdb: ListBox<TESQuest *>::SetEnabled | MapMenu.obj | retail, call graph, high
+// pdb params: abVal
+void ListBoxEnable::ListBox_TESQuest_SetEnabled(bool abVal)
 {
     static int kListBoxEnabled = GetTileValueID("_enabled", -1);
-    pParentTile->Set(kListBoxEnabled, bEnabled);
+    pParentTile->Set(kListBoxEnabled, abVal);
 }
 
 struct Tile;
@@ -6022,7 +6222,7 @@ struct FUN_007a3d20_cls
     float unk20;
 
     void ListBox_TESObjectREFR_Filter(bool (*pfnFilter)(int));
-    void UpdateScrollTraits_007a7700();
+    void ListBox_TESObjectREFR_SetTotalListHeight();
     Tile* ForwardCall_007a6250();
     void UpdateHighlightTraits_007a73e0();
     void AccumulateTileHeight(Tile*);
@@ -6030,6 +6230,9 @@ struct FUN_007a3d20_cls
 
 // @fnv 0x007a3d20
 // src: COMMUNITY 0x007a3d20
+// pdb: ListBox<TESObjectREFR *>::Filter | MapMenu.obj | retail, object-file run extension, low
+// pdb params: apFilterFn
+// pdb locals: isaveHLIndex, uifilterCount, pnode
 void FUN_007a3d20_cls::ListBox_TESObjectREFR_Filter(bool (*pfnFilter)(int))
 {
     int count = 0;
@@ -6064,7 +6267,7 @@ void FUN_007a3d20_cls::ListBox_TESObjectREFR_Filter(bool (*pfnFilter)(int))
     }
 
     this->parentTile->Set(numFiltered, (unsigned int)count);
-    this->UpdateScrollTraits_007a7700();
+    this->ListBox_TESObjectREFR_SetTotalListHeight();
     if (this->selected == 0 && selIdx >= 0)
         this->selected = this->vfn14(selIdx, 0);
     if (this->selected == 0 && selIdx >= 0)
@@ -6086,6 +6289,8 @@ class TileOwnerW
 // Caches the trait index for "_enabled" and sets that trait on m_pkTile to bValue.
 // @fnv 0x007a59a0
 // src: XBOX_PDB 0x007a59a0
+// pdb: ListBox<TESChallenge *>::SetEnabled | MapMenu.obj | retail, call graph, medium
+// pdb params: abVal
 void TileOwnerW::ListBox_TESChallenge_SetEnabled(bool abEnabled)
 {
     static int s_iTrait = Tile_AddUserTrait("_enabled", -1);
@@ -6125,13 +6330,15 @@ struct OwnQ
     int unk164, unk168, unk16c, unk170, unk174, unk178, unk17c, unk180, unk184, unk188, unk18c, unk190, unk194, unk198,
         unk19c, unk1a0, unk1a4, unk1a8, unk1ac, unk1b0, unk1b4, unk1b8, unk1bc;
     CQ kC1c0;
-    void HandleEvent(int iEvent, RQ* pRef);
+    void HandleEvent(int aiID, RQ* apTarget);
 };
 // Dispatches iEvent to call member methods, update fields, or notify when pRef and kC1c0 return equal values.
 // @fnv 0x00799690
-void OwnQ::HandleEvent(int iEvent, RQ* pRef)
+// pdb: MapMenu::DoLeave | MapMenu.obj | retail, vtable slot, high
+// pdb params: aiID, apTarget
+void OwnQ::HandleEvent(int aiID, RQ* apTarget)
 {
-    switch (iEvent)
+    switch (aiID)
     {
     case 14:
         kA160.ListBox_BGSNote_SetEnabled(1);
@@ -6146,7 +6353,7 @@ void OwnQ::HandleEvent(int iEvent, RQ* pRef)
             unk94 = 0;
         break;
     case -1:
-        if (pRef && pRef->FUN_0045cd60() == kC1c0.FUN_00825c00())
+        if (apTarget && apTarget->FUN_0045cd60() == kC1c0.FUN_00825c00())
             Notify(0xf, 0);
         break;
     }
@@ -6296,7 +6503,7 @@ class AMPlayer
 };
 extern AMPlayer* DAT_011dea3c;
 
-void Interface_ShowSubtitle(const char* pcSubtitle, BSSoundHandle kHandle, AMPoint kPos, AMPlayer* pkSpeaker, int iFlag);
+void Interface_ShowSubtitle(const char* apString, BSSoundHandle ahandle, AMPoint aSpeakerLoc, AMPlayer* apTarget, int abForceShow);
 int Tile_TextToTrait(const char* pcTrait);
 int BSsprintf(char* pcBuffer, unsigned int uiSize, const char* pcFormat, ...);
 float BSMIN(float fA, float fB);
@@ -6330,10 +6537,13 @@ struct AMSubtitles
 
 // Updates holotape playback state, displays remaining time on the info tile, and advances to the next subtitle when the current audio node finishes.
 // @fnv 0x0079a660
-void __fastcall UpdateHolotapePlayback(MapMenu* menu)
+// src: XBOX_RETAIL_PDB 0x0079a660
+// pdb: MapMenu::UpdatePlayingSounds | MapMenu.obj | retail, string-set bridge, high
+// pdb locals: strtemp, ballSoundsInvalid, inumSounds, ballSoundsLoaded, itotalDuration, psound, iremainingMillis, felapsedMillis
+void __fastcall MapMenu_UpdatePlayingSounds(MapMenu* menu)
 {
     char acText[64];
-    if (menu->m_bMapListUpdatePending)
+    if (menu->bSoundsLoading)
     {
         bool bAllReady = true;
         bool bNonePlayingOld = true;
@@ -6358,29 +6568,29 @@ void __fastcall UpdateHolotapePlayback(MapMenu* menu)
         if (bNonePlayingOld)
         {
             menu->RefreshMapData();
-            BSAudio::GetSingleton()->SetRadioVolume(menu->m_fSavedMusicVolume);
+            BSAudio::GetSingleton()->SetRadioVolume(menu->fOldPipboyRadioVolume);
         }
         else if (bAllReady)
         {
-            menu->m_bMapListUpdatePending = false;
-            menu->m_fMapZoom = (iCount - 1) * 500 + iTotalLoc;
+            menu->bSoundsLoading = false;
+            menu->fSoundDurationMillis = (iCount - 1) * 500 + iTotalLoc;
             reinterpret_cast<AMSoundNode*&>(menu->m_pkActiveSoundList)->FUN_006815c0()->Play(false);
-            reinterpret_cast<unsigned int&>(menu->m_iMapSelectionIndex) = DAT_011f6394.FUN_00825c00();
+            reinterpret_cast<unsigned int&>(menu->iSoundPlayStartTime) = DAT_011f6394.FUN_00825c00();
             Interface_ShowSubtitle(reinterpret_cast<AMSubtitles&>(menu->SubtitlesToShow).GetElement(0)->Modelloader_GetReferencedThis(), *reinterpret_cast<AMSoundNode*&>(menu->m_pkActiveSoundList)->FUN_006815c0(),
                          DAT_011dea3c->GetPosition(), DAT_011dea3c, 0);
             reinterpret_cast<AMSubtitles&>(menu->SubtitlesToShow).RemoveAt(0, 1);
         }
     }
-    else if (menu->m_fMapZoom > 0.0)
+    else if (menu->fSoundDurationMillis > 0.0)
     {
-        float fTimeOffset = DAT_011f6394.FUN_00825c00() - reinterpret_cast<unsigned int&>(menu->m_iMapSelectionIndex);
+        float fTimeOffset = DAT_011f6394.FUN_00825c00() - reinterpret_cast<unsigned int&>(menu->iSoundPlayStartTime);
         int iRemaining = 0;
-        fTimeOffset = BSMIN(fTimeOffset, menu->m_fMapZoom);
-        iRemaining = (int)(menu->m_fMapZoom - fTimeOffset);
+        fTimeOffset = BSMIN(fTimeOffset, menu->fSoundDurationMillis);
+        iRemaining = (int)(menu->fSoundDurationMillis - fTimeOffset);
         BSsprintf(acText, 0x40, "%02d:%02d:%01d %s", iRemaining / 60000, iRemaining % 60000 / 1000,
                      iRemaining % 1000 / 100, DAT_011d3960.FUN_00403df0());
         menu->m_pTiles[13]->Tile_Set_00a01350(Tile_TextToTrait("_ItemStringInfo"), acText, 1);
-        menu->m_pTiles[13]->Tile_Set(Tile_TextToTrait("_AudioFileCompletion"), fTimeOffset / menu->m_fMapZoom, 1);
+        menu->m_pTiles[13]->Tile_Set(Tile_TextToTrait("_AudioFileCompletion"), fTimeOffset / menu->fSoundDurationMillis, 1);
     }
     if (reinterpret_cast<AMSoundNode*&>(menu->m_pkActiveSoundList) && !reinterpret_cast<AMSoundNode*&>(menu->m_pkActiveSoundList)->FUN_006815c0()->IsValid())
     {
@@ -6419,9 +6629,11 @@ struct PipboyLookup_host
 
 // If m_i80 is 0x20 or 0x21, pushes a flag based on PipboyLookup Query divided by 0x78 compared to DAT_01012060, with value DAT_01056528.
 // @fnv 0x0079c530
-void MapMenu::HandleMousewheel(unsigned int aiUnused, Tile* tile)
+// pdb: MapMenu::DoWheelMove | MapMenu.obj | retail, vtable slot, high
+// pdb params: aiID, apTarget
+void MapMenu::HandleMousewheel(unsigned int aiID, Tile* apTarget)
 {
-    if (m_iMapDisplayMode == 0x21 || m_iMapDisplayMode == 0x20)
+    if (iCurrentPage == 0x21 || iCurrentPage == 0x20)
     {
         static_cast<ZoomMenu*>(this)->MapMenu_ZoomMap(
             (double)(reinterpret_cast<PipboyLookup_host*>(InterfaceManager_GetSingleton())->Query() / 0x78) > DAT_01012060,
@@ -6443,12 +6655,12 @@ struct MMMapData
 class MMTile
 {
   public:
-    void Tile_Set_00a01350(int m_iValueId, const char* pcValue, int iFlag);
-    void FUN_00715c60(int m_iValueId, int iValue);
+    void Tile_Set_00a01350(int m_iValueId, const char* apString, int iFlag);
+    void FUN_00715c60(int aiTrait, int aiValue);
     void Tile_Set(int m_iValueId, float fValue, int iFlag);
     void FUN_00700320(int m_iValueId, int iValue);
     void FUN_00707e10(const char* pcName);
-    MMTile* Tile_GetChildByID(int iIndex);
+    MMTile* Tile_GetChildByID(int aiID);
 };
 
 struct MMRefNode;
@@ -6457,7 +6669,7 @@ class MMWorld : public TESWorldSpace
   public:
     MMMapData* GetWorldMapData();
     const char* GetWorldMapTextureName();
-    MMRefNode* GetOrCreateElement(int iFlag);
+    MMRefNode* TESWorldSpace_BuildMapMarkerList(int abLocalOnly);
 };
 
 struct MMWorldNode
@@ -6485,7 +6697,7 @@ struct MMParent
 };
 struct MMLocationName
 {
-    const char* FUN_00616710();
+    const char* GetReputationTitle();
 };
 struct MMMarkerData
 {
@@ -6660,39 +6872,42 @@ extern const char* DAT_011a0404[];
 // @fnv 0x0079cdb0
 }  // namespace fnv_0079cdb0
 
-void MapMenu::RefreshMap()
+// src: XBOX_RETAIL_PDB 0x0079cdb0
+// pdb: MapMenu::UpdateWorldMap | MapMenu.obj | retail, string-set bridge, high
+// pdb locals: prootWorldData, inextMarkerIndex, pfullMarkerList, pcurrMarkerObj, pcurrMarker, pmarkerTile, markerPos, pmarkerRootWorldspace, sLocName, markerTilePos, pRep
+void MapMenu::UpdateWorldMap()
 {
-    fnv_0079cdb0::MMMapData* pkData = reinterpret_cast<fnv_0079cdb0::MMWorld*&>(m_pCurrentWorldspace) ? reinterpret_cast<fnv_0079cdb0::MMWorld*&>(m_pCurrentWorldspace)->GetWorldMapData() : 0;
-    if (!reinterpret_cast<fnv_0079cdb0::MMWorld*&>(m_pCurrentWorldspace) || !pkData || !pkData->iWidth || !pkData->iHeight)
+    fnv_0079cdb0::MMMapData* pkData = reinterpret_cast<fnv_0079cdb0::MMWorld*&>(pRootMapSpace) ? reinterpret_cast<fnv_0079cdb0::MMWorld*&>(pRootMapSpace)->GetWorldMapData() : 0;
+    if (!reinterpret_cast<fnv_0079cdb0::MMWorld*&>(pRootMapSpace) || !pkData || !pkData->iWidth || !pkData->iHeight)
     {
-        reinterpret_cast<fnv_0079cdb0::MMWorld*&>(m_pCurrentWorldspace) = (fnv_0079cdb0::MMWorld*)dynamic_cast<TESWorldSpace*>(fnv_0079cdb0::TESForm_GetFormByNumericID(0x3c));
-        pkData = reinterpret_cast<fnv_0079cdb0::MMWorld*&>(m_pCurrentWorldspace) ? reinterpret_cast<fnv_0079cdb0::MMWorld*&>(m_pCurrentWorldspace)->GetWorldMapData() : 0;
-        m_bLocalMapMode = true;
+        reinterpret_cast<fnv_0079cdb0::MMWorld*&>(pRootMapSpace) = (fnv_0079cdb0::MMWorld*)dynamic_cast<TESWorldSpace*>(fnv_0079cdb0::TESForm_GetFormByNumericID(0x3c));
+        pkData = reinterpret_cast<fnv_0079cdb0::MMWorld*&>(pRootMapSpace) ? reinterpret_cast<fnv_0079cdb0::MMWorld*&>(pRootMapSpace)->GetWorldMapData() : 0;
+        bRootSpaceChanged = true;
     }
-    if (!reinterpret_cast<fnv_0079cdb0::MMWorld*&>(m_pCurrentWorldspace) || !pkData || !pkData->iWidth || !pkData->iHeight)
+    if (!reinterpret_cast<fnv_0079cdb0::MMWorld*&>(pRootMapSpace) || !pkData || !pkData->iWidth || !pkData->iHeight)
     {
-        reinterpret_cast<fnv_0079cdb0::MMWorld*&>(m_pCurrentWorldspace) = *fnv_0079cdb0::DAT_011c3f2c->TESDataHandler_GetWorldSpaceList()->FUN_006815c0();
-        pkData = reinterpret_cast<fnv_0079cdb0::MMWorld*&>(m_pCurrentWorldspace) ? reinterpret_cast<fnv_0079cdb0::MMWorld*&>(m_pCurrentWorldspace)->GetWorldMapData() : 0;
-        m_bLocalMapMode = true;
+        reinterpret_cast<fnv_0079cdb0::MMWorld*&>(pRootMapSpace) = *fnv_0079cdb0::DAT_011c3f2c->TESDataHandler_GetWorldSpaceList()->FUN_006815c0();
+        pkData = reinterpret_cast<fnv_0079cdb0::MMWorld*&>(pRootMapSpace) ? reinterpret_cast<fnv_0079cdb0::MMWorld*&>(pRootMapSpace)->GetWorldMapData() : 0;
+        bRootSpaceChanged = true;
     }
-    reinterpret_cast<fnv_0079cdb0::MMWorld*&>(m_pCurrentMapForm) = reinterpret_cast<fnv_0079cdb0::MMWorld*&>(m_pCurrentWorldspace);
+    reinterpret_cast<fnv_0079cdb0::MMWorld*&>(pMapSpace) = reinterpret_cast<fnv_0079cdb0::MMWorld*&>(pRootMapSpace);
     pAdjustNorthRotationCell = 0;
-    if (reinterpret_cast<fnv_0079cdb0::MMWorld*&>(m_pCurrentWorldspace) && pkData)
+    if (reinterpret_cast<fnv_0079cdb0::MMWorld*&>(pRootMapSpace) && pkData)
     {
-        if (DAT_011da36c || m_bLocalMapMode)
+        if (DAT_011da36c || bRootSpaceChanged)
         {
-            reinterpret_cast<fnv_0079cdb0::MMTile*>(m_pTiles[4])->Tile_Set_00a01350(0xfcc, reinterpret_cast<fnv_0079cdb0::MMWorld*&>(m_pCurrentWorldspace)->GetWorldMapTextureName(), 1);
+            reinterpret_cast<fnv_0079cdb0::MMTile*>(m_pTiles[4])->Tile_Set_00a01350(0xfcc, reinterpret_cast<fnv_0079cdb0::MMWorld*&>(pRootMapSpace)->GetWorldMapTextureName(), 1);
             reinterpret_cast<fnv_0079cdb0::MMTile*>(m_pTiles[4])->FUN_00715c60(0xfcd, pkData->iWidth);
             reinterpret_cast<fnv_0079cdb0::MMTile*>(m_pTiles[4])->FUN_00715c60(0xfce, pkData->iHeight);
             DAT_011da36c = false;
-            m_bLocalMapMode = false;
+            bRootSpaceChanged = false;
         }
         static_cast<fnv_0079cdb0::MMMenu*>(this)->MapMenu_ZoomMap(1, 1.0f);
-        *(fnv_0079cdb0::MMPoint2*)&m_kMapMinimumPoint = fnv_0079cdb0::MMPoint2(pkData->sMinX << 12, (pkData->sMinY << 12) + 0x1000);
-        *(fnv_0079cdb0::MMPoint2*)&m_kMapMaximumPoint = fnv_0079cdb0::MMPoint2((pkData->sMaxX << 12) + 0x1000, pkData->sMaxY << 12);
+        *(fnv_0079cdb0::MMPoint2*)&MapNWCorner = fnv_0079cdb0::MMPoint2(pkData->sMinX << 12, (pkData->sMinY << 12) + 0x1000);
+        *(fnv_0079cdb0::MMPoint2*)&MapSECorner = fnv_0079cdb0::MMPoint2((pkData->sMaxX << 12) + 0x1000, pkData->sMaxY << 12);
         if (!reinterpret_cast<fnv_0079cdb0::MMTile*>(m_pTiles[4])->Tile_GetChildByID(0x1a))
         {
-            fnv_0079cdb0::MMRefNode* pkList = reinterpret_cast<fnv_0079cdb0::MMWorld*&>(m_pCurrentWorldspace)->GetOrCreateElement(0);
+            fnv_0079cdb0::MMRefNode* pkList = reinterpret_cast<fnv_0079cdb0::MMWorld*&>(pRootMapSpace)->TESWorldSpace_BuildMapMarkerList(0);
             fnv_0079cdb0::DAT_011da370 = 0;
             for (fnv_0079cdb0::MMRefNode* pkIter = pkList; pkIter && *pkIter->FUN_006815c0(); pkIter = pkIter->FUN_00726070())
             {
@@ -6703,7 +6918,7 @@ void MapMenu::RefreshMap()
                     pkSpace = pkSpace->EffectSetting_GetLight();
                 if (!pkRef->TESObjectREFR_GetMapMarkerData()->FUN_00438ed0() || pkRef->FUN_00440da0())
                     continue;
-                if (pkSpace != (fnv_0079cdb0::MMParent*)reinterpret_cast<fnv_0079cdb0::MMWorld*&>(m_pCurrentWorldspace))
+                if (pkSpace != (fnv_0079cdb0::MMParent*)reinterpret_cast<fnv_0079cdb0::MMWorld*&>(pRootMapSpace))
                     continue;
                 fnv_0079cdb0::MMTile* pkMarkerEntry = ((fnv_0079cdb0::MMMenu*)DAT_011da368)->FUN_00a1ddb0(reinterpret_cast<fnv_0079cdb0::MMTile*>(m_pTiles[4]), "MapMarkerTemplate", 0);
                 if (pkMarkerEntry)
@@ -6714,7 +6929,7 @@ void MapMenu::RefreshMap()
                     if (pkName)
                     {
                         fnv_0079cdb0::BSsprintf(acText, 0x100, "%s\n(%s)", pkRef->TESObjectREFR_GetMapMarkerData()->MapMarkerData_GetLocationName(),
-                                     pkName->FUN_00616710());
+                                     pkName->GetReputationTitle());
                         pkMarkerEntry->Tile_Set_00a01350(fnv_0079cdb0::Tile_AddUserTrait("_LocationName", -1), acText, 1);
                     }
                     else
@@ -6732,7 +6947,7 @@ void MapMenu::RefreshMap()
                         pkMarkerEntry->FUN_00700320(0x1004, 0);
                     }
                     pkMarkerEntry->FUN_00700320(fnv_0079cdb0::Tile_AddUserTrait("_MarkerIndex", -1), fnv_0079cdb0::DAT_011da370);
-                    reinterpret_cast<fnv_0079cdb0::MMRefList&>(m_kMapMarkerList).FUN_00905820(&pkRef);
+                    reinterpret_cast<fnv_0079cdb0::MMRefList&>(WorldMapMarkerList).FUN_00905820(&pkRef);
                     fnv_0079cdb0::DAT_011da370++;
                 }
             }
@@ -6760,8 +6975,8 @@ struct NoteTexture
 struct NoteInput
 {
     int GetNoteType();
-    NoteTextSource* FUN_005e91d0();
-    NoteTexture* GetNoteTexture();
+    NoteTextSource* GetNoteText();
+    NoteTexture* GetNoteImage();
 };
 struct NoteTile
 {
@@ -6792,9 +7007,12 @@ struct NoteSetting
 extern NoteSetting g_011d3960;
 // Populates the note menu's data tile with text, image, or time-string content based on the note type, and configures the scrollbar for text overflow.
 // @fnv 0x007993d0
+// pdb: MapMenu::LoadNote | MapMenu.obj | retail, string-set bridge, high
+// pdb params: apNote
+// pdb locals: fheightDifference, pscrollbar, fscrollDelta, pnoteText, ftextHeight, strtemp
 }  // namespace fnv_007993d0
 
-void MapMenu::SetNote(BGSNote* note)
+void MapMenu::SetNote(BGSNote* apNote)
 {
     float textHeight2;
     fnv_007993d0::NoteTile* textTile2;
@@ -6803,7 +7021,7 @@ void MapMenu::SetNote(BGSNote* note)
     float overflow3;
     fnv_007993d0::NoteExtent extent4;
     char timeText2[64];
-    switch (reinterpret_cast<fnv_007993d0::NoteInput*>(note)->GetNoteType())
+    switch (reinterpret_cast<fnv_007993d0::NoteInput*>(apNote)->GetNoteType())
     {
     case 1:
         textTile2 = reinterpret_cast<fnv_007993d0::NoteTile*>(m_pTiles[13])->Tile_GetChildByName("MM_DataText");
@@ -6811,10 +7029,10 @@ void MapMenu::SetNote(BGSNote* note)
         scrollDelta = scrollbar2->FUN_00a011b0(fnv_007993d0::Tile_TextToTrait("_ScrollDelta"));
         overflow3 = 0.0f;
         reinterpret_cast<fnv_007993d0::NoteTile*>(m_pTiles[13])->FUN_00700320(fnv_007993d0::Tile_TextToTrait("_ItemType"), 1);
-        textTile2->Tile_Set_00a01350(0xfc4, reinterpret_cast<fnv_007993d0::NoteInput*>(note)->FUN_005e91d0()->GetText((BGSNote*)note, 0x4d414e54), true);
+        textTile2->Tile_Set_00a01350(0xfc4, reinterpret_cast<fnv_007993d0::NoteInput*>(apNote)->GetNoteText()->GetText((BGSNote*)apNote, 0x4d414e54), true);
         textHeight2 =
             fnv_007993d0::FUN_005bd5b0()
-                ->FUN_00a1b020(&extent4, reinterpret_cast<fnv_007993d0::NoteInput*>(note)->FUN_005e91d0()->GetText((BGSNote*)note, 0x4d414e54), 1, 400.0f, 0)
+                ->FUN_00a1b020(&extent4, reinterpret_cast<fnv_007993d0::NoteInput*>(apNote)->GetNoteText()->GetText((BGSNote*)apNote, 0x4d414e54), 1, 400.0f, 0)
                 ->y;
         overflow3 = textHeight2 - textTile2->FUN_0045cd60()->FUN_00a011b0(0xfb0);
         overflow3 = fnv_007993d0::BSMAX_00404010(0.0f, overflow3);
@@ -6823,7 +7041,7 @@ void MapMenu::SetNote(BGSNote* note)
         scrollbar2->SetTraitFloat(fnv_007993d0::Tile_TextToTrait("_SetInCode"), 1.0f);
         break;
     case 2:
-        reinterpret_cast<fnv_007993d0::NoteTile*>(m_pTiles[13])->Tile_GetChildByName("MM_DataImage")->Tile_Set_00a01350(0xfcc, reinterpret_cast<fnv_007993d0::NoteInput*>(note)->GetNoteTexture()->TESModel_GetModel(), true);
+        reinterpret_cast<fnv_007993d0::NoteTile*>(m_pTiles[13])->Tile_GetChildByName("MM_DataImage")->Tile_Set_00a01350(0xfcc, reinterpret_cast<fnv_007993d0::NoteInput*>(apNote)->GetNoteImage()->TESModel_GetModel(), true);
         reinterpret_cast<fnv_007993d0::NoteTile*>(m_pTiles[13])->FUN_00700320(fnv_007993d0::Tile_TextToTrait("_ItemType"), 2);
         break;
     case 0:
@@ -6846,6 +7064,8 @@ int __cdecl Tile_AddUserTrait(const char*, int);
 HighlightTile_mapmenu* __cdecl Tile_GetTileByName(Tile*, const char*);
 // Sets two container traits and applies the selected tile speech challenge failure flag to the highlight box and edges.
 // @fnv 0x007a8260
+// pdb: ListBox<TESChallenge *>::UpdateHighlightBoxPos | MapMenu.obj | retail, call graph, high
+// pdb locals: phighlightY, pselectedHeight, hlBox, tmp
 void HighlightList_mapmenu::UpdateHighlight()
 {
     static int highlightY = Tile_AddUserTrait("_highlight_y", -1);
@@ -6959,34 +7179,37 @@ struct ClickVtable
 };
 // Handles codes 23–25 for list selections and updates the selected index, with additional handling for codes 14, 15, and -1.
 // @fnv 0x00798cb0
+// pdb: MapMenu::DoEnter | MapMenu.obj | retail, string-set bridge, high
+// pdb params: aiID, apTarget
+// pdb locals: inewHighlightIndex, pcurrNote, pcurrChallenge
 }  // namespace fnv_00798cb0
 
-void MapMenu::HandleMouseover(unsigned int aiEventCode, Tile* tile)
+void MapMenu::HandleMouseover(unsigned int aiID, Tile* apTarget)
 {
     int index = 0;
     BGSNote* challenge;
     TESChallenge* note;
-    switch (static_cast<int>(aiEventCode))
+    switch (static_cast<int>(aiID))
     {
     case 23:
-        if (tile)
+        if (apTarget)
         {
-            m_pSelectedQuest = m_kQuestListBox.GetSelectedData(tile);
-            m_kObjectiveListBox.Filter((bool (*)(BGSQuestObjective*))fnv_00798cb0::MapMenu_IsQuestMapMenuSelectedQuest);
-            index = tile ? (int)tile->GetFloat(0xfac) : 0;
+            pDisplayedQuest = lbQuestsList.GetSelectedData(apTarget);
+            lbQuestObjectivesList.Filter((bool (*)(BGSQuestObjective*))fnv_00798cb0::MapMenu_IsQuestMapMenuSelectedQuest);
+            index = apTarget ? (int)apTarget->GetFloat(0xfac) : 0;
             m_pTiles[13]->Set(Tile::GetTraitID(fnv_00798cb0::str_010739a0), 4);
             m_pTiles[13]->Set(0xfa3, 1);
-            m_pSelectedMapMarkerInfo = 0;
-            m_kObjectiveListBox.Traverse(fnv_00798cb0::MapMenu_FindQuestObjectiveTargetFunc, 0, 0x7fffffff);
-            m_pTiles[12]->Set(0xfaf, m_pSelectedMapMarkerInfo != 0);
-            m_pTiles[11]->Set(0xfaf, m_pSelectedQuest && !m_pSelectedQuest->GetCompleted() ? 1 : 0);
+            pDisplayedQuestTarget = 0;
+            lbQuestObjectivesList.Traverse(fnv_00798cb0::MapMenu_FindQuestObjectiveTargetFunc, 0, 0x7fffffff);
+            m_pTiles[12]->Set(0xfaf, pDisplayedQuestTarget != 0);
+            m_pTiles[11]->Set(0xfaf, pDisplayedQuest && !pDisplayedQuest->GetCompleted() ? 1 : 0);
         }
         break;
     case 24:
         if (!DAT_011da36d)
         {
-            challenge = m_kNoteListBox.GetSelectedData(tile);
-            index = m_kNoteListBox.GetHighlightedItem() ? (int)m_kNoteListBox.GetHighlightedItem()->GetFloat(0xfac) : 0;
+            challenge = lbNotesList.GetSelectedData(apTarget);
+            index = lbNotesList.GetHighlightedItem() ? (int)lbNotesList.GetHighlightedItem()->GetFloat(0xfac) : 0;
             if (InterfaceManager_Has360Controller() || (challenge && !m_pSelectedNote))
                 SetNote(challenge);
             if (!challenge->GetNoteType() || challenge->GetNoteType() == 3)
@@ -6995,34 +7218,34 @@ void MapMenu::HandleMouseover(unsigned int aiEventCode, Tile* tile)
             }
             else if (!challenge->GetUnk7d())
             {
-                m_uiMapState = g_timeGlobal.GetTimeStamp();
+                uiNoteEnterStartTime = g_timeGlobal.GetTimeStamp();
             }
         }
         else
         {
-            note = m_kChallengeListBox.GetSelectedData(tile);
+            note = lbChallengeList.GetSelectedData(apTarget);
             if (InterfaceManager_Has360Controller() || note)
-                static_cast<MapMenu_Shell*>(this)->UpdateChallengeText(note);
+                static_cast<MapMenu_Shell*>(this)->MapMenu_LoadChallenge(note);
             m_pTiles[13]->Set(0xfa3, 1);
             fnv_00798cb0::Interface_PlayMenuSound(4);
         }
         break;
     case 25:
-        index = m_kMapMarkerListBox.GetHighlightedItem() ? (int)m_kMapMarkerListBox.GetHighlightedItem()->GetFloat(0xfac) : 0;
+        index = lbRadioStationsList.GetHighlightedItem() ? (int)lbRadioStationsList.GetHighlightedItem()->GetFloat(0xfac) : 0;
         break;
     case 14:
-        ((fnv_00798cb0::MapEnterNoteSelection*)&m_kNoteListBox)->ListBox_BGSNote_SetEnabled(false);
+        ((fnv_00798cb0::MapEnterNoteSelection*)&lbNotesList)->ListBox_BGSNote_SetEnabled(false);
         break;
     case 15:
-        ((fnv_00798cb0::QuestSelection*)&m_kQuestListBox)->ListBox_TESQuest_SetEnabled(false);
-        ((fnv_00798cb0::MapEnterObjectiveSelection*)&m_kObjectiveListBox)->SetEnabledTrait(true);
+        ((fnv_00798cb0::QuestSelection*)&lbQuestsList)->ListBox_TESQuest_SetEnabled(false);
+        ((fnv_00798cb0::MapEnterObjectiveSelection*)&lbQuestObjectivesList)->SetEnabledTrait(true);
         break;
     case -1:
-        if (tile && ((fnv_00798cb0::SelectedIndex*)tile)->GetProcessLevel() == ((TimeGlobal*)&m_kObjectiveListBox)->GetTimeStamp())
+        if (apTarget && ((fnv_00798cb0::SelectedIndex*)apTarget)->GetProcessLevel() == ((TimeGlobal*)&lbQuestObjectivesList)->GetTimeStamp())
             ((fnv_00798cb0::ClickVtable*)this)->v10(15, 0);
         break;
     }
-    if (fnv_00798cb0::DAT_011da400 != index && (aiEventCode == 23 || aiEventCode == 24 || aiEventCode == 25))
+    if (fnv_00798cb0::DAT_011da400 != index && (aiID == 23 || aiID == 24 || aiID == 25))
     {
         ((fnv_00798cb0::Proxy*)InterfaceManager_GetSingleton())
             ->FUN_00704370()

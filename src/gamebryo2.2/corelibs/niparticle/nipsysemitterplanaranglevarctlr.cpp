@@ -14,6 +14,7 @@ void* __cdecl NiPSysEmitterPlanarAngleVarCtlr_GetRTTI()
     return &g_01202730;
 }
 
+// pdb: class NiPSysEmitterPlanarAngleVarCtlr, size 0x40, bases: NiPSysModifierFloatCtlr, 0 members
 struct NiPSysEmitterPlanarAngleVarCtlr : NiPSysModifierFloatCtlr
 {
     virtual ~NiPSysEmitterPlanarAngleVarCtlr() throw();
@@ -27,14 +28,14 @@ struct NiPSysEmitterPlanarAngleVarCtlr : NiPSysModifierFloatCtlr
 // src: GUESS 0x00c2b470 (confidence: high)
 void __thiscall NiPSysEmitterPlanarAngleVarCtlr::SetPlanarAngleVariation(float fValue)
 {
-    static_cast<NiPSysEmitter*>(m_pkTargetModifier)->m_fPlanarAngleVariation = fValue;
+    static_cast<NiPSysEmitter*>(m_pkModifier)->m_fPlanarAngleVar = fValue;
 }
 
 // @fnv 0x00c2a8b0
 // src: GUESS 0x00c2a8b0 (confidence: high)
 void NiPSysEmitterPlanarAngleVarCtlr::GetPlanarAngleVariation(float& rfValue)
 {
-    rfValue = static_cast<NiPSysEmitter*>(m_pkTargetModifier)->m_fPlanarAngleVariation;
+    rfValue = static_cast<NiPSysEmitter*>(m_pkModifier)->m_fPlanarAngleVar;
 }
 
 void __stdcall NiPSysModifierFloatCtlr_GetViewerStrings(StrArr*);
@@ -42,6 +43,8 @@ char* __cdecl _FUN_00a7d330(void*);
 // Appends the string returned by _FUN_00a7d330(g_01202730) to the end of pkStrings, growing the array if it is full.
 // @fnv 0x00c2b4d0
 // src: XBOX_PDB 0x00c2b4d0
+// pdb: NiPSysEmitterPlanarAngleVarCtlr::GetViewerStrings | NiPSysEmitterPlanarAngleVarCtlr.obj | retail, upstream name already matches, high
+// pdb params: pkStrings
 void __stdcall NiPSysEmitterPlanarAngleVarCtlr_GetViewerStrings(StrArr* pkStrings)
 {
     NiPSysModifierFloatCtlr_GetViewerStrings(pkStrings);
@@ -60,6 +63,8 @@ inline void* __cdecl operator new(unsigned int, void* memory)
 // Allocates and constructs a controller, copies its data, and returns the clone or null.
 // @fnv 0x00c2b480
 // src: XBOX_PDB 0x00c2b480
+// pdb: NiPSysEmitterPlanarAngleVarCtlr::IsEqual | NiPSysEmitterPlanarAngleVarCtlr.obj | debug, object-file run extension, low
+// pdb params: pkObject
 NiPSysEmitterPlanarAngleVarCtlr* NiPSysEmitterPlanarAngleVarCtlr::CreateClone_00c2b480(void* volatile argument)
 {
     NiPSysEmitterPlanarAngleVarCtlr* clone = (NiPSysEmitterPlanarAngleVarCtlr*)NiMemObject::operator new(0x40);

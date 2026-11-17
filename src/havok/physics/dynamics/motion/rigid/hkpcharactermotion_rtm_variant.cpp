@@ -19,6 +19,9 @@ extern "C" LocalM128 _mm_shuffle_ps(LocalM128, LocalM128, unsigned int);
 
 // The shared class lacks these wrapper declarations; an unused EDX argument preserves the thiscall ABI.
 // @fnv 0x00d1efd0
+// pdb: hkpCharacterMotion::applyForce | hkpCharacterMotion.obj | retail, vtable slot, high
+// pdb params: deltaTime, force, p
+// pdb locals: impulse
 void __fastcall ApplyCharacterForceAtPoint(hkpCharacterMotion* motion, void*, float s,
                                          const hkVector4& v, const hkVector4& point)
 {
@@ -31,6 +34,9 @@ void __fastcall ApplyCharacterForceAtPoint(hkpCharacterMotion* motion, void*, fl
 }
 
 // @fnv 0x00d1f010
+// pdb: hkpCharacterMotion::applyTorque | hkpCharacterMotion.obj | retail, vtable slot, high
+// pdb params: deltaTime, torque
+// pdb locals: impulse
 void __fastcall ApplyCharacterTorque(hkpCharacterMotion* motion, void*, float step, const hkVector4& torque)
 {
     __declspec(align(16)) hkVector4 angularStep;

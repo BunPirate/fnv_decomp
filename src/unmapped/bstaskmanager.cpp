@@ -54,6 +54,9 @@ struct FUN_00c3fca0_Class
 extern long __cdecl FUN_004019a0(volatile long*);
 // @fnv 0x0044e050
 // src: COMMUNITY 0x0044e050
+// pdb: BSTaskManager<__int64>::RemoveTask | ModelLoader.obj | debug, call graph, medium
+// pdb params: apTask
+// pdb locals: ibucket
 bool __thiscall FUN_00c3fca0_Class::BSTaskManager_int64_RemoveTask(InputValues* input)
 {
     int item = ((Controller*)this)->index(input->GetValue64());

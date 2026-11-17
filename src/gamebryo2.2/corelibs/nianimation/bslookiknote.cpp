@@ -39,6 +39,8 @@ extern int DAT_01097c8c;
 inline void* operator new(unsigned int, void* storage) { return storage; }
 
 // @fnv 0x00a43fb0
+// pdb: BSLookIKNote::CreateObject | BSLookIKNote.obj | retail, object-file run extension, low
+// pdb locals: pkObject
 BSLookIKNote* __cdecl CreateLookIKNote()
 {
     BSLookIKNote* pNote = static_cast<BSLookIKNote*>(BSLookIKNote::operator new(0x18));
@@ -46,8 +48,8 @@ BSLookIKNote* __cdecl CreateLookIKNote()
     {
         ::new (pNote) NiObject;
         pNote->fTime = 0.0f;
-        *reinterpret_cast<int*>(pNote->unk08) = 2;
-        pNote->m_fDistanceScale = 0.0f;
+        *reinterpret_cast<int*>(pNote->eType) = 2;
+        pNote->fGain = 0.0f;
         *reinterpret_cast<void**>(pNote) = &DAT_01097c8c;
         pNote->eState = 0;
         return pNote;
@@ -60,12 +62,15 @@ BSLookIKNote* __cdecl CreateLookIKNote()
 bool __stdcall AnimNoteIsEqual(NiObject* apObject);
 
 // @fnv 0x00a43f30
+// pdb: BSLookIKNote::IsEqual | BSLookIKNote.obj | retail, upstream name already matches, high
+// pdb params: apObject
+// pdb locals: bres, pkDest
 bool BSLookIKNote::IsEqual(NiObject* apObject) const
 {
     if (AnimNoteIsEqual(apObject))
     {
         BSLookIKNote* pkDest = (BSLookIKNote*)apObject;
-        if (m_fDistanceScale == pkDest->m_fDistanceScale && eState == pkDest->eState)
+        if (fGain == pkDest->fGain && eState == pkDest->eState)
             return true;
     }
     return false;
@@ -254,11 +259,13 @@ struct S_00a44130_Stream
 void __stdcall LoadAnimNoteFields(NiStream& kStream);
 
 // @fnv 0x00a44130
-void BSLookIKNote::LoadBinary(NiStream& kStream)
+// pdb: BSLookIKNote::LoadBinary | BSLookIKNote.obj | retail, upstream name already matches, high
+// pdb params: arStream
+void BSLookIKNote::LoadBinary(NiStream& arStream)
 {
-    LoadAnimNoteFields(kStream);
-    S_00a44130_Stream& stream = reinterpret_cast<S_00a44130_Stream&>(kStream);
-    S_00a44130_StreamSaveBinary(*stream.m_pBackingStream, m_fDistanceScale);
+    LoadAnimNoteFields(arStream);
+    S_00a44130_Stream& stream = reinterpret_cast<S_00a44130_Stream&>(arStream);
+    S_00a44130_StreamSaveBinary(*stream.m_pBackingStream, fGain);
     S_00a44130_StreamSaveBinary(*stream.m_pBackingStream, eState);
 }
 
@@ -438,11 +445,13 @@ template <class T> inline void S_00a44190_SaveBinary(S_00a44190_Stream& kStream,
 void __stdcall SaveAnimNoteFields(NiStream& kStream);
 
 // @fnv 0x00a44190
-void BSLookIKNote::SaveBinary(NiStream& kStream)
+// pdb: BSLookIKNote::SaveBinary | BSLookIKNote.obj | retail, upstream name already matches, high
+// pdb params: arStream
+void BSLookIKNote::SaveBinary(NiStream& arStream)
 {
-    SaveAnimNoteFields(kStream);
-    S_00a44190_Stream& stream = reinterpret_cast<S_00a44190_Stream&>(kStream);
-    S_00a44190_SaveBinary(stream, m_fDistanceScale);
+    SaveAnimNoteFields(arStream);
+    S_00a44190_Stream& stream = reinterpret_cast<S_00a44190_Stream&>(arStream);
+    S_00a44190_SaveBinary(stream, fGain);
     S_00a44190_SaveBinary(stream, eState);
 }
 
@@ -454,6 +463,9 @@ struct AnimNoteCloneHelper
 };
 
 // @fnv 0x00a43ff0
+// pdb: BSLookIKNote::CreateClone | BSLookIKNote.obj | retail, object-file run extension, low
+// pdb params: arCloneData
+// pdb locals: pkCtlr
 NiObject* BSLookIKNote::MakeClone(CloningProcess& cloning)
 {
     BSLookIKNote* pkClone = static_cast<BSLookIKNote*>(BSLookIKNote::operator new(0x18));
@@ -461,15 +473,15 @@ NiObject* BSLookIKNote::MakeClone(CloningProcess& cloning)
     {
         ::new (pkClone) NiObject;
         pkClone->fTime = 0.0f;
-        *reinterpret_cast<int*>(pkClone->unk08) = 2;
-        pkClone->m_fDistanceScale = 0.0f;
+        *reinterpret_cast<int*>(pkClone->eType) = 2;
+        pkClone->fGain = 0.0f;
         *reinterpret_cast<void**>(pkClone) = &DAT_01097c8c;
         pkClone->eState = 0;
     }
     else
         pkClone = 0;
     reinterpret_cast<AnimNoteCloneHelper*>(this)->CopyMemberData(pkClone, cloning);
-    pkClone->m_fDistanceScale = m_fDistanceScale;
+    pkClone->fGain = fGain;
     pkClone->eState = eState;
     return pkClone;
 }
@@ -494,17 +506,20 @@ class TextKeyString
   public:
     TextKeyString(const char* pcString) throw();
     ~TextKeyString() throw();
-    bool ParseFloatValue(float* pfValue) throw();
+    bool ParseFloatValue(float* f) throw();
 
     char* m_pcString;
 };
 
 // Parses a "LookIK" text key: reads a 4-char float value into m_fDistanceScale and sets eState to 1 for Start or 2 for Stop.
 // @fnv 0x00a44050
-bool BSLookIKNote::vf35(const TimedTextEntry* pkKey)
+// pdb: BSLookIKNote::ParseTextKey | BSLookIKNote.obj | retail, string-set bridge, high
+// pdb params: apTextKey
+// pdb locals: bret, ptext, gainStr, gain
+bool BSLookIKNote::vf35(const TimedTextEntry* apTextKey)
 {
-    bool bResult = BSAnimNote::vf35(pkKey);
-    const char* pcText = pkKey->m_kText;
+    bool bResult = BSAnimNote::vf35(apTextKey);
+    const char* pcText = apTextKey->m_kText;
 
     if (strncmp(pcText, "LookIK", 6) == 0)
     {
@@ -517,7 +532,7 @@ bool BSLookIKNote::vf35(const TimedTextEntry* pkKey)
         strncpy(acValue, pcText, 4);
         {
             TextKeyString kValue(acValue);
-            if (!kValue.ParseFloatValue(&m_fDistanceScale))
+            if (!kValue.ParseFloatValue(&fGain))
                 bResult = false;
             pcText += 4;
         }
@@ -554,7 +569,7 @@ extern const char str_010477f4[];
 extern const char str_010639ec[];
 extern const char str_0102909c[];
 char* __cdecl NiGetViewerString_00a7d550(const char* fmt, float v);
-char* __cdecl NiGetViewerString_00a7d5e0(const char* fmt, const char* s);
+char* __cdecl NiGetViewerString_00a7d5e0(const char* pcPrefix, const char* pcValue);
 
 inline void S_Push(S_00a441f0_arg* p, char* s)
 {
@@ -567,11 +582,13 @@ inline void S_Push(S_00a441f0_arg* p, char* s)
 }
 
 // @fnv 0x00a441f0
-void BSLookIKNote::GetViewerStrings(NiViewerStringsArray* strings)
+// pdb: BSLookIKNote::GetViewerStrings | BSLookIKNote.obj | retail, string-set bridge, high
+// pdb params: apStrings
+void BSLookIKNote::GetViewerStrings(NiViewerStringsArray* apStrings)
 {
-    BSAnimNote::GetViewerStrings(strings);
-    S_00a441f0_arg* p = reinterpret_cast<S_00a441f0_arg*>(strings);
-    S_Push(p, NiGetViewerString_00a7d550(str_01097d24, m_fDistanceScale));
+    BSAnimNote::GetViewerStrings(apStrings);
+    S_00a441f0_arg* p = reinterpret_cast<S_00a441f0_arg*>(apStrings);
+    S_Push(p, NiGetViewerString_00a7d550(str_01097d24, fGain));
     switch (eState)
     {
     case 1:

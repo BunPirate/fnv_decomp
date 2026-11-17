@@ -22,11 +22,14 @@ struct RegionMapMerge : TESRegionDataMap
     bool FUN_004f15c0(unsigned char value);
     void SaveMapData();
     TESRegionData* CreateRegionData() const;
-    void MergeMapData(RegionMapMerge* data, void* context);
+    void MergeMapData(RegionMapMerge* apRegionData, void* aiTotalBlending);
 };
 
 // Reads the RDMP chunk from apFile into a buffer and stores it in the map string, returning true on success.
 // @fnv 0x004f3e90
+// pdb: TESRegionDataMap::LoadRegionDataMap | TESRegionDataMap.obj | retail, vtable slot, high
+// pdb params: apFile
+// pdb locals: pMessage
 bool TESRegionDataMap::LoadRegionMapData(TESFile* apFile)
 {
     if (!apFile || apFile->GetChunkID() != CHUNK_ID_RDMP_ID)
@@ -39,6 +42,7 @@ bool TESRegionDataMap::LoadRegionMapData(TESFile* apFile)
 }
 
 // @fnv 0x005585e0
+// pdb: TESRegionDataMap::GetMapName | TESRegionDataMap.obj | debug, vtable slot, medium
 const char* TESRegionDataMap::GetRegionMapName()
 {
     return m_kMapName.String();
@@ -46,6 +50,7 @@ const char* TESRegionDataMap::GetRegionMapName()
 
 // Constructs the object and sets its string member to "Default Region Name".
 // @fnv 0x004f3ca0
+// pdb: TESRegionDataMap::TESRegionDataMap | TESRegionDataMap.obj | retail, unique string literal, high
 TESRegionDataMap::TESRegionDataMap()
 {
     m_kMapName.Set("Default Region Name", 0);
@@ -65,6 +70,7 @@ struct H4280
 };
 void __cdecl TESForm_AddChunkArray(unsigned int, void*, unsigned int);
 // @fnv 0x004f3e40
+// pdb: TESRegionDataMap::Save | TESRegionDataMap.obj | retail, vtable slot, high
 void RegionMapMerge::SaveMapData()
 {
     TESRegionData::Save();
@@ -74,6 +80,8 @@ void RegionMapMerge::SaveMapData()
 }
 
 // @fnv 0x004f3f10
+// pdb: TESRegionDataMap::GetMapName | TESRegionDataMap.obj | debug, vtable slot, medium
+// pdb params: aMapName
 void TESRegionDataMap::vf10(BSStringT<char>& apMapName)
 {
     apMapName.Set(m_kMapName.String(), 0);
@@ -81,6 +89,8 @@ void TESRegionDataMap::vf10(BSStringT<char>& apMapName)
 
 
 // @fnv 0x004f3f40
+// pdb: TESRegionDataMap::SetMapName | TESRegionDataMap.obj | retail, vtable slot, high
+// pdb params: apMapName
 bool TESRegionDataMap::vf12(char const* apMapName)
 {
     if (((::BSStringT<char>*)&m_kMapName)->StrCmp(apMapName, true))
@@ -92,6 +102,7 @@ bool TESRegionDataMap::vf12(char const* apMapName)
 }
 
 // @fnv 0x004f3de0
+// pdb: TESRegionDataMap::~TESRegionDataMap | TESRegionDataMap.obj | debug, upstream name already matches, high
 TESRegionDataMap::~TESRegionDataMap()
 {
 }
@@ -99,6 +110,8 @@ TESRegionDataMap::~TESRegionDataMap()
 void* __cdecl operator new(unsigned int);
 
 // @fnv 0x004f3f80
+// pdb: TESRegionDataMap::Copy | TESRegionDataMap.obj | retail, vtable slot, high
+// pdb locals: pdata
 TESRegionData* RegionMapMerge::CreateRegionData() const
 {
     TESRegionData* pdata = new TESRegionDataMap(this);
@@ -115,10 +128,13 @@ TESRegionDataMap::TESRegionDataMap(const TESRegionDataMap* apSource) : TESRegion
 float __cdecl floor(float value);
 
 // @fnv 0x004f4000
-void RegionMapMerge::MergeMapData(RegionMapMerge* apOther, void* context)
+// pdb: TESRegionDataMap::BlendInto | TESRegionDataMap.obj | retail, vtable slot, high
+// pdb params: apRegionData, aiTotalBlending
+// pdb locals: pdataIn, fnewPriority
+void RegionMapMerge::MergeMapData(RegionMapMerge* apRegionData, void* aiTotalBlending)
 {
-    RegionMapMerge* other = apOther;
-    if (!apOther || (unsigned int)apOther->GetType() != 4 || !context)
+    RegionMapMerge* other = apRegionData;
+    if (!apRegionData || (unsigned int)apRegionData->GetType() != 4 || !aiTotalBlending)
         return;
     if (m_bHasRegionData)
     {

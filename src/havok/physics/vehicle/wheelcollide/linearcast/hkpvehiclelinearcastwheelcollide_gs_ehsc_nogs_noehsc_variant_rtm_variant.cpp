@@ -256,6 +256,9 @@ static inline __m128 splat(const float& r)
 
 // @fnv 0x00e367d0
 // src: XBOX_PDB 0x00e367d0
+// pdb: hkpVehicleLinearCastWheelCollide::updateWheelState | hkpVehicleLinearCastWheelCollide.obj | retail, upstream name already matches, high
+// pdb params: vehicle, wheelNum
+// pdb locals: rotation
 void WheelCollide::hkpVehicleLinearCastWheelCollide_updateWheelState(LcVehicle* vehicle, unsigned char wheelNum)
 {
     LcWheelInfo& wheelInfo = vehicle->m_kWheelInfoArray[wheelNum];

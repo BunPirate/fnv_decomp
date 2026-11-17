@@ -13,36 +13,43 @@ double std::abs(float value)
 }
 // Reads eState, a second dword, iWarningCount and a trailing value from the load buffer.
 // @fnv 0x009f28b0
-void GuardActorPackageData::LoadGame(BGSLoadFormBuffer* buffer)
+// pdb: GuardActorPackageData::LoadGame | GuardPackage.obj | retail, upstream name already matches, high
+// pdb params: apLoadGameBuffer
+void GuardActorPackageData::LoadGame(BGSLoadFormBuffer* apLoadGameBuffer)
 {
-    buffer->ReadTypedData(static_cast<void*>(&eState), 4u);
-    buffer->ReadTypedData(static_cast<void*>(&m_fWarningTimer), 4u);
-    buffer->ReadTypedData(static_cast<void*>(&iWarningCount), 4u);
-    buffer->ReadFormIdentifier(&pWarningTarget);
+    apLoadGameBuffer->ReadTypedData(static_cast<void*>(&eState), 4u);
+    apLoadGameBuffer->ReadTypedData(static_cast<void*>(&fGuardTimer), 4u);
+    apLoadGameBuffer->ReadTypedData(static_cast<void*>(&iWarningCount), 4u);
+    apLoadGameBuffer->ReadFormIdentifier(&pGuardWarnedActor);
 }
 // Resolves the stored form reference to an Actor and, if found, calls the reference helper with true.
 // @fnv 0x009f2900
-void GuardActorPackageData::InitLoadGame(BGSLoadFormBuffer* buffer)
+// pdb: GuardActorPackageData::InitLoadGame | GuardPackage.obj | retail, upstream name already matches, high
+// pdb params: apLoadGameBuffer
+void GuardActorPackageData::InitLoadGame(BGSLoadFormBuffer* apLoadGameBuffer)
 {
-    pWarningTarget =
-        pWarningTarget ? dynamic_cast<Actor*>(TESForm::GetFormByID((unsigned int)pWarningTarget)) : 0;
-    if (pWarningTarget)
-        ((TESObjectREFRHelper*)pWarningTarget)->SetTargetingState(true);
+    pGuardWarnedActor =
+        pGuardWarnedActor ? dynamic_cast<Actor*>(TESForm::GetFormByID((unsigned int)pGuardWarnedActor)) : 0;
+    if (pGuardWarnedActor)
+        ((TESObjectREFRHelper*)pGuardWarnedActor)->SetTargetingState(true);
 }
 
 // Saves the guard state, warning timer, warning count and warning target.
 // @fnv 0x009f2850
+// pdb: GuardActorPackageData::SaveGame | GuardPackage.obj | retail, upstream name already matches, high
+// pdb params: apSaveGameBuffer
 void GuardActorPackageData::SaveGame(BGSSaveFormBuffer* apSaveGameBuffer)
 {
     apSaveGameBuffer->SaveData(&eState, 4, 0);
-    apSaveGameBuffer->SaveData(&m_fWarningTimer, 4, 0);
+    apSaveGameBuffer->SaveData(&fGuardTimer, 4, 0);
     apSaveGameBuffer->SaveData(&iWarningCount, 4, 0);
-    apSaveGameBuffer->SerializeFormData(pWarningTarget, 0);
+    apSaveGameBuffer->SerializeFormData(pGuardWarnedActor, 0);
 }
 
 void _Deallocate(void*);
 
 // @fnv 0x009f2800
+// pdb: GuardActorPackageData::`scalar deleting destructor' | GuardPackage.obj | debug, vtable slot, medium
 void* GuardActorPackageData::DestroyIfFlagged(unsigned int flags)
 {
     this->~GuardActorPackageData();
@@ -52,6 +59,7 @@ void* GuardActorPackageData::DestroyIfFlagged(unsigned int flags)
 }
 
 // @fnv 0x009f2830
+// pdb: GuardActorPackageData::~GuardActorPackageData | GuardPackage.obj | debug, upstream name already matches, high
 GuardActorPackageData::~GuardActorPackageData()
 {
 }

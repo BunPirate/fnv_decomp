@@ -73,6 +73,8 @@ extern "C"
 
 // @fnv 0x00a60850
 // src: XBOX_PDB 0x00a60850
+// pdb: NiSourceCubeMap::RegisterStreamables | NiSourceCubeMap.obj | retail, upstream name already matches, high
+// pdb params: kStream
 bool __stdcall NiSourceCubeMap_RegisterStreamables(NiStream& kStream)
 {
     return AttachToListener(&kStream);
@@ -97,7 +99,7 @@ NiSourceCubeMap* __cdecl CreateNiSourceCubeMap()
         NiSourceCubeMap* n = static_cast<NiSourceCubeMap*>(p);
         n->NiSourceTexture::NiSourceTexture();
         *(unsigned int*)(n) = (int)&DAT_0109babc;
-        n->m_uiFace = 0;
+        n->m_eFace = 0;
         return n;
     }
     return 0;
@@ -126,6 +128,9 @@ struct DelObj
 };
 
 // @fnv 0x00a60800
+// pdb: NiSourceCubeMap::PostLinkObject | NiSourceCubeMap.obj | debug, object-file run extension, low
+// pdb params: kStream
+// pdb locals: bRet
 bool __thiscall NiSourceCubeMap::CreateCubeOrRelease()
 {
     NiRenderer* pkRenderer = NiRenderer::ms_pRenderer;
@@ -179,6 +184,9 @@ extern "C" void* __cdecl memset(void*, int, unsigned int);
 
 // @fnv 0x00a60ba0
 // src: XBOX_PDB 0x00a60ba0
+// pdb: NiSourceCubeMap::LinkObject | NiSourceCubeMap.obj | retail, object-file run extension, low
+// pdb params: kStream
+// pdb locals: aspFaceSrcPixelDatas, ui
 void NiSourceCubeMap::LinkObject_00a60ba0(NiStream& kStream)
 {
     if (kStream.version() < 0x0A030006)
@@ -220,8 +228,8 @@ void NiSourceCubeMap::LinkObject_00a60ba0(NiStream& kStream)
 extern "C"
 {
     void* __cdecl Object_DispatchCommandFour(unsigned int size);
-    void __cdecl NiStandardizeFilePath(char** pp);
-    void __cdecl NiImageConverter_ConvertFilenameToPlatformSpecific_(char** pp, unsigned int* p);
+    void __cdecl NiStandardizeFilePath(char** kString);
+    void __cdecl NiImageConverter_ConvertFilenameToPlatformSpecific(char** kPath, unsigned int* kPlatformSpecificPath);
 }
 
 inline void* operator new(unsigned int, void* p)
@@ -233,6 +241,9 @@ extern "C" char* DAT_0109b220;
 extern "C" unsigned char DAT_011a9594;
 
 // @fnv 0x00a60f60
+// pdb: NiSourceCubeMap::Create | NiSourceCubeMap.obj | debug, object-file run extension, low
+// pdb params: kFilename, apkRenderer, kPrefs
+// pdb locals: pkCubeMap, pkRenderer
 NiSourceCubeMap* __cdecl CreateSpawnedCubeShell(char** ppName, NiRenderer* pOwner, unsigned int* pVals)
 {
     void* mem = Object_DispatchCommandFour(0x4c);
@@ -255,10 +266,10 @@ NiSourceCubeMap* __cdecl CreateSpawnedCubeShell(char** ppName, NiRenderer* pOwne
         *ppStoredName = s;
     }
     NiStandardizeFilePath(ppStoredName);
-    NiImageConverter_ConvertFilenameToPlatformSpecific_(ppStoredName, (unsigned int*)&pShell->m_kPlatformFilename.m_kHandle);
-    if (pShell->m_uiFace != 0)
+    NiImageConverter_ConvertFilenameToPlatformSpecific(ppStoredName, (unsigned int*)&pShell->m_kPlatformFilename.m_kHandle);
+    if (pShell->m_eFace != 0)
     {
-        pShell->m_uiFace = 0;
+        pShell->m_eFace = 0;
     }
     if (DAT_011a9594 != 0)
     {
@@ -274,6 +285,8 @@ NiSourceCubeMap* __cdecl CreateSpawnedCubeShell(char** ppName, NiRenderer* pOwne
 
 // @fnv 0x00a61040
 // src: XBOX_PDB 0x00a61040
+// pdb: NiXenonSourceCubeMapData::`scalar deleting destructor' | NiXenonSourceCubeMapData.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiSourceCubeMap::Create
 NiSourceCubeMap* __cdecl NiSourceCubeMap_Create(char** ppName, int aValue, NiRenderer* pRenderer, int* pVec)
 {
     NiSourceCubeMap* p = new NiSourceCubeMap();
@@ -298,11 +311,11 @@ NiSourceCubeMap* __cdecl NiSourceCubeMap_Create(char** ppName, int aValue, NiRen
     }
 
     NiStandardizeFilePath(ppNameSlot);
-    NiImageConverter_ConvertFilenameToPlatformSpecific_(ppNameSlot, (unsigned int*)&p->m_kPlatformFilename.m_kHandle);
+    NiImageConverter_ConvertFilenameToPlatformSpecific(ppNameSlot, (unsigned int*)&p->m_kPlatformFilename.m_kHandle);
 
-    if (p->m_uiFace != 0)
+    if (p->m_eFace != 0)
     {
-        p->m_uiFace = 0;
+        p->m_eFace = 0;
     }
 
     p->m_pFile = (NiFile*)aValue;
@@ -334,6 +347,8 @@ struct LoadBuffer
 };
 
 // @fnv 0x00a61120
+// pdb: NiXenonSourceCubeMapData::CreateCubeMap | NiXenonSourceCubeMapData.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
+// pdb locals: pkD3DDevice9, ulsize, uimipSize, eD3DFmt, pkD3DCubeTex, eD3DRet, ioverhead, uibaseSize
 NiSourceCubeMap* __cdecl CreateCubeMap(void* a1, void* a2, void* a3, void* a4, void* a5, void* a6, NiRenderer* pkRenderer,
                                  int iUnused, const TextureFormatPreferences* pkPrefs)
 {
@@ -344,8 +359,8 @@ NiSourceCubeMap* __cdecl CreateCubeMap(void* a1, void* a2, void* a3, void* a4, v
     kBuf.Init();
     pkMap->Load(a1, a2, a3, a4, a5, a6, &kBuf);
 
-    if (pkMap->m_uiFace)
-        pkMap->m_uiFace = 0;
+    if (pkMap->m_eFace)
+        pkMap->m_eFace = 0;
 
     if (pkRenderer && (!pkMap->m_spSrcPixelData.m_pObject || !CreateCubeRendererData(pkRenderer, pkMap)))
     {
@@ -436,6 +451,8 @@ void __cdecl NiSourceTexture_SaveBinary();
 
 // @fnv 0x00a60870
 // src: XBOX_PDB 0x00a60870
+// pdb: NiSourceCubeMap::SaveBinary | NiSourceCubeMap.obj | debug, upstream name already matches, high
+// pdb params: kStream
 void __cdecl NiSourceCubeMap_SaveBinary()
 {
     NiSourceTexture_SaveBinary();
@@ -507,9 +524,9 @@ struct CubeMapLoader
 
 void* __cdecl _NiMalloc_00aa1070(unsigned int size);
 int __cdecl FUN_00ec65a6(char* dst, unsigned int n, const char* src);
-void __cdecl NiPath_Standardize(char* p);
+void __cdecl NiPath_Standardize(char* pcPath);
 void* __cdecl GetPathWithExtension(char* p);
-bool __cdecl NiFile_Access(const char* p, int a);
+bool __cdecl NiFile_Access(const char* pcName, int eMode);
 
 static __forceinline void S00a60cc0_ReleaseAll(NiRefObject** res)
 {
@@ -679,28 +696,31 @@ struct PixelPtr
 // Allocates a Pixels object with six faces, copies each level from the six inputs, then releases their references.
 // @fnv 0x00a60940
 // src: COMMUNITY 0x00a60940
-void NiSourceCubeMap::LoadFromPixelData(Pixels* a, Pixels* b, Pixels* c, Pixels* d, Pixels* e, Pixels* f)
+// pdb: NiSourceCubeMap::LoadFromPixelData | NiSourceCubeMap.obj | retail, upstream name already matches, high
+// pdb params: pkPosXRaw, pkNegXRaw, pkPosYRaw, pkNegYRaw, pkPosZRaw, pkNegZRaw
+// pdb locals: aspFaceSrcPixelDatas, uiFace, uiMip, pcSrcData, pcDestData, uiDestSize
+void NiSourceCubeMap::LoadFromPixelData(Pixels* pkPosXRaw, Pixels* pkNegXRaw, Pixels* pkPosYRaw, Pixels* pkNegYRaw, Pixels* pkPosZRaw, Pixels* pkNegZRaw)
 {
     void* storage = Object_DispatchCommandFour(sizeof(Pixels));
     Pixels* created;
     if (storage)
     {
-        unsigned int levels = a->levels;
-        unsigned int height = *a->heights;
-        unsigned int width = *a->widths;
-        created = ::new (storage) Pixels(width, height, a->format, levels, 6);
+        unsigned int levels = pkPosXRaw->levels;
+        unsigned int height = *pkPosXRaw->heights;
+        unsigned int width = *pkPosXRaw->widths;
+        created = ::new (storage) Pixels(width, height, pkPosXRaw->format, levels, 6);
     }
     else
         created = 0;
     *(PixelPtr*)&m_spSrcPixelData = created;
     PixelPtr facePtrs[6];
     memset(facePtrs, 0, sizeof(facePtrs));
-    facePtrs[0] = a;
-    facePtrs[1] = b;
-    facePtrs[2] = c;
-    facePtrs[3] = d;
-    facePtrs[4] = e;
-    facePtrs[5] = f;
+    facePtrs[0] = pkPosXRaw;
+    facePtrs[1] = pkNegXRaw;
+    facePtrs[2] = pkPosYRaw;
+    facePtrs[3] = pkNegYRaw;
+    facePtrs[4] = pkPosZRaw;
+    facePtrs[5] = pkNegZRaw;
     for (unsigned int face = 0; face < 6; ++face)
     {
         for (unsigned int level = 0; level < facePtrs[face].ptr->levels; ++level)

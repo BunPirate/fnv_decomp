@@ -27,6 +27,7 @@ template <class T> class NiPointer;
 template <class T> class NiTPrimitiveArray;
 typedef NiTPrimitiveArray<const char*> NiViewerStringsArray;
 
+// pdb: class NiObject, size 0x8, bases: NiRefObject, 0 members
 class NiObject : public NiRefObject
 {
   public:
@@ -53,10 +54,10 @@ class NiObject : public NiRefObject
     virtual void LoadBinary(NiStream& arStream);
     virtual void LinkObject(NiStream& arStream);
     virtual bool RegisterStreamables(NiStream& arStream);
-    virtual void SaveBinary(NiStream& arStream);
-    virtual bool IsEqual(NiObject* apObject) const;
+    virtual void SaveBinary(NiStream& kStream);
+    virtual bool IsEqual(NiObject* pObject) const;
     virtual void GetViewerStrings(NiViewerStringsArray* apStrings);
-    virtual void AddViewerStrings(NiViewerStringsArray* apStrings);
+    virtual void AddViewerStrings(NiViewerStringsArray* pStrings);
     virtual void ProcessClone(CloningProcess& arCloning);
     virtual void PostLinkObject(NiStream& arStream);
     virtual bool StreamCanSkip();
@@ -88,7 +89,7 @@ class NiObject : public NiRefObject
     unsigned short ChildCount() const;
     NiObject** MeshChildren() const;
     NiObject** Children() const;
-    void ApplyToAllObjects(unsigned int);
+    void NiMeshPSysData_PurgeRendererDataForPools(unsigned int);
 
     void* bhkCharacterProxy_GethkPosition();
     void BSFadeNode_SetLODMultType(int);

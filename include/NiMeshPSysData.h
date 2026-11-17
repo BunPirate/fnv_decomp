@@ -3,6 +3,7 @@
 #include "NiPSysData.h"
 #include "NiNode.h"
 
+// pdb: class NiMeshPSysData, size 0x98, bases: NiPSysData, 4 members
 class NiMeshPSysData : public NiPSysData
 {
 public:
@@ -26,8 +27,8 @@ public:
     void CloneTo(NiMeshPSysData* pkDest, CloningProcess& kCloning);
     void ReleaseSlotRef(unsigned int uiGeneration, NiPointer<NiAVObject> spParticle);
     void ReleaseSlotRef(unsigned int uiGeneration, NiRefObject* pkParticle);
-    void ResizeChildren(unsigned int uiCount);
-    void FillPools(bool bFill);
+    void ResizeChildren(unsigned int uiNumGenerations);
+    void FillPools(bool uiNumGenerations);
     void WriteToStream(NiStream& kStream);
 
     void __thiscall SetActiveVertexCount_00c308d0(unsigned short usStartIndex);
@@ -40,12 +41,12 @@ public:
     void* __thiscall FUN_00c30bd0(unsigned int);
     NiMeshPSysData* __thiscall FUN_00c30c00();
     NiObject* __thiscall CreateClone_00c30c50(CloningProcess& kCloning);
-    void __thiscall RemoveParticle(unsigned short usParticleIndex);
+    void __thiscall RemoveParticle(unsigned short usParticle);
     void __thiscall LoadBinary_00c31090(NiStream& kStream);
 
-    NiPointer<NiNode> m_pMeshNode;
-    bool m_bUseDefaultPools;
+    NiPointer<NiNode> m_spParticleMeshes; // src: XBOX_RETAIL_PDB +0x7c (old: m_pMeshNode)
+    bool m_bFillPoolsOnLoad; // src: XBOX_RETAIL_PDB +0x80 (old: m_bUseDefaultPools)
     unsigned char unk81[3];
-    unsigned int m_uiDefaultPoolsSize;
-    NiTObjectArray<NiTObjectArray<NiPointer<NiAVObject> >*> m_kPoolArrays;
+    unsigned int m_uiDefaultPoolSize; // src: XBOX_RETAIL_PDB +0x84 (old: m_uiDefaultPoolsSize)
+    NiTObjectArray<NiTObjectArray<NiPointer<NiAVObject> >*> m_kPools; // src: XBOX_RETAIL_PDB +0x88 (old: m_kPoolArrays)
 };

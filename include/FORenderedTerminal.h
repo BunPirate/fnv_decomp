@@ -5,6 +5,7 @@
 
 class TilePX;
 
+// pdb: class FORenderedTerminal, size 0xf0, bases: FORenderedMenu, 4 members
 class FORenderedTerminal : public FORenderedMenu
 {
 public:
@@ -29,9 +30,9 @@ public:
     void SetTarget_00705fc0(NiNode* node);
     void Refresh();
 
-    NiPoint3 pt;
-    NodeHandle node;
-    float unkE8;
-    unsigned char unkEC;
+    NiPoint3 OriginalPos; // src: XBOX_RETAIL_PDB +0xd8 (old: pt)
+    NodeHandle spExitButton; // src: XBOX_RETAIL_PDB +0xe4 (old: node)
+    float fLastFadePercent; // src: XBOX_RETAIL_PDB +0xe8 (old: unkE8)
+    unsigned char bFadingOut; // src: XBOX_RETAIL_PDB +0xec (old: unkEC)
     unsigned char unkED[3];
 };

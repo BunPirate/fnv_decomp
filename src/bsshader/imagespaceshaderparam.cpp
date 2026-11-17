@@ -7,12 +7,15 @@
 
 // Releases and reallocates the vertex and pixel constant arrays, then registers them with two new NiD3DShaderConstantMap objects.
 // @fnv 0x00b8ab10
-void ImageSpaceShaderParam::AllocateShaderConstants(int vertexCount, int pixelCount)
+// pdb: ImageSpaceShaderParam::InitConstantMap | ImageSpaceShaderParam.obj | retail, string-set bridge, high
+// pdb params: aiVSize, aiPSize
+// pdb locals: uiConstantFlags
+void ImageSpaceShaderParam::AllocateShaderConstants(int aiVSize, int aiPSize)
 {
     ClearConstantGroups();
     m_pVertexShaderConstantMap = new NiD3DShaderConstantMap(g_pkRenderer, 0u);
     m_pPixelShaderConstantMap = new NiD3DShaderConstantMap(g_pkRenderer, 2u);
-    m_iVertexShaderConstantCount = vertexCount + 3;
+    m_iVertexShaderConstantCount = aiVSize + 3;
     if (m_iVertexShaderConstantCount > 0)
     {
         if (m_pfVertexShaderConstants)
@@ -23,7 +26,7 @@ void ImageSpaceShaderParam::AllocateShaderConstants(int vertexCount, int pixelCo
             "Constant Group", 0x10000000, 0, 0, m_iVertexShaderConstantCount, "", m_iVertexShaderConstantCount * 16, 4,
             m_pfVertexShaderConstants, false);
     }
-    m_iPixelShaderConstantCount = pixelCount;
+    m_iPixelShaderConstantCount = aiPSize;
     if (m_iPixelShaderConstantCount > 0)
     {
         if (m_pfPixelShaderConstants)
@@ -48,14 +51,17 @@ void ImageSpaceShaderParam::SetShaderConstantVector4(int index, float x, float y
 }
 
 // @fnv 0x00b8a8d0
-void ImageSpaceShaderParam::SetRenderState(unsigned int state, unsigned int value)
+// pdb: ImageSpaceShaderParam::SetRenderState | ImageSpaceShaderParam.obj | debug, upstream name already matches, high
+// pdb params: auiState, auiValue
+void ImageSpaceShaderParam::SetRenderState(unsigned int auiState, unsigned int auiValue)
 {
-    m_kRenderStateMap.SetAt(state, value);
+    m_kRenderStateMap.SetAt(auiState, auiValue);
 }
 
 // Releases the object references and deallocates the two buffers, clearing each pointer to null.
 // @fnv 0x00b8a7e0
 // src: COMMUNITY 0x00b8a7e0
+// pdb: ImageSpaceShaderParam::ClearConstantMap | ImageSpaceShaderParam.obj | retail, call graph, medium
 void ImageSpaceShaderParam::ClearConstantGroups()
 {
     if (m_pVertexShaderConstantMap.m_pObject)
@@ -214,13 +220,16 @@ struct ShaderPass_4e30
     int unk64;
     ParamColor_4e30 kColor;
 
-    bool ImageSpaceEffectCinematic_UpdateParams(int arg);
+    bool ImageSpaceEffectCinematic_UpdateParams(int pParam);
 };
 
 // Sets a shader reference vector and three parameter vectors, using pPoint coordinates for the first when bUsePoint is set.
 // @fnv 0x00c04e30
 // src: COMMUNITY 0x00c04e30
-bool ShaderPass_4e30::ImageSpaceEffectCinematic_UpdateParams(int arg)
+// pdb: ImageSpaceEffectCinematic::UpdateParams | ImageSpaceEffectCinematic.obj | retail, upstream name already matches, high
+// pdb params: pParam
+// pdb locals: ffade, pparam, ftint, fbright, fenables
+bool ShaderPass_4e30::ImageSpaceEffectCinematic_UpdateParams(int pParam)
 {
     ShaderConstants_4e30* pShader = pOwner->pShader;
     float fRadius;

@@ -49,14 +49,14 @@ public:
     void* DestroyIfFlagged(unsigned int flags);
     void CopyFromProjectile(TESForm* copy);
     bool IsNotEqual(TESForm* compare);
-    virtual void QueueResourceLoad(IO_TASK_PRIORITY a, QueuedFile* b);
-    int GetProjectileCloneCount(TESObjectWEAP* sourceWeapon);
+    virtual void QueueResourceLoad(IO_TASK_PRIORITY aePriority, QueuedFile* apParent);
+    int BGSProjectile_GetPreCloneCount(TESObjectWEAP* sourceWeapon);
     int GetKind();
     int GetKindCode();
     S_004fdfb0_Obj* GetPreloadObject();
-    ProjResult* CreateOrClone(ProjRef* ref, bool value);
-    ProjResult* Create(ProjRef* ref, bool value);
-    void Release(ProjRef* ref);
+    ProjResult* CreateOrClone(ProjRef* pRequester, bool deepCopy);
+    ProjResult* Create(ProjRef* pRequester, bool deepCopy);
+    void Release(ProjRef* apRequester);
     void WriteProjectileSave();
 };
 
@@ -78,12 +78,14 @@ class Tile;
 
 
 // @fnv 0x004fd090
+// pdb: BGSProjectile::ClearData | BGSProjectile.obj | debug, upstream name already matches, high
 void BGSProjectile::ClearData()
 {
     m_kProjectileModel.Free();
 }
 
 // @fnv 0x004fd050
+// pdb: BGSProjectile::InitializeData | BGSProjectile.obj | retail, vtable slot, high
 void BGSProjectile::ResetFormData()
 {
     reinterpret_cast<ProjectileProperties*>(reinterpret_cast<TESDataHandler*>(this)->GetTESRaceList())
@@ -113,12 +115,15 @@ void BGSProjectileFloatNode::AddHead(const float& newValue)
     }
 }
 // @fnv 0x004fce60
+// pdb: BGSProjectile::BGSProjectile | BGSProjectile.obj | retail, upstream name already matches, high
 BGSProjectile::BGSProjectile()
 {
     SetFormType(static_cast<ENUM_FORM_ID>(0x33));
     ResetFormData();
 }
 // @fnv 0x004fd0c0
+// pdb: BGSProjectile::InitItem | BGSProjectile.obj | retail, upstream name already matches, high
+// pdb locals: itempInt
 void BGSProjectile::InitItem()
 {
     if (GetInitialized())
@@ -179,63 +184,66 @@ void BGSProjectile::InitItem()
     SetInitializationState(true);
 }
 // @fnv 0x004fd6f0
-bool BGSProjectile::Load(TESFile* file)
+// pdb: BGSProjectile::Load | BGSProjectile.obj | retail, upstream name already matches, high
+// pdb params: apFile
+// pdb locals: echunkid, formid, pMessage, pfilename, itemp
+bool BGSProjectile::Load(TESFile* apFile)
 {
-    unsigned char formType = file->GetTESForm();
+    unsigned char formType = apFile->GetTESForm();
     if (formType != 0x33)
         return false;
 
     ClearData();
-    reinterpret_cast<TESForm*>(this)->LoadRecordHeader(file);
+    reinterpret_cast<TESForm*>(this)->LoadRecordHeader(apFile);
     reinterpret_cast<TESForm*>(this)->SetInitializationState(false);
 
     int chunkID;
-    while ((chunkID = file->GetChunkID()) != 0)
+    while ((chunkID = apFile->GetChunkID()) != 0)
     {
 
         switch (chunkID)
         {
         case 0x44494445: {
-            char* buffer = (char*)_alloca(file->GetChunkSize());
-            file->GetChunkData(buffer, 0x200);
+            char* buffer = (char*)_alloca(apFile->GetChunkSize());
+            apFile->GetChunkData(buffer, 0x200);
             SetEditorID_AtRuntime(buffer);
             break;
         }
         case 0x444E424F:
-            readOBNDSubRecord(file);
+            readOBNDSubRecord(apFile);
             break;
         case 0x4C4C5546:
-            TESFullName::LoadFullNameChunk(static_cast<TESFullName*>(this), file);
+            TESFullName::LoadFullNameChunk(static_cast<TESFullName*>(this), apFile);
             break;
         case 0x4C444F4D:
         case 0x54444F4D: {
-            TESModel::LoadModelData(static_cast<TESModel*>(this), file);
+            TESModel::LoadModelData(static_cast<TESModel*>(this), apFile);
             break;
         }
         case 0x44545344:
         case 0x54534544: {
-            BGSDestructibleObjectForm::LoadDestructibleData(static_cast<BGSDestructibleObjectForm*>(this), file);
+            BGSDestructibleObjectForm::LoadDestructibleData(static_cast<BGSDestructibleObjectForm*>(this), apFile);
             break;
         }
         case 0x41544144:
-            reinterpret_cast<BGSImpactData*>(this)->ReadTypedData(file, &Data, 0x54);
+            reinterpret_cast<BGSImpactData*>(this)->ReadTypedData(apFile, &Data, 0x54);
             break;
         case 0x314D414E: {
-            if (file->GetChunkSize())
+            if (apFile->GetChunkSize())
             {
-                char* buffer = (char*)_alloca(file->GetChunkSize());
-                file->GetChunkData(buffer, 0);
+                char* buffer = (char*)_alloca(apFile->GetChunkSize());
+                apFile->GetChunkData(buffer, 0);
                 m_kProjectileModel.SetModelFilePath(static_cast<const char*>(buffer));
             }
             break;
         }
         case 0x324D414E:
-            if (file->GetChunkSize())
-                TESModel::LoadTextureSwapData(&m_kProjectileModel, file);
+            if (apFile->GetChunkSize())
+                TESModel::LoadTextureSwapData(&m_kProjectileModel, apFile);
             break;
         case 0x4D414E56: {
             unsigned int soundLevel;
-            file->GetChunkData(&soundLevel);
+            apFile->GetChunkData(&soundLevel);
             if (soundLevel > 3)
                 m_eSoundLevel = static_cast<SOUND_LEVEL>(1);
             else
@@ -244,9 +252,9 @@ bool BGSProjectile::Load(TESFile* file)
         }
         }
 
-        if (chunkID == 0x41544144 && file->IsEndianConversionRequired())
+        if (chunkID == 0x41544144 && apFile->IsEndianConversionRequired())
             Data.Endian();
-        if (!file->NextChunk())
+        if (!apFile->NextChunk())
             break;
     }
 
@@ -254,6 +262,7 @@ bool BGSProjectile::Load(TESFile* file)
 }
 
 // @fnv 0x004fcc00
+// pdb: BGSProjectileData::BGSProjectileData | BGSProjectile.obj | debug, call graph, medium
 BGSProjectile::Properties::Properties()
 {
     InitializeDefaults();
@@ -294,12 +303,15 @@ void FUN_004fcc20_shell::InitializeDefaults()
 
 // @fnv 0x004fd360
 // src: XBOX_PDB 0x004fd360
+// pdb: BGSProjectile::GetHasExplosion | BGSProjectile.obj | debug, upstream name already matches, high
 bool BGSProjectile::GetHasExplosion()
 {
     return GetFlag(2);
 }
 
 // @fnv 0x004fd420
+// pdb: BGSProjectile::IsFlagSet | BGSProjectile.obj | debug, call graph (shared callers), high
+// pdb params: aeFlag
 bool BGSProjectile::GetFlag(unsigned int aeFlag) const
 {
     return (*(int*)((TESDataHandler*)this)->GetTESRaceList() & aeFlag) ? true : false;
@@ -309,12 +321,13 @@ bool BGSProjectile::GetFlag(unsigned int aeFlag) const
 // src: XBOX_PDB 0x00821640
 float TESCreature::TESObjectWEAP_GetShotsPerSecond()
 {
-    return m_fFirstCreatureStat;
+    return fTurnSpeed;
 }
 
 void _Deallocate(void*);
 // Calls FUN_004fcf80, then deallocates this when bit 0 of flags is set, and returns this.
 // @fnv 0x004fcf50
+// pdb: BGSProjectile::`scalar deleting destructor' | BGSProjectile.obj | retail, vtable slot, high
 void* BGSProjectileMethods::DestroyIfFlagged(unsigned int flags)
 {
     BGSProjectile::~BGSProjectile();
@@ -325,7 +338,11 @@ void* BGSProjectileMethods::DestroyIfFlagged(unsigned int flags)
 
 int __cdecl MinInt(int, int);
 // @fnv 0x004fe080
-int BGSProjectileMethods::GetProjectileCloneCount(TESObjectWEAP* apSourceWeapon)
+// src: XBOX_DEBUG_PDB 0x004fe080
+// pdb: BGSProjectile::GetPreCloneCount | BGSProjectile.obj | debug, call graph, high
+// pdb params: apSourceWeapon
+// pdb locals: icloneCount, iprojectiles, iprojectilesPerSecond
+int BGSProjectileMethods::BGSProjectile_GetPreCloneCount(TESObjectWEAP* apSourceWeapon)
 {
     int icloneCount = 5;
     if (GetKind() == 0x40000 ||
@@ -362,6 +379,7 @@ struct FUN_004fccf0_shell
 };
 
 // @fnv 0x004fccf0
+// pdb: BGSProjectileData::Endian | BGSProjectile.obj | retail, call graph (shared callers), high
 void FUN_004fccf0_shell::SwapEndianFields()
 {
     BSEndian(reinterpret_cast<unsigned char*>(this), EndianSizeTag<0>());
@@ -395,6 +413,9 @@ struct FUN_004fdcf0_subobject
 };
 
 // @fnv 0x004fdcf0
+// pdb: BGSProjectile::Copy | BGSProjectile.obj | retail, vtable slot, high
+// pdb params: apCopy
+// pdb locals: pcopy
 void BGSProjectileMethods::CopyFromProjectile(TESForm* apCopy)
 {
     BGSProjectile* pcopy;
@@ -415,7 +436,7 @@ void BGSProjectileMethods::CopyFromProjectile(TESForm* apCopy)
 struct FUN_005e79a0_t
 {
   public:
-    bool TESForm_CompareAllComponents(TESForm* pForm);
+    bool TESForm_CompareAllComponents(TESForm* apCompare);
 };
 
 struct FUN_004fdd80_field
@@ -431,6 +452,9 @@ int _memcmp(const void* pLeft, const void* pRight, unsigned int nCount);
 
 // Compares this projectile against apCompare: returns true if the cast fails or any of several fields differ, false if all match.
 // @fnv 0x004fdd80
+// pdb: BGSProjectile::Compare | BGSProjectile.obj | retail, vtable slot, high
+// pdb params: apCompare
+// pdb locals: pcomp
 bool BGSProjectileMethods::IsNotEqual(TESForm* apCompare)
 {
     BGSProjectile* pcomp = dynamic_cast<BGSProjectile*>(apCompare);
@@ -457,6 +481,7 @@ bool BGSProjectileMethods::IsNotEqual(TESForm* apCompare)
 }
 
 // @fnv 0x004fcf80
+// pdb: BGSProjectile::~BGSProjectile | BGSProjectile.obj | retail, upstream name already matches, high
 BGSProjectile::~BGSProjectile()
 {
     ClearData();
@@ -619,25 +644,28 @@ extern ProjSaveLoad* g_BGSSaveLoadGame;
 
 struct ProjCache
 {
-    ProjResult* Make(ProjNiObject* apObj);
+    ProjResult* Make(ProjNiObject* apLoadedObject);
 };
 ProjCache* GetProjCache(bool abCreate);
 
 // Creates or clones a ProjResult for apRef depending on the object type and reference state, then sets a flag on the result if present.
 // @fnv 0x004fd510
-ProjResult* BGSProjectileMethods::CreateOrClone(ProjRef* apRef, bool abVal)
+// pdb: BGSProjectile::Clone3D | BGSProjectile.obj | retail, vtable slot, high
+// pdb params: pRequester, deepCopy
+// pdb locals: pav, pprojectile, cloneData, ploadedArt
+ProjResult* BGSProjectileMethods::CreateOrClone(ProjRef* pRequester, bool deepCopy)
 {
     ProjResult* pResult4 = 0;
-    if (apRef)
+    if (pRequester)
     {
         switch (GetKind())
         {
         case 0x40000:
         case 0x100000:
-            pResult4 = Create(apRef, true);
+            pResult4 = Create(pRequester, true);
             break;
         default: {
-            ProjRef* pRef8 = apRef;
+            ProjRef* pRef8 = pRequester;
             if (pRef8 && pRef8->GetBase() && pRef8->GetBase()->GetBaseObj())
             {
                 ProjNiObject* pNodeVal = pRef8->GetBase()->GetBaseObj()->Get3D(0);
@@ -647,16 +675,16 @@ ProjResult* BGSProjectileMethods::CreateOrClone(ProjRef* apRef, bool abVal)
             }
             else
             {
-                ProjNiObject* p3D = reinterpret_cast<ProjNiObject*>(CreateNiNode(reinterpret_cast<TESObjectREFR*>(apRef)));
-                if (p3D && g_dataHandler->IsValid(apRef->GetID()) && !g_BGSSaveLoadGame->IsLoading())
+                ProjNiObject* p3D = reinterpret_cast<ProjNiObject*>(CreateNiNode(reinterpret_cast<TESObjectREFR*>(pRequester)));
+                if (p3D && g_dataHandler->IsValid(pRequester->GetID()) && !g_BGSSaveLoadGame->IsLoading())
                 {
                     pResult4 = GetProjCache(true)->Make(p3D);
                 }
                 if (!pResult4)
                 {
-                    pResult4 = Create(apRef, abVal);
+                    pResult4 = Create(pRequester, deepCopy);
                     if (p3D)
-                        Release(apRef);
+                        Release(pRequester);
                 }
             }
         }
@@ -706,33 +734,37 @@ struct S_004fdfb0_Obj
 };
 struct S_004fdfb0_Mgr
 {
-    void ModelLoader_QueueModel(TESModel* model, int a, int b, int c, int d, int e, int f);
+    void ModelLoader_QueueModel(TESModel* model, int aePriority, int apParent, int aeLODFadeMult, int abPrepareAfterLoad, int abAddRefCount, int abFaceGenModel);
 };
 extern S_004fdfb0_Mgr* DAT_011c3b3c;
 int __cdecl TES_GetLODMult(BGSProjectile* proj);
 
 // @fnv 0x004fdfb0
-void BGSProjectileMethods::QueueResourceLoad(IO_TASK_PRIORITY a, QueuedFile* b)
+// pdb: BGSProjectile::QueueFiles | BGSProjectile.obj | retail, vtable slot, high
+// pdb params: aePriority, apParent
+void BGSProjectileMethods::QueueResourceLoad(IO_TASK_PRIORITY aePriority, QueuedFile* apParent)
 {
     if (TESModel::GetModelLength())
     {
-        DAT_011c3b3c->ModelLoader_QueueModel(static_cast<TESModel*>(this), a, reinterpret_cast<int>(b), TES_GetLODMult(this), 1, 0, 0);
+        DAT_011c3b3c->ModelLoader_QueueModel(static_cast<TESModel*>(this), aePriority, reinterpret_cast<int>(apParent), TES_GetLODMult(this), 1, 0, 0);
     }
     if (m_kProjectileModel.GetModelLength())
     {
-        DAT_011c3b3c->ModelLoader_QueueModel(&this->m_kProjectileModel, a, reinterpret_cast<int>(b), 3, 1, 0, 0);
+        DAT_011c3b3c->ModelLoader_QueueModel(&this->m_kProjectileModel, aePriority, reinterpret_cast<int>(apParent), 3, 1, 0, 0);
     }
     if (GetPreloadObject())
     {
-        GetPreloadObject()->sub64.v4(a, reinterpret_cast<int>(b));
+        GetPreloadObject()->sub64.v4(aePriority, reinterpret_cast<int>(apParent));
     }
 }
 
 // Returns the clip rounds, adding the weapon modifier when requested.
 // @fnv 0x004fe160
-int TESObjectWEAP::GetClipRounds(bool abAddExtra)
+// pdb: TESObjectWEAP::GetFormClipRounds | BGSProjectile.obj | debug, call graph, high
+// pdb params: bModValue
+int TESObjectWEAP::GetClipRounds(bool bModValue)
 {
-    if (abAddExtra)
+    if (bModValue)
     {
         return (unsigned char)GetModdedWeaponValue(static_cast<WEAPON_MOD_EFFECT>(2), 0) +
                BGSClipRoundsForm::GetClipRounds();
@@ -746,6 +778,7 @@ int TESObjectWEAP::GetClipRounds(bool abAddExtra)
 
 // Maps the value returned by GetKind() to a code (0x3d-0x40, 0x69), returning 0 for any other kind.
 // @fnv 0x004fe1d0
+// pdb: BGSProjectile::GetProjectileRefFormType | BGSProjectile.obj | debug, object-file run extension, low
 int BGSProjectileMethods::GetKindCode()
 {
     switch (GetKind())
@@ -773,6 +806,8 @@ bool IsEndian();
 void WriteChunk(unsigned int, void*, unsigned int);
 void WriteValue(unsigned int, int);
 // @fnv 0x004fda00
+// pdb: BGSProjectile::Save | BGSProjectile.obj | retail, vtable slot, high
+// pdb locals: psaveActiveSound, psaveDeactivateSound, psaveLight, psaveCountdownSound, psaveMuzzleLight, psaveDefaultWeaponSource, psaveExplosion
 void BGSProjectileMethods::WriteProjectileSave()
 {
     BeginFormRecord();

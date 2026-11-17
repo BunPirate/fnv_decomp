@@ -10,7 +10,7 @@ struct S_008d6a80_Holder
     void bhkBlendCollisionObjectAddRotation_SetAdditionalRotation(void* data);
 };
 extern void* DAT_011e00e0[];
-extern char DAT_012681cc;
+extern char bhkBlendCollisionObjectAddRotation_ms_RTTI; // src: XBOX_RETAIL_PDB 0x012681cc (old: DAT_012681cc/g_012681cc)
 extern char DAT_011a9448;
 S_008d6a80_Obj* BSUtilities_GetObjectByName(void* root, void* name);
 void* NiObject_DynamicCast(void* rtti, void* obj);
@@ -18,14 +18,17 @@ void* NiObject_DynamicCast(void* rtti, void* obj);
 // Looks up the object named by DAT_011e00e0[idx] under root, resolves its holder via FUN_00653270 and passes DAT_011a9448 to FUN_004f0110.
 // @fnv 0x008d6a80
 // src: XBOX_PDB 0x008d6a80
-void ClearGunWobble(int iIndex, void* root)
+// pdb: ClearGunWobble | GunWobble.obj | retail, upstream name already matches, high
+// pdb params: aeWeaponType, apRoot
+// pdb locals: pwobbleObj, pblendColObj
+void ClearGunWobble(int aeWeaponType, void* apRoot)
 {
-    if (DAT_011e00e0[iIndex])
+    if (DAT_011e00e0[aeWeaponType])
     {
-        S_008d6a80_Obj* obj = BSUtilities_GetObjectByName(root, DAT_011e00e0[iIndex]);
+        S_008d6a80_Obj* obj = BSUtilities_GetObjectByName(apRoot, DAT_011e00e0[aeWeaponType]);
         if (obj)
         {
-            S_008d6a80_Holder* holder = (S_008d6a80_Holder*)NiObject_DynamicCast(&DAT_012681cc, obj->NiAVObject_GetCollisionObject());
+            S_008d6a80_Holder* holder = (S_008d6a80_Holder*)NiObject_DynamicCast(&bhkBlendCollisionObjectAddRotation_ms_RTTI, obj->NiAVObject_GetCollisionObject());
             if (holder)
                 holder->bhkBlendCollisionObjectAddRotation_SetAdditionalRotation(&DAT_011a9448);
         }

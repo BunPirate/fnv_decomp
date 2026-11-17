@@ -8,6 +8,7 @@
 
 // @fnv 0x008264b0
 // src: XBOX_PDB 0x008264b0
+// pdb: ParalysisEffect::Finish | ParalysisEffect.obj | debug, vtable slot, medium
 void ParalysisEffect::Finish_008264b0()
 {
     ValueModifierEffect::ApplyEffect();
@@ -15,14 +16,18 @@ void ParalysisEffect::Finish_008264b0()
 
 // @fnv 0x00826550
 // src: XBOX_PDB 0x00826550
+// pdb: ParalysisEffect::FinishInitLoadGame | ParalysisEffect.obj | debug, vtable slot, medium
+// pdb params: apActor
 void ParalysisEffect::FinishInitLoadGame_00826550(Actor* apActor)
 {
     ValueModifierEffect::ValueModifierEffect_FinishInitLoadGame(apActor);
 }
 
 // @fnv 0x008262e0
-ParalysisEffect::ParalysisEffect(void* caster, void* item, void* effect)
-    : ValueModifierEffect(caster, item, effect)
+// pdb: ParalysisEffect::ParalysisEffect | ParalysisEffect.obj | debug, upstream name already matches, high
+// pdb params: apCaster, apSpell, apEffect
+ParalysisEffect::ParalysisEffect(void* apCaster, void* apSpell, void* apEffect)
+    : ValueModifierEffect(apCaster, apSpell, apEffect)
 {
 }
 
@@ -177,9 +182,12 @@ struct ParalysisMagicTarget
 
 // Updates the effect, then dispels it if the target actor is paralysis immune.
 // @fnv 0x00826430
-void ParalysisEffect::UpdateParalysisEffect(float afElapsed)
+// pdb: ParalysisEffect::Update | ParalysisEffect.obj | retail, vtable slot, high
+// pdb params: afSecondsElapsed
+// pdb locals: ptargetActor
+void ParalysisEffect::UpdateParalysisEffect(float afSecondsElapsed)
 {
-    ValueModifierEffect::Update(afElapsed);
+    ValueModifierEffect::Update(afSecondsElapsed);
     ParalysisActor* pActor = GetTarget() ? ((ParalysisMagicTarget*)GetTarget())->GetActor() : 0;
     if (pActor && pActor->IsParalysisImmune(false))
         Dispel(true);
@@ -187,6 +195,8 @@ void ParalysisEffect::UpdateParalysisEffect(float afElapsed)
 
 // Allocates and constructs a ParalysisEffect from the caster, item and effect pointers, returning the new object.
 // @fnv 0x008264d0
+// pdb: ParalysisEffect::Instantiate | ParalysisEffect.obj | debug, object-file gap fill, medium
+// pdb params: apCaster, apSpell, apEffect
 ParalysisEffect* __cdecl CreateParalysisEffectFactoryObject(void* caster, void* item, void* effect)
 {
     return new ParalysisEffect(caster, item, effect);
@@ -221,6 +231,8 @@ struct ParalysisController
 };
 // Allocates a ParalysisEffect from source28, actor08 and target0c, registers it, and returns it.
 // @fnv 0x00826310
+// pdb: ParalysisEffect::Copy | ParalysisEffect.obj | retail, vtable slot, high
+// pdb locals: presult
 void* ParalysisController::CreateEffect()
 {
     ParalysisEffect* effect = new ParalysisEffect(source28, actor08, target0c);
@@ -384,6 +396,8 @@ struct ParalysisSourceHolder
 // Gets the paralysis subject via FUN_0059bb30/FUN_00822b40, calls FUN_00934250 on it, reads IsSubjectActive, then calls FUN_0082c000.
 // @fnv 0x008263c0
 // src: XBOX_PDB 0x008263c0
+// pdb: ParalysisEffect::Start | ParalysisEffect.obj | retail, vtable slot, high
+// pdb locals: ptargetActor, bwasParalyzed
 void ParalysisEffect::Start_008263c0()
 {
     bool active;
@@ -406,11 +420,14 @@ void __cdecl ApplyHavokOperation(NiAVObject*, int, int);
 // Calls FUN_004534f0 with actor, then calls FUN_00c8f210 with 0 and 1 if actor->Get3DSimple() is non-null.
 // @fnv 0x00826570
 // src: XBOX_PDB 0x00826570
-void ParalysisEffect::Revert_00826570(TESObjectREFR* actor)
+// pdb: ParalysisEffect::Revert | ParalysisEffect.obj | retail, vtable slot, high
+// pdb params: apActor
+// pdb locals: pobj3D
+void ParalysisEffect::Revert_00826570(TESObjectREFR* apActor)
 {
     NiAVObject* object;
-    ActiveEffect::Revert((Actor*)actor);
-    object = actor->Get3DSimple();
+    ActiveEffect::Revert((Actor*)apActor);
+    object = apActor->Get3DSimple();
     if (object)
         ApplyHavokOperation(object, 0, 1);
 }

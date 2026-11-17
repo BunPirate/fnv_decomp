@@ -44,12 +44,14 @@ struct FUN_00dd5210_Object
     int unk04;
     hkpShapeContainer* unk08;
     int unk0c;
-    void FillRecords(FUN_00dd5210_Record* records);
+    void FillRecords(FUN_00dd5210_Record* primitives);
 };
 
 // Fills count records with successive shape keys from unk08.
 // @fnv 0x00dd5210
-void FUN_00dd5210_Object::FillRecords(FUN_00dd5210_Record* records)
+// pdb: hkpMoppShapeMediator::getPrimitives | hkpMoppShapeMediator.obj | retail, vtable slot, high
+// pdb params: primitives
+void FUN_00dd5210_Object::FillRecords(FUN_00dd5210_Record* primitives)
 {
     int count = unk0c;
     hkpShapeKey value = unk08->GetFirstKey();
@@ -57,9 +59,9 @@ void FUN_00dd5210_Object::FillRecords(FUN_00dd5210_Record* records)
     {
         do
         {
-            records->value = value;
-            records->reserved = 0;
-            ++records;
+            primitives->value = value;
+            primitives->reserved = 0;
+            ++primitives;
             value = unk08->GetNextShapeKey(value);
             --count;
         } while (count != 0);
@@ -80,17 +82,20 @@ class FUN_00dd52a0_cls : public SpawnedBase
     hkpShapeContainer* m_src08;
     int m_result0c;
 
-    FUN_00dd52a0_cls* InitFromSource(hkpShapeContainer* src);
+    FUN_00dd52a0_cls* hkpMoppShapeMediator_ctor(hkpShapeContainer* shapeArray);
 };
 
 // Sets m_flag06 to 1, destroys the base, stores src and its child shape count, and returns this.
 // @fnv 0x00dd52a0
-FUN_00dd52a0_cls* FUN_00dd52a0_cls::InitFromSource(hkpShapeContainer* pSource)
+// src: XBOX_RETAIL_PDB 0x00dd52a0
+// pdb: hkpMoppShapeMediator::hkpMoppShapeMediator | hkpMoppShapeMediator.obj | retail, call graph, high
+// pdb params: shapeArray
+FUN_00dd52a0_cls* FUN_00dd52a0_cls::hkpMoppShapeMediator_ctor(hkpShapeContainer* shapeArray)
 {
     m_flag06 = 1;
     this->SpawnedBase::~SpawnedBase();
-    m_src08 = pSource;
-    m_result0c = pSource->GetNumChildShapes();
+    m_src08 = shapeArray;
+    m_result0c = shapeArray->GetNumChildShapes();
     return this;
 }
 
@@ -117,6 +122,7 @@ struct CpuObject
     CpuObject* FUN_00dd55a0(unsigned int flags);
 };
 // @fnv 0x00dd55a0
+// pdb: hkpMoppShapeMediator::`scalar deleting destructor' | hkpMoppShapeMediator.obj | debug, vtable slot, medium
 CpuObject* CpuObject::FUN_00dd55a0(unsigned int flags)
 {
     InitializeFields_00dd51d0();
@@ -184,13 +190,15 @@ struct ProjectionShape
     int unk04;
     hkpShapeContainer* m_container;
 
-    void ComputeProjectionRange(const hkVector4& direction, int unused, ProjectionSample* samples, int numSamples,
-                                hkReal* minOut, hkReal* maxOut);
+    void ComputeProjectionRange(const hkVector4& direction, int directionIndex, ProjectionSample* primitives, int numPrimitives,
+                                hkReal* absMinOut, hkReal* absMaxOut);
 };
 
 // @fnv 0x00dd52d0
-void ProjectionShape::ComputeProjectionRange(const hkVector4& direction, int unused, ProjectionSample* samples,
-                                             int numSamples, hkReal* minOut, hkReal* maxOut)
+// pdb: hkpMoppShapeMediator::projectPrimitives | hkpMoppShapeMediator.obj | retail, vtable slot, high
+// pdb params: direction, directionIndex, primitives, numPrimitives, absMinOut, absMaxOut
+void ProjectionShape::ComputeProjectionRange(const hkVector4& direction, int directionIndex, ProjectionSample* primitives,
+                                             int numPrimitives, hkReal* absMinOut, hkReal* absMaxOut)
 {
     hkpShapeBuffer buffer;
     hkReal fMinCorner;
@@ -198,7 +206,7 @@ void ProjectionShape::ComputeProjectionRange(const hkVector4& direction, int unu
     hkReal minProj;
     hkReal maxProj;
     {
-        hkpShapeKey key = samples[0].m_key;
+        hkpShapeKey key = primitives[0].m_key;
         const hkpShape* pShape = m_container->GetShapeForKey(key, buffer);
         if (pShape)
         {
@@ -212,14 +220,14 @@ void ProjectionShape::ComputeProjectionRange(const hkVector4& direction, int unu
             fMinCorner = 0.0f;
             fMaxCorner = 0.0f;
         }
-        samples[0].m_kMinimumCorner = fMinCorner;
-        samples[0].m_kMaximumCorner = fMaxCorner;
+        primitives[0].m_kMinimumCorner = fMinCorner;
+        primitives[0].m_kMaximumCorner = fMaxCorner;
         maxProj = fMaxCorner;
         minProj = fMinCorner;
     }
-    for (int i = 1; i < numSamples; i++)
+    for (int i = 1; i < numPrimitives; i++)
     {
-        hkpShapeKey key = samples[i].m_key;
+        hkpShapeKey key = primitives[i].m_key;
         const hkpShape* pShape = m_container->GetShapeForKey(key, buffer);
         if (pShape)
         {
@@ -233,8 +241,8 @@ void ProjectionShape::ComputeProjectionRange(const hkVector4& direction, int unu
             fMinCorner = 0.0f;
             fMaxCorner = 0.0f;
         }
-        samples[i].m_kMinimumCorner = fMinCorner;
-        samples[i].m_kMaximumCorner = fMaxCorner;
+        primitives[i].m_kMinimumCorner = fMinCorner;
+        primitives[i].m_kMaximumCorner = fMaxCorner;
         if (fMinCorner < minProj)
         {
             minProj = fMinCorner;
@@ -244,6 +252,6 @@ void ProjectionShape::ComputeProjectionRange(const hkVector4& direction, int unu
             maxProj = fMaxCorner;
         }
     }
-    *minOut = minProj;
-    *maxOut = maxProj;
+    *absMinOut = minProj;
+    *absMaxOut = maxProj;
 }

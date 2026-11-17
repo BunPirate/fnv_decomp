@@ -49,7 +49,7 @@ struct NiBlendObjectDerived_b9169 : NiBlendObject_b9169
 };
 struct NiUpdateOwner_b9169
 {
-    void NiBlendInterpolator_CopyMembers(NiBlendObject_b9169* p, int a);
+    void NiBlendInterpolator_CopyMembers(NiBlendObject_b9169* pkDest, int kCloning);
 };
 struct FUN_00a40a50_cls : NiUpdateOwner_b9169
 {
@@ -63,7 +63,7 @@ extern unsigned int DAT_011f3708;
 extern unsigned int DAT_011f370c;
 extern unsigned int DAT_011f3710;
 extern float DAT_01096b8c;
-void __stdcall NiBlendInterpolator_LoadBinary(void* a1);
+void __stdcall NiBlendInterpolator_LoadBinary(void* kStream);
 class FUN_00a40ab0_obj
 {
   public:
@@ -134,9 +134,9 @@ class QuatBlockArg
     unsigned int m_14;
     unsigned int m_18;
     unsigned int m_1C;
-    void Apply(FUN_00a40ab0_obj* apObj);
+    void Apply(FUN_00a40ab0_obj* kStream);
 };
-void __stdcall NiBlendTransformInterpolator_LoadBinary(FUN_00a40ab0_obj* a1);
+void __stdcall NiBlendTransformInterpolator_LoadBinary(FUN_00a40ab0_obj* kStream);
 template <class T> class AGPrimArray
 {
   public:
@@ -177,29 +177,32 @@ struct QuatWords
 };
 __forceinline void Invalidate850(NiQuatTransform& value)
 {
-    value.scale = value.qy = value.x = -3.402823466e+38F;
+    value.m_fScale = value.qy = value.m_kTranslate = -3.402823466e+38F;
 }
 // @fnv 0x00a40b30
 // src: XBOX_PDB 0x00a40b30
-bool NiBlendTransformInterpolator::StoreSingleValue(float time, NiObjectNET* object, NiQuatTransform& value)
+// pdb: NiBlendTransformInterpolator::StoreSingleValue | NiBlendTransformInterpolator.obj | retail, upstream name already matches, high
+// pdb params: fTime, pkInterpTarget, kValue
+// pdb locals: rot
+bool NiBlendTransformInterpolator::StoreSingleValue(float fTime, NiObjectNET* pkInterpTarget, NiQuatTransform& kValue)
 {
-    if (m_uiObjectFlags & 1)
-        time = m_fSingleInterpolatorTime;
-    if (time == DAT_0109696c)
+    if (m_uFlags & 1)
+        fTime = m_fSingleTime;
+    if (fTime == DAT_0109696c)
     {
-        Invalidate850(value);
+        Invalidate850(kValue);
         return false;
     }
-    if (m_pSingleInterpolator->UpdateTransform(time, object, value))
+    if (m_pkSingleInterpolator->UpdateTransform(fTime, pkInterpTarget, kValue))
     {
-        if (value.qy != DAT_010241b0)
+        if (kValue.qy != DAT_010241b0)
         {
-            NiQuaternion rotation = *reinterpret_cast<NiQuaternion*>(&value.qx);
+            NiQuaternion rotation = *reinterpret_cast<NiQuaternion*>(&kValue.m_kRotate);
             rotation.Normalize();
-            *reinterpret_cast<QuatWords*>(&value.qx) = *reinterpret_cast<QuatWords*>(&rotation);
+            *reinterpret_cast<QuatWords*>(&kValue.m_kRotate) = *reinterpret_cast<QuatWords*>(&rotation);
         }
         return true;
     }
-    Invalidate850(value);
+    Invalidate850(kValue);
     return false;
 }

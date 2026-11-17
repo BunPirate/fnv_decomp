@@ -49,7 +49,7 @@ __forceinline void* hkGeometry::operator new(size_t nbytes) throw()
 __forceinline void* hkDisplayGeometry::operator new(std::size_t nbytes)
 {
     void* b = getRouter()->heap().blockAlloc(nbytes);
-    static_cast<hkDisplayGeometry*>(b)->m_usMemSizeAndFlags = static_cast<unsigned short>(nbytes);
+    static_cast<hkDisplayGeometry*>(b)->m_memSizeAndFlags = static_cast<unsigned short>(nbytes);
     return b;
 }
 
@@ -62,56 +62,61 @@ __forceinline void hkVector4::SetAllComponents(float r)
 }
 
 // Shared hkDisplaySphere.h is not available; retain the real class declaration here.
+// pdb: class hkDisplaySphere, size 0x80, bases: hkDisplayGeometry, 3 members
 struct hkDisplaySphere : hkDisplayGeometry
 {
     hkSphere m_pSphere;
-    int m_iXResolution;
+    int m_sphere; // src: XBOX_RETAIL_PDB +0x60 (old: m_iXResolution)
     int m_iYResolution;
     int unk68;
     int unk6C;
-    int unk70;
+    int m_xRes; // src: XBOX_RETAIL_PDB +0x70 (old: unk70)
     hkDisplaySphere(const hkSphere& sphere, int xRes, int yRes);
 };
 
 // Shared hkDisplayBox.h is not available; retain the real class declaration here.
+// pdb: class hkDisplayBox, size 0x70, bases: hkDisplayGeometry, 1 members
 struct hkDisplayBox : hkDisplayGeometry
 {
     hkVector4 m_vHalfExtents;
-    int unk60;
+    int m_halfExtents; // src: XBOX_RETAIL_PDB +0x60 (old: unk60)
     hkDisplayBox(const hkVector4& halfExtents);
 };
 
 // Shared hkDisplayAABB.h is not available; retain the real class declaration here.
+// pdb: class hkDisplayAABB, size 0x80, bases: hkDisplayGeometry, 2 members
 struct hkDisplayAABB : hkDisplayGeometry
 {
     hkVector4 m_kMinimumCorner;
-    hkVector4 m_kMaximumCorner;
-    int unk70;
+    hkVector4 m_minExtent; // src: XBOX_RETAIL_PDB +0x60 (old: m_kMaximumCorner)
+    int m_maxExtent; // src: XBOX_RETAIL_PDB +0x70 (old: unk70)
     hkDisplayAABB(const hkVector4& min, const hkVector4& max);
 };
 
 // Shared hkDisplayCone.h is not available; retain the real class declaration here.
+// pdb: class hkDisplayCone, size 0x90, bases: hkDisplayGeometry, 5 members
 struct hkDisplayCone : hkDisplayGeometry
 {
     hkVector4 m_kStartPosition;
-    hkVector4 m_kAxisEndPoints;
-    hkReal m_fConeAngle;
+    hkVector4 m_startPos; // src: XBOX_RETAIL_PDB +0x60 (old: m_kAxisEndPoints)
+    hkReal m_coneAxis; // src: XBOX_RETAIL_PDB +0x70 (old: m_fConeAngle)
     hkReal m_height;
     int m_iNumSegments;
     int unk7C;
-    int unk80;
+    int m_numSegments; // src: XBOX_RETAIL_PDB +0x80 (old: unk80)
     hkDisplayCone(hkReal coneAngle, hkReal coneHeight, int numSegments, const hkVector4& coneAxis,
                    const hkVector4& startPos);
 };
 
 // Shared hkDisplayPlane.h is not available; retain the real class declaration here.
+// pdb: class hkDisplayPlane, size 0xa0, bases: hkDisplayGeometry, 4 members
 struct hkDisplayPlane : hkDisplayGeometry
 {
     hkVector4 m_vHitNormal;
-    hkVector4 m_kPerpendicularToNormal;
-    hkVector4 m_kCenterPosition;
-    hkVector4 m_fExtents;
-    int unk90;
+    hkVector4 m_normal; // src: XBOX_RETAIL_PDB +0x60 (old: m_kPerpendicularToNormal)
+    hkVector4 m_center; // src: XBOX_RETAIL_PDB +0x70 (old: m_kCenterPosition)
+    hkVector4 m_perpToNormal; // src: XBOX_RETAIL_PDB +0x80 (old: m_fExtents)
+    int m_extent; // src: XBOX_RETAIL_PDB +0x90 (old: unk90)
     hkDisplayPlane(const hkVector4& normal, const hkVector4& perpToNormal, const hkVector4& center,
                     const hkVector4& extent);
 };
@@ -119,15 +124,16 @@ struct hkDisplayPlane : hkDisplayGeometry
 // Shared hkDisplayCapsule.h lacks the constructor and capsule data members used here.
 
 // Shared hkDisplayCylinder.h is not available; retain the real class declaration here.
+// pdb: class hkDisplayCylinder, size 0x90, bases: hkDisplayGeometry, 5 members
 struct hkDisplayCylinder : hkDisplayGeometry
 {
     hkVector4 m_fMinimumV;
-    hkVector4 m_fMaximumV;
-    hkReal m_fSphereRadius;
+    hkVector4 m_top; // src: XBOX_RETAIL_PDB +0x60 (old: m_fMaximumV)
+    hkReal m_bottom; // src: XBOX_RETAIL_PDB +0x70 (old: m_fSphereRadius)
     int m_iNumSides;
     int m_iNumHeightSegments;
     int unk7C;
-    int unk80;
+    int m_radius; // src: XBOX_RETAIL_PDB +0x80 (old: unk80)
     hkDisplayCylinder(const hkVector4& top, const hkVector4& bottom, hkReal radius, int numSides,
                        int numHeightSegments);
 };
@@ -160,7 +166,7 @@ __forceinline void hkDisplaySerializeIStream::ReadVector4(hkVector4& v)
 
 __forceinline void hkDisplaySerializeIStream::ReadTransform(hkTransform& t)
 {
-    ReadTranslationAndRotation(t);
+    readTransform(t);
 }
 
 __forceinline void hkDisplaySerializeIStream::ReadGeometry(hkGeometry* g)
@@ -170,6 +176,9 @@ __forceinline void hkDisplaySerializeIStream::ReadGeometry(hkGeometry* g)
 
 // @fnv 0x00ddada0
 // src: GUESS 0x00ddada0 (confidence: low)
+// pdb: hkDisplaySerializeIStream::readDisplayGeometry | hkDisplaySerializeIStream.obj | retail, object-file run extension, low
+// pdb params: dg
+// pdb locals: transform, sphere, position, top, bottom, halfExtents, minExtent, maxExtent, axis, perp, normal, center, perpToNormal, extent3, assertBuf, ostr
 void hkDisplaySerializeIStream::UpdateFields_00ddada0(hkDisplayGeometry*& geometry)
 {
     hkInt8 type = readInt8();

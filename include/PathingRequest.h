@@ -19,6 +19,7 @@ class NiMatrix3;
 template <class T, unsigned int N> class BSSimpleArray;
 enum PATHING_REQUEST_TYPE;
 
+// pdb: class PathingRequest, size 0xb0, bases: NiRefObject, 29 members
 class PathingRequest : public NiRefObject
 {
 public:
@@ -35,7 +36,7 @@ public:
     virtual void LoadGame(BGSLoadFormBuffer*);
     virtual void InitLoadGame(BGSLoadFormBuffer*);
 
-    static PathingRequest* CreateRequestForType(PATHING_REQUEST_TYPE);
+    static PathingRequest* CreatePathingRequest(PATHING_REQUEST_TYPE);
 
     void SetUseSoft(bool);
     void SetTargetAngle(float);
@@ -131,28 +132,28 @@ public:
             PathingActorData PathingActorState;
         };
     };
-    float m_fFirstValueAfterActorData;
-    float m_fSecondValueAfterActorData;
-    float PathingActorSpatialData;
-    float fWeaponSpread;
-    float m_fCenterRadius;
+    float fActorRadius; // src: XBOX_RETAIL_PDB +0x68 (old: m_fFirstValueAfterActorData)
+    float fActorHeight; // src: XBOX_RETAIL_PDB +0x6c (old: m_fSecondValueAfterActorData)
+    float fGoalZDelta; // src: XBOX_RETAIL_PDB +0x70 (old: PathingActorSpatialData)
+    float fTargetRadius; // src: XBOX_RETAIL_PDB +0x74 (old: fWeaponSpread)
+    float fCenterRadius; // src: XBOX_RETAIL_PDB +0x78 (old: m_fCenterRadius)
     NiPoint3 Center;
-    float m_fFloatAfterCenter;
-    float m_fPathingRadius;
-    float m_fAvoidanceRadius;
-    NiPointer<PathingAvoidNodeArray> m_pPathingAvoidNodeArray;
+    float fSmoothingRandomness; // src: XBOX_RETAIL_PDB +0x88 (old: m_fFloatAfterCenter)
+    float fGoalAngle; // src: XBOX_RETAIL_PDB +0x8c (old: m_fPathingRadius)
+    float fInitialPathHeading; // src: XBOX_RETAIL_PDB +0x90 (old: m_fAvoidanceRadius)
+    NiPointer<PathingAvoidNodeArray> spAvoidNodeArray; // src: XBOX_RETAIL_PDB +0x94 (old: m_pPathingAvoidNodeArray)
     bool bCantOpenDoors;
     bool bFaceTargetAtGoal;
-    bool PathingOptions;
+    bool bDrawDebugGeometry; // src: XBOX_RETAIL_PDB +0x9a (old: PathingOptions)
     bool bAllowIncompletePath;
-    bool m_bAllowDoorTraversal;
+    bool bSoftGoalRadius; // src: XBOX_RETAIL_PDB +0x9c (old: m_bAllowDoorTraversal)
     bool bCanSwim;
     bool bCanFly;
-    bool m_bCanWalk;
-    bool m_bCanJump;
-    bool m_bCanClimb;
-    bool m_bCanUseDoors;
-    bool m_bCanRun;
+    bool bWaitIfPlayerWaits; // src: XBOX_RETAIL_PDB +0x9f (old: m_bCanWalk)
+    bool bFirstTangentUsesHeading; // src: XBOX_RETAIL_PDB +0xa0 (old: m_bCanJump)
+    bool bGoDirectIfPathingFails; // src: XBOX_RETAIL_PDB +0xa1 (old: m_bCanClimb)
+    bool bTryToUseCurvedPath; // src: XBOX_RETAIL_PDB +0xa2 (old: m_bCanUseDoors)
+    bool bIgnoreSmoothingIfFails; // src: XBOX_RETAIL_PDB +0xa3 (old: m_bCanRun)
     bool bIgnoreLocks;
     struct
     {
@@ -160,8 +161,8 @@ public:
         unsigned char byte1;
         unsigned char byte2;
     } layoutPaddingA5;
-    int m_iRequestType;
-    bool m_bCanOpenDoors;
+    int iRetryCount; // src: XBOX_RETAIL_PDB +0xa8 (old: m_iRequestType)
+    bool bFailIfGoalOccupied; // src: XBOX_RETAIL_PDB +0xac (old: m_bCanOpenDoors)
     struct
     {
         unsigned char byte0;

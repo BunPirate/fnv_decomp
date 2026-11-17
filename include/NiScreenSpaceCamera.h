@@ -2,6 +2,7 @@
 
 #include "NiCamera.h"
 
+// pdb: class NiScreenSpaceCamera, size 0x160 (here 0x134), bases: NiCamera, 2 members
 class NiScreenSpaceCamera : public NiCamera
 {
   public:

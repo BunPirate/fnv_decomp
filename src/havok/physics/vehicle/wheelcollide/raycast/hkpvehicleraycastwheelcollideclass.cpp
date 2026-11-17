@@ -25,6 +25,7 @@ struct FUN_00dfeb10
 
 // Initialises m_u04 and m_u06 to zero for a FUN_00dfeb10 instance.
 // @fnv 0x00dfeb10
+// pdb: hkpVehicleRayCastWheelCollide::`scalar deleting destructor' | hkpVehicleRayCastWheelCollideClass.obj | retail, vtable slot, high
 FUN_00dfeb10::FUN_00dfeb10()
 {
     m_u04 = 0;

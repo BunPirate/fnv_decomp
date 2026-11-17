@@ -5,6 +5,7 @@
 class WorldHolder;
 class MoppCodeHeader;
 
+// pdb: class bhkSerializable, size 0x10 (here 0xc), bases: bhkRefObject, 1 members
 class bhkSerializable : public bhkRefObject
 {
 public:

@@ -9,7 +9,7 @@
 // @fnv 0x00BE0B20
 void NiD3DPixelShader::SetD3DPixelShader(GeometryRelatedType* const pixelShader)
 {
-    m_pD3DPixelShader = pixelShader;
+    m_hShader = pixelShader;
 }
 
 void __cdecl NiD3DShaderProgramFactory_RecreatePixelShader(NiD3DPixelShader*);
@@ -30,8 +30,8 @@ struct FakeRenderer
 // @fnv 0x00e898c0
 void NiD3DPixelShader::UnloadShader()
 {
-    if (m_pD3DPixelShader)
+    if (m_hShader)
     {
-        reinterpret_cast<FakeRenderer*>(m_pShaderObject)->PurgeShader(reinterpret_cast<FakeShader*>(this));
+        reinterpret_cast<FakeRenderer*>(m_pkD3DRenderer)->PurgeShader(reinterpret_cast<FakeShader*>(this));
     }
 }

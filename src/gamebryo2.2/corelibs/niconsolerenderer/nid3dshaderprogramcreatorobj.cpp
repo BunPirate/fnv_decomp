@@ -7,21 +7,23 @@ int __cdecl NiShaderFactory_ReportError(int a, int b, const char* c);
 
 // Allocates a buffer of size b, copies a into it, stores the pointer and size in c and d, and returns false with an error if a or b is zero.
 // @fnv 0x00e98370
-bool __stdcall CopyShaderBuffer(int apSource, int uiSize, int* pOutBuffer, int* pOutSize, int* e, int* f, int g)
+// pdb: NiD3DShaderProgramCreatorObj::LoadShaderCodeFromBuffer | NiD3DShaderProgramCreatorObj.obj | retail, string-set bridge, high
+// pdb params: pvBuffer, uiBufferSize, pvCode, uiCodeSize, pvConstantData, uiConstantSize, bRecoverable
+bool __stdcall CopyShaderBuffer(int pvBuffer, int uiBufferSize, int* pvCode, int* uiCodeSize, int* pvConstantData, int* uiConstantSize, int bRecoverable)
 {
-    *pOutBuffer = 0;
-    *pOutSize = 0;
-    *e = 0;
-    *f = 0;
-    if (apSource != 0 && uiSize != 0)
+    *pvCode = 0;
+    *uiCodeSize = 0;
+    *pvConstantData = 0;
+    *uiConstantSize = 0;
+    if (pvBuffer != 0 && uiBufferSize != 0)
     {
-        void* pBuffer = _NiMalloc_00aa1070((unsigned int)uiSize);
-        *pOutBuffer = (int)pBuffer;
-        memmove(pBuffer, (const void*)apSource, (unsigned int)uiSize);
-        *pOutSize = uiSize;
+        void* pBuffer = _NiMalloc_00aa1070((unsigned int)uiBufferSize);
+        *pvCode = (int)pBuffer;
+        memmove(pBuffer, (const void*)pvBuffer, (unsigned int)uiBufferSize);
+        *uiCodeSize = uiBufferSize;
         return true;
     }
-    NiShaderFactory_ReportError(1, g, "Invalid shader buffer\n");
+    NiShaderFactory_ReportError(1, bRecoverable, "Invalid shader buffer\n");
     return false;
 }
 
@@ -31,7 +33,7 @@ extern "C" const char str_010f12a8[];
 
 extern "C" void* __cdecl FUN_00ec61c0(void* d, int v, unsigned int n);
 extern "C" void __cdecl _NiFree_00aa10f0(void* p);
-extern "C" bool __cdecl FindShaderProgramFile(const char* in, char* out, unsigned int n);
+extern "C" bool __cdecl NiD3DShaderProgramFactory_ResolveShaderFileName(const char* pcOriginalName, char* pcTrueName, unsigned int uiStringLen);
 
 extern "C" __declspec(dllimport) void* __stdcall CreateFileA(const char*, unsigned int, unsigned int, void*,
                                                              unsigned int, unsigned int, void*);
@@ -44,8 +46,11 @@ typedef int(__cdecl* FUN_00aa0020_4args)(int, int, const char*, const char*);
 // Resolves a file path, opens it, reads its entire contents into a newly allocated buffer, and returns the buffer and size via out parameters.
 // @fnv 0x00e981f0
 // src: XBOX_PDB 0x00e981f0
-bool __stdcall NiD3DShaderProgramCreatorObj_LoadShaderCodeFromFile(const char* apFilePath, void** apOutBuffer, unsigned int* outSize,
-                            unsigned int* apOutExtra1, unsigned int* apOutExtra2, int aiContext)
+// pdb: NiD3DShaderProgramCreatorObj::LoadShaderCodeFromFile | NiD3DShaderProgramCreatorObj.obj | retail, string-set bridge, high
+// pdb params: pcFileName, pvCode, uiCodeSize, pvConstantData, uiConstantSize, bRecoverable
+// pdb locals: dwBytesRead, acShaderPath, hFile, pbyData, dwSize
+bool __stdcall NiD3DShaderProgramCreatorObj_LoadShaderCodeFromFile(const char* pcFileName, void** pvCode, unsigned int* uiCodeSize,
+                            unsigned int* pvConstantData, unsigned int* uiConstantSize, int bRecoverable)
 {
     char szResolvedPath[0x104];
     void* hFile;
@@ -53,27 +58,27 @@ bool __stdcall NiD3DShaderProgramCreatorObj_LoadShaderCodeFromFile(const char* a
     unsigned int uiBytesRead;
     void* pBuffer;
 
-    *apOutBuffer = 0;
-    *outSize = 0;
-    *apOutExtra1 = 0;
-    *apOutExtra2 = 0;
+    *pvCode = 0;
+    *uiCodeSize = 0;
+    *pvConstantData = 0;
+    *uiConstantSize = 0;
 
-    if (apFilePath == 0 || *apFilePath == 0)
+    if (pcFileName == 0 || *pcFileName == 0)
     {
-        NiShaderFactory_ReportError(1, aiContext, str_010f12a8);
+        NiShaderFactory_ReportError(1, bRecoverable, str_010f12a8);
         return false;
     }
 
-    if (!FindShaderProgramFile(apFilePath, szResolvedPath, 0x104))
+    if (!NiD3DShaderProgramFactory_ResolveShaderFileName(pcFileName, szResolvedPath, 0x104))
     {
-        ((FUN_00aa0020_4args)NiShaderFactory_ReportError)(1, aiContext, str_010f1338, apFilePath);
+        ((FUN_00aa0020_4args)NiShaderFactory_ReportError)(1, bRecoverable, str_010f1338, pcFileName);
         return false;
     }
 
     hFile = CreateFileA(szResolvedPath, 0x80000000, 1, 0, 3, 0, 0);
     if (hFile == (void*)-1)
     {
-        ((FUN_00aa0020_4args)NiShaderFactory_ReportError)(1, aiContext, str_010f1628, szResolvedPath);
+        ((FUN_00aa0020_4args)NiShaderFactory_ReportError)(1, bRecoverable, str_010f1628, szResolvedPath);
         return false;
     }
 
@@ -91,7 +96,7 @@ bool __stdcall NiD3DShaderProgramCreatorObj_LoadShaderCodeFromFile(const char* a
         _NiFree_00aa10f0(pBuffer);
         return false;
     }
-    *outSize = uiFileSize;
-    *apOutBuffer = pBuffer;
+    *uiCodeSize = uiFileSize;
+    *pvCode = pBuffer;
     return true;
 }

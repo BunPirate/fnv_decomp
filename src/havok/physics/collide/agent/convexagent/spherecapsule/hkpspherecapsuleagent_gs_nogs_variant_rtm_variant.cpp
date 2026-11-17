@@ -90,7 +90,7 @@ class FUN_00d3e2b0_cls
     int m_i04;
     InnerCls* m_pInner;
     unsigned short m_w0c;
-    void hkpSphereCapsuleAgent_cleanup(int a1);
+    void hkpSphereCapsuleAgent_cleanup(int constraintOwner);
 };
 
 struct ObjAllocator
@@ -108,7 +108,7 @@ struct SmallRecord
 };
 extern char DAT_010cf018[];
 hkMemoryRouter* hkMemoryRouter_getInstance();
-void __cdecl hkpSphereCapsuleAgent_createCapsuleSphereAgent(int a, int b, int c, int d);
+void __cdecl hkpSphereCapsuleAgent_createCapsuleSphereAgent(int bodyA, int bodyB, int input, int mgr);
 void __cdecl hkpSphereCapsuleAgent_staticGetPenetrations(int a, int b, int c, int d);
 void __stdcall hkpSphereCapsuleAgent_getPenetrations(int a, int b, int c, int d);
 extern char DAT_010ce81c;
@@ -119,7 +119,7 @@ struct FUN_00d3f040_tmp
     unsigned int value;
 };
 void __cdecl hkpSphereCapsuleAgent_staticGetPenetrations(unsigned int a, unsigned int b, unsigned int c, FUN_00d3f040_tmp* p);
-void __cdecl Object_UpdateFields_00d3f040(unsigned int a0, unsigned int a1, unsigned int a2, unsigned int a3);
+void __cdecl hkpSymmetricAgentLinearCast_hkpSphereCapsuleAgent_staticGetPenetrations(unsigned int bodyA, unsigned int bodyB, unsigned int input, unsigned int collector);
 
 extern "C" __declspec(dllimport) void* __stdcall TlsGetValue(unsigned long dwTlsIndex);
 extern "C" double __cdecl sqrt(double);
@@ -148,7 +148,7 @@ inline const float& hkVector4::operator()(int i) const
 }
 inline const hkTransform& hkpCdBody::getTransform() const
 {
-    return *static_cast<const hkTransform*>(m_pMotionState);
+    return *static_cast<const hkTransform*>(m_motion);
 }
 inline const hkRotation& hkTransform::getRotation() const
 {
@@ -211,6 +211,9 @@ static inline void timerCommand(const char* name, volatile unsigned int& ticks)
 
 // @fnv 0x00d3e850
 // src: HAVOK_SRC 0x00d3e850
+// pdb: hkpSphereCapsuleAgent::getClosestPoints | hkpSphereCapsuleAgent.obj | retail, upstream name already matches, high
+// pdb params: bodyA, bodyB, input, collector
+// pdb locals: event
 void __stdcall hkpSphereCapsuleAgent_getClosestPoints(const hkpCdBody& bodyA, const hkpCdBody& bodyB, const CollisionAgentContext& input,
                             hkpCdPointCollector& collector)
 {
@@ -232,8 +235,8 @@ void __stdcall hkpSphereCapsuleAgent_getClosestPoints(const hkpCdBody& bodyA, co
     float absY;
     timerCommand("TtSphereCapsule", scal0.startTicks);
 
-    const hkpSphereShape* sphereA = static_cast<const hkpSphereShape*>(bodyA.m_pCollisionShape);
-    const hkpCapsuleShape* capsuleB = static_cast<const hkpCapsuleShape*>(bodyB.m_pCollisionShape);
+    const hkpSphereShape* sphereA = static_cast<const hkpSphereShape*>(bodyA.m_shape);
+    const hkpCapsuleShape* capsuleB = static_cast<const hkpCapsuleShape*>(bodyB.m_shape);
     const hkVector4& posA = bodyA.getTransform().getTranslation();
     hkVector4 first;
     hkVector4 second;
@@ -255,7 +258,7 @@ void __stdcall hkpSphereCapsuleAgent_getClosestPoints(const hkpCdBody& bodyA, co
     third.m_vComponents.m128_i32[2] = tB.getTranslation().m_vComponents.m128_i32[2];
     third.m_vComponents.m128_i32[3] = tB.getTranslation().m_vComponents.m128_i32[3];
     __m128 tr = _mm_load_ps(third.m_vComponents.m128_f32);
-    const hkVector4* in = &capsuleB->m_kVertexA;
+    const hkVector4* in = &capsuleB->m_vertexA;
     int i = 1;
     do
     {
@@ -271,7 +274,7 @@ void __stdcall hkpSphereCapsuleAgent_getClosestPoints(const hkpCdBody& bodyA, co
 
     hkpCapsuleShape::GetClosestPointOnLineSegment(posA, fourth[0], fourth[1], third);
 
-    scal2.radiusSum = sphereA->m_fSphereRadius + capsuleB->m_fSphereRadius;
+    scal2.radiusSum = sphereA->m_radius + capsuleB->m_radius;
     float refDist = scal2.radiusSum + input.m_fScalar;
 
     second.m_vComponents = _mm_sub_ps(posA.m_vComponents, third.m_vComponents);
@@ -286,7 +289,7 @@ void __stdcall hkpSphereCapsuleAgent_getClosestPoints(const hkpCdBody& bodyA, co
     if (!(scal0.distanceSquared >= refDist2))
     {
         float distance;
-        hkVector4& normal = event.m_kPoint.m_vSeparatingNormal;
+        hkVector4& normal = event.m_kPoint.m_separatingNormal;
         if (scal0.distanceSquared > 0.0f)
         {
             distance = hkMathSqrt(scal0.distanceSquared);
@@ -336,8 +339,8 @@ void __stdcall hkpSphereCapsuleAgent_getClosestPoints(const hkpCdBody& bodyA, co
                 _mm_mul_ps(_mm_shuffle_ps(broadcast.m_vComponents, broadcast.m_vComponents, 0), normal.m_vComponents);
         }
 
-        absY = capsuleB->m_fSphereRadius - distance;
-        event.m_kPoint.m_vContactPosition.m_vComponents =
+        absY = capsuleB->m_radius - distance;
+        event.m_kPoint.m_position.m_vComponents =
             _mm_add_ps(_mm_mul_ps(_mm_shuffle_ps(_mm_load_ss(&absY), _mm_load_ss(&absY), 0), normal.m_vComponents),
                        posA.m_vComponents);
         normal(3) = distance - scal2.radiusSum;

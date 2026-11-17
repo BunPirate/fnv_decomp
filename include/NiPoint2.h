@@ -4,6 +4,7 @@
 
 class NiStream;
 
+// pdb: class NiPoint2, size 0x8, 2 members
 class NiPoint2
 {
 public:

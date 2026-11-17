@@ -59,6 +59,8 @@ struct S_0080bac0
 
 // Allocates an S_0080bac0_Obj from unk28, unk8 and unkC, passes it to vfn44, and returns it.
 // @fnv 0x0080bac0
+// pdb: CommandHumanoidEffect::Copy | CommandHumanoidEffect.obj | retail, vtable slot, high
+// pdb locals: presult
 S_0080bac0_Obj* S_0080bac0::CreateAndDispatchObject()
 {
     S_0080bac0_Obj* p = new S_0080bac0_Obj(unk28, unk8, unkC);
@@ -299,14 +301,17 @@ struct CastTarget
 struct FUN_0080bb70_cls
 {
     float GetFloatAtOffset1C();
-    bool CanCastOn(void* apObject);
+    bool CanCastOn(void* apTarget);
 };
 
 // Resolves apObject to a CastTarget, rejects it if null or blocked, and returns whether the cast check on its value and amount succeeds.
 // @fnv 0x0080bb70
-bool FUN_0080bb70_cls::CanCastOn(void* apObject)
+// pdb: CommandHumanoidEffect::CheckTarget | CommandHumanoidEffect.obj | retail, vtable slot, high
+// pdb params: apTarget
+// pdb locals: ptargetActor
+bool FUN_0080bb70_cls::CanCastOn(void* apTarget)
 {
-    CastTarget* pTarget = (CastTarget*)FUN_00ec43fb(apObject, 0, &DAT_011a0ef8, &DAT_011a0f14, 0);
+    CastTarget* pTarget = (CastTarget*)FUN_00ec43fb(apTarget, 0, &DAT_011a0ef8, &DAT_011a0f14, 0);
     if (pTarget == 0)
         return false;
 

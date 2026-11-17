@@ -5,6 +5,7 @@
 
 class NiVBSet;
 
+// pdb: class NiStaticGeometryGroup, size 0x1c, bases: NiGeometryGroup, 1 members
 class NiStaticGeometryGroup : public NiGeometryGroup
 {
 public:
@@ -17,5 +18,5 @@ public:
     void FUN_00e98710();
     void* Destroy(unsigned int);
 
-    NiTPointerMap<unsigned int, NiVBSet*> map;
+    NiTPointerMap<unsigned int, NiVBSet*> m_kSets; // src: XBOX_RETAIL_PDB +0xc (old: map)
 };

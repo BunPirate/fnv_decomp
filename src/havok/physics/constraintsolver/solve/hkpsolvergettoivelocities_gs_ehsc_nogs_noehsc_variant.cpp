@@ -67,6 +67,9 @@ static __forceinline float clampValue(float a)
 }
 // @fnv 0x00d9f6f0
 // src: GUESS 0x00d9f6f0 (confidence: low)
+// pdb: hkSolveGetToiViolatingConstraintVelocity | hkpSolverGetToiVelocities.obj | debug, call graph, medium
+// pdb params: i, schemas, accums, maxNumVelocities, velocitiesOut
+// pdb locals: com, mB, nonConstAccumB, numVelocities, nonConstAccumA, assertBuf, ostr, deltaSumVelB, deltaSumVelA, deltaVelA, deltaVelB
 int __cdecl hkVector4_ProcessEntries_00d9f6f0(void* unused, const Header* header, const State* states, int limit, float* output)
 {
     const State* first = states + header->first;

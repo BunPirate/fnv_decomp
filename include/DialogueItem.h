@@ -10,21 +10,22 @@ class TESTopic;
 class TESQuest;
 class TESObjectREFR;
 
+// pdb: class DialogueItem, size 0x1c, 6 members
 class DialogueItem
 {
 public:
-    BSSimpleList<DialogueResponse*> m_kResponseList;
-    BSSimpleList<DialogueResponse*>* m_pCurrentResponseList;
+    BSSimpleList<DialogueResponse*> lResponses; // src: XBOX_RETAIL_PDB +0x0 (old: m_kResponseList)
+    BSSimpleList<DialogueResponse*>* pCurrentResponse; // src: XBOX_RETAIL_PDB +0x8 (old: m_pCurrentResponseList)
     TESTopicInfo* pInfo;
     TESTopic* pTopic;
     TESQuest* pQuest;
-    TESObjectREFR* m_pDialogueSpeaker;
+    TESObjectREFR* pSpeaker; // src: XBOX_RETAIL_PDB +0x18 (old: m_pDialogueSpeaker)
 
     DialogueItem();
     DialogueItem(TESQuest* quest, TESTopic* topic, TESTopicInfo* info, TESObjectREFR* speaker);
     ~DialogueItem();
     static void operator delete(void*);
-    void LoadDialogueItem(BGSLoadFormBuffer*);
+    void LoadGame(BGSLoadFormBuffer*);
     void RefreshObjectRef(BGSLoadFormBuffer*);
     bool SelectDefaultResponseList();
     bool NextResponse();

@@ -18,16 +18,19 @@ template <> NiPointer<SceneGraph>& NiPointer<SceneGraph>::operator=(SceneGraph* 
 extern PlayerCharacter* g_thePlayer;
 
 
+// pdb: class Main, size 0xac (here 0x1), 25 members
 class Main
 {
   public:
     static NiPointer<SceneGraph> spMenuSceneGraph;
 
-    static void CreateMenuSceneGraph();
+    static void CreateMenuRootNode3D();
 };
 
 // @fnv 0x004dc650
-void Main::CreateMenuSceneGraph()
+// src: XBOX_DEBUG_PDB 0x004dc650
+// pdb: Main::CreateMenuRootNode3D | Main.obj | debug, unique string literal, high
+void Main::CreateMenuRootNode3D()
 {
     spMenuSceneGraph = new SceneGraph("3DMenu", false, 0);
 }

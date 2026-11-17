@@ -13,10 +13,12 @@ inline void NiBinaryStream::Read(float* values)
 }
 
 // @fnv 0x00a51660
-void NiBSplineCompFloatInterpolator::LoadBinary(NiStream& stream)
+// pdb: NiBSplineCompFloatInterpolator::LoadBinary | NiBSplineCompFloatInterpolator.obj | retail, upstream name already matches, high
+// pdb params: kStream
+void NiBSplineCompFloatInterpolator::LoadBinary(NiStream& kStream)
 {
-    NiBSplineFloatInterpolator::LoadBinary(stream);
-    stream.m_pkIstr->Read(m_afOffsetAndHalfRange);
+    NiBSplineFloatInterpolator::LoadBinary(kStream);
+    kStream.m_pkIstr->Read(m_afCompScalars);
 }
 
 extern int g_011f401c;
@@ -31,37 +33,42 @@ int* __cdecl NiBSplineCompFloatInterpolator_GetRTTI()
 struct FUN_00a52d20_shell
 {
     int* m_p;
-    int __thiscall NiBoolInterpolator_GetKeys(int* b, int* c, char* d);
+    int __thiscall NiBoolInterpolator_GetKeys(int* uiNumKeys, int* eType, char* ucSize);
 };
 
 // @fnv 0x00a52d20
 // src: COMMUNITY 0x00a52d20
-int __thiscall FUN_00a52d20_shell::NiBoolInterpolator_GetKeys(int* b, int* c, char* d)
+// pdb: NiBoolInterpolator::GetKeys | NiPSysEmitterCtlr.obj | debug, upstream name already matches, high
+// pdb params: uiNumKeys, eType, ucSize
+int __thiscall FUN_00a52d20_shell::NiBoolInterpolator_GetKeys(int* uiNumKeys, int* eType, char* ucSize)
 {
     int* p = *(int**)((char*)this + 0x10);
     if (p)
     {
-        *b = *(int*)((char*)p + 8);
-        *c = *(int*)((char*)p + 0x10);
-        *d = *(char*)((char*)p + 0x14);
+        *uiNumKeys = *(int*)((char*)p + 8);
+        *eType = *(int*)((char*)p + 0x10);
+        *ucSize = *(char*)((char*)p + 0x14);
         return *(int*)((char*)p + 0xc);
     }
-    *b = 0;
-    *c = 0;
-    *d = 0;
+    *uiNumKeys = 0;
+    *eType = 0;
+    *ucSize = 0;
     return 0;
 }
 
 // The unused fastcall register lets these free functions implement the original
 // member ABI. Call through a thiscall pointer so callers pass only ECX and stack arguments.
-void __fastcall InitializeBSplineInterpolator(NiBSplineInterpolator* self, int, int a, int b);
+void __fastcall NiBSplineInterpolator_ctor(NiBSplineInterpolator* self, int, int a, int b);
 extern int DAT_010997f4;
 
 // @fnv 0x00a509f0
+// pdb: NiBSplineFloatInterpolator::NiBSplineFloatInterpolator | NiBSplineFloatInterpolator.obj | retail, call graph, medium
+// pdb note: debug build links it to NiBSplinePoint3Interpolator::`scalar deleting destructor'
+// pdb params: pkData, kFloatCPHandle, pkBasisData
 NiBSplineFloatInterpolator* __fastcall InitializeFloatInterpolator(NiBSplineFloatInterpolator* self, int,
                                                                   int a, int b, int c)
 {
-    reinterpret_cast<void (__thiscall*)(NiBSplineInterpolator*, int, int)>(InitializeBSplineInterpolator)(self, a, c);
+    reinterpret_cast<void (__thiscall*)(NiBSplineInterpolator*, int, int)>(NiBSplineInterpolator_ctor)(self, a, c);
     *(int*)self = (int)&DAT_010997f4;
     self->m_kFloatCPHandle = b;
     return self;
@@ -71,6 +78,8 @@ char* __cdecl _FUN_00a7d330(const char*);
 void __fastcall SerializeToStrings(NiBSplineFloatInterpolator* self, int, StrArr* strings);
 
 // @fnv 0x00a516e0
+// pdb: NiBSplineCompFloatInterpolator::GetViewerStrings | NiBSplineCompFloatInterpolator.obj | retail, object-file run extension, low
+// pdb params: pkStrings
 void __fastcall AppendString(NiBSplineCompFloatInterpolator* self, int, StrArr* pkStrings)
 {
     reinterpret_cast<void (__thiscall*)(NiBSplineFloatInterpolator*, StrArr*)>(SerializeToStrings)(self, pkStrings);
@@ -96,7 +105,7 @@ bool __fastcall Equals(NiBSplineCompFloatInterpolator* self, int, NiBSplineCompF
     pkDest = pkObject;
     for (iIndex = 0; iIndex < 2; iIndex++)
     {
-        if (self->m_afOffsetAndHalfRange[iIndex] != pkDest->m_afOffsetAndHalfRange[iIndex])
+        if (self->m_afCompScalars[iIndex] != pkDest->m_afCompScalars[iIndex])
             return false;
     }
     return true;
@@ -105,15 +114,22 @@ bool __fastcall Equals(NiBSplineCompFloatInterpolator* self, int, NiBSplineCompF
 void __fastcall SaveFloatInterpolator(NiBSplineFloatInterpolator* self, int, NiStream& stream);
 
 // @fnv 0x00a516a0
+// pdb: NiBSplineCompFloatInterpolator::SaveBinary | NiBSplineCompFloatInterpolator.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiBSplineCompFloatInterpolator::LinkObject
+// pdb params: kStream
 void __fastcall WriteToStream(NiBSplineCompFloatInterpolator* self, int, NiStream& kStream)
 {
     reinterpret_cast<void (__thiscall*)(NiBSplineFloatInterpolator*, NiStream&)>(SaveFloatInterpolator)(self, kStream);
     NiBinaryStream* __restrict pkOstr = kStream.m_pkOstr;
     unsigned int size = 4;
-    pkOstr->m_uiAbsoluteCurrentPos += pkOstr->m_pfnWrite(pkOstr, self->m_afOffsetAndHalfRange, 8, &size, 1);
+    pkOstr->m_uiAbsoluteCurrentPos += pkOstr->m_pfnWrite(pkOstr, self->m_afCompScalars, 8, &size, 1);
 }
 
 // @fnv 0x00a51530
+// pdb: NiBSplineCompFloatInterpolator::Update | NiBSplineCompFloatInterpolator.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiBSplineCompFloatInterpolator::CreateClone
+// pdb params: fTime, pkInterpTarget, fValue
+// pdb locals: fNormTime
 bool __fastcall EvaluateAtTime(NiBSplineCompFloatInterpolator* self, int, float afTime, unsigned int unused, float* pfOut)
 {
     float t;
@@ -126,8 +142,8 @@ bool __fastcall EvaluateAtTime(NiBSplineCompFloatInterpolator* self, int, float 
     if (handle != 0xffff)
     {
         t = (afTime - self->m_fStartTime) / (self->m_fEndTime - self->m_fStartTime);
-        self->m_spTransformData.m_pObject->CalculateSplineValue(t, &self->m_fFloatValue, 1,
-            self->m_spSplineBasisData.m_pObject, handle, self->m_afOffsetAndHalfRange[0], self->m_afOffsetAndHalfRange[1]);
+        self->m_spData.m_pObject->CalculateSplineValue(t, &self->m_fFloatValue, 1,
+            self->m_spBasisData.m_pObject, handle, self->m_afCompScalars[0], self->m_afCompScalars[1]);
     }
     *pfOut = self->m_fFloatValue;
     self->m_fLastTime = afTime;
@@ -142,14 +158,18 @@ inline void InitializeCompFloatInterpolator(NiBSplineCompFloatInterpolator* self
 {
     reinterpret_cast<NiBSplineFloatInterpolator* (__thiscall*)(NiBSplineFloatInterpolator*, int, int, int)>(InitializeFloatInterpolator)(self, 0, 0xffff, 0);
     *(int*)self = (int)&DAT_01099b2c;
-    float* pfScalars = self->m_afOffsetAndHalfRange;
+    float* pfScalars = self->m_afCompScalars;
     pfScalars[0] = kMaxCompScalar;
     pfScalars[1] = kMaxCompScalar;
 }
 
-void __fastcall CopyFloatInterpolator(NiBSplineFloatInterpolator* self, int, NiBSplineFloatInterpolator* object, CloningProcess& cloning);
+void __fastcall CopyFloatInterpolator(NiBSplineFloatInterpolator* pkDest, int, NiBSplineFloatInterpolator* object, CloningProcess& cloning);
 
 // @fnv 0x00a515c0
+// pdb: NiBSplineCompFloatInterpolator::CreateClone | NiBSplineCompFloatInterpolator.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiBSplineCompFloatInterpolator::CopyMembers
+// pdb params: kCloning
+// pdb locals: pkObject
 NiBSplineCompFloatInterpolator* __fastcall CloneCompFloatInterpolator(NiBSplineCompFloatInterpolator* self, int, CloningProcess& cloning)
 {
     NiBSplineCompFloatInterpolator* p = (NiBSplineCompFloatInterpolator*)Object_DispatchCommandFour(0x2c);
@@ -162,13 +182,15 @@ NiBSplineCompFloatInterpolator* __fastcall CloneCompFloatInterpolator(NiBSplineC
         p = 0;
     }
     reinterpret_cast<void (__thiscall*)(NiBSplineFloatInterpolator*, NiBSplineFloatInterpolator*, CloningProcess&)>(CopyFloatInterpolator)(self, p, cloning);
-    p->m_afOffsetAndHalfRange[0] = self->m_afOffsetAndHalfRange[0];
-    p->m_afOffsetAndHalfRange[1] = self->m_afOffsetAndHalfRange[1];
+    p->m_afCompScalars[0] = self->m_afCompScalars[0];
+    p->m_afCompScalars[1] = self->m_afCompScalars[1];
     return p;
 }
 
 // @fnv 0x00a51620
 // src: EXE 0x00a51620
+// pdb: NiBSplineCompFloatInterpolator::CreateObject | NiBSplineCompFloatInterpolator.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 NiBSplineCompFloatInterpolator* NiBSplineCompFloatInterpolator_CreateObject()
 {
     NiBSplineCompFloatInterpolator* p = (NiBSplineCompFloatInterpolator*)NiBSplineCompFloatInterpolator::operator new(0x2c);

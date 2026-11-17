@@ -17,27 +17,30 @@ struct DialoguePackageDataCopy : TESDialoguePackageData
     void Copy(TESPackageData*);
 };
 // @fnv 0x0067b310
-void DialoguePackageDataCopy::Copy(TESPackageData* input)
+// pdb: TESDialoguePackageData::Copy | PackageDataDialogue.obj | retail, vtable slot, high
+// pdb params: apCopy
+// pdb locals: pcopy
+void DialoguePackageDataCopy::Copy(TESPackageData* apCopy)
 {
-    TESDialoguePackageData* source = dynamic_cast<TESDialoguePackageData*>(input);
+    TESDialoguePackageData* source = dynamic_cast<TESDialoguePackageData*>(apCopy);
     if (source)
     {
-        m_fFirstFloat = source->m_fFirstFloat;
-        m_fFloatValue = source->m_fFloatValue;
-        m_bFirstFlag = source->m_bFirstFlag;
-        if (m_pTargetLocation)
+        fFov = source->fFov;
+        fDistanceStartTalking = source->fDistanceStartTalking;
+        bNOHeadtracking = source->bNOHeadtracking;
+        if (pTargetLocation)
         {
-            delete m_pTargetLocation;
-            m_pTargetLocation = 0;
+            delete pTargetLocation;
+            pTargetLocation = 0;
         }
-        if (source->m_pTargetLocation)
+        if (source->pTargetLocation)
         {
-            m_pTargetLocation = new TargetLocation;
-            m_pTargetLocation->FUN_0067f4d0(source->m_pTargetLocation, 0);
+            pTargetLocation = new TargetLocation;
+            pTargetLocation->FUN_0067f4d0(source->pTargetLocation, 0);
         }
-        pMenuTopicEntry = source->pMenuTopicEntry;
-        m_bFollowingFlag = source->m_bFollowingFlag;
-        m_bThirdFlag = source->m_bThirdFlag;
-        m_iTrailingValue = source->m_iTrailingValue;
+        ptopic = source->ptopic;
+        bDoNotControlTarget = source->bDoNotControlTarget;
+        bSayTo = source->bSayTo;
+        eTriggerType = source->eTriggerType;
     }
 }

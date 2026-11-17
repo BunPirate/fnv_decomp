@@ -45,6 +45,7 @@ struct FUN_006694c0_shell
     float fPad5;
     void SetPad5(float value);
 };
+// pdb: class CSpeedTreeRT, size 0xa0 (here 0x1), 31 members
 struct CSpeedTreeRT
 {
     unsigned short GetUnsignedShortValue();
@@ -58,8 +59,8 @@ struct FUN_006699d0_shell
     unsigned short GetUnsignedShort();
 };
 extern "C" void* __cdecl BSTreeManager_GetInstance(bool);
-extern "C" unsigned char __cdecl GetByteAtOffset1B();
-unsigned char __cdecl GetByteAtOffset1B();
+extern "C" unsigned char __cdecl BSTreeManager_GetForceFullLOD();
+unsigned char __cdecl BSTreeManager_GetForceFullLOD();
 struct Flt
 {
     operator unsigned int() const;
@@ -75,7 +76,7 @@ float SpeedTree_fTreeForceMaxBudAngle_Get();
 struct S_00666910
 {
     void ReleaseStorage_00b03b30();
-    void* FUN_00666910(unsigned int);
+    void* CSpeedTreeRT_ScalarDtor(unsigned int);
 };
 void _Deallocate(void*);
 NiAlphaProperty* BSTreeModel_CreateAlphaProperty();
@@ -175,7 +176,7 @@ struct GeometryX
 };
 struct SpeedTreeX
 {
-    void CSpeedTreeRT_GetGeometry(GeometryX& arGeometry, int a2, int a3, int a4, int a5);
+    void CSpeedTreeRT_GetGeometry(GeometryX& sGeometry, int ulBitVector, int sOverrideBranchLodValue, int sOverrideFrondLodValue, int sOverrideLeafLodValue);
     void UpdateState_00b08750();
     void ProcessState_00b08780();
 };
@@ -286,6 +287,7 @@ struct FUN_00666650 : PathingSolutionBase
 int strcpy_s(char* apDst, unsigned int auiSize, const char* apSrc);
 int strcat_s(char* apDst, unsigned int auiSize, const char* apSrc);
 template <class T> unsigned int BSStringLength(const T* apString);
+// pdb: class FileFinder, size 0x10 (here 0x1), 1 members
 class FileFinder
 {
   public:
@@ -293,7 +295,7 @@ class FileFinder
     {
         FILE_NOT_FOUND
     };
-    static FILE_LOCATION Exist(const char* apPath, char* apOut, unsigned int auiArg, unsigned int auiArgCur);
+    static FILE_LOCATION Exist(const char* apName, char* apFilePath, unsigned int aiFlags, unsigned int aiArchiveType);
 };
 extern const NiRTTI DAT_011f4280;
 NiAVObject* NiDynamicCast(const NiRTTI* apRTTI, NiAVObject* apObject);
@@ -307,9 +309,9 @@ struct ModelName
 struct FUN_00667190_shell : public TreeCloneView
 {
     void BSTreeModel_CreateBranchGeometry();
-    void BSTreeModel_CreateLeafGeometry(TESObjectTREE* apTree);
-    void BSTreeModel_CreateBillboardGeometry(TESObjectTREE* apTree);
-    void LoadTreeCollision(TESObjectTREE* apTree);
+    void BSTreeModel_CreateLeafGeometry(TESObjectTREE* apTreeObj);
+    void BSTreeModel_CreateBillboardGeometry(TESObjectTREE* apTreeObj);
+    void LoadTreeCollision(TESObjectTREE* apTreeObj);
 };
 namespace TreeBuild {
 struct Model;
@@ -701,7 +703,10 @@ struct Model
     Tree* CreateTree(float);
 };
 // @fnv 0x00669fd0
-Tree* Model::CreateTree(float scale)
+// pdb: BSTreeModel::CreateArt | BSTreeModel.obj | retail, unique string literal, high
+// pdb params: afScale
+// pdb locals: sprigid, slevels, UpdateData, pretval, tempMemContext, pnode, slevel, pshader, pgeom, ppropAlpha, pdata
+Tree* Model::CreateTree(float afScale)
 {
     Scope scope(30, 1, DAT_010667b8, 901);
     Tree* tree5 = 0;
@@ -711,10 +716,10 @@ Tree* Model::CreateTree(float scale)
         return 0;
     if (radius > DAT_010240c0)
     {
-        if (scale == DAT_01012070)
+        if (afScale == DAT_01012070)
             shape.FUN_0066b0d0(ConvertFloatToUInt());
         else
-            shape.FUN_0066b0d0(NiNode_ProcessAndReturnValue_00c81380(scale * radius, scale * height / DAT_01011590));
+            shape.FUN_0066b0d0(NiNode_ProcessAndReturnValue_00c81380(afScale * radius, afScale * height / DAT_01011590));
     }
     else
         shape.FUN_0066b0d0(0);
@@ -797,7 +802,7 @@ Tree* Model::CreateTree(float scale)
     tree5->UpdateProperties();
     UpdateData update(0.0f, 0, 0);
     tree5->FUN_00a59c90(&update);
-    tree5->BSTreeNode_MakeHavokLeaves(model, scale);
+    tree5->BSTreeNode_MakeHavokLeaves(model, afScale);
     return tree5;
 }
 }
@@ -889,6 +894,9 @@ extern float DAT_01018180;
 #pragma strict_gs_check(push, on)
 // @fnv 0x00c81380
 // src: GUESS 0x00c81380 (confidence: low)
+// pdb: bhkUtilFunctions::CreateTree | bhkUtilFunctions.obj | retail, object-file run extension, low
+// pdb params: afHeight, afRadius
+// pdb locals: prb, csi, pcs, rbi, icf
 NiNode* __cdecl NiNode_ProcessAndReturnValue_00c81380(float a, float b)
 {
     CapsuleParams params;

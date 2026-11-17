@@ -174,8 +174,11 @@ static __forceinline void calcPerpendicular(const hkVector4& vectorIn, hkVector4
 // Tests two capsules for collision using FUN_00d22e40, then fills cpOut with the separating normal and contact point.
 // @fnv 0x00cd6260
 // src: XBOX_PDB 0x00cd6260
+// pdb: hkCollideCapsuleUtilClostestPointCapsVsCaps | hkpCollideCapsuleUtil.obj | retail, upstream name already matches, high
+// pdb params: capsA, capsARadius, capsB, capsBRadius, collisionTolerance, cpoint
+// pdb locals: result, dA, dB
 int hkCollideCapsuleUtilClostestPointCapsVsCaps(const hkVector4* capsA, float capsARadius, const hkVector4* capsB, float capsBRadius,
-                 float collisionTolerance, hkContactPoint* cpOut)
+                 float collisionTolerance, hkContactPoint* cpoint)
 {
     hkVector4 dA;
     dA.setSub4(capsA[1], capsA[0]);
@@ -199,7 +202,7 @@ int hkCollideCapsuleUtilClostestPointCapsVsCaps(const hkVector4* capsA, float ca
     {
         if (result.m_fValue > 0.0f)
         {
-            cpOut->m_vSeparatingNormal = result.m_kClosestPointOnSecond;
+            cpoint->m_separatingNormal = result.m_kClosestPointOnSecond;
             goto normalize;
         }
     }
@@ -213,16 +216,16 @@ int hkCollideCapsuleUtilClostestPointCapsVsCaps(const hkVector4* capsA, float ca
             {
                 cross.setNeg4(cross);
             }
-            cpOut->m_vSeparatingNormal = cross;
+            cpoint->m_separatingNormal = cross;
             goto normalize;
         }
     }
-    calcPerpendicular(dA, cpOut->m_vSeparatingNormal);
+    calcPerpendicular(dA, cpoint->m_separatingNormal);
 
 normalize:
-    cpOut->m_vSeparatingNormal.normalize3();
-    cpOut->m_vContactPosition.setAddMul4(result.m_kFirstVector, cpOut->m_vSeparatingNormal, capsBRadius - distance);
-    cpOut->m_vSeparatingNormal(3) = distance - radiusSum;
+    cpoint->m_separatingNormal.normalize3();
+    cpoint->m_position.setAddMul4(result.m_kFirstVector, cpoint->m_separatingNormal, capsBRadius - distance);
+    cpoint->m_separatingNormal(3) = distance - radiusSum;
     return 0;
 }
 
@@ -267,23 +270,23 @@ static __declspec(noinline) void hkVector4_UpdateFields_00cd6120(const float* ap
     const LocalM128 n_c9 = _mm_shuffle_ps(n.m_vComponents, n.m_vComponents, 0xc9);
     const LocalM128 n_d2 = _mm_shuffle_ps(n.m_vComponents, n.m_vComponents, 0xd2);
 
-    m.m_kColumn0.m_vComponents = _mm_sub_ps(_mm_mul_ps(_mm_shuffle_ps(a.m_vComponents, a.m_vComponents, 0xc9), n_d2),
+    m.m_col0.m_vComponents = _mm_sub_ps(_mm_mul_ps(_mm_shuffle_ps(a.m_vComponents, a.m_vComponents, 0xc9), n_d2),
                                             _mm_mul_ps(_mm_shuffle_ps(a.m_vComponents, a.m_vComponents, 0xd2), n_c9));
-    m.m_kColumn1.m_vComponents = _mm_sub_ps(_mm_mul_ps(_mm_shuffle_ps(b.m_vComponents, b.m_vComponents, 0xc9), n_d2),
+    m.m_col1.m_vComponents = _mm_sub_ps(_mm_mul_ps(_mm_shuffle_ps(b.m_vComponents, b.m_vComponents, 0xc9), n_d2),
                                             _mm_mul_ps(_mm_shuffle_ps(b.m_vComponents, b.m_vComponents, 0xd2), n_c9));
-    m.m_kColumn2.m_vComponents = _mm_sub_ps(_mm_mul_ps(_mm_shuffle_ps(c.m_vComponents, c.m_vComponents, 0xc9), n_d2),
+    m.m_col2.m_vComponents = _mm_sub_ps(_mm_mul_ps(_mm_shuffle_ps(c.m_vComponents, c.m_vComponents, 0xc9), n_d2),
                                             _mm_mul_ps(_mm_shuffle_ps(c.m_vComponents, c.m_vComponents, 0xd2), n_c9));
 
-    hkSwap(m.m_kColumn1(0), m.m_kColumn0(1));
-    hkSwap(m.m_kColumn2(0), m.m_kColumn0(2));
-    hkSwap(m.m_kColumn2(1), m.m_kColumn1(2));
+    hkSwap(m.m_col1(0), m.m_col0(1));
+    hkSwap(m.m_col2(0), m.m_col0(2));
+    hkSwap(m.m_col2(1), m.m_col1(2));
 
-    m.m_kColumn0(3) = normal(0);
-    m.m_kColumn1(3) = normal(1);
-    m.m_kColumn2(3) = normal(2);
+    m.m_col0(3) = normal(0);
+    m.m_col1(3) = normal(1);
+    m.m_col2(3) = normal(2);
 
-    m.m_kColumn3.setZero4();
-    m.m_kColumn3(0) = -apParams[0] * apParams[4];
+    m.m_col3.setZero4();
+    m.m_col3(0) = -apParams[0] * apParams[4];
 }
 
 volatile void* g_p;
@@ -465,18 +468,21 @@ inline float addRadii(const float& a, const float& b)
 // Computes the closest points between two capsules defined by endpoints and radii, writing contact normals and positions into points.
 // @fnv 0x00cd58b0
 // src: XBOX_PDB 0x00cd58b0
-int __cdecl hkCollideCapsuleUtilManifoldCapsVsCaps(const ManifoldVector* apFirstSegment, RadiusInput firstRadius,
-                         const ManifoldVector* apSecondSegment, RadiusInput secondRadius,
-                         ManifoldContact* apContactPoints)
+// pdb: hkCollideCapsuleUtilManifoldCapsVsCaps | hkpCollideCapsuleUtil.obj | retail, upstream name already matches, high
+// pdb params: capsAPointsIn, capsARadius, capsBPoints, capsBRadius, points
+// pdb locals: t, dA, u, lengthInv
+int __cdecl hkCollideCapsuleUtilManifoldCapsVsCaps(const ManifoldVector* capsAPointsIn, RadiusInput capsARadius,
+                         const ManifoldVector* capsBPoints, RadiusInput capsBRadius,
+                         ManifoldContact* points)
 {
 
     LocalM128 q;
 
     ManifoldVector directionA;
-    directionA.setSub4(apFirstSegment[1], apFirstSegment[0]);
+    directionA.setSub4(capsAPointsIn[1], capsAPointsIn[0]);
 
     ManifoldVector directionB;
-    directionB.setSub4(apSecondSegment[1], apSecondSegment[0]);
+    directionB.setSub4(capsBPoints[1], capsBPoints[0]);
 
     float cosine = directionB.dot3(directionA);
 
@@ -488,17 +494,17 @@ int __cdecl hkCollideCapsuleUtilManifoldCapsVsCaps(const ManifoldVector* apFirst
         cosine = -cosine;
         directionA.setNeg4(directionA);
 
-        endpointsA[0] = apFirstSegment[1];
-        endpointsA[1] = apFirstSegment[0];
+        endpointsA[0] = capsAPointsIn[1];
+        endpointsA[1] = capsAPointsIn[0];
     }
     else
     {
-        endpointsA[0] = apFirstSegment[0];
-        endpointsA[1] = apFirstSegment[1];
+        endpointsA[0] = capsAPointsIn[0];
+        endpointsA[1] = capsAPointsIn[1];
     }
 
     ManifoldVector offset;
-    offset.setSub4(apSecondSegment[0], endpointsA[0]);
+    offset.setSub4(capsBPoints[0], endpointsA[0]);
 
     float projectionA = directionA.dot3(offset);
 
@@ -590,14 +596,14 @@ closestReady:
 
     ManifoldVector b;
 
-    b.setAddMul4(apSecondSegment[0], directionB, alongB);
+    b.setAddMul4(capsBPoints[0], directionB, alongB);
 
     ManifoldVector difference;
     difference.setSub4(a, b);
 
-    const float radiusSum = addRadii(firstRadius.value, secondRadius.value);
+    const float radiusSum = addRadii(capsARadius.value, capsBRadius.value);
 
-    float referenceDistance = maxDistance(1.1920928955078125e-7f, apContactPoints->getDistance());
+    float referenceDistance = maxDistance(1.1920928955078125e-7f, points->getDistance());
 
     float distance = difference.length3();
 
@@ -605,7 +611,7 @@ closestReady:
 
     float contactDistance = distance - radiusSum;
 
-    apContactPoints->getSeparatingNormal() = difference;
+    points->getSeparatingNormal() = difference;
 
     if (contactDistance < referenceDistance)
     {
@@ -636,32 +642,32 @@ closestReady:
                 least = 2;
             }
 
-            apContactPoints->getSeparatingNormal().setZero4();
+            points->getSeparatingNormal().setZero4();
 
-            apContactPoints->getSeparatingNormal()(firstAxis) = directionA(secondAxis);
+            points->getSeparatingNormal()(firstAxis) = directionA(secondAxis);
 
-            apContactPoints->getSeparatingNormal()(secondAxis) = -directionA(firstAxis);
+            points->getSeparatingNormal()(secondAxis) = -directionA(firstAxis);
 
-            apContactPoints->getSeparatingNormal().normalize3();
+            points->getSeparatingNormal().normalize3();
         }
         else
         {
-            apContactPoints->getSeparatingNormal().mul4(inverseDistance);
+            points->getSeparatingNormal().mul4(inverseDistance);
         }
 
         {
-            float offset = secondRadius.value - distance;
+            float offset = capsBRadius.value - distance;
             q = _mm_load_ss(&offset);
-            apContactPoints->getPosition().getQuad() = _mm_add_ps(
-                a.getQuad(), _mm_mul_ps(_mm_shuffle_ps(q, q, 0), apContactPoints->getSeparatingNormal().getQuad()));
+            points->getPosition().getQuad() = _mm_add_ps(
+                a.getQuad(), _mm_mul_ps(_mm_shuffle_ps(q, q, 0), points->getSeparatingNormal().getQuad()));
         }
 
-        apContactPoints->getSeparatingNormal()(3) = contactDistance;
+        points->getSeparatingNormal()(3) = contactDistance;
     }
     else
     {
-        apContactPoints->getSeparatingNormal().mul4(inverseDistance);
-        apContactPoints->getSeparatingNormal()(3) = contactDistance;
+        points->getSeparatingNormal().mul4(inverseDistance);
+        points->getSeparatingNormal()(3) = contactDistance;
         return features;
     }
 }
@@ -683,9 +689,9 @@ closestReady:
 
     ManifoldVector endpointA = endpointsA[0];
 
-    ManifoldVector endpointB = apSecondSegment[0];
+    ManifoldVector endpointB = capsBPoints[0];
 
-    ManifoldContact* pContactPoint = apContactPoints + 1;
+    ManifoldContact* pContactPoint = points + 1;
 
     int pass = 0;
 
@@ -736,7 +742,7 @@ closestReady:
             ManifoldVector delta;
             delta.setSub4(endpointA, endpointB);
 
-            const float radiusSumCopy = addRadii(firstRadius.value, secondRadius.value);
+            const float radiusSumCopy = addRadii(capsARadius.value, capsBRadius.value);
 
             const float limit = pContactPoint->getSeparatingNormal()(3) + radiusSumCopy;
 
@@ -756,11 +762,11 @@ closestReady:
 
                 else
                 {
-                    pContactPoint->getSeparatingNormal() = apContactPoints->getSeparatingNormal();
+                    pContactPoint->getSeparatingNormal() = points->getSeparatingNormal();
                 }
 
                 {
-                    float offset = secondRadius.value - d;
+                    float offset = capsBRadius.value - d;
                     q = _mm_load_ss(&offset);
                     pContactPoint->getPosition().getQuad() =
                         _mm_add_ps(endpointA.getQuad(),
@@ -777,7 +783,7 @@ closestReady:
             return features;
 
         endpointA = endpointsA[1];
-        endpointB = apSecondSegment[1];
+        endpointB = capsBPoints[1];
 
         onB = lengthB - onB - cosine;
 
@@ -1162,26 +1168,29 @@ static __forceinline void makePlanes(const ContactVector* v, const float* cache,
 // Tests a capsule (two positions, radius, thickness) against a triangle, filling up to three ContactRecords and optional Feature data.
 // @fnv 0x00cd6520
 // src: XBOX_PDB 0x00cd6520
-void __cdecl hkCollideCapsuleUtilCapsVsTri(const ContactVector* positions, float radius, const ContactVector* triangle, float thickness,
-                          const float* orientation, float margin, int useFaces, ContactRecord* contacts,
-                          Feature* feature)
+// pdb: hkCollideCapsuleUtilCapsVsTri | hkpCollideCapsuleUtil.obj | retail, upstream name already matches, high
+// pdb params: capsAPoints, capsARadius, triVertices, triBRadius, cache, collisionTolerance, searchManifold, points, featuresOut
+// pdb locals: diffcapsAPoints, mask, planeDirections, distances, checkRadius4, f, dir, dirW, project, prevCp, pB, result, edge
+void __cdecl hkCollideCapsuleUtilCapsVsTri(const ContactVector* capsAPoints, float capsARadius, const ContactVector* triVertices, float triBRadius,
+                          const float* cache, float collisionTolerance, int searchManifold, ContactRecord* points,
+                          Feature* featuresOut)
 {
-    if (feature)
+    if (featuresOut)
         for (int k = 0; k < 3; ++k)
-            feature[k].count = 0;
+            featuresOut[k].count = 0;
     ContactTransform planes;
     ContactVector normal;
-    makePlanes(triangle, orientation, planes, normal);
+    makePlanes(triVertices, cache, planes, normal);
     ContactVector distances[2];
-    distances[0].setSub4(positions[0], triangle[0]);
-    distances[1].setSub4(positions[1], triangle[0]);
+    distances[0].setSub4(capsAPoints[0], triVertices[0]);
+    distances[1].setSub4(capsAPoints[1], triVertices[0]);
     projectPoints(planes, distances, 2, distances);
-    float radiusSum = radius + thickness;
-    float expanded = radiusSum + margin;
+    float radiusSum = capsARadius + triBRadius;
+    float expanded = radiusSum + collisionTolerance;
     const float largeDistance = 3.40282e38f;
-    contacts[0].setDistance(largeDistance);
-    contacts[1].setDistance(largeDistance);
-    contacts[2].setDistance(largeDistance);
+    points[0].setDistance(largeDistance);
+    points[1].setDistance(largeDistance);
+    points[2].setDistance(largeDistance);
     {
         ContactVector limit;
         limit.SetAllComponents(expanded);
@@ -1202,7 +1211,7 @@ void __cdecl hkCollideCapsuleUtilCapsVsTri(const ContactVector* positions, float
         hit.setInterpolate4(distances[0], distances[1], t);
         if (hit.allLessThan3(ContactVector::getZero()))
         {
-            ContactRecord* pContact = contacts + 1;
+            ContactRecord* pContact = points + 1;
             pContact->setDistance(-3.40282e38f);
             for (int i = 0; i < 2; ++i)
             {
@@ -1215,12 +1224,12 @@ void __cdecl hkCollideCapsuleUtilCapsVsTri(const ContactVector* positions, float
                         if (signs[i] & ContactCompare::MASK_W)
                         {
                             pContact->getSeparatingNormal() = normal;
-                            pContact->getPosition().setAddMul4(positions[i], normal, thickness - distances[i](3));
+                            pContact->getPosition().setAddMul4(capsAPoints[i], normal, triBRadius - distances[i](3));
                         }
                         else
                         {
                             pContact->getSeparatingNormal().setNeg4(normal);
-                            pContact->getPosition().setAddMul4(positions[i], normal, -thickness - distances[i](3));
+                            pContact->getPosition().setAddMul4(capsAPoints[i], normal, -triBRadius - distances[i](3));
                         }
                         pContact->setDistance(d);
                     }
@@ -1253,39 +1262,39 @@ void __cdecl hkCollideCapsuleUtilCapsVsTri(const ContactVector* positions, float
                                                                      _mm_mul_ps(splatScalar(dw), row.getQuad()));
                         pContact->getSeparatingNormal().normalize3();
                         ContactVector pos;
-                        pos.setInterpolate4(positions[0], positions[1], project);
+                        pos.setInterpolate4(capsAPoints[0], capsAPoints[1], project);
                         float depth = -localSqrt(sq);
-                        pContact->getPosition().setAddMul4(pos, pContact->getNormal(), thickness - depth);
+                        pContact->getPosition().setAddMul4(pos, pContact->getNormal(), triBRadius - depth);
                         pContact->setDistance(depth - radiusSum);
                     }
                 }
             }
             for (int k = 0; k < 3; ++k)
-                if (feature)
+                if (featuresOut)
                 {
-                    feature[k].count = 3;
-                    feature[k].first = 0;
-                    feature[k].second = 1;
-                    feature[k].third = 2;
+                    featuresOut[k].count = 3;
+                    featuresOut[k].first = 0;
+                    featuresOut[k].second = 1;
+                    featuresOut[k].third = 2;
                 }
             return;
         }
     }
     int endpoint = 0;
     ContactVector worldDirection;
-    worldDirection.setSub4(positions[1], positions[0]);
-    ContactRecord* pContact = contacts;
+    worldDirection.setSub4(capsAPoints[1], capsAPoints[0]);
+    ContactRecord* pContact = points;
     bool segmentMode = false;
     if (((signs[0] | signs[1]) & (ContactCompare::MASK_X | ContactCompare::MASK_Y | ContactCompare::MASK_Z)) !=
         (ContactCompare::MASK_X | ContactCompare::MASK_Y | ContactCompare::MASK_Z))
     {
-        if (useFaces)
+        if (searchManifold)
         {
             int combined = signs[0] | signs[1];
-            const float tolerance = margin;
-            contacts[0].setDistance(tolerance);
-            contacts[1].setDistance(tolerance);
-            contacts[2].setDistance(tolerance);
+            const float tolerance = collisionTolerance;
+            points[0].setDistance(tolerance);
+            points[1].setDistance(tolerance);
+            points[2].setDistance(tolerance);
             ContactRecord previous;
             previous.getSeparatingNormal()(3) = 3.40282e38f;
             ContactVector pair[2];
@@ -1295,25 +1304,25 @@ void __cdecl hkCollideCapsuleUtilCapsVsTri(const ContactVector* positions, float
                 if (mask & combined)
                     continue;
                 int left = DAT_010cb442[j], right = DAT_010cb440[j];
-                pair[0] = triangle[left];
-                pair[1] = triangle[right];
-                int kind = hkCollideCapsuleUtilManifoldCapsVsCaps(positions, radius, pair, thickness, contacts);
-                if (feature)
+                pair[0] = triVertices[left];
+                pair[1] = triVertices[right];
+                int kind = hkCollideCapsuleUtilManifoldCapsVsCaps(capsAPoints, capsARadius, pair, triBRadius, points);
+                if (featuresOut)
                     for (int k = 0; k < 3; ++k)
                     {
-                        feature[k].first = (unsigned short)left;
+                        featuresOut[k].first = (unsigned short)left;
                         if (kind & 12)
-                            feature[k].count = 1;
+                            featuresOut[k].count = 1;
                         else
                         {
-                            feature[k].count = 2;
-                            feature[k].second = (unsigned short)right;
+                            featuresOut[k].count = 2;
+                            featuresOut[k].second = (unsigned short)right;
                         }
                     }
-                if (contacts[0].getSeparatingNormal()(3) > previous.getSeparatingNormal()(3))
-                    contacts[0] = previous;
+                if (points[0].getSeparatingNormal()(3) > previous.getSeparatingNormal()(3))
+                    points[0] = previous;
                 else
-                    previous = contacts[0];
+                    previous = points[0];
             }
             return;
         }
@@ -1330,22 +1339,22 @@ void __cdecl hkCollideCapsuleUtilCapsVsTri(const ContactVector* positions, float
         {
             if (signs[endpoint] & ContactCompare::MASK_W)
             {
-                pContact->getPosition().setAddMul4(positions[endpoint], normal, -thickness - distances[endpoint](3));
+                pContact->getPosition().setAddMul4(capsAPoints[endpoint], normal, -triBRadius - distances[endpoint](3));
                 pContact->getSeparatingNormal().setNeg4(normal);
                 pContact->setDistance(-distances[endpoint](3) - radiusSum);
             }
             else
             {
-                pContact->getPosition().setAddMul4(positions[endpoint], normal, thickness - distances[endpoint](3));
+                pContact->getPosition().setAddMul4(capsAPoints[endpoint], normal, triBRadius - distances[endpoint](3));
                 pContact->getSeparatingNormal() = normal;
                 pContact->setDistance(distances[endpoint](3) - radiusSum);
             }
-            if (feature)
+            if (featuresOut)
             {
-                feature[endpoint].count = 3;
-                feature[endpoint].first = 0;
-                feature[endpoint].second = 1;
-                feature[endpoint].third = 2;
+                featuresOut[endpoint].count = 3;
+                featuresOut[endpoint].first = 0;
+                featuresOut[endpoint].second = 1;
+                featuresOut[endpoint].third = 2;
             }
         }
         else
@@ -1365,20 +1374,20 @@ void __cdecl hkCollideCapsuleUtilCapsVsTri(const ContactVector* positions, float
                         continue;
                 }
                 int left = DAT_010cb440[e], right = DAT_010cb442[e];
-                const ContactVector& trianglePoint = triangle[right];
+                const ContactVector& trianglePoint = triVertices[right];
                 ContactVector edge;
-                edge.setSub4(triangle[left], trianglePoint);
+                edge.setSub4(triVertices[left], trianglePoint);
                 ContactClosest closest;
-                int kind = hkLineSegmentUtil_closestLineSegLineSeg(positions[0], worldDirection, trianglePoint, edge, closest);
-                if (feature)
+                int kind = hkLineSegmentUtil_closestLineSegLineSeg(capsAPoints[0], worldDirection, trianglePoint, edge, closest);
+                if (featuresOut)
                 {
-                    feature[endpoint].first = (unsigned short)right;
+                    featuresOut[endpoint].first = (unsigned short)right;
                     if (kind & 12)
-                        feature[endpoint].count = 1;
+                        featuresOut[endpoint].count = 1;
                     else
                     {
-                        feature[endpoint].count = 2;
-                        feature[endpoint].second = (unsigned short)left;
+                        featuresOut[endpoint].count = 2;
+                        featuresOut[endpoint].second = (unsigned short)left;
                     }
                 }
                 float limit = pContact->getDistance() + radiusSum;
@@ -1411,7 +1420,7 @@ void __cdecl hkCollideCapsuleUtilCapsVsTri(const ContactVector* positions, float
                         d = -d;
                         n.setNeg4(n);
                     }
-                    pContact->getPosition().setAddMul4(closest.m_kFirstVector, n, thickness - d);
+                    pContact->getPosition().setAddMul4(closest.m_kFirstVector, n, triBRadius - d);
                     pContact->getSeparatingNormal() = n;
                     pContact->setDistance(d - radiusSum);
                 }

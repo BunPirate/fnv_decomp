@@ -21,25 +21,31 @@ bool TESDataHandler::LoadDescriptionForForm()
 }
 // Initializes the description offset from the file when both are non-null.
 // @fnv 0x00482d50
-void TESDescription::ReadDescriptionFromFile(TESDescription* description, TESFile* file)
+// pdb: TESDescription::LoadDescriptionData | TESDescription.obj | debug, call graph, high
+// pdb params: apDesc, apFile
+void TESDescription::ReadDescriptionFromFile(TESDescription* apDesc, TESFile* apFile)
 {
-    if (description && file)
-        description->SetDescriptionFileOffset(file->GetOffset());
+    if (apDesc && apFile)
+        apDesc->SetDescriptionFileOffset(apFile->GetOffset());
 }
 // @fnv 0x00482c50
+// pdb: TESDescription::TESDescription | TESDescription.obj | retail, upstream name already matches, high
 TESDescription::TESDescription()
 {
     InitializeComponent();
 }
 // @fnv 0x00482e90
-const char* TESDescription::GetDescription(TESForm* form, CHUNK_ID chunk)
+// pdb: TESDescription::GetDescription | TESDescription.obj | retail, upstream name already matches, high
+// pdb params: apForm, aeChunk
+// pdb locals: pform
+const char* TESDescription::GetDescription(TESForm* apForm, CHUNK_ID aeChunk)
 {
     if (!g_dataHandler->LoadDescriptionForForm())
     {
-        TESForm* owner = form;
+        TESForm* owner = apForm;
         if (!owner)
             owner = dynamic_cast<TESForm*>(this);
-        LoadDescriptionForForm(owner, chunk);
+        LoadDescriptionForForm(owner, aeChunk);
     }
     return reinterpret_cast<NiPointer<NiNode>*>(&g_menuParsedXML)->operator->()
                ? reinterpret_cast<const char*>(reinterpret_cast<NiPointer<NiNode>*>(&g_menuParsedXML)->operator->())
@@ -64,6 +70,7 @@ extern int DAT_011c5490;
 
 // Resets the parsed XML string, clears DAT_011c5490, and zeroes the description offset.
 // @fnv 0x00482c80
+// pdb: TESDescription::InitializeDataComponent | TESDescription.obj | retail, vtable slot, high
 void TESDescription::InitializeComponent()
 {
     ((::BSStringT<char>*)&g_menuParsedXML)->Set(0, 0);
@@ -71,18 +78,23 @@ void TESDescription::InitializeComponent()
     m_uiDescriptionFileOffset = 0;
 }
 
-void __cdecl WriteDescChunk(void*, int);
+void __cdecl TESDescription_SaveDescriptionData(void*, int);
 
 // @fnv 0x00482cb0
 // src: COMMUNITY 0x00482cb0
+// pdb: TESDescription::Save | TESDescription.obj | debug, call graph, high
 void __thiscall TESDescription::Save_00482cb0()
 {
-    WriteDescChunk(this, 0x43534544);
+    TESDescription_SaveDescriptionData(this, 0x43534544);
 }
 
 void __cdecl TESForm_AddChunkArray(unsigned int, void*, unsigned int);
 // @fnv 0x00482cd0
-void __cdecl WriteDescChunk(void* apDesc, int aiChunk)
+// src: XBOX_DEBUG_PDB 0x00482cd0
+// pdb: TESDescription::SaveDescriptionData | TESDescription.obj | debug, call graph, high
+// pdb params: apDesc, aiChunk
+// pdb locals: empty
+void __cdecl TESDescription_SaveDescriptionData(void* apDesc, int aiChunk)
 {
     char empty;
     if (apDesc)
@@ -106,6 +118,7 @@ struct S7010
     unsigned int Length();
 };
 // @fnv 0x00482d30
+// pdb: TESDescription::GetDescriptionLength | TESDescription.obj | debug, upstream name already matches, high
 unsigned int __thiscall TESDescription::GetDescriptionLength()
 {
     return ((S7010*)&g_menuParsedXML)->Length();
@@ -119,6 +132,7 @@ struct ClassFFB70
 };
 // Calls FUN_004ffba0 on this, frees this with _Deallocate when flags has bit 1 set, and returns this.
 // @fnv 0x004ffb70
+// pdb: BGSTerminal::`scalar deleting destructor' | BGSTerminal.obj | retail, vtable slot, high
 void* __thiscall ClassFFB70::DestroyIfFlagged(unsigned int flags)
 {
     this->FUN_004ffba0();
@@ -141,6 +155,8 @@ struct FUN_005a6e10_shell
 
 // Returns the string held by m_str if it is non-null, otherwise returns g_011c72c0_arg1.
 // @fnv 0x005a6e10
+// pdb: TESLoadScreen::GetDescription | TESLoadScreen.obj | debug, object-file gap fill, medium
+// pdb params: apForm, aeChunk
 const char* FUN_005a6e10_shell::GetStringOrDefault(int aiUnusedA, int aiUnusedB)
 {
     (void)aiUnusedA;
@@ -154,9 +170,12 @@ struct StrCmpHelper
 };
 
 // @fnv 0x00482df0
-bool __thiscall TESDescription::IsEqualToBase(BaseFormComponent* apComponent)
+// pdb: TESDescription::CompareComponent | TESDescription.obj | retail, vtable slot, high
+// pdb params: apCompareFC
+// pdb locals: pCompare
+bool __thiscall TESDescription::IsEqualToBase(BaseFormComponent* apCompareFC)
 {
-    TESDescription* pDesc = dynamic_cast<TESDescription*>(apComponent);
+    TESDescription* pDesc = dynamic_cast<TESDescription*>(apCompareFC);
     if (!pDesc)
         return true;
     if (GetDescriptionLength() || pDesc->GetDescriptionLength())
@@ -182,14 +201,14 @@ extern SettingString g_011c8394;
 
 #include "../../include/ActorValue.h"
 namespace ActorValue {
-const char* __cdecl GetActorValueName(Index aeIndex);
+const char* __cdecl GetActorValueName(Index aiIndex);
 }
 
 float __cdecl FUN_004bd510(float afValue, float afMult);
 void __cdecl Interface_QueueMenuCreate(int, TESObjectREFR*, int, int, int, int);
 bool __cdecl QueueUIMessage(const char* apMsg, int aeType, const char* apIcon, const char* apSound, float afTime,
                             bool abInstant);
-void __cdecl BGSOpenCloseForm_HandleActivate(TESObjectREFR* apRef, PlayerCharacter* apActor, int aiUnk);
+void __cdecl BGSOpenCloseForm_HandleActivate(TESObjectREFR* apItemActivated, PlayerCharacter* apActionRef, int apOpenCloseForm);
 
 struct TermHackBase0
 {
@@ -231,47 +250,53 @@ struct TermHackBase70
 struct TermHack : TermHackBase0, TermHackBase70
 {
     float BGSTerminal_GetMinSkillRequiredToHack(TESObjectREFR* apRef);
-    virtual void BGSTerminal_HandleOpenFinish(TESObjectREFR* apRef, PlayerCharacter* apActor);
+    virtual void BGSTerminal_HandleOpenFinish(TESObjectREFR* apItemActivated, PlayerCharacter* apActionRef);
 };
 
 // @fnv 0x005015f0
 // src: XBOX_PDB 0x005015f0
-void TermHack::BGSTerminal_HandleOpenFinish(TESObjectREFR* apRef, PlayerCharacter* apActor)
+// pdb: BGSTerminal::HandleOpenFinish | BGSTerminal.obj | retail, upstream name already matches, high
+// pdb params: apItemActivated, apActionRef
+// pdb locals: strmsg
+void TermHack::BGSTerminal_HandleOpenFinish(TESObjectREFR* apItemActivated, PlayerCharacter* apActionRef)
 {
-    if (apRef && apActor == g_thePlayer)
+    if (apItemActivated && apActionRef == g_thePlayer)
     {
-        switch (g_thePlayer->GetTerminalAccessResult(apRef))
+        switch (g_thePlayer->GetTerminalAccessResult(apItemActivated))
         {
         case 0:
         case 1:
-            Interface_QueueMenuCreate(3, apRef, 0, 0, 1, 0);
+            Interface_QueueMenuCreate(3, apItemActivated, 0, 0, 1, 0);
             break;
         case 2:
         case 3:
-            Interface_QueueMenuCreate(2, apRef, 0, 0, 1, 0);
+            Interface_QueueMenuCreate(2, apItemActivated, 0, 0, 1, 0);
             break;
         case 4: {
             ::BSStringT<char> kMsg;
             BSStringT_char_SPrintF(&kMsg, g_011c8394.GetString(), ActorValue::GetActorValueName((ActorValue::Index)0x28),
-                         (int)FUN_004bd510(BGSTerminal_GetMinSkillRequiredToHack(apRef), 1.0f));
+                         (int)FUN_004bd510(BGSTerminal_GetMinSkillRequiredToHack(apItemActivated), 1.0f));
             QueueUIMessage(kMsg, 0, "Interface\\Icons\\Message Icons\\glow_message_vaultboy_sad.dds", 0, 2.0f, false);
         }
         break;
         }
-        BGSOpenCloseForm_HandleActivate(apRef, apActor, 0);
+        BGSOpenCloseForm_HandleActivate(apItemActivated, apActionRef, 0);
     }
 }
 
 class GlobalObject_004037b0
 {
   public:
-    bool FUN_004037f0(const char* apString, unsigned int auiLength);
+    bool FUN_004037f0(const char* apString, unsigned int aiMaxLen);
 };
 extern GlobalObject_004037b0 g_011c5498;
 // @fnv 0x00482d80
-void TESDescription::BaseFormRecord(BaseFormComponent* apComponent)
+// pdb: TESDescription::CopyComponent | TESDescription.obj | retail, vtable slot, high
+// pdb params: apCopyFC
+// pdb locals: pCopy
+void TESDescription::BaseFormRecord(BaseFormComponent* apCopyFC)
 {
-    TESDescription* pDesc = dynamic_cast<TESDescription*>(apComponent);
+    TESDescription* pDesc = dynamic_cast<TESDescription*>(apCopyFC);
     if (!pDesc)
         return;
     g_011c5498.FUN_004037f0((const char*)pDesc->GetDescription(0, (CHUNK_ID)'CSED'), 0);

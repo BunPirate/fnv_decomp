@@ -46,6 +46,7 @@ struct ShapeSubpartStorage
 };
 
 // @fnv 0x00d4ad20
+// pdb: hkpStorageExtendedMeshShape::ShapeSubpartStorage::`scalar deleting destructor' | hkpStorageExtendedMeshShape.obj | retail, vtable slot, high
 ShapeSubpartStorage* ShapeSubpartStorage::FUN_00d4ad20(int deletingFlag)
 {
     FUN_00d4ac70();
@@ -72,6 +73,7 @@ struct hkpStorageExtendedMeshShape_MeshSubpartStorage
 };
 
 // @fnv 0x00d4b120
+// pdb: hkpStorageExtendedMeshShape::MeshSubpartStorage::`scalar deleting destructor' | hkpStorageExtendedMeshShape.obj | retail, vtable slot, high
 hkpStorageExtendedMeshShape_MeshSubpartStorage* hkpStorageExtendedMeshShape_MeshSubpartStorage::DestroyStorage(
     unsigned int deletingDestructor)
 {
@@ -136,6 +138,7 @@ class FUN_00d49cb0 : public FUN_00d56e00
 };
 
 // @fnv 0x00d49cb0
+// pdb: hkpStorageExtendedMeshShape::~hkpStorageExtendedMeshShape | hkpStorageExtendedMeshShape.obj | retail, object-file run extension, low
 FUN_00d49cb0::~FUN_00d49cb0() throw()
 {
     for (int i = 0; i < m_kMeshSubparts.m_iElementCount; i++)
@@ -244,6 +247,8 @@ class FUN_00d4a180 : public FUN_00d56f10
 };
 
 // @fnv 0x00d4a180
+// pdb: hkpStorageExtendedMeshShape::hkpStorageExtendedMeshShape | hkpStorageExtendedMeshShape.obj | retail, object-file run extension, low
+// pdb params: radius, numbits
 FUN_00d4a180::FUN_00d4a180(FinishingFlag flag) throw()
     : FUN_00d56f10(flag), m_kMeshSubparts(FinishingFlag(flag.m_bFinishing)), m_kShapeSubparts(FinishingFlag(flag.m_bFinishing))
 {
@@ -287,6 +292,7 @@ struct FUN_00d4aec0_Class
     virtual FUN_00d4aec0_Class* FUN_00d4aec0(unsigned char flags);
 };
 // @fnv 0x00d4aec0
+// pdb: hkpStorageExtendedMeshShape::`scalar deleting destructor' | hkpStorageExtendedMeshShape.obj | retail, vtable slot, high
 FUN_00d4aec0_Class* FUN_00d4aec0_Class::FUN_00d4aec0(unsigned char flags)
 {
     FUN_00d49cb0();
@@ -299,6 +305,7 @@ FUN_00d4aec0_Class* FUN_00d4aec0_Class::FUN_00d4aec0(unsigned char flags)
 }
 
 // No shared hkpNamedMeshMaterial header yet: filter info followed by hkStringPtr (destructor 0x00cb0c00).
+// pdb: class hkpNamedMeshMaterial, size 0x8, bases: hkpMeshMaterial, 1 members
 struct hkpNamedMeshMaterial : public hkpMeshMaterial
 {
     hkStringPtr m_name;
@@ -357,6 +364,7 @@ class FUN_00d4af60 : public hkReferencedObject
 };
 
 // @fnv 0x00d4af60
+// pdb: hkpStorageExtendedMeshShape::MeshSubpartStorage::~MeshSubpartStorage | hkpStorageExtendedMeshShape.obj | retail, object-file run extension, low
 FUN_00d4af60::~FUN_00d4af60() throw()
 {}
 }  // namespace fnv_00d4af60
@@ -457,6 +465,7 @@ template <typename T, typename A> __forceinline hkArray<T, A>::~hkArray()
 }
 
 // @fnv 0x00d4ac70
+// pdb: hkpStorageExtendedMeshShape::ShapeSubpartStorage::~ShapeSubpartStorage | hkpStorageExtendedMeshShape.obj | retail, object-file run extension, low
 hkpStorageExtendedMeshShape::ShapeSubpartStorage::~ShapeSubpartStorage() throw()
 {}
 
@@ -501,7 +510,7 @@ class FUN_00d4aa70 : public FUN_00d569c0
     char m_pad108[0x8];
 
     FUN_00d4aa70(const FUN_00d569c0* pkMesh) throw();
-    void addTrianglesSubpart(const hkpTrianglesSubpartD4AA& kPart) throw();
+    void addTrianglesSubpart(const hkpTrianglesSubpartD4AA& partIn) throw();
     void addShapesSubpart(const hkpShapesSubpartD4AA& kPart) throw();
 };
 
@@ -509,11 +518,13 @@ typedef char fnv_check_d4aa70_a[(sizeof(FUN_00d4aa70) == 0x110) ? 1 : -1];
 
 // Constructs from pkMesh, copies its half extents, user data and welding data, calls FUN_00d4a2b0 and FUN_00d49dc0 per subpart, then FUN_00d55950.
 // @fnv 0x00d4aa70
+// pdb: hkpStorageExtendedMeshShape::hkpStorageExtendedMeshShape | hkpStorageExtendedMeshShape.obj | retail, object-file run extension, low
+// pdb params: radius, numbits
 FUN_00d4aa70::FUN_00d4aa70(const FUN_00d569c0* pkMesh) throw()
     : FUN_00d569c0(pkMesh->m_fSphereRadius, pkMesh->m_iNumBitsForSubpartIndex)
 {
     m_kAabbHalfExtents = pkMesh->m_kAabbHalfExtents;
-    m_ulUserData = pkMesh->m_ulUserData;
+    m_userData = pkMesh->m_userData;
     m_bDisableWelding = pkMesh->m_bDisableWelding;
 
     for (int i = 0; i < pkMesh->m_kTrianglesSubparts.GetLogicalSize(); i++)
@@ -635,6 +646,8 @@ struct hkpExtendedMeshShapeShapesSubpartD4AD : public hkpExtendedMeshShapeSubpar
 // Copies the base subpart fields, child shapes array, rotation, and translation from kOther into this subpart, then returns a reference to this.
 // @fnv 0x00d4ad60
 // src: GUESS 0x00d4ad60 (confidence: medium)
+// pdb: hkpExtendedMeshShape::ShapesSubpart::operator= | hkpStorageExtendedMeshShape.obj | retail, object-file run extension, low
+// pdb params: __that
 hkpExtendedMeshShapeShapesSubpartD4AD& hkpExtendedMeshShapeShapesSubpartD4AD::CopySubpartFields(
     const hkpExtendedMeshShapeShapesSubpartD4AD& kOther) throw()
 {
@@ -737,12 +750,12 @@ __forceinline void* hkReferencedObject::operator new(std::size_t nbytes)
 {
     hkReferencedObject* b = static_cast<hkReferencedObject*>(
         hkMemoryRouter::getInstance().heap().blockAlloc(nbytes));
-    b->m_usMemSizeAndFlags = static_cast<hkUint16>(nbytes);
+    b->m_memSizeAndFlags = static_cast<hkUint16>(nbytes);
     return b;
 }
 
 class hkClass;
-extern const hkClass g_kHkpMeshMaterialClass;
+extern const hkClass hkpStorageExtendedMeshShapeMaterialClass; // src: XBOX_RETAIL_PDB 0x01268c8c (old: DAT_01268c8c/g_01268c8c/g_kHkpMeshMaterialClass)
 
 struct StorageMaterial : hkpMeshMaterial
 {
@@ -795,11 +808,14 @@ struct TrianglesSubpart
 // Copies partIn into a new TrianglesSubpart, copies its vertex and material index data into MeshSubpartStorage, and returns the new subpart index.
 // @fnv 0x00d49dc0
 // src: HAVOK_LIB 0x00d49dc0
+// pdb: hkpStorageExtendedMeshShape::addShapesSubpart | hkpStorageExtendedMeshShape.obj | retail, upstream name already matches, high
+// pdb params: partIn
+// pdb locals: assertBuf, ostr
 int hkpStorageExtendedMeshShape::addShapesSubpart(const TrianglesSubpart& partIn)
 {
-    TrianglesSubpart& part = *AppendElement();
-    reinterpret_cast<hkArray<::MeshSubpartStorage*>&>(m_kShapeSubparts).pushBack(new ::MeshSubpartStorage());
-    ::MeshSubpartStorage* storage = reinterpret_cast<hkArray<::MeshSubpartStorage*>&>(m_kShapeSubparts).back();
+    TrianglesSubpart& part = *hkpExtendedMeshShape_expandOneShapesSubparts();
+    reinterpret_cast<hkArray<::MeshSubpartStorage*>&>(m_shapestorage).pushBack(new ::MeshSubpartStorage());
+    ::MeshSubpartStorage* storage = reinterpret_cast<hkArray<::MeshSubpartStorage*>&>(m_shapestorage).back();
 
     part.CopySubpartFields(partIn);
 
@@ -877,13 +893,13 @@ int hkpStorageExtendedMeshShape::addShapesSubpart(const TrianglesSubpart& partIn
         StorageMaterial* dst = materials.m_data + first;
         for (int i = 0; i < partIn.m_iNumTriangles; i++)
         {
-            if (partIn.m_pMaterialBase == &g_kHkpMeshMaterialClass)
+            if (partIn.m_pMaterialBase == &hkpStorageExtendedMeshShapeMaterialClass)
             {
                 *dst = *static_cast<const StorageMaterial*>(src);
             }
             else
             {
-                dst->m_uiFilterInfo = src->m_uiFilterInfo;
+                dst->m_filterInfo = src->m_filterInfo;
                 dst->m_fSlipAngle = 1.0f;
                 dst->m_fElasticity = 0.0f;
             }
@@ -1010,7 +1026,7 @@ struct ShapesSubpartS
         m_iIndexStriding = 0;
         m_iNumTriangles = 1;
     }
-    ShapesSubpartS* InitializeConvexSubpartTranslation(hkpConvexShape* const* childShapes, int numChildShapes, const hkVector4& offset);
+    ShapesSubpartS* hkpExtendedMeshShape_ShapesSubpart_ctor(hkpConvexShape* const* childShapes, int numChildShapes, const hkVector4& offset);
 };
 
 static __forceinline bool equals3(const hkVector4& a, const LocalM128& b, hkReal epsilon)
@@ -1022,8 +1038,10 @@ static __forceinline bool equals3(const hkVector4& a, const LocalM128& b, hkReal
 
 // Initializes a convex subpart with child shapes, translation offset, and identity rotation, encoding a non-zero flag in the translation w component.
 // @fnv 0x00d56500
-// src: GUESS 0x00d56500 (confidence: medium)
-ShapesSubpartS* ShapesSubpartS::InitializeConvexSubpartTranslation(hkpConvexShape* const* childShapes, int numChildShapes,
+// src: XBOX_RETAIL_PDB 0x00d56500
+// pdb: hkpExtendedMeshShape::ShapesSubpart::ShapesSubpart | hkpExtendedMeshShape.obj | retail, object-file gap fill, high
+// pdb params: flag
+ShapesSubpartS* ShapesSubpartS::hkpExtendedMeshShape_ShapesSubpart_ctor(hkpConvexShape* const* childShapes, int numChildShapes,
                                              const hkVector4& offset)
 {
     initSubpart(1);

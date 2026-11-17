@@ -53,9 +53,9 @@ class BloodSplatterShaderLocal_00b80d30 : public BSShader
     NiPointer<NiD3DPixelShader> m_spPixelShaderVariants[2];  // +0x7C, 8 bytes
     BloodSplatterShaderLocal_00b80d30();
     static void* __cdecl operator new(unsigned int size);
-    BSShader* CreateShader();
-    void InitializeShaderData();
-    bool ConfigureShaderPass();
+    BSShader* BSShaderBloodSplatter_CreateShader();
+    void BSShaderBloodSplatter_LoadShaders();
+    bool BSShaderBloodSplatter_LoadStagesAndPasses();
     void BSShaderBloodSplatterProperty_SetClampD3D(unsigned int);
     void BSShaderBloodSplatter_InitPass(unsigned int);
     void NiD3DPass_SetPixelShader(NiRefObject*);
@@ -65,9 +65,9 @@ class BloodSplatterShaderLocal_00b80d30 : public BSShader
     void X_Shader_ClearPassStages();
     bool BSShaderBloodSplatter_ReloadShaders();
     void* FUN_00b80e40(unsigned int);
-    void CreateShaderConstantMaps();
-    void InitPassItems(struct FUN_00b80b30_arg*);
-    void ApplyBloodShader(fnv_00b80c20::RenderInput*);
+    void BSShaderBloodSplatter_CreateConstantMaps();
+    void BSShaderBloodSplatter_SetupGeometryTextures(struct FUN_00b80b30_arg*);
+    void BSShaderBloodSplatter_SetupGeometryConstants(fnv_00b80c20::RenderInput*);
 };
 
 class NiD3DVertexDeclaration : public NiD3DShaderDeclaration
@@ -94,7 +94,10 @@ struct SplatterFloat4
 };
 
 // @fnv 0x00b80e70
-BSShader* BloodSplatterShaderLocal_00b80d30::CreateShader()
+// src: XBOX_RETAIL_PDB 0x00b80e70
+// pdb: BSShaderBloodSplatter::CreateShader | BSShaderBloodSplatter.obj | retail, call graph, high
+// pdb locals: pdecl, pshader
+BSShader* BloodSplatterShaderLocal_00b80d30::BSShaderBloodSplatter_CreateShader()
 {
     NiD3DVertexDeclaration* declaration = NiD3DVertexDeclaration::Create(g_pkRenderer, 2, 1);
     typedef void(__thiscall * Method5)(void*, unsigned int, unsigned int, unsigned int, unsigned int, unsigned int);
@@ -105,8 +108,8 @@ BSShader* BloodSplatterShaderLocal_00b80d30::CreateShader()
 
     BloodSplatterShaderLocal_00b80d30* shader = new BloodSplatterShaderLocal_00b80d30;
     shader->Initialize();
-    shader->InitializeShaderData();
-    shader->ConfigureShaderPass();
+    shader->BSShaderBloodSplatter_LoadShaders();
+    shader->BSShaderBloodSplatter_LoadStagesAndPasses();
     // The approved BSShader header does not declare slot 71 yet.
     reinterpret_cast<Method0>((*reinterpret_cast<void***>(shader))[71])(shader);
     shader->UseShaderDeclaration(declaration);
@@ -114,6 +117,7 @@ BSShader* BloodSplatterShaderLocal_00b80d30::CreateShader()
 }
 
 // @fnv 0x00b80d30
+// pdb: BSShaderBloodSplatter::BSShaderBloodSplatter | BSShaderBloodSplatter.obj | retail, unique string literal, high
 BloodSplatterShaderLocal_00b80d30::BloodSplatterShaderLocal_00b80d30() : BSShader()
 {
     SplatterFloat4 values = {g_splatterDefaultFirst, g_splatterDefaultFirst, 0.0f, g_splatterDefaultSecond};
@@ -197,13 +201,13 @@ inline void NiD3DPass::SetRenderState(unsigned int state, unsigned int value, bo
         m_pkRenderStateGroup = D3DRenderStateGroup::GetCurrentRenderStateGroup();
     m_pkRenderStateGroup->SetRenderState(state, value, save);
 }
-inline void NiD3DPass::SetVertexShader(NiD3DVertexShader* shader)
+inline void NiD3DPass::SetVertexShader(NiD3DVertexShader* pkVertexShader)
 {
-    m_spVertexShader = shader;
+    m_spVertexShader = pkVertexShader;
 }
-inline void NiD3DPass::SetPixelShader(NiD3DPixelShader* shader)
+inline void NiD3DPass::SetPixelShader(NiD3DPixelShader* pkPixelShader)
 {
-    m_spPixelShader = shader;
+    m_spPixelShader = pkPixelShader;
 }
 
 void ConfigureBeamStage(BeamStage*, unsigned int, unsigned int, unsigned int, bool);
@@ -214,7 +218,10 @@ extern NiD3DPass* DAT_0126f74c;
 
 // Configures two NiD3DPass objects with two texture stages each, render states, vertex and pixel shaders, and returns true.
 // @fnv 0x00b807d0
-bool BloodSplatterShaderLocal_00b80d30::ConfigureShaderPass()
+// src: XBOX_RETAIL_PDB 0x00b807d0
+// pdb: BSShaderBloodSplatter::LoadStagesAndPasses | BSShaderBloodSplatter.obj | retail, call graph, high
+// pdb locals: i, spStage
+bool BloodSplatterShaderLocal_00b80d30::BSShaderBloodSplatter_LoadStagesAndPasses()
 {
     NiD3DPass::CreateD3DPass(spRenderPass[0]);
     for (unsigned int i = 0; i < 2; ++i)
@@ -263,7 +270,10 @@ struct SplatterShaderInfo
     _D3DXMACRO macros[9];
 };
 // @fnv 0x00b80090
-void BloodSplatterShaderLocal_00b80d30::InitializeShaderData()
+// src: XBOX_RETAIL_PDB 0x00b80090
+// pdb: BSShaderBloodSplatter::LoadShaders | BSShaderBloodSplatter.obj | retail, string-set bridge, high
+// pdb locals: pixelShaderParams, ptempFName, vertexShaderParamsFlare, vertexShaderParams, pcacheFName, pixelShaderParamsFlare
+void BloodSplatterShaderLocal_00b80d30::BSShaderBloodSplatter_LoadShaders()
 {
     SplatterShaderInfo vertex;
     vertex.file = "BloodSplatter\\BloodSplatter.v.hlsl";
@@ -310,9 +320,11 @@ void BloodSplatterShaderLocal_00b80d30::BSShaderBloodSplatterProperty_SetClampD3
 
 // @fnv 0x00b805d0
 // src: COMMUNITY 0x00b805d0
-void BloodSplatterShaderLocal_00b80d30::BSShaderBloodSplatter_InitPass(unsigned int pass)
+// pdb: BSShaderBloodSplatter::InitPass | BSShaderBloodSplatter.obj | debug, upstream name already matches, high
+// pdb params: auiCurrentPass
+void BloodSplatterShaderLocal_00b80d30::BSShaderBloodSplatter_InitPass(unsigned int auiCurrentPass)
 {
-    switch (pass)
+    switch (auiCurrentPass)
     {
     case 0x2f0:
         DAT_0126f74c = spRenderPass[1].m_pObject;
@@ -326,17 +338,19 @@ void BloodSplatterShaderLocal_00b80d30::BSShaderBloodSplatter_InitPass(unsigned 
 // Assigns value to the NiRefObject pointer at offset 0x44, releasing the old reference and incrementing the new one's ref count.
 // @fnv 0x00b80600
 // src: COMMUNITY 0x00b80600
-void BloodSplatterShaderLocal_00b80d30::NiD3DPass_SetPixelShader(NiRefObject* value)
+// pdb: NiD3DPass::SetPixelShader | NiXenonErrorShader.obj | debug, upstream name already matches, high
+// pdb params: pkPixelShader
+void BloodSplatterShaderLocal_00b80d30::NiD3DPass_SetPixelShader(NiRefObject* pkPixelShader)
 {
     NiRefObject** ppSlot = reinterpret_cast<NiRefObject**>(&m_uiRemainingStages);
     NiRefObject* old = *ppSlot;
-    if (old != value)
+    if (old != pkPixelShader)
     {
         if (old && InterlockedDecrement(reinterpret_cast<volatile long*>(&old->m_uiRefCount)) == 0)
             reinterpret_cast<void(__thiscall*)(void*)>((*reinterpret_cast<void***>(old))[1])(old);
-        *ppSlot = value;
-        if (value)
-            InterlockedIncrement(reinterpret_cast<volatile long*>(&value->m_uiRefCount));
+        *ppSlot = pkPixelShader;
+        if (pkPixelShader)
+            InterlockedIncrement(reinterpret_cast<volatile long*>(&pkPixelShader->m_uiRefCount));
     }
 }
 
@@ -347,13 +361,13 @@ int __thiscall BloodSplatterShaderLocal_00b80d30::ImageSpaceShader_GetShaderDecl
     return reinterpret_cast<int>(m_spShaderDecl.m_pObject);
 }
 
-extern int g_011fedc8;
+extern int BSShaderBloodSplatter_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011fedc8 (old: g_011fedc8)
 
 // @fnv 0x00b807b0
 // src: COMMUNITY 0x00b807b0
 int* __cdecl BSShaderBloodSplatter_GetRTTI()
 {
-    return &g_011fedc8;
+    return &BSShaderBloodSplatter_ms_RTTI;
 }
 
 // Clears the texture stages in both shader passes.
@@ -375,15 +389,17 @@ void BloodSplatterShaderLocal_00b80d30::X_Shader_ClearPassStages()
 
 // @fnv 0x00b80b20
 // src: COMMUNITY 0x00b80b20
+// pdb: BSShaderBloodSplatter::ReloadShaders | BSShaderBloodSplatter.obj | retail, upstream name already matches, high
 bool BloodSplatterShaderLocal_00b80d30::BSShaderBloodSplatter_ReloadShaders()
 {
-    InitializeShaderData();
-    return ConfigureShaderPass();
+    BSShaderBloodSplatter_LoadShaders();
+    return BSShaderBloodSplatter_LoadStagesAndPasses();
 }
 
 void __cdecl _delete(void*, unsigned int);
 // Destroys the shader and releases its allocation when bit 0 of the flags is set.
 // @fnv 0x00b80e40
+// pdb: BSShaderBloodSplatter::`scalar deleting destructor' | BSShaderBloodSplatter.obj | retail, object-file gap fill, high
 void* __thiscall BloodSplatterShaderLocal_00b80d30::FUN_00b80e40(unsigned int auiFlags)
 {
     this->BloodSplatterShaderLocal_00b80d30::~BloodSplatterShaderLocal_00b80d30();
@@ -409,7 +425,7 @@ inline NiPoint3 NiPoint3::operator-(const NiPoint3& kV) const
 
 struct Picker_00b803b0
 {
-    bool ShadowSceneNode_GetAverageLightPos(const NiPoint3& akStart, const NiPoint3& kWorldPosition, NiPoint3& kHit);
+    bool ShadowSceneNode_GetAverageLightPos(const NiPoint3& aTargetCenter, const NiPoint3& aTargetDir, NiPoint3& aLoc);
 };
 extern Picker_00b803b0* DAT_011f91c8;
 extern float DAT_011fed90;
@@ -425,25 +441,28 @@ struct Camera_00b803b0
     float m20;  // +0x80
     float m21, m22;
     NiPoint3 m_kWorldTranslate;  // +0x8c
-    bool ProjectPointToScreen(const NiPoint3& kPt, float& fX, float& fY, float& fZ, float fZeroTolerance);
+    bool NiCamera_WorldPtToScreenPt3(const NiPoint3& kPt, float& fX, float& fY, float& fZ, float fZeroTolerance);
 };
 
 // @fnv 0x00b803b0
 // src: COMMUNITY 0x00b803b0
-void __cdecl BSShaderBloodSplatter_ComputeScreenSpaceLightLoc(Camera_00b803b0* pkCamera)
+// pdb: BSShaderBloodSplatter::ComputeScreenSpaceLightLoc | BSShaderBloodSplatter.obj | retail, upstream name already matches, high
+// pdb params: apCamera
+// pdb locals: loc, vect, worlddir, ud, fy, fz, lightvect, fx
+void __cdecl BSShaderBloodSplatter_ComputeScreenSpaceLightLoc(Camera_00b803b0* apCamera)
 {
     DAT_011fed90 = 0.0f;
     NiPoint3 kHit;
-    if (DAT_011f91c8->ShadowSceneNode_GetAverageLightPos(pkCamera->m_kWorldTranslate, NiPoint3(pkCamera->m00, pkCamera->m10, pkCamera->m20),
+    if (DAT_011f91c8->ShadowSceneNode_GetAverageLightPos(apCamera->m_kWorldTranslate, NiPoint3(apCamera->m00, apCamera->m10, apCamera->m20),
                                    kHit))
     {
-        NiPoint3 kWorldPosition(pkCamera->m00, pkCamera->m10, pkCamera->m20);
-        NiPoint3 kDelta = kHit - pkCamera->m_kWorldTranslate;
+        NiPoint3 kWorldPosition(apCamera->m00, apCamera->m10, apCamera->m20);
+        NiPoint3 kDelta = kHit - apCamera->m_kWorldTranslate;
         kWorldPosition.ComputeMagnitude();
         kDelta.ComputeMagnitude();
         DAT_011fed90 = kDelta * kWorldPosition;
         float fX, fY, fZ;
-        if (pkCamera->ProjectPointToScreen(kHit, fX, fY, fZ, 1e-05f))
+        if (apCamera->NiCamera_WorldPtToScreenPt3(kHit, fX, fY, fZ, 1e-05f))
         {
             if (fX < 0.0f)
                 fX = 0.0f;
@@ -488,7 +507,10 @@ extern float DAT_011feda4;
 
 // Lazily creates the two NiD3DShaderConstantMap objects stored at offsets 0x30 and 0x34 and registers their shader constant entries.
 // @fnv 0x00b80f50
-void BloodSplatterShaderLocal_00b80d30::CreateShaderConstantMaps()
+// src: XBOX_RETAIL_PDB 0x00b80f50
+// pdb: BSShaderBloodSplatter::CreateConstantMaps | BSShaderBloodSplatter.obj | retail, string-set bridge, high
+// pdb locals: uiConstantPoint4Flags, uiDefinedMatrixFlags
+void BloodSplatterShaderLocal_00b80d30::BSShaderBloodSplatter_CreateConstantMaps()
 {
     NiPointer<NiD3DShaderConstantMap>& pAlphaMap = m_spPixelConstantMap;
     NiPointer<NiD3DShaderConstantMap>& m_pVertexShaderConstantMap = m_spVertexConstantMap;
@@ -509,6 +531,8 @@ void BloodSplatterShaderLocal_00b80d30::CreateShaderConstantMaps()
 
 // Releases the two pass, vertex-shader and pixel-shader references and the white-flash texture, clearing each pointer.
 // @fnv 0x00b80650
+// pdb: BSShaderBloodSplatter::~BSShaderBloodSplatter | BSShaderBloodSplatter.obj | debug, call graph, medium
+// pdb locals: ui
 BloodSplatterShaderLocal_00b80d30::~BloodSplatterShaderLocal_00b80d30()
 {
     for (unsigned int i = 0; i < 2; ++i)
@@ -635,15 +659,19 @@ struct FUN_00b80b30_mgr
     void* ImageSpaceTexture_GetTexture();
 };
 
-extern FUN_00b80b30_mgr DAT_012005a4;
+extern FUN_00b80b30_mgr ImageSpaceEffectHDR_spAdaptedLight; // src: XBOX_RETAIL_PDB 0x012005a4 (old: DAT_012005a4)
 extern int DAT_011f91e4;
 extern int DAT_011fedc4;
 
 // Updates the pass texture stages and configures them for the current render pass.
 // @fnv 0x00b80b30
-void BloodSplatterShaderLocal_00b80d30::InitPassItems(FUN_00b80b30_arg* apArg)
+// src: XBOX_RETAIL_PDB 0x00b80b30
+// pdb: BSShaderBloodSplatter::SetupGeometryTextures | BSShaderBloodSplatter.obj | retail, object-file gap fill, high
+// pdb params: apState
+// pdb locals: pstage, epass, ppass, pprop, i
+void BloodSplatterShaderLocal_00b80d30::BSShaderBloodSplatter_SetupGeometryTextures(FUN_00b80b30_arg* apState)
 {
-    FUN_00b80b30_sub* sub = apArg->m_pSub;
+    FUN_00b80b30_sub* sub = apState->m_pSub;
     if (DAT_011f91e4 == 0x2f1)
     {
         NiD3DPass* pass = spRenderPass[0].m_pObject;
@@ -663,9 +691,9 @@ void BloodSplatterShaderLocal_00b80d30::InitPassItems(FUN_00b80b30_arg* apArg)
         void* value0 = sub->v51();
         pFirstItem->ApplyPairToState(value0);
         BeamStage* pSecondItem = pass->m_kStages.m_pBase[1].m_pObject;
-        if (DAT_012005a4.ImageSpaceTexture_GetTexture())
+        if (ImageSpaceEffectHDR_spAdaptedLight.ImageSpaceTexture_GetTexture())
         {
-            pSecondItem->m_uiTexture = (unsigned int)DAT_012005a4.ImageSpaceTexture_GetTexture();
+            pSecondItem->m_uiTexture = (unsigned int)ImageSpaceEffectHDR_spAdaptedLight.ImageSpaceTexture_GetTexture();
         }
         else
         {
@@ -725,7 +753,11 @@ struct RenderInput
 
 // Computes a scaled value from the render input's object, applies the pixel and vertex constant maps to the current geometry with the bound and transform.
 // @fnv 0x00b80c20
-void BloodSplatterShaderLocal_00b80d30::ApplyBloodShader(fnv_00b80c20::RenderInput* input)
+// src: XBOX_RETAIL_PDB 0x00b80c20
+// pdb: BSShaderBloodSplatter::SetupGeometryConstants | BSShaderBloodSplatter.obj | retail, object-file gap fill, high
+// pdb params: apState
+// pdb locals: pgeometry, epass, worldTransform, apRenderPass, worldBound, pprop, pbufferData, pskin
+void BloodSplatterShaderLocal_00b80d30::BSShaderBloodSplatter_SetupGeometryConstants(fnv_00b80c20::RenderInput* apState)
 {
     using namespace fnv_00b80c20;
     NiGeometry* geom = *DAT_011f91e0;
@@ -738,7 +770,7 @@ void BloodSplatterShaderLocal_00b80d30::ApplyBloodShader(fnv_00b80c20::RenderInp
     typedef void(__thiscall* ApplyObjectTransform)(NiDX9Renderer*, const NiTransform&, bool);
     reinterpret_cast<ApplyObjectTransform>(&ApplyRendererObjectTransform)(
         reinterpret_cast<NiDX9Renderer*>(m_pkD3DRenderer), *transform, false);
-    float value = *input->object->value * input->object->scale;
+    float value = *apState->object->value * apState->object->scale;
     *(float*)&DAT_011fedb4 = value * DAT_011ad878;
     if (fnv_00b80c20::DAT_011f91e4 == 0x2f0)
         *(float*)&DAT_011fedb4 = DAT_011fed90 * DAT_011ad874 * *(float*)&DAT_011fedb4;
@@ -749,7 +781,7 @@ void BloodSplatterShaderLocal_00b80d30::ApplyBloodShader(fnv_00b80c20::RenderInp
         if (shader)
             map->ConfigureShaderConstantMap(shader, geom, properties,
                 static_cast<const NiSkinPartition::Partition*>(0), data,
-                reinterpret_cast<const NiPropertyState*>(input), static_cast<const NiDynamicEffectState*>(0),
+                reinterpret_cast<const NiPropertyState*>(apState), static_cast<const NiDynamicEffectState*>(0),
                 *transform, *bound, 0, true);
     }
     map = m_spVertexConstantMap.m_pObject;
@@ -759,7 +791,7 @@ void BloodSplatterShaderLocal_00b80d30::ApplyBloodShader(fnv_00b80c20::RenderInp
         if (shader)
             map->ConfigureShaderConstantMap(shader, geom, properties,
                 static_cast<const NiSkinPartition::Partition*>(0), data,
-                reinterpret_cast<const NiPropertyState*>(input), static_cast<const NiDynamicEffectState*>(0),
+                reinterpret_cast<const NiPropertyState*>(apState), static_cast<const NiDynamicEffectState*>(0),
                 *transform, *bound, 0, true);
     }
 }

@@ -58,7 +58,7 @@ public:
     PodPoint3* FUN_00439e90(PodPoint3* output, const PodPoint3* other) const;
     PodPoint3 SubtractIntoVector(const PodPoint3& other) const;
     void SubtractIntoVector();
-    PodPoint3 FUN_004b3800(const PodPoint3& axis) const;
+    PodPoint3 FUN_004b3800(const PodPoint3& pt) const;
     void Unitize_004a0c10();
     float FUN_00457910();
     float FUN_00457990() const;
@@ -180,17 +180,17 @@ public:
     void Unitize_004a0c10();
     float FUN_004a7290();
     float FUN_004a7290() const;
-    LocalVec3 FUN_004b3800(const LocalVec3& other) const;
+    LocalVec3 FUN_004b3800(const LocalVec3& pt) const;
     LocalVec3 ProcessAndReturnValue_0053d280(float divisor);
     float NiPoint3_XYLength();
     float NiPoint3_XYLength() const;
     void ComputeValue_0063c8a0(const LocalVec3* other);
     void ComputeValue_0063c8a0(void* other);
     void FUN_006815c0();
-    float CVec3_Distance(LocalVec3* other);
-    float CVec3_Distance(const LocalVec3& other) const;
-    LocalVec3 TransformPointByMatrix4(const Mat& matrix);
-    LocalVec3 TransformPointByMatrix4(const Matrix4* matrix);
+    float CVec3_Distance(LocalVec3* cVec);
+    float CVec3_Distance(const LocalVec3& cVec) const;
+    LocalVec3 TransformPointByMatrix4(const Mat& cTransform);
+    LocalVec3 TransformPointByMatrix4(const Matrix4* cTransform);
     void Normalize_00b12790();
     LocalVec3 Diff_00b13040(void* other);
     LocalVec3 Diff_00b13040(const LocalVec3& other) const;
@@ -285,6 +285,8 @@ struct OrientedBoxBound
 };
 
 // @fnv 0x00ea0800
+// pdb: NiBoxBV::SaveBinary | NiBoxBV.obj | retail, upstream name already matches, high
+// pdb params: kStream
 void __thiscall NiBoxBV::SaveBinary(NiStream& kStream)
 {
     NiBoundingVolume::SaveBinary(kStream);
@@ -301,6 +303,9 @@ struct StandIn
 };
 // @fnv 0x00ea07a0
 // src: GUESS 0x00ea07a0 (confidence: low)
+// pdb: NiBoxBV::operator== | NiBoxBV.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiParallelogram::NiParallelogram
+// pdb params: kABV
 int __thiscall StandIn::ProcessAndReturnValue_00ea07a0(const NiBoundingVolume& kABV)
 {
     if (kABV.F3() == 1)
@@ -390,23 +395,26 @@ struct Isect
 };
 // @fnv 0x00ea3950
 // src: XBOX_PDB 0x00ea3950
-bool NiBoxBV_BoxSphereFindIntersect(float afLength, const void* pA, const void* pB, const void* pC, const void* pD, float* pfTime,
-                  NiPoint3* pPoint, bool bNormal, NiPoint3* pNormal, NiPoint3* pNegNormal)
+// pdb: NiBoxBV::BoxSphereFindIntersect | NiBoxBV.obj | retail, upstream name already matches, high
+// pdb params: fTime, kBV0, kV0, kBV1, kV1, fIntrTime, kIntrPt, bCalcNormals, kNormal0, kNormal1
+// pdb locals: kIntersector
+bool NiBoxBV_BoxSphereFindIntersect(float fTime, const void* kBV0, const void* kV0, const void* kBV1, const void* kV1, float* fIntrTime,
+                  NiPoint3* kIntrPt, bool bCalcNormals, NiPoint3* kNormal0, NiPoint3* kNormal1)
 {
     Isect k;
-    k.InitRegion(pA, pC, afLength, 0.001f, g_011c5aa8_arg1, 0x20);
-    k.Solve(pB, pD);
-    *pfTime = k.NiIntersector_GetContactTime();
+    k.InitRegion(kBV0, kBV1, fTime, 0.001f, g_011c5aa8_arg1, 0x20);
+    k.Solve(kV0, kV1);
+    *fIntrTime = k.NiIntersector_GetContactTime();
     if (k.FUN_00be0aa0() != 3 && k.FUN_00be0aa0() != 2)
     {
         k.SetVtbl();
         return false;
     }
-    *pPoint = k.NiIntersector_GetContactPoint();
-    if (bNormal)
+    *kIntrPt = k.NiIntersector_GetContactPoint();
+    if (bCalcNormals)
     {
-        *pNormal = k.NiIntersector_GetContactNormal();
-        *pNegNormal = -*pNormal;
+        *kNormal0 = k.NiIntersector_GetContactNormal();
+        *kNormal1 = -*kNormal0;
     }
     k.SetVtbl();
     return true;
@@ -454,15 +462,17 @@ struct Ea07Owner
     int m_00;
     Ea07Sub m_04;
     void __thiscall nullsub_3(int a);
-    void __thiscall NiBoxBV_LoadBinary(int a);
+    void __thiscall NiBoxBV_LoadBinary(int kStream);
 };
 
 // @fnv 0x00ea07e0
 // src: GAMEBRYO_SRC 0x00ea07e0
-void Ea07Owner::NiBoxBV_LoadBinary(int a)
+// pdb: NiBoxBV::LoadBinary | NiBoxBV.obj | retail, upstream name already matches, high
+// pdb params: kStream
+void Ea07Owner::NiBoxBV_LoadBinary(int kStream)
 {
-    this->nullsub_3(a);
-    m_04.WriteToStream(a);
+    this->nullsub_3(kStream);
+    m_04.WriteToStream(kStream);
 }
 
 extern const float DAT_010141cc;
@@ -481,23 +491,26 @@ struct PointPairState
 };
 // @fnv 0x00ea3c50
 // src: XBOX_PDB 0x00ea3c50
-bool NiBoxBV_BoxCapsuleFindIntersect(float length, const void* a, const void* b, const void* c, const void* d, float* pfTime, NiPoint3* point,
-                  bool normals, NiPoint3* normal, NiPoint3* negative)
+// pdb: NiBoxBV::BoxCapsuleFindIntersect | NiBoxBV.obj | retail, upstream name already matches, high
+// pdb params: fTime, kBV0, kV0, kBV1, kV1, fIntrTime, kIntrPt, bCalcNormals, kNormal0, kNormal1
+// pdb locals: kIntersector
+bool NiBoxBV_BoxCapsuleFindIntersect(float fTime, const void* kBV0, const void* kV0, const void* kBV1, const void* kV1, float* fIntrTime, NiPoint3* kIntrPt,
+                  bool bCalcNormals, NiPoint3* kNormal0, NiPoint3* kNormal1)
 {
     PointPairState isect;
-    isect.FUN_00eb3890(a, c, length, DAT_01017d00, DAT_010141cc, 32);
-    isect.Solve(b, d);
-    *pfTime = isect.NiIntersector_GetContactTime();
+    isect.FUN_00eb3890(kBV0, kBV1, fTime, DAT_01017d00, DAT_010141cc, 32);
+    isect.Solve(kV0, kV1);
+    *fIntrTime = isect.NiIntersector_GetContactTime();
     if (isect.FUN_00be0aa0() != 3 && isect.FUN_00be0aa0() != 2)
     {
         isect.SetVtbl();
         return false;
     }
-    *point = isect.NiIntersector_GetContactPoint();
-    if (normals)
+    *kIntrPt = isect.NiIntersector_GetContactPoint();
+    if (bCalcNormals)
     {
-        *normal = isect.NiIntersector_GetContactNormal();
-        *negative = -*normal;
+        *kNormal0 = isect.NiIntersector_GetContactNormal();
+        *kNormal1 = -*kNormal0;
     }
     isect.SetVtbl();
     return true;
@@ -523,9 +536,9 @@ struct V3
     {
         return x * v.x + y * v.y + z * v.z;
     }
-    V3 Cross(const V3& v) const
+    V3 Cross(const V3& pt) const
     {
-        return V3(y * v.z - z * v.y, z * v.x - x * v.z, x * v.y - y * v.x);
+        return V3(y * pt.z - z * pt.y, z * pt.x - x * pt.z, x * pt.y - y * pt.x);
     }
 };
 struct CenteredPointBounds
@@ -545,7 +558,11 @@ inline float AbsF(float f)
 }
 // Tests whether a triangle moving by (kV1-kV0)*fTime intersects the oriented bounding box using projection tests.
 // @fnv 0x00ea2190
-bool IntersectsTriangle(float fTime, const BoxVolume& kBV0, const V3& kV0, const V3& kVert0, const V3& kVert1,
+// src: XBOX_RETAIL_PDB 0x00ea2190
+// pdb: NiBoxBV::BoxTriTestIntersect | NiBoxBV.obj | retail, object-file gap fill, high
+// pdb params: fTime, kBV0, kV0, kVert0, kVert1, kVert2, kV1
+// pdb locals: A2dW, A0xE2dD, A1xE1, A1xE1dD, A0dD, A0xE0dD, A0xE1, A1xE1dW, A1xE2dD, A2xE1, D, A0xE1dW, A1xE0dD, A2xE0dW, A2xE1dW, A, A2dE2, A0dE2, A2xE1dD, A2dN, R, A2dE0, kBBV, A0dE1 ...
+bool NiBoxBV_BoxTriTestIntersect(float fTime, const BoxVolume& kBV0, const V3& kV0, const V3& kVert0, const V3& kVert1,
                         const V3& kVert2, const V3& kV1)
 {
     const BoxVolume& kBBV = (const BoxVolume&)kBV0;
@@ -1347,6 +1364,9 @@ class OBoxBV
 
 // @fnv 0x00ea0ad0
 // src: GAMEBRYO_LIB 0x00ea0ad0
+// pdb: NiBoxBV::BoxBoxTestIntersect | NiBoxBV.obj | retail, upstream name already matches, high
+// pdb params: fTime, kBV0, kV0, kBV1, kV1
+// pdb locals: kBBV0, AD0, A, D0, R, kWxD0, afWA, kBBV1, extA, D1, AD1, R01, B, R0, afWB, fAB, extB, W, R1, AB
 bool __cdecl NiBoxBV_BoxBoxTestIntersect(float fTime, const OBoxBV& kBV0, const PodPoint3& kV0, const OBoxBV& kBV1, const PodPoint3& kV1)
 {
     const OBox& kBox0 = kBV0.m_kBoundsBox;
@@ -1801,6 +1821,9 @@ bool IntersectsSphereAndBox(float fTime, const BoxBVStub& kBV0, const LocalVec3&
 }  // namespace fnv_00ea7530
 
 // @fnv 0x00ea08a0
+// pdb: NiBoxBV::Copy | NiBoxBV.obj | debug, upstream name already matches, high
+// pdb params: kABV
+// pdb locals: kBBV
 void NiBoxBV::Copy(const NiBoundingVolume& kABV)
 {
     NiBoxBV* kBBV = this;
@@ -1845,6 +1868,9 @@ struct BoxNormal
 // Builds a vector from side-selected box axes, including an axis when velocity is zero or its axis dot velocity exceeds the threshold.
 // @fnv 0x00ea3a60
 // src: GUESS 0x00ea3a60 (confidence: low)
+// pdb: NiBoxBV::GetNormal | NiBoxBV.obj | debug, object-file run extension, low
+// pdb params: iSign0, iSign1, iSign2, kVelocity
+// pdb locals: uiAxisCount, bZeroVelocity, kNormal
 NormalVec BoxNormal::CopyData_00ea3a60(int iXSide, int iYSide, int iZSide, NormalVec kMotionVelocity)
 {
     int iNumAxes = 0;
@@ -1911,20 +1937,23 @@ struct FnvStringArray
 };
 struct FnvTextProcessor
 {
-    void AddString(const char* text, FnvStringArray* array);
+    void AddString(const char* pcPrefix, FnvStringArray* pkStrings);
 };
 // Formats text into a new buffer, grows the array if needed, and appends the buffer pointer at the current count index.
 // @fnv 0x00eab7b0
-void FnvTextProcessor::AddString(const char* text, FnvStringArray* array)
+// pdb: NiBoxBV::AddViewerStrings | NiBoxBV.obj | retail, string-set bridge, high
+// pdb params: pcPrefix, pkStrings
+// pdb locals: pString, uiLen
+void FnvTextProcessor::AddString(const char* pcPrefix, FnvStringArray* pkStrings)
 {
-    unsigned int length = (unsigned int)strlen(text) + 10;
-    const char* q = text;
-    text = (const char*)_NiMalloc_00aa1070(length);
-    FUN_00a305b0((char*)text, length, &DAT_010f1844, q);
-    unsigned int index = array->count;
-    if (index >= array->capacity)
-        array->FUN_0096ad30(index + array->growth);
-    array->FUN_0096ae90(index, &text);
+    unsigned int length = (unsigned int)strlen(pcPrefix) + 10;
+    const char* q = pcPrefix;
+    pcPrefix = (const char*)_NiMalloc_00aa1070(length);
+    FUN_00a305b0((char*)pcPrefix, length, &DAT_010f1844, q);
+    unsigned int index = pkStrings->count;
+    if (index >= pkStrings->capacity)
+        pkStrings->FUN_0096ad30(index + pkStrings->growth);
+    pkStrings->FUN_0096ae90(index, &pcPrefix);
 }
 
 struct SolPoint
@@ -1996,6 +2025,10 @@ struct SolBoxVolume : NiBoundingVolume
 };
 // Applies a WorldTransform to a source SolBoxVolume, updating this box's center, axes, and extents.
 // @fnv 0x00ea08c0
+// pdb: NiBoxBV::UpdateWorldData | NiBoxBV.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiBoxBV::BoxSphereTestIntersect
+// pdb params: kModelABV, kWorld
+// pdb locals: kModelBox
 void SolBoxVolume::TransformFrom(const NiBoundingVolume& source, const WorldTransform& transform)
 {
     const SolBoxVolume& input = static_cast<const SolBoxVolume&>(source);
@@ -2069,8 +2102,8 @@ struct BoxSphereIsect
     int unk44;
     int unk48;
     int unk4c;
-    void Init(const CenteredPointBounds* a, const SphereShape* b, float c, float d, float e, int f);
-    void SetVelocities(const void* a, const void* b);
+    void Init(const CenteredPointBounds* kBox, const SphereShape* kCapsule, float fMaxTime, float fDerivativeTimeStep, float fPseudodistanceThreshold, int iMaxIterations);
+    void SetVelocities(const void* kV0, const void* kV1);
     int GetType();
     void Release();
 };
@@ -2086,18 +2119,21 @@ static inline float AbsF(float f)
 // Checks if a sphere overlaps a box via axis projections, or if their velocities cause a collision within the given time step.
 // @fnv 0x00ea2030
 // src: XBOX_PDB 0x00ea2030
-bool NiBoxBV_BoxCapsuleTestIntersect(float fTime, const CenteredPointBounds* pBox, const void* pVel0, const SphereShape* pSphere, const void* pVel1)
+// pdb: NiBoxBV::BoxCapsuleTestIntersect | NiBoxBV.obj | retail, upstream name already matches, high
+// pdb params: fTime, kBV0, kV0, kBV1, kV1
+// pdb locals: fCx, kBBV, kIntersector, kDeltaC, kCBV, fCy, fCz
+bool NiBoxBV_BoxCapsuleTestIntersect(float fTime, const CenteredPointBounds* kBV0, const void* kV0, const SphereShape* kBV1, const void* kV1)
 {
-    BoxPt d = pSphere->center - pBox->center;
+    BoxPt d = kBV1->center - kBV0->center;
 
-    if (AbsF(pBox->axis0.Dot(d)) <= pBox->extent0 &&
-        AbsF(d.x * pBox->axis1.x + d.y * pBox->axis1.y + d.z * pBox->axis1.z) <= pBox->extent1 &&
-        AbsF(pBox->axis2.Dot(d)) <= pBox->extent2)
+    if (AbsF(kBV0->axis0.Dot(d)) <= kBV0->extent0 &&
+        AbsF(d.x * kBV0->axis1.x + d.y * kBV0->axis1.y + d.z * kBV0->axis1.z) <= kBV0->extent1 &&
+        AbsF(kBV0->axis2.Dot(d)) <= kBV0->extent2)
         return true;
 
     BoxSphereIsect kIsect;
-    kIsect.Init(pBox, pSphere, fTime, DAT_01017d00, g_011c5aa8_arg1, 0x20);
-    kIsect.SetVelocities(pVel0, pVel1);
+    kIsect.Init(kBV0, kBV1, fTime, DAT_01017d00, g_011c5aa8_arg1, 0x20);
+    kIsect.SetVelocities(kV0, kV1);
     bool bIntersecting;
     if (kIsect.GetType() == 3 || kIsect.GetType() == 2)
         bIntersecting = true;
@@ -2124,9 +2160,9 @@ class ReworkPoint
     {
         return ReworkPoint(x - o.x, y - o.y, z - o.z);
     }
-    ReworkPoint Cross(const ReworkPoint& o) const
+    ReworkPoint Cross(const ReworkPoint& pt) const
     {
-        return ReworkPoint(y * o.z - z * o.y, z * o.x - x * o.z, x * o.y - y * o.x);
+        return ReworkPoint(y * pt.z - z * pt.y, z * pt.x - x * pt.z, x * pt.y - y * pt.x);
     }
     ReworkPoint EdgeCross(const ReworkPoint& o) const
     {
@@ -2221,29 +2257,32 @@ inline float ReworkAbs(float fValue)
 // Tests a moving triangle against an oriented bounding box, returning the earliest hit time, point, and optional normals.
 // @fnv 0x00ea3d60
 // src: COMMUNITY 0x00ea3d60
-bool __cdecl NiBoxBV_BoxTriFindIntersect(float maxTime, const ReworkBox& box, const ReworkPoint& vel0, const ReworkPoint& p0,
-                          const ReworkPoint& p1, const ReworkPoint& p2, const ReworkPoint& vel1, float& hitTime,
-                          ReworkPoint& hitPoint, bool wantNormals, ReworkPoint& normal0, ReworkPoint& normal1)
+// pdb: NiBoxBV::BoxTriFindIntersect | NiBoxBV.obj | retail, upstream name already matches, high
+// pdb params: fTime, kBV0, kV0, kVert0, kVert1, kVert2, kV1, fIntrTime, kIntrPt, bCalcNormals, kNormal0, kNormal1
+// pdb locals: uiType, A0xE2dD, A1xE1, A1xE1dD, DxE, A0xE0dD, A0xE1, A1xE1dW, A1xE2dD, A2xE1, D, A0xE1dW, A1xE0dD, A2xE0dW, A2xE1dW, A, A2xE1dD, R, kBBV, extA, N, AE, A1xE2dW, A0xE0dW ...
+bool __cdecl NiBoxBV_BoxTriFindIntersect(float fTime, const ReworkBox& kBV0, const ReworkPoint& kV0, const ReworkPoint& kVert0,
+                          const ReworkPoint& kVert1, const ReworkPoint& kVert2, const ReworkPoint& kV1, float& fIntrTime,
+                          ReworkPoint& kIntrPt, bool bCalcNormals, ReworkPoint& kNormal0, ReworkPoint& kNormal1)
 {
-    const ReworkBox& bv = box;
+    const ReworkBox& bv = kBV0;
 
     const ReworkPoint* axes = bv.GetAxes();
     const float* pExtents = bv.GetExtents();
 
-    ReworkPoint vRelVel = vel1 - vel0;
+    ReworkPoint vRelVel = kV1 - kV0;
 
     ReworkPoint vDelta;
     ReworkPoint vEdge[3];
     ReworkPoint vTriNormal;
-    vEdge[0] = p1 - p0;
-    vEdge[1] = p2 - p0;
+    vEdge[0] = kVert1 - kVert0;
+    vEdge[1] = kVert2 - kVert0;
     vTriNormal = vEdge[0].Cross(vEdge[1]);
-    vDelta = p0 - bv.GetNavMeshData();
+    vDelta = kVert0 - bv.GetNavMeshData();
 
     unsigned int hitAxis = 0;
     unsigned int hitEdge = 0;
     int side = 0;
-    hitTime = 0.0f;
+    fIntrTime = 0.0f;
     int i;
 
     float axN[3];
@@ -2258,12 +2297,12 @@ bool __cdecl NiBoxBV_BoxTriFindIntersect(float maxTime, const ReworkBox& box, co
         if ((fNDot) > (radius))
         {
             nW = (vTriNormal).Dot(vRelVel);
-            if ((fNDot) + ((maxTime)*nW) > (radius))
+            if ((fNDot) + ((fTime)*nW) > (radius))
                 return false;
             t = ((radius) - (fNDot)) / nW;
-            if (t > (hitTime))
+            if (t > (fIntrTime))
             {
-                (hitTime) = t;
+                (fIntrTime) = t;
                 (hitAxis) = (1);
                 (side) = 1;
             }
@@ -2271,12 +2310,12 @@ bool __cdecl NiBoxBV_BoxTriFindIntersect(float maxTime, const ReworkBox& box, co
         else if ((fNDot) < -(radius))
         {
             nW = (vTriNormal).Dot(vRelVel);
-            if ((fNDot) + ((maxTime)*nW) < -(radius))
+            if ((fNDot) + ((fTime)*nW) < -(radius))
                 return false;
             t = -((radius) + (fNDot)) / nW;
-            if (t > (hitTime))
+            if (t > (fIntrTime))
             {
-                (hitTime) = t;
+                (fIntrTime) = t;
                 (hitAxis) = (1);
                 (side) = -1;
             }
@@ -2301,12 +2340,12 @@ bool __cdecl NiBoxBV_BoxTriFindIntersect(float maxTime, const ReworkBox& box, co
                 {
                     if ((axE[i][1]) >= 0.0f)
                     {
-                        if ((axD[i]) + ((maxTime) * (axW)) > (pExtents[i]))
+                        if ((axD[i]) + ((fTime) * (axW)) > (pExtents[i]))
                             return false;
                         t = ((pExtents[i]) - (axD[i])) / (axW);
-                        if (t > (hitTime))
+                        if (t > (fIntrTime))
                         {
-                            (hitTime) = t;
+                            (fIntrTime) = t;
                             (hitAxis) = (i + 2);
                             (hitEdge) = 0;
                             (side) = 1;
@@ -2317,12 +2356,12 @@ bool __cdecl NiBoxBV_BoxTriFindIntersect(float maxTime, const ReworkBox& box, co
                         lo = (axD[i]) + (axE[i][1]);
                         if (lo > (pExtents[i]))
                         {
-                            if (lo + ((maxTime) * (axW)) > (pExtents[i]))
+                            if (lo + ((fTime) * (axW)) > (pExtents[i]))
                                 return false;
                             t = ((pExtents[i]) - lo) / (axW);
-                            if (t > (hitTime))
+                            if (t > (fIntrTime))
                             {
-                                (hitTime) = t;
+                                (fIntrTime) = t;
                                 (hitAxis) = (i + 2);
                                 (hitEdge) = 2;
                                 (side) = 1;
@@ -2335,12 +2374,12 @@ bool __cdecl NiBoxBV_BoxTriFindIntersect(float maxTime, const ReworkBox& box, co
                     lo = (axD[i]) + (axE[i][1]);
                     if (lo > (pExtents[i]))
                     {
-                        if (lo + ((maxTime) * (axW)) > (pExtents[i]))
+                        if (lo + ((fTime) * (axW)) > (pExtents[i]))
                             return false;
                         t = ((pExtents[i]) - lo) / (axW);
-                        if (t > (hitTime))
+                        if (t > (fIntrTime))
                         {
-                            (hitTime) = t;
+                            (fIntrTime) = t;
                             (hitAxis) = (i + 2);
                             (hitEdge) = 2;
                             (side) = 1;
@@ -2352,12 +2391,12 @@ bool __cdecl NiBoxBV_BoxTriFindIntersect(float maxTime, const ReworkBox& box, co
                     lo = (axD[i]) + (axE[i][0]);
                     if (lo > (pExtents[i]))
                     {
-                        if (lo + ((maxTime) * (axW)) > (pExtents[i]))
+                        if (lo + ((fTime) * (axW)) > (pExtents[i]))
                             return false;
                         t = ((pExtents[i]) - lo) / (axW);
-                        if (t > (hitTime))
+                        if (t > (fIntrTime))
                         {
-                            (hitTime) = t;
+                            (fIntrTime) = t;
                             (hitAxis) = (i + 2);
                             (hitEdge) = 1;
                             (side) = 1;
@@ -2372,12 +2411,12 @@ bool __cdecl NiBoxBV_BoxTriFindIntersect(float maxTime, const ReworkBox& box, co
                 {
                     if ((axE[i][1]) <= 0.0f)
                     {
-                        if ((axD[i]) + ((maxTime) * (axW)) < -(pExtents[i]))
+                        if ((axD[i]) + ((fTime) * (axW)) < -(pExtents[i]))
                             return false;
                         t = -((pExtents[i]) + (axD[i])) / (axW);
-                        if (t > (hitTime))
+                        if (t > (fIntrTime))
                         {
-                            (hitTime) = t;
+                            (fIntrTime) = t;
                             (hitAxis) = (i + 2);
                             (hitEdge) = 0;
                             (side) = -1;
@@ -2388,12 +2427,12 @@ bool __cdecl NiBoxBV_BoxTriFindIntersect(float maxTime, const ReworkBox& box, co
                         hi = (axD[i]) + (axE[i][1]);
                         if (hi < -(pExtents[i]))
                         {
-                            if (hi + ((maxTime) * (axW)) < -(pExtents[i]))
+                            if (hi + ((fTime) * (axW)) < -(pExtents[i]))
                                 return false;
                             t = -((pExtents[i]) + hi) / (axW);
-                            if (t > (hitTime))
+                            if (t > (fIntrTime))
                             {
-                                (hitTime) = t;
+                                (fIntrTime) = t;
                                 (hitAxis) = (i + 2);
                                 (hitEdge) = 2;
                                 (side) = -1;
@@ -2406,12 +2445,12 @@ bool __cdecl NiBoxBV_BoxTriFindIntersect(float maxTime, const ReworkBox& box, co
                     hi = (axD[i]) + (axE[i][1]);
                     if (hi < -(pExtents[i]))
                     {
-                        if (hi + ((maxTime) * (axW)) < -(pExtents[i]))
+                        if (hi + ((fTime) * (axW)) < -(pExtents[i]))
                             return false;
                         t = -((pExtents[i]) + hi) / (axW);
-                        if (t > (hitTime))
+                        if (t > (fIntrTime))
                         {
-                            (hitTime) = t;
+                            (fIntrTime) = t;
                             (hitAxis) = (i + 2);
                             (hitEdge) = 2;
                             (side) = -1;
@@ -2423,12 +2462,12 @@ bool __cdecl NiBoxBV_BoxTriFindIntersect(float maxTime, const ReworkBox& box, co
                     hi = (axD[i]) + (axE[i][0]);
                     if (hi < -(pExtents[i]))
                     {
-                        if (hi + ((maxTime) * (axW)) < -(pExtents[i]))
+                        if (hi + ((fTime) * (axW)) < -(pExtents[i]))
                             return false;
                         t = -((pExtents[i]) + hi) / (axW);
-                        if (t > (hitTime))
+                        if (t > (fIntrTime))
                         {
-                            (hitTime) = t;
+                            (fIntrTime) = t;
                             (hitAxis) = (i + 2);
                             (hitEdge) = 1;
                             (side) = -1;
@@ -2450,12 +2489,12 @@ bool __cdecl NiBoxBV_BoxTriFindIntersect(float maxTime, const ReworkBox& box, co
         {
             if ((axN[0]) >= 0.0f)
             {
-                if ((fC00Dot) + ((maxTime) * (fC00Vel)) > (radius))
+                if ((fC00Dot) + ((fTime) * (fC00Vel)) > (radius))
                     return false;
                 t = ((radius) - (fC00Dot)) / (fC00Vel);
-                if (t > (hitTime))
+                if (t > (fIntrTime))
                 {
-                    (hitTime) = t;
+                    (fIntrTime) = t;
                     (hitAxis) = (5);
                     (hitEdge) = 0;
                     (side) = 1;
@@ -2466,12 +2505,12 @@ bool __cdecl NiBoxBV_BoxTriFindIntersect(float maxTime, const ReworkBox& box, co
                 float lo = (fC00Dot) + (axN[0]);
                 if (lo > (radius))
                 {
-                    if (lo + ((maxTime) * (fC00Vel)) > (radius))
+                    if (lo + ((fTime) * (fC00Vel)) > (radius))
                         return false;
                     t = ((radius)-lo) / (fC00Vel);
-                    if (t > (hitTime))
+                    if (t > (fIntrTime))
                     {
-                        (hitTime) = t;
+                        (fIntrTime) = t;
                         (hitAxis) = (5);
                         (hitEdge) = 1;
                         (side) = 1;
@@ -2483,12 +2522,12 @@ bool __cdecl NiBoxBV_BoxTriFindIntersect(float maxTime, const ReworkBox& box, co
         {
             if ((axN[0]) <= 0.0f)
             {
-                if ((fC00Dot) + ((maxTime) * (fC00Vel)) < -(radius))
+                if ((fC00Dot) + ((fTime) * (fC00Vel)) < -(radius))
                     return false;
                 t = -((radius) + (fC00Dot)) / (fC00Vel);
-                if (t > (hitTime))
+                if (t > (fIntrTime))
                 {
-                    (hitTime) = t;
+                    (fIntrTime) = t;
                     (hitAxis) = (5);
                     (hitEdge) = 0;
                     (side) = -1;
@@ -2499,12 +2538,12 @@ bool __cdecl NiBoxBV_BoxTriFindIntersect(float maxTime, const ReworkBox& box, co
                 float hi = (fC00Dot) + (axN[0]);
                 if (hi < -(radius))
                 {
-                    if (hi + ((maxTime) * (fC00Vel)) < -(radius))
+                    if (hi + ((fTime) * (fC00Vel)) < -(radius))
                         return false;
                     t = -((radius) + hi) / (fC00Vel);
-                    if (t > (hitTime))
+                    if (t > (fIntrTime))
                     {
-                        (hitTime) = t;
+                        (fIntrTime) = t;
                         (hitAxis) = (5);
                         (hitEdge) = 1;
                         (side) = -1;
@@ -2524,12 +2563,12 @@ bool __cdecl NiBoxBV_BoxTriFindIntersect(float maxTime, const ReworkBox& box, co
         {
             if ((-axN[0]) >= 0.0f)
             {
-                if ((fC01Dot) + ((maxTime) * (fC01Vel)) > (radius))
+                if ((fC01Dot) + ((fTime) * (fC01Vel)) > (radius))
                     return false;
                 t = ((radius) - (fC01Dot)) / (fC01Vel);
-                if (t > (hitTime))
+                if (t > (fIntrTime))
                 {
-                    (hitTime) = t;
+                    (fIntrTime) = t;
                     (hitAxis) = (6);
                     (hitEdge) = 0;
                     (side) = 1;
@@ -2540,12 +2579,12 @@ bool __cdecl NiBoxBV_BoxTriFindIntersect(float maxTime, const ReworkBox& box, co
                 float lo = (fC01Dot) + (-axN[0]);
                 if (lo > (radius))
                 {
-                    if (lo + ((maxTime) * (fC01Vel)) > (radius))
+                    if (lo + ((fTime) * (fC01Vel)) > (radius))
                         return false;
                     t = ((radius)-lo) / (fC01Vel);
-                    if (t > (hitTime))
+                    if (t > (fIntrTime))
                     {
-                        (hitTime) = t;
+                        (fIntrTime) = t;
                         (hitAxis) = (6);
                         (hitEdge) = 1;
                         (side) = 1;
@@ -2557,12 +2596,12 @@ bool __cdecl NiBoxBV_BoxTriFindIntersect(float maxTime, const ReworkBox& box, co
         {
             if ((-axN[0]) <= 0.0f)
             {
-                if ((fC01Dot) + ((maxTime) * (fC01Vel)) < -(radius))
+                if ((fC01Dot) + ((fTime) * (fC01Vel)) < -(radius))
                     return false;
                 t = -((radius) + (fC01Dot)) / (fC01Vel);
-                if (t > (hitTime))
+                if (t > (fIntrTime))
                 {
-                    (hitTime) = t;
+                    (fIntrTime) = t;
                     (hitAxis) = (6);
                     (hitEdge) = 0;
                     (side) = -1;
@@ -2573,12 +2612,12 @@ bool __cdecl NiBoxBV_BoxTriFindIntersect(float maxTime, const ReworkBox& box, co
                 float hi = (fC01Dot) + (-axN[0]);
                 if (hi < -(radius))
                 {
-                    if (hi + ((maxTime) * (fC01Vel)) < -(radius))
+                    if (hi + ((fTime) * (fC01Vel)) < -(radius))
                         return false;
                     t = -((radius) + hi) / (fC01Vel);
-                    if (t > (hitTime))
+                    if (t > (fIntrTime))
                     {
-                        (hitTime) = t;
+                        (fIntrTime) = t;
                         (hitAxis) = (6);
                         (hitEdge) = 1;
                         (side) = -1;
@@ -2598,12 +2637,12 @@ bool __cdecl NiBoxBV_BoxTriFindIntersect(float maxTime, const ReworkBox& box, co
         {
             if ((-axN[0]) >= 0.0f)
             {
-                if ((fC02Dot) + ((maxTime) * (fC02Vel)) > (radius))
+                if ((fC02Dot) + ((fTime) * (fC02Vel)) > (radius))
                     return false;
                 t = ((radius) - (fC02Dot)) / (fC02Vel);
-                if (t > (hitTime))
+                if (t > (fIntrTime))
                 {
-                    (hitTime) = t;
+                    (fIntrTime) = t;
                     (hitAxis) = (7);
                     (hitEdge) = 0;
                     (side) = 1;
@@ -2614,12 +2653,12 @@ bool __cdecl NiBoxBV_BoxTriFindIntersect(float maxTime, const ReworkBox& box, co
                 float lo = (fC02Dot) + (-axN[0]);
                 if (lo > (radius))
                 {
-                    if (lo + ((maxTime) * (fC02Vel)) > (radius))
+                    if (lo + ((fTime) * (fC02Vel)) > (radius))
                         return false;
                     t = ((radius)-lo) / (fC02Vel);
-                    if (t > (hitTime))
+                    if (t > (fIntrTime))
                     {
-                        (hitTime) = t;
+                        (fIntrTime) = t;
                         (hitAxis) = (7);
                         (hitEdge) = 1;
                         (side) = 1;
@@ -2631,12 +2670,12 @@ bool __cdecl NiBoxBV_BoxTriFindIntersect(float maxTime, const ReworkBox& box, co
         {
             if ((-axN[0]) <= 0.0f)
             {
-                if ((fC02Dot) + ((maxTime) * (fC02Vel)) < -(radius))
+                if ((fC02Dot) + ((fTime) * (fC02Vel)) < -(radius))
                     return false;
                 t = -((radius) + (fC02Dot)) / (fC02Vel);
-                if (t > (hitTime))
+                if (t > (fIntrTime))
                 {
-                    (hitTime) = t;
+                    (fIntrTime) = t;
                     (hitAxis) = (7);
                     (hitEdge) = 0;
                     (side) = -1;
@@ -2647,12 +2686,12 @@ bool __cdecl NiBoxBV_BoxTriFindIntersect(float maxTime, const ReworkBox& box, co
                 float hi = (fC02Dot) + (-axN[0]);
                 if (hi < -(radius))
                 {
-                    if (hi + ((maxTime) * (fC02Vel)) < -(radius))
+                    if (hi + ((fTime) * (fC02Vel)) < -(radius))
                         return false;
                     t = -((radius) + hi) / (fC02Vel);
-                    if (t > (hitTime))
+                    if (t > (fIntrTime))
                     {
-                        (hitTime) = t;
+                        (fIntrTime) = t;
                         (hitAxis) = (7);
                         (hitEdge) = 1;
                         (side) = -1;
@@ -2672,12 +2711,12 @@ bool __cdecl NiBoxBV_BoxTriFindIntersect(float maxTime, const ReworkBox& box, co
         {
             if ((axN[1]) >= 0.0f)
             {
-                if ((fC10Dot) + ((maxTime) * (fC10Vel)) > (radius))
+                if ((fC10Dot) + ((fTime) * (fC10Vel)) > (radius))
                     return false;
                 t = ((radius) - (fC10Dot)) / (fC10Vel);
-                if (t > (hitTime))
+                if (t > (fIntrTime))
                 {
-                    (hitTime) = t;
+                    (fIntrTime) = t;
                     (hitAxis) = (8);
                     (hitEdge) = 0;
                     (side) = 1;
@@ -2688,12 +2727,12 @@ bool __cdecl NiBoxBV_BoxTriFindIntersect(float maxTime, const ReworkBox& box, co
                 float lo = (fC10Dot) + (axN[1]);
                 if (lo > (radius))
                 {
-                    if (lo + ((maxTime) * (fC10Vel)) > (radius))
+                    if (lo + ((fTime) * (fC10Vel)) > (radius))
                         return false;
                     t = ((radius)-lo) / (fC10Vel);
-                    if (t > (hitTime))
+                    if (t > (fIntrTime))
                     {
-                        (hitTime) = t;
+                        (fIntrTime) = t;
                         (hitAxis) = (8);
                         (hitEdge) = 1;
                         (side) = 1;
@@ -2705,12 +2744,12 @@ bool __cdecl NiBoxBV_BoxTriFindIntersect(float maxTime, const ReworkBox& box, co
         {
             if ((axN[1]) <= 0.0f)
             {
-                if ((fC10Dot) + ((maxTime) * (fC10Vel)) < -(radius))
+                if ((fC10Dot) + ((fTime) * (fC10Vel)) < -(radius))
                     return false;
                 t = -((radius) + (fC10Dot)) / (fC10Vel);
-                if (t > (hitTime))
+                if (t > (fIntrTime))
                 {
-                    (hitTime) = t;
+                    (fIntrTime) = t;
                     (hitAxis) = (8);
                     (hitEdge) = 0;
                     (side) = -1;
@@ -2721,12 +2760,12 @@ bool __cdecl NiBoxBV_BoxTriFindIntersect(float maxTime, const ReworkBox& box, co
                 float hi = (fC10Dot) + (axN[1]);
                 if (hi < -(radius))
                 {
-                    if (hi + ((maxTime) * (fC10Vel)) < -(radius))
+                    if (hi + ((fTime) * (fC10Vel)) < -(radius))
                         return false;
                     t = -((radius) + hi) / (fC10Vel);
-                    if (t > (hitTime))
+                    if (t > (fIntrTime))
                     {
-                        (hitTime) = t;
+                        (fIntrTime) = t;
                         (hitAxis) = (8);
                         (hitEdge) = 1;
                         (side) = -1;
@@ -2746,12 +2785,12 @@ bool __cdecl NiBoxBV_BoxTriFindIntersect(float maxTime, const ReworkBox& box, co
         {
             if ((-axN[1]) >= 0.0f)
             {
-                if ((fC11Dot) + ((maxTime) * (fC11Vel)) > (radius))
+                if ((fC11Dot) + ((fTime) * (fC11Vel)) > (radius))
                     return false;
                 t = ((radius) - (fC11Dot)) / (fC11Vel);
-                if (t > (hitTime))
+                if (t > (fIntrTime))
                 {
-                    (hitTime) = t;
+                    (fIntrTime) = t;
                     (hitAxis) = (9);
                     (hitEdge) = 0;
                     (side) = 1;
@@ -2762,12 +2801,12 @@ bool __cdecl NiBoxBV_BoxTriFindIntersect(float maxTime, const ReworkBox& box, co
                 float lo = (fC11Dot) + (-axN[1]);
                 if (lo > (radius))
                 {
-                    if (lo + ((maxTime) * (fC11Vel)) > (radius))
+                    if (lo + ((fTime) * (fC11Vel)) > (radius))
                         return false;
                     t = ((radius)-lo) / (fC11Vel);
-                    if (t > (hitTime))
+                    if (t > (fIntrTime))
                     {
-                        (hitTime) = t;
+                        (fIntrTime) = t;
                         (hitAxis) = (9);
                         (hitEdge) = 1;
                         (side) = 1;
@@ -2779,12 +2818,12 @@ bool __cdecl NiBoxBV_BoxTriFindIntersect(float maxTime, const ReworkBox& box, co
         {
             if ((-axN[1]) <= 0.0f)
             {
-                if ((fC11Dot) + ((maxTime) * (fC11Vel)) < -(radius))
+                if ((fC11Dot) + ((fTime) * (fC11Vel)) < -(radius))
                     return false;
                 t = -((radius) + (fC11Dot)) / (fC11Vel);
-                if (t > (hitTime))
+                if (t > (fIntrTime))
                 {
-                    (hitTime) = t;
+                    (fIntrTime) = t;
                     (hitAxis) = (9);
                     (hitEdge) = 0;
                     (side) = -1;
@@ -2795,12 +2834,12 @@ bool __cdecl NiBoxBV_BoxTriFindIntersect(float maxTime, const ReworkBox& box, co
                 float hi = (fC11Dot) + (-axN[1]);
                 if (hi < -(radius))
                 {
-                    if (hi + ((maxTime) * (fC11Vel)) < -(radius))
+                    if (hi + ((fTime) * (fC11Vel)) < -(radius))
                         return false;
                     t = -((radius) + hi) / (fC11Vel);
-                    if (t > (hitTime))
+                    if (t > (fIntrTime))
                     {
-                        (hitTime) = t;
+                        (fIntrTime) = t;
                         (hitAxis) = (9);
                         (hitEdge) = 1;
                         (side) = -1;
@@ -2819,12 +2858,12 @@ bool __cdecl NiBoxBV_BoxTriFindIntersect(float maxTime, const ReworkBox& box, co
         {
             if ((-axN[1]) >= 0.0f)
             {
-                if ((fC12Dot) + ((maxTime) * (fC12Vel)) > (radius))
+                if ((fC12Dot) + ((fTime) * (fC12Vel)) > (radius))
                     return false;
                 t = ((radius) - (fC12Dot)) / (fC12Vel);
-                if (t > (hitTime))
+                if (t > (fIntrTime))
                 {
-                    (hitTime) = t;
+                    (fIntrTime) = t;
                     (hitAxis) = (10);
                     (hitEdge) = 0;
                     (side) = 1;
@@ -2835,12 +2874,12 @@ bool __cdecl NiBoxBV_BoxTriFindIntersect(float maxTime, const ReworkBox& box, co
                 float lo = (fC12Dot) + (-axN[1]);
                 if (lo > (radius))
                 {
-                    if (lo + ((maxTime) * (fC12Vel)) > (radius))
+                    if (lo + ((fTime) * (fC12Vel)) > (radius))
                         return false;
                     t = ((radius)-lo) / (fC12Vel);
-                    if (t > (hitTime))
+                    if (t > (fIntrTime))
                     {
-                        (hitTime) = t;
+                        (fIntrTime) = t;
                         (hitAxis) = (10);
                         (hitEdge) = 1;
                         (side) = 1;
@@ -2852,12 +2891,12 @@ bool __cdecl NiBoxBV_BoxTriFindIntersect(float maxTime, const ReworkBox& box, co
         {
             if ((-axN[1]) <= 0.0f)
             {
-                if ((fC12Dot) + ((maxTime) * (fC12Vel)) < -(radius))
+                if ((fC12Dot) + ((fTime) * (fC12Vel)) < -(radius))
                     return false;
                 t = -((radius) + (fC12Dot)) / (fC12Vel);
-                if (t > (hitTime))
+                if (t > (fIntrTime))
                 {
-                    (hitTime) = t;
+                    (fIntrTime) = t;
                     (hitAxis) = (10);
                     (hitEdge) = 0;
                     (side) = -1;
@@ -2868,12 +2907,12 @@ bool __cdecl NiBoxBV_BoxTriFindIntersect(float maxTime, const ReworkBox& box, co
                 float hi = (fC12Dot) + (-axN[1]);
                 if (hi < -(radius))
                 {
-                    if (hi + ((maxTime) * (fC12Vel)) < -(radius))
+                    if (hi + ((fTime) * (fC12Vel)) < -(radius))
                         return false;
                     t = -((radius) + hi) / (fC12Vel);
-                    if (t > (hitTime))
+                    if (t > (fIntrTime))
                     {
-                        (hitTime) = t;
+                        (fIntrTime) = t;
                         (hitAxis) = (10);
                         (hitEdge) = 1;
                         (side) = -1;
@@ -2893,12 +2932,12 @@ bool __cdecl NiBoxBV_BoxTriFindIntersect(float maxTime, const ReworkBox& box, co
         {
             if ((axN[2]) >= 0.0f)
             {
-                if ((fC20Dot) + ((maxTime) * (fC20Vel)) > (radius))
+                if ((fC20Dot) + ((fTime) * (fC20Vel)) > (radius))
                     return false;
                 t = ((radius) - (fC20Dot)) / (fC20Vel);
-                if (t > (hitTime))
+                if (t > (fIntrTime))
                 {
-                    (hitTime) = t;
+                    (fIntrTime) = t;
                     (hitAxis) = (11);
                     (hitEdge) = 0;
                     (side) = 1;
@@ -2909,12 +2948,12 @@ bool __cdecl NiBoxBV_BoxTriFindIntersect(float maxTime, const ReworkBox& box, co
                 float lo = (fC20Dot) + (axN[2]);
                 if (lo > (radius))
                 {
-                    if (lo + ((maxTime) * (fC20Vel)) > (radius))
+                    if (lo + ((fTime) * (fC20Vel)) > (radius))
                         return false;
                     t = ((radius)-lo) / (fC20Vel);
-                    if (t > (hitTime))
+                    if (t > (fIntrTime))
                     {
-                        (hitTime) = t;
+                        (fIntrTime) = t;
                         (hitAxis) = (11);
                         (hitEdge) = 1;
                         (side) = 1;
@@ -2926,12 +2965,12 @@ bool __cdecl NiBoxBV_BoxTriFindIntersect(float maxTime, const ReworkBox& box, co
         {
             if ((axN[2]) <= 0.0f)
             {
-                if ((fC20Dot) + ((maxTime) * (fC20Vel)) < -(radius))
+                if ((fC20Dot) + ((fTime) * (fC20Vel)) < -(radius))
                     return false;
                 t = -((radius) + (fC20Dot)) / (fC20Vel);
-                if (t > (hitTime))
+                if (t > (fIntrTime))
                 {
-                    (hitTime) = t;
+                    (fIntrTime) = t;
                     (hitAxis) = (11);
                     (hitEdge) = 0;
                     (side) = -1;
@@ -2942,12 +2981,12 @@ bool __cdecl NiBoxBV_BoxTriFindIntersect(float maxTime, const ReworkBox& box, co
                 float hi = (fC20Dot) + (axN[2]);
                 if (hi < -(radius))
                 {
-                    if (hi + ((maxTime) * (fC20Vel)) < -(radius))
+                    if (hi + ((fTime) * (fC20Vel)) < -(radius))
                         return false;
                     t = -((radius) + hi) / (fC20Vel);
-                    if (t > (hitTime))
+                    if (t > (fIntrTime))
                     {
-                        (hitTime) = t;
+                        (fIntrTime) = t;
                         (hitAxis) = (11);
                         (hitEdge) = 1;
                         (side) = -1;
@@ -2967,12 +3006,12 @@ bool __cdecl NiBoxBV_BoxTriFindIntersect(float maxTime, const ReworkBox& box, co
         {
             if ((-axN[2]) >= 0.0f)
             {
-                if ((fC21Dot) + ((maxTime) * (fC21Vel)) > (radius))
+                if ((fC21Dot) + ((fTime) * (fC21Vel)) > (radius))
                     return false;
                 t = ((radius) - (fC21Dot)) / (fC21Vel);
-                if (t > (hitTime))
+                if (t > (fIntrTime))
                 {
-                    (hitTime) = t;
+                    (fIntrTime) = t;
                     (hitAxis) = (12);
                     (hitEdge) = 0;
                     (side) = 1;
@@ -2983,12 +3022,12 @@ bool __cdecl NiBoxBV_BoxTriFindIntersect(float maxTime, const ReworkBox& box, co
                 float lo = (fC21Dot) + (-axN[2]);
                 if (lo > (radius))
                 {
-                    if (lo + ((maxTime) * (fC21Vel)) > (radius))
+                    if (lo + ((fTime) * (fC21Vel)) > (radius))
                         return false;
                     t = ((radius)-lo) / (fC21Vel);
-                    if (t > (hitTime))
+                    if (t > (fIntrTime))
                     {
-                        (hitTime) = t;
+                        (fIntrTime) = t;
                         (hitAxis) = (12);
                         (hitEdge) = 1;
                         (side) = 1;
@@ -3000,12 +3039,12 @@ bool __cdecl NiBoxBV_BoxTriFindIntersect(float maxTime, const ReworkBox& box, co
         {
             if ((-axN[2]) <= 0.0f)
             {
-                if ((fC21Dot) + ((maxTime) * (fC21Vel)) < -(radius))
+                if ((fC21Dot) + ((fTime) * (fC21Vel)) < -(radius))
                     return false;
                 t = -((radius) + (fC21Dot)) / (fC21Vel);
-                if (t > (hitTime))
+                if (t > (fIntrTime))
                 {
-                    (hitTime) = t;
+                    (fIntrTime) = t;
                     (hitAxis) = (12);
                     (hitEdge) = 0;
                     (side) = -1;
@@ -3016,12 +3055,12 @@ bool __cdecl NiBoxBV_BoxTriFindIntersect(float maxTime, const ReworkBox& box, co
                 float hi = (fC21Dot) + (-axN[2]);
                 if (hi < -(radius))
                 {
-                    if (hi + ((maxTime) * (fC21Vel)) < -(radius))
+                    if (hi + ((fTime) * (fC21Vel)) < -(radius))
                         return false;
                     t = -((radius) + hi) / (fC21Vel);
-                    if (t > (hitTime))
+                    if (t > (fIntrTime))
                     {
-                        (hitTime) = t;
+                        (fIntrTime) = t;
                         (hitAxis) = (12);
                         (hitEdge) = 1;
                         (side) = -1;
@@ -3039,12 +3078,12 @@ bool __cdecl NiBoxBV_BoxTriFindIntersect(float maxTime, const ReworkBox& box, co
         {
             if ((-axN[2]) >= 0.0f)
             {
-                if ((fC22Dot) + ((maxTime) * (fC22Vel)) > (radius))
+                if ((fC22Dot) + ((fTime) * (fC22Vel)) > (radius))
                     return false;
                 t = ((radius) - (fC22Dot)) / (fC22Vel);
-                if (t > (hitTime))
+                if (t > (fIntrTime))
                 {
-                    (hitTime) = t;
+                    (fIntrTime) = t;
                     (hitAxis) = (13);
                     (hitEdge) = 0;
                     (side) = 1;
@@ -3055,12 +3094,12 @@ bool __cdecl NiBoxBV_BoxTriFindIntersect(float maxTime, const ReworkBox& box, co
                 float lo = (fC22Dot) + (-axN[2]);
                 if (lo > (radius))
                 {
-                    if (lo + ((maxTime) * (fC22Vel)) > (radius))
+                    if (lo + ((fTime) * (fC22Vel)) > (radius))
                         return false;
                     t = ((radius)-lo) / (fC22Vel);
-                    if (t > (hitTime))
+                    if (t > (fIntrTime))
                     {
-                        (hitTime) = t;
+                        (fIntrTime) = t;
                         (hitAxis) = (13);
                         (hitEdge) = 1;
                         (side) = 1;
@@ -3072,12 +3111,12 @@ bool __cdecl NiBoxBV_BoxTriFindIntersect(float maxTime, const ReworkBox& box, co
         {
             if ((-axN[2]) <= 0.0f)
             {
-                if ((fC22Dot) + ((maxTime) * (fC22Vel)) < -(radius))
+                if ((fC22Dot) + ((fTime) * (fC22Vel)) < -(radius))
                     return false;
                 t = -((radius) + (fC22Dot)) / (fC22Vel);
-                if (t > (hitTime))
+                if (t > (fIntrTime))
                 {
-                    (hitTime) = t;
+                    (fIntrTime) = t;
                     (hitAxis) = (13);
                     (hitEdge) = 0;
                     (side) = -1;
@@ -3088,12 +3127,12 @@ bool __cdecl NiBoxBV_BoxTriFindIntersect(float maxTime, const ReworkBox& box, co
                 float hi = (fC22Dot) + (-axN[2]);
                 if (hi < -(radius))
                 {
-                    if (hi + ((maxTime) * (fC22Vel)) < -(radius))
+                    if (hi + ((fTime) * (fC22Vel)) < -(radius))
                         return false;
                     t = -((radius) + hi) / (fC22Vel);
-                    if (t > (hitTime))
+                    if (t > (fIntrTime))
                     {
-                        (hitTime) = t;
+                        (fIntrTime) = t;
                         (hitAxis) = (13);
                         (hitEdge) = 1;
                         (side) = -1;
@@ -3116,7 +3155,7 @@ bool __cdecl NiBoxBV_BoxTriFindIntersect(float maxTime, const ReworkBox& box, co
     case 0: {
 
         static float fOneThird = 1.0f / 3.0f;
-        hitPoint = FUN_004a3760(0.5f, FUN_004a3760(fOneThird, p0 + p1 + p2) + bv.GetNavMeshData());
+        kIntrPt = FUN_004a3760(0.5f, FUN_004a3760(fOneThird, kVert0 + kVert1 + kVert2) + bv.GetNavMeshData());
         break;
     }
     case 1: {
@@ -3149,8 +3188,8 @@ bool __cdecl NiBoxBV_BoxTriFindIntersect(float maxTime, const ReworkBox& box, co
             const ReworkPoint* axis = (bv).GetAxes();
             for (int k = 0; k < 3; k++)
             {
-                (hitPoint)[k] =
-                    center[k] + (hitTime) * (vel0)[k] + (x)[0] * axis[0][k] + (x)[1] * axis[1][k] + (x)[2] * axis[2][k];
+                (kIntrPt)[k] =
+                    center[k] + (fIntrTime) * (kV0)[k] + (x)[0] * axis[0][k] + (x)[1] * axis[1][k] + (x)[2] * axis[2][k];
             }
         }
         break;
@@ -3159,11 +3198,11 @@ bool __cdecl NiBoxBV_BoxTriFindIntersect(float maxTime, const ReworkBox& box, co
     case 3:
     case 4: {
         if (hitEdge == 0)
-            hitPoint = p0 + FUN_004a3760(hitTime, vel1);
+            kIntrPt = kVert0 + FUN_004a3760(fIntrTime, kV1);
         else if (hitEdge == 1)
-            hitPoint = p0 + FUN_004a3760(hitTime, vel1) + vEdge[0];
+            kIntrPt = kVert0 + FUN_004a3760(fIntrTime, kV1) + vEdge[0];
         else
-            hitPoint = p0 + FUN_004a3760(hitTime, vel1) + vEdge[1];
+            kIntrPt = kVert0 + FUN_004a3760(fIntrTime, kV1) + vEdge[1];
         break;
     }
     case 5: {
@@ -3183,7 +3222,7 @@ bool __cdecl NiBoxBV_BoxTriFindIntersect(float maxTime, const ReworkBox& box, co
             else
                 (x[2]) = 0.0f;
         }
-        vDelta += FUN_004a3760(hitTime, vRelVel);
+        vDelta += FUN_004a3760(fIntrTime, vRelVel);
         vDCrossE[0] = vDelta.Cross(vEdge[0]);
         nDotDE[0] = vC00.Dot(vDCrossE[0]);
         nDotAE[0][0] = vC00.Dot(vC00);
@@ -3200,8 +3239,8 @@ bool __cdecl NiBoxBV_BoxTriFindIntersect(float maxTime, const ReworkBox& box, co
             const ReworkPoint* axis = (bv).GetAxes();
             for (int k = 0; k < 3; k++)
             {
-                (hitPoint)[k] =
-                    center[k] + (hitTime) * (vel0)[k] + (x)[0] * axis[0][k] + (x)[1] * axis[1][k] + (x)[2] * axis[2][k];
+                (kIntrPt)[k] =
+                    center[k] + (fIntrTime) * (kV0)[k] + (x)[0] * axis[0][k] + (x)[1] * axis[1][k] + (x)[2] * axis[2][k];
             }
         }
         break;
@@ -3223,7 +3262,7 @@ bool __cdecl NiBoxBV_BoxTriFindIntersect(float maxTime, const ReworkBox& box, co
             else
                 (x[2]) = 0.0f;
         }
-        vDelta += FUN_004a3760(hitTime, vRelVel);
+        vDelta += FUN_004a3760(fIntrTime, vRelVel);
         vDCrossE[1] = vDelta.Cross(vEdge[1]);
         nDotDE[1] = vC01.Dot(vDCrossE[1]);
         nDotAE[0][1] = vC01.Dot(vC01);
@@ -3240,8 +3279,8 @@ bool __cdecl NiBoxBV_BoxTriFindIntersect(float maxTime, const ReworkBox& box, co
             const ReworkPoint* axis = (bv).GetAxes();
             for (int k = 0; k < 3; k++)
             {
-                (hitPoint)[k] =
-                    center[k] + (hitTime) * (vel0)[k] + (x)[0] * axis[0][k] + (x)[1] * axis[1][k] + (x)[2] * axis[2][k];
+                (kIntrPt)[k] =
+                    center[k] + (fIntrTime) * (kV0)[k] + (x)[0] * axis[0][k] + (x)[1] * axis[1][k] + (x)[2] * axis[2][k];
             }
         }
         break;
@@ -3268,7 +3307,7 @@ bool __cdecl NiBoxBV_BoxTriFindIntersect(float maxTime, const ReworkBox& box, co
             else
                 (x[2]) = 0.0f;
         }
-        vDelta += FUN_004a3760(hitTime, vRelVel);
+        vDelta += FUN_004a3760(fIntrTime, vRelVel);
         vDCrossE[2] = vDelta.Cross(vEdge[2]);
         nDotDE[2] = vC02.Dot(vDCrossE[2]);
         nDotAE[0][2] = vC02.Dot(vC02);
@@ -3285,8 +3324,8 @@ bool __cdecl NiBoxBV_BoxTriFindIntersect(float maxTime, const ReworkBox& box, co
             const ReworkPoint* axis = (bv).GetAxes();
             for (int k = 0; k < 3; k++)
             {
-                (hitPoint)[k] =
-                    center[k] + (hitTime) * (vel0)[k] + (x)[0] * axis[0][k] + (x)[1] * axis[1][k] + (x)[2] * axis[2][k];
+                (kIntrPt)[k] =
+                    center[k] + (fIntrTime) * (kV0)[k] + (x)[0] * axis[0][k] + (x)[1] * axis[1][k] + (x)[2] * axis[2][k];
             }
         }
         break;
@@ -3308,7 +3347,7 @@ bool __cdecl NiBoxBV_BoxTriFindIntersect(float maxTime, const ReworkBox& box, co
             else
                 (x[2]) = 0.0f;
         }
-        vDelta += FUN_004a3760(hitTime, vRelVel);
+        vDelta += FUN_004a3760(fIntrTime, vRelVel);
         vDCrossE[0] = vDelta.Cross(vEdge[0]);
         nDotDE[0] = vC10.Dot(vDCrossE[0]);
         nDotAE[0][0] = vC10.Dot(vC00);
@@ -3325,8 +3364,8 @@ bool __cdecl NiBoxBV_BoxTriFindIntersect(float maxTime, const ReworkBox& box, co
             const ReworkPoint* axis = (bv).GetAxes();
             for (int k = 0; k < 3; k++)
             {
-                (hitPoint)[k] =
-                    center[k] + (hitTime) * (vel0)[k] + (x)[0] * axis[0][k] + (x)[1] * axis[1][k] + (x)[2] * axis[2][k];
+                (kIntrPt)[k] =
+                    center[k] + (fIntrTime) * (kV0)[k] + (x)[0] * axis[0][k] + (x)[1] * axis[1][k] + (x)[2] * axis[2][k];
             }
         }
         break;
@@ -3348,7 +3387,7 @@ bool __cdecl NiBoxBV_BoxTriFindIntersect(float maxTime, const ReworkBox& box, co
             else
                 (x[2]) = 0.0f;
         }
-        vDelta += FUN_004a3760(hitTime, vRelVel);
+        vDelta += FUN_004a3760(fIntrTime, vRelVel);
         vDCrossE[1] = vDelta.Cross(vEdge[1]);
         nDotDE[1] = vC11.Dot(vDCrossE[1]);
         nDotAE[0][1] = vC11.Dot(vC01);
@@ -3365,8 +3404,8 @@ bool __cdecl NiBoxBV_BoxTriFindIntersect(float maxTime, const ReworkBox& box, co
             const ReworkPoint* axis = (bv).GetAxes();
             for (int k = 0; k < 3; k++)
             {
-                (hitPoint)[k] =
-                    center[k] + (hitTime) * (vel0)[k] + (x)[0] * axis[0][k] + (x)[1] * axis[1][k] + (x)[2] * axis[2][k];
+                (kIntrPt)[k] =
+                    center[k] + (fIntrTime) * (kV0)[k] + (x)[0] * axis[0][k] + (x)[1] * axis[1][k] + (x)[2] * axis[2][k];
             }
         }
         break;
@@ -3393,7 +3432,7 @@ bool __cdecl NiBoxBV_BoxTriFindIntersect(float maxTime, const ReworkBox& box, co
             else
                 (x[2]) = 0.0f;
         }
-        vDelta += FUN_004a3760(hitTime, vRelVel);
+        vDelta += FUN_004a3760(fIntrTime, vRelVel);
         vDCrossE[2] = vDelta.Cross(vEdge[2]);
         nDotDE[2] = vC12.Dot(vDCrossE[2]);
         nDotAE[0][2] = vC12.Dot(vC02);
@@ -3410,8 +3449,8 @@ bool __cdecl NiBoxBV_BoxTriFindIntersect(float maxTime, const ReworkBox& box, co
             const ReworkPoint* axis = (bv).GetAxes();
             for (int k = 0; k < 3; k++)
             {
-                (hitPoint)[k] =
-                    center[k] + (hitTime) * (vel0)[k] + (x)[0] * axis[0][k] + (x)[1] * axis[1][k] + (x)[2] * axis[2][k];
+                (kIntrPt)[k] =
+                    center[k] + (fIntrTime) * (kV0)[k] + (x)[0] * axis[0][k] + (x)[1] * axis[1][k] + (x)[2] * axis[2][k];
             }
         }
         break;
@@ -3433,7 +3472,7 @@ bool __cdecl NiBoxBV_BoxTriFindIntersect(float maxTime, const ReworkBox& box, co
             else
                 (x[1]) = 0.0f;
         }
-        vDelta += FUN_004a3760(hitTime, vRelVel);
+        vDelta += FUN_004a3760(fIntrTime, vRelVel);
         vDCrossE[0] = vDelta.Cross(vEdge[0]);
         nDotDE[0] = vC20.Dot(vDCrossE[0]);
         nDotAE[0][0] = vC20.Dot(vC00);
@@ -3450,8 +3489,8 @@ bool __cdecl NiBoxBV_BoxTriFindIntersect(float maxTime, const ReworkBox& box, co
             const ReworkPoint* axis = (bv).GetAxes();
             for (int k = 0; k < 3; k++)
             {
-                (hitPoint)[k] =
-                    center[k] + (hitTime) * (vel0)[k] + (x)[0] * axis[0][k] + (x)[1] * axis[1][k] + (x)[2] * axis[2][k];
+                (kIntrPt)[k] =
+                    center[k] + (fIntrTime) * (kV0)[k] + (x)[0] * axis[0][k] + (x)[1] * axis[1][k] + (x)[2] * axis[2][k];
             }
         }
         break;
@@ -3473,7 +3512,7 @@ bool __cdecl NiBoxBV_BoxTriFindIntersect(float maxTime, const ReworkBox& box, co
             else
                 (x[1]) = 0.0f;
         }
-        vDelta += FUN_004a3760(hitTime, vRelVel);
+        vDelta += FUN_004a3760(fIntrTime, vRelVel);
         vDCrossE[1] = vDelta.Cross(vEdge[1]);
         nDotDE[1] = vC21.Dot(vDCrossE[1]);
         nDotAE[0][1] = vC21.Dot(vC01);
@@ -3490,8 +3529,8 @@ bool __cdecl NiBoxBV_BoxTriFindIntersect(float maxTime, const ReworkBox& box, co
             const ReworkPoint* axis = (bv).GetAxes();
             for (int k = 0; k < 3; k++)
             {
-                (hitPoint)[k] =
-                    center[k] + (hitTime) * (vel0)[k] + (x)[0] * axis[0][k] + (x)[1] * axis[1][k] + (x)[2] * axis[2][k];
+                (kIntrPt)[k] =
+                    center[k] + (fIntrTime) * (kV0)[k] + (x)[0] * axis[0][k] + (x)[1] * axis[1][k] + (x)[2] * axis[2][k];
             }
         }
         break;
@@ -3518,7 +3557,7 @@ bool __cdecl NiBoxBV_BoxTriFindIntersect(float maxTime, const ReworkBox& box, co
             else
                 (x[1]) = 0.0f;
         }
-        vDelta += FUN_004a3760(hitTime, vRelVel);
+        vDelta += FUN_004a3760(fIntrTime, vRelVel);
         vDCrossE[2] = vDelta.Cross(vEdge[2]);
         nDotDE[2] = vC22.Dot(vDCrossE[2]);
         nDotAE[0][2] = vC22.Dot(vC02);
@@ -3535,20 +3574,20 @@ bool __cdecl NiBoxBV_BoxTriFindIntersect(float maxTime, const ReworkBox& box, co
             const ReworkPoint* axis = (bv).GetAxes();
             for (int k = 0; k < 3; k++)
             {
-                (hitPoint)[k] =
-                    center[k] + (hitTime) * (vel0)[k] + (x)[0] * axis[0][k] + (x)[1] * axis[1][k] + (x)[2] * axis[2][k];
+                (kIntrPt)[k] =
+                    center[k] + (fIntrTime) * (kV0)[k] + (x)[0] * axis[0][k] + (x)[1] * axis[1][k] + (x)[2] * axis[2][k];
             }
         }
         break;
     }
     }
 
-    if (wantNormals)
+    if (bCalcNormals)
     {
 
-        normal1 = vTriNormal;
-        normal1.Unitize_004a0c10();
-        normal0 = -normal1;
+        kNormal1 = vTriNormal;
+        kNormal1.Unitize_004a0c10();
+        kNormal0 = -kNormal1;
     }
 
     return true;
@@ -3581,9 +3620,9 @@ class SweepPoint
         return SweepPoint(-x, -y, -z);
     }
     float DotProduct(const SweepPoint& o) const;
-    SweepPoint FUN_004b3800(const SweepPoint& o) const
+    SweepPoint FUN_004b3800(const SweepPoint& pt) const
     {
-        return SweepPoint(y * o.z - z * o.y, z * o.x - x * o.z, x * o.y - y * o.x);
+        return SweepPoint(y * pt.z - z * pt.y, z * pt.x - x * pt.z, x * pt.y - y * pt.x);
     }
     float FUN_004a7290() const
     {
@@ -3648,13 +3687,16 @@ void __cdecl ClampPositionToBoxes(float fTime, const SweepBox* pkBox0, const Swe
 // Tests two moving boxes over maxTime and writes hitTime and hitPoint, with normal outputs when requested.
 // @fnv 0x00ea7d40
 // src: XBOX_PDB 0x00ea7d40
-bool __cdecl NiBoxBV_BoxBoxFindIntersect(float maxTime, const SweepBox& box0, const SweepPoint& vel0, const SweepBox& box1,
-                          const SweepPoint& vel1, float& hitTime, SweepPoint& hitPoint, bool wantNormals,
-                          SweepPoint& normal0, SweepPoint& normal1)
+// pdb: NiBoxBV::BoxBoxFindIntersect | NiBoxBV.obj | retail, upstream name already matches, high
+// pdb params: fTime, kBV0, kV0, kBV1, kV1, fIntrTime, kIntrPt, bCalcNormals, kNormal0, kNormal1
+// pdb locals: uiType, j, kBBV0, AD0, D, A, D0, R, bd, BD1, kBBV1, extA, D1, AD1, BD0, B, R0, div, fEpsilon, fAB, AR1, tmp, extB, iSide ...
+bool __cdecl NiBoxBV_BoxBoxFindIntersect(float fTime, const SweepBox& kBV0, const SweepPoint& kV0, const SweepBox& kBV1,
+                          const SweepPoint& kV1, float& fIntrTime, SweepPoint& kIntrPt, bool bCalcNormals,
+                          SweepPoint& kNormal0, SweepPoint& kNormal1)
 {
     const float fEpsilon = 1e-06f;
-    const SweepBox& b0 = box0;
-    const SweepBox& b1 = box1;
+    const SweepBox& b0 = kBV0;
+    const SweepBox& b1 = kBV1;
     const SweepPoint* A = b0.GetAxes();
     const SweepPoint* pkAxes1 = b1.GetAxes();
     const float* extA = b0.GetExtents();
@@ -3674,12 +3716,12 @@ bool __cdecl NiBoxBV_BoxBoxFindIntersect(float maxTime, const SweepBox& box0, co
     float R1;
     float R;
     float Rsum;
-    W = vel1.SubtractIntoVector(vel0);
+    W = kV1.SubtractIntoVector(kV0);
     vRelPos0 = b1.GetNavMeshData().SubtractIntoVector(b0.GetNavMeshData());
-    vRelPos1 = vRelPos0.FUN_00439e90(FUN_004a3760(maxTime, W));
+    vRelPos1 = vRelPos0.FUN_00439e90(FUN_004a3760(fTime, W));
     unsigned int hitAxis = 0;
     int side = 0;
-    hitTime = 0.0f;
+    fIntrTime = 0.0f;
     afAxisDot[0][0] = A[0].DotProduct(pkAxes1[0]);
     afAxisDot[0][1] = A[0].DotProduct(pkAxes1[1]);
     afAxisDot[0][2] = A[0].DotProduct(pkAxes1[2]);
@@ -3697,10 +3739,10 @@ bool __cdecl NiBoxBV_BoxBoxFindIntersect(float maxTime, const SweepBox& box0, co
         {
             if (afAxisDotRel1[0] > Rsum)
                 return false;
-            tmp = maxTime * (Rsum - afAxisDotRel0[0]) / (afAxisDotRel1[0] - afAxisDotRel0[0]);
-            if (tmp > hitTime + FLT_EPSILON)
+            tmp = fTime * (Rsum - afAxisDotRel0[0]) / (afAxisDotRel1[0] - afAxisDotRel0[0]);
+            if (tmp > fIntrTime + FLT_EPSILON)
             {
-                hitTime = tmp;
+                fIntrTime = tmp;
                 hitAxis = 1;
                 side = 1;
             }
@@ -3709,10 +3751,10 @@ bool __cdecl NiBoxBV_BoxBoxFindIntersect(float maxTime, const SweepBox& box0, co
         {
             if (afAxisDotRel1[0] < -Rsum)
                 return false;
-            tmp = -maxTime * (Rsum + afAxisDotRel0[0]) / (afAxisDotRel1[0] - afAxisDotRel0[0]);
-            if (tmp > hitTime + FLT_EPSILON)
+            tmp = -fTime * (Rsum + afAxisDotRel0[0]) / (afAxisDotRel1[0] - afAxisDotRel0[0]);
+            if (tmp > fIntrTime + FLT_EPSILON)
             {
-                hitTime = tmp;
+                fIntrTime = tmp;
                 hitAxis = 1;
                 side = -1;
             }
@@ -3735,10 +3777,10 @@ bool __cdecl NiBoxBV_BoxBoxFindIntersect(float maxTime, const SweepBox& box0, co
         {
             if (afAxisDotRel1[1] > Rsum)
                 return false;
-            tmp = maxTime * (Rsum - afAxisDotRel0[1]) / (afAxisDotRel1[1] - afAxisDotRel0[1]);
-            if (tmp > hitTime + FLT_EPSILON)
+            tmp = fTime * (Rsum - afAxisDotRel0[1]) / (afAxisDotRel1[1] - afAxisDotRel0[1]);
+            if (tmp > fIntrTime + FLT_EPSILON)
             {
-                hitTime = tmp;
+                fIntrTime = tmp;
                 hitAxis = 2;
                 side = 1;
             }
@@ -3747,10 +3789,10 @@ bool __cdecl NiBoxBV_BoxBoxFindIntersect(float maxTime, const SweepBox& box0, co
         {
             if (afAxisDotRel1[1] < -Rsum)
                 return false;
-            tmp = -maxTime * (Rsum + afAxisDotRel0[1]) / (afAxisDotRel1[1] - afAxisDotRel0[1]);
-            if (tmp > hitTime + FLT_EPSILON)
+            tmp = -fTime * (Rsum + afAxisDotRel0[1]) / (afAxisDotRel1[1] - afAxisDotRel0[1]);
+            if (tmp > fIntrTime + FLT_EPSILON)
             {
-                hitTime = tmp;
+                fIntrTime = tmp;
                 hitAxis = 2;
                 side = -1;
             }
@@ -3773,10 +3815,10 @@ bool __cdecl NiBoxBV_BoxBoxFindIntersect(float maxTime, const SweepBox& box0, co
         {
             if (afAxisDotRel1[2] > Rsum)
                 return false;
-            tmp = maxTime * (Rsum - afAxisDotRel0[2]) / (afAxisDotRel1[2] - afAxisDotRel0[2]);
-            if (tmp > hitTime + FLT_EPSILON)
+            tmp = fTime * (Rsum - afAxisDotRel0[2]) / (afAxisDotRel1[2] - afAxisDotRel0[2]);
+            if (tmp > fIntrTime + FLT_EPSILON)
             {
-                hitTime = tmp;
+                fIntrTime = tmp;
                 hitAxis = 3;
                 side = 1;
             }
@@ -3785,10 +3827,10 @@ bool __cdecl NiBoxBV_BoxBoxFindIntersect(float maxTime, const SweepBox& box0, co
         {
             if (afAxisDotRel1[2] < -Rsum)
                 return false;
-            tmp = -maxTime * (Rsum + afAxisDotRel0[2]) / (afAxisDotRel1[2] - afAxisDotRel0[2]);
-            if (tmp > hitTime + FLT_EPSILON)
+            tmp = -fTime * (Rsum + afAxisDotRel0[2]) / (afAxisDotRel1[2] - afAxisDotRel0[2]);
+            if (tmp > fIntrTime + FLT_EPSILON)
             {
-                hitTime = tmp;
+                fIntrTime = tmp;
                 hitAxis = 3;
                 side = -1;
             }
@@ -3804,10 +3846,10 @@ bool __cdecl NiBoxBV_BoxBoxFindIntersect(float maxTime, const SweepBox& box0, co
         {
             if (afAxisBDotRel1[0] > Rsum)
                 return false;
-            tmp = maxTime * (Rsum - afAxisBDotRel0[0]) / (afAxisBDotRel1[0] - afAxisBDotRel0[0]);
-            if (tmp > hitTime + FLT_EPSILON)
+            tmp = fTime * (Rsum - afAxisBDotRel0[0]) / (afAxisBDotRel1[0] - afAxisBDotRel0[0]);
+            if (tmp > fIntrTime + FLT_EPSILON)
             {
-                hitTime = tmp;
+                fIntrTime = tmp;
                 hitAxis = 4;
                 side = 1;
             }
@@ -3816,10 +3858,10 @@ bool __cdecl NiBoxBV_BoxBoxFindIntersect(float maxTime, const SweepBox& box0, co
         {
             if (afAxisBDotRel1[0] < -Rsum)
                 return false;
-            tmp = -maxTime * (Rsum + afAxisBDotRel0[0]) / (afAxisBDotRel1[0] - afAxisBDotRel0[0]);
-            if (tmp > hitTime + FLT_EPSILON)
+            tmp = -fTime * (Rsum + afAxisBDotRel0[0]) / (afAxisBDotRel1[0] - afAxisBDotRel0[0]);
+            if (tmp > fIntrTime + FLT_EPSILON)
             {
-                hitTime = tmp;
+                fIntrTime = tmp;
                 hitAxis = 4;
                 side = -1;
             }
@@ -3835,10 +3877,10 @@ bool __cdecl NiBoxBV_BoxBoxFindIntersect(float maxTime, const SweepBox& box0, co
         {
             if (afAxisBDotRel1[1] > Rsum)
                 return false;
-            tmp = maxTime * (Rsum - afAxisBDotRel0[1]) / (afAxisBDotRel1[1] - afAxisBDotRel0[1]);
-            if (tmp > hitTime + FLT_EPSILON)
+            tmp = fTime * (Rsum - afAxisBDotRel0[1]) / (afAxisBDotRel1[1] - afAxisBDotRel0[1]);
+            if (tmp > fIntrTime + FLT_EPSILON)
             {
-                hitTime = tmp;
+                fIntrTime = tmp;
                 hitAxis = 5;
                 side = 1;
             }
@@ -3847,10 +3889,10 @@ bool __cdecl NiBoxBV_BoxBoxFindIntersect(float maxTime, const SweepBox& box0, co
         {
             if (afAxisBDotRel1[1] < -Rsum)
                 return false;
-            tmp = -maxTime * (Rsum + afAxisBDotRel0[1]) / (afAxisBDotRel1[1] - afAxisBDotRel0[1]);
-            if (tmp > hitTime + FLT_EPSILON)
+            tmp = -fTime * (Rsum + afAxisBDotRel0[1]) / (afAxisBDotRel1[1] - afAxisBDotRel0[1]);
+            if (tmp > fIntrTime + FLT_EPSILON)
             {
-                hitTime = tmp;
+                fIntrTime = tmp;
                 hitAxis = 5;
                 side = -1;
             }
@@ -3866,10 +3908,10 @@ bool __cdecl NiBoxBV_BoxBoxFindIntersect(float maxTime, const SweepBox& box0, co
         {
             if (afAxisBDotRel1[2] > Rsum)
                 return false;
-            tmp = maxTime * (Rsum - afAxisBDotRel0[2]) / (afAxisBDotRel1[2] - afAxisBDotRel0[2]);
-            if (tmp > hitTime + FLT_EPSILON)
+            tmp = fTime * (Rsum - afAxisBDotRel0[2]) / (afAxisBDotRel1[2] - afAxisBDotRel0[2]);
+            if (tmp > fIntrTime + FLT_EPSILON)
             {
-                hitTime = tmp;
+                fIntrTime = tmp;
                 hitAxis = 6;
                 side = 1;
             }
@@ -3878,10 +3920,10 @@ bool __cdecl NiBoxBV_BoxBoxFindIntersect(float maxTime, const SweepBox& box0, co
         {
             if (afAxisBDotRel1[2] < -Rsum)
                 return false;
-            tmp = -maxTime * (Rsum + afAxisBDotRel0[2]) / (afAxisBDotRel1[2] - afAxisBDotRel0[2]);
-            if (tmp > hitTime + FLT_EPSILON)
+            tmp = -fTime * (Rsum + afAxisBDotRel0[2]) / (afAxisBDotRel1[2] - afAxisBDotRel0[2]);
+            if (tmp > fIntrTime + FLT_EPSILON)
             {
-                hitTime = tmp;
+                fIntrTime = tmp;
                 hitAxis = 6;
                 side = -1;
             }
@@ -3898,10 +3940,10 @@ bool __cdecl NiBoxBV_BoxBoxFindIntersect(float maxTime, const SweepBox& box0, co
             q = (afAxisDotRel1[2] * afAxisDot[1][0]) - (afAxisDotRel1[1] * afAxisDot[2][0]);
             if (q > Rsum)
                 return false;
-            tmp = maxTime * (Rsum - R) / (q - R);
-            if (tmp > hitTime + FLT_EPSILON)
+            tmp = fTime * (Rsum - R) / (q - R);
+            if (tmp > fIntrTime + FLT_EPSILON)
             {
-                hitTime = tmp;
+                fIntrTime = tmp;
                 hitAxis = 7;
                 side = 1;
             }
@@ -3911,10 +3953,10 @@ bool __cdecl NiBoxBV_BoxBoxFindIntersect(float maxTime, const SweepBox& box0, co
             q = (afAxisDotRel1[2] * afAxisDot[1][0]) - (afAxisDotRel1[1] * afAxisDot[2][0]);
             if (q < -Rsum)
                 return false;
-            tmp = -maxTime * (Rsum + R) / (q - R);
-            if (tmp > hitTime + FLT_EPSILON)
+            tmp = -fTime * (Rsum + R) / (q - R);
+            if (tmp > fIntrTime + FLT_EPSILON)
             {
-                hitTime = tmp;
+                fIntrTime = tmp;
                 hitAxis = 7;
                 side = -1;
             }
@@ -3931,10 +3973,10 @@ bool __cdecl NiBoxBV_BoxBoxFindIntersect(float maxTime, const SweepBox& box0, co
             q = (afAxisDotRel1[2] * afAxisDot[1][1]) - (afAxisDotRel1[1] * afAxisDot[2][1]);
             if (q > Rsum)
                 return false;
-            tmp = maxTime * (Rsum - R) / (q - R);
-            if (tmp > hitTime + FLT_EPSILON)
+            tmp = fTime * (Rsum - R) / (q - R);
+            if (tmp > fIntrTime + FLT_EPSILON)
             {
-                hitTime = tmp;
+                fIntrTime = tmp;
                 hitAxis = 8;
                 side = 1;
             }
@@ -3944,10 +3986,10 @@ bool __cdecl NiBoxBV_BoxBoxFindIntersect(float maxTime, const SweepBox& box0, co
             q = (afAxisDotRel1[2] * afAxisDot[1][1]) - (afAxisDotRel1[1] * afAxisDot[2][1]);
             if (q < -Rsum)
                 return false;
-            tmp = -maxTime * (Rsum + R) / (q - R);
-            if (tmp > hitTime + FLT_EPSILON)
+            tmp = -fTime * (Rsum + R) / (q - R);
+            if (tmp > fIntrTime + FLT_EPSILON)
             {
-                hitTime = tmp;
+                fIntrTime = tmp;
                 hitAxis = 8;
                 side = -1;
             }
@@ -3964,10 +4006,10 @@ bool __cdecl NiBoxBV_BoxBoxFindIntersect(float maxTime, const SweepBox& box0, co
             q = (afAxisDotRel1[2] * afAxisDot[1][2]) - (afAxisDotRel1[1] * afAxisDot[2][2]);
             if (q > Rsum)
                 return false;
-            tmp = maxTime * (Rsum - R) / (q - R);
-            if (tmp > hitTime + FLT_EPSILON)
+            tmp = fTime * (Rsum - R) / (q - R);
+            if (tmp > fIntrTime + FLT_EPSILON)
             {
-                hitTime = tmp;
+                fIntrTime = tmp;
                 hitAxis = 9;
                 side = 1;
             }
@@ -3977,10 +4019,10 @@ bool __cdecl NiBoxBV_BoxBoxFindIntersect(float maxTime, const SweepBox& box0, co
             q = (afAxisDotRel1[2] * afAxisDot[1][2]) - (afAxisDotRel1[1] * afAxisDot[2][2]);
             if (q < -Rsum)
                 return false;
-            tmp = -maxTime * (Rsum + R) / (q - R);
-            if (tmp > hitTime + FLT_EPSILON)
+            tmp = -fTime * (Rsum + R) / (q - R);
+            if (tmp > fIntrTime + FLT_EPSILON)
             {
-                hitTime = tmp;
+                fIntrTime = tmp;
                 hitAxis = 9;
                 side = -1;
             }
@@ -3997,10 +4039,10 @@ bool __cdecl NiBoxBV_BoxBoxFindIntersect(float maxTime, const SweepBox& box0, co
             q = (afAxisDotRel1[0] * afAxisDot[2][0]) - (afAxisDotRel1[2] * afAxisDot[0][0]);
             if (q > Rsum)
                 return false;
-            tmp = maxTime * (Rsum - R) / (q - R);
-            if (tmp > hitTime + FLT_EPSILON)
+            tmp = fTime * (Rsum - R) / (q - R);
+            if (tmp > fIntrTime + FLT_EPSILON)
             {
-                hitTime = tmp;
+                fIntrTime = tmp;
                 hitAxis = 10;
                 side = 1;
             }
@@ -4010,10 +4052,10 @@ bool __cdecl NiBoxBV_BoxBoxFindIntersect(float maxTime, const SweepBox& box0, co
             q = (afAxisDotRel1[0] * afAxisDot[2][0]) - (afAxisDotRel1[2] * afAxisDot[0][0]);
             if (q < -Rsum)
                 return false;
-            tmp = -maxTime * (Rsum + R) / (q - R);
-            if (tmp > hitTime + FLT_EPSILON)
+            tmp = -fTime * (Rsum + R) / (q - R);
+            if (tmp > fIntrTime + FLT_EPSILON)
             {
-                hitTime = tmp;
+                fIntrTime = tmp;
                 hitAxis = 10;
                 side = -1;
             }
@@ -4030,10 +4072,10 @@ bool __cdecl NiBoxBV_BoxBoxFindIntersect(float maxTime, const SweepBox& box0, co
             q = (afAxisDotRel1[0] * afAxisDot[2][1]) - (afAxisDotRel1[2] * afAxisDot[0][1]);
             if (q > Rsum)
                 return false;
-            tmp = maxTime * (Rsum - R) / (q - R);
-            if (tmp > hitTime + FLT_EPSILON)
+            tmp = fTime * (Rsum - R) / (q - R);
+            if (tmp > fIntrTime + FLT_EPSILON)
             {
-                hitTime = tmp;
+                fIntrTime = tmp;
                 hitAxis = 11;
                 side = 1;
             }
@@ -4043,10 +4085,10 @@ bool __cdecl NiBoxBV_BoxBoxFindIntersect(float maxTime, const SweepBox& box0, co
             q = (afAxisDotRel1[0] * afAxisDot[2][1]) - (afAxisDotRel1[2] * afAxisDot[0][1]);
             if (q < -Rsum)
                 return false;
-            tmp = -maxTime * (Rsum + R) / (q - R);
-            if (tmp > hitTime + FLT_EPSILON)
+            tmp = -fTime * (Rsum + R) / (q - R);
+            if (tmp > fIntrTime + FLT_EPSILON)
             {
-                hitTime = tmp;
+                fIntrTime = tmp;
                 hitAxis = 11;
                 side = -1;
             }
@@ -4063,10 +4105,10 @@ bool __cdecl NiBoxBV_BoxBoxFindIntersect(float maxTime, const SweepBox& box0, co
             q = (afAxisDotRel1[0] * afAxisDot[2][2]) - (afAxisDotRel1[2] * afAxisDot[0][2]);
             if (q > Rsum)
                 return false;
-            tmp = maxTime * (Rsum - R) / (q - R);
-            if (tmp > hitTime + FLT_EPSILON)
+            tmp = fTime * (Rsum - R) / (q - R);
+            if (tmp > fIntrTime + FLT_EPSILON)
             {
-                hitTime = tmp;
+                fIntrTime = tmp;
                 hitAxis = 12;
                 side = 1;
             }
@@ -4076,10 +4118,10 @@ bool __cdecl NiBoxBV_BoxBoxFindIntersect(float maxTime, const SweepBox& box0, co
             q = (afAxisDotRel1[0] * afAxisDot[2][2]) - (afAxisDotRel1[2] * afAxisDot[0][2]);
             if (q < -Rsum)
                 return false;
-            tmp = -maxTime * (Rsum + R) / (q - R);
-            if (tmp > hitTime + FLT_EPSILON)
+            tmp = -fTime * (Rsum + R) / (q - R);
+            if (tmp > fIntrTime + FLT_EPSILON)
             {
-                hitTime = tmp;
+                fIntrTime = tmp;
                 hitAxis = 12;
                 side = -1;
             }
@@ -4096,10 +4138,10 @@ bool __cdecl NiBoxBV_BoxBoxFindIntersect(float maxTime, const SweepBox& box0, co
             q = (afAxisDotRel1[1] * afAxisDot[0][0]) - (afAxisDotRel1[0] * afAxisDot[1][0]);
             if (q > Rsum)
                 return false;
-            tmp = maxTime * (Rsum - R) / (q - R);
-            if (tmp > hitTime + FLT_EPSILON)
+            tmp = fTime * (Rsum - R) / (q - R);
+            if (tmp > fIntrTime + FLT_EPSILON)
             {
-                hitTime = tmp;
+                fIntrTime = tmp;
                 hitAxis = 13;
                 side = 1;
             }
@@ -4109,10 +4151,10 @@ bool __cdecl NiBoxBV_BoxBoxFindIntersect(float maxTime, const SweepBox& box0, co
             q = (afAxisDotRel1[1] * afAxisDot[0][0]) - (afAxisDotRel1[0] * afAxisDot[1][0]);
             if (q < -Rsum)
                 return false;
-            tmp = -maxTime * (Rsum + R) / (q - R);
-            if (tmp > hitTime + FLT_EPSILON)
+            tmp = -fTime * (Rsum + R) / (q - R);
+            if (tmp > fIntrTime + FLT_EPSILON)
             {
-                hitTime = tmp;
+                fIntrTime = tmp;
                 hitAxis = 13;
                 side = -1;
             }
@@ -4129,10 +4171,10 @@ bool __cdecl NiBoxBV_BoxBoxFindIntersect(float maxTime, const SweepBox& box0, co
             q = (afAxisDotRel1[1] * afAxisDot[0][1]) - (afAxisDotRel1[0] * afAxisDot[1][1]);
             if (q > Rsum)
                 return false;
-            tmp = maxTime * (Rsum - R) / (q - R);
-            if (tmp > hitTime + FLT_EPSILON)
+            tmp = fTime * (Rsum - R) / (q - R);
+            if (tmp > fIntrTime + FLT_EPSILON)
             {
-                hitTime = tmp;
+                fIntrTime = tmp;
                 hitAxis = 14;
                 side = 1;
             }
@@ -4142,10 +4184,10 @@ bool __cdecl NiBoxBV_BoxBoxFindIntersect(float maxTime, const SweepBox& box0, co
             q = (afAxisDotRel1[1] * afAxisDot[0][1]) - (afAxisDotRel1[0] * afAxisDot[1][1]);
             if (q < -Rsum)
                 return false;
-            tmp = -maxTime * (Rsum + R) / (q - R);
-            if (tmp > hitTime + FLT_EPSILON)
+            tmp = -fTime * (Rsum + R) / (q - R);
+            if (tmp > fIntrTime + FLT_EPSILON)
             {
-                hitTime = tmp;
+                fIntrTime = tmp;
                 hitAxis = 14;
                 side = -1;
             }
@@ -4162,10 +4204,10 @@ bool __cdecl NiBoxBV_BoxBoxFindIntersect(float maxTime, const SweepBox& box0, co
             q = (afAxisDotRel1[1] * afAxisDot[0][2]) - (afAxisDotRel1[0] * afAxisDot[1][2]);
             if (q > Rsum)
                 return false;
-            tmp = maxTime * (Rsum - R) / (q - R);
-            if (tmp > hitTime + FLT_EPSILON)
+            tmp = fTime * (Rsum - R) / (q - R);
+            if (tmp > fIntrTime + FLT_EPSILON)
             {
-                hitTime = tmp;
+                fIntrTime = tmp;
                 hitAxis = 15;
                 side = 1;
             }
@@ -4175,10 +4217,10 @@ bool __cdecl NiBoxBV_BoxBoxFindIntersect(float maxTime, const SweepBox& box0, co
             q = (afAxisDotRel1[1] * afAxisDot[0][2]) - (afAxisDotRel1[0] * afAxisDot[1][2]);
             if (q < -Rsum)
                 return false;
-            tmp = -maxTime * (Rsum + R) / (q - R);
-            if (tmp > hitTime + FLT_EPSILON)
+            tmp = -fTime * (Rsum + R) / (q - R);
+            if (tmp > fIntrTime + FLT_EPSILON)
             {
-                hitTime = tmp;
+                fIntrTime = tmp;
                 hitAxis = 15;
                 side = -1;
             }
@@ -4190,9 +4232,9 @@ bool __cdecl NiBoxBV_BoxBoxFindIntersect(float maxTime, const SweepBox& box0, co
     switch (hitAxis)
     {
     case 0: {
-        hitPoint = FUN_004a3760(0.5f, b0.GetNavMeshData().FUN_00439e90(b1.GetNavMeshData()));
-        if (wantNormals)
-            normal0 = hitPoint.SubtractIntoVector(b0.GetNavMeshData());
+        kIntrPt = FUN_004a3760(0.5f, b0.GetNavMeshData().FUN_00439e90(b1.GetNavMeshData()));
+        if (bCalcNormals)
+            kNormal0 = kIntrPt.SubtractIntoVector(b0.GetNavMeshData());
         break;
     }
     case 1:
@@ -4219,17 +4261,17 @@ bool __cdecl NiBoxBV_BoxBoxFindIntersect(float maxTime, const SweepBox& box0, co
             y[2] = 0.0f;
         for (int k = 0; k < 3; k++)
         {
-            hitPoint[k] = b1.GetNavMeshData()[k] + (hitTime * vel1[k]) + y[0] * b1.GetAxis(0)[k] +
+            kIntrPt[k] = b1.GetNavMeshData()[k] + (fIntrTime * kV1[k]) + y[0] * b1.GetAxis(0)[k] +
                           y[1] * b1.GetAxis(1)[k] + y[2] * b1.GetAxis(2)[k];
         }
-        ClampPositionToBoxes(maxTime, &b1, &vel1, &b0, &vel0, hitTime, hitPoint);
-        if (wantNormals)
+        ClampPositionToBoxes(fTime, &b1, &kV1, &b0, &kV0, fIntrTime, kIntrPt);
+        if (bCalcNormals)
         {
             if (side < 0)
-                normal0 = -A[i];
+                kNormal0 = -A[i];
             else
-                normal0 = A[i];
-            normal1 = -normal0;
+                kNormal0 = A[i];
+            kNormal1 = -kNormal0;
         }
         return true;
     }
@@ -4257,17 +4299,17 @@ bool __cdecl NiBoxBV_BoxBoxFindIntersect(float maxTime, const SweepBox& box0, co
             x[2] = 0.0f;
         for (int k = 0; k < 3; k++)
         {
-            hitPoint[k] = b0.GetNavMeshData()[k] + (hitTime * vel0[k]) + x[0] * b0.GetAxis(0)[k] +
+            kIntrPt[k] = b0.GetNavMeshData()[k] + (fIntrTime * kV0[k]) + x[0] * b0.GetAxis(0)[k] +
                           x[1] * b0.GetAxis(1)[k] + x[2] * b0.GetAxis(2)[k];
         }
-        ClampPositionToBoxes(maxTime, &b0, &vel0, &b1, &vel1, hitTime, hitPoint);
-        if (wantNormals)
+        ClampPositionToBoxes(fTime, &b0, &kV0, &b1, &kV1, fIntrTime, kIntrPt);
+        if (bCalcNormals)
         {
             if (side < 0)
-                normal0 = -pkAxes1[iAxisB];
+                kNormal0 = -pkAxes1[iAxisB];
             else
-                normal0 = pkAxes1[iAxisB];
-            normal1 = -normal0;
+                kNormal0 = pkAxes1[iAxisB];
+            kNormal1 = -kNormal0;
         }
         return true;
     }
@@ -4299,7 +4341,7 @@ bool __cdecl NiBoxBV_BoxBoxFindIntersect(float maxTime, const SweepBox& box0, co
         fDivisor = 1.0f - (afAxisDot[0][0] * afAxisDot[0][0]);
         if (NiAbs(fDivisor) > fEpsilon)
         {
-            D = vRelPos0.FUN_00439e90(FUN_004a3760(hitTime, W));
+            D = vRelPos0.FUN_00439e90(FUN_004a3760(fIntrTime, W));
             fDotA = A[0].DotProduct(D);
             fDotB = pkAxes1[0].DotProduct(D);
             tmp = (afAxisDot[1][0] * x[1]) + (afAxisDot[2][0] * x[2]) - fDotB;
@@ -4311,16 +4353,16 @@ bool __cdecl NiBoxBV_BoxBoxFindIntersect(float maxTime, const SweepBox& box0, co
         }
         for (int k = 0; k < 3; k++)
         {
-            hitPoint[k] = b0.GetNavMeshData()[k] + (hitTime * vel0[k]) + x[0] * b0.GetAxis(0)[k] +
+            kIntrPt[k] = b0.GetNavMeshData()[k] + (fIntrTime * kV0[k]) + x[0] * b0.GetAxis(0)[k] +
                           x[1] * b0.GetAxis(1)[k] + x[2] * b0.GetAxis(2)[k];
         }
-        ClampPositionToBoxes(maxTime, &b0, &vel0, &b1, &vel1, hitTime, hitPoint);
-        if (wantNormals)
+        ClampPositionToBoxes(fTime, &b0, &kV0, &b1, &kV1, fIntrTime, kIntrPt);
+        if (bCalcNormals)
         {
             if (side < 0)
-                normal0 = -A[0].FUN_004b3800(pkAxes1[0]);
+                kNormal0 = -A[0].FUN_004b3800(pkAxes1[0]);
             else
-                normal0 = A[0].FUN_004b3800(pkAxes1[0]);
+                kNormal0 = A[0].FUN_004b3800(pkAxes1[0]);
         }
         break;
     }
@@ -4352,7 +4394,7 @@ bool __cdecl NiBoxBV_BoxBoxFindIntersect(float maxTime, const SweepBox& box0, co
         fDivisor = 1.0f - (afAxisDot[0][1] * afAxisDot[0][1]);
         if (NiAbs(fDivisor) > fEpsilon)
         {
-            D = vRelPos0.FUN_00439e90(FUN_004a3760(hitTime, W));
+            D = vRelPos0.FUN_00439e90(FUN_004a3760(fIntrTime, W));
             fDotA = A[0].DotProduct(D);
             fDotB = pkAxes1[1].DotProduct(D);
             tmp = (afAxisDot[1][1] * x[1]) + (afAxisDot[2][1] * x[2]) - fDotB;
@@ -4364,16 +4406,16 @@ bool __cdecl NiBoxBV_BoxBoxFindIntersect(float maxTime, const SweepBox& box0, co
         }
         for (int k = 0; k < 3; k++)
         {
-            hitPoint[k] = b0.GetNavMeshData()[k] + (hitTime * vel0[k]) + x[0] * b0.GetAxis(0)[k] +
+            kIntrPt[k] = b0.GetNavMeshData()[k] + (fIntrTime * kV0[k]) + x[0] * b0.GetAxis(0)[k] +
                           x[1] * b0.GetAxis(1)[k] + x[2] * b0.GetAxis(2)[k];
         }
-        ClampPositionToBoxes(maxTime, &b0, &vel0, &b1, &vel1, hitTime, hitPoint);
-        if (wantNormals)
+        ClampPositionToBoxes(fTime, &b0, &kV0, &b1, &kV1, fIntrTime, kIntrPt);
+        if (bCalcNormals)
         {
             if (side < 0)
-                normal0 = -A[0].FUN_004b3800(pkAxes1[1]);
+                kNormal0 = -A[0].FUN_004b3800(pkAxes1[1]);
             else
-                normal0 = A[0].FUN_004b3800(pkAxes1[1]);
+                kNormal0 = A[0].FUN_004b3800(pkAxes1[1]);
         }
         break;
     }
@@ -4405,7 +4447,7 @@ bool __cdecl NiBoxBV_BoxBoxFindIntersect(float maxTime, const SweepBox& box0, co
         fDivisor = 1.0f - (afAxisDot[0][2] * afAxisDot[0][2]);
         if (NiAbs(fDivisor) > fEpsilon)
         {
-            D = vRelPos0.FUN_00439e90(FUN_004a3760(hitTime, W));
+            D = vRelPos0.FUN_00439e90(FUN_004a3760(fIntrTime, W));
             fDotA = A[0].DotProduct(D);
             fDotB = pkAxes1[2].DotProduct(D);
             tmp = (afAxisDot[1][2] * x[1]) + (afAxisDot[2][2] * x[2]) - fDotB;
@@ -4417,16 +4459,16 @@ bool __cdecl NiBoxBV_BoxBoxFindIntersect(float maxTime, const SweepBox& box0, co
         }
         for (int k = 0; k < 3; k++)
         {
-            hitPoint[k] = b0.GetNavMeshData()[k] + (hitTime * vel0[k]) + x[0] * b0.GetAxis(0)[k] +
+            kIntrPt[k] = b0.GetNavMeshData()[k] + (fIntrTime * kV0[k]) + x[0] * b0.GetAxis(0)[k] +
                           x[1] * b0.GetAxis(1)[k] + x[2] * b0.GetAxis(2)[k];
         }
-        ClampPositionToBoxes(maxTime, &b0, &vel0, &b1, &vel1, hitTime, hitPoint);
-        if (wantNormals)
+        ClampPositionToBoxes(fTime, &b0, &kV0, &b1, &kV1, fIntrTime, kIntrPt);
+        if (bCalcNormals)
         {
             if (side < 0)
-                normal0 = -A[0].FUN_004b3800(pkAxes1[2]);
+                kNormal0 = -A[0].FUN_004b3800(pkAxes1[2]);
             else
-                normal0 = A[0].FUN_004b3800(pkAxes1[2]);
+                kNormal0 = A[0].FUN_004b3800(pkAxes1[2]);
         }
         break;
     }
@@ -4458,7 +4500,7 @@ bool __cdecl NiBoxBV_BoxBoxFindIntersect(float maxTime, const SweepBox& box0, co
         fDivisor = 1.0f - (afAxisDot[1][0] * afAxisDot[1][0]);
         if (NiAbs(fDivisor) > fEpsilon)
         {
-            D = vRelPos0.FUN_00439e90(FUN_004a3760(hitTime, W));
+            D = vRelPos0.FUN_00439e90(FUN_004a3760(fIntrTime, W));
             fDotA = A[1].DotProduct(D);
             fDotB = pkAxes1[0].DotProduct(D);
             tmp = (afAxisDot[0][0] * x[0]) + (afAxisDot[2][0] * x[2]) - fDotB;
@@ -4470,16 +4512,16 @@ bool __cdecl NiBoxBV_BoxBoxFindIntersect(float maxTime, const SweepBox& box0, co
         }
         for (int k = 0; k < 3; k++)
         {
-            hitPoint[k] = b0.GetNavMeshData()[k] + (hitTime * vel0[k]) + x[0] * b0.GetAxis(0)[k] +
+            kIntrPt[k] = b0.GetNavMeshData()[k] + (fIntrTime * kV0[k]) + x[0] * b0.GetAxis(0)[k] +
                           x[1] * b0.GetAxis(1)[k] + x[2] * b0.GetAxis(2)[k];
         }
-        ClampPositionToBoxes(maxTime, &b0, &vel0, &b1, &vel1, hitTime, hitPoint);
-        if (wantNormals)
+        ClampPositionToBoxes(fTime, &b0, &kV0, &b1, &kV1, fIntrTime, kIntrPt);
+        if (bCalcNormals)
         {
             if (side < 0)
-                normal0 = -A[1].FUN_004b3800(pkAxes1[0]);
+                kNormal0 = -A[1].FUN_004b3800(pkAxes1[0]);
             else
-                normal0 = A[1].FUN_004b3800(pkAxes1[0]);
+                kNormal0 = A[1].FUN_004b3800(pkAxes1[0]);
         }
         break;
     }
@@ -4511,7 +4553,7 @@ bool __cdecl NiBoxBV_BoxBoxFindIntersect(float maxTime, const SweepBox& box0, co
         fDivisor = 1.0f - (afAxisDot[1][1] * afAxisDot[1][1]);
         if (NiAbs(fDivisor) > fEpsilon)
         {
-            D = vRelPos0.FUN_00439e90(FUN_004a3760(hitTime, W));
+            D = vRelPos0.FUN_00439e90(FUN_004a3760(fIntrTime, W));
             fDotA = A[1].DotProduct(D);
             fDotB = pkAxes1[1].DotProduct(D);
             tmp = (afAxisDot[0][1] * x[0]) + (afAxisDot[2][1] * x[2]) - fDotB;
@@ -4523,16 +4565,16 @@ bool __cdecl NiBoxBV_BoxBoxFindIntersect(float maxTime, const SweepBox& box0, co
         }
         for (int k = 0; k < 3; k++)
         {
-            hitPoint[k] = b0.GetNavMeshData()[k] + (hitTime * vel0[k]) + x[0] * b0.GetAxis(0)[k] +
+            kIntrPt[k] = b0.GetNavMeshData()[k] + (fIntrTime * kV0[k]) + x[0] * b0.GetAxis(0)[k] +
                           x[1] * b0.GetAxis(1)[k] + x[2] * b0.GetAxis(2)[k];
         }
-        ClampPositionToBoxes(maxTime, &b0, &vel0, &b1, &vel1, hitTime, hitPoint);
-        if (wantNormals)
+        ClampPositionToBoxes(fTime, &b0, &kV0, &b1, &kV1, fIntrTime, kIntrPt);
+        if (bCalcNormals)
         {
             if (side < 0)
-                normal0 = -A[1].FUN_004b3800(pkAxes1[1]);
+                kNormal0 = -A[1].FUN_004b3800(pkAxes1[1]);
             else
-                normal0 = A[1].FUN_004b3800(pkAxes1[1]);
+                kNormal0 = A[1].FUN_004b3800(pkAxes1[1]);
         }
         break;
     }
@@ -4564,7 +4606,7 @@ bool __cdecl NiBoxBV_BoxBoxFindIntersect(float maxTime, const SweepBox& box0, co
         fDivisor = 1.0f - (afAxisDot[1][2] * afAxisDot[1][2]);
         if (NiAbs(fDivisor) > fEpsilon)
         {
-            D = vRelPos0.FUN_00439e90(FUN_004a3760(hitTime, W));
+            D = vRelPos0.FUN_00439e90(FUN_004a3760(fIntrTime, W));
             fDotA = A[1].DotProduct(D);
             fDotB = pkAxes1[2].DotProduct(D);
             tmp = (afAxisDot[0][2] * x[0]) + (afAxisDot[2][2] * x[2]) - fDotB;
@@ -4576,16 +4618,16 @@ bool __cdecl NiBoxBV_BoxBoxFindIntersect(float maxTime, const SweepBox& box0, co
         }
         for (int k = 0; k < 3; k++)
         {
-            hitPoint[k] = b0.GetNavMeshData()[k] + (hitTime * vel0[k]) + x[0] * b0.GetAxis(0)[k] +
+            kIntrPt[k] = b0.GetNavMeshData()[k] + (fIntrTime * kV0[k]) + x[0] * b0.GetAxis(0)[k] +
                           x[1] * b0.GetAxis(1)[k] + x[2] * b0.GetAxis(2)[k];
         }
-        ClampPositionToBoxes(maxTime, &b0, &vel0, &b1, &vel1, hitTime, hitPoint);
-        if (wantNormals)
+        ClampPositionToBoxes(fTime, &b0, &kV0, &b1, &kV1, fIntrTime, kIntrPt);
+        if (bCalcNormals)
         {
             if (side < 0)
-                normal0 = -A[1].FUN_004b3800(pkAxes1[2]);
+                kNormal0 = -A[1].FUN_004b3800(pkAxes1[2]);
             else
-                normal0 = A[1].FUN_004b3800(pkAxes1[2]);
+                kNormal0 = A[1].FUN_004b3800(pkAxes1[2]);
         }
         break;
     }
@@ -4617,7 +4659,7 @@ bool __cdecl NiBoxBV_BoxBoxFindIntersect(float maxTime, const SweepBox& box0, co
         fDivisor = 1.0f - (afAxisDot[2][0] * afAxisDot[2][0]);
         if (NiAbs(fDivisor) > fEpsilon)
         {
-            D = vRelPos0.FUN_00439e90(FUN_004a3760(hitTime, W));
+            D = vRelPos0.FUN_00439e90(FUN_004a3760(fIntrTime, W));
             fDotA = A[2].DotProduct(D);
             fDotB = pkAxes1[0].DotProduct(D);
             tmp = (afAxisDot[0][0] * x[0]) + (afAxisDot[1][0] * x[1]) - fDotB;
@@ -4629,16 +4671,16 @@ bool __cdecl NiBoxBV_BoxBoxFindIntersect(float maxTime, const SweepBox& box0, co
         }
         for (int k = 0; k < 3; k++)
         {
-            hitPoint[k] = b0.GetNavMeshData()[k] + (hitTime * vel0[k]) + x[0] * b0.GetAxis(0)[k] +
+            kIntrPt[k] = b0.GetNavMeshData()[k] + (fIntrTime * kV0[k]) + x[0] * b0.GetAxis(0)[k] +
                           x[1] * b0.GetAxis(1)[k] + x[2] * b0.GetAxis(2)[k];
         }
-        ClampPositionToBoxes(maxTime, &b0, &vel0, &b1, &vel1, hitTime, hitPoint);
-        if (wantNormals)
+        ClampPositionToBoxes(fTime, &b0, &kV0, &b1, &kV1, fIntrTime, kIntrPt);
+        if (bCalcNormals)
         {
             if (side < 0)
-                normal0 = -A[2].FUN_004b3800(pkAxes1[0]);
+                kNormal0 = -A[2].FUN_004b3800(pkAxes1[0]);
             else
-                normal0 = A[2].FUN_004b3800(pkAxes1[0]);
+                kNormal0 = A[2].FUN_004b3800(pkAxes1[0]);
         }
         break;
     }
@@ -4670,7 +4712,7 @@ bool __cdecl NiBoxBV_BoxBoxFindIntersect(float maxTime, const SweepBox& box0, co
         fDivisor = 1.0f - (afAxisDot[2][1] * afAxisDot[2][1]);
         if (NiAbs(fDivisor) > fEpsilon)
         {
-            D = vRelPos0.FUN_00439e90(FUN_004a3760(hitTime, W));
+            D = vRelPos0.FUN_00439e90(FUN_004a3760(fIntrTime, W));
             fDotA = A[2].DotProduct(D);
             fDotB = pkAxes1[1].DotProduct(D);
             tmp = (afAxisDot[0][1] * x[0]) + (afAxisDot[1][1] * x[1]) - fDotB;
@@ -4682,16 +4724,16 @@ bool __cdecl NiBoxBV_BoxBoxFindIntersect(float maxTime, const SweepBox& box0, co
         }
         for (int k = 0; k < 3; k++)
         {
-            hitPoint[k] = b0.GetNavMeshData()[k] + (hitTime * vel0[k]) + x[0] * b0.GetAxis(0)[k] +
+            kIntrPt[k] = b0.GetNavMeshData()[k] + (fIntrTime * kV0[k]) + x[0] * b0.GetAxis(0)[k] +
                           x[1] * b0.GetAxis(1)[k] + x[2] * b0.GetAxis(2)[k];
         }
-        ClampPositionToBoxes(maxTime, &b0, &vel0, &b1, &vel1, hitTime, hitPoint);
-        if (wantNormals)
+        ClampPositionToBoxes(fTime, &b0, &kV0, &b1, &kV1, fIntrTime, kIntrPt);
+        if (bCalcNormals)
         {
             if (side < 0)
-                normal0 = -A[2].FUN_004b3800(pkAxes1[1]);
+                kNormal0 = -A[2].FUN_004b3800(pkAxes1[1]);
             else
-                normal0 = A[2].FUN_004b3800(pkAxes1[1]);
+                kNormal0 = A[2].FUN_004b3800(pkAxes1[1]);
         }
         break;
     }
@@ -4723,7 +4765,7 @@ bool __cdecl NiBoxBV_BoxBoxFindIntersect(float maxTime, const SweepBox& box0, co
         fDivisor = 1.0f - (afAxisDot[2][2] * afAxisDot[2][2]);
         if (NiAbs(fDivisor) > fEpsilon)
         {
-            D = vRelPos0.FUN_00439e90(FUN_004a3760(hitTime, W));
+            D = vRelPos0.FUN_00439e90(FUN_004a3760(fIntrTime, W));
             fDotA = A[2].DotProduct(D);
             fDotB = pkAxes1[2].DotProduct(D);
             tmp = (afAxisDot[0][2] * x[0]) + (afAxisDot[1][2] * x[1]) - fDotB;
@@ -4735,31 +4777,31 @@ bool __cdecl NiBoxBV_BoxBoxFindIntersect(float maxTime, const SweepBox& box0, co
         }
         for (int k = 0; k < 3; k++)
         {
-            hitPoint[k] = b0.GetNavMeshData()[k] + (hitTime * vel0[k]) + x[0] * b0.GetAxis(0)[k] +
+            kIntrPt[k] = b0.GetNavMeshData()[k] + (fIntrTime * kV0[k]) + x[0] * b0.GetAxis(0)[k] +
                           x[1] * b0.GetAxis(1)[k] + x[2] * b0.GetAxis(2)[k];
         }
-        ClampPositionToBoxes(maxTime, &b0, &vel0, &b1, &vel1, hitTime, hitPoint);
-        if (wantNormals)
+        ClampPositionToBoxes(fTime, &b0, &kV0, &b1, &kV1, fIntrTime, kIntrPt);
+        if (bCalcNormals)
         {
             if (side < 0)
-                normal0 = -A[2].FUN_004b3800(pkAxes1[2]);
+                kNormal0 = -A[2].FUN_004b3800(pkAxes1[2]);
             else
-                normal0 = A[2].FUN_004b3800(pkAxes1[2]);
+                kNormal0 = A[2].FUN_004b3800(pkAxes1[2]);
         }
         break;
     }
     }
-    if (wantNormals)
+    if (bCalcNormals)
     {
-        const float fNormalSqrLength = normal0.FUN_004a7290();
+        const float fNormalSqrLength = kNormal0.FUN_004a7290();
         if (NiAbs(fNormalSqrLength - 1.0) > DAT_0104da4c)
         {
             if (fNormalSqrLength > DAT_0104da4c)
-                normal0.Unitize_004a0c10();
+                kNormal0.Unitize_004a0c10();
             else
-                normal0 = reinterpret_cast<const SweepPoint&>(DAT_011a946c);
+                kNormal0 = reinterpret_cast<const SweepPoint&>(DAT_011a946c);
         }
-        normal1 = -normal0;
+        kNormal1 = -kNormal0;
     }
     return true;
 }

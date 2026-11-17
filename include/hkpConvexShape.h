@@ -12,6 +12,7 @@ struct hkVec4X;
 typedef unsigned char hkUint8;
 typedef unsigned short hkpVertexId;
 
+// pdb: class hkpConvexShape, size 0x14, bases: hkpSphereRepShape, 1 members
 class hkpConvexShape : public hkpShape
 {
 public:
@@ -62,7 +63,7 @@ public:
                                const hkpConvexShape* collidingShape, const hkTransform* collidingTransform,
                                hkVector4_S& separatingNormalInOut) const;
 
-    __forceinline hkReal getRadius() const { return m_fSphereRadius; }
+    __forceinline hkReal getRadius() const { return m_radius; }
 
-    hkReal m_fSphereRadius;
+    hkReal m_radius; // src: XBOX_RETAIL_PDB +0x10 (old: m_fSphereRadius)
 };

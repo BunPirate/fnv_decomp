@@ -3,6 +3,7 @@
 #include "TESForm.h"
 #include "MagicItem.h"
 
+// pdb: class MagicItemForm, size 0x34, bases: TESForm, MagicItem, 0 members
 class MagicItemForm : public TESForm, public MagicItem
 {
 public:
@@ -12,8 +13,8 @@ public:
     virtual bool LoadForm(TESFile* file);
     virtual void SaveForm();
     virtual void InitItem();
-    virtual void SetAltered(bool set);
-    virtual void CopyFrom(const TESForm* form);
+    virtual void SetAltered(bool abValue);
+    virtual void CopyFrom(const TESForm* apCopy);
     virtual bool Compare(TESForm* form);
     virtual void Endian();
 

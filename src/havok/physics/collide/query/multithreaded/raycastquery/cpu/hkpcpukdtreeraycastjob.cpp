@@ -118,6 +118,7 @@ struct FUN_00e4e3c0
     FUN_00e4e3c0();
 
 // @fnv 0x00e4e3c0
+// pdb: hkKdTreeCpuBroadphaseBundleCastCollector::`scalar deleting destructor' | hkpCpuKdTreeRayCastJob.obj | retail, vtable slot, high
     virtual ~FUN_00e4e3c0()
     {}
 

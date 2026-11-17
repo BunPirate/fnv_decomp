@@ -5,6 +5,7 @@
 
 class TESSound;
 
+// pdb: class BGSPickupPutdownSounds, size 0xc, bases: BaseFormComponent, 2 members
 class BGSPickupPutdownSounds : public BaseFormComponent
 {
 public:
@@ -14,8 +15,8 @@ public:
     BGSPickupPutdownSounds();
     ~BGSPickupPutdownSounds();
 
-    void InitItem(TESForm* form);
+    void InitItem(TESForm* apOwner);
     void SetPickupSound(TESSound* sound);
     void SetPutdownSound(TESSound* sound);
-    void SavePickupChunk();
+    void Save();
 };

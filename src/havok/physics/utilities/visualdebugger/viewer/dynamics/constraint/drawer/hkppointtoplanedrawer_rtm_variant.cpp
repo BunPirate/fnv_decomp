@@ -51,7 +51,7 @@ struct FUN_00e10a10_Obj
 
 typedef void(__thiscall* VF5_00de7580)(void* self, void* p1, void* p2, void* p3, int p4, int p5);
 
-__m128* PackColorBigEndian(float a, float b, float c, float d);
+__m128* PackColorBigEndian(float red, float green, float blue, float alpha);
 
 struct ArgHolder_00de7580
 {
@@ -74,9 +74,9 @@ struct FUN_00de7580_cls
     __m128 unkB0;
     FUN_00e10a10_Obj unkC0;
 
-    void hkpConstraintDrawer_updateCommonParameters(Arg_00de7580* a1, hkTransform* a2, hkTransform* a3);
+    void hkpConstraintDrawer_updateCommonParameters(Arg_00de7580* a1, hkTransform* refLocalToWorld, hkTransform* attLocalToWorld);
     void hkpConstraintDrawer_drawPivots(int a1, int a2);
-    void hkpConstraintDrawer_drawBodyFrames(int a1, int a2);
+    void hkpConstraintDrawer_drawBodyFrames(int id, int tag);
     void UpdateFields_00de7580(ArgHolder_00de7580 a1, Render_00de7580* a2, int a3, int a4);
 };
 

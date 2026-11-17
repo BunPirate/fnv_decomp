@@ -21,7 +21,7 @@ class DownloadableContentManager
     BSSimpleList<char*> m_kMountedPackageNames;
 
     DownloadableContentManager();
-    static DownloadableContentManager& GetRandomGenerator();
+    static DownloadableContentManager& BSDLCSystemUtility_QInstance();
     static __forceinline void* operator new(unsigned int size)
     {
         return g_memoryManager.Allocate(size);
@@ -40,7 +40,7 @@ class IdleSystem
     IdleSystem();
     ~IdleSystem();
     void Idle();
-    static void Shutdown();
+    static void BSAwardsSystemUtility_Destroy();
     static void Startup();
     static IdleSystem& GetRandomGenerator();
     static bool Initialize();

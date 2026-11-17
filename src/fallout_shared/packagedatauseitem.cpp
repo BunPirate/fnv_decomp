@@ -7,21 +7,23 @@ struct LocationDescriptor
 {
     ~LocationDescriptor();
     void Save(int);
-    bool FUN_0067f600(LocationDescriptor* apCompare);
+    bool PackageLocation_Compare(LocationDescriptor* apCompare);
 };
 // @fnv 0x0067c9d0
+// pdb: TESUseItemPackageData::Save | PackageDataUseItem.obj | retail, vtable slot, high
 void TESUseItemPackageData::vf03()
 {
     TESForm_AddChunk(0x44495550);
-    if (this->m_pPackageTarget != 0)
-        this->m_pPackageTarget->Save(0x32444c50);
+    if (this->pSearchLocation != 0)
+        this->pSearchLocation->Save(0x32444c50);
 }
 
 // The compiler emits the scalar deleting destructor at 0x0067c7a0.
 // @fnv 0x0067c7d0
+// pdb: TESUseItemPackageData::~TESUseItemPackageData | PackageDataUseItem.obj | debug, upstream name already matches, high
 TESUseItemPackageData::~TESUseItemPackageData()
 {
-    delete m_pPackageTarget;
+    delete pSearchLocation;
 }
 
 extern "C" void* __cdecl FUN_00ec43fb(void* p, long vf, void* src, void* tgt, int isRef);
@@ -29,18 +31,21 @@ extern int DAT_0119bdec;
 extern int DAT_0119bed8;
 // Returns true if the cast fails, the target comparison returns true, or only the other target is non-null.
 // @fnv 0x0067c960
+// pdb: TESUseItemPackageData::Compare | PackageDataUseItem.obj | retail, vtable slot, high
+// pdb params: apCompare
+// pdb locals: pcomp
 bool TESUseItemPackageData::vf02(TESPackageData* apCompare)
 {
     TESUseItemPackageData* pUseItemData =
         (TESUseItemPackageData*)FUN_00ec43fb(apCompare, 0, &DAT_0119bdec, &DAT_0119bed8, 0);
     if (!pUseItemData)
         return true;
-    if (m_pPackageTarget)
+    if (pSearchLocation)
     {
-        if (m_pPackageTarget->FUN_0067f600(pUseItemData->m_pPackageTarget))
+        if (pSearchLocation->PackageLocation_Compare(pUseItemData->pSearchLocation))
             return true;
     }
-    else if (pUseItemData->m_pPackageTarget)
+    else if (pUseItemData->pSearchLocation)
         return true;
     return false;
 }

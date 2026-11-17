@@ -9,13 +9,13 @@
 #include "../../../../include/NiStream.h"
 #include "../../../../include/StrArr.h"
 
-extern const NiRTTI g_011f3f50;
+extern const NiRTTI NiRotData_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f3f50 (old: g_011f3f50)
 
 // @fnv 0x00a48150
 // src: COMMUNITY 0x00a48150
 const NiRTTI* __cdecl NiRotData_GetRTTI()
 {
-    return &g_011f3f50;
+    return &NiRotData_ms_RTTI;
 }
 
 extern unsigned char DAT_011f3764[];
@@ -25,21 +25,21 @@ extern void(__cdecl* DAT_011f38d0[])(TimedRotationKey*);
 // @fnv 0x00a48220
 void NiRotData::SetKeys(TimedRotationKey* pkKeys, unsigned int uiNumKeys, NiAnimationKey::KeyType eInterpType)
 {
-    if (m_pKeyArray)
-        DAT_011f38d0[m_eRequestType](m_pKeyArray);
+    if (m_pkKeys)
+        DAT_011f38d0[m_eType](m_pkKeys);
     if (pkKeys && uiNumKeys)
     {
-        m_ucKeyDataSize = DAT_011f3764[eInterpType];
-        m_pKeyArray = pkKeys;
+        m_ucKeySize = DAT_011f3764[eInterpType];
+        m_pkKeys = pkKeys;
         m_uiNumKeys = uiNumKeys;
-        m_eRequestType = eInterpType;
+        m_eType = eInterpType;
     }
     else
     {
         m_uiNumKeys = 0;
-        m_pKeyArray = 0;
-        m_eRequestType = NiAnimationKey::NOINTERP;
-        m_ucKeyDataSize = 0;
+        m_pkKeys = 0;
+        m_eType = NiAnimationKey::NOINTERP;
+        m_ucKeySize = 0;
     }
 }
 
@@ -73,10 +73,10 @@ void __cdecl _delete(void*, unsigned int);
 // @fnv 0x00a481e0
 void* __fastcall DestroyRotData(NiRotData* self, int, unsigned int auiFlags)
 {
-    TimedRotationKey* pk = self->m_pKeyArray;
+    TimedRotationKey* pk = self->m_pkKeys;
     *(void**)self = (void*)&DAT_010984ec;
     if (pk)
-        DAT_011f38d0[self->m_eRequestType](pk);
+        DAT_011f38d0[self->m_eType](pk);
     ((NiRefObject*)self)->NiRefObject::~NiRefObject();
     if (auiFlags & 1)
         _delete(self, 0x18);
@@ -93,9 +93,9 @@ void __fastcall GetRotKeyData(NiRotData* pThis, int, TimedRotationKey** ppkKeysO
     if (pkKey)
     {
         *piKeyOut = pkKey->m_uiNumKeys;
-        *piCountOut = pkKey->m_eRequestType;
-        *pKeySize = pkKey->m_ucKeyDataSize;
-        *ppkKeysOut = pkKey->m_pKeyArray;
+        *piCountOut = pkKey->m_eType;
+        *pKeySize = pkKey->m_ucKeySize;
+        *ppkKeysOut = pkKey->m_pkKeys;
     }
     else
     {
@@ -168,6 +168,9 @@ struct SelfStub
 // Calls FUN_00b702b0 with the given arguments, then invokes v52 on the same char pointer.
 // @fnv 0x00b665d0
 // src: COMMUNITY 0x00b665d0
+// pdb: BSShaderPPLightingProperty::CopyMembers | BSShaderPPLightingProperty.obj | retail, call graph, low
+// pdb note: debug build links it to Lighting30ShaderProperty::CopyMembers
+// pdb params: pDest, arCloneData
 void SelfStub::Lighting30ShaderProperty_CopyMembers(char* a, void* b)
 {
     BSShaderLightingProperty_CopyMembers(a, b);
@@ -234,6 +237,8 @@ void __fastcall BSShaderLightingProperty_CopyTo(S00b66600*, int, int);
 // Calls FUN_00b70290 with the two int arguments, then invokes the virtual method v52 on the object with the second argument.
 // @fnv 0x00b66600
 // src: XBOX_PDB 0x00b66600
+// pdb: BSShaderPPLightingProperty::CopyTo | BSShaderPPLightingProperty.obj | retail, upstream name already matches, high
+// pdb params: pDest
 void __fastcall BSShaderPPLightingProperty_CopyTo(S00b66600* p, int aiFirst, int aiSecond)
 {
     BSShaderLightingProperty_CopyTo(p, aiFirst, aiSecond);
@@ -250,16 +255,16 @@ bool __fastcall IsRotDataEqual(NiRotData* self, int, NiObject* pkObject)
         return false;
     if (self->m_uiNumKeys != pkData->m_uiNumKeys)
         return false;
-    if (self->m_eRequestType != pkData->m_eRequestType)
+    if (self->m_eType != pkData->m_eType)
         return false;
-    if (self->m_ucKeyDataSize != pkData->m_ucKeyDataSize)
+    if (self->m_ucKeySize != pkData->m_ucKeySize)
         return false;
-    void(__cdecl * pfnEqualFunc)(TimedRotationKey*) = (void(__cdecl*)(TimedRotationKey*))DAT_011f3b10[self->m_eRequestType];
+    void(__cdecl * pfnEqualFunc)(TimedRotationKey*) = (void(__cdecl*)(TimedRotationKey*))DAT_011f3b10[self->m_eType];
     for (unsigned int ui = 0; ui < self->m_uiNumKeys; ++ui)
     {
-        unsigned int uiKeyOffset = self->m_ucKeyDataSize * ui;
-        TimedRotationKey* pkB = (TimedRotationKey*)((char*)pkData->m_pKeyArray + uiKeyOffset);
-        TimedRotationKey* pkA = (TimedRotationKey*)((char*)self->m_pKeyArray + uiKeyOffset);
+        unsigned int uiKeyOffset = self->m_ucKeySize * ui;
+        TimedRotationKey* pkB = (TimedRotationKey*)((char*)pkData->m_pkKeys + uiKeyOffset);
+        TimedRotationKey* pkA = (TimedRotationKey*)((char*)self->m_pkKeys + uiKeyOffset);
         if (!((bool(__cdecl*)(TimedRotationKey*, TimedRotationKey*))pfnEqualFunc)(pkA, pkB))
             return false;
     }
@@ -273,7 +278,7 @@ struct NiRTTIAccess
 
 void* __cdecl _FUN_00a7d330(void* pObject);
 char* __cdecl NiGetViewerString_00a7d510(char const* pName, unsigned int uiValue);
-void __stdcall AppendCameraPathEntries(StrArr* apViewerStrings);
+void __stdcall AppendCameraPathEntries(StrArr* pStrings);
 
 // @fnv 0x00a484c0
 void __fastcall AppendNumKeysToStringArray(NiRotData* self, int, StrArr* apViewerStrings)
@@ -281,7 +286,7 @@ void __fastcall AppendNumKeysToStringArray(NiRotData* self, int, StrArr* apViewe
     AppendCameraPathEntries(apViewerStrings);
 
     char* pString =
-        static_cast<char*>(_FUN_00a7d330(reinterpret_cast<const NiRTTIAccess*>(&g_011f3f50)->m_pIntegerData));
+        static_cast<char*>(_FUN_00a7d330(reinterpret_cast<const NiRTTIAccess*>(&NiRotData_ms_RTTI)->m_pIntegerData));
 
     unsigned int uiSize = apViewerStrings->m_usSize;
     if (uiSize >= apViewerStrings->m_usMaxSize)
@@ -422,13 +427,13 @@ void __fastcall LoadRotData(NiRotData* self, int, NiStream& kStream)
         NiAnimationKey::KeyType eRotType;
         ReadStreamValue(kStream, eRotType);
 
-        self->m_ucKeyDataSize = DAT_011f3764[eRotType];
+        self->m_ucKeySize = DAT_011f3764[eRotType];
 
         CreateFunction pfnCreateFunc = g_apfnCreateKey[eRotType];
         TimedRotationKey* pkRotKeys = pfnCreateFunc(kStream, uiNumKeys);
 
         FillDerivedValsFunction pfnFillDerivedFunc = g_apfnFillDerived[eRotType];
-        pfnFillDerivedFunc(pkRotKeys, uiNumKeys, self->m_ucKeyDataSize);
+        pfnFillDerivedFunc(pkRotKeys, uiNumKeys, self->m_ucKeySize);
 
         self->SetKeys(pkRotKeys, uiNumKeys, eRotType);
     }
@@ -466,16 +471,16 @@ void __fastcall LinkRotData(NiRotData* self, int, NiStream& kStream)
     NiStreamLoadBinary2(kStream, self->m_uiNumKeys);
     if (self->m_uiNumKeys > 0)
     {
-        NiStreamLoadBinary2(kStream, self->m_eRequestType);
-        DAT_011f3a80[self->m_eRequestType](kStream, self->m_pKeyArray, self->m_uiNumKeys);
+        NiStreamLoadBinary2(kStream, self->m_eType);
+        DAT_011f3a80[self->m_eType](kStream, self->m_pkKeys, self->m_uiNumKeys);
     }
 }
 
 extern int(__stdcall* DAT_00fdf1c0)(void*);
 extern int(__stdcall* DAT_00fdf1c4)(void*);
 
-void __cdecl NiAnimationKey_CopySequence(int a1, int a2, void* a3, unsigned int a4, float a5, float a6, TimedRotationKey** a7,
-                          unsigned int* a8);
+void __cdecl NiAnimationKey_CopySequence(int eContent, int eType, void* pkOrigKeys, unsigned int uiOrigNumKeys, float fStartTime, float fEndTime, TimedRotationKey** pkNewKeys,
+                          unsigned int* uiNewNumKeys);
 
 // Obtains an object, fills its keys using the current key data and time arguments, then assigns it to ppRival with reference counting.
 // @fnv 0x00a48280
@@ -493,8 +498,8 @@ void __fastcall CopyRotData(NiRotData* self, int, float fTime, float fDuration, 
     {
         TimedRotationKey* pKeys = 0;
         unsigned int uiNumKeys = 0;
-        NiAnimationKey_CopySequence(2, self->m_eRequestType, self->m_pKeyArray, self->m_uiNumKeys, fTime, fDuration, &pKeys, &uiNumKeys);
-        pCopy->SetKeys(pKeys, uiNumKeys, (NiAnimationKey::KeyType)self->m_eRequestType);
+        NiAnimationKey_CopySequence(2, self->m_eType, self->m_pkKeys, self->m_uiNumKeys, fTime, fDuration, &pKeys, &uiNumKeys);
+        pCopy->SetKeys(pKeys, uiNumKeys, (NiAnimationKey::KeyType)self->m_eType);
     }
 
     NiRotData* pOld = *ppRival;

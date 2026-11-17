@@ -13,6 +13,7 @@ class HkFLA_Stats;
 
 typedef void (__cdecl* hkMemoryWalkCallback)(void* start, unsigned int size, hkBool allocated, int pool, void* param);
 
+// pdb: class hkFreeListAllocator, size 0xaa0, bases: hkMemoryAllocator, 13 members
 class hkFreeListAllocator : public hkMemoryAllocator
 {
 public:
@@ -48,15 +49,15 @@ public:
     };
 
     virtual ~hkFreeListAllocator();
-    virtual void* blockAlloc(int iNumBytes);
-    virtual void blockFree(void* pItem, int iNumBytes);
+    virtual void* blockAlloc(int nbytes);
+    virtual void blockFree(void* p, int nbytes);
   public:  // variable-size buffers (slots 3-5)
     virtual void* bufAlloc(int& kReqNumBytesInOut);
     virtual void bufFree(void* pItem, int iNumBytes);
     virtual void* bufRealloc(void* pPold, int iOldNumBytes, int& kReqNumBytesInOut);
   public:  // batches and capacity queries (slots 6-9)
-    virtual void blockAllocBatch(void** pPtrsOut, int iNumPtrs, int iBlockSize);
-    virtual void blockFreeBatch(void** pPtrsIn, int iNumPtrs, int iBlockSize);
+    virtual void blockAllocBatch(void** blocksOut, int nblocks, int nbytes);
+    virtual void blockFreeBatch(void** pPtrsIn, int nblocks, int nbytes);
     virtual bool canAllocSingleBlock(int iNumBytes);
     virtual bool canAllocTotal(int iNumBytes);
   public:  // statistics (slots 10-12)
@@ -67,32 +68,32 @@ public:
     virtual void __thiscall PrintStatistics(int);
     virtual void nullsub_80(int);
     virtual void garbageCollect();
-    virtual void AllocateBlocks(int iCount);
+    virtual void AllocateBlocks(int numBlocks);
     virtual void UpdateTotalSize();
-    virtual void setMemorySoftLimit(int iValue);
+    virtual void setMemorySoftLimit(int maxMemory);
     virtual int GetUnkA94_00d5fba0();
     virtual void releaseUnusedPagesToSystemMemory();
     virtual bool* __thiscall isOk_00d5f890(bool* __restrict pItem);
-    virtual int walkMemory(hkMemoryWalkCallback kCallback, void* pParam);
+    virtual int walkMemory(hkMemoryWalkCallback kCallback, void* param);
 
     void unused1();
     void unused2();
     void freeBlock(hkFreeListNode* pNode);
-    void _deleteFreeList(FreeList* pItem);
+    void _deleteFreeList(FreeList* freeList);
     void* AllocateBlock(int iUnused, int iNumBytes);
-    void FreeBlocks(void** pBlocks, int iNumBlocks, int iBlockSize);
+    void FreeBlocks(void** pBlocks, int nblocks, int nbytes);
     void resetPeakMemoryStatistics_00d5f850();
-    void blockAlloc_00d5f970(int iFirst);
+    void blockAlloc_00d5f970(int nbytes);
     unsigned char HasRoomFor(unsigned int uLimit);
-    hkFreeListAllocator* hkFreeListAllocator_00d60270(int iA1);
-    void blockAllocBatch_00d5fd70(void** pOut, int iCount, int iSize);
-    void blockFree_00d5f980(void* pBlock, int iNumBytes);
-    void getMemoryStatistics_00d5f750(HkFLA_Stats* pOut);
-    void* bufAlloc_00d5fca0(int* pItem);
-    void SetVtableAndProcessState_00d5ffd0();
-    FreeList* _newFreeList(int iA1, int iA2, int iA3);
-    int Alloc(int iFirst, int iSecond, int iThird);
-    void Reset(int iFirst);
+    hkFreeListAllocator* hkFreeListAllocator_00d60270(int server);
+    void blockAllocBatch_00d5fd70(void** blocksOut, int nblocks, int nbytes);
+    void blockFree_00d5f980(void* p, int nbytes);
+    void getMemoryStatistics_00d5f750(HkFLA_Stats* stats);
+    void* bufAlloc_00d5fca0(int* reqNumInOut);
+    void hkFreeListAllocator_dtor();
+    FreeList* _newFreeList(int elementSize, int alignment, int blockSize);
+    int Alloc(int elementSize, int alignment, int blockSize);
+    void Reset(int maxMemory);
 
     union
     {
@@ -125,7 +126,7 @@ public:
         int m_24;
         int unk24;
     };
-    unsigned char unk28[0xC0];
+    unsigned char m_server[0xC0]; // src: XBOX_RETAIL_PDB +0x28 (old: unk28)
     union { int m_e8; unsigned int m_total; int unkE8; };
     union
     {
@@ -145,8 +146,8 @@ public:
     union { int m_iFreeListCount; int m_uiItemCount; int m_iArrayLength; int m_iPoolCount; int m_234; int count234; };
     union { FreeList* m_238; FreeList* volatile cur238; void* m_kNode; };
     union { FreeList* m_23c; FreeList* end23c; };
-    FreeList m_items[41];
+    FreeList m_lastFreeList[41]; // src: XBOX_RETAIL_PDB +0x240 (old: m_items)
     union { int unkA94; int m_a94; unsigned int m_pFreeList; };
     union { int m_a98; int m_iCur; };
-    int unkA9C;
+    int m_incrementalFreeListIndex; // src: XBOX_RETAIL_PDB +0xa9c (old: unkA9C)
 };

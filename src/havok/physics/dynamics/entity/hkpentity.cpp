@@ -81,7 +81,7 @@ inline hkMotionState::hkMotionState() {}
 template <typename E, typename S> inline hkEnum<E, S>::hkEnum() {}
 inline hkpKeyframedRigidMotion::hkpKeyframedRigidMotion() : hkpMotion(FinishingFlag(0))
 {
-    m_pSavedMotion = 0;
+    m_savedMotion = 0;
 }
 static inline void setGravityHalf(hkHalf& half, float value)
 {
@@ -91,30 +91,31 @@ static inline void setGravityHalf(hkHalf& half, float value)
 inline hkpMotion::hkpMotion(FinishingFlag flag) : hkReferencedObject(flag)
 {
     if (flag.m_bFinishing)
-        setGravityHalf(m_fGravityFactor, 1.0f);
+        setGravityHalf(m_gravityFactor, 1.0f);
 }
 
 // @fnv 0x00c9c380
 // src: HAVOK_LIB 0x00c9c380
+// pdb: hkpRigidBody::getCollisionFilterInfo | bhkCharacterController.obj | debug, call graph, medium
 __declspec(noinline) int hkpEntity::getNumConstraints() throw()
 {
-    return m_kSlaveConstraints.m_iElementCount + m_eSmallArraySerializeOverrideType.m_iElementCount;
+    return m_constraintsSlave.m_iElementCount + m_constraintsMaster.m_iElementCount;
 }
 
 // Returns the entry at index from the first array if index is below the count at offset 0xb0, otherwise from the second array.
 // @fnv 0x00c9c3c0
 int hkpEntity::GetEntryAt(int index) throw()
 {
-    if (index < m_eSmallArraySerializeOverrideType.m_iElementCount)
+    if (index < m_constraintsMaster.m_iElementCount)
     {
         int offset = index * 3;
         offset <<= 4;
-        return *reinterpret_cast<int*>(static_cast<char*>(m_eSmallArraySerializeOverrideType.m_data) + offset);
+        return *reinterpret_cast<int*>(static_cast<char*>(m_constraintsMaster.m_data) + offset);
     }
     else
     {
-        int offset = index - m_eSmallArraySerializeOverrideType.m_iElementCount;
-        return reinterpret_cast<int*>(m_kSlaveConstraints.m_data)[offset];
+        int offset = index - m_constraintsMaster.m_iElementCount;
+        return reinterpret_cast<int*>(m_constraintsSlave.m_data)[offset];
     }
 }
 
@@ -136,17 +137,17 @@ struct FUN_00c9c1a0_Item
 int __fastcall findCollisionEntryValue(hkpEntity* self, int, int value)
 {
     int index = 0;
-    if (self->m_kCollidable.m_kCollisionEntries.m_iElementCount > 0)
+    if (self->m_kCollidable.m_collisionEntries.m_iElementCount > 0)
     {
         int key = value + 0x10;
-        FUN_00c9c1a0_Item* item = reinterpret_cast<FUN_00c9c1a0_Item*>(self->m_kCollidable.m_kCollisionEntries.m_data);
+        FUN_00c9c1a0_Item* item = reinterpret_cast<FUN_00c9c1a0_Item*>(self->m_kCollidable.m_collisionEntries.m_data);
         do
         {
             if (item->m_04 == key)
                 return item->m_00->m_08;
             ++index;
             ++item;
-        } while (index < self->m_kCollidable.m_kCollisionEntries.m_iElementCount);
+        } while (index < self->m_kCollidable.m_collisionEntries.m_iElementCount);
     }
     return 0;
 }
@@ -172,6 +173,7 @@ extern FUN_00c9d490_Router* __cdecl _D1A0E0GetMemoryRouter();
 namespace fnv_00c9cf60 { void __fastcall destroyEntity(hkpEntity* self); }
 
 // @fnv 0x00c9d490
+// pdb: hkpEntity::`scalar deleting destructor' | hkpEntity.obj | retail, vtable slot, high
 void* __fastcall deleteEntity(hkpEntity* self, int, int flags)
 {
     fnv_00c9cf60::destroyEntity(self);
@@ -180,7 +182,7 @@ void* __fastcall deleteEntity(hkpEntity* self, int, int flags)
     {
         FUN_00c9d490_Router* router = _D1A0E0GetMemoryRouter();
         FUN_00c9d490_Allocator* allocator = router->m_10;
-        allocator->m_08(self, self->m_usMemSizeAndFlags);
+        allocator->m_08(self, self->m_memSizeAndFlags);
     }
 
     return self;
@@ -189,31 +191,31 @@ void* __fastcall deleteEntity(hkpEntity* self, int, int flags)
 // @fnv 0x00c9c020
 const ResizableArray<ConstraintRuntimeInfo>& hkpEntity::getConstraintMastersImpl() const
 {
-    return reinterpret_cast<const ResizableArray<ConstraintRuntimeInfo>&>(m_eSmallArraySerializeOverrideType);
+    return reinterpret_cast<const ResizableArray<ConstraintRuntimeInfo>&>(m_constraintsMaster);
 }
 
 // @fnv 0x00c9c030
 char* __fastcall getConstraintMasters(hkpEntity* self)
 {
-    return reinterpret_cast<char*>(&self->m_eSmallArraySerializeOverrideType);
+    return reinterpret_cast<char*>(&self->m_constraintsMaster);
 }
 
 // @fnv 0x00c9c3f0
 char* __fastcall getConstraintSlaves(hkpEntity* self)
 {
-    return reinterpret_cast<char*>(&self->m_kSlaveConstraints);
+    return reinterpret_cast<char*>(&self->m_constraintsSlave);
 }
 
-void __cdecl hkpEntityAabbUtil_entityBatchRecalcAabb(int a1, int* a2, int a3);
+void __cdecl hkpEntityAabbUtil_entityBatchRecalcAabb(int collisionInput, int* entityBatch, int numEntities);
 
 // If m_08 and m_10 are set, calls FUN_00d1a330 with m_08->m_78, a pointer to this, and 1.
 // @fnv 0x00c9bfa0
 void __fastcall synchronizeEntity(hkpEntity* self)
 {
-    if (self->m_pOwningWorld && self->m_kCollidable.m_pCollisionShape)
+    if (self->m_world && self->m_kCollidable.m_pCollisionShape)
     {
         hkpEntity* entity = self;
-        hkpEntityAabbUtil_entityBatchRecalcAabb(reinterpret_cast<int*>(self->m_pOwningWorld)[0x78 / 4], (int*)&entity, 1);
+        hkpEntityAabbUtil_entityBatchRecalcAabb(reinterpret_cast<int*>(self->m_world)[0x78 / 4], (int*)&entity, 1);
     }
 }
 
@@ -235,11 +237,11 @@ struct hkWorldOperationC9C3 : public hkWorldOperationBaseC9C3
 // @fnv 0x00c9c300
 void __fastcall activateEntity(hkpEntity* self, int)
 {
-    if (static_cast<hkpWorld*>(self->m_pOwningWorld) && static_cast<hkpWorld*>(self->m_pOwningWorld)->m_iCriticalOperationsLockCount)
+    if (static_cast<hkpWorld*>(self->m_world) && static_cast<hkpWorld*>(self->m_world)->m_criticalOperationsLockCount)
     {
         hkWorldOperationC9C3 kOp;
         kOp.m_pEntity = self;
-        static_cast<hkpWorld*>(self->m_pOwningWorld)->hkpWorld_queueOperation(&kOp);
+        static_cast<hkpWorld*>(self->m_world)->hkpWorld_queueOperation(&kOp);
         return;
     }
     self->activate_00c9c1d0();
@@ -256,8 +258,8 @@ void __fastcall deactivateEntityImmediately(hkpEntity* self);
 // @fnv 0x00c9c340
 void __fastcall deactivateEntity(hkpEntity* self)
 {
-    hkpWorld* world = static_cast<hkpWorld*>(self->m_pOwningWorld);
-    if (world && world->m_iCriticalOperationsLockCount)
+    hkpWorld* world = static_cast<hkpWorld*>(self->m_world);
+    if (world && world->m_criticalOperationsLockCount)
     {
         WorldOp op;
         op.m_pEntity = self;
@@ -270,18 +272,19 @@ void __fastcall deactivateEntity(hkpEntity* self)
 
 // Returns the entry at index from the inline array when index is below m_b0, otherwise from the m_b4 array offset by m_b0.
 // @fnv 0x00c9c390
+// pdb: __restgprlr | crtgpr.obj | debug, call graph, medium
 int __fastcall getEntityConstraint(hkpEntity* self, int, int index)
 {
-    if (index < self->m_eSmallArraySerializeOverrideType.m_iElementCount)
-        return ((int*)self->m_eSmallArraySerializeOverrideType.m_data)[(index + index * 2) * 4];
-    return reinterpret_cast<int*>(self->m_kSlaveConstraints.m_data)[index - self->m_eSmallArraySerializeOverrideType.m_iElementCount];
+    if (index < self->m_constraintsMaster.m_iElementCount)
+        return ((int*)self->m_constraintsMaster.m_data)[(index + index * 2) * 4];
+    return reinterpret_cast<int*>(self->m_constraintsSlave.m_data)[index - self->m_constraintsMaster.m_iElementCount];
 }
 
 class GlobalObjectO2_00d472a0;
 extern GlobalObjectO2_00d472a0 g_012688c8;
 extern GlobalObjectO2_00d472a0 g_01268808;
 
-void __cdecl WriteReflectedMembers(const void* obj, const GlobalObjectO2_00d472a0* cls,
+void __cdecl hkStatisticsCollectorUtil_addClassContents(const void* obj, const GlobalObjectO2_00d472a0* cls,
                                    hkStreamWriter* collector);
 
 // Declaration-only extension: the shared statistics interface lacks this hkStreamWriter overload.
@@ -294,26 +297,28 @@ class hkpEntityStats : public hkpEntity
 
 // Reports the entity's constraint, collision, listener and motion data to the writer, including flagged arrays when its serialization mode requests them.
 // @fnv 0x00c9c400
+// pdb: hkpEntity::calcContentStatistics | hkpEntity.obj | retail, string-set bridge, high
+// pdb params: collector, cls
 void hkpEntityStats::CollectStats(hkStreamWriter* collector, const hkClass* cls) const
 {
-    collector->WriteArray(3, "constraintsSlave", m_kSlaveConstraints.m_data, m_kSlaveConstraints.m_iElementCount * 4,
-                              reinterpret_cast<void*>((m_kSlaveConstraints.m_iCapacityState & 0x3fffffff) * 4));
-    WriteReflectedMembers(this, &g_012688c8, collector);
-    if ((m_kContactListeners.m_iCapacityState & 0x8000) == 0 || reinterpret_cast<const char*>(collector)[0x10])
+    collector->WriteArray(3, "constraintsSlave", m_constraintsSlave.m_data, m_constraintsSlave.m_iElementCount * 4,
+                              reinterpret_cast<void*>((m_constraintsSlave.m_iCapacityState & 0x3fffffff) * 4));
+    hkStatisticsCollectorUtil_addClassContents(this, &g_012688c8, collector);
+    if ((m_contactListeners.m_iCapacityState & 0x8000) == 0 || reinterpret_cast<const char*>(collector)[0x10])
     {
-        collector->WriteArray(3, "CollisionListnr", m_kContactListeners.m_data, m_kContactListeners.m_iElementCount * 4,
-                                  reinterpret_cast<void*>((m_kContactListeners.m_iCapacityState & 0x3fff) * 4));
+        collector->WriteArray(3, "CollisionListnr", m_contactListeners.m_data, m_contactListeners.m_iElementCount * 4,
+                                  reinterpret_cast<void*>((m_contactListeners.m_iCapacityState & 0x3fff) * 4));
     }
-    if (m_pExtendedListeners)
+    if (m_extendedListeners)
     {
-        const hkSmallArray<hkpEntityListener*>& entityListeners = m_pExtendedListeners->m_entityListeners;
+        const hkSmallArray<hkpEntityListener*>& entityListeners = m_extendedListeners->m_entityListeners;
         if ((entityListeners.m_capacityAndFlags & 0x8000) == 0 || reinterpret_cast<const char*>(collector)[0x10])
         {
             collector->WriteArray(3, "EntityListeners", entityListeners.m_data, entityListeners.m_size * 4,
                                       reinterpret_cast<void*>((entityListeners.m_capacityAndFlags & 0x3fff) * 4));
         }
         const hkSmallArray<hkpEntityActivationListener*>& activationListeners =
-            m_pExtendedListeners->m_activationListeners;
+            m_extendedListeners->m_activationListeners;
         if ((activationListeners.m_capacityAndFlags & 0x8000) == 0 || reinterpret_cast<const char*>(collector)[0x10])
         {
             collector->WriteArray(3, "ActivatonListners", activationListeners.m_data,
@@ -321,11 +326,11 @@ void hkpEntityStats::CollectStats(hkStreamWriter* collector, const hkClass* cls)
                                       reinterpret_cast<void*>((activationListeners.m_capacityAndFlags & 0x3fff) * 4));
         }
     }
-    collector->WriteField("SavedMotion", m_pMotionState.m_pSavedMotion, 0);
+    collector->WriteField("SavedMotion", m_motion.m_savedMotion, 0);
     WriteToStream(collector, &g_01268808);
 }
 
-void __cdecl hkSmallArrayUtil__reserveMore(void* array, int elemSize);
+void __cdecl hkSmallArrayUtil__reserveMore(void* array, int sizeElem);
 
 inline int findEmptyContactSlot(const hkpEntitySmallArraySerializeOverrideType& slots)
 {
@@ -345,13 +350,17 @@ inline void appendContactSlot(hkpEntitySmallArraySerializeOverrideType& slots, v
 
 // Finds the first empty contact-listener slot or appends one.
 // @fnv 0x00c9c540
-void hkpEntity::AddContactListener(void* apSlot)
+// src: XBOX_RETAIL_PDB 0x00c9c540
+// pdb: hkpEntity::addContactListener | hkpEntity.obj | retail, object-file gap fill, high
+// pdb params: cl
+// pdb locals: assertBuf, ostr
+void hkpEntity::addContactListener(void* cl)
 {
-    int i = findEmptyContactSlot(m_kContactListeners);
+    int i = findEmptyContactSlot(m_contactListeners);
     if (i >= 0)
-        static_cast<void**>(m_kContactListeners.m_data)[i] = apSlot;
+        static_cast<void**>(m_contactListeners.m_data)[i] = cl;
     else
-        appendContactSlot(m_kContactListeners, apSlot);
+        appendContactSlot(m_contactListeners, cl);
 }
 
 // A constraint-master record is 0x30 bytes; the approved headers leave this entity array as void storage.
@@ -374,26 +383,29 @@ struct ConstraintMasterRecord
 
 void hkpConstraintInstance_SortConstraintInstances(void* a1, int a2, int a3, void* a4);
 // @fnv 0x00c9c860
-void __fastcall updateConstraintSlaveIndices(hkpEntity* self, int)
+// src: XBOX_RETAIL_PDB 0x00c9c860
+// pdb: hkpEntity::sortConstraintsSlavesDeterministically | hkpEntity.obj | retail, call graph, high
+// pdb locals: isWarningEnabled
+void __fastcall hkpEntity_sortConstraintsSlavesDeterministically(hkpEntity* self, int)
 {
-    if (*reinterpret_cast<const hkUint8*>(&self->m_pMotionState.m_type) != 5)
+    if (*reinterpret_cast<const hkUint8*>(&self->m_motion.m_type) != 5)
     {
         return;
     }
-    if (self->m_kSlaveConstraints.m_iElementCount > 1)
+    if (self->m_constraintsSlave.m_iElementCount > 1)
     {
-        hkpConstraintInstance_SortConstraintInstances(self->m_kSlaveConstraints.m_data, 0, self->m_kSlaveConstraints.m_iElementCount - 1, self);
+        hkpConstraintInstance_SortConstraintInstances(self->m_constraintsSlave.m_data, 0, self->m_constraintsSlave.m_iElementCount - 1, self);
     }
-    for (int i = 0; i < self->m_kSlaveConstraints.m_iElementCount; ++i)
+    for (int i = 0; i < self->m_constraintsSlave.m_iElementCount; ++i)
     {
-        hkpConstraintInstance* node = self->m_kSlaveConstraints.m_data[i];
+        hkpConstraintInstance* node = self->m_constraintsSlave.m_data[i];
         hkpEntity* owner =
-            reinterpret_cast<hkpEntity*>(reinterpret_cast<unsigned int>(node->m_kActorEntries[1]) ^ reinterpret_cast<unsigned int>(node->m_kActorEntries[0]) ^ reinterpret_cast<unsigned int>(self));
-        for (int k = 0; k < owner->m_eSmallArraySerializeOverrideType.m_iElementCount; ++k)
+            reinterpret_cast<hkpEntity*>(reinterpret_cast<unsigned int>(node->m_entities[1]) ^ reinterpret_cast<unsigned int>(node->m_entities[0]) ^ reinterpret_cast<unsigned int>(self));
+        for (int k = 0; k < owner->m_constraintsMaster.m_iElementCount; ++k)
         {
-            if (static_cast<ConstraintMasterRecord*>(owner->m_eSmallArraySerializeOverrideType.m_data)[k].m_00 == node)
+            if (static_cast<ConstraintMasterRecord*>(owner->m_constraintsMaster.m_data)[k].m_00 == node)
             {
-                static_cast<ConstraintMasterRecord*>(owner->m_eSmallArraySerializeOverrideType.m_data)[k].m_22 = (unsigned short)i;
+                static_cast<ConstraintMasterRecord*>(owner->m_constraintsMaster.m_data)[k].m_22 = (unsigned short)i;
                 break;
             }
         }
@@ -407,8 +419,8 @@ extern const int DAT_010c6f7c;
 inline hkpMaterial makeDefaultMaterial()
 {
     hkpMaterial material(FinishingFlag(0));
-    material.m_fSlipAngle = 0.5f;
-    material.m_fElasticity = 0.4f;
+    material.m_friction = 0.5f;
+    material.m_restitution = 0.4f;
     return material;
 }
 
@@ -467,13 +479,15 @@ class __declspec(novtable) FUN_00c9cce0 : public EntityShapeConstructionBase
     EmptyLocalFrameReference m_pLocalFrame;
     hkpEntityExtendedListeners* m_pExtendedListeners;
 
-    FUN_00c9cce0(const hkpShape* pkShape) throw();
+    FUN_00c9cce0(const hkpShape* shape) throw();
 };
 
 // Constructs an hkpEntity from a shape, initialising its material, motion, arrays and listener pointers to defaults.
 // @fnv 0x00c9cce0
-FUN_00c9cce0::FUN_00c9cce0(const hkpShape* pkShape) throw()
-    : EntityShapeConstructionBase(pkShape), m_iMaterialIndex(makeDefaultMaterial())
+// pdb: hkpEntity::hkpEntity | hkpEntity.obj | retail, call graph, high
+// pdb params: shape
+FUN_00c9cce0::FUN_00c9cce0(const hkpShape* shape) throw()
+    : EntityShapeConstructionBase(shape), m_iMaterialIndex(makeDefaultMaterial())
 {
     m_usStorageIndex = 0xffff;
     m_fBulletSpread = 1.0f;
@@ -510,7 +524,7 @@ hkpKeyframedRigidMotion* __fastcall finishKeyframedMotion(hkpKeyframedRigidMotio
     if (enabled != 0)
     {
         *reinterpret_cast<volatile float*>(&enabled) = 1.0f;
-        self->m_fGravityFactor.m_value = static_cast<short>(enabled >> 16);
+        self->m_gravityFactor.m_value = static_cast<short>(enabled >> 16);
     }
     *reinterpret_cast<int* volatile*>(self) = &DAT_010c6bec;
     return self;
@@ -532,13 +546,15 @@ struct FnvCpu_FUN_00c9d160_CpuAllocatorHolder
 };
 FnvCpu_FUN_00c9d160_CpuAllocatorHolder* __cdecl hkMemoryRouter_getInstance();
 // @fnv 0x00c9d160
+// pdb: hkpKeyframedRigidMotion::`scalar deleting destructor' | hkpEntity.obj | retail, vtable slot, high
+// pdb params: this
 hkpMotion* __fastcall deleteMotion(hkpMotion* self, int, unsigned int flags)
 {
     self->hkpMotion::~hkpMotion();
     if (flags & 1)
     {
         FnvCpu_FUN_00c9d160_CpuAllocatorHolder* holder = hkMemoryRouter_getInstance();
-        holder->allocator->Invoke(self, self->m_usMemSizeAndFlags);
+        holder->allocator->Invoke(self, self->m_memSizeAndFlags);
     }
     return self;
 }
@@ -552,7 +568,7 @@ hkpSphereMotion* __fastcall finishSphereMotion(hkpSphereMotion* self, int, int f
     if (flag)
     {
         float one = 1.0f;
-        self->m_fGravityFactor.m_value = static_cast<short>(*reinterpret_cast<int*>(&one) >> 16);
+        self->m_gravityFactor.m_value = static_cast<short>(*reinterpret_cast<int*>(&one) >> 16);
     }
     *reinterpret_cast<int* volatile*>(self) = &DAT_010c6d54;
     return self;
@@ -567,7 +583,7 @@ hkpBoxMotion* __fastcall finishBoxMotion(hkpBoxMotion* self, int, int flag)
     if (flag)
     {
         *reinterpret_cast<float*>(&flag) = 1.0f;
-        self->m_fGravityFactor.m_value = static_cast<short>(flag >> 16);
+        self->m_gravityFactor.m_value = static_cast<short>(flag >> 16);
     }
     *reinterpret_cast<const int* volatile*>(self) = &DAT_010c6dc4;
     return self;
@@ -587,6 +603,7 @@ template <typename T> inline void releaseListenerArray(hkSmallArray<T>& array)
 }
 
 // @fnv 0x00c9d340
+// pdb: hkpLinkedCollidable::~hkpLinkedCollidable | hkpEntity.obj | retail, object-file run extension, low
 void __fastcall destroyExtendedListeners(hkpEntityExtendedListeners* listeners)
 {
     releaseListenerArray(listeners->m_entityListeners);
@@ -617,6 +634,7 @@ struct FnvCpu_FUN_00c9d460_CpuObject
     FnvCpu_FUN_00c9d460_CpuObject* FUN_00c9d460(unsigned int flags);
 };
 // @fnv 0x00c9d460
+// pdb: hkpWorldObject::`scalar deleting destructor' | hkpEntity.obj | retail, vtable slot, high
 FnvCpu_FUN_00c9d460_CpuObject* FnvCpu_FUN_00c9d460_CpuObject::FUN_00c9d460(unsigned int flags)
 {
     FUN_00c9d3b0();
@@ -734,6 +752,7 @@ class FUN_00d1f780 : public FUN_00d08130
 
 // Destructor that releases the array member by freeing its heap buffer and resetting it.
 // @fnv 0x00d1f780
+// pdb: hkpSimpleShapePhantom::~hkpSimpleShapePhantom | hkpSimpleShapePhantom.obj | retail, object-file gap fill, high
 FUN_00d1f780::~FUN_00d1f780() throw()
 {
 }
@@ -771,25 +790,28 @@ struct S00c92a80_cls
     int unk00;
     int unk04;
     S00c92a80_Obj* obj;
-    void hkpWorld_findInitialContactPoints(int a0, int a1);
+    void hkpWorld_findInitialContactPoints(int entities, int numEntities);
 };
 
 // Reads a float from obj, builds a S00c92a80_Range, and calls obj->v1c with a0, a1, this, the range, and 1.
 // @fnv 0x00c92a80
 // src: HAVOK_LIB 0x00c92a80
-void S00c92a80_cls::hkpWorld_findInitialContactPoints(int a0, int a1)
+// pdb: hkpWorld::findInitialContactPoints | hkpWorld.obj | retail, upstream name already matches, high
+// pdb params: entities, numEntities
+// pdb locals: stepInfo
+void S00c92a80_cls::hkpWorld_findInitialContactPoints(int entities, int numEntities)
 {
     float b = *(float*)((char*)obj + 0x18);
     float a = *(float*)((char*)obj + 0x18);
     S00c92a80_Range r(b, a);
-    obj->v1c(a0, a1, this, &r, 1);
+    obj->v1c(entities, numEntities, this, &r, 1);
 }
 
 // @fnv 0x00c9bfd0
 // src: HAVOK_LIB 0x00c9bfd0
 static __declspec(noinline) unsigned char* hkEntity_isActive(hkpEntity* self, unsigned char* out)
 {
-    hkpSimulationIsland* p = self->m_pSimulationIsland;
+    hkpSimulationIsland* p = self->m_simulationIsland;
     if (!p)
         *(unsigned char*)out = 0;
     else
@@ -806,14 +828,16 @@ void c9bfd0_caller(hkpEntity* self)
 // Writes a 2-bit value extracted from byte 0x26 of m_cc into out, or 0 if m_cc is null.
 // @fnv 0x00c9bff0
 // src: HAVOK_LIB 0x00c9bff0
+// pdb: bhkRigidBody::IsActive | TESObjectREFR.obj | retail, call graph, medium
+// pdb locals: pb
 unsigned char* hkpEntity::isActive_00c9bff0(unsigned char* out)
 {
-    if (m_pSimulationIsland == 0)
+    if (m_simulationIsland == 0)
     {
         *out = 0;
         return out;
     }
-    *out = (((unsigned char*)m_pSimulationIsland)[0x26] >> 2) & 3;
+    *out = (((unsigned char*)m_simulationIsland)[0x26] >> 2) & 3;
     return out;
 }
 
@@ -838,15 +862,17 @@ class hkBoundingVolumeC9C0
 
 // Frees the current bounding volume storage, then resets it from pkShape's container when the shape flags indicate a container shape.
 // @fnv 0x00c9c040
+// pdb: hkpEntity::setCachedShapeData | hkpEntity.obj | debug, call graph, medium
+// pdb params: world, shape
 void __fastcall updateEntityBoundingVolume(hkpEntity* self, int, const hkpWorld* pkWorld, const hkpShape* pkShape)
 {
-    const hkUint8& motionType = *reinterpret_cast<const hkUint8*>(&self->m_pMotionState.m_type);
-    if (reinterpret_cast<hkBoundingVolumeC9C0*>(&self->m_kCollidable.m_kBoundingVolumeData)->m_data)
-        reinterpret_cast<hkBoundingVolumeC9C0*>(&self->m_kCollidable.m_kBoundingVolumeData)->FreeStorage();
+    const hkUint8& motionType = *reinterpret_cast<const hkUint8*>(&self->m_motion.m_type);
+    if (reinterpret_cast<hkBoundingVolumeC9C0*>(&self->m_kCollidable.m_boundingVolumeData)->m_data)
+        reinterpret_cast<hkBoundingVolumeC9C0*>(&self->m_kCollidable.m_boundingVolumeData)->FreeStorage();
     if (!pkWorld || !pkShape)
         return;
 
-    int iShapeFlags = static_cast<hkpCollisionDispatcher*>(pkWorld->m_pDispatcher)->m_auiAlternateTypeFlags[*reinterpret_cast<const hkUint32*>(&pkShape->m_type)];
+    int iShapeFlags = static_cast<hkpCollisionDispatcher*>(pkWorld->m_collisionDispatcher)->m_auiAlternateTypeFlags[*reinterpret_cast<const hkUint32*>(&pkShape->m_type)];
     bool m_bIsOptional = false;
     const hkpShapeContainer* pkContainer;
     if (iShapeFlags & 0x80)
@@ -866,7 +892,7 @@ void __fastcall updateEntityBoundingVolume(hkpEntity* self, int, const hkpWorld*
     if ((motionType == 5 || motionType == 4) && m_bIsOptional)
         return;
 
-    reinterpret_cast<hkBoundingVolumeC9C0*>(&self->m_kCollidable.m_kBoundingVolumeData)->Reset(pkContainer->GetNumChildShapes());
+    reinterpret_cast<hkBoundingVolumeC9C0*>(&self->m_kCollidable.m_boundingVolumeData)->Reset(pkContainer->GetNumChildShapes());
     if (motionType == 5)
         synchronizeEntity(self);
 }
@@ -875,7 +901,7 @@ void __fastcall updateEntityBoundingVolume(hkpEntity* self, int, const hkpWorld*
 // @fnv 0x00c9c0f0
 void hkpEntity::RemoveEntityListener(void* value)
 {
-    hkSmallArray<hkpEntityActivationListener*>& listeners = m_pExtendedListeners->m_activationListeners;
+    hkSmallArray<hkpEntityActivationListener*>& listeners = m_extendedListeners->m_activationListeners;
     hkpEntityActivationListener* listener = static_cast<hkpEntityActivationListener*>(value);
     int i = listeners.indexOf(listener);
     listeners.m_data[i] = 0;
@@ -883,13 +909,16 @@ void hkpEntity::RemoveEntityListener(void* value)
 
 // Sets the entry at the index found by indexOf to 0 in m_entries.
 // @fnv 0x00c9c140
+// pdb: hkpEntity::removeContactListener | hkpEntity.obj | debug, call graph, medium
+// pdb params: cl
+// pdb locals: assertBuf, ostr
 void hkpEntity::RemoveContactListener(void* entry)
 {
-    hkSmallArray<void*>& entries = reinterpret_cast<hkSmallArray<void*>&>(m_kContactListeners);
+    hkSmallArray<void*>& entries = reinterpret_cast<hkSmallArray<void*>&>(m_contactListeners);
     entries.m_data[entries.indexOf(entry)] = 0;
 }
 
-void __cdecl AddEntryToList(hkpWorld* world, hkpSimulationIsland* island);
+void __cdecl hkpWorldOperationUtil_markIslandActive(hkpWorld* world, hkpSimulationIsland* island);
 
 // Deactivation flag setup is not declared by the shared motion interface.
 
@@ -898,43 +927,49 @@ void __cdecl AddEntryToList(hkpWorld* world, hkpSimulationIsland* island);
 void hkpEntity::activate_00c9c1d0()
 {
     hkBool active(char(0));
-    if (m_pSimulationIsland)
-        active = hkBool(static_cast<char>(m_pSimulationIsland->f26.f26mid));
-    if (!active && *reinterpret_cast<const hkUint8*>(&m_pMotionState.m_type) != 5 && m_pOwningWorld)
+    if (m_simulationIsland)
+        active = hkBool(static_cast<char>(m_simulationIsland->f26.f26mid));
+    if (!active && *reinterpret_cast<const hkUint8*>(&m_motion.m_type) != 5 && m_world)
     {
-        m_pMotionState.m_ausDeactivationNumInactiveFrames[0] = 0;
-        m_pMotionState.m_ausDeactivationNumInactiveFrames[1] = 0;
-        AddEntryToList(static_cast<hkpWorld*>(m_pOwningWorld), m_pSimulationIsland);
+        m_motion.m_deactivationNumInactiveFrames[0] = 0;
+        m_motion.m_deactivationNumInactiveFrames[1] = 0;
+        hkpWorldOperationUtil_markIslandActive(static_cast<hkpWorld*>(m_world), m_simulationIsland);
         // Solver-info deactivation settings are not yet named in the shared world header.
-        m_pMotionState.SetFlagBits(reinterpret_cast<const hkUint8*>(m_pOwningWorld)[0x305],
-                                   reinterpret_cast<const hkUint8*>(m_pOwningWorld)[0x306],
-                                   reinterpret_cast<const hkUint8*>(m_pOwningWorld)[0x307]);
+        m_motion.SetFlagBits(reinterpret_cast<const hkUint8*>(m_world)[0x305],
+                                   reinterpret_cast<const hkUint8*>(m_world)[0x306],
+                                   reinterpret_cast<const hkUint8*>(m_world)[0x307]);
     }
 }
 
 // Ensures m_pExtendedListeners is allocated, then nulls the entry for pvListener in m_pExtendedListeners->m_entityListeners.
 // @fnv 0x00c9c670
 // src: HAVOK_LIB 0x00c9c670
+// pdb: hkpEntity::removeEntityListener | hkpEntity.obj | debug, call graph, medium
+// pdb params: el
+// pdb locals: assertBuf, ostr
 void hkpEntity::removeEntityListener_00c9c670(void* pvListener)
 {
-    if (!m_pExtendedListeners)
-        m_pExtendedListeners = new hkpEntityExtendedListeners;
-    hkSmallArray<hkpEntityListener*>& kArray = m_pExtendedListeners->m_entityListeners;
+    if (!m_extendedListeners)
+        m_extendedListeners = new hkpEntityExtendedListeners;
+    hkSmallArray<hkpEntityListener*>& kArray = m_extendedListeners->m_entityListeners;
     hkpEntityListener* listener = static_cast<hkpEntityListener*>(pvListener);
     kArray[kArray.indexOf(listener)] = 0;
 }
 
 // @fnv 0x00c9c7c0
-void __fastcall collectEntityConstraints(hkpEntity* self, int, hkArray<hkpConstraintInstance*>& constraints)
+// src: XBOX_RETAIL_PDB 0x00c9c7c0
+// pdb: hkpEntity::getAllConstraints | hkpEntity.obj | retail, object-file gap fill, high
+// pdb params: constraints
+void __fastcall hkpEntity_getAllConstraints(hkpEntity* self, int, hkArray<hkpConstraintInstance*>& constraints)
 {
     constraints.setSize(self->getNumConstraints());
     int k = 0;
-    for (int i = 0; i < self->m_eSmallArraySerializeOverrideType.m_iElementCount; i++)
+    for (int i = 0; i < self->m_constraintsMaster.m_iElementCount; i++)
         // The approved headers expose this array as void storage; hkConstraintInternal is 0x30 bytes.
         constraints[k++] = *reinterpret_cast<hkpConstraintInstance**>(
-            static_cast<char*>(self->m_eSmallArraySerializeOverrideType.m_data) + i * 0x30);
-    for (int i = 0; i < self->m_kSlaveConstraints.m_iElementCount; i++)
-        constraints[k++] = self->m_kSlaveConstraints.m_data[i];
+            static_cast<char*>(self->m_constraintsMaster.m_data) + i * 0x30);
+    for (int i = 0; i < self->m_constraintsSlave.m_iElementCount; i++)
+        constraints[k++] = self->m_constraintsSlave.m_data[i];
 }
 
 extern int DAT_010c59f4;
@@ -969,49 +1004,52 @@ class FUN_00c9d220
 
 // The approved world-object constructor still names an incomplete, unit-specific flag type.
 // Its 0x00cd2c50 ABI carries the same single integer as the shared FinishingFlag.
-hkpWorldObject* __fastcall finishWorldObject(hkpWorldObject* self, int, FinishingFlag flag);
+hkpWorldObject* __fastcall hkpWorldObject_ctor(hkpWorldObject* self, int, FinishingFlag flag);
 
 inline void finishMaxSizeMotion(hkpMaxSizeMotion& motion, int flag)
 {
     *reinterpret_cast<int**>(&motion) = &DAT_010c59f4;
     if (flag)
-        setHalfC9CE(motion.m_fGravityFactor, 1.0f);
+        setHalfC9CE(motion.m_gravityFactor, 1.0f);
     *reinterpret_cast<const int**>(&motion) = &DAT_010c6c64;
 }
 
 // Constructs the base and m_pMotionState from flag, then if flag is set re-constructs m_pMotionState as the motion class matching its m_type.
 // @fnv 0x00c9ce00
-hkpEntity* __fastcall finishEntity(hkpEntity* self, int unused, int flag)
+// src: XBOX_RETAIL_PDB 0x00c9ce00
+// pdb: hkpEntity::hkpEntity | hkpEntity.obj | retail, call graph (shared callers), high
+// pdb params: shape
+hkpEntity* __fastcall hkpEntity_ctor(hkpEntity* self, int unused, int flag)
 {
-    finishWorldObject(self, unused, FinishingFlag(*(volatile int*)&flag));
+    hkpWorldObject_ctor(self, unused, FinishingFlag(*(volatile int*)&flag));
     *reinterpret_cast<const int**>(self) = &DAT_010c6f7c;
-    initializeEntitySmallArray(self->m_eSmallArraySerializeOverrideType);
-    initializeEntityArray(self->m_kSlaveConstraints);
-    initializeEntityArray(self->m_pByteBuffer);
-    finishMaxSizeMotion(self->m_pMotionState, flag);
-    initializeEntitySmallArray(self->m_kContactListeners);
-    initializeEntitySmallArray(self->m_ppActions);
+    initializeEntitySmallArray(self->m_constraintsMaster);
+    initializeEntityArray(self->m_constraintsSlave);
+    initializeEntityArray(self->m_constraintRuntime);
+    finishMaxSizeMotion(self->m_motion, flag);
+    initializeEntitySmallArray(self->m_contactListeners);
+    initializeEntitySmallArray(self->m_actions);
     if (flag)
     {
-        switch (*reinterpret_cast<const hkUint8*>(&self->m_pMotionState.m_type))
+        switch (*reinterpret_cast<const hkUint8*>(&self->m_motion.m_type))
         {
         case hkpMotion::MOTION_SPHERE_INERTIA:
-            ::new (&self->m_pMotionState) SphereMotionFinish(flag);
+            ::new (&self->m_motion) SphereMotionFinish(flag);
             break;
         case hkpMotion::MOTION_BOX_INERTIA:
-            ::new (&self->m_pMotionState) hkpBoxMotion(FinishingFlag(flag));
+            ::new (&self->m_motion) hkpBoxMotion(FinishingFlag(flag));
             break;
         case hkpMotion::MOTION_KEYFRAMED:
-            ::new (&self->m_pMotionState) FUN_00c9d100(flag);
+            ::new (&self->m_motion) FUN_00c9d100(flag);
             break;
         case hkpMotion::MOTION_FIXED:
-            ::new (&self->m_pMotionState) FUN_00c9d130(flag);
+            ::new (&self->m_motion) FUN_00c9d130(flag);
             break;
         case hkpMotion::MOTION_THIN_BOX_INERTIA:
-            ::new (&self->m_pMotionState) hkpThinBoxMotion(FinishingFlag(flag));
+            ::new (&self->m_motion) hkpThinBoxMotion(FinishingFlag(flag));
             break;
         case hkpMotion::MOTION_CHARACTER:
-            ::new (&self->m_pMotionState) FUN_00c9d220(flag);
+            ::new (&self->m_motion) FUN_00c9d220(flag);
             break;
         }
     }
@@ -1026,7 +1064,7 @@ hkpMotion* __fastcall finishFixedMotion(hkpMotion* self, int, int flag)
     if (flag)
     {
         *reinterpret_cast<float*>(&flag) = 1.0f;
-        self->m_fGravityFactor.m_value = static_cast<short>(flag >> 16);
+        self->m_gravityFactor.m_value = static_cast<short>(flag >> 16);
     }
     *reinterpret_cast<const int* volatile*>(self) = &DAT_010c6cdc;
     return self;
@@ -1041,7 +1079,7 @@ struct MotionCtorBase : public hkpMotion
         if (flag)
         {
             *reinterpret_cast<float*>(&flag) = 1.0f;
-            volatile short& gravityFactor = m_fGravityFactor.m_value;
+            volatile short& gravityFactor = m_gravityFactor.m_value;
             gravityFactor = static_cast<short>(flag >> 16);
         }
     }
@@ -1064,22 +1102,22 @@ struct hkEntryLessD250
 
     hkpEntity* getPartner(const hkpConstraintInstance* pkEntry) const
     {
-        return reinterpret_cast<hkpEntity*>(reinterpret_cast<unsigned int>(pkEntry->m_kActorEntries[1]) ^
-                                                          reinterpret_cast<unsigned int>(pkEntry->m_kActorEntries[0]) ^
+        return reinterpret_cast<hkpEntity*>(reinterpret_cast<unsigned int>(pkEntry->m_entities[1]) ^
+                                                          reinterpret_cast<unsigned int>(pkEntry->m_entities[0]) ^
                                                           m_key);
     }
 
     bool operator()(const hkpConstraintInstance* pkA, const hkpConstraintInstance* pkB) const
     {
-        if (pkA->m_uiUniqueId < pkB->m_uiUniqueId)
+        if (pkA->m_uid < pkB->m_uid)
         {
             return true;
         }
-        if (pkA->m_uiUniqueId > pkB->m_uiUniqueId)
+        if (pkA->m_uid > pkB->m_uid)
         {
             return false;
         }
-        return getPartner(pkA)->m_uiUniqueId < getPartner(pkB)->m_uiUniqueId;
+        return getPartner(pkA)->m_uid < getPartner(pkB)->m_uid;
     }
 };
 
@@ -1133,9 +1171,13 @@ struct FUN_00c9c700_Allocator
 
 // Initializes the internal array if needed, then inserts value into the first empty slot or appends it, growing capacity when full.
 // @fnv 0x00c9c700
-void __fastcall addActivationListener(hkpEntity* self, int, hkpEntityActivationListener* value)
+// src: XBOX_RETAIL_PDB 0x00c9c700
+// pdb: hkpEntity::addEntityActivationListener | hkpEntity.obj | retail, object-file gap fill, high
+// pdb params: el
+// pdb locals: assertBuf, ostr
+void __fastcall hkpEntity_addEntityActivationListener(hkpEntity* self, int, hkpEntityActivationListener* value)
 {
-    if (self->m_pExtendedListeners == 0)
+    if (self->m_extendedListeners == 0)
     {
         FnvCpu_FUN_00c9d160_CpuAllocatorHolder* holder = hkMemoryRouter_getInstance();
         FUN_00c9c700_Allocator* allocator = (FUN_00c9c700_Allocator*)holder->allocator;
@@ -1155,10 +1197,10 @@ void __fastcall addActivationListener(hkpEntity* self, int, hkpEntityActivationL
             array = 0;
         }
 
-        self->m_pExtendedListeners = array;
+        self->m_extendedListeners = array;
     }
 
-    hkpEntityExtendedListeners* array = self->m_pExtendedListeners;
+    hkpEntityExtendedListeners* array = self->m_extendedListeners;
     int index = 0;
 
     if (0 < array->m_activationListeners.m_size)
@@ -1178,7 +1220,7 @@ void __fastcall addActivationListener(hkpEntity* self, int, hkpEntityActivationL
             }
             ++index;
             ++p;
-        } while (index < self->m_pExtendedListeners->m_activationListeners.m_size);
+        } while (index < self->m_extendedListeners->m_activationListeners.m_size);
     }
 
     if (array->m_activationListeners.m_size == (array->m_activationListeners.m_capacityAndFlags & 0x3fff))
@@ -1189,13 +1231,13 @@ void __fastcall addActivationListener(hkpEntity* self, int, hkpEntityActivationL
 }
 
 extern float DAT_0104da48;
-void __cdecl PropagateStateToChildren(hkpWorld* world, hkpSimulationIsland* island);
-void __cdecl AddItemToContainer(hkpWorld* world, hkpSimulationIsland* island);
+void __cdecl PropagateStateToChildren(hkpWorld* world, hkpSimulationIsland* currentIsland);
+void __cdecl hkpWorldOperationUtil_markIslandInactive(hkpWorld* world, hkpSimulationIsland* island);
 // If the island is active: runs PropagateStateToChildren when split-check or sparse is set, sets each entity's reference position w to FLT_MAX, then calls AddItemToContainer.
 // @fnv 0x00c9c240
 void __fastcall deactivateEntityImmediately(hkpEntity* self)
 {
-    hkpSimulationIsland* island = (hkpSimulationIsland*)self->m_pSimulationIsland;
+    hkpSimulationIsland* island = (hkpSimulationIsland*)self->m_simulationIsland;
     if (island)
     {
         unsigned char act = island->f26.f26mid;
@@ -1204,16 +1246,16 @@ void __fastcall deactivateEntityImmediately(hkpEntity* self)
         {
             if ((island->flags25 & 3) || ((island->flags25 >> 2) & 3))
             {
-                hkpWorld* world = (hkpWorld*)self->m_pOwningWorld;
-                int minIslandSize = world->m_uiMinDesiredIslandSize;
-                world->m_uiMinDesiredIslandSize = 0;
-                ((hkpSimulationIsland*)self->m_pSimulationIsland)->flags25 &= ~0x0c;
-                ((hkpSimulationIsland*)self->m_pSimulationIsland)->flags25 = (((hkpSimulationIsland*)self->m_pSimulationIsland)->flags25 & ~3) | 1;
-                PropagateStateToChildren((hkpWorld*)self->m_pOwningWorld,
-                                         (hkpSimulationIsland*)self->m_pSimulationIsland);
-                ((hkpWorld*)self->m_pOwningWorld)->m_uiMinDesiredIslandSize = minIslandSize;
+                hkpWorld* world = (hkpWorld*)self->m_world;
+                int minIslandSize = world->m_minDesiredIslandSize;
+                world->m_minDesiredIslandSize = 0;
+                ((hkpSimulationIsland*)self->m_simulationIsland)->flags25 &= ~0x0c;
+                ((hkpSimulationIsland*)self->m_simulationIsland)->flags25 = (((hkpSimulationIsland*)self->m_simulationIsland)->flags25 & ~3) | 1;
+                PropagateStateToChildren((hkpWorld*)self->m_world,
+                                         (hkpSimulationIsland*)self->m_simulationIsland);
+                ((hkpWorld*)self->m_world)->m_minDesiredIslandSize = minIslandSize;
             }
-            island = (hkpSimulationIsland*)self->m_pSimulationIsland;
+            island = (hkpSimulationIsland*)self->m_simulationIsland;
             int i = 0;
             if (island->entities.count > 0)
             {
@@ -1221,11 +1263,11 @@ void __fastcall deactivateEntityImmediately(hkpEntity* self)
                 do
                 {
                     hkpEntity* entity = *entities++;
-                    entity->m_pMotionState.m_akDeactivationReferencePositions[0].w = 3.40282e+38f;
-                    entity->m_pMotionState.m_akDeactivationReferencePositions[1].w = 3.40282e+38f;
+                    entity->m_motion.m_deactivationRefPosition[0].w = 3.40282e+38f;
+                    entity->m_motion.m_deactivationRefPosition[1].w = 3.40282e+38f;
                 } while (++i < island->entities.count);
             }
-            AddItemToContainer((hkpWorld*)self->m_pOwningWorld, island);
+            hkpWorldOperationUtil_markIslandInactive((hkpWorld*)self->m_world, island);
         }
     }
 }
@@ -1238,7 +1280,7 @@ hkpThinBoxMotion* __fastcall finishThinBoxMotion(hkpThinBoxMotion* self, int, in
     if (flag)
     {
         *reinterpret_cast<float*>(&flag) = 1.0f;
-        self->m_fGravityFactor.m_value = static_cast<short>(flag >> 16);
+        self->m_gravityFactor.m_value = static_cast<short>(flag >> 16);
     }
     *reinterpret_cast<const int* volatile*>(self) = &DAT_010c6e34;
     return self;
@@ -1329,72 +1371,74 @@ __forceinline void freeExtendedListeners(hkpEntityExtendedListeners* listeners)
 
 // Deletes p98 after FUN_00c9c140, then frees storage of p60, master, slave, runtime, contact, actions and extended when each is empty.
 // @fnv 0x00c9c8f0
+// pdb: hkpEntity::deallocateInternalArrays | hkpEntity.obj | retail, vtable slot, high
+// pdb locals: assertBuf, ostr
 void __fastcall rebuildEntity(hkpEntity* self)
 {
-    FnvRef* old = static_cast<FnvRef*>(self->m_pEntityUserData);
+    FnvRef* old = static_cast<FnvRef*>(self->m_limitContactImpulseUtil);
     if (old)
     {
         self->RemoveContactListener(static_cast<hkpContactListener*>(old));
         delete old;
-        self->m_pEntityUserData = 0;
+        self->m_limitContactImpulseUtil = 0;
     }
-    if (self->m_kCollidable.m_kCollisionEntries.m_iElementCount == 0)
+    if (self->m_kCollidable.m_collisionEntries.m_iElementCount == 0)
     {
         FnvRouter* router = hkMemoryRouter_getInstance();
         FnvMem* mem = router->heap;
-        int f = self->m_kCollidable.m_kCollisionEntries.m_iCapacityState;
-        self->m_kCollidable.m_kCollisionEntries.m_iElementCount = 0;
+        int f = self->m_kCollidable.m_collisionEntries.m_iCapacityState;
+        self->m_kCollidable.m_collisionEntries.m_iElementCount = 0;
         if (!(f & 0x80000000))
-            mem->freeBlock(self->m_kCollidable.m_kCollisionEntries.m_data, (f & 0x3fffffff) * 8);
-        self->m_kCollidable.m_kCollisionEntries.m_data = 0;
-        self->m_kCollidable.m_kCollisionEntries.m_iCapacityState = 0x80000000;
+            mem->freeBlock(self->m_kCollidable.m_collisionEntries.m_data, (f & 0x3fffffff) * 8);
+        self->m_kCollidable.m_collisionEntries.m_data = 0;
+        self->m_kCollidable.m_collisionEntries.m_iCapacityState = 0x80000000;
     }
-    if (self->m_eSmallArraySerializeOverrideType.m_iElementCount == 0)
-        clearSmallArray(self->m_eSmallArraySerializeOverrideType, 48);
-    if (self->m_kSlaveConstraints.m_iElementCount == 0)
+    if (self->m_constraintsMaster.m_iElementCount == 0)
+        clearSmallArray(self->m_constraintsMaster, 48);
+    if (self->m_constraintsSlave.m_iElementCount == 0)
     {
         FnvRouter* router = hkMemoryRouter_getInstance();
         FnvMem* mem = router->heap;
-        int f = self->m_kSlaveConstraints.m_iCapacityState;
-        self->m_kSlaveConstraints.m_iElementCount = 0;
+        int f = self->m_constraintsSlave.m_iCapacityState;
+        self->m_constraintsSlave.m_iElementCount = 0;
         if (!(f & 0x80000000))
-            mem->freeBlock(self->m_kSlaveConstraints.m_data, (f & 0x3fffffff) * 4);
-        self->m_kSlaveConstraints.m_data = 0;
-        self->m_kSlaveConstraints.m_iCapacityState = 0x80000000;
+            mem->freeBlock(self->m_constraintsSlave.m_data, (f & 0x3fffffff) * 4);
+        self->m_constraintsSlave.m_data = 0;
+        self->m_constraintsSlave.m_iCapacityState = 0x80000000;
     }
-    if (self->m_pByteBuffer.m_iElementCount == 0)
+    if (self->m_constraintRuntime.m_iElementCount == 0)
     {
         FnvRouter* router = hkMemoryRouter_getInstance();
         FnvMem* mem = router->heap;
-        int f = self->m_pByteBuffer.m_iCapacityState;
-        self->m_pByteBuffer.m_iElementCount = 0;
+        int f = self->m_constraintRuntime.m_iCapacityState;
+        self->m_constraintRuntime.m_iElementCount = 0;
         if (!(f & 0x80000000))
-            mem->freeBlock(self->m_pByteBuffer.m_data, f & 0x3fffffff);
-        self->m_pByteBuffer.m_data = 0;
-        self->m_pByteBuffer.m_iCapacityState = 0x80000000;
+            mem->freeBlock(self->m_constraintRuntime.m_data, f & 0x3fffffff);
+        self->m_constraintRuntime.m_data = 0;
+        self->m_constraintRuntime.m_iCapacityState = 0x80000000;
     }
-    clearContactArrayIfEmpty(self->m_kContactListeners);
+    clearContactArrayIfEmpty(self->m_contactListeners);
     bool usedContact = false;
-    hkpEntityExtendedListeners* pExtended = self->m_pExtendedListeners;
+    hkpEntityExtendedListeners* pExtended = self->m_extendedListeners;
     if (pExtended)
     {
         clearExtendedArrayIfEmpty(pExtended->m_activationListeners, usedContact);
     }
     bool usedAction = false;
-    pExtended = self->m_pExtendedListeners;
+    pExtended = self->m_extendedListeners;
     if (pExtended)
     {
         clearExtendedArrayIfEmpty(pExtended->m_entityListeners, usedAction);
     }
     if (!usedContact && !usedAction)
     {
-        pExtended = self->m_pExtendedListeners;
+        pExtended = self->m_extendedListeners;
         if (pExtended)
             freeExtendedListeners(pExtended);
-        self->m_pExtendedListeners = 0;
+        self->m_extendedListeners = 0;
     }
-    if (self->m_ppActions.m_iElementCount == 0)
-        clearSmallArray(self->m_ppActions, 4);
+    if (self->m_actions.m_iElementCount == 0)
+        clearSmallArray(self->m_actions, 4);
 }
 }  // namespace fnv_00c9c8f0
 
@@ -1415,55 +1459,59 @@ struct LimitUtilC9CF : public hkReferencedObject, public hkpContactListener
     virtual ~LimitUtilC9CF() throw();
 };
 
-void __cdecl DeleteCallbacks(void* pEntity);
+void __cdecl hkpEntityCallbackUtil_fireEntityDeleted(void* entity);
 
 // Destructor: if m_pEntityUserData is set, passes it to FUN_00c9c140 and deletes it; calls DeleteCallbacks(this); deletes m_pExtendedListeners if set.
 // @fnv 0x00c9cf60
+// pdb: hkpEntity::~hkpEntity | hkpEntity.obj | retail, object-file run extension, low
+// pdb locals: assertBuf, ostr
 void __fastcall destroyEntity(hkpEntity* self)
 {
     extern const int DAT_010c6f7c;
     *reinterpret_cast<const int**>(self) = &DAT_010c6f7c;
-    LimitUtilC9CF* pkUtil = static_cast<LimitUtilC9CF*>(self->m_pEntityUserData);
+    LimitUtilC9CF* pkUtil = static_cast<LimitUtilC9CF*>(self->m_limitContactImpulseUtil);
     if (pkUtil)
     {
         self->RemoveContactListener(static_cast<hkpContactListener*>(pkUtil));
         delete pkUtil;
-        self->m_pEntityUserData = 0;
+        self->m_limitContactImpulseUtil = 0;
     }
-    DeleteCallbacks(self);
-    hkpEntityExtendedListeners* listeners = self->m_pExtendedListeners;
+    hkpEntityCallbackUtil_fireEntityDeleted(self);
+    hkpEntityExtendedListeners* listeners = self->m_extendedListeners;
     if (listeners)
     {
         destroyExtendedListeners(listeners);
         hkpEntityExtendedListeners::operator delete(listeners);
     }
-    hkReferencedObject* localFrame = reinterpret_cast<hkReferencedObject*>(self->m_pLocalFrame);
+    hkReferencedObject* localFrame = reinterpret_cast<hkReferencedObject*>(self->m_localFrame);
     if (localFrame)
         localFrame->removeReference();
-    self->m_pLocalFrame = 0;
-    releaseEntitySmallArray(self->m_ppActions, 4);
-    releaseEntitySmallArray(self->m_kContactListeners, 4);
-    self->m_pMotionState.hkpMotion::~hkpMotion();
-    releaseArrayStorage(self->m_pByteBuffer, 1);
-    releaseArrayStorage(self->m_kSlaveConstraints, 4);
+    self->m_localFrame = 0;
+    releaseEntitySmallArray(self->m_actions, 4);
+    releaseEntitySmallArray(self->m_contactListeners, 4);
+    self->m_motion.hkpMotion::~hkpMotion();
+    releaseArrayStorage(self->m_constraintRuntime, 1);
+    releaseArrayStorage(self->m_constraintsSlave, 4);
     // hkConstraintInternal has 0x30-byte records; no approved shared definition exists yet.
-    releaseEntitySmallArray(self->m_eSmallArraySerializeOverrideType, 0x30);
+    releaseEntitySmallArray(self->m_constraintsMaster, 0x30);
     self->hkpWorldObject::~hkpWorldObject();
 }
 }  // namespace fnv_00c9cf60
 
 // Keep the original destruction sequence explicit: properties, name, collision entries, then the base object.
 // @fnv 0x00c9d3b0
+// pdb: hkpWorldObject::~hkpWorldObject | hkpEntity.obj | retail, call graph (shared callers), high
+// pdb locals: assertBuf, ostr
 void __fastcall destroyWorldObject(hkpWorldObject* self, int)
 {
     extern const int DAT_010c6f64;
     *reinterpret_cast<const int**>(self) = &DAT_010c6f64;
     if (self->m_kCollidable.m_pCollisionShape)
         const_cast<hkpShape*>(self->m_kCollidable.m_pCollisionShape)->removeReference();
-    if (self->m_kNextStreamField)
-        static_cast<hkReferencedObject*>(self->m_kNextStreamField)->removeReference();
-    releaseArrayStorage(self->m_kProperties, 16);
+    if (self->m_aiData)
+        static_cast<hkReferencedObject*>(self->m_aiData)->removeReference();
+    releaseArrayStorage(self->m_properties, 16);
     self->m_name.~hkStringPtr();
-    releaseArrayStorage(self->m_kCollidable.m_kCollisionEntries, 8);
+    releaseArrayStorage(self->m_kCollidable.m_collisionEntries, 8);
     self->hkBaseObject::~hkBaseObject();
 }

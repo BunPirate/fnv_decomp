@@ -8,9 +8,12 @@
 
 // Stores color into DAT_011c74b8 and, if FUN_004bc3f0() succeeds, passes a copy with alpha 0.0f to its SetBackgroundColor (slot 43) and returns true.
 // @fnv 0x004dce50
-bool Renderer::SetBackgroundColor(NiColor& color)
+// pdb: Renderer::SetBackgroundColor | Renderer.obj | retail, upstream name already matches, high
+// pdb params: arColor
+// pdb locals: kaColor
+bool Renderer::SetBackgroundColor(NiColor& arColor)
 {
-    DAT_011c74b8 = color;
+    DAT_011c74b8 = arColor;
     if (Renderer_GetNIRenderer())
     {
         NiColorA background(0.0f, 0.0f, 0.0f, 0.0f);
@@ -26,6 +29,9 @@ bool Renderer::SetBackgroundColor(NiColor& color)
 
 // Returns true when DAT_011c70e9 is unset or FUN_005d4a40 returns true.
 // @fnv 0x00452540
+// pdb: Renderer::QCurrentThreadOwnsRenderer | Renderer.obj | retail, call graph, low
+// pdb note: debug build links it to Renderer::QCanResume
+// pdb locals: irendererThread
 bool Renderer::CanRender()
 {
     return !DAT_011c70e9 || Cmd_Default_Execute();
@@ -36,6 +42,8 @@ double __cdecl FUN_00ec9ac0(double, double);
 // Returns the result of FUN_00ec9ac0(_X, _Y) cast to float.
 // @fnv 0x004dd150
 // src: XBOX_PDB 0x004dd150
+// pdb: powf | Renderer.obj | debug, object-file run extension, low
+// pdb params: _X, _Y
 float __cdecl powf_004dd150(float _X, float _Y)
 {
     return (float)FUN_00ec9ac0(_X, _Y);
@@ -50,6 +58,7 @@ struct RendererSetting : public Setting
 };
 // @fnv 0x004ed780
 // src: GUESS 0x004ed780 (confidence: low)
+// pdb: NiTPointerListSingleThread<PlaceableWaterGroup *>::NiTPointerListSingleThread<PlaceableWaterGroup *> | TESWater.obj | debug, object-file run extension, low
 RendererSetting* RendererSetting::ProcessAndReturnValue_004ed780(float f)
 {
     SetValue(f);
@@ -72,6 +81,7 @@ extern "C" void* DAT_011c70dc;
 
 // @fnv 0x004dce30
 // src: COMMUNITY 0x004dce30
+// pdb: Renderer::QFullScreen | Renderer.obj | debug, object-file run extension, low
 void* __cdecl TESRenderer_GetSystemDesc()
 {
     if (DAT_011c70dc == 0)
@@ -84,9 +94,11 @@ extern "C" float __cdecl powf_004dd150(float, float);
 
 // @fnv 0x004dd130
 // src: XBOX_PDB 0x004dd130
-float pow_004dd130(float a, float b)
+// pdb: pow | Renderer.obj | debug, call graph (shared callers), high
+// pdb params: _X, _Y
+float pow_004dd130(float _X, float _Y)
 {
-    return powf_004dd150(a, b);
+    return powf_004dd150(_X, _Y);
 }
 }  // namespace fnv_004dd130
 
@@ -100,6 +112,8 @@ void* __cdecl TESRenderer_GetSystemDesc();
 extern Flt* DAT_011c70dc;
 // Returns the value at index a1 from DAT_011c70dc when FUN_004dce30() succeeds and a1 is in range, otherwise 0.
 // @fnv 0x004dcdb0
+// pdb: Renderer::SetErrorString | Renderer.obj | debug, object-file run extension, low
+// pdb params: apReason
 unsigned int __cdecl GetFltValueAt(unsigned int auiIndex)
 {
     unsigned int uiValue;
@@ -125,6 +139,8 @@ void __cdecl _FNV_Warning(const char*, ...);
 // Calls FUN_00b54630, and on final kill releases the renderer via FUN_00461300, warning if smart pointers remain, then clears g_011c73b4.
 // @fnv 0x004da4d0
 // src: XBOX_PDB 0x004da4d0
+// pdb: Renderer::Kill | Renderer.obj | retail, upstream name already matches, high
+// pdb params: abFinalKill
 void __cdecl Renderer_Kill(bool abFinalKill)
 {
     BSShaderManager_Free(abFinalKill);
@@ -244,7 +260,7 @@ struct GRRendererPtr
     operator GRRenderer*() const;
 };
 
-float __cdecl GRApplyGamma(float afValue, float afGamma);
+float __cdecl GRApplyGamma(float _X, float _Y);
 
 extern bool g_bGRGammaDirty;
 extern float g_fGRGamma;
@@ -253,6 +269,8 @@ extern GRRendererPtr g_spGRRenderer;
 
 // Clears the gamma-dirty flag, stores g_fGRGamma, builds a 256-entry gamma ramp via GRApplyGamma and applies it to swap chain 0 with SetGammaRamp.
 // @fnv 0x004dcef0
+// pdb: Renderer::UpdateGamma | Renderer.obj | retail, object-file run extension, low
+// pdb locals: kGammaRamp, eD3DFBFormat, us
 void __cdecl ApplyGammaRamp()
 {
     GRRamp kRamp4;
@@ -280,6 +298,9 @@ extern P03MM _g_memoryManager;
 // Copies apString to the string value; if pKey exists, copies it into a new buffer, changes its first byte to 'S', and frees old pKey only when it starts with 'S'.
 // @fnv 0x00c33170
 // src: GUESS 0x00c33170 (confidence: medium)
+// pdb: Setting::operator= | Setting.obj | retail, call graph (shared callers), high
+// pdb params: apString
+// pdb locals: ikeyLen, pstr, ilen, cp
 Setting& Setting::SetStringAndPromoteKeyOwnership(const char* apString)
 {
     if (this)
@@ -1605,12 +1626,15 @@ int __cdecl FUN_00b4f380(int);
 
 // Initializes the renderer device, queries GPU capabilities, writes RendererInfo.txt, and caches float/bool settings into globals.
 // @fnv 0x004da670
-// src: EXE 0x004da670
-int __cdecl NiXAdapaterDesc_GetDeviceCaps(int aiWidth, int aiHeight)
+// src: XBOX_RETAIL_PDB 0x004da670 (was EXE)
+// pdb: Renderer::Init | Renderer.obj | retail, unique string literal, high
+// pdb params: ahWnd, ahInstance
+// pdb locals: pdrivername, eoldMode, eproc, bnonpow2tex, tempMemContext, pdevicename, pcaps, ipixelinstructions, affin, bcanDoRefraction, videoMode
+int __cdecl Renderer_Init(int ahWnd, int ahInstance)
 {
     S4eb0 tracker10(4, true, "D:\\_Fallout3\\Platforms\\Common\\Code\\Fallout Shared\\Renderer.cpp", 377);
-    DAT_011c6fc0 = aiWidth;
-    DAT_011c6fc4 = aiHeight;
+    DAT_011c6fc0 = ahWnd;
+    DAT_011c6fc4 = ahInstance;
     char buf21[260];
     _sprintf_s(buf21, 260, "%sRendererInfo.txt", BSUtilities_GetPersonalPath());
     void* file32 = FUN_00ec9a47(buf21, (const char*)&DAT_0102156c);

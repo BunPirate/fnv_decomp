@@ -11,35 +11,41 @@
 class BSMultiBoundStreamOperations : public BSMultiBound
 {
 public:
-    void LoadBinary(NiStream* stream);
-    void LinkObject(NiStream& stream);
-    void RegisterShape(NiStream& stream);
-    bool IsSameBound(BSMultiBound* other);
+    void LoadBinary(NiStream* arStream);
+    void LinkObject(NiStream& arStream);
+    void RegisterShape(NiStream& arStream);
+    bool IsSameBound(BSMultiBound* apObject);
     void* Delete(unsigned int flags);
     const NiRTTI* GetRTTI() const;
-    BSMultiBound* CloneBound(int context);
+    BSMultiBound* CloneBound(int arCloneData);
     void CopyBound(BSMultiBound* target, int context);
     void* GetViewerEntries(int argument);
-    void* AppendCameraPathEntries(int argument);
+    void* AppendCameraPathEntries(int pStrings);
 };
 
 // @fnv 0x00c36040
-void BSMultiBoundStreamOperations::LoadBinary(NiStream* stream)
+// pdb: BSMultiBound::LoadBinary | BSMultiBound.obj | retail, vtable slot, high
+// pdb params: arStream
+void BSMultiBoundStreamOperations::LoadBinary(NiStream* arStream)
 {
-    NiObject::LoadBinary(*stream);
-    stream->ResetStreamState();
+    NiObject::LoadBinary(*arStream);
+    arStream->ResetStreamState();
 }
 
 // @fnv 0x00c36070
-void BSMultiBoundStreamOperations::LinkObject(NiStream& stream)
+// pdb: BSMultiBound::LinkObject | BSMultiBound.obj | retail, vtable slot, high
+// pdb params: arStream
+void BSMultiBoundStreamOperations::LinkObject(NiStream& arStream)
 {
     int _u1;
     int _u2;
-    NiObject::LinkObject(stream);
-    reinterpret_cast<GO&>(pShape) = stream.GetLoadedObject();
+    NiObject::LinkObject(arStream);
+    reinterpret_cast<GO&>(spShape) = arStream.GetLoadedObject();
 }
 
 // @fnv 0x00c36220
+// pdb: BSMultiBound::GetViewerStrings | BSMultiBound.obj | debug, vtable slot, medium
+// pdb params: apStrings
 void* BSMultiBoundStreamOperations::GetViewerEntries(int arg)
 {
     return AppendCameraPathEntries(arg);
@@ -47,6 +53,7 @@ void* BSMultiBoundStreamOperations::GetViewerEntries(int arg)
 
 void _delete(void*, unsigned int);
 // @fnv 0x00c36290
+// pdb: BSMultiBound::`scalar deleting destructor' | BSMultiBound.obj | retail, vtable slot, high
 void* BSMultiBoundStreamOperations::Delete(unsigned int flags)
 {
     BSMultiBound::~BSMultiBound();
@@ -63,6 +70,8 @@ struct S_00c362c0
 };
 // @fnv 0x00c362c0
 // src: GUESS 0x00c362c0 (confidence: low)
+// pdb: NiPointer<BSMultiBoundShape>::NiPointer<BSMultiBoundShape> | BSMultiBound.obj | debug, object-file run extension, low
+// pdb params: pObject
 void S_00c362c0::UpdateFields_00c362c0()
 {
     NiObject* p;
@@ -83,10 +92,13 @@ const NiRTTI* BSMultiBoundStreamOperations::GetRTTI() const
 }
 
 // @fnv 0x00c35f50
-BSMultiBound* BSMultiBoundStreamOperations::CloneBound(int a)
+// pdb: BSMultiBound::CreateClone | BSMultiBound.obj | retail, vtable slot, high
+// pdb params: arCloneData
+// pdb locals: pobj
+BSMultiBound* BSMultiBoundStreamOperations::CloneBound(int arCloneData)
 {
     BSMultiBound* t = new BSMultiBound;
-    CopyBound(t, a);
+    CopyBound(t, arCloneData);
     return t;
 }
 
@@ -94,21 +106,25 @@ extern int _data_011c16bc;
 
 // @fnv 0x00c361a0
 // src: EXE 0x00c361a0
+// pdb: BSMultiBound::CreateObject | BSMultiBound.obj | retail, upstream name already matches, high
 BSMultiBound* BSMultiBound_CreateObject()
 {
     return new BSMultiBound;
 }
 
 // @fnv 0x00c36130
-bool BSMultiBoundStreamOperations::IsSameBound(BSMultiBound* arg)
+// pdb: BSMultiBound::IsEqual | BSMultiBound.obj | retail, vtable slot, high
+// pdb params: apObject
+// pdb locals: bres, pkDest
+bool BSMultiBoundStreamOperations::IsSameBound(BSMultiBound* apObject)
 {
-    bool result = IsSameAs(arg);
-    BSMultiBound* other = arg;
+    bool result = IsSameAs(apObject);
+    BSMultiBound* other = apObject;
     {
         int a;
         int b;
-        if ((bool)(int)(pShape.m_pObject == other->pShape.m_pObject) &&
-            ((a = m_uiBoundFlags) == (b = other->m_uiBoundFlags)))
+        if ((bool)(int)(spShape.m_pObject == other->spShape.m_pObject) &&
+            ((a = uiBoundFrameCount) == (b = other->uiBoundFrameCount)))
         {
             result = true;
         }
@@ -121,9 +137,11 @@ bool BSMultiBoundStreamOperations::IsSameBound(BSMultiBound* arg)
 }
 
 // @fnv 0x00c360f0
-void BSMultiBoundStreamOperations::RegisterShape(NiStream& s)
+// pdb: BSMultiBound::SaveBinary | BSMultiBound.obj | retail, vtable slot, high
+// pdb params: arStream
+void BSMultiBoundStreamOperations::RegisterShape(NiStream& arStream)
 {
-    NiObject::LinkObject(s);
-    const void* object = pShape.m_pObject;
-    s.SaveLinkID(reinterpret_cast<const NiObject*>(object));
+    NiObject::LinkObject(arStream);
+    const void* object = spShape.m_pObject;
+    arStream.SaveLinkID(reinterpret_cast<const NiObject*>(object));
 }

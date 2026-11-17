@@ -51,6 +51,8 @@ struct FUN_00b66c40_t
 };
 // @fnv 0x00b66c40
 // src: XBOX_PDB 0x00b66c40
+// pdb: BSShaderPPLightingProperty::GetEnvMapLODFade | BSShaderPPLightingProperty.obj | debug, upstream name already matches, high
+// pdb locals: bcheckEyeEnvMap, fenvMapLODFade, bcheckEnvMap
 float FUN_00b66c40_t::BSShaderPPLightingProperty_GetEnvMapLODFade()
 {
     bool bFadeInActive = (uiFlags & 0x80) > 0 && !((uiFlags2 & 0x800000) > 0) && DAT_011f9460 > 0.0f;
@@ -202,6 +204,10 @@ class FUN_00b66b80_cls
 
 // @fnv 0x00b66b80
 // src: XBOX_PDB 0x00b66b80
+// pdb: BSShaderPPLightingProperty::GetWaterFogPassList | BSShaderPPLightingProperty.obj | retail, object-file run extension, low
+// pdb note: debug build links it to BSShaderPPLightingProperty::GetSpecularLODFade
+// pdb params: apGeom
+// pdb locals: balphaTest, palpha, bvertexcolors
 float FUN_00b66b80_cls::BSShaderPPLightingProperty_GetSpecularLODFade()
 {
     bool ok = (m_20 & 1u) > 0 && !((m_24 & 0x800000u) > 0) && DAT_011f9458 > 0.0f;
@@ -355,18 +361,21 @@ struct FUN_00b66ad0_cls
     int unkA8;
     FnvRefObj** m_ac[6];  // +0xac
 
-    void BSShaderPPLightingProperty_LoadTextureSet(int a1, FnvTarget* target);
+    void BSShaderPPLightingProperty_LoadTextureSet(int apcfilename, FnvTarget* apTextureSet);
 };
 
 // @fnv 0x00b66ad0
 // src: COMMUNITY 0x00b66ad0
-void FUN_00b66ad0_cls::BSShaderPPLightingProperty_LoadTextureSet(int a1, FnvTarget* target)
+// pdb: BSShaderPPLightingProperty::LoadTextureSet | BSShaderPPLightingProperty.obj | retail, upstream name already matches, high
+// pdb params: apcfilename, apTextureSet
+// pdb locals: ptexset, i, base, ioldMethod, psrc, pspecularfilename, ilen, pcubetex, psrctex
+void FUN_00b66ad0_cls::BSShaderPPLightingProperty_LoadTextureSet(int apcfilename, FnvTarget* apTextureSet)
 {
-    if (target == 0)
+    if (apTextureSet == 0)
     {
-        target = m_a4;
+        apTextureSet = m_a4;
     }
-    FnvTarget* t = target;
+    FnvTarget* t = apTextureSet;
     FnvRefObj*** base = m_ac;
     FnvRefObj*** cur = base;
     for (int i = 0; i < 6; ++i)

@@ -15,6 +15,7 @@
 class ScriptParameter;
 #include "../../include/OBJECT_ACTION.h"
 class BGSMusicType;
+// pdb: class FalloutAudioMedia, size 0x1, 0 members
 class FalloutAudioMedia
 {
   public:
@@ -566,6 +567,9 @@ extern char DAT_011846d4;
 
 // @fnv 0x005c98e0
 // src: EXE 0x005c98e0
+// pdb: Script::StopLookFunction | TESScriptFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: pActor
 bool __cdecl Cmd_StopLook_Execute(const ScriptParameter* apParameters, const char* apCompiledParams,
                           TESObjectREFR* apRefObject, TESObjectREFR* apContainer, Script* apScript,
                           ScriptLocals* apScriptLocals, double& afReturnValue, unsigned int& auiOffset)

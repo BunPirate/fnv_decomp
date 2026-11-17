@@ -50,6 +50,8 @@ template <class T> inline T* NiPointer<T>::operator->() const { return m_pObject
 
 // @fnv 0x00be08e0
 // src: COMMUNITY 0x00be08e0
+// pdb: BSShader::CreateStagesAndPasses | BSShader.obj | retail, upstream name already matches, high
+// pdb locals: ui
 bool __fastcall BSShader_CreateStagesAndPasses(char* self, int)
 {
     NiD3DPass::CreateD3DPass(*(NiPointer<NiD3DPass>*)(self + 0x5c));
@@ -127,7 +129,7 @@ struct PassBase
     unsigned int unk20;
     unsigned int unk24;
     unsigned int unk28;
-    PassBase(void* owner, unsigned int mode);
+    PassBase(void* pkRenderer, unsigned int eType);
 };
 
 struct FUN_00be08f0 : PassBase
@@ -325,7 +327,10 @@ extern unsigned int DAT_011fc85c;
 extern unsigned int DAT_011fd454;
 extern unsigned int DAT_011fc874;
 // @fnv 0x00bea040
-void InitDefaultShaderPasses()
+// src: XBOX_RETAIL_PDB 0x00bea040
+// pdb: ShadowLightShader::PresetLandscape_1x | ShadowLightShader_Preset_1x.obj | retail, call graph, high
+// pdb locals: sppass, spstage
+void ShadowLightShader_PresetLandscape_1x()
 {
     ShaderPassPointer pass;
     ShaderStagePointer stage;
@@ -539,6 +544,8 @@ extern unsigned int DAT_011fcc98, DAT_011fcc9c, DAT_011fcca0;
 extern unsigned int DAT_011fc0b8, DAT_011fc0bc, DAT_011fc0c0;
 // @fnv 0x00beb830
 // src: COMMUNITY 0x00beb830
+// pdb: ShadowLightShader::PresetConstAlphaPasses_1x | ShadowLightShader_Preset_1x.obj | debug, upstream name already matches, high
+// pdb locals: sppass, spstage
 void __cdecl ShadowLightShader_PresetConstAlphaPasses_1x()
 {
     NiPointer<NiD3DPass> pass;

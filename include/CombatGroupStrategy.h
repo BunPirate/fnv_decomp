@@ -3,6 +3,7 @@
 class ActorCombatGroup;
 class MarkerStruct;
 
+// pdb: class CombatGroupStrategy, size 0x8, 1 members
 class CombatGroupStrategy
 {
 public:
@@ -12,5 +13,5 @@ public:
 
     bool CheckGroup(ActorCombatGroup* apGroup);
 
-    int unk04;
+    int eType; // src: XBOX_RETAIL_PDB +0x4 (old: unk04)
 };

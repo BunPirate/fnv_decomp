@@ -5,13 +5,13 @@
 #include "../../../../include/NiPSysUpdateTask.h"
 #include "../../../../include/NiRefObject.h"
 
-extern "C" void* g_01202580;
+extern "C" void* NiPSysUpdateTask_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01202580 (old: g_01202580)
 
 // @fnv 0x00c25870
 // src: COMMUNITY 0x00c25870
 void* __cdecl NiPSysUpdateTask_GetRTTI()
 {
-    return &g_01202580;
+    return &NiPSysUpdateTask_ms_RTTI;
 }
 
 extern int DAT_010be45c;
@@ -115,7 +115,7 @@ typedef unsigned int C25AC0size_t;
 
 struct C25AC0MemoryManager
 {
-    void Deallocate(void* pvMem);
+    void Deallocate(void* apMem);
 };
 extern C25AC0MemoryManager g_C25AC0MemoryManager;
 
@@ -163,6 +163,7 @@ extern int g_C25AC0Default;
 
 // Resets the count to zero, deletes the global manager instance, and restores the current value from the default.
 // @fnv 0x00c25ac0
+// pdb: NiPSysUpdateTask::_SDMShutdown | NiPSysUpdateTask.obj | debug, call graph, medium
 void __cdecl DestroyManager()
 {
     C25AC0Manager* pkManager = g_C25AC0Instance;

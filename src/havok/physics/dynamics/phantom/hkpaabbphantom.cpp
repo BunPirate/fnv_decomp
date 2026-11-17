@@ -76,7 +76,7 @@ template <typename T, typename A> __forceinline hkArray<T, A>::~hkArray()
 {
     clearAndDeallocate();
 }
-void __cdecl ResizeAudioStream(void* pvAlloc, void* apvArray, int iElemSize);
+void __cdecl ResizeAudioStream(void* mem, void* array, int sizeElem);
 template <typename T> __forceinline void hkArrayBase<T>::_pushBack(hkMemoryAllocator& alloc, const T& t)
 {
     if (m_iElementCount == getCapacity())
@@ -124,11 +124,13 @@ class PhantomOverlapSearch : public hkpAabbPhantom
 
 // Searches m_ppOverlappingCollidables for pv and returns true if found, otherwise false.
 // @fnv 0x00cf24d0
+// pdb: hkpAabbPhantom::isOverlappingCollidableAdded | hkpAabbPhantom.obj | debug, vtable slot, medium
+// pdb params: collidable
 hkBool PhantomOverlapSearch::ContainsItem(void* apItem) const
 {
-    for (int i = 0; i < m_ppOverlappingCollidables.m_iElementCount; i++)
+    for (int i = 0; i < m_overlappingCollidables.m_iElementCount; i++)
     {
-        if (m_ppOverlappingCollidables.m_data[i] == apItem)
+        if (m_overlappingCollidables.m_data[i] == apItem)
             return true;
     }
     return false;
@@ -147,20 +149,22 @@ struct PresentFlag
 // The shared class lacks the removal method and the nontrivial notification flag signature.
 struct PhantomOverlapRemoval : hkpAabbPhantom
 {
-    void NotifyAll(hkpCollidable* collidable, PresentFlag wasPresent);
+    void hkpPhantom_fireCollidableRemoved(hkpCollidable* collidable, PresentFlag collidableWasAdded);
     void hkpAabbPhantom_removeOverlappingCollidable(hkpCollidable* collidable);
 };
 // Searches the phantom's collidable list for the given collidable, notifies via NotifyAll whether it was present, and removes it by swapping in the last entry.
 // @fnv 0x00cf2a60
 // src: HAVOK_LIB 0x00cf2a60
+// pdb: hkpAabbPhantom::removeOverlappingCollidable | hkpAabbPhantom.obj | retail, upstream name already matches, high
+// pdb params: collidable
 void PhantomOverlapRemoval::hkpAabbPhantom_removeOverlappingCollidable(hkpCollidable* collidable)
 {
     int index;
-    int count = m_ppOverlappingCollidables.m_iElementCount;
+    int count = m_overlappingCollidables.m_iElementCount;
     int i = 0;
     if (count > 0)
     {
-        void** ppEntry = m_ppOverlappingCollidables.m_data;
+        void** ppEntry = m_overlappingCollidables.m_data;
         do
         {
             if (*ppEntry == collidable)
@@ -174,25 +178,25 @@ void PhantomOverlapRemoval::hkpAabbPhantom_removeOverlappingCollidable(hkpCollid
     }
     index = -1;
 search_done:
-    NotifyAll(collidable, PresentFlag(index >= 0));
+    hkpPhantom_fireCollidableRemoved(collidable, PresentFlag(index >= 0));
     if (index >= 0)
     {
-        --m_ppOverlappingCollidables.m_iElementCount;
-        int lastIndex = m_ppOverlappingCollidables.m_iElementCount;
+        --m_overlappingCollidables.m_iElementCount;
+        int lastIndex = m_overlappingCollidables.m_iElementCount;
         if (lastIndex != index)
-            m_ppOverlappingCollidables.m_data[index] = m_ppOverlappingCollidables.m_data[lastIndex];
-        m_bOrderDirty = 1;
+            m_overlappingCollidables.m_data[index] = m_overlappingCollidables.m_data[lastIndex];
+        m_orderDirty = 1;
     }
 }
 
 extern const hkClass DAT_0126902c;
 
-int __cdecl hkStatisticsCollector_getAllocatedSize(const void* pvChunk, int iNumBytes) throw();
+int __cdecl hkStatisticsCollector_getAllocatedSize(const void* p, int size) throw();
 
 template <class T, class Allocator>
 void hkStatisticsCollector::addArray(const char* pcName, const hkArray<T, Allocator>& kArray)
 {
-    if ((kArray.m_iCapacityState & 0x80000000) == 0 || m_reportInplaceAllocations)
+    if ((kArray.m_iCapacityState & 0x80000000) == 0 || m_includeUnmanagedArrayMemory)
     {
         int iAllocated = hkStatisticsCollector_getAllocatedSize(kArray.m_data, kArray.getCapacity() * sizeof(T));
         AddMemoryChunk(3, pcName, kArray.m_data, kArray.GetLogicalSize() * sizeof(T), iAllocated);
@@ -203,33 +207,37 @@ void hkStatisticsCollector::addArray(const char* pcName, const hkArray<T, Alloca
 class PhantomStatistics : public hkpAabbPhantom
 {
   public:
-    void CollectStatistics(hkStatisticsCollector* pkCollector, const hkClass* pkClass) const throw();
+    void CollectStatistics(hkStatisticsCollector* collector, const hkClass* cls) const throw();
 };
 
 // Adds the collidable pointer array and the base class data to the statistics collector.
 // @fnv 0x00cf2ae0
-void PhantomStatistics::CollectStatistics(hkStatisticsCollector* pkCollector,
-                                         const hkClass* pkClass) const throw()
+// pdb: hkpAabbPhantom::calcContentStatistics | hkpAabbPhantom.obj | retail, string-set bridge, high
+// pdb params: collector, cls
+void PhantomStatistics::CollectStatistics(hkStatisticsCollector* collector,
+                                         const hkClass* cls) const throw()
 {
-    pkCollector->addArray("OvrlpCollPtr", m_ppOverlappingCollidables);
-    hkpPhantom::calcContentStatistics(pkCollector, &DAT_0126902c);
+    collector->addArray("OvrlpCollPtr", m_overlappingCollidables);
+    hkpPhantom::calcContentStatistics(collector, &DAT_0126902c);
 }
 
 // 0x00ca94c0 checks overlap acceptance; the shared class lacks the add-overlap method.
 class PhantomOverlapInsertion : public hkpAabbPhantom
 {
   public:
-    int hkpPhantom_fireCollidableAdded(void* p);
-    void AddOverlap(void* p);
+    int hkpPhantom_fireCollidableAdded(void* collidable);
+    void AddOverlap(void* collidable);
 };
 
 // @fnv 0x00cf2b50
-void PhantomOverlapInsertion::AddOverlap(void* pOverlap)
+// pdb: hkpAabbPhantom::addOverlappingCollidable | hkpAabbPhantom.obj | retail, vtable slot, high
+// pdb params: collidable
+void PhantomOverlapInsertion::AddOverlap(void* collidable)
 {
-    if (hkpPhantom_fireCollidableAdded(pOverlap) == 0)
+    if (hkpPhantom_fireCollidableAdded(collidable) == 0)
     {
-        m_ppOverlappingCollidables.pushBack(pOverlap);
-        m_bOrderDirty = true;
+        m_overlappingCollidables.pushBack(collidable);
+        m_orderDirty = true;
     }
 }
 
@@ -237,7 +245,7 @@ struct hkLessCF2B
 {
 };
 
-void __cdecl QuickSortShapeDetails(void** pArr, int iStart, int iEnd, hkLessCF2B kCmp);
+void __cdecl QuickSortShapeDetails(void** pArr, int d, int iEnd, hkLessCF2B cmpLess);
 
 inline void quickSortCF2B(void** pArr, int iSize, hkLessCF2B kCmp)
 {
@@ -253,16 +261,18 @@ struct PhantomOverlapSort : public hkpAabbPhantom
 
 // Sorts the overlap array when dirty, then clears the flag.
 // @fnv 0x00cf2bb0
+// pdb: hkpAabbPhantom::ensureDeterministicOrder | hkpAabbPhantom.obj | retail, vtable slot, high
 void PhantomOverlapSort::SortIfDirty()
 {
-    if (m_bOrderDirty)
+    if (m_orderDirty)
     {
-        quickSortCF2B(m_ppOverlappingCollidables.m_data, m_ppOverlappingCollidables.m_iElementCount, hkLessCF2B());
-        m_bOrderDirty = false;
+        quickSortCF2B(m_overlappingCollidables.m_data, m_overlappingCollidables.m_iElementCount, hkLessCF2B());
+        m_orderDirty = false;
     }
 }
 
 // @fnv 0x00cf2bf0
+// pdb: hkpAabbPhantom::~hkpAabbPhantom | hkpAabbPhantom.obj | retail, upstream name already matches, high
 hkpAabbPhantom::~hkpAabbPhantom() throw()
 {}
 
@@ -277,10 +287,12 @@ class PhantomArrayCleanup : public hkpAabbPhantom
 
 // If the overlaps array is empty, frees it via the heap allocator, then calls FreeListenerArrays.
 // @fnv 0x00cf2c50
+// pdb: hkpAabbPhantom::deallocateInternalArrays | hkpAabbPhantom.obj | retail, vtable slot, high
+// pdb locals: assertBuf, ostr
 void PhantomArrayCleanup::ClearOverlapsIfEmpty()
 {
-    if (m_ppOverlappingCollidables.m_iElementCount == 0)
-        m_ppOverlappingCollidables.clearAndDeallocate();
+    if (m_overlappingCollidables.m_iElementCount == 0)
+        m_overlappingCollidables.clearAndDeallocate();
     hkpPhantom::FreeListenerArrays();
 }
 }  // namespace fnv_00cf2c50
@@ -295,24 +307,25 @@ class PhantomClone : public hkpAabbPhantom
     static __forceinline void* operator new(unsigned int uiSize) throw()
     {
         hkpWorldObject* p = (hkpWorldObject*)hkMemoryRouter_getInstance().heap().blockAlloc(uiSize);
-        p->m_usMemSizeAndFlags = (hkUint16)uiSize;
+        p->m_memSizeAndFlags = (hkUint16)uiSize;
         return p;
     }
     static void operator delete(void* p) throw();
 
     void CopyEntriesFrom(const hkpWorldObject* pkOtherObj) throw();
-    PhantomClone(const hkAabb& kAabb, hkUint32 uiCollisionFilterInfo) throw();
+    PhantomClone(const hkAabb& aabb, hkUint32 collisionFilterInfo) throw();
     hkpWorldObject* Clone() const throw();
 };
 
 typedef char fnv_check_cf2d50[(sizeof(PhantomClone) == 0xe0) ? 1 : -1];
 
 // @fnv 0x00cf2d50
+// pdb: hkpAabbPhantom::clone | hkpAabbPhantom.obj | retail, vtable slot, high
 hkpWorldObject* PhantomClone::Clone() const throw()
 {
-    PhantomClone* pkPhantom = new PhantomClone(m_kBounds, m_kCollidable.GetFilterInfoForKey());
-    pkPhantom->m_kPhantomOverlapListeners = m_kPhantomOverlapListeners;
-    pkPhantom->m_kPhantomListeners = m_kPhantomListeners;
+    PhantomClone* pkPhantom = new PhantomClone(m_aabb, m_kCollidable.GetFilterInfoForKey());
+    pkPhantom->m_overlapListeners = m_overlapListeners;
+    pkPhantom->m_phantomListeners = m_phantomListeners;
     pkPhantom->CopyEntriesFrom(this);
     return pkPhantom;
 }
@@ -326,7 +339,7 @@ class PhantomDeletion : public hkpAabbPhantom
   public:
     static void operator delete(void* p) throw()
     {
-        hkMemoryRouter_getInstance().heap().blockFree(p, static_cast<hkpAabbPhantom*>(p)->m_usMemSizeAndFlags);
+        hkMemoryRouter_getInstance().heap().blockFree(p, static_cast<hkpAabbPhantom*>(p)->m_memSizeAndFlags);
     }
 
     PhantomDeletion* DestroyAndFree(unsigned int uiFlags) throw();
@@ -334,6 +347,7 @@ class PhantomDeletion : public hkpAabbPhantom
 
 // Runs the destructor, then frees the object via operator delete when uiFlags has bit 0 set, and returns this.
 // @fnv 0x00cf2f60
+// pdb: hkpAabbPhantom::`scalar deleting destructor' | hkpAabbPhantom.obj | retail, vtable slot, high
 PhantomDeletion* PhantomDeletion::DestroyAndFree(unsigned int uiFlags) throw()
 {
     this->hkpAabbPhantom::~hkpAabbPhantom();
@@ -369,7 +383,7 @@ struct __declspec(align(16)) ShapeRayCastQuery
 
 struct DummyNormal : public hkVector4
 {
-    void hkVector4_setRotatedDir(const void* rot, const void* dir);
+    void hkVector4_setRotatedDir(const void* quat, const void* direction);
 };
 
 struct WorldRayCastOutput
@@ -479,6 +493,9 @@ class PhantomRayCast : public hkpAabbPhantom
 // Performs a ray cast against overlapping collidables, transforming ray endpoints into local space and recording the hit root collidable.
 // @fnv 0x00cf26b0
 // src: XBOX_PDB 0x00cf26b0
+// pdb: hkpAabbPhantom::castRay | hkpAabbPhantom.obj | retail, object-file run extension, low
+// pdb params: input, collector
+// pdb locals: sinput, assertBuf, ostr
 void PhantomRayCast::hkpAabbPhantom_castRay_00cf26b0(const WorldRayCastInput& input, WorldRayCastOutput& output) const
 {
     hkMonitorStream* pTlsCursor = (hkMonitorStream*)TlsGetValue(DAT_0126835c);
@@ -498,7 +515,7 @@ void PhantomRayCast::hkpAabbPhantom_castRay_00cf26b0(const WorldRayCastInput& in
     shapeQuery.m_uiFilterInfo = input.m_uiFilterInfo;
     if (input.m_bEnableShapeCollectionFilter)
     {
-        char* filter = ((DummyWorld*)m_pOwningWorld)->m_pCollisionFilter;
+        char* filter = ((DummyWorld*)m_world)->m_pCollisionFilter;
         shapeQuery.m_pRayShapeCollectionFilter = filter ? filter + 0x10 : 0;
     }
     else
@@ -506,8 +523,8 @@ void PhantomRayCast::hkpAabbPhantom_castRay_00cf26b0(const WorldRayCastInput& in
         shapeQuery.m_pRayShapeCollectionFilter = 0;
     }
 
-    const hkpCollidable* const* ppCollidables = (const hkpCollidable* const*)m_ppOverlappingCollidables.m_data;
-    for (int i = m_ppOverlappingCollidables.m_iElementCount - 1; i >= 0; i--)
+    const hkpCollidable* const* ppCollidables = (const hkpCollidable* const*)m_overlappingCollidables.m_data;
+    for (int i = m_overlappingCollidables.m_iElementCount - 1; i >= 0; i--)
     {
         const DummyShape* shape = reinterpret_cast<const DummyShape*>((*ppCollidables)->m_pCollisionShape);
         if (shape)
@@ -550,35 +567,37 @@ struct PhantomBoundsReader : public hkpAabbPhantom
 // @fnv 0x00cf2470
 void PhantomBoundsReader::GetBounds(hkAabb* bounds)
 {
-    *(LocalM128*)&bounds->m_kMinimumCorner = *(const LocalM128*)&m_kBounds.m_kMinimumCorner;
-    *(LocalM128*)&bounds->m_kMaximumCorner = *(const LocalM128*)&m_kBounds.m_kMaximumCorner;
+    *(LocalM128*)&bounds->m_kMinimumCorner = *(const LocalM128*)&m_aabb.m_kMinimumCorner;
+    *(LocalM128*)&bounds->m_kMaximumCorner = *(const LocalM128*)&m_aabb.m_kMaximumCorner;
 }
 
 // The shared bounds setter takes hkAabbQ instead of hkAabb; its update helper is absent.
 struct PhantomBounds : public hkpAabbPhantom
 {
-    void __thiscall hkpPhantom_updateBroadPhase(hkAabb* bounds);
-    void __thiscall hkpAabbPhantom_setAabb(const hkAabb& source);
+    void __thiscall hkpPhantom_updateBroadPhase(hkAabb* aabb);
+    void __thiscall hkpAabbPhantom_setAabb(const hkAabb& newAabb);
 };
 // Copies the minimum and maximum corners from source into the embedded hkAabb at offset 0xb0, then calls FUN_00d07ec0 on it.
 // @fnv 0x00cf24a0
 // src: XBOX_PDB 0x00cf24a0
-void PhantomBounds::hkpAabbPhantom_setAabb(const hkAabb& source)
+// pdb: hkpAabbPhantom::setAabb | hkpAabbPhantom.obj | debug, upstream name already matches, high
+// pdb params: newAabb
+void PhantomBounds::hkpAabbPhantom_setAabb(const hkAabb& newAabb)
 {
-    hkAabb* target = &m_kBounds;
-    _mm_store_ps(&target->m_kMinimumCorner.x, _mm_load_ps(&source.m_kMinimumCorner.x));
-    _mm_store_ps(&target->m_kMaximumCorner.x, _mm_load_ps(&source.m_kMaximumCorner.x));
+    hkAabb* target = &m_aabb;
+    _mm_store_ps(&target->m_kMinimumCorner.x, _mm_load_ps(&newAabb.m_kMinimumCorner.x));
+    _mm_store_ps(&target->m_kMaximumCorner.x, _mm_load_ps(&newAabb.m_kMaximumCorner.x));
     hkpPhantom_updateBroadPhase(target);
 }
 
 __forceinline unsigned int hkpCollidable::GetFilterInfoForKey() const
 {
-    return m_kBroadPhaseHandle.m_uiCollisionFilterData;
+    return m_broadPhaseHandle.m_collisionFilterInfo;
 }
 
 __forceinline void hkpCollidable::SetOwnerPointer(void* pvOwner)
 {
-    m_iOwnerOffset = (char)((unsigned int)pvOwner - (unsigned int)this);
+    m_ownerOffset = (char)((unsigned int)pvOwner - (unsigned int)this);
 }
 
 // The shared hkpPhantom has no shape constructor; retain its construction here.
@@ -599,7 +618,7 @@ class PhantomConstructionBase : public hkpWorldObject
 class AabbPhantomConstruction : public PhantomConstructionBase
 {
   public:
-    AabbPhantomConstruction(const hkAabb& kAabb, unsigned int uiCollisionFilterInfo) throw();
+    AabbPhantomConstruction(const hkAabb& aabb, unsigned int collisionFilterInfo) throw();
     virtual ~AabbPhantomConstruction() throw();
     hkAabb m_kBounds;
     hkArray<void*> m_ppOverlappingCollidables;
@@ -608,9 +627,11 @@ class AabbPhantomConstruction : public PhantomConstructionBase
 
 // Constructs the Phantom base with a null shape, clears m_bOrderDirty, copies kAabb into m_kBounds and stores the collision filter data.
 // @fnv 0x00cf2cb0
-AabbPhantomConstruction::AabbPhantomConstruction(const hkAabb& kAabb, unsigned int uiCollisionFilterInfo) throw() : PhantomConstructionBase(0)
+// pdb: hkpAabbPhantom::hkpAabbPhantom | hkpAabbPhantom.obj | retail, object-file gap fill, high
+// pdb params: flag
+AabbPhantomConstruction::AabbPhantomConstruction(const hkAabb& aabb, unsigned int collisionFilterInfo) throw() : PhantomConstructionBase(0)
 {
     m_bOrderDirty = false;
-    m_kBounds = kAabb;
-    m_kCollidable.m_kBroadPhaseHandle.m_uiCollisionFilterData = uiCollisionFilterInfo;
+    m_kBounds = aabb;
+    m_kCollidable.m_broadPhaseHandle.m_collisionFilterInfo = collisionFilterInfo;
 }

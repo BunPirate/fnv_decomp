@@ -29,6 +29,7 @@ class TileMenu;
 
 template <class T> class ListBoxItem;
 
+// pdb: class StartMenu, size 0x1cc (here 0x1d4), bases: Menu, 17 members
 class StartMenu : public Menu
 {
 public:
@@ -40,9 +41,9 @@ public:
         virtual ~Option();
         bool IsForModes(unsigned int auiModes);
 
-        const char* GetValueText;
-        void (__cdecl* m_pActionCallback)();
-        unsigned int m_uiModes;
+        const char* pDisplayText; // src: XBOX_RETAIL_PDB +0x4 (old: GetValueText)
+        void (__cdecl* pfChooseFn)(); // src: XBOX_RETAIL_PDB +0x8 (old: m_pActionCallback)
+        unsigned int iModes; // src: XBOX_RETAIL_PDB +0xc (old: m_uiModes)
     };
 
     class UserOption : public Option
@@ -50,12 +51,12 @@ public:
     public:
         const char* pTemplate;
         int iVal;
-        int iDefaultValue;
+        int iDefaultVal; // src: XBOX_RETAIL_PDB +0x18 (old: iDefaultValue)
         int eType;
-        unsigned int m_uiValueCount;
-        unsigned int m_uiModeFlags;
-        const char** m_ppOptionValues;
-        void (__cdecl* m_pChangeCallback)(UserOption*);
+        unsigned int iNumSettings; // src: XBOX_RETAIL_PDB +0x20 (old: m_uiValueCount)
+        unsigned int iArrowSpacing; // src: XBOX_RETAIL_PDB +0x24 (old: m_uiModeFlags)
+        const char** pValueStrings; // src: XBOX_RETAIL_PDB +0x28 (old: m_ppOptionValues)
+        void (__cdecl* pfChangeFn)(UserOption*); // src: XBOX_RETAIL_PDB +0x2c (old: m_pChangeCallback)
     };
 
     class OptionManager
@@ -152,7 +153,7 @@ public:
     StartMenu();
     TileMenu* GetMenuTitle();
     const char* GetMenuTitle() const;
-    void HandleSliderTileInput(int aiID, void* apTile);
+    void HandleSliderTileInput(int aiID, void* apTarget);
     void UpdateMouseover(int aiID, void* apTarget);
     bool IsStartMenuActive();
     bool IsFlagSet(Flag aFlag);
@@ -160,5 +161,5 @@ public:
 
     static bool IsInGame();
     static bool __cdecl Create(bool, bool);
-    static void UpdateMedia();
+    static void FalloutAudioMedia_MediaClear();
 };

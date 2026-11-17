@@ -14,13 +14,16 @@ const char kGarbageCollectorRemoveLabel[] = "GarbageCollector::Remove(TESObjectR
 
 // Locks the garbage collector, removes the reference from both garbage lists if present, then unlocks it.
 // @fnv 0x00868270
-void GarbageCollector::Remove(TESObjectREFR* reference)
+// pdb: GarbageCollector::Remove | GarbageCollector.obj | retail, string-set bridge, high
+// pdb params: apRef
+// pdb locals: icount, tempAutoEvent, i
+void GarbageCollector::Remove(TESObjectREFR* apRef)
 {
     LockGarbageCollector(kGarbageCollectorRemoveLabel, true);
     unsigned int size = ms_kReferencesQueuedForRemoval.GetSize();
     for (unsigned int index = 0; index < size; ++index)
     {
-        if (ms_kReferencesQueuedForRemoval.GetAt(index) == reference)
+        if (ms_kReferencesQueuedForRemoval.GetAt(index) == apRef)
         {
             ms_kReferencesQueuedForRemoval.RemoveAtAndFill(index);
             break;
@@ -29,7 +32,7 @@ void GarbageCollector::Remove(TESObjectREFR* reference)
     size = ObjectGarbageB.GetSize();
     for (unsigned int index = 0; index < size; ++index)
     {
-        if (ObjectGarbageB.GetAt(index) == reference)
+        if (ObjectGarbageB.GetAt(index) == apRef)
         {
             ObjectGarbageB.RemoveAtAndFill(index);
             break;
@@ -46,6 +49,7 @@ void GarbageCollector::QueryCurrentThread(bool)
 
 const char kGarbageCollectorClearTempEffectsLabel[] = "GarbageCollector::ClearTempEffects()";
 // @fnv 0x00868d10
+// pdb: GarbageCollector::ClearTempEffects | GarbageCollector.obj | retail, string-set bridge, high
 void GarbageCollector::ClearTempEffects()
 {
     if (g_011de828.GetSize() && g_modelLoader->FUN_00868250())
@@ -59,6 +63,8 @@ void GarbageCollector::ClearTempEffects()
 
 const char kGarbageCollectorUpdateLabel[] = "GarbageCollector::Update()";
 // @fnv 0x00868850
+// pdb: GarbageCollector::Update | GarbageCollector.obj | retail, string-set bridge, high
+// pdb locals: ifreemult, inumObjects, iremovecount, panim, pbiped, iexpensiveCount, pref
 void GarbageCollector::Update()
 {
     LockGarbageCollector(kGarbageCollectorUpdateLabel, true);
@@ -186,18 +192,21 @@ struct TwoPointerRecord
 extern __declspec(thread) bool DAT_tlsFlag;
 
 // @fnv 0x00868790
-void __cdecl AddNavMeshToGarbageCollector(NavMeshPtr& apNavMesh)
+// pdb: GarbageCollector::Add | GarbageCollector.obj | retail, string-set bridge, high
+// pdb params: apRef
+// pdb locals: tempAutoEvent, i, pactor, pworld
+void __cdecl AddNavMeshToGarbageCollector(NavMeshPtr& aspNavMesh)
 {
     TwoPointerRecord tempAutoEvent(0x20, "GarbageCollector::Add(NavMeshPtr)");
-    ((NavMesh*)apNavMesh)->NiRefObject::IncRefCount();
+    ((NavMesh*)aspNavMesh)->NiRefObject::IncRefCount();
     if (DAT_tlsFlag)
     {
-        NavMesh* mesh = apNavMesh.AnimatingText_GetFullText();
+        NavMesh* mesh = aspNavMesh.AnimatingText_GetFullText();
         g_011de924.Add(mesh);
     }
     else
     {
-        NavMesh* mesh = apNavMesh.AnimatingText_GetFullText();
+        NavMesh* mesh = aspNavMesh.AnimatingText_GetFullText();
         g_011de898.Add(mesh);
     }
 }
@@ -213,6 +222,8 @@ extern __declspec(thread) bool bCollecting;
 
 // @fnv 0x00868d70
 // src: EXE 0x00868d70
+// pdb: GarbageCollector::ClearAll | GarbageCollector.obj | retail, string-set bridge, high
+// pdb locals: icount, bwascollecting, tempAutoEvent, i, panim, pbiped, pref
 void GarbageCollector_ClearAll(bool abTryLock)
 {
     if (DAT_011de958)
@@ -304,6 +315,7 @@ void GarbageCollector_ClearAll(bool abTryLock)
 extern RecursiveSpinLock g_011de8e0;
 
 // @fnv 0x00867f50
+// pdb: Calendar::StaticGetHour | calendar.obj | debug, object-file run extension, low
 void __cdecl LockGlobalObject(const char* apLabel)
 {
     g_011de8e0.Lock(apLabel);
@@ -334,6 +346,9 @@ extern int DAT_011de804;
 
 // If m_04 is zero, clears the bits of m_00 in DAT_011de804, then unlocks the garbage collector.
 // @fnv 0x00868210
+// pdb: bhkCollisionFilter::isCollisionEnabled | bhkCollisionFilter.obj | retail, object-file run extension, low
+// pdb params: arColA, arColB
+// pdb locals: bres, ia, ib
 void FUN_00868210_shell::ClearBitsAndUnlockGC()
 {
     if (m_04 == 0)
@@ -367,6 +382,7 @@ struct FUN_008681c0_shell
 };
 // Stores a in m_00, locks the garbage collector with b, sets m_04 from the overlap of DAT_011de804 and a, then ORs a into DAT_011de804.
 // @fnv 0x008681c0
+// pdb: bhkCollisionFilter::InitFlags | bhkCollisionFilter.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
 FUN_008681c0_shell* __thiscall FUN_008681c0_shell::InitFlags(int aiFlags, const char* apName)
 {
     m_00 = aiFlags;
@@ -429,6 +445,8 @@ struct ChildGarbageCleanupAdapter
 };
 // @fnv 0x00572160
 // src: XBOX_PDB 0x00572160
+// pdb: NiNode::DetachAllChildren | TESObjectREFR.obj | debug, call graph, high
+// pdb locals: icount, i, pchild
 void NiNode::DetachAllChildren_00572160()
 {
     unsigned int i;
@@ -453,17 +471,20 @@ void __cdecl Garbagecollector_ForwardCall_00868770(int* a, int b)
 // Adds a temporary-effect pointer to the active or deferred garbage queue.
 // @fnv 0x00868490
 // src: EXE 0x00868490
-void __cdecl GarbageCollector_Add(int aiEffect)
+// pdb: GarbageCollector::Add | GarbageCollector.obj | retail, string-set bridge, high
+// pdb params: apRef
+// pdb locals: tempAutoEvent, i, pactor, pworld
+void __cdecl GarbageCollector_Add(int apEffect)
 {
     TwoPointerRecord e(0x10, "GarbageCollector::Add(BSTempEffect)");
     if (DAT_tlsFlag)
     {
-        GO p(aiEffect);
+        GO p(apEffect);
         g_011de828.Add(reinterpret_cast<const NiPointer<BSTempEffect>&>(p));
     }
     else
     {
-        GO p(aiEffect);
+        GO p(apEffect);
         g_011de858.Add(reinterpret_cast<const NiPointer<BSTempEffect>&>(p));
     }
 }
@@ -472,7 +493,10 @@ extern BGSSaveLoadGame* g_BGSSaveLoadGame;
 
 // @fnv 0x00868560
 // src: EXE 0x00868560
-void __cdecl GarbageCollector_Add_00868560(GarbageCollectorDeleteB* apObject)
+// pdb: GarbageCollector::Add | GarbageCollector.obj | retail, string-set bridge, high
+// pdb params: apRef
+// pdb locals: tempAutoEvent, i, pactor, pworld
+void __cdecl GarbageCollector_Add_00868560(GarbageCollectorDeleteB* apBiped)
 {
     TwoPointerRecord autoEvent(4, "GarbageCollector::Add(BipedAnim)");
 
@@ -480,40 +504,43 @@ void __cdecl GarbageCollector_Add_00868560(GarbageCollectorDeleteB* apObject)
     {
         if (g_modelLoader->FUN_00868250())
         {
-            delete apObject;
+            delete apBiped;
             g_modelLoader->ModelLoader_UnlockModelMap();
         }
         else
         {
-            g_011de838.Add(apObject);
+            g_011de838.Add(apBiped);
         }
     }
     else
     {
-        g_011de910.Add(apObject);
+        g_011de910.Add(apBiped);
     }
 }
 
 // Marks a non-null object for collection and queues its smart pointer.
 // @fnv 0x00868660
 // src: EXE 0x00868660
-void GarbageCollector_Add_00868660(NiAVObject* apObject)
+// pdb: GarbageCollector::Add | GarbageCollector.obj | retail, string-set bridge, high
+// pdb params: apRef
+// pdb locals: tempAutoEvent, i, pactor, pworld
+void GarbageCollector_Add_00868660(NiAVObject* apActor3D)
 {
     TwoPointerRecord autoEvent(2, "GarbageCollector::Add(NiAVObject)");
 
-    if (apObject)
+    if (apActor3D)
     {
-        reinterpret_cast<GarbageMarkAdapter*>(apObject)->MarkForCollection();
+        reinterpret_cast<GarbageMarkAdapter*>(apActor3D)->MarkForCollection();
     }
 
     if (bCollecting)
     {
-        GO object(reinterpret_cast<int>(apObject));
+        GO object(reinterpret_cast<int>(apActor3D));
         g_011de888.Add(reinterpret_cast<const NiPointer<NiAVObject>&>(object));
     }
     else
     {
-        GO object(reinterpret_cast<int>(apObject));
+        GO object(reinterpret_cast<int>(apActor3D));
         g_011de848.Add(reinterpret_cast<const NiPointer<NiAVObject>&>(object));
     }
 }
@@ -536,13 +563,16 @@ struct AnimationLoader
 extern int DAT_011f36bc;
 extern int g_011f36e4;
 // @fnv 0x00868330
-void AddAnimationToGarbageCollector(AnimationObject* object)
+// pdb: GarbageCollector::Add | GarbageCollector.obj | retail, string-set bridge, high
+// pdb params: apRef
+// pdb locals: tempAutoEvent, i, pactor, pworld
+void AddAnimationToGarbageCollector(AnimationObject* apAnim)
 {
     TwoPointerRecord event(8, "GarbageCollector::Add(Animation)");
-    object->FreeAllIdles();
-    if (object->GetControllerManager_00496940())
-        object->GetControllerManager_00496940()->FUN_0048fef0(0.0f);
-    NiAVObject* pRoot = object->FUN_005585e0();
+    apAnim->FreeAllIdles();
+    if (apAnim->GetControllerManager_00496940())
+        apAnim->GetControllerManager_00496940()->FUN_0048fef0(0.0f);
+    NiAVObject* pRoot = apAnim->FUN_005585e0();
     if (pRoot)
     {
         NiTimeController* controller = pRoot->GetController(reinterpret_cast<const NiRTTI*>(&DAT_011f36bc));
@@ -552,13 +582,13 @@ void AddAnimationToGarbageCollector(AnimationObject* object)
         if (controller)
             reinterpret_cast<ControllerRemovalAdapter*>(pRoot)->RemoveController(controller);
     }
-    ((AnimationLoader*)g_modelLoader)->ModelLoader_CancelReplacementKFList(object);
+    ((AnimationLoader*)g_modelLoader)->ModelLoader_CancelReplacementKFList(apAnim);
     if (!DAT_tlsFlag || (g_BGSSaveLoadGame && g_BGSSaveLoadGame->BGSSaveLoadGame_GetSaveGameLoading()))
     {
-        delete (GarbageCollectorDeleteA*)object;
+        delete (GarbageCollectorDeleteA*)apAnim;
     }
     else
     {
-        g_011de808.Add(reinterpret_cast<GarbageCollectorDeleteA*&>(object));
+        g_011de808.Add(reinterpret_cast<GarbageCollectorDeleteA*&>(apAnim));
     }
 }

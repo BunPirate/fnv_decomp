@@ -36,10 +36,11 @@
 
 extern unsigned int DAT_010a2480;
 
+// pdb: class ContainerItemExtra, size 0xc, 5 members
 class ContainerItemExtra
 {
   public:
-    unsigned int data[3];
+    unsigned int pOwnerForm[3]; // src: XBOX_RETAIL_PDB +0x0 (old: data)
     ContainerItemExtra();
     void ContainerItemExtra_AdjustHealthPercent(float);
     void InitItem(TESForm*);
@@ -85,34 +86,41 @@ extern "C" int __cdecl _ftol2_sse();
 // @fnv 0x00487740
 void TESLeveledList::InitializeComponent()
 {
-    m_pChanceGlobal = 0;
-    m_ucChanceNone = 0;
-    m_pLevelGlobal = 0;
+    cChanceNone = 0;
+    cLLFlags = 0;
+    pChanceGlobal = 0;
 }
 
 // @fnv 0x00487770
+// pdb: TESLeveledList::ClearDataComponent | TESLeveledList.obj | debug, call graph, medium
 void TESLeveledList::ClearComponent()
 {
     InitializeLeveledList();
 }
 
 // @fnv 0x00488f10
-void TESLeveledList::Revert(BGSLoadFormBuffer* buffer)
+// pdb: TESLeveledList::Revert | TESLeveledList.obj | debug, upstream name already matches, high
+// pdb params: apLoadGameBuffer
+void TESLeveledList::Revert(BGSLoadFormBuffer* apLoadGameBuffer)
 {
-    if (buffer->GetOldChangeFlags(0x80000000).operator bool())
-        ClearScriptAddedLeveledObjects();
+    if (apLoadGameBuffer->GetOldChangeFlags(0x80000000).operator bool())
+        RemoveAllScriptAddedLeveledObjects();
 }
 
 // @fnv 0x00487f70
-void TESLeveledList::PopulateContainerWithLeveledItems(unsigned short level, unsigned short count,
-                                                       TESContainer* container, int mode)
+// src: XBOX_RETAIL_PDB 0x00487f70
+// pdb: TESLeveledList::CalculateCurrentFormList | TESLeveledList.obj | retail, call graph, high
+// pdb params: asLevel, asCount, apOutCont, aiAllBelowForce
+// pdb locals: tempcont, icalclevel, imaxlevel, pllist, ilev, i, pcalcform, icalccount, pcalcextra, plev, pcalcobj, chancenone, rnone, bnone, plist, pdata
+void TESLeveledList::CalculateCurrentFormList(unsigned short asLevel, unsigned short asCount,
+                                                       TESContainer* apOutCont, int aiAllBelowForce)
 {
-    if (level < 1)
-        level = 1;
-    if (container && count > 0)
+    if (asLevel < 1)
+        asLevel = 1;
+    if (apOutCont && asCount > 0)
     {
-        unsigned int selectionLevel = level;
-        if ((FUN_004877e0() && mode == 0) || mode > 0)
+        unsigned int selectionLevel = asLevel;
+        if ((FUN_004877e0() && aiAllBelowForce == 0) || aiAllBelowForce > 0)
         {
             struct LevelScan
             {
@@ -135,7 +143,7 @@ void TESLeveledList::PopulateContainerWithLeveledItems(unsigned short level, uns
         TESContainer selected;
         if (vfn_14())
         {
-            for (int i = 0; i < count; ++i)
+            for (int i = 0; i < asCount; ++i)
             {
                 struct Selection
                 {
@@ -146,13 +154,13 @@ void TESLeveledList::PopulateContainerWithLeveledItems(unsigned short level, uns
                 result.form = 0;
                 result.quantity = 0;
                 result.extra = 0;
-                SelectLeveledObject((unsigned short)selectionLevel, result.form, result.quantity, result.extra, false,
-                                    mode);
+                CalculateCurrentForm((unsigned short)selectionLevel, result.form, result.quantity, result.extra, false,
+                                    aiAllBelowForce);
                 if (result.form && result.quantity)
                 {
                     TESLeveledList* nested = GetFormAsLeveledList(result.form);
                     if (nested)
-                        nested->PopulateContainerWithLeveledItems(level, result.quantity, &selected, mode);
+                        nested->CalculateCurrentFormList(asLevel, result.quantity, &selected, aiAllBelowForce);
                     else if (result.form->IsActor_InEditor())
                     {
                         TESForm* object = result.form;
@@ -198,8 +206,8 @@ void TESLeveledList::PopulateContainerWithLeveledItems(unsigned short level, uns
                                 {
                                     TESLeveledList* nested = GetFormAsLeveledList(result.form);
                                     if (nested)
-                                        nested->PopulateContainerWithLeveledItems(level, result.quantity, &selected,
-                                                                                  mode);
+                                        nested->CalculateCurrentFormList(asLevel, result.quantity, &selected,
+                                                                                  aiAllBelowForce);
                                     else if (result.form->IsActor_InEditor())
                                     {
                                         TESForm* object = result.form;
@@ -213,13 +221,13 @@ void TESLeveledList::PopulateContainerWithLeveledItems(unsigned short level, uns
                 }
                 else
                 {
-                    SelectLeveledObject((unsigned short)selectionLevel, result.form, result.quantity, result.extra,
-                                        false, mode);
+                    CalculateCurrentForm((unsigned short)selectionLevel, result.form, result.quantity, result.extra,
+                                        false, aiAllBelowForce);
                     if (result.form && result.quantity)
                     {
                         TESLeveledList* nested = GetFormAsLeveledList(result.form);
                         if (nested)
-                            nested->PopulateContainerWithLeveledItems(level, result.quantity, &selected, mode);
+                            nested->CalculateCurrentFormList(asLevel, result.quantity, &selected, aiAllBelowForce);
                         else if (result.form->IsActor_InEditor())
                         {
                             TESForm* object = result.form;
@@ -228,17 +236,21 @@ void TESLeveledList::PopulateContainerWithLeveledItems(unsigned short level, uns
                         }
                     }
                 }
-                selected.ScaleEntryCounts(count);
+                selected.ScaleEntryCounts(asCount);
             }
         }
-        container->MergeContainer(&selected);
+        apOutCont->AddContainerContents(&selected);
     }
 }
 
 // Rolls chance and level range over perk entries, picks one entry, optionally recurses into a nested leveled list, and writes form, count and extra.
 // @fnv 0x00487d00
-void TESLeveledList::SelectLeveledObject(unsigned short level, TESForm*& form, unsigned short& count,
-                                         ContainerItemExtra*& extra, bool recurse, int mode)
+// src: XBOX_DEBUG_PDB 0x00487d00
+// pdb: TESLeveledList::CalculateCurrentForm | TESLeveledList.obj | debug, call graph, high
+// pdb params: asLevel, apOutForm, asOutCount, apOutExtra, abRecurse, aiAllBelowForce
+// pdb locals: plist, chancenone, ilastvalid, pfirstvalid, iminlevel, ivalidcount, bminreached, rnone, imaxdiff, pdata, ithislevel, plevlist, ishift, soutcount, poutextra, poutform, psubextra, psubform, ssubcount
+void TESLeveledList::CalculateCurrentForm(unsigned short asLevel, TESForm*& apOutForm, unsigned short& asOutCount,
+                                         ContainerItemExtra*& apOutExtra, bool abRecurse, int aiAllBelowForce)
 {
     struct LevelRange
     {
@@ -249,9 +261,9 @@ void TESLeveledList::SelectLeveledObject(unsigned short level, TESForm*& form, u
     } range;
     bool foundRange;
     {
-        form = 0;
-        count = 0;
-        extra = 0;
+        apOutForm = 0;
+        asOutCount = 0;
+        apOutExtra = 0;
         unsigned char chance = vfn_10();
         if (chance > 0)
         {
@@ -259,12 +271,12 @@ void TESLeveledList::SelectLeveledObject(unsigned short level, TESForm*& form, u
             if (roll < chance)
                 return;
         }
-        range.minimumLevel = level;
-        if ((FUN_004877e0() && mode == 0) || mode > 0)
+        range.minimumLevel = asLevel;
+        if ((FUN_004877e0() && aiAllBelowForce == 0) || aiAllBelowForce > 0)
         {
             int difference = vfn_18();
             if (difference)
-                range.minimumLevel = level - difference;
+                range.minimumLevel = asLevel - difference;
             else
                 range.minimumLevel = -1;
         }
@@ -280,7 +292,7 @@ void TESLeveledList::SelectLeveledObject(unsigned short level, TESForm*& form, u
             if (entry)
             {
                 int entryLevel = entry->sLevel;
-                if (entryLevel > level)
+                if (entryLevel > asLevel)
                     break;
                 if (entryLevel > range.lastLevel && (range.lastLevel == 0 || !foundRange))
                 {
@@ -320,7 +332,7 @@ void TESLeveledList::SelectLeveledObject(unsigned short level, TESForm*& form, u
                 result.extra = result.entry->m_pExtraData;
                 {
                     TESLeveledList* nested = GetFormAsLeveledList(result.entry->pForm);
-                    if (nested && recurse)
+                    if (nested && abRecurse)
                     {
                         struct RecursiveForm
                         {
@@ -331,16 +343,16 @@ void TESLeveledList::SelectLeveledObject(unsigned short level, TESForm*& form, u
                         recursive.form = 0;
                         recursive.count = 0;
                         recursive.extra = 0;
-                        nested->SelectLeveledObject(level, recursive.form, recursive.count, recursive.extra, recurse,
-                                                    mode);
+                        nested->CalculateCurrentForm(asLevel, recursive.form, recursive.count, recursive.extra, abRecurse,
+                                                    aiAllBelowForce);
                         result.form = recursive.form;
                         result.count *= recursive.count;
                         if (recursive.extra)
                             result.extra = recursive.extra;
                     }
-                    form = result.form;
-                    count = result.count;
-                    extra = result.extra;
+                    apOutForm = result.form;
+                    asOutCount = result.count;
+                    apOutExtra = result.extra;
                 }
             }
         }
@@ -349,7 +361,10 @@ void TESLeveledList::SelectLeveledObject(unsigned short level, TESForm*& form, u
 
 // Resolves each perk entry's form and the chance global against the owner's file, removing and warning about entries that fail to resolve.
 // @fnv 0x00488570
-void TESLeveledList::InitItem(TESForm* owner)
+// pdb: TESLeveledList::InitItem | TESLeveledList.obj | retail, string-set bridge, high
+// pdb params: apOwner
+// pdb locals: pdata, pList, pLastList, pownerFile, tempint
+void TESLeveledList::InitItem(TESForm* apOwner)
 {
     struct ResolveState
     {
@@ -363,7 +378,7 @@ void TESLeveledList::InitItem(TESForm* owner)
         resolveState.node =
             reinterpret_cast<BSSimpleList<LeveledObject*>*>(reinterpret_cast<PlayerQuestData*>(this)->GetConditions());
         resolveState.entry = 0;
-        resolveState.file = owner ? owner->GetFile(-1) : 0;
+        resolveState.file = apOwner ? apOwner->GetFile(-1) : 0;
         unsigned int formID, globalID;
         while (resolveState.node && (resolveState.entry = resolveState.node->GetItem()) != 0)
         {
@@ -382,14 +397,14 @@ void TESLeveledList::InitItem(TESForm* owner)
                 deletion.object = deletion.doomed;
                 deletion.object ? deletion.object->Destroy(1) : 0;
                 resolveState.entry = 0;
-                if (owner)
+                if (apOwner)
                 {
-                    if (reinterpret_cast<BGSCameraPath*>(owner)->HasNameForWarning())
+                    if (reinterpret_cast<BGSCameraPath*>(apOwner)->HasNameForWarning())
                         Warning("MASTERFILE: Unable to find Leveled Object Form (%08X) for owner object \"%s\".",
-                                formID, owner->GetName());
+                                formID, apOwner->GetName());
                     else
                         Warning("MASTERFILE: Unable to find Leveled Object Form (%08X) for owner object (%08X).",
-                                formID, owner->GetFormID());
+                                formID, apOwner->GetFormID());
                 }
                 else
                     Warning("MASTERFILE: Unable to find Leveled Object Form (%08X) for unknown owner.", formID);
@@ -400,23 +415,23 @@ void TESLeveledList::InitItem(TESForm* owner)
                 resolveState.node = resolveState.node->GetNext();
             }
             if (resolveState.entry && resolveState.entry->m_pExtraData)
-                resolveState.entry->m_pExtraData->InitItem(owner);
+                resolveState.entry->m_pExtraData->InitItem(apOwner);
         }
-        if (m_pLevelGlobal)
+        if (pChanceGlobal)
         {
-            globalID = reinterpret_cast<unsigned int>(m_pLevelGlobal);
+            globalID = reinterpret_cast<unsigned int>(pChanceGlobal);
             TESForm::RemapFormIDForFile(globalID, resolveState.file);
-            m_pLevelGlobal = dynamic_cast<TESGlobal*>(TESForm::GetFormByID(globalID));
-            if (!m_pLevelGlobal)
+            pChanceGlobal = dynamic_cast<TESGlobal*>(TESForm::GetFormByID(globalID));
+            if (!pChanceGlobal)
             {
-                if (owner)
+                if (apOwner)
                 {
-                    if (reinterpret_cast<BGSCameraPath*>(owner)->HasNameForWarning())
+                    if (reinterpret_cast<BGSCameraPath*>(apOwner)->HasNameForWarning())
                         Warning("MASTERFILE: Unable to find Leveled Chance Global (%08X) for owner object \"%s\".",
-                                globalID, owner->GetName());
+                                globalID, apOwner->GetName());
                     else
                         Warning("MASTERFILE: Unable to find Leveled Chance Global (%08X) for owner object (%08X).",
-                                globalID, owner->GetFormID());
+                                globalID, apOwner->GetFormID());
                 }
                 else
                     Warning("MASTERFILE: Unable to find Leveled Chance Global (%08X) for unknown owner.", globalID);
@@ -426,13 +441,16 @@ void TESLeveledList::InitItem(TESForm* owner)
 }
 
 // @fnv 0x00488d70
-void TESLeveledList::LoadGame(BGSLoadFormBuffer* buffer)
+// pdb: TESLeveledList::LoadGame | TESLeveledList.obj | retail, upstream name already matches, high
+// pdb params: apLoadGameBuffer
+// pdb locals: isaveGameCount, iloop, scount, slevel, pform, fhealthPercent, pextra
+void TESLeveledList::LoadGame(BGSLoadFormBuffer* apLoadGameBuffer)
 {
-    if (buffer->GetChangeFlags(0x80000000).operator bool())
+    if (apLoadGameBuffer->GetChangeFlags(0x80000000).operator bool())
     {
-        if (!reinterpret_cast<BSSimpleList<BGSCameraShot*>*>(&m_kLeveledObjects)->IsEmpty())
-            ClearScriptAddedLeveledObjects();
-        unsigned int uiEntryCount = buffer->ReadElementCount();
+        if (!reinterpret_cast<BSSimpleList<BGSCameraShot*>*>(&ScriptAddedList)->IsEmpty())
+            RemoveAllScriptAddedLeveledObjects();
+        unsigned int uiEntryCount = apLoadGameBuffer->ReadElementCount();
         for (unsigned int i = 0; i < uiEntryCount; ++i)
         {
             struct SavedForm
@@ -446,10 +464,10 @@ void TESLeveledList::LoadGame(BGSLoadFormBuffer* buffer)
                 unsigned short level = 0;
                 savedItem.health = 0;
                 savedItem.form =
-                    TESForm::GetFormByID(reinterpret_cast<BGSLoadGameBuffer*>(buffer)->ReadFormIdentifier());
-                buffer->ReadTypedData(static_cast<void*>(&level), 2u);
-                buffer->ReadTypedData(static_cast<void*>(&count), 2u);
-                buffer->ReadTypedData(static_cast<void*>(&savedItem.health), 4u);
+                    TESForm::GetFormByID(reinterpret_cast<BGSLoadGameBuffer*>(apLoadGameBuffer)->ReadFormIdentifier());
+                apLoadGameBuffer->ReadTypedData(static_cast<void*>(&level), 2u);
+                apLoadGameBuffer->ReadTypedData(static_cast<void*>(&count), 2u);
+                apLoadGameBuffer->ReadTypedData(static_cast<void*>(&savedItem.health), 4u);
                 if (savedItem.form)
                 {
                     ContainerItemExtra* extra = 0;
@@ -458,7 +476,7 @@ void TESLeveledList::LoadGame(BGSLoadFormBuffer* buffer)
                         extra = new ContainerItemExtra;
                         extra->ContainerItemExtra_AdjustHealthPercent(savedItem.health);
                     }
-                    reinterpret_cast<FileEntryList*>(this)->Copy(buffer->GetForm(), level, count, savedItem.form,
+                    reinterpret_cast<FileEntryList*>(this)->Copy(apLoadGameBuffer->GetForm(), level, count, savedItem.form,
                                                                  extra);
                 }
             }
@@ -467,31 +485,35 @@ void TESLeveledList::LoadGame(BGSLoadFormBuffer* buffer)
 }
 
 // @fnv 0x004726f0
+// pdb: TESFile::NextChunk | TESFile.obj | retail, upstream name already matches, high
+// pdb locals: currentoffset, iformlength
 bool TESFile::NextChunk()
 {
     struct ChunkPosition
     {
         unsigned int offset, formSize;
     } chunkPos;
-    chunkPos.formSize = m_kRecordInfo.length;
+    chunkPos.formSize = m_currentform.length;
     if (IsCurrentFormCompressed())
         chunkPos.formSize = reinterpret_cast<HighProcess*>(this)->HighProcess::GetPostAnimationAction();
-    m_uiRecordOffset += m_uiChunkSize + 6;
-    if (m_uiRecordOffset >= chunkPos.formSize)
+    m_formoffset += m_actualChunkSize + 6;
+    if (m_formoffset >= chunkPos.formSize)
     {
         FUN_004720d0();
         return false;
     }
-    chunkPos.offset = m_uiRecordSize + reinterpret_cast<bhkLiquidAction*>(this)->GetInstanceSize() + m_uiRecordOffset;
+    chunkPos.offset = m_fileoffset + reinterpret_cast<bhkLiquidAction*>(this)->GetInstanceSize() + m_formoffset;
     if (!IsCurrentFormCompressed())
         m_pFile->Seek(chunkPos.offset, DAT_010a2480);
-    m_uiCurrentOffset = 0;
+    m_chunkoffset = 0;
     FUN_004720d0();
     GetChunkID();
     return true;
 }
 
 // @fnv 0x00487900
+// pdb: TESLeveledList::FreeLeveledList | TESLeveledList.obj | retail, object-file run extension, low
+// pdb locals: pList, pObj
 void TESLeveledList::InitializeLeveledList()
 {
     BSSimpleList<LeveledObject*>* node =
@@ -514,13 +536,13 @@ void TESLeveledList::InitializeLeveledList()
         else
             node = node->GetNext();
     }
-    reinterpret_cast<BSSimpleList<ActorCause*>*>(&m_kLeveledObjects)->RemoveAll();
+    reinterpret_cast<BSSimpleList<ActorCause*>*>(&ScriptAddedList)->RemoveAll();
 }
 
 // @fnv 0x004877e0
 bool TESLeveledList::GetAllBelow()
 {
-    if (m_ucChanceNone & 1)
+    if (cLLFlags & 1)
         return true;
     else
         return false;
@@ -529,13 +551,14 @@ bool TESLeveledList::GetAllBelow()
 // @fnv 0x004878a0
 bool TESLeveledList::GetUseAll()
 {
-    if (m_ucChanceNone & 4)
+    if (cLLFlags & 4)
         return true;
     else
         return false;
 }
 
 // @fnv 0x00487f50
+// pdb: Random | TESLeveledList.obj | debug, call graph, high
 unsigned int DialogueRandom()
 {
     return MersenneTwister::GetRandomGenerator()->GetRandomUInt();
@@ -545,12 +568,13 @@ typedef char _sizecheck_BaseFormComponent[sizeof(BaseFormComponent) == 4 ? 1 : -
 
 // Returns the value of the TESGlobalValueReader at offset 0x10 if present, otherwise the byte at offset 0x0c.
 // @fnv 0x00487790
+// pdb: TESLeveledList::GetChanceNone | TESLeveledList.obj | debug, upstream name already matches, high
 unsigned char TESLeveledList::GetChanceNone()
 {
-    if (m_pLevelGlobal)
+    if (pChanceGlobal)
         return static_cast<unsigned char>(
-            reinterpret_cast<TESGlobalValueReader*>(m_pLevelGlobal)->GetValue());
-    return m_pChanceGlobal;
+            reinterpret_cast<TESGlobalValueReader*>(pChanceGlobal)->GetValue());
+    return cChanceNone;
 }
 
 typedef char _sizecheck_BaseFormComponent[sizeof(BaseFormComponent) == 4 ? 1 : -1];
@@ -558,7 +582,7 @@ typedef char _sizecheck_BaseFormComponent[sizeof(BaseFormComponent) == 4 ? 1 : -
 // @fnv 0x00487840
 bool TESLeveledList::UsesAllEntries()
 {
-    if (m_ucChanceNone & 2)
+    if (cLLFlags & 2)
         return true;
     else
         return false;
@@ -571,6 +595,8 @@ struct FUN_00487ba0_shell : public LeveledObject
 };
 
 // @fnv 0x00487ba0
+// pdb: TESLeveledList::DeleteLeveledObject | TESLeveledList.obj | debug, object-file gap fill, medium
+// pdb params: apObject
 LeveledObject* __fastcall InitLeveledObject(LeveledObject* pThis)
 {
     pThis->pForm = 0;
@@ -584,14 +610,18 @@ float __cdecl floor(float);
 
 // Reads the reference's level multiplier and all-below flag, computes a level from its level, and adds leveled list items to the container.
 // @fnv 0x00488350
-void TESLeveledList::PopulateContainerFromReference(TESObjectREFR* apRef, TESContainer* apOutCont)
+// src: XBOX_RETAIL_PDB 0x00488350
+// pdb: TESLeveledList::CalculateCurrentFormListForRef | TESLeveledList.obj | retail, call graph (shared callers), high
+// pdb params: apRef, apOutCont
+// pdb locals: flevmult, iallbelowforce, icalclevel, ilevel
+void TESLeveledList::CalculateCurrentFormListForRef(TESObjectREFR* apRef, TESContainer* apOutCont)
 {
     if (!apRef || !apOutCont)
         return;
 
     float fLevelMult = 1.0f;
     int iallbelowforce = 0;
-    apRef->GetExtraData()->GetLeveledItemData(fLevelMult, iallbelowforce);
+    apRef->GetExtraData()->GetLevCreaMultiplier(fLevelMult, iallbelowforce);
 
     unsigned int icalclevel = 1;
     icalclevel = apRef->GetReferenceLevel(true);
@@ -600,7 +630,7 @@ void TESLeveledList::PopulateContainerFromReference(TESObjectREFR* apRef, TESCon
     if (ilevel < 1)
         ilevel = 1;
 
-    PopulateContainerWithLeveledItems((unsigned short)ilevel, 1, apOutCont, iallbelowforce);
+    CalculateCurrentFormList((unsigned short)ilevel, 1, apOutCont, iallbelowforce);
 }
 
 namespace fnv_0050ad90 {
@@ -664,9 +694,9 @@ float FUN_00526ac0_shell::BSMultiBoundCapsule_QMultiBoundRadius()
 void TESLeveledList::SetCalcAllBelow(bool bFlag)
 {
     if (bFlag)
-        m_ucChanceNone |= 1;
+        cLLFlags |= 1;
     else
-        m_ucChanceNone &= 0xfffffffe;
+        cLLFlags &= 0xfffffffe;
 }
 
 // Sets or clears bit 1 of the byte at offset 0x0d according to the set argument.
@@ -674,9 +704,9 @@ void TESLeveledList::SetCalcAllBelow(bool bFlag)
 void TESLeveledList::SetMultCalc(bool set)
 {
     if (set)
-        m_ucChanceNone |= 2;
+        cLLFlags |= 2;
     else
-        m_ucChanceNone &= ~2;
+        cLLFlags &= ~2;
 }
 
 struct FUN_00c611d0_shell
@@ -692,12 +722,14 @@ int FUN_00c611d0_shell::GetFour()
 
 struct FUN_00c611e0_shell
 {
-    int __thiscall BSMultiBoundCapsule_CheckBound(int arg1);
+    int __thiscall BSMultiBoundCapsule_CheckBound(int aTargetBound);
 };
 
 // @fnv 0x00c611e0
 // src: COMMUNITY 0x00c611e0
-int __thiscall FUN_00c611e0_shell::BSMultiBoundCapsule_CheckBound(int arg1)
+// pdb: BSMultiBoundCapsule::CheckBound | BSMultiBoundCapsule.obj | retail, upstream name already matches, high
+// pdb params: aTargetBound
+int __thiscall FUN_00c611e0_shell::BSMultiBoundCapsule_CheckBound(int aTargetBound)
 {
     return 0;
 }
@@ -709,6 +741,8 @@ struct FUN_00c61230_shell
 
 // @fnv 0x00c61230
 // src: XBOX_PDB 0x00c61230
+// pdb: BSMultiBoundCapsule::WithinFrustum | BSMultiBoundCapsule.obj | debug, upstream name already matches, high
+// pdb params: aPlanes
 bool FUN_00c61230_shell::BSMultiBoundCapsule_WithinFrustum(int)
 {
     return false;
@@ -721,6 +755,8 @@ struct FUN_00c61240_shell
 
 // @fnv 0x00c61240
 // src: XBOX_PDB 0x00c61240
+// pdb: BSMultiBoundCapsule::CompletelyWithinFrustum | BSMultiBoundCapsule.obj | debug, upstream name already matches, high
+// pdb params: aPlanes
 bool __thiscall FUN_00c61240_shell::BSMultiBoundCapsule_CompletelyWithinFrustum(int)
 {
     return 0;
@@ -728,12 +764,14 @@ bool __thiscall FUN_00c61240_shell::BSMultiBoundCapsule_CompletelyWithinFrustum(
 
 struct FUN_00c61250_shell
 {
-    void __thiscall BSMultiBoundCapsule_GetNiBound(int a);
+    void __thiscall BSMultiBoundCapsule_GetNiBound(int aBound);
 };
 
 // @fnv 0x00c61250
 // src: COMMUNITY 0x00c61250
-void __thiscall FUN_00c61250_shell::BSMultiBoundCapsule_GetNiBound(int a)
+// pdb: BSMultiBoundCapsule::GetNiBound | BSMultiBoundCapsule.obj | debug, upstream name already matches, high
+// pdb params: aBound
+void __thiscall FUN_00c61250_shell::BSMultiBoundCapsule_GetNiBound(int aBound)
 {}
 
 struct FUN_00c61260_shell
@@ -743,6 +781,8 @@ struct FUN_00c61260_shell
 
 // @fnv 0x00c61260
 // src: COMMUNITY 0x00c61260
+// pdb: BSMultiBoundCapsule::MakeDebugGeom | BSMultiBoundCapsule.obj | debug, vtable slot, medium
+// pdb params: apLines, apShape, akBaseColor
 void __thiscall FUN_00c61260_shell::BSMultiBoundCapsule_CreateDebugGeometry(int a, int b, int c, int d, int e, int f)
 {}
 
@@ -769,6 +809,7 @@ struct NiRefObjectDeletion
 extern "C" void __cdecl __Dummy_00b6fef0(void* p, unsigned int size);
 
 // @fnv 0x00c61280
+// pdb: BSMultiBoundCapsule::`scalar deleting destructor' | BSMultiBoundCapsule.obj | retail, vtable slot, high
 void* __thiscall NiRefObjectDeletion::Delete(NiRefObject* obj, unsigned int flags)
 {
     obj->NiRefObject::~NiRefObject();
@@ -781,9 +822,9 @@ void* __thiscall NiRefObjectDeletion::Delete(NiRefObject* obj, unsigned int flag
 void __thiscall TESLeveledList::SetUseAll(bool abSet)
 {
     if (abSet)
-        m_ucChanceNone |= 4;
+        cLLFlags |= 4;
     else
-        m_ucChanceNone &= ~4;
+        cLLFlags &= ~4;
 }
 
 extern void __fastcall FUN_00c4f980(void*);
@@ -792,6 +833,7 @@ extern int DAT_010c34ac;
 // Initialize the capsule without introducing calls to its empty point constructors.
 // @fnv 0x00c60d50
 // src: EXE 0x00c60d50
+// pdb: BSMultiBoundCapsule::BSMultiBoundCapsule | BSMultiBoundCapsule.obj | debug, upstream name already matches, high
 BSMultiBoundCapsule* __fastcall BSMultiBoundCapsule_BSMultiBoundCapsule(BSMultiBoundCapsule* capsule)
 {
     FUN_00c4f980(capsule);
@@ -809,11 +851,13 @@ struct TmpEndian
     unsigned short f0;
     int f1;
     unsigned short f2;
-    void SwapEndian();
+    void LEVELED_OBJECT_FILE_Endian();
 };
 // Byte-swaps the three fields f0, f1 and f2 of this struct via BSEndian.
 // @fnv 0x00488510
-void TmpEndian::SwapEndian()
+// src: XBOX_DEBUG_PDB 0x00488510
+// pdb: LEVELED_OBJECT_FILE::Endian | TESLeveledList.obj | debug, call graph (shared callers), high
+void TmpEndian::LEVELED_OBJECT_FILE_Endian()
 {
     BSEndian(&f0, EndianSizeTag<2>());
     BSEndian(&f1, EndianSizeTag<2>());
@@ -842,25 +886,29 @@ struct FUN_00c60e70_shell : public FUN_00c4f9f0_shell
 };
 // @fnv 0x00c60e70
 // src: XBOX_PDB 0x00c60e70
-void FUN_00c60e70_shell::BSMultiBoundCapsule_LoadBinary(void* stream)
+// pdb: BSMultiBoundCapsule::LoadBinary | BSMultiBoundCapsule.obj | retail, upstream name already matches, high
+// pdb params: arStream
+void FUN_00c60e70_shell::BSMultiBoundCapsule_LoadBinary(void* arStream)
 {
-    BSMultiBoundShape_LoadBinary(stream);
-    ColorStreamIO::Load(&c1, stream);
-    ColorStreamIO::Load(&c2, stream);
-    ReadBinaryValue<unsigned int>(stream, u);
+    BSMultiBoundShape_LoadBinary(arStream);
+    ColorStreamIO::Load(&c1, arStream);
+    ColorStreamIO::Load(&c2, arStream);
+    ReadBinaryValue<unsigned int>(arStream, u);
 }
 
 struct FUN_00c60ec0_shell
 {
     void BSMultiBoundShape_LinkObject(int);
-    void BSMultiBoundCapsule_LinkObject(int a);
+    void BSMultiBoundCapsule_LinkObject(int arStream);
 };
 
 // @fnv 0x00c60ec0
 // src: XBOX_PDB 0x00c60ec0
-void FUN_00c60ec0_shell::BSMultiBoundCapsule_LinkObject(int aiValue)
+// pdb: BSMultiBoundCapsule::LinkObject | BSMultiBoundCapsule.obj | debug, upstream name already matches, high
+// pdb params: arStream
+void FUN_00c60ec0_shell::BSMultiBoundCapsule_LinkObject(int arStream)
 {
-    BSMultiBoundShape_LinkObject(aiValue);
+    BSMultiBoundShape_LinkObject(arStream);
 }
 
 struct FUN_00c38020_shell
@@ -870,9 +918,11 @@ struct FUN_00c38020_shell
 };
 // @fnv 0x00c60ee0
 // src: XBOX_PDB 0x00c60ee0
-bool FUN_00c38020_shell::BSMultiBoundCapsule_RegisterStreamables(int a)
+// pdb: BSMultiBoundCapsule::RegisterStreamables | BSMultiBoundCapsule.obj | debug, upstream name already matches, high
+// pdb params: arStream
+bool FUN_00c38020_shell::BSMultiBoundCapsule_RegisterStreamables(int arStream)
 {
-    if (!BSMultiBoundShape_RegisterStreamables(a))
+    if (!BSMultiBoundShape_RegisterStreamables(arStream))
         return false;
     return true;
 }
@@ -893,16 +943,21 @@ struct Host : FUN_00c38050_Holder
 };
 // @fnv 0x00c60f10
 // src: XBOX_PDB 0x00c60f10
-void Host::BSMultiBoundCapsule_SaveBinary(void* s)
+// pdb: BSMultiBoundCapsule::SaveBinary | BSMultiBoundCapsule.obj | retail, upstream name already matches, high
+// pdb params: arStream
+void Host::BSMultiBoundCapsule_SaveBinary(void* arStream)
 {
-    FUN_00c38050_Holder::BSMultiBoundShape_SaveBinary(s);
-    ColorStreamIO::Save(&c1, s);
-    ColorStreamIO::Save(&c2, s);
-    CallAnimCallback(s, &f24);
+    FUN_00c38050_Holder::BSMultiBoundShape_SaveBinary(arStream);
+    ColorStreamIO::Save(&c1, arStream);
+    ColorStreamIO::Save(&c2, arStream);
+    CallAnimCallback(arStream, &f24);
 }
 }  // namespace fnv_00c60f10
 
 // @fnv 0x00488c50
+// pdb: TESLeveledList::SaveGame | TESLeveledList.obj | retail, upstream name already matches, high
+// pdb params: apSaveGameBuffer
+// pdb locals: plist, isaveGameBufferPos, isaveGameCount, pitem, fhealthPercent
 void TESLeveledList::SaveGame(BGSSaveFormBuffer* apSaveGameBuffer)
 {
     if (apSaveGameBuffer->GetChangeFlags(0x80000000).operator bool())
@@ -937,20 +992,22 @@ struct Shell
     NiPoint3 m0c;
     NiPoint3 m18;
     float m24;
-    void BSMultiBoundShape_CopyMembers(Shell* dest, int a);
+    void BSMultiBoundShape_CopyMembers(Shell* pDest, int arCloneData);
 };
 // Calls CopyMembersStreamWithField on dest, then copies m0c, m18 and m24 from this into dest.
 // @fnv 0x00c60e00
 // src: XBOX_PDB 0x00c60e00
-void Shell::BSMultiBoundShape_CopyMembers(Shell* dest, int aiArg)
+// pdb: BSMultiBoundShape::CopyMembers | BSMultiBoundShape.obj | retail, upstream name already matches, high
+// pdb params: pDest, arCloneData
+void Shell::BSMultiBoundShape_CopyMembers(Shell* pDest, int arCloneData)
 {
-    CopyMembersStreamWithField(dest, aiArg);
+    CopyMembersStreamWithField(pDest, arCloneData);
     // Preserve the original trivial, bitwise vector copies. NiPoint3's shared
     // assignment operator is out of line with this unit's /Od build flags.
-    reinterpret_cast<NiPoint3&>(dest->m0c) = reinterpret_cast<const NiPoint3&>(m0c);
-    reinterpret_cast<NiPoint3&>(dest->m18) = reinterpret_cast<const NiPoint3&>(m18);
+    reinterpret_cast<NiPoint3&>(pDest->m0c) = reinterpret_cast<const NiPoint3&>(m0c);
+    reinterpret_cast<NiPoint3&>(pDest->m18) = reinterpret_cast<const NiPoint3&>(m18);
     float f = m24;
-    dest->m24 = f;
+    pDest->m24 = f;
 }
 
 namespace fnv_00c60d70 {
@@ -965,21 +1022,24 @@ struct Shell : public A51BF0Base
 {
     char padding[36];
 
-    void BSMultiBoundShape_CopyMembers(Shell* object, int value);
+    void BSMultiBoundShape_CopyMembers(Shell* pDest, int arCloneData);
 };
 
 struct FUN_00c60d70_shell : public Shell
 {
-    Shell* BSMultiBoundCapsule_CreateClone(int value);
+    Shell* BSMultiBoundCapsule_CreateClone(int arCloneData);
 };
 
 // Allocates a BSMultiBoundCapsule, copies the members, and returns the new object.
 // @fnv 0x00c60d70
 // src: XBOX_PDB 0x00c60d70
-Shell* FUN_00c60d70_shell::BSMultiBoundCapsule_CreateClone(int value)
+// pdb: BSMultiBoundCapsule::CreateClone | BSMultiBoundCapsule.obj | retail, upstream name already matches, high
+// pdb params: arCloneData
+// pdb locals: pobj
+Shell* FUN_00c60d70_shell::BSMultiBoundCapsule_CreateClone(int arCloneData)
 {
     Shell* shell = reinterpret_cast<Shell*>(new BSMultiBoundCapsule);
-    BSMultiBoundShape_CopyMembers(shell, value);
+    BSMultiBoundShape_CopyMembers(shell, arCloneData);
     return shell;
 }
 }  // namespace fnv_00c60d70
@@ -996,12 +1056,15 @@ struct CurrentLeveledEntries
 };
 
 // @fnv 0x00487980
-void TESLeveledList::ClearScriptAddedLeveledObjects()
+// src: XBOX_RETAIL_PDB 0x00487980
+// pdb: TESLeveledList::RemoveAllScriptAddedLeveledObjects | TESLeveledList.obj | retail, object-file run extension, high
+// pdb locals: plev
+void TESLeveledList::RemoveAllScriptAddedLeveledObjects()
 {
-    while (!reinterpret_cast<ScriptAddedEntries*>(&m_kLeveledObjects)->FUN_008256d0())
+    while (!reinterpret_cast<ScriptAddedEntries*>(&ScriptAddedList)->FUN_008256d0())
     {
-        LeveledObject* entryToDestroy = reinterpret_cast<ScriptAddedEntries*>(&m_kLeveledObjects)->FUN_006815c0();
-        reinterpret_cast<ScriptAddedEntries*>(&m_kLeveledObjects)->FUN_0063f7b0();
+        LeveledObject* entryToDestroy = reinterpret_cast<ScriptAddedEntries*>(&ScriptAddedList)->FUN_006815c0();
+        reinterpret_cast<ScriptAddedEntries*>(&ScriptAddedList)->FUN_0063f7b0();
         reinterpret_cast<CurrentLeveledEntries*>(&leveledList)->RemoveMatchingItem(entryToDestroy);
 
         LeveledObject* item = entryToDestroy;
@@ -1027,13 +1090,15 @@ struct ExtraSaver_00488400 : ContainerItemExtra
 };
 
 // @fnv 0x00488400
+// pdb: TESLeveledList::Save | TESLeveledList.obj | retail, upstream name already matches, high
+// pdb locals: pdata, pList, itempint, fileLevObj
 void TESLeveledList::Save()
 {
-    TESForm_AddChunk_3(0x444c564c, m_pChanceGlobal);
-    TESForm_AddChunk_3(0x464c564c, m_ucChanceNone);
-    if (m_pLevelGlobal)
+    TESForm_AddChunk_3(0x444c564c, cChanceNone);
+    TESForm_AddChunk_3(0x464c564c, cLLFlags);
+    if (pChanceGlobal)
     {
-        unsigned int chanceFormID = m_pLevelGlobal->GetFormID();
+        unsigned int chanceFormID = pChanceGlobal->GetFormID();
         TESForm_AddChunk_00485910(0x474c564c, chanceFormID);
     }
     LevelNode_00488400* pEntryNode = static_cast<LevelNode_00488400*>(GetLeveledList());
@@ -1045,10 +1110,10 @@ void TESLeveledList::Save()
         levelEntryData.f0 = entry->sLevel;
         levelEntryData.f2 = entry->m_sCount;
         if (TESForm_QEndianSwapOnSave())
-            levelEntryData.SwapEndian();
+            levelEntryData.LEVELED_OBJECT_FILE_Endian();
         AppendChunk(0x4f4c564c, &levelEntryData, 12);
         if (TESForm_QEndianSwapOnSave())
-            levelEntryData.SwapEndian();
+            levelEntryData.LEVELED_OBJECT_FILE_Endian();
         if (entry->m_pExtraData)
             static_cast<ExtraSaver_00488400*>(entry->m_pExtraData)->WriteToChunk();
         pEntryNode = pEntryNode->FUN_00726070();
@@ -1070,18 +1135,21 @@ struct TCColorEq : public TCEq
     NiPoint3 m0c;
     NiPoint3 m18;
     float m24;
-    bool BSMultiBoundCapsule_IsEqual(NiObject* pObject);
+    bool BSMultiBoundCapsule_IsEqual(NiObject* apObject);
 };
 
 // Calls the base equality check, then compares m0c, m18 and m24 against the same fields of pObject cast to TCColorEq.
 // @fnv 0x00c60f60
 // src: XBOX_PDB 0x00c60f60
-bool TCColorEq::BSMultiBoundCapsule_IsEqual(NiObject* pObject)
+// pdb: BSMultiBoundCapsule::IsEqual | BSMultiBoundCapsule.obj | retail, upstream name already matches, high
+// pdb params: apObject
+// pdb locals: bres, pobj
+bool TCColorEq::BSMultiBoundCapsule_IsEqual(NiObject* apObject)
 {
-    bool bResultTmp = BSMultiBoundShape_IsEqual(pObject);
+    bool bResultTmp = BSMultiBoundShape_IsEqual(apObject);
     if (bResultTmp)
     {
-        TCColorEq* pOther = (TCColorEq*)pObject;
+        TCColorEq* pOther = (TCColorEq*)apObject;
         {
             NiPoint3* pB = &pOther->m0c;
             NiPoint3* pA = &m0c;
@@ -1156,6 +1224,9 @@ struct C00c611f0
 // Calls v8c on the VTarget pointer stored in arg->unk0c and returns 0.
 // @fnv 0x00c611f0
 // src: XBOX_PDB 0x00c611f0
+// pdb: BSMultiBoundCapsule::CheckBound | BSMultiBoundCapsule.obj | debug, vtable slot, medium
+// pdb params: aTargetBound
+// pdb locals: kshape
 int C00c611f0::BSMultiBoundCapsule_CheckBound_00c611f0(Struct08* apStruct)
 {
     int res;
@@ -1191,9 +1262,12 @@ struct TesleveledlistListNodeView
 TesleveledlistListNodeView* __fastcall FUN_00717e50(TESLeveledList*);
 // Compares this leveled list against another, returning true if any property or entry differs.
 // @fnv 0x004889d0
-bool TESLeveledList::IsEqualToBase(BaseFormComponent* component)
+// pdb: TESLeveledList::CompareComponent | TESLeveledList.obj | retail, vtable slot, high
+// pdb params: apCompareFC
+// pdb locals: pCompare, pList, pCompareList, pCompareLevO, pLevO
+bool TESLeveledList::IsEqualToBase(BaseFormComponent* apCompareFC)
 {
-    TESLeveledList* pOtherList = dynamic_cast<TESLeveledList*>(component);
+    TESLeveledList* pOtherList = dynamic_cast<TESLeveledList*>(apCompareFC);
     if (!pOtherList)
         return true;
     if (GetAllBelow() != pOtherList->GetAllBelow())
@@ -1204,7 +1278,7 @@ bool TESLeveledList::IsEqualToBase(BaseFormComponent* component)
         return true;
     if (GetUseAll() != pOtherList->GetUseAll())
         return true;
-    if (m_pLevelGlobal != pOtherList->m_pLevelGlobal)
+    if (pChanceGlobal != pOtherList->pChanceGlobal)
         return true;
     TesleveledlistListNodeView* first = FUN_00717e50(this);
     TesleveledlistListNodeView* pSecondNode = FUN_00717e50(pOtherList);
@@ -1257,6 +1331,7 @@ bool TESLeveledList::IsEqualToBase(BaseFormComponent* component)
 // Allocates and returns a new BSMultiBoundCapsule instance on the heap.
 // @fnv 0x00c610a0
 // src: EXE 0x00c610a0
+// pdb: BSMultiBoundCapsule::CreateObject | BSMultiBoundCapsule.obj | retail, upstream name already matches, high
 BSMultiBoundCapsule* __cdecl BSMultiBoundCapsule_CreateObject(void)
 {
     return new BSMultiBoundCapsule();
@@ -1296,9 +1371,12 @@ class CIE_cls : public ContainerItemExtra
 
 // Copies the leveled list entries and properties from another TESLeveledList instance into this one.
 // @fnv 0x004887a0
-void TESLeveledList::BaseFormRecord(BaseFormComponent* apSource)
+// pdb: TESLeveledList::CopyComponent | TESLeveledList.obj | retail, vtable slot, high
+// pdb params: apCopyFC
+// pdb locals: pList, pCopy, pCopyList, pcopydata, pdata
+void TESLeveledList::BaseFormRecord(BaseFormComponent* apCopyFC)
 {
-    TESLeveledList* src3 = (TESLeveledList*)FUN_00ec43fb(apSource, 0, &DAT_01183040, &DAT_01186c1c, 0);
+    TESLeveledList* src3 = (TESLeveledList*)FUN_00ec43fb(apCopyFC, 0, &DAT_01183040, &DAT_01186c1c, 0);
     if (src3 == 0)
     {
         return;
@@ -1329,7 +1407,7 @@ void TESLeveledList::BaseFormRecord(BaseFormComponent* apSource)
         }
         it = it->FUN_00726070();
     }
-    m_pLevelGlobal = src3->m_pLevelGlobal;
+    pChanceGlobal = src3->pChanceGlobal;
     ExtraWeaponModFlags_SetWeaponModFlags(src3->vfn_10());
     SetCalcAllBelow(src3->FUN_004877e0());
     SetMultCalc(src3->vfn_14());

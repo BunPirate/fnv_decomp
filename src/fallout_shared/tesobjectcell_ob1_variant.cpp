@@ -98,23 +98,26 @@ struct BoxInput
     float halfWidth;
     float halfDepth;
     M_004b4500 rotation;
-    unsigned char BSOcclusionPlane_TestIntersection(const SphereInput* sphere);
+    unsigned char BSOcclusionPlane_TestIntersection(const SphereInput* aBound);
 };
 
 // @fnv 0x00c34890
 // src: COMMUNITY 0x00c34890
-unsigned char BoxInput::BSOcclusionPlane_TestIntersection(const SphereInput* sphere)
+// pdb: BSOcclusionPlane::TestIntersection | BSOcclusionPlane.obj | retail, upstream name already matches, high
+// pdb params: aBound
+// pdb locals: kvect, kboundcenter, fradius, kinv, frad
+unsigned char BoxInput::BSOcclusionPlane_TestIntersection(const SphereInput* aBound)
 {
     float halfA;
     M_004b4500 rotationB = rotation.Inverse();
-    NiPoint3 point7 = rotationB.FUN_004b4500(&(*sphere - center));
+    NiPoint3 point7 = rotationB.FUN_004b4500(&(*aBound - center));
     NiPoint3 bound;
     float radius6;
     {
         point7.x = NiAbs(point7.x);
         point7.y = NiAbs(point7.y);
         point7.z = NiAbs(point7.z);
-        radius6 = sphere->radius;
+        radius6 = aBound->radius;
         bound.Set(point7.x - radius6, point7.y - radius6, point7.z - radius6);
     }
     if (!(bound.x <= halfWidth) || !(bound.z <= halfDepth) || !(bound.y <= 0.0))
@@ -306,32 +309,35 @@ struct Owner5b
     int unk4c;
     List5b m_list50;
     List5b m_list5c;
-    void BSPortalGraph_AttachAlwaysRenderChild(NiRefObject* p);
+    void BSPortalGraph_AttachAlwaysRenderChild(NiRefObject* pkChild);
 };
 
 // @fnv 0x00c5b1c0
 // src: COMMUNITY 0x00c5b1c0
-void Owner5b::BSPortalGraph_AttachAlwaysRenderChild(NiRefObject* p)
+// pdb: BSPortalGraph::AttachAlwaysRenderChild | BSPortalGraph.obj | retail, upstream name already matches, high
+// pdb params: pkChild
+// pdb locals: kaditer, pdobj, kprev, pobj
+void Owner5b::BSPortalGraph_AttachAlwaysRenderChild(NiRefObject* pkChild)
 {
-    if (!p)
+    if (!pkChild)
         return;
     EnterCriticalSection(&DAT_01203328);
     ListItem5b* pos = m_list50.GetHeadPos();
     while (pos)
     {
         NiRefObject* cur = m_list50.GetNext(pos);
-        if (cur == p)
+        if (cur == pkChild)
             break;
     }
     if (!pos)
     {
-        m_list50.AddHead(p);
+        m_list50.AddHead(pkChild);
         pos = m_list5c.GetHeadPos();
         while (pos)
         {
             ListItem5b* saved2 = pos;
             NiRefObject* cur = m_list5c.GetNext(pos);
-            if (cur == p)
+            if (cur == pkChild)
             {
                 m_list5c.RemovePos(saved2);
             }
@@ -446,15 +452,18 @@ struct ItemQueue
     int unk54;
     int unk58;
     ItemList items;
-    void BSPortalGraph_DetachAlwaysRenderChild(NiRefObject* obj);
+    void BSPortalGraph_DetachAlwaysRenderChild(NiRefObject* pkChild);
 };
 
 // @fnv 0x00c5b370
 // src: XBOX_PDB 0x00c5b370
-void ItemQueue::BSPortalGraph_DetachAlwaysRenderChild(NiRefObject* obj)
+// pdb: BSPortalGraph::DetachAlwaysRenderChild | BSPortalGraph.obj | retail, upstream name already matches, high
+// pdb params: pkChild
+// pdb locals: kaditer, kprev, pobj
+void ItemQueue::BSPortalGraph_DetachAlwaysRenderChild(NiRefObject* pkChild)
 {
     EnterCriticalSection(&DAT_01203328);
-    items.AddTail(obj);
+    items.AddTail(pkChild);
     NiRefObject* p;
     ItemNode* it;
     ItemNode* cur;
@@ -463,7 +472,7 @@ void ItemQueue::BSPortalGraph_DetachAlwaysRenderChild(NiRefObject* obj)
     {
         cur = it;
         p = pending.GetNext(it);
-        if (p == obj)
+        if (p == pkChild)
         {
             pending.RemovePos(&cur);
             break;

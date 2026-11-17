@@ -5,6 +5,7 @@ class NiPoint3;
 
 // Bethesda's sound handle: 12 bytes (Xbox debug PDB Fallout_Release_Beta.pdb; RTTI names it as a template argument).
 // Declarations only: a unit whose original inlines a body defines it out of class.
+// pdb: class BSSoundHandle, size 0xc, 3 members
 class BSSoundHandle
 {
 public:
@@ -32,8 +33,8 @@ public:
     bool operator!=(const BSSoundHandle& kOther) const;
 
     void Clear();
-    bool Play(bool bUnk);
-    bool PlayAfter(unsigned int uiDelay, int iUnk);
+    bool Play(bool abLoopPlayback);
+    bool PlayAfter(unsigned int aiDelay, int aiPlayFlags);
     bool Pause();
     bool Stop();
     bool IsPlaying();
@@ -41,34 +42,34 @@ public:
     int GetSoundType();
     float GetVolume();
     bool SetVolume(float fVolume);
-    bool SetFrequency(float fFrequency);
-    bool SetModFrequency(float fFrequency);
-    bool SetFrequencyVariance(unsigned char ucVariance);
-    bool SetBalance(int iBalance);
+    bool SetFrequency(float afNewFrequency);
+    bool SetModFrequency(float afNewFrequency);
+    bool SetFrequencyVariance(unsigned char aiFreqVariance);
+    bool SetBalance(int aiNewBalance);
     bool SetStaticAttenuation(unsigned short usAttenuation);
     int GetDuration();
-    bool SetPosition(const NiPoint3& kPosition);
-    bool SetPosition(float fX, float fY, float fZ);
+    bool SetPosition(const NiPoint3& aPosition);
+    bool SetPosition(float afX, float afY, float afZ);
     bool SetBeamEnd(const NiPoint3& kPosition);
-    bool SetBeamEnd(float fX, float fY, float fZ);
+    bool SetBeamEnd(float afX, float afY, float afZ);
     void SetMinMax(float fMin, float fMax);
-    void SetAttenuationCurve(unsigned short a, unsigned short b, unsigned short c, unsigned short d, unsigned short e);
-    void SetReverbAttenuation(unsigned short usAttenuation);
-    bool SetOrientation(float fX, float fY, float fZ);
+    void SetAttenuationCurve(unsigned short aiPt1, unsigned short aiPt2, unsigned short aiPt3, unsigned short aiPt4, unsigned short aiPt5);
+    void SetReverbAttenuation(unsigned short aiReverbAtt);
+    bool SetOrientation(float afX, float afY, float afZ);
     unsigned int GetID() const;
     void SetObjectToFollow(NiAVObject* pkObject);
-    void Seek(unsigned int uiPosition);
-    void SetFollowsListener(bool bFollows);
-    void SetCompletionCallback(CompletionCallback pfnCallback, void* pvData);
-    void SetPlayCallback(CompletionCallback pfnCallback, void* pvData);
+    void Seek(unsigned int aiMilliseconds);
+    void SetFollowsListener(bool abFollowsListener);
+    void SetCompletionCallback(CompletionCallback apfnCallback, void* pvData);
+    void SetPlayCallback(CompletionCallback apfnCallback, void* apContext);
     bool Release();
-    bool FadeInPlay(unsigned int uiMilliseconds);
-    bool FadeOutAndRelease(unsigned int uiMilliseconds);
-    bool FadeOut(unsigned int uiMilliseconds);
-    void SetTimeConstraints(unsigned char a, unsigned char b);
-    void SetSynchStartTime(unsigned int uiTime);
+    bool FadeInPlay(unsigned int aiMilliseconds);
+    bool FadeOutAndRelease(unsigned int aiMilliseconds);
+    bool FadeOut(unsigned int aiMilliseconds);
+    void SetTimeConstraints(unsigned char aiStart, unsigned char aiStop);
+    void SetSynchStartTime(unsigned int aiStartTime);
     void ClearSynchStartTime();
-    void SetPriority(unsigned int uiPriority);
+    void SetPriority(unsigned int aiPriority);
     void SetAssumeSuccess(bool bAssume);
     ASSUMED_STATE QState() const;
 };

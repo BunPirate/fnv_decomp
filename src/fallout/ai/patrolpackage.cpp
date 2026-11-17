@@ -19,6 +19,7 @@ class LocationDescriptor
 };
 
 
+// pdb: class ArchiveManager, size 0x1, 0 members
 class ArchiveManager
 {
   public:
@@ -43,6 +44,7 @@ extern int DAT_010933c8;
 
 // Calls FUN_0067d920, installs the vtable at DAT_010933c8, and zeroes fields at offsets 0x4 through 0x10 before returning thisPtr.
 // @fnv 0x009f27a0
+// pdb: GuardActorPackageData::GuardActorPackageData | GuardPackage.obj | debug, call graph, low
 void* __fastcall InitEscortPackageData(void* thisPtr)
 {
     reinterpret_cast<EscortActorPackageData*>(thisPtr)->FUN_0067d920();
@@ -63,18 +65,21 @@ PTYPE PatrolActorPackageData::GetPackageType()
 
 // Stores the actor and package, resets counters, and if the package is valid and has patrol data, initializes the patrol from the actor's position.
 // @fnv 0x009f2ba0
+// pdb: PatrolActorPackageData::Init | PatrolPackage.obj | retail, upstream name already matches, high
+// pdb params: apActor, apPackage
+// pdb locals: bvalid
 bool PatrolActorPackageData::Init(Actor* apActor, TESPackage* apPackage)
 {
     pActor = apActor;
     pPackage = apPackage;
-    m_pEscortPackageData = apPackage->GetPackagePatrolData();
-    m_uiSecondValueAfterReferenceFlag = 0;
-    m_bPatrolFlag = true;
-    m_uiValueAfterReferenceFlag = 0;
+    pPackageData = apPackage->GetPackagePatrolData();
+    iCurrentReference = 0;
+    bPatrolDirection = true;
+    iLoopAroundIndex = 0;
     bool bvalid = (((ArchiveManager*)this)->*(bool(ArchiveManager::*)()) & ArchiveManager::CopyArchiveName)();
     if (bvalid)
     {
-        if (((PatrolPackage*)m_pEscortPackageData)->TESRegionData_GetOverride())
+        if (((PatrolPackage*)pPackageData)->TESRegionData_GetOverride())
         {
             SetPatrolPosition((*(const NiPoint3&(__thiscall**)(Actor*))(*(int*)apActor + 0x1f4))(apActor));
         }
@@ -90,6 +95,7 @@ class BGSMessageInitAccess
 
 // Returns the reference from the pack's icon form if it resolves to one, otherwise falls back to the actor's linked reference.
 // @fnv 0x009f2d40
+// pdb: PatrolActorPackageData::GetCurrentReference | PatrolPackage.obj | debug, call graph, medium
 TESObjectREFR* __cdecl PatrolActorPackageData::GetPatrolReference(Actor* apActor, TESPackage* apPack)
 {
     LocationDescriptor* ploc;
@@ -140,12 +146,16 @@ using fnv_009f30d0::PatrolHelper;
 using fnv_009f30d0::ClampInt;
 
 // @fnv 0x009f30d0
-bool PatrolActorPackageData::SetPatrolRefIndex(unsigned int aiRefIndex)
+// src: XBOX_RETAIL_PDB 0x009f30d0
+// pdb: PatrolActorPackageData::SetCurrentReference | PatrolPackage.obj | retail, call graph (shared callers), high
+// pdb params: aiRefIndex
+// pdb locals: pnewExtra, aiclampedRefIndex, isize, pnewRef, bsuccess
+bool PatrolActorPackageData::SetCurrentReference(unsigned int aiRefIndex)
 {
     if (References.NiTListBase_DFALL_NiTListItem_BSAnimGroupSequence_const_BSAnimGroupSequence_const_IsEmpty() ||
-        !m_bReferenceFlag)
+        !bCircularArray)
     {
-        m_uiSecondValueAfterReferenceFlag = aiRefIndex;
+        iCurrentReference = aiRefIndex;
         return true;
     }
     unsigned int aiclampedRefIndex = aiRefIndex;
@@ -161,7 +171,7 @@ bool PatrolActorPackageData::SetPatrolRefIndex(unsigned int aiRefIndex)
         {
             ((PatrolHelper*)this)->PatrolActorPackageData_ClearReservedPatrolRef();
             ((ExtraHelper*)pnewExtra)->ExtraDataList_SetPatrolRefInUse(pActor);
-            m_uiSecondValueAfterReferenceFlag = aiclampedRefIndex;
+            iCurrentReference = aiclampedRefIndex;
         }
         else
         {
@@ -177,7 +187,7 @@ TESObjectREFR* PatrolActorPackageData::GetCurrentPatrolReference()
 {
     if (!References.NiTListBase_DFALL_NiTListItem_BSAnimGroupSequence_const_BSAnimGroupSequence_const_IsEmpty())
     {
-        return References.GetAt(m_uiSecondValueAfterReferenceFlag);
+        return References.GetAt(iCurrentReference);
     }
     else
     {
@@ -195,6 +205,7 @@ struct PatrolCleanupAccess
     void PatrolActorPackageData_ClearReservedPatrolRef();
 };
 // @fnv 0x009f2a70
+// pdb: PatrolActorPackageData::~PatrolActorPackageData | PatrolPackage.obj | retail, upstream name already matches, high
 PatrolActorPackageData::~PatrolActorPackageData()
 {
     if (!g_dataHandler->TESDataHandler_GetClearingData())
@@ -203,19 +214,22 @@ PatrolActorPackageData::~PatrolActorPackageData()
     eState = PATROL_STATE_DEBUG_DESTRUCTED;
     pActor = 0;
     pPackage = 0;
-    m_pEscortPackageData = 0;
+    pPackageData = 0;
 }
 
 
 // @fnv 0x009f33d0
+// pdb: PatrolActorPackageData::SaveGame | PatrolPackage.obj | retail, upstream name already matches, high
+// pdb params: apSaveGameBuffer
+// pdb locals: isaveGameCount, i, pref
 void PatrolActorPackageData::SaveGame(BGSSaveFormBuffer* apSaveGameBuffer)
 {
     apSaveGameBuffer->SaveData(&eState, 4, 0);
-    apSaveGameBuffer->SaveData(&m_fElapsedWaitTime, 4, 0);
-    apSaveGameBuffer->SaveData(&m_uiSecondValueAfterReferenceFlag, 4, 0);
-    apSaveGameBuffer->SaveData(&m_bPatrolFlag, 1, 0);
-    apSaveGameBuffer->SaveData(&m_bReferenceFlag, 1, 0);
-    apSaveGameBuffer->SaveData(&m_uiValueAfterReferenceFlag, 4, 0);
+    apSaveGameBuffer->SaveData(&fCurrentTimeAtReference, 4, 0);
+    apSaveGameBuffer->SaveData(&iCurrentReference, 4, 0);
+    apSaveGameBuffer->SaveData(&bPatrolDirection, 1, 0);
+    apSaveGameBuffer->SaveData(&bCircularArray, 1, 0);
+    apSaveGameBuffer->SaveData(&iLoopAroundIndex, 4, 0);
     apSaveGameBuffer->SerializeFormData(pPackage, 0);
     unsigned int isaveGameCount = (reinterpret_cast<BSSimpleArray<TESObjectREFR*, 1024>*>(reinterpret_cast<char*>(this) + offsetof(PatrolActorPackageData, References))) ? References.GetSize() : 0;
     apSaveGameBuffer->SaveVariableSizedValue(isaveGameCount);
@@ -238,21 +252,25 @@ struct PatrolRef
 
 // Computes the next patrol index from m_uiSecondValueAfterReferenceFlag and m_bPatrolFlag, wrapping or reversing at the ends, and applies it via SetPatrolRefIndex when abApply is set.
 // @fnv 0x009f2ea0
-bool PatrolActorPackageData::AdvanceToNextReference(bool abApply)
+// src: XBOX_DEBUG_PDB 0x009f2ea0
+// pdb: PatrolActorPackageData::SetNextReferenceForPatrol | PatrolPackage.obj | debug, call graph (shared callers), high
+// pdb params: abWaitForOccupiedPoints
+// pdb locals: bkeepPatrolling, inextReference, brepeatable, bgoingToNextPoint, isize, iavailable, i, pnewExtra, pref
+bool PatrolActorPackageData::SetNextReferenceForPatrol(bool abWaitForOccupiedPoints)
 {
-    int idx = m_uiSecondValueAfterReferenceFlag;
+    int idx = iCurrentReference;
     bool bResult = true;
-    bool bLoop = m_pEscortPackageData ? ((PatrolPackage*)m_pEscortPackageData)->TESRegionData_GetOverride() : false;
-    if (m_bPatrolFlag)
+    bool bLoop = pPackageData ? ((PatrolPackage*)pPackageData)->TESRegionData_GetOverride() : false;
+    if (bPatrolDirection)
     {
         idx++;
         if (idx == References.GetSize())
         {
             if (bLoop)
             {
-                if (m_bReferenceFlag)
+                if (bCircularArray)
                 {
-                    idx = m_uiValueAfterReferenceFlag;
+                    idx = iLoopAroundIndex;
                 }
                 else
                 {
@@ -260,7 +278,7 @@ bool PatrolActorPackageData::AdvanceToNextReference(bool abApply)
                         idx = 0;
                     else
                         idx -= 2;
-                    m_bPatrolFlag = !m_bPatrolFlag;
+                    bPatrolDirection = !bPatrolDirection;
                 }
             }
             else
@@ -277,7 +295,7 @@ bool PatrolActorPackageData::AdvanceToNextReference(bool abApply)
         {
             if (bLoop)
             {
-                if (m_bReferenceFlag)
+                if (bCircularArray)
                 {
                     idx = 0;
                     bResult = false;
@@ -288,7 +306,7 @@ bool PatrolActorPackageData::AdvanceToNextReference(bool abApply)
                         idx = 0;
                     else
                         idx = 1;
-                    m_bPatrolFlag = !m_bPatrolFlag;
+                    bPatrolDirection = !bPatrolDirection;
                 }
             }
             else
@@ -298,11 +316,11 @@ bool PatrolActorPackageData::AdvanceToNextReference(bool abApply)
             }
         }
     }
-    if (abApply)
+    if (abWaitForOccupiedPoints)
     {
-        if (idx != m_uiSecondValueAfterReferenceFlag)
+        if (idx != iCurrentReference)
         {
-            bool bOk = SetPatrolRefIndex(idx);
+            bool bOk = SetCurrentReference(idx);
             if (!bOk)
             {
                 unsigned int numRefs = References.GetSize();
@@ -311,19 +329,19 @@ bool PatrolActorPackageData::AdvanceToNextReference(bool abApply)
                 {
                     PatrolRef* pRef = (PatrolRef*)References.GetAt(i);
                     PatrolTarget* pTarget = pRef ? pRef->BSFile_GetDevice() : 0;
-                    if (i == m_uiSecondValueAfterReferenceFlag)
+                    if (i == iCurrentReference)
                         continue;
                     if (!pTarget || !pTarget->ExtraDataList_GetPatrolRefCanBeUsedBy(pActor))
                         uiValid--;
                 }
                 if (uiValid <= 0)
-                    return AdvanceToNextReference(false);
+                    return SetNextReferenceForPatrol(false);
             }
         }
     }
     else
     {
-        m_uiSecondValueAfterReferenceFlag = idx;
+        iCurrentReference = idx;
     }
     return bResult;
 }
@@ -466,13 +484,16 @@ using fnv_009f31c0::PatrolRefStub;
 using fnv_009f31c0::DAT_01016970;
 
 // @fnv 0x009f31c0
-void PatrolActorPackageData::SelectClosestPatrolPoint(const NiPoint3& arPoint)
+// pdb: PatrolActorPackageData::ResumeRepeatablePatrol | PatrolPackage.obj | retail, call graph (shared callers), high
+// pdb params: aActorPos
+// pdb locals: iSegmentStartRef, psegmentEndRef, bbestOverallDirection, ibestOverallStartRef, psegmentStartPos, psegmentEndPos, bfoundOverallSolution, bSegmentDirection, count, fbestOverallFlatDistSqrToSegment, psegmentStartRef, i, pnewExtra, pnewRef, patrolSegment, actorToSegment, fflatDistSqrToSegment
+void PatrolActorPackageData::SelectClosestPatrolPoint(const NiPoint3& aActorPos)
 {
     if (!pActor)
         return;
     int BackgroundTask = References.GetSize();
-    SetPatrolRefIndex(0);
-    m_bPatrolFlag = true;
+    SetCurrentReference(0);
+    bPatrolDirection = true;
     PatrolRefStub* pOld = 0;
     NiPoint3* pOrigPos = 0;
     int iPrevIdx = 0;
@@ -487,11 +508,11 @@ void PatrolActorPackageData::SelectClosestPatrolPoint(const NiPoint3& arPoint)
     bool bSuccess = false;
     for (int i = 0; i < BackgroundTask; i++)
     {
-        iPrevIdx = m_uiSecondValueAfterReferenceFlag;
-        bOldForward = m_bPatrolFlag;
+        iPrevIdx = iCurrentReference;
+        bOldForward = bPatrolDirection;
         pOld = pR;
         pOrigPos = pPt;
-        AdvanceToNextReference(false);
+        SetNextReferenceForPatrol(false);
         PatrolRefStub* pNext = (PatrolRefStub*)GetCurrentPatrolReference();
         PatrolTarget* pData = pNext ? pNext->GetTarget() : 0;
         if (!pData || pData->ExtraDataList_GetPatrolRefCanBeUsedBy(pActor))
@@ -500,7 +521,7 @@ void PatrolActorPackageData::SelectClosestPatrolPoint(const NiPoint3& arPoint)
             if (!pR)
                 break;
             pPt = pR->GetPos();
-            NiPoint3 kDelta = *pOrigPos - arPoint;
+            NiPoint3 kDelta = *pOrigPos - aActorPos;
             NiPoint3 kLine = *pPt - *pOrigPos;
             float fDistance = kDelta.GetSquaredXYLength();
             if (fDistance < afThirdFloatArgument)
@@ -514,10 +535,10 @@ void PatrolActorPackageData::SelectClosestPatrolPoint(const NiPoint3& arPoint)
     }
     if (bSuccess)
     {
-        SetPatrolRefIndex(iWinner);
-        m_bPatrolFlag = bBest;
+        SetCurrentReference(iWinner);
+        bPatrolDirection = bBest;
     }
-    m_bPatrolFlag = true;
+    bPatrolDirection = true;
 }
 
 extern BGSSaveLoadGame* g_BGSSaveLoadGame;
@@ -657,32 +678,35 @@ struct PatrolReferenceArrayAccess : BSSimpleArray<unsigned int, 1024>
 };
 // Removes a patrol reference: if it is the active one, resets state; otherwise erases it from the array and adjusts the active index.
 // @fnv 0x009f2c30
-void PatrolActorPackageData::SetReferenceTarget(TESObjectREFR* reference)
+// pdb: PatrolActorPackageData::HandleDeletedReference | PatrolPackage.obj | retail, vtable slot, high
+// pdb params: apDeletedObj
+// pdb locals: i
+void PatrolActorPackageData::SetReferenceTarget(TESObjectREFR* apDeletedObj)
 {
-    if (reference == (TESObjectREFR*)pActor)
+    if (apDeletedObj == (TESObjectREFR*)pActor)
     {
         ((PatrolCleanupAccess*)this)->PatrolActorPackageData_ClearReservedPatrolRef();
         eState = PATROL_STATE_DEBUG_ACTOR_DELETED;
         pActor = 0;
         pPackage = 0;
-        m_pEscortPackageData = 0;
+        pPackageData = 0;
     }
     else
     {
         unsigned int index;
         for (index = 0; index < References.GetSize(); index++)
         {
-            if (References.GetAt(index) == reference)
+            if (References.GetAt(index) == apDeletedObj)
             {
                 reinterpret_cast<PatrolReferenceArrayAccess&>(References).RemoveAt(index, true);
-                if (m_uiSecondValueAfterReferenceFlag >= index)
-                    m_uiSecondValueAfterReferenceFlag--;
+                if (iCurrentReference >= index)
+                    iCurrentReference--;
                 index--;
             }
         }
         if (pActor && !g_BGSSaveLoadGame->BGSSaveLoadGame_GetSaveGameLoading())
         {
-            if (!SetPatrolRefIndex(m_uiSecondValueAfterReferenceFlag))
+            if (!SetCurrentReference(iCurrentReference))
             {
                 SelectClosestPatrolPoint(((PatrolReference*)pActor)->GetPos());
             }

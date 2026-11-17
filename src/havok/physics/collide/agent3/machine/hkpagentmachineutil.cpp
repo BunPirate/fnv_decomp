@@ -14,12 +14,15 @@ struct FUN_00c91180_Class
 void __cdecl hkpWorldMemoryUtil_watchHeapMemory(void* p);
 struct FUN_00d022b0_Class
 {
-    void __thiscall hkpMultiThreadedSimulation_stepBeginSt(void* a, float c);
+    void __thiscall hkpMultiThreadedSimulation_stepBeginSt(void* jobQueue, float physicsDeltaTime);
 };
 
 // If the field at offset 0x50 is set, calls IncrementCounter, FUN_00d01d20 and FUN_00c91190 on self, then forwards a and c to the object at offset 8.
 // @fnv 0x00c92d70
 // src: HAVOK_LIB 0x00c92d70
+// pdb: hkpWorld::initMtStep | hkpWorld.obj | retail, upstream name already matches, high
+// pdb params: jobQueue, physicsDeltaTime
+// pdb locals: assertBuf, ostr
 void __fastcall hkpWorld_initMtStep(FUN_00c91180_Class* self, int, void* apArg, float afValue)
 {
     if (*(int*)((char*)self + 0x50))
@@ -81,7 +84,11 @@ struct S_00d97360_Track
 
 // Adds the track's sector array to the collector and, for each sector entry of certain types, adds its object as "ContactMgr".
 // @fnv 0x00d97360
-void __cdecl CollectSectors(S_00d97360_Track& track, S_00d97360_Collector* collector)
+// src: XBOX_RETAIL_PDB 0x00d97360
+// pdb: hkpAgentMachineUtil::calcNnStatisticsContactMgrsOnly | hkpAgentMachineUtil.obj | retail, string-set bridge, high
+// pdb params: track, collector
+// pdb locals: assertBuf, ostr
+void __cdecl hkpAgentMachineUtil_calcNnStatisticsContactMgrsOnly(S_00d97360_Track& track, S_00d97360_Collector* collector)
 {
     if ((track.m_kSectors.m_iCapacityState & 0x80000000) == 0 || collector->unk10)
     {
@@ -123,7 +130,7 @@ struct S_00d97130_Collector
     virtual void v04();
     virtual void v08();
     virtual void AddObjectInstance(const char* fieldName, const void* object, int flags);
-    void DispatchWithMode(const char* name, const void* chunk, int sizeUsed, int sizeAllocated);
+    void hkStatisticsCollector_addNormalChunk(const char* name, const void* p, int size, int allocated);
 };
 
 struct S_00d97130_Entry
@@ -1643,6 +1650,9 @@ struct S_00d97130_Track
 
 // Returns a pointer to base advanced by offset bytes.
 // @fnv 0x00d97130
+// pdb: hkpAgentMachineUtil::calcNnStatistics | hkpAgentMachineUtil.obj | retail, string-set bridge, high
+// pdb params: track, input, collector
+// pdb locals: assertBuf, ostr
 template <typename T> inline T* hkAddByteOffset(T* base, int offset)
 {
     return (T*)((char*)base + offset);
@@ -1654,7 +1664,7 @@ void __cdecl hkpAgentMachineUtil_calcNnStatistics(S_00d97130_Track& track, const
     {
         char* sector = track.m_kSectors[i];
         int sizeUsed = (i + 1 == track.m_kSectors.GetLogicalSize()) ? track.m_bytesAllocatedInLastSector : 0x200;
-        collector->DispatchWithMode("Sector", sector, sizeUsed, 0x200);
+        collector->hkStatisticsCollector_addNormalChunk("Sector", sector, sizeUsed, 0x200);
     }
 
     for (int sectorIndex = 0; sectorIndex < track.m_kSectors.GetLogicalSize();)
@@ -1706,7 +1716,7 @@ struct Logger
     int unk08;
     int unk0c;
     char quiet;
-    void __thiscall DispatchWithMode(const char* s, void* p, unsigned int q, int n);
+    void __thiscall hkStatisticsCollector_addNormalChunk(const char* name, void* p, unsigned int size, int allocated);
 };
 struct Hdr
 {
@@ -1721,18 +1731,21 @@ struct Ent
     int unk04, unk08, unk0c, unk10, unk14, unk18, unk1c, unk20, unk24, unk28;
     int unk2c, unk30, unk34, unk38, unk3c, unk40, unk44, unk48, unk4c;
 };
-unsigned int __cdecl hkStatisticsCollector_getAllocatedSize(void* p, unsigned int n);
+unsigned int __cdecl hkStatisticsCollector_getAllocatedSize(void* p, unsigned int size);
 // Logs sector pointer array and iterates sectors dispatching entry operations to registered functions via the logger.
 // @fnv 0x00d97250
 // src: HAVOK_LIB 0x00d97250
-void __cdecl hkpAgentMachineUtil_calc1nStatistics(Hdr* apSectorArray, char** st, Logger* apLogger)
+// pdb: hkpAgentMachineUtil::calc1nStatistics | hkpAgentMachineUtil.obj | retail, string-set bridge, high
+// pdb params: agentTrack, input, collector
+// pdb locals: assertBuf, ostr
+void __cdecl hkpAgentMachineUtil_calc1nStatistics(Hdr* agentTrack, char** input, Logger* collector)
 {
-    if (!(apSectorArray->flags & 0x80000000) || apLogger->quiet)
+    if (!(agentTrack->flags & 0x80000000) || collector->quiet)
     {
-        unsigned int n = (apSectorArray->flags & 0x3fffffff) * 4;
-        void* a = apSectorArray->arr;
+        unsigned int n = (agentTrack->flags & 0x3fffffff) * 4;
+        void* a = agentTrack->arr;
         unsigned int sz = hkStatisticsCollector_getAllocatedSize(a, n);
-        apLogger->Log(3, "SectorPtrs", apSectorArray->arr, apSectorArray->count * 4, sz);
+        collector->Log(3, "SectorPtrs", agentTrack->arr, agentTrack->count * 4, sz);
     }
     int i = 0;
     unsigned char* pEntry;
@@ -1764,19 +1777,19 @@ process:
         case 10:
         case 11:
         case 14: {
-            Fn f = ((Ent*)(*st + 0x16cc))[pEntry[1]].fn;
+            Fn f = ((Ent*)(*input + 0x16cc))[pEntry[1]].fn;
             if (f)
-                f(pEntry, pEntry + off, st, apLogger);
+                f(pEntry, pEntry + off, input, collector);
         }
         case 0:
             pEntry += (unsigned int)pEntry[3];
         }
     } while (pEntry < end);
 refill:
-    unsigned char* pSector = *(unsigned char**)((char*)apSectorArray->arr + i);
+    unsigned char* pSector = *(unsigned char**)((char*)agentTrack->arr + i);
     pEntry = pSector + 0x10;
     end = pSector + *(unsigned int*)pSector + 0x10;
-    apLogger->DispatchWithMode("Sector", pSector, *(unsigned int*)pSector + 0x10, 0x200);
+    collector->hkStatisticsCollector_addNormalChunk("Sector", pSector, *(unsigned int*)pSector + 0x10, 0x200);
     i += 4;
     goto process;
 }

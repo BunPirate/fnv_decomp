@@ -15,6 +15,9 @@ struct V
 };
 // @fnv 0x00961190
 // src: XBOX_PDB 0x00961190
+// pdb: bhkMouseSpringAction::GetMousePositionInWorld | PlayerCharacter.obj | debug, object-file run extension, low
+// pdb params: arPos
+// pdb locals: pm
 void V::hkVector4_sub4(const V& o)
 {
     v = _mm_sub_ps(v, o.v);

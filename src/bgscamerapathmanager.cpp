@@ -14,13 +14,17 @@ void* __cdecl operator new(unsigned int);
 
 // Constructs a NiTPrimitiveArray<BGSCameraPath*> by forwarding maxSize and growBy to the NiTArray base constructor.
 // @fnv 0x0058bc30
+// pdb: NiTPrimitiveArray<BGSCameraPath *>::NiTPrimitiveArray<BGSCameraPath *> | BGSCameraPathManager.obj | debug, call graph, medium
+// pdb params: uiMaxSize, uiGrowBy
 template <>
 NiTPrimitiveArray<BGSCameraPath*>::NiTPrimitiveArray(unsigned int maxSize, unsigned int growBy)
     : NiTArray<BGSCameraPath*, NiTMallocInterface<BGSCameraPath*> >(maxSize, growBy)
 {}
 
 // @fnv 0x0058b850
-void CameraPathManager::InitializeCameraPaths()
+// src: XBOX_RETAIL_PDB 0x0058b850
+// pdb: BGSCameraPathManager::CreateDefaultPath | BGSCameraPathManager.obj | retail, string-set bridge, high
+void CameraPathManager::CreateDefaultPath()
 {
     if (!ms_pDefaultCameraPath)
     {
@@ -30,7 +34,7 @@ void CameraPathManager::InitializeCameraPaths()
             ms_pDefaultCameraPath = new BGSCameraPath;
             ms_pDefaultCameraPath->SetRefID(0x16, true);
             ms_pDefaultCameraPath->SetEditorID_AtRuntime("DefaultCameraPath");
-            m_kCameraPathArray.SetFormAtIndex(m_kCameraPathArray.GetSize(), ms_pDefaultCameraPath);
+            PathArray.SetFormAtIndex(PathArray.GetSize(), ms_pDefaultCameraPath);
         }
     }
 }
@@ -51,7 +55,7 @@ void CameraPathManager::UpdateCameraPaths()
         if (path && !path->IsFormInitialized())
         {
             path->InitItem();
-            if (path->HasMissingPathArray())
+            if (path->InitParents())
             {
                 BGSCameraPath* empty = 0;
                 m_kCameraPathList.SetAt(i, empty);
@@ -68,24 +72,27 @@ void CameraPathManager::UpdateCameraPaths()
 
 struct FUN_0058b510_shell
 {
-    TESFile* GetCameraPathToPlay(unsigned int a, unsigned int b);
+    TESFile* GetCameraPathToPlay(unsigned int apActionRef, unsigned int apTargetRef);
 };
 // This flag-check entry point is not declared by the shared TESFile header.
 bool __fastcall IsTESFileFlag80Set(TESFile* file);
 bool __fastcall _ref_008256d0(const char* s);
 // @fnv 0x0058bb50
 // src: COMMUNITY 0x0058bb50
-TESFile* CameraPathManager::BGSCameraPathManager_GetCameraPathToPlay(unsigned int arg1, unsigned int arg2)
+// pdb: BGSCameraPathManager::GetCameraPathToPlay | BGSCameraPathManager.obj | retail, upstream name already matches, high
+// pdb params: apActionRef, apTargetRef
+// pdb locals: pretpath, icount, i, ppath
+TESFile* CameraPathManager::BGSCameraPathManager_GetCameraPathToPlay(unsigned int apActionRef, unsigned int apTargetRef)
 {
     TESFile* pFile = 0;
-    if (arg1)
+    if (apActionRef)
     {
-        unsigned int count = m_kCameraPathArray.GetSize();
+        unsigned int count = PathArray.GetSize();
         for (unsigned int i = 0; i < count; ++i)
         {
-            TESForm* form = m_kCameraPathArray.GetFormAt(i);
+            TESForm* form = PathArray.GetFormAt(i);
             if (form)
-                pFile = reinterpret_cast<FUN_0058b510_shell*>(form)->GetCameraPathToPlay(arg1, arg2);
+                pFile = reinterpret_cast<FUN_0058b510_shell*>(form)->GetCameraPathToPlay(apActionRef, apTargetRef);
             if (pFile)
                 break;
         }
@@ -111,8 +118,9 @@ struct FUN_0058bc00_obj
 };
 // Sets the object's vtbl to DAT_01032748 and deallocates its data array via NiTMallocInterface.
 // @fnv 0x0058bc00
-// src: GUESS 0x0058bc00 (confidence: medium)
-void __fastcall Object_ReleaseStorage(FUN_0058bc00_obj* self)
+// src: XBOX_DEBUG_PDB 0x0058bc00
+// pdb: NiTArray<BGSCameraPath *,NiTMallocInterface<BGSCameraPath *> >::~NiTArray<BGSCameraPath *,NiTMallocInterface<BGSCameraPath *> > | BGSCameraPathManager.obj | debug, call graph (shared callers), high
+void __fastcall NiTArray_BGSCameraPath_NiTMallocInterface_BGSCameraPath_dtor(FUN_0058bc00_obj* self)
 {
     self->vtbl = &DAT_01032748;
     NiTMallocInterface<ActorCombatGroup*>::Deallocate(self->data);
@@ -135,13 +143,15 @@ struct FUN_00863db0_class
 };
 
 // @fnv 0x0058ba40
+// pdb: BGSCameraPathManager::DestroyRootPathArrayForms | BGSCameraPathManager.obj | retail, object-file run extension, low
+// pdb locals: icount, isize, i, ppath
 void CameraPathManager::DestroyCameraPaths()
 {
-    unsigned int count = m_kCameraPathArray.GetSize();
+    unsigned int count = PathArray.GetSize();
     for (unsigned int index = 0; index < count; ++index)
     {
         BGSCameraPath* path =
-            dynamic_cast<BGSCameraPath*>(m_kCameraPathArray.GetFormAt(index));
+            dynamic_cast<BGSCameraPath*>(PathArray.GetFormAt(index));
         delete path;
     }
 

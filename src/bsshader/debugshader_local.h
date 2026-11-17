@@ -85,7 +85,7 @@ class BloodSplatterBeamShader : public BSShader
     virtual ~BloodSplatterBeamShader();
     static BSShader* CreateShader();
     void InitializeShaderData();
-    bool ConfigureShaderPass();
+    bool LoadStagesAndPasses();
     // BloodSplatterBeamShader
     // void __cdecl BloodSplatterBeamShader::*()
     // bool __cdecl BloodSplatterBeamShader::*(NiGeometry*)

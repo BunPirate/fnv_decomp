@@ -174,13 +174,16 @@ extern int DAT_011ad14c;
 
 struct FUN_00b14ae0_class
 {
-    float ComputeValue_00b14ae0(int id, float a, float b);
+    float CIdvBranch_ComputeHighLevelVertexWeight(int id, float a, float b);
 };
 
 // Returns 1.0, or 1.0 minus a*b when id equals DAT_011ad14c.
 // @fnv 0x00b14ae0
-// src: GUESS 0x00b14ae0 (confidence: low)
-float FUN_00b14ae0_class::ComputeValue_00b14ae0(int id, float a, float b)
+// src: XBOX_DEBUG_PDB 0x00b14ae0
+// pdb: CIdvBranch::ComputeHighLevelVertexWeight | Branch.obj | debug, call graph, high
+// pdb params: fBaseWeight, fFlexibility
+// pdb locals: fWeight
+float FUN_00b14ae0_class::CIdvBranch_ComputeHighLevelVertexWeight(int id, float a, float b)
 {
     float result = 1.0f;
     if (id == DAT_011ad14c)
@@ -200,6 +203,8 @@ struct FUN_00b15170
 
 // Returns a pointer to the element at index a in the buffer from m_0c to m_10, calling FUN_00ec7c56 if a is out of range.
 // @fnv 0x00b15170
+// pdb: D3DXShader::CFragmentRegisterAllocator::GetElement | cassembler.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays; only the method name matches, on a class other than the PDB class, so its parameter names are not applied
+// pdb params (unverified): szName
 char* FUN_00b15170::GetElement(unsigned int uiIndex)
 {
     if (uiIndex >= (unsigned int)(m_10 - m_0c))
@@ -225,6 +230,8 @@ double __cdecl FUN_00ec6054(double);
 // Normalizes the vector by dividing x, y and z by the square root of the sum of their squares.
 // @fnv 0x00b12790
 // src: COMMUNITY 0x00b12790
+// pdb: CVec3::Normalize | FrondEngine.obj | debug, call graph, medium
+// pdb locals: fInvSquareRoot, fSumOfSquares
 void LocalVec::Normalize_00b12790()
 {
     float fSumOfSquares;
@@ -245,6 +252,8 @@ struct FUN_00b0cff0_class
 };
 // Multiplies each component by factor and writes them to output with x/y/z rotated (x<-y, y<-z, z<-x), returning output.
 // @fnv 0x00b0cff0
+// pdb: CVec3::operator* | SpeedTreeRT.obj | debug, call graph, medium
+// pdb params: fScale
 NiPoint3* FUN_00b0cff0_class::ScaleSwizzled(NiPoint3* output, float factor)
 {
     float z = factor * this->x;
@@ -259,14 +268,17 @@ NiPoint3* FUN_00b0cff0_class::ScaleSwizzled(NiPoint3* output, float factor)
 extern double __cdecl FUN_00eca190(double value);
 struct This : FUN_00b2a180
 {
-    float CVec3_AngleBetween(const NiPoint3& point);
+    float CVec3_AngleBetween(const NiPoint3& cVec);
 };
 // Computes the dot product of point with this object, clamps it to [-1, 1], and returns the result of FUN_00eca190 on the clamped value.
 // @fnv 0x00b12720
 // src: COMMUNITY 0x00b12720
-float This::CVec3_AngleBetween(const NiPoint3& point)
+// pdb: CVec3::AngleBetween | Branch.obj | debug, upstream name already matches, high
+// pdb params: cVec
+// pdb locals: fDot
+float This::CVec3_AngleBetween(const NiPoint3& cVec)
 {
-    float value = Dot(point);
+    float value = Dot(cVec);
     if (value < -1.0f)
         value = -1.0f;
     if (value > 1.0f)
@@ -304,19 +316,22 @@ struct Link
 };
 struct Owner
 {
-    bool TestThresholdAndRandomLimit(Link* link, float input);
+    bool CIdvBranch_IsBlossom(Link* pParent, float fPercentOfParent);
 };
 // @fnv 0x00b13b50
-// src: GUESS 0x00b13b50 (confidence: medium)
-bool Owner::TestThresholdAndRandomLimit(Link* link, float input)
+// src: XBOX_DEBUG_PDB 0x00b13b50
+// pdb: CIdvBranch::IsBlossom | Branch.obj | debug, call graph, high
+// pdb params: pParent, fPercentOfParent
+// pdb locals: fTestPercent, bIsBlossom, pBranch, nLevels
+bool Owner::CIdvBranch_IsBlossom(Link* pParent, float fPercentOfParent)
 {
     bool result = false;
     {
-        float value = input;
+        float value = fPercentOfParent;
         if (DAT_011f8bf4->count == 0)
         {
             int current = 1;
-            Link* index = link;
+            Link* index = pParent;
             Link* next;
             while (index != 0 && (next = index->next) != 0 && current < DAT_011f8bf4->count)
             {
@@ -346,6 +361,7 @@ struct B4230Point3
 
 // Computes the square root of the squared length of the vector via a bit-shift approximation on the float bits.
 // @fnv 0x00b14230
+// pdb: CVec3::Magnitude | FrondEngine.obj | debug, call graph, low
 float B4230Point3::FastSqrt() const
 {
     float fSqrLength = z * z + (y * y + x * x);
@@ -372,7 +388,7 @@ float FUN_00b14b10_class::UpdateState_00b14b10(float value, float factor)
 struct b14_sub
 {
     float x, y, z;
-    float CVec3_Distance(b14_sub* other);
+    float CVec3_Distance(b14_sub* cVec);
 };
 
 struct b14_elem
@@ -395,6 +411,8 @@ struct b14_ctx
 
 // @fnv 0x00b14b40
 // src: COMMUNITY 0x00b14b40
+// pdb: CIdvBranch::ComputeVolume | Branch.obj | debug, upstream name already matches, high
+// pdb locals: i, pVertex1, fDistance, pVertex2
 void b14_ctx::CIdvBranch_ComputeVolume()
 {
     if (this->unk20 != 0)
@@ -483,6 +501,9 @@ void FUN_00b14be0_cls::FindSegment(OutPair* out, float afValue)
 
 // @fnv 0x00b15110
 // src: GUESS 0x00b15110 (confidence: low)
+// pdb: CIdvBranch::LeafVertexColorHelp | Branch.obj | retail, object-file run extension, low
+// pdb params: apBranch
+// pdb locals: fstart
 float __cdecl Branch_UpdateState_00b15110(Link* link)
 {
     float ratio;
@@ -505,7 +526,7 @@ float __cdecl Branch_UpdateState_00b15110(Link* link)
 struct MyThis
 {
     float a, b, c;
-    LocalVec* ProjectOntoLine(LocalVec* out, LocalVec* a, LocalVec* b, LocalVec* c);
+    LocalVec* CProjectedShadow_ClosestPoint(LocalVec* out, LocalVec* a, LocalVec* b, LocalVec* c);
 };
 
 // The function projects the point c onto the line through a and b.
@@ -521,7 +542,11 @@ struct MyThis
 //   ebp-0x18  ejne (the normalised direction)
 //   ebp-0x0c  z   (c - a)
 // @fnv 0x00b3ec40
-LocalVec* MyThis::ProjectOntoLine(LocalVec* out, LocalVec* a, LocalVec* pLineStart, LocalVec* c)
+// src: XBOX_DEBUG_PDB 0x00b3ec40
+// pdb: CProjectedShadow::ClosestPoint | ProjectedShadow.obj | debug, call graph, high
+// pdb params: cStart, cEnd, cVertex
+// pdb locals: fT, cDirection, cTmp
+LocalVec* MyThis::CProjectedShadow_ClosestPoint(LocalVec* out, LocalVec* a, LocalVec* pLineStart, LocalVec* c)
 {
     // Raw, float-aligned storage preserves the original uninitialized locals.
     float m[sizeof(LocalVec) / sizeof(float)];
@@ -615,6 +640,9 @@ struct S_00b14280_This
 };
 
 // @fnv 0x00b14280
+// pdb: CIdvBranch::RoomForLeaf | Branch.obj | debug, object-file run extension, low
+// pdb params: cPos, nTextureIndex, vLeaves
+// pdb locals: bIsRoom, sTexture, fLargerSide, i, cOther
 bool S_00b14280_This::IsPointClearOfEntries(const NiPoint3& aPoint, unsigned int index, S_00b14280_List* list)
 {
     bool ok5 = true;
@@ -664,8 +692,8 @@ struct FacingTint
 {
     int unk00;
     LocalVec* CBillboardLeaf_GetColor(LocalVec* out);
-    void CBillboardLeaf_SetColor(LocalVec* point, int flag);
-    void CBillboardLeaf_AdjustStaticLighting(LocalVec* point, LocalVec* other, float t);
+    void CBillboardLeaf_SetColor(LocalVec* cColor, int bApplyDimming);
+    void CBillboardLeaf_AdjustStaticLighting(LocalVec* cTreeCenter, LocalVec* cLightPos, float fLightScalar);
 };
 
 extern double __cdecl FUN_00ec9f30(double value);
@@ -673,7 +701,10 @@ extern double DAT_01011588;
 
 // @fnv 0x00b40210
 // src: COMMUNITY 0x00b40210
-void FacingTint::CBillboardLeaf_AdjustStaticLighting(LocalVec* point, LocalVec* other, float t)
+// pdb: CBillboardLeaf::AdjustStaticLighting | BillboardLeaf.obj | retail, upstream name already matches, high
+// pdb params: cTreeCenter, cLightPos, fLightScalar
+// pdb locals: fLightAdjust, fAngleBetween, cLeafAngle, cLightAngle
+void FacingTint::CBillboardLeaf_AdjustStaticLighting(LocalVec* cTreeCenter, LocalVec* cLightPos, float fLightScalar)
 {
     // Avoid invoking LocalVec constructors for the original uninitialized scratch storage.
     float goal[sizeof(LocalVec) / sizeof(float)];
@@ -683,13 +714,13 @@ void FacingTint::CBillboardLeaf_AdjustStaticLighting(LocalVec* point, LocalVec* 
     float scaled[sizeof(LocalVec) / sizeof(float)];
     float dest[sizeof(LocalVec) / sizeof(float)];
     float basis[sizeof(AngleState) / sizeof(float)];
-    ((LocalVec*)((char*)this + 4))->Diff_00b13040((LocalVec*)sample, point);
+    ((LocalVec*)((char*)this + 4))->Diff_00b13040((LocalVec*)sample, cTreeCenter);
     ((LocalVec*)sample)->Normalize_00b12790();
-    other->Diff_00b13040((LocalVec*)goal, point);
+    cLightPos->Diff_00b13040((LocalVec*)goal, cTreeCenter);
     ((LocalVec*)goal)->Normalize_00b12790();
     ((AngleState*)basis)->radians = ((This*)sample)->CVec3_AngleBetween(*(NiPoint3*)goal);
     length = (float)(double)(float)FUN_00ec9f30(((AngleState*)basis)->radians);
-    scale = (float)((length + 1.0) * DAT_01011588) * (1.0f - t) + t;
+    scale = (float)((length + 1.0) * DAT_01011588) * (1.0f - fLightScalar) + fLightScalar;
     this->CBillboardLeaf_SetColor(this->CBillboardLeaf_GetColor((LocalVec*)scaled)->ScaleSwizzled((LocalVec*)dest, scale), 1);
 }
 
@@ -697,6 +728,9 @@ void FacingTint::CBillboardLeaf_AdjustStaticLighting(LocalVec* point, LocalVec* 
 // Returns a random float between minimum and maximum by scaling rand() to the range width and offsetting by minimum.
 // @fnv 0x00b14e90
 // src: GUESS 0x00b14e90 (confidence: high)
+// pdb: rand | rand.obj | retail, call graph, low
+// pdb note: debug build links it to GetRandom
+// pdb locals: ptd
 float Branch_GetRandomFloatInRange(float minimum, float maximum)
 {
     float fraction = (float)(rand() / 32767.0);

@@ -116,9 +116,9 @@ inline void hkVector4::setAddMul4a(const hkVector4& a, const hkVector4& b, hkRea
                                _mm_mul_ps(_mm_shuffle_ps(_mm_load_ss(&r), _mm_load_ss(&r), 0), b.m_vComponents));
 }
 
-inline hkSimdReal hkVector4::dot3(const hkVector4& a) const
+inline hkSimdReal hkVector4::dot3(const hkVector4& x) const
 {
-    LocalM128 m = _mm_mul_ps(m_vComponents, a.m_vComponents);
+    LocalM128 m = _mm_mul_ps(m_vComponents, x.m_vComponents);
     LocalM128 y = _mm_shuffle_ps(m, m, 0x55);
     LocalM128 xy = _mm_add_ss(y, m);
     LocalM128 z = _mm_shuffle_ps(m, m, 0xaa);
@@ -151,6 +151,9 @@ struct VectorPairResult
 // Computes the closest points on two line segments defined by A/dA and B/dB, storing them and the squared distance in result.
 // @fnv 0x00d22e40
 // src: XBOX_PDB 0x00d22e40
+// pdb: hkLineSegmentUtil::closestLineSegLineSeg | hkLineSegmentUtil.obj | retail, upstream name already matches, high
+// pdb params: A, dA, B, dB, result
+// pdb locals: t, u
 int hkLineSegmentUtil_closestLineSegLineSeg(const hkVector4& A, const hkVector4& dA, const hkVector4& B, const hkVector4& dB,
                  VectorPairResult& result)
 {

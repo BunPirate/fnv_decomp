@@ -32,6 +32,7 @@ struct FUN_00404b10_class
 
 // Calls FUN_00404b90 with DAT_01189c40, sets m_p to "@K@", and returns this.
 // @fnv 0x00404b10
+// pdb: GameSettingCollection::GameSettingCollection | EffectItem.obj | debug, object-file gap fill, medium
 void* __thiscall FUN_00404b10_class::Initialize()
 {
     FUN_00404b90(DAT_01189c40);
@@ -60,6 +61,9 @@ struct AnimSequenceBase;
 
 // Hashes the key, walks the bucket chain matching keys, and returns the stored value via the out parameter on a hit.
 // @fnv 0x0049c390
+// pdb: NiTMapBase<NiTPointerAllocator<unsigned int>,unsigned short,AnimSequenceBase *>::GetAt | Animation.obj | debug, call graph, medium
+// pdb params: key, val
+// pdb locals: pkItem, uiIndex
 template <>
 bool NiTMapBase<DFALL<NiTMapItem<unsigned short, AnimSequenceBase*> >, unsigned short, AnimSequenceBase*>::GetAt(unsigned short key, AnimSequenceBase*& value) const
 {
@@ -99,7 +103,10 @@ bool NiTMapBase<DFALL<NiTMapItem<unsigned int, CombatThreatRecord_nitmapbase*> >
 
 // Iterates the container's entries, deletes each stored object, then removes all entries.
 // @fnv 0x009a5270
-void __fastcall DeleteAllEntries(NiTMapBase<DFALL<NiTMapItem<unsigned int, CombatThreatRecord_nitmapbase*> >, unsigned int, CombatThreatRecord_nitmapbase*>* map)
+// src: XBOX_RETAIL_PDB 0x009a5270
+// pdb: CombatThreatMap::RemoveAllThreats | CombatThreatMap.obj | retail, object-file run extension, high
+// pdb locals: it, ithreatID, pthreat
+void __fastcall CombatThreatMap_RemoveAllThreats(NiTMapBase<DFALL<NiTMapItem<unsigned int, CombatThreatRecord_nitmapbase*> >, unsigned int, CombatThreatRecord_nitmapbase*>* map)
 {
     void* position = map->GetFirstPos();
     while (position)
@@ -227,6 +234,8 @@ class FUN_00404b90 : public B90Base
 
 // Constructs the object, initializing m_kBuffer with the given size and a zero fill.
 // @fnv 0x00404b90
+// pdb: SettingCollectionMap<Setting>::SettingCollectionMap<Setting> | EffectItem.obj | debug, object-file gap fill, medium
+// pdb params: aiMapSize
 FUN_00404b90::FUN_00404b90(int iSize) : m_kBuffer(iSize, 0)
 {}
 
@@ -252,6 +261,10 @@ void NiTMapBase<DFALL<NiTMapItem<unsigned int, CombatThreatRecord_nitmapbase*> >
 }
 
 // @fnv 0x0049c250
+// pdb: NiTMapBase<DFALL<NiTMapItem<unsigned short,NiPointer<ObstacleData> > >,unsigned short,NiPointer<ObstacleData> >::RemoveAt | NavMeshObstacleCutter.obj | retail, call graph (shared callers), low
+// pdb note: debug build links it to NiTMapBase<NiTPointerAllocator<unsigned int>,unsigned short,AnimSequenceBase *>::RemoveAt
+// pdb params: key
+// pdb locals: pkItem, uiIndex, pkPrev, pkCurr
 template <>
 bool NiTMapBase<DFALL<NiTMapItem<unsigned short, AnimSequenceBase*> >, unsigned short, AnimSequenceBase*>::RemoveAt(unsigned short key)
 {
@@ -291,6 +304,8 @@ bool NiTMapBase<DFALL<NiTMapItem<unsigned short, AnimSequenceBase*> >, unsigned 
 
 // Reads the key and value of the node at position, then advances position to the next node or the next non-empty bucket, or null.
 // @fnv 0x006b7f20
+// pdb: ImpactSwap::AddSwappedImpactData | BGSImpactDataSet.obj | debug, call graph, medium
+// pdb params: aeType, apOrigImpactData, apNewImpactData
 template <>
 void NiTMapBase<DFALL<NiTMapItem<unsigned int, CombatThreatRecord_nitmapbase*> >, unsigned int, CombatThreatRecord_nitmapbase*>::GetNext(void*& position, unsigned int& outKey, CombatThreatRecord_nitmapbase*& outValue) const
 {
@@ -323,6 +338,9 @@ void NiTMapBase<DFALL<NiTMapItem<unsigned int, CombatThreatRecord_nitmapbase*> >
 
 // Inserts or updates the unsigned integer value for a key.
 // @fnv 0x00844700
+// pdb: NiTMapBase<DFALL<NiTMapItem<unsigned int,CombatThreat *> >,unsigned int,CombatThreat *>::SetAt | CombatThreatMap.obj | retail, call graph, medium
+// pdb params: key, val
+// pdb locals: pkItem, uiIndex, uiDepth
 template <>
 void NiTMapBase<DFALL<NiTMapItem<unsigned int, unsigned int> >, unsigned int, unsigned int>::SetAt(unsigned int key, unsigned int value)
 {
@@ -352,6 +370,9 @@ void NiTMapBase<DFALL<NiTMapItem<unsigned int, unsigned int> >, unsigned int, un
 
 // Looks up the bucket for key, updates the matching node's value, or allocates a new node, links it into the bucket and increments the count.
 // @fnv 0x00a0c6c0
+// pdb: NiTMapBase<NiTPointerAllocator<unsigned int>,int,int>::SetAt | Tile.obj | debug, call graph, medium
+// pdb params: key, val
+// pdb locals: pkItem, uiIndex, uiDepth
 template <>
 void NiTMapBase<DFALL<NiTMapItem<unsigned int, AnimSequenceBase*> >, unsigned int, AnimSequenceBase*>::SetAt(unsigned int key, AnimSequenceBase* value)
 {
@@ -378,6 +399,10 @@ void NiTMapBase<DFALL<NiTMapItem<unsigned int, AnimSequenceBase*> >, unsigned in
 class NiAVObject;
 // Looks up key in the bucket chain, replaces the value if found, otherwise allocates a new item, inserts it at the bucket head and increments size.
 // @fnv 0x006c6920
+// pdb: NiTMapBase<DFALL<NiTMapItem<bhkRigidBody *,NiPointer<ObstacleData> > >,bhkRigidBody *,NiPointer<ObstacleData> >::SetAt | NavMeshObstacleManager.obj | retail, call graph (shared callers), low
+// pdb note: debug build links it to NiTMapBase<DFALL<NiTMapItem<unsigned int,NiPointer<ReferenceObstacleArray> > >,unsigned int,NiPointer<ReferenceObstacleArray> >::SetAt
+// pdb params: key, val
+// pdb locals: pkItem, uiIndex, uiDepth
 template <>
 void NiTMapBase<DFALL<NiTMapItem<unsigned int, NiPointer<NiAVObject> > >, unsigned int, NiPointer<NiAVObject> >::SetAt(unsigned int key, NiPointer<NiAVObject> value)
 {
@@ -403,6 +428,9 @@ void NiTMapBase<DFALL<NiTMapItem<unsigned int, NiPointer<NiAVObject> > >, unsign
 
 // Looks up the hash bucket for key, unlinks the matching item, clears and deletes it, decrements the count, and returns whether it was found.
 // @fnv 0x00a1e240
+// pdb: NiTMapBase<NiTPointerAllocator<unsigned int>,int,NiPointer<NiAVObject> >::RemoveAt | BSAudioManager.obj | debug, call graph, medium
+// pdb params: key
+// pdb locals: pkItem, uiIndex, pkPrev, pkCurr
 template <>
 bool NiTMapBase<DFALL<NiTMapItem<unsigned int, void*> >, unsigned int, void*>::RemoveAt(unsigned int soughtKey)
 {
@@ -462,6 +490,9 @@ bool NiTMapBase<DFALL<NiTMapItem<unsigned int, NiPointer<NiAVObject> > >, unsign
 
 // Copies the key and value of the item at pos out, then advances pos to the next item in its chain or the next occupied bucket, or to null at the end.
 // @fnv 0x00ae7ee0
+// pdb: NiTMapBase<DFALL<NiTMapItem<unsigned int,NiPointer<ReferenceObstacleArray> > >,unsigned int,NiPointer<ReferenceObstacleArray> >::GetNext | NavMeshObstacleManager.obj | retail, call graph, medium
+// pdb params: pos, key, val
+// pdb locals: bfound, ihashIndex, pkItem, pcompItem, i
 template <>
 void NiTMapBase<DFALL<NiTMapItem<unsigned int, NiPointer<NiAVObject> > >, unsigned int, NiPointer<NiAVObject> >::GetNext(void*& pos, unsigned int& key, NiPointer<NiAVObject>& val) const
 {

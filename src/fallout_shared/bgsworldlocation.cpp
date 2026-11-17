@@ -21,6 +21,8 @@ extern TES* g_TES;
 
 // @fnv 0x00527a00
 // src: XBOX_PDB 0x00527a00
+// pdb: BGSWorldLocation::IsLocationLoaded | BGSWorldLocation.obj | retail, upstream name already matches, high
+// pdb locals: pcell
 bool CoordinateTriple::BGSWorldLocation_IsLocationLoaded()
 {
     TESObjectCELL* pcell = BGSWorldLocation_GetCell();
@@ -41,6 +43,8 @@ struct CoordinateTriple
 
 // @fnv 0x00527a40
 // src: XBOX_PDB 0x00527a40
+// pdb: BGSWorldLocation::GetDistanceSquared | BGSWorldLocation.obj | debug, upstream name already matches, high
+// pdb params: arWorldLocation
 float CoordinateTriple::BGSWorldLocation_GetDistanceSquared(const CoordinateTriple& arWorldLocation)
 {
     if (this->m_pPathingCell != arWorldLocation.m_pPathingCell)
@@ -60,15 +64,18 @@ struct FUN_00527a80_shell
 {
     NiPoint3 pos;
     int cell;
-    float DistanceTo(FUN_00527a80_shell*);
+    float BGSWorldLocation_GetDistance(FUN_00527a80_shell*);
 };
 // Returns the distance between this position and p's position if both are in the same cell, otherwise returns FLT_MAX.
 // @fnv 0x00527a80
-float FUN_00527a80_shell::DistanceTo(FUN_00527a80_shell* apOther)
+// src: XBOX_DEBUG_PDB 0x00527a80
+// pdb: BGSWorldLocation::GetDistance | BGSWorldLocation.obj | debug, call graph, high
+// pdb params: arWorldLocation
+float FUN_00527a80_shell::BGSWorldLocation_GetDistance(FUN_00527a80_shell* arWorldLocation)
 {
-    if (cell != apOther->cell)
+    if (cell != arWorldLocation->cell)
         return 3.4028234663852886e+38F;
-    return (apOther->pos - pos).Length();
+    return (arWorldLocation->pos - pos).Length();
 }
 
 struct FUN_00527b70_shell
@@ -79,6 +86,8 @@ struct FUN_00527b70_shell
 };
 // @fnv 0x00527b70
 // src: COMMUNITY 0x00527b70
+// pdb: BGSWorldLocation::SaveGame | BGSWorldLocation.obj | retail, upstream name already matches, high
+// pdb params: apSaveGameBuffer
 void FUN_00527b70_shell::BGSWorldLocation_SaveGame(BGSSaveGameBuffer* apSaveGameBuffer)
 {
     apSaveGameBuffer->SaveData(this, 0xC, 0);
@@ -91,11 +100,13 @@ struct FUN_00527ba0_This
 {
     char _pad[12];
     void* m_pPathingCell;
-    void BGSLoadGameBuffer_LoadBGSWorldLocation(BGSLoadGameBuffer* apLoadGameBuffer);
+    void BGSWorldLocation_LoadGame(BGSLoadGameBuffer* apLoadGameBuffer);
 };
 // @fnv 0x00527ba0
-// src: COMMUNITY 0x00527ba0
-void FUN_00527ba0_This::BGSLoadGameBuffer_LoadBGSWorldLocation(BGSLoadGameBuffer* apLoadGameBuffer)
+// src: XBOX_RETAIL_PDB 0x00527ba0 (was COMMUNITY)
+// pdb: BGSWorldLocation::LoadGame | BGSWorldLocation.obj | retail, call graph (shared callers), high
+// pdb params: apLoadGameBuffer
+void FUN_00527ba0_This::BGSWorldLocation_LoadGame(BGSLoadGameBuffer* apLoadGameBuffer)
 {
     apLoadGameBuffer->ReadTypedData(this, 12);
     m_pPathingCell = _ref_004839c0(apLoadGameBuffer->ReadFormIdentifier());
@@ -111,6 +122,10 @@ struct FUN_00527990_shell
 };
 // @fnv 0x00527990
 // src: XBOX_PDB 0x00527990
+// pdb: Pathing::FindClosestPointOnNavmesh | Pathfind.obj | retail, call graph (shared callers), low
+// pdb note: debug build links it to BGSWorldLocation::GetCellOrWorld
+// pdb params: apWorldSpace, apCell, aLocation, apRetPt
+// pdb locals: loc, tempMemContext, testMesh, ustriangle
 bool FUN_00527990_shell::BGSWorldLocation_GetCellOrWorld(int* apID, int* apType)
 {
     if (!pForm)
@@ -135,18 +150,22 @@ bool FUN_00527990_shell::BGSWorldLocation_GetCellOrWorld(int* apID, int* apType)
 struct FUN_00527ac0_shell
 {
     char _pad[12];
-    float ComputeWeightedDistance(FUN_00527ac0_shell* apOther, NiPoint3* apDir);
+    float BGSWorldLocation_GetModifiedDistanceSquared(FUN_00527ac0_shell* arWorldLocation, NiPoint3* arCoordMult);
 };
 
 // @fnv 0x00527ac0
-float FUN_00527ac0_shell::ComputeWeightedDistance(FUN_00527ac0_shell* apOther, NiPoint3* apDir)
+// src: XBOX_DEBUG_PDB 0x00527ac0
+// pdb: BGSWorldLocation::GetModifiedDistanceSquared | BGSWorldLocation.obj | debug, call graph, high
+// pdb params: arWorldLocation, arCoordMult
+// pdb locals: vec
+float FUN_00527ac0_shell::BGSWorldLocation_GetModifiedDistanceSquared(FUN_00527ac0_shell* arWorldLocation, NiPoint3* arCoordMult)
 {
-    if (*(int*)((char*)this + 0xc) != *(int*)((char*)apOther + 0xc))
+    if (*(int*)((char*)this + 0xc) != *(int*)((char*)arWorldLocation + 0xc))
         return 3.4028234663852886e+38f;
-    NiPoint3 diff = ((NiPoint3*)apOther)->operator-(*(NiPoint3*)this);
-    diff.x = diff.x * apDir->x;
-    diff.y = diff.y * apDir->y;
-    diff.z = diff.z * apDir->z;
+    NiPoint3 diff = ((NiPoint3*)arWorldLocation)->operator-(*(NiPoint3*)this);
+    diff.x = diff.x * arCoordMult->x;
+    diff.y = diff.y * arCoordMult->y;
+    diff.z = diff.z * arCoordMult->z;
     return ((TESCombatStyle*)&diff)->UpdateCombatStyle();
 }
 
@@ -158,6 +177,9 @@ struct FUN_00425fd0_shell
 // Returns true if form is null, has form type 0x41, or is a cell whose FUN_00425fd0 check succeeds; otherwise false.
 // @fnv 0x00527b20
 // src: GUESS 0x00527b20 (confidence: low)
+// pdb: BGSWorldLocation::CheckSpace | BGSWorldLocation.obj | debug, call graph, medium
+// pdb params: apSpace
+// pdb locals: pcell
 bool __cdecl TESForm_ProcessAndReturnValue_00527b20(TESForm* form)
 {
     if (form == 0)
@@ -197,6 +219,8 @@ struct FUN_00527900_shell
 // Returns pForm for type 0x39, resolves type 0x41 using m_f0 and m_f4, and otherwise returns null.
 // @fnv 0x00527900
 // src: XBOX_PDB 0x00527900
+// pdb: BGSWorldLocation::GetCell | BGSWorldLocation.obj | retail, upstream name already matches, high
+// pdb locals: eformType, icellX, icellY, pworld
 TESObjectCELL* FUN_00527900_shell::BGSWorldLocation_GetCell()
 {
     if (pForm == 0)

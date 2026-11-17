@@ -25,6 +25,7 @@ struct CpuObject
     CpuObject* FUN_00dfe050(unsigned int flags);
 };
 // @fnv 0x00dfe050
+// pdb: hkMonitorStreamColorTable::`scalar deleting destructor' | hkMonitorStreamAnalyzerClass.obj | retail, vtable slot, high
 CpuObject* CpuObject::FUN_00dfe050(unsigned int flags)
 {
     ResetAndDestroy();

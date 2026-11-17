@@ -4,7 +4,9 @@
 #include "../../../include/TES.h"
 
 // @fnv 0x00694de0
-EdgeExtraInfo* EdgeExtraInfo::DeserializeFromFile()
+// src: XBOX_DEBUG_PDB 0x00694de0
+// pdb: BSSimpleArray<int,1024>::BSSimpleArray<int,1024> | NavMesh_LoadSave.obj | debug, call graph (shared callers), high
+EdgeExtraInfo* EdgeExtraInfo::BSSimpleArray_int_1024_ctor()
 {
     vtable = &DAT_0106b0dc;
     reinterpret_cast<BSSimpleArray<NavMeshInfo*, 1024>*>(this)->BSSimpleArray_float_1024_InitialSetup(0, false);

@@ -191,13 +191,16 @@ struct NamesArray
     unsigned short capacity, length, populated, grow;
 };
 // @fnv 0x00a352f0
-void NiControllerSequence::LinkObject(NiStream& stream)
+// pdb: NiControllerSequence::LinkObject | NiControllerSequence.obj | retail, upstream name already matches, high
+// pdb params: kStream
+// pdb locals: ui, pkCtlr, us
+void NiControllerSequence::LinkObject(NiStream& kStream)
 {
-    ::NiObject::LinkObject(stream);
+    ::NiObject::LinkObject(kStream);
     if (m_spStringPalette.m_pObject)
     {
         for (unsigned int i = 0; i < m_uiNumControlledBlocks; ++i)
-            ((LegacyTag*)m_pkIDTags)[i].LoadFromPalette((RefObj*)m_spStringPalette.m_pObject, stream);
+            ((LegacyTag*)m_pkIDTags)[i].LoadFromPalette((RefObj*)m_spStringPalette.m_pObject, kStream);
         if (m_spStringPalette.m_pObject)
         {
             RefObj* palette = (RefObj*)m_spStringPalette.m_pObject;
@@ -206,7 +209,7 @@ void NiControllerSequence::LinkObject(NiStream& stream)
             m_spStringPalette.m_pObject = 0;
         }
     }
-    if (((LegacyStream*)&stream)->version < 0x0a010068)
+    if (((LegacyStream*)&kStream)->version < 0x0a010068)
     {
         m_fFirstKeyTime = DAT_01096548;
         unsigned int n = m_uiNumControlledBlocks;

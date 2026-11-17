@@ -5,6 +5,7 @@
 class Direct3DDeviceInterface;
 
 #pragma pack(push, 1)
+// pdb: class BGSMoviePlayer, size 0x54 (here 0x21), bases: MoviePlayer, 0 members
 class BGSMoviePlayer : public MoviePlayer
 {
 public:
@@ -21,7 +22,7 @@ public:
     virtual bool IsDeviceReady();
     virtual unsigned int GetScreenWidthOverride();
     virtual unsigned int GetUptimeMilliseconds();
-    virtual bool UpdateMoviePlayback(bool continuePlaying);
+    virtual bool UpdateMoviePlayback(bool abAllowInterruption);
 
     unsigned char unk10[0x20 - sizeof(MoviePlayer)];
     unsigned char field_20;

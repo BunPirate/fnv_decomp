@@ -25,13 +25,15 @@ struct BSSimpleListTESRaceSize
 // Returns true if the list at offset 0x98 has one entry that is the player and FUN_00953c50 fails; otherwise false.
 // @fnv 0x009f1990
 // src: COMMUNITY 0x009f1990
+// pdb: FleePackage::ShouldShutDown | FleePackage.obj | retail, upstream name already matches, high
+// pdb locals: pref, bsearch
 bool FleePackage::ShouldShutDown()
 {
-    if (((BSSimpleListTESRaceSize*)((char*)&AvoidedRefList))->GetSize() == 1)
+    if (((BSSimpleListTESRaceSize*)((char*)&pAvoidRefList))->GetSize() == 1)
     {
         bool flag = false;
         {
-            PlayerCharacter* item = *((BSSimpleListTESRaceSize*)((char*)&AvoidedRefList))->_ref_006815c0();
+            PlayerCharacter* item = *((BSSimpleListTESRaceSize*)((char*)&pAvoidRefList))->_ref_006815c0();
             if (item == g_thePlayer)
             {
                 if (!g_thePlayer->PlayerCharacter_IsPlayerCharacterInCombat(&flag))
@@ -45,10 +47,12 @@ bool FleePackage::ShouldShutDown()
 // Adds apRef to AvoidedRefList if it is not already present.
 // @fnv 0x009f1310
 // src: XBOX_PDB 0x009f1310
+// pdb: FleePackage::AddAvoidedRef | FleePackage.obj | retail, upstream name already matches, high
+// pdb params: apRef
 void FleePackage::AddAvoidedRef(TESObjectREFR* apRef)
 {
-    if (!AvoidedRefList.IsInList(apRef))
-        AvoidedRefList.AddHead(apRef);
+    if (!pAvoidRefList.IsInList(apRef))
+        pAvoidRefList.AddHead(apRef);
 }
 
 void* __cdecl operator new(unsigned int);
@@ -88,6 +92,7 @@ struct FUN_009f9250 : public TESPackage
 
 // Initializes the package fields, sets reach/complete flags and procedure type, and configures the target from apRef.
 // @fnv 0x009f9250
+// pdb: TrespassPackage::TrespassPackage | TrespassPackage.obj | retail, object-file run extension, low
 FUN_009f9250::FUN_009f9250(TESObjectREFR* apRef, int aiUnk88, int aiUnk8c, int aiUnk94)
 {
     m_fPackageValue = 0.0f;
@@ -128,20 +133,24 @@ struct BSSimpleList_TESObjectREFR_Helper
 };
 
 // @fnv 0x009f1350
-void FleePackage::RemoveRef(TESObjectREFR* apRef)
+// src: XBOX_RETAIL_PDB 0x009f1350
+// pdb: FleePackage::RemoveAvoidedRef | FleePackage.obj | retail, call graph (shared callers), high
+// pdb params: apRef
+// pdb locals: pref
+void FleePackage::RemoveAvoidedRef(TESObjectREFR* apRef)
 {
-    ((BSSimpleList_TESObjectREFR_Helper*)((char*)&AvoidedRefList))->Remove(apRef);
+    ((BSSimpleList_TESObjectREFR_Helper*)((char*)&pAvoidRefList))->Remove(apRef);
     TESObjectREFR* pref = 0;
     if (((Script*)this)->GetData())
         pref = ((PTHelper*)((Script*)this)->GetData())->GetReferenceTarget();
     if (pref && pref == apRef)
     {
-        if (!((BSSimpleList_TESObjectREFR_Helper*)((char*)&AvoidedRefList))->FUN_008256d0())
+        if (!((BSSimpleList_TESObjectREFR_Helper*)((char*)&pAvoidRefList))->FUN_008256d0())
         {
             ((PTHelper*)((Script*)this)->GetData())
-                ->SetTargetObjectReference(*(((BSSimpleList_TESObjectREFR_Helper*)((char*)&AvoidedRefList))->_ref_006815c0()));
+                ->SetTargetObjectReference(*(((BSSimpleList_TESObjectREFR_Helper*)((char*)&pAvoidRefList))->_ref_006815c0()));
             ((LocationDescriptor*)((Script*)this)->GetText())
-                ->PackageLocation_SetLocReference(*(((BSSimpleList_TESObjectREFR_Helper*)((char*)&AvoidedRefList))->_ref_006815c0()));
+                ->PackageLocation_SetLocReference(*(((BSSimpleList_TESObjectREFR_Helper*)((char*)&pAvoidRefList))->_ref_006815c0()));
         }
         else
         {
@@ -149,8 +158,8 @@ void FleePackage::RemoveRef(TESObjectREFR* apRef)
             ((LocationDescriptor*)((Script*)this)->GetText())->PackageLocation_SetLocReference(0);
         }
     }
-    if (apRef == pRefA4)
-        pRefA4 = 0;
+    if (apRef == pRefFleeTo)
+        pRefFleeTo = 0;
 }
 
 extern const float runtimeFloatSettingDefault132;
@@ -676,30 +685,32 @@ struct FUN_009f1140_VirtualTarget
 
 // @fnv 0x009f1140
 // src: XBOX_PDB 0x009f1140
-bool FleePackage::FindTeleportDoor(TESObjectREFR* apRef, TESObjectREFR* apContext)
+// pdb: FleePackage::FindTeleportDoor | FleePackage.obj | retail, upstream name already matches, high
+// pdb params: apActor, apThreat
+bool FleePackage::FindTeleportDoor(TESObjectREFR* apActor, TESObjectREFR* apThreat)
 {
-    if (!flag80)
+    if (!bEvaluatePoint)
         return false;
 
-    if (!apContext)
+    if (!apThreat)
         return false;
 
-    DAT_011f2f1c = apContext;
+    DAT_011f2f1c = apThreat;
 
-    if (reinterpret_cast<TESObjectREFR_GetRefPersists*>(apRef)->GetReferencePersistence())
+    if (reinterpret_cast<TESObjectREFR_GetRefPersists*>(apActor)->GetReferencePersistence())
     {
         g_dataHandler->GetReferencesInArea(
-            reinterpret_cast<TESObjectCELL*>(reinterpret_cast<BSOcclusionPlane*>(apRef)->GetCullResult()),
-            *reinterpret_cast<FUN_009f1140_VirtualTarget*>(apRef)->Target(), runtimeFloatSettingDefault132,
-            *reinterpret_cast<FUN_009f1140_VirtualTarget*>(apRef)->Target(), runtimeFloatSettingDefault132,
-            CanActorReachReference, reinterpret_cast<long>(apRef));
+            reinterpret_cast<TESObjectCELL*>(reinterpret_cast<BSOcclusionPlane*>(apActor)->GetCullResult()),
+            *reinterpret_cast<FUN_009f1140_VirtualTarget*>(apActor)->Target(), runtimeFloatSettingDefault132,
+            *reinterpret_cast<FUN_009f1140_VirtualTarget*>(apActor)->Target(), runtimeFloatSettingDefault132,
+            CanActorReachReference, reinterpret_cast<long>(apActor));
     }
 
-    pRefA0 = reinterpret_cast<TESObjectREFR*>(DAT_011f2f10);
+    pTeleportDoor = reinterpret_cast<TESObjectREFR*>(DAT_011f2f10);
     DAT_011f2f1c = 0;
     DAT_011f2f10 = 0;
 
-    return pRefA0 != 0;
+    return pTeleportDoor != 0;
 }
 
 struct Saver
@@ -737,6 +748,8 @@ struct HitSound
 };
 
 // @fnv 0x009f19f0
+// pdb: FleePackage::GetSaveSize | FleePackage.obj | retail, upstream name already matches, high
+// pdb locals: isize, itempStartSize, pheader, pform
 unsigned short FleePackage::GetSaveSize()
 {
     unsigned short usSize = 0;
@@ -751,7 +764,7 @@ unsigned short FleePackage::GetSaveSize()
         usSize += 2;
     }
 
-    usSize += reinterpret_cast<BSSimpleListTESRaceSize*>(&AvoidedRefList)->GetSize() * 4 + 2;
+    usSize += reinterpret_cast<BSSimpleListTESRaceSize*>(&pAvoidRefList)->GetSize() * 4 + 2;
     usSize += 4;
     usSize += 4;
     usSize += 1;
@@ -798,6 +811,8 @@ struct FleeSaveReferenceList
 
 // Serializes the object's extra fields and its reference list into the save buffer, then writes the reference count and a form value.
 // @fnv 0x009f2380
+// pdb: FleePackage::SaveGame | FleePackage.obj | retail, vtable slot, high
+// pdb locals: icount, plist, iteleportDoorID, iactorRunToID, itempStartPosition, iblockSize, pcount, pblockSize, iblockHeader, pref, irefID, icurrentBufferPosition, pheader, pform, istartBufferPosition
 void FleePackage::SaveExtraData(BGSSaveFormBuffer* apSaveGameBuffer)
 {
     FleeSaveReferenceList* isaveGameBufferPos;
@@ -807,20 +822,20 @@ void FleePackage::SaveExtraData(BGSSaveFormBuffer* apSaveGameBuffer)
 
     reinterpret_cast<FUN_006797c0_shell*>(this)->TESPackage_SaveGame(apSaveGameBuffer);
 
-    apSaveGameBuffer->SaveData((void*)((char*)&flag80), 1, 0);
-    apSaveGameBuffer->SaveData((void*)((char*)&flag81), 1, 0);
-    apSaveGameBuffer->SaveData((void*)((char*)&position), 0xc, 0);
-    apSaveGameBuffer->SaveData((void*)((char*)&timer), 4, 0);
-    apSaveGameBuffer->SaveData((void*)((char*)&flag94), 1, 0);
-    apSaveGameBuffer->SaveData((void*)((char*)&flagA8), 1, 0);
-    apSaveGameBuffer->SaveData((void*)((char*)&flagA9), 1, 0);
+    apSaveGameBuffer->SaveData((void*)((char*)&bEvaluatePoint), 1, 0);
+    apSaveGameBuffer->SaveData((void*)((char*)&bCombatMode), 1, 0);
+    apSaveGameBuffer->SaveData((void*)((char*)&pFleePoint), 0xc, 0);
+    apSaveGameBuffer->SaveData((void*)((char*)&fFleeTimer), 4, 0);
+    apSaveGameBuffer->SaveData((void*)((char*)&bFleeSucceeded), 1, 0);
+    apSaveGameBuffer->SaveData((void*)((char*)&bknowstarget), 1, 0);
+    apSaveGameBuffer->SaveData((void*)((char*)&busehorse), 1, 0);
 
-    apSaveGameBuffer->SerializeFormData(pRefA0, 0);
-    apSaveGameBuffer->SerializeFormData(pRefA4, 0);
+    apSaveGameBuffer->SerializeFormData(pTeleportDoor, 0);
+    apSaveGameBuffer->SerializeFormData(pRefFleeTo, 0);
 
     isaveGameCount = 0;
     pForm = apSaveGameBuffer->StartVariableSizedValue();
-    isaveGameBufferPos = (FleeSaveReferenceList*)((char*)&AvoidedRefList);
+    isaveGameBufferPos = (FleeSaveReferenceList*)((char*)&pAvoidRefList);
 
     while (isaveGameBufferPos != 0)
     {
@@ -844,20 +859,22 @@ struct G2
 // Calls LoadGame, reads several fields from the buffer, then reads a count and loads that many TESObjectREFR forms into the list at offset 0x98.
 // @fnv 0x009f24d0
 // src: XBOX_PDB 0x009f24d0
+// pdb: FleePackage::LoadGame | FleePackage.obj | retail, vtable slot, high
+// pdb locals: icount, iteleportDoorID, iactorRunToID, istartBufferPosition, iblockSize, i, iblockHeader, pheader, pform, iactorID, pactor, icurrentBufferPosition
 void FleePackage::LoadGame_009f24d0(BGSLoadFormBuffer* apLoadGameBuffer)
 {
     reinterpret_cast<TESPackage*>(this)->TESPackage::LoadGame(apLoadGameBuffer);
 
-    apLoadGameBuffer->ReadTypedData(reinterpret_cast<void*>(reinterpret_cast<char*>(&flag80)), 1);
-    apLoadGameBuffer->ReadTypedData(reinterpret_cast<void*>(reinterpret_cast<char*>(&flag81)), 1);
-    apLoadGameBuffer->ReadTypedData(reinterpret_cast<void*>(reinterpret_cast<char*>(&position)), 0x0c);
-    apLoadGameBuffer->ReadTypedData(reinterpret_cast<void*>(reinterpret_cast<char*>(&timer)), 4);
-    apLoadGameBuffer->ReadTypedData(reinterpret_cast<void*>(reinterpret_cast<char*>(&flag94)), 1);
-    apLoadGameBuffer->ReadTypedData(reinterpret_cast<void*>(reinterpret_cast<char*>(&flagA8)), 1);
-    apLoadGameBuffer->ReadTypedData(reinterpret_cast<void*>(reinterpret_cast<char*>(&flagA9)), 1);
+    apLoadGameBuffer->ReadTypedData(reinterpret_cast<void*>(reinterpret_cast<char*>(&bEvaluatePoint)), 1);
+    apLoadGameBuffer->ReadTypedData(reinterpret_cast<void*>(reinterpret_cast<char*>(&bCombatMode)), 1);
+    apLoadGameBuffer->ReadTypedData(reinterpret_cast<void*>(reinterpret_cast<char*>(&pFleePoint)), 0x0c);
+    apLoadGameBuffer->ReadTypedData(reinterpret_cast<void*>(reinterpret_cast<char*>(&fFleeTimer)), 4);
+    apLoadGameBuffer->ReadTypedData(reinterpret_cast<void*>(reinterpret_cast<char*>(&bFleeSucceeded)), 1);
+    apLoadGameBuffer->ReadTypedData(reinterpret_cast<void*>(reinterpret_cast<char*>(&bknowstarget)), 1);
+    apLoadGameBuffer->ReadTypedData(reinterpret_cast<void*>(reinterpret_cast<char*>(&busehorse)), 1);
 
-    apLoadGameBuffer->ReadFormIdentifier(reinterpret_cast<void*>(reinterpret_cast<char*>(&pRefA0)));
-    apLoadGameBuffer->ReadFormIdentifier(reinterpret_cast<void*>(reinterpret_cast<char*>(&pRefA4)));
+    apLoadGameBuffer->ReadFormIdentifier(reinterpret_cast<void*>(reinterpret_cast<char*>(&pTeleportDoor)));
+    apLoadGameBuffer->ReadFormIdentifier(reinterpret_cast<void*>(reinterpret_cast<char*>(&pRefFleeTo)));
 
     unsigned int isaveGameCount = apLoadGameBuffer->ReadElementCount();
     {
@@ -866,7 +883,7 @@ void FleePackage::LoadGame_009f24d0(BGSLoadFormBuffer* apLoadGameBuffer)
         {
             TESObjectREFR* pForm = 0;
             apLoadGameBuffer->ReadFormIdentifier(&pForm);
-            reinterpret_cast<G2*>(reinterpret_cast<char*>(&AvoidedRefList))->AddHead(reinterpret_cast<int*>(&pForm));
+            reinterpret_cast<G2*>(reinterpret_cast<char*>(&pAvoidRefList))->AddHead(reinterpret_cast<int*>(&pForm));
         }
     }
 }
@@ -1021,19 +1038,23 @@ struct FUN_009f1210_ref
     virtual void M138();
     virtual bool M139(int a);
     bool TESObjectREFR_GetRefPersists_005653d0();
-    float TESObjectREFR_GetDistanceFromReference(FUN_009f1210_ref* apRef, int a2, int a3);
+    float TESObjectREFR_GetDistanceFromReference(FUN_009f1210_ref* apRef, int abDisabled, int bSameSpace);
     bool FUN_00440da0();
 };
 extern const float DAT_01016970;
 
 // @fnv 0x009f1210
+// pdb: FleePackage::FleePackage | FleePackage.obj | retail, object-file run extension, low
+// pdb note: debug build links it to FleePackage::GetClosestAvoidedRef
+// pdb params: apActor, pcell, apRef
+// pdb locals: pnew, ploc
 TESObjectREFR* FleePackage::FindNearestRef(TESObjectREFR* apRef)
 {
-    if (flag80 == 0 || !reinterpret_cast<FUN_009f1210_ref*>(apRef)->TESObjectREFR_GetRefPersists_005653d0())
+    if (bEvaluatePoint == 0 || !reinterpret_cast<FUN_009f1210_ref*>(apRef)->TESObjectREFR_GetRefPersists_005653d0())
     {
         return 0;
     }
-    FUN_009f1210_node* nodeB = reinterpret_cast<FUN_009f1210_node*>(&AvoidedRefList);
+    FUN_009f1210_node* nodeB = reinterpret_cast<FUN_009f1210_node*>(&pAvoidRefList);
     float best = DAT_01016970;
     FUN_009f1210_ref* result2 = 0;
     float d2;
@@ -1045,8 +1066,8 @@ TESObjectREFR* FleePackage::FindNearestRef(TESObjectREFR* apRef)
         d2 = cand->TESObjectREFR_GetDistanceFromReference(reinterpret_cast<FUN_009f1210_ref*>(apRef), 0, 0);
         if (cand->FUN_00440da0() || cand->M139(0))
         {
-            RemoveRef(reinterpret_cast<TESObjectREFR*>(cand));
-            nodeB = reinterpret_cast<FUN_009f1210_node*>(&AvoidedRefList);
+            RemoveAvoidedRef(reinterpret_cast<TESObjectREFR*>(cand));
+            nodeB = reinterpret_cast<FUN_009f1210_node*>(&pAvoidRefList);
         }
         else if (best > d2)
         {
@@ -1233,14 +1254,14 @@ struct AvoidanceContext
 // @fnv 0x009f1830
 void FleePackage::RemoveInvalidAvoidedReferences(AvoidanceContext* context)
 {
-    AvoidedList* current = reinterpret_cast<AvoidedList*>(&AvoidedRefList);
+    AvoidedList* current = reinterpret_cast<AvoidedList*>(&pAvoidRefList);
     float limit2 = *DAT_011cd348.Setting_Float_00403e20();
     while (current && current->FUN_006815c0())
     {
         AvoidedReference* reference6 = current->FUN_006815c0();
         AvoidedReference* actor = reference6->IsActor() ? reference6 : 0;
         bool remove4 = reference6->IsDead(0) || reference6->FUN_00440d80();
-        if (!remove4 && actor && flag81)
+        if (!remove4 && actor && bCombatMode)
         {
             remove4 = (!actor->Actor_IsInCombat() && actor != DAT_011dea3c) ||
                       (context && CombatTimer_GetTimer() - context->GetLastTime(actor, 0) > limit2);
@@ -1248,7 +1269,7 @@ void FleePackage::RemoveInvalidAvoidedReferences(AvoidanceContext* context)
         if (remove4)
         {
             current->FUN_0063f7b0();
-            current = reinterpret_cast<AvoidedList*>(&AvoidedRefList);
+            current = reinterpret_cast<AvoidedList*>(&pAvoidRefList);
             continue;
         }
         current = current->FUN_00726070();
@@ -1259,9 +1280,10 @@ void FleePackage::RemoveInvalidAvoidedReferences(AvoidanceContext* context)
 
 // Destructor that removes all avoided references.
 // @fnv 0x009f10c0
+// pdb: FleePackage::~FleePackage | FleePackage.obj | debug, upstream name already matches, high
 FleePackage::~FleePackage()
 {
-    AvoidedRefList.RemoveAll();
+    pAvoidRefList.RemoveAll();
 }
 
 struct FUN_00672930_flags
@@ -1406,6 +1428,10 @@ extern const float runtimeFloatSettingDefault1018;
 float __cdecl BSMAX_00404010(float, float);
 
 // @fnv 0x009f1440
+// pdb: FleePackage::UpdateAvoidedRefList | FleePackage.obj | retail, object-file run extension, low
+// pdb note: debug build links it to FleePackage::CreateAvoidNodeArray
+// pdb params: apProcess
+// pdb locals: plist, fforgetTime, pact, pref, bdelete
 PathingAvoidNodeArray* FleePackage::BuildAvoidNodeArray()
 {
     PathingAvoidNodeArray* pNodes_ = new PathingAvoidNodeArray;
@@ -1417,14 +1443,14 @@ PathingAvoidNodeArray* FleePackage::BuildAvoidNodeArray()
     float fRadius4;
     AvoidedReference* pRef;
     unsigned int iSize;
-    for (pNode = reinterpret_cast<AvoidedList*>(&AvoidedRefList); pNode != 0; pNode = pNode->FUN_00726070())
+    for (pNode = reinterpret_cast<AvoidedList*>(&pAvoidRefList); pNode != 0; pNode = pNode->FUN_00726070())
     {
         pRef = pNode->FUN_006815c0();
         if (!pRef || ((Actor*)pRef)->GetDisabled() || pRef->IsDead(0))
             continue;
 
         iSize = ((FUN_00672930_flags*)pNodes_)->GetFlags();
-        pNodes_->SetSize(iSize + 1, true);
+        pNodes_->BSSimpleArray_PathingAvoidNode_1024_SetSize(iSize + 1, true);
         fRadius4 = BSMAX_00404010(fRadius3 * fRadius3, runtimeFloatSettingDefault1018);
         *pNodes_->BSSimpleArray_PathingAvoidNode_1024_GetAt(iSize) = PathingAvoidNode(*((AvoidedRefTarget*)pRef)->GetPos(), fRadius3, fRadius4);
     }
@@ -1457,6 +1483,9 @@ extern const float runtimeFloatSettingDefault142;
 bool __cdecl CallWithNullArgs(PathingLocation*, PathingLocation*, int);
 
 // @fnv 0x009f1600
+// pdb: FleePackage::EvaluateReferenceforGuardorFriend | FleePackage.obj | debug, object-file run extension, low
+// pdb params: apRef, aiFilterData
+// pdb locals: ptarget, pactor, bfighting, ftargetheight, ptestactorbase
 bool __cdecl CanActorReachReference(TESObjectREFR* reference, long context)
 {
     float fDistance;
@@ -1540,6 +1569,8 @@ struct PackageSaveAccess
 };
 void __cdecl FNV_Warning(const char*, ...);
 // @fnv 0x009f1b70
+// pdb: FleePackage::SaveGame | FleePackage.obj | retail, vtable slot, high
+// pdb locals: icount, plist, iteleportDoorID, iactorRunToID, itempStartPosition, iblockSize, pcount, pblockSize, iblockHeader, pref, irefID, icurrentBufferPosition, pheader, pform, istartBufferPosition
 void FleePackage::SaveFleePackage()
 {
     reinterpret_cast<PackageSaveAccess*>(this)->SavePackage();
@@ -1558,7 +1589,7 @@ void FleePackage::SaveFleePackage()
     unsigned short kCount = 0;  // Number of avoided references.
     unsigned char* _position = reinterpret_cast<SaveStream*>(DAT_011de45c)->FUN_00825c00();
     reinterpret_cast<SaveStream*>(DAT_011de45c)->TESSaveLoadGame_SaveGameDataOLD(&kCount, 2);
-    SavedReferenceList* node = reinterpret_cast<SavedReferenceList*>(&AvoidedRefList);
+    SavedReferenceList* node = reinterpret_cast<SavedReferenceList*>(&pAvoidRefList);
     while (node && !node->FUN_008256d0())
     {
         SavedReference* reference = node->_ref_006815c0();
@@ -1569,20 +1600,20 @@ void FleePackage::SaveFleePackage()
     }
     *reinterpret_cast<unsigned short*>(_position) = kCount;
     unsigned int formB = 0;
-    if (pRefA4)
-        formB = reinterpret_cast<SavedReference*>(pRefA4)->GetFormID();
+    if (pRefFleeTo)
+        formB = reinterpret_cast<SavedReference*>(pRefFleeTo)->GetFormID();
     reinterpret_cast<PackageSaveAccess*>(this)->ForwardToSaveLoadGame(&formB, 4);
     unsigned int form = 0;
-    if (pRefA0)
-        form = reinterpret_cast<SavedReference*>(pRefA0)->GetFormID();
+    if (pTeleportDoor)
+        form = reinterpret_cast<SavedReference*>(pTeleportDoor)->GetFormID();
     reinterpret_cast<PackageSaveAccess*>(this)->ForwardToSaveLoadGame(&form, 4);
-    reinterpret_cast<PackageSaveAccess*>(this)->TESForm_SaveGameDataOLD(&flag81, 1);
-    reinterpret_cast<PackageSaveAccess*>(this)->TESForm_SaveGameDataOLD(&flagA8, 1);
-    reinterpret_cast<PackageSaveAccess*>(this)->TESForm_SaveGameDataOLD(&flag94, 1);
-    reinterpret_cast<PackageSaveAccess*>(this)->TESForm_SaveGameDataOLD(&timer, 4);
-    reinterpret_cast<PackageSaveAccess*>(this)->TESForm_SaveGameDataOLD(&this->position, 12);
-    reinterpret_cast<PackageSaveAccess*>(this)->TESForm_SaveGameDataOLD(&flag80, 1);
-    reinterpret_cast<PackageSaveAccess*>(this)->TESForm_SaveGameDataOLD(&flagA9, 1);
+    reinterpret_cast<PackageSaveAccess*>(this)->TESForm_SaveGameDataOLD(&bCombatMode, 1);
+    reinterpret_cast<PackageSaveAccess*>(this)->TESForm_SaveGameDataOLD(&bknowstarget, 1);
+    reinterpret_cast<PackageSaveAccess*>(this)->TESForm_SaveGameDataOLD(&bFleeSucceeded, 1);
+    reinterpret_cast<PackageSaveAccess*>(this)->TESForm_SaveGameDataOLD(&fFleeTimer, 4);
+    reinterpret_cast<PackageSaveAccess*>(this)->TESForm_SaveGameDataOLD(&this->pFleePoint, 12);
+    reinterpret_cast<PackageSaveAccess*>(this)->TESForm_SaveGameDataOLD(&bEvaluatePoint, 1);
+    reinterpret_cast<PackageSaveAccess*>(this)->TESForm_SaveGameDataOLD(&busehorse, 1);
     if (*g_011de4e8.Bool())
     {
         unsigned char* end = reinterpret_cast<SaveStream*>(DAT_011de45c)->FUN_00825c00();
@@ -1621,7 +1652,7 @@ struct FleeLoadFormInfo
 struct FleeLoadManager
 {
     bool IsLoading();
-    void ReadTypedData(void* apBuffer, int aiSize);
+    void ReadTypedData(void* apData, int aiSize);
     unsigned int GetOffset();
     FleeLoadFormInfo* GetCurrentFormInfo();
     unsigned char GetVersion();
@@ -1649,6 +1680,8 @@ struct PackageLoadAccess
 // Loads the package's avoided-ref list, targets, flags, value and position from the save buffer, validating the BLOK header and block size.
 // @fnv 0x009f1e80
 // src: XBOX_PDB 0x009f1e80
+// pdb: FleePackage::LoadGame | FleePackage.obj | retail, string-set bridge, high
+// pdb locals: icount, iteleportDoorID, iactorRunToID, istartBufferPosition, iblockSize, i, iblockHeader, pheader, pform, iactorID, pactor, icurrentBufferPosition
 void FleePackage::LoadGame_009f1e80()
 {
     unsigned short usCount4;
@@ -1695,21 +1728,21 @@ void FleePackage::LoadGame_009f1e80()
         unsigned int auiFormId;
         reinterpret_cast<PackageLoadAccess*>(this)->ReadFormIdentifier(&auiFormId, 4);
         unsigned int uiRef = auiFormId;
-        reinterpret_cast<FleeLoadRefList*>(&AvoidedRefList)->AddHead((FleeLoadRef*)uiRef);
+        reinterpret_cast<FleeLoadRefList*>(&pAvoidRefList)->AddHead((FleeLoadRef*)uiRef);
     }
 
     reinterpret_cast<PackageLoadAccess*>(this)->ReadFormIdentifier(&uiRefA9, 4);
-    pRefA4 = reinterpret_cast<TESObjectREFR*>(uiRefA9);
+    pRefFleeTo = reinterpret_cast<TESObjectREFR*>(uiRefA9);
     reinterpret_cast<PackageLoadAccess*>(this)->ReadFormIdentifier(&uiRefA7, 4);
-    pRefA0 = reinterpret_cast<TESObjectREFR*>(uiRefA7);
-    reinterpret_cast<PackageLoadAccess*>(this)->ReadTypedData(&flag81, 1);
-    reinterpret_cast<PackageLoadAccess*>(this)->ReadTypedData(&flagA8, 1);
-    reinterpret_cast<PackageLoadAccess*>(this)->ReadTypedData(&flag94, 1);
-    reinterpret_cast<PackageLoadAccess*>(this)->ReadTypedData(&timer, 4);
-    reinterpret_cast<PackageLoadAccess*>(this)->ReadTypedData(position.components, 0xc);
-    reinterpret_cast<PackageLoadAccess*>(this)->ReadTypedData(&flag80, 1);
+    pTeleportDoor = reinterpret_cast<TESObjectREFR*>(uiRefA7);
+    reinterpret_cast<PackageLoadAccess*>(this)->ReadTypedData(&bCombatMode, 1);
+    reinterpret_cast<PackageLoadAccess*>(this)->ReadTypedData(&bknowstarget, 1);
+    reinterpret_cast<PackageLoadAccess*>(this)->ReadTypedData(&bFleeSucceeded, 1);
+    reinterpret_cast<PackageLoadAccess*>(this)->ReadTypedData(&fFleeTimer, 4);
+    reinterpret_cast<PackageLoadAccess*>(this)->ReadTypedData(pFleePoint.components, 0xc);
+    reinterpret_cast<PackageLoadAccess*>(this)->ReadTypedData(&bEvaluatePoint, 1);
     if (g_pFleeLoadManager->GetVersion() >= 0x71)
-        reinterpret_cast<PackageLoadAccess*>(this)->ReadTypedData(&flagA9, 1);
+        reinterpret_cast<PackageLoadAccess*>(this)->ReadTypedData(&busehorse, 1);
 
     if (g_pFleeLoadManager->IsLoading())
     {
@@ -1767,19 +1800,21 @@ struct RefListNode
 
 struct TESPackageInitLoadAccess
 {
-    void InitLoadGame(void* apBuffer);
+    void InitLoadGame(void* apLoadGameBuffer);
 };
 
 // Calls the base InitLoadGame, re-resolves pRefA0/pRefA4 and the AvoidedRefList entries via _ref_004839c0, removing entries that no longer resolve.
 // @fnv 0x009f25f0
 // src: XBOX_PDB 0x009f25f0
-void FleePackage::InitLoadGame_009f25f0(void* apBuffer)
+// pdb: FleePackage::InitLoadGame | FleePackage.obj | retail, vtable slot, high
+// pdb locals: plist, iteleportDoorID, plastList, iactorRunToID, iactorID, pactor
+void FleePackage::InitLoadGame_009f25f0(void* apLoadGameBuffer)
 {
-    reinterpret_cast<TESPackageInitLoadAccess*>(this)->InitLoadGame(apBuffer);
-    pRefA0 = pRefA0 ? dynamic_cast<TESObjectREFR*>(_ref_004839c0((unsigned int)pRefA0)) : 0;
-    pRefA4 = pRefA4 ? dynamic_cast<TESObjectREFR*>(_ref_004839c0((unsigned int)pRefA4)) : 0;
+    reinterpret_cast<TESPackageInitLoadAccess*>(this)->InitLoadGame(apLoadGameBuffer);
+    pTeleportDoor = pTeleportDoor ? dynamic_cast<TESObjectREFR*>(_ref_004839c0((unsigned int)pTeleportDoor)) : 0;
+    pRefFleeTo = pRefFleeTo ? dynamic_cast<TESObjectREFR*>(_ref_004839c0((unsigned int)pRefFleeTo)) : 0;
 
-    RefListNode* pNode = reinterpret_cast<RefListNode*>(&AvoidedRefList);
+    RefListNode* pNode = reinterpret_cast<RefListNode*>(&pAvoidRefList);
     RefListNode* pPrev = 0;
     while (pNode && !pNode->IsEmpty())
     {

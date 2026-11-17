@@ -5,6 +5,7 @@
 // Havok 7.1 Physics/Collide/Query/Collector/PointCollector/hkpRootCdPoint.h: 0x30 bytes, the contact point then per
 // body the root collidable and the shape key (hkpClosestCdPointCollector holds it as m_hitPoint at +0x10). Member
 // names are the ones the FNV units use.
+// pdb: structure hkpRootCdPoint, size 0x70 (here 0x30), 7 members
 struct hkpRootCdPoint
 {
     hkContactPoint m_kPoint;           // +0x00

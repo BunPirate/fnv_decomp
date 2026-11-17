@@ -12,13 +12,13 @@
 #include "../../../../include/NiMatrix3.h"
 
 struct GlobalObjectO2_00a7b610;
-extern GlobalObjectO2_00a7b610 g_011f5f0c;
+extern GlobalObjectO2_00a7b610 NiParticleMeshesData_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f5f0c (old: DAT_011f5f0c/g_011f5f0c)
 
 // @fnv 0x00a98b00
 // src: COMMUNITY 0x00a98b00
 GlobalObjectO2_00a7b610* __cdecl NiParticleMeshesData_GetRTTI()
 {
-    return &g_011f5f0c;
+    return &NiParticleMeshesData_ms_RTTI;
 }
 
 // @fnv 0x00a98a10
@@ -32,11 +32,14 @@ void NiParticleMeshesData::LoadBinary_00a98a10(NiStream& stream)
 // Removes node children from usActive up to m_usActive, then clamps m_usActive to m_usVertices.
 // @fnv 0x00a98a30
 // src: XBOX_PDB 0x00a98a30
+// pdb: NiParticleMeshesData::SetActiveVertexCount | NiParticleMeshesData.obj | retail, upstream name already matches, high
+// pdb params: usActive
+// pdb locals: i
 void NiParticleMeshesData::SetActiveVertexCount(unsigned short usActive)
 {
     unsigned short i;
     for (i = usActive; i < m_usActive; ++i)
-        m_spRootNode.m_pObject->RemoveNthObject(i);
+        m_spParticleMeshes.m_pObject->RemoveNthObject(i);
     if (usActive <= m_usVertices)
         m_usActive = usActive;
     else
@@ -50,7 +53,7 @@ bool NiParticleMeshesData::RegisterStreamables_00a98a80(NiStream& kStream)
 {
     if (!((NiLinesData*)this)->NiLinesData::RegisterStreamables(kStream))
         return 0;
-    m_spRootNode.m_pObject->RegisterStreamables(kStream);
+    m_spParticleMeshes.m_pObject->RegisterStreamables(kStream);
     return 1;
 }
 
@@ -60,7 +63,7 @@ void NiParticleMeshesData::SaveBinary_00a98ab0(NiStream& kStream)
 {
     NiNode* pkNode;
     NiParticlesData::SaveBinary(kStream);
-    pkNode = m_spRootNode.m_pObject;
+    pkNode = m_spParticleMeshes.m_pObject;
     kStream.SaveLinkID(pkNode);
 }
 
@@ -71,8 +74,8 @@ bool NiParticleMeshesData::IsMeshNodeEqual(void* pkObject)
     NiParticleMeshesData* pkPart = (NiParticleMeshesData*)pkObject;
     if (!NiParticlesData::IsEqual((NiObject*)pkObject))
         return false;
-    NiNode* mine = m_spRootNode.m_pObject;
-    NiNode* other = pkPart->m_spRootNode.m_pObject;
+    NiNode* mine = m_spParticleMeshes.m_pObject;
+    NiNode* other = pkPart->m_spParticleMeshes.m_pObject;
     // IsEqual is slot 23; this caller normalizes its raw result byte.
     typedef unsigned char (__thiscall *EqualityResultByte)(NiObject*, NiObject*);
     return reinterpret_cast<EqualityResultByte>((*reinterpret_cast<void***>(mine))[23])(mine, other);
@@ -84,16 +87,18 @@ extern "C" __declspec(dllimport) long __stdcall InterlockedIncrement(long volati
 // Links the object to kStream, then swaps m_spRootNode to the stream's object, releasing the old one and retaining the new one.
 // @fnv 0x00a98d60
 // src: XBOX_PDB 0x00a98d60
+// pdb: NiParticleMeshesData::LinkObject | NiParticleMeshesData.obj | retail, object-file gap fill, high
+// pdb params: kStream
 void NiParticleMeshesData::LinkObject_00a98d60(NiStream& kStream)
 {
     ((NiLinesData*)this)->NiLinesData::LinkObject(kStream);
     NiObject* pkNew = kStream.GetLoadedObject();
-    NiObject* pkOld = m_spRootNode.m_pObject;
+    NiObject* pkOld = m_spParticleMeshes.m_pObject;
     if (pkOld != pkNew)
     {
         if (pkOld && InterlockedDecrement((volatile long*)&pkOld->m_uiRefCount) == 0)
             pkOld->DeleteThis();
-        m_spRootNode.m_pObject = (NiNode*)pkNew;
+        m_spParticleMeshes.m_pObject = (NiNode*)pkNew;
         if (pkNew)
             InterlockedIncrement((volatile long*)&pkNew->m_uiRefCount);
     }
@@ -147,10 +152,12 @@ template <> inline NiPointer<NiNode>& NiPointer<NiNode>::operator=(NiNode* objec
 
 // Initializes the object by allocating a new NiNode with zero children and setting the flag to false.
 // @fnv 0x00a98b10
+// pdb: NiParticleMeshesData::NiParticleMeshesData | NiParticleMeshesData.obj | retail, upstream name already matches, high
+// pdb params: usVertices, pkVertex, pkNormal, pkColor, pkRots
 NiParticleMeshesData::NiParticleMeshesData() throw()
 {
-    m_spRootNode = new NiNode(0);
-    m_bModifierActive = false;
+    m_spParticleMeshes = new NiNode(0);
+    m_bNeedsPropertyEffectUpdate = false;
 }
 
 extern "C" __declspec(dllimport) long __stdcall InterlockedDecrement(long volatile* addend) throw();
@@ -167,14 +174,14 @@ void NiParticleMeshesData::RemoveParticleMesh(unsigned short usParticle)
     unsigned short usFinalIndex = m_usActive - 1;
     if (usParticle == usFinalIndex)
     {
-        m_spRootNode.m_pObject->RemoveNthObject(usFinalIndex);
+        m_spParticleMeshes.m_pObject->RemoveNthObject(usFinalIndex);
     }
     else
     {
         NiAVObject* pkFinal = 0;
-        m_spRootNode.m_pObject->RemoveNthObject2(usFinalIndex, &pkFinal);
-        m_spRootNode.m_pObject->RemoveNthObject(usParticle);
-        m_spRootNode.m_pObject->ReplaceNthObject(usParticle, pkFinal);
+        m_spParticleMeshes.m_pObject->RemoveNthObject2(usFinalIndex, &pkFinal);
+        m_spParticleMeshes.m_pObject->RemoveNthObject(usParticle);
+        m_spParticleMeshes.m_pObject->ReplaceNthObject(usParticle, pkFinal);
         if (pkFinal)
             pkFinal->DecRefCount();
     }
@@ -193,11 +200,13 @@ inline float fabs(float _X)
 }
 
 // @fnv 0x00a98c90
+// pdb: NiParticleMeshesData::UpdateParticles | NiParticleMeshesData.obj | debug, object-file run extension, low
+// pdb locals: i, pkMesh
 void NiParticleMeshesData::UpdateParticleMeshes()
 {
     for (unsigned int i = 0; i < m_usActive; i++)
     {
-        NiAVObject* pkMesh = m_spRootNode.m_pObject->m_kChildren.m_pBase[i].m_pObject;
+        NiAVObject* pkMesh = m_spParticleMeshes.m_pObject->m_kChildren.m_pBase[i].m_pObject;
         if (pkMesh)
         {
             pkMesh->m_kLocal.m_Translate = m_pkVertex[i];
@@ -215,10 +224,12 @@ inline void* __cdecl operator new(unsigned int, void* where)
 // Allocates a 0x78-byte object, constructs it, sets the bool at offset 0x40 to true, and returns it.
 // @fnv 0x00a98d30
 // src: EXE 0x00a98d30
+// pdb: NiParticleMeshesData::CreateObject | NiParticleMeshesData.obj | retail, upstream name already matches, high
+// pdb locals: pkData
 NiParticleMeshesData* __cdecl NiParticleMeshesData_CreateObject()
 {
     NiParticleMeshesData* pObject = ::new (NiMemObject::operator new(0x78)) NiParticleMeshesData();
-    pObject->m_bHasRadii = true;
+    pObject->m_bIsOldRotatingParticlesObject = true;
     return pObject;
 }
 
@@ -238,21 +249,24 @@ void* __cdecl NiViewerStrings_NiGetViewerString_Title(void*);
 // Calls FUN_00a97420 on p, fetches an item via FUN_00a7d330, grows the container if count reaches capacity, then stores the item at index count.
 // @fnv 0x00a98de0
 // src: XBOX_PDB 0x00a98de0
-void __stdcall NiParticleMeshesData_GetViewerStrings(FUN_0096ad30_This* pContainer)
+// pdb: NiParticleMeshesData::GetViewerStrings | NiParticleMeshesData.obj | retail, upstream name already matches, high
+// pdb params: pkStrings
+void __stdcall NiParticleMeshesData_GetViewerStrings(FUN_0096ad30_This* pkStrings)
 {
-    FUN_00a97420(pContainer);
-    void* item = NiViewerStrings_NiGetViewerString_Title(*(void**)&g_011f5f0c);
-    unsigned int count = pContainer->m_uiItemCount;
-    unsigned int capacity = pContainer->m_pRayCursor;
+    FUN_00a97420(pkStrings);
+    void* item = NiViewerStrings_NiGetViewerString_Title(*(void**)&NiParticleMeshesData_ms_RTTI);
+    unsigned int count = pkStrings->m_uiItemCount;
+    unsigned int capacity = pkStrings->m_pRayCursor;
     if (count >= capacity)
-        pContainer->FUN_0096ad30((unsigned int)pContainer->m_growth + count);
-    pContainer->FUN_0096ae90(count, &item);
+        pkStrings->FUN_0096ad30((unsigned int)pkStrings->m_growth + count);
+    pkStrings->FUN_0096ae90(count, &item);
 }
 
 #include <windows.h>
 
 // Calls FUN_00a98b90 on this, frees this with _delete when flags has bit 1 set, and returns this.
 // @fnv 0x00a98dc0
+// pdb: NiParticleMeshesData::`scalar deleting destructor' | NiParticleMeshesData.obj | retail, object-file gap fill, high
 void* __fastcall DestroyIfFlagged(NiParticleMeshesData* self, void*, unsigned int flags)
 {
     self->NiParticleMeshesData::~NiParticleMeshesData();
@@ -262,7 +276,8 @@ void* __fastcall DestroyIfFlagged(NiParticleMeshesData* self, void*, unsigned in
 }
 
 // @fnv 0x00a98b90
+// pdb: NiParticleMeshesData::~NiParticleMeshesData | NiParticleMeshesData.obj | retail, upstream name already matches, high
 NiParticleMeshesData::~NiParticleMeshesData() throw()
 {
-    m_spRootNode = (NiNode*)0;
+    m_spParticleMeshes = (NiNode*)0;
 }

@@ -4,6 +4,7 @@
 class NiPixelData;
 class NiPixelFormat;
 
+// pdb: class NiImageConverter, size 0x780 (here 0x8), bases: NiRefObject, 1 members
 class NiImageConverter : public NiRefObject
 {
 public:

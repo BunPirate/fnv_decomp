@@ -23,6 +23,7 @@ class FUN_00c855f0_cls
 // If m_14 exceeds 1, calls FUN_00c852c0 on m_10 with 0 and m_14 - 1.
 // @fnv 0x00c855f0
 // src: COMMUNITY 0x00c855f0
+// pdb: hkpAllRayHitCollector::sortHits | hkpAllRayHitCollector.obj | retail, object-file run extension, high
 void FUN_00c855f0_cls::hknpAllHitsCollector_sortHits()
 {
     union
@@ -40,7 +41,7 @@ void FUN_00c855f0_cls::hknpAllHitsCollector_sortHits()
 #include <xmmintrin.h>
 
 hkMemoryRouter* __cdecl hkMemoryRouter_getInstance();
-void __cdecl ResizeAudioStream(hkMemoryAllocator* apAllocator, void* apContainer, unsigned int auiElemSize);
+void __cdecl ResizeAudioStream(hkMemoryAllocator* mem, void* array, unsigned int sizeElem);
 void __cdecl CollectValuesReversed(void* apDst, unsigned int auiSize, void* apOwner);
 
 struct ChainNode
@@ -108,12 +109,14 @@ struct FUN_00c85520_cls
     int unk0c;
     EntryListNode m_kNode;
 
-    void AddEntry(ChainOwner* apOwner, SourceEntry* apSource);
+    void AddEntry(ChainOwner* cdBody, SourceEntry* hitInfo);
 };
 
 // Grows the SpawnedEntry list if full, appends a new entry copying fields from apSource, and links it to the last ChainNode in apOwner.
 // @fnv 0x00c85520
-void FUN_00c85520_cls::AddEntry(ChainOwner* apOwner, SourceEntry* apSource)
+// pdb: hkpAllRayHitCollector::addRayHit | hkpAllRayHitCollector.obj | retail, vtable slot, high
+// pdb params: cdBody, hitInfo
+void FUN_00c85520_cls::AddEntry(ChainOwner* cdBody, SourceEntry* hitInfo)
 {
     EntryListNode* pList = &m_kNode;
     hkMemoryRouter* pHolder = hkMemoryRouter_getInstance();
@@ -135,14 +138,14 @@ void FUN_00c85520_cls::AddEntry(ChainOwner* apOwner, SourceEntry* apSource)
     SpawnedEntry* pDst = pList->m_pData + pList->m_uCount;
     pList->m_uCount++;
 
-    pDst->m_v0 = apSource->m_v0;
-    pDst->m_f10 = apSource->m_f10;
-    pDst->m_i14 = apSource->m_i14;
-    pDst->m_i18 = apSource->m_i18;
-    pDst->m_i1C = apSource->m_i1C;
-    CollectValuesReversed(&pDst->m_i20, 8, apOwner);
+    pDst->m_v0 = hitInfo->m_v0;
+    pDst->m_f10 = hitInfo->m_f10;
+    pDst->m_i14 = hitInfo->m_i14;
+    pDst->m_i18 = hitInfo->m_i18;
+    pDst->m_i1C = hitInfo->m_i1C;
+    CollectValuesReversed(&pDst->m_i20, 8, cdBody);
 
-    ChainNode* pLast = (ChainNode*)apOwner;
+    ChainNode* pLast = (ChainNode*)cdBody;
     while (pLast->m_pNext != 0)
     {
         pLast = pLast->m_pNext;

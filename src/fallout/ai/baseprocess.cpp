@@ -25,27 +25,37 @@ unsigned int BaseProcess::GetAttackChance(Actor* apActor, float afValue1, float 
 }
 
 // @fnv 0x008d1050
-void BaseProcess::ApplyLoadBuffer(BGSLoadFormBuffer* buffer)
+// pdb: BaseProcess::FinishLoadGame | BaseProcess.obj | debug, call graph, high
+// pdb params: apLoadGameBuffer
+void BaseProcess::ApplyLoadBuffer(BGSLoadFormBuffer* apLoadGameBuffer)
 {
-    reinterpret_cast<ActorPackageCall*>(&m_kProcessData)->ApplyLoadBuffer(buffer);
+    reinterpret_cast<ActorPackageCall*>(&m_kProcessData)->ActorPackage_FinishLoadGame(apLoadGameBuffer);
 }
 
 // @fnv 0x008d1000
-void BaseProcess::InitLoadGame(BGSLoadFormBuffer* buffer)
+// pdb: BaseProcess::InitLoadGame | BaseProcess.obj | retail, upstream name already matches, high
+// pdb params: aiFlags, aiOldFlags, pmob
+void BaseProcess::InitLoadGame(BGSLoadFormBuffer* apLoadGameBuffer)
 {
-    reinterpret_cast<ActorPackageCall*>(&m_kProcessData)->FUN_008c6970(buffer);
+    reinterpret_cast<ActorPackageCall*>(&m_kProcessData)->FUN_008c6970(apLoadGameBuffer);
     if (m_pCachedValues)
         reinterpret_cast<CachedValuesCall*>(m_pCachedValues)->ClearField44();
 }
 
 // @fnv 0x008d08b0
+// pdb: BaseProcess::SetCurrentPackage | BaseProcess.obj | retail, object-file run extension, low
+// pdb params: apNewPackage, apMob
+// pdb locals: ptarget
 void BaseProcess::SetCurrentPackageAndTarget(TESPackage* package, Actor* reference)
 {
-    TESObjectREFR* target = package->GetResolvedTargetReference((MobileObject*)reference);
-    reinterpret_cast<ActorPackageCall*>(&m_kProcessData)->SetPackageAndTarget(package, target);
+    TESObjectREFR* target = package->ComputeInitialTarget((MobileObject*)reference);
+    reinterpret_cast<ActorPackageCall*>(&m_kProcessData)->ActorPackage_InitFromPackage(package, target);
 }
 
 // @fnv 0x008d0870
+// pdb: BaseProcess::HandleDeletedReference | BaseProcess.obj | retail, object-file run extension, low
+// pdb params: apRef
+// pdb locals: pactorPackageData
 void BaseProcess::SetReferenceTarget(Actor* reference)
 {
     reinterpret_cast<GuardActorPackageDataCall*>(&m_kProcessData)->SetReferenceTarget((TESObjectREFR*)reference);
@@ -56,31 +66,39 @@ void BaseProcess::SetReferenceTarget(Actor* reference)
 }
 
 // @fnv 0x008d1070
-void BaseProcess::Revert(BGSLoadFormBuffer* buffer)
+// pdb: BaseProcess::Revert | BaseProcess.obj | retail, upstream name already matches, high
+// pdb params: aiFlags, pmob
+void BaseProcess::Revert(BGSLoadFormBuffer* apLoadGameBuffer)
 {
     m_fValue1 = -1.0F;
     m_uiStateFlags = 0;
-    reinterpret_cast<ActorPackageCall*>(&m_kProcessData)->FUN_008c6c80(buffer);
+    reinterpret_cast<ActorPackageCall*>(&m_kProcessData)->FUN_008c6c80(apLoadGameBuffer);
     if (m_pCachedValues)
         reinterpret_cast<CachedValuesCall*>(m_pCachedValues)->ClearField44();
 }
 
 // @fnv 0x008d0f90
-void BaseProcess::LoadGame(BGSLoadFormBuffer* buffer)
+// pdb: BaseProcess::LoadGame | BaseProcess.obj | retail, object-file run extension, high
+// pdb params: aiFlags, aiCurrentFlags, pmob
+// pdb locals: istartBufferPosition, iblockSize, iblockHeader, pheader, pform, icurrentBufferPosition
+void BaseProcess::LoadGame(BGSLoadFormBuffer* apLoadGameBuffer)
 {
-    buffer->ReadTypedData(static_cast<void*>(&m_fValue2), 4u);
-    if (buffer->GetVersion() >= 6)
+    apLoadGameBuffer->ReadTypedData(static_cast<void*>(&m_fValue2), 4u);
+    if (apLoadGameBuffer->GetVersion() >= 6)
     {
-        buffer->ReadTypedData(static_cast<void*>(&m_fValue1), 4u);
-        buffer->ReadTypedData(static_cast<void*>(&m_uiStateFlags), 4u);
+        apLoadGameBuffer->ReadTypedData(static_cast<void*>(&m_fValue1), 4u);
+        apLoadGameBuffer->ReadTypedData(static_cast<void*>(&m_uiStateFlags), 4u);
     }
-    reinterpret_cast<ActorPackageCall*>(&m_kProcessData)->LoadGame(buffer);
+    reinterpret_cast<ActorPackageCall*>(&m_kProcessData)->LoadGame(apLoadGameBuffer);
 }
 
 // @fnv 0x008d0660
-void BaseProcess::Copy(BaseProcess* source)
+// pdb: BaseProcess::Copy | BaseProcess.obj | retail, upstream name already matches, high
+// pdb params: apProcess
+// pdb locals: pcopyHigh, pcopyMiddleLow, phigh, pcopyMiddleHigh, pmiddleHigh, pcopyLow, pmiddleLow, plow
+void BaseProcess::Copy(BaseProcess* apProcess)
 {
-    if (!source)
+    if (!apProcess)
         return;
     void* thisMiddleHigh;
     void* sourceSecond;
@@ -90,10 +108,10 @@ void BaseProcess::Copy(BaseProcess* source)
     void* sourceThird;
     void* sourceLow;
     void* thisLow;
-    thisThird = __RTDynamicCast(source, 0, &DAT_0118a6b8, &DAT_0118a6d4, 0);
-    sourceLow = __RTDynamicCast(source, 0, &DAT_0118a6b8, &DAT_0118c64c, 0);
-    thisMiddleHigh = __RTDynamicCast(source, 0, &DAT_0118a6b8, &DAT_011a3668, 0);
-    sourceMiddleHigh = __RTDynamicCast(source, 0, &DAT_0118a6b8, &DAT_011a364c, 0);
+    thisThird = __RTDynamicCast(apProcess, 0, &DAT_0118a6b8, &DAT_0118a6d4, 0);
+    sourceLow = __RTDynamicCast(apProcess, 0, &DAT_0118a6b8, &DAT_0118c64c, 0);
+    thisMiddleHigh = __RTDynamicCast(apProcess, 0, &DAT_0118a6b8, &DAT_011a3668, 0);
+    sourceMiddleHigh = __RTDynamicCast(apProcess, 0, &DAT_0118a6b8, &DAT_011a364c, 0);
     thisSecond = __RTDynamicCast(this, 0, &DAT_0118a6b8, &DAT_0118a6d4, 0);
     sourceSecond = __RTDynamicCast(this, 0, &DAT_0118a6b8, &DAT_0118c64c, 0);
     sourceThird = __RTDynamicCast(this, 0, &DAT_0118a6b8, &DAT_011a3668, 0);
@@ -125,9 +143,9 @@ void BaseProcess::Copy(BaseProcess* source)
     if (thisLow && sourceMiddleHigh)
         reinterpret_cast<LowProcess*>(thisLow)->HandlePackageChange(
             reinterpret_cast<LowProcess*>(sourceMiddleHigh));
-    if (m_pCachedValues && source->m_pCachedValues)
+    if (m_pCachedValues && apProcess->m_pCachedValues)
         reinterpret_cast<LowProcessCachedCopyCall*>(m_pCachedValues)
-            ->HandlePackageChange(reinterpret_cast<LowProcessCachedCopyCall*>(source->m_pCachedValues));
+            ->HandlePackageChange(reinterpret_cast<LowProcessCachedCopyCall*>(apProcess->m_pCachedValues));
 }
 
 struct FUN_0049bb50_shell : public ActorPackageContext
@@ -149,6 +167,7 @@ struct Dummy_00527770
 // Calls FUN_00527770 with 0x25, sets the first pointer to "@kR", and zeroes the ints at offsets 16 and 20 before returning pThis.
 // @fnv 0x00526b00
 // src: EXE 0x00526b00
+// pdb: LoadedReferenceMap::LoadedReferenceMap | BGSLoadedReferenceCollection.obj | retail, upstream name already matches, high
 void* __fastcall LoadedReferenceMap_LoadedReferenceMap(void* pThis)
 {
     ((Dummy_00527770*)pThis)->NiTMap_unsigned_int_TESObjectREFR_NiTMap(0x25);
@@ -160,6 +179,7 @@ void* __fastcall LoadedReferenceMap_LoadedReferenceMap(void* pThis)
 
 
 // @fnv 0x008d03e0
+// pdb: BaseProcess::GetCurrentProcedureIndex | BaseProcess.obj | debug, object-file run extension, low
 int BaseProcess::GetCurrentProcedure() const
 {
     return const_cast<ActorPackageContext&>(m_kProcessData).GetProcedureIndex();
@@ -169,6 +189,7 @@ int BaseProcess::GetCurrentProcedure() const
 void __fastcall DeleteData(void* pThis);
 
 // @fnv 0x008d0640
+// pdb: BaseProcess::~BaseProcess | BaseProcess.obj | debug, upstream name already matches, high
 BaseProcess::~BaseProcess()
 {
     DeleteData(reinterpret_cast<char*>(this) + 4);
@@ -422,6 +443,7 @@ void BaseProcess::Move(MobileObject* apRef, NiPoint3 akSource)
 {}
 
 // @fnv 0x008d02a0
+// pdb: BaseProcess::GetCurrentPackage | BaseProcess.obj | debug, object-file run extension, low
 NiPoint3 BaseProcess::GetActorWorldPosition(Actor* apActor)
 {
     return NiPoint3::ZERO;
@@ -514,14 +536,16 @@ void BaseProcess::SetTargetReferenceByIndex(HeadTrackType a, TESObjectREFR* b)
 
 struct FUN_008c64d0_target
 {
-    void FUN_008c64d0(unsigned int, unsigned int);
+    void ActorPackage_InitLoadGame(unsigned int, unsigned int);
 };
 
 // Forwards the new and old flag values to the object at offset 4 of this shell.
 // @fnv 0x008d0e60
+// pdb: BaseProcess::InitLoadGame | BaseProcess.obj | debug, object-file gap fill, medium
+// pdb params: aiFlags, aiOldFlags, pmob
 void BaseProcess::InitLoadGameTES(unsigned int aiFlags, unsigned int aiOldFlags, MobileObject* pmob)
 {
-    ((FUN_008c64d0_target*)((char*)this + 4))->FUN_008c64d0(aiFlags, aiOldFlags);
+    ((FUN_008c64d0_target*)((char*)this + 4))->ActorPackage_InitLoadGame(aiFlags, aiOldFlags);
 }
 
 struct FUN_008c65d0_target
@@ -529,22 +553,27 @@ struct FUN_008c65d0_target
     void SavePackage(BGSSaveFormBuffer*);
 };
 // @fnv 0x008d0f30
-void BaseProcess::SaveGameBGS(BGSSaveGameBuffer* apBuffer)
+// pdb: BaseProcess::SaveGame | BaseProcess.obj | retail, object-file run extension, high
+// pdb params: aiFlags, pmob
+// pdb locals: itempStartPosition, iblockSize, pblockSize, iblockHeader, icurrentBufferPosition, pheader, pform, istartBufferPosition
+void BaseProcess::SaveGameBGS(BGSSaveGameBuffer* apSaveGameBuffer)
 {
-    reinterpret_cast<BGSSaveFormBuffer*>(apBuffer)->SaveData((char*)this + 0x1c, 4, 0);
-    reinterpret_cast<BGSSaveFormBuffer*>(apBuffer)->SaveData((char*)this + 0x20, 4, 0);
-    reinterpret_cast<BGSSaveFormBuffer*>(apBuffer)->SaveData((char*)this + 0x24, 4, 0);
-    ((FUN_008c65d0_target*)((char*)this + 4))->SavePackage(reinterpret_cast<BGSSaveFormBuffer*>(apBuffer));
+    reinterpret_cast<BGSSaveFormBuffer*>(apSaveGameBuffer)->SaveData((char*)this + 0x1c, 4, 0);
+    reinterpret_cast<BGSSaveFormBuffer*>(apSaveGameBuffer)->SaveData((char*)this + 0x20, 4, 0);
+    reinterpret_cast<BGSSaveFormBuffer*>(apSaveGameBuffer)->SaveData((char*)this + 0x24, 4, 0);
+    ((FUN_008c65d0_target*)((char*)this + 4))->SavePackage(reinterpret_cast<BGSSaveFormBuffer*>(apSaveGameBuffer));
 }
 
 struct FUN_008c65a0_shell
 {
-    void FUN_008c65a0(int);
+    void ActorPackage_Revert(int);
 };
 // @fnv 0x008d0f10
+// pdb: BaseProcess::Revert | BaseProcess.obj | debug, object-file gap fill, medium
+// pdb params: aiFlags, pmob
 void BaseProcess::RevertTES(unsigned int aiFlags, MobileObject* pmob)
 {
-    ((FUN_008c65a0_shell*)&m_kProcessData)->FUN_008c65a0(aiFlags);
+    ((FUN_008c65a0_shell*)&m_kProcessData)->ActorPackage_Revert(aiFlags);
 }
 
 namespace fnv_008d0900 {
@@ -584,6 +613,9 @@ TESForm* _ref_004839c0(unsigned int iFormID);
 
 // Accumulates a save-size value from the save manager, a virtual call on this+4, and a constant, logging the delta when the debug flag is set.
 // @fnv 0x008d0900
+// pdb: BaseProcess::GetSaveSize | BaseProcess.obj | retail, upstream name already matches, high
+// pdb params: aiFlags, pmob
+// pdb locals: isize, itempStartSize, pheader, pform
 }  // namespace fnv_008d0900
 
 unsigned short BaseProcess::GetSaveSize(unsigned int aiFlags, MobileObject* pmob)
@@ -633,6 +665,8 @@ unsigned short BaseProcess::GetSaveSize(unsigned int aiFlags, MobileObject* pmob
 
 // Calls the virtual function vfn_144 with param_3.
 // @fnv 0x008d04a0
+// pdb: BaseProcess::SetProcedureIndexRunning | BaseProcess.obj | debug, object-file run extension, low
+// pdb params: aiNewIndex
 void BaseProcess::SetProcessTarget(MobileObject*, int aiValue)
 {
     SetPackageExecutionState(aiValue);
@@ -651,6 +685,9 @@ struct FUN_008a6ce0_shell
 
 
 // @fnv 0x008d0e80
+// pdb: BaseProcess::FinishInitLoadGame | BaseProcess.obj | debug, object-file gap fill, medium
+// pdb params: aiFlags, aiOldFlags, pmob
+// pdb locals: pactor
 void BaseProcess::FinishLoadGameTES(unsigned int aiUnused1, unsigned int aiUnused2, MobileObject* p3)
 {
     void* t = FUN_00ec43fb(p3, 0, DAT_01184920, DAT_011846d4, 0);
@@ -696,7 +733,7 @@ TESForm* __cdecl TESForm_GetFormByNumericID(unsigned int);
 struct ProcessData
 {
     int unk00, unk04, unk08, unk0c, unk10, unk14;
-    void FUN_008c6250(unsigned int);
+    void TESSaveLoadGame_SaveGameDataOLDEndian(unsigned int);
 };
 struct SavedProcess
 {
@@ -787,7 +824,10 @@ struct FormView
 };
 // @fnv 0x008d0a10
 // src: COMMUNITY 0x008d0a10
-void SavedProcess::BaseProcess_SaveGameTES(unsigned int flags, unsigned int unused)
+// pdb: BaseProcess::SaveGame | BaseProcess.obj | retail, object-file gap fill, high
+// pdb params: aiFlags, pmob
+// pdb locals: itempStartPosition, iblockSize, pblockSize, iblockHeader, icurrentBufferPosition, pheader, pform, istartBufferPosition
+void SavedProcess::BaseProcess_SaveGameTES(unsigned int aiFlags, unsigned int pmob)
 {
     unsigned short length = 0;
     unsigned int* begin = 0;
@@ -801,7 +841,7 @@ void SavedProcess::BaseProcess_SaveGameTES(unsigned int flags, unsigned int unus
         begin = (unsigned int*)((TimeGlobal*)g_TESSaveLoadGame)->GetTimeStamp();
         ((TESSaveLoadGameHelper*)g_TESSaveLoadGame)->TESSaveLoadGame_SaveGameDataOLD(&length, 2);
     }
-    data.FUN_008c6250(flags);
+    data.TESSaveLoadGame_SaveGameDataOLDEndian(aiFlags);
     ((TESSaveLoadGameHelper*)g_TESSaveLoadGame)->TESSaveLoadGame_SaveGameDataOLD(&unk1c, 4);
     if (*g_011de4e8.Bool())
     {
@@ -944,7 +984,10 @@ struct Target8d
 };
 // Reads a tag and count from the reader, calls base.FUN_008c6320, reads field, then logs size mismatches between the recorded and actual block length.
 // @fnv 0x008d0bc0
-void Target8d::LoadAndValidate(void* arg1, void* arg2, void* arg3)
+// pdb: BaseProcess::LoadGame | BaseProcess.obj | retail, string-set bridge, high
+// pdb params: aiFlags, aiCurrentFlags, pmob
+// pdb locals: istartBufferPosition, iblockSize, iblockHeader, pheader, pform, icurrentBufferPosition
+void Target8d::LoadAndValidate(void* aiFlags, void* aiCurrentFlags, void* pmob)
 {
     unsigned short count = 0;
     unsigned start = 0;
@@ -969,7 +1012,7 @@ void Target8d::LoadAndValidate(void* arg1, void* arg2, void* arg3)
         start = (*(Reader8d**)&DAT_011de45c)->FUN_00825c00();
         (*(Reader8d**)&DAT_011de45c)->TESSaveLoadGame_LoadGameDataOLD(&count, 2);
     }
-    base.FUN_008c6320(arg1, arg2);
+    base.FUN_008c6320(aiFlags, aiCurrentFlags);
     (*(Reader8d**)&DAT_011de45c)->TESSaveLoadGame_LoadGameDataOLD(&field, 4);
     if ((*(Reader8d**)&DAT_011de45c)->TESSaveLoadGame_UseSaveGameBlocks())
     {

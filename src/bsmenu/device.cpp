@@ -9,6 +9,7 @@ struct FUN_007adc60_shell
 // Sets or clears bit aIndex in the flags word at offset 0xec of this object, according to aSet.
 // @fnv 0x007adc60
 // src: XBOX_PDB 0x007adc60
+// pdb: RaceSexMenu::MenuOption::GetValue | RaceSexMenu.obj | debug, call graph, medium
 void __thiscall FUN_007adc60_shell::RaceSexMenu_SetFlag(int aIndex, bool aSet)
 {
     if (aSet)

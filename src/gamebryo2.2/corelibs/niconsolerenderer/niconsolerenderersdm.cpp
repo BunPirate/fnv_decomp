@@ -6,13 +6,14 @@
 // @fnv 0x00e91ae0
 void __thiscall NiD3DShaderProgramCreatorHLSL::SetCompileFlags(unsigned int uiFlags)
 {
-    m_uiCompileFlags = uiFlags;
+    m_uiShaderCreationFlags = uiFlags;
 }
 
 extern "C" void* __cdecl __Dummy_00b6fef0(void* obj, unsigned int flags);
 extern int DAT_010f0a68;
 
 // @fnv 0x00e91c10
+// pdb: NiD3DShaderProgramCreatorObj::`scalar deleting destructor' | NiXenonRendererSDM.obj | debug, object-file run extension, low
 void* __thiscall NiD3DShaderProgramCreatorHLSL::Destroy(unsigned int flags)
 {
     *(void**)this = (void*)&DAT_010f0a68;
@@ -26,6 +27,7 @@ void* __thiscall NiD3DShaderProgramCreatorHLSL::Destroy(unsigned int flags)
 void __cdecl _delete(void*, unsigned int);
 extern int DAT_010f0a68;
 // @fnv 0x00e91be0
+// pdb: NiD3DShaderProgramCreatorObj::NiD3DShaderProgramCreatorObj | NiXenonRendererSDM.obj | debug, object-file run extension, low
 void* __fastcall DestroyShaderProgramCreator(NiD3DShaderProgramCreator* pThis, void*, unsigned int flags)
 {
     *(void**)pThis = (void*)&DAT_010f0a68;
@@ -47,6 +49,7 @@ struct Holder00e91c40
     void* DestroyHolder(unsigned int);
 };
 // @fnv 0x00e91c40
+// pdb: NiD3DShaderProgramCreatorObj::~NiD3DShaderProgramCreatorObj | NiXenonRendererSDM.obj | debug, object-file run extension, low
 void* Holder00e91c40::DestroyHolder(unsigned int auiFlags)
 {
     void* p = m8;

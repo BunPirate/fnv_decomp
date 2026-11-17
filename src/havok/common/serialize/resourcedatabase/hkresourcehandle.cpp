@@ -33,7 +33,7 @@ inline void* operator new(unsigned int, void* p)
 }
 
 extern "C" hkMemoryRouter* __cdecl hkMemoryRouter_getInstance() throw();
-void __cdecl ResizeAudioStream(void* alloc, void* arr, int elemSize) throw();
+void __cdecl ResizeAudioStream(void* mem, void* array, int sizeElem) throw();
 // This unit's reserve helper is nonthrowing; hkArrayUtil::_reserve is not.
 void __cdecl ReserveResourceArray(hkMemoryAllocator&, void*, int, int) throw();
 
@@ -106,6 +106,7 @@ struct FUN_00e2def0_class
     int __thiscall InitAndMaybeFree(int flags);
 };
 // @fnv 0x00e2def0
+// pdb: hkResourceMap::`scalar deleting destructor' | hkResourceHandle.obj | retail, vtable slot, high
 int __thiscall FUN_00e2def0_class::InitAndMaybeFree(int flags)
 {
     m_p = &DAT_010eb19c;
@@ -177,21 +178,23 @@ struct FUN_00e2df80_obj
 
 struct FUN_00e2df80_class
 {
-    int __thiscall hkContainerResourceMap_findObjectByName(void* a, int* out);
+    int __thiscall hkContainerResourceMap_findObjectByName(void* objectName, int* klassOut);
 };
 
 // Clears *out, looks up an object via the helper at this+4, and if found stores its v1c() result in *out and returns its v18() result.
 // @fnv 0x00e2df80
 // src: XBOX_PDB 0x00e2df80
-int __thiscall FUN_00e2df80_class::hkContainerResourceMap_findObjectByName(void* apKey, int* piOut)
+// pdb: hkContainerResourceMap::findObjectByName | hkResourceHandle.obj | retail, upstream name already matches, high
+// pdb params: objectName, klassOut
+int __thiscall FUN_00e2df80_class::hkContainerResourceMap_findObjectByName(void* objectName, int* klassOut)
 {
-    if (piOut)
-        *piOut = 0;
-    FUN_00e2df80_obj* obj = (FUN_00e2df80_obj*)((FUN_00d479e0_class*)((char*)this + 4))->GetValue(apKey, 0);
+    if (klassOut)
+        *klassOut = 0;
+    FUN_00e2df80_obj* obj = (FUN_00e2df80_obj*)((FUN_00d479e0_class*)((char*)this + 4))->GetValue(objectName, 0);
     if (!obj)
         return 0;
-    if (piOut)
-        *piOut = obj->FUN_00e2df80_v1c();
+    if (klassOut)
+        *klassOut = obj->FUN_00e2df80_v1c();
     return obj->FUN_00e2df80_v18();
 }
 
@@ -202,14 +205,15 @@ struct FUN_00e2ea20_class
     int m_kPointA;
     int m_kPointB;
     hkStringPtr m_h;
-    FUN_00e2ea20_class* hkaMeshBinding_hkaMeshBinding(int a);
+    FUN_00e2ea20_class* hkMemoryResourceHandle_ctor(int flag);
 };
 // @fnv 0x00e2ea20
-// src: HAVOK_LIB 0x00e2ea20
-FUN_00e2ea20_class* FUN_00e2ea20_class::hkaMeshBinding_hkaMeshBinding(int aiValue)
+// src: XBOX_RETAIL_PDB 0x00e2ea20 (was HAVOK_LIB)
+// pdb: hkMemoryResourceHandle::hkMemoryResourceHandle | hkResourceHandle.obj | retail, object-file gap fill, high
+FUN_00e2ea20_class* FUN_00e2ea20_class::hkMemoryResourceHandle_ctor(int flag)
 {
     m_p = (int)&DAT_010eb288;
-    m_h.hkStringPtr::hkStringPtr(FinishingFlag(aiValue));
+    m_h.hkStringPtr::hkStringPtr(FinishingFlag(flag));
     return this;
 }
 
@@ -226,6 +230,7 @@ struct FUN_00e2f1e0_class
 };
 
 // @fnv 0x00e2f1e0
+// pdb: hkContainerResourceMap::`scalar deleting destructor' | hkResourceHandle.obj | retail, vtable slot, high
 void* __thiscall FUN_00e2f1e0_class::Destroy(int flags)
 {
     m_base.~S_00e028e0_Base();
@@ -257,6 +262,7 @@ struct FUN_00e2f210_class : public FUN_00e2ea40_class
 
 // Runs the base constructor, and if flags has bit 0 set, releases m_handle through the memory router's manager, then returns this.
 // @fnv 0x00e2f210
+// pdb: hkMemoryResourceHandle::`scalar deleting destructor' | hkResourceHandle.obj | retail, vtable slot, high
 void* FUN_00e2f210_class::FUN_00e2f210(unsigned int flags)
 {
     FUN_00e2ea40_class::FUN_00e2ea40();
@@ -273,7 +279,7 @@ void* FUN_00e2f210_class::FUN_00e2f210(unsigned int flags)
 namespace fnv_00e2f240 {
 struct FUN_00e2ec00_class
 {
-    void ClearItems();
+    void hkMemoryResourceContainer_dtor();
 };
 
 struct FUN_00e2f240_manager_class
@@ -294,9 +300,10 @@ struct FUN_00e2f240_class : public FUN_00e2ec00_class
 };
 
 // @fnv 0x00e2f240
+// pdb: hkMemoryResourceContainer::`scalar deleting destructor' | hkResourceHandle.obj | retail, vtable slot, high
 void* FUN_00e2f240_class::FUN_00e2f240(int flags)
 {
-    this->ClearItems();
+    this->hkMemoryResourceContainer_dtor();
 
     if (flags & 1)
     {
@@ -363,22 +370,24 @@ struct FNVEntryCollection
     FNVEntry** items;
     int count;
 
-    FNVEntry* __thiscall hkMemoryResourceContainer_findContainerByName(const void* filter, FNVEntry* previous);
+    FNVEntry* __thiscall hkMemoryResourceContainer_findContainerByName(const void* containerName, FNVEntry* prevContainer);
 };
 // @fnv 0x00e2dfd0
 // src: HAVOK_SRC 0x00e2dfd0
-FNVEntry* __thiscall FNVEntryCollection::hkMemoryResourceContainer_findContainerByName(const void* filter, FNVEntry* previous)
+// pdb: hkMemoryResourceContainer::findContainerByName | hkResourceHandle.obj | retail, upstream name already matches, high
+// pdb params: containerName, prevContainer
+FNVEntry* __thiscall FNVEntryCollection::hkMemoryResourceContainer_findContainerByName(const void* containerName, FNVEntry* prevContainer)
 {
     int index = 0;
     FNVEntry** ppSlot = 0;
-    while (previous && index < count && (ppSlot = &items[index++], *ppSlot != previous))
+    while (prevContainer && index < count && (ppSlot = &items[index++], *ppSlot != prevContainer))
     {
     }
 
     for (int next = index; next < count; ++next)
     {
         FNVEntry* item = items[next];
-        if (!filter || !hkString_strCmp(filter, reinterpret_cast<const void*>(item->taggedType & ~1u)))
+        if (!containerName || !hkString_strCmp(containerName, reinterpret_cast<const void*>(item->taggedType & ~1u)))
         {
             return item;
         }
@@ -407,7 +416,10 @@ void __stdcall hkResourceContainer_findAllResourceRecursively(hkArrayBase<Entry*
 hkMemoryRouter* __cdecl hkMemoryRouter_getInstance();
 // @fnv 0x00e2e960
 // src: HAVOK_SRC 0x00e2e960
-void __stdcall hkMemoryResourceContainer_tryToResolveLinks(int aiValue)
+// pdb: hkResourceContainer::tryToResolveLinks | hkResourceHandle.obj | retail, vtable slot, high
+// pdb params: map
+// pdb locals: handles
+void __stdcall hkMemoryResourceContainer_tryToResolveLinks(int map)
 {
     hkArrayBase<Entry*> a;
     a.m_data = 0;
@@ -415,7 +427,7 @@ void __stdcall hkMemoryResourceContainer_tryToResolveLinks(int aiValue)
     a.m_iCapacityState = 0x80000000;
     hkResourceContainer_findAllResourceRecursively(&a);
     for (int i = 0; i < a.m_iElementCount; ++i)
-        a.m_data[i]->process(aiValue);
+        a.m_data[i]->process(map);
     hkMemoryRouter* pRouter = hkMemoryRouter_getInstance();
     int cap = a.m_iCapacityState;
     {
@@ -455,10 +467,12 @@ struct AnimationResource
     hkReferencedObject** m_secondItems;
     int m_secondCount;
     int m_secondCapacity;
-    void ClearItems();
+    void hkMemoryResourceContainer_dtor();
 };
 // @fnv 0x00e2ec00
-void AnimationResource::ClearItems()
+// src: XBOX_RETAIL_PDB 0x00e2ec00
+// pdb: hkMemoryResourceContainer::~hkMemoryResourceContainer | hkResourceHandle.obj | retail, object-file gap fill, high
+void AnimationResource::hkMemoryResourceContainer_dtor()
 {
     m_ppVirtualMethodTable = &DAT_010eb2c4;
     hkMemoryRouter* router = reinterpret_cast<hkMemoryRouter*>(hkMemoryRouter_getInstance());
@@ -552,7 +566,7 @@ namespace fnv_00e2f090 {
 class hkTypeSourceE2F0
 {
   public:
-    void hkResourceContainer_findAllResourceRecursively(hkArray<hkNamedTypeE2F0*>& kTypesOut) const throw();
+    void hkResourceContainer_findAllResourceRecursively(hkArray<hkNamedTypeE2F0*>& resourcesOut) const throw();
 };
 
 class FUN_00d87790
@@ -563,8 +577,8 @@ class FUN_00d87790
     int m_08;
     int m_0c;
 
-    FUN_00d87790(hkBool bIsValid) throw();
-    void hkCachedHashMap_hkStringMapOperations_hkContainerHeapAllocator_insert(const char* pcKey, const void* pvValue) throw();
+    FUN_00d87790(hkBool ops) throw();
+    void hkCachedHashMap_hkStringMapOperations_hkContainerHeapAllocator_insert(const char* key, const void* val) throw();
 };
 
 template <typename V> class hkStringMapE2F0
@@ -585,16 +599,19 @@ class FUN_00e2f090
   public:
     hkStringMapE2F0<hkNamedTypeE2F0*> m_typeFromName;
 
-    FUN_00e2f090(const hkTypeSourceE2F0* pkSource) throw();
+    FUN_00e2f090(const hkTypeSourceE2F0* container) throw();
     virtual void V0() throw();
 };
 
 // Collects the named types from pkSource and inserts each type into m_typeFromName keyed by its name.
 // @fnv 0x00e2f090
-FUN_00e2f090::FUN_00e2f090(const hkTypeSourceE2F0* pkSource) throw()
+// pdb: hkContainerResourceMap::hkContainerResourceMap | hkResourceHandle.obj | retail, object-file gap fill, high
+// pdb params: container
+// pdb locals: handles, buffer
+FUN_00e2f090::FUN_00e2f090(const hkTypeSourceE2F0* container) throw()
 {
     hkArray<hkNamedTypeE2F0*> kTypes;
-    pkSource->hkResourceContainer_findAllResourceRecursively(kTypes);
+    container->hkResourceContainer_findAllResourceRecursively(kTypes);
     for (int i = 0; i < kTypes.GetLogicalSize(); i++)
     {
         hkNamedTypeE2F0* pkType = kTypes[i];
@@ -647,18 +664,21 @@ class hkNodeE2E2
     virtual void vfn_30();
     virtual hkNodeE2E2* vfn_34(int a, hkNodeE2E2* prev);
 
-    void hkResourceContainer_findAllResourceRecursively(hkArray<hkNodeE2E2*>& out);
+    void hkResourceContainer_findAllResourceRecursively(hkArray<hkNodeE2E2*>& resourcesOut);
 };
 
 // Recursively visits nodes returned by vfn_34 and appends nodes returned by vfn_20 to out.
 // @fnv 0x00e2e2e0
 // src: XBOX_PDB 0x00e2e2e0
-void hkNodeE2E2::hkResourceContainer_findAllResourceRecursively(hkArray<hkNodeE2E2*>& apOutNodes)
+// pdb: hkResourceContainer::findAllResourceRecursively | hkResourceHandle.obj | retail, upstream name already matches, high
+// pdb params: resourcesOut
+// pdb locals: handle
+void hkNodeE2E2::hkResourceContainer_findAllResourceRecursively(hkArray<hkNodeE2E2*>& resourcesOut)
 {
     for (hkNodeE2E2* child = vfn_34(0, 0); child; child = vfn_34(0, child))
-        child->hkResourceContainer_findAllResourceRecursively(apOutNodes);
+        child->hkResourceContainer_findAllResourceRecursively(resourcesOut);
     for (hkNodeE2E2* item = vfn_20(0, 0, 0); item; item = vfn_20(0, 0, item))
-        AppendResourceNode(apOutNodes, item);
+        AppendResourceNode(resourcesOut, item);
 }
 
 class hkNodeE2E3
@@ -679,17 +699,19 @@ class hkNodeE2E3
     virtual void vfn_30();
     virtual hkNodeE2E3* vfn_34(int a, hkNodeE2E3* prev);
 
-    void hkResourceContainer_findAllContainersRecursively(hkArray<hkNodeE2E3*>& out);
+    void hkResourceContainer_findAllContainersRecursively(hkArray<hkNodeE2E3*>& resourcesOut);
 };
 
 // Appends this node to out, then recursively appends all descendant child nodes via vfn_34.
 // @fnv 0x00e2e380
 // src: XBOX_PDB 0x00e2e380
-void hkNodeE2E3::hkResourceContainer_findAllContainersRecursively(hkArray<hkNodeE2E3*>& out)
+// pdb: hkResourceContainer::findAllContainersRecursively | hkResourceHandle.obj | retail, upstream name already matches, high
+// pdb params: resourcesOut
+void hkNodeE2E3::hkResourceContainer_findAllContainersRecursively(hkArray<hkNodeE2E3*>& resourcesOut)
 {
-    AppendResourceNode(out, this);
+    AppendResourceNode(resourcesOut, this);
     for (hkNodeE2E3* child = vfn_34(0, 0); child; child = vfn_34(0, child))
-        child->hkResourceContainer_findAllContainersRecursively(out);
+        child->hkResourceContainer_findAllContainersRecursively(resourcesOut);
 }
 
 struct S00e2e3f0_Pair
@@ -711,6 +733,7 @@ struct S00e2e3f0_Obj
 
 // @fnv 0x00e2e3f0
 // src: HAVOK_SRC 0x00e2e3f0
+// pdb: hkMemoryResourceHandle::clearExternalLinks | hkResourceHandle.obj | retail, upstream name already matches, high
 void S00e2e3f0_Obj::hkMemoryResourceHandle_clearExternalLinks()
 {
     S00e2e3f0_Pair* p = m_aiIndexedValues;
@@ -727,7 +750,7 @@ extern "C" void* __cdecl memcpy(void*, const void*, unsigned int);
 extern "C" int __cdecl hkString_strCmp(const char*, const char*);
 inline const char* hkStringPtr::cString() const
 {
-    return reinterpret_cast<const char*>(reinterpret_cast<unsigned int>(m_pcText) & ~1u);
+    return reinterpret_cast<const char*>(reinterpret_cast<unsigned int>(m_stringAndFlag) & ~1u);
 }
 
 // Two hkStringPtr fields released at 0x00e2e430; shared Pair instead contains two integers.
@@ -756,11 +779,13 @@ struct Container839
 // Finds the pair whose name matches name, destroys its strings, decrements size, and copies the last pair into its slot when needed.
 // @fnv 0x00e2e430
 // src: HAVOK_SRC 0x00e2e430
-void Container839::hkMemoryResourceHandle_removeExternalLink(const char* name)
+// pdb: hkMemoryResourceHandle::removeExternalLink | hkResourceHandle.obj | retail, upstream name already matches, high
+// pdb params: memberName
+void Container839::hkMemoryResourceHandle_removeExternalLink(const char* memberName)
 {
     for (int i = 0; i < size; ++i)
     {
-        if (hkString_strCmp(pairs[i].name.cString(), name) == 0)
+        if (hkString_strCmp(pairs[i].name.cString(), memberName) == 0)
         {
             ResourceStringPair* found = &pairs[i];
             found->value.~hkStringPtr();
@@ -778,14 +803,16 @@ struct C
     int a, b, c, d;
     void** items;
     int count;
-    void RemoveItem(void* item);
+    void RemoveItem(void* resourceHandle);
 };
 // Calls FUN_00c90510 on item and searches items; then calls FUN_00c905b0 on item, and if found releases the slot, decrements count, and copies later entries down.
 // @fnv 0x00e2e670
-void C::RemoveItem(void* item)
+// pdb: hkMemoryResourceContainer::destroyResource | hkResourceHandle.obj | retail, vtable slot, high
+// pdb params: resourceHandle
+void C::RemoveItem(void* resourceHandle)
 {
-    if (item)
-        reinterpret_cast<hkReferencedObject*>(item)->addReference();
+    if (resourceHandle)
+        reinterpret_cast<hkReferencedObject*>(resourceHandle)->addReference();
     int index;
     int i = 0;
     if (count > 0)
@@ -793,7 +820,7 @@ void C::RemoveItem(void* item)
         void** p = items;
         do
         {
-            if (*p == item)
+            if (*p == resourceHandle)
             {
                 index = i;
                 goto found;
@@ -804,8 +831,8 @@ void C::RemoveItem(void* item)
     }
     index = -1;
 found:
-    if (item)
-        reinterpret_cast<hkReferencedObject*>(item)->removeReference();
+    if (resourceHandle)
+        reinterpret_cast<hkReferencedObject*>(resourceHandle)->removeReference();
     if (index > -1)
     {
         void** target = items + index;
@@ -859,14 +886,16 @@ struct WorldE2E710
     int unk14;
     int unk18;
     hkArray<RefPtrE2E710<hkReferencedObject> > m_kThirdFollowingStreamField;
-    void RemoveObject(hkReferencedObject* pkObject);
+    void RemoveObject(hkReferencedObject* container2);
 };
 
 // Finds pkObject in m_kThirdFollowingStreamField and removes it from the array if found.
 // @fnv 0x00e2e710
-void WorldE2E710::RemoveObject(hkReferencedObject* pkObject)
+// pdb: hkMemoryResourceContainer::destroyContainer | hkResourceHandle.obj | retail, vtable slot, high
+// pdb params: container2
+void WorldE2E710::RemoveObject(hkReferencedObject* container2)
 {
-    int iIndex = m_kThirdFollowingStreamField.indexOf(pkObject);
+    int iIndex = m_kThirdFollowingStreamField.indexOf(container2);
     if (iIndex > -1)
         m_kThirdFollowingStreamField.removeAt(iIndex);
 }
@@ -882,14 +911,16 @@ struct FUN_00e2e9e0_class
     int m_iValueAfterStandIn;
     int m_flags;
 
-    void* __thiscall Ctor();
+    void* __thiscall hkMemoryResourceHandle_ctor();
 };
 
 extern int DAT_010eb288;
 
 // Initializes the object handle, class pointer, reference count, target, and flags, then returns this.
 // @fnv 0x00e2e9e0
-void* __thiscall FUN_00e2e9e0_class::Ctor()
+// src: XBOX_RETAIL_PDB 0x00e2e9e0
+// pdb: hkMemoryResourceHandle::hkMemoryResourceHandle | hkResourceHandle.obj | retail, object-file gap fill, high
+void* __thiscall FUN_00e2e9e0_class::hkMemoryResourceHandle_ctor()
 {
     m_handle = 1;
     m_class = &DAT_010eb288;
@@ -903,7 +934,7 @@ void* __thiscall FUN_00e2e9e0_class::Ctor()
 
 extern int DAT_010eb2c4;
 // The shared string header has no const-char constructor; retain its call here.
-void __cdecl ConstructResourceName(hkStringPtr*, const char*);
+void __cdecl hkStringPtr_ctor(hkStringPtr*, const char*);
 
 struct ResourceArrays
 {
@@ -916,7 +947,7 @@ struct ResourceArrays
 
 struct FUN_00e2eb70 : public hkReferencedObject
 {
-    FUN_00e2eb70* Init(const char* pcName) throw();
+    FUN_00e2eb70* Init(const char* name) throw();
     virtual ~FUN_00e2eb70() throw();
     hkStringPtr m_kName;
     ResourceArrays m_arrays;
@@ -924,11 +955,13 @@ struct FUN_00e2eb70 : public hkReferencedObject
 
 // Constructs the object, storing pcName in m_kName and initialising m_iValue to 0.
 // @fnv 0x00e2eb70
-FUN_00e2eb70* FUN_00e2eb70::Init(const char* pcName) throw()
+// pdb: hkMemoryResourceContainer::hkMemoryResourceContainer | hkResourceHandle.obj | retail, object-file gap fill, high
+// pdb params: name
+FUN_00e2eb70* FUN_00e2eb70::Init(const char* name) throw()
 {
-    m_sReferenceCount = 1;
+    m_referenceCount = 1;
     *reinterpret_cast<void**>(this) = &DAT_010eb2c4;
-    reinterpret_cast<void (__thiscall*)(hkStringPtr*, const char*)>(ConstructResourceName)(&m_kName, pcName);
+    reinterpret_cast<void (__thiscall*)(hkStringPtr*, const char*)>(hkStringPtr_ctor)(&m_kName, name);
     // MSVC supports explicit construction of this member without a placement-new null check.
     m_arrays.ResourceArrays::ResourceArrays();
     return this;
@@ -960,16 +993,19 @@ struct FUN_00e2ebc0_class
     int unk18;
     Item_e2ebc0** items;
     int itemCount;
-    FUN_00e2ebc0_class* Init(F_e2ebc0 flags);
+    FUN_00e2ebc0_class* hkMemoryResourceContainer_ctor(F_e2ebc0 flag);
 };
 
 // Initializes the object by setting unk00 to DAT_010eb2c4, calling FUN_00cb0a70 with flags.v, and back-linking items when flags.v is set.
 // @fnv 0x00e2ebc0
-FUN_00e2ebc0_class* FUN_00e2ebc0_class::Init(F_e2ebc0 flags)
+// src: XBOX_RETAIL_PDB 0x00e2ebc0
+// pdb: hkMemoryResourceContainer::hkMemoryResourceContainer | hkResourceHandle.obj | retail, object-file gap fill, high
+// pdb params: name
+FUN_00e2ebc0_class* FUN_00e2ebc0_class::hkMemoryResourceContainer_ctor(F_e2ebc0 flag)
 {
     unk00 = (int)&DAT_010eb2c4;
-    reinterpret_cast<hkStringPtr*>((char*)this + 8)->hkStringPtr::hkStringPtr(FinishingFlag(flags.v));
-    if (flags.v)
+    reinterpret_cast<hkStringPtr*>((char*)this + 8)->hkStringPtr::hkStringPtr(FinishingFlag(flag.v));
+    if (flag.v)
     {
         for (int i = 0; i < itemCount; ++i)
             items[i]->unk0c = (int)this;
@@ -983,7 +1019,7 @@ struct Heap_e2ef
     virtual void v00();
     virtual void* AllocateMemoryBlock(int nbytes) throw();
 };
-void __cdecl ResizeAudioStream(void* mem, void* array, int sizeOfElement) throw();
+void __cdecl ResizeAudioStream(void* mem, void* array, int sizeElem) throw();
 
 inline Heap_e2ef& ResourceHeap(hkMemoryRouter& router)
 {
@@ -1054,6 +1090,8 @@ struct Container_e2ef
 // Looks up a resource by name, and if missing, allocates one via FUN_00e2eb70, adds it to m_kResources, sets m_parent, and returns it.
 // @fnv 0x00e2efe0
 // src: HAVOK_SRC 0x00e2efe0
+// pdb: hkMemoryResourceContainer::createContainer | hkResourceHandle.obj | retail, upstream name already matches, high
+// pdb params: name
 Resource_e2ef* Container_e2ef::hkMemoryResourceContainer_createContainer(const char* name)
 {
     Resource_e2ef* found = findResource(name, 0);
@@ -1101,6 +1139,7 @@ class hkMemoryResourceHandle : public ::hkReferencedObject
 
 // Destructor for hkMemoryResourceHandle; body is empty so members are destroyed by their own destructors.
 // @fnv 0x00e2ea40
+// pdb: hkMemoryResourceHandle::~hkMemoryResourceHandle | hkResourceHandle.obj | retail, upstream name already matches, high
 hkMemoryResourceHandle::~hkMemoryResourceHandle() throw()
 {}
 }
@@ -1109,7 +1148,7 @@ hkMemoryResourceHandle::~hkMemoryResourceHandle() throw()
 namespace fnv_00e2eae0 {
 struct FUN_00e2eae0_Result
 {
-    void __thiscall UpdateFields_00e2eae0(int* param);
+    void __thiscall hkResourceContainer_getPath(int* pathOut);
 };
 
 struct FUN_00e2eae0_class
@@ -1124,12 +1163,12 @@ struct FUN_00e2eae0_class
     virtual void* vf1c();
     virtual void* vf20();
     virtual FUN_00e2eae0_Result* vf24();
-    void __thiscall UpdateFields_00e2eae0(int* param);
+    void __thiscall hkResourceContainer_getPath(int* pathOut);
 };
 
 struct FUN_00d61df0_Obj
 {
-    void __thiscall FUN_00d61df0(void* value);
+    void __thiscall FUN_00d61df0(void* other);
 };
 
 struct FUN_00c85750_Object
@@ -1147,23 +1186,26 @@ hkMemoryRouter* __cdecl hkMemoryRouter_getInstance();
 
 // Calls vf24 and vf10, sends two values to the object at param, then conditionally calls allocator->vf10.
 // @fnv 0x00e2eae0
-// src: GUESS 0x00e2eae0 (confidence: low)
-void __thiscall FUN_00e2eae0_class::UpdateFields_00e2eae0(int* apTarget)
+// src: XBOX_RETAIL_PDB 0x00e2eae0
+// pdb: hkResourceContainer::getPath | hkResourceHandle.obj | retail, object-file gap fill, high
+// pdb params: pathOut
+// pdb locals: buffer
+void __thiscall FUN_00e2eae0_class::hkResourceContainer_getPath(int* pathOut)
 {
     FUN_00e2eae0_Result* result = vf24();
     if (result != 0)
     {
-        result->UpdateFields_00e2eae0(apTarget);
+        result->hkResourceContainer_getPath(pathOut);
     }
 
     // The original uses the out-of-line initializer and explicit cleanup here.
     unsigned int storage[sizeof(hkStringBuf) / sizeof(unsigned int)];
     hkStringBuf& local = *reinterpret_cast<hkStringBuf*>(storage);
-    local.InitBuffer();
+    local.hkStringBuf_ctor();
 
     void* value = vf10(&local);
 
-    FUN_00d61df0_Obj* target = (FUN_00d61df0_Obj*)apTarget;
+    FUN_00d61df0_Obj* target = (FUN_00d61df0_Obj*)pathOut;
     target->FUN_00d61df0(&DAT_01063cbc);
     target->FUN_00d61df0(value);
 
@@ -1196,6 +1238,8 @@ struct ExternalLinkHandle : hkResourceHandle
 // Appends a new ExternalLinkPair with the given memberName and externalId to the references array, growing capacity if needed.
 // @fnv 0x00e2e040
 // src: HAVOK_SRC 0x00e2e040
+// pdb: hkMemoryResourceHandle::addExternalLink | hkResourceHandle.obj | retail, upstream name already matches, high
+// pdb params: memberName, externalId
 void ExternalLinkHandle::hkMemoryResourceHandle_addExternalLink(const char* memberName, const char* externalId)
 {
     hkArray<ExternalLinkPair>* links = &references;
@@ -1211,7 +1255,7 @@ void ExternalLinkHandle::hkMemoryResourceHandle_addExternalLink(const char* memb
     link->externalId = externalId;
 }
 
-void __cdecl ResizeAudioStream(void* alloc, void* arr, int elemSize) throw();
+void __cdecl ResizeAudioStream(void* mem, void* array, int sizeElem) throw();
 struct ObjQ_e2e9e0
 {
     virtual void v00();
@@ -1224,7 +1268,7 @@ struct ObjQ_e2e9e0
     virtual void v1c();
     virtual void FUN_00e2e9e0_v20(void* a, void* b);
     unsigned short m_usMemSizeAndFlags;
-    void* Ctor();
+    void* hkMemoryResourceHandle_ctor();
 };
 struct FUN_00e2ed00_class
 {
@@ -1233,18 +1277,20 @@ struct FUN_00e2ed00_class
     int unk08;
     int unk0c;
     hkArray<ObjQ_e2e9e0*> unk10;
-    ObjQ_e2e9e0* hkMemoryResourceContainer_createResource(void* p0, void* p1, void* p2);
+    ObjQ_e2e9e0* hkMemoryResourceContainer_createResource(void* name, void* object, void* klass);
 };
 // Allocates an ObjQ_e2e9e0, initializes it with p0, p1, p2, and appends it to the hkArray<ObjQ_e2e9e0*> array at unk10.
 // @fnv 0x00e2ed00
 // src: HAVOK_SRC 0x00e2ed00
-ObjQ_e2e9e0* FUN_00e2ed00_class::hkMemoryResourceContainer_createResource(void* p0, void* apArg1, void* apArg2)
+// pdb: hkMemoryResourceContainer::createResource | hkResourceHandle.obj | retail, upstream name already matches, high
+// pdb params: name, object, klass
+ObjQ_e2e9e0* FUN_00e2ed00_class::hkMemoryResourceContainer_createResource(void* name, void* object, void* klass)
 {
     ObjQ_e2e9e0* obj = (ObjQ_e2e9e0*)ResourceHeap(*hkMemoryRouter_getInstance()).AllocateMemoryBlock(0x1c);
     obj->m_usMemSizeAndFlags = 0x1c;
-    obj = (ObjQ_e2e9e0*)obj->Ctor();
-    obj->FUN_00e2e9e0_v14(p0);
-    obj->FUN_00e2e9e0_v20(apArg1, apArg2);
+    obj = (ObjQ_e2e9e0*)obj->hkMemoryResourceHandle_ctor();
+    obj->FUN_00e2e9e0_v14(name);
+    obj->FUN_00e2e9e0_v20(object, klass);
     ((hkReferencedObject*)obj)->addReference();
     hkArray<ObjQ_e2e9e0*>* arr = &this->unk10;
     hkMemoryRouter& audio2 = *hkMemoryRouter_getInstance();

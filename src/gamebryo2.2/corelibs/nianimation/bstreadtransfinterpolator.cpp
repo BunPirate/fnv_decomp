@@ -11,9 +11,9 @@ unsigned int BSTreadTransfInterpolator::GetColorKeyCount(unsigned short arg) con
 {
     if (arg == 0)
     {
-        if (reference.m_pObject)
+        if (spLerpData.m_pObject)
         {
-            return *reinterpret_cast<int*>(reinterpret_cast<char*>(reference.m_pObject) + 8);
+            return *reinterpret_cast<int*>(reinterpret_cast<char*>(spLerpData.m_pObject) + 8);
         }
     }
     return 0;
@@ -21,11 +21,14 @@ unsigned int BSTreadTransfInterpolator::GetColorKeyCount(unsigned short arg) con
 
 // @fnv 0x00a43580
 // src: XBOX_PDB 0x00a43580
-void* BSTreadTransfInterpolator::GetKeyType(unsigned short flag)
+// pdb: BSTreadTransfInterpolator::GetKeyType | BSTreadTransfInterpolator.obj | debug, upstream name already matches, high
+// pdb params: usChannel
+// pdb locals: uinumKeys, etype, ucsize
+void* BSTreadTransfInterpolator::GetKeyType(unsigned short usChannel)
 {
-    if (!flag)
+    if (!usChannel)
     {
-        void* p = reference.m_pObject;
+        void* p = spLerpData.m_pObject;
         if (p)
             return *reinterpret_cast<void**>(reinterpret_cast<unsigned char*>(p) + 0x10);
     }
@@ -37,7 +40,7 @@ NiAnimationKey* BSTreadTransfInterpolator::GetChannelKeys(unsigned short arg1) c
 {
     if (arg1 != 0)
         return 0;
-    void* obj = reference.m_pObject;
+    void* obj = spLerpData.m_pObject;
     if (obj)
         return *reinterpret_cast<NiAnimationKey**>(reinterpret_cast<char*>(obj) + 0xc);
     return 0;
@@ -59,7 +62,7 @@ unsigned char BSTreadTransfInterpolator::GetColorKeySize(unsigned short arg) con
 {
     if (arg != 0)
         return 0;
-    void* p = reference.m_pObject;
+    void* p = spLerpData.m_pObject;
     if (p)
         return *reinterpret_cast<unsigned char*>(reinterpret_cast<unsigned char*>(p) + 0x14);
     return 0;
@@ -72,28 +75,31 @@ struct TrackFlags
 float __cdecl InterpolateKey(float, float*, float*, unsigned int, unsigned int*, TrackFlags);
 // Samples the track, updates the sample index and value delta, and stores the current value and time.
 // @fnv 0x00a434b0
+// pdb: BSTreadTransfInterpolator::Update | BSTreadTransfInterpolator.obj | retail, object-file run extension, low
+// pdb params: afTime, apInterpTarget, arValue
+// pdb locals: uclerpSize, uinumLerpKeys, elerpType, uitempLast, plerpKeys, fnewLerp
 bool BSTreadTransfInterpolator::UpdateSampleValue(float time, int, int)
 {
-    NiFloatData* pTrack = reinterpret_cast<NiFloatData*>(reference.m_pObject);
+    NiFloatData* pTrack = reinterpret_cast<NiFloatData*>(spLerpData.m_pObject);
     unsigned int count = pTrack->m_uiNumKeys;
-    float* values = reinterpret_cast<float*>(pTrack->m_eRequestType);
+    float* values = reinterpret_cast<float*>(pTrack->m_eType);
     TrackFlags flags;
-    flags.value = pTrack->m_ucKeyDataSize;
-    float* times = reinterpret_cast<float*>(pTrack->m_pKeyArray);
+    flags.value = pTrack->m_ucKeySize;
+    float* times = reinterpret_cast<float*>(pTrack->m_pkKeys);
     if (count > 0)
     {
-        unsigned int index = unk1c;
+        unsigned int index = uiLastLerpIdx;
         float value = InterpolateKey(time, times, values, count, &index, flags);
-        unk1c = index;
-        if (m_fLastTime > time && firstValue > value)
+        uiLastLerpIdx = index;
+        if (m_fLastTime > time && fCurrLerp > value)
         {
-            secondValue = (1.0f - firstValue) + value;
+            fDiffLerp = (1.0f - fCurrLerp) + value;
         }
         else
         {
-            secondValue = value - firstValue;
+            fDiffLerp = value - fCurrLerp;
         }
-        firstValue = value;
+        fCurrLerp = value;
     }
     m_fLastTime = time;
     return true;
@@ -101,11 +107,13 @@ bool BSTreadTransfInterpolator::UpdateSampleValue(float time, int, int)
 
 // @fnv 0x00a435e0
 // src: XBOX_PDB 0x00a435e0
-bool BSTreadTransfInterpolator::GetChannelPosed(int arg)
+// pdb: BSTreadTransfInterpolator::GetChannelPosed | BSTreadTransfInterpolator.obj | retail, upstream name already matches, high
+// pdb params: usChannel
+bool BSTreadTransfInterpolator::GetChannelPosed(int usChannel)
 {
-    if (reference.m_pObject != 0)
+    if (spLerpData.m_pObject != 0)
     {
-        GetColorKeyCount(static_cast<unsigned short>(arg));
+        GetColorKeyCount(static_cast<unsigned short>(usChannel));
     }
     return false;
 }
@@ -342,18 +350,21 @@ class A43600Base
 
 // Saves the base data, entry count, each entry's name and two colors, then the target link ID to the stream.
 // @fnv 0x00a43600
+// pdb: BSTreadTransfInterpolator::SaveBinary | BSTreadTransfInterpolator.obj | retail, upstream name already matches, high
+// pdb params: arStream
+// pdb locals: ui
 void BSTreadTransfInterpolator::SaveBinary(NiStream& arStream)
 {
     A43600Stream& kStream = reinterpret_cast<A43600Stream&>(arStream);
     reinterpret_cast<A43600Base*>(this)->SaveBinaryBase(kStream);
-    A43600SaveBinary(kStream, count);
-    for (unsigned int i = 0; i < count; i++)
+    A43600SaveBinary(kStream, uiNumLinks);
+    for (unsigned int i = 0; i < uiNumLinks; i++)
     {
-        kStream.SerializeString(&entries[i].m_kName);
-        entries[i].m_kColor0.SaveBinary(kStream);
-        entries[i].m_kColor1.SaveBinary(kStream);
+        kStream.SerializeString(&Links[i].m_kName);
+        Links[i].m_kColor0.SaveBinary(kStream);
+        Links[i].m_kColor1.SaveBinary(kStream);
     }
-    kStream.SaveLinkID(reinterpret_cast<A43600Object*>(reference.m_pObject));
+    kStream.SaveLinkID(reinterpret_cast<A43600Object*>(spLerpData.m_pObject));
 }
 
 template <class T> inline NiPointer<T>::NiPointer()
@@ -368,12 +379,15 @@ template <class T> __declspec(nothrow) inline NiPointer<T>::~NiPointer()
 }
 
 inline BSTreadTransfInterpolator::BSTreadTransfInterpolator() throw()
-    : entries(0), count(0), firstValue(0.0f), secondValue(0.0f), unk1c(0)
+    : Links(0), uiNumLinks(0), fCurrLerp(0.0f), fDiffLerp(0.0f), uiLastLerpIdx(0)
 {}
 
 // Allocates a clone and copies the interpolator data.
 // @fnv 0x00a439e0
 // src: XBOX_PDB 0x00a439e0
+// pdb: BSTreadTransfInterpolator::CreateClone | BSTreadTransfInterpolator.obj | retail, object-file run extension, low
+// pdb params: kCloning
+// pdb locals: pkObject
 BSTreadTransfInterpolator* BSTreadTransfInterpolator::CreateClone_00a439e0(void* kCloning)
 {
     BSTreadTransfInterpolator* pkClone = new BSTreadTransfInterpolator;
@@ -392,9 +406,10 @@ extern a43840_Mem DAT_011f6238;
 
 // Frees the entry array; member and base destructors release the reference and interpolator data.
 // @fnv 0x00a43840
+// pdb: BSTreadTransfInterpolator::~BSTreadTransfInterpolator | BSTreadTransfInterpolator.obj | retail, upstream name already matches, high
 BSTreadTransfInterpolator::~BSTreadTransfInterpolator()
 {
-    TreadTransformEntry* pElements = entries;
+    TreadTransformEntry* pElements = Links;
     if (pElements != 0)
     {
         int i = ((int*)pElements)[-1];

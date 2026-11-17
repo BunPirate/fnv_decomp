@@ -19,12 +19,14 @@ struct S_00d2b790
     void* DispatchToTarget(void* pArg);
 };
 // @fnv 0x00d2b790
+// pdb: hkSocket::ReaderAdapter::isOk | hkSocket.obj | retail, vtable slot, high
 void* S_00d2b790::DispatchToTarget(void* pArg)
 {
     m_pFlagTarget->v0C(pArg);
     return pArg;
 }
 
+// pdb: structure Reader, size 0x3c (here 0x4), 6 members
 struct Reader
 {
     virtual void V0();
@@ -40,25 +42,27 @@ struct Owner
 {
     unsigned char unk00[8];
     Reader* reader;
-    int hkSocket_WriterAdapter_write(int start, int length);
+    int hkSocket_WriterAdapter_write(int buf, int nbytes);
 };
 
 // @fnv 0x00d2b7b0
 // src: HAVOK_LIB 0x00d2b7b0
-int Owner::hkSocket_WriterAdapter_write(int start, int length)
+// pdb: hkSocket::WriterAdapter::write | hkSocket.obj | retail, upstream name already matches, high
+// pdb params: buf, nbytes
+int Owner::hkSocket_WriterAdapter_write(int buf, int nbytes)
 {
     int done = 0;
-    if (length > 0)
+    if (nbytes > 0)
     {
-        while (done < length)
+        while (done < nbytes)
         {
-            int amount = reader->Read(start + done, length - done);
+            int amount = reader->Read(buf + done, nbytes - done);
             done += amount;
             if (amount == 0)
                 return done;
         }
     }
-    return length;
+    return nbytes;
 }
 
 struct FUN_00da30a0_class
@@ -81,6 +85,7 @@ struct FUN_00c85750_context
 };
 FUN_00c85750_context* __cdecl hkMemoryRouter_getInstance();
 // @fnv 0x00d2b820
+// pdb: hkSocketCreate | hkSocket.obj | retail, object-file run extension, low
 void __cdecl CreateAllocatedValue()
 {
     FUN_00c85750_context* context = hkMemoryRouter_getInstance();
@@ -126,6 +131,7 @@ struct FUN_00d2b8c0_Class
 void* DAT_0102e388;
 UnkRet* hkMemoryRouter_getInstance();
 // @fnv 0x00d2b8c0
+// pdb: hkSocket::`scalar deleting destructor' | hkSocket.obj | retail, vtable slot, high
 FUN_00d2b8c0_Class* FUN_00d2b8c0_Class::FUN_00d2b8c0(unsigned int flags)
 {
     vptr14 = &DAT_0102e388;
@@ -159,27 +165,29 @@ class FUN_00d2b740_cls
     unsigned int unk04;
     StreamIface* m_pBinaryStream;
 
-    int hkSocket_ReaderAdapter_read(char* buf, int size);
+    int hkSocket_ReaderAdapter_read(char* buf, int nbytes);
 };
 
 // @fnv 0x00d2b740
 // src: HAVOK_LIB 0x00d2b740
-int FUN_00d2b740_cls::hkSocket_ReaderAdapter_read(char* apBuffer, int size)
+// pdb: hkSocket::ReaderAdapter::read | hkSocket.obj | retail, upstream name already matches, high
+// pdb params: buf, nbytes
+int FUN_00d2b740_cls::hkSocket_ReaderAdapter_read(char* buf, int nbytes)
 {
     int total = 0;
-    if (size > 0)
+    if (nbytes > 0)
     {
         do
         {
-            int n = m_pBinaryStream->Read(apBuffer + total, size - total);
+            int n = m_pBinaryStream->Read(buf + total, nbytes - total);
             total += n;
             if (n == 0)
             {
                 return total;
             }
-        } while (total < size);
+        } while (total < nbytes);
     }
-    return size;
+    return nbytes;
 }
 
 struct FUN_00d2b800_cls;
@@ -201,6 +209,7 @@ struct FUN_00d2b800_cls
 };
 
 // @fnv 0x00d2b800
+// pdb: hkSocket::WriterAdapter::isOk | hkSocket.obj | retail, vtable slot, high
 void* FUN_00d2b800_cls::ForwardToTarget(void* apArg)
 {
     m_08->v3(apArg);
@@ -215,22 +224,22 @@ extern "C" InitFuncD2B DAT_011b3de8;
 
 class FUN_00d2b850;
 
-class PartAD2B : public hkReferencedObject
+class hkSocket_ReaderAdapter : public hkReferencedObject // src: EXE 0x010ce5fc (vtable; old: PartAD2B)
 {
   public:
-    PartAD2B() throw() : m_pOwnerObject(0)
+    hkSocket_ReaderAdapter() throw() : m_pOwnerObject(0)
     {}
-    virtual ~PartAD2B() throw();
+    virtual ~hkSocket_ReaderAdapter() throw();
 
     FUN_00d2b850* m_pOwnerObject;
 };
 
-class PartBD2B : public hkReferencedObject
+class hkSocket_WriterAdapter : public hkReferencedObject // src: EXE 0x010ce630 (vtable; old: PartBD2B)
 {
   public:
-    PartBD2B() throw() : m_pOwnerObject(0)
+    hkSocket_WriterAdapter() throw() : m_pOwnerObject(0)
     {}
-    virtual ~PartBD2B() throw();
+    virtual ~hkSocket_WriterAdapter() throw();
 
     FUN_00d2b850* m_pOwnerObject;
 };
@@ -241,11 +250,12 @@ class FUN_00d2b850 : public hkReferencedObject
     FUN_00d2b850() throw();
     virtual ~FUN_00d2b850() throw();
 
-    PartAD2B m_partA;
-    PartBD2B m_partB;
+    hkSocket_ReaderAdapter m_partA;
+    hkSocket_WriterAdapter m_partB;
 };
 
 // @fnv 0x00d2b850
+// pdb: hkSocket::hkSocket | hkSocket.obj | retail, object-file run extension, low
 FUN_00d2b850::FUN_00d2b850() throw()
 {
     m_partA.m_pOwnerObject = this;

@@ -76,12 +76,15 @@ const NiRTTI* BSFaceGenNiNode::GetRTTI() const
 }
 
 // @fnv 0x006629f0
+// pdb: BSFaceGenNiNode::GetAnimationData | BSFaceGenNiNode.obj | debug, upstream name already matches, high
 BSFaceGenAnimationData* BSFaceGenNiNode::GetAnimationData()
 {
     return spAnimationData;
 }
 
 // @fnv 0x00439920
+// pdb: BSFaceGenNiNode::SetAnimationData | BSFaceGenNiNode.obj | debug, upstream name already matches, high
+// pdb params: apData
 void BSFaceGenNiNode::SetAnimationData(BSFaceGenAnimationData* apData)
 {
     spAnimationData = apData;

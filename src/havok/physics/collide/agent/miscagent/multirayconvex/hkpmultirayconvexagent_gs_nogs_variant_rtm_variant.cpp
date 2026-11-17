@@ -35,10 +35,10 @@ void hkpMultiRayConvexAgent_staticGetPenetrations(int a, int b, int c, int d);
 struct FUN_00d37690_Class {
     void __thiscall ForwardToFunction(int a, int b, int c, int d);
 };
-void hkpMultiRayConvexAgent_createMultiRayConvexAgent(int a, int b, int c, int d);
-void FUN_00d37780(int a, int b, int c, int d);
-void Object_ProcessState_00d37860(int a, int b, int c, int d);
-void Object_UpdateFields_00d378a0(int a, int b, int c, int d);
+void hkpMultiRayConvexAgent_createMultiRayConvexAgent(int bodyA, int bodyB, int input, int mgr);
+void FUN_00d37780(int bodyA, int bodyB, int input, int mgr);
+void hkpSymmetricAgentLinearCast_hkpMultiRayConvexAgent_staticGetPenetrations(int bodyA, int bodyB, int input, int d);
+void hkpSymmetricAgentLinearCast_hkpMultiRayConvexAgent_staticGetClosestPoints(int bodyA, int bodyB, int input, int collector);
 void hkpMultiRayConvexAgent_staticGetClosestPoints(int a, int b, int c, int d);
 void Object_ProcessEntries_00daf8e0();
 void Object_UpdateFields_00d3ac80();
@@ -51,9 +51,9 @@ struct FUN_00cfbbe0_Arg {
     char f5;
 };
 struct FUN_00cfbbe0_Class {
-    void __thiscall AppendRecordAndRegisterAgents(FUN_00cfbbe0_Arg* a, int b, int c);
+    void __thiscall AppendRecordAndRegisterAgents(FUN_00cfbbe0_Arg* f, int typeA, int typeB);
 };
-void hkpMultiRayConvexAgent_registerAgent(int pClass);
+void hkpMultiRayConvexAgent_registerAgent(int dispatcher);
 struct Handler {
     virtual void slot0();
     virtual void slot1();
@@ -68,7 +68,7 @@ struct Owner {
     Handler* handler;
     unsigned short* values;
     int count;
-    void ProcessValuesAndDelete(int argument);
+    void ProcessValuesAndDelete(int constraintOwner);
 };
 struct S_00d37860_Base {
     virtual void f0();
@@ -83,12 +83,12 @@ struct S_00d37860_Collector : S_00d37860_Base {
     virtual void f1();
 };
 void hkpMultiRayConvexAgent_staticGetPenetrations(void* b, void* a, void* c, S_00d37860_Collector* collector);
-void Object_ProcessState_00d37860(void* a, void* b, void* c, int filter);
+void hkpSymmetricAgentLinearCast_hkpMultiRayConvexAgent_staticGetPenetrations(void* bodyA, void* bodyB, void* input, int filter);
 struct Payload { const char* name; float value; int id; };
 extern float DAT_0104da48;
 extern const char DAT_010ce7fc[];
 void hkpMultiRayConvexAgent_staticGetClosestPoints(int, int, int, Payload*);
-void Object_UpdateFields_00d378a0(int aiArg1, int aiArg2, int aiArg3, int aiId);
+void hkpSymmetricAgentLinearCast_hkpMultiRayConvexAgent_staticGetClosestPoints(int bodyA, int bodyB, int input, int collector);
 struct D376B0Allocator;
 struct D376B0MemoryRouter {
     int unk00;
@@ -100,7 +100,7 @@ struct D376B0MemoryRouter {
     D376B0Allocator& heap() { return *m_pStreamAllocator; }
 };
 extern "C" D376B0MemoryRouter& __cdecl hkMemoryRouter_getInstance();
-void __cdecl hkArrayUtil__reserve(D376B0Allocator* alloc, void* array, int numElements, int sizeElem);
+void __cdecl hkArrayUtil__reserve(D376B0Allocator* mem, void* array, int numElem, int sizeElem);
 class D376B0ReferencedObject {
 public:
     D376B0ReferencedObject() : m_sReferenceCount(1) {}
@@ -240,15 +240,15 @@ m_time0=ticks;
 typedef hkUint16 hkContactPointId;
 inline hkVector4&hkContactPoint::getPosition()
 {
-return m_vContactPosition;
+return m_position;
 }
 inline hkVector4&hkContactPoint::getSeparatingNormal()
 {
-return m_vSeparatingNormal;
+return m_separatingNormal;
 }
 inline void hkContactPoint::setDistance(hkReal d)
 {
-m_vSeparatingNormal(3)=d;
+m_separatingNormal(3)=d;
 }
 class Vector4WithInt24W:public hkVector4
 {
@@ -305,11 +305,11 @@ _reset();
 const hkTransform&hkpCdBody::getTransform()const
 {
 ;
-return*static_cast<const hkTransform*>(m_pMotionState);
+return*static_cast<const hkTransform*>(m_motion);
 }
 const hkpShape*hkpCdBody::getShape()const
 {
-return m_pCollisionShape;
+return m_shape;
 }
 class hkpCollisionDispatcher;
 class hkpConstraintOwner;
@@ -324,6 +324,7 @@ const hkpCdBody&m_pBodyA;
 const hkpCdBody&m_pBodyB;};
 class hkpCdBodyPairCollector;
 class hkpContactMgr;
+// pdb: class hkpMultiRayConvexAgent, size 0x20, bases: hkpIterativeLinearCastAgent, 1 members
 class hkpMultiRayConvexAgent:public hkpIterativeLinearCastAgent
 {
 public:
@@ -344,7 +345,7 @@ struct ContactPointIdEntry
 __forceinline void*__cdecl operator new(hk_size_t nbytes){;void*obj=hkMemoryRouter::getInstance().heap().blockAlloc(static_cast<int>(nbytes));;return obj;}__forceinline void __cdecl operator delete(void*p){if(p){;hkMemoryRouter::getInstance().heap().blockFree(p,sizeof(hkpMultiRayConvexAgent::ContactPointIdEntry));}}__forceinline void*__cdecl operator new(hk_size_t n,void*p){;return p;}__forceinline void*__cdecl operator new[](hk_size_t,void*p){return p;}__forceinline void __cdecl operator delete(void*,void*){}__forceinline void __cdecl operator delete[](void*,void*){}class CommandArgument;
 hkContactPointId m_usContactPointId;
 };
-hkInplaceArray<ContactPointIdEntry,4>m_kContactPointIds;
+hkInplaceArray<ContactPointIdEntry,4>m_contactInfo; // src: XBOX_RETAIL_PDB +0xc (old: m_kContactPointIds)
 };
 
 class hkpRayShapeCollectionFilter;
@@ -365,6 +366,9 @@ extern const char DAT_010c41f8[];
 
 // @fnv 0x00d37280
 // src: XBOX_PDB 0x00d37280
+// pdb: hkpMultiRayConvexAgent::staticGetClosestPoints | hkpMultiRayConvexAgent.obj | retail, upstream name already matches, high
+// pdb params: bodyA, bodyB, input, collector
+// pdb locals: event, rayInput, bTa, rayHit, rayResults, dist
 void __cdecl hkpMultiRayConvexAgent_staticGetClosestPoints(const hkpCdBody&bodyA,const hkpCdBody&bodyB,const CollisionAgentContext&input,class hkpCdPointCollector&collector)
 {
 {hkMonitorStream&mStream=hkMonitorStream::getInstance();if(mStream.memoryAvailable()){hkMonitorStream::TimerCommand*h=reinterpret_cast<hkMonitorStream::TimerCommand*>(mStream.getEnd());h->m_commandAndMonitor=DAT_010ceda8;h->setTime();mStream.setEnd((char*)(h+1));}};
@@ -379,8 +383,8 @@ ShapeRayCastQuery rayInput;
 for(int i=0;i<nRays;i++)
 {
 ShapeRayCastOutput rayResults;
-rayInput.m_vFrom._setTransformedPos(bTa,rayA->m_kRayStart);
-rayInput.m_vTo._setTransformedPos(bTa,rayA->m_kRayEnd);
+rayInput.m_vFrom._setTransformedPos(bTa,rayA->m_start);
+rayInput.m_vTo._setTransformedPos(bTa,rayA->m_end);
 hkBool rayHit=convexB->RayCast(rayInput,rayResults);
 if(rayHit)
 {
@@ -389,7 +393,7 @@ const hkReal dist=rayResults.m_fHitFraction;
 hkVector4 hitpoint;hitpoint.setInterpolate4(rayInput.m_vFrom,rayInput.m_vTo,dist);
 event.m_kPoint.getPosition()._setTransformedPos(bodyB.getTransform(),hitpoint);
 event.m_kPoint.getSeparatingNormal()._setRotatedDir(bodyB.getTransform().getRotation(),normal);
-event.m_kPoint.setDistance((dist-1.0f)*rayA->m_kRayStart(3)+msA->getRayPenetrationDistance());
+event.m_kPoint.setDistance((dist-1.0f)*rayA->m_start(3)+msA->getRayPenetrationDistance());
 collector.AddCdPoint(event);
 }
 rayA++;

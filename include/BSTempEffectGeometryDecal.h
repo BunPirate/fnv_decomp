@@ -17,12 +17,13 @@ class DNewPartition;
 
 template <class T> class NiPointer;
 
+// pdb: class BSTempEffectGeometryDecal, size 0x64, bases: BSTempEffect, 15 members
 class BSTempEffectGeometryDecal : public BSTempEffect
 {
 public:
-    BSTempEffectGeometryDecal(int a1, float a2, const Aux30* a3, Obj4* a4,
-                             SubDef a5, SubDef a6, float a11, float a12,
-                             unsigned int a13);
+    BSTempEffectGeometryDecal(int apCell, float afLifetime, const Aux30* apDecalData, Obj4* apGeometry,
+                             SubDef apOrigin, SubDef apVector, float afScale, float afRotation,
+                             unsigned int aiBodyParts);
     virtual ~BSTempEffectGeometryDecal();
 
     virtual const NiRTTI* GetRTTI() const override;
@@ -45,14 +46,14 @@ public:
                              DNewPartition* apNewPartition, unsigned short* apPartMap);
     void CreateDecalGeometry(const char* s, int a, int b, Pt3Obj* c, Pt3Obj* d,
                              unsigned short* e, Obj4c* f, void* g, unsigned short* h);
-    bool ShouldAddTriangle(int triangle, int base, bool strip,
-                      const unsigned short* indices, const NiPoint3* vertices,
-                      const unsigned short* remap);
-    bool ShouldAddTriangle(int triangle, int base, bool strip,
-                      const unsigned short* indices, const DPoint* vertices,
-                      const unsigned short* remap);
-    unsigned char ShouldAddTriangle(int a, int b, bool c, unsigned short* d,
-                               Pt3Obj* e, int f);
+    bool ShouldAddTriangle(int aiIndex, int aiBaseVertex, bool abStrip,
+                      const unsigned short* apIB, const NiPoint3* apTexCoords,
+                      const unsigned short* apusVertexMap);
+    bool ShouldAddTriangle(int aiIndex, int aiBaseVertex, bool abStrip,
+                      const unsigned short* apIB, const DPoint* apTexCoords,
+                      const unsigned short* apusVertexMap);
+    unsigned char ShouldAddTriangle(int aiIndex, int aiBaseVertex, bool abStrip, unsigned short* apIB,
+                               Pt3Obj* apTexCoords, int apusVertexMap);
 
     void Smooth();
     void Straighten();
@@ -68,20 +69,20 @@ public:
     void SaveGameTES_00688b00();
     bool LoadGameTES_00688c90();
 
-    unsigned int unk18;
-    NiPointer<NiAVObject> m_spGeometry;
-    int unk20;
-    char* m_pData;
-    unsigned char unk28;
+    unsigned int pDecalData; // src: XBOX_RETAIL_PDB +0x18 (old: unk18)
+    NiPointer<NiAVObject> spDecalGeometry; // src: XBOX_RETAIL_PDB +0x1c (old: m_spGeometry)
+    int pGeometry; // src: XBOX_RETAIL_PDB +0x20 (old: unk20)
+    char* pOldIndex; // src: XBOX_RETAIL_PDB +0x24 (old: m_pData)
+    unsigned char bFinished; // src: XBOX_RETAIL_PDB +0x28 (old: unk28)
     unsigned char unk29[3];
-    NiPointer<NiAVObject> m_sp2C;
-    NiPointer<NiAVObject> m_sp30;
-    NiPointer<NiAVObject> m_sp34;
-    NiPoint3 m_38;
-    NiPoint3 m_44;
-    float m_50;
-    float m_54;
-    unsigned int m_58;
-    unsigned int m_5c;
-    unsigned int m_60;
+    NiPointer<NiAVObject> spTargetGeom; // src: XBOX_RETAIL_PDB +0x2c (old: m_sp2C)
+    NiPointer<NiAVObject> spParent; // src: XBOX_RETAIL_PDB +0x30 (old: m_sp30)
+    NiPointer<NiAVObject> spDecalParent; // src: XBOX_RETAIL_PDB +0x34 (old: m_sp34)
+    NiPoint3 pOrigin; // src: XBOX_RETAIL_PDB +0x38 (old: m_38)
+    NiPoint3 pVector; // src: XBOX_RETAIL_PDB +0x44 (old: m_44)
+    float fScale; // src: XBOX_RETAIL_PDB +0x50 (old: m_50)
+    float fRotation; // src: XBOX_RETAIL_PDB +0x54 (old: m_54)
+    unsigned int pTextureSet; // src: XBOX_RETAIL_PDB +0x58 (old: m_58)
+    unsigned int iNumVerts; // src: XBOX_RETAIL_PDB +0x5c (old: m_5c)
+    unsigned int iBodyParts; // src: XBOX_RETAIL_PDB +0x60 (old: m_60)
 };

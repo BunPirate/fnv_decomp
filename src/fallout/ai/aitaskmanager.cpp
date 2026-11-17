@@ -35,6 +35,7 @@
 
 // The rendering wait helper forwards the lock at the start of this object.
 // @fnv 0x004538c0
+// pdb: BSCriticalSection::Leave | TES.obj | debug, call graph, medium
 void ActorTaskManager::WaitForTasksDuringRendering()
 {
     reinterpret_cast<RecursiveLock*>(this)->Leave();
@@ -57,7 +58,7 @@ void PlayerTaskMethods::SetUpdateFlag(bool abValue)
 // src: XBOX_PDB 0x008c8fd0
 void BaseProcess::HighProcess_SetSkippedLastUpdate(bool abVal)
 {
-    reinterpret_cast<HighProcess*>(this)->m_kFirstAdditionalHighProcessField = abVal;
+    reinterpret_cast<HighProcess*>(this)->bSkippedUpdate = abVal;
 }
 
 struct WeatherEntry;
@@ -70,9 +71,11 @@ int __cdecl QuestUpdateManager_SortQuestNamesByPriorityFunction(WeatherEntry*, W
 // Appends name to g_011d970c and re-sorts the list using FUN_0076bb00 as the comparison.
 // @fnv 0x0076bad0
 // src: XBOX_PDB 0x0076bad0
-void QuestUpdateManager_AddQuestNamesTail(char* name)
+// pdb: QuestUpdateManager::AddQuestNamesTail | HUDMainMenu.obj | debug, upstream name already matches, high
+// pdb params: pQuestUpdate
+void QuestUpdateManager_AddQuestNamesTail(char* pQuestUpdate)
 {
-    g_011d970c.AddTail(name);
+    g_011d970c.AddTail(pQuestUpdate);
     ((BSSimpleList<WeatherEntry*>*)&g_011d970c)->Sort(QuestUpdateManager_SortQuestNamesByPriorityFunction);
 }
 
@@ -101,6 +104,7 @@ struct FUN_008c8370_shell
 };
 // Calls FUN_008c83a0, then deletes this if flags has bit 0 set, and returns this.
 // @fnv 0x008c8370
+// pdb: MobileObjectTaskletData::`scalar deleting destructor' | AITaskManager.obj | debug, vtable slot, medium
 FUN_008c8370_shell* FUN_008c8370_shell::FUN_008c8370(unsigned int flags)
 {
     FUN_008c83a0();
@@ -116,6 +120,7 @@ struct FUN_008c8400_shell
 };
 // Calls FUN_008c8430, deletes this when flags has bit 0 set, and returns this.
 // @fnv 0x008c8400
+// pdb: DetectionTaskData::`scalar deleting destructor' | AITaskManager.obj | retail, vtable slot, high
 FUN_008c8400_shell* FUN_008c8400_shell::FUN_008c8400(unsigned int flags)
 {
     SetVtableAndProcessState_008c8430();
@@ -133,6 +138,7 @@ struct FUN_008c8430_shell
 };
 // @fnv 0x008c8430
 // src: GUESS 0x008c8430 (confidence: low)
+// pdb: DetectionTaskData::~DetectionTaskData | AITaskManager.obj | debug, object-file gap fill, medium
 void FUN_008c8430_shell::SetVtableAndProcessState_008c8430()
 {
     vtbl = &DAT_01085728;
@@ -141,8 +147,8 @@ void FUN_008c8430_shell::SetVtableAndProcessState_008c8430()
 
 extern PlayerCharacter* g_thePlayer;
 void __fastcall PlayerCharacter_UpdateAutoAimActor(void*);
-extern ActorTaskManager g_011dfbe8;
-extern ActorTaskManager g_011dfc04;
+extern ActorTaskManager UpdatingDetection; // src: XBOX_RETAIL_PDB 0x011dfbe8 (old: g_011dfbe8)
+extern ActorTaskManager UpdatingMovement; // src: XBOX_RETAIL_PDB 0x011dfc04 (old: g_011dfc04)
 struct FUN_008c8490_shell
 {
     void DetectionTaskData_HandleEndMessage(unsigned int);
@@ -150,11 +156,13 @@ struct FUN_008c8490_shell
 // Calls FUN_00964260 on g_thePlayer, then waits for rendering tasks on g_011dfc04 and g_011dfbe8.
 // @fnv 0x008c8490
 // src: XBOX_PDB 0x008c8490
+// pdb: DetectionTaskData::HandleEndMessage | AITaskManager.obj | retail, upstream name already matches, high
+// pdb params: aiThread
 void FUN_008c8490_shell::DetectionTaskData_HandleEndMessage(unsigned int)
 {
     PlayerCharacter_UpdateAutoAimActor(g_thePlayer);
-    g_011dfc04.WaitForTasksDuringRendering();
-    g_011dfbe8.WaitForTasksDuringRendering();
+    UpdatingMovement.WaitForTasksDuringRendering();
+    UpdatingDetection.WaitForTasksDuringRendering();
 }
 
 extern int DAT_01085768;
@@ -166,6 +174,8 @@ struct FUN_008c8830_shell
 };
 // Calls FUN_008c82e0 with p, sets the vtable to DAT_01085768, and returns this.
 // @fnv 0x008c8830
+// pdb: AnimationTaskData::AnimationTaskData | AITaskManager.obj | debug, object-file gap fill, medium
+// pdb params: apPool
 FUN_008c8830_shell* FUN_008c8830_shell::Construct(int p)
 {
     FUN_008c82e0(p);
@@ -181,6 +191,7 @@ struct FUN_008c8860_shell
 };
 // Calls FUN_008c8890, deletes this when flags has bit 0 set, and returns this.
 // @fnv 0x008c8860
+// pdb: AnimationTaskData::`scalar deleting destructor' | AITaskManager.obj | retail, vtable slot, high
 void* FUN_008c8860_shell::FUN_008c8860(unsigned int flags)
 {
     SetVtableAndProcessState_008c8890();
@@ -198,6 +209,7 @@ struct FUN_008c8890_shell
 };
 // @fnv 0x008c8890
 // src: GUESS 0x008c8890 (confidence: low)
+// pdb: AnimationTaskData::~AnimationTaskData | AITaskManager.obj | debug, object-file gap fill, medium
 void FUN_008c8890_shell::SetVtableAndProcessState_008c8890()
 {
     vtbl = &DAT_01085768;
@@ -205,42 +217,46 @@ void FUN_008c8890_shell::SetVtableAndProcessState_008c8890()
 }
 
 namespace fnv_008c88b0 {
-extern ActorTaskManager g_011dfc38;
-extern ActorTaskManager g_011dfc04;
+extern ActorTaskManager UpdatingActors; // src: XBOX_RETAIL_PDB 0x011dfc38 (old: g_011dfc38)
+extern ActorTaskManager UpdatingMovement; // src: XBOX_RETAIL_PDB 0x011dfc04 (old: g_011dfc04)
 struct FUN_008c88b0_shell
 {
     void QueryPerformanceCounters(int);
 };
 // Calls QueryPerformanceCounter on g_011dfc38 and g_011dfc04 with argument 0.
 // @fnv 0x008c88b0
+// pdb: AnimationTaskData::HandleCountMessage | AITaskManager.obj | retail, vtable slot, high
+// pdb params: uiCount
 void FUN_008c88b0_shell::QueryPerformanceCounters(int)
 {
-    g_011dfc38.QueryPerformanceCounter(0);
-    g_011dfc04.QueryPerformanceCounter(0);
+    UpdatingActors.QueryPerformanceCounter(0);
+    UpdatingMovement.QueryPerformanceCounter(0);
 }
 }  // namespace fnv_008c88b0
 
 namespace fnv_008c88e0 {
-extern ActorTaskManager g_011dfc04;
-extern ActorTaskManager g_011dfc38;
+extern ActorTaskManager UpdatingMovement; // src: XBOX_RETAIL_PDB 0x011dfc04 (old: g_011dfc04)
+extern ActorTaskManager UpdatingActors; // src: XBOX_RETAIL_PDB 0x011dfc38 (old: g_011dfc38)
 struct FUN_008c88e0_shell
 {
-    void AnimationTaskData_HandleEndMessage(int a);
+    void AnimationTaskData_HandleEndMessage(int aiThread);
 };
 // Calls WaitForTasksDuringRendering on g_011dfc04 and g_011dfc38.
 // @fnv 0x008c88e0
 // src: XBOX_PDB 0x008c88e0
-void FUN_008c88e0_shell::AnimationTaskData_HandleEndMessage(int aiUnused)
+// pdb: AnimationTaskData::HandleEndMessage | AITaskManager.obj | retail, upstream name already matches, high
+// pdb params: aiThread
+void FUN_008c88e0_shell::AnimationTaskData_HandleEndMessage(int aiThread)
 {
-    g_011dfc04.WaitForTasksDuringRendering();
-    g_011dfc38.WaitForTasksDuringRendering();
+    UpdatingMovement.WaitForTasksDuringRendering();
+    UpdatingActors.WaitForTasksDuringRendering();
 }
 }  // namespace fnv_008c88e0
 
 struct FUN_008c82e0
 {
     int pad[13];
-    FUN_008c82e0(int a);
+    FUN_008c82e0(int apPool);
     virtual void Run();
 };
 struct FUN_008c89a0 : FUN_008c82e0
@@ -251,6 +267,8 @@ struct FUN_008c89a0 : FUN_008c82e0
 };
 // Initializes the base class with a and sets field38 to 0.
 // @fnv 0x008c89a0
+// pdb: ActorUpdateTaskData::ActorUpdateTaskData | AITaskManager.obj | debug, object-file gap fill, medium
+// pdb params: apPool
 FUN_008c89a0::FUN_008c89a0(int aiValue) : FUN_008c82e0(aiValue)
 {
     field38 = 0;
@@ -263,6 +281,7 @@ struct FUN_008c89d0_shell
     void* Destroy(unsigned int flags);
 };
 // @fnv 0x008c89d0
+// pdb: ActorUpdateTaskData::`scalar deleting destructor' | AITaskManager.obj | retail, vtable slot, high
 void* FUN_008c89d0_shell::Destroy(unsigned int flags)
 {
     SetVirtualTableAndProcessState_008c8a00();
@@ -280,6 +299,7 @@ struct FUN_008c8a00_shell
 };
 // @fnv 0x008c8a00
 // src: GUESS 0x008c8a00 (confidence: low)
+// pdb: ActorUpdateTaskData::~ActorUpdateTaskData | AITaskManager.obj | debug, object-file gap fill, medium
 void FUN_008c8a00_shell::SetVirtualTableAndProcessState_008c8a00()
 {
     vtbl = &DAT_01085788;
@@ -287,7 +307,7 @@ void FUN_008c8a00_shell::SetVirtualTableAndProcessState_008c8a00()
 }
 
 namespace fnv_008c8a20 {
-extern ActorTaskManager g_011dfc38;
+extern ActorTaskManager UpdatingActors; // src: XBOX_RETAIL_PDB 0x011dfc38 (old: g_011dfc38)
 struct FUN_008c8a20_shell
 {
     void ActorUpdateTaskData_HandleCountMessage(int);
@@ -295,24 +315,28 @@ struct FUN_008c8a20_shell
 // Clears the int at offset 0x38 and calls QueryPerformanceCounter on g_011dfc38.
 // @fnv 0x008c8a20
 // src: XBOX_PDB 0x008c8a20
+// pdb: ActorUpdateTaskData::HandleCountMessage | AITaskManager.obj | debug, upstream name already matches, high
+// pdb params: aiCount
 void FUN_008c8a20_shell::ActorUpdateTaskData_HandleCountMessage(int)
 {
     *reinterpret_cast<int*>(reinterpret_cast<char*>(this) + 0x38) = 0;
-    g_011dfc38.QueryPerformanceCounter(0);
+    UpdatingActors.QueryPerformanceCounter(0);
 }
 }  // namespace fnv_008c8a20
 
 namespace fnv_008c8a50 {
-extern ActorTaskManager g_011dfc38;
+extern ActorTaskManager UpdatingActors; // src: XBOX_RETAIL_PDB 0x011dfc38 (old: g_011dfc38)
 struct FUN_008c8a50_shell
 {
-    void ActorUpdateTaskData_HandleEndMessage(int a);
+    void ActorUpdateTaskData_HandleEndMessage(int aiThread);
 };
 // @fnv 0x008c8a50
 // src: XBOX_PDB 0x008c8a50
-void FUN_008c8a50_shell::ActorUpdateTaskData_HandleEndMessage(int aiUnused)
+// pdb: ActorUpdateTaskData::HandleEndMessage | AITaskManager.obj | debug, upstream name already matches, high
+// pdb params: aiThread
+void FUN_008c8a50_shell::ActorUpdateTaskData_HandleEndMessage(int aiThread)
 {
-    g_011dfc38.WaitForTasksDuringRendering();
+    UpdatingActors.WaitForTasksDuringRendering();
 }
 }  // namespace fnv_008c8a50
 
@@ -323,6 +347,7 @@ struct FUN_008c8b20_shell
     void* DestroyOrReturnSelf(unsigned int flags);
 };
 // @fnv 0x008c8b20
+// pdb: PackageUpdateTaskData::`scalar deleting destructor' | AITaskManager.obj | retail, vtable slot, high
 void* FUN_008c8b20_shell::DestroyOrReturnSelf(unsigned int flags)
 {
     SetVtableAndProcessState_008c8b50();
@@ -340,6 +365,7 @@ struct FUN_008c8b50_shell
 };
 // @fnv 0x008c8b50
 // src: GUESS 0x008c8b50 (confidence: low)
+// pdb: PackageUpdateTaskData::~PackageUpdateTaskData | AITaskManager.obj | debug, object-file gap fill, medium
 void FUN_008c8b50_shell::SetVtableAndProcessState_008c8b50()
 {
     vtbl = &DAT_010857a8;
@@ -366,15 +392,17 @@ struct PkgObj
 };
 extern Twin_0084d030 g_timeGlobal;
 extern PkgObj DAT_011e0e80;
-extern ActorTaskManager g_011dfbe8;
+extern ActorTaskManager UpdatingDetection; // src: XBOX_RETAIL_PDB 0x011dfbe8 (old: g_011dfbe8)
 
 // @fnv 0x008c8ff0
+// pdb: PackageUpdateTaskData::HandleEndMessage | AITaskManager.obj | retail, vtable slot, high
+// pdb params: aiThread
 }  // namespace fnv_008c8ff0
 void PackageUpdateTaskData::RunPackageUpdateTask(unsigned int aiThread)
 {
     using namespace fnv_008c8ff0;
     fnv_008c8ff0::DAT_011e0e80.ProcessLists_DisableExcessDeadActors(fnv_008c8ff0::g_timeGlobal.GetStoredFloatValue());
-    fnv_008c8ff0::g_011dfbe8.WaitForTasksDuringRendering();
+    fnv_008c8ff0::UpdatingDetection.WaitForTasksDuringRendering();
 }
 
 
@@ -382,7 +410,7 @@ namespace fnv_008c9020 {
 struct FUN_008c82e0
 {
     int pad[14];
-    FUN_008c82e0(int a);
+    FUN_008c82e0(int apPool);
     virtual void Run();
 };
 struct FUN_008c9020 : FUN_008c82e0
@@ -393,6 +421,8 @@ struct FUN_008c9020 : FUN_008c82e0
 };
 // Constructs the object by forwarding a to the base constructor and initializing field to 0.
 // @fnv 0x008c9020
+// pdb: ActorsScriptTaskData::ActorsScriptTaskData | AITaskManager.obj | debug, object-file gap fill, medium
+// pdb params: apPool
 FUN_008c9020::FUN_008c9020(int a) : FUN_008c82e0(a)
 {
     field = 0;
@@ -407,6 +437,7 @@ struct FUN_008c9050_shell
 };
 // Calls FUN_008c9080, deletes this when flags has bit 0 set, and returns this.
 // @fnv 0x008c9050
+// pdb: ActorsScriptTaskData::`scalar deleting destructor' | AITaskManager.obj | retail, vtable slot, high
 void* FUN_008c9050_shell::FUN_008c9050(unsigned int flags)
 {
     SetVirtualTableAndProcessState_008c9080();
@@ -424,6 +455,7 @@ struct FUN_008c9080_shell
 };
 // @fnv 0x008c9080
 // src: GUESS 0x008c9080 (confidence: low)
+// pdb: ActorsScriptTaskData::~ActorsScriptTaskData | AITaskManager.obj | debug, object-file gap fill, medium
 void FUN_008c9080_shell::SetVirtualTableAndProcessState_008c9080()
 {
     vtbl = &DAT_010857c8;
@@ -431,9 +463,9 @@ void FUN_008c9080_shell::SetVirtualTableAndProcessState_008c9080()
 }
 
 namespace fnv_008c90e0 {
-extern ActorTaskManager g_011dfbe8;
-extern ActorTaskManager g_011dfc04;
-extern ActorTaskManager g_011dfc38;
+extern ActorTaskManager UpdatingDetection; // src: XBOX_RETAIL_PDB 0x011dfbe8 (old: g_011dfbe8)
+extern ActorTaskManager UpdatingMovement; // src: XBOX_RETAIL_PDB 0x011dfc04 (old: g_011dfc04)
+extern ActorTaskManager UpdatingActors; // src: XBOX_RETAIL_PDB 0x011dfc38 (old: g_011dfc38)
 struct FUN_008c90e0_shell
 {
     void ActorsScriptTaskData_HandleEndMessage(unsigned int);
@@ -441,11 +473,13 @@ struct FUN_008c90e0_shell
 // Calls WaitForTasksDuringRendering on three global ActorTaskManager instances to wait for their tasks during rendering.
 // @fnv 0x008c90e0
 // src: XBOX_PDB 0x008c90e0
+// pdb: ActorsScriptTaskData::HandleEndMessage | AITaskManager.obj | retail, upstream name already matches, high
+// pdb params: aiThread
 void FUN_008c90e0_shell::ActorsScriptTaskData_HandleEndMessage(unsigned int)
 {
-    g_011dfbe8.WaitForTasksDuringRendering();
-    g_011dfc04.WaitForTasksDuringRendering();
-    g_011dfc38.WaitForTasksDuringRendering();
+    UpdatingDetection.WaitForTasksDuringRendering();
+    UpdatingMovement.WaitForTasksDuringRendering();
+    UpdatingActors.WaitForTasksDuringRendering();
 }
 }  // namespace fnv_008c90e0
 
@@ -453,7 +487,7 @@ namespace fnv_008c9170 {
 struct FUN_008c82e0
 {
     int pad[13];
-    FUN_008c82e0(int a);
+    FUN_008c82e0(int apPool);
     virtual void Run();
 };
 struct FUN_008c9170 : FUN_008c82e0
@@ -464,6 +498,8 @@ struct FUN_008c9170 : FUN_008c82e0
 };
 // Constructs the object by forwarding a to the base constructor and initializing field to 0.
 // @fnv 0x008c9170
+// pdb: MovementTaskData::MovementTaskData | AITaskManager.obj | debug, object-file gap fill, medium
+// pdb params: apPool
 FUN_008c9170::FUN_008c9170(int a) : FUN_008c82e0(a)
 {
     field = 0;
@@ -478,6 +514,7 @@ struct FUN_008c91a0_shell
 };
 // Calls FUN_008c91d0, then frees this with operator delete when flags has bit 0 set, and returns this.
 // @fnv 0x008c91a0
+// pdb: MovementTaskData::`scalar deleting destructor' | AITaskManager.obj | retail, vtable slot, high
 void* FUN_008c91a0_shell::FUN_008c91a0(unsigned int flags)
 {
     UpdateState_008c91d0();
@@ -497,6 +534,7 @@ struct FUN_008c91d0_shell
 
 // @fnv 0x008c91d0
 // src: GUESS 0x008c91d0 (confidence: low)
+// pdb: MovementTaskData::~MovementTaskData | AITaskManager.obj | debug, object-file gap fill, medium
 void FUN_008c91d0_shell::UpdateState_008c91d0()
 {
     m_vft = &DAT_010857e8;
@@ -504,35 +542,39 @@ void FUN_008c91d0_shell::UpdateState_008c91d0()
 }
 
 namespace fnv_008c91f0 {
-extern ActorTaskManager g_011dfbe8;
-extern ActorTaskManager g_011dfc04;
+extern ActorTaskManager UpdatingDetection; // src: XBOX_RETAIL_PDB 0x011dfbe8 (old: g_011dfbe8)
+extern ActorTaskManager UpdatingMovement; // src: XBOX_RETAIL_PDB 0x011dfc04 (old: g_011dfc04)
 
 // Clears field and queries the performance counter on both g_011dfc04 and g_011dfbe8.
 // @fnv 0x008c91f0
+// pdb: MovementTaskData::HandleCountMessage | AITaskManager.obj | retail, vtable slot, high
+// pdb params: auiCount
 }  // namespace fnv_008c91f0
 void MovementTaskData::SetMobileObjectCount(unsigned int auiCount)
 {
     using namespace fnv_008c91f0;
-    uiRunCount = 0;
-    fnv_008c91f0::g_011dfc04.QueryPerformanceCounter(0);
-    fnv_008c91f0::g_011dfbe8.QueryPerformanceCounter(0);
+    iUpdated = 0;
+    fnv_008c91f0::UpdatingMovement.QueryPerformanceCounter(0);
+    fnv_008c91f0::UpdatingDetection.QueryPerformanceCounter(0);
 }
 
 
 namespace fnv_008c9300 {
-extern ActorTaskManager g_011dfbe8;
-extern ActorTaskManager g_011dfc04;
+extern ActorTaskManager UpdatingDetection; // src: XBOX_RETAIL_PDB 0x011dfbe8 (old: g_011dfbe8)
+extern ActorTaskManager UpdatingMovement; // src: XBOX_RETAIL_PDB 0x011dfc04 (old: g_011dfc04)
 struct FUN_008c9300_shell
 {
-    void MovementTaskData_HandleEndMessage(int a);
+    void MovementTaskData_HandleEndMessage(int aiThread);
 };
 // Calls WaitForTasksDuringRendering on g_011dfbe8 and g_011dfc04.
 // @fnv 0x008c9300
 // src: XBOX_PDB 0x008c9300
-void FUN_008c9300_shell::MovementTaskData_HandleEndMessage(int aiUnused)
+// pdb: MovementTaskData::HandleEndMessage | AITaskManager.obj | retail, upstream name already matches, high
+// pdb params: aiThread
+void FUN_008c9300_shell::MovementTaskData_HandleEndMessage(int aiThread)
 {
-    g_011dfbe8.WaitForTasksDuringRendering();
-    g_011dfc04.WaitForTasksDuringRendering();
+    UpdatingDetection.WaitForTasksDuringRendering();
+    UpdatingMovement.WaitForTasksDuringRendering();
 }
 }  // namespace fnv_008c9300
 
@@ -564,6 +606,9 @@ struct Obj_008c9a80
 
 // Stores a into m_items at a circular index derived from m_44 and m_40, then increments m_40, if m_40 is below 10.
 // @fnv 0x008c9a80
+// pdb: AITaskQueue::Enqueue | AITaskManager.obj | debug, call graph (shared callers), low
+// pdb params: pTaskData
+// pdb locals: icurPos
 void Obj_008c9a80::PushItem(int aiValue)
 {
     if (m_40 < 10)
@@ -583,6 +628,7 @@ struct FUN_008c9ec0_shell
     void* FUN_008c9ec0(unsigned int flags);
 };
 // @fnv 0x008c9ec0
+// pdb: AITaskThread::`scalar deleting destructor' | AITaskManager.obj | debug, vtable slot, medium
 void* FUN_008c9ec0_shell::FUN_008c9ec0(unsigned int flags)
 {
     FUN_008c9ef0();
@@ -617,6 +663,7 @@ struct FUN_008c9ef0 : FUN_00aa63c0_base
 };
 // Destructor for FUN_008c9ef0; the body is empty.
 // @fnv 0x008c9ef0
+// pdb: AITaskThread::~AITaskThread | AITaskManager.obj | debug, object-file gap fill, medium
 FUN_008c9ef0::~FUN_008c9ef0()
 {}
 
@@ -625,6 +672,7 @@ struct FUN_008c9fb0_shell
     void SignalAtOffset30();
 };
 // @fnv 0x008c9fb0
+// pdb: AITaskThread::StartProcessingTasks | AITaskManager.obj | debug, object-file gap fill, medium
 void FUN_008c9fb0_shell::SignalAtOffset30()
 {
     ((CountingSemaphore*)((char*)this + 0x30))->Signal();
@@ -659,6 +707,7 @@ struct FUN_008ca300_shell
 
 // @fnv 0x008ca300
 // src: COMMUNITY 0x008ca300
+// pdb: AITaskManager::WaitForTasksDuringRendering | AITaskManager.obj | retail, upstream name already matches, high
 void __thiscall FUN_008ca300_shell::AITaskManager_WaitForTasksDuringRendering()
 {
     if (*(unsigned char*)((char*)this + 0x10180))
@@ -675,6 +724,8 @@ struct FUN_008ca330_shell
 };
 // @fnv 0x008ca330
 // src: COMMUNITY 0x008ca330
+// pdb: AITaskThreadManager::WaitForThread | AITaskManager.obj | retail, upstream name already matches, high
+// pdb params: aiIndex
 void FUN_008ca330_shell::AITaskThreadManager_WaitForThread(int aiIndex)
 {
     AITaskThread_WaitForCompletion(((void**)this)[aiIndex]);
@@ -697,6 +748,7 @@ struct FUN_008ca3e0_shell
 };
 // Calls FUN_008ca3c0, deletes this when flags has bit 0 set, and returns this.
 // @fnv 0x008ca3e0
+// pdb: BSTFreeList<MobileObjectMessage>::`scalar deleting destructor' | AITaskManager.obj | debug, vtable slot, medium
 void* FUN_008ca3e0_shell::FUN_008ca3e0(unsigned int flags)
 {
     Object_SetVirtualTable_008ca3c0();
@@ -712,6 +764,7 @@ struct FUN_008ca410_shell
     void* FUN_008ca410(unsigned int flags);
 };
 // @fnv 0x008ca410
+// pdb: BSTStaticFreeList<MobileObjectMessage,4096>::`scalar deleting destructor' | AITaskManager.obj | debug, vtable slot, medium
 void* FUN_008ca410_shell::FUN_008ca410(unsigned int flags)
 {
     FUN_008ca350();
@@ -738,6 +791,8 @@ struct FUN_008ca440 : FUN_008ca740
 
 // Stores the constructor argument in m_08, zeroes m_0c, and points m_10 at m_0c.
 // @fnv 0x008ca440
+// pdb: BSTCommonLLMessageQueue<MobileObjectMessage>::BSTCommonLLMessageQueue<MobileObjectMessage> | AITaskManager.obj | debug, call graph, medium
+// pdb params: apFreeList
 FUN_008ca440::FUN_008ca440(int aiValue)
 {
     m_08 = aiValue;
@@ -752,8 +807,9 @@ struct FUN_008ca520_shell
 extern int DAT_01085864;
 
 // @fnv 0x008ca500
-// src: GUESS 0x008ca500 (confidence: low)
-void __fastcall Object_UpdateFields_008ca500(void* this_ptr)
+// src: XBOX_DEBUG_PDB 0x008ca500
+// pdb: BSTCommonMessageQueue<MobileObjectMessage>::~BSTCommonMessageQueue<MobileObjectMessage> | AITaskManager.obj | debug, call graph (shared callers), high
+void __fastcall BSTCommonMessageQueue_MobileObjectMessage_dtor(void* this_ptr)
 {
     *(void**)this_ptr = &DAT_01085864;
     ((FUN_008ca520_shell*)this_ptr)->InitVtbl();
@@ -776,14 +832,15 @@ void FUN_008ca520_shell::InitVtbl()
 void __cdecl operator delete(void*);
 struct FUN_008ca540_shell
 {
-    void Object_UpdateFields_008ca500();
+    void BSTCommonMessageQueue_MobileObjectMessage_dtor();
     void* FUN_008ca540(unsigned int flags);
 };
 // Calls FUN_008ca500, then deletes this when flags has bit 0 set, and returns this.
 // @fnv 0x008ca540
+// pdb: BSTCommonMessageQueue<MobileObjectMessage>::`scalar deleting destructor' | AITaskManager.obj | debug, vtable slot, medium
 void* FUN_008ca540_shell::FUN_008ca540(unsigned int flags)
 {
-    Object_UpdateFields_008ca500();
+    BSTCommonMessageQueue_MobileObjectMessage_dtor();
     if (flags & 1)
         operator delete(this);
     return this;
@@ -797,6 +854,7 @@ struct FUN_008ca570_shell
 };
 // Calls InitVtbl, then deletes this when flags has bit 0 set, and returns this.
 // @fnv 0x008ca570
+// pdb: BSTMessageQueue<MobileObjectMessage>::`scalar deleting destructor' | AITaskManager.obj | retail, vtable slot, high
 void* FUN_008ca570_shell::FUN_008ca570(unsigned int flags)
 {
     InitVtbl();
@@ -823,14 +881,17 @@ struct FUN_008ca5a0_mgr
     FUN_008ca5a0_pool* pool;
     FUN_008ca5a0_node* head;
     FUN_008ca5a0_node** tail;
-    bool AppendNode(unsigned int arg);
+    bool AppendNode(unsigned int aMessage);
 };
 // @fnv 0x008ca5a0
-bool FUN_008ca5a0_mgr::AppendNode(unsigned int arg)
+// pdb: BSTCommonLLMessageQueue<MobileObjectMessage>::DoTryPush | AITaskManager.obj | retail, vtable slot, high
+// pdb params: aMessage
+// pdb locals: pElem, bResult
+bool FUN_008ca5a0_mgr::AppendNode(unsigned int aMessage)
 {
     bool result;
     FUN_008ca5a0_node* node;
-    if (pool && pool->BSTFreeList_Allocate(&node, arg))
+    if (pool && pool->BSTFreeList_Allocate(&node, aMessage))
     {
         if (!head)
             tail = &head;
@@ -854,11 +915,13 @@ struct List_009e03e0
 // If the new value differs from reinterpret_cast<int&>(m_pCurrentQuest), stores it and, when it becomes zero, clears the m_6c4 list.
 // @fnv 0x009529d0
 // src: XBOX_PDB 0x009529d0
-void PlayerCharacter::SetActiveQuest(int a)
+// pdb: PlayerCharacter::SetActiveQuest | PlayerCharacter.obj | debug, upstream name already matches, high
+// pdb params: apActiveQuest
+void PlayerCharacter::SetActiveQuest(int apActiveQuest)
 {
-    if (a != reinterpret_cast<int&>(m_pCurrentQuest))
+    if (apActiveQuest != reinterpret_cast<int&>(m_pCurrentQuest))
     {
-        reinterpret_cast<int&>(m_pCurrentQuest) = a;
+        reinterpret_cast<int&>(m_pCurrentQuest) = apActiveQuest;
         if (reinterpret_cast<int&>(m_pCurrentQuest))
         {
         }
@@ -889,6 +952,7 @@ struct FUN_008c83a0 : BaseT
 
 // Destructor for FUN_008c83a0; the body is empty and the base and member destructors run implicitly.
 // @fnv 0x008c83a0
+// pdb: MobileObjectTaskletData::~MobileObjectTaskletData | AITaskManager.obj | debug, object-file gap fill, medium
 FUN_008c83a0::~FUN_008c83a0()
 {}
 
@@ -938,6 +1002,7 @@ struct FUN_008c9430 : FUN_008c8430_base
     ~FUN_008c9430();
 };
 // @fnv 0x008c9430
+// pdb: AITaskManager::~AITaskManager | AITaskManager.obj | debug, object-file gap fill, medium
 FUN_008c9430::~FUN_008c9430()
 {}
 
@@ -969,10 +1034,13 @@ struct FUN_008c9ae0_mgr
 {
     FUN_008c9bd0* threads[3];
     int count;
-    void CreateThread(unsigned int aiThread);
+    void AITaskThreadManager_AddThread(unsigned int aiThread);
 };
 // @fnv 0x008c9ae0
-void FUN_008c9ae0_mgr::CreateThread(unsigned int aiThread)
+// src: XBOX_RETAIL_PDB 0x008c9ae0
+// pdb: AITaskThreadManager::AddThread | AITaskManager.obj | retail, string-set bridge, high
+// pdb params: aiThread
+void FUN_008c9ae0_mgr::AITaskThreadManager_AddThread(unsigned int aiThread)
 {
     if (count < 3)
     {
@@ -997,6 +1065,8 @@ struct FUN_008c9bd0 : BSThread
 };
 // Initializes the thread's start and finish objects, stores the thread argument in arg, and clears quit.
 // @fnv 0x008c9bd0
+// pdb: AITaskThread::AITaskThread | AITaskManager.obj | retail, call graph, high
+// pdb params: aiThread
 FUN_008c9bd0::FUN_008c9bd0(unsigned int aiThread) : start(0, 10), finish(0, 10)
 {
     arg = aiThread;
@@ -1020,11 +1090,13 @@ struct Owner
 };
 // Constructs a FUN_008c8190 temporary and invokes the virtual _b on the Mid subobject at offset 0x1c of this.
 // @fnv 0x008ca040
+// pdb: MobileObjectTaskletData::SendEndMessage | AITaskManager.obj | debug, object-file run extension, low
 void Owner::CallMidVirtualB()
 {
     reinterpret_cast<Mid*>(reinterpret_cast<char*>(this) + 0x1c)->_b(FUN_008c8190());
 }
 
+// pdb: class Date, size 0x4 (here 0x10), 2 members
 struct Date
 {
     int m_v[4];
@@ -1042,6 +1114,8 @@ struct FUN_008ca350 : FUN_008ca3c0
 };
 // Destructs the array of Date elements held by the object.
 // @fnv 0x008ca350
+// pdb: MobileObjectTaskletData::SendEndMessage | AITaskManager.obj | retail, object-file run extension, low
+// pdb note: debug build links it to BSTStaticFreeList<MobileObjectMessage,4096>::~BSTStaticFreeList<MobileObjectMessage,4096>
 FUN_008ca350::~FUN_008ca350()
 {}
 
@@ -1058,11 +1132,13 @@ struct FUN_008ca500
 };
 struct FUN_008ca480 : FUN_008ca500
 {
-    bool BSTCommonMessageQueue_MobileObjectMessage_TryPop(Tmp_008ca480* t);
+    bool BSTCommonMessageQueue_MobileObjectMessage_TryPop(Tmp_008ca480* aMessage);
     virtual ~FUN_008ca480();
 };
 // Destructor that repeatedly calls FUN_006ec390 with a temporary Tmp_008ca480 until it returns false.
 // @fnv 0x008ca480
+// pdb: BSTCommonLLMessageQueue<MobileObjectMessage>::~BSTCommonLLMessageQueue<MobileObjectMessage> | AITaskManager.obj | debug, call graph, medium
+// pdb locals: dummyMessage
 FUN_008ca480::~FUN_008ca480()
 {
     Tmp_008ca480 t;
@@ -1092,17 +1168,20 @@ struct Obj_008ca620
     int m_auiShapeKeys[2];
     List_008ca620* m_08;
     Node_008ca620* m_0c;
-    bool PopNode(Arg_008ca620* a);
+    bool PopNode(Arg_008ca620* aMessage);
 };
 
 // @fnv 0x008ca620
-bool Obj_008ca620::PopNode(Arg_008ca620* a)
+// pdb: BSTCommonLLMessageQueue<MobileObjectMessage>::DoTryPop | AITaskManager.obj | retail, vtable slot, high
+// pdb params: aMessage
+// pdb locals: pElem, bResult
+bool Obj_008ca620::PopNode(Arg_008ca620* aMessage)
 {
     bool bPopped;
     Node_008ca620* node = m_0c;
     if (node)
     {
-        a->InitializeFields_008caa70(node->_ref_006815c0());
+        aMessage->InitializeFields_008caa70(node->_ref_006815c0());
         m_0c = node->m_0c;
         m_08->ProcessState_008ca770(&node);
         bPopped = true;
@@ -1137,6 +1216,7 @@ struct FUN_008ca680 : FUN_008ca800_base
 };
 // Constructs the object and calls InitFreeList with 0x1000 and the items array.
 // @fnv 0x008ca680
+// pdb: BSTStaticFreeList<MobileObjectMessage,4096>::BSTStaticFreeList<MobileObjectMessage,4096> | AITaskManager.obj | debug, object-file gap fill, medium
 FUN_008ca680::FUN_008ca680()
 {
     InitFreeList(0x1000, items);
@@ -1150,6 +1230,7 @@ struct FUN_008ca710_shell
     void* FUN_008ca710(unsigned int flags);
 };
 // @fnv 0x008ca710
+// pdb: BSTCommonLLMessageQueue<MobileObjectMessage>::`scalar deleting destructor' | AITaskManager.obj | retail, vtable slot, high
 void* FUN_008ca710_shell::FUN_008ca710(unsigned int flags)
 {
     FUN_008ca480();
@@ -1161,6 +1242,9 @@ void* FUN_008ca710_shell::FUN_008ca710(unsigned int flags)
 
 // If apMob is an actor with a flag at offset 0xbc set, or a talking activator, calls Unk_9A with 0.0f.
 // @fnv 0x008c8910
+// pdb: AnimationTaskData::HandleMobMessage | AITaskManager.obj | retail, vtable slot, high
+// pdb params: apMob
+// pdb locals: pmob, pact
 void AnimationTaskData::ProcessMobileObject(MobileObject* apMob)
 {
     MobileObject* pmob = apMob;
@@ -1179,15 +1263,18 @@ void AnimationTaskData::ProcessMobileObject(MobileObject* apMob)
 }
 
 // @fnv 0x008c8240
+// pdb: MobileObjectTaskletData::RunToCompletion | AITaskManager.obj | debug, call graph, medium
+// pdb params: aiThread
+// pdb locals: msg
 void MobileObjectTaskletData::ProcessMessages(int eType)
 {
-    this->eType = eType;
+    this->iThread = eType;
     // Raw storage preserves the original constructor-only lifetime.
     struct { unsigned int word0, word1; void* word2; } msg;
     reinterpret_cast<MobileObjectTaskletContext*>(&msg)->MobileObjectTaskletContext::MobileObjectTaskletContext();
-    while (kMessageQueue.Pop(*reinterpret_cast<MobileObjectTaskletContext*>(&msg)))
+    while (msgqueue.Pop(*reinterpret_cast<MobileObjectTaskletContext*>(&msg)))
     {
-        if (!ProcessMessage(&msg, eType))
+        if (!HandleMessage(&msg, eType))
             break;
     }
 }
@@ -1200,6 +1287,9 @@ struct MobileObjectExt
 
 // If apMob is an actor and the script check passes, calls FUN_00565870 on it and increments m_3C.
 // @fnv 0x008c9110
+// pdb: ActorsScriptTaskData::HandleMobMessage | AITaskManager.obj | retail, vtable slot, high
+// pdb params: apMob
+// pdb locals: pmob
 // File-local extension for a method absent from the shared declaration.
 struct ProcessActorScriptMethods : ActorsScriptTaskData
 {
@@ -1211,26 +1301,30 @@ void ProcessActorScriptMethods::Run(MobileObject* apMob)
     if (pmob && pmob->IsActor() && Script::IsConsolePlatform())
     {
         ((MobileObjectExt*)pmob)->TESObjectREFR_RunScript();
-        uiRunCount++;
+        iUpdated++;
     }
 }
 
 
 // @fnv 0x008c81c0
-bool MobileObjectTaskletData::ProcessMessage(void* aMessage, int aThread)
+// src: XBOX_DEBUG_PDB 0x008c81c0
+// pdb: MobileObjectTaskletData::HandleMessage | AITaskManager.obj | debug, call graph (shared callers), high
+// pdb params: aMessage, aiThread
+// pdb locals: bResult
+bool MobileObjectTaskletData::HandleMessage(void* aMessage, int aiThread)
 {
     bool bResult = true;
     switch (static_cast<const MobileObjectTaskletContext*>(aMessage)->eType)
     {
     case 0:
-        MobileObjectTaskletState = static_cast<const MobileObjectTaskletContext*>(aMessage)->uiObjectCount;
+        uiHighActorCount = static_cast<const MobileObjectTaskletContext*>(aMessage)->uiObjectCount;
         SetMobileObjectCount(static_cast<const MobileObjectTaskletContext*>(aMessage)->uiObjectCount);
         break;
     case 1:
         ProcessMobileObject(static_cast<MobileObject*>(static_cast<const MobileObjectTaskletContext*>(aMessage)->pObject));
         break;
     case 2:
-        SetThreadNumber(aThread);
+        SetThreadNumber(aiThread);
         bResult = false;
         break;
     }
@@ -1242,9 +1336,9 @@ void MobileObjectTaskletData::Process()
     // Raw storage preserves the original constructor-only lifetime.
     struct { unsigned int word0, word1; void* word2; } msg;
     reinterpret_cast<MobileObjectTaskletContext*>(&msg)->MobileObjectTaskletContext::MobileObjectTaskletContext();
-    while (kMessageQueue.TryPop(*reinterpret_cast<MobileObjectTaskletContext*>(&msg)))
+    while (msgqueue.TryPop(*reinterpret_cast<MobileObjectTaskletContext*>(&msg)))
     {
-        if (!ProcessMessage(&msg, eType))
+        if (!HandleMessage(&msg, iThread))
             return;
     }
     ((PathingTaskData*)this)->SetTaskYielded();
@@ -1255,7 +1349,7 @@ namespace fnv_008c82a0 {
 struct FUN_008c82e0
 {
     int pad[13];
-    FUN_008c82e0(int a);
+    FUN_008c82e0(int apPool);
     virtual void Run();
 };
 struct FUN_008c82a0 : FUN_008c82e0
@@ -1267,6 +1361,8 @@ struct FUN_008c82a0 : FUN_008c82e0
 };
 // Initializes the derived object's f38 to 0.0f and f3c to 0 after constructing the base with a.
 // @fnv 0x008c82a0
+// pdb: DetectionTaskData::DetectionTaskData | AITaskManager.obj | debug, object-file gap fill, medium
+// pdb params: apPool
 FUN_008c82a0::FUN_008c82a0(int a) : FUN_008c82e0(a)
 {
     f38 = 0.0f;
@@ -1275,28 +1371,32 @@ FUN_008c82a0::FUN_008c82a0(int a) : FUN_008c82e0(a)
 }  // namespace fnv_008c82a0
 
 // @fnv 0x008c82e0
-MobileObjectTaskletData::MobileObjectTaskletData(BSTFreeList<MobileObjectTaskletContext>* arg)
-    : pMobList(0), kMessageQueue(arg), MobileObjectTaskletState(0), eType(0)
+// pdb: MobileObjectTaskletData::MobileObjectTaskletData | AITaskManager.obj | debug, upstream name already matches, high
+// pdb params: apPool
+MobileObjectTaskletData::MobileObjectTaskletData(BSTFreeList<MobileObjectTaskletContext>* apPool)
+    : pmoblist(0), msgqueue(apPool), uiHighActorCount(0), iThread(0)
 {}
 
 
 namespace fnv_008c8450 {
-extern ActorTaskManager g_011dfbe8;
-extern ActorTaskManager g_011dfc04;
+extern ActorTaskManager UpdatingDetection; // src: XBOX_RETAIL_PDB 0x011dfbe8 (old: g_011dfbe8)
+extern ActorTaskManager UpdatingMovement; // src: XBOX_RETAIL_PDB 0x011dfc04 (old: g_011dfc04)
 
 // Clears f38 and f3c, then calls QueryPerformanceCounter on g_011dfc04 and g_011dfbe8.
 // @fnv 0x008c8450
+// pdb: DetectionTaskData::HandleCountMessage | AITaskManager.obj | retail, vtable slot, high
+// pdb params: auiCount
 // File-local extension for a method absent from the shared declaration.
 struct ResetMovementTaskMethods : MovementTaskData
 {
-    void Run(unsigned int auUnused);
+    void Run(unsigned int auiCount);
 };
-void ResetMovementTaskMethods::Run(unsigned int auUnused)
+void ResetMovementTaskMethods::Run(unsigned int auiCount)
 {
     *reinterpret_cast<float*>(reinterpret_cast<char*>(this) + 0x38) = 0.0f;
     *reinterpret_cast<int*>(reinterpret_cast<char*>(this) + 0x3c) = 0;
-    g_011dfc04.QueryPerformanceCounter(0);
-    g_011dfbe8.QueryPerformanceCounter(0);
+    UpdatingMovement.QueryPerformanceCounter(0);
+    UpdatingDetection.QueryPerformanceCounter(0);
 }
 }  // namespace fnv_008c8450
 
@@ -1304,7 +1404,7 @@ namespace fnv_008c8ae0 {
 struct FUN_008c82e0
 {
     int pad[14];
-    FUN_008c82e0(int a);
+    FUN_008c82e0(int apPool);
     virtual void Run();
 };
 struct FUN_008c8ae0 : FUN_008c82e0
@@ -1316,6 +1416,8 @@ struct FUN_008c8ae0 : FUN_008c82e0
 };
 // Initializes the two derived-class fields f3c and f40 to zero after constructing the base class.
 // @fnv 0x008c8ae0
+// pdb: PackageUpdateTaskData::PackageUpdateTaskData | AITaskManager.obj | debug, object-file gap fill, medium
+// pdb params: apPool
 FUN_008c8ae0::FUN_008c8ae0(int a) : FUN_008c82e0(a)
 {
     f3c = 0;
@@ -1325,11 +1427,13 @@ FUN_008c8ae0::FUN_008c8ae0(int a) : FUN_008c82e0(a)
 
 namespace fnv_008c8b70 {
 
-extern ActorTaskManager g_011dfbe8;
+extern ActorTaskManager UpdatingDetection; // src: XBOX_RETAIL_PDB 0x011dfbe8 (old: g_011dfbe8)
 extern Actor* g_thePlayer;
 void HighProcess_ClearWanderStarted();
 
 // @fnv 0x008c8b70
+// pdb: PackageUpdateTaskData::HandleCountMessage | AITaskManager.obj | debug, vtable slot, medium
+// pdb params: uiCount
 // File-local extension for a method absent from the shared declaration.
 struct ResetPackageTaskMethods : PackageUpdateTaskData
 {
@@ -1337,32 +1441,34 @@ struct ResetPackageTaskMethods : PackageUpdateTaskData
 };
 void ResetPackageTaskMethods::Run(unsigned int auiUnused)
 {
-    uiUpdatedCount = 0;
-    uiSkippedCount = 0;
+    iUpdated = 0;
+    iNotUpdated = 0;
     HighProcess_ClearWanderStarted();
     g_thePlayer->FUN_008c8bb0(0);
-    g_011dfbe8.QueryPerformanceCounter(0);
+    UpdatingDetection.QueryPerformanceCounter(0);
 }
 }  // namespace fnv_008c8b70
 
 namespace fnv_008c90a0 {
-extern ActorTaskManager g_011dfbe8;
-extern ActorTaskManager g_011dfc04;
-extern ActorTaskManager g_011dfc38;
+extern ActorTaskManager UpdatingDetection; // src: XBOX_RETAIL_PDB 0x011dfbe8 (old: g_011dfbe8)
+extern ActorTaskManager UpdatingMovement; // src: XBOX_RETAIL_PDB 0x011dfc04 (old: g_011dfc04)
+extern ActorTaskManager UpdatingActors; // src: XBOX_RETAIL_PDB 0x011dfc38 (old: g_011dfc38)
 
 // Clears f3c and queries the three performance counters with argument 0.
 // @fnv 0x008c90a0
+// pdb: ActorsScriptTaskData::HandleCountMessage | AITaskManager.obj | retail, vtable slot, high
+// pdb params: auiCount
 // File-local extension for a method absent from the shared declaration.
 struct ResetActorScriptTaskMethods : ActorsScriptTaskData
 {
-    void Run(unsigned int a);
+    void Run(unsigned int auiCount);
 };
-void ResetActorScriptTaskMethods::Run(unsigned int a)
+void ResetActorScriptTaskMethods::Run(unsigned int auiCount)
 {
-    uiRunCount = 0;
-    g_011dfc38.QueryPerformanceCounter(0);
-    g_011dfc04.QueryPerformanceCounter(0);
-    g_011dfbe8.QueryPerformanceCounter(0);
+    iUpdated = 0;
+    UpdatingActors.QueryPerformanceCounter(0);
+    UpdatingMovement.QueryPerformanceCounter(0);
+    UpdatingDetection.QueryPerformanceCounter(0);
 }
 }  // namespace fnv_008c90a0
 
@@ -1381,16 +1487,18 @@ struct FUN_008c9c70_cls
     unsigned char quit;
     char pad1[3];
     int arg;
-    void InitMemory();
-    void DispatchTask();
+    void AITaskThread_OnStartup();
+    void AITaskThread_OnShutdown();
     unsigned int RunTaskletLoop();
 };
 // Waits on start, processes tasklet data via g_011dfb98 until none remain, signals finish, and exits when quit is set.
 // @fnv 0x008c9c70
+// pdb: AITaskThread::ThreadProc | AITaskManager.obj | retail, vtable slot, high
+// pdb locals: ptaskData
 unsigned int FUN_008c9c70_cls::RunTaskletLoop()
 {
     MobileObjectTaskletData* pTaskletData;
-    InitMemory();
+    AITaskThread_OnStartup();
     while (1)
     {
         start.Wait();
@@ -1405,7 +1513,7 @@ unsigned int FUN_008c9c70_cls::RunTaskletLoop()
         } while (pTaskletData);
         finish.Signal();
     }
-    DispatchTask();
+    AITaskThread_OnShutdown();
     return 0;
 }
 }  // namespace fnv_008c9c70
@@ -1422,6 +1530,8 @@ struct FUN_008c9f70_this
 };
 // Iterates over count elements and calls SignalAtOffset30 on each one.
 // @fnv 0x008c9f70
+// pdb: AITaskThreadManager::StartThreads | AITaskManager.obj | debug, object-file gap fill, medium
+// pdb locals: ithreadIdx
 void FUN_008c9f70_this::CallAllElements()
 {
     for (int i = 0; i < count; i++)
@@ -1439,6 +1549,8 @@ struct FUN_008c9fd0_this
 // Calls FUN_008c7490 on each of the count pointers stored in the array starting at this.
 // @fnv 0x008c9fd0
 // src: XBOX_PDB 0x008c9fd0
+// pdb: AITaskThreadManager::WaitForThreads | AITaskManager.obj | retail, upstream name already matches, high
+// pdb locals: ithreadIdx
 void FUN_008c9fd0_this::AITaskThreadManager_WaitForThreads()
 {
     for (int i = 0; i < count; i++)
@@ -1458,6 +1570,8 @@ struct H008ca010
 };
 // Calls f1 on the inner object, passing the given int through.
 // @fnv 0x008ca010
+// pdb: MobileObjectTaskletData::SendMessageTo | AITaskManager.obj | debug, object-file run extension, low
+// pdb params: aMessage
 void H008ca010::ForwardToInner(int aiValue)
 {
     inner.f1(aiValue);
@@ -1466,6 +1580,9 @@ void H008ca010::ForwardToInner(int aiValue)
 
 // If apMob is a valid mobile object with v100 set, resets the actor's v2f8 to 0 when byte 0xbc is nonzero and increments m_unk38.
 // @fnv 0x008c8a70
+// pdb: ActorUpdateTaskData::HandleMobMessage | AITaskManager.obj | retail, vtable slot, high
+// pdb params: apMob
+// pdb locals: pmob, pact
 void ActorUpdateTaskData::UpdateActorTask(MobileObject* apMob)
 {
     MobileObject* pmob = apMob;
@@ -1477,7 +1594,7 @@ void ActorUpdateTaskData::UpdateActorTask(MobileObject* apMob)
         {
             static_cast<MobileObject*>(pact)->Update(0.0f);
         }
-        uiRunCount++;
+        iUpdated++;
     }
 }
 
@@ -1541,6 +1658,7 @@ struct FUN_008c9330
 
 // Constructs the object, initializing m0 through m5 with a pointer to m6, calling m6.FUN_008ca680(), and setting m_flag to 0.
 // @fnv 0x008c9330
+// pdb: AITaskManager::AITaskManager | AITaskManager.obj | debug, object-file gap fill, medium
 FUN_008c9330::FUN_008c9330() : m0(&m6), m1(&m6), m2(&m6), m3(&m6), m4(&m6), m5(&m6)
 {
     m6.FUN_008ca680();
@@ -1571,35 +1689,38 @@ struct Task
 
 // @fnv 0x0077a480
 // src: XBOX_PDB 0x0077a480
-void __cdecl HUDMainMenu_ShowQuestName(TESQuest* quest)
+// pdb: HUDMainMenu::ShowQuestName | HUDMainMenu.obj | retail, upstream name already matches, high
+// pdb params: apQuest
+// pdb locals: questName
+void __cdecl HUDMainMenu_ShowQuestName(TESQuest* apQuest)
 {
     g_011d96cc.QueryPerformanceCounter(0);
 
-    if (quest == 0 || _pme == 0)
+    if (apQuest == 0 || _pme == 0)
         return;
 
     DAT_011d96ac = g_timeGlobal.GetTime();
 
     Task* task = new Task;
-    task->quest = quest;
+    task->quest = apQuest;
 
-    if (quest->HasFlag40())
+    if (apQuest->HasFlag40())
     {
         task->state = 2;
-        if (_g_thePlayer->PlayerCharacter_GetActiveQuest() == quest)
+        if (_g_thePlayer->PlayerCharacter_GetActiveQuest() == apQuest)
             _g_thePlayer->SetActiveQuest(0);
     }
-    else if (quest->GetCompleted())
+    else if (apQuest->GetCompleted())
     {
         task->state = 1;
-        if (_g_thePlayer->PlayerCharacter_GetActiveQuest() == quest)
+        if (_g_thePlayer->PlayerCharacter_GetActiveQuest() == apQuest)
             _g_thePlayer->SetActiveQuest(0);
     }
     else
     {
         task->state = 0;
         if (_g_thePlayer->PlayerCharacter_GetActiveQuest() == 0)
-            _g_thePlayer->SetActiveQuest(reinterpret_cast<int>(quest));
+            _g_thePlayer->SetActiveQuest(reinterpret_cast<int>(apQuest));
     }
 
     QuestUpdateManager_AddQuestNamesTail(reinterpret_cast<char*>(task));
@@ -1651,10 +1772,12 @@ struct TaskOwner
     unsigned int unk54, unk58, unk5c, unk60;
     unsigned int unk64, unk68, unk6c, unk70;
     void* payload;
-    void DispatchTask();
+    void AITaskThread_OnShutdown();
 };
 // @fnv 0x008c9e40
-void TaskOwner::DispatchTask()
+// src: XBOX_RETAIL_PDB 0x008c9e40
+// pdb: AITaskThread::OnShutdown | AITaskManager.obj | retail, object-file run extension, high
+void TaskOwner::AITaskThread_OnShutdown()
 {
     context.TESMain_GetThread()->Dispatch(payload, 0x16800);
     hkBaseSystem_quitThread();
@@ -1669,6 +1792,9 @@ void TaskOwner::DispatchTask()
 
 // Advances the task counter and, depending on the mob's state, calls Unk_D2, FUN_009bec10 or FUN_009ae580 with 0.0f.
 // @fnv 0x008c9220
+// pdb: MovementTaskData::HandleMobMessage | AITaskManager.obj | retail, vtable slot, high
+// pdb params: apMob
+// pdb locals: pmob, pact, pprojectile, pexplosion
 void __fastcall UpdateProjectileMovement(MobileObject*, float);
 void __fastcall UpdateExplosionMovement(MobileObject*, float);
 void MovementTaskData::UpdateMovementTask(HighProcess* apMob)
@@ -1677,7 +1803,7 @@ void MovementTaskData::UpdateMovementTask(HighProcess* apMob)
     if (pCurrentObject && pCurrentObject->IsActor())
     {
         Actor* pActor = static_cast<Actor*>(pCurrentObject);
-        if (pActor->m_bFirstActorFlag)
+        if (pActor->bProcessMe)
         {
             pActor->Virtual_348(0.0f, g_thePlayer->IsSleepingOrResting());
         }
@@ -1695,7 +1821,7 @@ void MovementTaskData::UpdateMovementTask(HighProcess* apMob)
             UpdateExplosionMovement(pTarget, 0.0f);
         }
     }
-    uiRunCount++;
+    iUpdated++;
 }
 
 struct CountTask
@@ -1730,7 +1856,7 @@ extern BoolSettingView DAT_011dfb68, DAT_011dfc70, DAT_011dfb88;
 extern IntSettingView DAT_011c3ea4, DAT_011d10d4;
 struct ThreadManagerView
 {
-    void CreateThread(unsigned);
+    void AITaskThreadManager_AddThread(unsigned);
     void CallAllElements();
     void AITaskThreadManager_WaitForThreads();
 };
@@ -1838,6 +1964,8 @@ struct TaskOwnerTarget
 // If enabled, queues count and actor tasks into the six work queues, dispatches or clears them, and runs the int-setting callbacks.
 // @fnv 0x008c94e0
 // src: XBOX_PDB 0x008c94e0
+// pdb: AITaskManager::UpdateTasks | AITaskManager.obj | retail, upstream name already matches, high
+// pdb locals: uiItems, i
 void TaskOwnerTarget::AITaskManager_UpdateTasks()
 {
     unsigned count, uiActorCount;
@@ -1846,9 +1974,9 @@ void TaskOwnerTarget::AITaskManager_UpdateTasks()
     {
         if (*DAT_011dfb68.Bool())
         {
-            DAT_011dfc24.CreateThread(1);
-            DAT_011dfc24.CreateThread(3);
-            DAT_011dfc24.CreateThread(5);
+            DAT_011dfc24.AITaskThreadManager_AddThread(1);
+            DAT_011dfc24.AITaskThreadManager_AddThread(3);
+            DAT_011dfc24.AITaskThreadManager_AddThread(5);
         }
         DAT_011a34e7 = false;
     }
@@ -2008,9 +2136,9 @@ class ActorProjectileMethods : public Actor
 public:
     PROJ* GetProjectileBase();
     unsigned char Actor_IsInCombatWithActor(ActorProjectileMethods* a);
-    int Actor_GetDetectionLevelAgainstActor(int a, ActorProjectileMethods* b, unsigned char* c, unsigned char d, int e, int f, unsigned char* g);
-    void PlayerCharacter_InsertPerceivedActor(ActorProjectileMethods* a, unsigned char b, int c);
-    void PlayerCharacter_RemovePerceivedActor(ActorProjectileMethods* a);
+    int Actor_GetDetectionLevelAgainstActor(int abRunFormula, ActorProjectileMethods* apActor, unsigned char* abLineofSight, unsigned char binCombat, int abattacked, int abCombat, unsigned char* ap360LineOfSight);
+    void PlayerCharacter_InsertPerceivedActor(ActorProjectileMethods* apActor, unsigned char abAttack, int abHasLineSightNotDetection);
+    void PlayerCharacter_RemovePerceivedActor(ActorProjectileMethods* apActor);
 };
 
 class TG
@@ -2048,7 +2176,7 @@ extern S4 DAT_011e0e80;
 
 
 float BSMIN(float a, float b);
-float _RandomFloat(float a, float b);
+float _RandomFloat(float afMin, float afMax);
 
 class Owner
 {
@@ -2058,21 +2186,24 @@ class Owner
     char pad34[8];
     int m3c;
 
-    void UpdateProjectile(ActorProjectileMethods* arg);
+    void UpdateProjectile(ActorProjectileMethods* apMob);
 };
 
 // @fnv 0x008c84c0
-void Owner::UpdateProjectile(ActorProjectileMethods* arg)
+// pdb: DetectionTaskData::HandleMobMessage | AITaskManager.obj | retail, vtable slot, high
+// pdb params: apMob
+// pdb locals: ftime, pmob, pdetectact, fdistancefromplayer, bcombat, b360LineofSight, ereaction, blinesight, battack, iplayerdetect
+void Owner::UpdateProjectile(ActorProjectileMethods* apMob)
 {
     float v6 = (double)m30 * DAT_011f6394.GetTime();
     v6 = BSMIN(v6, 5.0f);
     v6 = _RandomFloat(0.0f, v6);
     ActorProjectileMethods* p = NULL;
-    if (arg && static_cast<MobileObject*>(arg)->IsActor())
+    if (apMob && static_cast<MobileObject*>(apMob)->IsActor())
     {
-        p = arg;
+        p = apMob;
         ActorProjectileMethods* aQ = p;
-        if (aQ->m_bFirstActorFlag && !aQ->GetProjectileBase()->m30.a20())
+        if (aQ->bProcessMe && !aQ->GetProjectileBase()->m30.a20())
         {
             float v3 = aQ->TESObjectREFR_GetDistanceFromReference(DAT_011dea3c, 0, 0);
             if (aQ != DAT_011dea3c && !DAT_011de45c->GetLoading())
@@ -2135,7 +2266,7 @@ void Owner::UpdateProjectile(ActorProjectileMethods* arg)
 
 namespace fnv_008c8be0 {
 bool __fastcall ShouldUpdateActor(Actor*);
-void __fastcall ApplyFatigueDamage(Actor*, float);
+void __fastcall Actor_RestoreFatigue(Actor*, float);
 // Additional Actor operation absent from Actor.h; no layout is duplicated.
 struct FollowerActorMethods : Actor
 {
@@ -2173,12 +2304,15 @@ class UpdateManager
     void* unk38;
     unsigned int updatedObjects;
     unsigned int updatedActors;
-    void UpdateMobileObject(MobileObject* object);
+    void UpdateMobileObject(MobileObject* apMob);
 };
 // @fnv 0x008c8be0
-void UpdateManager::UpdateMobileObject(MobileObject* object)
+// pdb: PackageUpdateTaskData::HandleMobMessage | AITaskManager.obj | retail, vtable slot, high
+// pdb params: apMob
+// pdb locals: pmob, pact, updatefollower, pfollow, plist, pHead, pTempList, ptemp, ptarget
+void UpdateManager::UpdateMobileObject(MobileObject* apMob)
 {
-    MobileObject* current = object;
+    MobileObject* current = apMob;
     Actor* actorTmp;
     bool allowedTmp;
     ExtraFollower* otherList3;
@@ -2193,7 +2327,7 @@ void UpdateManager::UpdateMobileObject(MobileObject* object)
         allowedTmp = true;
         if (current && current->IsActor())
             actorTmp = reinterpret_cast<Actor*>(current);
-        if (actorTmp && !actorTmp->m_bFirstActorFlag)
+        if (actorTmp && !actorTmp->bProcessMe)
             return;
         if (actorTmp && ShouldUpdateActor(actorTmp))
         {
@@ -2211,7 +2345,7 @@ void UpdateManager::UpdateMobileObject(MobileObject* object)
         if (actorTmp && g_thePlayer->IsSleepingOrResting())
         {
             actorTmp->RestoreHealth(2.0f);
-            ApplyFatigueDamage(actorTmp, 2.0f);
+            Actor_RestoreFatigue(actorTmp, 2.0f);
         }
         if (current->FUN_00931850())
             pending = 0;
@@ -2303,6 +2437,8 @@ struct Obj
 };
 // @fnv 0x008ca070
 // src: COMMUNITY 0x008ca070
+// pdb: AITaskManager::StartTasksDuringRendering | AITaskManager.obj | retail, upstream name already matches, high
+// pdb locals: uiItems, i
 void Obj::AITaskManager_StartTasksDuringRendering()
 {
     if (*DAT_011c3ea4.Setting_Int() == 1)
@@ -2385,7 +2521,7 @@ struct FacQ
     virtual void Create(MemQ* p, const char* pName, FUN_008c71b0 k);
 };
 FacQ* hkMemorySystem_getInstance();
-void __cdecl hkBaseSystem_initThread(MemQ* p);
+void __cdecl hkBaseSystem_initThread(MemQ* memoryRouter);
 struct HeapQ
 {
     virtual void v0();
@@ -2393,7 +2529,7 @@ struct HeapQ
 };
 struct BufQ
 {
-    void hkStackMemory_initMemory(int p, int n);
+    void hkStackMemory_initMemory(int p, int size);
 };
 struct MemQ
 {
@@ -2404,7 +2540,7 @@ struct MemQ
 };
 struct GQ
 {
-    void FUN_00462ee0();
+    void CreateThreadSafeFiles();
 };
 extern GQ* DAT_011c3f2c;
 struct OwnQ
@@ -2413,10 +2549,12 @@ struct OwnQ
     MemQ kMem;
     char pad2[0x20];
     int unk74;
-    void InitMemory();
+    void AITaskThread_OnStartup();
 };
 // @fnv 0x008c9d70
-void OwnQ::InitMemory()
+// src: XBOX_RETAIL_PDB 0x008c9d70
+// pdb: AITaskThread::OnStartup | AITaskManager.obj | retail, string-set bridge, high
+void OwnQ::AITaskThread_OnStartup()
 {
     hkMemorySystem_getInstance()->Create(&kMem, "AITaskThread", FUN_008c71b0(1));
     hkBaseSystem_initThread(&kMem);
@@ -2424,7 +2562,7 @@ void OwnQ::InitMemory()
     kMem.FUN_00984f60(kMem.TESMain_GetThread());
     unk74 = kMem.TESMain_GetThread()->Alloc(0x16800);
     kMem.FUN_006815c0()->hkStackMemory_initMemory(unk74, 0x16800);
-    DAT_011c3f2c->FUN_00462ee0();
+    DAT_011c3f2c->CreateThreadSafeFiles();
 }
 }  // namespace fnv_008c9d70
 
@@ -2439,13 +2577,15 @@ struct Obj_008c9cf0
     int m_items[10];
     int m_uiItemCount;
     int m_next;
-    void QueryPerformanceCounter(int a);
+    void QueryPerformanceCounter(int apName);
     int AITaskQueue_Dequeue();
 };
 
 // Pops the next task from a circular buffer of 10 items, wrapping the index, then calls WaitForTasksDuringRendering.
 // @fnv 0x008c9cf0
 // src: XBOX_PDB 0x008c9cf0
+// pdb: AITaskQueue::Dequeue | AITaskManager.obj | debug, upstream name already matches, high
+// pdb locals: preturn
 int Obj_008c9cf0::AITaskQueue_Dequeue()
 {
     QueryPerformanceCounter(0);

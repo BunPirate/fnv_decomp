@@ -119,6 +119,8 @@ long FUN_00eca6d3(const char*);
 int NiStricmp(const char*, const char*);
 
 // @fnv 0x00a9c2a0
+// pdb: NiShaderConstantMap::_SDMInit | NiShaderConstantMap.obj | retail, unique string literal, high
+// pdb locals: ui
 void NiShaderConstantMap::InitializePoint3()
 {
     ms_uiShaderConstantMapEntryCount = 136;
@@ -776,6 +778,10 @@ void NiShaderConstantMap::InitializePoint3()
 
 // Copies key into name, and if key ends with _<digit>, strips that suffix and stores the parsed digit in extra.
 // @fnv 0x00a9bee0
+// pdb: NiShaderConstantMap::ParseKeyName | NiShaderConstantMap.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiShaderConstantMap::LookUpPredefinedMapping
+// pdb params: pszOrigName, pszTrueName, uiMaxLen, uiRegisterCount
+// pdb locals: pcKey, acFullKey, pcContext, pcToken
 bool NiShaderConstantMap::ParseConstantName(const char* key, char* name, unsigned int size, unsigned int& extra)
 {
     char buffer[260];
@@ -799,6 +805,10 @@ bool NiShaderConstantMap::ParseConstantName(const char* key, char* name, unsigne
 }
 
 // @fnv 0x00a9bfd0
+// pdb: NiShaderConstantMap::LookUpPredefinedMapping | NiShaderConstantMap.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiShaderConstantMap::LookUpPredefinedMappingName
+// pdb params: pszMapping, uiMappingID, uiNumRegisters
+// pdb locals: szTrueName, ui, pkMapping
 bool NiShaderConstantMap::FindConstantMapping(const char* key, unsigned int& mapping, unsigned int& extra)
 {
     char name[260];
@@ -929,6 +939,9 @@ extern int __cdecl _NiStricmp(const char*, const char*);
 
 // Searches the shader constant map table for a case-insensitive name match and writes the matching entry's ID to uiMappingID, returning true if found.
 // @fnv 0x00a9c0e0
+// pdb: NiShaderConstantMap::LookUpObjectMapping | NiShaderConstantMap.obj | retail, object-file run extension, low
+// pdb params: pcMapping, uiMappingID
+// pdb locals: ui, pkMapping
 bool __cdecl LookupShaderConstantMapping(const char* pcName, unsigned int* uiMappingID)
 {
     unsigned int uiIndex;

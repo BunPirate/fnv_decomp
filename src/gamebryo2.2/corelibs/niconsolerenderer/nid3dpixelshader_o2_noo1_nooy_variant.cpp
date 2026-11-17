@@ -3672,17 +3672,18 @@ bool S00e89910_Renderer::NiDX9RenderState_SetPixelShaderConstantF(int a1, int a2
     return m_pkDevice->vf1B4(a1, a2, a3) >= 0;
 }
 
-void __cdecl RemoveProgramFromMap(NiD3DPixelShader*) throw();
+void __cdecl NiD3DShaderProgramFactory_ReleasePixelShader(NiD3DPixelShader*) throw();
 
 // @fnv 0x00e89970
+// pdb: NiD3DPixelShader::~NiD3DPixelShader | NiD3DPixelShader.obj | retail, upstream name already matches, high
 NiD3DPixelShader::~NiD3DPixelShader()
 {
-    RemoveProgramFromMap(this);
+    NiD3DShaderProgramFactory_ReleasePixelShader(this);
 
-    if (m_pD3DPixelShader != 0)
+    if (m_hShader != 0)
     {
-        reinterpret_cast<FakeRenderer*>(m_pShaderObject)->PurgeShader(reinterpret_cast<FakeShader*>(this));
+        reinterpret_cast<FakeRenderer*>(m_pkD3DRenderer)->PurgeShader(reinterpret_cast<FakeShader*>(this));
     }
 
-    m_pD3DPixelShader = 0;
+    m_hShader = 0;
 }

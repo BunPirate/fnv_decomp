@@ -9,6 +9,9 @@
 
 // Returns the save size of the effect: the base ActiveEffect save size plus one byte.
 // @fnv 0x0080ccf0
+// pdb: DemoralizeEffect::GetSaveSize | DemoralizeEffect.obj | debug, upstream name already matches, high
+// pdb params: apActor
+// pdb locals: isize
 unsigned short DemoralizeEffect::GetSaveSize(Actor* apActor)
 {
     unsigned short isize = 0;
@@ -18,19 +21,23 @@ unsigned short DemoralizeEffect::GetSaveSize(Actor* apActor)
 }
 
 // @fnv 0x0080c890
-DemoralizeEffect::DemoralizeEffect(MagicCaster* a, MagicItem* pItem, EffectItem* pEffectItem)
-    : ActiveEffect(a, pItem, pEffectItem)
+// pdb: DemoralizeEffect::DemoralizeEffect | DemoralizeEffect.obj | debug, upstream name already matches, high
+// pdb params: apCaster, apSpell, apEffect
+DemoralizeEffect::DemoralizeEffect(MagicCaster* apCaster, MagicItem* apSpell, EffectItem* apEffect)
+    : ActiveEffect(apCaster, apSpell, apEffect)
 {
-    m_bDemoralized = 0;
+    bTurned = 0;
 }
 
 extern TESSaveLoadGame* g_TESSaveLoadGame;
 
 // @fnv 0x0082b750
+// pdb: TurnUndeadEffect::SaveGame | TurnUndeadEffect.obj | retail, vtable slot, high
+// pdb params: apActor
 void DemoralizeEffect::SaveGame(Actor* apActor)
 {
     ActiveEffect::SaveGame(apActor);
-    g_TESSaveLoadGame->TESSaveLoadGame_SaveGameDataOLD(&m_bDemoralized, 1);
+    g_TESSaveLoadGame->TESSaveLoadGame_SaveGameDataOLD(&bTurned, 1);
 }
 
 struct PackageNodeHandler
@@ -246,9 +253,11 @@ struct PackageNodeHandler
 };
 
 // @fnv 0x0080cb60
+// pdb: DemoralizeEffect::Finish | DemoralizeEffect.obj | retail, upstream name already matches, high
+// pdb locals: ptargetActor, pcasterActor
 void DemoralizeEffect::Finish()
 {
-    if (!m_bDemoralized)
+    if (!bTurned)
         return;
     Actor* target = FUN_0059bb30() ? FUN_0059bb30()->FUN_00822b40() : 0;
     Actor* caster = FUN_0045cd60() ? FUN_0045cd60()->GetCasterActor() : 0;
@@ -268,16 +277,20 @@ void DemoralizeEffect::Finish()
 }
 
 // @fnv 0x0080cc70
+// pdb: DemoralizeEffect::Instantiate | DemoralizeEffect.obj | retail, object-file run extension, low
+// pdb params: apCaster, apSpell, apEffect
 ActiveEffect* __cdecl CreateDemoralizeEffect(MagicCaster* caster, MagicItem* item, EffectItem* effect)
 {
     return new DemoralizeEffect(caster, item, effect);
 }
 
 // @fnv 0x0080c8d0
+// pdb: DemoralizeEffect::Copy | DemoralizeEffect.obj | retail, upstream name already matches, high
+// pdb locals: presult
 ActiveEffect* DemoralizeEffect::Copy()
 {
     DemoralizeEffect* obj = ::new DemoralizeEffect(m_pEffectInstance, pSpell, pEffect);
-    obj->m_bDemoralized = m_bDemoralized;
+    obj->bTurned = bTurned;
     CopyData(obj);
     return obj;
 }
@@ -285,6 +298,8 @@ ActiveEffect* DemoralizeEffect::Copy()
 extern float DAT_01012054;
 
 // @fnv 0x0080ca50
+// pdb: DemoralizeEffect::Start | DemoralizeEffect.obj | retail, upstream name already matches, high
+// pdb locals: ptargetActor, pcasterActor
 void DemoralizeEffect::Start()
 {
     Actor* caster = FUN_0059bb30() ? FUN_0059bb30()->FUN_00822b40() : 0;
@@ -296,7 +311,7 @@ void DemoralizeEffect::Start()
             // This call uses arguments absent from the shared slot 0x428 declaration.
             reinterpret_cast<CombatController* (__thiscall*)(Actor*, Actor*, int)>(
                 (*reinterpret_cast<void***>(caster))[0x428 / 4])(caster, target2, 0)->FUN_008d0600();
-            m_bDemoralized = 1;
+            bTurned = 1;
         }
         else if (!caster->Actor_IsFleeing(0))
         {
@@ -305,7 +320,7 @@ void DemoralizeEffect::Start()
             reinterpret_cast<void (__thiscall*)(Actor*, Actor*, bool, bool, bool, int, int, float, float)>(
                 (*reinterpret_cast<void***>(caster))[0x410 / 4])(
                     caster, target2, 1, 1, 1, 0, 0, DAT_01012054, DAT_01012054);
-            m_bDemoralized = 1;
+            bTurned = 1;
         }
     }
 }
@@ -317,6 +332,9 @@ bool MagicFormulas_CheckTargetLevelMagnitude(unsigned short, float);
 int FUN_00ec43fb(MagicTarget*, int, int*, int*, int);
 
 // @fnv 0x0080c980
+// pdb: DemoralizeEffect::CheckTarget | DemoralizeEffect.obj | retail, vtable slot, high
+// pdb params: apTarget
+// pdb locals: pactor, pcreature
 bool DemoralizeEffect::IsEffectValid(MagicTarget* apTarget)
 {
     Actor* actor = apTarget ? apTarget->FUN_00822b40() : 0;

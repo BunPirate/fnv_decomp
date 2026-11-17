@@ -7,6 +7,7 @@ class TESObjectREFR;
 class BGSSaveFormBuffer;
 class BGSLoadFormBuffer;
 
+// pdb: class TESValueForm, size 0x8, bases: BaseFormComponent, 1 members
 struct TESValueForm : public BaseFormComponent
 {
 public:
@@ -24,13 +25,13 @@ public:
     void InitializeComponent();
     void ClearComponent();
     void BaseFormRecord(BaseFormComponent* component);
-    bool IsEqualToBase(BaseFormComponent* component);
+    bool IsEqualToBase(BaseFormComponent* apCompareFC);
     void Save();
     static int GetValueFromForm(TESForm* form);
     unsigned int GetValueFromForm();
-    TESObjectREFR* GetValueFromForm(TESForm* form, bool flag);
+    TESObjectREFR* GetValueFromForm(TESForm* apNpc, bool abDetection);
     void SetFormValue(int value);
-    void SetFormValue(unsigned int value);
+    void SetFormValue(unsigned int aiValue);
     void SaveGame(BGSSaveFormBuffer* buffer);
     void LoadGame(BGSLoadFormBuffer* buffer);
 
@@ -41,7 +42,7 @@ public:
     void Save(unsigned long changedFlags);
     void Load(unsigned long changedFlags);
 
-    void CopyComponent(BaseFormComponent* component);
+    void CopyComponent(BaseFormComponent* apCopyFC);
     unsigned short GetFlaggedDataSize(unsigned int aiFlags);
     void SaveGame_0048e9e0(unsigned int flags);
     void LoadGame_0048ea10(unsigned int a, unsigned int b);

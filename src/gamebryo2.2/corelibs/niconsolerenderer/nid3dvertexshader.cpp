@@ -11,9 +11,9 @@ struct ShaderRendererDataReleaser
 // @fnv 0x00e89ac0
 void NiD3DVertexShader::UnloadShader()
 {
-    if (m_pD3DPixelShader != 0)
+    if (m_hShader != 0)
     {
-        ((ShaderRendererDataReleaser*)m_pShaderObject)->ClearShader(this);
+        ((ShaderRendererDataReleaser*)m_pkD3DRenderer)->ClearShader(this);
     }
 }
 
@@ -1229,22 +1229,22 @@ bool __fastcall SetVertexShaderConstantArray(NiD3DVertexShader* pkShader, void*,
                                               unsigned int uiNumEntries, unsigned int uiRegisterCount,
                                               const unsigned short* pusIndices)
 {
-    int iType = g_aiE89C70ConstantTypes[pkConstant->m_uiValue1 & 0xff];
+    int iType = g_aiE89C70ConstantTypes[pkConstant->m_uiFlags & 0xff];
     if (iType != 8 && iType != 9)
         return false;
 
-    unsigned int uiRegister = pkConstant->m_uiValue3;
+    unsigned int uiRegister = pkConstant->m_uiShaderRegister;
     for (unsigned int i = 0; i < uiNumEntries; i++)
     {
         unsigned short usIndex = pusIndices[i];
-        if ((pkConstant->m_uiValue1 & 0xf0000000) == 0x20000000 && pkConstant->m_pConstantData)
+        if ((pkConstant->m_uiFlags & 0xf0000000) == 0x20000000 && pkConstant->m_pvDataSource)
         {
-            memmove((char*)pkConstant->m_pConstantData + i * uiRegisterCount * 16, afData + usIndex * uiRegisterCount * 4,
-                    pkConstant->m_uiValue5);
+            memmove((char*)pkConstant->m_pvDataSource + i * uiRegisterCount * 16, afData + usIndex * uiRegisterCount * 4,
+                    pkConstant->m_uiDataSize);
         }
         else
         {
-            VertexConstantDeviceStorage* pkRenderer = (VertexConstantDeviceStorage*)pkShader->m_pRenderState;
+            VertexConstantDeviceStorage* pkRenderer = (VertexConstantDeviceStorage*)pkShader->m_pkD3DRenderState;
             pkRenderer->m_pkDevice->SetVertexShaderConstantF(uiRegister, afData + usIndex * uiRegisterCount * 4,
                                                              uiRegisterCount);
         }
@@ -1391,28 +1391,30 @@ struct VertexConstantUploader : VertexConstantDeviceStorage
 
 // Uses the entry flags to copy data into m_pConstantData or upload it through the shader render state.
 // @fnv 0x00e89ba0
+// pdb: NiD3DShaderProgram::SetVertexShaderConstant | ShadowLightShader.obj | debug, upstream name already matches, high
+// pdb params: aiIndex, aiCount, apfData
 bool __fastcall SetVertexShaderConstant(NiD3DVertexShader* pkShader, void*,
                                              NiShaderConstantMapEntry* pkEntry, const void* pvDataSource,
                                              unsigned int uiRegisterCount)
 {
     if (!pvDataSource)
-        pvDataSource = pkEntry->m_pConstantData;
+        pvDataSource = pkEntry->m_pvDataSource;
     if (!uiRegisterCount)
     {
-        uiRegisterCount = pkEntry->m_uiValue4;
+        uiRegisterCount = pkEntry->m_uiRegisterCount;
         if (!uiRegisterCount)
             uiRegisterCount = 1;
     }
-    unsigned int uiFlags = pkEntry->m_uiValue1;
+    unsigned int uiFlags = pkEntry->m_uiFlags;
     int eType = DAT_011f5fc4[uiFlags & 0xff];
-    if ((uiFlags & 0xf0000000) == 0x20000000 && pkEntry->m_pConstantData)
+    if ((uiFlags & 0xf0000000) == 0x20000000 && pkEntry->m_pvDataSource)
     {
-        FUN_00ec44d0(pkEntry->m_pConstantData, pvDataSource, pkEntry->m_uiValue5);
+        FUN_00ec44d0(pkEntry->m_pvDataSource, pvDataSource, pkEntry->m_uiDataSize);
         return true;
     }
     if (eType == 1)
-        return ((VertexConstantUploader*)pkShader->m_pRenderState)->UploadB(pkEntry->m_uiValue3, (const int*)pvDataSource, uiRegisterCount);
+        return ((VertexConstantUploader*)pkShader->m_pkD3DRenderState)->UploadB(pkEntry->m_uiShaderRegister, (const int*)pvDataSource, uiRegisterCount);
     if (eType == 3)
-        return ((VertexConstantUploader*)pkShader->m_pRenderState)->UploadI(pkEntry->m_uiValue3, (const int*)pvDataSource, uiRegisterCount);
-    return ((VertexConstantUploader*)pkShader->m_pRenderState)->UploadF(pkEntry->m_uiValue3, (const float*)pvDataSource, uiRegisterCount);
+        return ((VertexConstantUploader*)pkShader->m_pkD3DRenderState)->UploadI(pkEntry->m_uiShaderRegister, (const int*)pvDataSource, uiRegisterCount);
+    return ((VertexConstantUploader*)pkShader->m_pkD3DRenderState)->UploadF(pkEntry->m_uiShaderRegister, (const float*)pvDataSource, uiRegisterCount);
 }

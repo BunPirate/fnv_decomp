@@ -5,6 +5,7 @@
 class TESTopic;
 class TESTopicInfo;
 
+// pdb: class ExtraSayToTopicInfo, size 0x1c, bases: BSExtraData, 4 members
 struct ExtraSayToTopicInfo : public BSExtraData
 {
 public:

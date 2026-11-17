@@ -11,13 +11,15 @@
 void __fastcall AssignReferencedObject(hkOArchive* self, void*, hkReferencedObject* apObject)
 {
     apObject->addReference();
-    self->writer->removeReference();
-    self->writer = static_cast<hkStreamWriter*>(apObject);
+    self->m_writer->removeReference();
+    self->m_writer = static_cast<hkStreamWriter*>(apObject);
 }
 
 extern "C" unsigned int __stdcall WriteSwapped(void*, int, int);
 
 // @fnv 0x00d609c0
+// pdb: hkOArchive::writeFloat32 | hkOArchive.obj | retail, call graph, medium
+// pdb params: f
 unsigned int __stdcall HashUInt(unsigned int auiValue)
 {
     return WriteSwapped(&auiValue, 4, 1);
@@ -71,6 +73,8 @@ void __fastcall hkOArchive_WriteSwapped_Thunk_00d60ae0(hkOArchive* self, void*, 
 }
 
 // @fnv 0x00d60940
+// pdb: hkOArchive::write32 | hkOArchive.obj | retail, call graph, medium
+// pdb params: i
 void hkOArchive::WriteInt(unsigned int aiValue)
 {
     WriteBinaryData(&aiValue, 4, 1);
@@ -78,13 +82,17 @@ void hkOArchive::WriteInt(unsigned int aiValue)
 
 // @fnv 0x00d60960
 // src: XBOX_PDB 0x00d60960
-void __stdcall hkOArchive_write32u(const float* p)
+// pdb: hkOArchive::write32u | hkOArchive.obj | retail, upstream name already matches, high
+// pdb params: u
+void __stdcall hkOArchive_write32u(const float* u)
 {
-    WriteSwapped((void*)&p, 4, 1);
+    WriteSwapped((void*)&u, 4, 1);
 }
 
 // @fnv 0x00d60980
 // src: GUESS 0x00d609a0 (confidence: medium)
+// pdb: hkOArchive::write64 | hkOArchive.obj | retail, object-file gap fill, high
+// pdb params: i
 void __fastcall hkOArchive_WriteBinaryData_Thunk(hkOArchive* self, void*, int aiValue, int aiUnused)
 {
     self->WriteBinaryData(&aiValue, 8, 1);
@@ -92,22 +100,28 @@ void __fastcall hkOArchive_WriteBinaryData_Thunk(hkOArchive* self, void*, int ai
 
 // @fnv 0x00d609a0
 // src: GUESS 0x00d609e0 (confidence: medium)
+// pdb: hkOArchive::write64u | hkOArchive.obj | retail, call graph, medium
+// pdb params: u
 void __fastcall hkOArchive_WriteBinaryData_Thunk_00d609e0(hkOArchive* self, void*, int value, int)
 {
     self->WriteBinaryData(&value, 8, 1);
 }
 
 // @fnv 0x00d605b0
+// pdb: hkOArchive::write8 | hkOArchive.obj | retail, call graph, medium
+// pdb params: c
 void hkOArchive::WriteUint8(unsigned char value)
 {
-    writer->write(&value, 1);
+    m_writer->write(&value, 1);
 }
 
 // @fnv 0x00d605d0
 // src: XBOX_PDB 0x00d605d0
+// pdb: hkOArchive::write8u | hkOArchive.obj | retail, upstream name already matches, high
+// pdb params: u
 void __fastcall hkOArchive_write8u(hkOArchive* self, void*, unsigned char value)
 {
-    self->writer->write(&value, 1);
+    self->m_writer->write(&value, 1);
 }
 
 struct FUN_00d607e0_object
@@ -119,22 +133,25 @@ struct FUN_00d607e0_object
 };
 
 // @fnv 0x00d607e0
+// pdb: hkOArchive::isOk | hkOArchive.obj | retail, call graph, medium
 int __fastcall ForwardValueToObject(hkOArchive* self, void*, int value)
 {
-    reinterpret_cast<FUN_00d607e0_object*>(self->writer)->FUN_00d607e0_virtual3(value);
+    reinterpret_cast<FUN_00d607e0_object*>(self->m_writer)->FUN_00d607e0_virtual3(value);
     return value;
 }
 
 extern int DAT_010d14f8;
 
 // @fnv 0x00d60830
-// src: GUESS 0x00d60830 (confidence: high)
-hkOArchive* __fastcall hkOArchive_InitializeWriterWithByteSwap(hkOArchive* self, void*, hkReferencedObject* apObject, char b)
+// src: XBOX_RETAIL_PDB 0x00d60830
+// pdb: hkOArchive::hkOArchive | hkOArchive.obj | retail, call graph, high
+// pdb params: sw, bs
+hkOArchive* __fastcall hkOArchive_ctor(hkOArchive* self, void*, hkReferencedObject* apObject, char b)
 {
-    self->m_sReferenceCount = 1;
+    self->m_referenceCount = 1;
     *(int*)self = (int)&DAT_010d14f8;
-    self->writer = static_cast<hkStreamWriter*>(apObject);
-    self->byteSwap.m_cBooleanValue = b;
+    self->m_writer = static_cast<hkStreamWriter*>(apObject);
+    self->m_byteSwap.m_cBooleanValue = b;
     apObject->addReference();
     return self;
 }
@@ -186,14 +203,14 @@ struct hkStub
 // src: XBOX_PDB 0x00d607b0
 void __fastcall hkOArchive_writeRaw(hkOArchive* self, void*, int a)
 {
-    reinterpret_cast<hkStub*>(self->writer)->vf10(a);
+    reinterpret_cast<hkStub*>(self->m_writer)->vf10(a);
 }
 
 // @fnv 0x00d607c0
 // src: GUESS 0x00d607c0 (confidence: low)
 void __fastcall hkOArchive_UpdateFields_00d607c0(hkOArchive* self, void*, char v)
 {
-    self->byteSwap.m_cBooleanValue = v;
+    self->m_byteSwap.m_cBooleanValue = v;
 }
 
 extern "C" void* __cdecl hkString_memCpy(void* dest, const void* src, unsigned int count);
@@ -206,13 +223,16 @@ inline void swapBytes(unsigned char& a, unsigned char& b)
 }
 
 // @fnv 0x00d60600
+// pdb: hkOArchive::writeArrayGeneric | hkOArchive.obj | retail, call graph, medium
+// pdb params: ptr, elemSize, arraySize
+// pdb locals: buf, assertBuf, ostr
 void hkOArchive::WriteSwapped(const void* data, unsigned int size, unsigned int elementCount)
 {
     int elementSize = static_cast<int>(size);
     int count = static_cast<int>(elementCount);
-    if (!byteSwap.m_cBooleanValue)
+    if (!m_byteSwap.m_cBooleanValue)
     {
-        writer->write(data, elementSize * count);
+        m_writer->write(data, elementSize * count);
         return;
     }
 
@@ -269,7 +289,7 @@ void hkOArchive::WriteSwapped(const void* data, unsigned int size, unsigned int 
         break;
         }
 
-        writer->write(aiBuffer, chunkSize);
+        m_writer->write(aiBuffer, chunkSize);
         cur += chunkSize;
         totalBytes -= chunkSize;
     }
@@ -279,7 +299,7 @@ void hkOArchive::WriteSwapped(const void* data, unsigned int size, unsigned int 
 // src: GUESS 0x00d607d0 (confidence: high)
 unsigned char* __fastcall hkOArchive_GetByteSwapFlag(hkOArchive* self, void*, unsigned char* output)
 {
-    *output = self->byteSwap.m_cBooleanValue;
+    *output = self->m_byteSwap.m_cBooleanValue;
     return output;
 }
 
@@ -287,7 +307,7 @@ unsigned char* __fastcall hkOArchive_GetByteSwapFlag(hkOArchive* self, void*, un
 // src: XBOX_PDB 0x00d60800
 void* __fastcall hkOArchive_getStreamWriter(hkOArchive* self, void*)
 {
-    return self->writer;
+    return self->m_writer;
 }
 
 class hkMap64DBA
@@ -316,19 +336,22 @@ class ListMapDBA
     hkMap64DBA m_map;
 
     int AllocateSlot();
-    void Insert(unsigned __int64 key, const int& value);
+    void hkSerializeMultiMap_unsigned_int64_int_insert(unsigned __int64 k, const int& value);
 };
 
 // Allocates an entry slot, stores value and the existing next index for key, then inserts the key-to-slot mapping into m_map.
 // @fnv 0x00dba360
-void ListMapDBA::Insert(unsigned __int64 key, const int& value)
+// src: XBOX_RETAIL_PDB 0x00dba360
+// pdb: hkSerializeMultiMap<unsigned __int64,int>::insert | hkVersionPatchManager.obj | retail, call graph, high
+// pdb params: k, value
+void ListMapDBA::hkSerializeMultiMap_unsigned_int64_int_insert(unsigned __int64 k, const int& value)
 {
-    int next = (int)m_map.hkMapBase_unsigned_int64_unsigned_int64_struct_hkMapOperations_unsigned_int64_getWithDefault(key, (unsigned __int64)-1);
+    int next = (int)m_map.hkMapBase_unsigned_int64_unsigned_int64_struct_hkMapOperations_unsigned_int64_getWithDefault(k, (unsigned __int64)-1);
     int iSlot = AllocateSlot();
     EntryDBA& e = m_entries[iSlot];
     e.m_uiFilterValue = value;
     e.m_next = next;
     // Shared router accessor is bound to 0x00c85750; its heap allocator is at offset 0x10.
     hkMemoryAllocator& alloc = *hkMemoryRouter::getInstance().m_heap;
-    m_map.InsertKeyValue(alloc, key, iSlot);
+    m_map.InsertKeyValue(alloc, k, iSlot);
 }

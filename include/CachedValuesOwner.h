@@ -1,5 +1,6 @@
 #pragma once
 
+// pdb: class CachedValuesOwner, size 0x4, 0 members
 class CachedValuesOwner
 {
 public:

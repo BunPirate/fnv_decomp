@@ -17,19 +17,20 @@ public:
 
 extern "C"
 {
-    extern void* g_012026a8;
+    extern void* NiPSysResetOnLoopCtlr_ms_RTTI; // src: XBOX_RETAIL_PDB 0x012026a8 (old: g_012026a8)
 }
 
 // @fnv 0x00c28400
 // src: COMMUNITY 0x00c28400
 void* __cdecl NiPSysResetOnLoopCtlr_GetRTTI()
 {
-    return &g_012026a8;
+    return &NiPSysResetOnLoopCtlr_ms_RTTI;
 }
 
 void __cdecl FUN_00a6d290();
 void __cdecl _delete(void* p, unsigned int size);
 
+// pdb: class NiPSysResetOnLoopCtlr, size 0x38 (here 0x1), bases: NiTimeController, 1 members
 struct NiPSysResetOnLoopCtlr
 {
     NiPSysResetOnLoopCtlr* __thiscall Destroy(unsigned int flags);
@@ -82,10 +83,12 @@ char* __cdecl _FUN_00a7d330(void*);
 // Appends the string returned by _FUN_00a7d330(g_012026a8) to pkStrings, growing the array if the position is at or past its size.
 // @fnv 0x00c28520
 // src: XBOX_PDB 0x00c28520
+// pdb: NiPSysResetOnLoopCtlr::GetViewerStrings | NiPSysResetOnLoopCtlr.obj | retail, upstream name already matches, high
+// pdb params: pkStrings
 void __stdcall NiPSysResetOnLoopCtlr_GetViewerStrings(StrArr* pkStrings)
 {
     FUN_00a6d830(pkStrings);
-    char* pcString = _FUN_00a7d330(g_012026a8);
+    char* pcString = _FUN_00a7d330(NiPSysResetOnLoopCtlr_ms_RTTI);
     unsigned int uiPos = pkStrings->m_usSize;
     unsigned int uiSize = pkStrings->m_usMaxSize;
     if (uiPos >= uiSize)
@@ -129,6 +132,10 @@ struct FUN_00c28430_class : CloneableObj
     FUN_00c28430_Object* CreateCloneableObject(void* volatile argument);
 };
 // @fnv 0x00c28430
+// pdb: NiPSysResetOnLoopCtlr::CreateClone | NiPSysResetOnLoopCtlr.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiPSysResetOnLoopCtlr::NiPSysResetOnLoopCtlr
+// pdb params: kCloning
+// pdb locals: pkObject
 FUN_00c28430_Object* FUN_00c28430_class::CreateCloneableObject(void* volatile argument)
 {
     FUN_00c28430_Object* object = (FUN_00c28430_Object*)NiMemObject::operator new(0x38);
@@ -167,17 +174,19 @@ struct FUN_00c28490_shell
     int unk30;
     float unk34;
     char DontDoUpdate(float value);
-    void NiPSysResetOnLoopCtlr_Update(float* p);
+    void NiPSysResetOnLoopCtlr_Update(float* UpdateData);
 };
 // Clears two flags, and if unk2c is set and FUN_00a36250(*p) returns 0, resets unk34 to unk28 and sets unk2c[0xd8] when unk34 exceeds unk28.
 // @fnv 0x00c28490
 // src: XBOX_PDB 0x00c28490
-void FUN_00c28490_shell::NiPSysResetOnLoopCtlr_Update(float* pfValue)
+// pdb: NiPSysResetOnLoopCtlr::Update | NiPSysResetOnLoopCtlr.obj | retail, upstream name already matches, high
+// pdb params: UpdateData
+void FUN_00c28490_shell::NiPSysResetOnLoopCtlr_Update(float* UpdateData)
 {
     flags &= 0xfff9;
     if (unk2c != 0)
     {
-        if (DontDoUpdate(*pfValue) == 0)
+        if (DontDoUpdate(*UpdateData) == 0)
         {
             if ((double)unk34 == _DAT_010241b0)
                 unk34 = unk28;
@@ -192,6 +201,8 @@ void __cdecl NiTimeController_RegisterStreamables();
 
 // @fnv 0x00a2f8b0
 // src: XBOX_PDB 0x00a2f8b0
+// pdb: NiInterpController::RegisterStreamables | NiInterpController.obj | debug, upstream name already matches, high
+// pdb params: kStream
 void __cdecl NiInterpController_RegisterStreamables()
 {
     NiTimeController_RegisterStreamables();
@@ -200,34 +211,40 @@ void __cdecl NiInterpController_RegisterStreamables()
 
 struct C27120Class : BaseHack_nipsysresetonloopctlr
 {
-    void NiInterpController_SaveBinary(NiStream& s);
+    void NiInterpController_SaveBinary(NiStream& kStream);
 };
 
 // @fnv 0x00c27120
 // src: XBOX_PDB 0x00c27120
-void C27120Class::NiInterpController_SaveBinary(NiStream& s)
+// pdb: NiInterpController::SaveBinary | NiInterpController.obj | debug, upstream name already matches, high
+// pdb params: kStream
+void C27120Class::NiInterpController_SaveBinary(NiStream& kStream)
 {
-    FUN_00a6d730(s);
+    FUN_00a6d730(kStream);
 }
 
 struct NiStream;
 
 struct SubNiPSysResetOnLoopCtlr : NiPSysResetOnLoopCtlr
 {
-    void FUN_00a6d5e0(NiStream& stream);
-    void NiPSysResetOnLoopCtlr_LoadBinary(NiStream& stream);
+    void FUN_00a6d5e0(NiStream& kStream);
+    void NiPSysResetOnLoopCtlr_LoadBinary(NiStream& kStream);
 };
 
 // @fnv 0x00c283e0
 // src: XBOX_PDB 0x00c283e0
-void SubNiPSysResetOnLoopCtlr::NiPSysResetOnLoopCtlr_LoadBinary(NiStream& stream)
+// pdb: NiPSysResetOnLoopCtlr::LoadBinary | NiPSysResetOnLoopCtlr.obj | debug, upstream name already matches, high
+// pdb params: kStream
+void SubNiPSysResetOnLoopCtlr::NiPSysResetOnLoopCtlr_LoadBinary(NiStream& kStream)
 {
-    FUN_00a6d5e0(stream);
+    FUN_00a6d5e0(kStream);
 }
 
 void __cdecl NiTimeController_IsEqual();
 // @fnv 0x00c283f0
 // src: XBOX_PDB 0x00c283f0
+// pdb: NiInterpController::IsEqual | NiInterpController.obj | debug, upstream name already matches, high
+// pdb params: pkObject
 void __cdecl NiInterpController_IsEqual()
 {
     NiTimeController_IsEqual();

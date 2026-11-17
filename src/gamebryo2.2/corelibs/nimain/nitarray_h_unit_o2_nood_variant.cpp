@@ -27,7 +27,7 @@ struct FUN_0096aca0_shell : Arr
 };
 
 extern __declspec(thread) int g_tlsMemContext;
-extern void* DAT_012685c8;
+extern void* bhkDashpotAction_ms_RTTI; // src: XBOX_RETAIL_PDB 0x012685c8 (old: DAT_012685c8/g_012685c8)
 void* __cdecl NiViewerStrings_NiGetViewerString_Title(void*);
 
 struct PrimitiveStringArray
@@ -72,15 +72,18 @@ struct HavokOperation
 };
 // @fnv 0x00cc4070
 // src: XBOX_PDB 0x00cc4070
-void HavokOperation::bhkDashpotAction_GetViewerStrings(PrimitiveStringArray* array)
+// pdb: bhkDashpotAction::GetViewerStrings | bhkDashpotAction.obj | retail, upstream name already matches, high
+// pdb params: apStrings
+// pdb locals: tempMemContext, ci
+void HavokOperation::bhkDashpotAction_GetViewerStrings(PrimitiveStringArray* apStrings)
 {
     MemoryContextScope context;
-    bhkBinaryAction_GetViewerStrings(array);
-    void* entry = NiViewerStrings_NiGetViewerString_Title(DAT_012685c8);
-    unsigned int index = array->size_at_0a;
-    if (index >= array->capacity_at_08)
-        array->FUN_0096ad30(index + array->growth_at_0e);
-    array->FUN_0096ae90(index, entry);
+    bhkBinaryAction_GetViewerStrings(apStrings);
+    void* entry = NiViewerStrings_NiGetViewerString_Title(bhkDashpotAction_ms_RTTI);
+    unsigned int index = apStrings->size_at_0a;
+    if (index >= apStrings->capacity_at_08)
+        apStrings->FUN_0096ad30(index + apStrings->growth_at_0e);
+    apStrings->FUN_0096ae90(index, entry);
     OperationParameters parameters = {0, 0, 0, {0, 0, 0, 0}, {0, 0, 0, 0}, 0.1f, 0.01f};
     bhkDashpotAction_CopyCinfo(&parameters);
 }

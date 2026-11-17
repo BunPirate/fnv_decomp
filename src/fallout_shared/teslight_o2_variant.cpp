@@ -11,7 +11,7 @@ extern "C" void* __cdecl memset(void* destination, int value, unsigned int size)
 extern "C" const char DAT_01029064[];
 extern int __cdecl Warning(const char* format, ...);
 extern float DAT_010249d8;
-NiLight* FindLightInNode(NiNode* node);
+NiLight* FindLightInNode(NiNode* apNode);
 
 struct PrimaryBase
 {

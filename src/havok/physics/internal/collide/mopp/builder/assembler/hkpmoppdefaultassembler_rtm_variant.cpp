@@ -96,7 +96,7 @@ struct ByteSink
             GrowBuffer();
     }
 
-    void PutBytePair(char acFirst, char acSecond);
+    void PutBytePair(char code, char param);
 };
 typedef void(__thiscall* FlushFunction)(void*);
 struct BufferWriter
@@ -106,7 +106,7 @@ struct BufferWriter
     int capacity;
     int position;
     unsigned char* data;
-    void WriteInt24(int value);
+    void hkpMoppCodeGenerator_addParam24(int param);
 };
 struct S_00e06aa0_Pool
 {
@@ -183,7 +183,7 @@ struct S_00e06aa0
     int unk6C;
     int unk70;
     bool m_enabled;
-    void hkpMoppDefaultAssembler_releaseNode(S_00e06aa0_Item* item);
+    void hkpMoppDefaultAssembler_releaseNode(S_00e06aa0_Item* node);
 };
 struct Node
 {
@@ -226,7 +226,7 @@ struct Limits
 void __stdcall AdjustLimits(Limits* first, Limits* second, Limits* third);
 struct E06C20Writer
 {
-    void hkpMoppCodeGenerator_addCommand32(int size, void* data);
+    void hkpMoppCodeGenerator_addCommand32(int code, void* param);
 };
 struct E06C20Object
 {
@@ -236,7 +236,7 @@ struct E06C20Object
     int unk0C;
     E06C20Writer* m_pStreamWriter;
 
-    int hkpMoppDefaultAssembler_addJumpChunk(void* data);
+    int hkpMoppDefaultAssembler_addJumpChunk(void* chunkId);
 };
 struct S_00e07040_A
 {
@@ -262,14 +262,14 @@ template <class T> inline T S_00e07040_Max(T a, T b)
     return a > b ? a : b;
 }
 // src: HAVOK_LIB 0x00e07040
-int __stdcall hkpMoppDefaultAssembler_calcRescaleBits(S_00e07040_A* a, S_00e07040_B* b)
+int __stdcall hkpMoppDefaultAssembler_calcRescaleBits(S_00e07040_A* parentInfo, S_00e07040_B* currentInfo)
 {
-    int n = b->unk08 - 8;
+    int n = currentInfo->unk08 - 8;
     if (n <= 0)
         n = 0;
-    int r = a->unk24 - n;
-    if (r > a->unk24)
-        r = a->unk24;
+    int r = parentInfo->unk24 - n;
+    if (r > parentInfo->unk24)
+        r = parentInfo->unk24;
     return r;
 }
 struct E07510Input
@@ -294,9 +294,9 @@ struct E07510Input
 };
 struct E07510Solver
 {
-    void hkpMoppDefaultAssembler_recalcRescale(void* b, void* c, void* d);
+    void hkpMoppDefaultAssembler_recalcRescale(void* parent, void* info, void* cmd);
     void AdjustLimits(E07510Input* a, void* b, void* c);
-    void hkpMoppDefaultAssembler_initTopDown(E07510Input* a, void* b, void* c, void* d);
+    void hkpMoppDefaultAssembler_initTopDown(E07510Input* currentNode, void* parentInfo, void* currentInfo, void* rescaleCommandInfo);
 };
 struct S_e07c50_Buf
 {
@@ -320,9 +320,9 @@ struct S_e07c50
     int unk24;
     int m_uiItemCount;
     void hkpMoppDefaultAssembler_fixScale(S_e07c50_Item* item);
-    void hkpMoppDefaultAssembler_addTerminals(S_e07c50_Item* item, int b, int c);
-    void hkpMoppDefaultAssembler_addCut(S_e07c50_Item* item, int c);
-    int hkpMoppDefaultAssembler_assembleCutAndTerminalCommand(S_e07c50_Item* item, int b, int c);
+    void hkpMoppDefaultAssembler_addTerminals(S_e07c50_Item* thisNode, int parentInfo, int currentInfo);
+    void hkpMoppDefaultAssembler_addCut(S_e07c50_Item* currentNode, int currentInfo);
+    int hkpMoppDefaultAssembler_assembleCutAndTerminalCommand(S_e07c50_Item* currentNode, int parentInfo, int currentInfo);
 };
 struct S_e07c50_Item
 {
@@ -376,7 +376,7 @@ struct FUN_00e06800_cls
     char* m_buf;
 
     void __thiscall Flush();
-    void __thiscall hkpMoppCodeGenerator_addCommand16(char a, int v);
+    void __thiscall hkpMoppCodeGenerator_addCommand16(char code, int param);
 };
 struct FUN_00e06880_cls
 {
@@ -387,7 +387,7 @@ struct FUN_00e06880_cls
     char* m_buf;
 
     void __thiscall Flush();
-    void __thiscall hkpMoppCodeGenerator_addCommand24(char a, int v);
+    void __thiscall hkpMoppCodeGenerator_addCommand24(char code, int param);
 };
 struct FUN_00e069a0_cls
 {
@@ -398,7 +398,7 @@ struct FUN_00e069a0_cls
     char* m_buf;
 
     void __thiscall Flush();
-    void __thiscall hkpMoppCodeGenerator_addCommand32(char a, unsigned int v);
+    void __thiscall hkpMoppCodeGenerator_addCommand32(char code, unsigned int param);
 };
 struct FUN_00e06490_cls
 {
@@ -412,7 +412,7 @@ struct FUN_00e06a60_cls
     int unk0c;
     int unk10;
 
-    void __thiscall FillWithPattern(int count);
+    void __thiscall hkpMoppCodeGenerator_pad(int size);
 };
 // FUN_00e06af0 - a small __thiscall member that fills in a result flag.
 //
@@ -483,14 +483,14 @@ struct Stream
         }
     }
 
-    void hkpMoppCodeGenerator_addCommand16(int a, int b);
+    void hkpMoppCodeGenerator_addCommand16(int code, int param);
 };
 struct FUN_00e06c40_class
 {
     char pad[0x10];
     Stream* m_stream;
 
-    int __thiscall hkpMoppDefaultAssembler_addDataOffset(int a1, int a2);
+    int __thiscall hkpMoppDefaultAssembler_addDataOffset(int offset, int numTerminals);
 };
 extern "C" void __cdecl GrowBuffer();
 struct Sink
@@ -528,7 +528,7 @@ class FUN_00e06cb0_cls
     int unk0c;
     Sink* m_pSink;
 
-    void __thiscall WritePacket(const Pkt* p);
+    void __thiscall hkpMoppDefaultAssembler_addRescale(const Pkt* cmd);
 };
 extern char DAT_01000000;
 struct S_00e06e00_Item
@@ -542,10 +542,10 @@ struct S_00e06e00_Buf
     int unk8;
     int unkC;
     int unk10;
-    void PutBytePair(int tag, unsigned int v);
-    void hkpMoppCodeGenerator_addCommand16(int tag, unsigned int v);
-    void hkpMoppCodeGenerator_addCommand24(int tag, unsigned int v);
-    void hkpMoppCodeGenerator_addCommand32(int tag, unsigned int v);
+    void PutBytePair(int code, unsigned int param);
+    void hkpMoppCodeGenerator_addCommand16(int code, unsigned int param);
+    void hkpMoppCodeGenerator_addCommand24(int code, unsigned int param);
+    void hkpMoppCodeGenerator_addCommand32(int code, unsigned int param);
 };
 struct S_00e06e00_A0
 {
@@ -609,7 +609,7 @@ struct S_00e06e00_Cls
     int unk8;
     int unkC;
     S_00e06e00_Buf* unk10;
-    int hkpMoppDefaultAssembler_addTerminals(S_00e06e00_A0* a, S_00e06e00_A1* b, S_00e06e00_A2* c);
+    int hkpMoppDefaultAssembler_addTerminals(S_00e06e00_A0* thisNode, S_00e06e00_A1* parentInfo, S_00e06e00_A2* currentInfo);
     void WriteOp(int idx, S_00e06e00_Item* item);
 };
 extern const double g_thresholdA;
@@ -635,8 +635,8 @@ struct S_00e07070_Result
     int count;
     int q[3];
 };
-extern "C" int __stdcall hkpMoppDefaultAssembler_calcRescaleBits(S_00e07070_Object* a, S_00e07070_Object* b);
-void __stdcall hkpMoppDefaultAssembler_recalcRescale(S_00e07070_Object* a, S_00e07070_Object* b, S_00e07070_Result* out);
+extern "C" int __stdcall hkpMoppDefaultAssembler_calcRescaleBits(S_00e07070_Object* parentInfo, S_00e07070_Object* currentInfo);
+void __stdcall hkpMoppDefaultAssembler_recalcRescale(S_00e07070_Object* parent, S_00e07070_Object* info, S_00e07070_Result* cmd);
 struct S_00e07680_Writer
 {
     int unk0;
@@ -662,7 +662,7 @@ struct S_00e07680
     int unkc;
     S_00e07680_Writer* w;
     void WriteOffsetDelta(int);
-    void hkpMoppDefaultAssembler_addSplit(int a1, int a2, int a3, int a4, int a5);
+    void hkpMoppDefaultAssembler_addSplit(int pright, int pleft, int directionCode, int lpos, int rpos);
 };
 struct Entry
 {
@@ -708,7 +708,7 @@ struct Handler
     void __thiscall WriteSize(int);
     void __thiscall hkpMoppDefaultAssembler_checkAndAddProperties(Entry*, Entry*, Entry*);
     void __thiscall hkpMoppDefaultAssembler_addCut(Entry*, Entry*);
-    void __thiscall WritePacket(char*);
+    void __thiscall hkpMoppDefaultAssembler_addRescale(char*);
     int __thiscall hkpMoppDefaultAssembler_assembleNonTerminalCommand(Entry*, Entry*, Entry*, char*);
 };
 extern int __cdecl hkMath_hkFloatToInt(float f);
@@ -740,7 +740,7 @@ struct S_00e07da0_Region : S_00e07da0_Bounds
     int hi54[3];
 
     void BuildScaledRanges(struct S_00e07da0_Node* node, void* p);
-    void hkpMoppAssemblerNodeInfo_calcMaxExtentsSignificantBits();
+    void hkpMoppAssemblerNodeInfo_updateExtents();
 };
 struct S_00e07da0_Result
 {
@@ -812,10 +812,10 @@ struct S_00e07da0_Tree
     float unk54;
 
     void BuildRegion(S_00e07da0_Node* node, S_00e07da0_Region* parent, S_00e07da0_Region* region);
-    void ComputeNodeBounds(S_00e07da0_Node* node, S_00e07da0_Region* region);
-    void hkpMoppDefaultAssembler_recalcRescale(S_00e07da0_Region* parent, S_00e07da0_Region* region, S_00e07da0_Result* out);
+    void hkpMoppDefaultAssembler_calcTermCut(S_00e07da0_Node* currentNode, S_00e07da0_Region* currentInfo);
+    void hkpMoppDefaultAssembler_recalcRescale(S_00e07da0_Region* parent, S_00e07da0_Region* info, S_00e07da0_Result* cmd);
     int ClassifyVec3Region(void* p);
-    void hkpMoppDefaultAssembler_findPlanes(S_00e07da0_Node* node, S_00e07da0_Region* region, int* lo, int* hi);
+    void hkpMoppDefaultAssembler_findPlanes(S_00e07da0_Node* node, S_00e07da0_Region* info, int* pleft, int* pright);
 };
 struct BSAudio;
 extern int DAT_010ea5dc;
@@ -844,7 +844,7 @@ struct FUN_00e09450_cls
 
     void DestroyAudioBuffer();
 };
-int __cdecl hkMath_hkFloorToInt(float v);
+int __cdecl hkMath_hkFloorToInt(float r);
 struct FUN_00e094a0_floatpair
 {
     float lo;
@@ -891,7 +891,7 @@ struct FUN_00e09540_Self
     int unk18;  // y max
     int unk1c;  // z min
     int unk20;  // z max
-    void hkpMoppAssemblerNodeInfo_calcMaxExtentsSignificantBits();
+    void hkpMoppAssemblerNodeInfo_updateExtents();
 };
 class FUN_00e095d0_cls
 {
@@ -918,18 +918,18 @@ class FUN_00e095d0_cls
     unsigned int unk40;
     unsigned int unk44;
 
-    FUN_00e095d0_cls* __thiscall UpdateState_00e095d0(FUN_00e095d0_cls* src, unsigned int a2, unsigned int a3);
+    FUN_00e095d0_cls* __thiscall hkpMoppAssemblerNodeInfo_ctor(FUN_00e095d0_cls* parentInfo, unsigned int node, unsigned int codeInfo);
     void __thiscall CopyOffsets(unsigned int a);
     void __thiscall BuildScaledRanges(unsigned int a, unsigned int b);
-    void __thiscall hkpMoppAssemblerNodeInfo_calcMaxExtentsSignificantBits();
+    void __thiscall hkpMoppAssemblerNodeInfo_updateExtents();
 };
 // Emit an opcode with an immediate, choosing the byte, short or int form (and its opcode offset) by value range.
 class E6BC0Writer
 {
   public:
-    void WriteByteOp(int iOpcode, int iValue);
-    void WriteShortOp(int iOpcode, int iValue);
-    void WriteIntOp(int iOpcode, int iValue);
+    void WriteByteOp(int code, int param);
+    void WriteShortOp(int code, int param);
+    void WriteIntOp(int code, int param);
 };
 class E6BC0Encoder
 {
@@ -1002,7 +1002,7 @@ struct Tree07400
     int unk5C;
     float m_afMaxCount[3];
 
-    void ComputeNodeBounds(Node07400* node, Region07400* region);
+    void hkpMoppDefaultAssembler_calcTermCut(Node07400* currentNode, Region07400* currentInfo);
 };
 struct Arg1Flags
 {
@@ -1026,7 +1026,7 @@ struct BufWriter
     int m_0c;
     int m_10;
     void __thiscall Flush();
-    void __thiscall WriteInt24(int v);
+    void __thiscall hkpMoppCodeGenerator_addParam24(int param);
 };
 inline void EmitByte(BufWriter* w, unsigned char v)
 {
@@ -1044,7 +1044,7 @@ struct FUN_00e07550_cls
     int unk08;
     int unk0c;
     BufWriter* m_10;
-    void __thiscall hkpMoppDefaultAssembler_addCut(Arg1Flags* a1, Arg2Layout* a2);
+    void __thiscall hkpMoppDefaultAssembler_addCut(Arg1Flags* currentNode, Arg2Layout* currentInfo);
 };
 extern "C" unsigned int __cdecl _rotl(unsigned int, int);
 struct KdNode;
@@ -1075,7 +1075,7 @@ struct KdCtx
 
     void __thiscall CopyOffsets(KdNode* k);
     void __thiscall BuildScaledRanges(KdNode* k, float* p);
-    void __thiscall hkpMoppAssemblerNodeInfo_calcMaxExtentsSignificantBits();
+    void __thiscall hkpMoppAssemblerNodeInfo_updateExtents();
 };
 struct KdNode
 {
@@ -1139,9 +1139,9 @@ struct MyTree
     int unk5c;
     float f60[3];
 
-    int __thiscall hkpMoppDefaultAssembler_calcRescaleBits(KdCtx* a, KdCtx* c);
-    void __thiscall hkpMoppDefaultAssembler_recalcRescale(KdCtx* a, KdCtx* c, S_00e07070_Result* o);
-    int __thiscall Recurse(KdNode* n, KdCtx* a, KdCtx* c);
+    int __thiscall hkpMoppDefaultAssembler_calcRescaleBits(KdCtx* parentInfo, KdCtx* currentInfo);
+    void __thiscall hkpMoppDefaultAssembler_recalcRescale(KdCtx* parent, KdCtx* info, S_00e07070_Result* cmd);
+    int __thiscall hkpMoppDefaultAssembler_preCalcScale(KdNode* currentNode, KdCtx* parentInfo, KdCtx* currentInfo);
 };
 #include <xmmintrin.h>
 extern double _gModifierZero;
@@ -1261,10 +1261,10 @@ struct FUN_00e065f0
     unsigned char* m_data;
     hkArrayBase<BvFixup> m_buffer;
 
-    void FillWithPattern(int);
+    void hkpMoppCodeGenerator_pad(int);
     void nullsub_26();
-    FUN_00e065f0(unsigned int id) throw();
-    void Destroy();
+    FUN_00e065f0(unsigned int size) throw();
+    void hkpMoppCodeGenerator_dtor();
     void* operator new(unsigned int n)
     {
         FUN_00e065f0* p = static_cast<FUN_00e065f0*>(((BvAllocator*)hkMemoryRouter::getInstance().m_heap)->AllocateMemoryBlock(n));
@@ -1344,23 +1344,23 @@ struct BvRange
     int unk0c;
     int unk10;
 };
-void __stdcall hkpMoppDefaultAssembler_assembleCutAndTerminalCommand(struct BvNode* node, FUN_00e095d0_cls* parent, FUN_00e095d0_cls* stack);
+void __stdcall hkpMoppDefaultAssembler_assembleCutAndTerminalCommand(struct BvNode* currentNode, FUN_00e095d0_cls* parentInfo, FUN_00e095d0_cls* currentInfo);
 void* __cdecl hkString_memCpy(void*, const void*, int);
 // src: HAVOK_LIB 0x00e08320
-static void copyJumpCommandInfo(hkArrayBase<BvFixup>* destination, hkArrayBase<BvFixup>* source, int adjustment)
+static void copyJumpCommandInfo(hkArrayBase<BvFixup>* newCommands, hkArrayBase<BvFixup>* originalCommands, int offset)
 {
-    for (int i = 0; i < source->m_iElementCount; ++i)
+    for (int i = 0; i < originalCommands->m_iElementCount; ++i)
     {
         BvAllocator& heap = GetHeap();
-        if (destination->m_iElementCount == destination->getCapacity())
-            ResizeAudioStream(&heap, destination, sizeof(BvFixup));
-        BvFixup* out = destination->m_data + destination->m_iElementCount;
-        ++destination->m_iElementCount;
-        out->value = source->m_data[i].value;
-        out->offset = source->m_data[i].offset + adjustment;
+        if (newCommands->m_iElementCount == newCommands->getCapacity())
+            ResizeAudioStream(&heap, newCommands, sizeof(BvFixup));
+        BvFixup* out = newCommands->m_data + newCommands->m_iElementCount;
+        ++newCommands->m_iElementCount;
+        out->value = originalCommands->m_data[i].value;
+        out->offset = originalCommands->m_data[i].offset + offset;
     }
 }
-static int copyCodeAndEmbedTerminals(BvTree* tree, FUN_00e065f0* source, hkArrayBase<int>* refs, FUN_00e065f0* destination);
+static int copyCodeAndEmbedTerminals(BvTree* chunkInfo, FUN_00e065f0* codeWithTerminals, hkArrayBase<int>* codeWithoutTerminals, FUN_00e065f0* terminals);
 struct BvBuilder
 {
     int unk00;
@@ -1377,11 +1377,11 @@ struct BvBuilder
     int unk2c;
     int m_info30;
 
-    void hkpMoppDefaultAssembler_addDataOffset(int offset, int count);
-    void hkpMoppDefaultAssembler_assembleJumpChunkCommand(BvNode* node);
-    void hkpMoppDefaultAssembler_initTopDown(BvNode* node, FUN_00e095d0_cls* parent, FUN_00e095d0_cls* stack, BvRange* range);
-    void hkpMoppDefaultAssembler_assembleNonTerminalCommand(BvNode* node, FUN_00e095d0_cls* parent, FUN_00e095d0_cls* stack, BvRange* range);
-    void hkpMoppDefaultAssembler_assembleSubNodeIntoChunks(BvNode* node, FUN_00e095d0_cls* parent, FUN_00e095d0_cls* stack, int depth, hkArrayBase<int>* refs);
+    void hkpMoppDefaultAssembler_addDataOffset(int offset, int numTerminals);
+    void hkpMoppDefaultAssembler_assembleJumpChunkCommand(BvNode* currentNode);
+    void hkpMoppDefaultAssembler_initTopDown(BvNode* currentNode, FUN_00e095d0_cls* parentInfo, FUN_00e095d0_cls* currentInfo, BvRange* rescaleCommandInfo);
+    void hkpMoppDefaultAssembler_assembleNonTerminalCommand(BvNode* currentNode, FUN_00e095d0_cls* parentInfo, FUN_00e095d0_cls* currentInfo, BvRange* rescaleCommandInfo);
+    void hkpMoppDefaultAssembler_assembleSubNodeIntoChunks(BvNode* currentNode, FUN_00e095d0_cls* parentInfo, FUN_00e095d0_cls* currentInfo, int chunkId, hkArrayBase<int>* terminalsOut);
 };
 inline void* operator new(unsigned int, void* p)
 {
@@ -1478,7 +1478,7 @@ struct P154Region
     int unk24, unk28, unk2c, unk30, context, unk38, unk3c, unk40, unk44;
     void CopyOffsets(struct P154Node*);
     void BuildScaledRanges(struct P154Node*, float*);
-    void hkpMoppAssemblerNodeInfo_calcMaxExtentsSignificantBits();
+    void hkpMoppAssemblerNodeInfo_updateExtents();
 };
 struct P154Node
 {
@@ -1529,7 +1529,7 @@ struct P154Tree
 struct CodeCopySource : FUN_00e065f0
 {
 };
-static int copyCodeAndEmbedTerminals(BvTree* tree, CodeCopySource* source, hkArrayBase<int>* refs, FUN_00e065f0* destination);
+static int copyCodeAndEmbedTerminals(BvTree* chunkInfo, CodeCopySource* codeWithTerminals, hkArrayBase<int>* codeWithoutTerminals, FUN_00e065f0* terminals);
 int copy_code_caller(BvTree* tree, CodeCopySource* source, hkArrayBase<int>* refs, FUN_00e065f0* destination);
 extern "C" void* __cdecl memset(void*, int, unsigned int);
 struct ObjectWriter
@@ -1548,10 +1548,10 @@ struct ObjectWriter
     {
         FUN_00e065f0(size);
     }
-    void Destroy() throw();
+    void hkpMoppCodeGenerator_dtor() throw();
     ~ObjectWriter() throw()
     {
-        Destroy();
+        hkpMoppCodeGenerator_dtor();
     }
     void FUN_00c90510() throw();
 };
@@ -1634,7 +1634,7 @@ struct __declspec(align(8)) MyBounds
 
     void BuildScaledRanges(S_00e07da0_Node* node, void* p) throw();
     void CopyOffsets(S_00e07da0_Node* node) throw();
-    void hkpMoppAssemblerNodeInfo_calcMaxExtentsSignificantBits() throw();
+    void hkpMoppAssemblerNodeInfo_updateExtents() throw();
 };
 struct __declspec(align(8)) MyRegion : public MyBounds
 {
@@ -1647,8 +1647,8 @@ struct __declspec(align(8)) MyRegion : public MyBounds
 
     void CopyOffsets(S_00e07da0_Node* node) throw();
     void BuildScaledRanges(S_00e07da0_Node* node, void* p) throw();
-    void hkpMoppAssemblerNodeInfo_calcMaxExtentsSignificantBits() throw();
-    void UpdateState_00e095d0(MyBounds* src, S_00e07da0_Node* node, void* p) throw();
+    void hkpMoppAssemblerNodeInfo_updateExtents() throw();
+    void hkpMoppAssemblerNodeInfo_ctor(MyBounds* parentInfo, S_00e07da0_Node* node, void* codeInfo) throw();
 };
 extern "C" void __cdecl copyCodeAndEmbedTerminals(AssemblerHelper*, ObjectWriter*, void*) throw();
 struct Tree : public FUN_00e09640_class
@@ -1657,7 +1657,7 @@ struct Tree : public FUN_00e09640_class
     virtual void vf08() throw();
     virtual void vf0c() throw();
     virtual void vf10() throw();
-    virtual void hkpMoppDefaultAssembler_assemble(S_00e07da0_Node* node, int arg2, int arg3);
+    virtual void hkpMoppDefaultAssembler_assemble(S_00e07da0_Node* rootNode, int mgr, int minAssembledElems);
     virtual void vf18(S_00e07da0_Node* node, void* p) throw();
 
     int unk08;
@@ -1688,13 +1688,13 @@ struct Tree : public FUN_00e09640_class
     int unk6c;
     int unk70;
 
-    void Recurse(S_00e07da0_Node* node, MyBounds* b, MyRegion* r) throw();
+    void hkpMoppDefaultAssembler_preCalcScale(S_00e07da0_Node* currentNode, MyBounds* parentInfo, MyRegion* currentInfo) throw();
     void BuildRegion(S_00e07da0_Node* node, MyRegion* r1, MyRegion* r2) throw();
     void OptimizeTree(S_00e07da0_Node* node, MyBounds* b1, MyBounds* b2) throw();
-    void hkpMoppDefaultAssembler_calcChunkPoints(S_00e07da0_Node* node, MyBounds* b, MyRegion* r, void* arr) throw();
-    void hkpMoppDefaultAssembler_calcTerminalIdsForChunks(S_00e07da0_Node* node, int a, int b) throw();
-    void hkpMoppDefaultAssembler_assembleSubNodeIntoChunks(S_00e07da0_Node* node, MyBounds* b1, MyBounds* b2, int a, void* arr) throw();
-    void hkpMoppDefaultAssembler_addDataOffset(int a, int b) throw();
+    void hkpMoppDefaultAssembler_calcChunkPoints(S_00e07da0_Node* currentNode, MyBounds* parentInfo, MyRegion* currentInfo, void* terminalsOut) throw();
+    void hkpMoppDefaultAssembler_calcTerminalIdsForChunks(S_00e07da0_Node* currentNode, int chunkId, int currentId) throw();
+    void hkpMoppDefaultAssembler_assembleSubNodeIntoChunks(S_00e07da0_Node* currentNode, MyBounds* parentInfo, MyBounds* currentInfo, int chunkId, void* terminalsOut) throw();
+    void hkpMoppDefaultAssembler_addDataOffset(int offset, int numTerminals) throw();
 };
 typedef void(__thiscall* Vf18Fn)(Tree*, S_00e07da0_Node*, void*) throw();
 
@@ -1775,7 +1775,7 @@ union hkVector4Copy
 
 hkReal hkMath_hkFloor(hkReal f);
 int hkMath_hkFloatToInt(hkReal f);
-int hkMath_hkFloorToInt(hkReal f);
+int hkMath_hkFloorToInt(hkReal r);
 extern "C" const double DAT_010ea5c0;
 
 struct QuantNode
@@ -1840,7 +1840,7 @@ struct KdQuantizer
     int unk2c;
     hkVector4Unaligned m_vRayOrigins;
 
-    void hkpMoppDefaultAssembler_findPlanes(const QuantNode* node, const KdRegion* region, int* hiOut, int* loOut);
+    void hkpMoppDefaultAssembler_findPlanes(const QuantNode* node, const KdRegion* info, int* pleft, int* pright);
 };
 
 static __forceinline int toCell(hkReal scale, double x)
@@ -1863,7 +1863,10 @@ static __forceinline int clampIndex(int i)
 
 // @fnv 0x00e07880
 // src: XBOX_PDB 0x00e07880
-void KdQuantizer::hkpMoppDefaultAssembler_findPlanes(const QuantNode* node, const KdRegion* region, int* hiOut, int* loOut)
+// pdb: hkpMoppDefaultAssembler::findPlanes | hkpMoppDefaultAssembler.obj | retail, upstream name already matches, high
+// pdb params: node, info, pleft, pright
+// pdb locals: sInv
+void KdQuantizer::hkpMoppDefaultAssembler_findPlanes(const QuantNode* node, const KdRegion* info, int* pleft, int* pright)
 {
     const hkReal* n = &node->m_vHitNormal->m_vComponents.m128_f32[0];
     int numNonZero = 0;
@@ -1891,16 +1894,16 @@ void KdQuantizer::hkpMoppDefaultAssembler_findPlanes(const QuantNode* node, cons
         const hkReal* origin = &m_vRayOrigins.x;
         int lo = toCell(m_vRayOrigins.w, minDist - origin[axis]);
         int hi = toCell(m_vRayOrigins.w, maxDist - origin[axis]);
-        int offset = region->m_offset[axis];
-        lo = (lo - offset) >> region->m_iIndex;
-        hi = ((hi - offset) >> region->m_iIndex) + 1;
+        int offset = info->m_offset[axis];
+        lo = (lo - offset) >> info->m_iIndex;
+        hi = ((hi - offset) >> info->m_iIndex) + 1;
         lo = clampIndex(lo);
         hi = clampIndex(hi);
-        *loOut = lo;
-        *hiOut = hi;
-        if (*loOut < 0)
+        *pright = lo;
+        *pleft = hi;
+        if (*pright < 0)
         {
-            *loOut = 0;
+            *pright = 0;
         }
         return;
     }
@@ -1910,12 +1913,12 @@ void KdQuantizer::hkpMoppDefaultAssembler_findPlanes(const QuantNode* node, cons
     origin.m_v = m_vRayOrigins;
 
     hkVector4 p;
-    p.set((hkReal)region->m_offset[0], (hkReal)region->m_offset[1], (hkReal)region->m_offset[2], 0.0f);
+    p.set((hkReal)info->m_offset[0], (hkReal)info->m_offset[1], (hkReal)info->m_offset[2], 0.0f);
     p.mul4(ScalarLane(1.0f / scale));
     p.add4(reinterpret_cast<const __m128&>(origin.m_q));
     double d = p.dot3scalar(*node->m_vHitNormal);
 
-    hkReal cellSize = (hkReal)(1 << region->m_iIndex);
+    hkReal cellSize = (hkReal)(1 << info->m_iIndex);
     double lo = (minDist - d) * m_vRayOrigins.w / cellSize;
     maxDist = (maxDist - d) * m_vRayOrigins.w / cellSize;
 
@@ -1944,6 +1947,6 @@ void KdQuantizer::hkpMoppDefaultAssembler_findPlanes(const QuantNode* node, cons
     int ihi = hkMath_hkFloorToInt((hkReal)(maxDist * norm)) + 1;
     ilo = clampIndex(ilo);
     ihi = clampIndex(ihi);
-    *loOut = ilo;
-    *hiOut = ihi;
+    *pright = ilo;
+    *pleft = ihi;
 }

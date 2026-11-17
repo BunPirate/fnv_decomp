@@ -15,7 +15,7 @@ extern int DAT_0126fa6c;
 extern int DAT_0126fa70;
 extern int DAT_0126fa74;
 extern float DAT_0126fa78;
-int* __cdecl NiCollisionConvert_ConvertToSphereBV_Fast(float f, int* p);
+int* __cdecl NiCollisionConvert_ConvertToSphereBV_Fast(float fRadius, int* kCenter);
 
 __forceinline Vec4::Vec4(float a, float b, float c, float d) : x(a), y(b), z(c), w(d)
 {}
@@ -218,7 +218,7 @@ struct Host
     unsigned char dirty;
     unsigned char ue5;
     unsigned char m_e6[16];
-    void BSOcclusionPlane_GetVertices(Pt* v);
+    void BSOcclusionPlane_GetVertices(Pt* apPoints);
     __forceinline int GetMode()
     {
         return m40;
@@ -236,12 +236,12 @@ struct Host
             return false;
         return ((VObj*)this)->vt08() == (int)&DAT_012030b0;
     }
-    void BSOcclusionPlane_MakeDebugGeom(Pt p0, Obj* pA, Obj* pB, Vec4 color, unsigned char flag);
+    void BSOcclusionPlane_MakeDebugGeom(Pt akViewPoint, Obj* apLines, Obj* apShape, Vec4 akBaseColor, unsigned char abWithinFrustum);
 };
 // src: COMMUNITY 0x00c35c10
-inline void Host::BSOcclusionPlane_GetVertices(Pt* v)
+inline void Host::BSOcclusionPlane_GetVertices(Pt* apPoints)
 {
-    Pt* output = v;
+    Pt* output = apPoints;
     unsigned int byteCount = 4 * sizeof(Pt);
     if (!dirty)
     {
@@ -267,23 +267,26 @@ inline void Host::BSOcclusionPlane_GetVertices(Pt* v)
 }
 // @fnv 0x00c34ad0
 // src: XBOX_PDB 0x00c34ad0
-void Host::BSOcclusionPlane_MakeDebugGeom(Pt p0, Obj* pA, Obj* pB, Vec4 color, unsigned char flag)
+// pdb: BSOcclusionPlane::MakeDebugGeom | BSOcclusionPlane.obj | debug, upstream name already matches, high
+// pdb params: akViewPoint, apLines, apShape, akBaseColor, abWithinFrustum
+// pdb locals: iaddtris, kpoints, klinecolor, ilastindex, ktemp, kpvert, kdisabledlinecolor, kpconn, ktriconn, i, kconn, kcolor, kpcol, kpflag, iaddlines, ktangent
+void Host::BSOcclusionPlane_MakeDebugGeom(Pt akViewPoint, Obj* apLines, Obj* apShape, Vec4 akBaseColor, unsigned char abWithinFrustum)
 {
     int count30 = 4;
     int n21 = 2;
     Pt aCorners[8];
     Pt tmp4c;
     BSOcclusionPlane_GetVertices(aCorners);
-    tmp4c = (&aCorners[0])->operator-(p0);
+    tmp4c = (&aCorners[0])->operator-(akViewPoint);
     tmp4c.Unitize_004a0c10();
     aCorners[4] = (&aCorners[0])->operator+((&tmp4c)->operator*(DAT_010500cc));
-    tmp4c = (&aCorners[1])->operator-(p0);
+    tmp4c = (&aCorners[1])->operator-(akViewPoint);
     tmp4c.Unitize_004a0c10();
     aCorners[5] = (&aCorners[1])->operator+((&tmp4c)->operator*(DAT_010500cc));
-    tmp4c = (&aCorners[2])->operator-(p0);
+    tmp4c = (&aCorners[2])->operator-(akViewPoint);
     tmp4c.Unitize_004a0c10();
     aCorners[6] = (&aCorners[2])->operator+((&tmp4c)->operator*(DAT_010500cc));
-    tmp4c = (&aCorners[3])->operator-(p0);
+    tmp4c = (&aCorners[3])->operator-(akViewPoint);
     tmp4c.Unitize_004a0c10();
     aCorners[7] = (&aCorners[3])->operator+((&tmp4c)->operator*(DAT_010500cc));
     unsigned short t13[8][2];
@@ -337,7 +340,7 @@ void Host::BSOcclusionPlane_MakeDebugGeom(Pt p0, Obj* pA, Obj* pB, Vec4 color, u
     Vec4 colObj(Vec4::Uninitialized);
     Vec4 colorA(Vec4::Uninitialized);
     Vec4 colorB(Vec4::Uninitialized);
-    colObj = color;
+    colObj = akBaseColor;
     colorA = DAT_011a9be0;
     colorA.x = colObj.w;
     colorA.y = colObj.w;
@@ -345,13 +348,13 @@ void Host::BSOcclusionPlane_MakeDebugGeom(Pt p0, Obj* pA, Obj* pB, Vec4 color, u
     colorB.x = 1.0f;
     colorB.y = 0.7f;
     colorB.z = 0.7f;
-    colorB.w = color.w;
+    colorB.w = akBaseColor.w;
     Pt* pVertsTmp;
     Vec4* colors8;
     PairB* flags0;
-    pVertsTmp = pA->GetVertices();
-    colors8 = pA->GetColors();
-    flags0 = pA->GetFlags();
+    pVertsTmp = apLines->GetVertices();
+    colors8 = apLines->GetColors();
+    flags0 = apLines->GetFlags();
     unsigned short fillA;
     unsigned short idx46;
     idx46 = 0;
@@ -359,12 +362,12 @@ void Host::BSOcclusionPlane_MakeDebugGeom(Pt p0, Obj* pA, Obj* pB, Vec4 color, u
     {
         pVertsTmp[idx46 * 2] = aCorners[t13[idx46][0]];
         colors8[idx46 * 2] = GetMode() == 1
-                                 ? (m_e6[idx46] ? Vec4(1.0f, 1.0f, 0.1f, color.w) : Vec4(0.1f, 1.0f, 0.1f, color.w))
-                                 : Vec4(0.7f, 0.15f, 0.15f, color.w);
+                                 ? (m_e6[idx46] ? Vec4(1.0f, 1.0f, 0.1f, akBaseColor.w) : Vec4(0.1f, 1.0f, 0.1f, akBaseColor.w))
+                                 : Vec4(0.7f, 0.15f, 0.15f, akBaseColor.w);
         pVertsTmp[idx46 * 2 + 1] = aCorners[t13[idx46][1]];
         colors8[idx46 * 2 + 1] = GetMode() == 1
-                                     ? (m_e6[idx46] ? Vec4(1.0f, 1.0f, 0.1f, color.w) : Vec4(0.1f, 1.0f, 0.1f, color.w))
-                                     : Vec4(0.7f, 0.15f, 0.15f, color.w);
+                                     ? (m_e6[idx46] ? Vec4(1.0f, 1.0f, 0.1f, akBaseColor.w) : Vec4(0.1f, 1.0f, 0.1f, akBaseColor.w))
+                                     : Vec4(0.7f, 0.15f, 0.15f, akBaseColor.w);
         flags0[idx46].a = 1;
         flags0[idx46].b = 0;
     }
@@ -393,14 +396,14 @@ void Host::BSOcclusionPlane_MakeDebugGeom(Pt p0, Obj* pA, Obj* pB, Vec4 color, u
         flags0[idx46].a = 0;
         flags0[idx46].b = 0;
     }
-    pVertsTmp = pB->GetVertices();
-    colors8 = pB->GetColors();
-    if (flag)
+    pVertsTmp = apShape->GetVertices();
+    colors8 = apShape->GetColors();
+    if (abWithinFrustum)
         colObj.w = 0.2f;
     else
         colObj.w = 0.1f;
     short* indices_35;
-    indices_35 = pB->GetIndices();
+    indices_35 = apShape->GetIndices();
     idx46 = 0;
     for (; idx46 < n21; idx46++)
     {

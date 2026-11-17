@@ -5,11 +5,12 @@
 enum IO_TASK_PRIORITY;
 class RefObj;
 
+// pdb: class IOTask, size 0x18, bases: BSTask<__int64>, 0 members
 class IOTask : public BSTask<__int64>
 {
 public:
-    IOTask(IO_TASK_PRIORITY priority);
-    IOTask(int priority);
+    IOTask(IO_TASK_PRIORITY aePriority);
+    IOTask(int aePriority);
     virtual ~IOTask();
     virtual void Run();
     virtual void Finish();
@@ -20,7 +21,7 @@ public:
     virtual void ChangePriority(IO_TASK_PRIORITY priority);
 
     void ChangePriority(int priority);
-    void SetIOTaskPriority(IO_TASK_PRIORITY priority);
+    void SetIOTaskPriority(IO_TASK_PRIORITY aePriority);
     unsigned char GetPriority();
     void SetKey(char, unsigned int, unsigned char, unsigned short);
     unsigned int InitScriptRunLockTask();
@@ -37,8 +38,8 @@ public:
     IO_TASK_PRIORITY IOTask_GetIOTaskPriority();
     unsigned short IOTask_GetNextCounter();
     void BSTask_int64_DecRefCount();
-    void QueuedFile_Cancel(int state, RefObj* obj);
-    void QueuedFile_AddAdditionalParent(RefObj* obj);
+    void QueuedFile_Cancel(int aePreviousState, RefObj* apTaskOwner);
+    void QueuedFile_AddAdditionalParent(RefObj* apAdditionalParent);
 
     static unsigned char GetPriorityFromKey(__int64& key);
 };

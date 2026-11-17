@@ -22,6 +22,7 @@ class HdrEffectParamLocalForm
     void** m_ppVirtualMethodTable;
     unsigned char textureArrays[32];
 };
+// pdb: class ImageSpaceShaderParam, size 0x88, bases: ImageSpaceEffectParam, 13 members
 class ImageSpaceShaderParam : public HdrEffectParamLocalForm
 {
   public:
@@ -36,7 +37,7 @@ class ImageSpaceShaderParam : public HdrEffectParamLocalForm
     void* m_pPixelShaderConstantMap;
     bool m_bTextureFlags[3];
     unsigned char layoutPadding57;
-    unsigned char inputArraysAndStates[48];
+    unsigned char pInputTextures[48]; // src: XBOX_RETAIL_PDB +0x58 (old: inputArraysAndStates)
     ImageSpaceShaderParam();
     static void* operator new(size_t size)
     {
@@ -46,6 +47,7 @@ class ImageSpaceShaderParam : public HdrEffectParamLocalForm
     void SetBlurClearMode();
     void CopyParamData(int, const float*, unsigned int);
 };
+// pdb: class ImageSpaceEffect, size 0x58, 7 members
 class ImageSpaceEffect
 {
   public:
@@ -55,7 +57,7 @@ class ImageSpaceEffect
     NiTArray<ImageSpaceEffect*, NiTMallocInterface<ImageSpaceEffect*> > pEffectList;
     NiTArray<HdrEffectParamLocalForm*, NiTMallocInterface<HdrEffectParamLocalForm*> > pEffectParamList;
     NiTArray<ImageSpaceTexture*, NiTMallocInterface<ImageSpaceTexture*> > pTextures;
-    unsigned char remainingArrays[32];
+    unsigned char pEffectInputs[32]; // src: XBOX_RETAIL_PDB +0x38 (old: remainingArrays)
     void SetTextureArrayCount(int);
     void SetEffectAt(int, ImageSpaceEffect*, HdrEffectParamLocalForm*, int);
 };

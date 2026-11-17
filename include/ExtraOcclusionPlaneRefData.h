@@ -4,6 +4,7 @@
 
 class PatrolReferenceData;
 
+// pdb: class ExtraOcclusionPlaneRefData, size 0x10, bases: BSExtraData, 1 members
 class ExtraOcclusionPlaneRefData : public BSExtraData
 {
 public:

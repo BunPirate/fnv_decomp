@@ -10,6 +10,7 @@ struct FUN_00a21660 : TileImage
 };
 // Constructs a TileImage-derived object; the body only declares unused locals and performs no work.
 // @fnv 0x00a21660
+// pdb: RadialTile::RadialTile | RadialTile.obj | debug, object-file run extension, low
 FUN_00a21660::FUN_00a21660()
 {
     int a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11;
@@ -29,6 +30,7 @@ struct FUN_00a219e0_shell
 
 // Calls DestroyTileImageBase, then deallocates this via g_memoryManager when flags has bit 1 set, and returns this.
 // @fnv 0x00a219e0
+// pdb: RadialTile::`scalar deleting destructor' | RadialTile.obj | retail, vtable slot, high
 void* FUN_00a219e0_shell::FUN_00a219e0(unsigned int flags)
 {
     DestroyTileImageBase();
@@ -78,6 +80,7 @@ struct DeadStackSpace
 };
 
 // @fnv 0x00a21690
+// pdb: RadialTile::~RadialTile | RadialTile.obj | debug, object-file run extension, low
 void FUN_00a219e0_shell::DestroyTileImageBase()
 {
     DeadStackSpace dead;

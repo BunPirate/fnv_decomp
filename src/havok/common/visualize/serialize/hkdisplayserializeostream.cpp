@@ -12,9 +12,12 @@ __declspec(nothrow) hkMemoryRouter* __cdecl hkMemoryRouter_getInstance();
 
 // @fnv 0x00dda830
 // src: HAVOK_LIB 0x00dda830
-unsigned int hkDisplaySerializeOStream_computeBytesRequired(const unsigned int* puiValues)
+// pdb: hkDisplaySerializeOStream::computeBytesRequired | hkDisplaySerializeOStream.obj | debug, upstream name already matches, high
+// pdb params: dg
+// pdb locals: assertBuf, ostr
+unsigned int hkDisplaySerializeOStream_computeBytesRequired(const unsigned int* dg)
 {
-    return 4 * (3 * (puiValues[4] + puiValues[1])) + 8;
+    return 4 * (3 * (dg[4] + dg[1])) + 8;
 }
 
 void __stdcall WriteFloatArray(unsigned int, unsigned int);
@@ -102,21 +105,24 @@ struct DDA7C0OStream
     void writeVector(const DDA7C0Vector4& v);
     void writeTriangle(const DDA7C0Triangle& t);
 
-    void WriteGeometry(const DDA7C0Geometry& geometry);
+    void hkDisplaySerializeOStream_writeGeometry(const DDA7C0Geometry& g);
 };
 
 // Writes the vertex count and vertices, then the triangle count and triangles, of a geometry to the stream.
 // @fnv 0x00dda7c0
-void DDA7C0OStream::WriteGeometry(const DDA7C0Geometry& geometry)
+// src: XBOX_RETAIL_PDB 0x00dda7c0
+// pdb: hkDisplaySerializeOStream::writeGeometry | hkDisplaySerializeOStream.obj | retail, call graph, high
+// pdb params: g
+void DDA7C0OStream::hkDisplaySerializeOStream_writeGeometry(const DDA7C0Geometry& g)
 {
-    int numVertices = geometry.m_kVertices.m_iElementCount;
+    int numVertices = g.m_kVertices.m_iElementCount;
     writeInt32(numVertices);
     for (int i = 0; i < numVertices; i++)
-        writeVector(geometry.m_kVertices.m_data[i]);
-    int numTriangles = geometry.m_uiTriangleCount.m_iElementCount;
+        writeVector(g.m_kVertices.m_data[i]);
+    int numTriangles = g.m_uiTriangleCount.m_iElementCount;
     writeInt32(numTriangles);
     for (int i = 0; i < numTriangles; i++)
-        writeTriangle(geometry.m_uiTriangleCount.m_data[i]);
+        writeTriangle(g.m_uiTriangleCount.m_data[i]);
 }
 
 namespace fnv_00ddabb0 {
@@ -145,6 +151,8 @@ FUN_00ddabb0_shell* FUN_00ddabb0_shell::FUN_00ddabb0(unsigned int flags)
 // The shared header lacks this unsigned-16 writer; the unused EDX argument
 // lets this local helper retain the original thiscall ABI without a class copy.
 // @fnv 0x00d60920
+// pdb: hkOArchive::write16u | hkOArchive.obj | retail, call graph (shared callers), medium
+// pdb params: u
 void __fastcall WriteUInt16(hkOArchive* archive, void*, unsigned short value)
 {
     archive->WriteSwapped(&value, 2, 1);
@@ -182,12 +190,16 @@ struct S_00dda740_Quaternion
 struct S_00dda740
 {
     void WriteFloatArray(const float* data, int n);
-    void WriteTransform(const S_00dda740_Transform& t);
+    void hkDisplaySerializeOStream_writeTransform(const S_00dda740_Transform& t);
 };
 
 // Converts the rotation matrix to a quaternion and writes the translation and quaternion components to the stream.
 // @fnv 0x00dda740
-void S_00dda740::WriteTransform(const S_00dda740_Transform& t)
+// src: XBOX_RETAIL_PDB 0x00dda740
+// pdb: hkDisplaySerializeOStream::writeTransform | hkDisplaySerializeOStream.obj | retail, call graph, high
+// pdb params: t
+// pdb locals: rotation, position, orientation
+void S_00dda740::hkDisplaySerializeOStream_writeTransform(const S_00dda740_Transform& t)
 {
     S_00dda740_Vector4 trans = t.m_vTranslation;
     __declspec(align(16)) hkMatrix3 rot = t.m_rotation;
@@ -197,7 +209,7 @@ void S_00dda740::WriteTransform(const S_00dda740_Transform& t)
     WriteFloatArray(&q.m_vec.x, 4);
 }
 
-int hkDisplaySerializeOStream_computeBytesRequired(int value);
+int hkDisplaySerializeOStream_computeBytesRequired(int dg);
 
 // Returns a constant chosen by the int at param+0x50 (0x1d plus FUN_00dda830(param+8) for 6), or 1 for other values.
 // @fnv 0x00dda850
@@ -276,15 +288,18 @@ struct Shape
 struct DDA8C0Writer
 {
     void FUN_00d605b0(int v);
-    void WriteTransform(const void* p);
+    void hkDisplaySerializeOStream_writeTransform(const void* p);
     void hkDisplaySerializeOStream_writeQuadVector4(const void* p);
     void HashUInt(float f);
     void WriteInt(int v);
-    void WriteGeometry(const DDA7C0Geometry& geometry);
+    void hkDisplaySerializeOStream_writeGeometry(const DDA7C0Geometry& g);
     void WriteShape(Shape* p);
 };
 // Writes a Shape to the stream by dispatching on its tag and serializing the tag-specific fields via the writer's hash and write helpers.
 // @fnv 0x00dda8c0
+// pdb: hkDisplaySerializeOStream::writeDisplayGeometry | hkDisplaySerializeOStream.obj | retail, call graph, medium
+// pdb params: dg
+// pdb locals: assertBuf, ostr, s
 void DDA8C0Writer::WriteShape(Shape* p)
 {
     Vec4A t[6];
@@ -293,12 +308,12 @@ void DDA8C0Writer::WriteShape(Shape* p)
     switch (tag)
     {
     case 6: {
-        WriteTransform(&p->unk10);
-        WriteGeometry(*p->geom);
+        hkDisplaySerializeOStream_writeTransform(&p->unk10);
+        hkDisplaySerializeOStream_writeGeometry(*p->geom);
         break;
     }
     case 1: {
-        WriteTransform(&p->unk10);
+        hkDisplaySerializeOStream_writeTransform(&p->unk10);
         t[0] = p->vec60;
         HashUInt(t[0].f[3]);
         hkDisplaySerializeOStream_writeQuadVector4(&t[0]);
@@ -307,7 +322,7 @@ void DDA8C0Writer::WriteShape(Shape* p)
         break;
     }
     case 8: {
-        WriteTransform(&p->unk10);
+        hkDisplaySerializeOStream_writeTransform(&p->unk10);
         HashUInt(p->f80);
         hkDisplaySerializeOStream_writeQuadVector4(&p->vec60);
         hkDisplaySerializeOStream_writeQuadVector4(&p->i70);
@@ -316,7 +331,7 @@ void DDA8C0Writer::WriteShape(Shape* p)
         break;
     }
     case 9: {
-        WriteTransform(&p->unk10);
+        hkDisplaySerializeOStream_writeTransform(&p->unk10);
         HashUInt(p->f80);
         hkDisplaySerializeOStream_writeQuadVector4(&p->vec60);
         hkDisplaySerializeOStream_writeQuadVector4(&p->i70);
@@ -325,7 +340,7 @@ void DDA8C0Writer::WriteShape(Shape* p)
         break;
     }
     case 2: {
-        WriteTransform(&p->unk10);
+        hkDisplaySerializeOStream_writeTransform(&p->unk10);
         hkDisplaySerializeOStream_writeQuadVector4(&p->vec60);
         break;
     }

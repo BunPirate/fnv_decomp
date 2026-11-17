@@ -9,6 +9,7 @@
 
 // Calls FUN_006270f0, then deletes this with size 0x44 when flags has bit 0 set, and returns this.
 // @fnv 0x006270c0
+// pdb: LoadedAreaBound::`scalar deleting destructor' | LoadedAreaBound.obj | retail, vtable slot, high
 void* LoadedAreaBound::FUN_006270c0(unsigned int flags)
 {
     this->FUN_006270f0();
@@ -30,7 +31,7 @@ struct Refr
     Refr* FUN_0067f390();
     int PackageLocation_GetLocType();
     void* TESObjectREFR_GetOwner();
-    bool TESObjectREFR_IsAnOwner(Actor* a, bool b);
+    bool TESObjectREFR_IsAnOwner(Actor* pOwner, bool b);
     ObjA* BGSSaveFormBuffer_GetForm();
     int TESObjectREFR_GetFirstFreeMarkerIndex(bool b);
     bool TESObjectREFR_GetMarkerAtIndex(int a, int b);
@@ -470,12 +471,12 @@ struct MgrNode
 };
 struct IOMgr
 {
-    void LoadQueuedPriority(int a);
+    void LoadQueuedPriority(int aePriority);
 };
 extern TES* DAT_011dea10;
 extern IOMgr* DAT_01202d98;
 void* __fastcall TESObjectREFR_GetWorldSpace(Actor* a);
-void __cdecl FUN_006d6f80(void* a, void* b, NiPoint3* c, NiPoint3* d);
+void __cdecl FUN_006d6f80(void* apWorldSpace, void* apCell, NiPoint3* aLocation, NiPoint3* apRetPt);
 struct ThisCls
 {
     int m_00;
@@ -484,6 +485,8 @@ struct ThisCls
 };
 // @fnv 0x00972d30
 // src: XBOX_PDB 0x00972d30
+// pdb: ProcessLists::PlaceActorsinBedsOrChairs | ProcessLists.obj | retail, upstream name already matches, high
+// pdb locals: pMob, pFurniture, pObject, pTesList, bplacedActor, i, pactor, pmarker, pFurObject, ptargetref, pcurrentpack, pactorspace, plocref, index, absleep, bNeedsToMoveToSafePos, ploc, pdata, ppatrolData, badvanced, curPos, dest
 void ThisCls::ProcessLists_PlaceActorsinBedsOrChairs()
 {
     bool resultFlag;
@@ -717,7 +720,7 @@ struct CF845
     int unk;
 };
 
-TESObjectREFR* __cdecl TESHavokUtilities_FindCollidableRef(void* p);
+TESObjectREFR* __cdecl TESHavokUtilities_FindCollidableRef(void* apCol);
 
 struct PickedObj
 {
@@ -777,12 +780,15 @@ struct Arg3
 struct FUN_00628df0_class
 {
     void ProcessEntries_00628df0(Arg1* a1, Arg2* a2, Arg3* a3);
-    void LoadedAreaBound_WarpActor(TESObjectREFR* r);
+    void LoadedAreaBound_WarpActor(TESObjectREFR* apActor);
 };
 
 // For each a2 item with a string, calls a3's target vfunc_0x3c; if the a1 checks fail and the item type is 0x1e, passes its REFR to FUN_006295e0.
 // @fnv 0x00628df0
 // src: GUESS 0x00628df0 (confidence: low)
+// pdb: LoadedAreaBound::FindWarpLocation | LoadedAreaBound.obj | retail, object-file run extension, low
+// pdb params: apRef, arCurLoc, arWarpLoc
+// pdb locals: pcell, pact, blocFound, rot, fheightNavMesh, tmpLoc, plocForm, warpLoc, boundAabb
 void FUN_00628df0_class::ProcessEntries_00628df0(Arg1* a1, Arg2* apItems, Arg3* apTarget)
 {
     FUN_00437c10 tmp;

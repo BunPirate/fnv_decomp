@@ -11,10 +11,11 @@ extern GlobalObject2_0040c150 g_011c8f00;
 #include "layout_support.h"
 #include "../../include/TESBoundObject.h"
 #include "../../include/TESLeveledList.h"
+// pdb: class ContainerItemExtra, size 0xc, 5 members
 class ContainerItemExtra
 {
   public:
-    unsigned int data[3];
+    unsigned int pOwnerForm[3]; // src: XBOX_RETAIL_PDB +0x0 (old: data)
     static void* operator new(unsigned int);
     static void operator delete(void*);
     ContainerItemExtra();
@@ -28,7 +29,7 @@ class LeveledObject
     TESForm* form;
     unsigned short count;
     unsigned short pad2;
-    void SwapEndian();
+    void LEVELED_OBJECT_FILE_Endian();
 };
 extern LeveledObject* DAT_011c8f1c;
 extern "C" void* __cdecl memset(void*, int, unsigned int);

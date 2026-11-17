@@ -105,17 +105,17 @@ public:
     void Unitize_004a0c10();
     float FUN_004a7290();
     float FUN_004a7290() const;
-    LocalVec3 FUN_004b3800(const LocalVec3& other) const;
+    LocalVec3 FUN_004b3800(const LocalVec3& pt) const;
     LocalVec3 ProcessAndReturnValue_0053d280(float divisor);
     float NiPoint3_XYLength();
     float NiPoint3_XYLength() const;
     void ComputeValue_0063c8a0(const LocalVec3* other);
     void ComputeValue_0063c8a0(void* other);
     void FUN_006815c0();
-    float CVec3_Distance(LocalVec3* other);
-    float CVec3_Distance(const LocalVec3& other) const;
-    LocalVec3 TransformPointByMatrix4(const Mat& matrix);
-    LocalVec3 TransformPointByMatrix4(const Matrix4* matrix);
+    float CVec3_Distance(LocalVec3* cVec);
+    float CVec3_Distance(const LocalVec3& cVec) const;
+    LocalVec3 TransformPointByMatrix4(const Mat& cTransform);
+    LocalVec3 TransformPointByMatrix4(const Matrix4* cTransform);
     void Normalize_00b12790();
     LocalVec3 Diff_00b13040(void* other);
     LocalVec3 Diff_00b13040(const LocalVec3& other) const;
@@ -143,7 +143,7 @@ struct FloatVec
 struct FUN_00b30190_shell
 {
     char m_ucUnknownByte[0xb8];
-    void AppendThreeFloatComponents(const float* p);
+    void CIndexedGeometry_AddVertexNormal(const float* pNormal);
 };
 unsigned int __cdecl FUN_00ec7c56(void);
 struct Vec28
@@ -193,7 +193,7 @@ struct FUN_00b10dc0
     float unk34;
     SubB unk38;
 
-    FUN_00b10dc0(int param);
+    FUN_00b10dc0(int pParent);
 };
 struct FUN_00b300c0_cls
 {
@@ -298,7 +298,7 @@ struct FUN_00b304f0_cls
     int unk144;
     FloatVec m_148;
 
-    void CIndexedGeometry_AddVertexTexCoord1(const float& v);
+    void CIndexedGeometry_AddVertexTexCoord1(const float& pTexCoord);
 };
 bool __cdecl CSpeedTreeRT_GetTextureFlip(void);
 void __cdecl FreeBlock(void* p);
@@ -838,7 +838,10 @@ struct Mesh
 
 // @fnv 0x00b2ed70
 // src: COMMUNITY 0x00b2ed70
-void Mesh::CIndexedGeometry_CombineStrips(bool preserve)
+// pdb: CIndexedGeometry::CombineStrips | IndexedGeometry.obj | retail, upstream name already matches, high
+// pdb params: bToggleFaceOrdering
+// pdb locals: vCompositeStrips, vCompositeTriangleCounts, vCompositeStripLengths, usLod, nCompositeLength, usStrip, pStripPointer, pCompositeStrip, usStripLength, nNumStrips, x
+void Mesh::CIndexedGeometry_CombineStrips(bool bToggleFaceOrdering)
 {
     if ((unsigned short)(triangles.size() / 3) > 0)
     {
@@ -855,7 +858,7 @@ void Mesh::CIndexedGeometry_CombineStrips(bool preserve)
                 combinedLength += lengths[group][index];
             if (combinedLength > 0)
             {
-                if (preserve)
+                if (bToggleFaceOrdering)
                 {
                     for (unsigned short join = 0;
                          join < ((short)group > -1 ? (unsigned short)strips.ProcessAndReturnValue_00b319a0((short)group)->size()
@@ -892,7 +895,7 @@ void Mesh::CIndexedGeometry_CombineStrips(bool preserve)
                                                    : (unsigned short)0) -
                                     1)
                     {
-                        if (preserve)
+                        if (bToggleFaceOrdering)
                         {
                             if (copyLength % 2 == 0)
                             {
@@ -1001,7 +1004,10 @@ struct Geometry366
 };
 // @fnv 0x00b2fc50
 // src: COMMUNITY 0x00b2fc50
-void Geometry366::CIndexedGeometry_Transform(const Matrix4& matrix)
+// pdb: CIndexedGeometry::Transform | IndexedGeometry.obj | retail, upstream name already matches, high
+// pdb params: cTransform
+// pdb locals: usVertexCount, i, cCoord, pCoord, pOrigCoord
+void Geometry366::CIndexedGeometry_Transform(const Matrix4& cTransform)
 {
     unsigned short count;
     int i;
@@ -1013,7 +1019,7 @@ void Geometry366::CIndexedGeometry_Transform(const Matrix4& matrix)
     {
         vertex2 = GetVertex(i);
         point2.Set(vertex2[0], vertex2[1], vertex2[2]);
-        memcpy(&point2, &point2.TransformPointByMatrix4(&matrix), sizeof(point2));
+        memcpy(&point2, &point2.TransformPointByMatrix4(&cTransform), sizeof(point2));
         _memmove(vertex2, &point2, 12);
         if (normals)
         {
@@ -1021,7 +1027,7 @@ void Geometry366::CIndexedGeometry_Transform(const Matrix4& matrix)
             {
                 normal = GetPlaneNormal(i);
                 point2.Set(normal[0], normal[1], normal[2]);
-                memcpy(&point2, &point2.TransformPointByMatrix4(&matrix), sizeof(point2));
+                memcpy(&point2, &point2.TransformPointByMatrix4(&cTransform), sizeof(point2));
                 _memmove(normal, &point2, 12);
             }
         }
@@ -1252,29 +1258,31 @@ struct CoordinateWriter
     S_0060b3f0 mainCoordinates;
     AuxFloatArray auxiliaryCoordinates;
     ByteArray indices;
-    void CIndexedGeometry_AddVertexTexCoord0(const float* point, short index);
+    void CIndexedGeometry_AddVertexTexCoord0(const float* pTexCoord, short sIndex);
 };
 // @fnv 0x00b301f0
 // src: COMMUNITY 0x00b301f0
-void CoordinateWriter::CIndexedGeometry_AddVertexTexCoord0(const float* point, short index)
+// pdb: CIndexedGeometry::AddVertexTexCoord0 | IndexedGeometry.obj | retail, upstream name already matches, high
+// pdb params: pTexCoord, sIndex
+void CoordinateWriter::CIndexedGeometry_AddVertexTexCoord0(const float* pTexCoord, short sIndex)
 {
     if (count == mainCoordinates.size() / 2)
     {
         mainCoordinates.resize(mainCoordinates.size() + 2);
-        if (index > -1 && enabled)
+        if (sIndex > -1 && enabled)
         {
             indices.resize(indices.size() + 1);
             auxiliaryCoordinates.resize(auxiliaryCoordinates.size() + 2);
         }
     }
-    if (index > -1 && enabled)
+    if (sIndex > -1 && enabled)
     {
-        indices[count] = (unsigned char)index;
-        auxiliaryCoordinates[2 * count] = point[0];
-        auxiliaryCoordinates[2 * count + 1] = point[1];
+        indices[count] = (unsigned char)sIndex;
+        auxiliaryCoordinates[2 * count] = pTexCoord[0];
+        auxiliaryCoordinates[2 * count + 1] = pTexCoord[1];
     }
-    mainCoordinates[2 * count] = point[0];
-    mainCoordinates[2 * count + 1] = CSpeedTreeRT_GetTextureFlip() ? -point[1] : point[1];
+    mainCoordinates[2 * count] = pTexCoord[0];
+    mainCoordinates[2 * count + 1] = CSpeedTreeRT_GetTextureFlip() ? -pTexCoord[1] : pTexCoord[1];
 }
 
 struct ScalarTag
@@ -1549,6 +1557,8 @@ template <class T> inline const UIntVecT<T>* ConstIterT<T>::GetContainer() const
 
 // @fnv 0x00b333e0
 // src: GUESS 0x00b333e0 (confidence: low)
+// pdb: std::vector<int,std::allocator<int> >::resize | IndexedGeometry.obj | retail, call graph (shared callers), medium
+// pdb params: _Newsize
 template <> void UIntVecT<unsigned int>::ProcessState_00b333e0(unsigned int n, unsigned int val)
 {
     if (size() < n)
@@ -1647,6 +1657,10 @@ inline CItQ_acad60::CItQ_acad60(char* _Ptr, const VecQ_acad60* _Pvector) : _Myau
 }
 // @fnv 0x00b0dae0
 // src: GUESS 0x00b0dae0 (confidence: low)
+// pdb: std::vector<SShape,std::allocator<SShape> >::push_back | SpeedTreeRT.obj | retail, object-file run extension, low
+// pdb note: debug build links it to std::basic_ostream<char,std::char_traits<char> >::operator<<
+// pdb params: _Val
+// pdb locals: _Idx
 void VecQ_acad60::UpdateFields_00b0dae0(const char& _Val)
 {
     if (size() < capacity())
@@ -1779,6 +1793,7 @@ struct FUN_00b2e9c0
     ~FUN_00b2e9c0();
 };
 // @fnv 0x00b2e9c0
+// pdb: CIndexedGeometry::~CIndexedGeometry | IndexedGeometry.obj | retail, call graph, high
 FUN_00b2e9c0::~FUN_00b2e9c0()
 {
     Free(pBuf);
@@ -1863,13 +1878,16 @@ struct ShapeHost
         b->y = a2.y;
         b->z = a2.z;
     }
-    Vec3f* CIndexedGeometry_GetVertexCoord(int index);
-    void CIndexedGeometry_ComputeExtents(BoundsBox* out);
+    Vec3f* CIndexedGeometry_GetVertexCoord(int nVertexIndex);
+    void CIndexedGeometry_ComputeExtents(BoundsBox* cExtents);
 };
 
 // @fnv 0x00b2fa30
 // src: COMMUNITY 0x00b2fa30
-void ShapeHost::CIndexedGeometry_ComputeExtents(BoundsBox* out)
+// pdb: CIndexedGeometry::ComputeExtents | IndexedGeometry.obj | retail, upstream name already matches, high
+// pdb params: cExtents
+// pdb locals: usVertexCount, i, cCoord, pCoord
+void ShapeHost::CIndexedGeometry_ComputeExtents(BoundsBox* cExtents)
 {
     unsigned short count = getCount();
     for (int i = 0; i < count; ++i)
@@ -1877,7 +1895,7 @@ void ShapeHost::CIndexedGeometry_ComputeExtents(BoundsBox* out)
         Vec3f* pX = CIndexedGeometry_GetVertexCoord(i);
         Vec3f b;
         fill(pX, &b);
-        *out = out->ComputeValue_00b3caa0(&b);
+        *cExtents = cExtents->ComputeValue_00b3caa0(&b);
     }
 }
 
@@ -3066,20 +3084,23 @@ struct VectorSet
     std::vector<unsigned int> values;
     std::vector<std::vector<unsigned short> > first;
     std::vector<std::vector<unsigned int> > second;
-    void CIndexedGeometry_SetNumLodLevels(unsigned short size);
+    void CIndexedGeometry_SetNumLodLevels(unsigned short nLevels);
 };
 // @fnv 0x00b2fb30
 // src: COMMUNITY 0x00b2fb30
-void VectorSet::CIndexedGeometry_SetNumLodLevels(unsigned short size)
+// pdb: CIndexedGeometry::SetNumLodLevels | IndexedGeometry.obj | retail, upstream name already matches, high
+// pdb params: nLevels
+// pdb locals: i
+void VectorSet::CIndexedGeometry_SetNumLodLevels(unsigned short nLevels)
 {
     first.clear();
     second.clear();
     values.clear();
-    count = size;
-    first.resize(size);
-    second.resize(size);
-    values.resize(size);
-    for (int i = 0; i < size; ++i)
+    count = nLevels;
+    first.resize(nLevels);
+    second.resize(nLevels);
+    values.resize(nLevels);
+    for (int i = 0; i < nLevels; ++i)
         values[i] = 0;
 }
 
@@ -3116,7 +3137,7 @@ struct Target
     CheckedVector<unsigned int> counts;
     CheckedVector<CheckedUnsignedShortVector> shorts;
     CheckedVector<IntVector> values;
-    void CIndexedGeometry_AddStrip(unsigned short index, unsigned int value, unsigned short amount);
+    void CIndexedGeometry_AddStrip(unsigned short nLodLevel, unsigned int pStrip, unsigned short nStripLength);
 };
 __forceinline unsigned int& SlotRef(unsigned int& r)
 {
@@ -3124,10 +3145,12 @@ __forceinline unsigned int& SlotRef(unsigned int& r)
 }
 // @fnv 0x00b2fdc0
 // src: COMMUNITY 0x00b2fdc0
-void Target::CIndexedGeometry_AddStrip(unsigned short index, unsigned int value, unsigned short amount)
+// pdb: CIndexedGeometry::AddStrip | IndexedGeometry.obj | retail, upstream name already matches, high
+// pdb params: nLodLevel, pStrip, nStripLength
+void Target::CIndexedGeometry_AddStrip(unsigned short nLodLevel, unsigned int pStrip, unsigned short nStripLength)
 {
     {
-        unsigned int position = index;
+        unsigned int position = nLodLevel;
         CheckedVector<CheckedUnsignedShortVector>* count = &shorts;
         if (position >= (unsigned int)(count->last - count->first))
             FUN_00ec7c56();
@@ -3136,7 +3159,7 @@ void Target::CIndexedGeometry_AddStrip(unsigned short index, unsigned int value,
         vector->ProcessState_00b337f0(row, 0);
     }
     {
-        unsigned int position = index;
+        unsigned int position = nLodLevel;
         CheckedVector<CheckedUnsignedShortVector>* count = &shorts;
         if (position >= (unsigned int)(count->last - count->first))
             FUN_00ec7c56();
@@ -3144,10 +3167,10 @@ void Target::CIndexedGeometry_AddStrip(unsigned short index, unsigned int value,
         unsigned int row = columns;
         if (row >= (unsigned int)(vector->last - vector->first))
             FUN_00ec7c56();
-        vector->first[row] = amount;
+        vector->first[row] = nStripLength;
     }
     {
-        unsigned int position = index;
+        unsigned int position = nLodLevel;
         CheckedVector<IntVector>* count = &values;
         if (position >= (unsigned int)(count->last - count->first))
             FUN_00ec7c56();
@@ -3181,7 +3204,7 @@ void Target::CIndexedGeometry_AddStrip(unsigned short index, unsigned int value,
         }
     }
     {
-        unsigned int position = index;
+        unsigned int position = nLodLevel;
         CheckedVector<IntVector>* count = &values;
         if (position >= (unsigned int)(count->last - count->first))
             FUN_00ec7c56();
@@ -3189,14 +3212,14 @@ void Target::CIndexedGeometry_AddStrip(unsigned short index, unsigned int value,
         unsigned int row = columns;
         if (row >= (unsigned int)(vector->last - vector->first))
             FUN_00ec7c56();
-        vector->first[row] = value;
+        vector->first[row] = pStrip;
     }
     {
-        unsigned int position = index;
+        unsigned int position = nLodLevel;
         CheckedVector<unsigned int>* count = &counts;
         if (position >= (unsigned int)(count->last - count->first))
             FUN_00ec7c56();
-        SlotRef(count->first[position]) += amount - 2;
+        SlotRef(count->first[position]) += nStripLength - 2;
     }
 }
 
@@ -3292,6 +3315,9 @@ inline void S00b30660_Push(FloatVec& v, const float& x)
 
 // @fnv 0x00b30660
 // src: GUESS 0x00b30660 (confidence: low)
+// pdb: CIndexedGeometry::AddVertexBinormal | IndexedGeometry.obj | debug, object-file gap fill, medium
+// pdb params: pBinormal
+// pdb locals: afAdjustedBinormal
 void S00b30660_Obj::UpdateFields_00b30660(const float* p)
 {
     float f7 = p[0];
@@ -3643,7 +3669,7 @@ template <class _Ty> class vectorS : public _Vector_valS<_Ty>
 class FUN_00b30730_Tree
 {
   public:
-    int* CIndexedGeometry_GetStripsPointer(unsigned short usIndex);
+    int* CIndexedGeometry_GetStripsPointer(unsigned short nLodLevel);
     int unk00;
     int unk04;
     int unk08;
@@ -3671,9 +3697,11 @@ class FUN_00b30730_Tree
 
 // @fnv 0x00b30730
 // src: XBOX_PDB 0x00b30730
-int* FUN_00b30730_Tree::CIndexedGeometry_GetStripsPointer(unsigned short usIndex)
+// pdb: CIndexedGeometry::GetStripsPointer | IndexedGeometry.obj | debug, upstream name already matches, high
+// pdb params: nLodLevel
+int* FUN_00b30730_Tree::CIndexedGeometry_GetStripsPointer(unsigned short nLodLevel)
 {
-    return m_kLists[usIndex].size() ? &m_kLists[usIndex][0] : 0;
+    return m_kLists[nLodLevel].size() ? &m_kLists[nLodLevel][0] : 0;
 }
 
 typedef unsigned short U16;
@@ -3726,11 +3754,11 @@ __forceinline float& LocalVec3::operator[](int i)
 }
 
 // src: GUESS 0x00b05000 (confidence: medium)
-inline LocalVec3 LocalVec3::TransformPointByMatrix4(const Matrix4* matrix)
+inline LocalVec3 LocalVec3::TransformPointByMatrix4(const Matrix4* cTransform)
 {
-    float ax = matrix->m[0][0] * x + matrix->m[1][0] * y + matrix->m[2][0] * z + matrix->m[3][0];
-    float ay = matrix->m[0][1] * x + matrix->m[1][1] * y + matrix->m[2][1] * z + matrix->m[3][1];
-    float az = matrix->m[0][2] * x + matrix->m[1][2] * y + matrix->m[2][2] * z + matrix->m[3][2];
+    float ax = cTransform->m[0][0] * x + cTransform->m[1][0] * y + cTransform->m[2][0] * z + cTransform->m[3][0];
+    float ay = cTransform->m[0][1] * x + cTransform->m[1][1] * y + cTransform->m[2][1] * z + cTransform->m[3][1];
+    float az = cTransform->m[0][2] * x + cTransform->m[1][2] * y + cTransform->m[2][2] * z + cTransform->m[3][2];
     return LocalVec3(ax, ay, az);
 }
 __forceinline void InitializeOrigin(LocalVec3& position)
@@ -3745,6 +3773,7 @@ struct VertexIndexRow
 {
     DataVector<U16*> indices;
 };
+// pdb: class CIndexedGeometry, size 0x118 (here 0x190), 29 members
 struct GeometryProcessor
 {
     U32 unk00, unk04, unk08;
@@ -3762,15 +3791,15 @@ struct GeometryProcessor
     DataVector<float> blendFactors;
     DataVector<unsigned char> transformIndices;
 // src: XBOX_PDB 0x00b0a9a0
-    inline U16 CIndexedGeometry_GetNumStrips(short index)
+    inline U16 CIndexedGeometry_GetNumStrips(short sLodLevel)
     {
-        return index > -1 ? (U16)vertexIndices[index].indices.size() : 0;
+        return sLodLevel > -1 ? (U16)vertexIndices[sLodLevel].indices.size() : 0;
     }
     __forceinline unsigned char GetInitialized() const
     {
         return initialized;
     }
-    unsigned char CIndexedGeometry_ComputeWindEffect(U16 index);
+    unsigned char CIndexedGeometry_ComputeWindEffect(U16 nLodLevel);
 };
 __forceinline Matrix4* Matrix(U16 pose)
 {
@@ -3785,7 +3814,10 @@ extern "C" void* __cdecl memcpy(void*, const void*, unsigned int);
 
 // @fnv 0x00b30800
 // src: COMMUNITY 0x00b30800
-unsigned char GeometryProcessor::CIndexedGeometry_ComputeWindEffect(U16 index)
+// pdb: CIndexedGeometry::ComputeWindEffect | IndexedGeometry.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
+// pdb params: nLodLevel
+// pdb locals: bGeometryUpdated, cInterpWindEffect, usVertexCount, cFullWindEffect, i, nStrip, nVertex, nIndex, fWeight, usWindGroup, pOrigCoord
+unsigned char GeometryProcessor::CIndexedGeometry_ComputeWindEffect(U16 nLodLevel)
 {
     unsigned char changed = 0;
     if (!GetInitialized())
@@ -3799,11 +3831,11 @@ unsigned char GeometryProcessor::CIndexedGeometry_ComputeWindEffect(U16 index)
         InitializeOrigin(transformed);
         LocalVec3 _interpolatedPosition;
         InitializeOrigin(_interpolatedPosition);
-        for (int group4 = 0; group4 < CIndexedGeometry_GetNumStrips(index); ++group4)
+        for (int group4 = 0; group4 < CIndexedGeometry_GetNumStrips(nLodLevel); ++group4)
         {
-            for (int kEntry = 0; kEntry < vertexCounts[index].counts[group4]; ++kEntry)
+            for (int kEntry = 0; kEntry < vertexCounts[nLodLevel].counts[group4]; ++kEntry)
             {
-                U16 vertexId = vertexIndices[index].indices[group4][kEntry];
+                U16 vertexId = vertexIndices[nLodLevel].indices[group4][kEntry];
                 if (!processedVertices[vertexId])
                 {
                     float factor5 = blendFactors[vertexId];
@@ -3955,6 +3987,7 @@ inline CIter IntStdVector::UpdateState_00b33030(CIter a, CIter b)
 
 // @fnv 0x00b32120
 // src: COMMUNITY 0x00b32120
+// pdb: std::vector<std::vector<unsigned short *,std::allocator<unsigned short *> >,std::allocator<std::vector<unsigned short *,std::allocator<unsigned short *> > > >::clear | IndexedGeometry.obj | debug, call graph (shared callers), high
 void IntStdVector::m_vStrips_clear()
 {
     UpdateState_00b33030(begin(), end());
@@ -4099,6 +4132,9 @@ __forceinline void HD()
 }
 // @fnv 0x00b36330
 // src: GUESS 0x00b36330 (confidence: low)
+// pdb: std::vector<int,std::allocator<int> >::operator= | IndexedGeometry.obj | retail, call graph (shared callers), medium
+// pdb params: _Right
+// pdb locals: _Ptr
 VectorStorage& VectorStorage::UpdateState_00b36330(const VectorStorage& _Right)
 {
     if (this != &_Right)
@@ -4204,7 +4240,7 @@ struct Matrix
 struct RandomState
 {
     int unk00, unk04, unk08, unk0c, unk10, unk14, unk18, unk1c, unk20, unk24;
-    void FUN_00b3f160(int);
+    void Reseed(int);
     float FUN_00b3f130(float, float);
 };
 struct RenderObject
@@ -4325,7 +4361,10 @@ struct Target
 };
 // @fnv 0x00b2af80
 // src: COMMUNITY 0x00b2af80
-void Target::CTreeEngine_Compute(float elapsed)
+// pdb: CTreeEngine::Compute | TreeEngine.obj | retail, upstream name already matches, high
+// pdb params: fLeafSizeIncreaseFactor
+// pdb locals: fTreeSize, i, j, sLeaf
+void Target::CTreeEngine_Compute(float fLeafSizeIncreaseFactor)
 {
     SetEnabled(flag == 0);
     renderer = new Renderer(0);
@@ -4338,7 +4377,7 @@ void Target::CTreeEngine_Compute(float elapsed)
     {
         AddValue(values[i]);
     }
-    random.FUN_00b3f160(seed);
+    random.Reseed(seed);
     float value = random.FUN_00b3f130(center - range, center + range);
     srand(randomSeed);
     if (center > 0.0)
@@ -4350,7 +4389,7 @@ void Target::CTreeEngine_Compute(float elapsed)
             record.scaled[Y] = (float)(center * record.original[Y]);
         }
     }
-    random.FUN_00b3f160(seed);
+    random.Reseed(seed);
     object->CIndexedGeometry_SetNumLodLevels((unsigned short)ShortCount(count));
     object->CIndexedGeometry_ResetStripCounter(0);
     SetRandomSeed(seed);
@@ -4361,7 +4400,7 @@ void Target::CTreeEngine_Compute(float elapsed)
     }
     BuildBranchLods();
     if (!flag)
-        CTreeEngine_BuildLeafLods(elapsed);
+        CTreeEngine_BuildLeafLods(fLeafSizeIncreaseFactor);
     srand((unsigned)_time64(0));
 }
 }  // namespace fnv_00b2af80
@@ -4803,11 +4842,14 @@ struct Target
     int unkf4;
     int unkf8;
     float parameter;
-    void CTreeEngine_BuildLeafLods(float step);
+    void CTreeEngine_BuildLeafLods(float fLeafSizeIncreaseFactor);
 };
 // @fnv 0x00b2c890
 // src: XBOX_PDB 0x00b2c890
-void Target::CTreeEngine_BuildLeafLods(float step)
+// pdb: CTreeEngine::BuildLeafLods | TreeEngine.obj | retail, upstream name already matches, high
+// pdb params: fLeafSizeIncreaseFactor
+// pdb locals: fLargestLeaf, i, fLargestSide, sTexture, j, cLod, fSizeMultiplier
+void Target::CTreeEngine_BuildLeafLods(float fLeafSizeIncreaseFactor)
 {
     float maximum = -1.0f;
     {
@@ -4830,7 +4872,7 @@ void Target::CTreeEngine_BuildLeafLods(float step)
             values[0].UpdateState_00b36330(initial);
             for (iteration = 1; iteration < count; iteration++)
             {
-                stepFactor = 1.0f + iteration * step;
+                stepFactor = 1.0f + iteration * fLeafSizeIncreaseFactor;
                 Init operation(&unk94, (float)(maximum * 10.0), parameter, stepFactor);
                 values[iteration].UpdateState_00b36330(operation.UpdateState_00b40b30(values[iteration - 1]));
             }

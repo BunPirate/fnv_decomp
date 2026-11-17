@@ -48,28 +48,31 @@ struct TimNode : Node
 
 // @fnv 0x00cfdbe0
 // src: XBOX_PDB 0x00cfdbe0
-void __cdecl hkAgentNnMachine_InvalidateTimInAgent(InvalidateTimDetail::Node* node, const InvalidateTimDetail::Input& input)
+// pdb: hkAgentNnMachine_InvalidateTimInAgent | hkpAgentNnMachine.obj | debug, upstream name already matches, high
+// pdb params: entry, input
+// pdb locals: assertBuf, ostr
+void __cdecl hkAgentNnMachine_InvalidateTimInAgent(InvalidateTimDetail::Node* entry, const InvalidateTimDetail::Input& input)
 {
     using namespace InvalidateTimDetail;
-    switch (node->command)
+    switch (entry->command)
     {
     case 2:
     case 6:
     case 10:
     case 14: {
-        Invalidate action = input.methods[node->agentType + 0x49].invalidate;
+        Invalidate action = input.methods[entry->agentType + 0x49].invalidate;
         if (action)
-            action(node, node + 1, input);
+            action(entry, entry + 1, input);
         break;
     }
     case 4:
     case 12: {
-        TimNode* pTimNode = static_cast<TimNode*>(node);
+        TimNode* pTimNode = static_cast<TimNode*>(entry);
         pTimNode->time = DAT_01012054;
         pTimNode->normal = _mm_setzero_ps();
-        Invalidate action = input.methods[node->agentType + 0x49].invalidate;
+        Invalidate action = input.methods[entry->agentType + 0x49].invalidate;
         if (action)
-            action(node, pTimNode + 1, input);
+            action(entry, pTimNode + 1, input);
         break;
     }
     }

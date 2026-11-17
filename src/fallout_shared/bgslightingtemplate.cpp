@@ -10,6 +10,7 @@
 #include "../../include/TESFile.h"
 
 // @fnv 0x005265c0
+// pdb: BGSLightingTemplate::BGSLightingTemplate | BGSLightingTemplate.obj | retail, upstream name already matches, high
 BGSLightingTemplate::BGSLightingTemplate()
 {
     SetFormType(ENUM_FORM_ID_LGTM_ID);
@@ -17,6 +18,7 @@ BGSLightingTemplate::BGSLightingTemplate()
 }
 
 // @fnv 0x00526710
+// pdb: BGSLightingTemplate::InitializeData | BGSLightingTemplate.obj | debug, object-file gap fill, medium
 void BGSLightingTemplate::ResetFormData()
 {
     memset(&Data, 0, sizeof(Data));
@@ -24,35 +26,38 @@ void BGSLightingTemplate::ResetFormData()
 
 // Reads the LGTM record header and chunks (EDID, OBND, DATA) into the lighting template, converting endianness if required.
 // @fnv 0x005268a0
-bool BGSLightingTemplate::Load(TESFile* file)
+// pdb: BGSLightingTemplate::Load | BGSLightingTemplate.obj | retail, upstream name already matches, high
+// pdb params: apFile
+// pdb locals: chunkid, pMessage
+bool BGSLightingTemplate::Load(TESFile* apFile)
 {
-    if (static_cast<TESFileFormInt*>(file)->GetTESForm() != ENUM_FORM_ID_LGTM_ID)
+    if (static_cast<TESFileFormInt*>(apFile)->GetTESForm() != ENUM_FORM_ID_LGTM_ID)
         return false;
-    LoadRecordHeader(file);
+    LoadRecordHeader(apFile);
     int iChunkID;
-    while ((iChunkID = file->GetChunkID()) != 0)
+    while ((iChunkID = apFile->GetChunkID()) != 0)
     {
         switch (iChunkID)
         {
         case 0x44494445:  // EDID
         {
-            char* pEditorID = static_cast<char*>(_alloca(file->GetChunkSize()));
-            file->GetChunkData(pEditorID, 0x200);
+            char* pEditorID = static_cast<char*>(_alloca(apFile->GetChunkSize()));
+            apFile->GetChunkData(pEditorID, 0x200);
             SetEditorID_AtRuntime(pEditorID);
             break;
         }
         case 0x444E424F:  // OBND
-            readOBNDSubRecord(file);
+            readOBNDSubRecord(apFile);
             break;
         case 0x41544144:  // DATA
-            ReadTypedData(file, &Data, sizeof(Data));
+            ReadTypedData(apFile, &Data, sizeof(Data));
             break;
         }
-        if (!file->NextChunk())
+        if (!apFile->NextChunk())
             break;
     }
-    if (file->IsEndianConversionRequired())
-        Data.Endian();
+    if (apFile->IsEndianConversionRequired())
+        Data.INTERIOR_DATA_Endian();
     return true;
 }
 
@@ -74,6 +79,7 @@ InteriorData::InteriorData()
 }
 
 // @fnv 0x005266f0
+// pdb: BGSLightingTemplate::~BGSLightingTemplate | BGSLightingTemplate.obj | debug, upstream name already matches, high
 BGSLightingTemplate::~BGSLightingTemplate()
 {}
 
@@ -82,21 +88,22 @@ BGSLightingTemplate::~BGSLightingTemplate()
 struct LightingTemplateOperations : BGSLightingTemplate
 {
     void SaveForm();
-    void CopyFrom(TESForm* source);
+    void CopyFrom(TESForm* apCopy);
     void ClearData();
-    bool Compare(TESForm* form);
+    bool Compare(TESForm* apCompare);
 };
 
 extern "C" bool __cdecl TESForm_QEndianSwapOnSave();
 // @fnv 0x00526730
+// pdb: BGSLightingTemplate::Save | BGSLightingTemplate.obj | retail, vtable slot, high
 void LightingTemplateOperations::SaveForm()
 {
     BeginFormRecord();
     if (TESForm_QEndianSwapOnSave())
-        Data.Endian();
+        Data.INTERIOR_DATA_Endian();
     TESForm___SaveData(&Data, sizeof(Data));
     if (TESForm_QEndianSwapOnSave())
-        Data.Endian();
+        Data.INTERIOR_DATA_Endian();
     FinishFormRecord();
 }
 
@@ -108,7 +115,9 @@ void SwapInt(int* p, SwapTag tag);
 
 // Swaps the byte order of the ten serialized 32-bit lighting fields.
 // @fnv 0x00526790
-void InteriorData::Endian()
+// src: XBOX_RETAIL_PDB 0x00526790
+// pdb: INTERIOR_DATA::Endian | BGSLightingTemplate.obj | retail, call graph, high
+void InteriorData::INTERIOR_DATA_Endian()
 {
     SwapInt(reinterpret_cast<int*>(&m_uiAmbientColor), SwapTag());
     SwapInt(reinterpret_cast<int*>(&m_uiDirectionalColor), SwapTag());
@@ -126,21 +135,25 @@ extern "C" void* __cdecl _memcpy(void* dst, const void* src, unsigned int size);
 
 // Copies InteriorData from a BGSLightingTemplate source and calls the base class copy routine.
 // @fnv 0x005269f0
-void LightingTemplateOperations::CopyFrom(TESForm* apSource)
+// pdb: BGSLightingTemplate::Copy | BGSLightingTemplate.obj | retail, vtable slot, high
+// pdb params: apCopy
+// pdb locals: pcopy
+void LightingTemplateOperations::CopyFrom(TESForm* apCopy)
 {
-    BGSLightingTemplate* src = dynamic_cast<BGSLightingTemplate*>(apSource);
+    BGSLightingTemplate* src = dynamic_cast<BGSLightingTemplate*>(apCopy);
     if (src == 0)
     {
     }
     else
     {
         _memcpy(&Data, &src->Data, sizeof(InteriorData));
-        TESForm::CopyFrom(apSource);
+        TESForm::CopyFrom(apCopy);
     }
 }
 
 // If the form is not yet initialized, clears its data and marks it as initialized.
 // @fnv 0x005269c0
+// pdb: BGSLightingTemplate::InitItem | BGSLightingTemplate.obj | debug, object-file gap fill, medium
 void LightingTemplateOperations::ClearData()
 {
     if (IsFormInitialized())
@@ -152,9 +165,12 @@ void LightingTemplateOperations::ClearData()
 extern "C" int __cdecl _memcmp(const void*, const void*, unsigned int);
 // Returns true when the cast fails, the InteriorData bytes differ, or TESForm::Compare returns true.
 // @fnv 0x00526a50
-bool LightingTemplateOperations::Compare(TESForm* form)
+// pdb: BGSLightingTemplate::Compare | BGSLightingTemplate.obj | retail, vtable slot, high
+// pdb params: apCompare
+// pdb locals: pcomp
+bool LightingTemplateOperations::Compare(TESForm* apCompare)
 {
-    BGSLightingTemplate* other = dynamic_cast<BGSLightingTemplate*>(form);
+    BGSLightingTemplate* other = dynamic_cast<BGSLightingTemplate*>(apCompare);
     if (!other)
         return true;
     if (_memcmp(&Data, &other->Data, sizeof(InteriorData)))

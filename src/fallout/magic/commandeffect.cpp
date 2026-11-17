@@ -9,6 +9,7 @@
 #include "../../../include/MagicCaster.h"
 
 
+// pdb: class CommandEffect, size 0x48, bases: ActiveEffect, 0 members
 class CommandEffect : public ActiveEffect
 {
 public:
@@ -23,6 +24,7 @@ public:
     void FUN_00804210(int);
 };
 
+// pdb: class CommandCreatureEffect, size 0x48, bases: CommandEffect, 0 members
 class CommandCreatureEffect : public CommandEffect
 {
 public:
@@ -30,16 +32,22 @@ public:
 };
 
 // @fnv 0x0080b370
-CommandCreatureEffect::CommandCreatureEffect(MagicCaster* caster, MagicItem* item, EffectItem* effect)
-    : CommandEffect(caster, item, effect)
+// pdb: CommandCreatureEffect::CommandCreatureEffect | CommandCreatureEffect.obj | debug, upstream name already matches, high
+// pdb params: apCaster, apSpell, apEffect
+CommandCreatureEffect::CommandCreatureEffect(MagicCaster* apCaster, MagicItem* apSpell, EffectItem* apEffect)
+    : CommandEffect(apCaster, apSpell, apEffect)
 {}
 
 // @fnv 0x0080b560
-CommandEffect::CommandEffect(MagicCaster* caster, MagicItem* item, EffectItem* effect)
-    : ActiveEffect(caster, item, effect)
+// pdb: CommandEffect::CommandEffect | CommandEffect.obj | retail, upstream name already matches, high
+// pdb params: apCaster, apSpell, apEffect
+CommandEffect::CommandEffect(MagicCaster* apCaster, MagicItem* apSpell, EffectItem* apEffect)
+    : ActiveEffect(apCaster, apSpell, apEffect)
 {}
 
 // @fnv 0x0080b590
+// pdb: CommandEffect::Copy | CommandEffect.obj | retail, upstream name already matches, high
+// pdb locals: presult
 CommandEffect* CommandEffect::Copy()
 {
     CommandEffect* effect = new CommandEffect(m_pEffectInstance, pSpell, pEffect);
@@ -49,27 +57,33 @@ CommandEffect* CommandEffect::Copy()
 
 // @fnv 0x0080b640
 // src: XBOX_PDB 0x0080b640
+// pdb: CommandEffect::CheckTarget | CommandEffect.obj | debug, vtable slot, medium
+// pdb params: apTarget
 void CommandEffect::CheckTarget_0080b640(const char* apName)
 {
     reinterpret_cast<const ActorValueInfo*>(this)->SetScriptName(apName);
 }
 
-void __cdecl StartHostilityAndCombat(Actor*, Actor*);
+void __cdecl CommandEffect_InitCommandedActor(Actor*, Actor*);
 
 // @fnv 0x0080b660
 // src: XBOX_PDB 0x0080b660
+// pdb: CommandEffect::Start | CommandEffect.obj | retail, vtable slot, high
+// pdb locals: pcaster, ptarget
 void CommandEffect::Start_0080b660()
 {
     Actor* pSourceActor = FUN_0059bb30() ? FUN_0059bb30()->FUN_00822b40() : (Actor*)0;
     Actor* pCasterActor = FUN_0045cd60() ? FUN_0045cd60()->FUN_00815410() : (Actor*)0;
     if (pSourceActor && pCasterActor)
-        StartHostilityAndCombat(pSourceActor, pCasterActor);
+        CommandEffect_InitCommandedActor(pSourceActor, pCasterActor);
 }
 
 void CommandEffect_CleanupCommandedActor(Actor*, Actor*, int);
 
 // @fnv 0x0080b7c0
 // src: XBOX_PDB 0x0080b7c0
+// pdb: CommandEffect::Finish | CommandEffect.obj | retail, vtable slot, high
+// pdb locals: pcaster, ptarget
 void CommandEffect::Finish_0080b7c0()
 {
     Actor* ptarget =
@@ -273,6 +287,9 @@ class EffectHost
 void __cdecl CommandEffect_UpdateCommandedActor(void*, void*);
 // @fnv 0x0080b6f0
 // src: XBOX_PDB 0x0080b6f0
+// pdb: CommandEffect::Update | CommandEffect.obj | retail, vtable slot, high
+// pdb params: afSecondsElapsed
+// pdb locals: pcaster, ptarget
 void CommandEffect::Update_0080b6f0(int)
 {
     EffectHost* a;
@@ -923,15 +940,19 @@ extern "C" B850Actor* g_thePlayer;
 
 // Adds 100 hostility toward pkTarget, sets it as combat target, raises disposition, and calls get() on the target's current package if not the player.
 // @fnv 0x0080b850
-void __cdecl StartHostilityAndCombat(B850Actor* pkActor, B850Actor* pkTarget)
+// src: XBOX_RETAIL_PDB 0x0080b850
+// pdb: CommandEffect::InitCommandedActor | CommandEffect.obj | retail, call graph, high
+// pdb params: apTarget, apCaster
+// pdb locals: pcasterpack
+void __cdecl CommandEffect_InitCommandedActor(B850Actor* apTarget, B850Actor* apCaster)
 {
-    pkActor->AddHostility(pkTarget, 100.0f);
-    B850Process* pkProcess = pkActor->GetProcess();
-    pkProcess->SetCombatTarget(pkTarget);
-    pkActor->ModifyDisposition(1, 100, 0);
+    apTarget->AddHostility(apCaster, 100.0f);
+    B850Process* pkProcess = apTarget->GetProcess();
+    pkProcess->SetCombatTarget(apCaster);
+    apTarget->ModifyDisposition(1, 100, 0);
     B850Package* pkPackage3 = 0;
-    if (pkTarget != g_thePlayer)
-        pkPackage3 = pkTarget->GetProcess()->GetCurrentPackage();
+    if (apCaster != g_thePlayer)
+        pkPackage3 = apCaster->GetProcess()->GetCurrentPackage();
     if (pkPackage3)
         pkPackage3->get();
 }
@@ -1289,7 +1310,10 @@ extern int DAT_011dea3c;
 
 // @fnv 0x0080b8f0
 // src: XBOX_PDB 0x0080b8f0
-void CommandEffect_UpdateCommandedActor(void* pActor, void* pOther)
+// pdb: CommandEffect::UpdateCommandedActor | CommandEffect.obj | retail, upstream name already matches, high
+// pdb params: apTarget, apCaster
+// pdb locals: ppackage, pcasterpack
+void CommandEffect_UpdateCommandedActor(void* apTarget, void* apCaster)
 {
     void* w3;
     void* w1;
@@ -1297,30 +1321,30 @@ void CommandEffect_UpdateCommandedActor(void* pActor, void* pOther)
     VirtOwner* w0;
     VirtOwner* w5;
     VirtOwner* w2;
-    if (reinterpret_cast<ActorRef*>(pActor)->FUN_008d8520() == 0)
+    if (reinterpret_cast<ActorRef*>(apTarget)->FUN_008d8520() == 0)
         return;
     {
-        w4 = reinterpret_cast<ActorRef*>(pActor)->FUN_008d8520();
-        if (w4->v52c() != pOther)
+        w4 = reinterpret_cast<ActorRef*>(apTarget)->FUN_008d8520();
+        if (w4->v52c() != apCaster)
         {
-            w0 = reinterpret_cast<ActorRef*>(pActor)->FUN_008d8520();
-            w0->v528(pOther);
+            w0 = reinterpret_cast<ActorRef*>(apTarget)->FUN_008d8520();
+            w0->v528(apCaster);
         }
     }
-    if (reinterpret_cast<ActorRef*>(pActor)->Actor_IsInCombat() == 0)
+    if (reinterpret_cast<ActorRef*>(apTarget)->Actor_IsInCombat() == 0)
     {
         w3 = 0;
-        if ((int)pOther != DAT_011dea3c)
+        if ((int)apCaster != DAT_011dea3c)
         {
-            w5 = reinterpret_cast<ActorRef*>(pOther)->FUN_008d8520();
+            w5 = reinterpret_cast<ActorRef*>(apCaster)->FUN_008d8520();
             w3 = w5->v27c();
         }
-        w2 = reinterpret_cast<ActorRef*>(pActor)->FUN_008d8520();
+        w2 = reinterpret_cast<ActorRef*>(apTarget)->FUN_008d8520();
         w1 = w2->v27c();
         if (w3 == 0 || reinterpret_cast<ResultRef*>(w3)->FUN_0041ca90() == 0x12)
         {
-            if (w1 == 0 || reinterpret_cast<ActorRef*>(pActor)->Actor_IsRunningRunOnce() == 0)
-                reinterpret_cast<ActorRef*>(pActor)->FUN_004534f0(pOther);
+            if (w1 == 0 || reinterpret_cast<ActorRef*>(apTarget)->Actor_IsRunningRunOnce() == 0)
+                reinterpret_cast<ActorRef*>(apTarget)->FUN_004534f0(apCaster);
         }
     }
 }
@@ -1339,13 +1363,15 @@ extern float DAT_01024100;
 // If the owner's FUN_008d8520 result is non-null and abFlag is set, calls slot 330 on it with 0, then calls slots 280 and 232 on apOwner.
 // @fnv 0x0080b9e0
 // src: XBOX_PDB 0x0080b9e0
-void CommandEffect_CleanupCommandedActor(void* apOwner, int aValue, bool abFlag)
+// pdb: CommandEffect::CleanupCommandedActor | CommandEffect.obj | retail, upstream name already matches, high
+// pdb params: apTarget, apCaster, abClearCommandingActor
+void CommandEffect_CleanupCommandedActor(void* apTarget, int apCaster, bool abClearCommandingActor)
 {
-    if (((FUN_008d8520_class*)apOwner)->FUN_008d8520() != 0 && abFlag)
+    if (((FUN_008d8520_class*)apTarget)->FUN_008d8520() != 0 && abClearCommandingActor)
     {
-        void* pTarget = ((FUN_008d8520_class*)apOwner)->FUN_008d8520();
+        void* pTarget = ((FUN_008d8520_class*)apTarget)->FUN_008d8520();
         ((SlotNoFloat)(*(void***)pTarget)[330])(pTarget, 0);
     }
-    ((SlotWithFloat)(*(void***)apOwner)[280])(apOwner, aValue, DAT_01024100);
-    ((SlotThreeInts)(*(void***)apOwner)[232])(apOwner, 1, -100, 0);
+    ((SlotWithFloat)(*(void***)apTarget)[280])(apTarget, apCaster, DAT_01024100);
+    ((SlotThreeInts)(*(void***)apTarget)[232])(apTarget, 1, -100, 0);
 }

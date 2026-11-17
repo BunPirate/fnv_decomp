@@ -5,10 +5,12 @@
 #include "navmesharray_decls.h"
 #include "../../../include/NavMeshCollection.h"
 // @fnv 0x00464f60
-NavMeshPtr NavMeshCollection::GetNavMeshAt(unsigned int index)
+// pdb: NavMeshArray::GetNavMeshByIndex | TESDataHandler.obj | debug, call graph, high
+// pdb params: aiNavMeshIndex
+NavMeshPtr NavMeshCollection::GetNavMeshAt(unsigned int aiNavMeshIndex)
 {
-    if (index >= reinterpret_cast<GlobalObject_00869f00*>(data)->GetSize())
+    if (aiNavMeshIndex >= reinterpret_cast<GlobalObject_00869f00*>(data)->GetSize())
         return MakeNavMeshPointer(0);
-    return reinterpret_cast<const NavMeshPtr&>(reinterpret_cast<GlobalObject_00869f00*>(data)->GetAt(index));
+    return reinterpret_cast<const NavMeshPtr&>(reinterpret_cast<GlobalObject_00869f00*>(data)->GetAt(aiNavMeshIndex));
 }
 #endif

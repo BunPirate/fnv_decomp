@@ -113,13 +113,13 @@ void* __cdecl PrecipitationShader_GetRTTI()
     return &g_012005c0;
 }
 
-extern void* g_012005fc;
+extern void* PrecipitationShaderProperty_ms_RTTI; // src: XBOX_RETAIL_PDB 0x012005fc (old: DAT_012005fc/g_012005fc)
 
 // @fnv 0x00bb0d10
 // src: XBOX_PDB 0x00bb0d10
 void* __cdecl PrecipitationShaderProperty_GetRTTI()
 {
-    return &g_012005fc;
+    return &PrecipitationShaderProperty_ms_RTTI;
 }
 
 struct FUN_00bb0d20_shell
@@ -150,10 +150,12 @@ void* __cdecl FUN_00bb0550();
 extern "C" void __cdecl operator delete(void*, unsigned int);
 struct FUN_00bb0a50_shell
 {
-    void* __thiscall DestroyIfFlagged(int flags);
+    void* __thiscall PrecipitationShader_ScalarDtor(int flags);
 };
 // @fnv 0x00bb0a50
-void* __thiscall FUN_00bb0a50_shell::DestroyIfFlagged(int flags)
+// src: XBOX_RETAIL_PDB 0x00bb0a50
+// pdb: PrecipitationShader::`scalar deleting destructor' | PrecipitationShader.obj | retail, object-file gap fill, high
+void* __thiscall FUN_00bb0a50_shell::PrecipitationShader_ScalarDtor(int flags)
 {
     FUN_00bb0550();
     if (flags & 1)
@@ -184,6 +186,7 @@ struct FUN_00bb04b0 : BSShader
 
 // Initializes the object's fields: sets iShaderType to 0x12, zeroes m_90, copies g_011a9b7c into m_a0, and sets m_bUsesNiRenderState to 1.
 // @fnv 0x00bb04b0
+// pdb: PrecipitationShader::PrecipitationShader | PrecipitationShader.obj | retail, call graph, medium
 FUN_00bb04b0::FUN_00bb04b0() : m_9c(0), m_a0(0.0f, 0.0f, 0.0f)
 {
     iShaderType = 0x12;
@@ -221,6 +224,8 @@ extern "C" void* g_011f9508;
 
 // @fnv 0x00bb0660
 // src: COMMUNITY 0x00bb0660
+// pdb: PrecipitationShader::CreateShader | PrecipitationShader.obj | retail, upstream name already matches, high
+// pdb locals: pshaderDecl, eInput, pshader
 void* __cdecl PrecipitationShader_CreateShader()
 {
     NiDX9ShaderDeclaration* pHost = NiDX9ShaderDeclaration::Create((NiRenderer*)g_011f9508, 3, 2);
@@ -277,10 +282,12 @@ extern NiD3DPixelShader* g_pkVertexShader_012005c8;
 
 void __cdecl FUN_00e804d0(NiD3DPass** ppkPass);
 void __cdecl AssignStageFromPool(NiPointer<BeamStage>* pspPass);
-void __cdecl ConfigureBeamStage(BeamStage* pkPass, int a1, int a2, int a3, int a4);
+void __cdecl ConfigureBeamStage(BeamStage* apStage, int aiStageNum, int aiAddressValue, int aiMipFilter, int abAniso);
 
 // @fnv 0x00bb0770
 // src: COMMUNITY 0x00bb0770
+// pdb: PrecipitationShader::LoadStagesAndPasses | PrecipitationShader.obj | retail, upstream name already matches, high
+// pdb locals: spStage
 bool __cdecl PrecipitationShader_LoadStagesAndPasses()
 {
     NiPointer<BeamStage> spRenderPass;
@@ -314,11 +321,14 @@ struct ShaderConstantsImpl : BSShader
     float m_afParams[4];
     float m_afAmbientColor[4];
 
-    void InitConstantMaps();
+    void PrecipitationShader_CreateConstantMaps();
 };
 
 // @fnv 0x00bb0a80
-void ShaderConstantsImpl::InitConstantMaps()
+// src: XBOX_RETAIL_PDB 0x00bb0a80
+// pdb: PrecipitationShader::CreateConstantMaps | PrecipitationShader.obj | retail, unique string literal, high
+// pdb locals: uiConstantPoint3Flags, uiDefinedMatrixFlags
+void ShaderConstantsImpl::PrecipitationShader_CreateConstantMaps()
 {
     if (!m_spPixelConstantMap.m_pObject)
     {
@@ -387,6 +397,8 @@ class FUN_00bb0550 : public BSShader
 
 // Destructor that clears the four g_aspLarge and two g_aspSmall NiPointers and the g_spSharedResource NiPointer to null.
 // @fnv 0x00bb0550
+// pdb: PrecipitationShader::~PrecipitationShader | PrecipitationShader.obj | retail, object-file run extension, low
+// pdb locals: i
 FUN_00bb0550::~FUN_00bb0550()
 {
     for (int i = 0; i < 4; i++)
@@ -400,12 +412,15 @@ class ShaderManager_bb09
 {
   public:
     bool FUN_00be0870();
-    bool ResetSharedResources();
+    bool PrecipitationShader_Initialize();
 };
 
 // Calls FUN_00be0870, zeroes g_aspLarge, g_aspSmall, and g_spSharedResource, then returns the result of FUN_00be0870.
 // @fnv 0x00bb09b0
-bool ShaderManager_bb09::ResetSharedResources()
+// src: XBOX_RETAIL_PDB 0x00bb09b0
+// pdb: PrecipitationShader::Initialize | PrecipitationShader.obj | retail, object-file gap fill, high
+// pdb locals: retval, i
+bool ShaderManager_bb09::PrecipitationShader_Initialize()
 {
     bool bResult = FUN_00be0870();
     for (int i = 0; i < 4; i++)

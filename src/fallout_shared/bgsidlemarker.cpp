@@ -44,6 +44,7 @@ extern "C" void* __cdecl _alloca(unsigned int size);
 #pragma intrinsic(_alloca)
 
 // @fnv 0x005e9800
+// pdb: BGSQuestPerkEntry::BGSQuestPerkEntry | BGSPerk.obj | debug, upstream name already matches, high
 BGSQuestPerkEntry::BGSQuestPerkEntry()
 {
     Data.pQuest = 0;
@@ -52,6 +53,7 @@ BGSQuestPerkEntry::BGSQuestPerkEntry()
 
 // If the form is not yet initialized, initializes the BGSIdleCollection at offset 0x30 and marks the form as initialized.
 // @fnv 0x005e7bb0
+// pdb: BGSIdleMarker::InitItem | BGSIdleMarker.obj | retail, upstream name already matches, high
 void BGSIdleMarker::InitItem()
 {
     if (IsFormInitialized())
@@ -66,6 +68,7 @@ void BGSIdleMarker::InitItem()
 
 // Constructs the object and sets its form type to 0x30.
 // @fnv 0x005e7a90
+// pdb: BGSIdleMarker::BGSIdleMarker | BGSIdleMarker.obj | retail, upstream name already matches, high
 BGSIdleMarker::BGSIdleMarker()
 {
     SetFormType(static_cast<ENUM_FORM_ID>(0x30));
@@ -83,7 +86,7 @@ struct FUN_00485680
 };
 struct FUN_004799f0_shell
 {
-    void FUN_004799f0();
+    void BGSIdleCollection_Save();
 };
 struct FUN_005e7ed0_shell
 {
@@ -91,10 +94,11 @@ struct FUN_005e7ed0_shell
 };
 // @fnv 0x005e7ed0
 // src: COMMUNITY 0x005e7ed0
+// pdb: BGSIdleMarker::Save | BGSIdleMarker.obj | retail, vtable slot, high
 void FUN_005e7ed0_shell::BGSIdleMarker_SaveAlt()
 {
     ((FUN_004855a0*)this)->M();
-    ((FUN_004799f0_shell*)((char*)this + 0x30))->FUN_004799f0();
+    ((FUN_004799f0_shell*)((char*)this + 0x30))->BGSIdleCollection_Save();
     ((FUN_00485680*)this)->M();
 }
 
@@ -108,6 +112,9 @@ struct FUN_005e7f00_t
 };
 // Casts apCopy to BGSIdleMarker and, if the cast succeeds, forwards it to FUN_004851b0 on this object.
 // @fnv 0x005e7f00
+// pdb: BGSIdleMarker::Copy | BGSIdleMarker.obj | retail, vtable slot, high
+// pdb params: apCopy
+// pdb locals: pcopy
 void FUN_005e7f00_t::CopyFrom(TESForm* apCopy)
 {
     BGSIdleMarker* pcopy = dynamic_cast<BGSIdleMarker*>(apCopy);
@@ -117,6 +124,7 @@ void FUN_005e7f00_t::CopyFrom(TESForm* apCopy)
 }
 
 // @fnv 0x005e7b40
+// pdb: BGSIdleMarker::~BGSIdleMarker | BGSIdleMarker.obj | debug, upstream name already matches, high
 BGSIdleMarker::~BGSIdleMarker()
 {}
 
@@ -143,43 +151,46 @@ struct BGSIdleMarkerImpl : public TESForm
     TESIdleForm** unk38;
     unsigned int unk3c;
 
-    bool BGSIdleMarker_Load(TESFile* file);
+    bool BGSIdleMarker_Load(TESFile* apFile);
 };
 
 // Reads record chunks from the file, updates fields for handled chunks, and constructs a wrapper for the payload chunk.
 // @fnv 0x005e7bf0
 // src: COMMUNITY 0x005e7bf0
-bool BGSIdleMarkerImpl::BGSIdleMarker_Load(TESFile* file)
+// pdb: BGSIdleMarker::Load | BGSIdleMarker.obj | retail, upstream name already matches, high
+// pdb params: apFile
+// pdb locals: chunkid, pMessage, icount, isize, ii, temp, PTData
+bool BGSIdleMarkerImpl::BGSIdleMarker_Load(TESFile* apFile)
 {
-    this->LoadRecordHeader(file);
+    this->LoadRecordHeader(apFile);
     this->SetInitializationState(false);
-    while (int chunkID = file->GetChunkID())
+    while (int chunkID = apFile->GetChunkID())
     {
         switch (chunkID)
         {
         case 0x44494445: {  // 'EDID'
-            char* pEditorID = (char*)_alloca(file->GetChunkSize());
-            file->GetChunkData(pEditorID, 0x200);
+            char* pEditorID = (char*)_alloca(apFile->GetChunkSize());
+            apFile->GetChunkData(pEditorID, 0x200);
             this->SetEditorID_AtRuntime(pEditorID);
             break;
         }
         case 0x444E424F: {  // 'OBND'
-            this->readOBNDSubRecord(file);
+            this->readOBNDSubRecord(apFile);
             break;
         }
         case 0x464C4449: {  // 'IDLF'
-            file->GetChunkData(&this->unk34, 1);
+            apFile->GetChunkData(&this->unk34, 1);
             break;
         }
         case 0x434C4449: {  // 'IDLC'
-            if (file->GetChunkSize() == 1)
+            if (apFile->GetChunkSize() == 1)
             {
-                file->GetChunkData(&this->unk35, 1);
+                apFile->GetChunkData(&this->unk35, 1);
             }
             else
             {
                 unsigned int val = 0;
-                file->GetChunkData(&val);
+                apFile->GetChunkData(&val);
                 this->unk35 = (unsigned char)val;
             }
             if (this->unk35 != 0)
@@ -197,10 +208,10 @@ bool BGSIdleMarkerImpl::BGSIdleMarker_Load(TESFile* file)
             if (this->unk38 != 0)
             {
                 unsigned int size = this->unk35 * sizeof(TESIdleForm*);
-                if (file->GetChunkSize() == size)
+                if (apFile->GetChunkSize() == size)
                 {
-                    file->GetChunkData(this->unk38, size);
-                    if (file->IsEndianConversionRequired())
+                    apFile->GetChunkData(this->unk38, size);
+                    if (apFile->IsEndianConversionRequired())
                     {
                         for (int i = 0; i < this->unk35; ++i)
                         {
@@ -212,7 +223,7 @@ bool BGSIdleMarkerImpl::BGSIdleMarker_Load(TESFile* file)
             break;
         }
         case 0x544C4449: {  // 'IDLT'
-            file->GetChunkData(&this->unk3c);
+            apFile->GetChunkData(&this->unk3c);
             goto def_label;
             goto def_label;
             goto def_label;
@@ -220,8 +231,8 @@ bool BGSIdleMarkerImpl::BGSIdleMarker_Load(TESFile* file)
         case 0x54445450: {  // 'PTDT'
             ChunkPayload16 payload;
             memset(&payload, 0, sizeof(payload));
-            file->GetChunkData(&payload, sizeof(payload));
-            if (file->IsEndianConversionRequired())
+            apFile->GetChunkData(&payload, sizeof(payload));
+            if (apFile->IsEndianConversionRequired())
             {
                 payload.OBJ_WEAP_VATS_SPECIAL_Endian();
             }
@@ -232,7 +243,7 @@ bool BGSIdleMarkerImpl::BGSIdleMarker_Load(TESFile* file)
         def_label:
             break;
         }
-        if (!file->NextChunk())
+        if (!apFile->NextChunk())
         {
             break;
         }
@@ -244,7 +255,7 @@ bool BGSIdleMarkerImpl::BGSIdleMarker_Load(TESFile* file)
 class FormComponentComparison : public TESForm
 {
   public:
-    bool TESForm_CompareAllComponents(TESForm* compare);
+    bool TESForm_CompareAllComponents(TESForm* apCompare);
 };
 
 class IdleMarkerComparison : public BGSIdleMarker
@@ -256,6 +267,9 @@ class IdleMarkerComparison : public BGSIdleMarker
 // Returns true if apCompare is not a BGSIdleMarker or if the base form component comparison against it succeeds.
 // @fnv 0x005e7f40
 // src: XBOX_PDB 0x005e7f40
+// pdb: BGSIdleMarker::Compare | BGSIdleMarker.obj | retail, upstream name already matches, high
+// pdb params: apCompare
+// pdb locals: pcomp
 bool IdleMarkerComparison::BGSIdleMarker_Compare(TESForm* apCompare)
 {
     BGSIdleMarker* pIdleMarker = dynamic_cast<BGSIdleMarker*>(apCompare);

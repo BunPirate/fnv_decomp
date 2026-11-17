@@ -6,6 +6,7 @@
 class NiAGDDataBlock;
 class ShadowSceneNode;
 
+// pdb: class NiAdditionalGeometryData, size 0x2c (here 0x34), bases: NiObject, 6 members
 class NiAdditionalGeometryData : public NiObject
 {
   public:
@@ -27,8 +28,8 @@ class NiAdditionalGeometryData : public NiObject
     void* NiAdditionalGeometryData_LockDataBlock(unsigned int, unsigned int*);
     void* NiAdditionalGeometryData_UnlockDataBlock(unsigned int);
     bool __thiscall NiAdditionalGeometryData_IsEqual(const NiAdditionalGeometryData*);
-    bool NiAdditionalGeometryData_GetDataStream(unsigned int uiIndex, char** ppcData, void** ppvStream, unsigned short* pusVertexCount,
-                      int* piFormat, int* piStride, int* piUsage);
+    bool NiAdditionalGeometryData_GetDataStream(unsigned int uiStreamIndex, char** pucData, void** uiType, unsigned short* usCount,
+                      int* uiTotalSize, int* uiUnitSize, int* uiStride);
     void* FUN_00537cb0(unsigned int flags);
 
     unsigned char unk08[0x24];

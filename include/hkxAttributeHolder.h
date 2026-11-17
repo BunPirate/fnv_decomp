@@ -7,10 +7,11 @@ class SceneAttribute;
 
 #include "hkArray.h"
 
+// pdb: class hkxAttributeHolder, size 0x14, bases: hkReferencedObject, 1 members
 class hkxAttributeHolder : public hkReferencedObject
 {
 public:
-    hkArray<SceneAttribute> attributes;
+    hkArray<SceneAttribute> m_attributeGroups; // src: XBOX_RETAIL_PDB +0x8 (old: attributes)
 
     explicit hkxAttributeHolder(FinishingFlag flag) throw();
 };

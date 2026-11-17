@@ -121,9 +121,9 @@ __forceinline void hkVector4::setSub4(const hkVector4&v0,const hkVector4&v1)
 {
 m_vComponents=_mm_sub_ps(v0.m_vComponents,v1.m_vComponents);
 }
-__forceinline void hkVector4::setMul4(hkSimdRealParameter r,const hkVector4&v1)
+__forceinline void hkVector4::setMul4(hkSimdRealParameter r,const hkVector4&x)
 {
-m_vComponents=_mm_mul_ps(r.broadcast(),v1.m_vComponents);
+m_vComponents=_mm_mul_ps(r.broadcast(),x.m_vComponents);
 }
 __forceinline void hkVector4::addMul4(hkSimdRealParameter r,const hkVector4&v1)
 {
@@ -140,9 +140,9 @@ hkQuadReal r1=_mm_mul_ps(r.getColumn(1).m_vComponents,b1);
 hkQuadReal b2=_mm_shuffle_ps(b.m_vComponents,b.m_vComponents,(((2)<<6)|((2)<<4)|((2)<<2)|((2))));
 hkQuadReal r2=_mm_mul_ps(r.getColumn(2).m_vComponents,b2);
 m_vComponents=_mm_add_ps(_mm_add_ps(r0,r1),_mm_add_ps(r2,t.getTranslation().m_vComponents));}
-__forceinline hkSimdReal hkVector4::dot3(const hkVector4&a)const
+__forceinline hkSimdReal hkVector4::dot3(const hkVector4&x)const
 {
-hkQuadReal x2=_mm_mul_ps(m_vComponents,a.m_vComponents);
+hkQuadReal x2=_mm_mul_ps(m_vComponents,x.m_vComponents);
 hkQuadReal xySum=_mm_add_ss(_mm_shuffle_ps(x2,x2,(((1)<<6)|((1)<<4)|((1)<<2)|((1)))),x2);
 return _mm_add_ss(_mm_shuffle_ps(x2,x2,(((2)<<6)|((2)<<4)|((2)<<2)|((2)))),xySum);}
 __forceinline hkReal&hkVector4::operator()(int a)
@@ -232,29 +232,29 @@ typedef hkUint32 hkpShapeKey;
 const hkTransform&hkpCdBody::getTransform()const
 {
 ;
-return*static_cast<const hkTransform*>(m_pMotionState);
+return*static_cast<const hkTransform*>(m_motion);
 }
 const hkMotionState*hkpCdBody::GetMotionState()const
 {
-return static_cast<const hkMotionState*>(m_pMotionState);
+return static_cast<const hkMotionState*>(m_motion);
 }
 const hkpShape*hkpCdBody::getShape()const
 {
-return m_pCollisionShape;
+return m_shape;
 }
 hkpCdBody::hkpCdBody(const hkpCdBody*parent,const hkTransform*t)
 {
 m_parent=parent;
-m_pMotionState=t;
+m_motion=t;
 }
 hkpShapeKey hkpCdBody::getShapeKey()const
 {
-return m_uiCollisionShapeKey;
+return m_shapeKey;
 }
 void hkpCdBody::SetCollisionShapeAndKey(const hkpShape*shape,hkpShapeKey key)
 {
-m_pCollisionShape=shape;
-m_uiCollisionShapeKey=key;
+m_shape=shape;
+m_shapeKey=key;
 }
 struct GskAgentInput;
 class hkpContactMgr;
@@ -351,7 +351,7 @@ hkUint8 m_ucDimensionB;
 hkUint8 m_ucFeatureTypeA:4;
 hkUint8 m_ucFeatureTypeB:4;
 public:
-void init(const hkpConvexShape*shapeA,const hkpConvexShape*shapeB,const hkTransform&btoa);};
+void init(const hkpConvexShape*shapeA,const hkpConvexShape*shapeB,const hkTransform&aTb);};
 
 void hkpConvexShape::GetVerticesForIds(const hkpVertexId*ids,int numIds,Vector4WithInt24W*vertixArrayOut)const
 {
@@ -387,13 +387,13 @@ void __cdecl MotionUtilities::calcTimInfo(const hkMotionState&ms0,const hkMotion
 {
 const hkSweptTransform&st0=ms0.getSweptTransform();
 const hkSweptTransform&st1=ms1.getSweptTransform();
-hkQuadReal diff0 = _mm_sub_ps(st0.m_vCenterOfMass0.m_vComponents, st0.m_vCenterOfMass1.m_vComponents);
-hkQuadReal diff1 = _mm_sub_ps(st1.m_vCenterOfMass1.m_vComponents, st1.m_vCenterOfMass0.m_vComponents);
+hkQuadReal diff0 = _mm_sub_ps(st0.m_centerOfMass0.m_vComponents, st0.m_vCenterOfMass1.m_vComponents);
+hkQuadReal diff1 = _mm_sub_ps(st1.m_vCenterOfMass1.m_vComponents, st1.m_centerOfMass0.m_vComponents);
 hkReal f0=deltaTime*st0.getInvDeltaTime();
 hkReal f1=deltaTime*st1.getInvDeltaTime();
 timOut.m_vComponents = _mm_mul_ps(hkSimdReal(f0).broadcast(), diff0);
 timOut.m_vComponents = _mm_add_ps(timOut.m_vComponents, _mm_mul_ps(hkSimdReal(f1).broadcast(), diff1));
-timOut(3)=f0*ms0.m_kDeltaAngle(3)*ms0.m_fObjectRadius+f1*ms1.m_kDeltaAngle(3)*ms1.m_fObjectRadius;}
+timOut(3)=f0*ms0.m_deltaAngle(3)*ms0.m_objectRadius+f1*ms1.m_deltaAngle(3)*ms1.m_objectRadius;}
 namespace hkVector4Util_S
 {
 __forceinline void __cdecl TransformPointArray(const hkTransform&t,const hkVector4*vectorsIn,int numVectors,hkVector4*vectorsOut);}
@@ -405,6 +405,7 @@ do
 {
 vectorsOut[i]._setTransformedPos(unaliased,vectorsIn[i]);
 }while(--i>=0);}
+// pdb: class hkTraceStream, size 0x1c (here 0x10), bases: hkReferencedObject, hkSingleton<hkTraceStream>, 3 members
 class hkTraceStream:public hkReferencedObject,public hkSingleton<hkTraceStream>
 {
 public:
@@ -470,8 +471,8 @@ hkPadSpu<hkReal>m_fMinimumCollisionSeparation;
 hkPadSpu<hkReal>m_fMaximumSeparation;};
 extern "C"
 {
-void __cdecl RemoveManifoldContacts(ConvexContactManifold&manifold,hkpContactMgr*mgr,hkpConstraintOwner&constraintOwner);
-int __cdecl BuildManifoldOperation(ConvexContactManifold&manifold,const MeshVertexBasisData&work,int firstPointIndex,WorldOperationEntry&out,hkpContactMgr*contactMgr);
+void __cdecl hkGskManifold_cleanup(ConvexContactManifold&manifold,hkpContactMgr*mgr,hkpConstraintOwner&constraintOwner);
+int __cdecl BuildManifoldOperation(ConvexContactManifold&manifold,const MeshVertexBasisData&work,int firstPointIndex,WorldOperationEntry&processOut,hkpContactMgr*contactMgr);
 void __cdecl BuildContactPointOperation(const AgentSubtypeMarker&in3,const hkReal allowedPenetration,const hkReal minSeparation,const hkReal toiSeparation,ConvexFeaturePairCache&gskCache,hkVector4&separatingNormal,WorldOperationEntry&output);
 __forceinline void __cdecl hkGskManifold_init(const ConvexContactManifold&manifold,const hkVector4&masterNormal,const hkpCdBody&cA,const hkpCdBody&m_ucPackageByte,hkReal keepContactMaxDist,MeshVertexBasisData&work)
 {
@@ -497,76 +498,79 @@ hkVector4Util_S::TransformPointArray(m_ucPackageByte.getTransform(),verts,manifo
 }
 }
 // @fnv 0x00d42020
+// pdb: hkpPredGskfAgent::processCollision | hkpPredGskfAgent.obj | retail, vtable slot, high
+// pdb params: bodyA, bodyB, input, output
+// pdb locals: timInfo, gsk, bB, tA, tB, bA, in3, work
 void hkpPredGskfAgent::ProcessAgent(const hkpCdBody&bodyA,const hkpCdBody&bodyB,const GskAgentInput&input,WorldOperationEntry&output)
 {
 {hkMonitorStream&mStream=hkMonitorStream::getInstance();if(mStream.memoryAvailable()){hkMonitorStream::TimerCommand*h=reinterpret_cast<hkMonitorStream::TimerCommand*>(mStream.getEnd());h->m_commandAndMonitor="T" "t" "Gsk";h->setTime();mStream.setEnd((char*)(h+1));}};ScopedTimer timeblock155;
 char names[2][128];
 {
-if(m_fFloatValue !=input.m_pStepInfo.m_uiStartTime)
+if(m_timeOfSeparatingNormal !=input.m_pStepInfo.m_startTime)
 {
-if(!input.m_pCollisionQualityInfo->m_iQualityInfoValue10.val())
+if(!input.m_pCollisionQualityInfo->m_useContinuousPhysics.val())
 {
-m_fFloatValue=input.m_pStepInfo.m_fEndTime;
+m_timeOfSeparatingNormal=input.m_pStepInfo.m_endTime;
 goto PROCESS_AT_T1;
 }
 hkTransform tA;
 hkTransform tB;
 hkpCdBody bA(&bodyA,&tA);bA.SetCollisionShapeAndKey(bodyA.getShape(),bodyA.getShapeKey());
 hkpCdBody bB(&bodyB,&tB);bB.SetCollisionShapeAndKey(bodyB.getShape(),bodyB.getShapeKey());
-MotionUtilities::ComputeTransformAtTime(bodyA.GetMotionState()->getSweptTransform(),input.m_pStepInfo.m_uiStartTime,tA);
-MotionUtilities::ComputeTransformAtTime(bodyB.GetMotionState()->getSweptTransform(),input.m_pStepInfo.m_uiStartTime,tB);
+MotionUtilities::ComputeTransformAtTime(bodyA.GetMotionState()->getSweptTransform(),input.m_pStepInfo.m_startTime,tA);
+MotionUtilities::ComputeTransformAtTime(bodyB.GetMotionState()->getSweptTransform(),input.m_pStepInfo.m_startTime,tB);
 const hkpConvexShape*shapeA=static_cast<const hkpConvexShape*>(bodyA.getShape());
 const hkpConvexShape*shapeB=static_cast<const hkpConvexShape*>(bodyB.getShape());
 ConvexShapePairCache gsk;
-gsk.init(shapeA,shapeB,*reinterpret_cast<ConvexFeaturePairCache*>(m_pAccess));
-ComputeClosestPoint(bA,bB,input.m_pCollisionQualityInfo->m_fMinimumCollisionSeparation,gsk,m_vSeparatingNormal);
-gsk.checkForChangesAndUpdateCache(*reinterpret_cast<ConvexFeaturePairCache*>(m_pAccess));
+gsk.init(shapeA,shapeB,*reinterpret_cast<ConvexFeaturePairCache*>(m_cache));
+ComputeClosestPoint(bA,bB,input.m_pCollisionQualityInfo->m_keepContact,gsk,m_separatingNormal);
+gsk.checkForChangesAndUpdateCache(*reinterpret_cast<ConvexFeaturePairCache*>(m_cache));
 }
-m_fFloatValue=input.m_pStepInfo.m_fEndTime;
+m_timeOfSeparatingNormal=input.m_pStepInfo.m_endTime;
 const hkMotionState*msA=bodyA.GetMotionState();
 const hkMotionState*msB=bodyB.GetMotionState();
 hkVector4 timInfo;
-MotionUtilities::calcTimInfo(*msA,*msB,input.m_pStepInfo.m_fTimeStep,timInfo);
-hkReal realProjectedLinearDelta=timInfo.dot3(m_vSeparatingNormal);
-hkReal distAtT1=m_vSeparatingNormal(3)-realProjectedLinearDelta-timInfo(3);
-if(distAtT1>input.m_pCollisionQualityInfo->m_fMinimumCollisionSeparation&&m_fSeparationDistance*0.5<distAtT1)
+MotionUtilities::calcTimInfo(*msA,*msB,input.m_pStepInfo.m_deltaTime,timInfo);
+hkReal realProjectedLinearDelta=timInfo.dot3(m_separatingNormal);
+hkReal distAtT1=m_separatingNormal(3)-realProjectedLinearDelta-timInfo(3);
+if(distAtT1>input.m_pCollisionQualityInfo->m_keepContact&&m_allowedPenetration*0.5<distAtT1)
 {
 if(0)hkTraceStream::GetMonitorStream().dontPrintf("Tim","# Tim %-6s %-6s dist:%2.4f \n",names[0],names[1],distAtT1);
-m_vSeparatingNormal(3)=distAtT1;
+m_separatingNormal(3)=distAtT1;
 if(m_kContactManifold.m_usNumContactPoints)
 {
-RemoveManifoldContacts(m_kContactManifold,m_pContactManager,*output.m_pConstraintOwner.val());
+hkGskManifold_cleanup(m_kContactManifold,m_contactMgr,*output.m_pConstraintOwner.val());
 }
 goto END_OF_FUNCTION;
 }
-if(input.m_pCollisionQualityInfo->m_iQualityInfoValue10.val())
+if(input.m_pCollisionQualityInfo->m_useContinuousPhysics.val())
 {
 AgentSubtypeMarker in3;
-in3.m_pBodyA=&bodyA;
-in3.m_pBodyB=&bodyB;
-in3.m_pRayCastInput=reinterpret_cast<const hkpProcessCollisionInput*>(&input);
-in3.m_pContactManager=m_pContactManager;
+in3.m_bodyA=&bodyA;
+in3.m_bodyB=&bodyB;
+in3.m_input=reinterpret_cast<const hkpProcessCollisionInput*>(&input);
+in3.m_contactMgr=m_contactMgr;
 in3.m_fSubtypeValue=distAtT1;
 in3.m_vSubtypePosition=timInfo;
 hkpCollisionQualityInfo*qi=input.m_pCollisionQualityInfo;
-const hkReal distance=m_vSeparatingNormal(3);
-const hkReal minSeparation=MathUtilities::min2(qi->m_fCreateContactThreshold*m_fSeparationDistance,distance+qi->m_fManifoldTimeDistance*m_fSeparationDistance);
+const hkReal distance=m_separatingNormal(3);
+const hkReal minSeparation=MathUtilities::min2(qi->m_minSeparation*m_allowedPenetration,distance+qi->m_minExtraSeparation*m_allowedPenetration);
 if(distAtT1>=minSeparation)
 {
 goto QUICK_VERIFY_MANIFOLD;
 }
-const hkReal toiSeparation=MathUtilities::min2(qi->m_fMinimumTimeOfImpactDelta*m_fSeparationDistance,distance+qi->m_fMaximumTimeOfImpactDelta*m_fSeparationDistance);
-BuildContactPointOperation(in3,m_fSeparationDistance,minSeparation,toiSeparation,*reinterpret_cast<ConvexFeaturePairCache*>(m_pAccess),m_vSeparatingNormal,output);
+const hkReal toiSeparation=MathUtilities::min2(qi->m_toiSeparation*m_allowedPenetration,distance+qi->m_toiExtraSeparation*m_allowedPenetration);
+BuildContactPointOperation(in3,m_allowedPenetration,minSeparation,toiSeparation,*reinterpret_cast<ConvexFeaturePairCache*>(m_cache),m_separatingNormal,output);
 goto PROCESS_AT_T1;
 }
 QUICK_VERIFY_MANIFOLD:
-if(distAtT1>input.m_pCollisionQualityInfo->m_fTimeOfImpactSeparation)
+if(distAtT1>input.m_pCollisionQualityInfo->m_manifoldTimDistance)
 {
 if(0)hkTraceStream::GetMonitorStream().dontPrintf("Pts","# Pts %-6s %-6s dist:%2.4f \n",names[0],names[1],distAtT1);
-m_vSeparatingNormal(3)=distAtT1;
+m_separatingNormal(3)=distAtT1;
 MeshVertexBasisData work;
-hkGskManifold_init(m_kContactManifold,m_vSeparatingNormal,bodyA,bodyB,input.getTolerance(),work);
-BuildManifoldOperation(m_kContactManifold,work,0,output,m_pContactManager);
+hkGskManifold_init(m_kContactManifold,m_separatingNormal,bodyA,bodyB,input.getTolerance(),work);
+BuildManifoldOperation(m_kContactManifold,work,0,output,m_contactMgr);
 goto END_OF_FUNCTION;
 }
 }

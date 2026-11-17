@@ -32,16 +32,16 @@ public:
 
     void ResetFormData();
     virtual void InitItem();
-    bool Load(TESFile* file);
+    bool Load(TESFile* apFile);
     // TESForm vtable slot 8 (vftable 0x1026064 slot 8 = 0x502cd0)
-    bool LoadForm(TESFile* file);
+    bool LoadForm(TESFile* apFile);
     unsigned char GetByteAtOffsetB0();
     unsigned char GetFlag() const;
     const char* FUN_00772820();
 
     AmmoCharacteristics data;
-    AmmoProjectileData m_kProjectileData;
-    BSStringT<char> m_kPrimaryString;
-    BSStringT<char> m_kSecondaryString;
-    BSSimpleList<TESAmmoEffect*> m_kEffects;
+    AmmoProjectileData NVdata; // src: XBOX_RETAIL_PDB +0xb0 (old: m_kProjectileData)
+    BSStringT<char> cDesc; // src: XBOX_RETAIL_PDB +0xc4 (old: m_kPrimaryString)
+    BSStringT<char> cAbbrev; // src: XBOX_RETAIL_PDB +0xcc (old: m_kSecondaryString)
+    BSSimpleList<TESAmmoEffect*> pAmmoEffectList; // src: XBOX_RETAIL_PDB +0xd4 (old: m_kEffects)
 };

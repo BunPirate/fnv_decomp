@@ -21,6 +21,7 @@ enum TES_RETURN_CODE;
 enum CHUNK_ID;
 
 #pragma pack(push, 4)
+// pdb: class TESFile, size 0x42c, 46 members
 class TESFile
 {
 public:
@@ -34,60 +35,60 @@ public:
         unsigned int control;
     };
 
-    TES_RETURN_CODE m_eReturnCode;
-    TESFile* m_pThreadSafeParent;
-    NiTPointerMap<unsigned int, TESFile*>* m_pThreadSafeFileMap;
-    BSFile* m_pSecondaryFile;
+    TES_RETURN_CODE m_lastError; // src: XBOX_RETAIL_PDB +0x0 (old: m_eReturnCode)
+    TESFile* pThreadSafeParent; // src: XBOX_RETAIL_PDB +0x4 (old: m_pThreadSafeParent)
+    NiTPointerMap<unsigned int, TESFile*>* pThreadSafeFileMap; // src: XBOX_RETAIL_PDB +0x8 (old: m_pThreadSafeFileMap)
+    BSFile* m_pLockedFile; // src: XBOX_RETAIL_PDB +0xc (old: m_pSecondaryFile)
     BSFile* m_pFile;
-    TESBitArrayFile* m_pBitArrayFile1;
-    TESBitArrayFile* m_pBitArrayFile2;
-    TESBitArrayFile* m_pBitArrayFile3;
-    char m_acFilename[260];
-    char m_acPath[260];
+    TESBitArrayFile* pFormUserDataBitArray; // src: XBOX_RETAIL_PDB +0x14 (old: m_pBitArrayFile1)
+    TESBitArrayFile* pFormVersionBitArray; // src: XBOX_RETAIL_PDB +0x18 (old: m_pBitArrayFile2)
+    TESBitArrayFile* pFormIDBitArray; // src: XBOX_RETAIL_PDB +0x1c (old: m_pBitArrayFile3)
+    char m_Filename[260]; // src: XBOX_RETAIL_PDB +0x20 (old: m_acFilename)
+    char m_Path[260]; // src: XBOX_RETAIL_PDB +0x124 (old: m_acPath)
     char* m_pBuffer;
     unsigned int m_uiBufferAllocSize;
-    unsigned int m_uiReadPosition;
-    unsigned int m_uiBufferSize;
-    TESObjectCELL* m_pCurrentCell;
-    unsigned int m_uiFormCount;
-    FormRecordHeader m_kRecordInfo;
-    CHUNK_ID m_eChunkID;
-    unsigned int m_uiChunkSize;
-    unsigned int m_uiChunkOffset;
-    unsigned int m_uiRecordSize;
-    unsigned int m_uiRecordOffset;
-    unsigned int m_uiCurrentOffset;
-    FormRecordHeader m_kChunkInfo;
-    unsigned int m_uiChunkValue1;
-    unsigned int m_uiChunkValue2;
-    BSSimpleList<TESFileGroup*> m_kRecordList;
-    bool m_bIsLoading;
-    bool m_bIsSaving;
-    bool m_bHasCurrentGroup;
+    unsigned int m_firstCellOffset; // src: XBOX_RETAIL_PDB +0x230 (old: m_uiReadPosition)
+    unsigned int m_currCellOffset; // src: XBOX_RETAIL_PDB +0x234 (old: m_uiBufferSize)
+    TESObjectCELL* m_pCurrCell; // src: XBOX_RETAIL_PDB +0x238 (old: m_pCurrentCell)
+    unsigned int m_currRefOffset; // src: XBOX_RETAIL_PDB +0x23c (old: m_uiFormCount)
+    FormRecordHeader m_currentform; // src: XBOX_RETAIL_PDB +0x240 (old: m_kRecordInfo)
+    CHUNK_ID m_currentchunkID; // src: XBOX_RETAIL_PDB +0x258 (old: m_eChunkID)
+    unsigned int m_actualChunkSize; // src: XBOX_RETAIL_PDB +0x25c (old: m_uiChunkSize)
+    unsigned int m_filesize; // src: XBOX_RETAIL_PDB +0x260 (old: m_uiChunkOffset)
+    unsigned int m_fileoffset; // src: XBOX_RETAIL_PDB +0x264 (old: m_uiRecordSize)
+    unsigned int m_formoffset; // src: XBOX_RETAIL_PDB +0x268 (old: m_uiRecordOffset)
+    unsigned int m_chunkoffset; // src: XBOX_RETAIL_PDB +0x26c (old: m_uiCurrentOffset)
+    FormRecordHeader m_saveform; // src: XBOX_RETAIL_PDB +0x270 (old: m_kChunkInfo)
+    unsigned int m_saveformoffset; // src: XBOX_RETAIL_PDB +0x288 (old: m_uiChunkValue1)
+    unsigned int m_savechunkoffset; // src: XBOX_RETAIL_PDB +0x28c (old: m_uiChunkValue2)
+    BSSimpleList<TESFileGroup*> m_grouplist; // src: XBOX_RETAIL_PDB +0x290 (old: m_kRecordList)
+    bool bHasGroups; // src: XBOX_RETAIL_PDB +0x298 (old: m_bIsLoading)
+    bool bMustEndianConvert; // src: XBOX_RETAIL_PDB +0x299 (old: m_bIsSaving)
+    bool bCloseFileOverride; // src: XBOX_RETAIL_PDB +0x29a (old: m_bHasCurrentGroup)
     unsigned char layoutPadding29B;
-    _WIN32_FIND_DATAA m_kFindData;
-    TESFileHeader m_kFileMetadata;
-    unsigned int m_uiFileCount;
-    BSSimpleList<char*> m_kFilenameList;
-    BSSimpleList<_ULARGE_INTEGER*> m_kFileSizeList;
-    unsigned int m_uiTESFileCount;
-    TESFile** m_ppTESFiles;
-    _FILETIME m_kLastWriteTime;
-    unsigned char m_ucCompileIndex;
+    _WIN32_FIND_DATAA m_FileInfo; // src: XBOX_RETAIL_PDB +0x29c (old: m_kFindData)
+    TESFileHeader fileHeaderInfo; // src: XBOX_RETAIL_PDB +0x3dc (old: m_kFileMetadata)
+    unsigned int m_Flags; // src: XBOX_RETAIL_PDB +0x3e8 (old: m_uiFileCount)
+    BSSimpleList<char*> listMasters; // src: XBOX_RETAIL_PDB +0x3ec (old: m_kFilenameList)
+    BSSimpleList<_ULARGE_INTEGER*> listMastersData; // src: XBOX_RETAIL_PDB +0x3f4 (old: m_kFileSizeList)
+    unsigned int iMasterCount; // src: XBOX_RETAIL_PDB +0x3fc (old: m_uiTESFileCount)
+    TESFile** m_pMasterPtrs; // src: XBOX_RETAIL_PDB +0x400 (old: m_ppTESFiles)
+    _FILETIME DeletedFormTime; // src: XBOX_RETAIL_PDB +0x404 (old: m_kLastWriteTime)
+    unsigned char cCompileIndex; // src: XBOX_RETAIL_PDB +0x40c (old: m_ucCompileIndex)
     unsigned char layoutPadding40D;
     unsigned short layoutPadding40E;
-    BSStringT<char> m_kCreator;
-    BSStringT<char> m_kSummary;
-    char* m_pDecompressedFormBuffer;
-    unsigned int m_uiAuxBufferSize;
-    bool m_bIsMaster;
-    bool m_bOptimizedFile;
-    bool m_bIsDLC;
+    BSStringT<char> cCreatedBy; // src: XBOX_RETAIL_PDB +0x410 (old: m_kCreator)
+    BSStringT<char> cSummary; // src: XBOX_RETAIL_PDB +0x418 (old: m_kSummary)
+    char* pDecompressedFormBuffer; // src: XBOX_RETAIL_PDB +0x420 (old: m_pDecompressedFormBuffer)
+    unsigned int iDecompressedFormBufferSize; // src: XBOX_RETAIL_PDB +0x424 (old: m_uiAuxBufferSize)
+    bool bCached; // src: XBOX_RETAIL_PDB +0x428 (old: m_bIsMaster)
+    bool bCaching; // src: XBOX_RETAIL_PDB +0x429 (old: m_bOptimizedFile)
+    bool bDLC; // src: XBOX_RETAIL_PDB +0x42a (old: m_bIsDLC)
     unsigned char layoutPadding42B;
 
     bool CreateTES(char*, char*, int);
     bool CreateTES(int);
-    bool OpenTESFile(char*, char*, int, bool);
+    bool OpenTES(char*, char*, int, bool);
     bool OpenTESFile(int, bool);
     bool CloseTESFile();
     bool DeleteTES();
@@ -105,7 +106,7 @@ public:
     void SetFileLanguage(int);
     float GetFileVersion();
     void SetFileVersion(float);
-    bool IsValidFileVersion();
+    bool IsFileVersionTooHigh();
     unsigned int GetFORMSize();
     const char* GetPath();
     const char* GetFilename();
@@ -117,7 +118,7 @@ public:
     void* GetCreator();
     void* GetSummary();
     bool MastersChecked(void*);
-    bool CheckMasterFiles(void*, bool);
+    bool GenIndexTable(void*, bool);
     TESFile* GetMasterFile(unsigned int);
     char* GetMasterFileName(unsigned int);
     unsigned int GetMasterFileCount();
@@ -140,9 +141,9 @@ public:
     void CloseGroup();
     bool IsFormInCurrentGroup(TESForm*);
     bool IsGroupOpen();
-    void SetCurrentForm(TESForm*);
+    void StartAndEndGroupsForForm(TESForm*);
     void ResetCurrentForm();
-    void ResetFileState(bool getform);
+    void TESRewind(bool getform);
     TESFileGroup* GetCurrentGroup();
     void* GetGroupList();
     void SetGroupMode(bool);
@@ -217,7 +218,7 @@ public:
     unsigned int GetFNVVersionInfo();
     void InitEndian();
     bool IsCurrentFormCompressed();
-    void InflateCompressedForm();
+    void DecompressCurrentForm();
     unsigned int GetDecompressedBufferSize();
     char* GetDecompressedBuffer();
     void ReleaseDecompressedBuffer();
@@ -230,7 +231,7 @@ public:
     void ClearThreadSafeFiles();
     void SetThreadSafeParent(TESFile*);
     TESFile* GetFileForThread(unsigned int);
-    int ReadFileBuffer(void*, unsigned int);
+    int EasyWrite(void*, unsigned int);
     void MoveToFilePosition(int);
     bool IsTempIDLoadable(unsigned int, unsigned int);
     void SetTempIDOwner(bool);
@@ -258,9 +259,9 @@ public:
     TESFile(const char* path, const char* filename, NiFile::OpenMode openMode);
     ~TESFile();
     bool IsEndianConversionRequired();
-    bool CheckMasterFiles(BSSimpleList<TESFile*>* files, bool unknown);
-    bool OpenTESFile(NiFile::OpenMode openMode, bool closeOverride);
-    bool OpenTESFile(const char* path, const char* filename, NiFile::OpenMode openMode, bool closeOverride);
+    bool GenIndexTable(BSSimpleList<TESFile*>* files, bool unknown);
+    bool OpenTESFile(NiFile::OpenMode accessmode, bool lock);
+    bool OpenTES(const char* path, const char* filename, NiFile::OpenMode openMode, bool closeOverride);
     void InitializeComponent();
     unsigned int GetChunkID();
     bool GetChunkData();

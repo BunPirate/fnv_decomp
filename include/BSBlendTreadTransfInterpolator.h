@@ -2,6 +2,7 @@
 
 #include "NiBlendInterpolator.h"
 
+// pdb: class BSBlendTreadTransfInterpolator, size 0x34, bases: NiBlendInterpolator, 1 members
 class BSBlendTreadTransfInterpolator : public NiBlendInterpolator
 {
   public:
@@ -12,5 +13,5 @@ class BSBlendTreadTransfInterpolator : public NiBlendInterpolator
     bool UpdateSingleInterpolator(float, NiObjectNET*, NiQuatTransform&);
     bool UpdateAccumulatedTransform(float, NiObjectNET*, NiQuatTransform&);
 
-    float m_fPhase;
+    float fCurrLerp; // src: XBOX_RETAIL_PDB +0x30 (old: m_fPhase)
 };

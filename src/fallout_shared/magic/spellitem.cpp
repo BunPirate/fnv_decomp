@@ -48,11 +48,14 @@ struct FUN_00409210
 };
 // Destructor for the object holding a Base5a and an IngredientItem; the body is empty.
 // @fnv 0x00409210
+// pdb: MagicItemForm::`scalar deleting destructor' | EnchantmentItem.obj | retail, object-file run extension, low
+// pdb note: debug build links it to MagicItemForm::~MagicItemForm
 FUN_00409210::~FUN_00409210()
 {}
 
 // Returns true when the object at this-0x18 reports false for the argument 1.
 // @fnv 0x0040e1e0
+// pdb: SpellItem::IsAutoCalc | SpellItem.obj | debug, object-file run extension, low
 bool MagicItem::IsAutoCalculated()
 {
     return !(unsigned char)((SpellItem*)((char*)this - 0x18))->ContainsAnyFlag(1);
@@ -66,6 +69,7 @@ bool MagicItem::IgnoreResistance()
 
 // Sets the form type to 0x14 and resets the spell data.
 // @fnv 0x0040e160
+// pdb: SpellItem::SpellItem | SpellItem.obj | retail, upstream name already matches, high
 SpellItem::SpellItem()
 {
     SetFormType(static_cast<ENUM_FORM_ID>(0x14));
@@ -112,6 +116,7 @@ class E600TopicInfo : public E600Info, public E600SoundSource
 // Returns the speaker sound if flag 1 is set, otherwise picks a sound from the value at index 0.
 // @fnv 0x0040e600
 // src: COMMUNITY 0x0040e600
+// pdb: SpellItem::GetLevel | SpellItem.obj | retail, upstream name already matches, high
 E600Sound* E600TopicInfo::SpellItem_GetLevel()
 {
     if (HasFlag(1))
@@ -121,6 +126,7 @@ E600Sound* E600TopicInfo::SpellItem_GetLevel()
 }
 
 // @fnv 0x0040e2c0
+// pdb: SpellItem::~SpellItem | SpellItem.obj | retail, upstream name already matches, high
 SpellItem::~SpellItem()
 {
     SpellItem::ClearData();
@@ -151,9 +157,12 @@ struct MagicBase
 // RTTI returns the containing spell; this points to its secondary interface at offset 0x18.
 // @fnv 0x0040e3c0
 // src: COMMUNITY 0x0040e3c0
-bool MagicItem::SpellItem_CompareMagicItemData(MagicItem* apItem)
+// pdb: SpellItem::CompareMagicItemData | SpellItem.obj | retail, upstream name already matches, high
+// pdb params: apCompare
+// pdb locals: pspell
+bool MagicItem::SpellItem_CompareMagicItemData(MagicItem* apCompare)
 {
-    MagicItem* a = reinterpret_cast<MagicItem*>(dynamic_cast<SpellItem*>(apItem));
+    MagicItem* a = reinterpret_cast<MagicItem*>(dynamic_cast<SpellItem*>(apCompare));
     if (a == 0)
     {
         return true;
@@ -205,6 +214,7 @@ struct ObjE360 : PadE360, IfaceE360
 };
 // @fnv 0x0040e360
 // src: COMMUNITY 0x0040e360
+// pdb: EnchantmentItem::Endian | EnchantmentItem.obj | debug, upstream name already matches, high
 void ObjE360::EnchantmentItem_Endian()
 {
     if (TESForm_QEndianSwapOnSave())
@@ -224,29 +234,32 @@ struct MagicEffectKind
     virtual void slot5();
     virtual int GetType();
 };
-float __cdecl ScaleBySettingBlend(float cost, int value, int adjustment);
+float __cdecl MagicFormulas_AdjustMagicSpellCost(float cost, int value, int adjustment);
 struct FUN_0040e520_shell
 {
     int EffectItemList_GetAssociatedSkill();
-    float GetTotalCost(Actor* caster);
-    float SpellItem_GetCost(Actor* caster);
+    float GetTotalCost(Actor* apActor);
+    float SpellItem_GetCost(Actor* apActor);
 };
 // @fnv 0x0040e520
 // src: COMMUNITY 0x0040e520
-float FUN_0040e520_shell::SpellItem_GetCost(Actor* caster)
+// pdb: SpellItem::GetCost | SpellItem.obj | retail, upstream name already matches, high
+// pdb params: apActor
+// pdb locals: fcost, puseActor
+float FUN_0040e520_shell::SpellItem_GetCost(Actor* apActor)
 {
     float cost = 0.0f;
     Actor* effectiveCaster = (((MagicEffectKind*)((char*)this - 12))->GetType() == 2 ||
                               ((MagicEffectKind*)((char*)this - 12))->GetType() == 3)
                                  ? 0
-                                 : caster;
+                                 : apActor;
     if (((SpellItem*)((char*)this - 36))->FUN_0040e210(1))
     {
         cost = (float)((SpellItem*)((char*)this - 36))->GetField38();
         if (effectiveCaster)
         {
             cost =
-                ScaleBySettingBlend(cost, ((ActorValues*)((char*)effectiveCaster + 0xa4))->FUN_0066ef20(EffectItemList_GetAssociatedSkill()),
+                MagicFormulas_AdjustMagicSpellCost(cost, ((ActorValues*)((char*)effectiveCaster + 0xa4))->FUN_0066ef20(EffectItemList_GetAssociatedSkill()),
                                     ((ActorValues*)((char*)effectiveCaster + 0xa4))->FUN_0066ef20(11));
         }
     }
@@ -283,14 +296,17 @@ struct CopyPart40E
 struct CopyOwner40E : TESForm, CopyPart40E
 {
     void FUN_008d7dc0(int value);
-    virtual void SpellItem_CopyMagicItemData(MagicItem* input);
+    virtual void SpellItem_CopyMagicItemData(MagicItem* apCopy);
 };
 // Passes source values to setters, assigns the value returned by GetSpeaker, and copies the source flags.
 // @fnv 0x0040e470
 // src: COMMUNITY 0x0040e470
-void CopyOwner40E::SpellItem_CopyMagicItemData(MagicItem* apSource)
+// pdb: SpellItem::CopyMagicItemData | SpellItem.obj | retail, upstream name already matches, high
+// pdb params: apCopy
+// pdb locals: pspell
+void CopyOwner40E::SpellItem_CopyMagicItemData(MagicItem* apCopy)
 {
-    SpellItem* source = static_cast<SpellItem*>(_FNV_DynamicCast(apSource, 0, &DAT_01183140, &DAT_01183060, 0));
+    SpellItem* source = static_cast<SpellItem*>(_FNV_DynamicCast(apCopy, 0, &DAT_01183140, &DAT_01183060, 0));
     if (source == 0)
         return;
     FUN_008d7dc0(reinterpret_cast<MagicBase*>(reinterpret_cast<char*>(source) + 0x18)->s6());

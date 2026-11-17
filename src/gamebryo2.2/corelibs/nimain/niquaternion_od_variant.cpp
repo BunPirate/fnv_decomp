@@ -22,6 +22,9 @@ struct FUN_004f0180_Class
 
 // @fnv 0x004f0180
 // src: XBOX_PDB 0x004f0180
+// pdb: NiQuaternion::ToRotation | BSBipNode.obj | debug, upstream name already matches, high
+// pdb params: rot
+// pdb locals: tx, twy, tyz, twz, tz, txx, txy, tyy, txz, ty, twx, tzz
 void FUN_004f0180_Class::NiQuaternion_ToRotation(M3_* rot)
 {
     float tx;

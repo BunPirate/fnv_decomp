@@ -2,6 +2,7 @@
 
 class ConstraintData;
 
+// pdb: class hkSerializableCinfo, size 0x1 (here 0x10), 0 members
 class hkSerializableCinfo
 {
 public:

@@ -113,7 +113,7 @@ class ConsoleManager
     char m_acOutputFilename[260];       // +0x810, 260 bytes
 
     bool Idle(int);
-    void Print(const char*, const char*);
+    void MenuConsole_PrintLine(const char*, const char*);
     void ResetOutputState();
     void DumpTextureList();
     static ConsoleManager* Instance(bool bCreate);

@@ -16,9 +16,9 @@ class TESObjectTREE : public TESBoundTreeObject,
                       public BGSDestructibleObjectForm
 {
 public:
-    NiTPrimitiveArray_unsigned_int_ m_kSeedArray;
+    NiTPrimitiveArray_unsigned_int_ SeedArray; // src: XBOX_RETAIL_PDB +0x5c (old: m_kSeedArray)
     TreeRecordData Data;
-    NiPoint2 m_kBillboardDimensions;
+    NiPoint2 BillboardSize; // src: XBOX_RETAIL_PDB +0x8c (old: m_kBillboardDimensions)
 
     TESObjectTREE();
     TreeRecordData* GetData();
@@ -27,9 +27,9 @@ public:
     bool TESObjectTREE_IsLargeEnoughForDistantLOD();
     void UpdateRustleSpeed(const float speed);
     virtual void InitItem();
-    bool Load(TESFile* file);
+    bool Load(TESFile* apFile);
     // TESForm vtable slot 8 (TESObjectTREE vftable 0x0102bc94 slot 8 = 0x0051bbc0)
-    bool LoadForm(TESFile* file);
+    bool LoadForm(TESFile* apFile);
 
     virtual void Reserved97();
     virtual void Reserved98();

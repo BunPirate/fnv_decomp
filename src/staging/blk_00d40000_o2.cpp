@@ -49,30 +49,32 @@ extern __declspec(thread) int g_ThreadMemoryContext;
 
 __forceinline AutoMemContext::AutoMemContext(int context)
 {
-    m_eMemoryContext = static_cast<MEM_CONTEXT>(g_ThreadMemoryContext);
+    iOldMemContext = static_cast<MEM_CONTEXT>(g_ThreadMemoryContext);
     g_ThreadMemoryContext = context;
 }
 __forceinline AutoMemContext::~AutoMemContext()
 {
-    g_ThreadMemoryContext = m_eMemoryContext;
+    g_ThreadMemoryContext = iOldMemContext;
 }
 
 // Keep the original inline construction and destruction on the shared layouts.
 
 struct FUN_00c9ce00_cls
 {
-    void __thiscall FUN_00c9ce00(int);
+    void __thiscall hkpEntity_ctor(int);
 };
 extern int DAT_010c7888;
 
 // @fnv 0x00d49530
 // src: HAVOK_LIB 0x00d49530
-void __cdecl finishLoadedObjecthkpRigidBody(FUN_00c9ce00_cls* pObject, int aiValue)
+// pdb: finishLoadedObjecthkpRigidBody | hkpRigidBodyClass.obj | retail, upstream name already matches, high
+// pdb params: p, finishing
+void __cdecl finishLoadedObjecthkpRigidBody(FUN_00c9ce00_cls* p, int finishing)
 {
-    if (pObject)
+    if (p)
     {
-        pObject->FUN_00c9ce00(aiValue);
-        *(int*)pObject = (int)&DAT_010c7888;
+        p->hkpEntity_ctor(finishing);
+        *(int*)p = (int)&DAT_010c7888;
     }
 }
 
@@ -87,15 +89,17 @@ void __stdcall hkpBreakableConstraintData_buildNopJacobian(int a, int b)
 
 struct FUN_00d53200_class
 {
-    void hkConstraintCinfo_LoadBinary(NiStream& stream);
-    void hkConstraintChainCinfo_LoadBinary(void* stream);
+    void hkConstraintCinfo_LoadBinary(NiStream& arStream);
+    void hkConstraintChainCinfo_LoadBinary(void* arStream);
 };
 
 // @fnv 0x00d53200
 // src: XBOX_PDB 0x00d53200
-void FUN_00d53200_class::hkConstraintChainCinfo_LoadBinary(void* stream)
+// pdb: hkConstraintChainCinfo::LoadBinary | bhkConstraintChain.obj | retail, upstream name already matches, high
+// pdb params: arStream
+void FUN_00d53200_class::hkConstraintChainCinfo_LoadBinary(void* arStream)
 {
-    NiStream& input = *static_cast<NiStream*>(stream);
+    NiStream& input = *static_cast<NiStream*>(arStream);
     input.ReadUnsignedInteger();
     hkConstraintCinfo_LoadBinary(input);
 }
@@ -241,33 +245,36 @@ struct Agent
 {
     void __thiscall AppendRecordAndRegisterAgents(CollisionAgentFunctionTable*, int, int);
 };
-void __cdecl Object_ConstructObject_00d442c0();
+void __cdecl hkpShapeCollectionAgent_createListBAgent();
 void __cdecl hkCollectorD347_ProcessState_00d34790();
 void __cdecl QueryClosestPoints();
 void __cdecl hkpShapeCollectionAgent_staticLinearCast_UpdateState_00d34810();
-void __cdecl AllocateAndInitBlock();
+void __cdecl hkpShapeCollectionAgent_createListAAgent();
 void __cdecl hkpShapeCollectionAgent_staticGetPenetrations();
-void __cdecl GetClosestPointsShapeCollection();
+void __cdecl hkpShapeCollectionAgent_staticGetClosestPoints();
 void __cdecl hkpShapeCollectionAgent_staticLinearCast();
 // @fnv 0x00d44310
 // src: HAVOK_LIB 0x00d44310
-void __cdecl hkpShapeCollectionAgent_registerAgent(Agent* a)
+// pdb: hkpShapeCollectionAgent::registerAgent | hkpShapeCollectionAgent.obj | retail, upstream name already matches, high
+// pdb params: dispatcher
+// pdb locals: af
+void __cdecl hkpShapeCollectionAgent_registerAgent(Agent* dispatcher)
 {
     CollisionAgentFunctionTable af;
-    af.f0 = (void*)&Object_ConstructObject_00d442c0;
+    af.f0 = (void*)&hkpShapeCollectionAgent_createListBAgent;
     af.f1 = (void*)&hkCollectorD347_ProcessState_00d34790;
     af.f2 = (void*)&QueryClosestPoints;
     af.f3 = (void*)&hkpShapeCollectionAgent_staticLinearCast_UpdateState_00d34810;
     af.b0 = true;
     af.b1 = true;
-    a->AppendRecordAndRegisterAgents(&af, -1, 7);
-    af.f0 = (void*)&AllocateAndInitBlock;
+    dispatcher->AppendRecordAndRegisterAgents(&af, -1, 7);
+    af.f0 = (void*)&hkpShapeCollectionAgent_createListAAgent;
     af.f1 = (void*)&hkpShapeCollectionAgent_staticGetPenetrations;
-    af.f2 = (void*)&GetClosestPointsShapeCollection;
+    af.f2 = (void*)&hkpShapeCollectionAgent_staticGetClosestPoints;
     af.f3 = (void*)&hkpShapeCollectionAgent_staticLinearCast;
     af.b0 = false;
     af.b1 = true;
-    a->AppendRecordAndRegisterAgents(&af, 7, -1);
+    dispatcher->AppendRecordAndRegisterAgents(&af, 7, -1);
 }
 
 struct FUN_00d48330_vt
@@ -343,18 +350,20 @@ struct FUN_00d4fe40_cls
     bool b0;
     char pad2[0xb2 - 0xa3];
     bool b1;
-    void __thiscall hkpPrismaticConstraintData_setMotorActive(void* a, bool b);
+    void __thiscall hkpPrismaticConstraintData_setMotorActive(void* instance, bool toBeEnabled);
 };
 // Stores the flag and its inverse, then zeroes four floats at a nested pointer when the argument and its sub-pointers are non-null.
 // @fnv 0x00d4fe40
 // src: HAVOK_LIB 0x00d4fe40
-void FUN_00d4fe40_cls::hkpPrismaticConstraintData_setMotorActive(void* apObject, bool abFlag)
+// pdb: hkpPrismaticConstraintData::setMotorActive | hkpPrismaticConstraintData.obj | debug, upstream name already matches, high
+// pdb params: instance, toBeEnabled
+void FUN_00d4fe40_cls::hkpPrismaticConstraintData_setMotorActive(void* instance, bool toBeEnabled)
 {
-    b0 = abFlag;
-    b1 = !abFlag;
-    if (apObject)
+    b0 = toBeEnabled;
+    b1 = !toBeEnabled;
+    if (instance)
     {
-        void* p = *(void**)((char*)apObject + 0x30);
+        void* p = *(void**)((char*)instance + 0x30);
         if (p)
         {
             float* f = (float*)*(void**)((char*)p + 0x1c);
@@ -377,6 +386,9 @@ struct FUN_00d532a0_cls
 };
 
 // @fnv 0x00d532a0
+// pdb: bhkConstraintChain::RegisterStreamables | bhkConstraintChain.obj | retail, object-file run extension, low
+// pdb params: arStream
+// pdb locals: pchain, pc, i, pbhkEnt
 void __thiscall FUN_00d532a0_cls::ApplyToAllEntries(int aiValue)
 {
     int* p = this ? *(int**)((char*)this + 8) : 0;
@@ -428,12 +440,14 @@ inline void* hkReferencedObject::operator new(std::size_t nbytes)
     hkMemoryRouter* holder = hkMemoryRouter_getInstance();
     hkReferencedObject* object = static_cast<hkReferencedObject*>(
         reinterpret_cast<hkMemoryAllocator*>(holder->m_heap)->blockAlloc(nbytes));
-    object->m_usMemSizeAndFlags = static_cast<unsigned short>(nbytes);
+    object->m_memSizeAndFlags = static_cast<unsigned short>(nbytes);
     return object;
 }
 
 // Allocates a 0x80-byte SpawnLarge (or 0x30-byte SpawnSmall when a4 is 0) from the holder's allocator, sets its size field and initializes it.
 // @fnv 0x00d41f50
+// pdb: hkpPredGskfAgent::createPredGskfAgent | hkpPredGskfAgent.obj | retail, object-file run extension, low
+// pdb params: bodyA, bodyB, input, mgr
 void* __cdecl CreateSpawnObject(int a1, int a2, int a3, int a4)
 {
     if (a4 != 0)
@@ -525,6 +539,8 @@ class D42800Agent : public hkReferencedObject
 
 // @fnv 0x00d42800
 // src: GUESS 0x00d42800 (confidence: low)
+// pdb: hkpPhantomAgent::createPhantomAgent | hkpPhantomAgent.obj | retail, object-file run extension, low
+// pdb params: bodyA, bodyB, input, contactMgr
 D42800Agent* Object_ProcessAndReturnValue_00d42800(const D42800CdBody& kBodyA, const D42800CdBody& kBodyB, const D42800CollisionInput& kInput,
                           D42800ContactMgr* pkMgr)
 {
@@ -584,6 +600,8 @@ static FNVDispatchNode* FNVTailOf(FNVDispatchNode* n)
 
 // If either node's dispatch type has typeId 0x1d, calls its v11 with the two lists' tails and the code, then returns 0.
 // @fnv 0x00d428d0
+// pdb: hkpPhantomAgent::createNoPhantomAgent | hkpPhantomAgent.obj | retail, object-file run extension, low
+// pdb params: bodyA, bodyB, input, mgr
 int __cdecl DispatchToType1dNodes(FNVDispatchNode* pNodeA, FNVDispatchNode* pNodeB, int iCode)
 {
     if (pNodeA->m_pName->m_typeId == 0x1d)
@@ -608,6 +626,9 @@ void __cdecl nullsub_18();
 
 // @fnv 0x00d42960
 // src: GUESS 0x00d42960 (confidence: low)
+// pdb: hkpPhantomAgent::registerAgent | hkpPhantomAgent.obj | retail, call graph, low
+// pdb params: dispatcher
+// pdb locals: af
 void __cdecl Object_UpdateFields_00d42960(Agent* apAgent)
 {
     CollisionAgentFunctionTable s;
@@ -642,13 +663,16 @@ struct FUN_00d440f0_cls
 extern hkMemoryRouter* __cdecl hkMemoryRouter_getInstance();
 
 // @fnv 0x00d44280
-void __cdecl AllocateAndInitBlock(int a1, int a2, int a3, int a4)
+// src: XBOX_RETAIL_PDB 0x00d44280
+// pdb: hkpShapeCollectionAgent::createListAAgent | hkpShapeCollectionAgent.obj | retail, object-file gap fill, high
+// pdb params: bodyA, bodyB, input, mgr
+void __cdecl hkpShapeCollectionAgent_createListAAgent(int bodyA, int bodyB, int input, int mgr)
 {
     hkMemoryRouter* pHolder = hkMemoryRouter_getInstance();
     hkMemoryAllocator* pAlloc = reinterpret_cast<hkMemoryAllocator*>(pHolder->m_heap);
     FUN_00d440f0_cls* pBlock = (FUN_00d440f0_cls*)pAlloc->blockAlloc(0x38);
     pBlock->unk04 = 0x38;
-    pBlock->FUN_00d440f0(a1, a2, a3, a4);
+    pBlock->FUN_00d440f0(bodyA, bodyB, input, mgr);
 }
 }  // namespace fnv_00d44280
 
@@ -699,8 +723,10 @@ class D442C0ShapeAgent : public D442C0Agent
 
 // Allocates a D442C0ShapeAgent with bodyB, bodyA, input and mgr, and returns it as a D442C0Agent pointer.
 // @fnv 0x00d442c0
-// src: GUESS 0x00d442c0 (confidence: medium)
-D442C0Agent* __cdecl Object_ConstructObject_00d442c0(const void* bodyA, const void* bodyB, const void* input, void* mgr)
+// src: XBOX_RETAIL_PDB 0x00d442c0
+// pdb: hkpShapeCollectionAgent::createListBAgent | hkpShapeCollectionAgent.obj | retail, object-file gap fill, high
+// pdb params: bodyA, bodyB, input, mgr
+D442C0Agent* __cdecl hkpShapeCollectionAgent_createListBAgent(const void* bodyA, const void* bodyB, const void* input, void* mgr)
 {
     return new D442C0ShapeAgent(bodyB, bodyA, input, mgr);
 }
@@ -791,7 +817,7 @@ struct KeyTemp
     unsigned int m_00;
     unsigned int m_04;
     unsigned int m_08;
-    KeyTemp* Init(void* a, void* b);
+    KeyTemp* Init(void* mem, void* memSize);
     void Dispose();
 };
 
@@ -802,16 +828,19 @@ struct KeyTempRef
     void* m_08;
 };
 
-void* __cdecl hkSerializeUtil_loadOnHeap(void* p, void* b, void* c, void* d);
+void* __cdecl hkSerializeUtil_loadOnHeap(void* streamIn, void* errorOut, void* classReg, void* typeReg);
 
 // Initialises a KeyTemp from a1 and a2, calls FUN_00d48fc0 with the stored pointer and a3/a4/a5, disposes the temp and returns the result.
 // @fnv 0x00d491f0
-void* __cdecl InitAndCall(void* volatile a1, void* volatile a2, void* volatile a3, void* volatile a4, void* volatile a5)
+// pdb: hkSerializeUtil::loadOnHeap | hkSerializeUtil.obj | retail, object-file gap fill, high
+// pdb params: streamIn, errorOut, classReg, typeReg
+// pdb locals: details, world, assertBuf, ostr
+void* __cdecl InitAndCall(void* volatile buf, void* volatile buflen, void* volatile errorOut, void* volatile classReg, void* volatile typeReg)
 {
     KeyTemp keyTemp;
-    KeyTempRef* r = (KeyTempRef*)keyTemp.Init(a1, a2);
+    KeyTempRef* r = (KeyTempRef*)keyTemp.Init(buf, buflen);
     void* p = r->m_08;
-    void* result = hkSerializeUtil_loadOnHeap(p, a3, a4, a5);
+    void* result = hkSerializeUtil_loadOnHeap(p, errorOut, classReg, typeReg);
     keyTemp.Dispose();
     return result;
 }
@@ -825,13 +854,13 @@ int* __cdecl Object_GetGlobalObjectAddress_00d49520()
     return &DAT_01268bcc;
 }
 
-extern int DAT_01268c14;
+extern int hkpStorageSampledHeightFieldShapeClass; // src: XBOX_RETAIL_PDB 0x01268c14 (old: DAT_01268c14/g_01268c14)
 
 // @fnv 0x00d49590
 // src: GUESS 0x00d49590 (confidence: low)
 int __cdecl Runtime_EvaluateValue_00d49590()
 {
-    return (int)&DAT_01268c14;
+    return (int)&hkpStorageSampledHeightFieldShapeClass;
 }
 
 extern int DAT_010cfb34;
@@ -938,6 +967,8 @@ struct FUN_00d49c50_cls
 // Calls FUN_00d569c0, sets both vtables, and initializes the six fields at offsets 0xF0-0x104, returning this.
 // @fnv 0x00d49c50
 // src: HAVOK_LIB 0x00d49c50
+// pdb: hkpStorageExtendedMeshShape::hkpStorageExtendedMeshShape | hkpStorageExtendedMeshShape.obj | retail, object-file run extension, low
+// pdb params: radius, numbits
 void* FUN_00d49c50_cls::hkpStorageExtendedMeshShape_hkpStorageExtendedMeshShape(float afValue, int i)
 {
     FUN_00d569c0(afValue, i);
@@ -952,13 +983,13 @@ void* FUN_00d49c50_cls::hkpStorageExtendedMeshShape_hkpStorageExtendedMeshShape(
     return this;
 }
 
-extern "C" int DAT_01268c8c;
+extern "C" int hkpStorageExtendedMeshShapeMaterialClass; // src: XBOX_RETAIL_PDB 0x01268c8c (old: DAT_01268c8c/g_01268c8c/g_kHkpMeshMaterialClass)
 
 // @fnv 0x00d4b160
 // src: GUESS 0x00d4b160 (confidence: low)
 extern "C" void* __cdecl Object_GetGlobalObjectAddress_00d4b160()
 {
-    return &DAT_01268c8c;
+    return &hkpStorageExtendedMeshShapeMaterialClass;
 }
 
 struct S_00d4b170
@@ -973,13 +1004,13 @@ void __cdecl Runtime_ProcessState_00d4b170(S_00d4b170* pTarget, int a)
         pTarget->SetVptr_00d4a170(a);
 }
 
-extern int DAT_01268cbc;
+extern int hkpStorageExtendedMeshShapeMeshSubpartStorageClass; // src: XBOX_RETAIL_PDB 0x01268cbc (old: DAT_01268cbc/g_01268cbc)
 
 // @fnv 0x00d4b1c0
 // src: GUESS 0x00d4b1c0 (confidence: low)
 void* __cdecl Object_GetGlobalObjectAddress_00d4b1c0()
 {
-    return &DAT_01268cbc;
+    return &hkpStorageExtendedMeshShapeMeshSubpartStorageClass;
 }
 
 struct S_00d49c40
@@ -994,13 +1025,13 @@ void __cdecl Object_ProcessState_00d4b1d0(S_00d49c40* pObject, int a)
         pObject->SetVirtualTable_00d49c40(a);
 }
 
-extern int DAT_01268d04;
+extern int hkpStorageExtendedMeshShapeShapeSubpartStorageClass; // src: XBOX_RETAIL_PDB 0x01268d04 (old: DAT_01268d04/g_01268d04)
 
 // @fnv 0x00d4b220
 // src: GUESS 0x00d4b220 (confidence: low)
 int __cdecl Object_ComputeValue_00d4b220()
 {
-    return reinterpret_cast<int>(&DAT_01268d04);
+    return reinterpret_cast<int>(&hkpStorageExtendedMeshShapeShapeSubpartStorageClass);
 }
 
 // Forwarding helper: if the object pointer is valid, pass the second
@@ -1018,12 +1049,12 @@ void __cdecl Runtime_ProcessState_00d4b230(FUN_00d4a180_cls* pTarget, int aiValu
         pTarget->FUN_00d4a180(aiValue);
 }
 
-extern int DAT_01268d4c;
+extern int hkpStorageExtendedMeshShapeClass; // src: XBOX_RETAIL_PDB 0x01268d4c (old: DAT_01268d4c/g_01268d4c)
 // @fnv 0x00d4b280
 // src: GUESS 0x00d4b280 (confidence: low)
 int* __cdecl Object_GetGlobalObjectAddress_00d4b280()
 {
-    return &DAT_01268d4c;
+    return &hkpStorageExtendedMeshShapeClass;
 }
 
 extern int DAT_01268d94;
@@ -1034,12 +1065,12 @@ void* __cdecl Object_GetGlobalObjectAddress_00d4b2a0()
     return &DAT_01268d94;
 }
 
-extern unsigned char DAT_01268dc4;
+extern unsigned char hkpExtendedMeshShapeTrianglesSubpartClass; // src: XBOX_RETAIL_PDB 0x01268dc4 (old: DAT_01268dc4/g_01268dc4)
 // @fnv 0x00d4b2c0
 // src: GUESS 0x00d4b2c0 (confidence: low)
 void* __cdecl Object_GetGlobalObjectAddress_00d4b2c0()
 {
-    return &DAT_01268dc4;
+    return &hkpExtendedMeshShapeTrianglesSubpartClass;
 }
 
 // Null-guarded forwarder: the first argument is an object pointer; when it
@@ -1048,7 +1079,7 @@ void* __cdecl Object_GetGlobalObjectAddress_00d4b2c0()
 class FUN_00d4b2d0_cls
 {
   public:
-    void hkpExtendedMeshShape_ShapesSubpart_ShapesSubpart(int a1);
+    void hkpExtendedMeshShape_ShapesSubpart_ShapesSubpart(int flag);
 };
 
 // @fnv 0x00d4b2d0
@@ -1061,13 +1092,13 @@ void __cdecl hkpExtendedMeshShape_ShapesSubpart_ShapesSubpart_ProcessState_00d4b
     }
 }
 
-extern int DAT_01268df4;
+extern int hkpExtendedMeshShapeShapesSubpartClass; // src: XBOX_RETAIL_PDB 0x01268df4 (old: DAT_01268df4/g_01268df4)
 
 // @fnv 0x00d4b2f0
 // src: GUESS 0x00d4b2f0 (confidence: low)
 void* __cdecl Runtime_GetDAT01268df4Address()
 {
-    return &DAT_01268df4;
+    return &hkpExtendedMeshShapeShapesSubpartClass;
 }
 
 // Null-guarded forwarder: the first argument is an object pointer; when it
@@ -1170,6 +1201,8 @@ struct FUN_00d4b3c0_cls
 
 // @fnv 0x00d4b3c0
 // src: HAVOK_LIB 0x00d4b3c0
+// pdb: hkpStorageMeshShape::hkpStorageMeshShape | hkpStorageMeshShape.obj | retail, object-file run extension, low
+// pdb params: radius, numbits
 void* FUN_00d4b3c0_cls::hkpStorageMeshShape_hkpStorageMeshShape(float afValue, int aiValue)
 {
     FUN_00dcd310(afValue, aiValue);
@@ -1195,13 +1228,13 @@ void Runtime_ProcessState_00d4be30(D4BE30World* pkWorld, void* pvEntity)
         pkWorld->UpdateEntity(pvEntity);
 }
 
-extern int DAT_01268e6c;
+extern int hkpStorageMeshShapeSubpartStorageClass; // src: XBOX_RETAIL_PDB 0x01268e6c (old: DAT_01268e6c/g_01268e6c)
 
 // @fnv 0x00d4be80
 // src: GUESS 0x00d4be80 (confidence: low)
 int* Object_GetGlobalObjectAddress_00d4be80()
 {
-    return &DAT_01268e6c;
+    return &hkpStorageMeshShapeSubpartStorageClass;
 }
 
 struct FUN_00d4ba30_class
@@ -1217,22 +1250,22 @@ void __cdecl Object_ProcessState_00d4be90(FUN_00d4ba30_class* pObject, int value
         pObject->FUN_00d4ba30(value);
 }
 
-extern int g_unk01268eb4;
+extern int hkpStorageMeshShapeClass; // src: XBOX_RETAIL_PDB 0x01268eb4 (old: g_01268eb4/g_unk01268eb4)
 
 // @fnv 0x00d4bee0
 // src: GUESS 0x00d4bee0 (confidence: low)
 void* __cdecl Object_GetGlobalObjectAddress_00d4bee0()
 {
-    return &g_unk01268eb4;
+    return &hkpStorageMeshShapeClass;
 }
 
-extern int g_unk01268efc;
+extern int hkpMeshShapeSubpartClass; // src: XBOX_RETAIL_PDB 0x01268efc (old: g_01268efc/g_unk01268efc)
 
 // @fnv 0x00d4bf00
 // src: GUESS 0x00d4bf00 (confidence: low)
 void* __cdecl Object_GetGlobalObjectAddress_00d4bf00()
 {
-    return &g_unk01268efc;
+    return &hkpMeshShapeSubpartClass;
 }
 
 struct D4BF10FinishFlag
@@ -1410,6 +1443,8 @@ struct FUN_00d4ce60 : S_00d4ce60_Base
     ~FUN_00d4ce60() throw();
 };
 // @fnv 0x00d4ce60
+// pdb: hkpCachingShapePhantom::~hkpCachingShapePhantom | hkpCachingShapePhantom.obj | retail, object-file gap fill, high
+// pdb locals: constraintOwner
 FUN_00d4ce60::~FUN_00d4ce60() throw()
 {
     S_00d4ce60_Msg msg;
@@ -1437,13 +1472,15 @@ struct FnvCpu_FUN_00d4de00_CpuObject
 {
     unsigned int unk00;
     unsigned short size;
-    void ReleaseReferencedObjectsAndLock();
+    void hkpBinaryAction_dtor();
     FnvCpu_FUN_00d4de00_CpuObject* FUN_00d4de00(unsigned int flags);
 };
 // @fnv 0x00d4de00
+// pdb: hkpSpringAction::`scalar deleting destructor' | hkpSpringAction.obj | retail, vtable slot, high
+// pdb params: this
 FnvCpu_FUN_00d4de00_CpuObject* FnvCpu_FUN_00d4de00_CpuObject::FUN_00d4de00(unsigned int flags)
 {
-    ReleaseReferencedObjectsAndLock();
+    hkpBinaryAction_dtor();
     if (flags & 1)
     {
         hkMemoryRouter* holder = hkMemoryRouter_getInstance();
@@ -1472,6 +1509,8 @@ class FUN_00d50020 : public FUN_00d50020_base
 
 // Calls unk08() on this object and decrements the global counter DAT_01268f74.
 // @fnv 0x00d50020
+// pdb: bhkGenericConstraint::~bhkGenericConstraint | bhkGenericConstraint.obj | retail, object-file run extension, low
+// pdb note: debug build links it to hkGenericConstraintCinfo::CreateData
 FUN_00d50020::~FUN_00d50020()
 {
     this->unk08();
@@ -1579,7 +1618,7 @@ struct DataObject : DataIntermediate
 
 struct DataFactory
 {
-    void bhkConstraint_CopyMembers(DataObject* object, int id);
+    void bhkConstraint_CopyMembers(DataObject* pDest, int arCloneData);
     DataObject* bhkGenericConstraint_Clone(int id);
 };
 
@@ -1624,6 +1663,8 @@ class FUN_00d51720_cls
 
 // Stores the helper pointer, its Query() result in m_04, and zeroes m_08, m_0c and the trailing byte fields.
 // @fnv 0x00d51720
+// pdb: hkpConstraintConstructionKit::begin | hkpConstraintConstructionKit.obj | debug, object-file run extension, low
+// pdb params: constraint
 void FUN_00d51720_cls::InitFromHelper(void* pHelper)
 {
     m_04 = reinterpret_cast<FUN_00d51720_helper*>(pHelper)->Query();
@@ -1658,10 +1699,13 @@ struct D51760Stats
 
 // @fnv 0x00d51760
 // src: HAVOK_LIB 0x00d51760
-void __cdecl hkpConstraintConstructionKit_computeConstraintInfo(D51760Buffer* buf, D51760Stats* stats)
+// pdb: hkpConstraintConstructionKit::computeConstraintInfo | hkpConstraintConstructionKit.obj | debug, upstream name already matches, high
+// pdb params: commands, info
+// pdb locals: assertBuf, ostr
+void __cdecl hkpConstraintConstructionKit_computeConstraintInfo(D51760Buffer* commands, D51760Stats* info)
 {
-    unsigned int* p = buf->data;
-    unsigned int* end = p + buf->count;
+    unsigned int* p = commands->data;
+    unsigned int* end = p + commands->count;
     while (p < end)
     {
         switch (*p)
@@ -1670,73 +1714,73 @@ void __cdecl hkpConstraintConstructionKit_computeConstraintInfo(D51760Buffer* bu
             return;
         case 6:
             p++;
-            stats->bytes += 0x30;
-            stats->unk08 += 1;
-            stats->unk0C += 1;
+            info->bytes += 0x30;
+            info->unk08 += 1;
+            info->unk0C += 1;
             break;
         case 7:
-            stats->bytes += 0x90;
-            stats->unk08 += 3;
-            stats->unk0C += 3;
+            info->bytes += 0x90;
+            info->unk08 += 3;
+            info->unk0C += 3;
             break;
         case 12:
             p++;
-            stats->bytes += 0x60;
-            stats->unk08 += 2;
-            stats->unk0C += 2;
+            info->bytes += 0x60;
+            info->unk08 += 2;
+            info->unk0C += 2;
             break;
         case 13:
-            stats->bytes += 0x90;
-            stats->unk08 += 3;
-            stats->unk0C += 3;
+            info->bytes += 0x90;
+            info->unk08 += 3;
+            info->unk0C += 3;
             break;
         case 16:
             p++;
-            stats->bytes += 0x40;
-            stats->unk08 += 1;
-            stats->unk0C += 1;
+            info->bytes += 0x40;
+            info->unk08 += 1;
+            info->unk0C += 1;
             break;
         case 17:
             p++;
-            stats->bytes += 0x30;
-            stats->unk08 += 1;
-            stats->unk0C += 1;
+            info->bytes += 0x30;
+            info->unk08 += 1;
+            info->unk0C += 1;
             break;
         case 18:
             p++;
-            stats->bytes += 0x30;
-            stats->unk08 += 1;
-            stats->unk0C += 1;
+            info->bytes += 0x30;
+            info->unk08 += 1;
+            info->unk0C += 1;
             break;
         case 19:
             p += 2;
-            stats->bytes += 0x30;
-            stats->unk08 += 1;
-            stats->unk0C += 1;
+            info->bytes += 0x30;
+            info->unk08 += 1;
+            info->unk0C += 1;
             break;
         case 14:
             p++;
-            stats->bytes += 0x40;
-            stats->unk08 += 1;
-            stats->unk0C += 3;
+            info->bytes += 0x40;
+            info->unk08 += 1;
+            info->unk0C += 3;
             break;
         case 15:
             p++;
-            stats->bytes += 0x50;
-            stats->unk08 += 1;
-            stats->unk0C += 3;
+            info->bytes += 0x50;
+            info->unk08 += 1;
+            info->unk0C += 3;
             break;
         case 20:
             p++;
-            stats->bytes += 0x30;
-            stats->unk08 += 1;
-            stats->unk0C += 2;
+            info->bytes += 0x30;
+            info->unk08 += 1;
+            info->unk0C += 2;
             break;
         case 21:
             p++;
-            stats->bytes += 0x40;
-            stats->unk08 += 1;
-            stats->unk0C += 2;
+            info->bytes += 0x40;
+            info->unk08 += 1;
+            info->unk0C += 2;
             break;
         case 3:
         case 4:
@@ -1758,7 +1802,7 @@ struct FUN_00d51b30_arr
 };
 
 hkMemoryRouter* __cdecl hkMemoryRouter_getInstance();
-void __cdecl ResizeAudioStream(void* alloc, FUN_00d51b30_arr* arr, int n);
+void __cdecl ResizeAudioStream(void* mem, FUN_00d51b30_arr* array, int sizeElem);
 
 struct FUN_00d51b30_obj
 {
@@ -1780,6 +1824,9 @@ struct FUN_00d51b30_cls
 };
 
 // @fnv 0x00d51b30
+// pdb: hkpConstraintConstructionKit::constrainLinearDof | hkpConstraintConstructionKit.obj | retail, object-file run extension, low
+// pdb params: axis
+// pdb locals: assertBuf, ostr
 void FUN_00d51b30_cls::AppendTwoIntsAndAdvance(int aiValue)
 {
     FUN_00d51b30_arr* arr = &m_pEntryObject->m_1c;
@@ -1816,7 +1863,7 @@ void FUN_00d51b30_cls::AppendTwoIntsAndAdvance(int aiValue)
 namespace fnv_00d51e50 {
 
 hkMemoryRouter* __cdecl hkMemoryRouter_getInstance() throw();
-void __cdecl ResizeAudioStream(void* apAllocator, void* apVec, int aElemSize);
+void __cdecl ResizeAudioStream(void* mem, void* array, int sizeElem);
 
 struct FUN_00d51e50_vec
 {
@@ -1853,6 +1900,7 @@ class FUN_00d51e50_cls
 
 // @fnv 0x00d51e50
 // src: HAVOK_LIB 0x00d51e50
+// pdb: hkpConstraintConstructionKit::setAngularBasisABodyFrame | hkpConstraintConstructionKit.obj | retail, upstream name already matches, high
 void FUN_00d51e50_cls::hkpConstraintConstructionKit_setAngularBasisABodyFrame()
 {
     FUN_00d51e50_vec* pVec = &m_04->m_1c;
@@ -1889,7 +1937,7 @@ struct S_00d51f90_Arr
     int m_iElementCount;
     int m_cap;
 };
-void ResizeAudioStream(S_00d51f90_Heap* heap, S_00d51f90_Arr* arr, int elemSize);
+void ResizeAudioStream(S_00d51f90_Heap* mem, S_00d51f90_Arr* array, int sizeElem);
 struct S_00d51f90_Info
 {
     int unk00;
@@ -1905,10 +1953,13 @@ struct S_00d51f90_Obj
 {
     int unk00;
     S_00d51f90_Info* m_info;
-    void AppendEntryAndAdvance();
+    void hkpConstraintConstructionKit_constrainAllAngularDof();
 };
 // @fnv 0x00d51f90
-void S_00d51f90_Obj::AppendEntryAndAdvance()
+// src: XBOX_RETAIL_PDB 0x00d51f90
+// pdb: hkpConstraintConstructionKit::constrainAllAngularDof | hkpConstraintConstructionKit.obj | retail, object-file gap fill, high
+// pdb locals: assertBuf, ostr
+void S_00d51f90_Obj::hkpConstraintConstructionKit_constrainAllAngularDof()
 {
     S_00d51f90_Arr* a = &m_info->m_aiIndexedValues;
     S_00d51f90_Router* r = hkMemoryRouter_getInstance();
@@ -1957,7 +2008,7 @@ struct D52BA0MemoryRouter
 };
 
 extern "C" D52BA0MemoryRouter& __cdecl hkMemoryRouter_getInstance();
-void __cdecl ResizeAudioStream(void* alloc, void* array, int sizeElem);
+void __cdecl ResizeAudioStream(void* mem, void* array, int sizeElem);
 
 static __forceinline void D52BA0IntArray_construct(int* p, int n, const int& e);
 
@@ -2009,6 +2060,7 @@ class D52BA0Builder
 // Decrements m_iDepth and appends command 0x17 to m_pkCommands->m_commands.
 // @fnv 0x00d52ba0
 // src: HAVOK_LIB 0x00d52ba0
+// pdb: hkpConstraintConstructionKit::restoreStrength | hkpConstraintConstructionKit.obj | retail, upstream name already matches, high
 void D52BA0Builder::hkpConstraintConstructionKit_restoreStrength()
 {
     m_iDepth--;
@@ -2020,7 +2072,7 @@ namespace fnv_00d52be0 {
 extern "C" void _ReadWriteBarrier(void);
 
 hkMemoryRouter* __cdecl hkMemoryRouter_getInstance() throw();
-void __cdecl ResizeAudioStream(void* pAllocator, void* pArray, unsigned int auiNewSize) throw();
+void __cdecl ResizeAudioStream(void* mem, void* array, unsigned int sizeElem) throw();
 
 struct FUN_00d52be0_arr
 {
@@ -2047,13 +2099,15 @@ struct FUN_00d52be0_cls
     int unk00;
     FUN_00d52be0_S* m_pS;
 
-    void hkpConstraintConstructionKit_addConstraintModifierCallback(int a1, int a2);
+    void hkpConstraintConstructionKit_addConstraintModifierCallback(int cm, int userData);
 };
 
 // Appends 0x18, a1 and a2 to the two arrays in m_pS, growing each array via ResizeAudioStream when it is full.
 // @fnv 0x00d52be0
 // src: HAVOK_LIB 0x00d52be0
-void FUN_00d52be0_cls::hkpConstraintConstructionKit_addConstraintModifierCallback(int aiFirstValue, int aiSecondValue)
+// pdb: hkpConstraintConstructionKit::addConstraintModifierCallback | hkpConstraintConstructionKit.obj | retail, upstream name already matches, high
+// pdb params: cm, userData
+void FUN_00d52be0_cls::hkpConstraintConstructionKit_addConstraintModifierCallback(int cm, int userData)
 {
     FUN_00d52be0_arr* arr = &m_pS->m_arr1c;
     hkMemoryRouter* holder = hkMemoryRouter_getInstance();
@@ -2074,7 +2128,7 @@ void FUN_00d52be0_cls::hkpConstraintConstructionKit_addConstraintModifierCallbac
     }
     int* slot1 = (int*)((unsigned int)arr->data + (unsigned int)arr->count * 4);
     _ReadWriteBarrier();
-    *slot1 = aiFirstValue;
+    *slot1 = cm;
     arr->count++;
 
     arr = &m_pS->m_arr1c;
@@ -2085,7 +2139,7 @@ void FUN_00d52be0_cls::hkpConstraintConstructionKit_addConstraintModifierCallbac
     }
     int* slot2 = (int*)((unsigned int)arr->data + (unsigned int)arr->count * 4);
     _ReadWriteBarrier();
-    *slot2 = aiSecondValue;
+    *slot2 = userData;
     arr->count++;
 }
 }  // namespace fnv_00d52be0
@@ -2100,7 +2154,7 @@ struct PairList
 };
 
 hkMemoryRouter* hkMemoryRouter_getInstance();
-void ResizeAudioStream(void* allocator, PairList* list, unsigned int elemSize);
+void ResizeAudioStream(void* mem, PairList* array, unsigned int sizeElem);
 
 struct SubOwner
 {
@@ -2119,12 +2173,14 @@ struct FUN_00d52ca0_cls
     int unk00;
     SubOwner* m_pSub;
 
-    void AppendZeroItem();
+    void hkpConstraintConstructionKit_end();
 };
 
 // Appends a zero element to m_pSub->m_items, growing the list via ResizeAudioStream when it is full, then increments the count.
 // @fnv 0x00d52ca0
-void FUN_00d52ca0_cls::AppendZeroItem()
+// src: XBOX_RETAIL_PDB 0x00d52ca0
+// pdb: hkpConstraintConstructionKit::end | hkpConstraintConstructionKit.obj | retail, call graph, high
+void FUN_00d52ca0_cls::hkpConstraintConstructionKit_end()
 {
     PairList* items = &m_pSub->m_items;
     hkMemoryRouter* holder = hkMemoryRouter_getInstance();
@@ -2169,6 +2225,8 @@ struct FUN_00d53220 : FUN_00c89640
 };
 
 // @fnv 0x00d53220
+// pdb: bhkConstraintChain::~bhkConstraintChain | bhkConstraintChain.obj | retail, object-file run extension, low
+// pdb note: debug build links it to bhkGenericConstraint::~bhkGenericConstraint
 FUN_00d53220::~FUN_00d53220()
 {
     bhkSerializable_Kill();
@@ -2201,12 +2259,15 @@ struct S_00d532f0_Class
     int unk04;
     S_00d532f0_Data* unk08;
 
-    bool __thiscall IsEqualWithValues(S_00d532f0_Class* p);
+    bool __thiscall IsEqualWithValues(S_00d532f0_Class* apObject);
     bool __thiscall CompareData(S_00d532f0_Class* p);
 };
 
 // Calls IsEqualWithValues, then compares the unk3c counts and each of the unk38 entries of this's and p's unk08 data, returning whether all match.
 // @fnv 0x00d532f0
+// pdb: bhkConstraintChain::IsEqual | bhkConstraintChain.obj | retail, object-file run extension, low
+// pdb params: apObject
+// pdb locals: bres, po, phko, pobj, i
 bool S_00d532f0_Class::CompareData(S_00d532f0_Class* apOther)
 {
     bool result = IsEqualWithValues(apOther);
@@ -2448,22 +2509,25 @@ class D53360Owner
     D53360Entry** m_ppkEntries;
     unsigned int m_uiCount;
 
-    void hkConstraintCinfo_SaveBinary(D53360Stream& kStream);
-    void hkConstraintChainCinfo_SaveBinary(D53360Stream& kStream);
+    void hkConstraintCinfo_SaveBinary(D53360Stream& arStream);
+    void hkConstraintChainCinfo_SaveBinary(D53360Stream& arStream);
 };
 
 // @fnv 0x00d53360
 // src: XBOX_PDB 0x00d53360
-void D53360Owner::hkConstraintChainCinfo_SaveBinary(D53360Stream& kStream)
+// pdb: hkConstraintChainCinfo::SaveBinary | bhkConstraintChain.obj | retail, upstream name already matches, high
+// pdb params: arStream
+// pdb locals: uiNumEntities, ui, pbhkEnt
+void D53360Owner::hkConstraintChainCinfo_SaveBinary(D53360Stream& arStream)
 {
     unsigned int ItemUpdateArray = m_uiCount;
-    D53360SaveBinary(kStream, ItemUpdateArray);
+    D53360SaveBinary(arStream, ItemUpdateArray);
     for (unsigned int i = 0; i < ItemUpdateArray; i++)
     {
         D53360Entry* pkEntry = m_ppkEntries[i];
-        kStream.SaveLinkID(pkEntry ? pkEntry->m_pPointer : 0);
+        arStream.SaveLinkID(pkEntry ? pkEntry->m_pPointer : 0);
     }
-    hkConstraintCinfo_SaveBinary(kStream);
+    hkConstraintCinfo_SaveBinary(arStream);
 }
 
 namespace fnv_00d57120 {
@@ -2478,6 +2542,7 @@ struct FnvCpu_FUN_00d57120_CpuObject
 };
 // @fnv 0x00d57120
 // src: COMMUNITY 0x00d57120
+// pdb: hkpExtendedMeshShape::`scalar deleting destructor' | hkpExtendedMeshShape.obj | retail, vtable slot, high
 FnvCpu_FUN_00d57120_CpuObject* FnvCpu_FUN_00d57120_CpuObject::hkpExtendedMeshShape_Destroy(unsigned int flags)
 {
     ReleaseMeshArrays();
@@ -2591,6 +2656,7 @@ struct FUN_00d51ea0_Cls
 // Appends a zeroed entry to the inner vector (growing it if full), sets it to 0xb, increments the count, sets m_b17 and returns true.
 // @fnv 0x00d51ea0
 // src: HAVOK_LIB 0x00d51ea0
+// pdb: hkpConstraintConstructionKit::setAngularBasisBBodyFrame | hkpConstraintConstructionKit.obj | retail, upstream name already matches, high
 bool FUN_00d51ea0_Cls::hkpConstraintConstructionKit_setAngularBasisBBodyFrame()
 {
     FUN_00d51ea0_Vec* vec = &m_pInner->m_vec1c;
@@ -2832,11 +2898,14 @@ struct FUN_00d536a0_shell
     char pad04[4];
     ListD53* m_pkList;
 
-    bool UpdateConstraintEntries(ParamD53* pkParam, bool bAdd);
+    bool UpdateConstraintEntries(ParamD53* apWorld, bool abAdd);
 };
 
 // @fnv 0x00d536a0
-bool FUN_00d536a0_shell::UpdateConstraintEntries(ParamD53* pkParam, bool bAdd)
+// pdb: bhkConstraintChain::ProcessEntities | bhkConstraintChain.obj | retail, string-set bridge, high
+// pdb params: apWorld, abAdd
+// pdb locals: bres, pchain, tempMemContext, pc, i, peb, pe, fltb, pea, flta, assertBuf, ostr
+bool FUN_00d536a0_shell::UpdateConstraintEntries(ParamD53* apWorld, bool abAdd)
 {
     AutoMemContext kContext(0x10);
     bool bResult = false;
@@ -2844,13 +2913,13 @@ bool FUN_00d536a0_shell::UpdateConstraintEntries(ParamD53* pkParam, bool bAdd)
     for (int i = 0; i < pkList->m_iArrayLength; i++)
     {
         EntryD53* pkEntry = pkList->m_ppkEntries[i];
-        if (bAdd)
+        if (abAdd)
         {
             ConstraintD53* pkConstraint;
             if (!pkEntry || !(pkConstraint = pkEntry->m_pkConstraint))
             {
                 bResult = true;
-                v050(GetEntityD53(pkParam->v037()));
+                v050(GetEntityD53(apWorld->v037()));
                 continue;
             }
             HolderD53* pkHolder = pkConstraint->m_pkHolder;
@@ -2869,9 +2938,9 @@ bool FUN_00d536a0_shell::UpdateConstraintEntries(ParamD53* pkParam, bool bAdd)
                 unsigned int uiLayer = (unsigned short)pkEntry->m_uiFilterInfo;
                 pkEntry->m_uiFilterInfo = (uiInfo & 0xffff0000) | uiLayer;
             }
-            if (pkParam->m_uiCount <= 0)
+            if (apWorld->m_uiCount <= 0)
             {
-                pkConstraint->v039(pkParam);
+                pkConstraint->v039(apWorld);
                 if (!pkConstraint->v037() && !(pkConstraint->m_ucFlags & 0x30))
                 {
                     {
@@ -2884,13 +2953,13 @@ bool FUN_00d536a0_shell::UpdateConstraintEntries(ParamD53* pkParam, bool bAdd)
                                               "D:\\_Fallout3\\Platforms\\Common\\Code\\BSHavok\\bhkConstraintChain.cpp",
                                               0x168);
                     }
-                    pkConstraint->v050(pkParam);
+                    pkConstraint->v050(apWorld);
                 }
             }
         }
         else
         {
-            if (pkEntry == GetEntityD53(pkParam->v037()))
+            if (pkEntry == GetEntityD53(apWorld->v037()))
                 v050(0);
         }
     }
@@ -2934,7 +3003,7 @@ struct D53970HeapAlloc
 };
 static __forceinline int D53970Array_GetCapacity(hkArrayBase<int>& self);
 
-void __cdecl hkArrayUtil__reserve(D53970Alloc* alloc, hkArrayBase<int>* arr, int n, int elemSize);
+void __cdecl hkArrayUtil__reserve(D53970Alloc* mem, hkArrayBase<int>* array, int numElem, int sizeElem);
 static __forceinline void D53970Array_Reserve(hkArrayBase<int>& self, D53970Alloc& alloc, int n);
 
 static __forceinline void D53970Array_SetSizeA(hkArrayBase<int>& self, D53970Alloc& alloc, int n);
@@ -2967,7 +3036,7 @@ static __forceinline void D53970Array_SetSize(hkArrayBase<int>& self, int n)
         D53970Array_SetSizeA(self, D53970HeapAlloc().Get(), n);
     }
 
-void __cdecl hkArrayUtil__reserve(D53970Alloc* alloc, hkArrayBase<int>* arr, int n, int elemSize);
+void __cdecl hkArrayUtil__reserve(D53970Alloc* mem, hkArrayBase<int>* array, int numElem, int sizeElem);
 
 struct D53970BaseA
 {
@@ -3032,11 +3101,14 @@ struct D53970Obj
     virtual void v43();
     virtual void v44();
     virtual D53970BaseB* GetData(int* out);
-    void bhkConstraint_LinkObject(D53970Stream* stream);
+    void bhkConstraint_LinkObject(D53970Stream* arStream);
     void ReadDataArray(D53970Stream* stream);
 };
 
 // @fnv 0x00d53970
+// pdb: bhkConstraintChain::LinkObject | bhkConstraintChain.obj | retail, object-file run extension, low
+// pdb params: arStream
+// pdb locals: uinumLinks, tempMemContext, cinfo, ui, pbhkEnt
 void D53970Obj::ReadDataArray(D53970Stream* stream)
 {
     AutoMemContext scope(16);
@@ -3109,14 +3181,18 @@ struct Owner
 {
     int unk;
     Writer* m_pkWriter;
-    void AppendPairAndAdvance(int v);
+    void hkpConstraintConstructionKit_constrainToAngularDof(int axis);
 };
 // Appends 0xc and v to the writer's int array, then calls Add twice to advance the writer's counters and byte count.
 // @fnv 0x00d51ef0
-void Owner::AppendPairAndAdvance(int aiValue)
+// src: XBOX_RETAIL_PDB 0x00d51ef0
+// pdb: hkpConstraintConstructionKit::constrainToAngularDof | hkpConstraintConstructionKit.obj | retail, object-file gap fill, high
+// pdb params: axis
+// pdb locals: assertBuf, ostr
+void Owner::hkpConstraintConstructionKit_constrainToAngularDof(int axis)
 {
     AddBack(m_pkWriter->m_kArr, 0xc);
-    AddBack(m_pkWriter->m_kArr, aiValue);
+    AddBack(m_pkWriter->m_kArr, axis);
     m_pkWriter->Add();
     m_pkWriter->Add();
 }
@@ -3241,13 +3317,15 @@ class hkEntryListD46E
 {
   public:
     int SumListValues() const;
-    hkNamedEntryD46E* hkClass_getEnum(int i);
+    hkNamedEntryD46E* hkClass_getEnum(int enumIndex);
 
     hkNamedEntryD46E* FindByName(int iName);
 };
 
 // Scans the entries and returns the first whose m_name matches iName via FUN_00cb0fa0, or null if none match.
 // @fnv 0x00d46e90
+// pdb: hkClass::getEnumByName | hkClass.obj | debug, object-file run extension, low
+// pdb params: name
 hkNamedEntryD46E* hkEntryListD46E::FindByName(int iName)
 {
     for (int i = 0; i < SumListValues(); i++)
@@ -3315,13 +3393,13 @@ void __cdecl Object_ProcessState_00d47f40(FUN_00d48300_Obj* obj, int aiValue)
 }
 
 class GlobalObjectO2_00d472a0;
-extern GlobalObjectO2_00d472a0 g_01268b24;
+extern GlobalObjectO2_00d472a0 hkRootLevelContainerNamedVariantClass; // src: XBOX_RETAIL_PDB 0x01268b24 (old: g_01268b24)
 
 // @fnv 0x00d47f60
 // src: GUESS 0x00d47f60 (confidence: low)
 GlobalObjectO2_00d472a0* __cdecl Object_GetGlobalObjectAddress_00d47f60()
 {
-    return &g_01268b24;
+    return &hkRootLevelContainerNamedVariantClass;
 }
 
 struct FnvCpu_FUN_00d47f70_CpuTarget
@@ -3337,12 +3415,12 @@ void __cdecl Runtime_ProcessState_00d47f70(FnvCpu_FUN_00d47f70_CpuTarget* pCpuTa
 }
 
 struct CpuOpaque;
-extern CpuOpaque DAT_01268b54;
+extern CpuOpaque hkRootLevelContainerClass; // src: XBOX_RETAIL_PDB 0x01268b54 (old: DAT_01268b54/g_01268b54)
 // @fnv 0x00d47f90
 // src: GUESS 0x00d47f90 (confidence: low)
 CpuOpaque* __cdecl Runtime_GetDAT01268b54Address()
 {
-    return &DAT_01268b54;
+    return &hkRootLevelContainerClass;
 }
 
 struct Sh00cb0c00
@@ -3387,7 +3465,7 @@ FUN_00d48320::FUN_00d48320(FinishingFlag flag)
 class FUN_00dcc160_cls
 {
   public:
-    FUN_00dcc160_cls* InitFromValue(void* pvSource);
+    FUN_00dcc160_cls* hkIstream_ctor(void* fname);
     void SetVirtualTable_00dcc160();
 
     int m_iUnk00;
@@ -3397,11 +3475,14 @@ class FUN_00dcc160_cls
 
 // @fnv 0x00d491b0
 // src: XBOX_PDB 0x00d491b0
-void* __cdecl hkSerializeUtil_loadOnHeap_00d491b0(void* pvSource, void* pvArg, void* pvArgCur, void* kvArg)
+// pdb: hkSerializeUtil::loadOnHeap | hkSerializeUtil.obj | retail, object-file gap fill, high
+// pdb params: streamIn, errorOut, classReg, typeReg
+// pdb locals: details, world, assertBuf, ostr
+void* __cdecl hkSerializeUtil_loadOnHeap_00d491b0(void* filename, void* errorOut, void* classReg, void* typeReg)
 {
     FUN_00dcc160_cls kData;
-    void* pvData = kData.InitFromValue(pvSource)->m_pResource;
-    void* pvResult = hkSerializeUtil_loadOnHeap(pvData, pvArg, pvArgCur, kvArg);
+    void* pvData = kData.hkIstream_ctor(filename)->m_pResource;
+    void* pvResult = hkSerializeUtil_loadOnHeap(pvData, errorOut, classReg, typeReg);
     kData.SetVirtualTable_00dcc160();
     return pvResult;
 }
@@ -3436,10 +3517,12 @@ void nullsub_100()
 void nullsub_102()
 {}
 
-void __cdecl hkConstraintCinfo_LoadBinary(int* param_1, int param_2);
+void __cdecl hkConstraintCinfo_LoadBinary(int* arStream, int param_2);
 
 // @fnv 0x00d50000
 // src: XBOX_PDB 0x00d50000
+// pdb: hkGenericConstraintCinfo::LoadBinary | bhkGenericConstraint.obj | debug, upstream name already matches, high
+// pdb params: arStream
 void __cdecl hkGenericConstraintCinfo_LoadBinary(int* param_1, int param_2)
 {
     hkConstraintCinfo_LoadBinary(param_1, param_2);
@@ -3451,20 +3534,22 @@ struct FUN_00c89920_cls
 };
 struct FUN_00d53290_cls
 {
-    void __thiscall bhkConstraintChain_SaveBinary(int a);
+    void __thiscall bhkConstraintChain_SaveBinary(int arStream);
 };
 // @fnv 0x00d53290
 // src: XBOX_PDB 0x00d53290
-void __thiscall FUN_00d53290_cls::bhkConstraintChain_SaveBinary(int a)
+// pdb: bhkConstraintChain::SaveBinary | bhkConstraintChain.obj | debug, upstream name already matches, high
+// pdb params: arStream
+void __thiscall FUN_00d53290_cls::bhkConstraintChain_SaveBinary(int arStream)
 {
-    ((FUN_00c89920_cls*)this)->InvokeRefTarget(a);
+    ((FUN_00c89920_cls*)this)->InvokeRefTarget(arStream);
 }
 
 
 namespace hkRouterD539 {
 extern "C" hkMemoryRouter& __cdecl hkMemoryRouter_getInstance() throw();
 }
-void __cdecl hkArrayUtil__reserve(hkMemoryAllocator& kAlloc, void* apvArray, int aiNumElements, int iSizeElem) throw();
+void __cdecl hkArrayUtil__reserve(hkMemoryAllocator& mem, void* array, int numElem, int sizeElem) throw();
 
 struct hkInfoD539
 {
@@ -3482,7 +3567,7 @@ struct hkContainerD539
 class FUN_00c89c80_obj
 {
   public:
-    void CopyFromSource(unsigned int info) throw();
+    void CopyFromSource(unsigned int arInfo) throw();
 };
 
 class hkShapeD539 : public FUN_00c89c80_obj
@@ -3497,6 +3582,10 @@ class hkShapeD539 : public FUN_00c89c80_obj
 
 // Calls CopyFromSource on info, then if m_container is set resizes info.m_keys to m_numKeys and copies the container's keys into it.
 // @fnv 0x00d53900
+// pdb: bhkConstraintChain::CopyCinfo | bhkConstraintChain.obj | retail, object-file run extension, low
+// pdb note: debug build links it to bhkConstraintChain::GetCinfo
+// pdb params: arInfo
+// pdb locals: pchain, pc, bsCInfo, i
 void hkShapeD539::CopyContainerKeysToInfo(hkInfoD539& info)
 {
     CopyFromSource((unsigned int)&info);
@@ -3523,15 +3612,17 @@ class FUN_00d54180_cls
     hkVector4 m_kPointA;
     hkVector4 m_kPointB;
 
-    void hkpBallAndSocketConstraintData_setInWorldSpace(const hkTransform& kA, const hkTransform& kB, const hkVector4& fT);
+    void hkpBallAndSocketConstraintData_setInWorldSpace(const hkTransform& bodyATransform, const hkTransform& bodyBTransform, const hkVector4& pivot);
 };
 
 // @fnv 0x00d54180
 // src: HAVOK_LIB 0x00d54180
-void FUN_00d54180_cls::hkpBallAndSocketConstraintData_setInWorldSpace(const hkTransform& kA, const hkTransform& kB, const hkVector4& fT)
+// pdb: hkpBallAndSocketConstraintData::setInWorldSpace | hkpBallAndSocketConstraintData.obj | retail, upstream name already matches, high
+// pdb params: bodyATransform, bodyBTransform, pivot
+void FUN_00d54180_cls::hkpBallAndSocketConstraintData_setInWorldSpace(const hkTransform& bodyATransform, const hkTransform& bodyBTransform, const hkVector4& pivot)
 {
-    m_kPointA.hkVector4_setTransformedInversePos(kA, fT);
-    m_kPointB.hkVector4_setTransformedInversePos(kB, fT);
+    m_kPointA.hkVector4_setTransformedInversePos(bodyATransform, pivot);
+    m_kPointB.hkVector4_setTransformedInversePos(bodyBTransform, pivot);
 }
 
 struct FnvCpu_FUN_00d54d60_CpuObject
@@ -3689,6 +3780,8 @@ struct FUN_00d58ce0_Class
 extern "C" void __cdecl FUN_00da2560();
 
 // @fnv 0x00d58ce0
+// pdb: hkDisplaySphere::`scalar deleting destructor' | hkDisplaySphere.obj | retail, vtable slot, high
+// pdb params: this
 int __thiscall FUN_00d58ce0_Class::FUN_00d58ce0(unsigned char flag)
 {
     FUN_00da2560();
@@ -3728,7 +3821,7 @@ void __thiscall FUN_00d5d660_cls::NextFloat4(float* pOut)
 inline void hkReferencedObject::operator delete(void* p)
 {
     reinterpret_cast<hkMemoryRouter*>(hkMemoryRouter_getInstance())
-        ->heap().blockFree(p, static_cast<hkReferencedObject*>(p)->m_usMemSizeAndFlags);
+        ->heap().blockFree(p, static_cast<hkReferencedObject*>(p)->m_memSizeAndFlags);
 }
 
 // 0x00d5e070 (ConvexChildShapeOwner) is in blk_00d40000_o2_ehsc_noehsc_variant.cpp: no EH frame in the original.
@@ -3736,8 +3829,8 @@ inline void hkReferencedObject::operator delete(void* p)
 inline hkpShapeContainer::~hkpShapeContainer() {}
 inline hkpSingleShapeContainer::~hkpSingleShapeContainer()
 {
-    if (m_pContainedShape)
-        const_cast<hkpShape*>(m_pContainedShape)->removeReference();
+    if (m_childShape)
+        const_cast<hkpShape*>(m_childShape)->removeReference();
 }
 
 
@@ -3796,7 +3889,7 @@ struct D46E50Node
     int unk10;
     int unk14;
 
-    int hkClass_getEnum(int param);
+    int hkClass_getEnum(int enumIndex);
 };
 
 struct D46E50Helper
@@ -3822,10 +3915,13 @@ int D46E50Helper::SumListValues()
 // Walks nodes adding unk14 to param minus SumListValues() until it is non-negative, returning that node's unk10 + value * 20; otherwise this->unk10.
 // @fnv 0x00d46e50
 // src: HAVOK_LIB 0x00d46e50
-int D46E50Node::hkClass_getEnum(int param)
+// pdb: hkClass::getEnum | hkClass.obj | debug, upstream name already matches, high
+// pdb params: enumIndex
+// pdb locals: assertBuf, ostr
+int D46E50Node::hkClass_getEnum(int enumIndex)
 {
     D46E50Node* node = this;
-    int d = param - ((D46E50Helper*)this)->SumListValues();
+    int d = enumIndex - ((D46E50Helper*)this)->SumListValues();
     if (this)
     {
         do
@@ -3955,81 +4051,85 @@ struct Hk48fc0_Data
     void* __thiscall ForwardToReceiver(Hk48fc0_Contents* pOut);
 };
 
-void __cdecl hkSerializeUtil_detectFormat(void* pStream, Hk48fc0_Format* pFormat);
-void* __cdecl hkDataObjectUtil_toObjectWithRegistry(void* pData, void* pAllocator, void* pLoader);
+void __cdecl hkSerializeUtil_detectFormat(void* reader, Hk48fc0_Format* details);
+void* __cdecl hkDataObjectUtil_toObjectWithRegistry(void* pData, void* classReg, void* typeReg);
 int __cdecl Hkserializeutil_UpdateState_00d48950(void* pObj, void* pArg1, void* pArg2, void* pArg3);
 void __cdecl hkBinaryTagfileReader_load(void* pArg1, void* pArg2, void* pArg3);
 
 // module-local helper: object in ESI, error in EDI, stream on the stack
-__declspec(noinline) static int Hk48fc0_ReadTagfile(Hk48fc0_Data* pObj, void* pError, void* pStream, void* pAllocator)
+__declspec(noinline) static int anonymous_namespace_loadBinaryTagfileIntoWorld(Hk48fc0_Data* streamIn, void* world, void* errorOut, void* classReg) // src: XBOX_RETAIL_PDB 0x00d48a90
 {
     Hk48fc0_Contents kBuf;
-    hkBinaryTagfileReader_load(&kBuf, &pStream, pObj);
-    if (pError)
+    hkBinaryTagfileReader_load(&kBuf, &errorOut, streamIn);
+    if (world)
     {
-        if (Hkserializeutil_UpdateState_00d48950(pObj, pError, DAT_01269b70, pAllocator) == 0)
+        if (Hkserializeutil_UpdateState_00d48950(streamIn, world, DAT_01269b70, classReg) == 0)
         {
             return 1;
         }
     }
-    kBuf.hkVersionPatchManager_applyPatches(pObj, pAllocator);
+    kBuf.hkVersionPatchManager_applyPatches(streamIn, classReg);
     return 0;
 }
 
 // module-local helper: allocator in EAX, the rest on the stack
-__declspec(noinline) static void* Hk48fc0_LoadPackfile(void* pAllocator, void* pStream, Hk48fc0_Format* pFormat,
-                                                       void* pError, void* pLoader)
+// src: XBOX_RETAIL_PDB 0x00d48840
+__declspec(noinline) static void* anonymous_namespace_loadNewPackfileOnHeap(void* streamIn, void* details, Hk48fc0_Format* errorOut,
+                                                       void* classReg, void* typeReg)
 {
-    if (pAllocator == 0)
+    if (streamIn == 0)
     {
         return 0;
     }
-    hkBinaryTagfileReader_load(pAllocator, &pStream, &pFormat);
-    return hkDataObjectUtil_toObjectWithRegistry(&pError, &pLoader, 0);
+    hkBinaryTagfileReader_load(streamIn, &details, &errorOut);
+    return hkDataObjectUtil_toObjectWithRegistry(&classReg, &typeReg, 0);
 }
 
 // @fnv 0x00d48fc0
 // src: XBOX_PDB 0x00d48fc0
-void* __cdecl hkSerializeUtil_loadOnHeap(void* pStream, void* pError, void* pAllocator, void* pLoader)
+// pdb: hkSerializeUtil::loadOnHeap | hkSerializeUtil.obj | retail, string-set bridge, high
+// pdb params: streamIn, errorOut, classReg, typeReg
+// pdb locals: details, world, assertBuf, ostr
+void* __cdecl hkSerializeUtil_loadOnHeap(void* streamIn, void* errorOut, void* classReg, void* typeReg)
 {
     Hk48fc0_Contents kContents;
-    if (!pStream)
+    if (!streamIn)
     {
-        if (pError)
+        if (errorOut)
         {
-            reinterpret_cast<Hk48fc0_Error*>(pError)->m_nCode = 1;
-            reinterpret_cast<Hk48fc0_Error*>(pError)->m_strMsg.UpdateState_00cb0c10(str_010cfacc);
+            reinterpret_cast<Hk48fc0_Error*>(errorOut)->m_nCode = 1;
+            reinterpret_cast<Hk48fc0_Error*>(errorOut)->m_strMsg.UpdateState_00cb0c10(str_010cfacc);
         }
         return 0;
     }
-    if (!reinterpret_cast<Hk48fc0_Stream*>(pStream)->IsStreamValid())
+    if (!reinterpret_cast<Hk48fc0_Stream*>(streamIn)->IsStreamValid())
     {
-        if (pError)
+        if (errorOut)
         {
-            reinterpret_cast<Hk48fc0_Error*>(pError)->m_nCode = 1;
-            reinterpret_cast<Hk48fc0_Error*>(pError)->m_strMsg.UpdateState_00cb0c10(str_010cfab8);
+            reinterpret_cast<Hk48fc0_Error*>(errorOut)->m_nCode = 1;
+            reinterpret_cast<Hk48fc0_Error*>(errorOut)->m_strMsg.UpdateState_00cb0c10(str_010cfab8);
         }
         return 0;
     }
-    if (!pAllocator)
+    if (!classReg)
     {
-        pAllocator = DAT_01268b08->getAllocator();
+        classReg = DAT_01268b08->getAllocator();
     }
-    if (!pLoader)
+    if (!typeReg)
     {
-        pLoader = DAT_01268b08->getLoader();
+        typeReg = DAT_01268b08->getLoader();
     }
     Hk48fc0_Format kFormat;
     kFormat.m_strVersion.FUN_00cb0a60();
-    hkSerializeUtil_detectFormat(pStream, &kFormat);
+    hkSerializeUtil_detectFormat(streamIn, &kFormat);
     switch (kFormat.m_nType)
     {
     case 4: {
         Hk48fc0_Data kData;
         kData.hkDataWorldDict_hkDataWorldDict();
-        if (!Hk48fc0_ReadTagfile(&kData, pError, pStream, pAllocator))
+        if (!anonymous_namespace_loadBinaryTagfileIntoWorld(&kData, errorOut, streamIn, classReg))
         {
-            void* pResult = hkDataObjectUtil_toObjectWithRegistry(kData.ForwardToReceiver(&kContents), pAllocator, pLoader);
+            void* pResult = hkDataObjectUtil_toObjectWithRegistry(kData.ForwardToReceiver(&kContents), classReg, typeReg);
             kContents.ReleaseStorage_00dba7f0();
             kData.ReleaseStorage_00dc8080();
             kFormat.m_strVersion.Object_UpdateFields_00cb0c00();
@@ -4042,22 +4142,22 @@ void* __cdecl hkSerializeUtil_loadOnHeap(void* pStream, void* pError, void* pAll
     case 2: {
         if (kFormat.m_kMagic.MatchesTag(DAT_011b7b88) && kFormat.m_strVersion.Equals(str_010cf830))
         {
-            void* pResult = Hk48fc0_LoadPackfile(pAllocator, pStream, &kFormat, pError, pLoader);
+            void* pResult = anonymous_namespace_loadNewPackfileOnHeap(classReg, streamIn, &kFormat, errorOut, typeReg);
             kFormat.m_strVersion.Object_UpdateFields_00cb0c00();
             return pResult;
         }
     }
     // fall through
     case 3: {
-        void* pResult = DAT_01269b74->load(pStream, &kFormat, pError);
+        void* pResult = DAT_01269b74->load(streamIn, &kFormat, errorOut);
         kFormat.m_strVersion.Object_UpdateFields_00cb0c00();
         return pResult;
     }
     default:
-        if (pError)
+        if (errorOut)
         {
-            reinterpret_cast<Hk48fc0_Error*>(pError)->m_nCode = 2;
-            reinterpret_cast<Hk48fc0_Error*>(pError)->m_strMsg.UpdateState_00cb0c10(str_010cfa94);
+            reinterpret_cast<Hk48fc0_Error*>(errorOut)->m_nCode = 2;
+            reinterpret_cast<Hk48fc0_Error*>(errorOut)->m_strMsg.UpdateState_00cb0c10(str_010cfa94);
         }
         kFormat.m_strVersion.Object_UpdateFields_00cb0c00();
         return 0;
@@ -4133,15 +4233,17 @@ struct hkpD500Stream;
 class hkpD500Object
 {
   public:
-    void hkConstraintCinfo_SaveBinary(hkpD500Stream* pkStream);
-    void hkGenericConstraintCinfo_SaveBinary(hkpD500Stream* pkStream);
+    void hkConstraintCinfo_SaveBinary(hkpD500Stream* arStream);
+    void hkGenericConstraintCinfo_SaveBinary(hkpD500Stream* arStream);
 };
 
 // @fnv 0x00d50010
 // src: XBOX_PDB 0x00d50010
-void hkpD500Object::hkGenericConstraintCinfo_SaveBinary(hkpD500Stream* pkStream)
+// pdb: hkGenericConstraintCinfo::SaveBinary | bhkGenericConstraint.obj | debug, upstream name already matches, high
+// pdb params: arStream
+void hkpD500Object::hkGenericConstraintCinfo_SaveBinary(hkpD500Stream* arStream)
 {
-    hkConstraintCinfo_SaveBinary(pkStream);
+    hkConstraintCinfo_SaveBinary(arStream);
 }
 
 
@@ -4163,7 +4265,7 @@ class FUN_00d21ce0_cls
 class FUN_00dd0420_Class
 {
   public:
-    FUN_00dd0420_Class* hkpGenericConstraintDataScheme_hkpGenericConstraintDataScheme(int flag);
+    FUN_00dd0420_Class* hkpGenericConstraintDataScheme_hkpGenericConstraintDataScheme(int f);
 
     int unk00;
 };
@@ -4171,7 +4273,7 @@ class FUN_00dd0420_Class
 class FUN_00d50c00
 {
   public:
-    FUN_00d50c00(FinishingFlag flag);
+    FUN_00d50c00(FinishingFlag f);
     virtual ~FUN_00d50c00();
 
     int unk04;
@@ -4181,10 +4283,12 @@ class FUN_00d50c00
 };
 
 // @fnv 0x00d50c00
-FUN_00d50c00::FUN_00d50c00(FinishingFlag flag) : m_kListeners(flag)
+// pdb: hkpGenericConstraintData::hkpGenericConstraintData | hkpGenericConstraintData.obj | retail, object-file run extension, high
+// pdb params: f
+FUN_00d50c00::FUN_00d50c00(FinishingFlag f) : m_kListeners(f)
 {
-    m_data.hkpGenericConstraintDataScheme_hkpGenericConstraintDataScheme(flag.m_bFinishing);
-    if (flag.m_bFinishing)
+    m_data.hkpGenericConstraintDataScheme_hkpGenericConstraintDataScheme(f.m_bFinishing);
+    if (f.m_bFinishing)
         m_kListeners.hkpBridgeConstraintAtom_init(this);
 }
 
@@ -4249,27 +4353,30 @@ class ObjD534
     int unk04;
     int m_08;
     void bhkWorld_Add_00c6b320(int value);
-    bool bhkConstraintChain_Add(ObjD534* other);
+    bool bhkConstraintChain_Add(ObjD534* apWorld);
 };
 // When m_08 is nonzero: resets and attaches other (passing it m_08, returning true) if its type differs, or just resets when other is null.
 // @fnv 0x00d534e0
 // src: XBOX_PDB 0x00d534e0
-bool ObjD534::bhkConstraintChain_Add(ObjD534* other)
+// pdb: bhkConstraintChain::Add | bhkConstraintChain.obj | retail, upstream name already matches, high
+// pdb params: apWorld
+// pdb locals: bres, tempMemContext, pc, pcur
+bool ObjD534::bhkConstraintChain_Add(ObjD534* apWorld)
 {
     AutoMemContext context(16);
     int value = this ? m_08 : 0;
     bool result = false;
     if (value)
     {
-        if (other)
+        if (apWorld)
         {
             int myType = GetType94();
-            int theirType = other->GetType94();
+            int theirType = apWorld->GetType94();
             if (myType != theirType)
             {
                 ResetA0();
-                AttachD8(other, 1);
-                other->bhkWorld_Add_00c6b320(value);
+                AttachD8(apWorld, 1);
+                apWorld->bhkWorld_Add_00c6b320(value);
                 result = true;
             }
         }
@@ -4366,7 +4473,11 @@ inline ShapeClonePointerArrayOwner* GetShapeClonePointerArrayOwner(void* pkConta
 }
 
 // @fnv 0x00d53a80
-void __fastcall CopyListShapeMembers(bhkListShape* self, void*, NiObject* pkDest, CloningProcess& kCloning)
+// src: XBOX_RETAIL_PDB 0x00d53a80
+// pdb: bhkConstraintChain::CopyMembers | bhkConstraintChain.obj | retail, object-file run extension, high
+// pdb params: pDest, arCloneData
+// pdb locals: tempMemContext, oldEntities, cinfo, i, pc, pcloneEnt
+void __fastcall bhkConstraintChain_CopyMembers(bhkListShape* self, void*, NiObject* pkDest, CloningProcess& kCloning)
 {
     AutoMemContext kContext(0x10);
     char cTmp;
@@ -4389,7 +4500,7 @@ void __fastcall CopyListShapeMembers(bhkListShape* self, void*, NiObject* pkDest
         // CloningProcess is opaque in the shared headers; its clone-map pointer is at +0.
         if (!(*reinterpret_cast<NiTPointerMap<NiObject*, NiObject*>**>(&kCloning))->GetAt(kChildren[j], pkClone))
             pkClone = kChildren[j]->MakeClone(kCloning);
-        WrapperLinkedHavokObject* pkShape = reinterpret_cast<WrapperLinkedHavokObject*>(static_cast<bhkRefObject*>(pkClone)->m_pHavokObject);
+        WrapperLinkedHavokObject* pkShape = reinterpret_cast<WrapperLinkedHavokObject*>(static_cast<bhkRefObject*>(pkClone)->phkObject);
         kShapes[j] = pkShape;
     }
 
@@ -4455,15 +4566,18 @@ struct FNVMemoryManager
 // Calls FUN_00c851c0 on object, then appends a string from FUN_00a7d330(DAT_01268f90) via FUN_0096ae90, growing with FUN_0096ad30 first when full.
 // @fnv 0x00d54ed0
 // src: XBOX_PDB 0x00d54ed0
-void __thiscall FNVMemoryManager::bhkHeightFieldShape_GetViewerStrings(FUN_00d54ed0_Obj* object)
+// pdb: bhkHeightFieldShape::GetViewerStrings | bhkHeightFieldShape.obj | retail, upstream name already matches, high
+// pdb params: apStrings
+// pdb locals: tempMemContext
+void __thiscall FNVMemoryManager::bhkHeightFieldShape_GetViewerStrings(FUN_00d54ed0_Obj* apStrings)
 {
     AutoMemContext scope(16);
-    this->bhkShape_GetViewerStrings(object);
+    this->bhkShape_GetViewerStrings(apStrings);
     char* result = NiViewerStrings_NiGetViewerString_Title(DAT_01268f90);
-    unsigned int n = object->unk0A;
-    if (n >= object->unk08)
-        object->FUN_0096ad30(object->unk0E + n);
-    object->FUN_0096ae90(n, &result);
+    unsigned int n = apStrings->unk0A;
+    if (n >= apStrings->unk08)
+        apStrings->FUN_0096ad30(apStrings->unk0E + n);
+    apStrings->FUN_0096ae90(n, &result);
 }
 
 struct D47180Cls
@@ -4603,12 +4717,15 @@ struct OwnerD500
 // Creates a new FUN_00d50c90 object if object is null, then calls ReleaseObject on it with the given argument.
 // @fnv 0x00d50090
 // src: XBOX_PDB 0x00d50090
-void OwnerD500::hkGenericConstraintCinfo_CloneData(FUN_00d50c90* object, int arg)
+// pdb: hkGenericConstraintCinfo::CloneData | bhkGenericConstraint.obj | retail, upstream name already matches, high
+// pdb params: apData, arCloneData
+// pdb locals: pnd, tempMemContext
+void OwnerD500::hkGenericConstraintCinfo_CloneData(FUN_00d50c90* apData, int arCloneData)
 {
     AutoMemContext context(0x10);
-    if (!object)
-        object = new FUN_00d50c90;
-    ReleaseObject(object, arg);
+    if (!apData)
+        apData = new FUN_00d50c90;
+    ReleaseObject(apData, arCloneData);
 }
 
 struct D502D0_Allocator
@@ -4648,7 +4765,7 @@ struct D502D0_Owner
 {
     unsigned int m_unk00, m_unk04, m_flag08;
     D502D0_RefData* m_pData;
-    void __thiscall CopyFromSource(D502D0_RefObject* object);
+    void __thiscall CopyFromSource(D502D0_RefObject* arInfo);
     D502D0_RefData* __thiscall EnsureReference(bool* created);
 };
 // Sets *created to true when m_pData is null, then creates a new D502D0_RefData via D502D0_CreateReference and copies from source if m_flag08 is set.
@@ -4676,7 +4793,7 @@ struct Mem_d51b
     virtual void v00();
 };
 
-void __cdecl ResizeAudioStream(void* mem, void* array, int sizeOfElement);
+void __cdecl ResizeAudioStream(void* mem, void* array, int sizeElem);
 
 struct Info_d51b
 {
@@ -4698,12 +4815,15 @@ struct Kit_d51b
 {
     int unk00;
     Info_d51b* m_info;
-    void AddBridgeAtoms();
+    void hkpConstraintConstructionKit_constrainAllLinearDof();
 };
 
 // Adds a bridge atom to m_info and accumulates schema byte size, solver result count, and temporary element count three times.
 // @fnv 0x00d51bc0
-void Kit_d51b::AddBridgeAtoms()
+// src: XBOX_RETAIL_PDB 0x00d51bc0
+// pdb: hkpConstraintConstructionKit::constrainAllLinearDof | hkpConstraintConstructionKit.obj | retail, call graph, high
+// pdb locals: assertBuf, ostr
+void Kit_d51b::hkpConstraintConstructionKit_constrainAllLinearDof()
 {
     d51::AddBack(m_info->m_kBridgeAtoms, 7);
     m_info->add(0x30, 1, 1);
@@ -4734,7 +4854,7 @@ struct FUN_00dd0530
     unsigned int unk40;
     unsigned int unk44;
     FUN_00dd0530(int);
-    void AddReferencedObject(int);
+    void addEntity(int);
 
     __forceinline void* SetSizeAndGrow(unsigned int n)
     {
@@ -4811,18 +4931,21 @@ struct Target
 // Allocates a FUN_00dd0530, adds each item from the Input's items array as a referenced object, then calls v35, FUN_00c905b0, and v47.
 // @fnv 0x00d533e0
 // src: XBOX_PDB 0x00d533e0
-void Target::bhkConstraintChain_Init(void* arg)
+// pdb: bhkConstraintChain::Init | bhkConstraintChain.obj | retail, upstream name already matches, high
+// pdb params: arInfo
+// pdb locals: po, tempMemContext, pdata, cinfo, i
+void Target::bhkConstraintChain_Init(void* arInfo)
 {
     FUN_00dd0530* p;
     AutoMemContext context(16);
-    Input* input = arg ? (Input*)((char*)arg - 4) : 0;
+    Input* input = arInfo ? (Input*)((char*)arInfo - 4) : 0;
     int value = input->value;
     p = new FUN_00dd0530(value);
     for (int i = 0; i < input->count; ++i)
-        p->AddReferencedObject(input->items[i]);
+        p->addEntity(input->items[i]);
     v35(p);
     ((hkReferencedObject*)p)->removeReference();
-    v47(arg);
+    v47(arInfo);
 }
 
 // 0x00c68d50 uses a virtual Havok-world accessor and a Bethesda pending-entity queue (+0x44), unlike hkpWorld.
@@ -5052,6 +5175,8 @@ struct Entity35D0
 };
 // Gets the owning entity's world, calls UpdateEntity on m_phkObject, invokes OnRemoved, and returns the world's result or false if no world.
 // @fnv 0x00d535d0
+// pdb: bhkConstraintChain::Remove | bhkConstraintChain.obj | retail, object-file gap fill, high
+// pdb locals: bres, pbw, tempMemContext
 bool __fastcall RemovePhysicsWorldObject(bhkWorldObject* self, void*)
 {
     AutoMemContext kContext(0x10);
@@ -5061,7 +5186,7 @@ bool __fastcall RemovePhysicsWorldObject(bhkWorldObject* self, void*)
     PhysicsWorldWrapperView* pkWorld = pkEntity ? pkEntity->GetWorld() : 0;
     if (pkWorld)
     {
-        bool bResult = pkWorld->UpdateEntity(self->m_pHavokObject);
+        bool bResult = pkWorld->UpdateEntity(self->phkObject);
         // The derived removal callback at +0xd8 is not declared by the shared base.
         reinterpret_cast<void(__thiscall*)(bhkWorldObject*, PhysicsWorldWrapperView*, int)>(
             (*reinterpret_cast<void***>(self))[0xd8 / 4])(self, pkWorld, 0);
@@ -5292,6 +5417,9 @@ class FUN_00d56f10 : public hkpShapeCollectionF
 
 // Initializes an extended-mesh shape collection, defaulting invalid material index types to INT8 and inlining a single triangle subpart.
 // @fnv 0x00d56f10
+// pdb: hkpExtendedMeshShape::hkpExtendedMeshShape | hkpExtendedMeshShape.obj | retail, object-file run extension, low
+// pdb params: radius, numBitsForSubpartIndex
+// pdb locals: assertBuf, ostr
 FUN_00d56f10::FUN_00d56f10(FinishingFlag flag)
     : hkpShapeCollectionF(flag), m_kTrianglesSubpart(flag), m_kTrianglesSubparts(flag), m_kShapesSubparts(flag)
 {
@@ -5358,6 +5486,9 @@ struct LoadResult
 void hkGeometryUtility_createConvexGeometry(InputBuffer*, LoadResult*, unsigned int);
 // Copies src into a temporary InputBuffer, calls FUN_00d5a630 to fill a LoadResult, then swaps result.primary into dst.
 // @fnv 0x00d5a510
+// pdb: bhkCharControllerShape::Init | bhkCharControllerShape.obj | retail, object-file run extension, low
+// pdb params: arInfo
+// pdb locals: svs, po, tempMemContext, cinfo
 void LoadIntoArray(const InputBuffer* src, unsigned int flags, ArrayData* dst)
 {
     InputBuffer input;
@@ -5540,6 +5671,8 @@ struct OwnerS
 // Appends command 4 and index to commands, adds value to vectors, and sets flags[index] to 1.
 // @fnv 0x00d51970
 // src: GUESS 0x00d51970 (confidence: medium)
+// pdb: hkpConstraintConstructionKit::setLinearDofB | hkpConstraintConstructionKit.obj | retail, object-file run extension, low
+// pdb params: dof, axis
 int OwnerS::AppendVectorCommandAndSetFlag(const hkVector4& value, int index)
 {
     d51::AddBack(data->commands, 4);
@@ -5556,14 +5689,17 @@ struct S
     char val;
 };
 
-extern "C" void __cdecl ReleaseAllEntries(S* a, int b, int c);
+extern "C" void __cdecl hkGskManifold_cleanup(S* manifold, int mgr, int constraintOwner);
 
 // @fnv 0x00d409b0
 // src: HAVOK_LIB 0x00d409b0
-static __declspec(noinline) void resetGskManifold(S* dst, S* src, int b, int c)
+// pdb: resetGskManifold | hkpPredGskCylinderAgent3.obj | retail, upstream name already matches, high
+// pdb params: gskManifold, entry, mgr, constraintOwner
+// pdb locals: assertBuf, ostr
+static __declspec(noinline) void resetGskManifold(S* gskManifold, S* entry, int mgr, int constraintOwner)
 {
-    ReleaseAllEntries(src, b, c);
-    dst->val = src->val;
+    hkGskManifold_cleanup(entry, mgr, constraintOwner);
+    gskManifold->val = entry->val;
 }
 
 volatile S* g_dst;
@@ -5821,6 +5957,8 @@ __declspec(noinline) void hkpRagdollDataS::setConeStab(hkBool b)
 
 // Initializes bridge ragdoll atoms with identity rotations, twist limits of +/-0.5236 rad, cone limits, and plane limits with tau factor 0.8.
 // @fnv 0x00d4f2a0
+// pdb: hkpRagdollLimitsData::hkpRagdollLimitsData | hkpRagdollLimitsData.obj | retail, call graph (shared callers), high
+// pdb params: f
 FUN_00d4f2a0::FUN_00d4f2a0()
 {
     m_kBridgeAtoms.m_kLocalRotations.m_kRotationA.setIdentity();
@@ -5907,6 +6045,7 @@ class FUN_00d52fc0
 
 // Constructor: sets the vptr, several small integer fields, two identity matrices, and three floats (two from globals, one 1.0).
 // @fnv 0x00d52fc0
+// pdb: hkpHingeLimitsData::hkpHingeLimitsData | hkpHingeLimitsData.obj | retail, call graph (shared callers), high
 FUN_00d52fc0::FUN_00d52fc0()
 {
     m_vptr = &DAT_010d0be4;
@@ -5953,6 +6092,7 @@ struct FUN_00d54290
 };
 // Initializes a FUN_00d54290 object, setting m_word06 to 1, m_word10 to 3, m_word40 to 5, and calling m_data43.FUN_00ca9360(5, &one).
 // @fnv 0x00d54290
+// pdb: hkpBallAndSocketConstraintData::hkpBallAndSocketConstraintData | hkpBallAndSocketConstraintData.obj | retail, call graph (shared callers), medium
 FUN_00d54290::FUN_00d54290()
 {
     float one = 1.0f;

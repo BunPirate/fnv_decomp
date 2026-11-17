@@ -38,6 +38,7 @@ struct FUN_00dc0ef0_class
 // If m_14 is set, calls FUN_00dc0de0 on m_08 and m_0c, then clears m_14 and m_18.
 // @fnv 0x00dc0ef0
 // src: GUESS 0x00dc0ef0 (confidence: low)
+// pdb: `anonymous namespace'::hkNativeResource::callDestructors | hkNativePackfileUtils.obj | retail, vtable slot, high
 void FUN_00dc0ef0_class::UpdateState_00dc0ef0()
 {
     if (m_14)
@@ -78,6 +79,8 @@ struct FUN_00dc08f0_Header
 };
 
 // @fnv 0x00dc08f0
+// pdb: hkNativePackfileUtils::getImportsExports | hkNativePackfileUtils.obj | retail, object-file run extension, low
+// pdb params: loadedBuffer, expOut, impOut
 extern "C" void __cdecl ProcessElements(int header, int first, int second)
 {
     FUN_00dc08f0_Header* pHeader = (FUN_00dc08f0_Header*)header;
@@ -193,6 +196,9 @@ struct S_00dc0de0
 
 // @fnv 0x00dc0de0
 // src: XBOX_PDB 0x00dc0de0
+// pdb: hkNativePackfileUtils::unload | hkNativePackfileUtils.obj | retail, upstream name already matches, high
+// pdb params: buffer, bufferSize
+// pdb locals: assertBuf, ostr
 void hkNativePackfileUtils_unload(S_00dc0de0* s)
 {
     s->m_00 = 0;
@@ -332,12 +338,16 @@ struct S_00dc0cd0_Resource
 };
 
 // @fnv 0x00dc0cd0
-void* __cdecl CreateResourceFromArray(void* arg0, void* arg1, void* arg2) throw()
+// src: XBOX_RETAIL_PDB 0x00dc0cd0
+// pdb: hkNativePackfileUtils::load | hkNativePackfileUtils.obj | retail, call graph (shared callers), high
+// pdb params: packfileData, packfileSize, outBuffer, outBufferSize, userRegistry
+// pdb locals: inSections, assertBuf, ostr
+void* __cdecl hkNativePackfileUtils_load(void* packfileData, void* dataSize, void* userRegistry) throw()
 {
     S_00dc0cd0_ArrayLocalForm tempArray;
-    int needed = hkPackfile_ComputeNativeStorageSize(arg0, arg1);
+    int needed = hkPackfile_ComputeNativeStorageSize(packfileData, dataSize);
     tempArray.SetSizeAndGrow(needed);
-    void* pKey = UnpackPackfile(arg0, arg1, tempArray.m_data, needed, arg2);
+    void* pKey = UnpackPackfile(packfileData, dataSize, tempArray.m_data, needed, userRegistry);
     S_00dc0cd0_Map* map = (S_00dc0cd0_Map*)((char*)tempArray.m_data + 8);
     void* pFound = 0;
     void** ppValue = (void**)map->LookupHashEntry(pKey, 0);
@@ -375,12 +385,13 @@ struct FUN_00dc0f20_cls
     int m_14;
     int m_18;
 
-    void UpdateFields_00dc0f20();
+    void anonymous_namespace_hkNativeResource_dtor();
 };
 
 // @fnv 0x00dc0f20
-// src: GUESS 0x00dc0f20 (confidence: low)
-void FUN_00dc0f20_cls::UpdateFields_00dc0f20()
+// src: XBOX_RETAIL_PDB 0x00dc0f20
+// pdb: `anonymous namespace'::hkNativeResource::~hkNativeResource | hkNativePackfileUtils.obj | retail, object-file gap fill, high
+void FUN_00dc0f20_cls::anonymous_namespace_hkNativeResource_dtor()
 {
     m_vptr = (int)&DAT_010d6a94;
     if (m_14 != 0)
@@ -417,103 +428,108 @@ void __cdecl hkString_memSet(void* p, int a, int b);
 void* __cdecl hkVersionUtil_getCurrentVersion();
 int __cdecl hkString_strCmp(const void* a, const void* b);
 
+// pdb: class hkPackfileHeader, size 0x40, 11 members
 struct hkPackfileHeader
 {
-    unsigned int m_magic0;
+    unsigned int m_magic; // src: XBOX_RETAIL_PDB +0x0 (old: m_magic0)
     unsigned int m_magic1;
-    int m_uiUserTag;
-    int m_iFileVersion;
-    unsigned char m_layoutRules_0;
+    int m_userTag; // src: XBOX_RETAIL_PDB +0x8 (old: m_uiUserTag)
+    int m_fileVersion; // src: XBOX_RETAIL_PDB +0xc (old: m_iFileVersion)
+    unsigned char m_layoutRules; // src: XBOX_RETAIL_PDB +0x10 (old: m_layoutRules_0)
     unsigned char m_layoutRules_1;
     unsigned char m_layoutRules_2;
     unsigned char m_layoutRules_3;
-    int m_iNumSections;
-    int m_iContentsSectionIndex;
-    int m_iContentsSectionOffset;
-    int m_iContentsClassNameSectionIndex;
-    int m_iContentsClassNameSectionOffset;
-    unsigned char m_contentsVersion_0;
+    int m_numSections; // src: XBOX_RETAIL_PDB +0x14 (old: m_iNumSections)
+    int m_contentsSectionIndex; // src: XBOX_RETAIL_PDB +0x18 (old: m_iContentsSectionIndex)
+    int m_contentsSectionOffset; // src: XBOX_RETAIL_PDB +0x1c (old: m_iContentsSectionOffset)
+    int m_contentsClassNameSectionIndex; // src: XBOX_RETAIL_PDB +0x20 (old: m_iContentsClassNameSectionIndex)
+    int m_contentsClassNameSectionOffset; // src: XBOX_RETAIL_PDB +0x24 (old: m_iContentsClassNameSectionOffset)
+    unsigned char m_contentsVersion; // src: XBOX_RETAIL_PDB +0x28 (old: m_contentsVersion_0)
     unsigned char unk29;
     unsigned char unk2a;
     unsigned char unk2b;
     unsigned int unk2c;
     unsigned int unk30;
     unsigned int unk34;
-    int m_flags;
+    int m_pad; // src: XBOX_RETAIL_PDB +0x38 (old: m_flags)
     int unk3c;
 
     hkPackfileHeader()
     {
         hkString_memSet(this, -1, sizeof(*this));
-        m_magic0 = 0x57e0e057;
+        m_magic = 0x57e0e057;
         m_magic1 = 0x10c0c010;
-        m_contentsVersion_0 = 0;
+        m_contentsVersion = 0;
     }
 };
 
 // @fnv 0x00dc0640
-int __cdecl ValidatePackfileHeader(const hkPackfileHeader* header, const char** outError)
+// src: XBOX_RETAIL_PDB 0x00dc0640
+// pdb: hkNativePackfileUtils::validatePackfileHeader | hkNativePackfileUtils.obj | retail, string-set bridge, high
+// pdb params: packfileData, errOut
+// pdb locals: magic
+int __cdecl hkNativePackfileUtils_validatePackfileHeader(const hkPackfileHeader* packfileData, const char** errOut)
 {
-    if (!header)
+    if (!packfileData)
     {
-        if (outError)
-            *outError = "Pointer is null";
+        if (errOut)
+            *errOut = "Pointer is null";
         return 1;
     }
 
     hkPackfileHeader defaultHeader;
-    if (header->m_magic0 != defaultHeader.m_magic0)
+    if (packfileData->m_magic != defaultHeader.m_magic)
         goto bad_magic;
-    if (header->m_magic1 != defaultHeader.m_magic1)
+    if (packfileData->m_magic1 != defaultHeader.m_magic1)
     {
     bad_magic:
-        if (outError)
-            *outError = "Missing packfile magic header. Is this from a binary file?";
+        if (errOut)
+            *errOut = "Missing packfile magic header. Is this from a binary file?";
         return 1;
     }
 
     const StructureLayoutRules& hostRules = DAT_011b7b88;
-    if (header->m_layoutRules_0 != hostRules.m_ucBytesInPointer)
+    if (packfileData->m_layoutRules != hostRules.m_ucBytesInPointer)
     {
-        if (outError)
-            *outError = "Trying to process a binary file with a different pointer size than this platform.";
+        if (errOut)
+            *errOut = "Trying to process a binary file with a different pointer size than this platform.";
         return 1;
     }
-    if (header->m_layoutRules_1 != hostRules.m_bLittleEndian)
+    if (packfileData->m_layoutRules_1 != hostRules.m_bLittleEndian)
     {
-        if (outError)
-            *outError = "Trying to process a binary file with a different endian than this platform.";
+        if (errOut)
+            *errOut = "Trying to process a binary file with a different endian than this platform.";
         return 1;
     }
-    if (header->m_layoutRules_2 != DAT_011b7b88.m_bReusePaddingOptimization)
+    if (packfileData->m_layoutRules_2 != DAT_011b7b88.m_bReusePaddingOptimization)
     {
-        if (outError)
-            *outError = "Trying to process a binary file with a different padding optimization than this platform.";
+        if (errOut)
+            *errOut = "Trying to process a binary file with a different padding optimization than this platform.";
         return 1;
     }
-    if (header->m_layoutRules_3 != DAT_011b7b88.m_bEmptyBaseClassOptimization)
+    if (packfileData->m_layoutRules_3 != DAT_011b7b88.m_bEmptyBaseClassOptimization)
     {
-        if (outError)
-            *outError =
+        if (errOut)
+            *errOut =
                 "Trying to process a binary file with a different empty base class optimization than this platform.";
         return 1;
     }
-    if (((unsigned int)header & 3) != 0)
+    if (((unsigned int)packfileData & 3) != 0)
     {
-        if (outError)
-            *outError = "Packfile data source needs to be 4 byte aligned";
+        if (errOut)
+            *errOut = "Packfile data source needs to be 4 byte aligned";
         return 1;
     }
-    if (header->m_contentsVersion_0 == 0xff)
+    if (packfileData->m_contentsVersion == 0xff)
     {
-        if (outError)
-            *outError = "Packfile file format is too old";
+        if (errOut)
+            *errOut = "Packfile file format is too old";
         return 1;
     }
-    if (hkString_strCmp(&header->m_contentsVersion_0, hkVersionUtil_getCurrentVersion()) != 0)
+    if (hkString_strCmp(&packfileData->m_contentsVersion, hkVersionUtil_getCurrentVersion()) != 0)
     {
-        if (outError)
-            *outError = "Packfile contents are not up to date";
+        if (errOut)
+            *errOut = "Packfile contents are not up to date";
         return 1;
     }
 
@@ -588,21 +604,24 @@ struct hkNativeHeaderN
 
 // Copies section data, applies local and global fixups, registers objects listed by virtual fixups, and returns the contents pointer.
 // @fnv 0x00dc0940
+// pdb: hkNativePackfileUtils::load | hkNativePackfileUtils.obj | retail, object-file run extension, low
+// pdb params: packfileData, packfileSize, outBuffer, outBufferSize, userRegistry
+// pdb locals: inSections, assertBuf, ostr
 extern "C" void* __cdecl UnpackPackfile(void* packfileData, void* dataSize, void* outBuffer, int outBufferSize,
                                         void* userRegistry) throw()
 {
     int iFixupIndex;
     const hkPackfileHeader* header = (const hkPackfileHeader*)packfileData;
     const hkPackfileSectionHeaderN* sectionHeaders =
-        header->m_iNumSections > 0 ? (const hkPackfileSectionHeaderN*)(header + 1) : 0;
+        header->m_numSections > 0 ? (const hkPackfileSectionHeaderN*)(header + 1) : 0;
     hkNativeHeaderN* out = (hkNativeHeaderN*)outBuffer;
 
     out->m_kMagic = 0xd5109142;
     new (&out->m_sections)
-        hkSectionArrayN((hkPackfileSectionHeaderN*)(out + 1), header->m_iNumSections, header->m_iNumSections);
+        hkSectionArrayN((hkPackfileSectionHeaderN*)(out + 1), header->m_numSections, header->m_numSections);
 
-    int dataOffset = sizeof(hkNativeHeaderN) + header->m_iNumSections * sizeof(hkPackfileSectionHeaderN);
-    for (int i = 0; i < header->m_iNumSections; i++)
+    int dataOffset = sizeof(hkNativeHeaderN) + header->m_numSections * sizeof(hkPackfileSectionHeaderN);
+    for (int i = 0; i < header->m_numSections; i++)
     {
         hkPackfileSectionHeaderN& dst = out->m_sections[i];
         const hkPackfileSectionHeaderN& src = sectionHeaders[i];
@@ -625,8 +644,8 @@ extern "C" void* __cdecl UnpackPackfile(void* packfileData, void* dataSize, void
         hkMemCpyN(dstData + dst.m_iImportsOffset, srcData + src.m_iImportsOffset,
                   src.m_iEndOffset - src.m_iImportsOffset);
 
-        if (i == header->m_iContentsSectionIndex)
-            out->m_iContentsVersion = dataOffset + header->m_iContentsSectionOffset;
+        if (i == header->m_contentsSectionIndex)
+            out->m_iContentsVersion = dataOffset + header->m_contentsSectionOffset;
 
         const int* localFixups = (const int*)(srcData + src.m_iLocalFixupsOffset);
         for (iFixupIndex = 0; iFixupIndex < (src.m_iGlobalFixupsOffset - src.m_iLocalFixupsOffset) / 4;
@@ -639,7 +658,7 @@ extern "C" void* __cdecl UnpackPackfile(void* packfileData, void* dataSize, void
         dataOffset += dst.m_iEndOffset;
     }
 
-    for (int i = 0; i < header->m_iNumSections; i++)
+    for (int i = 0; i < header->m_numSections; i++)
     {
         const hkPackfileSectionHeaderN& src = sectionHeaders[i];
         char* dstData = (char*)outBuffer + out->m_sections[i].m_iAbsoluteDataStart;
@@ -662,7 +681,7 @@ extern "C" void* __cdecl UnpackPackfile(void* packfileData, void* dataSize, void
     hkTypeInfoRegistryN* registry =
         userRegistry ? (hkTypeInfoRegistryN*)userRegistry : g_pkBuiltinTypeRegistryN->GetTypeInfoRegistry();
 
-    for (int i = 0; i < header->m_iNumSections; i++)
+    for (int i = 0; i < header->m_numSections; i++)
     {
         char* dstData = (char*)outBuffer + out->m_sections[i].m_iAbsoluteDataStart;
         const hkPackfileSectionHeaderN& src = sectionHeaders[i];
@@ -733,52 +752,56 @@ void CallTarget_dc07b0()
 
 extern "C" int __cdecl Hkmap_ProcessEntries_00cb17f0(int);
 
+// pdb: class hkPackfileSectionHeader, size 0x30, 9 members
 struct hkPackfileSectionHeader
 {
-    char m_acSectionTag[19];
-    char m_cNullByte;
-    int m_iAbsoluteDataStart;
-    int m_iLocalFixupsOffset;
-    int m_iGlobalFixupsOffset;
-    int m_iVirtualFixupsOffset;
-    int m_iExportsOffset;
-    int m_iImportsOffset;
-    int m_iEndOffset;
+    char m_sectionTag[19]; // src: XBOX_RETAIL_PDB +0x0 (old: m_acSectionTag)
+    char m_nullByte; // src: XBOX_RETAIL_PDB +0x13 (old: m_cNullByte)
+    int m_absoluteDataStart; // src: XBOX_RETAIL_PDB +0x14 (old: m_iAbsoluteDataStart)
+    int m_localFixupsOffset; // src: XBOX_RETAIL_PDB +0x18 (old: m_iLocalFixupsOffset)
+    int m_globalFixupsOffset; // src: XBOX_RETAIL_PDB +0x1c (old: m_iGlobalFixupsOffset)
+    int m_virtualFixupsOffset; // src: XBOX_RETAIL_PDB +0x20 (old: m_iVirtualFixupsOffset)
+    int m_exportsOffset; // src: XBOX_RETAIL_PDB +0x24 (old: m_iExportsOffset)
+    int m_importsOffset; // src: XBOX_RETAIL_PDB +0x28 (old: m_iImportsOffset)
+    int m_endOffset; // src: XBOX_RETAIL_PDB +0x2c (old: m_iEndOffset)
 
     int getDataSize() const
     {
-        return m_iLocalFixupsOffset;
+        return m_localFixupsOffset;
     }
     int getVirtualFixupsSize() const
     {
-        return m_iExportsOffset - m_iVirtualFixupsOffset;
+        return m_exportsOffset - m_virtualFixupsOffset;
     }
     int getExportsSize() const
     {
-        return m_iImportsOffset - m_iExportsOffset;
+        return m_importsOffset - m_exportsOffset;
     }
     int getImportsSize() const
     {
-        return m_iEndOffset - m_iImportsOffset;
+        return m_endOffset - m_importsOffset;
     }
 };
 
 // @fnv 0x00dc07d0
 // src: GUESS 0x00dc07d0 (confidence: medium)
+// pdb: hkNativePackfileUtils::getRequiredBufferSize | hkNativePackfileUtils.obj | retail, object-file run extension, low
+// pdb params: packfileData, packfileSize
+// pdb locals: assertBuf, ostr
 extern "C" int __cdecl hkPackfile_ComputeNativeStorageSize(void* packfileData, void* packfileSize) throw()
 {
     const hkPackfileHeader* header = (const hkPackfileHeader*)packfileData;
     int dataSize = 0;
     int numVirtualFixups = 0;
     const hkPackfileSectionHeader* sections =
-        header->m_iNumSections > 0 ? (const hkPackfileSectionHeader*)(header + 1) : 0;
-    for (int i = 0; i < header->m_iNumSections; i++)
+        header->m_numSections > 0 ? (const hkPackfileSectionHeader*)(header + 1) : 0;
+    for (int i = 0; i < header->m_numSections; i++)
     {
         numVirtualFixups += sections[i].getVirtualFixupsSize() / (3 * (int)sizeof(int));
         dataSize += sections[i].getDataSize() + sections[i].getExportsSize() + sections[i].getImportsSize();
     }
     int mapSize = Hkmap_ProcessEntries_00cb17f0(numVirtualFixups);
-    return 0x20 + header->m_iNumSections * (int)sizeof(hkPackfileSectionHeader) + dataSize + mapSize;
+    return 0x20 + header->m_numSections * (int)sizeof(hkPackfileSectionHeader) + dataSize + mapSize;
 }
 
 namespace fnv_00dc0f80 {
@@ -795,6 +818,7 @@ struct FUN_00dc0f80
     }
 };
 // @fnv 0x00dc0f80
+// pdb: `anonymous namespace'::hkNativeResource::`scalar deleting destructor' | hkNativePackfileUtils.obj | retail, vtable slot, high
 FUN_00dc0f80::FUN_00dc0f80()
 {}
 }  // namespace fnv_00dc0f80

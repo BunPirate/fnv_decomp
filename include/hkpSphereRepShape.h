@@ -4,6 +4,7 @@
 
 class hkSphere;
 
+// pdb: class hkpSphereRepShape, size 0x10, bases: hkpShape, 0 members
 class hkpSphereRepShape : public hkpShape
 {
 public:

@@ -2,6 +2,7 @@
 
 class hkpWorld;
 
+// pdb: class hkpWorldDeletionListener, size 0x4, 0 members
 class hkpWorldDeletionListener
 {
 public:

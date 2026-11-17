@@ -7,6 +7,9 @@
 
 // Casts apCopyFC to TESSoundFile and, if successful, copies its sound file name via SetSoundFile.
 // @fnv 0x0048cf00
+// pdb: TESSoundFile::CopyComponent | TESSoundFile.obj | retail, vtable slot, high
+// pdb params: apCopyFC
+// pdb locals: pcopy
 void TESSoundFile::CopyFromBase(BaseFormComponent* apCopyFC)
 {
     TESSoundFile* pcopy = dynamic_cast<TESSoundFile*>(apCopyFC);
@@ -17,6 +20,9 @@ void TESSoundFile::CopyFromBase(BaseFormComponent* apCopyFC)
 
 int _stricmp(const char*, const char*);
 // @fnv 0x0048cf50
+// pdb: TESSoundFile::CompareComponent | TESSoundFile.obj | retail, vtable slot, high
+// pdb params: apCompareFC
+// pdb locals: pcompare
 bool TESSoundFile::CompareWithBase(BaseFormComponent* apCompareFC)
 {
     TESSoundFile* pcompare = dynamic_cast<TESSoundFile*>(apCompareFC);

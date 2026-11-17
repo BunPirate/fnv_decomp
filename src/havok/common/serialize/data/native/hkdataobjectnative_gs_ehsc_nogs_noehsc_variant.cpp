@@ -54,7 +54,7 @@ inline Pair::Pair() throw()
 inline void* __cdecl hkReferencedObject::operator new(std::size_t nbytes)
 {
     hkReferencedObject* b = static_cast<hkReferencedObject*>(GetRouterHeap<hkMemoryAllocator>(hkMemoryRouter_getInstance()).blockAlloc(nbytes));
-    b->m_usMemSizeAndFlags = (unsigned short)nbytes;
+    b->m_memSizeAndFlags = (unsigned short)nbytes;
     return b;
 }
 
@@ -98,27 +98,30 @@ struct S00dbb260_Result
 
 // @fnv 0x00dbb260
 // src: XBOX_PDB 0x00dbb260
-static __declspec(noinline) S00dbb260_Result* hkNativeDataObjectImplCreate(Pair* args, S00dbb260_World* world)
+// pdb: hkNativeDataObjectImplCreate | hkDataObjectNative.obj | retail, upstream name already matches, high
+// pdb params: v, w
+// pdb locals: assertBuf, ostr
+static __declspec(noinline) S00dbb260_Result* hkNativeDataObjectImplCreate(Pair* v, S00dbb260_World* w)
 {
-    if (!!args->b)
+    if (!!v->b)
     {
         S00dbb260_Rec* a;
-        a = world->vf24(reinterpret_cast<hkClass*>(args->b)->getName());
+        a = w->vf24(reinterpret_cast<hkClass*>(v->b)->getName());
         if ((bool)a)
         {
-            args->b = reinterpret_cast<int>(a->unk0C);
+            v->b = reinterpret_cast<int>(a->unk0C);
         }
         else
         {
             {
                 char j[0x200];
                 hkOstream writer(j, 0x200);
-                writer << str_010d64bc << reinterpret_cast<void*>(args->a) << str_010d64d0
-                       << reinterpret_cast<hkClass*>(args->b)->getName() << str_010d64dc;
+                writer << str_010d64bc << reinterpret_cast<void*>(v->a) << str_010d64d0
+                       << reinterpret_cast<hkClass*>(v->b)->getName() << str_010d64dc;
                 hkError::s_instance->message(1, 0x1800473A, j, str_010d6394, 0x2C7);
             }
-            args->a = 0;
-            args->b = 0;
+            v->a = 0;
+            v->b = 0;
         }
     }
     S00dbb260_Result* rec;
@@ -127,8 +130,8 @@ static __declspec(noinline) S00dbb260_Result* hkNativeDataObjectImplCreate(Pair*
     rec->unk06 = 0;
     rec->unk08 = 0;
     rec->vt = (int)DAT_010d6334;
-    rec->sub.Imath_Vec2_int_Vec2_int(*args);
-    rec->world = world;
+    rec->sub.Imath_Vec2_int_Vec2_int(*v);
+    rec->world = w;
     return rec;
 }
 
@@ -175,29 +178,29 @@ struct ResultDBC
     hkClass* type;
 };
 // src: XBOX_PDB 0x00dbb140
-static __declspec(noinline) ResultDBC getVariantWithMostDerivedClass(hkClass* type, void* object, ClassLookupDBC* lookup, WorldDBC* world)
+static __declspec(noinline) ResultDBC getVariantWithMostDerivedClass(hkClass* klass, void* object, ClassLookupDBC* vtable, WorldDBC* classReg)
 {
     ResultDBC result = {0, 0};
-    if (type && object)
+    if (klass && object)
     {
-        if (type->GetLastNodeFlag().m_cBooleanValue)
+        if (klass->GetLastNodeFlag().m_cBooleanValue)
         {
-            hkClass* actual = lookup->lookup(object);
-            hkClass* found = actual ? world->find(actual->getName()) : 0;
+            hkClass* actual = vtable->lookup(object);
+            hkClass* found = actual ? classReg->find(actual->getName()) : 0;
             result.type = found;
             result.object = found ? object : 0;
             if (!found)
             {
                 char buffer[512];
                 hkOstream stream(buffer, 512);
-                stream << DAT_010d63bc << type->getName() << DAT_010d63f8 << object << DAT_010d6400;
+                stream << DAT_010d63bc << klass->getName() << DAT_010d63f8 << object << DAT_010d6400;
                 hkError::s_instance->message(1, 0x3476d70f, buffer, DAT_010d6394, 0x37);
             }
         }
         else
         {
             result.object = object;
-            result.type = type;
+            result.type = klass;
         }
     }
     return result;
@@ -214,27 +217,27 @@ class NativeDBC : public hkReferencedObject
     }
 };
 // src: XBOX_PDB 0x00dbb260
-static __declspec(noinline) NativeDBC* hkNativeDataObjectImplCreate(WorldDBC* world, Pair* value)
+static __declspec(noinline) NativeDBC* hkNativeDataObjectImplCreate(WorldDBC* v, Pair* w)
 {
-    if (value->b)
+    if (w->b)
     {
-        WorldDBC* found = world->findObjectType(reinterpret_cast<hkClass*>(value->b)->getName());
+        WorldDBC* found = v->findObjectType(reinterpret_cast<hkClass*>(w->b)->getName());
         if (found)
-            value->b = reinterpret_cast<int>(found->type);
+            w->b = reinterpret_cast<int>(found->type);
         else
         {
             {
                 char buffer[512];
                 hkOstream stream(buffer, 512);
-                stream << DAT_010d64bc << reinterpret_cast<void*>(value->a) << DAT_010d64d0
-                       << reinterpret_cast<hkClass*>(value->b)->getName() << DAT_010d64dc;
+                stream << DAT_010d64bc << reinterpret_cast<void*>(w->a) << DAT_010d64d0
+                       << reinterpret_cast<hkClass*>(w->b)->getName() << DAT_010d64dc;
                 hkError::s_instance->message(1, 0x1800473a, buffer, DAT_010d6394, 0x2c7);
             }
-            value->a = 0;
-            value->b = 0;
+            w->a = 0;
+            w->b = 0;
         }
     }
-    return new NativeDBC(*value, world);
+    return new NativeDBC(*w, v);
 }
 struct DescriptorDBC
 {
@@ -245,28 +248,31 @@ struct DescriptorDBC
 };
 // @fnv 0x00dbc000
 // src: XBOX_PDB 0x00dbc000
+// pdb: hkDataArrayNative::asObject | hkDataObjectNative.obj | retail, upstream name already matches, high
+// pdb params: index
+// pdb locals: v
 NativeDBC* hkDataArrayNative::asObject(int index)
 {
     Pair value;
     value.a = 0;
     value.b = 0;
     unsigned high = 0;
-    switch (m_18)
+    switch (m_nativeType)
     {
     case 20: {
-        ResultDBC v = getVariantWithMostDerivedClass((hkClass*)m_1c, *(void**)(((char*)m_0C) + m_14 * index), ((DescriptorDBC*)m_08)->lookup, ((DescriptorDBC*)m_08)->world);
+        ResultDBC v = getVariantWithMostDerivedClass((hkClass*)m_class, *(void**)(((char*)m_address) + m_elementStride * index), ((DescriptorDBC*)m_world)->lookup, ((DescriptorDBC*)m_world)->world);
         value.a = reinterpret_cast<int>(v.object);
         high = (unsigned)v.type;
         break;
     }
     case 25: {
-        ResultDBC v = getVariantWithMostDerivedClass((hkClass*)m_1c, ((char*)m_0C) + m_14 * index, ((DescriptorDBC*)m_08)->lookup, ((DescriptorDBC*)m_08)->world);
+        ResultDBC v = getVariantWithMostDerivedClass((hkClass*)m_class, ((char*)m_address) + m_elementStride * index, ((DescriptorDBC*)m_world)->lookup, ((DescriptorDBC*)m_world)->world);
         value.a = reinterpret_cast<int>(v.object);
         high = (unsigned)v.type;
         break;
     }
     case 28:
-        value = *(Pair*)(m_14 * index + ((char*)m_0C));
+        value = *(Pair*)(m_elementStride * index + ((char*)m_address));
         high = (unsigned)value.b;
         break;
     default:
@@ -274,6 +280,6 @@ NativeDBC* hkDataArrayNative::asObject(int index)
     }
     value.b = (int)high;
     if (value.a && value.b)
-        return hkNativeDataObjectImplCreate((WorldDBC*)((DescriptorDBC*)m_08), &value);
+        return hkNativeDataObjectImplCreate((WorldDBC*)((DescriptorDBC*)m_world), &value);
     return 0;
 }

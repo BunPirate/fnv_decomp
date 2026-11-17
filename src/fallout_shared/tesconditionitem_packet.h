@@ -2,11 +2,12 @@
 #ifndef TESCONDITIONITEM_PACKET_H
 #define TESCONDITIONITEM_PACKET_H
 
+// pdb: structure FUNCTION_DATA, size 0xc, 2 members
 struct FUNCTION_DATA
 {
-    unsigned short function;
+    unsigned short iFunction; // src: XBOX_RETAIL_PDB +0x0 (old: function)
     unsigned short pad;
-    TESObjectREFR* param;
+    TESObjectREFR* pParam; // src: XBOX_RETAIL_PDB +0x4 (old: param)
     void* param2;
 };
 template <class T> class BSSimpleList;
@@ -28,7 +29,7 @@ extern CommandInfo g_scriptCommands[];
 class ScriptFunctionData
 {
   public:
-    static void InitItem(TESForm*, FUNCTION_DATA*);
+    static void TESParameters_InitItem(TESForm*, FUNCTION_DATA*);
     static bool GetParamIsReference(FUNCTION_DATA*, unsigned int);
 };
 bool Compare(int, float, float);

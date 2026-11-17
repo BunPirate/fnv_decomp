@@ -38,6 +38,8 @@ extern "C" void* DAT_011d8a80;
 // Returns byte at offset 0x4cd of DAT_011d8a80, or 0 if DAT_011d8a80 is null.
 // @fnv 0x00944270
 // src: COMMUNITY 0x00944270
+// pdb: RandomUnsignedInt | PlayerCharacter.obj | debug, object-file run extension, low
+// pdb params: aiMin, aiMax
 char __cdecl InterfaceManager_GetContainerMenuQueued()
 {
     char result;
@@ -48,6 +50,7 @@ char __cdecl InterfaceManager_GetContainerMenuQueued()
     return result;
 }
 
+// pdb: class Animation, size 0x13c (here 0x4), 33 members
 struct Animation
 {
     float m_fMovementRate;
@@ -183,6 +186,7 @@ struct FUN_00944400_Class
 
 // Returns whether the DummyFlags object at offset 0x410 has flag 0x400 set.
 // @fnv 0x00944400
+// pdb: bhkCharacterController::QCanJump | PlayerCharacter.obj | debug, call graph, low
 bool FUN_00944400_Class::HasFlag400()
 {
     return ((DummyFlags*)((char*)this + 0x410))->FUN_00621270(0x400) != 0;
@@ -229,6 +233,7 @@ struct FUN_0094c380_Class
 
 // @fnv 0x0094c380
 // src: COMMUNITY 0x0094c380
+// pdb: CameraCaster::Remove | PlayerCharacter.obj | debug, upstream name already matches, high
 void __thiscall FUN_0094c380_Class::CameraCaster_Remove()
 {
     CameraCaster_Add(0);
@@ -240,11 +245,14 @@ extern Setting g_011d9748;
 
 // If _pme is set, stores value multiplied by the float from g_011d9748 into the field at offset 0x274 of _pme.
 // @fnv 0x0094c3a0
-void SetScaledValue(float value)
+// src: XBOX_DEBUG_PDB 0x0094c3a0
+// pdb: HUDMainMenu::Shake | PlayerCharacter.obj | debug, call graph, high
+// pdb params: afMagnitude
+void HUDMainMenu_Shake(float afMagnitude)
 {
     if (_pme)
     {
-        *(float*)((char*)_pme + 0x274) = value * *(float*)g_011d9748.Float();
+        *(float*)((char*)_pme + 0x274) = afMagnitude * *(float*)g_011d9748.Float();
     }
 }
 }  // namespace fnv_0094c3a0
@@ -262,9 +270,11 @@ unsigned int __thiscall FUN_0094c8c0_class::GetField6EC()
 
 // @fnv 0x00950b00
 // src: XBOX_PDB 0x00950b00
-int PlayerCharacter::GetBiped(bool firstPerson)
+// pdb: PlayerCharacter::GetBiped | PlayerCharacter.obj | debug, call graph, high
+// pdb params: abFirstPerson
+int PlayerCharacter::GetBiped(bool abFirstPerson)
 {
-    if (firstPerson)
+    if (abFirstPerson)
         return *(int*)((char*)this + 0x68c);
     return (int)GetBipedComponent();
 }
@@ -277,6 +287,7 @@ struct FUN_0095f6a0_Class
 
 // @fnv 0x0095f6a0
 // src: COMMUNITY 0x0095f6a0
+// pdb: PlayerCharacter::ForcePhysicsGrabDrop | PlayerCharacter.obj | debug, upstream name already matches, high
 void FUN_0095f6a0_Class::PlayerCharacter_ForcePhysicsGrabDrop()
 {
     PlayerCharacter_DestroyMouseSpring();
@@ -321,21 +332,24 @@ struct FUN_00952a20_shell
     char pad6bc[8];
     char kTargetList[8];
     QuestObjectiveNode* GetOffset6BC();
-    void PlayerCharacter_AddQuestObjective(BGSQuestObjective* apObjective);
+    void PlayerCharacter_AddQuestObjective(BGSQuestObjective* apObj);
 };
 
 // @fnv 0x00952a20
 // src: COMMUNITY 0x00952a20
-void FUN_00952a20_shell::PlayerCharacter_AddQuestObjective(BGSQuestObjective* apObjective)
+// pdb: PlayerCharacter::AddQuestObjective | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb params: apObj
+// pdb locals: plist, bquestinlist, bhasObjectives, bobjinlist, pquest, pobj
+void FUN_00952a20_shell::PlayerCharacter_AddQuestObjective(BGSQuestObjective* apObj)
 {
     QuestObjectiveNode* pIter = GetOffset6BC();
-    TESQuest* pObjQuest = apObjective->TESMain_GetThread();
+    TESQuest* pObjQuest = apObj->TESMain_GetThread();
     bool bFound = false;
     bool bSameQuest = false;
     while (pIter && pIter->FUN_006815c0())
     {
         BGSQuestObjective* pObjective = pIter->FUN_006815c0();
-        if (apObjective == pObjective)
+        if (apObj == pObjective)
         {
             bSameQuest = true;
             break;
@@ -345,11 +359,11 @@ void FUN_00952a20_shell::PlayerCharacter_AddQuestObjective(BGSQuestObjective* ap
         pIter = pIter->FUN_00726070();
     }
     bool bHasObjectives =
-        apObjective->TESMain_GetThread()->FUN_005d43e0() && !apObjective->TESMain_GetThread()->FUN_005d43e0()->FUN_008256d0();
+        apObj->TESMain_GetThread()->FUN_005d43e0() && !apObj->TESMain_GetThread()->FUN_005d43e0()->FUN_008256d0();
     if (bHasObjectives && !bSameQuest)
-        ((G2*)GetOffset6BC())->AddHead((int*)&apObjective);
-    if (apObjective->TESMain_GetThread() == pQuest)
-        apObjective->AddMatchingTargetsToList(kTargetList);
+        ((G2*)GetOffset6BC())->AddHead((int*)&apObj);
+    if (apObj->TESMain_GetThread() == pQuest)
+        apObj->AddMatchingTargetsToList(kTargetList);
 }
 
 struct FUN_00952b30_BSSimpleList
@@ -360,6 +374,8 @@ struct FUN_00952b30_BSSimpleList
 };
 
 // @fnv 0x00952b30
+// pdb: PlayerCharacter::GetActiveQuestObjective | PlayerCharacter.obj | debug, call graph, medium
+// pdb locals: plist, pobj
 int PlayerCharacter::FindAudioEntry()
 {
     FUN_00952b30_BSSimpleList* node = (FUN_00952b30_BSSimpleList*)((char*)this + 0x6bc);
@@ -380,6 +396,9 @@ struct FUN_00952830_Class
 void __cdecl SortTopicList(unsigned int, BSSimpleList<TESTopic*>*);
 // Iterates the given topic list, calls FUN_00952830 on each entry, and if any returns true calls SortTopicList with 1 and the result of GetSelfOffset6A8.
 // @fnv 0x009527b0
+// pdb: PlayerCharacter::AddTopics | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb params: apAddTopicList
+// pdb locals: bNeedsResort, pList
 void __thiscall PlayerCharacter::AddTopics(BSSimpleList<TESTopic*>* apAddTopicList)
 {
     if (apAddTopicList)
@@ -407,25 +426,28 @@ struct FUN_00952830_BSSimpleList
 void SortTopicList(int, BSSimpleList<TESTopic*>*);
 struct FUN_00952830_Class
 {
-    bool PlayerCharacter_AddTopic(int param_2, unsigned char param_3, int pad);
+    bool PlayerCharacter_AddTopic(int apNewTopic, unsigned char abResort, int abDisplayMessage);
 };
 // Returns false if param_2 is zero or already present in the list; otherwise adds it to the head of the list at offset 0x6a8 and optionally calls SortTopicList.
 // @fnv 0x00952830
 // src: COMMUNITY 0x00952830
-bool FUN_00952830_Class::PlayerCharacter_AddTopic(int aiValue, unsigned char param_3, int pad)
+// pdb: PlayerCharacter::AddTopic | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb params: apNewTopic, abResort, abDisplayMessage
+// pdb locals: pList
+bool FUN_00952830_Class::PlayerCharacter_AddTopic(int apNewTopic, unsigned char abResort, int abDisplayMessage)
 {
     FUN_00952830_BSSimpleList* pEntry;
-    if (aiValue == 0)
+    if (apNewTopic == 0)
         return false;
     pEntry = (FUN_00952830_BSSimpleList*)((PlayerCharacter*)this)->GetSelfOffset6A8();
     while (pEntry && *pEntry->_ref_006815c0())
     {
-        if (*pEntry->_ref_006815c0() == aiValue)
+        if (*pEntry->_ref_006815c0() == apNewTopic)
             return false;
         pEntry = pEntry->GetNext();
     }
-    ((G2*)((char*)this + 0x6a8))->AddHead(&aiValue);
-    if (param_3)
+    ((G2*)((char*)this + 0x6a8))->AddHead(&apNewTopic);
+    if (abResort)
         SortTopicList(1, ((PlayerCharacter*)this)->GetSelfOffset6A8());
     return true;
 }
@@ -466,27 +488,30 @@ struct FUN_0094c950_shell
     ArgObj* field_6f0;
 
     void PlayerCharacter_SetSelectedSpell(BaseB* p);
-    void SetArg(ArgObj* pArg);
+    void PlayerCharacter_SetSelectedScroll(ArgObj* apScroll);
 };
 
 // Updates field_6f0 to pArg when it differs, clearing it if pArg's list lookup fails, and forwards the list result to FUN_0094c8e0.
 // @fnv 0x0094c950
-void FUN_0094c950_shell::SetArg(ArgObj* pArg)
+// src: XBOX_RETAIL_PDB 0x0094c950
+// pdb: PlayerCharacter::SetSelectedScroll | PlayerCharacter.obj | retail, call graph (shared callers), high
+// pdb params: apScroll
+void FUN_0094c950_shell::PlayerCharacter_SetSelectedScroll(ArgObj* apScroll)
 {
-    if (pArg && !pArg->list.FUN_00726070())
+    if (apScroll && !apScroll->list.FUN_00726070())
     {
         field_6f0 = 0;
         return;
     }
-    if (field_6f0 && field_6f0 == pArg)
+    if (field_6f0 && field_6f0 == apScroll)
     {
         return;
     }
-    if (field_6f0 && !pArg)
+    if (field_6f0 && !apScroll)
     {
         PlayerCharacter_SetSelectedSpell(0);
     }
-    field_6f0 = pArg;
+    field_6f0 = apScroll;
     if (field_6f0)
     {
         PlayerCharacter_SetSelectedSpell(field_6f0->list.FUN_00726070());
@@ -516,7 +541,7 @@ struct FUN_00952f90_helper
 
 struct FUN_00952f90_member
 {
-    void __thiscall ClearTeleportPath();
+    void __thiscall TeleportPath_Clear();
 };
 
 class FUN_00952f90_cls
@@ -525,18 +550,20 @@ class FUN_00952f90_cls
     char unk0000[0x6f4];
     FUN_00952f90_helper* m_6f4;
     FUN_00952f90_member m_6f8;
-    void __thiscall ClearHelper();
+    void __thiscall PlayerCharacter_RemovePlayerMapMarker();
 };
 
 // Calls v10(1) on m_6f4 if non-null, then nulls m_6f4 and calls ClearTeleportPath on m_6f8.
 // @fnv 0x00952f90
-void FUN_00952f90_cls::ClearHelper()
+// src: XBOX_RETAIL_PDB 0x00952f90
+// pdb: PlayerCharacter::RemovePlayerMapMarker | PlayerCharacter.obj | retail, call graph (shared callers), high
+void FUN_00952f90_cls::PlayerCharacter_RemovePlayerMapMarker()
 {
     unsigned int tmp = (unsigned int)m_6f4;
     FUN_00952f90_helper* p = (FUN_00952f90_helper*)tmp;
     p != 0 ? p->v10(1) : 0;
     m_6f4 = 0;
-    m_6f8.ClearTeleportPath();
+    m_6f8.TeleportPath_Clear();
 }
 
 class EnchantedFormList
@@ -691,14 +718,14 @@ struct PlayerEnchantStub
     int unk234;
     int unk238;
     EnchantedFormList* pEnchantedForms;
-    void RemoveEnchantment(TESBoundObject* apForm, int aiUnused);
+    void PlayerCharacter_RemoveQueuedEnchantment(TESBoundObject* apObject, int apExtra);
 };
 
 
 struct InvEntry
 {
     TESBoundObject* GetObj();
-    void SetPerkExtra(void* a);
+    void SetPoison(void* apPoison);
 };
 
 struct ProcStub
@@ -1367,6 +1394,8 @@ void __cdecl Interface_UpdateInventory();
 
 // @fnv 0x0095e900
 // src: COMMUNITY 0x0095e900
+// pdb: PlayerCharacter::PoisonWeapon | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb locals: pweapon, pweaponItem
 void __cdecl PlayerCharacter_PoisonWeapon()
 {
     if (!_g_thePlayer->unk758)
@@ -1380,7 +1409,7 @@ void __cdecl PlayerCharacter_PoisonWeapon()
         {
             FUN_005f5950(5, 1, _g_thePlayer->unk758, 0, 0, 0, 0);
             FUN_005f5950(9, 1, _g_thePlayer->unk758, 0, 0, 0, 0);
-            entry3->SetPerkExtra(_g_thePlayer->unk758);
+            entry3->SetPoison(_g_thePlayer->unk758);
             _g_thePlayer->Equip(_g_thePlayer->unk758, 0, 1, 0, 0, 0, 0, 0, 1, 0);
             Interface_UpdateInventory();
         }
@@ -2063,15 +2092,19 @@ struct RestorePlayer
     RestorePosition* GetPosition();
     void SetLocation(const RestorePosition&);
     RestoreNode* GetNode(bool);
-    void RestorePlayerLocation(bool);
+    void PlayerCharacter_ReturnToLastKnownGoodPosition(bool);
 };
 // If a saved destination exists, either moves the player to it (travel) or restores the saved position, controller, cell and nodes.
 // @fnv 0x0094dbe0
-void RestorePlayer::RestorePlayerLocation(bool travel)
+// src: XBOX_RETAIL_PDB 0x0094dbe0
+// pdb: PlayerCharacter::ReturnToLastKnownGoodPosition | PlayerCharacter.obj | retail, call graph (shared callers), high
+// pdb params: abPositionPlayer
+// pdb locals: pcell, pworld, pobj1st3D, pactor, pcon, pobj3D, UpdateData1, UpdateData2, icellx, icelly
+void RestorePlayer::PlayerCharacter_ReturnToLastKnownGoodPosition(bool abPositionPlayer)
 {
     if (savedDestination)
     {
-        if (travel)
+        if (abPositionPlayer)
         {
             QueueUIMessage(g_011d50bc.String(), 0, restoreIcon, 0, 2.0f, false);
             SavedForm* cellB = 0;
@@ -2391,19 +2424,23 @@ struct Ref
 extern Ref* player;
 struct Controller
 {
-    bool IsPlayerTargeted(Ref* actor, bool mode);
+    bool PlayerCharacter_IsActorFollowingEscortingPlayer(Ref* apActor, bool bAll);
 };
 // Checks whether actor is alive and enabled and, depending on mode, whether its package or current process targets the player.
 // @fnv 0x00954a70
-bool Controller::IsPlayerTargeted(Ref* actor, bool mode)
+// src: XBOX_RETAIL_PDB 0x00954a70
+// pdb: PlayerCharacter::IsActorFollowingEscortingPlayer | PlayerCharacter.obj | retail, object-file run extension, high
+// pdb params: apActor, bAll
+// pdb locals: pPack, pproc, pactorpack, pref, pobject
+bool Controller::PlayerCharacter_IsActorFollowingEscortingPlayer(Ref* apActor, bool bAll)
 {
-    if (actor->Dead(0) || actor->GetDisabled() || actor->Invalid() || actor->Actor_IsRestrained())
+    if (apActor->Dead(0) || apActor->GetDisabled() || apActor->Invalid() || apActor->Actor_IsRestrained())
         return false;
-    actor->GetCurrentProcess()->Set(actor, 1);
-    Package* package = actor->GetAssignedPackage();
-    Process* process = actor->GetCurrentProcess();
+    apActor->GetCurrentProcess()->Set(apActor, 1);
+    Package* package = apActor->GetAssignedPackage();
+    Process* process = apActor->GetCurrentProcess();
     Handle* handle8 = &process->handle;
-    if (mode)
+    if (bAll)
     {
         Ref* target8 = 0;
         if (handle8 && handle8->Get())
@@ -2416,12 +2453,12 @@ bool Controller::IsPlayerTargeted(Ref* actor, bool mode)
                     target8 = player;
             }
         }
-        if ((package && package->Target(actor) == player) ||
-            ((target8 == player || actor->GetCurrentProcess()->Target() == player) && package->Type() != 9))
+        if ((package && package->Target(apActor) == player) ||
+            ((target8 == player || apActor->GetCurrentProcess()->Target() == player) && package->Type() != 9))
         {
             if (target8 == player)
             {
-                if (actor->ActorTest())
+                if (apActor->ActorTest())
                     return false;
                 else
                     return true;
@@ -2433,7 +2470,7 @@ bool Controller::IsPlayerTargeted(Ref* actor, bool mode)
     {
         if (package && (package->Type() == 1 || package->Type() == 7) && package->GetData())
         {
-            Process* aProcess2 = actor->GetCurrentProcess();
+            Process* aProcess2 = apActor->GetCurrentProcess();
             Handle* kTarget2 = &aProcess2->handle;
             Ref* handleA = kTarget2->Get();
             if (!handleA)
@@ -3338,10 +3375,13 @@ struct Update97
     void SetActiveState(int, int, int);
     int GetAnimAction_008a7570();
     float PlayerCharacter_SetFOV(float);
-    void UpdateScopeZoom(float elapsed);
+    void UpdateScopeZoom(float afDelta);
 };
 // @fnv 0x0095de30
-void Update97::UpdateScopeZoom(float elapsed)
+// pdb: PlayerCharacter::DoIronSightsZoom | PlayerCharacter.obj | debug, call graph (shared callers), high
+// pdb params: afDelta
+// pdb locals: fzoomScale, fzoom, pweapon, fdefault, f1stdefault, fchangeTime, fpipboy, pchange, fextraZoom, fdelta, ftarget, f1target, ffovMult, src, fdistMult, fdist, ftan, ffovMultDelta, pobj, rbound, fcamTime
+void Update97::UpdateScopeZoom(float afDelta)
 {
     static Actor97* previous = 0;
     if (*(unsigned char*)DAT_011e097c.FUN_00408d60())
@@ -3380,7 +3420,7 @@ void Update97::UpdateScopeZoom(float elapsed)
         {
             float vertical = normalVertical;
             float step = scope;
-            float horizontal = elapsed * 30.0 / speed;
+            float horizontal = afDelta * 30.0 / speed;
             if (Actor_GetIronSights() && weapon > 5.0 &&
                 ((GetAnimAction_008a7570() != 9 && GetAnimAction_008a7570() != 17) || GetSettingInteger(&DAT_011f2250) == 4))
             {
@@ -3518,7 +3558,7 @@ struct InputManager
 extern InputManager* DAT_011dea0c;
 extern bool DAT_011e0d5c;
 void __cdecl Interface_SetDragDroppingState(int);
-int __cdecl GetLODMultTypeIfKeySet();
+int __cdecl Interface_GetDragDroppingState();
 struct Item;
 struct ItemEntry
 {
@@ -4113,13 +4153,16 @@ struct Owner
 };
 // @fnv 0x0095f6c0
 // src: COMMUNITY 0x0095f6c0
-void Owner::PlayerCharacter_HandlePhysicsGrab(float delta)
+// pdb: PlayerCharacter::HandlePhysicsGrab | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb params: afTimeDelta
+// pdb locals: bdropPressed, istate, pcontrols, bbuttonPressed, bdropHeld, pObject, pbody, pcol, pav, fobjectMass
+void Owner::PlayerCharacter_HandlePhysicsGrab(float afTimeDelta)
 {
     InputState* input = DAT_011dea0c->Main_GetControls();
     unsigned char pressed = input->Controls_GetUserAction(27, 1) != 0;
     if (pressed)
         Interface_SetDragDroppingState(0);
-    int status = GetLODMultTypeIfKeySet();
+    int status = Interface_GetDragDroppingState();
     bool second;
     {
         bool first = status == 1;
@@ -4133,7 +4176,7 @@ void Owner::PlayerCharacter_HandlePhysicsGrab(float delta)
             if (mode == 1)
             {
                 if ((DAT_011e0d5c && !pressed) || second)
-                    PlayerCharacter_UpdateMouseSpring(delta);
+                    PlayerCharacter_UpdateMouseSpring(afTimeDelta);
                 else
                 {
                     PlayerCharacter_DestroyMouseSpring();
@@ -4182,7 +4225,7 @@ struct Node
 };
 struct Target
 {
-    void UpdateEffectsByFlags(void* data);
+    void MagicTarget_StartSpell(void* apSpell);
 };
 struct Virtual
 {
@@ -4204,28 +4247,36 @@ struct Obj
     Virtual unk88;
     int unk8c, unk90;
     Target unk94;
-    void ApplyFormPayload(Form* form, int unused);
+    void PlayerCharacter_AddQueuedEnchantment(Form* apObject, int apExtra);
 };
 // If form's type is 24 or 26, resolves a node via FUN_00ec43fb and passes its payload18 to unk88.vf14 and unk94.UpdateEffectsByFlags.
 // @fnv 0x0095ea30
-void Obj::ApplyFormPayload(Form* form, int unused)
+// src: XBOX_RETAIL_PDB 0x0095ea30
+// pdb: PlayerCharacter::AddQueuedEnchantment | PlayerCharacter.obj | retail, object-file run extension, high
+// pdb params: apObject, apExtra
+// pdb locals: penchantment, penchantable
+void Obj::PlayerCharacter_AddQueuedEnchantment(Form* apObject, int apExtra)
 {
-    if (form->FUN_00401170() != 24 && form->FUN_00401170() != 26)
+    if (apObject->FUN_00401170() != 24 && apObject->FUN_00401170() != 26)
         return;
-    Node* result = static_cast<Node*>(FUN_00ec43fb(form, 0, &DAT_01183108, &DAT_011839b4, 0));
+    Node* result = static_cast<Node*>(FUN_00ec43fb(apObject, 0, &DAT_01183108, &DAT_011839b4, 0));
     Node* node = result ? result->FUN_00726070() : 0;
     if (node)
     {
-        unk88.vf14(node ? &node->payload18 : 0, (int)form, 0);
-        unk94.UpdateEffectsByFlags(node ? &node->payload18 : 0);
+        unk88.vf14(node ? &node->payload18 : 0, (int)apObject, 0);
+        unk94.MagicTarget_StartSpell(node ? &node->payload18 : 0);
     }
 }
 
 // For form type 0x18 or 0x1A with an enchantment, removes the spell if present, removes apForm from pEnchantedForms, and deletes the list when it becomes empty.
 // @fnv 0x0095eb10
-void PlayerEnchantStub::RemoveEnchantment(TESBoundObject* apForm, int aiUnused)
+// src: XBOX_RETAIL_PDB 0x0095eb10
+// pdb: PlayerCharacter::RemoveQueuedEnchantment | PlayerCharacter.obj | retail, call graph, high
+// pdb params: apObject, apExtra
+// pdb locals: penchantment, penchantable
+void PlayerEnchantStub::PlayerCharacter_RemoveQueuedEnchantment(TESBoundObject* apObject, int apExtra)
 {
-    if (apForm->FNV_GetFormType() != 0x18 && apForm->FNV_GetFormType() != 0x1A)
+    if (apObject->FNV_GetFormType() != 0x18 && apObject->FNV_GetFormType() != 0x1A)
     {
         return;
     }
@@ -4233,7 +4284,7 @@ void PlayerEnchantStub::RemoveEnchantment(TESBoundObject* apForm, int aiUnused)
     {
         return;
     }
-    TESEnchantableForm* pEnchantable = dynamic_cast<TESEnchantableForm*>(apForm);
+    TESEnchantableForm* pEnchantable = dynamic_cast<TESEnchantableForm*>(apObject);
     EnchantmentItem* pEnchantmentItem = pEnchantable ? pEnchantable->GetEnchantment() : 0;
     if (pEnchantmentItem == 0)
     {
@@ -4241,9 +4292,9 @@ void PlayerEnchantStub::RemoveEnchantment(TESBoundObject* apForm, int aiUnused)
     }
     if (kMagicTarget.HasSpell(pEnchantmentItem, true))
     {
-        kMagicTarget.RemoveSpellStub(apForm, false);
+        kMagicTarget.RemoveSpellStub(apObject, false);
     }
-    pEnchantedForms->Remove(apForm);
+    pEnchantedForms->Remove(apObject);
     if (pEnchantedForms->IsEmptyStub())
     {
         delete pEnchantedForms;

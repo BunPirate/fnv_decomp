@@ -1,6 +1,7 @@
 
 // Functions are listed by their @fnv annotations; compile flags inferred from the PC code.
 
+// pdb: class KFModel, size 0x14 (here 0x4), 5 members
 struct KFModel
 {
     unsigned int m_uiObjectRefCount;
@@ -16,6 +17,8 @@ struct NiPointer_KFModel
 
 // @fnv 0x0044b070
 // src: GUESS 0x0044b070 (confidence: low)
+// pdb: NiPointer<KFModel>::operator= | ModelLoader.obj | debug, call graph, high
+// pdb params: pObject
 NiPointer_KFModel& NiPointer_KFModel::UpdateState_0044b070(KFModel* pObject)
 {
     if (m_pObject != pObject)
@@ -29,6 +32,7 @@ NiPointer_KFModel& NiPointer_KFModel::UpdateState_0044b070(KFModel* pObject)
     return *this;
 }
 
+// pdb: class LoadedFile, size 0x10 (here 0x4), bases: NiMemObject, 5 members
 struct LoadedFile
 {
     int BackgroundTask;
@@ -42,6 +46,8 @@ struct NiPointer_LoadedFile
 };
 // @fnv 0x0044b220
 // src: GUESS 0x0044b220 (confidence: medium)
+// pdb: NiPointer<LoadedFile>::operator= | ModelLoader.obj | debug, object-file gap fill, medium
+// pdb params: pObject
 NiPointer_LoadedFile& NiPointer_LoadedFile::AssignRetainedObject_0044b220(LoadedFile* pObject)
 {
     if (m_pObject != pObject)
@@ -257,7 +263,7 @@ struct BSBase
     int unk0C;
     int unk10;
     int unk14;
-    BSBase(int a1);
+    BSBase(int aePriority);
 };
 
 struct FUN_00c3c590 : BSBase
@@ -268,11 +274,13 @@ struct FUN_00c3c590 : BSBase
     RefPtr m_1c;
     int m_20;
     int m_24;
-    FUN_00c3c590(int a1);
+    FUN_00c3c590(int aePriority);
 };
 
 // @fnv 0x00c3c590
-FUN_00c3c590::FUN_00c3c590(int a1) : BSBase(a1)
+// pdb: QueuedFile::QueuedFile | QueuedFiles.obj | debug, call graph, high
+// pdb params: aePriority
+FUN_00c3c590::FUN_00c3c590(int aePriority) : BSBase(aePriority)
 {
     RefPtr* p;
     RefObj* kObj;

@@ -3,6 +3,7 @@
 #include <stddef.h>
 #include "NiNode.h"
 
+// pdb: class NiSortAdjustNode, size 0xe0 (here 0xac), bases: NiNode, 1 members
 class NiSortAdjustNode : public NiNode
 {
   public:

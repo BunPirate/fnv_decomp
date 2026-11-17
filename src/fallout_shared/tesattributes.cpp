@@ -4,6 +4,7 @@
 #include "../../include/TESAttributes.h"
 
 // @fnv 0x0047ff70
+// pdb: TESAttributes::TESAttributes | TESAttributes.obj | debug, upstream name already matches, high
 TESAttributes::TESAttributes()
 {
     InitializeComponent();
@@ -24,6 +25,8 @@ unsigned int __fastcall FUN_009d2510(void*);
 
 // Copies 7 bytes from apData into the object at offset 4, then calls FUN_009d2510 on this and returns its result.
 // @fnv 0x00480130
+// pdb: TESAttributes::Load | TESAttributes.obj | debug, upstream name already matches, high
+// pdb params: apData
 unsigned int TESAttributes::Load(void* apData)
 {
     memcpy(reinterpret_cast<char*>(this) + 4, apData, 7);
@@ -41,6 +44,8 @@ unsigned int __fastcall FUN_009d2510(void* p);
 
 // Copies 7 bytes from this+4 into apData, then returns the result of FUN_009d2510(this).
 // @fnv 0x00480100
+// pdb: TESAttributes::Save | TESAttributes.obj | debug, upstream name already matches, high
+// pdb params: apData
 unsigned int __thiscall TESAttributes::Save(void* apData)
 {
     _memcpy(apData, reinterpret_cast<char*>(this) + 4, 7);
@@ -62,9 +67,11 @@ unsigned short TESAttributes::GetSaveSize(unsigned int param)
 
 
 // @fnv 0x00480240
-void __thiscall TESAttributes::LoadGame(unsigned int aFlags, unsigned int aDummy)
+// pdb: TESAttributes::LoadGame | TESAttributes.obj | debug, call graph, high
+// pdb params: aiFlags, aiCurrentFlags
+void __thiscall TESAttributes::LoadGame(unsigned int aiFlags, unsigned int aiCurrentFlags)
 {
-    if (aFlags & 0)
+    if (aiFlags & 0)
     {
         g_TESSaveLoadGame->ReadTypedData((void*)((char*)this + 4), 7);
     }
@@ -79,9 +86,12 @@ struct AVH
 
 // Casts component to TESAttributes and copies its seven attribute values into cAttribute.
 // @fnv 0x00480000
-void TESAttributes::BaseFormRecord(BaseFormComponent* component)
+// pdb: TESAttributes::CopyComponent | TESAttributes.obj | retail, vtable slot, high
+// pdb params: apCopyFC
+// pdb locals: pCopy, n
+void TESAttributes::BaseFormRecord(BaseFormComponent* apCopyFC)
 {
-    TESAttributes* attributes = dynamic_cast<TESAttributes*>(component);
+    TESAttributes* attributes = dynamic_cast<TESAttributes*>(apCopyFC);
     if (!attributes)
         return;
     for (int i = 0; i < 7; ++i)
@@ -96,9 +106,12 @@ struct AVH
 }  // namespace fnv_00480070
 // Casts component to TESAttributes and returns false only if all seven attribute values match this object's cAttribute entries; returns true otherwise.
 // @fnv 0x00480070
-bool TESAttributes::IsEqualToBase(BaseFormComponent* component)
+// pdb: TESAttributes::CompareComponent | TESAttributes.obj | retail, vtable slot, high
+// pdb params: apCompareFC
+// pdb locals: pCompare, n
+bool TESAttributes::IsEqualToBase(BaseFormComponent* apCompareFC)
 {
-    TESAttributes* attributes = dynamic_cast<TESAttributes*>(component);
+    TESAttributes* attributes = dynamic_cast<TESAttributes*>(apCompareFC);
     if (!attributes)
         return true;
     for (int i = 0; i < 7; ++i)
@@ -110,6 +123,8 @@ bool TESAttributes::IsEqualToBase(BaseFormComponent* component)
     return false;
 }
 // @fnv 0x00480210
+// pdb: TESAttributes::SaveGame | TESAttributes.obj | debug, call graph, high
+// pdb params: aiFlags
 void TESAttributes::SaveGame(unsigned int aiFlags)
 {
     if (aiFlags & 0)
@@ -123,10 +138,13 @@ extern void* PTR_PTR_01183028;
 extern "C" void* FUN_00ec43fb(void* self, int a, void* b, void* c, int d);
 // Writes value at byte offset offset - 1, then when flag is nonzero calls FUN_00ec43fb and a method on its result.
 // @fnv 0x00480180
-void TESAttributes::SetAttributeValue(int offset, unsigned char value, bool flag)
+// pdb: TESAttributes::SetAttributeValue | TESAttributes.obj | retail, upstream name already matches, high
+// pdb params: aeAttribute, acValue, abMarkChange
+// pdb locals: pform
+void TESAttributes::SetAttributeValue(int aeAttribute, unsigned char acValue, bool abMarkChange)
 {
-    ((char*)this)[offset - 1] = value;
-    if (flag != 0)
+    ((char*)this)[aeAttribute - 1] = acValue;
+    if (abMarkChange != 0)
     {
         void* p = FUN_00ec43fb(this, 0, &PTR_PTR_01186c74, &PTR_PTR_01183028, 0);
         if (p != 0)

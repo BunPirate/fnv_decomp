@@ -27,12 +27,15 @@ void __cdecl hkPredGskAgent3_initAgentFunc(FUN_00d41f00_Local* p);
 class SpawnedObject
 {
   public:
-    void AddEntry(FUN_00d41f00_Local* p, int a, int b);
+    void hkpCollisionDispatcher_registerAgent3(FUN_00d41f00_Local* f, int typeA, int typeB);
 };
 
 // @fnv 0x00d41f00
 // src: HAVOK_LIB 0x00d41f00
-void __cdecl hkPredGskAgent3_registerAgent3(SpawnedObject* self, int aiArg1, int aiArg2)
+// pdb: hkPredGskAgent3::registerAgent3 | hkpPredGskAgent3.obj | retail, upstream name already matches, high
+// pdb params: dispatcher, typeA, typeB
+// pdb locals: f
+void __cdecl hkPredGskAgent3_registerAgent3(SpawnedObject* dispatcher, int typeA, int typeB)
 {
     FUN_00d41f00_Local local;
     local.unk30 = 0;
@@ -44,5 +47,5 @@ void __cdecl hkPredGskAgent3_registerAgent3(SpawnedObject* self, int aiArg1, int
     local.unk24 = 0;
     local.unk28 = 0;
     hkPredGskAgent3_initAgentFunc(&local);
-    self->AddEntry(&local, aiArg1, aiArg2);
+    dispatcher->hkpCollisionDispatcher_registerAgent3(&local, typeA, typeB);
 }

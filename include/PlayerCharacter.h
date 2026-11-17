@@ -40,6 +40,7 @@ enum ACTION_FLAGS;
 // Player action uses the shared global enum; process methods use _AnimationAction::Action.
 #include "ANIMATION_ACTION.h"
 
+// pdb: class PlayerCharacter, size 0xe4c (here 0xe50), bases: Character, 203 members
 class PlayerCharacter : public Character
 {
 public:
@@ -158,7 +159,7 @@ public:
     virtual BSSimpleList<PerkForm*>* GetPerks(bool teammate);
 
     virtual ~PlayerCharacter();
-    virtual int GetActorValue(ActorValue::Index actorValue);
+    virtual int GetActorValue(ActorValue::Index aiWhich);
     virtual ActorCombatGroup* GetCombatGroup();
     virtual unsigned char GetPerkRank(BGSPerk* perk, bool teammate);
 
@@ -169,29 +170,29 @@ public:
     bool GetUnderAIControl();
     void SetUnderAIControl(bool enabled);
     void UpdateCameraMode();
-    void Show1stPerson(bool show);
-    bool IsActorInCombatWithPlayer(Actor* actor);
+    void Show1stPerson(bool abFirstPerson);
+    bool IsPlayerFollower(Actor* actor);
     int GetCharacterLevel();
     Animation* GetAnimation(bool firstPerson);
     Animation* GetAnimation(bool firstPerson) const;
     static bool __cdecl UpdatePlayerStatus();
-    BipedAnim* GetBipedAnim(bool firstPerson);
-    BipedAnim* GetBipedAnimation(bool firstPerson);
+    BipedAnim* GetBipedAnim(bool abFirstPerson);
+    BipedAnim* GetBipedAnimation(bool abFirstPerson);
     NiNode* GetNode(bool firstPerson);
     int GetPlayerLevel();
     void UpdateRadiationEffects();
     MagicShaderHitEffect* GetField6A4();
     int GetField230();
     MusicMarkerReference* GetMusicMarkerReference();
-    void WriteProgressData(int value);
+    void ExportProgressData(int aeEvent);
     void UpdatePlayerState();
     float GetScale();
-    bool PlaceAtPosition(NiPoint3& position);
+    bool Actor_GetKnockedDownMovementDelta(NiPoint3& aMovementDelta);
     bhkCharacterController* GetPhysicsCharacterController();
     ANIMATION_ACTION GetAnimAction();
     bool IsAlert();
-    unsigned short GetAnimGroup(ANIM_GROUP_ENUM group, InventoryStackRecord* record,
-                               bool firstPerson, Animation* animation);
+    unsigned short GetAnimGroup(ANIM_GROUP_ENUM aeGroup, InventoryStackRecord* apWeaponItem,
+                               bool abCheckHandToHand, Animation* apAnim);
     void SetActionGroupFlags(unsigned short group, ACTION_FLAGS flags);
     void ResetActorValueModifiers();
     TESObjectCELL* GetTarget();
@@ -199,7 +200,7 @@ public:
     void ResetRegionSoundTimer();
     bool IsRegionSoundsEnabled();
     void Refresh();
-    void UpdateAnimationMovement(Animation* animation, float delta);
+    void UpdateAnimationMovement(Animation* apAnim, float delta);
     NiPoint3* GetFieldAtOffsetDD4();
     NiPoint3 GetPosition();
     float GetLooking();
@@ -213,8 +214,8 @@ public:
     BaseProcess* GetCurrentAIProcess();
     BaseProcess* GetCurrentAIProcess() const;
     void UpdatePlayerControls();
-    void FocusOnActor(MobileObject* actor, float value, bool enabled);
-    void SetAimingWeapon(bool first, bool second, bool third);
+    void FocusOnActor(MobileObject* apActor, float afZoomPercent, bool abOnlyZoom);
+    void SetAimingWeapon(bool abIronSights, bool abPostAnim, bool abCheckAnimBlendOut);
     void UpdatePlayerInventory();
     void UpdateCamera(bool first, const bool second);
     float GetLookingZAngle(int flags);
@@ -225,24 +226,24 @@ public:
     void SetDateTimeText(BSStringT<char>& text);
     float GetAngleZ(int flags);
     MagicCaster* GetFloatAsUInt();
-    void GetCameraPosAndDir(NiPoint3* position, NiPoint3* direction, bool firstPerson);
+    void GetCameraPosAndDir(NiPoint3* aOrigin, NiPoint3* aDirection, bool abIncludeCameraOffset);
     void SetField644(float value);
     bool V8B(int flags);
-    void ModifyKarmaForTheft(int amount);
+    void ModifyKarmaForTheft(int aiAmount);
     void ModifyKarmaForStolenItem(TESForm* object, int count);
-    bool HasNote(BGSNote* note);
+    bool HasNote(BGSNote* apNote);
     bool IsPlayerBipedAnimation(BipedAnim* animation);
-    void ApplyHitShaderToReference(TESObjectREFR* reference);
+    void ApplyHitShaderToReference(TESObjectREFR* apRef);
     BSSimpleList<ActorCombatEntry*>* GetListofPerceivedActors();
     bool HasAction(void* action);
     BSSimpleList<TESTopic*>* GetSelfOffset6A8();
-    int GetTerminalAccessResult(TESObjectREFR* reference);
+    int GetTerminalAccessResult(TESObjectREFR* apTerminalRef);
     TESActorBase* GetActorBase();
     void ProcessAllActions();
     void* GetPlayerNode();
-    bool CompleteQuestObjective(PlayerQuestData* item);
-    bool AddMagicItem(MagicItem* item);
-    void OnSpellRemoved(SpellItem* spell);
+    bool CompleteQuestObjective(PlayerQuestData* apNewItem);
+    bool AddEatDrinkItem(MagicItem* item);
+    void OnSpellRemoved(SpellItem* apSpellIn);
     void AddTopics(BSSimpleList<TESTopic*>* topics);
     bool IsSneaking();
     bool MovingCheck();
@@ -258,15 +259,15 @@ public:
     void PlayerCharacter_Force3rdPerson(bool);
     void PlayerCharacter_Force3rdPerson(unsigned char);
     void PlayerCharacter_SetAIControlledPackage(bool);   // 0x005cc7a0: stores the flag at +0x79b
-    int GetBiped(bool firstPerson);
+    int GetBiped(bool abFirstPerson);
     void* PlayerCharacter_Get3D_00950bb0(int i);
-    void UpdateAim(int a1, void* pkNode, float* pfX, float* pfY, int a5,
-                   float m_fGridOriginX, float afWorldOriginY);
+    void ApplyAutoAimActor(int apProjectile, void* apReleaseObj, float* apHeading, float* apLooking, int apOrigin,
+                   float afStartHeading, float afStartLooking);
     int PlayerCharacter_GetAutoAimActor();
-    bool Actor_LineOfSight(int a1, Actor* target, int a3, int a4, int a5);
+    bool Actor_LineOfSight(int abRunFormula, Actor* pTarget, int abUseEyeLevel, int aeInView, int abfull360);
     TESQuest* PlayerCharacter_GetActiveQuest();
-    void SetActiveQuest(int value);
-    void SetActiveQuest(TESQuest* quest);
+    void SetActiveQuest(int apActiveQuest);
+    void SetActiveQuest(TESQuest* apActiveQuest);
     ScriptContext* BSFile_GetDevice(bool first, bool second);
     void PlayerCharacter_DestroyMouseSpring();
     void PlayerCharacter_CreateMouseSpring(TelekinesisReference*, int, float);
@@ -301,7 +302,7 @@ public:
     bool PlayerCharacter_AddTopic(BSAudio* topic, unsigned int sort, unsigned int flags);
     bool PlayerCharacter_AddTopic(int value, unsigned char sort, int flags);
     void PlayerCharacter_SetSelectedSpell(BaseB* node);
-    void SetArg(ArgObj* argument);
+    void SetSelectedScroll(ArgObj* apScroll);
     void __thiscall ClearHelper();
     void RestorePlayerLocation(bool travel);
     bool IsPlayerTargeted(Ref* actor, bool mode);
@@ -310,13 +311,13 @@ public:
     void SetActiveState(int first, int second, int third);
     float PlayerCharacter_SetFOV(float value);
     void UpdateScopeZoom(float elapsed);
-    void PlayerCharacter_UpdateMouseSpring(float delta);
+    void PlayerCharacter_UpdateMouseSpring(float afTimeDelta);
     void PlayerCharacter_CreateMouseSpring(ActorRef* actor, int mode, float distance);
     void PlayerCharacter_HandlePhysicsGrab(float delta);
     void ApplyFormPayload(Form* form, int unused);
     void RemoveEnchantment(TESBoundObject* form, int unused);
-    bool __thiscall PlayerCharacter_GetDropPoint(TESBoundObject* object, InventoryDropPoint* dropPoint, int first, int second);
-    bool PlayerCharacter_CanEquipOrUseObject(InventoryStackRecord* record);
+    bool __thiscall PlayerCharacter_GetDropPoint(TESBoundObject* apObject, InventoryDropPoint* aPoint, int abAllowBackupPoint, int abAdvanceExtraRotate);
+    bool PlayerCharacter_CanEquipOrUseObject(InventoryStackRecord* apItem);
     void TESForm_SaveGameDataOLD(unsigned int, int);
     void TESForm_LoadGameDataOLD(unsigned int, int);
     bool PlayerCharacter_IsImportantConversationRunning();                        // 0x00969860

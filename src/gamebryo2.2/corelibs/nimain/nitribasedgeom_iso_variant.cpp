@@ -6,13 +6,13 @@
 #include "../../../../include/NiUpdateData.h"
 
 class GlobalObjectO2_00a7b610;
-extern GlobalObjectO2_00a7b610 g_011f4a48;
+extern GlobalObjectO2_00a7b610 NiLines_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f4a48 (old: DAT_011f4a48/g_011f4a48)
 
 // @fnv 0x00a74790
 // src: COMMUNITY 0x00a74790
 const GlobalObjectO2_00a7b610* NiLines_GetRTTI()
 {
-    return &g_011f4a48;
+    return &NiLines_ms_RTTI;
 }
 
 extern "C" unsigned int DAT_0109ed94;
@@ -20,6 +20,8 @@ extern "C" void __fastcall UpdateFields_00a80580(::NiGeometry*);
 extern "C" void __cdecl FUN_00aa1460(void*, unsigned int);
 
 // @fnv 0x00a89790
+// pdb: NiTriBasedGeom::IsEqual | NiTriBasedGeom.obj | debug, object-file run extension, low
+// pdb params: pkObject
 extern "C" ::NiGeometry* __fastcall FUN_00a89790(::NiGeometry* geometry, void*, unsigned int flags)
 {
     *reinterpret_cast<void**>(geometry) = &DAT_0109ed94;
@@ -31,7 +33,7 @@ extern "C" ::NiGeometry* __fastcall FUN_00a89790(::NiGeometry* geometry, void*, 
 
 struct FUN_00a59f90_holder
 {
-    void __thiscall FUN_00a59f90(NiUpdateData& data, unsigned int value);
+    void __thiscall FUN_00a59f90(NiUpdateData& UpdateData, unsigned int uFlags);
 };
 struct ParticleDownwardPassReceiver
 {
@@ -82,20 +84,22 @@ struct ParticleDownwardPassReceiver
     virtual void slot44();
     virtual void slot45();
     virtual void dispatch(void* data);
-    void __thiscall NiParticleSystem_UpdateDownwardPass(void* data, unsigned int value);
+    void __thiscall NiParticleSystem_UpdateDownwardPass(void* UpdateData, unsigned int uFlags);
 };
 // @fnv 0x00c1ad90
 // src: XBOX_PDB 0x00c1ad90
-void ParticleDownwardPassReceiver::NiParticleSystem_UpdateDownwardPass(void* data, unsigned int value)
+// pdb: NiParticleSystem::UpdateDownwardPass | NiParticleSystem.obj | retail, upstream name already matches, high
+// pdb params: UpdateData, uFlags
+void ParticleDownwardPassReceiver::NiParticleSystem_UpdateDownwardPass(void* UpdateData, unsigned int uFlags)
 {
-    NiUpdateData* update = (NiUpdateData*)data;
+    NiUpdateData* update = (NiUpdateData*)UpdateData;
     if (update->pad2 != 0)
     {
         update->pad3 = 1;
         return;
     }
-    dispatch(data);
-    ((FUN_00a59f90_holder*)this)->FUN_00a59f90(*(NiUpdateData*)data, value);
+    dispatch(UpdateData);
+    ((FUN_00a59f90_holder*)this)->FUN_00a59f90(*(NiUpdateData*)UpdateData, uFlags);
 }
 
 class NiStream;
@@ -105,9 +109,11 @@ class ParticleLinkEndpoint : public NiGeometry
     void FUN_00a80b50(NiStream&);
 // @fnv 0x00a74780
 // src: XBOX_PDB 0x00a74780
-    void NiLines_LinkObject(NiStream& input)
+// pdb: NiLines::LinkObject | NiLines.obj | debug, upstream name already matches, high
+// pdb params: kStream
+    void NiLines_LinkObject(NiStream& kStream)
     {
-        FUN_00a80b50(input);
+        FUN_00a80b50(kStream);
     }
 };
 
@@ -153,11 +159,13 @@ char* __cdecl NiViewerStrings_NiGetViewerString_Title(const char*);
 
 // @fnv 0x00a897c0
 // src: XBOX_PDB 0x00a897c0
-void __stdcall NiTriBasedGeom_GetViewerStrings(TriGeomViewerDetail::EntryArray* entries)
+// pdb: NiTriBasedGeom::GetViewerStrings | NiTriBasedGeom.obj | retail, upstream name already matches, high
+// pdb params: pkStrings
+void __stdcall NiTriBasedGeom_GetViewerStrings(TriGeomViewerDetail::EntryArray* pkStrings)
 {
-    TriGeomViewerDetail::FUN_00a80e70(entries);
+    TriGeomViewerDetail::FUN_00a80e70(pkStrings);
     char* label = TriGeomViewerDetail::NiViewerStrings_NiGetViewerString_Title(TriGeomViewerDetail::g_011f4a20_arg1);
-    entries->Append(label);
+    pkStrings->Append(label);
 }
 
 namespace LineLoadEntry {
@@ -166,14 +174,16 @@ class LineReceiver : public ::NiGeometry
 {
   public:
     void FUN_00a80bf0(BinaryDataRecord& stream);
-    void NiLines_LoadBinary(BinaryDataRecord& stream);
+    void NiLines_LoadBinary(BinaryDataRecord& kStream);
 };
 
 // @fnv 0x00a9b180
 // src: XBOX_PDB 0x00a9b180
-void LineReceiver::NiLines_LoadBinary(BinaryDataRecord& stream)
+// pdb: NiLines::LoadBinary | NiLines.obj | debug, upstream name already matches, high
+// pdb params: kStream
+void LineReceiver::NiLines_LoadBinary(BinaryDataRecord& kStream)
 {
-    FUN_00a80bf0(stream);
+    FUN_00a80bf0(kStream);
 }
 }
 
@@ -188,7 +198,9 @@ class ParticleDataEndpoint : public ::NiGeometry
 
 // @fnv 0x00c1ad80
 // src: XBOX_PDB 0x00c1ad80
-void ParticleDataEndpoint::NiParticleSystem_SetModelData(NiGeometryData* replacement)
+// pdb: NiParticleSystem::SetModelData | NiParticleSystem.obj | debug, upstream name already matches, high
+// pdb params: pkModelData
+void ParticleDataEndpoint::NiParticleSystem_SetModelData(NiGeometryData* pkModelData)
 {
-    FUN_00a80680(replacement);
+    FUN_00a80680(pkModelData);
 }

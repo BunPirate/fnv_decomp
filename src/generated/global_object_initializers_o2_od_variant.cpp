@@ -20,6 +20,7 @@ struct FUN_00404950
     virtual ~FUN_00404950();
 };
 // @fnv 0x00404950
+// pdb: Setting::~Setting | EffectItem.obj | debug, call graph (shared callers), medium
 FUN_00404950::~FUN_00404950()
 {
     if (_8 && *_8 == 'S')
@@ -39,6 +40,7 @@ struct FUN_00559d90 : FUN_00559df0
     virtual ~FUN_00559d90();
 };
 // @fnv 0x00559d90
+// pdb: NiTMap<TESObjectREFR *,TESObjectREFR *>::~NiTMap<TESObjectREFR *,TESObjectREFR *> | TESObjectCELL.obj | debug, object-file run extension, low
 FUN_00559d90::~FUN_00559d90()
 {
     reinterpret_cast<NiTPointerMap<TESObjectREFR*, TESObjectREFR*>*>(this)->RemoveAll();
@@ -47,6 +49,7 @@ FUN_00559d90::~FUN_00559d90()
 class NavMesh;
 
 // @fnv 0x006b3830
+// pdb: BSSimpleArray<NavMesh *,1024>::~BSSimpleArray<NavMesh *,1024> | PathSmootherPOV.obj | debug, call graph (shared callers), low
 template <>
 BSSimpleArray<NavMesh*, 1024>::~BSSimpleArray()
 {
@@ -61,6 +64,7 @@ struct FUN_00869a20_class
 
 // @fnv 0x00869a20
 // src: COMMUNITY 0x00869a20
+// pdb: NiTObjectArray<TESObjectREFR *>::~NiTObjectArray<TESObjectREFR *> | GarbageCollector.obj | debug, object-file gap fill, medium
 void FUN_00869a20_class::NiTObjectArray_TESObjectREFR_Free()
 {
     UpdateFields_00869a40();
@@ -74,6 +78,7 @@ struct FUN_00869b70_Class
 
 // @fnv 0x00869b70
 // src: COMMUNITY 0x00869b70
+// pdb: NiTObjectArray<BipedAnim *>::~NiTObjectArray<BipedAnim *> | GarbageCollector.obj | debug, object-file gap fill, medium
 void __thiscall FUN_00869b70_Class::NiTObjectArray_BipedAnim_Free()
 {
     InitializeAndReleaseNext();
@@ -86,6 +91,7 @@ struct FUN_00869e10_class
 };
 // @fnv 0x00869e10
 // src: COMMUNITY 0x00869e10
+// pdb: NiTObjectArray<NiPointer<BSTempEffect> >::~NiTObjectArray<NiPointer<BSTempEffect> > | GarbageCollector.obj | debug, object-file gap fill, medium
 void __thiscall FUN_00869e10_class::NiTObjectArray_NiPointer_BSTempEffect_Free()
 {
     UpdateState_00869e30();
@@ -93,8 +99,11 @@ void __thiscall FUN_00869e10_class::NiTObjectArray_NiPointer_BSTempEffect_Free()
 
 extern int DAT_010a47b8;
 bool __cdecl BSTaskletManager_RegisterOnStartupCallback(void*);
-bool __cdecl QueueTasklet(void*);
+bool __cdecl BSTaskletManager_RegisterOnExitCallback(void*);
 // @fnv 0x00b00e40
+// pdb: BSTaskletManagerCallback::BSTaskletManagerCallback | BSTaskletManager.obj | retail, object-file run extension, low
+// pdb params: aePhase
+// pdb locals: bResult
 BSTaskletManagerCallback* BSTaskletManagerCallback::Initialize(int a)
 {
     *(int**)this = &DAT_010a47b8;
@@ -105,7 +114,7 @@ BSTaskletManagerCallback* BSTaskletManagerCallback::Initialize(int a)
         b = BSTaskletManager_RegisterOnStartupCallback(this);
         break;
     default:
-        b = QueueTasklet(this);
+        b = BSTaskletManager_RegisterOnExitCallback(this);
         break;
     }
     return this;
@@ -114,6 +123,7 @@ BSTaskletManagerCallback* BSTaskletManagerCallback::Initialize(int a)
 struct EffectItemData;
 
 // @fnv 0x00788390
+// pdb: BSSimpleArray<EffectItemData,1024>::~BSSimpleArray<EffectItemData,1024> | LevelUpMenu.obj | debug, object-file run extension, low
 template <>
 BSSimpleArray<EffectItemData, 1024>::~BSSimpleArray()
 {
@@ -135,6 +145,7 @@ struct FUN_00404a00_cls : FUN_00404950
 };
 
 // @fnv 0x00404a00
+// pdb: SettingT<GameSettingCollection>::~SettingT<GameSettingCollection> | EffectItem.obj | debug, object-file gap fill, medium
 FUN_00404a00_cls::~FUN_00404a00_cls()
 {
     FUN_00404a70()->v2(this);
@@ -166,6 +177,7 @@ class FUN_0044f4f0 : public FUN_0044f4f0_base
 };
 
 // @fnv 0x0044f4f0
+// pdb: SettingT<INISettingCollection>::~SettingT<INISettingCollection> | ModelLoader.obj | retail, call graph, high
 FUN_0044f4f0::~FUN_0044f4f0()
 {
     reinterpret_cast<FUN_0044f4f0_obj*>(FUN_0044f560())->v2(this);
@@ -215,6 +227,7 @@ struct FUN_00632f90 : BaseDtorCls
 };
 
 // @fnv 0x00632f90
+// pdb: SettingT<BlendSettingCollection>::~SettingT<BlendSettingCollection> | XBlendSettings.obj | debug, object-file gap fill, medium
 FUN_00632f90::~FUN_00632f90()
 {
     GetSpawnedHelper()->unk08(this);
@@ -222,6 +235,7 @@ FUN_00632f90::~FUN_00632f90()
 
 using ::SettingT;
 // @fnv 0x004de420
+// pdb: INIPrefSetting::`scalar deleting destructor' | Renderer.obj | retail, object-file run extension, low
 template <>
 SettingT<INIPrefSettingCollection>::~SettingT()
 {

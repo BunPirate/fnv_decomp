@@ -7,6 +7,7 @@ struct CombatWorldStateArray;
 class CombatWriter;
 class SavedCombatState;
 
+// pdb: class CombatAction, size 0x2c, 6 members
 class CombatAction
 {
 public:
@@ -52,8 +53,8 @@ public:
     virtual void vf03();
     virtual void vf04();
 
-    static CombatAction* CreateAction(COMBAT_ACTION type);
-    static CombatAction* __cdecl CreateAction(int type);
+    static CombatAction* CreateCombatAction(COMBAT_ACTION aeCombatAction);
+    static CombatAction* __cdecl CreateCombatAction(int aeCombatAction);
 
     char* GetCombatActionName();
     void FUN_00979c80();
@@ -63,19 +64,19 @@ public:
     bool HasRequirement(int state, int* value);
     void HasRequirement(int aiArg1, int aiArg2);
 
-    void AddEffect(int state, int value);
+    void AddEffect(int aeState, int aiValue);
     void AddFirstSoundEntry(int state, int value);
     void AddSecondSoundEntry(int state, int value);
     void AddActionWorldState(int state, int value);
     void RemoveActionWorldStateByOwner(int state);
     void RemoveEffectByOwner(int state);
     void RemoveFirstSoundEntryByOwner(int state);
-    void SaveGame(CombatWriter* writer, SavedCombatState* state);
+    void SaveGame(CombatWriter* apSaveGameBuffer, SavedCombatState* apGroup);
 
-    CombatWorldStateListNode m_kFirstSoundEntryNode;
-    CombatWorldStateListNode m_kActionWorldStateNode;
+    CombatWorldStateListNode ExecutionConditions; // src: XBOX_RETAIL_PDB +0x4 (old: m_kFirstSoundEntryNode)
+    CombatWorldStateListNode Preconditions; // src: XBOX_RETAIL_PDB +0xc (old: m_kActionWorldStateNode)
     CombatWorldStateListNode Effects;
-    CombatWorldStateListNode m_kSecondSoundEntryNode;
+    CombatWorldStateListNode PossibleEffects; // src: XBOX_RETAIL_PDB +0x1c (old: m_kSecondSoundEntryNode)
     COMBAT_ACTION eType;
     unsigned int iFlags;
 };

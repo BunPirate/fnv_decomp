@@ -53,7 +53,7 @@ extern void(__stdcall* DAT_00fdf054)(void*);
 
 inline NiImageReader::NiImageReader()
 {
-    DAT_00fdf054(lock);
+    DAT_00fdf054(m_kReadCriticalSection);
 }
 
 // Initializes the NiBMPReader fields: zeroes height, width, unknown, x, y, sets format to DAT_011aa2e8 and clears b1 and b2.
@@ -114,9 +114,11 @@ void __fastcall NiDDSReader_ProcessEntries_00a8d590(char* this_ptr, int, unsigne
 int __cdecl NiStricmp(const char*, const char*);
 // @fnv 0x00a8c0e0
 // src: XBOX_PDB 0x00a8c0e0
-bool __stdcall NiDDSReader_CanReadFile(const char* extension)
+// pdb: NiDDSReader::CanReadFile | NiDDSReader.obj | retail, string-set bridge, high
+// pdb params: pcFileExtension
+bool __stdcall NiDDSReader_CanReadFile(const char* pcFileExtension)
 {
-    if (NiStricmp(extension, ".dds") != 0)
+    if (NiStricmp(pcFileExtension, ".dds") != 0)
         return false;
     return true;
 }
@@ -136,6 +138,7 @@ struct NiPixelFormatMaskView : NiPixelFormat
 };
 // Returns a canonical NiPixelFormat for 16-, 24- and 32-bit formats, otherwise returns fmt unchanged.
 // @fnv 0x00a8c120
+// pdb: NiDDSReader::NiDDSReader | NiDDSReader.obj | retail, object-file run extension, low
 NiPixelFormat __stdcall NormalizePixelFormat(NiPixelFormat aFormat)
 {
     switch (aFormat.bits)
@@ -164,6 +167,8 @@ struct FUN_00a8c190 : NiImageReader
     virtual void vfn_x();
 };
 // @fnv 0x00a8c190
+// pdb: NiDDSReader::`scalar deleting destructor' | NiDDSReader.obj | retail, object-file run extension, low
+// pdb params: this
 FUN_00a8c190::FUN_00a8c190()
 {
     m_kPointA = 0;
@@ -330,6 +335,8 @@ struct FUN_00a8d850_cls : NiImageReader
 };
 
 // @fnv 0x00a8d850
+// pdb: NiStreamSaveBinary<char const > | NiD3DUtility.obj | debug, object-file run extension, low
+// pdb params: binstream, value, uiNumEls
 FUN_00a8d850_cls* FUN_00a8d850_cls::DestroyImageReader(unsigned char acFlags)
 {
     void* pFirst = m_p164;
@@ -338,7 +345,7 @@ FUN_00a8d850_cls* FUN_00a8d850_cls::DestroyImageReader(unsigned char acFlags)
     void* pSecond = m_p16c;
     DAT_011f6238.Deallocate(pSecond);
     *(int*)this = (int)&DAT_0109f3d0;
-    DAT_00fdf058(lock);
+    DAT_00fdf058(m_kReadCriticalSection);
     if (acFlags & 1)
     {
         DAT_011f6238.Deallocate(this);
@@ -404,7 +411,7 @@ struct ClsReader : NiImageReader
 NiPixelData* ClsReader::ReadImage(NiBinaryStream* stream, NiPixelData* image)
 {
     NiPixelFormat fmt;
-    void* lockPtr = lock;
+    void* lockPtr = m_kReadCriticalSection;
     DAT_00fdf05c(lockPtr);
     int out1;
     int out2;
@@ -555,12 +562,12 @@ extern NiPixelFormat DAT_011aa6d8;
 
 inline void NiDDSReader::Lock()
 {
-    DAT_00fdf05c(lock);
+    DAT_00fdf05c(m_kReadCriticalSection);
 }
 
 inline void NiDDSReader::Unlock()
 {
-    DAT_00fdf100(lock);
+    DAT_00fdf100(m_kReadCriticalSection);
 }
 
 __declspec(noinline) bool NiDDSReader::IsValidBitDepth(unsigned int uiRedMask, unsigned int uiGreenMask,
@@ -573,6 +580,9 @@ __declspec(noinline) bool NiDDSReader::IsValidBitDepth(unsigned int uiRedMask, u
 // Parses a DDS header from kIst, validating magic, size, and pixel format, then sets uiWidth, uiHeight, kFormat, bMipmap, and uiFaces.
 // @fnv 0x00a8c1e0
 // src: XBOX_PDB 0x00a8c1e0
+// pdb: NiDDSReader::ReadHeader | NiDDSReader.obj | retail, object-file run extension, low
+// pdb params: kIst, uiWidth, uiHeight, kFormat, bMipmap, uiFaces
+// pdb locals: uiFlags, uiCaps2, uiFormatFlags, uiMipmapCount, uiRequiredFlags, uiSize, uiCompressionCode, uiXFlags, uiMagicNumber, uiTemp, uiCaps1, uiSwapped, uiBlueMask, uiBitsPerPixel, uiGreenMask, uiAlphaMask, uiRedMask
 bool NiDDSReader::ReadHeader_00a8c1e0(NiBinaryStream& kIst, unsigned int& uiWidth, unsigned int& uiHeight,
                                NiPixelFormat& kFormat, bool& bMipmap, unsigned int& uiFaces)
 {
@@ -811,6 +821,9 @@ struct FormatView
 // Reads one mip level from a stream and expands its packed pixels into RGBA bytes, forcing alpha to 255 when the source format has no alpha channel.
 // @fnv 0x00a8c7a0
 // src: XBOX_PDB 0x00a8c7a0
+// pdb: NiDDSReader::Read32Bit | NiDDSReader.obj | retail, upstream name already matches, high
+// pdb params: kIst, pkDest, kSrcFmt, kDestFmt, uiMipMapIdx, uiFaceIdx, bEndianConverted
+// pdb locals: uiHeight, uiWidth, uiSize, kSrcBits, pucDest, puiSrc, y, x, G, A, R, B
 void __cdecl NiDDSReader_Read32Bit(NiBinaryStream* stream, NiPixelData* data, NiPixelFormat source, NiPixelFormat dest,
                           unsigned int level, unsigned int face)
 {
@@ -881,15 +894,18 @@ inline bool ReadDDSHeader(NiDDSReader* reader, NiBinaryStream* stream, unsigned 
 
 // Reads DDS pixel data for all faces and mip levels from stream into result, converting pixel format if it differs from the requested format.
 // @fnv 0x00a8d0d0
+// pdb: NiDDSReader::ReadFile | NiDDSReader.obj | retail, object-file run extension, low
+// pdb params: kIst, pkOptDest
+// pdb locals: uiH, uiNumFaces, uiW, bMipmap, pkDest, uiMipmapLevels, kFmt, i, uiFaceIdx, uiTrueFaceIdx, uiSize, pucDest
 NiPixelData* __fastcall ReadDDSPixelData(NiDDSReader* reader, int, NiBinaryStream* stream, NiPixelData* apPixelData)
 {
     unsigned int uiWidth, uiHeight, faceCount;
     bool headerFlag;
     NiPixelFormat requested;
-    DAT_00fdf05c(reader->lock);
+    DAT_00fdf05c(reader->m_kReadCriticalSection);
     if (!ReadDDSHeader(reader, stream, &uiWidth, &uiHeight, &requested, &headerFlag, &faceCount))
     {
-        DAT_00fdf100(reader->lock);
+        DAT_00fdf100(reader->m_kReadCriticalSection);
         return 0;
     }
     if (!apPixelData || apPixelData->m_puiWidth[0] != reader->m_uiImageWidth || apPixelData->m_puiHeight[0] != reader->m_uiImageHeight ||
@@ -979,7 +995,7 @@ NiPixelData* __fastcall ReadDDSPixelData(NiDDSReader* reader, int, NiBinaryStrea
             }
         }
     }
-    DAT_00fdf100(reader->lock);
+    DAT_00fdf100(reader->m_kReadCriticalSection);
     return apPixelData;
 }
 
@@ -1023,7 +1039,7 @@ bool DDSReader::NiTGAReader_ReadHeader(NiBinaryStream* stream, int* apWidth, int
 {
     NiBinaryStream& kReadStream = *stream;
     kReadStream.SetEndianSwap(false);
-    DAT_00fdf05c(lock);
+    DAT_00fdf05c(m_kReadCriticalSection);
     *pFlag = 1;
     ReadStreamBytes(kReadStream, &b100, 1);
     ReadStreamBytes(kReadStream, &b101, 1);
@@ -1069,7 +1085,7 @@ bool DDSReader::NiTGAReader_ReadHeader(NiBinaryStream* stream, int* apWidth, int
         b116 = 0;
         break;
     default:
-        DAT_00fdf100(lock);
+        DAT_00fdf100(m_kReadCriticalSection);
         return false;
     }
     unsigned char bHasPalette = b116;
@@ -1095,7 +1111,7 @@ bool DDSReader::NiTGAReader_ReadHeader(NiBinaryStream* stream, int* apWidth, int
             m_pfnPixelConverter = (void(__fastcall*)(char*, int, unsigned char*, unsigned char*))DecodeBytes;
         else
         {
-            DAT_00fdf100(lock);
+            DAT_00fdf100(m_kReadCriticalSection);
             return false;
         }
         break;
@@ -1134,7 +1150,7 @@ bool DDSReader::NiTGAReader_ReadHeader(NiBinaryStream* stream, int* apWidth, int
     *apHeight = w110;
     *apFormat = m_eFormat;
     *pByte = 0;
-    DAT_00fdf100(lock);
+    DAT_00fdf100(m_kReadCriticalSection);
     return true;
 }
 }  // namespace fnv_00a8dce0
@@ -1245,6 +1261,9 @@ template <int C> static inline unsigned char Expand(unsigned int raw, const Chan
 // Reads packed pixel data from stream into buf, expands each channel via ChannelInfo, and writes RGBA or RGB bytes into data->m_pucPixels for the given mip and face.
 // @fnv 0x00a8cc40
 // src: XBOX_PDB 0x00a8cc40
+// pdb: NiDDSReader::Read16Bit | NiDDSReader.obj | retail, upstream name already matches, high
+// pdb params: kIst, pkDest, kSrcFmt, kDestFmt, uiMipMapIdx, uiFaceIdx, bEndianConverted
+// pdb locals: uiSize, pucSrc, kSrcBits, pucDest, uiBytesWritten, uiBuffSize, pusSrc, y
 void __cdecl NiDDSReader_Read16Bit(NiBinaryStream* stream, NiPixelData* apPixelData, NiPixelFormat srcFmt, NiPixelFormat dstFmt,
                           unsigned int mip, unsigned int face)
 {

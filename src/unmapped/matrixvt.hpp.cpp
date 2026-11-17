@@ -70,12 +70,15 @@ struct S_00658260_Owner
     void InitB(S_00658260_B* b);
     S_00658260_F* GetF(S_00658260_F* f);
 
-    S_00658260_A BuildScaledValues(float scale);
+    S_00658260_A BuildScaledValues(float d);
 };
 
 // Iterates x over GetF(&info), writes each value times scale into it.Slot(), and returns a copy of a built from m18 and m1c.
 // @fnv 0x00658260
-S_00658260_A S_00658260_Owner::BuildScaledValues(float scale)
+// pdb: FR2MatrixVTC<float>::operator* | BSFaceGenManager.obj | retail, object-file run extension, high
+// pdb params: d
+// pdb locals: dptr, newMat, nd
+S_00658260_A S_00658260_Owner::BuildScaledValues(float d)
 {
     S_00658260_F info;
     S_00658260_H obj;
@@ -87,7 +90,7 @@ S_00658260_A S_00658260_Owner::BuildScaledValues(float scale)
     S_00658260_C it;
     for (InitB(&x), a.Attach(&it); x.Next(GetF(&info)); x.Begin(&ent, 0), it.Begin(&arr, 0))
     {
-        *it.Slot() = (float)(*x.Value() * scale);
+        *it.Slot() = (float)(*x.Value() * d);
     }
     return a;
 }
@@ -117,6 +120,8 @@ class Mgr
 
 // Iterates over the manager's entries and multiplies each entry's float value by scale, returning this.
 // @fnv 0x00658650
+// pdb: FR2MatrixVTC<float>::operator/= | FanControls.obj | debug, call graph, medium
+// pdb params: v
 Mgr* Mgr::ScaleAll(float scale)
 {
     Iterator iter;
@@ -146,7 +151,7 @@ class A87A0Matrix
 
     A87A0Element At(unsigned int uiRow, unsigned int uiCol);
 
-    A87A0Matrix Transpose();
+    A87A0Matrix FR2MatrixVTC_float_transpose();
 
     int unk00;
     int unk04;
@@ -160,7 +165,10 @@ class A87A0Matrix
 
 // Builds a matrix with rows and columns swapped and copies each element from At(i, j) into At(j, i).
 // @fnv 0x006587a0
-A87A0Matrix A87A0Matrix::Transpose()
+// src: XBOX_DEBUG_PDB 0x006587a0
+// pdb: FR2MatrixVTC<float>::transpose | BSFaceGenManager.obj | debug, call graph (shared callers), high
+// pdb locals: jj, ii, tMat
+A87A0Matrix A87A0Matrix::FR2MatrixVTC_float_transpose()
 {
     A87A0Matrix kResult(m_uiCols, m_uiRows);
     for (unsigned int i = 0; i < m_uiRows; i++)

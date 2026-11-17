@@ -4,6 +4,7 @@
 #include "hkBool.h"
 #include "hkResult.h"
 
+// pdb: class hkStreamWriter, size 0x8, bases: hkReferencedObject, 0 members
 class hkStreamWriter : public hkReferencedObject
 {
 public:
@@ -21,5 +22,5 @@ public:
     virtual hkResult seek(int offset, SeekWhence whence);
     virtual int tell() const;
 
-    void DispatchWithMode(const void* field, const void* data, int bytes, int flags);
+    void hkStatisticsCollector_addNormalChunk(const void* name, const void* p, int size, int allocated);
 };

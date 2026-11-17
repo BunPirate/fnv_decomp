@@ -11,7 +11,7 @@ extern char* EmptyFS;
 extern MemoryManager g_memoryManager;
 void Object_ProcessEntries_00a644a0(char** p);
 const char* __cdecl NiD3DGPUProgramCache_GetPlatformSpecificCodeID();
-extern "C" void* g_01270920;
+extern "C" void* NiGPUProgramCache_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01270920 (old: g_01270920)
 void* __cdecl NiGPUProgramCache_GetRTTI();
 struct RefCounted
 {
@@ -138,7 +138,7 @@ struct S_00e8e1d0_Map
     S_00e8e1d0_Node** buckets;
     unsigned count;
     void AssignValueHolder(S_00e8e1d0_Node* n, const unsigned* k, S_00e8e1d0_Ptr v) throw();
-    void InsertOrAssign(const unsigned* k, S_00e8e1d0_Ptr v) throw();
+    void NiTFixedStringMapBase_DFALL_NiTMapItem_NiFixedString_NiPointer_NiGPUProgramCache_NiGPUProgramDesc_NiPointer_NiGPUProgramCache_NiGPUProgramDesc_SetAt(const unsigned* kKey, S_00e8e1d0_Ptr val) throw();
 };
 extern int DAT_0101dce4;
 extern long DAT_011f4400;
@@ -158,11 +158,11 @@ struct W20Profiles
     NiFixedString* data;
     unsigned int capacity, count, unk0c, unk10;
     __declspec(nothrow) void ResizeStringArray(unsigned int);
-    __declspec(nothrow) void PushBack(const NiFixedString& value)
+    __declspec(nothrow) void NiTSet_NiFixedString_NiTNewInterface_NiFixedString_Add(const NiFixedString& element) // src: XBOX_RETAIL_PDB 0x00e8e330
     {
         if (count == capacity)
             ResizeStringArray(capacity > 0 ? capacity * 2 : 1);
-        data[count++] = value;
+        data[count++] = element;
     }
 };
 struct W20Base
@@ -243,8 +243,8 @@ struct ShaderLibrary8e
 };
 ShaderLibrary8e* __stdcall NiD3DShaderProgramFactory_GetInstance(ShaderProgram8e* pkProgram);
 long __stdcall D3DXCreateBuffer_0(unsigned int uiNumBytes, ShaderBuffer8e** ppkBuffer);
-extern const char* DAT_0126fa48;
-extern const char* DAT_0126fa40;
+extern const char* NiD3DHLSLVertexShader_ms_RTTI; // src: XBOX_RETAIL_PDB 0x0126fa48 (old: DAT_0126fa48/g_0126fa48)
+extern const char* NiD3DHLSLPixelShader_ms_RTTI; // src: XBOX_RETAIL_PDB 0x0126fa40 (old: DAT_0126fa40/g_0126fa40)
 extern ShaderFactory8e* DAT_0126fa3c;
 struct ShaderLoader8e
 {
@@ -271,7 +271,7 @@ struct ShaderLoader8e
     virtual void v20();
     virtual const NiFixedString& GetLoaderName();
 
-    void NiGPUProgramCache_LoadStringA(ShaderStream8e* pkStream, char* pcBuffer, unsigned int uiMaxLen);
+    void NiGPUProgramCache_LoadString(ShaderStream8e* kStream, char* pcBuffer, unsigned int stBufferSize);
     bool LoadShaderProgram(ShaderStream8e* pkStream, const NiFixedString& kName, ShaderProgram8e** ppkProgram,
                            bool bSkip);
 };
@@ -293,6 +293,8 @@ namespace sc1d790 {
 
 // @fnv 0x00c1d790
 // src: XBOX_PDB 0x00c1d790
+// pdb: NiTObjectArray<NiPointer<NiShaderConstantMapEntry> >::NiTObjectArray<NiPointer<NiShaderConstantMapEntry> > | NiXenonFragmentShader.obj | retail, call graph, medium
+// pdb params: uiMaxSize, uiGrowBy
 NiPointer<NiD3DPass>* NiTObjectArray_NiPointer_NiScreenTexture_NiTObjectArray_NiPointer_NiScreenTexture(unsigned int ItemUpdateArray)
 {
     return new (DAT_011f6238) NiPointer<NiD3DPass>[ItemUpdateArray];

@@ -17,6 +17,7 @@ extern void* DAT_011f6044;
 
 // @fnv 0x00aa0000
 // src: COMMUNITY 0x00aa0000
+// pdb: NiShaderFactory::ReleaseAllShaders | NiShaderFactory.obj | debug, upstream name already matches, high
 void NiShaderFactory_ReleaseAllShaders()
 {
     if (DAT_011f6044)
@@ -29,6 +30,7 @@ extern MemoryManager g_memoryManager;
 
 // @fnv 0x00aa1980
 // src: COMMUNITY 0x00aa1980
+// pdb: NiSystemDesc::ShutdownSystemDesc | NiSystemDesc.obj | debug, upstream name already matches, high
 void NiSystemDesc_ShutdownSystemDesc()
 {
     g_memoryManager.Deallocate(DAT_011f6078);
@@ -59,21 +61,22 @@ extern "C" void __cdecl NiStaticDataManager_SetRootLibrary(int aiFirst, int aiSe
     DAT_011f6114 = aiSecond;
 }
 
-extern "C" void __cdecl InitHolder();
-extern "C" void __cdecl NiSystemDesc_NiSystemDesc();
+extern "C" void __cdecl NiMemManager__SDMInit();
+extern "C" void __cdecl NiSystemDesc_InitSystemDesc();
 extern "C" void __cdecl OEI_IO_initialize();
 extern unsigned char DAT_011f6229;
 
 // If the global flag DAT_011f6229 is clear, sets it to 1 and calls InitHolder, FUN_00aa1920 and FUN_00aa7eb0 once.
 // @fnv 0x00aa3050
 // src: COMMUNITY 0x00aa3050
+// pdb: NiSystemSDM::Init | NiSystemSDM.obj | retail, upstream name already matches, high
 void __cdecl NiSystemSDM_Init()
 {
     if (DAT_011f6229 == 0)
     {
         DAT_011f6229 = 1;
-        InitHolder();
-        NiSystemDesc_NiSystemDesc();
+        NiMemManager__SDMInit();
+        NiSystemDesc_InitSystemDesc();
         OEI_IO_initialize();
     }
 }
@@ -125,6 +128,9 @@ struct FUN_00aa2ff0_s
 
 // @fnv 0x00aa2ff0
 // src: EXE 0x00aa2ff0
+// pdb: NiMemStream::NiMemStream | NiMemStream.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiThread::SetPriority
+// pdb params: pBuffer, uiSize
 FUN_00aa2ff0_s* FUN_00aa2ff0_s::NiMemStream_NiMemStream()
 {
     FUN_00aa1d10();
@@ -144,6 +150,8 @@ extern char DAT_010a2138;
 extern MemoryManager _g_memoryManager;
 
 // @fnv 0x00aa02b0
+// pdb: NiTFixedStringMapBase<DFALL<NiTMapItem<NiFixedString,NiAVObject *> >,NiAVObject *>::IsKeysEqual | NiControllerManager.obj | debug, object-file run extension, low
+// pdb params: kKey1, kKey2
 void* NiTFixedStringMap_NiAVObject___::Destroy(int flags)
 {
     m_baseData0 = &DAT_010a2138;
@@ -166,6 +174,8 @@ extern void* DAT_010a2154;
 extern MemoryManager _g_memoryManager;
 
 // @fnv 0x00aa02f0
+// pdb: NiTFixedStringMapBase<DFALL<NiTMapItem<NiFixedString,NiAVObject *> >,NiAVObject *>::SetValue | NiControllerManager.obj | debug, object-file run extension, low
+// pdb params: pkItem, kKey, val
 void* FUN_00aa02f0_s::FUN_00aa02f0(unsigned char bDelete)
 {
     m_baseData0 = &DAT_010a2154;
@@ -194,6 +204,8 @@ extern long long DAT_011f6070;
 
 // Initializes the performance frequency and start counter once, then returns the seconds elapsed since that start counter.
 // @fnv 0x00aa12f0
+// pdb: _NiExternalFree | NiMemoryDefines.obj | debug, object-file run extension, low
+// pdb params: pvMem
 float GetElapsedSeconds()
 {
     long long currentCounter;
@@ -242,6 +254,10 @@ class HashTableBase
 // Looks up the node whose key matches *key in its bucket, unlinks and destroys it, decrements count, and returns whether it was found.
 // @fnv 0x00aa0250
 // src: COMMUNITY 0x00aa0250
+// pdb: NiTFixedStringMapBase<DFALL<NiTMapItem<NiFixedString,NiAVObject *> >,NiAVObject *>::RemoveAt | NiControllerManager.obj | retail, call graph, low
+// pdb note: debug build links it to NiTFixedStringMapBase<DFALL<NiTMapItem<NiFixedString,NiAVObject *> >,NiAVObject *>::KeyToHashIndex
+// pdb params: kKey
+// pdb locals: pkItem, uiIndex, pkPrev, pkCurr
 bool HashTableBase::NiTStringPointerMap_NiAVObject_RemoveAt(const unsigned int* key)
 {
     unsigned int value = *key;
@@ -309,6 +325,9 @@ extern "C" DeviceInterface** DAT_011f6080;
 // Defaults value to 1 if zero, then dispatches command 4 with the adjusted value through the device interface.
 // @fnv 0x00aa13e0
 // src: GUESS 0x00aa13e0 (confidence: medium)
+// pdb: NiMemObject::operator new | NiMemObject.obj | retail, call graph, medium
+// pdb params: stSizeInBytes
+// pdb locals: p
 void __cdecl Object_DispatchCommandFour(int value)
 {
     if (!value)
@@ -326,6 +345,8 @@ struct FUN_00aff950_shell
 
 // @fnv 0x00aa19c0
 // src: COMMUNITY 0x00aa19c0
+// pdb: NiFile::WriteNoSwap | NiFile.obj | debug, upstream name already matches, high
+// pdb params: pkThis, pvBuffer, uiBytes, __formal, __formal
 void __cdecl NiFile_WriteNoSwap(void* object, void* buffer, unsigned int size)
 {
     reinterpret_cast<FUN_00aff950_shell*>(object)->FUN_00aa1810(buffer, size);
@@ -384,6 +405,9 @@ class FUN_00aa1fd0_cls
 
 // Advances through the string, calling m_0c per character, accumulating its result into m_04, and returns the number of successfully consumed characters.
 // @fnv 0x00aa1fd0
+// pdb: NiBinaryStream::PutS | NiBinaryStream.obj | retail, object-file run extension, low
+// pdb params: pBuffer
+// pdb locals: i
 unsigned int FUN_00aa1fd0_cls::AdvanceChars(char* s)
 {
     unsigned int count = 0;
@@ -434,7 +458,9 @@ extern FUN_00aa2020_Holder* DAT_011f6080;
 
 // Allocates a 4-byte holder, stores the impl obtained from DAT_011f6118 into it, then calls the impl's method.
 // @fnv 0x00aa2020
-extern "C" void __cdecl InitHolder()
+// src: XBOX_RETAIL_PDB 0x00aa2020
+// pdb: NiMemManager::_SDMInit | NiMemManager.obj | retail, call graph, high
+extern "C" void __cdecl NiMemManager__SDMInit()
 {
     DAT_011f6080 = static_cast<FUN_00aa2020_Holder*>(DAT_011f6238.Allocate(4));
     DAT_011f6080->m_pImpl = DAT_011f6118->NiInitOptions_GetAllocator();
@@ -452,14 +478,16 @@ extern int DAT_011f6088[];
 // Stores callback and value in parallel arrays at the current index, increments the index, and invokes the callback if the flag is set.
 // @fnv 0x00aa2080
 // src: COMMUNITY 0x00aa2080
-void __cdecl NiStaticDataManager_AddLibrary(FUN_00aa2080_callback callback, int value)
+// pdb: NiStaticDataManager::AddLibrary | NiStaticDataManager.obj | debug, upstream name already matches, high
+// pdb params: pfnInit, pfnShutdown
+void __cdecl NiStaticDataManager_AddLibrary(FUN_00aa2080_callback pfnInit, int pfnShutdown)
 {
-    DAT_011f60c8[DAT_011f6108] = callback;
-    DAT_011f6088[DAT_011f6108] = value;
+    DAT_011f60c8[DAT_011f6108] = pfnInit;
+    DAT_011f6088[DAT_011f6108] = pfnShutdown;
     ++DAT_011f6108;
 
     if (DAT_011f610c)
-        return callback();
+        return pfnInit();
 }
 
 namespace fnv_00aa2170 {
@@ -480,6 +508,8 @@ struct FUN_00aa21e0_shell
 
 // @fnv 0x00aa2170
 // src: COMMUNITY 0x00aa2170
+// pdb: NiStaticDataManager::Shutdown | NiStaticDataManager.obj | retail, upstream name already matches, high
+// pdb locals: ui
 void __cdecl NiStaticDataManager_Shutdown()
 {
     for (unsigned int i = 0; i < DAT_011f6108; ++i)
@@ -754,13 +784,15 @@ struct FUN_00aa2fb0 : S_00aa2fb0_Base
     unsigned int unk1c;
     unsigned char unk20;
     unsigned char unk21;
-    FUN_00aa2fb0(void* a, unsigned int b);
+    FUN_00aa2fb0(void* pBuffer, unsigned int uiSize);
 };
 
 // @fnv 0x00aa2fb0
-FUN_00aa2fb0::FUN_00aa2fb0(void* a, unsigned int b) : unk10(a), unk14(0), unk1c(b), unk20(1), unk21(0)
+// pdb: NiMemStream::NiMemStream | NiMemStream.obj | retail, call graph, high
+// pdb params: pBuffer, uiSize
+FUN_00aa2fb0::FUN_00aa2fb0(void* pBuffer, unsigned int uiSize) : unk10(pBuffer), unk14(0), unk1c(uiSize), unk20(1), unk21(0)
 {
-    unk18 = b;
+    unk18 = uiSize;
     unk08 = NiMemStream_ReadNoSwap;
     unk0c = NiMemStream_WriteNoSwap;
 }
@@ -774,6 +806,7 @@ void Object_DoNothing();
 // If DAT_011f6229 is set, clears it and calls FUN_00aa81d0, FUN_00aa1980 and FUN_00a29680.
 // @fnv 0x00aa3070
 // src: COMMUNITY 0x00aa3070
+// pdb: NiSystemSDM::Shutdown | NiSystemSDM.obj | retail, upstream name already matches, high
 void NiSystemSDM_Shutdown()
 {
     if (DAT_011f6229 != 0)
@@ -812,6 +845,9 @@ struct S_00aa36f0_Foo
 };
 
 // @fnv 0x00aa36f0
+// pdb: NiSmallObjectAllocator::NiSmallObjectAllocator | NiSmallObjectAllocator.obj | retail, object-file run extension, low
+// pdb params: stChunkSize
+// pdb locals: st
 void S_00aa36f0_Foo::WriteBufferByte(unsigned char* buffer)
 {
     S_00aa36f0_State* state = unk18;
@@ -897,6 +933,7 @@ class FUN_00aa0390 : public NiRefObject
 
 // Initializes the three pointers to null and default-constructs the string map; the base NiRefObject constructor runs first.
 // @fnv 0x00aa0390
+// pdb: NiShaderFactory::NiShaderFactory | NiShaderFactory.obj | retail, object-file run extension, low
 FUN_00aa0390::FUN_00aa0390() throw() : m_pkFirst(0), m_pkSecond(0), m_pkThird(0)
 {}
 
@@ -907,6 +944,9 @@ static const char kForwardSlash = 0x2f;
 
 // Converts forward slashes to backslashes in pcPath in place and collapses repeated separators, then null-terminates.
 // @fnv 0x00aa1380
+// pdb: NiStrdup | NiSystem.obj | debug, object-file run extension, low
+// pdb params: pcString
+// pdb locals: pcReturn, uiLen
 void __cdecl NormalizePathSeparators(char* pcPath)
 {
     if (!pcPath)
@@ -984,15 +1024,19 @@ inline void Swap4(char* data, int count)
     }
 }
 // @fnv 0x00aa1de0
-void __cdecl SwapBufferBySizes(char* buffer, unsigned int length, const unsigned int* sizes, unsigned int count)
+// src: XBOX_RETAIL_PDB 0x00aa1de0
+// pdb: NiBinaryStream::DoByteSwap | NiBinaryStream.obj | retail, call graph, high
+// pdb params: pvData, uiTotalBytes, puiComponentSizes, uiNumComponents
+// pdb locals: pDummy, uiSize, j, uiCompSize, inum, i
+void __cdecl NiBinaryStream_DoByteSwap(char* pvData, unsigned int uiTotalBytes, const unsigned int* puiComponentSizes, unsigned int uiNumComponents)
 {
-    char* data = buffer;
+    char* data = pvData;
     unsigned int done = 0;
-    while (done < length)
+    while (done < uiTotalBytes)
     {
-        for (unsigned int i = 0; i < count; ++i)
+        for (unsigned int i = 0; i < uiNumComponents; ++i)
         {
-            unsigned int size = sizes[i];
+            unsigned int size = puiComponentSizes[i];
             switch (size)
             {
             case 2:
@@ -1142,7 +1186,7 @@ class FixedStringAA0
 class FUN_00aa00d0 : public NiRefObject
 {
   public:
-    FUN_00aa00d0(const char* pcName, unsigned int uiValue, unsigned int uiSize, const void* pvData) throw();
+    FUN_00aa00d0(const char* pcKey, unsigned int eType, unsigned int uiDataSize, const void* pvDataSource) throw();
     virtual ~FUN_00aa00d0() throw();
     void ResizeAndCopy(unsigned int uiNewSize, const void* pvData);
 
@@ -1152,18 +1196,23 @@ class FUN_00aa00d0 : public NiRefObject
     void* m_pResource;
 };
 // @fnv 0x00aa00d0
-FUN_00aa00d0::FUN_00aa00d0(const char* pcName, unsigned int uiValue, unsigned int uiSize, const void* pvData) throw()
+// pdb: NiGlobalConstantEntry::NiGlobalConstantEntry | NiShaderFactory.obj | retail, call graph, high
+// pdb params: pcKey, eType, uiDataSize, pvDataSource
+// pdb locals: key
+FUN_00aa00d0::FUN_00aa00d0(const char* pcKey, unsigned int eType, unsigned int uiDataSize, const void* pvDataSource) throw()
     : m_uiCurrentValue(0), m_uiSize(0), m_pResource(0)
 {
-    m_kName = *new FixedStringAA0(pcName);
-    m_uiCurrentValue = uiValue;
-    ResizeAndCopy(uiSize, pvData);
+    m_kName = *new FixedStringAA0(pcKey);
+    m_uiCurrentValue = eType;
+    ResizeAndCopy(uiDataSize, pvDataSource);
 }
 
 extern "C" void __cdecl BSTextureSet_RegisterStreamables();
 
 // @fnv 0x00aa0ad0
 // src: XBOX_PDB 0x00aa0ad0
+// pdb: BSPackedAdditionalGeometryData::RegisterStreamables | BSPackedAdditionalGeometryData.obj | debug, upstream name already matches, high
+// pdb params: kStream
 void __cdecl BSPackedAdditionalGeometryData_RegisterStreamables()
 {
     BSTextureSet_RegisterStreamables();
@@ -1201,6 +1250,7 @@ struct StringMapItemAA0
 // Resets the key and value of a StringMapItemAA0, runs its destructor, and returns it to the memory manager.
 // @fnv 0x00aa0330
 // src: GUESS 0x00aa0330 (confidence: low)
+// pdb: NiGlobalConstantEntry::`scalar deleting destructor' | NiShaderFactory.obj | retail, object-file run extension, low
 void __stdcall Runtime_ReleaseStorage_00aa0330(StringMapItemAA0* pkItem)
 {
     pkItem->m_key = 0;
@@ -1216,21 +1266,24 @@ struct ProcessingState
 
 void* __cdecl _NiMalloc_00aa1070(unsigned int size);
 void __cdecl FUN_00ec44d0(void* destination, const void* source, unsigned int size);
-void __cdecl SwapBufferBySizes(void* buffer, unsigned int size, void* optionA, void* optionB);
+void __cdecl NiBinaryStream_DoByteSwap(void* pvData, unsigned int uiTotalBytes, void* puiComponentSizes, void* uiNumComponents);
 void __cdecl _NiFree_00aa10f0(void* buffer);
 
 // If size is non-zero, copies data to a temporary buffer, calls SwapBufferBySizes on it, returns state->FUN_00aa1810(buffer, size) and frees the buffer; else 0.
 // @fnv 0x00aa1ad0
 // src: COMMUNITY 0x00aa1ad0
-unsigned int __cdecl NiFile_WriteAndSwap(ProcessingState* state, const void* data, unsigned int size, void* optionA,
-                                  void* optionB)
+// pdb: NiFile::WriteAndSwap | NiFile.obj | retail, upstream name already matches, high
+// pdb params: pkThis, pvBuffer, uiBytes, puiComponentSizes, uiNumComponents
+// pdb locals: uiBytesWritten, pucTmpArray
+unsigned int __cdecl NiFile_WriteAndSwap(ProcessingState* pkThis, const void* pvBuffer, unsigned int uiBytes, void* puiComponentSizes,
+                                  void* uiNumComponents)
 {
-    if (size <= 0u)
+    if (uiBytes <= 0u)
         return 0;
-    void* buffer = _NiMalloc_00aa1070(size);
-    FUN_00ec44d0(buffer, data, size);
-    SwapBufferBySizes(buffer, size, optionA, optionB);
-    unsigned int result = state->FUN_00aa1810(buffer, size);
+    void* buffer = _NiMalloc_00aa1070(uiBytes);
+    FUN_00ec44d0(buffer, pvBuffer, uiBytes);
+    NiBinaryStream_DoByteSwap(buffer, uiBytes, puiComponentSizes, uiNumComponents);
+    unsigned int result = pkThis->FUN_00aa1810(buffer, uiBytes);
     _NiFree_00aa10f0(buffer);
     return result;
 }
@@ -1426,35 +1479,38 @@ void __cdecl NiSystemSDM_Init();
 // Sets TLS unk2b4 to 15, selects or allocates the object stored in DAT_011f6118, runs FUN_00aa3050 and the init callbacks, restores unk2b4 and sets DAT_011f610c.
 // @fnv 0x00aa20b0
 // src: COMMUNITY 0x00aa20b0
-void __cdecl NiStaticDataManager_Init(void* value)
+// pdb: NiStaticDataManager::Init | NiStaticDataManager.obj | retail, upstream name already matches, high
+// pdb params: pkOptions
+// pdb locals: tempMemContext, ui
+void __cdecl NiStaticDataManager_Init(void* pkOptions)
 {
     int oldState = s_tlsData.unk2b4;
     s_tlsData.unk2b4 = 15;
     void* existing = DAT_011f6118;
-    if (!value)
+    if (!pkOptions)
     {
         if (!existing)
         {
             void* allocated = DAT_011f6238.Allocate(8);
             if (allocated)
-                value = ((FUN_00aa2200_shell*)allocated)->FUN_00aa2200();
+                pkOptions = ((FUN_00aa2200_shell*)allocated)->FUN_00aa2200();
             else
-                value = 0;
+                pkOptions = 0;
             DAT_011f610d = 1;
         }
         else
         {
-            value = existing;
+            pkOptions = existing;
             DAT_011f610d = 0;
         }
     }
     else
     {
         if (existing)
-            value = existing;
+            pkOptions = existing;
         DAT_011f610d = 0;
     }
-    DAT_011f6118 = value;
+    DAT_011f6118 = pkOptions;
     InitSystemCall::NiSystemSDM_Init();
     if (DAT_011f6110)
         ((void(__cdecl*)())DAT_011f6110)();
@@ -1473,6 +1529,7 @@ class ThreadSuspendForward : public FUN_00aa2710_cls
 
 // @fnv 0x00aa3040
 // src: COMMUNITY 0x00aa3040
+// pdb: NiThread::Suspend | NiThread.obj | debug, upstream name already matches, high
 unsigned int ThreadSuspendForward::NiThread_Suspend()
 {
     return SuspendThreadHandle();
@@ -1496,8 +1553,9 @@ extern void* _DAT_011f6078;
 
 // Allocates 8 bytes from the memory manager, stores the processor count and performance frequency, and sets the global pointer to the block.
 // @fnv 0x00aa1920
-// src: COMMUNITY 0x00aa1920
-void __cdecl NiSystemDesc_NiSystemDesc()
+// src: XBOX_RETAIL_PDB 0x00aa1920 (was COMMUNITY)
+// pdb: NiSystemDesc::InitSystemDesc | NiSystemDesc.obj | retail, call graph, high
+void __cdecl NiSystemDesc_InitSystemDesc()
 {
     unsigned int* p = (unsigned int*)_g_memoryManager.Allocate(8);
     if (p)

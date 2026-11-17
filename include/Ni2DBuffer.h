@@ -5,6 +5,7 @@
 
 class NiPixelFormat;
 
+// pdb: class Ni2DBuffer, size 0x14, bases: NiObject, 3 members
 class Ni2DBuffer : public NiObject
 {
 public:
@@ -57,11 +58,11 @@ public:
     const NiRTTI* GetType() const;
     unsigned int GetWidth() const
     {
-        return m_uiImageWidth;
+        return m_uiWidth;
     }
     unsigned int GetHeight() const
     {
-        return m_uiImageHeight;
+        return m_uiHeight;
     }
     bool IsKindOfType(const NiRTTI* target) const;
     bool CreateRendererData(const NiPixelFormat&, MultiSamplePreference);
@@ -71,7 +72,7 @@ public:
     // 0x00a8f2c0: a new buffer of the given size that holds pkData.
     static Ni2DBuffer* Create(unsigned int uiWidth, unsigned int uiHeight, RendererData* pkData);
 
-    unsigned int m_uiImageWidth;
-    unsigned int m_uiImageHeight;
-    void* m_pRendererData;
+    unsigned int m_uiWidth; // src: XBOX_RETAIL_PDB +0x8 (old: m_uiImageWidth)
+    unsigned int m_uiHeight; // src: XBOX_RETAIL_PDB +0xc (old: m_uiImageHeight)
+    void* m_spRendererData; // src: XBOX_RETAIL_PDB +0x10 (old: m_pRendererData)
 };

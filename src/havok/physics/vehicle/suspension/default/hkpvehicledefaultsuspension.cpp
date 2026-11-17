@@ -71,33 +71,35 @@ class SuspensionE397
     hkArray<SuspensionWheelParamsE397> m_kWheelParams;
     hkArray<WheelSpringParamsE397> m_kWheelSpringSuspensionParameters;
 
-    void CalculateSuspensionForces(const void* pkStepInfo, const VehicleE397* pkVehicle,
-                                   const CdWheelOutputE397* pkCdInfo, float* pfSuspensionForceOut);
+    void CalculateSuspensionForces(const void* deltaTime, const VehicleE397* vehicle,
+                                   const CdWheelOutputE397* cdInfo, float* suspensionForceOut);
 };
 
 // Computes per-wheel suspension forces from spring and damping parameters, scaled by chassis mass, and writes them to pfSuspensionForceOut.
 // @fnv 0x00e397f0
-void SuspensionE397::CalculateSuspensionForces(const void* pkStepInfo, const VehicleE397* pkVehicle,
-                                               const CdWheelOutputE397* pkCdInfo, float* pfSuspensionForceOut)
+// pdb: hkpVehicleDefaultSuspension::calcSuspension | hkpVehicleDefaultSuspension.obj | retail, vtable slot, high
+// pdb params: deltaTime, vehicle, cdInfo, suspensionForceOut
+void SuspensionE397::CalculateSuspensionForces(const void* deltaTime, const VehicleE397* vehicle,
+                                               const CdWheelOutputE397* cdInfo, float* suspensionForceOut)
 {
-    const float fChassisMass = pkVehicle->m_pEntity->GetMassValue();
-    for (int w_it = 0; w_it < pkVehicle->m_data->m_iWheelCount; w_it++)
+    const float fChassisMass = vehicle->m_pEntity->GetMassValue();
+    for (int w_it = 0; w_it < vehicle->m_data->m_iWheelCount; w_it++)
     {
-        if (pkCdInfo[w_it].m_pUserData)
+        if (cdInfo[w_it].m_pUserData)
         {
-            const float fLengthDiff = m_kWheelParams[w_it].m_fRestLength - pkCdInfo[w_it].m_fContactFriction;
+            const float fLengthDiff = m_kWheelParams[w_it].m_fRestLength - cdInfo[w_it].m_fContactFriction;
             const float fSpringForce = fLengthDiff * m_kWheelSpringSuspensionParameters[w_it].m_fSpringStrength *
-                                       pkCdInfo[w_it].m_fValueAtOffset50;
-            const float fClosing = pkCdInfo[w_it].m_fValueAtOffset4C;
+                                       cdInfo[w_it].m_fValueAtOffset50;
+            const float fClosing = cdInfo[w_it].m_fValueAtOffset4C;
             const float fDampingCoefficient = fClosing < 0.0f
                                                   ? m_kWheelSpringSuspensionParameters[w_it].m_fDampingCompression
                                                   : m_kWheelSpringSuspensionParameters[w_it].m_fDampingRelaxation;
             const float fForce = fSpringForce - fDampingCoefficient * fClosing;
-            pfSuspensionForceOut[w_it] = fForce * fChassisMass;
+            suspensionForceOut[w_it] = fForce * fChassisMass;
         }
         else
         {
-            pfSuspensionForceOut[w_it] = 0.0f;
+            suspensionForceOut[w_it] = 0.0f;
         }
     }
 }

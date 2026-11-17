@@ -6,6 +6,7 @@
 class NiPSysData;
 class NiParticleSystem;
 
+// pdb: class NiPSysModifier, size 0x18, bases: NiObject, 4 members
 class NiPSysModifier : public NiObject
 {
 public:
@@ -15,7 +16,7 @@ public:
     virtual void LoadBinary(NiStream& stream);
     virtual void LinkObject(NiStream& stream);
     virtual bool RegisterStreamables(NiStream& stream);
-    virtual void SaveBinary(NiStream& stream);
+    virtual void SaveBinary(NiStream& kStream);
     virtual bool IsEqual(NiObject* object) const;
     virtual void ProcessClone(CloningProcess& process);
 
@@ -26,11 +27,11 @@ public:
     virtual void SetTargetSystem(NiParticleSystem* target);
     virtual bool IsDeferred() const;
 
-    void CopyMemberData(NiPSysModifier* destination, CloningProcess& process);
-    void BSWindModifier_LinkObject(NiStream& stream);
-    void __thiscall BSPSysStripUpdateModifier_CopyMembers(NiPSysModifier* apDest, CloningProcess& apProcess);
-    void NiPSysPositionModifier_LoadBinary(NiStream& stream);
-    void FUN_00c31950(NiStream& stream);
+    void CopyMembers(NiPSysModifier* destination, CloningProcess& process);
+    void BSWindModifier_LinkObject(NiStream& arStream);
+    void __thiscall BSPSysStripUpdateModifier_CopyMembers(NiPSysModifier* pkDest, CloningProcess& kCloning);
+    void NiPSysPositionModifier_LoadBinary(NiStream& kStream);
+    void FUN_00c31950(NiStream& kStream);
     const NiFixedString& GetName() const;
     void SetName(const NiFixedString& name);
     unsigned int GetOrder() const;

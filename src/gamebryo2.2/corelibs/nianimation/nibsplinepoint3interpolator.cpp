@@ -28,24 +28,26 @@ inline unsigned int NiBinaryStream::BinaryWrite(const void* p, unsigned int n, u
 
 // Loads the base interpolator, the point3 value, and the control point handle from the stream.
 // @fnv 0x00a50910
-void NiBSplinePoint3Interpolator::LoadBinary(NiStream& stream)
+// pdb: NiBSplinePoint3Interpolator::LoadBinary | NiBSplinePoint3Interpolator.obj | retail, upstream name already matches, high
+// pdb params: kStream
+void NiBSplinePoint3Interpolator::LoadBinary(NiStream& kStream)
 {
-    NiBSplineInterpolator::LoadBinary(stream);
-    m_kPoint3Value.LoadBinary(stream);
-    (*reinterpret_cast<NiBinaryStream**>(reinterpret_cast<char*>(&stream) + 0x24c))->ReadUInt(m_kPoint3CPHandle);
+    NiBSplineInterpolator::LoadBinary(kStream);
+    m_kPoint3Value.LoadBinary(kStream);
+    (*reinterpret_cast<NiBinaryStream**>(reinterpret_cast<char*>(&kStream) + 0x24c))->ReadUInt(m_kPoint3CPHandle);
 }
 
 // The shared base header does not yet declare its clone-copy helper.
 struct BSplineCloneBase
 {
-    void __thiscall FUN_00a57fd0(BSplineCloneBase*, CloningProcess&);
+    void __thiscall NiBSplineInterpolator_CopyMembers(BSplineCloneBase*, CloningProcess&);
 };
 
 // Calls FUN_00a57fd0, then copies the four int fields at offsets 0x1C-0x28 from this into dest.
 // @fnv 0x00a50680
 void NiBSplineTransformInterpolator::CopyUnknownFields(NiBSplineTransformInterpolator* dest, CloningProcess& process)
 {
-    reinterpret_cast<BSplineCloneBase*>(this)->FUN_00a57fd0(
+    reinterpret_cast<BSplineCloneBase*>(this)->NiBSplineInterpolator_CopyMembers(
         reinterpret_cast<BSplineCloneBase*>(dest), process);
     int* p = (int*)this;
     int* d = (int*)dest;
@@ -94,17 +96,19 @@ void __fastcall NiBSplinePoint3Interpolator_SetPoint3ControlHandle(NiBSplinePoin
 extern int DAT_010996dc;
 struct FUN_00a57f20_shell
 {
-    void __thiscall FUN_00a57f20(int, int);
+    void __thiscall NiBSplineInterpolator_ctor(int, int);
 };
 
 // @fnv 0x00a50840
 // src: EXE 0x00a50840
+// pdb: NiBSplinePoint3Interpolator::CreateObject | NiBSplinePoint3Interpolator.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 void* __cdecl NiBSplinePoint3Interpolator_CreateObject()
 {
     void* p = BSFadeNode::operator new(0x2c);
     if (p)
     {
-        ((FUN_00a57f20_shell*)p)->FUN_00a57f20(0, 0);
+        ((FUN_00a57f20_shell*)p)->NiBSplineInterpolator_ctor(0, 0);
         *(void**)p = &DAT_010996dc;
         *(int*)((char*)p + 0x28) = 0xffff;
     }
@@ -118,19 +122,23 @@ void* __cdecl NiBSplinePoint3Interpolator_CreateObject()
 // @fnv 0x00a506c0
 void* __fastcall NiBSplinePoint3Interpolator_Construct(NiBSplinePoint3Interpolator* self, void*, int a1, int aiValue, int a3)
 {
-    ((FUN_00a57f20_shell*)self)->FUN_00a57f20(a1, a3);
+    ((FUN_00a57f20_shell*)self)->NiBSplineInterpolator_ctor(a1, a3);
     *(void**)self = (void*)&DAT_010996dc;
     self->m_kPoint3CPHandle = aiValue;
     return self;
 }
 
 // @fnv 0x00a507e0
+// pdb: NiBSplinePoint3Interpolator::CreateClone | NiBSplinePoint3Interpolator.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiBSplinePoint3Interpolator::CopyMembers
+// pdb params: kCloning
+// pdb locals: pkObject
 NiObject* __fastcall NiBSplinePoint3Interpolator_Clone(NiBSplinePoint3Interpolator* self, void*, CloningProcess& kCloning)
 {
     NiBSplinePoint3Interpolator* pkObject = (NiBSplinePoint3Interpolator*)BSFadeNode::operator new(44);
     if (pkObject)
     {
-        ((FUN_00a57f20_shell*)pkObject)->FUN_00a57f20(0, 0);
+        ((FUN_00a57f20_shell*)pkObject)->NiBSplineInterpolator_ctor(0, 0);
         *(int*)pkObject = (int)&DAT_010996dc;
         pkObject->m_kPoint3CPHandle = 0xffff;
     }
@@ -138,7 +146,7 @@ NiObject* __fastcall NiBSplinePoint3Interpolator_Clone(NiBSplinePoint3Interpolat
     {
         pkObject = 0;
     }
-    reinterpret_cast<BSplineCloneBase*>(self)->FUN_00a57fd0(
+    reinterpret_cast<BSplineCloneBase*>(self)->NiBSplineInterpolator_CopyMembers(
         reinterpret_cast<BSplineCloneBase*>(pkObject), kCloning);
     int* dest = reinterpret_cast<int*>(&pkObject->m_kPoint3Value);
     const int* source = reinterpret_cast<const int*>(&self->m_kPoint3Value);
@@ -158,6 +166,8 @@ char* __cdecl _FUN_00a7d330(char const*);
 char* __cdecl NiGetViewerString_00a7d510(char const*, unsigned int);
 
 // @fnv 0x00a50960
+// pdb: NiBSplinePoint3Interpolator::GetViewerStrings | NiBSplinePoint3Interpolator.obj | retail, string-set bridge, high
+// pdb params: pkStrings
 void __fastcall NiBSplinePoint3Interpolator_GetViewerStrings(NiBSplinePoint3Interpolator* self, void*, StrArr* pkStrings)
 {
     reinterpret_cast<Base*>(self)->FUN_00a58200(
@@ -191,6 +201,10 @@ struct BSplineData
     void __thiscall FUN_00a52550(float time, float* output, int components, int offset, int handle);
 };
 // @fnv 0x00a50710
+// pdb: NiBSplinePoint3Interpolator::Update | NiBSplinePoint3Interpolator.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiBSplinePoint3Interpolator::CreateClone
+// pdb params: fTime, pkInterpTarget, kValue
+// pdb locals: fNormTime, afValues
 bool __fastcall NiBSplinePoint3Interpolator_SampleBSpline(NiBSplinePoint3Interpolator* self, void*, float time, int aiUnused, NiPoint3* output)
 {
     NiPoint3& lastValue = *reinterpret_cast<NiPoint3*>(&self->m_kPoint3Value);
@@ -202,9 +216,9 @@ bool __fastcall NiBSplinePoint3Interpolator_SampleBSpline(NiBSplinePoint3Interpo
     if (self->m_kPoint3CPHandle != 0xffff)
     {
         float sample[3];
-        reinterpret_cast<BSplineData*>(self->m_spTransformData.m_pObject)->FUN_00a52550(
+        reinterpret_cast<BSplineData*>(self->m_spData.m_pObject)->FUN_00a52550(
             (time - self->m_fStartTime) / (self->m_fEndTime - self->m_fStartTime), sample, 3,
-            reinterpret_cast<int>(self->m_spSplineBasisData.m_pObject), self->m_kPoint3CPHandle);
+            reinterpret_cast<int>(self->m_spBasisData.m_pObject), self->m_kPoint3CPHandle);
         NiPoint3 value;
         value.x = sample[0];
         value.y = sample[1];
@@ -253,6 +267,8 @@ class A50880Base
 
 // SaveBinary
 // @fnv 0x00a50880
+// pdb: NiBSplinePoint3Interpolator::SaveBinary | NiBSplinePoint3Interpolator.obj | retail, upstream name already matches, high
+// pdb params: kStream
 void __fastcall NiBSplinePoint3Interpolator_SaveBinary(NiBSplinePoint3Interpolator* self, void*, NiStream& kStream)
 {
     reinterpret_cast<A50880Base*>(self)->SaveToStream(kStream);
@@ -274,6 +290,9 @@ struct BSplineEqualityBase
 };
 
 // @fnv 0x00a508d0
+// pdb: NiBSplinePoint3Interpolator::IsEqual | NiBSplinePoint3Interpolator.obj | retail, upstream name already matches, high
+// pdb params: pkObject
+// pdb locals: pkDest
 bool __fastcall NiBSplinePoint3Interpolator_IsEqual(NiBSplinePoint3Interpolator* self, void*, NiBSplinePoint3Interpolator* pOther)
 {
     if (!reinterpret_cast<BSplineEqualityBase*>(self)->FUN_00a57e90(reinterpret_cast<BSplineEqualityBase*>(pOther)))

@@ -5,6 +5,7 @@
 
 typedef float hkReal;
 
+// pdb: class hkDisplayCapsule, size 0x90, bases: hkDisplayGeometry, 5 members
 class hkDisplayCapsule : public hkDisplayGeometry
 {
 public:
@@ -16,12 +17,12 @@ public:
     virtual void vf04();
 
     hkVector4 m_fMinimumV;
-    hkVector4 m_fMaximumV;
-    hkReal m_fSphereRadius;
+    hkVector4 m_top; // src: XBOX_RETAIL_PDB +0x60 (old: m_fMaximumV)
+    hkReal m_bottom; // src: XBOX_RETAIL_PDB +0x70 (old: m_fSphereRadius)
     int m_iNumSides;
     int m_iNumHeightSegments;
     int unk7C;
-    int unk80;
+    int m_radius; // src: XBOX_RETAIL_PDB +0x80 (old: unk80)
 
     void buildGeometry();
 };

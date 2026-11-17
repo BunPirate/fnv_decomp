@@ -1,5 +1,6 @@
 #pragma once
 
+// pdb: class NiFilename, size 0x403, 5 members
 class NiFilename
 {
 public:

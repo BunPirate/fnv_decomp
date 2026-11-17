@@ -43,6 +43,8 @@ inline void NiRefObject::DecRef()
 }
 
 // @fnv 0x00c1b020
+// pdb: NiParticleSystem::SetSelectiveUpdateFlags | NiParticleSystem.obj | debug, upstream name already matches, high
+// pdb params: bSelectiveUpdate, bSelectiveUpdateTransforms, bRigid
 void __thiscall NiParticleSystem::SetSelectiveUpdateFlags(bool& bSelectiveUpdate, bool bSelectiveUpdateTransforms,
                                                           bool& bRigid)
 {
@@ -94,6 +96,10 @@ void __cdecl _delete(void*, unsigned int);
 
 // Clears the list at offset 0xC8, calls FUN_00a80580, and if f has bit 0 set, deletes this with size 0x110; returns this.
 // @fnv 0x00c1b9b0
+// pdb: NiParticleSystem::CreateClone | NiParticleSystem.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiParticleSystem::`scalar deleting destructor'
+// pdb params: kCloning
+// pdb locals: pkObject
 void* __fastcall DestroyParticleSystem(NiParticleSystem* system, void*, unsigned int auiFlags)
 {
     ((ParticleListCleanup*)((char*)system + 0xC8))->RemoveAll();
@@ -115,12 +121,15 @@ struct S_00c1b060_Cloning
 
 struct S_00c1b060_Base
 {
-    void FUN_00a80a10(S_00c1b060_Cloning* k);
+    void FUN_00a80a10(S_00c1b060_Cloning* kCloning);
 };
 
 // Calls the base clone handler, looks up this object in the cloning map, then calls ProcessClone on each item in the unkC8 list and on unkB8.
 // @fnv 0x00c1b060
 // src: XBOX_PDB 0x00c1b060
+// pdb: NiParticleSystem::LinkObject | NiParticleSystem.obj | debug, object-file run extension, low
+// pdb params: kStream
+// pdb locals: uiNumModifiers, ui, pkModifier
 void NiParticleSystem::ProcessClone_00c1b060(CloningProcess& cloning)
 {
     S_00c1b060_Cloning* pkCloning = (S_00c1b060_Cloning*)&cloning;
@@ -149,7 +158,7 @@ inline bool S_00c1b120_IsKindOf(const NiRTTI* pkRTTI, const NiObject* pkObject)
     {
         if (pkTmp == pkRTTI)
             return true;
-        pkTmp = pkTmp->m_pBaseRTTI;
+        pkTmp = pkTmp->m_pkBaseRTTI;
     }
     return false;
 }
@@ -195,6 +204,8 @@ struct S_00c1b120_Data : NiObject
 
 // @fnv 0x00c1b120
 // src: XBOX_PDB 0x00c1b120
+// pdb: NiParticleSystem::PerformSystemReset | NiParticleSystem.obj | retail, upstream name already matches, high
+// pdb locals: pkCtlr, pkData, kIter, pkModifier, pkModifierCtlr
 void NiParticleSystem::PerformSystemReset()
 {
     S_00c1b120_Data* pkData = (S_00c1b120_Data*)m_spModelData.m_pObject;
@@ -210,7 +221,7 @@ void NiParticleSystem::PerformSystemReset()
         pkMod->HandleReset();
     }
 
-    for (NiTimeController* pkCtlr = m_spControllers; pkCtlr; pkCtlr = pkCtlr->m_spNextController.m_pObject)
+    for (NiTimeController* pkCtlr = m_spControllers; pkCtlr; pkCtlr = pkCtlr->m_spNext.m_pObject)
     {
         NiObject* pkCast = S_00c1b120_DynamicCast(&DAT_012027c8, pkCtlr);
         if (pkCast)
@@ -221,6 +232,8 @@ void NiParticleSystem::PerformSystemReset()
 void* __cdecl Object_DispatchCommandFour(unsigned int);
 // @fnv 0x00c1b7f0
 // src: EXE 0x00c1b7f0
+// pdb: NiParticleSystem::CreateObject | NiParticleSystem.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 NiParticleSystem* __cdecl NiParticleSystem_CreateObject()
 {
     NiParticleSystem* p = (NiParticleSystem*)Object_DispatchCommandFour(0x110);
@@ -230,6 +243,7 @@ NiParticleSystem* __cdecl NiParticleSystem_CreateObject()
 }
 
 // @fnv 0x00c1b9e0
+// pdb: NiTPointerList<NiPointer<NiPSysModifier> >::NiTPointerList<NiPointer<NiPSysModifier> > | NiParticleSystem.obj | debug, object-file run extension, low
 NiObject* NiParticleSystem::MakeClone(CloningProcess& cloning)
 {
     void* memory = NiParticleSystem::operator new(0x110);
@@ -263,14 +277,16 @@ extern "C" const Block9 DAT_011a9448;
 
 struct ParticleWorldDataBase
 {
-    void FUN_00a68c60(NiUpdateData& data);
+    void FUN_00a68c60(NiUpdateData& UpdateData);
 };
 
 // Preserve the world transform before applying the world-space particle transform.
 // @fnv 0x00c1add0
-void NiParticleSystem::UpdateWorldData(NiUpdateData& data)
+// pdb: NiParticleSystem::UpdateWorldData | NiParticleSystem.obj | retail, upstream name already matches, high
+// pdb params: UpdateData
+void NiParticleSystem::UpdateWorldData(NiUpdateData& UpdateData)
 {
-    ((ParticleWorldDataBase*)this)->FUN_00a68c60(data);
+    ((ParticleWorldDataBase*)this)->FUN_00a68c60(UpdateData);
     m_kUnmodifiedWorld = m_kWorld;
     if (m_bFlag != 0)
     {
@@ -370,7 +386,10 @@ struct NiparticlesystemListNodeView
 // Walks the linked list at m_c8 and calls v36 on each node's m_08 item, passing m_b8 and arg.
 // @fnv 0x00c1aee0
 // src: XBOX_PDB 0x00c1aee0
-void NiParticleSystem::InitializeNewParticle(unsigned int arg)
+// pdb: NiParticleSystem::InitializeNewParticle | NiParticleSystem.obj | retail, upstream name already matches, high
+// pdb params: usNewParticle
+// pdb locals: pkData, kIter, pkModifier
+void NiParticleSystem::InitializeNewParticle(unsigned int usNewParticle)
 {
     void* first = m_spModelData.m_pObject;
     NiparticlesystemListNodeView* node = (NiparticlesystemListNodeView*)m_kModifiers.m_pkHead;
@@ -380,7 +399,7 @@ void NiParticleSystem::InitializeNewParticle(unsigned int arg)
         {
             ListItemBase** pp = &node->m_08;
             node = node->next;
-            (*pp)->v36(first, arg);
+            (*pp)->v36(first, usNewParticle);
         } while (node != 0);
     }
 }
@@ -416,6 +435,7 @@ struct Holder
 };
 
 // @fnv 0x00c1af60
+// pdb: NiParticleSystem::UpdateWorldBound | NiParticleSystem.obj | retail, upstream name already matches, high
 void NiParticleSystem::UpdateWorldBound()
 {
     ((S_00a80710*)this)->FUN_00a80710();
@@ -620,6 +640,9 @@ extern double DAT_010241b0;
 
 // @fnv 0x00c1b260
 // src: XBOX_PDB 0x00c1b260
+// pdb: NiParticleSystem::Do_UpdateSystem | NiParticleSystem.obj | retail, upstream name already matches, high
+// pdb params: fTime
+// pdb locals: bnobound, pkPSysUpdateModifier, pkData, kIter, pkModifier, pparent
 void NiParticleSystem::Do_UpdateSystem(float fTime)
 {
     S_00c1b260_Data* pkData = (S_00c1b260_Data*)m_spModelData.m_pObject;
@@ -673,7 +696,7 @@ void NiParticleSystem::Do_UpdateSystem(float fTime)
 
 struct ParticleLoadBase
 {
-    void NiLines_LoadBinary(NiStream* stream);
+    void NiLines_LoadBinary(NiStream* kStream);
 };
 
 struct Sub_c1b3a0
@@ -837,10 +860,13 @@ struct Obj_c1b3a0
 };
 
 // @fnv 0x00c1b3a0
-void NiParticleSystem::LoadBinary(NiStream& stream)
+// pdb: NiParticleSystem::LoadBinary | NiParticleSystem.obj | retail, upstream name already matches, high
+// pdb params: kStream
+// pdb locals: bWorldSpace
+void NiParticleSystem::LoadBinary(NiStream& kStream)
 {
-    Obj_c1b3a0* pObj = (Obj_c1b3a0*)&stream;
-    ((ParticleLoadBase*)this)->NiLines_LoadBinary(&stream);
+    Obj_c1b3a0* pObj = (Obj_c1b3a0*)&kStream;
+    ((ParticleLoadBase*)this)->NiLines_LoadBinary(&kStream);
     Sub_c1b3a0* pSub = pObj->m_24c;
     bool bFlag;
     int nResult;
@@ -870,9 +896,11 @@ struct FUN_00c1af20_upd
 
 // If a.flag05 is set, marks a.flag06 and returns; otherwise, when bit 2 of flags30 is set, calls the virtual at offset 0xb8, then calls UpdateDownwardPassIfSelective with a and b.
 // @fnv 0x00c1af20
-void NiParticleSystem::UpdateParticleSystem(NiUpdateData& data, unsigned int b)
+// pdb: NiParticleSystem::UpdateSelectedDownwardPass | NiParticleSystem.obj | retail, object-file gap fill, high
+// pdb params: UpdateData, uFlags
+void NiParticleSystem::UpdateParticleSystem(NiUpdateData& UpdateData, unsigned int uFlags)
 {
-    FUN_00c1af20_upd& aUpd = *(FUN_00c1af20_upd*)&data;
+    FUN_00c1af20_upd& aUpd = *(FUN_00c1af20_upd*)&UpdateData;
     if (aUpd.flag05)
     {
         aUpd.flag06 = true;
@@ -882,10 +910,10 @@ void NiParticleSystem::UpdateParticleSystem(NiUpdateData& data, unsigned int b)
     bool on = ((flags >> 2) & 1) != 0;
     if (on)
     {
-        UpdateWorldData(data);
+        UpdateWorldData(UpdateData);
     }
     FUN_00a59fd0_shell* s = reinterpret_cast<FUN_00a59fd0_shell*>(this);
-    s->UpdateDownwardPassIfSelective(&aUpd, b);
+    s->UpdateDownwardPassIfSelective(&aUpd, uFlags);
 }
 
 // IsEqual: base comparison, matching flags, and every bound in the list equals the bound with the same id in the other list.
@@ -916,9 +944,12 @@ class B1D0Base
 
 // Compares base data, m_ucType and m_ucMode with pkOther, then checks each bound in m_pkBounds has an equal match in pkOther's bounds.
 // @fnv 0x00c1b1d0
-bool NiParticleSystem::IsEqual(NiObject* object) const
+// pdb: NiParticleSystem::IsEqual | NiParticleSystem.obj | retail, upstream name already matches, high
+// pdb params: pkObject
+// pdb locals: kListIter, pkDest, pkDestModifier, pkModifier
+bool NiParticleSystem::IsEqual(NiObject* pkObject) const
 {
-    NiParticleSystem* pkOther = (NiParticleSystem*)object;
+    NiParticleSystem* pkOther = (NiParticleSystem*)pkObject;
     if (!((B1D0Base*)this)->IsEqual((B1D0Base*)pkOther))
         return false;
     if (m_c4 != pkOther->m_c4)
@@ -980,6 +1011,9 @@ class BaseC1B400
 
 // Saves the base data, the m_bFlag byte, the m_eValue enum, and the link IDs of each node in the m_pkHead list to kStream.
 // @fnv 0x00c1b400
+// pdb: NiParticleSystem::SaveBinary | NiParticleSystem.obj | retail, upstream name already matches, high
+// pdb params: kStream
+// pdb locals: bWorldSpace, kIter, pkModifier
 void NiParticleSystem::SaveBinary(NiStream& kStream)
 {
     ((BaseC1B400*)this)->SaveBinary(kStream);
@@ -1033,7 +1067,7 @@ struct FUN_00c1b850_list
 };
 struct ParticleViewerBase
 {
-    void NiParticles_GetViewerStrings(FUN_00c1b850_list* strings);
+    void NiParticles_GetViewerStrings(FUN_00c1b850_list* pStrings);
 };
 
 struct C_0096ad30
@@ -1047,15 +1081,17 @@ struct C_0096ae90
 
 extern unsigned int g_012024e0;
 unsigned int __cdecl NiViewerStrings_NiGetViewerString_Title(unsigned int v);
-unsigned int __cdecl NiGetViewerString(const char* s, unsigned int v);
+unsigned int __cdecl NiGetViewerString(const char* pcPrefix, unsigned int bValue);
 unsigned int __cdecl NiGetViewerString_00a7d510(const char* s, unsigned int v);
-unsigned int __cdecl NiGetViewerString_00a7d490(const char* s, unsigned int v);
+unsigned int __cdecl NiGetViewerString_00a7d490(const char* pcPrefix, unsigned int usValue);
 
 // Appends World Space, NumMods, NumParticles and MaxParticles entries to the list via FUN_00a9b2e0 and FUN_0096ae90, growing it when full.
 // @fnv 0x00c1b850
-void NiParticleSystem::WriteParticleSystemInfo(StrArr* strings)
+// pdb: NiParticleSystem::GetViewerStrings | NiParticleSystem.obj | retail, string-set bridge, high
+// pdb params: pkStrings
+void NiParticleSystem::WriteParticleSystemInfo(StrArr* pkStrings)
 {
-    FUN_00c1b850_list* pList = (FUN_00c1b850_list*)strings;
+    FUN_00c1b850_list* pList = (FUN_00c1b850_list*)pkStrings;
     ((ParticleViewerBase*)this)->NiParticles_GetViewerStrings(pList);
     unsigned int v = NiViewerStrings_NiGetViewerString_Title(g_012024e0);
     unsigned int uiIndex = pList->m_0a;
@@ -1128,6 +1164,9 @@ struct PointerList
 
 // Inserts pkBound into m_kList ordered by m_uiUpdateOrder, ref-counting it around the list insert, then calls v9c(this) on it.
 // @fnv 0x00c1b610
+// pdb: NiParticleSystem::CreateClone | NiParticleSystem.obj | debug, object-file run extension, low
+// pdb params: kCloning
+// pdb locals: pkObject
 void NiParticleSystem::InsertSorted(NiPSysModifier* pkBound)
 {
     NiPSysModifier* pBound = pkBound;
@@ -1410,7 +1449,10 @@ struct BoundDataBlock
 // When the task manager is enabled, data time is positive, and the current thread matches the stored ID, it tries to queue a task; otherwise it calls Update.
 // @fnv 0x00c1ae40
 // src: XBOX_PDB 0x00c1ae40
-void NiParticleSystem::UpdateSystem(float time)
+// pdb: NiParticleSystem::UpdateSystem | NiParticleSystem.obj | retail, upstream name already matches, high
+// pdb params: fTime
+// pdb locals: pkTask
+void NiParticleSystem::UpdateSystem(float fTime)
 {
     if (DAT_012024d8 && DAT_011f5b04 && ((TaskManager*)DAT_011f5b04)->enabled && ((BoundDataBlock*)m_spModelData.m_pObject)->time > 0.0f &&
         GetCurrentThreadId() == DAT_012024dc)
@@ -1418,14 +1460,14 @@ void NiParticleSystem::UpdateSystem(float time)
         NiPSysUpdateTask* task = PopNiPSysUpdateTask();
         if (task)
         {
-            ((Host_00c258e0*)task)->AssignRefAndValue(this, time);
+            ((Host_00c258e0*)task)->AssignRefAndValue(this, fTime);
             if (((TaskManager*)DAT_011f5b04)->Queue(task, DAT_011ae6e0))
                 return;
             // NiTask exposes the original virtual release slot as vf37.
             task->vf37();
         }
     }
-    Update(time);
+    Update(fTime);
 }
 
 struct S_00c1b0b0_Base
@@ -1435,6 +1477,9 @@ struct S_00c1b0b0_Base
 
 // Calls the base routine, then invokes v21 on each linked element with kStream, and returns true if the base routine succeeds.
 // @fnv 0x00c1b0b0
+// pdb: NiParticleSystem::RegisterStreamables | NiParticleSystem.obj | retail, upstream name already matches, high
+// pdb params: kStream
+// pdb locals: kIter, pkModifier
 bool NiParticleSystem::RegisterStreamables(NiStream& stream)
 {
     NiStream* kStream = &stream;
@@ -1544,11 +1589,14 @@ struct ParticleCloneBase
 // Clone particle-system state, modifiers, and model data after the base clone routine.
 // @fnv 0x00c1b6f0
 // src: XBOX_PDB 0x00c1b6f0
-void NiParticleSystem::CopyMembers_00c1b6f0(NiParticleSystem* pDest, CloningProcess& kCloning)
+// pdb: NiParticleSystem::CopyMembers | NiParticleSystem.obj | retail, call graph, high
+// pdb params: pkDest, kCloning
+// pdb locals: kIter, pkModifier
+void NiParticleSystem::CopyMembers_00c1b6f0(NiParticleSystem* pkDest, CloningProcess& kCloning)
 {
-    ((ParticleCloneBase*)this)->NiParticleMeshes_CopyMembers(pDest, kCloning);
+    ((ParticleCloneBase*)this)->NiParticleMeshes_CopyMembers(pkDest, kCloning);
 
-    pDest->m_bFlag = m_bFlag;
+    pkDest->m_bFlag = m_bFlag;
 
     typedef NiTPointerListBase<NiTPointerAllocator<unsigned int>, NiPointer<NiPSysModifier> > ModifierCloneList;
     ModifierCloneList& modifiers = *(ModifierCloneList*)&m_kModifiers;
@@ -1556,12 +1604,12 @@ void NiParticleSystem::CopyMembers_00c1b6f0(NiParticleSystem* pDest, CloningProc
     while (kPos)
     {
         NiObject* modifier = static_cast<const ModifierCloneList&>(modifiers).GetNext(kPos);
-        ((ModifierCloneList*)&pDest->m_kModifiers)->AddTail(static_cast<NiPSysModifier*>(modifier->MakeClone(kCloning)));
+        ((ModifierCloneList*)&pkDest->m_kModifiers)->AddTail(static_cast<NiPSysModifier*>(modifier->MakeClone(kCloning)));
     }
 
-    pDest->m_fLastTime = m_fLastTime;
-    pDest->m_bD9 = m_bD9;
-    *(NiPointer<NiObject>*)&pDest->m_spModelData = ((NiObject*)m_spModelData.m_pObject)->MakeClone(kCloning);
+    pkDest->m_fLastTime = m_fLastTime;
+    pkDest->m_bD9 = m_bD9;
+    *(NiPointer<NiObject>*)&pkDest->m_spModelData = ((NiObject*)m_spModelData.m_pObject)->MakeClone(kCloning);
 }
 
 #include <windows.h>

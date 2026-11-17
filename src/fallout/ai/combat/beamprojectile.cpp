@@ -15,6 +15,8 @@
 
 // @fnv 0x00978ed0
 // src: COMMUNITY 0x00978ed0
+// pdb: Projectile::SetActorCause | BeamProjectile.obj | debug, object-file run extension, low
+// pdb params: apActorCause
 void Projectile::SetActorCause_00978ed0(ActorCause* apCause)
 {
     m_pActorCause.operator=(apCause);
@@ -45,6 +47,8 @@ void BeamProjectile::LoadProjectile(BGSLoadFormBuffer* apLoadGameBuffer)
 
 // @fnv 0x009b4cf0
 // src: XBOX_PDB 0x009b4cf0
+// pdb: GrenadeProjectile::FinishLoadGame | GrenadeProjectile.obj | debug, object-file run extension, low
+// pdb params: apLoadGameBuffer
 void BeamProjectile::LoadGame_009b4cf0(BGSLoadFormBuffer* apLoadGameBuffer)
 {
     LoadProjectile(apLoadGameBuffer);
@@ -52,6 +56,8 @@ void BeamProjectile::LoadGame_009b4cf0(BGSLoadFormBuffer* apLoadGameBuffer)
 
 // @fnv 0x009bab00
 // src: COMMUNITY 0x009bab00
+// pdb: MissileProjectile::InitLoadGame | MissileProjectile.obj | debug, object-file gap fill, medium
+// pdb params: apLoadGameBuffer
 void BeamProjectile::InitLoadGame_009bab00(BGSLoadFormBuffer* apBuffer)
 {
     Projectile::InitLoadGame(apBuffer);
@@ -154,27 +160,30 @@ struct BeamPair
 // Scales a NiAVObject's bound radius and center by scale, then scales child effect or geometry vertex data depending on the object's type.
 // @fnv 0x009795e0
 // src: COMMUNITY 0x009795e0
-void BeamProjectile::ScaleBeamGeometryLength(NiAVObject* apObject, float scale)
+// pdb: BeamProjectile::ScaleBeamGeometryLength | BeamProjectile.obj | retail, upstream name already matches, high
+// pdb params: apGeometry, afScaleFactor
+// pdb locals: pdata, pparticles, i, pmod, pemitter, pAGD, vertexIterator, pdest, istride, psrc, icurrent, vertexPosition, vvertexData
+void BeamProjectile::ScaleBeamGeometryLength(NiAVObject* apGeometry, float afScaleFactor)
 {
-    if (apObject)
+    if (apGeometry)
     {
-        ((NiTriShape*)apObject)->GetSourceFilesFromForm()->m_fRadius *= scale;
-        ((NiTriShape*)apObject)->GetSourceFilesFromForm()->m_kCenter.ScaleComponents(scale);
-        NiGeometryData* data = ((NiGeometry*)apObject)->GetModelData();
+        ((NiTriShape*)apGeometry)->NiGeometry_GetModelBound()->m_fRadius *= afScaleFactor;
+        ((NiTriShape*)apGeometry)->NiGeometry_GetModelBound()->m_kCenter.ScaleComponents(afScaleFactor);
+        NiGeometryData* data = ((NiGeometry*)apGeometry)->GetModelData();
         if (data)
         {
             if (NiObject_IsKindOf(&g_01202680_arg1, (NiAVObject*)data))
             {
-                if (NiObject_IsKindOf(&g_01202538_arg1, apObject))
+                if (NiObject_IsKindOf(&g_01202538_arg1, apGeometry))
                 {
-                    FUN_004d7d50_StandIn* node = (FUN_004d7d50_StandIn*)apObject;
+                    FUN_004d7d50_StandIn* node = (FUN_004d7d50_StandIn*)apGeometry;
                     for (unsigned int i = 0; i < node->NiParticleSystem_GetModifierCount(); i++)
                     {
                         NiAVObject* child = node->GetByIndex(i);
                         if (NiObject_IsKindOf(&g_01202508, child))
                         {
                             TESGrass* effect = (TESGrass*)child;
-                            ((EffectSetting*)effect)->BSShaderProperty_SetDepthBias(effect->TESGrass::GetLowestAllowedSlope() * scale);
+                            ((EffectSetting*)effect)->BSShaderProperty_SetDepthBias(effect->TESGrass::GetLowestAllowedSlope() * afScaleFactor);
                         }
                     }
                 }
@@ -191,7 +200,7 @@ void BeamProjectile::ScaleBeamGeometryLength(NiAVObject* apObject, float scale)
                         {
                             BeamVertex vertex = *(const BeamVertex*)&NiPoint3_ZERO;
                             vertexMap.NiGeometryDataIteratorNiPoint3_Get(iVertex, (NiPoint3&)vertex);
-                            vertex.y *= scale;
+                            vertex.y *= afScaleFactor;
                             vertexMap.SetVertex(iVertex, (const NiPoint3&)vertex);
                         }
                         data->NiGeometryData_UnlockPackedVertexData();
@@ -202,8 +211,8 @@ void BeamProjectile::ScaleBeamGeometryLength(NiAVObject* apObject, float scale)
             {
                 for (int k = 0; k < ((const NiGeometryData*)data)->GetVertexCount(); k++)
                 {
-                    data->GetVertices()[k].y *= scale;
-                    ((BeamPair*)((Script*)data)->GetText())[k].b *= scale;
+                    data->GetVertices()[k].y *= afScaleFactor;
+                    ((BeamPair*)((Script*)data)->GetText())[k].b *= afScaleFactor;
                 }
             }
         }
@@ -231,6 +240,7 @@ struct HandleField
 };
 // @fnv 0x00979280
 // src: XBOX_PDB 0x00979280
+// pdb: BeamProjectile::Initialize | BeamProjectile.obj | retail, vtable slot, high
 void __thiscall BeamProjectile::Initialize_00979280()
 {
     ((FUN_005de0a0_shell*)this)->Projectile_SetFlag(0x10, 0);
@@ -755,21 +765,24 @@ struct BeamEffect
     Actor* actor;
     Base* FUN_004181e0();
     bool Projectile_IsFlagSet(int);
-    void StopSound();
+    void Projectile_StopCountdownSound();
     void Projectile_SetFlag(int, bool);
     Form* TESObjectREFR_GetOwner();
-    bool IsFightReactionAllowed(int, Actor*, Form*);
+    bool Projectile_GetMineReactsToTarget(int, Actor*, Form*);
     bool Projectile_DisarmPlacedExplosives(int, bool);
 };
 // @fnv 0x009c43e0
 // src: COMMUNITY 0x009c43e0
-bool BeamEffect::Projectile_DisarmPlacedExplosives(int value, bool silent)
+// pdb: Projectile::TurnOff | Projectile.obj | retail, vtable slot, high
+// pdb params: apActionActor, abSilent
+// pdb locals: bresult, pdeactivateSound, soundHandle, pshooterActor, pownerFaction, powner, eownerType
+bool BeamEffect::Projectile_DisarmPlacedExplosives(int apActionActor, bool abSilent)
 {
     bool result = false;
     if (FUN_004181e0()->GetCanTurnOff() && !Projectile_IsFlagSet(0x200))
     {
-        StopSound();
-        if (!silent)
+        Projectile_StopCountdownSound();
+        if (!abSilent)
         {
             Reference* owner = FUN_004181e0()->CombatController_GetCombatState();
             if (owner)
@@ -797,8 +810,8 @@ bool BeamEffect::Projectile_DisarmPlacedExplosives(int value, bool silent)
                             container = parent;
                     }
                 }
-                if (!silent &&
-                    (lifetime != 3.4028234663852886e+38 || IsFightReactionAllowed(value, shooter, container)))
+                if (!abSilent &&
+                    (lifetime != 3.4028234663852886e+38 || Projectile_GetMineReactsToTarget(apActionActor, shooter, container)))
                 {
                     FUN_004d5c60(11);
                     if (*DAT_011cecdc.Setting_Int() > 0)
@@ -1028,6 +1041,8 @@ struct S_00979140_Holder
 
 // @fnv 0x00979140
 // src: COMMUNITY 0x00979140
+// pdb: BeamProjectile::Process3D | BeamProjectile.obj | retail, upstream name already matches, high
+// pdb locals: pav, pfireNode, frange, UpdateData
 void BeamProjectile::Process3D()
 {
     S_00979140_Node* node2 = (S_00979140_Node*)GetNiNode();
@@ -1049,7 +1064,7 @@ void BeamProjectile::Process3D()
 
 struct BeamHitHandler
 {
-    unsigned char ProcessHit(void* a1, void* a2, void* a3, void* a4, void* a5, void* a6);
+    unsigned char ProcessHit(void* apCollidee, void* aContactPoint, void* aContactNormal, void* apTargetCollidable, void* aiKey, void* aeForceMaterial);
 };
 
 struct FUN_00979510_sub88
@@ -1064,22 +1079,24 @@ struct FUN_00979510_res
 {
     float FUN_00457990();
 };
-unsigned char CanProjectileHit(void* a1, void* a4, void* self, void* r);
+unsigned char Projectile_IsValidImpact(void* apCollidee, void* apTargetCollidable, void* apProjectile, void* apProjectileBase);
 
 // @fnv 0x00979510
 // src: XBOX_PDB 0x00979510
-unsigned char BeamProjectile::AddImpact(void* a1, void* a2, void* a3, void* a4, void* a5, void* a6)
+// pdb: BeamProjectile::AddImpact | BeamProjectile.obj | retail, upstream name already matches, high
+// pdb params: apCollidee, aContactPoint, aContactNormal, apTargetCollidable, aiKey, aeForceMaterial
+unsigned char BeamProjectile::AddImpact(void* apCollidee, void* aContactPoint, void* aContactNormal, void* apTargetCollidable, void* aiKey, void* aeForceMaterial)
 {
     unsigned int unk04;
     unsigned int unk08;
     float fOut;
     if (((FUN_00979510_sub88*)((char*)this + 0x88))->FUN_008256d0())
     {
-        if (CanProjectileHit(a1, a4, this, this->FUN_004181e0()))
+        if (Projectile_IsValidImpact(apCollidee, apTargetCollidable, this, this->FUN_004181e0()))
         {
-            if (((BeamHitHandler*)this)->ProcessHit(a1, a2, a3, a4, a5, a6))
+            if (((BeamHitHandler*)this)->ProcessHit(apCollidee, aContactPoint, aContactNormal, apTargetCollidable, aiKey, aeForceMaterial))
             {
-                Projectile_SetRange(((FUN_00979510_res*)((FUN_00979510_obj*)a2)->SubtractIntoVector(&fOut, ((const BeamProjectile*)this)->GetPos()))
+                Projectile_SetRange(((FUN_00979510_res*)((FUN_00979510_obj*)aContactPoint)->SubtractIntoVector(&fOut, ((const BeamProjectile*)this)->GetPos()))
                                        ->FUN_00457990());
                 return 1;
             }
@@ -1148,17 +1165,20 @@ unsigned char __cdecl NiObject_IsKindOf(const void* typeDesc, const void* obj);
 
 // @fnv 0x00979840
 // src: COMMUNITY 0x00979840
-float BeamProjectile::FindBeamGeometryLength(NiGeometry* arg)
+// pdb: BeamProjectile::FindBeamGeometryLength | BeamProjectile.obj | debug, upstream name already matches, high
+// pdb params: apGeometry
+// pdb locals: flength, pdata, pparticles, i, pmod, pemitter, pAGD, vertexIterator, icurrent, pvertexsrc, vertexPosition, ivertexStride, vvertexData
+float BeamProjectile::FindBeamGeometryLength(NiGeometry* apGeometry)
 {
-    NiGeometryData* actor = arg->GetModelData();
+    NiGeometryData* actor = apGeometry->GetModelData();
     float best = 0.0f;
     if (actor != 0)
     {
         if (NiObject_IsKindOf(&DAT_01202558, actor))
         {
-            if (NiObject_IsKindOf(&DAT_012024e0, arg))
+            if (NiObject_IsKindOf(&DAT_012024e0, apGeometry))
             {
-                FUN_004d7d50_StandIn* owner = (FUN_004d7d50_StandIn*)arg;
+                FUN_004d7d50_StandIn* owner = (FUN_004d7d50_StandIn*)apGeometry;
                 for (unsigned int i = 0; best == 0.0f && i < owner->NiParticleSystem_GetModifierCount(); ++i)
                 {
                     NiAVObject* item = owner->GetByIndex(i);
@@ -1223,7 +1243,7 @@ struct S_00979a70_Obj;
 struct S_00979a70_Group
 {
     unsigned int FUN_0043b480();
-    S_00979a70_Obj* FUN_0043b4a0(unsigned int index);
+    S_00979a70_Obj* FUN_0043b4a0(unsigned int i);
 };
 
 struct S_00979a70_Obj
@@ -1243,6 +1263,9 @@ bool __cdecl NiObject_IsKindOf(const void* rtti, S_00979a70_Obj* obj);
 
 // Scales node's vector by a/b when b exceeds DAT_01012060, then scales the node or recurses into its children.
 // @fnv 0x00979a70
+// pdb: BeamProjectile::ScaleBeam3D | BeamProjectile.obj | debug, object-file run extension, low
+// pdb params: ap3D, afDesiredLength, afCurrentLength
+// pdb locals: fscale, location, pgeom, fcurrentLength, pnode, n, pobj
 void BeamProjectile::ScaleNode(NiAVObject* node, float fScale, float fDivisor)
 {
     if (node)
@@ -1323,6 +1346,8 @@ struct FUN_009b8b10_cls
 
 // @fnv 0x009b8b10
 // src: XBOX_PDB 0x009b8b10
+// pdb: MissileProjectile::ProcessImpacts | MissileProjectile.obj | retail, upstream name already matches, high
+// pdb locals: bprocessed, tempAutoEvent, bcontinueProcess, fminDistance
 bool FUN_009b8b10_cls::MissileProjectile_ProcessImpacts()
 {
     bool bResult = false;

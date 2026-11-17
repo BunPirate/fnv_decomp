@@ -18,6 +18,8 @@ unsigned int __cdecl FUN_00ec7c56(void);
 // Checks the block has room for alloc bytes, calls FUN_00ec7c56 if not, advances p twice and returns the pointer at used+alloc.
 // @fnv 0x00b3ede0
 // src: GUESS 0x00b3ede0 (confidence: medium)
+// pdb: CTreeFileAccess::ParseLong | FileAccess.obj | debug, call graph, medium
+// pdb locals: pReturn, ulSwapValue
 void* FUN_00b3ede0_shell::AdvanceBlockAllocationCursor()
 {
     unsigned int alloc = *(unsigned int*)this;
@@ -40,6 +42,7 @@ struct FUN_00b3ef80_shell
 
 // Builds a 3-component vector by calling FUN_00b3ed20 once per component and returns it.
 // @fnv 0x00b3ef80
+// pdb: BSSoundMessage::GetVector3 | BSAudioManager.obj | debug, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
 CVec3 FUN_00b3ef80_shell::GetVector3()
 {
     // Preserve explicit initialization without calling the shared default constructor.
@@ -73,6 +76,8 @@ struct FUN_00b3ed20_cls
 
 // @fnv 0x00b3ed20
 // src: COMMUNITY 0x00b3ed20
+// pdb: CTreeFileAccess::ParseFloat | FileAccess.obj | debug, upstream name already matches, high
+// pdb locals: pReturn, ulRawValue
 float FUN_00b3ed20_cls::CTreeFileAccess_ParseFloat()
 {
     unsigned int idx = m_nCursor;
@@ -144,6 +149,7 @@ struct FUN_00b40150_cls : public FUN_00b40150_base
 };
 
 // @fnv 0x00b40150
+// pdb: CBillboardLeaf::CBillboardLeaf | BillboardLeaf.obj | debug, call graph, high
 FUN_00b40150_cls::FUN_00b40150_cls()
 {
     m_unk10 = 0;

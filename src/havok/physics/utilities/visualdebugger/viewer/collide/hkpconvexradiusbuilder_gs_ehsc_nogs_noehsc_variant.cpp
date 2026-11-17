@@ -61,6 +61,9 @@ extern float DAT_0101b31c;
 
 // @fnv 0x00de3110
 // src: XBOX_PDB 0x00de3110
+// pdb: _getPlaneToSurfaceDistance | hkpConvexRadiusBuilder.obj | retail, upstream name already matches, high
+// pdb params: shape
+// pdb locals: vertices
 static __declspec(noinline) float _getPlaneToSurfaceDistance(int dummy, D31Mgr* mgr)
 {
     D31Pair* pair = mgr->FUN_00d58d50();

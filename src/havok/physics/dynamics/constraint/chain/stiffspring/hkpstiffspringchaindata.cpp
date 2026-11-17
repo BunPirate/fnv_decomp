@@ -54,26 +54,27 @@ class hkpStiffSpringChainDataConstraintInfo;
 
 // include/ has no hkpStiffSpringChainData.h yet; retain its reflected 0x30 layout
 // and this unit's methods together until that shared declaration is available.
+// pdb: class hkpStiffSpringChainData, size 0x30, bases: hkpConstraintChainData, 5 members
 class hkpStiffSpringChainData : public hkpConstraintChainData
 {
 public:
     virtual ~hkpStiffSpringChainData() throw();
 
-    hkpBridgeAtoms m_kBridgeAtoms;
-    hkArray<hkpStiffSpringChainDataConstraintInfo> m_pConstraintInfo;
-    hkReal m_fTau;
-    hkReal m_fMotorDamping;
-    hkReal m_fMaxErrorDistance;
+    hkpBridgeAtoms m_atoms; // src: XBOX_RETAIL_PDB +0xc (old: m_kBridgeAtoms)
+    hkArray<hkpStiffSpringChainDataConstraintInfo> m_infos; // src: XBOX_RETAIL_PDB +0x18 (old: m_pConstraintInfo)
+    hkReal m_tau; // src: XBOX_RETAIL_PDB +0x24 (old: m_fTau)
+    hkReal m_damping; // src: XBOX_RETAIL_PDB +0x28 (old: m_fMotorDamping)
+    hkReal m_cfm; // src: XBOX_RETAIL_PDB +0x2c (old: m_fMaxErrorDistance)
 
     void getRuntimeInfo_00e3af80(bool bFlag, unsigned int* pOut);
     void getConstraintInfo_00e3af40(::ConstraintInfo& info);
-    void buildJacobian_00e3b0f0(const SixteenWordFloatRecord& inNonConst, QueryResultSchema& out) volatile;
+    void buildJacobian_00e3b0f0(const SixteenWordFloatRecord& inNotValid, QueryResultSchema& out) volatile;
     hkpStiffSpringChainData* DestroyAndFree(unsigned int uiFlags) throw();
 
     static void operator delete(void* p) throw()
     {
         hkMemoryRouter_getInstance().heap().blockFree(
-            p, static_cast<hkpStiffSpringChainData*>(p)->m_usMemSizeAndFlags);
+            p, static_cast<hkpStiffSpringChainData*>(p)->m_memSizeAndFlags);
     }
 };
 
@@ -83,7 +84,7 @@ void hkpStiffSpringChainData::getRuntimeInfo_00e3af80(bool bFlag, unsigned int* 
 {
     if (bFlag)
     {
-        unsigned int u = static_cast<unsigned int>(m_pConstraintInfo.m_iElementCount);
+        unsigned int u = static_cast<unsigned int>(m_infos.m_iElementCount);
         pOut[1] = u;
         pOut[0] = u * 8;
     }
@@ -105,14 +106,14 @@ int __cdecl hkpStiffSpringChainData_ReturnConstant_0x64()
 // src: HAVOK_LIB 0x00e3af40
 void hkpStiffSpringChainData::getConstraintInfo_00e3af40(::ConstraintInfo& info)
 {
-    info.m_kBridgeAtoms = &m_kBridgeAtoms;
+    info.m_kBridgeAtoms = &m_atoms;
     info.m_iSolverResultCount = 0;
     info.m_iSolverElementTemporaryCount = 0;
     info.m_maxNumExternalSlaveContactPoints = 0;
     info.m_iSchemaByteSize = 16;
     info.m_usSizeOfAllAtoms = sizeof(hkpBridgeAtoms);
 
-    int size = m_pConstraintInfo.m_iElementCount;
+    int size = m_infos.m_iElementCount;
     info.m_iSchemaByteSize += (size * 80 + 36 + 15) & ~15;
     info.m_iSolverResultCount = size;
     info.m_iSolverElementTemporaryCount = size;
@@ -120,6 +121,7 @@ void hkpStiffSpringChainData::getConstraintInfo_00e3af40(::ConstraintInfo& info)
 
 // Runs the destructor and, when bit 0 of uiFlags is set, frees the object through operator delete; returns this.
 // @fnv 0x00e3b4a0
+// pdb: hkpStiffSpringChainData::`scalar deleting destructor' | hkpStiffSpringChainData.obj | retail, vtable slot, high
 hkpStiffSpringChainData* hkpStiffSpringChainData::DestroyAndFree(unsigned int uiFlags) throw()
 {
     this->hkpStiffSpringChainData::~hkpStiffSpringChainData();
@@ -221,15 +223,15 @@ struct SolverPointTransform : public hkVector4
 {
     void SetTransformedPoint(const hkTransform& t, const hkVector4& v) throw();
 };
-void __cdecl ResizeAudioStream(hkMemoryAllocator* alloc, void* array, int sizeElem) throw();
+void __cdecl ResizeAudioStream(hkMemoryAllocator* mem, void* array, int sizeElem) throw();
 extern "C" void __cdecl AppendEventRecord(const SixteenWordFloatRecord& in, QueryResultSchema& out, void* solverResults,
                                      int solverResultStriding) throw();
 SolverSchemaHeader* __cdecl hkJacobianStiffSpringChainSchema_getJacobians(SolverSchemaHeader* schema) throw();
 void __cdecl hkLoadVelocityAccumulators(SixteenWordFloatRecord* in) throw();
 void __cdecl hk1dLinearBilateralConstraintBuildJacobianWithCustomRhs_noSchema(const hk1dLinearBilateralConstraintInfo& info, const SixteenWordFloatRecord& in,
-                          SolverSchemaHeader* schema, hkReal rhs) throw();
-void __cdecl hkStiffSpringChainBuildJacobian(int numConstraints, hkReal tau, hkReal damping, hkReal cfm, int* offsets, hkUint32 base,
-                          SolverSchemaHeader* schema, const SixteenWordFloatRecord& in, QueryResultSchema& out) throw();
+                          SolverSchemaHeader* schema, hkReal customRhs) throw();
+void __cdecl hkStiffSpringChainBuildJacobian(int numConstraints, hkReal tau, hkReal damping, hkReal cfm, int* accumulators, hkUint32 accumBase,
+                          SolverSchemaHeader* jacobiansEnd, const SixteenWordFloatRecord& in, QueryResultSchema& out) throw();
 __forceinline void* __cdecl operator new(unsigned int, void* p) throw()
 {
     return p;
@@ -294,20 +296,23 @@ static __forceinline hkReal hkNormalizeWithLength3(SolverVectorStorage& v)
 }
 // @fnv 0x00e3b0f0
 // src: XBOX_PDB 0x00e3b0f0
-void hkpStiffSpringChainData::buildJacobian_00e3b0f0(const SixteenWordFloatRecord& inNonConst, QueryResultSchema& out) volatile
+// pdb: hkpStiffSpringChainData::buildJacobian | hkpStiffSpringChainData.obj | retail, vtable slot, high
+// pdb params: inNotValid, out
+// pdb locals: newIn, accumulators, numConstraints, entities, baseAccum, assertBuf, ostr, bp
+void hkpStiffSpringChainData::buildJacobian_00e3b0f0(const SixteenWordFloatRecord& inNotValid, QueryResultSchema& out) volatile
 {
-    AppendEventRecord(inNonConst, out, inNonConst.m_pByteBuffer, 8);
-    SixteenWordFloatRecord in = inNonConst;
+    AppendEventRecord(inNotValid, out, inNotValid.m_pByteBuffer, 8);
+    SixteenWordFloatRecord in = inNotValid;
     in.m_pConstraintChainInstance = 0;
     in.m_pByteBuffer = 0;
     hkInplaceIntArray32 velocityAccumulatorsOffsets;
-    hkpConstraintChainInstance* instance = inNonConst.m_pConstraintChainInstance;
-    int numConstraints = instance->m_ppRigidBodies.m_iElementCount - 1;
-    hkUint32 base = (hkUint32)inNonConst.m_pBodyA - instance->m_kActorEntries[0]->m_uiFilterInfo;
-    hkpEntity* rA = instance->m_ppRigidBodies.m_data[0];
-    in.m_pBodyB = (const QuantizedBoundsData*)(base + rA->m_uiFilterInfo);
+    hkpConstraintChainInstance* instance = inNotValid.m_pConstraintChainInstance;
+    int numConstraints = instance->m_chainedEntities.m_iElementCount - 1;
+    hkUint32 base = (hkUint32)inNotValid.m_pBodyA - instance->m_entities[0]->m_solverData;
+    hkpEntity* rA = instance->m_chainedEntities.m_data[0];
+    in.m_pBodyB = (const QuantizedBoundsData*)(base + rA->m_solverData);
     velocityAccumulatorsOffsets.pushBackUnchecked((hkUint32)in.m_pBodyB - base);
-    in.m_kBodyBLocalFrame = &rA->m_pMotionState.m_kMotionState.m_kMotionTransform;
+    in.m_kBodyBLocalFrame = &rA->m_motion.m_kMotionState.m_transform;
     in.m_fFourthQueryValue = 1.0f;
     in.m_iBeforeFourthQueryValue = in.m_fQueryInputValue;
     SolverSchemaHeader* schema = hkJacobianStiffSpringChainSchema_getJacobians(out.m_pQueryResultSchema.value());
@@ -315,14 +320,14 @@ void hkpStiffSpringChainData::buildJacobian_00e3b0f0(const SixteenWordFloatRecor
     {
         in.m_pBodyA = in.m_pBodyB;
         in.m_kBodyALocalFrame = in.m_kBodyBLocalFrame;
-        hkpEntity* rB = instance->m_ppRigidBodies.m_data[i + 1];
-        in.m_pBodyB = (const QuantizedBoundsData*)(base + rB->m_uiFilterInfo);
+        hkpEntity* rB = instance->m_chainedEntities.m_data[i + 1];
+        in.m_pBodyB = (const QuantizedBoundsData*)(base + rB->m_solverData);
         velocityAccumulatorsOffsets.AddBack(&hkMemoryRouter_getInstance(),
                                             (hkUint32)in.m_pBodyB - base);
-        in.m_kBodyBLocalFrame = &rB->m_pMotionState.m_kMotionState.m_kMotionTransform;
+        in.m_kBodyBLocalFrame = &rB->m_motion.m_kMotionState.m_transform;
         hk1dLinearBilateralConstraintInfo bp;
-        reinterpret_cast<SolverPointTransform&>(bp.m_kPivotA).SetTransformedPoint(*in.m_kBodyALocalFrame, m_pConstraintInfo.m_data[i].m_kPivotInA);
-        reinterpret_cast<SolverPointTransform&>(bp.m_kPivotB).SetTransformedPoint(*in.m_kBodyBLocalFrame, m_pConstraintInfo.m_data[i].m_kPivotInB);
+        reinterpret_cast<SolverPointTransform&>(bp.m_kPivotA).SetTransformedPoint(*in.m_kBodyALocalFrame, m_infos.m_data[i].m_kPivotInA);
+        reinterpret_cast<SolverPointTransform&>(bp.m_kPivotB).SetTransformedPoint(*in.m_kBodyBLocalFrame, m_infos.m_data[i].m_kPivotInB);
         SolverVectorStorage dir;
         dir.m_vComponents = _mm_sub_ps(bp.m_kPivotA.m_vComponents, bp.m_kPivotB.m_vComponents);
         hkReal length = hkNormalizeWithLength3(dir);
@@ -336,10 +341,10 @@ void hkpStiffSpringChainData::buildJacobian_00e3b0f0(const SixteenWordFloatRecor
             length = 0.0f;
         }
         hkLoadVelocityAccumulators(&in);
-        hkReal rhs = m_pConstraintInfo.m_data[i].m_fSpringRestLength - length;
+        hkReal rhs = m_infos.m_data[i].m_fSpringRestLength - length;
         hk1dLinearBilateralConstraintBuildJacobianWithCustomRhs_noSchema(bp, in, schema, rhs);
         schema = reinterpret_cast<SolverSchemaHeader*>(reinterpret_cast<char*>(schema) + 0x30);
     }
-    hkStiffSpringChainBuildJacobian(numConstraints, m_fTau, m_fMotorDamping, m_fMaxErrorDistance, velocityAccumulatorsOffsets.m_data, base,
-                 schema, inNonConst, out);
+    hkStiffSpringChainBuildJacobian(numConstraints, m_tau, m_damping, m_cfm, velocityAccumulatorsOffsets.m_data, base,
+                 schema, inNotValid, out);
 }

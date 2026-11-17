@@ -601,7 +601,7 @@ struct FUN_00dba780_cls
 {
     RefObj* m_pReference;
 
-    FUN_00dba780_cls* AssignRef(FUN_00dba780_cls* apOther);
+    FUN_00dba780_cls* hkDataObject_ctor(FUN_00dba780_cls* o);
 };
 struct RefCountedObj
 {
@@ -1310,7 +1310,7 @@ struct S_00dbaed0_Obj
 {
     S_00dbaed0_Target* m_target;
     int ForwardCall_00dba730();
-    void DispatchItems(S_00dbaed0_Elem** items);
+    void hkDataClass_getAllMemberInfo(S_00dbaed0_Elem** minfos);
 };
 struct S_Alloc
 {
@@ -1329,7 +1329,7 @@ struct S_Router
     }
 };
 S_Router* hkMemoryRouter_getInstance();
-void hkArrayUtil__reserve(S_Alloc& a, void* arr, int n, int esz);
+void hkArrayUtil__reserve(S_Alloc& mem, void* array, int numElem, int sizeElem);
 struct S_Obj
 {
     virtual void v0();
@@ -1570,16 +1570,16 @@ struct DB8000_Self
     virtual void v8();
     virtual unsigned int vfn9(const char* name);
 
-    void hkDataWorldDict_renameClass(DB8000_Handle* h, const char* name);
-    void RenameClassMember(DB8000_Handle* h, int a, int b);
-    void FUN_00dc7d20(DB8000_Handle* h, int a, int b, int c, int d);
-    void ProcessEntries_00dc7600(DB8000_Handle* h, int a);
+    void hkDataWorldDict_renameClass(DB8000_Handle* klass, const char* newName);
+    void RenameClassMember(DB8000_Handle* klass, int oldName, int newName);
+    void addClassMember(DB8000_Handle* h, int name, int type, int typeName, int tupleCount);
+    void ProcessEntries_00dc7600(DB8000_Handle* klass, int name);
     void InitAndRun(const char* name, DB8000_PtrArray* out);
-    void AssignRefCountedSlot(DB8000_Handle* h1, DB8000_Handle* h2);
+    void AssignRefCountedSlot(DB8000_Handle* klass, DB8000_Handle* parent);
     void CallWithReset(const char* name, DB8000_PtrArray* out);
-    void hkDataWorldDict_castObject(DB8000_Ref* ref, DB8000_Handle* h);
-    void ReleaseRef(DB8000_Handle* h);
-    void hkDataWorldDict_setClassVersion(DB8000_Handle* h, int a);
+    void hkDataWorldDict_castObject(DB8000_Ref* obj, DB8000_Handle* castClass);
+    void ReleaseRef(DB8000_Handle* klass);
+    void hkDataWorldDict_setClassVersion(DB8000_Handle* klass, int newVersion);
 };
 static int __cdecl applyPatchesFinally(DB8000_Self* self, DB8000_ItemArray* items);
 extern volatile DB8000_Self* g_db8000_self;

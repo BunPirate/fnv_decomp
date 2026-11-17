@@ -37,6 +37,9 @@ inline void NiBinaryStream::ReadComp(void* value, unsigned int bytes, unsigned i
 }
 // Checks whether the root bone or any bone name is present in context.map, returning true on the first hit.
 // @fnv 0x00a862d0
+// pdb: NiSkinInstance::NeedClone | NiSkinInstance.obj | retail, call graph, medium
+// pdb params: kCloning
+// pdb locals: uiBoneCount, bCloned, pkClone, i
 bool NiSkinData::MapSkinData(SkinMapContext& context)
 {
     ShaderBufferRecord* result;
@@ -77,6 +80,8 @@ struct FakeSkin : NiObject
 };
 // @fnv 0x00a84ce0
 // src: XBOX_PDB 0x00a84ce0
+// pdb: NiSkinData::LinkObject | NiSkinData.obj | retail, upstream name already matches, high
+// pdb params: kStream
 void FakeSkin::NiSkinData_LinkObject(void* streamObject)
 {
     NiStream& kStream = *static_cast<NiStream*>(streamObject);
@@ -88,6 +93,8 @@ void FakeSkin::NiSkinData_LinkObject(void* streamObject)
 extern int DAT_0109e574;
 // @fnv 0x00a84d30
 // src: EXE 0x00a84d30
+// pdb: NiSkinData::CreateObject | NiSkinData.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 void* __cdecl NiSkinData_CreateObject()
 {
     void* p = BSFadeNode::operator new(0x48);
@@ -113,7 +120,7 @@ struct SkinCompareOps
 {
     bool CompareSub(void* other);
     bool CompareTail(void* other);
-    bool CompareRoot(void* other);
+    bool CompareRoot(void* pObject);
     char unk00[0x10];
 };
 
@@ -133,29 +140,32 @@ struct FUN_00a84d70_cls
     char unk34[0x0c];
     SkinShape* m_40;
     unsigned int m_44;
-    bool Equals(FUN_00a84d70_cls* other);
+    bool Equals(FUN_00a84d70_cls* pkObject);
 };
 
 // Compares this object with another: root, sub-block, count, then each shape's ops, tail, count and entry keys/values; returns true if all match.
 // @fnv 0x00a84d70
-bool FUN_00a84d70_cls::Equals(FUN_00a84d70_cls* other)
+// pdb: NiSkinData::IsEqual | NiSkinData.obj | retail, object-file gap fill, high
+// pdb params: pkObject
+// pdb locals: pkSkinData, i, pkBoneData, v, pkBoneVertData
+bool FUN_00a84d70_cls::Equals(FUN_00a84d70_cls* pkObject)
 {
-    if (!reinterpret_cast<SkinCompareOps*>(this)->CompareRoot(other))
+    if (!reinterpret_cast<SkinCompareOps*>(this)->CompareRoot(pkObject))
     {
         return false;
     }
-    if (reinterpret_cast<SkinCompareOps*>(&unk0c)->CompareSub(&other->unk0c))
+    if (reinterpret_cast<SkinCompareOps*>(&unk0c)->CompareSub(&pkObject->unk0c))
     {
         return false;
     }
-    if (m_44 != other->m_44)
+    if (m_44 != pkObject->m_44)
     {
         return false;
     }
     for (unsigned int i = 0; i < m_44; ++i)
     {
         SkinShape* pShape = m_40 + i;
-        SkinShape* pOtherShape = other->m_40 + i;
+        SkinShape* pOtherShape = pkObject->m_40 + i;
         if (reinterpret_cast<SkinCompareOps*>(pShape)->CompareSub(pOtherShape))
         {
             return false;
@@ -186,7 +196,7 @@ bool FUN_00a84d70_cls::Equals(FUN_00a84d70_cls* other)
 struct S_00a84e70_Pool
 {
     void* Game_DoHeapAlloc(unsigned int size);
-    void MemoryManager_Deallocate(void* p);
+    void MemoryManager_Deallocate(void* apMem);
 };
 extern S_00a84e70_Pool DAT_011f6238;
 
@@ -206,20 +216,24 @@ struct S_00a84e70_Array
     S_00a84e70_Elem* m_data;
     unsigned int m_pRayCursor;
     unsigned int m_uiItemCount;
-    void Reserve(unsigned int newCapacity);
+    void NiTSet_NiPoint3_NiTNewInterface_NiPoint3_Realloc(unsigned int uiNewSize);
 };
 
 // @fnv 0x00a84e70
-void S_00a84e70_Array::Reserve(unsigned int newCapacity)
+// src: XBOX_RETAIL_PDB 0x00a84e70
+// pdb: NiTSet<NiPoint3,NiTNewInterface<NiPoint3> >::Realloc | NiSkinData.obj | retail, call graph, high
+// pdb params: uiNewSize
+// pdb locals: pNewBase, i
+void S_00a84e70_Array::NiTSet_NiPoint3_NiTNewInterface_NiPoint3_Realloc(unsigned int uiNewSize)
 {
-    if (newCapacity == m_pRayCursor)
+    if (uiNewSize == m_pRayCursor)
     {
         return;
     }
     S_00a84e70_Elem* newData;
-    if (newCapacity > 0)
+    if (uiNewSize > 0)
     {
-        newData = new S_00a84e70_Elem[newCapacity];
+        newData = new S_00a84e70_Elem[uiNewSize];
         for (unsigned int i = 0; i < m_uiItemCount; i++)
         {
             newData[i] = m_data[i];
@@ -231,7 +245,7 @@ void S_00a84e70_Array::Reserve(unsigned int newCapacity)
     }
     DAT_011f6238.MemoryManager_Deallocate(m_data);
     m_data = newData;
-    m_pRayCursor = newCapacity;
+    m_pRayCursor = uiNewSize;
 }
 
 template <class T> inline void SkinSaveBinary(NiStream& kStream, T& val)
@@ -279,6 +293,9 @@ struct SkinDataLike : SkinObjectBase
 // Saves the skin object base, transform, bone count, vertex-weight flag and each bone's transform, bound, vertex count and optional vertex weights to the stream.
 // @fnv 0x00a85250
 // src: XBOX_PDB 0x00a85250
+// pdb: NiSkinData::SaveBinary | NiSkinData.obj | retail, upstream name already matches, high
+// pdb params: kStream
+// pdb locals: bBoneVertData, i, pkBoneData, v, pkBoneVertData
 void SkinDataLike::NiSkinData_SaveBinary(void* streamObject)
 {
     NiStream& kStream = *static_cast<NiStream*>(streamObject);
@@ -308,7 +325,7 @@ void SkinDataLike::NiSkinData_SaveBinary(void* streamObject)
 
 struct PoolBounds
 {
-    void MemoryManager_Deallocate(void* p) throw();
+    void MemoryManager_Deallocate(void* apMem) throw();
 };
 struct PointList
 {
@@ -321,11 +338,11 @@ struct PointList
     {
         reinterpret_cast<PoolBounds*>(&DAT_011f6238)->MemoryManager_Deallocate(m_data);
     }
-    __declspec(noalias) void Reserve(unsigned int capacity) throw();
+    __declspec(noalias) void NiTSet_NiPoint3_NiTNewInterface_NiPoint3_Realloc(unsigned int uiNewSize) throw();
     void Append(const NiPoint3& p) throw()
     {
         if (m_uiItemCount == m_pRayCursor)
-            Reserve(m_pRayCursor > 0 ? 2 * m_pRayCursor : 1);
+            NiTSet_NiPoint3_NiTNewInterface_NiPoint3_Realloc(m_pRayCursor > 0 ? 2 * m_pRayCursor : 1);
         memcpy(m_data + m_uiItemCount, &p, sizeof(p));
         ++m_uiItemCount;
     }
@@ -342,20 +359,23 @@ struct SkinDataBounds : SkinObjectBase
     SkinTransform m_kSkinTransform;
     SkinBoneData* m_pBoneData;
     unsigned int m_uiBoneCount;
-    void NiSkinData_ComputeBoneBounds(NiPoint3* vertices);
+    void NiSkinData_ComputeBoneBounds(NiPoint3* pkVerts);
 };
 
 // For each bone, collects vertex positions from its weighted vertices, computes their bounding sphere, and transforms it into bone space.
 // @fnv 0x00a853c0
 // src: XBOX_PDB 0x00a853c0
-void SkinDataBounds::NiSkinData_ComputeBoneBounds(NiPoint3* vertices)
+// pdb: NiSkinData::ComputeBoneBounds | NiSkinData.obj | retail, upstream name already matches, high
+// pdb params: pkVerts
+// pdb locals: verts, i, j
+void SkinDataBounds::NiSkinData_ComputeBoneBounds(NiPoint3* pkVerts)
 {
     PointList points;
     for (unsigned int i = 0; i < m_uiBoneCount; ++i)
     {
         for (unsigned int j = 0; j < m_pBoneData[i].m_usVertexWeightCount; ++j)
         {
-            NiPoint3* pVertex = vertices + m_pBoneData[i].m_pkVertexWeights[j].m_usBoneIndex;
+            NiPoint3* pVertex = pkVerts + m_pBoneData[i].m_pkVertexWeights[j].m_usBoneIndex;
             points.Append(*pVertex);
         }
         reinterpret_cast<BoundBuilder*>(&m_pBoneData[i].m_kBound)
@@ -378,7 +398,7 @@ struct a84ef0_Counted
 
 struct a84ef0_Mgr
 {
-    void MemoryManager_Deallocate(unsigned int value);
+    void MemoryManager_Deallocate(unsigned int apMem);
 };
 
 void __cdecl FUN_00aa1460(void* apMemory, unsigned int auiSize);
@@ -409,6 +429,7 @@ struct FUN_00a84ef0_cls
 };
 
 // @fnv 0x00a84ef0
+// pdb: NiSkinData::`scalar deleting destructor' | NiSkinData.obj | retail, object-file gap fill, high
 FUN_00a84ef0_cls* FUN_00a84ef0_cls::FUN_00a84ef0(unsigned char acFlags)
 {
     m_vptr = (int)&DAT_0109e574;
@@ -475,14 +496,17 @@ struct SkinLoadData : SkinObjectBase
     SkinTransform rootParentToSkin;
     ResetFields* bones;
     unsigned int boneCount;
-    void NiSkinData_LoadBinary(void* streamObject);
+    void NiSkinData_LoadBinary(void* kStream);
 };
 // Reads skin data from a stream: base, transform, bone count, per-bone transforms/bounds/weights, and an optional trailing flag.
 // @fnv 0x00a84f50
 // src: XBOX_PDB 0x00a84f50
-void SkinLoadData::NiSkinData_LoadBinary(void* streamObject)
+// pdb: NiSkinData::LoadBinary | NiSkinData.obj | retail, string-set bridge, high
+// pdb params: kStream
+// pdb locals: bBoneVertData, bshowWarning, error, i, pkBoneData, v, pkBoneVertData, bUpdateModelBound
+void SkinLoadData::NiSkinData_LoadBinary(void* kStream)
 {
-    NiStream& stream = *static_cast<NiStream*>(streamObject);
+    NiStream& stream = *static_cast<NiStream*>(kStream);
     NiObject::LoadBinary(stream);
     ((SkinLoadTransform*)&rootParentToSkin)->FUN_00a86c80(stream);
     SkinLoadBinary(stream, boneCount);

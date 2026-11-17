@@ -31,7 +31,7 @@
 class LockFreeMap_TESObjectREFR___BSTreeNode___;
 extern BSTreeManager* DAT_011d5c48;
 extern TES* g_TES;
-void BSTreeManager_Destroy_();
+void BSTreeManager_Destroy();
 void* BSTreeManager_GetInstance(bool);
 void SetGlobalValue(bool);
 void SetGlobalFloatFromUInt(unsigned int);
@@ -40,15 +40,18 @@ extern float DAT_011fd890;
 extern float DAT_011adce0;
 
 // @fnv 0x00664870
-void BSTreeManager::Create(bool create)
+// pdb: BSTreeManager::Create | BSTreeManager.obj | retail, upstream name already matches, high
+// pdb params: abRecreateIfFound
+// pdb locals: tempMemContext
+void BSTreeManager::Create(bool abRecreateIfFound)
 {
     AutoMemContext context(MEM_CONTEXT_MEM_CONTEXT_TREESYSTEM, true,
                            "D:\\_Fallout3\\Platforms\\Common\\Code\\Fallout Shared\\SpeedTree\\BSTreeManager.cpp",
                            0xb1);
     if (DAT_011d5c48)
     {
-        if (create)
-            BSTreeManager_Destroy_();
+        if (abRecreateIfFound)
+            BSTreeManager_Destroy();
         else
             return;
     }
@@ -57,22 +60,26 @@ void BSTreeManager::Create(bool create)
 }
 
 // @fnv 0x00665860
-void BSTreeManager::UpdateTreeInstances()
+// src: XBOX_RETAIL_PDB 0x00665860
+// pdb: BSTreeManager::ClearCanopyShadow | BSTreeManager.obj | retail, string-set bridge, high
+void BSTreeManager::ClearCanopyShadow()
 {
     if (((NiPointer<NiAVObject>*)((char*)BSTreeManager_GetInstance(true) + 4))->operator NiAVObject*())
     {
         ((NiPointer<NiNode>*)((char*)BSTreeManager_GetInstance(true) + 4))->operator=(0);
         SetGlobalValue(false);
-        g_TES->LoadCanopyShadowTexture("Data\\Textures\\Trees\\CanopyShadow.dds", 0);
+        g_TES->RemoveTextureImage("Data\\Textures\\Trees\\CanopyShadow.dds", 0);
     }
 }
 
 // Returns DAT_011d5c48, creating the BSTreeManager first when create is true and it is not yet set.
 // @fnv 0x00664840
 // src: XBOX_PDB 0x00664840
-void* BSTreeManager_GetInstance(bool create)
+// pdb: BSTreeManager::GetInstance | BSTreeManager.obj | retail, upstream name already matches, high
+// pdb params: abCreateIfNotFound
+void* BSTreeManager_GetInstance(bool abCreateIfNotFound)
 {
-    if (!DAT_011d5c48 && create)
+    if (!DAT_011d5c48 && abCreateIfNotFound)
         BSTreeManager::Create(false);
 
     return DAT_011d5c48;
@@ -87,6 +94,8 @@ void SetGlobalFloatFromUInt(unsigned int value)
 
 // Clamps value to the range [0.0, 1.0] and stores the result in DAT_011adce0.
 // @fnv 0x00665520
+// pdb: BSTreeManager::ResetTreeLODLimits | BSTreeManager.obj | debug, object-file gap fill, medium
+// pdb locals: pkey, iter, pmodelarray, i, pspeedtree
 void ClampAndStoreValue(float value)
 {
     float fClampedResult;
@@ -113,6 +122,8 @@ void ClampAndStoreValue(float value)
 extern NP DAT_011f95e4;
 
 // @fnv 0x00664820
+// pdb: BSShaderManager::SetProjectedShadowTexture | BSTreeManager.obj | debug, call graph, medium
+// pdb params: apTexture
 void SetGlobalValue(unsigned int value)
 {
     DAT_011f95e4 = (void*)value;
@@ -121,13 +132,14 @@ void SetGlobalValue(unsigned int value)
 // @fnv 0x006652c0
 void BSTreeModel::SetByteAtOffset44(unsigned char value)
 {
-    *reinterpret_cast<unsigned char*>(&unk44) = value;
+    *reinterpret_cast<unsigned char*>(&bInitialized) = value;
 }
 
 extern Setting originalRuntimeFloatSetting1295;
 
 // @fnv 0x006655a0
 // src: COMMUNITY 0x006655a0
+// pdb: BSTreeManager::GetNearDistanceBase | BSTreeManager.obj | debug, object-file gap fill, medium
 float GameSetting_fTreeNearDistanceBase_Get()
 {
     return *originalRuntimeFloatSetting1295.Float();
@@ -137,6 +149,7 @@ namespace fnv_006655f0 {
 extern Setting originalRuntimeFloatSetting1296;
 
 // @fnv 0x006655f0
+// pdb: BSTreeManager::GetFarDistanceBase | BSTreeManager.obj | debug, object-file gap fill, medium
 float GetOriginalRuntimeFloatSetting1296()
 {
     return *originalRuntimeFloatSetting1296.Float();
@@ -149,6 +162,7 @@ extern unsigned char* __cdecl _FUN_00664840(bool);
 // Returns 1 if GetFirstProcessListByte succeeds and the byte at offset 0x18 of the object from _FUN_00664840(true) is nonzero, otherwise 0.
 // @fnv 0x0054ee20
 // src: COMMUNITY 0x0054ee20
+// pdb: BSTreeManager::AreTreesVisible | TESObjectCELL.obj | debug, call graph, medium
 unsigned char BSTreeManager_GetTreesEnabled(bool abCreateIfNotFound)
 {
     int result;
@@ -165,8 +179,9 @@ struct S664990
 };
 // If DAT_011d5c48 is set, calls its DestroyIfFlagged with 1, then clears DAT_011d5c48.
 // @fnv 0x00664940
-// src: COMMUNITY 0x00664940
-void BSTreeManager_Destroy_()
+// src: XBOX_RETAIL_PDB 0x00664940 (was COMMUNITY)
+// pdb: BSTreeManager::Destroy | BSTreeManager.obj | retail, call graph (shared callers), high
+void BSTreeManager_Destroy()
 {
     void* b;
     if (DAT_011d5c48)
@@ -193,6 +208,7 @@ struct FUN_00664990_shell
 void __cdecl _Deallocate(void*);
 // Calls FUN_00664740, then deallocates this when bit 0 of flags is set, and returns this.
 // @fnv 0x00664990
+// pdb: BSTreeManager::`scalar deleting destructor' | BSTreeManager.obj | debug, object-file run extension, low
 void* FUN_00664990_shell::DestroyIfFlagged(unsigned int flags)
 {
     FUN_00664740();
@@ -204,8 +220,9 @@ void* FUN_00664990_shell::DestroyIfFlagged(unsigned int flags)
 extern Setting DAT_011f9158;
 // Returns the result of FUN_006655a0 multiplied by the float value stored in DAT_011f9158.
 // @fnv 0x00665570
-// src: COMMUNITY 0x00665570
-float fTreeNearDistance_Get()
+// src: XBOX_DEBUG_PDB 0x00665570 (was COMMUNITY)
+// pdb: BSTreeManager::GetNearDistance | BSTreeManager.obj | debug, call graph, high
+float BSTreeManager_GetNearDistance()
 {
     return (double)GameSetting_fTreeNearDistanceBase_Get() * *DAT_011f9158.Float();
 }
@@ -214,8 +231,9 @@ double GetOriginalRuntimeFloatSetting1296();
 extern Setting DAT_011f9158;
 // Returns the value from GetOriginalRuntimeFloatSetting1296 multiplied by the float stored in DAT_011f9158.
 // @fnv 0x006655c0
-// src: COMMUNITY 0x006655c0
-float fTreeFarDistanceBase_Get()
+// src: XBOX_DEBUG_PDB 0x006655c0 (was COMMUNITY)
+// pdb: BSTreeManager::GetFarDistance | BSTreeManager.obj | debug, call graph, high
+float BSTreeManager_GetFarDistance()
 {
     return GetOriginalRuntimeFloatSetting1296() * *DAT_011f9158.Float();
 }
@@ -239,13 +257,15 @@ struct C665b80
 // Calls Foo on the object at this+0x1c; if it returns false, calls Func(1) on b when b is non-null.
 // @fnv 0x00665b80
 // src: XBOX_PDB 0x00665b80
-void C665b80::BSTreeManager_AddBackgroundLoadedTree(int aiValue, I2_665b80* pObject)
+// pdb: BSTreeManager::AddBackgroundLoadedTree | BSTreeManager.obj | retail, upstream name already matches, high
+// pdb params: apRef, apTreeNode
+void C665b80::BSTreeManager_AddBackgroundLoadedTree(int apRef, I2_665b80* apTreeNode)
 {
     I2_665b80* p1;
     I2_665b80* p2;
-    if (!(*(I1_665b80**)((char*)this + 0x1c))->Foo(aiValue, &pObject, 0))
+    if (!(*(I1_665b80**)((char*)this + 0x1c))->Foo(apRef, &apTreeNode, 0))
     {
-        p1 = pObject;
+        p1 = apTreeNode;
         p2 = p1;
         p2 ? p2->Func(1) : 0;
     }
@@ -288,13 +308,16 @@ struct FUN_004534f0_shell
 };
 struct FUN_006658b0_shell
 {
-    void Update();
+    void BSTreeManager_UpdateWindMatrices();
 };
 extern Setting g_011d5d98;
 extern Setting g_011d5d4c;
 
 // @fnv 0x006652e0
 // src: XBOX_PDB 0x006652e0
+// pdb: BSTreeManager::Update | BSTreeManager.obj | retail, upstream name already matches, high
+// pdb params: apCamera, abMenuMode
+// pdb locals: pt3temp, fcamDir, fcamLoc, col
 void BSTreeManager_Update(NiAVObject* apCamera, bool abMenuMode)
 {
     B006815c0 vecTemp;
@@ -336,7 +359,7 @@ void BSTreeManager_Update(NiAVObject* apCamera, bool abMenuMode)
                 ((NiProperty*)(unsigned int)(NiProperty*)*(NiPointer<NiProperty>*)(_FUN_00664840(1) + 8))->NiMaterialProperty_SetEmittance(&col);
             }
         }
-        ((FUN_006658b0_shell*)_FUN_00664840(1))->Update();
+        ((FUN_006658b0_shell*)_FUN_00664840(1))->BSTreeManager_UpdateWindMatrices();
     }
     SetGlobalFloatFromUInt(*g_011d5d98.Int());
     ClampAndStoreValue(*((Setting*)&g_011d5d4c)->Float());
@@ -360,6 +383,9 @@ struct TreeMgr664b50
 };
 
 // @fnv 0x00664b50
+// pdb: BSTreeManager::GetModel | BSTreeManager.obj | debug, object-file run extension, low
+// pdb params: apTree, aiSeed, aspBSTreeModel
+// pdb locals: sprettree, bfound, iemptyslot, pmodelarray, i, ptree
 void TreeMgr664b50::GetOrCreateModel(TESObjectTREE* tree, int key, NiPointer<BSTreeModel>& out)
 {
     g_treeLock.Lock(0);
@@ -424,20 +450,23 @@ struct C665be0_shell
     void* unk18;
     FUN_00665be0_interface* unk1c;
 
-    void BSTreeManager_RemoveBackgroundLoadedTree(int value);
+    void BSTreeManager_RemoveBackgroundLoadedTree(int apRef);
 };
 
 extern "C" void __cdecl _free(void*);
 
 // @fnv 0x00665be0
 // src: XBOX_PDB 0x00665be0
-void C665be0_shell::BSTreeManager_RemoveBackgroundLoadedTree(int value)
+// pdb: BSTreeManager::RemoveBackgroundLoadedTree | BSTreeManager.obj | retail, upstream name already matches, high
+// pdb params: apRef
+// pdb locals: ptreeNode
+void C665be0_shell::BSTreeManager_RemoveBackgroundLoadedTree(int apRef)
 {
     void* result = 0;
 
-    if (unk1c->f2(value, &result))
+    if (unk1c->f2(apRef, &result))
     {
-        unk1c->f5(value);
+        unk1c->f5(apRef);
 
         if (result != 0)
         {
@@ -476,6 +505,8 @@ struct LFFreeList
 };
 
 // @fnv 0x006c7610
+// pdb: ObstacleTaskNavMeshOperation::PrintDebugText | NavMeshObstacleTask.obj | debug, object-file run extension, low
+// pdb params: aLoc, apText
 void LFFreeList::PruneFreeList()
 {
     AutoMemContext context_2(MEM_CONTEXT_MEM_CONTEXT_TASK_OVERHEAD, true, kThreadSafeStructuresSourceFile, 0xd0);
@@ -514,9 +545,9 @@ void LFFreeList::PruneFreeList()
     iCount = uiKept;
 }
 
-void __cdecl SetMode664(int iMode);
+void __cdecl SetMode664(int abClearManagerOnlyHeldOnly);
 void __cdecl SetEnabled664(bool bEnabled);
-void __cdecl SetTarget664(void* pvTarget);
+void __cdecl SetTarget664(void* apTexture);
 void __cdecl SetState664(int iState);
 void __cdecl Refresh664();
 
@@ -543,6 +574,7 @@ class FUN_00664740
 
 // Resets mode, enabled state, target and state, refreshes, then deletes m_pkChild.
 // @fnv 0x00664740
+// pdb: BSTreeManager::~BSTreeManager | BSTreeManager.obj | debug, object-file run extension, low
 FUN_00664740::~FUN_00664740()
 {
     SetMode664(0);
@@ -573,6 +605,9 @@ struct Mgr6649c0
 
 // Looks up key in m_map, creating the map if null and inserting a new NiPointer<NiTexture> array when absent, then returns the pointer.
 // @fnv 0x006649c0
+// pdb: BSTreeManager::GetModelArray | BSTreeManager.obj | debug, object-file run extension, low
+// pdb params: apTree
+// pdb locals: pretval, tempMemContext
 NiPointer<NiTexture>* Mgr6649c0::GetOrCreateTexturePointer(unsigned int key)
 {
     AutoMemContext ctx(MEM_CONTEXT_MEM_CONTEXT_TREEART, true,
@@ -592,7 +627,7 @@ NiPointer<NiTexture>* Mgr6649c0::GetOrCreateTexturePointer(unsigned int key)
 class TreeReference : public TESObjectREFR
 {
   public:
-    unsigned int TESObjectREFR_GetSpeedTreeSeed();
+    unsigned int TESObjectREFR_GetSeed();
     float TESObjectREFR_GetScale_00567400();
 };
 class LockFreeMap_TESObjectREFR___BSTreeNode___
@@ -615,6 +650,9 @@ struct TreeManager : BSTreeManager
 };
 // Validates the tree and reference, looks up or builds a BSTreeModel, creates a scaled NiAVObject instance, names it from the model path, and returns it.
 // @fnv 0x00664f50
+// pdb: BSTreeManager::CreateTreeForReference | BSTreeManager.obj | retail, call graph (shared callers), medium
+// pdb params: apTreeRefr, apTreeObj
+// pdb locals: iseed, pmodel, ptreeNode, fscale, tempMemContext, spbasemodel, pretnode
 NiAVObject* TreeManager::CreateTreeInstance(TreeReference* reference, TESObjectTREE* tree)
 {
     AutoMemContext cached(MEM_CONTEXT_MEM_CONTEXT_TREEART, true,
@@ -625,14 +663,14 @@ NiAVObject* TreeManager::CreateTreeInstance(TreeReference* reference, TESObjectT
         (reference && reference->GetObjectReference() != (TESBoundObject*)tree))
         return 0;
     NiAVObject* m_uiMemoryContext = 0;
-    if (m_pTreeInstanceMap->Find(reference, &m_uiMemoryContext))
+    if (pBackgroundLoadedTreeMap->Find(reference, &m_uiMemoryContext))
     {
-        m_pTreeInstanceMap->Remove(reference);
+        pBackgroundLoadedTreeMap->Remove(reference);
         return m_uiMemoryContext;
     }
     unsigned int node = 1;
     if (reference)
-        node = reference->TESObjectREFR_GetSpeedTreeSeed();
+        node = reference->TESObjectREFR_GetSeed();
     ((TreeModelManager*)BSTreeManager_GetInstance(true))->GetOrCreateModel(tree, node, scale);
     if (!(BSTreeModel*)scale)
         return 0;
@@ -670,7 +708,7 @@ struct TreeTextureState
 };
 struct TextureLoader
 {
-    void FUN_004568c0(const char* filename, NiPointer<NiSourceTexture>& texture, bool first, bool second);
+    void FUN_004568c0(const char* apfilename, NiPointer<NiSourceTexture>& aspSourceTexture, bool abNoFileOK, bool second);
 };
 struct TextureFormatPrefs
 {
@@ -684,6 +722,8 @@ NiSourceTexture* NiSourceTexture_Create(NiPixelData* pixels, const char* name, c
 // Ensures the tree state's shadow texture is loaded from CanopyShadow.dds or generated as a 16x16 white NiPixelData, then returns it.
 // @fnv 0x00665610
 // src: XBOX_PDB 0x00665610
+// pdb: BSTreeManager::GetCanopyShadow | BSTreeManager.obj | retail, upstream name already matches, high
+// pdb locals: tempMemContext, ppixeldata, ppixels, iy, ix
 NiSourceTexture* BSTreeManager_GetCanopyShadow()
 {
     AutoMemContext context(MEM_CONTEXT_MEM_CONTEXT_TREEART, true,
@@ -747,7 +787,10 @@ struct Entry664
 };
 // @fnv 0x00664cd0
 // src: XBOX_PDB 0x00664cd0
-void Entry664::BSTreeManager_ClearModelCache(bool partial)
+// pdb: BSTreeManager::ClearModelCache | BSTreeManager.obj | retail, upstream name already matches, high
+// pdb params: abClearManagerOnlyHeldOnly
+// pdb locals: pkey, iter, pmodelarray, bempty, i
+void Entry664::BSTreeManager_ClearModelCache(bool abClearManagerOnlyHeldOnly)
 {
     NiPointer<BSTreeModel>* p;
     void* h;
@@ -762,7 +805,7 @@ void Entry664::BSTreeManager_ClearModelCache(bool partial)
     if (!*(Map664**)_FUN_00664840(true))
         return;
     ((Timer664*)&DAT_011d5cc0)->BSCriticalSection_Enter(0);
-    if (partial)
+    if (abClearManagerOnlyHeldOnly)
     {
         h = (*(Map664**)_FUN_00664840(true))->FUN_004b9ba0();
         while (h)
@@ -842,10 +885,13 @@ struct C6658
 {
     char pad[20];
     float value;
-    void Update();
+    void BSTreeManager_UpdateWindMatrices();
 };
 // @fnv 0x006658b0
-void C6658::Update()
+// src: XBOX_RETAIL_PDB 0x006658b0
+// pdb: BSTreeManager::UpdateWindMatrices | BSTreeManager.obj | retail, object-file run extension, high
+// pdb locals: fswayingScale, frustleAmountSway, fbaseAngle, frockAmountSway, i, frockSpeedSway, frustleSpeedSway, fxPercent, fyPercent, fbaseFreq
+void C6658::BSTreeManager_UpdateWindMatrices()
 {
     if ((*(int*)&DAT_011d5dec & 1) == 0)
     {
@@ -905,8 +951,8 @@ class xAlphaProp : public xMemObj
   public:
     int m_ai[7];
     xAlphaProp();
-    void SetAlphaBlending(bool b);
-    void SetSrcBlendMode(unsigned short us);
+    void SetAlphaBlending(bool bAlpha);
+    void NiAlphaProperty_SetTestMode(unsigned short eTestFunc);
     void SetTestRef(unsigned char uc);
     void SetAlphaTesting(bool b);
 };
@@ -915,7 +961,7 @@ class xFlagsObj : public xMemObj
 {
   public:
     int m_ai[4];
-    xFlagsObj(int i);
+    xFlagsObj(int aiValue);
 };
 
 class xMapObj
@@ -928,7 +974,7 @@ class xMapObj
 extern Setting xGB5d00;
 extern Setting xGI5d98;
 
-void xF_b07db0(int i);
+void xF_b07db0(int nNumMatrices);
 void xF_b084f0(unsigned char uc);
 void xF_b0d7b0(unsigned char uc);
 void xF_664720(unsigned int ui);
@@ -952,6 +998,7 @@ class FUN_00664440
 
 // Initializes material, alpha, and flag properties with default values, then creates a map object and calls global setup functions.
 // @fnv 0x00664440
+// pdb: BSTreeManager::BSTreeManager | BSTreeManager.obj | debug, call graph, medium
 FUN_00664440::FUN_00664440()
     : m_sp4(0), m_spMat(0), m_spAlpha(0), m_spFlags(0)
 {
@@ -967,7 +1014,7 @@ FUN_00664440::FUN_00664440()
     m_spMat->SetEmittance(NiColor(1.0f, 1.0f, 1.0f));
     m_spAlpha = new xAlphaProp();
     m_spAlpha->SetAlphaBlending(true);
-    m_spAlpha->SetSrcBlendMode(4);
+    m_spAlpha->NiAlphaProperty_SetTestMode(4);
     m_spAlpha->SetTestRef(0x54);
     m_spAlpha->SetAlphaTesting(false);
     m_spFlags = new xFlagsObj(3);
@@ -988,6 +1035,7 @@ void __stdcall FUN_00ec5fce(void*, unsigned int, int, void (__thiscall*)(NiPoint
 
 // Destroys the object or its array elements, optionally frees the allocation, and returns this or the preceding count header.
 // @fnv 0x00667120
+// pdb: NiPointer<NiTriBasedGeom>::`vector deleting destructor' | BSTreeNode.obj | debug, call graph, medium
 void* TreeModelPointerArrayDeleter::Delete(unsigned int flags)
 {
     if (flags & 2)

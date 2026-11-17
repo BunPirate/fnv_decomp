@@ -26,6 +26,8 @@ struct FUN_00600ad0_cls
 // Calls FUN_00600fd0 with the two arguments, sets v to a string literal, and returns this.
 // @fnv 0x00600ad0
 // src: EXE 0x00600ad0
+// pdb: NiTStringTemplateMap<NiTMap<char const *,IDLE_ANIM_ROOT *>,IDLE_ANIM_ROOT *>::ClearValue | TESIdleManager.obj | debug, object-file run extension, low
+// pdb params: pkItem
 FUN_00600ad0_cls* __thiscall FUN_00600ad0_cls::BSTCaseInsensitiveStringMap_IDLE_ANIM_ROOT_BSTCaseInsensitiveStringMap(int a, bool b)
 {
     FUN_00600fd0(a, b);
@@ -35,21 +37,22 @@ FUN_00600ad0_cls* __thiscall FUN_00600ad0_cls::BSTCaseInsensitiveStringMap_IDLE_
 
 struct FUN_00600d70_shell
 {
-    void ForwardCall_00600d70();
+    void NiTStringMap_IDLE_ANIM_ROOT_dtor();
 };
 
 struct FUN_00600b00_shell
 {
     const char* m_p;
-    void ForwardCall_00600d70();
+    void NiTStringMap_IDLE_ANIM_ROOT_dtor();
     ~FUN_00600b00_shell();
 };
 
 // @fnv 0x00600b00
+// pdb: BSTCaseInsensitiveStringMap<IDLE_ANIM_ROOT *>::~BSTCaseInsensitiveStringMap<IDLE_ANIM_ROOT *> | TESIdleManager.obj | debug, call graph, medium
 FUN_00600b00_shell::~FUN_00600b00_shell()
 {
     m_p = "@\r`";
-    ForwardCall_00600d70();
+    NiTStringMap_IDLE_ANIM_ROOT_dtor();
 }
 
 extern int DAT_0104a068;
@@ -119,6 +122,7 @@ struct GlobalObject_00869f00
     void Reset();
 };
 // @fnv 0x0060bac0
+// pdb: BSSimpleArray<BGSHeadPart *,1024>::~BSSimpleArray<BGSHeadPart *,1024> | TESNPC.obj | debug, call graph (shared callers), low
 void GlobalObject_00869f00::Reset()
 {
     *(int*)this = (int)&DAT_0104ab04;
@@ -260,6 +264,7 @@ void __fastcall Object_ForwardCall_00618940(void*);
 
 // @fnv 0x00618920
 // src: GUESS 0x00618920 (confidence: low)
+// pdb: TopicInfoArray::~TopicInfoArray | TESTopic.obj | debug, object-file run extension, low
 void __fastcall Object_ForwardCall_00618920(void* self)
 {
     Object_ForwardCall_00618940(self);
@@ -283,6 +288,8 @@ struct FUN_0061bef0_class
 };
 // Calls FUN_0061c120 with the two arguments, then sets the object's vtbl to &DAT_0104d450.
 // @fnv 0x0061bef0
+// pdb: NiTLargePrimitiveArray<TESTopicInfo *>::NiTLargePrimitiveArray<TESTopicInfo *> | TESTopic.obj | debug, object-file gap fill, medium
+// pdb params: uiMaxSize, uiGrowBy
 FUN_0061bef0_class::FUN_0061bef0_class(void* apArg1, void* apArg2)
 {
     FUN_0061c120(apArg1, apArg2);
@@ -300,6 +307,7 @@ struct FUN_0061bf50_Class
     void InitAndClear();
 };
 // @fnv 0x0061bf50
+// pdb: BSSimpleArray<INFO_LINK_ELEMENT,1024>::~BSSimpleArray<INFO_LINK_ELEMENT,1024> | TESTopic.obj | debug, object-file run extension, low
 void __thiscall FUN_0061bf50_Class::InitAndClear()
 {
     *reinterpret_cast<int**>(this) = &DAT_0104d458;
@@ -319,13 +327,15 @@ bool Object_ComputeValue_0061f420(unsigned int auiValue, unsigned int auiOther)
 
 struct FUN_0061f440 : TESResponseList
 {
-    void ClearResponses();
+    void ResponseListWrapper_dtor();
 };
 
 // @fnv 0x0061f440
-void FUN_0061f440::ClearResponses()
+// src: XBOX_DEBUG_PDB 0x0061f440
+// pdb: ResponseListWrapper::~ResponseListWrapper | TESTopicInfo.obj | debug, call graph, high
+void FUN_0061f440::ResponseListWrapper_dtor()
 {
-    TESResponseList::ClearResponses();
+    TESResponseList::ResponseListWrapper_ClearResponseList();
 }
 
 extern int DAT_0104d948;
@@ -337,6 +347,8 @@ struct FUN_0061fa10_class
 // Calls FUN_0061fa70 with a, stores the address of DAT_0104d948 at this, and returns this.
 // @fnv 0x0061fa10
 // src: EXE 0x0061fa10
+// pdb: NiTMap<TESObjectREFR *,int>::NiTMap<TESObjectREFR *,int> | BGSAcousticSpaceListener.obj | debug, call graph, medium
+// pdb params: uiHashSize
 int __thiscall FUN_0061fa10_class::NiTMap_TESObjectREFR_int_NiTMap(int a)
 {
     NiTMapBase_DFALL_NiTMapItem_TESObjectREFR_int_TESObjectREFR_int_NiTMapBase(a);
@@ -353,13 +365,14 @@ struct FUN_00600eb0_cls
     int a;
     void* b;
     void RemoveAll();
-    void SetVtableAndProcessState_00600eb0();
+    void NiTMapBase_DFALL_NiTMapItem_char_const_IDLE_ANIM_ROOT_char_const_IDLE_ANIM_ROOT_dtor();
 };
 
 // Sets the vtable pointer, calls RemoveAll, then frees the b pointer via NiFreeAlias.
 // @fnv 0x00600eb0
-// src: GUESS 0x00600eb0 (confidence: low)
-void FUN_00600eb0_cls::SetVtableAndProcessState_00600eb0()
+// src: XBOX_DEBUG_PDB 0x00600eb0
+// pdb: NiTMapBase<DFALL<NiTMapItem<char const *,IDLE_ANIM_ROOT *> >,char const *,IDLE_ANIM_ROOT *>::~NiTMapBase<DFALL<NiTMapItem<char const *,IDLE_ANIM_ROOT *> >,char const *,IDLE_ANIM_ROOT *> | TESIdleManager.obj | debug, call graph (shared callers), high
+void FUN_00600eb0_cls::NiTMapBase_DFALL_NiTMapItem_char_const_IDLE_ANIM_ROOT_char_const_IDLE_ANIM_ROOT_dtor()
 {
     *reinterpret_cast<void**>(this) = &DAT_0104a0b0;
     RemoveAll();
@@ -371,13 +384,14 @@ void NiFreeAlias(void*);
 
 struct NiTPointerMapIntInt : public NiTPointerMap<int, int>
 {
-    void ReleaseStorage_0061fb40();
+    void NiTMapBase_DFALL_NiTMapItem_TESObjectREFR_int_TESObjectREFR_int_dtor();
 };
 
 // Resets the vtable pointer, removes all entries, then frees the pointer stored at offset 8.
 // @fnv 0x0061fb40
-// src: GUESS 0x0061fb40 (confidence: medium)
-void NiTPointerMapIntInt::ReleaseStorage_0061fb40()
+// src: XBOX_DEBUG_PDB 0x0061fb40
+// pdb: NiTMapBase<DFALL<NiTMapItem<TESObjectREFR *,int> >,TESObjectREFR *,int>::~NiTMapBase<DFALL<NiTMapItem<TESObjectREFR *,int> >,TESObjectREFR *,int> | BGSAcousticSpaceListener.obj | debug, call graph (shared callers), high
+void NiTPointerMapIntInt::NiTMapBase_DFALL_NiTMapItem_TESObjectREFR_int_TESObjectREFR_int_dtor()
 {
     *(int**)this = &DAT_0104d968;
     RemoveAll();
@@ -395,6 +409,7 @@ struct FUN_00600b90_Cls
 // Sets m0 to the address of DAT_0104a060 and frees the m4 pointer via MyDeallocate.
 // @fnv 0x00600b90
 // src: GUESS 0x00600b90 (confidence: medium)
+// pdb: NiTArray<TESIdleForm *,NiTMallocInterface<TESIdleForm *> >::~NiTArray<TESIdleForm *,NiTMallocInterface<TESIdleForm *> > | TESIdleManager.obj | debug, call graph (shared callers), medium
 void __thiscall FUN_00600b90_Cls::ReleaseMemberStorage()
 {
     m0 = (void*)&DAT_0104a060;
@@ -410,9 +425,10 @@ struct FUN_00600ee0_cls
 
 // Calls FUN_00600eb0 on this, then deallocates this when flags has bit 0 set, and returns this.
 // @fnv 0x00600ee0
+// pdb: NiTMapBase<DFALL<NiTMapItem<char const *,IDLE_ANIM_ROOT *> >,char const *,IDLE_ANIM_ROOT *>::`scalar deleting destructor' | TESIdleManager.obj | retail, vtable slot, high
 void* FUN_00600ee0_cls::FUN_00600ee0(unsigned int flags)
 {
-    ((FUN_00600eb0_cls*)this)->SetVtableAndProcessState_00600eb0();
+    ((FUN_00600eb0_cls*)this)->NiTMapBase_DFALL_NiTMapItem_char_const_IDLE_ANIM_ROOT_char_const_IDLE_ANIM_ROOT_dtor();
     if (flags & 1)
         Deallocate(this);
     return this;
@@ -428,6 +444,7 @@ struct FUN_00600e50_class
 
 // Calls FUN_00600e50, frees this via Deallocate when flags has bit 0 set, and returns this.
 // @fnv 0x00600f10
+// pdb: NiTMap<char const *,IDLE_ANIM_ROOT *>::`scalar deleting destructor' | TESIdleManager.obj | retail, vtable slot, high
 void* FUN_00600e50_class::FUN_00600f10(unsigned int flags)
 {
     FUN_00600e50();
@@ -442,6 +459,7 @@ struct FUN_00600d90_shell
     void* FUN_00600f40(unsigned int flags);
 };
 // @fnv 0x00600f40
+// pdb: NiTStringTemplateMap<NiTMap<char const *,IDLE_ANIM_ROOT *>,IDLE_ANIM_ROOT *>::`scalar deleting destructor' | TESIdleManager.obj | retail, vtable slot, high
 void* FUN_00600d90_shell::FUN_00600f40(unsigned int flags)
 {
     FUN_00600d90();
@@ -460,6 +478,7 @@ struct FUN_00600f70_cls
     void* FUN_00600f70(unsigned int flags);
 };
 // @fnv 0x00600f70
+// pdb: NiTArray<TESIdleForm *,NiTMallocInterface<TESIdleForm *> >::`scalar deleting destructor' | TESIdleManager.obj | debug, vtable slot, medium
 void* FUN_00600f70_cls::FUN_00600f70(unsigned int flags)
 {
     ((FUN_005ffbd0_cls*)this)->ReleaseMemberStorage();
@@ -477,6 +496,7 @@ struct FUN_005ffbd0_cls
 void __cdecl operator delete(void*);
 // Calls FUN_005ffbd0, then deletes this if flags has bit 0 set, and returns this.
 // @fnv 0x00600fa0
+// pdb: NiTPrimitiveArray<TESIdleForm *>::`scalar deleting destructor' | TESIdleManager.obj | debug, vtable slot, medium
 void* __thiscall FUN_005ffbd0_cls::FUN_00600fa0(unsigned int flags)
 {
     ForwardCall_005ffbd0();
@@ -496,6 +516,7 @@ struct FUN_00600fd0 : FUN_006010a0_holder
     FUN_00600fd0(int, bool);
 };
 // @fnv 0x00600fd0
+// pdb: DFALL<NiTMapItem<char const *,IDLE_ANIM_ROOT *> >::Allocate | TESIdleManager.obj | debug, object-file run extension, low
 FUN_00600fd0::FUN_00600fd0(int a, bool b)
 {
     NiTStringTemplateMap_NiTMap_char_const_IDLE_ANIM_ROOT_IDLE_ANIM_ROOT_NiTStringTemplateMap(a, b);
@@ -509,9 +530,10 @@ struct FUN_00601070_shell : FUN_00600b00_shell
 
 // Calls FUN_00600d70, then deletes this if bit 0 of flags is set, and returns this.
 // @fnv 0x00601070
+// pdb: NiTStringMap<IDLE_ANIM_ROOT *>::`scalar deleting destructor' | TESIdleManager.obj | debug, vtable slot, medium
 void* __thiscall FUN_00601070_shell::FUN_00601070(unsigned int flags)
 {
-    ForwardCall_00600d70();
+    NiTStringMap_IDLE_ANIM_ROOT_dtor();
     if (flags & 1)
         operator delete(this);
     return this;
@@ -530,6 +552,8 @@ struct FUN_006010a0_Class
 // Calls InitializeWithGlobal on this, sets the vtable to DAT_0104a070, stores b in m_field_10 and returns this.
 // @fnv 0x006010a0
 // src: EXE 0x006010a0
+// pdb: NiTStringTemplateMap<NiTMap<char const *,IDLE_ANIM_ROOT *>,IDLE_ANIM_ROOT *>::NiTStringTemplateMap<NiTMap<char const *,IDLE_ANIM_ROOT *>,IDLE_ANIM_ROOT *> | TESIdleManager.obj | debug, object-file run extension, low
+// pdb params: uiHashSize, bCopy
 FUN_006010a0_Class* __thiscall FUN_006010a0_Class::NiTStringTemplateMap_NiTMap_char_const_IDLE_ANIM_ROOT_IDLE_ANIM_ROOT_NiTStringTemplateMap(int a, unsigned char b)
 {
     ((FUN_006010d0_Class*)this)->InitializeWithGlobal(a);
@@ -592,6 +616,7 @@ struct FUN_006013a0_shell
 
 // Calls FUN_0060b9b0, frees this via Deallocate when flags has bit 1 set, and returns this.
 // @fnv 0x0060bc60
+// pdb: NiTArray<FaceGenUndo *,NiTMallocInterface<FaceGenUndo *> >::`scalar deleting destructor' | TESNPC.obj | debug, vtable slot, medium
 void* __thiscall FUN_006013a0_shell::FUN_0060bc60(int flags)
 {
     SetVtableAndProcessState_0060b9b0();
@@ -609,6 +634,7 @@ struct FUN_006013a0_shell
 
 // Calls FUN_006013a0, deletes this when flags has bit 1 set, and returns this.
 // @fnv 0x0060bc90
+// pdb: NiTPrimitiveArray<FaceGenUndo *>::`scalar deleting destructor' | TESNPC.obj | debug, vtable slot, medium
 FUN_006013a0_shell* __thiscall FUN_006013a0_shell::FUN_0060bc90(unsigned int flags)
 {
     ForwardCall_006013a0();
@@ -624,6 +650,7 @@ struct FUN_0060bcc0_holder
 };
 // Calls Reset on this, frees this with _Deallocate when flags has bit 1 set, and returns this.
 // @fnv 0x0060bcc0
+// pdb: BSSimpleArray<BGSHeadPart *,1024>::`scalar deleting destructor' | TESNPC.obj | retail, vtable slot, high
 void* __thiscall FUN_0060bcc0_holder::FUN_0060bcc0(unsigned int flags)
 {
     ((GlobalObject_00869f00*)this)->Reset();
@@ -640,6 +667,7 @@ struct FUN_0060bcf0_class
 };
 // Calls FUN_0060bae0, then frees this via Deallocate when flags has bit 1 set, and returns this.
 // @fnv 0x0060bcf0
+// pdb: BSScrapArray<BGSHeadPart *,1024>::`scalar deleting destructor' | TESNPC.obj | retail, vtable slot, high
 void* __thiscall FUN_0060bcf0_class::FUN_0060bcf0(unsigned int flags)
 {
     FUN_0060bae0();
@@ -719,6 +747,8 @@ struct S_00616a60
 // Calls FUN_00616a20 when a equals 1, otherwise calls FUN_00616a40.
 // @fnv 0x00616a60
 // src: COMMUNITY 0x00616a60
+// pdb: TESReputation::GetReputationPct | TESReputation.obj | debug, upstream name already matches, high
+// pdb params: RepType
 void __thiscall S_00616a60::TESReputation_GetReputationPct(int a)
 {
     if (a == 1)
@@ -737,6 +767,7 @@ struct FUN_00618890_cls
 };
 // Calls FUN_006188c0, then deletes this if bit 0 of flags is set, and returns this.
 // @fnv 0x00618890
+// pdb: QUEST_INFO::`scalar deleting destructor' | TESTopic.obj | debug, object-file run extension, low
 FUN_00618890_cls* __thiscall FUN_00618890_cls::FUN_00618890(unsigned int flags)
 {
     FUN_006188c0();
@@ -752,6 +783,7 @@ struct FUN_0061c090_class
     void* __thiscall FUN_0061c090(unsigned int flags);
 };
 // @fnv 0x0061c090
+// pdb: NiTLargeArray<TESTopicInfo *,NiTMallocInterface<TESTopicInfo *> >::`scalar deleting destructor' | TESTopic.obj | debug, vtable slot, medium
 void* __thiscall FUN_0061c090_class::FUN_0061c090(unsigned int flags)
 {
     UpdateState_0061bcf0(this);
@@ -768,6 +800,7 @@ struct FUN_0061c0c0_class
 };
 // Calls FUN_00618940 on this, frees this with operator delete when flags has bit 0 set, and returns this.
 // @fnv 0x0061c0c0
+// pdb: NiTLargePrimitiveArray<TESTopicInfo *>::`scalar deleting destructor' | TESTopic.obj | debug, vtable slot, medium
 void* __thiscall FUN_0061c0c0_class::FUN_0061c0c0(unsigned int flags)
 {
     Object_ForwardCall_00618940(this);
@@ -784,6 +817,7 @@ struct FUN_0061bf50_class
 
 // Calls InitAndClear, then deletes this if flags has bit 0 set, and returns this.
 // @fnv 0x0061c0f0
+// pdb: BSSimpleArray<INFO_LINK_ELEMENT,1024>::`scalar deleting destructor' | TESTopic.obj | retail, vtable slot, high
 void* __thiscall FUN_0061bf50_class::FUN_0061c0f0(unsigned int flags)
 {
     InitAndClear();
@@ -793,11 +827,12 @@ void* __thiscall FUN_0061bf50_class::FUN_0061c0f0(unsigned int flags)
 }
 
 // @fnv 0x0061f220
+// pdb: TESTopicInfo::SetSaidOnce | TESTopicInfo.obj | debug, object-file run extension, low
 void __thiscall TESTopicInfo::MarkAsRefusal()
 {
     if (!IsRefusal())
     {
-        m_bGoodbye = 1;
+        bSaidOnce = 1;
         MarkAsModified(0x80000000);
     }
 }
@@ -809,6 +844,7 @@ struct FUN_005545d0_Class
 };
 // Calls FUN_005545f0, deletes this when flags has bit 0 set, and returns this.
 // @fnv 0x0061f550
+// pdb: bhkEntityListener::`scalar deleting destructor' | BGSAcousticSpaceListener.obj | debug, vtable slot, medium
 void* __thiscall FUN_005545d0_Class::FUN_0061f550(unsigned int flags)
 {
     FUN_005545f0();
@@ -827,6 +863,7 @@ struct FUN_0061fa40_class
 
 // Calls FUN_0061fae0, frees this with Deallocate when flags has bit 0 set, and returns this.
 // @fnv 0x0061fa40
+// pdb: NiTMap<TESObjectREFR *,int>::`scalar deleting destructor' | BGSAcousticSpaceListener.obj | retail, vtable slot, high
 void* __thiscall FUN_0061fa40_class::FUN_0061fa40(unsigned int flags)
 {
     FUN_0061fae0();
@@ -845,6 +882,8 @@ struct FUN_0061fa70_class
 // Sets the vtable, stores the count, allocates count*4 bytes, zeroes them, and returns this.
 // @fnv 0x0061fa70
 // src: EXE 0x0061fa70
+// pdb: BGSAcousticSpaceListener::BGSAcousticSpaceListener | BGSAcousticSpaceListener.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiTMapBase<DFALL<NiTMapItem<TESObjectREFR *,int> >,TESObjectREFR *,int>::NiTMapBase<DFALL<NiTMapItem<TESObjectREFR *,int> >,TESObjectREFR *,int>
 int __thiscall FUN_0061fa70_class::NiTMapBase_DFALL_NiTMapItem_TESObjectREFR_int_TESObjectREFR_int_NiTMapBase(int aiCount)
 {
     *reinterpret_cast<void**>(this) = &DAT_0104d968;
@@ -863,9 +902,10 @@ struct FUN_0061fb70_Cls
     void* __thiscall FUN_0061fb70(unsigned int flags);
 };
 // @fnv 0x0061fb70
+// pdb: NiTMapBase<DFALL<NiTMapItem<TESObjectREFR *,int> >,TESObjectREFR *,int>::`scalar deleting destructor' | BGSAcousticSpaceListener.obj | retail, vtable slot, high
 void* __thiscall FUN_0061fb70_Cls::FUN_0061fb70(unsigned int flags)
 {
-    ((NiTPointerMapIntInt*)this)->ReleaseStorage_0061fb40();
+    ((NiTPointerMapIntInt*)this)->NiTMapBase_DFALL_NiTMapItem_TESObjectREFR_int_TESObjectREFR_int_dtor();
     if (flags & 1)
         _Deallocate(this);
     return this;
@@ -884,6 +924,8 @@ struct FUN_00601000
 };
 // Sets the vtable, stores x and y, zeroes c and b, and allocates a elements into p when a is positive, otherwise p is null.
 // @fnv 0x00601000
+// pdb: NiTArray<TESIdleForm *,NiTMallocInterface<TESIdleForm *> >::SetAtGrow | TESIdleManager.obj | debug, object-file run extension, low
+// pdb params: uiIndex, element
 FUN_00601000::FUN_00601000(short x, short y)
 {
     vft = (int*)&DAT_0104a060;
@@ -932,15 +974,18 @@ extern Setting originalRuntimeFloatSetting51;
 extern Setting originalRuntimeFloatSetting50;
 struct FUN_00616c20_shell : FUN_00616c20_cls
 {
-    void __thiscall TESReputation_CommitCrime(bool b);
+    void __thiscall TESReputation_CommitCrime(bool bMajor);
 };
 // Reads one of two runtime float settings depending on b and passes it to FUN_00615730 with index 0.
 // @fnv 0x00616c20
 // src: XBOX_PDB 0x00616c20
-void __thiscall FUN_00616c20_shell::TESReputation_CommitCrime(bool abUseFirstSetting)
+// pdb: TESReputation::CommitCrime | TESReputation.obj | debug, upstream name already matches, high
+// pdb params: bMajor
+// pdb locals: fNegHit
+void __thiscall FUN_00616c20_shell::TESReputation_CommitCrime(bool bMajor)
 {
     float f;
-    if (abUseFirstSetting)
+    if (bMajor)
         f = *originalRuntimeFloatSetting51.Float();
     else
         f = *originalRuntimeFloatSetting50.Float();
@@ -965,14 +1010,17 @@ extern DH* g_dataHandler;
 // If a is non-zero, walks the list from g_dataHandler and calls ProcessTopicInfoList(a) on each item until _ref_008256d0 is true.
 // @fnv 0x00619b60
 // src: COMMUNITY 0x00619b60
-void TESTopic_ClearAllSaidOnceInfosForQuest(int a)
+// pdb: TESTopic::ClearAllSaidOnceInfosForQuest | TESTopic.obj | retail, upstream name already matches, high
+// pdb params: apQuest
+// pdb locals: plist
+void TESTopic_ClearAllSaidOnceInfosForQuest(int apQuest)
 {
-    if (a)
+    if (apQuest)
     {
         BSSimpleListShell* list = g_dataHandler->FUN_004612e0();
         while (list && !list->_ref_008256d0())
         {
-            (*list->GetItem())->ProcessTopicInfoList(a);
+            (*list->GetItem())->ProcessTopicInfoList(apQuest);
             list = list->GetNext();
         }
     }
@@ -992,6 +1040,7 @@ struct FUN_0061c120
 };
 // Initialises the array: sets the vtable, stores size and max, zeroes allocation fields, and allocates m_pData when size is non-zero.
 // @fnv 0x0061c120
+// pdb: BSSimpleList<QUEST_INFO *>::`scalar deleting destructor' | TESTopic.obj | debug, object-file run extension, low
 FUN_0061c120::FUN_0061c120(unsigned int size, unsigned int max)
 {
     vtbl = (void*)&DAT_0104d448;
@@ -1047,6 +1096,8 @@ extern GlobalObject_0040c150 g_011cbd44;
 
 // @fnv 0x006167d0
 // src: COMMUNITY 0x006167d0
+// pdb: TESReputation::GetReputationIcon | TESReputation.obj | debug, object-file gap fill, medium
+// pdb locals: pRepIcons, cPosIndex, cNegIndex
 char const* GlobalObject_0040c150::TESReputation_GetThresholdIcon()
 {
     const StartMenu* menuTable[4][4] = {{&g_011cbbfc, &g_011cbbcc, &g_011cbbaec, &g_011cbd44},
@@ -1066,12 +1117,14 @@ struct FUN_0061fea0_shell
 {
     void ClearList();
 };
-struct FUN_0061fc50 : FUN_0061fea0_shell
+// pdb: class ZoneEntry, size 0x18 (here 0x4), bases: bhkTTNode<TESObjectREFR>, 1 members
+struct ZoneEntry : FUN_0061fea0_shell // src: EXE 0x0104d9cc (vtable; old: FUN_0061fc50)
 {
-    virtual ~FUN_0061fc50();
+    virtual ~ZoneEntry();
 };
 // @fnv 0x0061fc50
-FUN_0061fc50::~FUN_0061fc50()
+// pdb: ZoneEntry::~ZoneEntry | BGSZoneTargetListener.obj | debug, object-file gap fill, medium
+ZoneEntry::~ZoneEntry()
 {
     reinterpret_cast<FUN_0061fea0_shell*>(this)->ClearList();
 }
@@ -1108,6 +1161,9 @@ class FUN_0060ba40_cls : public FNVBaseObj
 
 // Initializes m_10 from FUN_00401020()->FUN_00aa42e0() and calls FUN_006b3eb0 with 0, 0.
 // @fnv 0x0060ba40
+// pdb: BGSLoadGameBuffer::LoadDataEndian | BGSLoadGameBuffer.obj | retail, call graph, medium
+// pdb params: apData, aiSize, aiElementSize
+// pdb locals: icount, pbuffer, i
 FUN_0060ba40_cls::FUN_0060ba40_cls()
 {
     m_10 = MemoryManager_Instance()->FUN_00aa42e0();
@@ -1132,6 +1188,7 @@ class FUN_0060bae0_cls : public FUN_0060bac0_base
 };
 
 // @fnv 0x0060bae0
+// pdb: BSScrapArray<BGSHeadPart *,1024>::~BSScrapArray<BGSHeadPart *,1024> | TESNPC.obj | debug, call graph (shared callers), low
 FUN_0060bae0_cls::~FUN_0060bae0_cls()
 {
     Clear(1);
@@ -1157,6 +1214,7 @@ void CallWithFlagByte(int, int, int, S_0060bba0_TagA, S_0060bba0_TagB, S_0060bba
 // Calls CallWithFlagByte with CallWithFlag results for param1 and param2, param3, and FUN_0065fd70/FUN_0065e750 results plus a TagC.
 // @fnv 0x0060bba0
 // src: GUESS 0x0060bba0 (confidence: low)
+// pdb: BSSimpleList<TESNPC *>::`scalar deleting destructor' | TESNPC.obj | debug, object-file run extension, low
 void __cdecl Object_DispatchIteratorRange_0060bba0(int param1, int param2, int param3)
 {
     CallWithFlagByte(CallWithFlag(&param1), CallWithFlag(&param2), param3, return_value(&param1, &param3),
@@ -1177,6 +1235,7 @@ void __cdecl B60BC10FillOpt(void* first, void* last, void* value, void* extra, B
 
 // Calls B60BC10FillOpt with first, last, value and extra, passing a pointer-category tag built from first and a range-checked tag.
 // @fnv 0x0060bc10
+// pdb: BSSimpleList<TESNPC *>::~BSSimpleList<TESNPC *> | TESNPC.obj | debug, object-file run extension, low
 void __cdecl FillRange(void* first, void* last, void* value, void* extra)
 {
     B60BC10FillOpt(first, last, value, extra, B60BC10PtrCat(first, first), B60BC10RangeCheckedTag());
@@ -1324,6 +1383,10 @@ struct Comparison
 // Reads two comparison results and maps their combination, depending on mode, to a result code (0-6).
 // @fnv 0x00616a90
 // src: COMMUNITY 0x00616a90
+// pdb: TESReputation::AddReputationValueByLevel | TESReputation.obj | retail, call graph, low
+// pdb note: debug build links it to TESReputation::GetReputationThreshold
+// pdb params: RepType, iValue
+// pdb locals: cLevel, fRepValues, cNewLevel, repGain, bChangeLevel
 char Comparison::TESReputation_GetReputationThreshold(char mode)
 {
     char second = GetReputationRank(1);
@@ -1409,6 +1472,9 @@ struct FUN_00616c70_cls
 
 // Initializes the four fields at offsets 0, 4, 8 and 0x10 by calling FUN_00401080 on each with a default flag value.
 // @fnv 0x00616c70
+// pdb: TESResponse::Copy | TESResponse.obj | retail, object-file run extension, low
+// pdb note: debug build links it to RESPONSE_DATA::Endian
+// pdb params: apCopy
 void FUN_00616c70_cls::InitializeFields()
 {
     FUN_00616c70_flag a = {};
@@ -1432,30 +1498,33 @@ struct OutputStringDC
 
 struct FUN_00616e20_shell
 {
-    bool TESResponse_TestAudioFullPath(OutputStringDC* output, const char* first, const char* second, const char* third,
-                      const char* fourth, const char* fifth);
+    bool TESResponse_TestAudioFullPath(OutputStringDC* aFullPath, const char* apDirPath, const char* apMPFileName, const char* apVoiceTypeName,
+                      const char* apFileName, const char* apFileExt);
 };
 
 // @fnv 0x00616e20
 // src: COMMUNITY 0x00616e20
-bool FUN_00616e20_shell::TESResponse_TestAudioFullPath(OutputStringDC* output, const char* pcFirst, const char* pcSecond,
-                                      const char* pcThird, const char* pcFourth, const char* pcFifth)
+// pdb: TESResponse::TestAudioFullPath | TESResponse.obj | retail, upstream name already matches, high
+// pdb params: aFullPath, apDirPath, apMPFileName, apVoiceTypeName, apFileName, apFileExt
+// pdb locals: bfound, ptempPath, pout
+bool FUN_00616e20_shell::TESResponse_TestAudioFullPath(OutputStringDC* aFullPath, const char* apDirPath, const char* apMPFileName,
+                                      const char* apVoiceTypeName, const char* apFileName, const char* apFileExt)
 {
     bool succeeded2;
     char buffer[260];
     char* destination = buffer;
     destination[0] = 0;
-    FUN_00406d50(destination, 260, pcFirst);
+    FUN_00406d50(destination, 260, apDirPath);
     FUN_00406d50(destination, 260, DAT_01013444);
-    FUN_00406d50(destination, 260, pcSecond);
+    FUN_00406d50(destination, 260, apMPFileName);
     FUN_00406d50(destination, 260, DAT_01013444);
-    FUN_00406d50(destination, 260, pcThird);
+    FUN_00406d50(destination, 260, apVoiceTypeName);
     FUN_00406d50(destination, 260, DAT_01013444);
-    FUN_00406d50(destination, 260, pcFourth);
+    FUN_00406d50(destination, 260, apFileName);
     FUN_00406d50(destination, 260, DAT_01044c28);
-    FUN_00406d50(destination, 260, pcFifth);
+    FUN_00406d50(destination, 260, apFileExt);
     succeeded2 = true;
-    output->FUN_00438390(buffer);
+    aFullPath->FUN_00438390(buffer);
     return succeeded2;
 }
 
@@ -1520,6 +1589,8 @@ struct SortOwner
 
 // Bubble-sorts the linked list by comparing each entry's key and swapping adjacent items when the next key is greater, then returns true.
 // @fnv 0x0061ba90
+// pdb: TESTopic::ResetTopics | TESTopic.obj | debug, object-file run extension, low
+// pdb locals: pList, pQuestInfo, pInfoArray, maxSize, i, ti
 bool SortOwner::SortList()
 {
     V34();
@@ -1558,7 +1629,7 @@ class ThisBase_b5727
     unsigned int m_08;
     unsigned int m_0c;
     unsigned int m_10;
-    ThisBase_b5727(int aValue);
+    ThisBase_b5727(int aiFlag);
 };
 
 class ThisMember_b5727
@@ -1582,6 +1653,7 @@ class FUN_0061f460 : public ThisBase_b5727
 
 // Initializes the base with 0, sets m_14 to 1 and constructs m_18 with 0x25.
 // @fnv 0x0061f460
+// pdb: BGSAcousticSpaceListener::BGSAcousticSpaceListener | BGSAcousticSpaceListener.obj | debug, call graph, high
 FUN_0061f460::FUN_0061f460() : ThisBase_b5727(0), m_18(0x25)
 {
     m_14 = 1;
@@ -1605,7 +1677,7 @@ struct F4D0List
 class FUN_0061f4d0 : public F4D0Base
 {
   public:
-    FUN_0061f4d0(void* pkOwner);
+    FUN_0061f4d0(void* aiFlag);
     virtual ~FUN_0061f4d0();
 
     void* m_pkOwnerManager;
@@ -1614,9 +1686,11 @@ class FUN_0061f4d0 : public F4D0Base
 };
 
 // @fnv 0x0061f4d0
-FUN_0061f4d0::FUN_0061f4d0(void* pkOwner)
+// pdb: bhkEntityListener::bhkEntityListener | BGSAcousticSpaceListener.obj | debug, call graph (shared callers), high
+// pdb params: aiFlag
+FUN_0061f4d0::FUN_0061f4d0(void* aiFlag)
 {
-    m_pkOwnerManager = pkOwner;
+    m_pkOwnerManager = aiFlag;
     m_bEnableState = true;
 }
 
@@ -1692,6 +1766,9 @@ class F1A0Owner
 
 // Walks the owner's list and returns the key of the entry whose form matches pkForm, or 0 if none matches.
 // @fnv 0x0060f1a0
+// pdb: TESQuest::GetStageIndexForStageItem | TESQuest.obj | debug, object-file run extension, low
+// pdb params: apStageItem
+// pdb locals: pstages, pstage
 unsigned char F1A0Owner::GetKeyForForm(F1A0Form* pkForm)
 {
     F1A0Node* pkNode = GetList();
@@ -1732,12 +1809,15 @@ class B616890Menu
 {
   public:
     char GetIndex(bool bFirst);
-    const char* GetSelectedSettingString();
+    const char* TESReputation_GetReputationDesc();
 };
 
 // Reads the selected row and column via GetIndex, then returns the String() of the matching entry in the 4x4 settings table.
 // @fnv 0x00616890
-const char* B616890Menu::GetSelectedSettingString()
+// src: XBOX_DEBUG_PDB 0x00616890
+// pdb: TESReputation::GetReputationDesc | TESReputation.obj | debug, call graph, high
+// pdb locals: cPosIndex, pRepDescs, cNegIndex
+const char* B616890Menu::TESReputation_GetReputationDesc()
 {
     B616890Setting* aapkSettings3[4][4] = {{&g_k616890A0, &g_k616890A1, &g_k616890A2, &g_k616890A3},
                                            {&g_k616890B0, &g_k616890B1, &g_k616890B2, &g_k616890B3},
@@ -1806,6 +1886,8 @@ struct FUN_006186d0 : CleanupBase, CleanupSecondary
 };
 // Walks the cleanup list, deletes each topic's items and the topic itself, then calls FUN_00483710.
 // @fnv 0x006186d0
+// pdb: TESTopic::~TESTopic | TESTopic.obj | debug, object-file run extension, low
+// pdb locals: pList, pQuestInfo, maxSize, i, info
 FUN_006186d0::~FUN_006186d0()
 {
     CleanupList* list = FUN_005d8a70();
@@ -2001,19 +2083,22 @@ extern VFSetting g_kVoiceExtension;
 
 struct VFDialogue
 {
-    void BuildResponseName(void* apTopic, void* apQuest, VFTopicInfo* apInfo, VFString* apName);
-    bool BuildPath(char* apBuffer, const char* apPrefix, const char* apPlugin, const char* apVoice, const char* apName,
-                   const char* apExtension);
+    void GetAudioFilename(void* apOwnerQuest, void* apOwnerTopic, VFTopicInfo* apOwnerInfo, VFString* aFilename);
+    bool BuildPath(char* aFullPath, const char* apDirPath, const char* apMPFileName, const char* apVoiceTypeName, const char* apFileName,
+                   const char* apFileExt);
     bool BuildVoiceFilePath(VFForm* apSpeaker, void* apTopic, void* apQuest, VFTopicInfo* apInfo, char* apBuffer);
 };
 
 // @fnv 0x00616fa0
+// pdb: TESResponse::GetAudioFullPath | TESResponse.obj | debug, object-file gap fill, medium
+// pdb params: apSpeakerBase, apQuest, apOwnerTopic, apOwnerInfo, aFullPath
+// pdb locals: fileName, path, bFound, prootfile, pvoicetype, pmpfileName, pvoiceTypeName, pdirPath, pextension, prace, filename
 bool VFDialogue::BuildVoiceFilePath(VFForm* apSpeaker, void* apTopic, void* apQuest, VFTopicInfo* apInfo,
                                     char* apBuffer)
 {
     VFString kUnused;
     VFString kName2;
-    BuildResponseName(apTopic, apQuest, apInfo, &kName2);
+    GetAudioFilename(apTopic, apQuest, apInfo, &kName2);
     VFVoiceType* pVoice4 = 0;
     VFFile* pFile = apInfo->GetFile(0);
     if (!pFile)
@@ -2069,6 +2154,8 @@ struct FUN_0061f870_shell
     void SetCopyMapEntry(unsigned int a);
 };
 // @fnv 0x0061f870
+// pdb: BGSAcousticSpaceListener::QueueRemoval | BGSAcousticSpaceListener.obj | debug, object-file run extension, low
+// pdb params: apRef
 void FUN_0061f870_shell::SetCopyMapEntry(unsigned int uiKey)
 {
     ((CopyMap*)((char*)this + 0x18))->SetAt(uiKey, 5);
@@ -2088,6 +2175,7 @@ struct FUN_0061fae0 : public AHPtrMapBase
 };
 // Destructor that calls RemoveAll to clear the hash table entries.
 // @fnv 0x0061fae0
+// pdb: NiTMap<TESObjectREFR *,int>::~NiTMap<TESObjectREFR *,int> | BGSAcousticSpaceListener.obj | debug, call graph (shared callers), high
 FUN_0061fae0::~FUN_0061fae0()
 {
     RemoveAll();
@@ -2126,6 +2214,7 @@ struct FUN_00600d40 : FUN_00600b00_shell
     virtual ~FUN_00600d40();
 };
 // @fnv 0x00600d40
+// pdb: BSTCaseInsensitiveStringMap<IDLE_ANIM_ROOT *>::`scalar deleting destructor' | TESIdleManager.obj | retail, vtable slot, high
 FUN_00600d40::~FUN_00600d40()
 {}
 
@@ -2153,6 +2242,8 @@ struct FUN_00600d90 : FUN_00600e50
 
 // If ownsValues is set, walks every bucket's node list and calls FUN_00aa10f0 on each node's value.
 // @fnv 0x00600d90
+// pdb: NiTStringTemplateMap<NiTMap<char const *,IDLE_ANIM_ROOT *>,IDLE_ANIM_ROOT *>::~NiTStringTemplateMap<NiTMap<char const *,IDLE_ANIM_ROOT *>,IDLE_ANIM_ROOT *> | TESIdleManager.obj | debug, call graph (shared callers), high
+// pdb locals: i, pkItem, pkSave
 FUN_00600d90::~FUN_00600d90()
 {
     if (ownsValues)
@@ -2183,6 +2274,7 @@ struct FUN_00600e50_cls : public FUN_00600eb0_base
 
 // Destructor that calls FUN_00438af0.
 // @fnv 0x00600e50
+// pdb: NiTMap<char const *,IDLE_ANIM_ROOT *>::~NiTMap<char const *,IDLE_ANIM_ROOT *> | TESIdleManager.obj | debug, call graph, medium
 FUN_00600e50_cls::~FUN_00600e50_cls()
 {
     FUN_00438af0();
@@ -2190,6 +2282,7 @@ FUN_00600e50_cls::~FUN_00600e50_cls()
 
 // Destructor with an empty body; the base array is destroyed implicitly.
 // @fnv 0x006197f0
+// pdb: TopicInfoArray::`scalar deleting destructor' | TESTopic.obj | debug, vtable slot, medium
 TopicInfoArray::~TopicInfoArray()
 {}
 
@@ -2221,6 +2314,7 @@ struct FUN_006188c0
 
 // Destructor with an empty body; members m_kPath and m_kQueue are destroyed implicitly.
 // @fnv 0x006188c0
+// pdb: QUEST_INFO::~QUEST_INFO | TESTopic.obj | debug, object-file run extension, low
 FUN_006188c0::~FUN_006188c0()
 {}
 
@@ -2229,10 +2323,13 @@ FUN_006188c0::~FUN_006188c0()
 // Casts the form to TESRaceForm and returns its race via GetFormRace, or null if the cast fails.
 // @fnv 0x00617270
 // src: COMMUNITY 0x00617270
-TESRace* __cdecl TESRaceForm_GetFormRace(TESForm* form)
+// pdb: TESRaceForm::GetFormRace | TESResponse.obj | retail, upstream name already matches, high
+// pdb params: apForm
+// pdb locals: pRF
+TESRace* __cdecl TESRaceForm_GetFormRace(TESForm* apForm)
 {
     TESRaceForm* pRaceForm;
-    pRaceForm = dynamic_cast<TESRaceForm*>(form);
+    pRaceForm = dynamic_cast<TESRaceForm*>(apForm);
     {
         TESRace* result;
         if (pRaceForm)

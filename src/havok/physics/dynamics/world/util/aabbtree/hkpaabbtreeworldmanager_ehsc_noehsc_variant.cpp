@@ -15,7 +15,7 @@ struct FUN_00d08ff0_t {
     int c;
     int d;
 };
-void hkpAabbTreeWorldManager_gatherCollidablesFromWorld(FUN_00d08ff0_t* self, int arg);
+void hkpAabbTreeWorldManager_gatherCollidablesFromWorld(FUN_00d08ff0_t* collidables, int arg);
 struct FUN_00d08550_Class {
     void __thiscall hkpAabbTreeWorldManager_setTreeIsClean();
 };
@@ -95,7 +95,8 @@ struct EntryMap {
     int getValue(ScanToken* token) const { return (int)table.value(token); }
 };
 void __cdecl DispatchToOffsetTarget(hkpCollidable*, unsigned short);
-struct UpdateState {
+// pdb: class hkpAabbTreeWorldManager, size 0x70 (here 0x6c), bases: hkpTreeWorldManager, hkpEntityListener, hkpPhantomListener, hkpIslandActivationListener, hkpWorldPostSimulationListener, 15 members
+struct hkpAabbTreeWorldManager { // src: XBOX_RETAIL_PDB 0x00d08800 (first retail link of 3 high-tier links to its methods; old: UpdateState)
     int unk00; int unk04; int unk08; Tree* tree;
     FUN_00d08ff0_t gather;
     int unk20;
@@ -106,13 +107,13 @@ struct UpdateState {
     EntryMap entries;
     unsigned char fullScan; int scanStart; int scanLimit;
     unsigned char unk68; unsigned char dirty;
-    __declspec(noinline) bool CheckCollidables(hkArrayBase<hkpCollidable*>&);
+    __declspec(noinline) bool scanActiveListAndGetInactivated(hkArrayBase<hkpCollidable*>&);
     unsigned short hkpAabbTreeWorldManager_getNodeIdx(hkpCollidable*);
     bool isActive(int& value, hkpCollidable* node) { unsigned short id = hkpAabbTreeWorldManager_getNodeIdx(node); return value == 1 && id != 0xffff; }
     void hkpAabbTreeWorldManager_pushBackToActiveList(hkpCollidable*);
     void hkpAabbTreeWorldManager_buildActiveTree(hkArrayBase<hkpCollidable*>&, int, int);
     void hkpAabbTreeWorldManager_buildKdTree(FUN_00d08ff0_t*, hkArrayBase<hkpCollidable*>&, int, int, int);
-    void hkpAabbTreeWorldManager_incrementalBuild(int, int);
+    void incrementalBuild(int, int);
 };
 __forceinline void hkMonitorStream::TimerCommand::setTime() {
     unsigned int ticks;
@@ -157,15 +158,18 @@ static __forceinline void hkAddValue(const char* name, float value) {
     }
 }
 // @fnv 0x00d099d0
-// src: HAVOK_LIB 0x00d099d0
-void UpdateState::hkpAabbTreeWorldManager_incrementalBuild(int arg1, int arg2) {
+// src: XBOX_RETAIL_PDB 0x00d099d0 (was HAVOK_LIB)
+// pdb: hkpAabbTreeWorldManager::incrementalBuild | hkpAabbTreeWorldManager.obj | retail, string-set bridge, high
+// pdb params: jobQueue, jobThreadPool
+// pdb locals: inactivated, deferUpdate, aabb
+void hkpAabbTreeWorldManager::incrementalBuild(int jobQueue, int jobThreadPool) {
     CollidableArray inactive(nodes.GetLogicalSize());
     bool changed = false;
     if (incremental) {
         hkTimerBeginList("LtIncrementalBuild", "StClear Tree");
         hkTimerSplit("StFind Inactivated");
         if (dirty) {
-            changed = CheckCollidables(inactive);
+            changed = scanActiveListAndGetInactivated(inactive);
             hkTimerSplit("StUpdate Inactive Tree");
             Tree* t = tree;
             for (int i=0;i<inactive.GetLogicalSize();++i) {
@@ -182,14 +186,14 @@ void UpdateState::hkpAabbTreeWorldManager_incrementalBuild(int arg1, int arg2) {
         for (ScanToken* it = entries.GetFirstIterator(); entries.isValid(it); it = entries.getNext(it)) {
             hkpCollidable* node = entries.GetIteratorKey(it);
             int state = entries.getValue(it);
-            if (isActive(state, node) && node->m_kBroadPhaseHandle.m_type == 1) {
+            if (isActive(state, node) && node->m_broadPhaseHandle.m_type == 1) {
                 hkAddValue("MiNum of Removed Nodes", 1.0f);
                 currentTree->hkAabbTree_struct_hkAabbTreeData_hkAabbTreeAabb16_unsigned_short_remove(hkpAabbTreeWorldManager_getNodeIdx(node));
                 hkpAabbTreeWorldManager_pushBackToActiveList(node);
             }
         }
         hkTimerSplit("StUpdate Active");
-        hkpAabbTreeWorldManager_buildActiveTree(nodes, arg1, arg2);
+        hkpAabbTreeWorldManager_buildActiveTree(nodes, jobQueue, jobThreadPool);
         hkTimerSplit("lt");
     } else {
         hkTimerBeginList("LtDynamicBuild", "StGather");
@@ -197,7 +201,7 @@ void UpdateState::hkpAabbTreeWorldManager_incrementalBuild(int arg1, int arg2) {
         hkpAabbTreeWorldManager_gatherCollidablesFromWorld((FUN_00d08ff0_t*)&nodes, gatherMode);
         hkTimerSplit("StClear");
         hkTimerSplit("StRebuild");
-        hkpAabbTreeWorldManager_buildKdTree(&gather, nodes, gatherMode, arg1, arg2);
+        hkpAabbTreeWorldManager_buildKdTree(&gather, nodes, gatherMode, jobQueue, jobThreadPool);
         hkTimerSplit("lt");
     }
     ((FUN_00d08550_Class*)this)->hkpAabbTreeWorldManager_setTreeIsClean();
@@ -205,9 +209,10 @@ void UpdateState::hkpAabbTreeWorldManager_incrementalBuild(int arg1, int arg2) {
 }
 
 static __forceinline hkpEntity* getEntityOwner(hkpCollidable* node) {
-    return node->m_kBroadPhaseHandle.m_type==1 ? (hkpEntity*)((char*)node+node->m_iOwnerOffset) : 0;
+    return node->m_broadPhaseHandle.m_type==1 ? (hkpEntity*)((char*)node+node->m_ownerOffset) : 0;
 }
-__declspec(noinline) bool UpdateState::CheckCollidables(hkArrayBase<hkpCollidable*>& output) {
+// src: XBOX_RETAIL_PDB 0x00d08800
+__declspec(noinline) bool hkpAabbTreeWorldManager::scanActiveListAndGetInactivated(hkArrayBase<hkpCollidable*>& inactivatedOut) {
     if (fullScan) {
         for (int index=nodes.GetLogicalSize()-1;index>=0;--index) {
             hkpEntity* owner=getEntityOwner(nodes[index]);
@@ -216,7 +221,7 @@ __declspec(noinline) bool UpdateState::CheckCollidables(hkArrayBase<hkpCollidabl
                 owner->isActive_00c9bff0(&activeValue);
                 bool active=activeValue!=0;
                 if (!active) {
-                    output.pushBackUnchecked(nodes[index]);
+                    inactivatedOut.pushBackUnchecked(nodes[index]);
                     nodes.removeAt(index);
                 }
             }
@@ -235,7 +240,7 @@ __declspec(noinline) bool UpdateState::CheckCollidables(hkArrayBase<hkpCollidabl
                 owner->isActive_00c9bff0(&activeValue);
                 bool active=activeValue!=0;
                 if (!active) {
-                    output.pushBackUnchecked(nodes[index]);
+                    inactivatedOut.pushBackUnchecked(nodes[index]);
                     nodes.removeAt(index);
                 }
             }

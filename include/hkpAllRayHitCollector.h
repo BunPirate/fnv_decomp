@@ -14,6 +14,6 @@ public:
 
     int unk08;
     int unk0c;
-    HitArray hits;
+    HitArray m_hits; // src: XBOX_RETAIL_PDB +0x10 (old: hits)
     unsigned char unk1c[0x304];
 };

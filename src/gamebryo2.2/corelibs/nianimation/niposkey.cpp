@@ -5,19 +5,22 @@
 
 // Finds the key interval containing time, interpolates between the lower and upper keys via DAT_011f3ca8[type], updates lastIndex and returns the result.
 // @fnv 0x00a27490
-NiPoint3 PositionKeyInterpolator::InterpolatePosition(float time, PositionKeyInterpolator* keys, KeyType type,
-                                                      unsigned int count, unsigned int& lastIndex, unsigned char size)
+// pdb: NiPosKey::GenInterp | NiPosKey.obj | retail, call graph (shared callers), high
+// pdb params: fTime, pkKeys, eType, uiNumKeys, uiLastIdx, ucSize
+// pdb locals: fLastTime, uiNextIdx, fNormTime, uiNumKeysM1, kResult, interp, fNextTime, uiLastIdxCopy
+NiPoint3 PositionKeyInterpolator::InterpolatePosition(float fTime, PositionKeyInterpolator* pkKeys, KeyType eType,
+                                                      unsigned int uiNumKeys, unsigned int& uiLastIdx, unsigned char ucSize)
 {
-    if (count == 1 || time == DAT_010241b0)
-        return keys->GetPos();
+    if (uiNumKeys == 1 || fTime == DAT_010241b0)
+        return pkKeys->GetPos();
 
-    unsigned int last = count - 1;
-    unsigned int lower = lastIndex;
-    float lowerTime = keys->GetKeyAtIndex(lower, size)->GetTime();
-    if (time < lowerTime)
+    unsigned int last = uiNumKeys - 1;
+    unsigned int lower = uiLastIdx;
+    float lowerTime = pkKeys->GetKeyAtIndex(lower, ucSize)->GetTime();
+    if (fTime < lowerTime)
     {
         lower = 0;
-        lowerTime = keys->GetTime();
+        lowerTime = pkKeys->GetTime();
     }
 
     float upperTime = 0.0f;
@@ -26,18 +29,18 @@ NiPoint3 PositionKeyInterpolator::InterpolatePosition(float time, PositionKeyInt
     __assume(upper <= last);
     while (upper <= last)
     {
-        upperTime = keys->GetKeyAtIndex(upper, size)->GetTime();
-        if (time <= upperTime)
+        upperTime = pkKeys->GetKeyAtIndex(upper, ucSize)->GetTime();
+        if (fTime <= upperTime)
             break;
         ++lower;
         lowerTime = upperTime;
         ++upper;
     }
 
-    float normalizedTime = (time - lowerTime) / (upperTime - lowerTime);
+    float normalizedTime = (fTime - lowerTime) / (upperTime - lowerTime);
     NiPoint3 result;
-    DAT_011f3ca8[type](normalizedTime, keys->GetKeyAtIndex(lower, size), keys->GetKeyAtIndex(upper, size), &result);
-    lastIndex = lower;
+    DAT_011f3ca8[eType](normalizedTime, pkKeys->GetKeyAtIndex(lower, ucSize), pkKeys->GetKeyAtIndex(upper, ucSize), &result);
+    uiLastIdx = lower;
     return result;
 }
 
@@ -63,6 +66,9 @@ bool AreFloatsEqual(const A27760Data* pkA, const A27760Data* pkB);
 
 // Returns true when AreFloatsEqual succeeds for both records and their m_kValue points compare equal.
 // @fnv 0x00a27760
+// pdb: NiPosKey::Equal | NiPosKey.obj | retail, object-file run extension, low
+// pdb params: key0, key1
+// pdb locals: pos0, pos1
 bool AreDataEqual(const A27760Data* pkA, const A27760Data* pkB)
 {
     if (!AreFloatsEqual(pkA, pkB))
@@ -97,10 +103,13 @@ struct PKey
     }
 };
 extern NiPosKeyPoint3 DAT_011f365c;
-NiPosKeyPoint3 __cdecl FUN_00a27490(float time, PKey* keys, int type, unsigned int count, unsigned int& lastIndex,
-                        unsigned char size);
+NiPosKeyPoint3 __cdecl FUN_00a27490(float fTime, PKey* pkKeys, int eType, unsigned int uiNumKeys, unsigned int& uiLastIdx,
+                        unsigned char ucSize);
 // Returns the key position for time, clamping to the first/last key when time is out of range, otherwise delegating to FUN_00a27490.
 // @fnv 0x00a276a0
+// pdb: NiPosKey::GenInterpDefault | NiPosKey.obj | retail, object-file run extension, low
+// pdb params: fTime, pkKeys, eType, uiNumKeys, ucSize
+// pdb locals: uiLastIdx
 NiPosKeyPoint3 __cdecl GetKeyPosAtTime(float time, PKey* keys, int type, unsigned int count, unsigned char size)
 {
     if (count)
@@ -146,6 +155,9 @@ inline PointStorage InitialCrossCurveVectors(const NiPoint3& a, const NiPoint3& 
 }
 // Evaluates curve velocity and acceleration at time, then derives the tangent, normal, binormal and curvature for the animation key pair.
 // @fnv 0x00a277c0
+// pdb: NiPosKey::CoordinateFrame | NiPosKey.obj | retail, object-file run extension, low
+// pdb params: fTime, pKey0, pKey1, eType, tangent, normal, binormal, curvature
+// pdb locals: d1, fInvLength, d1Func, epsilon, cross, d2, fLengthSqr, fLength, d2Func
 void __cdecl ComputeFrenetFrame(float time, const NiAnimationKey* key0, const NiAnimationKey* key1,
                                 NiAnimationKey::KeyType type, NiPoint3& tangent, NiPoint3& normal, NiPoint3& binormal,
                                 float& curvature)

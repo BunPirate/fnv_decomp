@@ -11,7 +11,7 @@
 #include "../../include/MemoryManager.h"
 #include "../../include/AutoMemContext.h"
 extern BGSMoviePlayer* DAT_0126fac4;
-int __stdcall MoviePlayer_PlaySequenceThread(int a);
+int __stdcall MoviePlayer_PlaySequenceThread(int apString);
 extern MemoryManager g_memoryManager;
 struct FUN_00ec1a40_Class
 {
@@ -102,7 +102,7 @@ struct FUN_00ec2a10_class
     int m_0008;
     int m_000c;
     int m_0010;
-    void __thiscall PauseMovie();
+    void __thiscall MoviePlayer_Pause();
 };
 struct FUN_00ec2d40_class
 {
@@ -131,7 +131,7 @@ struct FUN_00ec2aa0_Class
     virtual void v9();
     virtual unsigned int v10();
     virtual unsigned int v11();
-    float __thiscall ComputeRatio(unsigned int a, unsigned int b, bool c);
+    float __thiscall ComputeRatio(unsigned int afWidth, unsigned int afHeight, bool abLetterBoxed);
 };
 extern "C" __declspec(dllimport) int __stdcall SetThreadPriority(void* hThread, int priority);
 struct FUN_00ec1fd0_shell
@@ -329,9 +329,9 @@ class NiPlaybackManager
     virtual void v05();
     virtual void v06();
     virtual int GetRenderer();
-    float GetFrameRate(unsigned int uiWidth, unsigned int uiHeight, bool bLooping);
-    float GetWidthScale(float fRate, unsigned int uiWidth, bool bLooping);
-    float GetHeightScale(float fRate, unsigned int uiHeight, bool bLooping);
+    float GetFrameRate(unsigned int afWidth, unsigned int afHeight, bool abLetterBoxed);
+    float GetWidthScale(float fRate, unsigned int afWidth, bool abLetterBoxed);
+    float GetHeightScale(float afScale, unsigned int afHeight, bool abLetterBoxed);
 };
 void* __cdecl CreatePlaybackTextures(int iRenderer, unsigned int uiWidth, unsigned int uiHeight, int iCount, int iFlags,
                                      int iFormat);
@@ -391,7 +391,7 @@ extern "C" __declspec(dllimport) void* __stdcall CreateThread(void* pvSecurity, 
 extern "C" __declspec(dllimport) unsigned long __stdcall ResumeThread(void* hThread);
 extern "C" __declspec(dllimport) unsigned long __stdcall WaitForSingleObject(void* hHandle,
                                                                              unsigned long ulMilliseconds);
-void __cdecl FUN_00aa2740(unsigned long ulThreadId, const char* pcName);
+void __cdecl FUN_00aa2740(unsigned long hThread, const char* nPriority);
 struct BEC16D0Setting
 {
     void* m_pvVtable;
@@ -423,8 +423,8 @@ class BEC16D0MoviePlayerThread
     int unk2C;
     BEC16D0Semaphore m_kStartSemaphore;
 
-    void SetPriority(int iPriority);
-    void MoviePlayer_StartSequence(void* pvParam, bool bFlag22, int iPriority, bool bFlag23, bool bFlag24, float fValue28);
+    void SetPriority(int aiPriority);
+    void MoviePlayer_StartSequence(void* apString, bool abLetterBoxed, int aiSequencePriority, bool abMuteGameAudio, bool abPauseGameAudio, float afTimeBeforeMovieSkippable);
 };
 extern int DAT_010f1ca4;
 void __cdecl _NiFree_00aa10f0(int aValue);
@@ -457,7 +457,7 @@ struct S_00ec2b20
     virtual unsigned int v11();
     virtual unsigned int v12();
     virtual unsigned int v13();
-    float __thiscall ComputeAdjustedValue(float a, unsigned int b, bool c);
+    float __thiscall ComputeAdjustedValue(float a, unsigned int afWidth, bool abLetterBoxed);
 };
 extern int DAT_0126fae0;
 extern int DAT_0126fae4;
@@ -704,9 +704,10 @@ struct Scope2490
     }
 };
 // Movie has the 0x28-byte playback layout; constructor 0x00ec1f20, background initializer 0x00ec1f60. No shared Movie.h yet.
+// pdb: class Movie, size 0x28, 10 members
 struct Movie
 {
-    int unk00, unk04, unk08, unk0C, unk10, unk14, unk18, unk1C, unk20, unk24;
+    int pBink, dxDevice, pTextureSet, iFrameCount, iNumFramesSkipped, fScale, fXCoordOffset, fYCoordOffset, ePlayingState, bLoading; // src: XBOX_RETAIL_PDB pBink +0x0 (old: unk00); dxDevice +0x4 (old: unk04); pTextureSet +0x8 (old: unk08); iFrameCount +0xc (old: unk0C); iNumFramesSkipped +0x10 (old: unk10); fScale +0x14 (old: unk14); fXCoordOffset +0x18 (old: unk18); fYCoordOffset +0x1c (old: unk1C); ePlayingState +0x20 (old: unk20); bLoading +0x24 (old: unk24)
     Movie();
     static void* operator new(unsigned int size)
     {
@@ -722,16 +723,19 @@ struct FUN_00ec2490_Class
     int unk10;
     Movie* cached;
     bool hasCached;
-    void PauseMovie();
+    void MoviePlayer_Pause();
     void MoviePlayer_Stop();
     unsigned char BGSMoviePlayer_PlayBackground(int, unsigned char);
 };
 // @fnv 0x00ec2490
 // src: COMMUNITY 0x00ec2490
+// pdb: MoviePlayer::PlayBackground | MoviePlayer.obj | debug, object-file gap fill, medium
+// pdb params: apFileName, abPreloadBink
+// pdb locals: bplaying, tempMemContext
 unsigned char FUN_00ec2490_Class::BGSMoviePlayer_PlayBackground(int value, unsigned char option)
 {
     Scope2490 scope;
-    PauseMovie();
+    MoviePlayer_Pause();
     if (hasCached && cached)
     {
         movie = cached;
@@ -773,10 +777,13 @@ struct SpawnedObject
 
 // @fnv 0x00ec2ca0
 // src: COMMUNITY 0x00ec2ca0
-int __stdcall MoviePlayer_MovieLoadingThread(int a1)
+// pdb: MoviePlayer::MovieLoadingThread | MoviePlayer.obj | debug, upstream name already matches, high
+// pdb params: apFileName
+// pdb locals: pmovie
+int __stdcall MoviePlayer_MovieLoadingThread(int apFileName)
 {
     SpawnedObject* obj = new SpawnedObject();
-    obj->FUN_00ec0ac0(a1, 1, 1, 1);
+    obj->FUN_00ec0ac0(apFileName, 1, 1, 1);
     reinterpret_cast<FUN_00ec2d40_class*>(DAT_0126fac4)->SetValueAndReset((int)obj);
     return 0;
 }
@@ -867,7 +874,7 @@ struct MoviePlayerA
     int unk38;
     bool unk3c;
 
-    void MoviePlayer_Play(const char* name, bool first, int a, int b, bool c, bool d, int e, bool f, bool g);
+    void MoviePlayer_Play(const char* apFileName, bool abAllowInterruption, int abSkipWarning, int abLoop, bool abPreloadBink, bool abLetterBoxed, int abAlreadyOpened, bool abMuteGameAudio, bool abPauseGameMusic);
 // src: COMMUNITY 0x00ec1a00
     void MoviePlayer_SignalBinkOpen()
     {
@@ -876,21 +883,24 @@ struct MoviePlayerA
         FUN_00fdf1c0(semaphore);
         unk3c = true;
     }
-    void MoviePlayer_PlaySequence(const char* list);
+    void MoviePlayer_PlaySequence(const char* apString);
 };
 
 // @fnv 0x00ec2760
 // src: XBOX_PDB 0x00ec2760
-void MoviePlayerA::MoviePlayer_PlaySequence(const char* list)
+// pdb: MoviePlayer::PlaySequence | MoviePlayer.obj | retail, upstream name already matches, high
+// pdb params: apString
+// pdb locals: pstring, pfilename, tempMemContext, ballowBinkSkipping, pextension
+void MoviePlayerA::MoviePlayer_PlaySequence(const char* apString)
 {
     char* ext2;
     int tidTmp3 = g_tlsAllocTag;
     ScopedAllocTag tag(tidTmp3);
     Lock();
     unsigned int size;
-    size = _strlen(list) + 1;
+    size = _strlen(apString) + 1;
     char* buf2 = (char*)g_movieMem.Allocate(size);
-    _strcpy(buf2, list);
+    _strcpy(buf2, apString);
     char* tok_2 = MovieStrtok(buf2, g_movieDelims);
     bool first = true;
     unk3c = 0;
@@ -1183,6 +1193,9 @@ struct ScopedAllocContext
 
 // @fnv 0x00ec1ff0
 // src: GUESS 0x00ec1ff0 (confidence: low)
+// pdb: BinkAlloc | MoviePlayer.obj | debug, object-file gap fill, medium
+// pdb params: num_bytes
+// pdb locals: tempMemContext
 void* __stdcall Runtime_AllocateStorage_00ec1ff0(unsigned int size)
 {
     ScopedAllocContext ctx(0x14);
@@ -1201,12 +1214,12 @@ inline void SetMemContextEC2200(unsigned int m_uiGeometryShaderFlags)
 }
 inline AutoMemContext::AutoMemContext(int context)
 {
-    m_eMemoryContext = (MEM_CONTEXT)GetMemContextEC2200();
+    iOldMemContext = (MEM_CONTEXT)GetMemContextEC2200();
     SetMemContextEC2200(context);
 }
 inline AutoMemContext::~AutoMemContext()
 {
-    SetMemContextEC2200(m_eMemoryContext);
+    SetMemContextEC2200(iOldMemContext);
 }
 class PlaybackFileEC2200
 {
@@ -1245,6 +1258,9 @@ class PlaybackEC2200
 
 // @fnv 0x00ec2200
 // src: COMMUNITY 0x00ec2200
+// pdb: MoviePlayer::Open | MoviePlayer.obj | debug, object-file gap fill, medium
+// pdb params: apFileName, abSkipWarning, abPreloadBink, abForcePreload
+// pdb locals: tempMemContext, bresult
 bool PlaybackEC2200::MoviePlayer_MovieLoadingThreadWithSettings(const char* pcName, bool bA, bool bB, bool bC)
 {
     AutoMemContext kContext(20);
@@ -1290,7 +1306,7 @@ class BSMovieJob
         return g_memoryManager.Allocate(uiSize);
     }
     static void operator delete(void* pv);
-    bool Movie_Play(void* pFile, bool a, bool b, bool c, bool d, bool e, bool f, bool g, float fScale);
+    bool Movie_Play(void* apFileName, bool abAllowInterruption, bool abSkipWarning, bool abLoop, bool abPreloadBink, bool abLetterBoxed, bool abMuteGameAudio, bool abPauseGameMusic, float afTimeBeforeMovieSkippable);
 };
 
 class BSMovieThread
@@ -1303,19 +1319,22 @@ class BSMovieThread
     bool m_bPending;
     int unk1c, unk20, unk24;
     float m_fScale;
-    void PauseMovie();
+    void MoviePlayer_Pause();
     void MoviePlayer_Stop();
-    bool MoviePlayer_Play(void* pFile, bool a, bool b, bool c, bool d, bool e, bool bReuse, bool f, bool g);
+    bool MoviePlayer_Play(void* apFileName, bool abAllowInterruption, bool abSkipWarning, bool abLoop, bool abPreloadBink, bool abLetterBoxed, bool abAlreadyOpened, bool abMuteGameAudio, bool abPauseGameMusic);
 };
 
 // @fnv 0x00ec2320
 // src: COMMUNITY 0x00ec2320
-bool BSMovieThread::MoviePlayer_Play(void* pFile, bool a, bool b, bool c, bool d, bool e, bool bReuse, bool f, bool g)
+// pdb: MoviePlayer::Play | MoviePlayer.obj | retail, upstream name already matches, high
+// pdb params: apFileName, abAllowInterruption, abSkipWarning, abLoop, abPreloadBink, abLetterBoxed, abAlreadyOpened, abMuteGameAudio, abPauseGameMusic
+// pdb locals: bfinishedPlaying, tempMemContext
+bool BSMovieThread::MoviePlayer_Play(void* apFileName, bool abAllowInterruption, bool abSkipWarning, bool abLoop, bool abPreloadBink, bool abLetterBoxed, bool abAlreadyOpened, bool abMuteGameAudio, bool abPauseGameMusic)
 {
     MemContextGuard kGuard(20);
-    if (!bReuse)
+    if (!abAlreadyOpened)
     {
-        PauseMovie();
+        MoviePlayer_Pause();
         if (m_bPending && m_pkSaved)
         {
             m_pkCurrent = m_pkSaved;
@@ -1327,7 +1346,7 @@ bool BSMovieThread::MoviePlayer_Play(void* pFile, bool a, bool b, bool c, bool d
             m_pkCurrent = new BSMovieJob;
         }
     }
-    bool bResult = m_pkCurrent->Movie_Play(pFile, a, b, c, d, e, f, g, m_fScale);
+    bool bResult = m_pkCurrent->Movie_Play(apFileName, abAllowInterruption, abSkipWarning, abLoop, abPreloadBink, abLetterBoxed, abMuteGameAudio, abPauseGameMusic, m_fScale);
     MoviePlayer_Stop();
     return bResult;
 }
@@ -1548,7 +1567,7 @@ struct EC1060Target
     {
         return unk20 != 0;
     }
-    unsigned char __thiscall Update(unsigned char a, unsigned char b, int c);
+    unsigned char __thiscall Movie_Update(unsigned char abAllowInterruption, unsigned char b, int abLetterBoxed);
 };
 
 struct EC2650Owner
@@ -1557,17 +1576,20 @@ struct EC2650Owner
     int unk04;
     int unk08;
     EC1060Target* unk0c;
-    unsigned char MoviePlayer_Update(unsigned char a, unsigned char b);
+    unsigned char MoviePlayer_Update(unsigned char abAllowInterruption, unsigned char abLoop);
 };
 
 // @fnv 0x00ec2650
 // src: COMMUNITY 0x00ec2650
-unsigned char EC2650Owner::MoviePlayer_Update(unsigned char a, unsigned char b)
+// pdb: MoviePlayer::Update | MoviePlayer.obj | debug, upstream name already matches, high
+// pdb params: abAllowInterruption, abLoop
+// pdb locals: tempMemContext
+unsigned char EC2650Owner::MoviePlayer_Update(unsigned char abAllowInterruption, unsigned char abLoop)
 {
     HeapZoneGuard guard(0x14);
     if (unk0c && unk0c->IsReady())
     {
-        return unk0c->Update(a, b, 0);
+        return unk0c->Movie_Update(abAllowInterruption, abLoop, 0);
     }
     return 0;
 }
@@ -1616,6 +1638,8 @@ class NiTStringMapCopy : public NiTStringMapMid
     virtual ~NiTStringMapCopy();
 };
 // @fnv 0x00ec1a90
+// pdb: NiTStringTemplateMap<NiTMap<char const *,char *>,char *>::~NiTStringTemplateMap<NiTMap<char const *,char *>,char *> | MoviePlayer_Xenon.obj | retail, call graph, medium
+// pdb locals: i, pkItem, pkSave
 NiTStringMapCopy::~NiTStringMapCopy()
 {
     if (m_bCopy)
@@ -1673,6 +1697,7 @@ struct BaseE40
 struct FUN_00ec1e40 : BaseE40
 {
 // @fnv 0x00ec1e40
+// pdb: NiTMap<char const *,char *>::`scalar deleting destructor' | MoviePlayer_Xenon.obj | retail, vtable slot, high
     virtual ~FUN_00ec1e40()
     {
         FUN_00438af0();
@@ -1778,6 +1803,7 @@ class BSMoviePlayer
     virtual ~BSMoviePlayer();
 };
 // @fnv 0x00ec15e0
+// pdb: MoviePlayer::~MoviePlayer | MoviePlayer_Xenon.obj | retail, call graph, medium
 BSMoviePlayer::~BSMoviePlayer()
 {
     while (unk0c != 0)
@@ -1882,6 +1908,7 @@ class BSMoviePlayer
     BSMoviePlayer();
 };
 // @fnv 0x00ec20c0
+// pdb: MoviePlayer::MoviePlayer | MoviePlayer.obj | debug, call graph, high
 BSMoviePlayer::BSMoviePlayer()
     : unk04(0), unk08(0), unk0c(0), unk10(0), unk14(0), unk18(0), unk19(0), unk1c(0), unk20(0), unk21(0), unk22(0),
       unk23(1), unk24(1), unk2c(0)
@@ -2115,10 +2142,10 @@ struct S0EPlaybackFile
     bool m_bBusy;
 
     bool InitPlayback(const char* pcName, bool bQuiet, bool bLoop, bool bLooping);
-    bool Update(bool bWait, bool b2, bool b3);
+    bool Movie_Update(bool abAllowInterruption, bool b2, bool abLetterBoxed);
     void Movie_Stop();
-    unsigned char Movie_Play(const char* pcName, bool b1, bool b2, bool b3, bool b4, bool b5, bool b6, bool b7,
-                               float afFinalFloat);
+    unsigned char Movie_Play(const char* apFileName, bool abAllowInterruption, bool abSkipWarning, bool abLoop, bool abPreloadBink, bool abLetterBoxed, bool abMuteGameAudio, bool abPauseGameMusic,
+                               float afTimeBeforeMovieSkippable);
 };
 
 __forceinline S0EBufferData* DynamicCastBufferData(S0EObject* pkObject)
@@ -2130,8 +2157,11 @@ __forceinline S0EBufferData* DynamicCastBufferData(S0EObject* pkObject)
 
 // @fnv 0x00ec0e00
 // src: COMMUNITY 0x00ec0e00
-unsigned char S0EPlaybackFile::Movie_Play(const char* pcName, bool b1, bool b2, bool b3, bool b4, bool b5, bool b6,
-                                            bool b7, float afFinalFloat)
+// pdb: Movie::Play | MoviePlayer_Xenon.obj | retail, upstream name already matches, high
+// pdb params: apFileName, abAllowInterruption, abSkipWarning, abLoop, abPreloadBink, abLetterBoxed, abMuteGameAudio, abPauseGameMusic, afTimeBeforeMovieSkippable
+// pdb locals: tempAutoPause, uiStartTime, bfinishedPlaying, bAllowSkip, uiCurrentTime
+unsigned char S0EPlaybackFile::Movie_Play(const char* apFileName, bool abAllowInterruption, bool abSkipWarning, bool abLoop, bool abPreloadBink, bool abLetterBoxed, bool abMuteGameAudio,
+                                            bool abPauseGameMusic, float afTimeBeforeMovieSkippable)
 {
     S0EBufferData* pkCast2;
     bool bWait;
@@ -2141,16 +2171,16 @@ unsigned char S0EPlaybackFile::Movie_Play(const char* pcName, bool b1, bool b2, 
 
     m_iFadeIndex = 1;
     m_bBusy = true;
-    if (!InitPlayback(pcName, b2, b4, b5))
+    if (!InitPlayback(apFileName, abSkipWarning, abPreloadBink, abLetterBoxed))
     {
         m_bBusy = false;
         return false;
     }
     m_bBusy = false;
 
-    if (b6)
+    if (abMuteGameAudio)
         DAT_0126fac4->BeginMoviePlayback();
-    if (b7)
+    if (abPauseGameMusic)
         DAT_0126fac4->vf03();
 
     pkCast2 =
@@ -2158,28 +2188,28 @@ unsigned char S0EPlaybackFile::Movie_Play(const char* pcName, bool b1, bool b2, 
     if (pkCast2)
         m_pkDevice->SetRenderTarget(0, pkCast2->GetSurface());
 
-    bWait = b1;
-    if (afFinalFloat != DAT_01012060)
+    bWait = abAllowInterruption;
+    if (afTimeBeforeMovieSkippable != DAT_01012060)
         bWait = false;
     uiStart = GetTickCount();
-    while (Update(bWait, b3, b5))
+    while (Movie_Update(bWait, abLoop, abLetterBoxed))
     {
-        if (afFinalFloat != DAT_01012060)
+        if (afTimeBeforeMovieSkippable != DAT_01012060)
         {
             uiNow3 = GetTickCount();
-            if (uiNow3 - uiStart > (unsigned int)(afFinalFloat * 1000.0))
+            if (uiNow3 - uiStart > (unsigned int)(afTimeBeforeMovieSkippable * 1000.0))
             {
                 bWait = true;
-                afFinalFloat = 0.0f;
+                afTimeBeforeMovieSkippable = 0.0f;
             }
         }
     }
 
     bRet = m_uiFrame >= m_pkBink->m_uiFrames;
     Movie_Stop();
-    if (b6)
+    if (abMuteGameAudio)
         DAT_0126fac4->EndMoviePlayback();
-    if (b7)
+    if (abPauseGameMusic)
         DAT_0126fac4->vf04();
     return bRet;
 }

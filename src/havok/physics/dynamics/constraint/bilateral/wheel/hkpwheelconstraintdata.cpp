@@ -44,11 +44,11 @@ void __stdcall hkpWheelConstraintData_getRuntimeInfo(char a1, int* a2)
 }
 
 // The shared wheel header lacks these methods; free fastcall functions reserve EDX and preserve ECX=this.
-void* __cdecl hkpConstraintData_getConstraintInfoUtil(void* a, int b, int c);
+void* __cdecl hkpConstraintData_getConstraintInfoUtil(void* a, int b, int infoOut);
 // @fnv 0x00d4e560
 void* __fastcall PopulateWheelInfo(hkpWheelConstraintData* self, void*, int aiIndex)
 {
-    return hkpConstraintData_getConstraintInfoUtil(&self->m_kBridgeAtoms, 0x124, aiIndex);
+    return hkpConstraintData_getConstraintInfoUtil(&self->m_atoms, 0x124, aiIndex);
 }
 
 // @fnv 0x00d4e5b0
@@ -191,7 +191,7 @@ void __fastcall UpdateWheelAtoms(hkpWheelConstraintData* self, void*, const hkTr
     reinterpret_cast<unsigned int*>(&steeringN)[3] = reinterpret_cast<const unsigned int*>(&steeringAxis)[3];
     hkNormalize3(steeringN);
 
-    WheelAtomFields& atoms = *reinterpret_cast<WheelAtomFields*>(&self->m_kBridgeAtoms);
+    WheelAtomFields& atoms = *reinterpret_cast<WheelAtomFields*>(&self->m_atoms);
 
     hkSetTransformedInversePos(atoms.m_kBodyALocalFrame.position, bodyATransform, pivot);
     hkSetTransformedInversePos(atoms.m_kBodyBLocalFrame.position, bodyBTransform, pivot);
@@ -208,10 +208,10 @@ void __fastcall UpdateWheelAtoms(hkpWheelConstraintData* self, void*, const hkTr
         hkRotation& rotB = atoms.m_kRotationB;
         hkSetRotatedInverseDir(rotA.m_kColumn0, bodyATransform, axleN);
         hkSetRotatedInverseDir(rotB.m_kColumn0, bodyBTransform, axleN);
-        simd(self->m_kAxleDirectionInBodyB) = simd(rotB.m_kColumn0);
+        simd(self->m_initialAxleInB) = simd(rotB.m_kColumn0);
         hkSetRotatedInverseDir(rotA.m_kColumn1, bodyATransform, steeringN);
         hkSetRotatedInverseDir(rotB.m_kColumn1, bodyBTransform, steeringN);
-        simd(self->m_kSteeringDirectionInBodyB) = simd(rotB.m_kColumn1);
+        simd(self->m_initialSteeringAxisInB) = simd(rotB.m_kColumn1);
         hkSetCross(rotA.m_kColumn2, rotA.m_kColumn0, rotA.m_kColumn1);
         hkSetCrossDirect(rotB.m_kColumn2, rotB.m_kColumn0, rotB.m_kColumn1);
     }
@@ -437,7 +437,7 @@ void __fastcall SetWheelInBodySpace(hkpWheelConstraintData* self, void*, const h
                                          const hkVector4& axleB, const hkVector4& suspensionB,
                                          const hkVector4& steeringB)
 {
-    WheelAtomFields& atoms = *reinterpret_cast<WheelAtomFields*>(&self->m_kBridgeAtoms);
+    WheelAtomFields& atoms = *reinterpret_cast<WheelAtomFields*>(&self->m_atoms);
 
     hkSetVec(atoms.m_kBodyALocalFrame.position, pivotA);
     hkSetVec(atoms.m_kBodyBLocalFrame.position, pivotB);
@@ -459,14 +459,14 @@ void __fastcall SetWheelInBodySpace(hkpWheelConstraintData* self, void*, const h
     hkSetVec(rotationColumn(atoms.m_kRotationB, 0), axleB);
     hkNormalize3(axleBn);
     simd(atoms.m_kRotationB.m_kColumn0) = simd(axleBn);
-    simd(self->m_kAxleDirectionInBodyB) = simd(axleBn);
+    simd(self->m_initialAxleInB) = simd(axleBn);
 
     hkVector4& baseIn = atoms.m_kRotationA.m_kColumn0;
     perpI2(baseIn, atoms.m_kRotationA.m_kColumn1);
     hkNormalize3(atoms.m_kRotationA.m_kColumn1);
     hkSetVec(atoms.m_kRotationB.m_kColumn1, steeringB);
     hkNormalize3(atoms.m_kRotationB.m_kColumn1);
-    simd(self->m_kSteeringDirectionInBodyB) =
+    simd(self->m_initialSteeringAxisInB) =
         simd(atoms.m_kRotationB.m_kColumn1);
 
     hkSetCrossF(atoms.m_kRotationA.m_kColumn2, atoms.m_kRotationA.m_kColumn0, atoms.m_kRotationA.m_kColumn1);
@@ -490,13 +490,14 @@ static __forceinline void InitializeWheelRotation(hkRotation& r)
 
 // The shared wheel and atoms headers lack constructor declarations, so initialize the shared storage here.
 // @fnv 0x00d4edc0
+// pdb: hkpWheelConstraintData::hkpWheelConstraintData | hkpWheelConstraintData.obj | retail, call graph (shared callers), medium
 hkpWheelConstraintData* __fastcall ConstructWheel(hkpWheelConstraintData* self, void*)
 {
-    self->m_sReferenceCount = 1;
-    self->m_ulUserData = 0;
+    self->m_referenceCount = 1;
+    self->m_userData = 0;
     *reinterpret_cast<int**>(self) = &DAT_010d0a64;
     typedef void (__thiscall *AtomsConstructor)(hkpWheelConstraintDataAtoms*);
-    reinterpret_cast<AtomsConstructor>(ConstructWheelAtoms)(&self->m_kBridgeAtoms);
+    reinterpret_cast<AtomsConstructor>(ConstructWheelAtoms)(&self->m_atoms);
 
     char* atoms = reinterpret_cast<char*>(self);
     *reinterpret_cast<float*>(atoms + 0xa4) = -0.5f;
@@ -525,9 +526,11 @@ typedef hkBool (hkTransform::*MemFn)(float tol);
 
 // Returns true if IsOrthonormal passes with 0.001f on both body frames and the two rotation-based transforms and m_suspensionMin <= m_suspensionMax.
 // @fnv 0x00d4eec0
+// pdb: hkpWheelConstraintData::isValid | hkpWheelConstraintData.obj | retail, vtable slot, high
+// pdb locals: steeringTransformA, steeringTransformB
 hkBool* __fastcall IsWheelValid(hkpWheelConstraintData* self, void*, hkBool* result)
 {
-    const char* atoms = self->m_kBridgeAtoms.pad0;
+    const char* atoms = self->m_atoms.pad0;
     const hkTransform& bodyAFrame = *reinterpret_cast<const hkTransform*>(atoms + 0x10);
     const hkTransform& bodyBFrame = *reinterpret_cast<const hkTransform*>(atoms + 0x50);
     const hkRotation& rotationA = *reinterpret_cast<const hkRotation*>(atoms + 0xc0);

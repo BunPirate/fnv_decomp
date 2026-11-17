@@ -63,6 +63,10 @@ class A64330Obj
 
 // @fnv 0x00a64330
 // src: XBOX_PDB 0x00a64330
+// pdb: NiTArray<CombatGroup *,NiTMallocInterface<CombatGroup *> >::AddFirstEmpty | CombatManager.obj | retail, call graph, low
+// pdb note: debug build links it to NiUnionBV::AddBoundingVolume
+// pdb params: element
+// pdb locals: i
 unsigned int A64330Obj::NiTArray_void_cdecl_NiStream_NiObject_NiTMallocInterface_void_cdecl_NiStream_NiObject_AddFirstEmpty(int* const& value)
 {
     int* element = value;
@@ -96,10 +100,13 @@ inline void* operator new(unsigned int, void* p) throw()
 
 // @fnv 0x00e9efe0
 // src: XBOX_PDB 0x00e9efe0
-NiUnionBV* __cdecl NiUnionBV_CreateFromStream(unsigned int a1)
+// pdb: NiUnionBV::CreateFromStream | NiUnionBV.obj | retail, upstream name already matches, high
+// pdb params: stream
+// pdb locals: pkABV
+NiUnionBV* __cdecl NiUnionBV_CreateFromStream(unsigned int stream)
 {
     NiUnionBV* p = new (g_memoryManager.Allocate(sizeof(NiUnionBV))) NiUnionBV;
-    p->LoadBinary(*(NiStream*)a1);
+    p->LoadBinary(*(NiStream*)stream);
     return p;
 }
 
@@ -113,6 +120,9 @@ struct UnionLoadBase
 };
 unsigned int NiBoundingVolume_CreateFromStream(void*);
 // @fnv 0x00e9f020
+// pdb: NiUnionBV::LoadBinary | NiUnionBV.obj | retail, upstream name already matches, high
+// pdb params: stream
+// pdb locals: uiSize, i, pkABV
 // This loading helper is not declared by the shared class.
 // src: GAMEBRYO_SRC 0x00e9f020
 void __fastcall NiUnionBV_LoadBinary(NiUnionBV* self, void*, char* stream)
@@ -130,13 +140,13 @@ void __fastcall NiUnionBV_LoadBinary(NiUnionBV* self, void*, char* stream)
         unsigned int item = NiBoundingVolume_CreateFromStream(stream);
         if (item)
         {
-            unsigned int max = self->m_kBoundingVolumes.m_usSize;
+            unsigned int max = self->m_kBoundingVolume.m_usSize;
             for (unsigned int j = 0; j < max; ++j)
             {
-                if (item == (unsigned int)self->m_kBoundingVolumes.m_pBase[j])
+                if (item == (unsigned int)self->m_kBoundingVolume.m_pBase[j])
                     goto found;
             }
-            ((Items*)&self->m_kBoundingVolumes)->NiTArray_void_cdecl_NiStream_NiObject_NiTMallocInterface_void_cdecl_NiStream_NiObject_AddFirstEmpty(&item);
+            ((Items*)&self->m_kBoundingVolume)->NiTArray_void_cdecl_NiStream_NiObject_NiTMallocInterface_void_cdecl_NiStream_NiObject_AddFirstEmpty(&item);
         found:;
         }
     }
@@ -159,20 +169,23 @@ struct E9E8C0Item
 
 inline E9E8C0Item*& GetComparisonItem(NiUnionBV* volume, unsigned int index)
 {
-    return ((E9E8C0Item**)volume->m_kBoundingVolumes.m_pBase)[index];
+    return ((E9E8C0Item**)volume->m_kBoundingVolume.m_pBase)[index];
 }
 
 // The shared header has no bool comparison overload for this entry point.
 // Keep its calling convention in a free helper, using the shared object layout.
 // @fnv 0x00e9e8c0
 // src: GUESS 0x00e9e8c0 (confidence: low)
+// pdb: NiUnionBV::operator== | NiUnionBV.obj | retail, object-file gap fill, high
+// pdb params: kABV
+// pdb locals: kUnionABV, i
 bool __fastcall NiUnionBV_ProcessEntries_00e9e8c0(NiUnionBV* self, void*, NiUnionBV* pkOther)
 {
     if (pkOther->F3() != 4)
         return false;
-    if (self->m_kBoundingVolumes.m_usSize != pkOther->m_kBoundingVolumes.m_usSize)
+    if (self->m_kBoundingVolume.m_usSize != pkOther->m_kBoundingVolume.m_usSize)
         return false;
-    for (unsigned int ui = 0; ui < self->m_kBoundingVolumes.m_usSize; ui++)
+    for (unsigned int ui = 0; ui < self->m_kBoundingVolume.m_usSize; ui++)
     {
         if (GetComparisonItem(self, ui)->IsDifferent(GetComparisonItem(pkOther, ui)))
             return false;
@@ -181,14 +194,17 @@ bool __fastcall NiUnionBV_ProcessEntries_00e9e8c0(NiUnionBV* self, void*, NiUnio
 }
 
 // @fnv 0x00e9e930
-void NiUnionBV::v5(NiBoundingVolume* a1, void* a2)
+// pdb: NiUnionBV::UpdateWorldData | NiUnionBV.obj | retail, object-file gap fill, high
+// pdb params: kModelABV, kWorld
+// pdb locals: kUnionABV, i
+void NiUnionBV::v5(NiBoundingVolume* kModelABV, void* kWorld)
 {
-    NiUnionBV* other = (NiUnionBV*)a1;
-    for (unsigned int i = 0; i < m_kBoundingVolumes.m_usSize; i++)
+    NiUnionBV* other = (NiUnionBV*)kModelABV;
+    for (unsigned int i = 0; i < m_kBoundingVolume.m_usSize; i++)
     {
-        NiBoundingVolume* obj = m_kBoundingVolumes.m_pBase[i];
-        NiBoundingVolume* arg = other->m_kBoundingVolumes.m_pBase[i];
-        obj->v5(arg, a2);
+        NiBoundingVolume* obj = m_kBoundingVolume.m_pBase[i];
+        NiBoundingVolume* arg = other->m_kBoundingVolume.m_pBase[i];
+        obj->v5(arg, kWorld);
     }
 }
 
@@ -209,18 +225,21 @@ template <class T> __forceinline void SerializeValue(NiBinaryStream& kStream, co
 }
 
 // @fnv 0x00e9ed50
-void NiUnionBV::SaveBinary(NiStream& kStream)
+// pdb: NiUnionBV::SaveBinary | NiUnionBV.obj | retail, upstream name already matches, high
+// pdb params: stream
+// pdb locals: i, pkABV
+void NiUnionBV::SaveBinary(NiStream& stream)
 {
-    NiBoundingVolume::SaveBinary(kStream);
+    NiBoundingVolume::SaveBinary(stream);
 
-    unsigned int ItemUpdateArray = m_kBoundingVolumes.m_usSize;
-    SerializeValue(**(NiBinaryStream**)((char*)&kStream + 0x250), ItemUpdateArray);
+    unsigned int ItemUpdateArray = m_kBoundingVolume.m_usSize;
+    SerializeValue(**(NiBinaryStream**)((char*)&stream + 0x250), ItemUpdateArray);
 
-    for (unsigned int i = 0; i < m_kBoundingVolumes.m_usSize; i++)
+    for (unsigned int i = 0; i < m_kBoundingVolume.m_usSize; i++)
     {
-        NiBoundingVolume* pkObj = m_kBoundingVolumes.m_pBase[i];
+        NiBoundingVolume* pkObj = m_kBoundingVolume.m_pBase[i];
         if (pkObj)
-            pkObj->SaveBinary(kStream);
+            pkObj->SaveBinary(stream);
     }
 }
 
@@ -249,6 +268,9 @@ inline NiBoundingVolume* GetBoundingVolume(const NiTPrimitiveArray<NiBoundingVol
 
 // @fnv 0x00e9f0b0
 // src: GAMEBRYO_SRC 0x00e9f0b0
+// pdb: NiUnionBV::AddViewerStrings | NiUnionBV.obj | retail, string-set bridge, high
+// pdb params: pcPrefix, pkStrings
+// pdb locals: pString, uiLen, i, pkABV, pChildPrefix
 void NiUnionBV::AddViewerStrings_00e9f0b0(char* pcPrefix, NiTPrimitiveArray<char*>* pkStrings)
 {
     u32 uiLen = strlen(pcPrefix) + 12;
@@ -256,11 +278,11 @@ void NiUnionBV::AddViewerStrings_00e9f0b0(char* pcPrefix, NiTPrimitiveArray<char
     FUN_00a305b0(pcString, uiLen, "%s = UNION_BV", pcPrefix);
     AddPrimitive(*pkStrings, pcString);
 
-    for (u32 i = 0; i < m_kBoundingVolumes.m_usSize; i++)
+    for (u32 i = 0; i < m_kBoundingVolume.m_usSize; i++)
     {
         char* pcChild = (char*)_NiMalloc_00aa1070(13);
         FUN_00a305b0(pcChild, 13, "   child %i", i);
-        GetBoundingVolume(m_kBoundingVolumes, i)->AddViewerStrings(pcChild, pkStrings);
+        GetBoundingVolume(m_kBoundingVolume, i)->AddViewerStrings(pcChild, pkStrings);
     }
 }
 
@@ -288,5 +310,6 @@ inline NiTPrimitiveArray<T>::NiTPrimitiveArray(unsigned int uiMaxSize, unsigned 
 {}
 
 // @fnv 0x00e9edd0
-NiUnionBV::NiUnionBV() throw() : m_kBoundingVolumes(2, 1), m_pkEntry(0)
+// pdb: NiUnionBV::NiUnionBV | NiUnionBV.obj | retail, upstream name already matches, high
+NiUnionBV::NiUnionBV() throw() : m_kBoundingVolume(2, 1), m_uiWhichObjectIntersect(0)
 {}

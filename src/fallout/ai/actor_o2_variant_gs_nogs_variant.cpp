@@ -77,7 +77,7 @@ struct MyNode
     char _pad2[2];
     unsigned short count;
 };
-MyNode* __cdecl bhkUtilFunctions_FindNextCollisionObject(MyNode* p);
+MyNode* __cdecl bhkUtilFunctions_FindNextCollisionObject(MyNode* apObj);
 struct MyRef
 {
     virtual ~MyRef();
@@ -164,7 +164,7 @@ struct Target
 };
 struct FUN_00c6ffc0_Class
 {
-    Target* bhkCharacterController_GetCollisionDebugNode();
+    Target* bhkCharacterController_FindDisplayGeometry();
     void bhkCharacterController_RemoveCollisionDebug();
 };
 extern char* EmptyFS;
@@ -233,13 +233,13 @@ struct RArr
 struct RCtx;
 RObj* __cdecl BSUtilities_GetObjectByName_00c4b470(RCtx*, RKey*, int);
 void __cdecl CopyPoseFunctor(RCtx* ctx, RObj* obj, RArr* arr);
-void __cdecl SetFlagRecursive(int, void*);
+void __cdecl bhkUtilFunctions_SetCOUseVel(int, void*);
 void __cdecl CopyPoseFunctor(void*, void*, void*);
 inline unsigned char GetFlag6(unsigned short w)
 {
     return (unsigned char)(w >> 6) & 1;
 }
-void __cdecl bhkRagdollController_CopyPoseTo3D(NiNode* param_1, void* param_2, void* param_3, char* param_4, unsigned int* param_5);
+void __cdecl bhkRagdollController_CopyPoseTo3D(NiNode* apSkeleton, void* apPose, void* arPoseA, char* arbPrevUseVel, unsigned int* arePrevMotion);
 void NI2HK_00c74dd0(void*, NiTransform*);
 extern bool DAT_01267c28;
 extern bool DAT_01267c34;
@@ -330,7 +330,7 @@ struct FUN_00c7d890_cls
     void ProcessEntries_00c7d890();
 };
 void* __cdecl FUN_00ec7230(char*, char const*, unsigned int);
-void __stdcall BSSimpleArray_bhkUtilFunctions_AVLevel_1024_CopyItems(char* dst, char* src, unsigned int count);
+void __stdcall BSSimpleArray_DetailedActorPathHandler_ActorAvoidanceData_1024__MoveItems(char* apDestAddr, char* apSrcAddr, unsigned int aiCount);
 void __cdecl hkaKeyFrameHierarchyUtility_initialize(void*, unsigned int);
 struct FUN_00cdb3e0_cls
 {
@@ -350,9 +350,9 @@ struct S_c6a200_Ev
     int unk10, unk14, unk18;
 };
 extern void* DAT_011afecc;
-S_c6a200_Info* __cdecl GetExtraDataChecked(void* obj);
-void __cdecl bhkWorld_DoObjectRec(void* obj, S_c6a200_Ev* ev, void* extra);
-bool __cdecl bhkWorld_SetDisabled(void* obj, unsigned char a1, unsigned char a2, unsigned char a3);
+S_c6a200_Info* __cdecl GetExtraDataChecked(void* apObject);
+void __cdecl bhkWorld_DoObjectRec(void* apObject, S_c6a200_Ev* arData, void* apFunc);
+bool __cdecl bhkWorld_SetDisabled(void* apObject, unsigned char abDisabled, unsigned char abRecurse, unsigned char abForce);
 struct FlagController
 {
     void bhkRagdollController_SetRagdollFeedbackActive(int);
@@ -509,7 +509,7 @@ struct MiddleObject : BaseObject
 struct FUN_00c7f9e0 : MiddleObject
 {
     FUN_00c7f9e0(void* context);
-    void SpawnAndAttach(void* context);
+    void SpawnAndAttach(void* arInfo);
 };
 extern __declspec(thread) int g_iCB9810AllocTag;
 struct BCB9810AllocTagScope
@@ -543,8 +543,8 @@ struct BCB9810Entry
 class BCB9810Registry
 {
   public:
-    void AppendTailPair(void* pvOwner, BCB9810Node* pkNode);
-    void bhkFilteredCdBodyCollector_addCdBodyPair(void* pvOwner, BCB9810Node* pkNode);
+    void AppendTailPair(void* bodyA, BCB9810Node* bodyB);
+    void bhkFilteredCdBodyCollector_addCdBodyPair(void* arBodyA, BCB9810Node* arBodyB);
 
     int unk00;
     int unk04;
@@ -664,7 +664,7 @@ struct S
     virtual void v38();
     virtual void SetMode(int iMode);
     void bhkRigidBody_SetLinearVelocity_00561690(int);
-    void bhkRigidBody_SetAngularVelocity_005617c0(float* pf);
+    void bhkRigidBody_SetAngularVelocity_005617c0(float* arVel);
 };
 struct Cast_c9b
 {
@@ -688,7 +688,7 @@ class Obj_c9b
     unsigned short m_usMax;
     unsigned short m_usElementCount;
 };
-void __cdecl ApplyCollisionEffect(Obj_c9b* pkObj, float f);
+void __cdecl bhkBlendController_DoGetUpRecursive(Obj_c9b* apObject, float afTime);
 __forceinline bool IsNode_c9b(Obj_c9b* pkObj)
 {
     RTTI_c9b* pkRTTI = pkObj->GetRTTI();
@@ -700,8 +700,8 @@ __forceinline bool IsNode_c9b(Obj_c9b* pkObj)
     }
     return false;
 }
-void __cdecl bhkBlendController_DoGetUp(Obj_c9b* pkObj, float f);
-void __stdcall BSSimpleArray_bhkUtilFunctions_AVLevel_1024_CopyItems(char* dst, char* src, unsigned int count);
+void __cdecl bhkBlendController_DoGetUp(Obj_c9b* apObject, float afTime);
+void __stdcall BSSimpleArray_DetailedActorPathHandler_ActorAvoidanceData_1024__MoveItems(char* apDestAddr, char* apSrcAddr, unsigned int aiCount);
 class FUN_00c7f970_cls
 {
   public:
@@ -746,10 +746,10 @@ struct FUN_00cb9650_Object
     virtual NiNode* vf0C();
 
     void* NiObjectNET_GetController(const void* typeInfo);
-    void NiObjectNET_RemoveController(int value);
+    void NiObjectNET_RemoveController(int pkControl);
 };
 extern const char DAT_012683f4[];
-void __cdecl bhkForceController_RemoveForce(FUN_00cb9650_Object* object);
+void __cdecl bhkForceController_RemoveForce(FUN_00cb9650_Object* apObject);
 #include <xmmintrin.h>
 #include "../../../include/MemoryManager.h"
 #include "../../../include/bhkRagdollController.h"
@@ -784,7 +784,7 @@ struct RagController
     {
         return *reinterpret_cast<unsigned char*>(reinterpret_cast<char*>(this) + 0x180);
     }
-    void bhkRagdollController_SetLookIKActive(unsigned char enabled);
+    void bhkRagdollController_SetLookIKActive(unsigned char abActive);
 };
 extern "C" double __cdecl sqrt(double x);
 __int64 __cdecl BSPrecisionTimer_GetTimer();
@@ -1022,7 +1022,7 @@ struct Cls
     bool m_284;
     int m_288;
 
-    void bhkRagdollController_DoPoseMatching(void* a1, void* a2, bool* a3);
+    void bhkRagdollController_DoPoseMatching(void* arWorldFromModel, void* apRagdollDrivePoseLS, bool* arbUseDrivePose);
 };
 extern __m128 g_hkQuadZero;
 struct RagMotion
@@ -1576,7 +1576,7 @@ struct S_Out
 };
 struct S_Inner
 {
-    int bhkWorldObject_GetAVObject(int arg);
+    int bhkWorldObject_GetAVObject(int aiKey);
 };
 struct S_Val
 {
@@ -1620,7 +1620,7 @@ inline S_Elem* GetPhantom(S_Obj* c)
 {
     return c->unk18 == 2 ? (S_Elem*)GetOwner(c) : 0;
 }
-int __cdecl bhkUtilFunctions_GetNiAVObject(S_Obj* p);
+int __cdecl bhkUtilFunctions_GetNiAVObject(S_Obj* apCollidable);
 extern const __m128 DAT_010c71e0;
 struct __declspec(align(16)) MVec4
 {
@@ -1693,7 +1693,7 @@ struct PoseState
     int unk24;
     bool ready;
     void hkaPose_syncModelSpace();
-    void ProcessEntries_00cda4c0();
+    void hkaPose_enforceSkeletonConstraintsModelSpace();
 };
 struct C7C2B0_Pair
 {
@@ -1896,7 +1896,7 @@ struct X48
 };
 struct MapStd
 {
-    void FUN_00e92760(char* key, void** out);
+    void FUN_00e92760(char* key, void** val);
     void FUN_00e91fd0(char* key);
 };
 extern MapStd DAT_011b02f0;
@@ -2116,9 +2116,9 @@ __forceinline void hkVector4::setCross(const hkVector4& v1, const hkVector4& v2)
     m_vComponents = crossValue(v1.m_vComponents, v2.m_vComponents);
 }
 
-__forceinline hkSimdReal hkVector4::dot3(const hkVector4& v) const
+__forceinline hkSimdReal hkVector4::dot3(const hkVector4& x) const
 {
-    __m128 x2 = _mm_mul_ps(m_vComponents, v.m_vComponents);
+    __m128 x2 = _mm_mul_ps(m_vComponents, x.m_vComponents);
     __m128 sum = _mm_add_ss(_mm_shuffle_ps(x2, x2, _MM_SHUFFLE(1, 1, 1, 1)), x2);
     return hkSimdReal(_mm_add_ss(_mm_shuffle_ps(x2, x2, _MM_SHUFFLE(2, 2, 2, 2)), sum));
 }
@@ -2215,16 +2215,18 @@ __forceinline void hkQsTransform::SetMulInverse(const hkQsTransform& a, const hk
 
 // @fnv 0x00cda690
 // src: COMMUNITY 0x00cda690
+// pdb: hkaPose::syncLocalSpace | hkaPose.obj | retail, upstream name already matches, high
+// pdb locals: numBones, assertBuf, ostr
 void hkaPose::syncLocalSpace()
 {
     if (m_bPoseInitialized)
         return;
-    const int numBones = m_pSkeleton->m_kBones.m_iElementCount;
+    const int numBones = m_pSkeleton->m_bones.m_iElementCount;
     for (int boneIdx = 0; boneIdx < numBones; boneIdx++)
     {
         if (m_pBoneFlags.m_data[boneIdx] & F_DIRTY_LOCAL)
         {
-            const short parentIdx = m_pSkeleton->m_kParentIndices.m_data[boneIdx];
+            const short parentIdx = m_pSkeleton->m_parentIndices.m_data[boneIdx];
             const hkQsTransform& modelFromBone = m_pModelPose.m_data[boneIdx];
             if (parentIdx != -1)
             {

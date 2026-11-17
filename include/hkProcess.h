@@ -4,6 +4,7 @@
 
 typedef unsigned char hkUint8;
 
+// pdb: class hkProcess, size 0x18, 5 members
 class hkProcess
 {
 public:
@@ -19,9 +20,9 @@ public:
     virtual void init();
     virtual void step(float frameTimeInMs);
 
-    int unk04;
-    int unk08;
-    int unk0c;
-    int unk10;
-    int unk14;
+    int m_selectable; // src: XBOX_RETAIL_PDB +0x4 (old: unk04)
+    int m_inStream; // src: XBOX_RETAIL_PDB +0x8 (old: unk08)
+    int m_outStream; // src: XBOX_RETAIL_PDB +0xc (old: unk0c)
+    int m_displayHandler; // src: XBOX_RETAIL_PDB +0x10 (old: unk10)
+    int m_processHandler; // src: XBOX_RETAIL_PDB +0x14 (old: unk14)
 };

@@ -29,7 +29,8 @@ typedef void(__cdecl* AIThreadFunction)();
 
 
 
-class AIThreadManager
+// pdb: class AILinearTaskThreadManager, size 0x3c (here 0x8c), 3 members
+class AILinearTaskThreadManager // src: XBOX_RETAIL_PDB 0x008c7290 (first retail link of 3 high-tier links to its methods; old: AIThreadManager)
 {
   public:
     enum AI_THREAD_INDEX
@@ -42,16 +43,18 @@ class AIThreadManager
     unsigned char layoutPadding0[0x30];
     void* threadHandles1[12];
     void* threadHandles2[8];
-    void LaunchWorkerThread(AI_THREAD_INDEX, unsigned int, AIThreadFunction, const char*, BSThread::StackSize);
-    void StartRenderingTaskThread();
-    static void SetThreadingEnabled(bool);
+    void AddThread(AI_THREAD_INDEX, unsigned int, AIThreadFunction, const char*, BSThread::StackSize);
+    void CreateThreads();
+    static void SetMainRendering(bool);
 };
 
 extern "C" int __cdecl sprintf_s(char*, unsigned int, const char*, ...);
 extern "C" unsigned int gPreferredMoveMode;
 
 // @fnv 0x008c7290
-void AIThreadManager::StartRenderingTaskThread()
+// src: XBOX_RETAIL_PDB 0x008c7290
+// pdb: AILinearTaskThreadManager::CreateThreads | AILinearTaskThreadManager.obj | retail, string-set bridge, high
+void AILinearTaskThreadManager::CreateThreads()
 {
     int i = 0;
     int j;
@@ -64,14 +67,14 @@ void AIThreadManager::StartRenderingTaskThread()
 
     if (*reinterpret_cast<int*>(DAT_011c3ea4.Int()) > 2)
     {
-        LaunchWorkerThread(AI_THREAD_1, *reinterpret_cast<int*>(DAT_011dfb34.Int()),
+        AddThread(AI_THREAD_1, *reinterpret_cast<int*>(DAT_011dfb34.Int()),
                            (AIThreadFunction)&fnv_008c7da0::AILinearTaskThreadManager_AIThread1TaskFunc, "AI Linear Task Thread 1", (BSThread::StackSize)0x10000);
-        LaunchWorkerThread(AI_THREAD_2, *reinterpret_cast<int*>(DAT_011dfb18.Int()),
+        AddThread(AI_THREAD_2, *reinterpret_cast<int*>(DAT_011dfb18.Int()),
                            (AIThreadFunction)&fnv_008c7f50::AILinearTaskThreadManager_AIThread2TaskFunc, "AI Linear Task Thread 2", (BSThread::StackSize)0x10000);
     }
     else
     {
-        LaunchWorkerThread(AI_THREAD_1, *reinterpret_cast<int*>(DAT_011dfb34.Int()),
+        AddThread(AI_THREAD_1, *reinterpret_cast<int*>(DAT_011dfb34.Int()),
                            (AIThreadFunction)&fnv_008c7bd0::AILinearTaskThreadManager_AIThreadCombined, "AI Linear Task Thread", (BSThread::StackSize)0x10000);
     }
 
@@ -79,36 +82,43 @@ void AIThreadManager::StartRenderingTaskThread()
 }
 
 // @fnv 0x008c74d0
-void AIThreadManager::LaunchWorkerThread(AI_THREAD_INDEX threadIndex, unsigned int processor,
-                                         AIThreadFunction taskFunction, const char* threadName,
-                                         BSThread::StackSize stackSize)
+// src: XBOX_RETAIL_PDB 0x008c74d0
+// pdb: AILinearTaskThreadManager::AddThread | AILinearTaskThreadManager.obj | retail, string-set bridge, high
+// pdb params: aiThreadIndex, aiHWThread, apfnTaskFunc, apThreadName, aeStackSize
+// pdb locals: pthreadname
+void AILinearTaskThreadManager::AddThread(AI_THREAD_INDEX aiThreadIndex, unsigned int aiHWThread,
+                                         AIThreadFunction apfnTaskFunc, const char* apThreadName,
+                                         BSThread::StackSize aeStackSize)
 {
-    if (threadIndex < 3 && threadIndex < 2 && !m_pTaskThreads[threadIndex])
+    if (aiThreadIndex < 3 && aiThreadIndex < 2 && !m_pTaskThreads[aiThreadIndex])
     {
-        m_pTaskThreads[threadIndex] = new AILinearTaskThread(taskFunction);
-        m_pTaskThreads[threadIndex]->Initialize(stackSize, threadName, false);
-        m_pTaskThreads[threadIndex]->SetSchedulingPriority(processor);
-        m_pTaskThreads[threadIndex]->SetThreadPriority(0);
+        m_pTaskThreads[aiThreadIndex] = new AILinearTaskThread(apfnTaskFunc);
+        m_pTaskThreads[aiThreadIndex]->Initialize(aeStackSize, apThreadName, false);
+        m_pTaskThreads[aiThreadIndex]->SetSchedulingPriority(aiHWThread);
+        m_pTaskThreads[aiThreadIndex]->SetThreadPriority(0);
 
-        if (!threadName)
+        if (!apThreadName)
         {
             char generatedName[0x104];
-            sprintf_s(generatedName, 0x104, "AI Linear Task Thread DEF %i", threadIndex);
-            m_pTaskThreads[threadIndex]->SetName(generatedName);
+            sprintf_s(generatedName, 0x104, "AI Linear Task Thread DEF %i", aiThreadIndex);
+            m_pTaskThreads[aiThreadIndex]->SetName(generatedName);
         }
     }
 }
 
 // Updates DAT_011dfa18 to the rendering flag and, when it was set and rendering is false, calls FUN_008c80c0.
 // @fnv 0x008c80e0
-void AIThreadManager::SetThreadingEnabled(bool rendering)
+// src: XBOX_DEBUG_PDB 0x008c80e0
+// pdb: AILinearTaskThreadManager::SetMainRendering | AILinearTaskThreadManager.obj | debug, call graph (shared callers), high
+// pdb params: abVal
+void AILinearTaskThreadManager::SetMainRendering(bool abVal)
 {
-    if (DAT_011dfa18 && !rendering)
+    if (DAT_011dfa18 && !abVal)
     {
-        DAT_011dfa18 = rendering;
+        DAT_011dfa18 = abVal;
         RenderSemaphore_Lock();
     }
-    DAT_011dfa18 = rendering;
+    DAT_011dfa18 = abVal;
 }
 
 
@@ -120,6 +130,7 @@ struct FUN_008c7490_this
 
 // @fnv 0x008c7490
 // src: XBOX_PDB 0x008c7490
+// pdb: AITaskThread::WaitForCompletion | AITaskManager.obj | debug, upstream name already matches, high
 void __fastcall AITaskThread_WaitForCompletion(FUN_008c7490_this* pThis)
 {
     pThis->sem.Wait();
@@ -138,6 +149,7 @@ struct NiNode;
 struct TESBoundObject;
 struct TESObjectREFR;
 struct TESObjectWEAP;
+// pdb: class TaskQueueInterface, size 0x10, 4 members
 struct TaskQueueInterface
 {
     void ThreadProcessInput();
@@ -227,6 +239,8 @@ extern BSAudio* g_osGlobals;
 
 // @fnv 0x008c7aa0
 // src: XBOX_PDB 0x008c7aa0
+// pdb: AILinearTaskThreadManager::ShouldQueue3DTask | AILinearTaskThreadManager.obj | retail, upstream name already matches, high
+// pdb locals: bretvalBug44071, bretval, icurrthread, pqueueInterface, iprocessthread
 bool __cdecl AILinearTaskThreadManager_ShouldQueue3DTask()
 {
     bool bretval = false;
@@ -284,6 +298,7 @@ struct FUN_0087a6b0_shell
 };
 // @fnv 0x0087a6b0
 // src: XBOX_PDB 0x0087a6b0
+// pdb: TaskQueueInterface::ThreadBeginInput | TaskQueueInterface.obj | retail, upstream name already matches, high
 void FUN_0087a6b0_shell::TaskQueueInterface_ThreadBeginInput()
 {
     p->SignalAtOffset();
@@ -300,6 +315,7 @@ struct FUN_0087a6d0_shell
 };
 // @fnv 0x0087a6d0
 // src: COMMUNITY 0x0087a6d0
+// pdb: TaskQueueInterface::ThreadEndInput | TaskQueueInterface.obj | retail, upstream name already matches, high
 void FUN_0087a6d0_shell::TaskQueueInterface_ThreadEndInput()
 {
     p->FUN_0086cdd0();
@@ -315,6 +331,7 @@ struct FUN_008c74b0_shell
 };
 
 // @fnv 0x008c74b0
+// pdb: BSLinearTaskThread::Shutdown | AILinearTaskThreadManager.obj | debug, object-file run extension, low
 void FUN_008c74b0_shell::SignalThread()
 {
     ((unsigned char*)this)[0x48] = 1;
@@ -358,6 +375,7 @@ void __cdecl RenderSemaphore_Wait();
 
 // @fnv 0x008c80d0
 // src: COMMUNITY 0x008c80d0
+// pdb: AILinearTaskThreadManager::WaitMainRendering | AILinearTaskThreadManager.obj | debug, upstream name already matches, high
 void __cdecl AILinearTaskThreadManager_WaitMainRendering()
 {
     RenderSemaphore_Wait();
@@ -371,11 +389,14 @@ struct FUN_008c79e0_shell
     int aiCurrent[2];
     char pad[0x78];
     void** ppEvents[2];
-    void SignalThreadEvent(int aiIndex, int aiEvent);
+    void AILinearTaskThreadManager_SignalThreadSema(int aiIndex, int aiEvent);
 };
 // If aiIndex is below 2 and the thread handle exists, signals the event at ppEvents[aiIndex][aiEvent] and stores aiEvent in aiCurrent[aiIndex].
 // @fnv 0x008c79e0
-void FUN_008c79e0_shell::SignalThreadEvent(int aiIndex, int aiEvent)
+// src: XBOX_RETAIL_PDB 0x008c79e0
+// pdb: AILinearTaskThreadManager::SignalThreadSema | AILinearTaskThreadManager.obj | retail, call graph (shared callers), high
+// pdb params: aiThread
+void FUN_008c79e0_shell::AILinearTaskThreadManager_SignalThreadSema(int aiIndex, int aiEvent)
 {
     if (aiIndex < 2 && apThreads[aiIndex])
     {
@@ -394,6 +415,8 @@ struct FUN_008c7a70_shell
 };
 // Waits indefinitely on the event at ppEvents[aiIndex][aiEvent].
 // @fnv 0x008c7a70
+// pdb: AILinearTaskThreadManager::WaitOnThreadStage | AILinearTaskThreadManager.obj | retail, call graph (shared callers), medium
+// pdb params: aiThreadIndex, aiStage
 void FUN_008c7a70_shell::WaitForEvent(int aiIndex, int aiEvent)
 {
     WaitForSingleObject(ppEvents[aiIndex][aiEvent], 0xffffffff);
@@ -407,6 +430,9 @@ struct FUN_008c7d80_shell
     void SetCurrent(int aiIndex, int aiValue);
 };
 // @fnv 0x008c7d80
+// pdb: BSRangeNode::SetCurrent | BSRangeNode.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
+// pdb params: acVal
+// pdb locals: boldEnabled, bEnabled
 void FUN_008c7d80_shell::SetCurrent(int aiIndex, int aiValue)
 {
     aiCurrent[aiIndex] = aiValue;
@@ -435,15 +461,18 @@ struct FUN_00991500_shell
 {
     char pad[0x14];
     CombatTargetMap* m_pTargetMap;
-    void CombatManager_Update(bool abFlag);
+    void CombatManager_Update(bool abTimeStopped);
 };
 // @fnv 0x00991500
 // src: COMMUNITY 0x00991500
-void FUN_00991500_shell::CombatManager_Update(bool abFlag)
+// pdb: CombatManager::Update | CombatManager.obj | retail, upstream name already matches, high
+// pdb params: abTimeStopped
+// pdb locals: tempMemContext, i, pgroup
+void FUN_00991500_shell::CombatManager_Update(bool abTimeStopped)
 {
     AutoMemHelper kMem(0x2b, true, "D:\\_Fallout3\\Platforms\\Common\\Code\\Fallout\\AI\\Combat\\CombatManager.cpp",
                        0x8b);
-    if (!abFlag)
+    if (!abTimeStopped)
     {
         CombatTimer_UpdateTimer(g_timeGlobal.GetStoredFloatValue());
         for (unsigned int i = 0; i < ((ArrHelper*)this)->GetSize(); i++)
@@ -452,7 +481,7 @@ void FUN_00991500_shell::CombatManager_Update(bool abFlag)
             if (pEntry && !pEntry->CombatGroup_IsEmpty())
                 pEntry->CombatGroup_Update();
         }
-        m_pTargetMap->ResetTargetMap();
+        m_pTargetMap->CombatThreatMap_UpdateThreats();
     }
 }
 
@@ -466,13 +495,15 @@ struct TaskThreadStandin
     virtual ~TaskThreadStandin();
 };
 
-struct FUN_008c73a0_shell : public AIThreadManager
+struct FUN_008c73a0_shell : public AILinearTaskThreadManager
 {
     void AILinearTaskThreadManager_Kill();
 };
 
 // @fnv 0x008c73a0
 // src: COMMUNITY 0x008c73a0
+// pdb: AILinearTaskThreadManager::DestroyThreads | AILinearTaskThreadManager.obj | debug, object-file run extension, low
+// pdb locals: ithreadIdx
 void FUN_008c73a0_shell::AILinearTaskThreadManager_Kill()
 {
     unsigned int i;
@@ -519,7 +550,7 @@ struct TaskQueueInterface
 
 struct FUN_008c79e0_shell
 {
-    void SignalThreadEvent(int);
+    void AILinearTaskThreadManager_SignalThreadSema(int);
 };
 
 struct FUN_008c7d80_shell
@@ -544,7 +575,7 @@ struct FUN_00991500_shell
 
 struct FUN_0096cb50_shell
 {
-    void UpdateHighProcessActors();
+    void ProcessLists_RunActorRagdollAnimationUpdates();
 };
 
 struct FUN_009784c0_shell
@@ -569,7 +600,7 @@ struct GlobalObject_0096d020
     void ProcessLists_RunActorAnimationUpdates();
     void ProcessLists_ParallelActorAnimationMovementUpdates();
     void MiddleHighProcess_CalculateLightValue(float, int);
-    void UpdateDetection();
+    void ProcessLists_RunDetectionForAllActors();
     void ProcessLists_UpdateActorsMovement(float, int, int);
 };
 
@@ -592,11 +623,12 @@ extern void* BGSSaveLoadGlobalDataWorldspacePtr;
 
 // @fnv 0x008c7bd0
 // src: COMMUNITY 0x008c7bd0
+// pdb: AILinearTaskThreadManager::AIThreadCombined | AILinearTaskThreadManager.obj | retail, upstream name already matches, high
 void __cdecl AILinearTaskThreadManager_AIThreadCombined()
 {
-    reinterpret_cast<FUN_008c79e0_shell*>(AILinearTaskThreadManager_GetSingleton(0))->SignalThreadEvent(0);
+    reinterpret_cast<FUN_008c79e0_shell*>(AILinearTaskThreadManager_GetSingleton(0))->AILinearTaskThreadManager_SignalThreadSema(0);
     TESMain_OnIdle_DoInterfaceIdle(g_osGlobals);
-    reinterpret_cast<FUN_008c79e0_shell*>(AILinearTaskThreadManager_GetSingleton(0))->SignalThreadEvent(1);
+    reinterpret_cast<FUN_008c79e0_shell*>(AILinearTaskThreadManager_GetSingleton(0))->AILinearTaskThreadManager_SignalThreadSema(1);
 
     reinterpret_cast<FUN_0087a6b0_shell*>(TaskQueueInterface::GetInstance())->TaskQueueInterface_ThreadBeginInput();
 
@@ -618,12 +650,12 @@ void __cdecl AILinearTaskThreadManager_AIThreadCombined()
     DAT_011f11a0.Lock(0);
     reinterpret_cast<GlobalObject_0096d020*>(&DAT_011e0e80)->MiddleHighProcess_CalculateLightValue(0.0f, 0);
     ProcessPlayerCellActors();
-    reinterpret_cast<GlobalObject_0096d020*>(&DAT_011e0e80)->UpdateDetection();
+    reinterpret_cast<GlobalObject_0096d020*>(&DAT_011e0e80)->ProcessLists_RunDetectionForAllActors();
     reinterpret_cast<GlobalObject_0096d020*>(&DAT_011e0e80)->ProcessLists_UpdateActorsMovement(0.0f, 0, 0);
     reinterpret_cast<SkyObject*>(&DAT_011e0e80)->Update(0.0f, 0);
     reinterpret_cast<ProcessListsView*>(&DAT_011e0e80)->RunActorUpdates();
-    reinterpret_cast<FUN_0096cb50_shell*>(&DAT_011e0e80)->UpdateHighProcessActors();
-    BGSDestructibleObjectForm::UpdateDestructionMap();
+    reinterpret_cast<FUN_0096cb50_shell*>(&DAT_011e0e80)->ProcessLists_RunActorRagdollAnimationUpdates();
+    BGSDestructibleObjectForm::UpdateDestructibleObjects();
     DAT_011f11a0.Unlock();
 
     reinterpret_cast<Zt5TES*>(g_TES)->TES_UpdateCellAnimations(Main_QFrameAnimTime());
@@ -653,7 +685,7 @@ struct Zt5TES
 
 struct FUN_0096c330_shell
 {
-    void UpdateDetection();
+    void ProcessLists_RunDetectionForAllActors();
     void ProcessLists_UpdateActorsMovement(float, int, int);
 };
 
@@ -675,7 +707,7 @@ class TaskQueueInterface
 
 struct FUN_008c79e0_shell
 {
-    void SignalThreadEvent(int);
+    void AILinearTaskThreadManager_SignalThreadSema(int);
 };
 
 struct FUN_008c7a70_shell
@@ -687,7 +719,7 @@ struct FUN_008c7a70_shell
 
 struct FUN_0096cb50_shell
 {
-    void UpdateHighProcessActors();
+    void ProcessLists_RunActorRagdollAnimationUpdates();
 };
 
 void* __stdcall AILinearTaskThreadManager_GetSingleton(int);
@@ -699,37 +731,38 @@ extern int DAT_011e0e80;
 
 // @fnv 0x008c7f50
 // src: COMMUNITY 0x008c7f50
+// pdb: AILinearTaskThreadManager::AIThread2TaskFunc | AILinearTaskThreadManager.obj | retail, upstream name already matches, high
 void AILinearTaskThreadManager_AIThread2TaskFunc()
 {
-    reinterpret_cast<FUN_008c79e0_shell*>(AILinearTaskThreadManager_GetSingleton(1))->SignalThreadEvent(0);
+    reinterpret_cast<FUN_008c79e0_shell*>(AILinearTaskThreadManager_GetSingleton(1))->AILinearTaskThreadManager_SignalThreadSema(0);
     reinterpret_cast<FUN_008c7a70_shell*>(AILinearTaskThreadManager_GetSingleton(0))->WaitForEvent(1);
 
     reinterpret_cast<FUN_0087a6b0_shell*>(TaskQueueInterface::GetInstance())->TaskQueueInterface_ThreadBeginInput();
-    reinterpret_cast<FUN_0096c330_shell*>(&DAT_011e0e80)->UpdateDetection();
+    reinterpret_cast<FUN_0096c330_shell*>(&DAT_011e0e80)->ProcessLists_RunDetectionForAllActors();
 
-    reinterpret_cast<FUN_008c79e0_shell*>(AILinearTaskThreadManager_GetSingleton(1))->SignalThreadEvent(1);
-    reinterpret_cast<FUN_008c79e0_shell*>(AILinearTaskThreadManager_GetSingleton(1))->SignalThreadEvent(2);
+    reinterpret_cast<FUN_008c79e0_shell*>(AILinearTaskThreadManager_GetSingleton(1))->AILinearTaskThreadManager_SignalThreadSema(1);
+    reinterpret_cast<FUN_008c79e0_shell*>(AILinearTaskThreadManager_GetSingleton(1))->AILinearTaskThreadManager_SignalThreadSema(2);
     reinterpret_cast<FUN_008c7a70_shell*>(AILinearTaskThreadManager_GetSingleton(0))->WaitForEvent(2);
 
     reinterpret_cast<FUN_0096c330_shell*>(&DAT_011e0e80)->ProcessLists_UpdateActorsMovement(0.0f, 0, 0);
 
-    reinterpret_cast<FUN_008c79e0_shell*>(AILinearTaskThreadManager_GetSingleton(1))->SignalThreadEvent(3);
+    reinterpret_cast<FUN_008c79e0_shell*>(AILinearTaskThreadManager_GetSingleton(1))->AILinearTaskThreadManager_SignalThreadSema(3);
     reinterpret_cast<SkyObject*>(&DAT_011e0e80)->Update(0.0f, 0);
-    reinterpret_cast<FUN_0096cb50_shell*>(&DAT_011e0e80)->UpdateHighProcessActors();
+    reinterpret_cast<FUN_0096cb50_shell*>(&DAT_011e0e80)->ProcessLists_RunActorRagdollAnimationUpdates();
 
-    reinterpret_cast<FUN_008c79e0_shell*>(AILinearTaskThreadManager_GetSingleton(1))->SignalThreadEvent(4);
-    BGSDestructibleObjectForm::UpdateDestructionMap();
+    reinterpret_cast<FUN_008c79e0_shell*>(AILinearTaskThreadManager_GetSingleton(1))->AILinearTaskThreadManager_SignalThreadSema(4);
+    BGSDestructibleObjectForm::UpdateDestructibleObjects();
 
-    reinterpret_cast<FUN_008c79e0_shell*>(AILinearTaskThreadManager_GetSingleton(1))->SignalThreadEvent(5);
+    reinterpret_cast<FUN_008c79e0_shell*>(AILinearTaskThreadManager_GetSingleton(1))->AILinearTaskThreadManager_SignalThreadSema(5);
     reinterpret_cast<FUN_008c7a70_shell*>(AILinearTaskThreadManager_GetSingleton(0))->WaitForEvent(4);
 
     reinterpret_cast<Zt5TES*>(g_TES)->TES_UpdateCellAnimations(Main_QFrameAnimTime());
 
-    reinterpret_cast<FUN_008c79e0_shell*>(AILinearTaskThreadManager_GetSingleton(1))->SignalThreadEvent(6);
+    reinterpret_cast<FUN_008c79e0_shell*>(AILinearTaskThreadManager_GetSingleton(1))->AILinearTaskThreadManager_SignalThreadSema(6);
     reinterpret_cast<FUN_0087a6d0_shell*>(TaskQueueInterface::GetInstance())->TaskQueueInterface_ThreadEndInput();
 
     reinterpret_cast<FUN_008c7a70_shell*>(AILinearTaskThreadManager_GetSingleton(0))->WaitForEvent(8);
-    reinterpret_cast<FUN_008c79e0_shell*>(AILinearTaskThreadManager_GetSingleton(1))->SignalThreadEvent(7);
+    reinterpret_cast<FUN_008c79e0_shell*>(AILinearTaskThreadManager_GetSingleton(1))->AILinearTaskThreadManager_SignalThreadSema(7);
 
     Script_ClearOptimizations();
     ScriptLocals_ClearOptimizations();
@@ -757,7 +790,7 @@ struct FUN_0087a6d0_shell
 
 struct FUN_008c79e0_shell
 {
-    void SignalThreadEvent(int, int);
+    void AILinearTaskThreadManager_SignalThreadSema(int, int);
 };
 
 struct FUN_008c7a70_shell
@@ -809,39 +842,40 @@ void __cdecl AILinearTaskThreadManager_WaitMainRendering();
 
 // @fnv 0x008c7da0
 // src: COMMUNITY 0x008c7da0
+// pdb: AILinearTaskThreadManager::AIThread1TaskFunc | AILinearTaskThreadManager.obj | retail, upstream name already matches, high
 void __cdecl AILinearTaskThreadManager_AIThread1TaskFunc()
 {
-    reinterpret_cast<FUN_008c79e0_shell*>(AILinearTaskThreadManager_GetSingleton())->SignalThreadEvent(0, 0);
+    reinterpret_cast<FUN_008c79e0_shell*>(AILinearTaskThreadManager_GetSingleton())->AILinearTaskThreadManager_SignalThreadSema(0, 0);
     TESMain_OnIdle_DoInterfaceIdle(g_osGlobals);
-    reinterpret_cast<FUN_008c79e0_shell*>(AILinearTaskThreadManager_GetSingleton())->SignalThreadEvent(0, 1);
+    reinterpret_cast<FUN_008c79e0_shell*>(AILinearTaskThreadManager_GetSingleton())->AILinearTaskThreadManager_SignalThreadSema(0, 1);
     reinterpret_cast<FUN_0087a6b0_shell*>(TaskQueueInterface::GetInstance())->TaskQueueInterface_ThreadBeginInput();
     reinterpret_cast<FUN_00991500_shell*>(BGSSaveLoadGlobalDataWorldspacePtr)->CombatManager_Update(TESMain_GetIsInPauseFade());
     reinterpret_cast<ProcessListsView*>(&DAT_011e0e80)->ProcessLists_RunActorAnimationUpdates();
     reinterpret_cast<ProcessListsView*>(&DAT_011e0e80)->ProcessLists_ParallelActorAnimationMovementUpdates();
-    reinterpret_cast<FUN_008c79e0_shell*>(AILinearTaskThreadManager_GetSingleton())->SignalThreadEvent(0, 2);
+    reinterpret_cast<FUN_008c79e0_shell*>(AILinearTaskThreadManager_GetSingleton())->AILinearTaskThreadManager_SignalThreadSema(0, 2);
     g_TES->TES_RunAnimations();
-    reinterpret_cast<FUN_008c79e0_shell*>(AILinearTaskThreadManager_GetSingleton())->SignalThreadEvent(0, 3);
+    reinterpret_cast<FUN_008c79e0_shell*>(AILinearTaskThreadManager_GetSingleton())->AILinearTaskThreadManager_SignalThreadSema(0, 3);
     CombatManager_UpdateCombatants(BGSSaveLoadGlobalDataWorldspacePtr);
-    reinterpret_cast<FUN_008c79e0_shell*>(AILinearTaskThreadManager_GetSingleton())->SignalThreadEvent(0, 4);
+    reinterpret_cast<FUN_008c79e0_shell*>(AILinearTaskThreadManager_GetSingleton())->AILinearTaskThreadManager_SignalThreadSema(0, 4);
     reinterpret_cast<FUN_009784c0_shell*>(&DAT_011e0e80)->ProcessLists_RunActorMagicUpdates();
-    reinterpret_cast<FUN_008c79e0_shell*>(AILinearTaskThreadManager_GetSingleton())->SignalThreadEvent(0, 5);
+    reinterpret_cast<FUN_008c79e0_shell*>(AILinearTaskThreadManager_GetSingleton())->AILinearTaskThreadManager_SignalThreadSema(0, 5);
     reinterpret_cast<ProcessListsView*>(&DAT_011e0e80)->MiddleHighProcess_CalculateLightValue(0.0f, 0);
-    reinterpret_cast<FUN_008c79e0_shell*>(AILinearTaskThreadManager_GetSingleton())->SignalThreadEvent(0, 6);
+    reinterpret_cast<FUN_008c79e0_shell*>(AILinearTaskThreadManager_GetSingleton())->AILinearTaskThreadManager_SignalThreadSema(0, 6);
     ProcessListsView::ProcessPlayerCellActors();
-    reinterpret_cast<FUN_008c79e0_shell*>(AILinearTaskThreadManager_GetSingleton())->SignalThreadEvent(0, 10);
+    reinterpret_cast<FUN_008c79e0_shell*>(AILinearTaskThreadManager_GetSingleton())->AILinearTaskThreadManager_SignalThreadSema(0, 10);
     reinterpret_cast<FUN_008c7a70_shell*>(AILinearTaskThreadManager_GetSingleton())->WaitForEvent(1, 1);
     reinterpret_cast<FUN_008c7a70_shell*>(AILinearTaskThreadManager_GetSingleton())->WaitForEvent(1, 3);
     reinterpret_cast<ProcessListsView*>(&DAT_011e0e80)->RunActorUpdates();
-    reinterpret_cast<FUN_008c79e0_shell*>(AILinearTaskThreadManager_GetSingleton())->SignalThreadEvent(0, 7);
+    reinterpret_cast<FUN_008c79e0_shell*>(AILinearTaskThreadManager_GetSingleton())->AILinearTaskThreadManager_SignalThreadSema(0, 7);
     reinterpret_cast<FUN_0087a6d0_shell*>(TaskQueueInterface::GetInstance())->TaskQueueInterface_ThreadEndInput();
-    reinterpret_cast<FUN_008c79e0_shell*>(AILinearTaskThreadManager_GetSingleton())->SignalThreadEvent(0, 8);
+    reinterpret_cast<FUN_008c79e0_shell*>(AILinearTaskThreadManager_GetSingleton())->AILinearTaskThreadManager_SignalThreadSema(0, 8);
     reinterpret_cast<FUN_008c7a70_shell*>(AILinearTaskThreadManager_GetSingleton())->WaitForEvent(1, 7);
     AILinearTaskThreadManager_WaitMainRendering();
-    reinterpret_cast<FUN_008c79e0_shell*>(AILinearTaskThreadManager_GetSingleton())->SignalThreadEvent(0, 9);
+    reinterpret_cast<FUN_008c79e0_shell*>(AILinearTaskThreadManager_GetSingleton())->AILinearTaskThreadManager_SignalThreadSema(0, 9);
     if (*reinterpret_cast<unsigned char*>(g_011d73e4.Bool()))
         NavMeshObstacleManager::GetSingleton()->Update();
     Script_ClearOptimizations();
     ScriptLocals_ClearOptimizations();
-    reinterpret_cast<FUN_008c79e0_shell*>(AILinearTaskThreadManager_GetSingleton())->SignalThreadEvent(0, 11);
+    reinterpret_cast<FUN_008c79e0_shell*>(AILinearTaskThreadManager_GetSingleton())->AILinearTaskThreadManager_SignalThreadSema(0, 11);
 }
 }  // namespace fnv_008c7da0

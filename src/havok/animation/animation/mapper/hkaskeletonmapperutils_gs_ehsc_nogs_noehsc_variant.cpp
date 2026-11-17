@@ -42,14 +42,17 @@ struct hkaSkeletonMapperDataSimpleMapping
 extern hkError* DAT_01268360;
 // @fnv 0x00ce5840
 // src: HAVOK_LIB 0x00ce5840
-int __cdecl hkaSkeletonMapperUtils_lockTranslationsAutomatically(hkaSkeletonMapperData* mapping)
+// pdb: hkaSkeletonMapperUtils::lockTranslationsAutomatically | hkaSkeletonMapperUtils.obj | retail, string-set bridge, high
+// pdb params: mapperData
+// pdb locals: assertBuf, ostr, reportBuf
+int __cdecl hkaSkeletonMapperUtils_lockTranslationsAutomatically(hkaSkeletonMapperData* mapperData)
 {
     int i = 0;
-    int count = mapping->m_kSimpleMappings.m_iElementCount;
-    hkaSkeleton* skelA = mapping->m_pSkeletonA;
-    int numBonesA = skelA->m_kBones.m_iElementCount;
-    hkaSkeleton* skelB = mapping->m_pSkeletonB;
-    int numBonesB = skelB->m_kBones.m_iElementCount;
+    int count = mapperData->m_simpleMappings.m_iElementCount;
+    hkaSkeleton* skelA = mapperData->m_skeletonA;
+    int numBonesA = skelA->m_bones.m_iElementCount;
+    hkaSkeleton* skelB = mapperData->m_skeletonB;
+    int numBonesB = skelB->m_bones.m_iElementCount;
     int rootA = numBonesA;
     _ReadBarrier();
     int rootB;
@@ -57,7 +60,7 @@ int __cdecl hkaSkeletonMapperUtils_lockTranslationsAutomatically(hkaSkeletonMapp
     {
         do
         {
-            hkaSkeletonMapperDataSimpleMapping* current = &GetElement(mapping->m_kSimpleMappings, i);
+            hkaSkeletonMapperDataSimpleMapping* current = &GetElement(mapperData->m_simpleMappings, i);
             if (current->m_sBoneA < rootA)
             {
                 rootB = current->m_sBoneB;
@@ -83,7 +86,7 @@ int __cdecl hkaSkeletonMapperUtils_lockTranslationsAutomatically(hkaSkeletonMapp
         rootB = numBonesB;
     }
 found:
-    if (rootA == skelA->m_kBones.m_iElementCount)
+    if (rootA == skelA->m_bones.m_iElementCount)
     {
         char buf[512];
         hkOstream os(buf, 512);
@@ -95,22 +98,22 @@ found:
     {
         char buf[512];
         hkOstream os(buf, 512);
-        os << "Locking translations in skeleton " << skelA->m_name << " from bone " << GetElement(skelA->m_kBones, rootA).m_name;
+        os << "Locking translations in skeleton " << skelA->m_name << " from bone " << GetElement(skelA->m_bones, rootA).m_name;
         DAT_01268360->message(0, -1, buf, ".\\Mapper\\hkaSkeletonMapperUtils.cpp", 784);
     }
-    for (int i = 0; i < skelA->m_kBones.m_iElementCount; ++i)
+    for (int i = 0; i < skelA->m_bones.m_iElementCount; ++i)
     {
-        GetElement(skelA->m_kBones, i).m_bLockTranslation = (i > rootA);
+        GetElement(skelA->m_bones, i).m_bLockTranslation = (i > rootA);
     }
     {
         char buf[512];
         hkOstream os(buf, 512);
-        os << "Locking translations in skeleton " << skelB->m_name << " from bone " << GetElement(skelB->m_kBones, rootB).m_name;
+        os << "Locking translations in skeleton " << skelB->m_name << " from bone " << GetElement(skelB->m_bones, rootB).m_name;
         DAT_01268360->message(0, -1, buf, ".\\Mapper\\hkaSkeletonMapperUtils.cpp", 793);
     }
-    for (int i = 0; i < skelB->m_kBones.m_iElementCount; ++i)
+    for (int i = 0; i < skelB->m_bones.m_iElementCount; ++i)
     {
-        GetElement(skelB->m_kBones, i).m_bLockTranslation = (i > rootB);
+        GetElement(skelB->m_bones, i).m_bLockTranslation = (i > rootB);
     }
     DAT_01268360->endSection();
     return 0;

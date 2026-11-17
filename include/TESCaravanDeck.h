@@ -6,6 +6,7 @@
 
 class TESCaravanCard;
 
+// pdb: class TESCaravanDeck, size 0x2c, bases: TESForm, TESFullName, 2 members
 class TESCaravanDeck : public TESForm, public TESFullName
 {
 public:
@@ -14,10 +15,10 @@ public:
 
     TESCaravanDeck();
 
-    virtual bool Compare(TESForm* form);
+    virtual bool Compare(TESForm* apCompare);
 
     void ResetFormData();
-    bool Load(TESFile* file);
+    bool Load(TESFile* apFile);
     BSSimpleList<TESCaravanCard*>* GetCardList();
     CaravanDeckData* GetDeckData();
 };

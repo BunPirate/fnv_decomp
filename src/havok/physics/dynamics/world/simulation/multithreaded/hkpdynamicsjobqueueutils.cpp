@@ -62,16 +62,19 @@ struct S_00d96530_Header
 };
 
 // @fnv 0x00d96530
-S_00d96530_Header* AllocateBlockHeader(int numBlocks, int numElems)
+// src: XBOX_RETAIL_PDB 0x00d96530
+// pdb: hkpAgentSectorHeader::allocate | hkpDynamicsJobQueueUtils.obj | retail, call graph, high
+// pdb params: numTasks, numAgentNnEntriesPerTask
+S_00d96530_Header* hkpAgentSectorHeader_allocate(int numTasks, int numAgentNnEntriesPerTask)
 {
     S_00d96530_Header* pHeader =
-        (S_00d96530_Header*)hkMemoryRouter_getInstance()->heap()->AllocateMemoryBlock((short)numBlocks * 4 + 0xc);
-    int iBlockBytes = numElems << 4;
-    pHeader->m_maxBlocks = numBlocks;
-    pHeader->m_iBlockCount = numBlocks;
+        (S_00d96530_Header*)hkMemoryRouter_getInstance()->heap()->AllocateMemoryBlock((short)numTasks * 4 + 0xc);
+    int iBlockBytes = numAgentNnEntriesPerTask << 4;
+    pHeader->m_maxBlocks = numTasks;
+    pHeader->m_iBlockCount = numTasks;
     pHeader->m_iDofCount = iBlockBytes + 0x20;
     S_00d96530_Block** blocks = pHeader->m_kBlocks;
-    for (int i = 0; i < numBlocks; i++)
+    for (int i = 0; i < numTasks; i++)
     {
         void* p = hkMemoryRouter_getInstance()->heap()->AllocateMemoryBlock(iBlockBytes + 0x20);
         blocks[i] = (S_00d96530_Block*)p;
@@ -114,6 +117,7 @@ struct S_C
 // Calls S_Call on each of the count items in arr with unk08, then calls S_Call on this with count*4+0xc.
 // @fnv 0x00d965b0
 // src: HAVOK_LIB 0x00d965b0
+// pdb: hkpAgentSectorHeader::deallocate | hkpDynamicsJobQueueUtils.obj | retail, upstream name already matches, high
 void S_C::hkpAgentSectorHeader_deallocate()
 {
     S_Item* const* p = arr;

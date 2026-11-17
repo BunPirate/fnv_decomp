@@ -485,7 +485,7 @@ struct HudInner
     int unk24;
     int unk28;
     ImageSpaceTexture** unk2c;
-    void UpdateHudGeometry(int a1, SurfaceOwner* a2, HudParam* a3, int a4);
+    void ImageSpaceShaderMenuUnpack_Render(int apGeometry, SurfaceOwner* apRenderer, HudParam* apParam, int abEndFrame);
 };
 
 struct HudOwner : HudBase, HudInner
@@ -501,12 +501,16 @@ extern HudParam DAT_01202410;
 
 // Rebuilds the HUD NiScreenElements from RecEntry rectangles when DAT_011ae5d4 is set, then renders them through the HudOwner and ScreenSink.
 // @fnv 0x00bb7530
-void HudInner::UpdateHudGeometry(int aiUnk, SurfaceOwner* apSurface, HudParam* apHudParam, int aiUnk2)
+// src: XBOX_RETAIL_PDB 0x00bb7530
+// pdb: ImageSpaceShaderMenuUnpack::Render | ImageSpaceShaderMenuUnpack.obj | retail, string-set bridge, high
+// pdb params: apGeometry, apRenderer, apParam, abEndFrame
+// pdb locals: punpackGeometry, pparam, tempviewport, pdest, UpdateData, i, u1, v0, fwratio, fxratio, furatio, fvratio, faspectRatio, fyratio, fhratio, u0, v1, pr, x, y, h, faspectRatioRatio, w
+void HudInner::ImageSpaceShaderMenuUnpack_Render(int apGeometry, SurfaceOwner* apRenderer, HudParam* apParam, int abEndFrame)
 {
     ColorA color(0.0f, 1.0f, 1.0f, 0.0f);
     if (DAT_011ae5e2 != 0)
     {
-        HudParam* p = apHudParam;
+        HudParam* p = apParam;
         if (p == 0)
             p = &DAT_01202410;
         if (DAT_011ae5d4)
@@ -518,11 +522,11 @@ void HudInner::UpdateHudGeometry(int aiUnk, SurfaceOwner* apSurface, HudParam* a
             int i = 0;
             for (i = 0; i < DAT_011ae5e2; i++)
             {
-                unsigned w = apSurface->GetWidth();
-                unsigned h = apSurface->GetHeight();
+                unsigned w = apRenderer->GetWidth();
+                unsigned h = apRenderer->GetHeight();
                 float aspect = (float)w / (float)h;
                 aspect = aspect / 1.3333333730697632;
-                static_cast<NiScreenElementsData*>(pScreenElements->m_spModelData.m_pObject)->FUN_00a87ae0(4, 0, 0);
+                static_cast<NiScreenElementsData*>(pScreenElements->m_spModelData.m_pObject)->Insert(4, 0, 0);
                 RecEntry* pRecEntry = DAT_011ae5dc[i];
                 double fScale = aspect * 1280.0;
                 float qx = pRecEntry->f10 / fScale;

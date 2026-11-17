@@ -53,6 +53,7 @@ void InitializeRuntimeFloatRatio10()
     runtimeInitializationFloat646 = runtimeInitializationDouble3 / runtimeInitializationFloat35;
 }
 // @fnv 0x00f37ed0
+// pdb: `dynamic initializer for 'NiStepPosKeyregisterloaderreturn'' | ModelLoader.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatRatio11()
 {
     runtimeInitializationFloat650 = runtimeInitializationDouble3 / runtimeInitializationFloat37;
@@ -278,6 +279,7 @@ void InitializeRuntimeFloatRatio55()
     runtimeInitializationFloat1090 = runtimeInitializationDouble3 / runtimeInitializationFloat322;
 }
 // @fnv 0x00f3e8f0
+// pdb: `dynamic initializer for 'NiStepPosKeyregisterloaderreturn'' | BipedAnim.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatRatio56()
 {
     runtimeInitializationFloat818 = runtimeInitializationDouble3 / runtimeInitializationFloat126;
@@ -463,11 +465,13 @@ void InitializeRuntimeFloatRatio92()
     runtimeInitializationFloat855 = runtimeInitializationDouble3 / runtimeInitializationFloat144;
 }
 // @fnv 0x00f88f10
+// pdb: `dynamic initializer for 'NiLinColorKeyregisterloaderreturn'' | PathBuilder.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatRatio93()
 {
     runtimeInitializationFloat1193 = runtimeInitializationDouble3 / runtimeInitializationFloat393;
 }
 // @fnv 0x00f89070
+// pdb: `dynamic initializer for 'NiStepPosKeyregisterloaderreturn'' | PathBuilder.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatRatio94()
 {
     runtimeInitializationFloat1194 = runtimeInitializationDouble3 / runtimeInitializationFloat394;
@@ -1178,6 +1182,7 @@ void InitializeRuntimeFloatRatio235()
     runtimeInitializationFloat927 = runtimeInitializationDouble3 / runtimeInitializationFloat216;
 }
 // @fnv 0x00f95770
+// pdb: `dynamic initializer for 'NiStepPosKeyregisterloaderreturn'' | FOVATSEffectManager.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatRatio236()
 {
     runtimeInitializationFloat1264 = runtimeInitializationDouble3 / runtimeInitializationFloat464;
@@ -1673,6 +1678,7 @@ void InitializeRuntimeFloatRatio334()
     runtimeInitializationFloat1315 = runtimeInitializationDouble3 / runtimeInitializationFloat515;
 }
 // @fnv 0x00f9db50
+// pdb: `dynamic initializer for 'NiStepPosKeyregisterloaderreturn'' | FalloutAudio.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatRatio335()
 {
     runtimeInitializationFloat1316 = runtimeInitializationDouble3 / runtimeInitializationFloat516;
@@ -1718,6 +1724,7 @@ void InitializeRuntimeFloatRatio343()
     runtimeInitializationFloat1324 = runtimeInitializationDouble3 / runtimeInitializationFloat524;
 }
 // @fnv 0x00f5d7e0
+// pdb: `dynamic initializer for 'NiStepPosKeyregisterloaderreturn'' | CombatFormulas.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatRatio344()
 {
     runtimeInitializationFloat975 = runtimeInitializationDouble3 / runtimeInitializationFloat264;
@@ -1923,16 +1930,19 @@ void InitializeRuntimeFloatRatio384()
     runtimeInitializationFloat1364 = runtimeInitializationDouble3 / runtimeInitializationFloat564;
 }
 // @fnv 0x00fa7950
+// pdb: `dynamic initializer for 'NiStepBoolKeyregisterloaderreturn'' | LowProcess.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatRatio385()
 {
     runtimeInitializationFloat1365 = runtimeInitializationDouble3 / runtimeInitializationFloat565;
 }
 // @fnv 0x00fa7c70
+// pdb: `dynamic initializer for 'NiStepPosKeyregisterloaderreturn'' | MiddleHighProcess.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatRatio386()
 {
     runtimeInitializationFloat1366 = runtimeInitializationDouble3 / runtimeInitializationFloat566;
 }
 // @fnv 0x00fa7fc0
+// pdb: `dynamic initializer for 'NiStepPosKeyregisterloaderreturn'' | MiddleLowProcess.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatRatio387()
 {
     runtimeInitializationFloat1367 = runtimeInitializationDouble3 / runtimeInitializationFloat567;
@@ -2068,6 +2078,7 @@ void InitializeRuntimeFloatRatio413()
     runtimeInitializationFloat3917 = runtimeInitializationDouble3 / runtimeInitializationFloat1954;
 }
 // @fnv 0x00fadb70
+// pdb: `dynamic initializer for 'NiStepPosKeyregisterloaderreturn'' | Projectile.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatRatio414()
 {
     runtimeInitializationFloat3922 = runtimeInitializationDouble3 / runtimeInitializationFloat1956;
@@ -2218,6 +2229,7 @@ void InitializeRuntimeFloatRatio443()
     runtimeInitializationFloat4109 = runtimeInitializationDouble3 / runtimeInitializationFloat2042;
 }
 // @fnv 0x00fb2e80
+// pdb: `dynamic initializer for 'NiStepPosKeyregisterloaderreturn'' | SpectatorPackage.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatRatio444()
 {
     runtimeInitializationFloat4117 = runtimeInitializationDouble3 / runtimeInitializationFloat2046;

@@ -56,7 +56,7 @@
 class ActorValueUtility_blk_008c0000_od
 {
 public:
-    static int __cdecl ConvertActorValue(int);
+    static int __cdecl GamePlayFormulas_GetRequiredExperiencePoints(int);
 };
 // PathActor_blk_008c0000_od: local type (was include/PathActor.h, which had no evidence of one real class); its methods are 0x00575d70 TESObjectREFR::GetWorldSpace, 0x0057b0a0 TESObjectREFR::GetRelevantWaterHeight, 0x005c3420 PathingLocation::GetLocation, 0x006dd6a0 PathingLocation::HasNavMeshData
 #include "../../include/NiPoint3.h"
@@ -129,6 +129,7 @@ template <>
 BSSimpleArray<Actor*, 1024>::~BSSimpleArray();
 
 // @fnv 0x008c1c00
+// pdb: BSSimpleArray<Actor *,1024>::BSSimpleArray<Actor *,1024> | Actor.obj | debug, call graph (shared callers), medium
 template <>
 BSSimpleArray<Actor*, 1024>::BSSimpleArray()
 {
@@ -145,6 +146,7 @@ struct S_008c1c60
 };
 // @fnv 0x008c1c60
 // src: GUESS 0x008c1c60 (confidence: medium)
+// pdb: NiPointer<HitData>::~NiPointer<HitData> | Actor.obj | debug, call graph, medium
 void __thiscall S_008c1c60::ReleaseReferencedObject_008c1c60()
 {
     if (*reinterpret_cast<BooleanFloatQuery**>(this))
@@ -164,6 +166,7 @@ int FlaggedData::ContainsAnyFlag(unsigned int)
 
 // @fnv 0x008c2e30
 // src: GUESS 0x008c2e30 (confidence: medium)
+// pdb: SpellItem::IsPCStartSpell | Actor_Magic.obj | debug, object-file gap fill, medium
 int FlaggedData::ContainsAnyFlag_Thunk()
 {
     return ContainsAnyFlag(4);
@@ -172,16 +175,21 @@ int FlaggedData::ContainsAnyFlag_Thunk()
 struct FUN_008c5000_shell
 {
     int Actor_GetCastPowerItem(int);
-    int IsNonZero(int arg);
+    int Actor_IsInCastPowerList(int apPower);
 };
 
 // @fnv 0x008c4fe0
-int FUN_008c5000_shell::IsNonZero(int arg)
+// src: XBOX_DEBUG_PDB 0x008c4fe0
+// pdb: Actor::IsInCastPowerList | Actor_Magic.obj | debug, call graph, high
+// pdb params: apPower
+int FUN_008c5000_shell::Actor_IsInCastPowerList(int apPower)
 {
-    return Actor_GetCastPowerItem(arg) != 0;
+    return Actor_GetCastPowerItem(apPower) != 0;
 }
 
 // @fnv 0x008c6c80
+// pdb: ActorPackage::Revert | ActorPackage.obj | debug, object-file run extension, low
+// pdb params: apLoadGameBuffer
 void ActorPackageContext::Revert(BGSLoadFormBuffer* buffer)
 {
     Clear();
@@ -195,6 +203,7 @@ struct FUN_008ca740_class
 };
 // @fnv 0x008ca740
 // src: GUESS 0x008ca740 (confidence: low)
+// pdb: BSTCommonMessageQueue<MobileObjectMessage>::BSTCommonMessageQueue<MobileObjectMessage> | AITaskManager.obj | debug, object-file run extension, low
 FUN_008ca740_class* __thiscall FUN_008ca740_class::InitializeFields_008ca740()
 {
     InitializeVtbl();
@@ -259,22 +268,25 @@ struct T_
 struct FUN_008cd6a0_Class
 {
     void hkRotation_set(void*);
-    void hkTransform_set(void* a, void* b);
+    void hkTransform_set(void* q, void* t);
 };
 
 // Calls FUN_00cb2d90 on a, then calls FUN_004a3f10 on b through the object at this+0x30.
 // @fnv 0x008cd6a0
 // src: COMMUNITY 0x008cd6a0
-void FUN_008cd6a0_Class::hkTransform_set(void* apFirst, void* apSecond)
+// pdb: hkTransform::set | ArrowProjectile.obj | debug, upstream name already matches, high
+// pdb params: q, t
+void FUN_008cd6a0_Class::hkTransform_set(void* q, void* t)
 {
-    hkRotation_set(apFirst);
-    ((T_*)((char*)this + 0x30))->SetValue(apSecond);
+    hkRotation_set(q);
+    ((T_*)((char*)this + 0x30))->SetValue(t);
 }
 
 extern int DAT_011dfc9c;
 unsigned int __cdecl bhkCollisionFilter_GetNewSystemGroup();
 
 // @fnv 0x008cddb0
+// pdb: ArrowProjectile::GetArrowGroup | ArrowProjectile.obj | debug, call graph, medium
 unsigned int __cdecl GetCachedValue()
 {
     if (!DAT_011dfc9c)
@@ -308,6 +320,7 @@ struct FUN_008cfff0_Class
 
 // @fnv 0x008cfff0
 // src: COMMUNITY 0x008cfff0
+// pdb: hkpWorldObject::isAddedToWorld | ArrowProjectile.obj | debug, upstream name already matches, high
 CalleeObj* FUN_008cfff0_Class::hkpWorldObject_isAddedToWorld(CalleeObj* arg)
 {
     arg->UpdateState_00622570(m_cByteAtOffset2 != 0);
@@ -382,10 +395,12 @@ extern GlobalObject2_0096a2d0 g_011dfe14;
 
 // @fnv 0x008d15b0
 // src: XBOX_PDB 0x008d15b0
-void __cdecl BSDoorHavokController_ReleaseDoor(const void* p)
+// pdb: BSDoorHavokController::ReleaseDoor | BSDoorHavokController.obj | retail, upstream name already matches, high
+// pdb params: apDoor
+void __cdecl BSDoorHavokController_ReleaseDoor(const void* apDoor)
 {
-    if (p)
-        g_011dfe14._ref_00905330(&p);
+    if (apDoor)
+        g_011dfe14._ref_00905330(&apDoor);
 }
 
 extern float DAT_011dfed4;
@@ -415,6 +430,7 @@ struct FUN_008d4360_class
 
 // @fnv 0x008d4360
 // src: COMMUNITY 0x008d4360
+// pdb: CharacterProgression::CharacterProgression | CharacterProgression.obj | retail, upstream name already matches, high
 FUN_008d4360_class* __thiscall FUN_008d4360_class::CharacterProgression_CharacterProgression()
 {
     ((FUN_008d5020_class*)this)->CharacterProgression_AllocateData();
@@ -431,6 +447,7 @@ struct FUN_008d4380_class
 
 // @fnv 0x008d4380
 // src: GUESS 0x008d4380 (confidence: medium)
+// pdb: CharacterProgression::~CharacterProgression | CharacterProgression.obj | debug, object-file run extension, low
 void __thiscall FUN_008d4380_class::FreeAndClear_Thunk()
 {
     FreeAndClear();
@@ -447,6 +464,7 @@ struct FUN_008d50e0_shell
 };
 // @fnv 0x008d50e0
 // src: COMMUNITY 0x008d50e0
+// pdb: CharacterProgression::InitializeData | FalloutCharacterProgression.obj | retail, upstream name already matches, high
 void FUN_008d50e0_shell::CharacterProgression_InitializeData()
 {
     if (m_p)
@@ -459,6 +477,8 @@ struct FUN_008d5660_class
     void __thiscall ForwardToInner(int a);
 };
 // @fnv 0x008d5660
+// pdb: CharacterProgression::SaveGame | FalloutCharacterProgression.obj | debug, object-file gap fill, medium
+// pdb params: apSaveGameBuffer
 void __thiscall FUN_008d5660_class::ForwardToInner(int aiValue)
 {
     ((FUN_008d5660_class*)*(void**)this)->SaveToBuffer(aiValue);
@@ -473,12 +493,15 @@ struct FUN_008d5720
 };
 
 // @fnv 0x008d5720
+// pdb: CharacterProgressionData::Revert | FalloutCharacterProgression.obj | debug, object-file run extension, low
+// pdb params: apLoadGameBuffer
 void __thiscall FUN_008d5720::Init(int)
 {
     bFlag = 0;
-    nValue = ActorValueUtility_blk_008c0000_od::ConvertActorValue(2);
+    nValue = ActorValueUtility_blk_008c0000_od::GamePlayFormulas_GetRequiredExperiencePoints(2);
 }
 
+// pdb: class TaskQueueInterface, size 0x10 (here 0x1), 4 members
 struct TaskQueueInterface
 {
     void SetTaskFlagDWord(bool enabled, unsigned int flag);
@@ -486,6 +509,8 @@ struct TaskQueueInterface
 };
 
 // @fnv 0x008d6f10
+// pdb: NiNode::SetNotVisible | HighActorCuller.obj | debug, call graph, high
+// pdb params: abTF
 void TaskQueueInterface::SetTaskFlag(bool enabled)
 {
     SetTaskFlagDWord(enabled, 0x100000);
@@ -514,6 +539,7 @@ struct FUN_008df000_shell
 
 // @fnv 0x008df000
 // src: XBOX_PDB 0x008df000
+// pdb: PathingRequest::SetNoDestination | HighProcess.obj | debug, upstream name already matches, high
 void __thiscall FUN_008df000_shell::PathingRequest_SetNoDestination()
 {
     ((FUN_006d2c00_shell*)((char*)this + 0x34))->FUN_006d2c00();
@@ -565,14 +591,17 @@ FUN_008ca800_Class* __thiscall FUN_008ca800_Class::BSTFreeList_MobileObjectMessa
 extern "C" void __cdecl _Deallocate(void*);
 struct FUN_008c4f90_Class
 {
-    void __thiscall Actor_RemoveCastPower(int arg);
+    void __thiscall Actor_RemoveCastPower(int apPower);
 };
 void __cdecl _Deallocate(void*);
 // @fnv 0x008c4f90
 // src: COMMUNITY 0x008c4f90
-void __thiscall FUN_008c4f90_Class::Actor_RemoveCastPower(int arg)
+// pdb: Actor::RemoveCastPower | Actor_Magic.obj | retail, upstream name already matches, high
+// pdb params: apPower
+// pdb locals: pitem
+void __thiscall FUN_008c4f90_Class::Actor_RemoveCastPower(int apPower)
 {
-    FUN_008c5000_shell* result = (FUN_008c5000_shell*)((FUN_008c5000_shell*)this)->Actor_GetCastPowerItem(arg);
+    FUN_008c5000_shell* result = (FUN_008c5000_shell*)((FUN_008c5000_shell*)this)->Actor_GetCastPowerItem(apPower);
     if (result)
     {
         ((GlobalObject2_0096a2d0*)((char*)this + 0xf4))->_ref_00905330((const void**)&result);
@@ -632,6 +661,7 @@ struct FUN_008c7790_Class
 
 // Calls FUN_008c77c0, then deletes this when flags has bit 0 set, and returns this.
 // @fnv 0x008c7790
+// pdb: BSLinearTaskThread::`scalar deleting destructor' | AILinearTaskThreadManager.obj | debug, vtable slot, medium
 void* __thiscall FUN_008c7790_Class::DestroyIfFlagged(unsigned int flags)
 {
     FUN_008c77c0();
@@ -658,6 +688,7 @@ struct FUN_008c77c0_Class : FUN_00aa63c0_base
 };
 // Destructor for the class; the body is empty and the compiler-generated member destructors run implicitly.
 // @fnv 0x008c77c0
+// pdb: BSLinearTaskThread::~BSLinearTaskThread | AILinearTaskThreadManager.obj | debug, object-file gap fill, medium
 FUN_008c77c0_Class::~FUN_008c77c0_Class()
 {}
 
@@ -671,6 +702,8 @@ struct FUN_008c7990_Class
 };
 // @fnv 0x008c7990
 // src: COMMUNITY 0x008c7990
+// pdb: AILinearTaskThreadManager::WaitForThreads | AILinearTaskThreadManager.obj | retail, upstream name already matches, high
+// pdb locals: ithreadIdx
 void __fastcall FUN_008c7990_Class::AILinearTaskThreadManager_WaitForThreads()
 {
     for (unsigned int i = 0; i < 2; ++i)
@@ -776,6 +809,7 @@ struct FUN_008d0270_Class
 // Sets the vtable pointer, calls FUN_008c5e20 on the object at offset 4, zeroes m_2c, and returns this.
 // @fnv 0x008d0270
 // src: EXE 0x008d0270
+// pdb: BaseProcess::BaseProcess | BaseProcess.obj | retail, upstream name already matches, high
 FUN_008d0270_Class* __thiscall FUN_008d0270_Class::BaseProcess_BaseProcess()
 {
     vtbl = &DAT_01085e2c;
@@ -793,6 +827,8 @@ struct FUN_008d1130_Class : FUN_008d1160_Class
 
 // Calls the base constructor, then if bit 0 of flags is set calls CallWithParam on this, and returns this.
 // @fnv 0x008d1130
+// pdb: ProjectileListener::`scalar deleting destructor' | ProjectileListener.obj | retail, vtable slot, high
+// pdb params: this
 FUN_008d1130_Class* __thiscall FUN_008d1130_Class::FUN_008d1130(unsigned int flags)
 {
     ForwardCall_008d1160();
@@ -810,6 +846,7 @@ struct FUN_008d15d0_Class
 // Calls FUN_00a6d220 on this, sets the vtable to DAT_010867fc, zeroes the float at +0x34 and the int at +0x38, and returns this.
 // @fnv 0x008d15d0
 // src: EXE 0x008d15d0
+// pdb: BSPlayerDistanceCheckController::BSPlayerDistanceCheckController | BSPlayerDistanceCheckController.obj | retail, upstream name already matches, high
 void* __thiscall FUN_008d15d0_Class::BSPlayerDistanceCheckController_BSPlayerDistanceCheckController()
 {
     FUN_00a6d220(this);
@@ -867,6 +904,8 @@ struct FUN_008d56c0_class
 };
 // Writes this object's first byte and the 4 bytes at offset 4 into the BGSSaveFormBuffer passed in.
 // @fnv 0x008d56c0
+// pdb: CharacterProgressionData::SaveGame | FalloutCharacterProgression.obj | debug, object-file run extension, low
+// pdb params: apSaveGameBuffer
 void __thiscall FUN_008d56c0_class::SaveToBuffer(int pBuffer)
 {
     ((BGSSaveFormBuffer*)pBuffer)->SaveData(this, 1, 0);
@@ -880,6 +919,8 @@ struct FUN_008d56f0_Class
 // Reads 1 byte into this and 4 bytes at offset 4 from the load buffer.
 // @fnv 0x008d56f0
 // src: COMMUNITY 0x008d56f0
+// pdb: CharacterProgressionData::LoadGame | FalloutCharacterProgression.obj | debug, object-file run extension, low
+// pdb params: apLoadGameBuffer
 void __thiscall FUN_008d56f0_Class::CharacterProgressionData_LoadGameBGS(BGSLoadFormBuffer* buffer)
 {
     buffer->ReadTypedData(this, 1u);
@@ -897,6 +938,8 @@ struct FUN_008d6000_Class
     void __thiscall InitTiming(unsigned int a, unsigned int b);
 };
 // @fnv 0x008d6000
+// pdb: FollowerBarks::FollowerBarkEntry::BuildBarkEntry | FollowerBarks.obj | debug, object-file gap fill, medium
+// pdb params: apBarker, aeBarkType
 void __thiscall FUN_008d6000_Class::InitTiming(unsigned int a, unsigned int b)
 {
     m_iWordAt04 = b;
@@ -919,23 +962,25 @@ extern ProcessLists DAT_011e0e80;
 
 struct FUN_008d6f50_Class
 {
-    void HighActorCuller_Run(int arg);
+    void HighActorCuller_Run(int apCamera);
 };
 
 // @fnv 0x008d6f50
 // src: COMMUNITY 0x008d6f50
-void FUN_008d6f50_Class::HighActorCuller_Run(int pCamera)
+// pdb: HighActorCuller::Run | HighActorCuller.obj | retail, upstream name already matches, high
+// pdb params: apCamera
+void FUN_008d6f50_Class::HighActorCuller_Run(int apCamera)
 {
     if (reinterpret_cast<bool (__thiscall*)(const NiPointer<NiNode>*, NiNode*)>(NiPointerEquals)((NiPointer<NiNode>*)((char*)this + 0xa0), 0))
     {
-        ((FUN_008d6bb0_shell*)this)->CreateMultiBoundNode(pCamera);
+        ((FUN_008d6bb0_shell*)this)->CreateMultiBoundNode(apCamera);
     }
     else
     {
-        ((MagicCaster*)((char*)this + 8))->SetSelectedMagicItem(pCamera);
-        ((S694a0*)((char*)this + 8))->NiCullingProcess_SetFrustum((void*)&((NiCamera*)pCamera)->GetViewFrustum());
+        ((MagicCaster*)((char*)this + 8))->SetSelectedMagicItem(apCamera);
+        ((S694a0*)((char*)this + 8))->NiCullingProcess_SetFrustum((void*)&((NiCamera*)apCamera)->GetViewFrustum());
     }
-    DAT_011e0e80.ProcessMobileObjects(this);
+    DAT_011e0e80.IterateMobs(this);
 }
 
 extern "C" void __cdecl _delete(void* p, unsigned int size);
@@ -948,6 +993,7 @@ struct FUN_008df980_Class
 
 // Calls FUN_008df9b0, frees this with _delete when flags has bit 0 set, and returns this.
 // @fnv 0x008df980
+// pdb: ActorPathingMessageQueue::`scalar deleting destructor' | HighProcess.obj | retail, vtable slot, high
 void* __thiscall FUN_008df980_Class::FUN_008df980(unsigned int flags)
 {
     FUN_008df9b0();
@@ -964,6 +1010,7 @@ struct SeqObj
 {
     NiFixedStr& GetName();
 };
+// pdb: class ModelLoader, size 0x30 (here 0x1), 12 members
 struct ModelLoader
 {
     void ModelLoader_ReleaseFile(const char* name);
@@ -976,8 +1023,10 @@ extern Loader_S g_modelLoader;
 extern int DAT_011e00e0[12];
 extern int DAT_011e0110[12];
 // @fnv 0x008d68d0
-// src: COMMUNITY 0x008d68d0
-void __cdecl FreeWobbleAnimations()
+// src: XBOX_RETAIL_PDB 0x008d68d0 (was COMMUNITY)
+// pdb: FreeGunWobble | GunWobble.obj | retail, object-file gap fill, high
+// pdb locals: n
+void __cdecl FreeGunWobble()
 {
     for (int i = 0; i < 12; ++i)
     {
@@ -995,6 +1044,7 @@ void __cdecl FreeWobbleAnimations()
     }
 }
 
+// pdb: class Model, size 0x10 (here 0x1), 4 members
 struct Model
 {
     NiTimeController* GetObject3D();
@@ -1012,18 +1062,21 @@ struct FUN_00571550_shell
 int __cdecl get_g_bip01();
 struct FUN_008da1a0_Class
 {
-    void HighProcess_InitBoneLOD(FUN_00571550_shell* actor);
+    void HighProcess_InitBoneLOD(FUN_00571550_shell* apActor);
 };
 // Clears the field at offset 0x2e4, then scans the actor's model controllers and stores the first one accepted by g_012031b8.
 // @fnv 0x008da1a0
 // src: COMMUNITY 0x008da1a0
-void FUN_008da1a0_Class::HighProcess_InitBoneLOD(FUN_00571550_shell* actor)
+// pdb: HighProcess::InitBoneLOD | HighProcess.obj | retail, upstream name already matches, high
+// pdb params: apActor
+// pdb locals: ptimeController, proot, pobj
+void FUN_008da1a0_Class::HighProcess_InitBoneLOD(FUN_00571550_shell* apActor)
 {
     *(int*)((char*)this + 0x2e4) = 0;
-    int id = actor->GetReferenceType();
+    int id = apActor->GetReferenceType();
     if (!id)
         return;
-    Model* model = actor->TESObjectREFR_GetActorBone_00571530(id, get_g_bip01());
+    Model* model = apActor->TESObjectREFR_GetActorBone_00571530(id, get_g_bip01());
     if (!model)
         return;
     NiTimeController* controller = model->GetObject3D();
@@ -1049,6 +1102,7 @@ struct FUN_008c7860_Class : FUN_008c77c0_Class
     ~FUN_008c7860_Class();
 };
 // @fnv 0x008c7860
+// pdb: AILinearTaskThread::~AILinearTaskThread | AILinearTaskThreadManager.obj | debug, object-file run extension, low
 FUN_008c7860_Class::~FUN_008c7860_Class()
 {}
 
@@ -1061,17 +1115,19 @@ extern int DAT_01086674;
 extern int DAT_01086684;
 struct FUN_008d10e0_Class : Call741e0
 {
-    void* bhkCharacterListenerArrow_bhkCharacterListenerArrow(int a, int b);
+    void* bhkCharacterListenerArrow_bhkCharacterListenerArrow(int arInfo, int apProjectile);
 };
 // @fnv 0x008d10e0
 // src: EXE 0x008d10e0
-void* FUN_008d10e0_Class::bhkCharacterListenerArrow_bhkCharacterListenerArrow(int aiArg, int aiValue)
+// pdb: bhkCharacterListenerArrow::bhkCharacterListenerArrow | bhkCharacterListenerArrow.obj | debug, upstream name already matches, high
+// pdb params: arInfo, apProjectile
+void* FUN_008d10e0_Class::bhkCharacterListenerArrow_bhkCharacterListenerArrow(int arInfo, int apProjectile)
 {
-    FUN_00c741e0(aiArg);
+    FUN_00c741e0(arInfo);
     *reinterpret_cast<int**>(this) = &DAT_01086684;
     *reinterpret_cast<int**>(reinterpret_cast<char*>(this) + 0x3e0) = &DAT_01086674;
     *reinterpret_cast<int**>(reinterpret_cast<char*>(this) + 0x410) = &DAT_01086658;
-    *reinterpret_cast<int*>(reinterpret_cast<char*>(this) + 0x650) = aiValue;
+    *reinterpret_cast<int*>(reinterpret_cast<char*>(this) + 0x650) = apProjectile;
     return this;
 }
 
@@ -1086,16 +1142,18 @@ struct CloneableObj
 };
 struct FUN_008d17d0_Class
 {
-    void BSPlayerDistanceCheckController_CopyMembers(BGSAcousticSpace* dst, void* arg);
+    void BSPlayerDistanceCheckController_CopyMembers(BGSAcousticSpace* pkDest, void* kCloning);
 };
 // @fnv 0x008d17d0
 // src: XBOX_PDB 0x008d17d0
-void FUN_008d17d0_Class::BSPlayerDistanceCheckController_CopyMembers(BGSAcousticSpace* dst, void* arg)
+// pdb: BSPlayerDistanceCheckController::CopyMembers | BSPlayerDistanceCheckController.obj | debug, upstream name already matches, high
+// pdb params: pkDest, kCloning
+void FUN_008d17d0_Class::BSPlayerDistanceCheckController_CopyMembers(BGSAcousticSpace* pkDest, void* kCloning)
 {
-    dst->SetNoonSound(reinterpret_cast<TESSound*>(reinterpret_cast<TESTopicInfo*>(this)->GetConversationData()));
-    reinterpret_cast<FUN_00929240_Class*>(dst)->MagicShaderHitEffect_SetLifeTime(
+    pkDest->SetNoonSound(reinterpret_cast<TESSound*>(reinterpret_cast<TESTopicInfo*>(this)->GetConversationData()));
+    reinterpret_cast<FUN_00929240_Class*>(pkDest)->MagicShaderHitEffect_SetLifeTime(
         reinterpret_cast<float (__thiscall*)(BSFaceGenMorphData*)>(NiControllerSequence_GetLastTime)(reinterpret_cast<BSFaceGenMorphData*>(this)));
-    reinterpret_cast<CloneableObj*>(this)->FUN_00a6cfe0(reinterpret_cast<CloneableObj*>(dst), arg);
+    reinterpret_cast<CloneableObj*>(this)->FUN_00a6cfe0(reinterpret_cast<CloneableObj*>(pkDest), kCloning);
 }
 
 struct FUN_0087adf0_shell
@@ -1118,6 +1176,7 @@ FUN_008c1c30_Class* FUN_008c1c30_Class::UpdateState_008c1c30(FUN_0087adf0_shell*
 }
 
 // @fnv 0x008c1cb0
+// pdb: BSSimpleArray<Actor *,1024>::~BSSimpleArray<Actor *,1024> | Actor.obj | debug, call graph, high
 template <>
 BSSimpleArray<Actor*, 1024>::~BSSimpleArray()
 {
@@ -1379,15 +1438,18 @@ struct FUN_008c45a0_Result
 // If GetLogDate() returns non-null, forwards arg to the virtual FUN_008c45a0 method on that object.
 // @fnv 0x008c45a0
 // src: COMMUNITY 0x008c45a0
-void TES::Actor_SetShouldCheckMagicNode(unsigned char aucValue)
+// pdb: Actor::SetShouldCheckMagicNode | Actor_Magic.obj | debug, upstream name already matches, high
+// pdb params: abCheck
+void TES::Actor_SetShouldCheckMagicNode(unsigned char abCheck)
 {
     if (GetLogDate())
     {
-        reinterpret_cast<FUN_008c45a0_Result*>(GetLogDate())->Actor_SetShouldCheckMagicNode(aucValue);
+        reinterpret_cast<FUN_008c45a0_Result*>(GetLogDate())->Actor_SetShouldCheckMagicNode(abCheck);
     }
 }
 
 // @fnv 0x008c7250
+// pdb: BSAISemaphore::BSAISemaphore | AILinearTaskThreadManager.obj | debug, object-file run extension, low
 CountingSemaphore::CountingSemaphore()
 {
     this->CountingSemaphore::CountingSemaphore(0, 0x14);
@@ -1416,11 +1478,13 @@ void __cdecl FUN_008c7270_Cb(void);
 // Calls FUN_0065ee50_Helper on m_18 with size 0xc, count 3 and callback FUN_008c7270_Cb.
 // @fnv 0x008c8110
 // src: GUESS 0x008c8110 (confidence: low)
+// pdb: AILinearTaskThreadManager::~AILinearTaskThreadManager | AILinearTaskThreadManager.obj | debug, object-file run extension, low
 void __thiscall FUN_008c8110_Class::ForwardCall_008c8110()
 {
     FUN_0065ee50_Helper(&m_18, 0xc, 3, FUN_008c7270_Cb);
 }
 
+// pdb: class Date, size 0x4 (here 0x1), 2 members
 struct Date
 {
     ~Date();
@@ -1433,6 +1497,8 @@ struct FUN_008ca770_Class
 // Destroys the Date object pointed to by pp, then calls FUN_008ca8d0 on pp.
 // @fnv 0x008ca770
 // src: GUESS 0x008ca770 (confidence: low)
+// pdb: BSTFreeList<MobileObjectMessage>::Deallocate | AITaskManager.obj | debug, object-file run extension, low
+// pdb params: apElem
 void FUN_008ca770_Class::ProcessState_008ca770(Date** ppDate)
 {
     (*ppDate)->Date::~Date();
@@ -1499,6 +1565,7 @@ struct FUN_008cc6f0_Class
 // Calls GetItem on four BSSimpleList<BGSPerk*> members at offsets 4, 0x10, 0x1c and 0x30, then returns this.
 // @fnv 0x008cc6f0
 // src: GUESS 0x008cc6f0 (confidence: low)
+// pdb: ArrowProjectile::CollisionInfo::CollisionInfo | ArrowProjectile.obj | debug, call graph, medium
 void* FUN_008cc6f0_Class::EvaluateValue_008cc6f0()
 {
     reinterpret_cast<BGSPerk*& (__thiscall*)(BSSimpleList<BGSPerk*>*)>(GetPerkListItem)((BSSimpleList<BGSPerk*>*)((char*)this + 4));
@@ -1519,15 +1586,17 @@ struct FUN_008d3f10_Class
     unsigned char pad[0x38];
     GO m_38;
 
-    void __thiscall NiGeomMorpherController_GetTarget(int arg);
+    void __thiscall NiGeomMorpherController_GetTarget(int uiIndex);
 };
 
 // Calls GetEntryAt on the object obtained by converting m_38 to an unsigned int, passing arg through.
 // @fnv 0x008d3f10
 // src: XBOX_PDB 0x008d3f10
-void FUN_008d3f10_Class::NiGeomMorpherController_GetTarget(int arg)
+// pdb: NiGeomMorpherController::GetTarget | Character.obj | debug, upstream name already matches, high
+// pdb params: uiIndex
+void FUN_008d3f10_Class::NiGeomMorpherController_GetTarget(int uiIndex)
 {
-    reinterpret_cast<FUN_008d3f40_Class*>(m_38.operator unsigned int())->GetEntryAt(arg);
+    reinterpret_cast<FUN_008d3f40_Class*>(m_38.operator unsigned int())->GetEntryAt(uiIndex);
 }
 
 namespace fnv_008d3f40 {
@@ -1564,6 +1633,7 @@ struct FUN_008d50a0_Class
 
 // If m_p is set, deallocates it and resets m_p to null.
 // @fnv 0x008d50a0
+// pdb: CharacterProgression::DeleteData | FalloutCharacterProgression.obj | debug, object-file gap fill, medium
 void __thiscall FUN_008d50a0_Class::FreeAndClear()
 {
     if (m_p)
@@ -1581,6 +1651,8 @@ struct FUN_008d5680_Class
 };
 // @fnv 0x008d5680
 // src: COMMUNITY 0x008d5680
+// pdb: CharacterProgression::LoadGame | FalloutCharacterProgression.obj | debug, object-file gap fill, medium
+// pdb params: apLoadGameBuffer
 void FUN_008d5680_Class::CharacterProgression_LoadGameBGS(BGSLoadFormBuffer* apBuffer)
 {
     m_p->CharacterProgressionData_LoadGameBGS(apBuffer);
@@ -1588,13 +1660,15 @@ void FUN_008d5680_Class::CharacterProgression_LoadGameBGS(BGSLoadFormBuffer* apB
 
 struct FUN_008d56a0_Class
 {
-    void __thiscall ProcessAndTransformResult_008d56a0(int value);
+    void __thiscall CharacterProgression_Revert(int apLoadGameBuffer);
 };
 // @fnv 0x008d56a0
-// src: GUESS 0x008d56a0 (confidence: low)
-void __thiscall FUN_008d56a0_Class::ProcessAndTransformResult_008d56a0(int value)
+// src: XBOX_DEBUG_PDB 0x008d56a0
+// pdb: CharacterProgression::Revert | FalloutCharacterProgression.obj | debug, call graph, high
+// pdb params: apLoadGameBuffer
+void __thiscall FUN_008d56a0_Class::CharacterProgression_Revert(int apLoadGameBuffer)
 {
-    ((FUN_008d5720*)*(void**)this)->Init(value);
+    ((FUN_008d5720*)*(void**)this)->Init(apLoadGameBuffer);
 }
 
 // Process slot 0x3D4 is SetMagicTarget; Actor.h lacks this override, so the bridge adds only its declaration.
@@ -1606,6 +1680,8 @@ class MagicTargetForwarder : public Actor
 
 // Forwards the magic target to the actor's process when one exists.
 // @fnv 0x008c4510
+// pdb: Actor::SetDesiredTarget | Actor_Magic.obj | debug, object-file gap fill, medium
+// pdb params: apDesiredTarget
 void MagicTargetForwarder::SetMagicTarget(MagicTarget* target)
 {
     if (GetProcess())
@@ -1691,23 +1767,26 @@ struct S_8c4f10_Cls
     int unk8c;
     int unk90;
     S_8c4f10_List list;
-    void Actor_CheckDeletedCaster(int a);
+    void Actor_CheckDeletedCaster(int apMagicCaster);
 };
 
 // If a is nonzero, walks the list nodes while FUN_005ae380 is true and calls v14(a) on the first item of each node.
 // @fnv 0x008c4f10
 // src: XBOX_PDB 0x008c4f10
-void S_8c4f10_Cls::Actor_CheckDeletedCaster(int a)
+// pdb: Actor::CheckDeletedCaster | Actor_Magic.obj | retail, upstream name already matches, high
+// pdb params: apMagicCaster
+// pdb locals: plist
+void S_8c4f10_Cls::Actor_CheckDeletedCaster(int apMagicCaster)
 {
     S_8c4f10_Node* pNode;
-    if (a)
+    if (apMagicCaster)
     {
         pNode = list.v02();
         while (pNode && pNode->FUN_005ae380())
         {
             if (*pNode->FUN_006815c0())
             {
-                (*pNode->FUN_006815c0())->v14(a);
+                (*pNode->FUN_006815c0())->v14(apMagicCaster);
             }
             pNode = pNode->FUN_00726070();
         }
@@ -1745,6 +1824,8 @@ struct FUN_008c71d0_cls
 // Constructs the three m_18 elements, zeroes m_00 and m_0c, points m_8c at m_3c and m_90 at m_6c, and returns this.
 // @fnv 0x008c71d0
 // src: COMMUNITY 0x008c71d0
+// pdb: AILinearTaskThreadManager::AILinearTaskThreadManager | AILinearTaskThreadManager.obj | retail, upstream name already matches, high
+// pdb locals: i
 FUN_008c71d0_cls* FUN_008c71d0_cls::AILinearTaskThreadManager_AILinearTaskThreadManager()
 {
     SpawnedArrayCtor(m_18, 12, 3, SpawnedElemB_Ctor, SpawnedElemB_Dtor);
@@ -1784,6 +1865,8 @@ extern void(__stdcall* g_FNV_008c78c0_hook)(int);
 // Calls the hook on each entry of unk3c and unk6c, clears unk0c, sets DAT_011dfa19 to 1, then invokes SignalAtOffset30 on each non-null unk00 element.
 // @fnv 0x008c78c0
 // src: COMMUNITY 0x008c78c0
+// pdb: AILinearTaskThreadManager::StartThreads | AILinearTaskThreadManager.obj | retail, upstream name already matches, high
+// pdb locals: ithreadIdx
 void FUN_008c78c0_Class::AILinearTaskThreadManager_StartThreads()
 {
     // twelve handler slots
@@ -1921,6 +2004,7 @@ void FUN_008cab00_cls::ForwardCall_008cab00()
 }
 
 extern int DAT_01085c90;
+// pdb: class Renderer, size 0x1, 0 members
 struct Renderer
 {
     void NiAVObject_SetTranslate(void*);
@@ -2717,10 +2801,13 @@ struct Player
     unsigned int unknown80;
     unsigned int unknown84;
     State* state;
-    unsigned char RenderActiveAction(int unused);
+    unsigned char RenderActiveAction(int apArrowRB);
 };
 // @fnv 0x008cd390
-unsigned char Player::RenderActiveAction(int unused)
+// pdb: ArrowProjectile::ProcessCollisionActor | ArrowProjectile.obj | debug, unique string literal, high
+// pdb params: apArrowRB
+// pdb locals: parrowAV, pshadowNode, pactor, ptargetObject
+unsigned char Player::RenderActiveAction(int apArrowRB)
 {
     Renderer* renderer = currentRenderer();
     resetRenderer();
@@ -2768,7 +2855,7 @@ struct EventTarget
 {
     EventProperty* bhkWorldObject_GetShape();
 };
-ResourceInfo* __cdecl FindFirstCollisionObject(int source);
+ResourceInfo* __cdecl FindFirstCollisionObject(int ap3D);
 extern float DAT_01016248;
 struct EventRecord
 {
@@ -2910,6 +2997,9 @@ struct Object
 // If the object's source resolves to a resource with metadata, builds an EventRecord from the arguments and passes it to FUN_00837550.
 // @fnv 0x008cfad0
 // src: COMMUNITY 0x008cfad0
+// pdb: ArrowProjectile::PlayArrowCollisionSound | ArrowProjectile.obj | debug, upstream name already matches, high
+// pdb params: afVelocity, aContactPoint, pTargetBody, aeTargetMaterial
+// pdb locals: pav, pcol, parrowRB, fakeCollisionData
 void Object::ArrowProjectile_PlayArrowCollisionSound(float weight, int aiParam1, int aiParam2, int aiParam3, int offset, unsigned char enabled)
 {
     int source = GetSource();
@@ -2957,6 +3047,8 @@ struct Holder_cffa0
 // Gets the object from this, calls FUN_00a29680 around a FUN_008cfff0 call on it, and returns the resulting bool, or false if the object is null.
 // @fnv 0x008cffa0
 // src: XBOX_PDB 0x008cffa0
+// pdb: bhkWorldObject::IsAddedToWorld | ArrowProjectile.obj | retail, upstream name already matches, high
+// pdb locals: pwo, bretVal
 bool Holder_cffa0::bhkWorldObject_IsAddedToWorld()
 {
     FUN_008cfff0_Class* obj =
@@ -3002,7 +3094,7 @@ struct Arg_cls
     int TESDataHandler_GetWorldSpaceList();
     int FUN_006815c0();
 };
-void bhkCharacterListenerArrow_ProcessCollision(Target_cls* p, int a, int b, int c);
+void bhkCharacterListenerArrow_ProcessCollision(Target_cls* apProjectile, int apCollidee, int aContactPoint, int aContactNormal);
 struct FUN_008d14e0_cls
 {
     int unk0000;
@@ -3410,12 +3502,15 @@ struct FUN_008d14e0_cls
     int unk0648;
     int unk064C;
     Target_cls* m_650;
-    void bhkCharacterListenerArrow_contactPointAddedCallback(Arg_cls* a1);
+    void bhkCharacterListenerArrow_contactPointAddedCallback(Arg_cls* point);
 };
 // If m_650 is non-null and its two checks both return zero, calls FUN_008d12e0 with m_650 and values from a1.
 // @fnv 0x008d14e0
 // src: COMMUNITY 0x008d14e0
-void FUN_008d14e0_cls::bhkCharacterListenerArrow_contactPointAddedCallback(Arg_cls* apArg)
+// pdb: bhkCharacterListenerArrow::contactPointAddedCallback | bhkCharacterListenerArrow.obj | debug, upstream name already matches, high
+// pdb params: point
+// pdb locals: pprojectile
+void FUN_008d14e0_cls::bhkCharacterListenerArrow_contactPointAddedCallback(Arg_cls* point)
 {
     Target_cls* p = m_650;
     if (p == 0 || p->FUN_008ce390() != 0 || p->FUN_00440d80() != 0)
@@ -3423,7 +3518,7 @@ void FUN_008d14e0_cls::bhkCharacterListenerArrow_contactPointAddedCallback(Arg_c
     }
     else
     {
-        bhkCharacterListenerArrow_ProcessCollision(p, apArg->unk0048, apArg->FUN_006815c0(), apArg->TESDataHandler_GetWorldSpaceList());
+        bhkCharacterListenerArrow_ProcessCollision(p, point->unk0048, point->FUN_006815c0(), point->TESDataHandler_GetWorldSpaceList());
     }
 }
 
@@ -3453,27 +3548,31 @@ struct AnimTimeSource
 extern NiMatrix3 DAT_011a9448;
 
 // @fnv 0x008d6970
-int ComputeRelativeRotation(int index, float time, NiMatrix3* pOutRotate)
+// src: XBOX_RETAIL_PDB 0x008d6970
+// pdb: GetGunWobble | GunWobble.obj | retail, object-file gap fill, high
+// pdb params: aeWeaponType, afTime, apReturnWobble
+// pdb locals: startRot, pcontroller, UpdateData2, fstartTime, UpdateData1
+int GetGunWobble(int aeWeaponType, float afTime, NiMatrix3* apReturnWobble)
 {
-    if (!DAT_011e0110[index] || !DAT_011e00e0[index])
+    if (!DAT_011e0110[aeWeaponType] || !DAT_011e00e0[aeWeaponType])
     {
-        *pOutRotate = DAT_011a9448;
+        *apReturnWobble = DAT_011a9448;
         return 0;
     }
-    AnimTimeSource* source7 = ((NiAVObject*)DAT_011e0110[index])->GetObject3D();
-    if (index != 0)
+    AnimTimeSource* source7 = ((NiAVObject*)DAT_011e0110[aeWeaponType])->GetObject3D();
+    if (aeWeaponType != 0)
     {
         float sourceTime = source7->GetSourceTimeStub();
         NiUpdateData data3(sourceTime, true, false);
-        ((NiAVObject*)DAT_011e0110[index])->Update(data3);
+        ((NiAVObject*)DAT_011e0110[aeWeaponType])->Update(data3);
     }
     // Preserve the original raw matrix copy without invoking the shared copy constructor.
     float rotate5[sizeof(NiMatrix3) / sizeof(float)];
-    *reinterpret_cast<NiMatrix3*>(rotate5) = ((NiAVObject*)DAT_011e0110[index])->GetLocalRotateStub();
-    NiUpdateData update2(time, true, false);
-    ((NiAVObject*)DAT_011e0110[index])->Update(update2);
-    *pOutRotate = reinterpret_cast<const NiMatrix3*>(rotate5)->Inverse() * ((NiAVObject*)DAT_011e0110[index])->GetLocalRotateStub();
-    return DAT_011e00e0[index];
+    *reinterpret_cast<NiMatrix3*>(rotate5) = ((NiAVObject*)DAT_011e0110[aeWeaponType])->GetLocalRotateStub();
+    NiUpdateData update2(afTime, true, false);
+    ((NiAVObject*)DAT_011e0110[aeWeaponType])->Update(update2);
+    *apReturnWobble = reinterpret_cast<const NiMatrix3*>(rotate5)->Inverse() * ((NiAVObject*)DAT_011e0110[aeWeaponType])->GetLocalRotateStub();
+    return DAT_011e00e0[aeWeaponType];
 }
 
 struct Small_b7397
@@ -3537,6 +3636,7 @@ class FUN_008d6af0_cls
 
 // Destructor that resets the three Small_b7397 members m_a0, m_9c and m_98 to zero before the object is destroyed.
 // @fnv 0x008d6af0
+// pdb: HighActorCuller::~HighActorCuller | HighActorCuller.obj | debug, object-file run extension, low
 FUN_008d6af0_cls::~FUN_008d6af0_cls()
 {
     m_a0.Reset(0);
@@ -3601,6 +3701,7 @@ class FUN_008df9b0 : public B8DF9B0Base
 
 // Destructor for FUN_008df9b0; the body is empty, so member destructors run implicitly.
 // @fnv 0x008df9b0
+// pdb: ActorPathingMessageQueue::~ActorPathingMessageQueue | HighProcess.obj | debug, call graph, medium
 FUN_008df9b0::~FUN_008df9b0()
 {}
 
@@ -3940,6 +4041,7 @@ class C44C0Actor : public C44C0Primary, public C44C0Interface
 // Returns the current package from the actor's process, or null if the actor has no process.
 // @fnv 0x008c44c0
 // src: COMMUNITY 0x008c44c0
+// pdb: Actor::GetDesiredTarget | Actor_Magic.obj | debug, upstream name already matches, high
 void* C44C0Actor::Actor_GetDesiredTarget()
 {
     return GetProcess() ? GetProcess()->GetCurrentPackage() : 0;
@@ -3952,13 +4054,15 @@ struct ArrowCollision
     ArrowWorldObj* bhkNiCollisionObject_GetWorldObject();
 };
 struct ArrowRenderer;
-ArrowCollision* __cdecl FindFirstCollisionObject(ArrowRenderer* source);
+ArrowCollision* __cdecl FindFirstCollisionObject(ArrowRenderer* ap3D);
 struct ArrowImpact
 {
     int type;
 };
 
 // @fnv 0x008cd210
+// pdb: ArrowProjectile::ProcessCollision | ArrowProjectile.obj | debug, unique string literal, high
+// pdb locals: pcol, parrowRB, bsuccess
 bool ArrowProjectile::ProcessImpact()
 {
     // Impact storage is not yet named in the shared declaration (0x88 and 0x8c).
@@ -4274,6 +4378,9 @@ struct MovementController
 };
 // Resets the node, updates its transform and rotation from the movement state, and pushes rotation and angle data to the animation output.
 // @fnv 0x008cd780
+// pdb: ArrowProjectile::ProcessBounce | ArrowProjectile.obj | debug, object-file gap fill, medium
+// pdb params: apArrowRB
+// pdb locals: pcol, UpdateData, accum, force, angle, vton, fnormalDotDirection, invrot
 bool MovementController::UpdateAnimation(AnimationOutput* output)
 {
     resetNode();
@@ -4357,7 +4464,7 @@ struct SceneHolder
     int unk88;
     int unk8C;
     void SetArg(SceneArg* arg);
-    void SetData(void* data);
+    void SetData(void* kFrustum);
 };
 
 struct FUN_008d6bb0_owner
@@ -4373,6 +4480,8 @@ struct FUN_008d6bb0_owner
 
 // Stores the scene arg and data in holder, then allocates a shape, a multi bound and a multi bound node and links them together.
 // @fnv 0x008d6bb0
+// pdb: HighActorCuller::Init | HighActorCuller.obj | debug, object-file run extension, low
+// pdb params: apCamera
 void FUN_008d6bb0_owner::CreateMultiBoundNode(SceneArg* arg)
 {
     holder.SetArg(arg);
@@ -4417,6 +4526,8 @@ struct FUN_008c7a30_class
 
 // If index is below 2, returns values[index] plus the result of FUN_00559450 called on items[index]; otherwise returns 0.
 // @fnv 0x008c7a30
+// pdb: AILinearTaskThreadManager::SignalRenderSema | AILinearTaskThreadManager.obj | retail, object-file run extension, low
+// pdb note: debug build links it to AILinearTaskThreadManager::WaitRenderSema
 int __thiscall FUN_008c7a30_class::GetValueWithItemResult(int index)
 {
     int result = 0;
@@ -4444,21 +4555,24 @@ struct AnimationOutputD6
 struct MovementControllerD6 : MovementController
 {
     void TESObjectREFR_SetLocationOnReference(const NiPoint3& position);
-    bool ArrowProjectile_ProcessCollisionTerrain(AnimationOutputD6* output);
+    bool ArrowProjectile_ProcessCollisionTerrain(AnimationOutputD6* apArrowRB);
 };
 // Resets the node, applies the state position, then writes a collision filter and an update token into the animation output and returns true.
 // @fnv 0x008cd6d0
 // src: XBOX_PDB 0x008cd6d0
-bool MovementControllerD6::ArrowProjectile_ProcessCollisionTerrain(AnimationOutputD6* output)
+// pdb: ArrowProjectile::ProcessCollisionTerrain | ArrowProjectile.obj | debug, upstream name already matches, high
+// pdb params: apArrowRB
+// pdb locals: filter
+bool MovementControllerD6::ArrowProjectile_ProcessCollisionTerrain(AnimationOutputD6* apArrowRB)
 {
     resetNode();
     getNode()->NiAVObject_SetTranslate(state->position);
     TESObjectREFR_SetLocationOnReference(state->position);
-    CollisionFilterD6 filter = output->bhkWorldObject_GetCollisionFilter();
+    CollisionFilterD6 filter = apArrowRB->bhkWorldObject_GetCollisionFilter();
     filter.CFilter_SetLayer(0xf);
     filter.SetFlag4000(false);
-    output->bhkWorldObject_SetCollisionFilter(filter.value);
-    output->bhkWorldObject_SetCollisionFilter(UpdateToken(0xf, GetCachedValue(), 0).value);
+    apArrowRB->bhkWorldObject_SetCollisionFilter(filter.value);
+    apArrowRB->bhkWorldObject_SetCollisionFilter(UpdateToken(0xf, GetCachedValue(), 0).value);
     return true;
 }
 
@@ -4607,6 +4721,8 @@ struct HealthCond5e30
 };
 // Checks whether the actor's health ratio or a set of actor values satisfies the condition type stored in iType.
 // @fnv 0x008d5e30
+// pdb: FollowerBarks::FollowerBarkEntry::GetShouldRepeat | FollowerBarks.obj | debug, object-file gap fill, medium
+// pdb locals: fhealth, fHealthMax, fHealthPct, eav
 bool HealthCond5e30::IsHealthConditionMet()
 {
     if (!pActor)
@@ -4686,6 +4802,8 @@ struct FUN_008d6fc0_cls
 // Copies all fields from rhs, copying f0c and f18 only when rhs.f18.FUN_006a7f50() exceeds -DAT_01087820.
 // @fnv 0x008d6fc0
 // src: COMMUNITY 0x008d6fc0
+// pdb: DetectionState::CopyNewData | HighProcess.obj | debug, object-file run extension, low
+// pdb params: apState
 void FUN_008d6fc0_cls::DetectionData_CopyFrom(const FUN_008d6fc0_cls& rhs)
 {
     f00 = rhs.f00;
@@ -4711,6 +4829,8 @@ class FUN_008d45f0 : public Actor
 };
 // Destructor that calls FUN_008d47d0(0, 0) when FUN_004077c0() returns false.
 // @fnv 0x008d45f0
+// pdb: Creature::Creature | Creature.obj | retail, object-file run extension, low
+// pdb note: debug build links it to Creature::~Creature
 FUN_008d45f0::~FUN_008d45f0()
 {
     if (!TESForm_GetTemporary())
@@ -4744,6 +4864,9 @@ class AttachedArrowProcesses
 // Removes up to maximum ArrowProjectiles matching owner, target and filter: the first pass deletes or calls FUN_008cc6d0(3), the second pass always deletes.
 // @fnv 0x008ce180
 // src: XBOX_PDB 0x008ce180
+// pdb: ArrowProjectile::DeleteAttachedArrows | ArrowProjectile.obj | retail, call graph (shared callers), medium
+// pdb params: apRef, abInstant
+// pdb locals: bdoMiddleHigh, bdoHigh, pactor, pprocess, plist, parrow, pmob, i, bremoved
 void ArrowProjectile_DeleteAttachedArrows_008ce180(void* target, int maximum, int owner, bool destroy, bool filter)
 {
     int list = 0;
@@ -4800,23 +4923,26 @@ class FUN_008c2630_Owner
   public:
     char unk00[0x88];
     FUN_008c2630_Obj m_88;
-    void __thiscall Actor_CheckEquipWornEnchantment(TESBoundObject* a1, int a2);
+    void __thiscall Actor_CheckEquipWornEnchantment(TESBoundObject* apObject, int apExtra);
 };
 
 // If a1 is form type 0x18 or 0x1a, dynamic_cast it to TESEnchantableForm, read its FUN_00726070() value, and call m_88.v5 with that value's offset 0x18.
 // @fnv 0x008c2630
 // src: XBOX_PDB 0x008c2630
-void FUN_008c2630_Owner::Actor_CheckEquipWornEnchantment(TESBoundObject* apForm, int a2)
+// pdb: Actor::CheckEquipWornEnchantment | Actor_Magic.obj | retail, upstream name already matches, high
+// pdb params: apObject, apExtra
+// pdb locals: penchantment, penchantable
+void FUN_008c2630_Owner::Actor_CheckEquipWornEnchantment(TESBoundObject* apObject, int apExtra)
 {
-    if (!(apForm->FUN_00401170() == 0x18 || apForm->FUN_00401170() == 0x1a))
+    if (!(apObject->FUN_00401170() == 0x18 || apObject->FUN_00401170() == 0x1a))
     {
         return;
     }
-    TESEnchantableForm* r6 = dynamic_cast<TESEnchantableForm*>(apForm);
+    TESEnchantableForm* r6 = dynamic_cast<TESEnchantableForm*>(apObject);
     FUN_008c2630_Obj* p2 = r6 ? (FUN_008c2630_Obj*)reinterpret_cast<unsigned int (__thiscall*)(TESEnchantableForm*)>(FUN_00726070)(r6) : 0;
     if (p2)
     {
-        m_88.v5(p2 ? (char*)p2 + 0x18 : 0, apForm, 0);
+        m_88.v5(p2 ? (char*)p2 + 0x18 : 0, apObject, 0);
     }
 }
 
@@ -4838,6 +4964,7 @@ struct FUN_008d5020_class
 
 // @fnv 0x008d5020
 // src: COMMUNITY 0x008d5020
+// pdb: CharacterProgression::AllocateData | FalloutCharacterProgression.obj | retail, upstream name already matches, high
 void FUN_008d5020_class::CharacterProgression_AllocateData()
 {
     *reinterpret_cast<void**>(this) = new FUN_008d5590_shell_helper;

@@ -2,6 +2,7 @@
 
 #include "Menu.h"
 
+// pdb: class TraitSelectMenu, size 0x88, bases: Menu, 7 members
 class TraitSelectMenu : public Menu
 {
 public:

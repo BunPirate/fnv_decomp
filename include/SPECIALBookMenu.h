@@ -8,6 +8,7 @@ class BkButton;
 class BkDisplay;
 class BookButton;
 
+// pdb: class SPECIALBookMenu, size 0x1e4, bases: Menu, 15 members
 class SPECIALBookMenu : public Menu
 {
 public:
@@ -67,7 +68,7 @@ public:
         BkDisplayList displays;
     };
 
-    int unk28;
+    int pTiles; // src: XBOX_RETAIL_PDB +0x28 (old: unk28)
     int unk2C;
     int unk30;
     int unk34;
@@ -117,17 +118,17 @@ public:
         BkGroup m_groups[9];
         BookGroup groups[9];
     };
-    int m180[10];
+    int spAVValues[10]; // src: XBOX_RETAIL_PDB +0x180 (old: m180)
     int m1a8[5];
-    int m1bc;
+    int spNextPageButtonImage; // src: XBOX_RETAIL_PDB +0x1bc (old: m1bc)
     int m1c0;
-    int m1c4;
+    int spPreviousPageButtonImage; // src: XBOX_RETAIL_PDB +0x1c4 (old: m1c4)
     int m1c8;
-    int m1cc;
+    int spOpenCloseBookButtonImage; // src: XBOX_RETAIL_PDB +0x1cc (old: m1cc)
     int m1d0;
-    int m1d4;
+    int spAVLeftArrowButtonImage; // src: XBOX_RETAIL_PDB +0x1d4 (old: m1d4)
     int m1d8;
-    int m1dc;
+    int spAVRightArrowButtonImage; // src: XBOX_RETAIL_PDB +0x1dc (old: m1dc)
     int m1e0;
 
     bool HandleInput(int aiKey);
@@ -135,10 +136,10 @@ public:
     int LoveTesterMenu_GetCurrentStatesActorValue();
     int SPECIALBookMenu_GetTotalPointsUsed();
     void DoIdle_007c6200();
-    bool HandleSpecialBookKey(unsigned int key, int unused);
-    bool TurnPage(bool forward);
-    void InitMenu();
-    void LoadBBTextures();
-    void InvokeCallbacksForSlot();
-    void HandleKey(unsigned int key, int unused);
+    bool HandleSpecialBookKey(unsigned int aiButton, int afValue);
+    bool TurnPage(bool bForward);
+    void InitBook();
+    void LoadButtonAndTextImages();
+    void RefreshPage();
+    void HandleKey(unsigned int aiID, int apTarget);
 };

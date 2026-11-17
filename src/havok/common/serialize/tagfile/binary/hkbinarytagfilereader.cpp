@@ -54,12 +54,14 @@ struct FUN_00dc6020_cls
     unsigned int m_n34;
     unsigned int m_flags38;
 
-    void FreeAllBlocks();
+    void Reader_dtor();
     void ReleaseArchiveReader();
 };
 
 // @fnv 0x00dc6020
-void FUN_00dc6020_cls::FreeAllBlocks()
+// src: XBOX_RETAIL_PDB 0x00dc6020
+// pdb: Reader::~Reader | hkBinaryTagfileReader.obj | retail, call graph, high
+void FUN_00dc6020_cls::Reader_dtor()
 {
     if (m_p14)
         m_p14->FreeAllBlocks(1);
@@ -113,7 +115,7 @@ inline hkMemoryAllocator& readerHeap(hkMemoryRouter& router)
     return *router.m_heap;
 }
 
-void __cdecl ResizeAudioStream(void* pvAlloc, void* apvArray, int iElemSize);
+void __cdecl ResizeAudioStream(void* mem, void* array, int sizeElem);
 
 template <class T> __forceinline void constructWithCopyDC5D(T* p, int n, const T& t)
 {
@@ -137,7 +139,10 @@ template <class T> __forceinline void hkArrayBase<T>::_pushBack(hkMemoryAllocato
 char* __cdecl AllocateWithHeader(hkMemoryAllocator* pkAlloc, int iNumBytes) throw();
 
 // @fnv 0x00dc5d90
-char* hkBinaryTagfileReader::ReadString()
+// src: XBOX_RETAIL_PDB 0x00dc5d90
+// pdb: Reader::readString | hkBinaryTagfileReader.obj | retail, call graph, high
+// pdb locals: s
+char* hkBinaryTagfileReader::Reader_readString()
 {
     int iLen = ReadSignedVarInt32();
     if (iLen > 0)
@@ -151,7 +156,7 @@ char* hkBinaryTagfileReader::ReadString()
     return m_pStringFunctions.m_data[-iLen];
 }
 
-void __cdecl hkArrayUtil__reserve(hkMemoryAllocator& kAlloc, void* apvArray, int aiNumElements, int iSizeElem) throw();
+void __cdecl hkArrayUtil__reserve(hkMemoryAllocator& mem, void* array, int numElem, int sizeElem) throw();
 
 template <typename T> __forceinline void hkArrayBase<T>::GrowArrayCapacity(hkMemoryAllocator& kAlloc, int n)
 {
@@ -172,26 +177,30 @@ template <typename T> __forceinline void hkArrayBase<T>::_setSize(hkMemoryAlloca
 
 // Reads iNumBits bits from the tagfile into kBitsOut, unpacking each byte least-significant bit first, then resizes the array to iNumBits.
 // @fnv 0x00dc5e10
-void hkBinaryTagfileReader::ReadBits(int iNumBits, hkArray<char>& kBitsOut) throw()
+// src: XBOX_RETAIL_PDB 0x00dc5e10
+// pdb: Reader::readBitfield | hkBinaryTagfileReader.obj | retail, object-file gap fill, high
+// pdb params: numMembers, bout
+// pdb locals: b
+void hkBinaryTagfileReader::Reader_readBitfield(int numMembers, hkArray<char>& bout) throw()
 {
-    int iNumBitsRounded = (iNumBits + 7) & ~7;
+    int iNumBitsRounded = (numMembers + 7) & ~7;
     int iNumBytes = iNumBitsRounded / 8;
     unsigned int auiBuf[16];
-    kBitsOut.setSize(iNumBitsRounded);
+    bout.setSize(iNumBitsRounded);
     hkIArchive_readArrayGeneric(auiBuf, 1, iNumBytes);
     for (int i = 0; i < iNumBytes; i++)
     {
         unsigned int uiByte = ((unsigned char*)auiBuf)[i];
         for (int j = 0; j < 8; j++)
         {
-            kBitsOut[i * 8 + j] = char(uiByte & 1);
+            bout[i * 8 + j] = char(uiByte & 1);
             uiByte >>= 1;
         }
     }
-    kBitsOut.setSize(iNumBits);
+    bout.setSize(numMembers);
 }
 
-extern "C" char* __fastcall ReadString(void* p);
+extern "C" char* __fastcall Reader_readString(void* p);
 extern "C" int __fastcall ReadSignedVarInt32(void* p);
 void __cdecl hkArrayUtil__reserve(void*, void*, int, int);
 void __cdecl ResizeAudioStream(void*, void*, int);
@@ -274,7 +283,7 @@ struct TagFileReader
     {
         return m_p10;
     }
-    int ReadTagFileEntry();
+    int Reader_readClass();
 };
 
 struct Locals
@@ -284,7 +293,10 @@ struct Locals
 };
 
 // @fnv 0x00dc6c90
-int TagFileReader::ReadTagFileEntry()
+// src: XBOX_RETAIL_PDB 0x00dc6c90
+// pdb: Reader::readClass | hkBinaryTagfileReader.obj | retail, call graph, high
+// pdb locals: cinfo, assertBuf, ostr
+int TagFileReader::Reader_readClass()
 {
     Locals entry;
 
@@ -292,7 +304,7 @@ int TagFileReader::ReadTagFileEntry()
     entry.s.m_items.m_iElementCount = 0;
     entry.s.m_items.m_iCapacityState = 0x80000000;
 
-    entry.s.m_str = ReadString(this);
+    entry.s.m_str = Reader_readString(this);
     entry.s.m_type = ReadSignedVarInt32(this);
 
     if (!*getP10()->vtable_18(&entry.outVal))
@@ -330,11 +342,11 @@ int TagFileReader::ReadTagFileEntry()
     for (int i = 0; i < entry.s.m_items.m_iElementCount; ++i)
     {
         Item* item = &entry.s.m_items.m_data[i];
-        item->m_name = ReadString(this);
+        item->m_name = Reader_readString(this);
         item->m_type = ReadSignedVarInt32(this);
         item->m_extra = (item->m_type & 0x20) ? ReadSignedVarInt32(this) : 0;
         int lowType = item->m_type & 0xf;
-        char* pAltName = (lowType == 9 || lowType == 8) ? ReadString(this) : 0;
+        char* pAltName = (lowType == 9 || lowType == 8) ? Reader_readString(this) : 0;
         item->m_altName = pAltName;
         if (pAltName)
         {
@@ -385,6 +397,7 @@ __forceinline void ReadTagfileVarInt(hkBinaryTagfileReader& kReader, __int64& kV
 // Reads a variable-length integer from the reader and returns it as a 32-bit signed value.
 // @fnv 0x00dc5bd0
 // src: GUESS 0x00dc5bd0 (confidence: high)
+// pdb: Reader::readInt<int> | hkBinaryTagfileReader.obj | retail, call graph, high
 int hkBinaryTagfileReader::ReadSignedVarInt32() throw()
 {
     __int64 iVarInt;
@@ -394,6 +407,7 @@ int hkBinaryTagfileReader::ReadSignedVarInt32() throw()
 
 // Reads a variable-length signed integer and returns the decoded value.
 // @fnv 0x00dc5c80
+// pdb: Reader::readInt<__int64> | hkBinaryTagfileReader.obj | retail, object-file run extension, low
 __int64 hkBinaryTagfileReader::ReadVarInt()
 {
     unsigned char ucByte;
@@ -434,17 +448,20 @@ struct FUN_00dc5d50_Local
 
     void Reader_Reader(unsigned int, unsigned int);
     void ProcessEntries_00dc6e50(unsigned int);
-    void FreeAllBlocks();
+    void Reader_dtor();
 };
 
 // @fnv 0x00dc5d50
 // src: HAVOK_SRC 0x00dc5d50
+// pdb: hkBinaryTagfileReader::load | hkBinaryTagfileReader.obj | retail, upstream name already matches, high
+// pdb params: stream, cont
+// pdb locals: reader
 unsigned int __stdcall hkBinaryTagfileReader_load(unsigned int a, unsigned int b, unsigned int c)
 {
     FUN_00dc5d50_Local local;
     local.Reader_Reader(b, c);
     local.ProcessEntries_00dc6e50(a);
-    local.FreeAllBlocks();
+    local.Reader_dtor();
     return a;
 }
 
@@ -489,16 +506,18 @@ struct S00dc5f30_Obj
 
     void Init(int, S00dc5f30_Tag);
 
-    S00dc5f30_Obj* Reader_Reader(int a0, int a1);
+    S00dc5f30_Obj* Reader_Reader(int sr, int cont);
 };
 
 // Initializes the object with a0 and a1, sets m_p10 and m_n14, and adds three entries to the m_hl18 and m_hl24 lists.
 // @fnv 0x00dc5f30
 // src: XBOX_PDB 0x00dc5f30
-S00dc5f30_Obj* S00dc5f30_Obj::Reader_Reader(int a0, int a1)
+// pdb: Reader::Reader | hkBinaryTagfileReader.obj | retail, upstream name already matches, high
+// pdb params: sr, cont
+S00dc5f30_Obj* S00dc5f30_Obj::Reader_Reader(int sr, int cont)
 {
-    Init(a0, S00dc5f30_Tag());
-    m_p10 = (void*)a1;
+    Init(sr, S00dc5f30_Tag());
+    m_p10 = (void*)cont;
     m_n14 = 0;
     S00dc5f30_HL* pFirstList = &m_hl18;
     S00dc5f30_HL* pSecondList = &m_hl24;
@@ -632,7 +651,7 @@ class hkOstreamTF
     {
         return ProcessAndReturnValue_00cc01c0(pcString);
     }
-    void FUN_00cb1600(void* pvBuffer, int iSize);
+    void FUN_00cb1600(void* buf, int bufSize);
     void FUN_00cc00e0();
     hkOstreamTF& ProcessAndReturnValue_00cc01c0(const char* pcString);
     void* m_ppVirtualMethodTable;
@@ -674,7 +693,7 @@ class hkDataClassTF
     void SetField00(hkDataClassImpl* pkImpl);
     void Object_DoNothing_00dba660();
     int ForwardCall_00dba730() const;
-    void DispatchItems(hkArrayTFLocalForm<MemberInfoTF>& kInfo) const;
+    void hkDataClass_getAllMemberInfo(hkArrayTFLocalForm<MemberInfoTF>& minfos) const;
     hkDataClassImpl* m_pClassImpl;
 };
 struct ValueRawTF
@@ -701,12 +720,12 @@ class hkDataObjectTF
     }
     hkDataObjectTF(const hkDataObjectTF& kOther)
     {
-        AssignRef(kOther);
+        hkDataObject_ctor(kOther);
     }
     __forceinline hkDataObjectTF(hkDataObjectTF& other, hkLocalArrayTF<MemberInfoTF>& members,
                                  hkLocalArrayTF<bool>& used, hkDataClassTF& pClassInfo)
     {
-        AssignRef(other);
+        hkDataObject_ctor(other);
         members.clearLocal();
         members.clearStorage();
         used.clearLocal();
@@ -719,7 +738,7 @@ class hkDataObjectTF
         ReleaseStorage_00dba7f0();
     }
     void hkDataObject_hkDataObject(hkDataObjectImplTF* pkImpl);
-    void AssignRef(const hkDataObjectTF& kOther);
+    void hkDataObject_ctor(const hkDataObjectTF& o);
     void ReleaseStorage_00dba7f0();
     ValueRawTF* UpdateState_00dba870(ValueRawTF* out, const char* pcName);
     ValueTF operator[](const char* pcName)
@@ -749,9 +768,9 @@ class hkBinaryTagfileReaderTF
     {
         return ::ReadSignedVarInt32(this);
     }
-    void ReadBits(int iNumMembers, hkArrayTFLocalForm<bool>& kUsed);
-    void ReadTypedTagValue(hkDataObjectImplTF* impl, void* handle, const MemberInfoTF& kInfo);
-    hkDataObjectTF ReadDataObject(int aiAllocationTag);
+    void Reader_readBitfield(int numMembers, hkArrayTFLocalForm<bool>& bout);
+    void Reader_readBinaryValue(hkDataObjectImplTF* impl, void* minfo, const MemberInfoTF& kInfo);
+    hkDataObjectTF Reader_readObject(int objectTag);
     int unk00;
     int unk04;
     int unk08;
@@ -766,10 +785,13 @@ class hkBinaryTagfileReaderTF
 };
 // Reads a data object from the binary tagfile stream, resolves its class and members, reads present values, and returns the object.
 // @fnv 0x00dc6970
-// src: GUESS 0x00dc6970 (confidence: medium)
-hkDataObjectTF hkBinaryTagfileReaderTF::ReadDataObject(int aiAllocationTag)
+// src: XBOX_RETAIL_PDB 0x00dc6970
+// pdb: Reader::readObject | hkBinaryTagfileReader.obj | retail, string-set bridge, high
+// pdb params: objectTag
+// pdb locals: membersPresent, obj, minfos, klass, assertBuf, ostr
+hkDataObjectTF hkBinaryTagfileReaderTF::Reader_readObject(int objectTag)
 {
-    int iTagType = aiAllocationTag;
+    int iTagType = objectTag;
     if (iTagType == -1)
         iTagType = ReadTag();
     if (iTagType == 5)
@@ -798,10 +820,10 @@ hkDataObjectTF hkBinaryTagfileReaderTF::ReadDataObject(int aiAllocationTag)
     }
     }
     hkLocalArrayTF<bool> kUsedMembers(128);
-    ReadBits(iNumMembers, kUsedMembers);
+    Reader_readBitfield(iNumMembers, kUsedMembers);
     hkLocalArrayTF<MemberInfoTF> kMembers(iNumMembers);
     kMembers.setSizeUnchecked(iNumMembers);
-    kClass.DispatchItems(kMembers);
+    kClass.hkDataClass_getAllMemberInfo(kMembers);
     for (int i = 0; i < iNumMembers; ++i)
     {
         const MemberInfoTF& kInfo = kMembers[i];
@@ -809,7 +831,7 @@ hkDataObjectTF hkBinaryTagfileReaderTF::ReadDataObject(int aiAllocationTag)
         {
             ValueRawTF raw;
             ValueRawTF* r = kObj.UpdateState_00dba870(&raw, kInfo.m_name);
-            ReadTypedTagValue(r->m_pClassImpl, r->m_handle, kInfo);
+            Reader_readBinaryValue(r->m_pClassImpl, r->m_handle, kInfo);
         }
     }
     return hkDataObjectTF(kObj, kMembers, kUsedMembers, kClass);
@@ -931,60 +953,63 @@ struct TagClass
 {
     void* object;
     int ForwardCall_00dba730();
-    void DispatchItems(TagArray<TagMember>&);
+    void hkDataClass_getAllMemberInfo(TagArray<TagMember>&);
     void Object_DoNothing_00dba660();
 };
 struct TagReader
 {
     int ReadSignedVarInt32();
     void hkIArchive_readArrayGeneric(void*, int, int);
-    TagString ReadDataObject(int) throw();
-    const char* ReadString();
-    void ReadBits(int, TagArray<char>&);
-    void ReadTypedArray(TagArrayRef*, int);
+    TagString Reader_readObject(int) throw();
+    const char* Reader_readString();
+    void Reader_readBitfield(int, TagArray<char>&);
+    void Reader__readArrayItems(TagArrayRef*, int);
 };
 // Reads an array of 'count' elements from the tag stream into the given TagArrayRef, dispatching on the element type code.
 // @fnv 0x00dc6100
-// src: GUESS 0x00dc6100 (confidence: medium)
-void TagReader::ReadTypedArray(TagArrayRef* array, int count)
+// src: XBOX_RETAIL_PDB 0x00dc6100
+// pdb: Reader::_readArrayItems | hkBinaryTagfileReader.obj | retail, object-file gap fill, high
+// pdb params: arr, nelem
+// pdb locals: buf, tmp, r, membersPresent, minfos, sclass, d, t
+void TagReader::Reader__readArrayItems(TagArrayRef* arr, int nelem)
 {
-    switch (array->ForwardCall_00dbac10())
+    switch (arr->ForwardCall_00dbac10())
     {
     case 1: {
-        TagArray<char> values(count);
-        values.reserve(reinterpret_cast<hkMemoryAllocator*>(getTagRouter()->m_temp), count);
-        hkIArchive_readArrayGeneric(values.data, 1, count);
-        array->hkDataArray_setAll_00dbae10(values.data, count);
+        TagArray<char> values(nelem);
+        values.reserve(reinterpret_cast<hkMemoryAllocator*>(getTagRouter()->m_temp), nelem);
+        hkIArchive_readArrayGeneric(values.data, 1, nelem);
+        arr->hkDataArray_setAll_00dbae10(values.data, nelem);
         values.release(reinterpret_cast<hkMemoryAllocator*>(getTagRouter()->m_temp));
         break;
     }
     case 2:
-        for (int i = 0; i < count; ++i)
-            array->UpdateState_00dbab90(i).InvokeOnInterface(ReadSignedVarInt32());
+        for (int i = 0; i < nelem; ++i)
+            arr->UpdateState_00dbab90(i).InvokeOnInterface(ReadSignedVarInt32());
         break;
     case 3: {
-        TagArray<float> values(count);
-        values.reserve(reinterpret_cast<hkMemoryAllocator*>(getTagRouter()->m_temp), count);
-        values.size = count;
-        hkIArchive_readArrayGeneric(values.data, 4, count);
-        array->InvokeVirtualMethod_00dbae80(values.data, values.size);
+        TagArray<float> values(nelem);
+        values.reserve(reinterpret_cast<hkMemoryAllocator*>(getTagRouter()->m_temp), nelem);
+        values.size = nelem;
+        hkIArchive_readArrayGeneric(values.data, 4, nelem);
+        arr->InvokeVirtualMethod_00dbae80(values.data, values.size);
         values.release(reinterpret_cast<hkMemoryAllocator*>(getTagRouter()->m_temp));
         break;
     }
     case 4: {
         int width = ReadSignedVarInt32();
         float values[4] = {0, 0, 0, 0};
-        for (int i = 0; i < count; ++i)
+        for (int i = 0; i < nelem; ++i)
         {
             hkIArchive_readArrayGeneric(values, 4, width);
-            array->UpdateState_00dbab90(i).InvokeVirtualMethod_00dbad60(values, 4);
+            arr->UpdateState_00dbab90(i).InvokeVirtualMethod_00dbad60(values, 4);
         }
         break;
     }
     case 6:
     case 7: {
-        int width = 4 * (array->ForwardCall_00dbac10() - 3);
-        for (int i = 0; i < count; ++i)
+        int width = 4 * (arr->ForwardCall_00dbac10() - 3);
+        for (int i = 0; i < nelem; ++i)
         {
             float values[16];
             for (int j = 0; j < width; ++j)
@@ -993,27 +1018,27 @@ void TagReader::ReadTypedArray(TagArrayRef* array, int count)
                 hkIArchive_readArrayGeneric(&value, 4, 1);
                 values[j] = value;
             }
-            array->UpdateState_00dbab90(i).InvokeVirtualMethod_00dbad60(values, width);
+            arr->UpdateState_00dbab90(i).InvokeVirtualMethod_00dbad60(values, width);
         }
         break;
     }
     case 8:
-        for (int i = 0; i < count; ++i)
+        for (int i = 0; i < nelem; ++i)
         {
-            array->UpdateState_00dbab90(i).InvokeVirtualMethod_00dbad00(ReadDataObject(-1));
+            arr->UpdateState_00dbab90(i).InvokeVirtualMethod_00dbad00(Reader_readObject(-1));
         }
         break;
     case 10:
-        for (int i = 0; i < count; ++i)
-            array->UpdateState_00dbab90(i).InvokeVirtualMethod_00dbadc0(ReadString());
+        for (int i = 0; i < nelem; ++i)
+            arr->UpdateState_00dbab90(i).InvokeVirtualMethod_00dbadc0(Reader_readString());
         break;
     case 9: {
-        array->Get_Thunk(count);
-        TagClass pClassInfo = array->ProcessAndReturnValue_00dbac20();
+        arr->Get_Thunk(nelem);
+        TagClass pClassInfo = arr->ProcessAndReturnValue_00dbac20();
         int membersCount = pClassInfo.ForwardCall_00dba730();
         TagLocalArray<char> presentBits;
         presentBits.allocateLocal(128);
-        ReadBits(membersCount, presentBits);
+        Reader_readBitfield(membersCount, presentBits);
         TagLocalArray<TagMember> members;
         members.allocateLocal(membersCount);
         int toConstruct = membersCount - members.size;
@@ -1021,7 +1046,7 @@ void TagReader::ReadTypedArray(TagArrayRef* array, int count)
         for (int k = 0; k < toConstruct; ++k)
             new (first + k) TagMember;
         members.size = membersCount;
-        pClassInfo.DispatchItems(members);
+        pClassInfo.hkDataClass_getAllMemberInfo(members);
         int i = 0;
         if (membersCount > 0)
         {
@@ -1031,17 +1056,17 @@ void TagReader::ReadTypedArray(TagArrayRef* array, int count)
                 TagMember& member = *reinterpret_cast<TagMember*>(reinterpret_cast<char*>(members.data) + byteOffset);
                 if (presentBits.data[i])
                 {
-                    TagArrayRef field = array->InvokeCallbackInto(member.name);
+                    TagArrayRef field = arr->InvokeCallbackInto(member.name);
                     if (!member.tupleSize)
                     {
-                        ReadTypedArray(&field, count);
+                        Reader__readArrayItems(&field, nelem);
                     }
                     else
                     {
-                        for (int j = 0; j < count; ++j)
+                        for (int j = 0; j < nelem; ++j)
                         {
                             TagArrayRef item = field.UpdateState_00dbab90(j).GetMemberArrayValue();
-                            ReadTypedArray(&item, member.tupleSize);
+                            Reader__readArrayItems(&item, member.tupleSize);
                             item.ReleaseStorage_00dbab70();
                         }
                     }
@@ -1110,34 +1135,37 @@ struct ValueWorld
 };
 struct ValueReader : TagFileReader
 {
-    void ReadTypedArray(RefB*, int);
+    void Reader__readArrayItems(RefB*, int);
     void hkIArchive_readArrayGeneric(void*, int, int);
-    void ReadDataObject(RefA*, int);
-    void ReadTypedTagValue(ParamP, const Item20*);
+    void Reader_readObject(RefA*, int);
+    void Reader_readBinaryValue(ParamP, const Item20*);
 };
 // Reads a typed value from the tag file stream into ParamP based on Item20 flags, handling scalars, vectors, objects, and references.
 // @fnv 0x00dc6720
-// src: GUESS 0x00dc6720 (confidence: medium)
-void ValueReader::ReadTypedTagValue(ParamP value, const Item20* item)
+// src: XBOX_RETAIL_PDB 0x00dc6720
+// pdb: Reader::readBinaryValue | hkBinaryTagfileReader.obj | retail, object-file gap fill, high
+// pdb params: value, minfo
+// pdb locals: obj, arr, _minfo, r, o
+void ValueReader::Reader_readBinaryValue(ParamP value, const Item20* minfo)
 {
     RefA owner;
-    if (item->flags & 0x20)
+    if (minfo->flags & 0x20)
     {
         owner.hkDataObject_hkDataObject(value.object);
-        void* created = reinterpret_cast<ValueWorld*>(m_p10)->vtable_14(&owner, item);
+        void* created = reinterpret_cast<ValueWorld*>(m_p10)->vtable_14(&owner, minfo);
         RefB reference;
         reference.FUN_00dbab50(created);
-        ReadTypedArray(&reference, item->tupleSize);
+        Reader__readArrayItems(&reference, minfo->tupleSize);
         reference.ReleaseStorage_00dbab70();
         owner.ReleaseStorage_00dba7f0();
         return;
     }
-    if (item->flags & 0x10)
+    if (minfo->flags & 0x10)
     {
         Item20 local;
-        memcpy(&local, item, sizeof(local));
+        memcpy(&local, minfo, sizeof(local));
         int index = ReadSignedVarInt32(this);
-        if (value.QueryAndWriteResult() == 0x19 && item->objectClass == 0)
+        if (value.QueryAndWriteResult() == 0x19 && minfo->objectClass == 0)
         {
             int objectIndex = ReadSignedVarInt32(this);
             local.objectClass = m_kTrackedObjects.m_data[objectIndex];
@@ -1147,12 +1175,12 @@ void ValueReader::ReadTypedTagValue(ParamP value, const Item20* item)
         RefB reference;
         reference.FUN_00dbab50(created);
         reference.Get_Thunk(index);
-        ReadTypedArray(&reference, index);
+        Reader__readArrayItems(&reference, index);
         reference.ReleaseStorage_00dbab70();
         owner.ReleaseStorage_00dba7f0();
         return;
     }
-    switch (item->flags)
+    switch (minfo->flags)
     {
     case 1: {
         unsigned char scalar;
@@ -1175,7 +1203,7 @@ void ValueReader::ReadTypedTagValue(ParamP value, const Item20* item)
     case 7: {
         float values[16];
         float scalar;
-        int count = item->flags * 4 - 12;
+        int count = minfo->flags * 4 - 12;
         for (int i = 0; i < count; ++i)
         {
             hkIArchive_readArrayGeneric(&scalar, 4, 1);
@@ -1187,13 +1215,13 @@ void ValueReader::ReadTypedTagValue(ParamP value, const Item20* item)
     case 8:
     case 9: {
         RefA object;
-        ReadDataObject(&object, -1);
+        Reader_readObject(&object, -1);
         value.DispatchToObject(&object);
         object.ReleaseStorage_00dba7f0();
         break;
     }
     case 10:
-        value.ForwardCall_00dbab30(ReadString(this));
+        value.ForwardCall_00dbab30(Reader_readString(this));
         break;
     default:
         break;

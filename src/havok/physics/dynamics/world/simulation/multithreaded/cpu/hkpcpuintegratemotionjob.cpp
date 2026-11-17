@@ -291,37 +291,39 @@ struct S_00d943d0_Ctx
 
 struct S_00d943d0_Obj
 {
-    void ProcessCallback(S_00d943d0_Item* a, S_00d943d0_Item* b, int c);
+    void ProcessCallback(S_00d943d0_Item* oldJob, S_00d943d0_Item* jobOut, int waitStatus);
 };
 
-int __cdecl hkRigidMotionUtilApplyForcesAndStep(int* p1e0, int* p1d0, int* p200, int* ints, int n, int sz);
+int __cdecl hkRigidMotionUtilApplyForcesAndStep(int* solverInfo, int* p1d0, int* deltaVel, int* ints, int numMotions, int motionOffset);
 int __cdecl hkRigidMotionUtilApplyAccumulators(int* p1e0, int* p1d0, S_00d943d0_Elem* e, int* ints, int n, int sz);
-void __cdecl hkpEntityAabbUtil_entityBatchRecalcAabb(int a, int* ints, int n);
+void __cdecl hkpEntityAabbUtil_entityBatchRecalcAabb(int collisionInput, int* entityBatch, int numEntities);
 
 // Picks FUN_00d28a30 or FUN_00d29bf0 by item->m_flag to set item->m_result, calls FUN_00d1a330, then obj->ProcessCallback.
 // @fnv 0x00d943d0
 // src: HAVOK_LIB 0x00d943d0
-void __cdecl hkCpuIntegrateMotionJob(S_00d943d0_Ctx* ctx, S_00d943d0_Obj* obj, S_00d943d0_Item* item)
+// pdb: hkCpuIntegrateMotionJob | hkpCpuIntegrateMotionJob.obj | retail, string-set bridge, high
+// pdb params: tl, jobQueue, jobInOut
+void __cdecl hkCpuIntegrateMotionJob(S_00d943d0_Ctx* tl, S_00d943d0_Obj* jobQueue, S_00d943d0_Item* jobInOut)
 {
     S_00d943d0_TimerBeginList("LtIntegrate", "StIntegrateMotions");
 
-    unsigned int idx = item->m_idx;
-    S_00d943d0_Block* pBlock = item->m_block;
-    unsigned int n = item->m_uiValueCount;
+    unsigned int idx = jobInOut->m_idx;
+    S_00d943d0_Block* pBlock = jobInOut->m_block;
+    unsigned int n = jobInOut->m_uiValueCount;
     S_00d943d0_Elem* e = pBlock->m_pElements + (idx + 1);
     int* ints = pBlock->m_auiHeaderValues + idx;
-    if (item->m_flag)
+    if (jobInOut->m_flag)
     {
-        item->m_result =
-            hkRigidMotionUtilApplyForcesAndStep(&ctx->m_inner->unk1E0, &ctx->m_inner->unk1D0, &ctx->m_inner->unk200, ints, n, 0xe0);
+        jobInOut->m_result =
+            hkRigidMotionUtilApplyForcesAndStep(&tl->m_inner->unk1E0, &tl->m_inner->unk1D0, &tl->m_inner->unk200, ints, n, 0xe0);
     }
     else
     {
-        item->m_result = hkRigidMotionUtilApplyAccumulators(&ctx->m_inner->unk1E0, &ctx->m_inner->unk1D0, e, ints, n, 0xe0);
+        jobInOut->m_result = hkRigidMotionUtilApplyAccumulators(&tl->m_inner->unk1E0, &tl->m_inner->unk1D0, e, ints, n, 0xe0);
     }
-    hkpEntityAabbUtil_entityBatchRecalcAabb(ctx->m_inner->unk078, ints, n);
+    hkpEntityAabbUtil_entityBatchRecalcAabb(tl->m_inner->unk078, ints, n);
 
     S_00d943d0_Timer("lt");
 
-    obj->ProcessCallback(item, item, 0);
+    jobQueue->ProcessCallback(jobInOut, jobInOut, 0);
 }

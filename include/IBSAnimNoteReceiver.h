@@ -1,5 +1,6 @@
 #pragma once
 
+// pdb: class IBSAnimNoteReceiver, size 0x4, 0 members
 class IBSAnimNoteReceiver
 {
 public:

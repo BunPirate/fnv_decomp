@@ -14,10 +14,12 @@ template <class T> inline void NiBinaryStream::ReadScalar(T& value)
 
 // Calls the base NiObject::LoadBinary, then reads a scalar from the stream into the basis data's field.
 // @fnv 0x00a52c10
-void NiBSplineBasisData::LoadBinary(NiStream& stream)
+// pdb: NiBSplineBasisData::LoadBinary | NiBSplineBasisData.obj | retail, upstream name already matches, high
+// pdb params: kStream
+void NiBSplineBasisData::LoadBinary(NiStream& kStream)
 {
-    NiObject::LoadBinary(stream);
-    stream.m_pkIstr->ReadScalar(m_kBSplineBasis.m_iNumControlPoints);
+    NiObject::LoadBinary(kStream);
+    kStream.m_pkIstr->ReadScalar(m_kBasisDegree3.m_iNumControlPoints);
 }
 
 // @fnv 0x00a52bb0
@@ -26,8 +28,8 @@ bool __fastcall IsBSplineBasisDataEqual(NiBSplineBasisData* pkThis, void*, NiObj
     if (!pkThis->NiObject::IsSameAs(pkObject))
         return false;
 
-    return static_cast<NiBSplineBasisData*>(pkObject)->m_kBSplineBasis.m_iNumControlPoints ==
-           pkThis->m_kBSplineBasis.m_iNumControlPoints;
+    return static_cast<NiBSplineBasisData*>(pkObject)->m_kBasisDegree3.m_iNumControlPoints ==
+           pkThis->m_kBasisDegree3.m_iNumControlPoints;
 }
 
 extern int DAT_01099f24;
@@ -75,14 +77,16 @@ struct ArrX
 };
 // @fnv 0x00a52c90
 // src: XBOX_PDB 0x00a52c90
-void __stdcall NiBSplineBasisData_GetViewerStrings(ArrX* pArray)
+// pdb: NiBSplineBasisData::GetViewerStrings | NiBSplineBasisData.obj | retail, upstream name already matches, high
+// pdb params: pStrings
+void __stdcall NiBSplineBasisData_GetViewerStrings(ArrX* pStrings)
 {
-    AppendCameraPathEntries(pArray);
+    AppendCameraPathEntries(pStrings);
     ActorCombatGroup* pObject = NiViewerStrings_NiGetViewerString_Title(g_011f403c);
-    unsigned n = pArray->m_usSize;
-    if (n >= pArray->m_usMaxSize)
-        pArray->SetSize(n + pArray->m_usGrowBy);
-    pArray->SetAt(n, pObject);
+    unsigned n = pStrings->m_usSize;
+    if (n >= pStrings->m_usMaxSize)
+        pStrings->SetSize(n + pStrings->m_usGrowBy);
+    pStrings->SetAt(n, pObject);
 }
 }  // namespace fnv_00a52c90
 
@@ -90,7 +94,7 @@ extern int DAT_01099d3c;
 
 struct FUN_00a51ab0_base
 {
-    void InitBase(int a1, int a3);
+    void NiBSplineInterpolator_ctor(int a1, int a3);
 };
 
 struct FUN_00a51ab0_cls : FUN_00a51ab0_base
@@ -108,21 +112,23 @@ struct FUN_00a51ab0_cls : FUN_00a51ab0_base
     float m_28;
     int m_2c;
 
-    FUN_00a51ab0_cls* NiBSplineColorInterpolator_NiBSplineColorInterpolator(int a1, int a2, int a3);
+    FUN_00a51ab0_cls* NiBSplineColorInterpolator_NiBSplineColorInterpolator(int pkData, int kColorACPHandle, int pkBasisData);
 };
 
 // Calls InitBase, sets the vtable pointer, zeroes four floats and stores a2 into m_2c, then returns this.
 // @fnv 0x00a51ab0
 // src: GAMEBRYO_LIB 0x00a51ab0
-FUN_00a51ab0_cls* FUN_00a51ab0_cls::NiBSplineColorInterpolator_NiBSplineColorInterpolator(int a1, int a2, int a3)
+// pdb: NiBSplineColorInterpolator::NiBSplineColorInterpolator | NiBSplineColorInterpolator.obj | retail, upstream name already matches, high
+// pdb params: pkData, kColorACPHandle, pkBasisData
+FUN_00a51ab0_cls* FUN_00a51ab0_cls::NiBSplineColorInterpolator_NiBSplineColorInterpolator(int pkData, int kColorACPHandle, int pkBasisData)
 {
-    InitBase(a1, a3);
+    NiBSplineInterpolator_ctor(pkData, pkBasisData);
     m_vptr00 = (int)&DAT_01099d3c;
     *(volatile float*)&m_1c = 0.0f;
     m_20 = 0.0f;
     m_24 = 0.0f;
     m_28 = 0.0f;
-    *(volatile int*)&m_2c = a2;
+    *(volatile int*)&m_2c = kColorACPHandle;
     return this;
 }
 
@@ -140,10 +146,10 @@ inline NiBSplineBasisData* AllocateBSplineBasisData()
     if (pMemory)
     {
         NiBSplineBasisData* pResult = ::new (pMemory) NiBSplineBasisData;
-        *(volatile float*)&pResult->m_kBSplineBasis.m_fLastTime = -1.0f;
-        pResult->m_kBSplineBasis.m_iNumControlPoints = 0;
-        pResult->m_kBSplineBasis.m_iMinControlPoint = 0;
-        pResult->m_kBSplineBasis.m_iMaxControlPoint = 3;
+        *(volatile float*)&pResult->m_kBasisDegree3.m_fLastTime = -1.0f;
+        pResult->m_kBasisDegree3.m_iNumControlPoints = 0;
+        pResult->m_kBasisDegree3.m_iMinControlPoint = 0;
+        pResult->m_kBasisDegree3.m_iMaxControlPoint = 3;
         return pResult;
     }
     return 0;
@@ -154,7 +160,7 @@ NiBSplineBasisData* __fastcall CloneBSplineBasisData(NiBSplineBasisData* pkThis,
 {
     NiBSplineBasisData* pResult = AllocateBSplineBasisData();
     pkThis->CreateVertexBufferSet(pResult, cloning);
-    pResult->m_kBSplineBasis = pkThis->m_kBSplineBasis;
+    pResult->m_kBasisDegree3 = pkThis->m_kBasisDegree3;
     return pResult;
 }
 
@@ -172,10 +178,12 @@ template <class T> inline void WriteScalar(NiBinaryStream* pkOstr, const T& valu
 }
 // Saves the base NiObject data and the BSplineBasis control point count to the given NiStream.
 // @fnv 0x00a52c50
+// pdb: NiBSplineBasisData::SaveBinary | NiBSplineBasisData.obj | retail, object-file gap fill, high
+// pdb params: kStream
 void __fastcall SaveBSplineBasisData(NiBSplineBasisData* pkThis, void*, NiStream& stream)
 {
     pkThis->NiObject::SaveBinary(stream);
-    WriteScalar(stream.m_pkOstr, pkThis->m_kBSplineBasis.m_iNumControlPoints);
+    WriteScalar(stream.m_pkOstr, pkThis->m_kBasisDegree3.m_iNumControlPoints);
 }
 
 extern int DAT_0109a2a4;
@@ -195,6 +203,7 @@ struct FUN_00a54190_cls
 // Sets object fields and allocates 4 times m_08 bytes when m_08 is positive.
 // @fnv 0x00a54190
 // src: GUESS 0x00a54190 (confidence: low)
+// pdb: NiTPrimitiveArray<NiTPrimitiveSet<NiNode *> *>::`scalar deleting destructor' | NiBSBoneLODController.obj | debug, object-file run extension, low
 FUN_00a54190_cls* FUN_00a54190_cls::UpdateState_00a54190(int n, short a2)
 {
     m_vt = (int)&DAT_0109a2a4;

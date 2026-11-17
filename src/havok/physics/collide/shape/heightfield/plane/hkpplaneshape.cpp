@@ -117,22 +117,25 @@ struct ShapeD54F90
     virtual void v18();
     virtual void v1C();
     virtual BoolD54F90 RayCast(const RayCastInputD54F90& kInput, RayCastOutputD54F90& kOutput) const;
-    void hkpPlaneShape_castRayWithCollectorImpl(const RayCastInputD54F90& kInput, const CdBodyD54F90& kBody, CollectorD54F90& kCollector) const;
+    void hkpPlaneShape_castRayWithCollectorImpl(const RayCastInputD54F90& inputLocal, const CdBodyD54F90& cdBody, CollectorD54F90& collector) const;
 };
 
 // Performs a ray cast against the shape, and if a hit is found, transforms the hit normal and forwards the result to the collector.
 // @fnv 0x00d54f90
 // src: HAVOK_LIB 0x00d54f90
-void ShapeD54F90::hkpPlaneShape_castRayWithCollectorImpl(const RayCastInputD54F90& kInput, const CdBodyD54F90& kBody,
-                               CollectorD54F90& kCollector) const
+// pdb: hkpPlaneShape::castRayWithCollectorImpl | hkpPlaneShape.obj | retail, upstream name already matches, high
+// pdb params: inputLocal, cdBody, collector
+// pdb locals: results, assertBuf, ostr
+void ShapeD54F90::hkpPlaneShape_castRayWithCollectorImpl(const RayCastInputD54F90& inputLocal, const CdBodyD54F90& cdBody,
+                               CollectorD54F90& collector) const
 {
     RayCastOutputD54F90 kOutput;
-    kOutput.m_fHitFraction = kCollector.m_fEarlyOutHitFraction;
-    BoolD54F90 kHit = RayCast(kInput, kOutput);
+    kOutput.m_fHitFraction = collector.m_fEarlyOutHitFraction;
+    BoolD54F90 kHit = RayCast(inputLocal, kOutput);
     if (kHit.m_cBooleanValue)
     {
-        hkVector4_setMul3(kBody.m_pMotionState, kOutput.m_vHitNormal);
-        kCollector.CollectRayHit(kBody, kOutput);
+        hkVector4_setMul3(cdBody.m_pMotionState, kOutput.m_vHitNormal);
+        collector.CollectRayHit(cdBody, kOutput);
     }
 }
 
@@ -149,13 +152,13 @@ struct PlaneShape_00d551d0 : hkpPlaneShape
 // src: XBOX_PDB 0x00d551d0
 PlaneShape_00d551d0* PlaneShape_00d551d0::hkpPlaneShape_hkpPlaneShape(const hkVector4& p, const hkVector4* box)
 {
-    m_ulUserData = 0;
+    m_userData = 0;
     *(unsigned int*)&m_type = 0x1c;
     *(void**)this = &DAT_010d0e18;
-    m_sReferenceCount = 1;
-    *(LocalM128*)&m_kTriangleNormal = *(const LocalM128*)&p;
-    *(LocalM128*)&m_kAabbCenter = _mm_mul_ps(_mm_add_ps(*(const LocalM128*)&box[1], *(const LocalM128*)&box[0]), DAT_010c71d0);
-    *(LocalM128*)&m_kAabbHalfExtents =
+    m_referenceCount = 1;
+    *(LocalM128*)&m_plane = *(const LocalM128*)&p;
+    *(LocalM128*)&m_aabbCenter = _mm_mul_ps(_mm_add_ps(*(const LocalM128*)&box[1], *(const LocalM128*)&box[0]), DAT_010c71d0);
+    *(LocalM128*)&m_aabbHalfExtents =
         _mm_mul_ps(_mm_sub_ps(*(const LocalM128*)&box[1], *(const LocalM128*)&box[0]), DAT_010c71d0);
     return this;
 }
@@ -296,6 +299,9 @@ class PlaneShapeD55
 
 // @fnv 0x00d552f0
 // src: XBOX_PDB 0x00d552f0
+// pdb: hkpPlaneShape::castRayImpl | hkpPlaneShape.obj | retail, string-set bridge, high
+// pdb params: input, results
+// pdb locals: hitFraction
 HkBoolD55 PlaneShapeD55::hkpPlaneShape_castRayImpl(const RayInputD55& input, RayOutputD55& results) const
 {
     union

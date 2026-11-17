@@ -17,6 +17,8 @@ char const* const* __cdecl NiParticles_GetRTTI()
 }
 
 // @fnv 0x00a9b230
+// pdb: NiParticles::CalculateConsistency | NiParticles.obj | debug, upstream name already matches, high
+// pdb params: bTool
 void NiParticles::CalculateConsistency(bool bTool)
 {
     NiGeometryData* p = m_spModelData.m_pObject;
@@ -28,6 +30,7 @@ void __fastcall DestroyGeometry(NiGeometry*);
 void __cdecl _delete(void*, unsigned int);
 // Calls FUN_00a80580 on this, frees this with _delete when bit 0 of f is set, and returns this.
 // @fnv 0x00a9b1c0
+// pdb: NiParticles::NiParticles | NiParticles.obj | debug, object-file run extension, low
 void* __fastcall DeleteParticles(NiParticles* self, void*, unsigned int auiFlags)
 {
     DestroyGeometry(self);
@@ -37,6 +40,9 @@ void* __fastcall DeleteParticles(NiParticles* self, void*, unsigned int auiFlags
 }
 
 // @fnv 0x00a9b1f0
+// pdb: NiParticles::RenderImmediate | NiParticles.obj | debug, object-file run extension, low
+// pdb params: apkRenderer
+// pdb locals: pkRenderer
 void __fastcall SetupRenderer(NiParticles* self, void*, NiRenderer* apkRenderer)
 {
     NiRenderer* pkRenderer = apkRenderer;
@@ -52,15 +58,17 @@ char* _FUN_00a7d330(const char*);
 // Grows the StrArr if it is full, then appends the string returned by _FUN_00a7d330(g_011f5f14_arg1) at the current size.
 // @fnv 0x00a9b2e0
 // src: XBOX_PDB 0x00a9b2e0
-void __stdcall NiParticles_GetViewerStrings(StrArr* apStrArr)
+// pdb: NiParticles::GetViewerStrings | NiParticles.obj | retail, upstream name already matches, high
+// pdb params: pStrings
+void __stdcall NiParticles_GetViewerStrings(StrArr* pStrings)
 {
-    FUN_00a80e70(apStrArr);
+    FUN_00a80e70(pStrings);
     char* psz = _FUN_00a7d330(g_011f5f14_arg1);
-    unsigned int uiSize = apStrArr->m_usSize;
-    unsigned int uiMax = apStrArr->m_usMaxSize;
+    unsigned int uiSize = pStrings->m_usSize;
+    unsigned int uiMax = pStrings->m_usMaxSize;
     if (uiSize >= uiMax)
-        apStrArr->SetSize(apStrArr->m_usGrowBy + uiSize);
-    apStrArr->SetAt(uiSize, psz);
+        pStrings->SetSize(pStrings->m_usGrowBy + uiSize);
+    pStrings->SetAt(uiSize, psz);
 }
 
 void* __cdecl Object_DispatchCommandFour(unsigned int size);
@@ -115,6 +123,9 @@ struct ArgRec
 
 // If m_9C is set and its flag bits are set, forwards pArg->m_0C to m_B8, then calls FUN_00a7fd90(pArg).
 // @fnv 0x00a9b2a0
+// pdb: NiParticles::CreateClone | NiParticles.obj | retail, object-file run extension, low
+// pdb params: kCloning
+// pdb locals: pkObject
 void __fastcall ProcessArgIfFlagged(NiParticles* self, void*, ArgRec* pArg)
 {
     ObjHdr* pObjHdr = (ObjHdr*)self->m_PropertyState.m_aspProps[0];

@@ -12,7 +12,10 @@ using ::SettingT;
 extern SettingT<GameSettingCollection> originalRuntimeFloatSetting236;
 // @fnv 0x0092cab0
 // src: XBOX_PDB 0x0092cab0
-void LowProcess::MiddleLowProcess_ProcessCombat(Actor* source)
+// pdb: MiddleLowProcess::ProcessCombat | MiddleLowProcess.obj | retail, upstream name already matches, high
+// pdb params: apActor
+// pdb locals: inumber, bflag, ptarget
+void LowProcess::MiddleLowProcess_ProcessCombat(Actor* apActor)
 {
     int iterations = (int)(*originalRuntimeFloatSetting236.Float() * 2);
     Actor* actor = 0;
@@ -20,16 +23,16 @@ void LowProcess::MiddleLowProcess_ProcessCombat(Actor* source)
     bool bUpdated = false;
     if (!pTarget || actor->GetDisabled() || actor->GetDeleted() || actor->HasHealth(false))
     {
-        source->Unk_10D(0);
-        source->Actor_EndInterruptPackage(false);
+        apActor->Unk_10D(0);
+        apActor->Actor_EndInterruptPackage(false);
     }
     else if (actor && actor->GetProcess() && actor->GetProcess()->GetProcessLevel() == 2)
     {
         while (iterations)
         {
-            if (source->HasHealth(false))
+            if (apActor->HasHealth(false))
                 break;
-            source->Unk_10E();
+            apActor->Unk_10E();
             actor = dynamic_cast<Actor*>(pTarget);
             if (actor && !actor->HasHealth(false) && actor->GetProcess()->GetProcessLevel() == 2)
             {
@@ -46,6 +49,6 @@ void LowProcess::MiddleLowProcess_ProcessCombat(Actor* source)
     }
     else
     {
-        UpdateActorPackage(source, true, 0x101, false);
+        UpdateActorPackage(apActor, true, 0x101, false);
     }
 }

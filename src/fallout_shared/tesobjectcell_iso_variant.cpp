@@ -24,7 +24,7 @@ struct RefNode;
 struct RefrShell;
 struct ZoneShell
 {
-    bool ShouldCellRecalc(FUN_00546af0_shell* cell);
+    bool ShouldCellRecalc(FUN_00546af0_shell* apCell);
 };
 struct Modelish
 {
@@ -45,7 +45,7 @@ struct EffectItemListBoolQuery
 };
 struct Obj34
 {
-    void UpdateSoundLevel(RefrShell* refr);
+    void BGSDestructibleObjectForm_ApplyTerminalDamage(RefrShell* apRef);
 };
 // ExtraShell_tesobjectcell_iso_variant: local type (was include/ExtraShell.h, which had no evidence of one real class); its methods are 0x00411ec0 ExtraDataList::CopyList, 0x004127e0 ExtraDataList::CompareList, 0x00418520 ExtraDataList::GetContainerChanges, 0x00418750 ExtraDataList::HasLeveledItem
 #include "../../include/ExtraDataList.h"
@@ -73,7 +73,7 @@ public:
     void* ExtraDataList_GetModelSwap();
     RefNode* ExtraDataList_GetDroppedItemList();
     void ExtraDataList_RemoveDroppedItemList();
-    void ExtraDataList_SetItemDropper(int a);
+    void ExtraDataList_SetItemDropper(int apDropper);
     RefrShell* ExtraDataList_GetAshPileRef();
 };
 struct RefrShell
@@ -283,7 +283,7 @@ struct RefrShell
     virtual void V201(int a, int b, int c);
     bool TESObjectREFR_GetRefPersists_005653d0();
     bool TESObjectREFR_GetRespawn();
-    bool IsExpired(unsigned int a);
+    bool Actor_ShouldReset(unsigned int aiCurrentTime);
     bool TESObjectREFR_HasQuestObject();
     void TESObjectREFR_MarkAsDeleted();
     ZoneShell* FUN_00567d20();
@@ -291,7 +291,7 @@ struct RefrShell
     bool FUN_00440d80();
     bool TESObjectREFR_GetPersistFlagValue();
     void TESObjectREFR_Lock();
-    void TESForm_SetEmpty(bool b);
+    void TESForm_SetEmpty(bool abEmpty);
     void SetFlag2000(bool b);
     bool Actor_GetRespawn();
     unsigned int GetHavokWorldObjectCountInSceneGraph_0084e3a0();
@@ -299,6 +299,7 @@ struct RefrShell
     void TESObjectREFR_SetLocationOnReference(ExpiredRefPosition3* p);
     void TESObjectREFR_SetAngleOnReference(ExpiredRefPosition3 p);
 };
+// pdb: class Calendar, size 0x1c (here 0x1), 7 members
 struct Calendar
 {
     unsigned int FUN_00867e30();
@@ -310,7 +311,7 @@ struct DHShell : public TESDataHandler
 extern Calendar g_calendar;
 unsigned int __cdecl TESObjectCELL_GetHoursToRespawnCell();
 bool __fastcall BGSEncounterZone_ShouldReset(void* zone);
-Obj34* __cdecl BGSDestructibleObjectForm_GetDestructionForm(void* p);
+Obj34* __cdecl BGSDestructibleObjectForm_GetDestructionForm(void* apForm);
 void __cdecl Script_InitActionList(RefrShell* refr, ExtraShell_tesobjectcell_iso_variant* extra);
 bool __cdecl Script_SetActionFlag(RefrShell* refr, ExtraShell_tesobjectcell_iso_variant* extra, unsigned int a);
 ExtraShell_tesobjectcell_iso_variant* __fastcall BSFile_GetDevice(RefrShell* refr);
@@ -318,13 +319,15 @@ struct CellShell : public FUN_00546af0_shell
 {
     ZoneShell* FUN_00546c20();
     RefNode* GetRefList_009604f0();
-    void SetDetachTime(unsigned int a, bool b);
+    void SetDetachTime(unsigned int aiTime, bool abForce);
     void* FUN_0054ddd0();
     bool FUN_00550200(ExpiredRefPosition3* p);
     bool TESObjectCELL_HandleExpiredReferences();
 };
 // @fnv 0x0054df30
 // src: XBOX_PDB 0x0054df30
+// pdb: TESObjectCELL::HandleExpiredReferences | TESObjectCELL.obj | retail, upstream name already matches, high
+// pdb locals: bforced, plist, icurrenttime, pcellzone, bcellresettime, breset, idetachtime, pref, pactor, prefzone, pdestruct, startpos, bmove, pdroplist, pdropref, pashpileref, pingr
 bool CellShell::TESObjectCELL_HandleExpiredReferences()
 {
     if (g_BGSSaveLoadGame->BGSSaveLoadGame_GetSaveGameLoading())
@@ -364,7 +367,7 @@ bool CellShell::TESObjectCELL_HandleExpiredReferences()
                 {
                     RefrShell* c;
                     c = flag6;
-                    if (c->IsExpired(_oldState))
+                    if (c->Actor_ShouldReset(_oldState))
                     {
                         flag6->V130(!flag6->TESObjectREFR_GetRespawn());
                     }
@@ -419,7 +422,7 @@ bool CellShell::TESObjectCELL_HandleExpiredReferences()
                 cnt = refr2;
             if (0 != cnt)
             {
-                if (!cnt->IsExpired(_oldState))
+                if (!cnt->Actor_ShouldReset(_oldState))
                     continue;
             }
             else
@@ -430,7 +433,7 @@ bool CellShell::TESObjectCELL_HandleExpiredReferences()
                     {
                         Obj34* v;
                         v = BGSDestructibleObjectForm_GetDestructionForm(refr2->BGSSaveFormBuffer_GetForm());
-                        v->UpdateSoundLevel(refr2);
+                        v->BGSDestructibleObjectForm_ApplyTerminalDamage(refr2);
                         if (!!BSFile_GetDevice(refr2)->ExtraDataList_GetModelSwap())
                             refr2->SetFlag2000(true);
                     }

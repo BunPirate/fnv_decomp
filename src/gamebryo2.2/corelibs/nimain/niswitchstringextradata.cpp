@@ -7,19 +7,21 @@
 // src/gamebryo2.2/corelibs/nimain/niswitchstringextradata.cpp - unit created 2026-10-16 from the whole-binary attribution (360 source path: d:/_fallout3/platforms/common/code/gamebryo2.2/corelibs/nimain/niswitchstringextradata.cpp).
 // Functions are listed by their @fnv annotations; compile flags inferred from the PC code.
 
-extern NiRTTI g_011f5eac;
+extern NiRTTI NiSwitchStringExtraData_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f5eac (old: g_011f5eac)
 
 // @fnv 0x00a93740
 // src: COMMUNITY 0x00a93740
 NiRTTI* __cdecl NiSwitchStringExtraData_GetRTTI()
 {
-    return &g_011f5eac;
+    return &NiSwitchStringExtraData_ms_RTTI;
 }
 
 extern int DAT_0109ff64;
 
 // @fnv 0x00a93870
 // src: EXE 0x00a93870
+// pdb: NiSwitchStringExtraData::CreateObject | NiSwitchStringExtraData.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 void* __cdecl NiSwitchStringExtraData_CreateObject()
 {
     void* p = BSFadeNode::operator new(0x18);
@@ -49,6 +51,8 @@ struct FUN_00a93750_shell
 };
 // @fnv 0x00a93750
 // src: GUESS 0x00a93750 (confidence: low)
+// pdb: NiSwitchStringExtraData::~NiSwitchStringExtraData | NiSwitchStringExtraData.obj | retail, object-file run extension, low
+// pdb locals: i
 void FUN_00a93750_shell::ProcessEntries_00a93750()
 {
     m_pData = &DAT_0109ff64;
@@ -61,6 +65,7 @@ void FUN_00a93750_shell::ProcessEntries_00a93750()
 
 void __cdecl _delete(void* p, unsigned int);
 
+// pdb: class NiSwitchStringExtraData, size 0x18 (here 0x1), bases: NiExtraData, 3 members
 struct NiSwitchStringExtraData
 {
     void* __thiscall FUN_00a938b0(unsigned int flags);
@@ -70,6 +75,7 @@ void __cdecl ProcessEntries_00a93750();
 
 // Calls FUN_00a93750, then frees this with _delete when flags has bit 0 set, and returns this.
 // @fnv 0x00a938b0
+// pdb: NiSwitchStringExtraData::`scalar deleting destructor' | NiSwitchStringExtraData.obj | retail, object-file gap fill, high
 void* __thiscall NiSwitchStringExtraData::FUN_00a938b0(unsigned int flags)
 {
     ProcessEntries_00a93750();
@@ -107,8 +113,8 @@ void __cdecl FUN_00a7b580();
 
 char* __cdecl _FUN_00a7d330(void* object);
 char* __cdecl NiGetViewerString_00a7d510(char const* name, char const* value);
-char* __cdecl NiGetViewerString_00a7d5e0(char const* name, char const* value);
-char* __cdecl NiGetViewerString_00a7d4d0(char const* name, int value);
+char* __cdecl NiGetViewerString_00a7d5e0(char const* pcPrefix, char const* pcValue);
+char* __cdecl NiGetViewerString_00a7d4d0(char const* pcPrefix, int iValue);
 
 struct FUN_00a93a60_shell
 {
@@ -119,106 +125,109 @@ struct FUN_00a93a60_shell
     char** m_ppcValue;
     int m_iIndex;
 
-    void NiSwitchStringExtraData_GetViewerStrings(StrArr* apViewerStrings);
+    void NiSwitchStringExtraData_GetViewerStrings(StrArr* pStrings);
 };
 
 // Appends viewer strings for the base object, m_uiSize, each m_ppcValue[i] and m_iIndex to the given string array.
 // @fnv 0x00a93a60
 // src: XBOX_PDB 0x00a93a60
-void FUN_00a93a60_shell::NiSwitchStringExtraData_GetViewerStrings(StrArr* apViewerStrings)
+// pdb: NiSwitchStringExtraData::GetViewerStrings | NiSwitchStringExtraData.obj | retail, string-set bridge, high
+// pdb params: pStrings
+// pdb locals: i
+void FUN_00a93a60_shell::NiSwitchStringExtraData_GetViewerStrings(StrArr* pStrings)
 {
     reinterpret_cast<void (__thiscall*)(NiExtraData*, StrArr*)>(FUN_00a7b580)(
-        reinterpret_cast<NiExtraData*>(this), apViewerStrings);
+        reinterpret_cast<NiExtraData*>(this), pStrings);
 
     {
-        char* value = _FUN_00a7d330(*(void**)&g_011f5eac);
-        unsigned int index = apViewerStrings->m_usSize;
-        if (index >= apViewerStrings->m_usMaxSize)
+        char* value = _FUN_00a7d330(*(void**)&NiSwitchStringExtraData_ms_RTTI);
+        unsigned int index = pStrings->m_usSize;
+        if (index >= pStrings->m_usMaxSize)
         {
-            apViewerStrings->SetSize(index + apViewerStrings->m_usGrowBy);
+            pStrings->SetSize(index + pStrings->m_usGrowBy);
         }
-        apViewerStrings->SetAt(index, value);
+        pStrings->SetAt(index, value);
 
         value = NiGetViewerString_00a7d510("m_uiSize", reinterpret_cast<char const*>(m_uiSize));
-        index = apViewerStrings->m_usSize;
-        if (index >= apViewerStrings->m_usMaxSize)
+        index = pStrings->m_usSize;
+        if (index >= pStrings->m_usMaxSize)
         {
-            apViewerStrings->SetSize(index + apViewerStrings->m_usGrowBy);
+            pStrings->SetSize(index + pStrings->m_usGrowBy);
         }
-        apViewerStrings->SetAt(index, value);
+        pStrings->SetAt(index, value);
 
         for (unsigned int i = 0; i < m_uiSize; ++i)
         {
             value = NiGetViewerString_00a7d5e0("m_ppcValue[i]", m_ppcValue[i]);
-            index = apViewerStrings->m_usSize;
-            if (index >= apViewerStrings->m_usMaxSize)
+            index = pStrings->m_usSize;
+            if (index >= pStrings->m_usMaxSize)
             {
-                apViewerStrings->SetSize(index + apViewerStrings->m_usGrowBy);
+                pStrings->SetSize(index + pStrings->m_usGrowBy);
             }
 
-            if (index >= apViewerStrings->m_usSize)
+            if (index >= pStrings->m_usSize)
             {
-                apViewerStrings->m_usSize = static_cast<unsigned short>(index + 1);
+                pStrings->m_usSize = static_cast<unsigned short>(index + 1);
                 if (value)
                 {
-                    ++apViewerStrings->m_usESize;
+                    ++pStrings->m_usESize;
                 }
             }
             else
             {
                 if (value)
                 {
-                    if (!apViewerStrings->m_pBase[index])
+                    if (!pStrings->m_pBase[index])
                     {
-                        ++apViewerStrings->m_usESize;
+                        ++pStrings->m_usESize;
                     }
                 }
                 else
                 {
-                    if (apViewerStrings->m_pBase[index])
+                    if (pStrings->m_pBase[index])
                     {
-                        apViewerStrings->m_usESize += static_cast<unsigned short>(0xffff);
+                        pStrings->m_usESize += static_cast<unsigned short>(0xffff);
                     }
                 }
             }
-            apViewerStrings->m_pBase[index] = value;
+            pStrings->m_pBase[index] = value;
         }
     }
 
     {
         char* value = NiGetViewerString_00a7d4d0("m_iIndex", m_iIndex);
-        unsigned int index = apViewerStrings->m_usSize;
-        if (index >= apViewerStrings->m_usMaxSize)
+        unsigned int index = pStrings->m_usSize;
+        if (index >= pStrings->m_usMaxSize)
         {
-            apViewerStrings->SetSize(index + apViewerStrings->m_usGrowBy);
+            pStrings->SetSize(index + pStrings->m_usGrowBy);
         }
 
-        if (index >= apViewerStrings->m_usSize)
+        if (index >= pStrings->m_usSize)
         {
-            apViewerStrings->m_usSize = static_cast<unsigned short>(index + 1);
+            pStrings->m_usSize = static_cast<unsigned short>(index + 1);
             if (value)
             {
-                ++apViewerStrings->m_usESize;
+                ++pStrings->m_usESize;
             }
         }
         else
         {
             if (value)
             {
-                if (!apViewerStrings->m_pBase[index])
+                if (!pStrings->m_pBase[index])
                 {
-                    ++apViewerStrings->m_usESize;
+                    ++pStrings->m_usESize;
                 }
             }
             else
             {
-                if (apViewerStrings->m_pBase[index])
+                if (pStrings->m_pBase[index])
                 {
-                    apViewerStrings->m_usESize += static_cast<unsigned short>(0xffff);
+                    pStrings->m_usESize += static_cast<unsigned short>(0xffff);
                 }
             }
         }
-        apViewerStrings->m_pBase[index] = value;
+        pStrings->m_pBase[index] = value;
     }
 }
 
@@ -270,32 +279,36 @@ struct StrListObj
     char** m_ppStrings;
     int m_iIndex;
 
-    void CopyStringList(StrListObj* dst, void* arg2);
+    void NiSwitchStringExtraData_CopyMembers(StrListObj* pDest, void* kCloning);
 };
 
 void* __cdecl _NiMalloc_00aa1070(unsigned int size);
 void __cdecl FUN_00ec65a6(void* dst, unsigned int size, void* src);
 
 // @fnv 0x00a937a0
-void StrListObj::CopyStringList(StrListObj* dst, void* arg2)
+// src: XBOX_RETAIL_PDB 0x00a937a0
+// pdb: NiSwitchStringExtraData::CopyMembers | NiSwitchStringExtraData.obj | retail, object-file run extension, high
+// pdb params: pDest, kCloning
+// pdb locals: i, uiLen
+void StrListObj::NiSwitchStringExtraData_CopyMembers(StrListObj* pDest, void* kCloning)
 {
-    reinterpret_cast<NiExtraData*>(this)->CopyMembers_00a7b330(dst, arg2);
+    reinterpret_cast<NiExtraData*>(this)->CopyMembers_00a7b330(pDest, kCloning);
     if (m_ppStrings == 0 || m_uiCount <= 0)
     {
-        dst->m_ppStrings = 0;
-        dst->m_uiCount = 0;
+        pDest->m_ppStrings = 0;
+        pDest->m_uiCount = 0;
         return;
     }
-    dst->m_uiCount = m_uiCount;
+    pDest->m_uiCount = m_uiCount;
     if (m_iIndex > -1 && m_iIndex < (int)m_uiCount)
     {
-        dst->m_iIndex = m_iIndex;
+        pDest->m_iIndex = m_iIndex;
     }
     else
     {
-        dst->m_iIndex = -1;
+        pDest->m_iIndex = -1;
     }
-    dst->m_ppStrings = (char**)_NiMalloc_00aa1070(m_uiCount * 4);
+    pDest->m_ppStrings = (char**)_NiMalloc_00aa1070(m_uiCount * 4);
     for (unsigned int i = 0; i < m_uiCount; i++)
     {
         if (m_ppStrings[i] != 0)
@@ -309,12 +322,12 @@ void StrListObj::CopyStringList(StrListObj* dst, void* arg2)
                 p++;
             } while (cChar != 0);
             unsigned int uiLen = (unsigned int)(p - base);
-            dst->m_ppStrings[i] = (char*)_NiMalloc_00aa1070(uiLen + 1);
-            FUN_00ec65a6(dst->m_ppStrings[i], uiLen + 1, m_ppStrings[i]);
+            pDest->m_ppStrings[i] = (char*)_NiMalloc_00aa1070(uiLen + 1);
+            FUN_00ec65a6(pDest->m_ppStrings[i], uiLen + 1, m_ppStrings[i]);
         }
         else
         {
-            dst->m_ppStrings[i] = 0;
+            pDest->m_ppStrings[i] = 0;
         }
     }
 }
@@ -356,6 +369,9 @@ template <class T> __forceinline void WriteBinaryValue(NiStream& kStream, T& val
 }
 
 // @fnv 0x00a939d0
+// pdb: NiSwitchStringExtraData::SaveBinary | NiSwitchStringExtraData.obj | retail, object-file gap fill, high
+// pdb params: kStream
+// pdb locals: i
 void SwitchStringSaveState::SaveToStream(NiStream& kStream)
 {
     NiExtraData::SaveBinary(kStream);
@@ -389,13 +405,16 @@ struct SSE_Node
 struct SSE_Owner : NiSwitchStringExtraData
 {
     SSE_Node* CreateNode(unsigned int);
-    void CopyStringList(SSE_Node*, unsigned int);
+    void NiSwitchStringExtraData_CopyMembers(SSE_Node*, unsigned int);
 };
 // @fnv 0x00a938d0
-SSE_Node* SSE_Owner::CreateNode(unsigned int arg)
+// pdb: NiSwitchStringExtraData::CreateClone | NiSwitchStringExtraData.obj | retail, object-file gap fill, high
+// pdb params: kCloning
+// pdb locals: pkObject
+SSE_Node* SSE_Owner::CreateNode(unsigned int kCloning)
 {
     SSE_Node* obj = new SSE_Node;
-    CopyStringList(obj, arg);
+    NiSwitchStringExtraData_CopyMembers(obj, kCloning);
     return obj;
 }
 
@@ -421,6 +440,9 @@ class SwitchStringLoadState : public NiExtraData
 // Reads the count, allocates the string array and loads each string, then reads the index.
 // @fnv 0x00a93930
 // src: XBOX_PDB 0x00a93930
+// pdb: NiSwitchStringExtraData::LoadBinary | NiSwitchStringExtraData.obj | retail, upstream name already matches, high
+// pdb params: kStream
+// pdb locals: i
 void SwitchStringLoadState::NiSwitchStringExtraData_LoadBinary(NiStream& kStream)
 {
     NiExtraData::LoadBinary(kStream);

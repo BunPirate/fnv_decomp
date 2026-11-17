@@ -7,7 +7,7 @@
 #include "../../../../include/NiSortAdjustNode.h"
 #include "../../../../include/NiStream.h"
 
-extern "C" void* g_011f5ed8;
+extern "C" void* NiSortAdjustNode_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f5ed8 (old: g_011f5ed8)
 extern int DAT_010a0384;
 void __fastcall UpdateFields_00c5faa0(void*);
 void __cdecl __Dummy_00b6fef0(void*, unsigned int);
@@ -98,7 +98,7 @@ inline NiSortAdjustNode* ConstructSortAdjustNode(void* storage) throw()
 // src: COMMUNITY 0x00a95310
 void* __cdecl NiSortAdjustNode_GetRTTI()
 {
-    return &g_011f5ed8;
+    return &NiSortAdjustNode_ms_RTTI;
 }
 
 // @fnv 0x00a95320
@@ -113,6 +113,8 @@ void* __thiscall NiSortAdjustNode::Destructor(unsigned int flags)
 
 // @fnv 0x00a952a0
 // src: EXE 0x00a952a0
+// pdb: NiSortAdjustNode::CreateObject | NiSortAdjustNode.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 void* __cdecl NiSortAdjustNode_CreateObject()
 {
     void* p = BSFadeNode::operator new(0xB0);
@@ -200,6 +202,8 @@ void __fastcall CullSortAdjustNode(NiSortAdjustNode* self, void*, SortAdjustCull
 void __cdecl NiNode_ProcessClone();
 // @fnv 0x00a95290
 // src: XBOX_PDB 0x00a95290
+// pdb: NiSortAdjustNode::ProcessClone | NiSortAdjustNode.obj | debug, upstream name already matches, high
+// pdb params: kCloning
 void __cdecl NiSortAdjustNode_ProcessClone()
 {
     NiNode_ProcessClone();

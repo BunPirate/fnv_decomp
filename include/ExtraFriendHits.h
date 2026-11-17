@@ -7,6 +7,7 @@
 #include "BSSimpleArray.h"
 #include "CombatTargetTimestamp.h"
 
+// pdb: class ExtraFriendHits, size 0x1c, bases: BSExtraData, 1 members
 class ExtraFriendHits : public BSExtraData
 {
 public:

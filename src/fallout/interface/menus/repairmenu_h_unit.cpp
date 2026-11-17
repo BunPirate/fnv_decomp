@@ -12,5 +12,5 @@ int RepairMenu::GetClass()
 void RepairMenu::AssignTileByID(int tileID, Tile* tile)
 {
     if (tileID >= 0 && tileID < 13)
-        m_pTiles[tileID] = tile;
+        pTiles[tileID] = tile;
 }

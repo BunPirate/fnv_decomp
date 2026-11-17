@@ -17,21 +17,29 @@
 #include "../../include/TESAIForm.h"
 
 // @fnv 0x0067e400
-void PackageList::ClearPackageList()
+// src: XBOX_DEBUG_PDB 0x0067e400
+// pdb: PackageList::FreePackageList | PackageList.obj | debug, call graph (shared callers), high
+void PackageList::FreePackageList()
 {
     GetListOfPackages()->RemoveAll();
 }
 
 // Copies the package list from src into this form's package list.
 // @fnv 0x0047f2d0
-void TESAIForm::CopyAIPackageList(const TESAIForm* src)
+// pdb: TESAIForm::CopyAIPackageList | TESAIForm.obj | debug, upstream name already matches, high
+// pdb params: apAIForm
+void TESAIForm::CopyAIPackageList(const TESAIForm* apAIForm)
 {
-    GetPackageList()->Copy(src->GetPackageList());
+    GetPackageList()->Copy(apAIForm->GetPackageList());
 }
 
 // Scans the package list for a package whose conditions and schedule match the actor, logs the pick, updates extra data and process state, and returns it.
 // @fnv 0x0067e780
-TESPackage* PackageList::GetPackageForActor(Actor* actor)
+// src: XBOX_RETAIL_PDB 0x0067e780
+// pdb: PackageList::FindCurrentPackage | PackageList.obj | retail, string-set bridge, high
+// pdb params: apActor
+// pdb locals: apCurrentPack, pList, string, pPack, pSchedule, bOverlapmonth, bOverlapday, bOverlapdayof, imonth, day, pTarget, pTargetRef, pact
+TESPackage* PackageList::FindCurrentPackage(Actor* apActor)
 {
     struct PackageSelection
     {
@@ -43,18 +51,18 @@ TESPackage* PackageList::GetPackageForActor(Actor* actor)
     char message[300];
     selection.list = GetListOfPackages();
     selection.current = 0;
-    if (actor)
-        selection.current = reinterpret_cast<TESPackage*>(actor->GetCurrentPackage());
+    if (apActor)
+        selection.current = reinterpret_cast<TESPackage*>(apActor->GetCurrentPackage());
     if (!selection.list->IsEmpty())
     {
         selection.package = 0;
         selection.schedule = 0;
         while (selection.list && (selection.package = selection.list->GetItem()))
         {
-            if ((selection.package->IsPackageValidForActor(actor) && !selection.package->IsFlag10000Set() &&
+            if ((selection.package->IsPackageValidForActor(apActor) && !selection.package->IsFlag10000Set() &&
                  !selection.package->IsMustReachLocation()) ||
                 (selection.package->IsMustReachLocation() &&
-                 !actor->GetExtraData()->CanReachPackageLocation(selection.package)))
+                 !apActor->GetExtraData()->CanReachPackageLocation(selection.package)))
             {
                 selection.schedule = selection.package->TESPackage_GetPackageSchedule();
                 if (selection.schedule)
@@ -98,33 +106,33 @@ TESPackage* PackageList::GetPackageForActor(Actor* actor)
                         targetState.packageTarget = selection.package->GetTarget();
                         if (targetState.packageTarget)
                             targetState.reference = targetState.packageTarget->GetReferenceTarget();
-                        if (selection.package->GetConditions()->ContainsTrait(actor, targetState.reference))
+                        if (selection.package->GetConditions()->ContainsTrait(apActor, targetState.reference))
                         {
-                            if (Interface_GetTargetREFR() == actor)
+                            if (Interface_GetTargetREFR() == apActor)
                             {
                                 sprintf(
-                                    message, "%s Picked Package %s (%s)", actor->TESObjectREFR::GetFullName(),
+                                    message, "%s Picked Package %s (%s)", apActor->TESObjectREFR::GetFullName(),
                                     PrepareScriptMessage(g_packageTypeNames[selection.package->GetPackType()], false),
                                     PrepareScriptMessage(selection.package->GetName(), false));
                                 DebugLog(message);
                             }
                             if (selection.package->GetProcedureType() == -1)
-                                selection.package->SetTargetFromReference(actor->GetLinkedRef());
+                                selection.package->SetTargetFromReference(apActor->GetLinkedRef());
                             if (selection.current && selection.current != selection.package &&
                                 selection.current->GetPackType() == 1)
                             {
-                                Actor* leader = dynamic_cast<Actor*>(actor->GetProcess()->GetTarget());
+                                Actor* leader = dynamic_cast<Actor*>(apActor->GetProcess()->GetTarget());
                                 if (leader)
-                                    leader->GetExtraData()->AddFollowerActor(actor);
+                                    leader->GetExtraData()->AddFollowerActor(apActor);
                             }
                             if (selection.current && selection.current != selection.package)
                             {
-                                Script::GetLocalData(selection.current, actor->GetExtraData(), 0x800);
-                                actor->GetProcess()->OnPackageStart(actor, selection.current);
-                                actor->GetProcess()->SetProcessModeEnabled(false);
+                                Script::GetLocalData(selection.current, apActor->GetExtraData(), 0x800);
+                                apActor->GetProcess()->OnPackageStart(apActor, selection.current);
+                                apActor->GetProcess()->SetProcessModeEnabled(false);
                             }
                             if (selection.package && selection.package != selection.current)
-                                Script::GetLocalData(selection.package, actor->GetExtraData(), 0x200);
+                                Script::GetLocalData(selection.package, apActor->GetExtraData(), 0x200);
                             return selection.package;
                         }
                     }
@@ -138,6 +146,9 @@ TESPackage* PackageList::GetPackageForActor(Actor* actor)
 
 // Scans packages over the coming days/hours, adds those whose schedule matches and are not current or already missed, then sorts the missed list by schedule.
 // @fnv 0x0067ec40
+// pdb: PackageList::FindMissedPackages | PackageList.obj | debug, object-file run extension, low
+// pdb params: apActor, apPacks, afStartdate, afhour
+// pdb locals: iendday, apCurrentPack, pFirst, fhour, iday, iendmonth, imonth, iyear, pSecond, pList, pPack, pSchedule, sDaysInMonth, iCount, bSwappedItems, pFirstData, pSecondData
 void PackageList::CollectEligiblePackages(Actor* actor, BSSimpleList<TESPackage*>* pMissedList, float elapsed,
                                           float startHour)
 {
@@ -244,7 +255,10 @@ void PackageList::CollectEligiblePackages(Actor* actor, BSSimpleList<TESPackage*
 
 // Resolves each package form ID in the package list to a TESPackage, warning and removing entries that cannot be found.
 // @fnv 0x0067e560
-void PackageList::InitItem(TESForm* form)
+// pdb: PackageList::InitItem | PackageList.obj | retail, string-set bridge, high
+// pdb params: apOwner
+// pdb locals: plist, plastlist, pownerFile, tempint, ppack, tempstring
+void PackageList::InitItem(TESForm* apOwner)
 {
     struct PackageResolutionCursor
     {
@@ -254,7 +268,7 @@ void PackageList::InitItem(TESForm* form)
     } cursor;
     cursor.list = GetListOfPackages();
     cursor.previous = 0;
-    cursor.file = form ? form->GetFile(-1) : 0;
+    cursor.file = apOwner ? apOwner->GetFile(-1) : 0;
     while (cursor.list && !cursor.list->IsEmpty())
     {
         struct PackageResolution
@@ -263,14 +277,14 @@ void PackageList::InitItem(TESForm* form)
             TESPackage* package;
         } packageEntry;
         packageEntry.formID = reinterpret_cast<unsigned int>(cursor.list->GetItem());
-        if (form)
+        if (apOwner)
             TESForm::RemapFormIDForFile(packageEntry.formID, cursor.file);
         packageEntry.package = dynamic_cast<TESPackage*>(TESForm::GetFormByID(packageEntry.formID));
         if (!packageEntry.package)
         {
             BSStringT<char> debugName;
-            if (form)
-                form->GetDebugName(&debugName);
+            if (apOwner)
+                apOwner->GetDebugName(&debugName);
             else
                 debugName.Set("UNKNOWN form", 0);
             Warning("MASTERFILE: Could not find Package (%08X) for %s.", packageEntry.formID, debugName.String());
@@ -319,15 +333,18 @@ bool IsHourInRange(int start, int duration, float hour)
 }
 
 // @fnv 0x0067e440
-void PackageList::Copy(const PackageList* src)
+// pdb: PackageList::Copy | PackageList.obj | retail, upstream name already matches, high
+// pdb params: apPackList
+// pdb locals: pList, pPack
+void PackageList::Copy(const PackageList* apPackList)
 {
     struct CopyCursor
     {
         TESPackage* package;
         BSSimpleList<TESPackage*>* list;
     } cursor;
-    ClearPackageList();
-    cursor.list = src->GetListOfPackages();
+    FreePackageList();
+    cursor.list = apPackList->GetListOfPackages();
     if (!cursor.list->IsEmpty())
     {
         while (cursor.list)
@@ -341,16 +358,18 @@ void PackageList::Copy(const PackageList* src)
 
 // Appends the given TESPackage to the list returned by GetListOfPackages().
 // @fnv 0x0067e420
-void PackageList::AddPackage(TESPackage* package)
+// pdb: PackageList::AddPackage | PackageList.obj | debug, upstream name already matches, high
+// pdb params: apPack
+void PackageList::AddPackage(TESPackage* apPack)
 {
-    GetListOfPackages()->AddTail(package);
+    GetListOfPackages()->AddTail(apPack);
 }
 
 // @fnv 0x0067efd0
 // src: XBOX_PDB 0x0067efd0
 bool TESPackage::GetMustComplete()
 {
-    return (packageFlags & 4) ? true : false;
+    return (PackData & 4) ? true : false;
 }
 
 // Compares two lists element by element, returning true if they differ or one is exhausted first.

@@ -8,16 +8,17 @@ class Depth;
 class OBBShape;
 class OBBCollisionRecord;
 
+// pdb: class NiOBBNode, size 0x8c, 4 members
 class NiOBBNode
 {
 public:
     virtual ~NiOBBNode();
     virtual bool IsTerminalNode();
-    virtual bool CompareTreeRecursive(NiOBBNode* other, char* thisData, char* otherData,
-                                      int depthA, int depthB, int idA, int idB);
+    virtual bool CompareTreeRecursive(NiOBBNode* pTestNode, char* pkObj0, char* pkObj1,
+                                      int iMaxDepth, int iTestMaxDepth, int uiChangeStamp0, int uiChangeStamp1);
     virtual int Intersect(NiOBBNode* other, void* a2, void* a3, void* a4, void* a5,
                           int depthA, Depth depthB, int idA, int idB, void* a10);
-    virtual int TestChildren(void* a1, void* a2, int a3, int a4, void* a5, int a6);
+    virtual int TestChildren(void* origin, void* dir, int pick, int bIntersects, void* pObj, int uiChangeStamp);
 
     struct BoundsMatrix
     {
@@ -26,7 +27,7 @@ public:
         NiPoint3 row2;
     };
 
-    NiPoint3 center;
+    NiPoint3 m_box; // src: XBOX_RETAIL_PDB +0x4 (old: center)
     BoundsMatrix matrix;
     NiPoint3 extent;
     NiPoint3 m_kCenter;
@@ -47,17 +48,17 @@ public:
         int unk7c;
         OBBShape* m_pkShape;
     };
-    int m_0x80;
-    int m_0x84;
-    int m_0x88;
+    int m_pLeft; // src: XBOX_RETAIL_PDB +0x80 (old: m_0x80)
+    int m_pRight; // src: XBOX_RETAIL_PDB +0x84 (old: m_0x84)
+    int m_uiChangeStamp; // src: XBOX_RETAIL_PDB +0x88 (old: m_0x88)
 
     char* GetBoundsData()
     {
-        return reinterpret_cast<char*>(&center);
+        return reinterpret_cast<char*>(&m_box);
     }
     const char* GetBoundsData() const
     {
-        return reinterpret_cast<const char*>(&center);
+        return reinterpret_cast<const char*>(&m_box);
     }
     __declspec(property(get=GetBoundsData)) char* pad1;
 

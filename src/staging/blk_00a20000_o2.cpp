@@ -137,7 +137,7 @@ inline void NiBinaryStream::Write(void* value)
 
 inline float NiQuaternion::Dot(const NiQuaternion& p, const NiQuaternion& q)
 {
-    return (p.m_fVectorY * q.m_fVectorY) + p.m_fVectorX * q.m_fVectorX + p.m_fVectorZ * q.m_fVectorZ + p.m_fScalarPart * q.m_fScalarPart;
+    return (p.m_fX * q.m_fX) + p.m_fW * q.m_fW + p.m_fY * q.m_fY + p.m_fZ * q.m_fZ;
 }
 
 // @fnv 0x00a26f80
@@ -163,25 +163,31 @@ void __cdecl Runtime_UpdateState_00a27470(int a, int b, int c, int* pOut)
     pOut[2] = DAT_011f4274;
 }
 
-extern "C" void __cdecl ReadBlockEntries(void*, void*);
+extern "C" void __cdecl NiEulerRotKey_LoadBinary(void*, void*);
 
 // Calls ReadBlockEntries for each of c elements, passing a and successive 0x48-byte records starting at b.
 // @fnv 0x00a2a0e0
 // src: GAMEBRYO_LIB 0x00a2a0e0
-void __cdecl NiEulerRotKey_SaveToStream(void* a, void* b, unsigned int c)
+// pdb: NiEulerRotKey::SaveToStream | NiEulerRotKey.obj | retail, upstream name already matches, high
+// pdb params: stream, pkKeys, uiNumKeys
+// pdb locals: pkEulerRotKeys, ui
+void __cdecl NiEulerRotKey_SaveToStream(void* stream, void* pkKeys, unsigned int uiNumKeys)
 {
-    for (unsigned int i = 0; i < c; ++i)
-        ReadBlockEntries(a, (char*)b + i * 0x48);
+    for (unsigned int i = 0; i < uiNumKeys; ++i)
+        NiEulerRotKey_LoadBinary(stream, (char*)pkKeys + i * 0x48);
 }
 
 extern MemoryManager g_memoryManager;
 
 // @fnv 0x00a2a600
 // src: COMMUNITY 0x00a2a600
-void NiStepPosKey_DeleteArray(void* p)
+// pdb: NiStepPosKey::DeleteArray | NiStepPosKey.obj | debug, upstream name already matches, high
+// pdb params: pkKeyArray
+// pdb locals: pkStepPosKeyArray
+void NiStepPosKey_DeleteArray(void* pkKeyArray)
 {
-    if (p)
-        g_memoryManager.Deallocate((char*)p - 4);
+    if (pkKeyArray)
+        g_memoryManager.Deallocate((char*)pkKeyArray - 4);
 }
 
 extern "C" void __cdecl SaveKey(int, int);
@@ -189,14 +195,17 @@ extern "C" void __cdecl SaveKey(int, int);
 // Calls SaveKey(a, b) count times, advancing b by 0x4c each iteration.
 // @fnv 0x00a2bb60
 // src: GAMEBRYO_LIB 0x00a2bb60
-void __cdecl NiTCBPosKey_SaveToStream(int aiArg, int aiBase, unsigned int count)
+// pdb: NiTCBPosKey::SaveToStream | NiTCBPosKey.obj | retail, upstream name already matches, high
+// pdb params: stream, pkKeys, uiNumKeys
+// pdb locals: pkTCBPosKeys, ui
+void __cdecl NiTCBPosKey_SaveToStream(int stream, int pkKeys, unsigned int uiNumKeys)
 {
-    if (count > 0)
+    if (uiNumKeys > 0)
     {
-        for (unsigned int i = 0; i < count; ++i)
+        for (unsigned int i = 0; i < uiNumKeys; ++i)
         {
-            SaveKey(aiArg, aiBase);
-            aiBase += 0x4c;
+            SaveKey(stream, pkKeys);
+            pkKeys += 0x4c;
         }
     }
 }
@@ -233,11 +242,13 @@ void __cdecl Object_ForwardCall_00a31680()
 extern "C" float __cdecl GetAccumulatedValue();
 
 struct FUN_00a3ea40_cls {
-    void UpdateIfFlagged();
+    void NiPathInterpolator_SetConstantVelocityData();
 };
 
 // @fnv 0x00a3ea40
-void FUN_00a3ea40_cls::UpdateIfFlagged()
+// src: XBOX_RETAIL_PDB 0x00a3ea40
+// pdb: NiPathInterpolator::SetConstantVelocityData | NiPathInterpolator.obj | retail, object-file gap fill, high
+void FUN_00a3ea40_cls::NiPathInterpolator_SetConstantVelocityData()
 {
     if ((*(unsigned short*)((char*)this + 0xc) & 1) != 0)
     {
@@ -266,19 +277,22 @@ void NiInterpScalar_AdjustBezier(float p0, float t0, float* tan0, float p1, floa
 void ComputeTCBKeyTangents(TCBKeyS* keys, unsigned int count, unsigned int stride);
 
 // @fnv 0x00a282a0
-// src: GUESS 0x00a282a0 (confidence: low)
-bool Object_CopyData_00a282a0(float afTime, TCBKeyS** pKeys, unsigned int* pCount)
+// src: XBOX_RETAIL_PDB 0x00a282a0
+// pdb: NiBezPosKey::Insert | NiBezPosKey.obj | retail, object-file gap fill, high
+// pdb params: fTime, pkKeys, uiNumKeys
+// pdb locals: uiDestSize, uiInsertAt, pkBezPosKeys, pkNewKey, pkNewKeys, kPt, fLastTime, kCurrentValue, kNextIn, kLastValue, fCurrentTime, kCurrentIn, fNextTime, pkNextKey, pkLastKey, kCurrentOut, kNextValue, kLastOut
+bool NiBezPosKey_Insert(float fTime, TCBKeyS** pkKeys, unsigned int* uiNumKeys)
 {
-    TCBKeyS* old = *pKeys;
+    TCBKeyS* old = *pkKeys;
     unsigned int idx;
-    if (FindKeyIndex(afTime, old, *pCount, &idx, sizeof(TCBKeyS))) {
-    TCBKeyS* keys = new TCBKeyS[*pCount + 1];
+    if (FindKeyIndex(fTime, old, *uiNumKeys, &idx, sizeof(TCBKeyS))) {
+    TCBKeyS* keys = new TCBKeyS[*uiNumKeys + 1];
     _memmove(keys, old, idx * sizeof(TCBKeyS));
-    if (*pCount > idx)
-        _memmove(&keys[idx + 1], &old[idx], (*pCount - idx) * sizeof(TCBKeyS));
-    NiPoint3 v = GetKeyPosAtTime(afTime, old, 2, *pCount, sizeof(TCBKeyS));
+    if (*uiNumKeys > idx)
+        _memmove(&keys[idx + 1], &old[idx], (*uiNumKeys - idx) * sizeof(TCBKeyS));
+    NiPoint3 v = GetKeyPosAtTime(fTime, old, 2, *uiNumKeys, sizeof(TCBKeyS));
     TCBKeyS* cur = &keys[idx];
-    cur->time = afTime;
+    cur->time = fTime;
     memcpy(&cur->pos, &v, sizeof(cur->pos));
     *(unsigned int*)&cur->in.x = (unsigned int)_NiPoint3_ZERO;
     *(unsigned int*)&cur->in.y = DAT_011f4270;
@@ -286,7 +300,7 @@ bool Object_CopyData_00a282a0(float afTime, TCBKeyS** pKeys, unsigned int* pCoun
     *(unsigned int*)&cur->out.x = (unsigned int)_NiPoint3_ZERO;
     *(unsigned int*)&cur->out.y = DAT_011f4270;
     *(unsigned int*)&cur->out.z = DAT_011f4274;
-    if (idx != 0 && idx != *pCount) {
+    if (idx != 0 && idx != *uiNumKeys) {
         TCBKeyS* prev = &keys[idx - 1];
         TCBKeyS* next = &keys[idx + 1];
         float t0 = prev->time;
@@ -297,19 +311,19 @@ bool Object_CopyData_00a282a0(float afTime, TCBKeyS** pKeys, unsigned int* pCoun
         PointStorage p1 = next->pos;
         PointStorage tan1 = next->in;
         PointStorage a, b;
-        NiInterpScalar_AdjustBezier(p0.x, t0, &tan0.x, p1.x, t1, &tan1.x, afTime, p.x, &a.x, &b.x);
-        NiInterpScalar_AdjustBezier(p0.y, t0, &tan0.y, p1.y, t1, &tan1.y, afTime, p.y, &a.y, &b.y);
-        NiInterpScalar_AdjustBezier(p0.z, t0, &tan0.z, p1.z, t1, &tan1.z, afTime, p.z, &a.z, &b.z);
+        NiInterpScalar_AdjustBezier(p0.x, t0, &tan0.x, p1.x, t1, &tan1.x, fTime, p.x, &a.x, &b.x);
+        NiInterpScalar_AdjustBezier(p0.y, t0, &tan0.y, p1.y, t1, &tan1.y, fTime, p.y, &a.y, &b.y);
+        NiInterpScalar_AdjustBezier(p0.z, t0, &tan0.z, p1.z, t1, &tan1.z, fTime, p.z, &a.z, &b.z);
         prev->out = tan0;
         cur->in = a;
         cur->out = b;
         next->in = tan1;
     }
-    ++*pCount;
+    ++*uiNumKeys;
     if (old)
         g_memoryManager.Deallocate((int*)old - 1);
-    *pKeys = keys;
-    ComputeTCBKeyTangents(keys, *pCount, sizeof(TCBKeyS));
+    *pkKeys = keys;
+    ComputeTCBKeyTangents(keys, *uiNumKeys, sizeof(TCBKeyS));
     return true;
     }
     return false;
@@ -325,6 +339,8 @@ void StoreGlobalByte(int a, int b, int c, unsigned char* pDest)
 
 // Calls Set on the object with each element of c multiplied by b, then returns the object.
 // @fnv 0x00a2bc90
+// pdb: operator* | NiTCBRotKey.obj | debug, call graph, medium
+// pdb params: c, q
 NiQuaternion* ScaleAndApply(NiQuaternion* apObject, float afScale, const float* afValues)
 {
     apObject->SetValues(afScale * afValues[0], afScale * afValues[1], afScale * afValues[2], afScale * afValues[3]);
@@ -345,7 +361,7 @@ void CopyFloat7(float* dst, const float* src)
 }
 
 
-struct FUN_00a30880_T { void ReleaseItems(); };
+struct FUN_00a30880_T { void ClearTargets(); };
 struct HolderBase { void FUN_00a2e620(); };
 // Partial view of the owning NiControllerManager, not a map.
 class NiControllerSequence;
@@ -364,6 +380,8 @@ struct ControllerManagerStorage {
 };
 // Iterates the pp1 array up to usSize2, calls ReleaseItems and zeroes offset 0x40 on each entry, then calls FUN_00a2e620 and RemoveAll on the embedded holders.
 // @fnv 0x00a2e9a0
+// pdb: NiControllerManager::RemoveAllSequences | NiControllerManager.obj | retail, object-file run extension, low
+// pdb locals: ui, pkSequence
 void ControllerManagerStorage::ClearEntries()
 {
     unsigned int i = 0;
@@ -371,7 +389,7 @@ void ControllerManagerStorage::ClearEntries()
         do {
             FUN_00a30880_T* t = (FUN_00a30880_T*)pp1[i];
             if (t) {
-                t->ReleaseItems();
+                t->ClearTargets();
                 *(unsigned int*)((char*)t + 0x40) = 0;
             }
             i++;
@@ -486,6 +504,7 @@ struct FUN_00a31260_StandIn {
 // Releases p0 and p1 via an interlocked decrement and virtual destructor when the count reaches zero, then clears p2 and sets b3/b4.
 // @fnv 0x00a31260
 // src: GUESS 0x00a31260 (confidence: medium)
+// pdb: NiControllerSequence::InterpArrayItem::AreValuesClear | NiControllerSequence.obj | debug, object-file run extension, low
 void FUN_00a31260_StandIn::ReleaseReferencedObjectsAndResetFlags()
 {
     FnInterlockedDecrement pfnDecrement = DAT_00fdf1c4;
@@ -514,6 +533,7 @@ struct FUN_00a30700_T {
 };
 
 // @fnv 0x00a30700
+// pdb: NiControllerSequence::InterpArrayItem::~InterpArrayItem | NiControllerSequence.obj | debug, object-file run extension, low
 void FUN_00a30700_T::ReleaseRefs()
 {
     FnInterlockedDecrement fn = DAT_00fdf1c4;
@@ -541,7 +561,7 @@ void FUN_00a30700_T::ReleaseRefs()
 }
 
 struct Base_00a26eb0 {
-    void AccumulateAnimSink(NiStream&);
+    void NiAnimationKey_LoadBinary(NiStream&);
 };
 struct FUN_00a27430_T : Base_00a26eb0 {
     char pad[4];
@@ -552,7 +572,7 @@ struct FUN_00a27430_T : Base_00a26eb0 {
 // src: GUESS 0x00a27430 (confidence: medium)
 void FUN_00a27430_T::LoadBinaryFields_00a27430(NiStream& stream)
 {
-    Base_00a26eb0::AccumulateAnimSink(stream);
+    Base_00a26eb0::NiAnimationKey_LoadBinary(stream);
     m_kDiffuseColor.LoadBinary(stream);
 }
 
@@ -571,17 +591,19 @@ extern int DAT_011f3780;
 extern int DAT_011f3810;
 
 // @fnv 0x00a28620
-// src: GUESS 0x00a28620 (confidence: low)
-void Object_UpdateFields_00a28620(int param_1, int param_2)
+// src: XBOX_RETAIL_PDB 0x00a28620
+// pdb: NiBezPosKey::RegisterSupportedFunctions | NiBezPosKey.obj | retail, object-file gap fill, high
+// pdb params: eContent, eType
+void NiBezPosKey_RegisterSupportedFunctions(int eContent, int eType)
 {
-    int iVar1 = (param_2 + param_1 * 6) * 4;
+    int iVar1 = (eType + eContent * 6) * 4;
     *(void**)((char*)&DAT_011f3d20 + iVar1) = (void*)NiBezPosKey_ComputeMaxCurvature;
     *(void**)((char*)&DAT_011f3c90 + iVar1) = (void*)EvaluateCubicKey;
     *(void**)((char*)&DAT_011f3c00 + iVar1) = (void*)NiBezPosKey_InterpolateD1;
     *(void**)((char*)&DAT_011f3b70 + iVar1) = (void*)NiBezPosKey_InterpolateD2;
     *(void**)((char*)&DAT_011f3ae0 + iVar1) = (void*)BezKeyEqual;
     *(void**)((char*)&DAT_011f3780 + iVar1) = (void*)ComputeTCBKeyTangents;
-    *(void**)((char*)&DAT_011f3810 + iVar1) = (void*)Object_CopyData_00a282a0;
+    *(void**)((char*)&DAT_011f3810 + iVar1) = (void*)NiBezPosKey_Insert;
 }
 
 struct Helper { unsigned int a; char b; };
@@ -589,10 +611,13 @@ bool AreFloatsEqual(const Helper* x, const Helper* y);
 // Returns false if AreFloatsEqual fails for the two Helpers, otherwise returns whether their b fields are equal.
 // @fnv 0x00a291a0
 // src: GAMEBRYO_LIB 0x00a291a0
-bool NiBoolKey_Equal(const Helper* apFirst, const Helper* apSecond)
+// pdb: NiBoolKey::Equal | NiBoolKey.obj | retail, upstream name already matches, high
+// pdb params: key0, key1
+// pdb locals: Bool0, Bool1
+bool NiBoolKey_Equal(const Helper* key0, const Helper* key1)
 {
-    if (!AreFloatsEqual(apFirst, apSecond)) return false;
-    return apFirst->b == apSecond->b;
+    if (!AreFloatsEqual(key0, key1)) return false;
+    return key0->b == key1->b;
 }
 
 // NiColorA does not yet declare LoadBinary; preserve its original member-call ABI.
@@ -600,7 +625,7 @@ extern "C" void NiColorA_LoadBinary();
 
 namespace fnv_00a29640 {
 struct Base_00a26eb0 {
-    void AccumulateAnimSink(NiStream&);
+    void NiAnimationKey_LoadBinary(NiStream&);
 };
 
 struct FUN_00a29640_T : Base_00a26eb0 {
@@ -610,9 +635,12 @@ struct FUN_00a29640_T : Base_00a26eb0 {
 };
 // @fnv 0x00a29640
 // src: GUESS 0x00a29640 (confidence: low)
+// pdb: NiColorKey::LoadBinary | NiColorKey.obj | retail, call graph (shared callers), low
+// pdb note: debug build links it to NiBezRotKey::LoadBinary
+// pdb params: stream
 void FUN_00a29640_T::ProcessState_00a29640(NiStream& stream)
 {
-    AccumulateAnimSink(stream);
+    NiAnimationKey_LoadBinary(stream);
     ((void (__thiscall*)(NiColorA*, NiStream&))NiColorA_LoadBinary)(&m_kDiffuseColor, stream);
 }
 }  // namespace fnv_00a29640
@@ -624,13 +652,15 @@ void __cdecl WriteFloatToStream(SStream*, SObj*);
 // Calls WriteFloatToStream for each of c SObj entries starting at b, advancing 8 bytes per entry.
 // @fnv 0x00a2d230
 // src: COMMUNITY 0x00a2d230
-void __cdecl NiAnimationKey_SaveToStream(SStream* pStream, SObj* b, unsigned int c)
+// pdb: NiAnimationKey::SaveToStream | NiAnimationKey.obj | debug, upstream name already matches, high
+// pdb params: stream, pkKeys, uiNumKeys
+void __cdecl NiAnimationKey_SaveToStream(SStream* stream, SObj* pkKeys, unsigned int uiNumKeys)
 {
-    if (c > 0) {
-        SObj* d = b;
-        unsigned int n = c;
+    if (uiNumKeys > 0) {
+        SObj* d = pkKeys;
+        unsigned int n = uiNumKeys;
         do {
-            WriteFloatToStream(pStream, d);
+            WriteFloatToStream(stream, d);
             d = (SObj*)((char*)d + 8);
         } while (--n);
     }
@@ -654,6 +684,8 @@ extern unsigned int DAT_011f3810;
 // Fills the seven function-pointer tables at index (param_2 + param_1 * 6) * 4 with the given handler addresses.
 // @fnv 0x00a2d5b0
 // src: GUESS 0x00a2d5b0 (confidence: medium)
+// pdb: NiStepPosKey::RegisterSupportedFunctions | NiStepPosKey.obj | retail, object-file run extension, low
+// pdb params: eContent, eType
 void NiStepPosKey_InterpolateD1_RegisterSevenKeyHandlers(int param_1, int param_2)
 {
     int iVar1 = (param_2 + param_1 * 6) * 4;
@@ -696,6 +728,8 @@ struct FUN_00a39120_cls {
 // Multiplies x, y, z and w by s, stores the result in out via Set, and returns out.
 // @fnv 0x00a39120
 // src: GUESS 0x00a39120 (confidence: medium)
+// pdb: NiQuaternion::operator* | NiBlendAccumTransformInterpolator.obj | debug, call graph, medium
+// pdb params: c
 NiQuaternion* FUN_00a39120_cls::ScaleFourComponents(NiQuaternion* out, float afScale)
 {
     out->SetValues(x * afScale, y * afScale, z * afScale, w * afScale);
@@ -712,6 +746,9 @@ bool AreFloatsEqual(FloatRecord_b5532* a, FloatRecord_b5532* b);
 
 // Returns true if AreFloatsEqual(a, b) succeeds and the two records' m_04 floats are equal.
 // @fnv 0x00a26b00
+// pdb: NiFloatKey::Equal | NiFloatKey.obj | retail, object-file run extension, low
+// pdb params: key0, key1
+// pdb locals: float1, float0
 bool AreRecordsEqual(FloatRecord_b5532* apRecordA, FloatRecord_b5532* apRecordB)
 {
     if (!AreFloatsEqual(apRecordA, apRecordB))
@@ -912,10 +949,13 @@ struct AnimTarget
     AnimNode m_node;
 };
 
-void __cdecl CallAnimCallback(int a, void* b);
+void __cdecl CallAnimCallback(int stream, void* pkKey);
 
 // Calls CallAnimCallback with a and b, then applies animation node in b using a.
 // @fnv 0x00a27450
+// pdb: NiPosKey::SaveBinary | NiPosKey.obj | retail, call graph, medium
+// pdb params: stream, pkKey
+// pdb locals: pkPos
 void __cdecl ApplyAnimToTarget(int a, AnimTarget* apTarget)
 {
     CallAnimCallback(a, apTarget);
@@ -947,6 +987,8 @@ struct FUN_00a27b60_rec {
 // Copies a 0x40-byte record from src to dst field by field, including a trailing three-word block.
 // @fnv 0x00a27b60
 // src: GAMEBRYO_LIB 0x00a27b60
+// pdb: NiPosKey::RegisterSupportedFunctions | NiPosKey.obj | debug, object-file run extension, low
+// pdb params: eContent, eType
 void __cdecl NiBezPosKey_Copy(FUN_00a27b60_rec* apDest, const FUN_00a27b60_rec* apSource)
 {
     apDest->m_f00 = apSource->m_f00;
@@ -1005,7 +1047,7 @@ bool BezKeyEqual(const A27BD0BezKey& kA, const A27BD0BezKey& kB)
 
 struct DynamicMemoryAllocator {
     void* Allocate(unsigned int auiSize);
-    void Free(void* apPtr);
+    void Free(void* apMem);
 };
 
 extern "C" DynamicMemoryAllocator DAT_011f6238;
@@ -1035,6 +1077,9 @@ struct Elem64 {
 
 // Allocates an array of Elem64 elements using the custom allocator and returns the block pointer.
 // @fnv 0x00a27c40
+// pdb: NiBezPosKey::DeleteArray | NiBezPosKey.obj | debug, object-file run extension, low
+// pdb params: pkKeyArray
+// pdb locals: pkBezPosKeyArray
 void* AllocateElem64Array(unsigned int count)
 {
     return new Elem64[count];
@@ -1061,6 +1106,9 @@ struct A27C80CubicKey {
 };
 
 // @fnv 0x00a27c80
+// pdb: NiBezPosKey::Interpolate | NiBezPosKey.obj | debug, object-file run extension, low
+// pdb params: fTime, pKey0, pKey1, pResult
+// pdb locals: pBezKey0
 void EvaluateCubicKey(float fTime, const A27C80CubicKey& kKey, unsigned int uiUnused, A27C80Point3& kResult) {
     kResult = kKey.m_kValue + (kKey.m_kB + (kKey.m_kC + kKey.m_kCubicCoefficient * fTime) * fTime) * fTime;
 }
@@ -1070,17 +1118,20 @@ extern double DAT_01011590;
 // Scales the key's extra components by t and two constants, sums them into a direction, offsets it by t, adds key->out and stores the result.
 // @fnv 0x00a27d60
 // src: GAMEBRYO_LIB 0x00a27d60
-void __cdecl NiBezPosKey_InterpolateD1(float afTime, TCBKeyS* key, unsigned int type, PointStorage* result)
+// pdb: NiBezPosKey::InterpolateD1 | NiBezPosKey.obj | debug, upstream name already matches, high
+// pdb params: fTime, pKey0, pKey1, pResult
+// pdb locals: pBezKey0
+void __cdecl NiBezPosKey_InterpolateD1(float fTime, TCBKeyS* pKey0, unsigned int pKey1, PointStorage* pResult)
 {
-    const float scaled = static_cast<float>(DAT_01021928 * afTime);
-    PointStorage fromScaled = {key->extra[3] * scaled, key->extra[4] * scaled, key->extra[5] * scaled};
-    PointStorage fromDefault = {static_cast<float>(DAT_01011590 * key->extra[0]),
-                         static_cast<float>(DAT_01011590 * key->extra[1]),
-                         static_cast<float>(DAT_01011590 * key->extra[2])};
+    const float scaled = static_cast<float>(DAT_01021928 * fTime);
+    PointStorage fromScaled = {pKey0->extra[3] * scaled, pKey0->extra[4] * scaled, pKey0->extra[5] * scaled};
+    PointStorage fromDefault = {static_cast<float>(DAT_01011590 * pKey0->extra[0]),
+                         static_cast<float>(DAT_01011590 * pKey0->extra[1]),
+                         static_cast<float>(DAT_01011590 * pKey0->extra[2])};
     PointStorage direction = {fromScaled.x + fromDefault.x, fromScaled.y + fromDefault.y, fromScaled.z + fromDefault.z};
-    PointStorage offset = {afTime * direction.x, afTime * direction.y, afTime * direction.z};
-    PointStorage translated = {key->out.x + offset.x, key->out.y + offset.y, key->out.z + offset.z};
-    *result = translated;
+    PointStorage offset = {fTime * direction.x, fTime * direction.y, fTime * direction.z};
+    PointStorage translated = {pKey0->out.x + offset.x, pKey0->out.y + offset.y, pKey0->out.z + offset.z};
+    *pResult = translated;
 }
 
 namespace fnv_00a27e40 {
@@ -1089,21 +1140,24 @@ extern "C" const double DAT_01011590;
 struct Vec3Output { float x,y,z; };
 // @fnv 0x00a27e40
 // src: GAMEBRYO_LIB 0x00a27e40
-extern "C" void __cdecl NiBezPosKey_InterpolateD2(float radians, const float* transform, unsigned int mode, Vec3Output* output) {
-    radians = (float)(radians * DAT_01034208);
+// pdb: NiBezPosKey::InterpolateD2 | NiBezPosKey.obj | debug, upstream name already matches, high
+// pdb params: fTime, pKey0, pKey1, pResult
+// pdb locals: pBezKey0
+extern "C" void __cdecl NiBezPosKey_InterpolateD2(float fTime, const float* pKey0, unsigned int pKey1, Vec3Output* pResult) {
+    fTime = (float)(fTime * DAT_01034208);
     Vec3Output offset;
-    offset.x = radians * transform[13];
-    offset.y = radians * transform[14];
-    offset.z = radians * transform[15];
+    offset.x = fTime * pKey0[13];
+    offset.y = fTime * pKey0[14];
+    offset.z = fTime * pKey0[15];
     Vec3Output base;
-    base.x = (float)(transform[10] * DAT_01011590);
-    base.y = (float)(transform[11] * DAT_01011590);
-    base.z = (float)(transform[12] * DAT_01011590);
+    base.x = (float)(pKey0[10] * DAT_01011590);
+    base.y = (float)(pKey0[11] * DAT_01011590);
+    base.z = (float)(pKey0[12] * DAT_01011590);
     Vec3Output sum;
     sum.x = base.x + offset.x;
     sum.y = reinterpret_cast<volatile Vec3Output&>(offset).y + base.y;
     sum.z = base.z + offset.z;
-    *output = sum;
+    *pResult = sum;
 }
 }  // namespace fnv_00a27e40
 
@@ -1141,13 +1195,17 @@ public:
 };
 
 // @fnv 0x00a281e0
-A281E0BezPosKey* LoadBezPosKeys(A281E0Stream& kStream, unsigned int uiNumKeys)
+// src: XBOX_RETAIL_PDB 0x00a281e0
+// pdb: NiBezPosKey::CreateFromStream | NiBezPosKey.obj | retail, object-file gap fill, high
+// pdb params: stream, uiNumKeys
+// pdb locals: pkBezPosKeys, ui
+A281E0BezPosKey* NiBezPosKey_CreateFromStream(A281E0Stream& stream, unsigned int uiNumKeys)
 {
     A281E0BezPosKey* pkKeys = new A281E0BezPosKey[uiNumKeys];
     for (unsigned int i = 0; i < uiNumKeys; i++) {
-        pkKeys[i].LoadBinary(kStream);
-        pkKeys[i].m_kInTan.LoadBinary(kStream);
-        pkKeys[i].m_kOutTan.LoadBinary(kStream);
+        pkKeys[i].LoadBinary(stream);
+        pkKeys[i].m_kInTan.LoadBinary(stream);
+        pkKeys[i].m_kOutTan.LoadBinary(stream);
     }
     return pkKeys;
 }
@@ -1182,14 +1240,18 @@ void __cdecl ApplyAnimToTarget(NiStream& kStream, A28260Key* pkKey);
 
 // For each of uiNumKeys keys, saves the key via ApplyAnimToTarget and then saves its two colors to kStream.
 // @fnv 0x00a28260
-void __cdecl SaveKeyArray(NiStream& kStream, A28260Key* pkKeys, unsigned int uiNumKeys)
+// src: XBOX_RETAIL_PDB 0x00a28260
+// pdb: NiBezPosKey::SaveToStream | NiBezPosKey.obj | retail, object-file gap fill, high
+// pdb params: stream, pkKeys, uiNumKeys
+// pdb locals: pkBezPosKeys, ui
+void __cdecl NiBezPosKey_SaveToStream(NiStream& stream, A28260Key* pkKeys, unsigned int uiNumKeys)
 {
     for (unsigned int ui = 0; ui < uiNumKeys; ui++)
     {
         A28260Key* pkKey = &pkKeys[ui];
-        ApplyAnimToTarget(kStream, pkKey);
-        pkKey->m_kColor0.SaveBinary(kStream);
-        pkKey->m_kColor1.SaveBinary(kStream);
+        ApplyAnimToTarget(stream, pkKey);
+        pkKey->m_kColor0.SaveBinary(stream);
+        pkKey->m_kColor1.SaveBinary(stream);
     }
 }
 
@@ -1198,19 +1260,21 @@ typedef NiQuaternion* (NiQuaternion::*ReturningQuaternionSetter)(float, float, f
 
 // @fnv 0x00a286e0
 // src: GAMEBRYO_LIB 0x00a286e0
-void NiRotKey_Interpolate(unsigned int auiUnused0, unsigned int auiUnused1, unsigned int auiUnused2, NiQuaternion* out)
+// pdb: NiRotKey::Interpolate | NiRotKey.obj | retail, upstream name already matches, high
+// pdb params: __formal, __formal, __formal, pResult
+void NiRotKey_Interpolate(unsigned int auiUnused0, unsigned int auiUnused1, unsigned int auiUnused2, NiQuaternion* pResult)
 {
     unsigned int storage[sizeof(NiQuaternion) / sizeof(unsigned int)];
     NiQuaternion* holder = reinterpret_cast<NiQuaternion*>(storage);
     NiQuaternion* src = (holder->*reinterpret_cast<ReturningQuaternionSetter>(&NiQuaternion::SetValues))(1.0f, 0.0f, 0.0f, 0.0f);
-    memcpy(out, src, sizeof(*out));
+    memcpy(pResult, src, sizeof(*pResult));
 }
 
 struct FUN_00a28720_target {
     void __thiscall FUN_00a6e4a0(void* value);
 };
 
-void __cdecl CallAnimCallback(void* a, void* b);
+void __cdecl CallAnimCallback(void* stream, void* pkKey);
 
 // Calls CallAnimCallback with a and b, then invokes FUN_00a6e4a0 on the object at b+4 passing a.
 // @fnv 0x00a28720
@@ -1232,6 +1296,9 @@ struct FUN_00a289b0_Vec4 {
 };
 
 // @fnv 0x00a289b0
+// pdb: NiRotKey::GenInterpDefault | NiRotKey.obj | retail, call graph (shared callers), medium
+// pdb params: fTime, pkKeys, eType, uiNumKeys, ucSize
+// pdb locals: uiLastIdx
 FUN_00a289b0_Vec4* __cdecl SampleKeyedVec4(FUN_00a289b0_Vec4* out, float fTime, char* keys, void* arg4, unsigned int count, unsigned char stride)
 {
     if (count != 0) {
@@ -1337,31 +1404,34 @@ struct FNVAnim {
     FNVKey  keys[64];
 };
 
-extern void  __cdecl NiRotKey_FillDerivedVals(FNVAnim* obj, unsigned int count, unsigned int flag);
+extern void  __cdecl NiRotKey_FillDerivedVals(FNVAnim* obj, unsigned int count, unsigned int ucSize);
 extern FNVQuat* __cdecl NiQuaternion_Intermediate(FNVQuat* out, FNVQuat* a, FNVQuat* b, FNVQuat* c);
 
 // For count >= 2, calls FUN_00a28ab0 then fills each key's q1 with FUN_00a6dd50 results from neighbouring q0 values, clamping the ends.
 // @fnv 0x00a28dc0
 // src: GAMEBRYO_LIB 0x00a28dc0
-void __cdecl NiBezRotKey_FillDerivedVals(FNVAnim* pAnim, unsigned int count, unsigned int flag)
+// pdb: NiBezRotKey::FillDerivedVals | NiBezRotKey.obj | retail, upstream name already matches, high
+// pdb params: pkKeys, uiNumKeys, ucSize
+// pdb locals: uiNumKeysM1, pkBezRotKeys, uiI
+void __cdecl NiBezRotKey_FillDerivedVals(FNVAnim* pkKeys, unsigned int uiNumKeys, unsigned int ucSize)
 {
-    if (count < 2) {
+    if (uiNumKeys < 2) {
         return;
     }
 
-    NiRotKey_FillDerivedVals(pAnim, count, flag);
+    NiRotKey_FillDerivedVals(pkKeys, uiNumKeys, ucSize);
 
     FNVQuat qTmp;
 
     // i == 0 : the "previous" key degenerates to the key itself.
-    FNVQuat* pResult0 = NiQuaternion_Intermediate(&qTmp, &pAnim->keys[0].q0, &pAnim->keys[0].q0, &pAnim->keys[1].q0);
-    pAnim->keys[0].q1 = *pResult0;
+    FNVQuat* pResult0 = NiQuaternion_Intermediate(&qTmp, &pkKeys->keys[0].q0, &pkKeys->keys[0].q0, &pkKeys->keys[1].q0);
+    pkKeys->keys[0].q1 = *pResult0;
 
-    unsigned int last = count - 1;
+    unsigned int last = uiNumKeys - 1;
 
     if (last > 1) {
         unsigned int n = last - 1;
-        FNVKey* p = &pAnim->keys[1];
+        FNVKey* p = &pkKeys->keys[1];
         do {
             FNVQuat* pResult1 = NiQuaternion_Intermediate(&qTmp, &p[-1].q0, &p->q0, &p[1].q0);
             p->q1 = *pResult1;
@@ -1370,8 +1440,8 @@ void __cdecl NiBezRotKey_FillDerivedVals(FNVAnim* pAnim, unsigned int count, uns
     }
 
     // i == count-1 : the "next" key degenerates to the key itself.
-    FNVQuat* pResult2 = NiQuaternion_Intermediate(&qTmp, &pAnim->keys[count - 2].q0, &pAnim->keys[last].q0, &pAnim->keys[last].q0);
-    pAnim->keys[last].q1 = *pResult2;
+    FNVQuat* pResult2 = NiQuaternion_Intermediate(&qTmp, &pkKeys->keys[uiNumKeys - 2].q0, &pkKeys->keys[last].q0, &pkKeys->keys[last].q0);
+    pkKeys->keys[last].q1 = *pResult2;
 }
 
 // The game class NiBound - a 16-byte bound (three position floats and a radius).
@@ -1391,11 +1461,15 @@ bool Object_ProcessAndReturnValue_00a28a80(UHelper* a, UHelper* b);
 // Adds the comparison of the NiBound sub-object at +0x14.
 // Returns false if FUN_00a28a80 fails; otherwise compares the unk14 NiBound of both UHelper objects via FUN_00a92660.
 // @fnv 0x00a28ea0
-bool CompareBounds(UHelper* pFirst, UHelper* pSecond) {
-    if (!Object_ProcessAndReturnValue_00a28a80(pFirst, pSecond)) {
+// src: XBOX_RETAIL_PDB 0x00a28ea0
+// pdb: NiBezRotKey::Equal | NiBezRotKey.obj | retail, object-file gap fill, high
+// pdb params: key0, key1
+// pdb locals: bez0, bez1
+bool NiBezRotKey_Equal(UHelper* key0, UHelper* key1) {
+    if (!Object_ProcessAndReturnValue_00a28a80(key0, key1)) {
         return false;
     }
-    return pFirst->unk14.Object_HasEqualFloatComponents(pSecond->unk14);
+    return key0->unk14.Object_HasEqualFloatComponents(key1->unk14);
 }
 
 namespace fnv_00a28ed0 {
@@ -1406,15 +1480,18 @@ void __cdecl Object_ProcessState_00a28720(void* base, void* elem);
 // Calls FUN_00a28720 on each 0x24-byte element in the array, iterating count times.
 // @fnv 0x00a28ed0
 // src: GAMEBRYO_LIB 0x00a28ed0
-void __cdecl NiBezRotKey_SaveToStream(void* base, char* elems, unsigned int count)
+// pdb: NiBezRotKey::SaveToStream | NiBezRotKey.obj | retail, upstream name already matches, high
+// pdb params: stream, pkKeys, uiNumKeys
+// pdb locals: pkBezRotKeys, ui
+void __cdecl NiBezRotKey_SaveToStream(void* stream, char* pkKeys, unsigned int uiNumKeys)
 {
-    unsigned int n = count;
+    unsigned int n = uiNumKeys;
     if (n > 0)
     {
-        char* cur = elems;
+        char* cur = pkKeys;
         do
         {
-            Object_ProcessState_00a28720(base, cur);
+            Object_ProcessState_00a28720(stream, cur);
             cur += 0x24;
             n--;
         } while (n != 0);
@@ -1441,6 +1518,8 @@ extern A291F0Func g_akA291F0Cubic[6][6];
 
 // Fills the per-content/per-type slots of seven curve operation tables with the given function pointers, clearing the cubic slot.
 // @fnv 0x00a291f0
+// pdb: NiBoolKey::RegisterSupportedFunctions | NiBoolKey.obj | retail, object-file run extension, low
+// pdb params: eContent, eType
 void __cdecl RegisterCurveOps(int eContent, int eType)
 {
     g_akA291F0FillDerived[eContent][eType] = Object_ComputeValue_00a291e0;
@@ -1614,6 +1693,8 @@ struct FUN_00a29550_owner {
 
 // @fnv 0x00a29550
 // src: GUESS 0x00a29550 (confidence: low)
+// pdb: NiStreamSaveBinary<unsigned char> | BSValueNode.obj | debug, call graph, medium
+// pdb params: kStream, value
 int __cdecl Runtime_UpdateState_00a29550(int apOwner, int a2) {
     FUN_00a29550_stream* s = reinterpret_cast<FUN_00a29550_owner*>(apOwner)->m_250;
     FUN_00a29550_fn fn = s->m_0c;
@@ -1630,7 +1711,7 @@ struct Outer {
     int unk00;
     Inner inner04;
 };
-void __cdecl CallAnimCallback(void* target, Outer* source);
+void __cdecl CallAnimCallback(void* stream, Outer* pkKey);
 // Calls CallAnimCallback with target and source, then invokes source->inner04.FUN_00a698a0 on target.
 // @fnv 0x00a29660
 // src: GUESS 0x00a29660 (confidence: low)
@@ -1686,9 +1767,13 @@ extern "C" void __stdcall FNV_array_ctor_iterator(void* base, unsigned int size,
 extern "C" void __cdecl FNV_element_ctor(void* self);
 
 // @fnv 0x00a29e40
-bool UpdateArrayElements(float t, void** pOut, int* piFlag)
+// src: XBOX_RETAIL_PDB 0x00a29e40
+// pdb: NiEulerRotKey::Insert | NiEulerRotKey.obj | retail, object-file gap fill, high
+// pdb params: fTime, pkKeys, uiNumKeys
+// pdb locals: bInsertedKey, pkEulerKey, i, uiNumFloatKeys, pkFloatKeys, eFloatType, fnInsert
+bool NiEulerRotKey_Insert(float fTime, void** pkKeys, int* uiNumKeys)
 {
-    if (*piFlag == 0) {
+    if (*uiNumKeys == 0) {
         FNV_Obj* p;
         void* block = ((P03MM*)&g_memoryManager)->Allocate(0x4c);
         if (block) {
@@ -1698,10 +1783,10 @@ bool UpdateArrayElements(float t, void** pOut, int* piFlag)
         } else {
             p = 0;
         }
-        *pOut = p;
-        *piFlag = 1;
+        *pkKeys = p;
+        *uiNumKeys = 1;
     }
-    FNV_Obj* arr = (FNV_Obj*)*pOut;
+    FNV_Obj* arr = (FNV_Obj*)*pkKeys;
     char flag = 0;
     for (unsigned int i = 0; i < 3; i++) {
         unsigned char c = (unsigned char)i;
@@ -1709,7 +1794,7 @@ bool UpdateArrayElements(float t, void** pOut, int* piFlag)
         int n = arr->m14[c];
         if (n) {
             FNV_CbFn fn = g_fnv_cb_011f3810[arr->m20[c]];
-            bool r = fn(t, &f, &n);
+            bool r = fn(fTime, &f, &n);
             if (r) flag = 1;
             arr->m14[c] = n;
             arr->m30[c] = f;
@@ -1893,7 +1978,7 @@ extern A29F00LoadFunc DAT_011f3db0[];
 
 class A29F00KeyData {
 public:
-    void LoadKeyData(A29F00Stream& kStream);
+    void NiEulerRotKey_RegisterSupportedFunctions(A29F00Stream& kStream);
 
     int unk00;
     int unk04;
@@ -1907,7 +1992,10 @@ public:
 };
 
 // @fnv 0x00a29f00
-void A29F00KeyData::LoadKeyData(A29F00Stream& kStream)
+// src: XBOX_RETAIL_PDB 0x00a29f00
+// pdb: NiEulerRotKey::RegisterSupportedFunctions | NiEulerRotKey.obj | retail, object-file gap fill, high
+// pdb params: eContent, eType
+void A29F00KeyData::NiEulerRotKey_RegisterSupportedFunctions(A29F00Stream& kStream)
 {
     if (kStream.m_uiFileVersion < 0x0A010068) {
         int iUnused;
@@ -2097,7 +2185,11 @@ extern A29FE0LoadFunc g_apfnA29FE0Load[];
 
 // Reads three count/type pairs from the stream and, for each nonzero count, reads its type and calls the matching loader with the data pointer.
 // @fnv 0x00a29fe0
-void ReadBlockEntries(A29FE0Context* pkContext, A29FE0Block* pkBlock) {
+// src: XBOX_RETAIL_PDB 0x00a29fe0
+// pdb: NiEulerRotKey::LoadBinary | NiEulerRotKey.obj | retail, object-file gap fill, high
+// pdb params: stream
+// pdb locals: iOrder, uiI, cf, eType
+void NiEulerRotKey_LoadBinary(A29FE0Context* pkContext, A29FE0Block* pkBlock) {
     unsigned int* puiCount = pkBlock->m_auiCount;
     for (int i = 0; i < 3; i++, puiCount++) {
         pkContext->m_pDataStream->Write(puiCount, 4);
@@ -2150,10 +2242,13 @@ float __cdecl NiInterpScalar_Linear(float a, float b, float c);
 
 // @fnv 0x00a2a560
 // src: GAMEBRYO_LIB 0x00a2a560
-void __cdecl NiLinFloatKey_Interpolate(float s, const NiPoint3* apPointA, const NiPoint3* apPointB, float* pfResult) {
-    float by = apPointB->y;
-    float ay = apPointA->y;
-    *pfResult = NiInterpScalar_Linear(s, ay, by);
+// pdb: NiLinFloatKey::Interpolate | NiLinFloatKey.obj | retail, upstream name already matches, high
+// pdb params: fTime, pKey0, pKey1, pResult
+// pdb locals: pLin0, pLin1
+void __cdecl NiLinFloatKey_Interpolate(float fTime, const NiPoint3* pKey0, const NiPoint3* pKey1, float* pResult) {
+    float by = pKey1->y;
+    float ay = pKey0->y;
+    *pResult = NiInterpScalar_Linear(fTime, ay, by);
 }
 
 namespace fnv_00a2a5a0 {
@@ -2168,6 +2263,9 @@ struct Elem {
 };
 // Allocates an array of n Elem objects and calls Init(x) on each element, returning the array.
 // @fnv 0x00a2a5a0
+// pdb: NiLinFloatKey::CreateFromStream | NiLinFloatKey.obj | retail, object-file run extension, low
+// pdb params: stream, uiNumKeys
+// pdb locals: pkLinFloatKeys, ui
 Elem* CreateInitializedElems(int x, unsigned auiCount)
 {
     Elem* r = new Elem[auiCount];
@@ -2213,8 +2311,11 @@ struct A2A890Key {
 // Stores into kResult the difference of kKey1.m_kValue and kKey0.m_kValue; fTime is unused.
 // @fnv 0x00a2a890
 // src: GAMEBRYO_LIB 0x00a2a890
-void NiLinPosKey_InterpolateD1(float fTime, const A2A890Key& kKey0, const A2A890Key& kKey1, A2A890Point3& kResult) {
-    kResult = kKey1.m_kValue - kKey0.m_kValue;
+// pdb: NiLinPosKey::InterpolateD1 | NiLinPosKey.obj | debug, upstream name already matches, high
+// pdb params: fTime, pKey0, pKey1, pResult
+// pdb locals: pPosKey1, pPosKey0
+void NiLinPosKey_InterpolateD1(float fTime, const A2A890Key& pKey0, const A2A890Key& pKey1, A2A890Point3& pResult) {
+    pResult = pKey1.m_kValue - pKey0.m_kValue;
 }
 
 struct VertexRecord {
@@ -2253,6 +2354,9 @@ struct LinPosKey : AnimKeyBase {
 // Inserts a new linear position key at time t (value sampled from the existing curve).
 // Inserts a new LinPosKey at time t into the sorted key array, shifting existing keys and evaluating the position via GetKeyPosAtTime.
 // @fnv 0x00a2a940
+// pdb: NiLinPosKey::Insert | NiLinPosKey.obj | retail, object-file run extension, low
+// pdb params: fTime, pkKeys, uiNumKeys
+// pdb locals: pkLinPosKeys, uiDestSize, uiInsertAt, pkNewKey, pkNewKeys, kPt
 bool InsertLinPosKey(float t, LinPosKey** pKeys, unsigned int* pCount)
 {
     LinPosKey* keys = *pKeys;
@@ -2277,7 +2381,7 @@ bool InsertLinPosKey(float t, LinPosKey** pKeys, unsigned int* pCount)
 }
 
 struct FUN_00a6e330_StandIn {
-    void __thiscall FUN_00a6e330(float value, const void* first, const void* second);
+    void __thiscall FUN_00a6e330(float value, const void* p, const void* q);
 };
 
 // Calls FUN_00a6e330 on result with value and the two pointers advanced by 4 bytes.
@@ -2323,6 +2427,8 @@ bool __cdecl A2AE90BaseIsEqual(A2AE90Light* pkA, A2AE90Light* pkB);
 
 // Compares two lights: first the base fields, then dimmer, two floats and the ambient, diffuse, specular and remaining point values.
 // @fnv 0x00a2ae90
+// pdb: NiTCBPosKey::CreateArray | NiTCBPosKey.obj | debug, object-file run extension, low
+// pdb params: uiNumKeys
 bool __cdecl IsLightEqual(A2AE90Light* pkA, A2AE90Light* pkB)
 {
     if (!A2AE90BaseIsEqual(pkA, pkB))
@@ -2355,6 +2461,9 @@ struct BezierKeyS {
 
 // Allocates an array of count BezierKeyS objects using the memory manager and returns the pointer.
 // @fnv 0x00a2af30
+// pdb: NiTCBPosKey::DeleteArray | NiTCBPosKey.obj | debug, object-file run extension, low
+// pdb params: pkKeyArray
+// pdb locals: pkTCBPosKeyArray
 BezierKeyS* __cdecl AllocateBezierKeys(unsigned int count) {
     return new BezierKeyS[count];
 }
@@ -2378,9 +2487,12 @@ static __forceinline S_00a2af70_V Add(const S_00a2af70_V& a, const S_00a2af70_V&
 
 // @fnv 0x00a2af70
 // src: GAMEBRYO_LIB 0x00a2af70
-void __cdecl NiTCBPosKey_Interpolate(float t, S_00a2af70_P* p, int unused, S_00a2af70_V* out)
+// pdb: NiTCBPosKey::Interpolate | NiTCBPosKey.obj | debug, upstream name already matches, high
+// pdb params: fTime, pKey0, pKey1, pResult
+// pdb locals: pTCBKey0
+void __cdecl NiTCBPosKey_Interpolate(float fTime, S_00a2af70_P* pKey0, int pKey1, S_00a2af70_V* pResult)
 {
-    *out = Add(p->c1, Scale(Add(p->c2, Scale(Add(p->c3, Scale(p->c4, t)), t)), t));
+    *pResult = Add(pKey0->c1, Scale(Add(pKey0->c2, Scale(Add(pKey0->c3, Scale(pKey0->c4, fTime)), fTime)), fTime));
 }
 
 struct S_00a2b050_V3 {
@@ -2407,6 +2519,10 @@ struct S_00a2b050_Obj {
 };
 // Computes o->pos plus (velA*2 + velB*3*t)*t and stores the result in out, returning out.
 // @fnv 0x00a2b050
+// pdb: NiTCBPosKey::Equal | NiTCBPosKey.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiTCBPosKey::InterpolateD1
+// pdb params: key0, key1
+// pdb locals: tcb0, tcb1
 S_00a2b050_V3* __cdecl ComputeInterpolatedPosition(float t, S_00a2b050_Obj* pObj, int unused, S_00a2b050_V3* out)
 {
     S_00a2b050_V3 r = pObj->pos + (pObj->velA * 2.0f + pObj->velB * (3.0f * t)) * t;
@@ -2443,6 +2559,9 @@ extern "C" double DAT_01011590;
 // Scales amount by DAT_01034208, then writes the sum of two Vector3s read from transform offsets 13 and 16, weighted by DAT_01011590 and amount, into result.
 // @fnv 0x00a2b130
 // src: GAMEBRYO_LIB 0x00a2b130
+// pdb: NiTCBPosKey::CreateArray | NiTCBPosKey.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiTCBPosKey::InterpolateD2
+// pdb params: uiNumKeys
 void __cdecl NiTCBPosKey_InterpolateD2(float amount, const float* transform, unsigned int unused, LocalVector3* result)
 {
     amount *= DAT_01034208;
@@ -2555,6 +2674,8 @@ struct Element76 {
 
 // Allocates an array of Element76 objects and calls Init(a1) on each element.
 // @fnv 0x00a2bb00
+// pdb: NiTCBPosKey::LoadBinary | NiTCBPosKey.obj | debug, object-file run extension, low
+// pdb params: stream
 void* __cdecl AllocateElement76Array(int a1, unsigned int auiCount)
 {
     Element76* items = new Element76[auiCount];
@@ -2635,6 +2756,9 @@ struct A2BDE0BezRotKey : A2BDE0Key {
 
 // Compares two rotation keys: base key equality, three floats, and the in/out quaternions.
 // @fnv 0x00a2bde0
+// pdb: NiTCBRotKey::DeleteArray | NiTCBRotKey.obj | debug, object-file run extension, low
+// pdb params: pkKeyArray
+// pdb locals: pkTCBRotKeyArray
 bool BezRotKeyEqual(const A2BDE0BezRotKey& kA, const A2BDE0BezRotKey& kB)
 {
     if (!A2BDE0KeyEqual(kA, kB))
@@ -2663,16 +2787,20 @@ struct TCBRotKey {
     float m_fValueZ;
     TQuat m_kOutgoingTangent;
     TQuat m_kIncomingTangent;
-    void ComputeTangents(const TCBRotKey& prev, const TCBRotKey& next);
+    void NiTCBRotKey_CalculateDVals(const TCBRotKey& pPrev, const TCBRotKey& pNext);
 };
 
 // @fnv 0x00a2beb0
-void TCBRotKey::ComputeTangents(const TCBRotKey& prev, const TCBRotKey& next)
+// src: XBOX_RETAIL_PDB 0x00a2beb0
+// pdb: NiTCBRotKey::CalculateDVals | NiTCBRotKey.obj | retail, object-file run extension, high
+// pdb params: pPrev, pNext
+// pdb locals: mc, d1, Tout, Tin, pb, d0, logNext, pc, fInv, mb, adjVal, logPrev, mt
+void TCBRotKey::NiTCBRotKey_CalculateDVals(const TCBRotKey& pPrev, const TCBRotKey& pNext)
 {
-    TQuat qLogPrev = TQuat::Log(Conj(prev.m_kRotationValue).Mul(m_kRotationValue));
-    TQuat qLogNext = TQuat::Log(Conj(m_kRotationValue).Mul(next.m_kRotationValue));
+    TQuat qLogPrev = TQuat::Log(Conj(pPrev.m_kRotationValue).Mul(m_kRotationValue));
+    TQuat qLogNext = TQuat::Log(Conj(m_kRotationValue).Mul(pNext.m_kRotationValue));
 
-    float invDelta = 1.0f / (next.m_fTime - prev.m_fTime);
+    float invDelta = 1.0f / (pNext.m_fTime - pPrev.m_fTime);
     float fTension, fContPlus, fContMinus, fBiasPlus, fBiasMinus;
     fTension = 1.0f - m_fValueX;
     fContMinus = 1.0f - m_fValueY;
@@ -2680,11 +2808,11 @@ void TCBRotKey::ComputeTangents(const TCBRotKey& prev, const TCBRotKey& next)
     fBiasMinus = 1.0f - m_fValueZ;
     fBiasPlus = 1.0f + m_fValueZ;
 
-    float f = (m_fTime - prev.m_fTime) * invDelta;
+    float f = (m_fTime - pPrev.m_fTime) * invDelta;
     TQuat qOutTangent = (f * fTension * fContMinus * fBiasMinus) * qLogNext + (f * fTension * fContPlus * fBiasPlus) * qLogPrev;
     m_kOutgoingTangent = m_kRotationValue.Mul(TQuat::Exp(0.5f * (qOutTangent - qLogNext)));
 
-    f = (next.m_fTime - m_fTime) * invDelta;
+    f = (pNext.m_fTime - m_fTime) * invDelta;
     TQuat qInTangent = (f * fTension * fContPlus * fBiasMinus) * qLogNext + (f * fTension * fContMinus * fBiasPlus) * qLogPrev;
     m_kIncomingTangent = m_kRotationValue.Mul(TQuat::Exp(0.5f * (qLogPrev - qInTangent)));
 }
@@ -2707,33 +2835,36 @@ struct Quad64
     int unk34;
     int unk38;
     int unk3C;
-    void ComputeTangents(void* a, void* b);
+    void NiTCBRotKey_CalculateDVals(void* pPrev, void* pNext);
 };
 
-void __cdecl NiRotKey_FillDerivedVals(void* a, unsigned int count, void* c);
+void __cdecl NiRotKey_FillDerivedVals(void* a, unsigned int count, void* ucSize);
 
 // @fnv 0x00a2c130
 // src: GAMEBRYO_LIB 0x00a2c130
-void __cdecl NiTCBRotKey_FillDerivedVals(Quad64* apQuads, unsigned int count, void* c)
+// pdb: NiTCBRotKey::FillDerivedVals | NiTCBRotKey.obj | retail, upstream name already matches, high
+// pdb params: pkKeys, uiNumKeys, ucSize
+// pdb locals: uiNumKeysM1, pkTCBRotKeys, uiI
+void __cdecl NiTCBRotKey_FillDerivedVals(Quad64* pkKeys, unsigned int uiNumKeys, void* ucSize)
 {
-    if (count < 2)
+    if (uiNumKeys < 2)
         return;
-    NiRotKey_FillDerivedVals(apQuads, count, c);
-    apQuads[0].ComputeTangents(apQuads, &apQuads[1]);
-    unsigned int n = count - 1;
+    NiRotKey_FillDerivedVals(pkKeys, uiNumKeys, ucSize);
+    pkKeys[0].NiTCBRotKey_CalculateDVals(pkKeys, &pkKeys[1]);
+    unsigned int n = uiNumKeys - 1;
     if (n > 1)
     {
-        Quad64* cur = apQuads;
+        Quad64* cur = pkKeys;
         unsigned int k = n - 1;
         do
         {
             Quad64* next = cur + 1;
-            next->ComputeTangents(cur, cur + 2);
+            next->NiTCBRotKey_CalculateDVals(cur, cur + 2);
             cur = next;
             k--;
         } while (k != 0);
     }
-    apQuads[n].ComputeTangents(&apQuads[count - 2], &apQuads[n]);
+    pkKeys[n].NiTCBRotKey_CalculateDVals(&pkKeys[uiNumKeys - 2], &pkKeys[n]);
 }
 
 
@@ -2904,15 +3035,18 @@ struct S_a2c300_Obj {
     int unk18;
     int unk1c;
     void ProcessState_00a29640(S_a2c300_Stream* s);
-    void SaveExtraFields(S_a2c300_Stream* s);
+    void NiTCBRotKey_LoadBinary(S_a2c300_Stream* stream);
 };
 // Calls FUN_00a29640, then serializes the 4-byte fields unk14, unk18 and unk1c to the stream via S_a2c300_Save.
 // @fnv 0x00a2c300
-void S_a2c300_Obj::SaveExtraFields(S_a2c300_Stream* pStream) {
-    ProcessState_00a29640(pStream);
-    S_a2c300_Save(pStream, &unk14, 4);
-    S_a2c300_Save(pStream, &unk18, 4);
-    S_a2c300_Save(pStream, &unk1c, 4);
+// src: XBOX_RETAIL_PDB 0x00a2c300
+// pdb: NiTCBRotKey::LoadBinary | NiTCBRotKey.obj | retail, object-file gap fill, high
+// pdb params: stream
+void S_a2c300_Obj::NiTCBRotKey_LoadBinary(S_a2c300_Stream* stream) {
+    ProcessState_00a29640(stream);
+    S_a2c300_Save(stream, &unk14, 4);
+    S_a2c300_Save(stream, &unk18, 4);
+    S_a2c300_Save(stream, &unk1c, 4);
 }
 
 
@@ -3087,14 +3221,17 @@ struct S_a2c390_Obj {
 };
 // Calls FUN_00a28720 on s and o, then loads o->unk14, o->unk18 and o->unk1c from the stream.
 // @fnv 0x00a2c390
-void __cdecl LoadObjFields(S_a2c390_Stream* pStream, S_a2c390_Obj* pObj) {
-    Object_ProcessState_00a28720(pStream, pObj);
-    S_a2c390_Load(pStream, pObj->unk14);
-    S_a2c390_Load(pStream, pObj->unk18);
-    S_a2c390_Load(pStream, pObj->unk1c);
+// src: XBOX_RETAIL_PDB 0x00a2c390
+// pdb: NiTCBRotKey::RegisterSupportedFunctions | NiTCBRotKey.obj | retail, object-file gap fill, high
+// pdb params: eContent, eType
+void __cdecl NiTCBRotKey_RegisterSupportedFunctions(S_a2c390_Stream* eContent, S_a2c390_Obj* eType) {
+    Object_ProcessState_00a28720(eContent, eType);
+    S_a2c390_Load(eContent, eType->unk14);
+    S_a2c390_Load(eContent, eType->unk18);
+    S_a2c390_Load(eContent, eType->unk1c);
 }
 
-extern "C" void __cdecl LoadObjFields(void* ctx, void* entry);
+extern "C" void __cdecl NiTCBRotKey_RegisterSupportedFunctions(void* eContent, void* eType);
 
 struct Entry64 {
     unsigned int unk00;
@@ -3119,11 +3256,14 @@ struct Entry64 {
 // Calls LoadObjFields with ctx and each entry in the array, advancing through count entries.
 // @fnv 0x00a2c490
 // src: GAMEBRYO_LIB 0x00a2c490
-void __cdecl NiTCBRotKey_SaveToStream(void* pContext, Entry64* entries, unsigned int count)
+// pdb: NiTCBRotKey::SaveToStream | NiTCBRotKey.obj | retail, upstream name already matches, high
+// pdb params: stream, pkKeys, uiNumKeys
+// pdb locals: pkTCBRotKeys, ui
+void __cdecl NiTCBRotKey_SaveToStream(void* stream, Entry64* pkKeys, unsigned int uiNumKeys)
 {
-    for (unsigned int i = 0; i < count; i++) {
-        LoadObjFields(pContext, entries);
-        entries++;
+    for (unsigned int i = 0; i < uiNumKeys; i++) {
+        NiTCBRotKey_RegisterSupportedFunctions(stream, pkKeys);
+        pkKeys++;
     }
 }
 
@@ -3140,10 +3280,13 @@ extern "C" float __cdecl func_0x00a42070(float input, float leftStart, float lef
 
 // @fnv 0x00a2c610
 // src: GAMEBRYO_LIB 0x00a2c610
-void __cdecl NiTCBFloatKey_Interpolate(float input, const ShapeValues* left, const ShapeValues* right, float* apfResult) {
-    const float rightStart = right->start;
-    const float leftStart = left->start;
-    *apfResult = func_0x00a42070(input, leftStart, left->extent, rightStart, right->end);
+// pdb: NiTCBFloatKey::Interpolate | NiTCBFloatKey.obj | retail, upstream name already matches, high
+// pdb params: fTime, pKey0, pKey1, pResult
+// pdb locals: pTcb0, pTcb1
+void __cdecl NiTCBFloatKey_Interpolate(float fTime, const ShapeValues* pKey0, const ShapeValues* pKey1, float* pResult) {
+    const float rightStart = pKey1->start;
+    const float leftStart = pKey0->start;
+    *pResult = func_0x00a42070(fTime, leftStart, pKey0->extent, rightStart, pKey1->end);
 }
 
 namespace fnv_00a2c660 {
@@ -3170,12 +3313,16 @@ struct Elem28 {
 
 // Allocates an array of count Elem28 objects using the custom allocator and returns the block pointer.
 // @fnv 0x00a2c660
+// pdb: NiTCBFloatKey::DeleteArray | NiTCBFloatKey.obj | debug, object-file run extension, low
+// pdb params: pkKeyArray
+// pdb locals: pkTCBFloatKeyArray
 void* AllocateElem28Array(unsigned int count)
 {
     return new Elem28[count];
 }
 }  // namespace fnv_00a2c660
 
+// pdb: class Key, size 0x8 (here 0x1c), 2 members
 struct Key {
     float t;
     float v;
@@ -3187,13 +3334,16 @@ struct Key {
 };
 
 // src: GAMEBRYO_LIB 0x00a2c6a0
-__declspec(noinline) void __cdecl NiTCBFloatKey_CalculateDVals(Key* k, float a, float b, float c, float d) {
-    k->a = a * c;
-    k->b = b * d;
+__declspec(noinline) void __cdecl NiTCBFloatKey_CalculateDVals(Key* result, float fValSub1, float fValPlus1, float fPreLen, float fNextLen) {
+    result->a = fValSub1 * fPreLen;
+    result->b = fValPlus1 * fNextLen;
 }
 
 // @fnv 0x00a2c7a0
 // src: GAMEBRYO_LIB 0x00a2c7a0
+// pdb: NiTCBFloatKey::FillDerivedVals | NiTCBFloatKey.obj | debug, upstream name already matches, high
+// pdb params: pkKeys, uiNumKeys, ucSize
+// pdb locals: pkTCBFloatKeys, uiNumKeysM1, uiNumKeysM2, uiI
 void __cdecl NiTCBFloatKey_FillDerivedVals(Key* keys, unsigned int count) {
     if (count < 2) {
         return;
@@ -3378,6 +3528,8 @@ struct FUN_00a2c9d0_cls {
 // Calls FUN_00a26eb0, then reads three 4-byte values from owner->m_stream into unk08, unk0c and unk10.
 // @fnv 0x00a2c9d0
 // src: GUESS 0x00a2c9d0 (confidence: medium)
+// pdb: NiTCBFloatKey::LoadBinary | NiTCBFloatKey.obj | retail, object-file run extension, low
+// pdb params: stream
 void FUN_00a2c9d0_cls::LoadBaseAndThreeValues(S_00a2c9d0_Owner* owner)
 {
     LoadBaseAndMemberValue(owner);
@@ -3400,6 +3552,8 @@ void __cdecl WriteFloatToStream(NiStreamStandInW_blk_00a20000_o2* pkStream, FUN_
 // Calls WriteFloatToStream, then writes the object's m_08, m_0c and m_10 fields to the stream.
 // @fnv 0x00a2ca60
 // src: GUESS 0x00a2ca60 (confidence: medium)
+// pdb: NiTCBFloatKey::RegisterSupportedFunctions | NiTCBFloatKey.obj | retail, object-file run extension, low
+// pdb params: eContent, eType
 void __cdecl Object_WriteKeyFields(NiStreamStandInW_blk_00a20000_o2* pkStream, FUN_00a2ca60_Obj* pkObj)
 {
     WriteFloatToStream(pkStream, pkObj);
@@ -3423,6 +3577,10 @@ struct KeyframeElement {
     }
 };
 // @fnv 0x00a2caf0
+// pdb: NiTCBFloatKey::CreateFromStream | NiTCBFloatKey.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiTCBFloatKey::LoadBinary
+// pdb params: stream, uiNumKeys
+// pdb locals: pkTCBFloatKeys, ui
 KeyframeElement* __cdecl AllocateKeyframeElements(void* context, unsigned int count) {
     KeyframeElement* elements = new KeyframeElement[count];
     if (count > 0) {
@@ -3441,14 +3599,17 @@ extern "C" void __cdecl Object_WriteKeyFields(void* a1, void* a2);
 // Calls FUN_00a2ca60 for each of count elements, advancing a2 by 0x1c bytes per iteration.
 // @fnv 0x00a2cb50
 // src: GAMEBRYO_LIB 0x00a2cb50
-void __cdecl NiTCBFloatKey_SaveToStream(void* a1, void* a2, unsigned int count)
+// pdb: NiTCBFloatKey::SaveToStream | NiTCBFloatKey.obj | retail, upstream name already matches, high
+// pdb params: stream, pkKeys, uiNumKeys
+// pdb locals: pkTCBFloatKeys, ui
+void __cdecl NiTCBFloatKey_SaveToStream(void* stream, void* pkKeys, unsigned int uiNumKeys)
 {
-    unsigned int n = count;
+    unsigned int n = uiNumKeys;
     if (n <= 0)
         return;
     do {
-        Object_WriteKeyFields(a1, a2);
-        a2 = (char*)a2 + 0x1c;
+        Object_WriteKeyFields(stream, pkKeys);
+        pkKeys = (char*)pkKeys + 0x1c;
         n = n - 1;
     } while (n != 0);
 }
@@ -3542,22 +3703,25 @@ struct FUN_00a2d200_arg
 // Writes a->m_04 to *out when t is below 1.0, otherwise writes b->m_04.
 // @fnv 0x00a2d200
 // src: GAMEBRYO_LIB 0x00a2d200
-void NiStepFloatKey_Interpolate(float t, FUN_00a2d200_arg* a, FUN_00a2d200_arg* b, float* apResult)
+// pdb: NiStepFloatKey::Interpolate | NiStepFloatKey.obj | debug, upstream name already matches, high
+// pdb params: fTime, pkKey0, pkKey1, pvResult
+// pdb locals: pkFloatKey0, pkFloatKey1
+void NiStepFloatKey_Interpolate(float fTime, FUN_00a2d200_arg* pkKey0, FUN_00a2d200_arg* pkKey1, float* pvResult)
 {
-    if (t < 1.0f)
+    if (fTime < 1.0f)
     {
-        *apResult = a->m_04;
+        *pvResult = pkKey0->m_04;
     }
     else
     {
-        *apResult = b->m_04;
+        *pvResult = pkKey1->m_04;
     }
 }
 
 namespace fnv_00a2d260 {
 struct DynamicMemoryAllocator {
     void* Game_DoHeapAlloc(unsigned int auiSize);
-    void MemoryManager_Deallocate(void* apPtr);
+    void MemoryManager_Deallocate(void* apMem);
 };
 
 extern "C" unsigned int DAT_011f6238;
@@ -3840,6 +4004,8 @@ public:
 
 // @fnv 0x00a30540
 // src: XBOX_PDB 0x00a30540
+// pdb: NiControllerSequence::DetachInterpolators | NiControllerSequence.obj | retail, upstream name already matches, high
+// pdb locals: ui, kItem
 void FUN_00a30540_cls::NiControllerSequence_DetachInterpolators()
 {
     for (unsigned int index = 0; index < m_uiItemCount; index++) {
@@ -3860,6 +4026,8 @@ struct FUN_00a305e0_cls {
 
 // Returns true if the stored string pointer matches other, or if both are non-null and strcmp reports them equal.
 // @fnv 0x00a305e0
+// pdb: NiShader::DynamicCast | NiD3DShaderFactory.obj | debug, object-file run extension, low
+// pdb params: pkRTTI, pkObject
 bool FUN_00a305e0_cls::Equals(const char* other)
 {
     if (m_00 == other) {
@@ -3950,6 +4118,8 @@ struct Object : Base {
 };
 // Calls FUN_00a370b0, sets the vtable and several fields from globals, and allocates an array of FUN_00a362f0 sized by count into unk50.
 // @fnv 0x00a363b0
+// pdb: NiBlendAccumTransformInterpolator::NiBlendAccumTransformInterpolator | NiTransformController.obj | retail, call graph, medium
+// pdb note: debug build links it to TESSaveLoadGame::InitObject
 Object* Object::InitObject(int aiArg, float afArg, int aiArg2) {
   NiBlendInterpolator_NiBlendInterpolator_00a370b0(aiArg,afArg,aiArg2);
   vtable = &DAT_01096784;
@@ -3989,6 +4159,10 @@ struct S_00a385d0_T {
 };
 
 // @fnv 0x00a385d0
+// pdb: NiTMapBase<DFALL<NiTMapItem<unsigned int,VertexDist> >,unsigned int,VertexDist>::GetNext | GlobalFunc.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiQuatTransform::Invert
+// pdb params: pos, key, val
+// pdb locals: bfound, ihashIndex, pkItem, pcompItem, i
 void S_00a385d0_T::InvertTransform(S_00a385d0_T* out) {
     if (scale == DAT_010241b0) out->scale = DAT_01096b8c;
     else out->scale = 1.0f / scale;
@@ -4055,14 +4229,16 @@ public:
     virtual void v38();
     virtual void v39();
     virtual void v40(int a, int b, int c, int d);
-    void NiParallelUpdateTaskManager_AddTask(int a, int b);
+    void NiParallelUpdateTaskManager_AddTask(int pkTask, int ePriority);
 };
 
 // @fnv 0x00a3a730
 // src: COMMUNITY 0x00a3a730
-void FUN_00a3a730_cls::NiParallelUpdateTaskManager_AddTask(int aiArg1, int aiArg2)
+// pdb: NiParallelUpdateTaskManager::AddTask | NiParallelUpdateTaskManager.obj | debug, upstream name already matches, high
+// pdb params: pkTask, ePriority
+void FUN_00a3a730_cls::NiParallelUpdateTaskManager_AddTask(int pkTask, int ePriority)
 {
-    v40(0, aiArg1, aiArg2, 1);
+    v40(0, pkTask, ePriority, 1);
 }
 
 #include "../../include/NiMemObject.h"
@@ -4072,7 +4248,7 @@ extern float DAT_0109a918;
 template <> inline NiPointer<NiFloatData>::NiPointer() { m_pObject = 0; }
 template <> inline NiPointer<NiFloatData>::~NiPointer() { if (m_pObject != 0) m_pObject->DecRefCount(); }
 inline NiFloatInterpolator::NiFloatInterpolator()
-    : NiKeyBasedInterpolator(), value(DAT_0109a918), data(), lastIndex(0) {}
+    : NiKeyBasedInterpolator(), m_fFloatValue(DAT_0109a918), m_spFloatData(), m_uiLastIdx(0) {}
 inline void* __cdecl operator new(unsigned int, void* memory) throw() {
     return memory;
 }
@@ -4086,6 +4262,8 @@ NiFloatInterpolator* __cdecl CreateNiFloatInterpolator() {
 }
 
 // @fnv 0x00a3d520
+// pdb: NiColorKey::GetKeySize | NiColorData.obj | debug, object-file run extension, low
+// pdb params: eType
 int __cdecl AreFloatsEqual(const float* pfA, const float* pfB)
 {
     if (*pfA == *pfB)
@@ -4104,17 +4282,20 @@ struct AnimSink {
 
 class FUN_00a3da20_cls {
 public:
-    void AccumulateAnimSink(int a1);
+    void NiAnimationKey_LoadBinary(int stream);
 };
 
 // Calls the sink's callback with count 4 and adds its return value to the sink's m_04 counter.
 // @fnv 0x00a3da20
-void FUN_00a3da20_cls::AccumulateAnimSink(int a1)
+// src: XBOX_RETAIL_PDB 0x00a3da20
+// pdb: NiAnimationKey::LoadBinary | NiAnimationKey.obj | retail, call graph, high
+// pdb params: stream
+void FUN_00a3da20_cls::NiAnimationKey_LoadBinary(int stream)
 {
-    AnimSink* sink = *(AnimSink**)((char*)a1 + 0x24c);
+    AnimSink* sink = *(AnimSink**)((char*)stream + 0x24c);
     int (__cdecl *fn)(AnimSink*, void*, int, int*, int) = sink->m_08;
-    a1 = 4;
-    sink->m_04 += fn(sink, this, 4, &a1, 1);
+    stream = 4;
+    sink->m_04 += fn(sink, this, 4, &stream, 1);
 }
 
 struct FUN_00a3da50_Anim {
@@ -4277,13 +4458,15 @@ struct FUN_00a3da50_Owner {
 };
 
 // @fnv 0x00a3da50
-int __cdecl CallAnimCallback(FUN_00a3da50_Owner *pOwner, int iIndex)
+// pdb: NiAnimationKey::SaveBinary | NiAnimationKey.obj | retail, call graph, high
+// pdb params: stream, pkKey
+int __cdecl CallAnimCallback(FUN_00a3da50_Owner *stream, int pkKey)
 {
     int iOut;
-    FUN_00a3da50_Anim *pAnim = pOwner->m_pAnim;
+    FUN_00a3da50_Anim *pAnim = stream->m_pAnim;
     int (__cdecl *pfn)(FUN_00a3da50_Anim *, int, int, int *, int) = pAnim->m_pfn;
     iOut = 4;
-    int iResult = pfn(pAnim, iIndex, 4, &iOut, 1);
+    int iResult = pfn(pAnim, pkKey, 4, &iOut, 1);
     pAnim->m_iArrayLength += iResult;
     return iResult;
 }
@@ -4328,6 +4511,7 @@ struct FUN_00a3dd40 : FUN_00a3ca30 {
 };
 
 // @fnv 0x00a3dd40
+// pdb: NiPathInterpolator::~NiPathInterpolator | NiPathInterpolator.obj | debug, call graph, medium
 FUN_00a3dd40::~FUN_00a3dd40() throw()
 {
     m_kPointA = 0;
@@ -4339,13 +4523,16 @@ extern "C" float __cdecl func_0x00a42070(float input, float leftStart, float lef
 
 // @fnv 0x00a26fe0
 // src: GAMEBRYO_LIB 0x00a26fe0
-void __cdecl NiBezFloatKey_Interpolate(float a, const float* b, const float* c, float* pfResult)
+// pdb: NiBezFloatKey::Interpolate | NiBezFloatKey.obj | retail, upstream name already matches, high
+// pdb params: fTime, pKey0, pKey1, pResult
+// pdb locals: pBez1, pBez0
+void __cdecl NiBezFloatKey_Interpolate(float fTime, const float* pKey0, const float* pKey1, float* pResult)
 {
-    float c2 = c[2];
-    float c1 = c[1];
-    float b3 = b[3];
-    float b1 = b[1];
-    *pfResult = func_0x00a42070(a, b1, b3, c1, c2);
+    float c2 = pKey1[2];
+    float c1 = pKey1[1];
+    float b3 = pKey0[3];
+    float b1 = pKey0[1];
+    *pResult = func_0x00a42070(fTime, b1, b3, c1, c2);
 }
 
 namespace fnv_00a29e00 {
@@ -4355,7 +4542,11 @@ extern "C" FUN_00a29e00_Callback DAT_011f3780[];
 
 // For each of 3 entries, if the target is nonzero, calls the callback from DAT_011f3780 indexed by slot with target, value and flag.
 // @fnv 0x00a29e00
-void __cdecl DispatchEntryCallbacks(void* pData)
+// src: XBOX_RETAIL_PDB 0x00a29e00
+// pdb: NiEulerRotKey::FillDerivedVals | NiEulerRotKey.obj | retail, object-file gap fill, high
+// pdb params: pkKeys, uiNumKeys, ucSize
+// pdb locals: pkEulerKey, uiI, derived
+void __cdecl NiEulerRotKey_FillDerivedVals(void* pData)
 {
     unsigned int index = 0;
     unsigned char* base = static_cast<unsigned char*>(pData);
@@ -4391,6 +4582,9 @@ float __cdecl GetValueAtTime(float t, TCBKeyS* keys, int type, unsigned int coun
 
 // @fnv 0x00a2a620
 // src: GUESS 0x00a2a620 (confidence: medium)
+// pdb: NiStepPosKey::Interpolate | NiStepPosKey.obj | debug, object-file run extension, low
+// pdb params: fTime, pkKey0, pkKey1, pvResult
+// pdb locals: pkPosKey1, pkPosKey0
 bool __cdecl Object_ConstructObject_00a2a620(float t, TCBKeyS** pKeys, unsigned int* puiCount)
 {
     TCBKeyS* old = *pKeys;
@@ -4451,6 +4645,9 @@ struct BezPosKey {
 void BezSortKeys(BezPosKey* keys, unsigned int count, unsigned int stride);
 
 // @fnv 0x00a2b850
+// pdb: NiTCBPosKey::Insert | NiTCBPosKey.obj | retail, object-file run extension, low
+// pdb params: fTime, pkKeys, uiNumKeys
+// pdb locals: pkTCBPosKeys, uiDestSize, uiInsertAt, pkNewKey, pkNewKeys, kPt
 bool InsertBezPosKey(float t, BezPosKey** pKeys, unsigned int* puiCount) {
     BezPosKey* oldKeys = *pKeys;
     unsigned int idx;
@@ -4490,6 +4687,9 @@ void* FUN_00ec44d0(void*, const void*, unsigned int);
 
 // @fnv 0x00a2d4a0
 // src: GUESS 0x00a2d4a0 (confidence: low)
+// pdb: NiStepPosKey::Insert | NiStepPosKey.obj | retail, object-file run extension, low
+// pdb params: fTime, pkKeys, uiNumKeys
+// pdb locals: pkStepPosKeys, uiDestSize, uiInsertAt, pkNewKey, pkNewKeys, kPt
 bool Object_CopyData_00a2d4a0(float time, InsertPositionKey*& keys, unsigned int& count) {
     InsertPositionKey* old = keys;
     unsigned int index;
@@ -4516,6 +4716,10 @@ bool Object_CopyData_00a2d4a0(float time, InsertPositionKey*& keys, unsigned int
 
 // Scans the keys for the first whose time is not less than fTime, storing its index in uiIndex and returning false on an exact time match.
 // @fnv 0x00a3d5d0
+// pdb: NiEulerRotKey::Initialize | NiAnimationKey.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiAnimationKey::OkayToInsert
+// pdb params: pkX, uiNumX, eTypeX, pkY, uiNumY, eTypeY, pkZ, uiNumZ, eTypeZ
+// pdb locals: i
 bool NiAnimationKey::FindKeyIndex(float fTime, NiAnimationKey* pkKeys, unsigned int uiNumKeys,
     unsigned int& uiIndex, unsigned char ucKeySize)
 {
@@ -4536,6 +4740,9 @@ extern "C" double DAT_01021928;
 
 // For each key after the first, computes two NiPoint3 tangent values from neighbouring positions scaled by DAT_01011590 and DAT_01021928 and stores them in the key.
 // @fnv 0x00a27ee0
+// pdb: NiBezPosKey::FillDerivedVals | NiBezPosKey.obj | debug, object-file gap fill, medium
+// pdb params: pkKeys, uiNumKeys, ucSize
+// pdb locals: pkBezPosKeys, uiI, pBez1, pBez0
 void ComputeTCBKeyTangents(TCBKeyS* keys, unsigned int count, unsigned int stride)
 {
     int remaining = (int)count + -1;
@@ -4651,10 +4858,14 @@ extern A29CF0CopyFn DAT_011f39c0[];
 
 // Copies three key arrays from pvSrc to pvDest, allocating each via the create function and copying elements with the copy function.
 // @fnv 0x00a29cf0
-void __cdecl CopyKeyData(void* pvDest, void* pvSrc)
+// src: XBOX_RETAIL_PDB 0x00a29cf0
+// pdb: NiEulerRotKey::Copy | NiEulerRotKey.obj | retail, object-file gap fill, high
+// pdb params: pkNewKey, pkOrigKey
+// pdb locals: pkNewEuler, pkOrigEuler, uiI, uiNumKeys, array, copy, uiJ
+void __cdecl NiEulerRotKey_Copy(void* pkNewKey, void* pkOrigKey)
 {
-    A29F00KeyData* pkDest = (A29F00KeyData*)pvDest;
-    A29F00KeyData* pkSrc = (A29F00KeyData*)pvSrc;
+    A29F00KeyData* pkDest = (A29F00KeyData*)pkNewKey;
+    A29F00KeyData* pkSrc = (A29F00KeyData*)pkOrigKey;
     for (unsigned int i = 0; i < 3; i++)
     {
         pkDest->m_auiNumKeys[i] = pkSrc->m_auiNumKeys[i];
@@ -4724,12 +4935,15 @@ struct Key415 { float time; NiPoint3 value; };
 // Subtracts the value of key b from key a and stores the resulting NiPoint3 in result.
 // @fnv 0x00a2d420
 // src: GAMEBRYO_LIB 0x00a2d420
-void NiStepPosKey_InterpolateD1(float unused,const Key415& a,const Key415& b,NiPoint3& result) {
- result = a.value - b.value;
+// pdb: NiStepPosKey::InterpolateD1 | NiStepPosKey.obj | debug, upstream name already matches, high
+// pdb params: fTime, pKey0, pKey1, pResult
+// pdb locals: pPosKey1, pPosKey0
+void NiStepPosKey_InterpolateD1(float fTime,const Key415& pKey0,const Key415& pKey1,NiPoint3& pResult) {
+ pResult = pKey0.value - pKey1.value;
 }
 
 struct FNVAnim;
-void __cdecl NiRotKey_FillDerivedVals(FNVAnim* object, unsigned int count, unsigned int flags);
+void __cdecl NiRotKey_FillDerivedVals(FNVAnim* object, unsigned int count, unsigned int ucSize);
 // @fnv 0x00a2d670
 // src: GUESS 0x00a2d670 (confidence: medium)
 void __cdecl NiRotKey_FillDerivedVals_Thunk(FNVAnim* object, unsigned int count, unsigned int flags)
@@ -4794,6 +5008,9 @@ struct NiKeyC { static void __cdecl Runtime_UpdateState_00a27470(); };
 // Stores six function pointers and a null into the KeyTables arrays at [eContent][eType].
 // @fnv 0x00a27aa0
 // src: GUESS 0x00a27aa0 (confidence: medium)
+// pdb: NiPosKey::RegisterSupportedFunctions | NiPosKey.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiPosKey::CreateFromStream
+// pdb params: eContent, eType
 void __cdecl Object_SetKeyFunctionTable(int eContent, int eType)
 {
     KeyTables::DAT_011f3d20[eContent][eType] = (void*)&Object_ComputeValue_00a291e0;
@@ -4819,38 +5036,44 @@ public:
 // Negates rotation quaternions whose dot product with the previous key is negative, then clamps each key's X component to [-1, 1].
 // @fnv 0x00a28ab0
 // src: GAMEBRYO_LIB 0x00a28ab0
-void __cdecl NiRotKey_FillDerivedVals(TimedRotationKey* pkKeys, unsigned int uiNumKeys, unsigned char ucKeySize)
+// pdb: NiRotKey::FillDerivedVals | NiRotKey.obj | retail, upstream name already matches, high
+// pdb params: pkKeys, uiNumKeys, ucSize
+// pdb locals: i, pkKey0, pkKey1, pkKey, fW
+void __cdecl NiRotKey_FillDerivedVals(TimedRotationKey* pkKeys, unsigned int uiNumKeys, unsigned char ucSize)
 {
     unsigned int ui;
     for (ui = 0; ui < uiNumKeys - 1; ui++)
     {
-        pkKeys->GetKeyPointerByIndex(ui + 1, ucKeySize)->Fix(*pkKeys->GetKeyPointerByIndex(ui, ucKeySize));
+        pkKeys->GetKeyPointerByIndex(ui + 1, ucSize)->Fix(*pkKeys->GetKeyPointerByIndex(ui, ucSize));
     }
     for (ui = 0; ui < uiNumKeys; ui++)
     {
-        TimedRotationKey* pkKey = pkKeys->GetKeyPointerByIndex(ui, ucKeySize);
-        float fW = pkKey->m_kRotationValue.m_fVectorX;
+        TimedRotationKey* pkKey = pkKeys->GetKeyPointerByIndex(ui, ucSize);
+        float fW = pkKey->m_kRotationValue.m_fW;
         if (fW < -1.0f)
-            pkKey->m_kRotationValue.m_fVectorX = -1.0f;
+            pkKey->m_kRotationValue.m_fW = -1.0f;
         else if (fW > 1.0f)
-            pkKey->m_kRotationValue.m_fVectorX = 1.0f;
+            pkKey->m_kRotationValue.m_fW = 1.0f;
     }
 }
 
 extern "C" unsigned char DAT_011f367d;
-extern "C" unsigned char __cdecl InterpolateBooleanKey(float, const void*, int, unsigned int, unsigned int*, unsigned char);
+extern "C" unsigned char __cdecl NiBoolKey_GenInterp(float, const void*, int, unsigned int, unsigned int*, unsigned char);
 
 // Returns the value at the first or last key when fTime is out of range, otherwise calls InterpolateBooleanKey to interpolate between keys.
 // @fnv 0x00a29470
 // src: GAMEBRYO_LIB 0x00a29470
-extern "C" unsigned char __cdecl NiBoolKey_GenInterpDefault(float fTime, const void* pkKeys, int uiType, unsigned int uiNumKeys, unsigned char ucSize) {
+// pdb: NiBoolKey::GenInterpDefault | NiBoolKey.obj | retail, upstream name already matches, high
+// pdb params: fTime, pkKeys, eType, uiNumKeys, ucSize
+// pdb locals: uiLastIdx
+extern "C" unsigned char __cdecl NiBoolKey_GenInterpDefault(float fTime, const void* pkKeys, int eType, unsigned int uiNumKeys, unsigned char ucSize) {
     if (uiNumKeys) {
         if (fTime < *(const float*)pkKeys)
             return *((const unsigned char*)pkKeys + 4);
         if (fTime > *(const float*)((const char*)pkKeys + (uiNumKeys - 1) * ucSize))
             return *((const unsigned char*)pkKeys + (uiNumKeys - 1) * ucSize + 4);
         unsigned int uiLastIdx = 0;
-        return InterpolateBooleanKey(fTime, pkKeys, uiType, uiNumKeys, &uiLastIdx, ucSize);
+        return NiBoolKey_GenInterp(fTime, pkKeys, eType, uiNumKeys, &uiLastIdx, ucSize);
     }
     return DAT_011f367d;
 }
@@ -4864,11 +5087,14 @@ struct NiColorKey_K {
     NiColorA_K GetColor() const { return m_kFogTint; }
     NiColorKey_K* GetKeyPointerByIndex(unsigned int ui, unsigned char ucSize) { return (NiColorKey_K*)((char*)this + ui * ucSize); }
 };
-NiColorA_K __cdecl InterpolateColor(float fTime, NiColorKey_K* pkKeys, unsigned int eType,
+NiColorA_K __cdecl NiColorKey_GenInterp(float fTime, NiColorKey_K* pkKeys, unsigned int eType,
     unsigned int uiNumKeys, unsigned int& uiLastIdx, unsigned char ucSize);
 // Returns the color at fTime by clamping to the first or last key when out of range, otherwise calling InterpolateColor to interpolate between keys.
 // @fnv 0x00a298f0
 // src: GUESS 0x00a298f0 (confidence: high)
+// pdb: NiColorKey::GenInterpDefault | NiColorKey.obj | retail, object-file run extension, low
+// pdb params: fTime, pkKeys, eType, uiNumKeys, ucSize
+// pdb locals: uiLastIdx
 NiColorA_K __cdecl NiColorA_K_InterpolateColorClampedToKeys(float fTime, NiColorKey_K* pkKeys, unsigned int eType,
     unsigned int uiNumKeys, unsigned char ucSize)
 {
@@ -4878,7 +5104,7 @@ NiColorA_K __cdecl NiColorA_K_InterpolateColorClampedToKeys(float fTime, NiColor
         if (fTime > pkKeys->GetKeyPointerByIndex(uiNumKeys - 1, ucSize)->GetTime())
             return pkKeys->GetKeyPointerByIndex(uiNumKeys - 1, ucSize)->GetColor();
         unsigned int uiLastIdx = 0;
-        return InterpolateColor(fTime, pkKeys, eType, uiNumKeys, uiLastIdx, ucSize);
+        return NiColorKey_GenInterp(fTime, pkKeys, eType, uiNumKeys, uiLastIdx, ucSize);
     }
     return DAT_011f3680;
 }
@@ -4911,6 +5137,9 @@ struct EulerQuat {
 float InterpolateKey(float, unsigned int, unsigned int, void*, unsigned int*, unsigned char);
 // @fnv 0x00a29b10
 // src: GUESS 0x00a29b10 (confidence: low)
+// pdb: NiEulerRotKey::Interpolate | NiEulerRotKey.obj | retail, object-file run extension, low
+// pdb params: fTime, pkKey0, pkKey1, pkResult
+// pdb locals: fsin2, pkEuler, fcos1, angles, fsin1, fcos2, fcos0, fsin0, i
 void Runtime_ProcessEntries_00a29b10(float fTime, const void* pkKey0, const void* pkKey1, void* pvResult)
 {
     RotationChannels* pkEuler = (RotationChannels*)pkKey0;
@@ -4943,23 +5172,26 @@ struct CompareBlock {
 // Returns true only when the three groups match in m_cnt, m_idx and the byte array, and each m_idx's g_compareTable function accepts all m_cnt value pairs.
 // @fnv 0x00a29c20
 // src: GAMEBRYO_LIB 0x00a29c20
-bool NiEulerRotKey_Equal(const void* left, const CompareBlock* apRight)
+// pdb: NiEulerRotKey::Equal | NiEulerRotKey.obj | retail, upstream name already matches, high
+// pdb params: key0, key1
+// pdb locals: euler1, euler0, uiI, equal, uiJ
+bool NiEulerRotKey_Equal(const void* key0, const CompareBlock* key1)
 {
-    const CompareBlock* a = static_cast<const CompareBlock*>(left);
+    const CompareBlock* a = static_cast<const CompareBlock*>(key0);
     for (unsigned int i = 0; i < 3; i++) {
-        if (a->m_cnt[i] != apRight->m_cnt[i]) {
+        if (a->m_cnt[i] != key1->m_cnt[i]) {
             return false;
         }
-        if (a->m_idx[i] != apRight->m_idx[i]) {
+        if (a->m_idx[i] != key1->m_idx[i]) {
             return false;
         }
-        if (a->m_kPointB[i] != apRight->m_kPointB[i]) {
+        if (a->m_kPointB[i] != key1->m_kPointB[i]) {
             return false;
         }
         if (a->m_cnt[i] > 0) {
             CompareFn fn = g_compareTable[a->m_idx[i]];
             for (unsigned int j = 0; j < a->m_cnt[i]; j++) {
-                unsigned int uiRightValue = apRight->m_kPointB[i] * j + apRight->m_v[i];
+                unsigned int uiRightValue = key1->m_kPointB[i] * j + key1->m_v[i];
                 unsigned int uiLeftValue = a->m_kPointB[i] * j + a->m_v[i];
                 if (!fn(uiLeftValue, uiRightValue)) {
                     return false;
@@ -4985,12 +5217,15 @@ struct S_00a2a7f0_Key {
 // Computes a linear interpolation between two keyframe vectors using factor t and stores the result in out.
 // @fnv 0x00a2a7f0
 // src: GAMEBRYO_LIB 0x00a2a7f0
-void __cdecl NiLinPosKey_Interpolate(float t, const S_00a2a7f0_Key* apFrom, const S_00a2a7f0_Key* apTo, S_00a2a7f0_V3* out)
+// pdb: NiLinPosKey::Interpolate | NiLinPosKey.obj | debug, upstream name already matches, high
+// pdb params: fTime, pKey0, pKey1, pResult
+// pdb locals: pPosKey1, pPosKey0
+void __cdecl NiLinPosKey_Interpolate(float fTime, const S_00a2a7f0_Key* pKey0, const S_00a2a7f0_Key* pKey1, S_00a2a7f0_V3* pResult)
 {
-    const S_00a2a7f0_Key* pFrom = apFrom;
-    float s = 1.0f - t;
-    *(float*)&apFrom = s;
-    *out = apTo->v * t + pFrom->v * *(float*)&apFrom;
+    const S_00a2a7f0_Key* pFrom = pKey0;
+    float s = 1.0f - fTime;
+    *(float*)&pKey0 = s;
+    *pResult = pKey1->v * fTime + pFrom->v * *(float*)&pKey0;
 }
 
 struct A2B1D0Vec {
@@ -5007,13 +5242,16 @@ struct A2B1D0Key {
     A2B1D0Vec value;
     float tension, continuity, bias;
     A2B1D0Vec inTangent, outTangent;
-    void NiTCBPosKey_CalculateDVals(const A2B1D0Vec& previous, const A2B1D0Vec& next, float before, float after);
+    void NiTCBPosKey_CalculateDVals(const A2B1D0Vec& ptSub1, const A2B1D0Vec& ptPlus1, float fPreLen, float fNextLen);
 };
 // @fnv 0x00a2b1d0
 // src: GAMEBRYO_LIB 0x00a2b1d0
-void A2B1D0Key::NiTCBPosKey_CalculateDVals(const A2B1D0Vec& previous, const A2B1D0Vec& next, float before, float after) {
-    A2B1D0Vec vDeltaPrev = value - previous;
-    A2B1D0Vec vDeltaNext = next - value;
+// pdb: NiTCBPosKey::CalculateDVals | NiTCBPosKey.obj | retail, upstream name already matches, high
+// pdb params: ptSub1, ptPlus1, fPreLen, fNextLen
+// pdb locals: homtomc, opc, diff2, omc, opb, diff1, omb, homt, fInv, homtopc
+void A2B1D0Key::NiTCBPosKey_CalculateDVals(const A2B1D0Vec& ptSub1, const A2B1D0Vec& ptPlus1, float fPreLen, float fNextLen) {
+    A2B1D0Vec vDeltaPrev = value - ptSub1;
+    A2B1D0Vec vDeltaNext = ptPlus1 - value;
     float plusBias = 1.0f + bias;
     float minusBias = 1.0f - bias;
     float halfTension = (1.0f - tension) * 0.5;
@@ -5027,9 +5265,9 @@ void A2B1D0Key::NiTCBPosKey_CalculateDVals(const A2B1D0Vec& previous, const A2B1
     float outPrev = a * plusBias;
     A2B1D0Vec prevPart = vDeltaPrev * outPrev;
     outTangent = prevPart + nextPart;
-    float adjustment = 2.0 / (before + after);
-    inTangent *= before * adjustment;
-    outTangent *= after * adjustment;
+    float adjustment = 2.0 / (fPreLen + fNextLen);
+    inTangent *= fPreLen * adjustment;
+    outTangent *= fNextLen * adjustment;
 }
 
 
@@ -5045,7 +5283,7 @@ struct PositionSplineKey {
     NiPoint3 m_kBackwardTangent;
     NiPoint3 m_kOutgoingTangent;
     NiPoint3 m_kIncomingTangent;
-    void NiTCBPosKey_CalculateDVals(const NiPoint3& kPrev, const NiPoint3& kNext, float fDT0, float fDT1);
+    void NiTCBPosKey_CalculateDVals(const NiPoint3& ptSub1, const NiPoint3& ptPlus1, float fPreLen, float fNextLen);
 };
 
 inline void Calc(PositionSplineKey& p, PositionSplineKey& c, PositionSplineKey& n) { c.NiTCBPosKey_CalculateDVals(p.m_kPositionValue,n.m_kPositionValue,c.m_fTime-p.m_fTime,n.m_fTime-c.m_fTime); }
@@ -5053,6 +5291,9 @@ inline void Calc(PositionSplineKey& p, PositionSplineKey& c, PositionSplineKey& 
 // Computes forward, backward, outgoing, and incoming tangents for each PositionSplineKey in a TCB spline of uiNumKeys keys.
 // @fnv 0x00a2b410
 // src: GAMEBRYO_LIB 0x00a2b410
+// pdb: NiTCBPosKey::FillDerivedVals | NiTCBPosKey.obj | retail, upstream name already matches, high
+// pdb params: pkKeys, uiNumKeys, ucSize
+// pdb locals: pkTCBPosKeys, uiNumKeysM1, i, uiNumKeysM2, pkTCBM, pkTCBP, pkTCBZ, pTCB0, pTCB1
 void __cdecl NiTCBPosKey_FillDerivedVals(PositionSplineKey* pkTCB, unsigned int uiNumKeys)
 {
     unsigned int uiNumKeysM1 = uiNumKeys - 1;
@@ -5128,14 +5369,16 @@ void __cdecl Runtime_ApplyAnimationsToTarget(int aiTarget, FUN_00a2d470_Entry* e
 }
 
 struct CloneableObj {
-    void BSMultiTargetTreadTransfController_CopyMembers(CloneableObj* pObject, void* pData);
+    void BSMultiTargetTreadTransfController_CopyMembers(CloneableObj* pkDest, void* kCloning);
     void FUN_00a6cfe0(CloneableObj* pObject, void* pData);
 };
 // @fnv 0x00a2f8a0
 // src: XBOX_PDB 0x00a2f8a0
-void CloneableObj::BSMultiTargetTreadTransfController_CopyMembers(CloneableObj* pObject, void* pData)
+// pdb: BSMultiTargetTreadTransfController::CopyMembers | BSMultiTargetTreadTransfController.obj | debug, upstream name already matches, high
+// pdb params: pkDest, kCloning
+void CloneableObj::BSMultiTargetTreadTransfController_CopyMembers(CloneableObj* pkDest, void* kCloning)
 {
-    FUN_00a6cfe0(pObject, pData);
+    FUN_00a6cfe0(pkDest, kCloning);
 }
 
 namespace sa359d0 {
@@ -5180,6 +5423,8 @@ struct Controller : ControllerBase {
 // Allocates and returns a new Controller object.
 // @fnv 0x00a359d0
 // src: XBOX_PDB 0x00a359d0
+// pdb: BSMultiTargetTreadTransfController::CreateObject | BSMultiTargetTreadTransfController.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 ControllerBase* BSMultiTargetTreadTransfController_CreateObject()
 {
     return new Controller;
@@ -5190,19 +5435,23 @@ ControllerBase* BSMultiTargetTreadTransfController_CreateObject()
 #include <math.h>
 struct TextureCodec { unsigned int unk00,unk04,unk08,offset0c,converterIndex; unsigned char bytesPerElement; };
 struct TexelSampler { unsigned int unk00,unk04,unk08,unk0c,unk10,unk14; TextureCodec* codec;
-float SampleLength(unsigned int x,unsigned int y,float value); };
+float NiPathInterpolator_PathSpeed(unsigned int iI0,unsigned int iI1,float fTime); };
 typedef void (__cdecl *ConverterFn)(float,unsigned int,unsigned int,float*);
 extern ConverterFn DAT_011f3c18[];
 // Calls the codec's converter (by converterIndex) with value and offsets derived from x and y, and returns the length of the resulting 3-float vector.
 // @fnv 0x00a3e5f0
-float TexelSampler::SampleLength(unsigned int x,unsigned int y,float value) {
+// src: XBOX_DEBUG_PDB 0x00a3e5f0
+// pdb: NiPathInterpolator::PathSpeed | NiPathInterpolator.obj | debug, call graph (shared callers), high
+// pdb params: iI0, iI1, fTime
+// pdb locals: uiNumPathKeys, pkPathKeys, ePathType, interpD1, ucSize, deriv
+float TexelSampler::NiPathInterpolator_PathSpeed(unsigned int iI0,unsigned int iI1,float fTime) {
   unsigned int rgb=0, type;
   TextureCodec* pCodec=codec;
   unsigned char base;
   if(pCodec) {type=pCodec->converterIndex;base=pCodec->bytesPerElement;rgb=pCodec->offset0c;}
   else {type=0;base=0;}
   float afComponents[3];
-  DAT_011f3c18[type](value,base*x+rgb,base*y+rgb,afComponents);
+  DAT_011f3c18[type](fTime,base*iI0+rgb,base*iI1+rgb,afComponents);
   float stride=afComponents[0]*afComponents[0]+afComponents[1]*afComponents[1]+afComponents[2]*afComponents[2];
   return sqrtf(stride);
 }
@@ -5224,23 +5473,26 @@ struct FUN_00a2c6a0_Key {
 // Computes the ds and dd tangent components for a keyframe from its bias, tension, continuity and neighbouring values.
 // @fnv 0x00a2c6a0
 // src: GAMEBRYO_LIB 0x00a2c6a0
-void __cdecl NiTCBFloatKey_CalculateDVals(FUN_00a2c6a0_Key* key, float prev, float next, float prevLen, float nextLen)
+// pdb: NiTCBFloatKey::CalculateDVals | NiTCBFloatKey.obj | debug, upstream name already matches, high
+// pdb params: result, fValSub1, fValPlus1, fPreLen, fNextLen
+// pdb locals: homtomc, opc, diff2, omc, opb, diff1, omb, homt, fInv, homtopc
+void __cdecl NiTCBFloatKey_CalculateDVals(FUN_00a2c6a0_Key* result, float fValSub1, float fValPlus1, float fPreLen, float fNextLen)
 {
-    float fDeltaPrev = key->value - prev;
-    float fDeltaNext = next - key->value;
-    float fOpBias = key->bias + 1.0f;
-    float fOmBias = 1.0f - key->bias;
-    float fOmTension = (1.0f - key->tension) * DAT_01011588;
-    float fOpContinuity = key->continuity + 1.0f;
+    float fDeltaPrev = result->value - fValSub1;
+    float fDeltaNext = fValPlus1 - result->value;
+    float fOpBias = result->bias + 1.0f;
+    float fOmBias = 1.0f - result->bias;
+    float fOmTension = (1.0f - result->tension) * DAT_01011588;
+    float fOpContinuity = result->continuity + 1.0f;
     float a = fOpContinuity * fOmTension;
-    float fOmContinuity = 1.0f - key->continuity;
+    float fOmContinuity = 1.0f - result->continuity;
     float b = fOmTension * fOmContinuity;
-    float adj = DAT_01011590 / (prevLen + nextLen);
+    float adj = DAT_01011590 / (fPreLen + fNextLen);
 
     float ds = b * fOpBias * fDeltaPrev + a * fOmBias * fDeltaNext;
-    key->ds = prevLen * adj * ds;
+    result->ds = fPreLen * adj * ds;
     float dd = a * fOpBias * fDeltaPrev + b * fOmBias * fDeltaNext;
-    key->dd = nextLen * adj * dd;
+    result->dd = fNextLen * adj * dd;
 }
 
 namespace fnv_00a2aa50 {
@@ -5249,6 +5501,8 @@ void __cdecl InsertLinPosKey();
 // Stores function pointers into KeyTables arrays indexed by content and type.
 // @fnv 0x00a2aa50
 // src: GUESS 0x00a2aa50 (confidence: medium)
+// pdb: NiLinPosKey::RegisterSupportedFunctions | NiLinPosKey.obj | retail, object-file run extension, low
+// pdb params: eContent, eType
 void NiLinPosKey_Interpolate_RegisterKeyTableHandlers(int content, int type)
 {
     KeyTables::DAT_011f3d20[content][type] = (void*)&Object_ComputeValue_00a291e0;
@@ -5303,7 +5557,7 @@ NiColorKey_K* NiColorKey_K_AllocateStorage_00a2a1b0(unsigned int count)
 }
 
 struct A2CC30_Shell {
-    static bool __cdecl NiBoolKey_Equal(const Helper* apFirst, const Helper* apSecond);
+    static bool __cdecl NiBoolKey_Equal(const Helper* key0, const Helper* key1);
 };
 
 // @fnv 0x00a2cc30

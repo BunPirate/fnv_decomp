@@ -4,6 +4,7 @@
 
 class hkpEntity;
 
+// pdb: class hkpUnaryAction, size 0x1c, bases: hkpAction, 1 members
 class hkpUnaryAction : public hkpAction
 {
 public:
@@ -12,5 +13,5 @@ public:
     hkpUnaryAction(hkpEntity* entity, unsigned int userData);
     hkpUnaryAction(FinishingFlag flag);
 
-    hkpEntity* m_pEntity;
+    hkpEntity* m_entity; // src: XBOX_RETAIL_PDB +0x18 (old: m_pEntity)
 };

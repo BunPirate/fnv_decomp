@@ -13,6 +13,7 @@ class MagicItem;
 class ProjectileCell;
 class SceneNode;
 
+// pdb: class MagicProjectile, size 0xa8 (here 0x150), bases: MobileObject, 8 members
 class MagicProjectile : public MobileObject
 {
 public:
@@ -73,7 +74,7 @@ public:
     void ResolveMagicReferences(int arg1, int arg2);
     void InitEffect();
     ProjectileCell* GetParentCell();
-    void InitializeProjectile(int arg1, int arg2);
+    void InitializeProjectile(int aiFlags, int aiOldFlags);
     Caster807* GetCaster();
     void Process(BGSLoadFormBuffer*);
     void Process(float);

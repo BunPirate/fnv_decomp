@@ -26,6 +26,7 @@ inline NiBound::NiBound(const NiBound& bound)
     { memcpy(this, &bound, sizeof(*this)); }
 // Returns the cached particle count, computing it from the renderer level (26, or 78 when level >= 2) if not yet set.
 // @fnv 0x00ba52d0
+// pdb: ParticleShader::GetNumParticles | ParticleShader.obj | debug, call graph, medium
 unsigned int ParticleShader::GetShaderParticleCount()
 {
     register unsigned int count = fnv_particle_shader_particle_count;
@@ -38,6 +39,8 @@ unsigned int ParticleShader::GetShaderParticleCount()
 }
 
 // @fnv 0x00ba58b0
+// pdb: ParticleShader::CreateShader | ParticleShader.obj | retail, upstream name already matches, high
+// pdb locals: spShaderDecl, eInput, pshader
 BSShader* ParticleShader::CreateShader()
 {
     NiD3DVertexDeclaration* d = NiD3DVertexDeclaration::Create(DAT_011f9508, 5, 1);
@@ -58,6 +61,8 @@ BSShader* ParticleShader::CreateShader()
 
 // Assigns a NiD3DPass pointer, releasing the old pass when its refcount at offset 0x64 drops to zero and incrementing the new pass's refcount.
 // @fnv 0x00ba53c0
+// pdb: NiPointer<NiD3DPass>::operator= | NiD3DPass.obj | debug, call graph, medium
+// pdb params: ptr
 void* __fastcall AssignNiD3DPass(void* pThis, int, void* param)
 {
     NiD3DPass** ppThis = (NiD3DPass**)pThis;
@@ -80,13 +85,13 @@ void* __fastcall AssignNiD3DPass(void* pThis, int, void* param)
     return pThis;
 }
 
-extern "C" void* g_012003f8;
+extern "C" void* ParticleShader_ms_RTTI; // src: XBOX_RETAIL_PDB 0x012003f8 (old: g_012003f8)
 
 // @fnv 0x00ba5730
 // src: XBOX_PDB 0x00ba5730
 void* __cdecl ParticleShader_GetRTTI()
 {
-    return &g_012003f8;
+    return &ParticleShader_ms_RTTI;
 }
 
 struct FUN_00ba6ce0_shell
@@ -112,6 +117,7 @@ struct FUN_00ba52f0_shell
 // Calls the virtual function at vtable slot 74 twice, passing _a and then _b.
 // @fnv 0x00ba52f0
 // src: XBOX_PDB 0x00ba52f0
+// pdb: ParticleShader::ClearPassStages | ParticleShader.obj | retail, upstream name already matches, high
 void __thiscall FUN_00ba52f0_shell::ParticleShader_ClearPassStages()
 {
     typedef void(__thiscall * Fn)(FUN_00ba52f0_shell*, void*);
@@ -232,6 +238,7 @@ struct FUN_00ba5740 : BSShader
 
 // Releases the global ComTarget, frees slot70 through g_memoryManager, and releases the four reference slots.
 // @fnv 0x00ba5740
+// pdb: ParticleShader::~ParticleShader | ParticleShader.obj | retail, object-file run extension, low
 FUN_00ba5740::~FUN_00ba5740()
 {
     if (DAT_012003f4)
@@ -401,11 +408,14 @@ struct ShaderState
     int field120;
     int field124;
     int field128;
-    void InitConstantMaps();
+    void ParticleShader_CreateConstantMaps();
 };
 // Creates the field34 ConstantMap with predefined and added constants if absent, then creates field30 if absent.
 // @fnv 0x00ba69f0
-void ShaderState::InitConstantMaps()
+// src: XBOX_RETAIL_PDB 0x00ba69f0
+// pdb: ParticleShader::CreateConstantMaps | ParticleShader.obj | retail, string-set bridge, high
+// pdb locals: iparticleCount, uiDefinedMatrixFlags, uiConstantPoint4Flags, uiConstantMatrixFlags, iregistersPerParticle
+void ShaderState::ParticleShader_CreateConstantMaps()
 {
     if (!field34.ptr)
     {
@@ -534,6 +544,8 @@ extern float DAT_011adcd8;
 
 // @fnv 0x00ba5320
 // src: COMMUNITY 0x00ba5320
+// pdb: ParticleShader::UpdateBillboardVectors | ParticleShader.obj | retail, object-file run extension, low
+// pdb locals: faspect, fwindowWidth, fwindowHeight
 void __cdecl ParticleShader_UpdateFov()
 {
     S_00ba5320_Inner* pRenderTarget = DAT_011f4748->GetRenderTarget();
@@ -583,11 +595,14 @@ void __cdecl FUN_00b57e30(NiObject*, int, int);
 
 // @fnv 0x00ba68d0
 // src: XBOX_PDB 0x00ba68d0
-NiProperty* __cdecl ParticleShader_Start(NiAVObject* apObject, ArgObj* apArg)
+// pdb: ParticleShader::Start | ParticleShader.obj | retail, upstream name already matches, high
+// pdb params: apRoot, apObject
+// pdb locals: pnode, UpdateData, pparticleGeometry, pclone, bound, ppsProp, pprop
+NiProperty* __cdecl ParticleShader_Start(NiAVObject* apRoot, ArgObj* apArg)
 {
-    if (apObject)
+    if (apRoot)
     {
-        NiNode* obj = apObject->IsSceneNode();
+        NiNode* obj = apRoot->IsSceneNode();
         if (obj)
         {
             NiObject* pPrototype = ParticleShader_GetParticleGeometry();
@@ -647,7 +662,7 @@ extern unsigned int DAT_012003ec;
 extern "C" __declspec(dllimport) long __stdcall InterlockedIncrement(volatile long*);
 
 void* __cdecl Object_DispatchCommandFour(unsigned int size);
-unsigned int __cdecl GetFloatQuadTable();
+unsigned int __cdecl ParticleShaderProperty_GetInstanceIndex();
 
 inline void* operator new[](unsigned int n, Q64_Pool& p)
 {
@@ -703,9 +718,9 @@ struct Q64_Buf : Q64_Obj
     int unk24;
     int unk28;
     void __thiscall SetSize_Thunk(int a);
-    void __thiscall NiAdditionalGeometryData_SetDataBlock(int a, unsigned int b, unsigned int c, int d);
-    void __thiscall NiAdditionalGeometryData_SetDataStream(int a, int b, int c, int d, unsigned short e, int f, int g);
-    Q64_Buf(unsigned short nv, int a);
+    void __thiscall NiAdditionalGeometryData_SetDataBlock(int a, unsigned int pucData, unsigned int uiTotalSize, int bCopyData);
+    void __thiscall NiAdditionalGeometryData_SetDataStream(int uiStreamIndex, int uiBlockIndex, int uiBlockOffset, int uiType, unsigned short usCount, int uiUnitSize, int g);
+    Q64_Buf(unsigned short usVertexCount, int uiDataStreamCount);
 };
 struct Q64_Geo : Q64_Obj
 {
@@ -873,7 +888,7 @@ struct Q64_Top : Q64_Obj
     Q64_Sub* sub;
     int unkbc;
     int unkc0;
-    void __thiscall NiAVObject_AttachProperty(Q64_Ren* a);
+    void __thiscall NiAVObject_AttachProperty(Q64_Ren* pkProperty);
     Q64_Top(Q64_Geo* geo);
 };
 
@@ -893,6 +908,8 @@ using ::NiPointer;
 // Builds and caches a Q64_Top containing repeated quad geometry with vertices, UVs, and a renderer.
 // @fnv 0x00ba64e0
 // src: XBOX_PDB 0x00ba64e0
+// pdb: ParticleShader::GetParticleGeometry | ParticleShader.obj | retail, upstream name already matches, high
+// pdb locals: pnewGeometry, inumparticles, ptex, ptriangleIndices, pnewShapeData, pdata, pvertex, inumTriangles, bound, inumVertices, pprop, i, itri, usvert
 NiObject* __cdecl ParticleShader_GetParticleGeometry()
 {
     if (!DAT_011f91c0)
@@ -945,7 +962,7 @@ NiObject* __cdecl ParticleShader_GetParticleGeometry()
     Q64_Geo* geo = new Q64_Geo(nv, verts, 0, 0, uv, 1, 0, tris, idx);
     Q64_Buf* buf = new Q64_Buf(nv, 1);
     buf->SetSize_Thunk(1);
-    buf->NiAdditionalGeometryData_SetDataBlock(0, GetFloatQuadTable(), nv * 4, 1);
+    buf->NiAdditionalGeometryData_SetDataBlock(0, ParticleShaderProperty_GetInstanceIndex(), nv * 4, 1);
     buf->NiAdditionalGeometryData_SetDataStream(0, 0, 0, 1, nv, 4, 4);
     geo->FUN_00a67260(buf);
 
@@ -1084,6 +1101,9 @@ inline void ZeroShaderRow(ParticleShaderRow_00ba53f0& row)
 
 // Initializes a particle shader with a vertex declaration, sets up particle arrays based on renderer level, and zeroes out matrix rows.
 // @fnv 0x00ba53f0
+// pdb: ParticleShader::ParticleShader | ParticleShader.obj | retail, call graph, medium
+// pdb params: apShaderDecl
+// pdb locals: iparticleCount
 FUN_00ba53f0::FUN_00ba53f0(NiD3DVertexDeclaration* apVertexDeclaration)
 {
     InitializeShaderRow(*reinterpret_cast<ParticleShaderRow_00ba53f0*>(rowStorage + 0 * sizeof(ParticleShaderRow_00ba53f0)));

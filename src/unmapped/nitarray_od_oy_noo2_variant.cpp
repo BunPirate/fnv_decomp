@@ -19,7 +19,7 @@ struct FUN_009ba5f0_shell
 };
 struct FUN_00c89c80_obj
 {
-    void CopyFromSource(unsigned int uiMaxSize);
+    void CopyFromSource(unsigned int arInfo);
 };
 extern MemoryManager DAT_011f6238;
 struct KeyPair
@@ -69,7 +69,7 @@ struct C89CD0Holder
     int unk04;
     C89CD0Target* m_pkTarget;
 
-    void ProcessTarget(void* arg);
+    void ProcessTarget(void* apEntity);
 };
 struct Target
 {
@@ -81,7 +81,7 @@ struct FUN_00c89cf0_cls
     int unk04;
     Target* m_pFlagTarget;
 
-    void DispatchToTarget(void* apArg);
+    void DispatchToTarget(void* apEntity);
 };
 
 typedef NiPointer<NiRefObject> NiRefObjectPtr;
@@ -101,6 +101,9 @@ void __cdecl j_CopyArrays_V_NiTObjectArray_V_NiPointer_VNiAVObject_GarbageCollec
 }
 
 // @fnv 0x0060bef0
+// pdb: NiTArray<NiPointer<BSTempEffect>,NiTNewInterface<NiPointer<BSTempEffect> > >::SetSize | GarbageCollector.obj | retail, call graph, medium
+// pdb params: uiMaxSize
+// pdb locals: pSaveBase, i
 template <>
 void NiTArray<NiRefObjectPtr, NiTNewInterface<NiRefObjectPtr> >::SetSize(unsigned int uiMaxSize)
 {
@@ -155,21 +158,24 @@ struct SpawnedObject
 struct FUN_009a5a70_cls
 {
     void Dispatch(void* item, SpawnedObject* object);
-    void CombatThreatMap_LoadGame(ItemList* list);
+    void CombatThreatMap_LoadGame(ItemList* apLoadGameBuffer);
 };
 // @fnv 0x009a5a70
 // src: COMMUNITY 0x009a5a70
-void FUN_009a5a70_cls::CombatThreatMap_LoadGame(ItemList* list)
+// pdb: CombatThreatMap::LoadGame | CombatThreatMap.obj | retail, upstream name already matches, high
+// pdb params: apLoadGameBuffer
+// pdb locals: isaveGameCount, iloop, pthreat, irefID, bremove
+void FUN_009a5a70_cls::CombatThreatMap_LoadGame(ItemList* apLoadGameBuffer)
 {
-    unsigned int count = list->GetCount();
+    unsigned int count = apLoadGameBuffer->GetCount();
     for (unsigned int index = 0; index < count; ++index)
     {
         bool failed = false;
         SpawnedObject* object = new SpawnedObject;
         void* output;
-        list->QueryItem(&output);
+        apLoadGameBuffer->QueryItem(&output);
         object->Fill(output);
-        object->Attach(list);
+        object->Attach(apLoadGameBuffer);
         if (output == 0)
             failed = true;
         if (!failed)

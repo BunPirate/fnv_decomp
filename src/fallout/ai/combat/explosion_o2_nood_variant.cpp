@@ -44,7 +44,7 @@ struct FUN_009afbb0_shell
 {
     virtual ~FUN_009afbb0_shell();
     void* FUN_009afbb0(unsigned int flags);
-    void ForwardCall_009afc10();
+    void hkpFixedBufferCdPointCollector_dtor();
 };
 extern "C" void __cdecl Object_UpdateFields_009afbe0(void*);
 struct FUN_00621100_shell
@@ -53,7 +53,7 @@ struct FUN_00621100_shell
 };
 struct FUN_009afc10_shell
 {
-    void __thiscall ForwardCall_009afc10();
+    void __thiscall hkpFixedBufferCdPointCollector_dtor();
 };
 struct FUN_009afc50_shell
 {
@@ -164,7 +164,7 @@ struct FUN_009ae0f0
 };
 void* __cdecl operator new(unsigned int);
 TESForm* GetFormByID(unsigned int);
-ActorCause* FindStateByValue(int);
+ActorCause* ActorCause_GetActorCauseByID(int);
 struct FUN_00825ad0
 {
     unsigned int unk00;
@@ -484,7 +484,7 @@ struct FUN_009ae140_cls : Ae140Base
     Ae140Vec m_30;
     unsigned char m_3c;
 
-    void Setup(unsigned int aArg);
+    void Setup(unsigned int arInfo);
     FUN_009ae140_cls(unsigned int aArg);
 };
 struct VectorHolder
@@ -543,7 +543,7 @@ struct MobileObjectBase
     unsigned int unk80, unk84;
 };
 TESForm* GetFormByID(unsigned int);
-void* LookupThing18(void*);
+void* GetMagicItemByNumericID(void*);
 void* LookupThing1C(void*);
 struct CasterData
 {
@@ -857,8 +857,8 @@ SceneX* CreateOctahedron(float, const NiColorA*, int);
 void* TESImageSpaceModifier_GetExplosionInFace();
 void FUN_005299a0(void*, float, SceneX*);
 float ComputeSquaredRatioComplement(float, float);
-float GetAnimValueByPrefix(SceneX*, const char*, const char*);
-void UpdateDistanceFade(float, const NiPoint3&);
+float FindTimeForNoteKey(SceneX*, const char*, const char*);
+void ShakeCamera(float, const NiPoint3&);
 float RandomFloatTwoPi();
 void BSTempEffectParticle_Spawn_00689210(CellX*, float, const char*, MatrixWater, NiPoint3, float, int, int);
 
@@ -1590,7 +1590,10 @@ __declspec(noinline) bool LiquidVec::HasEqualComponents(const LiquidVec& p)
 
 // @fnv 0x00cbccb0
 // src: XBOX_PDB 0x00cbccb0
-void LiquidActionCandidate::bhkLiquidAction_Update(float delta)
+// pdb: bhkLiquidAction::Update | bhkLiquidAction.obj | retail, upstream name already matches, high
+// pdb params: afDelta
+// pdb locals: pbody, force, pos, velocity, pliquid, forceHK, bantiGrav, fdampeningFactor, bsticking, pliquidList, phk, pcol, i, pconstraint, pdata, buseConstraint, pcontact, filter, id, point, flength, toStick, fstickFactor, stickForce ...
+void LiquidActionCandidate::bhkLiquidAction_Update(float afDelta)
 
 {
 
@@ -1728,7 +1731,7 @@ void LiquidActionCandidate::bhkLiquidAction_Update(float delta)
             else
                 damping = DAT_011b2180;
 
-            float exponent = (float)(damping * -1.0 * delta);
+            float exponent = (float)(damping * -1.0 * afDelta);
 
             float decay = exp(exponent);
 
@@ -1737,7 +1740,7 @@ void LiquidActionCandidate::bhkLiquidAction_Update(float delta)
             if (gravity)
             {
 
-                float vertical = -delta * DAT_011b218c * DAT_011b217c;
+                float vertical = -afDelta * DAT_011b218c * DAT_011b217c;
 
                 velocity.value = _mm_add_ps(velocity.value, _mm_setr_ps(0.0f, 0.0f, vertical, 0.0f));
             }

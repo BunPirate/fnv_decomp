@@ -51,22 +51,25 @@ struct FUN_00bb39e0_shell
     int m_00;
     int m_04;
     void* m_08;
-    void UpdateFields_00bb39e0(const void* src, unsigned int count);
+    void STLSPData_SetLeafMaps(const void* apLeafMaps, unsigned int aiCount);
 };
 
 // @fnv 0x00bb39e0
-// src: GUESS 0x00bb39e0 (confidence: low)
-void FUN_00bb39e0_shell::UpdateFields_00bb39e0(const void* src, unsigned int count)
+// src: XBOX_DEBUG_PDB 0x00bb39e0
+// pdb: STLSPData::SetLeafMaps | SpeedTreeLeafShaderProperty.obj | debug, call graph (shared callers), high
+// pdb params: apLeafMaps, aiCount
+// pdb locals: icount
+void FUN_00bb39e0_shell::STLSPData_SetLeafMaps(const void* apLeafMaps, unsigned int aiCount)
 {
-    if (src && m_08)
+    if (apLeafMaps && m_08)
     {
-        if (count)
+        if (aiCount)
         {
-            if (count >= 192)
-                count = 192;
-            _memmove(m_08, src, count * 4);
-            if (count < 192)
-                _fnv_zlib_memset((char*)m_08 + count * 4, 0, (192 - count) * 4);
+            if (aiCount >= 192)
+                aiCount = 192;
+            _memmove(m_08, apLeafMaps, aiCount * 4);
+            if (aiCount < 192)
+                _fnv_zlib_memset((char*)m_08 + aiCount * 4, 0, (192 - aiCount) * 4);
         }
     }
 }

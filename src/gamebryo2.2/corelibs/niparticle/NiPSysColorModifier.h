@@ -8,6 +8,7 @@
 class NiColorData;
 
 #pragma pack(push, 4)
+// pdb: class NiPSysColorModifier, size 0x24, bases: NiPSysModifier, 3 members
 class NiPSysColorModifier : public NiPSysModifier
 {
   public:

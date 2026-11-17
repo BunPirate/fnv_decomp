@@ -4,6 +4,7 @@
 
 class TimedTextEntry;
 
+// pdb: class BSAnimNote, size 0x10, bases: NiObject, 2 members
 class BSAnimNote : public NiObject
 {
   public:
@@ -11,8 +12,8 @@ class BSAnimNote : public NiObject
     virtual void GetViewerStrings(NiViewerStringsArray* apStrings);
     virtual bool __thiscall vf35(const TimedTextEntry* apTextKey);
 
-    void BaseGetViewerStrings(NiViewerStringsArray* apStrings);
+    void BaseGetViewerStrings(NiViewerStringsArray* pStrings);
 
-    unsigned char unk08[4];
+    unsigned char eType[4]; // src: XBOX_RETAIL_PDB +0x8 (old: unk08)
     float fTime;
 };

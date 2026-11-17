@@ -6,39 +6,45 @@
 
 // Reads the record header and chunks (EDID, OBND, DATA) from file, applies endian conversion to data, and returns true.
 // @fnv 0x005a72f0
-bool TESLoadScreenType::LoadForm(TESFile* file)
+// pdb: TESLoadScreenType::Load | TESLoadScreenType.obj | retail, vtable slot, high
+// pdb params: apFile
+// pdb locals: chunkid, pMessage
+bool TESLoadScreenType::LoadForm(TESFile* apFile)
 {
-    LoadRecordHeader(file);
+    LoadRecordHeader(apFile);
     SetInitializationState(false);
     unsigned int chunk;
-    while ((chunk = file->GetChunkID()) != 0)
+    while ((chunk = apFile->GetChunkID()) != 0)
     {
         switch (chunk)
         {
         case 0x44494445: {
-            char* editorID = (char*)_alloca(file->GetChunkSize());
-            file->GetChunkData(editorID, 512);
+            char* editorID = (char*)_alloca(apFile->GetChunkSize());
+            apFile->GetChunkData(editorID, 512);
             SetEditorID_AtRuntime(editorID);
         }
         break;
         case 0x444e424f:
-            readOBNDSubRecord(file);
+            readOBNDSubRecord(apFile);
             break;
         case 0x41544144:
-            ReadTypedData(file, formData, 88);
+            ReadTypedData(apFile, data, 88);
             break;
         }
-        if (!file->NextChunk())
+        if (!apFile->NextChunk())
             break;
     }
-    if (file->IsEndianConversionRequired())
-        ((LoadScreenTypeData*)formData)->Endian();
+    if (apFile->IsEndianConversionRequired())
+        ((LoadScreenTypeData*)data)->Endian();
     return true;
 }
 
 void* __cdecl __memcpy(void* dst, const void* src, unsigned int size);
 
 // @fnv 0x005a7690
+// pdb: TESLoadScreenType::Copy | TESLoadScreenType.obj | retail, vtable slot, high
+// pdb params: apCopy
+// pdb locals: pmisc
 void TESLoadScreenType::CopyFrom(const TESForm* apCopy)
 {
     TESLoadScreenType* pmisc = (TESLoadScreenType*)dynamic_cast<TESLoadScreenType*>((TESForm*)apCopy);
@@ -46,33 +52,37 @@ void TESLoadScreenType::CopyFrom(const TESForm* apCopy)
     {
         return;
     }
-    __memcpy(formData, pmisc->formData, 0x58);
+    __memcpy(data, pmisc->data, 0x58);
     TESForm::CopyFrom(apCopy);
 }
 
 bool __cdecl TESForm_QEndianSwapOnSave();
 // Saves the form data, converting its byte order before and after writing when required.
 // @fnv 0x005a7630
+// pdb: TESLoadScreenType::Save | TESLoadScreenType.obj | retail, vtable slot, high
 void TESLoadScreenType::SaveForm()
 {
     BeginFormRecord();
     if (TESForm_QEndianSwapOnSave())
-        ((LoadScreenTypeData*)formData)->Endian();
-    TESForm___SaveData(formData, 0x58);
+        ((LoadScreenTypeData*)data)->Endian();
+    TESForm___SaveData(data, 0x58);
     if (TESForm_QEndianSwapOnSave())
-        ((LoadScreenTypeData*)formData)->Endian();
+        ((LoadScreenTypeData*)data)->Endian();
     FinishFormRecord();
 }
 
 int __cdecl _memcmp(const void*, const void*, unsigned int);
 // Compares the form data and inherited fields, returning true when either differs or the cast fails.
 // @fnv 0x005a76f0
+// pdb: TESLoadScreenType::Compare | TESLoadScreenType.obj | retail, upstream name already matches, high
+// pdb params: apCompare
+// pdb locals: pcomp
 bool TESLoadScreenType::Compare(TESForm* apCompare)
 {
     TESLoadScreenType* pcomp = dynamic_cast<TESLoadScreenType*>(apCompare);
     if (!pcomp)
         return true;
-    if (_memcmp(formData, ((Script*)pcomp)->GetHeader(), 0x58))
+    if (_memcmp(data, ((Script*)pcomp)->GetHeader(), 0x58))
         return true;
     if (TESForm::Compare(pcomp))
         return true;
@@ -80,6 +90,7 @@ bool TESLoadScreenType::Compare(TESForm* apCompare)
 }
 
 // @fnv 0x005a72d0
+// pdb: TESLoadScreenType::~TESLoadScreenType | TESLoadScreenType.obj | debug, upstream name already matches, high
 TESLoadScreenType::~TESLoadScreenType()
 {}
 
@@ -115,6 +126,7 @@ struct LoadScreenTypeData_FUN
 };
 // Byte-swaps every integer field of the structure by calling FUN_00401080 on each member.
 // @fnv 0x005a7400
+// pdb: LoadScreenType_Data::Endian | TESLoadScreenType.obj | retail, call graph, high
 void LoadScreenTypeData_FUN::SwapEndianFields()
 {
     BSEndian_00401080(&unk28, EndianTag());

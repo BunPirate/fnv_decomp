@@ -1,5 +1,6 @@
 #pragma once
 
+// pdb: class NiBinaryStream, size 0x10, 3 members
 class NiBinaryStream
 {
   public:

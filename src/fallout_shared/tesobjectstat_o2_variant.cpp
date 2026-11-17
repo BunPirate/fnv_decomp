@@ -16,6 +16,6 @@
 TESObjectSTAT::TESObjectSTAT()
 {
     SetFormType((ENUM_FORM_ID)0x20);
-    m_cType = (char)0xFF;
-    m_pSoundForm = 0;
+    cPassThroughSoundIndex = (char)0xFF;
+    pRandomSound = 0;
 }

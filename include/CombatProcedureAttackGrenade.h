@@ -11,11 +11,12 @@ class Projectile;
 class SoundObj;
 class Target;
 
+// pdb: class CombatProcedureAttackGrenade, size 0x3c, bases: CombatProcedure, 6 members
 class CombatProcedureAttackGrenade : public CombatProcedure
 {
 public:
     CombatProcedureAttackGrenade();
-    CombatProcedureAttackGrenade(const NiPoint3* src, unsigned char flag);
+    CombatProcedureAttackGrenade(const NiPoint3* aTargetLocation, unsigned char abHighArc);
 
     virtual ~CombatProcedureAttackGrenade();
     virtual void Unk04();
@@ -24,8 +25,8 @@ public:
     virtual void d06();
     virtual void d08();
     virtual int GetType();
-    virtual void SaveGame(BGSSaveFormBuffer* apBuffer);
-    virtual void LoadGame(BGSLoadFormBuffer* apBuffer);
+    virtual void SaveGame(BGSSaveFormBuffer* apSaveGameBuffer);
+    virtual void LoadGame(BGSLoadFormBuffer* apLoadGameBuffer);
     virtual void vf16();
 
     void Shutdown_009cafc0();
@@ -51,5 +52,5 @@ public:
     bool Validate(void* object, NiPoint3* point, float value);
     void Reset();
 
-    unsigned char unk10[0x2C];
+    unsigned char eState[0x2C]; // src: XBOX_RETAIL_PDB +0x10 (old: unk10)
 };

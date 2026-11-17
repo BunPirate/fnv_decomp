@@ -105,7 +105,7 @@ typedef std::size_t hk_size_t;
 
 // src/havok/physics/utilities/visualdebugger/viewer/vehicle/hkpvehicleviewer.cpp - unit created 2026-10-16 from the whole-binary attribution (360 source path: d:/projects/fallout/code/havok/source/physics/utilities/visualdebugger/viewer/vehicle/hkpvehicleviewer.cpp).
 // Functions are listed by their @fnv annotations; compile flags inferred from the PC code.
-void __cdecl hkArrayUtil__reserve(hkMemoryAllocator* alloc, void* array, int numElements, int sizeElem);
+void __cdecl hkArrayUtil__reserve(hkMemoryAllocator* mem, void* array, int numElem, int sizeElem);
 void __cdecl D625A0MemMove(void* dst, const void* src, unsigned int nbytes);
 
 extern char d_010d17d0;
@@ -177,7 +177,7 @@ struct OurPart {
 
     int m_i04;
 
-    void RegisterAndNotify(struct Registry* apRegistry);
+    void RegisterAndNotify(struct Registry* w);
 };
 struct NotifyTarget {
     virtual void v00();
@@ -213,8 +213,8 @@ struct Factory {
 extern void* DAT_01268fcc;
 extern Factory* DAT_01269cd0;
 extern const char DAT_010d17c4;
-extern void AllocAndInitObject();
-void __cdecl Object_UpdateFields_00d63da0();
+extern void hkpVehicleViewer_create();
+void __cdecl hkpVehicleViewer_registerViewer();
 extern int g_D63DC0Value;
 int __cdecl Object_GetG_D63DC0Value_00d63dc0();
 // PassMembersToTarget - forwarding stub for a "container of" style object.
@@ -236,7 +236,7 @@ struct FUN_00d63480_cls {
     int unk18;
     int unk1c;
 
-    void PassMembersToTarget(Target* apTarget);
+    void PassMembersToTarget(Target* w);
 };
 // FUN_00d63c50 - the constructor of the Havok vehicle viewer
 // (hkpVehicleViewer).
@@ -284,11 +284,11 @@ struct FUN_00d63cb0 : hkpWorldViewerBase, S_D, S_E
     virtual ~FUN_00d63cb0() throw();
 };
 
-void __cdecl ResizeAudioStream(void* pvAlloc, void* apvArray, int iSizeElem) throw();
+void __cdecl ResizeAudioStream(void* mem, void* array, int sizeElem) throw();
 
 class VehicleViewerD635 {
 public:
-    void AddVehicle(hkReferencedObject* pkObj);
+    void AddVehicle(hkReferencedObject* action);
 
     int unk00, unk04;
     hkArray<hkReferencedObject*> m_ppVehicles;
@@ -507,9 +507,9 @@ inline void hkVector4::mul4(hkSimdRealParameter s)
 {
 m_vComponents=_mm_mul_ps(s.broadcast(),m_vComponents);
 }
-inline void hkVector4::setMul4(hkSimdRealParameter r,const hkVector4&v1)
+inline void hkVector4::setMul4(hkSimdRealParameter r,const hkVector4&x)
 {
-m_vComponents=_mm_mul_ps(r.broadcast(),v1.m_vComponents);
+m_vComponents=_mm_mul_ps(r.broadcast(),x.m_vComponents);
 }
 inline void hkVector4::addMul4(const hkVector4&x,const hkVector4&y)
 {
@@ -521,10 +521,10 @@ inline void hkVector4::setAddMul4(const hkVector4&a,const hkVector4&b,hkSimdReal
 m_vComponents=_mm_add_ps(a.m_vComponents,
 _mm_mul_ps(r.broadcast(),b.m_vComponents));
 }
-inline void hkVector4::setAddMul4(const hkVector4&a,const hkVector4&x,const hkVector4&y)
+inline void hkVector4::setAddMul4(const hkVector4&a,const hkVector4&x,const hkVector4&r)
 {
 m_vComponents=_mm_add_ps(a.m_vComponents,
-_mm_mul_ps(x.m_vComponents,y.m_vComponents));
+_mm_mul_ps(x.m_vComponents,r.m_vComponents));
 }
 inline void hkVector4::setCross(const hkVector4& v0,const hkVector4& v1)
 {
@@ -536,9 +536,9 @@ _mm_shuffle_ps(v1.m_vComponents,v1.m_vComponents,0xc9),
 _mm_shuffle_ps(v0.m_vComponents,v0.m_vComponents,0xd2));
 m_vComponents=_mm_sub_ps(cross0,cross1);
 }
-inline hkSimdReal hkVector4::dot3(const hkVector4&a)const
+inline hkSimdReal hkVector4::dot3(const hkVector4&x)const
 {
-hkQuadReal x2=_mm_mul_ps(m_vComponents,a.m_vComponents);
+hkQuadReal x2=_mm_mul_ps(m_vComponents,x.m_vComponents);
 hkQuadReal xySum=_mm_add_ss(_mm_shuffle_ps(x2,x2,(((1)<<6)|((1)<<4)|((1)<<2)|((1)))),x2);
 __declspec(align(16)) hkSimdReal result;
 reinterpret_cast<LocalM128&>(result)=_mm_add_ss(_mm_shuffle_ps(x2,x2,(((2)<<6)|((2)<<4)|((2)<<2)|((2)))),xySum);
@@ -608,7 +608,7 @@ hkQuaternion_setAxisAngle(axis,angle);
 
 inline const hkVector4&hkContactPoint::getPosition()const
 {
-return m_vContactPosition;
+return m_position;
 }
 __forceinline void hkMonitorStream::TimerCommand::setTime()
 {
@@ -639,7 +639,7 @@ public hkpActionListener,
 public VehicleViewerPostSimulationListener
 {
 public:
-__forceinline void*__cdecl operator new(hk_size_t nbytes){;hkReferencedObject*b=static_cast<hkReferencedObject*>(hkMemoryRouter::getInstance().heap().blockAlloc(static_cast<int>(nbytes)));b->m_usMemSizeAndFlags=static_cast<hkUint16>(nbytes);;return b;}__forceinline void __cdecl operator delete(void*p){hkReferencedObject*b=static_cast<hkReferencedObject*>(p);;hkMemoryRouter::getInstance().heap().blockFree(p,b->m_usMemSizeAndFlags);}__forceinline void*__cdecl operator new(hk_size_t,void*p){return p;}__forceinline void*__cdecl operator new[](hk_size_t,void*p){__debugbreak();return p;}__forceinline void __cdecl operator delete(void*,void*){}__forceinline void __cdecl operator delete[](void*,void*){__debugbreak();}class CommandArgument;
+__forceinline void*__cdecl operator new(hk_size_t nbytes){;hkReferencedObject*b=static_cast<hkReferencedObject*>(hkMemoryRouter::getInstance().heap().blockAlloc(static_cast<int>(nbytes)));b->m_memSizeAndFlags=static_cast<hkUint16>(nbytes);;return b;}__forceinline void __cdecl operator delete(void*p){hkReferencedObject*b=static_cast<hkReferencedObject*>(p);;hkMemoryRouter::getInstance().heap().blockFree(p,b->m_memSizeAndFlags);}__forceinline void*__cdecl operator new(hk_size_t,void*p){return p;}__forceinline void*__cdecl operator new[](hk_size_t,void*p){__debugbreak();return p;}__forceinline void __cdecl operator delete(void*,void*){}__forceinline void __cdecl operator delete[](void*,void*){__debugbreak();}class CommandArgument;
 static hkProcess*__cdecl create(const hkArray<hkProcessContext*>&contexts);
 static void __cdecl RegisterViewer();
 virtual int GetOperationType(){return (int)::DAT_01268fcc;}
@@ -656,7 +656,7 @@ virtual void ActionRemovedCallback(hkpAction*action);
 protected:
 static int m_ucOperationType;
 static const int ms_iProcessTag;
-hkArray<class hkpVehicleInstance*>m_ppVehicles;
+hkArray<class hkpVehicleInstance*>m_vehicles; // src: XBOX_RETAIL_PDB +0x30 (old: m_ppVehicles)
 };
 
 template<typename T>
@@ -693,39 +693,42 @@ return m_data[i];
 }
 // @fnv 0x00d63680
 // src: EXE 0x00d63680
+// pdb: hkpVehicleViewer::postSimulationCallback | hkpVehicleViewer.obj | retail, vtable slot, high
+// pdb params: world
+// pdb locals: numVehicles, i, vehicle, spokeRotation, spokes, start, end, b, a
 void hkpVehicleViewer::step_00d63680(hkpWorld*world)
 {
 {hkMonitorStream&mStream=hkMonitorStream::getInstance();if(mStream.memoryAvailable()){hkMonitorStream::TimerCommand*h=reinterpret_cast<hkMonitorStream::TimerCommand*>(mStream.getEnd());h->m_commandAndMonitor="T" "t" "hkpVehicleViewer::step";h->setTime();mStream.setEnd((char*)(h+1));}};ScopedTimer timeblock14;
-const int numVehicles=m_ppVehicles.m_iElementCount;
+const int numVehicles=m_vehicles.m_iElementCount;
 const int numWheelSegments=12;
 for(int i=0;i<numVehicles;i++)
 {
-const hkpVehicleInstance*vehicle=m_ppVehicles.m_data[i];
-const int numWheels=vehicle->m_kWheelInfoArray.m_iElementCount;
+const hkpVehicleInstance*vehicle=m_vehicles.m_data[i];
+const int numWheels=vehicle->m_wheelsInfo.m_iElementCount;
 HkDynamicArray<hkVector4>centerPoint(numWheels);
 for(int w=0;w<numWheels;w++)
 {
-const hkpVehicleData::WheelComponentParams&wheelParam=vehicle->m_data->m_kWheelParams.m_data[w];
-const hkpVehicleInstance::WheelInfo&wheel=reinterpret_cast<const hkpVehicleInstance::WheelInfo*>(vehicle->m_kWheelInfoArray.m_data)[w];
-const hkVector4&contactPoint=wheel.m_vContactPoint.getPosition();
-const hkVector4&hardPoint=wheel.m_vContactPointVelocity;
-const int collidableId=(wheel.m_pUserData)?(int)(hkUlong)(static_cast<const hkpCollidable*>(&wheel.m_pUserData->m_kCollidable)):0;
-reinterpret_cast<hkDebugDisplayHandler*>(unk10)->DisplayLine(contactPoint,hardPoint,(wheel.m_pUserData)? hkColor::RED:hkColor::ROSYBROWN,collidableId,(int)::DAT_01268fcc);
-centerPoint[w].setAddMul4(contactPoint,wheel.m_vHardPointWs,scalarComponent(-wheelParam.m_fSphereRadius));
+const hkpVehicleData::WheelComponentParams&wheelParam=vehicle->m_data->m_wheelParams.m_data[w];
+const hkpVehicleInstance::WheelInfo&wheel=reinterpret_cast<const hkpVehicleInstance::WheelInfo*>(vehicle->m_wheelsInfo.m_data)[w];
+const hkVector4&contactPoint=wheel.m_contactPoint.getPosition();
+const hkVector4&hardPoint=wheel.m_hardPointWs;
+const int collidableId=(wheel.m_contactBody)?(int)(hkUlong)(static_cast<const hkpCollidable*>(&wheel.m_contactBody->m_kCollidable)):0;
+reinterpret_cast<hkDebugDisplayHandler*>(m_displayHandler)->DisplayLine(contactPoint,hardPoint,(wheel.m_contactBody)? hkColor::RED:hkColor::ROSYBROWN,collidableId,(int)::DAT_01268fcc);
+centerPoint[w].setAddMul4(contactPoint,wheel.m_suspensionDirectionWs,scalarComponent(-wheelParam.m_radius));
 {
-hkVector4 spoke;spoke=wheel.m_vHardPointWs;
-hkQuaternion spokeRotation(wheel.m_vSuspensionDirectionWs,-wheel.m_fSpinAngle);
+hkVector4 spoke;spoke=wheel.m_suspensionDirectionWs;
+hkQuaternion spokeRotation(wheel.m_spinAxisWs,-wheel.m_spinAngle);
 spoke.SetRotatedDirection(spokeRotation,spoke);
 spoke.normalize3();
-spoke.mul4(scalarComponent(wheelParam.m_fSphereRadius));
+spoke.mul4(scalarComponent(wheelParam.m_radius));
 hkVector4 start;start.setAdd4(centerPoint[w],spoke);
 hkVector4 end;end.setSub4(centerPoint[w],spoke);
-reinterpret_cast<hkDebugDisplayHandler*>(unk10)->DisplayLine(start,end,(wheel.m_pUserData)? hkColor::WHITESMOKE:hkColor::ROSYBROWN,collidableId,(int)::DAT_01268fcc);
+reinterpret_cast<hkDebugDisplayHandler*>(m_displayHandler)->DisplayLine(start,end,(wheel.m_contactBody)? hkColor::WHITESMOKE:hkColor::ROSYBROWN,collidableId,(int)::DAT_01268fcc);
 }
 hkVector4 spokes[numWheelSegments];
 // Select the reference overload to retain the original inlining.
-(spokes[0].*static_cast<void (hkVector4::*)(const hkSimdReal&,const hkVector4&)>(&hkVector4::setMul4))(scalarComponent(wheelParam.m_fSphereRadius),wheel.m_vHardPointWs);
-hkQuaternion spokeRotation(wheel.m_vSuspensionDirectionWs,360.0 / numWheelSegments*0.017453292f);
+(spokes[0].*static_cast<void (hkVector4::*)(const hkSimdReal&,const hkVector4&)>(&hkVector4::setMul4))(scalarComponent(wheelParam.m_radius),wheel.m_suspensionDirectionWs);
+hkQuaternion spokeRotation(wheel.m_spinAxisWs,360.0 / numWheelSegments*0.017453292f);
 for(int s=1;s<numWheelSegments+2;s++)
 {
 if(s<numWheelSegments)
@@ -738,24 +741,24 @@ spokes[s-1].add4(centerPoint[w]);
 }
 if(s>=2)
 {
-reinterpret_cast<hkDebugDisplayHandler*>(unk10)->DisplayLine(spokes[(s-2)% numWheelSegments],spokes[(s-1)% numWheelSegments],(wheel.m_pUserData)? hkColor::WHITESMOKE:hkColor::ROSYBROWN,collidableId,(int)::DAT_01268fcc);
+reinterpret_cast<hkDebugDisplayHandler*>(m_displayHandler)->DisplayLine(spokes[(s-2)% numWheelSegments],spokes[(s-1)% numWheelSegments],(wheel.m_contactBody)? hkColor::WHITESMOKE:hkColor::ROSYBROWN,collidableId,(int)::DAT_01268fcc);
 }
 }
 }
-const int numAxles=vehicle->m_data->m_kNumWheelsPerAxle.m_iElementCount;
+const int numAxles=vehicle->m_data->m_numWheelsPerAxle.m_iElementCount;
 for(int axle=0;axle<numAxles;axle++)
 {
 hkVector4 a;
 hkVector4 b;
 bool firstTimeThrough=true;
-const int totalWheelsOnThisAxle=vehicle->m_data->m_kNumWheelsPerAxle.m_data[axle];
+const int totalWheelsOnThisAxle=vehicle->m_data->m_numWheelsPerAxle.m_data[axle];
 int wheelsFoundOnThisAxle=0;
 for(int w=0;w<numWheels;w++)
 {
-const hkpVehicleData::WheelComponentParams&wheelParam=vehicle->m_data->m_kWheelParams.m_data[w];
-const hkpVehicleInstance::WheelInfo&wheel=reinterpret_cast<const hkpVehicleInstance::WheelInfo*>(vehicle->m_kWheelInfoArray.m_data)[w];
-const int collidableId=(wheel.m_pUserData)?(int)(hkUlong)(static_cast<const hkpCollidable*>(&wheel.m_pUserData->m_kCollidable)):0;
-if(wheelParam.m_iAxle !=axle)continue;
+const hkpVehicleData::WheelComponentParams&wheelParam=vehicle->m_data->m_wheelParams.m_data[w];
+const hkpVehicleInstance::WheelInfo&wheel=reinterpret_cast<const hkpVehicleInstance::WheelInfo*>(vehicle->m_wheelsInfo.m_data)[w];
+const int collidableId=(wheel.m_contactBody)?(int)(hkUlong)(static_cast<const hkpCollidable*>(&wheel.m_contactBody->m_kCollidable)):0;
+if(wheelParam.m_axle !=axle)continue;
 wheelsFoundOnThisAxle++;
 a=b;
 b=centerPoint[w];
@@ -765,7 +768,7 @@ firstTimeThrough=false;
 }
 else
 {
-reinterpret_cast<hkDebugDisplayHandler*>(unk10)->DisplayLine(a,b,hkColor::YELLOWGREEN,collidableId,(int)::DAT_01268fcc);
+reinterpret_cast<hkDebugDisplayHandler*>(m_displayHandler)->DisplayLine(a,b,hkColor::YELLOWGREEN,collidableId,(int)::DAT_01268fcc);
 }
 if(wheelsFoundOnThisAxle==totalWheelsOnThisAxle)break;
 }

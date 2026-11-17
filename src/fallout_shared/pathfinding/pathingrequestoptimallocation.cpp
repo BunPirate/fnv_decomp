@@ -8,6 +8,7 @@
 extern void _delete(void* p, unsigned int size);
 
 // @fnv 0x006e5d70
+// pdb: PathingRequestOptimalLocation::`scalar deleting destructor' | PathingRequestOptimalLocation.obj | retail, vtable slot, high
 void* PathingRequestOptimalLocation::FUN_006e5d70(unsigned int flags)
 {
     this->PathingRequest::DestroyPathingRequest();
@@ -20,6 +21,7 @@ extern float g_011c7b14_arg1;
 
 // Initializes the PathingRequest base and the four optimal-location values.
 // @fnv 0x006e5d10
+// pdb: PathingRequestOptimalLocation::PathingRequestOptimalLocation | PathingRequestOptimalLocation.obj | debug, call graph, medium
 PathingRequestOptimalLocation::PathingRequestOptimalLocation() : PathingRequest()
 {
     fPointHeight = 128.0f;
@@ -29,6 +31,9 @@ PathingRequestOptimalLocation::PathingRequestOptimalLocation() : PathingRequest(
 }
 
 // @fnv 0x006e5e60
+// pdb: PathingRequestOptimalLocation::CopyTo | PathingRequestOptimalLocation.obj | retail, upstream name already matches, high
+// pdb params: apDest
+// pdb locals: pdest
 void PathingRequestOptimalLocation::CopyTo(PathingRequest* apDest)
 {
     PathingRequest* pdest = apDest;
@@ -40,6 +45,7 @@ void PathingRequestOptimalLocation::CopyTo(PathingRequest* apDest)
 }
 
 // @fnv 0x006e5db0
+// pdb: PathingRequestOptimalLocation::PathingRequestOptimalLocation | PathingRequestOptimalLocation.obj | retail, object-file run extension, low
 PathingRequestOptimalLocation::PathingRequestOptimalLocation(PathingRequestOptimalLocation* pSource)
     : PathingRequest(pSource)
 {

@@ -85,38 +85,42 @@ void* __fastcall NiMaterialProperty_Destructor(NiMaterialProperty* pThis, int, u
 
 // Loads a NiMaterialProperty from a stream, reading two colors and two or three floats depending on the stream version.
 // @fnv 0x00a75790
+// pdb: NiMaterialProperty::LoadBinary | NiMaterialProperty.obj | retail, upstream name already matches, high
+// pdb params: stream
+// pdb locals: kdummy
 void NiMaterialProperty::LoadBinary(NiStream& stream)
 {
     NiProperty::LoadBinary(stream);
-    if (stream.m_kHeader.m_uiVersion < 26)
+    if (stream.m_BSStreamHeader.uiVersion < 26)
     {
         NiColor kDummy;
         kDummy.LoadBinary(stream);
         kDummy.LoadBinary(stream);
-        reinterpret_cast<NiColor*>(&unk1c)->LoadBinary(stream);
-        reinterpret_cast<NiColor*>(&unk28)->LoadBinary(stream);
-        ReadBinaryValue(stream, *reinterpret_cast<float*>(&unk38));
-        ReadBinaryValue(stream, *reinterpret_cast<float*>(&unk3c));
+        reinterpret_cast<NiColor*>(&m_spec)->LoadBinary(stream);
+        reinterpret_cast<NiColor*>(&m_emit)->LoadBinary(stream);
+        ReadBinaryValue(stream, *reinterpret_cast<float*>(&m_fShine));
+        ReadBinaryValue(stream, *reinterpret_cast<float*>(&m_fAlpha));
     }
     else
     {
-        reinterpret_cast<NiColor*>(&unk1c)->LoadBinary(stream);
-        reinterpret_cast<NiColor*>(&unk28)->LoadBinary(stream);
-        ReadBinaryValue(stream, *reinterpret_cast<float*>(&unk38));
-        ReadBinaryValue(stream, *reinterpret_cast<float*>(&unk3c));
-        ReadBinaryValue(stream, *reinterpret_cast<float*>(&unk40));
+        reinterpret_cast<NiColor*>(&m_spec)->LoadBinary(stream);
+        reinterpret_cast<NiColor*>(&m_emit)->LoadBinary(stream);
+        ReadBinaryValue(stream, *reinterpret_cast<float*>(&m_fShine));
+        ReadBinaryValue(stream, *reinterpret_cast<float*>(&m_fAlpha));
+        ReadBinaryValue(stream, *reinterpret_cast<float*>(&m_fEmitMult));
     }
 }
 
-void* __fastcall Lighting30shaderproperty_StoreAndAddReference_00a75650(void* pThis);
+void* __fastcall NiMaterialProperty_ctor(void* pThis);
 extern void* DAT_011f4a64;
 
 // @fnv 0x00a759e0
 // src: XBOX_PDB 0x00a759e0
+// pdb: NiMaterialProperty::_SDMInit | NiMaterialProperty.obj | retail, upstream name already matches, high
 void __cdecl NiMaterialProperty__SDMInit()
 {
     void* pMemory = BSFadeNode::operator new(0x4c);
-    NiRefObject* pFadeNode = (NiRefObject*)(pMemory ? Lighting30shaderproperty_StoreAndAddReference_00a75650(pMemory) : 0);
+    NiRefObject* pFadeNode = (NiRefObject*)(pMemory ? NiMaterialProperty_ctor(pMemory) : 0);
     if ((NiRefObject*)DAT_011f4a64 != pFadeNode)
     {
         if (DAT_011f4a64)
@@ -128,26 +132,29 @@ void __cdecl NiMaterialProperty__SDMInit()
 }
 
 // @fnv 0x00a75960
+// pdb: NiMaterialProperty::IsEqual | NiMaterialProperty.obj | retail, upstream name already matches, high
+// pdb params: pObject
+// pdb locals: pMat
 bool __fastcall NiMaterialProperty_IsEqual(const NiMaterialProperty* pThis, void*, NiObject* apObject)
 {
     const NiMaterialProperty* other = static_cast<const NiMaterialProperty*>(apObject);
     if (reinterpret_cast<bool(__thiscall*)(const NiProperty*, NiObject*)>(NiProperty_IsEqual)(pThis, apObject))
     {
-        NiPlane* pPlaneA = (NiPlane*)&pThis->unk1c;
-        NiPlane* b = (NiPlane*)&other->unk1c;
+        NiPlane* pPlaneA = (NiPlane*)&pThis->m_spec;
+        NiPlane* b = (NiPlane*)&other->m_spec;
         if (!pPlaneA->operator==(*b))
         {
-            NiPlane* pPlaneC = (NiPlane*)&pThis->unk28;
-            NiPlane* pPlaneD = (NiPlane*)&other->unk28;
+            NiPlane* pPlaneC = (NiPlane*)&pThis->m_emit;
+            NiPlane* pPlaneD = (NiPlane*)&other->m_emit;
             if (!pPlaneC->operator==(*pPlaneD))
             {
-                if (pThis->unk34 == other->unk34)
+                if (pThis->m_external_emit == other->m_external_emit)
                 {
-                    if (*reinterpret_cast<const float*>(&pThis->unk38) == *reinterpret_cast<const float*>(&other->unk38))
+                    if (*reinterpret_cast<const float*>(&pThis->m_fShine) == *reinterpret_cast<const float*>(&other->m_fShine))
                     {
-                        if (*reinterpret_cast<const float*>(&pThis->unk3c) == *reinterpret_cast<const float*>(&other->unk3c))
+                        if (*reinterpret_cast<const float*>(&pThis->m_fAlpha) == *reinterpret_cast<const float*>(&other->m_fAlpha))
                         {
-                            if (*reinterpret_cast<const float*>(&pThis->unk40) == *reinterpret_cast<const float*>(&other->unk40))
+                            if (*reinterpret_cast<const float*>(&pThis->m_fEmitMult) == *reinterpret_cast<const float*>(&other->m_fEmitMult))
                                 return true;
                         }
                     }
@@ -167,7 +174,9 @@ struct Holder
 };
 // If DAT_011f4a64 is set, decrements its reference count at offset 4 and calls f1() when it reaches zero, then clears DAT_011f4a64.
 // @fnv 0x00a75a40
-void ReleaseGlobalHolder()
+// src: XBOX_RETAIL_PDB 0x00a75a40
+// pdb: NiMaterialProperty::_SDMShutdown | NiMaterialProperty.obj | retail, call graph, high
+void NiMaterialProperty__SDMShutdown()
 {
     if (DAT_011f4a64)
     {
@@ -179,12 +188,13 @@ void ReleaseGlobalHolder()
 }
 
 // @fnv 0x00a75730
+// pdb: NiMaterialProperty::`scalar deleting destructor' | NiMaterialProperty.obj | retail, object-file run extension, low
 NiObject* __fastcall NiMaterialProperty_MakeClone(NiMaterialProperty* pThis, void*, CloningProcess& kCloning)
 {
     if (pThis->m_spControllers)
     {
         void* memory = NiProperty::operator new(sizeof(NiMaterialProperty));
-        NiMaterialProperty* pkClone = static_cast<NiMaterialProperty*>(memory ? Lighting30shaderproperty_StoreAndAddReference_00a75650(memory) : 0);
+        NiMaterialProperty* pkClone = static_cast<NiMaterialProperty*>(memory ? NiMaterialProperty_ctor(memory) : 0);
         reinterpret_cast<void(__thiscall*)(NiMaterialProperty*, NiMaterialProperty*, CloningProcess&)>(
             NiMaterialProperty_CopyMemberData)(pThis, pkClone, kCloning);
         return pkClone;
@@ -207,14 +217,16 @@ template <class T> inline void SaveBinaryValue(NiStream& stream, const T& value)
 
 // Saves the base property, ambient and diffuse colors, shine, alpha and emit multiplier to the stream.
 // @fnv 0x00a758c0
+// pdb: NiMaterialProperty::SaveBinary | NiMaterialProperty.obj | retail, upstream name already matches, high
+// pdb params: stream
 void __fastcall NiMaterialProperty_SaveBinary(NiMaterialProperty* pThis, void*, NiStream& kStream)
 {
     reinterpret_cast<void(__thiscall*)(NiProperty*, NiStream&)>(NiProperty_SaveBinary)(pThis, kStream);
-    reinterpret_cast<NiColor*>(&pThis->unk1c)->SaveBinary(kStream);
-    reinterpret_cast<NiColor*>(&pThis->unk28)->SaveBinary(kStream);
-    SaveBinaryValue(kStream, *reinterpret_cast<float*>(&pThis->unk38));
-    SaveBinaryValue(kStream, *reinterpret_cast<float*>(&pThis->unk3c));
-    SaveBinaryValue(kStream, *reinterpret_cast<float*>(&pThis->unk40));
+    reinterpret_cast<NiColor*>(&pThis->m_spec)->SaveBinary(kStream);
+    reinterpret_cast<NiColor*>(&pThis->m_emit)->SaveBinary(kStream);
+    SaveBinaryValue(kStream, *reinterpret_cast<float*>(&pThis->m_fShine));
+    SaveBinaryValue(kStream, *reinterpret_cast<float*>(&pThis->m_fAlpha));
+    SaveBinaryValue(kStream, *reinterpret_cast<float*>(&pThis->m_fEmitMult));
 }
 
 struct MaterialViewerStringsArray
@@ -237,24 +249,26 @@ struct MaterialViewerStringsArray
     }
 };
 
-extern NiRTTI g_011f4a5c;
+extern NiRTTI NiMaterialProperty_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f4a5c (old: DAT_011f4a5c/g_011f4a5c)
 char* __cdecl NiViewerStrings_NiGetViewerString_Title(const char* pcText);
 char* __cdecl NiGetViewerString_00a7d550(const char* pcPrefix, float fValue);
 
 // Appends the RTTI name, spec, emit (external or local), shine, alpha and emit multiplier strings to the viewer strings array.
 // @fnv 0x00a75a70
+// pdb: NiMaterialProperty::GetViewerStrings | NiMaterialProperty.obj | retail, string-set bridge, high
+// pdb params: pStrings
 void __fastcall NiMaterialProperty_GetViewerStrings(NiMaterialProperty* pThis, void*, MaterialViewerStringsArray* pkStrings)
 {
     reinterpret_cast<void(__thiscall*)(NiProperty*, MaterialViewerStringsArray*)>(
         NiProperty_GetViewerStrings)(pThis, pkStrings);
-    pkStrings->Add(NiViewerStrings_NiGetViewerString_Title(g_011f4a5c.m_pcName));
-    pkStrings->Add(reinterpret_cast<NiColor*>(&pThis->unk1c)->GetFormattedString("m_spec"));
-    NiColor* externalEmit = reinterpret_cast<NiColor*>(pThis->unk34);
+    pkStrings->Add(NiViewerStrings_NiGetViewerString_Title(NiMaterialProperty_ms_RTTI.m_pcName));
+    pkStrings->Add(reinterpret_cast<NiColor*>(&pThis->m_spec)->GetViewerString("m_spec"));
+    NiColor* externalEmit = reinterpret_cast<NiColor*>(pThis->m_external_emit);
     if (externalEmit)
-        pkStrings->Add(externalEmit->GetFormattedString("m_external_emit"));
+        pkStrings->Add(externalEmit->GetViewerString("m_external_emit"));
     else
-        pkStrings->Add(reinterpret_cast<NiColor*>(&pThis->unk28)->GetFormattedString("m_emit"));
-    pkStrings->Add(NiGetViewerString_00a7d550("m_fShine", *reinterpret_cast<float*>(&pThis->unk38)));
-    pkStrings->Add(NiGetViewerString_00a7d550("m_fAlpha", *reinterpret_cast<float*>(&pThis->unk3c)));
-    pkStrings->Add(NiGetViewerString_00a7d550("m_fEmitMult", *reinterpret_cast<float*>(&pThis->unk40)));
+        pkStrings->Add(reinterpret_cast<NiColor*>(&pThis->m_emit)->GetViewerString("m_emit"));
+    pkStrings->Add(NiGetViewerString_00a7d550("m_fShine", *reinterpret_cast<float*>(&pThis->m_fShine)));
+    pkStrings->Add(NiGetViewerString_00a7d550("m_fAlpha", *reinterpret_cast<float*>(&pThis->m_fAlpha)));
+    pkStrings->Add(NiGetViewerString_00a7d550("m_fEmitMult", *reinterpret_cast<float*>(&pThis->m_fEmitMult)));
 }

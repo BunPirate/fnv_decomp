@@ -61,7 +61,7 @@ extern int DAT_011d9ea4;
 extern int DAT_011d9eb8;
 
 void* __cdecl Tile_TextToTrait(const char* s);
-void __cdecl UpdateCurrentValue();
+void __cdecl InventoryMenu_SavePageState();
 
 // PlayerCharacter.h does not yet declare the these inventory queries on the approved headers.
 struct InventoryPlayerQueries : PlayerCharacter
@@ -123,12 +123,15 @@ int BSstrcmp(const char*, const char*);
 void FUN_00406d30(char*, unsigned int, const char*);
 unsigned int BSstrlen(const char*);
 void* FUN_00479430(Form*);
-const char* GetMenuIconName(void*);
+const char* GetEquipTypeIconFilename(void*);
 void FUN_00406d50(char*, unsigned int, const char*);
 
 }
 
 // @fnv 0x00780ff0
+// pdb: InventoryMenu::DoEnter | InventoryMenu.obj | retail, string-set bridge, high
+// pdb params: aiID, apTarget
+// pdb locals: inewHighlightIndex, uiMinNameLength, pweap, strSmallIconName, fMaintainValue, strtemp
 void Menu::UpdateItemDisplay(int action, Tile* changed)
 {
     using namespace InventorySelection;
@@ -190,14 +193,14 @@ void Menu::UpdateItemDisplay(int action, Tile* changed)
             char path[260];
             FUN_00406d30(path, 260, DAT_0106eb24);
             unsigned int prefixLengthSlot0 = BSstrlen(path);
-            FUN_00406d50(path, 260, GetMenuIconName(FUN_00479430(DAT_011d9ea8->FUN_0044ddc0())));
+            FUN_00406d50(path, 260, GetEquipTypeIconFilename(FUN_00479430(DAT_011d9ea8->FUN_0044ddc0())));
             if (BSstrlen(path) > prefixLengthSlot0)
             {
-                (*((TileRef*)&static_cast<InventoryMenu*>(this)->m_pTiles[5]->m_kChildTileList)->NiTPointerListBase_NiTPointerAllocator_unsigned_int_Tile_GetHead())->Tile_Set_00a01350(0xfcc, path, 1);
-                (*((TileRef*)&static_cast<InventoryMenu*>(this)->m_pTiles[5]->m_kChildTileList)->NiTPointerListBase_NiTPointerAllocator_unsigned_int_Tile_GetHead())->FUN_00700320(0xfa3, 1);
+                (*((TileRef*)&static_cast<InventoryMenu*>(this)->m_pTiles[5]->xChildren)->NiTPointerListBase_NiTPointerAllocator_unsigned_int_Tile_GetHead())->Tile_Set_00a01350(0xfcc, path, 1);
+                (*((TileRef*)&static_cast<InventoryMenu*>(this)->m_pTiles[5]->xChildren)->NiTPointerListBase_NiTPointerAllocator_unsigned_int_Tile_GetHead())->FUN_00700320(0xfa3, 1);
             }
             else
-                (*((TileRef*)&static_cast<InventoryMenu*>(this)->m_pTiles[5]->m_kChildTileList)->NiTPointerListBase_NiTPointerAllocator_unsigned_int_Tile_GetHead())->FUN_00700320(0xfa3, 0);
+                (*((TileRef*)&static_cast<InventoryMenu*>(this)->m_pTiles[5]->xChildren)->NiTPointerListBase_NiTPointerAllocator_unsigned_int_Tile_GetHead())->FUN_00700320(0xfa3, 0);
             if (!static_cast<InventoryMenu*>(this)->m_kMenuData.GetVisible())
                 static_cast<InventoryMenu*>(this)->m_pTiles[11]->FUN_00700320(0xfa3, 1);
             UpdateButtons();
@@ -205,7 +208,7 @@ void Menu::UpdateItemDisplay(int action, Tile* changed)
     }
     else if (action == 30)
     {
-        ClearActionPointSource();
+        InventoryMenu_ClearCurrentItem();
         static_cast<InventoryMenu*>(this)->m_pTiles[11]->Tile_Set_00a01350(0xfcc, DAT_01073aac, 1);
         if (!static_cast<InventoryMenu*>(this)->m_kMenuData.GetVisible())
             static_cast<InventoryMenu*>(this)->m_pTiles[11]->FUN_00700320(0xfa3, 1);
@@ -216,7 +219,7 @@ void Menu::UpdateItemDisplay(int action, Tile* changed)
 
 InventoryChanges* __cdecl FUN_004bf220(void*);
 
-void __cdecl UpdateItemLabel(Tile* tile, InventoryStackRecord* item);
+void __cdecl InventoryMenu_InitFunc(Tile* apTile, InventoryStackRecord* apItem);
 
 // ListBox_ItemChange___.h does not yet declare these list operations or slots.
 struct InventoryMenuListOperations : ListBoxBase
@@ -227,7 +230,7 @@ struct InventoryMenuListOperations : ListBoxBase
     Tile* ListBox_ItemChange_AddItem(int, const char*, int, int);
     void ListBox_ItemChange_AddItem(void*, const char*, void*, int);
     void ListBox_ItemChange_RemoveItemGroup(void*);
-    void UpdateItems();
+    void ListBox_ItemChange_Synchronize();
     void ListBox_ItemChange_Traverse(void*, int, int);
     void PopulateInventoryList(void*, int, int, void*, int, int);
     void ApplyFilter(void*);
@@ -236,7 +239,7 @@ struct InventoryMenuListOperations : ListBoxBase
 // InventoryChanges.h does not yet declare these menu enumeration operations.
 struct InventoryMenuChanges : InventoryChanges
 {
-    void FindEntriesByType(void*, void*);
+    void InventoryChanges_GetItemGroup(void*, void*);
     int FindFirstItemOfType(int, int*);
 };
 
@@ -244,7 +247,7 @@ struct InventoryMenuChanges : InventoryChanges
 // InventoryStackRecord.h does not yet declare this item-modification query.
 struct InventoryItemQueries : InventoryStackRecord
 {
-    unsigned char FUN_004bd820();
+    unsigned char ItemChange_GetModSlots();
 };
 extern int DAT_011d9ea4;
 extern int DAT_011d9eb4;
@@ -268,7 +271,7 @@ int __cdecl BSsprintf(char*, int, const char*, ...);
 int __cdecl FUN_00406d30(char*, unsigned int, const char*);
 int __cdecl FUN_00406d50(char*, unsigned int, const char*);
 int __cdecl BSstrcmp(const char*, const char*);
-void __cdecl UpdateCurrentValue();
+void __cdecl InventoryMenu_SavePageState();
 int __cdecl FUN_005e58f0(int, void*, void*, int, float*);
 unsigned int __fastcall FUN_0044ddc0(void*);
 int __cdecl TESForm_GetFormByNumericID(int);
@@ -279,6 +282,8 @@ void __cdecl InventoryMenu_FilterFunc();
 static const char kStr_IM_Headline_Title[] = "IM_Headline_Title";
 // @fnv 0x00782a90
 // src: XBOX_PDB 0x00782a90
+// pdb: InventoryMenu::UpdateInventoryMenu | InventoryMenu.obj | retail, upstream name already matches, high
+// pdb locals: pinventory, idummy, pweap, pObjectWEAP, idamageResist, fIncreaseDT, fDDT, strtemp, imaxDR, iUT_Title, pcurrObj, pnewItemGroup, pcurrItemObj, itemName, pfull, uilength, pkeyringTile
 void InventoryMenu_UpdateInventoryMenu()
 {
     BSSimpleList<void*>* pInventoryChangeNode;
@@ -352,7 +357,7 @@ void InventoryMenu_UpdateInventoryMenu()
         ((InventoryMenu*)(void*)(unsigned int)DAT_011d9ea4)->HandleMouseoverTileAlt(0x1d, 0);
         if (((InventoryMenu*)(void*)(unsigned int)DAT_011d9ea4)->m_kHotkeyObjects.IsEmpty() == 0 && ea)
         {
-            UpdateCurrentValue();
+            InventoryMenu_SavePageState();
             ((InventoryMenuListOperations*)&((InventoryMenu*)(void*)(unsigned int)DAT_011d9ea4)->m_kItemList)->Highlight(0);
             for (pInventoryChangeNode = (BSSimpleList<void*>*)&((InventoryMenu*)(void*)(unsigned int)DAT_011d9ea4)->m_kHotkeyObjects;
                  pInventoryChangeNode && pInventoryChangeNode->GetItem();
@@ -364,7 +369,7 @@ void InventoryMenu_UpdateInventoryMenu()
                     int as;
                     BSSimpleList<void*>* am;
                     BSSimpleList<InventoryStackRecord*> ah;
-                    ea->FindEntriesByType(pInventoryChangeNode->GetItem(), &ah);
+                    ea->InventoryChanges_GetItemGroup(pInventoryChangeNode->GetItem(), &ah);
                     ((InventoryMenuListOperations*)&((InventoryMenu*)(void*)(unsigned int)DAT_011d9ea4)->m_kItemList)->ListBox_ItemChange_RemoveItemGroup(pInventoryChangeNode->GetItem());
                     for (am = (BSSimpleList<void*>*)&ah; am && am->GetItem(); am = am->GetNext())
                     {
@@ -372,20 +377,20 @@ void InventoryMenu_UpdateInventoryMenu()
                             (TESBoundObject*)(void*)((InventoryStackRecord*)am->GetItem())->FUN_0044ddc0());
                         as = (int)BSstrlen(((TESFullName*)bb)->GetFullName());
                         FUN_00406d30(bo, 0x80, ((TESFullName*)bb)->GetFullName());
-                        if (((InventoryItemQueries*)am->GetItem())->FUN_004bd820())
+                        if (((InventoryItemQueries*)am->GetItem())->ItemChange_GetModSlots())
                             FUN_00406d50(bo, 0x80, "+");
                         ((InventoryMenuListOperations*)&((InventoryMenu*)(void*)(unsigned int)DAT_011d9ea4)->m_kItemList)->ListBox_ItemChange_AddItem(am->GetItem(), bo, (void*)&InventoryMenu_CompareForSorting, 0);
                     }
                 }
             }
-            ((InventoryMenuListOperations*)&((InventoryMenu*)(void*)(unsigned int)DAT_011d9ea4)->m_kItemList)->ListBox_ItemChange_Traverse((void*)&UpdateItemLabel, 0, 0x7fffffff);
-            ((InventoryMenuListOperations*)&((InventoryMenu*)(void*)(unsigned int)DAT_011d9ea4)->m_kItemList)->UpdateItems();
+            ((InventoryMenuListOperations*)&((InventoryMenu*)(void*)(unsigned int)DAT_011d9ea4)->m_kItemList)->ListBox_ItemChange_Traverse((void*)&InventoryMenu_InitFunc, 0, 0x7fffffff);
+            ((InventoryMenuListOperations*)&((InventoryMenu*)(void*)(unsigned int)DAT_011d9ea4)->m_kItemList)->ListBox_ItemChange_Synchronize();
             ((InventoryMenuListOperations*)&((InventoryMenu*)(void*)(unsigned int)DAT_011d9ea4)->m_kItemList)->ListBox_ItemChange_Traverse((void*)&InventoryMenu_SetVisibleFunc, -1, 0x7fffffff);
             ((InventoryMenu*)(void*)(unsigned int)DAT_011d9ea4)->m_kHotkeyObjects.RemoveAll();
         }
         else
         {
-            ((InventoryMenuListOperations*)&((InventoryMenu*)(void*)(unsigned int)DAT_011d9ea4)->m_kItemList)->PopulateInventoryList(g_thePlayer, 0, 0, (void*)&UpdateItemLabel, 0, 0);
+            ((InventoryMenuListOperations*)&((InventoryMenu*)(void*)(unsigned int)DAT_011d9ea4)->m_kItemList)->PopulateInventoryList(g_thePlayer, 0, 0, (void*)&InventoryMenu_InitFunc, 0, 0);
             if (ea)
             {
                 if (ea->FindFirstItemOfType(0x2e, &df))
@@ -399,7 +404,7 @@ void InventoryMenu_UpdateInventoryMenu()
             ((InventoryMenuListOperations*)&((InventoryMenu*)(void*)(unsigned int)DAT_011d9ea4)->m_kItemList)->ListBox_ItemChange_Traverse((void*)&InventoryMenu_SetVisibleFunc, -1, 0x7fffffff);
             ((InventoryMenuListOperations*)&((InventoryMenu*)(void*)(unsigned int)DAT_011d9ea4)->m_kItemList)->q8((int)&InventoryMenu_CompareForSorting);
         }
-        ((Menu*)DAT_011d9ea4)->ClearActionPointSource();
+        ((Menu*)DAT_011d9ea4)->InventoryMenu_ClearCurrentItem();
         InventoryMenu_LoadPageState();
     }
 }

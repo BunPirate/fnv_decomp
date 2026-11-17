@@ -22,7 +22,7 @@ struct Node
 };
 struct StandIn
 {
-    void* FUN_009c8870(unsigned int);
+    void* VATS_COMMAND_ScalarDtor(unsigned int);
 };
 extern float DAT_011afe74;
 extern float DAT_011afe78;
@@ -32,7 +32,7 @@ struct SoundListEntry;
 struct SoundListView
 {
     void AddTail(SoundListEntry* const&);
-    void AddCommand(SoundListEntry* apCommand);
+    void VATS_QueueAction(SoundListEntry* apCommand);
 };
 struct ListHolder
 {
@@ -334,22 +334,25 @@ class PackageL8
 
 void __cdecl FUN_00c82870(int iLayer, unsigned __int64 ulMask);
 void* __cdecl bhkCollisionFilter_GetNewSystemGroup();
-void* __cdecl GetAVObjectForCollidable(void* pvCollidable);
+void* __cdecl GetAVObjectForCollidable(void* aphkCol);
 RefL8* __cdecl TESObjectREFR_FindReferenceFor3D(void* pvCollidable);
 
 class CheckerL8
 {
   public:
-    bool VATS_GetLineOfSight(PackageL8* pkPackage);
+    bool VATS_GetLineOfSight(PackageL8* apCommand);
 };
 
 // @fnv 0x009c8f20
 // src: COMMUNITY 0x009c8f20
-bool CheckerL8::VATS_GetLineOfSight(PackageL8* pkPackage)
+// pdb: VATS::GetLineOfSight | VATS.obj | retail, upstream name already matches, high
+// pdb params: apCommand
+// pdb locals: aLocation, collector, pw, pactorTarget, fltr, uimultiLayer, apTarget, targetLocation, bpickResult, pd, i, pav, pref, point
+bool CheckerL8::VATS_GetLineOfSight(PackageL8* apCommand)
 {
     RefL8* pkTarget = 0;
-    if (pkPackage->m_pkTarget->IsActor())
-        pkTarget = pkPackage->m_pkTarget;
+    if (apCommand->m_pkTarget->IsActor())
+        pkTarget = apCommand->m_pkTarget;
     if (!pkTarget)
         return false;
     WorldL8* pkWorld = pkTarget->GetParentCell() ? pkTarget->GetParentCell()->GetWorld() : 0;

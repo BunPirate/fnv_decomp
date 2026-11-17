@@ -6,20 +6,21 @@
 
 
 
-struct FUN_00e02ef0 : hkReferencedObject
+// pdb: class hkOffsetOnlyStreamWriter, size 0x10, bases: hkStreamWriter, 2 members
+struct hkOffsetOnlyStreamWriter : hkReferencedObject // src: EXE 0x010ea388 (vtable; old: FUN_00e02ef0)
 {
-    int m_kPointA;
-    int m_kPointB;
+    int m_offset; // src: XBOX_RETAIL_PDB +0x8 (old: m_kPointA)
+    int m_eofOffset; // src: XBOX_RETAIL_PDB +0xc (old: m_kPointB)
 
-    FUN_00e02ef0();
+    hkOffsetOnlyStreamWriter();
     virtual void vf1();
 };
 
 // @fnv 0x00e02ef0
-FUN_00e02ef0::FUN_00e02ef0()
+hkOffsetOnlyStreamWriter::hkOffsetOnlyStreamWriter()
 {
-    m_kPointA = 0;
-    m_kPointB = 0;
+    m_offset = 0;
+    m_eofOffset = 0;
 }
 
 struct E02E70Stats
@@ -54,6 +55,9 @@ class FUN_00e02e90_cls
 
 // Applies value to m_08 according to mode (set, add, or subtract from m_0c), then stores the larger of m_08 and m_0c into m_0c and returns 0.
 // @fnv 0x00e02e90
+// pdb: hkOffsetOnlyStreamWriter::seek | hkOffsetOnlyStreamWriter.obj | debug, vtable slot, medium
+// pdb params: offset, whence
+// pdb locals: assertBuf, ostr
 int FUN_00e02e90_cls::ApplyValue(int value, int mode)
 {
     switch (mode)

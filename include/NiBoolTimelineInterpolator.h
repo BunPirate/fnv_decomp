@@ -5,6 +5,7 @@
 class NiBoolData;
 class StrArr;
 
+// pdb: class NiBoolTimelineInterpolator, size 0x20, bases: NiBoolInterpolator, 2 members
 class NiBoolTimelineInterpolator : public NiBoolInterpolator
 {
   public:
@@ -37,6 +38,6 @@ class NiBoolTimelineInterpolator : public NiBoolInterpolator
     bool Update(float time, NiObjectNET* target, bool& out);
     bool IsEqual_00a52d10();
 
-    unsigned int m_uiLastIndex;
-    bool m_bBoolValue;
+    unsigned int m_uiPreviousIdx; // src: XBOX_RETAIL_PDB +0x18 (old: m_uiLastIndex)
+    bool m_bPreviousValue; // src: XBOX_RETAIL_PDB +0x1c (old: m_bBoolValue)
 };

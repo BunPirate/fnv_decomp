@@ -8,11 +8,12 @@
 class hkxMeshSection;
 class hkxMeshUserChannelInfo;
 #pragma pack(push, 1)
+// pdb: class hkxMesh, size 0x20, bases: hkReferencedObject, 2 members
 class hkxMesh : public hkReferencedObject
 {
   public:
     hkArray<hkxMeshSection*> m_sections;                   // +0x8
-    hkArray<hkxMeshUserChannelInfo*> m_kUserChannelInfos;  // +0x14
+    hkArray<hkxMeshUserChannelInfo*> m_userChannelInfos;  // +0x14 // src: XBOX_RETAIL_PDB +0x14 (old: m_kUserChannelInfos)
 };
 #pragma pack(pop)
 typedef char fnv_hk_size_hkxMesh[(sizeof(hkxMesh) == 0x20) ? 1 : -1];

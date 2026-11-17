@@ -22,6 +22,7 @@ typedef float hkReal;
 typedef hkReal hkTime;
 typedef unsigned short hkContactPointId;
 
+// pdb: class hkpGskBaseAgent, size 0x30, bases: hkpIterativeLinearCastAgent, 4 members
 class hkpGskBaseAgent : public hkpIterativeLinearCastAgent
 {
 public:
@@ -45,16 +46,16 @@ public:
 
 private:
 public:
-    unsigned char m_pAccess[0x0C];      // the agent's convex feature-pair cache
-    float m_fFloatValue;
-    float m_fSeparationDistance;
-    hkVector4 m_vSeparatingNormal;
+    unsigned char m_cache[0x0C];      // the agent's convex feature-pair cache // src: XBOX_RETAIL_PDB +0xc (old: m_pAccess)
+    float m_timeOfSeparatingNormal; // src: XBOX_RETAIL_PDB +0x18 (old: m_fFloatValue)
+    float m_allowedPenetration; // src: XBOX_RETAIL_PDB +0x1c (old: m_fSeparationDistance)
+    hkVector4 m_separatingNormal; // src: XBOX_RETAIL_PDB +0x20 (old: m_vSeparatingNormal)
 
     friend class hkpConvexListAgent;
     hkpGskBaseAgent(hkpContactMgr* pMgr);
 
 protected:
-    hkBool _getClosestPoint(const hkpCdBody& kBodyA, const hkpCdBody& kBodyB, const CollisionAgentContext& kInput, GskAgentData& kOutput);
+    hkBool getClosestPoint(const hkpCdBody& kBodyA, const hkpCdBody& kBodyB, const CollisionAgentContext& kInput, GskAgentData& kOutput);
     static void __cdecl ComputeClosestPoint(const hkpCdBody& kBodyA, const hkpCdBody& kBodyB, hkReal fEarlyOutTolerance, ConvexShapePairCache& kGsk, hkVector4& kSeparatingNormalOut);
     hkBool ComputeClosestPoints(const hkpCdBody& kBodyA, const hkpCdBody& kBodyB, const CollisionAgentContext& kInput, GskAgentData& kOutput);
     static hkBool staticGetClosestPoint(const hkpCdBody& kBodyA, const hkpCdBody& kBodyB, const hkTransform& kTb, const CollisionAgentContext& kInput, ConvexFeaturePairCache& kCache, GskAgentData& kOutput);

@@ -81,6 +81,9 @@ public:
 
 // @fnv 0x00e63f10
 // src: HAVOK_LIB 0x00e63f10
+// pdb: hkpMoppEarlyExitObbVirtualMachine::queryOBBOnTree | hkpMoppEarlyExitObbVirtualMachine.obj | retail, string-set bridge, high
+// pdb params: query, PC
+// pdb locals: scaledQuery, assertBuf, ostr
 void S00e63f10::hkpMoppEarlyExitObbVirtualMachine::queryOBBOnTree(const CollisionShapeRecord* query, const unsigned char* PC)
 {
     CollisionShapeRecord newQuery;

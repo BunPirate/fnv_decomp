@@ -19,8 +19,8 @@ class exception
     virtual ~exception();
 
   private:
-    const char* m_pcWhat;
-    int m_iDoFree;
+    const char* _Mywhat; // src: XBOX_RETAIL_PDB +0x4 (old: m_pcWhat)
+    int _Mydofree; // src: XBOX_RETAIL_PDB +0x8 (old: m_iDoFree)
 };
 class bad_alloc : public exception
 {

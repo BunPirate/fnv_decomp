@@ -11,19 +11,21 @@
 extern "C"
 {
     int __cdecl hkaRagdollUtils_reorderForRagdoll(void*, void*);
-    int __cdecl HkaragdollutilsFpfast_ProcessEntries_00ce9db0(void*, void*);
+    int __cdecl alignChildrenToConstraints(void*, void*);
     int __cdecl alignConstraintSpacesToChildren(void*);
 }
 
 // @fnv 0x00cea7c0
 // src: HAVOK_LIB 0x00cea7c0
-int __cdecl hkaRagdollUtils_reorderAndAlignForRagdoll(void* p1, void* p2, void* p3)
+// pdb: hkaRagdollUtils::reorderAndAlignForRagdoll | hkaRagdollUtils.obj | retail, upstream name already matches, high
+// pdb params: rigidBodiesInOut, constraintsInOut, warnOnAlignment
+int __cdecl hkaRagdollUtils_reorderAndAlignForRagdoll(void* rigidBodiesInOut, void* constraintsInOut, void* warnOnAlignment)
 {
-    if (hkaRagdollUtils_reorderForRagdoll(p1, p2))
+    if (hkaRagdollUtils_reorderForRagdoll(rigidBodiesInOut, constraintsInOut))
         return 1;
-    if (HkaragdollutilsFpfast_ProcessEntries_00ce9db0(p2, p3))
+    if (alignChildrenToConstraints(constraintsInOut, warnOnAlignment))
         return 1;
-    if (alignConstraintSpacesToChildren(p2))
+    if (alignConstraintSpacesToChildren(constraintsInOut))
         return 1;
     return 0;
 }
@@ -48,7 +50,7 @@ struct Counter
     int unk30;
 };
 extern "C" void __cdecl AssignNodeFlags(int, int, int);
-void __cdecl hkaRagdollUtils_setCollisionLayer(Container* c, int value, Counter* counter);
+void __cdecl hkaRagdollUtils_setCollisionLayer(Container* ragdoll, int layer, Counter* collisionFilter);
 struct Inner
 {
     virtual void unk0();
@@ -66,7 +68,7 @@ struct Obj
     char pad0[0xc];
     Inner* inner;
 };
-static bool IsSupportedRagdollConstraint(Obj* obj, bool reportError) throw();
+static bool _isConstraintSupported(Obj* constraint, bool warnIfNot) throw();
 void caller(Obj* obj);
 struct SpawnedAllocator
 {
@@ -86,7 +88,7 @@ struct SpawnedObject
 {
     int unk00;
     unsigned short m_size04;
-    int Init(void* a, void* b, int c, void* d);
+    int Init(void* rigidBodies, void* constraints, int skeleton, void* boneToRigidBodyMap);
 };
 struct SourceRecord
 {
@@ -381,10 +383,13 @@ struct ConstraintList
 
 // @fnv 0x00ceb2c0
 // src: COMMUNITY 0x00ceb2c0
-Skeleton* __cdecl hkaRagdollUtils_constructSkeletonForRagdoll(BodyList* bodies, ConstraintList* constraints) throw()
+// pdb: hkaRagdollUtils::constructSkeletonForRagdoll | hkaRagdollUtils.obj | retail, string-set bridge, high
+// pdb params: rigidBodies, constraints
+// pdb locals: assertBuf, ostr, parentWorldTransform, boneWorldTransform
+Skeleton* __cdecl hkaRagdollUtils_constructSkeletonForRagdoll(BodyList* rigidBodies, ConstraintList* constraints) throw()
 {
     Skeleton* result = new Skeleton;
-    int count = bodies->size;
+    int count = rigidBodies->size;
     result->bones.SetSizeAndGrow(count);
     result->parents.resize(count);
     result->pose.resize(count);
@@ -396,7 +401,7 @@ Skeleton* __cdecl hkaRagdollUtils_constructSkeletonForRagdoll(BodyList* bodies, 
             RigidBody* parent = constraints->data[i - 1]->parent;
             for (int j = 0; j < i; ++j)
             {
-                if (bodies->data[j] == parent)
+                if (rigidBodies->data[j] == parent)
                 {
                     parentIndex = j;
                     break;
@@ -404,11 +409,11 @@ Skeleton* __cdecl hkaRagdollUtils_constructSkeletonForRagdoll(BodyList* bodies, 
             }
         }
         result->parents.data[i] = (short)parentIndex;
-        RigidBody* body = bodies->data[i];
+        RigidBody* body = rigidBodies->data[i];
         Bone& currentBone = result->bones.data[i];
         if (parentIndex >= 0)
         {
-            RigidBody* parent = bodies->data[parentIndex];
+            RigidBody* parent = rigidBodies->data[parentIndex];
             RagdollQsTransform childPose, parentPose;
             childPose.setFromTransformNoScale(&body->transform);
             parentPose.setFromTransformNoScale(&parent->transform);

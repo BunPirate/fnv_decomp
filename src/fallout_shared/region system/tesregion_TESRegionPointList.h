@@ -22,7 +22,7 @@ class RegionPointList : public BSSimpleList<RegionPoint*>
     RegionPointList(bool owns);
     ~RegionPointList();
     void SetDistanceInsideAtMax(unsigned int value);
-    bool ReadPointsFromFile(TESFile*);
+    bool TESRegionPointList_LoadPoints(TESFile*);
     bool TESRegionPointList_Validate(bool);
     // RegionPointList
     // void __cdecl RegionPointList::*()

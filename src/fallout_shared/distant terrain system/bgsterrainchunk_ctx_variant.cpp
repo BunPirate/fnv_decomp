@@ -9,7 +9,7 @@
 struct AutoMemX
 {
     int m;
-    AutoMemX(int a, int b, const char* f, int l);
+    AutoMemX(int memContext, int overridable, const char* f, int aiLine);
     ~AutoMemX();
 };
 struct Q28
@@ -58,13 +58,15 @@ struct StreamX
     char buf[0x5cc];
     StreamX();
     ~StreamX();
-    bool BSStream_Load(int f);
-    RootX* GetStringAt(unsigned i);
-    unsigned GetRefAt21C();
+    bool BSStream_Load(int apFileName);
+    RootX* NiStream_GetObjectAt(unsigned i);
+    unsigned NiStream_GetObjectCount();
 };
 extern Setting g_kTerrainChunkSetting;
 
 // @fnv 0x006fbd00
+// pdb: BGSTerrainChunkLoadTask::Run | BGSTerrainChunk.obj | retail, upstream name already matches, high
+// pdb locals: pfile, tempMemContext, stream, pobj
 void BGSTerrainChunkLoadTask::Run()
 {
     AutoMemX kMemVal(
@@ -76,10 +78,10 @@ void BGSTerrainChunkLoadTask::Run()
     if (kStreamVal.BSStream_Load(
             (this->*reinterpret_cast<int (QueuedFileEntry::*)(BSFile*)>(&QueuedFileEntry::GetFileName))(iFile)))
     {
-        RootX* pkRoot = kStreamVal.GetStringAt(0);
+        RootX* pkRoot = kStreamVal.NiStream_GetObjectAt(0);
         if (pkRoot->Fc())
         {
-            reinterpret_cast<PN&>(unk54).FUN_0066b0d0(kStreamVal.GetStringAt(0));
+            reinterpret_cast<PN&>(unk54).FUN_0066b0d0(kStreamVal.NiStream_GetObjectAt(0));
             reinterpret_cast<PV&>(unk48).FUN_0066b0d0(
                 reinterpret_cast<PN&>(unk54).Modelloader_GetReferencedThis()->FUN_0043b4a0(0));
             if (reinterpret_cast<PN&>(unk54).Modelloader_GetReferencedThis()->NiNode_GetChildCount() > 1 && *g_kTerrainChunkSetting.Bool())
@@ -96,9 +98,9 @@ void BGSTerrainChunkLoadTask::Run()
         }
         else
         {
-            reinterpret_cast<PV&>(unk48).FUN_0066b0d0(kStreamVal.GetStringAt(0));
-            if (kStreamVal.GetRefAt21C() > 1)
-                reinterpret_cast<PQ&>(unk4c).FUN_0066b0d0(kStreamVal.GetStringAt(1));
+            reinterpret_cast<PV&>(unk48).FUN_0066b0d0(kStreamVal.NiStream_GetObjectAt(0));
+            if (kStreamVal.NiStream_GetObjectCount() > 1)
+                reinterpret_cast<PQ&>(unk4c).FUN_0066b0d0(kStreamVal.NiStream_GetObjectAt(1));
         }
     }
 }

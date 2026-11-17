@@ -4,6 +4,7 @@
 
 class InventoryItem;
 
+// pdb: class DisintegrateArmorEffect, size 0x4c, bases: ActiveEffect, 1 members
 class DisintegrateArmorEffect : public ActiveEffect
 {
 public:
@@ -20,5 +21,5 @@ public:
     float GetFloatAtOffset1C(int);
     float GetFloatAtOffset1C();
 
-    InventoryItem* m_pItem;
+    InventoryItem* pArmor; // src: XBOX_RETAIL_PDB +0x48 (old: m_pItem)
 };

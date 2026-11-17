@@ -62,25 +62,25 @@ struct WheelImpulseVehicle : hkpVehicleInstance {
 // src: GUESS 0x00e371d0 (confidence: low)
 void WheelImpulseVehicle::ComputeValues_00e371d0(float deltaTime, int wheelNum, float force) {
     float impulseScalar = force * deltaTime;
-    hkpVehicleInstanceWheelInfo& wheelInfo = this->m_kWheelInfoArray.m_data[wheelNum];
+    hkpVehicleInstanceWheelInfo& wheelInfo = this->m_wheelsInfo.m_data[wheelNum];
     VehicleVector4 impulse;
 
     SimdScalar scalar(impulseScalar);
     *(LocalM128*)&impulse = _mm_mul_ps(scalar.broadcast(), *(LocalM128*)&wheelInfo.unk10);
 
     if (force > 0.0f) {
-        hkpEntity* entity = this->m_pEntity;
+        hkpEntity* entity = this->m_entity;
         entity->activate_00c9c1d0();
-        entity->m_pMotionState.ApplyImpulseAtPoint(reinterpret_cast<const hkVector4&>(impulse), reinterpret_cast<const hkVector4&>(wheelInfo.unk50));
+        entity->m_motion.ApplyImpulseAtPoint(reinterpret_cast<const hkVector4&>(impulse), reinterpret_cast<const hkVector4&>(wheelInfo.unk50));
     }
 
     hkpRigidBody* contactBody = wheelInfo.m_pUserData;
     if (contactBody) {
-        float negMult = -this->m_data->m_kWheelParams.m_data[wheelNum].m_fMaxFrictionForce;
+        float negMult = -this->m_data->m_wheelParams.m_data[wheelNum].m_forceFeedbackMultiplier;
         *(LocalM128*)&impulse = _mm_mul_ps(splat(negMult), *(LocalM128*)&impulse);
 
-        float mass = contactBody->m_pMotionState.GetMassValue();
-        float maxImpulse = (this->m_data->m_kWheelParams.m_data[wheelNum].m_fFrictionEqualizer * mass) * deltaTime;
+        float mass = contactBody->m_motion.GetMassValue();
+        float maxImpulse = (this->m_data->m_wheelParams.m_data[wheelNum].m_maxContactBodyAcceleration * mass) * deltaTime;
 
         LocalM128 m2 = _mm_mul_ps(*(LocalM128*)&impulse, *(LocalM128*)&impulse);
         LocalM128 sum = _mm_add_ss(_mm_shuffle_ps(m2, m2, 0xaa), _mm_add_ss(_mm_shuffle_ps(m2, m2, 0x55), m2));
@@ -93,7 +93,7 @@ void WheelImpulseVehicle::ComputeValues_00e371d0(float deltaTime, int wheelNum, 
             *(LocalM128*)&impulse = _mm_mul_ps(splat(scale), *(LocalM128*)&impulse);
         }
 
-        contactBody->m_pMotionState.ApplyImpulseAtPoint(reinterpret_cast<const hkVector4&>(impulse), reinterpret_cast<const hkVector4&>(wheelInfo.unk50));
+        contactBody->m_motion.ApplyImpulseAtPoint(reinterpret_cast<const hkVector4&>(impulse), reinterpret_cast<const hkVector4&>(wheelInfo.unk50));
     }
 }
 
@@ -194,10 +194,10 @@ void FnvVehicle::ComputeValues_00e37350(int w_it, float linearForceAtWheel, floa
     float threshold = DAT_0104da4c;
     float forwardLen2;
     int wi = w_it;
-    int axle = m_data->m_kWheelParams.m_data[wi].m_iAxle;
+    int axle = m_data->m_wheelParams.m_data[wi].m_axle;
 
-    LocalM128 spin = fnv_load(reinterpret_cast<const FnvVec&>(m_kWheelInfoArray.m_data[wi].unka0));
-    LocalM128 normal = fnv_load(reinterpret_cast<const FnvVec&>(m_kWheelInfoArray.m_data[wi].unk10));
+    LocalM128 spin = fnv_load(reinterpret_cast<const FnvVec&>(m_wheelsInfo.m_data[wi].unka0));
+    LocalM128 normal = fnv_load(reinterpret_cast<const FnvVec&>(m_wheelsInfo.m_data[wi].unk10));
     LocalM128 spinY = _mm_shuffle_ps(spin, spin, 0xc9);
     LocalM128 spinZ = _mm_shuffle_ps(spin, spin, 0xd2);
     LocalM128 normalZ = _mm_shuffle_ps(normal, normal, 0xd2);
@@ -205,34 +205,34 @@ void FnvVehicle::ComputeValues_00e37350(int w_it, float linearForceAtWheel, floa
     LocalM128 forward = _mm_sub_ps(_mm_mul_ps(normalY, spinZ), _mm_mul_ps(normalZ, spinY));
     forwardLen2 = fnv_len2(forward);
     if (forwardLen2 < threshold) {
-        LocalM128 susp = fnv_load(reinterpret_cast<const FnvVec&>(m_kWheelInfoArray.m_data[wi].unk80));
+        LocalM128 susp = fnv_load(reinterpret_cast<const FnvVec&>(m_wheelsInfo.m_data[wi].unk80));
         LocalM128 suspY = _mm_shuffle_ps(susp, susp, 0xc9);
         LocalM128 suspZ = _mm_shuffle_ps(susp, susp, 0xd2);
         forward = _mm_sub_ps(_mm_mul_ps(suspZ, spinY), _mm_mul_ps(suspY, spinZ));
     }
     forward = fnv_normalize3(forward);
-    float inv = 1.0f / (float)m_data->m_kNumWheelsPerAxle.m_data[axle];
+    float inv = 1.0f / (float)m_data->m_numWheelsPerAxle.m_data[axle];
 
-    float scale = reinterpret_cast<const float&>(m_kWheelInfoArray.m_data[wi].unk20) * inv;
+    float scale = reinterpret_cast<const float&>(m_wheelsInfo.m_data[wi].unk20) * inv;
     LocalM128 invss = _mm_load_ss(&inv);
     LocalM128 inv4 = _mm_shuffle_ps(invss, invss, 0);
-    LocalM128 summed = _mm_add_ps(fnv_load(axle_params.m_kFirstVector), _mm_mul_ps(fnv_load(reinterpret_cast<const FnvVec&>(m_kWheelInfoArray.m_data[wi].unk00)), inv4));
+    LocalM128 summed = _mm_add_ps(fnv_load(axle_params.m_kFirstVector), _mm_mul_ps(fnv_load(reinterpret_cast<const FnvVec&>(m_wheelsInfo.m_data[wi].unk00)), inv4));
     fnv_store(axle_params.m_kFirstVector, summed);
     LocalM128 cn = _mm_sub_ps(_mm_mul_ps(_mm_shuffle_ps(forward, forward, 0xc9), normalZ), _mm_mul_ps(_mm_shuffle_ps(forward, forward, 0xd2), normalY));
     fnv_store(axle_params.m_kSecondAxleVector, _mm_add_ps(fnv_load(axle_params.m_kSecondAxleVector), cn));
     fnv_store(axle_params.m_kThirdVector, _mm_add_ps(fnv_load(axle_params.m_kThirdVector), forward));
 
-    axle_params.m_fFirstScalar += m_data->m_kWheelParams.m_data[wi].m_fSlipAngle * scale;
-    axle_params.m_fSecondScalar += m_data->m_kWheelParams.m_data[wi].m_fSlipVelocity * scale;
+    axle_params.m_fFirstScalar += m_data->m_wheelParams.m_data[wi].m_friction * scale;
+    axle_params.m_fSecondScalar += m_data->m_wheelParams.m_data[wi].m_viscosityFriction * scale;
     // Cache the maximum coefficient before weighting its contribution.
-    float coefficient2 = m_data->m_kWheelParams.m_data[wi].m_fMaxContactBodyAcceleration;
+    float coefficient2 = m_data->m_wheelParams.m_data[wi].m_maxFriction;
     axle_params.m_fThirdValue += coefficient2 * scale;
     axle_params.m_fFourthValue = suspensionForceAtWheel + axle_params.m_fFourthValue;
     float fwd = axle_params.m_fFifthScalar;
     fwd += linearForceAtWheel;
     axle_params.m_fFifthScalar = fwd;
-    axle_params.m_ucValue = axle_params.m_ucValue || m_kSecondRealArray.m_data[wi].m_cBooleanValue;
-    axle_params.m_fSixthValue += (inv * m_data->m_kWheelParams.m_data[wi].m_fForceFeedbackMultiplier) * estimatedCarSpeed;
+    axle_params.m_ucValue = axle_params.m_ucValue || m_isFixed.m_data[wi].m_cBooleanValue;
+    axle_params.m_fSixthValue += (inv * m_data->m_wheelParams.m_data[wi].m_slipAngle) * estimatedCarSpeed;
 }
 
 
@@ -257,12 +257,12 @@ struct TorqueVehicle : hkpVehicleInstance {
 void TorqueVehicle::UpdateFields_00e376e0(float dt, TorqueOutputRef output) const
 {
     const hkpVehicleData* d = (const hkpVehicleData*)m_data;
-    if (d->m_fTorqueFactor != 0.0f) {
-        float t = m_fMainSteeringAngle * d->m_fTorqueFactor * dt;
+    if (d->m_extraTorqueFactor != 0.0f) {
+        float t = m_mainSteeringAngle * d->m_extraTorqueFactor * dt;
         LocalM128 scalar = _mm_load_ss(&t);
         LocalM128 factor = _mm_shuffle_ps(scalar, scalar, 0);
-        LocalM128 impulse = _mm_mul_ps(d->m_kChassisOrientation.m_kColumn0.m_vComponents, factor);
-        impulse = _mm_mul_ps(impulse, d->m_vChassisUnitInertiaAndMassInv.m_vComponents);
+        LocalM128 impulse = _mm_mul_ps(d->m_chassisOrientation.m_kColumn0.m_vComponents, factor);
+        impulse = _mm_mul_ps(impulse, d->m_chassisFrictionInertiaInvDiag.m_vComponents);
         output.p->angularVelocity = _mm_add_ps(impulse, output.p->angularVelocity);
     }
 }
@@ -373,7 +373,7 @@ struct Out37
     Vec4 m_sub170;
 };
 
-void hkRigidMotionUtilApplyForcesAndBuildAccumulators(const TimeInterval& info, hkpMotion** motions, int n, int z, void* out);
+void hkRigidMotionUtilApplyForcesAndBuildAccumulators(const TimeInterval& info, hkpMotion** motions, int numMotions, int motionOffset, void* accumulatorsOut);
 
 // The shared vehicle has no declaration for this velocity-output helper.
 struct VehicleVelocityVehicle : hkpVehicleInstance
@@ -386,18 +386,18 @@ struct VehicleVelocityVehicle : hkpVehicleInstance
 void VehicleVelocityVehicle::UpdateFields_00e37740(const TimeInterval& info, Out37& out)
 {
     hkpMotion* motions[1];
-    motions[0] = &m_pEntity->m_pMotionState;
+    motions[0] = &m_entity->m_motion;
     hkRigidMotionUtilApplyForcesAndBuildAccumulators(info, motions, 1, 0, &out.unkd0);
 
-    hkMotionState* ms = &m_pEntity->m_pMotionState.m_kMotionState;
-    __declspec(align(16)) Vec4 linVel(_mm_sub_ps(ms->m_kSweptTransform.m_vCenterOfMass1.m_vComponents, ms->m_kSweptTransform.m_vCenterOfMass0.m_vComponents));
+    hkMotionState* ms = &m_entity->m_motion.m_kMotionState;
+    __declspec(align(16)) Vec4 linVel(_mm_sub_ps(ms->m_kSweptTransform.m_vCenterOfMass1.m_vComponents, ms->m_kSweptTransform.m_centerOfMass0.m_vComponents));
     linVel.mul4(ms->m_kSweptTransform.m_vCenterOfMass1.w);
     float angularScale = ms->m_kSweptTransform.m_vCenterOfMass1.w;
     LocalM128 angularScalar = _mm_load_ss(&angularScale);
     LocalM128 angularFactor = _mm_shuffle_ps(angularScalar, angularScalar, 0);
-    __declspec(align(16)) Vec4 angVel(_mm_mul_ps(angularFactor, ms->m_kDeltaAngle.m_vComponents));
+    __declspec(align(16)) Vec4 angVel(_mm_mul_ps(angularFactor, ms->m_deltaAngle.m_vComponents));
 
-    *(LocalM128*)&out.m_kGravity = m_data->m_vChassisUnitInertiaAndMassInv.m_vComponents;
+    *(LocalM128*)&out.m_kGravity = m_data->m_chassisFrictionInertiaInvDiag.m_vComponents;
     out.m_sub150.InitializeFields_00d72030(&out.unkd0);
     out.m_sub170.hkVector4_setRotatedDir(&out.unk120, angVel);
     *(LocalM128*)&out.m_kTranslationalVelocity = *(LocalM128*)&linVel;
@@ -407,7 +407,7 @@ extern "C" LocalM128 _mm_load_ss(const float*);
 
 struct VUBCD_Vec {
     LocalM128 m_vComponents;
-    void hkVector4_setRotatedDir(const VUBCD_Vec& rot, const VUBCD_Vec& dir) throw();
+    void hkVector4_setRotatedDir(const VUBCD_Vec& quat, const VUBCD_Vec& direction) throw();
     void setTransformedPos_00c7f640(const VUBCD_Vec& trans, const VUBCD_Vec& pos) throw();
     void setAddMul4(const VUBCD_Vec& a, const VUBCD_Vec& b, const float& r)
     {
@@ -438,6 +438,8 @@ void VUBCD_WheelCollide::CollideInstance(VUBCD_Instance* inst) {}
 
 // @fnv 0x00e37940
 // src: XBOX_PDB 0x00e37940
+// pdb: hkpVehicleInstance::updateBeforeCollisionDetection | hkpVehicleInstance.obj | retail, string-set bridge, high
+// pdb locals: assertBuf, ostr
 void VUBCD_Instance::hkpVehicleInstance_updateBeforeCollisionDetection()
 {
     VUC_Mon* s = (VUC_Mon*)TlsGetValue(DAT_0126835c);
@@ -452,15 +454,15 @@ void VUBCD_Instance::hkpVehicleInstance_updateBeforeCollisionDetection()
         h->m_ticks = ticks;
         s->m_kRayEnd = (char*)(h + 1);
     }
-    const VUBCD_Vec& carTransform = reinterpret_cast<const VUBCD_Vec&>(m_pEntity->m_pMotionState.m_kMotionState.m_kMotionTransform);
-    for (int w = 0; w < m_data->m_iWheelCount; w++) {
-        hkpVehicleInstanceWheelInfo& wheelInfo = m_kWheelInfoArray.m_data[w];
-        reinterpret_cast<VUBCD_Vec&>(wheelInfo.unk80).hkVector4_setRotatedDir(carTransform, static_cast<VUBCD_Suspension*>(static_cast<void*>(m_pSuspension))->m_kWheelParams[w].m_vDirectionChassisSpace);
-        reinterpret_cast<VUBCD_Vec&>(wheelInfo.unk50).setTransformedPos_00c7f640(carTransform, static_cast<VUBCD_Suspension*>(static_cast<void*>(m_pSuspension))->m_kWheelParams[w].m_vHardpointChassisSpace);
-        const float sum = static_cast<VUBCD_Suspension*>(static_cast<void*>(m_pSuspension))->m_kWheelParams[w].m_fRestLength + m_data->m_kWheelParams.m_data[w].m_fSphereRadius;
+    const VUBCD_Vec& carTransform = reinterpret_cast<const VUBCD_Vec&>(m_entity->m_motion.m_kMotionState.m_transform);
+    for (int w = 0; w < m_data->m_numWheels; w++) {
+        hkpVehicleInstanceWheelInfo& wheelInfo = m_wheelsInfo.m_data[w];
+        reinterpret_cast<VUBCD_Vec&>(wheelInfo.unk80).hkVector4_setRotatedDir(carTransform, static_cast<VUBCD_Suspension*>(static_cast<void*>(m_suspension))->m_kWheelParams[w].m_vDirectionChassisSpace);
+        reinterpret_cast<VUBCD_Vec&>(wheelInfo.unk50).setTransformedPos_00c7f640(carTransform, static_cast<VUBCD_Suspension*>(static_cast<void*>(m_suspension))->m_kWheelParams[w].m_vHardpointChassisSpace);
+        const float sum = static_cast<VUBCD_Suspension*>(static_cast<void*>(m_suspension))->m_kWheelParams[w].m_fRestLength + m_data->m_wheelParams.m_data[w].m_radius;
                 reinterpret_cast<VUBCD_Vec&>(wheelInfo.unk60).setAddMul4(reinterpret_cast<VUBCD_Vec&>(wheelInfo.unk50), reinterpret_cast<VUBCD_Vec&>(wheelInfo.unk80), sum);
     }
-    static_cast<VUBCD_WheelCollide*>(static_cast<void*>(m_pWheelCollide))->CollideInstance(this);
+    static_cast<VUBCD_WheelCollide*>(static_cast<void*>(m_wheelCollide))->CollideInstance(this);
     s = (VUC_Mon*)TlsGetValue(DAT_0126835c);
     h = (VUC_Timer*)s->m_kRayEnd;
     if ((char*)h < s->m_capMinus16) {

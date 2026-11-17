@@ -56,22 +56,22 @@ extern float DAT_01012054;
 // @fnv 0x00dabeb0
 void hkpGskBaseAgent::RemovePoint(const CollisionAgentContext&)
 {
-    m_fFloatValue = DAT_01012054;
-    m_vSeparatingNormal.m_vComponents = _mm_setzero_ps();
+    m_timeOfSeparatingNormal = DAT_01012054;
+    m_separatingNormal.m_vComponents = _mm_setzero_ps();
 }
 
 // Updates the cached time when it matches expected; otherwise invalidates it and clears the separating normal.
 // @fnv 0x00dabed0
 void hkpGskBaseAgent::WarpTime(hkTime expected, hkTime value, const CollisionAgentContext&)
 {
-    if (m_fFloatValue == expected)
+    if (m_timeOfSeparatingNormal == expected)
     {
-        m_fFloatValue = value;
+        m_timeOfSeparatingNormal = value;
     }
     else
     {
-        m_fFloatValue = DAT_01012054;
-        m_vSeparatingNormal.m_vComponents = _mm_setzero_ps();
+        m_timeOfSeparatingNormal = DAT_01012054;
+        m_separatingNormal.m_vComponents = _mm_setzero_ps();
     }
 }
 
@@ -109,9 +109,12 @@ struct ContactPointPair
     const hkpCdBody* m_pBodyB;
 };
 
-int hkpGsk_getClosestPoint(const GskInput* input, void* status, LocalM128* out1, LocalM128* out2);
+int hkpGsk_getClosestPoint(const GskInput* input, void* gskCache, LocalM128* separatingNormalOut, LocalM128* pointOnBOut);
 
 // @fnv 0x00dac9e0
+// pdb: hkpGskBaseAgent::getClosestPoints | hkpGskBaseAgent.obj | retail, upstream name already matches, high
+// pdb params: bodyA, bodyB, input, collector
+// pdb locals: separatingNormal, gskInput, aTb, pointOnB, event
 void hkpGskBaseAgent::getClosestPoints(const hkpCdBody& bodyA, const hkpCdBody& bodyB, const CollisionAgentContext& input,
                                       hkpCdPointCollector& collector)
 {
@@ -128,26 +131,26 @@ void hkpGskBaseAgent::getClosestPoints(const hkpCdBody& bodyA, const hkpCdBody& 
     }
 
     hkTransform aTb;
-    aTb.hkTransform_setMulInverseMul(bodyA.m_pMotionState, bodyB.m_pMotionState);
+    aTb.hkTransform_setMulInverseMul(bodyA.m_motion, bodyB.m_motion);
 
     GskInput queryInput;
-    queryInput.m_pShapeA = bodyA.m_pCollisionShape;
-    queryInput.m_pShapeB = bodyB.m_pCollisionShape;
+    queryInput.m_pShapeA = bodyA.m_shape;
+    queryInput.m_pShapeB = bodyB.m_shape;
     queryInput.m_kTransform = &aTb;
-    queryInput.m_pTransformB = bodyA.m_pMotionState;
+    queryInput.m_pTransformB = bodyA.m_motion;
     queryInput.m_fScalar = input.m_fScalar;
 
     GskOutput out;
-    if (hkpGsk_getClosestPoint(&queryInput, m_pAccess, &out.m_vHitNormal, &out.m_pos) == 0)
+    if (hkpGsk_getClosestPoint(&queryInput, m_cache, &out.m_vHitNormal, &out.m_pos) == 0)
     {
         // The temporary is filled below; avoid the approved hkVector4's
         // out-of-line default constructor for this raw solver result.
         LocalM128 pointStorage[sizeof(ContactPointPair) / sizeof(LocalM128)];
         ContactPointPair& point = *(ContactPointPair*)pointStorage;
-        point.m_kPoint.m_vContactPosition.m_vComponents = out.m_pos;
+        point.m_kPoint.m_position.m_vComponents = out.m_pos;
         point.m_pBodyA = &bodyA;
         point.m_pBodyB = &bodyB;
-        point.m_kPoint.m_vSeparatingNormal.m_vComponents = out.m_vHitNormal;
+        point.m_kPoint.m_separatingNormal.m_vComponents = out.m_vHitNormal;
         collector.AddCdPoint(point);
     }
 
@@ -165,6 +168,9 @@ void hkpGskBaseAgent::getClosestPoints(const hkpCdBody& bodyA, const hkpCdBody& 
 }
 
 // @fnv 0x00dabe80
+// pdb: hkpGskBaseAgent::processCollision | hkpGskBaseAgent.obj | debug, vtable slot, medium
+// pdb params: bodyA, bodyB, input, result
+// pdb locals: assertBuf, ostr
 void hkpGskBaseAgent::ProcessContactPoints(const hkpCdBody&, const hkpCdBody&, const CollisionAgentContext&, hkpConstraintOwner&)
 {}
 
@@ -191,20 +197,23 @@ struct FUN_00daad40_solver
 
 // Builds kAtB, calls the solver, rotates its result by body A's rotation into kSeparatingNormal, and sets w to the solver's w minus both sphere radii.
 // @fnv 0x00dac020
+// pdb: hkpGskBaseAgent::calcSeparatingNormal | hkpGskBaseAgent.obj | retail, object-file run extension, low
+// pdb params: bodyA, bodyB, earlyOutTolerance, gsk, separatingNormalOut
+// pdb locals: separatingNormal, aTb
 void __cdecl hkpGskBaseAgent::ComputeClosestPoint(const hkpCdBody& kBodyA, const hkpCdBody& kBodyB, hkReal earlyOutTolerance,
                                                ConvexShapePairCache& gsk, hkVector4& separatingNormalOut)
 {
-    const hkpConvexShape* pkShapeA = (const hkpConvexShape*)kBodyA.m_pCollisionShape;
-    const hkpConvexShape* pkShapeB = (const hkpConvexShape*)kBodyB.m_pCollisionShape;
+    const hkpConvexShape* pkShapeA = (const hkpConvexShape*)kBodyA.m_shape;
+    const hkpConvexShape* pkShapeB = (const hkpConvexShape*)kBodyB.m_shape;
 
     hkTransform kAtB;
-    kAtB.hkTransform_setMulInverseMul(*(const hkTransform*)kBodyA.m_pMotionState, *(const hkTransform*)kBodyB.m_pMotionState);
+    kAtB.hkTransform_setMulInverseMul(*(const hkTransform*)kBodyA.m_motion, *(const hkTransform*)kBodyB.m_motion);
 
     hkVector4 kNormal;
     ((FUN_00daad40_solver*)&gsk)->hkpGsk_getClosestFeature(pkShapeA, pkShapeB, kAtB, kNormal);
 
-    separatingNormalOut._setMul3(*(const hkMatrix3*)kBodyA.m_pMotionState, kNormal);
-    separatingNormalOut.w = kNormal.w - pkShapeA->m_fSphereRadius - pkShapeB->m_fSphereRadius;
+    separatingNormalOut._setMul3(*(const hkMatrix3*)kBodyA.m_motion, kNormal);
+    separatingNormalOut.w = kNormal.w - pkShapeA->m_radius - pkShapeB->m_radius;
 }
 
 extern char g_gskBaseAgentVtbl;
@@ -237,8 +246,8 @@ struct GskSub
     int m_00;
     int m_04;
     int m_08;
-    void Init(GskNode* a, GskNode* b, GskTmp* t);
-    void Init2(GskNode* a, GskNode* b, GskTmp* t);
+    void Init(GskNode* shapeA, GskNode* shapeB, GskTmp* btoa);
+    void Init2(GskNode* shapeA, GskNode* shapeB, GskTmp* aTb);
 };
 
 struct GskNode
@@ -269,10 +278,13 @@ struct GskNode
 // Keep this initializer outside the class while using its shared layout.
 // Initializes the feature cache and stores the smaller root-body radius.
 // @fnv 0x00dabf10
+// pdb: hkpGskBaseAgent::hkpGskBaseAgent | hkpGskBaseAgent.obj | retail, object-file run extension, low
+// pdb params: bodyA, bodyB, mgr
+// pdb locals: t
 hkpGskBaseAgent* __fastcall ConstructGskBaseAgent(hkpGskBaseAgent* agent, void*, const hkpCdBody& bodyA, const hkpCdBody& bodyB, hkpContactMgr* mgr)
 {
-    agent->m_sReferenceCount = 1;
-    agent->m_pContactManager = mgr;
+    agent->m_referenceCount = 1;
+    agent->m_contactMgr = mgr;
     *(void**)agent = &g_gskBaseAgentVtbl;
 
     const GskNode* apNodeA = (const GskNode*)&bodyA;
@@ -287,16 +299,16 @@ hkpGskBaseAgent* __fastcall ConstructGskBaseAgent(hkpGskBaseAgent* agent, void*,
 
     if ((int)ebx->m_0c == 3)
     {
-        ((GskSub*)agent->m_pAccess)->Init(a1base, ebx, &tmp);
+        ((GskSub*)agent->m_cache)->Init(a1base, ebx, &tmp);
     }
     else
     {
-        ((GskSub*)agent->m_pAccess)->Init2(a1base, ebx, &tmp);
+        ((GskSub*)agent->m_cache)->Init2(a1base, ebx, &tmp);
     }
 
-    agent->m_vSeparatingNormal.m_vComponents = _mm_setzero_ps();
-    agent->m_vSeparatingNormal.w = -1.0f;
-    agent->m_fFloatValue = -1.0f;
+    agent->m_separatingNormal.m_vComponents = _mm_setzero_ps();
+    agent->m_separatingNormal.w = -1.0f;
+    agent->m_timeOfSeparatingNormal = -1.0f;
 
     const GskNode* p = apNodeA;
     while (p->m_0c != 0)
@@ -312,7 +324,7 @@ hkpGskBaseAgent* __fastcall ConstructGskBaseAgent(hkpGskBaseAgent* agent, void*,
     }
     float fb = r->m_4c;
 
-    agent->m_fSeparationDistance = (fa < fb) ? fa : fb;
+    agent->m_allowedPenetration = (fa < fb) ? fa : fb;
     return agent;
 }
 
@@ -345,7 +357,7 @@ struct GskStatus
 
     void hkpGsk_getClosestFeature(const void* shapeA, const void* shapeB, const hkTransform* bTa, void* out10);
     void hkpGsk_exitAndExportCacheImpl(void* cache);
-    void hkpGsk_convertFeatureToClosestDistance(void* out10, hkContactPoint* pointOut);
+    void hkpGsk_convertFeatureToClosestDistance(void* separatingNormal, hkContactPoint* out);
 };
 
 extern "C"
@@ -373,20 +385,23 @@ static __forceinline short* unpackCache(GskCache& c, int& b, unsigned& f, int& a
 
 // Runs the GSK solver on the two shapes, writes the contact point to pointOut, and returns true if the separation minus radii is below input.m_fScalar.
 // @fnv 0x00dac7f0
-hkBool hkpGskBaseAgent::_getClosestPoint(const hkpCdBody& bodyA, const hkpCdBody& bodyB, const CollisionAgentContext& input,
+// src: XBOX_RETAIL_PDB 0x00dac7f0
+// pdb: hkpGskBaseAgent::getClosestPoint | hkpGskBaseAgent.obj | retail, object-file gap fill, high
+// pdb params: bodyA, bodyB, input, output
+hkBool hkpGskBaseAgent::getClosestPoint(const hkpCdBody& bodyA, const hkpCdBody& bodyB, const CollisionAgentContext& input,
                                      GskAgentData& output)
 {
     hkContactPoint& pointOut = (hkContactPoint&)output;
-    const hkpConvexShape* pShapeB = (const hkpConvexShape*)bodyB.m_pCollisionShape;
-    const hkpConvexShape* shapeA = (const hkpConvexShape*)bodyA.m_pCollisionShape;
+    const hkpConvexShape* pShapeB = (const hkpConvexShape*)bodyB.m_shape;
+    const hkpConvexShape* shapeA = (const hkpConvexShape*)bodyA.m_shape;
 
     hkTransform tRelativeTransform;
-    tRelativeTransform.hkTransform_setMulInverseMul(bodyA.m_pMotionState, bodyB.m_pMotionState);
+    tRelativeTransform.hkTransform_setMulInverseMul(bodyA.m_motion, bodyB.m_motion);
 
     const hkpConvexShape* __restrict convertShapeA = shapeA;
     int dimB, r1;
     unsigned uiFeatures;
-    short* i = unpackCache(*(GskCache*)m_pAccess, dimB, uiFeatures, r1);
+    short* i = unpackCache(*(GskCache*)m_cache, dimB, uiFeatures, r1);
     GskStatus gskStatus;
     gskStatus.m_ucDimensionB = dimB;
     gskStatus.unk10 = 0;
@@ -409,7 +424,7 @@ hkBool hkpGskBaseAgent::_getClosestPoint(const hkpCdBody& bodyA, const hkpCdBody
 
     gskStatus.hkpGsk_convertFeatureToClosestDistance(&c1, &pointOut);
 
-    const hkTransform* b = (const hkTransform*)bodyA.m_pMotionState;
+    const hkTransform* b = (const hkTransform*)bodyA.m_motion;
     ContactData* pContactData = (ContactData*)&pointOut;
     LocalM128 verts = pContactData->m_vHitNormal;
 
@@ -419,12 +434,12 @@ hkBool hkpGskBaseAgent::_getClosestPoint(const hkpCdBody& bodyA, const hkpCdBody
     pContactData->m_data40 = _mm_add_ps(_mm_add_ps(feat, aTransform), v3);
 
     float dimA;
-    dimA = pContactData->m_fClosestPointDistanceSquared - shapeA->m_fSphereRadius - pShapeB->m_fSphereRadius;
+    dimA = pContactData->m_fClosestPointDistanceSquared - shapeA->m_radius - pShapeB->m_radius;
     pContactData->m_fClosestPointDistanceSquared = dimA;
 
     if (dimA < input.m_fScalar)
     {
-        float fRadiusA = shapeA->m_fSphereRadius;
+        float fRadiusA = shapeA->m_radius;
         LocalM128 vRadiusA = _mm_load_ss(&fRadiusA);
         LocalM128 vRadiusASplatted = _mm_shuffle_ps(vRadiusA, vRadiusA, 0);
         _mm_store_ps(pContactData->m_vContactPosition.m128_f32,
@@ -490,8 +505,8 @@ struct S_00dac2b0_Cache
 {
     unsigned short id0, id1, id2, id3;
     unsigned char dimA, dimB, dims;
-    void hkpGskCache_initTriangle(const hkpConvexShape* a, const hkpConvexShape* b, const hkTransform* t);
-    void hkpGskCache_init(const hkpConvexShape* a, const hkpConvexShape* b, const hkTransform* t);
+    void hkpGskCache_initTriangle(const hkpConvexShape* shapeA, const hkpConvexShape* shapeB, const hkTransform* btoa);
+    void hkpGskCache_init(const hkpConvexShape* shapeA, const hkpConvexShape* shapeB, const hkTransform* aTb);
 };
 
 struct __declspec(align(16)) S_00dac2b0_Gsk
@@ -512,16 +527,19 @@ struct __declspec(align(16)) S_00dac2b0_Gsk
 
 // Runs the GSK step (timed as TtGsk) on the two bodies' shapes and adds the pair to the collector if the result is nonzero or the distance is below the radii.
 // @fnv 0x00dac2b0
+// pdb: hkpGskBaseAgent::staticGetPenetrations | hkpGskBaseAgent.obj | retail, object-file gap fill, high
+// pdb params: bodyA, bodyB, input, collector
+// pdb locals: separatingNormal, gsk, cache, aTb
 void __cdecl hkpGskBaseAgent::m_pVirtualFunction1(const hkpCdBody& bodyA, const hkpCdBody& bodyB, const CollisionAgentContext& input,
                                                hkpCdBodyPairCollector& collector)
 {
     GskTimer("TtGsk");
 
-    const hkpConvexShape* shapeA = (const hkpConvexShape*)bodyA.m_pCollisionShape;
-    const hkpConvexShape* shapeB = (const hkpConvexShape*)bodyB.m_pCollisionShape;
+    const hkpConvexShape* shapeA = (const hkpConvexShape*)bodyA.m_shape;
+    const hkpConvexShape* shapeB = (const hkpConvexShape*)bodyB.m_shape;
 
     hkTransform aTb;
-    aTb.hkTransform_setMulInverseMul(bodyA.m_pMotionState, bodyB.m_pMotionState);
+    aTb.hkTransform_setMulInverseMul(bodyA.m_motion, bodyB.m_motion);
 
     S_00dac2b0_Cache cache;
     if (shapeB->getType() == HK_SHAPE_TRIANGLE)
@@ -550,7 +568,7 @@ void __cdecl hkpGskBaseAgent::m_pVirtualFunction1(const hkpCdBody& bodyA, const 
 
     if (iResult == 0)
     {
-        float d = out.w - shapeA->m_fSphereRadius - shapeB->m_fSphereRadius;
+        float d = out.w - shapeA->m_radius - shapeB->m_radius;
         if (d < 0.0f)
         {
             collector.AddCdBodyPair(bodyA, bodyB);
@@ -685,6 +703,9 @@ struct S_00dac0b0_Gsk
 };
 
 // @fnv 0x00dac0b0
+// pdb: hkpGskBaseAgent::getPenetrations | hkpGskBaseAgent.obj | retail, string-set bridge, high
+// pdb params: bodyA, bodyB, input, collector
+// pdb locals: gsk, separatingNormalInA, aTb
 void hkpGskBaseAgent::getPenetrations(const hkpCdBody& bodyA, const hkpCdBody& bodyB,
                                      const CollisionAgentContext& input, hkpCdBodyPairCollector& collector)
 {
@@ -692,12 +713,12 @@ void hkpGskBaseAgent::getPenetrations(const hkpCdBody& bodyA, const hkpCdBody& b
     S_00dac0b0_TimerBeginList("LtGsk", "Sttim", scratch);
     S_00dac0b0_Timer("StSepNormal", scratch);
 
-    const hkpConvexShape* shapeA = (const hkpConvexShape*)bodyA.m_pCollisionShape;
-    const hkpConvexShape* shapeB = (const hkpConvexShape*)bodyB.m_pCollisionShape;
+    const hkpConvexShape* shapeA = (const hkpConvexShape*)bodyA.m_shape;
+    const hkpConvexShape* shapeB = (const hkpConvexShape*)bodyB.m_shape;
     S_00dac0b0_Gsk gsk;
-    gsk.aTb.hkTransform_setMulInverseMul(bodyA.m_pMotionState, bodyB.m_pMotionState);
+    gsk.aTb.hkTransform_setMulInverseMul(bodyA.m_motion, bodyB.m_motion);
 
-    S_00dac0b0_PackedCache* c = (S_00dac0b0_PackedCache*)m_pAccess;
+    S_00dac0b0_PackedCache* c = (S_00dac0b0_PackedCache*)m_cache;
     gsk.m_ucDimensionA = c->m_ucDimensionA;
     gsk.m_ucDimensionB = c->m_ucDimensionB;
     gsk.m_ucLowNibble = c->m_flags & 0xf;
@@ -715,19 +736,19 @@ void hkpGskBaseAgent::getPenetrations(const hkpCdBody& bodyA, const hkpCdBody& b
     if (scratch.result == 0)
     {
         LocalM128 n = *(LocalM128*)&normal;
-        scratch.distance = normal.w - shapeA->m_fSphereRadius - shapeB->m_fSphereRadius;
-        const hkTransform* ta = (const hkTransform*)bodyA.m_pMotionState;
+        scratch.distance = normal.w - shapeA->m_radius - shapeB->m_radius;
+        const hkTransform* ta = (const hkTransform*)bodyA.m_motion;
         LocalM128 r0 = _mm_add_ps(_mm_add_ps(_mm_mul_ps(_mm_shuffle_ps(n, n, 0x55), *(const LocalM128*)&ta->m_row1),
                                           _mm_mul_ps(_mm_shuffle_ps(n, n, 0x00), *(const LocalM128*)&ta->m_row0)),
                                _mm_mul_ps(_mm_shuffle_ps(n, n, 0xaa), *(const LocalM128*)&ta->m_row2));
-        *(LocalM128*)&m_vSeparatingNormal = r0;
-        m_vSeparatingNormal.w = scratch.distance;
+        *(LocalM128*)&m_separatingNormal = r0;
+        m_separatingNormal.w = scratch.distance;
         if (scratch.distance < 0.0f)
             collector.AddCdBodyPair(bodyA, bodyB);
     }
     else
     {
-        *(LocalM128*)&m_vSeparatingNormal = _mm_setzero_ps();
+        *(LocalM128*)&m_separatingNormal = _mm_setzero_ps();
         collector.AddCdBodyPair(bodyA, bodyB);
     }
     S_00dac0b0_TimerEnd();

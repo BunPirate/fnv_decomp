@@ -8,6 +8,7 @@ class BGSTalkingActivator;
 class Conversation;
 class TESObjectREFR;
 
+// pdb: class FalloutRadio, size 0x1, 0 members
 class FalloutRadio
 {
 public:
@@ -21,7 +22,7 @@ public:
         char padding[12];
         unsigned char active;
 
-        void* FUN_00832190(bool);
+        void* FalloutRadio_FORadioReceiver_ScalarDtor(bool);
         void InitLoadGame(BGSLoadGameBuffer*);
     };
 
@@ -48,7 +49,7 @@ public:
         BSSimpleList<RadioReceiver*> receivers;
 
         void InitLoadGame(BGSLoadGameBuffer*);
-        void* FUN_00832160(bool);
+        void* FalloutRadio_FORadioStation_ScalarDtor(bool);
     };
 
     static bool __cdecl SetRadioEnabled(bool);

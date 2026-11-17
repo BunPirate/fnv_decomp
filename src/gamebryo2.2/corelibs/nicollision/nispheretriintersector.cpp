@@ -29,13 +29,16 @@ struct CollisionGeometry
 };
 // @fnv 0x00eb5bf0
 // src: GAMEBRYO_LIB 0x00eb5bf0
-float __thiscall CollisionGeometry::NiSphereTriIntersector_Pseudodistance(const NiPoint3* motion, const NiPoint3* translation, float amount)
+// pdb: NiSphereTriIntersector::Pseudodistance | NiSphereTriIntersector.obj | retail, upstream name already matches, high
+// pdb params: kV0, kV1, fTime
+// pdb locals: kMTri, kMCenter, fPseudodistance
+float __thiscall CollisionGeometry::NiSphereTriIntersector_Pseudodistance(const NiPoint3* kV0, const NiPoint3* kV1, float fTime)
 {
-    NiPoint3 scaledMotion(motion->x * amount, motion->y * amount, motion->z * amount);
+    NiPoint3 scaledMotion(kV0->x * fTime, kV0->y * fTime, kV0->z * fTime);
     const NiPoint3& storedPos = base->position;
     NiPoint3 offsetPoint(storedPos.x + scaledMotion.x, storedPos.y + scaledMotion.y, storedPos.z + scaledMotion.z);
     FloatMatrix3 adjustedBasis = basis;
-    NiPoint3 scaledTranslation(translation->x * amount, translation->y * amount, translation->z * amount);
+    NiPoint3 scaledTranslation(kV1->x * fTime, kV1->y * fTime, kV1->z * fTime);
     adjustedBasis.m00 = adjustedBasis.m00 + scaledTranslation.x;
     adjustedBasis.m01 = scaledTranslation.y + adjustedBasis.m01;
     adjustedBasis.m02 = scaledTranslation.z + adjustedBasis.m02;

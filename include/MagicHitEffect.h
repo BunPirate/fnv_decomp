@@ -6,6 +6,7 @@ class ActiveEffect;
 class TESObjectREFR;
 template <class T> class BSSimpleList;
 
+// pdb: class MagicHitEffect, size 0x28, bases: BSTempEffect, 4 members
 class MagicHitEffect : public BSTempEffect
 {
   public:
@@ -23,7 +24,7 @@ class MagicHitEffect : public BSTempEffect
     virtual void InitLoadGame(ActiveEffect* apEffect, TESObjectREFR* apTarget);
     virtual void FinishLoadGameTES(ActiveEffect* apEffect, TESObjectREFR* apTarget, void* apData);
 
-    static BSSimpleList<MagicHitEffect*>* GetEffectsForActiveEffect(ActiveEffect* apEffect);
+    static BSSimpleList<MagicHitEffect*>* InstantiateHitEffects(ActiveEffect* apEffect);
     char* GetData();
     void SetByteAt24(unsigned int value);
     void FUN_00984f60(unsigned int);

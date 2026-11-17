@@ -63,7 +63,7 @@ struct __declspec(align(16)) StepReleaseFitQuaternion
         };
     };
     void setMul(const StepReleaseFitQuaternion*, const StepReleaseFitQuaternion*);
-    void normalize_005611c0();
+    void hkQuaternion_normalize();
 };
 struct StepReleaseFitMotionState
 {
@@ -182,7 +182,7 @@ static __forceinline void StepReleaseFitadvanceMotion(StepReleaseFitStateArgumen
         increment.w = StepReleaseFitcosineApprox(angleSquared);
     }
     previous.setMul(&increment, &previous);
-    previous.normalize_005611c0();
+    previous.hkQuaternion_normalize();
     state.deltaAngle = _mm_add_ps(*(LocalM128*)&increment, *(LocalM128*)&increment);
     float angle = (float)sqrt(angleSquared);
     state.deltaAngle.m128_f32[3] = (float)(angle * DAT_0101ff40);
@@ -191,6 +191,9 @@ static __forceinline void StepReleaseFitadvanceMotion(StepReleaseFitStateArgumen
 }
 // @fnv 0x00d28680
 // src: XBOX_PDB 0x00d28680
+// pdb: hkRigidMotionUtilStep | hkpRigidMotionUtil.obj | retail, upstream name already matches, high
+// pdb params: info, motions, numMotions, motionOffset
+// pdb locals: i
 extern "C" void __cdecl hkRigidMotionUtilStep(StepReleaseFitStepArgs args)
 {
     for (int remaining = args.count - 1; remaining >= 0; args.advance(), --remaining)

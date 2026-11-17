@@ -19,18 +19,18 @@ enum HAIR_PART;
 class __declspec(align(16)) BSFaceGenModel : public NiRefObject
 {
 public:
-    FaceGenGeometryModel* m_pGeometryModel;
-    BSFaceGenTexture* m_kTextureSlots;
+    FaceGenGeometryModel* pMeshData; // src: XBOX_RETAIL_PDB +0x8 (old: m_pGeometryModel)
+    BSFaceGenTexture* pTextureData; // src: XBOX_RETAIL_PDB +0xc (old: m_kTextureSlots)
 
     bool LoadModelMesh(const char*, const char*, const char*, HAIR_PART, bool);
     bool LoadFaceGenTexture();
-    bool LoadFaceGenTexture(const char*);
+    bool LoadModelTexture(const char*);
     static NiAVObject* GetFaceGenModelNode(NiAVObject*);
     bool ApplyFaceGenMorphs(FaceGenCoordinate*, NiTriBasedGeom*, bool);
     bool ApplyFaceGenMorphs(FaceGenData*, NiPointer<NiTriBasedGeom>&);
     bool ApplyFaceGenMorphs(FaceGenCoord (*)[4], NiTriBasedGeom*, bool);
-    bool ApplyTextureCoordinate(FaceGenCoordinates*, NiPointer<NiTexture>&, unsigned int);
-    bool ApplyTextureCoordinate(FaceGenCoordinates*, GO&, unsigned int);
+    bool ApplyCoordinateTexturingToMesh(FaceGenCoordinates*, NiPointer<NiTexture>&, unsigned int);
+    bool ApplyCoordinateTexturingToMesh(FaceGenCoordinates*, GO&, unsigned int);
     void ClearTextureData();
     bool CloneTriBasedGeom(NiPointer<NiTriBasedGeom>& out);
     bool HasMorphs();

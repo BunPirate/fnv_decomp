@@ -47,6 +47,7 @@ struct FUN_00b2ae60_shell
 };
 // Calls FUN_00b2ae90, then deletes this when flags has bit 0 set, and returns this.
 // @fnv 0x00b2ae60
+// pdb: CTreeEngine::`scalar deleting destructor' | TreeEngine.obj | retail, vtable slot, high
 void* __thiscall FUN_00b2ae60_shell::DestroyIfFlagged(unsigned int flags)
 {
     char stack[0x58];
@@ -58,30 +59,34 @@ void* __thiscall FUN_00b2ae60_shell::DestroyIfFlagged(unsigned int flags)
 
 struct RandomNumberGenerator
 {
-    void SeedRandomGenerator(long);
+    void Reseed(long);
     float GenerateRandomFloat(float, float);
 };
 extern float DAT_0108cb00;
 extern float _DAT_010162c0;
 struct FUN_00b2c0c0_shell
 {
-    void InitSeed(unsigned int seed);
+    void CTreeEngine_SetSeed(unsigned int nSeed);
 };
 // @fnv 0x00b2c0c0
-void FUN_00b2c0c0_shell::InitSeed(unsigned int seed)
+// src: XBOX_RETAIL_PDB 0x00b2c0c0
+// pdb: CTreeEngine::SetSeed | TreeEngine.obj | retail, call graph (shared callers), high
+// pdb params: nSeed
+// pdb locals: c_nMaxSeed
+void FUN_00b2c0c0_shell::CTreeEngine_SetSeed(unsigned int nSeed)
 {
-    if (seed == 0)
+    if (nSeed == 0)
     {
         const int c_nMaxSeed = 1000000;
-        ((RandomNumberGenerator*)((char*)this + 0x20))->SeedRandomGenerator(-1);
+        ((RandomNumberGenerator*)((char*)this + 0x20))->Reseed(-1);
         *(unsigned int*)((char*)this + 0x48) = (unsigned int)(long)(((RandomNumberGenerator*)((char*)this + 0x20))
                                                                         ->GenerateRandomFloat(2.0f, DAT_0108cb00));
     }
-    else if (seed == 1)
+    else if (nSeed == 1)
     {
     }
     else
-        *(unsigned int*)((char*)this + 0x48) = seed;
+        *(unsigned int*)((char*)this + 0x48) = nSeed;
 }
 
 struct ElementIterator
@@ -90,13 +95,15 @@ struct ElementIterator
 };
 struct FUN_00b2daf0_shell : CTreeEngine
 {
-    void __thiscall CTreeEngine_ParseFlareSeed(ElementIterator* a);
+    void __thiscall CTreeEngine_ParseFlareSeed(ElementIterator* cFile);
 };
 // @fnv 0x00b2daf0
 // src: COMMUNITY 0x00b2daf0
-void __thiscall FUN_00b2daf0_shell::CTreeEngine_ParseFlareSeed(ElementIterator* a)
+// pdb: CTreeEngine::ParseFlareSeed | TreeEngine.obj | retail, upstream name already matches, high
+// pdb params: cFile
+void __thiscall FUN_00b2daf0_shell::CTreeEngine_ParseFlareSeed(ElementIterator* cFile)
 {
-    *(int*)((char*)this + 0x54) = a->GetNextElement();
+    *(int*)((char*)this + 0x54) = cFile->GetNextElement();
 }
 
 namespace std {
@@ -124,6 +131,8 @@ struct NarrowString : std::basic_string<char, std::char_traits<char>, std::alloc
 };
 
 // @fnv 0x00b2b8d0
+// pdb: CTreeEngine::SetBranchTexture | TreeEngine.obj | retail, call graph, medium
+// pdb params: strFilename
 NarrowString& NarrowString::AssignFromString(const NarrowString& aString)
 {
     unsigned char unused[92];
@@ -135,7 +144,7 @@ NarrowString& NarrowString::AssignFromString(const NarrowString& aString)
 
 struct FUN_00b04d40_Obj
 {
-    float CVec3_Distance(int a);
+    float CVec3_Distance(int cVec);
 };
 
 extern FUN_00b04d40_Obj DAT_011f8e9c;
@@ -230,6 +239,7 @@ extern float DAT_01017b78;
 // Sets unk00 false, fills float triples at unk04, unk30, unk3C, unk48 from globals/constants, sets unk10, and calls FUN_0044a730(false, 0) on unk14.
 // @fnv 0x00b3d720
 // src: XBOX_PDB 0x00b3d720
+// pdb: SIdvLeafTexture::SIdvLeafTexture | TreeEngine.obj | retail, upstream name already matches, high
 FUN_00b3d720_Class* __thiscall FUN_00b3d720_Class::SIdvLeafTexture_SIdvLeafTexture()
 {
     int unused01;
@@ -354,11 +364,13 @@ struct FUN_00b2ac80
     float f104;
     int i108;
     FUN_00b40850 s10c;
-    void SetWind(float v);
+    void SetWind(float fStrength);
     FUN_00b2ac80(int param);
 };
 
 // @fnv 0x00b2ac80
+// pdb: CTreeEngine::CTreeEngine | TreeEngine.obj | debug, object-file run extension, low
+// pdb params: pBranchGeometry
 FUN_00b2ac80::FUN_00b2ac80(int param)
     : base00(), f10((base00.vfptr = &DAT_010a5670, 1.0f)), f14(1.0f), f18(DAT_01012054), f1c(0.0f), go20(), b21(1),
       s24(), i58(0), i5c(0), s60(), i78(6), s7c(), s94(), iec(0), bf0(0), ff4(DAT_01016248), ff8(1.0f),

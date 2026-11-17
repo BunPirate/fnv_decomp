@@ -5,6 +5,7 @@
 
 class Setting;
 
+// pdb: class RegSettingCollection, size 0x114 (here 0x10c), bases: SettingCollectionList<Setting>, 0 members
 class RegSettingCollection : public SettingCollectionList<Setting>
 {
 public:

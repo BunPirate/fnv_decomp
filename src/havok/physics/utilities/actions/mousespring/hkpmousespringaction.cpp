@@ -25,9 +25,11 @@ struct FUN_00cbb1c0 : FUN_00d2b1f0
 };
 
 // @fnv 0x00cbb1c0
-void __thiscall FUN_00cbb1c0::Method(int aiValue)
+// pdb: hkpMouseSpringAction::entityRemovedCallback | hkpMouseSpringAction.obj | retail, vtable slot, high
+// pdb params: entity
+void __thiscall FUN_00cbb1c0::Method(int entity)
 {
-    EntityRemovedCallback(aiValue);
+    EntityRemovedCallback(entity);
     *(int*)((char*)this + 0x18) = 0;
 }
 
@@ -260,44 +262,46 @@ struct Ms_cls
     float objDamping;
     int shapeKey;
     hkArrayBase<int> cb;
-    Ms_cls* hkpMouseSpringAction_hkpMouseSpringAction(LocalM128* a0, LocalM128* a1, float a2, float a3, float a4, Ms_Ent* a5, hkArray<int>* a6);
+    Ms_cls* hkpMouseSpringAction_hkpMouseSpringAction(LocalM128* positionInRbLocal, LocalM128* mousePositionInWorld, float springDamping, float springElasticity, float objectDamping, Ms_Ent* rb, hkArray<int>* appliedCallbacks);
 };
 
 // Initializes the Ms_cls object with position, mouse, and damping parameters, copies an array, and computes a shape key via a collision test against the world.
 // @fnv 0x00cbb560
 // src: EXE 0x00cbb560
-Ms_cls* Ms_cls::hkpMouseSpringAction_hkpMouseSpringAction(LocalM128* apPos, LocalM128* apMouse, float afDamping, float afElasticity, float afObjDamping,
-                             Ms_Ent* apEnt, hkArray<int>* apArr)
+// pdb: hkpMouseSpringAction::hkpMouseSpringAction | hkpMouseSpringAction.obj | retail, object-file gap fill, high
+// pdb params: flag
+Ms_cls* Ms_cls::hkpMouseSpringAction_hkpMouseSpringAction(LocalM128* positionInRbLocal, LocalM128* mousePositionInWorld, float springDamping, float springElasticity, float objectDamping,
+                             Ms_Ent* rb, hkArray<int>* appliedCallbacks)
 {
-    ((Ms_B*)this)->FUN_00d2b260(apEnt, 0);
+    ((Ms_B*)this)->FUN_00d2b260(rb, 0);
     *(int**)this = &DAT_010c8e94;
-    _mm_store_ps(&pos.x, *apPos);
-    _mm_store_ps(&mouse.x, *apMouse);
-    damping = afDamping;
-    elasticity = afElasticity;
-    objDamping = afObjDamping;
+    _mm_store_ps(&pos.x, *positionInRbLocal);
+    _mm_store_ps(&mouse.x, *mousePositionInWorld);
+    damping = springDamping;
+    elasticity = springElasticity;
+    objDamping = objectDamping;
     cb.setOwnedData(0, 0, 0x80000000);
     maxRel = 250.0f;
-    if (apArr)
+    if (appliedCallbacks)
     {
         hkMemoryAllocator& h = *(hkMemoryAllocator*)hkMemoryRouter_getInstance()->m_heap;
         int cap = cb.m_iCapacityState & 0x3fffffff;
-        if (cap < apArr->m_iElementCount)
+        if (cap < appliedCallbacks->m_iElementCount)
         {
             if ((cb.m_iCapacityState & 0x80000000) == 0)
                 h.bufFree(cb.m_data, cap * 4);
-            int n = apArr->m_iElementCount * 4;
+            int n = appliedCallbacks->m_iElementCount * 4;
             cb.m_data = (int*)h.bufAlloc(n);
             cb.m_iCapacityState = n / 4;
         }
-        int cnt = apArr->m_iElementCount;
+        int cnt = appliedCallbacks->m_iElementCount;
         cb.m_iElementCount = cnt;
         int* dst = cb.m_data;
-        int* src = apArr->m_data;
+        int* src = appliedCallbacks->m_data;
         for (int i = 0; i < cnt; i++)
             dst[i] = src[i];
     }
-    Ms_World* w = apEnt->world;
+    Ms_World* w = rb->world;
     shapeKey = -1;
     if (w)
     {
@@ -308,11 +312,11 @@ Ms_cls* Ms_cls::hkpMouseSpringAction_hkpMouseSpringAction(LocalM128* apPos, Loca
         xf.c0 = ident->c0;
         xf.c1 = ident->c1;
         xf.c2 = ident->c2;
-        xf.t = *apMouse;
+        xf.t = *mousePositionInWorld;
         Ms_Body body;
         body.FUN_00cd2d80(&sph, &xf, 0);
         Ms_Disp* d = w->disp;
-        unsigned char t = *((unsigned char*)d + (((sph.type + 13) << 5) + apEnt->shape->type));
+        unsigned char t = *((unsigned char*)d + (((sph.type + 13) << 5) + rb->shape->type));
         Ms_Fn fn = *(Ms_Fn*)((char*)d + t * 20 + 0x9a8);
         Ms_Input in;
         Ms_Input* src = w->input;
@@ -330,7 +334,7 @@ Ms_cls* Ms_cls::hkpMouseSpringAction_hkpMouseSpringAction(LocalM128* apPos, Loca
         coll.early = DAT_0104da48;
         coll.vptr = &DAT_010c476c;
         coll.hit = 0;
-        fn(&body, &apEnt->shape, &in, &coll);
+        fn(&body, &rb->shape, &in, &coll);
         if (coll.hit)
             shapeKey = coll.key;
     }
@@ -386,38 +390,41 @@ class FUN_00cbb4e0 : public hkpUnaryAction
     hkUint32 m_uiCollisionShapeKey;
     hkArray<void*> m_kAppliedCallbacks;
 
-    FUN_00cbb4e0(hkpEntity* pkEntity) throw();
+    FUN_00cbb4e0(hkpEntity* rb) throw();
 
     void* operator new(unsigned int uiSize)
     {
         hkMemoryRouter* pkRouter = (hkMemoryRouter*)hkMemoryRouter_getInstance();
         hkReferencedObject* pkObj = (hkReferencedObject*)((hkMemoryAllocator*)pkRouter->m_heap)->blockAlloc(uiSize);
-        pkObj->m_usMemSizeAndFlags = (hkUint16)uiSize;
+        pkObj->m_memSizeAndFlags = (hkUint16)uiSize;
         return pkObj;
     }
 
-    FUN_00cbb4e0* CloneForEntity(const hkArray<hkpEntity*>& kNewEntities,
-                                 const hkArray<void*>& kNewPhantoms) const throw();
+    FUN_00cbb4e0* CloneForEntity(const hkArray<hkpEntity*>& newEntities,
+                                 const hkArray<void*>& newPhantoms) const throw();
 };
 
 // Creates a copy of this action for a single entity, returning null if the entity count is not one or any phantoms are present.
 // @fnv 0x00cbb790
-FUN_00cbb4e0* FUN_00cbb4e0::CloneForEntity(const hkArray<hkpEntity*>& kNewEntities,
-                                           const hkArray<void*>& kNewPhantoms) const throw()
+// pdb: hkpMouseSpringAction::clone | hkpMouseSpringAction.obj | retail, vtable slot, high
+// pdb params: newEntities, newPhantoms
+// pdb locals: assertBuf, ostr
+FUN_00cbb4e0* FUN_00cbb4e0::CloneForEntity(const hkArray<hkpEntity*>& newEntities,
+                                           const hkArray<void*>& newPhantoms) const throw()
 {
-    if (kNewEntities.GetLogicalSize() != 1)
+    if (newEntities.GetLogicalSize() != 1)
         return 0;
-    if (kNewPhantoms.GetLogicalSize() != 0)
+    if (newPhantoms.GetLogicalSize() != 0)
         return 0;
 
-    FUN_00cbb4e0* pkAction = new FUN_00cbb4e0(kNewEntities[0]);
+    FUN_00cbb4e0* pkAction = new FUN_00cbb4e0(newEntities[0]);
     pkAction->m_kMousePositionInWorld = m_kMousePositionInWorld;
     pkAction->m_kGrabPointInBodySpace = m_kGrabPointInBodySpace;
     pkAction->m_fSpringDamping = m_fSpringDamping;
     pkAction->m_fSpringElasticity = m_fSpringElasticity;
     pkAction->m_fMaxRelativeForce = m_fMaxRelativeForce;
     pkAction->m_fTau = m_fTau;
-    pkAction->m_ulUserData = m_ulUserData;
+    pkAction->m_userData = m_userData;
     pkAction->m_uiCollisionShapeKey = m_uiCollisionShapeKey;
     pkAction->m_kAppliedCallbacks = m_kAppliedCallbacks;
     return pkAction;
@@ -436,7 +443,7 @@ extern const float DAT_01012054;
 inline void hkpTypedBroadPhaseHandle::SetOwnerPointer(void* owner)
 {
     int offset = (int)((char*)owner - (char*)this);
-    m_iOwnerOffset = (signed char)offset;
+    m_ownerOffset = (signed char)offset;
 }
 
 class FUN_00cd2d80 : public hkpCdBody
@@ -454,6 +461,8 @@ class FUN_00cd2d80 : public hkpCdBody
 
 // Constructs the body from shape and motionState, builds the broad phase handle with type, sets its owner pointer, and sets a default allowed penetration depth.
 // @fnv 0x00cd2d80
+// pdb: hkArrayBase<hkpProperty>::operator[] | hkpWorldObject.obj | debug, object-file run extension, low
+// pdb params: i
 FUN_00cd2d80::FUN_00cd2d80(const void* apCollisionShape, const void* motionState, int aiBroadPhaseType)
     : hkpCdBody(apCollisionShape, motionState), m_iOwnerOffset(0), m_kBroadPhaseHandle(aiBroadPhaseType),
       m_fAllowedPenetrationDepth(DAT_01012054)
@@ -472,11 +481,12 @@ struct Cls
     int m_58;
     int m_5c;
     Cls* FUN_00cbb8b0(int flags);
-    void ReleaseReference_00d2b2b0();
+    void hkpUnaryAction_dtor();
 };
 
 // Clears the array at m_54 and releases its buffer unless flagged, calls FUN_00d2b2b0, and frees this through the TLS heap when bit 0 of flags is set.
 // @fnv 0x00cbb8b0
+// pdb: hkpMouseSpringAction::`scalar deleting destructor' | hkpMouseSpringAction.obj | retail, vtable slot, high
 Cls* Cls::FUN_00cbb8b0(int flags)
 {
     hkMemoryRouter* tls = hkMemoryRouter_getInstance();
@@ -487,7 +497,7 @@ Cls* Cls::FUN_00cbb8b0(int flags)
         heap->bufFree((void*)m_54, (n & 0x3fffffff) * 4);
     m_54 = 0;
     m_5c = 0x80000000;
-    ReleaseReference_00d2b2b0();
+    hkpUnaryAction_dtor();
     if (flags & 1)
     {
         hkMemoryRouter* tls2 = hkMemoryRouter_getInstance();
@@ -540,14 +550,16 @@ class hkpPositionTrackerCBB1
     int unk2C;
     hkVector4 m_vContactPosition;
 
-    void hkpMouseSpringAction_setMousePosition(const hkVector4& kPosition);
+    void hkpMouseSpringAction_setMousePosition(const hkVector4& mousePositionInWorld);
 };
 
 // @fnv 0x00cbb150
 // src: COMMUNITY 0x00cbb150
-void hkpPositionTrackerCBB1::hkpMouseSpringAction_setMousePosition(const hkVector4& kPosition)
+// pdb: hkpMouseSpringAction::setMousePosition | hkpMouseSpringAction.obj | retail, upstream name already matches, high
+// pdb params: mousePositionInWorld
+void hkpPositionTrackerCBB1::hkpMouseSpringAction_setMousePosition(const hkVector4& mousePositionInWorld)
 {
-    LocalM128 d = _mm_sub_ps(kPosition.m_vComponents, m_vContactPosition.m_vComponents);
+    LocalM128 d = _mm_sub_ps(mousePositionInWorld.m_vComponents, m_vContactPosition.m_vComponents);
     d = _mm_and_ps(d, DAT_01017d10);
     LocalM128 eps = _mm_load_ps1(&DAT_01017d00);
     int iMask = _mm_movemask_ps(_mm_cmple_ps(d, eps));
@@ -556,7 +568,7 @@ void hkpPositionTrackerCBB1::hkpMouseSpringAction_setMousePosition(const hkVecto
         if (m_pOwnerObject && m_pOwnerObject->m_pOwningWorld)
             m_pOwnerObject->activate_00c9c1d0();
     }
-    m_vContactPosition = kPosition;
+    m_vContactPosition = mousePositionInWorld;
 }
 
 extern "C" LocalM128 _mm_setzero_ps(void);
@@ -579,14 +591,16 @@ struct FUN_00cbb4e0
     hkReal m_fTau;
     unsigned int m_uiCollisionShapeKey;
     hkArrayBase<char> m_kAppliedCallbacks;
-    FUN_00cbb4e0(int arg);
+    FUN_00cbb4e0(int rb);
 };
 extern float DAT_01016248, DAT_01017870, DAT_0101ffc0;
 // Initializes the hkpMouseSpringAction fields with default spring constants, zeroed vectors, and the action name.
 // @fnv 0x00cbb4e0
-FUN_00cbb4e0::FUN_00cbb4e0(int arg) : m_kAppliedCallbacks(FinishingFlag())
+// pdb: hkpMouseSpringAction::hkpMouseSpringAction | hkpMouseSpringAction.obj | retail, object-file gap fill, high
+// pdb params: flag
+FUN_00cbb4e0::FUN_00cbb4e0(int rb) : m_kAppliedCallbacks(FinishingFlag())
 {
-    ((Ms_B*)this)->FUN_00d2b260((void*)arg, 0);
+    ((Ms_B*)this)->FUN_00d2b260((void*)rb, 0);
     m_fSpringDamping = DAT_01016248;
     unk00 = (void*)&DAT_010c8e94;
     m_fSpringElasticity = DAT_01017870;

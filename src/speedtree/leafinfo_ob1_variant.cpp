@@ -61,7 +61,7 @@ struct S_00b3cf40_Random
 {
     S_00b3cf40_Random();
     ~S_00b3cf40_Random();
-    float FUN_00b3f130(float lo, float hi);
+    float FUN_00b3f130(float lo, float fMax);
 };
 static const float DAT_01022958 = 10000.0f;
 struct S_00b3cf40
@@ -207,14 +207,17 @@ struct S00b3d1b0_Obj
     float m_30;
     int m_34;
 
-    void SIdvLeafInfo_Parse(S00b3d1b0_Src* src);
+    void SIdvLeafInfo_Parse(S00b3d1b0_Src* cFile);
 };
 
 // @fnv 0x00b3d1b0
 // src: XBOX_PDB 0x00b3d1b0
-void S00b3d1b0_Obj::SIdvLeafInfo_Parse(S00b3d1b0_Src* src)
+// pdb: SIdvLeafInfo::Parse | LeafInfo.obj | retail, upstream name already matches, high
+// pdb params: cFile
+// pdb locals: nToken, nCount, i, sLeaf
+void S00b3d1b0_Obj::SIdvLeafInfo_Parse(S00b3d1b0_Src* cFile)
 {
-    int aTag = src->ReadToken();
+    int aTag = cFile->ReadToken();
     int count;
     int i;
     do
@@ -222,90 +225,90 @@ void S00b3d1b0_Obj::SIdvLeafInfo_Parse(S00b3d1b0_Src* src)
         switch (aTag)
         {
         case 3000:
-            m_2c = src->CTreeFileAccess_ParseFloat();
+            m_2c = cFile->CTreeFileAccess_ParseFloat();
             break;
         case 3001:
-            m_34 = src->GetNextElement();
+            m_34 = cFile->GetNextElement();
             break;
         case 3002:
-            m_30 = src->CTreeFileAccess_ParseFloat();
+            m_30 = cFile->CTreeFileAccess_ParseFloat();
             break;
         case 3003:
-            src->ProcessAndTransformResult_00b06180();
+            cFile->ProcessAndTransformResult_00b06180();
             break;
         case 3004:
-            src->CTreeFileAccess_ParseFloat();
+            cFile->CTreeFileAccess_ParseFloat();
             break;
         case 3009:
-            m_iWordAt00 = src->ProcessAndTransformResult_00b06180();
+            m_iWordAt00 = cFile->ProcessAndTransformResult_00b06180();
             break;
         case 3010:
-            m_iWordAt04 = src->CTreeFileAccess_ParseFloat();
+            m_iWordAt04 = cFile->CTreeFileAccess_ParseFloat();
             break;
         case 3005:
-            src->CTreeFileAccess_ParseFloat();
+            cFile->CTreeFileAccess_ParseFloat();
             break;
         case 3006:
-            src->ProcessAndTransformResult_00b06180();
+            cFile->ProcessAndTransformResult_00b06180();
             break;
         case 3007:
-            m_28 = src->CTreeFileAccess_ParseFloat();
+            m_28 = cFile->CTreeFileAccess_ParseFloat();
             break;
         case 3008:
-            m_iThirdValue = src->GetNextElement();
+            m_iThirdValue = cFile->GetNextElement();
             break;
         case 1009: {
-            aTag = src->ReadToken();
-            count = src->GetNextElement();
+            aTag = cFile->ReadToken();
+            count = cFile->GetNextElement();
             m_10.clear();
             m_10.resize(count);
             for (i = 0; i < count; ++i)
             {
                 S00b3d1b0_Leaf leaf;
-                aTag = src->ReadToken();
-                aTag = src->ReadToken();
+                aTag = cFile->ReadToken();
+                aTag = cFile->ReadToken();
                 do
                 {
                     switch (aTag)
                     {
                     case 4000:
-                        leaf.m_iWordAt00 = src->ProcessAndTransformResult_00b06180();
+                        leaf.m_iWordAt00 = cFile->ProcessAndTransformResult_00b06180();
                         break;
                     case 4001:
-                        leaf.m_iWordAt04 = src->GetVector3();
+                        leaf.m_iWordAt04 = cFile->GetVector3();
                         break;
                     case 4002:
-                        leaf.m_10 = src->CTreeFileAccess_ParseFloat();
+                        leaf.m_10 = cFile->CTreeFileAccess_ParseFloat();
                         break;
                     case 4003:
-                        leaf.m_14 = src->CTreeFileAccess_ParseString();
+                        leaf.m_14 = cFile->CTreeFileAccess_ParseString();
                         leaf.m_14 = leaf.m_14.ProcessEntries_00b09f90();
                         break;
                     case 4004:
-                        leaf.m_30 = src->GetVector3();
+                        leaf.m_30 = cFile->GetVector3();
                         break;
                     case 4005:
-                        leaf.m_3c = src->GetVector3();
+                        leaf.m_3c = cFile->GetVector3();
                         break;
                     case 4006:
-                        leaf.m_48 = src->GetVector3();
+                        leaf.m_48 = cFile->GetVector3();
                         break;
                     case 4007:
-                        src->CTreeFileAccess_ParseFloat();
+                        cFile->CTreeFileAccess_ParseFloat();
                         break;
                     default:
                         throw S00b3d1b0_Err("malformed single leaf information", false);
                     }
-                    aTag = src->ReadToken();
+                    aTag = cFile->ReadToken();
                 } while (aTag != 1008);
                 m_10[i] = leaf;
             }
-            aTag = src->ReadToken();
+            aTag = cFile->ReadToken();
             break;
         }
         default:
             throw S00b3d1b0_Err("malformed general leaf information", (int)0);
         }
-        aTag = src->ReadToken();
+        aTag = cFile->ReadToken();
     } while (aTag != 1005);
 }

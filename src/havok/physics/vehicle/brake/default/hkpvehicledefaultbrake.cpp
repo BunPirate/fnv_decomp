@@ -72,24 +72,27 @@ struct Brk398_Output
 
 struct Brake_e398c0 : hkpVehicleDefaultBrake
 {
-    void UpdateBraking(const hkReal deltaTime, const Brk398_Instance* vehicle, const Brk398_Input& input,
-                       Brk398_Output& output);
+    void UpdateBraking(const hkReal deltaTime, const Brk398_Instance* vehicle, const Brk398_Input& filteredDriverInfo,
+                       Brk398_Output& breakingInfo);
 };
 
 // @fnv 0x00e398c0
-void Brake_e398c0::UpdateBraking(const hkReal deltaTime, const Brk398_Instance* vehicle, const Brk398_Input& input,
-                                 Brk398_Output& output)
+// pdb: hkpVehicleDefaultBrake::calcBreakingInfo | hkpVehicleDefaultBrake.obj | retail, vtable slot, high
+// pdb params: deltaTime, vehicle, filteredDriverInfo, breakingInfo
+// pdb locals: wheelsShouldBlock, assertBuf, ostr
+void Brake_e398c0::UpdateBraking(const hkReal deltaTime, const Brk398_Instance* vehicle, const Brk398_Input& filteredDriverInfo,
+                                 Brk398_Output& breakingInfo)
 {
-    const hkReal brakingInput = input.m_fSecondaryValue;
-    const hkBool isHandbrake = input.m_bFlag;
+    const hkReal brakingInput = filteredDriverInfo.m_fSecondaryValue;
+    const hkBool isHandbrake = filteredDriverInfo.m_bFlag;
     hkBool isAnyWheelBraking = false;
 
     for (int i = 0; i < vehicle->m_data->m_iWheelCount; ++i)
     {
-        output.m_wheelsLocked.m_data[i] =
-            ((*reinterpret_cast<hkpVehicleDefaultBrakeWheelBrakingProperties**>(&m_kWheelBrakingProperties))[i].m_bConnectedToHandbrake != 0) & (isHandbrake != 0);
+        breakingInfo.m_wheelsLocked.m_data[i] =
+            ((*reinterpret_cast<hkpVehicleDefaultBrakeWheelBrakingProperties**>(&m_wheelBrakingProperties))[i].m_bConnectedToHandbrake != 0) & (isHandbrake != 0);
 
-        if (brakingInput > (*reinterpret_cast<hkpVehicleDefaultBrakeWheelBrakingProperties**>(&m_kWheelBrakingProperties))[i].m_fMinPedalInputToBlock)
+        if (brakingInput > (*reinterpret_cast<hkpVehicleDefaultBrakeWheelBrakingProperties**>(&m_wheelBrakingProperties))[i].m_fMinPedalInputToBlock)
         {
             isAnyWheelBraking = true;
         }
@@ -100,7 +103,7 @@ void Brake_e398c0::UpdateBraking(const hkReal deltaTime, const Brk398_Instance* 
 
         const hkReal impulse = -(w * r * (fViscosityFriction * (1.0f / deltaTime)));
         hkReal torque = r * impulse;
-        const hkReal maxBrakingTorque = (*reinterpret_cast<hkpVehicleDefaultBrakeWheelBrakingProperties**>(&m_kWheelBrakingProperties))[i].m_fMaxBrakingTorque;
+        const hkReal maxBrakingTorque = (*reinterpret_cast<hkpVehicleDefaultBrakeWheelBrakingProperties**>(&m_wheelBrakingProperties))[i].m_fMaxBrakingTorque;
         const hkReal maxTorque = maxBrakingTorque * brakingInput;
         const hkReal absTorque = fabsf(torque);
 
@@ -115,29 +118,29 @@ void Brake_e398c0::UpdateBraking(const hkReal deltaTime, const Brk398_Instance* 
                 torque = -maxTorque;
             }
         }
-        output.m_kFirstRealArray.m_data[i] = torque;
+        breakingInfo.m_kFirstRealArray.m_data[i] = torque;
     }
 
     if (isAnyWheelBraking)
     {
-        if (output.m_wheelsBlockingTimer >= m_fWheelBlockTime)
+        if (breakingInfo.m_wheelsBlockingTimer >= m_wheelsMinTimeToBlock)
         {
-            const hkArray<hkpVehicleDefaultBrakeWheelBrakingProperties>& props = m_kWheelBrakingProperties;
+            const hkArray<hkpVehicleDefaultBrakeWheelBrakingProperties>& props = m_wheelBrakingProperties;
             for (int i = 0; i < vehicle->m_data->m_iWheelCount; ++i)
             {
                 if (brakingInput > (*reinterpret_cast<hkpVehicleDefaultBrakeWheelBrakingProperties* const*>(&props))[i].m_fMinPedalInputToBlock)
                 {
-                    output.m_wheelsLocked.m_data[i] = true;
+                    breakingInfo.m_wheelsLocked.m_data[i] = true;
                 }
             }
         }
         else
         {
-            output.m_wheelsBlockingTimer += deltaTime;
+            breakingInfo.m_wheelsBlockingTimer += deltaTime;
         }
     }
     else
     {
-        output.m_wheelsBlockingTimer = 0.0f;
+        breakingInfo.m_wheelsBlockingTimer = 0.0f;
     }
 }

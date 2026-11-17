@@ -157,6 +157,8 @@ struct Swept_00cf2410
 // Passes position and rotation to one method, passes rotation to another, stores position, sets m_inverseTime to 1.0f, and zeroes m_vVector.
 // @fnv 0x00cf2410
 // src: XBOX_PDB 0x00cf2410
+// pdb: hkMotionState::initMotionState | hkMotionState.obj | retail, upstream name already matches, high
+// pdb params: position, rotation
 void Swept_00cf2410::hkMotionState_initMotionState(LocalM128 const& position, LocalM128 const& rotation)
 {
     ((Swept_00cf2410_Sub*)((char*)this + 0x40))->hkSweptTransform_initSweptTransform(&position, &rotation);

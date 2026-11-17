@@ -6,7 +6,9 @@
 int __cdecl _mbscmp(const unsigned char*, const unsigned char*);
 // @fnv 0x00719c80
 // src: COMMUNITY 0x00719c80
-int __cdecl InventoryList_SortByName(InventoryStackRecord* pFirst, InventoryStackRecord* pSecond)
+// pdb: InventoryList::SortByName | InventoryList.obj | retail, upstream name already matches, high
+// pdb params: apItem1, apItem2
+int __cdecl InventoryList_SortByName(InventoryStackRecord* apItem1, InventoryStackRecord* apItem2)
 {
-    return _mbscmp(pFirst->GetFullName(), pSecond->GetFullName());
+    return _mbscmp(apItem1->GetFullName(), apItem2->GetFullName());
 }

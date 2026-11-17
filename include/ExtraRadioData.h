@@ -4,6 +4,7 @@
 
 class TESObjectCELL;
 
+// pdb: class ExtraRadioData, size 0x1c, bases: BSExtraData, 1 members
 class ExtraRadioData : public BSExtraData
 {
 public:

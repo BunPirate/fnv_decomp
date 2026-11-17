@@ -24,6 +24,7 @@ class __declspec(novtable) Reset3DMobIterator;
 #include "../../include/ENUM_FORM_ID.h"
 #include "../../include/TESSaveLoadGame.h"
 
+// pdb: class Crime, size 0x3c (here 0x1), 14 members
 class Crime
 {
   public:
@@ -46,6 +47,7 @@ SEX TESActorBase::GetSex()
 
 // Returns true if the form is an actor base (type 42) whose actor base data has flag 0x10 set; otherwise false.
 // @fnv 0x005f0d00
+// pdb: TESActorBase::IsAutoCalc | TESActorBase.obj | debug, object-file gap fill, medium
 bool TESActorBase::IsAutoCalculated() const
 {
     if (reinterpret_cast<const TESForm*>(this)->GetFormType() == 42)
@@ -54,35 +56,41 @@ bool TESActorBase::IsAutoCalculated() const
 }
 
 // @fnv 0x005f1630
-void TESActorBase::NotifyFormIDChanged(int changeFlags)
+// pdb: TESActorBase::AddChange | TESActorBase.obj | retail, vtable slot, high
+// pdb params: aiChangeFlags
+void TESActorBase::NotifyFormIDChanged(int aiChangeFlags)
 {
     if (g_dataHandler->FormIDExists(reinterpret_cast<TESForm*>(this)->GetFormID()))
     {
-        if (g_BGSSaveLoadGame->ShouldSaveForm(reinterpret_cast<TESForm*>(this), false))
-            reinterpret_cast<TESActorBaseData*>(reinterpret_cast<char*>(this) + 0x30)->AddFormChangeFlags(changeFlags);
+        if (g_BGSSaveLoadGame->ShouldAddChanges(reinterpret_cast<TESForm*>(this), false))
+            reinterpret_cast<TESActorBaseData*>(reinterpret_cast<char*>(this) + 0x30)->AddFormChangeFlags(aiChangeFlags);
     }
     else
-        reinterpret_cast<TESForm*>(this)->NotifyFormIDChanged(changeFlags);
+        reinterpret_cast<TESForm*>(this)->NotifyFormIDChanged(aiChangeFlags);
 }
 
 // Loads the actor base from the buffer: base form, actor data, crime, attributes, AI form, and optionally the full name when change flag 0x20 is set.
 // @fnv 0x005f1fd0
-void TESActorBase::LoadGame(BGSLoadFormBuffer* buffer)
+// pdb: TESActorBase::LoadGame | TESActorBase.obj | retail, vtable slot, high
+// pdb params: aiFlags, aiCurrentFlags
+// pdb locals: istartBufferPosition, iblockSize, iblockHeader, pheader, pform, ihealth, clength, pfullname, icurrentBufferPosition
+void TESActorBase::LoadGame(BGSLoadFormBuffer* apLoadGameBuffer)
 {
-    reinterpret_cast<TESForm*>(this)->TESForm::LoadGame(buffer);
-    reinterpret_cast<TESActorBaseData*>(reinterpret_cast<char*>(this) + 0x30)->LoadGame_0047ea70(buffer);
-    reinterpret_cast<Crime*>(reinterpret_cast<char*>(this) + 0x7c)->LoadGame(buffer);
-    reinterpret_cast<TESAttributes*>(reinterpret_cast<char*>(this) + 0xb8)->LoadDataIfChanged(buffer);
-    reinterpret_cast<TESAIForm*>(reinterpret_cast<char*>(this) + 0x90)->LoadGame(buffer);
-    if (buffer->GetChangeFlags(0x20u).operator bool())
+    reinterpret_cast<TESForm*>(this)->TESForm::LoadGame(apLoadGameBuffer);
+    reinterpret_cast<TESActorBaseData*>(reinterpret_cast<char*>(this) + 0x30)->LoadGame_0047ea70(apLoadGameBuffer);
+    reinterpret_cast<Crime*>(reinterpret_cast<char*>(this) + 0x7c)->LoadGame(apLoadGameBuffer);
+    reinterpret_cast<TESAttributes*>(reinterpret_cast<char*>(this) + 0xb8)->LoadDataIfChanged(apLoadGameBuffer);
+    reinterpret_cast<TESAIForm*>(reinterpret_cast<char*>(this) + 0x90)->LoadGame(apLoadGameBuffer);
+    if (apLoadGameBuffer->GetChangeFlags(0x20u).operator bool())
     {
         char name[264];
-        buffer->LoadString(name);
+        apLoadGameBuffer->LoadString(name);
         reinterpret_cast<TESFullName*>(reinterpret_cast<char*>(this) + 0xd0)->SetFullName(static_cast<const char*>(name));
     }
 }
 
 // @fnv 0x005f2150
+// pdb: Reset3DMobIterator::Reset3DMobIterator | TESActorBase.obj | debug, upstream name already matches, high
 Reset3DMobIterator::Reset3DMobIterator()
 {
     *reinterpret_cast<void**>(this) = &DAT_01047670;
@@ -91,47 +99,57 @@ Reset3DMobIterator::Reset3DMobIterator()
 // If reset is set, runs the 3D mob iterator over this actor base twice and resets the player's process 3D when this is the player's base.
 // @fnv 0x005f20a0
 // src: COMMUNITY 0x005f20a0
-void TESActorBase::Reset3DForLoadedActors(bool reset)
+// pdb: TESActorBase::Reset3DForLoadedActors | TESActorBase.obj | retail, upstream name already matches, high
+// pdb params: acResetFlags
+// pdb locals: iterator
+void TESActorBase::Reset3DForLoadedActors(bool acResetFlags)
 {
-    if (!reset)
+    if (!acResetFlags)
         return;
     Reset3DMobIterator mobIter;
-    mobIter.base = this;
-    mobIter.reset = reset;
+    mobIter.pActorBase = this;
+    mobIter.cFlags = acResetFlags;
     mobIter.FUN_006ecd40(0);
-    g_kProcessLists.ProcessMobileObjects(&mobIter);
+    g_kProcessLists.IterateMobs(&mobIter);
     mobIter.FUN_006ecd40(1);
-    g_kProcessLists.ProcessMobileObjects(&mobIter);
+    g_kProcessLists.IterateMobs(&mobIter);
     if (g_thePlayer->GetActorBase() == this)
     {
         if (g_thePlayer->GetProcess())
-            g_thePlayer->GetProcess()->ResetActorModel((RESET_3D_FLAGS)reset);
+            g_thePlayer->GetProcess()->ResetActorModel((RESET_3D_FLAGS)acResetFlags);
     }
 }
 
 // If the actor's object reference equals base and it has a process, resets that process's 3D state with reset.
 // @fnv 0x005f2170
+// pdb: TESAnimGroup::FillPriorityArray | TESAnimGroup.obj | retail, object-file run extension, low
+// pdb note: debug build links it to Reset3DMobIterator::Operate
+// pdb params: apSeq
+// pdb locals: pfakeBSSeq, n
 void Reset3DMobIterator::operator()(Actor* actor)
 {
-    if (actor->GetObjectReference() == base && actor->GetProcess())
-        actor->GetProcess()->ResetActorModel((RESET_3D_FLAGS)reset);
+    if (actor->GetObjectReference() == pActorBase && actor->GetProcess())
+        actor->GetProcess()->ResetActorModel((RESET_3D_FLAGS)cFlags);
 }
 
 // 0x005f15c6/0x005f1608 construct the by-value argument from int at 0x008c71b0.
 // @fnv 0x005f1590
-bool TESActorBase::ShouldUseDefaultAppearance(TESObjectREFR* ref)
+// pdb: TESActorBase::ShouldRunInitDefaultWorn | TESActorBase.obj | retail, call graph (shared callers), high
+// pdb params: apRef
+// pdb locals: brunInitDefaultWorn
+bool TESActorBase::ShouldUseDefaultAppearance(TESObjectREFR* apRef)
 {
     bool result = true;
     if (g_BGSSaveLoadGame->BGSSaveLoadGame_GetSaveGameLoading())
     {
-        if (static_cast<Actor*>(ref)->TESForm_IsStillLoading() &&
-            g_BGSSaveLoadGame->HasFormChangeFlags(reinterpret_cast<TESForm*>(ref), 0x08000020))
+        if (static_cast<Actor*>(apRef)->TESForm_IsStillLoading() &&
+            g_BGSSaveLoadGame->HasFormChangeFlags(reinterpret_cast<TESForm*>(apRef), 0x08000020))
             result = false;
     }
     else
     {
-        if (ref->HasHealth(false) &&
-            g_BGSSaveLoadGame->HasFormChangeFlags(reinterpret_cast<TESForm*>(ref), 0x400))
+        if (apRef->HasHealth(false) &&
+            g_BGSSaveLoadGame->HasFormChangeFlags(reinterpret_cast<TESForm*>(apRef), 0x400))
             result = false;
     }
     return result;
@@ -149,6 +167,7 @@ struct VTableHolder_005f0b00
 
 // @fnv 0x005f0b00
 // src: XBOX_PDB 0x005f0b00
+// pdb: TESActorBase::GetHealth | TESActorBase.obj | debug, call graph, high
 int TESActorBase::GetHealth_005f0b00()
 {
     return ((VTableHolder_005f0b00*)((char*)this + 0xb0))->vfn_4();
@@ -157,6 +176,7 @@ int TESActorBase::GetHealth_005f0b00()
 
 // @fnv 0x005f0b50
 // src: XBOX_PDB 0x005f0b50
+// pdb: TESActorBase::DoesSwim | TESActorBase.obj | debug, upstream name already matches, high
 bool TESActorBase::DoesSwim()
 {
     if (static_cast<const TESForm*>(this)->GetFormType() == 0x2b)
@@ -173,6 +193,7 @@ bool TESActorBase::DoesSwim()
 
 // @fnv 0x005f0c80
 // src: XBOX_PDB 0x005f0c80
+// pdb: TESActorBase::IsImmobile | TESActorBase.obj | debug, upstream name already matches, high
 bool TESActorBase::IsImmobile()
 {
     if (static_cast<const TESForm*>(this)->GetFormType() == 0x2b)
@@ -187,6 +208,7 @@ bool TESActorBase::IsImmobile()
 
 // @fnv 0x005f0f80
 // src: COMMUNITY 0x005f0f80
+// pdb: TESActorBase::GetBodyPartData | TESActorBase.obj | debug, upstream name already matches, high
 BGSBodyPartData* __fastcall TESActorBase_GetBodyPartData(TESActorBase* apActorBase)
 {
     if (BGSBodyPartData::ms_pBodyPartDataInstance && apActorBase == g_thePlayer->GetActorBase())
@@ -197,6 +219,8 @@ BGSBodyPartData* __fastcall TESActorBase_GetBodyPartData(TESActorBase* apActorBa
 
 // @fnv 0x005f0b30
 // src: COMMUNITY 0x005f0b30
+// pdb: TESActorBase::SetHealth | TESActorBase.obj | debug, object-file gap fill, medium
+// pdb params: aiValue
 void TESActorBase::SetHealth_005f0b30(int aiValue)
 {
     ((Reset3DMobIterator*)((char*)this + 0xb0))->FUN_006ecd40(aiValue);
@@ -206,6 +230,7 @@ void TESActorBase::SetHealth_005f0b30(int aiValue)
 
 // @fnv 0x005f0ba0
 // src: XBOX_PDB 0x005f0ba0
+// pdb: TESActorBase::FightsInWater | TESActorBase.obj | debug, upstream name already matches, high
 bool TESActorBase::FightsInWater()
 {
     if (!DoesSwim())
@@ -226,11 +251,14 @@ struct TesactorbaseOffset08View
 
 struct FUN_005f0f50_shell : TesactorbaseOffset08View
 {
-    char HasFlag80000();
+    char TESActorBase_GetStartsDead();
 };
 
 // @fnv 0x005f0f50
-char __thiscall FUN_005f0f50_shell::HasFlag80000()
+// src: XBOX_DEBUG_PDB 0x005f0f50
+// pdb: TESActorBase::GetStartsDead | TESActorBase.obj | debug, call graph, high
+// pdb locals: iflags
+char __thiscall FUN_005f0f50_shell::TESActorBase_GetStartsDead()
 {
     unsigned int flags = GetFlags();
     return (flags & 0x80000) != 0;
@@ -239,6 +267,7 @@ char __thiscall FUN_005f0f50_shell::HasFlag80000()
 // Returns true if this form is an actor base (type 0x2B) whose actor base data has flag 0x20 set; otherwise false.
 // @fnv 0x005f0c40
 // src: XBOX_PDB 0x005f0c40
+// pdb: TESActorBase::DoesFly | TESActorBase.obj | debug, upstream name already matches, high
 bool TESActorBase::DoesFly()
 {
     if (static_cast<const TESForm*>(this)->GetFormType() == 0x2B)
@@ -257,6 +286,8 @@ struct TESForm_Hack
 };
 // @fnv 0x005f1690
 // src: XBOX_PDB 0x005f1690
+// pdb: TESActorBase::RemoveChange | TESActorBase.obj | retail, upstream name already matches, high
+// pdb params: aiChangeFlags
 void TESActorBase::RemoveChange(int aiChangeFlags)
 {
     if (g_dataHandler->FormIDExists(GetFormID()) && g_BGSSaveLoadGame->IsFormChanged(this))
@@ -279,23 +310,27 @@ struct FUN_0048e040_holder
 };
 // @fnv 0x005f1f30
 // src: XBOX_PDB 0x005f1f30
-void TESActorBase::SaveGame_005f1f30(unsigned int buffer)
+// pdb: TESActorBase::SaveGame | TESActorBase.obj | retail, vtable slot, high
+// pdb params: aiFlags
+// pdb locals: itempStartPosition, iblockSize, pblockSize, iblockHeader, ihealth, clength, pfullname, icurrentBufferPosition, pheader, pform, istartBufferPosition
+void TESActorBase::SaveGame_005f1f30(unsigned int apSaveGameBuffer)
 {
-    ((FUN_00484d60_holder*)this)->SaveIfChanged(buffer);
-    ((TESActorBaseData*)((char*)this + 0x30))->SaveGame((BGSSaveFormBuffer*)buffer);
-    ((FUN_0048e040_holder*)((char*)this + 0x7c))->TESSpellList_SaveGameBGS(buffer);
-    ((TESAttributes*)((char*)this + 0xb8))->SaveGame((BGSSaveFormBuffer*)buffer);
-    ((TESAIForm*)((char*)this + 0x90))->SaveGame((BGSSaveFormBuffer*)buffer);
-    if (((BGSLoadFormBuffer*)buffer)->GetChangeFlags(0x20u).operator bool())
+    ((FUN_00484d60_holder*)this)->SaveIfChanged(apSaveGameBuffer);
+    ((TESActorBaseData*)((char*)this + 0x30))->SaveGame((BGSSaveFormBuffer*)apSaveGameBuffer);
+    ((FUN_0048e040_holder*)((char*)this + 0x7c))->TESSpellList_SaveGameBGS(apSaveGameBuffer);
+    ((TESAttributes*)((char*)this + 0xb8))->SaveGame((BGSSaveFormBuffer*)apSaveGameBuffer);
+    ((TESAIForm*)((char*)this + 0x90))->SaveGame((BGSSaveFormBuffer*)apSaveGameBuffer);
+    if (((BGSLoadFormBuffer*)apSaveGameBuffer)->GetChangeFlags(0x20u).operator bool())
     {
         const char* pfullname = ((FNStub*)((char*)this + 0xd0))->GetFullName();
-        ((BGSSaveGameBuffer*)buffer)->SaveGameString(pfullname, 0);
+        ((BGSSaveGameBuffer*)apSaveGameBuffer)->SaveString(pfullname, 0);
     }
 }
 
 // Returns true unless the form type is 0x2B and neither the 0x40 nor the 1 flag is set in abd.
 // @fnv 0x005f0bf0
 // src: XBOX_PDB 0x005f0bf0
+// pdb: TESActorBase::DoesWalk | TESActorBase.obj | debug, upstream name already matches, high
 bool TESActorBase::DoesWalk()
 {
     if (((const TESForm*)this)->GetFormType() == 0x2B)
@@ -327,21 +362,24 @@ double __cdecl FUN_00646360(unsigned short, float);
 // Looks up a form by type and returns a value derived from the matching item, component or constant, defaulting to 0.0f.
 // @fnv 0x005f0d60
 // src: XBOX_PDB 0x005f0d60
-float TESActorBase::GetDesirability(TESForm* form)
+// pdb: TESActorBase::GetDesirability | TESActorBase.obj | retail, upstream name already matches, high
+// pdb params: apForm
+// pdb locals: fRetVal, pAmmo, pWeap, condition, pClothing, pArmor, fhealth
+float TESActorBase::GetDesirability(TESForm* apForm)
 {
     float result = 0.0f;
-    if (form)
+    if (apForm)
     {
-        switch (form->FUN_00401170())
+        switch (apForm->FUN_00401170())
         {
         case 41: {
-            void* item = FUN_00ec43fb(form, 0, &DAT_01183028, &DAT_011840c4, 0);
+            void* item = FUN_00ec43fb(apForm, 0, &DAT_01183028, &DAT_011840c4, 0);
             if (item)
                 result = 1.0f;
             break;
         }
         case 40: {
-            void* item = FUN_00ec43fb(form, 0, &DAT_01183028, &DAT_01183998, 0);
+            void* item = FUN_00ec43fb(apForm, 0, &DAT_01183028, &DAT_01183998, 0);
             if (item && FUN_004873d0(item))
             {
                 float condition = 1.0f;
@@ -355,7 +393,7 @@ float TESActorBase::GetDesirability(TESForm* form)
             break;
         }
         case 26: {
-            void* item = FUN_00ec43fb(form, 0, &DAT_01183028, &DAT_01186fcc, 0);
+            void* item = FUN_00ec43fb(apForm, 0, &DAT_01183028, &DAT_01186fcc, 0);
             if (item)
             {
                 enum
@@ -369,7 +407,7 @@ float TESActorBase::GetDesirability(TESForm* form)
             break;
         }
         case 24: {
-            ItemTarget* item = static_cast<ItemTarget*>(FUN_00ec43fb(form, 0, &DAT_01183028, &DAT_01183a34, 0));
+            ItemTarget* item = static_cast<ItemTarget*>(FUN_00ec43fb(apForm, 0, &DAT_01183028, &DAT_01183a34, 0));
             if (item && FUN_004873d0(item))
             {
                 float condition = 1.0f;
@@ -494,14 +532,17 @@ struct SaveSizeFormPart
 struct SaveSizeContainer
 {
     int unk00;
-    unsigned short GetSaveSizeCont(unsigned int changeFlags);
+    unsigned short GetSaveSizeCont(unsigned int aiFlags);
 };
 
 
 // Accumulates the save size of the actor base's parts and optionally logs the total with the current form's ID and editor ID.
 // @fnv 0x005f16f0
 // src: XBOX_PDB 0x005f16f0
-unsigned short TESActorBase::GetSaveSize_005f16f0(unsigned int changeFlags)
+// pdb: TESActorBase::GetSaveSize | TESActorBase.obj | retail, vtable slot, high
+// pdb params: aiFlags
+// pdb locals: isize, itempStartSize, pheader, pform
+unsigned short TESActorBase::GetSaveSize_005f16f0(unsigned int aiFlags)
 {
     unsigned short totalSize = 0;
     unsigned short startSize = totalSize;
@@ -512,17 +553,17 @@ unsigned short TESActorBase::GetSaveSize_005f16f0(unsigned int changeFlags)
     }
     if (g_TESSaveLoadGame->FUN_008df040() >= 0x6d)
     {
-        totalSize += ((SaveSizeFormPart*)this)->GetSaveSize(changeFlags);
+        totalSize += ((SaveSizeFormPart*)this)->GetSaveSize(aiFlags);
     }
-    totalSize += ((TESAttributes*)((char*)this + 0xb8))->GetSaveSize(changeFlags);
-    totalSize += ((TESActorBaseData*)((char*)this + 0x30))->GetSaveSize(changeFlags);
-    totalSize += ((SaveSizeContainer*)((char*)this + 0x7c))->GetSaveSizeCont(changeFlags);
-    totalSize += ((TESAIForm*)((char*)this + 0x90))->TESAIForm::GetSaveSize(changeFlags);
-    if (changeFlags & 0)
+    totalSize += ((TESAttributes*)((char*)this + 0xb8))->GetSaveSize(aiFlags);
+    totalSize += ((TESActorBaseData*)((char*)this + 0x30))->GetSaveSize(aiFlags);
+    totalSize += ((SaveSizeContainer*)((char*)this + 0x7c))->GetSaveSizeCont(aiFlags);
+    totalSize += ((TESAIForm*)((char*)this + 0x90))->TESAIForm::GetSaveSize(aiFlags);
+    if (aiFlags & 0)
     {
         totalSize += 4;
     }
-    if (changeFlags & 0x20)
+    if (aiFlags & 0x20)
     {
         totalSize += 1;
         totalSize += BSStringLength(((FNStub*)((char*)this + 0xd0))->GetFullName());
@@ -665,7 +706,10 @@ void FNV_Warning(const char*, ...);
 
 // @fnv 0x005f18c0
 // src: XBOX_PDB 0x005f18c0
-void TESActorBase::SaveGame_005f18c0(unsigned int flags)
+// pdb: TESActorBase::SaveGame | TESActorBase.obj | retail, vtable slot, high
+// pdb params: aiFlags
+// pdb locals: itempStartPosition, iblockSize, pblockSize, iblockHeader, ihealth, clength, pfullname, icurrentBufferPosition, pheader, pform, istartBufferPosition
+void TESActorBase::SaveGame_005f18c0(unsigned int aiFlags)
 {
     using namespace fnv_005f18c0;
     unsigned short size = 0;
@@ -681,17 +725,17 @@ void TESActorBase::SaveGame_005f18c0(unsigned int flags)
         fnv_005f18c0::g_TESSaveLoadGame->TESSaveLoadGame_SaveGameDataOLD(&size, 2);
     }
     if (fnv_005f18c0::g_TESSaveLoadGame->FUN_008df040() >= 109)
-        ((SaveFormAccess*)this)->TESForm_SaveGame(flags);
-    ((TESAttributes*)((char*)this + 0xb8))->SaveGame(flags);
-    ((TESActorBaseData*)((char*)this + 0x30))->SaveGame(flags);
-    ((SaveInventory*)((char*)this + 0x7c))->SaveSpellList(flags);
-    ((TESAIForm*)((char*)this + 0x90))->TESAIForm::SaveGame(flags);
-    if (flags & 0)
+        ((SaveFormAccess*)this)->TESForm_SaveGame(aiFlags);
+    ((TESAttributes*)((char*)this + 0xb8))->SaveGame(aiFlags);
+    ((TESActorBaseData*)((char*)this + 0x30))->SaveGame(aiFlags);
+    ((SaveInventory*)((char*)this + 0x7c))->SaveSpellList(aiFlags);
+    ((TESAIForm*)((char*)this + 0x90))->TESAIForm::SaveGame(aiFlags);
+    if (aiFlags & 0)
     {
         unsigned int first = ((SaveList*)((char*)this + 0xb0))->FUN_00726070();
         ((SaveFormAccess*)this)->TESForm_SaveGameDataOLD(&first, 4);
     }
-    if (flags & 0x20)
+    if (aiFlags & 0x20)
     {
         const char* data = ((FNStub*)((char*)this + 0xd0))->GetFullName();
         unsigned char pos = (unsigned char)BSstrlen(data);
@@ -855,7 +899,10 @@ struct LoadFormAccess
 
 // @fnv 0x005f1b30
 // src: XBOX_PDB 0x005f1b30
-void TESActorBase::LoadGame_005f1b30(unsigned int aiFlags, unsigned int a2)
+// pdb: TESActorBase::LoadGame | TESActorBase.obj | retail, string-set bridge, high
+// pdb params: aiFlags, aiCurrentFlags
+// pdb locals: istartBufferPosition, iblockSize, iblockHeader, pheader, pform, ihealth, clength, pfullname, icurrentBufferPosition
+void TESActorBase::LoadGame_005f1b30(unsigned int aiFlags, unsigned int aiCurrentFlags)
 {
     using namespace fnv_005f1b30;
     FormName* form5;
@@ -891,11 +938,11 @@ void TESActorBase::LoadGame_005f1b30(unsigned int aiFlags, unsigned int a2)
         fnv_005f1b30::g_TESSaveLoadGame->TESSaveLoadGame_LoadGameDataOLD(&usVarZ, 2);
     }
     if (fnv_005f1b30::g_TESSaveLoadGame->FUN_008df040() >= 0x6d)
-        ((LoadFormAccess*)this)->TESForm_LoadGame(aiFlags, a2);
-    ((TESAttributes*)((char*)this + 0xb8))->LoadGame(aiFlags, a2);
-    ((TESActorBaseData*)((char*)this + 0x30))->LoadGame(aiFlags, a2);
-    ((Sub7C*)((char*)this + 0x7c))->LoadSpellList(aiFlags, a2);
-    ((TESAIForm*)((char*)this + 0x90))->TESAIForm::LoadGame(aiFlags, a2);
+        ((LoadFormAccess*)this)->TESForm_LoadGame(aiFlags, aiCurrentFlags);
+    ((TESAttributes*)((char*)this + 0xb8))->LoadGame(aiFlags, aiCurrentFlags);
+    ((TESActorBaseData*)((char*)this + 0x30))->LoadGame(aiFlags, aiCurrentFlags);
+    ((Sub7C*)((char*)this + 0x7c))->LoadSpellList(aiFlags, aiCurrentFlags);
+    ((TESAIForm*)((char*)this + 0x90))->TESAIForm::LoadGame(aiFlags, aiCurrentFlags);
     if (aiFlags & 0)
     {
         void* scriptVal;

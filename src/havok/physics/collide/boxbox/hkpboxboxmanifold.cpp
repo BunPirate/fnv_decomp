@@ -77,13 +77,15 @@ class BoxPointLookup
 class BoxPointInsertion : public FUN_00db0920
 {
   public:
-    int hkpBoxBoxManifold_addPoint(unsigned int a, unsigned int b, const unsigned char* key);
+    int hkpBoxBoxManifold_addPoint(unsigned int bodyA, unsigned int bodyB, const unsigned char* fcp);
 };
 
 // Inserts a key into the entries array if the count is under 8 and the key is not already present, returning the index or -1 on failure.
 // @fnv 0x00db0960
 // src: HAVOK_LIB 0x00db0960
-int BoxPointInsertion::hkpBoxBoxManifold_addPoint(unsigned int aiUnused, unsigned int b, const unsigned char* key)
+// pdb: hkpBoxBoxManifold::addPoint | hkpBoxBoxManifold.obj | retail, upstream name already matches, high
+// pdb params: bodyA, bodyB, fcp
+int BoxPointInsertion::hkpBoxBoxManifold_addPoint(unsigned int bodyA, unsigned int bodyB, const unsigned char* fcp)
 {
     FUN_00db0920* self = this;
     unsigned char count = self->count;
@@ -92,7 +94,7 @@ int BoxPointInsertion::hkpBoxBoxManifold_addPoint(unsigned int aiUnused, unsigne
         return -1;
     }
     unsigned int result;
-    unsigned char* found = reinterpret_cast<BoxPointLookup*>(self)->ContainsKey((unsigned char*)&result, key);
+    unsigned char* found = reinterpret_cast<BoxPointLookup*>(self)->ContainsKey((unsigned char*)&result, fcp);
     if (*found != 0)
     {
         return -1;
@@ -100,7 +102,7 @@ int BoxPointInsertion::hkpBoxBoxManifold_addPoint(unsigned int aiUnused, unsigne
     int idx = count;
     if (idx < 8)
     {
-        *(unsigned int*)&self->entries[idx] = *(const unsigned int*)key;
+        *(unsigned int*)&self->entries[idx] = *(const unsigned int*)fcp;
         self->count++;
         return idx;
     }

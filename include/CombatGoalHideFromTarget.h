@@ -2,6 +2,7 @@
 
 #include "CombatGoal.h"
 
+// pdb: class CombatGoalHideFromTarget, size 0x1c, bases: CombatGoal, 0 members
 class CombatGoalHideFromTarget : public CombatGoal
 {
 public:

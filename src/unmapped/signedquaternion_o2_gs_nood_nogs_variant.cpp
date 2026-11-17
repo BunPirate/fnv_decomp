@@ -42,19 +42,22 @@ class FnvNode
     int unk3c;
     float m_40;
 
-    void hkaSplineCompressedAnimation_sampleFloat(float a1, int a2, unsigned char a3, int a4, unsigned int* a5, float* a6);
+    void hkaSplineCompressedAnimation_sampleFloat(float u, int quantizedTime, unsigned char mask, int scalarQuantizationType, unsigned int* dataInOut, float* a6);
 };
 
 // The helper the original calls with eight stack arguments; it is cdecl (the
 // caller pops them) and it also receives the object pointer in ECX.
-void __cdecl hkaSplineCompressedAnimation_readNURBSCurve(unsigned int* a5, int a2, float m40, float a1, unsigned char a3, int a4, float* blk,
-                          float* res);
+void __cdecl hkaSplineCompressedAnimation_readNURBSCurve(unsigned int* dataInOut, int quantizedTime, float frameDuration, float u, unsigned char mask, int scalarQuantizationType, float* I,
+                          float* out);
 
 // @fnv 0x00e33f10
 // src: XBOX_PDB 0x00e33f10
-void FnvNode::hkaSplineCompressedAnimation_sampleFloat(float a1, int a2, unsigned char a3, int a4, unsigned int* a5, float* a6)
+// pdb: hkaSplineCompressedAnimation::sampleFloat | hkaSplineCompressedAnimation.obj | retail, upstream name already matches, high
+// pdb params: u, quantizedTime, mask, scalarQuantizationType, dataInOut, out
+// pdb locals: I, vout
+void FnvNode::hkaSplineCompressedAnimation_sampleFloat(float u, int quantizedTime, unsigned char mask, int scalarQuantizationType, unsigned int* dataInOut, float* a6)
 {
-    if (!a3)
+    if (!mask)
     {
         *a6 = 0.0f;
     }
@@ -62,8 +65,8 @@ void FnvNode::hkaSplineCompressedAnimation_sampleFloat(float a1, int a2, unsigne
     {
         FnvScratch s;
         _mm_store_ps((float*)&s.unk00, _mm_setzero_ps());
-        hkaSplineCompressedAnimation_readNURBSCurve(a5, a2, m_40, a1, a3, a4, (float*)&s.unk00, &s.result);
+        hkaSplineCompressedAnimation_readNURBSCurve(dataInOut, quantizedTime, m_40, u, mask, scalarQuantizationType, (float*)&s.unk00, &s.result);
         *a6 = s.result;
     }
-    *a5 = (*a5 + 3) & 0xfffffffcu;
+    *dataInOut = (*dataInOut + 3) & 0xfffffffcu;
 }

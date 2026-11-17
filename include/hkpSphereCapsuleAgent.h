@@ -17,6 +17,7 @@ struct WorldOperationEntry;
 typedef unsigned short hkContactPointId;
 typedef float hkTime;
 
+// pdb: class hkpSphereCapsuleAgent, size 0x10, bases: hkpIterativeLinearCastAgent, 1 members
 class hkpSphereCapsuleAgent : public hkpIterativeLinearCastAgent
 {
 public:
@@ -41,12 +42,12 @@ public:
     hkpSphereCapsuleAgent(const hkpCdBody& kBodyA, const hkpCdBody& kBodyB, const CollisionAgentContext& kInput, hkpContactMgr* pMgr);
 
     static void __cdecl RegisterCapsuleCapsuleAgent(hkpCollisionDispatcher* pDispatcher);
-    static void __cdecl m_pVirtualFunction2(const hkpCdBody& kBodyA, const hkpCdBody& kBodyB, const CollisionAgentContext& kInput, hkpCdPointCollector& kCollector);
+    static void __cdecl staticGetClosestPoints(const hkpCdBody& kBodyA, const hkpCdBody& kBodyB, const CollisionAgentContext& kInput, hkpCdPointCollector& kCollector);
     static void __cdecl m_pVirtualFunction1(const hkpCdBody& kBodyA, const hkpCdBody& kBodyB, const CollisionAgentContext& kInput, hkpCdBodyPairCollector& kCollector);
     static hkpCollisionAgent* __cdecl createSphereCapsuleAgent(const hkpCdBody& kBodyA, const hkpCdBody& kBodyB, const CollisionAgentContext& kInput, hkpContactMgr* pMgr);
     static hkpCollisionAgent* __cdecl createCapsuleSphereAgent(const hkpCdBody& kBodyA, const hkpCdBody& kBodyB, const CollisionAgentContext& kInput, hkpContactMgr* pMgr);
     static ClosestPointResult getClosestPointInl(const hkpCdBody& kBodyA, const hkpCdBody& kBodyB, const CollisionAgentContext& kInput, hkContactPoint& kCpoint);
     static ClosestPointResult __cdecl ComputeClosestPoints(const hkpCdBody& kBodyA, const hkpCdBody& kBodyB, const CollisionAgentContext& kInput, hkContactPoint& kCpoint);
 
-    hkContactPointId m_usContactPointId;
+    hkContactPointId m_contactPointId; // src: XBOX_RETAIL_PDB +0xc (old: m_usContactPointId)
 };

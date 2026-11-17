@@ -4,6 +4,7 @@
 
 class TESObjectREFR;
 
+// pdb: class ExtraEnableStateParent, size 0x14, bases: BSExtraData, 2 members
 class ExtraEnableStateParent : public BSExtraData
 {
 public:

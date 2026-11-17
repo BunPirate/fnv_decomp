@@ -8,7 +8,7 @@
 typedef unsigned short hkUint16;
 typedef unsigned int hkUint32;
 
-extern "C" void __cdecl hkpConstraintData_getConstraintInfoUtil(void* p, unsigned int x, unsigned int y);
+extern "C" void __cdecl hkpConstraintData_getConstraintInfoUtil(void* p, unsigned int x, unsigned int infoOut);
 
 struct FUN_00d4f130_StandIn
 {
@@ -80,6 +80,7 @@ struct S00d4f170_StandIn : public hkpConstraintData
 // Sets *result to whether both rotations pass IsOrthonormal and the cone, plane and twist limit angles satisfy the checked comparisons; returns result.
 // @fnv 0x00d4f170
 // src: HAVOK_LIB 0x00d4f170
+// pdb: hkpRagdollLimitsData::isValid | hkpRagdollLimitsData.obj | retail, upstream name already matches, high
 char* __thiscall S00d4f170_StandIn::hkpRagdollLimitsData_isValid(char* result)
 {
     char* __restrict out = result;
@@ -90,10 +91,10 @@ char* __thiscall S00d4f170_StandIn::hkpRagdollLimitsData_isValid(char* result)
     *out = (*p != 0);
     *out = (*out != 0) &&
            (*(p = m_kLocalRotations.m_kRotationB.IsOrthonormal(reinterpret_cast<char*>(&result), DAT_01017d00)) != 0);
-    *out = (*out != 0) && (m_kConeLimit.m_fMinAngle == DAT_01024108);
-    *out = (*out != 0) && (m_kConeLimit.m_fMaxAngle >= 0.0f);
-    *out = (*out != 0) && (m_kConeLimit.m_fMaxAngle < DAT_0101ff40);
-    *out = (*out != 0) && (m_kPlaneLimit.m_fMinAngle <= m_kPlaneLimit.m_fMaxAngle);
-    *out = (*out != 0) && (m_kTwistLimit.m_fMinAngle <= m_kTwistLimit.m_fMaxAngle);
+    *out = (*out != 0) && (m_kConeLimit.m_minAngle == DAT_01024108);
+    *out = (*out != 0) && (m_kConeLimit.m_maxAngle >= 0.0f);
+    *out = (*out != 0) && (m_kConeLimit.m_maxAngle < DAT_0101ff40);
+    *out = (*out != 0) && (m_kPlaneLimit.m_minAngle <= m_kPlaneLimit.m_maxAngle);
+    *out = (*out != 0) && (m_kTwistLimit.m_minAngle <= m_kTwistLimit.m_maxAngle);
     return out;
 }

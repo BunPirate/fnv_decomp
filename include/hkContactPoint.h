@@ -8,11 +8,12 @@
 
 struct ClassMemberDescriptor;
 
+// pdb: class hkContactPoint, size 0x20, 2 members
 class hkContactPoint
 {
 public:
-    hkVector4 m_vContactPosition;
-    hkVector4 m_vSeparatingNormal;
+    hkVector4 m_position; // src: XBOX_RETAIL_PDB +0x0 (old: m_vContactPosition)
+    hkVector4 m_separatingNormal; // src: XBOX_RETAIL_PDB +0x10 (old: m_vSeparatingNormal)
 
     static const ClassMemberDescriptor Members[];
 

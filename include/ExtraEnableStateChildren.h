@@ -2,6 +2,7 @@
 
 #include "BSExtraData.h"
 
+// pdb: class ExtraEnableStateChildren, size 0x14 (here 0x10), bases: BSExtraData, 1 members
 class ExtraEnableStateChildren : public BSExtraData
 {
 public:

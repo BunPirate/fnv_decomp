@@ -8,6 +8,10 @@
 
 // Iterates the map's entries, calls LoadGame on each threat, and deletes and removes entries whose TESForm pointer is null.
 // @fnv 0x009a5c40
+// pdb: CombatThreatMap::FinishLoadGame | CombatThreatMap.obj | retail, object-file run extension, low
+// pdb note: debug build links it to CombatThreatMap::InitLoadGame
+// pdb params: apLoadGameBuffer
+// pdb locals: it, pthreat, irefID
 void LocalCombatThreatMap::ApplyLoadBuffer(BGSLoadGameBuffer* buffer)
 {
     // A traversal cursor keeps its current key and continuation together.
@@ -36,12 +40,13 @@ void LocalCombatThreatMap::ApplyLoadBuffer(BGSLoadGameBuffer* buffer)
 
 // Constructs a LocalCombatThreatMap: initializes the base, stamp, mode and object, then calls InitThreatObjects.
 // @fnv 0x00991080
+// pdb: CombatManager::CombatManager | CombatManager.obj | debug, call graph, medium
 LocalCombatThreatMap::LocalCombatThreatMap() : FUN_00993960(0, 1), stamp(-DAT_0108d9b0), mode(1), object(0)
 {
     InitThreatObjects();
 }
 
-void __fastcall DeleteAllEntries(void*);
+void __fastcall CombatThreatMap_RemoveAllThreats(void*);
 
 struct FUN_009a5df0
 {
@@ -56,9 +61,10 @@ struct FUN_009a5050 : FUN_009a5df0
 
 // Destructor that forwards to DeleteAllEntries with this as the argument.
 // @fnv 0x009a5050
+// pdb: CombatThreatMap::~CombatThreatMap | CombatThreatMap.obj | debug, object-file gap fill, medium
 FUN_009a5050::~FUN_009a5050()
 {
-    DeleteAllEntries(this);
+    CombatThreatMap_RemoveAllThreats(this);
 }
 
 struct FUN_009a5cd0_cls
@@ -68,6 +74,9 @@ struct FUN_009a5cd0_cls
 };
 // Iterates the map and calls Process(dt) on each non-null MagicProjectile value.
 // @fnv 0x009a5cd0
+// pdb: CombatThreatMap::FinishLoadGame | CombatThreatMap.obj | debug, object-file gap fill, medium
+// pdb params: apLoadGameBuffer
+// pdb locals: it, pthreat, irefID
 void FUN_009a5cd0_cls::ProcessAllProjectiles(int aiDeltaTime)
 {
     MagicProjectile* p;
@@ -94,6 +103,7 @@ struct DelStandIn
 };
 // Runs the destructor on this, then frees this via Deallocate when flags has bit 0 set, and returns this.
 // @fnv 0x009a5020
+// pdb: CombatThreatMap::`scalar deleting destructor' | CombatThreatMap.obj | retail, vtable slot, high
 void* DelStandIn::DestroyIfFlagged(unsigned int flags)
 {
     ((DtorStandIn*)this)->FUN_0083dec0();
@@ -112,6 +122,7 @@ struct FUN_0043d450_Owner
 // Returns the bound stored at offset 0x20 of this object, or the global DAT_011f4288 when that pointer is null.
 // @fnv 0x0043d450
 // src: XBOX_PDB 0x0043d450
+// pdb: Model::GetModel | ModelLoader.obj | debug, object-file run extension, low
 NiBound* FUN_0043d450_Owner::NiAVObject_GetWorldBound()
 {
     NiBound* pBound = ((NiBound**)this)[8] ? ((NiBound**)this)[8] : &DAT_011f4288;
@@ -120,6 +131,7 @@ NiBound* FUN_0043d450_Owner::NiAVObject_GetWorldBound()
 
 struct KFModel;
 
+// pdb: class Animation, size 0x13c (here 0x1), 33 members
 struct Animation
 {
     bool AddAnimation(KFModel*, bool);
@@ -144,6 +156,8 @@ struct FUN_00497c10_struct
 
 // Reads three 4-byte fields from the buffer, defaults field_08 to 1 when zero, and adds an animation when field_08 is 2 and field_10 is nonzero.
 // @fnv 0x00497c10
+// pdb: AnimIdle::LoadGame | Animation.obj | debug, object-file gap fill, medium
+// pdb params: apLoadGameBuffer, apAnimation
 void FUN_00497c10_struct::LoadAnimationData(BGSLoadFormBuffer* buffer, Animation* anim)
 {
     buffer->ReadTypedData(static_cast<void*>(&field_08), 4u);
@@ -181,29 +195,32 @@ struct ThreatMap
     ThreatLock lock;
     void* GetFirstPos();
     void GetNext(void*& pos, unsigned int& key, Threat*& val);
-    float EvaluateThreats(NiPoint3 pos, int arg, float delay, float a, CombatTargetTimestamp since, float b);
+    float EvaluateThreats(NiPoint3 aLocation, int apActor, float afTime, float afAdditionalRadius, CombatTargetTimestamp afSkipOlderThreats, float afActorHealth);
 };
 
 // Locks the map, sums each threat's Evaluate result for threats newer than since, clamps the total to 1.0, unlocks and returns it.
 // @fnv 0x009a5670
-float ThreatMap::EvaluateThreats(NiPoint3 pos, int arg, float delay, float a, CombatTargetTimestamp since, float b)
+// pdb: CombatThreatMap::ComputeThreatScore | CombatThreatMap.obj | debug, call graph (shared callers), high
+// pdb params: aLocation, apActor, afTime, afAdditionalRadius, afSkipOlderThreats, afActorHealth
+// pdb locals: fthreatScore, fcompareTime, it, ithreatID, pthreat, fscore
+float ThreatMap::EvaluateThreats(NiPoint3 aLocation, int apActor, float afTime, float afAdditionalRadius, CombatTargetTimestamp afSkipOlderThreats, float afActorHealth)
 {
     lock.Lock();
     float fTotal = 0;
     float fTime = 0;
-    if (delay < DAT_01012060)
-        fTime = delay;
+    if (afTime < DAT_01012060)
+        fTime = afTime;
     else
-        fTime = CombatTimer_GetTimer() + delay;
+        fTime = CombatTimer_GetTimer() + afTime;
     void* iter = GetFirstPos();
     while (iter)
     {
         unsigned int key = 0;
         Threat* threat3 = 0;
         GetNext(iter, key, threat3);
-        if (threat3->GetStamp().DisplayElapsedTime() <= since.DisplayElapsedTime())
+        if (threat3->GetStamp().DisplayElapsedTime() <= afSkipOlderThreats.DisplayElapsedTime())
             continue;
-        float fValue = threat3->Evaluate(pos, arg, fTime, a, b);
+        float fValue = threat3->Evaluate(aLocation, apActor, fTime, afAdditionalRadius, afActorHealth);
         fTotal += fValue;
         if (fTotal > 1.0)
         {

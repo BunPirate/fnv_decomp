@@ -13,6 +13,7 @@ struct TextureFormatPreferences;
 #include "NiTMallocInterface.h"
 #include "NiTPrimitiveArray.h"
 
+// pdb: class NiTexturingProperty, size 0x30, bases: NiProperty, 3 members
 class NiTexturingProperty : public NiProperty
 {
   public:
@@ -53,10 +54,10 @@ class NiTexturingProperty : public NiProperty
     class ParallaxMap;
     class ShaderMap;
 
-    unsigned short m_uiObjectFlags;
+    unsigned short m_uFlags; // src: XBOX_RETAIL_PDB +0x18 (old: m_uiObjectFlags)
     unsigned char unk1A[2];
-    NiTPrimitiveArray<Map*> m_kStringArray;
-    NiTPrimitiveArray<ShaderMap*>* m_pShaderMaps;
+    NiTPrimitiveArray<Map*> m_kMaps; // src: XBOX_RETAIL_PDB +0x1c (old: m_kStringArray)
+    NiTPrimitiveArray<ShaderMap*>* m_pkShaderMaps; // src: XBOX_RETAIL_PDB +0x2c (old: m_pShaderMaps)
 
     NiTexturingProperty();
     NiTexturingProperty(NiPixelData* pixelData, const NiFixedString& name, TextureFormatPreferences& preferences);
@@ -78,8 +79,8 @@ class NiTexturingProperty : public NiProperty
     void SetMultiTexture(bool multi);
     void UpdateMultiTexture();
     void SetBaseMapFilterMode(FilterMode mode);
-    void SetBaseMapClampMode(ClampMode mode);
-    void SetBaseMapClampMode(int mode);
+    void SetBaseMapClampMode(ClampMode eMode);
+    void SetBaseMapClampMode(int eMode);
 
     Map* GetBaseMap() const;
     Map* GetDarkMap() const;
@@ -116,13 +117,13 @@ class NiTexturingProperty::Map
     virtual unsigned int GetClassID();
 
     void SetClampMode(ClampMode eMode);
-    void SetFilterMode(FilterMode eMode);
+    void SetFilterMode(FilterMode eFilterMode);
     void SetTextureIndex(unsigned int uiIndex);
     static void* operator new(size_t uiSize);
 
-    unsigned short m_usFlags;
+    unsigned short m_uFlags; // src: XBOX_RETAIL_PDB +0x4 (old: m_usFlags)
     TexturePtr m_spTexture;
-    TextureMapTransform* m_pTextureTransform;
+    TextureMapTransform* m_pkTextureTransform; // src: XBOX_RETAIL_PDB +0xc (old: m_pTextureTransform)
 };
 
 // vftable 0x0109c4d8, 0x28 bytes.
@@ -145,7 +146,7 @@ class NiTexturingProperty::ParallaxMap : public Map
   public:
     ParallaxMap() throw();
 
-    float m_fParallaxOffset;
+    float m_fOffset; // src: XBOX_RETAIL_PDB +0x10 (old: m_fParallaxOffset)
 };
 
 // vftable 0x0109c4ec.

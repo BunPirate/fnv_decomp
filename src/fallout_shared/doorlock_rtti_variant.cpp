@@ -30,6 +30,9 @@ extern Actor* g_thePlayer;
 
 // @fnv 0x005021c0
 // src: XBOX_PDB 0x005021c0
+// pdb: DoorLock::IsAnOwner | DoorLock.obj | debug, call graph, low
+// pdb params: apActor, abUseFaction
+// pdb locals: bretval, pbase, pactorbase, pfac, irank
 bool DoorAccessData::DoorLock_IsAnOwner(Actor* ref, bool b)
 {
     bool r7 = false;

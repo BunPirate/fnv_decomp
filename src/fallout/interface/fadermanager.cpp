@@ -44,23 +44,26 @@ float FaderManager::GetFadeValue(FADER_ENUM eFader)
 }
 
 // @fnv 0x007010e0
-void FaderManager::StopFader(FADER_ENUM eFader, bool bForce)
+// src: XBOX_RETAIL_PDB 0x007010e0
+// pdb: FaderManager::RemoveFader | FaderManager.obj | retail, call graph (shared callers), high
+// pdb params: aeFader, abForce
+void FaderManager::RemoveFader(FADER_ENUM aeFader, bool abForce)
 {
-    if (s_faders[eFader].pFadeNode == 0)
+    if (s_faders[aeFader].pFadeNode == 0)
         return;
-    if (bForce || s_bAllowDetach)
+    if (abForce || s_bAllowDetach)
     {
-        s_faders[eFader].pFadeNode->GetParent()->RemoveObject(s_faders[eFader].pFadeNode);
-        s_faders[eFader].pFadeNode = 0;
-        s_faders[eFader].fAlpha = 0.0f;
-        s_faders[eFader].m_pParentNode = 0;
+        s_faders[aeFader].pFadeNode->GetParent()->RemoveObject(s_faders[aeFader].pFadeNode);
+        s_faders[aeFader].pFadeNode = 0;
+        s_faders[aeFader].fAlpha = 0.0f;
+        s_faders[aeFader].m_pParentNode = 0;
         g_TES->RefreshWorldState(0, 0, 0);
     }
     else
     {
-        s_faders[eFader].bUnk08 = false;
-        if (s_faders[eFader].fAlpha == 1.0)
-            s_faders[eFader].fAlpha = s_faderClearedAlpha;
+        s_faders[aeFader].bUnk08 = false;
+        if (s_faders[aeFader].fAlpha == 1.0)
+            s_faders[aeFader].fAlpha = s_faderClearedAlpha;
     }
 }
 
@@ -69,7 +72,11 @@ static signed char s_iFadeDelay;
 
 // Steps each fader's alpha toward 1 or 0 using elapsed time, removes faded-out nodes, and applies alpha to their shader properties.
 // @fnv 0x007011d0
-void FaderManager::AdvanceFaders(bool bUpdate)
+// src: XBOX_RETAIL_PDB 0x007011d0
+// pdb: FaderManager::UpdateFaders | FaderManager.obj | retail, call graph, high
+// pdb params: abUpdateLoading
+// pdb locals: tempMemContext, n, pfd
+void FaderManager::UpdateFaders(bool abUpdateLoading)
 {
     AutoMemContext context(MEM_CONTEXT_MEM_CONTEXT_INTERFACE, true,
                            "D:\\_Fallout3\\Platforms\\Common\\Code\\Fallout\\Interface\\FaderManager.cpp", 266);
@@ -117,15 +124,18 @@ void FaderManager::AdvanceFaders(bool bUpdate)
 #include "fadermanager_create_decls.h"
 
 // @fnv 0x00700960
-void FaderManager::AddFader(FADER_ENUM eFader, float fDuration, bool bFadeOut)
+// pdb: FaderManager::CreateFader | FaderManager.obj | retail, unique string literal, high
+// pdb params: aeFader, afFadeSpeed, abBeginBlack
+// pdb locals: fhalfScreenHeight, pparent, ptexture, UpdateData, textureFilename, pvertOrder, ptri, palphaProp, ptsp, tempMemContext, pvertices, falpha, ptextures, fhalfScreenWidth
+void FaderManager::AddFader(FADER_ENUM aeFader, float afFadeSpeed, bool abBeginBlack)
 {
     AutoMemContext kAllocationContext(MEM_CONTEXT_MEM_CONTEXT_INTERFACE, true,
                                       "D:\\_Fallout3\\Platforms\\Common\\Code\\Fallout\\Interface\\FaderManager.cpp",
                                       135);
-    if (s_faders[eFader].pFadeNode)
+    if (s_faders[aeFader].pFadeNode)
     {
-        if (!s_faders[eFader].bUnk08)
-            StopFader(eFader, true);
+        if (!s_faders[aeFader].bUnk08)
+            RemoveFader(aeFader, true);
         else
             return;
     }
@@ -149,20 +159,20 @@ void FaderManager::AddFader(FADER_ENUM eFader, float fDuration, bool bFadeOut)
     pTriangles[3] = 2;
     pTriangles[4] = 1;
     pTriangles[5] = 3;
-    s_faders[eFader].pFadeNode = (BSFadeNode*)new NiSortAdjustNode(0);
-    s_faders[eFader].pFadeNode->SetName(NiFixedString(s_faders[eFader].pTextureName));
+    s_faders[aeFader].pFadeNode = (BSFadeNode*)new NiSortAdjustNode(0);
+    s_faders[aeFader].pFadeNode->SetName(NiFixedString(s_faders[aeFader].pTextureName));
     NiAlphaProperty* pBlendingProperty = new NiAlphaProperty;
     pBlendingProperty->NiAlphaProperty_SetAlphaBlending(true);
-    s_faders[eFader].pFadeNode->AttachProperty(pBlendingProperty);
+    s_faders[aeFader].pFadeNode->AttachProperty(pBlendingProperty);
     NiTriShape* faderShape = new NiTriShape(4, pScreenVertices, 0, 0, surface.pTexCoords, 1, 0, 2, pTriangles);
-    s_faders[eFader].pFadeNode->AttachChildInAvailableSlot(faderShape, true);
+    s_faders[aeFader].pFadeNode->AttachChildInAvailableSlot(faderShape, true);
     BSStringT<char> textureName;
-    textureName.PrintfString("Data\\Textures\\Interface\\Faders\\%s", s_faders[eFader].pTextureName);
+    textureName.PrintfString("Data\\Textures\\Interface\\Faders\\%s", s_faders[aeFader].pTextureName);
     faderShape->SetName(NiFixedString(textureName.String()));
     NiPointer<NiTexture> spTextureImage(
         NiSourceTexture::Create(NiFixedString(textureName.String()), DAT_011a9598, true, false));
     surface.fInitialAlpha = 0.0f;
-    if (bFadeOut || fDuration == 0.0)
+    if (abBeginBlack || afFadeSpeed == 0.0)
     {
         surface.fInitialAlpha = 1.0f;
         s_iFadeDelay = 3;
@@ -172,23 +182,26 @@ void FaderManager::AddFader(FADER_ENUM eFader, float fDuration, bool bFadeOut)
     pTileShader->EffectSetting_SetAreaSound(3);
     pTileShader->SetAlpha(surface.fInitialAlpha);
     faderShape->AttachProperty((NiObject*)pTileShader);
-    s_faders[eFader].m_pParentNode = (NiNode*)pTileShader;
+    s_faders[aeFader].m_pParentNode = (NiNode*)pTileShader;
     BSShaderManager::UpdateObjectTypeRecurse(faderShape, false, false);
-    faderShape->GetSourceFilesFromForm()->ComputeFromPoints(4, pScreenVertices);
+    faderShape->NiGeometry_GetModelBound()->ComputeFromPoints(4, pScreenVertices);
     NiNode* pRoot = m_pRootAboveMenus;
-    if (s_faders[eFader].m_bUseAlternateRoot)
+    if (s_faders[aeFader].m_bUseAlternateRoot)
         pRoot = m_pRootBelowMenus;
-    pRoot->AttachChildInAvailableSlot((NiAVObject*)s_faders[eFader].pFadeNode, true);
+    pRoot->AttachChildInAvailableSlot((NiAVObject*)s_faders[aeFader].pFadeNode, true);
     pRoot->UpdateSceneObject();
     NiUpdateData updateParams(0.0f, false, false);
     pRoot->Update(updateParams);
-    s_faders[eFader].fUnk0C = fDuration;
-    s_faders[eFader].bUnk08 = !bFadeOut;
-    s_faders[eFader].fAlpha = surface.fInitialAlpha;
+    s_faders[aeFader].fUnk0C = afFadeSpeed;
+    s_faders[aeFader].bUnk08 = !abBeginBlack;
+    s_faders[aeFader].fAlpha = surface.fInitialAlpha;
 }
 
 // @fnv 0x007006c0
-void FaderManager::AddRoot(NiNode* pParent, float m_fProjectionDepth, bool abBelowMenus)
+// pdb: FaderManager::AddRoot | FaderManager.obj | retail, upstream name already matches, high
+// pdb params: apNode, afOneToOneDistance, abBelowMenus
+// pdb locals: fscreenWidth, fscale, tempMemContext, pnode, plight, fscreenHeight
+void FaderManager::AddRoot(NiNode* apNode, float afOneToOneDistance, bool abBelowMenus)
 {
     AutoMemContext kContext(MEM_CONTEXT_MEM_CONTEXT_INTERFACE, true,
                             "D:\\_Fallout3\\Platforms\\Common\\Code\\Fallout\\Interface\\FaderManager.cpp", 80);
@@ -202,7 +215,7 @@ void FaderManager::AddRoot(NiNode* pParent, float m_fProjectionDepth, bool abBel
     {
         m_pRootAboveMenus = pSortAdjustNode;
         pSortAdjustNode->SetName(NiFixedString("FaderNode Above Menus"));
-        m_fProjectionDepth -= 20.0;
+        afOneToOneDistance -= 20.0;
     }
     NiDirectionalLight* apTargetLight = new NiDirectionalLight;
     apTargetLight->SetName(NiFixedString("FaderNodeLight"));
@@ -220,8 +233,8 @@ void FaderManager::AddRoot(NiNode* pParent, float m_fProjectionDepth, bool abBel
     if (is_bEyeFinity())
         fScale = 1.0f;
     pSortAdjustNode->NiAVObject_SetScale(fScale);
-    pSortAdjustNode->NiAVObject_SetTranslate(NiPoint3(0.0f, m_fProjectionDepth, 0.0f));
-    pParent->AttachChildInAvailableSlot((NiAVObject*)pSortAdjustNode, true);
+    pSortAdjustNode->NiAVObject_SetTranslate(NiPoint3(0.0f, afOneToOneDistance, 0.0f));
+    apNode->AttachChildInAvailableSlot((NiAVObject*)pSortAdjustNode, true);
 }
 
 typedef char _sizecheck_BSTimer[sizeof(GameTimerRecord) == 32 ? 1 : -1];
@@ -231,7 +244,7 @@ extern float DAT_011ac3a0;
 // @fnv 0x007013e0
 float GameTimerRecord::GetRealTimeSeconds()
 {
-    return fTimeSinceScaleStart / DAT_011ac3a0;
+    return fDelta / DAT_011ac3a0;
 }
 
 struct FaderRec7
@@ -295,6 +308,7 @@ struct FUN_006ffe80_shell
 // Calls FUN_006ffe80(0, 0), then initializes fields from DAT_0119f278/27c/280 and zeroes m_20, m_1c, m_24, m_29 while setting m_28 to 1.
 // @fnv 0x006ffe10
 // src: XBOX_PDB 0x006ffe10
+// pdb: AnimatingText::Initialize | AnimatingText.obj | debug, upstream name already matches, high
 void FUN_006ffe80_shell::AnimatingText_Initialize()
 {
     AnimatingText_SetTraits(0, 0);

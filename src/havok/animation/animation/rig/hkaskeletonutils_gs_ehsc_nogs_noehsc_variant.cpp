@@ -125,7 +125,7 @@ bool* __cdecl AreSequenceValuesInRange(bool* result, FUN_00cdd3f0_s* limits, Seq
 struct Msg
 {
     int f0, f4, f8;
-    void Init(void* buf, int size);
+    void Init(void* buf, int bufSize);
     void Done();
     Msg& Add(const char* s);
     Msg& Add(const char* s, int v);
@@ -168,7 +168,7 @@ struct Dst
     int cnt;
 };
 typedef int(__cdecl* CmpFn)(unsigned int, unsigned int);
-int __cdecl MapTracksToBones(Names* names, Src* src, CmpFn cmp, Dst* dst);
+int __cdecl hkaSkeletonUtils_bindByName(Names* skeleton, Src* anim, CmpFn compare, Dst* bindingOut);
 struct HolderRec
 {
     int unk00;
@@ -251,9 +251,9 @@ __forceinline void hkVector4::setBroadcast3(const hkVector4& v)
     m_vComponents = _mm_shuffle_ps(v.m_vComponents, v.m_vComponents, 0xff);
 }
 
-__forceinline hkSimdReal hkVector4::dot3(const hkVector4& v) const
+__forceinline hkSimdReal hkVector4::dot3(const hkVector4& x) const
 {
-    const __m128 x2 = _mm_mul_ps(m_vComponents, v.m_vComponents);
+    const __m128 x2 = _mm_mul_ps(m_vComponents, x.m_vComponents);
     const __m128 sum = _mm_add_ss(_mm_shuffle_ps(x2, x2, 0x55), x2);
     hkSimdReal result;
     result.m_vValue = _mm_add_ss(_mm_shuffle_ps(x2, x2, 0xaa), sum);
@@ -289,20 +289,25 @@ __forceinline void hkQsTransform::SetProduct(const hkQsTransform& t1, const hkQs
 
 // @fnv 0x00cddad0
 // src: COMMUNITY 0x00cddad0
-extern "C" void __cdecl hkaSkeletonUtils_transformLocalPoseToWorldPose(int numTransforms, int parentIndicesIn, int* worldFromModelIn, int poseLocalIn,
-                                     int poseModelIn)
+// pdb: hkaSkeletonUtils::transformLocalPoseToWorldPose | hkaSkeletonUtils.obj | retail, upstream name already matches, high
+// pdb params: numTransforms, parentIndices, worldFromModel, poseLocal, poseWorldOut
+extern "C" void __cdecl hkaSkeletonUtils_transformLocalPoseToWorldPose(int numTransforms, int parentIndices, int* worldFromModel, int poseLocal,
+                                     int poseWorldOut)
 {
     for (int i = 0; i < numTransforms; i++)
     {
-        const int parentId = ((const short*)parentIndicesIn)[i];
-        const hkQsTransform& worldFromParent = (-1 != parentId) ? ((hkQsTransform*)poseModelIn)[parentId]
-                                                                   : (*(const hkQsTransform*)worldFromModelIn);
-        ((hkQsTransform*)poseModelIn)[i].SetProduct(worldFromParent, ((const hkQsTransform*)poseLocalIn)[i]);
+        const int parentId = ((const short*)parentIndices)[i];
+        const hkQsTransform& worldFromParent = (-1 != parentId) ? ((hkQsTransform*)poseWorldOut)[parentId]
+                                                                   : (*(const hkQsTransform*)worldFromModel);
+        ((hkQsTransform*)poseWorldOut)[i].SetProduct(worldFromParent, ((const hkQsTransform*)poseLocal)[i]);
     }
 }
 
 // @fnv 0x00cddbf0
 // src: GUESS 0x00cddbf0 (confidence: high)
+// pdb: hkaSkeletonUtils::transformLocalBoneToModelBone | hkaSkeletonUtils.obj | retail, object-file run extension, low
+// pdb params: boneIndex, parentIndices, poseLocal, boneModelOut
+// pdb locals: assertBuf, ostr
 void __cdecl hkQsTransform_AccumulateBoneParentTransforms(int boneIndex, const short* parentIndices, const hkQsTransform* poseLocal,
                           hkQsTransform& poseModelOut)
 {

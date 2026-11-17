@@ -39,13 +39,13 @@ inline void NiRangeLODData::SetRange(unsigned int i, float fNear, float fFar)
     m_pRanges[i].m_fFarPlane = fFar;
 }
 
-extern "C" const void* g_011f5f1c;
+extern "C" const void* NiLODNode_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f5f1c (old: g_011f5f1c)
 
 // @fnv 0x00a994c0
 // src: COMMUNITY 0x00a994c0
 const void* __cdecl NiLODNode_GetRTTI()
 {
-    return &g_011f5f1c;
+    return &NiLODNode_ms_RTTI;
 }
 
 extern int DAT_010a0b64;
@@ -53,6 +53,8 @@ extern int DAT_010a0b64;
 // Allocates a NiLODNode, initializes its base, LOD data, switch index and modifier flag.
 // @fnv 0x00a99710
 // src: EXE 0x00a99710
+// pdb: NiLODNode::CreateObject | NiLODNode.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 void* __cdecl NiLODNode_CreateObject()
 {
     void* p = BSFadeNode::operator new(0xd4);
@@ -131,6 +133,8 @@ inline void NiRefObject::IncRefCount()
 }
 // Replaces m_sp with p, releasing the old object and incrementing the new one's reference count when they differ.
 // @fnv 0x00a99340
+// pdb: NiLODNode::SaveBinary | NiLODNode.obj | retail, object-file run extension, low
+// pdb params: kStream
 void NiLODNode::AssignRefCounted(Obj* apObj)
 {
     NiRefObject*& referencedObject = reinterpret_cast<NiRefObject*&>(m_spLODData.m_pObject);
@@ -179,6 +183,8 @@ void NiLODNode::UpdateChildrenWorldData()
 
 // @fnv 0x00a99390
 // src: XBOX_PDB 0x00a99390
+// pdb: NiLODNode::CopyMembers | NiLODNode.obj | retail, object-file run extension, low
+// pdb params: pkDest, kCloning
 void NiLODNode::CopyMembers_00a99390(NiSwitchNode* pkDest, CloningProcess& kCloning)
 {
     reinterpret_cast<void(__thiscall*)(NiSwitchNode*, NiSwitchNode*, CloningProcess&)>(&NiSwitchNode_CopyMembers)(
@@ -247,10 +253,15 @@ inline NiTArray<unsigned int, NiTMallocInterface<unsigned int> >::~NiTArray()
 
 // Destructor for the class; the body is empty, member cleanup is handled by the compiler-generated member destructors.
 // @fnv 0x00a99470
+// pdb: NiLODNode::~NiLODNode | NiLODNode.obj | retail, upstream name already matches, high
 NiLODNode::~NiLODNode() throw()
 {}
 
 // @fnv 0x00a996a0
+// pdb: NiLODNode::CreateClone | NiLODNode.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiLODNode::CopyMembers
+// pdb params: kCloning
+// pdb locals: pkObject
 NiLODNode* NiLODNode::CreateCloneLODNode(CloningProcess& process)
 {
     void* memory = BSFadeNode::operator new(0xd4);
@@ -275,7 +286,7 @@ NiLODNode* NiLODNode::CreateCloneLODNode(CloningProcess& process)
     return clone;
 }
 
-extern "C" const void* g_011f5f1c;
+extern "C" const void* NiLODNode_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f5f1c (old: g_011f5f1c)
 extern "C" char* __cdecl NiViewerStrings_NiGetViewerString_Title(const void* pvName);
 
 inline unsigned int LODAddViewerString(StrArr* strings, const char* const& value)
@@ -289,12 +300,14 @@ inline unsigned int LODAddViewerString(StrArr* strings, const char* const& value
 
 // @fnv 0x00a99760
 // src: XBOX_PDB 0x00a99760
+// pdb: NiLODNode::GetViewerStrings | NiLODNode.obj | retail, string-set bridge, high
+// pdb params: pkStrings
 void NiLODNode::GetViewerStrings_00a99760(NiViewerStringsArray* strings)
 {
     StrArr* pkStrings = reinterpret_cast<StrArr*>(strings);
     reinterpret_cast<void(__thiscall*)(NiSwitchNode*, NiViewerStringsArray*)>(&FUN_00a94680)(
         reinterpret_cast<NiSwitchNode*>(this), strings);
-    LODAddViewerString(pkStrings, NiViewerStrings_NiGetViewerString_Title(g_011f5f1c));
+    LODAddViewerString(pkStrings, NiViewerStrings_NiGetViewerString_Title(NiLODNode_ms_RTTI));
     NiObject* pkLODData = static_cast<NiObject*>(m_spLODData.m_pObject);
     if (pkLODData)
     {
@@ -330,6 +343,10 @@ void NiLODNode::LoadRefFromStream(NiStream* stream)
 // Calls FUN_00a94000, checks m_sp nullness, then compares v02 results and calls v23 when they match.
 // @fnv 0x00a99400
 // src: XBOX_PDB 0x00a99400
+// pdb: NiLODNode::IsEqual | NiLODNode.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiLODNode::NiLODNode
+// pdb params: pkObject
+// pdb locals: pkLOD, pkObjectData
 bool NiLODNode::IsEqual_00a99400(Holder* other)
 {
     if (!NiSwitchNode::IsEqual_00a94000(reinterpret_cast<NiObject*>(other)))

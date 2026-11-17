@@ -5,6 +5,7 @@
 class NiTriBasedGeomData;
 class NiShadeProperty;
 
+// pdb: class NiTriBasedGeom, size 0xf0 (here 0xc4), bases: NiGeometry, 0 members
 class NiTriBasedGeom : public NiGeometry
 {
   public:
@@ -17,7 +18,7 @@ class NiTriBasedGeom : public NiGeometry
     virtual bool RegisterStreamables(NiStream& stream);
     virtual void SaveBinary(NiStream& stream);
     virtual bool IsEqual(NiObject* object) const;
-    virtual void GetViewerStrings(NiViewerStringsArray* strings);
+    virtual void GetViewerStrings(NiViewerStringsArray* pkStrings);
     virtual NiTriBasedGeom* IsTriBasedGeometry() const;
     virtual void ReplaceModelData(NiGeometryData* data);
     virtual void GetTrianglePoints(unsigned short triangle, NiPoint3** a, NiPoint3** b, NiPoint3** c);

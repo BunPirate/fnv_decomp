@@ -112,17 +112,17 @@ public:
     void Unitize_004a0c10();
     float FUN_004a7290();
     float FUN_004a7290() const;
-    LocalVec3 FUN_004b3800(const LocalVec3& other) const;
+    LocalVec3 FUN_004b3800(const LocalVec3& pt) const;
     LocalVec3 ProcessAndReturnValue_0053d280(float divisor);
     float NiPoint3_XYLength();
     float NiPoint3_XYLength() const;
     void ComputeValue_0063c8a0(const LocalVec3* other);
     void ComputeValue_0063c8a0(void* other);
     void FUN_006815c0();
-    float CVec3_Distance(LocalVec3* other);
-    float CVec3_Distance(const LocalVec3& other) const;
-    LocalVec3 TransformPointByMatrix4(const Mat& matrix);
-    LocalVec3 TransformPointByMatrix4(const Matrix4* matrix);
+    float CVec3_Distance(LocalVec3* cVec);
+    float CVec3_Distance(const LocalVec3& cVec) const;
+    LocalVec3 TransformPointByMatrix4(const Mat& cTransform);
+    LocalVec3 TransformPointByMatrix4(const Matrix4* cTransform);
     void Normalize_00b12790();
     LocalVec3 Diff_00b13040(void* other);
     LocalVec3 Diff_00b13040(const LocalVec3& other) const;
@@ -203,32 +203,34 @@ struct SecondBase
     {}
 };
 
-struct FUN_00ddc0b0 : FirstBase, SecondBase
+// pdb: class hkStatisticsProcess, size 0x44, bases: hkReferencedObject, hkProcess, 3 members
+struct hkStatisticsProcess : FirstBase, SecondBase // src: EXE 0x010d7e28 (vtable; old: FUN_00ddc0b0)
 {
     int unk0c;
     int unk10;
     int unk14;
     int unk18;
     int unk1c;
-    PtrArrayMember m_kFirst;
-    ArrayMember m_kSecond;
-    ArrayMember m_kThird;
+    PtrArrayMember m_contexts; // src: XBOX_RETAIL_PDB +0x20 (old: m_kFirst)
+    ArrayMember m_infoBuffer; // src: XBOX_RETAIL_PDB +0x2c (old: m_kSecond)
+    ArrayMember m_strBuffer; // src: XBOX_RETAIL_PDB +0x38 (old: m_kThird)
 
-    virtual ~FUN_00ddc0b0() throw();
+    virtual ~hkStatisticsProcess() throw();
 };
 
 // Destructor of a container holding three array members, which are freed by their own destructors.
 // @fnv 0x00ddc0b0
-FUN_00ddc0b0::~FUN_00ddc0b0() throw()
+// pdb: hkStatisticsProcess::~hkStatisticsProcess | hkStatisticsProcess.obj | retail, object-file run extension, low
+hkStatisticsProcess::~hkStatisticsProcess() throw()
 {}
 
-extern int DAT_01269cd8;
+extern int hkStatisticsProcess_m_tag; // src: XBOX_RETAIL_PDB 0x01269cd8 (old: DAT_01269cd8)
 
 // @fnv 0x00ddc820
 // src: GUESS 0x00ddc820 (confidence: low)
 int Object_GetDAT_01269cd8_00ddc820()
 {
-    return DAT_01269cd8;
+    return hkStatisticsProcess_m_tag;
 }
 
 #include <windows.h>
@@ -250,8 +252,8 @@ __forceinline hkMemoryRouter* GetSingleton()
 {
     return reinterpret_cast<hkMemoryRouter*>(hkMemoryRouter_getInstance());
 }
-void __cdecl ResizeAudioStream(Allocator* ctx, void* pVec, int elem);
-void __cdecl hkArrayUtil__reserve(Allocator* ctx, void* pVec, int sz, int elem);
+void __cdecl ResizeAudioStream(Allocator* mem, void* array, int sizeElem);
+void __cdecl hkArrayUtil__reserve(Allocator* mem, void* array, int numElem, int sizeElem);
 struct IntVec
 {
     int* m_pData;
@@ -336,7 +338,7 @@ __forceinline Elem16& LocalVec3::expand(Allocator& allocator)
 extern char DAT_010c9368;
 extern char DAT_0102e388;
 extern char DAT_010d6ae8;
-extern char DAT_0126c830;
+extern char hkMonitorStreamStringMapClass; // src: XBOX_RETAIL_PDB 0x0126c830 (old: DAT_0126c830/g_0126c830/g_unk0126c830)
 struct CharVec
 {
     char* m_pData;
@@ -378,7 +380,7 @@ struct SObj
 void __cdecl hkObjectSerialize_writeObject(SObj* s, MiniStr* ms, int a, int b, LocalVec3* v3, void* g, Vec4* v4);
 struct Stream
 {
-    void hkOArchive_write32u(int total);
+    void hkOArchive_write32u(int u);
     void hkOArchive_write8u(int a);
     void WriteInt(int a);
     void hkOArchive_writeRaw(int a, int b);
@@ -402,11 +404,14 @@ struct ThisCls
     {
         return (Stream*)m_0c;
     }
-    void WriteToStream(int arg);
+    void WriteToStream(int frameTimeInMs);
 };
 // When sum is positive, writes m_24 data, m_30 text, and ranges derived from m_18 to m_0c, then frees local buffers.
 // @fnv 0x00ddc1c0
-void ThisCls::WriteToStream(int aiUnused)
+// pdb: hkStatisticsProcess::step | hkStatisticsProcess.obj | retail, vtable slot, high
+// pdb params: frameTimeInMs
+// pdb locals: starts, globalFixups, ends, monStreamEnd, monStreamBegin, strMap, strWriter, strPtrMap, assertBuf, ostr
+void ThisCls::WriteToStream(int frameTimeInMs)
 {
     if (m_0c == 0)
         return;
@@ -530,7 +535,7 @@ void ThisCls::WriteToStream(int aiUnused)
     objStr.m_08->m_pData[objStr.m_08->m_iArrayLength] = 0;
     MiniStr ms;
     ms.FUN_00dc1680(&DAT_010d6ae8);
-    hkObjectSerialize_writeObject(&objStr, &ms, 1, 0, &vecProcessed, &DAT_0126c830, &vec4);
+    hkObjectSerialize_writeObject(&objStr, &ms, 1, 0, &vecProcessed, &hkMonitorStreamStringMapClass, &vec4);
     objStr.m_00 = &DAT_010c9368;
     if (objStr.m_10 == 0)
     {
@@ -630,7 +635,7 @@ void ThisCls::WriteToStream(int aiUnused)
         if ((cap4 & (int)0x80000000) == 0)
             pAllocator11->Free(vec4.m_pData, (cap4 & 0x3fffffff) * sizeof(Elem12));
     }
-    (void)aiUnused;
+    (void)frameTimeInMs;
     (void)iTotalRangeLen;
     (void)vecProcessed;
 }
@@ -677,6 +682,7 @@ struct FUN_00ddc840
 
 // Initialises m_u04 and m_u06 to zero.
 // @fnv 0x00ddc840
+// pdb: hkStatisticsProcess::`scalar deleting destructor' | hkStatisticsProcess.obj | retail, vtable slot, high
 FUN_00ddc840::FUN_00ddc840()
 {
     m_u04 = 0;
@@ -690,7 +696,7 @@ struct Sbf00_Sub
     int unk04;
     int unk08;
     int unk0c;
-    void InitHeading();
+    void hkMonitorStreamAnalyzer_captureFrameDetails();
 };
 struct Sbf00_Ctx
 {
@@ -737,7 +743,7 @@ struct Sbf00_B2
 extern int DAT_010d1508;
 extern int DAT_010d7e48;
 extern int DAT_010d7e28;
-extern int DAT_0126c860;
+extern int hkMonitorStreamFrameInfoClass; // src: XBOX_RETAIL_PDB 0x0126c860 (old: DAT_0126c860/g_0126c860)
 extern double DAT_01017b70;
 unsigned __int64 __cdecl hkStopwatch_getTicksPerSecond();
 void __cdecl hkObjectSerialize_writeObject(Sbf00_Ctx* a1, Sbf00_Name* a2, int a3, int a4, Sbf00_Sub* a5, void* a6, Sbf00_Arr24* a7);
@@ -793,12 +799,15 @@ struct FUN_00ddbf00 : SbfBases
 };
 // Copies pointer elements from pSource into m_kFirst, growing its backing array when the source count exceeds capacity.
 // @fnv 0x00ddbf00
+// pdb: hkStatisticsProcess::hkStatisticsProcess | hkStatisticsProcess.obj | retail, object-file run extension, low
+// pdb params: contexts
+// pdb locals: frameInfo, infoWriter, globalFixups, assertBuf, ostr
 FUN_00ddbf00::FUN_00ddbf00(PtrArrayMember* pSource)
 {
     FUN_00ddbf00* pThis = this;
     ArrayMember* pSecond = (ArrayMember*)&m_kSecond;
     Sbf00_Ctx kCtx;
-    kCtx.m_kSub.InitHeading();
+    kCtx.m_kSub.hkMonitorStreamAnalyzer_captureFrameDetails();
     kCtx.m_kSub.unk00 = 0;
     kCtx.m_kSub.unk0c = 0;
     kCtx.m_kSub.unk04 = 0;
@@ -815,7 +824,7 @@ FUN_00ddbf00::FUN_00ddbf00(PtrArrayMember* pSource)
     {
         Sbf00_Name kName;
         kName.FUN_00dc1680(&DAT_010d6ae8);
-        hkObjectSerialize_writeObject(&kCtx, &kName, 1, 0, &kCtx.m_kSub, &DAT_0126c860, &kArr);
+        hkObjectSerialize_writeObject(&kCtx, &kName, 1, 0, &kCtx.m_kSub, &hkMonitorStreamFrameInfoClass, &kArr);
     }
     kCtx.FUN_00cc0780();
     kArr.Free();
@@ -868,6 +877,7 @@ struct Elem
 
 // @fnv 0x00ddc870
 // src: GUESS 0x00ddc870 (confidence: low)
+// pdb: hkMonitorStreamStringMap::~hkMonitorStreamStringMap | hkStatisticsProcess.obj | retail, object-file run extension, low
 void LocalVec3::ProcessEntries_00ddc870()
 {
     using namespace fnv_00ddc870;

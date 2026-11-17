@@ -5,6 +5,7 @@
 class Script;
 class ScriptLocals;
 
+// pdb: class ExtraScript, size 0x14, bases: BSExtraData, 2 members
 class ExtraScript : public BSExtraData
 {
 public:

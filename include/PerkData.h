@@ -1,5 +1,6 @@
 #pragma once
 
+// pdb: structure PerkData, size 0x5 (here 0x8), 5 members
 class PerkData
 {
 public:

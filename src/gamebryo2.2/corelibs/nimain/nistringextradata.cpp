@@ -30,6 +30,8 @@ extern "C" int EmptyFS;
 extern "C" void* DAT_0109d39c;
 // @fnv 0x00a74230
 // src: EXE 0x00a74230
+// pdb: NiStringExtraData::CreateObject | NiStringExtraData.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 void* __cdecl NiStringExtraData_CreateObject()
 {
     void* p = BSFadeNode::operator new(0x10);
@@ -52,6 +54,8 @@ struct NiStreamHelper
     void ReadStringTableEntry(NiFixedString&);
 };
 // @fnv 0x00a74260
+// pdb: NiStringExtraData::LoadBinary | NiStringExtraData.obj | retail, upstream name already matches, high
+// pdb params: stream
 void __fastcall NiStringExtraData_LoadBinary(NiStringExtraData* self, void*, NiStream& stream)
 {
     self->NiExtraData::LoadBinary(stream);
@@ -76,6 +80,8 @@ struct VHack
     virtual void v8(const char*);
 };
 // @fnv 0x00a741d0
+// pdb: NiStringExtraData::RegisterStreamables | NiStringExtraData.obj | retail, upstream name already matches, high
+// pdb params: stream
 bool __fastcall NiStringExtraData_RegisterStreamables(NiStringExtraData* self, void*, NiStream& stream)
 {
     if (!reinterpret_cast<bool (__thiscall*)(NiExtraData*, NiStream&)>(&FUN_00a7b290)(self, stream))
@@ -85,6 +91,8 @@ bool __fastcall NiStringExtraData_RegisterStreamables(NiStringExtraData* self, v
 }
 
 // @fnv 0x00a742a0
+// pdb: NiStringExtraData::LinkObject | NiStringExtraData.obj | debug, object-file run extension, low
+// pdb params: stream
 unsigned char __fastcall NiStringExtraData_Equals(NiStringExtraData* self, void*, NiStringExtraData* pOther)
 {
     if (pOther == 0)
@@ -126,6 +134,8 @@ extern "C" void(__stdcall* DAT_00fdf1c0)(void*);
 extern "C" void(__stdcall* DAT_00fdf1c4)(void*);
 
 // @fnv 0x00a74300
+// pdb: NiStringExtraData::`scalar deleting destructor' | NiStringExtraData.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiStringExtraData::IsEqual
 void* __fastcall NiStringExtraData_CreateCopy(NiStringExtraData* self, void*, int arg)
 {
     NiStringExtraData* esi = (NiStringExtraData*)Object_DispatchCommandFour(0x10);
@@ -179,11 +189,13 @@ struct NiStrTable
 };
 
 extern "C" char* __cdecl NiViewerStrings_NiGetViewerString_Title(char* s);
-extern "C" char* __cdecl NiGetViewerString_00a7d5e0(const char* key, char* value);
+extern "C" char* __cdecl NiGetViewerString_00a7d5e0(const char* pcPrefix, char* pcValue);
 
 extern "C" void FUN_00a7b580();
 
 // @fnv 0x00a74380
+// pdb: NiStringExtraData::GetViewerStrings | NiStringExtraData.obj | retail, string-set bridge, high
+// pdb params: pStrings
 void __fastcall NiStringExtraData_GetViewerStrings(NiStringExtraData* self, void*, NiStream& stream)
 {
     reinterpret_cast<void (__thiscall*)(NiExtraData*, NiStream&)>(&FUN_00a7b580)(self, stream);

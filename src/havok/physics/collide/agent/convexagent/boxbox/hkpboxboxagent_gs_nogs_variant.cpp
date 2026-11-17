@@ -38,7 +38,7 @@ struct S_00d40180 {
     S_00d40180_Entry m_entries[8];
     unsigned char unk30;
     unsigned char m_uiItemCount;
-    void DispatchAndDelete(void* p);
+    void DispatchAndDelete(void* constraintOwner);
 };
 typedef void (__cdecl* D41FD0Func)();
 struct D41FD0AgentFuncs {
@@ -56,7 +56,7 @@ void __cdecl D41FD0CreateAgent();
 void __cdecl D41FD0StaticGetPenetrations();
 void __cdecl D41FD0StaticGetClosestPoints();
 void __cdecl D41FD0StaticLinearCast();
-void __cdecl RegisterStaticCollisionAgent(D41FD0CollisionDispatcher* dispatcher);
+void __cdecl hkpPredGskfAgent_registerAgent(D41FD0CollisionDispatcher* dispatcher);
 extern "C" const double DAT_010cf200;
 extern "C" char DAT_010cf1c4;
 extern "C" void* __cdecl FUN_00dacc00(void* a1, void* a2, void* a3, void* a4);
@@ -96,8 +96,8 @@ public:
     unsigned short m_06;
     void* m_08;
 };
-void* hkpBoxBoxAgent_createBoxBoxAgent(void* a1, void* a2, void* a3, void* a4);
-extern "C" void __cdecl hkpBoxBoxAgent_staticGetClosestPoints(void* a, void* b, void* c, void* d);
+void* hkpBoxBoxAgent_createBoxBoxAgent(void* bodyA, void* bodyB, void* input, void* contactMgr);
+extern "C" void __cdecl hkpBoxBoxAgent_staticGetClosestPoints(void* bodyA, void* bodyB, void* input, void* collector);
 // @fnv 0x00d406a0
 // src: HAVOK_SRC 0x00d406a0
 extern "C" void __stdcall hkpBoxBoxAgent_getClosestPoints(void* a, void* b, void* c, void* d) {
@@ -210,7 +210,7 @@ struct Query70 {
         expandedB.quad=_mm_add_ps(toleranceVec.quad, hb.quad);
     }
 
-    hkBool70 UpdateState_00db2750(Contact70*);
+    hkBool70 hkpBoxBoxCollisionDetection_calculateClosestPoint(Contact70*);
 };
 
 struct CollisionWork70 {
@@ -221,7 +221,10 @@ struct CollisionWork70 {
 
 // @fnv 0x00d40470
 // src: XBOX_PDB 0x00d40470
-extern "C" void __cdecl hkpBoxBoxAgent_staticGetClosestPoints(void* first, void* second, void* rawInput, void* rawCollector)
+// pdb: hkpBoxBoxAgent::staticGetClosestPoints | hkpBoxBoxAgent.obj | retail, upstream name already matches, high
+// pdb params: bodyA, bodyB, input, collector
+// pdb locals: rB, result, event, detector, rA, aTb
+extern "C" void __cdecl hkpBoxBoxAgent_staticGetClosestPoints(void* bodyA, void* bodyB, void* input, void* collector)
 {
     {
         TimerStream70* stream = (TimerStream70*)TlsGetValue(DAT_0126835c);
@@ -238,8 +241,8 @@ extern "C" void __cdecl hkpBoxBoxAgent_staticGetClosestPoints(void* first, void*
         }
     }
 
-    Body70* a = (Body70*)first;
-    Body70* b = (Body70*)second;
+    Body70* a = (Body70*)bodyA;
+    Body70* b = (Body70*)bodyB;
     Contact70 contact;
     Transform70 relative;
     Query70 query;
@@ -255,15 +258,15 @@ extern "C" void __cdecl hkpBoxBoxAgent_staticGetClosestPoints(void* first, void*
 
     relative.hkTransform_setMulInverseMul(a->transform, b->transform);
 
-    new (&query) Query70(a, b, relative, ha, hb, ((Input70*)rawInput)->GetTolerance());
+    new (&query) Query70(a, b, relative, ha, hb, ((Input70*)input)->GetTolerance());
 
     contact.a = a;
     contact.b = b;
 
-    hkBool70 hit = query.UpdateState_00db2750(&contact);
+    hkBool70 hit = query.hkpBoxBoxCollisionDetection_calculateClosestPoint(&contact);
 
     if (hit) {
-        ((Collector70*)rawCollector)->Add(&contact);
+        ((Collector70*)collector)->Add(&contact);
     }
 
     {

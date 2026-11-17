@@ -44,6 +44,9 @@ struct MyNiFixedStringArray : public NiFixedStringArray
 
 // @fnv 0x00a65140
 // src: XBOX_PDB 0x00a65140
+// pdb: NiTLargeArray<NiFixedString,NiTNewInterface<NiFixedString> >::SetSize | NiStream.obj | retail, call graph, medium
+// pdb params: uiMaxSize
+// pdb locals: pSaveBase, i
 void MyNiFixedStringArray::NiTLargeArray_NiFixedString_NiTNewInterface_NiFixedString_SetSize(unsigned int uiMaxSize)
 {
     if (uiMaxSize == m_uiMaxSize)

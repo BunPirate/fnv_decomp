@@ -2,6 +2,7 @@
 
 #include "NiAllocator.h"
 
+// pdb: class NiStandardAllocator, size 0x4, bases: NiAllocator, 0 members
 class NiStandardAllocator : public NiAllocator
 {
 public:

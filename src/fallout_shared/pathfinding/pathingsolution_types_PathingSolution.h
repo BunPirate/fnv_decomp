@@ -62,6 +62,7 @@ enum PathSmootherPOVDebugArcTest__Result
 #pragma pack(push, 4)
 #pragma pack(pop)
 #pragma pack(push, 4)
+// pdb: structure ParentSpaceNode, size 0xc, 3 members
 class ParentSpaceNode
 {
   public:
@@ -76,6 +77,7 @@ FNV_STATIC_ASSERT(offsetof(ParentSpaceNode, m_bIsWorldspace) == 0);
 FNV_STATIC_ASSERT(offsetof(ParentSpaceNode, m_pContainingWorldspace) == 4);
 FNV_STATIC_ASSERT(offsetof(ParentSpaceNode, m_pReferenceCell) == 8);
 #pragma pack(push, 4)
+// pdb: structure TeleportLink, size 0x10, 2 members
 class TeleportLink
 {
   public:
@@ -218,6 +220,7 @@ FNV_STATIC_ASSERT(offsetof(CircularArc, Start) == 0);
 FNV_STATIC_ASSERT(offsetof(CircularArc, End) == 8);
 FNV_STATIC_ASSERT(offsetof(CircularArc, Dir) == 16);
 #pragma pack(push, 4)
+// pdb: structure Sphere, size 0x10, 2 members
 class Sphere
 {
   public:

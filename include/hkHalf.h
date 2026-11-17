@@ -1,6 +1,7 @@
 #pragma once
 
 // src: HAVOK_SRC (class name, member name m_value)
+// pdb: class hkHalf, size 0x2, 1 members
 class hkHalf
 {
 public:

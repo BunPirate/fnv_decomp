@@ -100,6 +100,7 @@ struct FUN_00464f40_class
 
 // @fnv 0x00464f40
 // src: GUESS 0x00464f40 (confidence: low)
+// pdb: NiTLargePrimitiveArray<TESForm *>::~NiTLargePrimitiveArray<TESForm *> | TESDataHandler.obj | debug, call graph (shared callers), medium
 void __thiscall FUN_00464f40_class::ForwardCall_00464f40()
 {
     SetVtableAndProcessState_00470110();
@@ -108,6 +109,8 @@ void __thiscall FUN_00464f40_class::ForwardCall_00464f40()
 
 // @fnv 0x00464ff0
 // src: XBOX_PDB 0x00464ff0
+// pdb: NavMeshPtr::NavMeshPtr | TESDataHandler.obj | debug, call graph, medium
+// pdb params: pObject
 NavMesh* NavMesh::NavMeshPtr_NavMeshPtr_00464ff0(int a)
 {
     NiPointer_NavMesh_NiPointer_NavMesh_0042fd70(a);
@@ -142,6 +145,8 @@ void __cdecl FUN_00ec825b(char* p, unsigned int a, char const* b, char const* c,
 // Calls FUN_00ec825b, passing through p, a, b, c, d and e unchanged.
 // @fnv 0x0046e850
 // src: COMMUNITY 0x0046e850
+// pdb: BSmakepath | TESDataHandler.obj | debug, call graph, medium
+// pdb params: apPath, aiSize, apDrive, apDir, apFile, apExt
 void __cdecl makepath(char* p, unsigned int a, char const* b, char const* c, char const* d, char const* e)
 {
     FUN_00ec825b(p, a, b, c, d, e);
@@ -180,6 +185,7 @@ struct FUN_0046eb00_Class
 };
 
 // @fnv 0x0046eb00
+// pdb: NiTexturingProperty::GetDarkMap | TESDataHandler.obj | debug, object-file gap fill, medium
 unsigned int __thiscall FUN_0046eb00_Class::GetSecondElement()
 {
     return *((Arr*)((char*)this + 0x1c))->GetAt(1);
@@ -198,6 +204,7 @@ struct FUN_0046eb40_Class
 
 // @fnv 0x0046eb40
 // src: COMMUNITY 0x0046eb40
+// pdb: NiTexturingProperty::GetGlossMap | TESDataHandler.obj | debug, object-file gap fill, medium
 unsigned int FUN_0046eb40_Class::NiTexturingProperty_GetGlossMap()
 {
     return *(reinterpret_cast<Arr*>(this + 0x1c)->GetAt(3));
@@ -215,6 +222,7 @@ struct FUN_0046eb60_Class
 };
 // @fnv 0x0046eb60
 // src: COMMUNITY 0x0046eb60
+// pdb: NiTexturingProperty::GetGlowMap | TESDataHandler.obj | debug, object-file gap fill, medium
 unsigned int FUN_0046eb60_Class::NiTexturingProperty_GetGlowMap()
 {
     return *(reinterpret_cast<Arr*>(this + 0x1c)->GetAt(4));
@@ -231,6 +239,7 @@ struct FUN_0046eb80_Class
     unsigned int GetEntryAt5();
 };
 // @fnv 0x0046eb80
+// pdb: NiTexturingProperty::GetBumpMap | TESDataHandler.obj | debug, object-file gap fill, medium
 unsigned int FUN_0046eb80_Class::GetEntryAt5()
 {
     return *((Arr*)((char*)this + 0x1c))->GetAt(5);
@@ -249,6 +258,8 @@ struct FUN_0046eba0_class
 };
 // Returns the unsigned int stored at index a + 8 of the Arr object located at this + 0x1c.
 // @fnv 0x0046eba0
+// pdb: NiTexturingProperty::GetDecalMap | TESDataHandler.obj | debug, object-file gap fill, medium
+// pdb params: uiIndex
 unsigned int FUN_0046eba0_class::GetElementAtOffset(int aiIndex)
 {
     return *reinterpret_cast<Arr*>(reinterpret_cast<char*>(this) + 0x1c)->GetAt(aiIndex + 8);
@@ -299,6 +310,7 @@ struct FUN_00470040_class
 };
 // Calls FUN_004704e0 with the two arguments, then sets m_vft to the address of DAT_01019a1c.
 // @fnv 0x00470040
+// pdb: NiTMapBase<NiTPointerAllocator<unsigned int>,NiObject *,bool>::~NiTMapBase<NiTPointerAllocator<unsigned int>,NiObject *,bool> | BipedAnim.obj | debug, object-file run extension, low
 FUN_00470040_class::FUN_00470040_class(int aiFirst, int aiSecond)
 {
     FUN_004704e0(aiFirst, aiSecond);
@@ -314,6 +326,8 @@ struct FUN_004700a0
 };
 // Calls FUN_00470550 with the two arguments, then sets the object's vtbl to DAT_01019a2c.
 // @fnv 0x004700a0
+// pdb: NiTPointerMap<NiObject *,bool>::DeleteItem | BipedAnim.obj | debug, object-file run extension, low
+// pdb params: pkItem
 FUN_004700a0::FUN_004700a0(int aiFirst, int aiSecond)
 {
     FUN_00470550(aiFirst, aiSecond);
@@ -370,6 +384,8 @@ struct P03MM
 };
 P03MM* __cdecl MemoryManager_Instance();
 // @fnv 0x00474460
+// pdb: simpleMalloc | TESFile.obj | debug, object-file gap fill, medium
+// pdb params: opaque, aiNumItems, aSize
 void* __cdecl AllocateProduct(unsigned int auiUnused, unsigned int b, unsigned int c, unsigned int auiUnused2)
 {
     return MemoryManager_Instance()->Allocate(b * c);
@@ -379,9 +395,11 @@ namespace fnv_00474480 {
 MemoryManager* __cdecl MemoryManager_Instance(void);
 // @fnv 0x00474480
 // src: COMMUNITY 0x00474480
-void __cdecl simpleFree(void* apUnused, void* apBlock)
+// pdb: simpleFree | TESFile.obj | debug, upstream name already matches, high
+// pdb params: opaque, apPtr
+void __cdecl simpleFree(void* opaque, void* apPtr)
 {
-    MemoryManager_Instance()->Deallocate(apBlock);
+    MemoryManager_Instance()->Deallocate(apPtr);
 }
 }  // namespace fnv_00474480
 
@@ -392,12 +410,13 @@ struct FUN_00474760_This
 {
     const char* p;
     ActorCombatGroup** q;
-    void __thiscall ReleaseStorage_00474760();
+    void __thiscall NiTArray_unsigned_int_NiTMallocInterface_unsigned_int_dtor();
 };
 
 // @fnv 0x00474760
-// src: GUESS 0x00474760 (confidence: medium)
-void __thiscall FUN_00474760_This::ReleaseStorage_00474760()
+// src: XBOX_DEBUG_PDB 0x00474760
+// pdb: NiTArray<unsigned int,NiTMallocInterface<unsigned int> >::~NiTArray<unsigned int,NiTMallocInterface<unsigned int> > | TESFile.obj | debug, call graph (shared callers), high
+void __thiscall FUN_00474760_This::NiTArray_unsigned_int_NiTMallocInterface_unsigned_int_dtor()
 {
     p = " HG";
     NiTMallocInterface<ActorCombatGroup*>::Deallocate(q);
@@ -413,6 +432,7 @@ struct FUN_004748f0 : BaseFormComponent
 };
 // Sets the vtable pointer to DAT_0101a3b8 and then calls FUN_008c6060 on this object.
 // @fnv 0x004748f0
+// pdb: BGSAmmoForm::BGSAmmoForm | BGSAmmoForm.obj | debug, call graph, high
 FUN_004748f0::FUN_004748f0()
 {
     ((FUN_008c6060_shell*)this)->FUN_008c6060();
@@ -433,6 +453,7 @@ struct FUN_004750b0 : BaseFormComponent
 
 // Sets the object's vtable pointer to DAT_0101a644, then calls SetClipRounds on this object.
 // @fnv 0x004750b0
+// pdb: BGSClipRoundsForm::BGSClipRoundsForm | BGSClipRoundsForm.obj | debug, call graph, high
 FUN_004750b0::FUN_004750b0()
 {
     reinterpret_cast<FUN_00475100_shell*>(this)->SetClipRounds();
@@ -476,22 +497,27 @@ bool FUN_00476a20_Class::IsFlag4Set()
 struct FUN_00476ae0_class
 {
     void SetTaskFlag(bool a);
-    void BSFadeNode_SetFadingFlag(bool a);
+    void BSFadeNode_SetFadingFlag(bool aFade);
 };
 
 // @fnv 0x00476ae0
 // src: XBOX_PDB 0x00476ae0
-void FUN_00476ae0_class::BSFadeNode_SetFadingFlag(bool abEnabled)
+// pdb: BSFadeNode::SetFadingFlag | BGSDestructibleObjectForm.obj | debug, upstream name already matches, high
+// pdb params: aFade
+void FUN_00476ae0_class::BSFadeNode_SetFadingFlag(bool aFade)
 {
-    SetTaskFlag(abEnabled);
+    SetTaskFlag(aFade);
 }
 
+// pdb: class TaskQueueInterface, size 0x10 (here 0x1), 4 members
 struct TaskQueueInterface
 {
     void SetTaskFlagDWord(bool enabled, unsigned int flag);
     void SetTaskFlag(bool enabled);
 };
 // @fnv 0x00476b00
+// pdb: NiAVObject::SetFadedIn | BGSDestructibleObjectForm.obj | debug, object-file run extension, low
+// pdb params: abFaded
 void TaskQueueInterface::SetTaskFlag(bool enabled)
 {
     SetTaskFlagDWord(enabled, 0x4000);
@@ -509,6 +535,8 @@ struct FUN_00476be0_Class
 
 // @fnv 0x00476be0
 // src: XBOX_PDB 0x00476be0
+// pdb: BSRandom::UnsignedInt | BSRandom.obj | retail, upstream name already matches, high
+// pdb params: aiMin, aiMax
 unsigned int FUN_00476be0_Class::BSRandom_UnsignedInt()
 {
     return reinterpret_cast<MersenneTwister*>(this)->GetRandomUInt(0xffffffff);
@@ -550,6 +578,8 @@ struct FUN_00479190_holder
 };
 
 // @fnv 0x00479190
+// pdb: NiTMap<TESObjectREFR *,unsigned int>::NiTMap<TESObjectREFR *,unsigned int> | BGSDestructibleObjectForm.obj | debug, object-file run extension, low
+// pdb params: uiHashSize
 FUN_00479190_holder* __thiscall FUN_00479190_holder::Construct(int a)
 {
     ((FUN_004791f0_holder*)this)->InitArrayHolder(a);
@@ -565,6 +595,7 @@ struct FUN_00573eb0_Class
 
 // @fnv 0x0047b4b0
 // src: COMMUNITY 0x0047b4b0
+// pdb: bhkNiCollisionObject::QReset | BGSOpenCloseForm.obj | debug, object-file run extension, low
 int FUN_00573eb0_Class::bhkNiCollisionObject_IsReset()
 {
     return NiPathInterpolator_GetBit(0x40);
@@ -592,43 +623,49 @@ struct S47
 // Stores p at offset 0x18 of this and calls FUN_0047e2a0 with 2.
 // @fnv 0x0047dea0
 // src: COMMUNITY 0x0047dea0
-void __thiscall S47::TESActorBaseData_SetBaseDisposition(short asValue)
+// pdb: TESActorBaseData::SetBaseDisposition | TESActorBaseData.obj | debug, upstream name already matches, high
+// pdb params: asVal
+void __thiscall S47::TESActorBaseData_SetBaseDisposition(short asVal)
 {
-    *(short*)((char*)this + 0x18) = asValue;
+    *(short*)((char*)this + 0x18) = asVal;
     FUN_0047e2a0(2);
 }
 
 struct FUN_0047ebb0_Class
 {
     void FUN_005fc970(int, char);
-    void TESFaction_SetPCMurder(int value);
+    void TESFaction_SetPCMurder(int abVal);
 };
 
 // @fnv 0x0047ebb0
 // src: XBOX_PDB 0x0047ebb0
-void FUN_0047ebb0_Class::TESFaction_SetPCMurder(int value)
+// pdb: TESFaction::SetPCMurder | TESActorBaseData.obj | debug, upstream name already matches, high
+// pdb params: abVal
+void FUN_0047ebb0_Class::TESFaction_SetPCMurder(int abVal)
 {
-    FUN_005fc970(0x40, (char)value);
+    FUN_005fc970(0x40, (char)abVal);
 }
 
 struct FUN_0047ebd0_Class
 {
     void __thiscall FUN_005fc970(int b, int a);
-    void __thiscall TESFaction_SetPCAttack(bool value);
+    void __thiscall TESFaction_SetPCAttack(bool abVal);
 };
 
 // @fnv 0x0047ebd0
 // src: XBOX_PDB 0x0047ebd0
-void __thiscall FUN_0047ebd0_Class::TESFaction_SetPCAttack(bool value)
+// pdb: TESFaction::SetPCAttack | TESActorBaseData.obj | debug, upstream name already matches, high
+// pdb params: abVal
+void __thiscall FUN_0047ebd0_Class::TESFaction_SetPCAttack(bool abVal)
 {
-    FUN_005fc970(0x20, value);
+    FUN_005fc970(0x20, abVal);
 }
 
 
 // @fnv 0x0047ff50
 void TESAttackDamageForm::SetAttackDamage(unsigned short value)
 {
-    m_usAttackDamage = value;
+    sAttackDamage = value;
 }
 
 extern "C" void __cdecl NiFreeAlias(void*);
@@ -656,6 +693,8 @@ struct FUN_00474730_Map
 // Sets the vtable pointer, removes all entries, and frees the m_ptr allocation.
 // @fnv 0x00474730
 // src: GUESS 0x00474730 (confidence: low)
+// pdb: NiTMap<unsigned int,TESFile *>::DeleteItem | TESFile.obj | debug, object-file run extension, low
+// pdb params: pkItem
 void FUN_00474730_Map::UpdateState_00474730()
 {
     m_vtbl = &DAT_0101a384;
@@ -692,6 +731,7 @@ struct FUN_0045d930_class
 
 // Calls FUN_0046ffd0, then deletes this when flags has bit 0 set, and returns this.
 // @fnv 0x00470320
+// pdb: NiTArray<TESObjectCELL *,NiTMallocInterface<TESObjectCELL *> >::`scalar deleting destructor' | TESDataHandler.obj | debug, vtable slot, medium
 void* __thiscall FUN_0045d930_class::FUN_00470320(unsigned int flags)
 {
     SetVtableAndProcessState_0046ffd0();
@@ -708,6 +748,7 @@ struct FUN_0045d930_class
 };
 void* __cdecl Deallocate(void*);
 // @fnv 0x00470350
+// pdb: NiTPrimitiveArray<TESObjectCELL *>::`scalar deleting destructor' | TESDataHandler.obj | debug, vtable slot, medium
 void* FUN_0045d930_class::FUN_00470350(unsigned int flags)
 {
     ForwardCall_0045d930();
@@ -725,6 +766,7 @@ struct FUN_0045d950_Class
 
 // Calls FUN_00470070, then deletes this if bit 0 of flags is set, and returns this.
 // @fnv 0x00470380
+// pdb: NiTArray<BGSAddonNode *,NiTMallocInterface<BGSAddonNode *> >::`scalar deleting destructor' | TESDataHandler.obj | debug, vtable slot, medium
 void* FUN_0045d950_Class::FUN_00470380(unsigned int flags)
 {
     SetVtableAndProcessState_00470070();
@@ -744,6 +786,7 @@ struct FUN_004703b0_Class : FUN_0045d950_Class
 };
 // Calls the base class cleanup, deletes this when bit 0 of flags is set, and returns this.
 // @fnv 0x004703b0
+// pdb: NiTPrimitiveArray<BGSAddonNode *>::`scalar deleting destructor' | TESDataHandler.obj | debug, vtable slot, medium
 void* FUN_004703b0_Class::FUN_004703b0(unsigned int flags)
 {
     FUN_0045d950_Class::ForwardCall_0045d950();
@@ -759,6 +802,7 @@ struct FUN_004703e0_class : public FUN_00464f40_class
 };
 // Calls FUN_00470110, then deletes this when flags has bit 0 set, and returns this.
 // @fnv 0x004703e0
+// pdb: NiTLargeArray<TESForm *,NiTMallocInterface<TESForm *> >::`scalar deleting destructor' | TESDataHandler.obj | debug, vtable slot, medium
 void* __thiscall FUN_004703e0_class::FUN_004703e0(unsigned int flags)
 {
     SetVtableAndProcessState_00470110();
@@ -776,6 +820,7 @@ struct FUN_00470410_class : public FUN_00464f40_class
     void* __thiscall FUN_00470410(unsigned int flags);
 };
 // @fnv 0x00470410
+// pdb: NiTLargePrimitiveArray<TESForm *>::`scalar deleting destructor' | TESDataHandler.obj | debug, vtable slot, medium
 void* __thiscall FUN_00470410_class::FUN_00470410(unsigned int flags)
 {
     ForwardCall_00464f40();
@@ -791,6 +836,7 @@ struct FUN_004746d0_Class
 };
 
 // @fnv 0x00474530
+// pdb: NiTMap<unsigned int,TESFile *>::`scalar deleting destructor' | TESFile.obj | retail, vtable slot, high
 void* __thiscall FUN_004746d0_Class::FUN_00474530(unsigned int flags)
 {
     FUN_004746d0();
@@ -810,6 +856,7 @@ struct FUN_004747f0_class
 };
 // Calls FUN_00474730, then deallocates this when flags has bit 0 set, and returns this.
 // @fnv 0x004747f0
+// pdb: NiTMapBase<DFALL<NiTMapItem<unsigned int,TESFile *> >,unsigned int,TESFile *>::`scalar deleting destructor' | TESFile.obj | retail, vtable slot, high
 void* FUN_004747f0_class::FUN_004747f0(unsigned int flags)
 {
     UpdateState_00474730();
@@ -821,16 +868,17 @@ void* FUN_004747f0_class::FUN_004747f0(unsigned int flags)
 void __cdecl Deallocate(void*);
 struct FUN_00473f00_class
 {
-    void __thiscall ForwardToHolder();
+    void __thiscall NiTPrimitiveArray_unsigned_int_dtor();
 };
 struct FUN_00474850_class : public FUN_00473f00_class
 {
     void* __thiscall FUN_00474850(unsigned int flags);
 };
 // @fnv 0x00474850
+// pdb: NiTPrimitiveArray<unsigned int>::`scalar deleting destructor' | TESFile.obj | debug, vtable slot, medium
 void* __thiscall FUN_00474850_class::FUN_00474850(unsigned int flags)
 {
-    ForwardToHolder();
+    NiTPrimitiveArray_unsigned_int_dtor();
     if (flags & 1)
         Deallocate(this);
     return this;
@@ -844,6 +892,7 @@ struct FUN_004752e0_Class
 
 // Calls FUN_00475310, then deletes this object if bit 0 of flags is set, and returns this.
 // @fnv 0x004752e0
+// pdb: DestructibleObjectStage::`scalar deleting destructor' | BGSDestructibleObjectForm.obj | debug, call graph, medium
 void* __thiscall FUN_004752e0_Class::FUN_004752e0(unsigned int flags)
 {
     UpdateState_00475310();
@@ -858,6 +907,7 @@ struct FUN_004792f0_Class : FUN_004792c0_Class
 };
 
 // @fnv 0x004792f0
+// pdb: NiTMapBase<DFALL<NiTMapItem<TESObjectREFR *,unsigned int> >,TESObjectREFR *,unsigned int>::`scalar deleting destructor' | BGSDestructibleObjectForm.obj | retail, vtable slot, high
 void* __thiscall FUN_004792f0_Class::FUN_004792f0(unsigned int flags)
 {
     ReleaseStorage_004792c0();
@@ -893,6 +943,7 @@ struct S_00462230
 };
 // @fnv 0x00462230
 // src: XBOX_PDB 0x00462230
+// pdb: TwoValues::Endian | BGSEntryPointFunction.obj | debug, upstream name already matches, high
 void __thiscall S_00462230::TwoValues_Endian()
 {
     BSEndian((unsigned char*)this, EndianSizeTag<0>());
@@ -925,11 +976,13 @@ struct S69570
 };
 // @fnv 0x00469570
 // src: COMMUNITY 0x00469570
+// pdb: BSSynchTest::~BSSynchTest | TESDataHandler.obj | debug, object-file run extension, low
 unsigned char S69570::BGSSaveLoadGame_GetLoadingMovedRefs()
 {
     return (TLS_PAD[165] & 2) != 0;
 }
 
+// pdb: class KFModel, size 0x14 (here 0x1), 5 members
 struct KFModel
 {
     void* GetControllerSequence();
@@ -968,6 +1021,10 @@ struct FUN_004700d0_class : FUN_004705c0_cls
 // Calls FUN_004705c0 to get an object, stores *p at offset 8, then passes it to FUN_0049fa20.
 // @fnv 0x004700d0
 // src: COMMUNITY 0x004700d0
+// pdb: NiTPointerListBase<DFALL<NiTListItem<QueuedRemoval *> >,QueuedRemoval *>::AddHead | TESWaterListener.obj | retail, call graph (shared callers), low
+// pdb note: debug build links it to NiTPointerListBase<DFALL<NiTListItem<NiAVObject *> >,NiAVObject *>::AddHead
+// pdb params: element
+// pdb locals: pkNode
 void __thiscall FUN_004700d0_class::NiTPointerListBase_DFALL_NiTListItem_NiAVObject_NiAVObject_AddHead(int* piValue)
 {
     void* v = ((FUN_004705c0_cls*)this)->NiTPointerListBase_DFALL_NiTListItem_BSAnimGroupSequence_const_BSAnimGroupSequence_const_NewItem();
@@ -1034,6 +1091,7 @@ struct FUN_00471e60_shell
 };
 
 // @fnv 0x00471e60
+// pdb: TESFile::InitEndian | TESFile.obj | debug, object-file run extension, low
 void FUN_00471e60_shell::LoadFormAndUpdateFlag()
 {
     if (!pFile)
@@ -1108,6 +1166,8 @@ struct FUN_00474790_Class
 // Calls FUN_00474880 with the two arguments, sets m0 to "PHG", and returns this.
 // @fnv 0x00474790
 // src: EXE 0x00474790
+// pdb: NiTPrimitiveArray<unsigned int>::NiTPrimitiveArray<unsigned int> | TESFile.obj | retail, call graph, medium
+// pdb params: uiMaxSize, uiGrowBy
 FUN_00474790_Class* __thiscall FUN_00474790_Class::NiTPrimitiveArray_unsigned_int_NiTPrimitiveArray(unsigned int a, unsigned int b)
 {
     ((FUN_00474880_Helper*)this)->FUN_00474880(a, b);
@@ -1122,9 +1182,10 @@ struct FUN_00474820_Class
 };
 // Calls FUN_00474760 on this, then frees this via _Deallocate when flags has bit 0 set, and returns this.
 // @fnv 0x00474820
+// pdb: NiTArray<unsigned int,NiTMallocInterface<unsigned int> >::`scalar deleting destructor' | TESFile.obj | debug, vtable slot, medium
 void* __thiscall FUN_00474820_Class::FUN_00474820(unsigned int flags)
 {
-    ((FUN_00474760_This*)this)->ReleaseStorage_00474760();
+    ((FUN_00474760_This*)this)->NiTArray_unsigned_int_NiTMallocInterface_unsigned_int_dtor();
     if (flags & 1)
         _Deallocate(this);
     return this;
@@ -1138,6 +1199,7 @@ struct FUN_00474a00_shell
 };
 // Returns q if it is non-null and its form type is 0x29, otherwise returns null.
 // @fnv 0x00474a00
+// pdb: BGSAmmoForm::GetAmmoForm | BGSAmmoForm.obj | debug, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
 void* FUN_00474a00_shell::GetAmmoForm()
 {
     return q && reinterpret_cast<TESForm*>(q)->GetFormType() == 0x29 ? q : 0;
@@ -1153,6 +1215,7 @@ struct FUN_00474a40_shell
 // Returns form if it is non-null and its FNV_GetFormType() equals 0x55, otherwise returns null.
 // @fnv 0x00474a40
 // src: GUESS 0x00474a40 (confidence: medium)
+// pdb: BGSAmmoForm::GetAmmoFormList | BGSAmmoForm.obj | debug, call graph, high
 TESForm* FUN_00474a40_shell::GetFormIfType55()
 {
     return form && form->FNV_GetFormType() == 0x55 ? form : 0;
@@ -1169,6 +1232,7 @@ struct S751
 };
 // Zeroes the object's fields at offsets 0, 4, 5, 8 and 12, constructs the QueueObj at offset 16 with 0, and returns this.
 // @fnv 0x004751d0
+// pdb: DestructibleObjectData::DestructibleObjectData | BGSDestructibleObjectForm.obj | debug, call graph, medium
 S751* __thiscall S751::Initialize()
 {
     *((int*)((char*)this + 0)) = 0;
@@ -1196,6 +1260,8 @@ struct FUN_00476a40_Holder
 // Returns the item at index from data->items when data is non-null and index is below data->count, otherwise returns 0.
 // @fnv 0x00476a40
 // src: XBOX_PDB 0x00476a40
+// pdb: NiPoint4::SetVector | BGSDestructibleObjectForm.obj | debug, object-file run extension, low
+// pdb params: pt
 void* __thiscall FUN_00476a40_Holder::BGSDestructibleObjectForm_GetStage(unsigned int index)
 {
     if (data != 0 && index < data->count)
@@ -1214,6 +1280,7 @@ struct FUN_004781b0_This
 // Sets field0, field4 and field5 to zero and returns this.
 // @fnv 0x004781b0
 // src: GUESS 0x004781b0 (confidence: low)
+// pdb: SAVE_DESTRUCTIBLE_OBJECT_DATA::Endian | BGSDestructibleObjectForm.obj | debug, object-file gap fill, medium
 FUN_004781b0_This* __thiscall FUN_004781b0_This::ClearFields_004781b0()
 {
     field0 = 0;
@@ -1252,6 +1319,7 @@ FUN_00478f70_s* FUN_00478f70_s::DestructibleObjectStage_DestructibleObjectStage(
 }
 
 // @fnv 0x00479110
+// pdb: BSSimpleArray<NiNode *,1024>::BSSimpleArray<NiNode *,1024> | BGSDestructibleObjectForm.obj | debug, object-file run extension, low
 template <>
 BSSimpleArray<NiNode*>::BSSimpleArray()
 {
@@ -1266,6 +1334,9 @@ struct FUN_004791f0_holder2
 };
 // Sets the vtable, stores the element count, allocates count*4 zeroed bytes and stores the pointer at offset 8.
 // @fnv 0x004791f0
+// pdb: NiTMapBase<DFALL<NiTMapItem<TESObjectREFR *,unsigned int> >,TESObjectREFR *,unsigned int>::NiTMapBase<DFALL<NiTMapItem<TESObjectREFR *,unsigned int> >,TESObjectREFR *,unsigned int> | BGSDestructibleObjectForm.obj | debug, object-file run extension, low
+// pdb params: uiHashSize
+// pdb locals: uiSize
 void* __thiscall FUN_004791f0_holder2::InitArrayHolder(int aiCount)
 {
     *(int*)this = (int)&DAT_0101a91c;
@@ -1279,12 +1350,13 @@ void* __thiscall FUN_004791f0_holder2::InitArrayHolder(int aiCount)
 
 struct FUN_0047b470_This
 {
-    bool __thiscall bhkCollisionObject_GetUseVelocity();
+    bool __thiscall bhkCollisionObject_QUseVel();
 };
 // Returns true when bit 0x20 is set in the word at offset 0xc and the result of FUN_0047b4b0 is zero.
 // @fnv 0x0047b470
-// src: COMMUNITY 0x0047b470
-bool __thiscall FUN_0047b470_This::bhkCollisionObject_GetUseVelocity()
+// src: XBOX_DEBUG_PDB 0x0047b470 (was COMMUNITY)
+// pdb: bhkCollisionObject::QUseVel | BGSOpenCloseForm.obj | debug, call graph (shared callers), high
+bool __thiscall FUN_0047b470_This::bhkCollisionObject_QUseVel()
 {
     return (((*(unsigned short*)((char*)this + 0xc) & 0x20) != 0) &&
             ((unsigned char)((FUN_00573eb0_Class*)this)->bhkNiCollisionObject_IsReset() == 0));
@@ -1299,6 +1371,9 @@ struct FUN_0047ba80_This
 };
 // Returns true if m4 is set and its form list contains actor; otherwise returns false.
 // @fnv 0x0047ba80
+// pdb: BGSRepairItemList::HasRepairItem | BGSRepairItemList.obj | debug, object-file run extension, low
+// pdb params: apForm
+// pdb locals: bretval
 bool __thiscall FUN_0047ba80_This::IsActorInList(Actor* actor)
 {
     bool flag = false;
@@ -1346,6 +1421,8 @@ struct FUN_00474920_shell
 };
 // Returns GetForm() if present, otherwise an indexed form from the ammo list, or its first item when the index is out of range.
 // @fnv 0x00474920
+// pdb: BGSAmmoForm::GetAmmoHelper | BGSAmmoForm.obj | debug, object-file gap fill, medium
+// pdb locals: pAmmoReturn
 TESForm* FUN_00474920_shell::GetFormOrScriptForm()
 {
     TESForm* result = 0;
@@ -1380,19 +1457,22 @@ void __cdecl BGSDestructibleObjectForm_UpdateDamageStageNodes(NiAVObject*, int);
 // If object is non-null and passes FUN_0043b300, calls FUN_00c455a0 with flag, then recurses over all children of its node.
 // @fnv 0x00476ec0
 // src: XBOX_PDB 0x00476ec0
-void __cdecl BGSDestructibleObjectForm_UpdateDamageStageNodes(NiAVObject* object, int flag)
+// pdb: BGSDestructibleObjectForm::UpdateDamageStageNodes | BGSDestructibleObjectForm.obj | retail, upstream name already matches, high
+// pdb params: apRoot, aiStageIndex
+// pdb locals: pnode, pdamageStage, i
+void __cdecl BGSDestructibleObjectForm_UpdateDamageStageNodes(NiAVObject* apRoot, int aiStageIndex)
 {
-    if (!object)
+    if (!apRoot)
         return;
-    if (NiObject_IsKindOf(&g_01202e8c, object))
+    if (NiObject_IsKindOf(&g_01202e8c, apRoot))
     {
-        FUN_00476ec0_Class* p = (FUN_00476ec0_Class*)object;
-        p->BSRangeNode_SetCurrent((unsigned char)flag);
+        FUN_00476ec0_Class* p = (FUN_00476ec0_Class*)apRoot;
+        p->BSRangeNode_SetCurrent((unsigned char)aiStageIndex);
     }
-    NiNode* node = ((NiObject*)object)->IsSceneNode();
+    NiNode* node = ((NiObject*)apRoot)->IsSceneNode();
     if (node)
         for (unsigned int i = 0; i < node->GetNumChildren(); ++i)
-            BGSDestructibleObjectForm_UpdateDamageStageNodes(node->GetAt(i), flag);
+            BGSDestructibleObjectForm_UpdateDamageStageNodes(node->GetAt(i), aiStageIndex);
 }
 
 struct FUN_00478130_class
@@ -1402,6 +1482,7 @@ struct FUN_00478130_class
 // Applies BSEndian to the four fields at offsets 4, 8, 12 and 16 of this object.
 // @fnv 0x00478130
 // src: XBOX_PDB 0x00478130
+// pdb: SAVE_DESTRUCTIBLE_OBJECT_STAGE::Endian | BGSDestructibleObjectForm.obj | debug, upstream name already matches, high
 void __thiscall FUN_00478130_class::SAVE_DESTRUCTIBLE_OBJECT_STAGE_Endian()
 {
     BSEndian((unsigned char*)this + 4, EndianSizeTag<0>());
@@ -1417,6 +1498,8 @@ struct FUN_00462e10_Class
 };
 // Sets or clears the bits of m_flags selected by mask, according to set.
 // @fnv 0x00462e10
+// pdb: BSStream::Endian | LipSynchAnim.obj | debug, object-file run extension, low
+// pdb params: arVal
 void FUN_00462e10_Class::SetFlags(signed char mask, bool set)
 {
     set ? m_flags |= mask : m_flags &= ~mask;
@@ -1434,6 +1517,7 @@ struct FUN_004704e0
 };
 // Sets the vtable, stores x and y, zeroes c and d, and allocates a buffer of x elements (or null when x is 0).
 // @fnv 0x004704e0
+// pdb: BSSimpleList<ExtraDataList *>::`scalar deleting destructor' | TESDataHandler.obj | debug, object-file run extension, low
 FUN_004704e0::FUN_004704e0(unsigned short ausCount, unsigned short y)
 {
     vtbl = &DAT_01019a14;
@@ -1511,10 +1595,12 @@ struct FUN_00478570_holder
 {
     char m_iWordAt00[0x14];
     B2_4fe* m_cByteAtOffset1;
-    void EnsureB2_4fe();
+    void DestructibleObjectStage_CreateReplacementModel();
 };
 // @fnv 0x00478570
-void FUN_00478570_holder::EnsureB2_4fe()
+// src: XBOX_DEBUG_PDB 0x00478570
+// pdb: DestructibleObjectStage::CreateReplacementModel | BGSDestructibleObjectForm.obj | debug, call graph, high
+void FUN_00478570_holder::DestructibleObjectStage_CreateReplacementModel()
 {
     if (!m_cByteAtOffset1)
         m_cByteAtOffset1 = new B2_4fe;
@@ -1532,6 +1618,9 @@ struct FUN_0047bac0_ARMO : TESForm
 };
 // Returns a pointer to the biped field of the given form if it is armor (type 0x28) or an NPC (type 0x18), otherwise null.
 // @fnv 0x0047bac0
+// pdb: BGSRepairItemList::GetRepairListForForm | BGSRepairItemList.obj | debug, object-file run extension, low
+// pdb params: apForm
+// pdb locals: preplistform, pretlist
 void* GetBipedPointer(TESForm* form)
 {
     void* result = 0;
@@ -1556,6 +1645,9 @@ void* GetBipedPointer(TESForm* form)
 
 // Casts apCopyFC to TESAttackDamageForm and, if the cast succeeds, copies its damage value via SetAttackDamage.
 // @fnv 0x0047fe30
+// pdb: TESAttackDamageForm::CopyComponent | TESAttackDamageForm.obj | retail, vtable slot, high
+// pdb params: apCopyFC
+// pdb locals: pCopy
 void TESAttackDamageForm::BaseFormRecord(BaseFormComponent* apCopyFC)
 {
     TESAttackDamageForm* pCopy = dynamic_cast<TESAttackDamageForm*>(apCopyFC);
@@ -1569,6 +1661,7 @@ struct FUN_0046eb20_Class
     unsigned int GetElementAt2();
 };
 // @fnv 0x0046eb20
+// pdb: NiTexturingProperty::GetDetailMap | TESDataHandler.obj | debug, object-file gap fill, medium
 unsigned int FUN_0046eb20_Class::GetElementAt2()
 {
     return *reinterpret_cast<Arr*>(this + 0x1c)->GetAt(2);
@@ -1581,6 +1674,7 @@ struct FUN_0046ebd0_Class
 
 // @fnv 0x0046ebd0
 // src: COMMUNITY 0x0046ebd0
+// pdb: NiTexturingProperty::GetDecalMapCount | TESDataHandler.obj | debug, upstream name already matches, high
 unsigned int FUN_0046ebd0_Class::NiTexturingProperty_GetDecalMapCount()
 {
     return (unsigned int)(unsigned short)reinterpret_cast<FUN_0046ebf0_Class*>(this)->GetMaskedShifted(0xff0, 4);
@@ -1602,6 +1696,7 @@ extern int DAT_01019a24;
 
 // @fnv 0x00470070
 // src: GUESS 0x00470070 (confidence: low)
+// pdb: NiTPointerMap<NiObject *,bool>::NewItem | BipedAnim.obj | debug, object-file run extension, low
 void __thiscall FUN_0045d950_Class::SetVtableAndProcessState_00470070()
 {
     *(int*)this = (int)&DAT_01019a24;
@@ -1609,6 +1704,7 @@ void __thiscall FUN_0045d950_Class::SetVtableAndProcessState_00470070()
 }
 
 extern int DAT_0101a644;
+// pdb: class Date, size 0x4, 2 members
 struct Date
 {
     virtual ~Date();
@@ -1619,10 +1715,12 @@ struct FUN_004750e0 : Date
     ~FUN_004750e0();
 };
 // @fnv 0x004750e0
+// pdb: BGSClipRoundsForm::~BGSClipRoundsForm | BGSClipRoundsForm.obj | debug, call graph, medium
 FUN_004750e0::~FUN_004750e0()
 {}
 
 // @fnv 0x00479140
+// pdb: BSSimpleArray<NiNode *,1024>::~BSSimpleArray<NiNode *,1024> | BGSDestructibleObjectForm.obj | debug, call graph, high
 template <>
 BSSimpleArray<NiNode*>::~BSSimpleArray()
 {
@@ -1647,6 +1745,8 @@ struct FUN_0047eb90_Class
 };
 // @fnv 0x0047eb90
 // src: GUESS 0x0047eb90 (confidence: low)
+// pdb: TESFaction::SetPCAnEnemy | TESActorBaseData.obj | debug, call graph, high
+// pdb params: abVal
 void FUN_0047eb90_Class::ForwardCall_0047eb90(int value)
 {
     FUN_005fc970(0x10, (char)value);
@@ -1663,6 +1763,9 @@ class FUN_00462dc0_cls
 
 // Calls the callback stored in m_08 with the four arguments, adds its return value to m_04, and returns that value.
 // @fnv 0x00462dc0
+// pdb: NiBinaryStream::BinaryRead | LipSynchAnim.obj | debug, object-file run extension, low
+// pdb params: pvBuffer, uiTotalBytes, puiComponentSizes, uiNumComponents
+// pdb locals: uiBytesRead
 int FUN_00462dc0_cls::InvokeAndAccumulate(int a1, int a2, int a3, int a4)
 {
     int result = this->m_08(this, a1, a2, a3, a4);
@@ -1716,6 +1819,7 @@ extern Twin_008d0360* g_011f6078;
 
 // @fnv 0x00471f70
 // src: COMMUNITY 0x00471f70
+// pdb: NiSystemDesc::GetSystemDesc | TESFile.obj | debug, upstream name already matches, high
 Twin_008d0360* __cdecl NiSystemDesc_GetSystemDesc()
 {
     return g_011f6078;
@@ -1743,6 +1847,8 @@ struct FUN_00475220
 };
 
 // @fnv 0x00475220
+// pdb: DestructibleObjectData::~DestructibleObjectData | BGSDestructibleObjectForm.obj | debug, object-file gap fill, medium
+// pdb locals: i
 FUN_00475220::~FUN_00475220()
 {
     for (unsigned int i = 0; i < ucCount; i++)
@@ -1783,6 +1889,7 @@ class FUN_00475310_cls
 // Calls vSlot10(1) on m_14 if it is non-null.
 // @fnv 0x00475310
 // src: GUESS 0x00475310 (confidence: low)
+// pdb: DestructibleObjectStage::~DestructibleObjectStage | BGSDestructibleObjectForm.obj | debug, object-file gap fill, medium
 void FUN_00475310_cls::UpdateState_00475310()
 {
     FUN_00475310_obj* obj = m_14;
@@ -1827,6 +1934,10 @@ struct ActorProcessor
 };
 // Recursively processes item and its children, calling CreateProjectileRef on matching items and returning the count processed.
 // @fnv 0x00476cb0
+// pdb: BGSDestructibleObjectForm::SpawnExplosionsAtBlastNodes | BGSDestructibleObjectForm.obj | retail, object-file run extension, low
+// pdb note: debug build links it to BGSDestructibleObjectForm::SpawnDebrisAtDebrisNodes
+// pdb params: apRoot, apExplosion, aiStageIndex, apRef
+// pdb locals: pnode, inumExplosions, pblastNode, i
 int ActorProcessor::ProcessCollectionTree(CollectionItem* item, int arg, unsigned int options, OutputRenderer* output)
 {
     if (item == 0)
@@ -1865,7 +1976,7 @@ struct Node
 struct NodeChildren
 {
     unsigned int FUN_0043b480();
-    Node* FUN_0043b4a0(unsigned int index);
+    Node* FUN_0043b4a0(unsigned int i);
 };
 struct Context
 {
@@ -1874,7 +1985,7 @@ struct Context
 };
 struct Receiver
 {
-    void FUN_004fa6f0(int value);
+    void FUN_004fa6f0(int apCell);
 };
 extern unsigned char __cdecl NiObject_IsKindOf(const void* descriptor, Node* node);
 struct Walk
@@ -1883,6 +1994,10 @@ struct Walk
 };
 // Recursively walks a node tree, applying a typed check and receiver update to matching nodes, and returns the number of nodes processed.
 // @fnv 0x00476dd0
+// pdb: BGSDestructibleObjectForm::SpawnDebrisAtDebrisNodes | BGSDestructibleObjectForm.obj | retail, object-file run extension, low
+// pdb note: debug build links it to BGSDestructibleObjectForm::FindDebrisNodes
+// pdb params: apRoot, apDebris, aiStageIndex, apRef, aiNumParticles
+// pdb locals: pnode, inumDebris, pdebrisNode, i
 int Walk::WalkTree(Node* node, Receiver* receiver, unsigned int mode, Context* context, void* extra)
 {
     if (node == 0)
@@ -1914,8 +2029,8 @@ struct FUN_00477090_Space;
 struct FUN_00477090_Handle
 {
     float GetLevel();
-    void SetLevel(float level);
-    void PlayAt(FUN_00477090_Sound* sound, FUN_00477090_Space* space);
+    void SetLevel(float afHealth);
+    void PlayAt(FUN_00477090_Sound* apModelSwap, FUN_00477090_Space* apModelSwapForm);
 };
 
 struct FUN_00477090_Ref
@@ -2069,14 +2184,18 @@ struct FUN_00477090_Owner
 {
     int unk00;
     FUN_00477090_Data* data;
-    void UpdateRef(FUN_00477090_Ref* ref, int flag);
-    void UpdateSoundLevel(FUN_00477090_Ref* ref);
+    void UpdateRef(FUN_00477090_Ref* apRef, int abForceUpdate);
+    void BGSDestructibleObjectForm_ApplyTerminalDamage(FUN_00477090_Ref* apRef);
 };
 
 // @fnv 0x00477090
-void FUN_00477090_Owner::UpdateSoundLevel(FUN_00477090_Ref* ref)
+// src: XBOX_RETAIL_PDB 0x00477090
+// pdb: BGSDestructibleObjectForm::ApplyTerminalDamage | BGSDestructibleObjectForm.obj | retail, object-file run extension, high
+// pdb params: apRef
+// pdb locals: ccurrentHealthPercentage, fcurrentHealth, plastReplacementModel, clastStageHealthPercent, ilastStageSelfDPS, i, pstage, fnewHealth
+void FUN_00477090_Owner::BGSDestructibleObjectForm_ApplyTerminalDamage(FUN_00477090_Ref* apRef)
 {
-    float levelX = ref->GetHandle()->GetLevel();
+    float levelX = apRef->GetHandle()->GetLevel();
     if (levelX == -1.0)
         return;
     unsigned char target9 = (unsigned char)FUN_00476b20(levelX * 100.0 / data->total);
@@ -2099,13 +2218,13 @@ void FUN_00477090_Owner::UpdateSoundLevel(FUN_00477090_Ref* ref)
     if (prevPercent < target9)
     {
         float newLevel3 = prevPercent / 100.0 * data->total;
-        ref->GetHandle()->SetLevel(newLevel3);
+        apRef->GetHandle()->SetLevel(newLevel3);
         if (sound)
         {
-            ref->RefreshSound(0, 1);
-            ref->GetHandle()->PlayAt(sound, ref->GetReferenceSpace());
+            apRef->RefreshSound(0, 1);
+            apRef->GetHandle()->PlayAt(sound, apRef->GetReferenceSpace());
         }
-        UpdateRef(ref, 0);
+        UpdateRef(apRef, 0);
     }
 }
 
@@ -2118,7 +2237,7 @@ struct FUN_00477230_item
 {
     FUN_00477230_owner* GetOwner();
     unsigned int GetCount();
-    struct FUN_00477230_node* GetChild(unsigned int index);
+    struct FUN_00477230_node* GetChild(unsigned int i);
 };
 
 struct FUN_00477230_arg
@@ -2136,7 +2255,7 @@ struct FUN_00477230_node
 
 struct FUN_00477230_cls
 {
-    void BGSDestructibleObjectForm_FindModelSwapNodes(FUN_00477230_node* node, FUN_00477230_arg* arg);
+    void BGSDestructibleObjectForm_FindModelSwapNodes(FUN_00477230_node* apRoot, FUN_00477230_arg* arNodeArray);
 };
 
 FUN_00477230_owner* SceneHelperA();
@@ -2145,25 +2264,28 @@ bool __cdecl SceneHelperB(FUN_00477230_owner* a, FUN_00477230_owner* b);
 // Recursively visits a node's item, calls arg->Update when the item's owner is flagged and matches SceneHelperA, then recurses into each child.
 // @fnv 0x00477230
 // src: COMMUNITY 0x00477230
-void FUN_00477230_cls::BGSDestructibleObjectForm_FindModelSwapNodes(FUN_00477230_node* node, FUN_00477230_arg* arg)
+// pdb: BGSDestructibleObjectForm::FindModelSwapNodes | BGSDestructibleObjectForm.obj | retail, upstream name already matches, high
+// pdb params: apRoot, arNodeArray
+// pdb locals: pnode, i
+void FUN_00477230_cls::BGSDestructibleObjectForm_FindModelSwapNodes(FUN_00477230_node* apRoot, FUN_00477230_arg* arNodeArray)
 {
-    if (node == 0)
+    if (apRoot == 0)
     {
         return;
     }
-    FUN_00477230_item* item = node->v0c();
+    FUN_00477230_item* item = apRoot->v0c();
     if (item != 0)
     {
         if (item->GetOwner()->IsFlagged())
         {
             if (SceneHelperB(item->GetOwner(), SceneHelperA()))
             {
-                arg->Update(&item);
+                arNodeArray->Update(&item);
             }
         }
         for (unsigned int i = 0; i < item->GetCount(); i++)
         {
-            this->BGSDestructibleObjectForm_FindModelSwapNodes(item->GetChild(i), arg);
+            this->BGSDestructibleObjectForm_FindModelSwapNodes(item->GetChild(i), arNodeArray);
         }
     }
 }
@@ -2214,6 +2336,9 @@ class FUN_00477970_cls
 };
 
 // @fnv 0x00477970
+// pdb: BGSDestructibleObjectForm::CalculateDangerousExplosionHealth | BGSDestructibleObjectForm.obj | debug, object-file run extension, low
+// pdb params: apRef, afRequiredRadius, afRequiredDamage, apOutExplosion
+// pdb locals: ccurrentHealthPercentage, fcurrentHealth, pdata, pdestructionForm
 float FUN_00477970_cls::FindShapeByThresholds(unsigned char a1, float fMinMeasure, float fMinWeight,
                                               FnvShapeObject** ppOutObject)
 {
@@ -2259,6 +2384,7 @@ struct ManagedSceneHolder
 
 // Allocates a new ManagedSceneEntry and stores it in current when current is null.
 // @fnv 0x00478600
+// pdb: BGSDestructibleObjectForm::CreateData | BGSDestructibleObjectForm.obj | retail, object-file run extension, low
 void ManagedSceneHolder::EnsureCurrentEntry()
 {
     if (!current)
@@ -2292,6 +2418,9 @@ struct FUN_00478e90_This
 
 // Allocates an array of count SpawnedItem_b10003 pointers, constructs a new SpawnedItem_b10003 for each, and returns the array (or null when count is 0).
 // @fnv 0x00478e90
+// pdb: BGSDestructibleObjectForm::AllocateStages | BGSDestructibleObjectForm.obj | debug, call graph, medium
+// pdb params: acStagesCount
+// pdb locals: pstages, i
 SpawnedItem_b10003** FUN_00478e90_This::AllocateSpawnedItemArray(unsigned char count)
 {
     if (count == 0)
@@ -2338,22 +2467,24 @@ struct EffectData
     int count0c;
     int count10;
     FUN_0048a3d0* effect14;
-    void DestructibleObjectStage_Copy(const EffectData* source);
+    void DestructibleObjectStage_Copy(const EffectData* apCopy);
 };
 // Copies the scalar fields from source, releases the current effect14, then clones source->effect14 into a new object.
 // @fnv 0x00478fd0
 // src: XBOX_PDB 0x00478fd0
-void EffectData::DestructibleObjectStage_Copy(const EffectData* source)
+// pdb: DestructibleObjectStage::Copy | BGSDestructibleObjectForm.obj | retail, upstream name already matches, high
+// pdb params: apCopy
+void EffectData::DestructibleObjectStage_Copy(const EffectData* apCopy)
 {
-    if (!source)
+    if (!apCopy)
         return;
-    flags01 = source->flags01;
-    count04 = source->count04;
-    flags00 = source->flags00;
-    flags02 = source->flags02;
-    count08 = source->count08;
-    count0c = source->count0c;
-    count10 = source->count10;
+    flags01 = apCopy->flags01;
+    count04 = apCopy->count04;
+    flags00 = apCopy->flags00;
+    flags02 = apCopy->flags02;
+    count08 = apCopy->count08;
+    count0c = apCopy->count0c;
+    count10 = apCopy->count10;
     if (effect14)
     {
         FUN_0048a3d0* oldEffect = effect14;
@@ -2361,10 +2492,10 @@ void EffectData::DestructibleObjectStage_Copy(const EffectData* source)
         previous ? previous->methods->release10(previous, 1) : 0;
         effect14 = 0;
     }
-    if (source->effect14)
+    if (apCopy->effect14)
     {
         effect14 = new FUN_0048a3d0();
-        reinterpret_cast<CopyInterface*>(effect14)->CopyFrom(source->effect14);
+        reinterpret_cast<CopyInterface*>(effect14)->CopyFrom(apCopy->effect14);
     }
 }
 
@@ -2385,6 +2516,7 @@ class FUN_00479260_Map : public B479260MapBase
 };
 
 // @fnv 0x00479260
+// pdb: NiTMap<TESObjectREFR *,unsigned int>::~NiTMap<TESObjectREFR *,unsigned int> | BGSDestructibleObjectForm.obj | debug, object-file run extension, low
 FUN_00479260_Map::~FUN_00479260_Map()
 {
     RemoveAll();
@@ -2393,12 +2525,15 @@ FUN_00479260_Map::~FUN_00479260_Map()
 // If the buffer's change flags include bit 2, saves flag bit 1, reads the actor attributes, then restores flag bit 1.
 // @fnv 0x0047ea70
 // src: COMMUNITY 0x0047ea70
-void TESActorBaseData::LoadGame_0047ea70(BGSLoadFormBuffer* pkBuffer)
+// pdb: TESActorBaseData::LoadGame | TESActorBaseData.obj | retail, object-file run extension, high
+// pdb params: aiFlags, aiCurrentFlags
+// pdb locals: istartBufferPosition, iblockSize, iblockHeader, pheader, pform, icount, i, pfaction, crank, ifactionID, prank, icurrentBufferPosition
+void TESActorBaseData::LoadGame_0047ea70(BGSLoadFormBuffer* apLoadGameBuffer)
 {
-    if (pkBuffer->GetChangeFlags().ContainsAnyFlags(2))
+    if (apLoadGameBuffer->GetChangeFlags().ContainsAnyFlags(2))
     {
         bool bFlag = GetFlagBit(1);
-        pkBuffer->ReadTypedData(&actorData.m_uiActorFlags, 0x18u);
+        apLoadGameBuffer->ReadTypedData(&actorData.m_uiActorFlags, 0x18u);
         UpdateFlagBit(1, bFlag, true);
     }
 }
@@ -2410,17 +2545,20 @@ struct FUN_0047ead0_cls
     FUN_0047ead0_cls* FUN_004181e0(FUN_0047ead0_cls* a, int b);
     int GetFactionRank();
     FUN_0047ead0_cls* FUN_00726070();
-    void TESFaction_SetPCAttack(int v);
-    void TESFaction_SetPCMurder(int v);
+    void TESFaction_SetPCAttack(int abVal);
+    void TESFaction_SetPCMurder(int abVal);
     void ForwardCall_0047eb90(int v);
-    void TESActorBaseData_SetPCFactionFlags(int mode);
+    void TESActorBaseData_SetPCFactionFlags(int aeflag);
 };
 
 extern FUN_0047ead0_cls* DAT_011dea3c;
 
 // @fnv 0x0047ead0
 // src: XBOX_PDB 0x0047ead0
-void FUN_0047ead0_cls::TESActorBaseData_SetPCFactionFlags(int mode)
+// pdb: TESActorBaseData::SetPCFactionFlags | TESActorBaseData.obj | retail, upstream name already matches, high
+// pdb params: aeflag
+// pdb locals: pFacList, pfaction, pfac
+void FUN_0047ead0_cls::TESActorBaseData_SetPCFactionFlags(int aeflag)
 {
     FUN_0047ead0_cls* cur = this->FUN_005d8a70();
     while (cur != 0 && *cur->FUN_006815c0() != 0)
@@ -2432,7 +2570,7 @@ void FUN_0047ead0_cls::TESActorBaseData_SetPCFactionFlags(int mode)
             {
                 if (((FUN_0047ead0_cls*)((char*)DAT_011dea3c->FUN_004181e0(vt, 1) + 0x30))->GetFactionRank() != -1)
                 {
-                    switch (mode)
+                    switch (aeflag)
                     {
                     case 1:
                         vt->TESFaction_SetPCAttack(1);
@@ -2454,9 +2592,12 @@ void FUN_0047ead0_cls::TESActorBaseData_SetPCFactionFlags(int mode)
 
 // Casts other to TESAttackDamageForm; returns true if the cast fails or the attack damage values differ, otherwise false.
 // @fnv 0x0047fe80
-bool __thiscall TESAttackDamageForm::IsEqualToBase(BaseFormComponent* other)
+// pdb: TESAttackDamageForm::CompareComponent | TESAttackDamageForm.obj | retail, vtable slot, high
+// pdb params: apCompareFC
+// pdb locals: pCompare
+bool __thiscall TESAttackDamageForm::IsEqualToBase(BaseFormComponent* apCompareFC)
 {
-    TESAttackDamageForm* form = dynamic_cast<TESAttackDamageForm*>(other);
+    TESAttackDamageForm* form = dynamic_cast<TESAttackDamageForm*>(apCompareFC);
     if (form == 0)
     {
         return true;
@@ -2496,6 +2637,9 @@ struct FUN_00477a50_shell
     float GetHourlyWeightedTime(unsigned char aucHour, float afMin, float afMinB, Standin77900** appData);
 };
 // @fnv 0x00477a50
+// pdb: BGSDestructibleObjectForm::CalculateDangerousExplosionHealth | BGSDestructibleObjectForm.obj | debug, object-file run extension, low
+// pdb params: acCurrentHealthPercentage, afRequiredRadius, afRequiredDamage, apOutExplosion
+// pdb locals: i, pstage, fhealth
 float FUN_00477a50_shell::GetHourlyWeightedTime(unsigned char aucHour, float afMin, float afMinB,
                                                 Standin77900** appData)
 {
@@ -2544,9 +2688,12 @@ struct CollisionComponent
 };
 // Copies destruction data from another BGSDestructibleObjectForm, freeing old stages and cloning each stage, or clears data if the source has none.
 // @fnv 0x004786e0
-void BGSDestructibleObjectForm::BaseFormRecord(BaseFormComponent* source)
+// pdb: BGSDestructibleObjectForm::CopyComponent | BGSDestructibleObjectForm.obj | retail, vtable slot, high
+// pdb params: apCopyFC
+// pdb locals: pcopy, pdata, i
+void BGSDestructibleObjectForm::BaseFormRecord(BaseFormComponent* apCopyFC)
 {
-    BGSDestructibleObjectForm* pOther = dynamic_cast<BGSDestructibleObjectForm*>(source);
+    BGSDestructibleObjectForm* pOther = dynamic_cast<BGSDestructibleObjectForm*>(apCopyFC);
     if (!pOther)
         return;
     CollisionComponent* pSourceData = pOther->GetData();
@@ -2648,7 +2795,7 @@ World_47ab40* __fastcall TESObjectCELL_GetbhkWorld(Cell_47ab40* cell);
 struct TaskQueue_47ab40
 {
     static TaskQueue_47ab40* GetInstance();
-    void HandlerRegistration(NiNode* node);
+    void HandlerRegistration(NiNode* ap3D);
 };
 
 struct Ref_47ab40
@@ -2775,16 +2922,19 @@ struct Ref_47ab40
 
 // @fnv 0x0047ab40
 // src: XBOX_PDB 0x0047ab40
-bool BGSOpenCloseForm_HandleAnimEndHavok(Ref_47ab40* ref, NamedObject_47ab40* obj)
+// pdb: BGSOpenCloseForm::HandleAnimEndHavok | BGSOpenCloseForm.obj | retail, upstream name already matches, high
+// pdb params: apAnimRef, apEndSeq
+// pdb locals: bwasOpenCloseAnim, pav, pcell, pworld
+bool BGSOpenCloseForm_HandleAnimEndHavok(Ref_47ab40* apAnimRef, NamedObject_47ab40* apEndSeq)
 {
     bool result = false;
-    if (ref && obj)
+    if (apAnimRef && apEndSeq)
     {
-        if (!FUN_00ec6da0(obj->GetName(), "Open") || !FUN_00ec6da0(obj->GetName(), "Close"))
+        if (!FUN_00ec6da0(apEndSeq->GetName(), "Open") || !FUN_00ec6da0(apEndSeq->GetName(), "Close"))
             result = true;
         if (!*g_011c4c64.Bool() && result && !*g_011c4c64.Bool())
         {
-            NiNode* node = ref->Get3D();
+            NiNode* node = apAnimRef->Get3D();
             if (node)
             {
                 if (AILinearTaskThreadManager_ShouldQueue3DTask())
@@ -2793,7 +2943,7 @@ bool BGSOpenCloseForm_HandleAnimEndHavok(Ref_47ab40* ref, NamedObject_47ab40* ob
                 }
                 else
                 {
-                    Cell_47ab40* cell = ref->GetParentCell();
+                    Cell_47ab40* cell = apAnimRef->GetParentCell();
                     World_47ab40* world = cell ? TESObjectCELL_GetbhkWorld(cell) : 0;
                     if (world)
                         world->AddObject(node, true, true, 0, 0);
@@ -2808,7 +2958,7 @@ bool BGSOpenCloseForm_HandleAnimEndHavok(Ref_47ab40* ref, NamedObject_47ab40* ob
 
 
 FUN_0047b470_This* __cdecl bhkUtilFunctions_FindNextCollisionObject(NiNode*);
-void __cdecl SetFlagRecursive(int, void*);
+void __cdecl bhkUtilFunctions_SetCOUseVel(int, void*);
 
 struct RefWithGetNiNode
 {
@@ -2933,22 +3083,25 @@ struct RefWithGetNiNode
 
 // @fnv 0x0047b360
 // src: XBOX_PDB 0x0047b360
+// pdb: BGSOpenCloseForm::SnapHavokTo3D | BGSOpenCloseForm.obj | retail, upstream name already matches, high
+// pdb params: apRef
+// pdb locals: sp3D, bprevMovementVel, pcolObj, updateData
 void __cdecl BGSOpenCloseForm_SnapHavokTo3D(RefWithGetNiNode* apRef)
 {
     NiPointer<NiNode> spNode7(apRef->GetNiNode());
     if (spNode7)
     {
         FUN_0047b470_This* pObj2 = bhkUtilFunctions_FindNextCollisionObject(spNode7);
-        bool bFlag3 = pObj2 ? pObj2->bhkCollisionObject_GetUseVelocity() : false;
+        bool bFlag3 = pObj2 ? pObj2->bhkCollisionObject_QUseVel() : false;
         if (bFlag3)
         {
-            SetFlagRecursive(0, spNode7);
+            bhkUtilFunctions_SetCOUseVel(0, spNode7);
         }
         NiUpdateData kData(0.0f, false, false);
         ((NiNode*)spNode7)->Update(static_cast<const NiUpdateData&>(kData));
         if (bFlag3)
         {
-            SetFlagRecursive(bFlag3, spNode7);
+            bhkUtilFunctions_SetCOUseVel(bFlag3, spNode7);
         }
     }
 }
@@ -3112,7 +3265,7 @@ struct ArmorStub : ItemForm
     int unk14C;
     int unk150;
     ListStub list154;
-    bool GetHeavyFlag();
+    bool GetArmorWeight();
 };
 
 struct PlayerStub;
@@ -3158,7 +3311,7 @@ bool __cdecl IsItemEquivalent(ItemForm* a, ItemForm* pItemB)
                     case 0x18: {
                         ArmorStub* armA = (ArmorStub*)a;
                         ArmorStub* armB5 = (ArmorStub*)pItemB;
-                        if (armA->bipedModel.IsPowerArmorCheck() && armA->GetHeavyFlag() == armB5->GetHeavyFlag() &&
+                        if (armA->bipedModel.IsPowerArmorCheck() && armA->GetArmorWeight() == armB5->GetArmorWeight() &&
                             armA->list154.GetHead() == armB5->list154.GetHead())
                         {
                             result5 = true;
@@ -3223,7 +3376,7 @@ struct xFile
     xTimes* GetInfo();
     const char* GetPath();
     const char* GetName();
-    bool AddMasters(xList*, bool);
+    bool GenIndexTable(xList*, bool);
     unsigned int GetMasterCount();
     xFile* IsMasterFile(unsigned int);
     int m_auiShapeKeys[0x10b];
@@ -3246,7 +3399,7 @@ struct FUN_004624b0_cls
 {
     bool TESDataHandler_BuildFileList(const char*);
     xList* GetFileList();
-    xFile* FindFile(const char*);
+    xFile* GetListFile(const char*);
     int GetIndex(const char*);
     void SetLoaded(unsigned int, bool);
     void Finish();
@@ -3254,7 +3407,10 @@ struct FUN_004624b0_cls
 
 // @fnv 0x004624b0
 // src: COMMUNITY 0x004624b0
-bool FUN_004624b0_cls::TESDataHandler_BuildFileList(const char* DIR)
+// pdb: TESDataHandler::BuildFileList | TESDataHandler.obj | retail, upstream name already matches, high
+// pdb params: pdirectory
+// pdb locals: handle, pPath, psort, pupdate, data, pfile, tempMemContext, pList, index, szFileName, pLastList, pnewDirectory, pfileName, bcached, bInserted, bcaching, pfileDirectory, pcachedPath, plastSlash, badvanced, i, pmaster
+bool FUN_004624b0_cls::TESDataHandler_BuildFileList(const char* pdirectory)
 {
     xList* qfTOqo;
     char qsSDDgz[0x104];
@@ -3267,7 +3423,7 @@ bool FUN_004624b0_cls::TESDataHandler_BuildFileList(const char* DIR)
     char qbGYp[0x104];
     void* qnuVZg;
     xAutoMem qSVM(0x16, true, "D:\\_Fallout3\\Platforms\\Common\\Code\\Fallout Shared\\TESDataHandler.cpp", 0x1195);
-    xStrcpy(qbGYp, 0x104, DIR);
+    xStrcpy(qbGYp, 0x104, pdirectory);
     qpqRa = GetFileList();
     while (qpqRa)
     {
@@ -3302,7 +3458,7 @@ bool FUN_004624b0_cls::TESDataHandler_BuildFileList(const char* DIR)
             {
                 if (qvyWyw.nFileSizeHigh || qvyWyw.nFileSizeLow)
                 {
-                    qdqWL = FindFile(qvyWyw.cFileName);
+                    qdqWL = GetListFile(qvyWyw.cFileName);
                     if (!qdqWL)
                     {
                         const char* qxQHW;
@@ -3314,7 +3470,7 @@ bool FUN_004624b0_cls::TESDataHandler_BuildFileList(const char* DIR)
                         char qbXcw[0x10];
                         unsigned int qBCzzXA;
                         char qsTDDg[0x100];
-                        qxQHW = DIR;
+                        qxQHW = pdirectory;
                         qdqWL = new xFile(qxQHW, qvyWyw.cFileName, 0);
                         xRelease(qdqWL);
                         xSplitPath(qvyWyw.cFileName, 0, 0, 0, 0, qrKBG, 0x104, qbXcw, 0x10);
@@ -3404,7 +3560,7 @@ bool FUN_004624b0_cls::TESDataHandler_BuildFileList(const char* DIR)
         xFile* qJDuOZ = (xFile*)*qpqRa->Head();
         if (qJDuOZ->IsMaster())
         {
-            qJDuOZ->AddMasters(GetFileList(), false);
+            qJDuOZ->GenIndexTable(GetFileList(), false);
             for (unsigned int qpia = 0; qpia < qJDuOZ->GetMasterCount(); qpia++)
             {
                 xFile* qXMUYT = qJDuOZ->IsMasterFile(qpia + 1);
@@ -3423,7 +3579,7 @@ bool FUN_004624b0_cls::TESDataHandler_BuildFileList(const char* DIR)
     while (qpqRa && !qpqRa->IsEmpty())
     {
         xFile* qbfQdhM = (xFile*)*qpqRa->Head();
-        qbfQdhM->AddMasters(GetFileList(), false);
+        qbfQdhM->GenIndexTable(GetFileList(), false);
         qpqRa = qpqRa->Next();
     }
     Finish();
@@ -3747,7 +3903,7 @@ struct DSetting
 struct DManager
 {
     void Add(DRef*, void*, float);
-    void Remove(DRef*);
+    void CombatThreatMap_RemoveThreat(DRef*);
 };
 struct DSingleton
 {
@@ -3793,23 +3949,26 @@ struct Destruction
 // Reduces ref's health by damage, runs the stages crossed (delete, destroy, replace, debris, explosions), then adds or removes ref in a manager.
 // @fnv 0x00475b20
 // src: XBOX_PDB 0x00475b20
-void Destruction::BGSDestructibleObjectForm_DamageObject(DRef* ref, float damage, unsigned int flags)
+// pdb: BGSDestructibleObjectForm::DamageObject | BGSDestructibleObjectForm.obj | retail, upstream name already matches, high
+// pdb params: apRef, afDamage, abSelfDamage
+// pdb locals: fthreatTime, ccurrentHealthPercentage, inewStage, fcurrentHealth, pexplosion, preplacementModel, inewModelDamageStage, icurrentDamagePerSecond, fnewHealth, cnewHealthPercentage, imaxHealth, spPrevious3D, idamagePerSecond, icurrentModelDamageStage, icurrentStage, pactor, i, pstage, pprojectile, oldModelSwapNodeTransform, bincrementedReplacementModelRefCount, bunderwater, ballowChanges, oldModelSwapNodes ...
+void Destruction::BGSDestructibleObjectForm_DamageObject(DRef* apRef, float afDamage, unsigned int abSelfDamage)
 {
-    if (!data || !ref || damage <= 0.0 || ref->GetDisabled() || ref->GetDeleted())
+    if (!data || !apRef || afDamage <= 0.0 || apRef->GetDisabled() || apRef->GetDeleted())
         return;
-    if (!ref->GetNode())
+    if (!apRef->GetNode())
         return;
-    unsigned int locked = GetTotal(ref);
-    float frac = ref->Extra()->GetHealth();
+    unsigned int locked = GetTotal(apRef);
+    float frac = apRef->Extra()->GetHealth();
     if (frac == -1.0)
         frac = locked;
     if (frac == 0.0)
         return;
     unsigned char r = (unsigned char)FUN_00476b20(frac * 100.0 / locked);
-    float val = frac - damage;
-    if (ref->IsActor())
+    float val = frac - afDamage;
+    if (apRef->IsActor())
     {
-        DRef* actor = ref;
+        DRef* actor = apRef;
         val = actor->values.GetValue(16);
     }
     if (val <= 0.0)
@@ -3817,7 +3976,7 @@ void Destruction::BGSDestructibleObjectForm_DamageObject(DRef* ref, float damage
     unsigned char b = (unsigned char)FUN_00476b20(val * 100.0 / locked);
     if (!b && val > 0.0)
         b = 1;
-    DPointer root(ref->GetNode());
+    DPointer root(apRef->GetNode());
     void* z = 0;
     long oldIndex;
     oldIndex = 0;
@@ -3842,19 +4001,19 @@ void Destruction::BGSDestructibleObjectForm_DamageObject(DRef* ref, float damage
             result = 1 + index;
             if (stage->IsDeletedStage())
             {
-                if (ref->IsSpecial())
+                if (apRef->IsSpecial())
                 {
-                    DRef* newRotation = ref;
+                    DRef* newRotation = apRef;
                     newRotation->DestroySpecial();
                 }
                 else
                 {
-                    DeleteReference(ref, 0);
-                    ref->MarkForDeletion(true);
+                    DeleteReference(apRef, 0);
+                    apRef->MarkForDeletion(true);
                 }
             }
             if (stage->IsDestroyedStage())
-                ref->SetDestroyed(true);
+                apRef->SetDestroyed(true);
             if (stage->IsTerminalStage())
             {
                 val = (locked * stage->percent) / 100.0;
@@ -3871,18 +4030,18 @@ void Destruction::BGSDestructibleObjectForm_DamageObject(DRef* ref, float damage
         }
     }
     if (val <= 0.0)
-        ref->SetDestroyed(true);
-    ref->Extra()->SetHealth(val);
-    ref->Changed(0x80000000);
+        apRef->SetDestroyed(true);
+    apRef->Extra()->SetHealth(val);
+    apRef->Changed(0x80000000);
     if (result > n)
     {
-        if (!ref->GetDisabled())
+        if (!apRef->GetDisabled())
         {
             if (z)
             {
                 BSSimpleArray<NiNode*> branch;
                 DTransform j;
-                CollectNodes(ref->GetNode(), &branch);
+                CollectNodes(apRef->GetNode(), &branch);
                 if (branch.GetSize())
                     j = ((DNode*)branch.GetAt(0))->Transform();
                 bool total;
@@ -3892,20 +4051,20 @@ void Destruction::BGSDestructibleObjectForm_DamageObject(DRef* ref, float damage
                     InitScriptRunLock(&data->lock);
                     total = true;
                 }
-                bool tmp = ref->IsPersistent();
+                bool tmp = apRef->IsPersistent();
                 bool oldNodes;
                 oldNodes = g_BGSSaveLoadGame->AllowChanges(false);
-                ref->Reload(0, 1);
+                apRef->Reload(0, 1);
                 if (tmp)
-                    ref->SetPersistent(true);
+                    apRef->SetPersistent(true);
                 g_BGSSaveLoadGame->AllowChanges(oldNodes);
-                ref->Extra()->SetBase(z, ref->GetReferenceSpace());
-                ref->Changed(0x80000000);
-                g_TES->UpdateReference(ref, ref->GetContainingCell(), 0, 0);
-                if (ref->GetNode())
+                apRef->Extra()->SetBase(z, apRef->GetReferenceSpace());
+                apRef->Changed(0x80000000);
+                g_TES->UpdateReference(apRef, apRef->GetContainingCell(), 0, 0);
+                if (apRef->GetNode())
                 {
                     DNode* q;
-                    q = ref->GetNode();
+                    q = apRef->GetNode();
                     DBranch* s;
                     s = q ? q->AsBranch() : 0;
                     DFader* health;
@@ -3921,15 +4080,15 @@ void Destruction::BGSDestructibleObjectForm_DamageObject(DRef* ref, float damage
                             DTransform found = ((DNode*)bound.GetAt(0))->Transform();
                             DMatrix i = found.InverseRotation();
                             DMatrix changes = j.rotation;
-                            DMatrix newNodes = ref->GetRotation();
+                            DMatrix newNodes = apRef->GetRotation();
                             DMatrix res = changes * i * newNodes;
-                            ref->SetRotation(res);
-                            ref->Update();
+                            apRef->SetRotation(res);
+                            apRef->Update();
                             found = ((DNode*)bound.GetAt(0))->Transform();
                             DPoint pForm = j.translation - found.translation;
-                            pForm += ref->GetPosition();
-                            ref->SetLocation(pForm);
-                            ref->Update();
+                            pForm += apRef->GetPosition();
+                            apRef->SetLocation(pForm);
+                            apRef->Update();
                         }
                     }
                     ResetNode(q, true, true, 0);
@@ -3939,22 +4098,22 @@ void Destruction::BGSDestructibleObjectForm_DamageObject(DRef* ref, float damage
             }
             else if (plus > oldPart)
             {
-                ChangeParts(ref->Get3DSimple(), plus);
-                ref->Refresh(0);
+                ChangeParts(apRef->Get3DSimple(), plus);
+                apRef->Refresh(0);
             }
         }
         if (oldIndex && val > 0.0)
         {
-            g_011c4104.SetAt(ref, oldIndex);
+            g_011c4104.SetAt(apRef, oldIndex);
             newPercent = oldIndex;
         }
         else
-            g_011c4104.RemoveAt(ref);
+            g_011c4104.RemoveAt(apRef);
     }
     for (unsigned int stageIndex = n; stageIndex < result; ++stageIndex)
     {
         DStage* stage = GetStage(stageIndex);
-        FlagReference(ref, ref->Extra(), 0x200000);
+        FlagReference(apRef, apRef->Extra(), 0x200000);
         unsigned long ptr;
         ptr = 0;
         if (plus)
@@ -3964,19 +4123,19 @@ void Destruction::BGSDestructibleObjectForm_DamageObject(DRef* ref, float damage
         if (stage->debris && stage->debrisCount)
         {
             int threshold;
-            threshold = SpawnDebris(root, stage->debris, ptr, ref, stage->debrisCount);
+            threshold = SpawnDebris(root, stage->debris, ptr, apRef, stage->debrisCount);
             if (!threshold)
             {
-                DPoint pObj = ref->GetPosition();
-                ((DDebris*)stage->debris)->Spawn(ref->GetContainingCell(), &pObj, stage->debrisCount, ref->GetScale());
+                DPoint pObj = apRef->GetPosition();
+                ((DDebris*)stage->debris)->Spawn(apRef->GetContainingCell(), &pObj, stage->debrisCount, apRef->GetScale());
             }
         }
         if (stage->explosion)
         {
-            int threshold = SpawnEffect(root, stage->explosion, ptr, ref);
+            int threshold = SpawnEffect(root, stage->explosion, ptr, apRef);
             if (0 == threshold)
             {
-                DMatrix oldPercent = ref->GetRotation();
+                DMatrix oldPercent = apRef->GetRotation();
                 DBound newTransform;
                 newTransform = ((DNode*)root)->Bound();
                 DPoint pObj;
@@ -3985,16 +4144,16 @@ void Destruction::BGSDestructibleObjectForm_DamageObject(DRef* ref, float damage
                 pObj.z = RandomFloat(DAT_01012054, 0.0f);
                 pObj *= newTransform.Radius();
                 DPoint cnt = newTransform.Center() + pObj;
-                if (ref->IsSpecial())
+                if (apRef->IsSpecial())
                 {
-                    DRef* newRotation = ref;
+                    DRef* newRotation = apRef;
                     DResult* stageValue = SpawnExplosion(stage->explosion, newRotation->Source0(), 0,
-                                                         ref->GetContainingCell(), cnt, oldPercent);
+                                                         apRef->GetContainingCell(), cnt, oldPercent);
                     if (stageValue && newRotation->GetSourceID())
                         stageValue->SetSourceID(newRotation->GetSourceID());
                 }
                 else
-                    SpawnExplosion(stage->explosion, ref, ref, ref->GetContainingCell(), cnt, oldPercent);
+                    SpawnExplosion(stage->explosion, apRef, apRef, apRef->GetContainingCell(), cnt, oldPercent);
             }
         }
     }
@@ -4019,9 +4178,9 @@ void Destruction::BGSDestructibleObjectForm_DamageObject(DRef* ref, float damage
             rate = *originalRuntimeFloatSetting479.Float();
     }
     if (rate != -1.0)
-        BGSSaveLoadGlobalDataWorldspacePtr->Manager()->Add(ref, replacement, rate);
+        BGSSaveLoadGlobalDataWorldspacePtr->Manager()->Add(apRef, replacement, rate);
     else
-        BGSSaveLoadGlobalDataWorldspacePtr->Manager()->Remove(ref);
+        BGSSaveLoadGlobalDataWorldspacePtr->Manager()->CombatThreatMap_RemoveThreat(apRef);
 }
 
 struct LoadRecordHeader
@@ -4565,9 +4724,12 @@ struct LoadHandler
 // Loops over file records, handling type 2 and 0x50 group markers, loading others via FUN_00467bd0, and formatting a 'Loading Files' percent string.
 // @fnv 0x00467780
 // src: COMMUNITY 0x00467780
-bool LoadHandler::TESDataHandler_ConstructObjectList(LoadFile* file, bool mode)
+// pdb: TESDataHandler::ConstructObjectList | TESDataHandler.obj | retail, upstream name already matches, high
+// pdb params: pFile, abNoExistingForms
+// pdb locals: ipercent, success, bcontinue, badvanceform, ioffset, ivoicesize, idatastart, iadjust, ploadedform, bsearchedForLoadedForm
+bool LoadHandler::TESDataHandler_ConstructObjectList(LoadFile* pFile, bool abNoExistingForms)
 {
-    if (!file->FUN_00470c70(0, 0))
+    if (!pFile->FUN_00470c70(0, 0))
         ReportDataHandlerError(4);
     bool result5 = true;
     int lastPercent3 = 0;
@@ -4580,18 +4742,18 @@ bool LoadHandler::TESDataHandler_ConstructObjectList(LoadFile* file, bool mode)
     {
         bool advance4 = true;
         more6 = true;
-        if (file->FUN_00472660() == 2)
+        if (pFile->FUN_00472660() == 2)
         {
-            if (!TESDataHandler_FormGroupLoadsInGame(file, file->FUN_00462270()))
+            if (!TESDataHandler_FormGroupLoadsInGame(pFile, pFile->FUN_00462270()))
             {
                 advance4 = false;
-                if (!file->FUN_00473660())
+                if (!pFile->FUN_00473660())
                     more6 = false;
             }
         }
-        else if (file->FUN_00472660() == 0x50)
+        else if (pFile->FUN_00472660() == 0x50)
         {
-            int groupEnd = file->FUN_00462270()->groupEnd;
+            int groupEnd = pFile->FUN_00462270()->groupEnd;
             if (groupEnd == -1)
             {
                 advance4 = false;
@@ -4599,9 +4761,9 @@ bool LoadHandler::TESDataHandler_ConstructObjectList(LoadFile* file, bool mode)
             }
             else if (groupEnd == -2)
             {
-                unsigned int groupSize7 = file->FUN_00462270()->size;
-                unsigned int nextOffset = file->FUN_00467bb0() + 0x18;
-                file->ReturnTrue(nextOffset, groupSize7);
+                unsigned int groupSize7 = pFile->FUN_00462270()->size;
+                unsigned int nextOffset = pFile->FUN_00467bb0() + 0x18;
+                pFile->ReturnTrue(nextOffset, groupSize7);
                 advance4 = false;
                 more6 = false;
             }
@@ -4611,16 +4773,16 @@ bool LoadHandler::TESDataHandler_ConstructObjectList(LoadFile* file, bool mode)
             }
             else if (DAT_011c3f34)
             {
-                unsigned int distance = groupEnd - file->FUN_00467bb0();
+                unsigned int distance = groupEnd - pFile->FUN_00467bb0();
                 distance += 0x18;
-                DAT_011c3f34->TESWorldSpace_AdjustCellOffsets(file, distance);
+                DAT_011c3f34->TESWorldSpace_AdjustCellOffsets(pFile, distance);
             }
-            else if (DAT_011c3f30 && DAT_011c3f30->FUN_00425fd0() && file->GetMasterList_00464df0()->FUN_008256d0())
+            else if (DAT_011c3f30 && DAT_011c3f30->FUN_00425fd0() && pFile->GetMasterList_00464df0()->FUN_008256d0())
             {
                 DAT_011c3f30->SetTempDataOffset_0054de80(groupEnd);
             }
         }
-        else if (!FUN_00467bd0(file, mode, 0, 0))
+        else if (!FUN_00467bd0(pFile, abNoExistingForms, 0, 0))
         {
             result5 = false;
         }
@@ -4633,7 +4795,7 @@ bool LoadHandler::TESDataHandler_ConstructObjectList(LoadFile* file, bool mode)
                 DAT_011c40a8++;
                 if ((DAT_011c40a8 & 0xff) == 0)
                     g_TESSaveLoadGame->TESSaveLoadGame_StartLoadingSequence();
-                form5 = TESForm_GetFormByNumericID(file->FUN_008d8ac0());
+                form5 = TESForm_GetFormByNumericID(pFile->FUN_008d8ac0());
                 lookedUpTmp = true;
                 if (form5)
                     g_TESSaveLoadGame->AddLoadingTopic(form5);
@@ -4641,7 +4803,7 @@ bool LoadHandler::TESDataHandler_ConstructObjectList(LoadFile* file, bool mode)
             else
             {
                 if (!lookedUpTmp)
-                    form5 = TESForm_GetFormByNumericID(file->FUN_008d8ac0());
+                    form5 = TESForm_GetFormByNumericID(pFile->FUN_008d8ac0());
                 if (form5)
                 {
                     switch (form5->FUN_00401170())
@@ -4672,12 +4834,12 @@ bool LoadHandler::TESDataHandler_ConstructObjectList(LoadFile* file, bool mode)
         {
             lastPercent3 = _percent;
             char progress2[260];
-            BSsprintf(progress2, 260, "Loading Files %d%% (%s)", lastPercent3, file->FUN_00891170());
+            BSsprintf(progress2, 260, "Loading Files %d%% (%s)", lastPercent3, pFile->FUN_00891170());
         }
         if (advance4)
-            more6 = file->NextForm_00472150(true);
+            more6 = pFile->NextForm_00472150(true);
     } while (more6);
-    if (!file->FUN_00471130())
+    if (!pFile->FUN_00471130())
         ReportDataHandlerError(4);
     return result5;
 }
@@ -4844,6 +5006,7 @@ unsigned char __fastcall ReadChunkHeader(TESFile* file);
 // If unk258 is zero, calls ReadChunkHeader and returns 0 if that fails; otherwise returns unk258.
 // @fnv 0x004726b0
 // src: XBOX_PDB 0x004726b0
+// pdb: TESFile::GetTESChunk | TESFile.obj | retail, upstream name already matches, high
 int FUN_004726b0_class::TESFile_GetTESChunk()
 {
     if (this->unk258 == 0 && !ReadChunkHeader(reinterpret_cast<TESFile*>(this)))
@@ -4878,6 +5041,7 @@ struct FUN_004791c0 : GlobalObject_00479190
     virtual ~FUN_004791c0();
 };
 // @fnv 0x004791c0
+// pdb: NiTMap<TESObjectREFR *,unsigned int>::`scalar deleting destructor' | BGSDestructibleObjectForm.obj | retail, vtable slot, high
 FUN_004791c0::~FUN_004791c0()
 {}
 
@@ -4902,9 +5066,12 @@ struct DestructionStage
 };
 // Compares destruction data of two destructible forms and returns true if their health, flags, count, or any destruction stage field differs.
 // @fnv 0x00478900
-bool BGSDestructibleObjectForm::IsEqualToBase(BaseFormComponent* other)
+// pdb: BGSDestructibleObjectForm::CompareComponent | BGSDestructibleObjectForm.obj | retail, vtable slot, high
+// pdb params: apCompareFC
+// pdb locals: pdata, pcompare, i
+bool BGSDestructibleObjectForm::IsEqualToBase(BaseFormComponent* apCompareFC)
 {
-    BGSDestructibleObjectForm* form4 = dynamic_cast<BGSDestructibleObjectForm*>(other);
+    BGSDestructibleObjectForm* form4 = dynamic_cast<BGSDestructibleObjectForm*>(apCompareFC);
     if (!form4)
         return true;
     CollisionComponent* rhs3 = form4->GetData();
@@ -4962,6 +5129,7 @@ bool BGSDestructibleObjectForm::IsEqualToBase(BaseFormComponent* other)
 
 // @fnv 0x00470110
 // src: GUESS 0x00470110 (confidence: low)
+// pdb: NiTLargeArray<TESForm *,NiTMallocInterface<TESForm *> >::~NiTLargeArray<TESForm *,NiTMallocInterface<TESForm *> > | TESDataHandler.obj | debug, call graph (shared callers), medium
 void __thiscall FUN_00464f40_class::SetVtableAndProcessState_00470110()
 {
     *reinterpret_cast<void***>(this) = reinterpret_cast<void**>(&DAT_01019a34);

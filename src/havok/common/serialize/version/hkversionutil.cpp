@@ -93,10 +93,13 @@ extern "C" void* __cdecl hkString_memCpy(void*, const void*, unsigned int);
 
 // @fnv 0x00dc0fc0
 // src: XBOX_PDB 0x00dc0fc0
-void __cdecl hkVersionUtil_renameMember(void* a1, int a2, void* a3, int a4)
+// pdb: hkVersionUtil::renameMember | hkVersionUtil.obj | retail, upstream name already matches, high
+// pdb params: oldObj, oldName, newObj, newName
+// pdb locals: newMember, oldMember
+void __cdecl hkVersionUtil_renameMember(void* oldObj, int oldName, void* newObj, int newName)
 {
-    FUN_00d871a0 obj1(a1, a2);
-    FUN_00d871a0 obj2(a3, a4);
+    FUN_00d871a0 obj1(oldObj, oldName);
+    FUN_00d871a0 obj2(newObj, newName);
     bool b;
     if (obj1.ComputeValue_00d871e0(b) && obj2.ComputeValue_00d871e0(b))
     {
@@ -112,29 +115,31 @@ class hkVersionCheckDC11
 {
   public:
     int hkObjectCopier_areMembersCompatible(const hkClassMember* pkOld, const hkClassMember* pkNew) throw();
-    int IsMemberCompatible(const hkClassMember* pkOld, const hkClassMember* pkNew) throw();
+    int IsMemberCompatible(const hkClassMember* src, const hkClassMember* dst) throw();
 };
 
 // Returns 1 if the old class member is compatible with the new one by type/subtype, cstring-to-stringptr, or variant-to-pointer conversion; otherwise 0.
 // @fnv 0x00dc1100
-int hkVersionCheckDC11::IsMemberCompatible(const hkClassMember* pkOld, const hkClassMember* pkNew) throw()
+// pdb: `anonymous namespace'::PackfileObjectCopier::areMembersCompatible | hkVersionUtil.obj | retail, vtable slot, high
+// pdb params: src, dst
+int hkVersionCheckDC11::IsMemberCompatible(const hkClassMember* src, const hkClassMember* dst) throw()
 {
-    bool bTypeCompatible = (pkOld->m_type == pkNew->m_type) || (pkOld->m_type == hkClassMember::TYPE_SIMPLEARRAY &&
-                                                                pkNew->m_type == hkClassMember::TYPE_ARRAY);
+    bool bTypeCompatible = (src->m_type == dst->m_type) || (src->m_type == hkClassMember::TYPE_SIMPLEARRAY &&
+                                                                dst->m_type == hkClassMember::TYPE_ARRAY);
     bool bCStringToStringPtr =
-        (pkOld->m_type == hkClassMember::TYPE_CSTRING && pkNew->m_type == hkClassMember::TYPE_STRINGPTR);
+        (src->m_type == hkClassMember::TYPE_CSTRING && dst->m_type == hkClassMember::TYPE_STRINGPTR);
     bool bVariantToPtr =
-        (pkOld->m_type == hkClassMember::TYPE_VARIANT && pkNew->m_type == hkClassMember::TYPE_POINTER &&
-         pkNew->m_eSubtype == hkClassMember::TYPE_STRUCT && GetMemberClass(pkNew) &&
-         hkString_strCmp(GetClassName(&g_01268748), GetClassName(pkNew->GetClass())) == 0);
+        (src->m_type == hkClassMember::TYPE_VARIANT && dst->m_type == hkClassMember::TYPE_POINTER &&
+         dst->m_subtype == hkClassMember::TYPE_STRUCT && GetMemberClass(dst) &&
+         hkString_strCmp(GetClassName(&g_01268748), GetClassName(dst->GetClass())) == 0);
     bool bSubTypeCompatible =
-        (pkOld->m_eSubtype == pkNew->m_eSubtype) || (pkOld->m_eSubtype == hkClassMember::TYPE_CSTRING &&
-                                                     pkNew->m_eSubtype == hkClassMember::TYPE_STRINGPTR);
+        (src->m_subtype == dst->m_subtype) || (src->m_subtype == hkClassMember::TYPE_CSTRING &&
+                                                     dst->m_subtype == hkClassMember::TYPE_STRINGPTR);
     bool bSubVariantToPtr =
-        (pkOld->m_eSubtype == hkClassMember::TYPE_VARIANT && pkNew->m_eSubtype == hkClassMember::TYPE_POINTER &&
-         GetMemberClass(pkNew) && hkString_strCmp(GetClassName(&g_01268748), GetClassName(pkNew->GetClass())) == 0);
+        (src->m_subtype == hkClassMember::TYPE_VARIANT && dst->m_subtype == hkClassMember::TYPE_POINTER &&
+         GetMemberClass(dst) && hkString_strCmp(GetClassName(&g_01268748), GetClassName(dst->GetClass())) == 0);
 
-    if (hkObjectCopier_areMembersCompatible(pkOld, pkNew) || bCStringToStringPtr || bVariantToPtr ||
+    if (hkObjectCopier_areMembersCompatible(src, dst) || bCStringToStringPtr || bVariantToPtr ||
         (bTypeCompatible && (bSubTypeCompatible || bSubVariantToPtr)))
         return 1;
     return 0;
@@ -175,10 +180,13 @@ class hkVisitorDC12
         hkStructureLayout_hkStructureLayout();
     }
     void hkStructureLayout_hkStructureLayout() throw();
-    void UpdateState_00dc1bb0(void* pvObject, hkPointerMapDC12& kDone, int iFlags) throw();
+    void hkStructureLayout_computeMemberOffsetsInplace(void* klass, hkPointerMapDC12& classesDone, int recurse) throw();
 };
 
 // @fnv 0x00dc1230
+// pdb: hkVersionUtil::recomputeClassMemberOffsets | hkVersionUtil.obj | retail, object-file run extension, low
+// pdb params: classes, classVersion
+// pdb locals: layout, classesDone
 extern "C" void __cdecl VisitObjectList(int apvList, int iFlags)
 {
     void* const* ppvList = reinterpret_cast<void* const*>(apvList);
@@ -187,7 +195,7 @@ extern "C" void __cdecl VisitObjectList(int apvList, int iFlags)
     hkPointerMapDC12 kDone;
     kDone.EnsureCapacity(reinterpret_cast<hkMemoryAllocatorDC12&>(hkMemoryRouter_getInstance().heap()), 0);
     for (int i = 0; ppvList[i]; i++)
-        kVisitor.UpdateState_00dc1bb0(ppvList[i], kDone, 1);
+        kVisitor.hkStructureLayout_computeMemberOffsetsInplace(ppvList[i], kDone, 1);
     kDone.ProcessArgument(reinterpret_cast<hkMemoryAllocatorDC12&>(hkMemoryRouter_getInstance().heap()));
 }
 
@@ -209,13 +217,13 @@ class FUN_00d274c0 : public FUN_00d27520
 {
   public:
     FUN_00d274c0(void* pvMem, int m_uiSizeAndFlags, hkBool bMemoryIsString) throw();
-    int hkBufferedStreamWriter_seek(int offset, int whence) throw();
+    int hkBufferedStreamWriter_seek(int relOffset, int whence) throw();
 };
 
 class SetDC10
 {
   public:
-    int FUN_00d46fe0(int key) throw();
+    int hkClass_getMemberByName(int key) throw();
 };
 
 class SectionsDC10
@@ -223,25 +231,28 @@ class SectionsDC10
   public:
     int FUN_00d470d0() throw();
     int FUN_00d46f00() throw();
-    hkClassMember* getMember(int i) throw();
+    hkClassMember* getMember(int memberIndex) throw();
     void InvokeTarget(int i, FUN_00d27520* pkWriter) throw();
 };
 
 // Writes entries from pkSections whose key is not in pkSet to pvBuf via a FUN_00d274c0 writer.
 // @fnv 0x00dc1070
 // src: XBOX_PDB 0x00dc1070
-void __cdecl hkVersionUtil_copyDefaults(void* apvBuffer, SetDC10* pkSet, SectionsDC10* pkSections)
+// pdb: hkVersionUtil::copyDefaults | hkVersionUtil.obj | retail, upstream name already matches, high
+// pdb params: obj, oldClass, newClass
+// pdb locals: writer
+void __cdecl hkVersionUtil_copyDefaults(void* obj, SetDC10* oldClass, SectionsDC10* newClass)
 {
-    FUN_00d274c0 kWriter(apvBuffer, pkSections->FUN_00d470d0(), false);
-    for (int i = 0; i < pkSections->FUN_00d46f00(); i++)
+    FUN_00d274c0 kWriter(obj, newClass->FUN_00d470d0(), false);
+    for (int i = 0; i < newClass->FUN_00d46f00(); i++)
     {
-        hkClassMember* pkEntry = pkSections->getMember(i);
+        hkClassMember* pkEntry = newClass->getMember(i);
         int key = reinterpret_cast<int>(pkEntry->m_name);
-        if (!pkSet->FUN_00d46fe0(key))
+        if (!oldClass->hkClass_getMemberByName(key))
         {
             int iOffset = pkEntry->m_offset;
             kWriter.hkBufferedStreamWriter_seek(iOffset, 0);
-            pkSections->InvokeTarget(i, &kWriter);
+            newClass->InvokeTarget(i, &kWriter);
         }
     }
     kWriter.FUN_00d27520_dtor();
@@ -272,7 +283,7 @@ struct S00dc15a0_Array
 namespace fnvc_adapt {
 extern "C" hkMemoryRouter* __cdecl hkMemoryRouter_getInstance();
 }
-extern "C" void __cdecl hkArrayUtil__reserve(S00dc15a0_Buffer* buffer, int** indices, int size, int elementSize);
+extern "C" void __cdecl hkArrayUtil__reserve(S00dc15a0_Buffer* mem, int** array, int numElem, int sizeElem);
 
 // src: GUESS 0x00dc12c0 (confidence: low)
 static __declspec(noinline) int Object_ComputeValue_00dc12c0(S00dc15a0_Params* params, int value, int flags, S00dc15a0_Array* arr)
@@ -284,6 +295,9 @@ static __declspec(noinline) int Object_ComputeValue_00dc12c0(S00dc15a0_Params* p
 // Builds an array containing 0..count-1, passes it to FUN_00dc12c0, and returns that call's result.
 // @fnv 0x00dc15a0
 // src: GUESS 0x00dc15a0 (confidence: medium)
+// pdb: hkVersionUtil::copyObjects | hkVersionUtil.obj | retail, object-file run extension, low
+// pdb params: objectsIn, objectsOut, tracker
+// pdb locals: objectIndices
 int __cdecl Object_BuildIndexArrayAndDispatch(S00dc15a0_Params* params, int value, int flags)
 {
     S00dc15a0_Array arr;
@@ -357,12 +371,14 @@ namespace FUN_00dc1040 {
 class PackfileObjectCopier : public FUN_00e03120::hkObjectCopier
 {
   public:
-    PackfileObjectCopier(const StructureLayoutRules& kSrc, const StructureLayoutRules& kDst);
+    PackfileObjectCopier(const StructureLayoutRules& layoutIn, const StructureLayoutRules& layoutOut);
     virtual void CopyContents();
 };
 
 // @fnv 0x00dc1040
-PackfileObjectCopier::PackfileObjectCopier(const StructureLayoutRules& kSrc, const StructureLayoutRules& kDst)
-    : FUN_00e03120::hkObjectCopier(kSrc, kDst, 0)
+// pdb: `anonymous namespace'::PackfileObjectCopier::PackfileObjectCopier | hkVersionUtil.obj | retail, object-file gap fill, high
+// pdb params: layoutIn, layoutOut
+PackfileObjectCopier::PackfileObjectCopier(const StructureLayoutRules& layoutIn, const StructureLayoutRules& layoutOut)
+    : FUN_00e03120::hkObjectCopier(layoutIn, layoutOut, 0)
 {}
 }

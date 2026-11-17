@@ -23,30 +23,32 @@ inline void hkVector4::setZero4()
     m_vComponents = _mm_setzero_ps();
 }
 
-void __cdecl Object_UpdateFields_00d8aac0(void* owner, void* current, int eventCode, int flags);
+void __cdecl hkSolveStepJacobians(void* owner, void* current, int eventCode, int tmp);
 // Optionally resets currentA/currentB to their reset values, zeroes the float range up to end, and notifies callbacks when current differs from desired.
 // @fnv 0x00d88340
 // src: HAVOK_LIB 0x00d88340
-void __cdecl hkpConstraintSolverSetup_subSolve(hkpConstraintSolverResources* state, int reset)
+// pdb: hkpConstraintSolverSetup::subSolve | hkpConstraintSolverSetup.obj | retail, upstream name already matches, high
+// pdb params: s, mode
+void __cdecl hkpConstraintSolverSetup_subSolve(hkpConstraintSolverResources* s, int mode)
 {
-    if (reset == 0)
+    if (mode == 0)
     {
-        state->m_akBufferStates[0].m_pValues = state->m_akBufferStates[0].m_pRayStart;
-        state->m_akBufferStates[1].m_pValues = state->m_akBufferStates[1].m_pRayStart;
+        s->m_schemas[0].m_pValues = s->m_schemas[0].m_pRayStart;
+        s->m_schemas[1].m_pValues = s->m_schemas[1].m_pRayStart;
     }
-    volatile float* p = reinterpret_cast<volatile float*>(state->m_akBufferStates[2].m_pValues);
-    while (p < reinterpret_cast<volatile float*>(state->m_akBufferStates[2].m_pTileTemplate))
+    volatile float* p = reinterpret_cast<volatile float*>(s->m_schemas[2].m_pValues);
+    while (p < reinterpret_cast<volatile float*>(s->m_schemas[2].m_pTileTemplate))
     {
         *p = 0.0f;
         ++p;
     }
-    state->m_akBufferStates[2].m_pValues = state->m_akBufferStates[2].m_pTileTemplate;
-    if (state->m_akBufferStates[0].m_pValues != state->m_akBufferStates[0].m_pTileTemplate)
-        Object_UpdateFields_00d8aac0(state->m_pSolverInfo, state->m_akBufferStates[0].m_pValues, reinterpret_cast<int>(state->m_pVelocityAccumulatorA), reinterpret_cast<int>(state->m_akBufferStates[2].m_pRayStart));
-    if (state->m_akBufferStates[1].m_pValues != state->m_akBufferStates[1].m_pTileTemplate)
-        Object_UpdateFields_00d8aac0(state->m_pSolverInfo, state->m_akBufferStates[1].m_pValues, reinterpret_cast<int>(state->m_pVelocityAccumulatorA), reinterpret_cast<int>(state->m_akBufferStates[2].m_pRayStart));
-    state->m_akBufferStates[0].m_pValues = state->m_akBufferStates[0].m_pTileTemplate;
-    state->m_akBufferStates[1].m_pValues = state->m_akBufferStates[1].m_pTileTemplate;
+    s->m_schemas[2].m_pValues = s->m_schemas[2].m_pTileTemplate;
+    if (s->m_schemas[0].m_pValues != s->m_schemas[0].m_pTileTemplate)
+        hkSolveStepJacobians(s->m_solverInfo, s->m_schemas[0].m_pValues, reinterpret_cast<int>(s->m_accumulators), reinterpret_cast<int>(s->m_schemas[2].m_pRayStart));
+    if (s->m_schemas[1].m_pValues != s->m_schemas[1].m_pTileTemplate)
+        hkSolveStepJacobians(s->m_solverInfo, s->m_schemas[1].m_pValues, reinterpret_cast<int>(s->m_accumulators), reinterpret_cast<int>(s->m_schemas[2].m_pRayStart));
+    s->m_schemas[0].m_pValues = s->m_schemas[0].m_pTileTemplate;
+    s->m_schemas[1].m_pValues = s->m_schemas[1].m_pTileTemplate;
 }
 
 struct D88310Bool
@@ -63,8 +65,8 @@ struct D88310Bool
 // src: HAVOK_LIB 0x00d88310
 D88310Bool __cdecl hkpConstraintSolverSetup_internalIsMemoryOkForNewAccumulators(const hkpConstraintSolverResources* stream, const void* unused, int numBlocks)
 {
-    int available = (int)(reinterpret_cast<char*>(stream->m_pVelocityAccumulatorB) - reinterpret_cast<char*>(stream->m_pVelocityAccumulatorC));
-    if (stream->m_pVelocityAccumulatorC == stream->m_pVelocityAccumulatorA)
+    int available = (int)(reinterpret_cast<char*>(stream->m_accumulatorsEnd) - reinterpret_cast<char*>(stream->m_accumulatorsCurrent));
+    if (stream->m_accumulatorsCurrent == stream->m_accumulators)
         numBlocks++;
     if (numBlocks * 128 > available - 16)
         return false;
@@ -111,12 +113,15 @@ struct D88470Elem
 
 // Accumulates amountA per element type and amountB*4 into totals, then returns true if the sums stay within obj's limitSum, limitA and limitB.
 // @fnv 0x00d88470
+// pdb: hkpConstraintSolverSetup::internalIsMemoryOkForNewJacobianSchemas | hkpConstraintSolverSetup.obj | debug, object-file run extension, low
+// pdb params: s, constraints, numConstraints
+// pdb locals: schemasCurrent
 D88310Bool __cdecl CheckTotalsWithinLimits(hkpConstraintSolverResources* obj, D88470Elem** begin, int count)
 {
     unsigned int totals[2];
-    totals[0] = reinterpret_cast<unsigned int>(obj->m_akBufferStates[0].m_pTileTemplate);
-    totals[1] = reinterpret_cast<unsigned int>(obj->m_akBufferStates[1].m_pTileTemplate);
-    unsigned int sum = reinterpret_cast<unsigned int>(obj->m_akBufferStates[2].m_pTileTemplate);
+    totals[0] = reinterpret_cast<unsigned int>(obj->m_schemas[0].m_pTileTemplate);
+    totals[1] = reinterpret_cast<unsigned int>(obj->m_schemas[1].m_pTileTemplate);
+    unsigned int sum = reinterpret_cast<unsigned int>(obj->m_schemas[2].m_pTileTemplate);
     unsigned int uiSum1 = 0;
     unsigned int uiSum2 = 0;
     D88470Elem** end = begin + count;
@@ -148,7 +153,7 @@ D88310Bool __cdecl CheckTotalsWithinLimits(hkpConstraintSolverResources* obj, D8
         totals[uiTypeIndex] += s->amountA;
     }
     sum += uiSum1 + uiSum2;
-    if (sum <= reinterpret_cast<unsigned int>(obj->m_akBufferStates[2].m_kRayEnd) && totals[0] + 4 <= reinterpret_cast<unsigned int>(obj->m_akBufferStates[0].m_kRayEnd) && totals[1] + 4 <= reinterpret_cast<unsigned int>(obj->m_akBufferStates[1].m_kRayEnd))
+    if (sum <= reinterpret_cast<unsigned int>(obj->m_schemas[2].m_kRayEnd) && totals[0] + 4 <= reinterpret_cast<unsigned int>(obj->m_schemas[0].m_kRayEnd) && totals[1] + 4 <= reinterpret_cast<unsigned int>(obj->m_schemas[1].m_kRayEnd))
         return true;
     else
         return false;
@@ -162,9 +167,9 @@ struct hkpSolverSumVelocities
     hkVector4 m_vAngularVelocity;
 };
 
-hkpVelocityAccumulator* __cdecl hkRigidMotionUtilApplyForcesAndBuildAccumulators(const hkStepInfo* pkInfo, hkpEntity* const* ppkEntities,
-                                                 unsigned int uiNumEntities, int iMotionOffset,
-                                                 hkpVelocityAccumulator* pkAccumulatorsOut);
+hkpVelocityAccumulator* __cdecl hkRigidMotionUtilApplyForcesAndBuildAccumulators(const hkStepInfo* info, hkpEntity* const* motions,
+                                                 unsigned int numMotions, int motionOffset,
+                                                 hkpVelocityAccumulator* accumulatorsOut);
 
 // @fnv 0x00d88670
 // src: GUESS 0x00d88670 (confidence: low)
@@ -176,11 +181,11 @@ void __cdecl hkpConstraintSolverResources_ProcessEntries_00d88670(hkpConstraintS
         return;
     }
 
-    if (kResources.m_pVelocityAccumulatorC == kResources.m_pVelocityAccumulatorA)
+    if (kResources.m_accumulatorsCurrent == kResources.m_accumulators)
     {
-        hkpVelocityAccumulator* pkFixed = kResources.m_pVelocityAccumulatorC;
+        hkpVelocityAccumulator* pkFixed = kResources.m_accumulatorsCurrent;
         pkFixed->setFixed();
-        kResources.m_pVelocityAccumulatorC = pkFixed + 1;
+        kResources.m_accumulatorsCurrent = pkFixed + 1;
         hkpSolverSumVelocities* pkFixedSumVel = kResources.m_sumVelocities;
         pkFixedSumVel->m_vAngularVelocity.setZero4();
         pkFixedSumVel->m_vLinearVelocity.setZero4();
@@ -188,15 +193,15 @@ void __cdecl hkpConstraintSolverResources_ProcessEntries_00d88670(hkpConstraintS
 
     for (unsigned int i = 0; i < uiNumEntities; i++)
     {
-        ppkEntities[i]->m_uiFilterInfo = reinterpret_cast<unsigned int>(kResources.m_pVelocityAccumulatorC + i) -
-                                         reinterpret_cast<unsigned int>(kResources.m_pVelocityAccumulatorA);
+        ppkEntities[i]->m_solverData = reinterpret_cast<unsigned int>(kResources.m_accumulatorsCurrent + i) -
+                                         reinterpret_cast<unsigned int>(kResources.m_accumulators);
     }
 
-    hkpVelocityAccumulator* pkAccumulator = kResources.m_pVelocityAccumulatorC;
+    hkpVelocityAccumulator* pkAccumulator = kResources.m_accumulatorsCurrent;
     hkpSolverSumVelocities* pkSumVel =
-        kResources.m_sumVelocities + ppkEntities[0]->m_uiFilterInfo / sizeof(hkpVelocityAccumulator);
-    kResources.m_pVelocityAccumulatorC =
-        hkRigidMotionUtilApplyForcesAndBuildAccumulators(kResources.m_pStepInfo, ppkEntities, uiNumEntities, 0xe0, pkAccumulator);
+        kResources.m_sumVelocities + ppkEntities[0]->m_solverData / sizeof(hkpVelocityAccumulator);
+    kResources.m_accumulatorsCurrent =
+        hkRigidMotionUtilApplyForcesAndBuildAccumulators(kResources.m_stepInfo, ppkEntities, uiNumEntities, 0xe0, pkAccumulator);
 
     for (unsigned int i = 0; i < uiNumEntities; i++)
     {
@@ -208,7 +213,7 @@ void __cdecl hkpConstraintSolverResources_ProcessEntries_00d88670(hkpConstraintS
         pkSumVel++;
     }
 
-    kResources.m_pVelocityAccumulatorC->m_type = 3;
+    kResources.m_accumulatorsCurrent->m_type = 3;
 }
 
 struct S88_Allocator;
@@ -227,7 +232,7 @@ struct S88_Router
 };
 
 S88_Router* __cdecl hkMemoryRouter_getInstance();
-void __cdecl ResizeAudioStream(S88_Allocator& a, void* array, int sizeElem);
+void __cdecl ResizeAudioStream(S88_Allocator& mem, void* array, int sizeElem);
 
 template <typename T> struct S88_PadSpu
 {
@@ -419,8 +424,8 @@ template <typename T> inline T S88_min2(T x, T y)
 }
 
 void __cdecl hkSimpleContactConstraintData_fireCallbacks(S88_ConstraintData* data, const S88_QueryIn* in, S88_Atom* atom, int type);
-void __cdecl hkSimpleContactConstraintDataBuildJacobian(S88_Atom* atom, const S88_QueryIn& in, D88310Bool writeHeader, S88_QueryOut& out);
-void __cdecl hkSolverBuildJacobianFromAtomsNotContact(const S88_Atom* atoms, int atomsSize, const S88_QueryIn& in, S88_QueryOut& out);
+void __cdecl hkSimpleContactConstraintDataBuildJacobian(S88_Atom* atom, const S88_QueryIn& in, D88310Bool writeHeaderSchemas, S88_QueryOut& out);
+void __cdecl hkSolverBuildJacobianFromAtomsNotContact(const S88_Atom* atoms, int atomsSize, const S88_QueryIn& tmpIn, S88_QueryOut& out);
 
 inline void S88_buildJacobianFromAtoms(S88_Atom* atoms, int atomsSize, const S88_QueryIn& in, S88_QueryOut& out)
 {
@@ -436,9 +441,12 @@ inline void S88_buildJacobianFromAtoms(S88_Atom* atoms, int atomsSize, const S88
 
 // @fnv 0x00d88760
 // src: XBOX_PDB 0x00d88760
+// pdb: hkpConstraintSolverSetup::internalAddJacobianSchemas | hkpConstraintSolverSetup.obj | retail, upstream name already matches, high
+// pdb params: s, constraints, numConstraints, constraintStatus
+// pdb locals: out, cEnd, cinfo
 void __cdecl hkpConstraintSolverSetup_internalAddJacobianSchemas(hkpConstraintSolverResources& s, S88_Instance** constraints, int numConstraints, hkArrayBase<S88_SchemaInfo>& constraintStatus)
 {
-    S88_QueryIn& in = *reinterpret_cast<S88_QueryIn*>(s.m_pConstraintQueryIn);
+    S88_QueryIn& in = *reinterpret_cast<S88_QueryIn*>(s.m_constraintQueryInput);
     S88_QueryOut out;
 
     for (S88_Instance **cp = constraints, **end = constraints + numConstraints; cp < end; cp++)
@@ -446,18 +454,18 @@ void __cdecl hkpConstraintSolverSetup_internalAddJacobianSchemas(hkpConstraintSo
         S88_Instance* instance = *cp;
         int prio = (instance->getPriority() == 5);
         hkpEntity** entities = &instance->getInternal()->m_kActorEntries[0];
-        hkpMotion* motionA = &entities[0]->m_pMotionState;
-        hkpMotion* motionB = &entities[1]->m_pMotionState;
+        hkpMotion* motionA = &entities[0]->m_motion;
+        hkpMotion* motionB = &entities[1]->m_motion;
 
         hkpVelocityAccumulator* pAccumulatorA =
-            S88_addByteOffset(s.m_pVelocityAccumulatorA, entities[0]->m_uiFilterInfo);
+            S88_addByteOffset(s.m_accumulators, entities[0]->m_solverData);
         hkpVelocityAccumulator* pAccumulatorB =
-            S88_addByteOffset(s.m_pVelocityAccumulatorA, entities[1]->m_uiFilterInfo);
+            S88_addByteOffset(s.m_accumulators, entities[1]->m_solverData);
         in.m_pBodyA = pAccumulatorA;
         in.m_pBodyB = pAccumulatorB;
 
-        S88_Backup* backupA = &reinterpret_cast<S88_Backup*>(s.m_sumVelocities)[entities[0]->m_uiFilterInfo >> 7];
-        S88_Backup* backupB = &reinterpret_cast<S88_Backup*>(s.m_sumVelocities)[entities[1]->m_uiFilterInfo >> 7];
+        S88_Backup* backupA = &reinterpret_cast<S88_Backup*>(s.m_sumVelocities)[entities[0]->m_solverData >> 7];
+        S88_Backup* backupB = &reinterpret_cast<S88_Backup*>(s.m_sumVelocities)[entities[1]->m_solverData >> 7];
         pAccumulatorA->m_vCenterOfMass = backupA->m_kTranslationalVelocity;
         pAccumulatorA->m_scratch1 = backupA->m_kAngularVelocity;
         pAccumulatorB->m_vCenterOfMass = backupB->m_kTranslationalVelocity;
@@ -465,21 +473,21 @@ void __cdecl hkpConstraintSolverSetup_internalAddJacobianSchemas(hkpConstraintSo
 
         const hkMotionState* pMotionStateA = &motionA->m_kMotionState;
         const hkMotionState* pMotionStateB = &motionB->m_kMotionState;
-        in.m_kBodyALocalFrame = &pMotionStateA->m_kMotionTransform;
-        in.m_kBodyBLocalFrame = &pMotionStateB->m_kMotionTransform;
+        in.m_kBodyALocalFrame = &pMotionStateA->m_transform;
+        in.m_kBodyBLocalFrame = &pMotionStateB->m_transform;
         in.m_pConstraintChainInstance = instance;
         in.m_pByteBuffer = instance->getRuntime();
-        in.m_uiParameterA = (unsigned short)(entities[0]->m_uiFilterInfo >> 7);
-        in.m_uiParameterB = (unsigned short)(entities[1]->m_uiFilterInfo >> 7);
+        in.m_uiParameterA = (unsigned short)(entities[0]->m_solverData >> 7);
+        in.m_uiParameterB = (unsigned short)(entities[1]->m_solverData >> 7);
         in.m_pUserData = instance->getRuntime();
 
         S88_SchemaInfo& info = S88_Array_AllocatePair(constraintStatus);
         info.m_pHavokConstraint = instance;
-        info.m_pConstraintSchema = reinterpret_cast<S88_Schema*>(s.m_akBufferStates[prio].m_pTileTemplate);
-        info.m_fAllowedPenetrationDepth = S88_min2(entities[0]->m_kCollidable.m_fAllowedPenetrationDepth,
-                                                   entities[1]->m_kCollidable.m_fAllowedPenetrationDepth);
+        info.m_pConstraintSchema = reinterpret_cast<S88_Schema*>(s.m_schemas[prio].m_pTileTemplate);
+        info.m_fAllowedPenetrationDepth = S88_min2(entities[0]->m_kCollidable.m_allowedPenetrationDepth,
+                                                   entities[1]->m_kCollidable.m_allowedPenetrationDepth);
 
-        out.m_pQueryResultSchema = reinterpret_cast<S88_Schema*>(s.m_akBufferStates[prio].m_pTileTemplate);
+        out.m_pQueryResultSchema = reinterpret_cast<S88_Schema*>(s.m_schemas[prio].m_pTileTemplate);
 
         if (instance->getData()->getType() == 11)
         {
@@ -495,8 +503,8 @@ void __cdecl hkpConstraintSolverSetup_internalAddJacobianSchemas(hkpConstraintSo
         S88_buildJacobianFromAtoms(instance->m_pConstraintInternal->getAtoms(),
                                    instance->m_pConstraintInternal->getAtomsSize(), in, out);
 
-        s.m_akBufferStates[prio].m_pTileTemplate = reinterpret_cast<char*>(out.m_pQueryResultSchema.val());
-        s.m_akBufferStates[2].m_pTileTemplate += instance->m_pConstraintInternal->m_iSolverElementTemporaryCount * 4;
+        s.m_schemas[prio].m_pTileTemplate = reinterpret_cast<char*>(out.m_pQueryResultSchema.val());
+        s.m_schemas[2].m_pTileTemplate += instance->m_pConstraintInternal->m_iSolverElementTemporaryCount * 4;
 
         pAccumulatorA->m_vCenterOfMass.setZero4();
         pAccumulatorA->m_scratch1.setZero4();
@@ -504,8 +512,8 @@ void __cdecl hkpConstraintSolverSetup_internalAddJacobianSchemas(hkpConstraintSo
         pAccumulatorB->m_scratch1.setZero4();
     }
 
-    *(int*)s.m_akBufferStates[0].m_pTileTemplate = 0;
-    *(int*)s.m_akBufferStates[1].m_pTileTemplate = 0;
+    *(int*)s.m_schemas[0].m_pTileTemplate = 0;
+    *(int*)s.m_schemas[1].m_pTileTemplate = 0;
 }
 
 // local form of hkMatrix3: 0x00d883c0 needs inline setZero/accessors; shared form emits an out-of-line setZero call absent from exe.
@@ -617,8 +625,11 @@ struct S883_TaskHeader
 
 // Lays out accumulator, schema and solver-element-temporary regions in buffer, sets taskHeader pointers and sizes, and initialises the first accumulator as fixed.
 // @fnv 0x00d883c0
-// src: GUESS 0x00d883c0 (confidence: low)
-int __cdecl Object_ProcessAndReturnValue_00d883c0(const S883_Island& island, char* buffer, int bufferSize, S883_TaskHeader& taskHeader)
+// src: XBOX_RETAIL_PDB 0x00d883c0
+// pdb: hkpConstraintSolverSetup::calcBufferOffsetsForSolve | hkpConstraintSolverSetup.obj | retail, call graph (shared callers), high
+// pdb params: island, buffer, bufferSize, taskHeader
+// pdb locals: assertBuf, ostr
+int __cdecl hkpConstraintSolverSetup_calcBufferOffsetsForSolve(const S883_Island& island, char* buffer, int bufferSize, S883_TaskHeader& taskHeader)
 {
     taskHeader.m_buffer = buffer;
     int numEntities = island.GetEntities().GetLogicalSize();
@@ -773,7 +784,7 @@ struct S88b50_SmallArray
 };
 static inline const S88b50_SmallArray& S88b50_getConstraintMasters(const hkpEntity* entity)
 {
-    return reinterpret_cast<const S88b50_SmallArray&>(entity->m_eSmallArraySerializeOverrideType);
+    return reinterpret_cast<const S88b50_SmallArray&>(entity->m_constraintsMaster);
 }
 
 struct S88b50_PtrArray
@@ -945,8 +956,8 @@ void __cdecl hkExportImpulsesAndRhs(const void* solverInfo, char* elemTemps, cha
 int __cdecl hkRigidMotionUtilApplyAccumulators(const void* solverInfo, const hkStepInfo* stepInfo,
                          const hkpVelocityAccumulator* accums, hkpEntity* const* bodies, int numBodies,
                          int offset);
-void __cdecl hkpEntityAabbUtil_entityBatchRecalcAabb(const void* input, hkpEntity* const* bodies, int numBodies);
-void __cdecl hkpWorldCallbackUtil_fireContactImpulseLimitBreached(void* world, void* elems, int n);
+void __cdecl hkpEntityAabbUtil_entityBatchRecalcAabb(const void* collisionInput, hkpEntity* const* entityBatch, int numEntities);
+void __cdecl hkpWorldCallbackUtil_fireContactImpulseLimitBreached(void* world, void* breachedContacts, int numBreachedContacts);
 
 // hkMatrix3
 struct S88b50_Matrix3
@@ -985,9 +996,9 @@ static __forceinline void S88b50_buildAccumulators(const hkStepInfo& info, hkpEn
     for (int i = 0; i < numBodies; i++)
     {
         unsigned int newVal = (i + 1) * 128;
-        if (newVal != bodies[i]->m_uiFilterInfo)
+        if (newVal != bodies[i]->m_solverData)
         {
-            bodies[i]->m_uiFilterInfo = newVal;
+            bodies[i]->m_solverData = newVal;
         }
     }
     hkpVelocityAccumulator* accumEnd =
@@ -1027,16 +1038,16 @@ static __forceinline void S88b50_buildJacobianElement(const S88b50_ConstraintInt
     }
     hkpEntity* rA = c->m_kActorEntries[0];
     hkpEntity* rB = c->m_kActorEntries[1];
-    hkpMotion* mA = &rA->m_pMotionState;
-    hkpMotion* mB = &rB->m_pMotionState;
-    in.m_pBodyA = S88_addByteOffset(accusIn, rA->m_uiFilterInfo);
-    in.m_pBodyB = S88_addByteOffset(accusIn, rB->m_uiFilterInfo);
-    in.m_kBodyALocalFrame = &mA->m_kMotionState.m_kMotionTransform;
-    in.m_kBodyBLocalFrame = &mB->m_kMotionState.m_kMotionTransform;
+    hkpMotion* mA = &rA->m_motion;
+    hkpMotion* mB = &rB->m_motion;
+    in.m_pBodyA = S88_addByteOffset(accusIn, rA->m_solverData);
+    in.m_pBodyB = S88_addByteOffset(accusIn, rB->m_solverData);
+    in.m_kBodyALocalFrame = &mA->m_kMotionState.m_transform;
+    in.m_kBodyBLocalFrame = &mB->m_kMotionState.m_transform;
     in.m_pConstraintChainInstance = c->m_pHavokConstraint;
     in.m_pByteBuffer = c->m_pRuntime;
-    in.m_uiParameterA = (unsigned short)(rA->m_uiFilterInfo >> 7);
-    in.m_uiParameterB = (unsigned short)(rB->m_uiFilterInfo >> 7);
+    in.m_uiParameterA = (unsigned short)(rA->m_solverData >> 7);
+    in.m_uiParameterB = (unsigned short)(rB->m_solverData >> 7);
     in.m_pUserData = in.m_pByteBuffer;
     S88_buildJacobianFromAtoms(c->getAtoms(), c->getAtomsSize(), in, out);
 }
@@ -1063,8 +1074,8 @@ static __forceinline void S88b50_buildJacobianElements(S88_QueryIn& in, hkpEntit
                 in.m_pByteBuffer = c->m_pRuntime;
                 hkpEntity* rA = S88b50_getEntityA(c->m_pHavokConstraint);
                 hkpEntity* rB = S88b50_getEntityB(c->m_pHavokConstraint);
-                in.m_pBodyA = S88_addByteOffset(accusIn, rA->m_uiFilterInfo);
-                in.m_pBodyB = S88_addByteOffset(accusIn, rB->m_uiFilterInfo);
+                in.m_pBodyA = S88_addByteOffset(accusIn, rA->m_solverData);
+                in.m_pBodyB = S88_addByteOffset(accusIn, rB->m_solverData);
                 in.m_kBodyALocalFrame = &*(const hkTransform*)rA->m_kCollidable.m_pMotionState;
                 in.m_kBodyBLocalFrame = &*(const hkTransform*)rB->m_kCollidable.m_pMotionState;
                 if (c->m_ucCallbackRequest & 9)
@@ -1115,13 +1126,16 @@ static __forceinline int S88b50_integrate2(const void* solverInfo, const hkStepI
                                            int numBodies)
 {
     int numInactiveFrames = hkRigidMotionUtilApplyAccumulators(solverInfo, &stepInfo, accumulators + 1, bodies, numBodies, 0xe0);
-    hkpEntityAabbUtil_entityBatchRecalcAabb(((S88b50_World*)bodies[0]->m_pOwningWorld)->getCollisionInput(), bodies, numBodies);
+    hkpEntityAabbUtil_entityBatchRecalcAabb(((S88b50_World*)bodies[0]->m_world)->getCollisionInput(), bodies, numBodies);
     return numInactiveFrames;
 }
 
 // Allocates solver buffers, builds velocity accumulators and Jacobian schemas, solves the constraint system, and integrates the island bodies.
 // @fnv 0x00d88b50
 // src: XBOX_PDB 0x00d88b50
+// pdb: hkpConstraintSolverSetup::solve | hkpConstraintSolverSetup.obj | retail, upstream name already matches, high
+// pdb params: stepInfo, solverInfo, constraintQueryIn, island, preallocatedBuffer, preallocatedBufferSize, bodies, numBodies
+// pdb locals: scratch2Size, schemasB, scratchpad, schemas, numInactiveFrames, elemTemp, totalSize, velAccums, assertBuf, ostr
 int __cdecl hkpConstraintSolverSetup_solve(const hkStepInfo& stepInfo, const void* solverInfo, S88_QueryIn& constraintQueryIn,
                          S88b50_Island& island, void* preallocatedBuffer, int preallocatedBufferSize,
                          hkpEntity* const* bodies, int numBodies)

@@ -3,6 +3,7 @@
 #include "NiExtraData.h"
 #include "BSSoundHandle.h"
 
+// pdb: class BGSAddonNodeSoundHandleExtra, size 0x18, bases: NiExtraData, 1 members
 class BGSAddonNodeSoundHandleExtra : public NiExtraData
 {
 public:
@@ -15,5 +16,5 @@ public:
     void FUN_004f9270();
     void* FUN_004f9240(unsigned int flags);
 
-    BSSoundHandle m_kData;
+    BSSoundHandle SoundHandle; // src: XBOX_RETAIL_PDB +0xc (old: m_kData)
 };

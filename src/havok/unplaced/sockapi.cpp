@@ -14,12 +14,15 @@ struct RequestReceiver
     int unk00;
     int unk04;
     FUN_00cc05f0Target* unk08;
-    RequestReceiver* InvokeFromRequest(void* request);
+    RequestReceiver* InvokeFromRequest(void* str);
 };
 // @fnv 0x00cc05f0
-RequestReceiver* RequestReceiver::InvokeFromRequest(void* request)
+// pdb: hkOstream::operator<< | hkOStream.obj | retail, call graph, high
+// pdb params: p
+// pdb locals: buf
+RequestReceiver* RequestReceiver::InvokeFromRequest(void* str)
 {
-    int* values = (int*)request;
+    int* values = (int*)str;
     if (values[0])
         unk08->Invoke((const char*)values[0], values[1] - 1);
     else

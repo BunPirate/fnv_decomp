@@ -5,6 +5,7 @@
 #include "NiPoint3.h"
 #include "NiPoint3.h"
 
+// pdb: class NiPointLight, size 0x130 (here 0xfc), bases: NiLight, 3 members
 class NiPointLight : public NiLight
 {
   public:
@@ -17,7 +18,7 @@ class NiPointLight : public NiLight
     virtual bool RegisterStreamables(NiStream& stream);
     virtual void SaveBinary(NiStream& stream);
     virtual bool IsEqual(NiObject* object) const;
-    virtual void GetViewerStrings(NiViewerStringsArray* strings);
+    virtual void GetViewerStrings(NiViewerStringsArray* pStrings);
     virtual void UpdateWorldData(NiUpdateData& update);
 
 
@@ -27,14 +28,14 @@ class NiPointLight : public NiLight
     void SetConstantAttenuation(float value);
     void SetLinearAttenuation(float value);
     void SetQuadraticAttenuation(float value);
-    void SetDimmer(float value);
+    void SetDimmer(float fDimmer);
     void SetSpecularColor(const NiPoint3& color);
     void IncRevisionID();
 
     void FUN_0050c630(float value);
     void FUN_0050c660(float value);
     void FUN_0050c690(float value);
-    void NiLight_SetDimmer(float value);
+    void NiLight_SetDimmer(float fDimmer);
     void FUN_0050dd50(const NiPoint3& color);
     void FUN_004bc2c0();
     bool IsEqual_00a7d730(NiObject* object);

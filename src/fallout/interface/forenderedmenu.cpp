@@ -48,7 +48,7 @@ public:
     PodPoint3* FUN_00439e90(PodPoint3* output, const PodPoint3* other) const;
     PodPoint3 SubtractIntoVector(const PodPoint3& other) const;
     void SubtractIntoVector();
-    PodPoint3 FUN_004b3800(const PodPoint3& axis) const;
+    PodPoint3 FUN_004b3800(const PodPoint3& pt) const;
     void Unitize_004a0c10();
     float FUN_00457910();
     float FUN_00457990() const;
@@ -91,7 +91,7 @@ typedef char FNV_ASSERT_sound_handle_size[(sizeof(BSSoundHandle) == 12) ? 1 : -1
 class RenderedMenuAudio : public BSAudio
 {
 public:
-    BSSoundHandle GetSoundHandleByEditorID(const char* editorID, unsigned int flags);
+    BSSoundHandle GetSoundHandleByEditorID(const char* apSoundName, unsigned int aiTypeFlags);
 };
 
 class TimeGlobal
@@ -102,7 +102,7 @@ class TimeGlobal
 
 extern TimeGlobal g_timeGlobal;
 extern bool g_burstSoundEnabled;
-bool __cdecl RandomBoolean(float chance);
+bool __cdecl RandomBoolean(float afPercentTrue);
 
 ShadowSceneNode* FUN_00450b80(unsigned int);
 struct NiRTTI;
@@ -120,6 +120,7 @@ extern NiColor DAT_011f4998;
 const char kRenderedMenuBurstSound[] = "UIPipBoyStatic";
 
 // @fnv 0x0063d040
+// pdb: BSAudio::GetSynchTime | MediaLocationController.obj | debug, call graph, medium
 unsigned int FORenderedMenu::GetCurrentTimeMilliseconds()
 {
     return (unsigned int)m_pRenderedMenuObject.operator NiAVObject*();
@@ -127,15 +128,19 @@ unsigned int FORenderedMenu::GetCurrentTimeMilliseconds()
 
 // Enables the burst, stores duration and intensity, records the start timestamp, and optionally plays the burst sound.
 // @fnv 0x007fb150
-void FORenderedMenu::StartBurst(float duration, float intensity, float soundChance)
+// src: XBOX_RETAIL_PDB 0x007fb150
+// pdb: FORenderedMenu::TriggerBurst | FORenderedMenu.obj | retail, string-set bridge, high
+// pdb params: afBurstDuration, afBurstIntensity, afSoundChance
+// pdb locals: psoundHand
+void FORenderedMenu::TriggerBurst(float afBurstDuration, float afBurstIntensity, float afSoundChance)
 {
     m_bBurstActive = true;
-    fBurstDuration = duration;
-    m_fBurstSoundChance = intensity;
-    m_fBurstIntensity = intensity;
-    m_fBurstElapsedTime = g_timeGlobal.GetTimeStamp();
+    fBurstDuration = afBurstDuration;
+    fBurstCurrentIntensity = afBurstIntensity;
+    fBurstMaximumIntensity = afBurstIntensity;
+    fBurstStartTime = g_timeGlobal.GetTimeStamp();
 
-    if (g_burstSoundEnabled && RandomBoolean(soundChance))
+    if (g_burstSoundEnabled && RandomBoolean(afSoundChance))
     {
         BSSoundHandle soundHandle;
         soundHandle = static_cast<RenderedMenuAudio*>(BSAudio::GetSingleton())->GetSoundHandleByEditorID(kRenderedMenuBurstSound, 0x121);
@@ -144,33 +149,36 @@ void FORenderedMenu::StartBurst(float duration, float intensity, float soundChan
 }
 
 // @fnv 0x007fc400
-bool FORenderedMenu::CreateMenuLight(const char* nodeName, ShadowSceneNode* shadowNode)
+// pdb: FORenderedMenu::CreateMenuLight | FORenderedMenu.obj | retail, string-set bridge, high
+// pdb params: apLightNodeName, apShadowSceneNode
+// pdb locals: pSSnode, bsuccess, plightObject, plightNode, lightpos, foo, plight
+bool FORenderedMenu::CreateMenuLight(const char* apLightNodeName, ShadowSceneNode* apShadowSceneNode)
 {
     ShadowSceneNode* pResolvedShadowNode;
     bool bSuccess = false;
-    pResolvedShadowNode = shadowNode ? shadowNode : FUN_00450b80(0);
+    pResolvedShadowNode = apShadowSceneNode ? apShadowSceneNode : FUN_00450b80(0);
     if (GetMenuRoot())
     {
         ClearMenuLight();
         NiNode* pNode;
-        NiAVObject* pObject = GetMenuRoot()->GetObjectByName(NiFixedString((const char*)nodeName));
+        NiAVObject* pObject = GetMenuRoot()->GetObjectByName(NiFixedString((const char*)apLightNodeName));
         pNode = 0;
         if (pObject)
             pNode = pObject->IsSceneNode();
         if (pNode)
         {
-            m_pMenuLight = new NiPointLight;
+            spLight = new NiPointLight;
             // Keep this copy trivial: the shared NiPoint3 copy constructor is out of line.
             struct MenuLightPosition { float x, y, z; };
             MenuLightPosition kTranslate = *(MenuLightPosition*)&pNode->GetTranslate_0043c490();
-            m_pMenuLight->NiAVObject_SetTranslate(*(const NiPoint3*)&kTranslate);
-            pResolvedShadowNode->GetShadowSceneLight((NiLight*)(NiPointLight*)m_pMenuLight, true);
-            m_pSecondaryMenuObject = pResolvedShadowNode;
-            pNode->GetParent()->AttachChildInAvailableSlot((NiAVObject*)(NiPointLight*)m_pMenuLight, true);
+            spLight->NiAVObject_SetTranslate(*(const NiPoint3*)&kTranslate);
+            pResolvedShadowNode->GetShadowSceneLight((NiLight*)(NiPointLight*)spLight, true);
+            pLightShadowSceneNode = pResolvedShadowNode;
+            pNode->GetParent()->AttachChildInAvailableSlot((NiAVObject*)(NiPointLight*)spLight, true);
             NiUpdateData kData(0.0f, false, false);
-            m_pMenuBackgroundScreenGeometry->Update(kData);
-            m_pMenuLight->SetAppCulled(true);
-            m_pMenuLight->SetName(NiFixedString("RenderedMenuLight"));
+            spScreenTriShape->Update(kData);
+            spLight->SetAppCulled(true);
+            spLight->SetName(NiFixedString("RenderedMenuLight"));
             bSuccess = true;
         }
         else
@@ -178,14 +186,14 @@ bool FORenderedMenu::CreateMenuLight(const char* nodeName, ShadowSceneNode* shad
             NiAVObject* light = GetMenuRoot()->GetObjectByName(NiFixedString("RenderedMenuLight"));
             if (light)
             {
-                m_pMenuLight = (NiPointLight*)NiDynamicCast(&DAT_011f4a98, light);
-                if (m_pMenuLight)
+                spLight = (NiPointLight*)NiDynamicCast(&DAT_011f4a98, light);
+                if (spLight)
                     bSuccess = true;
             }
             else
             {
                 Warning("MENUS: FORenderedMenu::CreateMenuLight could not find light node '%s' in the rendered menu with mesh '%s'",
-                        nodeName, (const char*)GetMenuRoot()->GetName());
+                        apLightNodeName, (const char*)GetMenuRoot()->GetName());
             }
         }
     }
@@ -194,10 +202,11 @@ bool FORenderedMenu::CreateMenuLight(const char* nodeName, ShadowSceneNode* shad
 
 // Creates a BSShaderAccumulator, loads the Pipboy screen texture as default, copies blur settings from globals and marks the menu initialized.
 // @fnv 0x007fc150
+// pdb: FORenderedMenu::OnMenuOpen | FORenderedMenu.obj | retail, upstream name already matches, high
 void FORenderedMenu::OnMenuOpen()
 {
-    m_pMenuLightNode = new BSShaderAccumulator(BSShaderManager::BRCM_NO_GROUPS, 1, 0x2f7);
-    m_pMenuLightNode->FUN_004a1040(10);
+    spAccumulator = new BSShaderAccumulator(BSShaderManager::BRCM_NO_GROUPS, 1, 0x2f7);
+    spAccumulator->FUN_004a1040(10);
     NiTexture* pTexture = 0;
     NiPointer<NiTexture> kTexture(0);
     BSShaderManager::GetTexture("Data\\Textures\\Pipboy3000\\screen.dds", true, kTexture, true, false);
@@ -207,18 +216,21 @@ void FORenderedMenu::OnMenuOpen()
     SetDefaultTexture(pTexture);
     fBlurRadius = *DAT_011db44c.Float();
     fBlurIntensity = *DAT_011db470.Float();
-    BSShaderManager::GetTexture(DAT_011db3d8.String(), true, m_pMenuLightShadowNode, false, false);
+    BSShaderManager::GetTexture(DAT_011db3d8.String(), true, spScanlinesTexture, false, false);
     bInitialized = true;
 }
 
 // @fnv 0x007fc2d0
 // src: COMMUNITY 0x007fc2d0
+// pdb: FORenderedMenu::PrepareGeometry | FORenderedMenu.obj | debug, object-file run extension, low
+// pdb params: apGeometry
+// pdb locals: pnlp, UpdateData, pmatprop, palphaprop
 void FOPipboyManager::FORenderedMenu_SetupScreen(NiAVObject* object)
 {
     NiProperty* material;
     {
         NiProperty* textureProperty = ((NiGeometry*)object)->GetProperty(NiShadeProperty_GetType());
-        textureProperty->BSShaderNoLightingProperty_SetBaseMap(m_pDefaultTexture);
+        textureProperty->BSShaderNoLightingProperty_SetBaseMap(spDefaultTex);
         if (!((NiGeometry*)object)->GetProperty(0))
         {
             NiAlphaProperty* alpha = new NiAlphaProperty;
@@ -237,12 +249,15 @@ void FOPipboyManager::FORenderedMenu_SetupScreen(NiAVObject* object)
 }
 
 // @fnv 0x007fc2b0
+// pdb: NiFloatInterpolator::SetFloatData | TESImageSpaceModifier.obj | debug, call graph, medium
+// pdb params: pkFloatData
 void FORenderedMenu::SetDefaultTexture(NiTexture* texture)
 {
-    m_pDefaultTexture = texture;
+    spDefaultTex = texture;
 }
 
 // @fnv 0x007fad10
+// pdb: FORenderedMenu::~FORenderedMenu | FORenderedMenu.obj | retail, upstream name already matches, high
 FORenderedMenu::~FORenderedMenu()
 {
     FORenderedMenu::ResetNifs();
@@ -316,19 +331,20 @@ struct LightNodeV
 };
 // @fnv 0x007fc6f0
 // src: XBOX_PDB 0x007fc6f0
+// pdb: FORenderedMenu::ClearMenuLight | FORenderedMenu.obj | retail, upstream name already matches, high
 void FORenderedMenu::ClearMenuLight()
 {
-    if (m_pMenuLight)
+    if (spLight)
     {
         if (GetMenuRoot()->IsSceneNode())
         {
             reinterpret_cast<LightNodeV*>(GetMenuRoot()->IsSceneNode())
-                ->AttachLight((unsigned int)m_pMenuLight.operator NiPointLight*());
+                ->AttachLight((unsigned int)spLight.operator NiPointLight*());
         }
-        reinterpret_cast<ExtraDataList*>(m_pSecondaryMenuObject)
+        reinterpret_cast<ExtraDataList*>(pLightShadowSceneNode)
             ->Set3DObject(reinterpret_cast<NiAVObject*>(
-                (unsigned int)(unsigned int)m_pMenuLight.operator NiPointLight*()));
-        m_pMenuLight = 0;
+                (unsigned int)(unsigned int)spLight.operator NiPointLight*()));
+        spLight = 0;
     }
 }
 
@@ -344,16 +360,17 @@ void TESImageSpaceModifier_AllowGetHit(char value)
 // Calls the base FORenderedMenu function, then zeroes several fields at offsets 4 through 0xd4 and a byte at 0x28.
 // @fnv 0x007fadf0
 // src: COMMUNITY 0x007fadf0
+// pdb: FORenderedMenu::Shutdown | FORenderedMenu.obj | debug, call graph, medium
 void FORenderedMenu::ResetNifs()
 {
     ClearMenuLight();
-    m_pMenuBackgroundScreenGeometry = 0;
+    spScreenTriShape = 0;
     m_pRenderedMenuObject = 0;
-    m_pScreenGeometry = 0;
-    m_pDefaultTexture = 0;
-    m_pMenuLight = 0;
-    m_pMenuLightParameters = 0;
-    m_pMenuLightNode = 0;
+    spPartialScreenGeometry = 0;
+    spDefaultTex = 0;
+    spLight = 0;
+    spCamera = 0;
+    spAccumulator = 0;
     bInitialized = 0;
 }
 
@@ -367,6 +384,7 @@ extern char* DAT_011f35cc;
 
 // @fnv 0x007fdf30
 // src: XBOX_PDB 0x007fdf30
+// pdb: Controls::GetInstance | FORenderedMenuRaceSex.obj | debug, upstream name already matches, high
 char* Controls_GetInstance()
 {
     return DAT_011f35cc;
@@ -391,6 +409,7 @@ float __fastcall GetRenderedMenuFieldB4(FORenderedMenu*)
 void __cdecl _Deallocate(void*);
 // Runs the destructor on this object, frees it with _Deallocate when flags has bit 0 set, and returns this.
 // @fnv 0x007face0
+// pdb: FORenderedMenu::`scalar deleting destructor' | FORenderedMenu.obj | debug, object-file run extension, low
 void* __fastcall DestroyRenderedMenu(FORenderedMenu* menu, void*, unsigned int flags)
 {
     menu->FORenderedMenu::~FORenderedMenu();
@@ -401,46 +420,53 @@ void* __fastcall DestroyRenderedMenu(FORenderedMenu* menu, void*, unsigned int f
 
 // Clears menu visibility and transient effects, culls the menu light, and clears the screen texture.
 // @fnv 0x007fb0b0
+// pdb: FORenderedMenu::OnMenuClose | FORenderedMenu.obj | retail, call graph (shared callers), medium
 void FORenderedMenu::ResetMenuState()
 {
-    m_bMenuLightCreated = 0;
+    bMenuRendering = 0;
     m_bBurstActive = 0;
-    m_bBurstSoundPlayed = 0;
-    if (m_pMenuLight)
-        ((NiAVObject*)(NiPointLight*)m_pMenuLight)->SetAppCulled(true);
+    bVertHoldActive = 0;
+    if (spLight)
+        ((NiAVObject*)(NiPointLight*)spLight)->SetAppCulled(true);
     SetScreenTexture(0);
 }
 
 // Starts distortion at the current global timestamp.
 // @fnv 0x007fb100
-void __fastcall StartRenderedMenuDistort(FORenderedMenu* menu)
+// src: XBOX_DEBUG_PDB 0x007fb100
+// pdb: FORenderedMenu::TriggerDistort | FORenderedMenu.obj | debug, call graph, high
+void __fastcall FORenderedMenu_TriggerDistort(FORenderedMenu* menu)
 {
-    menu->m_bShudderActive = 1;
-    menu->m_fDistortHorizontalScale = (float)g_timeGlobal.GetTimeStamp();
-    menu->m_fDistortVerticalScale = 0.0f;
+    menu->bDistortActive = 1;
+    menu->fDistortStartTime = (float)g_timeGlobal.GetTimeStamp();
+    menu->fDistortPosition = 0.0f;
 }
 
 // @fnv 0x007fb250
+// pdb: FORenderedMenu::UpdateDistort | FORenderedMenu.obj | retail, object-file run extension, low
+// pdb note: debug build links it to FORenderedMenu::TriggerVertHold
+// pdb params: afTime
+// pdb locals: fdelta
 void __fastcall StartRenderedMenuShudder(FORenderedMenu* menu, float afDuration, float afIntensity)
 {
-    menu->m_bBurstSoundPlayed = true;
-    menu->m_fShudderDuration = afDuration;
-    menu->m_fShudderFrequency = afIntensity * (double)0.001f;
-    menu->m_fShudderIntensity = (float)g_timeGlobal.GetTimeStamp();
-    menu->m_fVerticalHoldDuration = 0.0f;
+    menu->bVertHoldActive = true;
+    menu->fVertHoldDuration = afDuration;
+    menu->fVertHoldSpeed = afIntensity * (double)0.001f;
+    menu->fVertHoldStartTime = (float)g_timeGlobal.GetTimeStamp();
+    menu->fVertHoldCurrentPosition = 0.0f;
 }
 
 // @fnv 0x007fb420
 // src: COMMUNITY 0x007fb420
 void FORenderedMenu::HandleStaticEffect(float afTime)
 {
-    float fintensityValue = afTime - m_fBurstElapsedTime;
+    float fintensityValue = afTime - fBurstStartTime;
     if (fintensityValue > fBurstDuration)
         m_bBurstActive = 0;
     else
     {
         float fRemaining = 1.0F - fintensityValue / fBurstDuration;
-        m_fBurstSoundChance = m_fBurstIntensity * fRemaining;
+        fBurstCurrentIntensity = fBurstMaximumIntensity * fRemaining;
     }
 }
 
@@ -469,16 +495,18 @@ struct RenderedMenuInterface
 {
     NiNode* GetRoot();
     NiNode* FOPipboyManager_Get3rdPersonScreen();
-    void FOPipboyManager_SetRefractive(bool flag);
+    void FOPipboyManager_SetRefractive(bool abRefractive);
 };
 // Sets the app-culled flag on both the root node and the node returned by FUN_007fa970, if both exist.
 // @fnv 0x007fa8d0
 // src: XBOX_PDB 0x007fa8d0
-void __thiscall RenderedMenuInterface::FOPipboyManager_SetRefractive(bool abCulled)
+// pdb: FOPipboyManager::SetRefractive | FOPipboyManager.obj | debug, upstream name already matches, high
+// pdb params: abRefractive
+void __thiscall RenderedMenuInterface::FOPipboyManager_SetRefractive(bool abRefractive)
 {
     if (!GetRoot() || !FOPipboyManager_Get3rdPersonScreen())
         return;
-    if (abCulled)
+    if (abRefractive)
     {
         GetRoot()->SetAppCulled(true);
         FOPipboyManager_Get3rdPersonScreen()->SetAppCulled(true);
@@ -512,38 +540,45 @@ void FORenderedMenu::OnMenuOpen_007fb040()
         reinterpret_cast<Menu*>(reinterpret_cast<Tile*>(reinterpret_cast<NiAVObject*>(this)->GetParent())->GetMenu())
             ->Menu_SetRenderedMenu();
     ((RenderedMenuTile*)fnv_007fb040::ForenderedmenuInterfaceView::GetPrimaryInterfaceTile())->UpdateTileChildren();
-    if (m_pMenuLight.operator NiPointLight*())
-        reinterpret_cast<NiAVObject*>(m_pMenuLight.operator NiPointLight*())->SetAppCulled(false);
-    m_bMenuLightCreated = true;
+    if (spLight.operator NiPointLight*())
+        reinterpret_cast<NiAVObject*>(spLight.operator NiPointLight*())->SetAppCulled(false);
+    bMenuRendering = true;
 }
 
 Menu* __cdecl FindMenuById(int id);
 // This visibility entry point is not declared by the shared header yet.
 // Looks up three tiles by id and, for each enabled flag at offsets 0xd2/0xd0/0xd1, un-culls that tile's node.
 // @fnv 0x007fc8d0
-void __fastcall RestoreRenderedMenuVisibility(FORenderedMenu* menu)
+// src: XBOX_DEBUG_PDB 0x007fc8d0
+// pdb: FORenderedMenu::UnhidePopupMenus | FORenderedMenu.obj | debug, call graph, high
+// pdb locals: pquantity, pmessage, ptutorial
+void __fastcall FORenderedMenu_UnhidePopupMenus(FORenderedMenu* menu)
 {
     Tile* pquantity2 = (Tile*)FindMenuById(0x3e9);
     Tile* pmessage = (Tile*)FindMenuById(0x3f8);
     Tile* ptutorial = (Tile*)FindMenuById(0x423);
-    if (menu->m_bMenuLightAttached)
+    if (menu->bHidMessage)
         pquantity2->GetModel_0056c7f0()->SetAppCulled(false);
-    if (menu->m_bMenuLightVisible)
+    if (menu->bHidQuantity)
         pmessage->GetModel_0056c7f0()->SetAppCulled(false);
-    if (menu->m_bMenuLightShadowed)
+    if (menu->bHidTutorial)
         ptutorial->GetModel_0056c7f0()->SetAppCulled(false);
 }
 
 // Starts vertical hold with the supplied parameters and current global timestamp.
 // @fnv 0x007fb2b0
+// pdb: FORenderedMenu::UpdateShudder | FORenderedMenu.obj | retail, object-file run extension, low
+// pdb note: debug build links it to FORenderedMenu::TriggerShudder
+// pdb params: afTime
+// pdb locals: fshudderPosition, fdelta
 void __fastcall StartRenderedMenuVerticalHold(FORenderedMenu* menu, float x, float y, float z)
 {
-    menu->m_bVerticalHoldActive = 1;
-    menu->m_fVerticalHoldRate = x;
-    menu->m_fVerticalHoldChance = y;
-    menu->m_fShudderChance = z;
-    menu->m_fVerticalHoldSpeed = (float)g_timeGlobal.GetTimeStamp();
-    menu->m_fPulseRadiusIntensity = 0.0f;
+    menu->bShudderActive = 1;
+    menu->fShudderDuration = x;
+    menu->fShudderIntensity = y;
+    menu->fShudderFrequency = z;
+    menu->fShudderStartTime = (float)g_timeGlobal.GetTimeStamp();
+    menu->fShudderCurrentPosition = 0.0f;
 }
 
 struct FUN_007fbeb0_shell
@@ -552,14 +587,17 @@ struct FUN_007fbeb0_shell
     char pad1fd[1];
     char pad1fe[1];
     GO go1ff;
-    void __thiscall SetValueAndAssign(char, void*);
+    void __thiscall ImageSpaceManager_EnablePartialRender(char, void*);
 };
 
 // @fnv 0x007fbeb0
-void __thiscall FUN_007fbeb0_shell::SetValueAndAssign(char value, void* ptr)
+// src: XBOX_DEBUG_PDB 0x007fbeb0
+// pdb: ImageSpaceManager::EnablePartialRender | FORenderedMenu.obj | debug, call graph (shared callers), high
+// pdb params: abEnable, apPartialScreenGeometry
+void __thiscall FUN_007fbeb0_shell::ImageSpaceManager_EnablePartialRender(char abEnable, void* apPartialScreenGeometry)
 {
-    ((char*)this + 0x1fc)[0] = value;
-    ((GO*)((char*)this + 0x1f8))->operator=(ptr);
+    ((char*)this + 0x1fc)[0] = abEnable;
+    ((GO*)((char*)this + 0x1f8))->operator=(apPartialScreenGeometry);
 }
 
 // The shared header has no accumulator setter declaration.
@@ -569,9 +607,11 @@ struct RenderedMenuAccumulatorAccess : FORenderedMenu
 };
 
 // @fnv 0x007fdf10
+// pdb: RaceSexMenu::SetPlayerNode | FORenderedMenuRaceSex.obj | debug, object-file gap fill, medium
+// pdb params: apNode
 void RenderedMenuAccumulatorAccess::SetGo(void* apValue)
 {
-    *reinterpret_cast<GO*>(&m_pMenuLightNode) = apValue;
+    *reinterpret_cast<GO*>(&spAccumulator) = apValue;
 }
 
 float __cdecl FUN_004e44d0(float);
@@ -579,16 +619,16 @@ float __cdecl FUN_004e44d0(float);
 // src: COMMUNITY 0x007fb3a0
 void FORenderedMenu::HandleShudderEffect(float afTime)
 {
-    float fdelta = afTime - m_fVerticalHoldSpeed;
-    if (fdelta > m_fVerticalHoldRate)
+    float fdelta = afTime - fShudderStartTime;
+    if (fdelta > fShudderDuration)
     {
-        m_bVerticalHoldActive = 0;
+        bShudderActive = 0;
     }
     else
     {
-        float fRemainder = 1.0f - (fdelta / m_fVerticalHoldRate);
-        m_fPulseRadiusIntensity =
-            FUN_004e44d0(fdelta * m_fShudderChance) * m_fVerticalHoldChance * fRemainder;
+        float fRemainder = 1.0f - (fdelta / fShudderDuration);
+        fShudderCurrentPosition =
+            FUN_004e44d0(fdelta * fShudderFrequency) * fShudderIntensity * fRemainder;
     }
 }
 
@@ -602,8 +642,8 @@ extern Setting g_011db424;
 void FORenderedMenu::HandlePulseEffect(float afDuration)
 {
     float f04 = ApplyNoise(afDuration * *g_011db408.Float()) * 2.0f;
-    m_fPulseBrightenIntensity = f04 * *g_011db3a4.Float();
-    m_fPulseRate = f04 * *g_011db424.Float();
+    fPulseCurrentBrighten = f04 * *g_011db3a4.Float();
+    fPulseCurrentRadius = f04 * *g_011db424.Float();
 }
 
 // These transition entry points are not declared by FOPipboyManager.h yet.
@@ -624,6 +664,7 @@ extern Setting g_011db43c;
 extern Setting g_011db480;
 
 // @fnv 0x007f8010
+// pdb: FOPipboyManager::OnMenuOpen | FOPipboyManager.obj | retail, string-set bridge, high
 void PipboyMenuTransitions::OpenPipboyMenu()
 {
     if (!GetInitialized())
@@ -637,14 +678,14 @@ void PipboyMenuTransitions::OpenPipboyMenu()
 
     Interface_IsolateMenuElements(true, true);
 
-    reinterpret_cast<BSSoundHandle&>(m_kPipBoyLightData).Stop();
-    reinterpret_cast<BSSoundHandle&>(m_kPipBoyLightData).Release();
+    reinterpret_cast<BSSoundHandle&>(pBackgroundHum).Stop();
+    reinterpret_cast<BSSoundHandle&>(pBackgroundHum).Release();
 
-    reinterpret_cast<BSSoundHandle&>(m_kPipBoyLightData) = static_cast<RenderedMenuAudio*>(BSAudio::GetSingleton())->GetSoundHandleByEditorID("UIPipBoyHumLP", 0x31);
+    reinterpret_cast<BSSoundHandle&>(pBackgroundHum) = static_cast<RenderedMenuAudio*>(BSAudio::GetSingleton())->GetSoundHandleByEditorID("UIPipBoyHumLP", 0x31);
 
-    reinterpret_cast<BSSoundHandle&>(m_kPipBoyLightData).Play(false);
+    reinterpret_cast<BSSoundHandle&>(pBackgroundHum).Play(false);
 
-    StartBurst(*g_011db480.Float(), *g_011db43c.Float(), 0.5f);
+    TriggerBurst(*g_011db480.Float(), *g_011db43c.Float(), 0.5f);
 
     OnMenuOpen_007fb040();
 
@@ -656,6 +697,9 @@ void PipboyMenuTransitions::OpenPipboyMenu()
 
 // @fnv 0x007fae70
 // src: XBOX_PDB 0x007fae70
+// pdb: FORenderedMenu::SetScreenTexture | FORenderedMenu.obj | retail, upstream name already matches, high
+// pdb params: apTexture
+// pdb locals: pnlp
 void FORenderedMenu::SetScreenTexture(int apTexture)
 {
     NiProperty* pnlp;
@@ -663,14 +707,14 @@ void FORenderedMenu::SetScreenTexture(int apTexture)
     if (!bInitialized)
         return;
 
-    if ((unsigned int)m_pMenuBackgroundScreenGeometry.operator NiGeometry*() == 0)
+    if ((unsigned int)spScreenTriShape.operator NiGeometry*() == 0)
     {
         Warning("MESHES: Trying to clear a rendered menu screen but the screen trishape is NULL.");
         return;
     }
 
     pnlp = reinterpret_cast<NiGeometry*>(
-               (unsigned int)m_pMenuBackgroundScreenGeometry.operator NiGeometry*())
+               (unsigned int)spScreenTriShape.operator NiGeometry*())
                ->GetProperty(NiShadeProperty_GetType());
 
     if (apTexture != 0)
@@ -680,7 +724,7 @@ void FORenderedMenu::SetScreenTexture(int apTexture)
     else
     {
         pnlp->BSShaderNoLightingProperty_SetBaseMap(reinterpret_cast<NiTexture*>(
-            (unsigned int)m_pDefaultTexture.operator NiTexture*()));
+            (unsigned int)spDefaultTex.operator NiTexture*()));
     }
 }
 
@@ -693,17 +737,19 @@ FUN_007079f0_shell* _FUN_004b7210();
 
 // Reads the global time stamp, updates the menu-open state, and drives the screen effect's virtual update methods when the menu is or was open.
 // @fnv 0x007faf10
+// pdb: FORenderedMenu::OnIdle | FORenderedMenu.obj | retail, call graph, medium
+// pdb locals: bmenuOpenPreviousUpdate, fappTime
 bool FORenderedMenu::UpdateScreenEffect()
 {
     bool bmenuOpenPreviousUpdate;
     float fappTime;
 
     fappTime = g_timeGlobal.GetTimeStamp();
-    bmenuOpenPreviousUpdate = m_bMenuLightEnabled;
+    bmenuOpenPreviousUpdate = bMenuOpen;
 
-    m_bMenuLightEnabled = _FUN_004b7210()->InterfaceManager_IsInRenderedMenu();
+    bMenuOpen = _FUN_004b7210()->InterfaceManager_IsInRenderedMenu();
 
-    if (!m_bMenuLightEnabled && !bmenuOpenPreviousUpdate)
+    if (!bMenuOpen && !bmenuOpenPreviousUpdate)
         return false;
 
     UpdateNodePosition(fappTime);
@@ -711,22 +757,22 @@ bool FORenderedMenu::UpdateScreenEffect()
     if (m_bBurstActive)
         HandleStaticEffect(fappTime);
 
-    if (m_bBurstSoundPlayed)
+    if (bVertHoldActive)
         UpdateVertHold(fappTime);
 
-    if (m_bVerticalHoldActive)
+    if (bShudderActive)
         HandleShudderEffect(fappTime);
 
     HandlePulseEffect(fappTime);
 
-    if (m_bShudderActive)
+    if (bDistortActive)
     {
         UpdateDistortTimer(fappTime);
     }
     else
     {
-        if (fappTime > m_fDistortTimeRemaining)
-            StartRenderedMenuDistort(this);
+        if (fappTime > fNextDistortTime)
+            FORenderedMenu_TriggerDistort(this);
     }
 
     return true;
@@ -738,7 +784,10 @@ struct FUN_00456630_helper : NiAVObject
 };
 
 // @fnv 0x007fc790
-void __fastcall HideRenderedMenuTiles(FORenderedMenu* menu)
+// src: XBOX_DEBUG_PDB 0x007fc790
+// pdb: FORenderedMenu::HidePopupMenus | FORenderedMenu.obj | debug, call graph, high
+// pdb locals: pquantity, pmessage, ptutorial
+void __fastcall FORenderedMenu_HidePopupMenus(FORenderedMenu* menu)
 {
     Tile* pMenu;
 
@@ -747,21 +796,21 @@ void __fastcall HideRenderedMenuTiles(FORenderedMenu* menu)
         Tile* m_pTerminal = (Tile*)FindMenuById(0x3f8);
         pMenu = (Tile*)FindMenuById(0x423);
 
-        menu->m_bMenuLightAttached =
+        menu->bHidMessage =
             pOtherMenu ? !((FUN_00456630_helper*)pOtherMenu->GetModel_0056c7f0())->GetAppCulled_00456610() : 0;
 
-        menu->m_bMenuLightVisible =
+        menu->bHidQuantity =
             m_pTerminal ? !((FUN_00456630_helper*)m_pTerminal->GetModel_0056c7f0())->GetAppCulled_00456610() : 0;
 
-        menu->m_bMenuLightShadowed = pMenu ? !((FUN_00456630_helper*)pMenu->GetModel_0056c7f0())->GetAppCulled_00456610() : 0;
+        menu->bHidTutorial = pMenu ? !((FUN_00456630_helper*)pMenu->GetModel_0056c7f0())->GetAppCulled_00456610() : 0;
 
-        if (menu->m_bMenuLightAttached)
+        if (menu->bHidMessage)
             pOtherMenu->GetModel_0056c7f0()->SetAppCulled(true);
 
-        if (menu->m_bMenuLightVisible)
+        if (menu->bHidQuantity)
             m_pTerminal->GetModel_0056c7f0()->SetAppCulled(true);
 
-        if (menu->m_bMenuLightShadowed)
+        if (menu->bHidTutorial)
             pMenu->GetModel_0056c7f0()->SetAppCulled(true);
     }
 }
@@ -773,14 +822,17 @@ extern const double DAT_01012070;
 int FUN_00ecadb8();
 
 // @fnv 0x007fb310
+// pdb: FORenderedMenu::UpdatePulse | FORenderedMenu.obj | retail, object-file run extension, low
+// pdb params: afTime
+// pdb locals: fintensityValue
 void FORenderedMenu::UpdateDistortTimer(float dt)
 {
-    float t = dt - m_fDistortHorizontalScale;
-    m_fDistortVerticalScale = t / fDistortDuration;
-    if (*DAT_011db520.Float() + DAT_01012070 < m_fDistortVerticalScale)
+    float t = dt - fDistortStartTime;
+    fDistortPosition = t / fDistortDuration;
+    if (*DAT_011db520.Float() + DAT_01012070 < fDistortPosition)
     {
-        m_bShudderActive = 0;
-        m_fDistortTimeRemaining = (float)(FUN_00ecadb8() % *DAT_011db4f8.Int()) + dt;
+        bDistortActive = 0;
+        fNextDistortTime = (float)(FUN_00ecadb8() % *DAT_011db4f8.Int()) + dt;
     }
 }
 
@@ -791,20 +843,23 @@ void __fastcall FUN_007fb2b0(void*, float, float, float);
 
 // @fnv 0x007fb480
 // src: XBOX_PDB 0x007fb480
-void FORenderedMenu::UpdateVertHold(float a)
+// pdb: FORenderedMenu::UpdateVertHold | FORenderedMenu.obj | debug, upstream name already matches, high
+// pdb params: afTime
+// pdb locals: fdelta
+void FORenderedMenu::UpdateVertHold(float afTime)
 {
-    float d = a - m_fShudderIntensity;
-    if (d > m_fShudderDuration)
+    float d = afTime - fVertHoldStartTime;
+    if (d > fVertHoldDuration)
     {
-        m_bBurstSoundPlayed = 0;
+        bVertHoldActive = 0;
         FUN_007fb2b0(this, DAT_0101b2d0, DAT_010181bc, DAT_010181bc);
     }
     else
     {
-        m_fVerticalHoldDuration = d * m_fShudderFrequency;
-        if ((double)m_fVerticalHoldDuration >= 1.0 || (double)m_fVerticalHoldDuration < 0.0)
+        fVertHoldCurrentPosition = d * fVertHoldSpeed;
+        if ((double)fVertHoldCurrentPosition >= 1.0 || (double)fVertHoldCurrentPosition < 0.0)
         {
-            m_fVerticalHoldDuration = m_fVerticalHoldDuration - FloatFloor(m_fVerticalHoldDuration);
+            fVertHoldCurrentPosition = fVertHoldCurrentPosition - FloatFloor(fVertHoldCurrentPosition);
         }
     }
 }
@@ -1567,11 +1622,13 @@ struct FUN_007fd6c0_Class
     NiAVObject* FUN_005585e0();
     void* NiAVObject_GetParent();
     NiAVObject* NiAVObject_GetCollisionObject();
-    void UpdateSlotSelection(int);
+    void FORenderedMenuRaceSex_LightButton(int);
     void OnMenuOpen_007fb040();
     void UpdatePlayerFaceScene();
 };
 // @fnv 0x007fd6c0
+// pdb: FORenderedMenuRaceSex::OnMenuOpen | FORenderedMenuRaceSex.obj | retail, string-set bridge, high
+// pdb locals: prsm, theta, pscreenParent, bar, fr, fradiusPlayer, ptlook, port, foo, UpdateData2
 void FUN_007fd6c0_Class::UpdatePlayerFaceScene()
 {
     DAT_011dea0c->Main_RenderMenuBackground();
@@ -1637,8 +1694,8 @@ void FUN_007fd6c0_Class::UpdatePlayerFaceScene()
     camera->Update(menuRoot);
     root->SetAppCulled(false);
     radius->RaceSexMenu_RotatePlayer(0.5235987901687622f, true);
-    radius->UpdateProgress(0.0f, true);
-    UpdateSlotSelection(radius->FUN_007dcc00());
+    radius->RaceSexMenu_ZoomPlayer(0.0f, true);
+    FORenderedMenuRaceSex_LightButton(radius->FUN_007dcc00());
 }
 
 struct FUN_007fe930_Class : HackLight
@@ -1647,6 +1704,7 @@ struct FUN_007fe930_Class : HackLight
 };
 // @fnv 0x007fe930
 // src: GUESS 0x007fe930 (confidence: medium)
+// pdb: FORenderedMenuRaceSex::GetParentNodeToRender | FORenderedMenuRaceSex.obj | debug, object-file run extension, low
 void FUN_007fe930_Class::ClearMenuLight_Thunk()
 {
     NiAVObject* pObject = ClearMenuLight();
@@ -1670,18 +1728,22 @@ class MenuDriver
   public:
     unsigned int unk00[0x3a];
     MenuSlot m_slots[4];
-    void UpdateSlotSelection(int a1);
+    void FORenderedMenuRaceSex_LightButton(int aiButton);
 };
 
 // For each of the 4 slots with a non-null target, applies whether the slot index differs from a1.
 // @fnv 0x007fe950
-void MenuDriver::UpdateSlotSelection(int aiSelectedIndex)
+// src: XBOX_DEBUG_PDB 0x007fe950
+// pdb: FORenderedMenuRaceSex::LightButton | FORenderedMenuRaceSex.obj | debug, call graph, high
+// pdb params: aiButton
+// pdb locals: i
+void MenuDriver::FORenderedMenuRaceSex_LightButton(int aiButton)
 {
     for (unsigned int i = 0; i < 4; i++)
     {
         if (m_slots[i].Get() != 0)
         {
-            m_slots[i].Get()->Apply(i != aiSelectedIndex);
+            m_slots[i].Get()->Apply(i != aiButton);
         }
     }
 }
@@ -1737,6 +1799,8 @@ ShadowSceneNode* FUN_00450b80(unsigned int);
 
 // @fnv 0x007ff650
 // src: COMMUNITY 0x007ff650
+// pdb: FORenderedTerminal::OnMenuOpen | FORenderedTerminal.obj | retail, upstream name already matches, high
+// pdb locals: pscreenParent, foo
 void FUN_007ff650_cls::FORenderedTerminal_OnMenuOpen()
 {
     FUN_007ff650_h local2;
@@ -1833,7 +1897,7 @@ struct ObjectPointer82
 NiRenderer* NiXenonRenderer_GetRenderer();
 Interface82* InterfaceManager_GetSingleton();
 TargetManager82* __stdcall BSShaderManager_GetTextureManager(void*);
-bool BSRenderedTexture_IsOutsideFrame();
+bool BSRenderedTexture_QOutsideFrame();
 void BSRenderedTexture_StartOffscreen(void*, void*);
 Obj82* Interface_GetDebugTextRoot();
 FORenderedMenu* Interface_GetPipboy();
@@ -1842,13 +1906,16 @@ void FUN_00b6c0d0(Camera82*, Obj82*, int);
 void FUN_00b6b790();
 struct Partial82
 {
-    void SetValueAndAssign(int, int);
+    void ImageSpaceManager_EnablePartialRender(int, int);
 };
 Partial82* BSShaderManager_GetImageSpaceManager();
 // Renders the scene through the accumulator with a temporary orthographic frustum, restoring UI visibility, rect and camera state afterwards.
 // @fnv 0x007fba00
 // src: COMMUNITY 0x007fba00
-void FORenderedMenu::Render_007fba00(void* pRenderArg1, void* pRenderArg2, Target82* pSuppliedTarget)
+// pdb: FORenderedMenu::Draw | FORenderedMenu.obj | retail, call graph (shared callers), high
+// pdb params: apTarget, aeClearMode, apSwapTarget
+// pdb locals: prevcolor, sptempRenderTarget, oldfrust, bconsoleCulled, bHUDCulled, pHUD, bcullcursor, pconsoleRoot, pr, pim, pscene_graph, pcursor, pcamera, pculler, frust
+void FORenderedMenu::Render_007fba00(void* apTarget, void* aeClearMode, Target82* apSwapTarget)
 {
     if (!bInitialized)
         return;
@@ -1860,19 +1927,19 @@ void FORenderedMenu::Render_007fba00(void* pRenderArg1, void* pRenderArg2, Targe
         interface23->FUN_005e3fc0()->FUN_00450f90(true);
     Scene82* scene3 = interface23->SkyObject_GetNiNode();
     Accumulator82* render4 = scene3->FUN_008d80e0();
-    render4->BSCullingProcess_SetAccumulator(((ObjectPointer82*)&m_pMenuLightNode)->Modelloader_GetReferencedThis());
+    render4->BSCullingProcess_SetAccumulator(((ObjectPointer82*)&spAccumulator)->Modelloader_GetReferencedThis());
     Rect82 rect2(0.0f, 0.0f, 0.0f, 0.0f);
     renderer5->GetBackgroundColor(reinterpret_cast<NiVector4*>(&rect2));
     renderer5->SetBackgroundColor(reinterpret_cast<NiVector4*>(&BackgroundColor));
     Camera82* camera23 = scene3->FUN_006629f0();
     Pointer82 target31(0);
-    if (!pSuppliedTarget)
+    if (!apSwapTarget)
         target31.FUN_0066b0d0(BSShaderManager_GetTextureManager(NiXenonRenderer_GetRenderer())->BSTextureManager_BorrowRenderedTexture(49, 0, 0, 0));
     else
-        target31.FUN_0066b0d0(pSuppliedTarget);
-    if (BSRenderedTexture_IsOutsideFrame())
+        target31.FUN_0066b0d0(apSwapTarget);
+    if (BSRenderedTexture_QOutsideFrame())
     {
-        BSRenderedTexture_StartOffscreen(pRenderArg2, target31.Modelloader_GetReferencedThis()->FUN_00b6b260());
+        BSRenderedTexture_StartOffscreen(aeClearMode, target31.Modelloader_GetReferencedThis()->FUN_00b6b260());
         camera23->FUN_00712e60(Rect82(0.0f, 1.0f, 1.0f, 0.0f));
     }
     Frustum82 frustum12 = camera23->FUN_0045bbe0();
@@ -1902,12 +1969,12 @@ void FORenderedMenu::Render_007fba00(void* pRenderArg1, void* pRenderArg2, Targe
     ((NiAVObject*)((Tile*)menu1->Tile_GetMenuTile())->GetModel_0056c7f0())->FUN_00450f90(true);
     if (this != Interface_GetPipboy())
         ((ObjectPointer82*)&m_pRenderedMenuObject)->Modelloader_GetReferencedThis()->FUN_00450f90(false);
-    HideRenderedMenuTiles(this);
+    FORenderedMenu_HidePopupMenus(this);
     render4->BSCullingProcess_PushCullMode(1);
     BSShaderUtil_AccumulateScene(scene3->FUN_006629f0(), ((ObjectPointer82*)&m_pRenderedMenuObject)->Modelloader_GetReferencedThis(), render4);
-    FUN_00b6c0d0(scene3->FUN_006629f0(), ((ObjectPointer82*)&m_pMenuLightNode)->Modelloader_GetReferencedThis(), 0);
+    FUN_00b6c0d0(scene3->FUN_006629f0(), ((ObjectPointer82*)&spAccumulator)->Modelloader_GetReferencedThis(), 0);
     render4->BSCullingProcess_PopCullMode();
-    RestoreRenderedMenuVisibility(this);
+    FORenderedMenu_UnhidePopupMenus(this);
     render4->BSCullingProcess_SetAccumulator(0);
     if (this != Interface_GetPipboy())
         ((ObjectPointer82*)&m_pRenderedMenuObject)->Modelloader_GetReferencedThis()->FUN_00450f90(true);
@@ -1917,13 +1984,13 @@ void FORenderedMenu::Render_007fba00(void* pRenderArg1, void* pRenderArg2, Targe
     if (object4)
         object4->FUN_00450f90(oldObject25);
     FUN_00b6b790();
-    DoEffect((Arg*)target31.Modelloader_GetReferencedThis(), pRenderArg1, (int)pRenderArg2);
-    if (!pSuppliedTarget)
+    DoEffect((Arg*)target31.Modelloader_GetReferencedThis(), apTarget, (int)aeClearMode);
+    if (!apSwapTarget)
         BSShaderManager_GetTextureManager(target31.Modelloader_GetReferencedThis())->BSTextureManager_ReturnRenderedTexture();
     renderer5->SetBackgroundColor(reinterpret_cast<NiVector4*>(&rect2));
     camera23->FUN_00a6faf0(saved14);
-    if (m_bEnableFlicker)
-        BSShaderManager_GetImageSpaceManager()->SetValueAndAssign(0, 0);
+    if (bUsePartialScreenGeometry)
+        BSShaderManager_GetImageSpaceManager()->ImageSpaceManager_EnablePartialRender(0, 0);
     vf4();
     if (interface23->InterfaceManager_IsDebugTextVisible())
         interface23->FUN_005e3fc0()->FUN_00450f90(false);
@@ -2074,13 +2141,15 @@ struct Player
     virtual int v133();
     bool IsRefractive();
     Anim* FUN_00950a60(bool b);
-    unsigned short Actor_GetAnimGroup(int a, int b, int c, int d);
+    unsigned short Actor_GetAnimGroup(int aeGroup, int apWeaponItem, int abCheckHandToHand, int apAnim);
 };
-void __cdecl UpdateMenuTileVisibility();
+void __cdecl Interface_RestoreMenuElements();
 void __cdecl TESImageSpaceModifier_AllowGetHit(char c);
 extern bool DAT_011db378;
 }
 // @fnv 0x007f8170
+// pdb: FOPipboyManager::OnMenuClose | FOPipboyManager.obj | retail, string-set bridge, high
+// pdb locals: panim
 void PipboyMenuTransitions::ClosePipboyMenu()
 {
     using namespace n7f8;
@@ -2100,10 +2169,10 @@ void PipboyMenuTransitions::ClosePipboyMenu()
     if (!IsUnk28Set())
         return;
     static_cast<RenderedMenuAudio*>(BSAudio::GetSingleton())->GetSoundHandleByEditorID("UIPipBoyAccessDown", 0x121).Play(false);
-    reinterpret_cast<BSSoundHandle&>(m_kPipBoyLightData).Stop();
-    reinterpret_cast<BSSoundHandle&>(m_kPipBoyLightData).Release();
+    reinterpret_cast<BSSoundHandle&>(pBackgroundHum).Stop();
+    reinterpret_cast<BSSoundHandle&>(pBackgroundHum).Release();
     FUN_007fa010(0);
-    UpdateMenuTileVisibility();
+    Interface_RestoreMenuElements();
     ResetMenuState();
     DAT_011db378 = false;
     n7f8::TESImageSpaceModifier_AllowGetHit(1);
@@ -2144,7 +2213,7 @@ struct Results7fb7
 class GlobalObject_00e98f20
 {
   public:
-    GlobalObject_00e98f20(int iSize, int iGrowBy);
+    GlobalObject_00e98f20(int uiResultsInitialSize, int uiResultsGrowBy);
     ~GlobalObject_00e98f20();
     void SetByteAtOffset17(int iPickType);
     void SetTarget_00705fc0(NiGeometry* pkTarget);
@@ -2170,12 +2239,13 @@ Camera7fb7* __fastcall GetRenderedMenuCamera(FORenderedMenu* menu);
 
 // @fnv 0x007fb790
 // src: COMMUNITY 0x007fb790
+// pdb: FORenderedMenu::Shutdown | FORenderedMenu.obj | retail, object-file run extension, low
 bool FORenderedMenu::Pick_007fb790(void* pkUnused, float* pfX, float* pfY)
 {
     bool bResult = false;
     m_pRenderedMenuObject->SetAppCulled(false);
     Input7fb7* pkInput = Calls7fb7::InterfaceManager_GetSingleton();
-    if (!m_pMenuBackgroundScreenGeometry)
+    if (!spScreenTriShape)
         return false;
     PodPoint3 kSource;
     kSource.FUN_006815c0();
@@ -2188,7 +2258,7 @@ bool FORenderedMenu::Pick_007fb790(void* pkUnused, float* pfX, float* pfY)
     else
         pkCamera3D = Calls7fb7::Main_GetWorldSceneGraph()->FUN_006629f0();
     kPickObj.SetByteAtOffset17(1);
-    kPickObj.SetTarget_00705fc0(m_pMenuBackgroundScreenGeometry);
+    kPickObj.SetTarget_00705fc0(spScreenTriShape);
     kPickObj.FUN_006ecd40(0);
     kPickObj.SetByteAtOffset30(1);
     pkCamera3D->MapScreenToRay((int)pkInput->TESCombatStyle_GetWeaponMinRangeMult(), (int)pkInput->QueuedModel_GetOverriddenVisualDistance(), kSource, kWorldPosition, 0);
@@ -2196,7 +2266,7 @@ bool FORenderedMenu::Pick_007fb790(void* pkUnused, float* pfX, float* pfY)
     {
         unsigned int uiResult = 0;
         Record7fb7* pkResult = kPickObj.FUN_00500940()->ProcessArray_GetItem(uiResult);
-        if (pkResult && pkResult->AnimatingText_GetFullText() == m_pMenuBackgroundScreenGeometry)
+        if (pkResult && pkResult->AnimatingText_GetFullText() == spScreenTriShape)
         {
             Point2_7fb7 kUV = pkResult->FUN_00891170();
             if (Calls7fb7::Interface_IsMenuIDVisible(0x40c, 0))
@@ -2237,8 +2307,8 @@ struct Node
 };
 struct Manager
 {
-    void FUN_00b8c3b0(float, float, Node*);
-    void SetValueAndAssign(char, void*);
+    void CreatePartialScreenGeometry(float, float, Node*);
+    void ImageSpaceManager_EnablePartialRender(char, void*);
     void ImageSpaceManager_RenderEffect(int, void*, Arg*, void*, int, int);
 };
 void* InterfaceManager_GetSingleton();
@@ -2254,36 +2324,39 @@ struct Four
 
 // @fnv 0x007fbee0
 // src: COMMUNITY 0x007fbee0
-void FORenderedMenu::DoEffect(Arg* a, void* pData, int iValue)
+// pdb: FORenderedMenu::DoEffect | FORenderedMenu.obj | retail, upstream name already matches, high
+// pdb params: apSource, apDest, aeClearMode
+// pdb locals: pim
+void FORenderedMenu::DoEffect(Arg* apSource, void* apDest, int aeClearMode)
 {
     using namespace recon7fbee0;
     void* pUnused = recon7fbee0::InterfaceManager_GetSingleton();
     *(float*)&DAT_011ae5e8 = fBlurRadius;
     *(float*)&DAT_011ae5ec = fBlurIntensity;
-    *(float*)&DAT_011ae5f0 = m_fScanlineScale;
+    *(float*)&DAT_011ae5f0 = fScanlineScale;
     *(float*)&DAT_012007e8 = 0.0f;
-    ((Ptr*)&DAT_01200810)->FUN_006e5cc0(*(Ptr*)&m_pMenuLightShadowNode);
-    ((Ptr*)&DAT_01200818)->FUN_0066b0d0(a->BSRenderedTexture_GetTexture(0));
+    ((Ptr*)&DAT_01200810)->FUN_006e5cc0(*(Ptr*)&spScanlinesTexture);
+    ((Ptr*)&DAT_01200818)->FUN_0066b0d0(apSource->BSRenderedTexture_GetTexture(0));
     if (this == recon7fbee0::Interface_GetPipboy())
         *(float*)&DAT_011ae5f4 = recon7fbee0::InterfaceManager_GetMenuHeight();
     else
-        *(float*)&DAT_011ae5f4 = m_pFourthMenuObject->FUN_00a011b0(0xfb0);
+        *(float*)&DAT_011ae5f4 = pMenuTile->FUN_00a011b0(0xfb0);
     if (m_bBurstActive)
     {
-        *(float*)&DAT_011ae5ec *= 1.0f + m_fBurstSoundChance;
-        *(float*)&DAT_011ae5e8 *= 1.0f + m_fBurstSoundChance;
+        *(float*)&DAT_011ae5ec *= 1.0f + fBurstCurrentIntensity;
+        *(float*)&DAT_011ae5e8 *= 1.0f + fBurstCurrentIntensity;
     }
-    if (m_bBurstSoundPlayed)
-        *(float*)&DAT_012007e8 = recon7fbee0::InterfaceManager_GetMenuHeight() * m_fVerticalHoldDuration;
-    if (m_bVerticalHoldActive)
-        *(float*)&DAT_012007e8 += recon7fbee0::InterfaceManager_GetMenuHeight() * m_fPulseRadiusIntensity;
-    *(float*)&DAT_011ae5ec += m_fPulseBrightenIntensity;
-    *(float*)&DAT_011ae5e8 += m_fPulseRate;
-    if (m_bShudderActive)
+    if (bVertHoldActive)
+        *(float*)&DAT_012007e8 = recon7fbee0::InterfaceManager_GetMenuHeight() * fVertHoldCurrentPosition;
+    if (bShudderActive)
+        *(float*)&DAT_012007e8 += recon7fbee0::InterfaceManager_GetMenuHeight() * fShudderCurrentPosition;
+    *(float*)&DAT_011ae5ec += fPulseCurrentBrighten;
+    *(float*)&DAT_011ae5e8 += fPulseCurrentRadius;
+    if (bDistortActive)
     {
         *(float*)&DAT_012007f0 = *((Setting*)&recon7fbee0::DAT_011db520)->Setting_Float_00403e20();
         *(float*)&DAT_011ae5f8 = *((Setting*)&DAT_011db464)->Setting_Float_00403e20();
-        *(float*)&DAT_012007f4 = m_fDistortVerticalScale;
+        *(float*)&DAT_012007f4 = fDistortPosition;
         DAT_012007f8 = 1;
     }
     else
@@ -2292,13 +2365,13 @@ void FORenderedMenu::DoEffect(Arg* a, void* pData, int iValue)
         *(float*)&DAT_011ae5f8 = 0.0f;
         *(float*)&DAT_012007f4 = -1.0f;
     }
-    *(Four*)&DAT_01200800 = *(Four*)&m_kMenuLightColor;
-    if (m_bEnableFlicker && !((Node*)&m_pScreenGeometry)->Modelloader_GetReferencedThis())
-        recon7fbee0::BSShaderManager_GetImageSpaceManager()->FUN_00b8c3b0(recon7fbee0::InterfaceManager_GetMenuHeight(), recon7fbee0::InterfaceManager_GetMenuHeight(), (Node*)&m_pScreenGeometry);
-    if (m_bEnableFlicker)
-        recon7fbee0::BSShaderManager_GetImageSpaceManager()->SetValueAndAssign(1, ((Node*)&m_pScreenGeometry)->Modelloader_GetReferencedThis());
-    *(int*)&DAT_012007ec = iValue;
-    recon7fbee0::BSShaderManager_GetImageSpaceManager()->ImageSpaceManager_RenderEffect(10, recon7fbee0::NiXenonRenderer_GetRenderer(), a, pData, 0, 1);
+    *(Four*)&DAT_01200800 = *(Four*)&TintColor;
+    if (bUsePartialScreenGeometry && !((Node*)&spPartialScreenGeometry)->Modelloader_GetReferencedThis())
+        recon7fbee0::BSShaderManager_GetImageSpaceManager()->CreatePartialScreenGeometry(recon7fbee0::InterfaceManager_GetMenuHeight(), recon7fbee0::InterfaceManager_GetMenuHeight(), (Node*)&spPartialScreenGeometry);
+    if (bUsePartialScreenGeometry)
+        recon7fbee0::BSShaderManager_GetImageSpaceManager()->ImageSpaceManager_EnablePartialRender(1, ((Node*)&spPartialScreenGeometry)->Modelloader_GetReferencedThis());
+    *(int*)&DAT_012007ec = aeClearMode;
+    recon7fbee0::BSShaderManager_GetImageSpaceManager()->ImageSpaceManager_RenderEffect(10, recon7fbee0::NiXenonRenderer_GetRenderer(), apSource, apDest, 0, 1);
     ((Ptr*)&DAT_01200818)->FUN_0066b0d0(0);
 }
 
@@ -2398,11 +2471,13 @@ struct Owner007f
     Node007f* NiAVObject_GetCollisionObject();
     Node007f* FUN_005585e0();
     void ResetMenuState();
-    void UpdateSlotSelection(int);
+    void FORenderedMenuRaceSex_LightButton(int);
     void FORenderedMenuRaceSex_OnMenuClose();
 };
 // @fnv 0x007fdf40
 // src: COMMUNITY 0x007fdf40
+// pdb: FORenderedMenuRaceSex::OnMenuClose | FORenderedMenuRaceSex.obj | retail, upstream name already matches, high
+// pdb locals: foo
 void Owner007f::FORenderedMenuRaceSex_OnMenuClose()
 {
     DAT_011ad884 = 1;
@@ -2429,7 +2504,7 @@ void Owner007f::FORenderedMenuRaceSex_OnMenuClose()
     rF8.FUN_0066b0d0(0);
     ((Node007f*)FUN_00450b80(1))->RemoveAllLights();
     ResetMenuState();
-    UpdateSlotSelection(-1);
+    FORenderedMenuRaceSex_LightButton(-1);
     r108.FUN_0066b0d0(0);
 }
 
@@ -2440,6 +2515,8 @@ struct FUN_007ff740_shell : public FORenderedMenu
 };
 // If the rendered-menu scene getter returns an object, calls FUN_00450f90(true) and Update on it, then calls v3a with the menu root and resets menu state.
 // @fnv 0x007ff740
+// pdb: FORenderedTerminal::OnMenuClose | FORenderedTerminal.obj | retail, object-file gap fill, high
+// pdb locals: foo
 void FUN_007ff740_shell::UpdateBodyPart()
 {
     if (NiAVObject_GetCollisionObject())

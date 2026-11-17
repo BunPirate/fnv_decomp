@@ -71,6 +71,9 @@ struct SortPair
 };
 // @fnv 0x00d36520
 // src: GUESS 0x00d36520 (confidence: low)
+// pdb: hkAlgorithm::quickSortRecursive<hkShapeKeyPair,hkAlgorithm::less<hkShapeKeyPair> > | hkpCollectionCollectionAgent3.obj | retail, object-file run extension, low
+// pdb params: pArr, d, h, cmpLess
+// pdb locals: str
 extern "C" void Object_ProcessEntries_00d36520(SortPair* arr, int lo, int hi, unsigned int extra)
 {
     int i;
@@ -117,8 +120,8 @@ extern "C" void Object_ProcessEntries_00d36520(SortPair* arr, int lo, int hi, un
         lo = i;
     }
 }
-void __cdecl hkpCollectionAgent3_initAgentFunc(hkpCollisionDispatcher::Agent3FunctionTable& kFuncs);
-void __cdecl hkpCollectionAgent3_registerAgent3(hkpCollisionDispatcher* pkDispatcher);
+void __cdecl hkpCollectionAgent3_initAgentFunc(hkpCollisionDispatcher::Agent3FunctionTable& f);
+void __cdecl hkpCollectionAgent3_registerAgent3(hkpCollisionDispatcher* dispatcher);
 void InitOutputDefaults();
 void Runtime_ReleaseHandles_Thunk();
 void ReleaseHandles();
@@ -127,7 +130,7 @@ void InsertIntoSlotArray();
 void nullsub_15();
 void hkCollideCapsuleUtilCapsVsTri_ProcessEntries_00d39150();
 void hkCapsuleTriangleAgent3_process();
-void __cdecl hkCapsuleTriangleAgent3_registerAgent3(hkpCollisionDispatcher* pkDispatcher);
+void __cdecl hkCapsuleTriangleAgent3_registerAgent3(hkpCollisionDispatcher* dispatcher);
 extern "C"
 {
 using ::_mm_set_ps1;
@@ -342,14 +345,17 @@ class FUN_00d2c960_cls
     unsigned int unk1C;
     unsigned int m_kRoomNode;
 
-    void hkLiquidAction_applyAction(const S00d2c960_Info* pkInfo);
+    void hkLiquidAction_applyAction(const S00d2c960_Info* stepInfo);
 };
 
 // @fnv 0x00d2c960
 // src: XBOX_PDB 0x00d2c960
-void FUN_00d2c960_cls::hkLiquidAction_applyAction(const S00d2c960_Info* pkInfo)
+// pdb: hkLiquidAction::applyAction | hkLiquidAction.obj | retail, upstream name already matches, high
+// pdb params: stepInfo
+// pdb locals: ra, posA, assertBuf, ostr
+void FUN_00d2c960_cls::hkLiquidAction_applyAction(const S00d2c960_Info* stepInfo)
 {
-    float fTime = pkInfo->m_fTime;
+    float fTime = stepInfo->m_fTime;
     S00d2c960_Body* pkBody = m_pkBody;
     N::LocalM128 kPosition = pkBody->m_kPathOffset;
     pkBody->activate_00c9c1d0();

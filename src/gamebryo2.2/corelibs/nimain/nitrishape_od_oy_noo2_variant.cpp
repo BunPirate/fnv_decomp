@@ -12,6 +12,8 @@
 
 // @fnv 0x0051d000
 // src: COMMUNITY 0x0051d000
+// pdb: NiBillboardNode::SetMode | TESObjectTREE.obj | debug, call graph, medium
+// pdb params: eMode
 void NiBillboardNode::SetMode_0051d000(int a)
 {
     reinterpret_cast<NiTriBasedGeom*>(this)->SetBitfield(static_cast<unsigned short>(a), 7, 0);

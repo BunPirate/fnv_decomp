@@ -67,7 +67,7 @@ public:
     PodPoint3* FUN_00439e90(PodPoint3* output, const PodPoint3* other) const;
     PodPoint3 SubtractIntoVector(const PodPoint3& other) const;
     void SubtractIntoVector();
-    PodPoint3 FUN_004b3800(const PodPoint3& axis) const;
+    PodPoint3 FUN_004b3800(const PodPoint3& pt) const;
     void Unitize_004a0c10();
     float FUN_00457910();
     float FUN_00457990() const;
@@ -228,17 +228,17 @@ public:
     void Unitize_004a0c10();
     float FUN_004a7290();
     float FUN_004a7290() const;
-    LocalVec3 FUN_004b3800(const LocalVec3& other) const;
+    LocalVec3 FUN_004b3800(const LocalVec3& pt) const;
     LocalVec3 ProcessAndReturnValue_0053d280(float divisor);
     float NiPoint3_XYLength();
     float NiPoint3_XYLength() const;
     void ComputeValue_0063c8a0(const LocalVec3* other);
     void ComputeValue_0063c8a0(void* other);
     void FUN_006815c0();
-    float CVec3_Distance(LocalVec3* other);
-    float CVec3_Distance(const LocalVec3& other) const;
-    LocalVec3 TransformPointByMatrix4(const Mat& matrix);
-    LocalVec3 TransformPointByMatrix4(const Matrix4* matrix);
+    float CVec3_Distance(LocalVec3* cVec);
+    float CVec3_Distance(const LocalVec3& cVec) const;
+    LocalVec3 TransformPointByMatrix4(const Mat& cTransform);
+    LocalVec3 TransformPointByMatrix4(const Matrix4* cTransform);
     void Normalize_00b12790();
     LocalVec3 Diff_00b13040(void* other);
     LocalVec3 Diff_00b13040(const LocalVec3& other) const;
@@ -248,6 +248,7 @@ public:
     void FUN_00e0f6e0();
 };
 
+// pdb: structure ColorPair, size 0x8 (here 0xc), 2 members
 class ColorPair
 {
   public:
@@ -275,17 +276,20 @@ class ColorProperty : public ColorPropertyBase
     ColorPair m_kPrimaryColor;  // +0x0c
     ColorPair m_kColorB;        // +0x18
 
-    bool BSMultiBoundAABB_IsEqual(const ColorPropertyBase* pkObject);
+    bool BSMultiBoundAABB_IsEqual(const ColorPropertyBase* apObject);
 };
 
 // @fnv 0x00c38090
 // src: XBOX_PDB 0x00c38090
-bool ColorProperty::BSMultiBoundAABB_IsEqual(const ColorPropertyBase* pkObject)
+// pdb: BSMultiBoundAABB::IsEqual | BSMultiBoundAABB.obj | retail, upstream name already matches, high
+// pdb params: apObject
+// pdb locals: bres, pobj
+bool ColorProperty::BSMultiBoundAABB_IsEqual(const ColorPropertyBase* apObject)
 {
-    bool bEqual = BSMultiBoundShape_IsEqual(pkObject);
+    bool bEqual = BSMultiBoundShape_IsEqual(apObject);
     if (bEqual)
     {
-        const ColorProperty* pkOther = (const ColorProperty*)pkObject;
+        const ColorProperty* pkOther = (const ColorProperty*)apObject;
         bEqual = m_kPrimaryColor == pkOther->m_kPrimaryColor;
         bEqual &= m_kColorB == pkOther->m_kColorB;
     }
@@ -333,19 +337,22 @@ class CenteredPointBounds
     int unk08;
     Pt m_kCenter;
     Pt m_kExtent;
-    bool BSMultiBoundAABB_QPointWithin(const Pt& kPoint);
+    bool BSMultiBoundAABB_QPointWithin(const Pt& kpoint);
 };
 
 // @fnv 0x00c38a20
 // src: XBOX_PDB 0x00c38a20
-bool CenteredPointBounds::BSMultiBoundAABB_QPointWithin(const Pt& kPoint)
+// pdb: BSMultiBoundAABB::QPointWithin | BSMultiBoundAABB.obj | debug, upstream name already matches, high
+// pdb params: kpoint
+// pdb locals: kdiff
+bool CenteredPointBounds::BSMultiBoundAABB_QPointWithin(const Pt& kpoint)
 {
-    Pt kDiff = kPoint - m_kCenter;
+    Pt kDiff = kpoint - m_kCenter;
     return !(PtAbs(kDiff.x) - m_kExtent.x > 0.01f) && !(PtAbs(kDiff.y) - m_kExtent.y > 0.01f) &&
            !(PtAbs(kDiff.z) - m_kExtent.z > 0.01f);
 }
 
-extern int g_01202818;
+extern int BSMultiBoundOBB_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01202818 (old: g_01202818)
 extern void fnv_stub_grow(unsigned int, unsigned int);
 
 struct Obj_0096a610
@@ -376,7 +383,7 @@ struct Obj_0096a610
 
 struct Obj_00a598f0
 {
-    unsigned int __thiscall ToString(const char* name);
+    unsigned int __thiscall ToString(const char* pPrefix);
 };
 
 struct C_00c36580
@@ -392,24 +399,26 @@ struct C_00c36580
     int unk20;
     Obj_00a598f0 unk24;
 
-    void __thiscall AddPropertyNames(int value);
-    void __thiscall BSMultiBoundOBB_GetViewerStrings(Obj_0096a610* value);
+    void __thiscall AddPropertyNames(int apStrings);
+    void __thiscall BSMultiBoundOBB_GetViewerStrings(Obj_0096a610* apStrings);
 };
 
 int __cdecl NiViewerStrings_NiGetViewerString_Title(int value);
 
 // @fnv 0x00c36580
 // src: XBOX_PDB 0x00c36580
-void __thiscall C_00c36580::BSMultiBoundOBB_GetViewerStrings(Obj_0096a610* value)
+// pdb: BSMultiBoundOBB::GetViewerStrings | BSMultiBoundOBB.obj | retail, string-set bridge, high
+// pdb params: apStrings
+void __thiscall C_00c36580::BSMultiBoundOBB_GetViewerStrings(Obj_0096a610* apStrings)
 {
-    AddPropertyNames((int)value);
+    AddPropertyNames((int)apStrings);
 
-    int src = g_01202818;
+    int src = BSMultiBoundOBB_ms_RTTI;
     unsigned int first = (unsigned int)NiViewerStrings_NiGetViewerString_Title(src);
-    value->FUN_0096a610(first);
+    apStrings->FUN_0096a610(first);
 
     unsigned int second = unk24.ToString("Axis");
-    value->FUN_0096a610(second);
+    apStrings->FUN_0096a610(second);
 }
 
 // Previous geometry reconstruction credited to another contributor.
@@ -587,19 +596,19 @@ struct AABBDebugView
 
     float extentX, extentY, extentZ;
 // src: XBOX_PDB 0x00c39270
-    void BSMultiBoundAABB_GetVertices(PodPoint3* out)
+    void BSMultiBoundAABB_GetVertices(PodPoint3* apPoints)
     {
         PodPoint3 axisX = DAT_011a946c * extentX;
         PodPoint3 axisY = DAT_011a9478 * extentY;
         PodPoint3 axisZ = DAT_011a9484 * extentZ;
-        out[0] = center + axisX + axisY + axisZ;
-        out[1] = center + axisX + axisY - axisZ;
-        out[2] = center + axisX - axisY + axisZ;
-        out[3] = center + axisX - axisY - axisZ;
-        out[4] = center - axisX + axisY + axisZ;
-        out[5] = center - axisX + axisY - axisZ;
-        out[6] = center - axisX - axisY + axisZ;
-        out[7] = center - axisX - axisY - axisZ;
+        apPoints[0] = center + axisX + axisY + axisZ;
+        apPoints[1] = center + axisX + axisY - axisZ;
+        apPoints[2] = center + axisX - axisY + axisZ;
+        apPoints[3] = center + axisX - axisY - axisZ;
+        apPoints[4] = center - axisX + axisY + axisZ;
+        apPoints[5] = center - axisX + axisY - axisZ;
+        apPoints[6] = center - axisX - axisY + axisZ;
+        apPoints[7] = center - axisX - axisY - axisZ;
     }
 
     void BSMultiBoundAABB_MakeDebugGeom(Geometry*, Geometry*, Color);
@@ -607,7 +616,10 @@ struct AABBDebugView
 
 // @fnv 0x00c38b00
 // src: XBOX_PDB 0x00c38b00
-void AABBDebugView::BSMultiBoundAABB_MakeDebugGeom(Geometry* lines, Geometry* triangles, Color color)
+// pdb: BSMultiBoundAABB::MakeDebugGeom | BSMultiBoundAABB.obj | retail, upstream name already matches, high
+// pdb params: apLines, apShape, akBaseColor
+// pdb locals: kpoints, klinecolor, kpvert, kpconn, ktriconn, kconn, kcolor, kpcol, kpflag, i
+void AABBDebugView::BSMultiBoundAABB_MakeDebugGeom(Geometry* apLines, Geometry* apShape, Color akBaseColor)
 {
 
     PodPoint3 corners[8];
@@ -621,17 +633,17 @@ void AABBDebugView::BSMultiBoundAABB_MakeDebugGeom(Geometry* lines, Geometry* tr
     unsigned short faces[12][3] = {{2, 3, 1}, {2, 1, 0}, {5, 7, 6}, {5, 6, 4}, {7, 2, 6}, {7, 3, 2},
                                    {4, 0, 5}, {5, 0, 1}, {6, 0, 4}, {6, 2, 0}, {3, 7, 1}, {7, 5, 1}};
 
-    Color faceColor9 = color;
+    Color faceColor9 = akBaseColor;
 
     Color edgeColor = DAT_011a9be0;
 
-    PodPoint3* vertices9 = lines->GetData()->GetVertices();
+    PodPoint3* vertices9 = apLines->GetData()->GetVertices();
 
-    Color* colors8 = lines->GetData()->GetColors();
+    Color* colors8 = apLines->GetData()->GetColors();
 
-    bool* lineFlags9 = lines->GetData()->GetFlags();
+    bool* lineFlags9 = apLines->GetData()->GetFlags();
 
-    lines->position = center;
+    apLines->position = center;
 
     for (int edge = 0; edge < 12; ++edge)
     {
@@ -649,13 +661,13 @@ void AABBDebugView::BSMultiBoundAABB_MakeDebugGeom(Geometry* lines, Geometry* tr
         lineFlags9[2 * edge + 1] = false;
     }
 
-    vertices9 = triangles->GetData()->GetVertices();
+    vertices9 = apShape->GetData()->GetVertices();
 
-    colors8 = triangles->GetData()->GetColors();
+    colors8 = apShape->GetData()->GetColors();
 
-    unsigned short* indices = triangles->GetData()->FUN_00a7b850();
+    unsigned short* indices = apShape->GetData()->FUN_00a7b850();
 
-    triangles->position = center;
+    apShape->position = center;
 
     for (unsigned short triangle3 = 0; triangle3 < 12; ++triangle3)
     {
@@ -710,6 +722,8 @@ struct FUN_00c335d0 : NiObject
 };
 
 // @fnv 0x00c335d0
+// pdb: BSOcclusionPlane::BSOcclusionPlane | BSOcclusionPlane.obj | retail, call graph (shared callers), high
+// pdb params: arCenter, arHalfExtents, arRotation
 FUN_00c335d0::FUN_00c335d0()
 {
     kTargetCenter = NiPoint3::ZERO;
@@ -733,33 +747,34 @@ template <> inline NiPointer<BSMultiBoundShape>::operator BSMultiBoundShape*() c
 
 inline BSMultiBoundShape* BSMultiBound::GetShape() const
 {
-    return pShape;
+    return spShape;
 }
 
-inline float NiPlane::Distance(const NiPoint3& kPt) const
+inline float NiPlane::Distance(const NiPoint3& kPoint) const
 {
     // The original calls the out-of-line dot product (0x004b6190); NiPoint3.h defines Dot in its class.
-    return reinterpret_cast<const NiPoint3*>(this)->DotProduct(kPt) - c;
+    return reinterpret_cast<const NiPoint3*>(this)->DotProduct(kPoint) - m_fConstant;
 }
 
 // src: COMMUNITY 0x00c37a00
-inline void BSMultiBoundShape::BSMultiBoundOBB_GetVertices(NiPoint3* pts)
+inline void BSMultiBoundShape::BSMultiBoundOBB_GetVertices(NiPoint3* apPoints)
 {
     NiPoint3 axisX, axisY, axisZ;
-    axisX *= static_cast<BSMultiBoundOBB*>(this)->m_kOffset.x;
-    axisY *= static_cast<BSMultiBoundOBB*>(this)->m_kOffset.y;
-    axisZ *= static_cast<BSMultiBoundOBB*>(this)->m_kOffset.z;
-    pts[0] = reinterpret_cast<const NiPoint3&>(static_cast<BSMultiBoundOBB*>(this)->Center) - axisX - axisY - axisZ;
-    pts[1] = reinterpret_cast<const NiPoint3&>(static_cast<BSMultiBoundOBB*>(this)->Center) + axisX - axisY - axisZ;
-    pts[2] = reinterpret_cast<const NiPoint3&>(static_cast<BSMultiBoundOBB*>(this)->Center) + axisX + axisY - axisZ;
-    pts[3] = reinterpret_cast<const NiPoint3&>(static_cast<BSMultiBoundOBB*>(this)->Center) - axisX + axisY - axisZ;
-    pts[4] = reinterpret_cast<const NiPoint3&>(static_cast<BSMultiBoundOBB*>(this)->Center) - axisX - axisY + axisZ;
-    pts[5] = reinterpret_cast<const NiPoint3&>(static_cast<BSMultiBoundOBB*>(this)->Center) + axisX - axisY + axisZ;
-    pts[6] = reinterpret_cast<const NiPoint3&>(static_cast<BSMultiBoundOBB*>(this)->Center) + axisX + axisY + axisZ;
-    pts[7] = reinterpret_cast<const NiPoint3&>(static_cast<BSMultiBoundOBB*>(this)->Center) - axisX + axisY + axisZ;
+    axisX *= static_cast<BSMultiBoundOBB*>(this)->HalfExtents.x;
+    axisY *= static_cast<BSMultiBoundOBB*>(this)->HalfExtents.y;
+    axisZ *= static_cast<BSMultiBoundOBB*>(this)->HalfExtents.z;
+    apPoints[0] = reinterpret_cast<const NiPoint3&>(static_cast<BSMultiBoundOBB*>(this)->Center) - axisX - axisY - axisZ;
+    apPoints[1] = reinterpret_cast<const NiPoint3&>(static_cast<BSMultiBoundOBB*>(this)->Center) + axisX - axisY - axisZ;
+    apPoints[2] = reinterpret_cast<const NiPoint3&>(static_cast<BSMultiBoundOBB*>(this)->Center) + axisX + axisY - axisZ;
+    apPoints[3] = reinterpret_cast<const NiPoint3&>(static_cast<BSMultiBoundOBB*>(this)->Center) - axisX + axisY - axisZ;
+    apPoints[4] = reinterpret_cast<const NiPoint3&>(static_cast<BSMultiBoundOBB*>(this)->Center) - axisX - axisY + axisZ;
+    apPoints[5] = reinterpret_cast<const NiPoint3&>(static_cast<BSMultiBoundOBB*>(this)->Center) + axisX - axisY + axisZ;
+    apPoints[6] = reinterpret_cast<const NiPoint3&>(static_cast<BSMultiBoundOBB*>(this)->Center) + axisX + axisY + axisZ;
+    apPoints[7] = reinterpret_cast<const NiPoint3&>(static_cast<BSMultiBoundOBB*>(this)->Center) - axisX + axisY + axisZ;
 }
 
-inline void BSMultiBoundShape::GetPlanes(NiPlane* planes)
+// src: XBOX_DEBUG_PDB 0x00c37e00
+inline void BSMultiBoundShape::BSMultiBoundOBB_GetPlanes(NiPlane* apPlanes)
 {
     for (int i = 0; i < 3; i++)
     {
@@ -768,13 +783,16 @@ inline void BSMultiBoundShape::GetPlanes(NiPlane* planes)
         kNormal.x = pRow[i];
         kNormal.y = pRow[i + 3];
         kNormal.z = pRow[i + 6];
-        *reinterpret_cast<NiPoint3*>(&planes[i]) = kNormal;
-        planes[i].c = kNormal.DotProduct(static_cast<BSMultiBoundOBB*>(this)->Center);  // out-of-line, as NiPlane::Distance
+        *reinterpret_cast<NiPoint3*>(&apPlanes[i]) = kNormal;
+        apPlanes[i].m_fConstant = kNormal.DotProduct(static_cast<BSMultiBoundOBB*>(this)->Center);  // out-of-line, as NiPlane::Distance
     }
 }
 
 // @fnv 0x00c369b0
 // src: XBOX_PDB 0x00c369b0
+// pdb: BSMultiBoundOBB::CheckBound | BSMultiBoundOBB.obj | debug, vtable slot, medium
+// pdb params: aTargetBound
+// pdb locals: kshape, pkaabb, kaabbpoint, kobbplane, i, fDx, fDy, fDz, kobbpoint, pkobb, kbound, pksphere
 int BSMultiBoundShape::BSMultiBoundOBB_CheckBound_00c369b0(BSMultiBound* p)
 {
     int v = p->GetShape()->GetShapeType();
@@ -784,17 +802,17 @@ int BSMultiBoundShape::BSMultiBoundOBB_CheckBound_00c369b0(BSMultiBound* p)
         NiPoint3 e[8];
         j->BSMultiBoundAABB_GetVertices(e);
         NiPlane c[3];
-        this->GetPlanes(c);
+        this->BSMultiBoundOBB_GetPlanes(c);
         for (int i = 0; i < 8; i++)
         {
             float dx = (float)fabs(c[0].Distance(*(NiPoint3*)&e[i]));
-            if (dx - static_cast<BSMultiBoundAABB*>(this)->m_kOffset.x > 0.0)
+            if (dx - static_cast<BSMultiBoundAABB*>(this)->HalfExtents.x > 0.0)
                 return 0;
             float dz = (float)fabs(c[1].Distance(*(NiPoint3*)&e[i]));
-            if (dz - static_cast<BSMultiBoundAABB*>(this)->m_kOffset.y > 0.0)
+            if (dz - static_cast<BSMultiBoundAABB*>(this)->HalfExtents.y > 0.0)
                 return 0;
             float dy = (float)fabs(c[2].Distance(*(NiPoint3*)&e[i]));
-            if (dy - static_cast<BSMultiBoundAABB*>(this)->m_kOffset.z > 0.0)
+            if (dy - static_cast<BSMultiBoundAABB*>(this)->HalfExtents.z > 0.0)
                 return 0;
         }
         return 2;
@@ -805,17 +823,17 @@ int BSMultiBoundShape::BSMultiBoundOBB_CheckBound_00c369b0(BSMultiBound* p)
         NiPoint3 j[8];
         c->BSMultiBoundOBB_GetVertices(j);
         NiPlane e[3];
-        this->GetPlanes(e);
+        this->BSMultiBoundOBB_GetPlanes(e);
         for (int i = 0; i < 8; i++)
         {
             float dx = (float)fabs(e[0].Distance(*(NiPoint3*)&j[i]));
-            if (dx - static_cast<BSMultiBoundAABB*>(this)->m_kOffset.x > 0.0)
+            if (dx - static_cast<BSMultiBoundAABB*>(this)->HalfExtents.x > 0.0)
                 return 0;
             float dz = (float)fabs(e[1].Distance(*(NiPoint3*)&j[i]));
-            if (dz - static_cast<BSMultiBoundAABB*>(this)->m_kOffset.y > 0.0)
+            if (dz - static_cast<BSMultiBoundAABB*>(this)->HalfExtents.y > 0.0)
                 return 0;
             float dy = (float)fabs(e[2].Distance(*(NiPoint3*)&j[i]));
-            if (dy - static_cast<BSMultiBoundAABB*>(this)->m_kOffset.z > 0.0)
+            if (dy - static_cast<BSMultiBoundAABB*>(this)->HalfExtents.z > 0.0)
                 return 0;
         }
         return 2;
@@ -839,28 +857,31 @@ inline bool NiFrustumPlanes::IsPlaneActive(unsigned int i)
 {
     int unused[83];
     (void)unused;
-    return ((1 << i) & m_uiActivePlaneMask) ? true : false;
+    return ((1 << i) & m_uiActivePlanes) ? true : false;
 }
 // BSMultiBoundOBB has no FUN_00c37050 frustum overload in the shared header.
 struct C37050_Bound
 {
-    void BSMultiBoundOBB_GetVertices(PodPoint3* corners);
-    bool BSMultiBoundOBB_CompletelyWithinFrustum(const NiFrustumPlanes& frustum);
+    void BSMultiBoundOBB_GetVertices(PodPoint3* apPoints);
+    bool BSMultiBoundOBB_CompletelyWithinFrustum(const NiFrustumPlanes& aPlanes);
 };
 // @fnv 0x00c37050
 // src: XBOX_PDB 0x00c37050
-bool C37050_Bound::BSMultiBoundOBB_CompletelyWithinFrustum(const NiFrustumPlanes& frustum)
+// pdb: BSMultiBoundOBB::CompletelyWithinFrustum | BSMultiBoundOBB.obj | retail, upstream name already matches, high
+// pdb params: aPlanes
+// pdb locals: kboxpoints, i, j
+bool C37050_Bound::BSMultiBoundOBB_CompletelyWithinFrustum(const NiFrustumPlanes& aPlanes)
 {
     PodPoint3 corners[8];
     InitializePoint3Array(corners, 8);
     BSMultiBoundOBB_GetVertices(corners);
     for (int i = 0; i < 6; i++)
     {
-        if (const_cast<NiFrustumPlanes&>(frustum).IsPlaneActive(i))
+        if (const_cast<NiFrustumPlanes&>(aPlanes).IsPlaneActive(i))
         {
             for (int j = 0; j < 8; j++)
             {
-                if (reinterpret_cast<const C37050_Plane&>(frustum.m_akPlanes[i]).ClassifyPoint(corners[j]) == 2)
+                if (reinterpret_cast<const C37050_Plane&>(aPlanes.m_akCullingPlanes[i]).ClassifyPoint(corners[j]) == 2)
                     return false;
             }
         }
@@ -925,25 +946,28 @@ struct FrustQ
 {
     int unk00, unk04, unk08, unk0c, unk10, unk14;
     float m_fTolX, m_fTolY, m_fTolZ;
-    void GetPlanes(PlaneQ* p);
-    bool BSMultiBoundOBB_QPointWithin(const Pt3Q& kPt);
+    void BSMultiBoundOBB_GetPlanes(PlaneQ* apPlanes);
+    bool BSMultiBoundOBB_QPointWithin(const Pt3Q& aPoint);
 };
 // @fnv 0x00c378c0
 // src: XBOX_PDB 0x00c378c0
-bool FrustQ::BSMultiBoundOBB_QPointWithin(const Pt3Q& kPt)
+// pdb: BSMultiBoundOBB::QPointWithin | BSMultiBoundOBB.obj | retail, upstream name already matches, high
+// pdb params: aPoint
+// pdb locals: fDx, fDy, kobbplane, fDz
+bool FrustQ::BSMultiBoundOBB_QPointWithin(const Pt3Q& aPoint)
 {
     PlaneQ akPlanes3[3];
     DeadQ6();
-    GetPlanes(akPlanes3);
+    BSMultiBoundOBB_GetPlanes(akPlanes3);
     {
-        float fDistZ = AbsQ(akPlanes3[0].Distance(kPt));
+        float fDistZ = AbsQ(akPlanes3[0].Distance(aPoint));
         if (fDistZ - m_fTolX > DAT_01016408)
             return false;
-        float fDistX9 = AbsQ(DistOf(&akPlanes3[1], kPt));
+        float fDistX9 = AbsQ(DistOf(&akPlanes3[1], aPoint));
         if (fDistX9 - m_fTolY > DAT_01016408)
             return false;
     }
-    float fDistY = AbsQ(DistOf(&akPlanes3[2], kPt));
+    float fDistY = AbsQ(DistOf(&akPlanes3[2], aPoint));
     if (fDistY - m_fTolZ > DAT_01016408)
         return false;
     return true;
@@ -1036,24 +1060,27 @@ struct Prim
     LocalVec3 m_kCenterPosition;
     LocalVec3 m_radii;
 // src: COMMUNITY 0x00c39560
-    inline bool BSMultiBoundAABB_FastPointWithin(LocalVec3 v)
+    inline bool BSMultiBoundAABB_FastPointWithin(LocalVec3 kpoint)
     {
-        LocalVec3 delta = v - m_kCenterPosition;
+        LocalVec3 delta = kpoint - m_kCenterPosition;
         return AbsPoint(delta.x) - m_radii.x <= 0.01 && AbsPoint(delta.y) - m_radii.y <= 0.01 &&
                AbsPoint(delta.z) - m_radii.z <= 0.01;
     }
-    void BSMultiBoundOBB_GetVertices(LocalVec3* arr);
-    int BSMultiBoundAABB_CheckBound(Param* arg);
+    void BSMultiBoundOBB_GetVertices(LocalVec3* apPoints);
+    int BSMultiBoundAABB_CheckBound(Param* aTargetBound);
 };
 
 // @fnv 0x00c384f0
 // src: XBOX_PDB 0x00c384f0
-int Prim::BSMultiBoundAABB_CheckBound(Param* arg)
+// pdb: BSMultiBoundAABB::CheckBound | BSMultiBoundAABB.obj | retail, upstream name already matches, high
+// pdb params: aTargetBound
+// pdb locals: r, bintersect, fDx, bwithin, P, fDy, fDz
+int Prim::BSMultiBoundAABB_CheckBound(Param* aTargetBound)
 {
-    int mode_2 = arg->GetBV()->v35();
+    int mode_2 = aTargetBound->GetBV()->v35();
     if (mode_2 == 1)
     {
-        Prim* q = arg->GetBV();
+        Prim* q = aTargetBound->GetBV();
         LocalVec3 diff_2 = m_kCenterPosition - q->m_kCenterPosition;
         float resZ = AbsPoint(diff_2.x) + q->m_radii.x - m_radii.x;
         float resY4 = AbsPoint(diff_2.y) + q->m_radii.y - m_radii.y;
@@ -1064,7 +1091,7 @@ int Prim::BSMultiBoundAABB_CheckBound(Param* arg)
     }
     else if (mode_2 == 2)
     {
-        Prim* q = arg->GetBV();
+        Prim* q = aTargetBound->GetBV();
         if (!BSMultiBoundAABB_FastPointWithin(q->m_kCenterPosition))
             return 0;
         else
@@ -1081,7 +1108,7 @@ int Prim::BSMultiBoundAABB_CheckBound(Param* arg)
     }
     else if (mode_2 == 3)
     {
-        Prim* q = arg->GetBV();
+        Prim* q = aTargetBound->GetBV();
         Bound16 out;
         q->v41(&out);
         return v38(&out);
@@ -1115,40 +1142,43 @@ struct OccShape
     int unk00, unk04, unk08;
     LocalPt3 kTargetCenter;
     float fScaleMultiplier, m_fGlyphExtent, m_fGlyphWidthInPixels;
-    void GetVertices(LocalPt3* m_pkDeltas)
+    void GetVertices(LocalPt3* apPoints)
     {
         LocalPt3 vX = LocalPt3::ms_kFirstPoint * fScaleMultiplier;
         LocalPt3 vY = LocalPt3::ms_kSecondPoint * m_fGlyphExtent;
         LocalPt3 vZ = LocalPt3::ms_kThirdPoint * m_fGlyphWidthInPixels;
-        m_pkDeltas[0] = kTargetCenter + vX + vY + vZ;
-        m_pkDeltas[1] = kTargetCenter + vX + vY - vZ;
-        m_pkDeltas[2] = kTargetCenter + vX - vY + vZ;
-        m_pkDeltas[3] = kTargetCenter + vX - vY - vZ;
-        m_pkDeltas[4] = kTargetCenter - vX + vY + vZ;
-        m_pkDeltas[5] = kTargetCenter - vX + vY - vZ;
-        m_pkDeltas[6] = kTargetCenter - vX - vY + vZ;
-        m_pkDeltas[7] = kTargetCenter - vX - vY - vZ;
+        apPoints[0] = kTargetCenter + vX + vY + vZ;
+        apPoints[1] = kTargetCenter + vX + vY - vZ;
+        apPoints[2] = kTargetCenter + vX - vY + vZ;
+        apPoints[3] = kTargetCenter + vX - vY - vZ;
+        apPoints[4] = kTargetCenter - vX + vY + vZ;
+        apPoints[5] = kTargetCenter - vX + vY - vZ;
+        apPoints[6] = kTargetCenter - vX - vY + vZ;
+        apPoints[7] = kTargetCenter - vX - vY - vZ;
     }
-    bool BSMultiBoundAABB_WithinFrustum(NiFrustumPlanes* pkPlanes);
+    bool BSMultiBoundAABB_WithinFrustum(NiFrustumPlanes* aPlanes);
 };
 
 // @fnv 0x00c387f0
 // src: XBOX_PDB 0x00c387f0
-bool OccShape::BSMultiBoundAABB_WithinFrustum(NiFrustumPlanes* pkPlanes)
+// pdb: BSMultiBoundAABB::WithinFrustum | BSMultiBoundAABB.obj | retail, upstream name already matches, high
+// pdb params: aPlanes
+// pdb locals: kboxpoints, bzeroheight, i, ballneg, j
+bool OccShape::BSMultiBoundAABB_WithinFrustum(NiFrustumPlanes* aPlanes)
 {
     LocalPt3 kVerts[8];
     bool bFlat = (m_fGlyphWidthInPixels == 0.0);
     GetVertices(kVerts);
     for (int i = 0; i < 6; i++)
     {
-        if (bool(pkPlanes->m_uiActivePlaneMask & (1 << i)))
+        if (bool(aPlanes->m_uiActivePlanes & (1 << i)))
         {
             bool bAllOut = true;
             for (int j = 0; j < 8; j++)
             {
                 if (!bFlat || (j % 2) != 0)
                 {
-                    if (reinterpret_cast<const Plane4&>(pkPlanes->m_akPlanes[i]).WhichSide(&kVerts[j]) != 2)
+                    if (reinterpret_cast<const Plane4&>(aPlanes->m_akCullingPlanes[i]).WhichSide(&kVerts[j]) != 2)
                         bAllOut = false;
                 }
             }
@@ -1240,14 +1270,17 @@ struct FUN_00c4f8e0
 struct C4F390_Owner
 {
     void CopyFields(FUN_00c4f8e0* clone, CloningProcess& cloning);
-    FUN_00c4f8e0* BSPortal_CreateClone(CloningProcess& cloning);
+    FUN_00c4f8e0* BSPortal_CreateClone(CloningProcess& arCloneData);
 };
 // @fnv 0x00c4f390
 // src: XBOX_PDB 0x00c4f390
-FUN_00c4f8e0* C4F390_Owner::BSPortal_CreateClone(CloningProcess& cloning)
+// pdb: BSPortal::CreateClone | BSPortal.obj | retail, upstream name already matches, high
+// pdb params: arCloneData
+// pdb locals: pobj
+FUN_00c4f8e0* C4F390_Owner::BSPortal_CreateClone(CloningProcess& arCloneData)
 {
     FUN_00c4f8e0* clone = new FUN_00c4f8e0;
-    CopyFields(clone, cloning);
+    CopyFields(clone, arCloneData);
     return clone;
 }
 
@@ -1317,6 +1350,7 @@ class ObjA
 
 // @fnv 0x00c4f860
 // src: COMMUNITY 0x00c4f860
+// pdb: BSMultiBoundNode::QCullResult | BSPortal.obj | debug, object-file run extension, low
 int ObjA::BSMultiBoundRoom_GetCullResult()
 {
     NodeA* a = unkAC;
@@ -1340,6 +1374,9 @@ inline float NiPoint3::Length() { return NiSqrt_004579e0(x * x + y * y + z * z);
 
 // @fnv 0x00c4ff60
 // src: XBOX_PDB 0x00c4ff60
+// pdb: BSMultiBoundSphere::CheckBound | BSMultiBoundSphere.obj | debug, vtable slot, medium
+// pdb params: aTargetBound
+// pdb locals: kshape, pkaabb, fsqrradius, kboxpoints, i, flen, kvect, pkobb, pksphere
 int BSMultiBoundSphere::CheckBound(BSMultiBound* other)
 {
     int type = other->GetShape()->GetShapeType();
@@ -1348,10 +1385,10 @@ int BSMultiBoundSphere::CheckBound(BSMultiBound* other)
         BSMultiBoundAABB* box2 = static_cast<BSMultiBoundAABB*>(other->GetShape());
         NiPoint3 _vertices[8];
         box2->BSMultiBoundAABB_GetVertices(_vertices);
-        float radiusSquared8 = radius * radius;
+        float radiusSquared8 = Radius * Radius;
         for (int i = 0; i < 8; i++)
         {
-            NiPoint3 diff2 = center.operator-(_vertices[i]);
+            NiPoint3 diff2 = Center.operator-(_vertices[i]);
             float distanceSquared = diff2.SqrLength();
             if (distanceSquared > radiusSquared8)
                 return 0;
@@ -1363,10 +1400,10 @@ int BSMultiBoundSphere::CheckBound(BSMultiBound* other)
         BSMultiBoundOBB* box3 = static_cast<BSMultiBoundOBB*>(other->GetShape());
         NiPoint3 vertices5[8];
         box3->BSMultiBoundOBB_GetVertices(vertices5);
-        float radiusSquared = radius * radius;
+        float radiusSquared = Radius * Radius;
         for (int i = 0; i < 8; i++)
         {
-            NiPoint3 diff = center.operator-(vertices5[i]);
+            NiPoint3 diff = Center.operator-(vertices5[i]);
             {
                 float distanceSquared = diff.SqrLength();
                 if (distanceSquared > radiusSquared)
@@ -1379,10 +1416,10 @@ int BSMultiBoundSphere::CheckBound(BSMultiBound* other)
     {
         BSMultiBoundSphere* sphere = static_cast<BSMultiBoundSphere*>(other->GetShape());
         {
-            NiPoint3 diff3 = center.operator-(sphere->center);
+            NiPoint3 diff3 = Center.operator-(sphere->Center);
             {
                 float distance = diff3.Length();
-                if (distance + sphere->radius - radius <= 0.0)
+                if (distance + sphere->Radius - Radius <= 0.0)
                     return 2;
             }
         }
@@ -1401,17 +1438,20 @@ struct C50380_Sphere
     PodPoint3 m_kCenter;
     float m_fBoundRadius;
 
-    bool __thiscall BSMultiBoundSphere_QPointWithin(PodPoint3* other);
+    bool __thiscall BSMultiBoundSphere_QPointWithin(PodPoint3* aPoint);
 };
 
 
 // @fnv 0x00c50380
 // src: XBOX_PDB 0x00c50380
-bool __thiscall C50380_Sphere::BSMultiBoundSphere_QPointWithin(PodPoint3* other)
+// pdb: BSMultiBoundSphere::QPointWithin | BSMultiBoundSphere.obj | debug, upstream name already matches, high
+// pdb params: aPoint
+// pdb locals: fdist
+bool __thiscall C50380_Sphere::BSMultiBoundSphere_QPointWithin(PodPoint3* aPoint)
 {
     // Preserve the frame space reserved for the original inline point helpers.
     DeadQ4();
-    float fDist = other->SubtractIntoVector(m_kCenter).FUN_00457990();
+    float fDist = aPoint->SubtractIntoVector(m_kCenter).FUN_00457990();
     return (fDist < m_fBoundRadius) ? true : false;
 }
 
@@ -1463,7 +1503,7 @@ class NiMatrix3OB
 class NiOBBOB
 {
   public:
-    void BSMultiBoundOBB_GetVertices(NiPoint3OB* pkVerts);
+    void BSMultiBoundOBB_GetVertices(NiPoint3OB* apPoints);
     int m_aiPad[3];
     NiPoint3OB m_kCenter;
     float m_afExtents[3];
@@ -1472,7 +1512,10 @@ class NiOBBOB
 
 // @fnv 0x00c37a00
 // src: COMMUNITY 0x00c37a00
-void NiOBBOB::BSMultiBoundOBB_GetVertices(NiPoint3OB* pkVerts)
+// pdb: BSMultiBoundOBB::GetVertices | BSMultiBoundOBB.obj | debug, upstream name already matches, high
+// pdb params: apPoints
+// pdb locals: kY, kZ, kX
+void NiOBBOB::BSMultiBoundOBB_GetVertices(NiPoint3OB* apPoints)
 {
     NiPoint3OB kX = NiPoint3OB::ZERO;
     NiPoint3OB kY = NiPoint3OB::ZERO;
@@ -1483,14 +1526,14 @@ void NiOBBOB::BSMultiBoundOBB_GetVertices(NiPoint3OB* pkVerts)
     kY *= m_afExtents[1];
     m_kBasis.GetCol(2, kZ);
     kZ *= m_afExtents[2];
-    pkVerts[0] = m_kCenter + kX + kY + kZ;
-    pkVerts[1] = m_kCenter + kX + kY - kZ;
-    pkVerts[2] = m_kCenter + kX - kY + kZ;
-    pkVerts[3] = m_kCenter + kX - kY - kZ;
-    pkVerts[4] = m_kCenter - kX + kY + kZ;
-    pkVerts[5] = m_kCenter - kX + kY - kZ;
-    pkVerts[6] = m_kCenter - kX - kY + kZ;
-    pkVerts[7] = m_kCenter - kX - kY - kZ;
+    apPoints[0] = m_kCenter + kX + kY + kZ;
+    apPoints[1] = m_kCenter + kX + kY - kZ;
+    apPoints[2] = m_kCenter + kX - kY + kZ;
+    apPoints[3] = m_kCenter + kX - kY - kZ;
+    apPoints[4] = m_kCenter - kX + kY + kZ;
+    apPoints[5] = m_kCenter - kX + kY - kZ;
+    apPoints[6] = m_kCenter - kX - kY + kZ;
+    apPoints[7] = m_kCenter - kX - kY - kZ;
 }
 
 // 0x011f6238 is the MemoryManager; its allocator is bound at 0x00aa3e40.
@@ -1610,20 +1653,23 @@ struct FUN_00c47660
     }
     static void operator delete(void* p);
 };
-struct C4F460_Node : FUN_00a5ecb0
+// pdb: class BSPortalSharedNode, size 0xf0 (here 0xc4), bases: NiNode, 3 members
+struct BSPortalSharedNode : FUN_00a5ecb0 // src: EXE 0x010c21fc (vtable; old: C4F460_Node)
 {
     FUN_00c47660* m_pChildAtom;
     FUN_00c3a220 m_kMemberDescriptor;
     int m_C0;
-    C4F460_Node(int value);
-    virtual ~C4F460_Node();
+    BSPortalSharedNode(int apPortal);
+    virtual ~BSPortalSharedNode();
 };
 // @fnv 0x00c4f460
-C4F460_Node::C4F460_Node(int value) : FUN_00a5ecb0(0)
+// pdb: BSPortalSharedNode::BSPortalSharedNode | BSPortal.obj | retail, call graph, high
+// pdb params: apPortal
+BSPortalSharedNode::BSPortalSharedNode(int apPortal) : FUN_00a5ecb0(0)
 {
     m_pChildAtom = new FUN_00c47660;
     SetBit(true, 0x800);
-    m_C0 = value;
+    m_C0 = apPortal;
 }
 
 namespace fnv_00c4f550 {
@@ -1669,6 +1715,7 @@ class Owner_c4f550 : public FUN_00a5e930
 };
 
 // @fnv 0x00c4f550
+// pdb: BSPortalSharedNode::~BSPortalSharedNode | BSPortal.obj | debug, call graph, medium
 Owner_c4f550::~Owner_c4f550()
 {
     delete m_pkOwned;
@@ -1842,25 +1889,28 @@ struct OBBox
     float fExtentY;
     float fExtentZ;
 
-    void BSMultiBoundAABB_GetVertices(OBPoint* apCorners);
+    void BSMultiBoundAABB_GetVertices(OBPoint* apPoints);
 };
 
 // @fnv 0x00c39270
 // src: XBOX_PDB 0x00c39270
-void OBBox::BSMultiBoundAABB_GetVertices(OBPoint* apCorners)
+// pdb: BSMultiBoundAABB::GetVertices | BSMultiBoundAABB.obj | debug, upstream name already matches, high
+// pdb params: apPoints
+// pdb locals: kY, kZ, kX
+void OBBox::BSMultiBoundAABB_GetVertices(OBPoint* apPoints)
 {
     OBPoint kX = g_kOBUnitX * fExtentX;
     OBPoint kY = g_kOBUnitY * fExtentY;
     OBPoint kZ = g_kOBUnitZ * fExtentZ;
 
-    apCorners[0] = kTargetCenter + kX + kY + kZ;
-    apCorners[1] = kTargetCenter + kX + kY - kZ;
-    apCorners[2] = kTargetCenter + kX - kY + kZ;
-    apCorners[3] = kTargetCenter + kX - kY - kZ;
-    apCorners[4] = kTargetCenter - kX + kY + kZ;
-    apCorners[5] = kTargetCenter - kX + kY - kZ;
-    apCorners[6] = kTargetCenter - kX - kY + kZ;
-    apCorners[7] = kTargetCenter - kX - kY - kZ;
+    apPoints[0] = kTargetCenter + kX + kY + kZ;
+    apPoints[1] = kTargetCenter + kX + kY - kZ;
+    apPoints[2] = kTargetCenter + kX - kY + kZ;
+    apPoints[3] = kTargetCenter + kX - kY - kZ;
+    apPoints[4] = kTargetCenter - kX + kY + kZ;
+    apPoints[5] = kTargetCenter - kX + kY - kZ;
+    apPoints[6] = kTargetCenter - kX - kY + kZ;
+    apPoints[7] = kTargetCenter - kX - kY - kZ;
 }
 
 namespace FrustumBoxTest {
@@ -1893,7 +1943,7 @@ struct OrientedBox
     FloatMatrix3 rotation;
 
 // src: COMMUNITY 0x00c37a00
-    void BSMultiBoundOBB_GetVertices(PodPoint3* vertices)
+    void BSMultiBoundOBB_GetVertices(PodPoint3* apPoints)
     {
         PodPoint3 axisX = PodPoint3::ZERO;
         PodPoint3 axisY = PodPoint3::ZERO;
@@ -1906,14 +1956,14 @@ struct OrientedBox
         axisZ.y = rotation.entries[1][2];
         axisZ.z = rotation.entries[2][2];
         axisZ.ScaleComponents(extents.z);
-        vertices[0] = center + axisX + axisY + axisZ;
-        vertices[1] = (center + axisX + axisY).SubtractIntoVector(axisZ);
-        vertices[2] = (center + axisX).SubtractIntoVector(axisY) + axisZ;
-        vertices[3] = (center + axisX).SubtractIntoVector(axisY).SubtractIntoVector(axisZ);
-        vertices[4] = center.SubtractIntoVector(axisX) + axisY + axisZ;
-        vertices[5] = (center.SubtractIntoVector(axisX) + axisY).SubtractIntoVector(axisZ);
-        vertices[6] = center.SubtractIntoVector(axisX).SubtractIntoVector(axisY) + axisZ;
-        vertices[7] = center.SubtractIntoVector(axisX).SubtractIntoVector(axisY).SubtractIntoVector(axisZ);
+        apPoints[0] = center + axisX + axisY + axisZ;
+        apPoints[1] = (center + axisX + axisY).SubtractIntoVector(axisZ);
+        apPoints[2] = (center + axisX).SubtractIntoVector(axisY) + axisZ;
+        apPoints[3] = (center + axisX).SubtractIntoVector(axisY).SubtractIntoVector(axisZ);
+        apPoints[4] = center.SubtractIntoVector(axisX) + axisY + axisZ;
+        apPoints[5] = (center.SubtractIntoVector(axisX) + axisY).SubtractIntoVector(axisZ);
+        apPoints[6] = center.SubtractIntoVector(axisX).SubtractIntoVector(axisY) + axisZ;
+        apPoints[7] = center.SubtractIntoVector(axisX).SubtractIntoVector(axisY).SubtractIntoVector(axisZ);
     }
 
     bool BSMultiBoundOBB_WithinFrustum(NiFrustumPlanes*);
@@ -1921,7 +1971,10 @@ struct OrientedBox
 
 // @fnv 0x00c36f20
 // src: XBOX_PDB 0x00c36f20
-bool OrientedBox::BSMultiBoundOBB_WithinFrustum(NiFrustumPlanes* frustum)
+// pdb: BSMultiBoundOBB::WithinFrustum | BSMultiBoundOBB.obj | retail, upstream name already matches, high
+// pdb params: aPlanes
+// pdb locals: kboxpoints, bzeroheight, i, ballneg, j
+bool OrientedBox::BSMultiBoundOBB_WithinFrustum(NiFrustumPlanes* aPlanes)
 {
     PodPoint3 vertices[8];
     InitializePoint3Array(vertices, 8);
@@ -1929,14 +1982,14 @@ bool OrientedBox::BSMultiBoundOBB_WithinFrustum(NiFrustumPlanes* frustum)
     BSMultiBoundOBB_GetVertices(vertices);
     for (int plane = 0; plane < 6; ++plane)
     {
-        if ((bool)(frustum->m_uiActivePlaneMask & (1 << plane)))
+        if ((bool)(aPlanes->m_uiActivePlanes & (1 << plane)))
         {
             bool outside = true;
             for (int vertex = 0; vertex < 8; ++vertex)
             {
                 if (!flat || vertex % 2)
                 {
-                    if (reinterpret_cast<const Plane&>(frustum->m_akPlanes[plane]).ClassifyPoint(vertices[vertex]) != 2)
+                    if (reinterpret_cast<const Plane&>(aPlanes->m_akCullingPlanes[plane]).ClassifyPoint(vertices[vertex]) != 2)
                         outside = false;
                 }
             }

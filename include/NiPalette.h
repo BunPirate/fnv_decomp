@@ -3,6 +3,7 @@
 #include "NiObject.h"
 #include <stddef.h>
 
+// pdb: class NiPalette, size 0x24, bases: NiObject, 7 members
 class NiPalette : public NiObject
 {
 public:
@@ -23,11 +24,11 @@ public:
     void DecRefCount();
     void* DestroyPalette(unsigned int);
 
-    unsigned int unk08;
-    unsigned int unk0C;
-    unsigned int unk10;
-    unsigned int unk14;
-    unsigned int unk18;
-    unsigned int unk1C;
-    unsigned int unk20;
+    unsigned int m_bAlpha; // src: XBOX_RETAIL_PDB +0x8 (old: unk08)
+    unsigned int m_uiEntries; // src: XBOX_RETAIL_PDB +0xc (old: unk0C)
+    unsigned int m_uiRevID; // src: XBOX_RETAIL_PDB +0x10 (old: unk10)
+    unsigned int m_pkPalette; // src: XBOX_RETAIL_PDB +0x14 (old: unk14)
+    unsigned int m_pkRendererData; // src: XBOX_RETAIL_PDB +0x18 (old: unk18)
+    unsigned int m_pkPrev; // src: XBOX_RETAIL_PDB +0x1c (old: unk1C)
+    unsigned int m_pkNext; // src: XBOX_RETAIL_PDB +0x20 (old: unk20)
 };

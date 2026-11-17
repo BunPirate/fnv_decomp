@@ -25,6 +25,8 @@ void __cdecl VATSMenu_Create();
 
 // @fnv 0x00705640
 // src: COMMUNITY 0x00705640
+// pdb: Interface::CreateVATSMenu | Interface.obj | retail, upstream name already matches, high
+// pdb locals: pmenu, ptile
 void __cdecl Interface_CreateVATSMenu()
 {
     if (InterfaceManager_GetSingleton() && ((InterfaceManagerKey*)InterfaceManager_GetSingleton())->TESTextureList_GetTextureCount())
@@ -46,6 +48,8 @@ class Iface2
 void SleepWaitMenu_Close();
 // @fnv 0x007055c0
 // src: GUESS 0x007055c0 (confidence: low)
+// pdb: Interface::CloseSleepMenu | Interface.obj | debug, object-file gap fill, medium
+// pdb locals: pmenu, ptile
 void Object_UpdateFields_007055c0()
 {
     if (InterfaceManager_GetSingleton() && ((Iface2*)InterfaceManager_GetSingleton())->TESTextureList_GetTextureCount())

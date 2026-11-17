@@ -8,6 +8,7 @@
 
 class Owner;
 
+// pdb: class NonActorMagicTarget, size 0x28, bases: BSExtraData, MagicTarget, 2 members
 class NonActorMagicTarget : public BSExtraData, public MagicTarget
 {
 public:

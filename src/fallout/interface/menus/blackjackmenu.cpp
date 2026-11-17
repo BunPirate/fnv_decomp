@@ -12,7 +12,7 @@ public:
     bool IsRenderTargetId(unsigned int value);
     static void InitializeMultiBounds();
     static void SetRenderCamera(NiCamera* camera, BSShaderAccumulator* accumulator, bool unused);
-    static void SetRenderCamera(AnimIdle* camera, AnimIdle* accumulator, bool unused);
+    static void SetRenderCamera(AnimIdle* apCamera, AnimIdle* apAccumulator, bool abUseSPU);
     static void SetRenderCamera(void* camera, unsigned int accumulator, bool unused);
     static void SetAlphaOnNode(NiNode* node, float alpha);
 };
@@ -104,6 +104,7 @@ struct Helper731800
 void _Deallocate(void*);
 // Calls FUN_00731800 on this, then deallocates this if bit 0 of flags is set, and returns this.
 // @fnv 0x007317d0
+// pdb: BlackJackMenu::`scalar deleting destructor' | BlackJackMenu.obj | retail, vtable slot, high
 void* __thiscall FUN_007317d0_shell::DestroyIfFlagged(unsigned int flags)
 {
     ((Helper731800*)this)->FUN_00731800();
@@ -125,6 +126,7 @@ struct DAT_011d9050_S
 extern DAT_011d9050_S* DAT_011d9050;
 // @fnv 0x00731d30
 // src: XBOX_PDB 0x00731d30
+// pdb: BlackJackMenu::Close | BlackJackMenu.obj | retail, upstream name already matches, high
 void BlackJackMenu_Close()
 {
     if (DAT_011d9050 != 0)
@@ -148,6 +150,8 @@ struct FUN_007324f0_shell
 };
 // Copies the four fields of s into this object and returns a reference to this object.
 // @fnv 0x007324f0
+// pdb: BlackJackMenu::CardData::operator= | BlackJackMenu.obj | debug, call graph, high
+// pdb params: __that
 FUN_007324f0_shell& FUN_007324f0_shell::operator=(const FUN_007324f0_shell& aSource)
 {
     m0 = aSource.m0;
@@ -222,11 +226,14 @@ struct FUN_00739ad0_Holder
 {
     char _pad[0xDB4];
     NiAVObject* m_pTreeNode;
-    void __thiscall HideArrowNodes();
+    void __thiscall BlackJackMenu_ClearDeckHighlight();
 };
 // Looks up the nodes "Hand1_Arrow:0" and "Hand1_Arrow:0@#2" by name and culls both.
 // @fnv 0x00739ad0
-void __thiscall FUN_00739ad0_Holder::HideArrowNodes()
+// src: XBOX_DEBUG_PDB 0x00739ad0
+// pdb: BlackJackMenu::ClearDeckHighlight | BlackJackMenu.obj | debug, call graph (shared callers), high
+// pdb locals: pavobj
+void __thiscall FUN_00739ad0_Holder::BlackJackMenu_ClearDeckHighlight()
 {
     NiAVObject* pavobj;
     pavobj = SceneObjectLookup::GetObjectByName(m_pTreeNode, "Hand1_Arrow:0");
@@ -313,26 +320,29 @@ void __cdecl BlackJackMenu_DrawScene()
 
 struct FUN_00739650_shell : FUN_00734d50_holder
 {
-    bool BlackJackMenu_CanDoubleDown(bool bFlag);
+    bool BlackJackMenu_CanDoubleDown(bool isSplitHand);
 };
 
 // Compares a field at offset 0x74 against sums of fields at 0x6c and 0x70, then calls SetFlag with 0x200 or 0x40 depending on bFlag and returns the result.
 // @fnv 0x00739650
 // src: XBOX_PDB 0x00739650
-bool FUN_00739650_shell::BlackJackMenu_CanDoubleDown(bool bFlag)
+// pdb: BlackJackMenu::CanDoubleDown | BlackJackMenu.obj | debug, upstream name already matches, high
+// pdb params: isSplitHand
+// pdb locals: bCanDouble
+bool FUN_00739650_shell::BlackJackMenu_CanDoubleDown(bool isSplitHand)
 {
     bool bResult = true;
-    if (bFlag)
+    if (isSplitHand)
     {
         if (*(int*)((char*)this + 0x74) < *(int*)((char*)this + 0x6c) + *(int*)((char*)this + 0x70) * 2)
             bResult = false;
     }
-    if (!bFlag)
+    if (!isSplitHand)
     {
         if (*(int*)((char*)this + 0x74) < *(int*)((char*)this + 0x70) + *(int*)((char*)this + 0x6c) * 2)
             bResult = false;
     }
-    if (bFlag)
+    if (isSplitHand)
         SetFlag(0x200, bResult);
     else
         SetFlag(0x40, bResult);
@@ -370,6 +380,8 @@ struct FUN_00738270_shell
 
 // Builds card, card-back and shadow node names for indices 1-7 on three objects, un-culls each found node, then updates g_011d9098.
 // @fnv 0x00738270
+// pdb: BlackJackMenu::ResetCardAlpha | BlackJackMenu.obj | debug, object-file run extension, low
+// pdb locals: cardBackRefName, pavobj, cardRefName, shadowRefName, i
 void FUN_00738270_shell::UncullCardObjects()
 {
     char cardBackRefName[30];
@@ -445,7 +457,10 @@ struct FUN_00738c30_shell
 };
 
 // @fnv 0x00738cc0
-void __cdecl UpdateBetTiles(bool bBetTiles)
+// src: XBOX_RETAIL_PDB 0x00738cc0
+// pdb: BlackJackMenu::SetBetTiles | BlackJackMenu.obj | retail, call graph, high
+// pdb params: bBetTiles
+void __cdecl BlackJackMenu_SetBetTiles(bool bBetTiles)
 {
     if (!bBetTiles)
     {
@@ -541,12 +556,14 @@ struct FUN_007393f0_shell
 
     int DrawCard(int a1, int a2, int a3);
     int DrawCard(G2* hand, int a1, int a2);
-    void BlackJackMenu_GetHandValue(G2* hand);
+    void BlackJackMenu_GetHandValue(G2* pHand);
 
     void __thiscall DealInitialCards();
 };
 
 // @fnv 0x007393f0
+// pdb: BlackJackMenu::DealHand | BlackJackMenu.obj | debug, object-file gap fill, medium
+// pdb locals: cardindex
 void __thiscall FUN_007393f0_shell::DealInitialCards()
 {
     int cardindex;
@@ -595,6 +612,8 @@ struct FUN_007395a0_shell
 
 // @fnv 0x007395a0
 // src: XBOX_PDB 0x007395a0
+// pdb: BlackJackMenu::CanSplitHand | BlackJackMenu.obj | debug, upstream name already matches, high
+// pdb locals: numCards, clist, cd, bCanSplit
 bool __thiscall FUN_007395a0_shell::BlackJackMenu_CanSplitHand()
 {
     int numCards;
@@ -647,7 +666,7 @@ struct FUN_0073ab40_shell
     unsigned char _pad[0x3C];
     Tile* m_tile;
 
-    void __thiscall UpdateTileText();
+    void __thiscall BlackJackMenu_UpdateEarningsString();
 };
 
 extern const StartMenu g_011d3e08;
@@ -663,7 +682,10 @@ int __cdecl _sprintf_s(char*, unsigned int, char const*, ...);
 int __cdecl _BSStringLength(char const*);
 
 // @fnv 0x0073ab40
-void FUN_0073ab40_shell::UpdateTileText()
+// src: XBOX_RETAIL_PDB 0x0073ab40
+// pdb: BlackJackMenu::UpdateEarningsString | BlackJackMenu.obj | retail, call graph, high
+// pdb locals: tstring, ilen, i
+void FUN_0073ab40_shell::BlackJackMenu_UpdateEarningsString()
 {
     char tstring[260];
     int ilen;
@@ -779,6 +801,7 @@ class FUN_007315e0 : public SetBase
 };
 
 // @fnv 0x007315e0
+// pdb: BlackJackMenu::BlackJackMenu | BlackJackMenu.obj | debug, call graph, high
 FUN_007315e0::FUN_007315e0()
 {
     DAT_011d9044 = Tile_AddUserTrait("_Value", -1);
@@ -815,6 +838,7 @@ struct FUN_00731710_cls
 
 // Initializes m_00 to 0xe and m_04 to 5, and constructs m_08 and m_0c with 0.
 // @fnv 0x00731710
+// pdb: BlackJackMenu::CardData::CardData | BlackJackMenu.obj | debug, call graph (shared callers), medium
 FUN_00731710_cls::FUN_00731710_cls() : m_08(0), m_0c(0)
 {
     m_00 = 0xe;
@@ -1016,6 +1040,8 @@ struct FUN_00731800 : MenuBase
 };
 
 // @fnv 0x00731800
+// pdb: BlackJackMenu::~BlackJackMenu | BlackJackMenu.obj | debug, object-file run extension, low
+// pdb locals: i, shadowname, tempstr, j
 FUN_00731800::~FUN_00731800()
 {
     g_thePlayer->SetLastAntiCheatTime();
@@ -1131,7 +1157,7 @@ struct NiPtrC731
 };
 struct TES731
 {
-    void __thiscall CreateTextureImage(const char* aPath, NiPointer<NiSourceTexture>& aTex, bool a4, bool a5);
+    void __thiscall CreateTextureImage(const char* apfilename, NiPointer<NiSourceTexture>& aspSourceTexture, bool abNoFileOK, bool a5);
 };
 extern TES731* g_TES;
 struct CardT731
@@ -1164,12 +1190,15 @@ struct This731
     char _pad_db8[0xc];
     NiNode* arrDC4[6];
     NiNode* arrDDC[6];
-    bool __thiscall LoadCardDeckResources();
+    bool __thiscall BlackJackMenu_InitCasinoData();
 };
 
 // Loads deck model and card textures from DAT_011d9058, fills f60/f64/m_d9c/b_dac/m_db4/arrDC4/arrDDC and the cards array, and sets m_da0, arr84 and b80.
 // @fnv 0x00731d70
-bool __thiscall This731::LoadCardDeckResources()
+// src: XBOX_RETAIL_PDB 0x00731d70
+// pdb: BlackJackMenu::InitCasinoData | BlackJackMenu.obj | retail, unique string literal, high
+// pdb locals: suit, card, deckname, strtmp, cardpath, cd, strtemp2, pfilepath, i, shadowname, tempstr, j, decknum, n2, cardback, sindx, n1
+bool __thiscall This731::BlackJackMenu_InitCasinoData()
 {
     if (DAT_011d9058 != 0)
     {
@@ -1336,6 +1365,8 @@ struct FUN_007399f0_cls
 
 // @fnv 0x007399f0
 // src: XBOX_PDB 0x007399f0
+// pdb: BlackJackMenu::HighlightSelectedDeck | BlackJackMenu.obj | retail, upstream name already matches, high
+// pdb locals: pavobj, update1
 void __thiscall FUN_007399f0_cls::BlackJackMenu_HighlightSelectedDeck()
 {
     Local12_cls tmp;
@@ -1372,11 +1403,14 @@ struct BlackJackChipsX
     int iBet;
     char _pad70[0xdc4 - 0x70];
     NiAVObject* apChips[12];
-    void UpdateChipPositions();
+    void BlackJackMenu_SetBetChips();
 };
 // Positions the twelve chip nodes along Z according to the bet amount, then updates the table root node with a zero-time update.
 // @fnv 0x00739b30
-void BlackJackChipsX::UpdateChipPositions()
+// src: XBOX_RETAIL_PDB 0x00739b30
+// pdb: BlackJackMenu::SetBetChips | BlackJackMenu.obj | retail, call graph (shared callers), high
+// pdb locals: update1, numSChips
+void BlackJackChipsX::BlackJackMenu_SetBetChips()
 {
     if (iBet < 7)
     {
@@ -1599,6 +1633,7 @@ struct FUN_007c06f0 : Menu
     virtual ~FUN_007c06f0();
 };
 // @fnv 0x007c06f0
+// pdb: SlotMachineMenu::SlotMachineMenu | SlotMachineMenu.obj | debug, call graph, medium
 FUN_007c06f0::FUN_007c06f0()
 {
     g_traitValue = Tile_AddUserTrait("_Value", -1);
@@ -2624,14 +2659,17 @@ struct Menu90
     void* anime64;
     void* anime68;
     void* anime6c;
-    void InitBlackjackScene();
-    void UpdateChipPositions();
+    void BlackJackMenu_Prepare3DElements();
+    void BlackJackMenu_SetBetChips();
     void BlackJackMenu_SetSideHandVisibility(int);
-    void HideArrowNodes();
+    void BlackJackMenu_ClearDeckHighlight();
     NiAVObject* BlackJackMenu_SetupCamera();
 };
 // @fnv 0x00732540
-void Menu90::InitBlackjackScene()
+// src: XBOX_RETAIL_PDB 0x00732540
+// pdb: BlackJackMenu::Prepare3DElements | BlackJackMenu.obj | retail, unique string literal, high
+// pdb locals: pTableNode, pMachineAnimController, fradius, pavobj, pCardAnimController, pCardAnimController1, UpdateData1, pCardAnimController2, UpdateData2, pFaceShader, i
+void Menu90::BlackJackMenu_Prepare3DElements()
 {
     rootdb8 = DAT_011c3b3c->ModelLoader_LoadFile("Meshes\\Terminals\\NV_BlackJack\\NV_Blackjack-Hand1.NIF", 0, 1, 0, 0, 0);
     rootdbc = DAT_011c3b3c->ModelLoader_LoadFile("Meshes\\Terminals\\NV_BlackJack\\NV_Blackjack-Hand2.NIF", 0, 1, 0, 0, 0);
@@ -2648,9 +2686,9 @@ void Menu90::InitBlackjackScene()
         ((Pointer90<NiNode>*)&DAT_011d9098)->Modelloader_GetReferencedThis()->AttachChildInAvailableSlot(static_cast<NiAVObject*>(cards[i]), true);
         ((Pointer90<NiNode>*)&DAT_011d9098)->Modelloader_GetReferencedThis()->AttachChildInAvailableSlot(static_cast<NiAVObject*>(backs[i]), true);
     }
-    UpdateChipPositions();
+    BlackJackMenu_SetBetChips();
     BlackJackMenu_SetSideHandVisibility(0);
-    HideArrowNodes();
+    BlackJackMenu_ClearDeckHighlight();
     const NiUpdateData update110(0.0f, false, false);
     ((Pointer90<NiNode>*)&DAT_011d9098)->Modelloader_GetReferencedThis()->Update(update110);
     Controller90* controller158 = reinterpret_cast<Controller90*>(rootdb4->NiObjectNET_GetController(reinterpret_cast<NiRTTI*>(&DAT_011f36ac)));
@@ -2926,6 +2964,9 @@ int BSstrlen(const char*);
 // Validates the player's casino entry against limits and required amount, then opens and initializes the casino bet menu, returning its tile or null on failure.
 // @fnv 0x00733630
 // src: COMMUNITY 0x00733630
+// pdb: BlackJackMenu::Create | BlackJackMenu.obj | retail, upstream name already matches, high
+// pdb params: apCasino, aiMinBet, aiMaxBet, aiMinWinnings, abDebugMode
+// pdb locals: cl, pin, ptile, pold_menu_tile, cd, strMessage, strtemp
 Tile* BlackJackMenu_Create(SetMgr* casino, int minimum, int maximum, int required)
 {
     Menu* oldMenu = Tile_GetMenuByClass(0x439);
@@ -3025,13 +3066,13 @@ Tile* BlackJackMenu_Create(SetMgr* casino, int minimum, int maximum, int require
         ((BlackJackMenu*)DAT_011d9050)->message->SetTraitFloat((int)DAT_011d9048, 1.0f);
         ((BlackJackMenu*)DAT_011d9050)->message->FUN_00700320((int)DAT_011d9048, DAT_011d9054->amount);
         Tile_GetTileByName(((BlackJackMenu*)DAT_011d9050)->message, DAT_01070ba8)->FUN_00700320(0xfa3, 0);
-        ((BlackJackMenu*)DAT_011d9050)->UpdateTileText();
+        ((BlackJackMenu*)DAT_011d9050)->UpdateEarningsString();
         ((BlackJackMenu*)DAT_011d9050)->tile40->SetTraitFloat(0xfc4, 1.0f);
         ((BlackJackMenu*)DAT_011d9050)->tile40->Tile_Set_00a01350(0xfc4, DAT_011d4c84.FUN_00403df0(), true);
-        if (!((BlackJackMenu*)DAT_011d9050)->LoadCardDeckResources())
+        if (!((BlackJackMenu*)DAT_011d9050)->InitCasinoData())
             return 0;
-        UpdateBetTiles(true);
-        ((BlackJackMenu*)DAT_011d9050)->InitBlackjackScene();
+        BlackJackMenu_SetBetTiles(true);
+        ((BlackJackMenu*)DAT_011d9050)->Prepare3DElements();
         ((BlackJackMenu*)DAT_011d9050)->FUN_00a1dc20(0);
         ((BlackJackMenu*)DAT_011d9050)->tile40->FUN_00700320(0xfa3, 0);
         ((BlackJackMenu*)DAT_011d9050)->ClearField();
@@ -3044,6 +3085,8 @@ Tile* BlackJackMenu_Create(SetMgr* casino, int minimum, int maximum, int require
 
 NiAVObject* __cdecl BSUtilities_GetObjectByName(NiAVObject*, const char*);
 // @fnv 0x00737e50
+// pdb: BlackJackMenu::UpdateCardAlpha | BlackJackMenu.obj | debug, object-file run extension, low
+// pdb locals: cardBackRefName, pavobj, cardRefName, shadowRefName, i
 void BlackJackMenu::UpdateCulledNodes()
 {
     char p[30];
@@ -3129,14 +3172,17 @@ struct BlackjackButtonMenu
     int state;
     bool HasFlag(unsigned int);
     void BlackJackMenu_SetTileTextAlpha(int, float);
-    void UpdateButtonState(int);
+    void BlackJackMenu_UpdateTileAlpha(int);
 };
 // @fnv 0x00738560
-void BlackjackButtonMenu::UpdateButtonState(int button)
+// src: XBOX_DEBUG_PDB 0x00738560
+// pdb: BlackJackMenu::UpdateTileAlpha | BlackJackMenu.obj | debug, call graph, high
+// pdb params: TI
+void BlackjackButtonMenu::BlackJackMenu_UpdateTileAlpha(int TI)
 {
     if (state == 10)
         return;
-    switch (button)
+    switch (TI)
     {
     case 10:
         if (HasFlag(0x10))
@@ -3286,6 +3332,9 @@ struct BJDeck
     int DrawCard(void*, bool, bool);
 };
 // @fnv 0x00739090
+// pdb: BlackJackMenu::DealCard | BlackJackMenu.obj | debug, object-file gap fill, medium
+// pdb params: pHand, bApplyLuck, bIsDealer
+// pdb locals: tCard, card, cardindex, bestHighIndex, bestLowTotal, pointTotal, luckPool, bestLowIndex, num_lc, bestHighTotal, i, tCardValue, tPT
 int BJDeck::DrawCard(void* hand, bool useSkill, bool split)
 {
     BJCard last;
@@ -3390,13 +3439,16 @@ struct Table738c
 // Iterates the reference list of entry iIndex in table DAT_011d9050 and calls FUN_00a012d0(0xfa9, fValue, true) on each element.
 // @fnv 0x00738c30
 // src: XBOX_PDB 0x00738c30
-void FUN_00738c30_shell::BlackJackMenu_SetTileTextAlpha(int iIndex, float fValue)
+// pdb: BlackJackMenu::SetTileTextAlpha | BlackJackMenu.obj | retail, upstream name already matches, high
+// pdb params: TI, alpha
+// pdb locals: iter, pTileList
+void FUN_00738c30_shell::BlackJackMenu_SetTileTextAlpha(int TI, float alpha)
 {
-    void* pos = (void*)(const char*)*(blackjack_reference_list::BSStringTView<char>*)&((Table738c*)DAT_011d9050)->m_apEntries[iIndex]->m_kList;
-    blackjack_reference_list::NiTPointerListView<TESObjectREFR*>* pkList = &((Table738c*)DAT_011d9050)->m_apEntries[iIndex]->m_kList;
+    void* pos = (void*)(const char*)*(blackjack_reference_list::BSStringTView<char>*)&((Table738c*)DAT_011d9050)->m_apEntries[TI]->m_kList;
+    blackjack_reference_list::NiTPointerListView<TESObjectREFR*>* pkList = &((Table738c*)DAT_011d9050)->m_apEntries[TI]->m_kList;
     while (pos && pkList && *pkList->NiTPointerListBase_NiTPointerAllocator_unsigned_int_Tile_GetHead())
     {
-        ((Tile*)pkList->AddEight(pos))->Tile_Set(0xfa9, fValue, true);
+        ((Tile*)pkList->AddEight(pos))->Tile_Set(0xfa9, alpha, true);
         pos = pkList->DereferenceIfNotNull(pos);
     }
 }
@@ -3416,41 +3468,44 @@ struct GlobalPtr
 
 struct BlackjackMenuShell
 {
-    void BlackJackMenu_SwapCardTextures(int a1, int a2, CardInfo* a3);
+    void BlackJackMenu_SwapCardTextures(int aiHandIndex, int aiCardIndex, CardInfo* cd);
 };
 
 // @fnv 0x007396e0
 // src: COMMUNITY 0x007396e0
-void BlackjackMenuShell::BlackJackMenu_SwapCardTextures(int a1, int aiIndex, CardInfo* apCardInfo)
+// pdb: BlackJackMenu::SwapCardTextures | BlackJackMenu.obj | retail, string-set bridge, high
+// pdb params: aiHandIndex, aiCardIndex, cd
+// pdb locals: cardBackRefName, pavobj, cardRefName, pFaceShader
+void BlackjackMenuShell::BlackJackMenu_SwapCardTextures(int aiHandIndex, int aiCardIndex, CardInfo* cd)
 {
     Property90* _prop;
     char aBuf1[30];
     NiAVObject* node2;
     char buf2[30];
 
-    a1++;
-    if (aiIndex > 7 || aiIndex < 1 || !apCardInfo)
+    aiHandIndex++;
+    if (aiCardIndex > 7 || aiCardIndex < 1 || !cd)
         return;
 
-    switch (a1)
+    switch (aiHandIndex)
     {
     case 1:
-        _sprintf_s(aBuf1, 30, str_01070e34, aiIndex, aiIndex - 1);
-        _sprintf_s(buf2, 30, str_01070e20, aiIndex);
+        _sprintf_s(aBuf1, 30, str_01070e34, aiCardIndex, aiCardIndex - 1);
+        _sprintf_s(buf2, 30, str_01070e20, aiCardIndex);
         break;
     case 2:
-        _sprintf_s(aBuf1, 30, str_01070dc4, aiIndex, aiIndex - 1);
-        _sprintf_s(buf2, 30, str_01070db0, aiIndex);
+        _sprintf_s(aBuf1, 30, str_01070dc4, aiCardIndex, aiCardIndex - 1);
+        _sprintf_s(buf2, 30, str_01070db0, aiCardIndex);
         break;
     case 3:
-        _sprintf_s(aBuf1, 30, str_01070dfc, aiIndex);
-        _sprintf_s(buf2, 30, str_01070de8, aiIndex);
+        _sprintf_s(aBuf1, 30, str_01070dfc, aiCardIndex);
+        _sprintf_s(buf2, 30, str_01070de8, aiCardIndex);
         break;
     default:
         return;
     }
 
-    node2 = BSUtilities_GetObjectByName(((GlobalPtr*)&g_011d9098)->Modelloader_GetReferencedThis()->FUN_0043b4a0(a1), aBuf1);
+    node2 = BSUtilities_GetObjectByName(((GlobalPtr*)&g_011d9098)->Modelloader_GetReferencedThis()->FUN_0043b4a0(aiHandIndex), aBuf1);
     _prop = (!reinterpret_cast<Property90*>(node2->GetProperty(3))
                  ? 0
                  : (reinterpret_cast<Property90*>(node2->GetProperty(3))->FUN_00441110() >= 8 && reinterpret_cast<Property90*>(node2->GetProperty(3))->FUN_00441110() <= 12))
@@ -3458,10 +3513,10 @@ void BlackjackMenuShell::BlackJackMenu_SwapCardTextures(int a1, int aiIndex, Car
                 : 0;
     if (_prop)
     {
-        _prop->SetTexture(0, 0, apCardInfo->unk08.Modelloader_GetReferencedThis());
+        _prop->SetTexture(0, 0, cd->unk08.Modelloader_GetReferencedThis());
     }
 
-    node2 = BSUtilities_GetObjectByName(((GlobalPtr*)&g_011d9098)->Modelloader_GetReferencedThis()->FUN_0043b4a0(a1), buf2);
+    node2 = BSUtilities_GetObjectByName(((GlobalPtr*)&g_011d9098)->Modelloader_GetReferencedThis()->FUN_0043b4a0(aiHandIndex), buf2);
     _prop = (!reinterpret_cast<Property90*>(node2->GetProperty(3))
                  ? 0
                  : (reinterpret_cast<Property90*>(node2->GetProperty(3))->FUN_00441110() >= 8 && reinterpret_cast<Property90*>(node2->GetProperty(3))->FUN_00441110() <= 12))
@@ -3469,18 +3524,21 @@ void BlackjackMenuShell::BlackJackMenu_SwapCardTextures(int a1, int aiIndex, Car
                 : 0;
     if (_prop)
     {
-        _prop->SetTexture(0, 0, apCardInfo->unk0c.Modelloader_GetReferencedThis());
+        _prop->SetTexture(0, 0, cd->unk0c.Modelloader_GetReferencedThis());
     }
 }
 
 struct OwnQ
 {
-    int BlackJackMenu_GetHandValue(Node129* pList);
+    int BlackJackMenu_GetHandValue(Node129* pHand);
 };
 // Sums adjusted card values, counts entries with value 12, then subtracts 10 per such entry while total exceeds 21.
 // @fnv 0x00738ff0
 // src: XBOX_PDB 0x00738ff0
-int OwnQ::BlackJackMenu_GetHandValue(Node129* pList)
+// pdb: BlackJackMenu::GetHandValue | BlackJackMenu.obj | debug, upstream name already matches, high
+// pdb params: pHand
+// pdb locals: points, numOfAces, cd, tlist
+int OwnQ::BlackJackMenu_GetHandValue(Node129* pHand)
 {
     int iTotal;
     int iAces;
@@ -3488,7 +3546,7 @@ int OwnQ::BlackJackMenu_GetHandValue(Node129* pList)
     Node129* pIter_lcjr;
     iTotal = 0;
     iAces = 0;
-    pIter_lcjr = pList;
+    pIter_lcjr = pHand;
     while (pIter_lcjr && *pIter_lcjr->FUN_006815c0())
     {
         pCard_biq = (int*)*pIter_lcjr->FUN_006815c0();
@@ -3560,7 +3618,7 @@ struct InputMenu
     CardHand* hand;
     CardHand* split;
     void HandleAction(int, void*);
-    void UpdateButtonState(int);
+    void BlackJackMenu_UpdateTileAlpha(int);
     bool HasFlag(int);
     void SetFlag(int, bool);
     int DrawCard(void*, bool, bool);
@@ -3569,17 +3627,20 @@ struct InputMenu
     void BlackJackMenu_SetTileTextAlpha(int, float);
     void DealInitialCards();
     bool BlackJackMenu_CanDoubleDown(bool);
-    void UpdateChipPositions();
+    void BlackJackMenu_SetBetChips();
     void BlackJackMenu_SwapCardTextures(int, int, CardInfo*);
     void BlackJackMenu_HighlightSelectedDeck();
 };
 // Dispatches a UI action (hit, double, split, raise, lower, max, stand) to the appropriate blackjack state transition and card logic.
 // @fnv 0x00733ff0
-void InputMenu::HandleAction(int action, void* tile)
+// pdb: BlackJackMenu::DoClick | BlackJackMenu.obj | retail, unique string literal, high
+// pdb params: aiID, apTarget
+// pdb locals: cardindex, hValue, cl, cardCount, previousBet, hValue1, clist, cd, hValue2
+void InputMenu::HandleAction(int aiID, void* apTarget)
 {
     if (state == 10 || state == 4)
     {
-        switch (action)
+        switch (aiID)
         {
         case 8:
             if (state == 10)
@@ -3587,7 +3648,7 @@ void InputMenu::HandleAction(int action, void* tile)
             else if (state == 4)
             {
                 state = 8;
-                UpdateButtonState(10);
+                BlackJackMenu_UpdateTileAlpha(10);
             }
             break;
         case 3:
@@ -3597,7 +3658,7 @@ void InputMenu::HandleAction(int action, void* tile)
                 int hitIndex7 = 0;
                 state = 2;
                 SetFlag(1, true);
-                UpdateButtonState(7);
+                BlackJackMenu_UpdateTileAlpha(7);
                 SetFlag(0x100, false);
                 SetFlag(0x40, false);
                 SetFlag(4, false);
@@ -3651,7 +3712,7 @@ void InputMenu::HandleAction(int action, void* tile)
                         text->Set(0xfc4, DAT_01070cc0, true);
                     }
                 }
-                UpdateButtonState(10);
+                BlackJackMenu_UpdateTileAlpha(10);
             }
             break;
         case 4:
@@ -3694,7 +3755,7 @@ void InputMenu::HandleAction(int action, void* tile)
                         result = 4;
                     SetFlag(0x40, false);
                 }
-                UpdateButtonState(10);
+                BlackJackMenu_UpdateTileAlpha(10);
             }
             break;
         case 5:
@@ -3719,7 +3780,7 @@ void InputMenu::HandleAction(int action, void* tile)
                     bet = DAT_0119fe3c;
                 if (oldIncreaseTmp < bet)
                     BSAudio_QInstance()->BSAudio_GetSoundHandleByEditorName(DAT_01070ca4, 0x121).Play(false);
-                UpdateChipPositions();
+                BlackJackMenu_SetBetChips();
                 ((BlackJackMenu*)DAT_011d9050)->tile34->SetTraitFloat((int)DAT_011d9048, 1.0f);
                 ((BlackJackMenu*)DAT_011d9050)->tile34->FUN_00700320((int)DAT_011d9048, bet);
             }
@@ -3761,7 +3822,7 @@ void InputMenu::HandleAction(int action, void* tile)
                     SetFlag(8, true);
                     SetFlag(4, false);
                     BlackJackMenu_HighlightSelectedDeck();
-                    UpdateButtonState(10);
+                    BlackJackMenu_UpdateTileAlpha(10);
                     ((BlackJackMenu*)DAT_011d9050)->tile34->SetTraitFloat((int)DAT_011d9048, 1.0f);
                     ((BlackJackMenu*)DAT_011d9050)->tile34->FUN_00700320((int)DAT_011d9048, splitBet + bet);
                 }
@@ -3787,7 +3848,7 @@ void InputMenu::HandleAction(int action, void* tile)
                     bet = DAT_0119fe40;
                 if (kOldDecrease > bet)
                     BSAudio_QInstance()->BSAudio_GetSoundHandleByEditorName(DAT_01070c88, 0x121).Play(false);
-                UpdateChipPositions();
+                BlackJackMenu_SetBetChips();
                 ((BlackJackMenu*)DAT_011d9050)->tile34->SetTraitFloat((int)DAT_011d9048, 1.0f);
                 ((BlackJackMenu*)DAT_011d9050)->tile34->FUN_00700320((int)DAT_011d9048, bet);
             }
@@ -3801,7 +3862,7 @@ void InputMenu::HandleAction(int action, void* tile)
                         SetFlag(0x10, true);
                     BlackJackMenu_HighlightSelectedDeck();
                     text->Set(0xfc4, "", true);
-                    UpdateButtonState(10);
+                    BlackJackMenu_UpdateTileAlpha(10);
                 }
             }
             break;
@@ -3811,7 +3872,7 @@ void InputMenu::HandleAction(int action, void* tile)
                 bet = DAT_0119fe3c;
                 if (bet > funds)
                     bet = funds;
-                UpdateChipPositions();
+                BlackJackMenu_SetBetChips();
                 ((BlackJackMenu*)DAT_011d9050)->tile34->SetTraitFloat((int)DAT_011d9048, 1.0f);
                 ((BlackJackMenu*)DAT_011d9050)->tile34->FUN_00700320((int)DAT_011d9048, bet);
             }
@@ -3822,7 +3883,7 @@ void InputMenu::HandleAction(int action, void* tile)
                     SetFlag(0x400, true);
                     result = 6;
                     state = 8;
-                    UpdateButtonState(10);
+                    BlackJackMenu_UpdateTileAlpha(10);
                 }
             }
             break;

@@ -19,7 +19,7 @@ extern "C" hkMemoryRouter& __cdecl hkMemoryRouter_getInstance() throw();
 inline void* hkReferencedObject::operator new(std::size_t nbytes)
 {
     hkReferencedObject* b = static_cast<hkReferencedObject*>(hkMemoryRouter_getInstance().heap().blockAlloc(nbytes));
-    b->m_usMemSizeAndFlags = (unsigned short)nbytes;
+    b->m_memSizeAndFlags = (unsigned short)nbytes;
     return b;
 }
 
@@ -32,17 +32,19 @@ static inline void replaceInstance(hkReferencedObjectLock* p)
 
 // @fnv 0x00c90420
 // src: HAVOK_LIB 0x00c90420
-void __cdecl hkReferencedObject_lockInit(int value)
+// pdb: hkReferencedObject::lockInit | hkReferencedObject.obj | retail, upstream name already matches, high
+// pdb params: lockMode
+void __cdecl hkReferencedObject_lockInit(int lockMode)
 {
     if (!hkReferencedObjectLock::s_instance)
     {
         hkReferencedObjectLock* p = new hkReferencedObjectLock();
-        p->m_multiThreaded = value;
+        p->m_multiThreaded = lockMode;
         replaceInstance(p);
     }
     else
     {
-        hkReferencedObjectLock::s_instance->m_multiThreaded = value;
+        hkReferencedObjectLock::s_instance->m_multiThreaded = lockMode;
     }
 }
 #include <xmmintrin.h>
@@ -70,6 +72,7 @@ struct FUN_00c90e60_cls
 };
 // @fnv 0x00c90e60
 // src: GUESS 0x00c90e60 (confidence: low)
+// pdb: hkpContactMgrFactory::`scalar deleting destructor' | hkpWorld.obj | debug, object-file run extension, low
 void FUN_00c90e60_cls::UpdateFields_00c90e60(float fRadius, float m_fGlyphExtent)
 {
     m_fBoundRadius = fRadius;

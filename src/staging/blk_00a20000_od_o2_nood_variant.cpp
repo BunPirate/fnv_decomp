@@ -5934,13 +5934,13 @@ struct Controller
     EventQueue* queue;
     int unk1b84;
     unsigned char enabled;
-    void Controls_Rumble(float left, float right, int a, int b, int value, unsigned char state, bool force);
+    void Controls_Rumble(float leftMotor, float rightMotor, int timeInMillis, int iWavelength, int aRumblePattern, unsigned char abAlternate, bool bOverride);
 };
 int __cdecl FUN_00ec68e4(const char* name, unsigned int a1);
 class FUN_00a261a0_cls
 {
   public:
-    int XGamerProfile_GetContentBit(unsigned int a1);
+    int XGamerProfile_GetContentBit(unsigned int cCode);
 };
 struct WaveConfig
 {
@@ -6010,18 +6010,21 @@ struct Spl_a28060_Key
 };
 extern int DAT_011a7ed4;
 extern float DAT_011f3658;
-void __cdecl NiBezPosKey_InterpolateD1(float t, Spl_a28060_Key* a, Spl_a28060_Key* b, Spl_a28060_Pt* out);
-void __cdecl NiBezPosKey_InterpolateD2(float t, Spl_a28060_Key* a, Spl_a28060_Key* b, Spl_a28060_Pt* out);
+void __cdecl NiBezPosKey_InterpolateD1(float fTime, Spl_a28060_Key* pKey0, Spl_a28060_Key* pKey1, Spl_a28060_Pt* pResult);
+void __cdecl NiBezPosKey_InterpolateD2(float fTime, Spl_a28060_Key* pKey0, Spl_a28060_Key* pKey1, Spl_a28060_Pt* pResult);
 
 // @fnv 0x00a28060
 // src: GAMEBRYO_LIB 0x00a28060
-float __cdecl NiBezPosKey_ComputeMaxCurvature(Spl_a28060_Key* keys, int count)
+// pdb: NiBezPosKey::ComputeMaxCurvature | NiBezPosKey.obj | retail, upstream name already matches, high
+// pdb params: pkKeys, uiNumKeys
+// pdb locals: fMaxCurvature, pkBezPosKeys, uiI, pBez1, pBez0, uiJ, d1, fTime, d2, fCurvature
+float __cdecl NiBezPosKey_ComputeMaxCurvature(Spl_a28060_Key* pkKeys, int uiNumKeys)
 {
     float fScaledValue = 0.0f;
-    for (unsigned int i = 0; i < (unsigned int)(count - 1); i++)
+    for (unsigned int i = 0; i < (unsigned int)(uiNumKeys - 1); i++)
     {
-        Spl_a28060_Key* a = &keys[i];
-        Spl_a28060_Key* b = &keys[i + 1];
+        Spl_a28060_Key* a = &pkKeys[i];
+        Spl_a28060_Key* b = &pkKeys[i + 1];
         for (int j = 0; j <= DAT_011a7ed4; j++)
         {
             float t = j * DAT_011f3658;
@@ -6085,13 +6088,16 @@ void __cdecl NiTCBPosKey_InterpolateD2(float t, Spl_a2b6d0_Key* a, Spl_a2b6d0_Ke
 
 // @fnv 0x00a2b6d0
 // src: GAMEBRYO_LIB 0x00a2b6d0
-float __cdecl NiTCBPosKey_ComputeMaxCurvature(Spl_a2b6d0_Key* keys, int count)
+// pdb: NiTCBPosKey::ComputeMaxCurvature | NiTCBPosKey.obj | retail, upstream name already matches, high
+// pdb params: pkKeys, uiNumKeys
+// pdb locals: pkTCBPosKeys, fMaxCurvature, uiI, pTCB0, pTCB1, uiJ, d1, fTime, d2, fCurvature
+float __cdecl NiTCBPosKey_ComputeMaxCurvature(Spl_a2b6d0_Key* pkKeys, int uiNumKeys)
 {
     float fScaledValue = 0.0f;
-    for (unsigned int i = 0; i < (unsigned int)(count - 1); i++)
+    for (unsigned int i = 0; i < (unsigned int)(uiNumKeys - 1); i++)
     {
-        Spl_a2b6d0_Key* a = &keys[i];
-        Spl_a2b6d0_Key* b = &keys[i + 1];
+        Spl_a2b6d0_Key* a = &pkKeys[i];
+        Spl_a2b6d0_Key* b = &pkKeys[i + 1];
         for (int j = 0; j <= DAT_011a7ed4; j++)
         {
             float t = j * DAT_011f3658;

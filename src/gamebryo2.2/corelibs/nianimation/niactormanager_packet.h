@@ -3,7 +3,7 @@
 class ActorManagerPacket
 {
   public:
-    static void InitializePoint3();
+    static void NiActorManager__SDMInit();
 };
 #include "../../../../include/NiFixedString.h"
 extern NiFixedString EmptyFS;

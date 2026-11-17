@@ -7,6 +7,7 @@ float& bhkCharacterController::GetVectorElement(int index)
 }
 
 // @fnv 0x00931ed0
+// pdb: MobileObject::DeleteCurrentProcess | MobileObject.obj | retail, object-file gap fill, high
 CharacterControllerValue MobileObject::GetVectorElement()
 {
     bhkCharacterController* controller = GetPhysicsCharacterController();

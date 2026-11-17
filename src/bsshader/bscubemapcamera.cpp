@@ -502,7 +502,7 @@ void BSShaderUtil_AccumulateScene(void*, void*, S00bd7bb0_Cull*);
 void FUN_00b6c0d0(void*, Scene*, int);
 void BSShaderLightingProperty_SetLight(unsigned, Water*, float);
 void FUN_00b97fa0(int, int);
-void FUN_00b97ff0(int, int, int);
+void BSRenderState_SetAlphaBlendFunc(int, int, int);
 void FUN_00b6b790();
 inline float Sin(float x)
 {
@@ -596,12 +596,15 @@ struct Camera
     Ptr<Scene> scene;
     void BSCubeMapCamera_SetupTransformation(int);
     void NiAVObject_Update(UpdateData&);
-    void CullScene(Water*);
+    void BSCubeMapCamera_RenderGeomForLight(Water*);
     void BSCubeMapCamera_ClickCubeMapWithMask(int);
 };
 // For each selected face, selects the cube face, may update and cull the scene, then calls the image-space manager for supported faces.
 // @fnv 0x00bd7bb0
 // src: COMMUNITY 0x00bd7bb0
+// pdb: BSCubeMapCamera::ClickCubeMapWithMask | BSCubeMapCamera.obj | retail, upstream name already matches, high
+// pdb params: aiFace
+// pdb locals: uslightCull, koldcol, i, pmasktex, param, pmanager, iflag, prenderer, pcm, UpdateData, bdec, tmp
 void Camera::BSCubeMapCamera_ClickCubeMapWithMask(int aiFace)
 {
     UpdateData updateData;
@@ -688,11 +691,11 @@ void Camera::BSCubeMapCamera_ClickCubeMapWithMask(int aiFace)
             {
                 BSShaderLightingProperty_SetLight(0, water, 1.0f);
                 target = water.value->texture;
-                CullScene(water);
+                BSCubeMapCamera_RenderGeomForLight(water);
             }
         }
         FUN_00b97fa0(1, 1);
-        FUN_00b97ff0(6, 7, 0);
+        BSRenderState_SetAlphaBlendFunc(6, 7, 0);
         void* destination = DAT_011f9520;
         GlobalObjectO2_00b8a9e0 imageSpaceParams;
         ImageSpaceManager* manager = DAT_011f91ac;

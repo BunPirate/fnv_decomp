@@ -4,7 +4,7 @@
 
 struct S_0080b3a0_Obj
 {
-    S_0080b3a0_Obj(int a, int b, int c);
+    S_0080b3a0_Obj(int apCaster, int apSpell, int apEffect);
     int unk0;
     int unk4;
     int unk8;
@@ -60,6 +60,8 @@ struct S_0080b3a0
 
 // Allocates an S_0080b3a0_Obj from unk28, unk8 and unkC, passes it to vf44, and returns it.
 // @fnv 0x0080b3a0
+// pdb: CommandCreatureEffect::Copy | CommandCreatureEffect.obj | retail, vtable slot, high
+// pdb locals: presult
 S_0080b3a0_Obj* S_0080b3a0::CreateObject()
 {
     S_0080b3a0_Obj* obj = new S_0080b3a0_Obj(unk28, unk8, unkC);
@@ -215,15 +217,18 @@ bool __cdecl MagicFormulas_CheckTargetLevelMagnitude(unsigned short a, float b);
 
 struct FUN_0080b450_cls
 {
-    bool CommandCreatureEffect_CheckTarget(int p);
+    bool CommandCreatureEffect_CheckTarget(int apTarget);
     int unk0;
 };
 
 // @fnv 0x0080b450
 // src: XBOX_PDB 0x0080b450
-bool FUN_0080b450_cls::CommandCreatureEffect_CheckTarget(int p)
+// pdb: CommandCreatureEffect::CheckTarget | CommandCreatureEffect.obj | retail, upstream name already matches, high
+// pdb params: apTarget
+// pdb locals: ptargetActor, pactor
+bool FUN_0080b450_cls::CommandCreatureEffect_CheckTarget(int apTarget)
 {
-    SpawnedObject* a = p != 0 ? FUN_00822b40(p) : 0;
+    SpawnedObject* a = apTarget != 0 ? FUN_00822b40(apTarget) : 0;
     SpawnedObject* b = (a != 0 && a->vf87()) ? a : 0;
     if (b == 0)
     {

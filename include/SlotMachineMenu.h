@@ -6,6 +6,7 @@ class Tile;
 class AVObj;
 class CtrlObj;
 
+// pdb: class SlotMachineMenu, size 0x158, bases: Menu, 25 members
 class SlotMachineMenu : public Menu
 {
 public:
@@ -86,9 +87,9 @@ public:
     void SetTile(int id, Tile* tile);
     int GetMenuID_007c0800();
     char HasAllTenTiles();
-    bool InitReels();
-    bool LoadAssets();
-    void InitPayoutMenu();
+    bool SetupActiveReels();
+    bool InitializeCasinoData();
+    void Prepare3DElements();
     void* BlackJackMenu_SetupCamera();
     void DoClick_007c2460(int, void*);
     void Update();

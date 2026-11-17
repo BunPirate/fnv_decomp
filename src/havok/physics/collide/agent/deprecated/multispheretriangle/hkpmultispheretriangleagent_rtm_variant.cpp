@@ -28,7 +28,7 @@ LocalM128 _mm_add_ps(LocalM128, LocalM128);
 }
 }
 
-__forceinline float hkpTriangleShape::getRadius() const { return m_fSphereRadius; }
+__forceinline float hkpTriangleShape::getRadius() const { return m_radius; }
 __forceinline const hkVector4_S* hkpTriangleShape::GetIndexedVertices() const { return reinterpret_cast<const hkVector4_S*>(&m_kVertexA); }
 
 extern "C" {
@@ -71,6 +71,9 @@ struct SphereTriangleClosestPointReceiver : hkpMultiSphereTriangleAgent {
     void closestPoints(const hkpCdBody*, const hkpCdBody*, const CollisionInput*, ContactCollector*);
 };
 // @fnv 0x00d38390
+// pdb: hkpMultiSphereTriangleAgent::getClosestPoints | hkpMultiSphereTriangleAgent.obj | retail, vtable slot, high
+// pdb params: bodyA, bodyB, input, collector
+// pdb locals: event, triVertices, worldSpheres, cptr
 void SphereTriangleClosestPointReceiver::closestPoints(const hkpCdBody* bodyA, const hkpCdBody* bodyB, const CollisionInput* input, ContactCollector* collector)
 {
     volatile unsigned int timerTicks;
@@ -86,11 +89,11 @@ void SphereTriangleClosestPointReceiver::closestPoints(const hkpCdBody* bodyA, c
             timerMonitor->next = timerRecord + 1;
         }
     }
-    const hkpMultiSphereShape* __restrict spheres = static_cast<const hkpMultiSphereShape*>(bodyA->m_pCollisionShape);
-    const hkpTriangleShape* triangle = static_cast<const hkpTriangleShape*>(bodyB->m_pCollisionShape);
+    const hkpMultiSphereShape* __restrict spheres = static_cast<const hkpMultiSphereShape*>(bodyA->m_shape);
+    const hkpTriangleShape* triangle = static_cast<const hkpTriangleShape*>(bodyB->m_shape);
     SphereTrianglePacketLocal_00d38b00 triangleWorld[3];
     {
-    const TransformStorage* __restrict tb = static_cast<const TransformStorage*>(bodyB->m_pMotionState);
+    const TransformStorage* __restrict tb = static_cast<const TransformStorage*>(bodyB->m_motion);
     SphereTrianglePacketLocal_00d38b00 bxv; bxv.bits = CopyOther(tb->x); SphereTriangleProcessSimd::LocalM128 bx = bxv.q;
     SphereTrianglePacketLocal_00d38b00 byv; byv.bits = CopyWords(tb->y); SphereTriangleProcessSimd::LocalM128 by = byv.q;
     SphereTrianglePacketLocal_00d38b00 bzv; bzv.bits = CopyOther(tb->z); SphereTriangleProcessSimd::LocalM128 bz = bzv.q;
@@ -101,10 +104,10 @@ void SphereTriangleClosestPointReceiver::closestPoints(const hkpCdBody* bodyA, c
     }
     }
     SphereTrianglePacketLocal_00d38b00 spheresWorld[8];
-    const SphereTrianglePacketLocal_00d38b00* sourceSphere = reinterpret_cast<const SphereTrianglePacketLocal_00d38b00*>(spheres->m_kSpheres);
-    const int count = spheres->m_iSphereCount;
+    const SphereTrianglePacketLocal_00d38b00* sourceSphere = reinterpret_cast<const SphereTrianglePacketLocal_00d38b00*>(spheres->m_spheres);
+    const int count = spheres->m_numSpheres;
     {
-    const TransformStorage* __restrict ta = static_cast<const TransformStorage*>(bodyA->m_pMotionState);
+    const TransformStorage* __restrict ta = static_cast<const TransformStorage*>(bodyA->m_motion);
     closest.normal.bits = CopyWords(ta->x); SphereTriangleProcessSimd::LocalM128 ax = closest.normal.q;
     SphereTrianglePacketLocal_00d38b00 ayv; ayv.bits = CopyWords(ta->y); SphereTriangleProcessSimd::LocalM128 ay = ayv.q;
     SphereTrianglePacketLocal_00d38b00 azv; azv.bits = CopyWords(ta->z); SphereTriangleProcessSimd::LocalM128 az = azv.q;
@@ -120,14 +123,14 @@ void SphereTriangleClosestPointReceiver::closestPoints(const hkpCdBody* bodyA, c
     contact.bodyB = bodyB;
     {
         for (int index = 0; index < count; ++index) {
-        TriangleCache* triPlane = reinterpret_cast<TriangleCache*>(&m_kTriangleNormal);
+        TriangleCache* triPlane = reinterpret_cast<TriangleCache*>(&m_closestPointTriangleCache);
             const SphereTrianglePacketLocal_00d38b00* current = &spheresWorld[index];
-            float radiusSum=*static_cast<const volatile float*>(&triangle->m_fSphereRadius)+sourceSphere[index].values.w;
+            float radiusSum=*static_cast<const volatile float*>(&triangle->m_radius)+sourceSphere[index].values.w;
             hkpCollideTriangleUtil_closestPointTriangle(current, triangleWorld, triPlane, &closest, 0);
 const float& distance = closest.distance;
 float threshold = input->tolerance + radiusSum;
             if (distance < threshold) {
-                float offset = triangle->m_fSphereRadius - distance;
+                float offset = triangle->m_radius - distance;
                 SphereTriangleProcessSimd::LocalM128 off = SphereTriangleProcessSimd::_mm_load_ss(&offset);
                 contact.position.q = SphereTriangleProcessSimd::_mm_add_ps(current->q, SphereTriangleProcessSimd::_mm_mul_ps(SphereTriangleProcessSimd::_mm_shuffle_ps(off, off, 0), closest.normal.q));
                 contact.normal.q = closest.normal.q;
@@ -239,15 +242,15 @@ struct ProcessMonitor {
 };
 // Accessors adapt the shared layouts to the SIMD helper types used below.
 struct ProcessBody : hkpCdBody {
-    __forceinline const void* getShape() const { return m_pCollisionShape; }
-    __forceinline const ProcessTransform& getTransform() const { return *static_cast<const ProcessTransform*>(m_pMotionState); }
+    __forceinline const void* getShape() const { return m_shape; }
+    __forceinline const ProcessTransform& getTransform() const { return *static_cast<const ProcessTransform*>(m_motion); }
 };
 struct ProcessTriangle : hkpTriangleShape {
     __forceinline const ProcessVector* GetIndexedVertices() const { return reinterpret_cast<const ProcessVector*>(&m_kVertexA); }
 };
 struct ProcessSpheres : hkpMultiSphereShape {
-    __forceinline const ProcessVector* getSpheres() const { return reinterpret_cast<const ProcessVector*>(m_kSpheres); }
-    __forceinline int getNumSpheres() const { return m_iSphereCount; }
+    __forceinline const ProcessVector* getSpheres() const { return reinterpret_cast<const ProcessVector*>(m_spheres); }
+    __forceinline int getNumSpheres() const { return m_numSpheres; }
 };
 struct ProcessContact {
     ProcessVector position, normal;
@@ -294,7 +297,10 @@ struct SphereTriangleProcessReceiver : hkpMultiSphereTriangleAgent {
 };
 // @fnv 0x00d38b00
 // src: HAVOK_SRC 0x00d38b00
-void SphereTriangleProcessReceiver::hkpMultiSphereTriangleAgent_processCollision(const ProcessBody& a, const ProcessBody& b, const ProcessInput& input, ProcessOutput& output) {
+// pdb: hkpMultiSphereTriangleAgent::processCollision | hkpMultiSphereTriangleAgent.obj | retail, string-set bridge, high
+// pdb params: bodyA, bodyB, input, result
+// pdb locals: triVertices, worldSpheres, assertBuf, ostr, cptr
+void SphereTriangleProcessReceiver::hkpMultiSphereTriangleAgent_processCollision(const ProcessBody& bodyA, const ProcessBody& bodyB, const ProcessInput& input, ProcessOutput& result) {
     {
         ProcessMonitor& monitor = ProcessMonitor::instance();
         if (monitor.available()) {
@@ -304,15 +310,15 @@ void SphereTriangleProcessReceiver::hkpMultiSphereTriangleAgent_processCollision
             monitor.end = reinterpret_cast<char*>(record + 1);
         }
     }
-    const ProcessSpheres* spheres = static_cast<const ProcessSpheres*>(a.getShape());
-    const ProcessTriangle* triangle = static_cast<const ProcessTriangle*>(b.getShape());
+    const ProcessSpheres* spheres = static_cast<const ProcessSpheres*>(bodyA.getShape());
+    const ProcessTriangle* triangle = static_cast<const ProcessTriangle*>(bodyB.getShape());
     const ProcessVector* vertices = triangle->GetIndexedVertices();
     ProcessVector triangleWorld[3];
-    processPoints(b.getTransform(), vertices, 3, triangleWorld);
+    processPoints(bodyB.getTransform(), vertices, 3, triangleWorld);
     const ProcessVector* localSpheres = spheres->getSpheres();
     const int count = spheres->getNumSpheres();
     ProcessVector sphereWorld[8];
-    processPoints(a.getTransform(), localSpheres, count, sphereWorld);
+    processPoints(bodyA.getTransform(), localSpheres, count, sphereWorld);
     const ProcessVector* current = sphereWorld;
     const ProcessVector* local = localSpheres;
     for (int j = count - 1; j >= 0; ++current, ++local, --j) {
@@ -320,27 +326,27 @@ void SphereTriangleProcessReceiver::hkpMultiSphereTriangleAgent_processCollision
         const float radiusSum = sphereRadius + triangle->getRadius();
         {
             ProcessClosest closest;
-            hkpCollideTriangleUtil_closestPointTriangle(*current, triangleWorld, m_kTriangleNormal, closest);
+            hkpCollideTriangleUtil_closestPointTriangle(*current, triangleWorld, m_closestPointTriangleCache, closest);
             if (closest.distance < radiusSum + input.getTolerance()) {
-                ProcessPoint* point = output.reserve(1);
+                ProcessPoint* point = result.reserve(1);
                 point->contact.getPosition().addScaled(*current, closest.direction, triangle->getRadius() - closest.distance);
                 point->contact.setNormal(closest.direction);
                 point->contact.setDistance(closest.distance - radiusSum);
-                if (m_ids[j] == 0xffff) {
-                    m_ids[j] = reinterpret_cast<ProcessManager*>(m_pContactManager)->add(a, b, input, output, 0, point->contact);
+                if (m_contactPointId[j] == 0xffff) {
+                    m_contactPointId[j] = reinterpret_cast<ProcessManager*>(m_contactMgr)->add(bodyA, bodyB, input, result, 0, point->contact);
                 }
-                if (m_ids[j] != 0xffff) {
-                    output.commit(1);
-                    point->id = m_ids[j];
+                if (m_contactPointId[j] != 0xffff) {
+                    result.commit(1);
+                    point->id = m_contactPointId[j];
                 } else {
-                    output.abort(1);
+                    result.abort(1);
                 }
                 continue;
             }
         }
-        if (m_ids[j] != 0xffff) {
-            reinterpret_cast<ProcessManager*>(m_pContactManager)->remove(m_ids[j], output.owner.val());
-            m_ids[j] = 0xffff;
+        if (m_contactPointId[j] != 0xffff) {
+            reinterpret_cast<ProcessManager*>(m_contactMgr)->remove(m_contactPointId[j], result.owner.val());
+            m_contactPointId[j] = 0xffff;
         }
     }
     {

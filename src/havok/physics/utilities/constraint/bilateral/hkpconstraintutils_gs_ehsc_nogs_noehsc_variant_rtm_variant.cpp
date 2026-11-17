@@ -104,7 +104,7 @@ struct Instance : hkReferencedObject
 inline void* hkAlloc(int size)
 {
     hkReferencedObject* p = (hkReferencedObject*)audio()->heap().blockAlloc(size);
-    p->m_usMemSizeAndFlags = (unsigned short)size;
+    p->m_memSizeAndFlags = (unsigned short)size;
     return p;
 }
 Instance* __cdecl CloneInstanceFromSource(Instance* src);
@@ -120,7 +120,7 @@ extern FnvSink* DAT_01268360;
 class MsgWriter
 {
   public:
-    void Init(char* buf, unsigned int cap) throw();
+    void Init(char* buf, unsigned int bufSize) throw();
     void Append(const char* s) throw();
     void Finish() throw();
     unsigned int unk00;
@@ -154,7 +154,7 @@ class FnvHolder
     char unk00[0x0c];
     FnvInner* m_0c;
 };
-int hkpConstraintUtils_getConstraintPivots(FnvHolder* a0, __m128* a1, __m128* a2);
+int hkpConstraintUtils_getConstraintPivots(FnvHolder* a0, __m128* pivotInAOut, __m128* pivotInBOut);
 struct Ent
 {
     int unk00, unk04, unk08, unk0c, unk10, unk14, unk18, unk1c;
@@ -174,9 +174,9 @@ struct Ent
     int unk190, unk194, unk198, unk19c, unk1a0, unk1a4, unk1a8, unk1ac;
     __m128 unk1b0;
     __m128 unk1c0;
-    void hkpRigidBody_setPosition(__m128* v);
+    void hkpRigidBody_setPosition(__m128* position);
     void OnTrigger(int arg);
-    void hkpRigidBody_setAngularVelocity(void* p);
+    void hkpRigidBody_setAngularVelocity(void* newVel);
 };
 struct FnvHolder2 : FnvHolder
 {
@@ -230,9 +230,9 @@ __forceinline void hkVector4::addMul4(const hkSimdReal& r, const hkVector4& v1)
 {
     m_vComponents = _mm_add_ps(m_vComponents, _mm_mul_ps(r.broadcast(), v1.m_vComponents));
 }
-__forceinline hkSimdReal hkVector4::dot3(const hkVector4& a) const
+__forceinline hkSimdReal hkVector4::dot3(const hkVector4& x) const
 {
-    __m128 x2 = _mm_mul_ps(m_vComponents, a.m_vComponents);
+    __m128 x2 = _mm_mul_ps(m_vComponents, x.m_vComponents);
     __m128 xySum = _mm_add_ss(_mm_shuffle_ps(x2, x2, 0x55), x2);
     return _mm_add_ss(_mm_shuffle_ps(x2, x2, 0xaa), xySum);
 }
@@ -275,11 +275,11 @@ __forceinline hkVector4& hkTransform::getTranslation()
 }
 __forceinline hkSimdReal hkpMotion::getMassInv() const
 {
-    return m_kInertiaAndMassInv.getSimdAt3();
+    return m_inertiaAndMassInv.getSimdAt3();
 }
 __forceinline hkpMotion* hkpRigidBody::getRigidMotion()
 {
-    return &m_pMotionState;
+    return &m_motion;
 }
 __forceinline void hkpRigidBody::GetInertiaInvLocal(hkMatrix3& m)
 {
@@ -294,11 +294,14 @@ __forceinline float hkpRigidBody::getMassInv()
 }
 __forceinline const hkVector4& hkpRigidBody::getCenterOfMassLocal()
 {
-    return m_pMotionState.m_kMotionState.m_kSweptTransform.m_vCenterOfMassLocal;
+    return m_motion.m_kMotionState.m_kSweptTransform.m_centerOfMassLocal;
 }
 
 // @fnv 0x00e5a800
 // src: GUESS 0x00e5a800 (confidence: low)
+// pdb: hkpConstraintUtils::setHingePivotToOptimalPosition | hkpConstraintUtils.obj | retail, object-file run extension, low
+// pdb params: constraint
+// pdb locals: assertBuf, ostr, invRot, inertiaLocA, inertiaLocB
 void __cdecl Object_ProcessAndReturnValue_00e5a800(Instance* constraint)
 {
     SourceData* data = constraint->unk0c;
@@ -324,7 +327,7 @@ void __cdecl Object_ProcessAndReturnValue_00e5a800(Instance* constraint)
     {
         hkMatrix3 inertiaLocA;
         bodyA->GetInertiaInvLocal(inertiaLocA);
-        hkRotation invRot = transformsAtom->m_kBodyALocalFrame.getRotation();
+        hkRotation invRot = transformsAtom->m_transformA.getRotation();
         reinterpret_cast<hkMatrix3&>(invRot).transpose();
         inertiaLocA.SetFromRotation(invRot);
         invInertiaA = float(inertiaLocA(1, 1) + inertiaLocA(2, 1)) + float(inertiaLocA(1, 2) + inertiaLocA(2, 2));
@@ -348,9 +351,9 @@ void __cdecl Object_ProcessAndReturnValue_00e5a800(Instance* constraint)
         }
     }
 
-    const hkVector4& axisA = transformsAtom->m_kBodyALocalFrame.getRotation().getColumn(0);
+    const hkVector4& axisA = transformsAtom->m_transformA.getRotation().getColumn(0);
     hkVector4 pivotA;
-    pivotA.setSub4(transformsAtom->m_kBodyALocalFrame.getTranslation(), bodyA->getCenterOfMassLocal());
+    pivotA.setSub4(transformsAtom->m_transformA.getTranslation(), bodyA->getCenterOfMassLocal());
     float pivotLengthAlongAxisA = pivotA.dot3(axisA);
 
     const hkVector4& axisB = transformsAtom->m_kBodyBLocalFrame.getRotation().getColumn(0);
@@ -366,6 +369,6 @@ void __cdecl Object_ProcessAndReturnValue_00e5a800(Instance* constraint)
     pivotA.addMul4(newPivotLenghtAlongAxisA - pivotLengthAlongAxisA, axisA);
     pivotB.addMul4(newPivotLenghtAlongAxisB - pivotLengthAlongAxisB, axisB);
 
-    transformsAtom->m_kBodyALocalFrame.getTranslation().setAdd4(pivotA, bodyA->getCenterOfMassLocal());
+    transformsAtom->m_transformA.getTranslation().setAdd4(pivotA, bodyA->getCenterOfMassLocal());
     transformsAtom->m_kBodyBLocalFrame.getTranslation().setAdd4(pivotB, bodyB->getCenterOfMassLocal());
 }

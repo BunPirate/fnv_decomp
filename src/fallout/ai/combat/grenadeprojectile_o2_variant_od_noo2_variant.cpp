@@ -72,13 +72,15 @@ struct S_00561240
 struct S_00627920
 {
     __m128 unk00;
-    void __thiscall hkVector4_mul4(S_00561240* param);
+    void __thiscall hkVector4_mul4(S_00561240* s);
 };
 
 // @fnv 0x00627920
 // src: XBOX_PDB 0x00627920
-void __thiscall S_00627920::hkVector4_mul4(S_00561240* param)
+// pdb: hkVector4::mul4 | LoadedAreaBound.obj | debug, upstream name already matches, high
+// pdb params: s
+void __thiscall S_00627920::hkVector4_mul4(S_00561240* s)
 {
     __m128 tmp;
-    unk00 = _mm_mul_ps(*param->hkSimdReal_broadcast(&tmp), unk00);
+    unk00 = _mm_mul_ps(*s->hkSimdReal_broadcast(&tmp), unk00);
 }

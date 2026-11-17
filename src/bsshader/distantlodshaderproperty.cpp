@@ -37,7 +37,7 @@ NiDynamicTriShapeData::NiDynamicTriShapeData(unsigned short p1, NiPoint3* p2, Ni
 struct S_Pool
 {
     void* Alloc(unsigned int size);
-    void Free(void* p);
+    void Free(void* apMem);
 };
 
 extern S_Pool DAT_011f6238;
@@ -95,7 +95,7 @@ struct S_A
         DAT_011f6238.Free(this);
     }
     void FUN_00b6f0b0();
-    void BSTextureManager_PrecreateTextures(unsigned int v);
+    void BSTextureManager_PrecreateTextures(unsigned int apRenderer);
     static void* operator new(unsigned int n)
     {
         return DAT_011f6238.Alloc(n);
@@ -322,7 +322,7 @@ extern S_B* DAT_011f91ac;
 extern unsigned int DAT_011f91e0;
 extern unsigned int DAT_011f9508;
 
-void InitRenderSystem();
+void BSShaderManager_Initialize();
 void ClearAllCachedStates();
 void ParticleShader_Free();
 void BoltShader_Free();
@@ -330,11 +330,12 @@ void ClearRefObject();
 
 // @fnv 0x00b578a0
 // src: COMMUNITY 0x00b578a0
+// pdb: BSShaderManager::Reinitialize | BSShaderManager.obj | debug, upstream name already matches, high
 void BSShaderManager_Reinitialize()
 {
     if (DAT_011f91c6 == 0)
     {
-        InitRenderSystem();
+        BSShaderManager_Initialize();
         return;
     }
 
@@ -410,7 +411,7 @@ struct FnvOwner
     unsigned int m_14;
     unsigned int m_18;
     KeyedList m_1c;
-    void __thiscall DistantLODGroup_Add(Vec4* v, unsigned int key);
+    void __thiscall DistantLODGroup_Add(Vec4* apInstanceData, unsigned int aiCellKey);
     void __thiscall DistantLODGroup_UpdateGroupBound();
 };
 
@@ -478,54 +479,57 @@ struct Obj3
     virtual void v47();
 };
 
-unsigned short __cdecl GetOrCreateItem(ObjA4* a4, void* a1, FnvOwner** out, Obj3* a3);
+unsigned short __cdecl DistantLODShaderProperty_GetDistantLODGroup(ObjA4* a4, void* a1, FnvOwner** out, Obj3* a3);
 ObjR* __stdcall Object_GetOrCreateRenderItemCache(void* v, FnvOwner** out);
 
 // Passes Vec4 values assembled from a5 and a6 to the located object, then inserts key when absent from its KeyedList.
 // @fnv 0x00b59ae0
 // src: XBOX_PDB 0x00b59ae0
-void __cdecl DistantLODShaderProperty_AddDistantLOD(void* a1, unsigned int key, Obj3* apObj3, ObjA4* apObjA4, NiPoint3* apPoints, float* a6,
-                          unsigned short count)
+// pdb: DistantLODShaderProperty::AddDistantLOD | DistantLODShaderProperty.obj | retail, upstream name already matches, high
+// pdb params: aiCellChunk, aiCellKey, apDistantLODNode, apDistantLODParam, apPositions, afColors, aiNumPositions
+// pdb locals: iindex, pcachedlod, plodgroup, i, ilen, lodinstance
+void __cdecl DistantLODShaderProperty_AddDistantLOD(void* aiCellChunk, unsigned int aiCellKey, Obj3* apDistantLODNode, ObjA4* apDistantLODParam, NiPoint3* apPositions, float* afColors,
+                          unsigned short aiNumPositions)
 {
-    DAT_011f9640 += count;
+    DAT_011f9640 += aiNumPositions;
     int iIndex = 0;
     int i = 0;
 
     FnvOwner* pOwner;
-    while (count > 0)
+    while (aiNumPositions > 0)
     {
         pOwner = 0;
-        unsigned short n = GetOrCreateItem(apObjA4, a1, &pOwner, apObj3);
+        unsigned short n = DistantLODShaderProperty_GetDistantLODGroup(apDistantLODParam, aiCellChunk, &pOwner, apDistantLODNode);
         if (pOwner == 0)
         {
             return;
         }
         for (iIndex = 0; iIndex < (int)n; ++iIndex, ++i)
         {
-            if (!(count > 0))
+            if (!(aiNumPositions > 0))
                 break;
             Vec4 v;
-            v.x = apPoints[i].x;
-            v.y = apPoints[i].y;
-            v.z = apPoints[i].z;
-            v.w = a6[i];
-            pOwner->DistantLODGroup_Add(&v, key);
-            --count;
+            v.x = apPositions[i].x;
+            v.y = apPositions[i].y;
+            v.z = apPositions[i].z;
+            v.w = afColors[i];
+            pOwner->DistantLODGroup_Add(&v, aiCellKey);
+            --aiNumPositions;
         }
         pOwner->DistantLODGroup_UpdateGroupBound();
         iIndex = 0;
     }
 
-    apObj3->v47();
+    apDistantLODNode->v47();
     pOwner = 0;
-    ObjR* r = Object_GetOrCreateRenderItemCache(apObjA4->m_08, &pOwner);
+    ObjR* r = Object_GetOrCreateRenderItemCache(apDistantLODParam->m_08, &pOwner);
     r->FUN_00a53c30();
 
     KeyedList* pKeyedList = &pOwner->m_1c;
     DistantlodshaderpropertyListNodeView* node;
-    if (!pKeyedList->Find(key, &node) || node == 0)
+    if (!pKeyedList->Find(aiCellKey, &node) || node == 0)
     {
-        pKeyedList->AllocateStorage_00b584e0(&key);
+        pKeyedList->AllocateStorage_00b584e0(&aiCellKey);
     }
 }
 
@@ -629,6 +633,8 @@ struct FUN_00b6f0b0 : S_00b6f0b0_Base
 
 // Releases container references, recycles nodes from m84 and m78, and clears ma8 and mac.
 // @fnv 0x00b6f0b0
+// pdb: BSTextureManager::~BSTextureManager | BSTextureManager.obj | retail, call graph, medium
+// pdb locals: ptexData, i
 FUN_00b6f0b0::~FUN_00b6f0b0()
 {
     S_ReturnPtr result90;
@@ -730,8 +736,8 @@ inline NiColorA::NiColorA(float red, float green, float blue, float alpha)
 inline BSStream::BSStream() { unk5c4 = unk5c8 = 0; }
 inline NiAlphaProperty::NiAlphaProperty()
 {
-    m_usAlphaArg = 0xec;
-    m_ucAlphaArg2 = 0;
+    m_uFlags = 0xec;
+    m_ucAlphaTestRef = 0;
 }
 
 extern NiRTTI g_011f4a20, g_011f4a88, g_011f4a70, g_011f4aa0;
@@ -1013,7 +1019,7 @@ struct Cache
     void InsertOrAssign(void*, Ref<Resource>);
 };
 
-bool Cache::FUN_00e92760(void* key, Ref<Resource>* out)
+bool Cache::FUN_00e92760(void* key, Ref<Resource>* val)
 {
 
     CacheEntry* entry = buckets[Hash(key)];
@@ -1023,7 +1029,7 @@ bool Cache::FUN_00e92760(void* key, Ref<Resource>* out)
 
         if (Equal(key, entry->key))
         {
-            *out = entry->value;
+            *val = entry->value;
             return true;
         }
 
@@ -1108,7 +1114,7 @@ __forceinline bool IsKindOfType(NiObject* p, const NiRTTI* type)
     {
         if (r == type)
             return true;
-        r = r->m_pBaseRTTI;
+        r = r->m_pkBaseRTTI;
     }
 
     return false;
@@ -1117,7 +1123,10 @@ __forceinline bool IsKindOfType(NiObject* p, const NiRTTI* type)
 // Loads a distant LOD NIF, clones its geometry into a multi-instance buffer with instance IDs, and caches the resulting Resource under the input key.
 // @fnv 0x00b587c0
 // src: COMMUNITY 0x00b587c0
-Resource* __cdecl DistantLODShaderProperty_GetCachedGeometry(Input* input)
+// pdb: DistantLODShaderProperty::GetCachedGeometry | DistantLODShaderProperty.obj | retail, string-set bridge, high
+// pdb params: apDistantLODParam
+// pdb locals: pCachedGeom, bstrips, pnewTriData, plodgeom, stream, pobj, pinstance, pbasetexture, palphablend, iref, inuminstances, parent, ptristrips, palphanoblend, ivertices, kbound, pshadeprop, usinstanceTriCount, pprop, pstencil, i, pavobj, pindex, pcolor ...
+Resource* __cdecl DistantLODShaderProperty_GetCachedGeometry(Input* apDistantLODParam)
 {
 
     if (DAT_011f91c0 == 0)
@@ -1127,28 +1136,28 @@ Resource* __cdecl DistantLODShaderProperty_GetCachedGeometry(Input* input)
 
     BSStream stream;
 
-    if (input->key == 0)
+    if (apDistantLODParam->key == 0)
         return 0;
 
     Ref<Resource> cachedResource;
 
-    if (!GetNiTStringMap()->FUN_00e92760(input->key, &cachedResource))
+    if (!GetNiTStringMap()->FUN_00e92760(apDistantLODParam->key, &cachedResource))
     {
 
-        if (!input->scene && input->path && stream.BSStream_Load(input->path, false))
+        if (!apDistantLODParam->scene && apDistantLODParam->path && stream.BSStream_Load(apDistantLODParam->path, false))
         {
 
             // The top-level object array is at stream offset 0x220.
             Scene* loaded = reinterpret_cast<Scene**>(stream.m_kTopObjects.m_pBase)[0];
 
             if (loaded)
-                input->scene = (Scene*)loaded->IsSceneNode();
+                apDistantLODParam->scene = (Scene*)loaded->IsSceneNode();
         }
 
-        if (input->scene)
+        if (apDistantLODParam->scene)
         {
 
-            Scene* rootNode = input->scene;
+            Scene* rootNode = apDistantLODParam->scene;
 
             while (!geometry)
             {
@@ -1422,17 +1431,17 @@ Resource* __cdecl DistantLODShaderProperty_GetCachedGeometry(Input* input)
 
                 NiAlphaProperty* alpha = new NiAlphaProperty;
 
-                alpha->m_ucAlphaArg2 = 0;
+                alpha->m_ucAlphaTestRef = 0;
 
-                alpha->m_usAlphaArg = (alpha->m_usAlphaArg & 0xf3ff) | 0x1201;
+                alpha->m_uFlags = (alpha->m_uFlags & 0xf3ff) | 0x1201;
 
                 NiAlphaProperty* opaqueAlpha;
 
                 opaqueAlpha = new NiAlphaProperty;
 
-                opaqueAlpha->m_usAlphaArg = (opaqueAlpha->m_usAlphaArg & 0xf3fe) | 0x1200;
+                opaqueAlpha->m_uFlags = (opaqueAlpha->m_uFlags & 0xf3fe) | 0x1200;
 
-                opaqueAlpha->m_ucAlphaArg2 = 0;
+                opaqueAlpha->m_ucAlphaTestRef = 0;
 
                 NiProperty* extraProperty = geometry->FUN_00a59d30(4);
 
@@ -1464,7 +1473,7 @@ Resource* __cdecl DistantLODShaderProperty_GetCachedGeometry(Input* input)
 
                 cachedResource->node = false;
 
-                Scene* scene = input->scene;
+                Scene* scene = apDistantLODParam->scene;
 
                 if (scene)
                 {
@@ -1475,7 +1484,7 @@ Resource* __cdecl DistantLODShaderProperty_GetCachedGeometry(Input* input)
                         cachedResource->node = true;
                 }
 
-                GetNiTStringMap()->InsertOrAssign(input->key, cachedResource);
+                GetNiTStringMap()->InsertOrAssign(apDistantLODParam->key, cachedResource);
             }
         }
     }
@@ -1485,7 +1494,7 @@ Resource* __cdecl DistantLODShaderProperty_GetCachedGeometry(Input* input)
     if (answer == 0)
     {
         char error[200];
-        PrintError(error, 200, "DISTANT LOD ERROR : could not load DistantLOD nif %s", input->path);
+        PrintError(error, 200, "DISTANT LOD ERROR : could not load DistantLOD nif %s", apDistantLODParam->path);
     }
 
     return answer;

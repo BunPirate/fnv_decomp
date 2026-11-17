@@ -14,6 +14,7 @@ struct TileimageInterfaceView
 };
 struct FileFinder;
 extern FileFinder* g_fileFinder;
+// pdb: class FileFinder, size 0x10 (here 0x1), 1 members
 struct FileFinder
 {
     int GetFileLocation(char*, char*, unsigned int, unsigned int);
@@ -46,7 +47,7 @@ struct NiTexturePtr
 };
 }
 bool fnv_NiStreamGetTexture(char*, L::NiTexturePtr*);
-void ResolveTexturePath(const char* apFilename, float* afScale, float afZoom, char* axOut);
+void TileImage_ConvertToActualFilename(const char* apFilename, float* afScale, float afZoom, char* axOut);
 
 typedef unsigned int size_t;
 extern "C" int __cdecl strcmp(const char*, const char*);
@@ -605,33 +606,36 @@ typedef basic_string<char> string;
 typedef std::string AtlasPath;
 // @fnv 0x00a06dd0
 // src: COMMUNITY 0x00a06dd0
-void Tile_GetTextureAtlasInfo(const char* definition, const char* image, AtlasString* texture, float* bounds)
+// pdb: Tile::GetTextureAtlasInfo | Tile.obj | retail, upstream name already matches, high
+// pdb params: strAtlasFilename, strSubtextureFilename, strAtlasTextureFilename, ResultRect
+// pdb locals: atlasFile, pfullFileNameA, bufferA, bfound, plastBackslash, balreadyLoadedFile, pnode, strManip, pnewEntry, ireadCt
+void Tile_GetTextureAtlasInfo(const char* strAtlasFilename, const char* strSubtextureFilename, AtlasString* strAtlasTextureFilename, float* ResultRect)
 {
     char line5[1024];
     char filename9[260];
     _strcpy_s(filename9, 260, "Data\\Textures\\");
     AtlasFile* fileA = 0;
-    if (definition && image && (texture || bounds))
+    if (strAtlasFilename && strSubtextureFilename && (strAtlasTextureFilename || ResultRect))
     {
-        const char* slashTmp = strrchr(image, '\\');
+        const char* slashTmp = strrchr(strSubtextureFilename, '\\');
         bool foundImage = false;
         bool foundDefinition4 = false;
-        _strcat_s(filename9, 260, definition);
-        image = slashTmp ? slashTmp + 1 : image;
+        _strcat_s(filename9, 260, strAtlasFilename);
+        strSubtextureFilename = slashTmp ? slashTmp + 1 : strSubtextureFilename;
         for (AtlasNode* nodeB = &g_sheetEntries; nodeB && nodeB->entry; nodeB = nodeB->next)
         {
-            if (!strcmp(nodeB->Get()->definition.c_str(), definition))
+            if (!strcmp(nodeB->Get()->definition.c_str(), strAtlasFilename))
                 foundDefinition4 = true;
-            if (!strcmp(nodeB->entry->image.c_str(), image))
+            if (!strcmp(nodeB->entry->image.c_str(), strSubtextureFilename))
             {
-                if (texture)
-                    texture->Set(nodeB->entry->texture.c_str(), 0);
-                if (bounds)
+                if (strAtlasTextureFilename)
+                    strAtlasTextureFilename->Set(nodeB->entry->texture.c_str(), 0);
+                if (ResultRect)
                 {
-                    bounds[0] = nodeB->entry->rect.left;
-                    bounds[3] = nodeB->entry->rect.bottom;
-                    bounds[2] = nodeB->entry->rect.top;
-                    bounds[1] = nodeB->entry->rect.right;
+                    ResultRect[0] = nodeB->entry->rect.left;
+                    ResultRect[3] = nodeB->entry->rect.bottom;
+                    ResultRect[2] = nodeB->entry->rect.top;
+                    ResultRect[1] = nodeB->entry->rect.right;
                 }
                 foundImage = true;
             }
@@ -652,9 +656,9 @@ void Tile_GetTextureAtlasInfo(const char* definition, const char* image, AtlasSt
                     if (line5[0] == '#' || line5[0] == '\n' || line5[0] == '\t' || line5[0] == '\r' || line5[0] == ' ')
                         continue;
                     entry5 = new AtlasEntry;
-                    entry5->definition.Set(definition, 0);
+                    entry5->definition.Set(strAtlasFilename, 0);
                     entry5->image.Set(line5, 0);
-                    str.assign(definition);
+                    str.assign(strAtlasFilename);
                     str = str.Substr(0, str.find_last_of('\\') + 1);
                     str.append(strtok(0, " ,\t"));
                     entry5->texture.Set(str.c_str(), 0);
@@ -667,16 +671,16 @@ void Tile_GetTextureAtlasInfo(const char* definition, const char* image, AtlasSt
                     entry5->rect.bottom = (float)atof(strtok(0, " ,\t"));
                     entry5->rect.right += entry5->rect.left;
                     entry5->rect.bottom += entry5->rect.top;
-                    if (!strcmp(entry5->image.c_str(), image))
+                    if (!strcmp(entry5->image.c_str(), strSubtextureFilename))
                     {
-                        if (texture)
-                            texture->Set(entry5->texture.c_str(), 0);
-                        if (bounds)
+                        if (strAtlasTextureFilename)
+                            strAtlasTextureFilename->Set(entry5->texture.c_str(), 0);
+                        if (ResultRect)
                         {
-                            bounds[0] = entry5->rect.left;
-                            bounds[3] = entry5->rect.bottom;
-                            bounds[2] = entry5->rect.top;
-                            bounds[1] = entry5->rect.right;
+                            ResultRect[0] = entry5->rect.left;
+                            ResultRect[3] = entry5->rect.bottom;
+                            ResultRect[2] = entry5->rect.top;
+                            ResultRect[1] = entry5->rect.right;
                         }
                     }
                     g_sheetEntries.AddToHead(&entry5);

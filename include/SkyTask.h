@@ -4,10 +4,11 @@
 #include "NiTexture.h"
 
 #pragma pack(push, 4)
+// pdb: class SkyTask, size 0x38, bases: QueuedFileEntry, 1 members
 class SkyTask : public QueuedFileEntry
 {
 public:
-    SkyTask(NiPointer<NiTexture>* texture, const char* fileName);
+    SkyTask(NiPointer<NiTexture>* apspTexture, const char* apFilename);
     virtual ~SkyTask();
     virtual void Run();
     virtual void Finish();
@@ -16,7 +17,7 @@ public:
 
     SkyTask& operator=(const SkyTask& other);
 
-    NiPointer<NiTexture>* apTextureOutput;
+    NiPointer<NiTexture>* pspTexture; // src: XBOX_RETAIL_PDB +0x30 (old: apTextureOutput)
     unsigned char layoutPadding34[4];
 };
 #pragma pack(pop)

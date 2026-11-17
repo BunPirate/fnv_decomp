@@ -49,8 +49,8 @@ __forceinline void hkVector4::mul4(const float& s) { mul4(hkSimdReal(s)); }
 __forceinline void hkVector4::setMul4(float s,const hkVector4& v) { m_vComponents = _mm_mul_ps(hkSimdReal(s).broadcast(),v.m_vComponents); }
 __forceinline void hkVector4::addMul4(const hkSimdReal& s,const hkVector4& v) { m_vComponents = _mm_add_ps(m_vComponents,_mm_mul_ps(s.broadcast(),v.m_vComponents)); }
 __forceinline void hkVector4::setAddMul4(const hkVector4& a,const hkVector4& b,float s) { m_vComponents = _mm_add_ps(a.m_vComponents,_mm_mul_ps(hkSimdReal(s).broadcast(),b.m_vComponents)); }
-__forceinline hkSimdReal hkVector4::dot3(const hkVector4& a) const {
-    LocalM128 x2 = _mm_mul_ps(m_vComponents,a.m_vComponents);
+__forceinline hkSimdReal hkVector4::dot3(const hkVector4& x) const {
+    LocalM128 x2 = _mm_mul_ps(m_vComponents,x.m_vComponents);
     LocalM128 xy = _mm_add_ss(_mm_shuffle_ps(x2,x2,0x55),x2);
     return _mm_add_ss(_mm_shuffle_ps(x2,x2,0xaa),xy);
 }
@@ -91,18 +91,20 @@ static __forceinline int VectorEquals3(const hkVector4& a,const hkVector4& b,flo
 // Functions are listed by their @fnv annotations; compile flags inferred from the PC code.
 
 struct FUN_00cad480_Class {
-    void __thiscall hkpCharacterProxy_fireContactAdded(void* arg);
+    void __thiscall hkpCharacterProxy_fireContactAdded(void* point);
 };
 
 // Iterates the proxy list at this+0x80 in reverse and calls each proxy's third virtual method with this and arg.
 // @fnv 0x00cad480
 // src: HAVOK_LIB 0x00cad480
-void __thiscall FUN_00cad480_Class::hkpCharacterProxy_fireContactAdded(void* arg)
+// pdb: hkpCharacterProxy::fireContactAdded | hkpCharacterProxy.obj | retail, upstream name already matches, high
+// pdb params: point
+void __thiscall FUN_00cad480_Class::hkpCharacterProxy_fireContactAdded(void* point)
 {
     int count = *(int*)((char*)this + 0x84);
     for (--count; count >= 0; --count) {
         void* proxy = *(void**)((char*)*(void**)((char*)this + 0x80) + count * 4);
-        (*(void (__stdcall **)(void*, void*))(*(void***)proxy + 2))(this, arg);
+        (*(void (__stdcall **)(void*, void*))(*(void***)proxy + 2))(this, point);
     }
 }
 
@@ -148,16 +150,18 @@ struct S_00cad440 {
     int unk7C;
     S_00cad440_Listener** unk80;
     int unk84;
-    void hkpCharacterProxy_fireConstraintsProcessed(void* a, void* b);
+    void hkpCharacterProxy_fireConstraintsProcessed(void* manifold, void* input);
 };
 
 // Iterates the listener array backwards from unk84 and calls Notify(this, a, b) on each listener.
 // @fnv 0x00cad440
 // src: HAVOK_LIB 0x00cad440
-void S_00cad440::hkpCharacterProxy_fireConstraintsProcessed(void* a, void* b)
+// pdb: hkpCharacterProxy::fireConstraintsProcessed | hkpCharacterProxy.obj | retail, upstream name already matches, high
+// pdb params: manifold, input
+void S_00cad440::hkpCharacterProxy_fireConstraintsProcessed(void* manifold, void* input)
 {
     for (int i = unk84 - 1; i >= 0; i--)
-        unk80[i]->Notify(this, a, b);
+        unk80[i]->Notify(this, manifold, input);
 }
 
 struct CAD4C0Owner;
@@ -205,16 +209,18 @@ struct CAD4C0Owner {
     CAD4C0Listener** m_kListeners;
     int m_numListeners;
 
-    void hkpCharacterProxy_fireContactRemoved(void* data);
+    void hkpCharacterProxy_fireContactRemoved(void* point);
 };
 
 // Calls notify(this, data) on each listener in reverse order, from the last index down to zero.
 // @fnv 0x00cad4c0
 // src: HAVOK_LIB 0x00cad4c0
-void CAD4C0Owner::hkpCharacterProxy_fireContactRemoved(void* data)
+// pdb: hkpCharacterProxy::fireContactRemoved | hkpCharacterProxy.obj | retail, upstream name already matches, high
+// pdb params: point
+void CAD4C0Owner::hkpCharacterProxy_fireContactRemoved(void* point)
 {
     for (int i = m_numListeners - 1; i >= 0; i--)
-        m_kListeners[i]->notify(this, data);
+        m_kListeners[i]->notify(this, point);
 }
 
 struct FUN_00cad6f0_class
@@ -302,12 +308,15 @@ struct FNVOwner {
     FNVBuffers*& Buffers() {
         return *reinterpret_cast<FNVBuffers**>(reinterpret_cast<char*>(this) + 0x214);
     }
-    void hkpEntity_addEntityListener(int value);
+    void hkpEntity_addEntityListener(int el);
 };
 // Ensures the buffers exist, stores value into the first empty element slot or appends it, growing the array when full.
 // @fnv 0x00c9c5b0
 // src: HAVOK_LIB 0x00c9c5b0
-void FNVOwner::hkpEntity_addEntityListener(int value) {
+// pdb: hkpEntity::addEntityListener | hkpEntity.obj | retail, upstream name already matches, high
+// pdb params: el
+// pdb locals: assertBuf, ostr
+void FNVOwner::hkpEntity_addEntityListener(int el) {
     if (Buffers() == 0) {
         Buffers() = new FNVBuffers;
     }
@@ -315,7 +324,7 @@ void FNVOwner::hkpEntity_addEntityListener(int value) {
     for (int i = 0; i < array.size; ++i) {
         if (!array.values[i]) {
             if (i >= 0) {
-                array.values[i] = value;
+                array.values[i] = el;
                 return;
             }
             break;
@@ -324,7 +333,7 @@ void FNVOwner::hkpEntity_addEntityListener(int value) {
     if (array.size == (array.flags & 0x3fff)) {
         hkSmallArrayUtil__reserveMore(&array, sizeof(int));
     }
-    array.values[array.size] = value;
+    array.values[array.size] = el;
     ++array.size;
 }
 
@@ -344,6 +353,8 @@ struct FUN_00cac120_cls {
 
 // Calls FUN_00cadb00, then if bit 0 of acFlags is set frees this through the allocator from FUN_00c85750 using m_uSize, and returns this.
 // @fnv 0x00cac120
+// pdb: ahkpCharacterProxy::`scalar deleting destructor' | bhkCharacterProxy.obj | retail, vtable slot, high
+// pdb params: this
 FUN_00cac120_cls* FUN_00cac120_cls::FUN_00cac120(unsigned char acFlags)
 {
     FUN_00cadb00();
@@ -424,6 +435,8 @@ struct S_00cac150 {
 
 // Runs each item's callback with m_arg1/m_arg2, then resets m_count1 and m_count2 to zero.
 // @fnv 0x00cac150
+// pdb: ahkpCharacterProxy::RemoveEntityListeners | bhkCharacterProxy.obj | retail, object-file run extension, low
+// pdb locals: tempMemContext, i, j
 void S_00cac150::ClearItems() {
     S_00cac150_Scope scope(16);
     for (int i = 0; i < m_count1; ++i) {
@@ -464,6 +477,7 @@ struct CpuObject {
 };
 // @fnv 0x00cac910
 // src: XBOX_PDB 0x00cac910
+// pdb: hkpCharacterProxy::getPosition | hkpCharacterProxy.obj | debug, upstream name already matches, high
 unsigned int CpuObject::hkpCharacterProxy_getPosition()
 {
     return value->value + 48u;
@@ -483,8 +497,8 @@ struct FUN_00cacf10_cls {
     int m_74;
     int m_78;
 
-    float hkpCharacterProxy_surfaceDistance(void* a, void* b);
-    int hkpCharacterProxy_findSurface(void* arg);
+    float hkpCharacterProxy_surfaceDistance(void* p1, void* p2);
+    int hkpCharacterProxy_findSurface(void* info);
 };
 
 struct ArgminState {
@@ -494,7 +508,9 @@ struct ArgminState {
 
 // @fnv 0x00cacf10
 // src: COMMUNITY 0x00cacf10
-int FUN_00cacf10_cls::hkpCharacterProxy_findSurface(void* arg) {
+// pdb: hkpCharacterProxy::findSurface | hkpCharacterProxy.obj | retail, upstream name already matches, high
+// pdb params: info
+int FUN_00cacf10_cls::hkpCharacterProxy_findSurface(void* info) {
     ArgminState s;
     s.best = DAT_0101e2bc;
     s.idx = -1;
@@ -503,7 +519,7 @@ int FUN_00cacf10_cls::hkpCharacterProxy_findSurface(void* arg) {
         return -1;
     }
     do {
-        float d = hkpCharacterProxy_surfaceDistance(arg, (void*)(m_74 + i * 0x70));
+        float d = hkpCharacterProxy_surfaceDistance(info, (void*)(m_74 + i * 0x70));
         if (d < s.best) {
             s.best = d;
             s.idx = i;
@@ -590,19 +606,22 @@ struct BhkProxy {
     BhkTarget** m_ids;
     volatile int m_idcount;
 
-    void RemoveTarget(BhkTarget* arg1);
+    void RemoveTarget(BhkTarget* entity);
 };
 
 // Notifies arg1, then removes matching elements and the id entry from the proxy's arrays, compacting both.
 // @fnv 0x00cad740
-void BhkProxy::RemoveTarget(BhkTarget* pTarget)
+// pdb: hkpCharacterProxy::entityRemovedCallback | hkpCharacterProxy.obj | retail, vtable slot, high
+// pdb params: entity
+// pdb locals: assertBuf, ostr
+void BhkProxy::RemoveTarget(BhkTarget* entity)
 {
     void* pProxy;
     if ((char*)this - 8)
         pProxy = (void*)this;
     else
         pProxy = (void*)0;
-    pTarget->removeEntityListener_00c9c670(pProxy);
+    entity->removeEntityListener_00c9c670(pProxy);
 
     for (int i = m_uiItemCount - 1; i >= 0; i--) {
         BhkShape* p = m_elements[i].p;
@@ -611,7 +630,7 @@ void BhkProxy::RemoveTarget(BhkTarget* pTarget)
             key = (char*)p + p->unk10;
         else
             key = 0;
-        if (key == (char*)pTarget) {
+        if (key == (char*)entity) {
             m_uiItemCount--;
             if (m_uiItemCount != i) {
                 __int64* src = (__int64*)&m_elements[m_uiItemCount];
@@ -626,7 +645,7 @@ void BhkProxy::RemoveTarget(BhkTarget* pTarget)
     int idx = 0;
     bool found = false;
     while (idx < n) {
-        if (m_ids[idx] == pTarget) {
+        if (m_ids[idx] == entity) {
             found = true;
             break;
         }
@@ -652,7 +671,7 @@ struct FUN_00cad900_arg {
     unsigned char flag10;
 };
 
-extern "C" int __cdecl hkStatisticsCollector_getAllocatedSize(int ptr, int size);
+extern "C" int __cdecl hkStatisticsCollector_getAllocatedSize(int p, int size);
 extern "C" char str_010c8444[];
 extern "C" char str_010c8450[];
 extern "C" char str_010c8460[];
@@ -700,31 +719,33 @@ struct FUN_00cad900_cls {
     int m9c;
     int ma0;
 
-    void hkpCharacterProxy_calcContentStatistics(FUN_00cad900_arg* a1, int a2);
+    void hkpCharacterProxy_calcContentStatistics(FUN_00cad900_arg* collector, int cls);
 };
 
 // @fnv 0x00cad900
 // src: XBOX_PDB 0x00cad900
-void FUN_00cad900_cls::hkpCharacterProxy_calcContentStatistics(FUN_00cad900_arg* apReporter, int aiUnused) {
-    if ((m7c & 0x80000000u) == 0 || apReporter->flag10 != 0) {
+// pdb: hkpCharacterProxy::calcContentStatistics | hkpCharacterProxy.obj | retail, string-set bridge, high
+// pdb params: collector, cls
+void FUN_00cad900_cls::hkpCharacterProxy_calcContentStatistics(FUN_00cad900_arg* collector, int cls) {
+    if ((m7c & 0x80000000u) == 0 || collector->flag10 != 0) {
         int p = m74;
         int r = hkStatisticsCollector_getAllocatedSize(p, (m7c & 0x3fffffff) * 0x70);
-        apReporter->v05(3, (const char*)str_010c8460, m74, m78 * 0x70, r);
+        collector->v05(3, (const char*)str_010c8460, m74, m78 * 0x70, r);
     }
-    if ((m94 & 0x80000000u) == 0 || apReporter->flag10 != 0) {
+    if ((m94 & 0x80000000u) == 0 || collector->flag10 != 0) {
         int p = m8c;
         int r = hkStatisticsCollector_getAllocatedSize(p, (m94 & 0x3fffffff) * 4);
-        apReporter->v05(3, (const char*)str_010c8450, m8c, m90 * 4, r);
+        collector->v05(3, (const char*)str_010c8450, m8c, m90 * 4, r);
     }
-    if ((ma0 & 0x80000000u) == 0 || apReporter->flag10 != 0) {
+    if ((ma0 & 0x80000000u) == 0 || collector->flag10 != 0) {
         int p = m98;
         int r = hkStatisticsCollector_getAllocatedSize(p, (ma0 & 0x3fffffff) * 4);
-        apReporter->v05(3, (const char*)str_010c8460, m98, m9c * 4, r);
+        collector->v05(3, (const char*)str_010c8460, m98, m9c * 4, r);
     }
-    if ((m88 & 0x80000000u) == 0 || apReporter->flag10 != 0) {
+    if ((m88 & 0x80000000u) == 0 || collector->flag10 != 0) {
         int p = m80;
         int r = hkStatisticsCollector_getAllocatedSize(p, (m88 & 0x3fffffff) * 4);
-        apReporter->v05(3, (const char*)str_010c8444, m80, m84 * 4, r);
+        collector->v05(3, (const char*)str_010c8444, m80, m84 * 4, r);
     }
 }
 
@@ -737,17 +758,21 @@ struct PtrList {
 };
 
 hkMemoryRouter* hkMemoryRouter_getInstance();
-void ResizeAudioStream(void* allocator, PtrList* list, unsigned int elemSize);
+void ResizeAudioStream(void* mem, PtrList* array, unsigned int sizeElem);
 
 struct FUN_00cada30_cls {
     int unk00;
 
-    void AppendPointer(void* value);
+    void hkpCharacterProxy_addCharacterProxyListener(void* cpl);
 };
 
 // Appends value to the pointer list at this+0x80, growing it via ResizeAudioStream when full, then increments the count.
 // @fnv 0x00cada30
-void FUN_00cada30_cls::AppendPointer(void* value)
+// src: XBOX_RETAIL_PDB 0x00cada30
+// pdb: hkpCharacterProxy::addCharacterProxyListener | hkpCharacterProxy.obj | retail, object-file gap fill, high
+// pdb params: cpl
+// pdb locals: assertBuf, ostr
+void FUN_00cada30_cls::hkpCharacterProxy_addCharacterProxyListener(void* cpl)
 {
     PtrList* list = (PtrList*)((char*)this + 0x80);
     hkMemoryRouter* pAllocHolder = hkMemoryRouter_getInstance();
@@ -755,7 +780,7 @@ void FUN_00cada30_cls::AppendPointer(void* value)
         ResizeAudioStream(pAllocHolder->m_heap, list, 4);
     }
     void** slot = &list->m_data[list->m_uiItemCount];
-    *slot = value;
+    *slot = cpl;
     if (slot == 0) {
         ResizeAudioStream(pAllocHolder->m_heap, list, 4);
     }
@@ -771,7 +796,7 @@ extern char DAT_010c8470[];
 
 struct FUN_00cad500_Class
 {
-    void __thiscall hkpCharacterProxy_updateFromCinfo(void* arg);
+    void __thiscall hkpCharacterProxy_updateFromCinfo(void* info);
 };
 
 struct FUN_00cada70_cls
@@ -819,12 +844,15 @@ struct FUN_00cada70_cls
     unsigned int m_9c;
     unsigned int m_a0;
 
-    FUN_00cada70_cls* Construct(void* a1);
+    FUN_00cada70_cls* hkpCharacterProxy_ctor(void* info);
 };
 
 // Initialises the object's vtable, pointers and numeric fields, then calls FUN_00cad500 with a1 and returns this.
 // @fnv 0x00cada70
-FUN_00cada70_cls* FUN_00cada70_cls::Construct(void* a1)
+// src: XBOX_RETAIL_PDB 0x00cada70
+// pdb: hkpCharacterProxy::hkpCharacterProxy | hkpCharacterProxy.obj | retail, object-file gap fill, high
+// pdb params: info
+FUN_00cada70_cls* FUN_00cada70_cls::hkpCharacterProxy_ctor(void* info)
 {
     *(unsigned short volatile*)&m_06 = 1;
     *(void* volatile*)&m_08 = str_0102f13c;
@@ -846,7 +874,7 @@ FUN_00cada70_cls* FUN_00cada70_cls::Construct(void* a1)
     FUN_00cad500_Class* self = (FUN_00cad500_Class*)this;
     m_98 = 0;
     m_9c = 0;
-    self->hkpCharacterProxy_updateFromCinfo(a1);
+    self->hkpCharacterProxy_updateFromCinfo(info);
     return this;
 }
 
@@ -858,9 +886,9 @@ namespace Memory289 {extern "C" hkMemoryRouter* hkMemoryRouter_getInstance() thr
 
 // Keep these implementations inline while using the shared class layouts.
 __declspec(nothrow) __forceinline hkpCdPointCollector::hkpCdPointCollector()
-    : m_fEarlyOutDistance(DAT_0104da48) {}
+    : m_earlyOutDistance(DAT_0104da48) {}
 __declspec(nothrow) __forceinline hkpCdPointCollector::~hkpCdPointCollector() {}
-__forceinline void hkpCdPointCollector::reset() { m_fEarlyOutDistance=DAT_0104da48; }
+__forceinline void hkpCdPointCollector::reset() { m_earlyOutDistance=DAT_0104da48; }
 __declspec(nothrow) __forceinline ContactArray289::ContactArray289()
     : data(local), count(0), capacity(0x80000008) {}
 __declspec(nothrow) __forceinline ContactArray289::~ContactArray289() {
@@ -872,7 +900,7 @@ __declspec(nothrow) __forceinline ContactArray289::~ContactArray289() {
 
 __declspec(nothrow) inline hkpAllCdPointCollector::hkpAllCdPointCollector() {}
 __declspec(nothrow) __forceinline hkpAllCdPointCollector::~hkpAllCdPointCollector() {}
-inline void hkpAllCdPointCollector::reset() {contacts.count=0;m_fEarlyOutDistance=DAT_0104da48;}
+inline void hkpAllCdPointCollector::reset() {m_hits.count=0;m_earlyOutDistance=DAT_0104da48;}
 struct Query289 {
  __declspec(nothrow) void hkpCharacterProxy_integrateImplementation(void*,void*,hkpCdPointCollector*,hkpCdPointCollector*,unsigned,unsigned) throw();
  void CollectAllContactPoints(void*,void*);
@@ -940,7 +968,7 @@ struct S00cacaa0_World {
     S00cacaa0_Src* m_src;
     unsigned int unk7c;
     S00cacaa0_Disp* m_disp;
-    void hkpWorld_linearCast(S00cacaa0_Coll* a, float* b, void* c, void* d);
+    void hkpWorld_linearCast(S00cacaa0_Coll* collA, float* b, void* castCollector, void* startPointCollector);
 };
 
 struct S00cacaa0_Agent {
@@ -981,19 +1009,22 @@ struct S00cacaa0_cls {
     unsigned int unk00; unsigned int unk04; unsigned int unk08; unsigned int unk0c; unsigned int unk10; unsigned int unk14; unsigned int unk18; unsigned int unk1c;
     hkVector4 m_v20;
     S00cacaa0_Phantom* m_pPhantom;
-    void hkpCharacterProxy_linearCast(bool flag, float* a2, void* a3, void* a4);
+    void hkpCharacterProxy_linearCast(bool doWorldCast, float* input, void* castCollector, void* startCollector);
 };
 
 // With flag set calls the world's FUN_00c92430; otherwise builds an input and dispatches it to each indexed entry via the dispatch table or collision agents.
 // @fnv 0x00cacaa0
 // src: COMMUNITY 0x00cacaa0
-void S00cacaa0_cls::hkpCharacterProxy_linearCast(bool flag, float* a2, void* a3, void* a4)
+// pdb: hkpCharacterProxy::linearCast | hkpCharacterProxy.obj | retail, upstream name already matches, high
+// pdb params: doWorldCast, input, castCollector, startCollector
+// pdb locals: lcInput, assertBuf, ostr
+void S00cacaa0_cls::hkpCharacterProxy_linearCast(bool doWorldCast, float* input, void* castCollector, void* startCollector)
 {
     S00cacaa0_Phantom* pPhantom = m_pPhantom;
     S00cacaa0_World* world = pPhantom->m_pOwningWorld;
     S00cacaa0_Coll* coll = &pPhantom->m_coll;
-    if (flag) {
-        world->hkpWorld_linearCast(coll, a2, a3, a4);
+    if (doWorldCast) {
+        world->hkpWorld_linearCast(coll, input, castCollector, startCollector);
         return;
     }
 
@@ -1018,8 +1049,8 @@ void S00cacaa0_cls::hkpCharacterProxy_linearCast(bool flag, float* a2, void* a3,
     float norm;
     _mm_store_ss(&norm, t);
     in.f64 = norm;
-    *(float*)&in.f08 = a2[5];
-    in.f60 = a2[4];
+    *(float*)&in.f08 = input[5];
+    in.f60 = input[4];
 
     if (pPhantom->v14() == 1) {
         S00cacaa0_Arr& arr = m_pPhantom->m_aiIndexedValues;
@@ -1027,13 +1058,13 @@ void S00cacaa0_cls::hkpCharacterProxy_linearCast(bool flag, float* a2, void* a3,
         for (int i = arr.m_iElementCount - 1; i >= 0; --i) {
             S00cacaa0_Coll* const& other = ((S00cacaa0_Coll**)arr.m_data)[i];
             unsigned char k = disp->m_table[coll->m_pCollisionShape->m_type][other->m_pCollisionShape->m_type];
-            ((S00cacaa0_Entry*)((char*)disp + 0x9ac))[k].m_fn(coll, other, &in, a3, a4);
+            ((S00cacaa0_Entry*)((char*)disp + 0x9ac))[k].m_fn(coll, other, &in, castCollector, startCollector);
         }
     } else {
         S00cacaa0_Arr& arr = m_pPhantom->m_aiIndexedValues;
         for (int i = arr.m_iElementCount - 1; i >= 0; --i) {
             S00cacaa0_Pair& p = ((S00cacaa0_Pair*)arr.m_data)[i];
-            p.m_pCollisionAgent->v14(coll, p.m_coll, &in, a3, a4);
+            p.m_pCollisionAgent->v14(coll, p.m_coll, &in, castCollector, startCollector);
         }
     }
 }
@@ -1251,7 +1282,7 @@ struct ContactSolver {
     ContactListener** listeners;
     int listenerCount;
     ContactListener*& listenerAt(int i) {return listeners[i];}
-    void ahkpCharacterProxy_ResolveContacts(const float*,const hkVector4*,Output**,int);
+    void hkpCharacterProxy_applySurfaceInteractions(const float*,const hkVector4*,Output**,int);
 };
 extern float DAT_010c8440;
 static LocalM128 cross(LocalM128 a,LocalM128 b) {
@@ -1273,16 +1304,19 @@ static LocalM128 scaleAccel(LocalM128 a,float s) {LocalM128 v=_mm_load_ss(&s);re
 static LocalM128 scaleExtra(LocalM128 a,float s) {LocalM128 v=_mm_load_ss(&s);return _mm_mul_ps(_mm_shuffle_ps(v,v,0),a);}
 // Iterates active contacts, computes impulse responses using body inertia and correction, notifies listeners, and applies or collects results.
 // @fnv 0x00cacf80
-// src: COMMUNITY 0x00cacf80
-void ContactSolver::ahkpCharacterProxy_ResolveContacts(const float* step,const hkVector4* acceleration,Output** output,int outputCapacity) {
+// src: XBOX_RETAIL_PDB 0x00cacf80 (was COMMUNITY)
+// pdb: hkpCharacterProxy::applySurfaceInteractions | hkpCharacterProxy.obj | retail, object-file gap fill, high
+// pdb params: stepInfo, worldGravity, command, maxInteractions
+// pdb locals: numInteractions, input, val, output, pointVel, inertiaInv, jacAng, rc, deltaTime
+void ContactSolver::hkpCharacterProxy_applySurfaceInteractions(const float* stepInfo,const hkVector4* worldGravity,Output** command,int maxInteractions) {
     Work work;
-    work.velocityScale=readStep(step,2);
+    work.velocityScale=readStep(stepInfo,2);
     Output* destination=0;
-    bool collect=output!=0;
+    bool collect=command!=0;
     int count=contacts.size;
     if(collect) {
-        if(outputCapacity<count)count=outputCapacity;
-        destination=*output;
+        if(maxInteractions<count)count=maxInteractions;
+        destination=*command;
     }
     for(int index=0;index<count;++index) {
         ShapeData* body=reinterpret_cast<ShapeData*>(reinterpret_cast<char*>(contacts[index].shape)+contacts[index].shape->childOffset);
@@ -1308,7 +1342,7 @@ void ContactSolver::ahkpCharacterProxy_ResolveContacts(const float* step,const h
         float velocity=surfaceVec.dot3scalar(work.normal);
         work.velocity=velocity;
         float impulse=(float)(-velocity*0.9f);
-        if(work.point.w<0.0f)impulse=(float)(work.point.w*readStep(step,3)*0.4f+impulse);
+        if(work.point.w<0.0f)impulse=(float)(work.point.w*readStep(stepInfo,3)*0.4f+impulse);
         Response response;
         response.location.set(sharedQuad(contactQuad(work.point)));
         response.impulse.set(sharedQuad(_mm_setzero_ps()));
@@ -1324,7 +1358,7 @@ void ContactSolver::ahkpCharacterProxy_ResolveContacts(const float* step,const h
             mass+=laneW(body->motion.inertiaAndMass);
             work.mass=mass;
             work.factor=impulse/work.mass;
-            float cutoff=-minSpeed*readStep(step,2);
+            float cutoff=-minSpeed*readStep(stepInfo,2);
             if(work.factor<cutoff)work.factor=cutoff;
             normal=contactQuad(work.normal);
             response.impulse.set(sharedQuad(scale(normal,work.factor)));
@@ -1332,7 +1366,7 @@ void ContactSolver::ahkpCharacterProxy_ResolveContacts(const float* step,const h
             work.factor=0.0f;
             work.mass=laneW(body->motion.inertiaAndMass);
         }
-        float incoming=dot(scaleAccel(contactQuad(*acceleration),readStep(step,2)),normal);
+        float incoming=dot(scaleAccel(contactQuad(*worldGravity),readStep(stepInfo,2)),normal);
         if(work.velocity<0.0f)incoming-=work.velocity;
         if(DAT_010c8440>incoming)response.impulse.set(sharedQuad(_mm_add_ps(scaleExtra(normal,incoming*correctionScale),contactQuad(response.impulse))));
         for(int c=listenerCount-1;c>=0;--c)
@@ -1347,7 +1381,7 @@ void ContactSolver::ahkpCharacterProxy_ResolveContacts(const float* step,const h
             ((void (__thiscall*)(Motion*,const hkVector4*,const hkVector4*))motion->vtable[20])(motion,&response.impulse,&response.location);
         }
     }
-    if(collect && destination-*output<outputCapacity)destination->body=0;
+    if(collect && destination-*command<maxInteractions)destination->body=0;
 }
 }  // namespace fnv_00cacf80
 
@@ -1362,7 +1396,7 @@ struct HkWorldLock289 {
     int unk04;
 };
 struct HkWorld289 {
-    void hkpWorldObject_removeProperty(HkWorldLock289* apOut, unsigned int auiFlags) throw();
+    void hkpWorldObject_removeProperty(HkWorldLock289* key, unsigned int auiFlags) throw();
     void FUN_00c905b0() throw();
 };
 
@@ -1432,6 +1466,7 @@ struct FUN_00cadb00 : HkReferencedObject289, HkEntityListener289, HkPhantomListe
 
 // Removes this listener from every entity and phantom, clears both arrays, then calls FUN_00cd2a50 and FUN_00c905b0 on m_pOwningWorld.
 // @fnv 0x00cadb00
+// pdb: hkpCharacterProxy::~hkpCharacterProxy | hkpCharacterProxy.obj | retail, object-file gap fill, high
 FUN_00cadb00::~FUN_00cadb00()
 {
     for (int i = 0; i < m_kActorEntries.m_iElementCount; i++) {
@@ -1511,16 +1546,19 @@ struct S_Collector : S_CdBase {
 
 struct S00cafbf0_Obj {
     void hkpCharacterProxy_integrateImplementation(int, int, S_Collector*, S_Collector*, int, int) throw();
-    void hkpCharacterProxy_integrateMultithreaded(int a, int b, int c, int d) throw();
+    void hkpCharacterProxy_integrateMultithreaded(int stepInfo, int gravity, int command, int maxInteractions) throw();
 };
 
 // Creates two S_Collector objects and passes them with a, b, c and d to FUN_00cade20.
 // @fnv 0x00cafbf0
 // src: COMMUNITY 0x00cafbf0
-void S00cafbf0_Obj::hkpCharacterProxy_integrateMultithreaded(int a, int b, int c, int d) throw() {
+// pdb: hkpCharacterProxy::integrateMultithreaded | hkpCharacterProxy.obj | retail, upstream name already matches, high
+// pdb params: stepInfo, gravity, command, maxInteractions
+// pdb locals: startPointCollector, castCollector
+void S00cafbf0_Obj::hkpCharacterProxy_integrateMultithreaded(int stepInfo, int gravity, int command, int maxInteractions) throw() {
     S_Collector first;
     S_Collector second;
-    hkpCharacterProxy_integrateImplementation(a, b, &first, &second, c, d);
+    hkpCharacterProxy_integrateImplementation(stepInfo, gravity, &first, &second, command, maxInteractions);
 }
 
 // fires added/removed notifications and keeps entity/phantom listeners attached to the touched objects.
@@ -1543,7 +1581,7 @@ struct S_00caf4d0_Stack {
     void deallocateStack(void* p) throw() { m_next = (char*)p; }
 };
 static __forceinline hkMemoryRouter* GetRouter37() throw() { return reinterpret_cast<hkMemoryRouter*>(hkMemoryRouter_getInstance()); }
-void ResizeAudioStream(S_00caf4d0_Heap& alloc, void* array, int elemSize) throw();
+void ResizeAudioStream(S_00caf4d0_Heap& mem, void* array, int sizeElem) throw();
 
 inline void* __cdecl operator new(unsigned int, void* where) throw() { return where; }
 
@@ -1661,11 +1699,11 @@ struct S_00caf4d0_PhantomListener { virtual void plUnk00(); };
 struct S_00caf4d0_TrackerBase { virtual void tbUnk00(); int unk04; };
 
 struct S_00caf4d0_Entity {
-    void hkpEntity_addEntityListener(S_00caf4d0_EntityListener* l) throw();
+    void hkpEntity_addEntityListener(S_00caf4d0_EntityListener* el) throw();
     void removeEntityListener_00c9c670(S_00caf4d0_EntityListener* l) throw();
 };
 struct S_00caf4d0_Phantom {
-    void AddItem(S_00caf4d0_PhantomListener* l) throw();
+    void hkpPhantom_addPhantomListener(S_00caf4d0_PhantomListener* el) throw();
     void RemoveListener(S_00caf4d0_PhantomListener* l) throw();
 };
 
@@ -1716,20 +1754,23 @@ struct S_00caf4d0_Tracker : S_00caf4d0_TrackerBase, S_00caf4d0_EntityListener, S
     S_00caf4d0_Array<S_00caf4d0_Entity*> m_kActorEntries;  // 0x8c
     S_00caf4d0_Array<S_00caf4d0_Phantom*> m_kPhantoms; // 0x98
 
-    float hkpCharacterProxy_surfaceDistance(const S_00caf4d0_Point* a, const S_00caf4d0_Point* b) throw();
-    void hkpCharacterProxy_fireContactRemoved(const S_00caf4d0_Point* p) throw();
-    void hkpCharacterProxy_fireContactAdded(const S_00caf4d0_Point* p) throw();
-    int hkpCharacterProxy_findSurface(const S_00caf4d0_Point* p) throw();
+    float hkpCharacterProxy_surfaceDistance(const S_00caf4d0_Point* p1, const S_00caf4d0_Point* p2) throw();
+    void hkpCharacterProxy_fireContactRemoved(const S_00caf4d0_Point* point) throw();
+    void hkpCharacterProxy_fireContactAdded(const S_00caf4d0_Point* point) throw();
+    int hkpCharacterProxy_findSurface(const S_00caf4d0_Point* info) throw();
 
-    void hkpCharacterProxy_updateManifold(const S_00caf4d0_Collector* input, const S_00caf4d0_Collector* extra, bool keepListeners) throw();
+    void hkpCharacterProxy_updateManifold(const S_00caf4d0_Collector* startPointCollector, const S_00caf4d0_Collector* castCollector, bool isMultithreaded) throw();
 };
 
 // Merges input and extra hit points into m_kPoints, deduplicates close points, and updates entity/phantom listener lists.
 // @fnv 0x00caf4d0
 // src: XBOX_PDB 0x00caf4d0
-void S_00caf4d0_Tracker::hkpCharacterProxy_updateManifold(const S_00caf4d0_Collector* input, const S_00caf4d0_Collector* extra, bool keepListeners) throw()
+// pdb: hkpCharacterProxy::updateManifold | hkpCharacterProxy.obj | retail, upstream name already matches, high
+// pdb params: startPointCollector, castCollector, isMultithreaded
+// pdb locals: startPointHits, body, phantom
+void S_00caf4d0_Tracker::hkpCharacterProxy_updateManifold(const S_00caf4d0_Collector* startPointCollector, const S_00caf4d0_Collector* castCollector, bool isMultithreaded) throw()
 {
-    if (!keepListeners)
+    if (!isMultithreaded)
     {
         for (int i = 0; i < m_kActorEntries.GetLogicalSize(); i++)
             m_kActorEntries[i]->removeEntityListener_00c9c670(this);
@@ -1741,12 +1782,12 @@ void S_00caf4d0_Tracker::hkpCharacterProxy_updateManifold(const S_00caf4d0_Colle
     m_kActorEntries.clear();
     m_kPhantoms.clear();
 
-    S_00caf4d0_LocalArray<S_00caf4d0_Point> hits(input->m_kHits.GetLogicalSize());
-    hits.m_iElementCount = input->m_kHits.GetLogicalSize();
+    S_00caf4d0_LocalArray<S_00caf4d0_Point> hits(startPointCollector->m_kHits.GetLogicalSize());
+    hits.m_iElementCount = startPointCollector->m_kHits.GetLogicalSize();
     for (int i = 0; i < hits.GetLogicalSize(); i++)
     {
         S_00caf4d0_Point& p = hits[i];
-        p = input->m_kHits[i];
+        p = startPointCollector->m_kHits[i];
         if (p.getDistance() < minDistance)
             minDistance = p.getDistance();
     }
@@ -1807,9 +1848,9 @@ void S_00caf4d0_Tracker::hkpCharacterProxy_updateManifold(const S_00caf4d0_Colle
         }
     }
 
-    if (extra->m_kHits.GetLogicalSize() > 0)
+    if (castCollector->m_kHits.GetLogicalSize() > 0)
     {
-        const S_00caf4d0_Point& hit = extra->m_kHits[0];
+        const S_00caf4d0_Point& hit = castCollector->m_kHits[0];
         if (hkpCharacterProxy_findSurface(&hit) == -1)
         {
             hkpCharacterProxy_fireContactAdded(&hit);
@@ -1840,7 +1881,7 @@ void S_00caf4d0_Tracker::hkpCharacterProxy_updateManifold(const S_00caf4d0_Colle
             S_00caf4d0_Entity* entity = getRigidBody_caf(m_kPoints[i].m_pCollidableB);
             if (entity && m_kActorEntries.indexOf(entity) == -1)
             {
-                if (!keepListeners)
+                if (!isMultithreaded)
                     entity->hkpEntity_addEntityListener(this);
                 m_kActorEntries.AddBack(entity);
             }
@@ -1850,8 +1891,8 @@ void S_00caf4d0_Tracker::hkpCharacterProxy_updateManifold(const S_00caf4d0_Colle
             S_00caf4d0_Phantom* phantom = getPhantom_caf(m_kPoints[i].m_pCollidableB);
             if (phantom && m_kPhantoms.indexOf(phantom) == -1)
             {
-                if (!keepListeners)
-                    phantom->AddItem(this);
+                if (!isMultithreaded)
+                    phantom->hkpPhantom_addPhantomListener(this);
                 m_kPhantoms.AddBack(phantom);
             }
         }
@@ -1865,9 +1906,12 @@ struct ContactQuery {
 // Creates a local S_Collector and calls FUN_00cae900 with a, b and the collector.
 // @fnv 0x00cafd00
 // src: COMMUNITY 0x00cafd00
-void ContactQuery::ahkpCharacterProxy_checkSupport(void* a, unsigned b) {
+// pdb: hkpCharacterProxy::checkSupport | hkpCharacterProxy.obj | retail, object-file gap fill, high
+// pdb params: direction, ground
+// pdb locals: startPointCollector
+void ContactQuery::ahkpCharacterProxy_checkSupport(void* direction, unsigned ground) {
     S_Collector collector;
-    ahkpCharacterProxy_checkSupportWithCollector(a,b,&collector);
+    ahkpCharacterProxy_checkSupportWithCollector(direction,ground,&collector);
 }
 
 struct CadColl {
@@ -1966,6 +2010,9 @@ struct Cad820Cls : S_00caf4d0_TrackerBase, S_00caf4d0_EntityListener, CadPhantom
 // Calls phantom->RemoveListener(this), removes m_kPoints entries whose collidable B belongs to the phantom, and removes phantom from m_kPhantoms.
 // @fnv 0x00cad820
 // src: COMMUNITY 0x00cad820
+// pdb: hkpCharacterProxy::phantomRemovedCallback | hkpCharacterProxy.obj | retail, vtable slot, high
+// pdb params: phantom
+// pdb locals: assertBuf, ostr
 void Cad820Cls::hkpPhantomListener_phantomRemovedCallback(CadPhantom* phantom) throw()
 {
     phantom->RemoveListener(this);
@@ -1998,7 +2045,7 @@ struct S00cafd90_Info {
 struct S00cafd90_Body;
 
 struct S00cafd90_Conv {
-    __declspec(noalias) void hkpRigidBody_getPointVelocity(S00cafd90_Body* body, LocalM128* out);
+    __declspec(noalias) void hkpRigidBody_getPointVelocity(S00cafd90_Body* p, LocalM128* vecOut);
 };
 
 struct S00cafd90_Body {
@@ -2053,10 +2100,13 @@ static __forceinline float S00cafd90_Dot3(LocalM128 a, LocalM128 b)
 // Returns |pa-pb|^2 * DAT_0101ffa0 + unk60^2 * (1 - dot of the unk10 vectors) * DAT_01020758 + the squared difference of their w components.
 // @fnv 0x00cafd90
 // src: COMMUNITY 0x00cafd90
-float FUN_00cacf10_cls::hkpCharacterProxy_surfaceDistance(void* a_, void* b_)
+// pdb: hkpCharacterProxy::surfaceDistance | hkpCharacterProxy.obj | retail, upstream name already matches, high
+// pdb params: p1, p2
+// pdb locals: p2Vel, p1Vel
+float FUN_00cacf10_cls::hkpCharacterProxy_surfaceDistance(void* p1, void* p2)
 {
-    S00cafd90_Body* a = (S00cafd90_Body*)a_;
-    S00cafd90_Body* b = (S00cafd90_Body*)b_;
+    S00cafd90_Body* a = (S00cafd90_Body*)p1;
+    S00cafd90_Body* b = (S00cafd90_Body*)p2;
     float t = 1.0f - S00cafd90_Dot3(a->unk10.m_vComponents, b->unk10.m_vComponents);
     float c = *(float*)&unk60 * *(float*)&unk60 * t;
     float dw = a->unk10.m_vComponents.m128_f32[3] - b->unk10.m_vComponents.m128_f32[3];
@@ -2181,7 +2231,7 @@ public:
     __forceinline S00cacd60_MotionType getMotionType() const { return getRigidMotion()->getType(); }
     __forceinline S00cacd60_Bool isFixedOrKeyframed() const { return (m_pMotionState.m_type == S00cacd60_FIXED) || (m_pMotionState.m_type == S00cacd60_KEYFRAMED); }
     __forceinline const hkVector4& getCenterOfMassInWorld() const { return getRigidMotion()->GetMotionState()->getSweptTransform().m_vCenterOfMass1; }
-    void hkpRigidBody_getPointVelocity(const hkVector4& p, hkVector4& vel) const;
+    void hkpRigidBody_getPointVelocity(const hkVector4& p, hkVector4& vecOut) const;
 };
 __forceinline S00cacd60_Body* S00cacd60_GetRigidBody(const S00cacd60_Collidable* c) {
     if (c->getType() == 1) {
@@ -2274,6 +2324,8 @@ public:
 // Populates a Surface with friction, velocity and priority from a Hit and the proxy's friction and penetration recovery fields.
 // @fnv 0x00cacd60
 // src: COMMUNITY 0x00cacd60
+// pdb: hkpCharacterProxy::extractSurfaceConstraintInfo | hkpCharacterProxy.obj | retail, upstream name already matches, high
+// pdb params: hit, surface, timeTravelled
 void S00cacd60_Proxy::hkpCharacterProxy_extractSurfaceConstraintInfo(const S00cacd60_Hit& hit, S00cacd60_Surface& surface, float timeTravelled) const {
     surface.m_kTriangleNormal = hit.m_kPoint.getSeparatingNormal();
     surface.m_kTriangleNormal(3) -= static_cast<S00cacd60_Real>(m_fKeepDistance);
@@ -2360,18 +2412,20 @@ static __forceinline LocalM128 NormalizeSafe(LocalM128 projected)
 // If dot(normal at index, planev) is between DAT_01013ea4 and maximumDistance, appends a copy with a re-projected, normalized normal and returns 1, else 0.
 // @fnv 0x00cadca0
 // src: XBOX_PDB 0x00cadca0
-__declspec(noinline) static unsigned char addMaxSlopePlane(ContactBuffer* buffer, unsigned int index, float maximumDistance, const LocalM128& planev)
+// pdb: addMaxSlopePlane | hkpCharacterProxy.obj | retail, upstream name already matches, high
+// pdb params: maxSlopeCos, up, index, surfaceConstraintsInOut
+__declspec(noinline) static unsigned char addMaxSlopePlane(ContactBuffer* maxSlopeCos, unsigned int up, float maximumDistance, const LocalM128& surfaceConstraintsInOut)
 {
-    LocalM128 scaled = _mm_mul_ps(buffer->entries[index].normal, planev);
+    LocalM128 scaled = _mm_mul_ps(maxSlopeCos->entries[up].normal, surfaceConstraintsInOut);
     float depth;
     _mm_store_ss(&depth, _mm_add_ss(_mm_shuffle_ps(scaled, scaled, 0xaa), _mm_add_ss(_mm_shuffle_ps(scaled, scaled, 0x55), scaled)));
     if (DAT_01013ea4 < depth && maximumDistance > depth)
     {
         hkMemoryRouter* router = GetRouter37();
-        if (buffer->count == (buffer->capacityFlags & 0x3fffffffu))
-            ResizeAudioStream(reinterpret_cast<S_00caf4d0_Heap&>(router->heap()), buffer, 64);
-        Contact& destination = buffer->entries[buffer->count++];
-        const Contact& original = buffer->entries[index];
+        if (maxSlopeCos->count == (maxSlopeCos->capacityFlags & 0x3fffffffu))
+            ResizeAudioStream(reinterpret_cast<S_00caf4d0_Heap&>(router->heap()), maxSlopeCos, 64);
+        Contact& destination = maxSlopeCos->entries[maxSlopeCos->count++];
+        const Contact& original = maxSlopeCos->entries[up];
         destination.normal = original.normal;
         destination.tangent = original.tangent;
         destination.distance = original.distance;
@@ -2380,7 +2434,7 @@ __declspec(noinline) static unsigned char addMaxSlopePlane(ContactBuffer* buffer
         destination.bias = original.bias;
         destination.identifier = original.identifier;
 
-        LocalM128 projected = _mm_add_ps(_mm_mul_ps(planev, Set1(-depth)), destination.normal);
+        LocalM128 projected = _mm_add_ps(_mm_mul_ps(surfaceConstraintsInOut, Set1(-depth)), destination.normal);
         destination.normal = NormalizeSafe(projected);
         return 1;
     }
@@ -2432,16 +2486,19 @@ struct S_00cacc50 {
     int unk50;
     int unk54;
     float m58;
-    float hkpCharacterProxy_moveToLinearCastHitPosition(const S_A& a, S_B* b, S_Pad<hkVector4> c, S_Pad<hkVector4> d);
+    float hkpCharacterProxy_moveToLinearCastHitPosition(const S_A& output, S_B* castCollector, S_Pad<hkVector4> castInput, S_Pad<hkVector4> position);
 };
 
 // Computes a clamped scalar parameter from a dot product and length, then blends two vectors and returns the scaled result.
 // @fnv 0x00cacc50
 // src: COMMUNITY 0x00cacc50
-float S_00cacc50::hkpCharacterProxy_moveToLinearCastHitPosition(const S_A& a, S_B* b, S_Pad<hkVector4> c, S_Pad<hkVector4> d) {
-    const S_A* ap = &a;
+// pdb: hkpCharacterProxy::moveToLinearCastHitPosition | hkpCharacterProxy.obj | retail, upstream name already matches, high
+// pdb params: output, castCollector, castInput, position
+// pdb locals: fraction, assertBuf, ostr
+float S_00cacc50::hkpCharacterProxy_moveToLinearCastHitPosition(const S_A& output, S_B* castCollector, S_Pad<hkVector4> castInput, S_Pad<hkVector4> position) {
+    const S_A* ap = &output;
     LocalM128 v = ap->v.m_vComponents;
-    S_Inner* q = b->m10;
+    S_Inner* q = castCollector->m10;
     float qc = q->m0c;
     float f58 = m58;
     float len;
@@ -2453,7 +2510,7 @@ float S_00cacc50::hkpCharacterProxy_moveToLinearCastHitPosition(const S_A& a, S_
     float r = qc - u / len;
     r = Mx(0.0f, Mn(r, 1.0f));
     LocalM128 t = CaccSplat(r);
-    _mm_store_ps(&d.val()->x, _mm_add_ps(_mm_mul_ps(_mm_sub_ps(DAT_010ec7f0.m_vComponents, t), d.val()->m_vComponents), _mm_mul_ps(c.val()->m_vComponents, t)));
+    _mm_store_ps(&position.val()->x, _mm_add_ps(_mm_mul_ps(_mm_sub_ps(DAT_010ec7f0.m_vComponents, t), position.val()->m_vComponents), _mm_mul_ps(castInput.val()->m_vComponents, t)));
     return ap->m20 * r;
 }
 
@@ -2601,7 +2658,7 @@ struct S_00cad500_This {
     int m_ac;
     char m_b0;
     int unkB1;
-    void hkpCharacterProxy_updateFromCinfo(S_00cad500_Src* a);
+    void hkpCharacterProxy_updateFromCinfo(S_00cad500_Src* info);
     void hkpCharacterProxy_setPosition(S_00cad500_Src* a);
 };
 
@@ -2623,34 +2680,37 @@ __forceinline void S_00cad500_Normalize3(hkVector4& v, float zero, float three, 
 // Copies fields from a, normalizes m_40, zeroes m_20, runs FUN_00c9c670/FUN_00d07c10 over the m_8c and m_98 entries, then registers 0x1300 on m_30 unless present.
 // @fnv 0x00cad500
 // src: XBOX_PDB 0x00cad500
-void S_00cad500_This::hkpCharacterProxy_updateFromCinfo(S_00cad500_Src* apSrc)
+// pdb: hkpCharacterProxy::updateFromCinfo | hkpCharacterProxy.obj | retail, upstream name already matches, high
+// pdb params: info
+// pdb locals: assertBuf, ostr
+void S_00cad500_This::hkpCharacterProxy_updateFromCinfo(S_00cad500_Src* info)
 {
-    apSrc->m_48->FUN_00c90510();
+    info->m_48->FUN_00c90510();
     if (m_30) {
         m_30->FUN_00c905b0();
     }
-    reinterpret_cast<LocalM128&>(m_10) = reinterpret_cast<LocalM128&>(apSrc->m_10);
-    m_34 = apSrc->m_20;
-    m_38 = apSrc->m_24;
-    m_5c = apSrc->m_28;
-    m_50 = apSrc->m_40;
-    m_54 = apSrc->m_44;
-    m_58 = apSrc->m_4c;
-    m_30 = apSrc->m_48;
-    m_60 = apSrc->m_50;
-    m_64 = apSrc->m_54;
-    m_68 = apSrc->m_58;
-    m_6c = apSrc->m_5c;
-    m_70 = apSrc->m_60;
-    float c = (float)cos(apSrc->m_64);
+    reinterpret_cast<LocalM128&>(m_10) = reinterpret_cast<LocalM128&>(info->m_10);
+    m_34 = info->m_20;
+    m_38 = info->m_24;
+    m_5c = info->m_28;
+    m_50 = info->m_40;
+    m_54 = info->m_44;
+    m_58 = info->m_4c;
+    m_30 = info->m_48;
+    m_60 = info->m_50;
+    m_64 = info->m_54;
+    m_68 = info->m_58;
+    m_6c = info->m_5c;
+    m_70 = info->m_60;
+    float c = (float)cos(info->m_64);
     m_a4 = c;
-    m_a8 = apSrc->m_68;
-    m_ac = apSrc->m_6c;
-    m_b0 = apSrc->m_70;
-    reinterpret_cast<LocalM128&>(m_40) = reinterpret_cast<LocalM128&>(apSrc->m_30);
+    m_a8 = info->m_68;
+    m_ac = info->m_6c;
+    m_b0 = info->m_70;
+    reinterpret_cast<LocalM128&>(m_40) = reinterpret_cast<LocalM128&>(info->m_30);
     S_00cad500_Normalize3(m_40, 0.0f, 3.0f, DAT_01016248);
     if (m_30->m_08 != 0) {
-        hkpCharacterProxy_setPosition(apSrc);
+        hkpCharacterProxy_setPosition(info);
     }
     reinterpret_cast<LocalM128&>(m_20) = _mm_setzero_ps();
     for (int i = 0; i < m_90; i++) {
@@ -2675,27 +2735,28 @@ typedef float hkReal;
 
 
 
+// pdb: class hkpCharacterProxyCinfo, size 0x80, 19 members
 struct hkpCharacterProxyCinfo {
-    hkVector4 m_vContactPosition;
-    hkVector4 m_fVelocity;
-    hkReal m_fDynamicFriction;
-    hkReal m_fStaticFriction;
-    hkReal m_fKeepContactTolerance;
+    hkVector4 m_position; // src: XBOX_RETAIL_PDB +0x0 (old: m_vContactPosition)
+    hkVector4 m_velocity; // src: XBOX_RETAIL_PDB +0x10 (old: m_fVelocity)
+    hkReal m_dynamicFriction; // src: XBOX_RETAIL_PDB +0x20 (old: m_fDynamicFriction)
+    hkReal m_staticFriction; // src: XBOX_RETAIL_PDB +0x24 (old: m_fStaticFriction)
+    hkReal m_keepContactTolerance; // src: XBOX_RETAIL_PDB +0x28 (old: m_fKeepContactTolerance)
     int m_2c;
-    hkVector4 m_vStart;
-    hkReal m_fExtraUpStaticFriction;
-    hkReal m_fExtraDownStaticFriction;
-    void* m_pCharacterPhantom;
-    hkReal m_fKeepDistance;
-    hkReal m_fContactAngleSensitivity;
-    int m_uiUserPlanes;
-    hkReal m_fMaxCharacterSpeedForSolver;
-    hkReal m_fCharacterStrength;
-    hkReal m_fCharacterMass;
-    hkReal m_fMaximumSlope;
-    hkReal m_fPenetrationRecoverySpeed;
-    int m_iMaxCastIterations;
-    bool m_bRefreshManifoldInCheckSupport;
+    hkVector4 m_up; // src: XBOX_RETAIL_PDB +0x30 (old: m_vStart)
+    hkReal m_extraUpStaticFriction; // src: XBOX_RETAIL_PDB +0x40 (old: m_fExtraUpStaticFriction)
+    hkReal m_extraDownStaticFriction; // src: XBOX_RETAIL_PDB +0x44 (old: m_fExtraDownStaticFriction)
+    void* m_shapePhantom; // src: XBOX_RETAIL_PDB +0x48 (old: m_pCharacterPhantom)
+    hkReal m_keepDistance; // src: XBOX_RETAIL_PDB +0x4c (old: m_fKeepDistance)
+    hkReal m_contactAngleSensitivity; // src: XBOX_RETAIL_PDB +0x50 (old: m_fContactAngleSensitivity)
+    int m_userPlanes; // src: XBOX_RETAIL_PDB +0x54 (old: m_uiUserPlanes)
+    hkReal m_maxCharacterSpeedForSolver; // src: XBOX_RETAIL_PDB +0x58 (old: m_fMaxCharacterSpeedForSolver)
+    hkReal m_characterStrength; // src: XBOX_RETAIL_PDB +0x5c (old: m_fCharacterStrength)
+    hkReal m_characterMass; // src: XBOX_RETAIL_PDB +0x60 (old: m_fCharacterMass)
+    hkReal m_maxSlope; // src: XBOX_RETAIL_PDB +0x64 (old: m_fMaximumSlope)
+    hkReal m_penetrationRecoverySpeed; // src: XBOX_RETAIL_PDB +0x68 (old: m_fPenetrationRecoverySpeed)
+    int m_maxCastIterations; // src: XBOX_RETAIL_PDB +0x6c (old: m_iMaxCastIterations)
+    bool m_refreshManifoldInCheckSupport; // src: XBOX_RETAIL_PDB +0x70 (old: m_bRefreshManifoldInCheckSupport)
 };
 
 namespace MathUtilities {
@@ -2711,29 +2772,30 @@ namespace MathUtilities {
     }
 }
 
+// pdb: class hkpCharacterProxy, size 0xc0, bases: hkReferencedObject, hkpEntityListener, hkpPhantomListener, 23 members
 struct hkpCharacterProxy {
     int m_00, m_04, m_08, m_0c;
-    hkVector4 m_fVelocity;
-    int m_20, m_24, m_28, m_2c;
-    void* m_pCharacterPhantom;
-    hkReal m_fDynamicFriction;
-    hkReal m_fStaticFriction;
+    hkVector4 m_velocity; // src: XBOX_RETAIL_PDB +0x10 (old: m_fVelocity)
+    int m_oldDisplacement, m_24, m_28, m_2c; // src: XBOX_RETAIL_PDB +0x20 (old: m_20)
+    void* m_shapePhantom; // src: XBOX_RETAIL_PDB +0x30 (old: m_pCharacterPhantom)
+    hkReal m_dynamicFriction; // src: XBOX_RETAIL_PDB +0x34 (old: m_fDynamicFriction)
+    hkReal m_staticFriction; // src: XBOX_RETAIL_PDB +0x38 (old: m_fStaticFriction)
     int m_3c;
-    hkVector4 m_vStart;
-    hkReal m_fExtraUpStaticFriction;
-    hkReal m_fExtraDownStaticFriction;
-    hkReal m_fKeepDistance;
-    hkReal m_fKeepContactTolerance;
-    hkReal m_fContactAngleSensitivity;
-    int m_uiUserPlanes;
-    hkReal m_fMaxCharacterSpeedForSolver;
-    hkReal m_fCharacterStrength;
-    hkReal m_fCharacterMass;
-    int m_74, m_78, m_7c, m_80, m_84, m_88, m_8c, m_90, m_94, m_98, m_9c, m_a0;
-    hkReal m_fMaximumSlopeAngle;
-    hkReal m_fPenetrationRecoverySpeed;
-    int m_iMaxCastIterations;
-    bool m_bRefreshManifoldInCheckSupport;
+    hkVector4 m_up; // src: XBOX_RETAIL_PDB +0x40 (old: m_vStart)
+    hkReal m_extraUpStaticFriction; // src: XBOX_RETAIL_PDB +0x50 (old: m_fExtraUpStaticFriction)
+    hkReal m_extraDownStaticFriction; // src: XBOX_RETAIL_PDB +0x54 (old: m_fExtraDownStaticFriction)
+    hkReal m_keepDistance; // src: XBOX_RETAIL_PDB +0x58 (old: m_fKeepDistance)
+    hkReal m_keepContactTolerance; // src: XBOX_RETAIL_PDB +0x5c (old: m_fKeepContactTolerance)
+    hkReal m_contactAngleSensitivity; // src: XBOX_RETAIL_PDB +0x60 (old: m_fContactAngleSensitivity)
+    int m_userPlanes; // src: XBOX_RETAIL_PDB +0x64 (old: m_uiUserPlanes)
+    hkReal m_maxCharacterSpeedForSolver; // src: XBOX_RETAIL_PDB +0x68 (old: m_fMaxCharacterSpeedForSolver)
+    hkReal m_characterStrength; // src: XBOX_RETAIL_PDB +0x6c (old: m_fCharacterStrength)
+    hkReal m_characterMass; // src: XBOX_RETAIL_PDB +0x70 (old: m_fCharacterMass)
+    int m_manifold, m_78, m_7c, m_listeners, m_84, m_88, m_bodies, m_90, m_94, m_phantoms, m_9c, m_a0; // src: XBOX_RETAIL_PDB m_manifold +0x74 (old: m_74); m_listeners +0x80 (old: m_80); m_bodies +0x8c (old: m_8c); m_phantoms +0x98 (old: m_98)
+    hkReal m_maxSlopeCosine; // src: XBOX_RETAIL_PDB +0xa4 (old: m_fMaximumSlopeAngle)
+    hkReal m_penetrationRecoverySpeed; // src: XBOX_RETAIL_PDB +0xa8 (old: m_fPenetrationRecoverySpeed)
+    int m_maxCastIterations; // src: XBOX_RETAIL_PDB +0xac (old: m_iMaxCastIterations)
+    bool m_refreshManifoldInCheckSupport; // src: XBOX_RETAIL_PDB +0xb0 (old: m_bRefreshManifoldInCheckSupport)
 
     const hkVector4& getPosition() const;
     void getCinfo(hkpCharacterProxyCinfo& info) const;
@@ -2741,27 +2803,29 @@ struct hkpCharacterProxy {
 
 // @fnv 0x00cac9a0
 // src: XBOX_PDB 0x00cac9a0
+// pdb: hkpCharacterProxy::getCinfo | hkpCharacterProxy.obj | retail, upstream name already matches, high
+// pdb params: info
 void hkpCharacterProxy::getCinfo(hkpCharacterProxyCinfo& info) const
 {
-    info.m_vContactPosition = getPosition();
-    info.m_fVelocity = m_fVelocity;
-    info.m_pCharacterPhantom = m_pCharacterPhantom;
-    info.m_fDynamicFriction = m_fDynamicFriction;
-    info.m_fStaticFriction = m_fStaticFriction;
-    info.m_fKeepContactTolerance = m_fKeepContactTolerance;
-    info.m_vStart = m_vStart;
-    info.m_fExtraUpStaticFriction = m_fExtraUpStaticFriction;
-    info.m_fExtraDownStaticFriction = m_fExtraDownStaticFriction;
-    info.m_fKeepDistance = m_fKeepDistance;
-    info.m_fContactAngleSensitivity = m_fContactAngleSensitivity;
-    info.m_uiUserPlanes = m_uiUserPlanes;
-    info.m_fMaxCharacterSpeedForSolver = m_fMaxCharacterSpeedForSolver;
-    info.m_fCharacterStrength = m_fCharacterStrength;
-    info.m_fCharacterMass = m_fCharacterMass;
-    info.m_fMaximumSlope = MathUtilities::acos(m_fMaximumSlopeAngle);
-    info.m_fPenetrationRecoverySpeed = m_fPenetrationRecoverySpeed;
-    info.m_iMaxCastIterations = m_iMaxCastIterations;
-    info.m_bRefreshManifoldInCheckSupport = m_bRefreshManifoldInCheckSupport;
+    info.m_position = getPosition();
+    info.m_velocity = m_velocity;
+    info.m_shapePhantom = m_shapePhantom;
+    info.m_dynamicFriction = m_dynamicFriction;
+    info.m_staticFriction = m_staticFriction;
+    info.m_keepContactTolerance = m_keepContactTolerance;
+    info.m_up = m_up;
+    info.m_extraUpStaticFriction = m_extraUpStaticFriction;
+    info.m_extraDownStaticFriction = m_extraDownStaticFriction;
+    info.m_keepDistance = m_keepDistance;
+    info.m_contactAngleSensitivity = m_contactAngleSensitivity;
+    info.m_userPlanes = m_userPlanes;
+    info.m_maxCharacterSpeedForSolver = m_maxCharacterSpeedForSolver;
+    info.m_characterStrength = m_characterStrength;
+    info.m_characterMass = m_characterMass;
+    info.m_maxSlope = MathUtilities::acos(m_maxSlopeCosine);
+    info.m_penetrationRecoverySpeed = m_penetrationRecoverySpeed;
+    info.m_maxCastIterations = m_maxCastIterations;
+    info.m_refreshManifoldInCheckSupport = m_refreshManifoldInCheckSupport;
 }
 
 namespace sse_ca0c40 {
@@ -2816,22 +2880,25 @@ struct CharProxy_ca0c40 {
     sse_ca0c40::LocalM128 m_1b0;
     sse_ca0c40::LocalM128 m_1c0;
 
-    sse_ca0c40::LocalM128* hkpRigidBody_getPointVelocity(const sse_ca0c40::LocalM128* a, sse_ca0c40::LocalM128* out);
+    sse_ca0c40::LocalM128* hkpRigidBody_getPointVelocity(const sse_ca0c40::LocalM128* p, sse_ca0c40::LocalM128* vecOut);
 };
 
 // Stores m_1b0 plus the cross product of m_1c0 with (*a - m_140) in out and returns out.
 // @fnv 0x00ca0c40
 // src: XBOX_PDB 0x00ca0c40
-sse_ca0c40::LocalM128* CharProxy_ca0c40::hkpRigidBody_getPointVelocity(const sse_ca0c40::LocalM128* a, sse_ca0c40::LocalM128* out) {
-    sse_ca0c40::LocalM128 d = sse_ca0c40::_mm_sub_ps(*a, m_140);
+// pdb: hkpRigidBody::getPointVelocity | bhkRagdollPenetrationUtil.obj | debug, upstream name already matches, high
+// pdb params: p, vecOut
+// pdb locals: assertBuf, ostr
+sse_ca0c40::LocalM128* CharProxy_ca0c40::hkpRigidBody_getPointVelocity(const sse_ca0c40::LocalM128* p, sse_ca0c40::LocalM128* vecOut) {
+    sse_ca0c40::LocalM128 d = sse_ca0c40::_mm_sub_ps(*p, m_140);
     sse_ca0c40::LocalM128 b = m_1c0;
     sse_ca0c40::LocalM128 t1 = sse_ca0c40::_mm_mul_ps(sse_ca0c40::_mm_shuffle_ps(b, b, 0xc9), sse_ca0c40::_mm_shuffle_ps(d, d, 0xd2));
     sse_ca0c40::LocalM128 vTerm2 = sse_ca0c40::_mm_mul_ps(sse_ca0c40::_mm_shuffle_ps(b, b, 0xd2), sse_ca0c40::_mm_shuffle_ps(d, d, 0xc9));
     sse_ca0c40::LocalM128 c;
     c = sse_ca0c40::_mm_sub_ps(t1, vTerm2);
-    sse_ca0c40::_mm_store_ps((float*)out, c);
-    sse_ca0c40::_mm_store_ps((float*)out, sse_ca0c40::_mm_add_ps(m_1b0, c));
-    return out;
+    sse_ca0c40::_mm_store_ps((float*)vecOut, c);
+    sse_ca0c40::_mm_store_ps((float*)vecOut, sse_ca0c40::_mm_add_ps(m_1b0, c));
+    return vecOut;
 }
 
 struct S00cae900_Listeners { void hkpCharacterProxy_fireConstraintsProcessed(void*, void*); };
@@ -2956,8 +3023,8 @@ template <typename T> __forceinline void S00cae900_destruct(T* t, int n, S00cae9
 }
 
 struct S00cae900_ArrRaw;
-extern "C" void __cdecl ResizeAudioStream(S00cae900_Alloc& alloc, S00cae900_ArrRaw* arr, int elemSize);
-extern "C" void __cdecl hkArrayUtil__reserve(S00cae900_Alloc& alloc, S00cae900_ArrRaw* arr, int newCap, int elemSize);
+extern "C" void __cdecl ResizeAudioStream(S00cae900_Alloc& mem, S00cae900_ArrRaw* array, int sizeElem);
+extern "C" void __cdecl hkArrayUtil__reserve(S00cae900_Alloc& mem, S00cae900_ArrRaw* array, int numElem, int sizeElem);
 
 template <typename T>
 // local form of hkArrayBase: 0x00cae900 needs local construction and helper inlining; the shared form changes extent from 1738 to 1768 bytes.
@@ -3197,18 +3264,21 @@ public:
     int unka8;
     int unkac;
     bool m_bRefreshManifoldInCheckSupport;
-    void AllocateStorage_00cae7f0(S00cae900_Collector& collector);
+    void hkpCharacterProxy_refreshManifold(S00cae900_Collector& startPointCollector);
     void ahkpCharacterProxy_checkSupportWithCollector(const hkVector4& direction, S00cae900_SurfaceInfo& ground, S00cae900_Collector& startPointCollector);
 };
 
 // @fnv 0x00cae900
 // src: COMMUNITY 0x00cae900
+// pdb: hkpCharacterProxy::checkSupportWithCollector | hkpCharacterProxy.obj | retail, object-file gap fill, high
+// pdb params: direction, ground, startPointCollector
+// pdb locals: input, output, constraints, storedVelocities, interactions, assertBuf, ostr
 void S00cae900_Proxy::ahkpCharacterProxy_checkSupportWithCollector(const hkVector4& direction, S00cae900_SurfaceInfo& ground, S00cae900_Collector& startPointCollector)
 {
     S00cae900_timer("TtcheckSupport");
     if (m_bRefreshManifoldInCheckSupport)
     {
-        AllocateStorage_00cae7f0(startPointCollector);
+        hkpCharacterProxy_refreshManifold(startPointCollector);
     }
     S00cae900_LocalArray<S00cae900_ConstraintInfo> surfaceConstraints(m_kContactManifold.GetLogicalSize() + m_uiUserPlanes + 10);
     surfaceConstraints.setSizeUnchecked(m_kContactManifold.GetLogicalSize());
@@ -3394,7 +3464,7 @@ __forceinline void S00caefd0_destruct(void*, int, S00caefd0_PodTag) {}
 
 struct S00caefd0_ArrRaw;
 void __cdecl ResizeAudioStream(S00caefd0_Alloc& alloc, S00caefd0_ArrRaw* arr, int elemSize);
-void __cdecl hkArrayUtil__reserve(S00caefd0_Alloc& alloc, S00caefd0_ArrRaw* arr, int newCap, int elemSize);
+void __cdecl hkArrayUtil__reserve(S00caefd0_Alloc& mem, S00caefd0_ArrRaw* array, int numElem, int sizeElem);
 
 template <typename T>
 // local form of hkArrayBase: 0x00caefd0 needs local construction and helper inlining; the shared form changes extent from 1266 to 1286 bytes.
@@ -3620,12 +3690,15 @@ public:
     int unka0;
     float m_fMaximumSlopeAngle;
     void hkpCharacterProxy_fireConstraintsProcessed(void* manifold, void* input);
-    void ProcessEntries_00caefd0(const hkVector4& direction, S00caefd0_SurfaceInfo& ground) const;
+    void hkpCharacterProxy_checkSupportDeprecated(const hkVector4& direction, S00caefd0_SurfaceInfo& ground) const;
 };
 
 // @fnv 0x00caefd0
-// src: GUESS 0x00caefd0 (confidence: low)
-void S00caefd0_Proxy::ProcessEntries_00caefd0(const hkVector4& direction, S00caefd0_SurfaceInfo& ground) const
+// src: XBOX_RETAIL_PDB 0x00caefd0
+// pdb: hkpCharacterProxy::checkSupportDeprecated | hkpCharacterProxy.obj | retail, object-file gap fill, high
+// pdb params: direction, ground
+// pdb locals: input, output, constraints, interactions, assertBuf, ostr
+void S00caefd0_Proxy::hkpCharacterProxy_checkSupportDeprecated(const hkVector4& direction, S00caefd0_SurfaceInfo& ground) const
 {
     S00caefd0_timer("TtcheckSupport");
     S00caefd0_LocalArray<S00caefd0_ConstraintInfo> surfaceConstraints(m_kContactManifold.GetLogicalSize() + m_uiUserPlanes + 10);

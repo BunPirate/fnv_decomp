@@ -58,7 +58,7 @@ inline void ReleasePassReference(NiD3DPass* object)
 void TileShader::UpdateMaterial(const NiPropertyState* state)
 {
     TileShaderProperty* material = (TileShaderProperty*)state->m_aspProps[3];
-    if (material->m_bUnkAC)
+    if (material->bUseScissor)
         AddToCounterIfIdle(0, 0);
 
     NiStencilProperty* rendererSpecific = (NiStencilProperty*)state->m_aspProps[4];
@@ -73,6 +73,8 @@ extern NiGPUProgram* DAT_012021e4;
 extern int DAT_0126f74c;
 
 // @fnv 0x00bcb180
+// pdb: TileShader::ClearPassStages | TileShader.obj | debug, object-file run extension, low
+// pdb locals: i
 void __fastcall SelectGPUProgram(char* this_ptr, int, int arg)
 {
     switch (arg)
@@ -92,23 +94,25 @@ extern int DAT_0126f74c;
 
 struct FUN_00bca500_shell
 {
-    void __thiscall TileShader_InitPass(void* p);
+    void __thiscall TileShader_InitPass(void* auiCurrentPass);
 };
 
 // @fnv 0x00bca500
 // src: XBOX_PDB 0x00bca500
-void __thiscall FUN_00bca500_shell::TileShader_InitPass(void* p)
+// pdb: TileShader::InitPass | TileShader.obj | debug, upstream name already matches, high
+// pdb params: auiCurrentPass
+void __thiscall FUN_00bca500_shell::TileShader_InitPass(void* auiCurrentPass)
 {
     DAT_0126f74c = *reinterpret_cast<int*>(reinterpret_cast<char*>(this) + 0x6c);
 }
 
-extern "C" void* g_012021b8;
+extern "C" void* TileShader_ms_RTTI; // src: XBOX_RETAIL_PDB 0x012021b8 (old: g_012021b8)
 
 // @fnv 0x00bca6b0
 // src: XBOX_PDB 0x00bca6b0
 void* __cdecl TileShader_GetRTTI()
 {
-    return &g_012021b8;
+    return &TileShader_ms_RTTI;
 }
 
 // Sets byte at offset 8 of the objects at thisptr+0x84/0x88/0x8c based on whether a3 equals 0x24d, then calls vtable slot 0x24 on the object at thisptr+0x34.
@@ -139,6 +143,8 @@ void __fastcall SetFlagState(void* thisptr, int, int a3)
 
 // Calls UnkA0 on each non-null vertex shader when unk28 is set, then Unk88 on each non-null pixel shader, and finally calls FUN_00be08b0.
 // @fnv 0x00bca070
+// pdb: TileShader::RecreateRendererData | TileShader.obj | retail, object-file run extension, low
+// pdb locals: i
 void TileShader::RebuildPrograms()
 {
     unsigned int i;
@@ -146,14 +152,14 @@ void TileShader::RebuildPrograms()
     {
         for (i = 0; i < 3; i++)
         {
-            NiD3DVertexShader* p = m_apVertexShaders[i];
+            NiD3DVertexShader* p = spTileVertexShader[i];
             if (p)
                 p->BuildVertexShader();
         }
     }
     for (i = 0; i < 3; i++)
     {
-        NiD3DPixelShader* p = m_apPixelShaders[i];
+        NiD3DPixelShader* p = spTilePixelShader[i];
         if (p)
             p->BuildVertexShader();
     }
@@ -168,6 +174,7 @@ struct X
 };
 // Calls FUN_00bca510, then if bit 0 of a1 is set frees this with _delete and returns this.
 // @fnv 0x00bcae60
+// pdb: TileShader::`scalar deleting destructor' | TileShader.obj | retail, object-file gap fill, high
 void* __thiscall X::DestroyIfFlagged(unsigned int auiFlags)
 {
     FUN_00bca510();
@@ -238,17 +245,19 @@ struct FUN_00bcaca0 : public BSShader
     NiPointer_00bcaca0<NiD3DPixelShader> m_spPS2[3];
     NiPointer_00bcaca0<NiD3DVertexShader> m_sp88;
     NiPointer_00bcaca0<NiD3DVertexShader> m_sp8c;
-    FUN_00bcaca0(NiD3DVertexShader* p1, NiD3DVertexShader* p2);
+    FUN_00bcaca0(NiD3DVertexShader* apShaderDecl, NiD3DVertexShader* apShaderDeclVC);
     virtual ~FUN_00bcaca0();
 };
 
 // @fnv 0x00bcaca0
-FUN_00bcaca0::FUN_00bcaca0(NiD3DVertexShader* pVertexShader1, NiD3DVertexShader* pVertexShader2)
+// pdb: TileShader::TileShader | TileShader.obj | retail, call graph, high
+// pdb params: apShaderDecl, apShaderDeclVC
+FUN_00bcaca0::FUN_00bcaca0(NiD3DVertexShader* apShaderDecl, NiD3DVertexShader* apShaderDeclVC)
 {
     bFirstPass = true;
     iShaderType = 0x14;
-    m_sp88 = pVertexShader1;
-    m_sp8c = pVertexShader2;
+    m_sp88 = apShaderDecl;
+    m_sp8c = apShaderDeclVC;
     DAT_01202188 = NiColorA(1.0f, 1.0f, 1.0f, 1.0f);
     DAT_012021a8 = NiColorA(1.0f, 1.0f, 1.0f, 1.0f);
 }
@@ -256,7 +265,7 @@ FUN_00bcaca0::FUN_00bcaca0(NiD3DVertexShader* pVertexShader1, NiD3DVertexShader*
 
 struct FUN_00bcaff0_shell : public TileShader
 {
-    void CreateShaderConstantMaps();
+    void TileShader_CreateConstantMaps();
 };
 
 extern "C" __declspec(dllimport) long __stdcall InterlockedIncrement(long volatile*);
@@ -283,7 +292,10 @@ extern float DAT_01202198[4];
 
 // Lazily creates the two NiD3DShaderConstantMap objects and adds the tintcolor, WorldViewProjTranspose and TexScroll entries.
 // @fnv 0x00bcaff0
-void FUN_00bcaff0_shell::CreateShaderConstantMaps()
+// src: XBOX_RETAIL_PDB 0x00bcaff0
+// pdb: TileShader::CreateConstantMaps | TileShader.obj | retail, string-set bridge, high
+// pdb locals: uiConstantPoint4Flags, uiDefinedMatrixFlags
+void FUN_00bcaff0_shell::TileShader_CreateConstantMaps()
 {
     TileShaderLayout* p = (TileShaderLayout*)this;
     if (p->m_spSecondShaderConstantMap == 0)
@@ -332,10 +344,13 @@ struct FUN_00bca0d0_shell : BSShader
 {
     unsigned int unk6C;
     VSPtr_bca0d0 m_spVertexShaders[3];
-    void CreateTileVertexShaders();
+    void TileShader_LoadVertexShaders();
 };
 // @fnv 0x00bca0d0
-void FUN_00bca0d0_shell::CreateTileVertexShaders()
+// src: XBOX_RETAIL_PDB 0x00bca0d0
+// pdb: TileShader::LoadVertexShaders | TileShader.obj | retail, string-set bridge, high
+// pdb locals: pvs1Shader, ptempFName, pcacheFName, i
+void FUN_00bca0d0_shell::TileShader_LoadVertexShaders()
 {
     TileShaderDef_bca0d0 kDefs[3];
     kDefs[0].pFile = "tile\\tile.v.hlsl";
@@ -372,6 +387,8 @@ struct FUN_00bca6c0_shell : NiShader
 // Calls NiShader::Initialize, then releases three pairs of reference-counted objects and a NiD3DPass, clearing each pointer and returning true.
 // @fnv 0x00bca6c0
 // src: XBOX_PDB 0x00bca6c0
+// pdb: TileShader::Initialize | TileShader.obj | retail, upstream name already matches, high
+// pdb locals: i
 bool FUN_00bca6c0_shell::TileShader_Initialize()
 {
     NiShader::Initialize();
@@ -558,6 +575,8 @@ struct FUN_00bcaca0 : A51BF0Base
 
 // @fnv 0x00bcae90
 // src: XBOX_PDB 0x00bcae90
+// pdb: TileShader::CreateShader | TileShader.obj | retail, upstream name already matches, high
+// pdb locals: spShaderDeclVC, spShaderDecl, pshader
 FUN_00bcaca0* TileShader_CreateShader()
 {
     NiD3DVertexDeclaration* pFirstObject = NiD3DVertexDeclaration::Create(DAT_011f9508, 2, 1);
@@ -590,6 +609,10 @@ extern void* DAT_011f9508;
 
 // If the counter at DAT_011ff9d8[idx] is zero, sets render state 0xAE through NiDX9Renderer::pRenderState, then adds a2 to the counter.
 // @fnv 0x00b984f0
+// pdb: BSRenderState::SetScissorRect | BSRenderState_Xenon.obj | retail, object-file run extension, low
+// pdb note: debug build links it to BSRenderState::SetScissorEnable
+// pdb params: aiLeft, aiTop, aiRight, aiBottom, aeLock
+// pdb locals: prenderer, ScissorRect
 void AddToCounterIfIdle(unsigned int uiValue, unsigned int uiIncrement)
 {
     unsigned int idx = DAT_011ffce8;
@@ -642,12 +665,15 @@ struct FUN_00bca240_shell : BSShader
     unsigned int unk74;
     unsigned int unk78;
     PSPtr_bca240 m_spPixelShaders[3];
-    void CreateTilePixelShaders();
+    void TileShader_LoadPixelShaders();
 };
 
 // Builds three tile pixel-shader definitions, resolves the pixel shader profile, and creates each shader into m_spPixelShaders.
 // @fnv 0x00bca240
-void FUN_00bca240_shell::CreateTilePixelShaders()
+// src: XBOX_RETAIL_PDB 0x00bca240
+// pdb: TileShader::LoadPixelShaders | TileShader.obj | retail, string-set bridge, high
+// pdb locals: ptempFName, ptarget, pcacheFName, i, pps1Shader
+void FUN_00bca240_shell::TileShader_LoadPixelShaders()
 {
     TileShaderDef_bca240 kDefs[3];
     kDefs[0].pFile = "tile\\tile.p.hlsl";
@@ -735,6 +761,8 @@ struct FUN_00bca510 : BSShader
 };
 // Releases the vertex, pixel and pass references, then resets enabled64, other88 and value60.
 // @fnv 0x00bca510
+// pdb: TileShader::~TileShader | TileShader.obj | debug, call graph, medium
+// pdb locals: i
 FUN_00bca510::~FUN_00bca510()
 {
     for (unsigned int i = 0; i < 3; ++i)
@@ -802,6 +830,8 @@ struct Shader321
     bool ConfigurePassStages();
 };
 // @fnv 0x00bca3c0
+// pdb: TileShader::LoadStagesAndPasses | TileShader.obj | retail, object-file run extension, low
+// pdb locals: ui, spStage
 bool Shader321::ConfigurePassStages()
 {
     FUN_00e804d0(pass);
@@ -1030,19 +1060,19 @@ void TileShader::SetupMaterial(const NiPropertyState* state)
     TileShaderProperty* mat = (TileShaderProperty*)state->m_aspProps[3];
     ((ShaderProp*)m_pkD3DRenderer)->NiDX9Renderer_SetModelTransform(sub68, 0);
 
-    if (mat->m_bUnk91)
+    if (mat->bUseTexScroll)
     {
-        fnv_00bca980::DAT_01202198 = mat->m_afUnk7C[0];
-        fnv_00bca980::DAT_0120219c = mat->m_afUnk7C[1];
-        fnv_00bca980::DAT_012021a0 = mat->m_afUnk7C[2];
-        fnv_00bca980::DAT_012021a4 = mat->m_afUnk7C[3];
+        fnv_00bca980::DAT_01202198 = mat->fTexScrollX[0];
+        fnv_00bca980::DAT_0120219c = mat->fTexScrollX[1];
+        fnv_00bca980::DAT_012021a0 = mat->fTexScrollX[2];
+        fnv_00bca980::DAT_012021a4 = mat->fTexScrollX[3];
     }
     float scale = 1.0f;
     fnv_00bca980::DAT_01202188 = *(NiColorA*)mat->m_afUnk68;
     AlphaProp* pAlpha = (AlphaProp*)state->m_aspProps[2];
     if (pAlpha)
         scale = pAlpha->unk3C;
-    fnv_00bca980::DAT_01202188.a = mat->m_fAlpha * scale;
+    fnv_00bca980::DAT_01202188.a = mat->fAlpha * scale;
 
     Shader* pShader = (Shader*)m_spPixelConstantMap.m_pObject;
     if (pShader)
@@ -1059,19 +1089,19 @@ void TileShader::SetupMaterial(const NiPropertyState* state)
             pShader->Draw(q, ctx, vBC, 0, p34, state, 0, sub68, v20, 0, 1);
     }
 
-    if (mat->m_bUnkAC)
+    if (mat->bUseScissor)
     {
-        NiRectI rect = *(NiRectI*)mat->m_auiUnk9C;
+        NiRectI rect = *(NiRectI*)mat->ScissorRect;
         if (fnv_00bca980::DAT_011f9426)
         {
             NiRenderer* dev = fnv_00bca980::DAT_011f4748;
             if (fnv_00bca980::DAT_011f4748->GetCurrentRT() == dev->GetDefaultRT())
             {
                 NiRectF_tileshader vp = fnv_00bca980::DAT_011ad840;
-                unsigned int h1 = fnv_00bca980::DAT_011f4748->GetDefaultBackBuffer()->m_uiImageHeight;
+                unsigned int h1 = fnv_00bca980::DAT_011f4748->GetDefaultBackBuffer()->m_uiHeight;
                 Ni2DBuffer* rt = fnv_00bca980::DAT_011f4748->GetDefaultBackBuffer();
                 rect.top = (int)(h1 * vp.m_fMaximumV + rect.top * (vp.m_fMinimumV - vp.m_fMaximumV));
-                rect.bottom = (int)(rt->m_uiImageHeight * vp.m_fMaximumV + rect.bottom * (vp.m_fMinimumV - vp.m_fMaximumV));
+                rect.bottom = (int)(rt->m_uiHeight * vp.m_fMaximumV + rect.bottom * (vp.m_fMinimumV - vp.m_fMaximumV));
             }
         }
         AddToCounterIfIdle(1, 0);
@@ -1245,8 +1275,8 @@ struct ShaderState
     ShaderProgram* m_pPixelProgram;
 
     Renderer* NiD3DPass_GetD3DRenderState();
-    void NiD3DPass_SetVertexShader(void* pValue);
-    void NiD3DPass_SetPixelShader(void* pValue);
+    void NiD3DPass_SetVertexShader(void* pkVertexShader);
+    void NiD3DPass_SetPixelShader(void* pkPixelShader);
 };
 
 extern ShaderState* DAT_0126f74c;

@@ -16,6 +16,7 @@ class ImageSpaceEffect__EffectInput;
 class ImageSpaceManager;
 class GetHitEffectParamLocalForm;
 #pragma pack(push, 4)
+// pdb: class ImageSpaceEffect, size 0x58, 7 members
 class ImageSpaceEffect
 {
   public:

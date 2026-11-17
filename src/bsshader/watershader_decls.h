@@ -55,6 +55,7 @@ class ShaderPassRenderer;
 class GraphicsRenderer;
 
 #pragma pack(push, 4)
+// pdb: class WaterShader, size 0x250, bases: BSShader, 11 members
 class WaterShader : public BSShader
 {
   public:
@@ -72,8 +73,8 @@ class WaterShader : public BSShader
     WaterShader();
     static BSShader* CreateShader();
     void InitializeShaderData();
-    void UpdateShaderConstants();
-    void InitWaterPasses();
+    void CreateConstantMaps();
+    void LoadStagesAndPasses();
     virtual ~WaterShader();
     // const NiRTTI* __cdecl WaterShader::*()
     // WaterShader

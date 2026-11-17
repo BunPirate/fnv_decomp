@@ -13,6 +13,7 @@ enum BS_FACEGEN_PHONEME;
 enum BS_FACEGEN_CUSTOM_MORPH;
 struct BS_FACEGEN_MODIFIER;
 
+// pdb: class BSFaceGenAnimationData, size 0x1a0 (here 0x1c0), bases: NiExtraData, 51 members
 class BSFaceGenAnimationData : public NiExtraData
 {
   public:

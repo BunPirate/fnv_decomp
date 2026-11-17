@@ -36,6 +36,10 @@ class TileListBoxCalls_menuconsole : public Tile
 ConsoleManager* ConsoleManager::pInstance = 0;
 
 // @fnv 0x0071b0e0
+// pdb: MenuConsole::PrintLine | MenuConsole.obj | retail, object-file run extension, low
+// pdb note: debug build links it to MenuConsole::Init
+// pdb params: apString, xlist
+// pdb locals: xstring
 void ConsoleManager::Init()
 {
     m_pScriptCompiler = new ScriptCompiler;
@@ -43,6 +47,8 @@ void ConsoleManager::Init()
 
 // Returns the singleton instance, creating and initialising it first when bCreate is true and it does not yet exist.
 // @fnv 0x0071b160
+// pdb: MenuConsole::MenuConsole | MenuConsole.obj | retail, object-file run extension, low
+// pdb note: debug build links it to MenuConsole::Instance
 ConsoleManager* ConsoleManager::Instance(bool bCreate)
 {
     if (!pInstance && bCreate)
@@ -56,7 +62,10 @@ ConsoleManager* ConsoleManager::Instance(bool bCreate)
 }
 
 // @fnv 0x0071b210
-bool ConsoleManager::Idle(int aiKeyCode)
+// pdb: MenuConsole::Idle | MenuConsole.obj | retail, unique string literal, high
+// pdb params: aiKey
+// pdb locals: ikey, pubuf, ipos, pbuf, ilen, a, b, pim, xstr, pparent_tile, iindex, ptile_name, ptile, pparent, piter, frange, xfrust, isizey, isizex, ppickRef, pnode, xMessage, pstring, pmenu_name ...
+bool ConsoleManager::Idle(int aiKey)
 {
     if (cVisible <= 0 || !InterfaceManager_GetSingleton()->IsInMenuMode())
         return false;
@@ -66,7 +75,7 @@ bool ConsoleManager::Idle(int aiKeyCode)
         int length;
         int key;
     } state;
-    state.key = aiKeyCode;
+    state.key = aiKey;
     if (state.key)
     {
         char text[2048];
@@ -121,7 +130,7 @@ bool ConsoleManager::Idle(int aiKeyCode)
             {
                 DAT_011d8ce4 = true;
                 InterfaceManager* manager = InterfaceManager_GetSingleton();
-                reinterpret_cast<InterfaceManager*>(this)->SetNamedMenuOption(
+                reinterpret_cast<InterfaceManager*>(this)->MenuConsole_ScrollBy(
                     reinterpret_cast<BSSimpleArray<NavMeshInfo*, 1024>*>(&m_kOutputLines)->GetSize());
                 _MenuConsole_PrintLine(this, text);
                 BSStringT<char> line(text);
@@ -179,7 +188,7 @@ bool ConsoleManager::Idle(int aiKeyCode)
                 else if (!_mbsnbicmp_(text, "reload strings", 14))
                 {
                     delete manager->GetAVEffect();
-                    Menu::ReadMenuDefinition("Data\\Menus\\globals.xml", 0);
+                    Menu::RemoveFromXMLArchive("Data\\Menus\\globals.xml", 0);
                     Tile* tile = manager->CombatController_GetCombatState()->ReadFile("Data\\Menus\\globals.xml");
                     tile->SetParent(0, 0);
                     manager->BGSTerminal_SetPassword(tile);
@@ -222,27 +231,27 @@ bool ConsoleManager::Idle(int aiKeyCode)
                 {
                     char menuName[1024];
                     sscanf(text, "delete %s", menuName);
-                    MenuSystem::Instance(true)->DeleteMenu(Tile::GetTraitID(menuName));
+                    MenuSystem::Instance(true)->MenuManager_DeleteMenu(Tile::GetTraitID(menuName));
                 }
-                else if (!_mbsnbcmp_(text, "front", 5))
+                else if (!_tcsncmp(text, "front", 5))
                     _MenuConsole_PrintLine(this, "Frontmost: %s",
                                  reinterpret_cast<Tile*>(reinterpret_cast<BSSimpleList<TESObjectREFR*>*>(
                                                              MenuSystem::Instance(true)->GetFrontmostMenu())
                                                              ->GetNext())
                                      ->GetName_00700300());
-                else if (!_mbsnbcmp_(text, "stack", 5))
+                else if (!_tcsncmp(text, "stack", 5))
                 {
                     int i = 0;
                     while (manager->GetMenuStackEntry(i++))
                         _MenuConsole_PrintLine(this, "%i: %i", i, manager->GetMenuStackEntry(i));
                 }
-                else if (!_mbsnbcmp_(text, "visible", 7))
+                else if (!_tcsncmp(text, "visible", 7))
                 {
                     int menu = 0;
                     sscanf(text, "visible %i", &menu);
                     _MenuConsole_PrintLine(this, "Is Visible: %i", MenuSystem::Instance(true)->IsMenuClassVisible(menu));
                 }
-                else if (!_mbsnbcmp_(text, "exit menus", 10))
+                else if (!_tcsncmp(text, "exit menus", 10))
                 {
                     int menu = manager->GetTopEnterStackEntry();
                     while (menu)
@@ -251,12 +260,12 @@ bool ConsoleManager::Idle(int aiKeyCode)
                         menu = manager->GetTopEnterStackEntry();
                     }
                 }
-                else if (!_mbsnbcmp_(text, "emergency texture release", 25))
+                else if (!_tcsncmp(text, "emergency texture release", 25))
                 {
                     Interface_SetFirstChanceTextureRelease();
                     _MenuConsole_PrintLine(this, "First change release of hidden textures activated.");
                 }
-                else if (!_mbsnbcmp_(text, "set trait", 9))
+                else if (!_tcsncmp(text, "set trait", 9))
                 {
                     struct TileTraitEdit
                     {
@@ -277,12 +286,12 @@ bool ConsoleManager::Idle(int aiKeyCode)
                             edit.tile->Set(edit.trait, edit.value, true);
                         }
                         else if (edit.tile)
-                            Print("Unknown trait '%s'", traitName);
+                            MenuConsole_PrintLine("Unknown trait '%s'", traitName);
                         else
-                            Print("Can't find tile '%s'", tileName);
+                            MenuConsole_PrintLine("Can't find tile '%s'", tileName);
                     }
                 }
-                else if (!_mbsnbcmp_(text, "depth", 5))
+                else if (!_tcsncmp(text, "depth", 5))
                 {
                     _MenuConsole_PrintLine(this, "Max Depth: %i", (int)Tile::GetInterfaceScale());
                     _MenuConsole_PrintLine(this, "Cursor Depth: %i",
@@ -290,11 +299,11 @@ bool ConsoleManager::Idle(int aiKeyCode)
                                      reinterpret_cast<TESResponse*>(InterfaceManager_GetSingleton())->GetNext())
                                      ->GetFloat(4013));
                 }
-                else if (!_mbsnbcmp_(text, "new fonts", 9))
+                else if (!_tcsncmp(text, "new fonts", 9))
                     FontManager::GetFontManager(true)->SetByteAtOffset20();
-                else if (!_mbsnbcmp_(text, "old fonts", 9))
+                else if (!_tcsncmp(text, "old fonts", 9))
                     FontManager::GetFontManager(false)->SetByteAtOffset20();
-                else if (!_mbsnbcmp_(text, "iso", 3))
+                else if (!_tcsncmp(text, "iso", 3))
                 {
                     bool first = false;
                     bool second = false;
@@ -304,9 +313,9 @@ bool ConsoleManager::Idle(int aiKeyCode)
                         second = true;
                     Interface_IsolateMenuElements(first, second);
                 }
-                else if (!_mbsnbcmp_(text, "restore menus", 13))
-                    UpdateMenuTileVisibility();
-                else if (!_mbsnbcmp_(text, "use workbook", 12))
+                else if (!_tcsncmp(text, "restore menus", 13))
+                    Interface_RestoreMenuElements();
+                else if (!_tcsncmp(text, "use workbook", 12))
                 {
                     TileMenu* tileMenu = dynamic_cast<TileMenu*>(reinterpret_cast<Tile*>(FindMenuById(1026)));
                     if (tileMenu)
@@ -319,9 +328,9 @@ bool ConsoleManager::Idle(int aiKeyCode)
                     else
                         _MenuConsole_PrintLine(this, "You must open a book (or scroll) before using the workbook.");
                 }
-                else if (!_mbsnbcmp_(text, "dump textures", 13))
+                else if (!_tcsncmp(text, "dump textures", 13))
                     DumpTextureList();
-                else if (!_mbsnbcmp_(text, "bat", 3))
+                else if (!_tcsncmp(text, "bat", 3))
                 {
                     char filename[128];
                     filename[0] = ""[0];
@@ -392,7 +401,7 @@ bool ConsoleManager::Idle(int aiKeyCode)
                         }
                     }
                 }
-                else if (!_mbsnbcmp_(text, "rbat", 3))
+                else if (!_tcsncmp(text, "rbat", 3))
                 {
                     if (!m_bRecordingBatch)
                     {
@@ -496,17 +505,17 @@ bool ConsoleManager::Idle(int aiKeyCode)
                     }
                     else if (state.key == (int)0x80000009)
                     {
-                        reinterpret_cast<InterfaceManager*>(this)->SetNamedMenuOption(-DAT_011d8cfc.Int()->i + 1);
+                        reinterpret_cast<InterfaceManager*>(this)->MenuConsole_ScrollBy(-DAT_011d8cfc.Int()->i + 1);
                         ResetOutputState();
                     }
                     else if (state.key == (int)0x8000000a)
                     {
-                        reinterpret_cast<InterfaceManager*>(this)->SetNamedMenuOption(DAT_011d8cfc.Int()->i - 1);
+                        reinterpret_cast<InterfaceManager*>(this)->MenuConsole_ScrollBy(DAT_011d8cfc.Int()->i - 1);
                         ResetOutputState();
                     }
                     else if (state.key == (int)0x8000000a)
                     {
-                        reinterpret_cast<InterfaceManager*>(this)->SetNamedMenuOption(DAT_011d8cfc.Int()->i - 1);
+                        reinterpret_cast<InterfaceManager*>(this)->MenuConsole_ScrollBy(DAT_011d8cfc.Int()->i - 1);
                         ResetOutputState();
                     }
                     else if (state.key == (int)0x80000003)
@@ -674,6 +683,7 @@ struct FUN_0071af10
 };
 
 // @fnv 0x0071af10
+// pdb: MenuConsole::MenuConsole | MenuConsole.obj | debug, call graph, medium
 FUN_0071af10::FUN_0071af10()
 {
     f39 = 0;
@@ -713,6 +723,8 @@ struct ListHead
     void UpdateState_0071e0f0(ConsoleListNode*);
 };
 // @fnv 0x0071e070
+// pdb: NiTPointerListBase<DFALL<NiTListItem<BSStringT<char> > >,BSStringT<char> >::RemoveAll | MenuConsole.obj | debug, object-file gap fill, medium
+// pdb locals: pkCurr, pkDel
 void ListHead::Clear()
 {
     ConsoleListNode* pkNode = head;
@@ -740,7 +752,7 @@ void __thiscall FUN_0071b020_shell::ClearConsoleOutput_()
     FUN_0071dec0();
 }
 
-void Interface_SetCrosshairRef(int);
+void Interface_SetPickREFR(int);
 // Exe 0x0071d770: local storage view; GetFlags binds the folded DWORD-at-+8 accessor 0x0044ddc0.
 struct MenuconsoleOffset08View
 {
@@ -752,15 +764,16 @@ struct FUN_0071d770_shell : public ConsoleManager
 };
 // @fnv 0x0071d770
 // src: COMMUNITY 0x0071d770
+// pdb: MenuConsole::OnEnterMenuMode | MenuConsole.obj | debug, upstream name already matches, high
 void FUN_0071d770_shell::MenuConsole_OnEnterMenuMode()
 {
     if (cVisible > 0)
     {
         DebugText::Instance(true)->Print("|", (float)m_iConsoleX, (float)m_iConsoleY, 1, -1, -1.0f,
                                          DAT_011d8d38.Int()->i, 0);
-        ((InterfaceManager*)this)->SetNamedMenuOption(((MenuconsoleOffset08View*)((char*)this + 4))->GetFlags());
+        ((InterfaceManager*)this)->MenuConsole_ScrollBy(((MenuconsoleOffset08View*)((char*)this + 4))->GetFlags());
         ResetOutputState();
-        Interface_SetCrosshairRef(0);
+        Interface_SetPickREFR(0);
     }
 }
 
@@ -803,6 +816,9 @@ struct FUN_0071d620_shell
 
 // @fnv 0x0071d620
 // src: COMMUNITY 0x0071d620
+// pdb: MenuConsole::SetVisible | MenuConsole.obj | retail, upstream name already matches, high
+// pdb params: acState
+// pdb locals: cold_state
 void FUN_0071d620_shell::MenuConsole_SetVisible(char acState)
 {
     char cold_state;
@@ -820,7 +836,7 @@ void FUN_0071d620_shell::MenuConsole_SetVisible(char acState)
                 DebugText::Instance(true)->Print("|", (float)m_iConsoleX, (float)m_iConsoleY, 1, -1, -1.0f,
                                                  DAT_011d8d38.Int()->i, 0);
 
-                reinterpret_cast<InterfaceManager*>(this)->SetNamedMenuOption(reinterpret_cast<MenuconsoleOffset08View*>(reinterpret_cast<char*>(this) + 4)->GetFlags());
+                reinterpret_cast<InterfaceManager*>(this)->MenuConsole_ScrollBy(reinterpret_cast<MenuconsoleOffset08View*>(reinterpret_cast<char*>(this) + 4)->GetFlags());
             }
             else
             {
@@ -869,6 +885,7 @@ class FUN_0071b040
 
 // Destructor that deletes m_pkDecalData if it is non-null.
 // @fnv 0x0071b040
+// pdb: MenuConsole::~MenuConsole | MenuConsole.obj | retail, object-file run extension, low
 FUN_0071b040::~FUN_0071b040()
 {
     if (m_pkDecalData)
@@ -890,10 +907,10 @@ struct ConsoleLines
 };
 struct ConsoleTextRenderer
 {
-    void DebugText_Print(const char* text, float x, float y, int color, int state, float opacity, int alignment,
-                      int style);
+    void DebugText_Print(const char* apText, float afX, float afY, int aiJustify, int aiLine_num, float afDie, int aiFont,
+                      int apColor);
 };
-ConsoleTextRenderer* __cdecl DebugText_Instance(int mode);
+ConsoleTextRenderer* __cdecl DebugText_Instance(int abCreate);
 extern float _DAT_01012054;
 struct ConsoleDisplay
 {
@@ -905,6 +922,8 @@ struct ConsoleDisplay
 };
 // Draws the visible console string lines, padding with blank lines when the first visible index is negative, then advancing through the list.
 // @fnv 0x0071d410
+// pdb: MenuConsole::RefreshLines | MenuConsole.obj | debug, call graph (shared callers), high
+// pdb locals: xelem, ilast_line, iy, ifirst_line, a
 void ConsoleDisplay::DrawConsoleLines()
 {
     void* node = strings.Modelloader_GetReferencedThis();
@@ -963,6 +982,7 @@ class FUN_0071d580_cls
 
 // @fnv 0x0071d580
 // src: XBOX_PDB 0x0071d580
+// pdb: MenuConsole::ToggleVisible | MenuConsole.obj | retail, upstream name already matches, high
 bool FUN_0071d580_cls::MenuConsole_ToggleVisible()
 {
     ToggleGlobalFlag();
@@ -1071,10 +1091,12 @@ struct DumpTES
 extern DumpTES* g_TES;
 struct DumpConsole
 {
-    bool HasMenusPath(DumpTexture*);
+    bool MenuConsole_IsMenuTexture(DumpTexture*);
     void DumpLoadedTextures();
 };
 // @fnv 0x0071d800
+// pdb: MenuConsole::DumpTextures | MenuConsole.obj | retail, unique string literal, high
+// pdb locals: pfile, pTex, pLargestTex, pSTex, pRendData, idx, i, pRendData2, buffer, ultotalMemory, name
 void DumpConsole::DumpLoadedTextures()
 {
     DumpTexture* a0[200];
@@ -1094,7 +1116,7 @@ void DumpConsole::DumpLoadedTextures()
             {
                 a9 = a1;
                 a7 = a9->FUN_0059bb30();
-                if (a7 && (*g_011dec98.FUN_00408d60() || !HasMenusPath(a9)))
+                if (a7 && (*g_011dec98.FUN_00408d60() || !MenuConsole_IsMenuTexture(a9)))
                 {
                     a5 = -1;
                     for (a4 = 0; a4 < 200 && a5 == -1; a4++)

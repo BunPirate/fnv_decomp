@@ -24,6 +24,7 @@ struct hkArrayNative
     void SetSize(int size);
 };
 
+// pdb: class hkpSimulationIsland, size 0x6c (here 0x68), bases: hkpConstraintOwner, 20 members
 class hkpSimulationIsland : public hkpConstraintOwner
 {
 public:

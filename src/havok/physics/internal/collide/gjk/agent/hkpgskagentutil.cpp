@@ -3315,11 +3315,11 @@ __forceinline void Arg4::Commit(Arg6* cursor, unsigned int value)
     m_06 = value;
     *(char**)&cursor->m_00 += 0x30;
 }
-extern int hkpGsk_getClosestPoint(void* a, void* b, void* c, void* d);
-extern void ReleaseAllEntries(void* a, void* b, void* c);
+extern int hkpGsk_getClosestPoint(void* input, void* gskCache, void* separatingNormalOut, void* pointOnBOut);
+extern void hkGskManifold_cleanup(void* manifold, void* mgr, void* constraintOwner);
 extern unsigned char FindAndPromoteEntry(void* a, void* b);
-extern void hkGskManifold_verifyAndGetPoints(void* a, void* b, int c, void* d, void* e);
-extern int hkGskManifold_addPoint(void* a, void* b, void* c, void* d, void* e, void* f, void* g, void* h, void* i, int j);
+extern void hkGskManifold_verifyAndGetPoints(void* a, void* work, int firstPointIndex, void* processOut, void* contactMgr);
+extern int hkGskManifold_addPoint(void* manifold, void* bodyA, void* bodyB, void* input, void* output, void* newPoint, void* newCdPointInResultArray, void* resultPointArray, void* mgr, int mgrHandling);
 extern void _hkGskManifold_removePoint(void* a, int b);
 static __forceinline int BuildContacts(void* a, void* b, void* c, void* d, void* e, void* f, void* g, void* h, void* i,
                                        int j)
@@ -3367,6 +3367,9 @@ static __forceinline void XformReverse(Pt* pts, Mat* m, int n)
 }
 // Queries support and vertices for two shapes, builds contact points, and appends an output record to the collision result buffer.
 // @fnv 0x00db4180
+// pdb: hkGskAgentUtil_processCollisionNoTim | hkpGskAgentUtil.obj | debug, call graph, low
+// pdb params: input, entry, agentData, gskCache, gskManifold, separatingNormal, output
+// pdb locals: gskInput, pointOnB, weldedNormal, closestPointInManifold, resultPointArray, work
 void ProcessCollision(In* in, void* p1, Arg2* p2, Arg3* p3, Arg4* p4, VecS* p5, Arg6* p6)
 {
     // Scratch values are filled before use, without invoking Vec4's zeroing constructor.
@@ -3390,7 +3393,7 @@ void ProcessCollision(In* in, void* p1, Arg2* p2, Arg3* p3, Arg4* p4, VecS* p5, 
     {
         if (p4->m_02 == 0)
             return;
-        ReleaseAllEntries(p4, in->m_10, p6->m_04);
+        hkGskManifold_cleanup(p4, in->m_10, p6->m_04);
         return;
     }
     vec = *(Vec4*)p5c;
@@ -3416,7 +3419,7 @@ void ProcessCollision(In* in, void* p1, Arg2* p2, Arg3* p3, Arg4* p4, VecS* p5, 
     }
     if (!iSupport)
     {
-        ReleaseAllEntries(p4, in->m_10, p6->m_04);
+        hkGskManifold_cleanup(p4, in->m_10, p6->m_04);
         return;
     }
     if (iSupport == 1)

@@ -68,6 +68,8 @@ extern char const* const g_011f3f58_arg1;
 char* __cdecl _FUN_00a7d330(char const*);
 // Calls FUN_00a6d830, gets a string via _FUN_00a7d330, grows the array if full, then stores the string at the current size index.
 // @fnv 0x00a57bb0
+// pdb: NiBoolInterpController::RegisterStreamables | NiBoolInterpController.obj | debug, object-file run extension, low
+// pdb params: kStream
 void NiFloatController::AppendString(StrArr* pStrArr)
 {
     FUN_00a6d830(pStrArr);
@@ -84,6 +86,9 @@ void NiFloatController::AppendString(StrArr* pStrArr)
 
 // Reads key count, key type and key size from m_spFloatData into the out parameters and returns its key array, or zeroes them and returns null if absent.
 // @fnv 0x00a579f0
+// pdb: NiFloatController::ProcessClone | NiFloatController.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiFloatController::GetAnim
+// pdb params: kCloning
 TimedAnimationKey* NiFloatController::GetFloatKeys(unsigned int& uiNumKeys, NiAnimationKey::KeyType& eKeyType,
                                                     unsigned char& ucKeySize)
 {
@@ -91,9 +96,9 @@ TimedAnimationKey* NiFloatController::GetFloatKeys(unsigned int& uiNumKeys, NiAn
     if (pkData)
     {
         uiNumKeys = pkData->m_uiNumKeys;
-        eKeyType = pkData->m_eRequestType;
-        ucKeySize = pkData->m_ucKeyDataSize;
-        return pkData->m_pKeyArray;
+        eKeyType = pkData->m_eType;
+        ucKeySize = pkData->m_ucKeySize;
+        return pkData->m_pkKeys;
     }
     uiNumKeys = 0;
     eKeyType = (NiAnimationKey::KeyType)0;
@@ -113,6 +118,8 @@ bool NiFloatController::RegisterStreamables_00a57ad0(NiStream& stream)
 
 // @fnv 0x00a57b00
 // src: XBOX_PDB 0x00a57b00
+// pdb: NiBoolInterpController::CopyMembers | NiBoolInterpController.obj | debug, object-file run extension, low
+// pdb params: pkDest, kCloning
 void __thiscall NiFloatController::SaveBinary_00a57b00(NiStream& stream)
 {
     ((BaseHack_nifloatcontroller*)this)->FUN_00a6d730(stream);
@@ -122,6 +129,8 @@ void __thiscall NiFloatController::SaveBinary_00a57b00(NiStream& stream)
 extern "C" __declspec(dllimport) long __stdcall InterlockedDecrement(volatile long*);
 extern "C" __declspec(dllimport) long __stdcall InterlockedIncrement(volatile long*);
 // @fnv 0x00a57b50
+// pdb: NiBoolInterpController::LinkObject | NiBoolInterpController.obj | debug, object-file run extension, low
+// pdb params: kStream
 void NiFloatController::CopyInterpTo(NiFloatController* pkDest, void* pkProc)
 {
     FUN_00a6cfe0(pkDest, pkProc);
@@ -190,6 +199,7 @@ template <class T> class A57990Pointer
 
 // Destructor that clears the smart pointer member, releasing its referenced object.
 // @fnv 0x00a57990
+// pdb: NiFloatController::~NiFloatController | NiFloatController.obj | retail, upstream name already matches, high
 NiFloatController::~NiFloatController()
 {
     A57990Pointer<A57990RefObject>& reference =
@@ -208,6 +218,8 @@ NiFloatController::~NiFloatController()
 // Compare the controller base and the referenced float data.
 // @fnv 0x00a57b20
 // src: XBOX_PDB 0x00a57b20
+// pdb: NiBoolInterpController::LoadBinary | NiBoolInterpController.obj | debug, object-file run extension, low
+// pdb params: kStream
 bool NiFloatController::IsEqual_00a57b20(NiFloatController* other)
 {
     if (!NiTimeController_IsEqual(other))

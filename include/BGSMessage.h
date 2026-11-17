@@ -8,13 +8,14 @@
 class BGSMenuIcon;
 class PerkButtonEntry;
 
+// pdb: class BGSMessage, size 0x40, bases: TESForm, TESFullName, TESDescription, 4 members
 class BGSMessage : public TESForm, public TESFullName, public TESDescription
 {
 public:
     BGSMenuIcon* pIcon;
-    BSSimpleList<PerkButtonEntry*> m_kButtonEntries;
+    BSSimpleList<PerkButtonEntry*> ButtonList; // src: XBOX_RETAIL_PDB +0x30 (old: m_kButtonEntries)
     unsigned int iFlags;
-    unsigned int m_uiDisplayDuration;
+    unsigned int iDisplayTime; // src: XBOX_RETAIL_PDB +0x3c (old: m_uiDisplayDuration)
 
     BGSMessage();
     virtual ~BGSMessage();
@@ -22,14 +23,14 @@ public:
     virtual void InitItem();
 
     void ResetFormData();
-    void ClearButtons();
+    void ClearButtonList();
     void SetIcon(BGSMenuIcon* icon);
-    bool Load(TESFile* file);
+    bool Load(TESFile* apFile);
 
     void AddButton(PerkButtonEntry* button);
     void WriteToStream();
-    void CopyFromMessage(TESForm* form);
-    bool IsNotEqual(TESForm* form);
+    void CopyFromMessage(TESForm* apCopy);
+    bool IsNotEqual(TESForm* apCompare);
 
     BGSMenuIcon* GetIcon();
     bool GetAutoDisplay();

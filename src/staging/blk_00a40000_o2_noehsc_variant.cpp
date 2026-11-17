@@ -88,7 +88,7 @@ extern MemoryManager _g_memoryManager;
 extern int DAT_010997f4;
 struct BaseHolder
 {
-    void FUN_00a57f20(int, int);
+    void NiBSplineInterpolator_ctor(int, int);
 };
 void* __cdecl NiBSplineFloatInterpolator_CreateObject();
 void __fastcall _Call_a5d3a0(void*);
@@ -106,7 +106,7 @@ struct FUN_00a54160_class
     void* __thiscall FUN_00a54160(unsigned char flags);
 };
 void __cdecl NiStandardizeFilePath(NiFixedString*);
-void __cdecl NiImageConverter_ConvertFilenameToPlatformSpecific_(void*, void*);
+void __cdecl NiImageConverter_ConvertFilenameToPlatformSpecific(void*, void*);
 struct FUN_00a5fba0_class
 {
     void __thiscall NiSourceTexture_SetFilePath(const NiFixedString* kFilename);
@@ -114,7 +114,7 @@ struct FUN_00a5fba0_class
 unsigned int __stdcall NiGlobalStringTable_HashFunction(const char* s, unsigned int len);
 extern "C" unsigned int __cdecl _strcpy_s(char* dst, unsigned int size, const char* src);
 void __cdecl _fnv_StandardizeFilePath(char*);
-void __cdecl NiStandardizeFilePath(NiFixedString* k);
+void __cdecl NiStandardizeFilePath(NiFixedString* kString);
 extern int DAT_0109b00c;
 struct FUN_004a4650_ListBase
 {
@@ -181,7 +181,7 @@ struct FUN_00a57890_shell
 {
     void* m_iWordAt00;
     const char* m_cByteAtOffset1;
-    void __thiscall AssignStringRef(const char** s);
+    void __thiscall NiTextKey_SetText(const char** kText);
 };
 extern int DAT_011f4500;
 extern int DAT_011f4504;
@@ -195,10 +195,10 @@ extern "C" __declspec(dllimport) void __stdcall LeaveCriticalSection(CRITICAL_SE
 void __fastcall NiTexture_AddTextureToList(int param_1);
 struct ControllerAllocation
 {
-    ControllerAllocation* FUN_00a40520(void* target, float value, unsigned int flags);
+    ControllerAllocation* FUN_00a40520(void* bManagerControlled, float fWeightThreshold, unsigned int ucArraySize);
 };
-ControllerAllocation* __stdcall NiGeomMorpherController_CreateBlendInterpolator(unsigned int ReportDiagnostic, void* target, unsigned int unused2,
-                                             float value, unsigned int flags);
+ControllerAllocation* __stdcall NiGeomMorpherController_CreateBlendInterpolator(unsigned int usIndex, void* bManagerControlled, unsigned int bAccumulateAnimations,
+                                             float fWeightThreshold, unsigned int ucArraySize);
 struct FUN_00a413d0_pair
 {
     unsigned int m_key0;
@@ -264,7 +264,7 @@ struct S_00a42290_Cls
     int unk0c;
     S_00a42290_Ptr m10;
     int unk14;
-    void NiFloatInterpolator_SetKeys(void* a, unsigned int b, int c);
+    void NiFloatInterpolator_SetKeys(void* pkKeys, unsigned int uiNumKeys, int eType);
 };
 class A42380Owner
 {
@@ -290,7 +290,7 @@ class A42380Owner
 };
 extern const NiRTTI NiNodeRTTI_a42b70;
 extern const NiRTTI CtrlRTTI_A_a42b70;
-extern const NiRTTI CtrlRTTI_B_a42b70;
+extern const NiRTTI NiLookAtController_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f3f98 (old: CtrlRTTI_B_a42b70/g_011f3f98)
 extern const NiRTTI CtrlRTTI_C_a42b70;
 struct StubController : NiObject
 {
@@ -357,17 +357,17 @@ struct StubAVObject : NiObject
 };
 static inline bool IsKindOfRTTI(const NiRTTI* pkTarget, const NiObject* pkObj)
 {
-    for (const NiRTTI* r = pkObj->GetRTTI(); r; r = r->m_pBaseRTTI)
+    for (const NiRTTI* r = pkObj->GetRTTI(); r; r = r->m_pkBaseRTTI)
         if (r == pkTarget)
             return true;
     return false;
 }
-void __cdecl NiOldAnimationConverter_ConvertRollController(StubController* p);
+void __cdecl NiOldAnimationConverter_ConvertRollController(StubController* pkController);
 void __cdecl CreateInterpolator(StubController* p);
-void __cdecl ConvertLegacyController(StubController* p);
-void __cdecl NiOldAnimationConverter_RecurseScene(void* pArg, StubAVObject* pkObject);
+void __cdecl NiOldAnimationConverter_ConvertPathController(StubController* pkController);
+void __cdecl NiOldAnimationConverter_RecurseScene(void* kStream, StubAVObject* pkObject);
 extern int DAT_011f4304;
-void __cdecl NiOldAnimationConverter_RecurseScene(void* a1, void* a2);
+void __cdecl NiOldAnimationConverter_RecurseScene(void* kStream, void* a2);
 void __cdecl NiOldAnimationConverter_Convert(int* param1, NiObject* param2);
 struct FUN_00a42f80_base
 {
@@ -776,7 +776,7 @@ class A5B660StringTable
 
     static A5B660StringTable* ms_pStringTable;
 
-    static void ClearStaticStringTable();
+    static void NiGlobalStringTable__SDMShutdown();
 };
 struct FUN_00a5b870_cls
 {
@@ -916,7 +916,7 @@ class FUN_00a423f0_cls
     unsigned int unk3c;
     NiRefObject* m_pObject;
 
-    void NiLookAtInterpolator_SetScaleInterpolator(NiRefObject* obj);
+    void NiLookAtInterpolator_SetScaleInterpolator(NiRefObject* pkInterp);
 };
 extern "C" __declspec(dllimport) long __stdcall InterlockedIncrement(volatile long*);
 extern const NiRTTI DAT_011f36ec;
@@ -1015,7 +1015,7 @@ struct ControllerInterpolator : ControllerFields
     int unk34;
     int data;
     ControllerInterpolator* FUN_00a3f060(void*, void*);
-    void UpdateIfFlagged();
+    void NiPathInterpolator_SetConstantVelocityData();
     void SetFlag1(bool value)
     {
         if (value)
@@ -1058,7 +1058,7 @@ struct ControllerInterpolator : ControllerFields
         else
             flags &= (unsigned short)~16;
         if (value)
-            UpdateIfFlagged();
+            NiPathInterpolator_SetConstantVelocityData();
     }
 };
 struct LegacyController : StubController
@@ -1103,7 +1103,7 @@ struct LegacyController : StubController
     }
 };
 void __cdecl CopyControllerSettings(StubController*, ConvertedController*);
-void __cdecl ConvertLegacyController(StubController* p);
+void __cdecl NiOldAnimationConverter_ConvertPathController(StubController* pkController);
 extern "C" __declspec(dllimport) long __stdcall InterlockedIncrement(volatile long*);
 extern "C" __declspec(dllimport) long __stdcall InterlockedDecrement(volatile long*);
 extern NiRTTI g_011f3f38, g_011f3f28, g_011f4a38, g_011f36ec;
@@ -1140,7 +1140,7 @@ struct Obj
 };
 inline bool IsKind(const NiRTTI* type, const Obj* object) throw()
 {
-    for (const NiRTTI* r = object->GetType(); r; r = r->m_pBaseRTTI)
+    for (const NiRTTI* r = object->GetType(); r; r = r->m_pkBaseRTTI)
         if (r == type)
             return true;
     return false;
@@ -1199,12 +1199,12 @@ struct Result
 Result* __cdecl CreateResultFromStreamObject(NiStream* stream, unsigned int index, const char* name);
 extern "C" __declspec(dllimport) long __stdcall InterlockedIncrement(volatile long*);
 extern "C" __declspec(dllimport) long __stdcall InterlockedDecrement(volatile long*);
-extern unsigned int g_011f3f48;
+extern unsigned int NiSequence_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f3f48 (old: g_011f3f48)
 NiGPUProgram* CreateResultFromStreamObject(NiStream*, unsigned int, void*) throw();
 void GetGPUProgram(NiStream* stream, unsigned int index, NiPointer<NiGPUProgram>& result, void* extra);
 void __cdecl NiFreeA4D(void* pvMem) throw();
 void __cdecl FUN_00a57130(int a1);
-void __cdecl NiColorExtraDataController_SaveBinary(int a1);
+void __cdecl NiColorExtraDataController_SaveBinary(int kStream);
 void __cdecl NiInterpScalar_AdjustBezier(float a0, float a1, float* p2, float a3, float a4, float* p5, float a6, float a7, float* p8,
                           float* p9);
 struct FUN_00a44840_stub
@@ -1348,8 +1348,8 @@ class CloningProcessA5d6
 };
 extern void* __cdecl Object_DispatchCommandFour(unsigned int size);
 extern char* __cdecl FUN_00a5b690(const char* text);
-extern void __cdecl NiStandardizeFilePath(void* fixed);
-extern void __cdecl NiImageConverter_ConvertFilenameToPlatformSpecific_(void* fixed, void* out);
+extern void __cdecl NiStandardizeFilePath(void* kString);
+extern void __cdecl NiImageConverter_ConvertFilenameToPlatformSpecific(void* kPath, void* kPlatformSpecificPath);
 extern int DAT_0109b220;
 extern unsigned char DAT_011a9594;
 extern void(__stdcall* DAT_00fdf1c0)(void*);
@@ -1475,7 +1475,10 @@ inline NiPointer<T>& NiPointer<T>::operator=(const NiPointer<T>& ptr)
 }
 
 // @fnv 0x00a5d510
-void NiObject::ResolveObjectPointer(NiPointer<NiObject>& spCopy)
+// pdb: NiObject::CreateDeepCopy | NiObject.obj | retail, call graph, high
+// pdb params: aspObject
+// pdb locals: iBufferSize, stream, bSuccessful, pBuffer, spCopy
+void NiObject::ResolveObjectPointer(NiPointer<NiObject>& aspObject)
 {
     NiStream kStream;
     kStream.InsertObject(this);
@@ -1486,13 +1489,17 @@ void NiObject::ResolveObjectPointer(NiPointer<NiObject>& spCopy)
     // The shared stream keeps its top-level object array in opaque storage at +0x220.
     NiPointer<NiObject> spRetainedObject = reinterpret_cast<NiObject**>(kStream.m_kTopObjects.m_pBase)[0];
     NiFreeD510(pcBuffer);
-    spCopy = spRetainedObject;
+    aspObject = spRetainedObject;
 }
 
 // BSFrustumFOVController::MakeClone, from src/gamebryo2.2/corelibs/nianimation/bsfrustumfovcontroller.cpp: the original has
 // no EH frame around the new-expression although the NiFloatInterpController constructor may throw (no throw()), so it was
 // built without /EHsc like the rest of this unit.
 // @fnv 0x00a42e90
+// pdb: BSFrustumFOVController::CreateClone | BSFrustumFOVController.obj | retail, object-file run extension, low
+// pdb note: debug build links it to BSFrustumFOVController::CopyMembers
+// pdb params: kCloning
+// pdb locals: pkObject
 NiObject* BSFrustumFOVController::MakeClone(CloningProcess& cloning)
 {
     BSFrustumFOVController* p = new BSFrustumFOVController;
@@ -1533,14 +1540,17 @@ inline T* NiPointer<T>::operator->() const
 
 // BSFrustumFOVController::LinkObject, from src/gamebryo2.2/corelibs/nianimation/bsfrustumfovcontroller.cpp (no EH frame).
 // @fnv 0x00a42d00
+// pdb: BSFrustumFOVController::LinkObject | BSFrustumFOVController.obj | debug, upstream name already matches, high
+// pdb params: kStream
+// pdb locals: pkFloatData
 void BSFrustumFOVController::LinkObject(NiStream& kStream)
 {
     NiFloatInterpController::LinkObject(kStream);
     if (*reinterpret_cast<const unsigned int*>(reinterpret_cast<const char*>(&kStream) + 0xD8) < 0x0A010068)
     {
         NiFloatData* pkData = static_cast<NiFloatData*>(kStream.GetLoadedObject());
-        m_spControllerInterpolator = new NiFloatInterpolator(pkData);
-        m_spControllerInterpolator->Collapse();
+        m_spInterpolator = new NiFloatInterpolator(pkData);
+        m_spInterpolator->Collapse();
     }
 }
 
@@ -1562,9 +1572,9 @@ extern MemoryManager DAT_011f6238;
 inline NiFloatData::NiFloatData()
 {
     m_uiNumKeys = 0;
-    m_pKeyArray = 0;
-    m_eRequestType = (NiAnimationKey::KeyType)0;
-    m_ucKeyDataSize = 0;
+    m_pkKeys = 0;
+    m_eType = (NiAnimationKey::KeyType)0;
+    m_ucKeySize = 0;
 }
 struct A4F610KeyPair
 {
@@ -1581,7 +1591,7 @@ void* operator new[](unsigned int size)
 void __thiscall NiFlipController::LoadFromStream(NiStream* stream)
 {
     NiFloatInterpController::LoadBinary(*stream);
-    (*(A4F610StreamIo**)((char*)stream + 0x24c))->Read4(&m_eAffectedMap);
+    (*(A4F610StreamIo**)((char*)stream + 0x24c))->Read4(&m_uiAffectedMap);
     if ((*(unsigned int*)((char*)stream + 0xd8)) < 0x0a010068)
     {
         float fStart;
@@ -1602,12 +1612,12 @@ void __thiscall NiFlipController::LoadFromStream(NiStream* stream)
             }
             keys[count].t = run;
             keys[count].v = (float)(count - 1);
-            data->SetColorKeys((TimedAnimationKey*)keys, count + 1, (NiAnimationKey::KeyType)5);
+            data->ReplaceAnim((TimedAnimationKey*)keys, count + 1, (NiAnimationKey::KeyType)5);
             m_fLoKeyTime = fStart;
             m_fHiKeyTime = run;
         }
         NiFloatInterpolator* interp = new NiFloatInterpolator(data);
-        NiInterpolator* pOldInterp = m_spControllerInterpolator.m_pObject;
+        NiInterpolator* pOldInterp = m_spInterpolator.m_pObject;
         if (pOldInterp != interp)
         {
             if (pOldInterp)
@@ -1615,11 +1625,11 @@ void __thiscall NiFlipController::LoadFromStream(NiStream* stream)
                 if (InterlockedDecrement((long*)&pOldInterp->m_uiRefCount) == 0)
                     pOldInterp->DeleteThis();
             }
-            m_spControllerInterpolator.m_pObject = interp;
+            m_spInterpolator.m_pObject = interp;
             if (interp)
                 InterlockedIncrement((long*)&interp->m_uiRefCount);
         }
-        m_spControllerInterpolator.m_pObject->Collapse();
+        m_spInterpolator.m_pObject->Collapse();
     }
     else
     {

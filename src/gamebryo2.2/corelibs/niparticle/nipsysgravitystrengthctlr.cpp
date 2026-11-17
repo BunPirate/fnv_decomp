@@ -26,7 +26,7 @@ inline bool NiObject::IsKindOfType(const NiRTTI* pkRTTI) const
     {
         if (pkMy == pkRTTI)
             return true;
-        pkMy = pkMy->m_pBaseRTTI;
+        pkMy = pkMy->m_pkBaseRTTI;
     } while (pkMy);
     return false;
 }
@@ -39,6 +39,7 @@ struct BaseStandIn
     bool IsTargetParticleSystem(NiObjectNET*);
     char _pad[0x38];
 };
+// pdb: class NiPSysGravityStrengthCtlr, size 0x40 (here 0x3c), bases: NiPSysModifierFloatCtlr, 0 members
 struct NiPSysGravityStrengthCtlr : BaseStandIn
 {
     void* m_p38;
@@ -46,6 +47,9 @@ struct NiPSysGravityStrengthCtlr : BaseStandIn
 };
 // @fnv 0x00c2a910
 // src: XBOX_PDB 0x00c2a910
+// pdb: NiPSysGravityStrengthCtlr::InterpTargetIsCorrectType | NiPSysGravityStrengthCtlr.obj | retail, upstream name already matches, high
+// pdb params: pkTarget
+// pdb locals: pkModifier
 bool NiPSysGravityStrengthCtlr::InterpTargetIsCorrectType(NiObjectNET* pkTarget)
 {
     if (!BaseStandIn::IsTargetParticleSystem(pkTarget))
@@ -66,6 +70,9 @@ struct NiPSysGravityStrengthCtlr
 // Appends the string returned by _FUN_00a7d330(g_01202700) to pkStrings, growing the array if it is full.
 // @fnv 0x00c2a960
 // src: XBOX_PDB 0x00c2a960
+// pdb: NiPSysGravityStrengthCtlr::GetViewerStrings | NiPSysGravityStrengthCtlr.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiPSysGravityStrengthCtlr::GetTargetFloatValue
+// pdb params: pkStrings
 void NiPSysGravityStrengthCtlr::GetViewerStrings_00c2a960(StrArr* pkStrings)
 {
     NiPSysModifierFloatCtlr_GetViewerStrings(pkStrings);
@@ -117,6 +124,9 @@ class C2A8C0Object : public C2A8C0Base
 
 // @fnv 0x00c2a8c0
 // src: XBOX_PDB 0x00c2a8c0
+// pdb: NiPSysGravityStrengthCtlr::CreateClone | NiPSysGravityStrengthCtlr.obj | retail, upstream name already matches, high
+// pdb params: kCloning
+// pdb locals: pkObject
 C2A8C0Object* C2A8C0Object::NiPSysGravityStrengthCtlr_CreateClone(C2A8C0CloningProcess& kCloning)
 {
     C2A8C0Object* pkDest = new C2A8C0Object;

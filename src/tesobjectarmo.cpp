@@ -116,6 +116,7 @@ extern "C" void* __cdecl memset(void*, int, unsigned int);
 int __cdecl Warning(const char*, ...);
 
 // @fnv 0x00512e10
+// pdb: TESObjectARMO::InitializeData | TESObjectARMO.obj | retail, vtable slot, high
 void TESObjectARMO::ResetFormData()
 {
     memset(&data, 0, sizeof(data));
@@ -126,7 +127,9 @@ void TESObjectARMO::ResetFormData()
 
 // Returns 1 for heavy armor, 2 for medium armor, otherwise 0.
 // @fnv 0x00514410
-unsigned char TESObjectARMO::GetArmorType()
+// src: XBOX_DEBUG_PDB 0x00514410
+// pdb: TESObjectARMO::GetArmorWeight | TESObjectARMO.obj | debug, call graph (shared callers), high
+unsigned char TESObjectARMO::GetArmorWeight()
 {
     if (GetIsHeavyArmor())
         return 1;
@@ -136,6 +139,8 @@ unsigned char TESObjectARMO::GetArmorType()
 }
 
 // @fnv 0x00512e60
+// pdb: TESObjectARMO::InitItem | TESObjectARMO.obj | retail, upstream name already matches, high
+// pdb locals: tList, fsnd
 void TESObjectARMO::InitItem()
 {
     if (IsFormInitialized())
@@ -169,33 +174,36 @@ void TESObjectARMO::InitItem()
 
 // Reads an ARMO record from the TESFile: checks form type 24, loads the record header, then dispatches each chunk to the matching sub-record loader.
 // @fnv 0x00512fd0
-bool TESObjectARMO::Load(TESFile* file)
+// pdb: TESObjectARMO::Load | TESObjectARMO.obj | retail, upstream name already matches, high
+// pdb params: apFile
+// pdb locals: chunkid, formid, pMessage, tempint, stempval, olddata, itempint, tint, fsnd, idatasize, tempdata
+bool TESObjectARMO::Load(TESFile* apFile)
 {
-    unsigned char formType = file->GetTESForm();
+    unsigned char formType = apFile->GetTESForm();
     if (formType != 24)
         return false;
-    LoadRecordHeader(file);
+    LoadRecordHeader(apFile);
     SetInitializationState(false);
     int chunk;
-    while (chunk = file->GetChunkID())
+    while (chunk = apFile->GetChunkID())
     {
         switch (chunk)
         {
         case 'DIDE': {
-            char* name = (char*)_alloca(file->GetChunkSize());
-            file->GetChunkData(name, 512);
+            char* name = (char*)_alloca(apFile->GetChunkSize());
+            apFile->GetChunkData(name, 512);
             SetEditorID_AtRuntime(name);
             break;
         }
         case 'DNBO':
-            readOBNDSubRecord(file);
+            readOBNDSubRecord(apFile);
             break;
         case 'LLUF':
-            TESFullName::LoadFullNameChunk(this, file);
+            TESFullName::LoadFullNameChunk(this, apFile);
             break;
         case 'IRCS': {
             unsigned int uiScriptFormID = 0;
-            file->GetChunkData(&uiScriptFormID);
+            apFile->GetChunkData(&uiScriptFormID);
             SetScript((Script*)uiScriptFormID);
             TESScriptableForm::InitItem(this);
             break;
@@ -203,157 +211,157 @@ bool TESObjectARMO::Load(TESFile* file)
         case 'MANE':
         case 'MTIE': {
             unsigned int uiEnchantmentFormID = 0;
-            file->GetChunkData(&uiEnchantmentFormID);
+            apFile->GetChunkData(&uiEnchantmentFormID);
             SetFormEnchanting((EnchantmentItem*)uiEnchantmentFormID);
             break;
         }
         case 'MANA':
         case 'TMAE': {
             unsigned short usEnchantmentAmount = 0;
-            ((TESFileChunkData16*)file)->GetChunkData(&usEnchantmentAmount);
+            ((TESFileChunkData16*)apFile)->GetChunkData(&usEnchantmentAmount);
             SetFormEnchantmentAmount(usEnchantmentAmount);
             break;
         }
         case 'TDMB': {
-            if (((TESFileFormVersion*)file)->GetFormVersion() < 11)
+            if (((TESFileFormVersion*)apFile)->GetFormVersion() < 11)
             {
                 TESObjectARMOOldBipedModel oldBipedModel;
-                file->GetChunkData(&oldBipedModel, sizeof(oldBipedModel));
-                if (file->IsEndianConversionRequired())
+                apFile->GetChunkData(&oldBipedModel, sizeof(oldBipedModel));
+                if (apFile->IsEndianConversionRequired())
                     oldBipedModel.BSEndian_Thunk();
                 bipedFlags = oldBipedModel.flags;
                 partMask = oldBipedModel.slots;
             }
             else
             {
-                file->GetChunkData(&partMask, sizeof(BipedModelForm));
-                if (file->IsEndianConversionRequired())
+                apFile->GetChunkData(&partMask, sizeof(BipedModelForm));
+                if (apFile->IsEndianConversionRequired())
                     ((BipedModelForm*)&partMask)->Endian();
             }
             bipedFlags &= ~16;
             break;
         }
         case 'TCMB': {
-            char* name = (char*)_alloca(file->GetChunkSize());
-            file->GetChunkData(name, 0);
+            char* name = (char*)_alloca(apFile->GetChunkSize());
+            apFile->GetChunkData(name, 0);
             modelRDT.SetModelFilePath(name);
             break;
         }
         case 'LDOM': {
-            char* name = (char*)_alloca(file->GetChunkSize());
-            file->GetChunkData(name, 0);
+            char* name = (char*)_alloca(apFile->GetChunkSize());
+            apFile->GetChunkData(name, 0);
             bipedModel[0].SetModelFilePath(name);
             break;
         }
         case 'TDOM':
-            TESModel::LoadTextureSwapData(&bipedModel[0], file);
+            TESModel::LoadTextureSwapData(&bipedModel[0], apFile);
             break;
         case 'SDOM':
-            TESModelTextureSwap::ReadTextureSwapChunk(&bipedModel[0], file);
+            TESModelTextureSwap::LoadModelTextureSwapChunk(&bipedModel[0], apFile);
             break;
         case 'DDOM':
-            TESModel::LoadModelData(&bipedModel[0], file);
+            TESModel::LoadModelData(&bipedModel[0], apFile);
             break;
         case 'DSOM':
-            TESModel::LoadModelData(&bipedModel[1], file);
+            TESModel::LoadModelData(&bipedModel[1], apFile);
             break;
         case '2DOM': {
-            char* name = (char*)_alloca(file->GetChunkSize());
-            file->GetChunkData(name, 0);
+            char* name = (char*)_alloca(apFile->GetChunkSize());
+            apFile->GetChunkData(name, 0);
             groundModel[0].SetModelFilePath(name);
             break;
         }
         case 'T2OM':
-            TESModel::LoadTextureSwapData(&groundModel[0], file);
+            TESModel::LoadTextureSwapData(&groundModel[0], apFile);
             break;
         case 'S2OM':
-            TESModelTextureSwap::ReadTextureSwapChunk(&groundModel[0], file);
+            TESModelTextureSwap::LoadModelTextureSwapChunk(&groundModel[0], apFile);
             break;
         case 'NOCI': {
-            char* name = (char*)_alloca(file->GetChunkSize());
-            file->GetChunkData(name, 0);
+            char* name = (char*)_alloca(apFile->GetChunkSize());
+            apFile->GetChunkData(name, 0);
             ((TESTexture1024*)&icon[0])->SetTexture(name);
             break;
         }
         case 'OCIM': {
-            char* name = (char*)_alloca(file->GetChunkSize());
-            file->GetChunkData(name, 0);
+            char* name = (char*)_alloca(apFile->GetChunkSize());
+            apFile->GetChunkData(name, 0);
             messageIcon[0].SetMessageIconTextureName(name);
             break;
         }
         case '2CIM': {
-            char* name = (char*)_alloca(file->GetChunkSize());
-            file->GetChunkData(name, 0);
+            char* name = (char*)_alloca(apFile->GetChunkSize());
+            apFile->GetChunkData(name, 0);
             messageIcon[1].SetMessageIconTextureName(name);
             break;
         }
         case '3DOM': {
-            char* name = (char*)_alloca(file->GetChunkSize());
-            file->GetChunkData(name, 0);
+            char* name = (char*)_alloca(apFile->GetChunkSize());
+            apFile->GetChunkData(name, 0);
             bipedModel[1].SetModelFilePath(name);
             break;
         }
         case 'T3OM':
-            TESModel::LoadTextureSwapData(&bipedModel[1], file);
+            TESModel::LoadTextureSwapData(&bipedModel[1], apFile);
             break;
         case 'S3OM':
-            TESModelTextureSwap::ReadTextureSwapChunk(&bipedModel[1], file);
+            TESModelTextureSwap::LoadModelTextureSwapChunk(&bipedModel[1], apFile);
             break;
         case '4DOM': {
-            char* name = (char*)_alloca(file->GetChunkSize());
-            file->GetChunkData(name, 0);
+            char* name = (char*)_alloca(apFile->GetChunkSize());
+            apFile->GetChunkData(name, 0);
             groundModel[1].SetModelFilePath(name);
             break;
         }
         case 'T4OM':
-            TESModel::LoadTextureSwapData(&groundModel[1], file);
+            TESModel::LoadTextureSwapData(&groundModel[1], apFile);
             break;
         case 'S4OM':
-            TESModelTextureSwap::ReadTextureSwapChunk(&groundModel[1], file);
+            TESModelTextureSwap::LoadModelTextureSwapChunk(&groundModel[1], apFile);
             break;
         case '2OCI': {
-            char* name = (char*)_alloca(file->GetChunkSize());
-            file->GetChunkData(name, 0);
+            char* name = (char*)_alloca(apFile->GetChunkSize());
+            apFile->GetChunkData(name, 0);
             ((TESTexture1024*)&icon[1])->SetTexture(name);
             break;
         }
         case 'TSED':
         case 'DTSD':
-            BGSDestructibleObjectForm::LoadDestructibleData(this, file);
+            BGSDestructibleObjectForm::LoadDestructibleData(this, apFile);
             break;
         case 'LPER': {
             unsigned int uiListFormID = 0;
-            file->GetChunkData(&uiListFormID);
+            apFile->GetChunkData(&uiListFormID);
             SetRepairList((BGSListForm*)uiListFormID);
             break;
         }
         case 'LPIB': {
             unsigned int uiListFormID = 0;
-            file->GetChunkData(&uiListFormID);
+            apFile->GetChunkData(&uiListFormID);
             SetBipedModelList((BGSListForm*)uiListFormID);
             break;
         }
         case 'PYTE': {
             unsigned int uiEquipType = 0;
-            file->GetChunkData(&uiEquipType);
+            apFile->GetChunkData(&uiEquipType);
             SetEquipType((BGSEquipType__EQUIP_TYPE)uiEquipType);
             break;
         }
         case 'MANY': {
             unsigned int sound = 0;
-            file->GetChunkData(&sound);
+            apFile->GetChunkData(&sound);
             SetPickupSound((TESSound*)sound);
             break;
         }
         case 'MANZ': {
             unsigned int sound = 0;
-            file->GetChunkData(&sound);
+            apFile->GetChunkData(&sound);
             SetPutdownSound((TESSound*)sound);
             break;
         }
         case 'MANB': {
             unsigned int isBase = 0;
-            file->GetChunkData(&isBase);
+            apFile->GetChunkData(&isBase);
             if (isBase)
                 m_bUsesSoundList = true;
             else
@@ -364,7 +372,7 @@ bool TESObjectARMO::Load(TESFile* file)
             if (!m_bUsesSoundList)
             {
                 unsigned int formID = 0;
-                file->GetChunkData(&formID);
+                apFile->GetChunkData(&formID);
                 m_pSoundSourceArmor = (TESObjectARMO*)formID;
             }
             break;
@@ -375,8 +383,8 @@ bool TESObjectARMO::Load(TESFile* file)
                 if (!m_pPickupPutdownSoundList)
                     m_pPickupPutdownSoundList = new BSSimpleList<SoundDescriptor*>;
                 SoundDescriptor* sound = new SoundDescriptor;
-                ReadTypedData(file, sound, sizeof(SoundDescriptor));
-                if (file->IsEndianConversionRequired())
+                ReadTypedData(apFile, sound, sizeof(SoundDescriptor));
+                if (apFile->IsEndianConversionRequired())
                     sound->Endian();
                 m_pPickupPutdownSoundList->AddHead(sound);
             }
@@ -384,33 +392,33 @@ bool TESObjectARMO::Load(TESFile* file)
         }
         case 'ATAD': {
             unsigned int added = GetDataSizeAdjustment();
-            if (file->GetChunkSize() - added == 2)
+            if (apFile->GetChunkSize() - added == 2)
             {
                 TESObjectARMOOldData oldArmoData;
                 memset(&oldArmoData, 0, sizeof(oldArmoData));
-                ReadTypedData(file, &oldArmoData, sizeof(oldArmoData));
-                if (file->IsEndianConversionRequired())
+                ReadTypedData(apFile, &oldArmoData, sizeof(oldArmoData));
+                if (apFile->IsEndianConversionRequired())
                     oldArmoData.BSEndian_Thunk();
                 memcpy(&data, &oldArmoData, sizeof(oldArmoData));
                 data.cFlags = 0;
             }
             else
             {
-                ReadTypedData(file, 0, 0);
+                ReadTypedData(apFile, 0, 0);
             }
             break;
         }
         case 'MAND': {
             memset(&data, 0, sizeof(data));
-            file->GetChunkData(&data, sizeof(data));
-            if (file->IsEndianConversionRequired())
+            apFile->GetChunkData(&data, sizeof(data));
+            if (apFile->IsEndianConversionRequired())
                 reinterpret_cast<ArmorDataEndian*>(&data)->OBJ_WEAP_CRITICAL_Endian();
             break;
         }
         }
-        if (chunk == 'ATAD' && file->IsEndianConversionRequired())
+        if (chunk == 'ATAD' && apFile->IsEndianConversionRequired())
             reinterpret_cast<ArmorDataEndian*>(&data)->OBJ_WEAP_CRITICAL_Endian();
-        if (!file->NextChunk())
+        if (!apFile->NextChunk())
             break;
     }
     return true;
@@ -443,6 +451,9 @@ struct FormSaveGame
 };
 
 // @fnv 0x00514470
+// pdb: TESObjectCLOT::GetSaveSize | TESObjectCLOT.obj | retail, vtable slot, high
+// pdb params: aiFlags
+// pdb locals: isize
 unsigned short ArmorSaveGame::GetSaveSize(unsigned int aiFlags)
 {
     unsigned short isize = 0;
@@ -452,6 +463,8 @@ unsigned short ArmorSaveGame::GetSaveSize(unsigned int aiFlags)
 }
 
 // @fnv 0x00516040
+// pdb: TESObjectCLOT::SaveGame | TESObjectCLOT.obj | retail, vtable slot, high
+// pdb params: aiFlags
 void ArmorSaveGame::SaveGame(unsigned int aiFlags)
 {
     reinterpret_cast<FormSaveGame*>(this)->SaveGame(aiFlags);
@@ -459,13 +472,16 @@ void ArmorSaveGame::SaveGame(unsigned int aiFlags)
 }
 
 // @fnv 0x00516070
-void ArmorSaveGame::LoadGame(unsigned int a1, unsigned int a2)
+// pdb: TESObjectCLOT::LoadGame | TESObjectCLOT.obj | retail, vtable slot, high
+// pdb params: aiFlags, aiCurrentFlags
+void ArmorSaveGame::LoadGame(unsigned int aiFlags, unsigned int aiCurrentFlags)
 {
-    reinterpret_cast<FormSaveGame*>(this)->LoadGame(a1, a2);
-    reinterpret_cast<TESValueForm*>((char*)this + 0x58)->LoadGame_0048ea10(a1, a2);
+    reinterpret_cast<FormSaveGame*>(this)->LoadGame(aiFlags, aiCurrentFlags);
+    reinterpret_cast<TESValueForm*>((char*)this + 0x58)->LoadGame_0048ea10(aiFlags, aiCurrentFlags);
 }
 
 // @fnv 0x005129f0
+// pdb: TESObjectARMO::TESObjectARMO | TESObjectARMO.obj | retail, upstream name already matches, high
 TESObjectARMO::TESObjectARMO()
 {
     SetFormType(ENUM_FORM_ID_ARMO_ID);
@@ -473,6 +489,7 @@ TESObjectARMO::TESObjectARMO()
 }
 
 // @fnv 0x00512bd0
+// pdb: TESObjectARMO::~TESObjectARMO | TESObjectARMO.obj | retail, upstream name already matches, high
 TESObjectARMO::~TESObjectARMO()
 {}
 
@@ -489,12 +506,12 @@ struct FUN_004855a0_shell
 // Serialization methods missing from the shared component headers use method-only bridges.
 struct BipedModelSerialization
 {
-    void InitBipedModel();
+    void TESBipedModelForm_Save();
 };
 
 struct RepairListSerialization
 {
-    void FUN_0047b8a0();
+    void BGSRepairItemList_Save();
 };
 struct BipedModelListSerialization
 {
@@ -503,7 +520,7 @@ struct BipedModelListSerialization
 
 struct PickupPutdownSerialization
 {
-    void LogFormIDs();
+    void BGSPickupPutdownSounds_Save();
 };
 struct RefObj
 {
@@ -528,18 +545,20 @@ struct ArmorSerializer : TESObjectARMO
 };
 
 // @fnv 0x00513d90
+// pdb: TESObjectARMO::Save | TESObjectARMO.obj | retail, vtable slot, high
+// pdb locals: tint, tList, fsnd, tsnd
 void ArmorSerializer::Save()
 {
     ((FUN_004855a0_shell*)this)->BeginFormRecord();
     TESFullName::Save_00487010();
     TESScriptableForm::Save();
     TESEnchantableForm::Save();
-    reinterpret_cast<BipedModelSerialization*>(((char*)this + 0x70))->InitBipedModel();
+    reinterpret_cast<BipedModelSerialization*>(((char*)this + 0x70))->TESBipedModelForm_Save();
     BGSDestructibleObjectForm::Save();
-    reinterpret_cast<RepairListSerialization*>(((char*)this + 0x15C))->FUN_0047b8a0();
+    reinterpret_cast<RepairListSerialization*>(((char*)this + 0x15C))->BGSRepairItemList_Save();
     reinterpret_cast<BipedModelListSerialization*>(((char*)this + 0x164))->BGSBipedModelList_Save();
     BGSEquipType::Save();
-    reinterpret_cast<PickupPutdownSerialization*>(((char*)this + 0x16C))->LogFormIDs();
+    reinterpret_cast<PickupPutdownSerialization*>(((char*)this + 0x16C))->BGSPickupPutdownSounds_Save();
     ((FUN_004855a0_shell*)this)->TESForm_SaveData();
     if (TESForm_QEndianSwapOnSave())
         reinterpret_cast<ArmorDataEndian*>(&data)->OBJ_WEAP_CRITICAL_Endian();
@@ -584,12 +603,15 @@ void __cdecl operator delete(void*);
 struct ArmorCopy : TESObjectARMO
 {
     void CopyBase(TESForm*);
-    void CopyArmorData(TESForm* form);
+    void CopyArmorData(TESForm* apCopy);
 };
 // @fnv 0x00513fa0
-void ArmorCopy::CopyArmorData(TESForm* form)
+// pdb: TESObjectARMO::Copy | TESObjectARMO.obj | retail, vtable slot, high
+// pdb params: apCopy
+// pdb locals: parmo, tList, fsnd, tsnd
+void ArmorCopy::CopyArmorData(TESForm* apCopy)
 {
-    TESObjectARMO* source3 = dynamic_cast<TESObjectARMO*>(form);
+    TESObjectARMO* source3 = dynamic_cast<TESObjectARMO*>(apCopy);
     BSSimpleList<SoundDescriptor*>* node_;
     BSSimpleList<SoundDescriptor*>* iter;
     SoundDescriptor* original9;
@@ -597,7 +619,7 @@ void ArmorCopy::CopyArmorData(TESForm* form)
     SoundDescriptor* sound;
     if (!source3)
         return;
-    CopyBase(form);
+    CopyBase(apCopy);
     data = source3->data;
     if (m_bUsesSoundList && m_pPickupPutdownSoundList)
     {
@@ -645,6 +667,9 @@ class TESObjectARMOFoley : public TESObjectARMO
 
 // Scans the armor's foley list for an entry matching eType whose random chance roll succeeds, returning its sound or null.
 // @fnv 0x00512d40
+// pdb: TESObjectARMO::GetFoleySound | TESObjectARMO.obj | debug, object-file gap fill, medium
+// pdb params: aeType
+// pdb locals: pSound, pList, pData
 TESSound* TESObjectARMOFoley::GetFoleySound(int eType)
 {
     BSSimpleList<SoundDescriptor*>* pFoleyList;
@@ -666,14 +691,17 @@ TESSound* TESObjectARMOFoley::GetFoleySound(int eType)
 #include <string.h>
 struct ArmorCompare : TESObjectARMO
 {
-    bool TESForm_CompareAllComponents(TESObjectARMO* other);
-    bool IsDifferentFrom(TESForm* form);
+    bool TESForm_CompareAllComponents(TESObjectARMO* apCompare);
+    bool IsDifferentFrom(TESForm* apCompare);
 };
 // Returns true if form is not an armor or differs in base compare, data, sound source armor, or pickup/putdown sound list entries.
 // @fnv 0x00514220
-bool ArmorCompare::IsDifferentFrom(TESForm* form)
+// pdb: TESObjectARMO::Compare | TESObjectARMO.obj | retail, vtable slot, high
+// pdb params: apCompare
+// pdb locals: pcomp, tList, bFound, tListc
+bool ArmorCompare::IsDifferentFrom(TESForm* apCompare)
 {
-    TESObjectARMO* pOther = dynamic_cast<TESObjectARMO*>(form);
+    TESObjectARMO* pOther = dynamic_cast<TESObjectARMO*>(apCompare);
     if (!pOther)
         return true;
     if (TESForm_CompareAllComponents(pOther))

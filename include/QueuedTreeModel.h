@@ -5,6 +5,7 @@
 class TESObjectREFR;
 class TESObjectTREE;
 
+// pdb: class QueuedTreeModel, size 0x50, bases: QueuedModel, 2 members
 class QueuedTreeModel : public QueuedModel
 {
 public:
@@ -22,9 +23,9 @@ public:
     virtual unsigned char GetFileIndex() override;
     virtual void vf12() override;
 
-    bool QueuedFileEntry_GetDescription(char* apDescription, unsigned int aiBufferSize, const char* apName);
+    bool QueuedFileEntry_GetDescription(char* apDescription, unsigned int aiBufferSize, const char* apFileEntryTypeDescription);
     bool GetTreeModelDescription(char* apDescription, unsigned int aiBufferSize);
-    bool GrassLoadTask_GetDescription(char* pBuf, unsigned int uiSize);
+    bool GrassLoadTask_GetDescription(char* apDescription, unsigned int aiBufferSize);
     bool QueuedTexture_GetDescription(char* apDescription, unsigned int aiBufferSize);
     bool QueuedKF_GetDescription(char* apDescription, unsigned int aiBufferSize);
     bool QueuedModel_GetDescription(char* apDescription, unsigned int aiBufferSize);

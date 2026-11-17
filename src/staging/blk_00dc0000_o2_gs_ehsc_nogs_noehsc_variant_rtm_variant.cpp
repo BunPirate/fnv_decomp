@@ -68,7 +68,7 @@ struct FUN_00ddf050_cls
 {
     void ClearContainer();
 };
-extern "C" void __cdecl hkpConstraintConstructionKit_computeConstraintInfo(int* p1, int* p2);
+extern "C" void __cdecl hkpConstraintConstructionKit_computeConstraintInfo(int* commands, int* info);
 struct FUN_00dd0420_Class
 {
     int m_00;
@@ -79,7 +79,7 @@ struct FUN_00dd0420_Class
     int m_14;
     int m_18;
     int m_1c;
-    FUN_00dd0420_Class* __thiscall hkpGenericConstraintDataScheme_hkpGenericConstraintDataScheme(int arg);
+    FUN_00dd0420_Class* __thiscall hkpGenericConstraintDataScheme_hkpGenericConstraintDataScheme(int f);
 };
 struct FUN_00dd4b70_class
 {
@@ -189,7 +189,7 @@ struct FUN_00dc1670_cls
     int m_00;
     FUN_00dc1670_cls* hkStructureLayout_hkStructureLayout();
 };
-void __stdcall hkIArchive_readArrayGeneric(float* out, int a, int b);
+void __stdcall hkIArchive_readArrayGeneric(float* array, int elemsize, int arraySize);
 float hkIArchive_readFloat32();
 struct ArrayBlock
 {
@@ -212,7 +212,7 @@ struct ArrayHost
 {
     int unk00, unk04, unk08;
     ArrayBlock array;
-    void ResizeArray(int desired);
+    void ResizeArray(int n);
 };
 struct FUN_00dcc180_Interface
 {
@@ -258,11 +258,11 @@ struct FUN_00dcc670_Class
     unsigned short unk06;
     int unk08;
 
-    int* __thiscall InitFromValue(int* value);
+    int* __thiscall hkIstream_ctor(int* fname);
 };
 extern int DAT_010d7540;
 extern FUN_00dcc670_Manager* DAT_01268364;
-extern int g_unk01269bb4;
+extern int hkpNamedMeshMaterialClass; // src: XBOX_RETAIL_PDB 0x01269bb4 (old: g_01269bb4/g_unk01269bb4)
 int* __cdecl Object_GetGlobalObjectAddress_00dccb00();
 extern int DAT_01269be4;
 int* __cdecl Runtime_GetDAT01269be4Address();
@@ -271,7 +271,7 @@ struct FUN_00dced30_cls
     virtual void m_v00(int arg);
 };
 void __cdecl Object_ForwardCall_00dced30(FUN_00dced30_cls* pObject);
-extern int DAT_01269c44;
+extern int hkpBreakableConstraintDataClass; // src: XBOX_RETAIL_PDB 0x01269c44 (old: DAT_01269c44/g_01269c44)
 int __cdecl Object_ComputeValue_00dced40();
 struct FUN_00d4dfc0_class
 {
@@ -573,9 +573,9 @@ struct Lock_dd9
     int uNewnk;
     int uTmpnk;
     int* m_pkCriticalSection;
-    int FindEntry(int iKey);
-    int InvokeRecord(int iIndex, int iArg);
-    int hkProcessFactory_createProcess(int iKey, int iArg);
+    int hkProcessFactory_getProcessId(int name);
+    int InvokeRecord(int tag, int contexts);
+    int hkProcessFactory_createProcess(int iKey, int contexts);
 };
 extern int DAT_010d7db8;
 struct Bool1
@@ -778,9 +778,9 @@ static int volatile g_stub_v;
 static int volatile g_stub_out;
 extern "C" int stub_val(void);
 // src: HAVOK_LIB 0x00dcc3b0
-static __declspec(noinline) float readFloat(int arg)
+static __declspec(noinline) float readFloat(int reader)
 {
-    g_stub_out = arg;
+    g_stub_out = reader;
     stub_cls* s = g_stub_self;
     s->unk00 = s->unk04 + g_stub_v;
     return (float)s->unk00;
@@ -876,7 +876,7 @@ struct S00dcd1b0_Obj
     int unk3C;
     ArrayBlock m_40;
     unsigned char m_4c;
-    void hkpMeshShape_initWeldingInfo(int value);
+    void hkpMeshShape_initWeldingInfo(int weldingType);
 };
 struct S00dcd270_Rec
 {
@@ -921,7 +921,7 @@ struct S00dcd270_cls
     int unk2c;
     int unk30;
     S00dcd270_Arr arr;
-    S00dcd270_Rec* AddRecord(const S00dcd270_Rec* a0);
+    S00dcd270_Rec* AddRecord(const S00dcd270_Rec* part);
 };
 // The copied chunk-validation declarations have no callers or definitions in this RTM unit.
 #include <xmmintrin.h>
@@ -980,9 +980,9 @@ inline void hkVector4::setSubMul(const hkVector4& a, const hkVector4& b, const h
     q() = _mm_mul_ps(_mm_shuffle_ps(s.m, s.m, 0), _mm_sub_ps(a.q(), b.q()));
 }
 
-inline void hkVector4::setMul4(const hkSimdReal& s, const hkVector4& a)
+inline void hkVector4::setMul4(const hkSimdReal& r, const hkVector4& x)
 {
-    q() = _mm_mul_ps(_mm_shuffle_ps(s.m, s.m, 0), a.q());
+    q() = _mm_mul_ps(_mm_shuffle_ps(r.m, r.m, 0), x.q());
 }
 
 inline void hkVector4::mul4s(const hkSimdReal& s)
@@ -1054,13 +1054,15 @@ struct LongRayVm
     const void* m_pShapeCollection;
     int m_iCurrentChunkId;
     __declspec(noinline) void hkpMoppLongRayVirtualMachine_queryRayOnTree(const MachineVectorIndexRecord* query, const unsigned char* PC,
-                                           Vector4Pair* fq, int level);
+                                           Vector4Pair* fQuery, int chunkOffset);
     void hkpMoppLongRayVirtualMachine_queryLongRay(const void* collection, const MoppCode* code, const RayInput& input, const void* body,
                       RayCollector* collector);
 };
 
 // @fnv 0x00dd2ed0
 // src: XBOX_PDB 0x00dd2ed0
+// pdb: hkpMoppLongRayVirtualMachine::queryLongRay | hkpMoppLongRayVirtualMachine.obj | retail, object-file run extension, low
+// pdb params: collection, code, input, rayResult
 void LongRayVm::hkpMoppLongRayVirtualMachine_queryLongRay(const void* collection, const MoppCode* code, const RayInput& input, const void* body,
                              RayCollector* collector)
 {
@@ -1098,8 +1100,8 @@ void LongRayVm::hkpMoppLongRayVirtualMachine_queryLongRay(const void* collection
 
 extern void consumeRay(LongRayVm*, const MachineVectorIndexRecord*, float, float, unsigned int, int);
 // src: XBOX_PDB 0x00dd1f30
-void LongRayVm::hkpMoppLongRayVirtualMachine_queryRayOnTree(const MachineVectorIndexRecord* query, const unsigned char* PC, Vector4Pair* fq, int level)
+void LongRayVm::hkpMoppLongRayVirtualMachine_queryRayOnTree(const MachineVectorIndexRecord* query, const unsigned char* PC, Vector4Pair* fQuery, int chunkOffset)
 {
-    consumeRay(this, query, fq->m_kPointBundles[0].m_q[0], fq->m_kPointBundles[1].m_q[0],
-               query->m_uiPropertyCount + *PC, level);
+    consumeRay(this, query, fQuery->m_kPointBundles[0].m_q[0], fQuery->m_kPointBundles[1].m_q[0],
+               query->m_uiPropertyCount + *PC, chunkOffset);
 }

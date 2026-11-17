@@ -23,6 +23,7 @@ public:
     ObjectiveDisplayText& operator=(const char* text);
 };
 
+// pdb: class BGSQuestObjective, size 0x24, 6 members
 class BGSQuestObjective
 {
 public:
@@ -42,9 +43,9 @@ public:
     virtual ~BGSQuestObjective();
 
     unsigned int iIndex;
-    ObjectiveDisplayText m_kDisplayText;
+    ObjectiveDisplayText cDisplayText; // src: XBOX_RETAIL_PDB +0x8 (old: m_kDisplayText)
     TESQuest* m_pOwnerQuest;
-    BSSimpleList<RegionObjectEntry*> m_kTargetList;
+    BSSimpleList<RegionObjectEntry*> ListTargets; // src: XBOX_RETAIL_PDB +0x14 (old: m_kTargetList)
     bool bInitialized;
     unsigned char layoutPadding1D[3];
     QUEST_OBJECTIVE_STATE eState;
@@ -52,7 +53,7 @@ public:
     unsigned int GetIndex();
     void SetIndex(unsigned int index);
     void Initialize();
-    void InitItem(TESQuest* owner);
+    void InitItem(TESQuest* apUser);
     void Load(TESFile* file);
     void GetTargetsAndObjectives(BSSimpleList<RegionObjectEntry*>* targets);
     BSSimpleList<RegionObjectEntry*>* GetTargetList();

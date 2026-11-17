@@ -57,7 +57,7 @@ struct CollisionPair
 {
     CollisionPointer first;
     CollisionPointer second;
-    void CameraCaster_Init(float radius, unsigned int filter);
+    void CameraCaster_Init(float afRadius, unsigned int aiGroup);
 };
 struct xMemObj
 {
@@ -117,7 +117,7 @@ class xPick
     xSP<xPhantom> m_spPhantom;
     bool m_b3a4;
     unsigned int m_ui3a8;
-    void HitCaster_Init(float fRadius, unsigned int uiLayer);
+    void HitCaster_Init(float afRadius, unsigned int aiGroup);
 };
 extern float DAT_0104e148;
 extern float DAT_0104da48;
@@ -153,7 +153,7 @@ struct Obj_006286f0
 };
 struct Src_006286f0
 {
-    void GetBox(Box_006286f0* out);
+    void GetBox(Box_006286f0* arB);
 };
 struct Ptr_006286f0
 {
@@ -333,7 +333,7 @@ class ImpactEvent620
   public:
     void SetCollision(CollisionInfo620* pkInfo);
     void SetBody(void* pvBody);
-    void SetPosition(hkVector4* pkPos);
+    void SetPosition(hkVector4* arPos);
 };
 class FormRef620
 {
@@ -345,18 +345,18 @@ class ImpactHandler620
   public:
     virtual ImpactEvent620* CreateEvent(void* pvTarget, void* pvBody, void* pvInfo);
     FormRef620 m_kSource;
-    ImpactEvent620* CreateEventDirect(void* pvTarget, void* pvBody, void* pvInfo);
+    ImpactEvent620* CreateEventDirect(void* apTarget, void* apCol, void* aiFlags);
 };
-void* __cdecl GetAVObjectForCollidable(void* pvBody);
+void* __cdecl GetAVObjectForCollidable(void* aphkCol);
 void* __cdecl TESObjectREFR_FindReferenceFor3D(void* pvObject);
 PhysicsVectorSource* __cdecl hkpGetRigidBody(void* pvForm);
-void* __cdecl bhkEntity_Getbhk(const void* pvRef);
+void* __cdecl bhkEntity_Getbhk(const void* apEnt);
 class ImpactManager620
 {
   public:
-    ImpactHandler620* FindHandler(void* pvSource, void* pvBody);
-    ImpactHandler620* BGSZoneTargetListener_AddZoneTargetPair(CollisionInfo620* pkInfo, void* pvSource, void* pvTarget, void* pvData,
-                                   bool bDirect);
+    ImpactHandler620* FindHandler(void* apZone, void* apCol);
+    ImpactHandler620* BGSZoneTargetListener_AddZoneTargetPair(CollisionInfo620* arPoint, void* apZone, void* apTarget, void* aiFlags,
+                                   bool abTrap);
 };
 void xFUN_004a3e00(hkVector4*, const NiPoint3&);
 float xFUN_004a3e90(float);
@@ -872,7 +872,7 @@ struct xEffItem
 };
 struct xCaster2
 {
-    void DestroyDate();
+    void bhkWorld_MarkForRead();
     xEffItem* FUN_00541c80();
 };
 struct xSrc
@@ -895,7 +895,7 @@ struct xCaster
 {
     xBodyPtr m_iWordAt00;
     xBodyPtr m_iWordAt04;
-    bool CameraCaster_KeepOutOfCharacter(xRef* apRef, const NiPoint3& akPos, float afA, float afB);
+    bool CameraCaster_KeepOutOfCharacter(xRef* apController, const NiPoint3& arPoint, float afRadius, float afScaleOffset);
 };
 struct __declspec(align(16)) MotionFrame
 {
@@ -982,7 +982,7 @@ struct MotionOwner
     int unk394, unk398, unk39c;
     MotionPointer world;
     void DecalCaster_SetRadius(float);
-    void FUN_006233c0(int);
+    void DecalCaster_SetCustomPickCollisions(int);
     MotionStatus* hkpAllCdPointCollector_hasHit(bool&);
     void DecalCaster_GetNumCollisions();
     void DecalCaster_Pick(const void*, const void*, float);
@@ -992,7 +992,7 @@ const hkVector4* __cdecl NI2HK(hkVector4* pOut, const S006230f0_Source* pSource)
 class S006230f0_Object
 {
   public:
-    void bhkShapePhantom_SetPosition(const hkVector4* pValue);
+    void bhkShapePhantom_SetPosition(const hkVector4* arPos);
     void bhkShapePhantom_setPositionNi(const S006230f0_Source* pSource);
 };
 class hkAabbB
@@ -1155,7 +1155,7 @@ class GridB
 {
   public:
     unsigned int GetSize();
-    CellB** GetContainingCell(unsigned int i, unsigned int j);
+    CellB** GetContainingCell(unsigned int aiX, unsigned int aiY);
 };
 class PartB
 {
@@ -1198,7 +1198,7 @@ class TESObjectREFRB
 class SpawnAreaB
 {
   public:
-    bool LoadedAreaBound_GetBoundFromCell(TESObjectREFRB* pkRef, GridB* pkGrid, hkAabbB* pkOut);
+    bool LoadedAreaBound_GetBoundFromCell(TESObjectREFRB* apCell, GridB* apCellGrid, hkAabbB* arBound);
 };
 const hkVector4& hkVector4_getZero();
 // shared zero vector
@@ -1223,7 +1223,7 @@ class S006288c0_Object
   public:
     S006288c0_Shape* Bipedanim_GetReferenceFlagsOrZero();
     void Object_DoNothing();
-    void bhkAabbPhantom_GetAabb(S006288c0_Bounds* bounds);
+    void bhkAabbPhantom_GetAabb(S006288c0_Bounds* arB);
 };
 struct __declspec(align(16)) Text628980
 {
@@ -1487,7 +1487,7 @@ class TESObjectCELLP
 {
   public:
     void* GetLandData();
-    void ResolvePoint(NiPoint3* pkOut, NiPoint3* pkNormal);
+    void ResolvePoint(NiPoint3* aOutPos, NiPoint3* aOutRot);
 };
 bool __cdecl Pathing_GetNavMeshZForLocation(NiPoint3* pkPos, TESObjectCELLP* pkCell, void* pvLand, float* pfZ);
 class RegionP
@@ -1534,7 +1534,7 @@ class ShapeCastP
   public:
     ShapeCastP();
     void Reset();
-    void AddShape(const void* pvShape);
+    void AddShape(const void* point);
     int Cast(hkVector4* pkFrom);
     __m128 m_kFrom;
     __m128 m_kTo;
@@ -1603,7 +1603,7 @@ extern SettingV g_kSmoothTimeV;
 class MotionV
 {
   public:
-    void SetLinearVelocity(const hkVector4& kMotionVelocity);
+    void SetLinearVelocity(const hkVector4& centerOfMass);
     void Activate();
 };
 class BodyV
@@ -1697,15 +1697,15 @@ class SmoothListV
     void AddHead(SmoothEntryV* const& rpkEntry);
 };
 extern SmoothListV g_kSmoothListV;
-void __cdecl TESArrowTargetListener_AddArrowTarget(const hkVector4& kTarget, void* pvRef);
-hkVector4& NI2HK(hkVector4& out, const NiPoint3& in);
-void TESHavokUtilities_AddAngularVelocity_0062bae0(void* obj, hkVector4& v, int flag);
+void __cdecl TESArrowTargetListener_AddArrowTarget(const hkVector4& aArrowCenterOfMassWorld, void* apTargetObject);
+hkVector4& NI2HK(hkVector4& arhkTran, const NiPoint3& arNiTran);
+void TESHavokUtilities_AddAngularVelocity_0062bae0(void* apObject, hkVector4& aVelocity, int abReset);
 void TESHavokUtilities_AddAngularVelocity(void* obj, const NiPoint3& pos, bool flag);
 // These arguments are hkVector4: component access binds 0x00560d30 and addition binds 0x00553f70.
 struct WorldObject62BAE0
 {
     void* bhkRigidBody_GetAngularVelocity();
-    void bhkRigidBody_SetAngularVelocity_005617c0(hkVector4& kVector);
+    void bhkRigidBody_SetAngularVelocity_005617c0(hkVector4& arVel);
 };
 struct Collision62BAE0
 {
@@ -1725,7 +1725,7 @@ struct Node62BAE0 : public Object62BAE0
     Object62BAE0* FUN_0043b4a0(unsigned int i);
 };
 Collision62BAE0* __cdecl FUN_0043b610(Object62BAE0* pkObject);
-void __cdecl TESHavokUtilities_AddAngularVelocity_0062bae0(Object62BAE0* pkObject, hkVector4* pkPoint, bool bLocal);
+void __cdecl TESHavokUtilities_AddAngularVelocity_0062bae0(Object62BAE0* apObject, hkVector4* aVelocity, bool abReset);
 class S00632b40_Rotation
 {
   public:
@@ -1771,7 +1771,7 @@ class ShapePhantom
   public:
     void InvokeInterfaceCall(hkVector4* pFrom, InitFloats* pRay, class ShapeCaster* pCollector, int i);
 };
-void NI2HK(void* pOut, const NiPoint3& kIn);
+void NI2HK(void* arhkTran, const NiPoint3& arNiTran);
 class ShapeCaster
 {
   public:
@@ -2013,7 +2013,7 @@ class ShapeCaster
     void HitCaster_SetCustomPickCollisions();
     xHitRes* hkpAllCdPointCollector_hasHit(xHitFlag* pFlag);
     void hkpAllCdPointCollector_sortHits();
-    bool HitCaster_CastShape(const NiPoint3& kFrom, const NiPoint3& kWorldPosition, float fDist);
+    bool HitCaster_CastShape(const NiPoint3& aOrigin, const NiPoint3& aDirection, float afPickDistance);
 };
 extern "C" __m128 _mm_min_ps(__m128, __m128);
 const __m128* __fastcall FUN_006815c0(const void* obj);
@@ -2043,6 +2043,8 @@ struct VectorNormalizeOperations
 
 // @fnv 0x0062aea0
 // src: XBOX_PDB 0x0062aea0
+// pdb: hkVector4::normalize3 | TESArrowTargetListener.obj | debug, call graph, high
+// pdb locals: scale
 void hkVector4::normalize3_0062aea0()
 {
     // The helper writes these SIMD temporaries without calling vector constructors.

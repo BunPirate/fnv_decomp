@@ -7,6 +7,7 @@
 #include "bsrandom.h"
 
 // @fnv 0x00476c00
+// pdb: BSRandom::QInstance | BGSDestructibleObjectForm.obj | debug, call graph, medium
 inline MersenneTwister* MersenneTwister::GetRandomGenerator()
 {
     static MersenneTwister s_instance;
@@ -14,24 +15,31 @@ inline MersenneTwister* MersenneTwister::GetRandomGenerator()
 }
 
 // @fnv 0x00476b70
-float RandomFloat(float lo, float hi)
+// pdb: RandomFloat | BGSDestructibleObjectForm.obj | retail, upstream name already matches, high
+// pdb params: afMin, afMax
+float RandomFloat(float afMin, float afMax)
 {
-    return MersenneTwister::GetRandomGenerator()->Float(lo, hi);
+    return MersenneTwister::GetRandomGenerator()->Float(afMin, afMax);
 }
 
 // @fnv 0x005c5420
+// pdb: RandomFloat0To1 | TESScriptFunctions.obj | debug, upstream name already matches, high
 float RandomFloat0To1()
 {
     return MersenneTwister::GetRandomGenerator()->Float0To1();
 }
 
 // @fnv 0x004dff00
-bool RandomBoolean(float chance)
+// pdb: RandomBool | ScreenCustomSplatter.obj | debug, call graph, high
+// pdb params: afPercentTrue
+bool RandomBoolean(float afPercentTrue)
 {
-    return MersenneTwister::GetRandomGenerator()->Bool(chance);
+    return MersenneTwister::GetRandomGenerator()->Bool(afPercentTrue);
 }
 
 // @fnv 0x004dff60
+// pdb: BSRandom::Float0To1 | ScreenCustomSplatter.obj | debug, call graph, medium
+// pdb locals: r
 float MersenneTwister::Float0To1()
 {
     unsigned int value = GetRandomUInt();
@@ -39,6 +47,8 @@ float MersenneTwister::Float0To1()
 }
 
 // @fnv 0x004dff20
+// pdb: BSRandom::Bool | ScreenCustomSplatter.obj | debug, call graph, medium
+// pdb params: afPercentTrue
 bool MersenneTwister::Bool(float chance)
 {
     return chance >= Float0To1();
@@ -46,6 +56,7 @@ bool MersenneTwister::Bool(float chance)
 
 #include "bsrandom_singleton.h"
 // @fnv 0x0049fef0
+// pdb: BGSDecalManager::GetInstance | BGSDecalManager.obj | debug, call graph, medium
 bsrandom_singleton::MersenneTwister* bsrandom_singleton::MersenneTwister::GetRandomGenerator()
 {
     if (!DAT_011c57f8)

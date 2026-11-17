@@ -4,6 +4,7 @@
 
 class GeometryRelatedType;
 
+// pdb: class NiD3DShaderProgramCreatorAsm, size 0x10 (here 0x4), bases: NiD3DShaderProgramCreator, 3 members
 class NiD3DShaderProgramCreatorAsm : public NiD3DShaderProgramCreator
 {
 public:
@@ -14,5 +15,5 @@ public:
     virtual void vf10();
     virtual void vf11();
 
-    void* CreateHandle(GeometryRelatedType* pkShader);
+    void* CreateHandle(GeometryRelatedType* pvCode);
 };

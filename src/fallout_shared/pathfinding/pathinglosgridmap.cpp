@@ -25,14 +25,15 @@ struct FUN_006e0590_shell
 
 struct FUN_006e10a0_shell
 {
-    void ResetVirtualTableAndClear_006e10a0();
+    void BSSimpleArray_char_1024_dtor();
 };
 
 // @fnv 0x006e0590
 // src: GUESS 0x006e0590 (confidence: low)
+// pdb: PathingLOSGridCell::~PathingLOSGridCell | PathingLOSGridMap.obj | debug, object-file gap fill, medium
 void FUN_006e0590_shell::ForwardCall_006e0590()
 {
-    ((FUN_006e10a0_shell*)(reinterpret_cast<char*>(this) + 4))->ResetVirtualTableAndClear_006e10a0();
+    ((FUN_006e10a0_shell*)(reinterpret_cast<char*>(this) + 4))->BSSimpleArray_char_1024_dtor();
 }
 
 // @fnv 0x006a62f0
@@ -43,32 +44,37 @@ signed char& __thiscall BSSimpleArray<signed char>::GetAt(unsigned int index)
 }
 
 // @fnv 0x006e0ed0
+// pdb: BSSimpleArray<char,1024>::GetAt | PathingLOSGridMap.obj | debug, call graph, high
+// pdb params: aiIndex
 template <>
-signed char& __thiscall BSSimpleArray<signed char>::GetElement(unsigned int index)
+signed char& __thiscall BSSimpleArray<signed char>::GetElement(unsigned int aiIndex)
 {
-    return GetAt(index);
+    return GetAt(aiIndex);
 }
 
 
 struct FUN_006e08f0_shell
 {
     NavMeshInfo* m_pNavMeshInfo;
-    bool PathingLOSGrid_GetNavMesh(NavMeshPtr& aArg);
+    bool PathingLOSGrid_GetNavMesh(NavMeshPtr& spRetNavMesh);
 };
 
 // Checks whether the object at offset 16 is non-null and, if so, delegates to its NavMeshInfo method with aArg.
 // @fnv 0x006e08f0
 // src: COMMUNITY 0x006e08f0
-bool FUN_006e08f0_shell::PathingLOSGrid_GetNavMesh(NavMeshPtr& aArg)
+// pdb: PathingLOSGrid::GetNavMesh | PathingLOSGridMap.obj | debug, upstream name already matches, high
+// pdb params: spRetNavMesh
+bool FUN_006e08f0_shell::PathingLOSGrid_GetNavMesh(NavMeshPtr& spRetNavMesh)
 {
     if (reinterpret_cast<void**>(this)[4] == 0)
         return false;
-    return reinterpret_cast<NavMeshInfo*>(reinterpret_cast<void**>(this)[4])->ResolveNavMesh(aArg);
+    return reinterpret_cast<NavMeshInfo*>(reinterpret_cast<void**>(this)[4])->ResolveNavMesh(spRetNavMesh);
 }
 
 void __cdecl _delete(void*, unsigned int);
 // Calls FUN_006e02a0, then frees this with _delete when flags has bit 0 set, and returns this.
 // @fnv 0x006e0270
+// pdb: PathingLOSGridMap::`scalar deleting destructor' | PathingLOSGridMap.obj | retail, vtable slot, high
 void* __thiscall PathingLOSGridMap::FUN_006e0270(unsigned int flags)
 {
     this->FUN_006e02a0();
@@ -80,6 +86,7 @@ void* __thiscall PathingLOSGridMap::FUN_006e0270(unsigned int flags)
 void __cdecl operator delete(void*);
 // Calls FUN_006e04b0, frees this with operator delete when flags has bit 0 set, and returns this.
 // @fnv 0x006e0480
+// pdb: PathingLOSGrid::`scalar deleting destructor' | PathingLOSGridMap.obj | debug, object-file gap fill, medium
 void* __thiscall PathingLOSGridMap::FUN_006e0480(unsigned int flags)
 {
     FUN_006e04b0();
@@ -93,6 +100,7 @@ struct FUN_006e0560_shell : FUN_006e0590_shell
     void* __thiscall DestroyIfFlagged(unsigned int);
 };
 // @fnv 0x006e0560
+// pdb: PathingLOSGridCell::`scalar deleting destructor' | PathingLOSGridMap.obj | debug, object-file gap fill, medium
 void* __thiscall FUN_006e0560_shell::DestroyIfFlagged(unsigned int flags)
 {
     ForwardCall_006e0590();
@@ -108,18 +116,21 @@ struct FUN_006dfe90_shell
 };
 struct FUN_006e0bc0_shell
 {
-    bool __thiscall PathingLOSGridMap_SetLocationSeen(BSAudio* aArg, bool aFlag);
+    bool __thiscall PathingLOSGridMap_SetLocationSeen(BSAudio* arLocation, bool abSeen);
 };
 // @fnv 0x006e0bc0
 // src: XBOX_PDB 0x006e0bc0
-bool __thiscall FUN_006e0bc0_shell::PathingLOSGridMap_SetLocationSeen(BSAudio* aArg, bool aFlag)
+// pdb: PathingLOSGridMap::SetLocationSeen | PathingLOSGridMap.obj | retail, upstream name already matches, high
+// pdb params: arLocation, abSeen
+// pdb locals: pinfo, pgrid
+bool __thiscall FUN_006e0bc0_shell::PathingLOSGridMap_SetLocationSeen(BSAudio* arLocation, bool abSeen)
 {
-    void* pTopic = aArg->GetAudioBackendData();
-    if (!pTopic || ((PathingLocation*)aArg)->GetShortValueAtOffset24() == 0xFFFF)
+    void* pTopic = arLocation->GetAudioBackendData();
+    if (!pTopic || ((PathingLocation*)arLocation)->GetShortValueAtOffset24() == 0xFFFF)
         return false;
     unsigned int key = 0;
     if (((DummyPointerMap*)((char*)this + 8))->GetAt(*(GO*)pTopic, key))
-        return ((FUN_006dfe90_shell*)key)->PathingLOSGrid_SetLocationSeen(aArg, aFlag);
+        return ((FUN_006dfe90_shell*)key)->PathingLOSGrid_SetLocationSeen(arLocation, abSeen);
     return false;
 }
 
@@ -139,6 +150,7 @@ struct FUN_006e1020_shell : AX
 // Sets the object's vtable pointer to DAT_0106cef8, calls FUN_006b3eb0 with 0, 0, and returns this.
 // @fnv 0x006e1020
 // src: COMMUNITY 0x006e1020
+// pdb: BSSimpleArray<PathingLOSGridCell *,1024>::BSSimpleArray<PathingLOSGridCell *,1024> | PathingLOSGridMap.obj | debug, call graph, medium
 FUN_006e1020_shell* __thiscall FUN_006e1020_shell::BSSimpleArray_PathingLOSGridCell_1024_BSSimpleArray_PathingLOSGridCell_1024()
 {
     *reinterpret_cast<unsigned int**>(this) = reinterpret_cast<unsigned int*>(&DAT_0106cef8);
@@ -157,6 +169,7 @@ struct FUN_006e0190
 };
 // Initializes the embedded object, sets b0 and i14 to 0 and i18 to -1.
 // @fnv 0x006e0190
+// pdb: PathingLOSGridCell::PathingLOSGridCell | PathingLOSGridMap.obj | debug, object-file gap fill, medium
 FUN_006e0190::FUN_006e0190()
 {
     b0 = 0;
@@ -165,6 +178,7 @@ FUN_006e0190::FUN_006e0190()
 }
 
 // @fnv 0x006e05b0
+// pdb: PathingLOSGridMap::ClearSeen | PathingLOSGridMap.obj | debug, object-file gap fill, medium
 void __thiscall PathingLOSGridMap::Reset()
 {
     m_fCellSize = 0.0f;
@@ -194,6 +208,10 @@ struct FUN_006e0d20_t
 
 // @fnv 0x006e0d20
 // src: COMMUNITY 0x006e0d20
+// pdb: PathingLOSGrid::Setup | PathingLOSGridMap.obj | retail, object-file run extension, low
+// pdb note: debug build links it to PathingLOSGridMap::LoadGame
+// pdb params: apNavMeshInfo
+// pdb locals: spmesh
 void FUN_006e0d20_t::Lst0044_Data00D4_Load(BGSLoadFormBuffer* apLoadGameBuffer)
 {
     unsigned int isaveGameCount = apLoadGameBuffer->ReadElementCount();
@@ -230,6 +248,8 @@ struct FUN_00aa62e0_shell
 };
 // Calls AcquireLock on the object at offset 0x4c, deletes every value in the map at offset 8, then calls RemoveAll and FUN_00aa62e0.
 // @fnv 0x006e03e0
+// pdb: PathingLOSGridMap::Clear | PathingLOSGridMap.obj | debug, object-file gap fill, medium
+// pdb locals: it, inavmeshID, pgrid
 void PathingLOSGridMap::ClearMap()
 {
     ((FUN_00aa6060_shell*)((char*)this + 0x4c))->AcquireLock();
@@ -252,28 +272,31 @@ struct FUN_006df9c0_shell
     BSSimpleArray<signed char> m_aiIndexedValues;
     unsigned char pad2[0x14];
 
-    void __thiscall SaveFields_006df9c0(BGSSaveGameBuffer*);
+    void __thiscall PathingLOSGridCell_SaveGame(BGSSaveGameBuffer*);
 };
 
 // Saves the byte, a 4-byte value at offset 0x18, and, when m_byte is zero, the count and each element returned by FUN_006e0ed0.
 // @fnv 0x006df9c0
-// src: GUESS 0x006df9c0 (confidence: medium)
-void __thiscall FUN_006df9c0_shell::SaveFields_006df9c0(BGSSaveGameBuffer* buffer)
+// src: XBOX_DEBUG_PDB 0x006df9c0
+// pdb: PathingLOSGridCell::SaveGame | PathingLOSGridMap.obj | debug, call graph, high
+// pdb params: apSaveGameBuffer
+// pdb locals: isaveGameCount, i, cindex
+void __thiscall FUN_006df9c0_shell::PathingLOSGridCell_SaveGame(BGSSaveGameBuffer* apSaveGameBuffer)
 {
-    buffer->SaveData(this, 1, 0);
-    buffer->SaveData((void*)((char*)this + 0x18), 4, 0);
+    apSaveGameBuffer->SaveData(this, 1, 0);
+    apSaveGameBuffer->SaveData((void*)((char*)this + 0x18), 4, 0);
 
     if (!m_byte)
     {
         unsigned int count;
 
         count = ((char*)this + 4) ? m_aiIndexedValues.GetSize() : 0;
-        buffer->SaveVariableSizedValue(count);
+        apSaveGameBuffer->SaveVariableSizedValue(count);
 
         for (unsigned int i = 0; i < count; ++i)
         {
             void* data = &m_aiIndexedValues.GetElement(i);
-            buffer->SaveData(data, 1, 0);
+            apSaveGameBuffer->SaveData(data, 1, 0);
         }
     }
 }
@@ -292,6 +315,9 @@ struct FormLoadEntry
 
 // Reads a byte and four bytes into the object, then, if the flag is unset, reads a count and that many single bytes into indexed entries.
 // @fnv 0x006dfa70
+// pdb: PathingLOSGridCell::LoadGame | PathingLOSGridMap.obj | debug, object-file gap fill, medium
+// pdb params: apLoadGameBuffer
+// pdb locals: isaveGameCount, i, cindex
 void __thiscall FormLoadEntry::LoadForm(BGSLoadFormBuffer* apLoadGameBuffer)
 {
     apLoadGameBuffer->ReadTypedData(this, 1U);
@@ -313,6 +339,10 @@ void __thiscall FormLoadEntry::LoadForm(BGSLoadFormBuffer* apLoadGameBuffer)
 }
 
 // @fnv 0x006e10c0
+// pdb: PathingLOSGridMap::SaveGame | PathingLOSGridMap.obj | retail, object-file run extension, low
+// pdb note: debug build links it to BSSimpleArray<char,1024>::SetSize
+// pdb params: apSaveGameBuffer
+// pdb locals: isaveGameBufferPos, isaveGameCount, it, ppathingLOSGrid, inavmeshID
 template <>
 void __thiscall BSSimpleArray<signed char>::SetSize(unsigned int uiNewSize, bool abShrinkCapacity)
 {
@@ -377,6 +407,9 @@ struct FUN_006e05f0_shell
 };
 
 // @fnv 0x006e05f0
+// pdb: PathingLOSGridMap::Setup | PathingLOSGridMap.obj | debug, object-file gap fill, medium
+// pdb params: aNavMeshes
+// pdb locals: i, spmesh, pgrid
 bool FUN_006e05f0_shell::AddNavMeshes(BSSimpleArray<NiPointer<NavMesh> >* aArg)
 {
     reinterpret_cast<Lock*>(reinterpret_cast<unsigned char*>(this) + 0x4c)->Enter();
@@ -418,7 +451,7 @@ struct NavMeshLookup
 {
     NavMeshLookup* __thiscall Modelloader_GetReferencedThis();
     unsigned char* __thiscall GetTriangleScore(NavMeshLookup* rhs);
-    bool __thiscall FUN_0069ad00(NavMeshKey* key);
+    bool __thiscall FUN_0069ad00(NavMeshKey* aReturnNavMeshPtr);
     IndexList* __thiscall NavMesh_GetTrianglesForGridCell(unsigned int identifier);
 };
 
@@ -518,6 +551,7 @@ class FUN_006e01d0_cls : public NiRefObject
 
 // Constructs the solution object, initializing its array with grow-by 0x25 and zeroing cost, time and related floats.
 // @fnv 0x006e01d0
+// pdb: PathingLOSGridMap::PathingLOSGridMap | PathingLOSGridMap.obj | debug, object-file gap fill, medium
 FUN_006e01d0_cls::FUN_006e01d0_cls() : m_kNodeArray(0x25), m_fCost(0.0f), m_fHitDistance(0.0f), m_fTime(0.0f)
 {}
 
@@ -540,18 +574,21 @@ struct Sub4c
     void BSReadWriteLock_UnlockWrite();
 };
 
-unsigned char __cdecl Pathing_FindConnectedNavmeshesForLocation(void* aP, float aF, Loc14* aOut);
+unsigned char __cdecl Pathing_FindConnectedNavmeshesForLocation(void* aLocation, float afRadius, Loc14* apRetNavMeshes);
 
 
 // @fnv 0x006e0320
 // src: COMMUNITY 0x006e0320
-void PathingLOSGridMap::Initialize_006e0320(void* aArg, float aF)
+// pdb: PathingLOSGridMap::Initialize | PathingLOSGridMap.obj | retail, object-file run extension, high
+// pdb params: arCenter, afRadius
+// pdb locals: navmeshes
+void PathingLOSGridMap::Initialize_006e0320(void* arCenter, float afRadius)
 {
     reinterpret_cast<Sub4c*>(reinterpret_cast<char*>(this) + 0x4c)->AcquireLock();
-    *reinterpret_cast<PathingLocation*>(&m_1C) = *static_cast<const PathingLocation*>(aArg);
-    fRadius = aF;
+    *reinterpret_cast<PathingLocation*>(&m_1C) = *static_cast<const PathingLocation*>(arCenter);
+    fRadius = afRadius;
     Loc14 locResult;
-    if (Pathing_FindConnectedNavmeshesForLocation(&m_1C, aF, &locResult) != 0)
+    if (Pathing_FindConnectedNavmeshesForLocation(&m_1C, afRadius, &locResult) != 0)
     {
         reinterpret_cast<FUN_006e05f0_shell*>(this)->AddNavMeshes(
             reinterpret_cast<BSSimpleArray<NiPointer<NavMesh> >*>(&locResult));
@@ -596,8 +633,8 @@ struct LOSTarget
 
 struct LOSNavMeshInfo
 {
-    bool GetNavMeshRef(NavMeshRef& arRef);
-    void Update(LOSTargetPtr& arTarget);
+    bool GetNavMeshRef(NavMeshRef& spRetNavMesh);
+    void PathingLOSGrid_SetLOSMapFromSeenTriangles(LOSTargetPtr& aspLOSMap);
 };
 
 struct LOSInfoMap
@@ -639,6 +676,9 @@ struct LOSGridOwner
 };
 
 // @fnv 0x006e07a0
+// pdb: PathingLOSGridMap::SetLOSMapFromSeenTriangles | PathingLOSGridMap.obj | debug, object-file gap fill, medium
+// pdb params: aspLOSMap
+// pdb locals: loadedNavMeshes, it, navMeshID, spmesh, pgrid
 bool LOSGridOwner::UpdateNavMeshes(LOSTargetPtr& arTarget)
 {
     kLock.Lock();
@@ -661,7 +701,7 @@ bool LOSGridOwner::UpdateNavMeshes(LOSTargetPtr& arTarget)
         kMap.GetNext(pPos3, uiKey2, pInfo2);
         NavMeshRef kRefX;
         if (pInfo2->GetNavMeshRef(kRefX))
-            pInfo2->Update(arTarget);
+            pInfo2->PathingLOSGrid_SetLOSMapFromSeenTriangles(arTarget);
     }
     kLock.Unlock();
     return true;
@@ -683,7 +723,7 @@ struct GridEntryX
     int unk0C;
     int unk10;
     GridEntryX(const NavMeshInfo* apInfo);
-    bool Update(const NiPointer<TriangleVisibilityData>& arArray);
+    bool Update(const NiPointer<TriangleVisibilityData>& aspLOSMap);
 };
 
 struct EntryMapX
@@ -729,6 +769,9 @@ struct LOSGridUpdateState
 
 // Locks the map, creates or finds a GridEntryX per nav mesh and updates it, then stores the array value in fValue and unlocks.
 // @fnv 0x006e0920
+// pdb: PathingLOSGridMap::SetSeenTrianglesFromLOSMap | PathingLOSGridMap.obj | debug, object-file run extension, low
+// pdb params: aspLOSMap
+// pdb locals: i, spmesh, pgrid
 bool LOSGridUpdateState::UpdateFromNavMeshArray(const NiPointer<TriangleVisibilityData>& arNavMeshArray)
 {
     kLock.Lock();
@@ -833,23 +876,26 @@ struct FUN_006e0b50_cls
     unsigned char m_00[8];
     unsigned char m_08[0x10];
 
-    bool __thiscall PathingLOSGridMap_IsLocationSeen(void* aArg);
+    bool __thiscall PathingLOSGridMap_IsLocationSeen(void* arLocation);
 };
 
 // @fnv 0x006e0b50
 // src: XBOX_PDB 0x006e0b50
-bool __thiscall FUN_006e0b50_cls::PathingLOSGridMap_IsLocationSeen(void* aArg)
+// pdb: PathingLOSGridMap::IsLocationSeen | PathingLOSGridMap.obj | retail, upstream name already matches, high
+// pdb params: arLocation
+// pdb locals: pinfo, pgrid
+bool __thiscall FUN_006e0b50_cls::PathingLOSGridMap_IsLocationSeen(void* arLocation)
 {
     unsigned int value;
-    void* pHolder = ((FUN_0044edb0_shell*)aArg)->TESMain_GetThread();
-    if (pHolder == 0 || ((PathingLocation*)aArg)->GetShortValueAtOffset24() == 0xffff)
+    void* pHolder = ((FUN_0044edb0_shell*)arLocation)->TESMain_GetThread();
+    if (pHolder == 0 || ((PathingLocation*)arLocation)->GetShortValueAtOffset24() == 0xffff)
     {
         return false;
     }
     value = 0;
     if (((FUN_00853130_shell*)((char*)this + 8))->FUN_00853130(((FUN_00559450_shell*)pHolder)->Modelloader_GetReferencedThis(&value)))
     {
-        return ((FUN_006dfdc0_shell*)value)->PathingLOSGrid_IsLocationSeen(aArg);
+        return ((FUN_006dfdc0_shell*)value)->PathingLOSGrid_IsLocationSeen(arLocation);
     }
     return false;
 }
@@ -857,8 +903,8 @@ bool __thiscall FUN_006e0b50_cls::PathingLOSGridMap_IsLocationSeen(void* aArg)
 struct LoadBufferEx
 {
     unsigned int __thiscall StartVariableSizedValue();
-    void __thiscall FUN_00865db0(unsigned int key, unsigned int flags);
-    void __thiscall SaveVariableSizedValue_00865ff0(unsigned int writtenCount, unsigned int offset);
+    void __thiscall FUN_00865db0(unsigned int aiFormID, unsigned int aiUnusuedMetaDataArg);
+    void __thiscall SaveVariableSizedValue_00865ff0(unsigned int aiVariableValue, unsigned int aiPosition);
     void __thiscall FUN_00865e50(void* value, unsigned int size, unsigned int flags);
 };
 struct PathingCell
@@ -893,6 +939,9 @@ struct PathingGrid
     void SaveGame(LoadBufferEx* buffer);
 };
 // @fnv 0x006e0c40
+// pdb: PathingLOSGrid::~PathingLOSGrid | PathingLOSGridMap.obj | retail, object-file run extension, low
+// pdb note: debug build links it to PathingLOSGridMap::SaveGame
+// pdb locals: i
 void PathingGrid::SaveGame(LoadBufferEx* buffer)
 {
     unsigned int writtenCount = 0;
@@ -926,6 +975,9 @@ struct Owner6df780
     bool __thiscall UpdateNavMeshResults(PathingLocation* a1, unsigned char a2);
 };
 // @fnv 0x006df780
+// pdb: PathingLOSGridCell::SetLocationSeen | PathingLOSGridMap.obj | debug, object-file run extension, low
+// pdb params: arLocation, abSeen
+// pdb locals: spmesh, ptriangles, i, striangle
 bool __thiscall Owner6df780::UpdateNavMeshResults(PathingLocation* a1, unsigned char a2)
 {
     NavMeshKey key;
@@ -998,6 +1050,8 @@ class FUN_006e04b0 : public E04B0Array
 
 // Destructor that iterates over the array and deletes each element pointer returned by GetAt.
 // @fnv 0x006e04b0
+// pdb: PathingLOSGrid::~PathingLOSGrid | PathingLOSGridMap.obj | debug, object-file gap fill, medium
+// pdb locals: i
 FUN_006e04b0::~FUN_006e04b0()
 {
     for (unsigned int i = 0; i < GetSize(); i++)
@@ -1022,12 +1076,14 @@ class FUN_006e0730 : public C6E0730List
   public:
     FUN_006e0730(const FUN_006e0730& kOther);
 
-    void CopyFrom(const FUN_006e0730& kOther);
+    void CopyFrom(const FUN_006e0730& aspNavMesh);
 
     int m_iArrayLength;
 };
 
 // @fnv 0x006e0730
+// pdb: PathingLOSGrid::PathingLOSGrid | PathingLOSGridMap.obj | debug, object-file gap fill, medium
+// pdb params: aspNavMesh
 FUN_006e0730::FUN_006e0730(const FUN_006e0730& kOther)
 {
     m_iArrayLength = 0;
@@ -1052,6 +1108,8 @@ int g_TES;
 
 // @fnv 0x006e0070
 // src: COMMUNITY 0x006e0070
+// pdb: PathingLOSGridMap::PathingLOSGridMap | PathingLOSGridMap.obj | retail, object-file run extension, low
+// pdb note: debug build links it to PathingLOSGrid::LoadGame
 void FUN_006e0480::Lst0044_Data00D4_Arr0004_Load(BGSLoadFormBuffer* apLoadGameBuffer)
 {
     unsigned int inavmeshID;
@@ -1086,6 +1144,7 @@ void FUN_006e0480::Lst0044_Data00D4_Arr0004_Load(BGSLoadFormBuffer* apLoadGameBu
 }
 
 // @fnv 0x006e02a0
+// pdb: PathingLOSGridMap::~PathingLOSGridMap | PathingLOSGridMap.obj | retail, upstream name already matches, high
 PathingLOSGridMap::~PathingLOSGridMap()
 {
     ClearMap();

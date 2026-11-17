@@ -50,6 +50,7 @@ __declspec(noinline) int Provider::FUN_00d470d0()
 }
 // Returns -1 for tags 0x18/0x1f, the provider's value8 for tag 0x19, otherwise g_011b6ab8[tag].value.
 // @fnv 0x00d86b40
+// pdb: hkClassMember::getEnumType | hkClassMember.obj | debug, object-file run extension, low
 int Owner::GetTagValue()
 {
     if (FUN_00d86b30() == 0x18 || FUN_00d86b30() == 0x1f)
@@ -64,7 +65,7 @@ struct SizeNode;
 struct SizeNodeList
 {
     int FUN_00d46f00();
-    SizeNode* getMember(int index);
+    SizeNode* getMember(int memberIndex);
 };
 
 struct SizeNode
@@ -83,10 +84,13 @@ struct SizeNode
 
 // Returns a value for the node based on its type, recursing for types 19 and 25, then clamps it to a minimum derived from node->unk10 flags.
 // @fnv 0x00dc1850
-extern "C" int __cdecl GetNodeValue(SizeNode* node, int type, int fallback)
+// src: XBOX_RETAIL_PDB 0x00dc1850
+// pdb: getLayoutAlignment | hkStructureLayout.obj | retail, object-file gap fill, high
+// pdb params: member, memType, bytesInPointer
+extern "C" int __cdecl getLayoutAlignment(SizeNode* member, int memType, int bytesInPointer)
 {
     int result = -1;
-    switch (type)
+    switch (memType)
     {
     case 0:
     case 1:
@@ -110,7 +114,7 @@ extern "C" int __cdecl GetNodeValue(SizeNode* node, int type, int fallback)
     case 24:
     case 31:
     case 32:
-        result = node->GetAlignment();
+        result = member->GetAlignment();
         break;
     case 20:
     case 21:
@@ -121,21 +125,21 @@ extern "C" int __cdecl GetNodeValue(SizeNode* node, int type, int fallback)
     case 29:
     case 30:
     case 33:
-        result = fallback;
+        result = bytesInPointer;
         break;
     case 19: {
-        int t = node->unk0D;
-        result = GetNodeValue(node, t, fallback);
+        int t = member->unk0D;
+        result = getLayoutAlignment(member, t, bytesInPointer);
     }
     break;
     case 25: {
         int best = 1;
-        SizeNodeList* list = node->FUN_00d86910();
+        SizeNodeList* list = member->FUN_00d86910();
         for (int iIndex = 0; iIndex < list->FUN_00d46f00(); iIndex++)
         {
             SizeNode* child = list->getMember(iIndex);
             int t = child->unk0C;
-            int r = GetNodeValue(child, t, fallback);
+            int r = getLayoutAlignment(child, t, bytesInPointer);
             if (r > best)
                 best = r;
         }
@@ -143,7 +147,7 @@ extern "C" int __cdecl GetNodeValue(SizeNode* node, int type, int fallback)
         break;
     }
     }
-    int flags = node->unk10 & 0x180;
+    int flags = member->unk10 & 0x180;
     if (flags)
     {
         int minimum = (flags == 0x100) ? 16 : 8;
@@ -166,7 +170,7 @@ struct StrBuf_cls
     int m_00;
     int m_04;
     int m_08;
-    void Init(void* buf, unsigned int n);
+    void Init(void* buf, unsigned int bufSize);
     void Assign(const char* s);
     void Free();
 };
@@ -188,14 +192,18 @@ struct Mem_cls
 };
 
 extern Log_cls* DAT_01268360;
-int GetMemberSize(Lay_cls* a1, unsigned char* a2, int a3);
+int computeMemberSize(Lay_cls* member, unsigned char* rules, int type);
 
 // Returns the byte size of a structure member based on its type code, recursing for type 18 and logging an error for unknown types.
 // @fnv 0x00dc1690
-int GetMemberSize(Lay_cls* pLayout, unsigned char* pMemberData, int iType)
+// src: XBOX_RETAIL_PDB 0x00dc1690
+// pdb: computeMemberSize | hkStructureLayout.obj | retail, unique string literal, high
+// pdb params: member, rules, type
+// pdb locals: assertBuf, ostr
+int computeMemberSize(Lay_cls* member, unsigned char* rules, int type)
 {
     int r = 0;
-    switch (iType - 1)
+    switch (type - 1)
     {
     case 0:
     case 1:
@@ -218,39 +226,39 @@ int GetMemberSize(Lay_cls* pLayout, unsigned char* pMemberData, int iType)
     case 23:
     case 30:
     case 31:
-        r = pLayout->F86980();
+        r = member->F86980();
         break;
     case 19:
     case 20:
     case 28:
     case 29:
     case 32: {
-        int m = *pMemberData;
-        r = (pLayout->F86940() != 0 ? pLayout->F86940() : 1) * m;
+        int m = *rules;
+        r = (member->F86940() != 0 ? member->F86940() : 1) * m;
         break;
     }
     case 27:
-        r = *pMemberData * 2;
+        r = *rules * 2;
         break;
     case 21:
         r = 4;
     case 25:
-        r = r + *pMemberData + 4;
+        r = r + *rules + 4;
         break;
     case 24: {
-        int m = ((Mem_cls*)(pLayout->F86910()))->F470d0();
-        r = (pLayout->F86940() != 0 ? pLayout->F86940() : 1) * m;
+        int m = ((Mem_cls*)(member->F86910()))->F470d0();
+        r = (member->F86940() != 0 ? member->F86940() : 1) * m;
         break;
     }
     case 22:
         break;
     case 18: {
-        int t = pLayout->m_type;
-        r = GetMemberSize(pLayout, pMemberData, t);
+        int t = member->m_type;
+        r = computeMemberSize(member, rules, t);
         break;
     }
     case 26:
-        r = *pMemberData * 2 + 4;
+        r = *rules * 2 + 4;
         break;
     default: {
         unsigned int buf[0x80];
@@ -275,25 +283,27 @@ struct FUN_00cb18f0_Obj
     int __thiscall FindSlot(int value);
 };
 
-extern "C" void __cdecl Object_ComputeMemberLayoutRecursively(unsigned int value1, void* value2, void* value3, int value4);
+extern "C" void __cdecl retargetClassInplace(unsigned int topLevelClass, void* rules, void* classesDone, int recurse);
 
 class FUN_00dc1bb0_Class
 {
   public:
-    void UpdateState_00dc1bb0(unsigned int param1, unsigned int param2, int param3);
+    void hkStructureLayout_computeMemberOffsetsInplace(unsigned int klass, unsigned int classesDone, int recurse);
 };
 
 // Calls FindSlot on the object with param1 and, if the result exceeds object->unk08, calls FUN_00dc1960 with this, object and param3.
 // @fnv 0x00dc1bb0
-// src: GUESS 0x00dc1bb0 (confidence: low)
-void FUN_00dc1bb0_Class::UpdateState_00dc1bb0(unsigned int uiValue, unsigned int pObject, int param3)
+// src: XBOX_RETAIL_PDB 0x00dc1bb0
+// pdb: hkStructureLayout::computeMemberOffsetsInplace | hkStructureLayout.obj | retail, call graph, high
+// pdb params: klass, classesDone, recurse
+void FUN_00dc1bb0_Class::hkStructureLayout_computeMemberOffsetsInplace(unsigned int klass, unsigned int classesDone, int recurse)
 {
-    FUN_00cb18f0_Obj* object = reinterpret_cast<FUN_00cb18f0_Obj*>(pObject);
-    int result = object->FindSlot(uiValue);
+    FUN_00cb18f0_Obj* object = reinterpret_cast<FUN_00cb18f0_Obj*>(classesDone);
+    int result = object->FindSlot(klass);
 
     if (result > object->unk08)
     {
-        Object_ComputeMemberLayoutRecursively(uiValue, this, object, param3);
+        retargetClassInplace(klass, this, object, recurse);
     }
 }
 
@@ -430,14 +440,17 @@ struct Array
 };
 // Recursively visits child node lists, then computes and stores member offsets and total size for each node list based on layout options.
 // @fnv 0x00dc1960
-// src: GUESS 0x00dc1960 (confidence: medium)
-void __cdecl Object_ComputeMemberLayoutRecursively(NodeListEx& root, const LayoutOptions& options, Arg2& visited, int arg3)
+// src: XBOX_RETAIL_PDB 0x00dc1960
+// pdb: retargetClassInplace | hkStructureLayout.obj | retail, object-file gap fill, high
+// pdb params: topLevelClass, rules, classesDone, recurse
+// pdb locals: hier, assertBuf, ostr
+void __cdecl retargetClassInplace(NodeListEx& topLevelClass, const LayoutOptions& rules, Arg2& classesDone, int recurse)
 {
     Manager* i = hkMemoryRouter_getInstance();
-    visited.hkMapBase_unsigned_long_unsigned_long_hkMapOperations_unsigned_long_insert(i->unk10, (&root), 0);
-    if (0 != arg3)
+    classesDone.hkMapBase_unsigned_long_unsigned_long_hkMapOperations_unsigned_long_insert(i->unk10, (&topLevelClass), 0);
+    if (0 != recurse)
     {
-        int fallback = root.FUN_00d46f00();
+        int fallback = topLevelClass.FUN_00d46f00();
         long r;
         r = 0;
         if (0 < fallback)
@@ -445,12 +458,12 @@ void __cdecl Object_ComputeMemberLayoutRecursively(NodeListEx& root, const Layou
             do
             {
                 NodeEx* tmp;
-                tmp = const_cast<NodeEx*>(&root.FUN_00d46f60(r));
+                tmp = const_cast<NodeEx*>(&topLevelClass.FUN_00d46f60(r));
                 if (tmp->child)
                 {
-                    if (visited.IsMissing(tmp->FUN_00d86910()))
+                    if (classesDone.IsMissing(tmp->FUN_00d86910()))
                     {
-                        Object_ComputeMemberLayoutRecursively(*tmp->FUN_00d86910(), options, visited, arg3);
+                        retargetClassInplace(*tmp->FUN_00d86910(), rules, classesDone, recurse);
                     }
                 }
                 r++;
@@ -461,7 +474,7 @@ void __cdecl Object_ComputeMemberLayoutRecursively(NodeListEx& root, const Layou
     nodeArray.m_data = 0;
     nodeArray.m_iElementCount = 0;
     nodeArray.m_pRayCursor = 0x80000000;
-    NodeListEx* pNodeList = (&root);
+    NodeListEx* pNodeList = (&topLevelClass);
     while (pNodeList)
     {
         NodeListEx* pCurrent = pNodeList;
@@ -470,8 +483,8 @@ void __cdecl Object_ComputeMemberLayoutRecursively(NodeListEx& root, const Layou
         pNodeList = const_cast<NodeListEx*>(pNodeList->FUN_00d46d50());
     }
     int iPointerSize;
-    arg3 = 1;
-    iPointerSize = options.pointerBytes;
+    recurse = 1;
+    iPointerSize = rules.pointerBytes;
     int n = 0;
     for (int tmp = 0; tmp < nodeArray.m_iElementCount; ++tmp)
     {
@@ -484,22 +497,22 @@ void __cdecl Object_ComputeMemberLayoutRecursively(NodeListEx& root, const Layou
                 n += iPointerSize - iRemainder;
             }
             n += iPointerSize;
-            if (iPointerSize > arg3)
+            if (iPointerSize > recurse)
             {
-                arg3 = iPointerSize;
+                recurse = iPointerSize;
             }
         }
         for (int k = 0; k < idx->FUN_00d46f70(); ++k)
         {
             NodeEx* kIter = const_cast<NodeEx*>(&idx->FUN_00d46f80(k));
-            if (0 == n && tmp != 0 && options.emptyBase == 0)
+            if (0 == n && tmp != 0 && rules.emptyBase == 0)
             {
                 n = 1;
             }
-            int iSize = GetNodeValue((SizeNode*)kIter, kIter->ReadType(), options.pointerBytes);
-            if (iSize > arg3)
+            int iSize = getLayoutAlignment((SizeNode*)kIter, kIter->ReadType(), rules.pointerBytes);
+            if (iSize > recurse)
             {
-                arg3 = iSize;
+                recurse = iSize;
             }
             int iRemainder;
             iRemainder = n % iSize;
@@ -511,13 +524,13 @@ void __cdecl Object_ComputeMemberLayoutRecursively(NodeListEx& root, const Layou
             {
                 kIter->SetOffset(n);
             }
-            n += GetMemberSize((Lay_cls*)kIter, ((unsigned char*)&options), kIter->ReadType());
+            n += computeMemberSize((Lay_cls*)kIter, ((unsigned char*)&rules), kIter->ReadType());
         }
-        int j = n % arg3;
+        int j = n % recurse;
         int kIter = n;
         if (j)
         {
-            kIter = arg3 - j;
+            kIter = recurse - j;
         }
         if (j)
         {
@@ -528,7 +541,7 @@ void __cdecl Object_ComputeMemberLayoutRecursively(NodeListEx& root, const Layou
         {
             idx->FUN_00d470e0(c);
         }
-        if (options.reusePadding == 0)
+        if (rules.reusePadding == 0)
         {
             n = kIter;
         }

@@ -8,15 +8,18 @@ extern const float DAT_0109696c;
 extern const NiPoint3 DAT_011a9424;
 
 // @fnv 0x00a55b90
-bool NiBlendPoint3Interpolator::UpdateAccumulatedTransform(float fTime, NiObjectNET* pkTarget, NiPoint3& kValue)
+// src: XBOX_RETAIL_PDB 0x00a55b90
+// pdb: NiBlendPoint3Interpolator::StoreSingleValue | NiBlendPoint3Interpolator.obj | retail, object-file gap fill, high
+// pdb params: fTime, pkInterpTarget, kValue
+bool NiBlendPoint3Interpolator::StoreSingleValue(float fTime, NiObjectNET* pkInterpTarget, NiPoint3& kValue)
 {
-    if (m_uiObjectFlags & 1)
-        fTime = m_fSingleInterpolatorTime;
+    if (m_uFlags & 1)
+        fTime = m_fSingleTime;
 
     if (fTime == DAT_0109696c)
         return false;
 
-    if (m_pSingleInterpolator->UpdatePoint3(fTime, pkTarget, m_kPoint3Value))
+    if (m_pkSingleInterpolator->UpdatePoint3(fTime, pkInterpTarget, m_kPoint3Value))
     {
         kValue = m_kPoint3Value;
         return true;
@@ -29,15 +32,18 @@ bool NiBlendPoint3Interpolator::UpdateAccumulatedTransform(float fTime, NiObject
 
 // Updates the interpolator: delegates to single or multi-interpolation update based on m_ucInterpCount, stores fTime in m_fLastTime, and returns success.
 // @fnv 0x00a55e00
-bool NiBlendPoint3Interpolator::Update(float fTime, NiObjectNET* pkTarget, NiPoint3& kValue)
+// pdb: NiBlendPoint3Interpolator::Update | NiBlendPoint3Interpolator.obj | retail, upstream name already matches, high
+// pdb params: fTime, pkInterpTarget, kValue
+// pdb locals: bReturnValue
+bool NiBlendPoint3Interpolator::Update(float fTime, NiObjectNET* pkInterpTarget, NiPoint3& kValue)
 {
     bool bSuccess = false;
     if (m_ucInterpCount == 1)
-        bSuccess = UpdateAccumulatedTransform(fTime, pkTarget, kValue);
+        bSuccess = StoreSingleValue(fTime, pkInterpTarget, kValue);
     else if (m_ucInterpCount > 0)
     {
         NormalizeWeights();
-        bSuccess = UpdateSingleInterpolator(fTime, pkTarget, kValue);
+        bSuccess = UpdateSingleInterpolator(fTime, pkInterpTarget, kValue);
     }
     m_fLastTime = fTime;
     return bSuccess;
@@ -72,6 +78,9 @@ struct Call_439090_tgt
 // Calls FUN_00a36fd0 on pkObject; if that succeeds, calls _Call_439090 on pkObject+0x30 and returns its negation.
 // @fnv 0x00a55ec0
 // src: XBOX_PDB 0x00a55ec0
+// pdb: NiBlendPoint3Interpolator::IsEqual | NiBlendPoint3Interpolator.obj | retail, upstream name already matches, high
+// pdb params: pkObject
+// pdb locals: pkDest
 bool FUN_00a55ec0_shell::NiBlendPoint3Interpolator_IsEqual(NiObject* pkObject)
 {
     bool r = ((FUN_00a36fd0_tgt*)this)->NiBlendInterpolator_IsEqual(pkObject);
@@ -103,6 +112,8 @@ struct ViewerPoint3
     char* GetViewerString_00a59af0(const char*);
 };
 // @fnv 0x00a55ef0
+// pdb: NiBlendPoint3Interpolator::GetViewerStrings | NiBlendPoint3Interpolator.obj | retail, string-set bridge, high
+// pdb params: pkStrings
 void FUN_00a55ef0_shell::AppendPoint3Value(void* pkStrings)
 {
     ((ViewerBase*)this)->NiBlendInterpolator_GetViewerStrings(pkStrings);
@@ -123,6 +134,8 @@ void FUN_00a55ef0_shell::AppendPoint3Value(void* pkStrings)
 // Calls the virtual function at vtable offset 0xb0 on p and returns its bool result.
 // @fnv 0x00a55a60
 // src: XBOX_PDB 0x00a55a60
+// pdb: NiBlendPoint3Interpolator::InterpolatorIsCorrectType | NiBlendPoint3Interpolator.obj | debug, upstream name already matches, high
+// pdb params: pkInterpolator
 bool __stdcall NiBlendPoint3Interpolator_InterpolatorIsCorrectType(NiBlendPoint3Interpolator* p)
 {
     return reinterpret_cast<bool(__thiscall*)(NiObject*)>(*reinterpret_cast<const unsigned int*>(
@@ -136,6 +149,8 @@ extern int _DAT_011a9428;
 extern int _DAT_011a942c;
 // @fnv 0x00a55a80
 // src: EXE 0x00a55a80
+// pdb: NiBlendPoint3Interpolator::CreateObject | NiBlendPoint3Interpolator.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 void* NiBlendPoint3Interpolator_CreateObject()
 {
     void* p = BSFadeNode::operator new(64);
@@ -162,14 +177,16 @@ struct NiColorSaveHelper
 };
 struct FUN_00a37ec0_shell : public NiBlendPoint3Interpolator
 {
-    void NiBlendPoint3Interpolator_SaveBinary(NiStream& stream);
+    void NiBlendPoint3Interpolator_SaveBinary(NiStream& kStream);
 };
 // @fnv 0x00a55ad0
 // src: XBOX_PDB 0x00a55ad0
-void FUN_00a37ec0_shell::NiBlendPoint3Interpolator_SaveBinary(NiStream& stream)
+// pdb: NiBlendPoint3Interpolator::SaveBinary | NiBlendPoint3Interpolator.obj | retail, upstream name already matches, high
+// pdb params: kStream
+void FUN_00a37ec0_shell::NiBlendPoint3Interpolator_SaveBinary(NiStream& kStream)
 {
-    ((FUN_00a37ec0_tgt*)this)->NiBlendInterpolator_SaveBinary(stream);
-    ((NiColorSaveHelper*)((char*)this + 0x30))->SaveBinary(stream);
+    ((FUN_00a37ec0_tgt*)this)->NiBlendInterpolator_SaveBinary(kStream);
+    ((NiColorSaveHelper*)((char*)this + 0x30))->SaveBinary(kStream);
 }
 
 void __fastcall DestroyInterpolatorArray(void*);
@@ -200,6 +217,9 @@ struct FUN_00a55b20_shell : public NiBlendPoint3Interpolator
 // Allocates a NiBlendPoint3Interpolator, initialises it, copies the point3 fields and flag from this, and returns the clone.
 // @fnv 0x00a55b20
 // src: XBOX_PDB 0x00a55b20
+// pdb: NiBlendPoint3Interpolator::CreateClone | NiBlendPoint3Interpolator.obj | retail, upstream name already matches, high
+// pdb params: kCloning
+// pdb locals: pkObject
 void* FUN_00a55b20_shell::NiBlendPoint3Interpolator_CreateClone(CloningProcess* kCloning)
 {
     NiBlendPoint3Interpolator* pkObject = static_cast<NiBlendPoint3Interpolator*>(BSFadeNode::operator new(0x40));
@@ -266,7 +286,7 @@ FUN_00a55a10::FUN_00a55a10(void* apArg, float f, void* c)
 
 struct FUN_00a37980_tgt
 {
-    void NiBlendInterpolator_LoadBinary(NiObjectNET* p);
+    void NiBlendInterpolator_LoadBinary(NiObjectNET* kStream);
 };
 struct FUN_00a59be0_tgt
 {
@@ -274,18 +294,20 @@ struct FUN_00a59be0_tgt
 };
 struct FUN_00a55e60_cls : public NiBlendPoint3Interpolator
 {
-    void NiBlendPoint3Interpolator_LoadBinary(NiObjectNET* p);
+    void NiBlendPoint3Interpolator_LoadBinary(NiObjectNET* kStream);
 };
 // @fnv 0x00a55e60
 // src: GAMEBRYO_LIB 0x00a55e60
-void FUN_00a55e60_cls::NiBlendPoint3Interpolator_LoadBinary(NiObjectNET* apObject)
+// pdb: NiBlendPoint3Interpolator::LoadBinary | NiBlendPoint3Interpolator.obj | retail, upstream name already matches, high
+// pdb params: kStream
+void FUN_00a55e60_cls::NiBlendPoint3Interpolator_LoadBinary(NiObjectNET* kStream)
 {
-    ((FUN_00a37980_tgt*)this)->NiBlendInterpolator_LoadBinary(apObject);
+    ((FUN_00a37980_tgt*)this)->NiBlendInterpolator_LoadBinary(kStream);
     NiPoint3* pt = &m_kPoint3Value;
-    ((FUN_00a59be0_tgt*)pt)->FUN_00a59be0(apObject);
+    ((FUN_00a59be0_tgt*)pt)->FUN_00a59be0(kStream);
     if (pt->x != DAT_011a9424.x || pt->y != DAT_011a9424.y || pt->z != DAT_011a9424.z)
     {
-        m_bValueValid = true;
+        m_bValidValue = true;
     }
 }
 
@@ -312,57 +334,60 @@ struct BlendPointShell : NiBlendPoint3Interpolator
     }
     bool GetTime(unsigned char index, float& time)
     {
-        NiBlendInterpolator__InterpArrayItem& item = m_pInterpArray[index];
+        NiBlendInterpolator__InterpArrayItem& item = m_pkInterpArray[index];
         if (!item.m_spControllerInterpolator || item.m_fNormalizedWeight == 0.0f)
             return false;
-        if (m_uiObjectFlags & 1)
+        if (m_uFlags & 1)
             time = item.m_fLastEvaluationTime;
         return time != DAT_0109696c;
     }
-    bool NiBlendPoint3Interpolator_BlendValues(float time, NiObjectNET* target, NiPoint3& value);
+    bool NiBlendPoint3Interpolator_BlendValues(float fTime, NiObjectNET* pkInterpTarget, NiPoint3& kValue);
 };
 // Blends successful controller values using normalized weights, adjusts for skipped weights, and writes the result to value.
 // @fnv 0x00a55c30
 // src: XBOX_PDB 0x00a55c30
-bool BlendPointShell::NiBlendPoint3Interpolator_BlendValues(float time, NiObjectNET* target, NiPoint3& value)
+// pdb: NiBlendPoint3Interpolator::BlendValues | NiBlendPoint3Interpolator.obj | retail, upstream name already matches, high
+// pdb params: fTime, pkInterpTarget, kValue
+// pdb locals: fTotalNormalizedWeight, uc, pkInterpolator, fUpdateTime, bSuccess
+bool BlendPointShell::NiBlendPoint3Interpolator_BlendValues(float fTime, NiObjectNET* pkInterpTarget, NiPoint3& kValue)
 {
     float weight = 1.0f;
-    m_bValueValid = false;
+    m_bValidValue = false;
     m_kPoint3Value = DAT_011f426c;
     for (unsigned char i = 0; i < m_ucArraySize; ++i)
     {
-        NiBlendInterpolator__InterpArrayItem& item = m_pInterpArray[i];
+        NiBlendInterpolator__InterpArrayItem& item = m_pkInterpArray[i];
         if (item.m_spControllerInterpolator && item.m_fNormalizedWeight > 0.0f)
         {
-            float updateTime = time;
+            float updateTime = fTime;
             if (!GetTime(i, updateTime))
             {
                 weight -= item.m_fNormalizedWeight;
                 continue;
             }
             NiPoint3 tempPoint;
-            if (item.m_spControllerInterpolator->UpdatePoint3(updateTime, target, tempPoint))
+            if (item.m_spControllerInterpolator->UpdatePoint3(updateTime, pkInterpTarget, tempPoint))
             {
-                float w = m_pInterpArray[i].m_fNormalizedWeight;
+                float w = m_pkInterpArray[i].m_fNormalizedWeight;
                 NiPoint3 scaledPoint;
                 scaledPoint.x = tempPoint.x * w;
                 scaledPoint.y = tempPoint.y * w;
                 scaledPoint.z = tempPoint.z * w;
                 Add(m_kPoint3Value, scaledPoint);
-                m_bValueValid = true;
+                m_bValidValue = true;
             }
             else
-                weight -= m_pInterpArray[i].m_fNormalizedWeight;
+                weight -= m_pkInterpArray[i].m_fNormalizedWeight;
         }
     }
-    if (!m_bValueValid)
+    if (!m_bValidValue)
     {
         m_kPoint3Value = DAT_011a9424;
-        value = m_kPoint3Value;
+        kValue = m_kPoint3Value;
         return false;
     }
     float inverseWeight = 1.0f / weight;
     m_kPoint3Value *= inverseWeight;
-    value = m_kPoint3Value;
+    kValue = m_kPoint3Value;
     return true;
 }

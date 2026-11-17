@@ -49,7 +49,7 @@ struct FUN_00d871a0
     FUN_00d86980_Class* hkClassMemberAccessor_getClassMember();
 };
 extern "C" void* __cdecl hkString_memCpy(void*, const void*, unsigned int);
-void __cdecl hkVersionUtil_renameMember(void* a1, int a2, void* a3, int a4);
+void __cdecl hkVersionUtil_renameMember(void* oldObj, int oldName, void* newObj, int newName);
 struct FUN_00d46d40_s
 {
     const char* FUN_00d46d40() const throw();
@@ -65,7 +65,7 @@ class hkVersionCheckDC11
 {
   public:
     int hkObjectCopier_areMembersCompatible(const hkClassMember* pkOld, const hkClassMember* pkNew) throw();
-    int IsMemberCompatible(const hkClassMember* pkOld, const hkClassMember* pkNew) throw();
+    int IsMemberCompatible(const hkClassMember* src, const hkClassMember* dst) throw();
 };
 class hkMemoryAllocatorDC12;
 void __cdecl ProcessObjectArray(void* const* ppvList, int iFlags) throw();
@@ -97,9 +97,12 @@ class hkVisitorDC12
         hkStructureLayout_hkStructureLayout();
     }
     void hkStructureLayout_hkStructureLayout() throw();
-    void UpdateState_00dc1bb0(void* pvObject, hkPointerMapDC12& kDone, int iFlags) throw();
+    void hkStructureLayout_computeMemberOffsetsInplace(void* klass, hkPointerMapDC12& classesDone, int recurse) throw();
 };
 // @fnv 0x00dc1230
+// pdb: hkVersionUtil::recomputeClassMemberOffsets | hkVersionUtil.obj | retail, object-file run extension, low
+// pdb params: classes, classVersion
+// pdb locals: layout, classesDone
 extern "C" void __cdecl VisitObjectList(int iList, int iFlags)
 {
     void* const* ppvList = reinterpret_cast<void* const*>(iList);
@@ -108,7 +111,7 @@ extern "C" void __cdecl VisitObjectList(int iList, int iFlags)
     hkPointerMapDC12 kDone;
     kDone.EnsureCapacity(*reinterpret_cast<hkMemoryAllocatorDC12*>((&hkMemoryRouter::getInstance())->m_heap), 0);
     for (int i = 0; ppvList[i]; i++)
-        kVisitor.UpdateState_00dc1bb0(ppvList[i], kDone, 1);
+        kVisitor.hkStructureLayout_computeMemberOffsetsInplace(ppvList[i], kDone, 1);
     kDone.ProcessArgument(*reinterpret_cast<hkMemoryAllocatorDC12*>((&hkMemoryRouter::getInstance())->m_heap));
 }
 class FUN_00d27520
@@ -128,7 +131,7 @@ class FUN_00d274c0 : public FUN_00d27520
 {
   public:
     FUN_00d274c0(void* pvMem, int m_uiSizeAndFlags, hkBool bMemoryIsString) throw();
-    int hkBufferedStreamWriter_seek(int offset, int whence) throw();
+    int hkBufferedStreamWriter_seek(int relOffset, int whence) throw();
 };
 struct EntryDC10
 {
@@ -142,7 +145,7 @@ struct EntryDC10
 class SetDC10
 {
   public:
-    int FUN_00d46fe0(int key) throw();
+    int hkClass_getMemberByName(int key) throw();
 };
 class SectionsDC10
 {
@@ -152,7 +155,7 @@ class SectionsDC10
     EntryDC10* getMember(int i) throw();
     void InvokeTarget(int i, FUN_00d27520* pkWriter) throw();
 };
-void __cdecl hkVersionUtil_copyDefaults(void* pvBuf, SetDC10* pkSet, SectionsDC10* pkSections);
+void __cdecl hkVersionUtil_copyDefaults(void* obj, SetDC10* oldClass, SectionsDC10* newClass);
 struct S00dc15a0_Buffer
 {
     virtual void vf00();
@@ -172,7 +175,7 @@ struct S00dc15a0_Array
     int m_iElementCount;
     int m_capFlags;
 };
-extern "C" void __cdecl hkArrayUtil__reserve(S00dc15a0_Buffer* buffer, int** indices, int size, int elementSize);
+extern "C" void __cdecl hkArrayUtil__reserve(S00dc15a0_Buffer* mem, int** array, int numElem, int sizeElem);
 // src: GUESS 0x00dc12c0 (confidence: low)
 static __declspec(noinline) int Object_ComputeValue_00dc12c0(S00dc15a0_Params* params, int value, int flags, S00dc15a0_Array* arr)
 {
@@ -342,6 +345,9 @@ struct ListenerInput
 };
 // @fnv 0x00dc12c0
 // src: GUESS 0x00dc12c0 (confidence: low)
+// pdb: `anonymous namespace'::copySomeObjects | hkVersionUtil.obj | retail, object-file run extension, low
+// pdb params: objectsIn, objectsOut, objectIndices, tracker
+// pdb locals: buffer, out, relocations, overrides, copier
 static __declspec(noinline) char* Object_ComputeValue_00dc12c0(IndexArray* indices, ObjectInput objectInput, OffsetInput offsetInput,
                                                CopyListener* listener)
 {

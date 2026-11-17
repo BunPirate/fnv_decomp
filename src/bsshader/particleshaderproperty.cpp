@@ -32,13 +32,13 @@ inline NiPoint3 NiPoint3::operator+(const NiPoint3& kRhs) const
     return NiPoint3(x + kRhs.x, y + kRhs.y, z + kRhs.z);
 }
 
-extern int g_01200434;
+extern int ParticleShaderProperty_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01200434 (old: g_01200434)
 
 // @fnv 0x00ba7f10
 // src: XBOX_PDB 0x00ba7f10
 int& __cdecl ParticleShaderProperty_GetRTTI()
 {
-    return g_01200434;
+    return ParticleShaderProperty_ms_RTTI;
 }
 
 #include "../../include/NiTPrimitiveArray.h"
@@ -46,6 +46,7 @@ struct BaseStr
 {
     void WriteToSettingArray(NiTPrimitiveArray<char*>*);
 };
+// pdb: class ParticleShaderProperty, size 0x14c (here 0x1), bases: BSShaderProperty, 41 members
 struct ParticleShaderProperty : BaseStr
 {
     void GetViewerStrings_00ba7f20(NiTPrimitiveArray<char*>*);
@@ -53,10 +54,12 @@ struct ParticleShaderProperty : BaseStr
 char* __cdecl _FUN_00a7d330(const char*);
 // @fnv 0x00ba7f20
 // src: XBOX_PDB 0x00ba7f20
+// pdb: ParticleShaderProperty::GetViewerStrings | ParticleShaderProperty.obj | retail, object-file run extension, low
+// pdb params: apStrings
 void ParticleShaderProperty::GetViewerStrings_00ba7f20(NiTPrimitiveArray<char*>* apStrings)
 {
     WriteToSettingArray(apStrings);
-    char* str = _FUN_00a7d330((const char*)g_01200434);
+    char* str = _FUN_00a7d330((const char*)ParticleShaderProperty_ms_RTTI);
     unsigned int size = *(unsigned short*)((char*)apStrings + 0xA);
     if (size >= *(unsigned short*)((char*)apStrings + 8))
         apStrings->SetSize(size + *(unsigned short*)((char*)apStrings + 0xE));
@@ -68,9 +71,10 @@ extern int DAT_0101fbcc;
 extern int DAT_01016ca4;
 extern int DAT_01200424;
 char** __cdecl NiTObjectArray_NiPointer_NiTexture_NiTObjectArray_NiPointer_NiTexture(unsigned int);
-int __cdecl GetFloatQuadTable();
+int __cdecl ParticleShaderProperty_GetInstanceIndex();
 void* _fnv_zlib_memset(void*, int, unsigned int);
 extern MemoryManager g_memoryManager;
+// pdb: class ParticleShader, size 0x12c (here 0x1), bases: BSShader, 13 members
 struct ParticleShader
 {
     static unsigned int __cdecl GetShaderParticleCount();
@@ -195,6 +199,8 @@ struct FUN_00ba7f70 : FUN_00ba8e50
 };
 // Initialises particle system fields to defaults, clears kArray, allocates pParticles for the shader's particle count and zeroes it.
 // @fnv 0x00ba7f70
+// pdb: ParticleShaderProperty::ParticleShaderProperty | ParticleShaderProperty.obj | retail, call graph, high
+// pdb locals: iparticleCount
 FUN_00ba7f70::FUN_00ba7f70() : spRetainedObject(0), kArray(10, 10)
 {
     spRetainedObject = 0;
@@ -224,7 +230,7 @@ FUN_00ba7f70::FUN_00ba7f70() : spRetainedObject(0), kArray(10, 10)
     m_vecParticlePosition = NiPoint3(0.0f, 0.0f, 0.0f);
     fUnk148 = 0.0f;
     kArray.RemoveAll();
-    GetFloatQuadTable();
+    ParticleShaderProperty_GetInstanceIndex();
     pParticleBuffer = 0;
     unsigned int iparticleCount = ParticleShader::GetShaderParticleCount();
     pParticles = new BoundDataBlock[iparticleCount];
@@ -355,7 +361,10 @@ struct FloatQuad
 };
 
 // @fnv 0x00ba73a0
-int __cdecl GetFloatQuadTable()
+// src: XBOX_RETAIL_PDB 0x00ba73a0
+// pdb: ParticleShaderProperty::GetInstanceIndex | ParticleShaderProperty.obj | retail, call graph (shared callers), high
+// pdb locals: iparticleCount, i
+int __cdecl ParticleShaderProperty_GetInstanceIndex()
 {
     char** ppTable = reinterpret_cast<char**>(&DAT_01200420);
     if (*ppTable != 0)
@@ -420,21 +429,24 @@ struct ShaderArrayOwner
     int unk38;
     ShaderArrayHolder* m_pHolder;
     void Prep(int);
-    ShaderArrayHolder* EnsureShaderArrayEntries(int, int, int, int, int, int);
+    ShaderArrayHolder* ParticleShaderProperty_GetRenderPasses(int, int, int, int, int, int);
 };
 
 // Calls Prep(-1); if the holder's count is zero, inserts two entries (0x41 and 0x241) and sets each new entry's m_06 to 0xe and 1, then returns the holder.
 // @fnv 0x00ba7420
-ShaderArrayHolder* ShaderArrayOwner::EnsureShaderArrayEntries(int p1, int, int, int, int, int)
+// src: XBOX_RETAIL_PDB 0x00ba7420
+// pdb: ParticleShaderProperty::GetRenderPasses | ParticleShaderProperty.obj | retail, object-file gap fill, high
+// pdb params: apGeom, aiEnabledPasses, asCount, auiRenderMode, apAccumulator, abUpdateList
+ShaderArrayHolder* ShaderArrayOwner::ParticleShaderProperty_GetRenderPasses(int apGeom, int, int, int, int, int)
 {
     Prep(-1);
     ShaderArrayHolder* h = m_pHolder;
     if (h->m_uiCount == 0)
     {
-        h->Insert(p1, 0x41, 1, 0, 0, 0, 0, 0);
+        h->Insert(apGeom, 0x41, 1, 0, 0, 0, 0, 0);
         ShaderArrayEntry* e = m_pHolder->m_ppItems[m_pHolder->m_uiCount - 1];
         e->m_06 = 0xe;
-        m_pHolder->Insert(p1, 0x241, 1, 0, 0, 0, 0, 0);
+        m_pHolder->Insert(apGeom, 0x241, 1, 0, 0, 0, 0, 0);
         m_pHolder->m_ppItems[m_pHolder->m_uiCount - 1]->m_06 = 1;
     }
     return m_pHolder;
@@ -462,6 +474,9 @@ struct ParticleInitializer : FUN_00ba7f70
 };
 // Initializes each particle's fields with randomized life, angle, rotation and speed variations, sets fScaleTime, and resets iParticleCount to 0.
 // @fnv 0x00ba6e00
+// pdb: ParticleShaderProperty::InitParticleData | ParticleShaderProperty.obj | retail, call graph, low
+// pdb params: afTime
+// pdb locals: iparticleLimit, flifeVarRatio, fnormalSpeedRatio, i, ftextureIndexX, ftextureCoordX, ftextureIndexY, ftextureCoordY
 void ParticleInitializer::InitParticles(float time)
 {
     unsigned int count = FUN_00ba52d0();
@@ -704,7 +719,7 @@ struct PickShape
     PickMesh* m_pMesh;
     bool FUN_00a67360(int);
     void NiGeometryData_GetVerticesIterator(void*);
-    void GetBounds(void*);
+    void NiGeometryData_GetNormalsIterator(void*);
     void NiGeometryData_UnlockPackedVertexData();
 };
 
@@ -777,11 +792,15 @@ struct EmitterPick : ParticleEmitter
     PickElem** m_ppArr;
     unsigned short unk124;
     unsigned short m_usElementCount;
-    void PickParticle(int idx);
+    void ParticleShaderProperty_GenerateFromGeometry(int idx);
 };
 
 // @fnv 0x00ba74a0
-void EmitterPick::PickParticle(int aiIndex)
+// src: XBOX_RETAIL_PDB 0x00ba74a0
+// pdb: ParticleShaderProperty::GenerateFromGeometry | ParticleShaderProperty.obj | retail, call graph, high
+// pdb params: aiIndex
+// pdb locals: vertexPosition, vertexNormal, pgeometry, pskin, pobject, uirandom, pbone2, iboneCount, fblend, pbone, randNormal, ivertexCount, pdata, normalIterator, vertexIterator, inormalStride, pvertexsrc, pnormalsrc, ivertexStride, vvertexData, vnormalData
+void EmitterPick::ParticleShaderProperty_GenerateFromGeometry(int aiIndex)
 {
     NiPoint3 a = DAT_011f426c;
     NiPoint3 b = DAT_011f426c;
@@ -840,7 +859,7 @@ void EmitterPick::PickParticle(int aiIndex)
                 if (pShape->FUN_00a67360(1) != 0)
                 {
                     pShape->NiGeometryData_GetVerticesIterator(&scratch.work.view);
-                    pShape->GetBounds(&scratch.other.view);
+                    pShape->NiGeometryData_GetNormalsIterator(&scratch.other.view);
                     NiPoint3* __restrict pVecA =
                         (NiPoint3*)((char*)scratch.work.view.base + scratch.work.view.stride * uiRemainder);
                     a = *pVecA;
@@ -928,17 +947,20 @@ struct ParticleSceneNode
 };
 struct ParticleUpdater : FUN_00ba7f70
 {
-    void PickParticle(int);
+    void ParticleShaderProperty_GenerateFromGeometry(int);
     void ParticleShaderProperty_GenerateFromCollisionBones(int);
     void ParticleShaderProperty_GenerateFromRay(int);
-    void ParticleShaderProperty_UpdateParticles(float time, bool compensate, bool emit);
+    void ParticleShaderProperty_UpdateParticles(float afTime, bool abNeedsOffset, bool abGenerateNew);
 };
 // Ages and emits particles, optionally compensating for parent node movement.
 // @fnv 0x00ba7b60
 // src: XBOX_PDB 0x00ba7b60
-void ParticleUpdater::ParticleShaderProperty_UpdateParticles(float time, bool compensate, bool emit)
+// pdb: ParticleShaderProperty::UpdateParticles | ParticleShaderProperty.obj | retail, upstream name already matches, high
+// pdb params: afTime, abNeedsOffset, abGenerateNew
+// pdb locals: iparticleLimit, fdelta, imaxParticles, offset, fgenerate, imaxGenerate, pparent, i, fage
+void ParticleUpdater::ParticleShaderProperty_UpdateParticles(float afTime, bool abNeedsOffset, bool abGenerateNew)
 {
-    float delta = time - fScaleTime;
+    float delta = afTime - fScaleTime;
     delta = (float)fabs(delta);
     float amount = delta;
     int count = FUN_00ba52d0();
@@ -950,7 +972,7 @@ void ParticleUpdater::ParticleShaderProperty_UpdateParticles(float time, bool co
     int remaining = (int)amount;
     m_fParticleParameter3 = amount - remaining;
     NiPoint3 movement = NiPoint3_ZERO;
-    if (compensate)
+    if (abNeedsOffset)
     {
         ParticleSceneNode* node = static_cast<ParticleSceneNode*>(pParticleBuffer)->parent;
         while (node)
@@ -966,7 +988,7 @@ void ParticleUpdater::ParticleShaderProperty_UpdateParticles(float time, bool co
     for (int i = 0; i < count; ++i)
     {
         Particle* particle = reinterpret_cast<Particle*>(pParticles) + i;
-        float age = time - particle->fTime;
+        float age = afTime - particle->fTime;
         if (!(age < 0.0f) && !(age * particle->unk1C > m_fParticleParameter5))
             continue;
         if (particle->m_fFirstFloatValue != 3.4028234663852886e+38)
@@ -980,12 +1002,12 @@ void ParticleUpdater::ParticleShaderProperty_UpdateParticles(float time, bool co
             reinterpret_cast<Particle*>(pParticles)[i].unk18 = 0.0f;
             --iParticleCount;
         }
-        if (emit && remaining > 0 && iParticleCount < limit)
+        if (abGenerateNew && remaining > 0 && iParticleCount < limit)
         {
             switch (m_iParticleDataValue)
             {
             case 0:
-                PickParticle(i);
+                ParticleShaderProperty_GenerateFromGeometry(i);
                 break;
             case 1:
                 ParticleShaderProperty_GenerateFromCollisionBones(i);
@@ -996,7 +1018,7 @@ void ParticleUpdater::ParticleShaderProperty_UpdateParticles(float time, bool co
             }
             --remaining;
             ++iParticleCount;
-            if (compensate)
+            if (abNeedsOffset)
             {
                 reinterpret_cast<Particle*>(pParticles)[i].m_fFirstFloatValue -= movement.x;
                 reinterpret_cast<Particle*>(pParticles)[i].unk04 -= movement.y;
@@ -1004,7 +1026,7 @@ void ParticleUpdater::ParticleShaderProperty_UpdateParticles(float time, bool co
             }
         }
     }
-    fScaleTime = time;
+    fScaleTime = afTime;
 }
 
 #include <stdlib.h>
@@ -1046,12 +1068,15 @@ struct ParticleSpawner : ParticleEmitter
     int unk108, unk10c, unk110, unk114, unk118, unk11c;
     EmitterNode** emitters;
     unsigned short capacity, count;
-    void ParticleShaderProperty_GenerateFromCollisionBones(unsigned int index);
+    void ParticleShaderProperty_GenerateFromCollisionBones(unsigned int aiIndex);
 };
 // Selects a random emitter when available and writes position, direction, and time fields to the indexed particle.
 // @fnv 0x00ba7860
 // src: XBOX_PDB 0x00ba7860
-void ParticleSpawner::ParticleShaderProperty_GenerateFromCollisionBones(unsigned int index)
+// pdb: ParticleShaderProperty::GenerateFromCollisionBones | ParticleShaderProperty.obj | retail, upstream name already matches, high
+// pdb params: aiIndex
+// pdb locals: vertexPosition, vertexNormal, pbone2, pbone, pobject, uirandom, fblend
+void ParticleSpawner::ParticleShaderProperty_GenerateFromCollisionBones(unsigned int aiIndex)
 {
     NiPoint3 position;
     NiPoint3 direction;
@@ -1086,13 +1111,13 @@ void ParticleSpawner::ParticleShaderProperty_GenerateFromCollisionBones(unsigned
         direction = position = *(const NiPoint3*)&DAT_011f426c;
     }
     Particle* const& particles = pParticles;
-    particles[index].m_fFirstFloatValue = position.x;
-    particles[index].unk04 = position.y;
-    particles[index].unk08 = position.z;
-    particles[index].fTime = fScaleTime;
-    particles[index].unk10 = direction.x;
-    particles[index].unk14 = direction.y;
-    particles[index].unk18 = direction.z;
+    particles[aiIndex].m_fFirstFloatValue = position.x;
+    particles[aiIndex].unk04 = position.y;
+    particles[aiIndex].unk08 = position.z;
+    particles[aiIndex].fTime = fScaleTime;
+    particles[aiIndex].unk10 = direction.x;
+    particles[aiIndex].unk14 = direction.y;
+    particles[aiIndex].unk18 = direction.z;
 }
 
 struct Transform71
@@ -1214,7 +1239,7 @@ struct Target71
     int unk114;
     int unk118;
     Array71 kArray;
-    void ParticleShaderProperty_GenerateFromRay(unsigned int index);
+    void ParticleShaderProperty_GenerateFromRay(unsigned int aiIndex);
 };
 inline float RandomUnit71()
 {
@@ -1231,7 +1256,10 @@ inline float RandomSigned71()
 // Computes a particle position and direction from the first object in kArray, transforms them if enabled, and writes them into pParticles at the given index.
 // @fnv 0x00ba71d0
 // src: COMMUNITY 0x00ba71d0
-void Target71::ParticleShaderProperty_GenerateFromRay(unsigned int index)
+// pdb: ParticleShaderProperty::GenerateFromRay | ParticleShaderProperty.obj | retail, upstream name already matches, high
+// pdb params: aiIndex
+// pdb locals: vertexPosition, vertexNormal, pbone
+void Target71::ParticleShaderProperty_GenerateFromRay(unsigned int aiIndex)
 {
     NiPoint3 position;
     NiPoint3 direction;
@@ -1259,13 +1287,13 @@ void Target71::ParticleShaderProperty_GenerateFromRay(unsigned int index)
         static_cast<NiPoint3&>(position) = NiPoint3_ZERO;
         static_cast<NiPoint3&>(direction) = NiPoint3_ZERO;
     }
-    pParticles[index].x = position.x;
-    pParticles[index].y = position.y;
-    pParticles[index].z = position.z;
-    pParticles[index].scale = fScaleTime;
-    pParticles[index].dx = direction.x;
-    pParticles[index].dy = direction.y;
-    pParticles[index].dz = direction.z;
+    pParticles[aiIndex].x = position.x;
+    pParticles[aiIndex].y = position.y;
+    pParticles[aiIndex].z = position.z;
+    pParticles[aiIndex].scale = fScaleTime;
+    pParticles[aiIndex].dx = direction.x;
+    pParticles[aiIndex].dy = direction.y;
+    pParticles[aiIndex].dz = direction.z;
 }
 
 extern int DAT_010b8250;
@@ -1335,6 +1363,7 @@ struct FUN_00ba7df0 : FUN_00ba8e50
 
 // Releases the retained object, removes array entries, deletes the particle array, and deallocates a global pointer when a global counter reaches zero.
 // @fnv 0x00ba7df0
+// pdb: ParticleShaderProperty::~ParticleShaderProperty | ParticleShaderProperty.obj | retail, object-file run extension, low
 FUN_00ba7df0::~FUN_00ba7df0()
 {
 

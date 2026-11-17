@@ -19,6 +19,7 @@ public:
     HeapFreeList* pFirst;
 };
 
+// pdb: class AbstractHeap, size 0x20f4 (here 0x20f0), bases: IMemoryHeap, 23 members
 class AbstractHeap : public IMemoryHeap
 {
 public:
@@ -28,9 +29,9 @@ public:
     virtual void Deallocate(void* pointer, unsigned int alignment);
     virtual bool ContainsBlockImpl(const void* pointer);
     virtual void CheckHeapIntegrity();
-    virtual void GetHeapStats(MemoryHeapStats* stats, bool full);
-    virtual int OutputBucketInfo(IMemoryManagerFile* file);
-    virtual int OutputBlockInfo(IMemoryManagerFile* file, bool full);
+    virtual void GetHeapStats(MemoryHeapStats* apStats, bool abFullBlockInfo);
+    virtual int OutputBucketInfo(IMemoryManagerFile* apFile);
+    virtual int OutputBlockInfo(IMemoryManagerFile* apFile, bool abOutputWalk);
     virtual unsigned int Size(const void* pointer, unsigned int alignment);
     virtual void vf10();
     virtual void vf11();
@@ -94,14 +95,14 @@ public:
     {
         return bucket < 16 ? list >= pSubBuckets[bucket + 1].pFirst : list >= pLastSmallList;
     }
-    void* BaseAllocate(unsigned int size);
-    void BaseFree(void* pointer);
+    void* BaseAllocate(unsigned int aSize);
+    void BaseFree(void* apPointer);
     void RemoveBlockFromFreeList(HeapFreeBlock* block);
     void PushBlock(MemoryBlockHeader* block);
-    void AddBlockToFreeList(HeapFreeBlock* block);
+    void AddBlockToFreeList(HeapFreeBlock* apBlock);
     void RemoveBlockFromFreeList_00aa9e50(HeapFreeList* list, HeapFreeBlock* block);
-    void IncrementSubBucket(int size);
-    void DecrementSubBucket(int size);
+    void IncrementSubBucket(int aiBucketSize);
+    void DecrementSubBucket(int aiBucketSize);
     void RebuildFreeLists();
     void InsertFreeBlock(HeapFreeBlock* block);
     void CoalesceFreeBlocks(HeapFreeBlock* first, HeapFreeBlock* second);

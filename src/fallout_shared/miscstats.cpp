@@ -7,6 +7,8 @@
 #include "../../include/BGSSaveGameBuffer.h"
 
 // @fnv 0x004d5e10
+// pdb: MiscStatManager::Increment | MiscStats.obj | retail, string-set bridge, high
+// pdb params: aeID
 void AddMiscStat(MiscStatManager::MiscStat eStat, int delta)
 {
     if (delta == 0)
@@ -45,10 +47,14 @@ extern MiscStatEntry* DAT_011c6d50[];
 
 // Writes the misc stat count (43) and each stat's value from DAT_011c6d50 to the save buffer, using 0 for null entries.
 // @fnv 0x004d5fa0
-void SaveMiscStats(BGSSaveGameBuffer* pSave)
+// src: XBOX_RETAIL_PDB 0x004d5fa0
+// pdb: MiscStatManager::SaveGame | MiscStats.obj | retail, call graph, high
+// pdb params: apSaveGameBuffer
+// pdb locals: imiscStatCount, i, ival
+void MiscStatManager_SaveGame(BGSSaveGameBuffer* apSaveGameBuffer)
 {
     int nCount = 43;
-    pSave->SaveData((void*)&nCount, 4, 0);
+    apSaveGameBuffer->SaveData((void*)&nCount, 4, 0);
     unsigned int i = 0;
     for (; i < (unsigned int)nCount; ++i)
     {
@@ -58,7 +64,7 @@ void SaveMiscStats(BGSSaveGameBuffer* pSave)
         else
             nVal = 0;
         int iSaveValue = nVal;
-        pSave->SaveData((void*)&iSaveValue, 4, 0);
+        apSaveGameBuffer->SaveData((void*)&iSaveValue, 4, 0);
     }
 }
 
@@ -70,17 +76,21 @@ int BSstricmp(const char* a1, const char* a2);
 
 // Searches the 0x2b-entry misc stat name table for a1 and returns its index, or warns and returns 0x2b if not found.
 // @fnv 0x004d5eb0
-int FindMiscStatIndex(const char* pcStatName)
+// src: XBOX_RETAIL_PDB 0x004d5eb0
+// pdb: MiscStatManager::GetIDByName | MiscStats.obj | retail, string-set bridge, high
+// pdb params: apName
+// pdb locals: eid
+int MiscStatManager_GetIDByName(const char* apName)
 {
     int i;
 
     for (i = 0; i < 0x2b; FUN_007dc0a0(&i))
     {
-        if (DAT_01189280[i] != 0 && BSstricmp(DAT_01189280[i], pcStatName) == 0)
+        if (DAT_01189280[i] != 0 && BSstricmp(DAT_01189280[i], apName) == 0)
         {
             return i;
         }
     }
-    FNV_Warning("MENUS: Miscellaneous stat %s could not be found.  Returning MS_COUNT.", pcStatName);
+    FNV_Warning("MENUS: Miscellaneous stat %s could not be found.  Returning MS_COUNT.", apName);
     return 0x2b;
 }

@@ -53,6 +53,7 @@ struct FUN_00c3da50 : BaseListL
     FUN_00c3da50();
 };
 // @fnv 0x00c3da50
+// pdb: IOManager::IOManager | IOManager.obj | debug, call graph, high
 FUN_00c3da50::FUN_00c3da50() : BaseListL(10, 1, 120)
 {
     m_vtbl = &DAT_010c1604;
@@ -163,6 +164,10 @@ struct S_00c3e490 : C00449f80
 
 // @fnv 0x00c3e490
 // src: COMMUNITY 0x00c3e490
+// pdb: LockFreeMap<__int64,NiPointer<BSTask<__int64> > >::Remove | IOManager.obj | retail, object-file run extension, low
+// pdb note: debug build links it to LockFreeQueue<NiPointer<IOTask> >::Pop
+// pdb params: aiBucket, aData
+// pdb locals: bResult
 bool S_00c3e490::LockFreeQueue_NiPointer_IOTask_Pop_00c3e490(unsigned int a)
 {
     m_lock.Lock(0);

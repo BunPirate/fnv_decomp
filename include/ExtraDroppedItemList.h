@@ -4,6 +4,7 @@
 
 class DroppedItemNode;
 
+// pdb: class ExtraDroppedItemList, size 0x14 (here 0x10), bases: BSExtraData, 1 members
 class ExtraDroppedItemList : public BSExtraData
 {
 public:

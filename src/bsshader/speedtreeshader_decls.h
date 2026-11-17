@@ -7,7 +7,7 @@
 class SpeedTreeLeafShaderConstantMapSetup
 {
   public:
-    static void ConfigureShaderConstantMap(NiD3DShaderConstantMap*, int);
+    static void SpeedTreeShader_SetShaderConstants(NiD3DShaderConstantMap*, int);
 };
 extern float DAT_01200678[4];
 extern float DAT_01200688[64];

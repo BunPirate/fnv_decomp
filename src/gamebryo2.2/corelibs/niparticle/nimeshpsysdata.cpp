@@ -34,6 +34,7 @@ inline void __cdecl operator delete(void* object) throw()
 }
 
 // @fnv 0x00c309a0 (compiler-generated scalar deleting destructor of the pool array base)
+// pdb: NiMeshPSysData::NiMeshPSysData | NiMeshPSysData.obj | debug, object-file run extension, low
 template <> inline NiTArray<NiMeshPSysDataPool, NiTNewInterface<NiMeshPSysDataPool> >::~NiTArray() throw()
 {
     _NiFreeC30(this->m_pBase);
@@ -175,12 +176,13 @@ void* __thiscall NiMeshPSysData::FUN_00c30bd0(unsigned int flags)
 // Removes meshes from the new active count up to the previous count.
 // @fnv 0x00c308d0
 // src: XBOX_PDB 0x00c308d0
+// pdb: NiPSysAirFieldAirFrictionCtlr::`scalar deleting destructor' | NiPSysAirFieldAirFrictionCtlr.obj | debug, object-file run extension, low
 void __thiscall NiMeshPSysData::SetActiveVertexCount_00c308d0(unsigned short usStartIndex)
 {
     unsigned short us;
     for (us = usStartIndex; us < m_usActive; us++)
     {
-        m_pMeshNode.m_pObject->RemoveNthObject(us);
+        m_spParticleMeshes.m_pObject->RemoveNthObject(us);
     }
     if (usStartIndex <= m_usVertices)
         m_usActive = usStartIndex;
@@ -195,7 +197,7 @@ bool NiMeshPSysData::RegisterStreamables_00c30940(NiStream& kStream)
 {
     if (!((NiPSysData*)this)->NiPSysData::RegisterStreamables(kStream))
         return false;
-    m_pMeshNode.m_pObject->RegisterStreamables(kStream);
+    m_spParticleMeshes.m_pObject->RegisterStreamables(kStream);
     return true;
 }
 
@@ -205,9 +207,9 @@ void __thiscall NiMeshPSysData::ResolveAddedParticles_00c30a90()
 {
     unsigned short us;
     NiAVObject* pkMesh;
-    for (us = m_usNumParticles; us < m_usNumParticles + m_usNumActive; us++)
+    for (us = m_usAddedParticlesBase; us < m_usAddedParticlesBase + m_usNumAddedParticles; us++)
     {
-        pkMesh = m_pMeshNode.m_pObject->m_kChildren.m_pBase[us].m_pObject;
+        pkMesh = m_spParticleMeshes.m_pObject->m_kChildren.m_pBase[us].m_pObject;
         if (pkMesh)
             pkMesh->m_uFlags &= ~1;
     }
@@ -232,6 +234,8 @@ void __stdcall FUN_00c255b0(StrArr*);
 char* __cdecl _FUN_00a7d330(const char*);
 // @fnv 0x00c31210
 // src: XBOX_PDB 0x00c31210
+// pdb: NiMeshPSysData::GetViewerStrings | NiMeshPSysData.obj | retail, upstream name already matches, high
+// pdb params: pkStrings
 void __stdcall NiMeshPSysData_GetViewerStrings(StrArr* pkStrings)
 {
     FUN_00c255b0(pkStrings);
@@ -245,10 +249,11 @@ void __stdcall NiMeshPSysData_GetViewerStrings(StrArr* pkStrings)
 
 // @fnv 0x00c30920
 // src: XBOX_PDB 0x00c30920
+// pdb: NiPSysAirFieldAirFrictionCtlr::~NiPSysAirFieldAirFrictionCtlr | NiPSysAirFieldAirFrictionCtlr.obj | debug, object-file run extension, low
 void NiMeshPSysData::ProcessClone_00c30920(CloningProcess& kCloning)
 {
     NiObject::ProcessClone(kCloning);
-    m_pMeshNode.m_pObject->ProcessClone(kCloning);
+    m_spParticleMeshes.m_pObject->ProcessClone(kCloning);
 }
 
 // @fnv 0x00c30ca0
@@ -294,8 +299,8 @@ char __thiscall NiMeshPSysData::IsEqual_00c30970(NiMeshPSysData* other)
 {
     if (!((NiPSysData*)this)->NiPSysData::IsEqual(other))
         return 0;
-    Mesh308Compat* thisMesh = reinterpret_cast<Mesh308Compat*>(m_pMeshNode.m_pObject);
-    NiObject* otherMesh = other->m_pMeshNode.m_pObject;
+    Mesh308Compat* thisMesh = reinterpret_cast<Mesh308Compat*>(m_spParticleMeshes.m_pObject);
+    NiObject* otherMesh = other->m_spParticleMeshes.m_pObject;
     return thisMesh->a23(otherMesh) != 0;
 }
 
@@ -336,8 +341,8 @@ class C30AE0ObjectPtr
 void NiMeshPSysData::CloneTo(NiMeshPSysData* pkDest, CloningProcess& kCloning)
 {
     NiPSysData::CopyMemberData(pkDest, kCloning);
-    reinterpret_cast<C30AE0ObjectPtr&>(pkDest->m_pMeshNode) = m_pMeshNode.m_pObject->MakeClone(kCloning);
-    pkDest->m_bUseDefaultPools = m_bUseDefaultPools;
+    reinterpret_cast<C30AE0ObjectPtr&>(pkDest->m_spParticleMeshes) = m_spParticleMeshes.m_pObject->MakeClone(kCloning);
+    pkDest->m_bFillPoolsOnLoad = m_bFillPoolsOnLoad;
 }
 
 // @fnv 0x00c30b70
@@ -346,12 +351,12 @@ void __thiscall NiMeshPSysData::LinkObject_00c30b70(NiStream& kStream)
 {
     NiPSysData::LinkObject(kStream);
     NiObject* pkNode = kStream.GetLoadedObject();
-    NiObject* pkOld = m_pMeshNode.m_pObject;
+    NiObject* pkOld = m_spParticleMeshes.m_pObject;
     if (pkOld != pkNode)
     {
         if (pkOld && InterlockedDecrement((volatile long*)&pkOld->m_uiRefCount) == 0)
             pkOld->DeleteThis();
-        m_pMeshNode.m_pObject = static_cast<NiNode*>(pkNode);
+        m_spParticleMeshes.m_pObject = static_cast<NiNode*>(pkNode);
         if (pkNode)
             InterlockedIncrement((volatile long*)&pkNode->m_uiRefCount);
     }
@@ -359,23 +364,26 @@ void __thiscall NiMeshPSysData::LinkObject_00c30b70(NiStream& kStream)
 
 // Saves the pool configuration and a link to the mesh node.
 // @fnv 0x00c30cc0
+// pdb: NiMeshPSysData::SaveBinary | NiMeshPSysData.obj | retail, object-file run extension, low
+// pdb params: kStream
+// pdb locals: uiLoop
 void NiMeshPSysData::WriteToStream(NiStream& stream)
 {
     NiPSysData::SaveBinary(stream);
-    stream.GetBinaryStream()->Write(&m_uiDefaultPoolsSize, 4);
+    stream.GetBinaryStream()->Write(&m_uiDefaultPoolSize, 4);
     {
-        bool bActive = m_bUseDefaultPools;
+        bool bActive = m_bFillPoolsOnLoad;
         stream.GetBinaryStream()->Write(&bActive, 1);
     }
     {
-        unsigned int size = m_kPoolArrays.m_usSize;
+        unsigned int size = m_kPools.m_usSize;
         stream.GetBinaryStream()->Write(&size, 4);
     }
-    for (unsigned int i = 0; i < m_kPoolArrays.m_usSize; ++i)
+    for (unsigned int i = 0; i < m_kPools.m_usSize; ++i)
     {
-        if (m_kPoolArrays.m_pBase[i])
+        if (m_kPools.m_pBase[i])
         {
-            unsigned int id = m_kPoolArrays.m_pBase[i]->m_usMaxSize;
+            unsigned int id = m_kPools.m_pBase[i]->m_usMaxSize;
             stream.GetBinaryStream()->Write(&id, 4);
         }
         else
@@ -384,15 +392,17 @@ void NiMeshPSysData::WriteToStream(NiStream& stream)
             stream.GetBinaryStream()->Write(&zero, 4);
         }
     }
-    stream.SaveLinkID(reinterpret_cast<const NiObject*>(m_pMeshNode.m_pObject));
+    stream.SaveLinkID(reinterpret_cast<const NiObject*>(m_spParticleMeshes.m_pObject));
 }
 
 extern "C" __declspec(dllimport) long __stdcall InterlockedDecrement(long volatile* p);
 
 // @fnv 0x00c30df0
+// pdb: NiMeshPSysData::AddToPool | NiMeshPSysData.obj | retail, object-file run extension, low
+// pdb params: uiGeneration, spObject
 void __thiscall NiMeshPSysData::ReleaseSlotRef(unsigned int uiIndex, NiRefObject* pRef)
 {
-    if (uiIndex >= m_kPoolArrays.m_usSize)
+    if (uiIndex >= m_kPools.m_usSize)
     {
         if (pRef != 0)
         {
@@ -404,11 +414,11 @@ void __thiscall NiMeshPSysData::ReleaseSlotRef(unsigned int uiIndex, NiRefObject
         }
         return;
     }
-    if (m_kPoolArrays.m_pBase[uiIndex] != 0)
+    if (m_kPools.m_pBase[uiIndex] != 0)
     {
-        if (m_kPoolArrays.m_pBase[uiIndex]->m_usSize < m_kPoolArrays.m_pBase[uiIndex]->m_usMaxSize)
+        if (m_kPools.m_pBase[uiIndex]->m_usSize < m_kPools.m_pBase[uiIndex]->m_usMaxSize)
         {
-            m_kPoolArrays.m_pBase[uiIndex]->Add(reinterpret_cast<const NiPointer<NiAVObject>&>(pRef));
+            m_kPools.m_pBase[uiIndex]->Add(reinterpret_cast<const NiPointer<NiAVObject>&>(pRef));
         }
     }
     if (pRef != 0)
@@ -426,11 +436,12 @@ extern "C" void __cdecl _NiFreeC30(void* pvMem) throw();
 
 // Deletes each pool before releasing the pool array and mesh node.
 // @fnv 0x00c309d0
+// pdb: NiMeshPSysData::~NiMeshPSysData | NiMeshPSysData.obj | retail, upstream name already matches, high
 NiMeshPSysData::~NiMeshPSysData() throw()
 {
-    while (m_kPoolArrays.GetSize() > 0)
+    while (m_kPools.GetSize() > 0)
     {
-        NiMeshPSysDataPool pkElement = m_kPoolArrays.RemoveEnd();
+        NiMeshPSysDataPool pkElement = m_kPools.RemoveEnd();
         delete pkElement;
     }
 }
@@ -489,24 +500,27 @@ struct NiParticleInfoSI
 
 // @fnv 0x00c30e80
 // src: XBOX_PDB 0x00c30e80
-void NiMeshPSysData::RemoveParticle(unsigned short usParticleIndex)
+// pdb: NiMeshPSysData::RemoveParticle | NiMeshPSysData.obj | retail, upstream name already matches, high
+// pdb params: usParticle
+// pdb locals: usLastParticle, usGeneration, spRemovedParticle, spLastMesh
+void NiMeshPSysData::RemoveParticle(unsigned short usParticle)
 {
     unsigned short usLastParticle = m_usActive - 1;
-    unsigned short usParticleGeneration = reinterpret_cast<NiParticleInfoSI*>(m_pkParticleInfo)[usParticleIndex].m_usFirstValue;
+    unsigned short usParticleGeneration = reinterpret_cast<NiParticleInfoSI*>(m_pkParticleInfo)[usParticle].m_usFirstValue;
 
-    NiPSysData::vf41(usParticleIndex);
+    NiPSysData::vf41(usParticle);
 
     NiAVObjectPtrSI spParticle = 0;
-    if (usParticleIndex == usLastParticle)
+    if (usParticle == usLastParticle)
     {
-        m_pMeshNode.m_pObject->RemoveNthObject2(usLastParticle, &spParticle.m_pObject);
+        m_spParticleMeshes.m_pObject->RemoveNthObject2(usLastParticle, &spParticle.m_pObject);
     }
     else
     {
         NiAVObjectPtrSI spFinalParticle = 0;
-        m_pMeshNode.m_pObject->RemoveNthObject2(usLastParticle, &spFinalParticle.m_pObject);
-        m_pMeshNode.m_pObject->RemoveNthObject2(usParticleIndex, &spParticle.m_pObject);
-        m_pMeshNode.m_pObject->ReplaceNthObject(usParticleIndex, spFinalParticle);
+        m_spParticleMeshes.m_pObject->RemoveNthObject2(usLastParticle, &spFinalParticle.m_pObject);
+        m_spParticleMeshes.m_pObject->RemoveNthObject2(usParticle, &spParticle.m_pObject);
+        m_spParticleMeshes.m_pObject->ReplaceNthObject(usParticle, spFinalParticle);
         spFinalParticle.Release();
     }
 
@@ -522,22 +536,25 @@ void NiMeshPSysData::RemoveParticle(unsigned short usParticleIndex)
 
 // Resizes the generation pools, initializing new pools to the default capacity.
 // @fnv 0x00c30f90
-void NiMeshPSysData::ResizeChildren(unsigned count)
+// pdb: NiMeshPSysData::SetNumGenerations | NiMeshPSysData.obj | retail, object-file gap fill, high
+// pdb params: uiNumGenerations
+// pdb locals: uiLoop, uiOldSize, pkPool
+void NiMeshPSysData::ResizeChildren(unsigned uiNumGenerations)
 {
-    unsigned previous = m_kPoolArrays.m_usSize;
-    if (count < previous)
+    unsigned previous = m_kPools.m_usSize;
+    if (uiNumGenerations < previous)
     {
-        while (m_kPoolArrays.m_usSize > count)
-            delete m_kPoolArrays.RemoveEnd();
+        while (m_kPools.m_usSize > uiNumGenerations)
+            delete m_kPools.RemoveEnd();
     }
-    else if (count > previous)
+    else if (uiNumGenerations > previous)
     {
-        m_kPoolArrays.SetSize(count);
-        for (unsigned i = previous; i < count; ++i)
+        m_kPools.SetSize(uiNumGenerations);
+        for (unsigned i = previous; i < uiNumGenerations; ++i)
         {
             NiMeshPSysDataPool result = new NiTObjectArray<NiPointer<NiAVObject> >;
-            result->SetSize(m_uiDefaultPoolsSize);
-            m_kPoolArrays.SetAt(i, result);
+            result->SetSize(m_uiDefaultPoolSize);
+            m_kPools.SetAt(i, result);
         }
     }
 }
@@ -562,6 +579,9 @@ inline void AddPool(NiTObjectArray<NiMeshPSysDataPool>& kPools, unsigned int uiI
 // Loads base particle data, fills pools for older versions, and otherwise reads pool sizes and creates a pool for each nonzero size.
 // @fnv 0x00c31090
 // src: XBOX_PDB 0x00c31090
+// pdb: NiMeshPSysData::LoadBinary | NiMeshPSysData.obj | retail, object-file gap fill, high
+// pdb params: kStream
+// pdb locals: uiNumGenerations, bFill, uiGenerationPoolSize, uiLoop, pkPool
 void NiMeshPSysData::LoadBinary_00c31090(NiStream& kStream)
 {
     unsigned int uiPoolSize;
@@ -571,23 +591,23 @@ void NiMeshPSysData::LoadBinary_00c31090(NiStream& kStream)
 
     if (kStream.version() <= 0x0a010000)
     {
-        this->m_uiDefaultPoolsSize = m_usVertices;
+        this->m_uiDefaultPoolSize = m_usVertices;
         FillPools(true);
     }
     else
     {
         bool bFillPoolsOnLoad;
-        ReadBinaryValue(kStream, this->m_uiDefaultPoolsSize);
+        ReadBinaryValue(kStream, this->m_uiDefaultPoolSize);
         ReadBinaryValue(kStream, bFillPoolsOnLoad);
-        this->m_bUseDefaultPools = (bFillPoolsOnLoad != 0);
+        this->m_bFillPoolsOnLoad = (bFillPoolsOnLoad != 0);
         ReadBinaryValue(kStream, uiNumGenerations);
-        m_kPoolArrays.SetSize(uiNumGenerations);
+        m_kPools.SetSize(uiNumGenerations);
         for (unsigned int i = 0; i < uiNumGenerations; i++)
         {
             ReadBinaryValue(kStream, uiPoolSize);
             if (uiPoolSize > 0)
             {
-                AddPool(m_kPoolArrays, i, new NiTObjectArray<NiPointer<NiAVObject> >(0, 1), uiPoolSize);
+                AddPool(m_kPools, i, new NiTObjectArray<NiPointer<NiAVObject> >(0, 1), uiPoolSize);
             }
         }
     }

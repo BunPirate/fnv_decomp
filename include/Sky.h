@@ -24,6 +24,7 @@ class TESWeather;
 template <class T> class BSSimpleList;
 
 
+// pdb: class Sky, size 0x138, 41 members
 class Sky
 {
 public:
@@ -38,34 +39,34 @@ public:
 
     virtual ~Sky();
 
-    NiPointer<NiAVObject> m_pRootNode;
-    NiPointer<NiAVObject> m_pSkyNode;
-    TESClimate* m_pCurrentClimate;
-    TESWeather* m_pRegionWeather;
-    TESWeather* m_pPreviousWeather;
-    TESWeather* m_pQueuedWeather;
-    TESWeather* m_pOverrideWeather;
-    SkyObject* m_pAtmosphere;
-    SkyObject* m_pStars;
-    SkyObject* m_pSun;
-    Clouds* m_pClouds;
-    SkyObject* m_pPrimaryMoon;
-    SkyObject* m_pSecondaryMoon;
-    Precipitation* m_pPrecipitation;
-    NiColor m_kSkyColors[10];
-    NiPoint3 m_kSunlightColor;
-    NiPoint3 m_kSkyColor;
-    float m_fCurrentWeatherBlend;
-    float m_fTargetWeatherBlend;
-    float m_fCloudLayerAlpha[4];
-    float m_fFogNearDistance;
-    float m_fFogPower;
-    float m_fFogFarDistance;
-    float fWeatherChance;
-    float m_fWeatherBlend;
+    NiPointer<NiAVObject> spRoot; // src: XBOX_RETAIL_PDB +0x4 (old: m_pRootNode)
+    NiPointer<NiAVObject> spMoonsRoot; // src: XBOX_RETAIL_PDB +0x8 (old: m_pSkyNode)
+    TESClimate* pCurrentClimate; // src: XBOX_RETAIL_PDB +0xc (old: m_pCurrentClimate)
+    TESWeather* pCurrentWeather; // src: XBOX_RETAIL_PDB +0x10 (old: m_pRegionWeather)
+    TESWeather* pLastWeather; // src: XBOX_RETAIL_PDB +0x14 (old: m_pPreviousWeather)
+    TESWeather* pDefaultWeather; // src: XBOX_RETAIL_PDB +0x18 (old: m_pQueuedWeather)
+    TESWeather* pOverrideWeather; // src: XBOX_RETAIL_PDB +0x1c (old: m_pOverrideWeather)
+    SkyObject* pAtmosphere; // src: XBOX_RETAIL_PDB +0x20 (old: m_pAtmosphere)
+    SkyObject* pStars; // src: XBOX_RETAIL_PDB +0x24 (old: m_pStars)
+    SkyObject* pSun; // src: XBOX_RETAIL_PDB +0x28 (old: m_pSun)
+    Clouds* pClouds; // src: XBOX_RETAIL_PDB +0x2c (old: m_pClouds)
+    SkyObject* pMasser; // src: XBOX_RETAIL_PDB +0x30 (old: m_pPrimaryMoon)
+    SkyObject* pSecunda; // src: XBOX_RETAIL_PDB +0x34 (old: m_pSecondaryMoon)
+    Precipitation* pPrecip; // src: XBOX_RETAIL_PDB +0x38 (old: m_pPrecipitation)
+    NiColor SkyColor[10]; // src: XBOX_RETAIL_PDB +0x3c (old: m_kSkyColors)
+    NiPoint3 WaterFogColor; // src: XBOX_RETAIL_PDB +0xb4 (old: m_kSunlightColor)
+    NiPoint3 SunSpecularColor; // src: XBOX_RETAIL_PDB +0xc0 (old: m_kSkyColor)
+    float fWindSpeed; // src: XBOX_RETAIL_PDB +0xcc (old: m_fCurrentWeatherBlend)
+    float fWindAngle; // src: XBOX_RETAIL_PDB +0xd0 (old: m_fTargetWeatherBlend)
+    float fFogDistances[4]; // src: XBOX_RETAIL_PDB +0xd4 (old: m_fCloudLayerAlpha)
+    float fFogHeight; // src: XBOX_RETAIL_PDB +0xe4 (old: m_fFogNearDistance)
+    float fFogPower; // src: XBOX_RETAIL_PDB +0xe8 (old: m_fFogPower)
+    float fCurrentGameHour; // src: XBOX_RETAIL_PDB +0xec (old: m_fFogFarDistance)
+    float fLastWeatherUpdate; // src: XBOX_RETAIL_PDB +0xf0 (old: fWeatherChance)
+    float fCurrentWeatherPct; // src: XBOX_RETAIL_PDB +0xf4 (old: m_fWeatherBlend)
     unsigned int eMode;
-    BSSimpleList<SkySound*>* m_pSkySounds;
-    float m_fWeatherFade;
+    BSSimpleList<SkySound*>* pSkySoundList; // src: XBOX_RETAIL_PDB +0xfc (old: m_pSkySounds)
+    float fFlash; // src: XBOX_RETAIL_PDB +0x100 (old: m_fWeatherFade)
     union { unsigned int SkySoundData; unsigned int field104; };
     union { unsigned int m_uiSkyFourthValue; unsigned int field108; };
     union { float SkyTextureState; float field10c; };

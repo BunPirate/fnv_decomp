@@ -136,13 +136,15 @@ struct LongRayVm
     const void* m_pShapeCollection;
     int m_iCurrentChunkId;
 
-    void hkpMoppLongRayVirtualMachine_queryRayOnTree(const LongRayQueryInt* query, const unsigned char* PC, LongRayQueryFloat* fq, int level);
+    void hkpMoppLongRayVirtualMachine_queryRayOnTree(const LongRayQueryInt* query, const unsigned char* PC, LongRayQueryFloat* fQuery, int chunkOffset);
     LongRayBool UpdateState_00dd2df0(const void* collection, const LongRayCode* code, const LongRayInput& input,
                              void* collector);
 };
 
 // @fnv 0x00dd2df0
 // src: GUESS 0x00dd2df0 (confidence: low)
+// pdb: hkpMoppLongRayVirtualMachine::queryLongRay | hkpMoppLongRayVirtualMachine.obj | retail, object-file run extension, low
+// pdb params: collection, code, input, rayResult
 LongRayBool LongRayVm::UpdateState_00dd2df0(const void* collection, const LongRayCode* code, const LongRayInput& input,
                                     void* collector)
 {
@@ -177,10 +179,10 @@ LongRayBool LongRayVm::UpdateState_00dd2df0(const void* collection, const LongRa
 extern void continueRayTraversal(LongRayVm*, const LongRayQueryInt*, const unsigned char*, LongRayQueryFloat*, int);
 // src: XBOX_PDB 0x00dd1f30
 __declspec(noinline) void LongRayVm::hkpMoppLongRayVirtualMachine_queryRayOnTree(const LongRayQueryInt* query, const unsigned char* PC,
-                                                  LongRayQueryFloat* fq, int level)
+                                                  LongRayQueryFloat* fQuery, int chunkOffset)
 {
-    LongRayQueryFloat ray = *fq;
-    continueRayTraversal(this, query, PC, &ray, level);
+    LongRayQueryFloat ray = *fQuery;
+    continueRayTraversal(this, query, PC, &ray, chunkOffset);
 }
 
 namespace LongRayTreeDetail {
@@ -343,7 +345,10 @@ struct MoppMachine
 };
 // @fnv 0x00dd1f30
 // src: XBOX_PDB 0x00dd1f30
-void MoppMachine::hkpMoppLongRayVirtualMachine_queryRayOnTree(const RayState* state, const unsigned char* code, RayPair* ray, int codeOffset)
+// pdb: hkpMoppLongRayVirtualMachine::queryRayOnTree | hkpMoppLongRayVirtualMachine.obj | retail, string-set bridge, high
+// pdb params: query, PC, fQuery, chunkOffset
+// pdb locals: scaledQuery, leftFloat, ratio, fraction, f, assertBuf, ostr
+void MoppMachine::hkpMoppLongRayVirtualMachine_queryRayOnTree(const RayState* state, const unsigned char* code, RayPair* fQuery, int chunkOffset)
 {
     RayState localState;
     if (!DAT_01269cbd)
@@ -352,7 +357,7 @@ void MoppMachine::hkpMoppLongRayVirtualMachine_queryRayOnTree(const RayState* st
         if (!DAT_01269cbd)
             return;
     }
-    __assume((reinterpret_cast<unsigned>(ray) & 15) == 0);
+    __assume((reinterpret_cast<unsigned>(fQuery) & 15) == 0);
     for (;;)
     {
         unsigned int command = *code;
@@ -365,62 +370,62 @@ void MoppMachine::hkpMoppLongRayVirtualMachine_queryRayOnTree(const RayState* st
         case 19:
             lower = (float)(int)(2 * code[1]);
             upper = (float)(int)(2 * code[2]);
-            from = ray->ends[0](2) + ray->ends[0](1);
-            to = ray->ends[1](2) + ray->ends[1](1);
+            from = fQuery->ends[0](2) + fQuery->ends[0](1);
+            to = fQuery->ends[1](2) + fQuery->ends[1](1);
             goto shortSplit;
         case 20:
             lower = (float)(int)(2 * code[1] - 255);
             upper = (float)(int)(2 * code[2] - 255);
-            from = ray->ends[0](1) - ray->ends[0](2);
-            to = ray->ends[1](1) - ray->ends[1](2);
+            from = fQuery->ends[0](1) - fQuery->ends[0](2);
+            to = fQuery->ends[1](1) - fQuery->ends[1](2);
             goto shortSplit;
         case 21:
             lower = (float)(int)(2 * code[1]);
             upper = (float)(int)(2 * code[2]);
-            from = ray->ends[0](2) + ray->ends[0](0);
-            to = ray->ends[1](2) + ray->ends[1](0);
+            from = fQuery->ends[0](2) + fQuery->ends[0](0);
+            to = fQuery->ends[1](2) + fQuery->ends[1](0);
             goto shortSplit;
         case 22:
             lower = (float)(int)(2 * code[1] - 255);
             upper = (float)(int)(2 * code[2] - 255);
-            from = ray->ends[0](0) - ray->ends[0](2);
-            to = ray->ends[1](0) - ray->ends[1](2);
+            from = fQuery->ends[0](0) - fQuery->ends[0](2);
+            to = fQuery->ends[1](0) - fQuery->ends[1](2);
             goto shortSplit;
         case 23:
             lower = (float)(int)(2 * code[1]);
             upper = (float)(int)(2 * code[2]);
-            from = ray->ends[0](1) + ray->ends[0](0);
-            to = ray->ends[1](1) + ray->ends[1](0);
+            from = fQuery->ends[0](1) + fQuery->ends[0](0);
+            to = fQuery->ends[1](1) + fQuery->ends[1](0);
             goto shortSplit;
         case 24:
             lower = (float)(int)(2 * code[1] - 255);
             upper = (float)(int)(2 * code[2] - 255);
-            from = ray->ends[0](0) - ray->ends[0](1);
-            to = ray->ends[1](0) - ray->ends[1](1);
+            from = fQuery->ends[0](0) - fQuery->ends[0](1);
+            to = fQuery->ends[1](0) - fQuery->ends[1](1);
             goto shortSplit;
         case 25:
             lower = (float)(int)(3 * code[1]);
             upper = (float)(int)(3 * code[2]);
-            from = ray->ends[0](1) + ray->ends[0](0) + ray->ends[0](2);
-            to = ray->ends[1](1) + ray->ends[1](0) + ray->ends[1](2);
+            from = fQuery->ends[0](1) + fQuery->ends[0](0) + fQuery->ends[0](2);
+            to = fQuery->ends[1](1) + fQuery->ends[1](0) + fQuery->ends[1](2);
             goto shortSplit;
         case 26:
             lower = (float)(int)(3 * (code[1] - 85));
             upper = (float)(int)(3 * (code[2] - 85));
-            from = ray->ends[0](1) + ray->ends[0](0) - ray->ends[0](2);
-            to = ray->ends[1](1) + ray->ends[1](0) - ray->ends[1](2);
+            from = fQuery->ends[0](1) + fQuery->ends[0](0) - fQuery->ends[0](2);
+            to = fQuery->ends[1](1) + fQuery->ends[1](0) - fQuery->ends[1](2);
             goto shortSplit;
         case 27:
             lower = (float)(int)(3 * (code[1] - 85));
             upper = (float)(int)(3 * (code[2] - 85));
-            from = ray->ends[0](0) - ray->ends[0](1) + ray->ends[0](2);
-            to = ray->ends[1](0) - ray->ends[1](1) + ray->ends[1](2);
+            from = fQuery->ends[0](0) - fQuery->ends[0](1) + fQuery->ends[0](2);
+            to = fQuery->ends[1](0) - fQuery->ends[1](1) + fQuery->ends[1](2);
             goto shortSplit;
         case 28:
             lower = (float)(int)(3 * (code[1] - 170));
             upper = (float)(int)(3 * (code[2] - 170));
-            from = ray->ends[0](0) - ray->ends[0](1) - ray->ends[0](2);
-            to = ray->ends[1](0) - ray->ends[1](1) - ray->ends[1](2);
+            from = fQuery->ends[0](0) - fQuery->ends[0](1) - fQuery->ends[0](2);
+            to = fQuery->ends[1](0) - fQuery->ends[1](1) - fQuery->ends[1](2);
             goto shortSplit;
         case 32:
         case 33:
@@ -428,8 +433,8 @@ void MoppMachine::hkpMoppLongRayVirtualMachine_queryRayOnTree(const RayState* st
             axis = command - 32;
             upper = (float)(int)code[1];
             lower = (float)(1.0 + upper);
-            from = ray->ends[0](axis);
-            to = ray->ends[1](axis);
+            from = fQuery->ends[0](axis);
+            to = fQuery->ends[1](axis);
             code += 3;
             skipRight = code[-1];
             goto zeroLeft;
@@ -439,8 +444,8 @@ void MoppMachine::hkpMoppLongRayVirtualMachine_queryRayOnTree(const RayState* st
             axis = command - 35;
             lower = (float)(int)code[1];
             upper = (float)(int)code[2];
-            from = ray->ends[0](axis);
-            to = ray->ends[1](axis);
+            from = fQuery->ends[0](axis);
+            to = fQuery->ends[1](axis);
             skipLeft = (code[3] << 8) + code[4];
             code += 7;
             skipRight = (code[-2] << 8) + code[-1];
@@ -451,8 +456,8 @@ void MoppMachine::hkpMoppLongRayVirtualMachine_queryRayOnTree(const RayState* st
             axis = command - 16;
             lower = (float)(int)code[1];
             upper = (float)(int)code[2];
-            from = ray->ends[0](axis);
-            to = ray->ends[1](axis);
+            from = fQuery->ends[0](axis);
+            to = fQuery->ends[1](axis);
         shortSplit:
             code += 4;
             skipRight = code[-1];
@@ -474,31 +479,31 @@ void MoppMachine::hkpMoppLongRayVirtualMachine_queryRayOnTree(const RayState* st
             float toLower = to - lower;
             float toUpper = to - upper;
             RayPair branch;
-            branch.ends[0] = ray->ends[0];
-            branch.ends[1] = ray->ends[1];
+            branch.ends[0] = fQuery->ends[0];
+            branch.ends[1] = fQuery->ends[1];
 
             if (fromLower < toLower)
             {
                 if (toLower * fromLower < 0.0)
                 {
                     float ratio = fromLower / (fromLower - toLower);
-                    branch.ends[1].setInterpolate4(ray->ends[0], ray->ends[1], ratio);
+                    branch.ends[1].setInterpolate4(fQuery->ends[0], fQuery->ends[1], ratio);
                 }
-                hkpMoppLongRayVirtualMachine_queryRayOnTree(state, code + skipLeft - skipRight, &branch, codeOffset);
+                hkpMoppLongRayVirtualMachine_queryRayOnTree(state, code + skipLeft - skipRight, &branch, chunkOffset);
                 if (toUpper * fromUpper < 0.0)
                 {
                     float ratio = fromUpper / (fromUpper - toUpper);
-                    ray->ends[0].setInterpolate4(ray->ends[0], ray->ends[1], ratio);
+                    fQuery->ends[0].setInterpolate4(fQuery->ends[0], fQuery->ends[1], ratio);
                 }
                 if (fraction < 1.0f)
                 {
                     float f = fraction;
                     hkVector4 point;
                     point.setInterpolate4(this->ray.start, this->ray.end, f);
-                    ray->ends[1].setSub4(point, data->translation);
-                    ray->ends[1].mul4(hkSimdReal(state->scale));
-                    ray->ends[1].sub4(state->offset);
-                    if (axis < 3 && ray->ends[1](axis) < upper)
+                    fQuery->ends[1].setSub4(point, data->translation);
+                    fQuery->ends[1].mul4(hkSimdReal(state->scale));
+                    fQuery->ends[1].sub4(state->offset);
+                    if (axis < 3 && fQuery->ends[1](axis) < upper)
                         return;
                 }
             }
@@ -507,23 +512,23 @@ void MoppMachine::hkpMoppLongRayVirtualMachine_queryRayOnTree(const RayState* st
                 if (toUpper * fromUpper < 0.0)
                 {
                     float ratio = fromUpper / (fromUpper - toUpper);
-                    branch.ends[1].setInterpolate4(ray->ends[0], ray->ends[1], ratio);
+                    branch.ends[1].setInterpolate4(fQuery->ends[0], fQuery->ends[1], ratio);
                 }
-                hkpMoppLongRayVirtualMachine_queryRayOnTree(state, code, &branch, codeOffset);
+                hkpMoppLongRayVirtualMachine_queryRayOnTree(state, code, &branch, chunkOffset);
                 if (toLower * fromLower < 0.0)
                 {
                     float ratio = fromLower / (fromLower - toLower);
-                    ray->ends[0].setInterpolate4(ray->ends[0], ray->ends[1], ratio);
+                    fQuery->ends[0].setInterpolate4(fQuery->ends[0], fQuery->ends[1], ratio);
                 }
                 if (fraction < 1.0f)
                 {
                     float f = fraction;
                     hkVector4 point;
                     point.setInterpolate4(this->ray.start, this->ray.end, f);
-                    ray->ends[1].setSub4(point, data->translation);
-                    ray->ends[1].mul4(hkSimdReal(state->scale));
-                    ray->ends[1].sub4(state->offset);
-                    if (axis < 3 && ray->ends[1](axis) > lower)
+                    fQuery->ends[1].setSub4(point, data->translation);
+                    fQuery->ends[1].mul4(hkSimdReal(state->scale));
+                    fQuery->ends[1].sub4(state->offset);
+                    if (axis < 3 && fQuery->ends[1](axis) > lower)
                         return;
                 }
                 code += skipLeft - skipRight;
@@ -553,8 +558,8 @@ void MoppMachine::hkpMoppLongRayVirtualMachine_queryRayOnTree(const RayState* st
             lower = (float)(int)code[2];
             code += 3;
         clip: {
-            from = ray->ends[0](axis);
-            to = ray->ends[1](axis);
+            from = fQuery->ends[0](axis);
+            to = fQuery->ends[1](axis);
             int direction;
             if (from < to)
             {
@@ -572,19 +577,19 @@ void MoppMachine::hkpMoppLongRayVirtualMachine_queryRayOnTree(const RayState* st
                     return;
                 direction = 1;
             }
-            hkVector4 a = ray->ends[0];
-            hkVector4 b = ray->ends[1];
+            hkVector4 a = fQuery->ends[0];
+            hkVector4 b = fQuery->ends[1];
             float x = from - lower;
             float y = to - lower;
             if (x * y < 0.0f)
             {
-                ray->ends[1 - direction].setInterpolate4(a, b, x / (x - y));
+                fQuery->ends[1 - direction].setInterpolate4(a, b, x / (x - y));
             }
             float x2 = from - upper;
             float y2 = to - upper;
             if (x2 * y2 < 0.0f)
             {
-                ray->ends[direction].setInterpolate4(a, b, x2 / (x2 - y2));
+                fQuery->ends[direction].setInterpolate4(a, b, x2 / (x2 - y2));
             }
             continue;
         }
@@ -598,12 +603,12 @@ void MoppMachine::hkpMoppLongRayVirtualMachine_queryRayOnTree(const RayState* st
             code += (((code[1] << 8) + code[2]) << 8) + code[3] + 4;
             continue;
         case 12:
-            codeOffset = ((code[1] << 8) | code[2]) << 9;
+            chunkOffset = ((code[1] << 8) | code[2]) << 9;
             goto jumpCode;
         case 112:
-            codeOffset = (code[1] << 24) + (code[2] << 16) + (code[3] << 8) + code[4];
+            chunkOffset = (code[1] << 24) + (code[2] << 16) + (code[3] << 8) + code[4];
         jumpCode:
-            code = data->code + codeOffset;
+            code = data->code + chunkOffset;
             continue;
         case 13:
             code += 5;
@@ -616,10 +621,10 @@ void MoppMachine::hkpMoppLongRayVirtualMachine_queryRayOnTree(const RayState* st
             dv.set((float)(int)code[1], (float)(int)code[2], (float)(int)code[3], DAT_01011d78);
             __m128 d = dv.getQuad();
             float factor = (float)(1 << command);
-            ray->ends[0].sub4(dv);
-            ray->ends[1].sub4(dv);
-            ray->ends[0].mul4(hkSimdReal(factor));
-            ray->ends[1].mul4(hkSimdReal(factor));
+            fQuery->ends[0].sub4(dv);
+            fQuery->ends[1].sub4(dv);
+            fQuery->ends[0].mul4(hkSimdReal(factor));
+            fQuery->ends[1].mul4(hkSimdReal(factor));
             localState.offset.setAdd4(state->offset, dv);
             localState.offset.mul4(hkSimdReal(factor));
             localState.shift = state->shift + command;
@@ -773,7 +778,7 @@ void MoppMachine::hkpMoppLongRayVirtualMachine_queryRayOnTree(const RayState* st
                 primitive = command - 48;
             leaf:
                 primitive += state->primitiveOffset;
-                unsigned chunk = codeOffset >> 9;
+                unsigned chunk = chunkOffset >> 9;
                 unsigned remapped = ((chunk << 8) & keyMask) | primitive;
                 GetHitDistance(remapped, (const unsigned*)state->properties);
                 return;

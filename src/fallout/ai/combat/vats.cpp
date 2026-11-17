@@ -30,6 +30,7 @@ class ImageSpaceModifierInstanceForm;
 class ImageSpaceModifierInstanceRB;
 class ShadowSceneLight;
 
+// pdb: class Animation, size 0x13c (here 0x1), 33 members
 class Animation
 {
   public:
@@ -39,7 +40,7 @@ class Animation
 class TimeGlobal
 {
   public:
-    void ApplyGlobalTimeMultiplier();
+    void BSTimer_RestoreGlobalTimeMultiplierCache();
 };
 
 typedef char VATSPlayerTimerOffsetCheck[offsetof(PlayerCharacter, fVATSTimer) == 0xE18 ? 1 : -1];
@@ -48,7 +49,7 @@ typedef char VATSPlayerSizeCheck[sizeof(PlayerCharacter) == 0xE50 ? 1 : -1];
 class CameraPathManager
 {
   public:
-    void SetCameraPathEnabled(bool enabled, unsigned int mask);
+    void SetCameraPathEnabled(bool enabled, unsigned int aeDPC);
 };
 
 // BGSCameraShot.h does not yet declare these VATS camera helpers.
@@ -56,7 +57,7 @@ struct CameraShotExtra : BGSCameraShot
 {
     bool IsInitialized();
     float TESCombatStyle_GetTargetingFOV();
-    void __thiscall ResetCameraState();
+    void __thiscall BGSCameraShot_FreeCamera();
     float __thiscall GetFloatAtOffset58();
     bool __thiscall BGSCameraShot_IsFirstPerson();
     int GetField38();
@@ -64,32 +65,33 @@ struct CameraShotExtra : BGSCameraShot
 };
 
 // No include/VATS.h exists yet; keep one VATS definition for the 0x48-byte state.
+// pdb: class VATS, size 0x48, 17 members
 class VATS
 {
   public:
-    BSSimpleList<VATSCommand*> m_kCommandList;
+    BSSimpleList<VATSCommand*> commandList; // src: XBOX_RETAIL_PDB +0x0 (old: m_kCommandList)
     int eMode;
-    BSSimpleList<BGSCameraShot*>* m_pCameraShotList;
+    BSSimpleList<BGSCameraShot*>* pCameraList; // src: XBOX_RETAIL_PDB +0xc (old: m_pCameraShotList)
     BGSCameraShot* pCamera;
-    float m_fCameraTime;
-    float m_fCameraDuration;
-    Projectile* m_pSource;
-    Projectile* m_pTargetProjectile;
-    TESIdleForm* m_pIdleForm;
-    ImageSpaceModifierInstanceForm* m_pImagespaceModifier;
+    float fCameraTimer; // src: XBOX_RETAIL_PDB +0x14 (old: m_fCameraTime)
+    float fCameraMinTimer; // src: XBOX_RETAIL_PDB +0x18 (old: m_fCameraDuration)
+    Projectile* pFirstProjectile; // src: XBOX_RETAIL_PDB +0x1c (old: m_pSource)
+    Projectile* pLastProjectile; // src: XBOX_RETAIL_PDB +0x20 (old: m_pTargetProjectile)
+    TESIdleForm* pMeleeAttack; // src: XBOX_RETAIL_PDB +0x24 (old: m_pIdleForm)
+    ImageSpaceModifierInstanceForm* pImagespaceMod; // src: XBOX_RETAIL_PDB +0x28 (old: m_pImagespaceModifier)
     ImageSpaceModifierInstanceRB* pTransitionImagespaceMod;
-    bool bIsPlayer;
+    bool bAiming; // src: XBOX_RETAIL_PDB +0x30 (old: bIsPlayer)
     unsigned char layoutPadding31[3];
-    NiPointer<ShadowSceneLight> m_spShadowSceneLight;
-    bool m_bShadowLightEnabled;
+    NiPointer<ShadowSceneLight> spVATSLight; // src: XBOX_RETAIL_PDB +0x34 (old: m_spShadowSceneLight)
+    bool bFirstVatsAttack; // src: XBOX_RETAIL_PDB +0x38 (old: m_bShadowLightEnabled)
     unsigned char layoutPadding39[3];
-    int m_iShadowLightState;
-    TESBoundObject* m_pCurrentWeaponObject;
-    ExtraDataList* m_pWeaponExtraData;
+    int iKillCount; // src: XBOX_RETAIL_PDB +0x3c (old: m_iShadowLightState)
+    TESBoundObject* pUnEquipWeapon; // src: XBOX_RETAIL_PDB +0x40 (old: m_pCurrentWeaponObject)
+    ExtraDataList* pUnEquipExtra; // src: XBOX_RETAIL_PDB +0x44 (old: m_pWeaponExtraData)
     void Update(int mode, bool force);
     float GetModeTimeMultiplier();
     void QuitVATSPlayback(bool abForceQuit, bool abFinishCommandPlayback);
-    void AddCommand(VATSCommand*);
+    void QueueAction(VATSCommand*);
     void FUN_009c6c30(int, bool);
     void ForceTargetKillShot(TESObjectREFR*, int);
     void UpdateVATSLight(Actor*);
@@ -98,9 +100,9 @@ class VATS
     Node* FUN_006815c0();
     void FUN_0063f7b0();
     void RemoveCommandsForTarget(TESObjectREFR*);
-    bool IsValidCommand(VATSCommand*);
+    bool IsMeleeCommand(VATSCommand*);
     bool VATS_GetLineOfSight(VATSCommand*);
-    void ExecuteVATSMeleeAttack(VATSCommand*);
+    void UpdateMeleeAttack(VATSCommand*);
     void FreeHeadAction();
     bool UseNextCamera();
     VATSCommand* VATS_GetCurrentAction();
@@ -124,9 +126,11 @@ extern SettingT_GameSettingCollection_ DAT_011cf374;
 #include "../../../../include/bhkWorld.h"
 
 // @fnv 0x0093e770
+// pdb: VATS::Update | VATS.obj | retail, upstream name already matches, high
+// pdb locals: bgetNextCamera, pcurrentProcess, panimIdle, pcommand, pcontrols, fuseActionPoints, bnewCamera, bnewCameraList, ptargetTorso, pattacker3d, ptarget, ptarget3d, pattackerWeapon, pbodyPartData, pactor, pbodyPart, pbodyPartArray, pdismemberedRoot, ftransstrength, pWeap, bremoveCommand, pplayerWeapon, fapReward
 void VATS::Update(int mode, bool force)
 {
-    g_timeGlobal.ApplyGlobalTimeMultiplier();
+    g_timeGlobal.BSTimer_RestoreGlobalTimeMultiplierCache();
     if (reinterpret_cast<PlayerCharacter*>(this)->GetAnimation(
             !reinterpret_cast<PlayerCharacter*>(this)->PlayerCharacter_Is3rdPerson()))
     {
@@ -146,6 +150,8 @@ void VATS::Update(int mode, bool force)
 }
 
 // @fnv 0x009c8cc0
+// pdb: VATS::GetPlayerUpdateMult | VATS.obj | retail, call graph (shared callers), high
+// pdb locals: fplayerUpdateMult
 float VATS::GetModeTimeMultiplier()
 {
     float multiplier = 1.0f;
@@ -184,10 +190,12 @@ struct Node
 
 struct StandIn
 {
-    void* FUN_009c8870(unsigned int);
+    void* VATS_COMMAND_ScalarDtor(unsigned int);
 };
 
 // @fnv 0x009ca410
+// pdb: VATS::~VATS | VATS.obj | retail, object-file run extension, low
+// pdb note: debug build links it to VATS::ClearCommandList
 void VATS::ProcessVATSCommands()
 {
     if (*(void**)((char*)this + 0x24))
@@ -201,7 +209,7 @@ void VATS::ProcessVATSCommands()
         VATSCommand* pcommand = FUN_006815c0()->item;
         VATSCommand* pItem = pcommand;
         VATSCommand* pItemCopy = pItem;
-        pItemCopy ? ((StandIn*)pItemCopy)->FUN_009c8870(1) : 0;
+        pItemCopy ? ((StandIn*)pItemCopy)->VATS_COMMAND_ScalarDtor(1) : 0;
         FUN_0063f7b0();
     }
 }
@@ -228,11 +236,14 @@ struct SoundListEntry;
 struct SoundListView
 {
     void AddTail(SoundListEntry* const&);
-    void AddCommand(SoundListEntry* apCommand);
+    void VATS_QueueAction(SoundListEntry* apCommand);
 };
 
 // @fnv 0x009c71a0
-void SoundListView::AddCommand(SoundListEntry* apCommand)
+// src: XBOX_RETAIL_PDB 0x009c71a0
+// pdb: VATS::QueueAction | VATS.obj | retail, call graph, high
+// pdb params: apCommand
+void SoundListView::VATS_QueueAction(SoundListEntry* apCommand)
 {
     AddTail(apCommand);
 }
@@ -246,6 +257,7 @@ struct ListHolder
 
 // @fnv 0x009c71c0
 // src: XBOX_PDB 0x009c71c0
+// pdb: VATS::GetCurrentAction | VATS.obj | debug, upstream name already matches, high
 void* ListHolder::VATS_GetCurrentAction()
 {
     if (!_ref_008256d0())
@@ -262,6 +274,8 @@ struct MyList
 };
 // @fnv 0x009c71f0
 // src: XBOX_PDB 0x009c71f0
+// pdb: VATS::GetLastAction | VATS.obj | debug, upstream name already matches, high
+// pdb locals: iter
 VATSCommand* MyList::VATS_GetLastAction()
 {
     MyList* iter;
@@ -280,6 +294,7 @@ extern float DAT_012677c4;
 // Returns true when the pick count override is not active and FUN_009c8ef0() is less than DAT_012677c4; otherwise false.
 // @fnv 0x009c8ea0
 // src: COMMUNITY 0x009c8ea0
+// pdb: bhkWorld::QPickTimeOverMax | VATS.obj | debug, object-file run extension, low
 bool __cdecl bhkWorld_GetPickTimeOverMax()
 {
     return !bhkWorld::QPickCountOverride() ? bhkWorld_GetMaxPickTime() < DAT_012677c4 : false;
@@ -298,6 +313,7 @@ struct FUN_009ca4a0
 };
 
 // @fnv 0x009ca4a0
+// pdb: VATS_COMMAND::VATS_COMMAND | VATS.obj | retail, call graph, high
 FUN_009ca4a0::FUN_009ca4a0()
 {
     VATS_COMMAND_Initialize();
@@ -314,6 +330,8 @@ struct FUN_009d9ec0_shell
 };
 
 // @fnv 0x009d9ec0
+// pdb: PathingRequestLOS::SetLOSGridMap | CombatProcedureSearch.obj | debug, object-file gap fill, medium
+// pdb params: aspLOSGridMap
 void FUN_009d9ec0_shell::AssignAtOffsetB0(void* apValue)
 {
     ((Helper62d0*)((char*)this + 0xb0))->operator=(apValue);
@@ -338,6 +356,7 @@ struct FUN_0063cfe0_shell
 
 // @fnv 0x0063cfe0
 // src: COMMUNITY 0x0063cfe0
+// pdb: TESClimate::GetNightSkyModel | Sky.obj | debug, upstream name already matches, high
 void FUN_0063cfe0_shell::TESClimate_GetNightSkyModel()
 {
     m_inner.v5();
@@ -352,17 +371,20 @@ struct VATS_COMMAND_LIST
     char _pad_8[4];
     PlayerCharacter* pOwner;
     char _pad_10[24];
-    void __thiscall CreateCommandAndUpdateHUD();
+    void __thiscall VATS_InitPlayerDeath();
 };
 // @fnv 0x009ca1f0
-void __thiscall VATS_COMMAND_LIST::CreateCommandAndUpdateHUD()
+// src: XBOX_RETAIL_PDB 0x009ca1f0
+// pdb: VATS::InitPlayerDeath | VATS.obj | retail, object-file run extension, high
+// pdb locals: pcommand
+void __thiscall VATS_COMMAND_LIST::VATS_InitPlayerDeath()
 {
     ((VATS*)this)->QuitVATSPlayback(false, false);
     VATS_COMMAND_LIST* pCommand = new VATS_COMMAND_LIST;
     pCommand->iType = 15;
     pCommand->bFlag = true;
     pCommand->pOwner = g_thePlayer;
-    ((SoundListView*)this)->AddCommand((SoundListEntry*)pCommand);
+    ((SoundListView*)this)->VATS_QueueAction((SoundListEntry*)pCommand);
     ((NiPoint3Interpolator*)this)->CreateObject(4, false);
     HUDMainMenu::UpdateVisibilityState(4);
 }
@@ -371,30 +393,31 @@ bool __cdecl ActionPoints_IsAttackAction(int);
 
 
 // No include/HitData.h exists yet; constructor/reset at 0x009b4d90/0x009b4dc0 use this 0x64-byte layout.
+// pdb: class HitData, size 0x64, 21 members
 class HitData
 {
   public:
-    Actor* m_pAggressor;
+    Actor* pAggressor; // src: XBOX_RETAIL_PDB +0x0 (old: m_pAggressor)
     TESObjectREFR* pTarget;
-    TESObjectREFR* m_pSourceReference;
-    unsigned int m_uiHitLocation;
-    unsigned int m_uiHitFlags;
-    float m_fDamage;
-    float m_fArmorDamage;
-    float m_fHealthDamage;
-    float m_fLimbDamage;
-    float m_fFatigueDamage;
-    float m_fSneakAttackMultiplier;
-    float m_fCriticalHitMultiplier;
+    TESObjectREFR* pSourceRef; // src: XBOX_RETAIL_PDB +0x8 (old: m_pSourceReference)
+    unsigned int eAttackSkill; // src: XBOX_RETAIL_PDB +0xc (old: m_uiHitLocation)
+    unsigned int eDamageLimb; // src: XBOX_RETAIL_PDB +0x10 (old: m_uiHitFlags)
+    float fHealthDamage; // src: XBOX_RETAIL_PDB +0x14 (old: m_fDamage)
+    float fTotalDamage; // src: XBOX_RETAIL_PDB +0x18 (old: m_fArmorDamage)
+    float fFatigueDamage; // src: XBOX_RETAIL_PDB +0x1c (old: m_fHealthDamage)
+    float fTargetedLimbDamage; // src: XBOX_RETAIL_PDB +0x20 (old: m_fLimbDamage)
+    float fPercentBlocked; // src: XBOX_RETAIL_PDB +0x24 (old: m_fFatigueDamage)
+    float fArmorDamage; // src: XBOX_RETAIL_PDB +0x28 (old: m_fSneakAttackMultiplier)
+    float fDamageToWeapon; // src: XBOX_RETAIL_PDB +0x2c (old: m_fCriticalHitMultiplier)
     TESObjectWEAP* pWeapon;
-    float m_fWeaponDamage;
-    NiPoint3 vOffset1;
-    NiPoint3 vOffset2;
-    void* m_pHitDataObjectAtOffset50;
-    void* m_pHitDataObjectAtOffset54;
+    float fWeaponHealth; // src: XBOX_RETAIL_PDB +0x34 (old: m_fWeaponDamage)
+    NiPoint3 kHitLocation; // src: XBOX_RETAIL_PDB +0x38 (old: vOffset1)
+    NiPoint3 kHitDirection; // src: XBOX_RETAIL_PDB +0x44 (old: vOffset2)
+    void* pCriticalEffect; // src: XBOX_RETAIL_PDB +0x50 (old: m_pHitDataObjectAtOffset50)
+    void* pVATSCommand; // src: XBOX_RETAIL_PDB +0x54 (old: m_pHitDataObjectAtOffset54)
     unsigned int uiFlags;
-    float m_fHitValueAtOffset5C;
-    int BackgroundTask;
+    float fBonusMult; // src: XBOX_RETAIL_PDB +0x5c (old: m_fHitValueAtOffset5C)
+    int iRefCount; // src: XBOX_RETAIL_PDB +0x60 (old: BackgroundTask)
 
     HitData();
     void ClearData_009b4dc0();
@@ -407,6 +430,8 @@ void __cdecl SetContextInfo(HitData*, VATSCommand*);
 
 // @fnv 0x009c8e00
 // src: COMMUNITY 0x009c8e00
+// pdb: VATS::EvaluateCommand | VATS.obj | retail, upstream name already matches, high
+// pdb params: apCommand
 void VATS::EvaluateCommand(VATSCommand* apCommand)
 {
     if (apCommand && ActionPoints_IsAttackAction(apCommand->eAction))
@@ -437,13 +462,16 @@ struct FUN_009c9a50_shell
     char pad_00[0x34];
     GO m_34;
 
-    void SetLight(NiLight* apLight, bool abClear);
+    void VATS_SetVATSLight(NiLight* apLight, bool abRemoveOld);
 };
 
 // @fnv 0x009c9a50
-void FUN_009c9a50_shell::SetLight(NiLight* apLight, bool abClear)
+// src: XBOX_RETAIL_PDB 0x009c9a50
+// pdb: VATS::SetVATSLight | VATS.obj | retail, object-file gap fill, high
+// pdb params: apLight, abRemoveOld
+void FUN_009c9a50_shell::VATS_SetVATSLight(NiLight* apLight, bool abRemoveOld)
 {
-    if (abClear && m_34 != 0)
+    if (abRemoveOld && m_34 != 0)
     {
         m_34 = 0;
     }
@@ -465,6 +493,7 @@ struct FUN_009ca500_shell : public VATSCommand
 
 // @fnv 0x009ca500
 // src: XBOX_PDB 0x009ca500
+// pdb: VATS_COMMAND::Initialize | VATS.obj | retail, upstream name already matches, high
 void FUN_009ca500_shell::VATS_COMMAND_Initialize()
 {
     eAction = 0x16;
@@ -487,13 +516,16 @@ void FUN_009ca500_shell::VATS_COMMAND_Initialize()
 extern int DAT_011f21b8;
 
 // @fnv 0x009c8c40
-void VATS::SetValue(int a)
+// pdb: VATS::SetLastProjectile | VATS.obj | debug, call graph (shared callers), high
+// pdb params: apProjectile
+// pdb locals: bnewCamera
+void VATS::SetValue(int apProjectile)
 {
-    m_pTargetProjectile = reinterpret_cast<Projectile*>(a);
+    pLastProjectile = reinterpret_cast<Projectile*>(apProjectile);
     if (pCamera != 0)
     {
         HandleCommand(VATS_GetCurrentAction());
-        if (m_fCameraDuration == 0.0)
+        if (fCameraMinTimer == 0.0)
         {
             bool ok = true;
             while (pCamera != 0 && ok && DAT_011f21b8 > static_cast<CameraShotExtra*>(pCamera)->GetField38())
@@ -507,12 +539,15 @@ extern TESObjectREFR* DAT_011f21cc;
 
 // Clears DAT_011f21cc if it equals target, then walks the command list removing every command whose pTarget is target.
 // @fnv 0x009c9e90
+// pdb: VATS::ClearTarget | VATS.obj | debug, object-file gap fill, medium
+// pdb params: apRef
+// pdb locals: plist, plastlist, pcommand
 void VATS::RemoveCommandsForTarget(TESObjectREFR* target)
 {
     if (target == DAT_011f21cc)
         DAT_011f21cc = 0;
 
-    BSSimpleList<VATSCommand*>* current = &m_kCommandList;
+    BSSimpleList<VATSCommand*>* current = &commandList;
     BSSimpleList<VATSCommand*>* previous = 0;
     while (current != 0 && !current->IsEmpty())
     {
@@ -521,7 +556,7 @@ void VATS::RemoveCommandsForTarget(TESObjectREFR* target)
         {
             VATSCommand* temporary = command;
             VATSCommand* deleting = temporary;
-            deleting ? reinterpret_cast<StandIn*>(deleting)->FUN_009c8870(1) : 0;
+            deleting ? reinterpret_cast<StandIn*>(deleting)->VATS_COMMAND_ScalarDtor(1) : 0;
 
             if (previous)
             {
@@ -548,13 +583,17 @@ struct VatsCmd9c9
 struct VatsList9c9
 {
     VatsCmd9c9** FUN_006815c0();
-    bool IsValidCommand(VatsCmd9c9* pkCmd);
+    bool VATS_IsMeleeCommand(VatsCmd9c9* apCommand);
 };
 
 // @fnv 0x009c9f60
-bool VatsList9c9::IsValidCommand(VatsCmd9c9* pkCmd)
+// src: XBOX_DEBUG_PDB 0x009c9f60
+// pdb: VATS::IsMeleeCommand | VATS.obj | debug, call graph, high
+// pdb params: apCommand
+// pdb locals: pcommand
+bool VatsList9c9::VATS_IsMeleeCommand(VatsCmd9c9* apCommand)
 {
-    VatsCmd9c9* pkCommand = pkCmd;
+    VatsCmd9c9* pkCommand = apCommand;
     if (!pkCommand)
         pkCommand = *FUN_006815c0();
     if (pkCommand)
@@ -604,48 +643,52 @@ extern SettingT<GameSettingCollection> originalRuntimeFloatSetting555;
 
 struct TESObjectWEAP;
 
-void PlayMysteriousStrangerMusic();
-float __cdecl GetActorReach(Actor*, int);
+void FalloutAudio_MysteriousStrangerAppears();
+float __cdecl CombatUtilities_GetWeaponReach(Actor*, int);
 bool __fastcall TESObjectWEAP_IsMeleeWeapon(TESObjectWEAP*);
 bool __cdecl BuildPathingRequest(PlayerCharacter*, TESObjectREFR*, float, NiPoint3*);
 void FNV_Warning(const char*, ...);
 
 
 // @fnv 0x009c9280
-void VATS::ExecuteVATSMeleeAttack(VATSCommand* pAttackCmd)
+// src: XBOX_RETAIL_PDB 0x009c9280
+// pdb: VATS::UpdateMeleeAttack | VATS.obj | retail, string-set bridge, high
+// pdb params: apCommand
+// pdb locals: newPos, fdesiredDistance
+void VATS::UpdateMeleeAttack(VATSCommand* apCommand)
 {
-    if (pAttackCmd->m_ucFirstActionCode)
+    if (apCommand->m_ucFirstActionCode)
     {
         if ((TemporaryEffect*)DAT_011f21f0 == DAT_011f21e8 || (TemporaryEffect*)DAT_011f21f0 == DAT_011f21ec ||
-            this->IsValidCommand(pAttackCmd))
+            this->IsMeleeCommand(apCommand))
         {
-            if (pAttackCmd->pTarget)
+            if (apCommand->pTarget)
             {
                 float fDistance = 0.0f;
-                if (pAttackCmd->m_bFirstActionFlag)
+                if (apCommand->m_bFirstActionFlag)
                 {
                     fDistance = *originalRuntimeFloatSetting548.Float();
                     if (DAT_011f21e8->GetAlphaMult() != 1.0)
                     {
                         DAT_011f21e8->SetProcessValue(1.0f);
                         DAT_011f21e8->FUN_008c4640();
-                        PlayMysteriousStrangerMusic();
+                        FalloutAudio_MysteriousStrangerAppears();
                     }
                 }
-                else if (pAttackCmd->m_bFinalActionFlag)
+                else if (apCommand->m_bFinalActionFlag)
                 {
                     fDistance = *originalRuntimeFloatSetting548.Float();
                     if (DAT_011f21ec->GetAlphaMult() != 1.0)
                     {
                         DAT_011f21ec->SetProcessValue(1.0f);
                         DAT_011f21ec->FUN_008c4640();
-                        PlayMysteriousStrangerMusic();
+                        FalloutAudio_MysteriousStrangerAppears();
                     }
                 }
                 else
                 {
                     fDistance =
-                        GetActorReach((Actor*)DAT_011f21f0, (int)((Actor*)DAT_011f21f0)->Actor_GetCurrentWeapon());
+                        CombatUtilities_GetWeaponReach((Actor*)DAT_011f21f0, (int)((Actor*)DAT_011f21f0)->Actor_GetCurrentWeapon());
                     if (!((Actor*)DAT_011f21f0)->Actor_GetCurrentWeapon())
                     {
                         fDistance *= *originalRuntimeFloatSetting554.Float();
@@ -662,35 +705,35 @@ void VATS::ExecuteVATSMeleeAttack(VATSCommand* pAttackCmd)
                     ((TESObjectREFR*)DAT_011f21f0)->SetLocationOnReference(*((const TESObjectREFR*)g_thePlayer)->GetPos());
                 }
 
-                if (BuildPathingRequest(DAT_011f21f0, pAttackCmd->pTarget, fDistance, &targetPos))
+                if (BuildPathingRequest(DAT_011f21f0, apCommand->pTarget, fDistance, &targetPos))
                 {
                     ((Actor*)DAT_011f21f0)->SetPos(&targetPos);
-                    reinterpret_cast<void (__thiscall*)(Actor*, TESObjectREFR*)>((*reinterpret_cast<void***>(DAT_011f21f0))[0xB0])((Actor*)DAT_011f21f0, pAttackCmd->pTarget);
-                    if (g_thePlayer == DAT_011f21f0 && !this->VATS_GetLineOfSight(pAttackCmd))
+                    reinterpret_cast<void (__thiscall*)(Actor*, TESObjectREFR*)>((*reinterpret_cast<void***>(DAT_011f21f0))[0xB0])((Actor*)DAT_011f21f0, apCommand->pTarget);
+                    if (g_thePlayer == DAT_011f21f0 && !this->VATS_GetLineOfSight(apCommand))
                     {
-                        ((Actor*)DAT_011f21f0)->SetPos(((const TESObjectREFR*)pAttackCmd->pTarget)->GetPos());
-                        reinterpret_cast<void (__thiscall*)(Actor*, TESObjectREFR*)>((*reinterpret_cast<void***>(DAT_011f21f0))[0xB0])((Actor*)DAT_011f21f0, pAttackCmd->pTarget);
+                        ((Actor*)DAT_011f21f0)->SetPos(((const TESObjectREFR*)apCommand->pTarget)->GetPos());
+                        reinterpret_cast<void (__thiscall*)(Actor*, TESObjectREFR*)>((*reinterpret_cast<void***>(DAT_011f21f0))[0xB0])((Actor*)DAT_011f21f0, apCommand->pTarget);
                     }
                 }
                 else
                 {
-                    ((Actor*)DAT_011f21f0)->SetPos(((const TESObjectREFR*)pAttackCmd->pTarget)->GetPos());
-                    reinterpret_cast<void (__thiscall*)(Actor*, TESObjectREFR*)>((*reinterpret_cast<void***>(DAT_011f21f0))[0xB0])((Actor*)DAT_011f21f0, pAttackCmd->pTarget);
+                    ((Actor*)DAT_011f21f0)->SetPos(((const TESObjectREFR*)apCommand->pTarget)->GetPos());
+                    reinterpret_cast<void (__thiscall*)(Actor*, TESObjectREFR*)>((*reinterpret_cast<void***>(DAT_011f21f0))[0xB0])((Actor*)DAT_011f21f0, apCommand->pTarget);
                 }
 
                 ((ThisStub*)((TESObjectREFR*)DAT_011f21f0)->GetAnimData())->Animation_UpdateSceneGraphNoController();
             }
         }
 
-        this->m_pIdleForm = DAT_011cb6a0->FUN_00600950(DAT_011f21f0, pAttackCmd->pTarget);
-        if (this->m_pIdleForm)
+        this->pMeleeAttack = DAT_011cb6a0->FUN_00600950(DAT_011f21f0, apCommand->pTarget);
+        if (this->pMeleeAttack)
         {
-            if (this->m_pIdleForm->GetFlagsMasked() != 4)
+            if (this->pMeleeAttack->GetFlagsMasked() != 4)
             {
                 FNV_Warning(
                     "COMBAT: Bad VATS Melee Attack '%s' in the idle manager. Attacks should be tagged for 'Weapon' anim group section.",
-                    this->m_pIdleForm->GetName());
-                this->m_pIdleForm = 0;
+                    this->pMeleeAttack->GetName());
+                this->pMeleeAttack = 0;
             }
         }
     }
@@ -730,20 +773,23 @@ extern SettingT_GameSettingCollection_ DAT_011f21f4;
 
 // @fnv 0x009c9ae0
 // src: XBOX_PDB 0x009c9ae0
-void VATS::UpdateVATSLight(Actor* apActor)
+// pdb: VATS::UpdateVATSLight | VATS.obj | retail, upstream name already matches, high
+// pdb params: apVictim
+// pdb locals: pactor, pos, ftargetluminance, lightcolor, ktarget, radius, intensity, fdirect, vec, ilights, rotmat, fambient
+void VATS::UpdateVATSLight(Actor* apVictim)
 {
     using namespace fnv_009c9ae0;
-    if (apActor->IsActor())
+    if (apVictim->IsActor())
     {
-        if (apActor->GetNiNode())
+        if (apVictim->GetNiNode())
         {
-            if (reinterpret_cast<LightTarget9c9*>(m_spShadowSceneLight.operator->()))
+            if (reinterpret_cast<LightTarget9c9*>(spVATSLight.operator->()))
             {
-                Actor* pOwner = apActor;
+                Actor* pOwner = apVictim;
                 if (pOwner->GetProcess())
                 {
-                    NiPoint3 kCenter5 = (const NiPoint3&)((const NiAVObject*)apActor->GetNiNode())->NiAVObject_GetWorldBound().GetNavMeshData();
-                    NiPoint3 aKDir = *(const NiPoint3*)((const Actor*)g_pkPlayer9c9)->GetPos() - *(const NiPoint3*)((const Actor*)apActor)->GetPos();
+                    NiPoint3 kCenter5 = (const NiPoint3&)((const NiAVObject*)apVictim->GetNiNode())->NiAVObject_GetWorldBound().GetNavMeshData();
+                    NiPoint3 aKDir = *(const NiPoint3*)((const Actor*)g_pkPlayer9c9)->GetPos() - *(const NiPoint3*)((const Actor*)apVictim)->GetPos();
 
                     // The 36-byte rotation uses the shared matrix; 0x004a0c90 is its Z rotation helper.
                     NiMatrix3 kRotX;
@@ -766,8 +812,8 @@ void VATS::UpdateVATSLight(Actor* apActor)
                     NiPoint3 _kSpawn = *(const NiPoint3*)((const Actor*)pOwner)->GetPos() + NiPoint3(0.0f, 0.0f, ((const Actor*)pOwner)->GetActorHeight());
 
                     float fScaleTmp =
-                        ((ShadowSceneNode*)NiAdditionalGeometryData::GetShadowSceneNodeForIndex(0U))->FUN_00b5b610(_kSpawn, &iOutVal, &fA9, &fB_, *(const NiPoint3*)((const Actor*)g_pkPlayer9c9)->GetPos(),
-                                                      reinterpret_cast<LightTarget9c9*>(m_spShadowSceneLight.operator->())->ShadowSceneLight_GetLight()) *
+                        ((ShadowSceneNode*)NiAdditionalGeometryData::GetShadowSceneNodeForIndex(0U))->GetViewLuminanceAtPoint(_kSpawn, &iOutVal, &fA9, &fB_, *(const NiPoint3*)((const Actor*)g_pkPlayer9c9)->GetPos(),
+                                                      reinterpret_cast<LightTarget9c9*>(spVATSLight.operator->())->ShadowSceneLight_GetLight()) *
                         100.0;
 
                     float fRadiusTmp;
@@ -777,12 +823,12 @@ void VATS::UpdateVATSLight(Actor* apActor)
 
                     kOffset5 *= _fRange;
 
-                    fRadiusTmp = (kCenter5 - (const NiPoint3&)((const NiAVObject*)apActor->GetNiNode())->NiAVObject_GetWorldBound().GetNavMeshData()).Length() * 2.0f;
+                    fRadiusTmp = (kCenter5 - (const NiPoint3&)((const NiAVObject*)apVictim->GetNiNode())->NiAVObject_GetWorldBound().GetNavMeshData()).Length() * 2.0f;
 
-                    reinterpret_cast<LightTarget9c9*>(m_spShadowSceneLight.operator->())->ShadowSceneLight_GetLight()->NiAVObject_SetWorldTranslate(&kCenter5);
-                    reinterpret_cast<LightTarget9c9*>(m_spShadowSceneLight.operator->())->ShadowSceneLight_GetLight()->FUN_0050dd50((const ::NiPoint3&)NiPoint3(fRadiusTmp, 0.0f, 0.0f));
-                    ((NiPointLight*)reinterpret_cast<LightTarget9c9*>(m_spShadowSceneLight.operator->())->ShadowSceneLight_GetLight())->SetEffectColor((const ::NiPoint3&)kOffset5);
-                    reinterpret_cast<LightTarget9c9*>(m_spShadowSceneLight.operator->())->ShadowSceneLight_GetLight()->SetAppCulled(false);
+                    reinterpret_cast<LightTarget9c9*>(spVATSLight.operator->())->ShadowSceneLight_GetLight()->NiAVObject_SetWorldTranslate(&kCenter5);
+                    reinterpret_cast<LightTarget9c9*>(spVATSLight.operator->())->ShadowSceneLight_GetLight()->FUN_0050dd50((const ::NiPoint3&)NiPoint3(fRadiusTmp, 0.0f, 0.0f));
+                    ((NiPointLight*)reinterpret_cast<LightTarget9c9*>(spVATSLight.operator->())->ShadowSceneLight_GetLight())->SetEffectColor((const ::NiPoint3&)kOffset5);
+                    reinterpret_cast<LightTarget9c9*>(spVATSLight.operator->())->ShadowSceneLight_GetLight()->SetAppCulled(false);
                 }
             }
         }
@@ -801,12 +847,15 @@ struct Cmd9c9
 struct CmdList9c9
 {
     Cmd9c9** FUN_006815c0();
-    NiPoint3 VATS_GetTargetPercentagePos(float fDistance);
+    NiPoint3 VATS_GetTargetPercentagePos(float afPercentage);
 };
 
 // @fnv 0x009c9fe0
 // src: COMMUNITY 0x009c9fe0
-NiPoint3 CmdList9c9::VATS_GetTargetPercentagePos(float afScale)
+// pdb: VATS::GetTargetPercentagePos | VATS.obj | retail, upstream name already matches, high
+// pdb params: afPercentage
+// pdb locals: startingPos, pcommand, endingPos, delta, flength
+NiPoint3 CmdList9c9::VATS_GetTargetPercentagePos(float afPercentage)
 {
     NiPoint3 kPlayerPos = (const NiPoint3&)((TESObjectREFR*)DAT_011f21f0)->Get3D()->NiAVObject_GetWorldBound().GetNavMeshData();
     Cmd9c9* pkCmd = *FUN_006815c0();
@@ -829,7 +878,7 @@ NiPoint3 CmdList9c9::VATS_GetTargetPercentagePos(float afScale)
         }
         NiPoint3 kDirection = kTarget.SubtractIntoVector(kPlayerPos);
         float fScaleMultiplier = kDirection.FUN_00457910();
-        kPlayerPos.ComputeValue_0063c8a0(kDirection.ApplyScaled(fScaleMultiplier).ApplyScaled(afScale).ProcessAndReturnValue_0053d280(100.0f));
+        kPlayerPos.ComputeValue_0063c8a0(kDirection.ApplyScaled(fScaleMultiplier).ApplyScaled(afPercentage).ProcessAndReturnValue_0053d280(100.0f));
     }
     return kPlayerPos;
 }
@@ -855,9 +904,12 @@ extern int DAT_011f21b8;
 
 // Processes a VATS command, updating the camera state flag DAT_011f21b8 based on validity, animation, and target distance checks.
 // @fnv 0x009c95e0
+// pdb: VATS::UpdateCurrentCameraAction | VATS.obj | debug, object-file run extension, low
+// pdb params: apCommand
+// pdb locals: panim, pseq, bnewCamera, deltaPos
 void VATS::HandleCommand(VATSCommand* command)
 {
-    if (IsValidCommand(command))
+    if (IsMeleeCommand(command))
     {
         FUN_009c95e0_Anim* animation = (FUN_009c95e0_Anim*)((const Actor*)DAT_011f21f0)->GetAnimation();
         if (DAT_011f21b8 == 0)
@@ -875,7 +927,7 @@ void VATS::HandleCommand(VATSCommand* command)
             }
             if (DAT_011f21b8 == 2)
             {
-                if (m_fCameraDuration == 0.0)
+                if (fCameraMinTimer == 0.0)
                 {
                     bool flag = true;
                     while (flag && DAT_011f21b8 > static_cast<CameraShotExtra*>(pCamera)->GetField38())
@@ -891,22 +943,22 @@ void VATS::HandleCommand(VATSCommand* command)
         static_cast<CameraShotExtra*>(pCamera)->SetByteAt76(1);
         return;
     }
-    if (m_pSource && DAT_011f21b8 == 0)
+    if (pFirstProjectile && DAT_011f21b8 == 0)
         DAT_011f21b8 = 1;
-    if (m_pSource || m_pTargetProjectile)
+    if (pFirstProjectile || pLastProjectile)
     {
-        if (!m_pSource)
+        if (!pFirstProjectile)
             DAT_011f21b8 = 2;
-        else if (m_pSource && m_pTargetProjectile && (!pCamera || static_cast<CameraShotExtra*>(pCamera)->GetField38() == 2))
+        else if (pFirstProjectile && pLastProjectile && (!pCamera || static_cast<CameraShotExtra*>(pCamera)->GetField38() == 2))
             DAT_011f21b8 = 2;
         else
         {
-            NiPoint3 ptOffset = *static_cast<const TESObjectREFR*>(command->pTarget)->GetPos() - *reinterpret_cast<const TESObjectREFR*>(m_pSource)->GetPos();
+            NiPoint3 ptOffset = *static_cast<const TESObjectREFR*>(command->pTarget)->GetPos() - *reinterpret_cast<const TESObjectREFR*>(pFirstProjectile)->GetPos();
             if (ptOffset.Length() < *DAT_011cf81c.Setting_Int() + command->pTarget->GetMaximum().y)
                 DAT_011f21b8 = 2;
-            else if (m_pTargetProjectile)
+            else if (pLastProjectile)
             {
-                ptOffset = *static_cast<const TESObjectREFR*>(command->pTarget)->GetPos() - *reinterpret_cast<const TESObjectREFR*>(m_pTargetProjectile)->GetPos();
+                ptOffset = *static_cast<const TESObjectREFR*>(command->pTarget)->GetPos() - *reinterpret_cast<const TESObjectREFR*>(pLastProjectile)->GetPos();
                 if (ptOffset.Length() < *DAT_011cf81c.Setting_Int() + command->pTarget->GetMaximum().y)
                     DAT_011f21b8 = 2;
             }
@@ -926,18 +978,21 @@ struct VatsCmd_ca2c0 : public VATSCommand
 // Creates a VATS command targeting a1, sets its action, success, and hit data, then queues it and updates the VATS state.
 // @fnv 0x009ca2c0
 // src: COMMUNITY 0x009ca2c0
-void VATS::ForceTargetKillShot(TESObjectREFR* apTarget, int a2)
+// pdb: VATS::ForceTargetKillShot | VATS.obj | retail, upstream name already matches, high
+// pdb params: pTarget, eDamageLimb
+// pdb locals: pcommand, pWeap
+void VATS::ForceTargetKillShot(TESObjectREFR* apTarget, int eDamageLimb)
 {
     QuitVATSPlayback(false, false);
     VATSCommand* cmd = new VatsCmd_ca2c0();
     cmd->eAction = 0x12;
     cmd->bSuccess = true;
     cmd->pTarget = apTarget;
-    if (a2 == -1)
+    if (eDamageLimb == -1)
     {
-        a2 = 0;
+        eDamageLimb = 0;
     }
-    cmd->m_pActionObject->m_uiHitFlags = a2;
+    cmd->m_pActionObject->eDamageLimb = eDamageLimb;
     if (g_thePlayer->GetCurrentProcess() && g_thePlayer->GetCurrentProcess()->GetActiveWeapon())
     {
         TESObjectWEAP* weapon = g_thePlayer->GetCurrentProcess()->GetActiveWeapon()->GetFlags();
@@ -945,7 +1000,7 @@ void VATS::ForceTargetKillShot(TESObjectREFR* apTarget, int a2)
     }
     cmd->m_pActionObject->SetFlag(0x10, true);
     DAT_011f21f0 = g_thePlayer;
-    AddCommand(cmd);
+    QueueAction(cmd);
     FUN_009c6c30(4, false);
 }
 
@@ -966,6 +1021,8 @@ struct VATS_COMMAND_Del : public VATSCommand
 // Deletes the current command, removes commands meeting the target checks, then sets player state and triggers action callbacks.
 // @fnv 0x009c86b0
 // src: XBOX_PDB 0x009c86b0
+// pdb: VATS::FreeHeadAction | VATS.obj | retail, upstream name already matches, high
+// pdb locals: pcommand, bkillNextCommandToo
 void VATS::FreeHeadAction()
 {
     if (FUN_008256d0())
@@ -978,10 +1035,10 @@ void VATS::FreeHeadAction()
         delete (VATS_COMMAND_Del*)pCmd;
         pCmd = 0;
         FUN_0063f7b0();
-        if (m_pIdleForm)
+        if (pMeleeAttack)
         {
             ((FUN_00498910_shell*)((const Actor*)DAT_011f21f0)->GetAnimation())->Animation_SpecialIdleFree(true, false);
-            m_pIdleForm = 0;
+            pMeleeAttack = 0;
         }
         while (!FUN_008256d0())
         {
@@ -1035,9 +1092,11 @@ extern unsigned char DAT_011f21d3;
 // Advances the camera shot list past the current shot, updates m_fCameraDuration, and notifies the display manager or sets DAT_011f21d3.
 // @fnv 0x009c9920
 // src: XBOX_PDB 0x009c9920
+// pdb: VATS::UseNextCamera | VATS.obj | retail, upstream name already matches, high
+// pdb locals: plist, bretVal
 bool __thiscall VATS::UseNextCamera()
 {
-    ::BSSimpleList< ::BGSCameraShot*>* nextCamera = m_pCameraShotList;
+    ::BSSimpleList< ::BGSCameraShot*>* nextCamera = pCameraList;
     bool found = false;
     while (nextCamera && nextCamera->GetItem() != pCamera)
     {
@@ -1051,13 +1110,13 @@ bool __thiscall VATS::UseNextCamera()
     {
         if (pCamera)
         {
-            static_cast<CameraShotExtra*>(pCamera)->ResetCameraState();
+            static_cast<CameraShotExtra*>(pCamera)->BGSCameraShot_FreeCamera();
             pCamera = 0;
         }
         pCamera = nextCamera->GetItem();
-        if (pCamera && m_fCameraDuration < static_cast<CameraShotExtra*>(pCamera)->GetFloatAtOffset58())
+        if (pCamera && fCameraMinTimer < static_cast<CameraShotExtra*>(pCamera)->GetFloatAtOffset58())
         {
-            m_fCameraDuration = static_cast<CameraShotExtra*>(pCamera)->GetFloatAtOffset58();
+            fCameraMinTimer = static_cast<CameraShotExtra*>(pCamera)->GetFloatAtOffset58();
         }
         if (pCamera && static_cast<CameraShotExtra*>(pCamera)->BGSCameraShot_IsFirstPerson())
         {
@@ -1071,7 +1130,7 @@ bool __thiscall VATS::UseNextCamera()
     }
     else if (!nextCamera && pCamera && !static_cast<CameraShotExtra*>(pCamera)->IsInitialized())
     {
-        static_cast<CameraShotExtra*>(pCamera)->ResetCameraState();
+        static_cast<CameraShotExtra*>(pCamera)->BGSCameraShot_FreeCamera();
         pCamera = 0;
     }
     return found;

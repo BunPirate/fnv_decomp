@@ -54,6 +54,8 @@ extern MemoryManager g_memoryManager;
 
 // @fnv 0x00a644a0
 // src: GUESS 0x00a644a0 (confidence: low)
+// pdb: NiFixedString::`vector deleting destructor' | NiD3DGPUProgramCache.obj | retail, call graph, low
+// pdb note: debug build links it to NiStream::RemoveObject
 void Object_ProcessEntries_00a644a0(char** p)
 {
     if (p)
@@ -77,13 +79,13 @@ const char* __cdecl NiD3DGPUProgramCache_GetPlatformSpecificCodeID()
     return "hlsl";
 }
 
-extern "C" void* g_01270920;
+extern "C" void* NiGPUProgramCache_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01270920 (old: g_01270920)
 
 // @fnv 0x00e8ea10
 // src: COMMUNITY 0x00e8ea10
 void* __cdecl NiGPUProgramCache_GetRTTI()
 {
-    return &g_01270920;
+    return &NiGPUProgramCache_ms_RTTI;
 }
 
 struct RefCounted
@@ -100,6 +102,8 @@ struct Holder
     void ReleaseAll();
 };
 // @fnv 0x00e8de70
+// pdb: NiStreamLoadBinary<unsigned int> | NiD3DGPUProgramCache.obj | retail, object-file run extension, low
+// pdb params: binstream, value
 void Holder::ReleaseAll()
 {
     unsigned int i = 0;
@@ -158,6 +162,8 @@ struct ObjectReference
 };
 // Assigns a text pointer and a ref-counted object into a ValueHolder, adjusting reference counts and releasing the previous object.
 // @fnv 0x00e8ded0
+// pdb: NiTFixedStringMapBase<DFALL<NiTMapItem<NiFixedString,NiPointer<NiGPUProgramCache::NiGPUProgramDesc> > >,NiPointer<NiGPUProgramCache::NiGPUProgramDesc> >::SetValue | NiD3DGPUProgramCache.obj | retail, object-file run extension, low
+// pdb params: pkItem, kKey, val
 void __stdcall AssignValueHolder(ValueHolder* destination, char** sourceText, ObjectReference incoming)
 {
     char* text = *sourceText;
@@ -249,6 +255,9 @@ class E8DF70Writer
 
 // Writes the shader's name, code size and code bytes to the stream, returning false if the shader is null.
 // @fnv 0x00e8df70
+// pdb: NiD3DGPUProgramCache::SaveGPUProgram | NiD3DGPUProgramCache.obj | retail, object-file run extension, low
+// pdb params: kStream, pkProgram
+// pdb locals: pbCode, pkShader, uiCodeSize, pkRTTI
 bool E8DF70Writer::WriteShader(E8DF70BinaryStream& kStream, E8DF70Shader* pkShader)
 {
     if (!pkShader)
@@ -295,27 +304,31 @@ struct S_00e8e1d0_Map
     S_00e8e1d0_Node** buckets;
     unsigned count;
     void AssignValueHolder(S_00e8e1d0_Node* n, const unsigned* k, S_00e8e1d0_Ptr v) throw();
-    void InsertOrAssign(const unsigned* k, S_00e8e1d0_Ptr v) throw();
+    void NiTFixedStringMapBase_DFALL_NiTMapItem_NiFixedString_NiPointer_NiGPUProgramCache_NiGPUProgramDesc_NiPointer_NiGPUProgramCache_NiGPUProgramDesc_SetAt(const unsigned* kKey, S_00e8e1d0_Ptr val) throw();
 };
 // @fnv 0x00e8e1d0
-void S_00e8e1d0_Map::InsertOrAssign(const unsigned* pKey, S_00e8e1d0_Ptr v)
+// src: XBOX_RETAIL_PDB 0x00e8e1d0
+// pdb: NiTFixedStringMapBase<DFALL<NiTMapItem<NiFixedString,NiPointer<NiGPUProgramCache::NiGPUProgramDesc> > >,NiPointer<NiGPUProgramCache::NiGPUProgramDesc> >::SetAt | NiD3DGPUProgramCache.obj | retail, call graph, high
+// pdb params: kKey, val
+// pdb locals: pkItem, uiIndex, uiDepth
+void S_00e8e1d0_Map::NiTFixedStringMapBase_DFALL_NiTMapItem_NiFixedString_NiPointer_NiGPUProgramCache_NiGPUProgramDesc_NiPointer_NiGPUProgramCache_NiGPUProgramDesc_SetAt(const unsigned* kKey, S_00e8e1d0_Ptr val)
 {
-    unsigned i = *pKey % nBuckets;
+    unsigned i = *kKey % nBuckets;
     for (S_00e8e1d0_Node* n = buckets[i]; n; n = n->next)
     {
-        if (*pKey == n->key)
+        if (*kKey == n->key)
         {
-            AssignValueHolder(n, pKey, v);
-            v.Release();
+            AssignValueHolder(n, kKey, val);
+            val.Release();
             return;
         }
     }
     S_00e8e1d0_Node* n = Alloc();
-    AssignValueHolder(n, pKey, v);
+    AssignValueHolder(n, kKey, val);
     n->next = buckets[i];
     buckets[i] = n;
     count++;
-    v.Release();
+    val.Release();
 }
 
 extern int DAT_0101dce4;
@@ -336,6 +349,7 @@ struct FUN_00e8eb10_cls
 
 // Releases the holder and ref-counted object, resets the vtable, decrements a global counter, and frees this if the low flag bit is set.
 // @fnv 0x00e8eb10
+// pdb: NiGPUProgramCache::NiGPUProgramDesc::`scalar deleting destructor' | NiD3DGPUProgramCache.obj | retail, object-file run extension, low
 FUN_00e8eb10_cls* FUN_00e8eb10_cls::Destroy(unsigned char acFlags)
 {
     m_0c.ReleaseAll();
@@ -405,11 +419,11 @@ struct W20Profiles
     NiFixedString* data;
     unsigned int capacity, count, unk0c, unk10;
     __declspec(nothrow) void ResizeStringArray(unsigned int);
-    __declspec(nothrow) void PushBack(const NiFixedString& value)
+    __declspec(nothrow) void NiTSet_NiFixedString_NiTNewInterface_NiFixedString_Add(const NiFixedString& element) // src: XBOX_RETAIL_PDB 0x00e8e330
     {
         if (count == capacity)
             ResizeStringArray(capacity > 0 ? capacity * 2 : 1);
-        data[count++] = value;
+        data[count++] = element;
     }
 };
 struct W20Base
@@ -435,103 +449,106 @@ struct FUN_00e8e450 : W20Base
 __declspec(nothrow) void FUN_00a305b0(char*, unsigned int, const char*, ...);
 // Builds a shader cache filename from path, requested profile and "DX9", sets name/profile, fills the fallback profile list by kind, and loads if requested.
 // @fnv 0x00e8e450
-__declspec(nothrow) FUN_00e8e450::FUN_00e8e450(int a, const char* apcSource, int kind, const NiFixedString& arRequested,
-                                               const char* apcPath, int b, bool use, int c, bool load)
-    : W20Base(a, b, c)
+// pdb: NiD3DGPUProgramCache::NiD3DGPUProgramCache | NiD3DGPUProgramCache.obj | retail, unique string literal, high
+// pdb params: uiVersion, pcWorkingDir, eType, kShaderProfile, pcMaterialIdentifier, bAutoWriteCacheToDisk, bWriteDebugHLSLFile, bLocked, bLoad
+// pdb locals: acFilename, bSuccess
+__declspec(nothrow) FUN_00e8e450::FUN_00e8e450(int uiVersion, const char* pcWorkingDir, int eType, const NiFixedString& kShaderProfile,
+                                               const char* pcMaterialIdentifier, int bAutoWriteCacheToDisk, bool bWriteDebugHLSLFile, int bLocked, bool bLoad)
+    : W20Base(uiVersion, bAutoWriteCacheToDisk, bLocked)
 {
-    flag = use;
-    type = kind;
-    suffix = apcPath;
+    flag = bWriteDebugHLSLFile;
+    type = eType;
+    suffix = pcMaterialIdentifier;
     char filename[260];
-    FUN_00a305b0(filename, 260, "%s_%s_%s.cache", apcPath, arRequested.m_kHandle, "DX9");
+    FUN_00a305b0(filename, 260, "%s_%s_%s.cache", pcMaterialIdentifier, kShaderProfile.m_kHandle, "DX9");
     name = (const char*)filename;
-    SetString(apcSource);
-    profile = arRequested;
-    if (kind == 0)
+    SetString(pcWorkingDir);
+    profile = kShaderProfile;
+    if (eType == 0)
     {
         if (profile == "vs_1_1")
         {
-            profiles.PushBack("vs_1_1");
+            profiles.NiTSet_NiFixedString_NiTNewInterface_NiFixedString_Add("vs_1_1");
         }
         else if (profile == "vs_2_0")
         {
-            profiles.PushBack("vs_2_0");
-            profiles.PushBack("vs_1_1");
+            profiles.NiTSet_NiFixedString_NiTNewInterface_NiFixedString_Add("vs_2_0");
+            profiles.NiTSet_NiFixedString_NiTNewInterface_NiFixedString_Add("vs_1_1");
         }
         else if (profile == "vs_2_a")
         {
-            profiles.PushBack(NiFixedString("vs_2_a"));
-            profiles.PushBack(NiFixedString("vs_2_0"));
-            profiles.PushBack(NiFixedString("vs_1_1"));
+            profiles.NiTSet_NiFixedString_NiTNewInterface_NiFixedString_Add(NiFixedString("vs_2_a"));
+            profiles.NiTSet_NiFixedString_NiTNewInterface_NiFixedString_Add(NiFixedString("vs_2_0"));
+            profiles.NiTSet_NiFixedString_NiTNewInterface_NiFixedString_Add(NiFixedString("vs_1_1"));
         }
         else if (profile == "vs_3_0")
         {
-            profiles.PushBack(NiFixedString("vs_3_0"));
-            profiles.PushBack(NiFixedString("vs_2_a"));
-            profiles.PushBack(NiFixedString("vs_2_0"));
-            profiles.PushBack(NiFixedString("vs_1_1"));
+            profiles.NiTSet_NiFixedString_NiTNewInterface_NiFixedString_Add(NiFixedString("vs_3_0"));
+            profiles.NiTSet_NiFixedString_NiTNewInterface_NiFixedString_Add(NiFixedString("vs_2_a"));
+            profiles.NiTSet_NiFixedString_NiTNewInterface_NiFixedString_Add(NiFixedString("vs_2_0"));
+            profiles.NiTSet_NiFixedString_NiTNewInterface_NiFixedString_Add(NiFixedString("vs_1_1"));
         }
     }
-    else if (kind == 2)
+    else if (eType == 2)
     {
         if (profile == "ps_1_1")
-            profiles.PushBack(NiFixedString("ps_1_1"));
+            profiles.NiTSet_NiFixedString_NiTNewInterface_NiFixedString_Add(NiFixedString("ps_1_1"));
         else if (profile == "ps_1_2")
         {
-            profiles.PushBack(NiFixedString("ps_1_2"));
-            profiles.PushBack(NiFixedString("ps_1_1"));
+            profiles.NiTSet_NiFixedString_NiTNewInterface_NiFixedString_Add(NiFixedString("ps_1_2"));
+            profiles.NiTSet_NiFixedString_NiTNewInterface_NiFixedString_Add(NiFixedString("ps_1_1"));
         }
         else if (profile == "ps_1_3")
         {
-            profiles.PushBack(NiFixedString("ps_1_3"));
-            profiles.PushBack(NiFixedString("ps_1_2"));
-            profiles.PushBack(NiFixedString("ps_1_1"));
+            profiles.NiTSet_NiFixedString_NiTNewInterface_NiFixedString_Add(NiFixedString("ps_1_3"));
+            profiles.NiTSet_NiFixedString_NiTNewInterface_NiFixedString_Add(NiFixedString("ps_1_2"));
+            profiles.NiTSet_NiFixedString_NiTNewInterface_NiFixedString_Add(NiFixedString("ps_1_1"));
         }
         else if (profile == "ps_1_4")
         {
-            profiles.PushBack(NiFixedString("ps_1_4"));
-            profiles.PushBack(NiFixedString("ps_1_3"));
-            profiles.PushBack(NiFixedString("ps_1_2"));
-            profiles.PushBack(NiFixedString("ps_1_1"));
+            profiles.NiTSet_NiFixedString_NiTNewInterface_NiFixedString_Add(NiFixedString("ps_1_4"));
+            profiles.NiTSet_NiFixedString_NiTNewInterface_NiFixedString_Add(NiFixedString("ps_1_3"));
+            profiles.NiTSet_NiFixedString_NiTNewInterface_NiFixedString_Add(NiFixedString("ps_1_2"));
+            profiles.NiTSet_NiFixedString_NiTNewInterface_NiFixedString_Add(NiFixedString("ps_1_1"));
         }
         else if (profile == "ps_2_0")
         {
-            profiles.PushBack(NiFixedString("ps_2_0"));
-            profiles.PushBack(NiFixedString("ps_1_4"));
-            profiles.PushBack(NiFixedString("ps_1_3"));
-            profiles.PushBack(NiFixedString("ps_1_2"));
-            profiles.PushBack(NiFixedString("ps_1_1"));
+            profiles.NiTSet_NiFixedString_NiTNewInterface_NiFixedString_Add(NiFixedString("ps_2_0"));
+            profiles.NiTSet_NiFixedString_NiTNewInterface_NiFixedString_Add(NiFixedString("ps_1_4"));
+            profiles.NiTSet_NiFixedString_NiTNewInterface_NiFixedString_Add(NiFixedString("ps_1_3"));
+            profiles.NiTSet_NiFixedString_NiTNewInterface_NiFixedString_Add(NiFixedString("ps_1_2"));
+            profiles.NiTSet_NiFixedString_NiTNewInterface_NiFixedString_Add(NiFixedString("ps_1_1"));
         }
         else if (profile == "ps_2_a")
         {
-            profiles.PushBack(NiFixedString("ps_2_a"));
-            profiles.PushBack(NiFixedString("ps_2_0"));
-            profiles.PushBack(NiFixedString("ps_1_4"));
-            profiles.PushBack(NiFixedString("ps_1_3"));
-            profiles.PushBack(NiFixedString("ps_1_2"));
-            profiles.PushBack(NiFixedString("ps_1_1"));
+            profiles.NiTSet_NiFixedString_NiTNewInterface_NiFixedString_Add(NiFixedString("ps_2_a"));
+            profiles.NiTSet_NiFixedString_NiTNewInterface_NiFixedString_Add(NiFixedString("ps_2_0"));
+            profiles.NiTSet_NiFixedString_NiTNewInterface_NiFixedString_Add(NiFixedString("ps_1_4"));
+            profiles.NiTSet_NiFixedString_NiTNewInterface_NiFixedString_Add(NiFixedString("ps_1_3"));
+            profiles.NiTSet_NiFixedString_NiTNewInterface_NiFixedString_Add(NiFixedString("ps_1_2"));
+            profiles.NiTSet_NiFixedString_NiTNewInterface_NiFixedString_Add(NiFixedString("ps_1_1"));
         }
         else if (profile == "ps_2_b")
         {
-            profiles.PushBack(NiFixedString("ps_2_b"));
-            profiles.PushBack(NiFixedString("ps_2_0"));
-            profiles.PushBack(NiFixedString("ps_1_4"));
-            profiles.PushBack(NiFixedString("ps_1_3"));
-            profiles.PushBack(NiFixedString("ps_1_2"));
-            profiles.PushBack(NiFixedString("ps_1_1"));
+            profiles.NiTSet_NiFixedString_NiTNewInterface_NiFixedString_Add(NiFixedString("ps_2_b"));
+            profiles.NiTSet_NiFixedString_NiTNewInterface_NiFixedString_Add(NiFixedString("ps_2_0"));
+            profiles.NiTSet_NiFixedString_NiTNewInterface_NiFixedString_Add(NiFixedString("ps_1_4"));
+            profiles.NiTSet_NiFixedString_NiTNewInterface_NiFixedString_Add(NiFixedString("ps_1_3"));
+            profiles.NiTSet_NiFixedString_NiTNewInterface_NiFixedString_Add(NiFixedString("ps_1_2"));
+            profiles.NiTSet_NiFixedString_NiTNewInterface_NiFixedString_Add(NiFixedString("ps_1_1"));
         }
         else if (profile == "ps_3_0")
         {
-            profiles.PushBack(NiFixedString("ps_3_0"));
-            profiles.PushBack(NiFixedString("ps_2_a"));
-            profiles.PushBack(NiFixedString("ps_2_0"));
-            profiles.PushBack(NiFixedString("ps_1_4"));
-            profiles.PushBack(NiFixedString("ps_1_3"));
-            profiles.PushBack(NiFixedString("ps_1_2"));
-            profiles.PushBack(NiFixedString("ps_1_1"));
+            profiles.NiTSet_NiFixedString_NiTNewInterface_NiFixedString_Add(NiFixedString("ps_3_0"));
+            profiles.NiTSet_NiFixedString_NiTNewInterface_NiFixedString_Add(NiFixedString("ps_2_a"));
+            profiles.NiTSet_NiFixedString_NiTNewInterface_NiFixedString_Add(NiFixedString("ps_2_0"));
+            profiles.NiTSet_NiFixedString_NiTNewInterface_NiFixedString_Add(NiFixedString("ps_1_4"));
+            profiles.NiTSet_NiFixedString_NiTNewInterface_NiFixedString_Add(NiFixedString("ps_1_3"));
+            profiles.NiTSet_NiFixedString_NiTNewInterface_NiFixedString_Add(NiFixedString("ps_1_2"));
+            profiles.NiTSet_NiFixedString_NiTNewInterface_NiFixedString_Add(NiFixedString("ps_1_1"));
         }
     }
-    if (load && apcSource)
+    if (bLoad && pcWorkingDir)
         LoadCacheFile();
 }
 
@@ -592,8 +609,8 @@ struct ShaderLibrary8e
 };
 ShaderLibrary8e* __stdcall NiD3DShaderProgramFactory_GetInstance(ShaderProgram8e* pkProgram);
 long __stdcall D3DXCreateBuffer_0(unsigned int uiNumBytes, ShaderBuffer8e** ppkBuffer);
-extern const char* DAT_0126fa48;
-extern const char* DAT_0126fa40;
+extern const char* NiD3DHLSLVertexShader_ms_RTTI; // src: XBOX_RETAIL_PDB 0x0126fa48 (old: DAT_0126fa48/g_0126fa48)
+extern const char* NiD3DHLSLPixelShader_ms_RTTI; // src: XBOX_RETAIL_PDB 0x0126fa40 (old: DAT_0126fa40/g_0126fa40)
 extern ShaderFactory8e* DAT_0126fa3c;
 
 struct ShaderLoader8e
@@ -621,24 +638,27 @@ struct ShaderLoader8e
     virtual void v20();
     virtual const NiFixedString& GetLoaderName();
 
-    void NiGPUProgramCache_LoadStringA(ShaderStream8e* pkStream, char* pcBuffer, unsigned int uiMaxLen);
+    void NiGPUProgramCache_LoadString(ShaderStream8e* kStream, char* pcBuffer, unsigned int stBufferSize);
     bool LoadShaderProgram(ShaderStream8e* pkStream, const NiFixedString& kName, ShaderProgram8e** ppkProgram,
                            bool bSkip);
 };
 
 // @fnv 0x00e8e000
+// pdb: NiD3DGPUProgramCache::LoadGPUProgram | NiD3DGPUProgramCache.obj | retail, object-file run extension, low
+// pdb params: kStream, kName, pkProgram, bSkip
+// pdb locals: iRelease, uiCodeSize, acName, bHLSLVertex, pkCode, pkCreator
 bool ShaderLoader8e::LoadShaderProgram(ShaderStream8e* pkStream, const NiFixedString& kName,
                                        ShaderProgram8e** ppkProgram, bool bSkip)
 {
     *ppkProgram = 0;
     unsigned int uiCodeSize = 0;
     char acType[256];
-    NiGPUProgramCache_LoadStringA(pkStream, acType, 0x100);
+    NiGPUProgramCache_LoadString(pkStream, acType, 0x100);
 
     bool bVertex;
-    if (FUN_00aa1360(acType, DAT_0126fa48) == 0)
+    if (FUN_00aa1360(acType, NiD3DHLSLVertexShader_ms_RTTI) == 0)
         bVertex = true;
-    else if (FUN_00aa1360(acType, DAT_0126fa40) == 0)
+    else if (FUN_00aa1360(acType, NiD3DHLSLPixelShader_ms_RTTI) == 0)
         bVertex = false;
     else
         return false;
@@ -676,9 +696,9 @@ bool ShaderLoader8e::LoadShaderProgram(ShaderStream8e* pkStream, const NiFixedSt
 
 #include <string.h>
 bool __cdecl NiGPUProgramCache_ValidateDirectory();
-void __cdecl fnv_StandardizeFilePath(char* path);
+void __cdecl fnv_StandardizeFilePath(char* pcPath);
 bool __cdecl NiFile_DirectoryExists(const char* dir);
-bool __cdecl NiFile_CreateDirectoryRecursive(const char* dir);
+bool __cdecl NiFile_CreateDirectoryRecursive(const char* pcFullPath);
 
 inline unsigned int NiBinaryStream::Write(const void* pvBuffer, unsigned int uiBytes)
 {
@@ -721,9 +741,9 @@ void __cdecl _NiFree_00aa10f0(void* p);
 void* __cdecl Object_DispatchCommandFour(unsigned int size);
 __declspec(nothrow) void FUN_00a305b0(char*, unsigned int, const char*, ...);
 char* __cdecl FUN_00a5b690(const char* name);
-void* __cdecl NiD3DShaderProgramFactory_CreateVertexShaderFromBuffer(char* text, unsigned int len, char* path, char* path2, const char* entry, int target, int a,
-                           int b, int c, int d);
-void* __cdecl NiD3DShaderProgramFactory_CreatePixelShaderFromBuffer(char* text, unsigned int len, char* path, char* path2, const char* entry, int target, int d);
+void* __cdecl NiD3DShaderProgramFactory_CreateVertexShaderFromBuffer(char* pvBuffer, unsigned int uiBufferSize, char* pcExt, char* pcShaderName, const char* pcEntryPoint, int pcShaderTarget, int hDecl,
+                           int uiUsage, int bSoftwareVP, int bRecoverable);
+void* __cdecl NiD3DShaderProgramFactory_CreatePixelShaderFromBuffer(char* pvBuffer, unsigned int uiBufferSize, char* pcExt, char* pcShaderName, const char* pcEntryPoint, int pcShaderTarget, int bRecoverable);
 
 struct RefCountedBase
 {
@@ -793,7 +813,7 @@ struct ShaderCacheHashMap
     unsigned int nBuckets;
     void** buckets;
     unsigned int count;
-    void InsertOrAssign(const unsigned int* k, NiPointerVal v);
+    void NiTFixedStringMapBase_DFALL_NiTMapItem_NiFixedString_NiPointer_NiGPUProgramCache_NiGPUProgramDesc_NiPointer_NiGPUProgramCache_NiGPUProgramDesc_SetAt(const unsigned int* kKey, NiPointerVal val);
 };
 
 struct ArrayHolder
@@ -868,13 +888,16 @@ class S00e8eb80_Obj
     unsigned char unk43;
     const char* m_44;
 
-    RefCountedBase* NiD3DGPUProgramCache_GenerateProgram(const char* name, const char* src, ArrayHolder* refs);
+    RefCountedBase* NiD3DGPUProgramCache_GenerateProgram(const char* pcName, const char* pcProgramText, ArrayHolder* kUniforms);
 };
 
 // Compiles shader source into a ShaderNode, adds refs, and inserts it into the ShaderMap keyed by name.
 // @fnv 0x00e8eb80
 // src: XBOX_PDB 0x00e8eb80
-RefCountedBase* S00e8eb80_Obj::NiD3DGPUProgramCache_GenerateProgram(const char* name, const char* apSource, ArrayHolder* refs)
+// pdb: NiD3DGPUProgramCache::GenerateProgram | NiD3DGPUProgramCache.obj | retail, upstream name already matches, high
+// pdb params: pcName, pcProgramText, kUniforms
+// pdb locals: stNewProgramLength, pcNewProgramText, stProgramLength, spProgram, acFilename, pkDesc, kName, ui
+RefCountedBase* S00e8eb80_Obj::NiD3DGPUProgramCache_GenerateProgram(const char* pcName, const char* pcProgramText, ArrayHolder* kUniforms)
 {
     if (!m_3a)
     {
@@ -882,15 +905,15 @@ RefCountedBase* S00e8eb80_Obj::NiD3DGPUProgramCache_GenerateProgram(const char* 
         ScopedRef pObj;
         pObj.m_p = 0;
 
-        unsigned int srcLen = strlen(apSource);
+        unsigned int srcLen = strlen(pcProgramText);
         char* text = (char*)_NiMalloc_00aa1070(srcLen + 0x208);
 
         if (m_3c == 0)
         {
             const char** stem = vfn58();
             const char* ext = vfn60();
-            FUN_00a305b0(path, 0x104, "%s\\%s\\%s-V.%s", *stem, m_44, name, ext);
-            FUN_00a305b0(text, srcLen + 0x208, "#line 2 \"%s\"\n%s", path, apSource);
+            FUN_00a305b0(path, 0x104, "%s\\%s\\%s-V.%s", *stem, m_44, pcName, ext);
+            FUN_00a305b0(text, srcLen + 0x208, "#line 2 \"%s\"\n%s", path, pcProgramText);
             unsigned int len = strlen(text);
             int tgt = m_24;
             RefCountedBase* r = (RefCountedBase*)NiD3DShaderProgramFactory_CreateVertexShaderFromBuffer(text, len, path, path, "Main", tgt, 0, 0, 0, 1);
@@ -900,8 +923,8 @@ RefCountedBase* S00e8eb80_Obj::NiD3DGPUProgramCache_GenerateProgram(const char* 
         {
             const char** stem = vfn58();
             const char* ext = vfn60();
-            FUN_00a305b0(path, 0x104, "%s\\%s\\%s-P.%s", *stem, m_44, name, ext);
-            FUN_00a305b0(text, srcLen + 0x208, "#line 2 \"%s\"\n%s", path, apSource);
+            FUN_00a305b0(path, 0x104, "%s\\%s\\%s-P.%s", *stem, m_44, pcName, ext);
+            FUN_00a305b0(text, srcLen + 0x208, "#line 2 \"%s\"\n%s", path, pcProgramText);
             unsigned int len = strlen(text);
             int tgt = m_24;
             RefCountedBase* r = (RefCountedBase*)NiD3DShaderProgramFactory_CreatePixelShaderFromBuffer(text, len, path, path, "Main", tgt, 1);
@@ -914,25 +937,25 @@ RefCountedBase* S00e8eb80_Obj::NiD3DGPUProgramCache_GenerateProgram(const char* 
         }
 
         RefCountedBase* obj = pObj.m_p;
-        if (obj != 0 && vfn7C(obj, refs))
+        if (obj != 0 && vfn7C(obj, kUniforms))
         {
             ShaderNode* blk = (ShaderNode*)Object_DispatchCommandFour(0x18);
             ShaderNode* node = blk != 0 ? blk->FUN_00e8ead0() : 0;
 
-            for (unsigned int i = 0; i < refs->m_uiItemCount; i++)
+            for (unsigned int i = 0; i < kUniforms->m_uiItemCount; i++)
             {
-                node->m_0c.FUN_00e8ea60(&refs->m_base[i]);
+                node->m_0c.FUN_00e8ea60(&kUniforms->m_base[i]);
             }
 
             node->m_08 = pObj.m_p;
-            char* value = !name ? EmptyFS : FUN_00a5b690(name);
+            char* value = !pcName ? EmptyFS : FUN_00a5b690(pcName);
 
             if (m_38 != 0)
             {
                 vfn84(node, &value);
             }
 
-            m_08.InsertOrAssign((const unsigned int*)&value, node);
+            m_08.NiTFixedStringMapBase_DFALL_NiTMapItem_NiFixedString_NiPointer_NiGPUProgramCache_NiGPUProgramDesc_NiPointer_NiGPUProgramCache_NiGPUProgramDesc_SetAt((const unsigned int*)&value, node);
             if (value != EmptyFS)
             {
                 InterlockedDecrement((volatile long*)(value - 8));
@@ -950,7 +973,7 @@ RefCountedBase* S00e8eb80_Obj::NiD3DGPUProgramCache_GenerateProgram(const char* 
             }
             return obj;
         }
-        refs->ReleaseAll();
+        kUniforms->ReleaseAll();
     }
     return 0;
 }

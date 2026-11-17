@@ -14,7 +14,7 @@ public:
 
     bool ClearData();
     void SaveToBuffer(FileFormCollection*);
-    void WriteFileEntryToBuffer(FileFormCollection*, unsigned int, TESForm*, char*);
+    void LoadFromBuffer(FileFormCollection*, unsigned int, TESForm*, char*);
     void Save(int, char*);
     void Load(TESFile*, TESForm*, char*);
     void Load(TESFile*, TESForm*, const char*);
@@ -26,11 +26,11 @@ public:
     void* __vecDelDtor(unsigned int);
 #endif
 
-    unsigned char m_ucFileEntryCount;
+    unsigned char cTextureCount; // src: XBOX_RETAIL_PDB +0x0 (old: m_ucFileEntryCount)
     union
     {
         unsigned char layoutPadding1[3];
     };
-    BSFileEntry** m_ppFileEntries;
+    BSFileEntry** pTextureOffsetArray; // src: XBOX_RETAIL_PDB +0x4 (old: m_ppFileEntries)
 };
 

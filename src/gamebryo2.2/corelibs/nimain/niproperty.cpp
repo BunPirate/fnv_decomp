@@ -32,16 +32,19 @@ inline void NiStream::SetLastNiTimeControllerFlags(unsigned short flags)
 }
 
 // @fnv 0x00a5d7f0
-void NiProperty::LoadBinary(NiStream& stream)
+// pdb: NiProperty::LoadBinary | NiProperty.obj | retail, upstream name already matches, high
+// pdb params: kStream
+// pdb locals: usFlags
+void NiProperty::LoadBinary(NiStream& kStream)
 {
-    NiObjectNET::LoadBinary(stream);
+    NiObjectNET::LoadBinary(kStream);
 
-    if (stream.GetFileVersion() < 0x0a000102)
+    if (kStream.GetFileVersion() < 0x0a000102)
     {
         // Pre-10.0.1.2 files carry the block's property flags in the stream.
         unsigned short usPropertyFlags;
-        stream.GetBinaryStream()->Read(usPropertyFlags);
-        stream.SetLastNiTimeControllerFlags(usPropertyFlags);
+        kStream.GetBinaryStream()->Read(usPropertyFlags);
+        kStream.SetLastNiTimeControllerFlags(usPropertyFlags);
     }
 }
 
@@ -52,13 +55,16 @@ struct PropHack00a5d7c0
     void UpdateControllerChain(NiUpdateData& UpdateData);
 };
 // @fnv 0x00a5d7c0
+// pdb: NiProperty::Update | NiProperty.obj | retail, vtable slot, high
+// pdb params: UpdateData
+// pdb locals: pkControl
 void PropHack00a5d7c0::UpdateControllerChain(NiUpdateData& UpdateData)
 {
     NiTimeController* pkControl = m_pControllers;
     while (pkControl)
     {
         pkControl->Update(UpdateData);
-        pkControl = pkControl->m_spNextController.m_pObject;
+        pkControl = pkControl->m_spNext.m_pObject;
     }
 }
 
@@ -83,6 +89,8 @@ extern char const* const g_011f4408_arg1;
 char* __cdecl _FUN_00a7d330(char const*);
 // Appends the string returned by _FUN_00a7d330(g_011f4408_arg1) to pkStrings, growing the array if it is full.
 // @fnv 0x00a5d850
+// pdb: NiProperty::GetViewerStrings | NiProperty.obj | retail, call graph, high
+// pdb params: pkStrings
 void FUN_00a62a40_this::AppendString(StrArr* pkStrings)
 {
     NiObjectNET_GetViewerStrings(pkStrings);

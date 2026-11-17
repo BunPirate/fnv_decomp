@@ -19,6 +19,7 @@ struct FUN_00e42910_List
 // Iterates over the list's items up to a snapshot of count and calls FUN_00e37940 on each item.
 // @fnv 0x00e42910
 // src: HAVOK_LIB 0x00e42910
+// pdb: hkpVehicleCastBatchingManager::updateBeforeCollisionDetection | hkpVehicleCastBatchingManager.obj | retail, upstream name already matches, high
 void FUN_00e42910_List::hkpVehicleCastBatchingManager_updateBeforeCollisionDetection()
 {
     int countSnapshot = count;

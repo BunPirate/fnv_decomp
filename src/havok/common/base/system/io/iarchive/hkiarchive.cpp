@@ -93,6 +93,7 @@ class hkWrapperDD90
 };
 
 // @fnv 0x00dd90e0
+// pdb: hkIArchive::isOk | hkIArchive.obj | retail, call graph, medium
 ArchiveStreamResult hkWrapperDD90::GetStreamResult()
 {
     return m_stream->getResult();
@@ -126,7 +127,7 @@ struct DD8FE0_Stream
     int m_04;
     DD8FE0_Writer* m_pStreamWriter;
     unsigned char m_swapByteOrder;
-    void hkIArchive_readArrayGeneric(void* data, int itemSize, int itemCount);
+    void hkIArchive_readArrayGeneric(void* array, int elemsize, int arraySize);
 };
 static __forceinline void swapByte(unsigned char& low, unsigned char& high)
 {
@@ -137,24 +138,27 @@ static __forceinline void swapByte(unsigned char& low, unsigned char& high)
 // Writes itemSize*itemCount bytes to the stream writer, then swaps byte order in-place for 2, 4, or 8-byte items when m_swapByteOrder is set.
 // @fnv 0x00dd8fe0
 // src: HAVOK_LIB 0x00dd8fe0
-void DD8FE0_Stream::hkIArchive_readArrayGeneric(void* data, int itemSize, int itemCount)
+// pdb: hkIArchive::readArrayGeneric | hkIArchive.obj | retail, upstream name already matches, high
+// pdb params: array, elemsize, arraySize
+// pdb locals: assertBuf, ostr
+void DD8FE0_Stream::hkIArchive_readArrayGeneric(void* array, int elemsize, int arraySize)
 {
-    m_pStreamWriter->Write(data, itemSize * itemCount);
+    m_pStreamWriter->Write(array, elemsize * arraySize);
     if (m_swapByteOrder)
     {
-        unsigned char* buffer = static_cast<unsigned char*>(data);
-        switch (itemSize)
+        unsigned char* buffer = static_cast<unsigned char*>(array);
+        switch (elemsize)
         {
         case 2:
-            if (itemCount > 0)
+            if (arraySize > 0)
                 do
                 {
                     swapByte(buffer[0], buffer[1]);
                     buffer += 2;
-                } while (--itemCount);
+                } while (--arraySize);
             break;
         case 4:
-            if (itemCount > 0)
+            if (arraySize > 0)
             {
                 unsigned char* p = buffer + 2;
                 do
@@ -162,11 +166,11 @@ void DD8FE0_Stream::hkIArchive_readArrayGeneric(void* data, int itemSize, int it
                     swapByte(p[-2], p[1]);
                     swapByte(p[-1], p[0]);
                     p += 4;
-                } while (--itemCount);
+                } while (--arraySize);
             }
             break;
         case 8:
-            if (itemCount > 0)
+            if (arraySize > 0)
             {
                 unsigned char* p = buffer + 6;
                 do
@@ -176,7 +180,7 @@ void DD8FE0_Stream::hkIArchive_readArrayGeneric(void* data, int itemSize, int it
                     swapByte(p[-4], p[-1]);
                     swapByte(p[-3], p[-2]);
                     p += 8;
-                } while (--itemCount);
+                } while (--arraySize);
             }
             break;
         }

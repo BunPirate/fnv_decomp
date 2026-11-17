@@ -19,6 +19,7 @@ class TileShaderProperty;
 class Tile__Value;
 class NodeObj;
 
+// pdb: class Tile, size 0x38, 8 members
 class Tile
 {
   public:
@@ -109,7 +110,7 @@ class Tile
     virtual int GetType();
     virtual const char* GetTypeStr();
     virtual bool Unk_05(float arg0, float arg1);
-    virtual Tile* SetTraitValue(int valueID, float floatValue, const char* strValue);
+    virtual Tile* SetTraitValue(int aiTrait, float afValue, const char* axString);
     virtual void ClearTextures();
     virtual TileShaderProperty* GetShaderProperty();
     virtual void SetAlphaAndOverlayColor(NiNode* node, float alpha, NiColorAlpha* color);
@@ -118,7 +119,7 @@ class Tile
     static Menu* FindMenuById(int menuID);
     static int GetTraitID(const char* name);
     static float GetInterfaceScale();
-    static void UpdateAll(bool force);
+    static void UpdateAll(bool abDoNiUpdate);
     static bool IsSpecialTileName(const char* name);
 
     Menu* GetMenu();
@@ -128,23 +129,23 @@ class Tile
     void SetParent(Tile* parent, Tile* replacedChild);
     Tile* GetNamedChild(const char* name);
     Tile* GetNamedChild(const char* name) const;
-    Tile* GetChildById(int id);
-    Tile* GetChild(int id);
-    Tile* ReadFile(const char* path);
+    Tile* GetChildById(int aiID);
+    Tile* GetChild(int aiID);
+    Tile* ReadFile(const char* apName);
     NiNode* GetUnderlyingNode();
     const char* GetTypeName();
     void Release();
 
     void SetName(const char* name);
     void Set(int trait, int value);
-    void Set(int trait, unsigned int value);
+    void Set(int aiTrait, unsigned int aiValue);
     void Set(int trait, float value, bool clearActions);
-    void Set(int trait, const char* value, bool clearActions);
-    void Set(int trait, const char* value);
+    void Set(int trait, const char* apString, bool clearActions);
+    void Set(int trait, const char* apString);
     void SetInt(int trait, int value);
-    void SetUInt(int trait, unsigned int value);
+    void SetUInt(int aiTrait, unsigned int aiValue);
     void SetFloat(int trait, float value, bool propagate);
-    void SetString(int trait, const char* text, bool clearActions);
+    void SetString(int trait, const char* apString, bool clearActions);
     void SetTraitFloat(int trait, float value);
     Tile* SetTraitValueAndText(int trait, float value, const char* text);
     void SetTileType(int flags);
@@ -153,15 +154,15 @@ class Tile
     void SetNodeFloat(float value);
     void ResetImage();
     void UpdateTrait(int trait);
-    void UpdateEffectChanges(Tile* tile);
+    void UpdateEffectChanges(Tile* apTile);
 
     Value* GetValue(int trait);
     Value* GetOrCreateTraitValue(int trait);
     float GetValue(unsigned int trait);
     float GetFloat(int trait);
     float GetFloat(int trait) const;
-    void GetFloat(int trait, int value);
-    const char* GetString(int trait);
+    void GetFloat(int aiTrait, int aiValue);
+    const char* GetString(int aiTrait);
     float GetScreenX();
     float GetScreenY();
     float GetTotalFloat();
@@ -173,7 +174,7 @@ class Tile
     bool IsAllChildrenFlag0();
     bool IsTraitNonZero(int trait);
     bool GetSpeechChallengeFailure();
-    void SetSpeechChallengeFailure(bool value);
+    void UpdateChildren(bool abParentWillUpdate);
 
     void StartFade(int trait, float start, float end, float duration, int control);
     void SetTraitFade(int trait, float start, float end, float duration, TILE_FADE_CONTROL_TYPE control);
@@ -183,11 +184,11 @@ class Tile
     void Animate(int trait, float start, float end, float duration, int control);
     float AnimValue(int trait);
     void Stop(int trait);
-    void Text(int trait, const char* text, bool propagate);
+    void Text(int trait, const char* apString, bool propagate);
     void Integer(int trait, int value);
     Tile* Parent();
     void Float(int trait, float value, bool propagate);
-    void Refresh(bool force);
+    void Refresh(bool abClearUpdateFlags);
 
     const char* GetName_00700300();
     void FUN_00700320(int trait, int value);
@@ -206,31 +207,31 @@ class Tile
     float FUN_00a011b0();
     float FUN_00a011b0(int trait);
     float FUN_00a011b0(unsigned int trait);
-    const char* Tile_GetString(int trait);
+    const char* Tile_GetString(int aiTrait);
     const char* Tile_GetString(unsigned int trait);
     void Tile_Set(int trait, float value);
     void Tile_Set(int trait, float value, bool propagate);
     void Tile_Set(int trait, float value, int propagate);
-    void Tile_Set_00a01350(int trait, const char* text, bool propagate);
-    void Tile_Set_00a01350(int trait, int value, bool propagate);
+    void Tile_Set_00a01350(int trait, const char* apString, bool propagate);
+    void Tile_Set_00a01350(int trait, int apString, bool propagate);
     Tile* Tile_ReadFile();
-    Tile* Tile_ReadFile(const char* path);
+    Tile* Tile_ReadFile(const char* apName);
     Menu* Tile_GetMenu();
-    Tile* Tile_GetChildByID(int trait);
-    void Tile_UpdateTile(bool enabled);
+    Tile* Tile_GetChildByID(int aiID);
+    void Tile_UpdateTile(bool abClearUpdateFlags);
     void Tile_SetChangeFlag(int trait);
     bool Tile_HasFadeControl(int trait);
     bool Tile_GetFadeFinished(int trait);
     void Tile_PlayTileSound(int trait);
-    bool RadialTile_SpecialBoundsCheck(float x, float y);
+    bool RadialTile_SpecialBoundsCheck(float fx, float fy);
 
-    NiTPointerList_Tile___ m_kChildTileList;
-    BSSimpleArray<Tile__Value*, 8> m_kValues;
-    BSStringT<char> StringProvider;
+    NiTPointerList_Tile___ xChildren; // src: XBOX_RETAIL_PDB +0x4 (old: m_kChildTileList)
+    BSSimpleArray<Tile__Value*, 8> xTraits; // src: XBOX_RETAIL_PDB +0x10 (old: m_kValues)
+    BSStringT<char> xName; // src: XBOX_RETAIL_PDB +0x20 (old: StringProvider)
     Tile* pParent;
-    NiPointer<NiNode> m_pRenderedNodeEntry;
+    NiPointer<NiNode> spModel; // src: XBOX_RETAIL_PDB +0x2c (old: m_pRenderedNodeEntry)
     unsigned int uiFlags;
-    bool m_bFlagAfterUiFlags;
-    bool m_bSpeechChallengeFailure;
+    bool bNeedsNiUpdate; // src: XBOX_RETAIL_PDB +0x34 (old: m_bFlagAfterUiFlags)
+    bool bSpeechChallengeFailure; // src: XBOX_RETAIL_PDB +0x35 (old: m_bSpeechChallengeFailure)
     unsigned char layoutPadding36[2];
 };

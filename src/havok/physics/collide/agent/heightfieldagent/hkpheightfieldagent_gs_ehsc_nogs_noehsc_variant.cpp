@@ -11,7 +11,7 @@
 
 extern char DAT_010ceaa8[];
 BSAudio* hkMemoryRouter_getInstance();
-void __cdecl hkArrayUtil__reserve(hkMemoryAllocator& alloc, void* arr, int numElem, int sizeElem);
+void __cdecl hkArrayUtil__reserve(hkMemoryAllocator& mem, void* array, int numElem, int sizeElem);
 struct SizeSource {
     virtual void v00(); virtual void v01(); virtual void v02(); virtual void v03();
     virtual void v04(); virtual void v05(); virtual void v06(); virtual void v07();
@@ -71,7 +71,7 @@ struct D323B0Collector : D323B0CollectorBase {
     virtual void unk00();
     virtual void unk04();
 };
-void __cdecl hkpHeightFieldAgent_staticGetClosestPoints(int a, int b, int c, D323B0CollectorBase* collector);
+void __cdecl hkpHeightFieldAgent_staticGetClosestPoints(int csBody, int hfBody, int c, D323B0CollectorBase* collector);
 void __cdecl hkpHeightFieldAgent_staticGetClosestPoints_ProcessState_00d323b0(int a, int b, int c, int d);
 struct Handler {
     virtual void v0();
@@ -87,7 +87,7 @@ struct Owner {
     Handler* callback;
     unsigned short* indices;
     int count;
-    void NotifyAndClear(int value);
+    void NotifyAndClear(int constraintOwner);
 };
 extern "C" void __cdecl hkpHeightFieldAgent_ProcessSphereQueries(void* arg0, void* arg1, void* arg2, void* arg3, void* arg4);
 // @fnv 0x00d32030
@@ -96,7 +96,7 @@ extern "C" void __stdcall hkpHeightFieldAgent_linearCast(void* arg0, void* arg1,
 {
     hkpHeightFieldAgent_ProcessSphereQueries(arg0, arg1, arg2, arg3, arg4);
 }
-extern "C" void __cdecl hkpHeightFieldAgent_staticGetPenetrations(void* arg0, void* arg1, void* arg2, void* arg3);
+extern "C" void __cdecl hkpHeightFieldAgent_staticGetPenetrations(void* csBody, void* hfBody, void* arg2, void* arg3);
 // @fnv 0x00d32150
 // src: HAVOK_SRC 0x00d32150
 extern "C" void __stdcall hkpHeightFieldAgent_getPenetrations(void* arg0, void* arg1, void* arg2, void* arg3)
@@ -104,7 +104,7 @@ extern "C" void __stdcall hkpHeightFieldAgent_getPenetrations(void* arg0, void* 
     hkpHeightFieldAgent_staticGetPenetrations(arg0, arg1, arg2, arg3);
 }
 extern char DAT_010ce81c;
-void __cdecl hkpHeightFieldAgent_staticGetPenetrations(int a1, int a2, int a3, void* a4);
+void __cdecl hkpHeightFieldAgent_staticGetPenetrations(int csBody, int hfBody, int a3, void* a4);
 struct FUN_00d32370_cls {
     void* vt;
     unsigned char flag;
@@ -213,6 +213,9 @@ static __forceinline void event(TimerStream* stream,const char* name) {
 }
 // @fnv 0x00d31d30
 // src: GUESS 0x00d31d30 (confidence: medium)
+// pdb: hkpHeightFieldAgent::staticLinearCast | hkpHeightFieldAgent.obj | retail, object-file run extension, low
+// pdb params: csBody, hfBody, input, collector, startCollector
+// pdb locals: bTa, rayCollector, ray
 extern "C" void __cdecl hkpHeightFieldAgent_ProcessSphereQueries(void* arg0,void* arg1,void* arg2,void* arg3,void* arg4) {
     TimerStream* stream=(TimerStream*)TlsGetValue(DAT_0126835c);
     TimerEvent* e=stream->current;
@@ -359,16 +362,19 @@ static __forceinline __m128 direction(const Matrix& m, __m128 v) {
 }
 struct AgentD {
     void* vtable; int unk04; ManagerD* manager; unsigned short* ids; int count; int capacity;
-    void hkpHeightFieldAgent_processCollision(const BodyD& a, const BodyD& b, const InputD& input, OutputD& output);
+    void hkpHeightFieldAgent_processCollision(const BodyD& csBody, const BodyD& hfBody, const InputD& input, OutputD& processOutput);
 };
 // @fnv 0x00d324e0
 // src: HAVOK_SRC 0x00d324e0
-void AgentD::hkpHeightFieldAgent_processCollision(const BodyD& a, const BodyD& b, const InputD& input, OutputD& output) {
+// pdb: hkpHeightFieldAgent::processCollision | hkpHeightFieldAgent.obj | retail, string-set bridge, high
+// pdb params: csBody, hfBody, input, processOutput
+// pdb locals: bTa, assertBuf, ostr, in2
+void AgentD::hkpHeightFieldAgent_processCollision(const BodyD& csBody, const BodyD& hfBody, const InputD& input, OutputD& processOutput) {
     timer(DAT_010ceae0);
-    ShapeD* shapeA = a.shape;
-    ShapeD* shapeB = b.shape;
+    ShapeD* shapeA = csBody.shape;
+    ShapeD* shapeB = hfBody.shape;
     Matrix relative;
-    relative.hkTransform_setMulInverseMul(*b.transform,*a.transform);
+    relative.hkTransform_setMulInverseMul(*hfBody.transform,*csBody.transform);
     int n = count;
     __m128* transformed = reserve(n);
     unsigned short* id = ids;
@@ -397,20 +403,20 @@ void AgentD::hkpHeightFieldAgent_processCollision(const BodyD& a, const BodyD& b
     for (int i = last; i >= 0; ++p,++sphere,++id,--i) {
         if (((float*)p)[3] > tolerance) {
             if (*id != 0xffff) {
-                manager->remove(*id,output.constraint);
+                manager->remove(*id,processOutput.constraint);
                 *id = 0xffff;
             }
         } else {
-            ContactD* c = output.next;
+            ContactD* c = processOutput.next;
             float negW = -((float*)sphere)[3];
             __m128 pos = _mm_add_ps(_mm_mul_ps(_mm_set1_ps(negW),*p),*sphere);
-            c->position = point(*b.transform,pos);
-            c->normal = direction(*b.transform,*p);
+            c->position = point(*hfBody.transform,pos);
+            c->normal = direction(*hfBody.transform,*p);
             ((float*)&c->normal)[3] = ((float*)p)[3];
             if (*id == 0xffff) {
-                *id = manager->add(a,b,input,output,0,c);
-                if (*id != 0xffff) ++output.next;
-            } else ++output.next;
+                *id = manager->add(csBody,hfBody,input,processOutput,0,c);
+                if (*id != 0xffff) ++processOutput.next;
+            } else ++processOutput.next;
             c->id = *id;
         }
     }

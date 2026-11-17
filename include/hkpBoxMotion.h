@@ -2,6 +2,7 @@
 
 #include "hkpMotion.h"
 
+// pdb: class hkpBoxMotion, size 0x120, bases: hkpMotion, 0 members
 class hkpBoxMotion : public hkpMotion
 {
 public:
@@ -15,7 +16,7 @@ public:
     virtual void SetInertiaInvLocal(const hkMatrix3& kInverseInertia);
     virtual void GetInertiaInvLocal(hkMatrix3& kInverseInertia) const;
     virtual void GetLocalInverseInertia(hkMatrix3& kInverseInertia) const;
-    virtual void GetProjectedPointVelocity(const hkVector4& kPosition, const hkVector4& kDirection,
+    virtual void GetProjectedPointVelocity(const hkVector4& pos, const hkVector4& kDirection,
                                           float& kVelocity, float& kInverseVirtualMass) const;
     virtual void ApplyImpulseAtPoint(const hkVector4& kImpulse, const hkVector4& kPoint);
     virtual void ApplyAngularImpulseToBodies(const hkVector4& kImpulse);
@@ -26,5 +27,5 @@ public:
     hkpBoxMotion* InitializeBoxMotion(int iA1, int iA2);
     const hkMatrix3& StoreInertiaLocal(const hkMatrix3& kInertia);
     void WriteInverseInertiaDiagonal(float* pOut);
-    void GetInertiaWorld(hkMatrix3& kOut);
+    void GetInertiaWorld(hkMatrix3& inertia);
 };

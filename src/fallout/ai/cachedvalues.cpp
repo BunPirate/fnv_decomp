@@ -13,8 +13,10 @@ struct FUN_0092ca70_shell
 };
 
 // @fnv 0x0092ca70
+// pdb: MiddleLowProcess::MiddleLowCopy | MiddleLowProcess.obj | debug, object-file gap fill, medium
+// pdb params: apProcess
 void FUN_0092ca70_shell::CopyFrom(FUN_0092ca70_shell* source)
 {
     m_0xb4 = source->m_0xb4;
-    m_0xb8.CopyModifierListFrom(&source->m_0xb8);
+    m_0xb8.SetAllModifiers(&source->m_0xb8);
 }

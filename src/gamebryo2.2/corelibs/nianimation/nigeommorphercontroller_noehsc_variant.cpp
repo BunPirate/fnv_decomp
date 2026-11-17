@@ -221,39 +221,42 @@ struct MorphLoad : LoadBase
     bool m_bUpdateNormals;
     bool m_bNeedsUpdate;
     bool m_bUpdateBounds;
-    void NiGeomMorpherController_LoadBinary(MorphStream& stream);
+    void NiGeomMorpherController_LoadBinary(MorphStream& kStream);
 };
 // @fnv 0x00a3b150
 // src: XBOX_PDB 0x00a3b150
-void MorphLoad::NiGeomMorpherController_LoadBinary(MorphStream& stream)
+// pdb: NiGeomMorpherController::LoadBinary | NiGeomMorpherController.obj | retail, upstream name already matches, high
+// pdb params: kStream
+// pdb locals: bAlwaysUpdate, uiArraySize, ui
+void MorphLoad::NiGeomMorpherController_LoadBinary(MorphStream& kStream)
 {
-    LoadBase::LoadBinary(stream);
-    if (stream.version < 0x0a000102)
-        m_uiObjectFlags = (stream.legacyFlags >> 5) & 0x3f;
+    LoadBase::LoadBinary(kStream);
+    if (kStream.version < 0x0a000102)
+        m_uiObjectFlags = (kStream.legacyFlags >> 5) & 0x3f;
     else
-        stream.reader->Read(&m_uiObjectFlags, 2);
-    stream.ReadLinkID();
-    if (stream.version >= 0x04000002)
+        kStream.reader->Read(&m_uiObjectFlags, 2);
+    kStream.ReadLinkID();
+    if (kStream.version >= 0x04000002)
     {
         unsigned char value;
-        stream.reader->Read(&value, 1);
+        kStream.reader->Read(&value, 1);
         m_bNeedsUpdate = value != 0;
     }
-    if (stream.version >= 0x0a010068)
+    if (kStream.version >= 0x0a010068)
     {
-        if (stream.version < 0x14010003)
+        if (kStream.version < 0x14010003)
         {
-            stream.NiStream_ReadMultipleLinkIDs();
+            kStream.NiStream_ReadMultipleLinkIDs();
         }
         else
         {
             unsigned int count;
-            stream.reader->Read(&count, 4);
+            kStream.reader->Read(&count, 4);
             m_pInterpolatorItems = new LoadItem[count];
             for (unsigned short index = 0; index < count; ++index)
             {
-                m_pInterpolatorItems[index].interpolator = stream.FUN_00a64620();
-                stream.reader->Read(&m_pInterpolatorItems[index].weight, 4);
+                m_pInterpolatorItems[index].interpolator = kStream.FUN_00a64620();
+                kStream.reader->Read(&m_pInterpolatorItems[index].weight, 4);
             }
         }
     }

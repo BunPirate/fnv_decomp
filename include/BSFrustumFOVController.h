@@ -2,6 +2,7 @@
 
 #include "NiFloatInterpController.h"
 
+// pdb: class BSFrustumFOVController, size 0x38, bases: NiFloatInterpController, 0 members
 class BSFrustumFOVController : public NiFloatInterpController
 {
 public:
@@ -14,7 +15,7 @@ public:
     virtual void SaveBinary(NiStream& stream);
     virtual bool IsEqual(NiObject* object) const;
     virtual void GetViewerStrings(NiViewerStringsArray* strings);
-    virtual void Update(NiUpdateData& update);
+    virtual void Update(NiUpdateData& UpdateData);
     virtual bool TargetIsRequired(NiObjectNET* object) const;
     virtual void UpdateFloatValue(float* value);
 

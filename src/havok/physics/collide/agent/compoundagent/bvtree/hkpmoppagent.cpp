@@ -24,6 +24,8 @@ struct FUN_00d2f380_cls
 
 // Resets the object's vtable pointers, frees m_pData through the allocator when the capacity flag is clear, then clears the data pointer and capacity.
 // @fnv 0x00d2f380
+// pdb: hkpBvTreeAgent::~hkpBvTreeAgent | hkpMoppAgent.obj | retail, object-file run extension, low
+// pdb note: debug build links it to hkArray<hkpBvTreeAgent::hkpBvAgentEntryInfo,hkContainerHeapAllocator>::clearAndDeallocate
 void FUN_00d2f380_cls::DestroyArray()
 {
     m_vptr00 = (int)&DAT_010ce8f4;

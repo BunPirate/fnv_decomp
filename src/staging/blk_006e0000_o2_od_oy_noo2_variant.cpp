@@ -18,7 +18,7 @@ struct S006e6ae0_Point3
     float x, y, z;
 };
 
-const S006e6ae0_Vector* __cdecl NI2HK(S006e6ae0_Vector* pOut, const S006e6ae0_Point3* pPoint);
+const S006e6ae0_Vector* __cdecl NI2HK(S006e6ae0_Vector* arhkTran, const S006e6ae0_Point3* arNiTran);
 
 class S006e6ae0_Aabb
 {
@@ -91,7 +91,7 @@ class S006e6ae0_Node
     S006e6ae0_Owner1* GetOffsetC();
 };
 
-int __cdecl hkAllocateStack_char(int iValue, int iFlags);
+int __cdecl hkAllocateStack_char(int n, int iFlags);
 
 class S006e6ae0_Object
 {
@@ -128,6 +128,8 @@ class S006e6ae0_Object
 
 // @fnv 0x006e6ae0
 // src: COMMUNITY 0x006e6ae0
+// pdb: PathingSearchRayCast::CreateCache | PathingSearchRayCast.obj | retail, upstream name already matches, high
+// pdb locals: pw, aabb, icacheSize
 void S006e6ae0_Object::PathingSearchRayCast_CreateCache()
 {
     S006e6ae0_Aabb kAabb;

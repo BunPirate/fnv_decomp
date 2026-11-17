@@ -1,5 +1,6 @@
 #pragma once
 
+// pdb: class BaseFormComponent, size 0x4, 0 members
 class BaseFormComponent
 {
 public:

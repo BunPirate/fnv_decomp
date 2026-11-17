@@ -47,11 +47,13 @@ struct ResultData
     char unk0A;
     unsigned char unk0B;
     int unk0C;
-    void __thiscall hkpGskCache_initTriangle(void* a, void* b, void* c);
-    void __thiscall hkpGskCache_init(void* a, void* b, void* c);
+    void __thiscall hkpGskCache_initTriangle(void* shapeA, void* shapeB, void* btoa);
+    void __thiscall hkpGskCache_init(void* shapeA, void* shapeB, void* aTb);
 };
 // Calls one of two handlers on result based on record->type, clears status[2] and some result flags, then returns result advanced by an aligned size.
 // @fnv 0x00d418d0
+// pdb: hkPredGskAgent3::create | hkpPredGskAgent3.obj | retail, object-file run extension, low
+// pdb params: input, entry, agentData
 void* __cdecl DispatchInputRecord(InputData* input, unsigned char* status, ResultData* result)
 {
     InputObject* pObject = input->unk00;
@@ -75,8 +77,8 @@ extern "C" void __cdecl RemoveEntryById(int a, int b, int c, int d);
 extern "C" void __cdecl InsertSlotId(int a, int b, int c, int d);
 extern "C" void __cdecl FindEntryByKey(int a, int b, int c, int d);
 extern "C" void __cdecl ConvertPairFlags(int a, int b, int c, int d);
-extern "C" void __cdecl hkPredGskAgent3_sepNormal(int a, int b, int c, int d);
-extern "C" void __cdecl hkPredGskCylinderAgent3_process(int a, int b, int c, int d);
+extern "C" void __cdecl hkPredGskAgent3_sepNormal(int a, int entry, int agentData, int separatingNormalOut);
+extern "C" void __cdecl hkPredGskCylinderAgent3_process(int input, int entry, int agentData, int separatingNormal);
 
 // The handler table that is handed to CScript::RegisterHandler.  It is kept
 // 16 byte aligned, which is what makes the compiler emit the aligned frame
@@ -108,11 +110,15 @@ struct __declspec(align(16)) HandlerTable
 class CScript
 {
   public:
-    void __thiscall RegisterHandler(HandlerTable* handler, int a, int b);
+    void __thiscall hkpCollisionDispatcher_registerAgent3(HandlerTable* f, int typeA, int typeB);
 };
 
 // @fnv 0x00d41710
-void __cdecl RegisterScriptHandlers(void* pScript)
+// src: XBOX_RETAIL_PDB 0x00d41710
+// pdb: hkPredGskCylinderAgent3::registerAgent3 | hkpPredGskCylinderAgent3.obj | retail, call graph, high
+// pdb params: dispatcher
+// pdb locals: f
+void __cdecl hkPredGskCylinderAgent3_registerAgent3(void* dispatcher)
 {
     HandlerTable tab;
 
@@ -134,9 +140,9 @@ void __cdecl RegisterScriptHandlers(void* pScript)
     tab.unk30 = 1;
     tab.unk31 = 1;
 
-    ((CScript*)pScript)->RegisterHandler(&tab, 2, 0x12);
+    ((CScript*)dispatcher)->hkpCollisionDispatcher_registerAgent3(&tab, 2, 0x12);
     tab.unk32 = 1;
-    ((CScript*)pScript)->RegisterHandler(&tab, 0x12, 2);
+    ((CScript*)dispatcher)->hkpCollisionDispatcher_registerAgent3(&tab, 0x12, 2);
 }
 
 struct S_00d417b0_Entry
@@ -272,7 +278,7 @@ found:
 // it, so the value is handed back to the caller from a symbol whose name
 // still contains the required tag "FUN_00d41860".
 
-extern "C" void __cdecl ReleaseAllEntries(void* p, int obj, int data);
+extern "C" void __cdecl hkGskManifold_cleanup(void* manifold, int mgr, int constraintOwner);
 
 // Calls ReleaseAllEntries on the record at b+0x0C, computes an aligned size from three bytes, clears byte 2 of a, and returns b plus that size.
 // @fnv 0x00d41860
@@ -281,7 +287,7 @@ extern "C" int __cdecl Object_ProcessAndReturnValue_00d41860(int apOut, int apRe
 {
     unsigned char* rec = (unsigned char*)apRecord + 0x0C;
 
-    ReleaseAllEntries(rec, aObj, aData);
+    hkGskManifold_cleanup(rec, aObj, aData);
 
     unsigned int count = rec[0] + rec[1] + rec[2] * 4;
 
@@ -449,7 +455,10 @@ void __cdecl ProcessCollision(Request*, unsigned char*, ResultData*, ResultData*
 void __cdecl hkGskManifold_verifyAndGetPoints(Cache*, AlignedVec*, int, Output*, void*);
 // @fnv 0x00d41a30
 // src: COMMUNITY 0x00d41a30
-void* __cdecl hkPredGskAgent3_process(Request* input, unsigned char* status, ResultData* result, AlignedVec* separation,
+// pdb: hkPredGskAgent3::process | hkpPredGskAgent3.obj | retail, upstream name already matches, high
+// pdb params: input, entry, agentData, separatingNormal, output
+// pdb locals: assertBuf, ostr, work
+void* __cdecl hkPredGskAgent3_process(Request* input, unsigned char* entry, ResultData* agentData, AlignedVec* separatingNormal,
                            Output* output)
 {
     volatile unsigned uiTimestamp;
@@ -469,7 +478,7 @@ void* __cdecl hkPredGskAgent3_process(Request* input, unsigned char* status, Res
     _ReadWriteBarrier();
     float distance = input->distance;
     Settings* settings = input->collision->settings;
-    Cache* cache = (Cache*)&result->unk0C;
+    Cache* cache = (Cache*)&agentData->unk0C;
     if (settings->predictive)
     {
         Body* a = input->a;
@@ -481,7 +490,7 @@ void* __cdecl hkPredGskAgent3_process(Request* input, unsigned char* status, Res
             b = (Body*)b->parent;
         float radiusB = ((Shape*)b)->extent;
         float radius = radiusA < radiusB ? radiusA : radiusB;
-        float w = separation->w;
+        float w = separatingNormal->w;
         float limitA = settings->factorA * radius;
         float limitB = settings->factorB * radius + w;
         float limit = limitA < limitB ? limitA : limitB;
@@ -490,13 +499,13 @@ void* __cdecl hkPredGskAgent3_process(Request* input, unsigned char* status, Res
             float boundA = settings->factorC * radius;
             float boundB = settings->factorD * radius + w;
             float bound = boundA < boundB ? boundA : boundB;
-            hk4dGskCollideCalcToi(input, radius, limit, bound, result, separation, output);
+            hk4dGskCollideCalcToi(input, radius, limit, bound, agentData, separatingNormal, output);
             goto fallback;
         }
     }
-    if (distance > settings->maxDistance && !(result->unk0B & 0x10))
+    if (distance > settings->maxDistance && !(agentData->unk0B & 0x10))
     {
-        separation->w = distance;
+        separatingNormal->w = distance;
         if (cache->contacts)
         {
             Workspace workspace;
@@ -507,7 +516,7 @@ void* __cdecl hkPredGskAgent3_process(Request* input, unsigned char* status, Res
             Shape* shapeB = b->shape;
             workspace.radiusA = shapeA->radius;
             workspace.radiusB = shapeB->radius;
-            *(LocalM128*)&workspace.separation = *(const LocalM128*)separation;
+            *(LocalM128*)&workspace.separation = *(const LocalM128*)separatingNormal;
             AlignedVec* vertices = workspace.vertices;
             unsigned short* indices = (unsigned short*)((char*)cache + 4 + cache->contacts * 8);
             float threshold = workspace.radiusA + workspace.tolerance + workspace.radiusB;
@@ -560,11 +569,11 @@ void* __cdecl hkPredGskAgent3_process(Request* input, unsigned char* status, Res
     else
         goto fallback;
 complete:
-    status[2] = cache->contacts;
+    entry[2] = cache->contacts;
     unsigned contacts = cache->contacts;
     _ReadWriteBarrier();
     unsigned size = (cache->countB + contacts * 4 + cache->countA) * 2 + 31;
-    void* next = (char*)result + (size & ~15);
+    void* next = (char*)agentData + (size & ~15);
     {
         ProfileBuffer* p = (ProfileBuffer*)TlsGetValue(DAT_0126835c);
         ProfileEvent* event = p->current;
@@ -580,6 +589,6 @@ complete:
     }
     return next;
 fallback:
-    ProcessCollision(input, status, result, result, cache, separation, output);
+    ProcessCollision(input, entry, agentData, agentData, cache, separatingNormal, output);
     goto complete;
 }

@@ -16,6 +16,7 @@ class SpellItem;
 class BGSPlaceableWater;
 class BGSSaveFormBuffer;
 
+// pdb: class TESWaterForm, size 0x194, bases: TESForm, TESFullName, TESAttackDamageForm, 29 members
 struct TESWaterForm : public TESForm, public TESFullName, public TESAttackDamageForm
 {
 public:
@@ -64,36 +65,36 @@ public:
     void LoadGame_00580730(BGSLoadFormBuffer*);
     void Revert_005807a0(BGSLoadFormBuffer*);
 
-    bool m_bNeedsUpdate;
+    bool bNeedUpdate; // src: XBOX_RETAIL_PDB +0x2c (old: m_bNeedsUpdate)
     unsigned char layoutPadding2D[3];
-    NiPointer<BSRenderedTexture> m_pRenderedTexture;
-    NiColorA m_kTextureScrollLayer0;
-    NiColorA m_kTextureScrollLayer1;
-    NiColorA m_kTextureScrollLayer2;
-    TESTexture m_kNoiseMapTexture;
-    unsigned char m_ucOpacity;
+    NiPointer<BSRenderedTexture> spNoiseNormalMap; // src: XBOX_RETAIL_PDB +0x30 (old: m_pRenderedTexture)
+    NiColorA fTexScroll0; // src: XBOX_RETAIL_PDB +0x34 (old: m_kTextureScrollLayer0)
+    NiColorA fTexScroll1; // src: XBOX_RETAIL_PDB +0x44 (old: m_kTextureScrollLayer1)
+    NiColorA fTexScroll2; // src: XBOX_RETAIL_PDB +0x54 (old: m_kTextureScrollLayer2)
+    TESTexture NoiseTexture; // src: XBOX_RETAIL_PDB +0x64 (old: m_kNoiseMapTexture)
+    unsigned char cAlpha; // src: XBOX_RETAIL_PDB +0x70 (old: m_ucOpacity)
     unsigned char cFlags;
     unsigned char layoutPadding72[2];
-    BSStringT<char> m_kMaterialId;
-    TESSound* m_pWaterSound;
-    TESWaterForm* m_pWaterForm;
+    BSStringT<char> cMaterialID; // src: XBOX_RETAIL_PDB +0x74 (old: m_kMaterialId)
+    TESSound* pWaterSound; // src: XBOX_RETAIL_PDB +0x7c (old: m_pWaterSound)
+    TESWaterForm* pRemappedWaterForm; // src: XBOX_RETAIL_PDB +0x80 (old: m_pWaterForm)
     WaterShaderSettings Data;
-    TESWaterForm* m_apWaterForms[3];
-    int m_iCurrentTextureSelection1;
-    int m_iCurrentTextureSelection2;
-    unsigned int m_uiNoiseFrequencyX;
-    unsigned int m_uiNoiseFrequencyY;
-    int m_iNoiseOctaveCount;
-    float m_fNoiseAmplitude;
-    float m_fNoiseLacunarity;
-    float fSideOffset;
-    float m_fDistanceScale;
-    SpellItem* m_pWaterSpell;
-    NiPointer<NiTexture> m_kNoiseTextureData;
-    BGSPlaceableWater* m_pPlaceableAutoWater;
-    BGSPlaceableWater* m_pPlaceableWater;
-    int m_iRadiationMagnitude;
-    int m_iHealthMagnitude;
-    bool m_bResetNoiseTextures;
+    TESWaterForm* pWaterWeatherControl[3]; // src: XBOX_RETAIL_PDB +0x148 (old: m_apWaterForms)
+    int iCurrentTextureSelect01; // src: XBOX_RETAIL_PDB +0x154 (old: m_iCurrentTextureSelection1)
+    int iCurrentTextureSelect02; // src: XBOX_RETAIL_PDB +0x158 (old: m_iCurrentTextureSelection2)
+    unsigned int fFrequencyX; // src: XBOX_RETAIL_PDB +0x15c (old: m_uiNoiseFrequencyX)
+    unsigned int fFrequencyY; // src: XBOX_RETAIL_PDB +0x160 (old: m_uiNoiseFrequencyY)
+    int iOctaves; // src: XBOX_RETAIL_PDB +0x164 (old: m_iNoiseOctaveCount)
+    float fAmplitude; // src: XBOX_RETAIL_PDB +0x168 (old: m_fNoiseAmplitude)
+    float fLacunarity; // src: XBOX_RETAIL_PDB +0x16c (old: m_fNoiseLacunarity)
+    float fBias; // src: XBOX_RETAIL_PDB +0x170 (old: fSideOffset)
+    float fGain; // src: XBOX_RETAIL_PDB +0x174 (old: m_fDistanceScale)
+    SpellItem* pSpellItem; // src: XBOX_RETAIL_PDB +0x178 (old: m_pWaterSpell)
+    NiPointer<NiTexture> spNoiseTexture; // src: XBOX_RETAIL_PDB +0x17c (old: m_kNoiseTextureData)
+    BGSPlaceableWater* pPlaceableAutoWater; // src: XBOX_RETAIL_PDB +0x180 (old: m_pPlaceableAutoWater)
+    BGSPlaceableWater* pPlaceableLODWater; // src: XBOX_RETAIL_PDB +0x184 (old: m_pPlaceableWater)
+    int iRadiationDamage; // src: XBOX_RETAIL_PDB +0x188 (old: m_iRadiationMagnitude)
+    int iHealthRestoration; // src: XBOX_RETAIL_PDB +0x18c (old: m_iHealthMagnitude)
+    bool bResetNoiseTexture; // src: XBOX_RETAIL_PDB +0x190 (old: m_bResetNoiseTextures)
     unsigned char layoutPadding191[3];
 };

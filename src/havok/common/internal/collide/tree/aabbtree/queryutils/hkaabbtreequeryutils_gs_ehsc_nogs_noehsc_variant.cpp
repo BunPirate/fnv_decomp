@@ -39,7 +39,7 @@ struct S_00d1bcb0_Router
     }
 };
 S_00d1bcb0_Router* hkMemoryRouter_getInstance();
-void ResizeAudioStream(S_00d1bcb0_Allocator& alloc, void* array, int sizeElem);
+void ResizeAudioStream(S_00d1bcb0_Allocator& mem, void* array, int sizeElem);
 struct S_00d1bcb0_Entry
 {
     int m_kPointA;
@@ -50,7 +50,7 @@ struct S_00d1bcb0
 {
     int unk00;
     S_00d1bcb0_Array* m_ppData;
-    bool AppendPointPairAndReturnFalse(int a, int b);
+    bool AppendPointPairAndReturnFalse(int leafA, int leafB);
 };
 extern int __cdecl Object_CollectAABBTreeHits(void*, int, int, int, int, int);
 int __cdecl CallWithDefaults(void* arg0, int arg1, int arg2);
@@ -246,6 +246,9 @@ __forceinline int TreeD1C::queryAll(const hkAabb& kAabb, CollectorD1C* pkCollect
 
 // @fnv 0x00d1ce50
 // src: GUESS 0x00d1ce50 (confidence: high)
+// pdb: hkAabbTreeQueryUtils<hkAabbTreeData::hkAabbTreeAabb,unsigned short>::queryAabbInternal | hkAabbTreeQueryUtils.obj | retail, object-file run extension, low
+// pdb params: tree, aabb, collector, ptrArray, hitArray, hitCapacity
+// pdb locals: fpVolume
 int __cdecl hkAabb_QueryAllIfTreePresent(TreeD1C* pkTree, const hkAabb& kAabb, CollectorD1C* pkCollector, hkArrayIntD1CLocalForm* pkHits,
                          int** ppiOut, int iMaxOut)
 {
@@ -297,7 +300,7 @@ struct HkAllocator
     virtual void ReturnMemory(void* p, int n);
 };
 
-void hkArrayUtil__reserve(S_00d1bcb0_Allocator* alloc, void* arr, int cap, int elemSize);
+void hkArrayUtil__reserve(S_00d1bcb0_Allocator* mem, void* array, int numElem, int sizeElem);
 
 // src: XBOX_PDB (hkInplaceArray<...::NodePair,64,hkContainerHeapAllocator> family).
 // Exe 0x00d1d890: 64 inline node pairs, grown and released with the heap allocator.
@@ -326,8 +329,11 @@ typedef hkInplaceArray<Pair,64,hkContainerHeapAllocator> AabbQueryPairStack;
 
 
 // @fnv 0x00d1d890
-// src: GUESS 0x00d1d890 (confidence: low)
-int HkaabbtreequeryutilsGsEhscNogsNoehsc_ProcessEntries_00d1d890(Tree* treeA, Tree* treeB, Collider* cb)
+// src: XBOX_RETAIL_PDB 0x00d1d890
+// pdb: hkAabbTreeQueryUtils<hkAabbTreeData::hkAabbTreeAabb,unsigned int>::queryTreeCollision | hkAabbTreeQueryUtils.obj | retail, call graph, high
+// pdb params: treeA, treeB, pairsOut
+// pdb locals: stack, numHits, stackLimit, pair
+int hkAabbTreeQueryUtils_hkAabbTreeData_hkAabbTreeAabb_unsigned_int_queryTreeCollision(Tree* treeA, Tree* treeB, Collider* collector)
 {
     Node* rootA = treeA->m_pTreeNode;
     Node* rootB = treeB->m_pTreeNode;
@@ -392,7 +398,7 @@ int HkaabbtreequeryutilsGsEhscNogsNoehsc_ProcessEntries_00d1d890(Tree* treeA, Tr
                 {
                     if (bLeaf)
                     {
-                        if (cb->collide(nodeA, nodeB))
+                        if (collector->collide(nodeA, nodeB))
                             break;
                     }
                     else

@@ -22,7 +22,7 @@ public:
     void Save();
     bool Load(TESFile* file);
     void LoadFormReferences();
-    void Copy(unsigned int form);
+    void Copy(unsigned int apCopy);
     bool Compare(void* form);
     unsigned int GetItemList();
     unsigned int GetCreatedItem();
@@ -43,10 +43,11 @@ struct ModelSave
 // @fnv 0x004f9bf0
 unsigned int ConstructibleObjectOperations::GetItemList()
 {
-    return (unsigned int)m_pCreatedObject;
+    return (unsigned int)pRequiredItems;
 }
 
 // @fnv 0x004f9480
+// pdb: BGSConstructibleObject::`scalar deleting destructor' | BGSConstructibleObject.obj | retail, vtable slot, high
 void* BGSConstructibleObject::Destroy(unsigned int flags)
 {
     FUN_004f94b0();
@@ -59,11 +60,13 @@ void* BGSConstructibleObject::Destroy(unsigned int flags)
 // src: XBOX_PDB 0x004f9570
 void BGSConstructibleObject::InitializeData()
 {
-    m_pCreatedObject = 0;
-    m_pWorkbenchKeyword = 0;
+    pRequiredItems = 0;
+    pCreatedItem = 0;
 }
 
 // @fnv 0x004f9a90
+// pdb: BGSConstructibleObject::Save | BGSConstructibleObject.obj | retail, vtable slot, high
+// pdb locals: itempint
 void ConstructibleObjectOperations::Save()
 {
     TESForm::BeginFormRecord();
@@ -74,14 +77,14 @@ void ConstructibleObjectOperations::Save()
     TESScriptableForm::Save();
     BGSDestructibleObjectForm::Save();
     SaveEmptyData();
-    if (m_pCreatedObject)
+    if (pRequiredItems)
     {
-        unsigned int itempint = ((TESForm*)m_pCreatedObject)->GetHavokWorldObjectCountInSceneGraph_0084e3a0();
+        unsigned int itempint = ((TESForm*)pRequiredItems)->GetHavokWorldObjectCountInSceneGraph_0084e3a0();
         TESForm_AddChunk_00485910(0x4d414e52, itempint);
     }
-    if (m_pWorkbenchKeyword)
+    if (pCreatedItem)
     {
-        unsigned int itempint2 = ((TESForm*)m_pWorkbenchKeyword)->GetHavokWorldObjectCountInSceneGraph_0084e3a0();
+        unsigned int itempint2 = ((TESForm*)pCreatedItem)->GetHavokWorldObjectCountInSceneGraph_0084e3a0();
         TESForm_AddChunk_00485910(0x4d414e43, itempint2);
     }
     TESForm::FinishFormRecord();
@@ -89,6 +92,9 @@ void ConstructibleObjectOperations::Save()
 
 // Loads a bound object record from the file, dispatching each chunk to the matching loader and returning true.
 // @fnv 0x004f96f0
+// pdb: BGSConstructibleObject::Load | BGSConstructibleObject.obj | retail, vtable slot, high
+// pdb params: apFile
+// pdb locals: chunkid, pMessage, isize, pdata, tempint, itempint
 bool ConstructibleObjectOperations::Load(TESFile* apFile)
 {
     LoadRecordHeader(apFile);
@@ -120,7 +126,7 @@ bool ConstructibleObjectOperations::Load(TESFile* apFile)
             unsigned int uiChunkSize = apFile->GetChunkSize();
             void* pChunkData = _alloca(uiChunkSize);
             apFile->GetChunkData(pChunkData, uiChunkSize);
-            TESModelTextureSwap::ParseTextureSwapData(pChunkData, uiChunkSize, apFile->GetFormVersion());
+            TESModelTextureSwap::UnpackTextureSwapChunkData(pChunkData, uiChunkSize, apFile->GetFormVersion());
             break;
         }
         case 0x4e4f4349:
@@ -146,13 +152,13 @@ bool ConstructibleObjectOperations::Load(TESFile* apFile)
         case 0x4d414e52: {
             unsigned int itempint = 0;
             apFile->GetChunkData(&itempint);
-            m_pCreatedObject = (BGSListForm*)itempint;
+            pRequiredItems = (BGSListForm*)itempint;
             break;
         }
         case 0x4d414e43: {
             unsigned int itempint = 0;
             apFile->GetChunkData(&itempint);
-            m_pWorkbenchKeyword = (TESBoundObject*)itempint;
+            pCreatedItem = (TESBoundObject*)itempint;
             break;
         }
         }
@@ -167,17 +173,20 @@ extern char DAT_01189c78;
 void* __cdecl FUN_00ec43fb(unsigned int, unsigned int, void*, void*, unsigned int);
 
 // @fnv 0x004f9b80
-void ConstructibleObjectOperations::Copy(unsigned int a1)
+// pdb: BGSConstructibleObject::Copy | BGSConstructibleObject.obj | retail, vtable slot, high
+// pdb params: apCopy
+// pdb locals: pcopy
+void ConstructibleObjectOperations::Copy(unsigned int apCopy)
 {
-    void* r = FUN_00ec43fb(a1, 0, &DAT_01183028, &DAT_01189c78, 0);
+    void* r = FUN_00ec43fb(apCopy, 0, &DAT_01183028, &DAT_01189c78, 0);
     if (r == 0)
     {
     }
     else
     {
         CopyMisc(r);
-        m_pCreatedObject = (void*)reinterpret_cast<ConstructibleObjectOperations*>(r)->GetItemList();
-        m_pWorkbenchKeyword = (void*)reinterpret_cast<ConstructibleObjectOperations*>(r)->GetCreatedItem();
+        pRequiredItems = (void*)reinterpret_cast<ConstructibleObjectOperations*>(r)->GetItemList();
+        pCreatedItem = (void*)reinterpret_cast<ConstructibleObjectOperations*>(r)->GetCreatedItem();
     }
 }
 
@@ -186,26 +195,28 @@ void __cdecl ResolveFormID(unsigned int* id, void* file);
 int __cdecl Warning_005b5e40(const char* fmt, ...);
 
 // @fnv 0x004f95a0
+// pdb: BGSConstructibleObject::InitItem | BGSConstructibleObject.obj | retail, string-set bridge, high
+// pdb locals: itempint
 void ConstructibleObjectOperations::LoadFormReferences()
 {
     if (GetInitialized())
         return;
     TESObjectMISC::InitItem();
-    unsigned int id = (unsigned int)m_pCreatedObject;
+    unsigned int id = (unsigned int)pRequiredItems;
     if (id)
     {
         ResolveFormID(&id, FUN_00484e60(-1));
-        m_pCreatedObject = dynamic_cast<BGSListForm*>(TESForm_GetFormByNumericID(id));
-        if (!m_pCreatedObject)
+        pRequiredItems = dynamic_cast<BGSListForm*>(TESForm_GetFormByNumericID(id));
+        if (!pRequiredItems)
             Warning_005b5e40("MASTERFILE: Could not find item list (%08X) on constructible object '%s' (%08X).", id, GetName(),
                          GetHavokWorldObjectCountInSceneGraph_0084e3a0());
     }
-    id = (unsigned int)m_pWorkbenchKeyword;
+    id = (unsigned int)pCreatedItem;
     if (id)
     {
         ResolveFormID(&id, FUN_00484e60(-1));
-        m_pWorkbenchKeyword = dynamic_cast<TESBoundObject*>(TESForm_GetFormByNumericID(id));
-        if (!m_pWorkbenchKeyword)
+        pCreatedItem = dynamic_cast<TESBoundObject*>(TESForm_GetFormByNumericID(id));
+        if (!pCreatedItem)
             Warning_005b5e40("MASTERFILE: Could not find created item (%08X) on constructible object '%s' (%08X).", id,
                          GetName(), GetHavokWorldObjectCountInSceneGraph_0084e3a0());
     }
@@ -213,6 +224,9 @@ void ConstructibleObjectOperations::LoadFormReferences()
 }
 
 // @fnv 0x004f9c10
+// pdb: BGSConstructibleObject::Compare | BGSConstructibleObject.obj | retail, vtable slot, high
+// pdb params: apCompare
+// pdb locals: pcomp
 bool ConstructibleObjectOperations::Compare(void* apCompare)
 {
     void* pcomp = FUN_00ec43fb((unsigned int)apCompare, 0, &DAT_01183028, &DAT_01189c78, 0);
@@ -220,14 +234,15 @@ bool ConstructibleObjectOperations::Compare(void* apCompare)
         return true;
     if (CompareMisc(pcomp))
         return true;
-    if (m_pCreatedObject != (BGSListForm*)((ConstructibleObjectOperations*)pcomp)->GetItemList())
+    if (pRequiredItems != (BGSListForm*)((ConstructibleObjectOperations*)pcomp)->GetItemList())
         return true;
-    if (m_pWorkbenchKeyword != (TESBoundObject*)((ConstructibleObjectOperations*)pcomp)->GetCreatedItem())
+    if (pCreatedItem != (TESBoundObject*)((ConstructibleObjectOperations*)pcomp)->GetCreatedItem())
         return true;
     return false;
 }
 
 // @fnv 0x004f94b0
+// pdb: BGSConstructibleObject::~BGSConstructibleObject | BGSConstructibleObject.obj | retail, upstream name already matches, high
 BGSConstructibleObject::~BGSConstructibleObject()
 {
     TESForm::ClearData();

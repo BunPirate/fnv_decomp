@@ -16,6 +16,7 @@ struct Flt
 };
 
 // @fnv 0x009b3cb0
+// pdb: Projectile::GetPickCache | FlameProjectile.obj | debug, object-file gap fill, medium
 unsigned int __fastcall FlameProjectileGetEffectValue(FlameProjectile* self)
 {
     return ((Flt*)((char*)self + 0x11c))->operator unsigned int();
@@ -25,6 +26,8 @@ unsigned int __fastcall FlameProjectileGetEffectValue(FlameProjectile* self)
 // Loads the base BeamProjectile data, then reads two 4-byte values from the buffer into this+0x150 and this+0x154.
 // @fnv 0x009b3f00
 // src: XBOX_PDB 0x009b3f00
+// pdb: FlameProjectile::LoadGame | FlameProjectile.obj | retail, vtable slot, high
+// pdb params: apLoadGameBuffer
 void FlameProjectile::LoadGame_009b3f00(BGSLoadFormBuffer* apLoadGameBuffer)
 {
     reinterpret_cast<BeamProjectile*>(this)->BeamProjectile::LoadProjectile(apLoadGameBuffer);
@@ -35,6 +38,8 @@ void FlameProjectile::LoadGame_009b3f00(BGSLoadFormBuffer* apLoadGameBuffer)
 // Calls the base Projectile load routine, then zeroes the two floats at offsets 0x150 and 0x154.
 // @fnv 0x009b3f50
 // src: COMMUNITY 0x009b3f50
+// pdb: FlameProjectile::Revert | FlameProjectile.obj | retail, vtable slot, high
+// pdb params: apLoadGameBuffer
 void FlameProjectile::RevertBGS_009b3f50(BGSLoadFormBuffer* apLoadGameBuffer)
 {
     Projectile::RevertBGS_009c58e0(apLoadGameBuffer);
@@ -55,6 +60,7 @@ struct FUN_009bda10_shell
 
 // Calls FUN_005de0a0 with several bit flags and values, then calls FUN_009bda10.
 // @fnv 0x009b32b0
+// pdb: FlameProjectile::Initialize | FlameProjectile.obj | debug, object-file gap fill, medium
 void __fastcall FlameProjectileConfigureFlags(FlameProjectile* self)
 {
     ((FUN_005de0a0_shell*)self)->Projectile_SetFlag(0x10, 0);
@@ -75,6 +81,8 @@ struct FlameProjectileSaveArgs
 };
 
 // @fnv 0x009b3eb0
+// pdb: FlameProjectile::SaveGame | FlameProjectile.obj | retail, vtable slot, high
+// pdb params: apSaveGameBuffer
 void __fastcall FlameProjectileSave(FlameProjectile* self, FlameProjectileSaveArgs args)
 {
     reinterpret_cast<BeamProjectile*>(self)->BeamProjectile::SaveProjectile(args.buffer);
@@ -83,6 +91,7 @@ void __fastcall FlameProjectileSave(FlameProjectile* self, FlameProjectileSaveAr
 }
 
 // @fnv 0x009b3f80
+// pdb: GrenadeProjectile::~GrenadeProjectile | GrenadeProjectile.obj | debug, object-file run extension, low
 void __fastcall FlameProjectileReset(FlameProjectile* self)
 {
     self->FUN_009bc470();
@@ -123,20 +132,23 @@ extern void* g_01202560;
 extern int g_01202500_arg1;
 extern double _DAT_01012060;
 
-float GetMaxParticleGlobalValue(NiNode* node);
+float GetMaxParticleGlobalValue(NiNode* apObject);
 
 // @fnv 0x009b3da0
-float GetMaxParticleGlobalValue(NiNode* node)
+// pdb: FlameProjectile::FindFlameConeAngle | FlameProjectile.obj | retail, object-file run extension, high
+// pdb params: apObject
+// pdb locals: fresult, pnode, pparticles, i, pmodifier, pemitter, fangle
+float GetMaxParticleGlobalValue(NiNode* apObject)
 {
     float result = 0.0f;
 
-    if (node)
+    if (apObject)
     {
         NiNode* root;
 
-        if (NiObject_IsKindOf(reinterpret_cast<RTTI const*>(&g_01202560), node))
+        if (NiObject_IsKindOf(reinterpret_cast<RTTI const*>(&g_01202560), apObject))
         {
-            Particle* particle = reinterpret_cast<Particle*>(node);
+            Particle* particle = reinterpret_cast<Particle*>(apObject);
 
             for (unsigned int i = 0; result == _DAT_01012060 && i < particle->NiParticleSystem_GetModifierCount(); ++i)
             {
@@ -150,7 +162,7 @@ float GetMaxParticleGlobalValue(NiNode* node)
             }
         }
 
-        root = node->IsSceneNode();
+        root = apObject->IsSceneNode();
 
         if (root)
         {
@@ -330,6 +342,8 @@ struct ProjectileObject
 };
 // Gets the projectile's node and secondary node, sets a zero vector on the node, copies a matrix into this+0x94, and stores a scaled value at this+0x154.
 // @fnv 0x009b3320
+// pdb: FlameProjectile::Process3D | FlameProjectile.obj | retail, vtable slot, high
+// pdb locals: pav, pfireNode, UpdateData
 void ProjectileObject::UpdateProjectileNode()
 {
     GameNode* node = ((NodeGetter)(*reinterpret_cast<void***>(this))[0x1d0 / 4])(this);
@@ -525,7 +539,11 @@ extern FUN_00717e50_shell DAT_011e0e80;
 
 // Scans the project manager's objects for one whose v137 is set and whose FUN_004181e0 equals b and FUN_00874480 equals a, returning the first match or null.
 // @fnv 0x009bd780
-ProjObj* FindProjectObject(unsigned int a, unsigned int b)
+// src: XBOX_DEBUG_PDB 0x009bd780
+// pdb: Projectile::FindExistingProjectile | Projectile.obj | debug, call graph, high
+// pdb params: apShooter, apBase
+// pdb locals: presult, i, pmob, pprojectile
+ProjObj* Projectile_FindExistingProjectile(unsigned int apShooter, unsigned int apBase)
 {
     ProjObj* result = 0;
     for (unsigned int i = 0; result == 0 && i < DAT_011e0e80.FUN_00717e50(0)->ProcessArray_GetProcessLevelTail(); ++i)
@@ -536,9 +554,9 @@ ProjObj* FindProjectObject(unsigned int a, unsigned int b)
             if (pObj->v137() != 0)
             {
                 ProjObj* pCandidate = pObj;
-                if (((FUN_004181e0_shell*)pCandidate)->FUN_004181e0() == b)
+                if (((FUN_004181e0_shell*)pCandidate)->FUN_004181e0() == apBase)
                 {
-                    if (((FUN_00874480_shell*)pCandidate)->Projectile_GetShooter() == a)
+                    if (((FUN_00874480_shell*)pCandidate)->Projectile_GetShooter() == apShooter)
                     {
                         result = pCandidate;
                     }
@@ -638,7 +656,7 @@ class HitNode9B3
 
 class ProjectileBase9B3;
 
-bool __cdecl CanHit9B3(Ref9B3* pkTarget, int iPart, FlameProjectile* pkProjectile, ProjectileBase9B3* pkBase);
+bool __cdecl Projectile_IsValidImpact(Ref9B3* apCollidee, int apTargetCollidable, FlameProjectile* apProjectile, ProjectileBase9B3* apProjectileBase);
 
 // Pass hit arguments by value to preserve the original stack layout.
 struct FlameProjectileHitArgs
@@ -652,9 +670,12 @@ struct FlameProjectileHitArgs
 };
 
 // @fnv 0x009b3cd0
+// pdb: FlameProjectile::AddImpact | FlameProjectile.obj | retail, vtable slot, high
+// pdb params: apCollidee, aContactPoint, aContactNormal, apTargetCollidable, aiKey, aeForceMaterial
+// pdb locals: plist
 bool __fastcall FlameProjectileCanProcessHit(FlameProjectile* self, FlameProjectileHitArgs args)
 {
-    if (CanHit9B3(args.pkTarget, args.iPart, self, reinterpret_cast<ProjectileBase9B3*>(self->GetProjectileBase())))
+    if (Projectile_IsValidImpact(args.pkTarget, args.iPart, self, reinterpret_cast<ProjectileBase9B3*>(self->GetProjectileBase())))
     {
         HitNode9B3* pkNode = reinterpret_cast<HitNode9B3*>(&self->kImpacts);
         while (pkNode && !pkNode->IsEmpty())

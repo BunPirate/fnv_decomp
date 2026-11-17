@@ -4,6 +4,7 @@
 
 class ItemListNode;
 
+// pdb: class NiBackToFrontAccumulator, size 0x30, bases: NiAccumulator, 7 members
 class NiBackToFrontAccumulator : public NiAccumulator
 {
   public:

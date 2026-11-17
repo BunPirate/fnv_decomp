@@ -34,7 +34,7 @@ struct hkMemRouter
 };
 
 void* hkMemoryRouter_getInstance();
-void ResizeAudioStream(void* alloc, void* arr, int elemSize);
+void ResizeAudioStream(void* mem, void* array, int sizeElem);
 void* AllocateWithHeader(hkMemAlloc& alloc, int numBytes);
 void hkString_memCpy(void* dst, const void* src, int n);
 

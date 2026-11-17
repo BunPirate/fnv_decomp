@@ -116,6 +116,7 @@ class NiD3DVertexDeclaration : public NiD3DShaderDeclaration
     static NiD3DVertexDeclaration* Create(GraphicsRenderer*, UInt32, UInt32);
 };
 LIGHTING30_ASSERT(sizeof(NiD3DVertexDeclaration) == 0x34);
+// pdb: class Lighting30Shader, size 0xa4, bases: BSShader, 14 members
 class Lighting30Shader : public BSShader
 {
   public:
@@ -127,8 +128,8 @@ class Lighting30Shader : public BSShader
     virtual void InitializePixelShader();
     virtual bool ConfigureShaderPass();
     NiPointer<NiD3DShaderConstantMap> m_spFillColorConstantMap;
-    NiPointer<NiD3DShaderConstantMap> m_spFogConstantMap;
-    NiPointer<NiD3DShaderConstantMap> m_spFirstPassConstantMap;
+    NiPointer<NiD3DShaderConstantMap> spTexEffectVConstantMap; // src: XBOX_RETAIL_PDB +0x70 (old: m_spFogConstantMap)
+    NiPointer<NiD3DShaderConstantMap> spDefaultPixelConstantMap; // src: XBOX_RETAIL_PDB +0x74 (old: m_spFirstPassConstantMap)
     NiPointer<NiD3DShaderConstantMap> m_spSecondPassConstantMap;
     NiPointer<NiD3DVertexDeclaration> m_pVertexDeclaration1;
     NiPointer<NiD3DVertexDeclaration> m_pVertexDeclaration2;
@@ -166,6 +167,8 @@ extern "C" __declspec(dllimport) long __stdcall InterlockedDecrement(volatile lo
 // PC virtual slots and cross-platform names are documented in NOTES.md.
 // Builds eight shader declarations with vertex entries, creates a Lighting30Shader, assigns the non-color declarations to its slots, and initializes it.
 // @fnv 0x00bbd0d0
+// pdb: Lighting30Shader::CreateShader | Lighting30Shader.obj | retail, upstream name already matches, high
+// pdb locals: pshaderDeclVC, pshaderDecl, pskinnedShaderDecl, pshaderDeclNC, pskinnedShaderDeclVCNC, pskinnedShaderDeclVC, pskinnedShaderDeclNC, ubyte, pshader, pshaderDeclVCNC
 BSShader* Lighting30Shader::CreateShader()
 {
     NiD3DVertexDeclaration* declaration = NiD3DVertexDeclaration::Create(g_pkRenderer, 6, 1);
@@ -345,6 +348,7 @@ BSShader* Lighting30Shader::CreateShader()
 #include "lighting30shader_packet.h"
 // Copies DAT_011a9bd0 into DAT_01201b30, sets DAT_012010c4->dirty and the two flags DAT_01200bf4 and DAT_01200bf5 to true.
 // @fnv 0x00bbb840
+// pdb: Lighting30Shader::ResetPerFrameConstantData | Lighting30Shader.obj | retail, call graph, medium
 void Lighting30Shader::InvalidateShaderConstants()
 {
     DAT_01201b30 = DAT_011a9bd0;
@@ -393,14 +397,16 @@ extern int DAT_01201b5c;
 // If DAT_012010cc[8] is nonzero, copies four ints at offsets 0x84..0x90 of param_1 into DAT_01201b50..DAT_01201b5c.
 // @fnv 0x00bbbda0
 // src: COMMUNITY 0x00bbbda0
-void __stdcall Lighting30Shader_SetupGeometryConstants_HairTint(const char* param_1)
+// pdb: Lighting30Shader::SetupGeometryConstants_HairTint | Lighting30Shader.obj | debug, upstream name already matches, high
+// pdb params: pprop
+void __stdcall Lighting30Shader_SetupGeometryConstants_HairTint(const char* pprop)
 {
     if (DAT_012010cc[8] != 0)
     {
-        DAT_01201b50 = *(const int*)(param_1 + 0x84);
-        DAT_01201b54 = *(const int*)(param_1 + 0x88);
-        DAT_01201b58 = *(const int*)(param_1 + 0x8c);
-        DAT_01201b5c = *(const int*)(param_1 + 0x90);
+        DAT_01201b50 = *(const int*)(pprop + 0x84);
+        DAT_01201b54 = *(const int*)(pprop + 0x88);
+        DAT_01201b58 = *(const int*)(pprop + 0x8c);
+        DAT_01201b5c = *(const int*)(pprop + 0x90);
     }
 }
 
@@ -411,6 +417,8 @@ extern float DAT_01201b94;
 
 // @fnv 0x00bbbdf0
 // src: COMMUNITY 0x00bbbdf0
+// pdb: Lighting30Shader::SetupGeometryConstants_RefractionPower | Lighting30Shader.obj | debug, upstream name already matches, high
+// pdb params: pprop
 void __fastcall Lighting30Shader_SetupGeometryConstants_RefractionPower(void* this_ptr, int, char* param_1)
 {
     if (DAT_012010d8[8] != 0)
@@ -500,6 +508,9 @@ struct DummyVTable
 // If DAT_012010e0[8] is set, queries param_1->vf4(5, 0) to set DAT_01201bec to 1.0 or 0.0 and copies the float at param_1+0x30 into DAT_01201be8.
 // @fnv 0x00bbbe30
 // src: COMMUNITY 0x00bbbe30
+// pdb: Lighting30Shader::SetupGeometryConstants_Envmap | Lighting30Shader.obj | retail, upstream name already matches, high
+// pdb params: apProp
+// pdb locals: pmasktex
 void __fastcall Lighting30Shader_SetupGeometryConstants_Envmap(void* this_ptr, int edx_unused, DummyVTable* param_1)
 {
     if (DAT_012010e0[8] != 0)
@@ -517,6 +528,7 @@ void __stdcall NiD3DShader_SetupGeometryAlphaBlending(int arg);
 
 // Calls FUN_00be1ff0 with arg unless DAT_011f91e4 falls within any of four excluded ranges.
 // @fnv 0x00bbc5c0
+// pdb: Lighting30Shader::`scalar deleting destructor' | Lighting30Shader.obj | debug, object-file run extension, low
 void __stdcall DispatchIfNotExcluded(int arg)
 {
     if ((DAT_011f91e4 < 0x1cc || DAT_011f91e4 > 0x1dc) && (DAT_011f91e4 < 0x1bd || DAT_011f91e4 > 0x1c3) &&
@@ -528,6 +540,9 @@ void __stdcall DispatchIfNotExcluded(int arg)
 
 // @fnv 0x00bbd820
 // src: XBOX_PDB 0x00bbd820
+// pdb: Lighting30Shader::GetShaderDecl | Lighting30Shader.obj | retail, upstream name already matches, high
+// pdb params: apGeometry, apProperty
+// pdb locals: bvertexcolors, pniagd, pbsagd
 int __fastcall Lighting30Shader_GetShaderDecl(char* pThis, int, char* arg1, char* apFlags)
 {
     bool bHasFlag = false;
@@ -554,6 +569,9 @@ extern int DAT_011ff9dc;
 // Checks DAT_011f91e4 and state entries, calling FUN_00b97e80, UpdateRendererStateCount or decrementing DAT_011ff9dc and calling FUN_00b97e30 based on flags.
 // @fnv 0x00bbeef0
 // src: XBOX_PDB 0x00bbeef0
+// pdb: Lighting30Shader::PostGeometry | Lighting30Shader.obj | retail, upstream name already matches, high
+// pdb params: apState
+// pdb locals: auiCurrentPass
 void __fastcall Lighting30Shader_PostGeometry(void* this_ptr, int, unsigned char** state)
 {
     unsigned int val = DAT_011f91e4;
@@ -575,13 +593,13 @@ void __fastcall Lighting30Shader_PostGeometry(void* this_ptr, int, unsigned char
     }
 }
 
-extern "C" void* g_01201f20;
+extern "C" void* Lighting30Shader_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01201f20 (old: g_01201f20)
 
 // @fnv 0x00bbc9b0
 // src: XBOX_PDB 0x00bbc9b0
 void* __cdecl Lighting30Shader_GetRTTI()
 {
-    return &g_01201f20;
+    return &Lighting30Shader_ms_RTTI;
 }
 
 extern "C" void __cdecl _delete(void*, unsigned int);
@@ -624,11 +642,14 @@ void S::ApplyToGlobalRange()
 // Iterates entries from start to the count at p+0x18 and zeroes the int at offset 8 of each non-null entry from the array at p+0x24.
 // @fnv 0x00bbc610
 // src: COMMUNITY 0x00bbc610
-void __stdcall Lighting30Shader_ClearUnusedStages(void* apContainer, unsigned int start)
+// pdb: Lighting30Shader::ClearUnusedStages | Lighting30Shader.obj | debug, upstream name already matches, high
+// pdb params: apPass, auiFirstUnusedStage
+// pdb locals: pstage, istage
+void __stdcall Lighting30Shader_ClearUnusedStages(void* apPass, unsigned int auiFirstUnusedStage)
 {
-    for (unsigned int i = start; i < *reinterpret_cast<unsigned int*>(reinterpret_cast<char*>(apContainer) + 0x18); ++i)
+    for (unsigned int i = auiFirstUnusedStage; i < *reinterpret_cast<unsigned int*>(reinterpret_cast<char*>(apPass) + 0x18); ++i)
     {
-        void* pEntry = (*reinterpret_cast<void***>(reinterpret_cast<char*>(apContainer) + 0x24))[i];
+        void* pEntry = (*reinterpret_cast<void***>(reinterpret_cast<char*>(apPass) + 0x24))[i];
         if (pEntry)
             *reinterpret_cast<int*>(reinterpret_cast<char*>(pEntry) + 8) = 0;
     }
@@ -723,6 +744,8 @@ struct Lighting30Shader_s : BSShader
 // Calls Initialize, releases all cached objects in the global arrays, clears the packet arrays, and returns true.
 // @fnv 0x00bbce70
 // src: XBOX_PDB 0x00bbce70
+// pdb: Lighting30Shader::Initialize | Lighting30Shader.obj | retail, upstream name already matches, high
+// pdb locals: i
 bool Lighting30Shader_s::Lighting30Shader_Initialize()
 {
     BSShader::Initialize();
@@ -770,7 +793,7 @@ extern NiTexture* DAT_011f9510;
 extern NiTexture* DAT_011f9518;
 extern int DAT_011f952c;
 
-void __cdecl AddToTwoCounters(int, int, int);
+void __cdecl BSRenderState_SetAlphaBlendFunc(int, int, int);
 int __cdecl GetTableValue(int);
 
 struct FUN_00bbdcd0_Arg1
@@ -868,35 +891,38 @@ struct FUN_00bbdcd0_shell
 
 // Assigns textures to the first two render stages from arg1 and clears the rest, then calls AddToTwoCounters with values derived from textureObject.
 // @fnv 0x00bbdcd0
-void FUN_00bbdcd0_shell::ApplyTextureStages(FUN_00bbdcd0_Arg1* pTextureSource, NiD3DPass* pStageList)
+// pdb: Lighting30Shader::UpdatePipelineTexEffect | Lighting30Shader.obj | retail, object-file gap fill, high
+// pdb params: apBSSProp, apPass
+// pdb locals: pstage, pdata, pNormalMap
+void FUN_00bbdcd0_shell::ApplyTextureStages(FUN_00bbdcd0_Arg1* apBSSProp, NiD3DPass* apPass)
 {
-    FUN_00bbdcd0_TextureObject* textureObject = pTextureSource->m_pTextureObject;
+    FUN_00bbdcd0_TextureObject* textureObject = apBSSProp->m_pTextureObject;
     if (!textureObject)
         return;
 
-    BeamStage* stage0 = pStageList->m_kStages.m_pBase[0].m_pObject;
-    NiTexture* texture = *pTextureSource->m_ppTexture;
+    BeamStage* stage0 = apPass->m_kStages.m_pBase[0].m_pObject;
+    NiTexture* texture = *apBSSProp->m_ppTexture;
     if (!texture)
-        texture = ((pTextureSource->m_uiObjectFlags & 0x80) > 0) ? DAT_011f9518 : DAT_011f9510;
+        texture = ((apBSSProp->m_uiObjectFlags & 0x80) > 0) ? DAT_011f9518 : DAT_011f9510;
 
     stage0->m_pBeamTexture = texture;
     stage0->ApplyPairToState(3);
 
-    BeamStage* stage1 = pStageList->m_kStages.m_pBase[1].m_pObject;
+    BeamStage* stage1 = apPass->m_kStages.m_pBase[1].m_pObject;
     if (textureObject->m_pBeamTexture)
         stage1->m_pBeamTexture = textureObject->m_pBeamTexture;
     else
         stage1->m_pBeamTexture = reinterpret_cast<NiTexture*>(DAT_011f952c);
     stage1->ApplyPairToState(3);
 
-    for (unsigned int i = 2; i < pStageList->m_uiStageCount; ++i)
+    for (unsigned int i = 2; i < apPass->m_uiStageCount; ++i)
     {
-        BeamStage* stage = pStageList->m_kStages.m_pBase[i].m_pObject;
+        BeamStage* stage = apPass->m_kStages.m_pBase[i].m_pObject;
         if (stage)
             stage->m_pBeamTexture = 0;
     }
 
-    AddToTwoCounters(GetTableValue(textureObject->m_nValue5c), GetTableValue(textureObject->m_nValue60), 0);
+    BSRenderState_SetAlphaBlendFunc(GetTableValue(textureObject->m_nValue5c), GetTableValue(textureObject->m_nValue60), 0);
 
     v66();
 }
@@ -913,14 +939,16 @@ class FUN_00bbb820_cls
 {
   public:
     NiD3DPass* SetupPass(int param_1, int param_2);
-    void Lighting30Shader_SetRenderStatesForPass(int param_1, int param_2);
+    void Lighting30Shader_SetRenderStatesForPass(int auiPass, int apL30Prop);
 };
 
 // @fnv 0x00bbb820
 // src: COMMUNITY 0x00bbb820
-void FUN_00bbb820_cls::Lighting30Shader_SetRenderStatesForPass(int param_1, int param_2)
+// pdb: Lighting30Shader::SetRenderStatesForPass | Lighting30Shader.obj | retail, upstream name already matches, high
+// pdb params: auiPass, apL30Prop
+void FUN_00bbb820_cls::Lighting30Shader_SetRenderStatesForPass(int auiPass, int apL30Prop)
 {
-    NiD3DPass* pResult = this->SetupPass(param_1, param_2);
+    NiD3DPass* pResult = this->SetupPass(auiPass, apL30Prop);
     DAT_0126f74c = (int)pResult;
     reinterpret_cast<GroupStandIn*>(pResult->m_pkRenderStateGroup)->ApplyGroupEntries();
 }
@@ -1037,12 +1065,15 @@ extern FogColorA DAT_01200c38;
 
 // @fnv 0x00bbde20
 // src: COMMUNITY 0x00bbde20
-void __stdcall Lighting30Shader_UpdateTexEffectConstants(int bFog, ShadowSceneOwner* pOwner, int iUnused)
+// pdb: Lighting30Shader::UpdateTexEffectConstants | Lighting30Shader.obj | retail, upstream name already matches, high
+// pdb params: apGeometry, apBSSProp, apPass
+// pdb locals: pdata, pbsfog, pprop, knear, fpower, kfar, kfogcolor
+void __stdcall Lighting30Shader_UpdateTexEffectConstants(int apGeometry, ShadowSceneOwner* apBSSProp, int apPass)
 {
-    if (!pOwner)
+    if (!apBSSProp)
         return;
 
-    ShadowSceneData* pData = pOwner->m_pData;
+    ShadowSceneData* pData = apBSSProp->m_pData;
     if (pData)
     {
         DAT_01200bf8 = pData->m_kQuad0;
@@ -1056,7 +1087,7 @@ void __stdcall Lighting30Shader_UpdateTexEffectConstants(int bFog, ShadowSceneOw
     DAT_01200c28 = FogColorA(0.0f, 0.0f, 0.0f, 0.0f);
     DAT_01200c38 = FogColorA(0.0f, 0.0f, 0.0f, 0.0f);
 
-    if (!bFog)
+    if (!apGeometry)
         return;
 
     BSFogProperty* pFog = BSShaderManager_GetFogProperty(DAT_011f91c4);
@@ -1064,7 +1095,7 @@ void __stdcall Lighting30Shader_UpdateTexEffectConstants(int bFog, ShadowSceneOw
         return;
 
     float fStart = pFog->nearDepth;
-    float fFogEnd = pFog->farDepth;
+    float fFogEnd = pFog->fEndDistance;
     float m_fAlpha = pFog->density;
     if (fFogEnd != 0.0f || fStart != 0.0f)
     {
@@ -1114,7 +1145,11 @@ inline void AssignMap(NiPointer<NiD3DShaderConstantMap>& dst, const NiPointer<Ni
     }
 }
 // @fnv 0x00bbd880
-void __cdecl UpdateLightingPassState(unsigned int pass)
+// src: XBOX_RETAIL_PDB 0x00bbd880
+// pdb: Lighting30Shader::EnableConstantsForPass | Lighting30Shader.obj | retail, object-file gap fill, high
+// pdb params: auiPassEnum, abAlphaPass
+// pdb locals: ioffset, pkThis, i, pkdefshader
+void __cdecl Lighting30Shader_EnableConstantsForPass(unsigned int pass)
 {
     Lighting30Shader* shader = BSShaderManager_GetShader(29);
     if (shader && (pass == 480 || pass == 481))
@@ -1122,10 +1157,10 @@ void __cdecl UpdateLightingPassState(unsigned int pass)
         reinterpret_cast<ConstantMapPointer*>(&shader->m_spPixelConstantMap)
             ->FUN_00c663d0(&shader->m_spFillColorConstantMap);
         reinterpret_cast<ConstantMapPointer*>(&shader->m_spVertexConstantMap)
-            ->FUN_00c663d0(&shader->m_spFogConstantMap);
+            ->FUN_00c663d0(&shader->spTexEffectVConstantMap);
         return;
     }
-    AssignMap(shader->m_spPixelConstantMap, shader->m_spFirstPassConstantMap);
+    AssignMap(shader->m_spPixelConstantMap, shader->spDefaultPixelConstantMap);
     AssignMap(shader->m_spVertexConstantMap, shader->m_spSecondPassConstantMap);
     unsigned int index;
     switch (pass)
@@ -1257,20 +1292,23 @@ void __cdecl BSRenderState_SetAlphaTestFuncRef(unsigned int, unsigned int, unsig
 
 struct FUN_00bbdda0_cls : public FUN_00bbdcd0_shell
 {
-    void SetupTextureStages(FUN_00bbdcd0_Arg1* a1, NiD3DPass* a2);
+    void SetupTextureStages(FUN_00bbdcd0_Arg1* apBSSProp, NiD3DPass* apPass);
 };
 
 // @fnv 0x00bbdda0
-void FUN_00bbdda0_cls::SetupTextureStages(FUN_00bbdcd0_Arg1* apTextureSource, NiD3DPass* apStageList)
+// pdb: Lighting30Shader::UpdatePipelineZOnlyTexEffect | Lighting30Shader.obj | retail, object-file gap fill, high
+// pdb params: apBSSProp, apPass
+// pdb locals: pstage, pdata
+void FUN_00bbdda0_cls::SetupTextureStages(FUN_00bbdcd0_Arg1* apBSSProp, NiD3DPass* apPass)
 {
-    unsigned char* pTextureObject = (unsigned char*)apTextureSource->m_pTextureObject;
+    unsigned char* pTextureObject = (unsigned char*)apBSSProp->m_pTextureObject;
     if (pTextureObject == 0)
     {
         return;
     }
 
     unsigned int uiFirstTexture = *(unsigned int*)(pTextureObject + 0x6c);
-    BeamStage* stage0 = apStageList->m_kStages.m_pBase[0].m_pObject;
+    BeamStage* stage0 = apPass->m_kStages.m_pBase[0].m_pObject;
     if (uiFirstTexture != 0)
     {
         stage0->m_pBeamTexture = (NiTexture*)uiFirstTexture;
@@ -1281,9 +1319,9 @@ void FUN_00bbdda0_cls::SetupTextureStages(FUN_00bbdcd0_Arg1* apTextureSource, Ni
     }
     stage0->ApplyPairToState(3);
 
-    for (unsigned int i = 1; i < apStageList->m_uiStageCount; ++i)
+    for (unsigned int i = 1; i < apPass->m_uiStageCount; ++i)
     {
-        BeamStage* stage = apStageList->m_kStages.m_pBase[i].m_pObject;
+        BeamStage* stage = apPass->m_kStages.m_pBase[i].m_pObject;
         if (stage != 0)
         {
             stage->m_pBeamTexture = 0;
@@ -1574,6 +1612,8 @@ struct Lighting
 };
 // @fnv 0x00bbf5a0
 // src: XBOX_PDB 0x00bbf5a0
+// pdb: Lighting30Shader::CreateConstantMaps | Lighting30Shader.obj | retail, upstream name already matches, high
+// pdb locals: uiDefinedMatrixFlags, uiConstantPoint4Flags, uiConstantMatrixFlags, uiConstantPoint8Flags, uiConstantPoint1Flags
 void Lighting::Lighting30Shader_CreateConstantMaps()
 {
     if (!constants34.object && !DAT_01201f28)
@@ -2192,6 +2232,8 @@ class SM3ShaderLoader
 // Creates SM3 pixel shaders into DAT_01200c48 and DAT_01200d10 from kDescs, adjusting macro definitions by iVersion and DAT_011f94a4.
 // @fnv 0x00bba5d0
 // src: COMMUNITY 0x00bba5d0
+// pdb: Lighting30Shader::LoadPixelShaders | Lighting30Shader.obj | retail, upstream name already matches, high
+// pdb locals: ptempFName, cmaxlights2, ptarget, cpShadowMode, pcacheFName, pshader, i, cmaxlights8, cmaxlights20
 void SM3ShaderLoader::Lighting30Shader_LoadPixelShaders()
 {
     ShaderDescriptor kDescs[50] = {
@@ -2490,6 +2532,8 @@ extern float DAT_011f9614, DAT_011f9618;
 extern ResultVector DAT_01201bc0, DAT_01201bd0;
 // When DAT_012010e4->bOn, computes a fog plane from DAT_011f9604 and camera position, and sets DAT_01201bd0 from DAT_011f9614/DAT_011f9618.
 // @fnv 0x00bbbe80
+// pdb: Lighting30Shader::SetupGeometryConstants_WaterFog | Lighting30Shader.obj | debug, object-file gap fill, medium
+// pdb locals: knear, waterplane, eyepos, waterplanenormal, feyetoplanedist, kfar
 void UpdateFogPlanes()
 {
     if (DAT_012010e4->bOn)
@@ -2849,11 +2893,14 @@ void __stdcall D3DXVec3TransformCoord_00ee6df8(NiPoint3* dst, const NiPoint3* sr
 // Sets light colors and updates position/alpha entries in DAT_01201c90 using matrix transforms, actor origin, and scale adjustments.
 // @fnv 0x00bbc050
 // src: COMMUNITY 0x00bbc050
-void __stdcall Lighting30Shader_SetupGeometryConstants_Lights(LightingSource* source, EffectOp* op, unsigned int type, OtherData* detail, Matrix* matrix,
-                            int adjustScale, SizeScale* size)
+// pdb: Lighting30Shader::SetupGeometryConstants_Lights | Lighting30Shader.obj | retail, upstream name already matches, high
+// pdb params: pprop, apRenderPass, auiCurrentPass, pmaterialProperty, d3dInvWorld, pskin, worldTransform
+// pdb locals: psslight, fdarkness, icount, icount1, inumLights, ipdataindex, ilights, i, lightdirin, vLightDir, vLightObjectDir, modelspacedir, lightdir, lightpos, vLightPos, lightposin, koffset, vLightObjectPos, radius, modelspacepos
+void __stdcall Lighting30Shader_SetupGeometryConstants_Lights(LightingSource* pprop, EffectOp* apRenderPass, unsigned int auiCurrentPass, OtherData* pmaterialProperty, Matrix* d3dInvWorld,
+                            int pskin, SizeScale* worldTransform)
 {
     NiPoint3 vPoint, v;
-    float amount = source->intensity6c;
+    float amount = pprop->intensity6c;
     if (DAT_011f91b8 == 15)
     {
         RenderData* data = BSShaderManager_GetCurrentAccumulator();
@@ -2863,32 +2910,32 @@ void __stdcall Lighting30Shader_SetupGeometryConstants_Lights(LightingSource* so
         DAT_01201b30.w = data->light154.w;
         return;
     }
-    unsigned short opcode = op->opCode04;
-    int count = op->count09;
+    unsigned short opcode = apRenderPass->opCode04;
+    int count = apRenderPass->count09;
     unsigned short usLo = 0x1c4, usHi = 0x1c7;
     if ((opcode >= (unsigned short)0x1c8 && opcode <= (unsigned short)0x1cb) || (opcode >= usLo && opcode <= usHi))
     {
-        SetLightColor(0, op->indices0c[0], amount);
+        SetLightColor(0, apRenderPass->indices0c[0], amount);
     }
     else
     {
         if (count > 0)
-            ApplyWaterLighting(0, op->indices0c[0], amount);
+            ApplyWaterLighting(0, apRenderPass->indices0c[0], amount);
         for (int i = 1; i < count; ++i)
-            SetLightColor(i, op->indices0c[i], amount);
+            SetLightColor(i, apRenderPass->indices0c[i], amount);
     }
-    if (DAT_011f941e && (source->flags20 & 0x400) > 0)
+    if (DAT_011f941e && (pprop->flags20 & 0x400) > 0)
     {
         DAT_011fa0d0 = DAT_011fa0d0 * DAT_011f9184;
     }
     if (DAT_011f91a7)
         *reinterpret_cast<Lighting30Packet4*>(&DAT_011fa0d0) = DAT_011a9bd0;
-    if (type < 0x1bd)
+    if (auiCurrentPass < 0x1bd)
     {
         unsigned short cnt;
-        if (op->count09 > 0)
+        if (apRenderPass->count09 > 0)
         {
-            int vv = op->count09;
+            int vv = apRenderPass->count09;
             if (DAT_011ae60c < vv)
                 vv = DAT_011ae60c;
             cnt = (unsigned short)(vv - 1);
@@ -2899,13 +2946,13 @@ void __stdcall Lighting30Shader_SetupGeometryConstants_Lights(LightingSource* so
         }
         DAT_01201c70 = 1.0f;
         DAT_01201c74 = (float)(int)cnt;
-        DAT_01201c78 = detail->value38;
+        DAT_01201c78 = pmaterialProperty->value38;
         DAT_01201c7c = DAT_011f9427 ? 0.0f : 1.0f;
         DAT_012010e8->value20 = (int)(cnt + cnt + 3);
     }
-    else if (type == 0x1c3)
+    else if (auiCurrentPass == 0x1c3)
     {
-        if (source->BSShaderLightingProperty_GetNumberofActiveLights() == 0)
+        if (pprop->BSShaderLightingProperty_GetNumberofActiveLights() == 0)
         {
             if (DAT_011f91b8 == 10)
             {
@@ -2920,7 +2967,7 @@ void __stdcall Lighting30Shader_SetupGeometryConstants_Lights(LightingSource* so
     }
     else
     {
-        if (type - 0x1c4 <= 3)
+        if (auiCurrentPass - 0x1c4 <= 3)
         {
             DAT_012010e8->value20 = 3;
             DAT_01201c70 = 0.0f;
@@ -2938,7 +2985,7 @@ void __stdcall Lighting30Shader_SetupGeometryConstants_Lights(LightingSource* so
         int offset = 0;
         int primaryCount = (int)DAT_01201c70;
         int secondaryCount = (int)DAT_01201c74;
-        if ((type < 0x1c4 || type > 0x1c7) && primaryCount > 0)
+        if ((auiCurrentPass < 0x1c4 || auiCurrentPass > 0x1c7) && primaryCount > 0)
         {
             PositionAlphaEntry* pEntry = DAT_01201c90 + 1;
 
@@ -2949,7 +2996,7 @@ void __stdcall Lighting30Shader_SetupGeometryConstants_Lights(LightingSource* so
                 vPoint.x = vNeg.r;
                 vPoint.y = vNeg.g;
                 vPoint.z = vNeg.b;
-                D3DXVec3TransformNormal_00ee6df2(&vTransformed, &vPoint, matrix);
+                D3DXVec3TransformNormal_00ee6df2(&vTransformed, &vPoint, d3dInvWorld);
                 D3DXVec3Normalize_00ee6dec(&vPoint, &vTransformed);
                 NiPoint3 vTemp(vPoint.x, vPoint.y, vPoint.z);
                 v = vTemp;
@@ -2970,19 +3017,19 @@ void __stdcall Lighting30Shader_SetupGeometryConstants_Lights(LightingSource* so
             v.z = vEntryCopy.b;
             NiPoint3 vOrigin = DAT_011f91c8->position1e4;
             v += vOrigin;
-            D3DXVec3TransformCoord_00ee6df8(&vTransformed, &v, matrix);
+            D3DXVec3TransformCoord_00ee6df8(&vTransformed, &v, d3dInvWorld);
             vPoint.x = vTransformed.x;
             vPoint.y = vTransformed.y;
             vPoint.z = vTransformed.z;
             float opacity = vEntryCopy.a;
-            if (adjustScale == 0)
+            if (pskin == 0)
             {
-                if (type == 0x1c4 || type == 0x1c5)
+                if (auiCurrentPass == 0x1c4 || auiCurrentPass == 0x1c5)
                 {
-                    vPoint *= size->scale30;
+                    vPoint *= worldTransform->scale30;
                 }
                 else
-                    opacity /= size->scale30;
+                    opacity /= worldTransform->scale30;
             }
             NiColorA vCopyPosition(vPoint.x, vPoint.y, vPoint.z, opacity);
             *reinterpret_cast<NiColorA*>(&refEntry) = vCopyPosition;
@@ -3042,6 +3089,9 @@ class MapOwner : public NiD3DShader
 
 // Maps a shader index to a table entry, sets dirty flags on Lighting30PacketState objects, and updates fog and position packet data when their states are dirty.
 // @fnv 0x00bbe120
+// pdb: Lighting30Shader::SetupPassConstants | Lighting30Shader.obj | debug, object-file run extension, low
+// pdb params: auiCurrentPass
+// pdb locals: ioffset, i, pbsfog, kfogcolor, knear, fpower, kfar, eyepos, eyeposin
 void MapOwner::UpdateShaderDirtyFlags(int aiShaderIndex)
 {
     PacketF t;
@@ -3173,7 +3223,7 @@ void MapOwner::UpdateShaderDirtyFlags(int aiShaderIndex)
         {
             float v2c = pFogProperty->nearDepth;
             NiColor pt = pFogProperty->color;
-            float v30 = pFogProperty->farDepth;
+            float v30 = pFogProperty->fEndDistance;
             float v60 = pFogProperty->density;
             if (v30 == 0.0f && v2c == 0.0f)
             {
@@ -3573,6 +3623,9 @@ inline const NiPoint3& GetGeomPosition()
 
 // Selects a NiD3DPass by kind, configures its texture stages and inputs from the render context, and returns the pass.
 // @fnv 0x00c0bd40
+// pdb: Lighting30Shader::GetPass | Lighting30Shader_Update.obj | debug, object-file run extension, low
+// pdb params: auiPass
+// pdb locals: ppass
 NiD3DPass* RenderPassShader::SetupPass(int kind, RenderContext* context)
 {
     NiD3DPass* pass = 0;
@@ -4391,6 +4444,8 @@ class SM3ShaderLoader
 // Loads 57 vertex shader entries using the selected profile, with four entries that may instead use vs_3_0.
 // @fnv 0x00bb96f0
 // src: COMMUNITY 0x00bb96f0
+// pdb: Lighting30Shader::LoadVertexShaders | Lighting30Shader.obj | retail, upstream name already matches, high
+// pdb locals: ptempFName, ptarget, pcacheFName, pshader, i
 void SM3ShaderLoader::Lighting30Shader_LoadVertexShaders()
 {
     ShaderDescriptor shaderEntries[57] = {
@@ -5723,7 +5778,7 @@ extern PlaneTargetHolder* DAT_011f4748;
 extern float DAT_011f474c, DAT_011f4750, DAT_011f4754;
 
 void BSRenderState_SetZWriteEnable(int, int);
-void BSUtilities_GetInverseWorldMatrix(void* sub, int b, Mat* m);
+void BSUtilities_GetInverseWorldMatrix(void* aWorld, int apSkin, Mat* aOut);
 Flags164* BSShaderManager_GetAccumulator();
 Mat* __stdcall D3DXMatrixMultiply_00ee6de0(Mat* o, Mat* a, Mat* b);
 Mat* __stdcall D3DXMatrixInverse_00ee6dda(Mat* o, float* det, Mat* a);
@@ -5808,16 +5863,16 @@ struct Shadow
     int pad2_00c;
     int e30;
     int e34;
-    void SetupTextureStages(P0c* p, Glob* g);
-    void ApplyTextureStages(P0c* p, Glob* g);
-    void Lighting30Shader_UpdateTexEffectConstants(Obj* o, P0c* p, Glob* g);
-    void Lighting30Shader_SetupGeometryConstants_Lights(P0c* p, Root* r, int mode, int p8, Mat* m, int b, void* sub);
-    void Lighting30Shader_SetupGeometryConstants_ObjToCubemap(Root* r, int mode, int b, void* sub);
+    void SetupTextureStages(P0c* apBSSProp, Glob* apPass);
+    void ApplyTextureStages(P0c* apBSSProp, Glob* apPass);
+    void Lighting30Shader_UpdateTexEffectConstants(Obj* apGeometry, P0c* apBSSProp, Glob* apPass);
+    void Lighting30Shader_SetupGeometryConstants_Lights(P0c* pprop, Root* apRenderPass, int auiCurrentPass, int pmaterialProperty, Mat* d3dInvWorld, int pskin, void* worldTransform);
+    void Lighting30Shader_SetupGeometryConstants_ObjToCubemap(Root* apRenderPass, int auiCurrentPass, int apSkin, void* aWorldTransform);
     void UpdateShaderMatrices(int b, void* sub);
     void UpdatePositionOffset(const char* n);
     void UpdateTransformedPosition(Mat m, void* sub);
-    void Lighting30Shader_SetupGeometryConstants_HairTint(P0c* p);
-    void Lighting30Shader_SetupGeometryConstants_MaterialAlpha(const char* n, P0c* p, Arg* a, int mode);
+    void Lighting30Shader_SetupGeometryConstants_HairTint(P0c* pprop);
+    void Lighting30Shader_SetupGeometryConstants_MaterialAlpha(const char* aWorldBound, P0c* apProp, Arg* apState, int auiCurrentPass);
     void ApplyLightSource(int p8, P0c* p);
     void Lighting30Shader_SetupGeometryConstants_RefractionPower(P0c* p);
     void UpdateFogPlanes();
@@ -5825,7 +5880,7 @@ struct Shadow
     {
         return r18;
     }
-    void Lighting30Shader_SetupGeometryConstants(Arg* arg);
+    void Lighting30Shader_SetupGeometryConstants(Arg* apState);
     Shadow* UpdateFrustum(ClipFull* clip, Plane* src, Shadow* volatile& owner);
 };
 
@@ -5914,7 +5969,10 @@ __forceinline Shadow* Shadow::UpdateFrustum(ClipFull* clip, Plane* src, Shadow* 
 // Updates shadow rendering state, applies texture stages and matrices, updates frustum planes, and dispatches callbacks based on mode and flags.
 // @fnv 0x00bbef90
 // src: XBOX_PDB 0x00bbef90
-void Shadow::Lighting30Shader_SetupGeometryConstants(Arg* apArgs)
+// pdb: Lighting30Shader::SetupGeometryConstants | Lighting30Shader.obj | retail, upstream name already matches, high
+// pdb params: apState
+// pdb locals: auiCurrentPass, pgeometry, d3dInvWorld, pmaterialProperty, worldTransform, apRenderPass, worldBound, pprop, pbufferData, pskin, pdevice, plight, prenderpass, pplanes, kD3DView, koffset, kclipplane, kD3DProj, kview, kinv, kprojection, kworldtoclip, i, knormal ...
+void Shadow::Lighting30Shader_SetupGeometryConstants(Arg* apState)
 {
     Shadow* pShadow = this;
     Shadow* volatile pShadowVolatile = this;
@@ -5927,10 +5985,10 @@ void Shadow::Lighting30Shader_SetupGeometryConstants(Arg* apArgs)
         name = DAT_011f4288;
     int a = obj->b8->v;
     int b = obj->bc;
-    P0c* pc = apArgs->pc;
-    int p8 = apArgs->p8;
+    P0c* pc = apState->pc;
+    int p8 = apState->p8;
     Mat mat;
-    if ((unsigned)(mode - 0x1d3) <= 3 && (apArgs->g0->flags & 1))
+    if ((unsigned)(mode - 0x1d3) <= 3 && (apState->g0->flags & 1))
         BSRenderState_SetZWriteEnable(0, 1);
     BSUtilities_GetInverseWorldMatrix(sub, b, &mat);
     r18->NiDX9Renderer_SetModelTransform(sub, 0);
@@ -5952,7 +6010,7 @@ void Shadow::Lighting30Shader_SetupGeometryConstants(Arg* apArgs)
         UpdatePositionOffset(name);
         UpdateTransformedPosition(mat, sub);
         Lighting30Shader_SetupGeometryConstants_HairTint(pc);
-        Lighting30Shader_SetupGeometryConstants_MaterialAlpha(name, pc, apArgs, mode);
+        Lighting30Shader_SetupGeometryConstants_MaterialAlpha(name, pc, apState, mode);
         ApplyLightSource(p8, pc);
         Lighting30Shader_SetupGeometryConstants_RefractionPower(pc);
         if (DAT_012010dc->b)
@@ -5980,10 +6038,10 @@ void Shadow::Lighting30Shader_SetupGeometryConstants(Arg* apArgs)
         }
     }
     if (pShadow->e30 && DAT_0126f74c->h44)
-        DAT_0126f74c->l34->vfn(DAT_0126f74c->h44, obj, b, 0, a, apArgs, 0, sub, name, 0, 1);
+        DAT_0126f74c->l34->vfn(DAT_0126f74c->h44, obj, b, 0, a, apState, 0, sub, name, 0, 1);
     if (pShadow->e34 && DAT_0126f74c->h5c)
-        DAT_0126f74c->l48->vfn(DAT_0126f74c->h5c, obj, b, 0, a, apArgs, 0, sub, name, 0, 1);
-    Geo* t = apArgs->g10;
+        DAT_0126f74c->l48->vfn(DAT_0126f74c->h5c, obj, b, 0, a, apState, 0, sub, name, 0, 1);
+    Geo* t = apState->g10;
     if (t && (t->flags & 1))
         pShadow->s1c->f24(t);
 }
@@ -6184,14 +6242,17 @@ __declspec(noinline) float SolColor::ComputeWeightedSum() const
 // Computes ambient, diffuse, specular and emissive coefficients into DAT_01201b60 from lighting, state and render mode, and updates the dim flag.
 // @fnv 0x00bbe9c0
 // src: XBOX_PDB 0x00bbe9c0
-void __stdcall Lighting30Shader_SetupGeometryConstants_MaterialAlpha(const SolPosition* original, S00bbe9c0_Obj* lighting, S00bbe9c0_Flags** state,
-                            unsigned int renderMode)
+// pdb: Lighting30Shader::SetupGeometryConstants_MaterialAlpha | Lighting30Shader.obj | retail, upstream name already matches, high
+// pdb params: aWorldBound, apProp, apState, auiCurrentPass
+// pdb locals: boldma, palpha, fam, fenvMapLODFade, flightlum, fsunlum, ksunColor, psslight, pssunlight, itlight, flightatt, vlight, kdiffColor, destBlendMode
+void __stdcall Lighting30Shader_SetupGeometryConstants_MaterialAlpha(const SolPosition* aWorldBound, S00bbe9c0_Obj* apProp, S00bbe9c0_Flags** apState,
+                            unsigned int auiCurrentPass)
 {
     DAT_01201b60 = DAT_011a9be0;
     if (DAT_011f91b8 == 8)
     {
-        DAT_01201b60.ambient = ((lighting->flags & 0x20000u) > 0u) ? 0.0f : 1.0f;
-        S00bbe9c0_Flags* s = *state;
+        DAT_01201b60.ambient = ((apProp->flags & 0x20000u) > 0u) ? 0.0f : 1.0f;
+        S00bbe9c0_Flags* s = *apState;
         if (s && (((*(unsigned char*)&s->flags) & 1u) || ((((unsigned char)(s->flags >> 9)) & 1u) != 0)))
         {
             DAT_01201b60.diffuse = 0.0f;
@@ -6202,20 +6263,20 @@ void __stdcall Lighting30Shader_SetupGeometryConstants_MaterialAlpha(const SolPo
         }
         return;
     }
-    if (DAT_011f91b8 == 10 || renderMode - 0x1bd > 6)
+    if (DAT_011f91b8 == 10 || auiCurrentPass - 0x1bd > 6)
     {
-        DAT_01201b60.ambient = lighting->opacity < 1.0f ? lighting->opacity : 1.0f;
+        DAT_01201b60.ambient = apProp->opacity < 1.0f ? apProp->opacity : 1.0f;
     }
     else
     {
-        float modifier = lighting->vtable->GetActorValueModifierAmount(lighting);
-        float illumination = lighting->opacity * modifier;
+        float modifier = apProp->vtable->GetActorValueModifierAmount(apProp);
+        float illumination = apProp->opacity * modifier;
         DAT_01201b60.ambient = illumination < 1.0f ? illumination : 1.0f;
-        if (((lighting->flags & 0x8000u) > 0u) && !lighting->FUN_004a2020(0x11))
+        if (((apProp->flags & 0x8000u) > 0u) && !apProp->FUN_004a2020(0x11))
         {
-            renderMode = 0;
+            auiCurrentPass = 0;
             illumination = 0.0f;
-            S00bbe9c0_Node* node = lighting->BSShaderLightingProperty_GetFirstActiveNonShadowLight((int*)&renderMode);
+            S00bbe9c0_Node* node = apProp->BSShaderLightingProperty_GetFirstActiveNonShadowLight((int*)&auiCurrentPass);
             S00bbe9c0_Target* __restrict cam = ((S00bbe9c0_Holder*)DAT_011f91c8)->listE0->target;
             float alpha;
             {
@@ -6225,7 +6286,7 @@ void __stdcall Lighting30Shader_SetupGeometryConstants_MaterialAlpha(const SolPo
             if (node)
             {
                 S00bbe9c0_Target* t = node->target;
-                SolPosition relative = t->pos8c.SubtractIntoVector(*original);
+                SolPosition relative = t->pos8c.SubtractIntoVector(*aWorldBound);
                 SolColor scaledColor = node->target->posD4.ScaleTo(node->target->radC4);
                 float distance = relative.FUN_00457990() / t->fE0;
                 double d = BSMAX_0068b050(0.0, distance);
@@ -6236,7 +6297,7 @@ void __stdcall Lighting30Shader_SetupGeometryConstants_MaterialAlpha(const SolPo
             DAT_01201b60.ambient *= (illumination > alpha ? illumination : alpha);
         }
     }
-    S00bbe9c0_Flags* s = *state;
+    S00bbe9c0_Flags* s = *apState;
     if (!(((unsigned char)(s->flags >> 9)) & 1))
     {
         DAT_01201b60.diffuse = 0.0f;
@@ -6343,6 +6404,8 @@ struct FUN_00bbc9c0 : BSShader
 };
 // Releases shader pointers, states, resources, settings, and vertex declarations, resets constant arrays, and clears the geometry buffer pointer.
 // @fnv 0x00bbc9c0
+// pdb: Lighting30Shader::~Lighting30Shader | Lighting30Shader.obj | retail, object-file run extension, low
+// pdb locals: i
 FUN_00bbc9c0::~FUN_00bbc9c0()
 {
     for (int i = 0; i < 57; ++i)

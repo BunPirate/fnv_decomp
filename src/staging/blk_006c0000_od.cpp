@@ -68,7 +68,7 @@ public:
     PodPoint3* FUN_00439e90(PodPoint3* output, const PodPoint3* other) const;
     PodPoint3 SubtractIntoVector(const PodPoint3& other) const;
     void SubtractIntoVector();
-    PodPoint3 FUN_004b3800(const PodPoint3& axis) const;
+    PodPoint3 FUN_004b3800(const PodPoint3& pt) const;
     void Unitize_004a0c10();
     float FUN_00457910();
     float FUN_00457990() const;
@@ -119,6 +119,9 @@ struct FUN_006c8bd0_Class
 
 // @fnv 0x006c8bd0
 // src: COMMUNITY 0x006c8bd0
+// pdb: BSSimpleArray<ObstacleTaskNavMeshOperation,1024>::_MoveItems | NavMeshObstacleTask.obj | debug, object-file run extension, low
+// pdb params: apDestAddr, apSrcAddr, aiCount
+// pdb locals: i
 void FUN_006c8bd0_Class::BSSimpleArray_NiColorA_1024_CopyItems(const char* dst, const char* src, unsigned int count)
 {
     if (count <= 0)
@@ -177,6 +180,7 @@ struct FUN_006c00b0_Class
     FUN_006c00b0_Class();
 };
 // @fnv 0x006c00b0
+// pdb: bhkObstacleDeactivationListener::bhkObstacleDeactivationListener | NavMeshObstacleManager.obj | debug, call graph, medium
 FUN_006c00b0_Class::FUN_006c00b0_Class()
 {
     InitializeFields_006c0100();
@@ -212,6 +216,7 @@ struct FUN_006c6190_cls
 
 // @fnv 0x006c6190
 // src: GUESS 0x006c6190 (confidence: low)
+// pdb: BSSimpleArray<NiPointer<ObstacleData>,1024>::~BSSimpleArray<NiPointer<ObstacleData>,1024> | NavMeshObstacleManager.obj | debug, call graph (shared callers), medium
 void FUN_006c6190_cls::SetVtableAndProcessState_006c6190()
 {
     *reinterpret_cast<int**>(this) = &DAT_0106c640;
@@ -246,6 +251,7 @@ struct FUN_006c6c40_Class
 
 // @fnv 0x006c6c40
 // src: GUESS 0x006c6c40 (confidence: medium)
+// pdb: BSSimpleArray<ObstacleTaskData *,1024>::~BSSimpleArray<ObstacleTaskData *,1024> | NavMeshObstacleManager.obj | debug, call graph (shared callers), medium
 void FUN_006c6c40_Class::ResetVirtualTableAndClear_006c6c40()
 {
     m_ptr = "0rl";
@@ -316,7 +322,7 @@ void FUN_006c78f0_Class::SetVtableAndProcessState_006c78f0()
 // @fnv 0x006caa20
 bool __thiscall PathingRequest::GetByteAtOffsetA1()
 {
-    return m_bCanClimb;
+    return bGoDirectIfPathingFails;
 }
 
 struct EdgeArr
@@ -327,6 +333,7 @@ struct EdgeArr
 
 // @fnv 0x006ced70
 // src: COMMUNITY 0x006ced70
+// pdb: BSSimpleArray<ParentSpaceNode,1024>::GetFirst | PathBuilder.obj | debug, call graph, medium
 char* EdgeArr::BSSimpleArray_NiPoint3_1024_GetFirst()
 {
     return Object_GetIndexedValue_006a1440(0);
@@ -383,12 +390,13 @@ int FUN_006d1c20_Class::GetField2098()
 
 struct FUN_006d1c40_Class
 {
-    unsigned int InvokeVirtualMethod_006d1c40() const;
+    unsigned int NavMeshSearchLOS_GetLOSMap() const;
 };
 
 // @fnv 0x006d1c40
-// src: GUESS 0x006d1c40 (confidence: low)
-unsigned int FUN_006d1c40_Class::InvokeVirtualMethod_006d1c40() const
+// src: XBOX_DEBUG_PDB 0x006d1c40
+// pdb: NavMeshSearchLOS::GetLOSMap | Pathfind.obj | debug, call graph, high
+unsigned int FUN_006d1c40_Class::NavMeshSearchLOS_GetLOSMap() const
 {
     return ((const GO*)((const char*)this + 0x2070))->operator unsigned int();
 }
@@ -467,14 +475,18 @@ void FUN_006d33a0_Class::ForwardCall_006d33a0()
 }
 
 // @fnv 0x006d3ac0
-void PathingRequestClosePoint::SetOrigin(const PathingLocation& aLocation)
+// pdb: PathingRequest::SetOrigin | Pathfind.obj | debug, call graph, high
+// pdb params: aOrigin
+void PathingRequestClosePoint::SetOrigin(const PathingLocation& aOrigin)
 {
-    Origin = aLocation;
+    Origin = aOrigin;
 }
 
 void* __cdecl Pathing_ComputeApproximatePathingDistance(void*, void*, void*, void*, void*);
 
 // @fnv 0x006d62c0
+// pdb: Pathing::CanCreatePath | Pathfind.obj | debug, object-file gap fill, medium
+// pdb params: aStartLocation, aGoalLocation, apAvoidNodeArray
 void* __cdecl CallWithNullArgs(void* apArg1, void* apArg2, void* apArg3)
 {
     return Pathing_ComputeApproximatePathingDistance(apArg1, apArg2, apArg3, 0, 0);
@@ -483,15 +495,17 @@ void* __cdecl CallWithNullArgs(void* apArg1, void* apArg2, void* apArg3)
 
 struct FUN_006dad40_Class
 {
-    void PathingRequestCover_SetThreat(const NiPoint3& src);
+    void PathingRequestCover_SetThreat(const NiPoint3& apRef);
 };
 
 // Copies the given NiPoint3 into the object at offset 0xb0.
 // @fnv 0x006dad40
 // src: XBOX_PDB 0x006dad40
-void FUN_006dad40_Class::PathingRequestCover_SetThreat(const NiPoint3& src)
+// pdb: PathingRequestCover::SetThreat | PathingRequestCover.obj | debug, upstream name already matches, high
+// pdb params: apRef
+void FUN_006dad40_Class::PathingRequestCover_SetThreat(const NiPoint3& apRef)
 {
-    *reinterpret_cast<NiPoint3*>(reinterpret_cast<char*>(this) + 0xb0) = src;
+    *reinterpret_cast<NiPoint3*>(reinterpret_cast<char*>(this) + 0xb0) = apRef;
 }
 
 struct FUN_006db060_Class
@@ -502,6 +516,9 @@ struct FUN_006db060_Class
 // Allocates size * 0x54 bytes via operator new and returns the pointer.
 // @fnv 0x006db060
 // src: GUESS 0x006db060 (confidence: medium)
+// pdb: BSSimpleArray<PathingCoverLocation,1024>::_Allocate | Pathfind.obj | debug, vtable slot, medium
+// pdb params: aiSizeInItem
+// pdb locals: pnewBuffer
 void* __thiscall FUN_006db060_Class::AllocateStorage_006db060(unsigned int size)
 {
     void* result = operator new(size * 0x54);
@@ -517,6 +534,8 @@ struct FUN_006db0b0_Class
 
 // @fnv 0x006db0b0
 // src: GUESS 0x006db0b0 (confidence: medium)
+// pdb: BSSimpleArray<PathingCoverLocation,1024>::_Reallocate | Pathfind.obj | debug, vtable slot, medium
+// pdb params: apBuffer, aiNewSizeInItem
 void* __thiscall FUN_006db0b0_Class::Reallocate_Thunk(void* base, unsigned int count)
 {
     return _Reallocate(base, count * 0x54);
@@ -538,6 +557,7 @@ struct FUN_006db330_Class
 
 // @fnv 0x006db330
 // src: GUESS 0x006db330 (confidence: low)
+// pdb: BSSimpleArray<PathingNode *,1024>::~BSSimpleArray<PathingNode *,1024> | Pathfind.obj | debug, call graph (shared callers), medium
 void FUN_006db330_Class::UpdateState_006db330()
 {
     m_ptr = (GlobalObject_00869f00*)&DAT_0106cc14;
@@ -552,6 +572,7 @@ struct FUN_006db3b0_Class : public FUN_006dc1d0_Class
 };
 // @fnv 0x006db3b0
 // src: COMMUNITY 0x006db3b0
+// pdb: BSSimpleArray<FastNavMeshEdgeLocationProxy,1024>::BSSimpleArray<FastNavMeshEdgeLocationProxy,1024> | Pathfind.obj | debug, object-file run extension, low
 FUN_006db3b0_Class* FUN_006db3b0_Class::BSSimpleArray_FastNavMeshEdgeLocationProxy_1024_BSSimpleArray_FastNavMeshEdgeLocationProxy_1024()
 {
     *reinterpret_cast<int**>(this) = &DAT_0106cc28;
@@ -568,11 +589,12 @@ struct GlobalObject_00869f00
 struct FUN_006db3e0_Class
 {
     void* m_ptr;
-    void ResetVirtualTableAndClear_006db3e0();
+    void BSSimpleArray_FastNavMeshEdgeLocationProxy_1024_dtor();
 };
 // @fnv 0x006db3e0
-// src: GUESS 0x006db3e0 (confidence: medium)
-void FUN_006db3e0_Class::ResetVirtualTableAndClear_006db3e0()
+// src: XBOX_DEBUG_PDB 0x006db3e0
+// pdb: BSSimpleArray<FastNavMeshEdgeLocationProxy,1024>::~BSSimpleArray<FastNavMeshEdgeLocationProxy,1024> | Pathfind.obj | debug, call graph, high
+void FUN_006db3e0_Class::BSSimpleArray_FastNavMeshEdgeLocationProxy_1024_dtor()
 {
     m_ptr = &DAT_0106cc28;
     reinterpret_cast<GlobalObject_00869f00*>(this)->Clear(true);
@@ -588,10 +610,12 @@ struct GlobalObject_00869f00
 struct FUN_006db4d0_Class
 {
     void* m_ptr;
-    void InitializeAndClear();
+    void BSSimpleArray_NavmeshTriFan_1024_dtor();
 };
 // @fnv 0x006db4d0
-void FUN_006db4d0_Class::InitializeAndClear()
+// src: XBOX_DEBUG_PDB 0x006db4d0
+// pdb: BSSimpleArray<NavmeshTriFan,1024>::~BSSimpleArray<NavmeshTriFan,1024> | Pathfind.obj | debug, call graph, high
+void FUN_006db4d0_Class::BSSimpleArray_NavmeshTriFan_1024_dtor()
 {
     m_ptr = &DAT_0106cc3c;
     ((GlobalObject_00869f00*)this)->Clear(true);
@@ -630,6 +654,7 @@ struct FUN_006db930_Class
 };
 // @fnv 0x006db930
 // src: GUESS 0x006db930 (confidence: low)
+// pdb: BSSimpleArray<CrossedTriangle,1024>::~BSSimpleArray<CrossedTriangle,1024> | Pathfind.obj | debug, call graph (shared callers), low
 void FUN_006db930_Class::SetVtableAndProcessState_006db930()
 {
     *reinterpret_cast<int**>(this) = &DAT_0106cc8c;
@@ -649,6 +674,9 @@ struct FUN_006db9e0_Class
 // Sets the object's vtable pointer to DAT_0106cca0, calls FUN_006dc440(0, 0) on it, and returns this.
 // @fnv 0x006db9e0
 // src: XBOX_PDB 0x006db9e0
+// pdb: BSSimpleArray<NavMeshTriHandle,1024>::_Allocate | Pathfind.obj | debug, object-file run extension, low
+// pdb params: aiSizeInItem
+// pdb locals: pnewBuffer
 void* FUN_006db9e0_Class::BSSimpleArray_NavMeshTriHandle_1024_BSSimpleArray_NavMeshTriHandle_1024()
 {
     *reinterpret_cast<int**>(this) = &DAT_0106cca0;
@@ -670,6 +698,8 @@ struct FUN_006dba10_Class
 };
 
 // @fnv 0x006dba10
+// pdb: BSSimpleArray<NavMeshTriHandle,1024>::_Deallocate | Pathfind.obj | debug, object-file run extension, low
+// pdb params: apBuffer
 void FUN_006dba10_Class::InitAndClear()
 {
     *reinterpret_cast<int**>(this) = &DAT_0106cca0;
@@ -747,12 +777,13 @@ struct FUN_006c63b0_Class
     const char* m_str;
     int m_auiShapeKeys;
     void* m_alloc;
-    void UpdateState_006c63b0();
+    void NiTMapBase_DFALL_NiTMapItem_unsigned_int_NiPointer_ReferenceObstacleArray_unsigned_int_NiPointer_ReferenceObstacleArray_dtor();
 };
 // Sets m_str to "@ql", clears the pointer map contents, and frees m_alloc.
 // @fnv 0x006c63b0
-// src: GUESS 0x006c63b0 (confidence: low)
-void FUN_006c63b0_Class::UpdateState_006c63b0()
+// src: XBOX_DEBUG_PDB 0x006c63b0
+// pdb: NiTMapBase<DFALL<NiTMapItem<unsigned int,NiPointer<ReferenceObstacleArray> > >,unsigned int,NiPointer<ReferenceObstacleArray> >::~NiTMapBase<DFALL<NiTMapItem<unsigned int,NiPointer<ReferenceObstacleArray> > >,unsigned int,NiPointer<ReferenceObstacleArray> > | NavMeshObstacleManager.obj | debug, call graph (shared callers), high
+void FUN_006c63b0_Class::NiTMapBase_DFALL_NiTMapItem_unsigned_int_NiPointer_ReferenceObstacleArray_unsigned_int_NiPointer_ReferenceObstacleArray_dtor()
 {
     m_str = "@ql";
     ((NiTPointerMap<int, int>*)this)->RemoveAll();
@@ -766,12 +797,13 @@ struct FUN_006c6be0_Class
     int m_vtbl;
     int m_auiShapeKeys;
     void* m_ptr;
-    void ReleaseStorage_006c6be0();
+    void NiTMapBase_DFALL_NiTMapItem_unsigned_int_ObstacleTaskData_unsigned_int_ObstacleTaskData_dtor();
 };
 // Sets the vtable, clears the pointer map, and frees m_ptr.
 // @fnv 0x006c6be0
-// src: GUESS 0x006c6be0 (confidence: medium)
-void FUN_006c6be0_Class::ReleaseStorage_006c6be0()
+// src: XBOX_DEBUG_PDB 0x006c6be0
+// pdb: NiTMapBase<DFALL<NiTMapItem<unsigned int,ObstacleTaskData *> >,unsigned int,ObstacleTaskData *>::~NiTMapBase<DFALL<NiTMapItem<unsigned int,ObstacleTaskData *> >,unsigned int,ObstacleTaskData *> | NavMeshObstacleManager.obj | debug, call graph (shared callers), high
+void FUN_006c6be0_Class::NiTMapBase_DFALL_NiTMapItem_unsigned_int_ObstacleTaskData_unsigned_int_ObstacleTaskData_dtor()
 {
     m_vtbl = (int)&DAT_0106c6ac;
     ((NiTPointerMap<int, int>*)this)->RemoveAll();
@@ -788,6 +820,7 @@ struct FUN_006c60d0_Class
 
 // Calls FUN_006c6350, then frees this via Deallocate when flags has bit 0 set, and returns this.
 // @fnv 0x006c60d0
+// pdb: NiTMap<unsigned int,NiPointer<ReferenceObstacleArray> >::`scalar deleting destructor' | NavMeshObstacleManager.obj | retail, vtable slot, high
 void* __thiscall FUN_006c60d0_Class::FUN_006c60d0(unsigned int flags)
 {
     FUN_006c6350();
@@ -804,6 +837,7 @@ struct FUN_006c6100_Class
 };
 // Calls FUN_006c6a80, then deletes this if flags has bit 0 set, and returns this.
 // @fnv 0x006c6100
+// pdb: NiTMap<bhkRigidBody *,NiPointer<ObstacleData> >::`scalar deleting destructor' | NavMeshObstacleManager.obj | retail, vtable slot, high
 void* __thiscall FUN_006c6100_Class::FUN_006c6100(unsigned int flags)
 {
     FUN_006c6a80();
@@ -823,6 +857,7 @@ struct FUN_006c6130_Class
 };
 // Calls FUN_006c6b80 on this, then frees this via Deallocate if flags has bit 0 set, and returns this.
 // @fnv 0x006c6130
+// pdb: NiTMap<unsigned int,ObstacleTaskData *>::`scalar deleting destructor' | NavMeshObstacleManager.obj | retail, vtable slot, high
 void* __thiscall FUN_006c6130_Class::FUN_006c6130(unsigned int flags)
 {
     ((FUN_006c6b80_Class*)this)->FUN_006c6b80();
@@ -901,11 +936,12 @@ extern int DAT_0106c68c;
 void __cdecl _NiFree(void*);
 struct FUN_006c6ae0_S : public NiTPointerMap<int, int>
 {
-    void __thiscall ReleaseStorage_006c6ae0();
+    void __thiscall NiTMapBase_DFALL_NiTMapItem_bhkRigidBody_NiPointer_ObstacleData_bhkRigidBody_NiPointer_ObstacleData_dtor();
 };
 // @fnv 0x006c6ae0
-// src: GUESS 0x006c6ae0 (confidence: medium)
-void __thiscall FUN_006c6ae0_S::ReleaseStorage_006c6ae0()
+// src: XBOX_DEBUG_PDB 0x006c6ae0
+// pdb: NiTMapBase<DFALL<NiTMapItem<bhkRigidBody *,NiPointer<ObstacleData> > >,bhkRigidBody *,NiPointer<ObstacleData> >::~NiTMapBase<DFALL<NiTMapItem<bhkRigidBody *,NiPointer<ObstacleData> > >,bhkRigidBody *,NiPointer<ObstacleData> > | NavMeshObstacleManager.obj | debug, call graph (shared callers), high
+void __thiscall FUN_006c6ae0_S::NiTMapBase_DFALL_NiTMapItem_bhkRigidBody_NiPointer_ObstacleData_bhkRigidBody_NiPointer_ObstacleData_dtor()
 {
     *(int*)this = (int)&DAT_0106c68c;
     RemoveAll();
@@ -943,6 +979,7 @@ struct FUN_006c7110_Class : FUN_006c6190_cls
 };
 // Calls FUN_006c6190, then deallocates this when flags has bit 0 set, and returns this.
 // @fnv 0x006c7110
+// pdb: BSSimpleArray<NiPointer<ObstacleData>,1024>::`scalar deleting destructor' | NavMeshObstacleManager.obj | retail, vtable slot, high
 void* FUN_006c7110_Class::FUN_006c7110(unsigned int flags)
 {
     SetVtableAndProcessState_006c6190();
@@ -958,9 +995,10 @@ struct FUN_006c7140_Class
 };
 // Calls FUN_006c63b0 on this, frees this when flags has bit 0 set, and returns this.
 // @fnv 0x006c7140
+// pdb: NiTMapBase<DFALL<NiTMapItem<unsigned int,NiPointer<ReferenceObstacleArray> > >,unsigned int,NiPointer<ReferenceObstacleArray> >::`scalar deleting destructor' | NavMeshObstacleManager.obj | retail, vtable slot, high
 void* __thiscall FUN_006c7140_Class::FUN_006c7140(unsigned int flags)
 {
-    reinterpret_cast<FUN_006c63b0_Class*>(this)->UpdateState_006c63b0();
+    reinterpret_cast<FUN_006c63b0_Class*>(this)->NiTMapBase_DFALL_NiTMapItem_unsigned_int_NiPointer_ReferenceObstacleArray_unsigned_int_NiPointer_ReferenceObstacleArray_dtor();
     if (flags & 1)
         Deallocate(this);
     return this;
@@ -979,6 +1017,7 @@ struct FUN_006c7170_Class : public FUN_006c6680_Class
 };
 
 // @fnv 0x006c7170
+// pdb: LockFreeQueue<bhkRigidBody *>::`scalar deleting destructor' | NavMeshObstacleManager.obj | retail, vtable slot, high
 void* FUN_006c7170_Class::FUN_006c7170(unsigned int flags)
 {
     FUN_006c6680();
@@ -995,6 +1034,7 @@ struct FUN_006c74a0_Class
 };
 // Calls Destroy, then deallocates this when flags has bit 0 set, and returns this.
 // @fnv 0x006c71a0
+// pdb: ThreadSpecificInterfaceManager<LockFreeQueue<bhkRigidBody *>::LockFreeQueueInterface>::`scalar deleting destructor' | NavMeshObstacleManager.obj | debug, object-file gap fill, medium
 void* __thiscall FUN_006c74a0_Class::FUN_006c71a0(unsigned int flags)
 {
     Destroy();
@@ -1008,7 +1048,7 @@ extern "C" void __cdecl Deallocate(void*);
 
 struct FUN_006c6ae0_Class
 {
-    void ReleaseStorage_006c6ae0();
+    void NiTMapBase_DFALL_NiTMapItem_bhkRigidBody_NiPointer_ObstacleData_bhkRigidBody_NiPointer_ObstacleData_dtor();
 };
 
 struct FUN_006c71d0_Class : public FUN_006c6ae0_Class
@@ -1017,9 +1057,10 @@ struct FUN_006c71d0_Class : public FUN_006c6ae0_Class
 };
 
 // @fnv 0x006c71d0
+// pdb: NiTMapBase<DFALL<NiTMapItem<bhkRigidBody *,NiPointer<ObstacleData> > >,bhkRigidBody *,NiPointer<ObstacleData> >::`scalar deleting destructor' | NavMeshObstacleManager.obj | retail, vtable slot, high
 void* __thiscall FUN_006c71d0_Class::FUN_006c71d0(unsigned int flags)
 {
-    ReleaseStorage_006c6ae0();
+    NiTMapBase_DFALL_NiTMapItem_bhkRigidBody_NiPointer_ObstacleData_bhkRigidBody_NiPointer_ObstacleData_dtor();
     if (flags & 1)
         Deallocate(this);
     return this;
@@ -1032,9 +1073,10 @@ struct FUN_006c7200_Class : public FUN_006c6be0_Class
     void* __thiscall FUN_006c7200(unsigned int flags);
 };
 // @fnv 0x006c7200
+// pdb: NiTMapBase<DFALL<NiTMapItem<unsigned int,ObstacleTaskData *> >,unsigned int,ObstacleTaskData *>::`scalar deleting destructor' | NavMeshObstacleManager.obj | retail, vtable slot, high
 void* __thiscall FUN_006c7200_Class::FUN_006c7200(unsigned int flags)
 {
-    ReleaseStorage_006c6be0();
+    NiTMapBase_DFALL_NiTMapItem_unsigned_int_ObstacleTaskData_unsigned_int_ObstacleTaskData_dtor();
     if (flags & 1)
         operator delete(this);
     return this;
@@ -1048,6 +1090,7 @@ struct FUN_006c7230_Class : public FUN_006c6c40_Class
 };
 
 // @fnv 0x006c7230
+// pdb: BSSimpleArray<ObstacleTaskData *,1024>::`scalar deleting destructor' | NavMeshObstacleManager.obj | retail, vtable slot, high
 void* __thiscall FUN_006c7230_Class::FUN_006c7230(unsigned int flags)
 {
     ResetVirtualTableAndClear_006c6c40();
@@ -1057,6 +1100,7 @@ void* __thiscall FUN_006c7230_Class::FUN_006c7230(unsigned int flags)
 }
 
 // @fnv 0x006c7260
+// pdb: BSScrapArray<NavMeshPtr,1024>::`scalar deleting destructor' | NavMeshObstacleManager.obj | retail, vtable slot, high
 namespace FUN_006c6ce0 {
 struct FUN_006c6c60
 {
@@ -1081,6 +1125,7 @@ struct FUN_006c72c0_Class
 };
 // Calls FUN_006c6e00, then frees this with operator delete when flags has bit 0 set, and returns this.
 // @fnv 0x006c72c0
+// pdb: BSScrapArray<TESObjectCELL *,1024>::`scalar deleting destructor' | NavMeshObstacleManager.obj | retail, vtable slot, high
 void* __thiscall FUN_006c72c0_Class::ScalarDeletingDestructor(unsigned int flags)
 {
     FUN_006c6e00();
@@ -1109,13 +1154,14 @@ void* __thiscall FUN_006c75c0_Class::FUN_006c75c0(unsigned int flags)
 void __cdecl Deallocate(void*);
 struct M24
 {
-    void __thiscall M24_Destroy();
+    void __thiscall BSSimpleArray_ObstacleTaskNavMeshOperation_1024_dtor();
     void* __thiscall FUN_006c89b0(unsigned int flags);
 };
 // @fnv 0x006c89b0
+// pdb: BSSimpleArray<ObstacleTaskNavMeshOperation,1024>::`scalar deleting destructor' | NavMeshObstacleTask.obj | retail, vtable slot, high
 void* __thiscall M24::FUN_006c89b0(unsigned int flags)
 {
-    M24_Destroy();
+    BSSimpleArray_ObstacleTaskNavMeshOperation_1024_dtor();
     if (flags & 1)
         Deallocate(this);
     return this;
@@ -1133,6 +1179,8 @@ struct FUN_006c8a30_Class
 };
 // @fnv 0x006c8a30
 // src: XBOX_PDB 0x006c8a30
+// pdb: BSSimpleArray<ObstacleTaskNavMeshOperation,1024>::Clear | NavMeshObstacleTask.obj | debug, object-file run extension, low
+// pdb params: abFreeMemory
 void FUN_006c8a30_Class::BSSimpleArray_ObstacleTaskNavMeshOperation_1024_Clear(bool freeStorage)
 {
     if (m_data)
@@ -1163,6 +1211,9 @@ struct FUN_006c8b90_Class
 // Calls FUN_006c8d00(0) on each of the n elements of the array pointed to by p.
 // @fnv 0x006c8b90
 // src: XBOX_PDB 0x006c8b90
+// pdb: BSSimpleArray<ObstacleTaskNavMeshOperation,1024>::_DestructItems | NavMeshObstacleTask.obj | debug, object-file run extension, low
+// pdb params: apFirstAddr, aiCount
+// pdb locals: i
 void __thiscall FUN_006c8b90_Class::BSSimpleArray_ObstacleTaskNavMeshOperation_1024_DestructItems(S16_6c8d00* p, unsigned int n)
 {
     unsigned int i = 0;
@@ -1214,6 +1265,9 @@ struct FUN_006cee30_Class
 };
 // @fnv 0x006cee30
 // src: XBOX_PDB 0x006cee30
+// pdb: BSSimpleArray<NiPoint3,1024>::SetReservedSize | CombatState.obj | retail, call graph, low
+// pdb note: debug build links it to BSSimpleArray<ParentSpaceNode,1024>::SetReservedSize
+// pdb params: aiReserveSize
 void FUN_006cee30_Class::BSSimpleArray_ParentSpaceNode_1024_SetReservedSize(unsigned int n)
 {
     if (n == m_uiBufferCapacity)
@@ -1243,21 +1297,23 @@ struct FUN_006ceea0_Class
     unsigned int m_iElementCount;
     unsigned int m_uiItemCount;
     void BSSimpleArray_TeleportLink_1024_ReallocateBuffer(unsigned int, unsigned int);
-    void BSSimpleArray_TeleportLink_1024_SetReservedSize(unsigned int count);
+    void BSSimpleArray_TeleportLink_1024_SetReservedSize(unsigned int aiReserveSize);
 };
 // @fnv 0x006ceea0
 // src: XBOX_PDB 0x006ceea0
-void FUN_006ceea0_Class::BSSimpleArray_TeleportLink_1024_SetReservedSize(unsigned int count)
+// pdb: BSSimpleArray<TeleportLink,1024>::SetReservedSize | PathBuilder.obj | retail, call graph, high
+// pdb params: aiReserveSize
+void FUN_006ceea0_Class::BSSimpleArray_TeleportLink_1024_SetReservedSize(unsigned int aiReserveSize)
 {
-    if (count == m_uiItemCount)
+    if (aiReserveSize == m_uiItemCount)
         return;
-    if (count < m_iElementCount)
+    if (aiReserveSize < m_iElementCount)
     {
-        ((FUN_0072ba80_shell*)this)->FUN_0072ba80((char*)m_base + count * 16, m_iElementCount - count);
-        m_iElementCount = count;
+        ((FUN_0072ba80_shell*)this)->FUN_0072ba80((char*)m_base + aiReserveSize * 16, m_iElementCount - aiReserveSize);
+        m_iElementCount = aiReserveSize;
     }
-    BSSimpleArray_TeleportLink_1024_ReallocateBuffer(count, m_iElementCount);
-    m_uiItemCount = count;
+    BSSimpleArray_TeleportLink_1024_ReallocateBuffer(aiReserveSize, m_iElementCount);
+    m_uiItemCount = aiReserveSize;
 }
 }  // namespace fnv_006ceea0
 
@@ -1271,6 +1327,7 @@ struct FUN_006cfda0_Class
     void* __thiscall FUN_006cfda0(unsigned int flags);
 };
 // @fnv 0x006cfda0
+// pdb: BSSimpleArray<FastNavMeshTriHandle,1024>::`scalar deleting destructor' | PathBuilder.obj | retail, vtable slot, high
 void* __thiscall FUN_006cfda0_Class::FUN_006cfda0(unsigned int flags)
 {
     ((FUN_006cfaa0*)this)->ResetVirtualTableAndClear_006cfaa0();
@@ -1287,6 +1344,7 @@ struct FUN_006cfdd0_Class
 };
 // Calls FUN_006cfac0, then frees this with Deallocate when flags has bit 0 set, and returns this.
 // @fnv 0x006cfdd0
+// pdb: BSScrapArray<FastNavMeshTriHandle,1024>::`scalar deleting destructor' | PathBuilder.obj | retail, vtable slot, high
 void* __thiscall FUN_006cfdd0_Class::FUN_006cfdd0(unsigned int flags)
 {
     FUN_006cfac0();
@@ -1305,6 +1363,7 @@ struct FUN_006cfe00_Class
 
 // Calls FUN_006cfbc0, then frees this with Deallocate when flags has bit 0 set, and returns this.
 // @fnv 0x006cfe00
+// pdb: BSScrapArray<int,1024>::`scalar deleting destructor' | PathBuilder.obj | retail, vtable slot, high
 void* __thiscall FUN_006cfe00_Class::FUN_006cfe00(unsigned int flags)
 {
     FUN_006cfbc0();
@@ -1346,6 +1405,7 @@ struct FUN_006d4ca0_Class
     unsigned char __thiscall Equals(const FUN_006d4ca0_Class* other);
 };
 // @fnv 0x006d4ca0
+// pdb: NavmeshTriFan::NavmeshTriFan | Pathfind.obj | debug, object-file gap fill, medium
 unsigned char __thiscall FUN_006d4ca0_Class::Equals(const FUN_006d4ca0_Class* other)
 {
     return (m_kPointA == other->m_kPointA && m_kPointB == other->m_kPointB) ? 1 : 0;
@@ -1363,6 +1423,8 @@ struct FUN_006d4ce0 : public TwoIntRecord
     FUN_006d4ce0(const FUN_006d4ce0&);
 };
 // @fnv 0x006d4ce0
+// pdb: NavmeshTriFan::NavmeshTriFan | Pathfind.obj | debug, object-file gap fill, medium
+// pdb params: __that
 FUN_006d4ce0::FUN_006d4ce0(const FUN_006d4ce0& o) : TwoIntRecord(o), t(o.t)
 {}
 
@@ -1391,7 +1453,7 @@ struct FUN_006dbee0_s
 };
 struct FUN_006daeb0_Class
 {
-    void UpdateFields_006dbfc0(unsigned int from, unsigned int count);
+    void UpdateFields_006dbfc0(unsigned int aiNewSize, unsigned int aiCopyCount);
     unsigned int m_auiShapeKeys;
     Elem* m_data;
     unsigned int m_uiBufferCapacity;
@@ -1400,6 +1462,8 @@ struct FUN_006daeb0_Class
 };
 // @fnv 0x006daeb0
 // src: XBOX_PDB 0x006daeb0
+// pdb: BSSimpleArray<PathingCoverLocation,1024>::SetReservedSize | Pathfind.obj | debug, object-file gap fill, medium
+// pdb params: aiReserveSize
 void FUN_006daeb0_Class::BSSimpleArray_PathingCoverLocation_1024_SetReservedSize(unsigned int pos)
 {
     if (pos == m_cap)
@@ -1431,6 +1495,8 @@ struct FUN_006db0d0_Class
     void SetPosition(unsigned int position);
 };
 // @fnv 0x006db0d0
+// pdb: BSSimpleArray<NavMeshSearchNode,1024>::SetReservedSize | Pathfind.obj | debug, object-file run extension, low
+// pdb params: aiReserveSize
 void FUN_006db0d0_Class::SetPosition(unsigned int position)
 {
     if (position == m_pRayCursor)
@@ -1458,6 +1524,7 @@ struct S_006db4a0
 // Sets the vtable to DAT_0106cc3c, calls ResetAndWrite with 0, 0, and returns this.
 // @fnv 0x006db4a0
 // src: COMMUNITY 0x006db4a0
+// pdb: BSSimpleArray<NavmeshTriFan,1024>::BSSimpleArray<NavmeshTriFan,1024> | Pathfind.obj | debug, call graph, high
 S_006db4a0* __thiscall S_006db4a0::BSSimpleArray_NavmeshTriFan_1024_BSSimpleArray_NavmeshTriFan_1024()
 {
     vtable = &DAT_0106cc3c;
@@ -1476,6 +1543,7 @@ struct FUN_006db950 : public FUN_006db930
 };
 // Destructor that calls Clear(true) on the object.
 // @fnv 0x006db950
+// pdb: BSScrapArray<CrossedTriangle,1024>::~BSScrapArray<CrossedTriangle,1024> | Pathfind.obj | debug, call graph (shared callers), low
 FUN_006db950::~FUN_006db950()
 {
     ((GlobalObject_00869f00*)this)->Clear(true);
@@ -1493,6 +1561,7 @@ struct FUN_006dba80_Class
 };
 // Calls FUN_006dae90 on this, frees this when flags has bit 0 set, and returns this.
 // @fnv 0x006dba80
+// pdb: BSSimpleArray<PathingCoverLocation,1024>::`scalar deleting destructor' | Pathfind.obj | retail, vtable slot, high
 void* __thiscall FUN_006dba80_Class::FUN_006dba80(unsigned int flags)
 {
     ((FUN_006dae90_shell*)this)->UpdateState_006dae90();
@@ -1513,6 +1582,7 @@ struct FUN_006dbab0_Class : public FUN_006db330
 };
 // Runs the base destructor, frees this with Deallocate when flags has bit 0 set, and returns this.
 // @fnv 0x006dbab0
+// pdb: BSSimpleArray<PathingNode *,1024>::`scalar deleting destructor' | Pathfind.obj | retail, vtable slot, high
 void* FUN_006dbab0_Class::DestroySelf(unsigned int flags)
 {
     FUN_006db330::~FUN_006db330();
@@ -1532,6 +1602,7 @@ struct Holder
 };
 // Runs the destructor on this object and, when bit 0 of flags is set, deallocates it; returns this.
 // @fnv 0x006dbae0
+// pdb: BSScrapArray<PathingNode *,1024>::`scalar deleting destructor' | Pathfind.obj | retail, vtable slot, high
 void* __thiscall Holder::DestroyHolder(unsigned int flags)
 {
     ((FUN_006db350*)this)->FUN_006db350::~FUN_006db350();
@@ -1543,13 +1614,14 @@ void* __thiscall Holder::DestroyHolder(unsigned int flags)
 void __cdecl Deallocate(void*);
 struct FUN_006dbb10_Class
 {
-    void ResetVirtualTableAndClear_006db3e0();
+    void BSSimpleArray_FastNavMeshEdgeLocationProxy_1024_dtor();
     void* FUN_006dbb10(unsigned int flags);
 };
 // @fnv 0x006dbb10
+// pdb: BSSimpleArray<FastNavMeshEdgeLocationProxy,1024>::`scalar deleting destructor' | Pathfind.obj | retail, vtable slot, high
 void* FUN_006dbb10_Class::FUN_006dbb10(unsigned int flags)
 {
-    ResetVirtualTableAndClear_006db3e0();
+    BSSimpleArray_FastNavMeshEdgeLocationProxy_1024_dtor();
     if (flags & 1)
         Deallocate(this);
     return this;
@@ -1567,6 +1639,8 @@ struct LocalEdgePoint20 : NavMeshEdgePoint
 // Copies src into this, then copies the f18 and f1c floats from src, and returns this.
 // @fnv 0x006dbb40
 // src: GUESS 0x006dbb40 (confidence: medium)
+// pdb: FastNavMeshEdgeLocationProxy::operator= | Pathfind.obj | debug, object-file gap fill, medium
+// pdb params: __that
 LocalEdgePoint20& LocalEdgePoint20::CopyFields_006dbb40(const LocalEdgePoint20& src)
 {
     NavMeshEdgePoint::operator=(src);
@@ -1579,13 +1653,14 @@ namespace fnv_006dbb80 {
 void* __cdecl Deallocate(void*);
 struct FUN_006db4d0_Class
 {
-    void __thiscall InitializeAndClear();
+    void __thiscall BSSimpleArray_NavmeshTriFan_1024_dtor();
     void* __thiscall FUN_006dbb80(unsigned int flags);
 };
 // @fnv 0x006dbb80
+// pdb: BSSimpleArray<NavmeshTriFan,1024>::`scalar deleting destructor' | Pathfind.obj | retail, vtable slot, high
 void* FUN_006db4d0_Class::FUN_006dbb80(unsigned int flags)
 {
-    InitializeAndClear();
+    BSSimpleArray_NavmeshTriFan_1024_dtor();
     if (flags & 1)
         Deallocate(this);
     return this;
@@ -1600,6 +1675,9 @@ struct FUN_006dbbb0_Class
 };
 // Copies the 8-byte handle from src into m_handle and then copies the 3 trailing bytes at offset 8, returning &m_handle.
 // @fnv 0x006dbbb0
+// pdb: NavmeshTriFan::operator= | Pathfind.obj | debug, object-file gap fill, medium
+// pdb params: __that
+// pdb locals: S2
 TwoIntRecord* FUN_006dbbb0_Class::CopyHandle(const TwoIntRecord* apSource)
 {
     m_handle.TwoIntRecord::TwoIntRecord(*apSource);
@@ -1616,6 +1694,7 @@ struct FUN_006db720_Class
     void* FUN_006dbc00(unsigned int flags);
 };
 // @fnv 0x006dbc00
+// pdb: BSSimpleArray<float,1024>::`scalar deleting destructor' | Pathfind.obj | retail, vtable slot, high
 void* FUN_006db720_Class::FUN_006dbc00(unsigned int flags)
 {
     ResetVirtualTableAndClear_006db720();
@@ -1632,6 +1711,7 @@ struct FUN_006dbc30_Class
 };
 // Calls FUN_006db740, then frees this with Deallocate when flags has bit 0 set, and returns this.
 // @fnv 0x006dbc30
+// pdb: BSScrapArray<float,1024>::`scalar deleting destructor' | Pathfind.obj | retail, vtable slot, high
 void* __thiscall FUN_006dbc30_Class::FUN_006dbc30(unsigned int flags)
 {
     FUN_006db740();
@@ -1649,6 +1729,7 @@ struct FUN_006dbc60_Class
 };
 // Calls FUN_006db930, then frees this via Deallocate when flags has bit 0 set, and returns this.
 // @fnv 0x006dbc60
+// pdb: BSSimpleArray<CrossedTriangle,1024>::`scalar deleting destructor' | Pathfind.obj | retail, vtable slot, high
 void* FUN_006dbc60_Class::FUN_006dbc60(unsigned int flags)
 {
     SetVtableAndProcessState_006db930();
@@ -1667,6 +1748,7 @@ struct FUN_006db950_Class
 
 // Calls FUN_006db950, frees this with operator delete when flags has bit 0 set, and returns this.
 // @fnv 0x006dbc90
+// pdb: BSScrapArray<CrossedTriangle,1024>::`scalar deleting destructor' | Pathfind.obj | retail, vtable slot, high
 void* __thiscall FUN_006db950_Class::FUN_006dbc90(unsigned int flags)
 {
     FUN_006db950();
@@ -1682,6 +1764,7 @@ struct S_006dbcc0
 };
 // Calls InitAndClear on this, deletes this when flags has bit 0 set, and returns this.
 // @fnv 0x006dbcc0
+// pdb: BSSimpleArray<NavMeshTriHandle,1024>::`scalar deleting destructor' | Pathfind.obj | retail, vtable slot, high
 void* __thiscall S_006dbcc0::FUN_006dbcc0(unsigned int flags)
 {
     this->InitAndClear();
@@ -1699,7 +1782,7 @@ struct FUN_006dbd90_Class
     int m_unk0;
     int m_unk4;
     void* ProcessAndReturnValue_006dc500();
-    void ConstructInPlace(void* dst, unsigned int n);
+    void ConstructInPlace(void* apFirstAddr, unsigned int n);
     void* AllocateSlot(void* src);
 };
 // @fnv 0x006dbd90
@@ -1719,6 +1802,9 @@ struct FUN_006dbf20_Class
 // Copies count elements of 0x54 bytes from src to dst, iterating forward or backward depending on the relative addresses.
 // @fnv 0x006dbf20
 // src: GUESS 0x006dbf20 (confidence: medium)
+// pdb: BSSimpleArray<PathingCoverLocation,1024>::_MoveItems | Pathfind.obj | debug, object-file gap fill, medium
+// pdb params: apDestAddr, apSrcAddr, aiCount
+// pdb locals: i
 void __thiscall FUN_006dbf20_Class::CopyOverlappingElements54(char* dst, char* src, unsigned int count)
 {
     if (!(count > 0))
@@ -1748,6 +1834,7 @@ struct FUN_006dc370_Class
 // Sets the vtable to DAT_0106cc8c, calls FUN_006dc440 with 0, 0, and returns this.
 // @fnv 0x006dc370
 // src: GUESS 0x006dc370 (confidence: low)
+// pdb: BSSimpleArray<FastNavMeshTriHandle,1024>::BSSimpleArray<FastNavMeshTriHandle,1024> | PathBuilder.obj | debug, object-file run extension, low
 FUN_006dc370_Class* FUN_006dc370_Class::SetVtableAndProcessState_006dc370()
 {
     vtable = &DAT_0106cc8c;
@@ -1765,6 +1852,7 @@ struct FUN_006dc4d0_Class
 
 // Calls FUN_006d32c0 on this, frees this via Deallocate when flags has bit 0 set, and returns this.
 // @fnv 0x006dc4d0
+// pdb: VirtualPathingNode::`scalar deleting destructor' | PathBuilder.obj | debug, object-file run extension, low
 void* __thiscall FUN_006dc4d0_Class::FUN_006dc4d0(unsigned int flags)
 {
     ((FUN_006d32c0_Class*)this)->DestroyFields_006d32c0();
@@ -1777,9 +1865,10 @@ void* __thiscall FUN_006dc4d0_Class::FUN_006dc4d0(unsigned int flags)
 extern int DAT_0102583c;
 // Initializes the point member and sets the containing cell and worldspace.
 // @fnv 0x006dcea0
-PathingLocation::PathingLocation(const NiPoint3* apArg, TESWorldSpace* apOther)
+// pdb: PathingLocation::PathingLocation | PathingLocation.obj | retail, call graph (shared callers), high
+PathingLocation::PathingLocation(const NiPoint3* aLocation, TESWorldSpace* apWorldSpace)
 {
-    SetLocationData(const_cast<NiPoint3*>(apArg), 0, apOther);
+    SetLocationData(const_cast<NiPoint3*>(aLocation), 0, apWorldSpace);
 }
 
 struct FUN_006dfd70_Class
@@ -1787,16 +1876,19 @@ struct FUN_006dfd70_Class
     unsigned int InitFromLookup();
     unsigned int GetFlags();
     unsigned int* GetAt(int, unsigned int);
-    bool PathingLOSGrid_SetSeenTrianglesFromLOSMap(unsigned int idx);
+    bool PathingLOSGrid_SetSeenTrianglesFromLOSMap(unsigned int aspLOSMap);
 };
 // Iterates over all entries up to GetFlags(), calls InitFromLookup on each element obtained via GetAt(i, idx), and returns true.
 // @fnv 0x006dfd70
 // src: COMMUNITY 0x006dfd70
-bool FUN_006dfd70_Class::PathingLOSGrid_SetSeenTrianglesFromLOSMap(unsigned int idx)
+// pdb: PathingLOSGrid::SetSeenTrianglesFromLOSMap | PathingLOSGridMap.obj | debug, upstream name already matches, high
+// pdb params: aspLOSMap
+// pdb locals: i
+bool FUN_006dfd70_Class::PathingLOSGrid_SetSeenTrianglesFromLOSMap(unsigned int aspLOSMap)
 {
     unsigned int i = 0;
     for (; i < GetFlags(); ++i)
-        ((FUN_006dfd70_Class*)*GetAt(i, idx))->InitFromLookup();
+        ((FUN_006dfd70_Class*)*GetAt(i, aspLOSMap))->InitFromLookup();
     return true;
 }
 
@@ -1806,6 +1898,9 @@ struct FUN_006c0010_Class
 };
 // @fnv 0x006c0010
 // src: GUESS 0x006c0010 (confidence: low)
+// pdb: BSSimpleArray<CombatSearchLocation,1024>::_MoveItems | CombatGroup.obj | debug, call graph (shared callers), low
+// pdb params: apDestAddr, apSrcAddr, aiCount
+// pdb locals: i
 void FUN_006c0010_Class::ProcessEntries_006c0010(void* apDest, void* apSource, unsigned int count)
 {
     if (count <= 0)
@@ -1830,26 +1925,29 @@ struct PathingLocationArray
     virtual int fn0();
     virtual int Write(unsigned int);
     void ConstructItems(PathingLocation*, unsigned int);
-    void ResizeAndConstruct(unsigned int requested, unsigned int savedSize);
+    void BSSimpleArray_PathingLocation_1024__InitialSetup(unsigned int aiReserveSize, unsigned int aiInitialSize);
 };
 // Resets the array, allocates space for max(requested, savedSize) via Write, then constructs savedSize items into the buffer.
 // @fnv 0x006d0140
-void PathingLocationArray::ResizeAndConstruct(unsigned int requested, unsigned int savedSize)
+// src: XBOX_DEBUG_PDB 0x006d0140
+// pdb: BSSimpleArray<PathingLocation,1024>::_InitialSetup | PathBuilder.obj | debug, call graph, high
+// pdb params: aiReserveSize, aiInitialSize
+void PathingLocationArray::BSSimpleArray_PathingLocation_1024__InitialSetup(unsigned int aiReserveSize, unsigned int aiInitialSize)
 {
     m_iElementCount = 0;
     m_vContactPosition = 0;
     m_dataLength = 0;
-    if (savedSize > requested)
-        requested = savedSize;
-    if (requested > 0)
+    if (aiInitialSize > aiReserveSize)
+        aiReserveSize = aiInitialSize;
+    if (aiReserveSize > 0)
     {
-        m_iElementCount = Write(requested);
-        m_dataLength = requested;
+        m_iElementCount = Write(aiReserveSize);
+        m_dataLength = aiReserveSize;
     }
-    if (savedSize > 0)
+    if (aiInitialSize > 0)
     {
-        ConstructItems(reinterpret_cast<PathingLocation*>(m_iElementCount), savedSize);
-        m_vContactPosition = savedSize;
+        ConstructItems(reinterpret_cast<PathingLocation*>(m_iElementCount), aiInitialSize);
+        m_vContactPosition = aiInitialSize;
     }
 }
 
@@ -1869,6 +1967,8 @@ struct FUN_006d0310_Class
 };
 // @fnv 0x006d0310
 // src: COMMUNITY 0x006d0310
+// pdb: BSSimpleArray<NavMeshEdgeLocation,1024>::Clear | PathBuilder.obj | debug, object-file run extension, low
+// pdb params: abFreeMemory
 void FUN_006d0310_Class::BSSimpleArray_NavMeshEdgeLocation_1024_InitialSetup(unsigned int requested, unsigned int savedSize)
 {
     m_iElementCount = 0;
@@ -1898,6 +1998,8 @@ struct FUN_006dc440_Class : public FUN_006dc1d0_Class
 
 // @fnv 0x006dc440
 // src: XBOX_PDB 0x006dc440
+// pdb: BSSimpleArray<FastNavMeshTriHandle,1024>::_InitialSetup | PathBuilder.obj | debug, call graph, low
+// pdb params: aiReserveSize, aiInitialSize
 void FUN_006dc440_Class::BSSimpleArray_NavMeshTriHandle_1024_InitialSetup(unsigned int uiRequestedSize, unsigned int savedSize)
 {
     m_iElementCount = 0;
@@ -1925,6 +2027,10 @@ struct FUN_006dc640_Class
 // Copies count 32-byte elements from src to dst, iterating forward or backward depending on the relative addresses to handle overlap.
 // @fnv 0x006dc640
 // src: GUESS 0x006dc640 (confidence: medium)
+// pdb: BSSimpleArray<CombatSearchLocation,1024>::_MoveItems | CombatGroup.obj | retail, object-file run extension, low
+// pdb note: debug build links it to BSSimpleArray<CombatTarget,1024>::_DeallocateBuffer
+// pdb params: apDestAddr, apSrcAddr, aiCount
+// pdb locals: i
 void FUN_006dc640_Class::CopyOverlappingElements20(char* apDest, char* apSource, unsigned int count)
 {
     if (count <= 0)
@@ -1947,20 +2053,23 @@ struct FUN_006dc890_Class
     int m_f18;
     int m_f1c;
     unsigned char m_flag;
-    void PathingAvoidNode_SaveGame(BGSSaveFormBuffer* buffer);
+    void PathingAvoidNode_SaveGame(BGSSaveFormBuffer* apSaveGameBuffer);
 };
 // Saves m_flag, m_f18, m_f1c and the first 0xc bytes to the buffer, then saves bytes at offset 0xc if the int at offset 0x20 equals 1.
 // @fnv 0x006dc890
 // src: XBOX_PDB 0x006dc890
-void FUN_006dc890_Class::PathingAvoidNode_SaveGame(BGSSaveFormBuffer* buffer)
+// pdb: PathingAvoidNode::SaveGame | PathingAvoidNode.obj | retail, upstream name already matches, high
+// pdb params: apSaveGameBuffer
+// pdb locals: ctype
+void FUN_006dc890_Class::PathingAvoidNode_SaveGame(BGSSaveFormBuffer* apSaveGameBuffer)
 {
     unsigned char flag = m_flag;
-    buffer->SaveData(&flag, 1, 0);
-    buffer->SaveData(&m_f18, 4, 0);
-    buffer->SaveData(&m_f1c, 4, 0);
-    buffer->SaveData(this, 0xc, 0);
+    apSaveGameBuffer->SaveData(&flag, 1, 0);
+    apSaveGameBuffer->SaveData(&m_f18, 4, 0);
+    apSaveGameBuffer->SaveData(&m_f1c, 4, 0);
+    apSaveGameBuffer->SaveData(this, 0xc, 0);
     if (*(int*)((char*)this + 0x20) == 1)
-        buffer->SaveData((char*)this + 0xc, 0xc, 0);
+        apSaveGameBuffer->SaveData((char*)this + 0xc, 0xc, 0);
 }
 
 struct FUN_00438690
@@ -1999,27 +2108,30 @@ struct FUN_006df780_S
 
 struct FUN_006dfe90_S
 {
-    bool PathingLOSGrid_SetLocationSeen(PathingLocation* loc, bool b);
+    bool PathingLOSGrid_SetLocationSeen(PathingLocation* arLocation, bool abSeen);
 };
 
 // @fnv 0x006dfe90
 // src: XBOX_PDB 0x006dfe90
-bool FUN_006dfe90_S::PathingLOSGrid_SetLocationSeen(PathingLocation* pLocation, bool bFlag)
+// pdb: PathingLOSGrid::SetLocationSeen | PathingLOSGridMap.obj | retail, upstream name already matches, high
+// pdb params: arLocation, abSeen
+// pdb locals: spmesh, gridCells, bresult, i, iindex
+bool FUN_006dfe90_S::PathingLOSGrid_SetLocationSeen(PathingLocation* arLocation, bool abSeen)
 {
     NavMeshPtr apSearchNavMesh;
     bool bResult;
-    if (pLocation->ResolveNavMesh(apSearchNavMesh))
+    if (arLocation->ResolveNavMesh(apSearchNavMesh))
     {
         PSM3 triangles;
         ((FUN_00691350_S*)reinterpret_cast<const GO*>(&apSearchNavMesh)->operator unsigned int())
-            ->CollectTriangleCells(pLocation->GetShortValueAtOffset24(), triangles);
+            ->CollectTriangleCells(arLocation->GetShortValueAtOffset24(), triangles);
         bResult = false;
         for (unsigned int i = 0; i < ((BlkOffset08View*)&triangles)->GetFlags(); i++)
         {
             unsigned int index = ((FUN_006a7ad0_shell*)&triangles)->BSSimpleArray_NiAVObject_1024_GetAt(i);
             if (index < ((BlkOffset08View*)this)->GetFlags())
             {
-                if (((FUN_006df780_S*)*((Arr*)this)->GetAt(index))->UpdateNavMeshResults(pLocation, bFlag))
+                if (((FUN_006df780_S*)*((Arr*)this)->GetAt(index))->UpdateNavMeshResults(arLocation, abSeen))
                     bResult = true;
             }
         }
@@ -2042,6 +2154,7 @@ struct FUN_006c8c70_Class : public FUN_006dc1d0_Class
 };
 // @fnv 0x006c8c70
 // src: COMMUNITY 0x006c8c70
+// pdb: BSSimpleArray<ObstacleTaskNavMeshOperation,1024>::_DeallocateBuffer | NavMeshObstacleTask.obj | debug, object-file run extension, low
 void __thiscall FUN_006c8c70_Class::BSSimpleArray_ObstacleTaskNavMeshOperation_1024_InitialSetup(unsigned int uiRequestedSize, unsigned int savedSize)
 {
     m_iElementCount = 0;
@@ -2097,30 +2210,33 @@ struct FUN_006dbfc0_Class
     char* m_ptr;
     unsigned int m_iElementCount;
     unsigned int m_data;
-    void UpdateFields_006dbfc0(char* data, unsigned int size);
+    void UpdateFields_006dbfc0(char* aiNewSize, unsigned int aiCopyCount);
 };
 // @fnv 0x006dbfc0
 // src: GUESS 0x006dbfc0 (confidence: low)
-void FUN_006dbfc0_Class::UpdateFields_006dbfc0(char* data, unsigned int size)
+// pdb: BSSimpleArray<PathingCoverLocation,1024>::_ReallocateBuffer | Pathfind.obj | debug, call graph, high
+// pdb params: aiNewSize, aiCopyCount
+// pdb locals: pnewBuffer
+void FUN_006dbfc0_Class::UpdateFields_006dbfc0(char* aiNewSize, unsigned int aiCopyCount)
 {
     if (m_ptr)
     {
-        if (size == m_data)
+        if (aiCopyCount == m_data)
         {
-            m_ptr = v3(m_ptr, (unsigned int)data);
+            m_ptr = v3(m_ptr, (unsigned int)aiNewSize);
         }
         else
         {
-            char* p = v1(data);
-            ((FUN_006dbf20_Class*)this)->CopyOverlappingElements54(p, m_ptr, size);
+            char* p = v1(aiNewSize);
+            ((FUN_006dbf20_Class*)this)->CopyOverlappingElements54(p, m_ptr, aiCopyCount);
             ((FUN_006c8a30_Class*)this)->FUN_006a8500();
             m_ptr = p;
         }
     }
     else
     {
-        m_ptr = v1(data);
-        m_data = (unsigned int)data;
+        m_ptr = v1(aiNewSize);
+        m_data = (unsigned int)aiNewSize;
     }
 }
 
@@ -2148,6 +2264,9 @@ struct FUN_006c65b0_Class
 // Allocates a FUN_0044cd00_Class from this object and the two m_data entries at index*2 and index*2+1.
 // @fnv 0x006c65b0
 // src: COMMUNITY 0x006c65b0
+// pdb: LockFreeQueue<bhkRigidBody *>::AllocateInterface | NavMeshObstacleManager.obj | debug, vtable slot, medium
+// pdb params: aiNum
+// pdb locals: tempMemContext
 FUN_0044cd00_Class* __thiscall FUN_006c65b0_Class::LockFreeQueue_bhkRigidBody_AllocateInterface(unsigned int index)
 {
     AutoMemHelper helper(6, true, str_0106649c, 149);
@@ -2158,6 +2277,7 @@ FUN_0044cd00_Class* __thiscall FUN_006c65b0_Class::LockFreeQueue_bhkRigidBody_Al
 
 // @fnv 0x006d32c0
 // src: GUESS 0x006d32c0 (confidence: medium)
+// pdb: PathingCoverLocation::~PathingCoverLocation | Pathfind.obj | debug, call graph, medium
 void FUN_006d32c0_Class::DestroyFields_006d32c0()
 {
     PathingLocation::~PathingLocation();
@@ -2170,6 +2290,7 @@ struct StraightLineRequest : public PathingRequestClosePoint
 };
 
 // @fnv 0x006d3b20
+// pdb: PathingRequestSafeStraightLine::~PathingRequestSafeStraightLine | Pathfind.obj | debug, call graph, medium
 void StraightLineRequest::DestroyPathingRequest()
 {
     PathingRequestClosePoint::~PathingRequestClosePoint();
@@ -2177,7 +2298,7 @@ void StraightLineRequest::DestroyPathingRequest()
 
 struct FUN_006d4550_Helper
 {
-    void Init();
+    void FastNavMeshEdgeLocation_ctor();
 };
 
 struct FUN_006d4550_Class
@@ -2186,9 +2307,10 @@ struct FUN_006d4550_Class
 };
 
 // @fnv 0x006d4550
+// pdb: FastNavMeshEdgeLocationProxy::FastNavMeshEdgeLocationProxy | Pathfind.obj | debug, object-file gap fill, medium
 FUN_006d4550_Class::FUN_006d4550_Class()
 {
-    ((FUN_006d4550_Helper*)this)->Init();
+    ((FUN_006d4550_Helper*)this)->FastNavMeshEdgeLocation_ctor();
 }
 
 struct CombatThreatEntry;
@@ -2282,6 +2404,7 @@ struct FUN_006dc070_Class : public FUN_006dbd90_Class
 
 // @fnv 0x006dc070
 // src: XBOX_PDB 0x006dc070
+// pdb: BSSimpleArray<PathingCoverLocation,1024>::_DeallocateBuffer | Pathfind.obj | debug, object-file run extension, low
 void FUN_006dc070_Class::BSSimpleArray_PathingCoverLocation_1024_InitialSetup(unsigned int requested, unsigned int savedSize)
 {
     *reinterpret_cast<int*>(reinterpret_cast<char*>(this) + 4) = 0;
@@ -2380,6 +2503,9 @@ struct FUN_006dc500_Class
 
 // @fnv 0x006dc500
 // src: GUESS 0x006dc500 (confidence: low)
+// pdb: BSSimpleArray<CombatSearchLocation,1024>::_ReallocateBuffer | CombatGroup.obj | retail, object-file run extension, low
+// pdb params: aiNewSize, aiCopyCount
+// pdb locals: pnewBuffer
 int FUN_006dc500_Class::ProcessAndReturnValue_006dc500()
 {
     if (reinterpret_cast<FUN_00438b90_class*>(this)->BSSimpleArray_NavMeshInfo_1024_ShouldGrow())
@@ -2418,25 +2544,28 @@ struct FUN_006df5f0_Class
 
 struct FUN_006dfdc0_Class
 {
-    bool PathingLOSGrid_IsLocationSeen(PathingLocation* path);
+    bool PathingLOSGrid_IsLocationSeen(PathingLocation* arLocation);
 };
 
 // Gets the path's navmesh and location, looks up the location index in this array, and delegates the check to the element at that index.
 // @fnv 0x006dfdc0
 // src: XBOX_PDB 0x006dfdc0
-bool FUN_006dfdc0_Class::PathingLOSGrid_IsLocationSeen(PathingLocation* path)
+// pdb: PathingLOSGrid::IsLocationSeen | PathingLOSGridMap.obj | retail, upstream name already matches, high
+// pdb params: arLocation
+// pdb locals: spmesh, iindex
+bool FUN_006dfdc0_Class::PathingLOSGrid_IsLocationSeen(PathingLocation* arLocation)
 {
     NavMeshPtr navMesh;
 
-    if (path->ResolveNavMesh(navMesh))
+    if (arLocation->ResolveNavMesh(navMesh))
     {
         unsigned int index = reinterpret_cast<FUN_00691240_shell*>(reinterpret_cast<const GO*>(&navMesh)->operator unsigned int())->ForwardToInner(
-            path->GetLocation());
+            arLocation->GetLocation());
 
         if (index < reinterpret_cast<BlkOffset08View*>(this)->GetFlags())
         {
             return reinterpret_cast<FUN_006df5f0_Class*>(*reinterpret_cast<Arr*>(this)->GetAt(index))
-                ->IsLocationOnPath(path);
+                ->IsLocationOnPath(arLocation);
         }
     }
 
@@ -2453,6 +2582,8 @@ struct FUN_006d01d0_Class
     }
     // Returns a null pointer for the requested size; a stub allocator that never allocates memory.
 // @fnv 0x006d01d0
+// pdb: BSSimpleArray<NavMeshEdgeLocation,1024>::SetSize | PathBuilder.obj | debug, object-file run extension, low
+// pdb params: aiNewSize, abFreeMemory
     virtual void* FUN_006d01d0_alloc(unsigned int size)
     {
         return 0;
@@ -2544,12 +2675,16 @@ struct Queue6c67
     int m_iArrayLength;
     int unk1C;
     SpinLock6c67 m_kLock;
-    void ClearQueue(bool abFreeNodes);
+    void LockFreeQueue_bhkRigidBody_RemoveAll(bool abCalledByDestructor);
 };
 
 // Locks the queue, deletes its table and all queued nodes, then optionally recreates an empty head/tail and table with the old capacity, and unlocks.
 // @fnv 0x006c6700
-void Queue6c67::ClearQueue(bool abFreeNodes)
+// src: XBOX_DEBUG_PDB 0x006c6700
+// pdb: LockFreeQueue<bhkRigidBody *>::RemoveAll | NavMeshObstacleManager.obj | debug, call graph, high
+// pdb params: abCalledByDestructor
+// pdb locals: tempMemContext, imaxThreads, ptemp
+void Queue6c67::LockFreeQueue_bhkRigidBody_RemoveAll(bool abCalledByDestructor)
 {
     m_kLock.BSSpinLock_Lock(0);
     AutoMemContext kMemContext(MEM_CONTEXT_MEM_CONTEXT_TASK_OVERHEAD, true,
@@ -2565,7 +2700,7 @@ void Queue6c67::ClearQueue(bool abFreeNodes)
         delete m_pkHead;
         m_pkHead = pkNext;
     }
-    if (!abFreeNodes)
+    if (!abCalledByDestructor)
     {
         m_pkHead = new FUN_0096a2d0;
         m_pkTail = m_pkHead;
@@ -2584,6 +2719,7 @@ struct FUN_006c6a80 : FUN_006c6ae0_Base
     void FUN_00438af0();
 };
 // @fnv 0x006c6a80
+// pdb: NiTMap<bhkRigidBody *,NiPointer<ObstacleData> >::~NiTMap<bhkRigidBody *,NiPointer<ObstacleData> > | NavMeshObstacleManager.obj | debug, call graph (shared callers), high
 FUN_006c6a80::~FUN_006c6a80()
 {
     FUN_00438af0();
@@ -2593,7 +2729,7 @@ namespace fnv_006c6e60 {
 extern const char kThreadSafeStructuresSourceFile[];
 
 
-bool __cdecl CompareAndSwapEx(void* dest, int exchange, int comparand);
+bool __cdecl CompareAndSwapEx(void* apDestination, int aiExchange, int aiCompare);
 
 struct TSQueueNode
 {
@@ -2667,7 +2803,7 @@ struct Queue
     Node* m_pTail;
 };
 
-bool __cdecl CompareAndSwapEx(void* destination, void* exchange, void* comperand);
+bool __cdecl CompareAndSwapEx(void* apDestination, void* aiExchange, void* aiCompare);
 
 struct QueueConsumer
 {
@@ -2682,6 +2818,9 @@ struct QueueConsumer
 // Pops the head node from m_queue using a CAS loop, returns its data via out_val, and frees the old head; returns false when the queue is empty.
 // @fnv 0x006c6fe0
 // src: GUESS 0x006c6fe0 (confidence: medium)
+// pdb: LockFreeQueue<bhkRigidBody *>::LockFreeQueueInterface::Pop | NavMeshObstacleManager.obj | retail, object-file run extension, low
+// pdb params: arData
+// pdb locals: phead, ptail, pnext
 bool QueueConsumer::PopQueueValue(void** ppOutValue)
 {
     Node* volatile head7 = 0;
@@ -2839,6 +2978,8 @@ struct FUN_006c77a0 : FUN_006c7850
 };
 // Stores the given value into unk18 and clears unk54.
 // @fnv 0x006c77a0
+// pdb: ObstacleTaskData::ObstacleTaskData | NavMeshObstacleTask.obj | debug, object-file run extension, low
+// pdb params: apNavMesh
 FUN_006c77a0::FUN_006c77a0(unsigned int value)
 {
     unk18 = value;
@@ -2867,6 +3008,7 @@ struct FUN_006c7850 : public FUN_006c78d0
 };
 // Constructor that initializes unk08 to 0 and unk0c to 1.
 // @fnv 0x006c7850
+// pdb: BSXenonTaskletData::BSXenonTaskletData | NavMeshObstacleTask.obj | debug, call graph (shared callers), high
 FUN_006c7850::FUN_006c7850() : unk08(0), unk0c(1)
 {}
 }  // namespace fnv_006c7850
@@ -2942,7 +3084,7 @@ struct FUN_006f33b0
     PathEdgeArray edges;
     FUN_006f33b0();
     ~FUN_006f33b0();
-    bool InitDoorSearch(PathingLocation*, PathingLocation*, TeleportPathHelper*, int, float, PathingActorData*, int);
+    bool TeleportDoorSearch_BuildNodePath(PathingLocation*, PathingLocation*, TeleportPathHelper*, int, float, PathingActorData*, int);
 };
 struct PathingContext
 {
@@ -3013,7 +3155,7 @@ struct FUN_006cf340
     int unk0c;
     int unk10;
 
-    FUN_006cf340(int a, int b, void* c);
+    FUN_006cf340(int aiReserveSize, int aiInitialSize, void* apHeap);
     bool NiTListBase_DFALL_NiTListItem_BSAnimGroupSequence_const_BSAnimGroupSequence_const_IsEmpty();
     unsigned int FUN_0044ddc0();
     void** FUN_00877a30(unsigned int index);
@@ -3027,7 +3169,7 @@ struct FUN_006cf440
     int unk0c;
     int unk10;
 
-    FUN_006cf440(int a, int b, void* c);
+    FUN_006cf440(int aiReserveSize, int aiInitialSize, void* apHeap);
 };
 class PathHandler
 {
@@ -3036,7 +3178,7 @@ class PathHandler
     PathingSolution* m_pPathingSolution;
     void* m_unk08;
 
-    bool FindPath(const NiPoint3& pt1, const NiPoint3& pt2, PathingContext* ctx, int flag);
+    bool PathBuilder_BuildNavMeshInfoPathInSpace(const NiPoint3& aStartLocation, const NiPoint3& aGoalLocation, PathingContext* pSpace, int apTeleportDoor);
 };
 
 // LocalPathBuilder_006c9b20: 0x006c9b20 passes POD points to FindPath (PodPoint3); include/PathBuilder.h takes
@@ -3045,12 +3187,14 @@ struct LocalPathBuilder_006c9b20
 {
     PathingRequest* request;
     PathingSolution* solution;
-    bool FindPath(const PodPoint3&, const PodPoint3&, void*, PathDoorView*);
+    bool PathBuilder_BuildNavMeshInfoPathInSpace(const PodPoint3&, const PodPoint3&, void*, PathDoorView*);
     bool PathBuilder_BuildTeleportDoorPath();
 };
 // Runs a path search between the request's start and end locations, then builds the path through the resulting edges and doors, returning the search result.
 // @fnv 0x006c9b20
 // src: COMMUNITY 0x006c9b20
+// pdb: PathBuilder::BuildTeleportDoorPath | PathBuilder.obj | retail, upstream name already matches, high
+// pdb locals: bteleportSearchSucceeded, doorPath, doorSearch, plockData, startLocation, goalLocation, i
 bool LocalPathBuilder_006c9b20::PathBuilder_BuildTeleportDoorPath()
 {
     FUN_006f33b0 searchB;
@@ -3060,12 +3204,12 @@ bool LocalPathBuilder_006c9b20::PathBuilder_BuildTeleportDoorPath()
     PathingActorData* current = 0;
     if (!request->FUN_0073cb80())
         current = request->GetActorLockData();
-    bool _result = searchB.InitDoorSearch(request->GetOrigin(), request->NiAVObject_GetRotate_006a9540(), &dataB, 0, 0.0f, current, 0);
+    bool _result = searchB.TeleportDoorSearch_BuildNodePath(request->GetOrigin(), request->NiAVObject_GetRotate_006a9540(), &dataB, 0, 0.0f, current, 0);
     if (dataB.edges.FUN_0044ddc0() <= 1)
     {
         if (_result)
         {
-            if (!FindPath(request->GetOrigin()->FUN_005c3420<PodPoint3>(), request->NiAVObject_GetRotate_006a9540()->FUN_005c3420<PodPoint3>(),
+            if (!PathBuilder_BuildNavMeshInfoPathInSpace(request->GetOrigin()->FUN_005c3420<PodPoint3>(), request->NiAVObject_GetRotate_006a9540()->FUN_005c3420<PodPoint3>(),
                           dataB.edges.Object_GetIndexedValue_006a1440(0), 0))
                 return false;
         }
@@ -3074,13 +3218,13 @@ bool LocalPathBuilder_006c9b20::PathBuilder_BuildTeleportDoorPath()
     {
         PodPoint3 end3 = request->GetOrigin()->FUN_005c3420<PodPoint3>();
         PodPoint3 origin6 = *dataB.doors.GetFirst()->door->TESObjectREFR_GetLinkedDoorTeleportPosition();
-        if (!FindPath(end3, origin6, dataB.edges.BSSimpleArray_NiPoint3_1024_GetFirst(), dataB.doors.GetFirst()->door))
+        if (!PathBuilder_BuildNavMeshInfoPathInSpace(end3, origin6, dataB.edges.BSSimpleArray_NiPoint3_1024_GetFirst(), dataB.doors.GetFirst()->door))
             return false;
         for (unsigned int i = 0; i < dataB.doors.FUN_0044ddc0() - 1; ++i)
         {
             PodPoint3 origin = dataB.doors.GetElementAddress16(i).point;
             PodPoint3 point2 = *dataB.doors.GetElementAddress16(i + 1).door->TESObjectREFR_GetLinkedDoorTeleportPosition();
-            if (!FindPath(origin, point2, dataB.edges.Object_GetIndexedValue_006a1440(i + 1), dataB.doors.GetElementAddress16(i + 1).door))
+            if (!PathBuilder_BuildNavMeshInfoPathInSpace(origin, point2, dataB.edges.Object_GetIndexedValue_006a1440(i + 1), dataB.doors.GetElementAddress16(i + 1).door))
             {
                 solution->SetByteAtOffset40(1);
                 return false;
@@ -3088,7 +3232,7 @@ bool LocalPathBuilder_006c9b20::PathBuilder_BuildTeleportDoorPath()
         }
         reinterpret_cast<NiPoint3&>(end3) = reinterpret_cast<const NiPoint3&>(dataB.doors.BSSimpleArray_TeleportLink_1024_GetLast().point);
         reinterpret_cast<NiPoint3&>(origin6) = reinterpret_cast<const NiPoint3&>(static_cast<const PodPoint3&>(request->NiAVObject_GetRotate_006a9540()->FUN_005c3420<PodPoint3>()));
-        if (!FindPath(end3, origin6, dataB.edges.GetLastEdge(), 0))
+        if (!PathBuilder_BuildNavMeshInfoPathInSpace(end3, origin6, dataB.edges.GetLastEdge(), 0))
         {
             solution->SetByteAtOffset40(1);
             return false;
@@ -3134,6 +3278,9 @@ struct Mid6cec
 #include "../../include/PathBuilder.h"
 
 // @fnv 0x006cec40
+// pdb: PathBuilder::BuildStraightPathForVirtualNodes | PathBuilder.obj | debug, object-file run extension, low
+// pdb params: aiFirstVirtualNodeIndex, aiLastVirtualNodeIndex
+// pdb locals: i, loc
 bool PathBuilder::BuildPathSegment(unsigned int uiStartIndex, unsigned int uiEndIndex)
 {
     using namespace fnv_006cec40;
@@ -3164,7 +3311,7 @@ struct Array6cff
     unsigned int m_uiCapacity;
     void FUN_006ac010(bool bFree);
     void BSSimpleArray_PathingLocation_1024_ReallocateBuffer(unsigned int uiNewCapacity, unsigned int uiCopyCount);
-    void FUN_006d00a0(Elem6cff* pkItems, unsigned int ItemUpdateArray);
+    void FUN_006d00a0(Elem6cff* apFirstAddr, unsigned int aiCount);
     void BSSimpleArray_PathingLocation_1024_DestructItems(Elem6cff* pkItems, unsigned int ItemUpdateArray);
     void ResizeArrayStorage(unsigned int uiNewSize, bool bFree);
 };
@@ -3172,6 +3319,8 @@ struct Array6cff
 // Resizes the array to uiNewSize: frees when zero, grows capacity and constructs new items, or shrinks and optionally reallocates when bFree is set.
 // @fnv 0x006cff60
 // src: GUESS 0x006cff60 (confidence: medium)
+// pdb: BSSimpleArray<PathingLocation,1024>::SetSize | PathBuilder.obj | debug, object-file run extension, low
+// pdb params: aiNewSize, abFreeMemory
 void Array6cff::ResizeArrayStorage(unsigned int uiNewSize, bool bFree)
 {
     if (uiNewSize == 0)
@@ -3276,6 +3425,9 @@ bool __cdecl FindPathToTarget(TargetTypes::Request*, void*, int);
 
 // Builds a pathing request from two references' bounds and radii plus a margin, sets origin/destination and inner/outer radii, and passes it to FindPathToTarget.
 // @fnv 0x006d3780
+// pdb: Pathing::FindSafeStraightLinePathPoint | Pathfind.obj | debug, object-file gap fill, medium
+// pdb params: apStart, apTarget, afDistance, apRetPt
+// pdb locals: fwidth1, fwidth2, boundMax, fradius, boundMin, straightLineRequest, ftargetRadius, factorRadius
 bool __cdecl BuildPathingRequest(TESObjectREFR* pFirstRef, TESObjectREFR* pSecondRef, float margin, void* output)
 {
     TargetTypes::Request request;
@@ -3847,22 +3999,25 @@ struct NearbyEdgeLocation
     NiPoint3 position;
     void CopyFields_006cf900(MeshEdgeRecord*);
 };
-void CollectNearbyEdges(PathingLocation*, int, InitialEdgeList*);
-float DistanceToSegment(const NiPoint3&, const NiPoint3&, const NiPoint3&, float*);
+void Pathing_FindClosestEdges(PathingLocation*, int, InitialEdgeList*);
+float NavMeshMath_DistanceFromSegment(const NiPoint3&, const NiPoint3&, const NiPoint3&, float*);
 NiPoint3 GetClosestPointOnSegment(const NiPoint3&, const NiPoint3&, const NiPoint3&);
 
 // @fnv 0x006d4570
 // src: XBOX_PDB 0x006d4570
-bool __cdecl Pathing_FindClosestOpenEdge(PathingLocation* location, float radius, NearbyEdgeLocation* result)
+// pdb: Pathing::FindClosestOpenEdge | Pathfind.obj | retail, upstream name already matches, high
+// pdb params: aLocation, afMaxRadius, aRetEdge
+// pdb locals: edges, usfirstTri, bFoundMoreTris, spmesh, foundOpenEdges, firstTri, allTris, e, edgeVert1, edgeVert0, i, thisTri, ptri, thisEdge, otherEdge, binListAlready, j, newTri, f, closestEdge, closestPointOnEdge, fclosestDistSqr, projPoint, fdistSqr
+bool __cdecl Pathing_FindClosestOpenEdge(PathingLocation* aLocation, float afMaxRadius, NearbyEdgeLocation* aRetEdge)
 {
-    location->FUN_006dd6f0(0);
-    if (!location->FUN_006dd6a0())
+    aLocation->FUN_006dd6f0(0);
+    if (!aLocation->FUN_006dd6a0())
     {
         InitialEdgeList initialEdges;
-        CollectNearbyEdges(location, 1, &initialEdges);
+        Pathing_FindClosestEdges(aLocation, 1, &initialEdges);
         if (!initialEdges.NiTListBase_DFALL_NiTListItem_BSAnimGroupSequence_const_BSAnimGroupSequence_const_IsEmpty())
         {
-            result->CopyFields_006cf900(initialEdges.BSSimpleArray_NavMeshEdgeLocation_1024_GetAt(0));
+            aRetEdge->CopyFields_006cf900(initialEdges.BSSimpleArray_NavMeshEdgeLocation_1024_GetAt(0));
             return true;
         }
         else
@@ -3876,7 +4031,7 @@ bool __cdecl Pathing_FindClosestOpenEdge(PathingLocation* location, float radius
         TriangleList p;
         MeshPointer i;
         unsigned short f;
-        if (!location->FUN_006dd640(reinterpret_cast<NavMeshPtr*>(&i), &f))
+        if (!aLocation->FUN_006dd640(reinterpret_cast<NavMeshPtr*>(&i), &f))
             return false;
         TriangleHandle h;
         h.FUN_0069a690(&MeshTriangle(i.AnimatingText_GetFullText(), f));
@@ -3885,7 +4040,7 @@ bool __cdecl Pathing_FindClosestOpenEdge(PathingLocation* location, float radius
             NiPoint3 q;
             NiPoint3 b;
             i.Modelloader_GetReferencedThis()->GetEdgeVertices_0068f0c0(f, edge, q, b);
-            h.enabled[edge] = DistanceToSegment(location->FUN_005c3420<NiPoint3>(), q, b, 0) < radius;
+            h.enabled[edge] = NavMeshMath_DistanceFromSegment(aLocation->FUN_005c3420<NiPoint3>(), q, b, 0) < afMaxRadius;
         }
         p.UpdateState_006db4f0(&h);
         bool s = false;
@@ -3925,7 +4080,7 @@ bool __cdecl Pathing_FindClosestOpenEdge(PathingLocation* location, float radius
                                     NiPoint3 q;
                                     NiPoint3 b;
                                     neighbor.mesh->GetEdgeVertices_0068f0c0(neighbor.triangle, side, q, b);
-                                    next.enabled[side] = DistanceToSegment(location->FUN_005c3420<NiPoint3>(), q, b, 0) < radius;
+                                    next.enabled[side] = NavMeshMath_DistanceFromSegment(aLocation->FUN_005c3420<NiPoint3>(), q, b, 0) < afMaxRadius;
                                 }
                                 p.UpdateState_006db4f0(&next);
                             }
@@ -3944,8 +4099,8 @@ bool __cdecl Pathing_FindClosestOpenEdge(PathingLocation* location, float radius
                 NiPoint3 i;
                 NiPoint3 cf;
                 a.Object_GetIndexedValue_006a1440(j)->mesh->GetEdgeVertices_0068f0c0(a.Object_GetIndexedValue_006a1440(j)->triangle, a.Object_GetIndexedValue_006a1440(j)->edge, i, cf);
-                NiPoint3 f = GetClosestPointOnSegment(location->FUN_005c3420<NiPoint3>(), i, cf);
-                float s = (f - location->FUN_005c3420<NiPoint3>()).FUN_004a7290();
+                NiPoint3 f = GetClosestPointOnSegment(aLocation->FUN_005c3420<NiPoint3>(), i, cf);
+                float s = (f - aLocation->FUN_005c3420<NiPoint3>()).FUN_004a7290();
                 if (s < p)
                 {
                     p = s;
@@ -3953,10 +4108,10 @@ bool __cdecl Pathing_FindClosestOpenEdge(PathingLocation* location, float radius
                     eb.operator=(*a.Object_GetIndexedValue_006a1440(j));
                 }
             }
-            result->meshInfo = eb.mesh->GetNavMeshInfo_0068efb0();
-            result->triangle = eb.triangle;
-            result->edge = eb.edge;
-            result->position = h;
+            aRetEdge->meshInfo = eb.mesh->GetNavMeshInfo_0068efb0();
+            aRetEdge->triangle = eb.triangle;
+            aRetEdge->edge = eb.edge;
+            aRetEdge->position = h;
             return true;
         }
         else
@@ -3983,7 +4138,7 @@ struct Array6daf
     bool BSSimpleArray_NavMeshInfo_1024_ShouldGrow();
     unsigned int BSSimpleArray_NavMeshInfo_1024_GetNewSizeForGrow();
     void CopyOverlappingElements54(Elem6daf* pkDest, Elem6daf* pkSrc, unsigned int ItemUpdateArray);
-    void ConstructInPlace(Elem6daf* pkItems, unsigned int ItemUpdateArray);
+    void ConstructInPlace(Elem6daf* apFirstAddr, unsigned int ItemUpdateArray);
     void FUN_006a8500();
     void InsertArrayElement(unsigned int uiIndex, const Elem6daf& rkItem);
 };
@@ -3991,6 +4146,9 @@ struct Array6daf
 // Inserts rkItem at uiIndex, growing the array if needed and shifting existing elements to make room.
 // @fnv 0x006daf20
 // src: GUESS 0x006daf20 (confidence: medium)
+// pdb: BSSimpleArray<PathingCoverLocation,1024>::Insert | Pathfind.obj | debug, object-file gap fill, medium
+// pdb params: aiIndex, aValue
+// pdb locals: inewSize, pnewBuffer
 void Array6daf::InsertArrayElement(unsigned int uiIndex, const Elem6daf& rkItem)
 {
     if (uiIndex == m_uiSize)
@@ -4066,6 +4224,9 @@ struct FloatArray6db5
 // Inserts rkItem at uiIndex, growing the buffer if needed and shifting existing elements right.
 // @fnv 0x006db540
 // src: COMMUNITY 0x006db540
+// pdb: BSSimpleArray<float,1024>::Insert | Pathfind.obj | debug, object-file run extension, low
+// pdb params: aiIndex, aValue
+// pdb locals: inewSize, pnewBuffer
 void FloatArray6db5::BSScrapArray_float_1024_SetAt(unsigned int uiIndex, const float& rkItem)
 {
     if (uiIndex == m_uiSize)
@@ -4139,6 +4300,8 @@ struct FUN_006dba30_Class
 };
 // @fnv 0x006dba30
 // src: XBOX_PDB 0x006dba30
+// pdb: BSSimpleArray<NavMeshTriHandle,1024>::_Reallocate | Pathfind.obj | debug, object-file run extension, low
+// pdb params: apBuffer, aiNewSizeInItem
 unsigned int FUN_006dba30_Class::BSSimpleArray_NavMeshTriHandle_1024_Add(S0069a690 const* other)
 {
     unsigned int idx = reinterpret_cast<FUN_0069b030_S*>(this)->BSSimpleArray_NiPoint2_1024_AddUninitialized();
@@ -4167,6 +4330,8 @@ struct FUN_006dbcf0_Class
 // Default-constructs each of count FUN_006d5320 elements in the items array via placement new.
 // @fnv 0x006dbcf0
 // src: XBOX_PDB 0x006dbcf0
+// pdb: BSSimpleArray<PathingCoverLocation,1024>::Clear | Pathfind.obj | retail, object-file run extension, low
+// pdb params: abFreeMemory
 void FUN_006dbcf0_Class::BSSimpleArray_TeleportLink_1024_ConstructItems(FUN_006d5320* items, unsigned int count)
 {
     for (unsigned int i = 0; i < count; ++i)
@@ -4223,6 +4388,10 @@ struct Falloff6dc
 };
 
 // @fnv 0x006dc780
+// pdb: CombatGroup::FindSearchLocation | CombatGroup.obj | retail, object-file run extension, low
+// pdb note: debug build links it to PathingAvoidNode::GetCostForPoint
+// pdb params: apMember, acMinScore, apCurrentSearchLocation
+// pdb locals: pcombatController, memberWorldLoc, iindex, isearchLocationCount, bcurrentScoreTarget, fcurrentScore, i, fscore, fmodifiedScore, searchLoc, fscoreBonus
 float Falloff6dc::EvaluateFalloff(const Pt6dc& kPt)
 {
     float fRadiusSq = m_fBoundRadius * m_fBoundRadius;
@@ -4257,12 +4426,13 @@ struct FUN_00527990_shell
     bool BGSWorldLocation_GetCellOrWorld(int* first, int* second);
 };
 // @fnv 0x006dd220
-PathingLocation::PathingLocation(Location16* source)
+// pdb: PathingLocation::PathingLocation | PathingLocation.obj | retail, call graph (shared callers), high
+PathingLocation::PathingLocation(Location16* aWorldLocation)
 {
     int b = 0;
     int a = 0;
-    reinterpret_cast<FUN_00527990_shell*>(source)->BGSWorldLocation_GetCellOrWorld(&b, &a);
-    SetLocationData(&reinterpret_cast<BSSimpleList<BGSPerk*>*>(source)->GetItem(),
+    reinterpret_cast<FUN_00527990_shell*>(aWorldLocation)->BGSWorldLocation_GetCellOrWorld(&b, &a);
+    SetLocationData(&reinterpret_cast<BSSimpleList<BGSPerk*>*>(aWorldLocation)->GetItem(),
                     reinterpret_cast<TESObjectCELL*>(b), reinterpret_cast<TESWorldSpace*>(a));
 }
 
@@ -4287,7 +4457,7 @@ struct GridOwner6df2
 struct Location6df2
 {
     void* Modelloader_GetReferencedThis();
-    bool FUN_0069ad00(NavMeshPtr& kNavMesh);
+    bool FUN_0069ad00(NavMeshPtr& aReturnNavMeshPtr);
 };
 
 struct Values6df2
@@ -4350,7 +4520,7 @@ struct TriList6df5
 
 struct Owner6df5
 {
-    bool FUN_0069ad00(NavMeshPtr& rkNavMesh);
+    bool FUN_0069ad00(NavMeshPtr& aReturnNavMeshPtr);
 };
 
 struct Flags6df5
@@ -4411,6 +4581,9 @@ struct Owner_006dfb00
 };
 // Stores p as input, validates it via FUN_0069ad00 into a local FUN_0042fb00; on failure clears input, otherwise calls RebuildFromNavMesh.
 // @fnv 0x006dfb00
+// pdb: PathingLOSGrid::Setup | PathingLOSGridMap.obj | debug, object-file gap fill, medium
+// pdb params: apNavMeshInfo
+// pdb locals: spmesh
 void Owner_006dfb00::SetInput(Input_006dfb00* apInput)
 {
     input = apInput;
@@ -4439,6 +4612,7 @@ class FUN_006c6350 : public FUN_006c63b0
 };
 
 // @fnv 0x006c6350
+// pdb: NiTMap<unsigned int,NiPointer<ReferenceObstacleArray> >::~NiTMap<unsigned int,NiPointer<ReferenceObstacleArray> > | NavMeshObstacleManager.obj | debug, call graph (shared callers), high
 FUN_006c6350::~FUN_006c6350()
 {
     FUN_00438af0();
@@ -4453,14 +4627,15 @@ class FUN_006c6680 : public InterfacedClass
     unsigned int unk08;
     unsigned int unk0c;
     bhkRigidBody** entries;
-    void ClearQueue(bool clear);
+    void LockFreeQueue_bhkRigidBody_RemoveAll(bool abCalledByDestructor);
     virtual ~FUN_006c6680();
 };
 // Destructor that clears the queue and frees the entries array.
 // @fnv 0x006c6680
+// pdb: LockFreeQueue<bhkRigidBody *>::~LockFreeQueue<bhkRigidBody *> | NavMeshObstacleManager.obj | debug, call graph (shared callers), high
 FUN_006c6680::~FUN_006c6680()
 {
-    ClearQueue(true);
+    LockFreeQueue_bhkRigidBody_RemoveAll(true);
     delete[] entries;
 }
 
@@ -4480,6 +4655,7 @@ class FUN_006c6b80 : public FUN_006c6be0
 
 // Destructor that calls FUN_00438af0.
 // @fnv 0x006c6b80
+// pdb: NiTMap<unsigned int,ObstacleTaskData *>::~NiTMap<unsigned int,ObstacleTaskData *> | NavMeshObstacleManager.obj | debug, call graph (shared callers), high
 FUN_006c6b80::~FUN_006c6b80()
 {
     FUN_00438af0();
@@ -4504,6 +4680,7 @@ class FUN_006c6e00 : public FUN_006c6de0
 
 // Destructor: calls Clear(true) on this viewed as a BSSimpleArray_SandBoxChoiceListItem_1024_.
 // @fnv 0x006c6e00
+// pdb: BSScrapArray<TESObjectCELL *,1024>::~BSScrapArray<TESObjectCELL *,1024> | NavMeshObstacleManager.obj | debug, call graph, medium
 FUN_006c6e00::~FUN_006c6e00()
 {
     reinterpret_cast<BSSimpleArray_SandBoxChoiceListItem_1024_*>(this)->Clear(true);
@@ -4528,6 +4705,7 @@ class Fac
 };
 // Allocates and returns a new FUN_006c7370 object.
 // @fnv 0x006c72f0
+// pdb: DFALL<NiTMapItem<unsigned int,NiPointer<ReferenceObstacleArray> > >::Allocate | NavMeshObstacleManager.obj | debug, object-file run extension, low
 FUN_006c7370* Fac::CreateObj()
 {
     return new FUN_006c7370;
@@ -4549,6 +4727,9 @@ struct FUN_006c8a90_Class
 };
 // Placement-constructs a FUN_006c8b30 object at each 16-byte slot of buffer for count elements.
 // @fnv 0x006c8a90
+// pdb: BSSimpleArray<ObstacleTaskNavMeshOperation,1024>::_ConstructItems | NavMeshObstacleTask.obj | debug, call graph, medium
+// pdb params: apFirstAddr, aiCount
+// pdb locals: i
 void FUN_006c8a90_Class::InitializeArray(char* buffer, unsigned int count)
 {
     for (unsigned int i = 0; i < count; ++i)
@@ -4572,6 +4753,7 @@ class FUN_006c8b30_C
 
 // Constructor that initialises m_spSolution to null.
 // @fnv 0x006c8b30
+// pdb: ObstacleTaskNavMeshOperation::ObstacleTaskNavMeshOperation | NavMeshObstacleTask.obj | debug, object-file run extension, low
 FUN_006c8b30_C::FUN_006c8b30_C() : m_spSolution(0)
 {}
 }  // namespace fnv_006c8b30
@@ -4604,6 +4786,9 @@ class OwnerX
 };
 // Advances the pool counter, constructs a FUN_006f4f00 in the slot at that index, and returns the index.
 // @fnv 0x006c9a70
+// pdb: PathingSolution::AddVirtualPathingNode | PathBuilder.obj | debug, object-file gap fill, medium
+// pdb params: apNavMeshInfo, aLocation, apDoor
+// pdb locals: pnode, inewNodeIndex
 unsigned int OwnerX::CreateEntry(int a, int b, int c)
 {
     unsigned int uiIndex = kPool.AdvanceCounter();
@@ -4615,7 +4800,7 @@ unsigned int OwnerX::CreateEntry(int a, int b, int c)
 extern const char str_0106cb70[];
 extern const float DAT_010231a0;
 extern bool __cdecl Pathing_Pathfind(const void*, const void*);
-extern bool __cdecl FindCombatPosition(const void*, float, bool);
+extern bool __cdecl CombatState_FindBestAdvanceLocation(const void*, float, bool);
 
 struct NavMeshBuffer
 {
@@ -4629,8 +4814,8 @@ struct NavMeshBuffer
     unsigned int unk1c;
     unsigned int unk20;
     unsigned int unk24;
-    explicit NavMeshBuffer(void* source);
-    NavMeshBuffer(void* source, const NavMeshBuffer& reference);
+    explicit NavMeshBuffer(void* aLoc);
+    NavMeshBuffer(void* aLocation, const NavMeshBuffer& aHintLoc);
     ~NavMeshBuffer();
     void FUN_006dcce0(const NavMeshBuffer& original);
 };
@@ -4785,12 +4970,12 @@ struct NavMeshContext
     unsigned int unk104;
     unsigned int unk108;
     unsigned int unk10c;
-    explicit NavMeshContext(NavMeshContext* original);
+    explicit NavMeshContext(NavMeshContext* aRequest);
     ~NavMeshContext();
     void* GetOffsetC();
     void PathingRequestCoveredMove_SetCombatCoverLocation(NavMeshPlan* plan);
     void PathingRequestCoveredMove_SetCombatCoverSearchInfo(NavMeshTriangleVertexIndices* edgeTmp);
-    void FUN_006d1bc0(const NavMeshBuffer& buffer);
+    void FUN_006d1bc0(const NavMeshBuffer& aDestination);
     void* PathingRequestCoveredMove_GetCoverLocation();
     void PathingRequestCoveredMove_ClearCombatCoverData();
     void PathingRequestCoveredMove_SetCoverLocation(void* target);
@@ -4810,28 +4995,31 @@ struct NavMeshRoute
 // Iterates route items, testing each candidate position for combat suitability and updating the context with the first valid result found.
 // @fnv 0x006d2c80
 // src: COMMUNITY 0x006d2c80
-bool __cdecl Pathing_BuildCoveredMovePath(NavMeshContext* context, NavMeshRoute* route)
+// pdb: Pathing::BuildCoveredMovePath | Pathfind.obj | retail, upstream name already matches, high
+// pdb params: apRequest, apSolution
+// pdb locals: pcombatCoverLocation, previousNodeLocation, requestCopy, icurrentNode, tempMemContext, pcombatCoverSearchInfo, bsuccess, fminAdvanceDistance, nextNodeLocation, coverPathingLocation, newSolution
+bool __cdecl Pathing_BuildCoveredMovePath(NavMeshContext* apRequest, NavMeshRoute* apSolution)
 {
     bool acceptedNew;
     AutoMemHelper memoryRef(0x2d, true, str_0106cb70, 0x322);
-    acceptedNew = Pathing_Pathfind(context, route);
+    acceptedNew = Pathing_Pathfind(apRequest, apSolution);
     if (!acceptedNew)
         return false;
     float thresholdRes = DAT_010231a0;
-    NavMeshBuffer initial(context->GetOffsetC());
+    NavMeshBuffer initial(apRequest->GetOffsetC());
     NavMeshPlan* plan = new NavMeshPlan;
     NavMeshTriangleVertexIndices* edgeTmp = new NavMeshTriangleVertexIndices;
-    NavMeshContext currentVal(context);
+    NavMeshContext currentVal(apRequest);
     currentVal.PathingRequestCoveredMove_SetCombatCoverLocation(plan);
     currentVal.PathingRequestCoveredMove_SetCombatCoverSearchInfo(edgeTmp);
-    context->PathingRequestCoveredMove_SetCombatCoverLocation(plan);
-    context->PathingRequestCoveredMove_SetCombatCoverSearchInfo(edgeTmp);
+    apRequest->PathingRequestCoveredMove_SetCombatCoverLocation(plan);
+    apRequest->PathingRequestCoveredMove_SetCombatCoverSearchInfo(edgeTmp);
     unsigned int index = 1;
-    while (route->GetObjectFlags() > index)
+    while (apSolution->GetObjectFlags() > index)
     {
-        NavMeshBuffer candidate(route->GetNode_006e7970(index)->FUN_00717e50());
+        NavMeshBuffer candidate(apSolution->GetNode_006e7970(index)->FUN_00717e50());
         currentVal.FUN_006d1bc0(candidate);
-        if (FindCombatPosition(&currentVal, thresholdRes, true))
+        if (CombatState_FindBestAdvanceLocation(&currentVal, thresholdRes, true))
         {
             NavMeshBuffer replacement(currentVal.PathingRequestCoveredMove_GetCoverLocation(), candidate);
             currentVal.FUN_006d1bc0(replacement);
@@ -4839,11 +5027,11 @@ bool __cdecl Pathing_BuildCoveredMovePath(NavMeshContext* context, NavMeshRoute*
             bool found = Pathing_Pathfind(&currentVal, &resultTmp);
             if (found)
             {
-                context->PathingRequestCoveredMove_SetCoverLocation(currentVal.PathingRequestCoveredMove_GetCoverLocation());
-                context->FUN_006d1bc0(replacement);
+                apRequest->PathingRequestCoveredMove_SetCoverLocation(currentVal.PathingRequestCoveredMove_GetCoverLocation());
+                apRequest->FUN_006d1bc0(replacement);
                 currentVal.PathingRequestCoveredMove_ClearCombatCoverData();
-                resultTmp.FUN_006e8ab0(route);
-                context->FUN_00613fb0(true);
+                resultTmp.FUN_006e8ab0(apSolution);
+                apRequest->FUN_00613fb0(true);
                 return found;
             }
         }
@@ -4852,8 +5040,8 @@ bool __cdecl Pathing_BuildCoveredMovePath(NavMeshContext* context, NavMeshRoute*
     }
     currentVal.PathingRequestCoveredMove_ClearCombatCoverData();
     delete plan;
-    context->PathingRequestCoveredMove_SetCombatCoverLocation(0);
-    context->FUN_00613fb0(true);
+    apRequest->PathingRequestCoveredMove_SetCombatCoverLocation(0);
+    apRequest->FUN_00613fb0(true);
     return true;
 }
 
@@ -4869,6 +5057,7 @@ class FUN_006d3200 : public PathingLocation
 };
 // Initializes the shared pathing location base and its three point members.
 // @fnv 0x006d3200
+// pdb: PathingCoverLocation::PathingCoverLocation | Pathfind.obj | debug, call graph (shared callers), high
 FUN_006d3200::FUN_006d3200()
 {
     point28.FUN_006815c0();
@@ -4926,6 +5115,7 @@ class FUN_006db740 : public FUN_006db720
 };
 
 // @fnv 0x006db740
+// pdb: BSScrapArray<float,1024>::~BSScrapArray<float,1024> | Pathfind.obj | debug, call graph, medium
 FUN_006db740::~FUN_006db740()
 {
     FUN_008454f0(1);
@@ -4944,14 +5134,17 @@ struct FUN_006d3200
 };
 struct FUN_006dbe40_Class
 {
-    void ConstructInPlace(FUN_006d3200* pBase, unsigned int aiCount);
+    void ConstructInPlace(FUN_006d3200* apFirstAddr, unsigned int aiCount);
 };
 // Calls the FUN_006d3200 constructor on each element of the pBase array, aiCount times.
 // @fnv 0x006dbe40
-void FUN_006dbe40_Class::ConstructInPlace(FUN_006d3200* pBase, unsigned int aiCount)
+// pdb: BSSimpleArray<PathingCoverLocation,1024>::_ConstructItems | Pathfind.obj | debug, call graph, high
+// pdb params: apFirstAddr, aiCount
+// pdb locals: i
+void FUN_006dbe40_Class::ConstructInPlace(FUN_006d3200* apFirstAddr, unsigned int aiCount)
 {
     for (unsigned int i = 0; i < aiCount; ++i)
-        new (&pBase[i]) FUN_006d3200;
+        new (&apFirstAddr[i]) FUN_006d3200;
 }
 }  // namespace fnv_006dbe40
 
@@ -4970,6 +5163,8 @@ struct CrossedTriangleArray
 };
 // Placement-constructs TwoUIntRecord objects into the elements array for the given count.
 // @fnv 0x006dc3a0
+// pdb: BSSimpleArray<FastNavMeshTriHandle,1024>::Clear | PathBuilder.obj | debug, object-file run extension, low
+// pdb params: abFreeMemory
 void CrossedTriangleArray::ConstructElements(TwoUIntRecord* elements, unsigned int count)
 {
     for (unsigned int index = 0; index < count; ++index)
@@ -4996,6 +5191,8 @@ class FUN_006dfcb0
 
 // Calls FUN_006df200 with the two constructor arguments.
 // @fnv 0x006dfcb0
+// pdb: PathingLOSGridCell::PathingLOSGridCell | PathingLOSGridMap.obj | debug, object-file gap fill, medium
+// pdb params: apNavMeshInfo, aiGridIndex
 FUN_006dfcb0::FUN_006dfcb0(int a, int b)
 {
     PathingLOSGridCell_Setup(a, b);
@@ -5013,15 +5210,19 @@ class List6DFD
     unsigned int FUN_0044ddc0();
     Elem6DFD** FUN_00877a30(unsigned int index, int arg);
 
-    bool ApplyAllTriFlags(int arg);
+    bool PathingLOSGrid_SetLOSMapFromSeenTriangles(int aspLOSMap);
 };
 
 // Iterates over all elements in the list and calls ApplyTriFlags on each one, returning true.
 // @fnv 0x006dfd20
-bool List6DFD::ApplyAllTriFlags(int arg)
+// src: XBOX_DEBUG_PDB 0x006dfd20
+// pdb: PathingLOSGrid::SetLOSMapFromSeenTriangles | PathingLOSGridMap.obj | debug, call graph, high
+// pdb params: aspLOSMap
+// pdb locals: i
+bool List6DFD::PathingLOSGrid_SetLOSMapFromSeenTriangles(int aspLOSMap)
 {
     for (unsigned int i = 0; i < FUN_0044ddc0(); i++)
-        (*FUN_00877a30(i, arg))->ApplyTriFlags();
+        (*FUN_00877a30(i, aspLOSMap))->ApplyTriFlags();
     return true;
 }
 
@@ -5035,7 +5236,7 @@ struct FUN_0044ddc0_shell
 };
 struct FUN_00865db0_shell
 {
-    void FUN_00865db0(unsigned int value, unsigned int flags);
+    void FUN_00865db0(unsigned int aiFormID, unsigned int aiUnusuedMetaDataArg);
 };
 struct FUN_00865f60_shell
 {
@@ -5043,7 +5244,7 @@ struct FUN_00865f60_shell
 };
 struct FUN_006df9c0_shell
 {
-    void SaveFields_006df9c0(FUN_00865db0_shell* buf);
+    void PathingLOSGridCell_SaveGame(FUN_00865db0_shell* apSaveGameBuffer);
 };
 struct FUN_006dffc0_Class
 {
@@ -5056,6 +5257,10 @@ struct FUN_006dffc0_Class
 };
 // Passes a value from m_ref (or 0) and the item count to buffer, then calls FUN_006df9c0 on each item with buffer.
 // @fnv 0x006dffc0
+// pdb: PathingLOSGrid::LoadGame | PathingLOSGridMap.obj | retail, object-file run extension, low
+// pdb note: debug build links it to PathingLOSGrid::SaveGame
+// pdb params: apLoadGameBuffer
+// pdb locals: inavmeshID, isaveGameCount, i, plosGridCell
 void FUN_006dffc0_Class::WriteToBuffer(FUN_00865db0_shell* buffer)
 {
     buffer->FUN_00865db0(m_ref ? m_ref->Modelloader_GetReferencedThis() : 0, 0);
@@ -5064,7 +5269,7 @@ void FUN_006dffc0_Class::WriteToBuffer(FUN_00865db0_shell* buffer)
     for (unsigned int index = 0; index < count; ++index)
     {
         unsigned int* item = &((FUN_006a7ad0_shell*)this)->BSSimpleArray_NiAVObject_1024_GetAt(index);
-        ((FUN_006df9c0_shell*)*item)->SaveFields_006df9c0(buffer);
+        ((FUN_006df9c0_shell*)*item)->PathingLOSGridCell_SaveGame(buffer);
     }
 }
 
@@ -5132,6 +5337,7 @@ struct FUN_006cfd70 : public BSSimpleArray<NavMeshEdgeData, 1024>
 };
 // Empty virtual destructor of a class derived from BSSimpleArray<NavMeshEdgeData, 1024>.
 // @fnv 0x006cfd70
+// pdb: BSScrapArray<PathBuilder::VirtualNodeSegment,1024>::`scalar deleting destructor' | PathBuilder.obj | retail, vtable slot, high
 FUN_006cfd70::~FUN_006cfd70()
 {}
 
@@ -5163,6 +5369,7 @@ struct FUN_006d32e0
 
 // Initializes translation and rotation from DAT_011f426c, progress to 0, time to -DAT_0106cb30, and count, flags and enabled to 0.
 // @fnv 0x006d32e0
+// pdb: CombatCoverSearchInfo::CombatCoverSearchInfo | Pathfind.obj | debug, call graph (shared callers), high
 FUN_006d32e0::FUN_006d32e0()
     : translation(DAT_011f426c), rotation(DAT_011f426c), progress(0.0f), time(-DAT_0106cb30), state(), count(0),
       flags(0), enabled(0)
@@ -5170,10 +5377,14 @@ FUN_006d32e0::FUN_006d32e0()
 
 // Finds a navmesh path between two points, building a pathing solution with intermediate nodes and a final node or item.
 // @fnv 0x006ce8b0
-bool PathHandler::FindPath(const NiPoint3& pt1, const NiPoint3& pt2, PathingContext* ctx, int flag)
+// src: XBOX_DEBUG_PDB 0x006ce8b0
+// pdb: PathBuilder::BuildNavMeshInfoPathInSpace | PathBuilder.obj | debug, call graph, high
+// pdb params: aStartLocation, aGoalLocation, pSpace, apTeleportDoor
+// pdb locals: startLoc, infos, goalLoc, spaceSearch, portals, plockData, binfosearchRes, i
+bool PathHandler::PathBuilder_BuildNavMeshInfoPathInSpace(const NiPoint3& aStartLocation, const NiPoint3& aGoalLocation, PathingContext* pSpace, int apTeleportDoor)
 {
-    PathingLocation loc1(pt1, ctx->cell, ctx->worldSpace);
-    PathingLocation loc4(pt2, ctx->cell, ctx->worldSpace);
+    PathingLocation loc1(aStartLocation, pSpace->cell, pSpace->worldSpace);
+    PathingLocation loc4(aGoalLocation, pSpace->cell, pSpace->worldSpace);
 
     if (!loc1.FUN_006de250())
         return false;
@@ -5210,9 +5421,9 @@ bool PathHandler::FindPath(const NiPoint3& pt1, const NiPoint3& pt2, PathingCont
 
     if (retVal)
     {
-        if (flag != 0)
+        if (apTeleportDoor != 0)
         {
-            m_pPathingSolution->CreatePathNode(loc4, flag);
+            m_pPathingSolution->CreatePathNode(loc4, apTeleportDoor);
         }
         else
         {
@@ -5221,7 +5432,7 @@ bool PathHandler::FindPath(const NiPoint3& pt1, const NiPoint3& pt2, PathingCont
     }
     else
     {
-        m_pPathingSolution->AddPathingItem((char*)(*var5.FUN_006f2270()) + 0x10, *var5.FUN_006f2270());
+        m_pPathingSolution->AddVirtualPathingNode((char*)(*var5.FUN_006f2270()) + 0x10, *var5.FUN_006f2270());
     }
 
     return retVal;
@@ -5244,15 +5455,17 @@ class FUN_006db680 : public FloatArrayBase
 {
   public:
     ScrapHeapBuffer* heap;
-    FUN_006db680(unsigned int count, unsigned int capacity, ScrapHeapBuffer* allocator);
+    FUN_006db680(unsigned int aiReserveSize, unsigned int aiInitialSize, ScrapHeapBuffer* apHeap);
     virtual ~FUN_006db680();
 };
 // Initialises a float array with the given count and capacity, using the supplied allocator or the global memory manager's scrap heap buffer.
 // @fnv 0x006db680
-FUN_006db680::FUN_006db680(unsigned int count, unsigned int capacity, ScrapHeapBuffer* allocator)
+// pdb: BSScrapArray<float,1024>::BSScrapArray<float,1024> | Pathfind.obj | debug, call graph, high
+// pdb params: aiReserveSize, aiInitialSize, apHeap
+FUN_006db680::FUN_006db680(unsigned int aiReserveSize, unsigned int aiInitialSize, ScrapHeapBuffer* apHeap)
 {
-    heap = allocator ? allocator : MemoryManager::GetSingleton().GetGeneralAllocator();
-    BSSimpleArray_float_1024_InitialSetup(count, capacity);
+    heap = apHeap ? apHeap : MemoryManager::GetSingleton().GetGeneralAllocator();
+    BSSimpleArray_float_1024_InitialSetup(aiReserveSize, aiInitialSize);
 }
 }  // namespace fnv_006db680
 
@@ -5301,6 +5514,7 @@ class FUN_006df180 : public PathBuilderDetailedPathInfos
 
 // Initializes m_pMemoryAllocator from the global memory manager and calls FUN_006b3eb0 with zero arguments.
 // @fnv 0x006df180
+// pdb: BSScrapArray<NavMeshInfo const *,1024>::BSScrapArray<NavMeshInfo const *,1024> | PathingLocation.obj | debug, call graph, medium
 FUN_006df180::FUN_006df180()
 {
     // The shared base represents the vtable explicitly in its first word.
@@ -5314,17 +5528,20 @@ struct FakeArray : public FUN_006dc1d0_Class
 {
     unsigned int GetNextIndex();
     void ConstructPlacementObjects(int address, unsigned int count);
-    unsigned int AppendItemAndGetIndex(const LocalEdgePoint20& item);
+    unsigned int BSSimpleArray_FastNavMeshEdgeLocationProxy_1024_Add(const LocalEdgePoint20& aValue);
 };
 
 // Reserves a slot at the current index, copies item into it via FUN_006dbb40, and returns the index.
 // @fnv 0x006db400
-// src: GUESS 0x006db400 (confidence: medium)
-unsigned int FakeArray::AppendItemAndGetIndex(const LocalEdgePoint20& item)
+// src: XBOX_DEBUG_PDB 0x006db400
+// pdb: BSSimpleArray<FastNavMeshEdgeLocationProxy,1024>::Add | Pathfind.obj | debug, call graph, high
+// pdb params: aValue
+// pdb locals: iindex
+unsigned int FakeArray::BSSimpleArray_FastNavMeshEdgeLocationProxy_1024_Add(const LocalEdgePoint20& aValue)
 {
     unsigned int index = GetNextIndex();
     ConstructPlacementObjects(m_iElementCount + (index << 5), 1);
-    ((LocalEdgePoint20*)(m_iElementCount + (index << 5)))->CopyFields_006dbb40(item);
+    ((LocalEdgePoint20*)(m_iElementCount + (index << 5)))->CopyFields_006dbb40(aValue);
     return index;
 }
 
@@ -5335,6 +5552,7 @@ struct GlobalObjectDeletingEntry : public GlobalObject_00869f00
 };
 // Calls FUN_006c6de0 on this, deallocates the object when the low bit of flags is set, and returns this.
 // @fnv 0x006c7290
+// pdb: BSSimpleArray<TESObjectCELL *,1024>::`scalar deleting destructor' | NavMeshObstacleManager.obj | retail, vtable slot, high
 void* __thiscall GlobalObjectDeletingEntry::FUN_006c7290(unsigned int flags)
 {
     Object_ResetVirtualTableAndClear_006c6de0(this);

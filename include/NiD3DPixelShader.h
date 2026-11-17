@@ -5,6 +5,7 @@
 class GeometryRelatedType;
 class NiD3DRenderer;
 
+// pdb: class NiD3DPixelShader, size 0x30, bases: NiD3DShaderProgram, 1 members
 class NiD3DPixelShader : public NiD3DShaderProgram
 {
 public:
@@ -29,5 +30,5 @@ public:
     void* __thiscall DestroyPixelShader(unsigned int flags);
     int CanRecreate();
 
-    GeometryRelatedType* m_pD3DPixelShader;
+    GeometryRelatedType* m_hShader; // src: XBOX_RETAIL_PDB +0x2c (old: m_pD3DPixelShader)
 };

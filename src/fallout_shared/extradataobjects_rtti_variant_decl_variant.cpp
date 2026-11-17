@@ -38,11 +38,16 @@ void* __cdecl operator new[](unsigned int size);
 void __cdecl operator delete[](void* pointer);
 extern "C" void* __cdecl memcpy(void* destination, const void* source, unsigned int size);
 // @fnv 0x00877a30
+// pdb: NiTArray<NiTexturingProperty::Map *,NiTMallocInterface<NiTexturingProperty::Map *> >::GetAt | TESDataHandler.obj | debug, call graph, medium
+// pdb params: uiIndex
 template <> TESObjectREFR*& NiTArray<TESObjectREFR*, NiTNewInterface<TESObjectREFR*> >::GetAt(unsigned int index)
 {
     return m_pBase[index];
 }
 // @fnv 0x00438470
+// pdb: BSStringT<char>::Set | ExtraDataObjects.obj | retail, call graph, medium
+// pdb params: arString
+// pdb locals: inewLen, pold
 template <> bool BSStringT<char>::Set(const BSStringT<char>& source)
 {
     unsigned int length = source.Length();
@@ -84,11 +89,14 @@ void __cdecl operator delete(void*);
 struct ReflectReferences554 : BSExtraData
 {
     BSSimpleList<ReflectReference554*> references;
-    void ExtraReflectorRefs_InitItem(TESForm* form);
+    void ExtraReflectorRefs_InitItem(TESForm* apOwner);
 };
 // @fnv 0x00433ed0
 // src: XBOX_PDB 0x00433ed0
-void ReflectReferences554::ExtraReflectorRefs_InitItem(TESForm* form)
+// pdb: ExtraReflectorRefs::InitItem | ExtraDataObjects.obj | retail, upstream name already matches, high
+// pdb params: apOwner
+// pdb locals: preflist, plastlist, badvanced, pdata, tempint, pref
+void ReflectReferences554::ExtraReflectorRefs_InitItem(TESForm* apOwner)
 {
     BSSimpleList<ReflectReference554*>* position = &references;
     BSSimpleList<ReflectReference554*>* previous = 0;
@@ -97,7 +105,7 @@ void ReflectReferences554::ExtraReflectorRefs_InitItem(TESForm* form)
         bool removed = false;
         ReflectReference554* item3 = position->GetItem();
         unsigned int formID5 = reinterpret_cast<unsigned int>(item3->m_pWorldReferenceInfo);
-        ResolveFormID(&formID5, form->FUN_00484e60(-1));
+        ResolveFormID(&formID5, apOwner->FUN_00484e60(-1));
         TESObjectREFR* reference_2 = dynamic_cast<TESObjectREFR*>(TESForm_GetFormByNumericID(formID5));
         if (!reference_2 || !reference_2->TESObjectREFR_GetRefPersists_005653d0())
         {
@@ -123,9 +131,9 @@ void ReflectReferences554::ExtraReflectorRefs_InitItem(TESForm* form)
         else
         {
             if (item3->flags & 1)
-                reference_2->BSFile_GetDevice()->ExtraDataList_SetReflectsRef(form, true);
+                reference_2->BSFile_GetDevice()->ExtraDataList_SetReflectsRef(apOwner, true);
             if (item3->flags & 2)
-                reference_2->BSFile_GetDevice()->ExtraDataList_SetRefractsRef(form, true);
+                reference_2->BSFile_GetDevice()->ExtraDataList_SetRefractsRef(apOwner, true);
             item3->m_pWorldReferenceInfo = reference_2;
         }
         if (!removed)

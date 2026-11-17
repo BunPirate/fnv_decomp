@@ -4,13 +4,14 @@
 
 struct ClassMemberDescriptor;
 
+// pdb: class hkpBroadPhaseHandle, size 0x4, 1 members
 class hkpBroadPhaseHandle
 {
 public:
     static const ClassMemberDescriptor Members[];
 
-    hkpBroadPhaseHandle() : m_iOwnerObjectOffset(0) {}
+    hkpBroadPhaseHandle() : m_id(0) {}
     hkpBroadPhaseHandle(FinishingFlag flag);
 
-    unsigned int m_iOwnerObjectOffset;
+    unsigned int m_id; // src: XBOX_RETAIL_PDB +0x0 (old: m_iOwnerObjectOffset)
 };

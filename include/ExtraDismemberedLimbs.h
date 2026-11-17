@@ -5,6 +5,7 @@
 
 class DismembermentPart;
 
+// pdb: class ExtraDismemberedLimbs, size 0x30, bases: BSExtraData, 6 members
 class ExtraDismemberedLimbs : public BSExtraData
 {
 public:
@@ -12,7 +13,7 @@ public:
     virtual ~ExtraDismemberedLimbs();
 
     unsigned int GetCount();
-    DismembermentPart* GetInfoAt(unsigned int index);
+    DismembermentPart* GetDismemberedLimb(unsigned int aiIndex);
     bool IsBitSet(int limb);
     void SetBit(int limb, bool removed);
     void* __thiscall Destroy();

@@ -3,6 +3,7 @@
 class BSAnimGroupSequence;
 class TESAnimGroup;
 
+// pdb: class AnimSequenceBase, size 0x4, 0 members
 class AnimSequenceBase
 {
 public:

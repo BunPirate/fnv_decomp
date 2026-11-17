@@ -19,7 +19,7 @@ inline void* hkReferencedObject::operator new(std::size_t uiSize)
     hkMemoryAllocator& allocator =
         reinterpret_cast<hkMemoryAllocator&>((&hkMemoryRouter::getInstance())->heap());
     hkReferencedObject* pkObj = static_cast<hkReferencedObject*>(allocator.blockAlloc(uiSize));
-    pkObj->m_usMemSizeAndFlags = (unsigned short)uiSize;
+    pkObj->m_memSizeAndFlags = (unsigned short)uiSize;
     return pkObj;
 }
 
@@ -28,7 +28,7 @@ extern const __m128 DAT_010c71b0;
 class FUN_00cf4d80
 {
   public:
-    FUN_00cf4d80(void* pkEntityA, void* pkEntityB, unsigned long ulUserData) throw();
+    FUN_00cf4d80(void* entityA, void* entityB, unsigned long userData) throw();
     virtual ~FUN_00cf4d80() throw();
 
     unsigned short m_usMemSizeAndFlags;
@@ -44,7 +44,7 @@ class FUN_00cf4d80
 class FUN_00d4dbe0 : public FUN_00cf4d80
 {
   public:
-    FUN_00d4dbe0(void* pkEntityA, void* pkEntityB, unsigned long ulUserData) throw();
+    FUN_00d4dbe0(void* entityA, void* entityB, unsigned long userData) throw();
     virtual ~FUN_00d4dbe0() throw();
 
     hkQuaternion m_rotation;
@@ -54,8 +54,10 @@ class FUN_00d4dbe0 : public FUN_00cf4d80
 };
 
 // @fnv 0x00d4dbe0
-FUN_00d4dbe0::FUN_00d4dbe0(void* pkEntityA, void* pkEntityB, unsigned long ulUserData) throw()
-    : FUN_00cf4d80(pkEntityA, pkEntityB, ulUserData), m_fSpringStrength(0.1f), m_fMotorDamping(0.01f)
+// pdb: hkpAngularDashpotAction::hkpAngularDashpotAction | hkpAngularDashpotAction.obj | retail, call graph (shared callers), high
+// pdb params: flag
+FUN_00d4dbe0::FUN_00d4dbe0(void* entityA, void* entityB, unsigned long userData) throw()
+    : FUN_00cf4d80(entityA, entityB, userData), m_fSpringStrength(0.1f), m_fMotorDamping(0.01f)
 {
     *reinterpret_cast<__m128*>(&m_rotation) = DAT_010c71b0;
 }
@@ -88,7 +90,7 @@ class FUN_00d4dbe0 : public hkReferencedObject
     int unk38;
     int unk3C;
 
-    FUN_00d4dbe0(void* pvEntityA, void* pvEntityB, int iUserData) throw();
+    FUN_00d4dbe0(void* entityA, void* entityB, int userData) throw();
     virtual ~FUN_00d4dbe0() throw();
 };
 
@@ -107,20 +109,23 @@ class hkpConstraintTemplateD4DC
     float m_kMinimumCorner;
     float m_kMaximumCorner;
 
-    FUN_00d4dbe0* hkpAngularDashpotAction_clone(const hkpConstraintInputD4DC& kA, const hkpConstraintInputD4DC& kB);
+    FUN_00d4dbe0* hkpAngularDashpotAction_clone(const hkpConstraintInputD4DC& newEntities, const hkpConstraintInputD4DC& newPhantoms);
 };
 
 // Returns null unless kA.m_type is 2 and kB.m_type is 0; otherwise creates a FUN_00d4dbe0 from kA's entity pair and copies axis end points and min/max corners.
 // @fnv 0x00d4dc30
 // src: HAVOK_SRC 0x00d4dc30
-FUN_00d4dbe0* hkpConstraintTemplateD4DC::hkpAngularDashpotAction_clone(const hkpConstraintInputD4DC& kA,
-                                                      const hkpConstraintInputD4DC& kB)
+// pdb: hkpAngularDashpotAction::clone | hkpAngularDashpotAction.obj | retail, upstream name already matches, high
+// pdb params: newEntities, newPhantoms
+// pdb locals: assertBuf, ostr
+FUN_00d4dbe0* hkpConstraintTemplateD4DC::hkpAngularDashpotAction_clone(const hkpConstraintInputD4DC& newEntities,
+                                                      const hkpConstraintInputD4DC& newPhantoms)
 {
-    if (kA.m_type != 2)
+    if (newEntities.m_type != 2)
         return 0;
-    if (kB.m_type != 0)
+    if (newPhantoms.m_type != 0)
         return 0;
-    FUN_00d4dbe0* pkResult = new FUN_00d4dbe0(kA.m_pair->m_pEntityA, kA.m_pair->m_pEntityB, m_ulUserData);
+    FUN_00d4dbe0* pkResult = new FUN_00d4dbe0(newEntities.m_pair->m_pEntityA, newEntities.m_pair->m_pEntityB, m_ulUserData);
     pkResult->m_kAxisEndPoints = m_kAxisEndPoints;
     pkResult->m_kMinimumCorner = m_kMinimumCorner;
     pkResult->m_kMaximumCorner = m_kMaximumCorner;

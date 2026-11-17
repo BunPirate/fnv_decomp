@@ -20,7 +20,7 @@
 
 __forceinline hkpCdPointCollector::hkpCdPointCollector()
 {
-    m_fEarlyOutDistance = 3.40282e+38f;
+    m_earlyOutDistance = 3.40282e+38f;
 }
 
 __forceinline hkpCdPointCollector::~hkpCdPointCollector() throw()
@@ -94,6 +94,9 @@ struct ContactBody
 
 // @fnv 0x00d28560
 // src: GUESS 0x00d28560 (confidence: low)
+// pdb: hkRigidMotionUtilCanDeactivateFinal | hkpRigidMotionUtil.obj | debug, object-file run extension, low
+// pdb params: info, motions, numMotions, motionOffset
+// pdb locals: assertBuf, ostr
 bool Object_ProcessEntries_00d28560(void* unused, char** items, int count, int offset)
 {
     for (int i = count - 1; i >= 0; i--)
@@ -448,17 +451,19 @@ struct LinearCastState
 struct CastObj
 {
     void __thiscall hkpBvTreeAgent_processCollision(int a, int b, int c, LinearCastState& s);
-    void __thiscall ProcessEntries_00d31610(int a1, int a2, int a3, LinearCastState& st);
+    void __thiscall ProcessEntries_00d31610(int bodyA, int bodyB, int input, LinearCastState& result);
 };
 
 // @fnv 0x00d31610
 // src: GUESS 0x00d31610 (confidence: low)
-void __thiscall CastObj::ProcessEntries_00d31610(int a1, int a2, int a3, LinearCastState& st)
+// pdb: hkpSymmetricAgentLinearCast<hkpMoppAgent>::processCollision | hkpMoppAgent.obj | retail, vtable slot, high
+// pdb params: bodyA, bodyB, input, result
+void __thiscall CastObj::ProcessEntries_00d31610(int bodyA, int bodyB, int input, LinearCastState& result)
 {
-    LinearCastState* s = &st;
+    LinearCastState* s = &result;
     float oldDistance = s->m_fClosestPointDistanceSquared;
     LinearCastVertex* v = s->m_kRayEnd;
-    hkpBvTreeAgent_processCollision(a2, a1, a3, st);
+    hkpBvTreeAgent_processCollision(bodyB, bodyA, input, result);
     for (; v < s->m_kRayEnd; v++)
     {
         hkVector4 w;
@@ -532,46 +537,48 @@ class SimplexProcessor
 {
   public:
     void FUN_00d369a0(int a, int b, int c, Simplex* s);
-    void ProcessEntries_00d36d60(int a, int b, int c, Simplex* s);
+    void ProcessEntries_00d36d60(int bodyA, int bodyB, int input, Simplex* result);
 };
 
 // @fnv 0x00d36d60
 // src: GUESS 0x00d36d60 (confidence: low)
-void SimplexProcessor::ProcessEntries_00d36d60(int a, int b, int c, Simplex* s)
+// pdb: hkpSymmetricAgentLinearCast<hkpListAgent>::processCollision | hkpListAgent.obj | retail, vtable slot, high
+// pdb params: bodyA, bodyB, input, result
+void SimplexProcessor::ProcessEntries_00d36d60(int bodyA, int bodyB, int input, Simplex* result)
 {
-    SimplexVertex* v = s->m_kRayEnd;
-    float oldDistance = s->m_fClosestPointDistanceSquared;
-    FUN_00d369a0(b, a, c, s);
-    for (; v < s->m_kRayEnd; v++)
+    SimplexVertex* v = result->m_kRayEnd;
+    float oldDistance = result->m_fClosestPointDistanceSquared;
+    FUN_00d369a0(bodyB, bodyA, input, result);
+    for (; v < result->m_kRayEnd; v++)
     {
         const LocalM128* pb = &v->m_kPointB;
         LocalM128 w = _mm_shuffle_ps(*pb, *pb, 0xff);
         v->m_kPointA = _mm_add_ps(_mm_mul_ps(w, v->m_kPointB), v->m_kPointA);
         v->m_kPointB = _mm_xor_ps(v->m_kPointB, DAT_010c4c00);
     }
-    if (oldDistance != s->m_fClosestPointDistanceSquared)
+    if (oldDistance != result->m_fClosestPointDistanceSquared)
     {
-        LocalM128* n = &s->m_vHitNormal;
+        LocalM128* n = &result->m_vHitNormal;
         *n = _mm_xor_ps(*n, DAT_010c4c00);
         {
-            unsigned char t = s->m_dims.m_ucLowNibble;
-            s->m_dims.m_ucLowNibble = s->m_dims.m_ucHighNibble;
-            s->m_dims.m_ucHighNibble = t;
+            unsigned char t = result->m_dims.m_ucLowNibble;
+            result->m_dims.m_ucLowNibble = result->m_dims.m_ucHighNibble;
+            result->m_dims.m_ucHighNibble = t;
         }
         {
-            unsigned char t = s->m_ucDimensionA;
-            s->m_ucDimensionA = s->m_ucDimensionB;
-            s->m_ucDimensionB = t;
+            unsigned char t = result->m_ucDimensionA;
+            result->m_ucDimensionA = result->m_ucDimensionB;
+            result->m_ucDimensionB = t;
         }
-        int last = s->m_ucDimensionA + s->m_ucDimensionB - 1;
-        unsigned short t0 = s->m_ids[0];
-        s->m_ids[0] = s->m_ids[last];
-        s->m_ids[last] = t0;
-        if ((s->m_ucDimensionA & s->m_ucDimensionB) == 2)
+        int last = result->m_ucDimensionA + result->m_ucDimensionB - 1;
+        unsigned short t0 = result->m_ids[0];
+        result->m_ids[0] = result->m_ids[last];
+        result->m_ids[last] = t0;
+        if ((result->m_ucDimensionA & result->m_ucDimensionB) == 2)
         {
-            unsigned short t1 = s->m_ids[1];
-            s->m_ids[1] = s->m_ids[2];
-            s->m_ids[2] = t1;
+            unsigned short t1 = result->m_ids[1];
+            result->m_ids[1] = result->m_ids[2];
+            result->m_ids[2] = t1;
         }
     }
 }
@@ -670,6 +677,9 @@ class S00d2c8a0_Derived : public S00d2c8a0_Base
 // Havok getVtable helper: placement-construct into a local buffer with the finish-loading flag.
 // @fnv 0x00d2c8a0
 // src: GUESS 0x00d2c8a0 (confidence: medium)
+// pdb: finishLoadedObjecthkLiquidAction | hkLiquidAction.obj | retail, object-file run extension, low
+// pdb params: p, finishing
+// pdb locals: f
 const void* __cdecl Object_GetConstructedVirtualTable()
 {
     __declspec(align(16)) char buffer[sizeof(S00d2c8a0_Derived)];
@@ -732,51 +742,53 @@ struct Simplex
 
 struct AgentBase
 {
-    void hkpHeightFieldAgent_processCollision(int a, int b, int c, Simplex* s);
+    void hkpHeightFieldAgent_processCollision(int csBody, int hfBody, int c, Simplex* processOutput);
 };
 
 struct Agent : AgentBase
 {
-    void ProcessEntries_00d32850(int a, int b, int c, Simplex* s);
+    void ProcessEntries_00d32850(int bodyA, int bodyB, int input, Simplex* result);
 };
 
 // @fnv 0x00d32850
 // src: GUESS 0x00d32850 (confidence: low)
-void Agent::ProcessEntries_00d32850(int a, int b, int c, Simplex* s)
+// pdb: hkpSymmetricAgentLinearCast<hkpHeightFieldAgent>::processCollision | hkpHeightFieldAgent.obj | retail, vtable slot, high
+// pdb params: bodyA, bodyB, input, result
+void Agent::ProcessEntries_00d32850(int bodyA, int bodyB, int input, Simplex* result)
 {
-    SimplexVertex* v = s->m_kRayEnd;
-    float oldDistance = s->m_fClosestPointDistanceSquared;
-    AgentBase::hkpHeightFieldAgent_processCollision(b, a, c, s);
-    for (; v < s->m_kRayEnd; v++)
+    SimplexVertex* v = result->m_kRayEnd;
+    float oldDistance = result->m_fClosestPointDistanceSquared;
+    AgentBase::hkpHeightFieldAgent_processCollision(bodyB, bodyA, input, result);
+    for (; v < result->m_kRayEnd; v++)
     {
         const LocalM128* pb = &v->m_kPointB;
         LocalM128 w = _mm_shuffle_ps(*pb, *pb, 0xff);
         v->m_kPointA = _mm_add_ps(_mm_mul_ps(w, v->m_kPointB), v->m_kPointA);
         v->m_kPointB = _mm_xor_ps(v->m_kPointB, DAT_010c4c00);
     }
-    if (oldDistance != s->m_fClosestPointDistanceSquared)
+    if (oldDistance != result->m_fClosestPointDistanceSquared)
     {
-        LocalM128* n = &s->m_vHitNormal;
+        LocalM128* n = &result->m_vHitNormal;
         *n = _mm_xor_ps(*n, DAT_010c4c00);
         {
-            unsigned char t = s->m_dims.m_ucLowNibble;
-            s->m_dims.m_ucLowNibble = s->m_dims.m_ucHighNibble;
-            s->m_dims.m_ucHighNibble = t;
+            unsigned char t = result->m_dims.m_ucLowNibble;
+            result->m_dims.m_ucLowNibble = result->m_dims.m_ucHighNibble;
+            result->m_dims.m_ucHighNibble = t;
         }
         {
-            unsigned char t = s->m_ucDimensionA;
-            s->m_ucDimensionA = s->m_ucDimensionB;
-            s->m_ucDimensionB = t;
+            unsigned char t = result->m_ucDimensionA;
+            result->m_ucDimensionA = result->m_ucDimensionB;
+            result->m_ucDimensionB = t;
         }
-        int last = s->m_ucDimensionA + s->m_ucDimensionB - 1;
-        unsigned short t0 = s->m_ids[0];
-        s->m_ids[0] = s->m_ids[last];
-        s->m_ids[last] = t0;
-        if ((s->m_ucDimensionA & s->m_ucDimensionB) == 2)
+        int last = result->m_ucDimensionA + result->m_ucDimensionB - 1;
+        unsigned short t0 = result->m_ids[0];
+        result->m_ids[0] = result->m_ids[last];
+        result->m_ids[last] = t0;
+        if ((result->m_ucDimensionA & result->m_ucDimensionB) == 2)
         {
-            unsigned short t1 = s->m_ids[1];
-            s->m_ids[1] = s->m_ids[2];
-            s->m_ids[2] = t1;
+            unsigned short t1 = result->m_ids[1];
+            result->m_ids[1] = result->m_ids[2];
+            result->m_ids[2] = t1;
         }
     }
 }
@@ -790,6 +802,9 @@ struct SortPair
 
 // @fnv 0x00d36520
 // src: GUESS 0x00d36520 (confidence: low)
+// pdb: hkAlgorithm::quickSortRecursive<hkShapeKeyPair,hkAlgorithm::less<hkShapeKeyPair> > | hkpCollectionCollectionAgent3.obj | retail, object-file run extension, low
+// pdb params: pArr, d, h, cmpLess
+// pdb locals: str
 extern "C" void Object_ProcessEntries_00d36520(SortPair* arr, int lo, int hi, unsigned int extra)
 {
     int i;
@@ -850,15 +865,18 @@ inline hkpCollisionDispatcher::Agent3FunctionTable::Agent3FunctionTable()
     m_pAgentFunction7 = 0;
 }
 
-void __cdecl hkpCollectionAgent3_initAgentFunc(hkpCollisionDispatcher::Agent3FunctionTable& kFuncs);
+void __cdecl hkpCollectionAgent3_initAgentFunc(hkpCollisionDispatcher::Agent3FunctionTable& f);
 
 // @fnv 0x00d367d0
 // src: HAVOK_LIB 0x00d367d0
-void __cdecl hkpCollectionAgent3_registerAgent3(hkpCollisionDispatcher* pkDispatcher)
+// pdb: hkpCollectionAgent3::registerAgent3 | hkpCollectionAgent3.obj | retail, upstream name already matches, high
+// pdb params: dispatcher
+// pdb locals: f
+void __cdecl hkpCollectionAgent3_registerAgent3(hkpCollisionDispatcher* dispatcher)
 {
     __declspec(align(16)) hkpCollisionDispatcher::Agent3FunctionTable kFuncs;
     hkpCollectionAgent3_initAgentFunc(kFuncs);
-    pkDispatcher->AddEntry(&kFuncs, 0x12, 7);
+    dispatcher->registerAgent3(&kFuncs, 0x12, 7);
 }
 
 class hkpCdBody;
@@ -922,6 +940,9 @@ struct Agent : AgentBase
 
 // @fnv 0x00d36e80
 // src: GUESS 0x00d36e80 (confidence: low)
+// pdb: hkpSymmetricAgent<hkpListAgent>::linearCast | hkpListAgent.obj | retail, vtable slot, high
+// pdb params: bodyA, bodyB, input, collector, startCollector
+// pdb locals: flip, flippedInput, startFlip
 void Agent::CopyData_00d36e80(const hkpCdBody& bodyA, const hkpCdBody& bodyB, const ShapeSweepParameters& input,
                          hkpCdPointCollector& collector, hkpCdPointCollector* startCollector)
 {
@@ -996,51 +1017,53 @@ struct Simplex
 
 struct AgentBase
 {
-    void hkpMultiRayConvexAgent_processCollision(int a, int b, int c, Simplex* s);
+    void hkpMultiRayConvexAgent_processCollision(int bodyA, int bodyB, int c, Simplex* result);
 };
 
 struct Agent : AgentBase
 {
-    void hkpSymmetricAgentLinearCast_hkpMultiRayConvexAgent_processCollision(int a, int b, int c, Simplex* s);
+    void hkpSymmetricAgentLinearCast_hkpMultiRayConvexAgent_processCollision(int bodyA, int bodyB, int input, Simplex* result);
 };
 
 // @fnv 0x00d37c10
 // src: XBOX_PDB 0x00d37c10
-void Agent::hkpSymmetricAgentLinearCast_hkpMultiRayConvexAgent_processCollision(int a, int b, int c, Simplex* s)
+// pdb: hkpSymmetricAgentLinearCast<hkpMultiRayConvexAgent>::processCollision | hkpMultiRayConvexAgent.obj | retail, vtable slot, high
+// pdb params: bodyA, bodyB, input, result
+void Agent::hkpSymmetricAgentLinearCast_hkpMultiRayConvexAgent_processCollision(int bodyA, int bodyB, int input, Simplex* result)
 {
-    SimplexVertex* v = s->m_kRayEnd;
-    float oldDistance = s->m_fClosestPointDistanceSquared;
-    AgentBase::hkpMultiRayConvexAgent_processCollision(b, a, c, s);
-    for (; v < s->m_kRayEnd; v++)
+    SimplexVertex* v = result->m_kRayEnd;
+    float oldDistance = result->m_fClosestPointDistanceSquared;
+    AgentBase::hkpMultiRayConvexAgent_processCollision(bodyB, bodyA, input, result);
+    for (; v < result->m_kRayEnd; v++)
     {
         const LocalM128* pb = &v->m_kPointB;
         LocalM128 w = _mm_shuffle_ps(*pb, *pb, 0xff);
         v->m_kPointA = _mm_add_ps(_mm_mul_ps(w, v->m_kPointB), v->m_kPointA);
         v->m_kPointB = _mm_xor_ps(v->m_kPointB, DAT_010c4c00);
     }
-    if (oldDistance != s->m_fClosestPointDistanceSquared)
+    if (oldDistance != result->m_fClosestPointDistanceSquared)
     {
-        LocalM128* n = &s->m_vHitNormal;
+        LocalM128* n = &result->m_vHitNormal;
         *n = _mm_xor_ps(*n, DAT_010c4c00);
         {
-            unsigned char t = s->m_dims.m_ucLowNibble;
-            s->m_dims.m_ucLowNibble = s->m_dims.m_ucHighNibble;
-            s->m_dims.m_ucHighNibble = t;
+            unsigned char t = result->m_dims.m_ucLowNibble;
+            result->m_dims.m_ucLowNibble = result->m_dims.m_ucHighNibble;
+            result->m_dims.m_ucHighNibble = t;
         }
         {
-            unsigned char t = s->m_ucDimensionA;
-            s->m_ucDimensionA = s->m_ucDimensionB;
-            s->m_ucDimensionB = t;
+            unsigned char t = result->m_ucDimensionA;
+            result->m_ucDimensionA = result->m_ucDimensionB;
+            result->m_ucDimensionB = t;
         }
-        int last = s->m_ucDimensionA + s->m_ucDimensionB - 1;
-        unsigned short t0 = s->m_ids[0];
-        s->m_ids[0] = s->m_ids[last];
-        s->m_ids[last] = t0;
-        if ((s->m_ucDimensionA & s->m_ucDimensionB) == 2)
+        int last = result->m_ucDimensionA + result->m_ucDimensionB - 1;
+        unsigned short t0 = result->m_ids[0];
+        result->m_ids[0] = result->m_ids[last];
+        result->m_ids[last] = t0;
+        if ((result->m_ucDimensionA & result->m_ucDimensionB) == 2)
         {
-            unsigned short t1 = s->m_ids[1];
-            s->m_ids[1] = s->m_ids[2];
-            s->m_ids[2] = t1;
+            unsigned short t1 = result->m_ids[1];
+            result->m_ids[1] = result->m_ids[2];
+            result->m_ids[2] = t1;
         }
     }
 }
@@ -1059,7 +1082,10 @@ hkpAgentData* __cdecl hkCapsuleTriangleAgent3_process(const AgentSubtypeMarker&,
 
 // @fnv 0x00d39840
 // src: HAVOK_LIB 0x00d39840
-void __cdecl hkCapsuleTriangleAgent3_registerAgent3(hkpCollisionDispatcher* pkDispatcher)
+// pdb: hkCapsuleTriangleAgent3::registerAgent3 | hkpCapsuleTriangleAgent3.obj | retail, upstream name already matches, high
+// pdb params: dispatcher
+// pdb locals: f
+void __cdecl hkCapsuleTriangleAgent3_registerAgent3(hkpCollisionDispatcher* dispatcher)
 {
     __declspec(align(16)) hkpCollisionDispatcher::Agent3FunctionTable kFuncs;
     // This registration helper applies the defaults in its original store order.
@@ -1079,7 +1105,7 @@ void __cdecl hkCapsuleTriangleAgent3_registerAgent3(hkpCollisionDispatcher* pkDi
     kFuncs.m_pAgentFunction5 = InsertIntoSlotArray;
     kFuncs.m_pCreateZombieFunc = nullsub_15;
     kFuncs.m_pAgent3DestroyFuncs = Runtime_ReleaseHandles_Thunk;
-    pkDispatcher->AddEntry(&kFuncs, 5, 3);
+    dispatcher->registerAgent3(&kFuncs, 5, 3);
 }
 
 namespace fnv_00d3f500 {
@@ -1142,46 +1168,48 @@ struct AgentBase
 
 struct Agent : AgentBase
 {
-    void hkpSymmetricAgentLinearCast_hkpSphereCapsuleAgent_processCollision(int a, int b, int c, Simplex* s);
+    void hkpSymmetricAgentLinearCast_hkpSphereCapsuleAgent_processCollision(int bodyA, int bodyB, int input, Simplex* result);
 };
 
 // @fnv 0x00d3f500
 // src: XBOX_PDB 0x00d3f500
-void Agent::hkpSymmetricAgentLinearCast_hkpSphereCapsuleAgent_processCollision(int a, int b, int c, Simplex* s)
+// pdb: hkpSymmetricAgentLinearCast<hkpSphereCapsuleAgent>::processCollision | hkpSphereCapsuleAgent.obj | retail, vtable slot, high
+// pdb params: bodyA, bodyB, input, result
+void Agent::hkpSymmetricAgentLinearCast_hkpSphereCapsuleAgent_processCollision(int bodyA, int bodyB, int input, Simplex* result)
 {
-    SimplexVertex* v = s->m_kRayEnd;
-    float oldDistance = s->m_fClosestPointDistanceSquared;
-    AgentBase::FUN_00d3f080(b, a, c, s);
-    for (; v < s->m_kRayEnd; v++)
+    SimplexVertex* v = result->m_kRayEnd;
+    float oldDistance = result->m_fClosestPointDistanceSquared;
+    AgentBase::FUN_00d3f080(bodyB, bodyA, input, result);
+    for (; v < result->m_kRayEnd; v++)
     {
         const LocalM128* pb = &v->m_kPointB;
         LocalM128 w = _mm_shuffle_ps(*pb, *pb, 0xff);
         v->m_kPointA = _mm_add_ps(_mm_mul_ps(w, v->m_kPointB), v->m_kPointA);
         v->m_kPointB = _mm_xor_ps(v->m_kPointB, DAT_010c4c00);
     }
-    if (oldDistance != s->m_fClosestPointDistanceSquared)
+    if (oldDistance != result->m_fClosestPointDistanceSquared)
     {
-        LocalM128* n = &s->m_vHitNormal;
+        LocalM128* n = &result->m_vHitNormal;
         *n = _mm_xor_ps(*n, DAT_010c4c00);
         {
-            unsigned char t = s->m_dims.m_ucLowNibble;
-            s->m_dims.m_ucLowNibble = s->m_dims.m_ucHighNibble;
-            s->m_dims.m_ucHighNibble = t;
+            unsigned char t = result->m_dims.m_ucLowNibble;
+            result->m_dims.m_ucLowNibble = result->m_dims.m_ucHighNibble;
+            result->m_dims.m_ucHighNibble = t;
         }
         {
-            unsigned char t = s->m_ucDimensionA;
-            s->m_ucDimensionA = s->m_ucDimensionB;
-            s->m_ucDimensionB = t;
+            unsigned char t = result->m_ucDimensionA;
+            result->m_ucDimensionA = result->m_ucDimensionB;
+            result->m_ucDimensionB = t;
         }
-        int last = s->m_ucDimensionA + s->m_ucDimensionB - 1;
-        unsigned short t0 = s->m_ids[0];
-        s->m_ids[0] = s->m_ids[last];
-        s->m_ids[last] = t0;
-        if ((s->m_ucDimensionA & s->m_ucDimensionB) == 2)
+        int last = result->m_ucDimensionA + result->m_ucDimensionB - 1;
+        unsigned short t0 = result->m_ids[0];
+        result->m_ids[0] = result->m_ids[last];
+        result->m_ids[last] = t0;
+        if ((result->m_ucDimensionA & result->m_ucDimensionB) == 2)
         {
-            unsigned short t1 = s->m_ids[1];
-            s->m_ids[1] = s->m_ids[2];
-            s->m_ids[2] = t1;
+            unsigned short t1 = result->m_ids[1];
+            result->m_ids[1] = result->m_ids[2];
+            result->m_ids[2] = t1;
         }
     }
 }
@@ -1296,7 +1324,10 @@ struct Processor
 };
 // @fnv 0x00d3fe90
 // src: COMMUNITY 0x00d3fe90
-void* __cdecl hkBoxBoxAgent3_process(Params* p, unsigned char* out, unsigned char* obj, int unused, int z)
+// pdb: hkBoxBoxAgent3::process | hkpBoxBoxAgent3.obj | retail, string-set bridge, high
+// pdb params: input, entry, agentData, separatingNormal, output
+// pdb locals: rB, detector, rA
+void* __cdecl hkBoxBoxAgent3_process(Params* p, unsigned char* entry, unsigned char* agentData, int separatingNormal, int output)
 {
     ProfileBuffer* buf = (ProfileBuffer*)TlsGetValue(DAT_0126835c);
     if (buf->current < buf->end)
@@ -1321,9 +1352,9 @@ void* __cdecl hkBoxBoxAgent3_process(Params* p, unsigned char* out, unsigned cha
     halfB.m_vComponents = _mm_add_ps(bb, shapeB->halfExtents);
     CollisionInput* input = p->input;
     float tol = input->tolerance;
-    Processor state(*a, *p->b, input, p->unk10, z, p->relative, *a->transform, halfA, *p->b->transform, halfB, tol);
-    state.hkpBoxBoxCollisionDetection_calcManifold(obj);
-    out[2] = obj[0x21];
+    Processor state(*a, *p->b, input, p->unk10, output, p->relative, *a->transform, halfA, *p->b->transform, halfB, tol);
+    state.hkpBoxBoxCollisionDetection_calcManifold(agentData);
+    entry[2] = agentData[0x21];
     buf = (ProfileBuffer*)TlsGetValue(DAT_0126835c);
     if (buf->current < buf->end)
     {
@@ -1334,7 +1365,7 @@ void* __cdecl hkBoxBoxAgent3_process(Params* p, unsigned char* out, unsigned cha
         rec->time = tick;
         buf->current = rec + 1;
     }
-    return obj + 0x40;
+    return agentData + 0x40;
 }
 }  // namespace fnv_00d3fe90
 
@@ -1531,13 +1562,15 @@ class S00d2c910_Base
 class FUN_00d2c910 : public S00d2c910_Base
 {
   public:
-    FUN_00d2c910(void* a, int b);
+    FUN_00d2c910(void* entityA, int userData);
     virtual void vf00();
     N::LocalM128 m_kScaleFactors;
 };
 
 // @fnv 0x00d2c910
-FUN_00d2c910::FUN_00d2c910(void* a, int b) : S00d2c910_Base(a, b)
+// pdb: hkLiquidAction::hkLiquidAction | hkLiquidAction.obj | retail, call graph (shared callers), high
+// pdb params: entityA, userData
+FUN_00d2c910::FUN_00d2c910(void* entityA, int userData) : S00d2c910_Base(entityA, userData)
 {
     m_kScaleFactors = N::_mm_setr_ps(0.0f, 0.0f, 0.0f, 0.0f);
 }

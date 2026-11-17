@@ -61,6 +61,7 @@ struct FUN_00d74dd0_Class {
 
 // @fnv 0x00d74dd0
 // src: HAVOK_LIB 0x00d74dd0
+// pdb: hkgpConvexHull::deleteUserObject | hkgpConvexHull.obj | retail, upstream name already matches, high
 void FUN_00d74dd0_Class::hkgpConvexHull_deleteUserObject()
 {
     if (m_10) {
@@ -82,6 +83,7 @@ struct FUN_00d75850_class {
 };
 // @fnv 0x00d75850
 // src: HAVOK_LIB 0x00d75850
+// pdb: hkgpConvexHull::reset | hkgpConvexHull.obj | retail, upstream name already matches, high
 void FUN_00d75850_class::hkgpConvexHull_reset()
 {
     m2->hkgpConvexHullImpl_reset(0);
@@ -94,9 +96,12 @@ void FUN_00d75850_class::hkgpConvexHull_reset()
 
 // @fnv 0x00d76300
 // src: HAVOK_LIB 0x00d76300
-int __stdcall hkgpConvexHull_getNeighbour(const int* pValues, int iIndex)
+// pdb: hkgpConvexHull::getNeighbour | hkgpConvexHull.obj | debug, upstream name already matches, high
+// pdb params: triangle, index
+// pdb locals: assertBuf, ostr
+int __stdcall hkgpConvexHull_getNeighbour(const int* triangle, int index)
 {
-    return (pValues[iIndex + 5] & ~3);
+    return (triangle[index + 5] & ~3);
 }
 
 struct FUN_00d7c200_cls { void __thiscall FreeAll(); };
@@ -106,6 +111,7 @@ struct FUN_00d7c950_cls {
 };
 // @fnv 0x00d7c950
 // src: GUESS 0x00d7c950 (confidence: low)
+// pdb: hkgpAbstractMesh<hkgpConvexHullImpl::Edge,hkgpConvexHullImpl::Vertex,hkgpConvexHullImpl::Triangle,hkContainerHeapAllocator>::reset | hkgpConvexHull.obj | retail, vtable slot, high
 void __thiscall FUN_00d7c950_cls::ProcessState_00d7c950()
 {
     ((FUN_00d7c200_cls*)((char*)this + 8))->FreeAll();
@@ -114,9 +120,12 @@ void __thiscall FUN_00d7c950_cls::ProcessState_00d7c950()
 
 // @fnv 0x00d752c0
 // src: HAVOK_LIB 0x00d752c0
-int __stdcall hkgpConvexHull_getVertex(int* arr, int idx)
+// pdb: hkgpConvexHull::getVertex | hkgpConvexHull.obj | debug, upstream name already matches, high
+// pdb params: triangle, index
+// pdb locals: assertBuf, ostr
+int __stdcall hkgpConvexHull_getVertex(int* triangle, int index)
 {
-    return *(int*)((char*)arr + idx * 4 + 8);
+    return *(int*)((char*)triangle + index * 4 + 8);
 }
 
 struct CpuScalar {
@@ -750,12 +759,14 @@ struct S_00d75210_Self {
     int unk00;
     int unk04;
     S_00d75210_Config* m_pConfiguration;
-    int hkgpConvexHull_getPlaneIndex(const S_00d75210_Data* v) const throw();
+    int hkgpConvexHull_getPlaneIndex(const S_00d75210_Data* triangle) const throw();
 };
 
 // @fnv 0x00d75210
 // src: HAVOK_LIB 0x00d75210
-int S_00d75210_Self::hkgpConvexHull_getPlaneIndex(const S_00d75210_Data* v) const throw()
+// pdb: hkgpConvexHull::getPlaneIndex | hkgpConvexHull.obj | retail, upstream name already matches, high
+// pdb params: triangle
+int S_00d75210_Self::hkgpConvexHull_getPlaneIndex(const S_00d75210_Data* triangle) const throw()
 {
     S_00d75210_Config* cfg = m_pConfiguration;
     if (!cfg->m_hasIndex)
@@ -770,7 +781,7 @@ int S_00d75210_Self::hkgpConvexHull_getPlaneIndex(const S_00d75210_Data* v) cons
             __debugbreak();
         ostr.hkOstream::~hkOstream();
     }
-    return v->m_uiEdgeIndex;
+    return triangle->m_uiEdgeIndex;
 }
 
 struct D762F0Target {
@@ -792,7 +803,7 @@ void D762F0Owner::ForwardCall_00d762f0()
     m_target->update();
 }
 
-struct D76910Inner { void ProcessEntries_00d7cf00(); };
+struct D76910Inner { void hkgpConvexHullImpl_getEdgeLengths(); };
 struct D76910Owner {
     int unk00;
     int unk04;
@@ -803,7 +814,7 @@ struct D76910Owner {
 // src: GUESS 0x00d76910 (confidence: low)
 void D76910Owner::ForwardCall_00d76910()
 {
-    inner->ProcessEntries_00d7cf00();
+    inner->hkgpConvexHullImpl_getEdgeLengths();
 }
 
 struct FUN_00d76990_State {
@@ -851,7 +862,7 @@ float Shape::ProcessAndReturnValue_00d769c0(const NiPoint3& p)
 }
 
 struct AudioSink {
-    void hkgpConvexHullImpl_generateIndexedFaces_int_int(void* apFirst, void* apSecond, bool abIsNull, void* apThird);
+    void hkgpConvexHullImpl_generateIndexedFaces_int_int(void* vpf, void* vi, bool useSourceIndex, void* maximizeArea);
 };
 
 struct FUN_00d76c50_cls {
@@ -871,7 +882,7 @@ void FUN_00d76c50_cls::DispatchToSink(void* apKey, void* apFirst, void* apSecond
 }
 
 namespace fnv_00d76c80 {
-struct Target { float Call(int a, int b, int c); };
+struct Target { float Call(int projectionPlane, int b, int worldTransform); };
 struct Owner { int unk00; int unk04; Target* unk08; void DispatchCall(int a, int b, int c); };
 // @fnv 0x00d76c80
 void Owner::DispatchCall(int aiArg1, int aiArg2, int aiArg3) { unk08->Call(aiArg1, aiArg2, aiArg3); }
@@ -883,7 +894,7 @@ struct Vec4i {
 
 struct FUN_00d81510_Class {
     Vec4i m_00;
-    void hkgpConvexHullImpl_build(int a, int b, int c, int d);
+    void hkgpConvexHullImpl_build(int a, int b, int forcePlanar, int domain);
 };
 
 struct FUN_00d771c0_Owner {
@@ -896,6 +907,9 @@ struct FUN_00d771c0_Owner {
 // Stores v into the m_00 field of unk08, then calls unk08's FUN_00d81510 with a, b, 0, 0.
 // @fnv 0x00d771c0
 // src: HAVOK_LIB 0x00d771c0
+// pdb: hkgpConvexHull::build | hkgpConvexHull.obj | retail, upstream name already matches, high
+// pdb params: points, config
+// pdb locals: set
 void FUN_00d771c0_Owner::hkgpConvexHull_build(int a, int b, const Vec4i& v)
 {
     unk08->m_00 = v;
@@ -914,6 +928,9 @@ struct FUN_00d790a0_class {
 // Calls FUN_00d83430 on the object stored at unk08, passing the four arguments through unchanged.
 // @fnv 0x00d790a0
 // src: HAVOK_LIB 0x00d790a0
+// pdb: hkgpConvexHull::createCompound | hkgpConvexHull.obj | debug, object-file run extension, low
+// pdb params: inputs, a, b
+// pdb locals: set
 void FUN_00d790a0_class::hkgpConvexHull_splitByPlane(int aiArg1, int aiArg2, int aiArg3, float afArg4) {
     unk08->AllocateStorage_00d83430(aiArg1, aiArg2, aiArg3, afArg4);
 }
@@ -928,7 +945,7 @@ struct S_00d79f90_Opts
 struct S_00d79f90_Result
 {
     virtual ~S_00d79f90_Result();
-    void ProcessEntries_00d78720(float f, const S_00d79f90_Opts& opts);
+    void hkgpConvexHull_absoluteScale(float offset, const S_00d79f90_Opts& config);
 };
 
 struct S_00d79f90_World
@@ -936,17 +953,19 @@ struct S_00d79f90_World
     S_00d79f90_Result* hkgpConvexHull_clone();
 };
 
-void __cdecl HkgpconvexhullGsEhscNogsNoehsc_ReleaseStorage_00d79ab0(S_00d79f90_World* world, int a, void* b, float c);
-void __cdecl hkgpConvexHull_booleanSubtraction_00d79580(S_00d79f90_Result* res, void* b, int n, float eps);
+void __cdecl hkgpConvexHull_createVoronoiCells(S_00d79f90_World* world, int a, void* b, float c);
+void __cdecl hkgpConvexHull_booleanSubtraction_00d79580(S_00d79f90_Result* operandA, void* operandsB, int n, float thickness);
 
 // @fnv 0x00d79f90
 // src: HAVOK_LIB 0x00d79f90
-void __cdecl hkgpConvexHull_createVoronoiFeatures(S_00d79f90_World* world, int a, void* b, int n, float d)
+// pdb: hkgpConvexHull::createVoronoiFeatures | hkgpConvexHull.obj | retail, upstream name already matches, high
+// pdb params: domain, points, cells, edges, margin
+void __cdecl hkgpConvexHull_createVoronoiFeatures(S_00d79f90_World* domain, int points, void* cells, int edges, float margin)
 {
-    HkgpconvexhullGsEhscNogsNoehsc_ReleaseStorage_00d79ab0(world, a, b, d);
-    S_00d79f90_Result* res = world->hkgpConvexHull_clone();
-    res->ProcessEntries_00d78720(-d, S_00d79f90_Opts());
-    hkgpConvexHull_booleanSubtraction_00d79580(res, b, n, 1e-07f);
+    hkgpConvexHull_createVoronoiCells(domain, points, cells, margin);
+    S_00d79f90_Result* res = domain->hkgpConvexHull_clone();
+    res->hkgpConvexHull_absoluteScale(-margin, S_00d79f90_Opts());
+    hkgpConvexHull_booleanSubtraction_00d79580(res, cells, edges, 1e-07f);
     delete res;
 }
 
@@ -956,10 +975,13 @@ struct S_00d7a010_Obj {
     void operator delete(void* p) throw();
 };
 
-void __cdecl hkgpConvexHull_createVoronoiFeatures(int a, int b, hkArrayBase<S_00d7a010_Obj*>& out, int c, float f) throw();
+void __cdecl hkgpConvexHull_createVoronoiFeatures(int domain, int points, hkArrayBase<S_00d7a010_Obj*>& cells, int edges, float margin) throw();
 
 // Calls FUN_00d79f90 to fill an array of objects, deletes each element, then clears and deallocates the array via the heap.
 // @fnv 0x00d7a010
+// pdb: hkgpConvexHull::createVoronoiEdges | hkgpConvexHull.obj | retail, object-file run extension, low
+// pdb params: domain, points, edges, margin
+// pdb locals: cells
 void __cdecl DeleteCollectedObjects(int a, int b, int c, float f)
 {
     hkArrayBase<S_00d7a010_Obj*> objs;
@@ -978,6 +1000,7 @@ struct S_00d7c200 {
     void FreeAll();
 };
 // @fnv 0x00d7c200
+// pdb: hkgpAbstractMeshDefinitions::List<hkgpConvexHullImpl::Vertex,hkgpAbstractMeshDefinitions::List<hkgpConvexHullImpl::Vertex,hkgpConvexHull::Vertex,hkGeometryProcessing::PoolAllocator<hkgpConvexHullImpl::Vertex,32,hkContainerHeapAllocator> >::Item,hkGeometryProcessing::PoolAllocator<hkgpConvexHullImpl::Vertex,32,hkContainerHeapAllocator> >::reset | hkgpConvexHull.obj | retail, object-file run extension, low
 void S_00d7c200::FreeAll() {
     for (int i = 0; i < m_iBlockCount; i++) {
         void* p = m_kBlocks[i];
@@ -989,7 +1012,7 @@ void S_00d7c200::FreeAll() {
 }
 
 hkMemoryRouter* hkMemoryRouter_getInstance();
-int ResizeAudioStream(hkMemoryAllocator* alloc, void* array, int elemSize);
+int ResizeAudioStream(hkMemoryAllocator* mem, void* array, int sizeElem);
 
 struct S_00d7c340_Elem {
     S_00d7c340_Elem* next;
@@ -1011,6 +1034,9 @@ struct S_00d7c340 {
 };
 
 // @fnv 0x00d7c340
+// pdb: hkGeometryProcessing::PoolAllocator<hkgpConvexHullImpl::Triangle,32,hkContainerHeapAllocator>::allocateNewPool | hkgpConvexHull.obj | retail, object-file run extension, low
+// pdb note: debug build links it to hkgpConvexHullImpl::removeTriangle
+// pdb locals: pool
 S_00d7c340_Block* S_00d7c340::AllocateBlock()
 {
     hkMemoryAllocator* heap = &hkMemoryRouter_getInstance()->heap();
@@ -1119,6 +1145,7 @@ struct FUN_00d7ce20 {
 };
 
 // @fnv 0x00d7ce20
+// pdb: hkgpConvexHullImpl::~hkgpConvexHullImpl | hkgpConvexHull.obj | retail, object-file gap fill, high
 FUN_00d7ce20::~FUN_00d7ce20() throw()
 {
     hkgpConvexHullImpl_reset(0);
@@ -1153,11 +1180,14 @@ struct PoolList {
     Node *head;
     int activeCount;
     NodeBank *hkGeometryProcessing_PoolAllocator_struct_hkgpConvexHullImpl_Vertex_32_struct_hkContainerHeapAllocator_allocateNewPool();
-    Node *CloneNode(Node *source);
+    Node *hkgpAbstractMeshDefinitions_List_hkgpConvexHullImpl_Vertex_hkgpAbstractMeshDefinitions_List_hkgpConvexHullImpl_Vertex_hkgpConvexHull_Vertex_hkGeometryProcessing_PoolAllocator_hkgpConvexHullImpl_Vertex_32_hkContainerHeapAllocator_Item_hkGeometryProcessing_PoolAllocator_hkgpConvexHullImpl_Vertex_32_hkContainerHeapAllocator_allocate(Node *value);
 };
 // Allocates a node from the bank's free list, copies the source node's value fields, links it at the head of the list and returns it.
 // @fnv 0x00d7ef20
-Node *PoolList::CloneNode(Node *source) {
+// src: XBOX_RETAIL_PDB 0x00d7ef20
+// pdb: hkgpAbstractMeshDefinitions::List<hkgpConvexHullImpl::Vertex,hkgpAbstractMeshDefinitions::List<hkgpConvexHullImpl::Vertex,hkgpConvexHull::Vertex,hkGeometryProcessing::PoolAllocator<hkgpConvexHullImpl::Vertex,32,hkContainerHeapAllocator> >::Item,hkGeometryProcessing::PoolAllocator<hkgpConvexHullImpl::Vertex,32,hkContainerHeapAllocator> >::allocate | hkgpConvexHull.obj | retail, object-file gap fill, high
+// pdb params: value
+Node *PoolList::hkgpAbstractMeshDefinitions_List_hkgpConvexHullImpl_Vertex_hkgpAbstractMeshDefinitions_List_hkgpConvexHullImpl_Vertex_hkgpConvexHull_Vertex_hkGeometryProcessing_PoolAllocator_hkgpConvexHullImpl_Vertex_32_hkContainerHeapAllocator_Item_hkGeometryProcessing_PoolAllocator_hkgpConvexHullImpl_Vertex_32_hkContainerHeapAllocator_allocate(Node *value) {
     NodeBank *bank;
     if (bankValid == 0 || (*banks)->freeHead == 0)
         bank = hkGeometryProcessing_PoolAllocator_struct_hkgpConvexHullImpl_Vertex_32_struct_hkContainerHeapAllocator_allocateNewPool();
@@ -1166,16 +1196,16 @@ Node *PoolList::CloneNode(Node *source) {
     Node *node = bank->freeHead;
     bank->freeHead = node->link0;
     bank->allocated += 1;
-    node->value10 = source->value10;
-    node->value14 = source->value14;
-    node->value18 = source->value18;
-    node->value1c = source->value1c;
-    node->value20 = source->value20;
-    node->value24 = source->value24;
-    node->value28 = source->value28;
-    node->value2c = source->value2c;
-    node->value30 = source->value30;
-    node->value34 = source->value34;
+    node->value10 = value->value10;
+    node->value14 = value->value14;
+    node->value18 = value->value18;
+    node->value1c = value->value1c;
+    node->value20 = value->value20;
+    node->value24 = value->value24;
+    node->value28 = value->value28;
+    node->value2c = value->value2c;
+    node->value30 = value->value30;
+    node->value34 = value->value34;
     node->link4 = 0;
     Node *oldHead = head;
     node->link0 = oldHead;
@@ -1199,6 +1229,7 @@ struct D7f060Owner {
 };
 // Calls FUN_00d76940, and if flags has bit 0 set, releases this object's soundId through the audio service, then returns this.
 // @fnv 0x00d7f060
+// pdb: hkgpConvexHull::`scalar deleting destructor' | hkgpConvexHull.obj | retail, vtable slot, high
 D7f060Owner* D7f060Owner::FUN_00d7f060(unsigned int flags)
 {
     ((D76940Shell*)this)->ReleaseStorage_00d76940();
@@ -1588,11 +1619,13 @@ struct FUN_00d75390_cls {
     unsigned int unk00;
     unsigned int unk04;
     DiagState* m_08;
-    float GetMass();
+    float hkgpConvexHull_getSurfaceArea();
 };
 
 // @fnv 0x00d75390
-float FUN_00d75390_cls::GetMass() {
+// src: XBOX_RETAIL_PDB 0x00d75390
+// pdb: hkgpConvexHull::getSurfaceArea | hkgpConvexHull.obj | retail, object-file gap fill, high
+float FUN_00d75390_cls::hkgpConvexHull_getSurfaceArea() {
     DiagState* st = m_08;
     if (st->m_1b4 != 0) {
     } else {
@@ -1615,18 +1648,20 @@ extern const double DAT_010d35e0;
 
 struct FUN_00d75440_cls {
     float hkgpConvexHull_getVolume();
-    double GetMass();
-    float ComputeScaledPowerRatio();
+    double hkgpConvexHull_getSurfaceArea();
+    float hkgpConvexHull_getSphericity();
 };
 
 // Raises the value from FUN_00d752e0 to DAT_010d35e8, scales by DAT_010d35e0, divides by GetMass and returns the float result.
 // @fnv 0x00d75440
-float FUN_00d75440_cls::ComputeScaledPowerRatio()
+// src: XBOX_RETAIL_PDB 0x00d75440
+// pdb: hkgpConvexHull::getSphericity | hkgpConvexHull.obj | retail, object-file gap fill, high
+float FUN_00d75440_cls::hkgpConvexHull_getSphericity()
 {
     float base = this->hkgpConvexHull_getVolume();
     float powered = (float)pow((double)base, DAT_010d35e8);
     double scaled = (double)powered * DAT_010d35e0;
-    double dDivisor = this->GetMass();
+    double dDivisor = this->hkgpConvexHull_getSurfaceArea();
     return (float)(scaled / dDivisor);
 }
 
@@ -1644,15 +1679,19 @@ struct FUN_00d75820_cls {
     int m04;
     FUN_00d75820_Target* m08;
 
-    void CallTargetWithTemp(int a1, float a2, int a3);
+    void hkgpConvexHull_classify(int plane, float thickness, int bounds);
 };
 
 // Builds a temporary FUN_00d75820_Tmp8 and forwards a1, a2, its address and a3 to m08's FUN_00d7a200.
 // @fnv 0x00d75820
-void FUN_00d75820_cls::CallTargetWithTemp(int a1, float a2, int a3)
+// src: XBOX_RETAIL_PDB 0x00d75820
+// pdb: hkgpConvexHull::classify | hkgpConvexHull.obj | retail, object-file gap fill, high
+// pdb params: plane, thickness, bounds
+// pdb locals: counts
+void FUN_00d75820_cls::hkgpConvexHull_classify(int plane, float thickness, int bounds)
 {
     FUN_00d75820_Tmp8 tmpArg;
-    this->m08->ProcessEntries_00d7a200(a1, a2, &tmpArg, a3);
+    this->m08->ProcessEntries_00d7a200(plane, thickness, &tmpArg, bounds);
 }
 
 struct FUN_00d7b330_cls {
@@ -1715,7 +1754,7 @@ void FUN_00d77bc0_cls::UpdateFields_00d77bc0() {
 namespace fnv_00d77bd0 {
 struct Inner
 {
-    void Run();
+    void hkgpConvexHullImpl_decimateVertices();
 };
 
 struct FUN_00d77bd0_cls
@@ -1730,7 +1769,7 @@ struct FUN_00d77bd0_cls
 // src: GUESS 0x00d77bd0 (confidence: low)
 void FUN_00d77bd0_cls::ForwardCall_00d77bd0()
 {
-    m_pInner->Run();
+    m_pInner->hkgpConvexHullImpl_decimateVertices();
 }
 }  // namespace fnv_00d77bd0
 
@@ -1804,20 +1843,23 @@ struct FUN_00d79510_Object {
 struct FUN_00d79510_A;
 struct FUN_00d79510_B;
 
-void __cdecl FUN_00d79250_helper(FUN_00d79510_A* a, FUN_00d79510_B* b,
-                                 FUN_00d79510_Object** out, void* p, float f);
+void __cdecl FUN_00d79250_helper(FUN_00d79510_A* operandA, FUN_00d79510_B* operandB,
+                                 FUN_00d79510_Object** inside, void* outside, float thickness);
 
 // Calls FUN_00d79250_helper, then either invokes doIt(1) on the returned object or on each item from start to m_04, resetting m_04 to 0.
 // @fnv 0x00d79510
 // src: HAVOK_LIB 0x00d79510
-bool __cdecl hkgpConvexHull_booleanSubtraction(FUN_00d79510_A* a, FUN_00d79510_B* b,
-                          FUN_00d79510_Object* apObject, float afValue)
+// pdb: hkgpConvexHull::booleanSubtraction | hkgpConvexHull.obj | retail, object-file gap fill, high
+// pdb params: operandA, operandB, output, thickness
+// pdb locals: intersection
+bool __cdecl hkgpConvexHull_booleanSubtraction(FUN_00d79510_A* operandA, FUN_00d79510_B* operandB,
+                          FUN_00d79510_Object* output, float thickness)
 {
-    int start = ((FUN_00d79510_Record*)apObject)->m_04;
-    FUN_00d79510_Record* p = (FUN_00d79510_Record*)apObject;
-    FUN_00d79250_helper(a, b, &apObject, apObject, afValue);
-    if (apObject) {
-        apObject->FUN_00d79510_doIt(1);
+    int start = ((FUN_00d79510_Record*)output)->m_04;
+    FUN_00d79510_Record* p = (FUN_00d79510_Record*)output;
+    FUN_00d79250_helper(operandA, operandB, &output, output, thickness);
+    if (output) {
+        output->FUN_00d79510_doIt(1);
         return true;
     }
     for (int i = start; i < p->m_04; i++) {
@@ -1903,6 +1945,9 @@ static __forceinline bool Greater(const Record &a,const Record &b) { return a.ke
 // Sorts records in [left, right] by key using an in-place quicksort with a middle pivot and recursive partitioning.
 // @fnv 0x00d7b270
 // src: HAVOK_LIB 0x00d7b270
+// pdb: hkAlgorithm::quickSortRecursive<hkgpConvexHullImpl::SortedTriangle,hkAlgorithm::less<hkgpConvexHullImpl::SortedTriangle> > | hkgpConvexHull.obj | retail, object-file run extension, low
+// pdb params: pArr, d, h, cmpLess
+// pdb locals: str
 extern "C" void hkAlgorithm_quickSortRecursive_struct_hkgpConvexHullImpl_SortedTriangle_class_hkAlgorithm_less_struct_hkgpConvexHullImpl_SortedTriangle(Record* records, int left, int right, int context)
 {
     int i;
@@ -1944,6 +1989,7 @@ extern "C" void hkAlgorithm_quickSortRecursive_struct_hkgpConvexHullImpl_SortedT
 
 // Releases each queued element through the heap, then resets the queue count and related counters.
 // @fnv 0x00d7c250
+// pdb: hkgpAbstractMeshDefinitions::List<hkgpConvexHullImpl::Triangle,hkgpAbstractMeshDefinitions::List<hkgpConvexHullImpl::Vertex,hkgpConvexHull::Vertex,hkGeometryProcessing::PoolAllocator<hkgpConvexHullImpl::Vertex,32,hkContainerHeapAllocator> >::Item,hkGeometryProcessing::PoolAllocator<hkgpConvexHullImpl::Triangle,32,hkContainerHeapAllocator> >::reset | hkgpConvexHull.obj | retail, object-file run extension, low
 void __fastcall FlushQueuedElements(QueuedElements_hkgpconvexhull* self)
 {
     for (int i = 0; i < self->m_04; i++) {
@@ -1983,6 +2029,9 @@ struct FUN_00d7c2a0_cls {
 
 // @fnv 0x00d7c2a0
 // src: HAVOK_LIB 0x00d7c2a0
+// pdb: hkGeometryProcessing::PoolAllocator<hkgpConvexHullImpl::Vertex,32,hkContainerHeapAllocator>::allocateNewPool | hkgpConvexHull.obj | retail, object-file run extension, low
+// pdb note: debug build links it to hkgpAbstractMeshDefinitions::List<hkgpConvexHullImpl::Triangle,hkgpAbstractMeshDefinitions::List<hkgpConvexHullImpl::Vertex,hkgpConvexHull::Vertex,hkGeometryProcessing::PoolAllocator<hkgpConvexHullImpl::Vertex,32,hkContainerHeapAllocator> >::Item,hkGeometryProcessing::PoolAllocator<hkgpConvexHullImpl::Triangle,32,hkContainerHeapAllocator> >::reset
+// pdb locals: pool
 void* FUN_00d7c2a0_cls::hkGeometryProcessing_PoolAllocator_struct_hkgpConvexHullImpl_Vertex_32_struct_hkContainerHeapAllocator_allocateNewPool()
 {
     hkMemoryRouter* pManager = hkMemoryRouter_getInstance();
@@ -2110,12 +2159,15 @@ public:
 	int unk00;
 	int unk04;
 	SharedOwner *m_pSharedOwner;
-	void GetMassProperties(RetBlock64 *pOut64, RetBlock16 *pOut16);
+	void hkgpConvexHull_getLocalInertia(RetBlock64 *inertiaSpace, RetBlock16 *inertiaDiagonal);
 };
 
 // Asserts when the owner has no mass properties, then copies four vectors from the owner into pOut64 and one vector into pOut16.
 // @fnv 0x00d75490
-void FUN_00d75490_cls::GetMassProperties(RetBlock64 *pOut64, RetBlock16 *pOut16)
+// src: XBOX_RETAIL_PDB 0x00d75490
+// pdb: hkgpConvexHull::getLocalInertia | hkgpConvexHull.obj | retail, object-file gap fill, high
+// pdb params: inertiaSpace, inertiaDiagonal
+void FUN_00d75490_cls::hkgpConvexHull_getLocalInertia(RetBlock64 *inertiaSpace, RetBlock16 *inertiaDiagonal)
 {
 	SharedOwner *pOwner = m_pSharedOwner;
 	if (pOwner->m_b1B4 == 0)
@@ -2134,14 +2186,14 @@ void FUN_00d75490_cls::GetMassProperties(RetBlock64 *pOut64, RetBlock16 *pOut16)
 		dbgStr.hkOstream::~hkOstream();
 	}
 	__m128 *pSrcVec = &m_pSharedOwner->m_v120;
-	pOut64->m_v0 = *pSrcVec;
-	pOut64->m_v1 = pSrcVec[1];
-	pOut64->m_v2 = pSrcVec[2];
-	pOut64->m_v3 = pSrcVec[3];
-	pOut16->m_v0 = m_pSharedOwner->m_v160;
+	inertiaSpace->m_v0 = *pSrcVec;
+	inertiaSpace->m_v1 = pSrcVec[1];
+	inertiaSpace->m_v2 = pSrcVec[2];
+	inertiaSpace->m_v3 = pSrcVec[3];
+	inertiaDiagonal->m_v0 = m_pSharedOwner->m_v160;
 }
 
-void __cdecl hkArrayUtil__reserve(hkMemoryAllocator* alloc, void* array, int numElements, int sizeElem);
+void __cdecl hkArrayUtil__reserve(hkMemoryAllocator* mem, void* array, int numElem, int sizeElem);
 
 
 static inline hkVector4* ExpandHullVectors(hkArrayBase<hkVector4>& array, int n)
@@ -2161,7 +2213,7 @@ static inline hkVector4* ExpandHullVectors(hkArrayBase<hkVector4>& array, int n)
 
 struct D76250Shape {
     int getNumVertices() const;
-    const hkVector4& getVertex(int i) const;
+    const hkVector4& getVertex(int index) const;
 
     void CopyVerticesToArray(hkArrayBase<hkVector4>& vertices) const;
 };
@@ -2180,7 +2232,7 @@ void D76250Shape::CopyVerticesToArray(hkArrayBase<hkVector4>& vertices) const
 }
 
 struct FUN_00d81510_cls {
-    void hkgpConvexHullImpl_build(int a1, int a2, int a3, int a4);
+    void hkgpConvexHullImpl_build(int a1, int a2, int forcePlanar, int domain);
 };
 
 struct FUN_00d77320_cls {
@@ -2343,6 +2395,7 @@ extern const char str_010d358c[];
 // If the entity's unk1b4 is zero, builds a message via a local helper and asserts on failure, then returns the entity's unk1a0.
 // @fnv 0x00d752e0
 // src: HAVOK_LIB 0x00d752e0
+// pdb: hkgpConvexHull::getVolume | hkgpConvexHull.obj | retail, upstream name already matches, high
 float S_00d752e0_Class::hkgpConvexHull_getVolume() {
     S_00d752e0_Entity* entity = this->unk08;
     if (entity->unk1b4 == 0) {
@@ -2377,6 +2430,9 @@ struct SortRec12 {
 // Partitions SortRec12 records around a pivot key and recurses on the left part, looping on the right part.
 // @fnv 0x00d7b160
 // src: HAVOK_LIB 0x00d7b160
+// pdb: hkAlgorithm::quickSortRecursive<hkgpConvexHullImpl::SortedEdge,hkAlgorithm::less<hkgpConvexHullImpl::SortedEdge> > | hkgpConvexHull.obj | retail, object-file run extension, low
+// pdb params: pArr, d, h, cmpLess
+// pdb locals: str
 void __cdecl hkAlgorithm_quickSortRecursive_struct_hkgpConvexHullImpl_SortedEdge_class_hkAlgorithm_less_struct_hkgpConvexHullImpl_SortedEdge(SortRec12* apRecords, int lo, int hi, int aiUnused)
 {
     for (;;) {
@@ -2468,6 +2524,10 @@ struct DistanceLess {
 // Sorts the array in place with the midpoint element as pivot and DistanceLess for comparisons.
 // @fnv 0x00d7aaf0
 // src: GUESS 0x00d7aaf0 (confidence: medium)
+// pdb: hkgpConvexHullImpl::maxDistance | hkgpConvexHull.obj | retail, object-file run extension, low
+// pdb note: debug build links it to hkgpConvexHullImpl::FanIncrementAndCheck::operator()
+// pdb params: points, xform, planeOut
+// pdb locals: i, v
 void Hkgpconvexhull_SortDistanceVectors(DistanceVector* apVectors,int aiLow,int aiHigh,DistanceLess less)
 {
     for (;;) {
@@ -2521,6 +2581,7 @@ struct S00d7d1c0_Derived : S00d7d1c0_Base {
 };
 // @fnv 0x00d7d1c0
 // src: COMMUNITY 0x00d7d1c0
+// pdb: hkgpAbstractMesh<hkgpConvexHullImpl::Edge,hkgpConvexHullImpl::Vertex,hkgpConvexHullImpl::Triangle,hkContainerHeapAllocator>::`scalar deleting destructor' | hkgpConvexHull.obj | retail, vtable slot, high
 S00d7d1c0_Derived* S00d7d1c0_Derived::hkgpAbstractMesh_hkgpConvexHullImpl_Edge_hkgpConvexHullImpl_Vertex_hkgpConvexHullImpl_Triangle_hkContainerHeapAllocator_Destroy(int flags)
 {
     this->~S00d7d1c0_Derived();
@@ -2686,6 +2747,9 @@ struct S00d75fc0_Grid {
 // Transforms pos into grid cell coordinates using c->origin and c->invCellSize, then returns whether c->Find finds that cell key.
 // @fnv 0x00d75fc0
 // src: GUESS 0x00d75fc0 (confidence: low)
+// pdb: hkgpConvexHull::fetchPlanes | hkgpConvexHull.obj | retail, object-file run extension, low
+// pdb note: debug build links it to hkgpConvexHull::fetchPositions
+// pdb params: planes
 bool S00d75fc0_Grid::ProcessEntries_00d75fc0(const hkVec4* apPosition)
 {
     S00d75fc0_Cfg* c = cfg;
@@ -2729,17 +2793,19 @@ struct S00d78b90_Store2 {
 
 // @fnv 0x00d78b90
 // src: HAVOK_LIB 0x00d78b90
-S00d78b90_Node* hkgpConvexHull_volumeSimplify(S00d78b90_Store* apStore, float fThreshold, int arg3) {
-    if (apStore->GetInnerField1A8() == 3) {
+// pdb: hkgpConvexHull::volumeSimplify | hkgpConvexHull.obj | retail, upstream name already matches, high
+// pdb params: hull, threshold, ensureContainment
+S00d78b90_Node* hkgpConvexHull_volumeSimplify(S00d78b90_Store* hull, float threshold, int ensureContainment) {
+    if (hull->GetInnerField1A8() == 3) {
         S00d78b90_Node* best = hkgpConvexHull_clone();
         float f = best->hkgpConvexHull_getVolume();
         int lo = 4;
-        int hi = apStore->EvaluateValue_00d75050();
+        int hi = hull->EvaluateValue_00d75050();
         while (((hi - lo) & ~1) != 0) {
             int mid = (hi + lo) >> 1;
-            S00d78b90_Node* node = ((S00d78b90_Store2*)apStore)->hkgpConvexHull_clone();
+            S00d78b90_Node* node = ((S00d78b90_Store2*)hull)->hkgpConvexHull_clone();
             node->ForwardCall_00d762f0();
-            if (!node->ForwardCall_00d77bd0(mid, arg3)) {
+            if (!node->ForwardCall_00d77bd0(mid, ensureContainment)) {
                 if (node != 0)
                     node->Release(1);
                 break;
@@ -2747,7 +2813,7 @@ S00d78b90_Node* hkgpConvexHull_volumeSimplify(S00d78b90_Store* apStore, float fT
             float v = ((S00d78b90_Node2*)node)->hkgpConvexHull_getVolume();
             float r = (v - f) / f;
             volatile float fAbsRatio = (float)fabs(r);
-            if (fAbsRatio < fThreshold) {
+            if (fAbsRatio < threshold) {
                 S00d78b90_Node* old = best;
                 best = node;
                 hi = mid;
@@ -2817,13 +2883,15 @@ struct FUN_00d7efc0_cls {
     PoolEntry* m_pFirstNode;
     int m_uiItemCount;
 
-    PoolEntry* hkgpAbstractMeshDefinitions_List_struct_hkgpConvexHullImpl_Triangle_struct_hkgpAbstractMeshDefinitions_List_struct_hkgpConvexHullImpl_Vertex_struct_hkgpConvexHull_Vertex_struct_hkGeometryProcessing_PoolAllocator_struct_hkgpConvexHullImpl_Vertex_32_struct_hkContainerHeapAllocator_Item_struct_hkGeometryProcessing_PoolAllocator_struct_hkgpConvexHullImpl_Triangle_32_struct_hkContainerHeapAllocator_allocate(const PoolEntry* src);
+    PoolEntry* hkgpAbstractMeshDefinitions_List_hkgpConvexHullImpl_Triangle_hkgpAbstractMeshDefinitions_List_hkgpConvexHullImpl_Vertex_hkgpConvexHull_Vertex_hkGeometryProcessing_PoolAllocator_hkgpConvexHullImpl_Vertex_32_hkContainerHeapAllocator_Item_hkGeometryProcessing_PoolAllocator_hkgpConvexHullImpl_Triangle_32_hkContainerHeapAllocator_allocate(const PoolEntry* value);
 };
 
 // Allocates a new PoolEntry from the pool, copies src->data into it, and prepends it to the m_pFirstNode list.
 // @fnv 0x00d7efc0
-// src: HAVOK_LIB 0x00d7efc0
-PoolEntry* FUN_00d7efc0_cls::hkgpAbstractMeshDefinitions_List_struct_hkgpConvexHullImpl_Triangle_struct_hkgpAbstractMeshDefinitions_List_struct_hkgpConvexHullImpl_Vertex_struct_hkgpConvexHull_Vertex_struct_hkGeometryProcessing_PoolAllocator_struct_hkgpConvexHullImpl_Vertex_32_struct_hkContainerHeapAllocator_Item_struct_hkGeometryProcessing_PoolAllocator_struct_hkgpConvexHullImpl_Triangle_32_struct_hkContainerHeapAllocator_allocate(const PoolEntry* apSource)
+// src: XBOX_RETAIL_PDB 0x00d7efc0 (was HAVOK_LIB)
+// pdb: hkgpAbstractMeshDefinitions::List<hkgpConvexHullImpl::Triangle,hkgpAbstractMeshDefinitions::List<hkgpConvexHullImpl::Vertex,hkgpConvexHull::Vertex,hkGeometryProcessing::PoolAllocator<hkgpConvexHullImpl::Vertex,32,hkContainerHeapAllocator> >::Item,hkGeometryProcessing::PoolAllocator<hkgpConvexHullImpl::Triangle,32,hkContainerHeapAllocator> >::allocate | hkgpConvexHull.obj | retail, object-file gap fill, high
+// pdb params: value
+PoolEntry* FUN_00d7efc0_cls::hkgpAbstractMeshDefinitions_List_hkgpConvexHullImpl_Triangle_hkgpAbstractMeshDefinitions_List_hkgpConvexHullImpl_Vertex_hkgpConvexHull_Vertex_hkGeometryProcessing_PoolAllocator_hkgpConvexHullImpl_Vertex_32_hkContainerHeapAllocator_Item_hkGeometryProcessing_PoolAllocator_hkgpConvexHullImpl_Triangle_32_hkContainerHeapAllocator_allocate(const PoolEntry* value)
 {
     PoolBlock* block;
     if (m_kBlocks.m_iElementCount == 0 || m_kBlocks.m_data[0]->freeList == 0)
@@ -2831,7 +2899,7 @@ PoolEntry* FUN_00d7efc0_cls::hkgpAbstractMeshDefinitions_List_struct_hkgpConvexH
     else
         block = m_kBlocks.m_data[0];
     PoolEntry* node = block->take();
-    node->data = apSource->data;
+    node->data = value->data;
     node->prev = 0;
     node->next = m_pFirstNode;
     if (m_pFirstNode)
@@ -2864,17 +2932,20 @@ extern "C" void _mm_store_ss(float*, __m128);
 
 extern const hkVec4 DAT_010c44d0;
 struct ShapeHelper {
-    void ProcessEntries_00d76320(const hkVec4* apInput, hkVec4* apOutput);
+    void hkgpConvexHull_getSupportingVertex(const hkVec4* direction, hkVec4* vertexOut);
 };
 // XORs the input with DAT_010c44d0, passes it to ShapeHelper, and returns three component products summed with the input's w.
 // @fnv 0x00d76840
 // src: GUESS 0x00d76840 (confidence: low)
+// pdb: hkgpConvexHull::getMinimumDistanceFromPlane | hkgpConvexHull.obj | retail, object-file run extension, low
+// pdb params: plane
+// pdb locals: sv
 float Shape::ProcessAndReturnValue_00d76840(const hkVec4& avInput)
 {
     hkVec4 kNegated;
     hkVec4 kResult;
     *(__m128*)&kNegated = _mm_xor_ps(*(__m128*)&avInput, *(__m128*)&DAT_010c44d0);
-    ((ShapeHelper*)this)->ProcessEntries_00d76320(&kNegated, &kResult);
+    ((ShapeHelper*)this)->hkgpConvexHull_getSupportingVertex(&kNegated, &kResult);
     __m128 kW;
     if (&avInput) kW = _mm_shuffle_ps(*(__m128*)&avInput, *(__m128*)&avInput, 0xff);
     __m128 kP = _mm_mul_ps(*(__m128*)&avInput, *(__m128*)&kResult);
@@ -2903,7 +2974,7 @@ struct S00d79250_Shape {
     int hkgpConvexHull_getNumPlanes();
     float ProcessAndReturnValue_00d76840(const hkVec4& point);
 };
-void __cdecl hkArrayUtil__reserve(hkMemoryAllocator* alloc, void* array, int numElements, int sizeElem);
+void __cdecl hkArrayUtil__reserve(hkMemoryAllocator* mem, void* array, int numElem, int sizeElem);
 template <typename T>
 static __forceinline void AppendHullPointer(hkArrayBase<T*>& array, T* value)
 {
@@ -2920,25 +2991,28 @@ static __forceinline void AppendHullPointer(hkArrayBase<T*>& array, T* value)
 // Selects the remaining point with the highest score and passes it to FUN_00d790a0, updating or disposing of objects based on the result.
 // @fnv 0x00d79250
 // src: HAVOK_LIB 0x00d79250
-void __cdecl hkgpConvexHull_booleanSplit(S00d79250_World* world, S00d79250_Shape* shape,
-                          S00d79250_Obj** output, hkArrayBase<S00d79250_Obj*>* discarded, float tolerance)
+// pdb: hkgpConvexHull::booleanSplit | hkgpConvexHull.obj | retail, upstream name already matches, high
+// pdb params: operandA, operandB, inside, outside, thickness
+// pdb locals: planesPool, model, operand, parts
+void __cdecl hkgpConvexHull_booleanSplit(S00d79250_World* operandA, S00d79250_Shape* operandB,
+                          S00d79250_Obj** inside, hkArrayBase<S00d79250_Obj*>* outside, float thickness)
 {
-    S00d79250_Obj* current = world->hkgpConvexHull_clone();
-    S00d79250_Data* data = shape->data;
+    S00d79250_Obj* current = operandA->hkgpConvexHull_clone();
+    S00d79250_Data* data = operandB->data;
     hkArrayBase<int> indices;
-    if (output) *output = 0;
-    if (discarded) discarded->m_iElementCount = 0;
-    int numIndices = shape->hkgpConvexHull_getNumPlanes();
+    if (inside) *inside = 0;
+    if (outside) outside->m_iElementCount = 0;
+    int numIndices = operandB->hkgpConvexHull_getNumPlanes();
     indices._setSize(getHavokMonitorStream().heap(), numIndices);
     int i = 0;
-    int n = shape->hkgpConvexHull_getNumPlanes();
+    int n = operandB->hkgpConvexHull_getNumPlanes();
     for (; i < n; i++)
         indices[i] = i;
     while (current && indices.GetLogicalSize() > 0) {
         int best = 0;
-        float bestScore = shape->ProcessAndReturnValue_00d76840(data->points[indices[best]]);
+        float bestScore = operandB->ProcessAndReturnValue_00d76840(data->points[indices[best]]);
         for (int i = best + 1; i < indices.GetLogicalSize(); i++) {
-            float score = shape->ProcessAndReturnValue_00d76840(data->points[indices[i]]);
+            float score = operandB->ProcessAndReturnValue_00d76840(data->points[indices[i]]);
             if (score > bestScore) {
                 bestScore = score;
                 best = i;
@@ -2949,24 +3023,24 @@ void __cdecl hkgpConvexHull_booleanSplit(S00d79250_World* world, S00d79250_Shape
         if (indices.m_iElementCount != best)
             indices[best] = indices[indices.m_iElementCount];
         S00d79250_Obj* pieces[2];
-        switch (current->hkgpConvexHull_splitByPlane(point, &pieces[0], &pieces[1], tolerance)) {
+        switch (current->hkgpConvexHull_splitByPlane(point, &pieces[0], &pieces[1], thickness)) {
         case 1:
-            if (discarded) AppendHullPointer(*discarded, current);
+            if (outside) AppendHullPointer(*outside, current);
             else if (current) delete current;
             current = 0;
             break;
         case 3:
             delete current;
             current = pieces[1];
-            if (discarded) {
-                if (pieces[0]) AppendHullPointer(*discarded, pieces[0]);
+            if (outside) {
+                if (pieces[0]) AppendHullPointer(*outside, pieces[0]);
             } else if (pieces[0]) {
                 delete pieces[0];
             }
             break;
         }
     }
-    if (output) *output = current;
+    if (inside) *inside = current;
     else if (current) delete current;
     indices._clearAndDeallocate(getHavokMonitorStream().heap());
 }
@@ -2995,6 +3069,9 @@ __forceinline void Swap333(Record333&a,Record333&b){Record333 temp=b;b=a;a=temp;
 // Recursively sorts a range of Record333 elements in base using the Hoare partition scheme with a midpoint pivot.
 // @fnv 0x00d7af90
 // src: GUESS 0x00d7af90 (confidence: medium)
+// pdb: hkAlgorithm::quickSortRecursive<hkgpConvexHullImpl::Vertex,hkAlgorithm::less<hkgpConvexHullImpl::Vertex> > | hkgpConvexHull.obj | retail, object-file run extension, low
+// pdb params: pArr, d, h, cmpLess
+// pdb locals: str, zal
 void Hkgpconvexhull_SortRecordRange(Record333*apRecords,int aiLow,int aiHigh,int ctx){
  for(;;){
   int i=aiLow,j=aiHigh;
@@ -3167,7 +3244,7 @@ struct D7Owner {
     int o1a4;
     int o1a8;
     int stamp1ac;
-    void __thiscall hkgpConvexHullImpl_clearHorizon(D7Node* arg1, D7Pair* pair, D7Pair* out);
+    void __thiscall hkgpConvexHullImpl_clearHorizon(D7Node* vertex, D7Pair* root, D7Pair* horizon);
 };
 static __forceinline void UnlinkNode(D7Head* head, D7ListNode* nxt, D7ListNode* prv)
 {
@@ -3179,19 +3256,21 @@ static __forceinline void UnlinkNode(D7Head* head, D7ListNode* nxt, D7ListNode* 
 // Recursively visits adjacent pairs when Dist(arg1) is non-negative, unlinks and removes their nodes and elements, or copies the pair to out.
 // @fnv 0x00d7c3e0
 // src: HAVOK_LIB 0x00d7c3e0
-void __thiscall D7Owner::hkgpConvexHullImpl_clearHorizon(D7Node* arg1, D7Pair* pair, D7Pair* apOutPair)
+// pdb: hkgpConvexHullImpl::clearHorizon | hkgpConvexHull.obj | retail, upstream name already matches, high
+// pdb params: vertex, root, horizon
+void __thiscall D7Owner::hkgpConvexHullImpl_clearHorizon(D7Node* vertex, D7Pair* root, D7Pair* horizon)
 {
-    if (!pair->node) return;
-    if (pair->node->stamp40 == stamp1ac) return;
-    pair->node->stamp40 = stamp1ac;
-    if (pair->node->Dist(arg1) >= 0) {
-        { D7Pair n=pair->Adjacent(); hkgpConvexHullImpl_clearHorizon(arg1,&n,apOutPair); }
-        { D7Pair n=pair->Next().Adjacent(); hkgpConvexHullImpl_clearHorizon(arg1,&n,apOutPair); }
-        { D7Pair n=pair->Prev().Adjacent(); hkgpConvexHullImpl_clearHorizon(arg1,&n,apOutPair); }
-        pair->Unlink();
-        pair->Next().Unlink();
-        pair->Prev().Unlink();
-        D7Node* pNode = pair->node;
+    if (!root->node) return;
+    if (root->node->stamp40 == stamp1ac) return;
+    root->node->stamp40 = stamp1ac;
+    if (root->node->Dist(vertex) >= 0) {
+        { D7Pair n=root->Adjacent(); hkgpConvexHullImpl_clearHorizon(vertex,&n,horizon); }
+        { D7Pair n=root->Next().Adjacent(); hkgpConvexHullImpl_clearHorizon(vertex,&n,horizon); }
+        { D7Pair n=root->Prev().Adjacent(); hkgpConvexHullImpl_clearHorizon(vertex,&n,horizon); }
+        root->Unlink();
+        root->Next().Unlink();
+        root->Prev().Unlink();
+        D7Node* pNode = root->node;
         for (int i = 0; i < 3; i++) {
             D7ListNode* o = pNode->elems[i];
             pNode->elems[i]->ref30--;
@@ -3204,7 +3283,7 @@ void __thiscall D7Owner::hkgpConvexHullImpl_clearHorizon(D7Node* arg1, D7Pair* p
         headB.Remove((D7ListNode*)pNode);
         headB.hkGeometryProcessing_PoolAllocator_struct_hkgpConvexHullImpl_Triangle_32_struct_hkContainerHeapAllocator_release(pNode);
     } else {
-        *apOutPair = *pair;
+        *horizon = *root;
     }
 }
 
@@ -3269,6 +3348,7 @@ struct FUN_00d7c970_cls {
 // Advances m_kEdge through triangle edges until a canonical edge is found, returning when one is located.
 // @fnv 0x00d7c970
 // src: HAVOK_LIB 0x00d7c970
+// pdb: hkgpAbstractMesh<hkgpConvexHullImpl::Edge,hkgpConvexHullImpl::Vertex,hkgpConvexHullImpl::Triangle,hkContainerHeapAllocator>::EdgeIterator::next | hkgpConvexHull.obj | retail, object-file gap fill, high
 void FUN_00d7c970_cls::hkgpAbstractMesh_struct_hkgpConvexHullImpl_Edge_struct_hkgpConvexHullImpl_Vertex_struct_hkgpConvexHullImpl_Triangle_struct_hkContainerHeapAllocator_EdgeIterator_next()
 {
     while (m_kEdge.m_pkTriangle)
@@ -3328,12 +3408,14 @@ struct HullEdge {
 };
 struct HullEdgeIterator {
     HullEdge m_kEdge;
-    HullEdgeIterator(HullEdge e);
+    HullEdgeIterator(HullEdge first);
     void hkgpAbstractMesh_struct_hkgpConvexHullImpl_Edge_struct_hkgpConvexHullImpl_Vertex_struct_hkgpConvexHullImpl_Triangle_struct_hkContainerHeapAllocator_EdgeIterator_next();
 };
 // Constructs a HullEdgeIterator from a HullEdge, calling FUN_00d7c970 if the edge has a triangle and is not canonical.
 // @fnv 0x00d7d220
-HullEdgeIterator::HullEdgeIterator(HullEdge akEdge) : m_kEdge(akEdge)
+// pdb: hkgpAbstractMesh<hkgpConvexHullImpl::Edge,hkgpConvexHullImpl::Vertex,hkgpConvexHullImpl::Triangle,hkContainerHeapAllocator>::EdgeIterator::EdgeIterator | hkgpConvexHull.obj | retail, object-file gap fill, high
+// pdb params: first
+HullEdgeIterator::HullEdgeIterator(HullEdge first) : m_kEdge(first)
 {
     if (m_kEdge.m_pkTriangle && !m_kEdge.isCanonical()) hkgpAbstractMesh_struct_hkgpConvexHullImpl_Edge_struct_hkgpConvexHullImpl_Vertex_struct_hkgpConvexHullImpl_Triangle_struct_hkContainerHeapAllocator_EdgeIterator_next();
 }
@@ -3464,6 +3546,7 @@ struct FUN_00d7f6a0 : S_00d7f6a0_Head {
 
 // Assigns InterlockedExchangeAdd on s_nextId to m_iOwnerObjectOffset, then calls Reset(0).
 // @fnv 0x00d7f6a0
+// pdb: hkgpConvexHullImpl::hkgpConvexHullImpl | hkgpConvexHull.obj | retail, object-file gap fill, high
 FUN_00d7f6a0::FUN_00d7f6a0()
 {
     m_iOwnerObjectOffset = InterlockedExchangeAdd(&s_nextId, 1);
@@ -3518,13 +3601,15 @@ struct S76320_Cls {
     int unk00;
     int unk04;
     S76320_Owner* m_pOwnerObject;
-    void ProcessEntries_00d76320(int a1, int a2);
+    void hkgpConvexHull_getSupportingVertex(int direction, int vertexOut);
 };
 
 // Collects node vectors into a temporary array, sorts them via m_sorter, frees the array, then calls FUN_00dea810 with a1 and a2.
 // @fnv 0x00d76320
-// src: GUESS 0x00d76320 (confidence: low)
-void S76320_Cls::ProcessEntries_00d76320(int a1, int a2)
+// src: XBOX_RETAIL_PDB 0x00d76320
+// pdb: hkgpConvexHull::getSupportingVertex | hkgpConvexHull.obj | retail, object-file run extension, high
+// pdb params: direction, vertexOut
+void S76320_Cls::hkgpConvexHull_getSupportingVertex(int direction, int vertexOut)
 {
     S76320_Owner* owner = m_pOwnerObject;
     if (owner->m_built == 0) {
@@ -3544,7 +3629,7 @@ void S76320_Cls::ProcessEntries_00d76320(int a1, int a2)
         points.m_data = 0;
         points.m_iCapacityState = 0x80000000;
     }
-    hkVector4_FindSupportingVertex(&owner->m_sorter, a1, a2);
+    hkVector4_FindSupportingVertex(&owner->m_sorter, direction, vertexOut);
 }
 
 extern const float DAT_01012054;
@@ -3586,11 +3671,14 @@ static __forceinline void CheckSplitIndex(SplitObject* source,hkErrStream& strea
 // Iterates source planes, splits with splitter, keeps the pair with the highest score that passes predicate, returning the best score.
 // @fnv 0x00d79850
 // src: HAVOK_LIB 0x00d79850
-float hkgpConvexHull_findBestUnion(SplitObject* source,PlaneSplitter* splitter,PairPredicate* predicate,SplitObject*& outFirst,SplitObject*& outSecond)
+// pdb: hkgpConvexHull::findBestUnion | hkgpConvexHull.obj | retail, upstream name already matches, high
+// pdb params: a, b, f, aUnb, pb
+// pdb locals: pos, plane, neg, parms
+float hkgpConvexHull_findBestUnion(SplitObject* source,PlaneSplitter* b,PairPredicate* f,SplitObject*& aUnb,SplitObject*& pb)
 {
     float best=-1.0f;
-    outFirst=0;
-    outSecond=0;
+    aUnb=0;
+    pb=0;
     SplitWorkspace workspace;
     CheckSplitIndex(source,*reinterpret_cast<hkErrStream*>(workspace.stream));
     for(int i=0;i<source->hkgpConvexHull_getNumPlanes();++i) {
@@ -3598,7 +3686,7 @@ float hkgpConvexHull_findBestUnion(SplitObject* source,PlaneSplitter* splitter,P
         hkVec4 plane=*src;
         SplitObject* pFirst;
         SplitObject* pSecond;
-        int result=splitter->hkgpConvexHull_splitByPlane(plane,pFirst,pSecond,DAT_0106c288);
+        int result=b->hkgpConvexHull_splitByPlane(plane,pFirst,pSecond,DAT_0106c288);
         SplitObject* second=*(SplitObject* volatile*)&pSecond;
         SplitObject* first=*(SplitObject* volatile*)&pFirst;
         if(result==3 && first && second && first->GetInnerField1A8()==3 && second->GetInnerField1A8()==3 && !second->ForwardCall_00d762f0() && second->hkgpConvexHull_getVolume()>best && !first->ForwardCall_00d762f0()) {
@@ -3608,12 +3696,12 @@ float hkgpConvexHull_findBestUnion(SplitObject* source,PlaneSplitter* splitter,P
                     workspace.pair[0]=combined;
                     workspace.pair[1]=first;
                     bool accepted;
-                    if(*predicate->test(&accepted,workspace.pair,2)) {
-                        delete outFirst;
-                        delete outSecond;
+                    if(*f->test(&accepted,workspace.pair,2)) {
+                        delete aUnb;
+                        delete pb;
                         best=second->hkgpConvexHull_getVolume();
-                        outFirst=combined;
-                        outSecond=first;
+                        aUnb=combined;
+                        pb=first;
                         pFirst=0;
                         goto cleanupSecond;
                     }
@@ -3707,13 +3795,15 @@ __declspec(align(16)) struct FUN_00d7ac40_cls {
     unsigned char m_1b5;
     int unk1b6;
 
-    void __thiscall hkgpConvexHullImpl_reset(unsigned char flag);
+    void __thiscall hkgpConvexHullImpl_reset(unsigned char keepPlane);
 };
 
 // Calls m_10.v0c(), clears several fields, and initializes vectors from constants and data returned by FUN_00cd4b50().
 // @fnv 0x00d7ac40
 // src: XBOX_PDB 0x00d7ac40
-void FUN_00d7ac40_cls::hkgpConvexHullImpl_reset(unsigned char flag)
+// pdb: hkgpConvexHullImpl::reset | hkgpConvexHull.obj | retail, upstream name already matches, high
+// pdb params: keepPlane
+void FUN_00d7ac40_cls::hkgpConvexHullImpl_reset(unsigned char keepPlane)
 {
     m_10.v0c();
     __m128 vDefault = _mm_setr_ps(DAT_01011d78, DAT_01011d78, DAT_01011d78, DAT_0104da48);
@@ -3752,7 +3842,7 @@ void FUN_00d7ac40_cls::hkgpConvexHullImpl_reset(unsigned char flag)
     m_100 = DAT_01267e30;
     m_110 = DAT_01267e30;
     m_f0 = DAT_01267e30;
-    if (!flag) {
+    if (!keepPlane) {
         m_e0 = DAT_01267e30;
     }
 }
@@ -3762,7 +3852,7 @@ extern "C" void _ReadWriteBarrier(void);
 struct S_00d790d0_Item {
     virtual ~S_00d790d0_Item();
     void ForwardCall_00d762f0();
-    int UpdateFields_00d756a0(hkVector4* v, S_00d790d0_Item** a, S_00d790d0_Item** b, float f);
+    int hkgpConvexHull_getMajorPlane(hkVector4* v, S_00d790d0_Item** a, S_00d790d0_Item** b, float f);
     int hkgpConvexHull_splitByPlane(int r);
 };
 
@@ -3805,28 +3895,31 @@ __forceinline void hkArrayBase<T>::removeAt(int i)
 // Repeats the array traversal count times and replaces an item with two outputs when the result is 3 and both outputs are nonnull.
 // @fnv 0x00d790d0
 // src: HAVOK_LIB 0x00d790d0
-void __stdcall hkgpConvexHull_subdivide(int aiSteps, hkArrayBase<S_00d790d0_Item*>* apItems, float afParam) {
+// pdb: hkgpConvexHull::subdivide | hkgpConvexHull.obj | retail, upstream name already matches, high
+// pdb params: recursions, output, thickness
+// pdb locals: pieces
+void __stdcall hkgpConvexHull_subdivide(int recursions, hkArrayBase<S_00d790d0_Item*>* output, float thickness) {
     __declspec(align(16)) hkVector4 v;
     S_00d790d0_Pair vPair;
     S_00d790d0_Item* a;
-    apItems->m_iElementCount = 0;
-    AppendHullItem(*apItems, (S_00d790d0_Item*)hkgpConvexHull_clone());
+    output->m_iElementCount = 0;
+    AppendHullItem(*output, (S_00d790d0_Item*)hkgpConvexHull_clone());
     int n;
-    if (aiSteps > 0) {
-        n = aiSteps;
+    if (recursions > 0) {
+        n = recursions;
         do {
-            for (int i = 0, sz = apItems->m_iElementCount; i < sz; i++) {
-                S_00d790d0_Item* e = apItems->m_data[i];
+            for (int i = 0, sz = output->m_iElementCount; i < sz; i++) {
+                S_00d790d0_Item* e = output->m_data[i];
                 e->ForwardCall_00d762f0();
-                int res = e->UpdateFields_00d756a0(&v, &vPair.a, &vPair.b, afParam);
+                int res = e->hkgpConvexHull_getMajorPlane(&v, &vPair.a, &vPair.b, thickness);
                 int r = e->hkgpConvexHull_splitByPlane(res);
                 if (r == 3) {
                     a = vPair.a;
                     _ReadWriteBarrier();
                     if (a && vPair.b) {
-                        AppendHullItem(*apItems, a);
-                        AppendHullItemRef(*apItems, vPair.b);
-                        apItems->removeAt(i);
+                        AppendHullItem(*output, a);
+                        AppendHullItemRef(*output, vPair.b);
+                        output->removeAt(i);
                         delete e;
                     } else {
                         delete a;
@@ -3855,6 +3948,7 @@ struct FUN_00d74f10_class {
 // If the node flag at offset 0x1b5 is clear, builds a buffer and calls a service method, then returns the int at offset 0x58 of item08.
 // @fnv 0x00d74f10
 // src: HAVOK_LIB 0x00d74f10
+// pdb: hkgpConvexHull::getNumPlanes | hkgpConvexHull.obj | retail, upstream name already matches, high
 int FUN_00d74f10_class::hkgpConvexHull_getNumPlanes() {
     char* node = item08;
     void* storage[128];
@@ -3888,12 +3982,14 @@ struct S_00d74fb0_Inner {
 struct S_00d74fb0_Obj {
     int unk00, unk04;
     S_00d74fb0_Inner* unk08;
-    char* hkgpConvexHull_getPlane(unsigned int idx);
+    char* hkgpConvexHull_getPlane(unsigned int index);
 };
 // If the inner object's flag is clear, reports a message using its value, then returns a pointer into its data at idx * 16.
 // @fnv 0x00d74fb0
 // src: HAVOK_LIB 0x00d74fb0
-char* S_00d74fb0_Obj::hkgpConvexHull_getPlane(unsigned int uiIndex)
+// pdb: hkgpConvexHull::getPlane | hkgpConvexHull.obj | retail, upstream name already matches, high
+// pdb params: index
+char* S_00d74fb0_Obj::hkgpConvexHull_getPlane(unsigned int index)
 {
     S_00d74fb0_Inner* p = unk08;
     if (!p->unk1b5) {
@@ -3906,7 +4002,7 @@ char* S_00d74fb0_Obj::hkgpConvexHull_getPlane(unsigned int uiIndex)
             __debugbreak();
         s.hkOstream::~hkOstream();
     }
-    return unk08->unk54 + (uiIndex << 4);
+    return unk08->unk54 + (index << 4);
 }
 }  // namespace fnv_00d74fb0
 
@@ -4044,6 +4140,7 @@ struct FUN_00d75560_cls {
 // If sub->m_1b4 is zero, builds a log string from sub->m_1b0 and writes it via DAT_01268360, then returns a pointer to m_08 + 0x170.
 // @fnv 0x00d75560
 // src: HAVOK_LIB 0x00d75560
+// pdb: hkgpConvexHull::getWorldInertia | hkgpConvexHull.obj | retail, upstream name already matches, high
 void* FUN_00d75560_cls::hkgpConvexHull_getWorldInertia()
 {
     SubObject_cls* sub = m_08;
@@ -4188,6 +4285,7 @@ struct S_00d75600_Obj {
 // If the inner object's unk1b4 flag is clear, formats a debug message and reports it via DAT_01268360, then returns a pointer to the inner object's unk150 field.
 // @fnv 0x00d75600
 // src: HAVOK_LIB 0x00d75600
+// pdb: hkgpConvexHull::getCenterOfMass | hkgpConvexHull.obj | retail, upstream name already matches, high
 int* S_00d75600_Obj::hkgpConvexHull_getCenterOfMass()
 {
     S_00d75600_Inner* p = unk08;
@@ -4275,6 +4373,7 @@ struct FUN_00d76ca0 : S_00d76ca0_Base {
 
 // Requests a 0x1c0-byte block from the router heap, stores the result of FUN_00d7f6a0() when nonnull, and zeros m0c and m10.
 // @fnv 0x00d76ca0
+// pdb: hkgpConvexHull::hkgpConvexHull | hkgpConvexHull.obj | retail, call graph (shared callers), high
 FUN_00d76ca0::FUN_00d76ca0() {
     hkMemoryAllocator& h = hkMemoryRouter_getInstance()->heap();
     void* p = h.blockAlloc(0x1c0);
@@ -4295,7 +4394,7 @@ struct D76Iface {
 
 struct D76Sub {
     int unk00;
-    void* AllocateAndProcessEntries_00d7f720();
+    void* hkgpConvexHullImpl_clone();
 };
 
 struct D76Old {
@@ -4325,6 +4424,7 @@ struct FUN_00d76cf0_cls {
 // Allocates a D76Child, releases its existing m_08 object, then initializes m_08, m_0c, and m_10 from source fields.
 // @fnv 0x00d76cf0
 // src: HAVOK_LIB 0x00d76cf0
+// pdb: hkgpConvexHull::clone | hkgpConvexHull.obj | retail, upstream name already matches, high
 D76Child* FUN_00d76cf0_cls::hkgpConvexHull_clone()
 {
     hkMemoryRouter* pHolder = hkMemoryRouter_getInstance();
@@ -4340,7 +4440,7 @@ D76Child* FUN_00d76cf0_cls::hkgpConvexHull_clone()
         pAllocator2->blockFree(pOld, 0x1c0);
     }
     pNew->m_08 = 0;
-    pNew->m_08 = ((D76Sub*)m_08)->AllocateAndProcessEntries_00d7f720();
+    pNew->m_08 = ((D76Sub*)m_08)->hkgpConvexHullImpl_clone();
     pNew->m_0c = m_0c;
     void* pVal;
     if (m_10 != 0) {
@@ -4367,7 +4467,7 @@ struct Triangle {
     TriangleVertex* m_kVertices[3];
 };
 
-void __cdecl hkArrayUtil__reserve(void* alloc, void* array, int newCap, int elemSize) throw();
+void __cdecl hkArrayUtil__reserve(void* mem, void* array, int numElem, int sizeElem) throw();
 
 
 inline hkMemoryAllocator& hkContainerHeapAllocator::get(const void*)
@@ -4460,13 +4560,16 @@ struct GraphEdge : GraphEdgeBase {
     __forceinline GraphEdge(const GraphEdge& other) : GraphEdgeBase(other.face,other.corner) {}
 };
 struct HkHull : ChildData {
-    void hkgpConvexHullImpl_generateVertexAdjacencyGraph(hkArray<int>& indices, hkArray<int>& offsets);
+    void hkgpConvexHullImpl_generateVertexAdjacencyGraph(hkArray<int>& edges, hkArray<int>& vertexOffsets);
 };
 
 // Builds adjacency lists from triangle edges, then flattens each list into indices and records its starting offset.
 // @fnv 0x00d80f90
 // src: HAVOK_LIB 0x00d80f90
-void HkHull::hkgpConvexHullImpl_generateVertexAdjacencyGraph(hkArray<int>& indices, hkArray<int>& offsets) {
+// pdb: hkgpConvexHullImpl::generateVertexAdjacencyGraph | hkgpConvexHull.obj | retail, upstream name already matches, high
+// pdb params: edges, vertexOffsets
+// pdb locals: links
+void HkHull::hkgpConvexHullImpl_generateVertexAdjacencyGraph(hkArray<int>& edges, hkArray<int>& vertexOffsets) {
     if (!this->flag1b5) {
         unsigned int buffer[128];
         void* streamStorage[sizeof(hkErrStream) / sizeof(void*)];
@@ -4492,19 +4595,19 @@ void HkHull::hkgpConvexHullImpl_generateVertexAdjacencyGraph(hkArray<int>& indic
             }
         }
 
-        indices.m_iElementCount = 0;
-        indices.reserve(3 * this->unk040 + this->unk028);
-        offsets.setSize(this->unk028);
+        edges.m_iElementCount = 0;
+        edges.reserve(3 * this->unk040 + this->unk028);
+        vertexOffsets.setSize(this->unk028);
 
         int i = 0;
         int offset = 0;
         for (; i < links.m_iElementCount; ++i) {
             int count = links[i].m_iElementCount;
-            AppendHullIndex(indices, count);
+            AppendHullIndex(edges, count);
             for (int j = 0; j < links[i].m_iElementCount; ++j) {
-                AppendHullIndex(indices, links[i][j]);
+                AppendHullIndex(edges, links[i][j]);
             }
-            offsets[i] = offset;
+            vertexOffsets[i] = offset;
             offset += links[i].m_iElementCount + 1;
         }
     links.clearAndDeallocate();
@@ -4523,19 +4626,22 @@ static __forceinline void releasePiece(S_00d79f90_Result* item) {
 // Splits the world's initial piece against each input piece, collecting surviving sub-pieces into output and returning whether any remain.
 // @fnv 0x00d79580
 // src: HAVOK_LIB 0x00d79580
-bool __cdecl hkgpConvexHull_booleanSubtraction_00d79580(S_00d79f90_World* world, hkArray<S_00d79f90_Result*>* inputs, hkArray<S_00d79f90_Result*>* output, float afEpsilon) {
+// pdb: hkgpConvexHull::booleanSubtraction | hkgpConvexHull.obj | retail, object-file gap fill, high
+// pdb params: operandA, operandB, output, thickness
+// pdb locals: intersection
+bool __cdecl hkgpConvexHull_booleanSubtraction_00d79580(S_00d79f90_World* operandA, hkArray<S_00d79f90_Result*>* operandsB, hkArray<S_00d79f90_Result*>* output, float thickness) {
     void* currentStorage[sizeof(hkArray<S_00d79f90_Result*>) / sizeof(void*)];
     void* nextStorage[sizeof(hkArray<S_00d79f90_Result*>) / sizeof(void*)];
     void* piecesStorage[sizeof(hkArray<S_00d79f90_Result*>) / sizeof(void*)];
     hkArray<S_00d79f90_Result*>& current = *new (currentStorage) hkArray<S_00d79f90_Result*>;
     hkArray<S_00d79f90_Result*>& next = *new (nextStorage) hkArray<S_00d79f90_Result*>;
     hkArray<S_00d79f90_Result*>& pieces = *new (piecesStorage) hkArray<S_00d79f90_Result*>;
-    S_00d79f90_Result* pInitialPiece = world->hkgpConvexHull_clone();
+    S_00d79f90_Result* pInitialPiece = operandA->hkgpConvexHull_clone();
     AppendHullIndex(current, pInitialPiece);
-    for (int i = 0; i < inputs->m_iElementCount; ++i) {
+    for (int i = 0; i < operandsB->m_iElementCount; ++i) {
         int count = current.m_iElementCount;
         for (int j = 0; j < count; ++j) {
-            if (splitPiece(current.m_data[j], inputs->m_data[i], pieces, afEpsilon)) {
+            if (splitPiece(current.m_data[j], operandsB->m_data[i], pieces, thickness)) {
                 releasePiece(current.m_data[j]);
                 for (int k = 0; k < pieces.m_iElementCount; ++k) {
                     AppendHullIndex(next, pieces.m_data[k]);
@@ -4676,9 +4782,9 @@ cross1 = (_mm_mul_ps)(
 (_mm_shuffle_ps)((*(hkQuadReal*)&v0.m_quadS), (*(hkQuadReal*)&v0.m_quadS), (((3) << 6) | ((1) << 4) | ((0) << 2) | ((2)))),
 (_mm_shuffle_ps)((*(hkQuadReal*)&v1.m_quadS), (*(hkQuadReal*)&v1.m_quadS), (((3) << 6) | ((0) << 4) | ((2) << 2) | ((1)))) );
 (*(hkQuadReal*)&m_quadS) = (_mm_sub_ps)(cross0, cross1);}
-__forceinline hkSimdReal hkVector4::dot3(const hkVector4& a) const
+__forceinline hkSimdReal hkVector4::dot3(const hkVector4& x) const
 {
-hkQuadReal x2 = (_mm_mul_ps)((*(hkQuadReal*)&m_quadS),(*(hkQuadReal*)&a.m_quadS));
+hkQuadReal x2 = (_mm_mul_ps)((*(hkQuadReal*)&m_quadS),(*(hkQuadReal*)&x.m_quadS));
 hkQuadReal xySum = (_mm_add_ss)( (_mm_shuffle_ps)(x2,x2,(((1) << 6) | ((1) << 4) | ((1) << 2) | ((1)))), x2);
 return (_mm_add_ss)( (_mm_shuffle_ps)(x2,x2,(((2) << 6) | ((2) << 4) | ((2) << 2) | ((2)))), xySum);}
 __forceinline hkSimdReal hkVector4::length3() const
@@ -4755,10 +4861,11 @@ __forceinline void hkTransform::operator=(const hkTransform& t) {
 }
 __forceinline hkAabb::hkAabb() {}
 
+// pdb: class hkgpConvexHull, size 0x14 (here 0x8), bases: hkReferencedObject, 3 members
 class hkgpConvexHull : public hkReferencedObject
 {
 public:
-__forceinline void* __cdecl operator new(hk_size_t nbytes) { ; hkReferencedObject* b = static_cast<hkReferencedObject*>(getHavokMonitorStream().heap().blockAlloc(static_cast<int>(nbytes))); b->m_usMemSizeAndFlags = static_cast<hkUint16>(nbytes); ; return b; }
+__forceinline void* __cdecl operator new(hk_size_t nbytes) { ; hkReferencedObject* b = static_cast<hkReferencedObject*>(getHavokMonitorStream().heap().blockAlloc(static_cast<int>(nbytes))); b->m_memSizeAndFlags = static_cast<hkUint16>(nbytes); ; return b; }
 struct Vertex {};
 struct Triangle {};
 public:
@@ -4780,6 +4887,7 @@ private:
 inline hkgpConvexHull(const hkgpConvexHull& ch) : hkReferencedObject(ch) {}
 private:
 friend class hkgpConvexHullImpl;};
+// pdb: structure hkGeometryProcessing, size 0x1, 0 members
 struct hkGeometryProcessing
 {
 template <typename T,const int N,typename ALLOCATOR=hkContainerHeapAllocator>
@@ -4954,20 +5062,20 @@ VertexList m_kVertices;
 TriangleList m_uiTriangleCount;};class hkgpConvexHullImpl
 {
 public:
-struct Plane { int m_iThirdValue[3]; hkInt64 m_iFourthElementInteger; int m_uiEdgeIndex; };
+struct Plane { int m_c[3]; hkInt64 m_d; int m_index; }; // src: XBOX_RETAIL_PDB m_d +0x10 (old: m_iFourthElementInteger); m_c +0x0 (old: m_iThirdValue); m_index +0x18 (old: m_uiEdgeIndex)
 struct Vertex : AllocatedLinkedList::Vertex<Vertex, hkgpConvexHull::Vertex>
 {
-hkVector4 m_pObservedSource;
-int m_uiX[3];
-float m_vCenterOfMass;
+hkVector4 m_source; // src: XBOX_RETAIL_PDB +0x10 (old: m_pObservedSource)
+int m_x[3]; // src: XBOX_RETAIL_PDB +0x20 (old: m_uiX)
+float m_scratch; // src: XBOX_RETAIL_PDB +0x2c (old: m_vCenterOfMass)
 int m_refs;
-int m_uiEdgeIndex;
+int m_index; // src: XBOX_RETAIL_PDB +0x34 (old: m_uiEdgeIndex)
 };
 struct Triangle : AllocatedLinkedList::Triangle<Triangle, hkgpConvexHull::Triangle, Vertex*>
 {
-Plane m_kTriangleNormal;
-int m_iTriangleIndex;
-int m_uiEdgeIndex;
+Plane m_plane; // src: XBOX_RETAIL_PDB +0x20 (old: m_kTriangleNormal)
+int m_pid; // src: XBOX_RETAIL_PDB +0x40 (old: m_iTriangleIndex)
+int m_index; // src: XBOX_RETAIL_PDB +0x44 (old: m_uiEdgeIndex)
 };
 struct Edge : TriangleEdgeTopology::Edge<Edge, Vertex, Triangle, Vertex*> { };
 typedef hkgpAbstractMesh<Edge, Vertex, Triangle, hkContainerHeapAllocator> Mesh;
@@ -4978,16 +5086,16 @@ static __forceinline hkVector4 get(const hkgpConvexHullImpl* ch, const Vertex* v
 hkVector4 transform(const Vertex& v) const
 {
 hkVector4 r;
-r.set(hkReal(v.m_uiX[0]), hkReal(v.m_uiX[1]), hkReal(v.m_uiX[2]), 0.0f);
-r.mul4(m_vVertexScale);
-r.add4(m_vRayOrigins);
+r.set(hkReal(v.m_x[0]), hkReal(v.m_x[1]), hkReal(v.m_x[2]), 0.0f);
+r.mul4(m_scaleInv);
+r.add4(m_origin);
 return r;
 }
 template <typename P> const hkVector4& GetCenterOfMass() const throw();
 template <typename P> __forceinline void fetchWorldPositions(hkArray<hkVector4>& positions) const
 {
-hkVector4* pp = positions.expandBy(m_pMesh.m_kVertices.GetLogicalSize());
-for (const Vertex* v = m_pMesh.m_kVertices.getFirst(); v; v = v->next())
+hkVector4* pp = positions.expandBy(m_mesh.m_kVertices.GetLogicalSize());
+for (const Vertex* v = m_mesh.m_kVertices.getFirst(); v; v = v->next())
 {
 *pp++ = ConvexHullVertexTransform::get(this, v);
 }
@@ -5012,36 +5120,38 @@ w.sub(q);
 inertia.addMul(mass, w);
 }
 hkResult hkgpConvexHullImpl_buildMassProperties_hkgpConvexHullImpl_PositionAsTransform();
-hkgpConvexHull::ConvexHullRecord m_pConfiguration;
-Mesh m_pMesh;
-hkArray<Vertex> m_kVertexArray;
-hkArray<hkVector4> m_kPlaneArray;
-hkArray<hkGeometryProcessing::VectorBasis> m_kGeometryRecordArray;
-hkVector4 m_vVectorPair[2];
-hkAabb m_kAabbPair[2];
-hkVector4 m_kVectorAtOffsetD0;
-hkVector4 m_kVectorAtOffsetE0;
-hkVector4 m_vRayOrigins;
-hkVector4 m_vScale;
-hkVector4 m_vVertexScale;
-hkTransform m_kLocalTransform;
-hkVector4 m_vOffset;
-hkMatrix3 m_kTransformMatrix;
-float m_iBufferSize;
-float m_fVertexStride;
-int m_eVertexFloatDimensions;
-int m_iTriangleIndex;
-unsigned int m_uiUniqueId;
-bool m_bFirstImplementationFlag;};
+hkgpConvexHull::ConvexHullRecord m_config; // src: XBOX_RETAIL_PDB +0x0 (old: m_pConfiguration)
+Mesh m_mesh; // src: XBOX_RETAIL_PDB +0x10 (old: m_pMesh)
+hkArray<Vertex> m_pendings; // src: XBOX_RETAIL_PDB +0x48 (old: m_kVertexArray)
+hkArray<hkVector4> m_planes; // src: XBOX_RETAIL_PDB +0x54 (old: m_kPlaneArray)
+hkArray<hkGeometryProcessing::VectorBasis> m_supportCache; // src: XBOX_RETAIL_PDB +0x60 (old: m_kGeometryRecordArray)
+hkVector4 m_centroids[2]; // src: XBOX_RETAIL_PDB +0x70 (old: m_vVectorPair)
+hkAabb m_boundingBoxes[2]; // src: XBOX_RETAIL_PDB +0x90 (old: m_kAabbPair)
+hkVector4 m_projectionAxis; // src: XBOX_RETAIL_PDB +0xd0 (old: m_kVectorAtOffsetD0)
+hkVector4 m_projectionPlane; // src: XBOX_RETAIL_PDB +0xe0 (old: m_kVectorAtOffsetE0)
+hkVector4 m_origin; // src: XBOX_RETAIL_PDB +0xf0 (old: m_vRayOrigins)
+hkVector4 m_scale; // src: XBOX_RETAIL_PDB +0x100 (old: m_vScale)
+hkVector4 m_scaleInv; // src: XBOX_RETAIL_PDB +0x110 (old: m_vVertexScale)
+hkTransform m_localTransform; // src: XBOX_RETAIL_PDB +0x120 (old: m_kLocalTransform)
+hkVector4 m_inertia; // src: XBOX_RETAIL_PDB +0x160 (old: m_vOffset)
+hkMatrix3 m_inertiaMatrix; // src: XBOX_RETAIL_PDB +0x170 (old: m_kTransformMatrix)
+float m_volume; // src: XBOX_RETAIL_PDB +0x1a0 (old: m_iBufferSize)
+float m_surface; // src: XBOX_RETAIL_PDB +0x1a4 (old: m_fVertexStride)
+int m_dimensions; // src: XBOX_RETAIL_PDB +0x1a8 (old: m_eVertexFloatDimensions)
+int m_pid; // src: XBOX_RETAIL_PDB +0x1ac (old: m_iTriangleIndex)
+unsigned int m_uid; // src: XBOX_RETAIL_PDB +0x1b0 (old: m_uiUniqueId)
+bool m_hasMassProperties;}; // src: XBOX_RETAIL_PDB +0x1b4 (old: m_bFirstImplementationFlag)
 
 // Updates center, area, volume, and inertia-related state based on vertex dimensionality.
 // @fnv 0x00d7b600
 // src: XBOX_PDB 0x00d7b600
+// pdb: hkgpConvexHullImpl::buildMassProperties<hkgpConvexHullImpl::PositionAsTransform> | hkgpConvexHull.obj | retail, object-file run extension, low
+// pdb locals: offd, com, area, diag, vol, m, det, reportBuf, ostr, eigenValues, inertiaM, eigenVectors, assertBuf, vertices
 hkResult hkgpConvexHullImpl::hkgpConvexHullImpl_buildMassProperties_hkgpConvexHullImpl_PositionAsTransform()
 {
-if (!m_bFirstImplementationFlag)
+if (!m_hasMassProperties)
 {
-if (m_eVertexFloatDimensions == 3)
+if (m_dimensions == 3)
 {
 const hkVector4 base = GetCenterOfMass<ConvexHullVertexTransform>();
 hkVector4 com = hkVector4::getZero();
@@ -5049,7 +5159,7 @@ hkVector4 diag = hkVector4::getZero();
 hkVector4 offd = hkVector4::getZero();
 hkReal vol = 0;
 hkReal area = 0;
-for (const Triangle* pt = m_pMesh.m_uiTriangleCount.getFirst(); pt; pt = pt->next())
+for (const Triangle* pt = m_mesh.m_uiTriangleCount.getFirst(); pt; pt = pt->next())
 {
 hkMatrix3 m;
 m.setCols(ConvexHullVertexTransform::get(this, pt->vertex(0)), ConvexHullVertexTransform::get(this, pt->vertex(1)), ConvexHullVertexTransform::get(this, pt->vertex(2)));
@@ -5073,10 +5183,10 @@ accumulateMass(m, 2, 0, 1, det, diag, offd);
 }
 com.mul4(hkSimdReal(1.0 / (vol * 4.0)));
 com.add4(base);
-m_kLocalTransform.setTranslation(com);
-m_fVertexStride = area / 2.0;
-m_iBufferSize = vol / 6.0;
-if (m_iBufferSize > 1.1920928955078125e-07)
+m_localTransform.setTranslation(com);
+m_surface = area / 2.0;
+m_volume = vol / 6.0;
+if (m_volume > 1.1920928955078125e-07)
 {
 diag.mul4(hkSimdReal(1.0 / (vol * 10.0)));
 offd.mul4(hkSimdReal(1.0 / (vol * 20.0)));
@@ -5092,30 +5202,30 @@ hkVector4 eigenValues;
 if (inertiaM.DiagonalizeSymmetric(reinterpret_cast<hkMatrix3&>(eigenVectors), eigenValues, 128, 1e-4f) == HK_FAILURE)
 {
 
-if(1) { hkUint32 assertBuf[128]; void* ostrStore[sizeof(hkErrStream) / sizeof(void*)]; new(&ostrStore) hkErrStream(assertBuf,sizeof(assertBuf)); hkErrStream& ostr = *reinterpret_cast<hkErrStream*>(&ostrStore); ostr.hkOstream::operator<<(str_010d36a0) << m_uiUniqueId << str_0103d078; if ( hkError::GetMonitorStream().message(hkError::MESSAGE_ERROR, 0x45465, (const char*)assertBuf, str_010d3540, 1753) ) { fnv_Breakpoint(); } ostr.hkOstream::~hkOstream(); } else;
+if(1) { hkUint32 assertBuf[128]; void* ostrStore[sizeof(hkErrStream) / sizeof(void*)]; new(&ostrStore) hkErrStream(assertBuf,sizeof(assertBuf)); hkErrStream& ostr = *reinterpret_cast<hkErrStream*>(&ostrStore); ostr.hkOstream::operator<<(str_010d36a0) << m_uid << str_0103d078; if ( hkError::GetMonitorStream().message(hkError::MESSAGE_ERROR, 0x45465, (const char*)assertBuf, str_010d3540, 1753) ) { fnv_Breakpoint(); } ostr.hkOstream::~hkOstream(); } else;
 }
 reinterpret_cast<hkMatrix3&>(eigenVectors).transpose();
 eigenVectors.Orthonormalize();
-m_kTransformMatrix = inertiaM;
+m_inertiaMatrix = inertiaM;
 inertiaM.SetFromRotation(eigenVectors);
-m_vOffset.set(inertiaM(0, 0), inertiaM(1, 1), inertiaM(2, 2), 0.0f);
+m_inertia.set(inertiaM(0, 0), inertiaM(1, 1), inertiaM(2, 2), 0.0f);
 reinterpret_cast<hkMatrix3&>(eigenVectors).transpose();
-m_kLocalTransform.SetBodyOrientation(eigenVectors);
+m_localTransform.SetBodyOrientation(eigenVectors);
 }
 else
 {
 
 ;
-m_kLocalTransform.SetBodyOrientation(hkQuaternion::GetIdentityTransform());
-m_iBufferSize = 0;
-m_kTransformMatrix.getColumn(0) = hkVector4::getZero();
-m_kTransformMatrix.getColumn(1) = hkVector4::getZero();
-m_kTransformMatrix.getColumn(2) = hkVector4::getZero();
-m_vOffset = hkVector4::getZero();
+m_localTransform.SetBodyOrientation(hkQuaternion::GetIdentityTransform());
+m_volume = 0;
+m_inertiaMatrix.getColumn(0) = hkVector4::getZero();
+m_inertiaMatrix.getColumn(1) = hkVector4::getZero();
+m_inertiaMatrix.getColumn(2) = hkVector4::getZero();
+m_inertia = hkVector4::getZero();
 }
-m_bFirstImplementationFlag = true;
+m_hasMassProperties = true;
 }
-else if (m_eVertexFloatDimensions == 2)
+else if (m_dimensions == 2)
 {
 hkArray<hkVector4> vertices;
 const hkReal oneThird = 1.0f / 3.0f;
@@ -5128,28 +5238,28 @@ const hkVector4* o = &vertices[0];
 hkVector4 a; a.setSub4(vertices[i], *o);
 hkVector4 b; b.setSub4(vertices[i + 1], *o);
 hkVector4 plane; plane.setCross(a, b);
-const hkReal area2 = MathUtilities::fabs(plane.dot3(m_kVectorAtOffsetE0));
+const hkReal area2 = MathUtilities::fabs(plane.dot3(m_projectionPlane));
 total_area2 += area2;
 hkVector4 center; center.setAdd4(a, b);
 center.mul4(hkSimdReal(oneThird * area2));
 com.add4(center);
 }
-m_bFirstImplementationFlag = true;
-m_fVertexStride = total_area2 / 2.0;
-m_kTransformMatrix(0, 0) = 1.0f;
-m_vOffset.set(1.0f, 0.0f, 0.0f, 0.0f);
+m_hasMassProperties = true;
+m_surface = total_area2 / 2.0;
+m_inertiaMatrix(0, 0) = 1.0f;
+m_inertia.set(1.0f, 0.0f, 0.0f, 0.0f);
 com.mul4(hkSimdReal(1.0f / total_area2));
 com.add4(vertices[0]);
-m_kLocalTransform.setTranslation(com);
+m_localTransform.setTranslation(com);
 }
 else
 {
-m_bFirstImplementationFlag = true;
-m_fVertexStride = 0;
-m_iBufferSize = 0;
-m_kTransformMatrix = hkMatrix3::GetIdentityTransform();
-m_vOffset = hkVector4::getZero();
-m_kLocalTransform = hkTransform::GetIdentityTransform();
+m_hasMassProperties = true;
+m_surface = 0;
+m_volume = 0;
+m_inertiaMatrix = hkMatrix3::GetIdentityTransform();
+m_inertia = hkVector4::getZero();
+m_localTransform = hkTransform::GetIdentityTransform();
 }
 }
-return m_bFirstImplementationFlag ? HK_SUCCESS : HK_FAILURE;}
+return m_hasMassProperties ? HK_SUCCESS : HK_FAILURE;}

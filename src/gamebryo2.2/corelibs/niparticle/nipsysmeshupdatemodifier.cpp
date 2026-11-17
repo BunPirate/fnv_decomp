@@ -42,18 +42,21 @@ inline NiTObjectArray<T>::NiTObjectArray(unsigned int uiMaxSize, unsigned int ui
 }
 
 
-extern "C" void* g_01202530;
+extern "C" void* NiPSysMeshUpdateModifier_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01202530 (old: DAT_01202530/g_01202530)
 
 // @fnv 0x00c21720
 // src: COMMUNITY 0x00c21720
 void* __cdecl NiPSysMeshUpdateModifier_GetRTTI()
 {
-    return &g_01202530;
+    return &NiPSysMeshUpdateModifier_ms_RTTI;
 }
 
 // Calls the base modifier's ProcessClone, then clones each non-null mesh in m_kSceneObjects.
 // @fnv 0x00c20f30
 // src: XBOX_PDB 0x00c20f30
+// pdb: NiPSysMeshUpdateModifier::ProcessClone | NiPSysMeshUpdateModifier.obj | retail, object-file gap fill, high
+// pdb params: kCloning
+// pdb locals: ui, pkMesh
 void NiPSysMeshUpdateModifier::ProcessClone_00c20f30(CloningProcess& kCloning)
 {
     NiPSysModifier::ProcessClone(kCloning);
@@ -75,6 +78,9 @@ struct Holder31670
 }  // namespace fnv_00c20f80
 // @fnv 0x00c20f80
 // src: XBOX_PDB 0x00c20f80
+// pdb: NiPSysMeshUpdateModifier::RegisterStreamables | NiPSysMeshUpdateModifier.obj | retail, object-file gap fill, high
+// pdb params: kStream
+// pdb locals: ui, pkMesh
 bool NiPSysMeshUpdateModifier::RegisterStreamables_00c20f80(NiStream& kStream)
 {
     if (!((fnv_00c20f80::Holder31670*)this)->FUN_00c31670(kStream))
@@ -127,10 +133,12 @@ struct BaseMod
 }  // namespace fnv_00c21840
 // Calls the base handler, then appends the string returned by _FUN_00a7d330(g_01202530) to pkStrings, growing it if full.
 // @fnv 0x00c21840
+// pdb: NiMeshParticleSystem::NiMeshParticleSystem | NiMeshParticleSystem.obj | debug, object-file run extension, low
+// pdb params: pkData, bWorldSpace
 void NiPSysMeshUpdateModifier::AppendString(StrArr* pkStrings)
 {
     reinterpret_cast<fnv_00c21840::BaseMod*>(this)->FUN_00c319e0(pkStrings);
-    char* pcStr = fnv_00c21840::_FUN_00a7d330(g_01202530);
+    char* pcStr = fnv_00c21840::_FUN_00a7d330(NiPSysMeshUpdateModifier_ms_RTTI);
     unsigned int uiSize = pkStrings->m_usSize;
     if (uiSize >= pkStrings->m_usMaxSize)
         pkStrings->SetSize(uiSize + pkStrings->m_usGrowBy);
@@ -160,12 +168,15 @@ struct RefArray
     unsigned short capacity;
     unsigned short size;
     unsigned short count;
-    RefHandle PopBack();
+    RefHandle NiTArray_NiPointer_NiAVObject_NiTNewInterface_NiPointer_NiAVObject_RemoveEnd();
 };
 
 // Removes and returns the last entry of the array, decrementing the count and releasing the slot's reference.
 // @fnv 0x00c20fd0
-RefHandle RefArray::PopBack()
+// src: XBOX_RETAIL_PDB 0x00c20fd0
+// pdb: NiTArray<NiPointer<NiAVObject>,NiTNewInterface<NiPointer<NiAVObject> > >::RemoveEnd | NiPSysMeshUpdateModifier.obj | retail, object-file gap fill, high
+// pdb locals: element
+RefHandle RefArray::NiTArray_NiPointer_NiAVObject_NiTNewInterface_NiPointer_NiAVObject_RemoveEnd()
 {
     if (!size)
         return RefHandle(0);
@@ -202,22 +213,25 @@ class FUN_00c212b0_cls
     FUN_00c212b0_item** m_ppItems;
     char unk90[2];
     unsigned short m_usNumMeshes;
-    void NiMeshPSysData_FillPool(unsigned int a1, NiAVObject* a2);
+    void NiMeshPSysData_FillPool(unsigned int uiGeneration, NiAVObject* pkOriginal);
 };
 
 // @fnv 0x00c212b0
 // src: XBOX_PDB 0x00c212b0
-void FUN_00c212b0_cls::NiMeshPSysData_FillPool(unsigned int uiIndex, NiAVObject* pSource)
+// pdb: NiMeshPSysData::FillPool | NiPSysMeshUpdateModifier.obj | retail, upstream name already matches, high
+// pdb params: uiGeneration, pkOriginal
+// pdb locals: pkPool, uiLoop
+void FUN_00c212b0_cls::NiMeshPSysData_FillPool(unsigned int uiGeneration, NiAVObject* pkOriginal)
 {
-    if (uiIndex < m_usNumMeshes && m_ppItems[uiIndex] != 0)
+    if (uiGeneration < m_usNumMeshes && m_ppItems[uiGeneration] != 0)
     {
-        FUN_00c212b0_item* item = m_ppItems[uiIndex];
+        FUN_00c212b0_item* item = m_ppItems[uiGeneration];
         unsigned int i = 0;
         if (i < item->m_usElementCount)
         {
             do
             {
-                NiRefObject* p = (NiRefObject*)pSource->Clone();
+                NiRefObject* p = (NiRefObject*)pkOriginal->Clone();
                 void* out = p;
                 if (p != 0)
                 {
@@ -241,7 +255,7 @@ extern "C" __declspec(dllimport) long __stdcall InterlockedDecrement(volatile lo
 struct CloneHandle;
 struct MeshObject
 {
-    CloneHandle __thiscall PopBack() throw();
+    CloneHandle __thiscall NiTArray_NiPointer_NiAVObject_NiTNewInterface_NiPointer_NiAVObject_RemoveEnd() throw();
 };
 struct CloneHandle
 {
@@ -311,23 +325,26 @@ struct MeshLookup
     MeshObject** meshes;
     unsigned short unk90;
     unsigned short meshCount;
-    void __thiscall GetMeshHandle(unsigned int index, CloneHandle* result);
+    void __thiscall NiMeshPSysData_RemoveFromPool(unsigned int uiGeneration, CloneHandle* aspAVObject);
 };
 // If index is within meshCount and meshes[index] is non-null, assigns a clone handle of that mesh to result; otherwise clears result.
 // @fnv 0x00c21340
-void MeshLookup::GetMeshHandle(unsigned int index, CloneHandle* result)
+// src: XBOX_RETAIL_PDB 0x00c21340
+// pdb: NiMeshPSysData::RemoveFromPool | NiPSysMeshUpdateModifier.obj | retail, object-file gap fill, high
+// pdb params: uiGeneration, aspAVObject
+void MeshLookup::NiMeshPSysData_RemoveFromPool(unsigned int uiGeneration, CloneHandle* aspAVObject)
 {
-    if (index >= meshCount)
+    if (uiGeneration >= meshCount)
     {
-        result->Clear();
+        aspAVObject->Clear();
         return;
     }
-    if (meshes[index] == 0)
+    if (meshes[uiGeneration] == 0)
     {
-        result->Clear();
+        aspAVObject->Clear();
         return;
     }
-    result->FUN_006e5cc0(meshes[index]->PopBack());
+    aspAVObject->FUN_006e5cc0(meshes[uiGeneration]->NiTArray_NiPointer_NiAVObject_NiTNewInterface_NiPointer_NiAVObject_RemoveEnd());
 }
 
 // NiPSysMeshUpdateModifier's constructor is inline: NiPSysModifier::NiPSysModifier (0x00c31720), the vftable,
@@ -345,6 +362,7 @@ NiObject* NiPSysMeshUpdateModifier::CreateModifier()
 
 // Clones the modifier: a new NiPSysMeshUpdateModifier whose members CopyMemberData (0x00c21770) fills.
 // @fnv 0x00c21890
+// pdb: NiMeshParticleSystem::NiMeshParticleSystem | NiMeshParticleSystem.obj | debug, object-file run extension, low
 NiObject* NiPSysMeshUpdateModifier::MakeClone(CloningProcess& kCloning)
 {
     NiPSysMeshUpdateModifier* pkClone = new NiPSysMeshUpdateModifier;
@@ -445,6 +463,9 @@ class MyMeshUpdateMod
 
 // Stores pkMesh at uiIndex in the mesh pointer array, returning the previous entry in spOld (or null when growing).
 // @fnv 0x00c215d0
+// pdb: NiPSysMeshUpdateModifier::SetMeshAt | NiPSysMeshUpdateModifier.obj | retail, object-file run extension, low
+// pdb params: uiIndex, pkMesh, aspAVObject
+// pdb locals: spFormerMesh
 void MyMeshUpdateMod::SetMeshAt(unsigned int uiIndex, NiAVObject* pkMesh, MyMeshObjPtr& spOld)
 {
     if (uiIndex < m_kSceneObjects.GetSize())
@@ -491,14 +512,17 @@ class MeshUpdateStreamWriter : public NiPSysMeshUpdateModifier
 };
 // Writes the mesh count to the stream, then registers each mesh object with the stream.
 // @fnv 0x00c211c0
-void MeshUpdateStreamWriter::WriteMeshUpdate(NiStream* stream)
+// pdb: NiPSysMeshUpdateModifier::SaveBinary | NiPSysMeshUpdateModifier.obj | retail, object-file gap fill, high
+// pdb params: kStream
+// pdb locals: uiSize, ui, pkMesh
+void MeshUpdateStreamWriter::WriteMeshUpdate(NiStream* kStream)
 {
-    FUN_00c31950(stream);
+    FUN_00c31950(kStream);
     unsigned int meshCount = m_kSceneObjects.m_usSize;
-    BinaryStream* binary = reinterpret_cast<BinaryStream*>(stream->GetBinaryStream());
+    BinaryStream* binary = reinterpret_cast<BinaryStream*>(kStream->GetBinaryStream());
     binary->offset += binary->WriteData(&meshCount, 4);
     for (unsigned int i = 0; i < meshCount; ++i)
-        stream->SaveLinkID(reinterpret_cast<const NiObject*>(m_kSceneObjects.m_pBase[i].m_pObject));
+        kStream->SaveLinkID(reinterpret_cast<const NiObject*>(m_kSceneObjects.m_pBase[i].m_pObject));
 }
 
 extern "C" __declspec(dllimport) long __stdcall InterlockedIncrement(volatile long*);
@@ -518,19 +542,22 @@ struct ReferenceContainer
     int unk14;
     ReferenceArray array;
     void FUN_00c31650(NiStream* source);
-    void CopyReferencesFromSource(NiStream* source);
+    void CopyReferencesFromSource(NiStream* kStream);
 };
 // Resizes the array to the source's count, then copies each referenced object into the array while adjusting its reference count.
 // @fnv 0x00c214c0
-void ReferenceContainer::CopyReferencesFromSource(NiStream* source)
+// pdb: NiPSysMeshUpdateModifier::LinkObject | NiPSysMeshUpdateModifier.obj | retail, object-file gap fill, high
+// pdb params: kStream
+// pdb locals: uiSize, ui, pkMesh
+void ReferenceContainer::CopyReferencesFromSource(NiStream* kStream)
 {
-    FUN_00c31650(source);
-    unsigned int count = source->GetLinkID();
+    FUN_00c31650(kStream);
+    unsigned int count = kStream->GetLinkID();
     ReferenceArray* array = &this->array;
     array->FUN_0060bef0(count);
     for (unsigned int index = 0; index < count; ++index)
     {
-        NiRefObject* object = source->FUN_00a63430();
+        NiRefObject* object = kStream->FUN_00a63430();
         NiRefObject* handle = object;
         if (object != 0)
             InterlockedIncrement(reinterpret_cast<volatile long*>(&object->m_uiRefCount));
@@ -543,6 +570,9 @@ void ReferenceContainer::CopyReferencesFromSource(NiStream* source)
 
 // Compares m_kSceneObjects with pkObject's m_kSceneObjects, returning true only if both arrays have the same size and each element is equal.
 // @fnv 0x00c21230
+// pdb: NiPSysMeshUpdateModifier::IsEqual | NiPSysMeshUpdateModifier.obj | retail, upstream name already matches, high
+// pdb params: pkObject
+// pdb locals: pkDest, ui, pkMesh1, pkMesh2
 bool NiPSysMeshUpdateModifier::IsEqual(NiObject* pkObject) const
 {
     if (!NiPSysModifier::IsEqual(reinterpret_cast<NiObject*>(pkObject)))
@@ -589,7 +619,7 @@ struct MeshNiMatrix3
     float m20;
     float m21;
     float m22;
-    void MakeAxisAngleRotation(float fAngleDifference, float x, float y, float z);
+    void MakeAxisAngleRotation(float fAngle, float x, float y, float z);
 };
 struct MeshUpdateData
 {
@@ -694,6 +724,9 @@ struct MeshPSysData
 // For each active vertex, copies position and scale to its mesh, optionally sets rotation, then calls UpdateDownwardPass.
 // @fnv 0x00c21080
 // src: XBOX_PDB 0x00c21080
+// pdb: NiPSysMeshUpdateModifier::Update | NiPSysMeshUpdateModifier.obj | retail, upstream name already matches, high
+// pdb params: fTime, pkData
+// pdb locals: pkMeshData, pfRotationAngles, pkRotationAxes, us, pkCurrentParticle, UpdateData, pkParticleMesh, kRotate
 void __stdcall NiPSysMeshUpdateModifier_Update(float fTime, MeshPSysData* pkData)
 {
     float* pfRotationAngles = pkData->m_pfRotationAngles;
@@ -803,11 +836,11 @@ struct Entry_c21
     unsigned short m_1a;
 };
 
-void __cdecl StartControllersRecursive(NiAVObject* pkMesh, float fTime);
+void __cdecl StartControllersRecursive(NiAVObject* pkObj, float fTime);
 
 struct Lk2_c21
 {
-    __declspec(noalias) void GetMeshHandle(unsigned int index, CloneHandle* result);
+    __declspec(noalias) void NiMeshPSysData_RemoveFromPool(unsigned int uiGeneration, CloneHandle* aspAVObject);
 };
 class FUN_00c21400_cls
 {
@@ -818,18 +851,21 @@ class FUN_00c21400_cls
     NiAVObject** m_1c;
     unsigned short m_20;
     unsigned short m_usElementCount;
-    void AttachMesh(MeshLookup* pkLookup, unsigned short usIndex);
+    void AttachMesh(MeshLookup* pkData, unsigned short usNewParticle);
 };
 
 // Looks up or clones a mesh by usIndex, sets its m_uiValue1 flag, starts controllers, attaches it to the sink, and releases the reference.
 // @fnv 0x00c21400
-void FUN_00c21400_cls::AttachMesh(MeshLookup* pkLookup, unsigned short usIndex)
+// pdb: NiPSysMeshUpdateModifier::Initialize | NiPSysMeshUpdateModifier.obj | retail, object-file gap fill, high
+// pdb params: pkData, usNewParticle
+// pdb locals: pkMeshData, pkCurrentParticle, usGen, spClonedMesh
+void FUN_00c21400_cls::AttachMesh(MeshLookup* pkData, unsigned short usNewParticle)
 {
-    unsigned short usMesh = ((Entry_c21*)pkLookup->unk70)[usIndex].m_usIndex;
+    unsigned short usMesh = ((Entry_c21*)pkData->unk70)[usNewParticle].m_usIndex;
     if (usMesh >= m_usElementCount)
         usMesh = m_usElementCount - 1;
     NiAVObject* pkOut = 0;
-    ((Lk2_c21*)pkLookup)->GetMeshHandle(usMesh, (CloneHandle*)&pkOut);
+    ((Lk2_c21*)pkData)->NiMeshPSysData_RemoveFromPool(usMesh, (CloneHandle*)&pkOut);
     if (!pkOut)
     {
         NiAVObject* pkClone = m_1c[usMesh]->Clone();
@@ -842,7 +878,7 @@ void FUN_00c21400_cls::AttachMesh(MeshLookup* pkLookup, unsigned short usIndex)
     NiAVObject* pkMesh = pkOut;
     pkMesh->m_uFlags |= 1;
     StartControllersRecursive(pkMesh, 0.0f);
-    ((Sink_c21*)pkLookup->unk7c)->Attach(usIndex, pkMesh);
+    ((Sink_c21*)pkData->unk7c)->Attach(usNewParticle, pkMesh);
     pkMesh->UpdatePropertiesDownwardPass(reinterpret_cast<NiPropertyState*>(m_10 + 0x9c));
     if (DAT_00fdf1c4((void*)&pkMesh->m_uiRefCount) == 0)
         pkMesh->DeleteThis();
@@ -875,7 +911,7 @@ class S_c21770_Mod
     virtual ~S_c21770_Mod() throw();
     int unk04, unk08, unk0C, unk10, unk14;
     MyMeshPtrArray m_kSceneObjects;
-    void FUN_00c31780(S_c21770_Mod* pkDest, CloningProcess& kCloning) throw();
+    void CopyMembers(S_c21770_Mod* pkDest, CloningProcess& kCloning) throw();
     void SetMeshAt(unsigned int uiIndex, NiAVObject* pkMesh, OldSlot& spOld) throw();
     void CloneInto(S_c21770_Mod* pkDest, CloningProcess& kCloning);
 };
@@ -883,7 +919,7 @@ class S_c21770_Mod
 // @fnv 0x00c21770
 void S_c21770_Mod::CloneInto(S_c21770_Mod* pkDest, CloningProcess& kCloning)
 {
-    FUN_00c31780(pkDest, kCloning);
+    CopyMembers(pkDest, kCloning);
     for (unsigned int ui = 0; ui < m_kSceneObjects.GetSize(); ui++)
     {
         NiAVObject* pkMesh = m_kSceneObjects.GetAt(ui).m_pObject;
@@ -907,7 +943,7 @@ struct C21550PoolData : MeshPSysData
     unsigned int unk84, unk88, unk8C;
     unsigned short unk90;
     unsigned short generationCount;
-    void ResizeChildren(unsigned int count);
+    void ResizeChildren(unsigned int uiNumGenerations);
 };
 
 struct C21550ParticleSystem : MeshSystem
@@ -917,10 +953,13 @@ struct C21550ParticleSystem : MeshSystem
 };
 
 // @fnv 0x00c21550
-void NiPSysMeshUpdateModifier::PostLinkObject(NiStream& stream)
+// pdb: NiPSysMeshUpdateModifier::PostLinkObject | NiPSysMeshUpdateModifier.obj | retail, upstream name already matches, high
+// pdb params: kStream
+// pdb locals: pkData, pkMeshData, uiGen
+void NiPSysMeshUpdateModifier::PostLinkObject(NiStream& kStream)
 {
-    reinterpret_cast<C21550LinkBase*>(this)->nullsub_3(stream);
-    if (stream.GetFileVersion() <= 0x0A010000)
+    reinterpret_cast<C21550LinkBase*>(this)->nullsub_3(kStream);
+    if (kStream.GetFileVersion() <= 0x0A010000)
     {
         unsigned int count = m_kSceneObjects.m_usSize;
         C21550PoolData* data = reinterpret_cast<C21550ParticleSystem*>(m_pkTarget)->modelData;

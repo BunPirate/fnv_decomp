@@ -5,6 +5,7 @@
 class TESFile;
 class TESTexture;
 
+// pdb: class TESRegionDataLandscape, size 0xc, bases: TESRegionData, 1 members
 class TESRegionDataLandscape : public TESRegionData
 {
 public:

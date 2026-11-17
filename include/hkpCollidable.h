@@ -12,6 +12,7 @@ class hkpShape;
 struct ClassMemberDescriptor;
 struct hkFinishLoadedObjectFlagCD2C;
 
+// pdb: class hkpCollidable, size 0x50, bases: hkpCdBody, 6 members
 class hkpCollidable
 {
 public:
@@ -103,10 +104,10 @@ public:
     unsigned int m_uiCollisionShapeKey;
     const void* m_pMotionState;
     const hkpCdBody* m_parent;
-    signed char m_iOwnerOffset;
-    unsigned char m_uiForceCollideOntoPpu;
-    unsigned short m_uiShapeSizeOnSpu;
-    hkpTypedBroadPhaseHandle m_kBroadPhaseHandle;
-    hkpCollidableBoundingVolumeData m_kBoundingVolumeData;
-    float m_fAllowedPenetrationDepth;
+    signed char m_ownerOffset; // src: XBOX_RETAIL_PDB +0x10 (old: m_iOwnerOffset)
+    unsigned char m_forceCollideOntoPpu; // src: XBOX_RETAIL_PDB +0x11 (old: m_uiForceCollideOntoPpu)
+    unsigned short m_shapeSizeOnSpu; // src: XBOX_RETAIL_PDB +0x12 (old: m_uiShapeSizeOnSpu)
+    hkpTypedBroadPhaseHandle m_broadPhaseHandle; // src: XBOX_RETAIL_PDB +0x14 (old: m_kBroadPhaseHandle)
+    hkpCollidableBoundingVolumeData m_boundingVolumeData; // src: XBOX_RETAIL_PDB +0x20 (old: m_kBoundingVolumeData)
+    float m_allowedPenetrationDepth; // src: XBOX_RETAIL_PDB +0x4c (old: m_fAllowedPenetrationDepth)
 };

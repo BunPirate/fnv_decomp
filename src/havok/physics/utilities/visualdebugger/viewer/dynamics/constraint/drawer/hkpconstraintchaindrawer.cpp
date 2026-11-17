@@ -355,7 +355,7 @@ struct Obj
     hkRotation m_kSecondRotation;
     Sub mC0;
     void hkpConstraintDrawer_drawPivots(int a, int b);
-    void hkpConstraintDrawer_drawBodyFrames(int a, int b);
+    void hkpConstraintDrawer_drawBodyFrames(int id, int tag);
     void FireChainConstraints(ChainInstance* c, Listener* l, int a, int b);
 };
 

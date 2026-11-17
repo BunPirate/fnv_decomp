@@ -147,18 +147,21 @@ int __cdecl BSAtomicCompareExchange(long volatile* a1, long a2, long a3);
 
 struct FUN_006ec0d0_Class
 {
-    bool __thiscall BSTCommonMessageQueue_TryPush(int a1);
+    bool __thiscall BSTCommonMessageQueue_TryPush(int aMessage);
 };
 
 // @fnv 0x006ec0d0
 // src: COMMUNITY 0x006ec0d0
-bool __thiscall FUN_006ec0d0_Class::BSTCommonMessageQueue_TryPush(int a1)
+// pdb: BSTCommonMessageQueue<ActorPathingMessage>::TryPush | HighProcess.obj | retail, vtable slot, high
+// pdb params: aMessage
+// pdb locals: bResult
+bool __thiscall FUN_006ec0d0_Class::BSTCommonMessageQueue_TryPush(int aMessage)
 {
     bool result;
     if (BSAtomicCompareExchange((long volatile*)this + 1, 0, 1) == 0)
     {
         reinterpret_cast<void(__cdecl*)()>(&BlkInterfaceView::PrintDebugMessage)();
-        result = (bool)((bool(__thiscall*)(void*, int)) * (*(void***)this + 5))(this, a1);
+        result = (bool)((bool(__thiscall*)(void*, int)) * (*(void***)this + 5))(this, aMessage);
         reinterpret_cast<void(__cdecl*)()>(&BlkInterfaceView::PrintDebugMessage)();
         BSAtomicCompareExchange((long volatile*)this + 1, 1, 0);
     }
@@ -181,6 +184,7 @@ FUN_006e1020_shell* __thiscall FUN_006e1020_shell::BSSimpleArray_PathingLOSGridC
 }
 // @fnv 0x006e0e80
 // src: GUESS 0x006e0e80 (confidence: low)
+// pdb: PathingLOSGrid::PathingLOSGrid | PathingLOSGridMap.obj | debug, object-file gap fill, medium
 FUN_006e1020_shell* __thiscall FUN_006e1020_shell::ProcessAndReturnValue_006e0e80()
 {
     this->BSSimpleArray_PathingLOSGridCell_1024_BSSimpleArray_PathingLOSGridCell_1024();
@@ -196,6 +200,8 @@ struct FUN_006e0ea0_Class
 };
 // @fnv 0x006e0ea0
 // src: EXE 0x006e0ea0
+// pdb: NiTMap<unsigned int,PathingLOSGrid *>::NiTMap<unsigned int,PathingLOSGrid *> | PathingLOSGridMap.obj | debug, call graph, medium
+// pdb params: uiHashSize
 int* __thiscall FUN_006e0ea0_Class::NiTMap_unsigned_int_PathingLOSGrid_NiTMap(int aiValue)
 {
     ConstructHashTable(aiValue);
@@ -207,11 +213,12 @@ extern int DAT_0106cef8;
 struct GlobalObject_00869f00
 {
     void __thiscall Clear(bool);
-    void __thiscall SetVtableAndProcessState_006e1050();
+    void __thiscall BSSimpleArray_PathingLOSGridCell_1024_dtor();
 };
 // @fnv 0x006e1050
-// src: GUESS 0x006e1050 (confidence: low)
-void __thiscall GlobalObject_00869f00::SetVtableAndProcessState_006e1050()
+// src: XBOX_DEBUG_PDB 0x006e1050
+// pdb: BSSimpleArray<PathingLOSGridCell *,1024>::~BSSimpleArray<PathingLOSGridCell *,1024> | PathingLOSGridMap.obj | debug, call graph, high
+void __thiscall GlobalObject_00869f00::BSSimpleArray_PathingLOSGridCell_1024_dtor()
 {
     *reinterpret_cast<int*>(this) = reinterpret_cast<int>(&DAT_0106cef8);
     this->Clear(true);
@@ -224,11 +231,12 @@ struct S006d0420
 };
 struct FUN_006e1070_Class
 {
-    FUN_006e1070_Class* __thiscall SetVtableAndProcessState_006e1070();
+    FUN_006e1070_Class* __thiscall BSSimpleArray_char_1024_ctor();
 };
 // @fnv 0x006e1070
-// src: GUESS 0x006e1070 (confidence: low)
-FUN_006e1070_Class* __thiscall FUN_006e1070_Class::SetVtableAndProcessState_006e1070()
+// src: XBOX_DEBUG_PDB 0x006e1070
+// pdb: BSSimpleArray<char,1024>::BSSimpleArray<char,1024> | PathingLOSGridMap.obj | debug, call graph (shared callers), high
+FUN_006e1070_Class* __thiscall FUN_006e1070_Class::BSSimpleArray_char_1024_ctor()
 {
     *reinterpret_cast<int*>(this) = (int)&DAT_0106cf0c;
     reinterpret_cast<S006d0420*>(this)->BSSimpleArray_char_1024_InitialSetup(0, 0);
@@ -243,11 +251,12 @@ struct GlobalObject_00869f00
 };
 struct FUN_006e10a0_Class
 {
-    void __thiscall ResetVirtualTableAndClear_006e10a0();
+    void __thiscall BSSimpleArray_char_1024_dtor();
 };
 // @fnv 0x006e10a0
-// src: GUESS 0x006e10a0 (confidence: medium)
-void __thiscall FUN_006e10a0_Class::ResetVirtualTableAndClear_006e10a0()
+// src: XBOX_DEBUG_PDB 0x006e10a0
+// pdb: BSSimpleArray<char,1024>::~BSSimpleArray<char,1024> | PathingLOSGridMap.obj | debug, call graph (shared callers), high
+void __thiscall FUN_006e10a0_Class::BSSimpleArray_char_1024_dtor()
 {
     *reinterpret_cast<int**>(this) = &DAT_0106cf0c;
     reinterpret_cast<GlobalObject_00869f00*>(this)->Clear(true);
@@ -258,6 +267,8 @@ template <>
 NiTMapBase<DFALL<NiTMapItem<unsigned int, unsigned int> >, unsigned int, unsigned int>::NiTMapBase(unsigned int);
 
 // @fnv 0x006e2080
+// pdb: NiTMap<unsigned int,unsigned int>::NiTMap<unsigned int,unsigned int> | PathingLOSMap.obj | retail, call graph, high
+// pdb params: uiHashSize
 template <> NiTMap<unsigned int, unsigned int>::NiTMap(unsigned int uiHashSize)
     : NiTMapBase<DFALL<NiTMapItem<unsigned int, unsigned int> >, unsigned int, unsigned int>(uiHashSize)
 {
@@ -282,6 +293,7 @@ struct FUN_006e3a80
     FUN_006e3a80();
 };
 // @fnv 0x006e3a80
+// pdb: BSSimpleArray<PathingAvoidNode,1024>::BSSimpleArray<PathingAvoidNode,1024> | PathingRequest.obj | debug, object-file gap fill, medium
 FUN_006e3a80::FUN_006e3a80()
 {
     m_p = "`<n";
@@ -295,11 +307,12 @@ struct GlobalObject_00869f00
 };
 struct FUN_006e3ab0_Class
 {
-    void __thiscall UpdateState_006e3ab0();
+    void __thiscall BSSimpleArray_PathingAvoidNode_1024_dtor();
 };
 // @fnv 0x006e3ab0
-// src: GUESS 0x006e3ab0 (confidence: low)
-void __thiscall FUN_006e3ab0_Class::UpdateState_006e3ab0()
+// src: XBOX_DEBUG_PDB 0x006e3ab0
+// pdb: BSSimpleArray<PathingAvoidNode,1024>::~BSSimpleArray<PathingAvoidNode,1024> | PathingRequest.obj | debug, call graph (shared callers), high
+void __thiscall FUN_006e3ab0_Class::BSSimpleArray_PathingAvoidNode_1024_dtor()
 {
     *reinterpret_cast<const char**>(this) = "`<n";
     reinterpret_cast<GlobalObject_00869f00*>(this)->Clear(true);
@@ -323,6 +336,7 @@ struct FUN_006e6bd0_Class
 // Calls FUN_005e0b60 on the pointer at offset 0x78, then sets that pointer to null.
 // @fnv 0x006e6bd0
 // src: COMMUNITY 0x006e6bd0
+// pdb: PathingSearchRayCast::FreeCache | PathingSearchRayCast.obj | debug, upstream name already matches, high
 void __thiscall FUN_006e6bd0_Class::PathingSearchRayCast_FreeCache()
 {
     hkDeallocateStack_char(*(void**)((char*)this + 0x78));
@@ -367,6 +381,8 @@ struct FUN_006e8fe0_Class
 
 // @fnv 0x006e8fe0
 // src: XBOX_PDB 0x006e8fe0
+// pdb: BSSimpleArray<NavMeshSearchDebugData,1024>::_Deallocate | PathingSolution.obj | debug, object-file run extension, low
+// pdb params: apBuffer
 PathingGraphNode* __thiscall FUN_006e8fe0_Class::BSSimpleArray_PathingNode_1024_GetLast()
 {
     return this->GetPathingGraphNodeAddress(m_nCapacity - 1);
@@ -384,6 +400,7 @@ struct FUN_006e9050_Class
 
 // @fnv 0x006e9050
 // src: EXE 0x006e9050
+// pdb: BSSimpleArray<VirtualPathingNode,1024>::BSSimpleArray<VirtualPathingNode,1024> | PathingSolution.obj | debug, object-file run extension, low
 void* __thiscall FUN_006e9050_Class::BSSimpleArray_VirtualPathingNode_1024_BSSimpleArray()
 {
     *reinterpret_cast<void**>(this) = &DAT_0106d4d4;
@@ -396,12 +413,13 @@ struct PSClearStub
 {
     void __thiscall Clear(bool a1);
     int m_stub;
-    void __thiscall ResetVirtualTableAndClear_006e9080();
+    void __thiscall BSSimpleArray_VirtualPathingNode_1024_dtor();
 };
 extern int DAT_0106d4d4;
 // @fnv 0x006e9080
-// src: GUESS 0x006e9080 (confidence: medium)
-void __thiscall PSClearStub::ResetVirtualTableAndClear_006e9080()
+// src: XBOX_RETAIL_PDB 0x006e9080
+// pdb: BSSimpleArray<VirtualPathingNode,1024>::~BSSimpleArray<VirtualPathingNode,1024> | PathingSolution.obj | retail, call graph (shared callers), high
+void __thiscall PSClearStub::BSSimpleArray_VirtualPathingNode_1024_dtor()
 {
     m_stub = (int)&DAT_0106d4d4;
     Clear(true);
@@ -475,6 +493,7 @@ struct FUN_006ecb40_Class
 
 // @fnv 0x006ecb40
 // src: EXE 0x006ecb40
+// pdb: ThreadSpecificInterfaceManager<LockFreeMap<PathingRequest *,PathingTaskData *>::LockFreeMapInterface>::`scalar deleting destructor' | PathManager.obj | debug, object-file run extension, low
 FUN_006ecb40_Class* __thiscall FUN_006ecb40_Class::BSTCommonMessageQueue_PathingMessage_BSTCommonMessageQueue()
 {
     BSTMessageQueue_PathingMessage_BSTMessageQueue_PathingMessage();
@@ -497,6 +516,7 @@ struct FUN_006ecb70_Class
 
 // Calls FUN_006ecc20, sets m_vtbl to &DAT_0106d6f0 and initializes m_field to 0.
 // @fnv 0x006ecb70
+// pdb: BSSimpleList<PathManagerImpl::PathBuiltDebugStruct *>::`scalar deleting destructor' | PathManager.obj | debug, object-file run extension, low
 FUN_006ecb70_Class::FUN_006ecb70_Class()
 {
     BSTMessageQueue_NiPointer_NiAVObject_BSTMessageQueue_NiPointer_NiAVObject();
@@ -573,6 +593,8 @@ struct FUN_006ed7a0_Class
 };
 // @fnv 0x006ed7a0
 // src: COMMUNITY 0x006ed7a0
+// pdb: PathSmoother::AddPathingNode | PathSmoother.obj | debug, object-file gap fill, medium
+// pdb params: aLocation
 void __thiscall FUN_006ed7a0_Class::PathSmoother_AddPathingNode_0(const PathingLocation& loc)
 {
     ((PathingSolution**)((char*)this + 0x28))[0]->ReserveIndex(loc, _NiPoint3_ZERO);
@@ -587,6 +609,7 @@ struct GlobalObject_00869f00
 
 // @fnv 0x006f25b0
 // src: GUESS 0x006f25b0 (confidence: low)
+// pdb: BSSimpleArray<PathSmoother::PathEdge *,1024>::~BSSimpleArray<PathSmoother::PathEdge *,1024> | PathSmoother.obj | debug, call graph (shared callers), medium
 void __thiscall GlobalObject_00869f00::UpdateState_006f25b0()
 {
     *reinterpret_cast<const char**>(this) = "0/o";
@@ -606,6 +629,7 @@ struct FUN_006f26d0_Class
 };
 // @fnv 0x006f26d0
 // src: GUESS 0x006f26d0 (confidence: low)
+// pdb: BSSimpleArray<PathSmoother::UniqueVert *,1024>::~BSSimpleArray<PathSmoother::UniqueVert *,1024> | PathSmoother.obj | debug, call graph (shared callers), medium
 void __thiscall FUN_006f26d0_Class::SetVtableAndProcessState_006f26d0()
 {
     *reinterpret_cast<long*>(this) = (long)&DAT_0106d828;
@@ -622,6 +646,7 @@ struct GlobalObject_00869f00
 };
 // @fnv 0x006f27f0
 // src: GUESS 0x006f27f0 (confidence: low)
+// pdb: BSSimpleArray<PathSmoother::BoundsEdge *,1024>::~BSSimpleArray<PathSmoother::BoundsEdge *,1024> | PathSmoother.obj | debug, call graph (shared callers), medium
 void GlobalObject_00869f00::SetVtableAndProcessState_006f27f0()
 {
     *reinterpret_cast<int*>(this) = (int)&DAT_0106d850;
@@ -638,6 +663,7 @@ struct GlobalObject_00869f00
 };
 // @fnv 0x006f2e00
 // src: GUESS 0x006f2e00 (confidence: medium)
+// pdb: BSSimpleArray<PathSmoother::AvoidNode,1024>::~BSSimpleArray<PathSmoother::AvoidNode,1024> | PathSmoother.obj | debug, call graph (shared callers), low
 void GlobalObject_00869f00::ResetVirtualTableAndClear_006f2e00()
 {
     *reinterpret_cast<int**>(this) = &DAT_0106d88c;
@@ -669,6 +695,7 @@ struct FUN_006f30e0_Class
 };
 // @fnv 0x006f30e0
 // src: COMMUNITY 0x006f30e0
+// pdb: BSSimpleArray<PathSmoother::PathEdge *,1024>::BSSimpleArray<PathSmoother::PathEdge *,1024> | PathSmoother.obj | debug, object-file run extension, low
 AX* __thiscall FUN_006f30e0_Class::BSSimpleArray_PathSmoother_PathEdge_1024_BSSimpleArray_PathSmoother_PathEdge_1024()
 {
     *reinterpret_cast<unsigned int*>(this) = (unsigned int)"0/o";
@@ -738,6 +765,7 @@ FUN_006f3320_Class* __thiscall FUN_006f3320_Class::InitializeFields_006f31c0()
     return this;
 }
 
+// pdb: structure ScrapHeapBuffer, size 0x8 (here 0x4), 2 members
 struct ScrapHeapBuffer
 {
     int m;
@@ -752,6 +780,7 @@ struct FUN_006f4320_Class : public ScrapHeapBuffer
 };
 // @fnv 0x006f4320
 // src: GUESS 0x006f4320 (confidence: low)
+// pdb: AStarNodeHeap<ParentSpaceNode,TeleportLink,512>::AStarNodeHeap<ParentSpaceNode,TeleportLink,512> | TeleportDoorSearch.obj | debug, object-file run extension, low
 ScrapHeapBuffer* __thiscall FUN_006f4320_Class::ProcessAndReturnValue_006f4320()
 {
     ((FUN_00aa5410_Helper*)this)->InitWithAlignedSize(0x7000);
@@ -766,6 +795,7 @@ struct GlobalObject_00869f00
 };
 // @fnv 0x006f4640
 // src: GUESS 0x006f4640 (confidence: low)
+// pdb: BSSimpleArray<AStarNode<ParentSpaceNode,TeleportLink> *,1024>::~BSSimpleArray<AStarNode<ParentSpaceNode,TeleportLink> *,1024> | TeleportDoorSearch.obj | debug, call graph (shared callers), medium
 void __thiscall GlobalObject_00869f00::ForwardCall_006f4640()
 {
     *(const char**)this = "`Fo";
@@ -786,6 +816,7 @@ struct FUN_006f4880_Class
 
 // @fnv 0x006f4880
 // src: GUESS 0x006f4880 (confidence: low)
+// pdb: BSSimpleArray<AStarNode<ParentSpaceNode,TeleportLink> *,1024>::BSSimpleArray<AStarNode<ParentSpaceNode,TeleportLink> *,1024> | TeleportDoorSearch.obj | debug, object-file run extension, low
 AX* __thiscall FUN_006f4880_Class::ProcessAndReturnValue_006f4880()
 {
     *reinterpret_cast<unsigned int*>(this) = (unsigned int)"`Fo";
@@ -802,6 +833,7 @@ struct Dummy_0061bf20
 };
 // @fnv 0x006f4b10
 // src: GUESS 0x006f4b10 (confidence: low)
+// pdb: BSSimpleArray<ParentSpaceNode,1024>::BSSimpleArray<ParentSpaceNode,1024> | TeleportPath.obj | debug, object-file gap fill, medium
 Dummy_0061bf20* __thiscall Dummy_0061bf20::SetVtableAndProcessState_006f4b10()
 {
     *(int*)this = (int)&DAT_0106d974;
@@ -818,11 +850,12 @@ struct GlobalObject_00869f00
 struct FUN_006f4b40_Class
 {
     int* m_p;
-    void __thiscall ResetVirtualTableAndClear_006f4b40();
+    void __thiscall BSSimpleArray_ParentSpaceNode_1024_dtor();
 };
 // @fnv 0x006f4b40
-// src: GUESS 0x006f4b40 (confidence: medium)
-void __thiscall FUN_006f4b40_Class::ResetVirtualTableAndClear_006f4b40()
+// src: XBOX_DEBUG_PDB 0x006f4b40
+// pdb: BSSimpleArray<ParentSpaceNode,1024>::~BSSimpleArray<ParentSpaceNode,1024> | TeleportPath.obj | debug, call graph (shared callers), high
+void __thiscall FUN_006f4b40_Class::BSSimpleArray_ParentSpaceNode_1024_dtor()
 {
     m_p = &DAT_0106d974;
     ((GlobalObject_00869f00*)this)->Clear(true);
@@ -857,6 +890,7 @@ struct FUN_006f4b90_Class : GlobalObject_00869f00
 };
 // @fnv 0x006f4b90
 // src: GUESS 0x006f4b90 (confidence: low)
+// pdb: BSSimpleArray<TeleportLink,1024>::~BSSimpleArray<TeleportLink,1024> | TeleportPath.obj | debug, call graph (shared callers), medium
 void __thiscall FUN_006f4b90_Class::UpdateState_006f4b90()
 {
     m_00 = &DAT_0106d988;
@@ -882,6 +916,9 @@ void* __thiscall FUN_006f4bb0_Class::BSSimpleArray_Alloc16BytesMembers(int a1)
 
 // Copies the given NiPoint3 into the NiPoint3 stored at offset 4 of this object.
 // @fnv 0x006f4ed0
+// pdb: PathingLocation::SetLocation | PathingLocation.obj | retail, upstream name already matches, high
+// pdb params: aLocation
+// pdb locals: inewCellKey
 void PathingLocation::SetLocation(void* aLocation)
 {
     *reinterpret_cast<NiPoint3*>(reinterpret_cast<char*>(this) + 4) = *static_cast<const NiPoint3*>(aLocation);
@@ -898,6 +935,7 @@ struct FUN_006f7780_Class
 };
 // @fnv 0x006f7780
 // src: XBOX_PDB 0x006f7780
+// pdb: BGSDistantTreeBlock::ClearQueuedTrees | BGSDistantTreeBlock.obj | debug, upstream name already matches, high
 void __thiscall FUN_006f7780_Class::BGSDistantTreeBlock_ClearQueuedTrees()
 {
     ((GlobalObject_00869f00*)((char*)this + 0x34))->Clear(true);
@@ -916,6 +954,8 @@ struct FUN_006f9680_Class
 };
 // @fnv 0x006f9680
 // src: EXE 0x006f9680
+// pdb: BSMap<unsigned int,BGSDistantTreeBlock::InstanceData *>::BSMap<unsigned int,BGSDistantTreeBlock::InstanceData *> | BGSDistantTreeBlock.obj | debug, call graph, low
+// pdb params: uiHashSize
 int __thiscall FUN_006f9680_Class::BSMap_unsigned_int_BGSDistantTreeBlock_InstanceData_BSMap(int aiValue)
 {
     ((FUN_006f98c0_Class*)this)->FUN_006f98c0(aiValue);
@@ -935,6 +975,8 @@ struct FUN_006f96b0_Class
 // Calls FUN_006f9a00 with a1, then stores the address of DAT_0106df58 in the object's first field and returns this.
 // @fnv 0x006f96b0
 // src: EXE 0x006f96b0
+// pdb: BSMap<unsigned int,BGSDistantTreeBlock::TreeGroup *>::BSMap<unsigned int,BGSDistantTreeBlock::TreeGroup *> | BGSDistantTreeBlock.obj | debug, call graph, low
+// pdb params: uiHashSize
 int* __thiscall FUN_006f96b0_Class::BSMap_unsigned_int_BGSDistantTreeBlock_TreeGroup_BSMap(int a1)
 {
     reinterpret_cast<FUN_006f9a00_Class*>(this)->FUN_006f9a00(a1);
@@ -952,6 +994,7 @@ struct FUN_006f9740_Class
 
 // @fnv 0x006f9740
 // src: COMMUNITY 0x006f9740
+// pdb: BSSimpleArray<BGSDistantTreeBlock::InstanceData,1024>::BSSimpleArray<BGSDistantTreeBlock::InstanceData,1024> | BGSDistantTreeBlock.obj | debug, object-file run extension, low
 FUN_006f9740_Class* FUN_006f9740_Class::BSSimpleArray_BGSDistantTreeBlock_InstanceData_1024_BSSimpleArray_BGSDistantTreeBlock_InstanceData_1024()
 {
     *(int*)this = (int)&DAT_0106df78;
@@ -968,6 +1011,7 @@ struct GlobalObject_00869f00
 };
 // @fnv 0x006f9770
 // src: GUESS 0x006f9770 (confidence: low)
+// pdb: BSSimpleArray<BGSDistantTreeBlock::InstanceData,1024>::~BSSimpleArray<BGSDistantTreeBlock::InstanceData,1024> | BGSDistantTreeBlock.obj | debug, call graph (shared callers), low
 void __thiscall GlobalObject_00869f00::SetVtableAndProcessState_006f9770()
 {
     *reinterpret_cast<long*>(this) = (long)&DAT_0106df78;
@@ -1002,6 +1046,7 @@ struct FUN_006f9870_Class
 };
 // @fnv 0x006f9870
 // src: COMMUNITY 0x006f9870
+// pdb: BSSimpleArray<BGSDistantTreeBlock::TreeGroup *,1024>::BSSimpleArray<BGSDistantTreeBlock::TreeGroup *,1024> | BGSDistantTreeBlock.obj | debug, call graph, low
 AX* __thiscall FUN_006f9870_Class::BSSimpleArray_BGSDistantTreeBlock_TreeGroup_1024_BSSimpleArray_BGSDistantTreeBlock_TreeGroup_1024()
 {
     *reinterpret_cast<int*>(this) = reinterpret_cast<int>(&DAT_0106df8c);
@@ -1022,6 +1067,7 @@ struct FUN_006f98a0_Class
 };
 // @fnv 0x006f98a0
 // src: GUESS 0x006f98a0 (confidence: medium)
+// pdb: BSSimpleArray<BGSDistantTreeBlock::TreeGroup *,1024>::~BSSimpleArray<BGSDistantTreeBlock::TreeGroup *,1024> | BGSDistantTreeBlock.obj | debug, call graph, low
 void __thiscall FUN_006f98a0_Class::ResetVirtualTableAndClear_006f98a0()
 {
     *(int*)this = (int)&DAT_0106df8c;
@@ -1042,6 +1088,8 @@ struct FUN_006fa100_Class
 
 // @fnv 0x006fa100
 // src: COMMUNITY 0x006fa100
+// pdb: BSSimpleArray<BGSDistantTreeBlock::TreeType,1024>::_Reallocate | BGSDistantTreeBlock.obj | debug, object-file run extension, low
+// pdb params: apBuffer, aiNewSizeInItem
 FUN_006fa100_Class* __thiscall FUN_006fa100_Class::BSSimpleArray_BGSDistantTreeBlock_TreeType_1024_BSSimpleArray_BGSDistantTreeBlock_TreeType_1024()
 {
     *(int**)this = &DAT_0106dfe0;
@@ -1060,6 +1108,7 @@ struct FUN_006fa160_Class
 };
 // @fnv 0x006fa160
 // src: GUESS 0x006fa160 (confidence: low)
+// pdb: BSSimpleArray<BGSDistantTreeBlock::TreeType,1024>::~BSSimpleArray<BGSDistantTreeBlock::TreeType,1024> | BGSDistantTreeBlock.obj | debug, object-file run extension, low
 void __thiscall FUN_006fa160_Class::UpdateFields_006fa160()
 {
     *reinterpret_cast<int**>(this) = &DAT_0106dfe0;
@@ -1068,13 +1117,15 @@ void __thiscall FUN_006fa160_Class::UpdateFields_006fa160()
 
 struct FUN_006fc920_Class
 {
-    int __thiscall ReadFromStream(NiBinaryStream* a1);
+    int __thiscall ReadFromStream(NiBinaryStream* arVal);
 };
 
 // @fnv 0x006fc920
-int FUN_006fc920_Class::ReadFromStream(NiBinaryStream* a1)
+// pdb: BSFile::operator>> | BGSTerrainManager.obj | debug, call graph, high
+// pdb params: arVal
+int FUN_006fc920_Class::ReadFromStream(NiBinaryStream* arVal)
 {
-    *(unsigned int*)((char*)this + 0x148) = ((NiBinaryStream*)this)->Read((void*)a1, 2);
+    *(unsigned int*)((char*)this + 0x148) = ((NiBinaryStream*)this)->Read((void*)arVal, 2);
     return (int)this;
 }
 
@@ -1082,14 +1133,16 @@ namespace fnv_006fc950 {
 
 struct FUN_006fc950_Class : NiBinaryStream
 {
-    int __thiscall UpdateState_006fc950(int a1);
+    int __thiscall UpdateState_006fc950(int arVal);
 };
 
 // @fnv 0x006fc950
 // src: GUESS 0x006fc950 (confidence: low)
-int __thiscall FUN_006fc950_Class::UpdateState_006fc950(int pBuffer)
+// pdb: BSFile::operator>> | BGSTerrainManager.obj | debug, call graph, high
+// pdb params: arVal
+int __thiscall FUN_006fc950_Class::UpdateState_006fc950(int arVal)
 {
-    *(int*)((char*)this + 0x148) = Read((void*)pBuffer, 4);
+    *(int*)((char*)this + 0x148) = Read((void*)arVal, 4);
     return (int)this;
 }
 }  // namespace fnv_006fc950
@@ -1097,12 +1150,13 @@ int __thiscall FUN_006fc950_Class::UpdateState_006fc950(int pBuffer)
 void __cdecl BGSTerrainNode_DestroyRecurse();
 struct FUN_006fca70_Class
 {
-    void __thiscall BGSTerrainManager_DestroyNodeAndChildren();
+    void __thiscall BGSTerrainManager_UnloadPersistentData();
     void* m_p;
 };
 // @fnv 0x006fca70
-// src: COMMUNITY 0x006fca70
-void __thiscall FUN_006fca70_Class::BGSTerrainManager_DestroyNodeAndChildren()
+// src: XBOX_DEBUG_PDB 0x006fca70 (was COMMUNITY)
+// pdb: BGSTerrainManager::UnloadPersistentData | BGSTerrainManager.obj | debug, call graph, high
+void __thiscall FUN_006fca70_Class::BGSTerrainManager_UnloadPersistentData()
 {
     if (*(void**)((char*)this + 4))
         ((void(__thiscall*)(void*))BGSTerrainNode_DestroyRecurse)(*(void**)((char*)this + 4));
@@ -1203,11 +1257,12 @@ extern void* __cdecl NiFreeAlias(void*);
 extern void* DAT_0106ced8;
 struct FUN_006e0ff0_Class : NiTPointerMap<int, int>
 {
-    void __thiscall SetVtableAndProcessState_006e0ff0();
+    void __thiscall NiTMapBase_DFALL_NiTMapItem_unsigned_int_PathingLOSGrid_unsigned_int_PathingLOSGrid_dtor();
 };
 // @fnv 0x006e0ff0
-// src: GUESS 0x006e0ff0 (confidence: low)
-void __thiscall FUN_006e0ff0_Class::SetVtableAndProcessState_006e0ff0()
+// src: XBOX_DEBUG_PDB 0x006e0ff0
+// pdb: NiTMapBase<DFALL<NiTMapItem<unsigned int,PathingLOSGrid *> >,unsigned int,PathingLOSGrid *>::~NiTMapBase<DFALL<NiTMapItem<unsigned int,PathingLOSGrid *> >,unsigned int,PathingLOSGrid *> | PathingLOSGridMap.obj | debug, call graph (shared callers), high
+void __thiscall FUN_006e0ff0_Class::NiTMapBase_DFALL_NiTMapItem_unsigned_int_PathingLOSGrid_unsigned_int_PathingLOSGrid_dtor()
 {
     *(void**)this = &DAT_0106ced8;
     NiTPointerMap<int, int>::RemoveAll();
@@ -1215,6 +1270,10 @@ void __thiscall FUN_006e0ff0_Class::SetVtableAndProcessState_006e0ff0()
 }
 
 // @fnv 0x006e21b0
+// pdb: PathingLOSMap::IsNavMeshInMap | PathingLOSMap.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiTMapBase<DFALL<NiTMapItem<unsigned int,unsigned int> >,unsigned int,unsigned int>::~NiTMapBase<DFALL<NiTMapItem<unsigned int,unsigned int> >,unsigned int,unsigned int>
+// pdb params: aiNavMeshID
+// pdb locals: idummy
 template <>
 NiTMapBase<DFALL<NiTMapItem<unsigned int, unsigned int> >, unsigned int, unsigned int>::~NiTMapBase()
 {
@@ -1270,6 +1329,7 @@ struct FUN_006e0f90_Class
 void __cdecl Deallocate(void*);
 
 // @fnv 0x006e0ef0
+// pdb: NiTMap<unsigned int,PathingLOSGrid *>::`scalar deleting destructor' | PathingLOSGridMap.obj | retail, vtable slot, high
 void* __thiscall FUN_006e0f90_Class::FUN_006e0ef0(unsigned int flags)
 {
     FUN_006e0f90();
@@ -1285,9 +1345,10 @@ struct FUN_006e11f0_Class
 };
 // Calls FUN_006e0ff0 on this, frees this when flags has bit 0 set, and returns this.
 // @fnv 0x006e11f0
+// pdb: NiTMapBase<DFALL<NiTMapItem<unsigned int,PathingLOSGrid *> >,unsigned int,PathingLOSGrid *>::`scalar deleting destructor' | PathingLOSGridMap.obj | retail, vtable slot, high
 void* __thiscall FUN_006e11f0_Class::FUN_006e11f0(unsigned int flags)
 {
-    ((FUN_006e0ff0_Class*)this)->SetVtableAndProcessState_006e0ff0();
+    ((FUN_006e0ff0_Class*)this)->NiTMapBase_DFALL_NiTMapItem_unsigned_int_PathingLOSGrid_unsigned_int_PathingLOSGrid_dtor();
     if (flags & 1)
         _Deallocate(this);
     return this;
@@ -1299,9 +1360,10 @@ struct S006e1220 : GlobalObject_00869f00
     void* __thiscall FUN_006e1220(unsigned int);
 };
 // @fnv 0x006e1220
+// pdb: BSSimpleArray<PathingLOSGridCell *,1024>::`scalar deleting destructor' | PathingLOSGridMap.obj | retail, vtable slot, high
 void* __thiscall S006e1220::FUN_006e1220(unsigned int flags)
 {
-    SetVtableAndProcessState_006e1050();
+    BSSimpleArray_PathingLOSGridCell_1024_dtor();
     if (flags & 1)
         _Deallocate(this);
     return this;
@@ -1309,7 +1371,7 @@ void* __thiscall S006e1220::FUN_006e1220(unsigned int flags)
 
 struct FUN_006e10a0_shell
 {
-    void __thiscall ResetVirtualTableAndClear_006e10a0();
+    void __thiscall BSSimpleArray_char_1024_dtor();
 };
 void __cdecl Deallocate(void*);
 struct FUN_006e1250_Class
@@ -1318,9 +1380,10 @@ struct FUN_006e1250_Class
 };
 // Calls FUN_006e10a0 on this, frees this when bit 0 of a1 is set, and returns this.
 // @fnv 0x006e1250
+// pdb: BSSimpleArray<char,1024>::`scalar deleting destructor' | PathingLOSGridMap.obj | retail, vtable slot, high
 void* __thiscall FUN_006e1250_Class::FUN_006e1250(unsigned int auiFlags)
 {
-    ((FUN_006e10a0_shell*)this)->ResetVirtualTableAndClear_006e10a0();
+    ((FUN_006e10a0_shell*)this)->BSSimpleArray_char_1024_dtor();
     if (auiFlags & 1)
         Deallocate(this);
     return this;
@@ -1333,6 +1396,7 @@ struct FUN_006e1280_Class
 };
 // @fnv 0x006e1280
 // src: GUESS 0x006e1280 (confidence: medium)
+// pdb: DFALL<NiTMapItem<unsigned int,PathingLOSGrid *> >::Allocate | PathingLOSGridMap.obj | debug, object-file run extension, low
 void __thiscall FUN_006e1280_Class::VisitPlacementAddresses(char* apBuffer, unsigned int auiCount)
 {
     unsigned int i = 0;
@@ -1345,6 +1409,9 @@ void __thiscall FUN_006e1280_Class::VisitPlacementAddresses(char* apBuffer, unsi
 void* __cdecl _NiMalloc(unsigned int);
 void* memset(void* p, int v, unsigned int n);
 // @fnv 0x006e20e0
+// pdb: NiTMapBase<DFALL<NiTMapItem<unsigned int,unsigned int> >,unsigned int,unsigned int>::NiTMapBase<DFALL<NiTMapItem<unsigned int,unsigned int> >,unsigned int,unsigned int> | PathingLOSMap.obj | debug, object-file run extension, low
+// pdb params: uiHashSize
+// pdb locals: uiSize
 template <>
 NiTMapBase<DFALL<NiTMapItem<unsigned int, unsigned int> >, unsigned int, unsigned int>::NiTMapBase(unsigned int uiHashSize)
 {
@@ -1386,6 +1453,7 @@ struct FUN_006e5fa0 : public PathingRequestClosePoint
     FUN_006e5fa0();
 };
 // @fnv 0x006e5fa0
+// pdb: PathingRequestSafeStraightLine::PathingRequestSafeStraightLine | PathingRequestSafeStraightLine.obj | retail, object-file run extension, high
 FUN_006e5fa0::FUN_006e5fa0()
 {
     m_B8 = 0;
@@ -1399,6 +1467,7 @@ struct FUN_006e62b0_Class
 };
 // Destructor for the class; destroys the two embedded PathingLocation members and does nothing else.
 // @fnv 0x006e62b0
+// pdb: PathingSearchRayCast::~PathingSearchRayCast | PathingSearchRayCast.obj | debug, call graph, high
 FUN_006e62b0_Class::~FUN_006e62b0_Class()
 {}
 
@@ -1413,10 +1482,13 @@ struct S006e7620_R1
 S006e7620_R1* __cdecl _FUN_00c85750();
 // @fnv 0x006e7620
 // src: COMMUNITY 0x006e7620
-void __cdecl hkAllocateStack_char(int aiSize, const char* what)
+// pdb: hkAllocateStack<char> | PathingSearchRayCast.obj | debug, call graph (shared callers), high
+// pdb params: n, what
+// pdb locals: mem
+void __cdecl hkAllocateStack_char(int n, const char* what)
 {
     S006e7620_R1* mem = _FUN_00c85750();
-    mem->_ref_006815c0((aiSize + 0x7f) & 0xffffff80, what)->hkStackMemory_allocateStack();
+    mem->_ref_006815c0((n + 0x7f) & 0xffffff80, what)->hkStackMemory_allocateStack();
 }
 
 struct FUN_006e9000_Class
@@ -1429,6 +1501,8 @@ struct FUN_006e9000_Class
     float __thiscall ComputeWeightedSum(float* a1, float* a2, float* a3, float* a4);
 };
 // @fnv 0x006e9000
+// pdb: BSSimpleArray<NavMeshSearchDebugData,1024>::_Reallocate | PathingSolution.obj | debug, object-file run extension, low
+// pdb params: apBuffer, aiNewSizeInItem
 float FUN_006e9000_Class::ComputeWeightedSum(float* apFirst, float* apThird, float* apSecond, float* apFourth)
 {
     return m_cByteAtOffset1 * *apFirst + m_cByteAtOffset2 * *apSecond + m_cByteAtOffset3 * *apThird +
@@ -1446,6 +1520,7 @@ struct FUN_006e9500_Class : public FUN_006e9260
 };
 // Runs the base destructor, frees this via Deallocate when flags has bit 0 set, and returns this.
 // @fnv 0x006e9500
+// pdb: BSSimpleArray<PathingNode,1024>::`scalar deleting destructor' | PathingSolution.obj | retail, vtable slot, high
 void* __thiscall FUN_006e9500_Class::FUN_006e9500(unsigned int flags)
 {
     FUN_006e9260::~FUN_006e9260();
@@ -1466,6 +1541,8 @@ struct FUN_006e9530_Struct
 // Copies f0, f4 and f2c from a1 into this object and returns *this.
 // @fnv 0x006e9530
 // src: COMMUNITY 0x006e9530
+// pdb: VirtualPathingNode::Copy | VirtualPathingNode.obj | debug, upstream name already matches, high
+// pdb locals: pretNode
 FUN_006e9530_Struct& __thiscall FUN_006e9530_Struct::VirtualPathingNode_Copy(const FUN_006e9530_Struct& aOther)
 {
     f0 = aOther.f0;
@@ -1482,13 +1559,16 @@ struct HostA
 struct FUN_006ebbd0_Cls
 {
     HostA* h;
-    bool __thiscall ForwardToHost(int, bool);
+    bool __thiscall PathManager_DrawPath(int, bool);
 };
 // Calls DispatchToInner on the stored host pointer with the given arguments and returns its bool result.
 // @fnv 0x006ebbd0
-bool __thiscall FUN_006ebbd0_Cls::ForwardToHost(int aiArg, bool abFlag)
+// src: XBOX_RETAIL_PDB 0x006ebbd0
+// pdb: PathManager::DrawPath | PathManager.obj | retail, call graph, high
+// pdb params: aspNode, abDraw
+bool __thiscall FUN_006ebbd0_Cls::PathManager_DrawPath(int aspNode, bool abDraw)
 {
-    return h->DispatchToInner(aiArg, abFlag);
+    return h->DispatchToInner(aspNode, abDraw);
 }
 
 struct FUN_006ebbf0_Class
@@ -1500,6 +1580,8 @@ struct FUN_006ebbf0_Class
 // Forwards the five arguments to the CallVirtualObjectMethod method of the object stored at this's first pointer slot.
 // @fnv 0x006ebbf0
 // src: COMMUNITY 0x006ebbf0
+// pdb: PathManager::GetRayCastPathToNavMesh | PathManager.obj | debug, object-file gap fill, medium
+// pdb params: apRequest, aEdges, aGoalLocation, aRetPath, abStart
 void __thiscall FUN_006ebbf0_Class::PathManager_GetRayCastPathToNavmesh(void* a1, void* a2, void* a3, void* a4, bool a5)
 {
     ((FUN_006ebbf0_Class**)((FUN_006ebbf0_Class*)this))[0]->CallVirtualObjectMethod(a1, a2, a3, a4, a5);
@@ -1512,14 +1594,16 @@ struct FUN_006eb2b0_Callee
 struct Host_006ebc20
 {
     FUN_006eb2b0_Callee* m;
-    void __thiscall PathManager_GetRayCastPath(int a1, int a2, int a3, int a4);
+    void __thiscall PathManager_GetRayCastPath(int apRequest, int aStartLocation, int aGoalLocation, int aRetPath);
 };
 // Forwards all four arguments to the callee's ProcessKeyedItem method through the m pointer.
 // @fnv 0x006ebc20
 // src: COMMUNITY 0x006ebc20
-void __thiscall Host_006ebc20::PathManager_GetRayCastPath(int aiArg1, int aiArg2, int aiArg3, int aiArg4)
+// pdb: PathManager::GetRayCastPath | PathManager.obj | retail, upstream name already matches, high
+// pdb params: apRequest, aStartLocation, aGoalLocation, aRetPath
+void __thiscall Host_006ebc20::PathManager_GetRayCastPath(int apRequest, int aStartLocation, int aGoalLocation, int aRetPath)
 {
-    m->ProcessKeyedItem(aiArg1, aiArg2, aiArg3, aiArg4);
+    m->ProcessKeyedItem(apRequest, aStartLocation, aGoalLocation, aRetPath);
 }
 
 struct SeqObj
@@ -1536,6 +1620,8 @@ struct FUN_006ebfb0_Class
     int* __thiscall AssignPointer(int** other);
 };
 // @fnv 0x006ebfb0
+// pdb: NiPointer<ActorPathingMessageQueue>::operator= | PathManager.obj | debug, object-file run extension, low
+// pdb params: ptr
 int* __thiscall FUN_006ebfb0_Class::AssignPointer(int** other)
 {
     if (m_p != *other)
@@ -1561,6 +1647,8 @@ struct FUN_006ec090_Class
 };
 // @fnv 0x006ec090
 // src: EXE 0x006ec090
+// pdb: BSTCommonLLMessageQueue<PathingMessage>::BSTCommonLLMessageQueue<PathingMessage> | PathManager.obj | debug, object-file run extension, low
+// pdb params: apFreeList
 FUN_006ec090_Class* __thiscall FUN_006ec090_Class::BSTCommonLLMessageQueue_PathingMessage_BSTCommonLLMessageQueue(int aiValue)
 {
     ((FUN_006ecb40_Class*)this)->BSTCommonMessageQueue_PathingMessage_BSTCommonMessageQueue();
@@ -1580,6 +1668,9 @@ struct FUN_006ec200_Class
 };
 
 // @fnv 0x006ec200
+// pdb: BSTFreeList<ActorPathingMessage>::`scalar deleting destructor' | PathManager.obj | retail, object-file run extension, low
+// pdb note: debug build links it to BSTCommonMessageQueue<PathingMessage>::`scalar deleting destructor'
+// pdb params: this
 void* FUN_006ec200_Class::FUN_006ec200(unsigned int flags)
 {
     UpdateFields_006ec1c0();
@@ -1594,11 +1685,12 @@ struct Call_6ecb70
 };
 struct Holder_6ec340
 {
-    Holder_6ec340* __thiscall BSTCommonStaticMessageQueue_NiPointer_NiAVObject_256_BSTCommonStaticMessageQueue();
+    Holder_6ec340* __thiscall BSTCommonStaticMessageQueue_NiPointer_NiAVObject_256_ctor();
 };
 // @fnv 0x006ec340
-// src: EXE 0x006ec340
-Holder_6ec340* __thiscall Holder_6ec340::BSTCommonStaticMessageQueue_NiPointer_NiAVObject_256_BSTCommonStaticMessageQueue()
+// src: XBOX_DEBUG_PDB 0x006ec340 (was EXE)
+// pdb: BSTCommonStaticMessageQueue<NiPointer<NiAVObject>,256>::BSTCommonStaticMessageQueue<NiPointer<NiAVObject>,256> | PathManager.obj | debug, call graph, high
+Holder_6ec340* __thiscall Holder_6ec340::BSTCommonStaticMessageQueue_NiPointer_NiAVObject_256_ctor()
 {
     ((Call_6ecb70*)this)->FUN_006ecb70();
     *(int*)this = (int)&DAT_0106d6d0;
@@ -1610,17 +1702,20 @@ Holder_6ec340* __thiscall Holder_6ec340::BSTCommonStaticMessageQueue_NiPointer_N
 
 struct FUN_006ec390_Class
 {
-    bool __thiscall BSTCommonMessageQueue_MobileObjectMessage_TryPop(int a1);
+    bool __thiscall BSTCommonMessageQueue_MobileObjectMessage_TryPop(int aMessage);
 };
 // @fnv 0x006ec390
 // src: XBOX_PDB 0x006ec390
-bool FUN_006ec390_Class::BSTCommonMessageQueue_MobileObjectMessage_TryPop(int aiArg)
+// pdb: BSTCommonMessageQueue<ActorPathingMessage>::TryPop | HighProcess.obj | retail, vtable slot, high
+// pdb params: aMessage
+// pdb locals: bResult
+bool FUN_006ec390_Class::BSTCommonMessageQueue_MobileObjectMessage_TryPop(int aMessage)
 {
     bool result;
     if (BSAtomicCompareExchange((long volatile*)this + 1, 0, 1) == 0)
     {
         BlkInterfaceView::PrintDebugMessage();
-        result = ((bool(__thiscall*)(void*, int))(*(void***)this)[6])(this, aiArg);
+        result = ((bool(__thiscall*)(void*, int))(*(void***)this)[6])(this, aMessage);
         BlkInterfaceView::PrintDebugMessage();
         BSAtomicCompareExchange((long volatile*)this + 1, 1, 0);
     }
@@ -1645,6 +1740,7 @@ struct FUN_006ec450_Class
 
 // Calls FUN_006ec430 on this, deletes this when bit 0 of a1 is set, and returns this.
 // @fnv 0x006ec450
+// pdb: BSTCommonMessageQueue<NiPointer<NiAVObject> >::`scalar deleting destructor' | PathManager.obj | debug, vtable slot, medium
 void* __thiscall FUN_006ec450_Class::FUN_006ec450(unsigned int uiFlags)
 {
     ((FUN_006ec410_Helper*)this)->SetVtableAndProcessState_006ec430();
@@ -1660,6 +1756,7 @@ struct FUN_006ec480_Class : public FUN_006ec410_Class
 };
 // Calls FUN_006ec430, then deallocates this when flags has bit 0 set, and returns this.
 // @fnv 0x006ec480
+// pdb: BSTMessageQueue<NiPointer<NiAVObject> >::`scalar deleting destructor' | PathManager.obj | debug, vtable slot, medium
 void* __thiscall FUN_006ec480_Class::FUN_006ec480(unsigned int flags)
 {
     SetVtableAndProcessState_006ec430();
@@ -1687,6 +1784,9 @@ struct FUN_006ec9b0_Class
 };
 // @fnv 0x006ec9b0
 // src: GUESS 0x006ec9b0 (confidence: low)
+// pdb: ThreadSpecificInterfaceManager<LockFreeMap<PathingRequest *,PathingTaskData *>::LockFreeMapInterface>::GetInterface | PathManager.obj | debug, object-file run extension, low
+// pdb params: apInterfacedClass
+// pdb locals: pinterface
 bool FUN_006ec9b0_Class::UpdateState_006ec9b0(int a1, int a2, int* piOut)
 {
     bool r = ProcessNodeChain(a1, a2);
@@ -1708,6 +1808,7 @@ struct FUN_006ec130_Class
     void* __thiscall FUN_006eca80(unsigned int flags);
 };
 // @fnv 0x006eca80
+// pdb: BSTCommonLLMessageQueue<PathingMessage>::`scalar deleting destructor' | PathManager.obj | retail, vtable slot, high
 void* FUN_006ec130_Class::FUN_006eca80(unsigned int flags)
 {
     FUN_006ec130();
@@ -1723,6 +1824,7 @@ struct FUN_006ecab0_Class
 };
 // Calls FUN_006ec3f0 on this, frees this when flags has bit 0 set, and returns this.
 // @fnv 0x006ecab0
+// pdb: BSTCommonStaticMessageQueue<NiPointer<NiAVObject>,256>::`scalar deleting destructor' | PathManager.obj | debug, vtable slot, medium
 void* __thiscall FUN_006ecab0_Class::FUN_006ecab0(unsigned int flags)
 {
     ((FUN_006ec3f0_Class*)this)->SetVtableAndProcessState_006ec3f0();
@@ -1738,6 +1840,7 @@ struct FUN_006ec870_Class
     void* __thiscall FUN_006ecae0(unsigned int flags);
 };
 // @fnv 0x006ecae0
+// pdb: NiPointer<NiAVObject>::`scalar deleting destructor' | PathManager.obj | debug, object-file run extension, low
 void* __thiscall FUN_006ec870_Class::FUN_006ecae0(unsigned int flags)
 {
     FUN_006ec870();
@@ -1752,6 +1855,7 @@ void* __thiscall FUN_006ec870_Class::FUN_006ecae0(unsigned int flags)
 // Calls FUN_006ecce0 on the node then passes it to PushFront.
 // @fnv 0x006ecb10
 // src: GUESS 0x006ecb10 (confidence: high)
+// pdb: LockFreeMap<PathingRequest *,PathingTaskData *>::`scalar deleting destructor' | PathManager.obj | debug, object-file run extension, low
 void __thiscall BSTFreeList<QueuedMessage>::PrepareNodeAndPushFront(BSTFreeListElem<QueuedMessage>*& pNode)
 {
     pNode->ForwardCall_006ecce0();
@@ -1772,6 +1876,7 @@ struct FUN_006ecbd0_Class
 };
 // Initializes the embedded object via Init, then stores a into m0 and the value pointed to by b into m4, returning this.
 // @fnv 0x006ecbd0
+// pdb: BSTCommonMessageQueue<PathingMessage>::BSTCommonMessageQueue<PathingMessage> | PathManager.obj | debug, object-file run extension, low
 FUN_006ecbd0_Class* __thiscall FUN_006ecbd0_Class::InitFromValues(int aiValue, int* piValue)
 {
     m8.Init();
@@ -1812,6 +1917,7 @@ struct FUN_006ecf40_Class
 };
 // Calls FUN_006ecf20 on this, then frees this with _Deallocate when flags has bit 0 set, and returns this.
 // @fnv 0x006ecf40
+// pdb: BSTFreeList<ActorPathingMessage>::`scalar deleting destructor' | PathManager.obj | debug, vtable slot, medium
 void* __thiscall FUN_006ecf40_Class::FUN_006ecf40(unsigned int flags)
 {
     ((FUN_006ecf20_Class*)this)->SetVirtualTable_006ecf20();
@@ -1835,6 +1941,7 @@ struct FUN_006ee100_Class
 // Constructs the object by initializing the four NiPoint3 subobjects at offsets 8, 0x14, 0x20 and 0x2c and the NiBound at 0x3c, then returns this.
 // @fnv 0x006ee100
 // src: GUESS 0x006ee100 (confidence: medium)
+// pdb: PathSmoother::PathEdge::PathEdge | PathSmoother.obj | debug, object-file gap fill, medium
 FUN_006ee100_Class* __thiscall FUN_006ee100_Class::InitializeBoundsAndPoints()
 {
     ((NiPoint3*)((char*)this + 8))->NiPoint3::NiPoint3();
@@ -1852,21 +1959,24 @@ struct FUN_006efd50
     FUN_006efd50();
 };
 // @fnv 0x006efd50
+// pdb: NavMeshSearchEdge::NavMeshSearchEdge | PathSmoother.obj | debug, call graph, high
 FUN_006efd50::FUN_006efd50()
 {}
 
 struct S006F1E90
 {
     bool __thiscall PathSmoother_PointInShrunkPath(int);
-    bool __thiscall IsSegmentClear(int, int);
+    bool __thiscall PathSmoother_StraightLineTest(int, int);
     bool __thiscall PathSmoother_IsSegmentValid(int, int);
 };
 // Returns true when the second argument passes FUN_006f1fc0 and the pair passes IsSegmentClear; otherwise false.
 // @fnv 0x006f1e90
 // src: COMMUNITY 0x006f1e90
-bool __thiscall S006F1E90::PathSmoother_IsSegmentValid(int aiFirst, int aiSecond)
+// pdb: PathSmoother::IsSegmentValid | PathSmoother.obj | debug, upstream name already matches, high
+// pdb params: aStart, aEnd
+bool __thiscall S006F1E90::PathSmoother_IsSegmentValid(int aStart, int aEnd)
 {
-    if (PathSmoother_PointInShrunkPath(aiSecond) && IsSegmentClear(aiFirst, aiSecond))
+    if (PathSmoother_PointInShrunkPath(aEnd) && PathSmoother_StraightLineTest(aStart, aEnd))
         return true;
     else
         return false;
@@ -1883,6 +1993,7 @@ struct FUN_006f26f0_Class : public FUN_006f26d0_Class
     ~FUN_006f26f0_Class();
 };
 // @fnv 0x006f26f0
+// pdb: BSScrapArray<PathSmoother::UniqueVert *,1024>::~BSScrapArray<PathSmoother::UniqueVert *,1024> | PathSmoother.obj | debug, call graph, medium
 FUN_006f26f0_Class::~FUN_006f26f0_Class()
 {
     Clear(true);
@@ -1919,6 +2030,9 @@ struct FUN_006f2c10_Holder
 // Allocates a block of a1 * 0x28 bytes from the scrap heap via the helper at _10 and returns it.
 // @fnv 0x006f2c10
 // src: COMMUNITY 0x006f2c10
+// pdb: BSScrapArray<PathingLocation,1024>::_Allocate | PathSmoother.obj | debug, vtable slot, medium
+// pdb params: aiSizeInItem
+// pdb locals: pnewBuffer
 void* __thiscall FUN_006f2c10_Holder::BSScrapArray_PathingLocation_1024_Alloc40BytesMembers(int aiCount)
 {
     void* p;
@@ -1944,16 +2058,19 @@ struct FUN_006f2c40_Class
     int m_8;
     int m_iThirdValue;
     FUN_00aa54a0_s* m_pStreamAllocator;
-    void* __thiscall ReallocateArray(int a1, int a2);
+    void* __thiscall ReallocateArray(int apBuffer, int aiNewSizeInItem);
 };
 void* __cdecl __memcpy(void* dst, const void* src, unsigned int n);
 // Allocates a new block of a2*0x28 bytes, copies GetFlags()*0x28 bytes from a1 into it, frees a1 and returns the new block.
 // @fnv 0x006f2c40
-void* FUN_006f2c40_Class::ReallocateArray(int pOldBuffer, int a2)
+// pdb: BSScrapArray<PathingLocation,1024>::_Reallocate | PathSmoother.obj | retail, vtable slot, high
+// pdb params: apBuffer, aiNewSizeInItem
+// pdb locals: pnewBuffer
+void* FUN_006f2c40_Class::ReallocateArray(int apBuffer, int aiNewSizeInItem)
 {
-    void* dst = m_pStreamAllocator->Allocate(a2 * 0x28, DAT_010a2720);
-    __memcpy(dst, (const void*)pOldBuffer, ((BlkOffset08View*)this)->GetFlags() * 0x28);
-    m_pStreamAllocator->Deallocate((void*)pOldBuffer);
+    void* dst = m_pStreamAllocator->Allocate(aiNewSizeInItem * 0x28, DAT_010a2720);
+    __memcpy(dst, (const void*)apBuffer, ((BlkOffset08View*)this)->GetFlags() * 0x28);
+    m_pStreamAllocator->Deallocate((void*)apBuffer);
     return dst;
 }
 
@@ -1971,6 +2088,9 @@ struct Host_006f2ea0
 // Allocates a block of a1 << 4 bytes from the heap with DAT_010a2720 and returns the pointer.
 // @fnv 0x006f2ea0
 // src: GUESS 0x006f2ea0 (confidence: medium)
+// pdb: BSScrapArray<PathSmoother::AvoidNode,1024>::_Allocate | PathSmoother.obj | debug, vtable slot, medium
+// pdb params: aiSizeInItem
+// pdb locals: pnewBuffer
 void* __thiscall Host_006f2ea0::AllocateElementStorage_006f2ea0(int aiCount)
 {
     void* r;
@@ -1993,15 +2113,18 @@ struct FUN_00aa54a0_s
 };
 struct FUN_006f2ed0_Class
 {
-    void* __thiscall UpdateState_006f2ed0(const void* src, unsigned int n);
+    void* __thiscall UpdateState_006f2ed0(const void* apBuffer, unsigned int aiNewSizeInItem);
 };
 // @fnv 0x006f2ed0
 // src: GUESS 0x006f2ed0 (confidence: low)
-void* FUN_006f2ed0_Class::UpdateState_006f2ed0(const void* src, unsigned int n)
+// pdb: BSScrapArray<PathSmoother::AvoidNode,1024>::_Reallocate | PathSmoother.obj | retail, vtable slot, high
+// pdb params: apBuffer, aiNewSizeInItem
+// pdb locals: pnewBuffer
+void* FUN_006f2ed0_Class::UpdateState_006f2ed0(const void* apBuffer, unsigned int aiNewSizeInItem)
 {
-    void* p = reinterpret_cast<FUN_00aa54a0_s*>(*(void**)((char*)this + 0x10))->ScrapHeap_Allocate(n << 4, DAT_010a2720);
-    __memcpy(p, src, reinterpret_cast<BlkOffset08View*>(this)->GetFlags() << 4);
-    reinterpret_cast<FUN_00aa54a0_s*>(*(void**)((char*)this + 0x10))->FUN_00aa54b0((void*)src);
+    void* p = reinterpret_cast<FUN_00aa54a0_s*>(*(void**)((char*)this + 0x10))->ScrapHeap_Allocate(aiNewSizeInItem << 4, DAT_010a2720);
+    __memcpy(p, apBuffer, reinterpret_cast<BlkOffset08View*>(this)->GetFlags() << 4);
+    reinterpret_cast<FUN_00aa54a0_s*>(*(void**)((char*)this + 0x10))->FUN_00aa54b0((void*)apBuffer);
     return p;
 }
 }  // namespace fnv_006f2ed0
@@ -2014,6 +2137,7 @@ struct FUN_006f25b0
 void _Deallocate(void*);
 // Runs the destructor and, when bit 0 of flags is set, deallocates this object; returns this.
 // @fnv 0x006f2f30
+// pdb: BSSimpleArray<PathSmoother::PathEdge *,1024>::`scalar deleting destructor' | PathSmoother.obj | retail, vtable slot, high
 void* __thiscall FUN_006f25b0::FUN_006f2f30(unsigned int flags)
 {
     this->FUN_006f25b0::~FUN_006f25b0();
@@ -2033,6 +2157,7 @@ struct FUN_006f2f60_shell : public FUN_006f25d0
 };
 // Runs the destructor, then frees this object with _Deallocate when flags has bit 0 set, and returns this.
 // @fnv 0x006f2f60
+// pdb: BSScrapArray<PathSmoother::PathEdge *,1024>::`scalar deleting destructor' | PathSmoother.obj | retail, vtable slot, high
 void* __thiscall FUN_006f2f60_shell::FUN_006f2f60(unsigned int flags)
 {
     this->FUN_006f25d0::~FUN_006f25d0();
@@ -2050,6 +2175,7 @@ struct FUN_006f2f90_Class
 };
 // Calls FUN_006f26d0, then deallocates this when bit 0 of flags is set, and returns this.
 // @fnv 0x006f2f90
+// pdb: BSSimpleArray<PathSmoother::UniqueVert *,1024>::`scalar deleting destructor' | PathSmoother.obj | retail, vtable slot, high
 void* FUN_006f2f90_Class::FUN_006f2f90(unsigned int flags)
 {
     SetVtableAndProcessState_006f26d0();
@@ -2070,6 +2196,7 @@ struct FUN_006f2fc0_Class
 
 // Calls FUN_006f26f0, then deallocates this when bit 0 of a1 is set, and returns this.
 // @fnv 0x006f2fc0
+// pdb: BSScrapArray<PathSmoother::UniqueVert *,1024>::`scalar deleting destructor' | PathSmoother.obj | retail, vtable slot, high
 void* FUN_006f2fc0_Class::FUN_006f2fc0(unsigned int auiFlags)
 {
     FUN_006f26f0();
@@ -2089,6 +2216,7 @@ struct FUN_006f2ff0_Class
 };
 
 // @fnv 0x006f2ff0
+// pdb: BSSimpleArray<PathSmoother::BoundsEdge *,1024>::`scalar deleting destructor' | PathSmoother.obj | retail, vtable slot, high
 void* FUN_006f2ff0_Class::FUN_006f2ff0(unsigned int flags)
 {
     SetVtableAndProcessState_006f27f0();
@@ -2107,6 +2235,7 @@ struct FUN_006f2810_Class
 };
 
 // @fnv 0x006f3020
+// pdb: BSScrapArray<PathSmoother::BoundsEdge *,1024>::`scalar deleting destructor' | PathSmoother.obj | retail, vtable slot, high
 void* __thiscall FUN_006f2810_Class::FUN_006f3020(unsigned int flags)
 {
     FUN_006f2810();
@@ -2122,6 +2251,7 @@ struct FUN_006f3050_Class
 };
 
 // @fnv 0x006f3050
+// pdb: BSScrapArray<PathingLocation,1024>::`scalar deleting destructor' | PathSmoother.obj | retail, vtable slot, high
 void* FUN_006f3050_Class::FUN_006f3050(unsigned int flags)
 {
     FUN_006f2bb0();
@@ -2140,6 +2270,7 @@ struct FUN_006f3080_Class
 };
 
 // @fnv 0x006f3080
+// pdb: BSSimpleArray<PathSmoother::AvoidNode,1024>::`scalar deleting destructor' | PathSmoother.obj | retail, vtable slot, high
 void* __thiscall FUN_006f3080_Class::FUN_006f3080(unsigned int flags)
 {
     ResetVirtualTableAndClear_006f2e00();
@@ -2157,6 +2288,7 @@ struct FUN_006f2e40_Class
 void __cdecl Deallocate(void*);
 
 // @fnv 0x006f30b0
+// pdb: BSScrapArray<PathSmoother::AvoidNode,1024>::`scalar deleting destructor' | PathSmoother.obj | retail, vtable slot, high
 void* FUN_006f2e40_Class::FUN_006f30b0(unsigned int flags)
 {
     FUN_006f2e40();
@@ -2198,6 +2330,7 @@ struct FUN_006f3f80_Class : public _Base_006f3c80
 
 // Runs the base destructor, then frees this object with operator delete when flags has bit 0 set, and returns this.
 // @fnv 0x006f3f80
+// pdb: AStarSearch<ParentSpaceNode,TeleportLink>::`scalar deleting destructor' | TeleportDoorSearch.obj | retail, vtable slot, high
 void* FUN_006f3f80_Class::FUN_006f3f80(unsigned int flags)
 {
     _Base_006f3c80::~_Base_006f3c80();
@@ -2214,6 +2347,7 @@ struct FUN_006f4660_Class
     void* __thiscall FUN_006f4660(unsigned int flags);
 };
 // @fnv 0x006f4660
+// pdb: BSSimpleArray<AStarNode<ParentSpaceNode,TeleportLink> *,1024>::`scalar deleting destructor' | TeleportDoorSearch.obj | retail, vtable slot, high
 void* __thiscall FUN_006f4660_Class::FUN_006f4660(unsigned int flags)
 {
     ForwardCall_006f4640();
@@ -2234,6 +2368,7 @@ struct FUN_006f4850_Class
 };
 // Calls FUN_006f4690 on this, deallocates this when flags has bit 0 set, and returns this.
 // @fnv 0x006f4850
+// pdb: BSScrapArray<AStarNode<ParentSpaceNode,TeleportLink> *,1024>::`scalar deleting destructor' | TeleportDoorSearch.obj | retail, vtable slot, high
 void* FUN_006f4850_Class::FUN_006f4850(unsigned int flags)
 {
     ((FUN_006f4690_Class*)this)->FUN_006f4690();
@@ -2249,6 +2384,7 @@ struct FUN_006f4b40
 };
 // Runs the destructor and, when bit 0 of a1 is set, frees the object with operator delete; returns the pointer.
 // @fnv 0x006f4be0
+// pdb: BSSimpleArray<ParentSpaceNode,1024>::`scalar deleting destructor' | TeleportPath.obj | retail, vtable slot, high
 void* __thiscall FUN_006f4b40::FUN_006f4be0(unsigned int auiFlags)
 {
     this->FUN_006f4b40::~FUN_006f4b40();
@@ -2265,6 +2401,7 @@ struct FUN_006f4b90
 void __cdecl _Deallocate(void*);
 // Runs the destructor, then frees this object with _Deallocate when bit 0 of a1 is set, and returns this.
 // @fnv 0x006f4c10
+// pdb: BSSimpleArray<TeleportLink,1024>::`scalar deleting destructor' | TeleportPath.obj | retail, vtable slot, high
 void* __thiscall FUN_006f4b90::FUN_006f4c10(unsigned int auiFlags)
 {
     this->FUN_006f4b90::~FUN_006f4b90();
@@ -2297,11 +2434,13 @@ struct FUN_006f5020_Class
 {
     int m_flags;
     PathingLocation m_proxy;
-    void __thiscall UpdateProxyFlag();
+    void __thiscall VirtualPathingNode_UpdateNode();
 };
 // If m_flags bit 0 is clear and m_proxy's check returns true, sets bit 0 of m_flags.
 // @fnv 0x006f5020
-void __thiscall FUN_006f5020_Class::UpdateProxyFlag()
+// src: XBOX_RETAIL_PDB 0x006f5020
+// pdb: VirtualPathingNode::UpdateNode | VirtualPathingNode.obj | retail, object-file run extension, high
+void __thiscall FUN_006f5020_Class::VirtualPathingNode_UpdateNode()
 {
     if (!(m_flags & 1) && m_proxy.FindContainingTriangle(0))
         m_flags |= 1;
@@ -2315,12 +2454,15 @@ struct FUN_006f5060_Class
 {
     int m_type;
     PathingLocation m_loc;
-    void __thiscall SetLocation(const PathingLocation& location);
+    void __thiscall VirtualPathingNode_SetLocation(const PathingLocation& arLocation);
 };
 // @fnv 0x006f5060
-void __thiscall FUN_006f5060_Class::SetLocation(const PathingLocation& location)
+// src: XBOX_RETAIL_PDB 0x006f5060
+// pdb: VirtualPathingNode::SetLocation | VirtualPathingNode.obj | retail, object-file run extension, high
+// pdb params: arLocation
+void __thiscall FUN_006f5060_Class::VirtualPathingNode_SetLocation(const PathingLocation& arLocation)
 {
-    *(PathingLocation*)((char*)this + 4) = location;
+    *(PathingLocation*)((char*)this + 4) = arLocation;
     m_type = 2;
     if (((PathingLocation*)((char*)this + 4))->FindContainingTriangle(0))
         m_type |= 1;
@@ -2337,6 +2479,7 @@ struct FUN_006f9940_Class
 };
 
 // @fnv 0x006f96e0
+// pdb: BSMap<unsigned int,BGSDistantTreeBlock::InstanceData *>::`scalar deleting destructor' | BGSDistantTreeBlock.obj | retail, vtable slot, high
 void* FUN_006f9940_Class::FUN_006f96e0(unsigned int flags)
 {
     FUN_006f9940();
@@ -2354,6 +2497,7 @@ struct FUN_006f9710_Class
 
 // Calls FUN_006f9b80, then deletes this when bit 0 of a1 is set, and returns this.
 // @fnv 0x006f9710
+// pdb: BSMap<unsigned int,BGSDistantTreeBlock::TreeGroup *>::`scalar deleting destructor' | BGSDistantTreeBlock.obj | retail, vtable slot, high
 void* FUN_006f9710_Class::FUN_006f9710(unsigned int auiFlags)
 {
     FUN_006f9b80();
@@ -2374,6 +2518,7 @@ struct FUN_006f99a0_Class
 // Sets the vtable pointer to DAT_0106dfa0 and, if m_i is non-null, deallocates the object it points to.
 // @fnv 0x006f99a0
 // src: GUESS 0x006f99a0 (confidence: medium)
+// pdb: BSMapBase<unsigned int,BGSDistantTreeBlock::InstanceData *>::~BSMapBase<unsigned int,BGSDistantTreeBlock::InstanceData *> | BGSDistantTreeBlock.obj | debug, call graph (shared callers), low
 void __thiscall FUN_006f99a0_Class::ReleaseStorage_006f99a0()
 {
     *reinterpret_cast<int**>(this) = &DAT_0106dfa0;
@@ -2394,6 +2539,9 @@ struct FUN_006f9b80 : public FUN_006f9b80_shell
     virtual ~FUN_006f9b80();
 };
 // @fnv 0x006f9b80
+// pdb: D3DXShader::CAssembler::MicrocodeErrorCallback | cassembler.obj | retail, object-file run extension, low
+// pdb note: debug build links it to D3DXShader::CFragmentInfo::operator new
+// pdb params: isError, dwErrorNumber, message
 FUN_006f9b80::~FUN_006f9b80()
 {
     RemoveAll();
@@ -2407,6 +2555,8 @@ struct FUN_006f9be0_Class
 };
 // @fnv 0x006f9be0
 // src: GUESS 0x006f9be0 (confidence: medium)
+// pdb: D3DXShader::CRegisterEntryNode::~CRegisterEntryNode | cassembler.obj | retail, object-file run extension, low
+// pdb note: debug build links it to D3DXShader::CFragmentInfo::operator delete
 void FUN_006f9be0_Class::ReleaseStorage_006f9be0()
 {
     *reinterpret_cast<int**>(this) = &DAT_0106dfc0;
@@ -2425,6 +2575,7 @@ struct FUN_006f9770_Class
     FUN_006f9770_Class* __thiscall FUN_006f9cd0(unsigned int flags);
 };
 // @fnv 0x006f9cd0
+// pdb: BSSimpleArray<BGSDistantTreeBlock::InstanceData,1024>::`scalar deleting destructor' | BGSDistantTreeBlock.obj | retail, vtable slot, high
 FUN_006f9770_Class* FUN_006f9770_Class::FUN_006f9cd0(unsigned int flags)
 {
     SetVtableAndProcessState_006f9770();
@@ -2442,6 +2593,7 @@ struct FUN_006f98a0_Class
 };
 // Calls FUN_006f98a0, frees this when flags has bit 0 set, and returns this.
 // @fnv 0x006f9d00
+// pdb: BSSimpleArray<BGSDistantTreeBlock::TreeGroup *,1024>::`scalar deleting destructor' | BGSDistantTreeBlock.obj | retail, vtable slot, high
 void* FUN_006f98a0_Class::FUN_006f9d00(unsigned int flags)
 {
     ResetVirtualTableAndClear_006f98a0();
@@ -2462,6 +2614,7 @@ struct FUN_006f99a0_Class
 
 // Calls FUN_006f99a0, then deallocates this if bit 0 of a1 is set, and returns this.
 // @fnv 0x006f9d30
+// pdb: BSMapBase<unsigned int,BGSDistantTreeBlock::InstanceData *>::`scalar deleting destructor' | BGSDistantTreeBlock.obj | retail, vtable slot, high
 void* FUN_006f99a0_Class::FUN_006f9d30(unsigned int auiFlags)
 {
     ReleaseStorage_006f99a0();
@@ -2478,6 +2631,7 @@ struct FUN_006f9d60_Class
     void* __thiscall FUN_006f9d60(unsigned int flags);
 };
 // @fnv 0x006f9d60
+// pdb: BSMapBase<unsigned int,BGSDistantTreeBlock::TreeGroup *>::`scalar deleting destructor' | BGSDistantTreeBlock.obj | retail, vtable slot, high
 void* __thiscall FUN_006f9d60_Class::FUN_006f9d60(unsigned int flags)
 {
     ReleaseStorage_006f9be0();
@@ -2494,6 +2648,8 @@ struct FUN_006fa0d0_Class
     void __thiscall ForwardCall_006f9080();
 };
 // @fnv 0x006fa0d0
+// pdb: BSSimpleArray<BGSDistantTreeBlock::TreeType,1024>::_Deallocate | BGSDistantTreeBlock.obj | debug, object-file run extension, low
+// pdb params: apBuffer
 void* __thiscall FUN_006fa0d0_Class::FUN_006fa0d0(unsigned int flags)
 {
     ForwardCall_006f9080();
@@ -2514,6 +2670,7 @@ struct GlobalObject_006fa100
 
 // Calls FUN_006fa160, frees this with Deallocate when flags has bit 0 set, and returns this.
 // @fnv 0x006fa130
+// pdb: BSSimpleArray<BGSDistantTreeBlock::TreeType,1024>::`scalar deleting destructor' | BGSDistantTreeBlock.obj | retail, vtable slot, high
 GlobalObject_006fa100* __thiscall GlobalObject_006fa100::FUN_006fa130(unsigned int flags)
 {
     this->UpdateFields_006fa160();
@@ -2566,10 +2723,13 @@ struct Flt
 };
 
 // @fnv 0x006faa90
+// pdb: BGSTerrainChunk::SetMorphParameter | BGSTerrainChunk.obj | debug, call graph, medium
+// pdb params: afMorphParam
+// pdb locals: pprop
 void Tile::SetNodeFloat(float afValue)
 {
     NiNode* tmp;
-    if ((unsigned int)*reinterpret_cast<Flt*>(&m_kChildTileList))
+    if ((unsigned int)*reinterpret_cast<Flt*>(&xChildren))
     {
         tmp = GetModel_0056c7f0();
         if (tmp)
@@ -2588,6 +2748,7 @@ struct FUN_006fca40_Class
 };
 // Calls Unload on this object, then frees it via Deallocate when bit 0 of a1 is set, and returns this.
 // @fnv 0x006fca40
+// pdb: BGSTerrainNode::`scalar deleting destructor' | BGSTerrainManager.obj | debug, call graph, medium
 void* __thiscall FUN_006fca40_Class::FUN_006fca40(unsigned int auiFlags)
 {
     ((FUN_006fd750*)this)->Unload();
@@ -2603,18 +2764,20 @@ struct FUN_00759d80_Class
 struct FUN_006fea10_Class
 {
     void* m_10;
-    unsigned char __thiscall BGSTerrainNode_CheckMeshSolid(bool a1);
-    unsigned char __thiscall BGSTerrainNode_CheckMeshSolidUnderMe(bool a1);
+    unsigned char __thiscall BGSTerrainNode_CheckMeshSolid(bool abCheckIfLoadedOnly);
+    unsigned char __thiscall BGSTerrainNode_CheckMeshSolidUnderMe(bool abCheckIfLoadedOnly);
 };
 // @fnv 0x006fea10
 // src: COMMUNITY 0x006fea10
-unsigned char __thiscall FUN_006fea10_Class::BGSTerrainNode_CheckMeshSolid(bool a1)
+// pdb: BGSTerrainNode::CheckMeshSolid | BGSTerrainNode.obj | debug, upstream name already matches, high
+// pdb params: abCheckIfLoadedOnly
+unsigned char __thiscall FUN_006fea10_Class::BGSTerrainNode_CheckMeshSolid(bool abCheckIfLoadedOnly)
 {
     if (*((void**)((char*)this + 0x10)) && ((FUN_00759d80_Class*)*((void**)((char*)this + 0x10)))->AnimatingText_IsDisplayFinished())
         return 1;
     if (*((void**)((char*)this + 0x10)) && ((FORenderedMenu*)*((void**)((char*)this + 0x10)))->GetInitialized())
         return 1;
-    return BGSTerrainNode_CheckMeshSolidUnderMe(a1);
+    return BGSTerrainNode_CheckMeshSolidUnderMe(abCheckIfLoadedOnly);
 }
 
 extern int DAT_011d8794;
@@ -2682,6 +2845,8 @@ struct FUN_006e3e70_Class
 
 // @fnv 0x006e3e70
 // src: GUESS 0x006e3e70 (confidence: low)
+// pdb: BSSimpleArray<PathingAvoidNode,1024>::_InitialSetup | PathingRequest.obj | debug, object-file run extension, low
+// pdb params: aiReserveSize, aiInitialSize
 void __thiscall FUN_006e3e70_Class::ProcessEntries_006e3e70(char* pDst, char* pSrc, unsigned int c)
 {
     if (c <= 0)
@@ -2710,6 +2875,8 @@ struct SaveGameSizeState
 };
 // Resets the size, position and length fields, writes the larger of requested and savedSize, then records savedSize as the position.
 // @fnv 0x006e9670
+// pdb: BSSimpleArray<VirtualPathingNode,1024>::_InitialSetup | PathingSolution.obj | debug, object-file gap fill, medium
+// pdb params: aiReserveSize, aiInitialSize
 void __thiscall SaveGameSizeState::InitSizeState(unsigned int requested, unsigned int savedSize)
 {
     iSize = 0;
@@ -2733,7 +2900,7 @@ struct FUN_006e9700_Class
 {
     virtual void* __thiscall v0();
     virtual int __thiscall v1(unsigned int a1);
-    void __thiscall ConstructArray(int a1, unsigned int a2);
+    void __thiscall BSSimpleArray_PathingNode_1024__ConstructItems(int apFirstAddr, unsigned int aiCount);
     int m_iWordAt04;
     int m_8;
     int m_iThirdValue;
@@ -2741,6 +2908,8 @@ struct FUN_006e9700_Class
 };
 // @fnv 0x006e97a0
 // src: COMMUNITY 0x006e97a0
+// pdb: BSSimpleArray<PathingNode,1024>::_InitialSetup | PathingSolution.obj | debug, object-file run extension, low
+// pdb params: aiReserveSize, aiInitialSize
 void FUN_006e9700_Class::BSSimpleArray_PathingNode_1024_InitialSetup(unsigned int a1, unsigned int a2)
 {
     m_iWordAt04 = 0;
@@ -2755,7 +2924,7 @@ void FUN_006e9700_Class::BSSimpleArray_PathingNode_1024_InitialSetup(unsigned in
     }
     if (a2 > 0)
     {
-        ConstructArray(m_iWordAt04, a2);
+        BSSimpleArray_PathingNode_1024__ConstructItems(m_iWordAt04, a2);
         m_8 = a2;
     }
 }
@@ -2767,15 +2936,18 @@ struct FUN_006ec260_Class
     int m_8;
     int m_iThirdValue;
     int* m_10;
-    bool __thiscall BSTCommonLLMessageQueue_PathingMessage_DoTryPush(int a1);
+    bool __thiscall BSTCommonLLMessageQueue_PathingMessage_DoTryPush(int aMessage);
 };
 // @fnv 0x006ec260
 // src: COMMUNITY 0x006ec260
-bool FUN_006ec260_Class::BSTCommonLLMessageQueue_PathingMessage_DoTryPush(int a1)
+// pdb: BSTCommonLLMessageQueue<PathingMessage>::DoTryPush | PathManager.obj | retail, vtable slot, high
+// pdb params: aMessage
+// pdb locals: pElem, bResult
+bool FUN_006ec260_Class::BSTCommonLLMessageQueue_PathingMessage_DoTryPush(int aMessage)
 {
     bool r6;
     void* p2;
-    if (m_8 && ((FUN_006ecd60_stub*)m_8)->BSTFreeList_Allocate_1(&p2, a1))
+    if (m_8 && ((FUN_006ecd60_stub*)m_8)->BSTFreeList_Allocate_1(&p2, aMessage))
     {
         if (!m_iThirdValue)
             m_10 = (int*)((char*)this + 0xc);
@@ -2842,6 +3014,9 @@ struct FUN_006ed7d0_Class
 };
 // @fnv 0x006ed7d0
 // src: GUESS 0x006ed7d0 (confidence: low)
+// pdb: PathSmoother::CheckLineOfSight | PathSmoother.obj | debug, object-file gap fill, medium
+// pdb params: aiFirstEdgeIndex, aiLastEdgeIndex, aLineStart, aLineEnd
+// pdb locals: i
 bool FUN_006ed7d0_Class::ProcessEntries_006ed7d0(unsigned int uiStartIndex, unsigned int uiEndIndex, const NiPoint3& aPoint1,
                                       const NiPoint3& aPoint2)
 {
@@ -2882,6 +3057,8 @@ struct S5460
 };
 // @fnv 0x006f31f0
 // src: XBOX_PDB 0x006f31f0
+// pdb: BSSimpleArray<ObstacleTaskNavMeshOperation,1024>::AddUninitialized | NavMeshObstacleTask.obj | debug, call graph, medium
+// pdb locals: inewSize
 unsigned int __fastcall BSSimpleArray_TeleportLink_1024_AddUninitialized(S5460* self)
 {
     if (self->BSSimpleArray_NavMeshInfo_1024_ShouldGrow())
@@ -2912,6 +3089,8 @@ struct FUN_006f4e40_Class
     FUN_006f4e40_Class(int a1);
 };
 // @fnv 0x006f4e40
+// pdb: VirtualPathingNode::VirtualPathingNode | VirtualPathingNode.obj | debug, object-file run extension, low
+// pdb params: apNavMeshInfo
 FUN_006f4e40_Class::FUN_006f4e40_Class(int aiValue)
 {
     loc.SetNavMeshInfo(reinterpret_cast<void*>(aiValue));
@@ -2984,6 +3163,7 @@ struct FUN_006f4f90_Class
     FUN_006f4f90_Class(int a1, int a2);
 };
 // @fnv 0x006f4f90
+// pdb: VirtualPathingNode::VirtualPathingNode | VirtualPathingNode.obj | retail, object-file run extension, low
 FUN_006f4f90_Class::FUN_006f4f90_Class(int aiFirst, int aiSecond)
 {
     m_loc.SetNavMeshInfo(reinterpret_cast<void*>(aiSecond));
@@ -3038,6 +3218,8 @@ struct FUN_006f9d90_S
 };
 // Copies all fields of another instance into this one and returns a reference to this object.
 // @fnv 0x006f9d90
+// pdb: BGSDistantTreeBlock::TreeType::operator= | BGSDistantTreeBlock.obj | debug, object-file run extension, low
+// pdb params: __that
 FUN_006f9d90_S& FUN_006f9d90_S::operator=(const FUN_006f9d90_S& aSource)
 {
     m_iWordAt00 = aSource.m_iWordAt00;
@@ -3062,6 +3244,9 @@ struct FakeArray
     void __thiscall ResizeAndFill(unsigned int a1, unsigned int a2);
 };
 // @fnv 0x006f9f60
+// pdb: BSSimpleArray<BGSDistantTreeBlock::InstanceData,1024>::_DestructItems | BGSDistantTreeBlock.obj | debug, object-file run extension, low
+// pdb params: apFirstAddr, aiCount
+// pdb locals: i
 void __thiscall FakeArray::ResizeAndFill(unsigned int auiCapacity, unsigned int auiFillSize)
 {
     m_iWordAt04 = 0;
@@ -3089,7 +3274,7 @@ struct FUN_006fb170_Class
 };
 struct FUN_006fb3d0_Class
 {
-    void __thiscall BGSTerrainChunk_RemoveWaterFromSystem(int a1);
+    void __thiscall BGSTerrainChunk_RemoveWaterFromSystem(int abForce);
 };
 struct ListNode_680910
 {
@@ -3098,6 +3283,9 @@ struct ListNode_680910
 };
 // If the flag differs from DAT_0119f154, walks the g_011d8624 list calling UpdateWaterReferences or FUN_006fb3d0 on each entry, then stores the flag.
 // @fnv 0x006fa920
+// pdb: BGSTerrainChunk::EnableLODWaterProcessing | BGSTerrainChunk.obj | retail, object-file run extension, low
+// pdb params: abEnable
+// pdb locals: pkList, item
 void SetSoundListFlag(unsigned char a1)
 {
     if (DAT_0119f154 == a1)
@@ -3137,6 +3325,8 @@ struct FUN_006edce0_Class
 // Calls GetItem on the four perk lists, invokes FUN_006f2510 with (0, 0, a1), and returns this.
 // @fnv 0x006edce0
 // src: GUESS 0x006edce0 (confidence: low)
+// pdb: PathSmoother::UniqueVert::UniqueVert | PathSmoother.obj | debug, object-file gap fill, medium
+// pdb params: apHeap
 FUN_006edce0_Class* FUN_006edce0_Class::ProcessAndReturnValue_006edce0(int a1)
 {
     l0.GetItem();
@@ -3153,6 +3343,9 @@ struct FUN_006f2bb0_Class : public BSSimpleArray<PathingLocation, 1024>
 };
 // Destructor that clears the PathingLocation array before destroying its base.
 // @fnv 0x006f2bb0
+// pdb: BSSimpleArray<PathingLocation,1024>::Clear | NavMeshSearchMultipleGoals.obj | retail, call graph (shared callers), low
+// pdb note: debug build links it to BSScrapArray<PathingLocation,1024>::~BSScrapArray<PathingLocation,1024>
+// pdb params: abFreeMemory
 FUN_006f2bb0_Class::~FUN_006f2bb0_Class()
 {
     Clear(true);
@@ -3175,6 +3368,9 @@ struct FUN_006f46f0_Node
 };
 // Scans 20 slots of a1 for the first non-null node, unlinks it (replacing the slot with its m_2c child), clears its m_28/m_2c, and returns it.
 // @fnv 0x006f46f0
+// pdb: BSSimpleArray<AStarNode<ParentSpaceNode,TeleportLink> *,1024>::_ReallocateBuffer | TeleportDoorSearch.obj | debug, object-file run extension, low
+// pdb params: aiNewSize, aiCopyCount
+// pdb locals: pnewBuffer
 FUN_006f46f0_Node* __fastcall PopFirstNode(FUN_006f46f0_Node* a1)
 {
     FUN_006f46f0_Node* result = 0;
@@ -3216,6 +3412,8 @@ struct SizeState
     void __thiscall ResetAndWrite(unsigned int requested, unsigned int savedSize);
 };
 // @fnv 0x006f4c40
+// pdb: TeleportPath::~TeleportPath | TeleportPath.obj | retail, object-file run extension, low
+// pdb note: debug build links it to BSSimpleArray<ParentSpaceNode,1024>::_InitialSetup
 void __thiscall SizeState::ResetAndWrite(unsigned int requested, unsigned int savedSize)
 {
     iSize = 0;
@@ -3247,6 +3445,7 @@ struct FUN_006f4f00_Class
     FUN_006f4f00_Class(int a1, int a2, int a3);
 };
 // @fnv 0x006f4f00
+// pdb: VirtualPathingNode::VirtualPathingNode | VirtualPathingNode.obj | retail, object-file run extension, low
 FUN_006f4f00_Class::FUN_006f4f00_Class(int a1, int a2, int a3)
 {
     m_loc.SetNavMeshInfo(reinterpret_cast<void*>(a1));
@@ -3301,6 +3500,9 @@ struct FUN_006f9eb0_Class
 };
 // @fnv 0x006f9eb0
 // src: COMMUNITY 0x006f9eb0
+// pdb: BSSimpleArray<BGSDistantTreeBlock::InstanceData,1024>::_ConstructItems | BGSDistantTreeBlock.obj | debug, object-file run extension, low
+// pdb params: apFirstAddr, aiCount
+// pdb locals: i
 void FUN_006f9eb0_Class::BSSimpleArray_Resize_0(unsigned int auiKey, unsigned int b)
 {
     if (m)
@@ -3337,6 +3539,8 @@ struct FUN_006fa180_StandIn
 
 // @fnv 0x006fa180
 // src: GUESS 0x006fa180 (confidence: low)
+// pdb: BSSimpleArray<BGSDistantTreeBlock::TreeType,1024>::_InitialSetup | BGSDistantTreeBlock.obj | debug, object-file run extension, low
+// pdb params: aiReserveSize, aiInitialSize
 void FUN_006fa180_StandIn::UpdateFields_006fa180(unsigned int requested, unsigned int savedSize)
 {
     m_iElementCount = 0;
@@ -3360,7 +3564,7 @@ void FUN_006fa180_StandIn::UpdateFields_006fa180(unsigned int requested, unsigne
 
 struct Unk006fec90
 {
-    int GetActiveMenu(int a1);
+    int BGSTerrainNode_GetChunkForPoint(int aPoint);
 };
 struct Unk006fec00
 {
@@ -3368,7 +3572,7 @@ struct Unk006fec00
 };
 struct Unk006fec90_Class
 {
-    int GetActiveMenu(int a1);
+    int BGSTerrainNode_GetChunkForPoint(int aPoint);
     bool BGSTerrainNode_GetPointIsInNode(int a1);
     int m_iWordAt00;
     int m_cByteAtOffset1;
@@ -3381,10 +3585,14 @@ struct Unk006fec90_Class
     Unk006fec90* m_pItems[4];
 };
 // @fnv 0x006fec90
-int Unk006fec90_Class::GetActiveMenu(int a1)
+// src: XBOX_RETAIL_PDB 0x006fec90
+// pdb: BGSTerrainNode::GetChunkForPoint | BGSTerrainNode.obj | retail, object-file run extension, high
+// pdb params: aPoint
+// pdb locals: pchunk, i
+int Unk006fec90_Class::BGSTerrainNode_GetChunkForPoint(int aPoint)
 {
     int result = 0;
-    if (BGSTerrainNode_GetPointIsInNode(a1))
+    if (BGSTerrainNode_GetPointIsInNode(aPoint))
     {
         if (m_pMenu && m_pMenu->GetInitialized() && !((unsigned char*)this)[0x5d])
         {
@@ -3394,7 +3602,7 @@ int Unk006fec90_Class::GetActiveMenu(int a1)
         {
             for (int i = 0; i < 4; i++)
             {
-                result = m_pItems[i]->GetActiveMenu(a1);
+                result = m_pItems[i]->BGSTerrainNode_GetChunkForPoint(aPoint);
                 if (result)
                     break;
             }
@@ -3484,19 +3692,22 @@ struct FUN_006ec5b0_Class
     unsigned int m_40c;
     unsigned int m_uiEdgeIndex;
 
-    bool __thiscall UpdateState_006ec5b0(Helper62d0* a1);
+    bool __thiscall UpdateState_006ec5b0(Helper62d0* aMessage);
 };
 
 // @fnv 0x006ec5b0
 // src: GUESS 0x006ec5b0 (confidence: low)
-bool __thiscall FUN_006ec5b0_Class::UpdateState_006ec5b0(Helper62d0* a1)
+// pdb: BSTCommonStaticMessageQueue<NiPointer<NiAVObject>,256>::DoTryPop | PathManager.obj | retail, vtable slot, high
+// pdb params: aMessage
+// pdb locals: bResult, ppopmessage
+bool __thiscall FUN_006ec5b0_Class::UpdateState_006ec5b0(Helper62d0* aMessage)
 {
     bool result = m_uiItemCount > 0;
 
     if (result == true)
     {
         Elem4* pElement = &m_queue[m_uiEdgeIndex];
-        a1->operator=(*reinterpret_cast<const Helper62d0*>(pElement));
+        aMessage->operator=(*reinterpret_cast<const Helper62d0*>(pElement));
         pElement->FUN_008228f0(0);
         m_uiEdgeIndex++;
         m_uiEdgeIndex %= 0x100;
@@ -3519,6 +3730,7 @@ struct FUN_006ee050_Class
 };
 
 // @fnv 0x006ee050
+// pdb: PathSmoother::BoundsEdge::BoundsEdge | PathSmoother.obj | debug, object-file gap fill, medium
 FUN_006ee050_Class::FUN_006ee050_Class()
 {}
 
@@ -3530,12 +3742,15 @@ struct FUN_006f02e0_Node
 
 struct FUN_006f02e0_Class
 {
-    void CopyNodePositions();
+    void PathSmoother_SetLeftRightShrunkLocations();
 };
 
 // For each element of the array at offset 0x90, copies a point from p0+0x0c into the node at +0x20 and a point from p1+0x0c into the node at +0x2c.
 // @fnv 0x006f02e0
-void FUN_006f02e0_Class::CopyNodePositions()
+// src: XBOX_DEBUG_PDB 0x006f02e0
+// pdb: PathSmoother::SetLeftRightShrunkLocations | PathSmoother.obj | debug, call graph, high
+// pdb locals: i
+void FUN_006f02e0_Class::PathSmoother_SetLeftRightShrunkLocations()
 {
     for (int i = 0; i < reinterpret_cast<BlkOffset08View*>(reinterpret_cast<unsigned char*>(this) + 0x90)->GetFlags(); ++i)
     {
@@ -3564,6 +3779,9 @@ void FUN_006f02e0_Class::CopyNodePositions()
 }
 
 // @fnv 0x006f23d0
+// pdb: BSSimpleArray<PathSmoother::UniqueVert *,1024>::Insert | PathSmoother.obj | debug, call graph, medium
+// pdb params: aiIndex, aValue
+// pdb locals: inewSize, pnewBuffer
 template <> void BSSimpleArray<void*, 1024>::Insert(unsigned int index, void*& value)
 {
     if (index == iSize)
@@ -3663,6 +3881,9 @@ struct FUN_006f4230_Class
 };
 
 // @fnv 0x006f4230
+// pdb: AStarSearch<ParentSpaceNode,TeleportLink>::GetPathToNode | TeleportDoorSearch.obj | debug, call graph, medium
+// pdb params: apFinalNode, apReturnArray, apReturnLinkArray
+// pdb locals: icount, iindex, pcurrent
 bool __thiscall FUN_006f4230_Class::CopyNodeListToArrays(FUN_006f4230_Node* pNodeList, H2* pEdgeArr,
                                                          FUN_006f4480_Class* pExtraArr)
 {
@@ -3759,6 +3980,7 @@ struct FUN_006f47f0_Class
 
 // Initializes the object: zeroes two floats, calls FUN_006d5320 on the sub-object at offset 0x14, and zeroes five int fields from 0x24 to 0x34, returning this.
 // @fnv 0x006f47f0
+// pdb: AStarNode<ParentSpaceNode,TeleportLink>::AStarNode<ParentSpaceNode,TeleportLink> | TeleportDoorSearch.obj | debug, object-file run extension, low
 FUN_006f47f0_Class* __thiscall FUN_006f47f0_Class::Constructor()
 {
     *(float*)this = 0.0f;
@@ -3812,6 +4034,7 @@ struct TargetObject
 // Passes the four entry fields to methods on the object held by m_idle, clears m_idle, sets m_flag, and calls FUN_00929260(1) on the m_go object.
 // @fnv 0x006fa990
 // src: COMMUNITY 0x006fa990
+// pdb: BGSTerrainChunk::OnLoadFinished | BGSTerrainChunk.obj | retail, upstream name already matches, high
 void TargetObject::BGSTerrainChunk_OnLoadFinished()
 {
     reinterpret_cast<TargetObject*>(this->m_idle.operator unsigned int())->AssignValue(&this->m_entry4);
@@ -3852,20 +4075,23 @@ struct FUN_006fe920_Class
     FUN_006fea10_Class* m_object28;
     FUN_006fea10_Class* m_object2c;
 
-    bool __thiscall BGSTerrainNode_CheckMeshSolidUnderMe(bool value);
+    bool __thiscall BGSTerrainNode_CheckMeshSolidUnderMe(bool abCheckIfLoadedOnly);
 };
 
 // @fnv 0x006fe920
 // src: COMMUNITY 0x006fe920
-bool __thiscall FUN_006fe920_Class::BGSTerrainNode_CheckMeshSolidUnderMe(bool value)
+// pdb: BGSTerrainNode::CheckMeshSolidUnderMe | BGSTerrainNode.obj | retail, upstream name already matches, high
+// pdb params: abCheckIfLoadedOnly
+// pdb locals: bsolid
+bool __thiscall FUN_006fe920_Class::BGSTerrainNode_CheckMeshSolidUnderMe(bool abCheckIfLoadedOnly)
 {
     if (m_iValueAtOffset04 == m_terrainManager->GetMinLevel())
     {
         return false;
     }
 
-    bool result = this->m_object20->BGSTerrainNode_CheckMeshSolid(value) && this->m_object24->BGSTerrainNode_CheckMeshSolid(value) &&
-                  this->m_object28->BGSTerrainNode_CheckMeshSolid(value) && this->m_object2c->BGSTerrainNode_CheckMeshSolid(value);
+    bool result = this->m_object20->BGSTerrainNode_CheckMeshSolid(abCheckIfLoadedOnly) && this->m_object24->BGSTerrainNode_CheckMeshSolid(abCheckIfLoadedOnly) &&
+                  this->m_object28->BGSTerrainNode_CheckMeshSolid(abCheckIfLoadedOnly) && this->m_object2c->BGSTerrainNode_CheckMeshSolid(abCheckIfLoadedOnly);
 
     if (static_cast<short>(reinterpret_cast<const TESActorBaseData*>(this)->TESActorBaseData::GetFatigue()) > 40 ||
         static_cast<short>(reinterpret_cast<const TESActorBaseData*>(this)->TESActorBaseData::GetFatigue()) < -40)
@@ -3884,12 +4110,12 @@ bool __thiscall FUN_006fe920_Class::BGSTerrainNode_CheckMeshSolidUnderMe(bool va
 
 struct FUN_006fed30_Callee
 {
-    int __thiscall BGSTerrainNode_GetTreeBlockForPoint(int a1);
+    int __thiscall BGSTerrainNode_GetTreeBlockForPoint(int aPoint);
 };
 
 struct FUN_006fed30_Class
 {
-    int __thiscall BGSTerrainNode_GetTreeBlockForPoint(int a1);
+    int __thiscall BGSTerrainNode_GetTreeBlockForPoint(int aPoint);
 };
 
 struct LocalUnk006fec90_Class
@@ -3906,11 +4132,14 @@ void* __cdecl retn8();
 
 // @fnv 0x006fed30
 // src: XBOX_PDB 0x006fed30
-int FUN_006fed30_Class::BGSTerrainNode_GetTreeBlockForPoint(int a1)
+// pdb: BGSTerrainNode::GetTreeBlockForPoint | BGSTerrainNode.obj | retail, upstream name already matches, high
+// pdb params: aPoint
+// pdb locals: ptrees, i
+int FUN_006fed30_Class::BGSTerrainNode_GetTreeBlockForPoint(int aPoint)
 {
     int result = 0;
 
-    if (reinterpret_cast<LocalUnk006fec90_Class*>(this)->BGSTerrainNode_GetPointIsInNode(a1))
+    if (reinterpret_cast<LocalUnk006fec90_Class*>(this)->BGSTerrainNode_GetPointIsInNode(aPoint))
     {
         if (reinterpret_cast<LocalBSSimpleList*>(this)->GetNext() == retn8() &&
             *reinterpret_cast<int*>(reinterpret_cast<char*>(this) + 0x18) != 0)
@@ -3925,7 +4154,7 @@ int FUN_006fed30_Class::BGSTerrainNode_GetTreeBlockForPoint(int a1)
                 {
                     result =
                         reinterpret_cast<FUN_006fed30_Callee**>(reinterpret_cast<char*>(this) + 0x20)[i]->BGSTerrainNode_GetTreeBlockForPoint(
-                            a1);
+                            aPoint);
                     if (result != 0)
                         break;
                 }
@@ -3983,6 +4212,8 @@ struct FUN_006ee5d0_Class
 };
 
 // @fnv 0x006ee5d0
+// pdb: PathSmoother::AddGoalVert | PathSmoother.obj | debug, object-file gap fill, medium
+// pdb locals: node, pleftBoundsEdge, prightBoundsEdge, pgoalVert
 void FUN_006ee5d0_Class::CreateNavMeshEdges()
 {
     void* p = AllocateStorage_006edc40(this);
@@ -4056,6 +4287,9 @@ struct FUN_006f28a0_Class
 // Inserts a PathingLocation at index, growing the array if needed and shifting existing elements to make room.
 // @fnv 0x006f28a0
 // src: GUESS 0x006f28a0 (confidence: medium)
+// pdb: BSSimpleArray<PathingLocation,1024>::Insert | PathSmoother.obj | debug, object-file run extension, low
+// pdb params: aiIndex, aValue
+// pdb locals: inewSize, pnewBuffer
 void FUN_006f28a0_Class::InsertPathingLocation(unsigned int index, PathingLocation* location)
 {
     unsigned int count;
@@ -4118,6 +4352,9 @@ struct FUN_006e0f20_Class
 
 // Initializes the hash table: stores the hash size, allocates a zeroed pointer table of that size, and resets the entry count.
 // @fnv 0x006e0f20
+// pdb: NiTMapBase<DFALL<NiTMapItem<unsigned int,PathingLOSGrid *> >,unsigned int,PathingLOSGrid *>::NiTMapBase<DFALL<NiTMapItem<unsigned int,PathingLOSGrid *> >,unsigned int,PathingLOSGrid *> | PathingLOSGridMap.obj | debug, object-file run extension, low
+// pdb params: uiHashSize
+// pdb locals: uiSize
 FUN_006e0f20_Class* FUN_006e0f20_Class::ConstructHashTable(unsigned int hashSize)
 {
     m_ppVirtualMethodTable = &DAT_0106ced8;
@@ -4144,6 +4381,8 @@ struct FUN_006e12c0_Class
     void __thiscall SetData(int newData, int searchKey);
 };
 // @fnv 0x006e12c0
+// pdb: PathingLOSMap::PathingLOSMap | PathingLOSMap.obj | retail, object-file run extension, low
+// pdb params: aCenter, afRadius
 void FUN_006e12c0_Class::SetData(int aiData, int aiKey)
 {
     if (currentData)
@@ -4213,6 +4452,8 @@ struct FUN_006e1370 : FUN_004968b0
 };
 // Initializes the object with a position and size, zeroes the value fields, and constructs the items container with 37 elements.
 // @fnv 0x006e1370
+// pdb: PathingLOSMap::~PathingLOSMap | PathingLOSMap.obj | retail, object-file run extension, low
+// pdb note: debug build links it to PathingLOSMap::PathingLOSMap
 FUN_006e1370::FUN_006e1370(Position3 aPosition, float afSize) : FUN_004968b0(), items(37), range()
 {
     position = aPosition;
@@ -4251,33 +4492,36 @@ struct FUN_006e3d30_cls
     int m_04;
     int m_08;
     int m_0c;
-    void BSSimpleArray_PathingAvoidNode_1024_ReallocateBuffer(int a1, int a2);
+    void BSSimpleArray_PathingAvoidNode_1024_ReallocateBuffer(int aiNewSize, int aiCopyCount);
     void ProcessEntries_006e3e70(int a, int b, int c);
     void FUN_006a8500();
 };
 
 // @fnv 0x006e3d30
 // src: XBOX_PDB 0x006e3d30
-void FUN_006e3d30_cls::BSSimpleArray_PathingAvoidNode_1024_ReallocateBuffer(int a1, int a2)
+// pdb: BSSimpleArray<PathingAvoidNode,1024>::_ReallocateBuffer | PathingRequest.obj | debug, call graph, high
+// pdb params: aiNewSize, aiCopyCount
+// pdb locals: pnewBuffer
+void FUN_006e3d30_cls::BSSimpleArray_PathingAvoidNode_1024_ReallocateBuffer(int aiNewSize, int aiCopyCount)
 {
     if (m_04 != 0)
     {
-        if (a2 == m_0c)
+        if (aiCopyCount == m_0c)
         {
-            m_04 = v3(m_04, a1);
+            m_04 = v3(m_04, aiNewSize);
         }
         else
         {
-            int t = v1(a1);
-            ProcessEntries_006e3e70(t, m_04, a2);
+            int t = v1(aiNewSize);
+            ProcessEntries_006e3e70(t, m_04, aiCopyCount);
             FUN_006a8500();
             m_04 = t;
         }
     }
     else
     {
-        m_04 = v1(a1);
-        m_0c = a1;
+        m_04 = v1(aiNewSize);
+        m_0c = aiNewSize;
     }
 }
 
@@ -4383,7 +4627,7 @@ struct Child80_s
     void SetParent(void* a1);
     void SetChild(Child84_s* a1);
 };
-void* __cdecl HeapAlloc_s(unsigned int align, unsigned int size);
+void* __cdecl HeapAlloc_s(unsigned int acAlignment, unsigned int aSize);
 void* __cdecl operator new(unsigned int, void*);
 void __cdecl operator delete(void*, void*);
 
@@ -4424,11 +4668,14 @@ struct PathObj_s
     Child80_s* m_child80;
     Child84_s* m_child84;
     void Setup();
-    bool SetupFromCellWorld();
+    bool PathingSearchRayCast_InitRayCasts();
 };
 
 // @fnv 0x006e6c00
-bool PathObj_s::SetupFromCellWorld()
+// src: XBOX_DEBUG_PDB 0x006e6c00
+// pdb: PathingSearchRayCast::InitRayCasts | PathingSearchRayCast.obj | debug, call graph, high
+// pdb locals: pcell, filter
+bool PathObj_s::PathingSearchRayCast_InitRayCasts()
 {
     TESObjectCELL_s* pCell = m_holder->GetLocationPointer()->GetContainingCell();
     if (pCell == 0)
@@ -4457,7 +4704,7 @@ class FUN_006e6db0_ObjectBase
     virtual void Release(int flags);
 };
 
-void FreeObjectMemory(void* p);
+void FreeObjectMemory(void* apPtr);
 
 class FUN_006e6db0_cls
 {
@@ -4504,6 +4751,7 @@ class FUN_006e6db0_cls
 // Flushes children, then releases and frees m_84 and frees m_80, clearing both pointers.
 // @fnv 0x006e6db0
 // src: COMMUNITY 0x006e6db0
+// pdb: PathingSearchRayCast::CleanUpRayCasts | PathingSearchRayCast.obj | retail, upstream name already matches, high
 void FUN_006e6db0_cls::PathingSearchRayCast_CleanUpRayCasts()
 {
     FlushChildren();
@@ -4646,6 +4894,8 @@ struct FUN_006e7190_cls
 
 // Ticks m_80's helper and m_84, increments m_88, calls Foo and Bar on m_80, then returns false if m_7c->Check(m_80) is nonzero, otherwise true.
 // @fnv 0x006e7190
+// pdb: PathingSearchRayCast::UnderWaterRayCast | PathingSearchRayCast.obj | debug, object-file run extension, low
+// pdb params: aStart, aGoal
 bool FUN_006e7190_cls::UpdateAndCheck(void* a1, void* a2)
 {
     m_80->m_30.Tick();
@@ -4705,16 +4955,19 @@ struct FUN_006f4cd0
 };
 struct FUN_006e95d0_Class
 {
-    void __thiscall BSSimpleArray_VirtualPathingNode_1024_ConstructItems(FUN_006f4cd0* destination, unsigned int count);
+    void __thiscall BSSimpleArray_VirtualPathingNode_1024_ConstructItems(FUN_006f4cd0* apFirstAddr, unsigned int aiCount);
 };
 // Constructs count FUN_006f4cd0 objects in place at destination using placement new.
 // @fnv 0x006e95d0
 // src: COMMUNITY 0x006e95d0
-void FUN_006e95d0_Class::BSSimpleArray_VirtualPathingNode_1024_ConstructItems(FUN_006f4cd0* destination, unsigned int count)
+// pdb: BSSimpleArray<VirtualPathingNode,1024>::_ConstructItems | PathingSolution.obj | debug, call graph, high
+// pdb params: apFirstAddr, aiCount
+// pdb locals: i
+void FUN_006e95d0_Class::BSSimpleArray_VirtualPathingNode_1024_ConstructItems(FUN_006f4cd0* apFirstAddr, unsigned int aiCount)
 {
-    for (unsigned int i = 0; i < count; ++i)
+    for (unsigned int i = 0; i < aiCount; ++i)
     {
-        new (destination + i) FUN_006f4cd0;
+        new (apFirstAddr + i) FUN_006f4cd0;
     }
 }
 
@@ -4749,6 +5002,7 @@ class FUN_006ec000 : public FUN_006ecc40
 
 // Constructs the object and initializes its 256-entry nodes table via InitElementList.
 // @fnv 0x006ec000
+// pdb: BSTStaticFreeList<PathingMessage,256>::BSTStaticFreeList<PathingMessage,256> | PathManager.obj | debug, object-file run extension, low
 FUN_006ec000::FUN_006ec000()
 {
     InitElementList(256, nodes);
@@ -4788,18 +5042,21 @@ struct FUN_006ec2e0_Class
     int unk04;
     FUN_006ec2e0_Free* freeList;
     FUN_006ec2e0_Elem* head;
-    bool __thiscall PopHead(FUN_006ec2e0_Out* a1);
+    bool __thiscall PopHead(FUN_006ec2e0_Out* aMessage);
 };
 
 // If the list has a head element, passes its value to a1, advances head to next, frees the old head, and returns true; otherwise returns false.
 // @fnv 0x006ec2e0
-bool FUN_006ec2e0_Class::PopHead(FUN_006ec2e0_Out* pOut)
+// pdb: BSTCommonLLMessageQueue<PathingMessage>::DoTryPop | PathManager.obj | retail, vtable slot, high
+// pdb params: aMessage
+// pdb locals: pElem, bResult
+bool FUN_006ec2e0_Class::PopHead(FUN_006ec2e0_Out* aMessage)
 {
     bool bPopped;
     FUN_006ec2e0_Elem* tmp = head;
     if (tmp)
     {
-        pOut->AssignFields_006eaa00(tmp->FUN_006815c0());
+        aMessage->AssignFields_006eaa00(tmp->FUN_006815c0());
         head = tmp->next;
         freeList->PrepareNodeAndPushFront(tmp);
         bPopped = true;
@@ -4834,6 +5091,9 @@ class FUN_006ec4b0_cls
 };
 
 // @fnv 0x006ec4b0
+// pdb: NiPointer<NiAVObject>::`scalar deleting destructor' | PathManager.obj | retail, object-file run extension, low
+// pdb note: debug build links it to BSTCommonStaticMessageQueue<NiPointer<NiAVObject>,256>::DoTryPush
+// pdb params: this
 unsigned char FUN_006ec4b0_cls::PushItem(void* arg)
 {
     unsigned char bPushed = (m_uiItemCount < 0x100) ? 1 : 0;
@@ -5094,6 +5354,9 @@ struct FUN_006edd30_shell
 };
 // @fnv 0x006edd30
 // src: GUESS 0x006edd30 (confidence: low)
+// pdb: PathSmoother::AddFirstEdge | PathSmoother.obj | debug, object-file gap fill, medium
+// pdb params: aLeftLocation, aRightLocation
+// pdb locals: pleftVert, prightVert, prevTriNormal, pnewPathEdge, link, prightEdge, pleftEdge, nextTriNormal
 void FUN_006edd30_shell::UpdateState_006edd30(const NiPoint3* start, const NiPoint3* finish)
 {
     Location_006edd30* startLocation2 = AllocateStorage_006edc40();
@@ -5178,6 +5441,8 @@ struct FUN_006edfc0_Host
 };
 // Allocates 0x1c bytes from the allocator and placement-constructs a FUN_006ee050_Size28 in it, returning the memory.
 // @fnv 0x006edfc0
+// pdb: PathSmoother::CreateBoundsEdge | PathSmoother.obj | debug, object-file gap fill, medium
+// pdb locals: pedge
 void* FUN_006edfc0_Host::CreateSize28()
 {
     void* memory = allocator.Allocate(0x1c, DAT_010a2720);
@@ -5208,6 +5473,8 @@ struct FUN_006ee070_cls
 
 // Allocates 0x58 bytes from the heap, constructs a FUN_006ee070_obj in place, and returns the pointer.
 // @fnv 0x006ee070
+// pdb: PathSmoother::CreatePathEdge | PathSmoother.obj | debug, object-file gap fill, medium
+// pdb locals: pedge
 void* __thiscall FUN_006ee070_cls::CreateObject()
 {
     void* mem = m_pStreamAllocator.Allocate(0x58, DAT_010a2720);
@@ -5272,6 +5539,9 @@ struct FUN_006ee740_Class
 };
 // Splits the node at index into two nodes joined by a bridge edge, redistributing edges and creating a new edge at the split index.
 // @fnv 0x006ee740
+// pdb: PathSmoother::DuplicateVert | PathSmoother.obj | debug, object-file gap fill, medium
+// pdb params: aiVertIndex, abLeft, aPreviousVertNewLocation, aNewVertLocation
+// pdb locals: iprevPathEdgeIndex, pnewPathEdge, pnewVert, pboundsEdge, iEdgeCount, poriginalVert, iHalfEdgeCount, i
 Node* FUN_006ee740_Class::SplitNode(unsigned index, bool side, const NiPoint3& start, const NiPoint3& end)
 {
     Node* old = side ? nodesA.FUN_00877a30(index) : nodesB.FUN_00877a30(index);
@@ -5384,6 +5654,9 @@ struct FUN_006eec00_Class
     void SetEntry(unsigned int index, void* value, unsigned char usePrimary);
 };
 // @fnv 0x006eec00
+// pdb: PathSmoother::InsertBoundsEdge | PathSmoother.obj | debug, object-file gap fill, medium
+// pdb params: aiInsertIndex, apEdge, abLeft
+// pdb locals: i
 void FUN_006eec00_Class::SetEntry(unsigned int index, void* value, unsigned char usePrimary)
 {
     if (usePrimary)
@@ -5439,6 +5712,9 @@ struct FUN_006eecc0_Owner
     void __thiscall AssignRecordIndices(unsigned int first, unsigned int last);
 };
 // @fnv 0x006eecc0
+// pdb: PathSmoother::InsertPathEdge | PathSmoother.obj | debug, object-file gap fill, medium
+// pdb params: aiInsertIndex, apEdge
+// pdb locals: i
 void __thiscall FUN_006eecc0_Owner::AssignRecordIndices(unsigned int first, unsigned int last)
 {
     reinterpret_cast<IndexCollection*>(reinterpret_cast<char*>(this) + 0x90)->FUN_006f23d0(first, &last);
@@ -5475,6 +5751,8 @@ struct F08
 };
 // @fnv 0x006eef80
 // src: COMMUNITY 0x006eef80
+// pdb: PathSmoother::BuildShrunkEdgeLeftRightArrays | PathSmoother.obj | retail, upstream name already matches, high
+// pdb locals: i
 void F08::PathSmoother_BuildShrunkEdgeLeftRightArrays()
 {
     unk40.GetFirstForm()->copy = unk40.GetFirstForm()->original;
@@ -5523,6 +5801,8 @@ struct Host_6f03a0
 // For each element in arr90, sets pos08 to the sum of pos20 and pos2c scaled by DAT_01016248.
 // @fnv 0x006f03a0
 // src: COMMUNITY 0x006f03a0
+// pdb: PathSmoother::ComputeCenters | PathSmoother.obj | debug, upstream name already matches, high
+// pdb locals: i
 void Host_6f03a0::PathSmoother_ComputeCenters()
 {
     for (unsigned int i = 0; i < arr90.GetSize(); ++i)
@@ -5541,6 +5821,7 @@ namespace fnv_006f1d30 {
 float __cdecl BSMIN(float a, float b);
 extern float DAT_01016248;
 
+// pdb: class PathSmoother, size 0xb8 (here 0x68), 15 members
 struct PathSmoother
 {
     int unk00;
@@ -5592,6 +5873,8 @@ struct FUN_006f2510 : S_006f2510_Base
 };
 
 // @fnv 0x006f2510
+// pdb: BSScrapArray<PathSmoother::PathEdge *,1024>::BSScrapArray<PathSmoother::PathEdge *,1024> | PathSmoother.obj | debug, call graph (shared callers), medium
+// pdb params: aiReserveSize, aiInitialSize, apHeap
 FUN_006f2510::FUN_006f2510(unsigned int a, unsigned int b, void* heap)
 {
     unk10 = heap ? heap : MemoryManager::Instance().GetGeneralAllocator();
@@ -5631,6 +5914,9 @@ struct LOSArray6f29e0
 
 // Removes count elements starting at index from the array, optionally shrinking capacity, and updates the element count.
 // @fnv 0x006f29e0
+// pdb: BSSimpleArray<PathingLocation,1024>::RemoveRange | PathSmoother.obj | debug, object-file run extension, low
+// pdb params: aiIndex, aiHowMany, abShrink
+// pdb locals: inewSize, pnewBuffer
 void LOSArray6f29e0::RemoveRange(unsigned int index, unsigned int count, bool shrink)
 {
     if (count >= m_iElementCount)
@@ -5682,6 +5968,8 @@ struct FUN_006f2ca0_cls : Base_b9887
 
 // Stores the general allocator in m_i10, then calls FUN_0069b940 with a1 twice.
 // @fnv 0x006f2ca0
+// pdb: BSScrapArray<bool,1024>::BSScrapArray<bool,1024> | PathSmoother.obj | retail, object-file run extension, low
+// pdb params: aiInitialSize
 FUN_006f2ca0_cls::FUN_006f2ca0_cls(int a1)
 {
     *(void**)this = &DAT_0106c990;
@@ -5708,6 +5996,7 @@ struct FUN_006f2d80 : public B31c0
 };
 // Sets the vtable pointer, stores the general allocator in m_10, then calls InitBuffer with 0, 0.
 // @fnv 0x006f2d80
+// pdb: BSScrapArray<PathSmoother::AvoidNode,1024>::BSScrapArray<PathSmoother::AvoidNode,1024> | PathSmoother.obj | debug, object-file run extension, low
 FUN_006f2d80::FUN_006f2d80() : B31c0()
 {
     *(void**)this = &DAT_0106d878;
@@ -6007,6 +6296,7 @@ class FUN_006f33b0_cls : public Base_6f33b0
 
 // Empty constructor for the class; the base and member subobjects are initialized by their own constructors.
 // @fnv 0x006f33b0
+// pdb: TeleportDoorSearch::TeleportDoorSearch | TeleportDoorSearch.obj | retail, call graph, high
 FUN_006f33b0_cls::FUN_006f33b0_cls()
 {}
 
@@ -6049,6 +6339,7 @@ struct FUN_006f3bd0
 };
 
 // @fnv 0x006f3bd0
+// pdb: AStarSearch<ParentSpaceNode,TeleportLink>::AStarSearch<ParentSpaceNode,TeleportLink> | TeleportDoorSearch.obj | debug, call graph, medium
 FUN_006f3bd0::FUN_006f3bd0() : m_ppVirtualMethodTable(&DAT_0106d90c), m_uiItemCount(0), m_pRayCursor(0), m_uiEdgeIndex(0), m_sState(0)
 {}
 
@@ -6330,6 +6621,9 @@ struct S_006f3d00_Obj
 
 // @fnv 0x006f3d00
 // src: COMMUNITY 0x006f3d00
+// pdb: AStarSearch<ParentSpaceNode,TeleportLink>::AddStartNode | TeleportDoorSearch.obj | debug, object-file gap fill, medium
+// pdb params: aiKey, aNodeData, afHeuristic
+// pdb locals: pastarNode
 S_006f3d00_Node* S_006f3d00_Obj::AStarSearch_ParentSpaceNode_TeleportLink_AddStartNode(int key, NiPoint3* pos, float afValue)
 {
     S_006f3d00_Node* node;
@@ -6394,6 +6688,7 @@ class FUN_006f4790_cls
 
 // Reads p's value; returns 0x13 if it is at least m_00, otherwise returns the value scaled by DAT_010356e8 divided by m_00.
 // @fnv 0x006f4790
+// pdb: BSSimpleArray<AStarNode<ParentSpaceNode,TeleportLink> *,1024>::_DeallocateBuffer | TeleportDoorSearch.obj | debug, object-file run extension, low
 unsigned int FUN_006f4790_cls::GetScaledValue(SpawnedArg* pSpawnedArg)
 {
     float f = pSpawnedArg->GetValue();
@@ -6477,7 +6772,7 @@ struct DTB_Array
 struct DTB_MemContext
 {
     int unk00;
-    DTB_MemContext(MEM_CONTEXT ctx, bool b, const char* file, int line);
+    DTB_MemContext(MEM_CONTEXT memContext, bool overridable, const char* file, int aiLine);
     ~DTB_MemContext();
 };
 
@@ -6522,6 +6817,9 @@ struct FUN_006f7540
 };
 
 // @fnv 0x006f7540
+// pdb: BGSDistantTreeBlock::BGSDistantTreeBlock | BGSDistantTreeBlock.obj | debug, object-file run extension, low
+// pdb params: apNode, auiLevel, asCellX, asCellY
+// pdb locals: tempMemContext, pworld
 FUN_006f7540::FUN_006f7540(DTB_Ref* ref, int lod, short x, short y) : m_spTask(0), m_mapA(0x25), m_mapB(0x25)
 {
     DTB_MemContext ctx(
@@ -6579,7 +6877,7 @@ struct Sub_b9266D
 struct Helper_b9266
 {
     int unk00;
-    void Fn(unsigned int aArg1, int aArg2);
+    void Fn(unsigned int apTask, int apTaskOwner);
 };
 
 extern Helper_b9266* DAT_01202d98;
@@ -6606,6 +6904,7 @@ class FUN_006f76b0_cls : public Base_b9266
 };
 
 // @fnv 0x006f76b0
+// pdb: BGSDistantTreeBlock::~BGSDistantTreeBlock | BGSDistantTreeBlock.obj | debug, object-file run extension, low
 FUN_006f76b0_cls::~FUN_006f76b0_cls()
 {
     DAT_011d8598--;
@@ -6639,6 +6938,8 @@ struct S_006f9c20
     int AddElement(const S_006f9c20_Elem* a1);
 };
 // @fnv 0x006f9c20
+// pdb: D3DXShader::CFragmentRegisterAllocator::AddElement | cassembler.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
+// pdb params: szName, iRegister, cRegisters
 int S_006f9c20::AddElement(const S_006f9c20_Elem* pElem)
 {
     int iIndex = GetNextIndex();
@@ -6666,6 +6967,8 @@ class FNVOwner_cls
 
 // Placement-constructs count BoundArrayElement objects at 0x20-byte strides starting at base.
 // @fnv 0x006f9e10
+// pdb: BSSimpleArray<BGSDistantTreeBlock::InstanceData,1024>::AddUninitialized | BGSDistantTreeBlock.obj | debug, object-file run extension, low
+// pdb locals: inewSize
 void FNVOwner_cls::ConstructElements(char* base, unsigned int count)
 {
     for (unsigned int i = 0; i < count; i++)
@@ -6710,6 +7013,8 @@ struct Cursor
 // Walks the cursor list from DAT_011d8624, and for each item calls Done on the pair reached via Find and via the holders at offsets 0x14 and 0x18.
 // @fnv 0x006fa860
 // src: COMMUNITY 0x006fa860
+// pdb: BGSTerrainChunk::ResetMultiBoundResults | BGSTerrainChunk.obj | debug, object-file run extension, low
+// pdb locals: pkList, item, pnode
 void __cdecl BGSTerrainChunk_ResetCullResults()
 {
     Cursor* cur = (Cursor*)&DAT_011d8624;
@@ -6815,20 +7120,23 @@ class FE550Area
 
     bool IsForced();
     float GetFalloff(FE550Point2 kTargetCenter, float fRadius, FE550Point2 kTestPoint);
-    bool BGSTerrainNode_ShouldSplit(const NiPoint3* pkPos);
+    bool BGSTerrainNode_ShouldSplit(const NiPoint3* aViewPosition);
 };
 
 // Returns false if the list count matches m_uiCount, true if forced, otherwise compares GetFalloff against m_fThreshold.
 // @fnv 0x006fe550
 // src: COMMUNITY 0x006fe550
-bool FE550Area::BGSTerrainNode_ShouldSplit(const NiPoint3* pkPos)
+// pdb: BGSTerrainNode::ShouldSplit | BGSTerrainNode.obj | retail, upstream name already matches, high
+// pdb params: aViewPosition
+// pdb locals: center2D, fviewDist, viewPos2D
+bool FE550Area::BGSTerrainNode_ShouldSplit(const NiPoint3* aViewPosition)
 {
     if (m_uiCount == m_pkList->GetCount())
         return false;
     if (IsForced())
         return true;
 
-    FE550Point2 kTestPoint(pkPos->x, pkPos->y);
+    FE550Point2 kTestPoint(aViewPosition->x, aViewPosition->y);
     FE550Point2 kTargetCenter(m_fCenterX, m_fCenterY);
     float fValue = GetFalloff(kTargetCenter, m_uiCount * 4096.0, kTestPoint);
     if (fValue < m_fThreshold)
@@ -6871,14 +7179,17 @@ struct FUN_006fe620_cls
     float m_38;
 
     float Blend(Vec2 b, float f, Vec2 a);
-    bool BGSTerrainNode_ShouldLoadBlock(Vec2* p);
+    bool BGSTerrainNode_ShouldLoadBlock(Vec2* aViewPosition);
 };
 
 // @fnv 0x006fe620
 // src: COMMUNITY 0x006fe620
-bool FUN_006fe620_cls::BGSTerrainNode_ShouldLoadBlock(Vec2* pPoint)
+// pdb: BGSTerrainNode::ShouldLoadBlock | BGSTerrainNode.obj | retail, upstream name already matches, high
+// pdb params: aViewPosition
+// pdb locals: center2D, fviewDist, viewPos2D
+bool FUN_006fe620_cls::BGSTerrainNode_ShouldLoadBlock(Vec2* aViewPosition)
 {
-    Vec2 a(pPoint->x, pPoint->y);
+    Vec2 a(aViewPosition->x, aViewPosition->y);
     Vec2 b(m_34, m_38);
     float r2 = Blend(b, (float)((double)m_04 * DAT_01017a10), a);
     if (r2 < *DAT_011d877c.GetFloat())
@@ -6918,13 +7229,16 @@ struct S_006fe6d0
     float unk34;
     float unk38;
     float ComputeDistanceSquaredToRect(S_006fe6d0_Vec2 a, float b, S_006fe6d0_Vec2 c);
-    bool BGSTerrainNode_ShouldLoadBlockLowPriority(const S_006fe6d0_Vec2* p);
+    bool BGSTerrainNode_ShouldLoadBlockLowPriority(const S_006fe6d0_Vec2* aViewPosition);
 };
 // @fnv 0x006fe6d0
 // src: COMMUNITY 0x006fe6d0
-bool S_006fe6d0::BGSTerrainNode_ShouldLoadBlockLowPriority(const S_006fe6d0_Vec2* pPoint)
+// pdb: BGSTerrainNode::ShouldLoadBlockLowPriority | BGSTerrainNode.obj | retail, upstream name already matches, high
+// pdb params: aViewPosition
+// pdb locals: center2D, fviewDist, viewPos2D
+bool S_006fe6d0::BGSTerrainNode_ShouldLoadBlockLowPriority(const S_006fe6d0_Vec2* aViewPosition)
 {
-    S_006fe6d0_Vec2 a(pPoint->x, pPoint->y);
+    S_006fe6d0_Vec2 a(aViewPosition->x, aViewPosition->y);
     S_006fe6d0_Vec2 b(unk34, unk38);
     float r2 = ComputeDistanceSquaredToRect(b, (float)(unk4 * DAT_01017a10), a);
     if (r2 < *DAT_011d8724.Setting_Float_00403e20())
@@ -6963,15 +7277,18 @@ struct S_006fe780_Foo
     float unk34;
     float unk38;
     float __thiscall ComputeDistanceSquaredToRect(FUN_00452dc0 a, float t, FUN_00452dc0 b);
-    bool __thiscall BGSTerrainNode_ShouldLoadTrees(const FUN_00452dc0* p);
+    bool __thiscall BGSTerrainNode_ShouldLoadTrees(const FUN_00452dc0* aViewPosition);
 };
 
 // Builds a point from p and a point from unk34/unk38, calls ComputeDistanceSquaredToRect with a scaled unk04, and returns whether the result is below the value from DAT_011d8788.
 // @fnv 0x006fe780
 // src: COMMUNITY 0x006fe780
-bool __thiscall S_006fe780_Foo::BGSTerrainNode_ShouldLoadTrees(const FUN_00452dc0* pPoint)
+// pdb: BGSTerrainNode::ShouldLoadTrees | BGSTerrainNode.obj | retail, upstream name already matches, high
+// pdb params: aViewPosition
+// pdb locals: center2D, fviewDist, viewPos2D
+bool __thiscall S_006fe780_Foo::BGSTerrainNode_ShouldLoadTrees(const FUN_00452dc0* aViewPosition)
 {
-    FUN_00452dc0 a(pPoint->x, pPoint->y);
+    FUN_00452dc0 a(aViewPosition->x, aViewPosition->y);
     float r2;
     FUN_00452dc0 b(unk34, unk38);
     r2 = ComputeDistanceSquaredToRect(b, (float)(DAT_01017a10 * (double)unk04), a);
@@ -7004,6 +7321,9 @@ struct FnvOwner
 
 // Computes the squared distance from point (b,c) to the axis-aligned square of side a centred at s, returning 0 when inside.
 // @fnv 0x006fe830
+// pdb: BGSTerrainNode::UnloadPersistentDataRecurse | BGSTerrainNode.obj | retail, object-file run extension, low
+// pdb note: debug build links it to BGSTerrainNode::DistToSquare
+// pdb locals: i
 float FnvOwner::ComputeDistanceSquaredToRect(FnvPt2 aCenter, float afSize, float afPointX, float afPointY)
 {
     float gapX;
@@ -7112,6 +7432,9 @@ struct FUN_006fea70_Class
 };
 
 // @fnv 0x006fea70
+// pdb: BGSTerrainNode::UpdateMorphParameters | BGSTerrainNode.obj | debug, object-file gap fill, medium
+// pdb params: aViewPosition
+// pdb locals: i
 void FUN_006fea70_Class::SetValue(int value)
 {
     if (m_10 != 0 && m_10->IsUnk28Set())
@@ -7170,6 +7493,9 @@ struct FnvScaleNode
 
 // Computes a value from the point and m04, then returns 1.0, 0.0, or a scale interpolated between m4c and m48.
 // @fnv 0x006feb20
+// pdb: BGSTerrainNode::ComputeMorphParameter | BGSTerrainNode.obj | debug, object-file gap fill, medium
+// pdb params: aViewPosition
+// pdb locals: fmorphParam, center2D, fviewDist, viewPos2D
 float FnvScaleNode::GetScaleAtPoint(NiPoint2* pPoint)
 {
     NiPoint2 aPt(pPoint->x, pPoint->y);
@@ -7222,6 +7548,10 @@ class C6FEC00Cell
 // Returns true if pkPoint lies within m_uiSize * DAT_01016968 of the cell center on both axes.
 // @fnv 0x006fec00
 // src: COMMUNITY 0x006fec00
+// pdb: BGSTerrainNode::ComputeMorphParameter | BGSTerrainNode.obj | retail, object-file run extension, low
+// pdb note: debug build links it to BGSTerrainNode::GetPointIsInNode
+// pdb params: aViewPosition
+// pdb locals: fmorphParam, center2D, fviewDist, viewPos2D
 bool C6FEC00Cell::BGSTerrainNode_GetPointIsInNode(const C6FEC00Point2* pkPoint)
 {
     float fRadius = m_uiSize * DAT_01016968;
@@ -7458,6 +7788,8 @@ struct FFB90Request
 };
 
 // @fnv 0x006ffb90
+// pdb: ImageSpaceEffectCinematic::SetParams | ImageSpaceEffectCinematic.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays; only the method name matches, on a class other than the PDB class, so its parameter names are not applied
+// pdb params (unverified): apfData, auiEnables
 void FFB90Request::SetParams(int param1, int param2)
 {
     if (!param1 || !param2)
@@ -7523,20 +7855,22 @@ struct FUN_006ffda0_cls
 };
 
 int __cdecl FormHeapFreeAndLog_00401030(int a);
-int __cdecl AllocateZeroed(int a, int b);
+int __cdecl ourCalloc(int a, int b);
 
 // @fnv 0x006ffda0
 // src: XBOX_PDB 0x006ffda0
+// pdb: AnimatingText::ResetBuffer | AnimatingText.obj | retail, upstream name already matches, high
 void FUN_006ffda0_cls::AnimatingText_ResetBuffer()
 {
     FormHeapFreeAndLog_00401030(m_i24);
-    m_i24 = (Modelloader_GetReferencedThis() != 0) ? AllocateZeroed(BSStringT_char_Length() + 1, 1) : 0;
+    m_i24 = (Modelloader_GetReferencedThis() != 0) ? ourCalloc(BSStringT_char_Length() + 1, 1) : 0;
     m_cb29 = 0;
     m_i1c = 0;
 }
 
 // Vtables 0x0106cf68/0x0106cf88 identify NiTMap<unsigned int, unsigned int> and its DFALL map base.
 // @fnv 0x006e2150
+// pdb: NiTMap<unsigned int,unsigned int>::~NiTMap<unsigned int,unsigned int> | PathingLOSMap.obj | debug, call graph (shared callers), high
 template <> NiTMap<unsigned int, unsigned int>::~NiTMap()
 {
     RemoveAll();
@@ -7573,18 +7907,20 @@ class LoadedRefHolder
     LoadedRefPosition m_kPathOffset;
     TESObjectREFR* m_pReference;
 
-    void PathingNode_LoadGame(BGSLoadFormBuffer* apBuffer);
+    void PathingNode_LoadGame(BGSLoadFormBuffer* apLoadGameBuffer);
 };
 
 // Reads the holder's id, position and a form reference from the buffer, then loads the member's game data.
 // @fnv 0x006e23b0
 // src: XBOX_PDB 0x006e23b0
-void LoadedRefHolder::PathingNode_LoadGame(BGSLoadFormBuffer* apBuffer)
+// pdb: PathingNode::LoadGame | PathingNode.obj | retail, upstream name already matches, high
+// pdb params: apLoadGameBuffer
+void LoadedRefHolder::PathingNode_LoadGame(BGSLoadFormBuffer* apLoadGameBuffer)
 {
-    apBuffer->LoadData(&m_uiValue1, 4);
-    apBuffer->LoadData(&m_kPathOffset, 12);
-    m_pReference = dynamic_cast<TESObjectREFR*>(TESForm_GetFormByNumericID(apBuffer->FUN_008648a0()));
-    m_kMember.LoadGame(apBuffer);
+    apLoadGameBuffer->LoadData(&m_uiValue1, 4);
+    apLoadGameBuffer->LoadData(&m_kPathOffset, 12);
+    m_pReference = dynamic_cast<TESObjectREFR*>(TESForm_GetFormByNumericID(apLoadGameBuffer->FUN_008648a0()));
+    m_kMember.LoadGame(apLoadGameBuffer);
 }
 
 extern double DAT_010240c0;
@@ -7630,6 +7966,10 @@ class PathCheck
 
 // Steps from start toward end in m_spacing increments, testing each segment with TraceWithLiftAndExtension and finally comparing the height difference against DAT_010240c0.
 // @fnv 0x006e6e40
+// pdb: PathingSearchRayCast::RayCast | PathingSearchRayCast.obj | retail, object-file run extension, low
+// pdb note: debug build links it to PathingSearchRayCast::RayCastRecurse
+// pdb params: aStart, aGoal, aRetLoc
+// pdb locals: horizontalPickEnd, finitialOffset, horizontalPickStart, verticalPickEnd, pickEnd
 bool __thiscall PathCheck::CheckPathClear(NiPoint3* start, NiPoint3* end)
 {
     NiPoint3 diff2 = *end - *start;
@@ -7795,6 +8135,9 @@ struct TraceOwner
     bool TraceWithLiftAndExtension(const TraceVector&, const TraceVector&, TraceVector&);
 };
 // @fnv 0x006e6f90
+// pdb: PathingSearchRayCast::UnderWaterRayCast | PathingSearchRayCast.obj | retail, object-file run extension, low
+// pdb note: debug build links it to PathingSearchRayCast::RayCast
+// pdb params: aStart, aGoal
 bool TraceOwner::TraceWithLiftAndExtension(const TraceVector& from, const TraceVector& to, TraceVector& output)
 {
     float lift2 = height;
@@ -7875,6 +8218,9 @@ struct Class_6e7230
 
 // Initializes min/max to extreme values, then expands them over each node's point in list and over m_loc's location.
 // @fnv 0x006e7230
+// pdb: PathingSearchRayCast::ComputeBounds | PathingSearchRayCast.obj | debug, object-file run extension, low
+// pdb params: aEdges
+// pdb locals: i
 void __thiscall Class_6e7230::ComputeBounds(FUN_006cee10_shell* pNodeList)
 {
     reinterpret_cast<NiPoint3&>(min) = reinterpret_cast<const NiPoint3&>(static_cast<const NiPoint3&>(NiPoint3(3.402823466e+38F, 3.402823466e+38F, 3.402823466e+38F)));
@@ -7929,6 +8275,9 @@ struct SAArray
 // Removes the element at auiIndex, optionally shrinking the buffer, then decrements uiSize.
 // @fnv 0x006e7500
 // src: COMMUNITY 0x006e7500
+// pdb: BSSimpleArray<NavMeshEdgeLocation,1024>::Remove | PathingSearchRayCast.obj | debug, object-file run extension, low
+// pdb params: aiIndex, abShrink
+// pdb locals: inewSize, pnewBuffer
 void SAArray::BSSimpleArray_NavMeshEdgeLocation_1024_Remove(unsigned int auiIndex, bool abShrink)
 {
     if (abShrink && ShouldShrink())
@@ -7993,6 +8342,7 @@ struct FUN_006ecfa0 : Base_006ecf20
 
 // Destructor for the object holding an array of 256 elements; the body is empty.
 // @fnv 0x006ecfa0
+// pdb: BSTStaticFreeList<ActorPathingMessage,256>::~BSTStaticFreeList<ActorPathingMessage,256> | PathManager.obj | debug, object-file run extension, low
 FUN_006ecfa0::~FUN_006ecfa0()
 {}
 
@@ -8062,6 +8412,8 @@ class EDBC0Builder
 // Creates an entry from the source location's nav mesh info and triangle, copies the builder's point, and adds it to both the all and open arrays.
 // @fnv 0x006edbc0
 // src: GUESS 0x006edbc0 (confidence: medium)
+// pdb: PathSmoother::AddStartVert | PathSmoother.obj | debug, object-file gap fill, medium
+// pdb locals: node, pstartVert
 void EDBC0Builder::AddLocationToOpenAndAllArrays()
 {
     EDBC0Entry* pkEntry = CreateEntry();
@@ -8142,6 +8494,9 @@ struct PBBuilder
 
 // Creates a location, edge and path from the context at aiIndex, links them, computes the path distance and appends them to the builder's lists.
 // @fnv 0x006ee150
+// pdb: PathSmoother::AddLeftVert | PathSmoother.obj | debug, object-file gap fill, medium
+// pdb params: aLocation, aiEdgeIndex
+// pdb locals: pleftVert, pnewEdge, prevTriNormal, pnewPathEdge, link, nextTriNormal
 void PBBuilder::AddPathFromContext(const NiPoint3* apPosition, int aiIndex)
 {
     Location_006edd30* pLocation = NewLocation();
@@ -8277,6 +8632,9 @@ struct Builder390
 };
 // Creates a location, link and path from the parent edge at index, computes the dot of the two search positions, and appends them to the builder's lists.
 // @fnv 0x006ee390
+// pdb: PathSmoother::AddRightVert | PathSmoother.obj | debug, object-file gap fill, medium
+// pdb params: aLocation, aiEdgeIndex
+// pdb locals: prightVert, pnewEdge, prevTriNormal, pnewPathEdge, link, nextTriNormal
 void Builder390::AddPathFromEdge(const Vec390* position, int index)
 {
     Location390* location5 = NewLocation();
@@ -8356,35 +8714,38 @@ struct HostS
     EdgeS* CreateObject();
     void SetEntry(unsigned int, EdgeS*, bool);
     void AssignRecordIndices(unsigned int, EdgeS*);
-    NodeS* SplitEdge(unsigned int index, bool side);
+    NodeS* SplitEdge(unsigned int aiEdgeIndex, bool abLeft);
 };
 // Splits the edge at index on the chosen side, creating a new node and two edges and inserting them into the node and edge arrays.
 // @fnv 0x006eed30
-NodeS* HostS::SplitEdge(unsigned int index, bool side)
+// pdb: PathSmoother::SplitBoundsEdge | PathSmoother.obj | debug, call graph, high
+// pdb params: aiEdgeIndex, abLeft
+// pdb locals: pedge, pnewPathEdge, pedgeList, pnewVert, pstartVert, pboundsEdge, ppathEdge, pendVert
+NodeS* HostS::SplitEdge(unsigned int aiEdgeIndex, bool abLeft)
 {
-    ArrE* arr3 = side ? &edgesA : &edgesB;
-    EdgeS* cur3 = arr3->BSSimpleArray_NiAVObject_1024_GetAt(index);
+    ArrE* arr3 = abLeft ? &edgesA : &edgesB;
+    EdgeS* cur3 = arr3->BSSimpleArray_NiAVObject_1024_GetAt(aiEdgeIndex);
     NodeS* first7 = cur3->first;
     NodeS* second6 = cur3->second;
     EdgeS* exist = first7->edges.NiTListBase_DFALL_NiTListItem_BSAnimGroupSequence_const_BSAnimGroupSequence_const_IsEmpty() ? second6->edges.GetFirstForm() : first7->edges.FUN_006f2270();
     NodeS* nn = AllocateStorage_006edc40();
     reinterpret_cast<NiPoint3&>(nn->origin) = reinterpret_cast<const NiPoint3&>(first7->origin);
     nn->info.FUN_0069a690(&first7->info);
-    if (side)
-        nodesA.FUN_006f23d0(index + 1, nn);
+    if (abLeft)
+        nodesA.FUN_006f23d0(aiEdgeIndex + 1, nn);
     else
-        nodesB.FUN_006f23d0(index + 1, nn);
+        nodesB.FUN_006f23d0(aiEdgeIndex + 1, nn);
     EdgeS* e6 = CreateSize28();
     e6->first = first7;
     e6->second = nn;
-    e6->info = arr3->BSSimpleArray_NiAVObject_1024_GetAt(index)->info;
-    e6->flag = arr3->BSSimpleArray_NiAVObject_1024_GetAt(index)->flag;
-    arr3->BSSimpleArray_NiAVObject_1024_GetAt(index)->first = nn;
-    SetEntry(index, e6, side);
+    e6->info = arr3->BSSimpleArray_NiAVObject_1024_GetAt(aiEdgeIndex)->info;
+    e6->flag = arr3->BSSimpleArray_NiAVObject_1024_GetAt(aiEdgeIndex)->flag;
+    arr3->BSSimpleArray_NiAVObject_1024_GetAt(aiEdgeIndex)->first = nn;
+    SetEntry(aiEdgeIndex, e6, abLeft);
     EdgeS* e9 = CreateObject();
     e9->weight = 1.0f;
     e9->bound = exist->bound;
-    if (side)
+    if (abLeft)
     {
         e9->first = nn;
         e9->second = exist->second;
@@ -8449,6 +8810,9 @@ float atan2_004b5570(float, float);
 float tan_0057dd70(float);
 // Computes a node's direction from its neighbours' positions and radius, optionally spawning a new node, and returns the next index.
 // @fnv 0x006ef0c0
+// pdb: PathSmoother::ComputeShrunkPoint | PathSmoother.obj | debug, object-file gap fill, medium
+// pdb params: aiCurrentVertIndex, afDistance, abLeftEdge
+// pdb locals: edge, normalToLastVec, fdelta, pcurrentVert, pVertList, normalToNextVec, pBoundsEdgeList, NextToCurrentVec, LastToCurrentVec, x, y, fangle, newVertLoc, prevVertNewLoc, bCheckFlippedPoints, delta, center
 unsigned int HostP059::UpdateNodeDirection(unsigned int index, float radius, bool side)
 {
     ArrayP059<NodeP059*>* l = side ? &nodesA : &nodesB;
@@ -8639,12 +9003,15 @@ struct FNV_006ef920
     unsigned int unk88;
     unsigned int unk8c;
     IndexCollection edges;
-    bool CheckLinkCrossing(FNV_006ef920_Nodes*, FNV_006ef920_Nodes*, bool);
-    bool CheckEdges();
+    bool PathSmoother_TestBoundsEdgeAgainstOtherBound(FNV_006ef920_Nodes*, FNV_006ef920_Nodes*, bool);
+    bool PathSmoother_CheckBoundsEdges();
 };
 // Walks the edges collection twice, checking consecutive side nodes and segment intersections, reporting failures to receiver and returning false on any failure.
 // @fnv 0x006ef920
-bool FNV_006ef920::CheckEdges()
+// src: XBOX_DEBUG_PDB 0x006ef920
+// pdb: PathSmoother::CheckBoundsEdges | PathSmoother.obj | debug, call graph, high
+// pdb locals: pprevRightEdge, pprevLeftEdge, i, prightEdge, pleftEdge, badEdge, spmesh
+bool FNV_006ef920::PathSmoother_CheckBoundsEdges()
 {
     FNV_006ef920_Nodes* prevA = reinterpret_cast<FNV_006ef920_Entry*>(*edges.FUN_00877a30(0))->sideA;
     FNV_006ef920_Nodes* prevB = reinterpret_cast<FNV_006ef920_Entry*>(*edges.FUN_00877a30(0))->sideB;
@@ -8652,7 +9019,7 @@ bool FNV_006ef920::CheckEdges()
     {
         FNV_006ef920_Nodes* nextA = reinterpret_cast<FNV_006ef920_Entry*>(*edges.FUN_00877a30(index))->sideA;
         FNV_006ef920_Nodes* nextB = reinterpret_cast<FNV_006ef920_Entry*>(*edges.FUN_00877a30(index))->sideB;
-        if (nextA == prevA && !CheckLinkCrossing(nextB, nextA, false))
+        if (nextA == prevA && !PathSmoother_TestBoundsEdgeAgainstOtherBound(nextB, nextA, false))
         {
             if (receiver)
             {
@@ -8672,7 +9039,7 @@ bool FNV_006ef920::CheckEdges()
             }
             return false;
         }
-        if (nextB == prevB && !CheckLinkCrossing(nextA, nextB, true))
+        if (nextB == prevB && !PathSmoother_TestBoundsEdgeAgainstOtherBound(nextA, nextB, true))
         {
             if (receiver)
             {
@@ -8731,9 +9098,10 @@ struct Location
     Location(const NiPoint3&, const Mesh*);
     ~Location();
 };
+// pdb: structure Segment, size 0x18, 2 members
 struct Segment
 {
-    NiPoint3 start, end;
+    NiPoint3 Start, End; // src: XBOX_RETAIL_PDB End +0xc (old: end); Start +0x0 (old: start)
 };
 struct Vertex
 {
@@ -8753,14 +9121,18 @@ extern const float scale;
 struct Owner
 {
     Segment* Allocate(unsigned, bool);
-    bool CheckLinkCrossing(Link* source, Link* target, bool side);
+    bool PathSmoother_TestBoundsEdgeAgainstOtherBound(Link* apEdge1, Link* apEdge2, bool abLeft);
 };
 // @fnv 0x006efd80
-bool Owner::CheckLinkCrossing(Link* pSourceLink, Link* pTargetLink, bool side)
+// src: XBOX_DEBUG_PDB 0x006efd80
+// pdb: PathSmoother::TestBoundsEdgeAgainstOtherBound | PathSmoother.obj | debug, call graph, high
+// pdb params: apEdge1, apEdge2, abLeft
+// pdb locals: pEdge2EndVert, edgeStart, edgeEnd, delta, pathingLocation, pathingLocation2, pathingLocation1, pnewVert
+bool Owner::PathSmoother_TestBoundsEdgeAgainstOtherBound(Link* apEdge1, Link* apEdge2, bool abLeft)
 {
-    NiPoint3 startTmp = pSourceLink->first->position;
-    NiPoint3 end3 = pSourceLink->second->position;
-    Vertex* vertex2 = pTargetLink->second;
+    NiPoint3 startTmp = apEdge1->first->position;
+    NiPoint3 end3 = apEdge1->second->position;
+    Vertex* vertex2 = apEdge2->second;
     if (Cross(&startTmp, &end3, &vertex2->origin, &vertex2->position))
     {
         NiPoint3 delta9 = vertex2->position - vertex2->origin;
@@ -8771,9 +9143,9 @@ bool Owner::CheckLinkCrossing(Link* pSourceLink, Link* pTargetLink, bool side)
             Location second3(vertex2->position + delta9, vertex2->mesh);
             if (Reach(&first4, startTmp, 0, 0) && Reach(&second3, end3, 0, 0))
             {
-                Segment* result = Allocate(pSourceLink->index, side);
-                result->start = vertex2->position;
-                result->end = vertex2->position + delta9 * scale;
+                Segment* result = Allocate(apEdge1->index, abLeft);
+                result->Start = vertex2->position;
+                result->End = vertex2->position + delta9 * scale;
                 return true;
             }
         }
@@ -8781,7 +9153,7 @@ bool Owner::CheckLinkCrossing(Link* pSourceLink, Link* pTargetLink, bool side)
     }
     else
     {
-        if (Cross(&startTmp, &end3, &pTargetLink->first->position, &pTargetLink->second->position))
+        if (Cross(&startTmp, &end3, &apEdge2->first->position, &apEdge2->second->position))
             return false;
         return true;
     }
@@ -8917,6 +9289,8 @@ struct HeightPath
     void FlattenPathPoints();
 };
 // @fnv 0x006f0d20
+// pdb: PathSmoother::HandleWaterTriangles | PathSmoother.obj | debug, object-file run extension, low
+// pdb locals: ifirstWaterTri, waterTris, i, spmesh, fdeltaZ, firstLoc, lastLoc, pfirstEdge, plastEdge, ilastWaterTri, fdeltaXY, fthisEdgeDeltaXY
 void HeightPath::FlattenPathPoints()
 {
     HeightFlags flags9(points.GetSize());
@@ -8983,7 +9357,7 @@ struct PSLocation
 {
     int unk00[10];
 
-    PSLocation(const PSPoint3& arPoint, const PSNavMeshInfo* apInfo);
+    PSLocation(const PSPoint3& aLocation, const PSNavMeshInfo* apNavMeshInfo);
     ~PSLocation();
 };
 
@@ -9039,6 +9413,8 @@ struct PSSolution
 };
 
 // @fnv 0x006f10d0
+// pdb: PathSmoother::BuildStraightenedPath | PathSmoother.obj | debug, object-file run extension, low
+// pdb locals: ftotalNormalDelta, icurrentEdge, inextEdge, startLoc, bAddNode, pnextEdge, testStartPoint, testEndPoint, loc, goalLoc
 void PSSolution::BuildLocations()
 {
     {
@@ -9186,6 +9562,8 @@ bool NavMeshMath_SegmentCircleIntersection(const NiPoint3&, const NiPoint3&, con
 bool ComputeCircleTangents(const NiPoint3&, float, const NiPoint3&, NiPoint3*, NiPoint3*);
 // Builds obstacle spheres from the owner's avoid objects and inserts detour points into the path where segments intersect them.
 // @fnv 0x006f1440
+// pdb: PathSmoother::HandleAvoidNodes | PathSmoother.obj | debug, object-file run extension, low
+// pdb locals: pnodes, nodes, i, curNode, baddNode, newNode, j, ii, btangentInNavmesh, tangents, otherTangents, bgoodTangents, binsertNodes, botherTangentInNavmesh, iotherTangentIndex, ithisTangentIndex, ftangent2sqrDelta, ftangent1sqrDelta, howMany
 void AvoidPath::ClipPathAgainstObstacles()
 {
     AvoidObjects* objects = owner->GetString();
@@ -9291,6 +9669,8 @@ void AvoidPath::ClipPathAgainstObstacles()
 
 // Returns whether the squared distance from the point to m_kCenter is less than the squared radius.
 // @fnv 0x006f1bc0
+// pdb: PathSmoother::AvoidNode::IsPointInNode | PathSmoother.obj | debug, object-file run extension, low
+// pdb params: aPoint
 bool PathingBound::ContainsPoint(const NiPoint3& akPoint)
 {
     return ((const NiPoint3&)(akPoint - m_kCenter)).SqrLength() < m_fRadius * m_fRadius;
@@ -9314,7 +9694,7 @@ struct PathSegment
     int unk1C;
     int unk20;
     int unk24;
-    PathSegment(const PathPoint3& kPoint, int iCellID);
+    PathSegment(const PathPoint3& aLocation, int apNavMeshInfo);
     ~PathSegment();
 };
 struct PathCell
@@ -9458,22 +9838,26 @@ class F1ED0Area
     F1ED0EdgeArray m_kOuterEdges;
     F1ED0EdgeArray m_kInnerEdges;
 
-    bool IsSegmentClear(const NiPoint3& kStart, const NiPoint3& kEnd);
+    bool PathSmoother_StraightLineTest(const NiPoint3& aStart, const NiPoint3& aEnd);
 };
 
 // Returns false if the segment from kStart to kEnd intersects any outer or inner edge; otherwise returns true.
 // @fnv 0x006f1ed0
-bool F1ED0Area::IsSegmentClear(const NiPoint3& kStart, const NiPoint3& kEnd)
+// src: XBOX_RETAIL_PDB 0x006f1ed0
+// pdb: PathSmoother::StraightLineTest | PathSmoother.obj | retail, object-file run extension, high
+// pdb params: aStart, aEnd
+// pdb locals: i
+bool F1ED0Area::PathSmoother_StraightLineTest(const NiPoint3& aStart, const NiPoint3& aEnd)
 {
     for (unsigned int i = 0; i < m_kOuterEdges.GetSize(); i++)
     {
-        if (F1ED0SegmentsIntersect(kStart, kEnd, m_kOuterEdges.GetAt(i)->m_pkStart->m_kPos,
+        if (F1ED0SegmentsIntersect(aStart, aEnd, m_kOuterEdges.GetAt(i)->m_pkStart->m_kPos,
                                    m_kOuterEdges.GetAt(i)->m_pkEnd->m_kPos))
             return false;
     }
     for (unsigned int j = 0; j < m_kInnerEdges.GetSize(); j++)
     {
-        if (F1ED0SegmentsIntersect(kStart, kEnd, m_kInnerEdges.GetAt(j)->m_pkStart->m_kPos,
+        if (F1ED0SegmentsIntersect(aStart, aEnd, m_kInnerEdges.GetAt(j)->m_pkStart->m_kPos,
                                    m_kInnerEdges.GetAt(j)->m_pkEnd->m_kPos))
             return false;
     }
@@ -9521,34 +9905,37 @@ struct Host1fc0
 };
 // @fnv 0x006f1fc0
 // src: COMMUNITY 0x006f1fc0
-bool __thiscall Host1fc0::PathSmoother_PointInShrunkPath(int apPoint)
+// pdb: PathSmoother::PointInShrunkPath | PathSmoother.obj | retail, upstream name already matches, high
+// pdb params: aPoint
+// pdb locals: fdontCare, i
+bool __thiscall Host1fc0::PathSmoother_PointInShrunkPath(int aPoint)
 {
     float f6;
     int i;
     if (arr90.NiTListBase_DFALL_NiTListItem_BSAnimGroupSequence_const_BSAnimGroupSequence_const_IsEmpty())
         return true;
     if (NavMeshMath_IsPointInsideTriangle(pt08, (*arr90.FUN_00877a30(0))->second->pt, (*arr90.FUN_00877a30(0))->first->pt,
-                     *(const NiPoint3*)apPoint, f6, DAT_0106b158, DAT_0106b158))
+                     *(const NiPoint3*)aPoint, f6, DAT_0106b158, DAT_0106b158))
         return true;
     for (i = 0; i < arr90.FUN_0044ddc0() - 1; i++)
     {
         if ((*arr90.FUN_00877a30(i))->first == (*arr90.FUN_00877a30(i + 1))->first)
         {
             if (NavMeshMath_IsPointInsideTriangle((*arr90.FUN_00877a30(i))->first->pt, (*arr90.FUN_00877a30(i))->second->pt,
-                             (*arr90.FUN_00877a30(i + 1))->second->pt, *(const NiPoint3*)apPoint, f6, DAT_0106b158,
+                             (*arr90.FUN_00877a30(i + 1))->second->pt, *(const NiPoint3*)aPoint, f6, DAT_0106b158,
                              DAT_0106b158))
                 return true;
         }
         else if ((*arr90.FUN_00877a30(i))->second == (*arr90.FUN_00877a30(i + 1))->second)
         {
             if (NavMeshMath_IsPointInsideTriangle((*arr90.FUN_00877a30(i))->first->pt, (*arr90.FUN_00877a30(i))->second->pt,
-                             (*arr90.FUN_00877a30(i + 1))->first->pt, *(const NiPoint3*)apPoint, f6, DAT_0106b158,
+                             (*arr90.FUN_00877a30(i + 1))->first->pt, *(const NiPoint3*)aPoint, f6, DAT_0106b158,
                              DAT_0106b158))
                 return true;
         }
     }
     if (NavMeshMath_IsPointInsideTriangle(pt14, (*arr90.FUN_006f2270())->first->pt, (*arr90.FUN_006f2270())->second->pt,
-                     *(const NiPoint3*)apPoint, f6, DAT_0106b158, DAT_0106b158))
+                     *(const NiPoint3*)aPoint, f6, DAT_0106b158, DAT_0106b158))
         return true;
     return false;
 }
@@ -9588,7 +9975,7 @@ struct FUN_006cf180
     FUN_006cf180();
     virtual void unk00();
     ~FUN_006cf180();
-    void ResizeAndConstruct(int a, int b);
+    void BSSimpleArray_PathingLocation_1024__InitialSetup(int aiReserveSize, int aiInitialSize);
 };
 
 struct FUN_006f2b30 : FUN_006cf180
@@ -9603,10 +9990,11 @@ struct FUN_006f2b30 : FUN_006cf180
 
 // Stores the general allocator in unk10 and calls ResizeAndConstruct with 0, 0.
 // @fnv 0x006f2b30
+// pdb: BSScrapArray<PathingLocation,1024>::BSScrapArray<PathingLocation,1024> | PathSmoother.obj | debug, call graph, high
 FUN_006f2b30::FUN_006f2b30()
 {
     unk10 = reinterpret_cast<int>(MemoryManager::Instance().GetGeneralAllocator());
-    ResizeAndConstruct(0, 0);
+    BSSimpleArray_PathingLocation_1024__InitialSetup(0, 0);
 }
 }  // namespace fnv_006f2b30
 
@@ -9624,6 +10012,9 @@ class C6F3280Allocator
 };
 
 // @fnv 0x006f3280
+// pdb: BSSimpleArray<PathSmoother::AvoidNode,1024>::_ConstructItems | PathSmoother.obj | debug, call graph (shared callers), low
+// pdb params: apFirstAddr, aiCount
+// pdb locals: i
 void C6F3280Allocator::ConstructBounds(NiBound* pkElements, unsigned int ItemUpdateArray)
 {
     for (unsigned int i = 0; i < ItemUpdateArray; i++)
@@ -9839,6 +10230,8 @@ struct Search
 };
 // Pops the next open node, expands it, reparents and re-adds its neighbours, tracks the best node, and returns a goal node or null.
 // @fnv 0x006f3fb0
+// pdb: AStarSearch<ParentSpaceNode,TeleportLink>::BuildNodePath | TeleportDoorSearch.obj | debug, call graph, medium
+// pdb locals: iloopCount, ConnectedNodes, ptempLastSearchedNode, i, pconnectedNode
 SearchNode* Search::StepSearch()
 {
     Neighbours neighbours5;
@@ -9902,6 +10295,7 @@ FUN_006f4640::~FUN_006f4640()
 
 // Destructor for the derived class that calls FUN_008454f0 with true.
 // @fnv 0x006f4690
+// pdb: BSScrapArray<AStarNode<ParentSpaceNode,TeleportLink> *,1024>::~BSScrapArray<AStarNode<ParentSpaceNode,TeleportLink> *,1024> | TeleportDoorSearch.obj | debug, call graph (shared callers), medium
 FUN_006f4690::~FUN_006f4690()
 {
     FUN_008454f0(true);
@@ -9985,6 +10379,9 @@ struct FUN_006f5160
     FUN_006f5160(ObjRef*, int, short, short, bool);
 };
 // @fnv 0x006f5160
+// pdb: BGSDistantObjectBlock::BGSDistantObjectBlock | BGSDistantObjectBlock.obj | debug, object-file run extension, low
+// pdb params: apNode, aiLevel, asCellX, asCellY, abLoadLowPriority
+// pdb locals: tempMemContext, pworld
 FUN_006f5160::FUN_006f5160(ObjRef* apOwner, int lod, short x, short y, bool flag)
 {
     MemScope scope(
@@ -10111,6 +10508,7 @@ struct FUN_006f5370
     ~FUN_006f5370();
 };
 // @fnv 0x006f5370
+// pdb: BGSDistantObjectBlock::~BGSDistantObjectBlock | BGSDistantObjectBlock.obj | debug, object-file run extension, low
 FUN_006f5370::~FUN_006f5370()
 {
     RunLoop();
@@ -10158,6 +10556,9 @@ struct FUN_006f9060
 // Placement-constructs auiCount FUN_006f9060 objects in the buffer at apBuffer.
 // @fnv 0x006f9ff0
 // src: GUESS 0x006f9ff0 (confidence: medium)
+// pdb: BSSimpleArray<BGSDistantTreeBlock::InstanceData,1024>::_ReallocateBuffer | BGSDistantTreeBlock.obj | debug, object-file run extension, low
+// pdb params: aiNewSize, aiCopyCount
+// pdb locals: pnewBuffer
 void FUN_006fa180_StandIn::ConstructElementsInPlace(int apBuffer, unsigned int auiCount)
 {
     for (unsigned int i = 0; i < auiCount; i++)
@@ -10262,7 +10663,7 @@ FUN_006fa210::FUN_006fa210(OwnerPointer* apOwner, int lod, short x, short y)
 extern BSAudio* DAT_011dea0c;
 extern int DAT_011d85ec;
 void __cdecl BSTexturePalette_PurgeUnusedTextures();
-void __cdecl NiObjectGarbage_Add(NiNode* node);
+void __cdecl NiObjectGarbage_Add(NiNode* apObject);
 struct FUN_006fa420
 {
     NiPointer<NiNode>* owner;
@@ -10278,7 +10679,7 @@ struct FUN_006fa420
     int unk28;
     NiPointer<NiNode> node2C;
     void BGSTerrainChunk_RemoveFromTerrainChunksList();
-    void BGSTerrainChunk_RemoveWaterFromSystem(int flag);
+    void BGSTerrainChunk_RemoveWaterFromSystem(int abForce);
     ~FUN_006fa420();
 };
 // @fnv 0x006fa420
@@ -10430,6 +10831,9 @@ struct S006f4390_Map
 
 // Computes the bucket for node, walks the bucket list to the first entry with a lower key, then links node in before it.
 // @fnv 0x006f4390
+// pdb: AStarQueue<ParentSpaceNode,TeleportLink>::AddNode | TeleportDoorSearch.obj | debug, call graph, medium
+// pdb params: apNode
+// pdb locals: ppcurrent, ibucket, bucket
 void S006f4390_Map::InsertNode(S006f4390_Node* node)
 {
     int bucket = GetScaledValue(node);
@@ -10481,6 +10885,7 @@ struct FUN_006e4a50 : public PathingRequest
 };
 
 // @fnv 0x006e4a50
+// pdb: PathingRequestCoveredMove::PathingRequestCoveredMove | PathingRequestCoveredMove.obj | debug, call graph, medium
 FUN_006e4a50::FUN_006e4a50()
 {
     m_fB4 = 1.0f;
@@ -10541,6 +10946,9 @@ class FUN_006ec7e0_C
 // Locks the container, inserts or replaces a node via FUN_00449f80, unlocks, and returns the result.
 // @fnv 0x006ec7e0
 // src: COMMUNITY 0x006ec7e0
+// pdb: LockFreeMap<PathingRequest *,PathingTaskData *>::GetAt | PathManager.obj | debug, object-file run extension, low
+// pdb params: aKey, arData
+// pdb locals: bResult
 bool FUN_006ec7e0_C::LockFreeMap_char_const_T_Data_SetAt(void* a1, void* a2, void* a3, bool a4)
 {
     m_kLock.BSSpinLock_Lock(0);
@@ -10594,6 +11002,8 @@ struct PathSmoother
 // Iterates path nodes, resolves adjacent mesh edges, and adds path segments from edge or context points to build a smoothed path.
 // @fnv 0x006ed850
 // src: COMMUNITY 0x006ed850
+// pdb: PathSmoother::BuildInternalArrays | PathSmoother.obj | retail, upstream name already matches, high
+// pdb locals: i, vert2, vert1, cross, pNewMesh, newLeftVert, newRightVert, iedgeIndex, newEdgeVert2, usNewTriangle, newEdgeVert1
 void PathSmoother::BuildInternalArrays()
 {
     AddLocationToOpenAndAllArrays();
@@ -10704,6 +11114,8 @@ struct Host_006edc40
 // Allocates 0x40 bytes from the allocator and constructs an Object_006edc40 in that memory, returning the pointer.
 // @fnv 0x006edc40
 // src: GUESS 0x006edc40 (confidence: medium)
+// pdb: PathSmoother::CreateVert | PathSmoother.obj | debug, object-file gap fill, medium
+// pdb locals: pvert
 void* __thiscall Host_006edc40::AllocateStorage_006edc40()
 {
     void* memory = allocator.Allocate(0x40, DAT_010a2720);
@@ -10727,7 +11139,7 @@ class SMPPoint
     float Length() const;
 };
 SMPPoint operator*(float fScalar, const SMPPoint& kPoint);
-SMPPoint NiPoint3_UpdateState_006ba550(const SMPPoint* pkA, const SMPPoint* pkB, const SMPPoint* pkBefore, const SMPPoint* pkAfter);
+SMPPoint NiPoint3_UpdateState_006ba550(const SMPPoint* aSegmentStart, const SMPPoint* aSegmentEnd, const SMPPoint* aLineStart, const SMPPoint* aLineEnd);
 float FUN_00408840(float fValue);
 
 struct SMPNode
@@ -10766,6 +11178,8 @@ class SMPPath
 
 // Computes m_kSmoothed for each node in m_kNodeArray using surrounding positions, then adjusts it toward the side offset.
 // @fnv 0x006f0450
+// pdb: PathSmoother::BuildBestPointOnEdge | PathSmoother.obj | debug, object-file run extension, low
+// pdb locals: i, averagePointAfter, frandomness, deltaToVert, ipointCountAfter, averagePointBefore, ipointCountBefore, offset, iedgeIndex, segmentDelta, averagePointDelta, fsqrDistFromRightToPrevious, fsqrDistFromLeftToPrevious, delta
 void SMPPath::SmoothNodes()
 {
     for (int i = 0; i < m_kNodeArray.FUN_0044ddc0(); i++)
@@ -10903,17 +11317,19 @@ class LoadHolder6F51
     LoadMember6F51 m_kMember;
     TESObjectREFR* m_pReference;
 
-    void VirtualPathingNode_LoadGame(BGSLoadFormBuffer* apBuffer);
+    void VirtualPathingNode_LoadGame(BGSLoadFormBuffer* apLoadGameBuffer);
 };
 
 // Calls FUN_00864980(this, 4) on apBuffer, sets m_pReference via FUN_004839c0 and a dynamic_cast to TESObjectREFR, then calls m_kMember.LoadGame.
 // @fnv 0x006f5100
 // src: XBOX_PDB 0x006f5100
-void LoadHolder6F51::VirtualPathingNode_LoadGame(BGSLoadFormBuffer* apBuffer)
+// pdb: VirtualPathingNode::LoadGame | VirtualPathingNode.obj | retail, upstream name already matches, high
+// pdb params: apLoadGameBuffer
+void LoadHolder6F51::VirtualPathingNode_LoadGame(BGSLoadFormBuffer* apLoadGameBuffer)
 {
-    apBuffer->LoadData(this, 4);
-    m_pReference = dynamic_cast<TESObjectREFR*>(TESForm_GetFormByNumericID(apBuffer->FUN_008648a0()));
-    m_kMember.LoadGame(apBuffer);
+    apLoadGameBuffer->LoadData(this, 4);
+    m_pReference = dynamic_cast<TESObjectREFR*>(TESForm_GetFormByNumericID(apLoadGameBuffer->FUN_008648a0()));
+    m_kMember.LoadGame(apLoadGameBuffer);
 }
 
 class FUN_006fca40
@@ -10924,11 +11340,12 @@ class FUN_006fca40
 };
 // Deletes the terrain root and releases the LOD roots and reference array.
 // @fnv 0x006fc980
+// pdb: BGSTerrainManager::~BGSTerrainManager | BGSTerrainManager.obj | retail, upstream name already matches, high
 BGSTerrainManager::~BGSTerrainManager()
 {
-    delete reinterpret_cast<FUN_006fca40*>(pRootTerrainNode);
+    delete reinterpret_cast<FUN_006fca40*>(pRootNode);
     spLODRoot = 0;
-    spWaterLODRoot = 0;
+    spLODWaterRoot = 0;
 }
 
 struct EventArg6FF
@@ -10995,6 +11412,9 @@ struct PathSearch : public Search
 };
 // Steps the search, picks the target node (best or none), copies its node list into arrays, and returns whether a path was found.
 // @fnv 0x006f3d90
+// pdb: AStarSearch<ParentSpaceNode,TeleportLink>::Search | TeleportDoorSearch.obj | debug, object-file gap fill, medium
+// pdb params: apReturnArray, apReturnLinkArray, abReturnBestPathIfFailed
+// pdb locals: pbestNode, psolutionNode, bretValue
 bool PathSearch::FindPath(int a, int b, bool useBest)
 {
     yielding = FUN_00b00a00()->IsOwnerThread(FUN_0040fc90());
@@ -11037,6 +11457,7 @@ class FUN_006e0f90_cls : public FUN_006e0f90_base
 
 // Destructor that calls its own unk08 method.
 // @fnv 0x006e0f90
+// pdb: NiTMap<unsigned int,PathingLOSGrid *>::~NiTMap<unsigned int,PathingLOSGrid *> | PathingLOSGridMap.obj | debug, call graph (shared callers), high
 FUN_006e0f90_cls::~FUN_006e0f90_cls()
 {
     this->unk08();
@@ -11051,6 +11472,7 @@ struct FUN_006e3c60 : public FUN_006e3ab0
     virtual ~FUN_006e3c60();
 };
 // @fnv 0x006e3c60
+// pdb: BSSimpleArray<PathingAvoidNode,1024>::`scalar deleting destructor' | PathingRequest.obj | retail, vtable slot, high
 FUN_006e3c60::~FUN_006e3c60()
 {}
 
@@ -11086,11 +11508,15 @@ void __cdecl operator delete(void*, void*);
 
 // Places a2 instances of FUN_006e2210 into the memory block at a1 by calling the constructor at each offset.
 // @fnv 0x006e9700
-void __thiscall FUN_006e9700_Class::ConstructArray(int a1, unsigned int a2)
+// src: XBOX_DEBUG_PDB 0x006e9700
+// pdb: BSSimpleArray<PathingNode,1024>::_ConstructItems | PathingSolution.obj | debug, call graph, high
+// pdb params: apFirstAddr, aiCount
+// pdb locals: i
+void __thiscall FUN_006e9700_Class::BSSimpleArray_PathingNode_1024__ConstructItems(int apFirstAddr, unsigned int aiCount)
 {
-    for (unsigned int i = 0; i < a2; i++)
+    for (unsigned int i = 0; i < aiCount; i++)
     {
-        new ((FUN_006e2210*)a1 + i) FUN_006e2210;
+        new ((FUN_006e2210*)apFirstAddr + i) FUN_006e2210;
     }
 }
 
@@ -11111,7 +11537,7 @@ struct FUN_006ec130_Base
 
 struct FUN_006ec130 : FUN_006ec130_Base
 {
-    bool BSTCommonMessageQueue_MobileObjectMessage_TryPop(void* item);
+    bool BSTCommonMessageQueue_MobileObjectMessage_TryPop(void* aMessage);
     virtual ~FUN_006ec130();
 };
 
@@ -11130,6 +11556,7 @@ struct FUN_006eca20
 };
 // Empty virtual destructor for the FUN_006eca20 class.
 // @fnv 0x006eca20
+// pdb: BSSimpleArray<RayCastPathRequest *,1024>::`scalar deleting destructor' | PathManager.obj | retail, vtable slot, high
 FUN_006eca20::~FUN_006eca20()
 {}
 
@@ -11142,6 +11569,7 @@ struct FUN_006eca50 : Arr2_006e9e20
     virtual ~FUN_006eca50();
 };
 // @fnv 0x006eca50
+// pdb: BSSimpleArray<RayCastPath *,1024>::`scalar deleting destructor' | PathManager.obj | retail, vtable slot, high
 FUN_006eca50::~FUN_006eca50()
 {}
 
@@ -11197,6 +11625,7 @@ struct FUN_006ecf70
 };
 // Empty destructor for FUN_006ecf70.
 // @fnv 0x006ecf70
+// pdb: BSTStaticFreeList<ActorPathingMessage,256>::`scalar deleting destructor' | PathManager.obj | debug, vtable slot, medium
 FUN_006ecf70::~FUN_006ecf70()
 {}
 
@@ -11211,6 +11640,7 @@ struct FUN_006f2810 : FUN_006f27f0_Class
 };
 // Destructor that calls Clear(true) on this, viewed as a GlobalObject_00869f00.
 // @fnv 0x006f2810
+// pdb: BSScrapArray<PathSmoother::BoundsEdge *,1024>::~BSScrapArray<PathSmoother::BoundsEdge *,1024> | PathSmoother.obj | debug, call graph, medium
 FUN_006f2810::~FUN_006f2810()
 {
     reinterpret_cast<GlobalObject_00869f00*>(this)->Clear(true);
@@ -11229,6 +11659,7 @@ struct FUN_006f2e40 : Base006f2e00
 
 // Destructor that calls FUN_008454f0 with 1.
 // @fnv 0x006f2e40
+// pdb: BSScrapArray<PathSmoother::AvoidNode,1024>::~BSScrapArray<PathSmoother::AvoidNode,1024> | PathSmoother.obj | debug, call graph (shared callers), low
 FUN_006f2e40::~FUN_006f2e40()
 {
     FUN_008454f0(1);
@@ -11254,6 +11685,8 @@ struct FUN_006f3320_VTable
 
 // Zeroes the buffer fields, allocates max(a1, a2) elements, and if a2 is nonzero constructs a2 elements and sets the position to a2.
 // @fnv 0x006f3320
+// pdb: BSSimpleArray<PathSmoother::AvoidNode,1024>::_InitialSetup | PathSmoother.obj | debug, call graph, low
+// pdb params: aiReserveSize, aiInitialSize
 void FUN_006f3320_Class::InitBuffer(int a1, int a2)
 {
     reinterpret_cast<FUN_006f3320_Fields*>(reinterpret_cast<char*>(this) + 4)->m_pBuffer = 0;
@@ -11301,6 +11734,7 @@ class FUN_006f9940 : public F9940MapBase
 
 // Destroys the object by calling RemoveAll to clear the hash table entries.
 // @fnv 0x006f9940
+// pdb: BSMap<unsigned int,BGSDistantTreeBlock::InstanceData *>::~BSMap<unsigned int,BGSDistantTreeBlock::InstanceData *> | BGSDistantTreeBlock.obj | debug, call graph, low
 FUN_006f9940::~FUN_006f9940()
 {
     RemoveAll();
@@ -11376,41 +11810,44 @@ extern NiPointer<NiNode> DAT_011d86a8, DAT_011d8690;
 
 // Reads the worldspace LOD settings and creates the terrain and scene roots.
 // @fnv 0x006fc490
-BGSTerrainManager::BGSTerrainManager(TESWorldSpace* apSource) : spLODRoot(0), spWaterLODRoot(0)
+// pdb: BGSTerrainManager::BGSTerrainManager | BGSTerrainManager.obj | retail, upstream name already matches, high
+// pdb params: apWorld
+// pdb locals: pfile, pfilename, tempMemContext
+BGSTerrainManager::BGSTerrainManager(TESWorldSpace* apWorld) : spLODRoot(0), spLODWaterRoot(0)
 {
     using namespace fnv_006fc490;
     Mem490 context(
         34, true,
         "D:\\_Fallout3\\Platforms\\Common\\Code\\Fallout Shared\\Distant Terrain System\\BGSTerrainManager.cpp", 47);
     {
-        bFlag29 = false;
-        pWorld = apSource;
+        bHasLOD = false;
+        pWorld = apWorld;
         char filename[260];
         {
-            sprintf(filename, "Data\\LODSettings\\%s.DLODSettings", reinterpret_cast<TESForm*>(apSource)->GetName());
+            sprintf(filename, "Data\\LODSettings\\%s.DLODSettings", reinterpret_cast<TESForm*>(apWorld)->GetName());
             Stream490* stream = 0;
             if (FileFinder::Exist(filename, 0, 6, 256))
                 stream = FileFinder_GetFile_(filename, 0, 100);
             if (stream)
             {
-                stream->UpdateState_006fc950(uiMinLevel)
-                    .UpdateState_006fc950(uiMaxLevel)
-                    .UpdateState_006fc950(uiStride)
-                    .ReadFromStream(reinterpret_cast<unsigned short&>(sMinX))
-                    .ReadFromStream(reinterpret_cast<unsigned short&>(sMinY))
-                    .ReadFromStream(reinterpret_cast<unsigned short&>(sMaxX))
-                    .ReadFromStream(reinterpret_cast<unsigned short&>(sMaxY))
-                    .UpdateState_006fc950(uiLODLevel);
+                stream->UpdateState_006fc950(iMinLevel)
+                    .UpdateState_006fc950(iMaxLevel)
+                    .UpdateState_006fc950(iRootLevel)
+                    .ReadFromStream(reinterpret_cast<unsigned short&>(sMinCellX))
+                    .ReadFromStream(reinterpret_cast<unsigned short&>(sMinCellY))
+                    .ReadFromStream(reinterpret_cast<unsigned short&>(sMaxCellX))
+                    .ReadFromStream(reinterpret_cast<unsigned short&>(sMaxCellY))
+                    .UpdateState_006fc950(iBlockLevel);
                 delete stream;
-                pRootTerrainNode = reinterpret_cast<BGSTerrainNode*>(new TerrainNode490(this, 0, sMinX, sMinY, uiStride, false));
-                bFlag29 = true;
+                pRootNode = reinterpret_cast<BGSTerrainNode*>(new TerrainNode490(this, 0, sMinCellX, sMinCellY, iRootLevel, false));
+                bHasLOD = true;
             }
             else
-                pRootTerrainNode = 0;
+                pRootNode = 0;
             spLODRoot = DAT_011dea10->TESMain_GetThread();
             if ((NiNode*)spLODRoot)
             {
-                spWaterLODRoot = DAT_011dea10->FUN_00825c00();
+                spLODWaterRoot = DAT_011dea10->FUN_00825c00();
                 reinterpret_cast<void (__thiscall*)(NiNode*, bool)>(&NiAVObject_SetAlwaysDraw)((NiNode*)spLODRoot, true);
                 reinterpret_cast<void (__thiscall*)(NiNode*, bool)>(&NiAVObject_SetAlwaysDraw)(
                     reinterpret_cast<NiNode* (__thiscall*)(NiNode*)>(&NiAVObject_GetParent)((NiNode*)spLODRoot), true);
@@ -11473,6 +11910,7 @@ struct FUN_006f3c80
 };
 
 // @fnv 0x006f3c80
+// pdb: AStarSearch<ParentSpaceNode,TeleportLink>::~AStarSearch<ParentSpaceNode,TeleportLink> | TeleportDoorSearch.obj | debug, call graph (shared callers), high
 FUN_006f3c80::~FUN_006f3c80()
 {}
 }  // namespace fnv_006f3c80
@@ -11490,10 +11928,11 @@ struct FUN_006e4080 : PathingRequest
 extern const float DAT_0104e0e8, DAT_0101e704, DAT_0101e6ec, DAT_010236e0;
 // Constructor: sets unk68, unk6c, unkbc, unkc0, unkc4 from globals, unkc8 to 50, unkcc to true, the other flags to false, and two points to zero.
 // @fnv 0x006e4080
+// pdb: PathingRequestCover::PathingRequestCover | PathingRequestCover.obj | retail, call graph (shared callers), high
 FUN_006e4080::FUN_006e4080()
 {
-    m_fFirstValueAfterActorData = DAT_0104e0e8;
-    m_fSecondValueAfterActorData = DAT_0101e704;
+    fActorRadius = DAT_0104e0e8;
+    fActorHeight = DAT_0101e704;
     unkc0 = DAT_0101e6ec;
     unkbc = DAT_010236e0;
     unkc4 = DAT_0106b158;
@@ -11514,6 +11953,7 @@ struct QueueDeletingView : public FUN_006ec1e0_Class
 };
 
 // @fnv 0x006ec230
+// pdb: BSTMessageQueue<PathingMessage>::`scalar deleting destructor' | PathManager.obj | retail, vtable slot, high
 void* QueueDeletingView::FUN_006ec230(unsigned int flags)
 {
     SetVirtualTable_006ec1e0();

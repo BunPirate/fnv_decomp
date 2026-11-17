@@ -19,27 +19,33 @@ class DownloadableContentManager
     BSSimpleList<ContentMountRecord*> m_kContentEntries;
     BSSimpleList<ContentMountRecord*> m_kMountedPackages;
     BSSimpleList<char*> m_kMountedPackageNames;
-    static DownloadableContentManager& GetRandomGenerator();
+    static DownloadableContentManager& BSDLCSystemUtility_QInstance();
     bool IsDLCAvailable();
     bool IsContentAvailable();
     void UnmountDLC();
-    unsigned int MountDownloadableContent(unsigned int userIndex, MOUNT_CALLBACK callback);
+    unsigned int BSDLCSystemUtility_MountDLC(unsigned int anPlayerIndex, MOUNT_CALLBACK cb);
 };
 
 // @fnv 0x004c69f0
+// pdb: Setting::operator char const * | InventoryChanges.obj | debug, call graph, medium
 bool DownloadableContentManager::IsDLCAvailable()
 {
     return IsContentAvailable();
 }
 
 // @fnv 0x005dfa10
+// pdb: BSSystemUtility::QDLCUtility | TESDataHandler.obj | debug, upstream name already matches, high
 DownloadableContentManager& BSSystemUtility::QDLCUtility()
 {
-    return DownloadableContentManager::GetRandomGenerator();
+    return DownloadableContentManager::BSDLCSystemUtility_QInstance();
 }
 
 // @fnv 0x00af2b10
-unsigned int DownloadableContentManager::MountDownloadableContent(unsigned int userIndex, MOUNT_CALLBACK callback)
+// src: XBOX_RETAIL_PDB 0x00af2b10
+// pdb: BSDLCSystemUtility::MountDLC | BSDLCSystemUtility_Xenon.obj | retail, call graph (shared callers), high
+// pdb params: anPlayerIndex, cb
+// pdb locals: count, plist, rv, package
+unsigned int DownloadableContentManager::BSDLCSystemUtility_MountDLC(unsigned int anPlayerIndex, MOUNT_CALLBACK cb)
 {
     UnmountDLC();
     struct MountProgress
@@ -64,15 +70,15 @@ unsigned int DownloadableContentManager::MountDownloadableContent(unsigned int u
         kCount.pkItem = kCount.pkItem->m_pkNext;
     }
     kCount.uiNumValid = kCount.ItemUpdateArray;
-    if (callback)
+    if (cb)
     {
         while (kProgress.pkList &&
                !static_cast<unsigned char>((kProgress.pkList->m_pkNext == 0 && kProgress.pkList->m_item == 0) ? 1 : 0))
         {
-            callback(kProgress.uiIndex++, kCount.uiNumValid - 1, true, kProgress.pkList->m_item);
+            cb(kProgress.uiIndex++, kCount.uiNumValid - 1, true, kProgress.pkList->m_item);
             kProgress.pkList = kProgress.pkList->m_pkNext;
         }
-        callback(-1, -1, false, 0);
+        cb(-1, -1, false, 0);
         return 0;
     }
     {
@@ -96,6 +102,7 @@ unsigned int DownloadableContentManager::MountDownloadableContent(unsigned int u
 // Zeroes the object's first three words and clears three list nodes at offsets 0xc, 0x14 and 0x1c, then returns self.
 // @fnv 0x00af27c0
 // src: XBOX_PDB 0x00af27c0
+// pdb: BSDLCSystemUtility::BSDLCSystemUtility | BSDLCSystemUtility_Xenon.obj | debug, upstream name already matches, high
 DownloadableContentManager* __fastcall BSDLCSystemUtility_BSDLCSystemUtility(DownloadableContentManager* self)
 {
     *(unsigned int*)((char*)self + 0) = 0;
@@ -126,8 +133,9 @@ struct FUN_00af2850
 extern FUN_00af2850* DAT_011f7244;
 // Deletes the global object pointed to by DAT_011f7244 and clears the pointer.
 // @fnv 0x00af2760
-// src: GUESS 0x00af2760 (confidence: medium)
-void __cdecl Object_ClearGlobalObject()
+// src: XBOX_DEBUG_PDB 0x00af2760
+// pdb: BSDLCSystemUtility::Destroy | BSDLCSystemUtility_Xenon.obj | debug, call graph, high
+void __cdecl BSDLCSystemUtility_Destroy()
 {
     if (DAT_011f7244)
     {
@@ -187,6 +195,7 @@ struct FUN_00af2850
 };
 
 // @fnv 0x00af2850
+// pdb: BSDLCSystemUtility::~BSDLCSystemUtility | BSDLCSystemUtility_Xenon.obj | debug, object-file run extension, low
 FUN_00af2850::~FUN_00af2850()
 {
     int a0;
@@ -294,6 +303,9 @@ struct FUN_00af2a60_obj
     void ClearItems(int);
 };
 // @fnv 0x00af2940
+// pdb: BSDLCSystemUtility::LoadDLC | BSDLCSystemUtility_Xenon.obj | retail, call graph, medium
+// pdb params: anPlayerIndex, anDevice
+// pdb locals: hFiles, rv, MAX_CONTENT_PACKAGES, space, num, packages, ok, DOWNLOADED_CONTENT_PATH, rootEnd, rootSz, root, i, list, package
 unsigned int FUN_00af2940_shell::AddInstalledDlcPackages(unsigned int anPlayerIndex, unsigned int anDevice)
 {
     ((FUN_00af2a60_obj*)this)->ClearItems(1);
@@ -360,13 +372,16 @@ struct SteamFriendsObj
 
 struct FUN_00af28f0_cls
 {
-    int BSDLCSystemUtility_ShowMarketplace(int a1);
+    int BSDLCSystemUtility_ShowMarketplace(int anPlayerIndex);
 };
 
 // If both SteamFriends and SteamUtils are available, returns the friends interface's v22 called with the utils interface's v9 value.
 // @fnv 0x00af28f0
 // src: COMMUNITY 0x00af28f0
-int FUN_00af28f0_cls::BSDLCSystemUtility_ShowMarketplace(int a1)
+// pdb: BSDLCSystemUtility::ShowMarketplace | BSDLCSystemUtility_Xenon.obj | debug, upstream name already matches, high
+// pdb params: anPlayerIndex
+// pdb locals: result
+int FUN_00af28f0_cls::BSDLCSystemUtility_ShowMarketplace(int anPlayerIndex)
 {
     if (SteamFriends() != 0)
     {
@@ -409,6 +424,9 @@ struct OwnQ
 };
 // Optionally calls FUN_00af2c20 when bFlag is set, then deletes every item in kList and resets the list via FUN_00ae83e0.
 // @fnv 0x00af2a60
+// pdb: BSDLCSystemUtility::UnloadDLC | BSDLCSystemUtility_Xenon.obj | debug, object-file gap fill, medium
+// pdb params: unmount
+// pdb locals: pList
 void OwnQ::ClearItems(bool bFlag)
 {
     if (bFlag)

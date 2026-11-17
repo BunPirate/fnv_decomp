@@ -4,12 +4,13 @@
 #include "NiMorphData.h"
 #include "NiPointer.h"
 
+// pdb: class NiGeomMorpherController, size 0x44, bases: NiInterpController, 7 members
 class NiGeomMorpherController : public NiInterpController
 {
 public:
     struct InterpItem
     {
-        NiPointer<NiInterpolator> m_spControllerInterpolator;
+        NiPointer<NiInterpolator> m_spInterpolator; // src: XBOX_RETAIL_PDB +0x0 (old: m_spControllerInterpolator)
         float m_fWeight;
 
         __declspec(nothrow) InterpItem();
@@ -19,13 +20,13 @@ public:
     };
 
     NiGeomMorpherController(NiMorphData* pkData = 0) throw()
-        : m_spMorphTargetData(pkData), m_pInterpolatorItems(0)
+        : m_spMorphData(pkData), m_pkInterpItems(0)
     {
-        m_uiObjectFlags = 0;
-        m_bUpdateEnabled = false;
-        m_bUpdateNormals = false;
-        m_bNeedsUpdate = false;
-        m_bUpdateBounds = false;
+        m_uFlags = 0;
+        m_bNeedPreDisplay = false;
+        m_bIgnoreBaseTarget = false;
+        m_bAlwaysUpdate = false;
+        m_bBoundCalculated = false;
     }
     virtual ~NiGeomMorpherController() throw();
     virtual NiObject* MakeClone(CloningProcess& kCloning);
@@ -39,16 +40,16 @@ public:
 
     unsigned int GetNumTargets() const;
     void CopyMemberData(NiGeomMorpherController* pkClone, CloningProcess& kCloning);
-    void SetMorphData(NiMorphData* pkMorphData, bool bCanUpdate);
-    void ClearInterpolatorArray();
+    void SetMorphData(NiMorphData* pkData, bool bCalculateMorphBound);
+    void AllocateInterpArray();
 
-    unsigned short m_uiObjectFlags;
+    unsigned short m_uFlags; // src: XBOX_RETAIL_PDB +0x34 (old: m_uiObjectFlags)
     unsigned char m_aucPad[2];
-    NiPointer<NiMorphData> m_spMorphTargetData;
-    InterpItem* m_pInterpolatorItems;
-    bool m_bUpdateEnabled;
-    bool m_bUpdateNormals;
-    bool m_bNeedsUpdate;
-    bool m_bUpdateBounds;
+    NiPointer<NiMorphData> m_spMorphData; // src: XBOX_RETAIL_PDB +0x38 (old: m_spMorphTargetData)
+    InterpItem* m_pkInterpItems; // src: XBOX_RETAIL_PDB +0x3c (old: m_pInterpolatorItems)
+    bool m_bNeedPreDisplay; // src: XBOX_RETAIL_PDB +0x40 (old: m_bUpdateEnabled)
+    bool m_bIgnoreBaseTarget; // src: XBOX_RETAIL_PDB +0x41 (old: m_bUpdateNormals)
+    bool m_bAlwaysUpdate; // src: XBOX_RETAIL_PDB +0x42 (old: m_bNeedsUpdate)
+    bool m_bBoundCalculated; // src: XBOX_RETAIL_PDB +0x43 (old: m_bUpdateBounds)
 };
 

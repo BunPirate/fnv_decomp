@@ -277,13 +277,16 @@ struct SceneBranch : SceneObject
 };
 // @fnv 0x00c803a0
 // src: COMMUNITY 0x00c803a0
-void __cdecl bhkUtilFunctions_DampBodiesVelocity(SceneObject* object, float scale)
+// pdb: bhkUtilFunctions::DampBodiesVelocity | bhkUtilFunctions.obj | retail, upstream name already matches, high
+// pdb params: apObject, afDamp
+// pdb locals: pco, prb, pnode, linVel, angVel, ui
+void __cdecl bhkUtilFunctions_DampBodiesVelocity(SceneObject* apObject, float afDamp)
 {
-    if (object)
+    if (apObject)
     {
-        if (object->collision)
+        if (apObject->collision)
         {
-            CollisionState* state = object->collision->FUN_00653290(&DAT_012043f8);
+            CollisionState* state = apObject->collision->FUN_00653290(&DAT_012043f8);
             if (state && state->physics)
             {
                 PhysicsWrapper* wrapper = state->physics;
@@ -291,8 +294,8 @@ void __cdecl bhkUtilFunctions_DampBodiesVelocity(SceneObject* object, float scal
                 ScaledVector values[2];
                 values[0].value = backend ? backend->firstVector : DAT_01267e30;
                 values[1].value = backend ? backend->secondVector : DAT_01267e30;
-                values[0].Multiply(ScalarFactor(scale));
-                values[1].Multiply(ScalarFactor(scale));
+                values[0].Multiply(ScalarFactor(afDamp));
+                values[1].Multiply(ScalarFactor(afDamp));
                 if (backend)
                 {
                     wrapper->Object_DoNothing();
@@ -308,12 +311,12 @@ void __cdecl bhkUtilFunctions_DampBodiesVelocity(SceneObject* object, float scal
                 }
             }
         }
-        SceneBranch* branch = object->GetBranch();
+        SceneBranch* branch = apObject->GetBranch();
         if (branch)
         {
             for (unsigned int index = 0; index < branch->count; ++index)
             {
-                bhkUtilFunctions_DampBodiesVelocity(branch->children[index], scale);
+                bhkUtilFunctions_DampBodiesVelocity(branch->children[index], afDamp);
             }
         }
     }
@@ -329,10 +332,13 @@ union __declspec(align(16)) ResultBuffer
 };
 // @fnv 0x00c806b0
 // src: XBOX_PDB 0x00c806b0
-void* bhkUtilFunctions_GetClosestBody(void* first, const void* second, bool option)
+// pdb: bhkUtilFunctions::GetClosestBody | bhkUtilFunctions.obj | retail, upstream name already matches, high
+// pdb params: apRoot, arSphere, abIgnoreHead
+// pdb locals: clBody
+void* bhkUtilFunctions_GetClosestBody(void* apRoot, const void* arSphere, bool abIgnoreHead)
 {
     ResultBuffer result;
-    bhkUtilFunctions_ClosestBody_ClosestBody(first, second, &result, option);
+    bhkUtilFunctions_ClosestBody_ClosestBody(apRoot, arSphere, &result, abIgnoreHead);
     return result.hit;
 }
 
@@ -399,6 +405,8 @@ class bhkLimitedHingeVectorSet
 
 // @fnv 0x00c8bf50
 // src: XBOX_PDB 0x00c8bf50
+// pdb: bhkMatrix3::Renormalize | bhkTransformShape.obj | retail, upstream name already matches, high
+// pdb locals: temp
 void bhkLimitedHingeVectorSet::bhkMatrix3_Renormalize()
 {
     bhkLimitedHingeVector_blk_00c80000_od_o2_nood_variant& v1 = m_v1;
@@ -499,12 +507,15 @@ struct Owner00c9ec00
     int unk04;
     Obj00c9ec00* unk08;
     void Noop00a29680();
-    void bhkShapePhantom_GetTransform(hkMatrix4* out);
+    void bhkShapePhantom_GetTransform(hkMatrix4* arTrans);
 };
 
 // @fnv 0x00c9ec00
 // src: COMMUNITY 0x00c9ec00
-void Owner00c9ec00::bhkShapePhantom_GetTransform(hkMatrix4* out)
+// pdb: bhkShapePhantom::GetTransform | bhkShapePhantom.obj | retail, upstream name already matches, high
+// pdb params: arTrans
+// pdb locals: pp
+void Owner00c9ec00::bhkShapePhantom_GetTransform(hkMatrix4* arTrans)
 {
     if (!this)
         return;
@@ -512,14 +523,14 @@ void Owner00c9ec00::bhkShapePhantom_GetTransform(hkMatrix4* out)
     if (!p)
         return;
     Noop00a29680();
-    out->m_kColumn0.m_vComponents = p->m_mat.m_kColumn0.m_vComponents;
-    out->m_kColumn1.m_vComponents = p->m_mat.m_kColumn1.m_vComponents;
-    out->m_kColumn2.m_vComponents = p->m_mat.m_kColumn2.m_vComponents;
-    out->m_kColumn3.m_vComponents = p->m_mat.m_kColumn3.m_vComponents;
+    arTrans->m_col0.m_vComponents = p->m_mat.m_col0.m_vComponents;
+    arTrans->m_col1.m_vComponents = p->m_mat.m_col1.m_vComponents;
+    arTrans->m_col2.m_vComponents = p->m_mat.m_col2.m_vComponents;
+    arTrans->m_col3.m_vComponents = p->m_mat.m_col3.m_vComponents;
     Noop00a29680();
 }
 
-void __stdcall bhkShapePhantom_GetTransform(hkTransform* pkTransform);
+void __stdcall bhkShapePhantom_GetTransform(hkTransform* arTrans);
 void __cdecl HK2NI_00624b10(NiMatrix3* pkOut, const hkRotation* pkRotation);
 void __cdecl FUN_00458620(NiPoint3* pkOut, const hkVector4* pkVector);
 
@@ -551,27 +562,30 @@ struct HingeVectorSet
 
 struct FUN_00c9ecb0_cls
 {
-    void FillOutputFromState(HingeVectorSet* set);
-    void bhkShapePhantom_GetTransform(hkMatrix4& m);
-    void bhkShapePhantom_CopyCinfo(HingeVectorSet* set);
+    void bhkWorldObject_CopyCinfo(HingeVectorSet* arInfo);
+    void bhkShapePhantom_GetTransform(hkMatrix4& arTrans);
+    void bhkShapePhantom_CopyCinfo(HingeVectorSet* arInfo);
 };
 
 // The original local SIMD representation triggered /GS for this function.
 #pragma strict_gs_check(push, on)
 // @fnv 0x00c9ecb0
 // src: COMMUNITY 0x00c9ecb0
-void FUN_00c9ecb0_cls::bhkShapePhantom_CopyCinfo(HingeVectorSet* set)
+// pdb: bhkShapePhantom::CopyCinfo | bhkShapePhantom.obj | retail, upstream name already matches, high
+// pdb params: arInfo
+// pdb locals: hkt
+void FUN_00c9ecb0_cls::bhkShapePhantom_CopyCinfo(HingeVectorSet* arInfo)
 {
-    FillOutputFromState(set);
+    bhkWorldObject_CopyCinfo(arInfo);
     // The callee fills this scratch matrix without constructing its columns.
     __m128 matrixStorage[4];
     hkMatrix4& m = reinterpret_cast<hkMatrix4&>(matrixStorage);
     bhkShapePhantom_GetTransform(m);
-    bhkLimitedHingeVector_blk_00c80000_od_o2_nood_variant* vectors = set->m_akVectors;
-    vectors[0].SetQuaternionComponentsFromVector(m.m_kColumn0.m_vComponents.m128_f32);
-    vectors[1].SetQuaternionComponentsFromVector(m.m_kColumn1.m_vComponents.m128_f32);
-    vectors[2].SetQuaternionComponentsFromVector(m.m_kColumn2.m_vComponents.m128_f32);
-    vectors[3].SetQuaternionComponentsFromVector(m.m_kColumn3.m_vComponents.m128_f32);
+    bhkLimitedHingeVector_blk_00c80000_od_o2_nood_variant* vectors = arInfo->m_akVectors;
+    vectors[0].SetQuaternionComponentsFromVector(m.m_col0.m_vComponents.m128_f32);
+    vectors[1].SetQuaternionComponentsFromVector(m.m_col1.m_vComponents.m128_f32);
+    vectors[2].SetQuaternionComponentsFromVector(m.m_col2.m_vComponents.m128_f32);
+    vectors[3].SetQuaternionComponentsFromVector(m.m_col3.m_vComponents.m128_f32);
 }
 #pragma strict_gs_check(pop)
 }  // namespace fnv_00c9ecb0
@@ -582,7 +596,7 @@ namespace fnv_00c88520 {
 struct Quaternion
 {
     float w, x, y, z;
-    void FUN_00a6df40(const NiTransform& matrix);
+    void FUN_00a6df40(const NiTransform& rot);
 };
 struct SceneObject;
 struct CastObject
@@ -638,22 +652,25 @@ extern unsigned int DAT_01267b80;
 extern unsigned int DAT_01267b84;
 
 Wrapper* __cdecl bhkUtilFunctions_FindNextCollisionObject(SceneObject*);
-void __cdecl AccumulateParentTransforms(SceneObject*, SceneObject*, NiTransform*);
+void __cdecl GetTransformRecursive(SceneObject*, SceneObject*, NiTransform*);
 void __cdecl HK2NI_00624ad0(NiTransform*, hkMatrix4*);
 void __cdecl NI2HK(hkVector4&, const NiPoint3&);
 
 // @fnv 0x00c88520
 // src: COMMUNITY 0x00c88520
-void __cdecl WeaponObject_UpdateRigidBodyTransforms(SceneObject* a0, SceneObject* a1)
+// pdb: WeaponObject::UpdateRigidBodyTransforms | WeaponObject.obj | retail, upstream name already matches, high
+// pdb params: apObject, apParent
+// pdb locals: pweaponObject, pparentRB, pparentCol, pweapRB, pweapCol, hkr, parentTransform, niq, weaponObjectTransform, hkv, hktrans, parentToWeaponTransform
+void __cdecl WeaponObject_UpdateRigidBodyTransforms(SceneObject* apObject, SceneObject* apParent)
 {
-    Wrapper* p = a0 ? bhkUtilFunctions_FindNextCollisionObject(a0) : 0;
+    Wrapper* p = apObject ? bhkUtilFunctions_FindNextCollisionObject(apObject) : 0;
     SceneObject* source = p->GetSource();
     _ReadWriteBarrier();
     SceneObject* destination = p->GetDestination();
-    CastObject* cast = a1 && a1->unk1c ? a1->unk1c->FUN_00653290(&DAT_012043f8) : 0;
+    CastObject* cast = apParent && apParent->unk1c ? apParent->unk1c->FUN_00653290(&DAT_012043f8) : 0;
     _ReadWriteBarrier();
     SceneObject* body = cast->GetBody();
-    if (destination && body && source && a1 && a1->unk18)
+    if (destination && body && source && apParent && apParent->unk18)
     {
         // Keep the SIMD scratch storage trivial for the original stack layout.
         __m128 worldStorage[4];
@@ -665,8 +682,8 @@ void __cdecl WeaponObject_UpdateRigidBodyTransforms(SceneObject* a0, SceneObject
         NiTransform& relative = reinterpret_cast<NiTransform&>(relativeStorage);
         ((void(__thiscall*)(SceneObject*, hkMatrix4*))body->vtable[61])(body, &world);
         HK2NI_00624ad0(&converted, &world);
-        converted.m_fScale = a1->unk98;
-        AccumulateParentTransforms(source, a1, &relative);
+        converted.m_fScale = apParent->unk98;
+        GetTransformRecursive(source, apParent, &relative);
         NiTransform combined = converted.FUN_0062c250(relative);
         Quaternion q;
         q.FUN_00a6df40(combined);
@@ -677,7 +694,7 @@ void __cdecl WeaponObject_UpdateRigidBodyTransforms(SceneObject* a0, SceneObject
         rotation.m128_f32[1] = q.y;
         rotation.m128_f32[2] = q.z;
         rotation.m128_f32[3] = q.w;
-        reinterpret_cast<hkVector4*>(&rotation)->normalize_005611c0();
+        reinterpret_cast<hkVector4*>(&rotation)->hkQuaternion_normalize();
         reinterpret_cast<LockObject*>(&DAT_01267b80)->BSSpinLock_Lock(0);
         ((void(__thiscall*)(SceneObject*, hkVector4*, hkVector4*))destination->vtable[58])(
             destination, reinterpret_cast<hkVector4*>(&position), reinterpret_cast<hkVector4*>(&rotation));
@@ -751,7 +768,7 @@ struct KeyData : BaseCall_blk_00c80000_od_o2_nood_variant
     NiPoint3* keys;
     unsigned int unk40, unk44;
     unsigned int count;
-    void bhkBlendController_GetViewerStrings(StrArr* strings);
+    void bhkBlendController_GetViewerStrings(StrArr* apStrings);
 };
 class GlobalObjectO2_00a7b610
 {
@@ -767,13 +784,16 @@ extern MemoryManager g_memoryManager;
 
 // @fnv 0x00c9bbb0
 // src: XBOX_PDB 0x00c9bbb0
-void KeyData::bhkBlendController_GetViewerStrings(StrArr* strings)
+// pdb: bhkBlendController::GetViewerStrings | bhkBlendController.obj | retail, string-set bridge, high
+// pdb params: apStrings
+// pdb locals: tempMemContext, I, pstring, iStringLen, pstr, rkey
+void KeyData::bhkBlendController_GetViewerStrings(StrArr* apStrings)
 {
     MemContextGuard kGuard(16);
-    FUN_00a6d830(strings);
-    strings->AddInline(NiViewerStrings_NiGetViewerString_Title(g_012681f0.name));
+    FUN_00a6d830(apStrings);
+    apStrings->AddInline(NiViewerStrings_NiGetViewerString_Title(g_012681f0.name));
     unsigned int uiNumKeys = count;
-    strings->AddInline(NiGetViewerString_00a7d510("iKeys", uiNumKeys));
+    apStrings->AddInline(NiGetViewerString_00a7d510("iKeys", uiNumKeys));
     for (unsigned int i = 0; i < count; ++i)
     {
         char buffer[64];
@@ -782,7 +802,7 @@ void KeyData::bhkBlendController_GetViewerStrings(StrArr* strings)
         unsigned int length = strlen(buffer) + 1;
         char* copy = (char*)g_memoryManager.Allocate(length);
         _strcpy_s(copy, length, buffer);
-        strings->AppendInline(copy);
+        apStrings->AppendInline(copy);
     }
 }
 
@@ -1458,6 +1478,7 @@ struct PhysicsObject
     void UpdateMatchingNodes(World*);
 };
 
+// pdb: class Key, size 0x8 (here 0xc), 2 members
 struct Key
 {
     float time, value, tangent;
@@ -1673,6 +1694,7 @@ struct ConstraintData
 };
 
 
+// pdb: structure hkConstraintCinfo, size 0x14, bases: hkSerializableCinfo, 4 members
 struct hkConstraintCinfo : hkSerializableCinfo
 {
 
@@ -1687,6 +1709,7 @@ struct hkConstraintCinfo : hkSerializableCinfo
     void SetChildObject(int);
 };
 
+// pdb: structure hkLimitedHingeConstraintCinfo, size 0x14, bases: hkConstraintCinfo, 0 members
 struct hkLimitedHingeConstraintCinfo : hkConstraintCinfo
 {
 
@@ -1740,7 +1763,7 @@ World* bhkWorld_Getbhk(World*);
 
 SceneNode* NiObject_DynamicCast(TypeInfo*, CollisionWrapper*);
 
-void UpdateChainCollision(SceneNode*, World*);
+void WeaponObject_UpdateChain(SceneNode*, World*);
 
 static __forceinline void Normalize3(__m128& v)
 {
@@ -1793,21 +1816,24 @@ __forceinline unsigned char DynamicValue(const int& m)
 }
 // @fnv 0x00c88a40
 // src: COMMUNITY 0x00c88a40
-void __cdecl WeaponObject_Constrain(bool create, Filter filter, SceneNode* first, SceneNode* second, bool force)
+// pdb: WeaponObject::Constrain | WeaponObject.obj | retail, upstream name already matches, high
+// pdb params: abEnable, aOwnerFilter, apFrom, apTo, abDefaultKeyframed
+// pdb locals: tempMemContext, psourceCol, ptargetCol, prbb, pacList, bhasChain, prba, pitem, pdata, pcon, pact, xAxisWorld, ph, pw, fixPointb, phkw, ci, ifilter, pivot, axis, fixPointa, emotion, pblendCol
+void __cdecl WeaponObject_Constrain(bool abEnable, Filter aOwnerFilter, SceneNode* apFrom, SceneNode* apTo, bool abDefaultKeyframed)
 {
 
     ContextScope contextScope(16);
 
-    if (!first || !second)
+    if (!apFrom || !apTo)
         return;
 
     {
 
-        WeaponObject_UpdateRigidBodyTransforms(first, second);
+        WeaponObject_UpdateRigidBodyTransforms(apFrom, apTo);
 
-        CollisionWrapper* __restrict resolvedFirst = bhkUtilFunctions_FindNextCollisionObject(first);
+        CollisionWrapper* __restrict resolvedFirst = bhkUtilFunctions_FindNextCollisionObject(apFrom);
 
-        CollisionWrapper* resolvedSecond = bhkUtilFunctions_FindNextCollisionObject(second);
+        CollisionWrapper* resolvedSecond = bhkUtilFunctions_FindNextCollisionObject(apTo);
 
         if (resolvedFirst && resolvedSecond)
         {
@@ -1864,14 +1890,14 @@ void __cdecl WeaponObject_Constrain(bool create, Filter filter, SceneNode* first
                 listEntry->PopAndRelease();
             }
 
-            if (create)
+            if (abEnable)
             {
 
                 ConstraintInfo info;
 
                 info.hkLimitedHingeConstraintCinfo_CreateData();
 
-                if (force)
+                if (abDefaultKeyframed)
                     sourceBody->SetMotion(4);
 
                 else
@@ -1936,7 +1962,7 @@ void __cdecl WeaponObject_Constrain(bool create, Filter filter, SceneNode* first
                 __m128 convertedStorage[4];
                 Transform& convertedTransform = reinterpret_cast<Transform&>(convertedStorage);
 
-                FUN_0056df80(&convertedTransform, &first->transform);
+                FUN_0056df80(&convertedTransform, &apFrom->transform);
 
                 sourceTransform.hkRotation_renormalize();
 
@@ -1978,7 +2004,7 @@ void __cdecl WeaponObject_Constrain(bool create, Filter filter, SceneNode* first
 
                 unsigned layer = targetBody->bhkWorldObject_GetCollisionFilter().value & 0x7f;
 
-                unsigned bits = (sourceFilter.value & 0xe080) | (filter.value & 0xffff1400) | 0x1400;
+                unsigned bits = (sourceFilter.value & 0xe080) | (aOwnerFilter.value & 0xffff1400) | 0x1400;
 
                 bits = (bits & ~0x7f) | (layer & 0x7f);
 
@@ -2008,7 +2034,7 @@ void __cdecl WeaponObject_Constrain(bool create, Filter filter, SceneNode* first
                 }
 
                 if (skipped)
-                    UpdateChainCollision(first, world);
+                    WeaponObject_UpdateChain(apFrom, world);
 
                 return;
             }
@@ -2202,11 +2228,11 @@ inline unsigned int RigidBody::GetFilter()
 extern unsigned int DAT_012683f4;
 extern float DAT_011b1210[32];
 extern float DAT_01015f5c, DAT_011b0f88, DAT_011b0f8c, DAT_011afe64;
-hkVector4& NI2HK(hkVector4& result, const NiPoint3& point);
-void bhkForceController_TestForce2(NiAVObject* object, const hkVector4& velocity, float scale);
+hkVector4& NI2HK(hkVector4& arhkTran, const NiPoint3& arNiTran);
+void bhkForceController_TestForce2(NiAVObject* apObject, const hkVector4& arForce, float afEndTime);
 struct PhysicsMotion
 {
-    void ApplyImpulse(float duration, const hkVector4& velocity);
+    void ApplyImpulse(float deltaTime, const hkVector4& force);
 };
 inline void* operator new(unsigned int, void* p)
 {
@@ -2227,15 +2253,18 @@ union KeyVectorStorage
 };
 // @fnv 0x00c9b670
 // src: XBOX_PDB 0x00c9b670
-void __cdecl bhkBlendController_DoKnockDown(NiAVObject* object, const NiPoint3& velocity, unsigned int context, float time, bool disable)
+// pdb: bhkBlendController::DoKnockDown | bhkBlendController.obj | retail, upstream name already matches, high
+// pdb params: apObject, arDirection, abKill, afTime, abNoForce
+// pdb locals: pc, pnode, epart, prb, fendTime, ifilter, pcon, fgain, fvelGain, keys, I, pfcon, plist, pnewHead, pac, frc, hkforce, pc1
+void __cdecl bhkBlendController_DoKnockDown(NiAVObject* apObject, const NiPoint3& arDirection, unsigned int abKill, float afTime, bool abNoForce)
 {
     NiPoint3 sharedPoint;
     KeyVectorStorage work;
-    if (object)
+    if (apObject)
     {
         CollisionObject* collision = 0;
-        if (object->m_spCollisionObject.m_pObject)
-            collision = (CollisionObject*)((NiObject*)object->m_spCollisionObject.m_pObject)->DynamicCast((const NiRTTI*)&DAT_01267e64);
+        if (apObject->m_spCollisionObject.m_pObject)
+            collision = (CollisionObject*)((NiObject*)apObject->m_spCollisionObject.m_pObject)->DynamicCast((const NiRTTI*)&DAT_01267e64);
         if (collision)
         {
             collision->ApplyMotion();
@@ -2243,14 +2272,14 @@ void __cdecl bhkBlendController_DoKnockDown(NiAVObject* object, const NiPoint3& 
             if (collision->rigidBody)
                 filter = collision->rigidBody->GetFilter();
             float speed = DAT_011b1210[(filter >> 8) & 31];
-            KeyedTimeController* controller = static_cast<KeyedTimeController*>(object->GetController((const NiRTTI*)&DAT_012681f0));
+            KeyedTimeController* controller = static_cast<KeyedTimeController*>(apObject->GetController((const NiRTTI*)&DAT_012681f0));
             if (controller && speed >= 0.0f)
             {
-                if (!disable)
+                if (!abNoForce)
                 {
                     float begin = collision->beginValue;
                     float end = collision->endValue;
-                    controller->Reset();
+                    controller->bhkBlendController_ClearKeys();
                     unsigned int count = 2;
                     controller->mode = count;
                     if (controller->keys.effectiveSize == 0)
@@ -2269,17 +2298,17 @@ void __cdecl bhkBlendController_DoKnockDown(NiAVObject* object, const NiPoint3& 
                             controller->AddKey(*p);
                             ++p;
                         } while (--count != 0);
-                        controller->m_fLoKeyTime = time;
+                        controller->m_fLoKeyTime = afTime;
                         controller->m_fHiKeyTime = speed;
                         controller->m_uiObjectFlags = (controller->m_uiObjectFlags & 0xfef5) | 0xc5;
                         controller->m_fPhase = 0.0f;
                         controller->m_fFrequency = 1.0f;
                         controller->Start(DAT_01015f5c);
                     }
-                    NiAVObject* active = const_cast<NiAVObject* volatile&>(object);
+                    NiAVObject* active = const_cast<NiAVObject* volatile&>(apObject);
                     if (!active->GetController((const NiRTTI*)&DAT_012683f4))
                     {
-                        new (&sharedPoint) NiPoint3(reinterpret_cast<const NiPoint3&>(velocity) * DAT_011b0f88);
+                        new (&sharedPoint) NiPoint3(reinterpret_cast<const NiPoint3&>(arDirection) * DAT_011b0f88);
                         NiPoint3& scaled = sharedPoint;
                         bhkForceController_TestForce2(active, NI2HK(reinterpret_cast<hkVector4&>(work.vector), scaled), DAT_011b0f8c);
                     }
@@ -2290,9 +2319,9 @@ void __cdecl bhkBlendController_DoKnockDown(NiAVObject* object, const NiPoint3& 
                 }
             }
         }
-        else if (object->m_spCollisionObject.m_pObject)
+        else if (apObject->m_spCollisionObject.m_pObject)
         {
-            CollisionObject* fallback = (CollisionObject*)((NiObject*)object->m_spCollisionObject.m_pObject)->DynamicCast((const NiRTTI*)&DAT_012043f8);
+            CollisionObject* fallback = (CollisionObject*)((NiObject*)apObject->m_spCollisionObject.m_pObject)->DynamicCast((const NiRTTI*)&DAT_012043f8);
             if (fallback && fallback->rigidBody)
             {
                 RigidBody* body = fallback->rigidBody;
@@ -2301,20 +2330,20 @@ void __cdecl bhkBlendController_DoKnockDown(NiAVObject* object, const NiPoint3& 
                 if ((layer != 8 && layer != 29) || (filter & 0x1f00) == 0x1400)
                 {
                     body->SetBodyMotion(1);
-                    if (!disable)
+                    if (!abNoForce)
                     {
-                        new (&sharedPoint) NiPoint3(reinterpret_cast<const NiPoint3&>(velocity) * DAT_011b0f88);
+                        new (&sharedPoint) NiPoint3(reinterpret_cast<const NiPoint3&>(arDirection) * DAT_011b0f88);
                         NiPoint3& scaled = sharedPoint;
                         ((PhysicsMotion*)body->body)->ApplyImpulse(DAT_011afe64, NI2HK(reinterpret_cast<hkVector4&>(work.vector), scaled));
                     }
                 }
             }
         }
-        KnockDownNode* node = (KnockDownNode*)object->IsSceneNode();
+        KnockDownNode* node = (KnockDownNode*)apObject->IsSceneNode();
         if (node)
         {
             for (unsigned int i = 0; i < node->childCount; ++i)
-                bhkBlendController_DoKnockDown(node->children[i], velocity, context, time, disable);
+                bhkBlendController_DoKnockDown(node->children[i], arDirection, abKill, afTime, abNoForce);
         }
     }
 }

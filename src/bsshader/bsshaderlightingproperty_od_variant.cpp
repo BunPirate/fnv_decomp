@@ -13,6 +13,8 @@ struct FUN_0076a3d0_Class
 
 // @fnv 0x0076a3d0
 // src: GUESS 0x0076a3d0 (confidence: low)
+// pdb: AnimatingText::operator!= | HackingMenu.obj | debug, object-file gap fill, medium
+// pdb params: apString
 void __thiscall FUN_0076a3d0_Class::ForwardCall_0076a3d0(int a)
 {
     FUN_00700270(a);

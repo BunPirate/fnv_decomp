@@ -70,6 +70,7 @@ class NiTextureRendererData
     virtual void vfn_94();
     virtual unsigned int vfn_98();
 };
+// pdb: class FileFinder, size 0x10 (here 0x1), 1 members
 class FileFinder
 {
   public:
@@ -95,19 +96,19 @@ extern float DAT_011adcc8;
 extern unsigned int DAT_011f91b8;
 extern void (*DAT_011f9f38)(), (*DAT_011f9f3c)();
 extern void (*DAT_011f9f40[16])(), (*DAT_011f9f80[16])();
-extern unsigned int (*DAT_011f91ec)(NiAVObject*);
+extern unsigned int (*BSShaderManager_pObjectTypeCallback)(NiAVObject*); // src: XBOX_RETAIL_PDB 0x011f91ec (old: DAT_011f91ec)
 extern ShadowSceneNode* DAT_011f91c8[4];
 #pragma intrinsic(sin, cos)
 // The shipped setter was built without optimization.
 #pragma optimize("", off)
 #pragma optimize("", on)
-void __cdecl BSShaderManager_SetShadowSceneNode(int idx, ShadowSceneNode* p);
+void __cdecl BSShaderManager_SetShadowSceneNode(int idx, ShadowSceneNode* apSSN);
 
 extern ImageSpaceManager* DAT_011f91ac;
 NiTexture* GetImageSpaceTexture();
 extern "C" NiTexture* DAT_011f95ec;
 extern "C" __declspec(dllimport) long __stdcall InterlockedIncrement(volatile long*);
-void __cdecl BSShaderManager_SetAccumulator(NiTexture* pkTexture);
+void __cdecl BSShaderManager_SetAccumulator(NiTexture* apAccum);
 struct PropHelper
 {
     virtual void vfn_0();
@@ -123,11 +124,12 @@ struct PropHelper
     unsigned short _pad2;
     unsigned short m_uiItemCount;
 };
-void __cdecl ProcessPropertyTree(PropHelper*, int);
-void __cdecl ProcessPropertyTree(PropHelper* obj, int param2);
+void __cdecl BSShaderManager_SetObjectTypeRecurse(PropHelper*, int);
+void __cdecl BSShaderManager_SetObjectTypeRecurse(PropHelper* apObject, int aeObjectType);
 BSFogProperty* __cdecl BSShaderManager_GetFogProperty(int aiShadowSceneNode);
-void ProcessPropertyTree(NiAVObject*, unsigned int);
+void BSShaderManager_SetObjectTypeRecurse(NiAVObject*, unsigned int);
 void BSShaderManager_SetObjectType(NiAVObject* obj);
+// pdb: structure tagRECT, size 0x10, 4 members
 struct tagRECT
 {
     long left;
@@ -165,7 +167,7 @@ struct TGAVObject
 struct TGNode : TGAVObject
 {
     unsigned int GetArrayCount();
-    TGAVObject* GetAt(unsigned int auiIndex);
+    TGAVObject* GetAt(unsigned int i);
 };
 
 struct TGGeometry : TGAVObject
@@ -184,18 +186,21 @@ struct TGTexturingProperty
     TGTextureInfo* GetDecalMap(unsigned int auiIndex, TGGeometry* apGeom, const char* apName, int aiArg, bool abAlpha);
 };
 
-extern TGRTTI g_kTexturingPropertyRTTI;
+extern TGRTTI NiTexturingProperty_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f49a4 (old: DAT_011f49a4/g_011f49a4/g_kTexturingPropertyRTTI)
 TGTexturingProperty* __cdecl TGDynamicCast(const TGRTTI* apRTTI, TGProperty* apProperty);
 
 struct TGGatherer
 {
     void AddTexture(TGTextureInfo* apInfo);
-    void TESDataHandler_CheckTexturesRecurse(TGAVObject* apObject, int aiArg);
+    void TESDataHandler_CheckTexturesRecurse(TGAVObject* apObject, int apModel);
 };
 
 // @fnv 0x0046e910
 // src: COMMUNITY 0x0046e910
-void TGGatherer::TESDataHandler_CheckTexturesRecurse(TGAVObject* apObject, int aiArg)
+// pdb: TESDataHandler::CheckTexturesRecurse | TESDataHandler.obj | retail, upstream name already matches, high
+// pdb params: apObject, apModel
+// pdb locals: pgeometry, pshaderProp, ptexProp, index, pnode, ucount, uindex, pchild
+void TGGatherer::TESDataHandler_CheckTexturesRecurse(TGAVObject* apObject, int apModel)
 {
     if (apObject)
     {
@@ -203,16 +208,16 @@ void TGGatherer::TESDataHandler_CheckTexturesRecurse(TGAVObject* apObject, int a
         {
             TGGeometry* pGeom = (TGGeometry*)apObject;
             TGProperty* pAlpha6 = pGeom->GetProperty(3);
-            TGTexturingProperty* pTexProp2 = TGDynamicCast(&g_kTexturingPropertyRTTI, pGeom->GetProperty(5));
+            TGTexturingProperty* pTexProp2 = TGDynamicCast(&NiTexturingProperty_ms_RTTI, pGeom->GetProperty(5));
             if (pTexProp2)
             {
-                AddTexture(pTexProp2->GetDetailMap(pGeom, "Detail Map", aiArg, pAlpha6 != 0));
-                AddTexture(pTexProp2->GetBumpMap(pGeom, "Bump Map", aiArg, pAlpha6 != 0));
-                AddTexture(pTexProp2->GetGlowMap(pGeom, "Glow Map", aiArg, pAlpha6 != 0));
-                AddTexture(pTexProp2->GetGlossMap(pGeom, "Gloss Map", aiArg, pAlpha6 != 0));
-                AddTexture(pTexProp2->GetDarkMap(pGeom, "Dark Map", aiArg, pAlpha6 != 0));
+                AddTexture(pTexProp2->GetDetailMap(pGeom, "Detail Map", apModel, pAlpha6 != 0));
+                AddTexture(pTexProp2->GetBumpMap(pGeom, "Bump Map", apModel, pAlpha6 != 0));
+                AddTexture(pTexProp2->GetGlowMap(pGeom, "Glow Map", apModel, pAlpha6 != 0));
+                AddTexture(pTexProp2->GetGlossMap(pGeom, "Gloss Map", apModel, pAlpha6 != 0));
+                AddTexture(pTexProp2->GetDarkMap(pGeom, "Dark Map", apModel, pAlpha6 != 0));
                 for (unsigned int i = 0; i < pTexProp2->GetDecalMapCount(); i++)
-                    AddTexture(pTexProp2->GetDecalMap(i, pGeom, "Decal Map", aiArg, pAlpha6 != 0));
+                    AddTexture(pTexProp2->GetDecalMap(i, pGeom, "Decal Map", apModel, pAlpha6 != 0));
             }
         }
         else if (apObject && apObject->IsSceneNode())
@@ -223,7 +228,7 @@ void TGGatherer::TESDataHandler_CheckTexturesRecurse(TGAVObject* apObject, int a
             {
                 TGAVObject* pChild2 = pNode->GetAt(j2);
                 if (pChild2)
-                    TESDataHandler_CheckTexturesRecurse(pChild2, aiArg);
+                    TESDataHandler_CheckTexturesRecurse(pChild2, apModel);
             }
         }
     }

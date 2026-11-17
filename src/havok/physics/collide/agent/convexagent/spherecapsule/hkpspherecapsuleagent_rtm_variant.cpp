@@ -186,19 +186,19 @@ m_time0=ticks;
 typedef hkUint16 hkContactPointId;
 __forceinline const hkVector4&hkContactPoint::getNormal()const
 {
-return m_vSeparatingNormal;
+return m_separatingNormal;
 }
 __forceinline hkVector4&hkContactPoint::getPosition()
 {
-return m_vContactPosition;
+return m_position;
 }
 __forceinline hkVector4&hkContactPoint::getSeparatingNormal()
 {
-return m_vSeparatingNormal;
+return m_separatingNormal;
 }
 __forceinline void hkContactPoint::setDistance(hkReal d)
 {
-m_vSeparatingNormal(3)=d;
+m_separatingNormal(3)=d;
 }
 class Vector4WithInt24W:public hkVector4
 {
@@ -211,11 +211,11 @@ typedef hkUint32 hkpShapeKey;
 __forceinline const hkTransform&hkpCdBody::getTransform()const
 {
 ;
-return*static_cast<const hkTransform*>(m_pMotionState);
+return*static_cast<const hkTransform*>(m_motion);
 }
 __forceinline const hkpShape*hkpCdBody::getShape()const
 {
-return m_pCollisionShape;
+return m_shape;
 }
 struct GskAgentInput;
 class hkpContactMgr;
@@ -243,7 +243,7 @@ const hkpCdBody&m_pBodyB;};
 
 __forceinline const hkVector4*hkpCapsuleShape::GetIndexedVertices()const
 {
-return&m_kVertexA;
+return&m_vertexA;
 }
 
 namespace hkVector4Util_S
@@ -335,7 +335,11 @@ _mm_mul_ps(_mm_shuffle_ps(radiusMinusDist,radiusMinusDist,0),cpoint.getNormal().
 cpoint.setDistance(dist-radiusSum);
 return ST_CP_HIT;}
 // @fnv 0x00d3ebe0
-void __cdecl hkpSphereCapsuleAgent::m_pVirtualFunction2(const hkpCdBody&bodyA,const hkpCdBody&bodyB,const CollisionAgentContext&input,class hkpCdPointCollector&collector)
+// src: XBOX_RETAIL_PDB 0x00d3ebe0
+// pdb: hkpSphereCapsuleAgent::staticGetClosestPoints | hkpSphereCapsuleAgent.obj | retail, object-file gap fill, high
+// pdb params: bodyA, bodyB, input, collector
+// pdb locals: event
+void __cdecl hkpSphereCapsuleAgent::staticGetClosestPoints(const hkpCdBody&bodyA,const hkpCdBody&bodyB,const CollisionAgentContext&input,class hkpCdPointCollector&collector)
 {
 {hkMonitorStream&mStream=hkMonitorStream::getInstance();if(mStream.getEnd()<mStream.getCapacityMinus16()){hkMonitorStream::TimerCommand*h=reinterpret_cast<hkMonitorStream::TimerCommand*>(mStream.getEnd());h->m_commandAndMonitor="T" "t" "SphereCapsule";h->setTime();mStream.setEnd((char*)(h+1));}};
 // Leave output vectors uninitialized without relying on out-of-line constructors.

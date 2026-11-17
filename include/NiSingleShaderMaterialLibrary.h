@@ -4,6 +4,7 @@
 
 class NiMaterial;
 
+// pdb: class NiSingleShaderMaterialLibrary, size 0x14, bases: NiMaterialLibrary, 2 members
 class NiSingleShaderMaterialLibrary : public NiMaterialLibrary
 {
 public:
@@ -17,6 +18,6 @@ public:
     virtual void* vf05();
     virtual void* vf06();
 
-    int _c;
-    int _d;
+    int m_pkLastLibrary; // src: XBOX_RETAIL_PDB +0xc (old: _c)
+    int m_uiLastDesc; // src: XBOX_RETAIL_PDB +0x10 (old: _d)
 };

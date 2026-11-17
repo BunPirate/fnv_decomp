@@ -34,6 +34,8 @@ void NiIntegersExtraData::SetVtableAndProcessState_00a99950()
 
 // @fnv 0x00a99980
 // src: EXE 0x00a99980
+// pdb: NiIntegersExtraData::NiIntegersExtraData | NiIntegersExtraData.obj | debug, call graph, low
+// pdb params: uiSize, piValue
 NiIntegersExtraData* NiIntegersExtraData::NiIntegersExtraData_00a99980(int a, int b)
 {
     NiExtraData::FUN_00a7b2e0();
@@ -45,6 +47,8 @@ NiIntegersExtraData* NiIntegersExtraData::NiIntegersExtraData_00a99980(int a, in
 
 // @fnv 0x00a99a10
 // src: EXE 0x00a99a10
+// pdb: NiIntegersExtraData::CreateObject | NiIntegersExtraData.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 NiExtraData* NiIntegersExtraData_CreateObject()
 {
     NiIntegersExtraData* data = static_cast<NiIntegersExtraData*>(NiIntegersExtraData::operator new(sizeof(NiIntegersExtraData)));
@@ -60,6 +64,8 @@ NiExtraData* NiIntegersExtraData_CreateObject()
 }
 
 // @fnv 0x00a99a50
+// pdb: NiIntegersExtraData::`scalar deleting destructor' | BSWArray.obj | retail, vtable slot, high
+// pdb params: this
 NiIntegersExtraData* NiIntegersExtraData::FUN_00a99a50(int flag)
 {
     *(int*)this = (int)&DAT_010a0c7c;
@@ -99,6 +105,9 @@ bool NiIntegersExtraData::IsEqual_00a998e0(NiIntegersExtraData* pObject)
 void* __cdecl _NiMalloc(unsigned int);
 // @fnv 0x00a99870
 // src: XBOX_PDB 0x00a99870
+// pdb: NiIntegersExtraData::CopyMembers | NiIntegersExtraData.obj | debug, call graph, medium
+// pdb params: pDest, kCloning
+// pdb locals: i
 void NiIntegersExtraData::CopyMembers_00a99870(NiIntegersExtraData* pDest, void* pCloning)
 {
     NiExtraData::CopyMembers_00a7b330(pDest, pCloning);
@@ -153,20 +162,26 @@ char* CreateDebugString(const char* pcPrefix, int iValue);
 extern const char* g_011f5f24;
 
 // @fnv 0x00a99b20
-void NiIntegersExtraData::GetViewerStrings(NiViewerStringsArray* pkStrings)
+// pdb: NiIntegersExtraData::GetViewerStrings | NiIntegersExtraData.obj | retail, string-set bridge, high
+// pdb params: pStrings
+// pdb locals: i
+void NiIntegersExtraData::GetViewerStrings(NiViewerStringsArray* pStrings)
 {
-    BaseGetViewerStrings(pkStrings);
-    pkStrings->Add(CreateDebugString(g_011f5f24));
-    pkStrings->Add(CreateDebugString("m_uiSize", m_uiSize));
+    BaseGetViewerStrings(pStrings);
+    pStrings->Add(CreateDebugString(g_011f5f24));
+    pStrings->Add(CreateDebugString("m_uiSize", m_uiSize));
     for (unsigned int i = 0; i < m_uiSize; i++)
-        pkStrings->Add(CreateDebugString("m_piValue[i]", m_piValue[i]));
+        pStrings->Add(CreateDebugString("m_piValue[i]", m_piValue[i]));
 }
 
 // @fnv 0x00a999b0
 // src: XBOX_PDB 0x00a999b0
-NiExtraData* NiIntegersExtraData::CreateClone_00a999b0(void* pvProcess)
+// pdb: NiIntegersExtraData::CreateClone | NiIntegersExtraData.obj | retail, vtable slot, high
+// pdb params: kCloning
+// pdb locals: pkObject
+NiExtraData* NiIntegersExtraData::CreateClone_00a999b0(void* kCloning)
 {
     NiIntegersExtraData* pkClone = new NiIntegersExtraData;
-    CopyMembers_00a99870(pkClone, pvProcess);
+    CopyMembers_00a99870(pkClone, kCloning);
     return pkClone;
 }

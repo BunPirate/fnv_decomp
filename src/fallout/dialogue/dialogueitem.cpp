@@ -15,10 +15,11 @@
 #include "../../../include/TESSaveLoadGame.h"
 
 // @fnv 0x0083c820
+// pdb: DialogueItem::GetCurrentResponse | DialogueItem.obj | debug, call graph, high
 DialogueResponse* DialogueItem::GetActiveResponse()
 {
-    if (m_pCurrentResponseList)
-        return m_pCurrentResponseList->GetItem();
+    if (pCurrentResponse)
+        return pCurrentResponse->GetItem();
     else
         return NULL;
 }
@@ -34,13 +35,14 @@ void* __fastcall _ref_00726070(void* pThis);
 
 // @fnv 0x0083c7e0
 // src: XBOX_PDB 0x0083c7e0
+// pdb: DialogueItem::NextResponse | DialogueItem.obj | debug, call graph, high
 bool DialogueItem::NextResponse_0083c7e0()
 {
-    if (m_pCurrentResponseList)
+    if (pCurrentResponse)
     {
-        m_pCurrentResponseList = static_cast<BSSimpleList<DialogueResponse*>*>(_ref_00726070(m_pCurrentResponseList));
+        pCurrentResponse = static_cast<BSSimpleList<DialogueResponse*>*>(_ref_00726070(pCurrentResponse));
     }
-    return m_pCurrentResponseList != 0;
+    return pCurrentResponse != 0;
 }
 
 void __cdecl Deallocate(void*);
@@ -51,6 +53,7 @@ struct DialogueDeleteFlags
     unsigned int flags;
 };
 // @fnv 0x005c90d0
+// pdb: DialogueItem::`scalar deleting destructor' | TESScriptFunctions.obj | debug, call graph, high
 void* __fastcall DeleteDialogueItem(DialogueItem* item, DialogueDeleteFlags argument)
 {
     item->~DialogueItem();
@@ -60,6 +63,7 @@ void* __fastcall DeleteDialogueItem(DialogueItem* item, DialogueDeleteFlags argu
 }
 
 namespace fnv_0083c670 {
+// pdb: class DialogueResponse, size 0x2c, 9 members
 struct DialogueResponse
 {
     ~DialogueResponse();
@@ -75,9 +79,11 @@ struct ListX
 
 // Destructor that repeatedly deletes the list's current DialogueResponse and advances until the list reports empty.
 // @fnv 0x0083c670
+// pdb: DialogueItem::~DialogueItem | DialogueItem.obj | retail, upstream name already matches, high
+// pdb locals: pList
 DialogueItem::~DialogueItem()
 {
-    fnv_0083c670::ListX* pList = reinterpret_cast<fnv_0083c670::ListX*>(&m_kResponseList);
+    fnv_0083c670::ListX* pList = reinterpret_cast<fnv_0083c670::ListX*>(&lResponses);
     while (pList && !pList->_ref_008256d0())
     {
         delete *pList->_ref_006815c0();
@@ -90,11 +96,13 @@ struct FUN_0083c9e0_resp
     unsigned short ProcessAndReturnValue_0083d420();
 };
 // @fnv 0x0083c9e0
+// pdb: DialogueItem::GetSaveSize | DialogueItem.obj | debug, object-file run extension, low
+// pdb locals: plist, isize, presponse
 unsigned short __fastcall GetDialogueItemSaveSize(DialogueItem* item)
 {
     unsigned short usSize = 0;
     usSize += 1;
-    BSSimpleList<DialogueResponse*>* pIter = &item->m_kResponseList;
+    BSSimpleList<DialogueResponse*>* pIter = &item->lResponses;
     while (pIter && !pIter->IsEmpty())
     {
         FUN_0083c9e0_resp* pResponse = reinterpret_cast<FUN_0083c9e0_resp*>(pIter->GetItem());
@@ -113,10 +121,13 @@ void _FNV_Warning(const char* message);
 
 // Returns the index of response in the dialogue responses list, warning and returning 0 if it is not found.
 // @fnv 0x0083c900
+// pdb: DialogueItem::InitLoadGame | DialogueItem.obj | retail, object-file run extension, low
+// pdb note: debug build links it to DialogueItem::GetDialogueResponseIndex
+// pdb locals: ispeakerID
 short DialogueItem::GetResponseIndex(DialogueResponse* response)
 {
     short iElementIndex = 0;
-    BSSimpleList<DialogueResponse*>* pCurrentElementNext = &m_kResponseList;
+    BSSimpleList<DialogueResponse*>* pCurrentElementNext = &lResponses;
     while (pCurrentElementNext && !pCurrentElementNext->IsEmpty())
     {
         if (response == pCurrentElementNext->GetItem())
@@ -133,10 +144,13 @@ void FNV_Warning(const char* message);
 
 // Walks the dialogue response list and returns the response at the given index, warning and returning null if the index is out of range.
 // @fnv 0x0083c970
+// pdb: DialogueItem::GetSaveSize | DialogueItem.obj | retail, object-file run extension, low
+// pdb note: debug build links it to DialogueItem::GetDialogueResponseByIndex
+// pdb locals: plist, isize, presponse
 DialogueResponse* DialogueItem::GetResponseByIndex(short index)
 {
     short current = 0;
-    BSSimpleList<DialogueResponse*>* node = &m_kResponseList;
+    BSSimpleList<DialogueResponse*>* node = &lResponses;
     while (node && !node->IsEmpty())
     {
         if (current == index)
@@ -157,6 +171,9 @@ struct DialogueResponseArgument
     DialogueResponse* response;
 };
 // @fnv 0x0083c8a0
+// pdb: DialogueItem::InitLoadGame | DialogueItem.obj | retail, object-file run extension, low
+// pdb note: debug build links it to DialogueItem::SetCurrentResponse
+// pdb locals: ispeakerID
 void __fastcall SetActiveDialogueResponse(DialogueItem* item, DialogueResponseArgument argument)
 {
     void* pCurrentElementNext = (void*)item;
@@ -164,7 +181,7 @@ void __fastcall SetActiveDialogueResponse(DialogueItem* item, DialogueResponseAr
     {
         if (argument.response == _ref_006815c0(pCurrentElementNext))
         {
-            item->m_pCurrentResponseList = static_cast<BSSimpleList<DialogueResponse*>*>(pCurrentElementNext);
+            item->pCurrentResponse = static_cast<BSSimpleList<DialogueResponse*>*>(pCurrentElementNext);
             break;
         }
         pCurrentElementNext = _ref_00726070(pCurrentElementNext);
@@ -177,12 +194,14 @@ struct DialogueResponseSave
     void SaveToGame();
 };
 // @fnv 0x0083ca90
+// pdb: DialogueItem::SaveGame | DialogueItem.obj | debug, object-file run extension, low
+// pdb locals: plist, pcount, ispeakerID, ccurrentResponse, iinfoID, itopicID, ccount, iquestID, presponse
 void __fastcall SaveDialogueItemToSave(DialogueItem* item)
 {
     char cCount4 = 0;
     char* pCountPos8 = g_TESSaveLoadGame->GetCurrentPosition();
     g_TESSaveLoadGame->TESSaveLoadGame_SaveGameDataOLD(&cCount4, 1);
-    BSSimpleList<DialogueResponse*>* plist2 = &item->m_kResponseList;
+    BSSimpleList<DialogueResponse*>* plist2 = &item->lResponses;
     while (plist2 && !plist2->IsEmpty())
     {
         DialogueResponse* presponse3 = plist2->GetItem();
@@ -193,8 +212,8 @@ void __fastcall SaveDialogueItemToSave(DialogueItem* item)
     *pCountPos8 = cCount4;
 
     char cCurrentVal = -1;
-    if (item->m_pCurrentResponseList)
-        cCurrentVal = item->GetResponseIndex(item->m_pCurrentResponseList->GetItem());
+    if (item->pCurrentResponse)
+        cCurrentVal = item->GetResponseIndex(item->pCurrentResponse->GetItem());
     g_TESSaveLoadGame->TESSaveLoadGame_SaveGameDataOLD(&cCurrentVal, 1);
 
     unsigned int aIInfoID = 0;
@@ -213,19 +232,21 @@ void __fastcall SaveDialogueItemToSave(DialogueItem* item)
     g_TESSaveLoadGame->TESSaveLoadGame_SaveNumericID(static_cast<void*>(&iQuestID_2), 4);
 
     unsigned int iSpeakerID = 0;
-    if (item->m_pDialogueSpeaker)
-        iSpeakerID = item->m_pDialogueSpeaker->GetFormID();
+    if (item->pSpeaker)
+        iSpeakerID = item->pSpeaker->GetFormID();
     g_TESSaveLoadGame->TESSaveLoadGame_SaveNumericID(static_cast<void*>(&iSpeakerID), 4);
 }
 
 TESForm* GetFormByID(unsigned int);
 // @fnv 0x0083cdf0
+// pdb: DialogueItem::InitLoadGame | DialogueItem.obj | debug, object-file gap fill, medium
+// pdb locals: ispeakerID
 void __fastcall ResolveDialogueItemSpeaker(DialogueItem* item)
 {
-    unsigned int loc = reinterpret_cast<unsigned int>(item->m_pDialogueSpeaker);
+    unsigned int loc = reinterpret_cast<unsigned int>(item->pSpeaker);
     if (loc)
     {
-        item->m_pDialogueSpeaker = dynamic_cast<TESObjectREFR*>(GetFormByID(loc));
+        item->pSpeaker = dynamic_cast<TESObjectREFR*>(GetFormByID(loc));
     }
 }
 
@@ -240,7 +261,11 @@ struct DialogueSaveBufferArgument
 
 // Writes the response list, current response index, and associated form data (pInfo, pTopic, pQuest, m_pDialogueSpeaker) to apSaveGameBuffer.
 // @fnv 0x0083ce40
-void __fastcall SaveDialogueItemToBuffer(DialogueItem* item, DialogueSaveBufferArgument argument)
+// src: XBOX_DEBUG_PDB 0x0083ce40
+// pdb: DialogueItem::SaveGame | DialogueItem.obj | debug, call graph, high
+// pdb params: apSaveGameBuffer
+// pdb locals: scurrentResponse, plist, isaveGameBufferPos, isaveGameCount, presponse
+void __fastcall DialogueItem_SaveGame(DialogueItem* item, DialogueSaveBufferArgument argument)
 {
     short scurrentResponse;
     ::BSSimpleList< ::DialogueResponse*>* pCurrentElementNext;
@@ -249,7 +274,7 @@ void __fastcall SaveDialogueItemToBuffer(DialogueItem* item, DialogueSaveBufferA
 
     isaveGameCount = 0;
     isaveGameBufferPos = argument.buffer->StartVariableSizedValue();
-    pCurrentElementNext = &item->m_kResponseList;
+    pCurrentElementNext = &item->lResponses;
     while (pCurrentElementNext)
     {
         ::DialogueResponse* presponse = pCurrentElementNext->GetItem();
@@ -261,12 +286,12 @@ void __fastcall SaveDialogueItemToBuffer(DialogueItem* item, DialogueSaveBufferA
         pCurrentElementNext = pCurrentElementNext->GetNext();
     }
     argument.buffer->SaveVariableSizedValue_00865ff0(isaveGameCount, isaveGameBufferPos);
-    scurrentResponse = item->m_pCurrentResponseList ? item->GetResponseIndex(item->m_pCurrentResponseList->GetItem()) : -1;
+    scurrentResponse = item->pCurrentResponse ? item->GetResponseIndex(item->pCurrentResponse->GetItem()) : -1;
     argument.buffer->SaveData(static_cast<void*>(&scurrentResponse), 2, 0);
     argument.buffer->SerializeFormData(static_cast<void*>(item->pInfo), 0);
     argument.buffer->SerializeFormData(static_cast<void*>(item->pTopic), 0);
     argument.buffer->SerializeFormData(static_cast<void*>(item->pQuest), 0);
-    argument.buffer->SerializeFormData(static_cast<void*>(item->m_pDialogueSpeaker), 0);
+    argument.buffer->SerializeFormData(static_cast<void*>(item->pSpeaker), 0);
 }
 
 
@@ -292,23 +317,24 @@ struct DialogueResponse
 
 // Constructs a dialogue response list by iterating over TESResponse entries from apInfo and appending a DialogueResponse for each.
 // @fnv 0x0083c520
+// pdb: DialogueItem::DialogueItem | DialogueItem.obj | retail, upstream name already matches, high
 DialogueItem::DialogueItem(TESQuest* apQuest, TESTopic* apTopic, TESTopicInfo* apInfo, TESObjectREFR* apSpeaker)
 {
-    m_pCurrentResponseList = 0;
+    pCurrentResponse = 0;
     pInfo = 0;
     if (apTopic && apInfo && apQuest)
     {
         pInfo = apInfo;
         pTopic = apTopic;
         pQuest = apQuest;
-        m_pDialogueSpeaker = apSpeaker;
+        pSpeaker = apSpeaker;
         TESResponseList responseList;
         apInfo->CloneResponseList(&responseList);
         TESResponse* presponse = (TESResponse*)(unsigned int)responseList;
         while (presponse)
         {
             DialogueResponse* pResponse = reinterpret_cast<DialogueResponse*>(new fnv_0083c520::DialogueResponse(apQuest, apTopic, apInfo, apSpeaker, presponse));
-            m_kResponseList.AddTail(pResponse);
+            lResponses.AddTail(pResponse);
             presponse = (TESResponse*)presponse->GetNext();
         }
     }
@@ -320,19 +346,22 @@ class DialogueResponse
   public:
     DialogueResponse();
     void DialogueResponse_LoadGame();
-    BSStringT<char> m_kResponseText;
+    BSStringT<char> cText; // src: XBOX_RETAIL_PDB +0x0 (old: m_kResponseText)
     unsigned int eEmotion;
-    unsigned int m_uiEmotionValue;
-    BSStringT<char> m_kResponseNotes;
-    TESIdleForm* m_pFirstIdleForm;
-    TESIdleForm* m_pSecondIdleForm;
-    TESTopic* pTopic;
-    TESTopicInfo* pInfo;
-    TESQuest* pQuest;
+    unsigned int uiEmotion; // src: XBOX_RETAIL_PDB +0xc (old: m_uiEmotionValue)
+    BSStringT<char> cVoice; // src: XBOX_RETAIL_PDB +0x10 (old: m_kResponseNotes)
+    TESIdleForm* pSpeakerIdle; // src: XBOX_RETAIL_PDB +0x18 (old: m_pFirstIdleForm)
+    TESIdleForm* pListenIdle; // src: XBOX_RETAIL_PDB +0x1c (old: m_pSecondIdleForm)
+    TESTopic* pVoiceSound; // src: XBOX_RETAIL_PDB +0x20 (old: pTopic)
+    TESTopicInfo* bUseEmotion; // src: XBOX_RETAIL_PDB +0x24 (old: pInfo)
+    TESQuest* nResponseID; // src: XBOX_RETAIL_PDB +0x28 (old: pQuest)
 };
 // Reads response count, current index, topic info, topic, quest, and speaker IDs from the save stream into the dialogue item.
 // @fnv 0x0083cc10
-void __fastcall LoadDialogueItemFromSave(DialogueItem* item)
+// src: XBOX_DEBUG_PDB 0x0083cc10
+// pdb: DialogueItem::LoadGame | DialogueItem.obj | debug, call graph, high
+// pdb locals: ispeakerID, ccurrentResponse, iinfoID, itopicID, ccount, iquestID, i, presponse
+void __fastcall DialogueItem_LoadGame(DialogueItem* item)
 {
     unsigned char cCount4;
     unsigned int iloopB;
@@ -348,7 +377,7 @@ void __fastcall LoadDialogueItemFromSave(DialogueItem* item)
     {
         presponse3 = reinterpret_cast< ::DialogueResponse*>(new DialogueResponse);
         reinterpret_cast<DialogueResponse*>(presponse3)->DialogueResponse_LoadGame();
-        item->m_kResponseList.AddTail(presponse3);
+        item->lResponses.AddTail(presponse3);
     }
 
     g_TESSaveLoadGame->TESSaveLoadGame_LoadGameDataOLD(&cCurrentVal, 1);
@@ -357,7 +386,7 @@ void __fastcall LoadDialogueItemFromSave(DialogueItem* item)
         reinterpret_cast<void (__thiscall*)(DialogueItem*, DialogueResponse*)>(SetActiveDialogueResponse)(
             item, item->GetResponseByIndex(cCurrentVal));
     else
-        item->m_pCurrentResponseList = 0;
+        item->pCurrentResponse = 0;
 
     g_TESSaveLoadGame->FUN_00857aa0(&aIInfoID, 4);
     if (aIInfoID)
@@ -369,5 +398,5 @@ void __fastcall LoadDialogueItemFromSave(DialogueItem* item)
     if (iQuestID_2)
         item->pQuest = dynamic_cast<TESQuest*>(::GetFormByID(iQuestID_2));
     g_TESSaveLoadGame->FUN_00857aa0(&iSpeakerID, 4);
-    item->m_pDialogueSpeaker = (::TESObjectREFR*)iSpeakerID;
+    item->pSpeaker = (::TESObjectREFR*)iSpeakerID;
 }

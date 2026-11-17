@@ -8,6 +8,7 @@ class BGSPerk;
 class PerkRankList;
 
 // TraitMenu (FNV menu class 1084): ctor 0x007e6780 installs vftable 0x010779bc; MenuSystem::GetMenuById allocates 0x8c.
+// pdb: class TraitMenu, size 0x8c, bases: Menu, 5 members
 class TraitMenu : public Menu
 {
 public:

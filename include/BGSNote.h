@@ -25,10 +25,10 @@ class BGSNote : public TESBoundObject,
 {
 public:
     void* m_pText;
-    void* m_pDialogueSpeaker;
-    BSSimpleList<TESQuest*> ownerQuests;
+    void* pSpeaker; // src: XBOX_RETAIL_PDB +0x70 (old: m_pDialogueSpeaker)
+    BSSimpleList<TESQuest*> OwnerQuests; // src: XBOX_RETAIL_PDB +0x74 (old: ownerQuests)
     signed char cType;
-    bool m_bIsRead;
+    bool bHasBeenRead; // src: XBOX_RETAIL_PDB +0x7d (old: m_bIsRead)
     char padding7e[2];
 
     BGSNote();
@@ -40,28 +40,28 @@ public:
     virtual void LoadGame(BGSLoadFormBuffer* buffer);
     virtual void Revert(BGSLoadFormBuffer* buffer);
     virtual void InitItem();
-    virtual void CopyFrom(const TESForm* form);
-    virtual bool Compare(TESForm* form);
+    virtual void CopyFrom(const TESForm* apCopy);
+    virtual bool Compare(TESForm* apCompare);
 
     void* Release(unsigned int flags);
     void ClearNoteData();
     void SaveNote();
-    void SetNoteTexture(TESTexture* texture);
-    void SetNoteText(TESDescription* text);
+    void SetNoteImage(TESTexture* apTex);
+    void SetNoteText(TESDescription* apDesc);
     BSSimpleList<TESQuest*>* GetOwnerQuests();
 
-    void ChangeNoteType(NOTE_TYPE type);
-    bool Load(TESFile* file);
-    TESTexture* GetNoteTexture();
+    void SetNoteType(NOTE_TYPE aeVal);
+    bool Load(TESFile* apFile);
+    TESTexture* GetNoteImage();
     TESSound* GetNoteSound();
-    void SetNoteSound(TESSound* sound);
+    void SetNoteSound(TESSound* apSound);
     TESTopic* GetNoteTopic();
     void SetNoteTopic(TESTopic* topic);
     TESActorBase* GetNoteSpeaker();
     void SetNoteSpeaker(TESActorBase* speaker);
     void ResetFormData();
     int GetNoteType();
-    TESDescription* GetNoteDescription();
+    TESDescription* GetNoteText();
     bool GetUnk7d();
     void SetSoundNotePlayed(bool played);
 };

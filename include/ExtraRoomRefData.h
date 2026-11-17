@@ -5,6 +5,7 @@
 class RoomRefData;
 class MagicItem;
 
+// pdb: class ExtraRoomRefData, size 0x10, bases: BSExtraData, 1 members
 class ExtraRoomRefData : public BSExtraData
 {
 public:

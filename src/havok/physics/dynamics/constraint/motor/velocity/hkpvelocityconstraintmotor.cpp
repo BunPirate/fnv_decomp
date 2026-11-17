@@ -28,22 +28,23 @@ inline void* operator new(unsigned int size, void* p)
 __forceinline void* __cdecl hkReferencedObject::operator new(std::size_t nbytes)
 {
     hkReferencedObject* b = static_cast<hkReferencedObject*>(GetMotorHeap(hkMemoryRouter::getInstance()).allocateChunk(static_cast<int>(nbytes)));
-    b->m_usMemSizeAndFlags = static_cast<unsigned short>(nbytes);
+    b->m_memSizeAndFlags = static_cast<unsigned short>(nbytes);
     return b;
 }
 // No include/hkpVelocityConstraintMotor.h exists yet; the reflected layout is 0x20 bytes.
+// pdb: class hkpVelocityConstraintMotor, size 0x20, bases: hkpLimitedForceConstraintMotor, 3 members
 class hkpVelocityConstraintMotor : public hkpLimitedForceConstraintMotor
 {
   public:
     virtual void v0();
-    float m_fTau;
-    float m_fVelocityTarget;
-    char m_bUseVelocityTarget;
+    float m_tau; // src: XBOX_RETAIL_PDB +0x14 (old: m_fTau)
+    float m_velocityTarget; // src: XBOX_RETAIL_PDB +0x18 (old: m_fVelocityTarget)
+    char m_useVelocityTargetFromConstraintTargets; // src: XBOX_RETAIL_PDB +0x1c (old: m_bUseVelocityTarget)
     char pad1D[3];
 
     __forceinline hkpVelocityConstraintMotor(const hkpVelocityConstraintMotor& o) throw()
-        : hkpLimitedForceConstraintMotor(o), m_fTau(o.m_fTau), m_fVelocityTarget(o.m_fVelocityTarget),
-          m_bUseVelocityTarget(o.m_bUseVelocityTarget)
+        : hkpLimitedForceConstraintMotor(o), m_tau(o.m_tau), m_velocityTarget(o.m_velocityTarget),
+          m_useVelocityTargetFromConstraintTargets(o.m_useVelocityTargetFromConstraintTargets)
     {}
 
     hkpVelocityConstraintMotor* clone_00d861c0() const;
@@ -52,6 +53,7 @@ class hkpVelocityConstraintMotor : public hkpLimitedForceConstraintMotor
 // Allocates a chunk from the thread memory router and constructs a copy of this motor in it.
 // @fnv 0x00d861c0
 // src: HAVOK_LIB 0x00d861c0
+// pdb: hkpVelocityConstraintMotor::clone | hkpVelocityConstraintMotor.obj | retail, vtable slot, high
 hkpVelocityConstraintMotor* hkpVelocityConstraintMotor::clone_00d861c0() const
 {
     return new hkpVelocityConstraintMotor(*this);

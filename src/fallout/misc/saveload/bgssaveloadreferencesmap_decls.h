@@ -14,16 +14,17 @@
 
 class BGSReconstructFormsInAllFilesMap;
 
+// pdb: class BGSSaveLoadReferencesMap, size 0x30, 3 members
 class BGSSaveLoadReferencesMap
 {
   public:
-    NiTPointerMap<unsigned int, unsigned int> m_kReferenceIDMap;
-    BGSCellNumericIDArrayMap m_kCellReferences;
-    NiTPointerMap<unsigned int, BGSCellNumericIDArrayMap*> m_kWorldspaceCellReferenceMaps;
+    NiTPointerMap<unsigned int, unsigned int> MovedReferencesMap; // src: XBOX_RETAIL_PDB +0x0 (old: m_kReferenceIDMap)
+    BGSCellNumericIDArrayMap InteriorReferencesMap; // src: XBOX_RETAIL_PDB +0x10 (old: m_kCellReferences)
+    NiTPointerMap<unsigned int, BGSCellNumericIDArrayMap*> WorldspaceReferencesMap; // src: XBOX_RETAIL_PDB +0x20 (old: m_kWorldspaceCellReferenceMaps)
 
     void Clear();
     void LoadCellReferences(TESObjectCELL* cell, BGSReconstructFormsInAllFilesMap* forms);
-    void ReconstructFormID(unsigned int id, BGSReconstructFormsInAllFilesMap* forms);
+    void ReconstructFormID(unsigned int aiRefID, BGSReconstructFormsInAllFilesMap* apReconstructForms);
 };
 
 typedef char bgssaveloadreferencesmap_cell_map_size[(sizeof(BGSCellNumericIDArrayMap) == 16) ? 1 : -1];

@@ -49,7 +49,7 @@ struct S_00b5a4a0_Param : S_00b5a4a0_EffectParam
     {
         g_00b5a4a0_mm.Deallocate(p);
     }
-    void FUN_00b8ab10(int a, int b);
+    void FUN_00b8ab10(int aiVSize, int aiPSize);
     void FUN_00b8a790(int idx, float x, float y, float z, float w);
     int unk4;
     int unk8;
@@ -168,7 +168,7 @@ struct S_00b5a4a0
     int unk10;
     int unk14;
     S_00b5a4a0_ParamArray m_params;
-    void SetTextureArraySize(int n);
+    void SetTextureArraySize(int aiCount);
     void FUN_00ba3c70(int idx, ImageSpaceTexture* tex, S_00b5a4a0_Param* param, int d);
     void SetEffectParamAt(int a, int b, int c);
     void ImageSpaceEffect__Setup(S_00b5a4a0_Src* src, int unused);
@@ -196,27 +196,28 @@ struct S_EffectArray
     void SetSize(unsigned int size);
 };
 
+// pdb: class ImageSpaceEffect, size 0x58, 7 members
 struct ImageSpaceEffect
 {
     virtual ~ImageSpaceEffect();
-    int unk04;
-    int unk08;
+    int bIsActive; // src: XBOX_RETAIL_PDB +0x4 (old: unk04)
+    int pEffectList; // src: XBOX_RETAIL_PDB +0x8 (old: unk08)
     int unk0c;
     int unk10;
     int unk14;
-    int unk18;
+    int pEffectParamList; // src: XBOX_RETAIL_PDB +0x18 (old: unk18)
     int unk1c;
     int unk20;
     int unk24;
-    S_EffectArray m_effectTextures;
+    S_EffectArray pTextures; // src: XBOX_RETAIL_PDB +0x28 (old: m_effectTextures)
     int unk2c;
     int unk30;
     int unk34;
-    int unk38;
+    int pEffectInputs; // src: XBOX_RETAIL_PDB +0x38 (old: unk38)
     int unk3c;
     int unk40;
     int unk44;
-    int unk48;
+    int pEffectOutput; // src: XBOX_RETAIL_PDB +0x48 (old: unk48)
     int unk4c;
     int unk50;
     int unk54;
@@ -272,7 +273,7 @@ struct FUN_00b5a590 : ImageSpaceEffect
 // @fnv 0x00b5a590
 FUN_00b5a590::FUN_00b5a590()
 {
-    m_effectTextures.SetSize(4);
+    pTextures.SetSize(4);
 
     float values[4] = {1.0f, g_f_01013974, 0.0f, g_f_012023e0};
     memcpy(m_5c.m_vectors + 8, values, sizeof(values));
@@ -302,13 +303,16 @@ struct ParamAccessor
 struct FUN_00b5a720_cls : S_00b5a4a0
 {
     void FUN_00ba3ba0(int a, int b, int c, int d, int e, int f, int g);
-    void ImageSpaceEffectDepthRadialBlur_Setup(S_00b5a4a0_Src* src, int unused);
+    void ImageSpaceEffectDepthRadialBlur_Setup(S_00b5a4a0_Src* apManager, int apParam);
 };
 
 // Initializes two texture parameters from src, sets their values and flags, and registers them in m_params.
 // @fnv 0x00b5a720
 // src: XBOX_PDB 0x00b5a720
-void FUN_00b5a720_cls::ImageSpaceEffectDepthRadialBlur_Setup(S_00b5a4a0_Src* src, int unused)
+// pdb: ImageSpaceEffectDepthRadialBlur::Setup | ImageSpaceEffectRadialBlur.obj | retail, upstream name already matches, high
+// pdb params: apManager, apParam
+// pdb locals: pparam
+void FUN_00b5a720_cls::ImageSpaceEffectDepthRadialBlur_Setup(S_00b5a4a0_Src* apManager, int apParam)
 {
     S_00b5a4a0_Param* p;
 
@@ -318,7 +322,7 @@ void FUN_00b5a720_cls::ImageSpaceEffectDepthRadialBlur_Setup(S_00b5a4a0_Src* src
     p->FUN_00b8ab10(0, 2);
     p->FUN_00b8a790(0, DAT_0101e2bc, 0.0f, 0.0f, 0.0f);
 
-    ImageSpaceTexture* tex = src->unk8->unkD8[g_00b5a4a0_index];
+    ImageSpaceTexture* tex = apManager->unk8->unkD8[g_00b5a4a0_index];
     FUN_00ba3c70(0, tex, p, 2);
 
     m_params.FUN_00ba3aa0(0, p);
@@ -333,7 +337,7 @@ void FUN_00b5a720_cls::ImageSpaceEffectDepthRadialBlur_Setup(S_00b5a4a0_Src* src
 
     FUN_00ba3ba0(1, 1, 2, 3, 0, 1, 0);
 
-    FUN_00ba3c70(1, reinterpret_cast<ImageSpaceTexture*>(src->unk8->unkCC), p, 0);
+    FUN_00ba3c70(1, reinterpret_cast<ImageSpaceTexture*>(apManager->unk8->unkCC), p, 0);
     if (0)
         m_params.FUN_00ba3aa0(0, p);
 }

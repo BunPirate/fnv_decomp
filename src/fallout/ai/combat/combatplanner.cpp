@@ -126,8 +126,8 @@ class FUN_00994e60_State
     int unk00[57];
     FUN_00994e60_State(CombatPlanner::WorldState* pkState);
     int CombatWorldStateArray_GetStateValue(CPTarget* pkFrom, CPTarget* pkTo);
-    void CombatWorldStateArray_ApplyWorldState(int iCond, int iCondValue);
-    bool CombatWorldStateArray_IsTrue(int iCond, int iCondValue);
+    void CombatWorldStateArray_ApplyWorldState(int aeWorldState, int aiDesiredValue);
+    bool CombatWorldStateArray_IsTrue(int aeWorldState, int aiDesiredValue);
     void AppendPair(FUN_004b0680_Pair* pkPair, void* pvValue);
 };
 
@@ -138,7 +138,7 @@ class FUN_00995780_Plan
     int unk04;
     int unk08;
     int m_iAim;
-    FUN_00995780_Plan(CPAction* pkAction, CPTarget* pkTarget, void* pvValue);
+    FUN_00995780_Plan(CPAction* apAction, CPTarget* aiDesiredValue, void* apParentNode);
 };
 
 struct CPOutItem
@@ -158,16 +158,19 @@ class CPOutArray
 };
 
 // @fnv 0x009950c0
-bool CombatPlanner::ExpandNode(CPNode* pkNode, CPOutArray* pkOut)
+// pdb: CombatPlanner::GetNodeConnections | CombatPlanner.obj | retail, vtable slot, high
+// pdb params: apNode, apRetNodes
+// pdb locals: bfirstLink, fparentCost, i, pactionList, punsatisfiedState, bactionFound, paction, linkData, bactionMatches, iunsatisfiedStateValue, fcost, pnewNode, peffectsList, ikey, ppossibleEffectsList, pnode, ppreconditionsList, ivalue, pstate, j, plink
+bool CombatPlanner::ExpandNode(CPNode* apNode, CPOutArray* apRetNodes)
 {
-    float m_fPathingCostCur = pkNode->m_fCost;
-    bool bFirst = (pkNode->TESMain_GetThread() == 0) ? true : false;
+    float m_fPathingCostCur = apNode->m_fCost;
+    bool bFirst = (apNode->TESMain_GetThread() == 0) ? true : false;
     if (bFirst)
-        pkOut->BSSimpleArray_TESObjectREFR_1024_SetReservedSize(0x10);
+        apRetNodes->BSSimpleArray_TESObjectREFR_1024_SetReservedSize(0x10);
 
-    for (unsigned int i = 0; i < pkNode->m_pUserData->m_uiNumEntries; i++)
+    for (unsigned int i = 0; i < apNode->m_pUserData->m_uiNumEntries; i++)
     {
-        CPCond* pkCond = pkNode->m_pUserData->m_aEntries[i].m_pkCond;
+        CPCond* pkCond = apNode->m_pUserData->m_aEntries[i].m_pkCond;
         CPActionList* pkNodeIter = CombatAction_GetActionsForTargetState(pkCond->Modelloader_GetReferencedThis());
         bool bFound = false;
         while (pkNodeIter && *pkNodeIter->FUN_006815c0())
@@ -178,7 +181,7 @@ bool CombatPlanner::ExpandNode(CPNode* pkNode, CPOutArray* pkOut)
                 bool bValid = pkAction->CombatAction_HasTargetState(pkCond);
                 CPTarget* pkTarget = pkCond->FUN_00726070();
                 if (IsValidCode(pkTarget))
-                    pkTarget = pkNode->m_pUserData->GetCombatGoal(pkTarget);
+                    pkTarget = apNode->m_pUserData->GetCombatGoal(pkTarget);
                 FUN_00995760_Aim kAim;
                 ((CPOwner*)field_2058)->FUN_005e3fc0()->FUN_006ecd40(&kAim);
                 if (bValid)
@@ -210,15 +213,15 @@ bool CombatPlanner::ExpandNode(CPNode* pkNode, CPOutArray* pkOut)
                                 pkSide = pkSide->FUN_0062d990();
                             }
 
-                            for (unsigned int j = 0; j < pkNode->m_pUserData->m_uiNumEntries; j++)
+                            for (unsigned int j = 0; j < apNode->m_pUserData->m_uiNumEntries; j++)
                             {
-                                CPCond* pkGoalCond = pkNode->m_pUserData->m_aEntries[j].m_pkCond;
+                                CPCond* pkGoalCond = apNode->m_pUserData->m_aEntries[j].m_pkCond;
                                 int iCondValue = pkState->CombatWorldStateArray_GetStateValue(pkGoalCond->FUN_00726070(), pkTarget);
                                 if (!pkState->CombatWorldStateArray_IsTrue(pkGoalCond->Modelloader_GetReferencedThis(), iCondValue))
                                     pkState->AppendPair(
                                         new (field_20b8.ScrapHeap_Allocate(sizeof(FUN_004b0680_Pair), DAT_010a2720))
                                             FUN_004b0680_Pair(pkGoalCond->Modelloader_GetReferencedThis(), iCondValue),
-                                        pkNode->m_pUserData->m_aEntries[j].m_pAssociatedData);
+                                        apNode->m_pUserData->m_aEntries[j].m_pAssociatedData);
                             }
 
                             CPCondList* pkRequire = pkAction->GetOffsetC();
@@ -247,10 +250,10 @@ bool CombatPlanner::ExpandNode(CPNode* pkNode, CPOutArray* pkOut)
                                 FUN_00995780_Plan* pkPlan =
                                     new (field_20b8.ScrapHeap_Allocate(sizeof(FUN_00995780_Plan), DAT_010a2720))
                                         FUN_00995780_Plan(pkAction, pkTarget,
-                                                          pkNode->m_pUserData->m_aEntries[i].m_pAssociatedData);
+                                                          apNode->m_pUserData->m_aEntries[i].m_pAssociatedData);
                                 pkPlan->m_iAim = kAim.m_iValue;
                                 pkResult->m_pkPlan = pkPlan;
-                                pkOut->FUN_007cb2e0(pkResult);
+                                apRetNodes->FUN_007cb2e0(pkResult);
                             }
                             break;
                             }
@@ -262,7 +265,7 @@ bool CombatPlanner::ExpandNode(CPNode* pkNode, CPOutArray* pkOut)
         }
         if (!bFound)
         {
-            pkOut->FUN_008454f0(false);
+            apRetNodes->FUN_008454f0(false);
             return false;
         }
     }

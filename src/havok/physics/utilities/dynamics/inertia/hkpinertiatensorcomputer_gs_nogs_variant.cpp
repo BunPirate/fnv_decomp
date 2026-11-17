@@ -20,7 +20,7 @@ struct State
     int count;
     int context;
 };
-void hkpInertiaTensorComputer_computeConvexHullMassProperties(void* state, float zero, void* receiver);
+void hkpInertiaTensorComputer_computeConvexHullMassProperties(void* vertices, float radius, void* result);
 int __cdecl ApplyLimitToReceiver(int owner, int context, int count, float limit, Receiver* receiver, float value);
 struct FUN_00cebe80_Struct
 {
@@ -144,8 +144,8 @@ struct S_00cee1c0_Arr
     unsigned int* m_pTrailingData;
 };
 S_00cee1c0_Router* hkMemoryRouter_getInstance();
-float __cdecl hkInertiaTensorComputer_optimizeInertiasOfConstraintTreeInt(S_00cee1c0_Arr* arr, int unk, float value);
-void __cdecl ProcessArrayWithValue(unsigned int* source, int count, int unk, float value);
+float __cdecl hkInertiaTensorComputer_optimizeInertiasOfConstraintTreeInt(S_00cee1c0_Arr* constraints, int unk, float inertiaFactorHint);
+void __cdecl hkpInertiaTensorComputer_optimizeInertiasOfConstraintTree(unsigned int* constraints, int numConstraints, int rootBody, float inertiaFactorHint);
 
 #include <xmmintrin.h>
 // FUN_00cf07a0 - 120 bytes
@@ -194,7 +194,10 @@ void __cdecl hkpInertiaTensorComputer_computeShapeVolumeMassProperties(void* a, 
 
 // @fnv 0x00cf07a0
 // src: XBOX_PDB 0x00cf07a0
-void hkpInertiaTensorComputer_setShapeVolumeMassProperties(void* a, float b, Dest* c)
+// pdb: hkpInertiaTensorComputer::setShapeVolumeMassProperties | hkpInertiaTensorComputer.obj | retail, upstream name already matches, high
+// pdb params: shape, mass, bodyInfo
+// pdb locals: massProperties, assertBuf, ostr
+void hkpInertiaTensorComputer_setShapeVolumeMassProperties(void* shape, float mass, Dest* bodyInfo)
 {
     Src s;
     s.f0 = 0.0f;
@@ -203,10 +206,10 @@ void hkpInertiaTensorComputer_setShapeVolumeMassProperties(void* a, float b, Des
     s.m20 = _mm_setzero_ps();
     s.m30 = _mm_setzero_ps();
     s.m40 = _mm_setzero_ps();
-    hkpInertiaTensorComputer_computeShapeVolumeMassProperties(a, b, &s.f0);
-    c->f90 = s.f1;
-    c->m80 = s.m10;
-    c->m50 = s.m20;
-    c->m60 = s.m30;
-    c->m70 = s.m40;
+    hkpInertiaTensorComputer_computeShapeVolumeMassProperties(shape, mass, &s.f0);
+    bodyInfo->f90 = s.f1;
+    bodyInfo->m80 = s.m10;
+    bodyInfo->m50 = s.m20;
+    bodyInfo->m60 = s.m30;
+    bodyInfo->m70 = s.m40;
 }

@@ -2,6 +2,9 @@
 #include "imagespaceeffecthdr_decls.h"
 
 // @fnv 0x00BAD580
+// pdb: ImageSpaceEffectHDR::Setup | ImageSpaceEffectHDR.obj | debug, object-file run extension, low
+// pdb params: apManager, apParam
+// pdb locals: pparam
 void HDRImageSpaceEffect::Setup(ImageSpaceManager* manager, HdrEffectParamLocalForm* param)
 {
     SetTextureArrayCount(13);

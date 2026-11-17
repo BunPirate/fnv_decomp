@@ -5,6 +5,7 @@
 #include <malloc.h>
 
 // @fnv 0x004fc1b0
+// pdb: BGSPlaceableWater::BGSPlaceableWater | BGSPlaceableWater.obj | retail, upstream name already matches, high
 BGSPlaceableWater::BGSPlaceableWater() : TESBoundObject(), TESModel()
 {
     Data.FUN_004019f0();
@@ -14,6 +15,7 @@ BGSPlaceableWater::BGSPlaceableWater() : TESBoundObject(), TESModel()
 
 // Reinitializes the object returned by FUN_00624700 and calls the FUN_004fc360..FUN_004fc490 helpers with true/false flags.
 // @fnv 0x004fc2e0
+// pdb: BGSPlaceableWater::InitializeData | BGSPlaceableWater.obj | debug, object-file gap fill, medium
 void BGSPlaceableWater::ResetFormData()
 {
     GetExtraPartList()->Reinitialize();
@@ -22,7 +24,7 @@ void BGSPlaceableWater::ResetFormData()
     BGSPlaceableWater_SetReflectsLODLand(true);
     BGSPlaceableWater_SetReflectsSky(true);
     BGSPlaceableWater_SetRefractionEnabled(true);
-    SetFlag800(true);
+    SetRefractsLand(true);
     BGSPlaceableWater_SetAutomaticWater(false);
     BGSPlaceableWater_SetObjectTexCoordsEnabled(false);
     BGSPlaceableWater_SetDepthEnabled(true);
@@ -30,6 +32,8 @@ void BGSPlaceableWater::ResetFormData()
 }
 
 // @fnv 0x004fc4b0
+// pdb: BGSPlaceableWater::InitItem | BGSPlaceableWater.obj | retail, upstream name already matches, high
+// pdb locals: itempInt
 void BGSPlaceableWater::InitItem()
 {
     if (GetInitialized())
@@ -49,40 +53,43 @@ void BGSPlaceableWater::InitItem()
 
 // Loads a BGSPlaceableWater record from a TESFile: validates form type 0x23, clears data, reads EDID/OBND/MODL/MODT/DATA/DNAM chunks, and returns true on success.
 // @fnv 0x004fc540
-bool BGSPlaceableWater::LoadForm(TESFile* file)
+// pdb: BGSPlaceableWater::Load | BGSPlaceableWater.obj | retail, vtable slot, high
+// pdb params: apFile
+// pdb locals: echunkid, formid, pMessage, dataOld
+bool BGSPlaceableWater::LoadForm(TESFile* apFile)
 {
-    unsigned char formType = file->GetTESForm();
+    unsigned char formType = apFile->GetTESForm();
     if (formType != 0x23)
         return false;
 
     ClearData();
-    LoadRecordHeader(file);
+    LoadRecordHeader(apFile);
     SetInitializationState(false);
 
     int chunkID;
     char* editorID;
-    while ((chunkID = file->GetChunkID()) != 0)
+    while ((chunkID = apFile->GetChunkID()) != 0)
     {
         switch (chunkID)
         {
         case 0x44494445: {
-            editorID = static_cast<char*>(_alloca(file->GetChunkSize()));
-            file->GetChunkData(editorID, 0x200);
+            editorID = static_cast<char*>(_alloca(apFile->GetChunkSize()));
+            apFile->GetChunkData(editorID, 0x200);
             SetEditorID_AtRuntime(editorID);
             break;
         }
         case 0x444e424f:
-            readOBNDSubRecord(file);
+            readOBNDSubRecord(apFile);
             break;
         case 0x4c444f4d:
         case 0x54444f4d:
-            TESModel::LoadModelData(this ? reinterpret_cast<TESModel*>(reinterpret_cast<char*>(this) + 0x30) : 0, file);
+            TESModel::LoadModelData(this ? reinterpret_cast<TESModel*>(reinterpret_cast<char*>(this) + 0x30) : 0, apFile);
             break;
         case 0x41544144: {
             PlaceableWaterData data;
             data.Reset();
-            reinterpret_cast<BGSImpactData*>(this)->ReadTypedData(file, &data, 8);
-            if (reinterpret_cast<TESFileGetChunkData*>(file)->GetChunkData())
+            reinterpret_cast<BGSImpactData*>(this)->ReadTypedData(apFile, &data, 8);
+            if (reinterpret_cast<TESFileGetChunkData*>(apFile)->GetChunkData())
                 data.OBJ_WEAP_CRITICAL_Endian();
             Data.m_pOwningWater = data.m_pOwningWater;
             Data.flags = 0;
@@ -91,21 +98,21 @@ bool BGSPlaceableWater::LoadForm(TESFile* file)
             BGSPlaceableWater_SetReflectsLODLand(true);
             BGSPlaceableWater_SetReflectsSky(true);
             BGSPlaceableWater_SetRefractionEnabled(true);
-            SetFlag800(true);
+            SetRefractsLand(true);
             BGSPlaceableWater_SetAutomaticWater(false);
             break;
         }
         case 0x4d414e44: {
-            file->GetChunkData(&Data, 8);
-            if (reinterpret_cast<TESFileFormVersion*>(file)->GetFormVersion() < 9)
+            apFile->GetChunkData(&Data, 8);
+            if (reinterpret_cast<TESFileFormVersion*>(apFile)->GetFormVersion() < 9)
                 BGSPlaceableWater_SetAutomaticWater(false);
-            if (reinterpret_cast<TESFileGetChunkData*>(file)->GetChunkData())
+            if (reinterpret_cast<TESFileGetChunkData*>(apFile)->GetChunkData())
                 Data.TwoValues_Endian();
             break;
         }
         }
 
-        if (!file->NextChunk())
+        if (!apFile->NextChunk())
             break;
     }
     return true;
@@ -123,6 +130,8 @@ struct FUN_004fc990_t
 
 // @fnv 0x004fc380
 // src: COMMUNITY 0x004fc380
+// pdb: BGSPlaceableWater::SetReflectsLand | BGSPlaceableWater.obj | debug, upstream name already matches, high
+// pdb params: abValue
 void FUN_004fc380_shell::BGSPlaceableWater_SetReflectsLand(bool abValue)
 {
     reinterpret_cast<FUN_004fc990_t*>(this)->BGSPlaceableWater_SetFlag(4, abValue);
@@ -136,11 +145,13 @@ struct FUN_004fc450_shell : public BGSPlaceableWater
 
 struct FUN_004fc990_t
 {
-    void BGSPlaceableWater_SetFlag(int arg1, bool arg2);
+    void BGSPlaceableWater_SetFlag(int aeFlag, bool abValue);
 };
 
 // @fnv 0x004fc450
 // src: COMMUNITY 0x004fc450
+// pdb: BGSPlaceableWater::SetAutomaticWater | BGSPlaceableWater.obj | debug, upstream name already matches, high
+// pdb params: abValue
 void FUN_004fc450_shell::BGSPlaceableWater_SetAutomaticWater(bool abValue)
 {
     ((FUN_004fc990_t*)this)->BGSPlaceableWater_SetFlag(0x40000000, abValue);
@@ -170,6 +181,8 @@ struct FUN_004fc420_shell : public BGSPlaceableWater
 
 // @fnv 0x004fc420
 // src: COMMUNITY 0x004fc420
+// pdb: BGSPlaceableWater::EnableUnderwaterFoggingPass | BGSPlaceableWater.obj | debug, object-file gap fill, medium
+// pdb params: abValue
 void FUN_004fc420_shell::BGSPlaceableWater_SetUnderwaterFog(bool abValue)
 {
     ((FUN_004fc990_t*)this)->BGSPlaceableWater_SetFlag(0x80000000, abValue == 0);
@@ -186,6 +199,9 @@ struct FUN_004fc860_shell : public BGSPlaceableWater
 };
 // @fnv 0x004fc860
 // src: XBOX_PDB 0x004fc860
+// pdb: BGSPlaceableWater::Copy | BGSPlaceableWater.obj | retail, upstream name already matches, high
+// pdb params: apCopy
+// pdb locals: pcopy
 void FUN_004fc860_shell::BGSPlaceableWater_Copy(TESForm* apCopy)
 {
     BGSPlaceableWater* pcopy;
@@ -199,12 +215,14 @@ void FUN_004fc860_shell::BGSPlaceableWater_Copy(TESForm* apCopy)
 // Sets or clears aiFlag in the flags of the object returned by FUN_00624700, depending on abSet.
 // @fnv 0x004fc990
 // src: COMMUNITY 0x004fc990
-void FUN_004fc990_t::BGSPlaceableWater_SetFlag(int aiFlag, bool abSet)
+// pdb: BGSPlaceableWater::SetFlag | BGSPlaceableWater.obj | debug, upstream name already matches, high
+// pdb params: aeFlag, abValue
+void FUN_004fc990_t::BGSPlaceableWater_SetFlag(int aeFlag, bool abValue)
 {
-    if (abSet)
-        ((BGSPlaceableWater*)this)->GetExtraPartList()->flags |= aiFlag;
+    if (abValue)
+        ((BGSPlaceableWater*)this)->GetExtraPartList()->flags |= aeFlag;
     else
-        ((BGSPlaceableWater*)this)->GetExtraPartList()->flags &= ~aiFlag;
+        ((BGSPlaceableWater*)this)->GetExtraPartList()->flags &= ~aeFlag;
 }
 
 struct FUN_004fc360_shell : public BGSPlaceableWater
@@ -214,6 +232,8 @@ struct FUN_004fc360_shell : public BGSPlaceableWater
 
 // @fnv 0x004fc360
 // src: COMMUNITY 0x004fc360
+// pdb: BGSPlaceableWater::SetReflectionEnabled | BGSPlaceableWater.obj | debug, upstream name already matches, high
+// pdb params: abValue
 void FUN_004fc360_shell::BGSPlaceableWater_SetReflectionEnabled(bool abValue)
 {
     ((FUN_004fc990_t*)this)->BGSPlaceableWater_SetFlag(1, abValue);
@@ -226,6 +246,8 @@ struct FUN_004fc3a0_shell : public BGSPlaceableWater
 
 // @fnv 0x004fc3a0
 // src: COMMUNITY 0x004fc3a0
+// pdb: BGSPlaceableWater::SetReflectsLODLand | BGSPlaceableWater.obj | debug, upstream name already matches, high
+// pdb params: abValue
 void FUN_004fc3a0_shell::BGSPlaceableWater_SetReflectsLODLand(bool abValue)
 {
     ((FUN_004fc990_t*)this)->BGSPlaceableWater_SetFlag(8, abValue);
@@ -238,6 +260,8 @@ struct FUN_004fc3c0_shell : public BGSPlaceableWater
 
 // @fnv 0x004fc3c0
 // src: COMMUNITY 0x004fc3c0
+// pdb: BGSPlaceableWater::SetReflectsSky | BGSPlaceableWater.obj | debug, upstream name already matches, high
+// pdb params: abValue
 void FUN_004fc3c0_shell::BGSPlaceableWater_SetReflectsSky(bool abValue)
 {
     ((FUN_004fc990_t*)this)->BGSPlaceableWater_SetFlag(0x40, abValue);
@@ -250,6 +274,8 @@ struct FUN_004fc3e0_shell : public BGSPlaceableWater
 
 // @fnv 0x004fc3e0
 // src: COMMUNITY 0x004fc3e0
+// pdb: BGSPlaceableWater::SetRefractionEnabled | BGSPlaceableWater.obj | debug, upstream name already matches, high
+// pdb params: abValue
 void FUN_004fc3e0_shell::BGSPlaceableWater_SetRefractionEnabled(bool abValue)
 {
     ((FUN_004fc990_t*)this)->BGSPlaceableWater_SetFlag(0x200, abValue);
@@ -257,11 +283,14 @@ void FUN_004fc3e0_shell::BGSPlaceableWater_SetRefractionEnabled(bool abValue)
 
 struct FUN_004fc400_shell : public BGSPlaceableWater
 {
-    void SetFlag800(bool);
+    void BGSPlaceableWater_SetRefractsLand(bool);
 };
 
 // @fnv 0x004fc400
-void FUN_004fc400_shell::SetFlag800(bool abValue)
+// src: XBOX_DEBUG_PDB 0x004fc400
+// pdb: BGSPlaceableWater::SetRefractsLand | BGSPlaceableWater.obj | debug, call graph, high
+// pdb params: abValue
+void FUN_004fc400_shell::BGSPlaceableWater_SetRefractsLand(bool abValue)
 {
     ((FUN_004fc990_t*)this)->BGSPlaceableWater_SetFlag(0x800, abValue);
 }
@@ -273,6 +302,8 @@ struct FUN_004fc470_shell : public BGSPlaceableWater
 
 // @fnv 0x004fc470
 // src: COMMUNITY 0x004fc470
+// pdb: BGSPlaceableWater::SetObjectTexCoordsEnabled | BGSPlaceableWater.obj | debug, upstream name already matches, high
+// pdb params: abValue
 void FUN_004fc470_shell::BGSPlaceableWater_SetObjectTexCoordsEnabled(bool abValue)
 {
     ((FUN_004fc990_t*)this)->BGSPlaceableWater_SetFlag(0x20000000, abValue);
@@ -285,6 +316,8 @@ struct FUN_004fc490_shell : public BGSPlaceableWater
 
 // @fnv 0x004fc490
 // src: COMMUNITY 0x004fc490
+// pdb: BGSPlaceableWater::SetDepthEnabled | BGSPlaceableWater.obj | debug, upstream name already matches, high
+// pdb params: abValue
 void FUN_004fc490_shell::BGSPlaceableWater_SetDepthEnabled(bool abValue)
 {
     ((FUN_004fc990_t*)this)->BGSPlaceableWater_SetFlag(0x10000000, abValue);
@@ -302,6 +335,9 @@ struct FUN_004fc8c0_shell : public BGSPlaceableWater
 };
 // @fnv 0x004fc8c0
 // src: XBOX_PDB 0x004fc8c0
+// pdb: BGSPlaceableWater::Compare | BGSPlaceableWater.obj | retail, upstream name already matches, high
+// pdb params: apCompare
+// pdb locals: pcomp
 bool FUN_004fc8c0_shell::BGSPlaceableWater_Compare(TESForm* apCompare)
 {
     BGSPlaceableWater* pcomp = dynamic_cast<BGSPlaceableWater*>(apCompare);
@@ -316,14 +352,16 @@ bool FUN_004fc8c0_shell::BGSPlaceableWater_Compare(TESForm* apCompare)
 
 struct FUN_005802d0_shell : public FUN_004fc990_t
 {
-    void BGSPlaceableWater_SetReflectsLODBuildings(bool flag);
+    void BGSPlaceableWater_SetReflectsLODBuildings(bool abValue);
 };
 
 // @fnv 0x005802d0
 // src: COMMUNITY 0x005802d0
-void FUN_005802d0_shell::BGSPlaceableWater_SetReflectsLODBuildings(bool flag)
+// pdb: BGSPlaceableWater::SetReflectsLODBuildings | TESWaterForm.obj | debug, upstream name already matches, high
+// pdb params: abValue
+void FUN_005802d0_shell::BGSPlaceableWater_SetReflectsLODBuildings(bool abValue)
 {
-    BGSPlaceableWater_SetFlag(0x10, flag);
+    BGSPlaceableWater_SetFlag(0x10, abValue);
 }
 
 class ModelCallees
@@ -352,6 +390,8 @@ void __cdecl AppendChunk(unsigned int chunkId, void* data, unsigned int size);
 
 // @fnv 0x004fc7b0
 // src: COMMUNITY 0x004fc7b0
+// pdb: BGSPlaceableWater::Save | BGSPlaceableWater.obj | retail, vtable slot, high
+// pdb locals: OutData
 void FUN_004fc7b0_cls::BGSPlaceableWater_SaveAlt()
 {
     BeginFormRecord();
@@ -374,6 +414,7 @@ void FUN_004fc7b0_cls::BGSPlaceableWater_SaveAlt()
 }
 
 // @fnv 0x004fc240
+// pdb: BGSPlaceableWater::`scalar deleting destructor' | BGSPlaceableWater.obj | retail, vtable slot, high
 struct FUN_004fc240 : public BGSPlaceableWater
 {
     virtual ~FUN_004fc240();

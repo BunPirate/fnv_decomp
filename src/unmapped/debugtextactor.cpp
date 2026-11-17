@@ -18,14 +18,18 @@ int __cdecl FUN_00406d50(char* dst, unsigned int size, const char* src);
 struct S_009aae70
 {
     unsigned int FUN_005bd5c0(int type);
-    void FormatFlagsString(char* buf, unsigned int size, int type);
+    void CombatWorldStateArray_GetDebugText(char* apDebugText, unsigned int aiMaxLength, int aeState);
 };
 
 // @fnv 0x009aae70
-void S_009aae70::FormatFlagsString(char* pBuffer, unsigned int size, int type)
+// src: XBOX_DEBUG_PDB 0x009aae70
+// pdb: CombatWorldStateArray::GetDebugText | CombatWorldState.obj | debug, unique string literal, high
+// pdb params: apDebugText, aiMaxLength, aeState
+// pdb locals: ivalue, bstarted, i, ptemp
+void S_009aae70::CombatWorldStateArray_GetDebugText(char* apDebugText, unsigned int aiMaxLength, int aeState)
 {
-    unsigned int mask = FUN_005bd5c0(type);
-    if (DAT_011a55b4[type].flag)
+    unsigned int mask = FUN_005bd5c0(aeState);
+    if (DAT_011a55b4[aeState].flag)
     {
         bool any = false;
         for (unsigned int uiBit = 0; uiBit < 32; uiBit++)
@@ -34,22 +38,22 @@ void S_009aae70::FormatFlagsString(char* pBuffer, unsigned int size, int type)
             {
                 if (!any)
                 {
-                    BSsprintf(pBuffer, size, "%s: %s", CombatWorldState_GetStateName(type), CombatWorldState_GetStateValueText(type, uiBit));
+                    BSsprintf(apDebugText, aiMaxLength, "%s: %s", CombatWorldState_GetStateName(aeState), CombatWorldState_GetStateValueText(aeState, uiBit));
                 }
                 else
                 {
                     char acTemp[260];
-                    BSsprintf(acTemp, 0x104, ", %s", CombatWorldState_GetStateValueText(type, uiBit));
-                    FUN_00406d50(pBuffer, size - BSstrlen(pBuffer), acTemp);
+                    BSsprintf(acTemp, 0x104, ", %s", CombatWorldState_GetStateValueText(aeState, uiBit));
+                    FUN_00406d50(apDebugText, aiMaxLength - BSstrlen(apDebugText), acTemp);
                 }
                 any = true;
             }
         }
         if (!any)
-            BSsprintf(pBuffer, size, "%s: None", CombatWorldState_GetStateName(type));
+            BSsprintf(apDebugText, aiMaxLength, "%s: None", CombatWorldState_GetStateName(aeState));
     }
     else
     {
-        BSsprintf(pBuffer, size, "%s: %s", CombatWorldState_GetStateName(type), CombatWorldState_GetStateValueText(type, mask));
+        BSsprintf(apDebugText, aiMaxLength, "%s: %s", CombatWorldState_GetStateName(aeState), CombatWorldState_GetStateValueText(aeState, mask));
     }
 }

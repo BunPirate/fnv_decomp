@@ -56,6 +56,7 @@ public:
     void* CallVirtualZero(int);
 };
 
+// pdb: class InventoryMenu, size 0x124, bases: Menu, 6 members
 class InventoryMenu : public Menu
 {
 public:
@@ -95,13 +96,13 @@ public:
     InventoryMenu();
     Tile* FUN_00726070();
     void UpdateButtons();
-    void ClearActionPointSource();
+    void ClearCurrentItem();
     void UpdateItemDisplay(int, Tile*);
     void Click(int, int);
     void Select(int, int);
-    void AttachAndDeliver(MenuForm*, void*, MenuList*);
+    void UpdateItemInList(MenuForm*, void*, MenuList*);
     void ContainerMenu_UpdateLists(MenuForm*);
-    bool DoGamepad(int input, int unused);
+    bool DoGamepad(int aiButton, int afValue);
     bool IsWellFormedMenu_0077ff90();
     void Menu_SetRenderedMenu();
 

@@ -6,6 +6,7 @@
 class MorphController;
 class FakeGeo;
 
+// pdb: class NiGeomMorpherUpdateTask, size 0x14, bases: NiTask, 2 members
 class NiGeomMorpherUpdateTask : public NiTask
 {
 public:
@@ -18,6 +19,6 @@ public:
     void FUN_00a56bb0();
     static void* operator new[](size_t size, unsigned int count);
 
-    MorphController* m_pkMorphController;
-    FakeGeo* m_spReferencedObject;
+    MorphController* m_spMorphController; // src: XBOX_RETAIL_PDB +0xc (old: m_pkMorphController)
+    FakeGeo* m_spTarget; // src: XBOX_RETAIL_PDB +0x10 (old: m_spReferencedObject)
 };

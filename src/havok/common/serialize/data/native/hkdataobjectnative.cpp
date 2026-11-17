@@ -44,17 +44,20 @@ struct FUN_00dbb490_class
     int m_iWordAt00;
     int m_iWordAt04;
     hkReferencedObject* m_8;
-    void SetReferencedObject(hkReferencedObject* p);
+    void hkDataWorldNative_setClassRegistry(hkReferencedObject* r);
 };
 
 // @fnv 0x00dbb490
-void FUN_00dbb490_class::SetReferencedObject(hkReferencedObject* apObject)
+// src: XBOX_RETAIL_PDB 0x00dbb490
+// pdb: hkDataWorldNative::setClassRegistry | hkDataObjectNative.obj | retail, object-file gap fill, high
+// pdb params: r
+void FUN_00dbb490_class::hkDataWorldNative_setClassRegistry(hkReferencedObject* r)
 {
-    if (apObject)
-        apObject->addReference();
+    if (r)
+        r->addReference();
     if (m_8)
         m_8->removeReference();
-    m_8 = apObject;
+    m_8 = r;
 }
 
 namespace fnv_00dbb4c0 {
@@ -64,16 +67,19 @@ struct FUN_00dbb4c0_class
     int m_iValueAfterStandIn;
     int m_pAuxiliaryObject;
     hkReferencedObject* m_pObject;
-    void SetObject(hkReferencedObject* object);
+    void hkDataWorldNative_setVtableRegistry(hkReferencedObject* vt);
 };
 // @fnv 0x00dbb4c0
-void FUN_00dbb4c0_class::SetObject(hkReferencedObject* object)
+// src: XBOX_RETAIL_PDB 0x00dbb4c0
+// pdb: hkDataWorldNative::setVtableRegistry | hkDataObjectNative.obj | retail, object-file gap fill, high
+// pdb params: vt
+void FUN_00dbb4c0_class::hkDataWorldNative_setVtableRegistry(hkReferencedObject* vt)
 {
-    if (object)
-        object->addReference();
+    if (vt)
+        vt->addReference();
     if (m_pObject)
         m_pObject->removeReference();
-    m_pObject = object;
+    m_pObject = vt;
 }
 }  // namespace fnv_00dbb4c0
 
@@ -84,7 +90,7 @@ struct FUN_00dbbb20_Class
     int m_08;
     int m_0C;
     void* m_10;
-    int __thiscall hkDataObjectNative_isValid(int a);
+    int __thiscall hkDataObjectNative_isValid(int it);
 };
 
 struct FUN_00d46f00_Class
@@ -94,28 +100,33 @@ struct FUN_00d46f00_Class
 
 // @fnv 0x00dbbb20
 // src: XBOX_PDB 0x00dbbb20
-int __thiscall FUN_00dbbb20_Class::hkDataObjectNative_isValid(int a)
+// pdb: hkDataObjectNative::isValid | hkDataObjectNative.obj | retail, upstream name already matches, high
+// pdb params: it
+int __thiscall FUN_00dbbb20_Class::hkDataObjectNative_isValid(int it)
 {
-    return (a < ((FUN_00d46f00_Class*)m_10)->FUN_00d46f00()) ? 1 : 0;
+    return (it < ((FUN_00d46f00_Class*)m_10)->FUN_00d46f00()) ? 1 : 0;
 }
 
 // @fnv 0x00dbbc50
 // src: HAVOK_LIB 0x00dbbc50
 int __thiscall hkDataArrayNative::asVec(int a)
 {
-    return m_0C + a * m_14;
+    return m_address + a * m_elementStride;
 }
 
 // @fnv 0x00dbbc60
 // src: XBOX_PDB 0x00dbbc60
-int __thiscall hkDataArrayNative::asString(int aiIndex)
+// pdb: hkDataArrayNative::asString | hkDataObjectNative.obj | debug, upstream name already matches, high
+// pdb params: index
+// pdb locals: assertBuf, ostr
+int __thiscall hkDataArrayNative::asString(int index)
 {
-    switch (m_18)
+    switch (m_nativeType)
     {
     case 0x1d:
-        return *(int*)((char*)m_0C + m_14 * aiIndex);
+        return *(int*)((char*)m_address + m_elementStride * index);
     case 0x21:
-        return (*(int*)((char*)m_0C + m_14 * aiIndex)) & 0xfffffffe;
+        return (*(int*)((char*)m_address + m_elementStride * index)) & 0xfffffffe;
     default:
         return 0;
     }
@@ -158,6 +169,7 @@ struct FUN_00dbb940_VirtualClass
 }  // namespace fnv_00dbb940
 
 // @fnv 0x00dbb940
+// pdb: hkDataClassNative::getParent | hkDataObjectNative.obj | retail, upstream name already matches, high
 hkDataClassImpl* hkDataClassNative::getParent() const
 {
     hkClass* parent = reinterpret_cast<fnv_00dbb940::FUN_00d46d50_s*>(m_0C)->FUN_00d46d50();
@@ -208,6 +220,7 @@ struct FUN_00dbba80_Class
 
 // If m_10 is set, looks up its name through m_14 and returns the resulting hkClass; otherwise returns 0.
 // @fnv 0x00dbba80
+// pdb: hkDataObjectNative::getClass | hkDataObjectNative.obj | retail, vtable slot, high
 hkClass* __thiscall FUN_00dbba80_Class::GetNamedClass()
 {
     if (m_10)
@@ -251,6 +264,7 @@ struct FUN_00dbbc20_Class : DataWorldClassLookup
 // If m_20 is set, returns the result of calling FUN_00dbbc20_10 on m_0C with m_20's name; otherwise returns 0.
 // @fnv 0x00dbbc20
 // src: XBOX_PDB 0x00dbbc20
+// pdb: hkDataArrayNative::getClass | hkDataObjectNative.obj | retail, upstream name already matches, high
 int FUN_00dbbc20_Class::hkDataArrayNative_getClass()
 {
     if (m_20)
@@ -262,10 +276,12 @@ int FUN_00dbbc20_Class::hkDataArrayNative_getClass()
 
 // Reads the element at index from the array data pointer and returns it as an int, interpreting it according to the element type in m_18.
 // @fnv 0x00dbbcf0
+// pdb: hkDataArrayNative::asInt | hkDataObjectNative.obj | debug, vtable slot, medium
+// pdb params: index
 int hkDataArrayNative::GetElementAsInt(int index)
 {
-    int* p = (int*)(m_0C + m_14 * index);
-    switch (m_18 - 1)
+    int* p = (int*)(m_address + m_elementStride * index);
+    switch (m_nativeType - 1)
     {
     case 0:
         return *(signed char*)p;
@@ -317,25 +333,29 @@ int hkDataArrayNative::GetElementAsInt(int index)
 // @fnv 0x00dbbd70
 __int64 __thiscall hkDataArrayNative::GetEntry64(int aiIndex)
 {
-    return *reinterpret_cast<__int64*>(m_0C + m_14 * aiIndex);
+    return *reinterpret_cast<__int64*>(m_address + m_elementStride * aiIndex);
 }
 
 // Retrieves the shape at index a from the container m_0c and passes it with b to GetMemberInfo.
 // @fnv 0x00dbbfa0
-void hkDataClassNative::getDeclaredMemberInfo(int a, hkDataClassMemberInfo& b) const
+// pdb: hkDataClassNative::getDeclaredMemberInfo | hkDataObjectNative.obj | retail, upstream name already matches, high
+// pdb params: i, info
+void hkDataClassNative::getDeclaredMemberInfo(int i, hkDataClassMemberInfo& info) const
 {
-    GetMemberInfo(reinterpret_cast<const Shape*>(&m_0c->GetDeclaredMember(a)), b);
+    fillMemberInfo(reinterpret_cast<const Shape*>(&m_0c->GetDeclaredMember(i)), info);
 }
 
 struct FUN_00d46f20_Class
 {
-    const Shape* __thiscall getMember(int i) const;
+    const Shape* __thiscall getMember(int memberIndex) const;
 };
 
 // @fnv 0x00dbbfd0
-void hkDataClassNative::getMemberInfo(int aiArg1, hkDataClassMemberInfo& aiArg2) const
+// pdb: hkDataClassNative::getMemberInfo | hkDataObjectNative.obj | retail, upstream name already matches, high
+// pdb params: i, info
+void hkDataClassNative::getMemberInfo(int i, hkDataClassMemberInfo& info) const
 {
-    GetMemberInfo(reinterpret_cast<FUN_00d46f20_Class*>(m_0c)->getMember(aiArg1), aiArg2);
+    fillMemberInfo(reinterpret_cast<FUN_00d46f20_Class*>(m_0c)->getMember(i), info);
 }
 
 hkMemoryRouter* _D1A0E0GetMemoryRouter();
@@ -406,6 +426,8 @@ int hkDataClassNative::getMemberIndexByName(const char* param_1) const
 
 // @fnv 0x00dbba40
 // src: GUESS 0x00dbba40 (confidence: high)
+// pdb: hkDataArrayImpl::asInt64 | hkDataObjectNative.obj | debug, vtable slot, medium
+// pdb params: index
 __int64 __stdcall Object_ReturnZero_00dbba40(int)
 {
     return 0;
@@ -427,6 +449,8 @@ int __stdcall Object_ReturnZero_00dbb120(int arg0)
 
 // @fnv 0x00dbb130
 // src: GUESS 0x00dbb130 (confidence: high)
+// pdb: hkDataWorldNative::newArray | hkDataObjectNative.obj | debug, vtable slot, medium
+// pdb params: _obj, minfo
 int __stdcall Hkdataobjectnative_ReturnZero(int a, int b)
 {
     return 0;
@@ -459,11 +483,13 @@ struct FUN_00dbb360_Class
     hkReferencedObject* m_0C;
     FUN_00d87790_Obj m_10;
     int m_14, m_18, m_1C, m_20, m_24;
-    FUN_00dbb360_Class* __thiscall Initialize();
+    FUN_00dbb360_Class* __thiscall hkDataWorldNative_ctor();
 };
 // Initializes the object's fields, resets m_10, and stores referenced objects obtained from DAT_01268b08's vf14 and vf10.
 // @fnv 0x00dbb360
-FUN_00dbb360_Class* __thiscall FUN_00dbb360_Class::Initialize()
+// src: XBOX_RETAIL_PDB 0x00dbb360
+// pdb: hkDataWorldNative::hkDataWorldNative | hkDataObjectNative.obj | retail, object-file gap fill, high
+FUN_00dbb360_Class* __thiscall FUN_00dbb360_Class::hkDataWorldNative_ctor()
 {
     FUN_00d87790_Result result;
     m_06 = 1;
@@ -570,17 +596,19 @@ class hkLibDBB5
     int unk08;
     hkStringFnDBB5* m_pStringFunctions;
 
-    hkNodeRefDBB5 CreateNode(const hkNameDescDBB5& desc);
+    hkNodeRefDBB5 CreateNode(const hkNameDescDBB5& handle);
 };
 
 // @fnv 0x00dbb5a0
-hkNodeRefDBB5 hkLibDBB5::CreateNode(const hkNameDescDBB5& aNameDesc)
+// pdb: hkDataWorldNative::findObject | hkDataObjectNative.obj | retail, vtable slot, high
+// pdb params: handle
+hkNodeRefDBB5 hkLibDBB5::CreateNode(const hkNameDescDBB5& handle)
 {
     hkNodeDBB5* node = new hkNodeDBB5();
-    int len = aNameDesc.m_len;
+    int len = handle.m_len;
     if (!len)
-        len = m_pStringFunctions->strLen(aNameDesc.m_name);
-    node->m_name.Pair::Pair(reinterpret_cast<int>(aNameDesc.m_name), len);
+        len = m_pStringFunctions->strLen(handle.m_name);
+    node->m_name.Pair::Pair(reinterpret_cast<int>(handle.m_name), len);
     node->m_pOwnerObject = this;
     hkNodeRefDBB5 r;
     r.hkDataObject_hkDataObject(node);
@@ -617,23 +645,27 @@ class NativeWorldContents
     {
         return m_pkWorld;
     }
-    void SetContents(void* pvObject, hkClass& kClass);
+    void hkDataWorldNative_setContents(void* object, hkClass& klass);
 };
 
 // Stores pvObject and resolves its class through the world/vtable registry, reporting an error and clearing pvObject if the class is not registered.
 // @fnv 0x00dbb730
-void NativeWorldContents::SetContents(void* pvObject, hkClass& kClass)
+// src: XBOX_RETAIL_PDB 0x00dbb730
+// pdb: hkDataWorldNative::setContents | hkDataObjectNative.obj | retail, string-set bridge, high
+// pdb params: object, klass
+// pdb locals: assertBuf, ostr
+void NativeWorldContents::hkDataWorldNative_setContents(void* object, hkClass& klass)
 {
-    m_pvObject = pvObject;
+    m_pvObject = object;
     void* pvClass;
-    if (kClass.GetLastNodeFlag().m_cBooleanValue)
+    if (klass.GetLastNodeFlag().m_cBooleanValue)
     {
         ClassRegistryDispatch* pkWorld = m_pkWorld;
-        const hkClass* pkClass = m_pkVtableRegistry->GetClassFromVirtualInstance(pvObject);
+        const hkClass* pkClass = m_pkVtableRegistry->GetClassFromVirtualInstance(object);
         pvClass = !pkClass ? 0 : pkWorld->GetClassFromName(pkClass->getName());
     }
     else
-        pvClass = getWorld()->GetClassFromName(kClass.getName());
+        pvClass = getWorld()->GetClassFromName(klass.getName());
     m_pkClass = pvClass;
     if (!m_pkClass)
     {
@@ -642,9 +674,9 @@ void NativeWorldContents::SetContents(void* pvObject, hkClass& kClass)
         hkOstream& kReportStream = *reinterpret_cast<hkOstream*>(streamStorage);
         kReportStream.FUN_00cb1600(auiReportBuf, sizeof(auiReportBuf));
         kReportStream.ProcessAndReturnValue_00cc01c0("Cannot set contents with object at 0x")
-            .operator<<(pvObject)
+            .operator<<(object)
             .ProcessAndReturnValue_00cc01c0(". Class '")
-            .ProcessAndReturnValue_00cc01c0(kClass.getName())
+            .ProcessAndReturnValue_00cc01c0(klass.getName())
             .ProcessAndReturnValue_00cc01c0("' is not registered in the hkDataWorldNative. Ignore it.");
         DAT_01268360->message(1, 0x1800473b, (char*)auiReportBuf, ".\\Data\\Native\\hkDataObjectNative.cpp", 0x2fc);
         kReportStream.FUN_00cc00e0();
@@ -656,18 +688,22 @@ int __cdecl hkString_strCmp(int, int);
 
 
 // @fnv 0x00dbb970
-hkBool hkDataClassNative::isSuperClass(const hkDataClassImpl* pkNode) const
+// pdb: hkDataClassNative::isSuperClass | hkDataObjectNative.obj | retail, upstream name already matches, high
+// pdb params: k
+hkBool hkDataClassNative::isSuperClass(const hkDataClassImpl* k) const
 {
-    while (pkNode)
+    while (k)
     {
-        if (hkString_strCmp((int)pkNode->getName(), (int)getName()) == 0)
+        if (hkString_strCmp((int)k->getName(), (int)getName()) == 0)
             return true;
-        pkNode = pkNode->getParent();
+        k = k->getParent();
     }
     return false;
 }
 
 // @fnv 0x00dbba20
+// pdb: hkDataArrayImpl::asHalf | hkDataObjectNative.obj | debug, vtable slot, medium
+// pdb params: index
 hkHalf __stdcall MakeZeroHalf(int a)
 {
     return hkHalf(0.0f);
@@ -677,7 +713,7 @@ struct FUN_00d871a0_Data
 {
     int memberData;
     int key;
-    void ProcessAndReturnValue_00d871a0(void* value, int argument);
+    void hkClassMemberAccessor_ctor(void* var, int memberName);
     const char* ComputeValue_00d871e0(const int* argument);
 };
 struct FUN_00dbbae0_Class
@@ -686,15 +722,18 @@ struct FUN_00dbbae0_Class
     int unk04;
     int unk08;
     int unk0C;
-    int hkDataObjectNative_hasMember(int argument);
+    int hkDataObjectNative_hasMember(int name);
 };
 // @fnv 0x00dbbae0
 // src: XBOX_PDB 0x00dbbae0
-int FUN_00dbbae0_Class::hkDataObjectNative_hasMember(int iKey)
+// pdb: hkDataObjectNative::hasMember | hkDataObjectNative.obj | retail, upstream name already matches, high
+// pdb params: name
+// pdb locals: mem
+int FUN_00dbbae0_Class::hkDataObjectNative_hasMember(int name)
 {
     FUN_00d871a0_Data lookup;
-    lookup.ProcessAndReturnValue_00d871a0(&unk0C, iKey);
-    return *lookup.ComputeValue_00d871e0(&iKey) != 0;
+    lookup.hkClassMemberAccessor_ctor(&unk0C, name);
+    return *lookup.ComputeValue_00d871e0(&name) != 0;
 }
 
 class hkOwnerDBBB;
@@ -721,33 +760,38 @@ class hkOwnerDBBB
     virtual void V7();
     virtual int V8(int iKey);
 
-    hkRefDBBB MakeRef(int iKey);
+    hkRefDBBB MakeRef(int it);
 };
 
 // Constructs and returns an hkRefDBBB holding this owner and the value from V8(iKey).
 // @fnv 0x00dbbb40
-hkRefDBBB hkOwnerDBBB::MakeRef(int iKey)
+// pdb: hkDataObjectNative::getMemberValue | hkDataObjectNative.obj | retail, vtable slot, high
+// pdb params: it
+hkRefDBBB hkOwnerDBBB::MakeRef(int it)
 {
-    return hkRefDBBB(this, V8(iKey));
+    return hkRefDBBB(this, V8(it));
 }
 
 // Reads a value at m_0C + m_14*index, as float when m_18==11, as sign-extended short shifted left 16 when m_18==32, else 0.0f.
 // @fnv 0x00dbbca0
 // src: XBOX_PDB 0x00dbbca0
+// pdb: hkDataArrayNative::asReal | hkDataObjectNative.obj | debug, upstream name already matches, high
+// pdb params: index
+// pdb locals: value, assertBuf, ostr
 float hkDataArrayNative::asReal(int index)
 {
     volatile float& fValue = *reinterpret_cast<volatile float*>(&index);
-    if (m_18 != 11)
+    if (m_nativeType != 11)
     {
-        if (m_18 != 32)
+        if (m_nativeType != 32)
         {
             fValue = 0.0f;
             return fValue;
         }
-        index = int(*reinterpret_cast<short*>(m_0C + m_14 * index)) << 16;
+        index = int(*reinterpret_cast<short*>(m_address + m_elementStride * index)) << 16;
         return fValue;
     }
-    fValue = *reinterpret_cast<float*>(m_0C + m_14 * index);
+    fValue = *reinterpret_cast<float*>(m_address + m_elementStride * index);
     return fValue;
 }
 
@@ -777,22 +821,24 @@ inline void* hkDataArrayNative::operator new(unsigned int nbytes)
 }
 
 // @fnv 0x00dbbd90
-hkDataArrayNative* hkDataArrayNative::GetElement(int iIndex)
+// pdb: hkDataArrayNative::asArray | hkDataObjectNative.obj | retail, vtable slot, high
+// pdb params: index
+hkDataArrayNative* hkDataArrayNative::GetElement(int index)
 {
-    const int& tupleCount = m_28;
-    void* pvAddr = reinterpret_cast<char*>(m_0C) + m_14 * iIndex;
+    const int& tupleCount = m_tupleCount;
+    void* pvAddr = reinterpret_cast<char*>(m_address) + m_elementStride * index;
     if (tupleCount)
     {
-        int iStride = hkClassMember_getClassMemberTypeProperties(m_18)->m_iElementCount;
-        return new hkDataArrayNative(m_08, pvAddr, tupleCount, iStride, m_18, m_1c, 0);
+        int iStride = hkClassMember_getClassMemberTypeProperties(m_nativeType)->m_iElementCount;
+        return new hkDataArrayNative(m_world, pvAddr, tupleCount, iStride, m_nativeType, m_class, 0);
     }
     hkArrayBaseDBBD* pkArray = static_cast<hkArrayBaseDBBD*>(pvAddr);
-    return new hkDataArrayNative(m_08, pkArray->m_data, pkArray->m_iElementCount, 0, 0, 0, 0);
+    return new hkDataArrayNative(m_world, pkArray->m_data, pkArray->m_iElementCount, 0, 0, 0, 0);
 }
 
 struct FUN_00d46f20_Map
 {
-    int* getMember(int iKey);
+    int* getMember(int memberIndex);
 };
 
 struct FUN_00dbbe30_cls
@@ -803,13 +849,15 @@ struct FUN_00dbbe30_cls
     int m_0c;
     FUN_00d46f20_Map* m_map;
 
-    int GetValueForKey(int iKey);
+    int GetValueForKey(int it);
 };
 
 // @fnv 0x00dbbe30
-int FUN_00dbbe30_cls::GetValueForKey(int iKey)
+// pdb: hkDataObjectNative::getMemberName | hkDataObjectNative.obj | retail, vtable slot, high
+// pdb params: it
+int FUN_00dbbe30_cls::GetValueForKey(int it)
 {
-    return *m_map->getMember(iKey);
+    return *m_map->getMember(it);
 }
 
 namespace fnv_00dbbe50 {
@@ -839,6 +887,8 @@ class hkObjdbbe50 : public hkBaseDBBE
 
 // Destroys the base object and, when bit 0 of uiFlags is set, frees this object through the heap allocator.
 // @fnv 0x00dbbe50
+// pdb: hkDataRefCounted::`scalar deleting destructor' | hkDataObjectNative.obj | retail, vtable slot, high
+// pdb params: this
 hkObjdbbe50* hkObjdbbe50::FUN_00dbbe50(unsigned int uiFlags) throw()
 {
     this->hkBaseDBBE::~hkBaseDBBE();
@@ -868,7 +918,7 @@ struct FUN_00d871a0
 {
     void* m_object;
     const void* m_pObjectTypeInfo;
-    FUN_00d871a0(void* pvObject, const char* pcMember) throw();
+    FUN_00d871a0(void* var, const char* memberName) throw();
     const char** hkClassMemberAccessor_asCstring(int iIndex) throw();
 };
 
@@ -885,67 +935,72 @@ struct hkMemberInfo
 
 namespace fnv_00dbbe80 {
 extern const char* DAT_011b7958;
-int __cdecl GetShapeTypeFlags(int iType, int iSubType, const hkClass* pkClass, int iCount) throw();
+int __cdecl hkDataObjectUtil_getTypeFromMemberType(int mtype, int stype, const hkClass* klass, int count) throw();
 
 }  // namespace fnv_00dbbe80
 
 // Fills kInfo from kMember: copies the name, sets the owner, and resolves type, value class and array count, using the world to look up the class name.
 // @fnv 0x00dbbe80
-void hkDataClassNative::GetMemberInfo(const hkClassMember& kMember, hkMemberInfo& kInfo) const throw()
+// src: XBOX_RETAIL_PDB 0x00dbbe80
+// pdb: hkDataClassNative::fillMemberInfo | hkDataObjectNative.obj | retail, call graph (shared callers), high
+// pdb params: mem, info
+// pdb locals: attrTypeName
+void hkDataClassNative::fillMemberInfo(const hkClassMember& mem, hkMemberInfo& info) const throw()
 {
     using namespace fnv_00dbbe80;
-    kInfo.m_name = kMember.m_name;
-    kInfo.m_pOwnerObject = this;
-    if (kMember.flagsAllAreSet(0x400))
+    info.m_name = mem.m_name;
+    info.m_pOwnerObject = this;
+    if (mem.flagsAllAreSet(0x400))
     {
-        kInfo.m_type = 0;
-        kInfo.m_valueClass = 0;
-        kInfo.m_arrayCount = 0;
+        info.m_type = 0;
+        info.m_valueClass = 0;
+        info.m_arrayCount = 0;
         return;
     }
-    int iSubType = kMember.m_eSubtype;
-    int iType = kMember.m_type;
-    kInfo.m_type = GetShapeTypeFlags(iType, iSubType, kMember.getClass(), kMember.getCstyleArraySize());
-    if (kMember.getClass())
+    int iSubType = mem.m_subtype;
+    int iType = mem.m_type;
+    info.m_type = hkDataObjectUtil_getTypeFromMemberType(iType, iSubType, mem.getClass(), mem.getCstyleArraySize());
+    if (mem.getClass())
     {
-        void* pvAttr = const_cast<hkVariant*>(kMember.getAttribute_00d86960(DAT_011b7958));
+        void* pvAttr = const_cast<hkVariant*>(mem.getAttribute_00d86960(DAT_011b7958));
         if (pvAttr)
         {
             FUN_00d871a0 kAccess(pvAttr, "typeName");
-            kInfo.m_valueClass = reinterpret_cast<fnv_00dbbe80::hkDataWorld*>(m_pOwningWorld)->GetClassFromName(*kAccess.hkClassMemberAccessor_asCstring(0));
+            info.m_valueClass = reinterpret_cast<fnv_00dbbe80::hkDataWorld*>(m_pOwningWorld)->GetClassFromName(*kAccess.hkClassMemberAccessor_asCstring(0));
         }
         else
         {
-            kInfo.m_valueClass = reinterpret_cast<fnv_00dbbe80::hkDataWorld*>(m_pOwningWorld)->GetClassFromName(kMember.getClass()->getName());
+            info.m_valueClass = reinterpret_cast<fnv_00dbbe80::hkDataWorld*>(m_pOwningWorld)->GetClassFromName(mem.getClass()->getName());
         }
     }
     else
     {
-        kInfo.m_valueClass = 0;
+        info.m_valueClass = 0;
     }
-    kInfo.m_arrayCount = kMember.getCstyleArraySize();
+    info.m_arrayCount = mem.getCstyleArraySize();
 }
 
 // The accessors at 0x00d871a0..0x00d87370 operate on object/member pairs.
+// pdb: class hkClassMemberAccessor, size 0x8, 2 members
 class hkClassMemberAccessor
 {
   public:
-    void* m_pTargetObject;
-    const hkClassMember* m_kMemberDescriptor;
+    void* m_address; // src: XBOX_RETAIL_PDB +0x0 (old: m_pTargetObject)
+    const hkClassMember* m_member; // src: XBOX_RETAIL_PDB +0x4 (old: m_kMemberDescriptor)
 
-    hkClassMemberAccessor(void* obj, void* name) throw()
+    hkClassMemberAccessor(void* var, void* memberName) throw()
     {
-        ProcessAndReturnValue_00d871a0(obj, name);
+        hkClassMemberAccessor_ctor(var, memberName);
     }
-    void ProcessAndReturnValue_00d871a0(void* obj, void* name) throw();
+    void hkClassMemberAccessor_ctor(void* var, void* memberName) throw();
     hkClassMember* hkClassMemberAccessor_getClassMember() throw();
     unsigned int* hkClassMemberAccessor_asCstring(int i) throw();
     unsigned int* hkClassMemberAccessor_asStringPtr(int i) throw();
 
-    void ProcessAndReturnValue_00d871a0(hkVariant& kObject, const hkClassMember* pkMember) throw();
-    hkClassMemberAccessor(hkVariant& kObject, const hkClassMember* pkMember)
+    void hkClassMemberAccessor_ctor(hkVariant& var, const hkClassMember* memberName) throw();
+    hkClassMemberAccessor(hkVariant& var, const hkClassMember* memberName)
     {
-        ProcessAndReturnValue_00d871a0(kObject, pkMember);
+        hkClassMemberAccessor_ctor(var, memberName);
     }
 
     const hkClassMember& hkClassMemberAccessor_getClassMember() const throw();
@@ -973,6 +1028,9 @@ class hkObjDBC3
 
 // Builds an hkClassMemberAccessor from m_data and name, then returns the member's pointer value or its flags value with bit 0 cleared, or 0 for other types.
 // @fnv 0x00dbc310
+// pdb: hkDataObjectNative::asString | hkDataObjectNative.obj | retail, vtable slot, high
+// pdb params: name
+// pdb locals: mem, assertBuf, ostr
 unsigned int hkObjDBC3::GetMemberValue(void* name)
 {
     hkClassMemberAccessor v(m_data, name);
@@ -988,6 +1046,7 @@ unsigned int hkObjDBC3::GetMemberValue(void* name)
 
 
 
+// pdb: class hkDataObjectNative, size 0x18 (here 0x14), bases: hkDataObjectImpl, 2 members
 class hkDataObjectNative
 {
   public:
@@ -996,13 +1055,16 @@ class hkDataObjectNative
     int m_08;
     hkVariant m_object;
 
-    __int64 GetMemberValueAsInt64(const hkClassMember* pkHandle) throw();
+    __int64 GetMemberValueAsInt64(const hkClassMember* name) throw();
 };
 
 // @fnv 0x00dbc370
-__int64 hkDataObjectNative::GetMemberValueAsInt64(const hkClassMember* pkHandle) throw()
+// pdb: hkDataObjectNative::asInt | hkDataObjectNative.obj | retail, vtable slot, high
+// pdb params: name
+// pdb locals: acc
+__int64 hkDataObjectNative::GetMemberValueAsInt64(const hkClassMember* name) throw()
 {
-    hkClassMemberAccessor kAccessor(m_object, pkHandle);
+    hkClassMemberAccessor kAccessor(m_object, name);
     const hkClassMember& kMember = static_cast<const hkClassMemberAccessor&>(kAccessor).hkClassMemberAccessor_getClassMember();
     hkClassMember::Type eType = kMember.getType();
     while (1)
@@ -1031,7 +1093,7 @@ __int64 hkDataObjectNative::GetMemberValueAsInt64(const hkClassMember* pkHandle)
             return kAccessor.GetElementPointer_00d872b0(0);
         case hkClassMember::TYPE_ENUM:
         case hkClassMember::TYPE_FLAGS:
-            eType = static_cast<hkClassMember::Type>(kMember.m_eSubtype);
+            eType = static_cast<hkClassMember::Type>(kMember.m_subtype);
             break;
         default:
             return 0;
@@ -1048,13 +1110,14 @@ struct FUN_00dba490_class
     int m_10;
     int m_14;
 
-    void FreeArrayStorageAndReset();
+    void hkDataClass_Cinfo_dtor();
 };
 
 // Gets a heap, conditionally frees m_0C using a size derived from m_14, then resets m_0C and m_14.
 // @fnv 0x00dba490
-// src: GUESS 0x00dba490 (confidence: medium)
-void FUN_00dba490_class::FreeArrayStorageAndReset()
+// src: XBOX_RETAIL_PDB 0x00dba490
+// pdb: hkDataClass::Cinfo::~Cinfo | hkVersionPatchManager.obj | retail, object-file gap fill, high
+void FUN_00dba490_class::hkDataClass_Cinfo_dtor()
 {
     hkMemoryRouter* result = _D1A0E0GetMemoryRouter();
     hkMemoryAllocator* heap = reinterpret_cast<hkMemoryAllocator*>(result->m_heap);
@@ -1130,6 +1193,7 @@ class hkLibDBB6
 // Allocates a new hkNodeDBB6, copies m_name into it, sets m_pOwnerObject to this, and returns it wrapped in an hkNodeRefDBB6.
 // @fnv 0x00dbb620
 // src: HAVOK_SRC 0x00dbb620
+// pdb: hkDataWorldNative::getContents | hkDataObjectNative.obj | retail, upstream name already matches, high
 hkNodeRefDBB6 hkLibDBB6::hkDataWorldNative_getContents()
 {
     hkNodeDBB6* node = new hkNodeDBB6();
@@ -1143,6 +1207,8 @@ hkNodeRefDBB6 hkLibDBB6::hkDataWorldNative_getContents()
 // Returns 0.0f.
 // @fnv 0x00dbba10
 // src: GUESS 0x00dbba10 (confidence: high)
+// pdb: hkDataArrayImpl::asReal | hkDataObjectNative.obj | debug, vtable slot, medium
+// pdb params: index
 float __stdcall Hkdataobjectnative_ReturnZero_00dbba10(void* pArg)
 {
     return 0.0f;
@@ -1165,6 +1231,7 @@ struct FUN_00dbba50_Obj
 };
 
 // @fnv 0x00dbba50
+// pdb: hkDataObjectNative::getHandle | hkDataObjectNative.obj | retail, vtable slot, high
 hkVariant* FUN_00dbba50_Obj::GetHandle(hkVariant* __restrict handle)
 {
     int first = m_0C;
@@ -1180,7 +1247,7 @@ struct FUN_00d871a0
 {
     int m_00;
     int m_04;
-    FUN_00d871a0(void* pair, int x);
+    FUN_00d871a0(void* var, int memberName);
     void* hkClassMemberAccessor_getAddress();
 };
 
@@ -1191,25 +1258,28 @@ struct FUN_00dbbb60_cls
     int m_08;
     int m_0c;
     int m_10;
-    void* __thiscall hkDataObjectNative_asVec(int a, int b);
+    void* __thiscall hkDataObjectNative_asVec(int name, int nreal);
 };
 
 // Constructs a FUN_00d871a0 with m_0c and a, then returns the result of FUN_00d87200.
 // @fnv 0x00dbbb60
 // src: XBOX_PDB 0x00dbbb60
-void* FUN_00dbbb60_cls::hkDataObjectNative_asVec(int a, int aiUnused)
+// pdb: hkDataObjectNative::asVec | hkDataObjectNative.obj | retail, upstream name already matches, high
+// pdb params: name, nreal
+// pdb locals: mem
+void* FUN_00dbbb60_cls::hkDataObjectNative_asVec(int name, int nreal)
 {
-    FUN_00d871a0 t(&this->m_0c, a);
+    FUN_00d871a0 t(&this->m_0c, name);
     return t.hkClassMemberAccessor_getAddress();
 }
 
 struct StreamDBC5C0;
 struct AccessorDBC5C0
 {
-    AccessorDBC5C0(StreamDBC5C0* pkStream, int iIndex);
+    AccessorDBC5C0(StreamDBC5C0* var, int memberName);
     const hkClassMember* GetDesc();
     const float* hkClassMemberAccessor_asReal(int iComponent);
-    const short* hkClassMemberAccessor_asHalf(int iComponent);
+    const short* hkClassMemberAccessor_asHalf(int index);
     int m_iA;
     int m_iB;
 };
@@ -1223,14 +1293,17 @@ struct VertexDataDBC5C0
     int unk04;
     int unk08;
     StreamDBC5C0 m_kVertexStream;
-    float GetFloat(int iIndex);
+    float GetFloat(int name);
 };
 
 // Reads component 0 at iIndex as float bits for types 0xb or 0x20; returns 0.0f otherwise.
 // @fnv 0x00dbc5c0
-float VertexDataDBC5C0::GetFloat(int iIndex)
+// pdb: hkDataObjectNative::asReal | hkDataObjectNative.obj | retail, vtable slot, high
+// pdb params: name
+// pdb locals: mem, value, assertBuf, ostr
+float VertexDataDBC5C0::GetFloat(int name)
 {
-    AccessorDBC5C0 kAccessor(&m_kVertexStream, iIndex);
+    AccessorDBC5C0 kAccessor(&m_kVertexStream, name);
     union
     {
         float f;
@@ -1252,7 +1325,7 @@ float VertexDataDBC5C0::GetFloat(int iIndex)
     return uValue.f;
 }
 
-extern "C" int __cdecl Vsnprintf(char* pcBuffer, unsigned int uSize, const char* pcFormat, ...);
+extern "C" int __cdecl hkString_snprintf(char* pcBuffer, unsigned int uSize, const char* pcFormat, ...);
 extern const char str_010a5824[];
 extern "C" int __cdecl hkString_strLen(const char* s);
 // This helper dispatches slot 0; hkStreamWriter::write is at slot 4.
@@ -1261,19 +1334,22 @@ struct TextWriteDispatch
     virtual void write(const char* s, int len) throw();
 };
 // src: HAVOK_LIB 0x00cc0080
-static __declspec(noinline) void writeString(TextWriteDispatch* pkWriter, const char* pcString)
+static __declspec(noinline) void writeString(TextWriteDispatch* sb, const char* s)
 {
-    if (pcString == 0)
-        pkWriter->write("(null)", 6);
+    if (s == 0)
+        sb->write("(null)", 6);
     else
-        pkWriter->write(pcString, hkString_strLen(pcString));
+        sb->write(s, hkString_strLen(s));
 }
 // @fnv 0x00cc0120
+// pdb: hkOstream::operator<< | hkOStream.obj | retail, call graph, high
+// pdb params: p
+// pdb locals: buf
 hkOstream& hkOstream::operator<<(const void* pvPointer)
 {
     int buffer[2506];
-    Vsnprintf((char*)buffer, 0x2728u, str_010a5824, pvPointer);
-    writeString(reinterpret_cast<TextWriteDispatch*>(m_pStreamWriter), (const char*)buffer);
+    hkString_snprintf((char*)buffer, 0x2728u, str_010a5824, pvPointer);
+    writeString(reinterpret_cast<TextWriteDispatch*>(m_writer), (const char*)buffer);
     return *this;
 }
 
@@ -1283,28 +1359,31 @@ struct DbbOwner
 {
     int unk00;
     int unk04;
-    void __thiscall SetNativeDataObjectFromPair(int a, int b);
+    void __thiscall SetNativeDataObjectFromPair(int object, int klass);
 };
 
 // src: XBOX_PDB 0x00dbb260
-static __declspec(noinline) void hkNativeDataObjectImplCreate(Pair* p, DbbOwner* self)
+static __declspec(noinline) void hkNativeDataObjectImplCreate(Pair* v, DbbOwner* w)
 {
-    for (int i = 0; i < self->unk00; i++)
+    for (int i = 0; i < w->unk00; i++)
     {
-        DbbExtern(self);
-        p->a += self->unk04 + i;
-        p->b -= i;
+        DbbExtern(w);
+        v->a += w->unk04 + i;
+        v->b -= i;
     }
 }
 
 // Stores the two input integers into a Pair and passes it to FUN_00dbb260 for in-place modification.
 // @fnv 0x00dbb4f0
 // src: GUESS 0x00dbb4f0 (confidence: medium)
-void DbbOwner::SetNativeDataObjectFromPair(int aiFirst, int aiSecond)
+// pdb: hkDataWorldNative::wrapObject | hkDataObjectNative.obj | retail, object-file gap fill, high
+// pdb params: object, klass
+// pdb locals: v
+void DbbOwner::SetNativeDataObjectFromPair(int object, int klass)
 {
     Pair p;
-    p.a = aiFirst;
-    p.b = aiSecond;
+    p.a = object;
+    p.b = klass;
     hkNativeDataObjectImplCreate(&p, this);
 }
 
@@ -1363,14 +1442,14 @@ extern int DAT_010d6334;
 extern "C" void hkString_memSet(void*, int, int);
 
 // src: XBOX_PDB 0x00dbb260
-static __declspec(noinline) Node680* hkNativeDataObjectImplCreate(Pair* p, Dispatch680* o)
+static __declspec(noinline) Node680* hkNativeDataObjectImplCreate(Pair* v, Dispatch680* w)
 {
-    if (p->b)
+    if (v->b)
     {
-        Resolved680* r = (Resolved680*)o->q9(reinterpret_cast<hkClass*>(p->b)->getName());
+        Resolved680* r = (Resolved680*)w->q9(reinterpret_cast<hkClass*>(v->b)->getName());
         if (r)
         {
-            p->b = reinterpret_cast<int>(r->descriptor);
+            v->b = reinterpret_cast<int>(r->descriptor);
         }
         else
         {
@@ -1379,14 +1458,14 @@ static __declspec(noinline) Node680* hkNativeDataObjectImplCreate(Pair* p, Dispa
             hkOstream& stream = *reinterpret_cast<hkOstream*>(streamStorage);
             stream.FUN_00cb1600(buffer, 512);
             stream.ProcessAndReturnValue_00cc01c0(DAT_010d64bc)
-                .operator<<(reinterpret_cast<void*>(p->a))
+                .operator<<(reinterpret_cast<void*>(v->a))
                 .ProcessAndReturnValue_00cc01c0(DAT_010d64d0)
-                .ProcessAndReturnValue_00cc01c0(reinterpret_cast<hkClass*>(p->b)->getName())
+                .ProcessAndReturnValue_00cc01c0(reinterpret_cast<hkClass*>(v->b)->getName())
                 .ProcessAndReturnValue_00cc01c0(DAT_010d64dc);
             DAT_01268360->message(1, 0x1800473a, buffer, DAT_010d6394, 0x2c7);
             stream.FUN_00cc00e0();
-            p->a = 0;
-            p->b = 0;
+            v->a = 0;
+            v->b = 0;
         }
     }
     Node680* e = (Node680*)GetRouterHeap<hkMemoryAllocator>(hkRouterDBB6::hkMemoryRouter_getInstance()).blockAlloc(24);
@@ -1394,8 +1473,8 @@ static __declspec(noinline) Node680* hkNativeDataObjectImplCreate(Pair* p, Dispa
     e->unk08 = 0;
     e->size = 24;
     e->vtable = &DAT_010d6334;
-    e->name.Imath_Vec2_int_Vec2_int(*p);
-    e->owner = o;
+    e->name.Imath_Vec2_int_Vec2_int(*v);
+    e->owner = w;
     return e;
 }
 struct Owner680
@@ -1403,7 +1482,7 @@ struct Owner680
     int unk00;
     int unk04;
     Dispatch680* dispatch;
-    void hkDataWorldNative_newObject(Input680* input);
+    void hkDataWorldNative_newObject(Input680* klass);
 };
 struct RawDispatch680;
 typedef void*(__thiscall* DispatchFn680)(RawDispatch680*, void*);
@@ -1418,12 +1497,15 @@ struct RawDispatch680
 // Allocates a block using the first dispatch result's size, invokes an available callback, then passes the block and second result to FUN_00dbb260.
 // @fnv 0x00dbb680
 // src: HAVOK_SRC 0x00dbb680
-void Owner680::hkDataWorldNative_newObject(Input680* input)
+// pdb: hkDataWorldNative::newObject | hkDataObjectNative.obj | retail, upstream name already matches, high
+// pdb params: klass
+// pdb locals: v
+void Owner680::hkDataWorldNative_newObject(Input680* klass)
 {
     RawDispatch680* pRawDispatch = (RawDispatch680*)dispatch;
     Pair p;
     DispatchFn680* firstSlot = &pRawDispatch->table->v4;
-    void* r2 = (*firstSlot)(pRawDispatch, input->hkDataClass_getName());
+    void* r2 = (*firstSlot)(pRawDispatch, klass->hkDataClass_getName());
     int size = ((Size680*)r2)->FUN_00d470d0();
     p.a = reinterpret_cast<int>(GetRouterHeap<hkMemoryAllocator>(hkRouterDBB6::hkMemoryRouter_getInstance()).blockAlloc(size));
     p.b = reinterpret_cast<int>(r2);
@@ -1432,14 +1514,14 @@ void Owner680::hkDataWorldNative_newObject(Input680* input)
         hkString_memSet(reinterpret_cast<void*>(p.a), 0, ((Size680*)r2)->FUN_00d470d0());
         RawDispatch680* d = (RawDispatch680*)((Manager680*)DAT_01268b08)->RunFourthVirtual();
         DispatchFn680* secondSlot = &d->table->v7;
-        CallbackEntry680* pCallbackEntry = (CallbackEntry680*)(*secondSlot)(d, input->hkDataClass_getName());
+        CallbackEntry680* pCallbackEntry = (CallbackEntry680*)(*secondSlot)(d, klass->hkDataClass_getName());
         if (pCallbackEntry && pCallbackEntry->callback)
             pCallbackEntry->callback(reinterpret_cast<void*>(p.a), 0);
     }
     hkNativeDataObjectImplCreate(&p, (Dispatch680*)this);
 }
 
-void __cdecl ResizeAudioStream(void* allocator, void* array, int elemSize) throw();
+void __cdecl ResizeAudioStream(void* mem, void* array, int sizeElem) throw();
 void* __fastcall FUN_00d47280(void* item) throw();
 
 template <typename T> __forceinline void constructWithCopyRange(T* p, int n, const T& t) throw()
@@ -1500,12 +1582,15 @@ struct FUN_00dbb840_class
     int unk04;
     TargetClass* m_class;
 
-    void hkDataWorldNative_findAllClasses(hkArray<hkClass*>& out) throw();
+    void hkDataWorldNative_findAllClasses(hkArray<hkClass*>& classesOut) throw();
 };
 
 // @fnv 0x00dbb840
 // src: HAVOK_SRC 0x00dbb840
-void FUN_00dbb840_class::hkDataWorldNative_findAllClasses(hkArray<hkClass*>& out) throw()
+// pdb: hkDataWorldNative::findAllClasses | hkDataObjectNative.obj | retail, upstream name already matches, high
+// pdb params: classesOut
+// pdb locals: classes, c
+void FUN_00dbb840_class::hkDataWorldNative_findAllClasses(hkArray<hkClass*>& classesOut) throw()
 {
     int i = 0;
     TargetClass* cls = this->m_class;
@@ -1520,24 +1605,26 @@ void FUN_00dbb840_class::hkDataWorldNative_findAllClasses(hkArray<hkClass*>& out
             continue;
         }
         hkClass* handle = this->getMemberHandle(declaredMembers[i]->getName());
-        pushBackRouterHeap(out, handle);
+        pushBackRouterHeap(classesOut, handle);
     }
 }
 
 struct ClassDBC0
 {
-    const hkClassMember* FUN_00d46fe0(int index);
+    const hkClassMember* hkClass_getMemberByName(int index);
 };
 // Looks up a member by index, computes a type code, and constructs a new hkDataArrayNative from selected fields.
 // @fnv 0x00dbc0c0
 // src: XBOX_PDB 0x00dbc0c0
-hkDataArrayNative* hkDataArrayNative::swizzleObjectMember(int index)
+// pdb: hkDataArrayNative::swizzleObjectMember | hkDataObjectNative.obj | retail, upstream name already matches, high
+// pdb params: name
+hkDataArrayNative* hkDataArrayNative::swizzleObjectMember(int name)
 {
-    const hkClassMember* member = reinterpret_cast<ClassDBC0*>(m_1c)->FUN_00d46fe0(index);
-    char* data = reinterpret_cast<char*>(m_0C) + member->m_offset;
+    const hkClassMember* member = reinterpret_cast<ClassDBC0*>(m_class)->hkClass_getMemberByName(name);
+    char* data = reinterpret_cast<char*>(m_address) + member->m_offset;
     unsigned char type = member->m_type;
-    index = type == 0x18 || type == 0x1f ? (int)member->m_eSubtype : (int)type;
-    return new hkDataArrayNative(m_08, data, m_10, m_14, index, reinterpret_cast<int>(member->getClass()),
+    name = type == 0x18 || type == 0x1f ? (int)member->m_subtype : (int)type;
+    return new hkDataArrayNative(m_world, data, m_arraySize, m_elementStride, name, reinterpret_cast<int>(member->getClass()),
                             member->getCstyleArraySize());
 }
 
@@ -1554,9 +1641,9 @@ struct S00dbc150_Pair
 
     S00dbc150_Pair(void* obj, const char* name)
     {
-        ProcessAndReturnValue_00d871a0(obj, name);
+        hkClassMemberAccessor_ctor(obj, name);
     }
-    void ProcessAndReturnValue_00d871a0(void* obj, const char* name);
+    void hkClassMemberAccessor_ctor(void* var, const char* memberName);
     void* hkClassMemberAccessor_getAddress();
     const hkClassMember* hkClassMemberAccessor_getClassMember();
 };
@@ -1576,6 +1663,9 @@ struct S00dbc150_Obj
 // Resolves a named member on this object, determines its type, tuple size, and class, and returns a new hkDataArrayNative descriptor.
 // @fnv 0x00dbc150
 // src: XBOX_PDB 0x00dbc150
+// pdb: hkDataObjectNative::asArray | hkDataObjectNative.obj | retail, upstream name already matches, high
+// pdb params: name
+// pdb locals: acc, arr
 hkDataArrayNative* S00dbc150_Obj::hkDataObjectNative_asArray(const char* name)
 {
     S00dbc150_Pair pair(&this->unk0c, name);
@@ -1612,7 +1702,7 @@ hkDataArrayNative* S00dbc150_Obj::hkDataObjectNative_asArray(const char* name)
         out.m_iElementCount = pArray->m_iElementCount;
         S00dbc150_ClassDef* cls = reinterpret_cast<S00dbc150_ClassDef*>(const_cast<hkClass*>(member->getClass()));
         classDef = cls;
-        subType = member->m_eSubtype;
+        subType = member->m_subtype;
         hkClassMemberTypeDBBD* pTypeInfo = hkClassMember_getClassMemberTypeProperties(subType);
         tupleSize = pTypeInfo->m_iElementCount;
         if (!subType)
@@ -1676,22 +1766,24 @@ hkDataArrayNative* S00dbc150_Obj::hkDataObjectNative_asArray(const char* name)
     return new hkDataArrayNative(this->m_14, out.m_data, out.m_iElementCount, tupleSize, subType, (int)classDef, 0);
 }
 
-int __cdecl GetShapeTypeFlags(int a, int b, int c, int d);
+int __cdecl hkDataObjectUtil_getTypeFromMemberType(int mtype, int stype, int klass, int count);
 
 // @fnv 0x00dbbb90
-hkDataArrayNative::hkDataArrayNative(int ai0c, void* ai10, int ai14, int ai18, int ai1c, int ai20, int ai28) throw()
+// pdb: hkDataArrayNative::hkDataArrayNative | hkDataObjectNative.obj | retail, upstream name already matches, high
+// pdb params: world, address, arraySize, elementStride, stype, klass, cArrayCount
+hkDataArrayNative::hkDataArrayNative(int world, void* address, int arraySize, int elementStride, int stype, int klass, int cArrayCount) throw()
 {
     reinterpret_cast<short*>(this)[3] = 0;
     m_04 = 0;
-    m_08 = ai0c;
-    m_0C = reinterpret_cast<int>(ai10);
-    m_10 = ai14;
-    m_14 = ai18;
-    m_18 = ai1c;
-    m_1c = ai20;
-    m_28 = ai28;
-    int r = GetShapeTypeFlags(0x16, ai1c, ai20, ai28);
-    m_24 = (r > 0x10) ? (r - 0x10) : 0x10;
+    m_world = world;
+    m_address = reinterpret_cast<int>(address);
+    m_arraySize = arraySize;
+    m_elementStride = elementStride;
+    m_nativeType = stype;
+    m_class = klass;
+    m_tupleCount = cArrayCount;
+    int r = hkDataObjectUtil_getTypeFromMemberType(0x16, stype, klass, cArrayCount);
+    m_dataType = (r > 0x10) ? (r - 0x10) : 0x10;
 }
 
 extern "C" void _ReadWriteBarrier();
@@ -1699,7 +1791,7 @@ struct VariantC4D0
 {
     int m_00;
     int m_04;
-    void ProcessAndReturnValue_00d871a0(void* obj, int name);
+    void hkClassMemberAccessor_ctor(void* var, int memberName);
     int* hkClassMemberAccessor_getClassMember();
     int* hkClassMemberAccessor_asVariant(int a);
     void* hkClassMemberAccessor_getAddress();
@@ -1707,21 +1799,21 @@ struct VariantC4D0
 };
 extern "C" int dummy_call(int a);
 // src: XBOX_PDB 0x00dbb140
-static __declspec(noinline) __int64 getVariantWithMostDerivedClass(int x, int* obj, int y, int z)
+static __declspec(noinline) __int64 getVariantWithMostDerivedClass(int klass, int* object, int vtable, int classReg)
 {
     int* a[3];
-    a[0] = &x;
-    a[1] = &y;
-    a[2] = &z;
+    a[0] = &klass;
+    a[1] = &vtable;
+    a[2] = &classReg;
     int g1 = *a[1];
     int t1 = dummy_call(g1);
     g1 = g1 + t1;
     int g2 = *a[2];
     int t2 = dummy_call(g2);
     g2 = g2 + t2;
-    if (!obj)
+    if (!object)
         return *a[0];
-    return *a[0] + *obj + g1 + g2;
+    return *a[0] + *object + g1 + g2;
 }
 struct TailC4D0
 {
@@ -1760,26 +1852,26 @@ struct WorldC4D0
 extern NativeC4D0* allocateNativeC4D0();
 extern void warnNativeC4D0(int, int);
 // src: XBOX_PDB 0x00dbb260
-static __declspec(noinline) int hkNativeDataObjectImplCreate(Pair* r, int* blk)
+static __declspec(noinline) int hkNativeDataObjectImplCreate(Pair* v, int* w)
 {
-    if (r->b)
+    if (v->b)
     {
-        FoundClassC4D0* c = ((WorldC4D0*)blk)->GetClassFromName(((hkClass*)r->b)->getName());
+        FoundClassC4D0* c = ((WorldC4D0*)w)->GetClassFromName(((hkClass*)v->b)->getName());
         if (c)
-            r->b = c->classValue;
+            v->b = c->classValue;
         else
         {
-            warnNativeC4D0(r->a, r->b);
-            r->a = 0;
-            r->b = 0;
+            warnNativeC4D0(v->a, v->b);
+            v->a = 0;
+            v->b = 0;
         }
     }
     NativeC4D0* p = allocateNativeC4D0();
     p->m_00 = 0;
     p->m_04 = 0;
     p->m_08 = 0;
-    CopyPair(p->value, *r);
-    p->world = blk;
+    CopyPair(p->value, *v);
+    p->world = w;
     return (int)p;
 }
 struct FUN_00dbc4d0_Class
@@ -1796,11 +1888,14 @@ struct FUN_00dbc4d0_Class
 // Looks up a member by name, extracts its value based on type, and returns a native object via FUN_00dbb260.
 // @fnv 0x00dbc4d0
 // src: XBOX_PDB 0x00dbc4d0
+// pdb: hkDataObjectNative::asObject | hkDataObjectNative.obj | retail, upstream name already matches, high
+// pdb params: name
+// pdb locals: acc, v
 int FUN_00dbc4d0_Class::hkDataObjectNative_asObject(int name)
 {
     const hkClassMember* member;
     VariantC4D0 v;
-    v.ProcessAndReturnValue_00d871a0(&m_0C, name);
+    v.hkClassMemberAccessor_ctor(&m_0C, name);
     member = (const hkClassMember*)v.hkClassMemberAccessor_getClassMember();
     Pair result;
     result.a = 0;
@@ -1864,16 +1959,19 @@ static __forceinline void* CreateDataObjectFromNativeInstance(void* object, hkVt
 // Creates a hkVariant, using the resolved class for virtual classes and the given class otherwise.
 // @fnv 0x00dbb140
 // src: XBOX_PDB 0x00dbb140
+// pdb: getVariantWithMostDerivedClass | hkDataObjectNative.obj | retail, upstream name already matches, high
+// pdb params: klass, object, vtable, classReg
+// pdb locals: v, assertBuf, ostr
 static __declspec(noinline) hkVariant
-    getVariantWithMostDerivedClass(unsigned int akClass, void* object, hkVtableClassRegistry* registry, ClassRegistryDispatch* world)
+    getVariantWithMostDerivedClass(unsigned int klass, void* object, hkVtableClassRegistry* vtable, ClassRegistryDispatch* classReg)
 {
-    hkClass* pClass = (hkClass*)akClass;
+    hkClass* pClass = (hkClass*)klass;
     hkVariant result = {0, 0};
     if (pClass && object)
     {
         if (pClass->GetLastNodeFlag().m_cBooleanValue)
         {
-            void* pMostDerivedClass = CreateDataObjectFromNativeInstance(object, registry, world);
+            void* pMostDerivedClass = CreateDataObjectFromNativeInstance(object, vtable, classReg);
             if (pMostDerivedClass)
             {
                 result.m_class = static_cast<const hkClass*>(pMostDerivedClass);
@@ -1942,15 +2040,18 @@ struct Object
 // Looks up a record by key in the index, or allocates a new 20-byte record, stores the source reference, and inserts it into the index.
 // @fnv 0x00dbb520
 // src: HAVOK_SRC 0x00dbb520
-Record* Object::hkDataWorldNative_findClass(void* key)
+// pdb: hkDataWorldNative::findClass | hkDataObjectNative.obj | retail, upstream name already matches, high
+// pdb params: name
+// pdb locals: assertBuf, ostr
+Record* Object::hkDataWorldNative_findClass(void* name)
 {
     void* reference;
-    if (key)
+    if (name)
     {
-        Record* existing = (Record*)index.GetValue(key, 0);
+        Record* existing = (Record*)index.GetValue(name, 0);
         if (existing)
             return existing;
-        reference = source->vf10(key);
+        reference = source->vf10(name);
     }
     else
         reference = 0;
@@ -1962,7 +2063,7 @@ Record* Object::hkDataWorldNative_findClass(void* key)
     record->type = &DAT_010d62fc;
     record->reference = reference;
     record->owner = this;
-    index.unk(key, record);
+    index.unk(name, record);
     return record;
 }
 }  // namespace fnv_00dbb520
@@ -1983,14 +2084,17 @@ struct C_dbbab0
     int m_08;
     int m_0C;
 
-    NativeMemberReferenceDBBA __thiscall hkDataObjectNative_accessByName(int param_1);
+    NativeMemberReferenceDBBA __thiscall hkDataObjectNative_accessByName(int name);
 };
 
 // Calls FUN_00d871a0 on m_0C with param_1, then returns a NativeMemberReferenceDBBA pairing this object with param_1.
 // @fnv 0x00dbbab0
 // src: XBOX_PDB 0x00dbbab0
-NativeMemberReferenceDBBA C_dbbab0::hkDataObjectNative_accessByName(int aiMemberName)
+// pdb: hkDataObjectNative::accessByName | hkDataObjectNative.obj | retail, upstream name already matches, high
+// pdb params: name
+// pdb locals: mem
+NativeMemberReferenceDBBA C_dbbab0::hkDataObjectNative_accessByName(int name)
 {
-    FUN_00d871a0 member(&m_0C, aiMemberName);
-    return NativeMemberReferenceDBBA((int)this, aiMemberName);
+    FUN_00d871a0 member(&m_0C, name);
+    return NativeMemberReferenceDBBA((int)this, name);
 }

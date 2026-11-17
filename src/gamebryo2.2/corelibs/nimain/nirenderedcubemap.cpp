@@ -7,6 +7,7 @@
 // These accessors and the deleting destructor have no declarations in the shared class.
 // @fnv 0x00ee8220
 // src: XBOX_PDB 0x00ee8220
+// pdb: NiRenderedCubeMap::GetWidth | NiRenderedCubeMap.obj | debug, upstream name already matches, high
 void* __fastcall NiRenderedCubeMap_GetWidth(NiRenderedCubeMap* cubeMap)
 {
     void* p = cubeMap->m_ppCubeMapFaces[0];
@@ -15,19 +16,20 @@ void* __fastcall NiRenderedCubeMap_GetWidth(NiRenderedCubeMap* cubeMap)
 
 // @fnv 0x00ee8230
 // src: XBOX_PDB 0x00ee8230
+// pdb: NiRenderedCubeMap::GetHeight | NiRenderedCubeMap.obj | debug, upstream name already matches, high
 int __fastcall NiRenderedCubeMap_GetHeight(NiRenderedCubeMap* cubeMap)
 {
     void* p = cubeMap->m_ppCubeMapFaces[0];
     return *(int*)((char*)p + 0xc);
 }
 
-extern "C" void* DAT_012708e4;
+extern "C" void* NiRenderedCubeMap_ms_RTTI; // src: XBOX_RETAIL_PDB 0x012708e4 (old: DAT_012708e4/g_012708e4/g_sentinel_012708e4)
 
 // @fnv 0x00ee82a0
 // src: COMMUNITY 0x00ee82a0
 void* __cdecl NiRenderedCubeMap_GetRTTI()
 {
-    return &DAT_012708e4;
+    return &NiRenderedCubeMap_ms_RTTI;
 }
 
 void __cdecl operator delete(void* p, size_t size);
@@ -52,6 +54,8 @@ void __fastcall DestroyTexture(NiTexture* texture);
 void __fastcall DestroyObjectNET(NiObjectNET* object);
 
 // @fnv 0x00ee8240
+// pdb: NiRenderedCubeMap::NiRenderedCubeMap | NiRenderedCubeMap.obj | retail, call graph, low
+// pdb note: debug build links it to NiRenderedCubeMap::`scalar deleting destructor'
 NiRenderedCubeMap* __fastcall ConstructCubeMap(NiRenderedCubeMap* cubeMap) throw()
 {
     InitializeObjectNET(cubeMap);
@@ -65,7 +69,7 @@ NiRenderedCubeMap* __fastcall ConstructCubeMap(NiRenderedCubeMap* cubeMap) throw
     _ReadWriteBarrier();
     *(int**)cubeMap = &DAT_0110102c;
     memset(cubeMap->m_ppCubeMapFaces, 0, 0x18);
-    cubeMap->unk48 = 0;
+    cubeMap->m_eFace = 0;
     return cubeMap;
 }
 
@@ -76,6 +80,7 @@ struct Item
 
 // @fnv 0x00ee82b0
 // src: GUESS 0x00ee82b0 (confidence: medium)
+// pdb: NiRenderedCubeMap::~NiRenderedCubeMap | NiRenderedCubeMap.obj | retail, object-file run extension, low
 void NiRenderedCubeMap::ReleaseReference_00ee82b0()
 {
     NiRefObject** next = (NiRefObject**)(m_ppCubeMapFaces + 6);
@@ -231,6 +236,9 @@ struct S_00ee8330_Renderer
 // Allocates a cube map, creates six face buffers, copies three globals into fields, and calls the renderer to create renderer data.
 // @fnv 0x00ee8330
 // src: XBOX_PDB 0x00ee8330
+// pdb: NiRenderedCubeMap::Create | NiRenderedCubeMap.obj | retail, call graph, low
+// pdb params: uiSize, apkRenderer, kPrefs
+// pdb locals: pkThis, pkRenderer, ui
 NiRenderedCubeMap* NiRenderedCubeMap::Create_00ee8330(unsigned int uiFaceSize, NiRenderer* pkRenderer,
                                                      NiTexture::TextureFormatPreferences& kPrefs)
 {
@@ -243,9 +251,9 @@ NiRenderedCubeMap* NiRenderedCubeMap::Create_00ee8330(unsigned int uiFaceSize, N
     for (unsigned int ui = 0; ui < 6; ui++)
         AssignFace(pkThis->m_ppCubeMapFaces[ui], S_00ee8330_Buffer::Create(uiFaceSize, uiFaceSize));
 
-    pkThis->m_bUseDepthBuffer = DAT_011f4ac0;
+    pkThis->bForceD3DFormat = DAT_011f4ac0;
     pkThis->m_ePixelFormat = (_D3DFORMAT)DAT_011ab3c8;
-    pkThis->m_bUseMipMaps = DAT_011ab3c4;
+    pkThis->bRenderedTexture = DAT_011ab3c4;
 
     if (!((S_00ee8330_Renderer*)pkRenderer)->CreateRenderedCubeMapRendererData(pkThis))
     {

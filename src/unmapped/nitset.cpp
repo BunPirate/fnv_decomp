@@ -14,6 +14,8 @@ struct FUN_00a311e0_s
 
 // @fnv 0x00a311e0
 // src: XBOX_PDB 0x00a311e0
+// pdb: NiTSet<NiGeometryGroup *,NiTMallocInterface<NiGeometryGroup *> >::Add | NiD3DGeometryGroupManager.obj | retail, call graph, medium
+// pdb params: element
 void FUN_00a311e0_s::NiTSet_NiScreenGeometryData_ScreenElement_NiTMallocInterface_NiScreenGeometryData_ScreenElement_Add(unsigned int uiCapacity)
 {
     if (uiCapacity != m_uiElementCount)

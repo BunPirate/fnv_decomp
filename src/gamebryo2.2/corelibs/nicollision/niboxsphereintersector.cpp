@@ -97,6 +97,9 @@ extern const double DAT_01012070;
 
 // Scales a and b by s, adds them into the block and vector offsets, then evaluates GetSqrDistanceToOrientedBox and returns the result times m_40 minus DAT_01012070.
 // @fnv 0x00eb3ca0
+// pdb: NiBoxSphereIntersector::Pseudodistance | NiBoxSphereIntersector.obj | retail, object-file run extension, low
+// pdb params: kV0, kV1, fTime
+// pdb locals: kMCenter, fPseudodistance, kMBox
 float FUN_00eb3ca0_cls::AccumulateAndEvaluate(const float* a, const float* b, float afScale)
 {
     float fScaledX = a[0] * afScale;
@@ -181,29 +184,32 @@ struct S_00eb3d90
         m_pos = pSphere->m_kCenterPosition + kWorldPosition * pSphere->m_fSphereRadius;
         m_dir = -kWorldPosition;
     }
-    void NiBoxSphereIntersector_ComputeContactInformation(const NiPoint3& start, const NiPoint3& end);
+    void NiBoxSphereIntersector_ComputeContactInformation(const NiPoint3& kV0, const NiPoint3& kV1);
 };
 // Computes m_pos and m_dir from start and end based on m_type, using SetFromSphere, SetPosition, or a midpoint of the sphere and box centers.
 // @fnv 0x00eb3d90
 // src: GAMEBRYO_SRC 0x00eb3d90
-void S_00eb3d90::NiBoxSphereIntersector_ComputeContactInformation(const NiPoint3& start, const NiPoint3& end)
+// pdb: NiBoxSphereIntersector::ComputeContactInformation | NiBoxSphereIntersector.obj | retail, upstream name already matches, high
+// pdb params: kV0, kV1
+// pdb locals: kMCenter, i, fDeltaVSqr, fEpsilon, kNormal1, kV0Unit
+void S_00eb3d90::NiBoxSphereIntersector_ComputeContactInformation(const NiPoint3& kV0, const NiPoint3& kV1)
 {
     if (m_type == 2)
     {
-        NiPoint3 kScaledStart = start * m_vScale;
+        NiPoint3 kScaledStart = kV0 * m_vScale;
         m_pos = AddInitial(&kScaledStart, &m_frame->m_kBoundsBox.m_kCenter);
         for (int i = 0; i < 3; i++)
             m_pos.Accumulate(m_afOffset[i] * m_frame->m_kBoundsBox.m_akAxes[i]);
-        m_dir = m_pSphere->m_kCenterPosition + end * m_vScale - m_pos;
+        m_dir = m_pSphere->m_kCenterPosition + kV1 * m_vScale - m_pos;
         m_dir.Unitize();
         return;
     }
-    float fEndSqrLength = end.SqrLength();
-    float fStartSqrLength = start.SqrLength();
+    float fEndSqrLength = kV1.SqrLength();
+    float fStartSqrLength = kV0.SqrLength();
     float fDiff = fEndSqrLength - fStartSqrLength;
     if (fDiff < -1e-05f)
     {
-        SetFromSphere(start);
+        SetFromSphere(kV0);
         return;
     }
     if (fDiff > 1e-05f)

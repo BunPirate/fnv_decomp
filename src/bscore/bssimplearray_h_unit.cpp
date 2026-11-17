@@ -46,6 +46,9 @@ class PathOwner
 
 // Allocates a path node from the pool, constructs it with a and b, and if b is non-null adds b's form ID to the forms array.
 // @fnv 0x006ce7e0
+// pdb: PathingSolution::AddVirtualPathingNode | PathBuilder.obj | debug, object-file run extension, low
+// pdb params: aLocation, apDoor
+// pdb locals: pnode, inewNodeIndex
 void* PathOwner::CreatePathNode(void* a, TESForm* apForm)
 {
     void* id = pool.AdvanceCounter();

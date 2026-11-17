@@ -18,6 +18,7 @@ __forceinline unsigned int MemoryPool::GetBlockSize()
 {
     return m_uiAllocationSize;
 }
+// pdb: structure ScrapHeapBuffer, size 0x8 (here 0x10), 2 members
 class ScrapHeapBuffer
 {
   public:

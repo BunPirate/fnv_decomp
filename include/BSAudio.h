@@ -24,6 +24,7 @@ namespace weapon_audio
 typedef void (__cdecl* AudioCallback)();
 typedef bool (__cdecl* BSAudioSettingsCallback)(int, int*, int*);
 
+// pdb: class BSAudio, size 0x38, 13 members
 class BSAudio
 {
   public:
@@ -65,10 +66,10 @@ class BSAudio
     float GetMusicVolume();
     float GetMasterVolume();
     void SetMasterVolume(float);
-    void DisableAudioPlayback();
+    void UnPauseWorldSounds();
     void PausePlayback();
-    void SetListenerPosition(NiPoint3);
-    void SetAudioProperty(unsigned int, unsigned int, unsigned int);
+    void PositionListener(NiPoint3);
+    void MuteType(unsigned int, unsigned int, unsigned int);
     void Update(bool);
     void SetUseMultipleThreads(bool);
     bool IsAudioEnabled() const;
@@ -83,17 +84,17 @@ class BSAudio
     BSSoundHandle GetSoundHandleByFormID(unsigned int formID, unsigned int flags);
     BSSoundHandle GetSoundHandleByFormID(unsigned int formID, unsigned int flags, bool assumeSuccess);
     BSSoundHandle GetSoundHandleByFormID(unsigned int formID, unsigned int flags, unsigned int value);
-    BSSoundHandle GetSoundHandleByEditorID(const char* editorID, unsigned int flags);
+    BSSoundHandle GetSoundHandleByEditorID(const char* apSoundName, unsigned int aiTypeFlags);
     BSSoundHandle GetSoundHandleByEditorID(const char* editorID, unsigned int flags, int value);
     BSSoundHandle GetSoundHandleByEditorID(const char* editorID, unsigned int flags, bool value);
-    BSSoundHandle GetSoundHandleByFilePath(const char* path, unsigned int flags, void*);
+    BSSoundHandle GetSoundHandleByFilePath(const char* apFilename, unsigned int aiTypeFlags, void*);
     BSSoundHandle GetSoundHandleByFormID_00ad73b0(unsigned int formID, unsigned int flags);
     BSSoundHandle GetSoundHandleByFormID_00ad73b0(int formID, int flags);
     weapon_audio::NiPoint3 BSAudio_GetListenerPosition();
     weapon_audio::AudioPlaybackHandle BSAudio_GetSoundHandleByFilename(const char* path);
-    BSSoundHandle BSAudio_GetSoundHandleByFilename(const char* path, unsigned int flags, unsigned int sound);
+    BSSoundHandle BSAudio_GetSoundHandleByFilename(const char* apFilename, unsigned int aiTypeFlags, unsigned int apSettingsContext);
     BSSndHStruct BSAudio_GetSoundHandleByFilename(const char* path, unsigned int flags, SoundObj* sound);
-    BSSoundHandle BSAudio_GetSoundHandleByEditorName(const char* editorID, unsigned int flags);
+    BSSoundHandle BSAudio_GetSoundHandleByEditorName(const char* apSoundName, unsigned int aiTypeFlags);
     BSSoundHandle BSAudio_SpawnSoundReference(unsigned int formID, unsigned int flags, NiPoint3 position, unsigned int id);
 
     int GetCurrentTimeMilliseconds();
@@ -117,9 +118,9 @@ class BSAudio
     float GetVoiceVolume();
     float GetEffectsVolume();
     float GetMusicVolume_00ad7ab0();
-    void SetFootstepVolume(float);
+    void SetFootVolume(float);
     void SetVoiceVolume(float);
-    void SetEffectsVolume(float);
+    void SetEffectVolume(float);
     void SetMusicVolume(float);
     void SetRadioVolume(float);
     bool IsListenerUnderwater_00ad7c50();

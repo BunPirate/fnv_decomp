@@ -81,6 +81,7 @@ void __cdecl _Deallocate(void* p);
 } // namespace fnv_007658b0
 
 // @fnv 0x007658b0
+// pdb: HackingMenu::`scalar deleting destructor' | HackingMenu.obj | retail, vtable slot, high
 void* HackingMenu::Destroy(unsigned int flags)
 {
     using namespace fnv_007658b0;
@@ -104,6 +105,8 @@ namespace fnv_00767ff0 {
 
 // @fnv 0x00767ff0
 // src: XBOX_PDB 0x00767ff0
+// pdb: HackingMenu::DoLeave | HackingMenu.obj | retail, vtable slot, high
+// pdb params: aiID, apTarget
 void HackingMenu::DoLeave_00767ff0(int aiID, void* apTarget)
 {
     using namespace fnv_00767ff0;
@@ -124,11 +127,13 @@ int __cdecl Random_GetSign(WeatherEntry*, WeatherEntry*);
 
 struct FUN_007687b0_shell : WeatherEntryList
 {
-    void SortWeatherEntries();
+    void HackingMenu_WordList_Shuffle();
 };
 
 // @fnv 0x007687b0
-void FUN_007687b0_shell::SortWeatherEntries()
+// src: XBOX_DEBUG_PDB 0x007687b0
+// pdb: HackingMenu::WordList::Shuffle | HackingMenu.obj | debug, call graph, high
+void FUN_007687b0_shell::HackingMenu_WordList_Shuffle()
 {
     this->Sort(&Random_GetSign);
 }
@@ -144,6 +149,8 @@ extern "C" unsigned int __cdecl RandomUnsignedInt(unsigned int);
 
 // @fnv 0x0076b2e0
 // src: GUESS 0x0076b2e0 (confidence: medium)
+// pdb: HackingMenu::WordList::ShuffleFn | HackingMenu.obj | debug, object-file gap fill, medium
+// pdb params: apString1, apString2
 unsigned int __cdecl Random_GetSign()
 {
     return RandomUnsignedInt(2) * 2 - 1;
@@ -152,6 +159,7 @@ unsigned int __cdecl Random_GetSign()
 
 // @fnv 0x00747d00
 // src: XBOX_PDB 0x00747d00
+// pdb: InterfaceManager::GetCursorX | HackingMenu.obj | retail, upstream name already matches, high
 int __thiscall InterfaceManager::GetCursorX()
 {
     return (int)(UpdateInterfaceState() / 2.0 + *(float*)((char*)this + 0x2c));
@@ -164,6 +172,7 @@ unsigned int __cdecl gm_GetTickCount();
 // Calls FUN_0076a540 when gm_GetTickCount() exceeds the tick value stored at this+0x1d0.
 // @fnv 0x0076a510
 // src: XBOX_PDB 0x0076a510
+// pdb: HackingMenu::AccessTerminal | HackingMenu.obj | debug, upstream name already matches, high
 void __thiscall HackingMenu::AccessTerminal()
 {
     if (gm_GetTickCount() > *(unsigned int*)((char*)this + 0x1d0))
@@ -180,6 +189,7 @@ struct HackingTextAnimation : BSStringT<char>
 };
 // Constructs the object by calling FUN_006ffe10.
 // @fnv 0x00726c90
+// pdb: AnimatingText::AnimatingText | MovingText.obj | debug, call graph (shared callers), high
 HackingTextAnimation::HackingTextAnimation()
 {
     AnimatingText_Initialize();
@@ -191,24 +201,27 @@ struct ListX
 };
 struct FUN_00765810 : ListX
 {
-    void __thiscall FreeAll();
+    void __thiscall HackingMenu_WordList_Flush();
     ~FUN_00765810();
 };
 // @fnv 0x00765810
+// pdb: HackingMenu::WordList::~WordList | HackingMenu.obj | debug, call graph, medium
 FUN_00765810::~FUN_00765810()
 {
-    FreeAll();
+    HackingMenu_WordList_Flush();
 }
 
 void __cdecl Deallocate(void* p);
 struct FUN_0076b560_shell
 {
     void __thiscall FUN_0076b560();
-    void* __thiscall FUN_00765b50(unsigned int flags);
+    void* __thiscall HackingMenu_TerminalIO_ScalarDtor(unsigned int flags);
 };
 // Calls FUN_0076b560, then frees this with Deallocate when flags has bit 1 set, and returns this.
 // @fnv 0x00765b50
-void* __thiscall FUN_0076b560_shell::FUN_00765b50(unsigned int flags)
+// src: XBOX_DEBUG_PDB 0x00765b50
+// pdb: HackingMenu::TerminalIO::`scalar deleting destructor' | HackingMenu.obj | debug, call graph, high
+void* __thiscall FUN_0076b560_shell::HackingMenu_TerminalIO_ScalarDtor(unsigned int flags)
 {
     FUN_0076b560();
     if (flags & 1)
@@ -216,15 +229,17 @@ void* __thiscall FUN_0076b560_shell::FUN_00765b50(unsigned int flags)
     return this;
 }
 
-void __cdecl UpdateD766AA0Menu();
+void __cdecl HackingMenu_Close();
 // If aiButton is 10, stores 4 at offset 0x1c4, calls UpdateD766AA0Menu and returns true; otherwise returns false.
 // @fnv 0x00767b80
+// pdb: HackingMenu::DoGamepadUpEvent | HackingMenu.obj | retail, vtable slot, high
+// pdb params: aiButton, afValue
 bool __thiscall HackingMenu::HandleMenuInput(int aiButton, float afValue)
 {
     if (aiButton == 10)
     {
         *(int*)((char*)this + 0x1c4) = 4;
-        UpdateD766AA0Menu();
+        HackingMenu_Close();
         return true;
     }
     return false;
@@ -241,6 +256,7 @@ struct C7687d0
 // Reads a pointer from this, and if it is non-null calls its DestroyOrFree with 3.
 // @fnv 0x007687d0
 // src: GUESS 0x007687d0 (confidence: medium)
+// pdb: HackingMenu::Grid::~Grid | HackingMenu.obj | debug, object-file gap fill, medium
 void __thiscall C7687d0::DestroyStoredObject()
 {
     T7021b0* q;
@@ -261,6 +277,8 @@ struct FUN_00768920_shell
 };
 // @fnv 0x00768920
 // src: GUESS 0x00768920 (confidence: medium)
+// pdb: HackingMenu::GridRow::SetSize | HackingMenu.obj | debug, object-file gap fill, medium
+// pdb params: aiSize
 void __thiscall FUN_00768920_shell::AllocateElementStorage_00768920(void* n)
 {
     void* pOldBuffer = p;
@@ -275,15 +293,19 @@ unsigned int __cdecl FUN_0042f5a0(unsigned int, unsigned int);
 unsigned int __cdecl BSStringLength(const char*);
 // Returns 0 if either string is null, otherwise counts positions up to the shorter length where the two strings have equal characters.
 // @fnv 0x00768a10
-unsigned int __thiscall HackingMenu::CountMatchingChars(const char* pcStringA, const char* pcStringB)
+// src: XBOX_DEBUG_PDB 0x00768a10
+// pdb: HackingMenu::CommonPositions | HackingMenu.obj | debug, call graph (shared callers), high
+// pdb params: apString1, apString2
+// pdb locals: icnt, ilen, i
+unsigned int __thiscall HackingMenu::CommonPositions(const char* apString1, const char* apString2)
 {
-    if (!pcStringA || !pcStringB)
+    if (!apString1 || !apString2)
         return 0;
     unsigned int icnt = 0;
-    unsigned int ilen = FUN_0042f5a0(BSStringLength(pcStringA), BSStringLength(pcStringB));
+    unsigned int ilen = FUN_0042f5a0(BSStringLength(apString1), BSStringLength(apString2));
     for (unsigned int i = 0; i < ilen; ++i)
     {
-        if (pcStringA[i] == pcStringB[i])
+        if (apString1[i] == apString2[i])
             ++icnt;
     }
     return icnt;
@@ -298,6 +320,7 @@ struct FUN_007694f0_shell
 // Calls FUN_00726c90, then zeroes the int fields at offsets 0x30 and 0x2c and returns this.
 // @fnv 0x007694f0
 // src: XBOX_PDB 0x007694f0
+// pdb: HackingMenu::TerminalIO::TerminalIO | HackingMenu.obj | retail, upstream name already matches, high
 int __thiscall FUN_007694f0_shell::HackingMenu_TerminalIO_TerminalIO()
 {
     FUN_00726c90();
@@ -314,6 +337,7 @@ struct Struct0076ae30
 };
 // Scans buf for bytes equal to v, writes their indices into out, and returns how many were found.
 // @fnv 0x0076ae30
+// pdb: HackingMenu::TerminalIO::~TerminalIO | HackingMenu.obj | retail, object-file run extension, low
 int __thiscall Struct0076ae30::FindByteIndices(int aiValue, unsigned char* pIndices)
 {
     unsigned char c = 0;
@@ -335,6 +359,8 @@ struct Struct0076b090
 };
 // Resets field0 to 0, calls CopyFrom with a, and returns this.
 // @fnv 0x0076b090
+// pdb: HackingMenu::Grid::Grid | HackingMenu.obj | debug, object-file run extension, low
+// pdb params: aCopy
 Struct0076b090* __thiscall Struct0076b090::Construct(int aiValue)
 {
     field0 = 0;
@@ -353,6 +379,8 @@ struct STR_0076b200
     STR_0076b200* AssignFrom(STR_0076b200*);
 };
 // @fnv 0x0076b200
+// pdb: HackingMenu::GridRow::operator= | HackingMenu.obj | debug, object-file run extension, low
+// pdb params: aCopy
 STR_0076b200* STR_0076b200::AssignFrom(STR_0076b200* apSource)
 {
     AllocateElementStorage_00768920(apSource->f4);
@@ -361,6 +389,7 @@ STR_0076b200* STR_0076b200::AssignFrom(STR_0076b200* apSource)
 }
 
 unsigned int __cdecl BSStringLength(char const*);
+// pdb: class TaskQueueInterface, size 0x10 (here 0x1), 4 members
 struct TaskQueueInterface
 {
     static void __cdecl CopyStringToBuffer(char*, unsigned int, char const*);
@@ -371,15 +400,18 @@ struct G2
 };
 struct FUN_0076b240_shell
 {
-    void __thiscall tList_AppendStr(const char* s);
+    void __thiscall HackingMenu_WordList_Add(const char* apWord);
 };
 // @fnv 0x0076b240
-// src: COMMUNITY 0x0076b240
-void __thiscall FUN_0076b240_shell::tList_AppendStr(const char* apString)
+// src: XBOX_DEBUG_PDB 0x0076b240 (was COMMUNITY)
+// pdb: HackingMenu::WordList::Add | HackingMenu.obj | debug, call graph, high
+// pdb params: apWord
+// pdb locals: pnew, isize
+void __thiscall FUN_0076b240_shell::HackingMenu_WordList_Add(const char* apWord)
 {
-    unsigned int size = BSStringLength(apString) + 1;
+    unsigned int size = BSStringLength(apWord) + 1;
     char* buffer = new char[size];
-    TaskQueueInterface::CopyStringToBuffer(buffer, size, apString);
+    TaskQueueInterface::CopyStringToBuffer(buffer, size, apWord);
     reinterpret_cast<G2*>(this)->AddHead(reinterpret_cast<int*>(&buffer));
 }
 
@@ -389,11 +421,13 @@ struct FUN_0076b2a0_shell
 {
     void* m_p;
     void __thiscall FUN_0063f7b0();
-    void __thiscall FreeAll();
+    void __thiscall HackingMenu_WordList_Flush();
 };
 // Repeatedly deallocates the object at m_p and calls FUN_0063f7b0 until m_p becomes null.
 // @fnv 0x0076b2a0
-void __thiscall FUN_0076b2a0_shell::FreeAll()
+// src: XBOX_DEBUG_PDB 0x0076b2a0
+// pdb: HackingMenu::WordList::Flush | HackingMenu.obj | debug, call graph, high
+void __thiscall FUN_0076b2a0_shell::HackingMenu_WordList_Flush()
 {
     while (m_p)
     {
@@ -406,9 +440,10 @@ void __thiscall FUN_0076b2a0_shell::FreeAll()
 
 // @fnv 0x00768020
 // src: XBOX_PDB 0x00768020
+// pdb: HackingMenu::ClearEntry | HackingMenu.obj | retail, upstream name already matches, high
 void __thiscall HackingMenu::ClearEntry()
 {
-    anim.AssignString(0);
+    xEntryText.AssignString(0);
     m_pTiles[2]->Set(0x1005, -1);
     m_pTiles[2]->Set(0x1008, -1);
 }
@@ -425,6 +460,7 @@ struct MyHack
 // Returns f4AC multiplied by 1280.0, divided by the result of FUN_004dc1f0, then multiplied by f4D0.
 // @fnv 0x007697f0
 // src: XBOX_PDB 0x007697f0
+// pdb: InterfaceManager::GetPipboyMouseX | HackingMenu.obj | debug, upstream name already matches, high
 float __thiscall MyHack::InterfaceManager_GetPipboyMouseX()
 {
     return (float)(f4AC * 1280.0 / Renderer_GetScreenWidth() * f4D0);
@@ -433,6 +469,9 @@ float __thiscall MyHack::InterfaceManager_GetPipboyMouseX()
 
 // Writes "0x" followed by the four hex digits of v (most significant first) into dst and null-terminates it.
 // @fnv 0x00768970
+// pdb: HackingMenu::MakeHexString | HackingMenu.obj | debug, object-file gap fill, medium
+// pdb params: ausVal, apResult
+// pdb locals: i, c
 void __thiscall HackingMenu::FormatHexWord(unsigned short ausValue, char* pDest)
 {
     __memcpy(pDest, "0x", 2);
@@ -460,12 +499,15 @@ struct TileHelper
 // Scans 46 entries for one whose value is non-null, passes a check, and whose floats at 0xfac and 0x1004 equal a and b; returns that value or null.
 // @fnv 0x00767bb0
 // src: XBOX_PDB 0x00767bb0
-Tile* __thiscall HackingMenu::FindTile(int iColumn, int iNewRow)
+// pdb: HackingMenu::FindTile | HackingMenu.obj | retail, upstream name already matches, high
+// pdb params: aiIndex, aiCol
+// pdb locals: i
+Tile* __thiscall HackingMenu::FindTile(int aiIndex, int aiCol)
 {
     for (unsigned int i = 0; i < 46; ++i)
     {
         if (reinterpret_cast<TGF*>(entries[i]->tile) != 0 && reinterpret_cast<TileHelper*>(reinterpret_cast<TGF*>(entries[i]->tile))->ContainsTrait(0xfaf) &&
-            reinterpret_cast<TGF*>(entries[i]->tile)->GetFloat(0xfac) == static_cast<unsigned int>(iColumn) && reinterpret_cast<TGF*>(entries[i]->tile)->GetFloat(0x1004) == static_cast<unsigned int>(iNewRow))
+            reinterpret_cast<TGF*>(entries[i]->tile)->GetFloat(0xfac) == static_cast<unsigned int>(aiIndex) && reinterpret_cast<TGF*>(entries[i]->tile)->GetFloat(0x1004) == static_cast<unsigned int>(aiCol))
         {
             return reinterpret_cast<Tile*>(entries[i]->tile);
         }
@@ -486,6 +528,9 @@ struct FUN_00768810
 
 // Stores aiSize, allocates an STR_0076b200 array of that size, and initializes each element via FUN_00768920(uiSize).
 // @fnv 0x00768810
+// pdb: HackingMenu::Grid::Grid | HackingMenu.obj | debug, object-file gap fill, medium
+// pdb params: aiSize
+// pdb locals: i
 FUN_00768810::FUN_00768810(unsigned int aiSize)
 {
     unsigned int i;
@@ -509,6 +554,7 @@ extern "C" void __cdecl FormHeapFreeAndLog_00401030(void* apMemory);
 
 // Destroys the object's elements and optionally frees the allocation, returning the object or its base pointer depending on flags.
 // @fnv 0x007021b0
+// pdb: HackingMenu::GridRow::`vector deleting destructor' | Interface.obj | debug, object-file run extension, low
 void* FUN_007021b0_cls::DestroyOrFree(unsigned int flags)
 {
     if (flags & 2)
@@ -558,7 +604,10 @@ extern InterfaceManager* g_pkD766AA0InterfaceManager;
 extern unsigned int g_uiD766AA0CloseTime;
 
 // @fnv 0x00766aa0
-void __cdecl UpdateD766AA0Menu()
+// src: XBOX_RETAIL_PDB 0x00766aa0
+// pdb: HackingMenu::Close | HackingMenu.obj | retail, call graph (shared callers), high
+// pdb locals: pterm
+void __cdecl HackingMenu_Close()
 {
     if (g_pkD766AA0Menu)
     {
@@ -585,8 +634,8 @@ struct ValueRow
 {
     float __thiscall FUN_00a011b0(unsigned int key, unsigned int mode);
     void __thiscall Tile_Set(unsigned int key, float value);
-    void __thiscall FUN_00715c60(unsigned int key, unsigned int value);
-    void __thiscall Tile_Set_00a01350(unsigned int key, unsigned int value, unsigned int mode);
+    void __thiscall FUN_00715c60(unsigned int aiTrait, unsigned int aiValue);
+    void __thiscall Tile_Set_00a01350(unsigned int key, unsigned int apString, unsigned int mode);
 };
 struct MenuRowFactory
 {
@@ -600,7 +649,11 @@ struct EntryListNode
 };
 // Adds count to the 0xfac value of each existing row, then creates count new rows with descending 0xfac values and the given values at 0xfc4, appending each.
 // @fnv 0x00767ef0
-void __thiscall HackingMenu::AddValueRows(unsigned int count, const unsigned int* puiValues)
+// src: XBOX_RETAIL_PDB 0x00767ef0
+// pdb: HackingMenu::ScrollLog | HackingMenu.obj | retail, string-set bridge, high
+// pdb params: aiTicks, pNewEntries
+// pdb locals: piter, ptile, i
+void __thiscall HackingMenu::ScrollLog(unsigned int aiTicks, const unsigned int* pNewEntries)
 {
     ValueRow* item;
     {
@@ -608,14 +661,14 @@ void __thiscall HackingMenu::AddValueRows(unsigned int count, const unsigned int
         while (iterator != 0)
         {
             item = *(((EntryListNode*)((char*)this + 0x168))->NiTPointerListBase_NiTPointerAllocator_unsigned_int_Tile_GetNext(&iterator));
-            item->Tile_Set(0xfac, item->FUN_00a011b0(0xfac, 1) + float(count));
+            item->Tile_Set(0xfac, item->FUN_00a011b0(0xfac, 1) + float(aiTicks));
         }
     }
-    for (unsigned int index = 0; index < count; ++index)
+    for (unsigned int index = 0; index < aiTicks; ++index)
     {
         item = reinterpret_cast<MenuRowFactory*>(this)->FUN_00a1ddb0(*(void**)((char*)this + 0x118), &DAT_010729c8, 0);
-        item->FUN_00715c60(0xfac, count - index - 1);
-        item->Tile_Set_00a01350(0xfc4, puiValues[index], 1);
+        item->FUN_00715c60(0xfac, aiTicks - index - 1);
+        item->Tile_Set_00a01350(0xfc4, pNewEntries[index], 1);
         ((EntryListNode*)((char*)this + 0x168))->NiTPointerListBase_NiTPointerAllocator_unsigned_int_BSMultiBoundRoom_AddTail(&item);
     }
 }
@@ -645,6 +698,9 @@ struct Context
 // Scans input entries for the smallest value, recursing into sub-entries when it exceeds 2, and returns the combined result plus one.
 // @fnv 0x00769520
 // src: GUESS 0x00769520 (confidence: low)
+// pdb: HackingMenu::GetGuaranteedPossible | HackingMenu.obj | debug, object-file gap fill, medium
+// pdb params: aGrid
+// pdb locals: ucMinTally, row, ucMaxTally, iMinPossible, imax, imatchval, ucCols, iguarantee, subGrid
 unsigned int Context::ComputeRecursiveEntryValue_00769520(FUN_007687d0* input)
 {
     unsigned char minimum = 255;
@@ -714,13 +770,16 @@ extern GameRoot* g_pGame;
 
 // Calls UnkCallA/UnkCallB, picks m_1cc or a game value as result, then returns -1 if result is outside [a,b] or (result-a)/17.
 // @fnv 0x00769700
-int HackingMenu::GetScaledValue()
+// src: XBOX_RETAIL_PDB 0x00769700
+// pdb: HackingMenu::GetCharHit | HackingMenu.obj | retail, call graph, high
+// pdb locals: ix, iend, istart
+int HackingMenu::GetCharHit()
 {
     int result = 0;
     UnkCallA();
     if (UnkCallB())
     {
-        result = m_iCursorIndex;
+        result = iCursorX;
     }
     else
     {
@@ -746,22 +805,24 @@ struct TileV
 
 // @fnv 0x0076a3f0
 // src: XBOX_PDB 0x0076a3f0
+// pdb: HackingMenu::DoShutdown | HackingMenu.obj | retail, upstream name already matches, high
+// pdb locals: rate
 void HackingMenu::DoShutdown()
 {
-    if (gm_GetTickCount() > reinterpret_cast<unsigned int&>(unk1d0))
+    if (gm_GetTickCount() > reinterpret_cast<unsigned int&>(dwAccessTime))
     {
         const unsigned int delay = 50;
         reinterpret_cast<TileV*>(pMenu)->SetFloat(0x1005,
                          reinterpret_cast<TileV*>(pMenu)->GetFloat(0x1005) +
-                             static_cast<unsigned int>(unk1b8) * (reinterpret_cast<unsigned int&>(unk1d0) ? (gm_GetTickCount() - reinterpret_cast<unsigned int&>(unk1d0)) / delay + 1 : 1),
+                             static_cast<unsigned int>(iYInterval) * (reinterpret_cast<unsigned int&>(dwAccessTime) ? (gm_GetTickCount() - reinterpret_cast<unsigned int&>(dwAccessTime)) / delay + 1 : 1),
                          true);
-        reinterpret_cast<unsigned int&>(unk1d0) = gm_GetTickCount() + delay;
-        reinterpret_cast<BSSoundHandle&>(sounds[3]).Play(false);
+        reinterpret_cast<unsigned int&>(dwAccessTime) = gm_GetTickCount() + delay;
+        reinterpret_cast<BSSoundHandle&>(Sounds[3]).Play(false);
     }
     if (reinterpret_cast<TileV*>(m_pTiles[5])->GetWidth() + reinterpret_cast<TileV*>(m_pTiles[5])->GetFloat(0xfb0) < _gModifierZero)
     {
         reinterpret_cast<TileV*>(pMenu)->SetInt(0x1006, 1);
-        m_iStage = 4;
+        eStage = 4;
     }
 }
 
@@ -774,22 +835,25 @@ void __cdecl FUN_00401460(int, const char*, int);
 
 // @fnv 0x0076a670
 // src: XBOX_PDB 0x0076a670
-void HackingMenu::GetGarbageString(int a1, const char* pcSource)
+// pdb: HackingMenu::GetGarbageString | HackingMenu.obj | retail, upstream name already matches, high
+// pdb params: apTarget, apSource
+// pdb locals: ichars, pstart
+void HackingMenu::GetGarbageString(int apTarget, const char* apSource)
 {
     int idx = 1;
-    int r6 = FUN_00ec7690(DAT_011a0104, pcSource[0]);
+    int r6 = FUN_00ec7690(DAT_011a0104, apSource[0]);
     if (r6 != 0)
     {
         while (1)
         {
-            if (pcSource[idx] == 0 || FUN_00ec86e1(pcSource[idx]) != 0)
+            if (apSource[idx] == 0 || FUN_00ec86e1(apSource[idx]) != 0)
             {
                 idx = 1;
                 break;
             }
             else
             {
-                if (pcSource[idx] == DAT_011a0100[r6 - DAT_011a0104])
+                if (apSource[idx] == DAT_011a0100[r6 - DAT_011a0104])
                 {
                     idx++;
                     break;
@@ -798,7 +862,7 @@ void HackingMenu::GetGarbageString(int a1, const char* pcSource)
             idx++;
         }
     }
-    FUN_00401460(a1, pcSource, idx);
+    FUN_00401460(apTarget, apSource, idx);
 }
 
 extern "C" unsigned int __cdecl Cmd_GetSessionTime_Execute();
@@ -826,6 +890,7 @@ struct Widget
 };
 // Toggles the fade at offset 0x1d4 between 0 and 1 on a timer, creating it from resource 0xfa3 when absent, unless menu state 4 with widget 0x1006 is active.
 // @fnv 0x0076a9d0
+// pdb: HackingMenu::FlashCursor | HackingMenu.obj | retail, call graph, high
 void HackingMenu::UpdateFade()
 {
     static float delay = (*reinterpret_cast<Resources**>(reinterpret_cast<char*>(this) + 0x11c))
@@ -855,7 +920,7 @@ void HackingMenu::UpdateFade()
 struct Node
 {
     bool __thiscall IsTraitNonZero(int property);
-    Node* __thiscall Tile_GetString(int property);
+    Node* __thiscall Tile_GetString(int aiTrait);
     Node* __thiscall FUN_0045cd60();
     void __thiscall FUN_00a011b0(int property);
     void __thiscall FUN_00700320(int property, int value);
@@ -863,7 +928,10 @@ struct Node
 extern int __cdecl BSstrlen(Node* node);
 extern int __cdecl FUN_00ec62c0();
 // @fnv 0x0076ab40
-void HackingMenu::UpdateActiveNodeProperty()
+// src: XBOX_RETAIL_PDB 0x0076ab40
+// pdb: HackingMenu::UpdateCursorPos | HackingMenu.obj | retail, call graph, high
+// pdb locals: ichars, pentrytext, ix, ptile
+void HackingMenu::UpdateCursorPos()
 {
     Node* selected;
     int total;
@@ -888,7 +956,7 @@ void HackingMenu::UpdateActiveNodeProperty()
 // BuildHackingGuessTemplate - hacking menu guess template formatting
 struct FUN_00a1ddb0_res
 {
-    void __thiscall FUN_00715c60(unsigned int id, int cnt);
+    void __thiscall FUN_00715c60(unsigned int aiTrait, int aiValue);
     int __thiscall GetName_00700300();
     void __thiscall FUN_00707e10(int len);
 };
@@ -910,14 +978,17 @@ struct FUN_0044ddc0_sub
 
 
 // @fnv 0x0076ad50
-void HackingMenu::BuildHackingGuessTemplate()
+// src: XBOX_RETAIL_PDB 0x0076ad50
+// pdb: HackingMenu::MakeGuessBlock | HackingMenu.obj | retail, string-set bridge, high
+// pdb locals: strtmp, ptile
+void HackingMenu::MakeGuessBlock()
 {
     FUN_00a1ddb0_res* p = reinterpret_cast<FUN_00a1ddb0_owner*>(DAT_011d95b8)->FUN_00a1ddb0(reinterpret_cast<char*>(m_pTiles[1]), "hacking_guess_template", 0);
-    p->FUN_00715c60(0xfac, (*reinterpret_cast<FUN_0044ddc0_sub*>(&list174)).FUN_0044ddc0());
-    (*reinterpret_cast<FUN_0044ddc0_sub*>(&list174)).NiTPointerListBase_NiTPointerAllocator_unsigned_int_BSMultiBoundRoom_AddTail(&p);
+    p->FUN_00715c60(0xfac, (*reinterpret_cast<FUN_0044ddc0_sub*>(&xGuessTiles)).FUN_0044ddc0());
+    (*reinterpret_cast<FUN_0044ddc0_sub*>(&xGuessTiles)).NiTPointerListBase_NiTPointerAllocator_unsigned_int_BSMultiBoundRoom_AddTail(&p);
     {
         BSStringT<char> nameBuf;
-        nameBuf.PrintfString("%s_%d", p->GetName_00700300(), (*reinterpret_cast<FUN_0044ddc0_sub*>(&list174)).FUN_0044ddc0());
+        nameBuf.PrintfString("%s_%d", p->GetName_00700300(), (*reinterpret_cast<FUN_0044ddc0_sub*>(&xGuessTiles)).FUN_0044ddc0());
         p->FUN_00707e10((int)nameBuf.String());
     }
 }
@@ -982,6 +1053,9 @@ struct ElemArray
 };
 
 // @fnv 0x0076b0c0
+// pdb: HackingMenu::Grid::operator= | HackingMenu.obj | debug, object-file run extension, low
+// pdb params: aCopy
+// pdb locals: i
 ElemArray* ElemArray::CopyFrom(ElemArray* src)
 {
     uiSize = src->uiSize;
@@ -1000,33 +1074,35 @@ struct AudioManager
 void* __cdecl ourMemset(void*, int, unsigned int);
 static const char scrollSound[] = "UIHackingCharScroll";
 // @fnv 0x007654f0
+// pdb: HackingMenu::HackingMenu | HackingMenu.obj | retail, string-set bridge, high
+// pdb locals: mgr
 HackingMenu::HackingMenu()
 {
-    unk1b4 = 0;
-    unk1b8 = 30;
+    iYStart = 0;
+    iYInterval = 30;
     ourMemset(&unk10c, 0, 32);
-    unk19c = 0;
-    unk1a4 = 0;
-    unk1a0 = 0;
-    unk1ac = 0;
-    unk1a8 = 0;
-    m_iCursorIndex = 0;
-    unk1b0 = 0;
-    m_iStage = 0;
-    unk1bc = -1;
-    m_pkCursorTile = 0;
-    unk1c0 = 0;
-    unk1d9[1] = 0;
-    unk1d9[0] = 0;
-    m_bBlink = 0;
-    unk1d0 = 0;
-    unk1d4 = 0;
+    pPassword = 0;
+    iTotGuesses = 0;
+    iNumGuesses = 0;
+    iWordLength = 0;
+    iWordsHave = 0;
+    iCursorX = 0;
+    iBufferPos = 0;
+    eStage = 0;
+    iLastOffset = -1;
+    pOverTile = 0;
+    pLastTarget = 0;
+    bUsedReset[1] = 0;
+    bUsedReset[0] = 0;
+    bSuppressEntry = 0;
+    dwAccessTime = 0;
+    pCursorVis = 0;
     AudioManager* audio = AudioManager::Get();
-    reinterpret_cast<BSSoundHandle&>(sounds[0]) = audio->GetSoundByEditorID("UIHackingFanHumLP", 49);
-    reinterpret_cast<BSSoundHandle&>(sounds[1]) = audio->GetSoundByEditorID("UIHackingPassGood", 33);
-    reinterpret_cast<BSSoundHandle&>(sounds[2]) = audio->GetSoundByEditorID("UIHackingPassBad", 33);
-    reinterpret_cast<BSSoundHandle&>(sounds[3]) = audio->GetSoundByEditorID(scrollSound, 33);
-    reinterpret_cast<BSSoundHandle&>(sounds[4]) = audio->GetSoundByEditorID("UIHackingCharEnter", 33);
+    reinterpret_cast<BSSoundHandle&>(Sounds[0]) = audio->GetSoundByEditorID("UIHackingFanHumLP", 49);
+    reinterpret_cast<BSSoundHandle&>(Sounds[1]) = audio->GetSoundByEditorID("UIHackingPassGood", 33);
+    reinterpret_cast<BSSoundHandle&>(Sounds[2]) = audio->GetSoundByEditorID("UIHackingPassBad", 33);
+    reinterpret_cast<BSSoundHandle&>(Sounds[3]) = audio->GetSoundByEditorID(scrollSound, 33);
+    reinterpret_cast<BSSoundHandle&>(Sounds[4]) = audio->GetSoundByEditorID("UIHackingCharEnter", 33);
     ourMemset(&unk028, 0, 184);
 }
 
@@ -1036,7 +1112,7 @@ struct ScriptObj
 };
 struct EntObj
 {
-    void* FUN_00765b50(unsigned int);
+    void* HackingMenu_TerminalIO_ScalarDtor(unsigned int);
 };
 struct SettingValue
 {
@@ -1057,6 +1133,8 @@ extern SettingColl DAT_011d0b90;
 extern unsigned int DAT_011d95c0;
 extern char DAT_011d9674;
 // @fnv 0x007658e0
+// pdb: HackingMenu::~HackingMenu | HackingMenu.obj | retail, upstream name already matches, high
+// pdb locals: i
 HackingMenu::~HackingMenu()
 {
     ScriptObj* head7;
@@ -1067,34 +1145,34 @@ HackingMenu::~HackingMenu()
     EntObj* entCopy2;
     int i8;
     unsigned int jB;
-    while (!list168.NiTListBase_DFALL_NiTListItem_BSAnimGroupSequence_const_BSAnimGroupSequence_const_IsEmpty())
+    while (!xLogTiles.NiTListBase_DFALL_NiTListItem_BSAnimGroupSequence_const_BSAnimGroupSequence_const_IsEmpty())
     {
-        head7 = list168.RemoveHead();
+        head7 = xLogTiles.RemoveHead();
         objTmp = head7;
         objTmp ? objTmp->Call0(1) : 0;
     }
-    while (!list174.NiTListBase_DFALL_NiTListItem_BSAnimGroupSequence_const_BSAnimGroupSequence_const_IsEmpty())
+    while (!xGuessTiles.NiTListBase_DFALL_NiTListItem_BSAnimGroupSequence_const_BSAnimGroupSequence_const_IsEmpty())
     {
-        head4 = list174.RemoveHead();
+        head4 = xGuessTiles.RemoveHead();
         obj2 = head4;
         obj2 ? obj2->Call0(1) : 0;
     }
-    list188.FUN_004ed900();
+    xUsedBonuses.FUN_004ed900();
     DAT_011d95c0 = gm_GetTickCount() + DAT_011d0b90.Setting_Int()->v;
-    pair180.FreeAll();
-    void* ptrTmp = reinterpret_cast<void*>(unk1b0);
+    wordList.HackingMenu_WordList_Flush();
+    void* ptrTmp = reinterpret_cast<void*>(iBufferPos);
     FormHeapFreeAndLog_00401030(ptrTmp);
     DAT_011d95b8 = 0;
     for (i8 = 0; i8 < 5; i8++)
     {
-        reinterpret_cast<BSSoundHandle&>(sounds[i8]).Stop();
-        reinterpret_cast<BSSoundHandle&>(sounds[i8]).Clear();
+        reinterpret_cast<BSSoundHandle&>(Sounds[i8]).Stop();
+        reinterpret_cast<BSSoundHandle&>(Sounds[i8]).Clear();
     }
     for (jB = 0; jB < 46; jB++)
     {
         ent2 = reinterpret_cast<EntObj**>(entries)[jB];
         entCopy2 = ent2;
-        entCopy2 ? entCopy2->FUN_00765b50(1) : 0;
+        entCopy2 ? entCopy2->HackingMenu_TerminalIO_ScalarDtor(1) : 0;
     }
     SysColorMgr::GetSingleton(3, &DAT_011d9674)->ApplyToChild();
 }
@@ -1110,6 +1188,8 @@ struct HackList
 int __cdecl BSstrcmp(const char*, const char*);
 // Picks a random word matching selected, fills its menu tile with dots up to dotCount, shifts positions, frees the word and decrements count.
 // @fnv 0x0076a730
+// pdb: HackingMenu::RemoveDud | HackingMenu.obj | debug, object-file gap fill, medium
+// pdb locals: ibufferpos, iword, icnt, pnode, newbuffer, i, ptile
 void HackingMenu::RemoveRandomWord()
 {
     unsigned int index;
@@ -1121,43 +1201,43 @@ void HackingMenu::RemoveRandomWord()
     char text[20];
     do
     {
-        index = RandomUnsignedInt(reinterpret_cast<unsigned int&>(unk1a8));
+        index = RandomUnsignedInt(reinterpret_cast<unsigned int&>(iWordsHave));
         iter = index;
-        word = &(*reinterpret_cast<HackList*>(&pair180));
+        word = &(*reinterpret_cast<HackList*>(&wordList));
         while (iter--)
             word = word->Next();
-    } while (!BSstrcmp(*word->Get(), reinterpret_cast<const char*>(unk19c)));
+    } while (!BSstrcmp(*word->Get(), reinterpret_cast<const char*>(pPassword)));
     aRow = 4;
-    for (position3 = reinterpret_cast<unsigned int*>(unk1b0)[index]; position3 > 12; position3 -= 12)
+    for (position3 = reinterpret_cast<unsigned int*>(iBufferPos)[index]; position3 > 12; position3 -= 12)
         ++aRow;
     tile_2 = entries[aRow]->tile;
     ++aRow;
     __memcpy(text, tile_2->GetString(0xfc4), 20);
-    for (iter = 0; iter < static_cast<unsigned int>(unk1ac) && position3 < 12; ++iter)
+    for (iter = 0; iter < static_cast<unsigned int>(iWordLength) && position3 < 12; ++iter)
     {
         text[position3 + 7] = '.';
         ++position3;
     }
     tile_2->Set(0xfc4, text, true);
-    if (entries[aRow] && entries[aRow]->tile && entries[aRow]->tile->ContainsTrait(0xfaf) && iter < static_cast<unsigned int>(unk1ac))
+    if (entries[aRow] && entries[aRow]->tile && entries[aRow]->tile->ContainsTrait(0xfaf) && iter < static_cast<unsigned int>(iWordLength))
     {
         position3 = 0;
         tile_2 = entries[aRow]->tile;
         __memcpy(text, tile_2->GetString(0xfc4), 20);
-        while (iter++ < static_cast<unsigned int>(unk1ac))
+        while (iter++ < static_cast<unsigned int>(iWordLength))
         {
             text[position3 + 7] = '.';
             ++position3;
         }
         tile_2->Set(0xfc4, text, true);
     }
-    for (; index < reinterpret_cast<unsigned int&>(unk1a8) - 1; ++index)
-        reinterpret_cast<unsigned int*>(unk1b0)[index] = reinterpret_cast<unsigned int*>(unk1b0)[index + 1];
-    reinterpret_cast<unsigned int*>(unk1b0)[index] = 0x198;
+    for (; index < reinterpret_cast<unsigned int&>(iWordsHave) - 1; ++index)
+        reinterpret_cast<unsigned int*>(iBufferPos)[index] = reinterpret_cast<unsigned int*>(iBufferPos)[index + 1];
+    reinterpret_cast<unsigned int*>(iBufferPos)[index] = 0x198;
     char* deleted = *word->Get();
     FormHeapFreeAndLog_00401030(deleted);
-    (*reinterpret_cast<HackList*>(&pair180)).Remove(word->Get());
-    --reinterpret_cast<unsigned int&>(unk1a8);
+    (*reinterpret_cast<HackList*>(&wordList)).Remove(word->Get());
+    --reinterpret_cast<unsigned int&>(iWordsHave);
 }
 
 namespace fnv_0076ac10 {
@@ -1165,7 +1245,7 @@ unsigned int __cdecl BSStringLength(const char*);
 
 struct HTile
 {
-    const char* __thiscall GetString(int id);
+    const char* __thiscall GetString(int aiTrait);
     float __thiscall GetFloatValue(int id);
     HTile* __thiscall GetParentTile();
     void __thiscall Set(int id, int value);
@@ -1177,17 +1257,21 @@ struct HTile
 } // namespace fnv_0076ac10
 
 // @fnv 0x0076ac10
-void HackingMenu::PositionTileFromEntry(HackEntry* entry)
+// src: XBOX_RETAIL_PDB 0x0076ac10
+// pdb: HackingMenu::UpdateScrollingCursor | HackingMenu.obj | retail, call graph (shared callers), high
+// pdb params: apIO
+// pdb locals: ichars, iy, ptext, ix, pparent
+void HackingMenu::UpdateScrollingCursor(HackEntry* apIO)
 {
     using namespace fnv_0076ac10;
-    if (!entry || !reinterpret_cast<fnv_0076ac10::HTile*>(entry->tile))
+    if (!apIO || !reinterpret_cast<fnv_0076ac10::HTile*>(apIO->tile))
         return;
-    const char* text = reinterpret_cast<fnv_0076ac10::HTile*>(entry->tile)->GetString(0xfc4);
+    const char* text = reinterpret_cast<fnv_0076ac10::HTile*>(apIO->tile)->GetString(0xfc4);
     int len4 = (text && *text != ' ') ? fnv_0076ac10::BSStringLength(text) : 0;
-    int x8 = reinterpret_cast<fnv_0076ac10::HTile*>(entry->tile)->GetFloatValue(0xfa1) + len4 * 0x11;
-    int y = reinterpret_cast<fnv_0076ac10::HTile*>(entry->tile)->GetFloatValue(0xfa2);
+    int x8 = reinterpret_cast<fnv_0076ac10::HTile*>(apIO->tile)->GetFloatValue(0xfa1) + len4 * 0x11;
+    int y = reinterpret_cast<fnv_0076ac10::HTile*>(apIO->tile)->GetFloatValue(0xfa2);
     HTile* parent;
-    for (parent = reinterpret_cast<fnv_0076ac10::HTile*>(entry->tile)->GetParentTile(); parent && parent != reinterpret_cast<fnv_0076ac10::HTile*>(m_pTiles[4])->GetParentTile();
+    for (parent = reinterpret_cast<fnv_0076ac10::HTile*>(apIO->tile)->GetParentTile(); parent && parent != reinterpret_cast<fnv_0076ac10::HTile*>(m_pTiles[4])->GetParentTile();
          parent = parent->GetParentTile())
     {
         x8 += (int)parent->GetFloatValue(0xfa1);
@@ -1239,13 +1323,16 @@ struct FUN_0076b300 : FUN_00759eb0
 {
     ConstructorTile* tile;
     ConstructorTile* label;
-    void __thiscall SetCapacity(unsigned int);
+    void __thiscall AnimatingText_SetDisplayInterval(unsigned int);
     void __thiscall AnimatingText_SetTraits(int, int);
     FUN_0076b300(const char*, char*, const char*, int, unsigned char);
 };
 // @fnv 0x0076b300
-FUN_0076b300::FUN_0076b300(const char* name, char* parent, const char* path, int value, unsigned char kind)
-    : FUN_00759eb0(name)
+// pdb: HackingMenu::TerminalIO::TerminalIO | HackingMenu.obj | debug, call graph, high
+// pdb params: apString, apParent, apTemplate, aiY, ucType
+// pdb locals: iinterval, irate, ix
+FUN_0076b300::FUN_0076b300(const char* apString, char* apParent, const char* apTemplate, int aiY, unsigned char ucType)
+    : FUN_00759eb0(apString)
 {
     label = 0;
     tile = 0;
@@ -1256,27 +1343,27 @@ FUN_0076b300::FUN_0076b300(const char* name, char* parent, const char* path, int
     counts[1] = *DAT_011d4e4c.Setting_Int();
     counts[2] = *DAT_011d3510.Setting_Int();
     {
-        unsigned int randomValue = counts[kind] > 1 ? FUN_004bd510(1000.0 / counts[kind], 1.0f) : 1000.0f;
-        SetCapacity(randomValue);
-        tile = static_cast<ConstructorTile*>(reinterpret_cast<FUN_00a1ddb0_owner*>(DAT_011d95b8)->FUN_00a1ddb0(parent, path, 0));
+        unsigned int randomValue = counts[ucType] > 1 ? FUN_004bd510(1000.0 / counts[ucType], 1.0f) : 1000.0f;
+        AnimatingText_SetDisplayInterval(randomValue);
+        tile = static_cast<ConstructorTile*>(reinterpret_cast<FUN_00a1ddb0_owner*>(DAT_011d95b8)->FUN_00a1ddb0(apParent, apTemplate, 0));
         if (tile)
         {
             AnimatingText_SetTraits(tile->Tile_GetValue(0xfc4), tile->FindTraitValue(0xfa3));
-            if (kind == 1)
+            if (ucType == 1)
             {
                 label = static_cast<ConstructorTile*>(
                     reinterpret_cast<FUN_00a1ddb0_owner*>(DAT_011d95b8)->FUN_00a1ddb0(reinterpret_cast<char*>(DAT_011d95b8->m_pTiles[0]), DAT_0107293c, 0));
                 label->Tile_Set_00a01350(0xfc4, DAT_010692d0, true);
             }
-            if (value >= 0)
+            if (aiY >= 0)
             {
-                tile->FUN_00700320(0xfa2, value);
+                tile->FUN_00700320(0xfa2, aiY);
                 int width =
                     static_cast<int>(reinterpret_cast<TileValue*>(DAT_011d95b8->FUN_00726070())->FUN_00a011b0(0x1007));
                 if (label)
                 {
                     label->FUN_00700320(0xfa1, width);
-                    label->FUN_00700320(0xfa2, value);
+                    label->FUN_00700320(0xfa2, aiY);
                     tile->FUN_00715c60(0xfa1, width + BSStringLength(DAT_010692d0) * 17);
                 }
                 else
@@ -1300,7 +1387,7 @@ extern char str_01072a34[];
 extern char str_01072a00[];
 extern char str_010729e8[];
 unsigned int __cdecl gm_GetTickCount();
-void __cdecl UpdateD766AA0Menu();
+void __cdecl HackingMenu_Close();
 
 struct FUN_00680890 : FUN_00765810
 {
@@ -1343,7 +1430,11 @@ struct MatrixWrapper : FUN_007687d0
 };
 
 // @fnv 0x00768070
-void __thiscall HackingMenu::SelectWordSet(unsigned int requestedCount)
+// src: XBOX_RETAIL_PDB 0x00768070
+// pdb: HackingMenu::Prepare | HackingMenu.obj | retail, unique string literal, high
+// pdb params: aiWordsWant
+// pdb locals: inumtries, izerofreq, plistword, MAX_CHECKS, irandom, candidateList, strDictFilename, pnode, row, strtmp, pcandidate, dwBegin, ComPos, token, pdictFile, imax, ZERO_RANDMAX, dwTimeout, bvalid, uctally, pnode2, inumCommon, i, col
+void __thiscall HackingMenu::Prepare(unsigned int aiWordsWant)
 {
     unsigned int attacker;
     int ahead;
@@ -1360,7 +1451,7 @@ void __thiscall HackingMenu::SelectWordSet(unsigned int requestedCount)
     attacker = 0;
     ammo = 8;
     int threat = 10;
-    unsigned int qty = (requestedCount - 2) / *(unsigned int*)((char*)this + 0x1ac) + 1;
+    unsigned int qty = (aiWordsWant - 2) / *(unsigned int*)((char*)this + 0x1ac) + 1;
     ahead = 0;
     if (*(unsigned int*)((char*)this + 0x1ac) == 0)
         return;
@@ -1369,7 +1460,7 @@ void __thiscall HackingMenu::SelectWordSet(unsigned int requestedCount)
     if (!openedFile || !openedFile->FUN_20(0, 0))
     {
         Warning_005b5e40(0x12, str_01072a00, dataFileName.String());
-        UpdateD766AA0Menu();
+        HackingMenu_Close();
         return;
     }
     char line[32];
@@ -1386,21 +1477,21 @@ void __thiscall HackingMenu::SelectWordSet(unsigned int requestedCount)
                 continue;
         }
         if (BSStringLength(line) == *(unsigned int*)((char*)this + 0x1ac))
-            ((FUN_0076b240_shell*)&available)->tList_AppendStr(line);
+            ((FUN_0076b240_shell*)&available)->HackingMenu_WordList_Add(line);
     }
     delete openedFile;
-    ((FUN_007687b0_shell*)&available)->SortWeatherEntries();
-    ((FUN_007687b0_shell*)&available)->SortWeatherEntries();
-    ((FUN_007687b0_shell*)&available)->SortWeatherEntries();
+    ((FUN_007687b0_shell*)&available)->HackingMenu_WordList_Shuffle();
+    ((FUN_007687b0_shell*)&available)->HackingMenu_WordList_Shuffle();
+    ((FUN_007687b0_shell*)&available)->HackingMenu_WordList_Shuffle();
     while (1)
     {
         unsigned int limit = gm_GetTickCount() + 100;
         while (gm_GetTickCount() < limit && ++attacker)
         {
-            ((WordsView*)((char*)this + 0x180))->FreeAll();
+            ((WordsView*)((char*)this + 0x180))->HackingMenu_WordList_Flush();
             *(unsigned int*)((char*)this + 0x1a8) = 0;
-            ((FUN_007687b0_shell*)&available)->SortWeatherEntries();
-            for (currentNode = (WordsView*)&available; *(unsigned int*)((char*)this + 0x1a8) < requestedCount &&
+            ((FUN_007687b0_shell*)&available)->HackingMenu_WordList_Shuffle();
+            for (currentNode = (WordsView*)&available; *(unsigned int*)((char*)this + 0x1a8) < aiWordsWant &&
                                                        currentNode && (chosen = *currentNode->FUN_006815c0());
                  currentNode = currentNode->FUN_00726070())
             {
@@ -1410,12 +1501,12 @@ void __thiscall HackingMenu::SelectWordSet(unsigned int requestedCount)
                 for (WordsView* selected = ((WordsView*)((char*)this + 0x180));
                      accepted && selected && (aimed = *selected->FUN_006815c0()); selected = selected->FUN_00726070())
                 {
-                    unsigned int similarity = CountMatchingChars(chosen, aimed);
+                    unsigned int similarity = CommonPositions(chosen, aimed);
                     if (similarity == *(unsigned int*)((char*)this + 0x1ac))
                     {
                         accepted = false;
                     }
-                    else if (*(unsigned int*)((char*)this + 0x1a8) < requestedCount - 1)
+                    else if (*(unsigned int*)((char*)this + 0x1a8) < aiWordsWant - 1)
                     {
                         accepted = (similarity > 0 || RandomUnsignedInt(10) < (unsigned int)ahead);
                     }
@@ -1426,14 +1517,14 @@ void __thiscall HackingMenu::SelectWordSet(unsigned int requestedCount)
                 }
                 if (accepted)
                 {
-                    ((FUN_0076b240_shell*)((WordsView*)((char*)this + 0x180)))->tList_AppendStr(chosen);
+                    ((FUN_0076b240_shell*)((WordsView*)((char*)this + 0x180)))->HackingMenu_WordList_Add(chosen);
                     ++*(unsigned int*)((char*)this + 0x1a8);
                 }
             }
-            if (*(unsigned int*)((char*)this + 0x1a8) == requestedCount)
+            if (*(unsigned int*)((char*)this + 0x1a8) == aiWordsWant)
                 break;
         }
-        if (*(unsigned int*)((char*)this + 0x1a8) == requestedCount)
+        if (*(unsigned int*)((char*)this + 0x1a8) == aiWordsWant)
         {
             break;
         }
@@ -1442,15 +1533,15 @@ void __thiscall HackingMenu::SelectWordSet(unsigned int requestedCount)
             if (++ahead == 10)
             {
                 ahead = 0;
-                if (++qty > (requestedCount >> 1))
+                if (++qty > (aiWordsWant >> 1))
                     break;
             }
         }
     }
-    ((FUN_007687b0_shell*)((WordsView*)((char*)this + 0x180)))->SortWeatherEntries();
-    ((FUN_007687b0_shell*)((WordsView*)((char*)this + 0x180)))->SortWeatherEntries();
-    ((FUN_007687b0_shell*)((WordsView*)((char*)this + 0x180)))->SortWeatherEntries();
-    ((FUN_007687b0_shell*)((WordsView*)((char*)this + 0x180)))->SortWeatherEntries();
+    ((FUN_007687b0_shell*)((WordsView*)((char*)this + 0x180)))->HackingMenu_WordList_Shuffle();
+    ((FUN_007687b0_shell*)((WordsView*)((char*)this + 0x180)))->HackingMenu_WordList_Shuffle();
+    ((FUN_007687b0_shell*)((WordsView*)((char*)this + 0x180)))->HackingMenu_WordList_Shuffle();
+    ((FUN_007687b0_shell*)((WordsView*)((char*)this + 0x180)))->HackingMenu_WordList_Shuffle();
     bracket = RandomUnsignedInt(*(unsigned int*)((char*)this + 0x1a8));
     currentNode = ((WordsView*)((char*)this + 0x180));
     for (int index = 0; (unsigned int)index < bracket; ++index)
@@ -1468,7 +1559,7 @@ void __thiscall HackingMenu::SelectWordSet(unsigned int requestedCount)
         {
             ((EntryRow*)&bonus.Modelloader_GetReferencedThis()[row])->Modelloader_GetReferencedThis()[columnIndex] =
                 (currentNode == col) ? 0xFF
-                                     : this->CountMatchingChars(*currentNode->FUN_006815c0(), *col->FUN_006815c0());
+                                     : this->CommonPositions(*currentNode->FUN_006815c0(), *col->FUN_006815c0());
             ++columnIndex;
         }
         ++row;
@@ -1524,50 +1615,53 @@ void* operator new[](unsigned int);
 void operator delete[](void*);
 // Clears the entry list, rebuilds the intro entries, generates a random password buffer from the word list, and creates one entry per 12-character chunk.
 // @fnv 0x00768aa0
-void HackingMenu::BuildHackingPasswordFile()
+// src: XBOX_RETAIL_PDB 0x00768aa0
+// pdb: HackingMenu::MakePasswordFile | HackingMenu.obj | retail, unique string literal, high
+// pdb locals: buffer, BUFFER_SIZE, iindex, GARBAGE_SIZE, pend, icol, strtmp, itries, pstart, iline, FREE_ZONE, i, icnt, pnode, itimeout, ipos, bok, idelta, pnode2, hexaddr, csave
+void HackingMenu::MakePasswordFile()
 {
     for (unsigned int i = 0; i < 46 && reinterpret_cast<Entry83**>(entries)[i]; i++)
         delete reinterpret_cast<Entry83**>(entries)[i];
     ourMemset(reinterpret_cast<Entry83**>(entries), 0, 184);
     BSStringT<char> text24x17;
-    text24x17.PrintfString("%d %s", unk1a0, DAT_011d2e20.FUN_00403df0());
-    reinterpret_cast<Entry83**>(entries)[0] = new Entry83(DAT_011d33cc.FUN_004c69f0(), reinterpret_cast<Tile83*>(m_pTiles[1]), "hacking_intro_template", unk1b4, 0);
-    reinterpret_cast<Entry83**>(entries)[1] = new Entry83(DAT_011d430c.FUN_004c69f0(), reinterpret_cast<Tile83*>(m_pTiles[1]), "hacking_intro_template", unk1b4 + unk1b8, 0);
-    reinterpret_cast<Entry83**>(entries)[2] = new Entry83(text24x17.String(), reinterpret_cast<Tile83*>(m_pTiles[1]), "hacking_intro_template", unk1b4 + unk1b8 * 3, 0);
+    text24x17.PrintfString("%d %s", iNumGuesses, DAT_011d2e20.FUN_00403df0());
+    reinterpret_cast<Entry83**>(entries)[0] = new Entry83(DAT_011d33cc.FUN_004c69f0(), reinterpret_cast<Tile83*>(m_pTiles[1]), "hacking_intro_template", iYStart, 0);
+    reinterpret_cast<Entry83**>(entries)[1] = new Entry83(DAT_011d430c.FUN_004c69f0(), reinterpret_cast<Tile83*>(m_pTiles[1]), "hacking_intro_template", iYStart + iYInterval, 0);
+    reinterpret_cast<Entry83**>(entries)[2] = new Entry83(text24x17.String(), reinterpret_cast<Tile83*>(m_pTiles[1]), "hacking_intro_template", iYStart + iYInterval * 3, 0);
     reinterpret_cast<Tile83*>(m_pTiles[1])->Tile_Set(4101, reinterpret_cast<Entry83**>(entries)[2]->tile->FUN_00a011b0(4001, 1) + text24x17.Length() * 17);
     reinterpret_cast<Tile83*>(m_pTiles[1])->Tile_Set(4102, reinterpret_cast<Entry83**>(entries)[2]->tile->FUN_00a011b0(4002, 1));
     reinterpret_cast<Entry83**>(entries)[3] = new Entry83;
     reinterpret_cast<Entry83**>(entries)[3]->AnimatingText_SetTraits(0, reinterpret_cast<Tile83*>(m_pTiles[1])->Tile_GetValue(4100));
     int entryIndex7x39 = 4;
-    for (unsigned int i = 0; i < (unsigned int)unk1a4; i++)
-        BuildHackingGuessTemplate();
+    for (unsigned int i = 0; i < (unsigned int)iTotGuesses; i++)
+        MakeGuessBlock();
     unsigned int alphabetSize17x2 = BSstrlen("!@#$%^*()_+=-`[]{}|;':,./<>?\\\"");
     int spacing35x61 = 2;
     int bufferSize12x1 = 409;
     char bufferx3[409];
-    if (!unk1a8)
+    if (!iWordsHave)
         return;
-    delete[] reinterpret_cast<int*&>(unk1b0);
-    reinterpret_cast<int*&>(unk1b0) = new int[unk1a8];
+    delete[] reinterpret_cast<int*&>(iBufferPos);
+    reinterpret_cast<int*&>(iBufferPos) = new int[iWordsHave];
     unsigned int attempts8x10 = 0;
     while (true)
     {
         for (unsigned int fill18 = 0; fill18 < 408; fill18++)
             bufferx3[fill18] = "!@#$%^*()_+=-`[]{}|;':,./<>?\\\""[RandomUnsignedInt(alphabetSize17x2)];
         bufferx3[408] = 0;
-        Node83* node15 = &(*reinterpret_cast<Node83*>(&pair180));
+        Node83* node15 = &(*reinterpret_cast<Node83*>(&wordList));
         int wordIndex4 = 0;
         unsigned int failures12 = 0;
         while (node15 && *node15->FUN_006815c0() && failures12 < 100)
         {
-            int position4 = RandomUnsignedInt(409 - unk1ac - 2);
+            int position4 = RandomUnsignedInt(409 - iWordLength - 2);
             bool free16 = true;
-            for (int j = -2; free16 && j < unk1ac + 2; j++)
+            for (int j = -2; free16 && j < iWordLength + 2; j++)
                 free16 = !(position4 + j >= 0 && bufferx3[position4 + j] >= 'A' && bufferx3[position4 + j] <= 'Z');
             if (free16)
             {
-                FUN_00401460(bufferx3 + position4, *node15->FUN_006815c0(), unk1ac);
-                reinterpret_cast<int*&>(unk1b0)[wordIndex4] = position4;
+                FUN_00401460(bufferx3 + position4, *node15->FUN_006815c0(), iWordLength);
+                reinterpret_cast<int*&>(iBufferPos)[wordIndex4] = position4;
                 wordIndex4++;
                 node15 = node15->FUN_00726070();
                 failures12 = 0;
@@ -1586,15 +1680,15 @@ void HackingMenu::BuildHackingPasswordFile()
                     "MENUS: Unable to construct complete password file for hacking minigame.  Continuing with fewer words.");
                 while (*node15->FUN_006815c0())
                 {
-                    if (reinterpret_cast<char*&>(unk19c) == *node15->FUN_006815c0())
-                        reinterpret_cast<char*&>(unk19c) = *node15->FUN_006815c0();
+                    if (reinterpret_cast<char*&>(pPassword) == *node15->FUN_006815c0())
+                        reinterpret_cast<char*&>(pPassword) = *node15->FUN_006815c0();
                     delete[] *node15->FUN_006815c0();
                     node15->FUN_0063f7b0();
-                    unk1a8--;
-                    reinterpret_cast<int*&>(unk1b0)[wordIndex4] = 408;
+                    iWordsHave--;
+                    reinterpret_cast<int*&>(iBufferPos)[wordIndex4] = 408;
                     wordIndex4++;
                 }
-                for (Node83* walk = &(*reinterpret_cast<Node83*>(&pair180)); walk; walk = walk->FUN_00726070())
+                for (Node83* walk = &(*reinterpret_cast<Node83*>(&wordList)); walk; walk = walk->FUN_00726070())
                     if (walk->FUN_00726070() == node15)
                         walk->FUN_006ecd40(0);
             }
@@ -1624,8 +1718,8 @@ void HackingMenu::BuildHackingPasswordFile()
         InterfaceManager_GetSingleton();
         if (InterfaceManager_Has360Controller() && !row104x2 && !column9x68)
         {
-            reinterpret_cast<Tile83*&>(m_pkCursorTile) = reinterpret_cast<Entry83**>(entries)[entryIndex7x39]->tile;
-            m_iCursorIndex = (int)(reinterpret_cast<Tile83*&>(m_pkCursorTile)->GetTotalFloat() + 119.0);
+            reinterpret_cast<Tile83*&>(pOverTile) = reinterpret_cast<Entry83**>(entries)[entryIndex7x39]->tile;
+            iCursorX = (int)(reinterpret_cast<Tile83*&>(pOverTile)->GetTotalFloat() + 119.0);
         }
         row104x2++;
         if (row104x2 == 17)
@@ -1639,7 +1733,7 @@ void HackingMenu::BuildHackingPasswordFile()
         current28x7 += 12;
     }
     reinterpret_cast<Tile83*>(m_pTiles[0])->FUN_00700320(4003, 0);
-    m_iStage = 1;
+    eStage = 1;
 }
 
 namespace s767610 {
@@ -1713,116 +1807,119 @@ extern HackingState* DAT_011d95bc;
 } // namespace s767610
 
 // @fnv 0x00767610
-bool HackingMenu::HandleKey(int iKey, int iUnused)
+// pdb: HackingMenu::DoGamepad | HackingMenu.obj | retail, vtable slot, high
+// pdb params: aiButton, afValue
+// pdb locals: boverword, isave, iindex, icol, ptile
+bool HackingMenu::HandleKey(int aiButton, int afValue)
 {
     using namespace s767610;
     if (!s767610::InterfaceManager_GetSingleton()->InterfaceManager_Has360Controller())
         return false;
     if (s767610::Interface_IsTopMenuID(0x41f))
     {
-        s767610::DAT_011d95bc->m_pkSelected = m_pkCursorTile;
-        if (m_iStage < 2 && iKey == 9)
+        s767610::DAT_011d95bc->m_pkSelected = pOverTile;
+        if (eStage < 2 && aiButton == 9)
         {
             HandleSelection(-1, 0);
             return true;
         }
-        else if (m_iStage == 2)
+        else if (eStage == 2)
         {
-            switch (iKey)
+            switch (aiButton)
             {
             case 4: {
-                int iSavedIndex = m_iCursorIndex;
-                bool bWord = (m_pkCursorTile && m_pkCursorTile->Tile_GetString(0xfc4))
-                                 ? (s767610::FUN_00ec86e1(m_pkCursorTile->Tile_GetString(0xfc4)[GetScaledValue()]) ? 1 : 0)
+                int iSavedIndex = iCursorX;
+                bool bWord = (pOverTile && pOverTile->Tile_GetString(0xfc4))
+                                 ? (s767610::FUN_00ec86e1(pOverTile->Tile_GetString(0xfc4)[GetCharHit()]) ? 1 : 0)
                                  : 0;
-                m_iCursorIndex -= 0x11;
-                while (bWord && GetScaledValue() >= 7 &&
-                       s767610::FUN_00ec86e1(m_pkCursorTile->Tile_GetString(0xfc4)[GetScaledValue()]))
-                    m_iCursorIndex -= 0x11;
-                if (GetScaledValue() < 7)
+                iCursorX -= 0x11;
+                while (bWord && GetCharHit() >= 7 &&
+                       s767610::FUN_00ec86e1(pOverTile->Tile_GetString(0xfc4)[GetCharHit()]))
+                    iCursorX -= 0x11;
+                if (GetCharHit() < 7)
                 {
-                    if (m_pkCursorTile->FUN_00a011b0(0x1004) > 0.0)
+                    if (pOverTile->FUN_00a011b0(0x1004) > 0.0)
                     {
-                        int iColIndex = (int)m_pkCursorTile->FUN_00a011b0(0xfac);
-                        int iNewRow = (int)m_pkCursorTile->FUN_00a011b0(0x1004) - 1;
+                        int iColIndex = (int)pOverTile->FUN_00a011b0(0xfac);
+                        int iNewRow = (int)pOverTile->FUN_00a011b0(0x1004) - 1;
                         Tile* pkFound = FindTile(iColIndex, iNewRow);
                         if (pkFound)
                         {
-                            m_bBlink = false;
-                            m_pkCursorTile = pkFound;
-                            m_iCursorIndex =
-                                (int)(m_pkCursorTile->GetTotalFloat() + m_pkCursorTile->FUN_00a011b0(0xfb1) - 17.0);
+                            bSuppressEntry = false;
+                            pOverTile = pkFound;
+                            iCursorX =
+                                (int)(pOverTile->GetTotalFloat() + pOverTile->FUN_00a011b0(0xfb1) - 17.0);
                         }
                         else
                         {
-                            m_iCursorIndex = iSavedIndex;
+                            iCursorX = iSavedIndex;
                         }
                     }
                     else
                     {
-                        m_iCursorIndex = iSavedIndex;
+                        iCursorX = iSavedIndex;
                     }
                 }
                 else
                 {
-                    m_bBlink = false;
+                    bSuppressEntry = false;
                 }
                 return true;
             }
             case 3: {
-                int iSavedIndex = m_iCursorIndex;
-                bool bWord = (m_pkCursorTile && m_pkCursorTile->Tile_GetString(0xfc4))
-                                 ? (s767610::FUN_00ec86e1(m_pkCursorTile->Tile_GetString(0xfc4)[GetScaledValue()]) ? 1 : 0)
+                int iSavedIndex = iCursorX;
+                bool bWord = (pOverTile && pOverTile->Tile_GetString(0xfc4))
+                                 ? (s767610::FUN_00ec86e1(pOverTile->Tile_GetString(0xfc4)[GetCharHit()]) ? 1 : 0)
                                  : 0;
-                m_iCursorIndex += 0x11;
-                while (bWord && GetScaledValue() != -1 &&
-                       s767610::FUN_00ec86e1(m_pkCursorTile->Tile_GetString(0xfc4)[GetScaledValue()]))
-                    m_iCursorIndex += 0x11;
-                if (GetScaledValue() == -1)
+                iCursorX += 0x11;
+                while (bWord && GetCharHit() != -1 &&
+                       s767610::FUN_00ec86e1(pOverTile->Tile_GetString(0xfc4)[GetCharHit()]))
+                    iCursorX += 0x11;
+                if (GetCharHit() == -1)
                 {
-                    if (m_pkCursorTile->FUN_00a011b0(0x1004) < 1.0)
+                    if (pOverTile->FUN_00a011b0(0x1004) < 1.0)
                     {
-                        int iColIndex = (int)m_pkCursorTile->FUN_00a011b0(0xfac);
-                        int iNewRow = (int)m_pkCursorTile->FUN_00a011b0(0x1004) + 1;
+                        int iColIndex = (int)pOverTile->FUN_00a011b0(0xfac);
+                        int iNewRow = (int)pOverTile->FUN_00a011b0(0x1004) + 1;
                         Tile* pkFound = FindTile(iColIndex, iNewRow);
                         if (pkFound)
                         {
-                            m_bBlink = false;
-                            m_pkCursorTile = pkFound;
-                            m_iCursorIndex = (int)(m_pkCursorTile->GetTotalFloat() + 119.0);
+                            bSuppressEntry = false;
+                            pOverTile = pkFound;
+                            iCursorX = (int)(pOverTile->GetTotalFloat() + 119.0);
                         }
                         else
                         {
-                            m_iCursorIndex = iSavedIndex;
+                            iCursorX = iSavedIndex;
                         }
                     }
                     else
                     {
-                        m_iCursorIndex = iSavedIndex;
+                        iCursorX = iSavedIndex;
                     }
                 }
                 else
                 {
-                    m_bBlink = false;
+                    bSuppressEntry = false;
                 }
                 return true;
             }
             case 1: {
-                int iColumn = (int)m_pkCursorTile->FUN_00a011b0(0xfac);
+                int iColumn = (int)pOverTile->FUN_00a011b0(0xfac);
                 if (iColumn > 0)
                 {
-                    m_bBlink = false;
-                    m_pkCursorTile = FindTile(iColumn - 1, (unsigned int)m_pkCursorTile->FUN_00a011b0(0x1004));
+                    bSuppressEntry = false;
+                    pOverTile = FindTile(iColumn - 1, (unsigned int)pOverTile->FUN_00a011b0(0x1004));
                     return true;
                 }
                 break;
             }
             case 2: {
-                int iColumn = (int)m_pkCursorTile->FUN_00a011b0(0xfac);
+                int iColumn = (int)pOverTile->FUN_00a011b0(0xfac);
                 if (iColumn < 0x10)
                 {
-                    m_bBlink = false;
-                    m_pkCursorTile = FindTile(iColumn + 1, (unsigned int)m_pkCursorTile->FUN_00a011b0(0x1004));
+                    bSuppressEntry = false;
+                    pOverTile = FindTile(iColumn + 1, (unsigned int)pOverTile->FUN_00a011b0(0x1004));
                     return true;
                 }
                 break;
@@ -2230,22 +2327,24 @@ struct Entry28
 
 // Updates tile state based on unk1C4, handling fade, entry positioning, and active node property updates.
 // @fnv 0x00767c90
+// pdb: HackingMenu::DoIdle | HackingMenu.obj | retail, vtable slot, high
+// pdb locals: i, iy, ptile
 void HackingMenu::UpdateDialog()
 {
     unsigned int bbb;
     int j;
-    if (m_eFadeState != 1 || !Interface_IsTopMenuID(HackingMenu_GetClassStatic()) ||
-        (unk1d9[1] && !((Mgr4B7210*)InterfaceManager_GetSingleton())->m4D4.InterfaceManager_TutorialManager_HasBeenShown(0x13)))
+    if (xFadeState != 1 || !Interface_IsTopMenuID(HackingMenu_GetClassStatic()) ||
+        (bUsedReset[1] && !((Mgr4B7210*)InterfaceManager_GetSingleton())->m4D4.InterfaceManager_TutorialManager_HasBeenShown(0x13)))
     {
         return;
     }
     if ((InterfaceManager_GetSingleton(), InterfaceManager_Has360Controller()))
     {
-        DAT_011d95bc->mCC = m_pkCursorTile;
+        DAT_011d95bc->mCC = pOverTile;
     }
-    anim.AnimatingText_Update();
+    xEntryText.AnimatingText_Update();
     UpdateFade();
-    switch (m_iStage)
+    switch (eStage)
     {
     case 0:
         DoIntro();
@@ -2255,9 +2354,9 @@ void HackingMenu::UpdateDialog()
         {
             if (reinterpret_cast<Entry28**>(entries)[bbb] && !reinterpret_cast<Entry28**>(entries)[bbb]->AnimatingText_IsDisplayFinished())
             {
-                reinterpret_cast<BSSoundHandle&>(sounds[3]).Play(false);
+                reinterpret_cast<BSSoundHandle&>(Sounds[3]).Play(false);
                 reinterpret_cast<Entry28**>(entries)[bbb]->AnimatingText_Update();
-                PositionTileFromEntry(reinterpret_cast<Entry28**>(entries)[bbb]);
+                UpdateScrollingCursor(reinterpret_cast<Entry28**>(entries)[bbb]);
                 break;
             }
         }
@@ -2270,12 +2369,12 @@ void HackingMenu::UpdateDialog()
                 j += (int)i->FUN_00a011b0(0xfa2);
             }
             m_pTiles[4]->FUN_00700320(0xfa2, j);
-            m_iStage = 2;
+            eStage = 2;
         }
         break;
     case 2:
-        UpdateActiveNodeProperty();
-        if (unk1a0 == 1)
+        UpdateCursorPos();
+        if (iNumGuesses == 1)
         {
             reinterpret_cast<Entry28**>(entries)[1]->AnimatingText_Update();
         }
@@ -2285,12 +2384,12 @@ void HackingMenu::UpdateDialog()
         }
         break;
     case 3:
-        UpdateActiveNodeProperty();
+        UpdateCursorPos();
         DoShutdown();
         break;
     case 4:
-        UpdateActiveNodeProperty();
-        if (unk1a0 && m_eFadeState != 2)
+        UpdateCursorPos();
+        if (iNumGuesses && xFadeState != 2)
         {
             AccessTerminal();
         }
@@ -2304,7 +2403,7 @@ struct H769TileV
 {
     void FUN_00700320(int id, int value);
     bool IsTraitNonZero(int id);
-    const char* Tile_GetString(int id);
+    const char* Tile_GetString(int aiTrait);
 };
 struct H769Line
 {
@@ -2336,6 +2435,8 @@ extern int DAT_011d9694;
 
 // @fnv 0x00769830
 // src: XBOX_PDB 0x00769830
+// pdb: HackingMenu::DoIntro | HackingMenu.obj | retail, string-set bridge, high
+// pdb locals: i, inewlen, ioldlen, j, itime
 void HackingMenu::DoIntro()
 {
     int i;
@@ -2375,7 +2476,7 @@ void HackingMenu::DoIntro()
                     }
                     if (reinterpret_cast<H769Line**>(entries)[i]->AnimatingText_IsDisplayFinished())
                     {
-                        reinterpret_cast<BSSoundHandle&>(sounds[4]).Play(0);
+                        reinterpret_cast<BSSoundHandle&>(Sounds[4]).Play(0);
                         DAT_011d969c = Cmd_GetSessionTime_Execute() + 500;
                     }
                 }
@@ -2383,15 +2484,15 @@ void HackingMenu::DoIntro()
             else if (Cmd_GetSessionTime_Execute() > DAT_011d969c)
             {
                 reinterpret_cast<H769Line**>(entries)[i]->AnimatingText_Update();
-                reinterpret_cast<BSSoundHandle&>(sounds[3]).Play(0);
+                reinterpret_cast<BSSoundHandle&>(Sounds[3]).Play(0);
             }
-            PositionTileFromEntry(reinterpret_cast<HackEntry*>(entries[i]));
+            UpdateScrollingCursor(reinterpret_cast<HackEntry*>(entries[i]));
             break;
         }
     }
     if (i == 14 && Cmd_GetSessionTime_Execute() > DAT_011d969c)
     {
-        BuildHackingPasswordFile();
+        MakePasswordFile();
     }
 }
 
@@ -2410,22 +2511,24 @@ struct TilePX
 };
 struct TileStatics
 {
-    static void UpdateAll(bool propagate);
+    static void UpdateAll(bool abDoNiUpdate);
 };
 
-TilePX* __cdecl CreateComputerMenu(const char* path);
+TilePX* __cdecl ComputersMenu_Create(const char* apTerminalRef);
 FORenderedMenu* __cdecl Interface_GetCurrentRenderedMenu();
 
 // Creates a computer menu tile, updates tile statics, and attaches it to a rendered terminal, creating a new FORenderedTerminal if none exists.
 // @fnv 0x0076a540
 // src: EXE 0x0076a540
+// pdb: HackingMenu::TransitionToComputersMenu | HackingMenu.obj | retail, upstream name already matches, high
+// pdb locals: prm, pmenu
 void HackingMenu::TransitionToComputersMenu()
 {
     (*(Tile**)((char*)this + 4))->Set(0x1772, 1);
     ((MenuCloseOperation*)this)->FUN_00a1d910();
     if (*(int*)((char*)this + 0x194))
     {
-        TilePX* pTile = CreateComputerMenu(*(const char**)((char*)this + 0x198));
+        TilePX* pTile = ComputersMenu_Create(*(const char**)((char*)this + 0x198));
         pTile->Tile_GetMenu()->Menu_SetRenderedMenu();
         TileStatics::UpdateAll(false);
         FORenderedTerminal* r = dynamic_cast<FORenderedTerminal*>(Interface_GetCurrentRenderedMenu());
@@ -2462,6 +2565,9 @@ using namespace grid76a;
 // Creates a new G7Grid by reordering rows and columns of this grid according to the given permutation order.
 // @fnv 0x0076af90
 // src: GUESS 0x0076af90 (confidence: high)
+// pdb: HackingMenu::Grid::MakeSubGrid | HackingMenu.obj | debug, object-file run extension, low
+// pdb params: apIndices, ucSize
+// pdb locals: subGrid, row, col
 G7Grid G7Grid::CopyWithPermutedRowsAndColumns(const unsigned char* order, unsigned char size)
 {
     G7Grid kResult(size);
@@ -2898,7 +3004,7 @@ struct Text84
 {
     int unk00, unk04, unk08, unk0c;
     void AnimatingText_SetTraits(int, int);
-    void SetCapacity(unsigned int);
+    void AnimatingText_SetDisplayInterval(unsigned int);
 };
 extern HackingMenu* DAT_011d95b8;
 HackingMenu* Tile_GetMenuByClass(int);
@@ -2937,7 +3043,10 @@ extern Setting84 DAT_011d2130;
 // Creates and configures the hacking menu from hacking_menu.xml, populating entries based on terminal difficulty and skill.
 // @fnv 0x00765b80
 // src: COMMUNITY 0x00765b80
-Tile84* HackingMenu_Create(Ref84* reference)
+// pdb: HackingMenu::Create | HackingMenu.obj | retail, upstream name already matches, high
+// pdb params: apTerminalRef
+// pdb locals: pterminal, pmenu, ftop_depth, ptile, pold_menu_tile, pterm, imissingIndex, fscienceSkill, fpct, fskillDiff, fskillRange, ptemplate, imaxWords, iwordsWant, fminRqSkill, iminWords
+Tile84* HackingMenu_Create(Ref84* apTerminalRef)
 {
     HackingMenu* old40 = Tile_GetMenuByClass(HackingMenu_GetClassStatic());
     if (old40)
@@ -2945,7 +3054,7 @@ Tile84* HackingMenu_Create(Ref84* reference)
     DAT_011d95bc = InterfaceManager_GetSingleton();
     float screen13 = FUN_00a01530();
     SystemColorManager_GetInstance()->FUN_00719060(3, &DAT_011d9674);
-    Base84* terminal14 = reference->BGSSaveFormBuffer_GetForm();
+    Base84* terminal14 = apTerminalRef->BGSSaveFormBuffer_GetForm();
     if (terminal14->IsFlagBitSet())
         SystemColorManager_GetInstance()->ApplyToChild(3, Color84(1.0f, 1.0f, 1.0f, 0.0f));
     DAT_0119f27c = *DAT_011d42d0.Setting_Int();
@@ -2966,70 +3075,70 @@ Tile84* HackingMenu_Create(Ref84* reference)
             tile4->Tile_Set(4013, screen13, 1);
         reinterpret_cast<Tile84*>(DAT_011d95b8->m_pTiles[6])->Tile_Set_00a01350(4036, DAT_011d31bc.FUN_00403df0(), 1);
         reinterpret_cast<Tile84*>(DAT_011d95b8->m_pTiles[7])->Tile_Set_00a01350(4036, DAT_011d30e4.FUN_00403df0(), 1);
-        Base84* base14 = reference ? reference->BGSSaveFormBuffer_GetForm() : 0;
-        if (base14 && DAT_011dea3c->GetTerminalAccessResult(reference) == 2)
+        Base84* base14 = apTerminalRef ? apTerminalRef->BGSSaveFormBuffer_GetForm() : 0;
+        if (base14 && DAT_011dea3c->GetTerminalAccessResult(apTerminalRef) == 2)
         {
             tile4->FUN_00700320(4102, 1);
-            DAT_011d95b8->m_iStage = 4;
+            DAT_011d95b8->eStage = 4;
             reinterpret_cast<Tile84*>(DAT_011d95b8->m_pTiles[4])->FUN_00700320(4003, 0);
         }
         else
         {
-            reinterpret_cast<Base84*&>(DAT_011d95b8->unk194) = base14;
-            reinterpret_cast<Ref84*&>(DAT_011d95b8->unk198) = reference;
-            DAT_011d95b8->unk1ac =
-                reinterpret_cast<Base84*&>(DAT_011d95b8->unk194) ? reinterpret_cast<Base84*&>(DAT_011d95b8->unk194)->BGSTerminal_GetHackMiniGameValue(reinterpret_cast<Ref84*&>(DAT_011d95b8->unk198)) : 12;
-            DAT_011d95b8->unk1ac = FUN_0042f5a0(12, DAT_011d95b8->unk1ac);
-            DAT_011d95b8->unk1d9[1] = DAT_011d95bc->keys.InterfaceManager_TutorialManager_ShowMessage(19, HackingMenu_GetClassStatic(), 512);
+            reinterpret_cast<Base84*&>(DAT_011d95b8->pTerminal) = base14;
+            reinterpret_cast<Ref84*&>(DAT_011d95b8->pTerminalRef) = apTerminalRef;
+            DAT_011d95b8->iWordLength =
+                reinterpret_cast<Base84*&>(DAT_011d95b8->pTerminal) ? reinterpret_cast<Base84*&>(DAT_011d95b8->pTerminal)->BGSTerminal_GetHackMiniGameValue(reinterpret_cast<Ref84*&>(DAT_011d95b8->pTerminalRef)) : 12;
+            DAT_011d95b8->iWordLength = FUN_0042f5a0(12, DAT_011d95b8->iWordLength);
+            DAT_011d95b8->bUsedReset[1] = DAT_011d95bc->keys.InterfaceManager_TutorialManager_ShowMessage(19, HackingMenu_GetClassStatic(), 512);
             float skill5 = DAT_011dea3c->values.FUN_0066ef50(40);
             FUN_005e58f0(30, DAT_011dea3c, &skill5);
             unsigned int maximum12 = FUN_0042f5a0(20, *DAT_011d3318.Setting_Int());
             unsigned int minimum17 = FUN_0042f5a0(maximum12, *DAT_011d3c4c.Setting_Int());
             float difficulty4 =
-                BSMIN(100.0f, BSMAX_00404010(0.0f, reinterpret_cast<Base84*&>(DAT_011d95b8->unk194)->BGSTerminal_GetMinSkillRequiredToHack(reference)));
+                BSMIN(100.0f, BSMAX_00404010(0.0f, reinterpret_cast<Base84*&>(DAT_011d95b8->pTerminal)->BGSTerminal_GetMinSkillRequiredToHack(apTerminalRef)));
             float delta2 = BSMAX_00404010(0.0f, skill5 - difficulty4);
             float denominator55 = 100.0 - difficulty4;
             float fraction41 = denominator55 != 0.0 ? 1.0f - delta2 / denominator55 : 0.5;
             unsigned int count7 = minimum17 + (unsigned int)FUN_004bd510((maximum12 - minimum17) * fraction41, 1.0f);
             if (count7 > 20)
                 count7 = 20;
-            DAT_011d95b8->SelectWordSet(count7);
+            DAT_011d95b8->Prepare(count7);
             tile4->Tile_Set_00a01350(4100, ">", 1);
-            (*reinterpret_cast<Text84*>(&DAT_011d95b8->anim)).AnimatingText_SetTraits(reinterpret_cast<Tile84*>(DAT_011d95b8->m_pTiles[5])->Tile_GetValue(4036),
+            (*reinterpret_cast<Text84*>(&DAT_011d95b8->xEntryText)).AnimatingText_SetTraits(reinterpret_cast<Tile84*>(DAT_011d95b8->m_pTiles[5])->Tile_GetValue(4036),
                                             reinterpret_cast<Tile84*>(DAT_011d95b8->m_pTiles[5])->FindTraitValue(4003));
             if (*DAT_011d4e4c.Setting_Int() > 0)
-                (*reinterpret_cast<Text84*>(&DAT_011d95b8->anim)).SetCapacity((unsigned int)FUN_004bd510(1000.0 / *DAT_011d4e4c.Setting_Int(), 1.0f));
+                (*reinterpret_cast<Text84*>(&DAT_011d95b8->xEntryText)).AnimatingText_SetDisplayInterval((unsigned int)FUN_004bd510(1000.0 / *DAT_011d4e4c.Setting_Int(), 1.0f));
             const char* name9 = "hacking_intro_template";
             reinterpret_cast<Entry84**>(DAT_011d95b8->entries)[0] =
-                new Entry84(DAT_011d3f58.FUN_004c69f0(), reinterpret_cast<Tile84*>(DAT_011d95b8->m_pTiles[0]), name9, DAT_011d95b8->unk1b4, 0);
+                new Entry84(DAT_011d3f58.FUN_004c69f0(), reinterpret_cast<Tile84*>(DAT_011d95b8->m_pTiles[0]), name9, DAT_011d95b8->iYStart, 0);
             reinterpret_cast<Entry84**>(DAT_011d95b8->entries)[1] = new Entry84(DAT_011d3a38.FUN_004c69f0(), reinterpret_cast<Tile84*>(DAT_011d95b8->m_pTiles[0]), name9,
-                                                   DAT_011d95b8->unk1b4 + DAT_011d95b8->unk1b8 * 2, 0);
+                                                   DAT_011d95b8->iYStart + DAT_011d95b8->iYInterval * 2, 0);
             reinterpret_cast<Entry84**>(DAT_011d95b8->entries)[2] = new Entry84(DAT_011d3c64.FUN_004c69f0(), reinterpret_cast<Tile84*>(DAT_011d95b8->m_pTiles[0]), name9,
-                                                   DAT_011d95b8->unk1b4 + DAT_011d95b8->unk1b8 * 4, 1);
+                                                   DAT_011d95b8->iYStart + DAT_011d95b8->iYInterval * 4, 1);
             reinterpret_cast<Entry84**>(DAT_011d95b8->entries)[3] = new Entry84(DAT_011d4c00.FUN_004c69f0(), reinterpret_cast<Tile84*>(DAT_011d95b8->m_pTiles[0]), name9,
-                                                   DAT_011d95b8->unk1b4 + DAT_011d95b8->unk1b8 * 6, 0);
+                                                   DAT_011d95b8->iYStart + DAT_011d95b8->iYInterval * 6, 0);
             reinterpret_cast<Entry84**>(DAT_011d95b8->entries)[4] = new Entry84(DAT_011d4d5c.FUN_004c69f0(), reinterpret_cast<Tile84*>(DAT_011d95b8->m_pTiles[0]), name9,
-                                                   DAT_011d95b8->unk1b4 + DAT_011d95b8->unk1b8 * 8, 1);
+                                                   DAT_011d95b8->iYStart + DAT_011d95b8->iYInterval * 8, 1);
             reinterpret_cast<Entry84**>(DAT_011d95b8->entries)[5] = new Entry84(DAT_011d3030.FUN_004c69f0(), reinterpret_cast<Tile84*>(DAT_011d95b8->m_pTiles[0]), name9,
-                                                   DAT_011d95b8->unk1b4 + DAT_011d95b8->unk1b8 * 9, 1);
+                                                   DAT_011d95b8->iYStart + DAT_011d95b8->iYInterval * 9, 1);
             reinterpret_cast<Entry84**>(DAT_011d95b8->entries)[6] = new Entry84(DAT_011d4b94.FUN_004c69f0(), reinterpret_cast<Tile84*>(DAT_011d95b8->m_pTiles[0]), name9,
-                                                   DAT_011d95b8->unk1b4 + DAT_011d95b8->unk1b8 * 11, 0);
+                                                   DAT_011d95b8->iYStart + DAT_011d95b8->iYInterval * 11, 0);
             reinterpret_cast<Entry84**>(DAT_011d95b8->entries)[7] = new Entry84(DAT_011d1f44.FUN_004c69f0(), reinterpret_cast<Tile84*>(DAT_011d95b8->m_pTiles[0]), name9,
-                                                   DAT_011d95b8->unk1b4 + DAT_011d95b8->unk1b8 * 12, 0);
+                                                   DAT_011d95b8->iYStart + DAT_011d95b8->iYInterval * 12, 0);
             reinterpret_cast<Entry84**>(DAT_011d95b8->entries)[8] = new Entry84(DAT_011d1d9c.FUN_004c69f0(), reinterpret_cast<Tile84*>(DAT_011d95b8->m_pTiles[0]), name9,
-                                                   DAT_011d95b8->unk1b4 + DAT_011d95b8->unk1b8 * 13, 0);
+                                                   DAT_011d95b8->iYStart + DAT_011d95b8->iYInterval * 13, 0);
             reinterpret_cast<Entry84**>(DAT_011d95b8->entries)[9] = new Entry84(DAT_011d306c.FUN_004c69f0(), reinterpret_cast<Tile84*>(DAT_011d95b8->m_pTiles[0]), name9,
-                                                   DAT_011d95b8->unk1b4 + DAT_011d95b8->unk1b8 * 14, 0);
+                                                   DAT_011d95b8->iYStart + DAT_011d95b8->iYInterval * 14, 0);
             reinterpret_cast<Entry84**>(DAT_011d95b8->entries)[10] = new Entry84(DAT_011d484c.FUN_004c69f0(), reinterpret_cast<Tile84*>(DAT_011d95b8->m_pTiles[0]), name9,
-                                                    DAT_011d95b8->unk1b4 + DAT_011d95b8->unk1b8 * 15, 0);
+                                                    DAT_011d95b8->iYStart + DAT_011d95b8->iYInterval * 15, 0);
             reinterpret_cast<Entry84**>(DAT_011d95b8->entries)[11] = new Entry84(DAT_011d4f18.FUN_004c69f0(), reinterpret_cast<Tile84*>(DAT_011d95b8->m_pTiles[0]), name9,
-                                                    DAT_011d95b8->unk1b4 + DAT_011d95b8->unk1b8 * 16, 0);
+                                                    DAT_011d95b8->iYStart + DAT_011d95b8->iYInterval * 16, 0);
             reinterpret_cast<Entry84**>(DAT_011d95b8->entries)[12] = new Entry84(DAT_011d4690.FUN_004c69f0(), reinterpret_cast<Tile84*>(DAT_011d95b8->m_pTiles[0]), name9,
-                                                    DAT_011d95b8->unk1b4 + DAT_011d95b8->unk1b8 * 17, 0);
+                                                    DAT_011d95b8->iYStart + DAT_011d95b8->iYInterval * 17, 0);
             reinterpret_cast<Entry84**>(DAT_011d95b8->entries)[13] = new Entry84(DAT_011d2130.FUN_004c69f0(), reinterpret_cast<Tile84*>(DAT_011d95b8->m_pTiles[0]), name9,
-                                                    DAT_011d95b8->unk1b4 + DAT_011d95b8->unk1b8 * 19, 1);
+                                                    DAT_011d95b8->iYStart + DAT_011d95b8->iYInterval * 19, 1);
         }
-        reinterpret_cast<BSSoundHandle&>(DAT_011d95b8->sounds[0]).Play(0);
+        reinterpret_cast<BSSoundHandle&>(DAT_011d95b8->Sounds[0]).Play(0);
         menu24->FUN_00a1dc20(0);
         return tile4;
     }
@@ -3375,7 +3484,7 @@ struct HackPlayer
     virtual void slot480();
     virtual void slot484();
     virtual void Reward(int);
-    void Crime(HackRef*, HackForm*, int);
+    void Actor_TrespassAlarm(HackRef*, HackForm*, int);
 };
 extern HackPlayer* g_thePlayer;
 extern HackSetting g_011d26dc, g_011d1e78, g_011d430c, g_011d47e0, g_011d4f6c, g_011d2604, g_011d3444, g_011d4858,
@@ -3388,61 +3497,64 @@ int FUN_00ec86e1(int);
 unsigned int BSStringLength(const char*);
 extern "C" unsigned int __cdecl RandomUnsignedInt(unsigned int);
 void SuccessRef(HackRef*, bool);
-void FailRef(HackRef*, bool);
+void BGSTerminal_LockOut(HackRef*, bool);
 int ExperiencePoints_GetExperiencePoints(int, int);
 void Finish(int);
 // Handles a tile click by comparing the entered word to the password, updating the display, and triggering success or failure outcomes based on the match result.
 } // namespace fnv_00766b80
 
 // @fnv 0x00766b80
-void HackingMenu::HandleSelection(int aiButtonIndex, Tile* tile)
+// pdb: HackingMenu::DoClick | HackingMenu.obj | retail, unique string literal, high
+// pdb params: aiID, apTarget
+// pdb locals: i, pguess, strtmp, inumCommon, ilogscroll, ptmp, pform, pvictim, pfaction, pnpc
+void HackingMenu::HandleSelection(int aiID, Tile* apTarget)
 {
     using namespace fnv_00766b80;
     fnv_00766b80::InterfaceManager_GetSingleton();
     if (fnv_00766b80::InterfaceManager_Has360Controller())
-        tile = m_pkCursorTile;
-    if (!tile && aiButtonIndex >= 0 && aiButtonIndex < 8)
-        tile = m_pTiles[aiButtonIndex];
-    if (m_iStage == 0)
+        apTarget = pOverTile;
+    if (!apTarget && aiID >= 0 && aiID < 8)
+        apTarget = m_pTiles[aiID];
+    if (eStage == 0)
     {
         if (fnv_00766b80::gm_GetTickCount() > fnv_00766b80::DAT_011d95c0)
-            BuildHackingPasswordFile();
+            MakePasswordFile();
         return;
     }
-    else if (m_iStage == 1)
+    else if (eStage == 1)
     {
         for (unsigned int iter = 0; iter < 46; iter++)
             if (reinterpret_cast<fnv_00766b80::HackTile**>(entries)[iter])
                 reinterpret_cast<fnv_00766b80::HackTile**>(entries)[iter]->Refresh();
     }
-    else if (m_iStage == 2 && tile && reinterpret_cast<fnv_00766b80::HackTile*>(tile)->Parent() == reinterpret_cast<fnv_00766b80::HackTile**>(m_pTiles)[2])
+    else if (eStage == 2 && apTarget && reinterpret_cast<fnv_00766b80::HackTile*>(apTarget)->Parent() == reinterpret_cast<fnv_00766b80::HackTile**>(m_pTiles)[2])
     {
-        (*reinterpret_cast<fnv_00766b80::HackTile*>(&anim)).Refresh();
-        const char* word = (*reinterpret_cast<fnv_00766b80::HackTile*>(&anim)).Text();
+        (*reinterpret_cast<fnv_00766b80::HackTile*>(&xEntryText)).Refresh();
+        const char* word = (*reinterpret_cast<fnv_00766b80::HackTile*>(&xEntryText)).Text();
         if (word && *word)
         {
-            reinterpret_cast<BSSoundHandle&>(sounds[4]).Play(false);
-            unsigned int matched = CountMatchingChars(word, reinterpret_cast<const char*>(unk19c));
+            reinterpret_cast<BSSoundHandle&>(Sounds[4]).Play(false);
+            unsigned int matched = CommonPositions(word, reinterpret_cast<const char*>(pPassword));
             if (!fnv_00766b80::FUN_00ec86e1(*word) && fnv_00766b80::BSStringLength(word) > 1)
             {
                 BSStringT<char> c[3];
                 unsigned int j;
                 c[0].PrintfString("%s%s", ">", word);
-                if (unk1a8 == 1)
+                if (iWordsHave == 1)
                 {
                     c[1].PrintfString("%s%s", ">", g_011d26dc.String());
                     j = 2;
                 }
-                else if (unk1d9[0] || fnv_00766b80::RandomUnsignedInt(4))
+                else if (bUsedReset[0] || fnv_00766b80::RandomUnsignedInt(4))
                 {
                     RemoveRandomWord();
-                    (*reinterpret_cast<HackNumberList*>(&list188)).Add(12 * (unsigned int)(reinterpret_cast<fnv_00766b80::HackTile*>(tile)->Float(0x1004) * 17.0 + reinterpret_cast<fnv_00766b80::HackTile*>(tile)->Float(0xfac)) + GetScaledValue() - 7);
+                    (*reinterpret_cast<HackNumberList*>(&xUsedBonuses)).Add(12 * (unsigned int)(reinterpret_cast<fnv_00766b80::HackTile*>(apTarget)->Float(0x1004) * 17.0 + reinterpret_cast<fnv_00766b80::HackTile*>(apTarget)->Float(0xfac)) + GetCharHit() - 7);
                     c[1].PrintfString("%s%s", ">", g_011d1e78.String());
                     j = 2;
                 }
                 else
                 {
-                    if (reinterpret_cast<unsigned int&>(unk1a0) == 1)
+                    if (reinterpret_cast<unsigned int&>(iNumGuesses) == 1)
                     {
                         reinterpret_cast<fnv_00766b80::HackTile**>(entries)[1]->SetText(g_011d430c.GetString());
                         reinterpret_cast<fnv_00766b80::HackTile**>(entries)[1]->Enable(false);
@@ -3450,17 +3562,17 @@ void HackingMenu::HandleSelection(int aiButtonIndex, Tile* tile)
                     }
                     c[1].PrintfString("%s%s", ">", g_011d47e0.String());
                     c[2].PrintfString("%s%s", ">", g_011d4f6c.String());
-                    reinterpret_cast<unsigned int&>(unk1a0) = static_cast<unsigned int>(unk1a4);
-                    unk1d9[0] = true;
-                    (*reinterpret_cast<HackNumberList*>(&list188)).Add(12 * (unsigned int)(reinterpret_cast<fnv_00766b80::HackTile*>(tile)->Float(0x1004) * 17.0 + reinterpret_cast<fnv_00766b80::HackTile*>(tile)->Float(0xfac)) + GetScaledValue() - 7);
-                    while ((*reinterpret_cast<fnv_00766b80::HackList*>(&list174)).Count() < static_cast<unsigned int>(unk1a4))
-                        BuildHackingGuessTemplate();
+                    reinterpret_cast<unsigned int&>(iNumGuesses) = static_cast<unsigned int>(iTotGuesses);
+                    bUsedReset[0] = true;
+                    (*reinterpret_cast<HackNumberList*>(&xUsedBonuses)).Add(12 * (unsigned int)(reinterpret_cast<fnv_00766b80::HackTile*>(apTarget)->Float(0x1004) * 17.0 + reinterpret_cast<fnv_00766b80::HackTile*>(apTarget)->Float(0xfac)) + GetCharHit() - 7);
+                    while ((*reinterpret_cast<fnv_00766b80::HackList*>(&xGuessTiles)).Count() < static_cast<unsigned int>(iTotGuesses))
+                        MakeGuessBlock();
                     j = 3;
                 }
                 const char* e[3] = {c[0], c[1], c[2]};
-                AddValueRows(j, reinterpret_cast<const unsigned int*>(e));
+                ScrollLog(j, reinterpret_cast<const unsigned int*>(e));
             }
-            else if (matched == static_cast<unsigned int>(unk1ac))
+            else if (matched == static_cast<unsigned int>(iWordLength))
             {
                 BSStringT<char> c[5];
                 c[0].PrintfString("%s%s", ">", word);
@@ -3469,15 +3581,15 @@ void HackingMenu::HandleSelection(int aiButtonIndex, Tile* tile)
                 c[3].PrintfString("%s%s", ">", g_011d4858.String());
                 c[4].PrintfString("%s%s", ">", g_011d4ae0.String());
                 const char* e[5] = {c[0], c[1], c[2], c[3], c[4]};
-                AddValueRows(5, reinterpret_cast<const unsigned int*>(e));
-                reinterpret_cast<BSSoundHandle&>(sounds[1]).PlayAfter(250, 0);
-                reinterpret_cast<unsigned int&>(unk1d0) = fnv_00766b80::gm_GetTickCount() + 3000;
-                m_iStage = 4;
-                if (reinterpret_cast<HackTarget*>(unk194))
+                ScrollLog(5, reinterpret_cast<const unsigned int*>(e));
+                reinterpret_cast<BSSoundHandle&>(Sounds[1]).PlayAfter(250, 0);
+                reinterpret_cast<unsigned int&>(dwAccessTime) = fnv_00766b80::gm_GetTickCount() + 3000;
+                eStage = 4;
+                if (reinterpret_cast<HackTarget*>(pTerminal))
                 {
-                    SuccessRef(reinterpret_cast<HackRef*>(unk198), true);
-                    g_thePlayer->Reward(ExperiencePoints_GetExperiencePoints(2, reinterpret_cast<HackTarget*>(unk194)->Difficulty(reinterpret_cast<HackRef*>(unk198))));
-                    HackForm* owner = reinterpret_cast<HackRef*>(unk198)->Owner();
+                    SuccessRef(reinterpret_cast<HackRef*>(pTerminalRef), true);
+                    g_thePlayer->Reward(ExperiencePoints_GetExperiencePoints(2, reinterpret_cast<HackTarget*>(pTerminal)->Difficulty(reinterpret_cast<HackRef*>(pTerminalRef))));
+                    HackForm* owner = reinterpret_cast<HackRef*>(pTerminalRef)->Owner();
                     if (owner)
                     {
                         int zero = 0;
@@ -3489,7 +3601,7 @@ void HackingMenu::HandleSelection(int aiButtonIndex, Tile* tile)
                         {
                             HackForm* npc = owner;
                         }
-                        g_thePlayer->Crime(reinterpret_cast<HackRef*>(unk198), owner, -1);
+                        g_thePlayer->Actor_TrespassAlarm(reinterpret_cast<HackRef*>(pTerminalRef), owner, -1);
                     }
                 }
                 Finish(5);
@@ -3499,13 +3611,13 @@ void HackingMenu::HandleSelection(int aiButtonIndex, Tile* tile)
                 BSStringT<char> lines3[4];
                 lines3[0].PrintfString("%s%s", ">", word);
                 lines3[1].PrintfString("%s%s", ">", g_011d26dc.String());
-                --reinterpret_cast<unsigned int&>(unk1a0);
-                if (reinterpret_cast<unsigned int&>(unk1a0))
+                --reinterpret_cast<unsigned int&>(iNumGuesses);
+                if (reinterpret_cast<unsigned int&>(iNumGuesses))
                 {
-                    lines3[2].PrintfString("%s%d/%d %s.", ">", matched, static_cast<unsigned int>(unk1ac), g_011d2b2c.String());
+                    lines3[2].PrintfString("%s%d/%d %s.", ">", matched, static_cast<unsigned int>(iWordLength), g_011d2b2c.String());
                     const char* values3[3] = {lines3[0], lines3[1], lines3[2]};
-                    AddValueRows(3, reinterpret_cast<const unsigned int*>(values3));
-                    if (reinterpret_cast<unsigned int&>(unk1a0) == 1)
+                    ScrollLog(3, reinterpret_cast<const unsigned int*>(values3));
+                    if (reinterpret_cast<unsigned int&>(iNumGuesses) == 1)
                     {
                         reinterpret_cast<fnv_00766b80::HackTile**>(entries)[1]->SetText(g_011d1f74.GetString());
                         reinterpret_cast<fnv_00766b80::HackTile**>(entries)[1]->Refresh();
@@ -3517,20 +3629,20 @@ void HackingMenu::HandleSelection(int aiButtonIndex, Tile* tile)
                     lines3[2].PrintfString("%s%s", ">", g_011d3144.String());
                     lines3[3].PrintfString("%s", g_011d339c.String());
                     const char* values4[4] = {lines3[0], lines3[1], lines3[2], lines3[3]};
-                    AddValueRows(4, reinterpret_cast<const unsigned int*>(values4));
-                    m_iStage = 3;
-                    if (reinterpret_cast<HackTarget*>(unk194))
-                        FailRef(reinterpret_cast<HackRef*>(unk198), true);
+                    ScrollLog(4, reinterpret_cast<const unsigned int*>(values4));
+                    eStage = 3;
+                    if (reinterpret_cast<HackTarget*>(pTerminal))
+                        BGSTerminal_LockOut(reinterpret_cast<HackRef*>(pTerminalRef), true);
                 }
-                reinterpret_cast<BSSoundHandle&>(sounds[2]).PlayAfter(250, 0);
-                delete (*reinterpret_cast<fnv_00766b80::HackList*>(&list174)).RemoveTail();
+                reinterpret_cast<BSSoundHandle&>(Sounds[2]).PlayAfter(250, 0);
+                delete (*reinterpret_cast<fnv_00766b80::HackList*>(&xGuessTiles)).RemoveTail();
             }
             BSStringT<char> status;
-            status.PrintfString("%d %s", reinterpret_cast<unsigned int&>(unk1a0), g_011d2e20.String());
+            status.PrintfString("%d %s", reinterpret_cast<unsigned int&>(iNumGuesses), g_011d2e20.String());
             reinterpret_cast<fnv_00766b80::HackTile**>(entries)[2]->SetText(status);
             reinterpret_cast<fnv_00766b80::HackTile**>(entries)[2]->Refresh();
             ClearEntry();
-            m_bBlink = true;
+            bSuppressEntry = true;
         }
     }
 }

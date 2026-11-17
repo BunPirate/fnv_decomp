@@ -45,6 +45,9 @@ struct S_00df8990_Obj
 };
 
 // @fnv 0x00df8990
+// pdb: hkpFixedBufferRayHitCollector::addRayHit | hkpCpuWorldRaycastJob.obj | debug, vtable slot, medium
+// pdb params: cdBody, hitInfo
+// pdb locals: assertBuf, ostr
 void S_00df8990_Obj::InvokeCallback(void* a, void* b)
 {
     DAT_0126ec04(a, b, this);
@@ -68,13 +71,15 @@ struct S_00df8d60
     int unk10;
     float unk14;
     hkBool CastBody_Thunk(const void* data);
-    float hkCpuWorldRayCastCollector_addBroadPhaseHandle(const S_00df8d60_Data* data, int unused);
+    float hkCpuWorldRayCastCollector_addBroadPhaseHandle(const S_00df8d60_Data* broadPhaseHandle, int castIndex);
 };
 // @fnv 0x00df8d60
 // src: HAVOK_LIB 0x00df8d60
-float S_00df8d60::hkCpuWorldRayCastCollector_addBroadPhaseHandle(const S_00df8d60_Data* data, int unused)
+// pdb: hkCpuWorldRayCastCollector::addBroadPhaseHandle | hkpCpuWorldRaycastJob.obj | retail, upstream name already matches, high
+// pdb params: broadPhaseHandle, castIndex
+float S_00df8d60::hkCpuWorldRayCastCollector_addBroadPhaseHandle(const S_00df8d60_Data* broadPhaseHandle, int castIndex)
 {
-    CastBody_Thunk((const char*)data + data->unk5);
+    CastBody_Thunk((const char*)broadPhaseHandle + broadPhaseHandle->unk5);
     return unk14;
 }
 
@@ -103,15 +108,17 @@ struct FUN_00df8db0_cls
     int unk08;
     float m_fResult;
 
-    float GetResult(ParamBlock* apParam);
+    float GetResult(ParamBlock* leaf);
 };
 
 // @fnv 0x00df8db0
-float FUN_00df8db0_cls::GetResult(ParamBlock* apParam)
+// pdb: hkCpuWorldRayCastCollector::addLeaf | hkpCpuWorldRaycastJob.obj | retail, vtable slot, high
+// pdb params: leaf
+float FUN_00df8db0_cls::GetResult(ParamBlock* leaf)
 {
     int iOut;
     Container* pContainer = (Container*)((char*)this - 8);
-    pContainer->CastBody_Thunk(&iOut, apParam->m_iValue);
+    pContainer->CastBody_Thunk(&iOut, leaf->m_iValue);
     return m_fResult;
 }
 
@@ -128,6 +135,7 @@ struct FUN_00df8960_cls
 
 // Sets the vtable pointer and, when bit 0 of acFlags is set, frees this 0x1c-byte object through the allocator from FUN_00c85750.
 // @fnv 0x00df8960
+// pdb: hkpFixedBufferRayHitCollector::`scalar deleting destructor' | hkpCpuWorldRaycastJob.obj | retail, vtable slot, high
 FUN_00df8960_cls* FUN_00df8960_cls::FUN_00df8960(unsigned char acFlags)
 {
     m_vptr = (int)&DAT_0101e594;
@@ -152,6 +160,8 @@ struct AdjustOwner
 
 // @fnv 0x00df8d90
 // src: HAVOK_LIB 0x00df8d90
+// pdb: hkCpuWorldRayCastCollector::addMidPhaseHit | hkpCpuWorldRaycastJob.obj | retail, upstream name already matches, high
+// pdb params: primId
 void* AdjustOwner::hkCpuWorldRayCastCollector_addMidPhaseHit(void* apFirst, int aiSecond)
 {
     ((AdjustedBase*)((char*)this - 4))->CastBody_Thunk(apFirst, aiSecond);
@@ -177,14 +187,16 @@ struct FUN_00df8dd0_cls
     int unk04;
     float m_f08;
 
-    float hkCpuWorldRayCastCollector_addLeaf(FUN_00df8dd0_Param* p);
+    float hkCpuWorldRayCastCollector_addLeaf(FUN_00df8dd0_Param* leaf);
 };
 
 // @fnv 0x00df8dd0
 // src: HAVOK_LIB 0x00df8dd0
-float FUN_00df8dd0_cls::hkCpuWorldRayCastCollector_addLeaf(FUN_00df8dd0_Param* pParam)
+// pdb: hkCpuWorldRayCastCollector::addLeaf | hkpCpuWorldRaycastJob.obj | retail, vtable slot, high
+// pdb params: leaf
+float FUN_00df8dd0_cls::hkCpuWorldRayCastCollector_addLeaf(FUN_00df8dd0_Param* leaf)
 {
-    ((FUN_00df8dd0_helper*)((char*)this - 12))->CastBody_Thunk(&pParam, pParam->m_i0c);
+    ((FUN_00df8dd0_helper*)((char*)this - 12))->CastBody_Thunk(&leaf, leaf->m_i0c);
     return m_f08;
 }
 
@@ -223,6 +235,7 @@ class MultiBaseOwner : public BaseA, public BaseB, public BaseC, public BaseD
 
 // Destructs the object, then, if bit 0 of acFlags is set, frees it through the allocator obtained from FUN_00c85750, and returns this.
 // @fnv 0x00df9470
+// pdb: hkCpuWorldRayCastCollector::`scalar deleting destructor' | hkpCpuWorldRaycastJob.obj | retail, vtable slot, high
 MultiBaseOwner* MultiBaseOwner::FUN_00df9470(unsigned char acFlags)
 {
     this->MultiBaseOwner::~MultiBaseOwner();
@@ -434,45 +447,48 @@ struct HkpcpuworldraycastjobInterfaceView
 // Fills out from src, builds a Local, constructs a Spawned in spawned if src->m_3c is set, writes fields of src->m_30's block, then calls iface->v5c.
 // @fnv 0x00df89b0
 // src: XBOX_PDB 0x00df89b0
-void __cdecl castRayBroadPhase(HkpcpuworldraycastjobInterfaceView* apInterface, Source* apSource, Output* apOutput, Spawned* spawned)
+// pdb: castRayBroadPhase | hkpCpuWorldRaycastJob.obj | retail, upstream name already matches, high
+// pdb params: broadphase, command, collector, fixedBufferHitCollector
+// pdb locals: rayInput
+void __cdecl castRayBroadPhase(HkpcpuworldraycastjobInterfaceView* broadphase, Source* command, Output* collector, Spawned* fixedBufferHitCollector)
 {
     Local local;
 
-    local.m_pSub = &apSource->m_10;
+    local.m_pSub = &command->m_10;
     local.m_18 = 0x10;
     local.m_1c = 0;
     local.m_10 = 1;
-    local.m_vector = apSource->m_v00;
+    local.m_vector = command->m_v00;
 
-    apOutput->m_20 = apSource;
-    apOutput->m_50 = apSource->m_24;
-    apOutput->m_24 = apSource->m_30;
-    apOutput->m_28 = apSource->m_30;
-    apOutput->m_1c = apSource;
+    collector->m_20 = command;
+    collector->m_50 = command->m_24;
+    collector->m_24 = command->m_30;
+    collector->m_28 = command->m_30;
+    collector->m_1c = command;
 
-    if (apSource->m_20)
-        apOutput->m_54 = static_cast<SubBase*>(apOutput->m_10);
+    if (command->m_20)
+        collector->m_54 = static_cast<SubBase*>(collector->m_10);
     else
-        apOutput->m_54 = 0;
+        collector->m_54 = 0;
 
     float one = 1.0f;
 
-    if (apSource->m_3c != 0)
+    if (command->m_3c != 0)
     {
-        apOutput->m_60 = new (spawned) Spawned(apSource->m_30, apSource->m_34);
+        collector->m_60 = new (fixedBufferHitCollector) Spawned(command->m_30, command->m_34);
         DAT_0126ec04 = Runtime_ProcessEntries_00e2b9b0;
     }
     else
-        apOutput->m_60 = 0;
+        collector->m_60 = 0;
 
-    unsigned int* target = (unsigned int*)apSource->m_30;
+    unsigned int* target = (unsigned int*)command->m_30;
     *(float*)&target[4] = one;
     target[5] = 0xffffffffu;
     target[8] = 0xffffffffu;
     target[0x14] = 0;
     target[0x10] = 0;
 
-    apInterface->v5c(&local, apOutput, 0);
+    broadphase->v5c(&local, collector, 0);
 }
 
 
@@ -636,7 +652,7 @@ struct RayCaster_00df8aa0 : S_00df8d60
 
         RayCaster_00df8aa0* self = this;
         const hkpCdBody* body = (const hkpCdBody*)data;
-        const hkpShape* shape = body->m_pCollisionShape;
+        const hkpShape* shape = body->m_shape;
 
         hkBool result;
         result.m_cBooleanValue = 0;
@@ -645,7 +661,7 @@ struct RayCaster_00df8aa0 : S_00df8d60
             return result;
         }
 
-        const hkTransform& t = *static_cast<const hkTransform*>(body->m_pMotionState);
+        const hkTransform& t = *static_cast<const hkTransform*>(body->m_motion);
         self->m_kShapeRayInput.m_vFrom._setTransformedInversePos(t, self->m_pRayCastInput->m_vFrom);
         self->m_kShapeRayInput.m_vTo._setTransformedInversePos(t, self->m_pRayCastInput->m_vTo);
 
@@ -683,8 +699,8 @@ struct RayCaster_00df8aa0 : S_00df8d60
             return result;
         }
         shape->CastRayWithCollector(self->m_kShapeRayInput, *body, *self->m_kCollector);
-        self->m_kHits->m_iElementCount = self->m_kCollector->m_iHitCount.m_storage;
-        simd(self->m_earlyOutHitFractionVec) = SimdN::_mm_set_ps1(self->m_kCollector->m_fEarlyOutHitFraction);
+        self->m_kHits->m_iElementCount = self->m_kCollector->m_numOutputs.m_storage;
+        simd(self->m_earlyOutHitFractionVec) = SimdN::_mm_set_ps1(self->m_kCollector->m_earlyOutHitFraction);
         return result;
     }
 
@@ -749,6 +765,9 @@ __forceinline void memCpy16NonEmpty(void* dst, const void* src, int numQuads)
 // Delegates to castBody to test a collision body against the ray and record any hit in the output buffer.
 // @fnv 0x00df8aa0
 // src: GUESS 0x00df8aa0 (confidence: medium)
+// pdb: hkCpuWorldRayCastCollector::testCollidable | hkpCpuWorldRaycastJob.obj | retail, call graph (shared callers), medium
+// pdb params: collidable
+// pdb locals: output
 hkBool RayCaster_00df8aa0::CastBody_Thunk(const void* apBody)
 {
     return castBody(apBody);

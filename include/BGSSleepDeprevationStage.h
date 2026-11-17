@@ -5,6 +5,7 @@
 
 class SpellItem;
 
+// pdb: class BGSSleepDeprevationStage, size 0x20, bases: TESForm, 1 members
 class BGSSleepDeprevationStage : public TESForm
 {
 public:
@@ -18,10 +19,10 @@ public:
     virtual bool LoadForm(TESFile* modInfo);
     virtual void InitItem();
     virtual void CopyFrom(const TESForm* form);
-    virtual bool Compare(TESForm* form);
+    virtual bool Compare(TESForm* apCompare);
 
     void ResetFormData();
-    bool Load(TESFile* file);
+    bool Load(TESFile* apFile);
     SpellItem* GetSpell();
     unsigned int GetSpellFormID();
     void SetSpell(SpellItem* sickness);
@@ -32,7 +33,7 @@ public:
     void* FUN_00500940();
     void FUN_004021a0();
     void* FUN_00402170(unsigned int flags);
-    bool Compare_00402310(TESForm* pkForm);
+    bool Compare_00402310(TESForm* apCompare);
 
     static void ClearStageData(BGSSleepDeprevationStage* stage);
 };

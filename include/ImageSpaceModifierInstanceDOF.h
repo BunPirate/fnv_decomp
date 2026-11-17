@@ -2,6 +2,7 @@
 
 #include "ImageSpaceModifierInstanceTemp.h"
 
+// pdb: class ImageSpaceModifierInstanceDOF, size 0x30, bases: ImageSpaceModifierInstanceTemp, 4 members
 class ImageSpaceModifierInstanceDOF : public ImageSpaceModifierInstanceTemp
 {
   public:

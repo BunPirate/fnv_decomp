@@ -77,6 +77,7 @@ struct MeshBuilder
 };
 // Allocates GeometryBuffers, calls FUN_00de54b0, appends initialVertex to vertices, and fills edges with segmentCount entries.
 // @fnv 0x00de57a0
+// pdb: hkDisplayCone::buildGeometry | hkDisplayCone.obj | retail, vtable slot, high
 void __thiscall MeshBuilder::InitializeGeometry()
 {
     GlobalContext* context = hkMemoryRouter_getInstance();
@@ -178,7 +179,7 @@ struct S_00de58c0_Local
 
 struct S_00de58c0_Alloc;
 S_00de58c0_Router* __cdecl hkMemoryRouter_getInstance();
-void __cdecl hkArrayUtil__reserve(S_00de58c0_Alloc* a, S_00de58c0_Arr* arr, int n, int elemSize);
+void __cdecl hkArrayUtil__reserve(S_00de58c0_Alloc* mem, S_00de58c0_Arr* array, int numElem, int sizeElem);
 
 struct S_00de58c0_Obj
 {
@@ -212,8 +213,8 @@ struct S_00de58c0_Obj
     int unk78;
     int unk7c;
     int m_80;
-    void hkDisplayCone_generateConeVertices(struct S_00de58c0_Local* out);
-    void hkDisplayCone_getWireframeGeometry(struct S_00de58c0_Arr* out, struct S_00de58c0_Alloc* alloc);
+    void hkDisplayCone_generateConeVertices(struct S_00de58c0_Local* conePoints);
+    void hkDisplayCone_getWireframeGeometry(struct S_00de58c0_Arr* lines, struct S_00de58c0_Alloc* a);
 };
 
 static inline __m128& Q(S_00de58c0_V4& v)
@@ -224,7 +225,10 @@ static inline __m128& Q(S_00de58c0_V4& v)
 // Fills a local array via FUN_00de54b0, then writes four vectors per entry to out (m_60, entry i twice, entry i+1 mod m_80), growing out as needed.
 // @fnv 0x00de58c0
 // src: HAVOK_SRC 0x00de58c0
-void S_00de58c0_Obj::hkDisplayCone_getWireframeGeometry(S_00de58c0_Arr* out, S_00de58c0_Alloc* alloc)
+// pdb: hkDisplayCone::getWireframeGeometry | hkDisplayCone.obj | retail, upstream name already matches, high
+// pdb params: lines, a
+// pdb locals: conePoints
+void S_00de58c0_Obj::hkDisplayCone_getWireframeGeometry(S_00de58c0_Arr* lines, S_00de58c0_Alloc* a)
 {
     S_00de58c0_Local tmp;
     tmp.m_data = (S_00de58c0_V4*)tmp.m_buf;
@@ -233,20 +237,20 @@ void S_00de58c0_Obj::hkDisplayCone_getWireframeGeometry(S_00de58c0_Arr* out, S_0
     hkDisplayCone_generateConeVertices(&tmp);
     int n = m_80;
     int newSize = n * 4;
-    if ((out->m_cap & 0x3fffffff) < newSize)
+    if ((lines->m_cap & 0x3fffffff) < newSize)
     {
-        int iDoubledCap = (out->m_cap & 0x3fffffff) * 2;
-        hkArrayUtil__reserve(alloc, out, newSize < iDoubledCap ? iDoubledCap : newSize, 16);
+        int iDoubledCap = (lines->m_cap & 0x3fffffff) * 2;
+        hkArrayUtil__reserve(a, lines, newSize < iDoubledCap ? iDoubledCap : newSize, 16);
     }
-    out->m_iElementCount = newSize;
+    lines->m_iElementCount = newSize;
     int iWrite = 0;
     for (int iRead = 0; iRead < m_80;)
     {
-        Q(out->m_data[iWrite++]) = Q(m_60);
-        Q(out->m_data[iWrite++]) = Q(tmp.m_data[iRead]);
-        Q(out->m_data[iWrite++]) = Q(tmp.m_data[iRead]);
+        Q(lines->m_data[iWrite++]) = Q(m_60);
+        Q(lines->m_data[iWrite++]) = Q(tmp.m_data[iRead]);
+        Q(lines->m_data[iWrite++]) = Q(tmp.m_data[iRead]);
         iRead++;
-        Q(out->m_data[iWrite++]) = Q(tmp.m_data[iRead % m_80]);
+        Q(lines->m_data[iWrite++]) = Q(tmp.m_data[iRead % m_80]);
     }
     S_00de58c0_Heap& h = hkMemoryRouter_getInstance()->heap();
     tmp.m_iElementCount = 0;

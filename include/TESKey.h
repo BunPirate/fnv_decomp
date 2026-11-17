@@ -2,6 +2,7 @@
 
 #include "TESObjectMISC.h"
 
+// pdb: class TESKey, size 0xac, bases: TESObjectMISC, 0 members
 class TESKey : public TESObjectMISC
 {
 public:

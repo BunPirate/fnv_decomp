@@ -36,6 +36,8 @@ struct FUN_009b7840_shell
 
 // If a exceeds the float at offset 0x5c, stores a there, keeping the larger of the two.
 // @fnv 0x009b7840
+// pdb: HitData::HitData | HitData.obj | retail, object-file run extension, low
+// pdb note: debug build links it to BSWeightedRandom<BGSBodyPart *>::BSWeightedRandom<BGSBodyPart *>
 void FUN_009b7840_shell::RaiseMaxValue(float afValue)
 {
     if (afValue > *((float*)((char*)this + 0x5c)))
@@ -70,30 +72,31 @@ extern float DAT_011f4274;
 extern NiPoint3 _NiPoint3_ZERO;
 
 // HitData is 0x64 bytes; keep its local definition until include/HitData.h is available.
+// pdb: class HitData, size 0x64, 21 members
 class HitData
 {
   public:
-    void* m_pAggressor;
+    void* pAggressor; // src: XBOX_RETAIL_PDB +0x0 (old: m_pAggressor)
     void* pTarget;
-    void* m_pSourceReference;
-    unsigned int m_uiHitLocation;
-    unsigned int m_uiHitFlags;
-    float m_fDamage;
-    float m_fArmorDamage;
-    float m_fHealthDamage;
-    float m_fLimbDamage;
-    float m_fFatigueDamage;
-    float m_fSneakAttackMultiplier;
-    float m_fCriticalHitMultiplier;
+    void* pSourceRef; // src: XBOX_RETAIL_PDB +0x8 (old: m_pSourceReference)
+    unsigned int eAttackSkill; // src: XBOX_RETAIL_PDB +0xc (old: m_uiHitLocation)
+    unsigned int eDamageLimb; // src: XBOX_RETAIL_PDB +0x10 (old: m_uiHitFlags)
+    float fHealthDamage; // src: XBOX_RETAIL_PDB +0x14 (old: m_fDamage)
+    float fTotalDamage; // src: XBOX_RETAIL_PDB +0x18 (old: m_fArmorDamage)
+    float fFatigueDamage; // src: XBOX_RETAIL_PDB +0x1c (old: m_fHealthDamage)
+    float fTargetedLimbDamage; // src: XBOX_RETAIL_PDB +0x20 (old: m_fLimbDamage)
+    float fPercentBlocked; // src: XBOX_RETAIL_PDB +0x24 (old: m_fFatigueDamage)
+    float fArmorDamage; // src: XBOX_RETAIL_PDB +0x28 (old: m_fSneakAttackMultiplier)
+    float fDamageToWeapon; // src: XBOX_RETAIL_PDB +0x2c (old: m_fCriticalHitMultiplier)
     void* pWeapon;
-    float m_fWeaponDamage;
-    NiPoint3 vOffset1;
-    NiPoint3 vOffset2;
-    void* m_pHitDataObjectAtOffset50;
-    void* m_pHitDataObjectAtOffset54;
+    float fWeaponHealth; // src: XBOX_RETAIL_PDB +0x34 (old: m_fWeaponDamage)
+    NiPoint3 kHitLocation; // src: XBOX_RETAIL_PDB +0x38 (old: vOffset1)
+    NiPoint3 kHitDirection; // src: XBOX_RETAIL_PDB +0x44 (old: vOffset2)
+    void* pCriticalEffect; // src: XBOX_RETAIL_PDB +0x50 (old: m_pHitDataObjectAtOffset50)
+    void* pVATSCommand; // src: XBOX_RETAIL_PDB +0x54 (old: m_pHitDataObjectAtOffset54)
     unsigned int uiFlags;
-    float m_fHitValueAtOffset5C;
-    int BackgroundTask;
+    float fBonusMult; // src: XBOX_RETAIL_PDB +0x5c (old: m_fHitValueAtOffset5C)
+    int iRefCount; // src: XBOX_RETAIL_PDB +0x60 (old: BackgroundTask)
     void ClearData_009b4dc0();
     void Copy_009b4ec0(const HitData& src);
 };
@@ -102,27 +105,27 @@ class HitData
 // src: XBOX_PDB 0x009b4dc0
 void HitData::ClearData_009b4dc0()
 {
-    m_pAggressor = 0;
+    pAggressor = 0;
     pTarget = 0;
-    m_pSourceReference = 0;
-    m_uiHitLocation = 0x4d;
-    m_uiHitFlags = 0xffffffff;
-    m_fDamage = 0.0f;
-    m_fArmorDamage = 0.0f;
-    m_fHealthDamage = 0.0f;
-    m_fLimbDamage = 0.0f;
-    m_fFatigueDamage = 0.0f;
-    m_fSneakAttackMultiplier = 0.0f;
-    m_fCriticalHitMultiplier = 0.0f;
-    vOffset1 = _NiPoint3_ZERO;
-    vOffset2 = _NiPoint3_ZERO;
+    pSourceRef = 0;
+    eAttackSkill = 0x4d;
+    eDamageLimb = 0xffffffff;
+    fHealthDamage = 0.0f;
+    fTotalDamage = 0.0f;
+    fFatigueDamage = 0.0f;
+    fTargetedLimbDamage = 0.0f;
+    fPercentBlocked = 0.0f;
+    fArmorDamage = 0.0f;
+    fDamageToWeapon = 0.0f;
+    kHitLocation = _NiPoint3_ZERO;
+    kHitDirection = _NiPoint3_ZERO;
     pWeapon = 0;
-    m_fWeaponDamage = 0.0f;
-    m_pHitDataObjectAtOffset50 = 0;
-    m_pHitDataObjectAtOffset54 = 0;
+    fWeaponHealth = 0.0f;
+    pCriticalEffect = 0;
+    pVATSCommand = 0;
     uiFlags = 0;
-    BackgroundTask = 0;
-    m_fHitValueAtOffset5C = 0.0f;
+    iRefCount = 0;
+    fBonusMult = 0.0f;
 }
 
 struct GlobalObject_00869f00
@@ -196,11 +199,13 @@ void WeightedResultList::BSWeightedRandom_BGSBodyPart_AddWeightedResult(BGSBodyP
 extern "C" void __cdecl Deallocate(void*);
 struct FUN_009ca4c0_shell
 {
-    void FreeStoredPointer();
+    void VATS_COMMAND_dtor();
 };
 // If the pointer at offset 0x14 is set, deallocates it and clears that field.
 // @fnv 0x009ca4c0
-void FUN_009ca4c0_shell::FreeStoredPointer()
+// src: XBOX_DEBUG_PDB 0x009ca4c0
+// pdb: VATS_COMMAND::~VATS_COMMAND | VATS.obj | debug, call graph, high
+void FUN_009ca4c0_shell::VATS_COMMAND_dtor()
 {
     if (*(void**)((char*)this + 0x14))
     {
@@ -233,26 +238,26 @@ FUN_009b4d90::FUN_009b4d90()
 // src: XBOX_PDB 0x009b4ec0
 void HitData::Copy_009b4ec0(const HitData& src)
 {
-    m_pAggressor = src.m_pAggressor;
+    pAggressor = src.pAggressor;
     pTarget = src.pTarget;
-    m_pSourceReference = src.m_pSourceReference;
-    m_uiHitLocation = src.m_uiHitLocation;
-    m_uiHitFlags = src.m_uiHitFlags;
-    m_fDamage = src.m_fDamage;
-    m_fArmorDamage = src.m_fArmorDamage;
-    m_fHealthDamage = src.m_fHealthDamage;
-    m_fLimbDamage = src.m_fLimbDamage;
-    m_fFatigueDamage = src.m_fFatigueDamage;
-    m_fSneakAttackMultiplier = src.m_fSneakAttackMultiplier;
-    m_fCriticalHitMultiplier = src.m_fCriticalHitMultiplier;
-    vOffset1 = src.vOffset1;
-    vOffset2 = src.vOffset2;
+    pSourceRef = src.pSourceRef;
+    eAttackSkill = src.eAttackSkill;
+    eDamageLimb = src.eDamageLimb;
+    fHealthDamage = src.fHealthDamage;
+    fTotalDamage = src.fTotalDamage;
+    fFatigueDamage = src.fFatigueDamage;
+    fTargetedLimbDamage = src.fTargetedLimbDamage;
+    fPercentBlocked = src.fPercentBlocked;
+    fArmorDamage = src.fArmorDamage;
+    fDamageToWeapon = src.fDamageToWeapon;
+    kHitLocation = src.kHitLocation;
+    kHitDirection = src.kHitDirection;
     pWeapon = src.pWeapon;
-    m_fWeaponDamage = src.m_fWeaponDamage;
-    m_pHitDataObjectAtOffset50 = src.m_pHitDataObjectAtOffset50;
-    m_pHitDataObjectAtOffset54 = src.m_pHitDataObjectAtOffset54;
+    fWeaponHealth = src.fWeaponHealth;
+    pCriticalEffect = src.pCriticalEffect;
+    pVATSCommand = src.pVATSCommand;
     uiFlags = src.uiFlags;
-    m_fHitValueAtOffset5C = src.m_fHitValueAtOffset5C;
+    fBonusMult = src.fBonusMult;
 }
 
 struct SpawnObj
@@ -293,23 +298,26 @@ struct SpawnLocal
     void FUN_00407e00(unsigned int a, bool b);
 };
 
-void __cdecl SetContextInfo(SpawnLocal* ctx, SpawnObj* p);
+void __cdecl SetContextInfo(SpawnLocal* apData, SpawnObj* apVATSCommand);
 
 // @fnv 0x009b4fe0
 // src: COMMUNITY 0x009b4fe0
-float __cdecl HitData_PredictVATSCommandHealthDamage(SpawnObj* pSpawnObj)
+// pdb: HitData::PredictVATSCommandHealthDamage | HitData.obj | retail, upstream name already matches, high
+// pdb params: apVATSCommand
+// pdb locals: hitData, bsuccess
+float __cdecl HitData_PredictVATSCommandHealthDamage(SpawnObj* apVATSCommand)
 {
-    if (pSpawnObj == 0)
+    if (apVATSCommand == 0)
     {
         return 0.0f;
     }
     SpawnLocal L;
     L.FUN_00407e00(0x800, true);
     L.FUN_00407e00(0x1000, true);
-    unsigned char saved = pSpawnObj->flag4;
-    pSpawnObj->flag4 = 1;
-    SetContextInfo(&L, pSpawnObj);
-    pSpawnObj->flag4 = saved;
+    unsigned char saved = apVATSCommand->flag4;
+    apVATSCommand->flag4 = 1;
+    SetContextInfo(&L, apVATSCommand);
+    apVATSCommand->flag4 = saved;
     return L.unk14;
 }
 
@@ -382,6 +390,8 @@ struct FUN_009b7060_shell
 };
 
 // @fnv 0x009b7060
+// pdb: HitData::CheckCriticalStrike | HitData.obj | retail, call graph, low
+// pdb locals: fchance, fcriticalBonus, idieRoll, icurrentdetection, blineSight, puseWeapon
 void FUN_009b7060_shell::ApplyCriticalHit()
 {
     if (pTarget && reinterpret_cast<MagicTarget*>((char*)pTarget + 0x94)->CanReceiveMagicEffects())
@@ -682,6 +692,8 @@ struct Hit
     void ApplyDamageEffects();
 };
 // @fnv 0x009b73d0
+// pdb: HitData::DetermineOutcome | HitData.obj | retail, call graph, high
+// pdb locals: bexplodeAbsolute, fcurrentHealth, balwaysExplode, fshotMultiplier, iexplodeChance, ptargetWeaponItem, ptargetWeapon, pbodyPartData, pbodyPart, econditionAV, flimbCondition, bexplode, bdismember
 void Hit::ApplyDamageEffects()
 {
     if (!target || !target->IsActor())
@@ -899,11 +911,14 @@ extern n9b::Mgr* DAT_011dea3c;
 bool __cdecl ActionPoints_IsMeleeAttackAction(int v);
 void __cdecl InitHitData(n9b::Ctx* ctx, n9b::Mgr* mgr, n9b::Tgt* t, int v, bool flag);
 // @fnv 0x009b5050
-void __cdecl SetContextInfo(n9b::Ctx* ctx, n9b::Info* info)
+// pdb: HitData::InitializeHitData | HitData.obj | retail, call graph (shared callers), high
+// pdb params: apData, apVATSCommand
+// pdb locals: bpowerAttack
+void __cdecl SetContextInfo(n9b::Ctx* apData, n9b::Info* apVATSCommand)
 {
-    if (!ctx || !info || !info->m_iThirdValue)
+    if (!apData || !apVATSCommand || !apVATSCommand->m_iThirdValue)
         return;
-    ctx->m_54 = info;
-    bool flag = ActionPoints_IsMeleeAttackAction(info->m_iWordAt00) && info->m_iWordAt04;
-    InitHitData(ctx, DAT_011dea3c, info->m_iThirdValue->v40() ? info->m_iThirdValue : 0, DAT_011dea3c->FUN_008d8520()->v52(), flag);
+    apData->m_54 = apVATSCommand;
+    bool flag = ActionPoints_IsMeleeAttackAction(apVATSCommand->m_iWordAt00) && apVATSCommand->m_iWordAt04;
+    InitHitData(apData, DAT_011dea3c, apVATSCommand->m_iThirdValue->v40() ? apVATSCommand->m_iThirdValue : 0, DAT_011dea3c->FUN_008d8520()->v52(), flag);
 }

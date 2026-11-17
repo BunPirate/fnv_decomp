@@ -21,11 +21,14 @@
 
 // Samples the interpolator's position data at the given time into m_kValue and returns whether the value differs from the default point.
 // @fnv 0x00a49870
-bool NiPoint3Interpolator::Update(float time, NiObjectNET* target, NiPoint3& value)
+// pdb: NiPoint3Interpolator::Update | NiPoint3Interpolator.obj | retail, upstream name already matches, high
+// pdb params: fTime, pkInterpTarget, kValue
+// pdb locals: uiNumKeys, pkKeys, ucSize, eType
+bool NiPoint3Interpolator::Update(float fTime, NiObjectNET* pkInterpTarget, NiPoint3& kValue)
 {
-    if (m_fLastTime == time)
+    if (m_fLastTime == fTime)
     {
-        value = m_kValue;
+        kValue = m_kValue;
         if (m_kValue.x != DAT_011a9424 || m_kValue.y != DAT_011a9428 || m_kValue.z != DAT_011a942c)
             return true;
         return false;
@@ -35,21 +38,21 @@ bool NiPoint3Interpolator::Update(float time, NiObjectNET* target, NiPoint3& val
     if (pData)
     {
         unsigned int numKeys = pData->m_uiNumKeys;
-        NiAnimationKey::KeyType type = pData->m_eRequestType;
-        unsigned char keySize = pData->m_ucKeyDataSize;
-        PositionKeyInterpolator* keys = pData->m_pKeyArray;
+        NiAnimationKey::KeyType type = pData->m_eType;
+        unsigned char keySize = pData->m_ucKeySize;
+        PositionKeyInterpolator* keys = pData->m_pkKeys;
         if (numKeys > 0)
         {
             m_kValue =
-                PositionKeyInterpolator::InterpolatePosition(time, keys, type, numKeys, m_uiLastKeyIndex, keySize);
+                PositionKeyInterpolator::InterpolatePosition(fTime, keys, type, numKeys, m_uiLastKeyIndex, keySize);
         }
     }
 
     if (m_kValue.x == DAT_011a9424 && m_kValue.y == DAT_011a9428 && m_kValue.z == DAT_011a942c)
         return false;
 
-    value = m_kValue;
-    m_fLastTime = time;
+    kValue = m_kValue;
+    m_fLastTime = fTime;
     return true;
 }
 
@@ -57,6 +60,8 @@ bool NiPoint3Interpolator::Update(float time, NiObjectNET* target, NiPoint3& val
 #pragma optimize("", off)
 // Switches on state (and force) to set up or tear down VATS objects, lights and player state, then updates the last-time field and HUD visibility.
 // @fnv 0x009c6c30
+// pdb: NiPoint3Interpolator::CreateObject | NiPoint3Interpolator.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 void NiPoint3Interpolator::CreateObject(int state, bool force)
 {
     if (state != reinterpret_cast<int&>(m_fLastTime) || force)
@@ -70,7 +75,7 @@ void NiPoint3Interpolator::CreateObject(int state, bool force)
             if (!reinterpret_cast<VATS*>(&g_011f2250)->VATS_GetVATSLight())
             {
                 NiPointLight* pPointLight = new NiPointLight;
-                reinterpret_cast<VATS*>(&g_011f2250)->SetLight(pPointLight, true);
+                reinterpret_cast<VATS*>(&g_011f2250)->SetVATSLight(pPointLight, true);
             }
             break;
         case 2:
@@ -80,7 +85,7 @@ void NiPoint3Interpolator::CreateObject(int state, bool force)
             if (!reinterpret_cast<VATS*>(&g_011f2250)->VATS_GetVATSLight())
             {
                 NiPointLight* pPointLight = new NiPointLight;
-                reinterpret_cast<VATS*>(&g_011f2250)->SetLight(pPointLight, true);
+                reinterpret_cast<VATS*>(&g_011f2250)->SetVATSLight(pPointLight, true);
             }
             break;
         case 4:
@@ -122,7 +127,7 @@ void NiPoint3Interpolator::CreateObject(int state, bool force)
             DAT_011f21c4 = 0;
             DAT_011f21c8 = 0;
             if (state10)
-                state10->ResetCameraState();
+                state10->BGSCameraShot_FreeCamera();
             DAT_011f21b8 = 0;
             state0c = 0;
             state10 = 0;
@@ -175,7 +180,7 @@ void NiPoint3Interpolator::CreateObject(int state, bool force)
             reinterpret_cast<ExtraDataList*>(FUN_00450b80(0))
                 ->Set3DObject(reinterpret_cast<VATS*>(&g_011f2250)->VATS_GetVATSLight()->ShadowSceneLight_GetLight());
             static_cast<NiNode*>(FUN_00450b80(0))->RemoveObject(reinterpret_cast<VATS*>(&g_011f2250)->VATS_GetVATSLight()->ShadowSceneLight_GetLight());
-            reinterpret_cast<VATS*>(&g_011f2250)->SetLight(0, true);
+            reinterpret_cast<VATS*>(&g_011f2250)->SetVATSLight(0, true);
         }
         break;
     }
@@ -184,6 +189,8 @@ void NiPoint3Interpolator::CreateObject(int state, bool force)
 
 // Loads the base interpolator and a NiColor from the stream, then reads a NiObject and stores it as a ref-counted member.
 // @fnv 0x00a49530
+// pdb: NiPoint3Interpolator::LoadBinary | NiPoint3Interpolator.obj | retail, upstream name already matches, high
+// pdb params: kStream
 void NiPoint3Interpolator::LoadBinary(NiStream& kStream)
 {
     NiStream* pkStream = &kStream;
@@ -209,6 +216,7 @@ struct NiMemObject_Delete : public NiMemObject
 };
 
 // @fnv 0x00a49ae0
+// pdb: NiPoint3Interpolator::`scalar deleting destructor' | NiPoint3Interpolator.obj | retail, object-file gap fill, high
 NiPoint3Interpolator* __fastcall FUN_00a49ae0(NiPoint3Interpolator* pThis, int, unsigned int uiFlags)
 {
     NiPosData* pkData = *(NiPosData**)((char*)pThis + 0x18);
@@ -225,6 +233,8 @@ NiPoint3Interpolator* __fastcall FUN_00a49ae0(NiPoint3Interpolator* pThis, int, 
 
 // @fnv 0x00a49410
 // src: GAMEBRYO_LIB 0x00a49410
+// pdb: NiPoint3Interpolator::GetKeyCount | NiPoint3Interpolator.obj | debug, upstream name already matches, high
+// pdb params: usChannel
 void* __fastcall NiPoint3Interpolator_GetKeyCount(char* self, int, int)
 {
     void* d = *(void**)(self + 0x18);
@@ -235,6 +245,9 @@ void* __fastcall NiPoint3Interpolator_GetKeyCount(char* self, int, int)
 
 // @fnv 0x00a49420
 // src: GAMEBRYO_LIB 0x00a49420
+// pdb: NiPoint3Interpolator::GetKeyType | NiPoint3Interpolator.obj | debug, upstream name already matches, high
+// pdb params: usChannel
+// pdb locals: uiNumKeys, ucSize, eType
 void* __fastcall NiPoint3Interpolator_GetKeyType(char* self, int, int)
 {
     void* d = *(void**)(self + 0x18);
@@ -245,6 +258,9 @@ void* __fastcall NiPoint3Interpolator_GetKeyType(char* self, int, int)
 
 // @fnv 0x00a49430
 // src: GAMEBRYO_LIB 0x00a49430
+// pdb: NiPoint3Interpolator::GetKeyArray | NiPoint3Interpolator.obj | debug, upstream name already matches, high
+// pdb params: usChannel
+// pdb locals: uiNumKeys, pkKeys, ucSize, eType
 void* __fastcall NiPoint3Interpolator_GetKeyArray(char* self, int, int)
 {
     void* d = *(void**)(self + 0x18);
@@ -255,6 +271,9 @@ void* __fastcall NiPoint3Interpolator_GetKeyArray(char* self, int, int)
 
 // @fnv 0x00a49440
 // src: GAMEBRYO_LIB 0x00a49440
+// pdb: NiPoint3Interpolator::GetKeyStride | NiPoint3Interpolator.obj | debug, upstream name already matches, high
+// pdb params: usChannel
+// pdb locals: uiNumKeys, ucSize, eType
 unsigned char __fastcall NiPoint3Interpolator_GetKeyStride(char* self, int, int)
 {
     void* d = *(void**)(self + 0x18);
@@ -295,6 +314,8 @@ struct HC1Data
 
 // Calls FUN_00aa0ad0 on this as HC1Base; if it succeeds, registers the HC1Data at offset 0x18 with the stream and returns true.
 // @fnv 0x00a49590
+// pdb: NiPoint3Interpolator::RegisterStreamables | NiPoint3Interpolator.obj | retail, upstream name already matches, high
+// pdb params: kStream
 bool NiPoint3Interpolator::RegisterStreamables(NiStream& stream)
 {
     NiStream* kStream = &stream;
@@ -311,6 +332,8 @@ struct FUN_00a95ca0_helper
     void NiKeyBasedInterpolator_LinkObject(NiStream*);
 };
 // @fnv 0x00a495c0
+// pdb: NiPoint3Interpolator::SaveBinary | NiPoint3Interpolator.obj | retail, upstream name already matches, high
+// pdb params: kStream
 void NiPoint3Interpolator::SaveBinary(NiStream& kStream)
 {
     NiStream* stream = &kStream;
@@ -334,6 +357,8 @@ extern float DAT_011a942c;
 
 // @fnv 0x00a49460
 // src: GAMEBRYO_LIB 0x00a49460
+// pdb: NiPoint3Interpolator::GetChannelPosed | NiPoint3Interpolator.obj | debug, upstream name already matches, high
+// pdb params: usChannel
 bool __fastcall NiPoint3Interpolator_GetChannelPosed(NiPoint3Interpolator* self, int, unsigned short channel)
 {
     if (*(int*)((char*)self + 0x18))
@@ -365,7 +390,9 @@ struct RefObj00
 };
 // @fnv 0x00a494b0
 // src: XBOX_PDB 0x00a494b0
-void NiPoint3Interpolator::SetPoseValue(NiPoint3 aVec)
+// pdb: NiPoint3Interpolator::SetPoseValue | NiPoint3Interpolator.obj | retail, upstream name already matches, high
+// pdb params: kPoseValue
+void NiPoint3Interpolator::SetPoseValue(NiPoint3 kPoseValue)
 {
     RefObj00* pRef = reinterpret_cast<RefObj00*>(m_spPosData);
     if (pRef)
@@ -374,12 +401,14 @@ void NiPoint3Interpolator::SetPoseValue(NiPoint3 aVec)
             pRef->F1();
         m_spPosData = 0;
     }
-    m_kValue = aVec;
+    m_kValue = kPoseValue;
 }
 
 extern const NiPoint3 g_kA495F0InvalidPoint;
 
 // @fnv 0x00a495f0
+// pdb: NiPoint3Interpolator::NiPoint3Interpolator | NiPoint3Interpolator.obj | retail, object-file run extension, low
+// pdb params: pkPoint3Data
 NiPoint3Interpolator::NiPoint3Interpolator(NiPosData* pkPosData)
     : m_kValue(g_kA495F0InvalidPoint)
 {
@@ -391,9 +420,9 @@ NiPoint3Interpolator::NiPoint3Interpolator(NiPosData* pkPosData)
 
 struct NiPosDataRangeHelper : NiPosData
 {
-    void FUN_00a49140(float startTime, float endTime, NiPosData*& result);
+    void NiPosData_GetSequenceData(float fStartTime, float fEndTime, NiPosData*& aspPosData);
 };
-NiPoint3Interpolator* __stdcall NiInterpolator_GetSequenceInterpolator(float startTime, float endTime);
+NiPoint3Interpolator* __stdcall NiInterpolator_GetSequenceInterpolator(float fStartTime, float fEndTime);
 
 inline void AssignPosData(NiPosData*& destination, NiPosData* nextData)
 {
@@ -410,13 +439,16 @@ inline void AssignPosData(NiPosData*& destination, NiPosData* nextData)
 
 // Creates a point3 interpolator for the given time range and copies the extracted position data from m_spPosData into it.
 // @fnv 0x00a497b0
-NiPoint3Interpolator* NiPoint3Interpolator::CreateRangeInterpolator(float startTime, float endTime)
+// pdb: NiPoint3Interpolator::GetSequenceInterpolator | NiPoint3Interpolator.obj | retail, object-file gap fill, high
+// pdb params: fStartTime, fEndTime
+// pdb locals: pkSeqInterp, spNewPoint3Data
+NiPoint3Interpolator* NiPoint3Interpolator::CreateRangeInterpolator(float fStartTime, float fEndTime)
 {
-    NiPoint3Interpolator* result = NiInterpolator_GetSequenceInterpolator(startTime, endTime);
+    NiPoint3Interpolator* result = NiInterpolator_GetSequenceInterpolator(fStartTime, fEndTime);
     if (m_spPosData)
     {
         NiPosData* extractedData = 0;
-        static_cast<NiPosDataRangeHelper*>(m_spPosData)->FUN_00a49140(startTime, endTime, extractedData);
+        static_cast<NiPosDataRangeHelper*>(m_spPosData)->NiPosData_GetSequenceData(fStartTime, fEndTime, extractedData);
         AssignPosData(result->m_spPosData, extractedData);
         result->m_uiLastKeyIndex = 0;
         if (extractedData)
@@ -453,11 +485,14 @@ inline NiPoint3Interpolator::NiPoint3Interpolator() throw()
 
 // @fnv 0x00a49b30
 // src: XBOX_PDB 0x00a49b30
-NiPoint3Interpolator* NiPoint3Interpolator::CreateClone_00a49b30(void* pvCloning)
+// pdb: NiPoint3Interpolator::CreateClone | NiPoint3Interpolator.obj | retail, object-file gap fill, high
+// pdb params: kCloning
+// pdb locals: pkObject
+NiPoint3Interpolator* NiPoint3Interpolator::CreateClone_00a49b30(void* kCloning)
 {
     // The original point3 allocation is 0x20 bytes; the shared union also describes VATS state.
     NiPoint3Interpolator* pkClone = ::new (NiPoint3Interpolator::operator new(0x20)) NiPoint3Interpolator;
-    CopyMemberData(pkClone, pvCloning);
+    CopyMemberData(pkClone, kCloning);
     return pkClone;
 }
 
@@ -478,12 +513,12 @@ struct Sub0cHelper
     unsigned int unk00;
     unsigned int unk04;
     unsigned int unk08;
-    unsigned int GetViewerString_00a59af0(const char* name);
+    unsigned int GetViewerString_00a59af0(const char* pPrefix);
 };
 
 extern "C" unsigned int DAT_011f3f70;
 unsigned int __cdecl NiViewerStrings_NiGetViewerString_Title(unsigned int v);
-unsigned int __cdecl NiGetViewerString_00a7d5a0(const char* name, unsigned int v);
+unsigned int __cdecl NiGetViewerString_00a7d5a0(const char* pcPrefix, unsigned int pvValue);
 
 // The shared base does not declare its viewer-string helper.
 struct InterpolatorViewerHelper
@@ -492,9 +527,11 @@ struct InterpolatorViewerHelper
 };
 
 // @fnv 0x00a49bb0
-void NiPoint3Interpolator::GetViewerStrings(NiViewerStringsArray* strings)
+// pdb: NiPoint3Interpolator::GetViewerStrings | NiPoint3Interpolator.obj | retail, string-set bridge, high
+// pdb params: pkStrings
+void NiPoint3Interpolator::GetViewerStrings(NiViewerStringsArray* pkStrings)
 {
-    StrArrList* list = reinterpret_cast<StrArrList*>(strings);
+    StrArrList* list = reinterpret_cast<StrArrList*>(pkStrings);
     unsigned int value;
 
     reinterpret_cast<InterpolatorViewerHelper*>(this)->GetViewerStrings(list);
@@ -538,6 +575,8 @@ unsigned int __stdcall NiPoint3Interpolator_ReturnOne(unsigned int a1)
 }
 
 // @fnv 0x00a49650
+// pdb: NiPoint3Interpolator::NiPoint3Interpolator | NiPoint3Interpolator.obj | retail, call graph, high
+// pdb params: pkPoint3Data
 NiPoint3Interpolator::NiPoint3Interpolator(NiPoint3 kPoseValue) throw()
     : m_kValue(kPoseValue)
 {
@@ -568,14 +607,16 @@ struct PosDataView496 : NiPosData
                                                                  unsigned char& ucSize) const
     {
         uiNumKeys = m_uiNumKeys;
-        eType = m_eRequestType;
-        ucSize = m_ucKeyDataSize;
-        return m_pKeyArray;
+        eType = m_eType;
+        ucSize = m_ucKeySize;
+        return m_pkKeys;
     }
 };
 
 // If the position data has zero keys, clears it and resets m_kValue; if all keys share one value, clears the data and stores that value in m_kValue.
 // @fnv 0x00a49690
+// pdb: NiPoint3Interpolator::Collapse | NiPoint3Interpolator.obj | retail, object-file gap fill, high
+// pdb locals: uiNumKeys, pkKeys, ucSize, eType, kValue, bCollapse, ui
 void NiPoint3Interpolator::CollapseConstantPosData()
 {
     NiPosData* pkData = m_spPosData;
@@ -629,9 +670,12 @@ struct InterpolatorComparisonBase
 };
 
 // @fnv 0x00a49a80
-bool NiPoint3Interpolator::IsEqual(NiObject* object) const
+// pdb: NiPoint3Interpolator::IsEqual | NiPoint3Interpolator.obj | retail, upstream name already matches, high
+// pdb params: pkObject
+// pdb locals: pkDest
+bool NiPoint3Interpolator::IsEqual(NiObject* pkObject) const
 {
-    NiPoint3Interpolator* other = static_cast<NiPoint3Interpolator*>(object);
+    NiPoint3Interpolator* other = static_cast<NiPoint3Interpolator*>(pkObject);
     if (!reinterpret_cast<InterpolatorComparisonBase*>(const_cast<NiPoint3Interpolator*>(this))->IsEqual(other))
         return false;
     if (const_cast<NiPoint3&>(m_kValue).operator!=(other->m_kValue))

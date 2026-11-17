@@ -8,22 +8,26 @@
 NiGeometryGroup::NiGeometryGroup()
 {
     DAT_00fdf0e4((volatile long*)&m_uiRefCount, 0);
-    m_pD3DDevice = 0;
+    m_pkD3DDevice = 0;
 }
 
 // @fnv 0x00e98750
-void NiGeometryGroup::RemoveObject(NiGeometryBufferData* data)
+// pdb: NiGeometryGroup::RemoveObject | NiGeometryGroup.obj | retail, upstream name already matches, high
+// pdb params: pkBuffData
+// pdb locals: uiStreamCount, i
+void NiGeometryGroup::RemoveObject(NiGeometryBufferData* pkBuffData)
 {
     InterlockedDecrement((volatile long*)&m_uiRefCount);
-    unsigned int count = data->m_uiRegisterStreamCount;
-    data->m_pkOwnerGroup = 0;
+    unsigned int count = pkBuffData->m_uiRegisterStreamCount;
+    pkBuffData->m_pkOwnerGroup = 0;
     for (unsigned int i = 0; i < count; ++i)
-        vf07(data, i);
-    data->ReleaseBuffers();
+        vf07(pkBuffData, i);
+    pkBuffData->ReleaseBuffers();
 }
 
 // Initializes the NiGeometryBufferData object: sets the vtable pointer, zeroes all fields, sets one field to 4, and clears m_pusIndexArray.
 // @fnv 0x00e947c0
+// pdb: NiGeometryBufferData::NiGeometryBufferData | NiDynamicGeometryGroup.obj | debug, upstream name already matches, high
 NiGeometryBufferData::NiGeometryBufferData()
 {
     m_uiValue1 = 0;
@@ -52,6 +56,8 @@ __declspec(dllimport) long __stdcall InterlockedIncrement(long volatile*);
 
 // @fnv 0x00e98730
 // src: COMMUNITY 0x00e98730
+// pdb: NiGeometryGroup::AddObject | NiGeometryGroup.obj | debug, upstream name already matches, high
+// pdb params: pkBuffData
 void __fastcall NiGeometryGroup_AddObject(int pObject, int, int pArg)
 {
     InterlockedIncrement((long volatile*)(pObject + 4));
@@ -67,15 +73,17 @@ struct FakeDevice
 
 // Releases the attached D3D device, if present.
 // @fnv 0x00e98710
+// pdb: NiGeometryGroup::~NiGeometryGroup | NiGeometryGroup.obj | debug, upstream name already matches, high
 NiGeometryGroup::~NiGeometryGroup()
 {
-    void* device = m_pD3DDevice;
+    void* device = m_pkD3DDevice;
     if (device != 0)
         ((FakeDevice*)device)->Release();
 }
 
 // The game's deleting destructor uses NiMemObject's sized deallocation.
 // @fnv 0x00e98790
+// pdb: NiGeometryGroup::`scalar deleting destructor' | NiGeometryGroup.obj | debug, object-file run extension, low
 void* __fastcall DeleteNiGeometryGroup(NiGeometryGroup* group, int, unsigned int flags)
 {
     group->NiGeometryGroup::~NiGeometryGroup();

@@ -30,16 +30,16 @@ inline NiQuaternion& NiQuaternion::operator=(const NiQuaternion& src)
 
 inline void NiQuaternion::SetValues(float w, float x, float y, float z)
 {
-    m_fVectorX = w;
-    m_fVectorY = x;
-    m_fVectorZ = y;
-    m_fScalarPart = z;
+    m_fW = w;
+    m_fX = x;
+    m_fY = y;
+    m_fZ = z;
 }
 
 inline float NiQuaternion::Dot(const NiQuaternion& p, const NiQuaternion& q)
 {
-    return p.m_fVectorX * q.m_fVectorX + p.m_fVectorY * q.m_fVectorY +
-           p.m_fVectorZ * q.m_fVectorZ + p.m_fScalarPart * q.m_fScalarPart;
+    return p.m_fW * q.m_fW + p.m_fX * q.m_fX +
+           p.m_fY * q.m_fY + p.m_fZ * q.m_fZ;
 }
 
 class NiBlendInterpolator__InterpArrayItem
@@ -55,10 +55,10 @@ public:
 
 inline bool NiBlendInterpolator::GetUpdateTimeForItem(float& fTime, unsigned char uc)
 {
-    NiBlendInterpolator__InterpArrayItem& kItem = m_pInterpArray[uc];
+    NiBlendInterpolator__InterpArrayItem& kItem = m_pkInterpArray[uc];
     if (!kItem.m_spControllerInterpolator || kItem.m_fNormalizedWeight == 0.0f)
         return false;
-    if (m_uiObjectFlags & 1)
+    if (m_uFlags & 1)
         fTime = kItem.m_fLastEvaluationTime;
     return fTime != DAT_0109696c;
 }
@@ -68,6 +68,8 @@ void LoadNiColorABinary();
 typedef void (__thiscall *NiColorABinaryLoader)(NiColorA* color, NiStream& stream);
 
 // @fnv 0x00a554c0
+// pdb: NiBlendQuaternionInterpolator::LoadBinary | NiBlendQuaternionInterpolator.obj | retail, upstream name already matches, high
+// pdb params: kStream
 void NiBlendQuaternionInterpolator::LoadBinary(NiStream& kStream)
 {
     NiBlendInterpolator::LoadBinary(kStream);
@@ -76,6 +78,8 @@ void NiBlendQuaternionInterpolator::LoadBinary(NiStream& kStream)
 }
 
 // @fnv 0x00a554e0
+// pdb: NiBlendQuaternionInterpolator::SaveBinary | NiBlendQuaternionInterpolator.obj | retail, upstream name already matches, high
+// pdb params: kStream
 void NiBlendQuaternionInterpolator::SaveBinary(NiStream& kStream)
 {
     NiBlendInterpolator::SaveBinary(kStream);
@@ -100,6 +104,8 @@ extern int DAT_0109a3ac;
 
 // @fnv 0x00a55470
 // src: EXE 0x00a55470
+// pdb: NiBlendQuaternionInterpolator::CreateObject | NiBlendQuaternionInterpolator.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 void* __cdecl NiBlendQuaternionInterpolator_CreateObject()
 {
     void* p = BSFadeNode::operator new(0x40);
@@ -119,6 +125,8 @@ void* __cdecl NiBlendQuaternionInterpolator_CreateObject()
 // Returns whether the given NiInterpolator supports quaternion values.
 // @fnv 0x00a55450
 // src: XBOX_PDB 0x00a55450
+// pdb: NiBlendQuaternionInterpolator::InterpolatorIsCorrectType | NiBlendQuaternionInterpolator.obj | debug, upstream name already matches, high
+// pdb params: pkInterpolator
 bool __stdcall NiBlendQuaternionInterpolator_InterpolatorIsCorrectType(NiInterpolator* pkInterpolator)
 {
     return pkInterpolator->IsQuaternionValueSupported();
@@ -144,6 +152,9 @@ void* NiBlendQuaternionInterpolator::CloneInterpolator(void* kCloning)
 }
 
 // @fnv 0x00a55920
+// pdb: NiBlendQuaternionInterpolator::Update | NiBlendQuaternionInterpolator.obj | retail, object-file gap fill, high
+// pdb params: fTime, pkInterpTarget, kValue
+// pdb locals: bReturnValue
 bool NiBlendQuaternionInterpolator::Interpolate(float fTime, void* pkInterpTarget, NiQuaternion* kValue)
 {
     bool bReturnValue = false;
@@ -166,6 +177,8 @@ char* __cdecl _FUN_00a7d330(int);
 extern char str_01098800[];
 
 // @fnv 0x00a55980
+// pdb: NiBlendQuaternionInterpolator::GetViewerStrings | NiBlendQuaternionInterpolator.obj | retail, string-set bridge, high
+// pdb params: pkStrings
 void NiBlendQuaternionInterpolator::AppendInterpolatorStrings(StrArr* pkStrings)
 {
     NiBlendInterpolator::AppendInterpolatorStrings(pkStrings);
@@ -180,7 +193,7 @@ void NiBlendQuaternionInterpolator::AppendInterpolatorStrings(StrArr* pkStrings)
     pkStrings->SetAt(uiIndex, pString);
 
     pString = reinterpret_cast<NiQuaternion*>(reinterpret_cast<unsigned char*>(this) + 0x30)
-                  ->FormatToBuffer(str_01098800);
+                  ->GetViewerString(str_01098800);
 
     uiIndex = pkStrings->m_usSize;
     uiSize = pkStrings->m_usMaxSize;
@@ -208,11 +221,13 @@ extern int DAT_011f4210;
 extern int DAT_011f4214;
 
 // @fnv 0x00a555c0
+// pdb: NiBlendQuaternionInterpolator::StoreSingleValue | NiBlendQuaternionInterpolator.obj | retail, object-file run extension, low
+// pdb params: fTime, pkInterpTarget, kValue
 bool NiBlendQuaternionInterpolator::UpdateSingle(float t, void* p2, NiQuadWords* out)
 {
-    if ((m_uiObjectFlags & 1) != 0)
+    if ((m_uFlags & 1) != 0)
     {
-        t = m_fSingleInterpolatorTime;
+        t = m_fSingleTime;
     }
     if (t == DAT_0109696c)
     {
@@ -226,7 +241,7 @@ bool NiBlendQuaternionInterpolator::UpdateSingle(float t, void* p2, NiQuadWords*
         ((NiQuadWords*)&m_kQuaternionValue)->m_0c = out->m_0c;
         return false;
     }
-    NiInterpolator* tgt = m_pSingleInterpolator;
+    NiInterpolator* tgt = m_pkSingleInterpolator;
     NiQuadWords* pCachedQuad = (NiQuadWords*)&m_kQuaternionValue;
     if (tgt->UpdateQuaternion(t, (NiObjectNET*)p2, *(NiQuaternion*)pCachedQuad) == false)
     {
@@ -248,21 +263,24 @@ bool NiBlendQuaternionInterpolator::UpdateSingle(float t, void* p2, NiQuadWords*
 }
 
 // @fnv 0x00a556b0
-bool NiBlendQuaternionInterpolator::BlendValues(float fTime, void* pkTarget, NiQuaternion& kValue)
+// pdb: NiBlendQuaternionInterpolator::BlendValues | NiBlendQuaternionInterpolator.obj | retail, upstream name already matches, high
+// pdb params: fTime, pkInterpTarget, kValue
+// pdb locals: fTotalValueWeight, bValidValue, uc, pkInterpolator, fUpdateTime, bSuccess, fCos
+bool NiBlendQuaternionInterpolator::BlendValues(float fTime, void* pkInterpTarget, NiQuaternion& kValue)
 {
     m_kQuaternionValue.SetValues(0.0f, 0.0f, 0.0f, 0.0f);
     bool bModified = false;
     float fTotalWeight = 0.0f;
     for (unsigned char uc = 0; uc < m_ucArraySize; uc++)
     {
-        NiBlendInterpolator__InterpArrayItem& kItem = m_pInterpArray[uc];
+        NiBlendInterpolator__InterpArrayItem& kItem = m_pkInterpArray[uc];
         if (kItem.m_spControllerInterpolator && kItem.m_fNormalizedWeight > 0.0f)
         {
             float fUpdateTime = fTime;
             if (!GetUpdateTimeForItem(fUpdateTime, uc))
                 continue;
             NiQuaternion kQuat;
-            if (kItem.m_spControllerInterpolator->UpdateQuaternion(fUpdateTime, (NiObjectNET*)pkTarget, (NiQuaternion&)kQuat))
+            if (kItem.m_spControllerInterpolator->UpdateQuaternion(fUpdateTime, (NiObjectNET*)pkInterpTarget, (NiQuaternion&)kQuat))
             {
                 if (fTotalWeight > 0.0f)
                 {
@@ -270,16 +288,16 @@ bool NiBlendQuaternionInterpolator::BlendValues(float fTime, void* pkTarget, NiQ
                     if (fCos < 0.0f)
                         kQuat = kQuat.Negate();
                 }
-                kQuat = kQuat.ScaleFourComponents(m_pInterpArray[uc].m_fNormalizedWeight);
+                kQuat = kQuat.ScaleFourComponents(m_pkInterpArray[uc].m_fNormalizedWeight);
                 m_kQuaternionValue = m_kQuaternionValue.ScaleFourComponents(fTotalWeight);
-                float fZ = m_kQuaternionValue.m_fScalarPart;
-                float fY = m_kQuaternionValue.m_fVectorZ;
-                float fX = m_kQuaternionValue.m_fVectorY;
-                float fW = m_kQuaternionValue.m_fVectorX;
+                float fZ = m_kQuaternionValue.m_fZ;
+                float fY = m_kQuaternionValue.m_fY;
+                float fX = m_kQuaternionValue.m_fX;
+                float fW = m_kQuaternionValue.m_fW;
                 m_kQuaternionValue.Sum4(kQuat, fW, fX, fY, fZ);
                 m_kQuaternionValue.FUN_00a38560();
                 bModified = true;
-                fTotalWeight += m_pInterpArray[uc].m_fNormalizedWeight;
+                fTotalWeight += m_pkInterpArray[uc].m_fNormalizedWeight;
             }
         }
     }

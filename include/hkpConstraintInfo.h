@@ -1,5 +1,6 @@
 #pragma once
 
+// pdb: structure hkpConstraintInfo, size 0x10, 4 members
 struct hkpConstraintInfo
 {
 public:

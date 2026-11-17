@@ -1582,6 +1582,9 @@ void Gsk::ProcessEntries_00e4c230(const GskShape* shapeA, const GskShape* shapeB
 
 // @fnv 0x00e4c730
 // src: XBOX_PDB 0x00e4c730
+// pdb: hkGsk::getClosestPoint | hkGsk.obj | retail, upstream name already matches, high
+// pdb params: input, cache, output
+// pdb locals: loopCounter, result, dimA, terminationEps, shapeA, shapeB, dimB, dir, dirNeg, supportA, newVertexBinB, supportB, newVertexA, dots
 GskStatus Gsk::hkGsk_getClosestPoint(const Input& input, GskCache* __restrict cache, GskOut& output)
 {
     const GskShape* shapeA = input.m_pShapeA;

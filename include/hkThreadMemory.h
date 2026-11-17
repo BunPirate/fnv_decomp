@@ -4,6 +4,7 @@
 
 class hkMemory;
 
+// pdb: class hkThreadMemory, size 0x124 (here 0x14), bases: hkMemoryAllocator, 6 members
 class hkThreadMemory : public hkMemoryAllocator
 {
 public:

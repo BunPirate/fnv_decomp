@@ -4,14 +4,15 @@
 
 struct Flag;
 
+// pdb: class hkMemorySystem, size 0x4, 0 members
 class hkMemorySystem
 {
 public:
     struct FrameInfo
     {
         FrameInfo();
-        int m_iSolverBufferSize;
-        int m_iLargeBlockSize;
+        int m_stackSize; // src: XBOX_RETAIL_PDB +0x0 (old: m_iSolverBufferSize)
+        int m_solverBufferSize; // src: XBOX_RETAIL_PDB +0x4 (old: m_iLargeBlockSize)
     };
 
     class Flags

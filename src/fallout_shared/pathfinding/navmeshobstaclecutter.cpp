@@ -8,6 +8,7 @@ extern "C" void __cdecl _delete(void*, unsigned int);
 
 // Runs the destructor and, when flags has bit 0 set, frees this with _delete using size 0x70; returns this.
 // @fnv 0x006bc300
+// pdb: ObstacleUndoData::`scalar deleting destructor' | NavMeshObstacleCutter.obj | retail, vtable slot, high
 void* ObstacleUndoData::Destroy(unsigned int flags)
 {
     ObstacleUndoData::~ObstacleUndoData();

@@ -25,6 +25,7 @@ struct CpuObject
     CpuObject* FUN_00dfd9e0(unsigned int flags);
 };
 // @fnv 0x00dfd9e0
+// pdb: hkxMaterial::`scalar deleting destructor' | hkxMaterialClass.obj | retail, vtable slot, high
 CpuObject* CpuObject::FUN_00dfd9e0(unsigned int flags)
 {
     Destroy();

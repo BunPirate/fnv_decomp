@@ -30,6 +30,7 @@ class FormChangeRecord
 };
 // The shared map's nested character storage enables an extra /GS check in
 // BGSSaveLoadGame::FormReconstructionMap (0x00849b10), changing its original bytes.
+// pdb: class BGSSaveLoadReferencesMap, size 0x30 (here 0x1), 3 members
 class BGSSaveLoadReferencesMap
 {
   public:

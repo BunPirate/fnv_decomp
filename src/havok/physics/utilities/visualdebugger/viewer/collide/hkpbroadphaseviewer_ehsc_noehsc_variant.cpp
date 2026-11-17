@@ -10,17 +10,17 @@
 struct Container { int ClearValue(void* value); };
 struct Owner { int ClearAdjustedValue(Container* container); };
 struct FUN_00dd9380_StandIn {
-    int hkProcessFactory_registerProcess(const char* name, void* constructor);
+    int hkProcessFactory_registerProcess(const char* viewerName, void* creationFunction);
 };
 extern FUN_00dd9380_StandIn* DAT_01269cd0;
 extern int DAT_01269028;
 extern char DAT_010c65b0;
-void hkpBroadphaseViewer_Create();
-void __cdecl Object_UpdateFields_00d6ad40();
+void hkpBroadphaseViewer_create();
+void __cdecl hkpBroadphaseViewer_registerViewer();
 extern int DAT_01269028;
 int Object_GetDAT_01269028_00d6ad60();
 struct Target {
-    void hkpWorld_addWorldPostSimulationListener(void* apArg);
+    void hkpWorld_addWorldPostSimulationListener(void* worldListener);
 };
 struct FUN_00d6a8e0_cls {
     int unk00;
@@ -84,7 +84,7 @@ struct PostSimListener {
 };
 // one shape of the world; 0xc93920 appends a listener to its list at +0x164
 struct BroadElem {
-    void hkpWorld_addWorldPostSimulationListener(PostSimListener* p);
+    void hkpWorld_addWorldPostSimulationListener(PostSimListener* worldListener);
 };
 // the primary base at 0x00 (its vptr is the one at 0x00)
 struct PrimBase {
@@ -116,7 +116,7 @@ struct CtxListenerBase {
 // owns and the shape list at 0x24
 struct WorldViewerBase : PrimBase, ProcBase, CtxListenerBase {
     BroadCtx* m_ctx;              // +0x24
-    WorldViewerBase(void* a);
+    WorldViewerBase(void* contexts);
 };
 // hkpBroadphaseViewer itself (the class is named after the function so that
 // its constructor's decorated name carries the tag the checker looks for)
@@ -313,7 +313,7 @@ static inline hkMemoryAllocator& S00d6a9b0_heap()
 {
     return GetAudioAllocator(hkMemoryRouter_getInstance());
 }
-void __cdecl hkArrayUtil__reserve(hkMemoryAllocator* a, void* arr, int cap, int elemSize);
+void __cdecl hkArrayUtil__reserve(hkMemoryAllocator* mem, void* array, int numElem, int sizeElem);
 
 template <typename T>
 struct S00d6a9b0_Arr
@@ -462,7 +462,7 @@ struct S00d6a9b0_Obj
     int unk00;
     S00d6a9b0_Arr<S00d6a9b0_Item> m_aiIndexedValues;
 
-    void hkpBroadphaseViewer_postSimulationCallback(S00d6a9b0_Ctx* a1);
+    void hkpBroadphaseViewer_postSimulationCallback(S00d6a9b0_Ctx* world);
 };
 
 struct ViewerPrefix { S00d6a9b0_Owner* m_pOwnerObject; int unk04; int unk08; int unk0c; };
@@ -470,13 +470,16 @@ struct WholeViewer : ViewerPrefix, S00d6a9b0_Obj {};
 
 // @fnv 0x00d6a9b0
 // src: HAVOK_LIB 0x00d6a9b0
-void S00d6a9b0_Obj::hkpBroadphaseViewer_postSimulationCallback(S00d6a9b0_Ctx* a1)
+// pdb: hkpBroadphaseViewer::postSimulationCallback | hkpBroadphaseViewer.obj | retail, string-set bridge, high
+// pdb params: world
+// pdb locals: displayGeometries, allAabbs
+void S00d6a9b0_Obj::hkpBroadphaseViewer_postSimulationCallback(S00d6a9b0_Ctx* world)
 {
     S00d6a9b0_Mark("TthkpBroadphaseViewer");
 
     S00d6a9b0_Req req(0x400);
     req.m_iElementCount = 0x400;
-    a1->m_58->Run(&req);
+    world->m_58->Run(&req);
 
     if (req.m_iElementCount > m_aiIndexedValues.m_iElementCount)
         m_aiIndexedValues.SetSizeAndGrow(req.m_iElementCount);

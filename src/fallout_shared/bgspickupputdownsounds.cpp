@@ -29,12 +29,16 @@ public:
 #include "bgspickupputdownsounds_decls.h"
 
 // @fnv 0x00402c20
+// pdb: TESIcon::TESIcon | AlchemyItem.obj | debug, upstream name already matches, high
 TESIcon::TESIcon() : TESTexture()
 {}
 
 // Resolves the pickup and putdown sound form IDs to TESSound objects, warning when either sound cannot be found.
 // @fnv 0x0047b6a0
-void BGSPickupPutdownSounds::InitItem(TESForm* owner)
+// pdb: BGSPickupPutdownSounds::InitItem | BGSPickupPutdownSounds.obj | retail, string-set bridge, high
+// pdb params: apOwner
+// pdb locals: itempInt, pownerFile
+void BGSPickupPutdownSounds::InitItem(TESForm* apOwner)
 {
     struct InitData
     {
@@ -43,7 +47,7 @@ void BGSPickupPutdownSounds::InitItem(TESForm* owner)
     } initData;
 
     initData.formID = (unsigned int)m_pPickupSound;
-    initData.file = owner ? owner->GetFile(-1) : 0;
+    initData.file = apOwner ? apOwner->GetFile(-1) : 0;
 
     if (initData.formID)
     {
@@ -51,14 +55,14 @@ void BGSPickupPutdownSounds::InitItem(TESForm* owner)
         m_pPickupSound = dynamic_cast<TESSound*>(GetFormByID(initData.formID));
         if (!m_pPickupSound)
         {
-            if (owner)
+            if (apOwner)
             {
-                if (reinterpret_cast<BGSCameraPath*>(owner)->HasNameForWarning())
+                if (reinterpret_cast<BGSCameraPath*>(apOwner)->HasNameForWarning())
                     Warning("MASTERFILE: Unable to find pickup sound (%08X) for owner object \"%s\".", initData.formID,
-                            owner->GetName());
+                            apOwner->GetName());
                 else
                     Warning("MASTERFILE: Unable to find pickup sound  (%08X) for owner object (%08X).", initData.formID,
-                            owner->GetFormID());
+                            apOwner->GetFormID());
             }
             else
             {
@@ -74,14 +78,14 @@ void BGSPickupPutdownSounds::InitItem(TESForm* owner)
         m_pPutdownSound = dynamic_cast<TESSound*>(GetFormByID(initData.formID));
         if (!m_pPutdownSound)
         {
-            if (owner)
+            if (apOwner)
             {
-                if (reinterpret_cast<BGSCameraPath*>(owner)->HasNameForWarning())
+                if (reinterpret_cast<BGSCameraPath*>(apOwner)->HasNameForWarning())
                     Warning("MASTERFILE: Unable to find putdown sound (%08X) for owner object \"%s\".", initData.formID,
-                            owner->GetName());
+                            apOwner->GetName());
                 else
                     Warning("MASTERFILE: Unable to find putdown sound  (%08X) for owner object (%08X).",
-                            initData.formID, owner->GetFormID());
+                            initData.formID, apOwner->GetFormID());
             }
             else
             {
@@ -97,6 +101,7 @@ void __fastcall BGSPickupPutdownSounds_InitializeDataComponent(void* pThis);
 // Initialises the BaseFormComponent base, installs the vtable from DAT_0101abd8, calls FUN_0047b540, and returns pThis.
 // @fnv 0x0047b4f0
 // src: EXE 0x0047b4f0
+// pdb: BGSPickupPutdownSounds::BGSPickupPutdownSounds | BGSPickupPutdownSounds.obj | debug, upstream name already matches, high
 void* __fastcall BGSPickupPutdownSounds_BGSPickupPutdownSounds(BaseFormComponent* apComponent)
 {
     apComponent->BaseFormComponent::BaseFormComponent();
@@ -127,6 +132,9 @@ struct BgspickupputdownsoundsOffset08View
 };
 // Copies pickup and putdown sound references when the component has the matching type.
 // @fnv 0x0047b5d0
+// pdb: BGSPickupPutdownSounds::CopyComponent | BGSPickupPutdownSounds.obj | retail, vtable slot, high
+// pdb params: apCopyFC
+// pdb locals: pcopy
 void __fastcall CopyPickupPutdownSounds(BGSPickupPutdownSounds* sounds, PickupPutdownComponentArgument argument)
 {
     BGSPickupPutdownSounds* source = dynamic_cast<BGSPickupPutdownSounds*>(argument.component);
@@ -148,7 +156,10 @@ struct ItemList
 };
 extern "C" void __cdecl TESForm_AddChunk_00485910(int, int);
 // @fnv 0x0047b560
-void __fastcall LogFormIDs(BGSPickupPutdownSounds* sounds)
+// src: XBOX_RETAIL_PDB 0x0047b560
+// pdb: BGSPickupPutdownSounds::Save | BGSPickupPutdownSounds.obj | retail, call graph (shared callers), high
+// pdb locals: itempint
+void __fastcall BGSPickupPutdownSounds_Save(BGSPickupPutdownSounds* sounds)
 {
     if (((ItemList*)sounds)->GetItem())
     {
@@ -172,6 +183,9 @@ struct BgspickupputdownsoundsOffset08View
 
 // Returns false only when the component has the matching type and both sound references match.
 // @fnv 0x0047b630
+// pdb: BGSPickupPutdownSounds::CompareComponent | BGSPickupPutdownSounds.obj | retail, vtable slot, high
+// pdb params: apCompareFC
+// pdb locals: pcompare
 bool __fastcall IsSamePickupPutdownSounds(BGSPickupPutdownSounds* sounds, PickupPutdownComponentArgument argument)
 {
     BGSPickupPutdownSounds* pickup = dynamic_cast<BGSPickupPutdownSounds*>(argument.component);
@@ -187,6 +201,7 @@ bool __fastcall IsSamePickupPutdownSounds(BGSPickupPutdownSounds* sounds, Pickup
 extern int DAT_0101abd8;
 
 // @fnv 0x0047b520
+// pdb: BGSPickupPutdownSounds::~BGSPickupPutdownSounds | BGSPickupPutdownSounds.obj | debug, call graph, medium
 void __fastcall FreePickupPutdownSounds(BGSPickupPutdownSounds* sounds)
 {
     *(int**)sounds = &DAT_0101abd8;

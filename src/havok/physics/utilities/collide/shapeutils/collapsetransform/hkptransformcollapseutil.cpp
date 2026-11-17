@@ -48,6 +48,7 @@ struct ShapeRefArray
     int count;
 };
 
+// pdb: class _SharedShapeData, size 0xc (here 0x10), 1 members
 struct ShapeData
 {
     int m_kPointA;
@@ -56,19 +57,21 @@ struct ShapeData
     int m_iFourthElementInteger;
     void _SharedShapeData_recursivelyParseShapeReferences(int);
     void _SharedShapeData_removeSingleReferencedShapeData();
-    ShapeData* _SharedShapeData__SharedShapeData(ShapeRefArray* refs);
+    ShapeData* _SharedShapeData__SharedShapeData(ShapeRefArray* rigidBodies);
 };
 
 // Resets the three fields, forwards each ref's value at offset 0x10 to FUN_00d738f0, then calls FUN_00d74a20 and returns this.
 // @fnv 0x00d74b20
 // src: HAVOK_LIB 0x00d74b20
-ShapeData* ShapeData::_SharedShapeData__SharedShapeData(ShapeRefArray* refs)
+// pdb: _SharedShapeData::_SharedShapeData | hkpTransformCollapseUtil.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
+// pdb params: rigidBodies
+ShapeData* ShapeData::_SharedShapeData__SharedShapeData(ShapeRefArray* rigidBodies)
 {
     m_kPointA = 0;
     m_kPointB = 0;
     m_iThirdValue = 0x80000000;
-    for (int i = 0; i < refs->count; ++i)
-        _SharedShapeData_recursivelyParseShapeReferences(*(int*)(refs->refs[i] + 0x10));
+    for (int i = 0; i < rigidBodies->count; ++i)
+        _SharedShapeData_recursivelyParseShapeReferences(*(int*)(rigidBodies->refs[i] + 0x10));
     _SharedShapeData_removeSingleReferencedShapeData();
     return this;
 }
@@ -105,14 +108,17 @@ struct FUN_00d74420_Context
     int m_kPointA;  // +0x00
     int m_kPointB;  // +0x04
     int m_iThirdValue;  // +0x08, initialized to 0x80000000
-    void _SharedShapeData_recursivelyParseShapeReferences(int value);
+    void _SharedShapeData_recursivelyParseShapeReferences(int shape);
     void _SharedShapeData_removeSingleReferencedShapeData();
-    void ProcessEntries_00d74aa0();
+    void SharedShapeData_dtor();
 };
 
 int hkpShape_ProcessEntries_00d739f0(int a1, int a2, FUN_00d74420_Context* ctx, int a3);
 
 // @fnv 0x00d74420
+// pdb: hkpTransformCollapseUtil::collapseTransforms | hkpTransformCollapseUtil.obj | retail, object-file run extension, low
+// pdb params: shape, options, resultsOut, shapeOut
+// pdb locals: sharedShapeData
 int RunContextOperation(int aiArg1, int aiArg2, int aiArg3, int* piOut)
 {
     FUN_00d74420_Context ctx;
@@ -122,11 +128,11 @@ int RunContextOperation(int aiArg1, int aiArg2, int aiArg3, int* piOut)
     ctx._SharedShapeData_recursivelyParseShapeReferences(aiArg1);
     ctx._SharedShapeData_removeSingleReferencedShapeData();
     *piOut = hkpShape_ProcessEntries_00d739f0(aiArg1, aiArg2, &ctx, aiArg3);
-    ctx.ProcessEntries_00d74aa0();
+    ctx.SharedShapeData_dtor();
     return 0;
 }
 
-void __cdecl ResizeAudioStream(void* pvAlloc, void* apvArray, int iElemSize);
+void __cdecl ResizeAudioStream(void* mem, void* array, int sizeElem);
 
 template <class T> __forceinline void constructWithCopyD748(T* p, int n, const T& t)
 {
@@ -169,6 +175,9 @@ int __cdecl RemapCollisionShapes(hkArray<hkpEntity*>& kEntities, int iA, int iB)
 // Appends pkEntity to a local hkArray and forwards it with iA and iB to RemapCollisionShapes, returning its result.
 // @fnv 0x00d748d0
 // src: GUESS 0x00d748d0 (confidence: high)
+// pdb: hkpTransformCollapseUtil::collapseTransforms | hkpTransformCollapseUtil.obj | retail, object-file run extension, low
+// pdb params: shape, options, resultsOut, shapeOut
+// pdb locals: sharedShapeData
 int __cdecl hkpEntity_RemapSingleEntityCollisionShapes(hkpEntity* pkEntity, int iA, int iB) throw()
 {
     hkArray<hkpEntity*> kEntities;
@@ -194,6 +203,9 @@ class D749Table
 
 // Scans the table for an entry matching key in either key field, releases the old value, stores the new value, and returns 0 on success or 1 if not found.
 // @fnv 0x00d749c0
+// pdb: _SharedShapeData::setReplacement | hkpTransformCollapseUtil.obj | retail, object-file run extension, low
+// pdb note: debug build links it to hkArrayBase<_SharedShapeData::SharedShape>::_clearAndDeallocate
+// pdb params: shape, replacement
 int D749Table::SetEntryValue(int key, int value)
 {
     int i = 0;
@@ -240,14 +252,14 @@ __forceinline hkRotation& hkTransform::getRotation() { return reinterpret_cast<h
 __forceinline const hkRotation& hkTransform::getRotation() const { return reinterpret_cast<const hkRotation&>(m_row0); }
 __forceinline void hkTransform::setTranslation(const hkVector4& t) { m_row3 = t.m_vComponents; }
 __forceinline hkpShapeType hkpShape::getType() const { return reinterpret_cast<const hkpShapeType&>(m_type); }
-__forceinline const hkpShape* hkpTransformShape::GetShapeForKey() const { return m_pContainedShape.getChild(); }
-__forceinline const hkTransform& hkpTransformShape::getTransform() const { return m_kMotionTransform; }
+__forceinline const hkpShape* hkpTransformShape::GetShapeForKey() const { return m_childShape.getChild(); }
+__forceinline const hkTransform& hkpTransformShape::getTransform() const { return m_transform; }
 __forceinline const hkpConvexShape* hkpConvexTransformShapeBase::GetShapeForKey() const
-{ return static_cast<const hkpConvexShape*>(m_pContainedShape.getChild()); }
+{ return static_cast<const hkpConvexShape*>(m_childShape.getChild()); }
 __forceinline const hkpConvexShape* hkpConvexTransformShape::GetShapeForKey() const
-{ return static_cast<const hkpConvexShape*>(m_pContainedShape.getChild()); }
+{ return static_cast<const hkpConvexShape*>(m_childShape.getChild()); }
 __forceinline const hkpConvexShape* hkpConvexTranslateShape::GetShapeForKey() const
-{ return static_cast<const hkpConvexShape*>(m_pContainedShape.getChild()); }
+{ return static_cast<const hkpConvexShape*>(m_childShape.getChild()); }
 
 // Typed adapters for the original pointer-returning constructor entry points.
 // These allow construction without duplicating the shared abstract classes.
@@ -257,15 +269,15 @@ extern "C" void FUN_00c9e340();
 __forceinline void* hkReferencedObject::operator new(std::size_t nbytes)
 {
     hkReferencedObject* b = static_cast<hkReferencedObject*>(hkMemoryRouter::getInstance().heap().blockAlloc(nbytes));
-    b->m_usMemSizeAndFlags = static_cast<unsigned short>(nbytes);
+    b->m_memSizeAndFlags = static_cast<unsigned short>(nbytes);
     return b;
 }
 __forceinline hkpConvexTranslateShape* hkpConvexTranslateShape::init(const hkpConvexShape* child, const hkVector4& translation)
 {
     reinterpret_cast<void(__thiscall*)(hkpConvexTransformShapeBase*, int, float, const hkpConvexShape*, int)>(FUN_00c9e340)(this, HK_SHAPE_CONVEX_TRANSLATE, child->getRadius(), child, 1);
     *reinterpret_cast<void**>(this) = &DAT_010d0e5c;
-    m_vTranslation.setXYZ0(translation);
-    m_iChildShapeSize = 0;
+    m_translation.setXYZ0(translation);
+    m_childShapeSize = 0;
     return this;
 }
 
@@ -293,6 +305,9 @@ hkpShape* __cdecl hkpShape_ProcessEntries_00d739f0(hkpShape*, void*, Cache_d7448
 
 // Recursively processes a shape tree, replacing nodes with cached or newly allocated equivalents and storing results in the cache.
 // @fnv 0x00d74480
+// pdb: hkpTransformCollapseUtil::collapseShapesRecursively | hkpTransformCollapseUtil.obj | retail, object-file run extension, low
+// pdb params: shape, options, sharedShapeData, resultsOut
+// pdb locals: newShapes, newShape
 hkpShape* __cdecl ProcessShape(hkpShape* shape, void* context, Cache_d74480* cache, void* settings)
 {
     for (int i = 0; i < cache->count; ++i)
@@ -321,7 +336,7 @@ hkpShape* __cdecl ProcessShape(hkpShape* shape, void* context, Cache_d74480* cac
         bool bUnchanged = true;
         for (int i = 0; i < count; ++i)
         {
-            hkpShape* pChild = const_cast<hkpShape*>(list->m_kChildInfoList.m_data[i].m_pCollisionShape);
+            hkpShape* pChild = const_cast<hkpShape*>(list->m_childInfo.m_data[i].m_pCollisionShape);
             hkpShape* n = ProcessShape(pChild, context, cache, settings);
             hkMemoryRouter* pRouter = &hkMemoryRouter::getInstance();
             if (childShapes.size == (childShapes.capacity & 0x3fffffff))
@@ -343,7 +358,7 @@ hkpShape* __cdecl ProcessShape(hkpShape* shape, void* context, Cache_d74480* cac
             break;
         }
         hkpShape* v = (hkpShape*)hkMemoryRouter::getInstance().heap().blockAlloc(0x70);
-        v->m_usMemSizeAndFlags = 0x70;
+        v->m_memSizeAndFlags = 0x70;
         v = reinterpret_cast<hkpListShape*>(v)->FUN_00cf5640(childShapes.data, count, 1);
         for (int i = 0; i < count; ++i)
             childShapes.data[i]->removeReference();
@@ -357,7 +372,7 @@ hkpShape* __cdecl ProcessShape(hkpShape* shape, void* context, Cache_d74480* cac
     }
     case 15: {
         hkpTransformShape* xf = static_cast<hkpTransformShape*>(shape);
-        hkpShape* pChild = const_cast<hkpShape*>(xf->m_pContainedShape.getChild());
+        hkpShape* pChild = const_cast<hkpShape*>(xf->m_childShape.getChild());
         hkpShape* v = ProcessShape(pChild, context, cache, settings);
         hkpShape* n = v;
         if (pChild == v)
@@ -369,8 +384,8 @@ hkpShape* __cdecl ProcessShape(hkpShape* shape, void* context, Cache_d74480* cac
         else
         {
             hkpShape* mem = (hkpShape*)hkMemoryRouter::getInstance().heap().blockAlloc(0x70);
-            mem->m_usMemSizeAndFlags = 0x70;
-            v = reinterpret_cast<hkpTransformShape*(__thiscall*)(hkpTransformShape*, const hkpShape*, const hkTransform&)>(FUN_00cf5990)(static_cast<hkpTransformShape*>(mem), n, xf->m_kMotionTransform);
+            mem->m_memSizeAndFlags = 0x70;
+            v = reinterpret_cast<hkpTransformShape*(__thiscall*)(hkpTransformShape*, const hkpShape*, const hkTransform&)>(FUN_00cf5990)(static_cast<hkpTransformShape*>(mem), n, xf->m_transform);
             n->removeReference();
             cache->SetEntryValue(shape, v);
         }
@@ -380,7 +395,7 @@ hkpShape* __cdecl ProcessShape(hkpShape* shape, void* context, Cache_d74480* cac
     }
     case 12: {
         hkpConvexTransformShapeBase* cv = static_cast<hkpConvexTransformShapeBase*>(shape);
-        hkpShape* pChild = const_cast<hkpShape*>(cv->m_pContainedShape.getChild());
+        hkpShape* pChild = const_cast<hkpShape*>(cv->m_childShape.getChild());
         hkpShape* v = ProcessShape(pChild, context, cache, settings);
         hkpShape* n = v;
         if (pChild == v)
@@ -392,8 +407,8 @@ hkpShape* __cdecl ProcessShape(hkpShape* shape, void* context, Cache_d74480* cac
         else
         {
             hkpShape* mem = (hkpShape*)hkMemoryRouter::getInstance().heap().blockAlloc(0x60);
-            mem->m_usMemSizeAndFlags = 0x60;
-            v = reinterpret_cast<hkpConvexTransformShape*(__thiscall*)(hkpConvexTransformShape*, const hkpConvexShape*, const hkTransform&, int)>(hkpConvexTransformShape_hkpConvexTransformShape)(static_cast<hkpConvexTransformShape*>(mem), static_cast<hkpConvexShape*>(n), static_cast<hkpConvexTransformShape*>(cv)->m_kMotionTransform, 1);
+            mem->m_memSizeAndFlags = 0x60;
+            v = reinterpret_cast<hkpConvexTransformShape*(__thiscall*)(hkpConvexTransformShape*, const hkpConvexShape*, const hkTransform&, int)>(hkpConvexTransformShape_hkpConvexTransformShape)(static_cast<hkpConvexTransformShape*>(mem), static_cast<hkpConvexShape*>(n), static_cast<hkpConvexTransformShape*>(cv)->m_transform, 1);
             n->removeReference();
             cache->SetEntryValue(shape, v);
         }
@@ -404,7 +419,7 @@ hkpShape* __cdecl ProcessShape(hkpShape* shape, void* context, Cache_d74480* cac
     case 11: {
         hkpConvexTransformShapeBase* cv = static_cast<hkpConvexTransformShapeBase*>(shape);
         hkpShape* v;
-        hkpShape* pChild = const_cast<hkpShape*>(cv->m_pContainedShape.getChild());
+        hkpShape* pChild = const_cast<hkpShape*>(cv->m_childShape.getChild());
         hkpShape* n = ProcessShape(pChild, context, cache, settings);
         if (pChild == n)
         {
@@ -415,11 +430,11 @@ hkpShape* __cdecl ProcessShape(hkpShape* shape, void* context, Cache_d74480* cac
         else
         {
             hkpConvexTranslateShape* pNewConvex = (hkpConvexTranslateShape*)hkMemoryRouter::getInstance().heap().blockAlloc(0x30);
-            pNewConvex->m_usMemSizeAndFlags = 0x30;
-            reinterpret_cast<void(__thiscall*)(hkpConvexTransformShapeBase*, int, float, const hkpConvexShape*, int)>(FUN_00c9e340)(pNewConvex, 11, static_cast<hkpConvexShape*>(n)->m_fSphereRadius, static_cast<hkpConvexShape*>(n), 1);
+            pNewConvex->m_memSizeAndFlags = 0x30;
+            reinterpret_cast<void(__thiscall*)(hkpConvexTransformShapeBase*, int, float, const hkpConvexShape*, int)>(FUN_00c9e340)(pNewConvex, 11, static_cast<hkpConvexShape*>(n)->m_radius, static_cast<hkpConvexShape*>(n), 1);
             *reinterpret_cast<void**>(pNewConvex) = &DAT_010d0e5c;
-            pNewConvex->m_vTranslation.m_vComponents = _mm_and_ps(static_cast<hkpConvexTranslateShape*>(cv)->m_vTranslation.m_vComponents, DAT_010c4c10);
-            pNewConvex->m_iChildShapeSize = 0;
+            pNewConvex->m_translation.m_vComponents = _mm_and_ps(static_cast<hkpConvexTranslateShape*>(cv)->m_translation.m_vComponents, DAT_010c4c10);
+            pNewConvex->m_childShapeSize = 0;
             v = pNewConvex;
             n->removeReference();
             cache->SetEntryValue(shape, v);
@@ -465,8 +480,8 @@ struct hkShapeMapD748
     void* m_data;
     int m_iElementCount;
     int m_iCapacityState;
-    hkShapeMapD748* _SharedShapeData__SharedShapeData(hkShapeEntryArrayD748* refs) throw();
-    void ProcessEntries_00d74aa0() throw();
+    hkShapeMapD748* _SharedShapeData__SharedShapeData(hkShapeEntryArrayD748* rigidBodies) throw();
+    void SharedShapeData_dtor() throw();
 };
 
 hkReferencedObject* __cdecl ProcessShape(hkReferencedObject* shape, void* context, hkShapeMapD748* map,
@@ -474,6 +489,9 @@ hkReferencedObject* __cdecl ProcessShape(hkReferencedObject* shape, void* contex
 
 // Remaps each collision shape in refs via ProcessShape, storing results back into the entries and releasing the old references.
 // @fnv 0x00d74850
+// pdb: hkpTransformCollapseUtil::collapseTransforms | hkpTransformCollapseUtil.obj | retail, object-file run extension, low
+// pdb params: shape, options, resultsOut, shapeOut
+// pdb locals: sharedShapeData
 int __cdecl RemapCollisionShapes(hkShapeEntryArrayD748* refs, void* context, hkShapeOutputD748* out)
 {
     out->UpdateFields_00d73400();
@@ -487,7 +505,7 @@ int __cdecl RemapCollisionShapes(hkShapeEntryArrayD748* refs, void* context, hkS
         shape->removeReference();
         entry->m_pCollisionShape = pRemappedShape;
     }
-    map.ProcessEntries_00d74aa0();
+    map.SharedShapeData_dtor();
     return 0;
 }
 
@@ -502,8 +520,11 @@ template <class T> static __forceinline void PushBackD737(hkArray<T>* a, const T
 
 // Appends the child shapes of a shape to out: every list child for type 9, or the single child pointer for types 15, 12 and 11.
 // @fnv 0x00d737d0
-// src: GUESS 0x00d737d0 (confidence: high)
-static __declspec(noinline) void hkpShape_AppendChildShapesByType(const hkpShape* shape, hkArray<const hkpShape*>* out)
+// src: XBOX_RETAIL_PDB 0x00d737d0
+// pdb: _getShapeChildren | hkpTransformCollapseUtil.obj | retail, call graph, high
+// pdb params: shape, childrenOut
+// pdb locals: listChildShape
+static __declspec(noinline) void _getShapeChildren(const hkpShape* shape, hkArray<const hkpShape*>* childrenOut)
 {
     switch (shape->getType())
     {
@@ -515,26 +536,26 @@ static __declspec(noinline) void hkpShape_AppendChildShapesByType(const hkpShape
         {
             do
             {
-                const hkpShape* child = list->m_kChildInfoList.m_data[i].m_pCollisionShape;
-                PushBackD737(out, child);
+                const hkpShape* child = list->m_childInfo.m_data[i].m_pCollisionShape;
+                PushBackD737(childrenOut, child);
                 ++i;
             } while (i < container.GetNumChildShapes());
         }
     }
     break;
     case 15: {
-        const hkpShape* child = static_cast<const hkpTransformShape*>(shape)->m_pContainedShape.getChild();
-        PushBackD737(out, child);
+        const hkpShape* child = static_cast<const hkpTransformShape*>(shape)->m_childShape.getChild();
+        PushBackD737(childrenOut, child);
     }
     break;
     case 12: {
-        const hkpShape* child = static_cast<const hkpConvexTransformShapeBase*>(shape)->m_pContainedShape.getChild();
-        PushBackD737(out, child);
+        const hkpShape* child = static_cast<const hkpConvexTransformShapeBase*>(shape)->m_childShape.getChild();
+        PushBackD737(childrenOut, child);
     }
     break;
     case 11: {
-        const hkpShape* child = static_cast<const hkpConvexTransformShapeBase*>(shape)->m_pContainedShape.getChild();
-        PushBackD737(out, child);
+        const hkpShape* child = static_cast<const hkpConvexTransformShapeBase*>(shape)->m_childShape.getChild();
+        PushBackD737(childrenOut, child);
     }
     break;
     }
@@ -542,7 +563,7 @@ static __declspec(noinline) void hkpShape_AppendChildShapesByType(const hkpShape
 
 void zz_probe_d737d0(const hkpShape* shape, hkArray<const hkpShape*>* out)
 {
-    hkpShape_AppendChildShapesByType(shape, out);
+    _getShapeChildren(shape, out);
 }
 
 struct D74A20Entry
@@ -560,6 +581,7 @@ struct D74A20Array
 
 // @fnv 0x00d74a20
 // src: HAVOK_LIB 0x00d74a20
+// pdb: _SharedShapeData::removeSingleReferencedShapeData | hkpTransformCollapseUtil.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
 void ShapeData::_SharedShapeData_removeSingleReferencedShapeData()
 {
     D74A20Array* array = reinterpret_cast<D74A20Array*>(this);
@@ -605,8 +627,11 @@ void ShapeData::_SharedShapeData_removeSingleReferencedShapeData()
 
 // Applies a transform to a shape, collapsing identity results to the child shape or creating a new transform/convex shape wrapper.
 // @fnv 0x00d73590
-// src: GUESS 0x00d73590 (confidence: medium)
-const hkpShape* __cdecl hkpShape_CreateTransformedShape(const hkpShape* shape, const hkTransform& transform) throw()
+// src: XBOX_RETAIL_PDB 0x00d73590
+// pdb: hkpTransformCollapseUtil::transformTransformShape | hkpTransformCollapseUtil.obj | retail, object-file gap fill, high
+// pdb params: shape, transform
+// pdb locals: t, tr
+const hkpShape* __cdecl hkpTransformCollapseUtil_transformTransformShape(const hkpShape* shape, const hkTransform& transform) throw()
 {
     bool identity = transform.IsEqualWithinTolerance(hkTransform::GetIdentityTransform(), 0.001f);
     const hkpShape* retainedShape = shape;
@@ -680,12 +705,13 @@ class RefPairListD74
 {
   public:
     hkArray<RefPairD74> m_pairs;
-    void ProcessEntries_00d74aa0();
+    void SharedShapeData_dtor();
 };
 // Removes references from all pairs in m_pairs and then clears and releases the underlying array storage.
 // @fnv 0x00d74aa0
-// src: GUESS 0x00d74aa0 (confidence: low)
-void RefPairListD74::ProcessEntries_00d74aa0()
+// src: XBOX_RETAIL_PDB 0x00d74aa0
+// pdb: _SharedShapeData::~_SharedShapeData | hkpTransformCollapseUtil.obj | retail, object-file gap fill, high
+void RefPairListD74::SharedShapeData_dtor()
 {
     for (int i = 0; i < m_pairs.m_iElementCount; i++)
     {

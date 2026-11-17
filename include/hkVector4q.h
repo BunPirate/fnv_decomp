@@ -124,7 +124,7 @@ public:
     void setSelect4(const hkVector4Comparisonq& comp, const hkVector4q& trueValue, const hkVector4q& falseValue);
     void _setRotatedInverseDir(const hkMatrix3q& r, const hkVector4q& b);
     void SetRotatedDirection(const hkMatrix3q& r, const hkVector4q& b) throw();
-    void SetRotatedDirection(const hkMatrix3& r, const hkVector4q& b) throw(); // exe: 0x00c7f700
+    void SetRotatedDirection(const hkMatrix3& quat, const hkVector4q& direction) throw(); // exe: 0x00c7f700
     void SetRotatedDirection(const hkRotationq& r, const hkVector4q& b);
     void SetTransformedPoint(const hkTransformq& a, const hkVector4q& bIn);
     void setTransformedPos_00c7f640(const hkTransform& t, const hkVector4q& v);

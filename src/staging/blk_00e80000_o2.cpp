@@ -130,17 +130,17 @@ public:
     void Unitize_004a0c10();
     float FUN_004a7290();
     float FUN_004a7290() const;
-    LocalVec3 FUN_004b3800(const LocalVec3& other) const;
+    LocalVec3 FUN_004b3800(const LocalVec3& pt) const;
     LocalVec3 ProcessAndReturnValue_0053d280(float divisor);
     float NiPoint3_XYLength();
     float NiPoint3_XYLength() const;
     void ComputeValue_0063c8a0(const LocalVec3* other);
     void ComputeValue_0063c8a0(void* other);
     void FUN_006815c0();
-    float CVec3_Distance(LocalVec3* other);
-    float CVec3_Distance(const LocalVec3& other) const;
-    LocalVec3 TransformPointByMatrix4(const Mat& matrix);
-    LocalVec3 TransformPointByMatrix4(const Matrix4* matrix);
+    float CVec3_Distance(LocalVec3* cVec);
+    float CVec3_Distance(const LocalVec3& cVec) const;
+    LocalVec3 TransformPointByMatrix4(const Mat& cTransform);
+    LocalVec3 TransformPointByMatrix4(const Matrix4* cTransform);
     void Normalize_00b12790();
     LocalVec3 Diff_00b13040(void* other);
     LocalVec3 Diff_00b13040(const LocalVec3& other) const;
@@ -421,15 +421,16 @@ void __stdcall Runtime_UpdateState_00e8b490(int* paiValues, int iFirst, int iSec
 }
 
 
-extern NiTStringTemplateMap<NiTPointerMap<const char*, NiD3DShaderProgramCreator*>, NiD3DShaderProgramCreator*>* DAT_0126fa14;
+extern NiTStringTemplateMap<NiTPointerMap<const char*, NiD3DShaderProgramCreator*>, NiD3DShaderProgramCreator*>* NiD3DShaderProgramFactory_ms_pkShaderCreators; // src: XBOX_RETAIL_PDB 0x0126fa14 (old: DAT_0126fa14)
 // Calls RemoveAll on DAT_0126fa14, invokes its first virtual method with 1, then clears the pointer.
 // @fnv 0x00e933d0
 // src: GAMEBRYO_LIB 0x00e933d0
+// pdb: NiD3DShaderProgramFactory::_SDMShutdown | NiD3DShaderProgramFactory.obj | retail, upstream name already matches, high
 void NiD3DShaderProgramFactory__SDMShutdown()
 {
-    DAT_0126fa14->RemoveAll();
-    delete DAT_0126fa14;
-    DAT_0126fa14 = 0;
+    NiD3DShaderProgramFactory_ms_pkShaderCreators->RemoveAll();
+    delete NiD3DShaderProgramFactory_ms_pkShaderCreators;
+    NiD3DShaderProgramFactory_ms_pkShaderCreators = 0;
 }
 
 
@@ -440,6 +441,8 @@ extern bool DAT_0126f0d0;
 // Sets p[5] to 8 or 0x18 depending on the sign bit of p[2], and sets p[6] to 0 or 1 based on DAT_0126f0d0.
 // @fnv 0x00e941a0
 // src: COMMUNITY 0x00e941a0
+// pdb: NiVBSet::SetD3DDevice | NiStaticGeometryGroup.obj | debug, call graph, medium
+// pdb params: pkD3DDevice
 void __cdecl NiVBSet_DetermineUsageAndPool(void* apData)
 {
     int* p = (int*)apData;
@@ -499,18 +502,20 @@ struct FUN_00e81d00_Class {
     void* m_pRenderState;
     void* m_pShaderObject;
     void* m_pD3DDevice;
-    void __thiscall NiD3DShaderConstantMap_SetD3DRenderer(void* renderer);
+    void __thiscall NiD3DShaderConstantMap_SetD3DRenderer(void* pkD3DRenderer);
 };
 
 // Stores the renderer, releases the previous object, AddRefs the renderer's field at 0x288, and caches the pointer at 0x8b8.
 // @fnv 0x00e81d00
 // src: COMMUNITY 0x00e81d00
-void __thiscall FUN_00e81d00_Class::NiD3DShaderConstantMap_SetD3DRenderer(void* renderer)
+// pdb: NiD3DShaderConstantMap::SetD3DRenderer | NiD3DShaderConstantMap.obj | retail, upstream name already matches, high
+// pdb params: pkD3DRenderer
+void __thiscall FUN_00e81d00_Class::NiD3DShaderConstantMap_SetD3DRenderer(void* pkD3DRenderer)
 {
-    m_pShaderObject = renderer;
-    if (renderer)
+    m_pShaderObject = pkD3DRenderer;
+    if (pkD3DRenderer)
     {
-        void* state = *(void**)((char*)renderer + 0x288);
+        void* state = *(void**)((char*)pkD3DRenderer + 0x288);
         if (m_pRenderState)
         {
             typedef void (__stdcall *ReleaseFunction)(void*);
@@ -656,6 +661,8 @@ void __thiscall FUN_00e88bb0_Class::ApplyFromArray(int* aiValues) {
 }
 
 // @fnv 0x00e89220
+// pdb: NiD3DTextureStageGroup::SetTextureStage | NiD3DTextureStageGroup.obj | debug, object-file run extension, low
+// pdb params: uiStage
 void __fastcall ClearFields(void* self)
 {
     char* p = (char*)self + 0xa4;
@@ -721,16 +728,18 @@ struct NiConsoleRenderStateStub {
     void* m_ppVirtualMethodTable;
 };
 struct FUN_00e89760_Class {
-    void __thiscall NiD3DShaderProgram_SetD3DRenderer(NiConsoleRendererStub* renderer);
+    void __thiscall NiD3DShaderProgram_SetD3DRenderer(NiConsoleRendererStub* pkD3DRenderer);
 };
 // @fnv 0x00e89760
 // src: XBOX_PDB 0x00e89760
-void __thiscall FUN_00e89760_Class::NiD3DShaderProgram_SetD3DRenderer(NiConsoleRendererStub* renderer)
+// pdb: NiD3DShaderProgram::SetD3DRenderer | NiD3DShaderProgram.obj | retail, upstream name already matches, high
+// pdb params: pkD3DRenderer
+void __thiscall FUN_00e89760_Class::NiD3DShaderProgram_SetD3DRenderer(NiConsoleRendererStub* pkD3DRenderer)
 {
-    *(NiConsoleRendererStub**)((char*)this + 0x24) = renderer;
-    if (renderer)
+    *(NiConsoleRendererStub**)((char*)this + 0x24) = pkD3DRenderer;
+    if (pkD3DRenderer)
     {
-        NiConsoleRenderStateStub* state = (NiConsoleRenderStateStub*)*(void**)((char*)renderer + 0x288);
+        NiConsoleRenderStateStub* state = (NiConsoleRenderStateStub*)*(void**)((char*)pkD3DRenderer + 0x288);
         NiConsoleRenderStateStub* old = *(NiConsoleRenderStateStub**)((char*)this + 0x20);
         if (old)
         {
@@ -797,6 +806,7 @@ extern const unsigned char DAT_010bc868[];
 extern int DAT_010f0af4;
 // @fnv 0x00e91b90
 // src: COMMUNITY 0x00e91b90
+// pdb: NiD3DShaderProgramCreatorObj::_SDMInit | NiXenonRendererSDM.obj | retail, upstream name already matches, high
 void __cdecl NiD3DShaderProgramCreatorObj__SDMInit()
 {
     FUN_00e91b90_Class* p = (FUN_00e91b90_Class*)BSFadeNode::operator new(0x10);
@@ -842,12 +852,12 @@ void __cdecl NiDX9RendererSDM_Init()
         NiD3DTextureStageGroup_InitializePools();
         NiD3DShader_InitializePools();
         NiD3DShaderDeclaration__SDMInit();
-        NiD3DShaderFactory::InitializePoint3();
+        NiD3DShaderFactory::_SDMInit();
         NiD3DShaderProgramFactory__SDMInit();
         NiD3DShaderProgramCreatorAsm__SDMInit();
         NiD3DShaderProgramCreatorObj__SDMInit();
         CreateHLSLShaderProgramCreator();
-        NiD3DShader::InitializePoint3();
+        NiD3DShader::_SDMInit();
     }
 }
 }  // namespace fnv_00e91dc0
@@ -868,6 +878,7 @@ struct FUN_00e941d0_Node { unsigned int pad[9]; unsigned int count; unsigned int
 struct FUN_00e941d0_This { int pad[11]; FUN_00e941d0_Node* head; };
 // Walks the linked list from head to the first node whose count is at least value, unlinks it, and returns it (or null).
 // @fnv 0x00e941d0
+// pdb: NiTPointerMap<unsigned int,NiVBSet *>::~NiTPointerMap<unsigned int,NiVBSet *> | NiStaticGeometryGroup.obj | debug, object-file run extension, low
 FUN_00e941d0_Node* __fastcall RemoveFirstNodeAtLeast(FUN_00e941d0_This* self, int, unsigned int value)
 {
     FUN_00e941d0_Node* node = 0;
@@ -965,6 +976,9 @@ struct FUN_00e89350_Class {
 };
 // Zero-initializes all member fields of the object.
 // @fnv 0x00e89350
+// pdb: NiD3DTextureStageGroup::RestoreAllStageSamplers | NiD3DTextureStageGroup.obj | debug, object-file run extension, low
+// pdb params: uiStage
+// pdb locals: i
 FUN_00e89350_Class::FUN_00e89350_Class()
 {
     m_00 = 0;
@@ -1024,6 +1038,8 @@ struct FUN_00e93fb0_Class {
 };
 // If the value at offset 0x44 differs from p's, copies p's color, alpha and related floats into this and returns 1; otherwise returns 0.
 // @fnv 0x00e93fb0
+// pdb: NiD3DShaderProgramCreator::SetD3DDevice | NiD3DShaderProgramCreator.obj | debug, object-file run extension, low
+// pdb params: pkD3DDevice
 char __thiscall FUN_00e93fb0_Class::CopyColorIfChanged(FUN_00e93fb0_Class* apSource)
 {
     if (*(int*)((char*)this + 0x44) != *(int*)((char*)apSource + 0x44)) {
@@ -1071,6 +1087,7 @@ extern int DAT_010f0ac0;
 extern int DAT_0126fa50;
 // @fnv 0x00e91b40
 // src: COMMUNITY 0x00e91b40
+// pdb: NiD3DShaderProgramCreatorAsm::_SDMInit | NiXenonRendererSDM.obj | retail, upstream name already matches, high
 void __cdecl NiD3DShaderProgramCreatorAsm__SDMInit()
 {
     NiD3DShaderProgramCreator* p = (NiD3DShaderProgramCreator*)BSFadeNode::operator new(0x10);
@@ -1282,6 +1299,7 @@ struct FUN_00e92080_This {
 
 // @fnv 0x00e92080
 // src: COMMUNITY 0x00e92080
+// pdb: NiD3DShaderFactory::_SDMShutdown | NiD3DShaderFactory.obj | retail, upstream name already matches, high
 void NiD3DShaderFactory__SDMShutdown()
 {
     FUN_00e92080_This* p = (FUN_00e92080_This*)DAT_0126fa0c;
@@ -1359,18 +1377,21 @@ struct Program {
     NiTMapBase<NiTPointerAllocator<unsigned int>, const char*, NiD3DVertexShader*>* m_map;
 };
 
-Program* DAT_0126fa10;
+Program* NiD3DShaderProgramFactory_ms_pkFactory; // src: XBOX_RETAIL_PDB 0x0126fa10 (old: DAT_0126fa10)
 
 // If both the global Program and the given program are non-null, gets the program's name and removes it from the global Program's map.
 // @fnv 0x00e937c0
-void __cdecl RemoveProgramFromMap(Program* program)
+// src: XBOX_RETAIL_PDB 0x00e937c0
+// pdb: NiD3DShaderProgramFactory::ReleasePixelShader | NiD3DShaderProgramFactory.obj | retail, call graph, high
+// pdb params: pkShader
+void __cdecl NiD3DShaderProgramFactory_ReleasePixelShader(Program* pkShader)
 {
-    if (DAT_0126fa10 && program)
+    if (NiD3DShaderProgramFactory_ms_pkFactory && pkShader)
     {
-        const char* name = program->v50();
+        const char* name = pkShader->v50();
         if (name)
         {
-            NiTMapBase<NiTPointerAllocator<unsigned int>, const char*, NiD3DVertexShader*>* map = DAT_0126fa10->m_map;
+            NiTMapBase<NiTPointerAllocator<unsigned int>, const char*, NiD3DVertexShader*>* map = NiD3DShaderProgramFactory_ms_pkFactory->m_map;
             if (map)
                 map->RemoveAt(name);
         }
@@ -1403,12 +1424,15 @@ extern int DAT_0126fa30;
 
 // @fnv 0x00e94330
 // src: COMMUNITY 0x00e94330
-void __stdcall NiVBSet_FreeBlock(void* p)
+// pdb: NiVBSet::FreeBlock | NiVBSet.obj | retail, upstream name already matches, high
+// pdb params: pkBlock
+// pdb locals: pkVB
+void __stdcall NiVBSet_FreeBlock(void* pkBlock)
 {
-    if (!p)
+    if (!pkBlock)
         return;
 
-    void** obj = (void**)p;
+    void** obj = (void**)pkBlock;
     if (obj[2])
     {
         void* v = obj[2];
@@ -1418,7 +1442,7 @@ void __stdcall NiVBSet_FreeBlock(void* p)
         obj[2] = 0;
     }
 
-    ((FUN_00e942d0_Class*)p)->ClearAllData();
+    ((FUN_00e942d0_Class*)pkBlock)->ClearAllData();
 
     void* prev = obj[15];
     void* next = obj[16];
@@ -1429,11 +1453,11 @@ void __stdcall NiVBSet_FreeBlock(void* p)
 
     void* head = (void*)DAT_0126fa30;
     if (head)
-        *(void**)((char*)head + 0x40) = p;
+        *(void**)((char*)head + 0x40) = pkBlock;
     void* newhead = (void*)DAT_0126fa30;
     obj[15] = newhead;
     obj[16] = 0;
-    DAT_0126fa30 = (int)p;
+    DAT_0126fa30 = (int)pkBlock;
 }
 
 void __cdecl _NiFree(void* p);
@@ -1523,7 +1547,10 @@ struct A51BF0Base {
 
 // Allocates DAT_011c1118 zero-initialised 0x20-byte nodes, links each to the previous head via offsets 0x1c and 0x18, and updates DAT_0126fa58 to the new head.
 // @fnv 0x00e985a0
-void AllocateNodeList()
+// src: XBOX_RETAIL_PDB 0x00e985a0
+// pdb: NiVBBlock::GetFreeChip | NiVBBlock.obj | retail, call graph, high
+// pdb locals: pkVBChip
+void NiVBBlock_GetFreeChip()
 {
     unsigned int i = 0;
     if (DAT_011c1118 > 0) {
@@ -1566,6 +1593,8 @@ extern void** DAT_010f16dc;
 extern MemoryManager _g_memoryManager;
 
 // @fnv 0x00e98b10
+// pdb: NiD3DShaderConstantManager::RestoreVertexShaderConstantB | NiD3DShaderConstantManager.obj | debug, object-file run extension, low
+// pdb params: uiStartRegister, uiBoolCount
 FUN_00e98b10_Class* __thiscall FUN_00e98b10_Class::FUN_00e98b10(unsigned char flag)
 {
     m_ppVirtualMethodTable = &DAT_010f16dc;
@@ -1580,7 +1609,7 @@ struct SpawnedObject {
 };
 
 struct GlobalHolder {
-    void __thiscall MemoryManager_Deallocate(SpawnedObject* p);
+    void __thiscall MemoryManager_Deallocate(SpawnedObject* apMem);
 };
 
 extern SpawnedObject* DAT_0126f72c;
@@ -1588,6 +1617,7 @@ extern GlobalHolder DAT_011f6238;
 
 // If DAT_0126f72c is non-null, calls ReleaseResources on it and FUN_00aa4060 on DAT_011f6238, then sets DAT_0126f72c to null.
 // @fnv 0x00e803f0
+// pdb: NiTObjectArray<NiPointer<NiD3DTextureStage> >::~NiTObjectArray<NiPointer<NiD3DTextureStage> > | NiD3DPass.obj | debug, object-file run extension, low
 void __cdecl ClearSpawnedObject()
 {
     SpawnedObject* p = DAT_0126f72c;
@@ -1620,6 +1650,8 @@ extern int DAT_01101294;
 
 // Builds a key from a and b, checks the entry at the current index in slot c, and if it matches advances the index and returns the entry's value.
 // @fnv 0x00e81b60
+// pdb: NiTexturingProperty::GetShaderMap | NiD3DShaderConstantMap.obj | debug, object-file run extension, low
+// pdb params: uiIndex
 int FUN_00e81b60_Class::LookupEntry(unsigned int auiLowKey, unsigned int auiHighKey, int aiSlot, int aiUnused)
 {
     unsigned int key = (auiHighKey << DAT_01101294) | auiLowKey;
@@ -1721,12 +1753,15 @@ extern Vec4 DAT_0126f8b0;
 extern Vec4 DAT_0126f900;
 
 // @fnv 0x00e830f0
-int __stdcall SetConstantSum(ConstantTarget* target, int reg, int type1, int type2, int iUnused1, int iUnused2)
+// src: XBOX_RETAIL_PDB 0x00e830f0
+// pdb: NiD3DShaderConstantMap::PerformOperatorAdd | NiD3DShaderConstantMap.obj | retail, object-file gap fill, high
+// pdb params: pkShaderProgram, pkEntry, eType1, eType2, bInverse, bTranspose
+int __stdcall NiD3DShaderConstantMap_PerformOperatorAdd(ConstantTarget* pkShaderProgram, int pkEntry, int eType1, int eType2, int bInverse, int bTranspose)
 {
-    switch (type1) {
+    switch (eType1) {
     case 3:
     case 4:
-        switch (type2) {
+        switch (eType2) {
         case 3:
         case 4:
         {
@@ -1736,7 +1771,7 @@ int __stdcall SetConstantSum(ConstantTarget* target, int reg, int type1, int typ
             t.z = DAT_0126f8a0.z + DAT_0126f8b0.z;
             t.w = DAT_0126f8a0.w + DAT_0126f8b0.w;
             DAT_0126f900 = t;
-            return target->SetConstant(reg, &DAT_0126f900.x, 0) ? 0 : 0x50;
+            return pkShaderProgram->SetConstant(pkEntry, &DAT_0126f900.x, 0) ? 0 : 0x50;
         }
         case 7:
         case 10:
@@ -1744,26 +1779,26 @@ int __stdcall SetConstantSum(ConstantTarget* target, int reg, int type1, int typ
             DAT_0126f900.y = DAT_0126f8a0.y + DAT_0126f8b0.x;
             DAT_0126f900.z = DAT_0126f8a0.z + DAT_0126f8b0.x;
             DAT_0126f900.w = DAT_0126f8b0.x + DAT_0126f8a0.w;
-            return target->SetConstant(reg, &DAT_0126f900.x, 0) ? 0 : 0x50;
+            return pkShaderProgram->SetConstant(pkEntry, &DAT_0126f900.x, 0) ? 0 : 0x50;
         }
         break;
     case 7:
     case 10:
-        switch (type2) {
+        switch (eType2) {
         case 3:
         case 4:
             DAT_0126f900.x = DAT_0126f8a0.x + DAT_0126f8b0.x;
             DAT_0126f900.y = DAT_0126f8b0.y + DAT_0126f8a0.x;
             DAT_0126f900.z = DAT_0126f8b0.z + DAT_0126f8a0.x;
             DAT_0126f900.w = DAT_0126f8a0.x + DAT_0126f8b0.w;
-            return target->SetConstant(reg, &DAT_0126f900.x, 0) ? 0 : 0x50;
+            return pkShaderProgram->SetConstant(pkEntry, &DAT_0126f900.x, 0) ? 0 : 0x50;
         case 7:
         case 10:
             DAT_0126f900.x = DAT_0126f8a0.x + DAT_0126f8b0.x;
             DAT_0126f900.y = DAT_0126f8a0.y + DAT_0126f8b0.y;
             DAT_0126f900.z = DAT_0126f8a0.z + DAT_0126f8b0.z;
             DAT_0126f900.w = DAT_0126f8a0.w + DAT_0126f8b0.w;
-            return target->SetConstant(reg, &DAT_0126f900.x, 0) ? 0 : 0x50;
+            return pkShaderProgram->SetConstant(pkEntry, &DAT_0126f900.x, 0) ? 0 : 0x50;
         }
         break;
     }
@@ -1922,7 +1957,7 @@ void FUN_00e87a90_Class::NiD3DRenderState_RestoreShaderState() {
 
 inline bool AlphaTesting(const NiAlphaProperty* property)
 {
-    return ((unsigned short)(property->m_usAlphaArg >> 9) & 1) != 0;
+    return ((unsigned short)(property->m_uFlags >> 9) & 1) != 0;
 }
 
 class E87B60RenderState {
@@ -1972,17 +2007,17 @@ public:
 // Applies alpha blending and alpha testing render states from pkNew via SetRenderState.
 // @fnv 0x00e87b60
 void E87B60RenderState::ApplyAlphaProperty(const NiAlphaProperty* pkNew) {
-    if ((pkNew->m_usAlphaArg & 1)) {
+    if ((pkNew->m_uFlags & 1)) {
         SetRenderState(0x1b, 1, false, false);
-        SetRenderState(0x13, m_uiRenderStateValues[((pkNew->m_usAlphaArg >> 1) & 0xf)], false, false);
-        SetRenderState(0x14, m_uiRenderStateValues[((pkNew->m_usAlphaArg >> 5) & 0xf)], false, false);
+        SetRenderState(0x13, m_uiRenderStateValues[((pkNew->m_uFlags >> 1) & 0xf)], false, false);
+        SetRenderState(0x14, m_uiRenderStateValues[((pkNew->m_uFlags >> 5) & 0xf)], false, false);
     } else {
         SetRenderState(0x1b, 0, false, false);
     }
     if (AlphaTesting(pkNew)) {
         SetRenderState(0xf, 1, false, false);
-        SetRenderState(0x19, m_uiTextureStageStateValues[((pkNew->m_usAlphaArg >> 10) & 7)], false, false);
-        SetRenderState(0x18, pkNew->m_ucAlphaArg2, false, false);
+        SetRenderState(0x19, m_uiTextureStageStateValues[((pkNew->m_uFlags >> 10) & 7)], false, false);
+        SetRenderState(0x18, pkNew->m_ucAlphaTestRef, false, false);
     } else {
         SetRenderState(0xf, 0, false, false);
     }
@@ -6247,7 +6282,7 @@ void __thiscall FUN_00e88af0_Class::NiD3DRenderState_DisableAlpha() {
 
 // @fnv 0x00e88c20
 void NiD3DGeometryGroupManager::SetFlag(bool flag) {
-    m_18 = flag;
+    m_bHWSkinning = flag;
 }
 
 namespace fnv_00e88fc0 {
@@ -6481,6 +6516,9 @@ struct FUN_00e89250_cls
 
 // For each of 8 slots, if m_5c[i] is set dispatches v30 with m_3c[i], else if m_2c[i] is set dispatches with m_0c[i], using DAT_0126f948[i].
 // @fnv 0x00e89250
+// pdb: NiD3DTextureStageGroup::RestoreTextureStage | NiD3DTextureStageGroup.obj | debug, object-file run extension, low
+// pdb params: uiStage
+// pdb locals: eSampler, eStage
 int FUN_00e89250_cls::DispatchSlots(int param)
 {
     unsigned int i = 0;
@@ -6603,18 +6641,21 @@ public:
     int m_90[5];
     unsigned char m_a4[5];
 
-    int __thiscall NiD3DTextureStageGroup_SetAllStageSamplers(int a1);
+    int __thiscall NiD3DTextureStageGroup_SetAllStageSamplers(int uiStage);
 };
 
 // For each of 5 slots, if m_a4[i] is set calls DAT_0126f99c->v51 with m_90[i], else if m_80[i] is set calls it with m_6c[i], then returns 0.
 // @fnv 0x00e892d0
 // src: COMMUNITY 0x00e892d0
-int FUN_00e892d0_cls::NiD3DTextureStageGroup_SetAllStageSamplers(int a1) {
+// pdb: NiD3DTextureStageGroup::SetAllStageSamplers | NiD3DTextureStageGroup.obj | debug, upstream name already matches, high
+// pdb params: uiStage
+// pdb locals: rv, ps
+int FUN_00e892d0_cls::NiD3DTextureStageGroup_SetAllStageSamplers(int uiStage) {
     for (unsigned int i = 0; i < 5; i++) {
         if (m_a4[i] != 0) {
-            DAT_0126f99c->v51(a1, DAT_0126f918[i], m_90[i], 0);
+            DAT_0126f99c->v51(uiStage, DAT_0126f918[i], m_90[i], 0);
         } else if (m_80[i] != 0) {
-            DAT_0126f99c->v51(a1, DAT_0126f918[i], m_6c[i], 0);
+            DAT_0126f99c->v51(uiStage, DAT_0126f918[i], m_6c[i], 0);
         }
     }
     return 0;
@@ -6624,13 +6665,15 @@ int FUN_00e892d0_cls::NiD3DTextureStageGroup_SetAllStageSamplers(int a1) {
 struct FUN_00e89410_Class
 {
     void* __thiscall DispatchSlots(unsigned int index);
-    void* __thiscall NiD3DTextureStageGroup_SetAllStageSamplers(unsigned int index);
+    void* __thiscall NiD3DTextureStageGroup_SetAllStageSamplers(unsigned int uiStage);
     void* __thiscall GetItemByIndex(unsigned int index);
 };
 
 extern unsigned int DAT_011bf558;
 
 // @fnv 0x00e89410
+// pdb: NiD3DTextureStageGroup::GetFreeTextureStageGroup | NiD3DTextureStageGroup.obj | debug, object-file run extension, low
+// pdb locals: pkGroup
 void* __thiscall FUN_00e89410_Class::GetItemByIndex(unsigned int index)
 {
     void* item = 0;
@@ -6685,6 +6728,7 @@ struct FUN_00e89840_Class {
 };
 // @fnv 0x00e89840
 // src: GUESS 0x00e89840 (confidence: low)
+// pdb: NiD3DShaderProgram::~NiD3DShaderProgram | NiD3DShaderProgram.obj | retail, call graph, medium
 void FUN_00e89840_Class::UpdateFields_00e89840()
 {
     m_ppVirtualMethodTable = &DAT_010ef73c;
@@ -8431,6 +8475,7 @@ S_00e8b4b0_Class* __thiscall S_00e8b4b0_Class::Init(int value1, int value2) {
     return this;
 }
 
+// pdb: class Key, size 0x8 (here 0xf0), 2 members
 struct Key {
  unsigned int unk00;
  unsigned int unk04;
@@ -8896,13 +8941,16 @@ struct FUN_00e8d0e0 : NiRefObject {
     int unk7c;
     BSThreadCriticalSectionPC m_kCritSec;
 
-    FUN_00e8d0e0* Initialize(ComStub* device);
+    FUN_00e8d0e0* NiXenonVertexBufferManager_ctor(ComStub* pkD3DDevice9);
     virtual void DerivedV();
 };
 
 // Initializes the critical section, stores and AddRefs the device, clears the three maps and resets unk3c.
 // @fnv 0x00e8d0e0
-FUN_00e8d0e0* FUN_00e8d0e0::Initialize(ComStub* device)
+// src: XBOX_RETAIL_PDB 0x00e8d0e0
+// pdb: NiXenonVertexBufferManager::NiXenonVertexBufferManager | NiXenonVBManager.obj | retail, call graph, high
+// pdb params: pkD3DDevice9
+FUN_00e8d0e0* FUN_00e8d0e0::NiXenonVertexBufferManager_ctor(ComStub* pkD3DDevice9)
 {
     // Construct the shared base explicitly to preserve the original lack of unwind cleanup.
     __assume(this != 0);
@@ -8914,8 +8962,8 @@ FUN_00e8d0e0* FUN_00e8d0e0::Initialize(ComStub* device)
     ConstructVertexBufferMap(&m_kMap3);
     unk40 = 0; unk44 = 0; unk48 = 0; unk4c = 0;
     InitializeCriticalSection(&m_kCritSec);
-    m_pkDevice = device;
-    device->AddRef();
+    m_pkDevice = pkD3DDevice9;
+    pkD3DDevice9->AddRef();
     m_kMap1.RemoveAll();
     m_kMap2.RemoveAll();
     m_kMap3.RemoveAll();
@@ -8933,21 +8981,24 @@ public:
     unsigned int m_04;
     unsigned int m_08;
 
-    void ResizeStringArray(unsigned int newCap);
-    void PushBack(char* const* src);
+    void NiTSet_NiFixedString_NiTNewInterface_NiFixedString_Realloc(unsigned int uiNewSize);
+    void NiTSet_NiFixedString_NiTNewInterface_NiFixedString_Add(char* const* element);
 };
 
 // Appends the pointer from src to the array, growing capacity when full and releasing the previous element's reference-counted block.
 // @fnv 0x00e8e330
-void FUN_00e8e330_cls::PushBack(char* const* src)
+// src: XBOX_RETAIL_PDB 0x00e8e330
+// pdb: NiTSet<NiFixedString,NiTNewInterface<NiFixedString> >::Add | NiD3DGPUProgramCache.obj | retail, call graph, high
+// pdb params: element
+void FUN_00e8e330_cls::NiTSet_NiFixedString_NiTNewInterface_NiFixedString_Add(char* const* element)
 {
     if (m_08 == m_04) {
-        ResizeStringArray(m_04 > 0 ? m_04 * 2 : 1);
+        NiTSet_NiFixedString_NiTNewInterface_NiFixedString_Realloc(m_04 > 0 ? m_04 * 2 : 1);
     }
     unsigned int idx = m_08;
     char** slot = &m_00[idx];
     m_08 = idx + 1;
-    char* v = *src;
+    char* v = *element;
     if (*slot != v) {
         if (v != DAT_0109b220) {
             DAT_00fdf1c0(v - 8);
@@ -9009,7 +9060,7 @@ namespace fnv_00e8f7c0 {
 extern unsigned char DAT_010f02b0[];
 
 struct FUN_00aa4060_Class {
-    void __thiscall MemoryManager_Deallocate(void* object);
+    void __thiscall MemoryManager_Deallocate(void* apMem);
 };
 
 extern FUN_00aa4060_Class DAT_011f6238;
@@ -9210,7 +9261,7 @@ extern int DAT_010c4cf8;
 void __cdecl _NiFree_00aa10f0(int aValue);
 
 struct FUN_00e94810_pool {
-    void MemoryManager_Deallocate(void* apMemory);
+    void MemoryManager_Deallocate(void* apMem);
 };
 extern FUN_00e94810_pool DAT_011f6238;
 
@@ -9225,6 +9276,7 @@ struct FUN_00e94810_cls {
 };
 
 // @fnv 0x00e94810
+// pdb: NiGeometryBufferData::RemoveAllVBChips | NiDynamicGeometryGroup.obj | debug, object-file run extension, low
 FUN_00e94810_cls* FUN_00e94810_cls::FUN_00e94810(unsigned int acFlags)
 {
     m_vptr = (int)&DAT_010c4cf8;
@@ -9257,7 +9309,7 @@ FUN_00e95b60_cls* FUN_00e95b60_cls::Reset() {
 }
 
 struct S_00e97790_This {
-    void __thiscall NiD3DShaderConstantManager_NiD3DShaderConstantManager(void* p);
+    void __thiscall NiD3DShaderConstantManager_NiD3DShaderConstantManager(void* pkD3DRenderer);
 };
 
 
@@ -9349,6 +9401,8 @@ struct FUN_00e984d0_Struct {
 
 // @fnv 0x00e984d0
 // src: GUESS 0x00e984d0 (confidence: low)
+// pdb: NiStreamSaveBinary<unsigned int> | NiD3DGPUProgramCache.obj | retail, call graph, medium
+// pdb params: kStream, value
 void __cdecl Runtime_UpdateState_00e984d0(FUN_00e984d0_Struct* pStruct, int aiArg1, int aiArg2)
 {
     int local = 1;
@@ -9380,23 +9434,27 @@ extern FNV_CondFn_e9c8c0* DAT_0126fa94;
 
 // Looks up a function pointer in DAT_0126fa94 indexed by the two objects' indices and calls it, swapping the argument pairs if the first lookup is null.
 // @fnv 0x00e9c8c0
-bool __cdecl CallConditionFunction(float afValue, FUN_00e9c8c0_obj* apFirst, unsigned int auiFirstArg, FUN_00e9c8c0_obj* apSecond, unsigned int auiSecondArg)
+// src: XBOX_RETAIL_PDB 0x00e9c8c0
+// pdb: NiBoundingVolume::TestIntersect | NiBoundingVolume.obj | retail, call graph (shared callers), high
+// pdb params: fTime, kBV0, kVel0, kBV1, kVel1
+// pdb locals: pFunc
+bool __cdecl NiBoundingVolume_TestIntersect(float fTime, FUN_00e9c8c0_obj* kBV0, unsigned int kVel0, FUN_00e9c8c0_obj* kBV1, unsigned int kVel1)
 {
-    unsigned int uiFirstIndex = apFirst->GetIndex() * 6;
-    unsigned int uiSecondIndex = apSecond->GetIndex();
+    unsigned int uiFirstIndex = kBV0->GetIndex() * 6;
+    unsigned int uiSecondIndex = kBV1->GetIndex();
     FNV_CondFn_e9c8c0 fn = DAT_0126fa94[uiFirstIndex + uiSecondIndex];
     if (fn != 0) {
-        return fn(afValue, apFirst, auiFirstArg, apSecond, auiSecondArg);
+        return fn(fTime, kBV0, kVel0, kBV1, kVel1);
     }
-    unsigned int uiSwappedIndex = apSecond->GetIndex() * 6;
-    unsigned int uiSwappedSecondIndex = apFirst->GetIndex();
+    unsigned int uiSwappedIndex = kBV1->GetIndex() * 6;
+    unsigned int uiSwappedSecondIndex = kBV0->GetIndex();
     fn = DAT_0126fa94[uiSwappedIndex + uiSwappedSecondIndex];
-    return fn(afValue, apSecond, auiSecondArg, apFirst, auiFirstArg);
+    return fn(fTime, kBV1, kVel1, kBV0, kVel0);
 }
 
 typedef int (__cdecl *FUN_00e9c950_handler)(float, void*, int, void*, int, int, int, int, int, int);
 
-extern FUN_00e9c950_handler* DAT_0126fa98;
+extern FUN_00e9c950_handler* NiBoundingVolume_ms_pfnFindFuncTable; // src: XBOX_RETAIL_PDB 0x0126fa98 (old: DAT_0126fa98)
 
 class FUN_00e9c950_cls_key
 {
@@ -9409,20 +9467,23 @@ public:
 
 // Looks up a handler in DAT_0126fa98 by the two objects' Slot3 values and calls it, swapping the object and argument order for the fallback lookup.
 // @fnv 0x00e9c950
-int DispatchPairHandler(float afValue, FUN_00e9c950_cls_key* pFirst, int aiFirstArg, FUN_00e9c950_cls_key* pSecond, int aiSecondArg, int aiArg6, int aiArg7, int aiArg8, int aiArg9, int aiArg10)
+// pdb: NiBoundingVolume::FindIntersect | NiBoundingVolume.obj | retail, call graph (shared callers), high
+// pdb params: fTime, kBV0, kVel0, kBV1, kVel1, fIntrTime, kIntrPt, bCalcNormals, kNormal0, kNormal1
+// pdb locals: pFunc
+int DispatchPairHandler(float fTime, FUN_00e9c950_cls_key* kBV0, int kVel0, FUN_00e9c950_cls_key* kBV1, int kVel1, int fIntrTime, int kIntrPt, int bCalcNormals, int kNormal0, int kNormal1)
 {
-    int iFirstKey = pFirst->Slot3() * 3;
+    int iFirstKey = kBV0->Slot3() * 3;
     iFirstKey = iFirstKey + iFirstKey;
-    int idx = pSecond->Slot3() + iFirstKey;
-    FUN_00e9c950_handler fn = DAT_0126fa98[idx];
+    int idx = kBV1->Slot3() + iFirstKey;
+    FUN_00e9c950_handler fn = NiBoundingVolume_ms_pfnFindFuncTable[idx];
     if (fn != 0) {
-        return fn(afValue, pFirst, aiFirstArg, pSecond, aiSecondArg, aiArg6, aiArg7, aiArg8, aiArg9, aiArg10);
+        return fn(fTime, kBV0, kVel0, kBV1, kVel1, fIntrTime, kIntrPt, bCalcNormals, kNormal0, kNormal1);
     }
-    int s = pSecond->Slot3() * 3;
+    int s = kBV1->Slot3() * 3;
     s = s + s;
-    int iSwappedHandlerIndex = pFirst->Slot3() + s;
-    FUN_00e9c950_handler pSwappedHandler = DAT_0126fa98[iSwappedHandlerIndex];
-    return pSwappedHandler(afValue, pSecond, aiSecondArg, pFirst, aiFirstArg, aiArg6, aiArg7, aiArg8, aiArg10, aiArg9);
+    int iSwappedHandlerIndex = kBV0->Slot3() + s;
+    FUN_00e9c950_handler pSwappedHandler = NiBoundingVolume_ms_pfnFindFuncTable[iSwappedHandlerIndex];
+    return pSwappedHandler(fTime, kBV1, kVel1, kBV0, kVel0, fIntrTime, kIntrPt, bCalcNormals, kNormal1, kNormal0);
 }
 
 struct DispatchObj_b4010 {
@@ -9434,14 +9495,18 @@ struct DispatchObj_b4010 {
 
 typedef void (__cdecl *DispatchFn_b4010)(float, DispatchObj_b4010*, int, int, int, int, int);
 
-extern DispatchFn_b4010* DAT_0126fa9c;
+extern DispatchFn_b4010* NiBoundingVolume_ms_pfnTriTestFuncTable; // src: XBOX_RETAIL_PDB 0x0126fa9c (old: DAT_0126fa9c)
 
 // Looks up a dispatch function from DAT_0126fa9c using the object's virtual index and calls it with the forwarded arguments.
 // @fnv 0x00e9ca10
-void __cdecl DispatchByVirtualIndex(float afValue, DispatchObj_b4010* apObj, int aiArg2, int aiArg3, int aiArg4, int aiArg5, int aiArg6)
+// src: XBOX_RETAIL_PDB 0x00e9ca10
+// pdb: NiBoundingVolume::TestTriIntersect | NiBoundingVolume.obj | retail, object-file gap fill, high
+// pdb params: fTime, kBV0, kVel0, kVert0, kVert1, kVert2, kVel1
+// pdb locals: pFunc
+void __cdecl NiBoundingVolume_TestTriIntersect(float fTime, DispatchObj_b4010* kBV0, int kVel0, int kVert0, int kVert1, int kVert2, int kVel1)
 {
-    DispatchFn_b4010 fn = DAT_0126fa9c[apObj->v3()];
-    fn(afValue, apObj, aiArg2, aiArg3, aiArg4, aiArg5, aiArg6);
+    DispatchFn_b4010 fn = NiBoundingVolume_ms_pfnTriTestFuncTable[kBV0->v3()];
+    fn(fTime, kBV0, kVel0, kVert0, kVert1, kVert2, kVel1);
 }
 
 struct FUN_00e9e840_Class
@@ -9527,19 +9592,23 @@ struct ItemArrayOwner {
     unsigned int foundIndex;
 };
 
-bool __cdecl CallConditionFunction(float a1, void* a2, unsigned int a3, void* a4, unsigned int a5);
+bool __cdecl NiBoundingVolume_TestIntersect(float fTime, void* kBV0, unsigned int kVel0, void* kBV1, unsigned int kVel1);
 
 // Searches a2's items against a4's items with CallConditionFunction and, on a match, stores both indices in foundIndex and returns true.
 // @fnv 0x00e9e9e0
-bool __cdecl FindMatchingItemPair(float afValue, ItemArrayOwner* apOwnerA, unsigned int a3, ItemArrayOwner* apOwnerB, unsigned int a5)
+// src: XBOX_RETAIL_PDB 0x00e9e9e0
+// pdb: NiUnionBV::UnionUnionTestIntersect | NiUnionBV.obj | retail, object-file gap fill, high
+// pdb params: fTime, kABV0, kV0, kABV1, kV1
+// pdb locals: kUnionABV0, kUnionABV1, i, pkABV0, j, pkABV1
+bool __cdecl NiUnionBV_UnionUnionTestIntersect(float fTime, ItemArrayOwner* kABV0, unsigned int kV0, ItemArrayOwner* kABV1, unsigned int kV1)
 {
-    for (unsigned int i = 0; i < apOwnerA->count; i++) {
-        void* item = apOwnerA->pItems[i];
-        for (unsigned int j = 0; j < apOwnerB->count; j++) {
-            void* other = apOwnerB->pItems[j];
-            if (CallConditionFunction(afValue, item, a3, other, a5)) {
-                apOwnerA->foundIndex = i;
-                apOwnerB->foundIndex = j;
+    for (unsigned int i = 0; i < kABV0->count; i++) {
+        void* item = kABV0->pItems[i];
+        for (unsigned int j = 0; j < kABV1->count; j++) {
+            void* other = kABV1->pItems[j];
+            if (NiBoundingVolume_TestIntersect(fTime, item, kV0, other, kV1)) {
+                kABV0->foundIndex = i;
+                kABV1->foundIndex = j;
                 return true;
             }
         }
@@ -9557,16 +9626,20 @@ struct FNVItemHolder {
     int m_14;
 };
 
-bool __cdecl DispatchPairHandler(float f, void* item, int a2, int a3, int a4, int a5, int a6, int a7, int a8, int a9);
+bool __cdecl DispatchPairHandler(float fTime, void* kBV0, int kVel0, int kBV1, int kVel1, int fIntrTime, int kIntrPt, int bCalcNormals, int kNormal0, int kNormal1);
 
 // Iterates holder->m_08 up to holder->m_0e, calls DispatchPairHandler on each item, stores the matching index in holder->m_14 and returns true, else false.
 // @fnv 0x00e9eae0
-bool __cdecl FindItemByPredicate(float f, FNVItemHolder* holder, int a2, int a3, int a4, int a5, int a6, int a7, int a8, int a9)
+// src: XBOX_RETAIL_PDB 0x00e9eae0
+// pdb: NiUnionBV::UnionOtherFindIntersect | NiUnionBV.obj | retail, object-file gap fill, high
+// pdb params: fTime, kABV0, kV0, kABV1, kV1, fIntrTime, kIntrPt, bCalcNormals, kNormal0, kNormal1
+// pdb locals: kUnionABV0, i, pkABV
+bool __cdecl NiUnionBV_UnionOtherFindIntersect(float fTime, FNVItemHolder* kABV0, int kV0, int kABV1, int kV1, int fIntrTime, int kIntrPt, int bCalcNormals, int kNormal0, int kNormal1)
 {
-    for (unsigned int i = 0; i < holder->m_0e; ++i) {
-        void* item = holder->m_08[i];
-        if (DispatchPairHandler(f, item, a2, a3, a4, a5, a6, a7, a8, a9)) {
-            holder->m_14 = i;
+    for (unsigned int i = 0; i < kABV0->m_0e; ++i) {
+        void* item = kABV0->m_08[i];
+        if (DispatchPairHandler(fTime, item, kV0, kABV1, kV1, fIntrTime, kIntrPt, bCalcNormals, kNormal0, kNormal1)) {
+            kABV0->m_14 = i;
             return true;
         }
     }
@@ -9590,21 +9663,25 @@ struct E9EB60_Item
     int m_result;
 };
 
-extern "C" bool __cdecl E9C950_probe(float a0, void* a1, int a2, void* a3,
-                                     int a4, int a5, int a6, int a7, int a8, int a9);
+extern "C" bool __cdecl E9C950_probe(float fTime, void* kBV0, int kVel0, void* kBV1,
+                                     int kVel1, int fIntrTime, int kIntrPt, int bCalcNormals, int kNormal0, int kNormal1);
 
 // Scans every pair of entries from two item lists through E9C950_probe and, on the first match, stores both indices in m_result and returns true.
 // @fnv 0x00e9eb60
-bool __cdecl FindMatchingPair(float a0, E9EB60_Item* a1, int a2, E9EB60_Item* pListB,
-                          int a4, int a5, int a6, int a7, int a8, int a9)
+// src: XBOX_RETAIL_PDB 0x00e9eb60
+// pdb: NiUnionBV::UnionUnionFindIntersect | NiUnionBV.obj | retail, object-file gap fill, high
+// pdb params: fTime, kABV0, kV0, kABV1, kV1, fIntrTime, kIntrPt, bCalcNormals, kNormal0, kNormal1
+// pdb locals: kUnionABV0, kUnionABV1, i, pkABV0, j, pkABV1
+bool __cdecl NiUnionBV_UnionUnionFindIntersect(float fTime, E9EB60_Item* kABV0, int kV0, E9EB60_Item* kABV1,
+                          int kV1, int fIntrTime, int kIntrPt, int bCalcNormals, int kNormal0, int kNormal1)
 {
-    for (unsigned int i = 0; i < a1->m_uiItemCount; i++) {
-        void* a = a1->m_ppData[i];
-        for (unsigned int j = 0; j < pListB->m_uiItemCount; j++) {
-            void* b = pListB->m_ppData[j];
-            if (E9C950_probe(a0, a, a2, b, a4, a5, a6, a7, a8, a9)) {
-                a1->m_result = i;
-                pListB->m_result = j;
+    for (unsigned int i = 0; i < kABV0->m_uiItemCount; i++) {
+        void* a = kABV0->m_ppData[i];
+        for (unsigned int j = 0; j < kABV1->m_uiItemCount; j++) {
+            void* b = kABV1->m_ppData[j];
+            if (E9C950_probe(fTime, a, kV0, b, kV1, fIntrTime, kIntrPt, bCalcNormals, kNormal0, kNormal1)) {
+                kABV0->m_result = i;
+                kABV1->m_result = j;
                 return true;
             }
         }
@@ -10108,7 +10185,7 @@ void Object_ProcessEntries_00a644a0(FixedStr* pkArray);           // array delet
 
 class FixedStrArray {
 public:
-    void ResizeStringArray(unsigned int uiMaxSize);
+    void NiTSet_NiFixedString_NiTNewInterface_NiFixedString_Realloc(unsigned int uiNewSize);
 
     FixedStr* m_pBase;
     unsigned int m_uiMaxSize;
@@ -10117,14 +10194,17 @@ public:
 
 // Reallocates the string array to uiMaxSize, copies existing elements into the new buffer, frees the old buffer and updates m_pBase and m_uiMaxSize.
 // @fnv 0x00e8e290
-// src: GUESS 0x00e8e290 (confidence: medium)
-void FixedStrArray::ResizeStringArray(unsigned int uiNewMaxSize)
+// src: XBOX_RETAIL_PDB 0x00e8e290
+// pdb: NiTSet<NiFixedString,NiTNewInterface<NiFixedString> >::Realloc | NiD3DGPUProgramCache.obj | retail, object-file gap fill, high
+// pdb params: uiNewSize
+// pdb locals: pNewBase, i
+void FixedStrArray::NiTSet_NiFixedString_NiTNewInterface_NiFixedString_Realloc(unsigned int uiNewSize)
 {
-    if (uiNewMaxSize == m_uiMaxSize)
+    if (uiNewSize == m_uiMaxSize)
         return;
     FixedStr* pkNew;
-    if (uiNewMaxSize > 0) {
-        pkNew = NiTNewInterface_NiFixedString_Allocate(uiNewMaxSize);
+    if (uiNewSize > 0) {
+        pkNew = NiTNewInterface_NiFixedString_Allocate(uiNewSize);
         for (unsigned int i = 0; i < m_uiSize; i++)
             pkNew[i] = m_pBase[i];
     } else {
@@ -10132,7 +10212,7 @@ void FixedStrArray::ResizeStringArray(unsigned int uiNewMaxSize)
     }
     Object_ProcessEntries_00a644a0(m_pBase);
     m_pBase = pkNew;
-    m_uiMaxSize = uiNewMaxSize;
+    m_uiMaxSize = uiNewSize;
 }
 
 
@@ -10192,8 +10272,8 @@ __forceinline NiColor::NiColor() : r(0.0f), g(0.0f), b(0.0f) {}
 
 inline NiAlphaProperty::NiAlphaProperty() throw()
 {
-    m_usAlphaArg = 0xec;
-    m_ucAlphaArg2 = 0;
+    m_uFlags = 0xec;
+    m_ucAlphaTestRef = 0;
 }
 
 
@@ -10536,7 +10616,7 @@ int* __thiscall FUN_00e8d350_Class::NiDX9FragmentShader_GetShaderInstanceDesc() 
 
 struct Item9ea;
 
-bool DispatchByVirtualIndex(float fTime, Item9ea* pkItem, void* p2, void* p3, void* p4, void* p5, void* p6);
+bool NiBoundingVolume_TestTriIntersect(float fTime, Item9ea* kBV0, void* kVel0, void* kVert0, void* kVert1, void* kVert2, void* kVel1);
 
 struct Seq9ea
 {
@@ -10552,14 +10632,17 @@ struct Seq9ea
 // Iterates the sequence's items, calls DispatchByVirtualIndex on each, and on success stores the index in m_uiLast and returns true.
 // @fnv 0x00e9ea70
 // src: GAMEBRYO_LIB 0x00e9ea70
-bool NiUnionBV_UnionTriTestIntersect(float fTime, Seq9ea* pkSeq, void* p2, void* p3, void* p4, void* p5, void* p6)
+// pdb: NiUnionBV::UnionTriTestIntersect | NiUnionBV.obj | retail, upstream name already matches, high
+// pdb params: fTime, kABV0, kV0, kVert0, kVert1, kVert2, kV1
+// pdb locals: kUnionABV0, i, pkABV
+bool NiUnionBV_UnionTriTestIntersect(float fTime, Seq9ea* kABV0, void* kV0, void* kVert0, void* kVert1, void* kVert2, void* kV1)
 {
-    for (unsigned int i = 0; i < pkSeq->m_usElementCount; i++)
+    for (unsigned int i = 0; i < kABV0->m_usElementCount; i++)
     {
-        Item9ea* pkItem = pkSeq->m_ppGeometries[i];
-        if (DispatchByVirtualIndex(fTime, pkItem, p2, p3, p4, p5, p6))
+        Item9ea* pkItem = kABV0->m_ppGeometries[i];
+        if (NiBoundingVolume_TestTriIntersect(fTime, pkItem, kV0, kVert0, kVert1, kVert2, kV1))
         {
-            pkSeq->m_uiLast = i;
+            kABV0->m_uiLast = i;
             return true;
         }
     }
@@ -10879,6 +10962,9 @@ struct StageSet {
 // Stores obj at index in m_20, updating m_14, m_18, m_1C, and obj->m_04, or shrinks m_14 when obj is null.
 // @fnv 0x00e802b0
 // src: COMMUNITY 0x00e802b0
+// pdb: NiD3DPass::SetStage | NiD3DPass.obj | retail, upstream name already matches, high
+// pdb params: uiStageNum, pkStage
+// pdb locals: pkOldStage
 int StageSet::NiD3DPass_SetStage(unsigned int index, Stage321* obj)
 {
     if (index >= DAT_011bf560)
@@ -11383,6 +11469,9 @@ struct ThisObj {
 };
 // @fnv 0x00e8c570
 // src: COMMUNITY 0x00e8c570
+// pdb: NiXenonVertexBufferManager::PackTransformedVB | NiXenonVBManager.obj | debug, object-file run extension, low
+// pdb params: pkBuffData, usVerts, pkScreenSpaceVerts, pkColors, pkTex, usDirtyFlags, pakVertexElements, pkOldVBChip, pvLockedBuff
+// pdb locals: uiVertexTypeDesc, uiVertexStride, bUnlock, us, uiColorOffset, pkVBChip, uiTexOffset, uiPosOffset, pucTmp, kVBDesc
 VBEntry* ThisObj::NiDX9VertexBufferManager_PackTransformedVB(C_00e8f010* owner, unsigned short count, const TwoComponentVector* pos, const float* col, const unsigned int* uv, unsigned int streamFlags, VBEntry* existing, void* data) {
     if (count == 0 || pos == 0)
         return existing;
@@ -11838,6 +11927,7 @@ struct ShaderDataE989 : NiRefObject {
 };
 // Calls FUN_00aa10f0 on 12 pointer members, then calls Release on m_80 and nulls it if set.
 // @fnv 0x00e989c0
+// pdb: NiD3DShaderConstantManager::~NiD3DShaderConstantManager | NiD3DShaderConstantManager.obj | retail, object-file run extension, low
 ShaderDataE989::~ShaderDataE989() throw()
 {
     _NiFree_00aa10f0(m_08);
@@ -11880,43 +11970,46 @@ typedef void (__cdecl *FUN_00e9ca50_Entry)(
     int,
     int);
 
-extern void **DAT_0126faa0;
+extern void **NiBoundingVolume_ms_pfnTriFindFuncTable; // src: XBOX_RETAIL_PDB 0x0126faa0 (old: DAT_0126faa0)
 
 // Looks up a function pointer in DAT_0126faa0 using the object's index and calls it with the forwarded value and arguments.
 // @fnv 0x00e9ca50
 // src: GAMEBRYO_LIB 0x00e9ca50
+// pdb: NiBoundingVolume::FindTriIntersect | NiBoundingVolume.obj | retail, upstream name already matches, high
+// pdb params: fTime, kBV0, kVel0, kVert0, kVert1, kVert2, kVel1, fIntrTime, kIntrPt, bCalcNormals, kNormal0, kNormal1
+// pdb locals: pFunc
 void __cdecl NiBoundingVolume_FindTriIntersect(
-    float value,
-    FUN_00e9ca50_Object *object,
-    int arg1,
-    int arg2,
-    int arg3,
-    int arg4,
-    int arg5,
-    int arg6,
-    int arg7,
-    int arg8,
-    int arg9,
-    int arg10)
+    float fTime,
+    FUN_00e9ca50_Object *kBV0,
+    int kVel0,
+    int kVert0,
+    int kVert1,
+    int kVert2,
+    int kVel1,
+    int fIntrTime,
+    int kIntrPt,
+    int bCalcNormals,
+    int kNormal0,
+    int kNormal1)
 {
-    int index = object->FUN_00e9ca50_GetIndex();
-    float forwardedValue = value;
+    int index = kBV0->FUN_00e9ca50_GetIndex();
+    float forwardedValue = fTime;
     FUN_00e9ca50_Entry entry =
-        ((volatile FUN_00e9ca50_Entry *)DAT_0126faa0)[index];
+        ((volatile FUN_00e9ca50_Entry *)NiBoundingVolume_ms_pfnTriFindFuncTable)[index];
 
     entry(
         forwardedValue,
-        object,
-        arg1,
-        arg2,
-        arg3,
-        arg4,
-        arg5,
-        arg6,
-        arg7,
-        arg8,
-        arg9,
-        arg10);
+        kBV0,
+        kVel0,
+        kVert0,
+        kVert1,
+        kVert2,
+        kVel1,
+        fIntrTime,
+        kIntrPt,
+        bCalcNormals,
+        kNormal0,
+        kNormal1);
 }
 
 struct FUN_00e9ec90 {
@@ -11962,6 +12055,9 @@ void* Object_DispatchCommandFour(unsigned int size);
 
 // Packs a and b into a key, looks up the selected map by c, and creates a new node if the key is not found.
 // @fnv 0x00e8fa80
+// pdb: NiXenonIndexBufferManager::GetIBInfo | NiXenonIBManager.obj | retail, object-file run extension, low
+// pdb params: uiUsage, eFormat, ePool
+// pdb locals: pkIBInfo, uiIndex
 S00e8fa80_Node* S00e8fa80_Obj::GetOrCreateNode(int aiHigh, unsigned int aiLow, int aiMapIndex)
 {
     S00e8fa80_Map* map;
@@ -12031,21 +12127,24 @@ struct BlockAllocator {
     unsigned int unk24;
     unsigned int unk28;
     FUN_00a64330_Obj unk2C;
-    unsigned int __thiscall NiVBBlock_AllocateChip(unsigned int size);
+    unsigned int __thiscall NiVBBlock_AllocateChip(unsigned int uiSize);
 };
 
 extern int DAT_0126fa58;
 
-void AllocateNodeList();
+void NiVBBlock_GetFreeChip();
 
 // @fnv 0x00e98660
 // src: COMMUNITY 0x00e98660
-unsigned int __thiscall BlockAllocator::NiVBBlock_AllocateChip(unsigned int size) {
-    if (unk24 < size) {
+// pdb: NiVBBlock::AllocateChip | NiVBBlock.obj | retail, upstream name already matches, high
+// pdb params: uiSize
+// pdb locals: pkChip, uiIndex
+unsigned int __thiscall BlockAllocator::NiVBBlock_AllocateChip(unsigned int uiSize) {
+    if (unk24 < uiSize) {
         return 0;
     }
 
-    if (!DAT_0126fa58) AllocateNodeList();
+    if (!DAT_0126fa58) NiVBBlock_GetFreeChip();
     AllocationBlock* block=(AllocationBlock*)DAT_0126fa58;
     DAT_0126fa58=(int)((AllocationBlock*)DAT_0126fa58)->link.next;
     if(DAT_0126fa58) ((AllocationBlock*)DAT_0126fa58)->link.prev=0;
@@ -12054,10 +12153,10 @@ unsigned int __thiscall BlockAllocator::NiVBBlock_AllocateChip(unsigned int size
     block->unk04 = this;
     block->unk08 = unk08;
     block->unk0C = unk20;
-    block->unk14 = size;
-    unk20 += size;
-    unk24 -= size;
-    unk28 -= size;
+    block->unk14 = uiSize;
+    unk20 += uiSize;
+    unk24 -= uiSize;
+    unk28 -= uiSize;
 
     AllocationBlock* key = block;
     block->unk00 = (void*)unk2C.NiTArray_void_cdecl_NiStream_NiObject_NiTMallocInterface_void_cdecl_NiStream_NiObject_AddFirstEmpty(&key);
@@ -14447,13 +14546,15 @@ struct FUN_00e98910_Class {
     FUN_00e98910_Target* unk80;
     void* unk84;
 
-    FUN_00e98910_Class* __thiscall NiD3DShaderConstantManager_NiD3DShaderConstantManager(int* context);
+    FUN_00e98910_Class* __thiscall NiD3DShaderConstantManager_NiD3DShaderConstantManager(int* pkD3DRenderer);
 };
 
 // @fnv 0x00e98910
+// pdb: NiD3DShaderConstantManager::NiD3DShaderConstantManager | NiD3DShaderConstantManager.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
+// pdb params: pkD3DRenderer
 FUN_00e98910_Class* __thiscall
 // src: EXE 0x00e98910
-FUN_00e98910_Class::NiD3DShaderConstantManager_NiD3DShaderConstantManager(int* context) {
+FUN_00e98910_Class::NiD3DShaderConstantManager_NiD3DShaderConstantManager(int* pkD3DRenderer) {
     this->unk00 = &DAT_0101dce4;
     this->unk04 = 0;
 
@@ -14490,11 +14591,11 @@ FUN_00e98910_Class::NiD3DShaderConstantManager_NiD3DShaderConstantManager(int* c
     this->unk74 = 0;
     this->unk78 = 0;
     this->unk7C = 0;
-    this->unk84 = context;
+    this->unk84 = pkD3DRenderer;
 
-    if (context != 0) {
+    if (pkD3DRenderer != 0) {
         this->unk80 = reinterpret_cast<FUN_00e98910_Target*>(
-            *reinterpret_cast<int*>(reinterpret_cast<char*>(context) + 0x288));
+            *reinterpret_cast<int*>(reinterpret_cast<char*>(pkD3DRenderer) + 0x288));
     }
 
     if (this->unk80 != 0) {
@@ -14729,11 +14830,13 @@ namespace ShaderSubtractData {
 // Subtracts DAT_0126f8b0 from DAT_0126f8a0 into DAT_0126f900 based on typeA and typeB, then calls target->SetConstant(reg, &DAT_0126f900.x, 0).
 // @fnv 0x00e83320
 // src: COMMUNITY 0x00e83320
-int __stdcall NiD3DShaderConstantMap_PerformOperatorSubtract(ConstantTarget* target, int reg, int typeA, int typeB, int aiUnused5, int aiUnused6) {
-    switch (typeA) {
+// pdb: NiD3DShaderConstantMap::PerformOperatorSubtract | NiD3DShaderConstantMap.obj | retail, upstream name already matches, high
+// pdb params: pkShaderProgram, pkEntry, eType1, eType2, bInverse, bTranspose
+int __stdcall NiD3DShaderConstantMap_PerformOperatorSubtract(ConstantTarget* pkShaderProgram, int pkEntry, int eType1, int eType2, int bInverse, int bTranspose) {
+    switch (eType1) {
         case 3:
         case 4:
-            switch (typeB) {
+            switch (eType2) {
                 case 3:
                 case 4: {
                     Vec4 v;
@@ -14742,7 +14845,7 @@ int __stdcall NiD3DShaderConstantMap_PerformOperatorSubtract(ConstantTarget* tar
                     v.z = ShaderSubtractData::DAT_0126f8a0.z - ShaderSubtractData::DAT_0126f8b0.z;
                     v.w = ShaderSubtractData::DAT_0126f8a0.w - ShaderSubtractData::DAT_0126f8b0.w;
                     ShaderSubtractData::DAT_0126f900 = v;
-                    return target->SetConstant(reg, &ShaderSubtractData::DAT_0126f900.x, 0) ? 0 : 0x50;
+                    return pkShaderProgram->SetConstant(pkEntry, &ShaderSubtractData::DAT_0126f900.x, 0) ? 0 : 0x50;
                 }
                 case 7:
                 case 10:
@@ -14750,26 +14853,26 @@ int __stdcall NiD3DShaderConstantMap_PerformOperatorSubtract(ConstantTarget* tar
                     ShaderSubtractData::DAT_0126f900.y = ShaderSubtractData::DAT_0126f8a0.x - ShaderSubtractData::DAT_0126f8b0.y;
                     ShaderSubtractData::DAT_0126f900.z = ShaderSubtractData::DAT_0126f8a0.x - ShaderSubtractData::DAT_0126f8b0.z;
                     ShaderSubtractData::DAT_0126f900.w = ShaderSubtractData::DAT_0126f8a0.x - ShaderSubtractData::DAT_0126f8b0.w;
-                    return target->SetConstant(reg, &ShaderSubtractData::DAT_0126f900.x, 0) ? 0 : 0x50;
+                    return pkShaderProgram->SetConstant(pkEntry, &ShaderSubtractData::DAT_0126f900.x, 0) ? 0 : 0x50;
             }
             break;
         case 7:
         case 10:
-            switch (typeB) {
+            switch (eType2) {
                 case 3:
                 case 4:
                     ShaderSubtractData::DAT_0126f900.x = ShaderSubtractData::DAT_0126f8a0.x - ShaderSubtractData::DAT_0126f8b0.x;
                     ShaderSubtractData::DAT_0126f900.y = ShaderSubtractData::DAT_0126f8a0.y - ShaderSubtractData::DAT_0126f8b0.x;
                     ShaderSubtractData::DAT_0126f900.z = ShaderSubtractData::DAT_0126f8a0.z - ShaderSubtractData::DAT_0126f8b0.x;
                     ShaderSubtractData::DAT_0126f900.w = ShaderSubtractData::DAT_0126f8a0.w - ShaderSubtractData::DAT_0126f8b0.x;
-                    return target->SetConstant(reg, &ShaderSubtractData::DAT_0126f900.x, 0) ? 0 : 0x50;
+                    return pkShaderProgram->SetConstant(pkEntry, &ShaderSubtractData::DAT_0126f900.x, 0) ? 0 : 0x50;
                 case 7:
                 case 10:
                     ShaderSubtractData::DAT_0126f900.x = ShaderSubtractData::DAT_0126f8a0.x - ShaderSubtractData::DAT_0126f8b0.x;
                     ShaderSubtractData::DAT_0126f900.y = ShaderSubtractData::DAT_0126f8a0.y - ShaderSubtractData::DAT_0126f8b0.y;
                     ShaderSubtractData::DAT_0126f900.z = ShaderSubtractData::DAT_0126f8a0.z - ShaderSubtractData::DAT_0126f8b0.z;
                     ShaderSubtractData::DAT_0126f900.w = ShaderSubtractData::DAT_0126f8a0.w - ShaderSubtractData::DAT_0126f8b0.w;
-                    return target->SetConstant(reg, &ShaderSubtractData::DAT_0126f900.x, 0) ? 0 : 0x50;
+                    return pkShaderProgram->SetConstant(pkEntry, &ShaderSubtractData::DAT_0126f900.x, 0) ? 0 : 0x50;
             }
             break;
     }
@@ -14803,13 +14906,15 @@ extern "C" {
 // Computes a divided matrix or vector from DAT_0126f820/DAT_0126f8a0 by DAT_0126f8b0, optionally inverting/transposing, then calls target->SetConstant.
 // @fnv 0x00e82e70
 // src: COMMUNITY 0x00e82e70
-int __stdcall NiD3DShaderConstantMap_PerformOperatorDivide(ConstantTarget* target, int aiRegister, int type1, int type2, bool abInverse, bool abTranspose) {
-    switch (type1) {
+// pdb: NiD3DShaderConstantMap::PerformOperatorDivide | NiD3DShaderConstantMap.obj | retail, upstream name already matches, high
+// pdb params: pkShaderProgram, pkEntry, eType1, eType2, bInverse, bTranspose
+int __stdcall NiD3DShaderConstantMap_PerformOperatorDivide(ConstantTarget* pkShaderProgram, int pkEntry, int eType1, int eType2, bool bInverse, bool bTranspose) {
+    switch (eType1) {
     case 9: {
-        if (type2 < 3) {
+        if (eType2 < 3) {
             return 1;
         }
-        if (type2 > 4) {
+        if (eType2 > 4) {
             return 1;
         }
         S00e82e70_D3DXMATRIX mat;
@@ -14832,18 +14937,18 @@ int __stdcall NiD3DShaderConstantMap_PerformOperatorDivide(ConstantTarget* targe
         mat._44 = DAT_0126f820._44 * inv;
         DAT_0126f8c0 = mat;
 
-        if (abInverse) {
+        if (bInverse) {
             D3DXMatrixInverse(&DAT_0126f8c0, 0, &DAT_0126f8c0);
         }
-        if (abTranspose) {
+        if (bTranspose) {
             D3DXMatrixTranspose(&DAT_0126f8c0, &DAT_0126f8c0);
         }
-        return target->SetConstant(aiRegister, (const float*)&DAT_0126f8c0, 0) ? 0 : 0x50;
+        return pkShaderProgram->SetConstant(pkEntry, (const float*)&DAT_0126f8c0, 0) ? 0 : 0x50;
     }
 
     case 7:
     case 10:
-        switch (type2) {
+        switch (eType2) {
         case 3:
         case 4: {
             float inv = 1.0f / ShaderDivideDetail::DAT_0126f8b0.x;
@@ -14851,7 +14956,7 @@ int __stdcall NiD3DShaderConstantMap_PerformOperatorDivide(ConstantTarget* targe
             ShaderDivideDetail::DAT_0126f900.y = ShaderDivideDetail::DAT_0126f8a0.y * inv;
             ShaderDivideDetail::DAT_0126f900.z = ShaderDivideDetail::DAT_0126f8a0.z * inv;
             ShaderDivideDetail::DAT_0126f900.w = ShaderDivideDetail::DAT_0126f8a0.w * inv;
-            return target->SetConstant(aiRegister, (const float*)&ShaderDivideDetail::DAT_0126f900, 0) ? 0 : 0x50;
+            return pkShaderProgram->SetConstant(pkEntry, (const float*)&ShaderDivideDetail::DAT_0126f900, 0) ? 0 : 0x50;
         }
         case 7:
         case 10: {
@@ -14859,7 +14964,7 @@ int __stdcall NiD3DShaderConstantMap_PerformOperatorDivide(ConstantTarget* targe
             ShaderDivideDetail::DAT_0126f900.y = ShaderDivideDetail::DAT_0126f8a0.y / ShaderDivideDetail::DAT_0126f8b0.y;
             ShaderDivideDetail::DAT_0126f900.z = ShaderDivideDetail::DAT_0126f8a0.z / ShaderDivideDetail::DAT_0126f8b0.z;
             ShaderDivideDetail::DAT_0126f900.w = ShaderDivideDetail::DAT_0126f8a0.w / ShaderDivideDetail::DAT_0126f8b0.w;
-            return target->SetConstant(aiRegister, (const float*)&ShaderDivideDetail::DAT_0126f900, 0) ? 0 : 0x50;
+            return pkShaderProgram->SetConstant(pkEntry, (const float*)&ShaderDivideDetail::DAT_0126f900, 0) ? 0 : 0x50;
         }
         default:
             return 1;

@@ -7,6 +7,7 @@
 #include <string.h>
 
 // @fnv 0x005026b0
+// pdb: TESAmmo::TESAmmo | TESAmmo.obj | retail, upstream name already matches, high
 TESAmmo::TESAmmo()
 {
     SetFormType(ENUM_FORM_ID_AMMO_ID);
@@ -14,16 +15,19 @@ TESAmmo::TESAmmo()
 }
 
 // @fnv 0x005029f0
+// pdb: TESAmmo::InitializeData | TESAmmo.obj | retail, vtable slot, high
 void TESAmmo::ResetFormData()
 {
     memset(&data, 0, sizeof(data));
-    memset(&m_kProjectileData, 0, sizeof(m_kProjectileData));
-    m_kPrimaryString.Set(0, 0);
-    m_kSecondaryString.Set(0, 0);
+    memset(&NVdata, 0, sizeof(NVdata));
+    cDesc.Set(0, 0);
+    cAbbrev.Set(0, 0);
 }
 
 // Initializes the ammo's scriptable, destructible, model, pickup sound and projectile/effect forms, resolving each form ID and warning on failure.
 // @fnv 0x00502a50
+// pdb: TESAmmo::InitItem | TESAmmo.obj | retail, string-set bridge, high
+// pdb locals: itempInt, pAmmoEffect, pAmmoEffectList
 void TESAmmo::InitItem()
 {
     struct InitItemLocals
@@ -86,36 +90,39 @@ void TESAmmo::InitItem()
 }
 
 // @fnv 0x00502cd0
-bool TESAmmo::LoadForm(TESFile* file)
+// pdb: TESAmmo::Load | TESAmmo.obj | retail, vtable slot, high
+// pdb params: apFile
+// pdb locals: chunkid, formid, pMessage, isize, pdata, tempint, itempint, ptemp
+bool TESAmmo::LoadForm(TESFile* apFile)
 {
-    unsigned char type = file->GetTESForm();
+    unsigned char type = apFile->GetTESForm();
     if (type != 41)
         return false;
     ((BSSimpleList<ActorCause*>*)((TESAmmoInitCalls*)this)->TESAmmo_GetAmmoEffectList())->RemoveAll();
-    LoadRecordHeader(file);
+    LoadRecordHeader(apFile);
     SetInitializationState(false);
     int chunk;
-    while (chunk = file->GetChunkID())
+    while (chunk = apFile->GetChunkID())
     {
         switch (chunk)
         {
         case 0x44494445: {
-            char* pEditorID = (char*)_alloca(file->GetChunkSize());
-            file->GetChunkData(pEditorID, 512);
+            char* pEditorID = (char*)_alloca(apFile->GetChunkSize());
+            apFile->GetChunkData(pEditorID, 512);
             SetEditorID_AtRuntime(pEditorID);
             break;
         }
         case 0x444e424f:
-            readOBNDSubRecord(file);
+            readOBNDSubRecord(apFile);
             break;
         case 0x4c4c5546:
-            TESFullNameLoader::LoadFullNameChunk(this, file);
+            TESFullNameLoader::LoadFullNameChunk(this, apFile);
             break;
         case 0x4c444f4d:
         case 0x54444f4d:
         case 0x44444f4d:
         case 0x44534f4d:
-            TESModel::LoadModelData(this, file);
+            TESModel::LoadModelData(this, apFile);
             break;
         case 0x53444f4d: {
             struct SwapLocals
@@ -123,72 +130,72 @@ bool TESAmmo::LoadForm(TESFile* file)
                 unsigned int size;
                 void* swap;
             } TextureChunk;
-            TextureChunk.size = file->GetChunkSize();
+            TextureChunk.size = apFile->GetChunkSize();
             TextureChunk.swap = _alloca(TextureChunk.size);
-            file->GetChunkData(TextureChunk.swap, TextureChunk.size);
-            ParseTextureSwapData(TextureChunk.swap, TextureChunk.size, ((TESFileFormVersion*)file)->GetFormVersion());
+            apFile->GetChunkData(TextureChunk.swap, TextureChunk.size);
+            UnpackTextureSwapChunkData(TextureChunk.swap, TextureChunk.size, ((TESFileFormVersion*)apFile)->GetFormVersion());
             break;
         }
         case 0x4e4f4349:
-            TESTextureLoader::ReadTextureData(this, file);
+            TESTextureLoader::ReadTextureData(this, apFile);
             break;
         case 0x4f43494d:
-            BGSMessageIcon::LoadMessageIconChunk(this, file);
+            BGSMessageIcon::LoadMessageIconChunk(this, apFile);
             break;
         case 0x49524353: {
             unsigned int script = 0;
-            file->GetChunkData(&script);
+            apFile->GetChunkData(&script);
             ((CombatProcedure*)((char*)this + 0x9c))->Initialize((CombatController*)script);
             TESScriptableForm::InitItem(this);
             break;
         }
         case 0x54534544:
         case 0x44545344:
-            BGSDestructibleObjectForm::LoadDestructibleData(this, file);
+            BGSDestructibleObjectForm::LoadDestructibleData(this, apFile);
             break;
         case 0x4d414e59: {
             unsigned int pickup = 0;
-            file->GetChunkData(&pickup);
+            apFile->GetChunkData(&pickup);
             ((CombatProcedure*)((char*)this + 0x90))->Initialize((CombatController*)pickup);
             break;
         }
         case 0x4d414e5a: {
             unsigned int putdown = 0;
-            file->GetChunkData(&putdown);
+            apFile->GetChunkData(&putdown);
             ((TESRegionGrassObject*)((char*)this + 0x90))->AssignLandTexture((TESLandTexture*)putdown);
             break;
         }
         case 0x41544144:
-            ((BGSImpactData*)this)->ReadTypedData(file, &data, 8);
+            ((BGSImpactData*)this)->ReadTypedData(apFile, &data, 8);
             break;
         case 0x32544144:
-            file->GetChunkData(&m_kProjectileData, 20);
-            if (file->IsEndianConversionRequired())
-                ((TESAmmoNVEndian*)&m_kProjectileData)->SwapEndianFields();
+            apFile->GetChunkData(&NVdata, 20);
+            if (apFile->IsEndianConversionRequired())
+                ((TESAmmoNVEndian*)&NVdata)->SwapEndianFields();
             break;
         case 0x4d414e4f: {
-            char* pDescription = (char*)_alloca(file->GetChunkSize());
-            file->GetChunkData(pDescription, 0);
-            m_kPrimaryString.Set(pDescription, 0);
+            char* pDescription = (char*)_alloca(apFile->GetChunkSize());
+            apFile->GetChunkData(pDescription, 0);
+            cDesc.Set(pDescription, 0);
             break;
         }
         case 0x4d414e51: {
-            char* pAbbreviation = (char*)_alloca(file->GetChunkSize());
-            file->GetChunkData(pAbbreviation, 0);
-            m_kSecondaryString.Set(pAbbreviation, 0);
+            char* pAbbreviation = (char*)_alloca(apFile->GetChunkSize());
+            apFile->GetChunkData(pAbbreviation, 0);
+            cAbbrev.Set(pAbbreviation, 0);
             break;
         }
         case 0x4c494352: {
             unsigned int effect = 0;
-            file->GetChunkData(&effect);
+            apFile->GetChunkData(&effect);
             ((BSSimpleList<ScriptVariableInfo*>*)((TESAmmoInitCalls*)this)->TESAmmo_GetAmmoEffectList())
                 ->AddTail((ScriptVariableInfo*)effect);
             break;
         }
         }
-        if (chunk == 0x41544144 && file->IsEndianConversionRequired())
+        if (chunk == 0x41544144 && apFile->IsEndianConversionRequired())
             ((EncounterZoneData*)&data)->Endian();
-        if (!file->NextChunk())
+        if (!apFile->NextChunk())
             break;
     }
     return true;
@@ -219,6 +226,7 @@ struct FUN_00503240_shell
 
 // Byte-swaps the 4-byte values at offsets 8 and 0x10 of this object via BSEndian.
 // @fnv 0x00503240
+// pdb: AMMO_DATA_NV::Endian | TESAmmo.obj | debug, object-file run extension, low
 void FUN_00503240_shell::SwapEndianFields()
 {
     BSEndian(reinterpret_cast<int*>(reinterpret_cast<char*>(this) + 8), EndianSizeTag<4>());
@@ -235,6 +243,8 @@ struct FUN_00504420_shell
 // Calls FUN_00484c50 on this and FUN_0048ea10 on the object at this+0x78, passing the same two flags.
 // @fnv 0x00504420
 // src: XBOX_PDB 0x00504420
+// pdb: TESCaravanMoney::LoadGame | TESCaravan.obj | retail, vtable slot, high
+// pdb params: aiFlags, aiCurrentFlags
 void __thiscall FUN_00504420_shell::TESAmmo_LoadGame(unsigned int aiFlags, unsigned int aiCurrentFlags)
 {
     TESForm_LoadGame(aiFlags, aiCurrentFlags);
@@ -259,6 +269,9 @@ struct FUN_0048ea40_holder
 // Forwards aiFlags to the method at offset 0 and to the method at offset 0x78 of this object.
 // @fnv 0x00504450
 // src: XBOX_PDB 0x00504450
+// pdb: TESCaravanMoney::SaveGame | TESCaravan.obj | retail, vtable slot, medium
+// pdb note: debug build links it to TESCasinoChips::LoadGame
+// pdb params: aiFlags
 void FUN_00504450_shell::TESAmmo_SaveGame(unsigned int aiFlags)
 {
     reinterpret_cast<FUN_00484d60_holder*>(this)->SaveIfChanged(aiFlags);
@@ -276,14 +289,16 @@ public:
 };
 struct FUN_00503a40_shell : TESForm
 {
-    void LoadGame(BGSLoadFormBuffer* buffer);
+    void LoadGame(BGSLoadFormBuffer* apLoadGameBuffer);
 };
 
 // @fnv 0x00503a40
-void FUN_00503a40_shell::LoadGame(BGSLoadFormBuffer* buffer)
+// pdb: TESCaravanMoney::LoadGame | TESCaravan.obj | retail, vtable slot, high
+// pdb params: aiFlags, aiCurrentFlags
+void FUN_00503a40_shell::LoadGame(BGSLoadFormBuffer* apLoadGameBuffer)
 {
-    TESForm::LoadGame(buffer);
-    ((TESValueFormLoadGame_tesammo*)(this) + 0x78)->LoadGame(buffer);
+    TESForm::LoadGame(apLoadGameBuffer);
+    ((TESValueFormLoadGame_tesammo*)(this) + 0x78)->LoadGame(apLoadGameBuffer);
 }
 
 namespace fnv_00503210 {
@@ -298,6 +313,7 @@ struct Unk
 // Calls BSEndian on this object to byte-swap it as a 2-byte value.
 // @fnv 0x00503210
 // src: XBOX_PDB 0x00503210
+// pdb: QuestPerkEntryData::Endian | BGSPerk.obj | debug, upstream name already matches, high
 void Unk::QuestPerkEntryData_Endian()
 {
     BSEndian((int*)this, EndianSizeTag<2>());
@@ -320,6 +336,9 @@ struct FUN_005039f0_class
 };
 // @fnv 0x005039f0
 // src: XBOX_PDB 0x005039f0
+// pdb: TESCaravanMoney::GetSaveSize | TESCaravan.obj | retail, vtable slot, high
+// pdb params: aiFlags
+// pdb locals: isize
 unsigned short FUN_005039f0_class::TESAmmo_GetSaveSize(unsigned int aiFlags)
 {
     unsigned short isize;
@@ -344,6 +363,9 @@ struct FUN_0059b850_shell
 // Forwards aiFlags to FUN_00484c20 on m0 and to FUN_0048e9e0 on m78.
 // @fnv 0x0059b850
 // src: XBOX_PDB 0x0059b850
+// pdb: TESCaravanMoney::SaveGame | TESCaravan.obj | retail, vtable slot, medium
+// pdb note: debug build links it to TESCaravanMoney::LoadGame
+// pdb params: aiFlags
 void FUN_0059b850_shell::TESAmmo_SaveGame_0059b850(unsigned int aiFlags)
 {
     m0.TESForm_SaveGame(aiFlags);
@@ -458,6 +480,7 @@ struct AmmoDataNV
 
 // Destructor for the ammo object; the body is empty and member destructors run implicitly.
 // @fnv 0x00502880
+// pdb: TESAmmo::~TESAmmo | TESAmmo.obj | retail, upstream name already matches, high
 TESAmmo::~TESAmmo()
 {}
 
@@ -472,30 +495,33 @@ struct AmmoMethods : TESAmmo
     AmmoCharacteristics* GetBackTexture();
     AmmoProjectileData* hkpAabbPhantom_getAabb();
     AmmoEffectList* TESAmmo_GetAmmoEffectList();
-    bool TESAmmo_Compare(TESForm* form);
+    bool TESAmmo_Compare(TESForm* apCompare);
 };
 
 // @fnv 0x00503670
 // src: XBOX_PDB 0x00503670
-bool AmmoMethods::TESAmmo_Compare(TESForm* form)
+// pdb: TESAmmo::Compare | TESAmmo.obj | retail, upstream name already matches, high
+// pdb params: apCompare
+// pdb locals: pComp, ammoeffects, copyammoeffects, pAmmoEffect, pAmmoEffectCopy
+bool AmmoMethods::TESAmmo_Compare(TESForm* apCompare)
 {
     TESAmmo* i;
     BSSimpleList<TESAmmoEffect*>* a;
     BSSimpleList<TESAmmoEffect*>* p;
     TESAmmoEffect* f;
     TESAmmoEffect* s;
-    i = dynamic_cast<TESAmmo*>(form);
+    i = dynamic_cast<TESAmmo*>(apCompare);
     if (!i)
         return true;
     if (TESForm_CompareAllComponents(i))
         return true;
     if (memcmp(&data, static_cast<AmmoMethods*>(i)->GetBackTexture(), 8))
         return true;
-    if (memcmp(&m_kProjectileData, static_cast<AmmoMethods*>(i)->hkpAabbPhantom_getAabb(), 20))
+    if (memcmp(&NVdata, static_cast<AmmoMethods*>(i)->hkpAabbPhantom_getAabb(), 20))
         return true;
-    if (reinterpret_cast<::BSStringT<char>*>(&m_kSecondaryString)->FUN_00501c90(&i->m_kSecondaryString, true))
+    if (reinterpret_cast<::BSStringT<char>*>(&cAbbrev)->FUN_00501c90(&i->cAbbrev, true))
         return true;
-    if (reinterpret_cast<::BSStringT<char>*>(&m_kPrimaryString)->FUN_00501c90(&i->m_kPrimaryString, true))
+    if (reinterpret_cast<::BSStringT<char>*>(&cDesc)->FUN_00501c90(&i->cDesc, true))
         return true;
     if (TESAmmo_GetAmmoEffectList()->FUN_005ae380() != static_cast<AmmoMethods*>(i)->TESAmmo_GetAmmoEffectList()->FUN_005ae380())
         return true;
@@ -530,7 +556,7 @@ struct AmmoSaveCalls
     void FUN_0047a240(unsigned int);
     void Save_0048cca0();
     void FUN_00477f20();
-    void LogFormIDs();
+    void BGSPickupPutdownSounds_Save();
     void QuestPerkEntryData_Endian();
     void TESForm___SaveData(void*, unsigned int);
     unsigned int BSStringT_char_Length();
@@ -555,6 +581,8 @@ struct AmmoSave
     void Save();
 };
 // @fnv 0x00503280
+// pdb: TESAmmo::Save | TESAmmo.obj | retail, vtable slot, high
+// pdb locals: psaveProjectile, psaveAmmoConsumed, pAmmoEffect, pAmmoEffectList, itempint
 void AmmoSave::Save()
 {
     reinterpret_cast<AmmoSaveCalls*>(this)->BeginFormRecord();
@@ -564,7 +592,7 @@ void AmmoSave::Save()
     reinterpret_cast<AmmoSaveCalls&>(messageIcon).FUN_0047a240(0x4f43494d);
     reinterpret_cast<AmmoSaveCalls&>(script).Save_0048cca0();
     reinterpret_cast<AmmoSaveCalls&>(destructible).FUN_00477f20();
-    reinterpret_cast<AmmoSaveCalls&>(sounds).LogFormIDs();
+    reinterpret_cast<AmmoSaveCalls&>(sounds).BGSPickupPutdownSounds_Save();
     if (TESForm_QEndianSwapOnSave())
         reinterpret_cast<AmmoSaveCalls&>(data).QuestPerkEntryData_Endian();
     reinterpret_cast<AmmoSaveCalls*>(this)->TESForm___SaveData(&data, 8);
@@ -632,21 +660,24 @@ struct FUN_00503510_shell : public TESAmmo
     void* GetBackTexture();
     void FUN_004f15a0(int iType);
     AmmoEffectNode503* TESAmmo_GetAmmoEffectList();
-    void CopyFromAmmo(TESForm* pkForm);
+    void CopyFromAmmo(TESForm* apCopy);
 };
 
 // @fnv 0x00503510
-void FUN_00503510_shell::CopyFromAmmo(TESForm* pkForm)
+// pdb: TESAmmo::Copy | TESAmmo.obj | retail, vtable slot, high
+// pdb params: apCopy
+// pdb locals: plist, pCopy, pComp
+void FUN_00503510_shell::CopyFromAmmo(TESForm* apCopy)
 {
-    FUN_00503510_shell* pSourceAmmo = (FUN_00503510_shell*)dynamic_cast<TESAmmo*>(pkForm);
+    FUN_00503510_shell* pSourceAmmo = (FUN_00503510_shell*)dynamic_cast<TESAmmo*>(apCopy);
     if (!pSourceAmmo)
         return;
-    TESForm_CopyAllComponents(pkForm);
+    TESForm_CopyAllComponents(apCopy);
     __memcpy(&data, pSourceAmmo->GetBackTexture(), 8);
-    __memcpy(&m_kProjectileData, hkpAabbPhantom_getAabb((char*)pSourceAmmo), 0x14);
+    __memcpy(&NVdata, hkpAabbPhantom_getAabb((char*)pSourceAmmo), 0x14);
     FUN_004f15a0(::FNV_GetFormType(pSourceAmmo));
-    m_kPrimaryString.Set(((AmmoString503*)&pSourceAmmo->m_kPrimaryString)->Modelloader_GetReferencedThis(), 0);
-    m_kSecondaryString.Set(((AmmoString503*)&pSourceAmmo->m_kSecondaryString)->Modelloader_GetReferencedThis(), 0);
+    cDesc.Set(((AmmoString503*)&pSourceAmmo->cDesc)->Modelloader_GetReferencedThis(), 0);
+    cAbbrev.Set(((AmmoString503*)&pSourceAmmo->cAbbrev)->Modelloader_GetReferencedThis(), 0);
     while (!FUN_008256d0(TESAmmo_GetAmmoEffectList()))
         TESAmmo_GetAmmoEffectList()->FUN_0063f7b0();
     AmmoEffectNode503* pkNodeCur = pSourceAmmo->TESAmmo_GetAmmoEffectList();
@@ -664,7 +695,7 @@ int __cdecl FUN_00406d50(char* pcDest, unsigned int uiSize, const char* pcSrc);
 
 struct AmmoEffect503
 {
-    void FormatDescription(char* pcBuffer, unsigned int uiSize);
+    void TESAmmoEffect_BuildMenuString(char* astrResult, unsigned int auiResultLen);
 };
 
 struct AmmoEffectNode503
@@ -675,35 +706,38 @@ struct AmmoEffectNode503
 
 struct AmmoEffectList503 : public TESAmmoInitCalls
 {
-    void TESAmmo_BuildMenuString(char* pcBuffer, unsigned int uiSize);
+    void TESAmmo_BuildMenuString(char* astrResult, unsigned int auiResultLen);
 };
 
 // @fnv 0x00503a70
 // src: XBOX_PDB 0x00503a70
-void AmmoEffectList503::TESAmmo_BuildMenuString(char* pcOutBuffer, unsigned int uiBufferSize)
+// pdb: TESAmmo::BuildMenuString | TESAmmo.obj | retail, upstream name already matches, high
+// pdb params: astrResult, auiResultLen
+// pdb locals: bNeedNewLine, pAmmoEffectList, strtemp, pEffect
+void AmmoEffectList503::TESAmmo_BuildMenuString(char* astrResult, unsigned int auiResultLen)
 {
     bool bAppended = false;
-    pcOutBuffer[0] = 0;
+    astrResult[0] = 0;
     char acName[256];
     acName[0] = 0;
 
     AmmoEffectNode503* pkNode = (AmmoEffectNode503*)TESAmmo_GetAmmoEffectList();
     while (pkNode && *pkNode->FUN_006815c0())
     {
-        (*pkNode->FUN_006815c0())->FormatDescription(acName, 0x100);
+        (*pkNode->FUN_006815c0())->TESAmmoEffect_BuildMenuString(acName, 0x100);
         AmmoEffect503* pkEffect = *pkNode->FUN_006815c0();
         pkNode = pkNode->FUN_00726070();
-        pkEffect->FormatDescription(acName, 0x100);
+        pkEffect->TESAmmoEffect_BuildMenuString(acName, 0x100);
         if (BSStringLength(acName) > 0)
         {
             if (bAppended)
             {
-                FUN_00406d50(pcOutBuffer, uiBufferSize, "\n");
-                FUN_00406d50(pcOutBuffer, uiBufferSize, acName);
+                FUN_00406d50(astrResult, auiResultLen, "\n");
+                FUN_00406d50(astrResult, auiResultLen, acName);
             }
             else
             {
-                FUN_00406d50(pcOutBuffer, uiBufferSize, acName);
+                FUN_00406d50(astrResult, auiResultLen, acName);
                 bAppended = true;
             }
         }
@@ -716,5 +750,6 @@ struct FUN_00502850
     virtual ~FUN_00502850();
 };
 // @fnv 0x00502850
+// pdb: TESAmmo::`scalar deleting destructor' | TESAmmo.obj | retail, vtable slot, high
 FUN_00502850::~FUN_00502850()
 {}

@@ -137,6 +137,7 @@ class NiTPointerList_BGSDecalEmitter___ : public NiTPointerListBase_NiTPointerAl
 #pragma pack(pop)
 FNV_STATIC_ASSERT(sizeof(NiTPointerList_BGSDecalEmitter___) == 12);
 #pragma pack(push, 4)
+// pdb: class BGSDecalManager, size 0x28, 6 members
 class BGSDecalManager
 {
   public:
@@ -147,7 +148,7 @@ class BGSDecalManager
     NiTPointerList_BGSDecalEmitter___ BGSDecalEmitterList;                   // +0x14, 12 bytes
     DecalNiPointer<BSShaderAccumulator> m_spShaderAccumulator;                    // +0x20, 4 bytes
     DecalNiPointer<NiCamera> m_pDecalCamera;                                      // +0x24, 4 bytes
-    void RenderDecals();
+    void UpdateSimpleDecals();
     void RemoveDecal(BSTempEffectSimpleDecal*);
     // void __cdecl BGSDecalManager::*()
     // BGSDecalManager* __cdecl BGSDecalManager::*()

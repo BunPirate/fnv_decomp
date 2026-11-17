@@ -14,18 +14,18 @@ void Object_CollectPenetratingBodyPair();
 void staticGetClosestPoints();
 void Object_ProcessEntries_00daf8e0();
 void Object_InitializeAgentFunctionTable_00d3ab60(void* apObject);
-void __cdecl CreateAllocatedObject();
+void __cdecl hkpCapsuleTriangleAgent_createTriangleCapsuleAgent();
 void __cdecl Object_UpdateFields_00d3ac80();
-void __cdecl Object_UpdateFields_00d3b1a0();
-void __cdecl Object_UpdateFields_00d3b220();
+void __cdecl hkpSymmetricAgentLinearCast_hkpCapsuleTriangleAgent_staticGetPenetrations();
+void __cdecl hkpSymmetricAgentLinearCast_hkpCapsuleTriangleAgent_staticGetClosestPoints();
 void __cdecl Hkpcapsuletriangleagent_UpdateState_00d3ab90(void** apTable);
-void __cdecl CreateTriAgent2();
-void __cdecl Object_UpdateFields_00d38ac0();
-void __cdecl hkpMultiSphereTriangleAgent_UpdateState_00d38ed0();
+void __cdecl hkpMultiSphereTriangleAgent_createTriangleMultiSphereAgent();
+void __cdecl hkpSymmetricAgentLinearCast_hkpMultiSphereTriangleAgent_staticGetPenetrations();
+void __cdecl hkpSymmetricAgentLinearCast_hkpMultiSphereTriangleAgent_staticGetClosestPoints();
 void __cdecl Object_UpdateFields_00d3ac80();
 void __cdecl CreateTriAgent();
 void __cdecl hkpMultiSphereTriangleAgent_staticGetPenetrations();
-void __cdecl Object_ProcessEntries_00d386c0();
+void __cdecl hkpMultiSphereTriangleAgent_staticGetClosestPoints();
 void __cdecl Object_ProcessEntries_00daf8e0();
 typedef void(__cdecl* S_00d389f0_Func)();
 struct S_00d389f0_AgentFuncs
@@ -41,7 +41,7 @@ struct S_00d389f0_Dispatcher
 {
     void AppendRecordAndRegisterAgents(S_00d389f0_AgentFuncs& f, int typeA, int typeB);
 };
-void __cdecl hkpMultiSphereTriangleAgent_staticGetPenetrations_UpdateState_00d389f0(S_00d389f0_Dispatcher* dispatcher);
+void __cdecl hkpMultiSphereTriangleAgent_registerAgent(S_00d389f0_Dispatcher* dispatcher);
 struct ReceiverBase
 {
     virtual void Release(unsigned int value);
@@ -60,7 +60,7 @@ struct FUN_00d39930_class : ReceiverBase
 {
     NoteDispatcher* dispatcher;
     unsigned short receiverIds[3];
-    void __thiscall DispatchToReceivers(void* value);
+    void __thiscall DispatchToReceivers(void* constraintOwner);
 };
 extern const int DAT_010ce7fc;
 struct CallbackState
@@ -70,7 +70,7 @@ struct CallbackState
     int m_iValue;
 };
 void __cdecl staticGetClosestPoints(void* apFirst, void* apSecond, void* apThird, CallbackState* apState);
-void __cdecl Object_UpdateFields_00d3b220(void* apOne, void* apTwo, void* apThree, int aiValue);
+void __cdecl hkpSymmetricAgentLinearCast_hkpCapsuleTriangleAgent_staticGetClosestPoints(void* bodyA, void* bodyB, void* input, int collector);
 hkMemoryRouter* __cdecl hkMemoryRouter_getInstance() throw();
 void __cdecl ComputeInverseLengths(void* value, void* self);
 extern char DAT_010ceefc[];
@@ -87,7 +87,7 @@ struct FUN_00d39980_cls
     unsigned short m_w12;
     void* m_sub;
 };
-FUN_00d39980_cls* __cdecl CreateAllocatedObject(int a1, int a2, int a3, int a4);
+FUN_00d39980_cls* __cdecl hkpCapsuleTriangleAgent_createTriangleCapsuleAgent(int bodyA, int bodyB, int input, int mgr);
 extern const __m128 DAT_010c4c00;
 struct Elem_d3b260
 {
@@ -123,7 +123,7 @@ struct Buffer_d3b260
 struct Agent_d3b260
 {
     void hkpCapsuleTriangleAgent_processCollision(int b, int a, int c, Buffer_d3b260* buf);
-    void hkpSymmetricAgentLinearCast_hkpCapsuleTriangleAgent_processCollision(int a, int b, int c, Buffer_d3b260* buf);
+    void hkpSymmetricAgentLinearCast_hkpCapsuleTriangleAgent_processCollision(int bodyA, int bodyB, int input, Buffer_d3b260* result);
 };
 struct __declspec(align(16)) FourWord
 {
@@ -192,7 +192,7 @@ struct Mat4
 {
     Vec4 row0, row1, row2, row3;
 };
-void __cdecl hkCollideCapsuleUtilCapsVsTri(void* a, float b, void* c, float d, void* e, float f, int g, int h, int i);
+void __cdecl hkCollideCapsuleUtilCapsVsTri(void* capsAPoints, float capsARadius, void* triVertices, float triBRadius, void* cache, float collisionTolerance, int searchManifold, int points, int featuresOut);
 static __forceinline void transform(Vec4* out, const char* shape, int count, const Mat4* m)
 {
     Vec4 p0 = m->row0;
@@ -216,7 +216,7 @@ static __forceinline void transform(Vec4* out, const char* shape, int count, con
         *(__m128*)&out[i] = _mm_add_ps(a, b);
     }
 }
-void __cdecl TransformAndDispatch(char* a1, char* a2, char* pExtra, void* a4, int a5, int a6);
+void __cdecl hkpCapsuleTriangleAgent_getClosestPointsPublic(char* bodyA, char* bodyB, char* input, void* cache, int searchManifold, int points);
 extern "C" __m128 _mm_sub_ps(__m128 a, __m128 b);
 extern "C" __m128 _mm_add_ss(__m128 a, __m128 b);
 extern "C" void _mm_store_ss(float* p, __m128 a);
@@ -353,7 +353,7 @@ struct CollisionWorkspace
     __m128 la[2];
     __m128 lb[3];
 };
-int __cdecl hkpCapsuleTriangleAgent_getClosestPoint(Obj* a, Obj* b, Par* volatile p, void* q, Contact* out);
+int __cdecl hkpCapsuleTriangleAgent_getClosestPoint(Obj* bodyA, Obj* bodyB, Par* volatile p, void* cache, Contact* cpoint);
 #include <windows.h>
 #include "../../../../../../../include/hkMonitorStream.h"
 #include "../../../../../../../include/hkMonitorStream.h"
@@ -393,8 +393,8 @@ struct Context
     __m128 capsule[2];
     __m128 triangle[3];
 };
-extern "C" void __cdecl hkCollideCapsuleUtilCapsVsTri(void* out1, float fx, void* out2, float fy, void* p, float afDepth, int zero,
-                                     HitRec* hit, int zero2);
+extern "C" void __cdecl hkCollideCapsuleUtilCapsVsTri(void* capsAPoints, float capsARadius, void* triVertices, float triBRadius, void* cache, float collisionTolerance, int searchManifold,
+                                     HitRec* points, int featuresOut);
 struct CollisionInput
 {
     int unk00;
@@ -518,7 +518,7 @@ void __cdecl hkCollideCapsuleUtilCapsVsTri(hkVector4*, float, hkVector4*, float,
 struct CollisionAgent
 {
     unsigned int unk00, unk04, unk08, unk0c, unk10, cache14;
-    void hkpCapsuleTriangleAgent_getClosestPoints(const BodyRecord& a, const BodyRecord& b, const CollisionInput& input, Collector* output);
+    void hkpCapsuleTriangleAgent_getClosestPoints(const BodyRecord& bodyA, const BodyRecord& bodyB, const CollisionInput& input, Collector* collector);
 };
 
 typedef void(__cdecl* FnA_d3a280)(void*, void*, void*, CallbackState*);
@@ -537,6 +537,9 @@ __declspec(noinline) void Object_InitializeAgentFunctionTable_00d3ab60(void* p)
 
 // @fnv 0x00d3abc0
 // src: GUESS 0x00d3abc0 (confidence: low)
+// pdb: hkpCapsuleTriangleAgent::registerAgent | hkpCapsuleTriangleAgent.obj | retail, call graph, medium
+// pdb params: dispatcher
+// pdb locals: af
 void __cdecl Object_UpdateFields_00d3abc0(S_00d389f0_Dispatcher* obj)
 {
     S_00d389f0_AgentFuncs s;
@@ -561,7 +564,7 @@ struct FNVHookStruct
 };
 struct FNVHookOwner
 {
-    void AddSpawnEntry(void* s, int a, int b);
+    void hkpCollisionDispatcher_registerCollisionAgent2(void* f, int typeA, int typeB);
 };
 // @fnv 0x00d3ac20
 // src: GUESS 0x00d3ac20 (confidence: low)
@@ -571,9 +574,9 @@ void Object_UpdateFields_00d3ac20(FNVHookOwner* p)
     h.unk10 = 0;
     h.unk11 = 0;
     Hkpcapsuletriangleagent_UpdateState_00d3ab90((void**)&h);
-    p->AddSpawnEntry(&h, 3, 5);
+    p->hkpCollisionDispatcher_registerCollisionAgent2(&h, 3, 5);
     h.unk10 = 0;
     h.unk11 = 0;
     Object_InitializeAgentFunctionTable_00d3ab60(&h);
-    p->AddSpawnEntry(&h, 5, 3);
+    p->hkpCollisionDispatcher_registerCollisionAgent2(&h, 5, 3);
 }

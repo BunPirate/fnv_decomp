@@ -22,14 +22,15 @@ struct Record
 {
     int unk00;
     unsigned short value;
-    void ClearReferences();
+    void hkaAnimationBinding_dtor();
     Record* FUN_00dfea70(unsigned int flags);
 };
 // Calls ClearReferences, and if flags has bit 1 set, notifies the manager from FUN_00c85750 with this record and its value; returns this.
 // @fnv 0x00dfea70
+// pdb: hkaAnimationBinding::`scalar deleting destructor' | hkaAnimationBindingClass.obj | retail, vtable slot, high
 Record* Record::FUN_00dfea70(unsigned int flags)
 {
-    ClearReferences();
+    hkaAnimationBinding_dtor();
     if (flags & 1)
     {
         Holder* holder = hkMemoryRouter_getInstance();
@@ -72,7 +73,9 @@ struct CalleeB
 };
 
 // @fnv 0x00dfe9e0
-void Record::ClearReferences()
+// src: XBOX_RETAIL_PDB 0x00dfe9e0
+// pdb: hkaAnimationBinding::~hkaAnimationBinding | hkaAnimationBindingClass.obj | retail, object-file gap fill, high
+void Record::hkaAnimationBinding_dtor()
 {
     ReclaimState* pState = reinterpret_cast<ReclaimState*>(this);
     Holder* pManagerHolder = hkMemoryRouter_getInstance();

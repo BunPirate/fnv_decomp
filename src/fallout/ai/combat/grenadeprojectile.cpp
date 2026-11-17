@@ -11,6 +11,7 @@
 
 // Returns true if the projectile's explosion detonates, or if it has an alt trigger and a positive explosion proximity.
 // @fnv 0x009bdf80
+// pdb: Projectile::GetIsMine | Projectile.obj | debug, object-file run extension, low
 bool GrenadeProjectile::IsProximityTriggered()
 {
     return GetProjectileBase()->GetHasExplosionDetonates() ||
@@ -19,6 +20,8 @@ bool GrenadeProjectile::IsProximityTriggered()
 
 // Constructs the object via the base constructor with abFlag, clears bFlag150, and sets the form type to 0x3e.
 // @fnv 0x009b3fa0
+// pdb: GrenadeProjectile::GrenadeProjectile | GrenadeProjectile.obj | debug, call graph, medium
+// pdb params: abAdd
 GrenadeProjectile::GrenadeProjectile(bool abFlag) : Projectile(abFlag)
 {
     bFlag150 = false;
@@ -28,9 +31,12 @@ GrenadeProjectile::GrenadeProjectile(bool abFlag) : Projectile(abFlag)
 // Calls FUN_009c43e0 with the given arguments, then invokes HandleTracer, returning the result of the first call.
 // @fnv 0x009b4700
 // src: COMMUNITY 0x009b4700
-bool GrenadeProjectile::TurnOff(int aiArg, bool b)
+// pdb: GrenadeProjectile::TurnOff | GrenadeProjectile.obj | retail, upstream name already matches, high
+// pdb params: apActionActor, abSilent
+// pdb locals: bsuccess
+bool GrenadeProjectile::TurnOff(int apActionActor, bool abSilent)
 {
-    bool r = Projectile_DisarmPlacedExplosives(aiArg, b);
+    bool r = Projectile_DisarmPlacedExplosives(apActionActor, abSilent);
     HandleTracer();
     return r;
 }
@@ -38,6 +44,7 @@ bool GrenadeProjectile::TurnOff(int aiArg, bool b)
 extern double _gModifierZero;
 // @fnv 0x009b4c70
 // src: COMMUNITY 0x009b4c70
+// pdb: GrenadeProjectile::ReportHavokDeactivation | GrenadeProjectile.obj | retail, upstream name already matches, high
 void GrenadeProjectile::ReportHavokDeactivation()
 {
     if (GetProjectileBase()->GetHasExplosionDetonates() ||
@@ -50,6 +57,8 @@ void GrenadeProjectile::ReportHavokDeactivation()
 
 // @fnv 0x009b4d10
 // src: COMMUNITY 0x009b4d10
+// pdb: GrenadeProjectile::Revert | GrenadeProjectile.obj | retail, vtable slot, high
+// pdb params: apLoadGameBuffer
 void __thiscall GrenadeProjectile::RevertBGS_009b4d10(BGSLoadFormBuffer* apLoadGameBuffer)
 {
     Projectile::RevertBGS_009c58e0(apLoadGameBuffer);
@@ -66,6 +75,9 @@ extern TESObjectREFR* __cdecl GetReferenceFromNiAVObject(NiAVObject*);
 
 // If a1 is set and its object resolves, gets the reference and its source file list, then calls virtual slot 203 with them.
 // @fnv 0x009b4bf0
+// pdb: GrenadeProjectile::ReportCollision | GrenadeProjectile.obj | retail, object-file run extension, high
+// pdb params: arEvent
+// pdb locals: pbodyA, pcolA, ikey, prefA, contactNormal, pcollidable, prefB, pavA, contactPoint, pavB, pcollidee, pbodyB, pcolB
 void GrenadeProjectile::DispatchReferenceSourceFiles(ObjHelper* pObjHelper, void* a2, void* a3, void* a4, void* a5,
                                                   void* a6, void* a7)
 {
@@ -87,6 +99,7 @@ void GrenadeProjectile::DispatchReferenceSourceFiles(ObjHelper* pObjHelper, void
 
 // Enables or disables the node returned by GetNiNode based on whether flag 0x200 is set.
 // @fnv 0x009b46c0
+// pdb: GrenadeProjectile::Process3D | GrenadeProjectile.obj | retail, vtable slot, high
 void GrenadeProjectile::SetLightEnabled()
 {
     TESObjectREFR_SetLight_005726e0(GetNiNode(), !Projectile_IsFlagSet(0x200));
@@ -94,6 +107,8 @@ void GrenadeProjectile::SetLightEnabled()
 
 // Constructs the base object, clears bFlag150, and sets the form type to 0x3e.
 // @fnv 0x009b4020
+// pdb: GrenadeProjectile::GrenadeProjectile | GrenadeProjectile.obj | debug, object-file gap fill, medium
+// pdb params: apProjectileBase, apShooter, apFromWeapon, aOrigin, afZAngle, afXAngle
 GrenadeProjectile::GrenadeProjectile(void* a1, void* a2, void* a3, NiPoint3 aPoint, float a5, float a6)
     : Projectile((int)a1, (int)a2, (int)a3, reinterpret_cast<const NiPoint3&>(aPoint), a5, a6)
 {
@@ -266,13 +281,16 @@ struct GPRefVt
 };
 // Resolves the reference behind each contact body, picks the hit target and position/normal, calls HandleHit, and flags the contact when both bodies are present.
 // @fnv 0x009b4950
-void GrenadeProjectile::HandleContactHit(GPContact* apContact)
+// pdb: GrenadeProjectile::ReportCollision | GrenadeProjectile.obj | retail, object-file run extension, high
+// pdb params: arEvent
+// pdb locals: pbodyA, pcolA, ikey, prefA, contactNormal, pcollidable, prefB, pavA, contactPoint, pavB, pcollidee, pbodyB, pcolB
+void GrenadeProjectile::HandleContactHit(GPContact* arEvent)
 {
-    void* pCollA2 = hkpGetRigidBody(apContact->pBodyA->GetLastNode());
+    void* pCollA2 = hkpGetRigidBody(arEvent->pBodyA->GetLastNode());
     bhkCollisionObject* pbhkA8 = pCollA2 ? bhkCollisionObject::GetFromRigidBody((const hkpRigidBody*)pCollA2) : 0;
     NiAVObject* pNiA2 = pbhkA8 ? GetCollisionSceneObject(pbhkA8) : 0;
     TESObjectREFR* pRefA_ = pNiA2 ? GetReferenceFromNiAVObject(pNiA2) : 0;
-    void* pCollB3 = hkpGetRigidBody(apContact->pBodyB->GetLastNode());
+    void* pCollB3 = hkpGetRigidBody(arEvent->pBodyB->GetLastNode());
     bhkCollisionObject* pbhkB_ = pCollB3 ? bhkCollisionObject::GetFromRigidBody((const hkpRigidBody*)pCollB3) : 0;
     NiAVObject* pNiB = pbhkB_ ? GetCollisionSceneObject(pbhkB_) : 0;
     TESObjectREFR* pRefB = pNiB ? GetReferenceFromNiAVObject(pNiB) : 0;
@@ -284,28 +302,29 @@ void GrenadeProjectile::HandleContactHit(GPContact* apContact)
     if (pRefA_ && ((GPRefVt*)pRefA_)->Unk_89b())
     {
         kPTarget = pRefB;
-        SetNiPoint3FromHkVector4(kPos, *(const hkVector4*)apContact->pPoint->_ref_006815c0());
-        SetNiPoint3FromHkVector4(_kNormal, *(const hkVector4*)((TESForm*)apContact->pPoint)->GetSourceFiles());
+        SetNiPoint3FromHkVector4(kPos, *(const hkVector4*)arEvent->pPoint->_ref_006815c0());
+        SetNiPoint3FromHkVector4(_kNormal, *(const hkVector4*)((TESForm*)arEvent->pPoint)->GetSourceFiles());
         ((NiColor*)&_kNormal)->operator*=(-1.0f);
-        iShapeKey = (int)apContact->pBodyB->GetLastNode();
-        iBody5 = (int)((BSSimpleList<TESFile*>*)apContact->pBodyB)->GetNext();
+        iShapeKey = (int)arEvent->pBodyB->GetLastNode();
+        iBody5 = (int)((BSSimpleList<TESFile*>*)arEvent->pBodyB)->GetNext();
     }
     else if (pRefB && ((GPRefVt*)pRefB)->Unk_89b())
     {
         kPTarget = pRefA_;
-        SetNiPoint3FromHkVector4(kPos, *(const hkVector4*)((TESForm*)apContact->pPoint)->GetSourceFiles());
-        SetNiPoint3FromHkVector4(_kNormal, *(const hkVector4*)((TESForm*)apContact->pPoint)->GetSourceFiles());
-        iShapeKey = (int)apContact->pBodyA->GetLastNode();
-        iBody5 = (int)((BSSimpleList<TESFile*>*)apContact->pBodyA)->GetNext();
+        SetNiPoint3FromHkVector4(kPos, *(const hkVector4*)((TESForm*)arEvent->pPoint)->GetSourceFiles());
+        SetNiPoint3FromHkVector4(_kNormal, *(const hkVector4*)((TESForm*)arEvent->pPoint)->GetSourceFiles());
+        iShapeKey = (int)arEvent->pBodyA->GetLastNode();
+        iBody5 = (int)((BSSimpleList<TESFile*>*)arEvent->pBodyA)->GetNext();
     }
     ((void(__thiscall*)(GrenadeProjectile*, TESObjectREFR*, NiPoint3*, NiPoint3*, int, int, int))
         (*(void***)this)[203])(this, kPTarget, &kPos, &_kNormal, iShapeKey, iBody5, 0x24);
     if (kPTarget && kPTarget->IsActor() && pCollA2 && pCollB3)
-        apContact->iFlag = 1;
+        arEvent->iFlag = 1;
 }
 
 // Sets projectile flags based on the 0x400 test and owner cell checks, then calls FinishSetup.
 // @fnv 0x009b40d0
+// pdb: GrenadeProjectile::Initialize | GrenadeProjectile.obj | debug, object-file gap fill, medium
 void GrenadeProjectile::InitProjectileFlags()
 {
     SetProjFlag(4, true);
@@ -892,7 +911,7 @@ struct TargetSettings
 };
 extern TargetSettings DAT_011f2250;
 
-extern void __cdecl PlayMysteriousStrangerSound();
+extern void __cdecl FalloutAudio_MysteriousStrangerKillsTarget();
 
 extern Ref* __cdecl bhkEntity_Getbhk(int);
 
@@ -999,6 +1018,8 @@ struct ImpactProjectile : Ref
 
 // Iterates the hit list, applies impact effects to each hit's target, and marks the projectile as impacted.
 // @fnv 0x009c1b70
+// pdb: Projectile::ProcessImpacts | Projectile.obj | retail, vtable slot, high
+// pdb locals: btargetWasAlive, bprocessed, tempAutoEvent, impactList, b3dSwitched, pdata, pcollidee, pobj3D, pshooterActor, pbody, fextraDamage, fdamage, spdata, ptargetActor, ptargetCollidable
 bool ImpactProjectile::ProcessHits()
 {
 
@@ -1093,12 +1114,12 @@ bool ImpactProjectile::ProcessHits()
 
                         if (DAT_011f21e8 && DAT_011f21e8 == Projectile_GetShooter() && aTarget && aTarget->IsActor())
 
-                            PlayMysteriousStrangerSound();
+                            FalloutAudio_MysteriousStrangerKillsTarget();
 
                         if (DAT_011f21ec && DAT_011f21ec == Projectile_GetShooter() && aTarget && aTarget->IsActor() &&
                             aTarget->CheckFlag(0) && inverse)
 
-                            PlayMysteriousStrangerSound();
+                            FalloutAudio_MysteriousStrangerKillsTarget();
 
                         Ref* form = hit->itemID ? ((FormID*)hit->itemID)->TESDataHandler_GetWorldSpaceList() : 0;
 

@@ -67,6 +67,9 @@ public:
 #include "effectarchetype_decls.h"
 // Looks up the effect archetype's factory by the effect's archetype and creates an ActiveEffect via it, then passes source to the created effect.
 // @fnv 0x00403ab0
+// pdb: EffectArchetypes::Activate | EffectArchetype.obj | retail, call graph (shared callers), medium
+// pdb params: apCaster, apSpell, apEffectItem, apSource
+// pdb locals: psetting, eid, pfunction, presult
 ActiveEffect* MagicEffectSystem_effectarchetype::Activate(MagicCaster* caster, MagicItem* item, EffectItem* effect,
                                           TESBoundObject* source)
 {

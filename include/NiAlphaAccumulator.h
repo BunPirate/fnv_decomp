@@ -2,6 +2,7 @@
 
 #include "NiBackToFrontAccumulator.h"
 
+// pdb: class NiAlphaAccumulator, size 0x34, bases: NiBackToFrontAccumulator, 3 members
 class NiAlphaAccumulator : public NiBackToFrontAccumulator
 {
   public:
@@ -16,7 +17,7 @@ class NiAlphaAccumulator : public NiBackToFrontAccumulator
     virtual void SaveBinary(NiStream& arStream);
     virtual bool IsEqual(NiObject* apObject) const;
     virtual void RegisterObjectArray(NiVisibleArray* pkVisibleArray);
-    virtual bool RegisterObject(NiGeometry* pkGeom);
+    virtual bool RegisterObject(NiGeometry* apGeometry);
     virtual void Sort();
 
     static NiObject* CreateObject();

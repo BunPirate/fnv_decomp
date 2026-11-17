@@ -83,13 +83,16 @@ struct TagScope
 
 struct SoundPlayback
 {
-    BSSoundHandle BSAudio_GetSoundHandleByEditorName(unsigned int a, unsigned int b);
+    BSSoundHandle BSAudio_GetSoundHandleByEditorName(unsigned int apSoundName, unsigned int aiTypeFlags);
 };
 
 // @fnv 0x00ad7550
 // src: COMMUNITY 0x00ad7550
-BSSoundHandle SoundPlayback::BSAudio_GetSoundHandleByEditorName(unsigned int a, unsigned int b)
+// pdb: BSAudio::GetSoundHandleByName | BSAudio.obj | retail, object-file gap fill, high
+// pdb params: apSoundName, aiTypeFlags
+// pdb locals: tempMemContext
+BSSoundHandle SoundPlayback::BSAudio_GetSoundHandleByEditorName(unsigned int apSoundName, unsigned int aiTypeFlags)
 {
     TagScope scope;
-    return GetPlaybackDevice()->Play(a, b);
+    return GetPlaybackDevice()->Play(apSoundName, aiTypeFlags);
 }

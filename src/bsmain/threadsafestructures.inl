@@ -3,6 +3,9 @@
 
 template<>
 // @fnv 0x0044B350
+// pdb: LockFreeQueue<NiPointer<QueuedReference> >::LockFreeQueue<NiPointer<QueuedReference> > | ModelLoader.obj | debug, call graph, medium
+// pdb params: aiMaxThreads, aiDeleteBatchSize
+// pdb locals: tempMemContext
 LockFreeQueue<NiPointer<QueuedReference> >::LockFreeQueue(unsigned int maxThreads, unsigned int deleteBatchSize)
 {
     AutoMemContext context(MEM_CONTEXT_MEM_CONTEXT_TASK_OVERHEAD, true,
@@ -17,6 +20,9 @@ LockFreeQueue<NiPointer<QueuedReference> >::LockFreeQueue(unsigned int maxThread
 
 template<>
 // @fnv 0x006C6450
+// pdb: LockFreeQueue<bhkRigidBody *>::LockFreeQueue<bhkRigidBody *> | NavMeshObstacleManager.obj | debug, object-file run extension, low
+// pdb params: aiMaxThreads, aiDeleteBatchSize
+// pdb locals: tempMemContext
 LockFreeQueue<bhkRigidBody*>::LockFreeQueue(unsigned int maxThreads, unsigned int deleteBatchSize)
 {
     AutoMemContext context(MEM_CONTEXT_MEM_CONTEXT_TASK_OVERHEAD, true,
@@ -31,6 +37,9 @@ LockFreeQueue<bhkRigidBody*>::LockFreeQueue(unsigned int maxThreads, unsigned in
 
 template<>
 // @fnv 0x005289E0
+// pdb: LockFreeMap<unsigned int,NiPointer<ExteriorCellLoaderTask> >::LockFreeMap<unsigned int,NiPointer<ExteriorCellLoaderTask> > | ExteriorCellLoader.obj | debug, object-file run extension, low
+// pdb params: aiMaxThreads, aiNumBuckets, aiDeleteBatchSize
+// pdb locals: tempMemContext
 LockFreeMap<unsigned int, NiPointer<ExteriorCellLoaderTask> >::LockFreeMap(unsigned int maxThreads, unsigned int numBuckets, unsigned int deleteBatchSize)
 {
     AutoMemContext context(MEM_CONTEXT_MEM_CONTEXT_TASK_OVERHEAD, true,
@@ -88,6 +97,10 @@ void LockFreeMap<unsigned int, NiPointer<ExteriorCellLoaderTask> >::DeletedNodeS
 
 template<>
 // @fnv 0x006C73B0
+// pdb: ThreadSpecificInterfaceManager<LockFreeMap<MobileObject *,NiPointer<LipTask> >::LockFreeMapInterface>::ThreadSpecificInterfaceManager<LockFreeMap<MobileObject *,NiPointer<LipTask> >::LockFreeMapInterface> | LipSyncBackgroundManager.obj | retail, call graph (shared callers), low
+// pdb note: debug build links it to ThreadSpecificInterfaceManager<LockFreeQueue<NiPointer<QueuedReference> >::LockFreeQueueInterface>::ThreadSpecificInterfaceManager<LockFreeQueue<NiPointer<QueuedReference> >::LockFreeQueueInterface>
+// pdb params: aiMaxThreads
+// pdb locals: tempMemContext
 ThreadInterfaceManager<LockFreeQueue<bhkRigidBody*>::QueueDeleteManagerTag>::ThreadInterfaceManager(unsigned int maxThreads)
 {
     AutoMemContext context(MEM_CONTEXT_MEM_CONTEXT_TASK_OVERHEAD, true,
@@ -100,20 +113,26 @@ ThreadInterfaceManager<LockFreeQueue<bhkRigidBody*>::QueueDeleteManagerTag>::Thr
 
 template<>
 // @fnv 0x0044B750
-LockFreeMap<TESObjectREFR*, NiPointer<QueuedReference> >::LockFreeMap(unsigned int maxThreads, unsigned int numBuckets, unsigned int deleteBatchSize)
+// pdb: LockFreeMap<TESObjectREFR *,NiPointer<QueuedReference> >::LockFreeMap<TESObjectREFR *,NiPointer<QueuedReference> > | ModelLoader.obj | retail, call graph, medium
+// pdb params: aiMaxThreads, aiNumBuckets, aiDeleteBatchSize
+// pdb locals: tempMemContext
+LockFreeMap<TESObjectREFR*, NiPointer<QueuedReference> >::LockFreeMap(unsigned int aiMaxThreads, unsigned int aiNumBuckets, unsigned int aiDeleteBatchSize)
 {
     AutoMemContext context(MEM_CONTEXT_MEM_CONTEXT_TASK_OVERHEAD, true,
         kThreadSafeStructuresSourceFile, 912);
     uiCount = 0;
-    uiNumBuckets = numBuckets;
+    uiNumBuckets = aiNumBuckets;
     m_pBuckets = new ThreadSafePointer<ThreadSafeHashTableNode>[uiNumBuckets];
-    m_ppDeletedNodeBuffers = new ThreadSafeHashTableNode*[maxThreads * 3];
-    uiDeleteBatchSize = deleteBatchSize;
-    pManager = new Manager(maxThreads);
+    m_ppDeletedNodeBuffers = new ThreadSafeHashTableNode*[aiMaxThreads * 3];
+    uiDeleteBatchSize = aiDeleteBatchSize;
+    pManager = new Manager(aiMaxThreads);
 }
 
 template<>
 // @fnv 0x0044BA10
+// pdb: LockFreeMap<AnimIdle *,NiPointer<QueuedAnimIdle> >::LockFreeMap<AnimIdle *,NiPointer<QueuedAnimIdle> > | ModelLoader.obj | retail, call graph, high
+// pdb params: aiMaxThreads, aiNumBuckets, aiDeleteBatchSize
+// pdb locals: tempMemContext
 LockFreeMap<AnimIdle*, NiPointer<QueuedAnimIdle> >::LockFreeMap(unsigned int maxThreads, unsigned int numBuckets, unsigned int deleteBatchSize)
 {
     AutoMemContext context(MEM_CONTEXT_MEM_CONTEXT_TASK_OVERHEAD, true,
@@ -128,20 +147,26 @@ LockFreeMap<AnimIdle*, NiPointer<QueuedAnimIdle> >::LockFreeMap(unsigned int max
 
 template<>
 // @fnv 0x0044BBE0
-LockFreeMap<Animation*, NiPointer<QueuedReplacementKFList> >::LockFreeMap(unsigned int maxThreads, unsigned int numBuckets, unsigned int deleteBatchSize)
+// pdb: LockFreeMap<Animation *,NiPointer<QueuedReplacementKFList> >::LockFreeMap<Animation *,NiPointer<QueuedReplacementKFList> > | ModelLoader.obj | retail, call graph, medium
+// pdb params: aiMaxThreads, aiNumBuckets, aiDeleteBatchSize
+// pdb locals: tempMemContext
+LockFreeMap<Animation*, NiPointer<QueuedReplacementKFList> >::LockFreeMap(unsigned int aiMaxThreads, unsigned int aiNumBuckets, unsigned int aiDeleteBatchSize)
 {
     AutoMemContext context(MEM_CONTEXT_MEM_CONTEXT_TASK_OVERHEAD, true,
         kThreadSafeStructuresSourceFile, 912);
     uiCount = 0;
-    uiNumBuckets = numBuckets;
+    uiNumBuckets = aiNumBuckets;
     m_pBuckets = new ThreadSafePointer<ThreadSafeHashTableNode>[uiNumBuckets];
-    m_ppDeletedNodeBuffers = new ThreadSafeHashTableNode*[maxThreads * 3];
-    uiDeleteBatchSize = deleteBatchSize;
-    pManager = new Manager(maxThreads);
+    m_ppDeletedNodeBuffers = new ThreadSafeHashTableNode*[aiMaxThreads * 3];
+    uiDeleteBatchSize = aiDeleteBatchSize;
+    pManager = new Manager(aiMaxThreads);
 }
 
 template<>
 // @fnv 0x0044BE80
+// pdb: LockFreeMap<TESObjectREFR *,NiPointer<QueuedHelmet> >::LockFreeMap<TESObjectREFR *,NiPointer<QueuedHelmet> > | ModelLoader.obj | retail, call graph, high
+// pdb params: aiMaxThreads, aiNumBuckets, aiDeleteBatchSize
+// pdb locals: tempMemContext
 LockFreeMap<TESObjectREFR*, NiPointer<QueuedHelmet> >::LockFreeMap(unsigned int maxThreads, unsigned int numBuckets, unsigned int deleteBatchSize)
 {
     AutoMemContext context(MEM_CONTEXT_MEM_CONTEXT_TASK_OVERHEAD, true,

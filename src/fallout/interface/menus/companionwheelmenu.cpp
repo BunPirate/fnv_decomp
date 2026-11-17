@@ -35,6 +35,7 @@ public:
 #include "../../../../include/Setting.h"
 // Constructor: sets the menu state of FUN_004b7210() to 255 and initializes the message count to 0.
 // @fnv 0x007a8a10
+// pdb: MessageMenu::MessageMenu | MessageMenu.obj | debug, call graph, high
 MessageMenu_007a8a10::MessageMenu_007a8a10()
 {
     InterfaceManager_GetSingleton()->ucMsgBoxButton = 255;
@@ -55,14 +56,17 @@ extern Actor* g_thePlayer;
 
 // @fnv 0x00754d90
 // src: COMMUNITY 0x00754d90
-bool CompanionWheelMenu_GetShouldCompanionWheelOpen(Actor* apActor)
+// pdb: CompanionWheelMenu::GetShouldCompanionWheelOpen | CompanionWheelMenu.obj | retail, upstream name already matches, high
+// pdb params: apCompanion
+// pdb locals: eReaction
+bool CompanionWheelMenu_GetShouldCompanionWheelOpen(Actor* apCompanion)
 {
-    if (!apActor)
+    if (!apCompanion)
         return false;
-    if (!static_cast<FUN_00884480_shell*>(static_cast<void*>(apActor))->Actor_CanSpeak())
+    if (!static_cast<FUN_00884480_shell*>(static_cast<void*>(apCompanion))->Actor_CanSpeak())
         return false;
     int tmp;
-    if (apActor->IsHostileToActor(g_thePlayer, 0, &tmp, false))
+    if (apCompanion->IsHostileToActor(g_thePlayer, 0, &tmp, false))
         return false;
     return true;
 }
@@ -78,19 +82,22 @@ extern "C" float __cdecl LogFloat(float);
 
 // @fnv 0x00755660
 // src: XBOX_PDB 0x00755660
-float NiATan(float value)
+// pdb: NiATan | CompanionWheelMenu.obj | debug, upstream name already matches, high
+// pdb params: fValue
+float NiATan(float fValue)
 {
-    return LogFloat(value);
+    return LogFloat(fValue);
 }
 
-extern "C" void __cdecl CloseMenuAndRefresh(int);
+extern "C" void __cdecl CompanionWheelMenu_Close(int);
 
 // @fnv 0x00756960
 // src: XBOX_PDB 0x00756960
+// pdb: CompanionWheelMenu::Do_Talk | CompanionWheelMenu.obj | debug, upstream name already matches, high
 void __fastcall CompanionWheelMenu_Do_Talk(CompanionWheelMenu* apMenu)
 {
-    apMenu->unk74 = 1;
-    CloseMenuAndRefresh(1);
+    apMenu->bTalkToOnClose = 1;
+    CompanionWheelMenu_Close(1);
 }
 
 extern bool __cdecl _FUN_004b71d0();
@@ -103,6 +110,7 @@ struct FUN_00755680_shell
 // Returns true if _FUN_004b71d0 is false or the byte at offset 0x7d equals 1; otherwise returns false.
 // @fnv 0x00755680
 // src: XBOX_PDB 0x00755680
+// pdb: InterfaceManager::GetMouseVisible | CompanionWheelMenu.obj | debug, upstream name already matches, high
 bool __thiscall FUN_00755680_shell::InterfaceManager_GetMouseVisible()
 {
     if (!_FUN_004b71d0() || ((unsigned char*)this)[0x7d] == 1)
@@ -118,6 +126,7 @@ struct MyStandin754c30
 void __cdecl _Deallocate(void*);
 // Calls FUN_00754c60, then frees this with _Deallocate when flags has bit 1 set, and returns this.
 // @fnv 0x00754c30
+// pdb: CompanionWheelMenu::`scalar deleting destructor' | CompanionWheelMenu.obj | retail, vtable slot, high
 void* __thiscall MyStandin754c30::FUN_00754c30(unsigned int flags)
 {
     this->FUN_00754c60();
@@ -128,10 +137,12 @@ void* __thiscall MyStandin754c30::FUN_00754c30(unsigned int flags)
 
 // If tile 9 is set, calls its Set with id 0xFC4, the given string and true.
 // @fnv 0x00755d90
+// pdb: CompanionWheelMenu::SetButtonPreviewText | CompanionWheelMenu.obj | debug, object-file gap fill, medium
+// pdb params: asText
 void CompanionWheelMenu::SetTileText(const char* acText)
 {
-    if (tiles[9] != 0)
-        tiles[9]->Set(0xFC4, acText, true);
+    if (pTiles[9] != 0)
+        pTiles[9]->Set(0xFC4, acText, true);
 }
 
 struct FUN_008a7760_holder
@@ -140,20 +151,24 @@ struct FUN_008a7760_holder
 };
 // @fnv 0x00756930
 // src: XBOX_PDB 0x00756930
+// pdb: CompanionWheelMenu::Do_Backup | CompanionWheelMenu.obj | debug, upstream name already matches, high
 void CompanionWheelMenu::Do_Backup()
 {
-    if (companion)
-        ((FUN_008a7760_holder*)companion)->OpenDialogMenu();
-    CloseMenuAndRefresh(1);
+    if (m_pRelatedCompanion)
+        ((FUN_008a7760_holder*)m_pRelatedCompanion)->OpenDialogMenu();
+    CompanionWheelMenu_Close(1);
 }
 
 // @fnv 0x007560c0
-void CompanionWheelMenu::ToggleFollowersTacticsDistance()
+// src: XBOX_RETAIL_PDB 0x007560c0
+// pdb: CompanionWheelMenu::Do_ToggleNearFar | CompanionWheelMenu.obj | retail, string-set bridge, high
+// pdb locals: bSuccess, pRelatedTopic
+void CompanionWheelMenu::Do_ToggleNearFar()
 {
     bool bSuccess;
-    followersTacticsDistance = !followersTacticsDistance;
+    m_bFollowingLong = !m_bFollowingLong;
     bSuccess = false;
-    if (followersTacticsDistance)
+    if (m_bFollowingLong)
     {
         TESTopic* pRelatedTopic =
             dynamic_cast<TESTopic*>(TESForm::LookupFormByEditorID("FollowersTacticsDistanceLong"));
@@ -169,13 +184,16 @@ void CompanionWheelMenu::ToggleFollowersTacticsDistance()
         RunTopicResultScripts(pRelatedTopic);
         bSuccess = true;
     }
-    if (bSuccess && tiles[5])
+    if (bSuccess && pTiles[5])
     {
-        tiles[5]->Set(0x100f, followersTacticsDistance);
+        pTiles[5]->Set(0x100f, m_bFollowingLong);
     }
 }
 
 // @fnv 0x007575b0
+// pdb: CompanionWheelMenu::RunFollowerCommandScript | CompanionWheelMenu.obj | debug, object-file run extension, low
+// pdb params: aRelatedTopic
+// pdb locals: pActionActor, pInfo, pactor, pInfoScript
 void CompanionWheelMenu::RunTopicResultScripts(TESTopic* aRelatedTopic)
 {
     TESTopicInfo* pInfo = 0;
@@ -183,18 +201,18 @@ void CompanionWheelMenu::RunTopicResultScripts(TESTopic* aRelatedTopic)
     PlayerCharacter* pActionActor;
     Script* pInfoScript;
     pActionActor = (PlayerCharacter*)g_thePlayer;
-    pactor = companion;
+    pactor = m_pRelatedCompanion;
     if (aRelatedTopic)
         pInfo = aRelatedTopic->FindMatchingTopicInfo((MobileObject*)pactor, pActionActor);
     if (pInfo)
     {
         pInfoScript = pInfo->GetResultScript(0u);
         if (pInfoScript && *(int*)((char*)pInfoScript->GetHeader() + 8))
-            pInfoScript->Run(companion, const_cast<ExtraDataList*>(companion->GetExtra())->GetScriptLocalData(), false,
+            pInfoScript->Run(m_pRelatedCompanion, const_cast<ExtraDataList*>(m_pRelatedCompanion->GetExtra())->GetScriptLocalData(), false,
                              true);
         pInfoScript = pInfo->GetResultScript(1u);
         if (pInfoScript && *(int*)((char*)pInfoScript->GetHeader() + 8))
-            pInfoScript->Run(companion, const_cast<ExtraDataList*>(companion->GetExtra())->GetScriptLocalData(), false,
+            pInfoScript->Run(m_pRelatedCompanion, const_cast<ExtraDataList*>(m_pRelatedCompanion->GetExtra())->GetScriptLocalData(), false,
                              true);
     }
 }
@@ -204,9 +222,10 @@ MagicCaster* __cdecl _FUN_004b7210();
 extern CompanionWheelMenu* DAT_011d92b8;
 
 // @fnv 0x00754c60
+// pdb: CompanionWheelMenu::~CompanionWheelMenu | CompanionWheelMenu.obj | debug, upstream name already matches, high
 CompanionWheelMenu::~CompanionWheelMenu()
 {
-    if (unk74)
+    if (bTalkToOnClose)
     {
         _FUN_004b7210()->SetSelectedMagicItem(1);
         UpdateCompanionInteraction();
@@ -218,10 +237,12 @@ CompanionWheelMenu::~CompanionWheelMenu()
 void __cdecl InterfaceManager_PlayMenuSound(int);
 
 // @fnv 0x007552e0
+// pdb: CompanionWheelMenu::DoClick | CompanionWheelMenu.obj | retail, vtable slot, high
+// pdb params: aiID, apTarget
 void CompanionWheelMenu::HandleSelection(int aiID, Tile* apTarget)
 {
     if (!apTarget && aiID >= 0 && aiID < 16)
-        apTarget = tiles[aiID];
+        apTarget = pTiles[aiID];
 
     if (!InterfaceH_companionwheelmenu::GetSelectedTargetIndex(0x433))
         return;
@@ -230,7 +251,7 @@ void CompanionWheelMenu::HandleSelection(int aiID, Tile* apTarget)
     {
     case 11:
         InterfaceManager_PlayMenuSound(1);
-        CloseMenuAndRefresh(1);
+        CompanionWheelMenu_Close(1);
         break;
 
     case 3:
@@ -239,7 +260,7 @@ void CompanionWheelMenu::HandleSelection(int aiID, Tile* apTarget)
         break;
 
     case 2:
-        ToggleFollowerWait();
+        Do_ToggleStayFollow();
         this->SelectTile(aiID, true);
         InterfaceManager_PlayMenuSound(1);
         break;
@@ -250,7 +271,7 @@ void CompanionWheelMenu::HandleSelection(int aiID, Tile* apTarget)
         break;
 
     case 0:
-        this->ToggleAggressive();
+        this->Do_ToggleAggressivePassive();
         this->SelectTile(aiID, true);
         InterfaceManager_PlayMenuSound(1);
         break;
@@ -262,7 +283,7 @@ void CompanionWheelMenu::HandleSelection(int aiID, Tile* apTarget)
         break;
 
     case 7:
-        ToggleRelatedTopic();
+        Do_ToggleRangedMelee();
         this->SelectTile(aiID, true);
         InterfaceManager_PlayMenuSound(1);
         break;
@@ -273,7 +294,7 @@ void CompanionWheelMenu::HandleSelection(int aiID, Tile* apTarget)
         break;
 
     case 5:
-        ToggleFollowersTacticsDistance();
+        Do_ToggleNearFar();
         this->SelectTile(aiID, true);
         InterfaceManager_PlayMenuSound(1);
         break;
@@ -284,15 +305,18 @@ extern char str_01071f24[];
 extern char str_01071f40[];
 
 // @fnv 0x007562b0
-void CompanionWheelMenu::ToggleRelatedTopic()
+// src: XBOX_RETAIL_PDB 0x007562b0
+// pdb: CompanionWheelMenu::Do_ToggleRangedMelee | CompanionWheelMenu.obj | retail, string-set bridge, high
+// pdb locals: bSuccess, pRelatedTopic
+void CompanionWheelMenu::Do_ToggleRangedMelee()
 {
     bool bSuccess = false;
 
-    if (companion)
+    if (m_pRelatedCompanion)
     {
-        relatedTopicVisible = !relatedTopicVisible;
+        m_bRangedCombat = !m_bRangedCombat;
 
-        if (relatedTopicVisible)
+        if (m_bRangedCombat)
         {
             TESTopic* pRelatedTopic = dynamic_cast<TESTopic*>(TESForm::LookupFormByEditorID(str_01071f40));
 
@@ -311,14 +335,14 @@ void CompanionWheelMenu::ToggleRelatedTopic()
 
         if (bSuccess)
         {
-            if (tiles[7])
-                tiles[7]->Set(0x100f, DAT_011d92b8->relatedTopicVisible);
+            if (pTiles[7])
+                pTiles[7]->Set(0x100f, DAT_011d92b8->m_bRangedCombat);
         }
     }
 }
 
 unsigned int __cdecl gm_GetTickCount(void);
-float __cdecl NiATan(float value);
+float __cdecl NiATan(float fValue);
 int __cdecl _FUN_00ec7d40(int value);
 
 extern char $SG3295[];
@@ -332,6 +356,8 @@ extern short DAT_011d8a5e;
 extern short DAT_011d8a74;
 
 // @fnv 0x00755480
+// pdb: CompanionWheelMenu::DoIdle | CompanionWheelMenu.obj | retail, vtable slot, high
+// pdb locals: fInputVectorY, fInputAngle, bSufficientMagnitude, fInputVectorX, iy, ix, pcontrols
 void CompanionWheelMenu::UpdateDialog()
 {
     float fInputVectorY;
@@ -344,11 +370,11 @@ void CompanionWheelMenu::UpdateDialog()
     fInputVectorY = 0.0f;
     fInputAngle = 0.0f;
 
-    if (textClearTime != 0 && gm_GetTickCount() > textClearTime)
+    if (m_nTimeToClearSubtitle != 0 && gm_GetTickCount() > m_nTimeToClearSubtitle)
     {
-        textClearTime = 0;
-        if (tiles[12] != 0)
-            tiles[12]->Set(0xFC4, $SG3295, true);
+        m_nTimeToClearSubtitle = 0;
+        if (pTiles[12] != 0)
+            pTiles[12]->Set(0xFC4, $SG3295, true);
     }
 
     if (!InterfaceH_companionwheelmenu::GetSelectedTargetIndex(0x433))
@@ -407,17 +433,19 @@ struct MenuFactory
     Menu* Tile_GetMenu();
 };
 MenuFactory* __cdecl Tile_GetMenuByClass(int id);
-int __cdecl OpenCompanionMenu(int value);
+int __cdecl CompanionWheelMenu_Create(int apRelatedCompanion);
 
 // Looks up the menu factory for id 0x433, deletes its CompanionWheelMenu if present, then returns the result of OpenCompanionMenu(value).
 // @fnv 0x00754cf0
+// pdb: CompanionWheelMenu::CompanionWheelMenu | CompanionWheelMenu.obj | retail, object-file run extension, low
+// pdb note: debug build links it to CompanionWheelMenu::CreateCompanionWheelMenu
 bool __cdecl DestroyCompanionWheelMenu(int value)
 {
     MenuFactory* factory = Tile_GetMenuByClass(0x433);
     CompanionWheelMenu* menu = factory ? dynamic_cast<CompanionWheelMenu*>(factory->Tile_GetMenu()) : 0;
     if (menu)
         delete menu;
-    if (OpenCompanionMenu(value))
+    if (CompanionWheelMenu_Create(value))
         return true;
     return false;
 }
@@ -444,7 +472,11 @@ extern const char DAT_01071d58[];
 extern const char DAT_01025cc4[];
 extern const char DAT_01071db4[];
 // @fnv 0x00754de0
-Tile* OpenCompanionMenu(Actor* actor)
+// src: XBOX_RETAIL_PDB 0x00754de0
+// pdb: CompanionWheelMenu::Create | CompanionWheelMenu.obj | retail, unique string literal, high
+// pdb params: apRelatedCompanion
+// pdb locals: pin, ptile, pold_menu_tile
+Tile* CompanionWheelMenu_Create(Actor* apRelatedCompanion)
 {
     ResourceProvider* a = (ResourceProvider*)InterfaceManager_GetSingleton();
     CompanionWheelMenu* p = Tile_GetMenuByClass(return_1075());
@@ -454,32 +486,32 @@ Tile* OpenCompanionMenu(Actor* actor)
     companionMenu = (CompanionWheelMenu*)h->GetMenu();
     if (companionMenu && companionMenu->GetClass() == return_1075())
     {
-        companionMenu->companion = actor;
-        if (companionMenu->companion)
+        companionMenu->m_pRelatedCompanion = apRelatedCompanion;
+        if (companionMenu->m_pRelatedCompanion)
         {
-            companionMenu->aggressive = companionMenu->companion->ComputeFromNode(DAT_01071de0) == 1.0;
-            companionMenu->followersTacticsDistance = companionMenu->companion->ComputeFromNode(DAT_01071dd0) == 1.0;
-            companionMenu->relatedTopicVisible = companionMenu->companion->ComputeFromNode(DAT_01071dbc) == 1.0;
-            companionMenu->followerWait = companionMenu->companion->ComputeFromNode(DAT_01071db4) == 0.0;
+            companionMenu->m_bAggressiveStance = companionMenu->m_pRelatedCompanion->ComputeFromNode(DAT_01071de0) == 1.0;
+            companionMenu->m_bFollowingLong = companionMenu->m_pRelatedCompanion->ComputeFromNode(DAT_01071dd0) == 1.0;
+            companionMenu->m_bRangedCombat = companionMenu->m_pRelatedCompanion->ComputeFromNode(DAT_01071dbc) == 1.0;
+            companionMenu->m_bFollowing = companionMenu->m_pRelatedCompanion->ComputeFromNode(DAT_01071db4) == 0.0;
         }
-        if (companionMenu->tiles[0])
-            companionMenu->tiles[0]->Set(0x100f, (int)companionMenu->aggressive);
-        if (companionMenu->tiles[2])
-            companionMenu->tiles[2]->Set(0x100f, (int)!companionMenu->followerWait);
-        if (companionMenu->tiles[5])
-            companionMenu->tiles[5]->Set(0x100f, (int)companionMenu->followersTacticsDistance);
-        if (companionMenu->tiles[7])
-            companionMenu->tiles[7]->Set(0x100f, (int)companionMenu->relatedTopicVisible);
-        if (companionMenu->tiles[12])
-            companionMenu->tiles[12]->Set(0xfc4, DAT_01011584, true);
-        if (companionMenu->tiles[8])
-            companionMenu->tiles[8]->Set(0xfc4, DAT_011d3534.FUN_00403df0(), true);
-        if (companionMenu->tiles[13])
-            companionMenu->tiles[13]->Set(0xfc4, DAT_011d33fc.FUN_00403df0(), true);
-        if (companionMenu->tiles[14])
-            companionMenu->tiles[14]->Set(0xfc4, DAT_011d3ec8.FUN_00403df0(), true);
-        if (companionMenu->tiles[15])
-            companionMenu->tiles[15]->Set(0xfc4, DAT_011d27d8.FUN_00403df0(), true);
+        if (companionMenu->pTiles[0])
+            companionMenu->pTiles[0]->Set(0x100f, (int)companionMenu->m_bAggressiveStance);
+        if (companionMenu->pTiles[2])
+            companionMenu->pTiles[2]->Set(0x100f, (int)!companionMenu->m_bFollowing);
+        if (companionMenu->pTiles[5])
+            companionMenu->pTiles[5]->Set(0x100f, (int)companionMenu->m_bFollowingLong);
+        if (companionMenu->pTiles[7])
+            companionMenu->pTiles[7]->Set(0x100f, (int)companionMenu->m_bRangedCombat);
+        if (companionMenu->pTiles[12])
+            companionMenu->pTiles[12]->Set(0xfc4, DAT_01011584, true);
+        if (companionMenu->pTiles[8])
+            companionMenu->pTiles[8]->Set(0xfc4, DAT_011d3534.FUN_00403df0(), true);
+        if (companionMenu->pTiles[13])
+            companionMenu->pTiles[13]->Set(0xfc4, DAT_011d33fc.FUN_00403df0(), true);
+        if (companionMenu->pTiles[14])
+            companionMenu->pTiles[14]->Set(0xfc4, DAT_011d3ec8.FUN_00403df0(), true);
+        if (companionMenu->pTiles[15])
+            companionMenu->pTiles[15]->Set(0xfc4, DAT_011d27d8.FUN_00403df0(), true);
         companionMenu->FUN_00a1dc70((TileMenu*)h, false);
         if (!ValidateLoadedMenu(companionMenu))
         {
@@ -503,29 +535,32 @@ extern "C" bool __cdecl Interface_IsTopMenuID(int);
 // If menu 0x433 is active, dispatches HandleSelection for input 9 (the selected tile, else tile 11) or 10 (tile 11)
 // and returns whether it dispatched.
 // @fnv 0x007556b0
-bool CompanionWheelMenu::HandleMenuInput(int aiAction, float unused)
+// pdb: CompanionWheelMenu::DoGamepad | CompanionWheelMenu.obj | retail, vtable slot, high
+// pdb params: aiButton, afValue
+// pdb locals: bhandled
+bool CompanionWheelMenu::HandleMenuInput(int aiButton, float afValue)
 {
     bool result = false;
     if (!Interface_IsTopMenuID(0x433))
     {
         return result;
     }
-    if (aiAction == 9)
+    if (aiButton == 9)
     {
-        if (this->selected != -1)
+        if (this->m_CurrentlySelectedTile != -1)
         {
-            this->HandleSelection(this->selected, this->tiles[this->selected]);
+            this->HandleSelection(this->m_CurrentlySelectedTile, this->pTiles[this->m_CurrentlySelectedTile]);
             result = true;
         }
         else
         {
-            this->HandleSelection(0xb, this->tiles[11]);
+            this->HandleSelection(0xb, this->pTiles[11]);
             result = true;
         }
     }
-    else if (aiAction == 10)
+    else if (aiButton == 10)
     {
-        this->HandleSelection(0xb, this->tiles[11]);
+        this->HandleSelection(0xb, this->pTiles[11]);
         result = true;
     }
     return result;
@@ -535,26 +570,28 @@ struct WheelHost
 {
     char unk00[0x28];
     int m_aiIndexedValues[16];
-    void __thiscall SelectTile(int, bool);
-    void __thiscall CompanionWheelMenu_DoEnter(int a, int b);
+    void __thiscall CompanionWheelMenu_SetButtonAsHighlighted(int, bool);
+    void __thiscall CompanionWheelMenu_DoEnter(int aiID, int apTarget);
 };
 
 bool __cdecl Interface_IsTopMenuID(int);
 
 // @fnv 0x00755760
 // src: XBOX_PDB 0x00755760
-void __thiscall WheelHost::CompanionWheelMenu_DoEnter(int aiSlot, int aiValue)
+// pdb: CompanionWheelMenu::DoEnter | CompanionWheelMenu.obj | retail, upstream name already matches, high
+// pdb params: aiID, apTarget
+void __thiscall WheelHost::CompanionWheelMenu_DoEnter(int aiID, int apTarget)
 {
-    if (aiValue == 0 && aiSlot >= 0 && aiSlot < 16)
+    if (apTarget == 0 && aiID >= 0 && aiID < 16)
     {
-        aiValue = m_aiIndexedValues[aiSlot];
+        apTarget = m_aiIndexedValues[aiID];
     }
     if (Interface_IsTopMenuID(0x433) == 0)
     {
     }
     else
     {
-        switch (aiSlot)
+        switch (aiID)
         {
         case 0:
         case 1:
@@ -565,7 +602,7 @@ void __thiscall WheelHost::CompanionWheelMenu_DoEnter(int aiSlot, int aiValue)
         case 6:
         case 7:
         case 11:
-            SelectTile(aiSlot, false);
+            CompanionWheelMenu_SetButtonAsHighlighted(aiID, false);
             break;
         default:
             break;
@@ -599,7 +636,7 @@ struct ActorPosition
 };
 struct ActorExtraData
 {
-    void FUN_00815b00();
+    void InterruptCast();
 };
 struct ActorLock
 {
@@ -1101,6 +1138,8 @@ struct InteractionMenu
 };
 // Checks the companion's state and packages, then starts or resets dialogue with the player or another actor, or shows a locked message.
 // @fnv 0x00756980
+// pdb: CompanionWheelMenu::TransitionFromCloseToTalkTo | CompanionWheelMenu.obj | debug, object-file run extension, low
+// pdb locals: pActionActor, pactionpackage, potherpackage, pactor, pprocess, pgreetTopic, pgreetDialogue, ptopic, pspeaker, ppack, pact, string
 void InteractionMenu::UpdateCompanionInteraction()
 {
     InteractionActor* player2 = interactionPlayer;
@@ -1206,7 +1245,7 @@ void InteractionMenu::UpdateCompanionInteraction()
                                         actor2->SetPackage(aTarget, 1);
                                 }
                                 BSAudio_QInstance(4)->FUN_00ad8780();
-                                aTarget->extras.FUN_00815b00();
+                                aTarget->extras.InterruptCast();
                                 if (aTarget->GetState() != 9)
                                 {
                                     InteractionActor* speaker = player2;
@@ -1239,7 +1278,7 @@ void InteractionMenu::UpdateCompanionInteraction()
                                     player2->FUN_008d8520()->SetPackage(player2, 2);
                                 else
                                     player2->FUN_008d8520()->SetPackage(player2, 1);
-                                aTarget->extras.FUN_00815b00();
+                                aTarget->extras.InterruptCast();
                                 if (aTarget == interactionPlayer)
                                     aTarget->Actor_ForceIdleAnimation();
                                 else
@@ -1295,6 +1334,7 @@ struct SoundPath
     const char* CStr();
 };
 
+// pdb: class DialogueResponse, size 0x2c (here 0x1), 9 members
 struct DialogueResponse
 {
     SoundFile* GetSoundByEditorID();
@@ -1473,7 +1513,7 @@ struct CompActor
                         int emotionType, int emotionValue, CompActor* target, bool a8, bool a9, bool a10, bool a11,
                         bool a12);
 
-    BSSoundHandle PlaySound(unsigned int soundID, int a2, int flags, int a4);
+    BSSoundHandle PlaySound(unsigned int aiSoundFormID, int abLoop, int aiSoundType, int abAllowCopy);
 };
 
 
@@ -1519,6 +1559,9 @@ struct CompanionWheelStandin
 };
 
 // @fnv 0x007573d0
+// pdb: CompanionWheelMenu::PlayReactivityBark | CompanionWheelMenu.obj | debug, object-file run extension, low
+// pdb params: aRelatedTopic
+// pdb locals: pActionActor, pInfo, pactor, pResponse, Exchange, isoundFileID, fdelay
 void CompanionWheelStandin::PlayTopicResponse(TESTopic* topic)
 {
     TESTopicInfo* info6 = 0;
@@ -1579,17 +1622,21 @@ struct CWheelMenu_757690
     void __thiscall SetItemTextAndValue(CStringArg_757690 text, BSSoundHandle value);
 };
 // @fnv 0x00757690
+// pdb: ComputersMenu::Redisplay | ComputersMenu.obj | retail, object-file run extension, low
+// pdb note: debug build links it to CompanionWheelMenu::DisplayCompanionWheelSubtitle
+// pdb params: apTile, apMenuItem
+// pdb locals: idefault, strtmp, bgo
 void __thiscall CWheelMenu_757690::SetItemTextAndValue(CStringArg_757690 text, BSSoundHandle value)
 {
     float shift = 0.0f;
     if (text.BSStringT_char_Length() > 0)
     {
-        if (*DAT_011d8928.FUN_00408d60() || (reinterpret_cast<CompanionWheelMenu*>(this)->companion != 0 &&
-                                             reinterpret_cast<CompanionWheelMenu*>(this)->companion->BSSoundHandle_BSSoundHandle_008c1bc0()))
+        if (*DAT_011d8928.FUN_00408d60() || (reinterpret_cast<CompanionWheelMenu*>(this)->m_pRelatedCompanion != 0 &&
+                                             reinterpret_cast<CompanionWheelMenu*>(this)->m_pRelatedCompanion->BSSoundHandle_BSSoundHandle_008c1bc0()))
         {
-            if (reinterpret_cast<CompanionWheelMenu*>(this)->tiles[12])
+            if (reinterpret_cast<CompanionWheelMenu*>(this)->pTiles[12])
             {
-                reinterpret_cast<CompanionWheelMenu*>(this)->tiles[12]->Set(0xfc4, (const char*)text.Modelloader_GetReferencedThis(1));
+                reinterpret_cast<CompanionWheelMenu*>(this)->pTiles[12]->Set(0xfc4, (const char*)text.Modelloader_GetReferencedThis(1));
             }
             shift = (float)value.GetDuration();
             if (shift == DAT_01012060)
@@ -1597,7 +1644,7 @@ void __thiscall CWheelMenu_757690::SetItemTextAndValue(CStringArg_757690 text, B
                 shift =
                     (float)((double)FUN_00ec6130(text.Modelloader_GetReferencedThis()) * (*DAT_011d2178.Setting_Float_00403e20()) * DAT_01017b70);
             }
-            reinterpret_cast<CompanionWheelMenu*>(this)->textClearTime = (unsigned)((double)Cmd_GetSessionTime_Execute() + shift);
+            reinterpret_cast<CompanionWheelMenu*>(this)->m_nTimeToClearSubtitle = (unsigned)((double)Cmd_GetSessionTime_Execute() + shift);
         }
     }
 }
@@ -2325,6 +2372,9 @@ bool Script_ParseParameters(void*, void*, void*, Reference*, void*, void*, void*
 // Plays an idle animation on the source actor or reference, choosing the sequence and dispatching play events, then restores the previous setting value.
 // @fnv 0x005c8a50
 // src: EXE 0x005c8a50
+// pdb: Script::SayFunction | TESScriptFunctions.obj | debug, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: isubtitle, iPCHead, iAlwaysPlay, bforcesub, pNpc, ptopic, bplayerhead, balwaysplay, pactor, ioldLipDistance, pcurrentScriptTarget, pVoice, aSoundHand, pResponse, ptempactor
 bool Cmd_Say_Execute(void* paramInfo, void* scriptData, Reference* source, void* containing, void* script, void* locals,
                   double* result, void* offset)
 {
@@ -2355,7 +2405,7 @@ bool Cmd_Say_Execute(void* paramInfo, void* scriptData, Reference* source, void*
         {
             if (actor->FUN_008d8520() && !((Reference*)actor)->IsDead(1))
             {
-                actor->ReferenceMobileState = DAT_01012054;
+                actor->fSayToFailVoiceTimer = DAT_01012054;
                 ((Process*)actor->FUN_008d8520())->SetAlert(0);
                 ((Process*)actor->FUN_008d8520())->Reset();
                 if (!actor->FUN_00931850())
@@ -2439,7 +2489,7 @@ class SaveLoad755
 class Manager755
 {
   public:
-    void Refresh();
+    void ProcessLists_Update3DAfterResting();
 };
 
 extern CompanionWheelMenu* g_pkMenu755;
@@ -2448,14 +2498,17 @@ extern Manager755 g_kManager755;
 
 // If the menu exists, optionally starts its fader, refreshes the manager when not loading, sets tile 0x1772 to 1 and closes the menu.
 // @fnv 0x00755270
-void __cdecl CloseMenuAndRefresh(bool bFade)
+// src: XBOX_RETAIL_PDB 0x00755270
+// pdb: CompanionWheelMenu::Close | CompanionWheelMenu.obj | retail, call graph (shared callers), high
+// pdb params: abClearOutSpeech
+void __cdecl CompanionWheelMenu_Close(bool abClearOutSpeech)
 {
     if (g_pkMenu755)
     {
-        if (bFade)
-            g_pkMenu755->sound.FadeOutAndRelease(0x64);
+        if (abClearOutSpeech)
+            g_pkMenu755->m_hCurrentReactivityBark.FadeOutAndRelease(0x64);
         if (!g_pkSaveLoad755->IsLoading())
-            g_kManager755.Refresh();
+            g_kManager755.ProcessLists_Update3DAfterResting();
         g_pkMenu755->GetTile()->SetInt(0x1772, 1);
         g_pkMenu755->LoadMenuData();
     }
@@ -2463,7 +2516,7 @@ void __cdecl CloseMenuAndRefresh(bool bFade)
 
 struct ScriptTile256
 {
-    void Set(const char*, double);
+    void Actor_SetLocalVariableOnActor(const char*, double);
 };
 struct MenuGlobal256
 {
@@ -2528,11 +2581,14 @@ struct Wheel256
     bool aggressive;
     void PlayTopicResponse(TESTopic*);
     void RunTopicResultScripts(TESTopic*);
-    void ToggleAggressive();
+    void CompanionWheelMenu_Do_ToggleAggressivePassive();
 };
 // Flips the aggressive flag, applies the matching FollowersTacticsCombat topic, updates the FollowerSwitchAggressive script value and sets tile 0x100f.
 // @fnv 0x007561b0
-void Wheel256::ToggleAggressive()
+// src: XBOX_RETAIL_PDB 0x007561b0
+// pdb: CompanionWheelMenu::Do_ToggleAggressivePassive | CompanionWheelMenu.obj | retail, string-set bridge, high
+// pdb locals: pRelatedTopic
+void Wheel256::CompanionWheelMenu_Do_ToggleAggressivePassive()
 {
     aggressive = !aggressive;
     if (aggressive)
@@ -2549,7 +2605,7 @@ void Wheel256::ToggleAggressive()
         PlayTopicResponse(pPassiveTopic);
         RunTopicResultScripts(pPassiveTopic);
     }
-    reinterpret_cast<MenuGlobal256*>(DAT_011d92b8)->script->Set("FollowerSwitchAggressive", aggressive ? 1.0f : 0.0f);
+    reinterpret_cast<MenuGlobal256*>(DAT_011d92b8)->script->Actor_SetLocalVariableOnActor("FollowerSwitchAggressive", aggressive ? 1.0f : 0.0f);
     if (tile)
         tile->Set(0x100f, aggressive);
 }
@@ -2713,7 +2769,7 @@ struct HealingActorValues
 };
 struct HealingActor : HealingActorBase, HealingActorValues
 {
-    float GetHealthFraction();
+    float GetHealthPercentage();
     HealingInventoryEntry* TESObjectREFR_GetInventoryItem_00576260(void*, int);
     void EquipItemWithCaster(void*, HealingExtra*, int);
     void FUN_008c3c40(int, int);
@@ -2760,6 +2816,8 @@ struct CompanionHealingMenu
     void HealCompanion();
 };
 // @fnv 0x00756490
+// pdb: CompanionWheelMenu::Do_UseStim | CompanionWheelMenu.obj | debug, call graph, medium
+// pdb locals: pStimArchetype, pStimPack, fhealthPct, pRelatedTopic
 void CompanionHealingMenu::HealCompanion()
 {
     if (companion && DAT_011dea3c)
@@ -2770,7 +2828,7 @@ void CompanionHealingMenu::HealCompanion()
             HealingInventoryEntry* entry = DAT_011dea3c->TESObjectREFR_GetInventoryItem_00576260(item, 0);
             if (entry)
             {
-                float healthX = companion->GetHealthFraction();
+                float healthX = companion->GetHealthPercentage();
                 int crippled = 0;
                 float leftArm = FUN_00646800(companion, 27, 0);
                 if (leftArm == DAT_01012060)
@@ -3162,13 +3220,16 @@ struct Wheel755d
     int unk60;
     int unk64;
     CompanionStatsActorQueries* actor;
-    void CompanionWheelMenu_SetButtonContextText(int mode);
+    void CompanionWheelMenu_SetButtonContextText(int aiID);
 };
 
 // Builds a string for selected modes and writes it to the tile's 0xfc4 string field.
 // @fnv 0x00755dc0
 // src: XBOX_PDB 0x00755dc0
-void Wheel755d::CompanionWheelMenu_SetButtonContextText(int mode)
+// pdb: CompanionWheelMenu::SetButtonContextText | CompanionWheelMenu.obj | retail, upstream name already matches, high
+// pdb params: aiID
+// pdb locals: sContextText, nNumPaks, nHealth, pStimArchetype, nMaxHealth, pStimPack, pitem, nMaxWeight, nWeight
+void Wheel755d::CompanionWheelMenu_SetButtonContextText(int aiID)
 {
     char rltxt[260];
     int b;
@@ -3183,7 +3244,7 @@ void Wheel755d::CompanionWheelMenu_SetButtonContextText(int mode)
         int rlA5;
         int a2;
         rltxt[0] = 0;
-        switch (mode)
+        switch (aiID)
         {
         case 1:
             if (actor)
@@ -3266,16 +3327,19 @@ struct WheelSelection
     unsigned char flag6e;
     unsigned char flag6f;
     int selected;
-    void SelectTile(int next, bool force);
+    void CompanionWheelMenu_SetButtonAsHighlighted(int aiID, bool bForceRefresh);
     void SetTileText(const char*);
     void CompanionWheelMenu_SetButtonContextText(int);
 };
 
 // Selects a tile in the wheel, updating highlight state, tile text, and playing a UI scroll sound.
 // @fnv 0x007557d0
-void WheelSelection::SelectTile(int next, bool force)
+// src: XBOX_RETAIL_PDB 0x007557d0
+// pdb: CompanionWheelMenu::SetButtonAsHighlighted | CompanionWheelMenu.obj | retail, call graph, high
+// pdb params: aiID, bForceRefresh
+void WheelSelection::CompanionWheelMenu_SetButtonAsHighlighted(int aiID, bool bForceRefresh)
 {
-    if (!force && selected == next)
+    if (!bForceRefresh && selected == aiID)
         return;
     BSAudio_QInstance()->GetSoundHandleByEditorID("UIPipBoyScroll", 0x121).Play(false);
     if (selected != -1 && tiles[selected])
@@ -3299,10 +3363,10 @@ void WheelSelection::SelectTile(int next, bool force)
             tiles[selected]->Set(0x100f, flag6c);
         break;
     }
-    selected = next;
+    selected = aiID;
     if (selected != -1 && tiles[selected])
         tiles[selected]->Set(0x100e, 1);
-    switch (next)
+    switch (aiID)
     {
     case 11:
         SetTileText(DAT_011d33fc.FUN_00403df0());
@@ -3315,8 +3379,8 @@ void WheelSelection::SelectTile(int next, bool force)
             SetTileText(DAT_011d2d90.FUN_00403df0());
         else
             SetTileText(DAT_011d4540.FUN_00403df0());
-        if (tiles[next])
-            tiles[next]->Set(0x100f, flag6f);
+        if (tiles[aiID])
+            tiles[aiID]->Set(0x100f, flag6f);
         break;
     case 4:
         SetTileText(DAT_011d288c.FUN_00403df0());
@@ -3326,8 +3390,8 @@ void WheelSelection::SelectTile(int next, bool force)
             SetTileText(DAT_011d40cc.FUN_00403df0());
         else
             SetTileText(DAT_011d4fa8.FUN_00403df0());
-        if (tiles[next])
-            tiles[next]->Set(0x100f, !flag6d);
+        if (tiles[aiID])
+            tiles[aiID]->Set(0x100f, !flag6d);
         break;
     case 1:
         SetTileText(DAT_011d2268.FUN_00403df0());
@@ -3337,8 +3401,8 @@ void WheelSelection::SelectTile(int next, bool force)
             SetTileText(DAT_011d4660.FUN_00403df0());
         else
             SetTileText(DAT_011d2c88.FUN_00403df0());
-        if (tiles[next])
-            tiles[next]->Set(0x100f, !flag6e);
+        if (tiles[aiID])
+            tiles[aiID]->Set(0x100f, !flag6e);
         break;
     case 6:
         SetTileText(DAT_011d34c8.FUN_00403df0());
@@ -3348,8 +3412,8 @@ void WheelSelection::SelectTile(int next, bool force)
             SetTileText(DAT_011d3ba4.FUN_00403df0());
         else
             SetTileText(DAT_011d2598.FUN_00403df0());
-        if (tiles[next])
-            tiles[next]->Set(0x100f, !flag6c);
+        if (tiles[aiID])
+            tiles[aiID]->Set(0x100f, !flag6c);
         break;
     default:
         SetTileText($SG3295);
@@ -3360,11 +3424,14 @@ void WheelSelection::SelectTile(int next, bool force)
 
 // Toggles followerWait, plays the matching follower topic, and updates the tile set helper state.
 // @fnv 0x007563a0
-void CompanionWheelMenu::ToggleFollowerWait()
+// src: XBOX_RETAIL_PDB 0x007563a0
+// pdb: CompanionWheelMenu::Do_ToggleStayFollow | CompanionWheelMenu.obj | retail, string-set bridge, high
+// pdb locals: bSuccess, pRelatedTopic
+void CompanionWheelMenu::Do_ToggleStayFollow()
 {
     bool bSuccess = false;
-    followerWait = !followerWait;
-    if (!followerWait)
+    m_bFollowing = !m_bFollowing;
+    if (!m_bFollowing)
     {
         TESTopic* pRelatedTopic = dynamic_cast<TESTopic*>(TESForm::LookupFormByEditorID("FollowersWait"));
         PlayTopicResponse(pRelatedTopic);
@@ -3378,6 +3445,6 @@ void CompanionWheelMenu::ToggleFollowerWait()
         RunTopicResultScripts(pRelatedTopic);
         bSuccess = true;
     }
-    if (bSuccess && tiles[2])
-        tiles[2]->Set(0x100f, !followerWait);
+    if (bSuccess && pTiles[2])
+        pTiles[2]->Set(0x100f, !m_bFollowing);
 }

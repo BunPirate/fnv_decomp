@@ -50,6 +50,7 @@ struct FUN_00dfbb80_cls
 
 // Frees the data buffer through the allocator, resets the data pointer and capacity, calls BaseRelease, and optionally frees the object itself.
 // @fnv 0x00dfbb80
+// pdb: hkaDeltaCompressedAnimation::`scalar deleting destructor' | hkaDeltaCompressedAnimationClass.obj | retail, vtable slot, high
 FUN_00dfbb80_cls* FUN_00dfbb80_cls::ReleaseBuffer(unsigned char acFlags)
 {
     hkMemoryRouter* pAudioHolder = hkMemoryRouter_getInstance();

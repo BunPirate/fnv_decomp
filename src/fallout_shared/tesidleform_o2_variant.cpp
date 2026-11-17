@@ -54,7 +54,7 @@ struct FUN_00600d90_shell
 };
 struct FUN_00600d70_shell
 {
-    void ForwardCall_00600d70();
+    void NiTStringMap_IDLE_ANIM_ROOT_dtor();
 };
 
 // FUN_005ff880 : 8-byte MSVC this-adjusting (virtual) thunk.

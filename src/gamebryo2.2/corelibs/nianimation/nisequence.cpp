@@ -8,13 +8,13 @@
 // src/gamebryo2.2/corelibs/nianimation/nisequence.cpp - unit created 2026-10-16 from the whole-binary attribution (360 source path: d:/_fallout3/platforms/common/code/gamebryo2.2/corelibs/nianimation/nisequence.cpp).
 // Functions are listed by their @fnv annotations; compile flags inferred from the PC code.
 
-extern "C" void* g_011f3f48;
+extern "C" void* NiSequence_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f3f48 (old: g_011f3f48)
 
 // @fnv 0x00a47a10
 // src: COMMUNITY 0x00a47a10
 void* __cdecl NiSequence_GetRTTI()
 {
-    return &g_011f3f48;
+    return &NiSequence_ms_RTTI;
 }
 
 struct S
@@ -25,6 +25,7 @@ struct S
 void __cdecl _delete(void*, unsigned int);
 // Calls FUN_00a478f0, then if bit 0 of flag is set deletes this with size 0x34, and returns this.
 // @fnv 0x00a47cc0
+// pdb: NiSequence::`scalar deleting destructor' | NiSequence.obj | retail, object-file gap fill, high
 void* __thiscall S::DestroyIfFlagged(unsigned int uiFlags)
 {
     FUN_00a478f0();

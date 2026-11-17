@@ -7,6 +7,7 @@ class NavMeshPtr;
 class NiSortAdjustNode;
 class SpawnedTarget;
 
+// pdb: class PathingLOSMap, size 0x50, bases: NiRefObject, 11 members
 class PathingLOSMap : public NiRefObject
 {
 public:
@@ -18,21 +19,21 @@ public:
         void ReleaseMember();
     };
 
-    DummyPointerMap m_map;
+    DummyPointerMap NavMeshToOffsetMap; // src: XBOX_RETAIL_PDB +0x8 (old: m_map)
     union
     {
         char* pTriangleScores;
         char* m_pData;
     };
-    Shell1c m_shell1c;
+    Shell1c NavMeshes; // src: XBOX_RETAIL_PDB +0x1c (old: m_shell1c)
     unsigned char unk20[0x0C];
-    unsigned int m_uTotalCount;
-    unsigned char unk30[0x0C];
-    float f3c;
+    unsigned int iTotalTriangleCount; // src: XBOX_RETAIL_PDB +0x2c (old: m_uTotalCount)
+    unsigned char iTotalTrianglesSeen[0x0C]; // src: XBOX_RETAIL_PDB +0x30 (old: unk30)
+    float Center; // src: XBOX_RETAIL_PDB +0x3c (old: f3c)
     float f40;
     float f44;
-    float f48;
-    unsigned int unk4C;
+    float fRadius; // src: XBOX_RETAIL_PDB +0x48 (old: f48)
+    unsigned int fSightRadius; // src: XBOX_RETAIL_PDB +0x4c (old: unk4C)
 
     virtual ~PathingLOSMap();
 
@@ -41,8 +42,8 @@ public:
     char* GetTriangleScore(unsigned int aNavMeshID);
     void GetMapValue(unsigned int uiKey, unsigned int& ruiValue);
     char GetLOSValue(unsigned int aiOffset, unsigned short aOffset);
-    char GetNavMeshAndTriangleForIndex(unsigned int limit, SpawnedTarget* target, unsigned short* outOffset);
-    bool GetUnseenNavMeshAndTriangle(unsigned int a, unsigned int b);
+    char GetNavMeshAndTriangleForIndex(unsigned int aiIndex, SpawnedTarget* aRetNavMesh, unsigned short* aRetTriangle);
+    bool GetUnseenNavMeshAndTriangle(unsigned int aRetNavMesh, unsigned int aRetTriangle);
     NiSortAdjustNode* CreateSortAdjustNode();
     void ClampNonPositiveTextChars();
     bool HasNavMeshEntry(unsigned int aiNavMeshID);

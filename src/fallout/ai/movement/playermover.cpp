@@ -30,44 +30,55 @@ extern "C" void* const DAT_0109297c[];
 #include "playermover_decls.h"
 
 // @fnv 0x009ea6a0
-void PlayerMover::Revert(BGSLoadFormBuffer* apBuffer)
+// pdb: PlayerMover::Revert | PlayerMover.obj | retail, upstream name already matches, high
+// pdb params: apLoadGameBuffer
+void PlayerMover::Revert(BGSLoadFormBuffer* apLoadGameBuffer)
 {
-    ActorMover::Revert(apBuffer);
-    m_kSideVec = NiPoint3::ZERO;
-    ByteAndFlagState = 0;
-    m_fValue = -1.0f;
-    m_uiMode = 0;
+    ActorMover::Revert(apLoadGameBuffer);
+    SideVec = NiPoint3::ZERO;
+    MoveMode = 0;
+    fMinTurnTime = -1.0f;
+    LastTurnDir = 0;
 }
 
 // @fnv 0x009ea610
-void PlayerMover::LoadGame(BGSLoadFormBuffer* apBuffer)
+// pdb: PlayerMover::LoadGame | PlayerMover.obj | retail, upstream name already matches, high
+// pdb params: apLoadGameBuffer
+void PlayerMover::LoadGame(BGSLoadFormBuffer* apLoadGameBuffer)
 {
-    ActorMover::LoadGame(apBuffer);
-    apBuffer->ReadDataBlock(&m_kSideVec, sizeof(m_kSideVec));
-    apBuffer->ReadDataBlock(&ByteAndFlagState, sizeof(ByteAndFlagState));
-    apBuffer->ReadDataBlock(&m_uiMode, sizeof(m_uiMode));
-    apBuffer->ReadDataBlock(&m_fValue, sizeof(m_fValue));
+    ActorMover::LoadGame(apLoadGameBuffer);
+    apLoadGameBuffer->ReadDataBlock(&SideVec, sizeof(SideVec));
+    apLoadGameBuffer->ReadDataBlock(&MoveMode, sizeof(MoveMode));
+    apLoadGameBuffer->ReadDataBlock(&LastTurnDir, sizeof(LastTurnDir));
+    apLoadGameBuffer->ReadDataBlock(&fMinTurnTime, sizeof(fMinTurnTime));
 }
 
 // @fnv 0x009ea680
-void PlayerMover::InitLoadGame(BGSLoadFormBuffer* apBuffer)
+// pdb: PlayerMover::InitLoadGame | PlayerMover.obj | debug, upstream name already matches, high
+// pdb params: apLoadGameBuffer
+void PlayerMover::InitLoadGame(BGSLoadFormBuffer* apLoadGameBuffer)
 {
-    ActorMover::InitLoadGame(apBuffer);
+    ActorMover::InitLoadGame(apLoadGameBuffer);
 }
 
 // @fnv 0x009ea2f0
-void PlayerMover::SetMovementValue(float afDelta)
+// pdb: PlayerMover::UpdateTurnTimer | PlayerMover.obj | retail, object-file run extension, high
+// pdb params: fdeltaT
+void PlayerMover::SetMovementValue(float fdeltaT)
 {
-    if (m_fValue > 0.0)
+    if (fMinTurnTime > 0.0)
     {
-        m_fValue -= afDelta;
+        fMinTurnTime -= fdeltaT;
         if (!pActor->GetSitSleepState())
-            ByteAndFlagState |= m_uiMode;
+            MoveMode |= LastTurnDir;
     }
 }
 
 // @fnv 0x009e9e50
-void PlayerMover::Update(float fTimeSinceScaleStart)
+// pdb: PlayerMover::Update | PlayerMover.obj | retail, upstream name already matches, high
+// pdb params: fdeltaT
+// pdb locals: movedelta, panim, panim1st, pController, pListener, fMotionMagnitude, fAnimMagnitude, fCosTheta, fSinTheta, fdeltax, fangle, pos, pcell, refpos, fheight
+void PlayerMover::Update(float fdeltaT)
 {
     NiPoint3 delta = NiPoint3::ZERO;
     Animation* animation = g_thePlayer->GetAnimation(false);
@@ -77,7 +88,7 @@ void PlayerMover::Update(float fTimeSinceScaleStart)
         if (!animation || firstPerson->Animation_GetGroup(1) == animation->Animation_GetGroup(1))
             animation = firstPerson;
     }
-    if (!g_thePlayer->PlaceAtPosition(delta))
+    if (!g_thePlayer->Actor_GetKnockedDownMovementDelta(delta))
     {
         if (animation)
         {
@@ -95,7 +106,7 @@ void PlayerMover::Update(float fTimeSinceScaleStart)
         character.state = character.controller ? &character.controller->state : 0;
         if (character.state && character.state->bhkCharacterListener_StuckToSomeone())
             delta = NiPoint3::ZERO;
-        if ((ByteAndFlagState & 0xF) && !g_thePlayer->GetIsDying() && !g_thePlayer->FUN_0050d4a0())
+        if ((MoveMode & 0xF) && !g_thePlayer->GetIsDying() && !g_thePlayer->FUN_0050d4a0())
         {
             switch (g_thePlayer->GetAnimAction())
             {
@@ -107,28 +118,28 @@ void PlayerMover::Update(float fTimeSinceScaleStart)
                 float sideLength;
                 float deltaLength;
             } lengths;
-            lengths.sideLength = static_cast<const NiPoint3&>(m_kSideVec).Length();
+            lengths.sideLength = static_cast<const NiPoint3&>(SideVec).Length();
             lengths.deltaLength = static_cast<const NiPoint3&>(delta).Length();
-            if (lengths.sideLength > 0.0 && lengths.deltaLength > 0.0 && !(ByteAndFlagState & 0x40))
+            if (lengths.sideLength > 0.0 && lengths.deltaLength > 0.0 && !(MoveMode & 0x40))
             {
-                float sideX = m_kSideVec.x / lengths.sideLength;
-                float sideY = m_kSideVec.y / lengths.sideLength;
+                float sideX = SideVec.x / lengths.sideLength;
+                float sideY = SideVec.y / lengths.sideLength;
                 delta.x = sideX * lengths.deltaLength;
                 delta.y = sideY * lengths.deltaLength;
             }
         }
-        if ((ByteAndFlagState & 3) && (ByteAndFlagState & 0xC) && !g_thePlayer->GetIsDying())
+        if ((MoveMode & 3) && (MoveMode & 0xC) && !g_thePlayer->GetIsDying())
         {
             switch (g_thePlayer->GetLogDate()->GetAnimAction())
             {
             default:
                 if (delta.y != 0.0)
                 {
-                    float displacement = m_kSideVec.x * fTimeSinceScaleStart * g_thePlayer->GetScale();
+                    float displacement = SideVec.x * fdeltaT * g_thePlayer->GetScale();
                     float angle = displacement / delta.y * 0.7853981852531433;
-                    if (ByteAndFlagState & 4)
+                    if (MoveMode & 4)
                         delta.x += -std::abs(cos(1.5707963705062866 - angle) * delta.y);
-                    else if (ByteAndFlagState & 8)
+                    else if (MoveMode & 8)
                         delta.x += std::abs(cos(1.5707963705062866 - angle) * delta.y);
                     delta.y = cos(angle) * delta.y;
                 }
@@ -146,7 +157,7 @@ void PlayerMover::Update(float fTimeSinceScaleStart)
     }
     else
     {
-        g_thePlayer->Move(fTimeSinceScaleStart, &delta, g_thePlayer->GetActorStateFlags());
+        g_thePlayer->Move(fdeltaT, &delta, g_thePlayer->GetActorStateFlags());
         struct GroundHeight
         {
             float height;
@@ -170,15 +181,18 @@ void PlayerMover::Update(float fTimeSinceScaleStart)
 }
 
 // @fnv 0x009ea3e0
+// pdb: PlayerMover::ForceMoveMode | PlayerMover.obj | debug, vtable slot, medium
+// pdb params: aiMoveMode
+// pdb locals: bsneakChanged, eaimGroup, sanimGroup, panim, pseq
 void PlayerMover::SetMoverMode(unsigned int auMode)
 {
-    bool changed = (ByteAndFlagState & 0x400) != (auMode & 0x400);
+    bool changed = (MoveMode & 0x400) != (auMode & 0x400);
     if (auMode & 0x30)
     {
-        m_fValue = DAT_011cdf28.Float()->f;
-        m_uiMode = auMode & 0x30;
+        fMinTurnTime = DAT_011cdf28.Float()->f;
+        LastTurnDir = auMode & 0x30;
     }
-    ByteAndFlagState = auMode;
+    MoveMode = auMode;
     if (changed && TESAnimGroup::IsAimAnimation(g_thePlayer->GetAnimation(false)->Animation_GetGroup(4)))
     {
         struct AimAnimationState
@@ -208,40 +222,45 @@ void PlayerMover::SetMoverMode(unsigned int auMode)
 void PlayerMover::UpdatePlayerStatus(unsigned int auMode, bool abSet)
 {
     if (abSet)
-        ByteAndFlagState |= auMode;
+        MoveMode |= auMode;
     else
-        ByteAndFlagState &= ~auMode;
+        MoveMode &= ~auMode;
 }
 
 // Stores the given side vector into the player mover's side vector member.
 // @fnv 0x009ea570
 void PlayerMover::SetSideVec(const NiPoint3& arSideVec)
 {
-    m_kSideVec = arSideVec;
+    SideVec = arSideVec;
 }
 
 // @fnv 0x009ea3b0
 void PlayerMover::ClearMode(unsigned int auMode)
 {
-    ByteAndFlagState &= ~auMode;
+    MoveMode &= ~auMode;
 }
 
 // @fnv 0x009e9de0
 // src: XBOX_PDB 0x009e9de0
-void PlayerMover::ClearMoveModePreference(unsigned int auMode)
+// pdb: PlayerMover::ClearMoveModePreference | PlayerMover.obj | debug, upstream name already matches, high
+// pdb params: auiPreferredMoveMode
+void PlayerMover::ClearMoveModePreference(unsigned int auiPreferredMoveMode)
 {
-    ClearMode(auMode);
+    ClearMode(auiPreferredMoveMode);
 }
 
 // @fnv 0x009e9dc0
 // src: XBOX_PDB 0x009e9dc0
-void PlayerMover::SetMoveModePreference(unsigned int auMode)
+// pdb: PlayerMover::SetMoveModePreference | PlayerMover.obj | debug, upstream name already matches, high
+// pdb params: auiPreferredMoveMode
+void PlayerMover::SetMoveModePreference(unsigned int auiPreferredMoveMode)
 {
-    UpdatePlayerStatus(auMode, true);
+    UpdatePlayerStatus(auiPreferredMoveMode, true);
 }
 
 // @fnv 0x009e9e30
 // src: GUESS 0x009e9e30 (confidence: medium)
+// pdb: PlayerMover::~PlayerMover | PlayerMover.obj | debug, object-file gap fill, medium
 void PlayerMover::ResetVtableAndDestroyActorMover()
 {
     *reinterpret_cast<int*>(this) = (int)DAT_0109297c;
@@ -251,6 +270,7 @@ void PlayerMover::ResetVtableAndDestroyActorMover()
 void __cdecl _Deallocate(void*);
 // Calls FUN_009e9e30, then deallocates this object if auFlags has bit 0 set, and returns this.
 // @fnv 0x009e9e00
+// pdb: PlayerMover::`scalar deleting destructor' | PlayerMover.obj | debug, vtable slot, medium
 void* PlayerMover::FUN_009e9e00(unsigned int auFlags)
 {
     ResetVtableAndDestroyActorMover();
@@ -261,11 +281,13 @@ void* PlayerMover::FUN_009e9e00(unsigned int auFlags)
 
 // @fnv 0x009ea5a0
 // src: XBOX_PDB 0x009ea5a0
-void PlayerMover::SaveGame_009ea5a0(BGSSaveFormBuffer* apBuffer)
+// pdb: PlayerMover::SaveGame | PlayerMover.obj | retail, object-file run extension, high
+// pdb params: apSaveGameBuffer
+void PlayerMover::SaveGame_009ea5a0(BGSSaveFormBuffer* apSaveGameBuffer)
 {
-    ActorMover::SaveGame_009df100(apBuffer);
-    apBuffer->SaveData(&m_kSideVec, 0xC, 0);
-    apBuffer->SaveData(&ByteAndFlagState, 4, 0);
-    apBuffer->SaveData(&m_uiMode, 4, 0);
-    apBuffer->SaveData(&m_fValue, 4, 0);
+    ActorMover::SaveGame_009df100(apSaveGameBuffer);
+    apSaveGameBuffer->SaveData(&SideVec, 0xC, 0);
+    apSaveGameBuffer->SaveData(&MoveMode, 4, 0);
+    apSaveGameBuffer->SaveData(&LastTurnDir, 4, 0);
+    apSaveGameBuffer->SaveData(&fMinTurnTime, 4, 0);
 }

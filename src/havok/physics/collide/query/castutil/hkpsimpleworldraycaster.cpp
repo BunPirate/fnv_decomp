@@ -161,6 +161,8 @@ struct S_00cfa890_RayCaster
 
 // Transforms the ray into the collidable's local space, tests its shape for a hit, and stores the hit fraction and root collidable in m_result.
 // @fnv 0x00cfa890
+// pdb: hkpSimpleWorldRayCaster::addBroadPhaseHandle | hkpSimpleWorldRayCaster.obj | retail, vtable slot, high
+// pdb params: broadPhaseHandle, castIndex
 float S_00cfa890_RayCaster::RayCastCollidable(const S_00cfa890_Handle* broadPhaseHandle, int castIndex)
 {
     const S_00cfa890_Collidable* col = (const S_00cfa890_Collidable*)broadPhaseHandle->getOwner();

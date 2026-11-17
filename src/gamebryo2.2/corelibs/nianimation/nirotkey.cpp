@@ -11,6 +11,9 @@ inline NiQuaternion::NiQuaternion() {}
     reinterpret_cast<const TimedRotationKey*>(reinterpret_cast<const char*>(keys) + (index) * (size))
 
 // @fnv 0x00a28740
+// pdb: NiRotKey::GenInterp | NiRotKey.obj | retail, call graph (shared callers), medium
+// pdb params: fTime, pkKeys, eType, uiNumKeys, uiLastIdx, ucSize
+// pdb locals: fLastTime, uiNextIdx, fNormTime, uiNumKeysM1, interp, kQuat, fNextTime, uiLastIdxCopy
 NiQuaternion __cdecl TimedRotationKey::InterpolatePosition(float fTime, TimedRotationKey* pkKeys,
                                                            NiAnimationKey::KeyType eType, unsigned int uiNumKeys,
                                                            unsigned int& ruiLastIndex, unsigned char ucKeySize)
@@ -66,6 +69,8 @@ void UpdateState_00a3ca30();
 // Compares the four floats of pThis with those of q and returns 1 only if all four are exactly equal.
 // @fnv 0x00a92660
 // src: GUESS 0x00a92660 (confidence: high)
+// pdb: NiBound::operator== | BSOrderedNode.obj | debug, call graph, medium
+// pdb params: bound
 int __fastcall Object_HasEqualFloatComponents(const float* pThis, int, const float* q)
 {
     return pThis[0] == q[0] && pThis[1] == q[1] && pThis[2] == q[2] && pThis[3] == q[3];
@@ -118,7 +123,7 @@ class FUN_00a3e9a0_cls
     float* m_20;
     float m_24;
 
-    float NiPathInterpolator_PathLength(unsigned int a, unsigned int b, float c);
+    float NiPathInterpolator_PathLength(unsigned int iI0, unsigned int iI1, float fTime);
     float GetAccumulatedValue();
 };
 
@@ -127,6 +132,8 @@ void* __cdecl _NiMalloc_00aa1070(unsigned int n);
 
 // If m_24 is negative, allocates a float array sized from m_18->m_08, fills running sums via FUN_00a3e680, stores the last value in m_24, and returns m_24.
 // @fnv 0x00a3e9a0
+// pdb: NiPathInterpolator::GetTotalPathLength | NiPathInterpolator.obj | retail, object-file gap fill, high
+// pdb locals: uiNumPathKeys, ePathType, ucSize, ui0, ui1, fLength
 float FUN_00a3e9a0_cls::GetAccumulatedValue()
 {
     if (m_24 < 0.0f)

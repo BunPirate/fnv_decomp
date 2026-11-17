@@ -10,11 +10,13 @@ void GridArray::Init()
 }
 
 // @fnv 0x004b9eb0
+// pdb: GridArray::DetachAll | GridArray.obj | retail, vtable slot, high
+// pdb locals: x, y
 void GridArray::DetachAllCells()
 {
-    for (unsigned int i = 0; i < uiDimension; ++i)
+    for (unsigned int i = 0; i < iDimension; ++i)
     {
-        for (unsigned int j = 0; j < uiDimension; ++j)
+        for (unsigned int j = 0; j < iDimension; ++j)
         {
             Detach(i, j);
         }
@@ -27,6 +29,7 @@ GridArray::~GridArray()
 }
 
 // @fnv 0x004b9e90
+// pdb: GridArray::KillAll | GridArray.obj | debug, vtable slot, medium
 void GridArray::AttachAllCells()
 {
     DetachAllCells();
@@ -34,6 +37,9 @@ void GridArray::AttachAllCells()
 
 // Computes the offset from the current cell to (aiX, aiY), shifts by it, and returns whether the offset was non-zero.
 // @fnv 0x004b9f10
+// pdb: GridArray::SetCenter | GridArray.obj | retail, vtable slot, high
+// pdb params: aiX, aiY
+// pdb locals: ioffY, ioffX
 bool GridArray::SetGridPosition(int aiX, int aiY)
 {
     int ioffX = aiX - static_cast<const GridArray*>(this)->GetCenterX();
@@ -47,69 +53,72 @@ bool GridArray::SetGridPosition(int aiX, int aiY)
 
 int FUN_00ec7d40(int);
 // @fnv 0x004b9f70
-void GridArray::Shift(int aiShiftX, int aiShiftY)
+// pdb: GridArray::Shift | GridArray.obj | retail, upstream name already matches, high
+// pdb params: aiCols, aiRows
+// pdb locals: icol, irow
+void GridArray::Shift(int aiCols, int aiRows)
 {
     unsigned int j = 0;
     unsigned int i = 0;
-    iHorizontalPixelCenterObj += aiShiftX;
-    iCenterPixelY += aiShiftY;
-    if ((unsigned int)FUN_00ec7d40(aiShiftX) >= uiDimension || (unsigned int)FUN_00ec7d40(aiShiftY) >= uiDimension)
+    iHorizontalPixelCenterObj += aiCols;
+    iCenterPixelY += aiRows;
+    if ((unsigned int)FUN_00ec7d40(aiCols) >= iDimension || (unsigned int)FUN_00ec7d40(aiRows) >= iDimension)
     {
         DetachAllCells();
         return;
     }
-    while (aiShiftX != 0)
+    while (aiCols != 0)
     {
-        if (aiShiftX < 0)
+        if (aiCols < 0)
         {
-            for (i = 0; i < uiDimension; ++i)
+            for (i = 0; i < iDimension; ++i)
             {
-                j = uiDimension - 1;
+                j = iDimension - 1;
                 Detach(j, i);
                 for (; j > 0; --j)
                     MoveItem(j - 1, i, j, i);
                 ClearTileExtraPair(j, i);
             }
-            ++aiShiftX;
+            ++aiCols;
         }
         else
         {
-            for (i = 0; i < uiDimension; ++i)
+            for (i = 0; i < iDimension; ++i)
             {
                 j = 0;
                 Detach(j, i);
-                for (; j < uiDimension - 1; ++j)
+                for (; j < iDimension - 1; ++j)
                     MoveItem(j + 1, i, j, i);
                 ClearTileExtraPair(j, i);
             }
-            --aiShiftX;
+            --aiCols;
         }
     }
-    while (aiShiftY != 0)
+    while (aiRows != 0)
     {
-        if (aiShiftY < 0)
+        if (aiRows < 0)
         {
-            for (j = 0; j < uiDimension; ++j)
+            for (j = 0; j < iDimension; ++j)
             {
-                i = uiDimension - 1;
+                i = iDimension - 1;
                 Detach(j, i);
                 for (; i > 0; --i)
                     MoveItem(j, i - 1, j, i);
                 ClearTileExtraPair(j, i);
             }
-            ++aiShiftY;
+            ++aiRows;
         }
         else
         {
-            for (j = 0; j < uiDimension; ++j)
+            for (j = 0; j < iDimension; ++j)
             {
                 i = 0;
                 Detach(j, i);
-                for (; i < uiDimension - 1; ++i)
+                for (; i < iDimension - 1; ++i)
                     MoveItem(j, i + 1, j, i);
                 ClearTileExtraPair(j, i);
             }
-            --aiShiftY;
+            --aiRows;
         }
     }
 }

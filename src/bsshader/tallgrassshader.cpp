@@ -32,24 +32,26 @@ extern __declspec(thread) int gShaderAllocationContext;
 
 inline AutoMemContext::AutoMemContext(int context)
 {
-    m_eMemoryContext = static_cast<MEM_CONTEXT>(gShaderAllocationContext);
+    iOldMemContext = static_cast<MEM_CONTEXT>(gShaderAllocationContext);
     gShaderAllocationContext = context;
 }
 
 inline AutoMemContext::~AutoMemContext()
 {
-    gShaderAllocationContext = m_eMemoryContext;
+    gShaderAllocationContext = iOldMemContext;
 }
 
 // Creates the constants object with the given count (defaulting to 5 when count is -1) if it does not already exist.
 // @fnv 0x00ba95e0
-void TallGrassShader::InitializeConstants(unsigned int count)
+// pdb: BSShaderProperty::CheckCreateRenderPassArray | BSShaderProperty.obj | retail, call graph, high
+// pdb params: aiNumPasses
+void TallGrassShader::InitializeConstants(unsigned int aiNumPasses)
 {
     if (!constants)
     {
-        if (count == (unsigned int)-1)
-            count = 5;
-        constants = new FUN_00ba94b0(count);
+        if (aiNumPasses == (unsigned int)-1)
+            aiNumPasses = 5;
+        constants = new FUN_00ba94b0(aiNumPasses);
     }
 }
 
@@ -85,18 +87,21 @@ struct Node
 };
 // @fnv 0x00ba90a0
 // src: COMMUNITY 0x00ba90a0
-void BSShaderProperty_ToggleMotionBlurRecurse(Obj* apObj)
+// pdb: BSShaderProperty::ToggleMotionBlurRecurse | BSShaderProperty.obj | retail, upstream name already matches, high
+// pdb params: apObject
+// pdb locals: pgeometry, pproperty, bmotionblur, pnode, ucount, uindex, pchild
+void BSShaderProperty_ToggleMotionBlurRecurse(Obj* apObject)
 {
-    if (!apObj)
+    if (!apObject)
         return;
-    if (apObj->v7())
+    if (apObject->v7())
     {
-        Prop* p = ((PropHelper*)apObj)->GetProperty(3);
+        Prop* p = ((PropHelper*)apObject)->GetProperty(3);
         if (p)
             p->BSShaderProperty_SetMotionBlurred((p->flags & 0x10) <= 0);
         return;
     }
-    Node* n = apObj->v3();
+    Node* n = apObject->v3();
     if (n)
     {
         unsigned int cnt = n->count;
@@ -142,18 +147,21 @@ struct Node
 };
 // @fnv 0x00ba9120
 // src: COMMUNITY 0x00ba9120
-void BSShaderProperty_SetMotionBlurRecurse(Obj* pObj, int a)
+// pdb: BSShaderProperty::SetMotionBlurRecurse | BSShaderProperty.obj | retail, upstream name already matches, high
+// pdb params: apObject, abMotionBlur
+// pdb locals: pgeometry, pproperty, pnode, ucount, uindex, pchild
+void BSShaderProperty_SetMotionBlurRecurse(Obj* apObject, int abMotionBlur)
 {
-    if (!pObj)
+    if (!apObject)
         return;
-    if (pObj->v7())
+    if (apObject->v7())
     {
-        Prop* p = ((PropHelper*)pObj)->GetProperty(3);
+        Prop* p = ((PropHelper*)apObject)->GetProperty(3);
         if (p)
-            p->BSShaderProperty_SetMotionBlurred(a);
+            p->BSShaderProperty_SetMotionBlurred(abMotionBlur);
         return;
     }
-    Node* n = pObj->v3();
+    Node* n = apObject->v3();
     if (n)
     {
         unsigned int cnt = n->count;
@@ -161,7 +169,7 @@ void BSShaderProperty_SetMotionBlurRecurse(Obj* pObj, int a)
         {
             Obj* c = n->kids[i];
             if (c)
-                BSShaderProperty_SetMotionBlurRecurse(c, a);
+                BSShaderProperty_SetMotionBlurRecurse(c, abMotionBlur);
         }
     }
 }
@@ -200,18 +208,21 @@ struct Node
 };
 // @fnv 0x00ba91a0
 // src: XBOX_PDB 0x00ba91a0
-void BSShaderProperty_SetFlagRecurse(Obj* pObj, int a, bool b)
+// pdb: BSShaderProperty::SetFlagRecurse | BSShaderProperty.obj | retail, upstream name already matches, high
+// pdb params: apObject, aeFlag, abEnable
+// pdb locals: pgeometry, pproperty, pnode, ucount, uindex, pchild
+void BSShaderProperty_SetFlagRecurse(Obj* apObject, int aeFlag, bool abEnable)
 {
-    if (!pObj)
+    if (!apObject)
         return;
-    if (pObj->v6())
+    if (apObject->v6())
     {
-        Prop* p = ((PropHelper*)pObj)->GetProperty(3);
+        Prop* p = ((PropHelper*)apObject)->GetProperty(3);
         if (p)
-            p->BSShaderProperty_SetFlag(a, b);
+            p->BSShaderProperty_SetFlag(aeFlag, abEnable);
         return;
     }
-    Node* n = pObj->v3();
+    Node* n = apObject->v3();
     if (n)
     {
         unsigned int cnt = n->count;
@@ -219,7 +230,7 @@ void BSShaderProperty_SetFlagRecurse(Obj* pObj, int a, bool b)
         {
             Obj* c = n->kids[i];
             if (c)
-                BSShaderProperty_SetFlagRecurse(c, a, b);
+                BSShaderProperty_SetFlagRecurse(c, aeFlag, abEnable);
         }
     }
 }
@@ -247,6 +258,8 @@ struct FUN_00ba8e50
 // Allocates and constructs a new property object, returning the pointer.
 // @fnv 0x00ba9250
 // src: EXE 0x00ba9250
+// pdb: BSShaderProperty::CreateObject | BSShaderProperty.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 FUN_00ba8e50* BSShaderProperty_CreateObject()
 {
     return new FUN_00ba8e50;
@@ -254,15 +267,16 @@ FUN_00ba8e50* BSShaderProperty_CreateObject()
 
 struct FUN_00bac160_holder
 {
-    void ConfigureBeamPasses();
+    void TallGrassShader_PresetStages();
 };
 // @fnv 0x00bac8b0
 // src: XBOX_PDB 0x00bac8b0
+// pdb: TallGrassShader::ReloadShaders | TallGrassShader.obj | retail, upstream name already matches, high
 void __fastcall TallGrassShader_ReloadShaders(FUN_00bac160_holder* self, int)
 {
     void** vt = *(void***)self;
     ((void(__thiscall*)(void*))vt[79])(self);
-    self->ConfigureBeamPasses();
+    self->TallGrassShader_PresetStages();
 }
 
 struct U
@@ -270,6 +284,7 @@ struct U
     char pad[8];
     int f;
 };
+// pdb: structure T, size 0x8 (here 0x10), 1 members
 struct T
 {
     char pad[4];
@@ -287,15 +302,18 @@ extern int DAT_011f95e4;
 extern int DAT_011f95e8;
 // @fnv 0x00bac8d0
 // src: XBOX_PDB 0x00bac8d0
-void __stdcall TallGrassShader_SetupPassTextures(unsigned int k)
+// pdb: TallGrassShader::SetupPassTextures | TallGrassShader.obj | debug, upstream name already matches, high
+// pdb params: auiCurrentPass
+// pdb locals: sppass, spStage
+void __stdcall TallGrassShader_SetupPassTextures(unsigned int auiCurrentPass)
 {
     S* g = DAT_0126f74c;
-    if ((k >= 0x1c && k <= 0x25) || k - 0x262 <= 9)
+    if ((auiCurrentPass >= 0x1c && auiCurrentPass <= 0x25) || auiCurrentPass - 0x262 <= 9)
     {
         g->t->a->f = DAT_011f95e4;
         g->t->b->f = DAT_011f95e8;
     }
-    if ((k >= 0x30 && k <= 0x39) || k - 0x276 <= 9)
+    if ((auiCurrentPass >= 0x30 && auiCurrentPass <= 0x39) || auiCurrentPass - 0x276 <= 9)
     {
         g->t->b->f = DAT_011f95e4;
         g->t->c->f = DAT_011f95e8;
@@ -457,15 +475,18 @@ struct Self
     virtual void s64();
     virtual void s65();
     virtual int s66();
-    int TallGrassShader_SetupGeometryTextures(Arg* arg);
+    int TallGrassShader_SetupGeometryTextures(Arg* apState);
 };
 // Stores the result of p->s45() into the first slot, and for k in 0x284..0x287 also stores a texture from DAT_011f91e0[3] into the second slot, then calls s66().
 // @fnv 0x00bac950
 // src: XBOX_PDB 0x00bac950
-int Self::TallGrassShader_SetupGeometryTextures(Arg* arg)
+// pdb: TallGrassShader::SetupGeometryTextures | TallGrassShader.obj | retail, upstream name already matches, high
+// pdb params: apState
+// pdb locals: auiCurrentPass, ptgsprop, spStage
+int Self::TallGrassShader_SetupGeometryTextures(Arg* apState)
 {
     unsigned int k = DAT_011f91e4;
-    Poly* p = arg->p;
+    Poly* p = apState->p;
     Slot* a = DAT_0126f74c->t->a;
     a->f = p->s45();
     if (k - 0x284 <= 3)
@@ -481,7 +502,9 @@ void __fastcall FUN_00baa570(void*);
 void __cdecl __Dummy_00b6fef0(void*, unsigned int);
 // Calls FUN_00baa570 on self, then if bit 0 of flags is set calls __Dummy_00b6fef0 with self and 0x1e0, and returns self.
 // @fnv 0x00baced0
-void* __fastcall FUN_00baced0(void* self, int, unsigned int flags)
+// src: XBOX_RETAIL_PDB 0x00baced0
+// pdb: TallGrassShader::`scalar deleting destructor' | TallGrassShader.obj | retail, object-file gap fill, high
+void* __fastcall TallGrassShader_ScalarDtor(void* self, int, unsigned int flags)
 {
     FUN_00baa570(self);
     if (flags & 1)
@@ -491,15 +514,16 @@ void* __fastcall FUN_00baced0(void* self, int, unsigned int flags)
 
 struct NiTexture;
 
-extern ImageSpaceTexture DAT_012005a4;
+extern ImageSpaceTexture ImageSpaceEffectHDR_spAdaptedLight; // src: XBOX_RETAIL_PDB 0x012005a4 (old: DAT_012005a4)
 // @fnv 0x00bad4a0
 // src: COMMUNITY 0x00bad4a0
+// pdb: ImageSpaceEffectHDR::ClearAdaptedLight | ImageSpaceEffectHDR.obj | retail, upstream name already matches, high
 void ImageSpaceEffectHDR_ClearAdaptedLight()
 {
-    if (DAT_012005a4.GetTexture())
+    if (ImageSpaceEffectHDR_spAdaptedLight.GetTexture())
     {
-        DAT_012005a4.AddRenderedTexture();
-        DAT_012005a4.ImageSpaceTexture_ClearTexture();
+        ImageSpaceEffectHDR_spAdaptedLight.AddRenderedTexture();
+        ImageSpaceEffectHDR_spAdaptedLight.ImageSpaceTexture_ClearTexture();
     }
 }
 
@@ -571,16 +595,19 @@ struct FUN_00bacd00 : BSShader
     V4_bacd00 m_k1;
     V4_bacd00 m_k2;
     V4_bacd00 m_k3;
-    FUN_00bacd00(RefObj_bacd00* pDecl);
+    FUN_00bacd00(RefObj_bacd00* apShaderDecl);
     virtual ~FUN_00bacd00();
 };
 
 // @fnv 0x00bacd00
-FUN_00bacd00::FUN_00bacd00(RefObj_bacd00* pDecl)
+// pdb: TallGrassShader::TallGrassShader | TallGrassShader.obj | retail, call graph, high
+// pdb params: apShaderDecl
+// pdb locals: i
+FUN_00bacd00::FUN_00bacd00(RefObj_bacd00* apShaderDecl)
     : m_k1(0.0f, 0.0f, 0.0f, 0.0f), m_k2(0.0f, 0.0f, 0.0f, 0.0f), m_k3(0.0f, 0.0f, 0.0f, 0.0f)
 {
     iShaderType = 6;
-    reinterpret_cast<RefPtr_bacd00&>(m_spShaderDecl) = pDecl;
+    reinterpret_cast<RefPtr_bacd00&>(m_spShaderDecl) = apShaderDecl;
     m_f11c = 0.0f;
     DAT_01200570 = DAT_011a9bd0;
     if (_fnv_particle_shader_renderer_level >= 2)
@@ -736,7 +763,10 @@ struct FUN_00bacd00
     FUN_00bacd00(NiD3DVertexDeclaration*);
 };
 // @fnv 0x00bacf00
-FUN_00bacd00* CreateShaderFadeNode()
+// src: XBOX_RETAIL_PDB 0x00bacf00
+// pdb: TallGrassShader::CreateShader | TallGrassShader.obj | retail, call graph, high
+// pdb locals: tempMemContext, spShaderDecl, pshader
+FUN_00bacd00* TallGrassShader_CreateShader()
 {
     AutoMemContext tempMemContext(0x1c);
     NiD3DVertexDeclaration* m_pVertexDeclaration1 = NiD3DVertexDeclaration::Create(DAT_011f9508, 5, 1);
@@ -843,6 +873,9 @@ struct FUN_00ba8ff0_shell : NiPropertyState_stub
     FUN_00ba8e50* CreatePropertyStateCopy(unsigned int uiPass);
 };
 // @fnv 0x00ba8ff0
+// pdb: BSShaderProperty::CreateClone | BSShaderProperty.obj | retail, object-file run extension, low
+// pdb params: arCloneData
+// pdb locals: pprop
 FUN_00ba8e50* FUN_00ba8ff0_shell::CreatePropertyStateCopy(unsigned int uiPass)
 {
     FUN_00ba8e50* pResult = new FUN_00ba8e50;
@@ -876,15 +909,18 @@ static __forceinline void S_BinRead(S_00ba9380_Bin* bin, void* v, unsigned int b
 struct FUN_00ba9380_cls
 {
     void SaveToStream(void* pOther);
-    void BSShaderProperty_SaveBinary(void* pOther);
+    void BSShaderProperty_SaveBinary(void* kStream);
 };
 // Calls SaveToStream, then reads four 4-byte values from the stream at pOther+0x250 into this+0x58, this+0x20, this+0x24 and this+0x30.
 // @fnv 0x00ba9380
 // src: XBOX_PDB 0x00ba9380
-void FUN_00ba9380_cls::BSShaderProperty_SaveBinary(void* pOther)
+// pdb: BSShaderProperty::SaveBinary | BSShaderProperty.obj | retail, upstream name already matches, high
+// pdb params: kStream
+// pdb locals: i
+void FUN_00ba9380_cls::BSShaderProperty_SaveBinary(void* kStream)
 {
-    char* pObj = (char*)pOther;
-    SaveToStream(pOther);
+    char* pObj = (char*)kStream;
+    SaveToStream(kStream);
     S_BinRead(*(S_00ba9380_Bin**)(pObj + 0x250), (char*)this + 0x58, 4);
     char* p = (char*)this + 0x20;
     for (int i = 0; i < 2; i++)
@@ -900,7 +936,7 @@ extern int DAT_00ffdead;
 
 struct S_00ba9520_Heap
 {
-    void MemoryManager_Deallocate(void* p);
+    void MemoryManager_Deallocate(void* apMem);
 };
 extern S_00ba9520_Heap DAT_011f6238;
 
@@ -939,6 +975,8 @@ struct FUN_00ba9520 : S_00ba9520_Base
 
 // Frees each non-null entry and its unk0c buffer, then sets unk10 to DAT_00ffdead before the base destructor runs.
 // @fnv 0x00ba9520
+// pdb: BSShaderProperty::RenderPassArray::~RenderPassArray | BSShaderProperty.obj | retail, call graph, high
+// pdb locals: i
 FUN_00ba9520::~FUN_00ba9520()
 {
     for (unsigned int i = 0; i < unk0c; ++i)
@@ -965,12 +1003,14 @@ void __cdecl FUN_00e804d0(void*);
 struct Shader_bad060 : BSShader
 {
     NiPointer<NiD3DPass> m_aspPass[0x2c];
-    void ConfigureBeamPasses();
+    void TallGrassShader_PresetStages();
     bool TallGrassShader_LoadStagesAndPasses();
 };
 
 // @fnv 0x00bad060
 // src: COMMUNITY 0x00bad060
+// pdb: TallGrassShader::LoadStagesAndPasses | TallGrassShader.obj | retail, upstream name already matches, high
+// pdb locals: tempMemContext, ui
 bool Shader_bad060::TallGrassShader_LoadStagesAndPasses()
 {
     AutoMemContext kContext(0x1c);
@@ -978,7 +1018,7 @@ bool Shader_bad060::TallGrassShader_LoadStagesAndPasses()
     {
         FUN_00e804d0(&m_aspPass[i]);
     }
-    ConfigureBeamPasses();
+    TallGrassShader_PresetStages();
     return true;
 }
 
@@ -1004,11 +1044,14 @@ struct ShaderVariableMap : RefObj_bacd00
 };
 struct ShaderRegister
 {
-    void InitializeShaderVariableMaps();
+    void TallGrassShader_CreateConstantMaps();
 };
 // Creates the main and extra ShaderVariableMap groups if missing, registers their variables, and caches the lookup result of the count-based variable.
 // @fnv 0x00bad100
-void ShaderRegister::InitializeShaderVariableMaps()
+// src: XBOX_RETAIL_PDB 0x00bad100
+// pdb: TallGrassShader::CreateConstantMaps | TallGrassShader.obj | retail, string-set bridge, high
+// pdb locals: tempMemContext, uiDefinedMatrixFlags, uiConstantPoint4Flags, uiConstantMatrixFlags
+void ShaderRegister::TallGrassShader_CreateConstantMaps()
 {
     AutoMemContext allocScope(28);
     RefPtr_bacd00& mainGroup = *reinterpret_cast<RefPtr_bacd00*>(reinterpret_cast<char*>(this) + 0x34);
@@ -1111,7 +1154,9 @@ extern NiPoint3 DAT_012004f0;
 // If neither flag is set, copies the renderer's two matrices and the source's x/y/z point into globals and sets DAT_0120045e true and DAT_011adcdc false.
 // @fnv 0x00ba9420
 // src: COMMUNITY 0x00ba9420
-void BSShaderProperty_PreviousTransform_SaveCamera(const Source215* source)
+// pdb: BSShaderProperty::PreviousTransform::SaveCamera | BSShaderProperty.obj | retail, upstream name already matches, high
+// pdb params: apCamera
+void BSShaderProperty_PreviousTransform_SaveCamera(const Source215* apCamera)
 {
     if (!DAT_0120045c && !DAT_0120045d)
     {
@@ -1119,7 +1164,7 @@ void BSShaderProperty_PreviousTransform_SaveCamera(const Source215* source)
         DAT_012004b0 = *reinterpret_cast<const Matrix215*>(DAT_011f9508->kD3DProj);
         DAT_0120045e = true;
         DAT_011adcdc = false;
-        NiPoint3 point(source->x, source->y, source->z);
+        NiPoint3 point(apCamera->x, apCamera->y, apCamera->z);
         DAT_012004f0 = point;
     }
 }
@@ -1344,6 +1389,9 @@ struct S_00ba92c0_Prop : S_00ba92c0_Base
 // Reads unk58, the two flag words, sets flag 0x8000 when bit 0x2000 is set, then reads unk30 from the stream's bin.
 // @fnv 0x00ba92c0
 // src: XBOX_PDB 0x00ba92c0
+// pdb: BSShaderProperty::LoadBinary | BSShaderProperty.obj | retail, upstream name already matches, high
+// pdb params: kStream
+// pdb locals: i
 void S_00ba92c0_Prop::BSShaderProperty_LoadBinary(S_00ba92c0_Stream& kStream)
 {
     NiDitherProperty_LoadBinary(kStream);
@@ -1708,6 +1756,8 @@ inline GrassMacro* FindGrassMacroEnd(GrassShaderDescriptor* desc)
 // Builds vertex and pixel shader entries from descriptors, choosing profiles and binary names using global flags.
 // @fnv 0x00baafc0
 // src: COMMUNITY 0x00baafc0
+// pdb: TallGrassShader::LoadShaders | TallGrassShader.obj | retail, upstream name already matches, high
+// pdb locals: pvs1Shader, ptempFName, ptarget, tempMemContext, pcacheFName, i, pps1Shader, pvstarget
 void TallGrassPrograms::TallGrassShader_LoadShaders()
 {
     GrassMemoryScope grassMemoryScope;
@@ -2132,7 +2182,7 @@ struct CtorBase
     int f04;
     int f08;
     int f0c;
-    CtorBase(unsigned int n, int k);
+    CtorBase(unsigned int uiMaxSize, int uiGrowBy);
     ~CtorBase();
 };
 
@@ -2149,16 +2199,18 @@ class FUN_00ba94b0 : public MidLevel
 {
   public:
     int unk10;
-    void FUN_00ba8d30(unsigned int n);
-    FUN_00ba94b0(unsigned int n);
+    void FUN_00ba8d30(unsigned int uiMaxSize);
+    FUN_00ba94b0(unsigned int aiCount);
 };
 
 // Constructs a FUN_00ba94b0 object by calling the MidLevel base constructor, zeroing unk10, and invoking FUN_00ba8d30.
 // @fnv 0x00ba94b0
-FUN_00ba94b0::FUN_00ba94b0(unsigned int n) : MidLevel(n)
+// pdb: BSShaderProperty::RenderPassArray::RenderPassArray | BSShaderProperty.obj | retail, call graph (shared callers), high
+// pdb params: aiCount
+FUN_00ba94b0::FUN_00ba94b0(unsigned int aiCount) : MidLevel(aiCount)
 {
     unk10 = 0;
-    FUN_00ba8d30(n);
+    FUN_00ba8d30(aiCount);
 }
 
 }
@@ -2262,11 +2314,14 @@ struct Shader_c160 : BSShader
     unsigned int unk124;
     RefObj_bacd00* vertex[24];
     RefObj_bacd00* pixel[7];
-    void ConfigureBeamPasses();
+    void TallGrassShader_PresetStages();
 };
 // Configures up to 44 beam passes by assigning stages from a pool, setting node values, and linking vertex and pixel shader objects.
 // @fnv 0x00bac160
-void Shader_c160::ConfigureBeamPasses()
+// src: XBOX_RETAIL_PDB 0x00bac160
+// pdb: TallGrassShader::PresetStages | TallGrassShader.obj | retail, call graph, high
+// pdb locals: spStage, ipixelshader, tempMemContext, spTempD3DTextureStage, i, ppass
+void Shader_c160::TallGrassShader_PresetStages()
 {
     AutoMemContext scope(28);
     StagePtr_c160 stage;
@@ -2680,7 +2735,7 @@ extern "C"
     extern V4_bacd00 DAT_01200590;
 }
 
-int __cdecl BSRenderState_SetAlphaTestFuncRef(unsigned int a, unsigned int b, int c);
+int __cdecl BSRenderState_SetAlphaTestFuncRef(unsigned int aeFunc, unsigned int auiRef, int aeLock);
 
 struct BSParticleShader : FUN_00bacd00
 {
@@ -2690,6 +2745,9 @@ struct BSParticleShader : FUN_00bacd00
 
 // Sets particle shader uniforms from p1 and p2, calls the base vfunc24, and dispatches pass handlers when enabled.
 // @fnv 0x00bac9c0
+// pdb: TallGrassShader::SetupGeometryConstants | TallGrassShader.obj | debug, object-file run extension, low
+// pdb params: apState
+// pdb locals: pgrassparam, pgeometry, ptgsprop, paprop, worldTransform, apRenderPass, worldBound, pbufferData, pskin, kcol, fref, palphaprop, projLL, palpha
 void BSParticleShader::SetShaderParams(Param1* p1)
 {
     GeomStub* geom = *DAT_011f91e0;

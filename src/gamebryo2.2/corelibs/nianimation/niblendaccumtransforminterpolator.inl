@@ -19,7 +19,10 @@
 #pragma intrinsic(memcpy)
 
 // @fnv 0x00496340
-void NiBlendAccumTransformInterpolator::ResetAccumulation()
+// src: XBOX_DEBUG_PDB 0x00496340
+// pdb: NiBlendAccumTransformInterpolator::ClearAccumulatedTransform | Animation.obj | debug, call graph, high
+// pdb locals: kEmpty
+void NiBlendAccumTransformInterpolator::ClearAccumulatedTransform()
 {
     if (m_ucInterpCount == 1)
     {
@@ -28,15 +31,15 @@ void NiBlendAccumTransformInterpolator::ResetAccumulation()
         NiQuatTransform kTransform;
         // Preserve the original inline copy instead of calling the shared
         // out-of-line assignment operator.
-        memcpy(&m_kAccumulatedTransform, &kTransform, sizeof(kTransform));
+        memcpy(&m_kAccumulatedTransformValue, &kTransform, sizeof(kTransform));
     }
     else
     {
-        m_kAccumulatedTransform.GetTransformScale(const_cast<NiPoint3*>(&NiPoint3::ZERO));
-        m_kAccumulatedTransform.SetLocalRotation(const_cast<NiQuaternion*>(&NiQuaternion::IDENTITY));
-        m_kAccumulatedTransform.SetScale(1.0f);
+        m_kAccumulatedTransformValue.GetTransformScale(const_cast<NiPoint3*>(&NiPoint3::ZERO));
+        m_kAccumulatedTransformValue.SetLocalRotation(const_cast<NiQuaternion*>(&NiQuaternion::IDENTITY));
+        m_kAccumulatedTransformValue.SetScale(1.0f);
     }
-    m_bHasAccumulation = true;
+    m_bReset = true;
 }
 
 #endif

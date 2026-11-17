@@ -15,7 +15,7 @@ struct __declspec(align(16)) CB2FC0Snapshot
     float unk08;
     float unk0C;
 
-    CB2FC0Snapshot(const CB2FC0Object* object);
+    CB2FC0Snapshot(const CB2FC0Object* r);
 };
 
 struct CB2FC0Object
@@ -27,6 +27,8 @@ struct CB2FC0Object
 // Builds a CB2FC0Snapshot from this object and passes it to FUN_00cb2d90.
 // @fnv 0x00cb2fc0
 // src: HAVOK_LIB 0x00cb2fc0
+// pdb: hkRotation::renormalize | hkRotation.obj | retail, upstream name already matches, high
+// pdb locals: q
 void CB2FC0Object::hkRotation_renormalize()
 {
     CB2FC0Snapshot snapshot(this);
@@ -40,20 +42,24 @@ struct __declspec(align(16)) SpawnedSnap
     float unk08;
     float unk0C;
 
-    SpawnedSnap(int value, float scale);
+    SpawnedSnap(int axis, float angle);
 };
 
 class FUN_00cb2e30_cls
 {
   public:
-    void SpawnSnap(int value, float scale);
+    void hkRotation_setAxisAngle(int axis, float angle);
 };
 
 // Builds a SpawnedSnap from value and scale, then passes it to FUN_00cb2d90 on this object.
 // @fnv 0x00cb2e30
-void FUN_00cb2e30_cls::SpawnSnap(int value, float scale)
+// src: XBOX_DEBUG_PDB 0x00cb2e30
+// pdb: hkRotation::setAxisAngle | hkRotation.obj | debug, call graph (shared callers), high
+// pdb params: axis, angle
+// pdb locals: q
+void FUN_00cb2e30_cls::hkRotation_setAxisAngle(int axis, float angle)
 {
-    SpawnedSnap snap(value, scale);
+    SpawnedSnap snap(axis, angle);
     ((CB2FC0Object*)this)->hkRotation_set(&snap);
 }
 
@@ -256,6 +262,10 @@ static __forceinline void convertRotation(RotationRows& output, __m128 quaternio
 // Converts a quaternion loaded from snapshot into a rotation matrix stored in this RotationRows object.
 // @fnv 0x00cb2d90
 // src: XBOX_PDB 0x00cb2d90
+// pdb: hkRotation::setAxisAngle | hkRotation.obj | retail, object-file run extension, low
+// pdb note: debug build links it to hkRotation::set
+// pdb params: axis, angle
+// pdb locals: q
 void* RotationRows::hkRotation_set(void* apQuaternion)
 {
     convertRotation(*this, _mm_load_ps((const float*)apQuaternion));

@@ -43,9 +43,9 @@ inline hkSimdReal operator-(const hkSimdReal& r)
     return _mm_sub_ss(DAT_010c7160, r.getQuad());
 }
 
-__forceinline void hkVector4::setMul4(const hkSimdReal& r, const hkVector4& v1)
+__forceinline void hkVector4::setMul4(const hkSimdReal& r, const hkVector4& x)
 {
-    m_vComponents = _mm_mul_ps(r.broadcast(), v1.m_vComponents);
+    m_vComponents = _mm_mul_ps(r.broadcast(), x.m_vComponents);
 }
 __forceinline void hkVector4::addMul4(const hkSimdReal& r, const hkVector4& v1)
 {
@@ -57,9 +57,9 @@ __forceinline void hkVector4::setInterpolate4(const hkVector4& v0, const hkVecto
     __m128 s = _mm_sub_ps(DAT_010ec7f0, t);
     m_vComponents = _mm_add_ps(_mm_mul_ps(s, v0.m_vComponents), _mm_mul_ps(v1.m_vComponents, t));
 }
-inline hkSimdReal hkVector4::dot4(const hkVector4& a) const
+inline hkSimdReal hkVector4::dot4(const hkVector4& x) const
 {
-    __m128 x2 = _mm_mul_ps(m_vComponents, a.m_vComponents);
+    __m128 x2 = _mm_mul_ps(m_vComponents, x.m_vComponents);
     __m128 sum0 = _mm_add_ps(_mm_shuffle_ps(x2, x2, 0x4e), x2);
     __m128 sum1 = _mm_shuffle_ps(sum0, sum0, 0xb1);
     return _mm_add_ps(sum0, sum1);
@@ -102,14 +102,17 @@ __forceinline void hkQsTransform::setInterpolate4(const hkQsTransform& a, const 
 
 struct S00e3f9b0_Anim : public hkaInterleavedUncompressedAnimation
 {
-    void hkaAnimation_getFrameAndDelta(float time, int& frame, float& delta) const;
-    void hkaInterleavedUncompressedAnimation_sampleIndividualTransformTracks(float time, const short* tracks, unsigned int numTracks, hkQsTransform* transformsOut) const;
+    void hkaAnimation_getFrameAndDelta(float time, int& frameOut, float& deltaOut) const;
+    void hkaInterleavedUncompressedAnimation_sampleIndividualTransformTracks(float time, const short* tracks, unsigned int numTracks, hkQsTransform* transformTracksOut) const;
 };
 
 // @fnv 0x00e3f9b0
 // src: HAVOK_SRC 0x00e3f9b0
+// pdb: hkaInterleavedUncompressedAnimation::sampleIndividualTransformTracks | hkaInterleavedUncompressedAnimation.obj | retail, upstream name already matches, high
+// pdb params: time, tracks, numTracks, transformTracksOut
+// pdb locals: frame, delta
 void S00e3f9b0_Anim::hkaInterleavedUncompressedAnimation_sampleIndividualTransformTracks(float time, const short* tracks, unsigned int numTracks,
-                                  hkQsTransform* transformsOut) const
+                                  hkQsTransform* transformTracksOut) const
 {
     int frame;
     float delta;
@@ -128,9 +131,9 @@ void S00e3f9b0_Anim::hkaInterleavedUncompressedAnimation_sampleIndividualTransfo
         {
             continue;
         }
-        const hkQsTransform* base = m_kTransforms.m_data + transformTrackCount * frame;
+        const hkQsTransform* base = m_transforms.m_data + transformTrackCount * frame;
         hkQsTransform a = base[trackIndex];
         hkQsTransform b = base[trackIndex + transformTrackCount];
-        transformsOut[i].setInterpolate4(a, b, delta);
+        transformTracksOut[i].setInterpolate4(a, b, delta);
     }
 }

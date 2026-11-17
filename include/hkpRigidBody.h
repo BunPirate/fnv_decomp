@@ -10,6 +10,7 @@ class hkVector4H;
 class NiPoint3;
 class NiQuaternion;
 
+// pdb: class hkpRigidBody, size 0x220, bases: hkpEntity, 0 members
 class hkpRigidBody : public hkpEntity
 {
 public:

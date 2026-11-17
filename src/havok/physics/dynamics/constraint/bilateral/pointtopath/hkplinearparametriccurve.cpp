@@ -51,7 +51,7 @@ struct CurveEndParameter : public hkpLinearParametricCurve
 // src: HAVOK_LIB 0x00e47c20
 double CurveEndParameter::hkpLinearParametricCurve_getEnd() const
 {
-    return static_cast<double>(m_kPoints.m_iElementCount - 1);
+    return static_cast<double>(m_points.m_iElementCount - 1);
 }
 
 struct CurvePointTransformer : public hkpLinearParametricCurve
@@ -62,11 +62,13 @@ struct CurvePointTransformer : public hkpLinearParametricCurve
 // Transforms every curve point in place with the supplied hkTransform.
 // @fnv 0x00e47e50
 // src: HAVOK_LIB 0x00e47e50
-void CurvePointTransformer::hkpLinearParametricCurve_transformPoints(void const* data)
+// pdb: hkpLinearParametricCurve::transformPoints | hkpLinearParametricCurve.obj | retail, upstream name already matches, high
+// pdb params: transformation
+void CurvePointTransformer::hkpLinearParametricCurve_transformPoints(void const* transformation)
 {
-    int pointCount = m_kPoints.m_iElementCount;
+    int pointCount = m_points.m_iElementCount;
     for (int i = 0; i < pointCount; ++i)
-        m_kPoints.m_data[i].setTransformedPos_00c7f640(*static_cast<const hkTransform*>(data), m_kPoints.m_data[i]);
+        m_points.m_data[i].setTransformedPos_00c7f640(*static_cast<const hkTransform*>(transformation), m_points.m_data[i]);
 }
 
 struct CurveSmoothingSetter : public hkpLinearParametricCurve
@@ -77,7 +79,7 @@ struct CurveSmoothingSetter : public hkpLinearParametricCurve
 // src: XBOX_PDB 0x00e47430
 void CurveSmoothingSetter::hkpLinearParametricCurve_setSmoothingFactor(float input)
 {
-    m_fSmoothingValue = input;
+    m_smoothingFactor = input;
 }
 
 struct CurveLoopGetter : public hkpLinearParametricCurve
@@ -88,7 +90,7 @@ struct CurveLoopGetter : public hkpLinearParametricCurve
 // src: HAVOK_SRC 0x00e47400
 unsigned char* CurveLoopGetter::hkpLinearParametricCurve_isClosedLoop(unsigned char* output)
 {
-    *output = m_bClosedLoop.m_cBooleanValue;
+    *output = m_closedLoop.m_cBooleanValue;
     return output;
 }
 
@@ -109,7 +111,7 @@ class CurveSmoothingGetter : public hkpLinearParametricCurve
 // src: XBOX_PDB 0x00e47420
 float CurveSmoothingGetter::hkpLinearParametricCurve_getSmoothingFactor() const
 {
-    return m_fSmoothingValue;
+    return m_smoothingFactor;
 }
 
 
@@ -134,24 +136,27 @@ __forceinline void hkVector4::setInterpolate4(const hkVector4& a, const hkVector
 class CurvePointSampler : public hkpLinearParametricCurve
 {
   public:
-    void hkpLinearParametricCurve_getPoint(float t, hkVector4& kPointOut) const;
+    void hkpLinearParametricCurve_getPoint(float t, hkVector4& pointOnCurve) const;
 };
 
 // Selects a point from m_kPoints using t, interpolates with the next point when available, and writes the result to kPointOut.
 // @fnv 0x00e47440
 // src: HAVOK_SRC 0x00e47440
-void CurvePointSampler::hkpLinearParametricCurve_getPoint(float afParam, hkVector4& kPointOut) const
+// pdb: hkpLinearParametricCurve::getPoint | hkpLinearParametricCurve.obj | retail, upstream name already matches, high
+// pdb params: t, pointOnCurve
+// pdb locals: dt
+void CurvePointSampler::hkpLinearParametricCurve_getPoint(float t, hkVector4& pointOnCurve) const
 {
-    const int i = (afParam < 0.0f) ? 0 : hkMath_hkFloatToInt(afParam);
-    const float fFrac = afParam - i;
+    const int i = (t < 0.0f) ? 0 : hkMath_hkFloatToInt(t);
+    const float fFrac = t - i;
     const int iNextIndex = i + 1;
-    if (iNextIndex < m_kPoints.GetLogicalSize())
+    if (iNextIndex < m_points.GetLogicalSize())
     {
-        kPointOut.setInterpolate4(m_kPoints[i], m_kPoints[iNextIndex], fFrac);
+        pointOnCurve.setInterpolate4(m_points[i], m_points[iNextIndex], fFrac);
     }
     else
     {
-        kPointOut = m_kPoints[i];
+        pointOnCurve = m_points[i];
     }
 }
 
@@ -195,6 +200,9 @@ struct CurveNearestPoint : public hkpLinearParametricCurve
 
 // Clamps t, walks the point array to find the segment nearest to nearPoint, interpolates pointOnCurve, and adjusts for closed loops.
 // @fnv 0x00e474e0
+// pdb: hkpLinearParametricCurve::getNearestPoint | hkpLinearParametricCurve.obj | retail, vtable slot, high
+// pdb params: t, nearPoint, pointOnCurve
+// pdb locals: nearProjAB
 float CurveNearestPoint::FindNearestPoint(float t, const VectorQ& nearPointValue, VectorQ& pointOnCurveValue)
 {
     const hkVector4& nearPoint = reinterpret_cast<const hkVector4&>(nearPointValue);
@@ -205,9 +213,9 @@ float CurveNearestPoint::FindNearestPoint(float t, const VectorQ& nearPointValue
     }
     int ia = hkMath_hkFloatToInt(t);
     int ib = ia + 1;
-    if (ib >= m_kPoints.GetLogicalSize())
+    if (ib >= m_points.GetLogicalSize())
     {
-        ib = m_kPoints.GetLogicalSize() - 1;
+        ib = m_points.GetLogicalSize() - 1;
         ia = ib - 1;
     }
 
@@ -215,9 +223,9 @@ float CurveNearestPoint::FindNearestPoint(float t, const VectorQ& nearPointValue
     while (1)
     {
         hkVector4 dir;
-        dir.setSub4(m_kPoints[ib], m_kPoints[ia]);
+        dir.setSub4(m_points[ib], m_points[ia]);
         hkVector4 a;
-        a.setSub4(nearPoint, m_kPoints[ia]);
+        a.setSub4(nearPoint, m_points[ia]);
         fraction = curveDot3(a, dir) / curveDot3(dir, dir);
         if (fraction < 0.0f)
         {
@@ -230,12 +238,12 @@ float CurveNearestPoint::FindNearestPoint(float t, const VectorQ& nearPointValue
             continue;
         }
         hkVector4 b;
-        b.setSub4(nearPoint, m_kPoints[ib]);
+        b.setSub4(nearPoint, m_points[ib]);
         int ic = ib + 1;
-        if (!(curveDot3(b, dir) <= 0.0f) && ic < m_kPoints.GetLogicalSize())
+        if (!(curveDot3(b, dir) <= 0.0f) && ic < m_points.GetLogicalSize())
         {
             hkVector4 dir1;
-            dir1.setSub4(m_kPoints[ic], m_kPoints[ib]);
+            dir1.setSub4(m_points[ic], m_points[ib]);
             if (curveDot3(dir1, b) > 0.0f)
             {
                 ia++;
@@ -260,11 +268,11 @@ float CurveNearestPoint::FindNearestPoint(float t, const VectorQ& nearPointValue
         break;
     }
 
-    pointOnCurve.setInterpolate4(m_kPoints[ia], m_kPoints[ib], fraction);
+    pointOnCurve.setInterpolate4(m_points[ia], m_points[ib], fraction);
     float result = (float)ia + fraction;
-    if (m_bClosedLoop)
+    if (m_closedLoop)
     {
-        float end = (float)(m_kPoints.GetLogicalSize() - 1);
+        float end = (float)(m_points.GetLogicalSize() - 1);
         if (result < 0.25f)
         {
             result = FindNearestPoint(end - (1.0f - result), nearPointValue, pointOnCurveValue);
@@ -313,23 +321,26 @@ struct LinearCurveT : public hkpLinearParametricCurve
 {
     __forceinline const hkVector4& P(int i) const
     {
-        return m_kPoints.m_data[i];
+        return m_points.m_data[i];
     }
     void GetTangent(hkReal t, hkVector4& tangentOut) const;
 };
 
 // Computes the smoothed tangent at parameter t by interpolating between adjacent segment directions and writing the result to tangentOut.
 // @fnv 0x00e478d0
+// pdb: hkpLinearParametricCurve::getTangent | hkpLinearParametricCurve.obj | retail, vtable slot, high
+// pdb params: t, tangent
+// pdb locals: interp
 void LinearCurveT::GetTangent(hkReal t, hkVector4& tangentOut) const
 {
-    hkReal smooth = m_fSmoothingValue;
+    hkReal smooth = m_smoothingFactor;
     hkReal invSmooth = 1.0f / smooth;
 
     int ia = hkMath_hkFloatToInt(t);
     int ib = ia + 1;
-    if (ib >= m_kPoints.m_iElementCount)
+    if (ib >= m_points.m_iElementCount)
     {
-        ib = m_kPoints.m_iElementCount - 1;
+        ib = m_points.m_iElementCount - 1;
         ia = ib - 1;
     }
     else if (ia < 0)
@@ -357,7 +368,7 @@ void LinearCurveT::GetTangent(hkReal t, hkVector4& tangentOut) const
     }
 
     dist = ib - t;
-    if (dist < smooth && ib < m_kPoints.m_iElementCount - 1)
+    if (dist < smooth && ib < m_points.m_iElementCount - 1)
     {
         hkVector4 next;
         hkSetSub4(next, P(ib + 1), P(ia + 1));
@@ -379,22 +390,24 @@ class CurveDistanceInterpolator : public hkpLinearParametricCurve
 
 // Linearly interpolates, or extrapolates past the ends, between entries of m_fClosestPointDistanceSquared.m_data at t using the index from FUN_00cbfef0.
 // @fnv 0x00e47c30
+// pdb: hkpLinearParametricCurve::getLengthFromStart | hkpLinearParametricCurve.obj | retail, vtable slot, high
+// pdb params: t
 float CurveDistanceInterpolator::GetInterpolatedValue(float t) const
 {
     int i = hkMath_hkFloatToInt(t);
     float fInterval;
-    if (i >= m_kPoints.m_iElementCount - 1)
+    if (i >= m_points.m_iElementCount - 1)
     {
-        i = m_kPoints.m_iElementCount - 1;
-        fInterval = m_fClosestPointDistanceSquared.m_data[i] - m_fClosestPointDistanceSquared.m_data[i - 1];
+        i = m_points.m_iElementCount - 1;
+        fInterval = m_distance.m_data[i] - m_distance.m_data[i - 1];
     }
     else
     {
         if (i < 0)
             i = 0;
-        fInterval = m_fClosestPointDistanceSquared.m_data[i + 1] - m_fClosestPointDistanceSquared.m_data[i];
+        fInterval = m_distance.m_data[i + 1] - m_distance.m_data[i];
     }
-    return (t - i) * fInterval + m_fClosestPointDistanceSquared.m_data[i];
+    return (t - i) * fInterval + m_distance.m_data[i];
 }
 
 struct Allocator
@@ -419,29 +432,31 @@ void* hkMemoryRouter_getInstance();
 
 struct CurveHelper : public hkpLinearParametricCurve
 {
-    void CopyPoints(hkArray<hkVector4>& out) const;
+    void CopyPoints(hkArray<hkVector4>& pathPoints) const;
 };
 
 // Copies m_kPoints into out, growing out's buffer via the thread memory manager if its capacity is too small.
 // @fnv 0x00e47fa0
-void CurveHelper::CopyPoints(hkArray<hkVector4>& out) const
+// pdb: hkpLinearParametricCurve::getPointsToDraw | hkpLinearParametricCurve.obj | retail, vtable slot, high
+// pdb params: pathPoints
+void CurveHelper::CopyPoints(hkArray<hkVector4>& pathPoints) const
 {
     Allocator* mgr = ((ThreadMemory*)hkMemoryRouter_getInstance())->m_pMemoryAllocator;
-    int cap = out.m_iCapacityState & 0x3fffffff;
-    if (cap < this->m_kPoints.m_iElementCount)
+    int cap = pathPoints.m_iCapacityState & 0x3fffffff;
+    if (cap < this->m_points.m_iElementCount)
     {
-        if ((out.m_iCapacityState & 0x80000000) == 0)
+        if ((pathPoints.m_iCapacityState & 0x80000000) == 0)
         {
-            mgr->deallocate(out.m_data, cap * sizeof(hkVector4));
+            mgr->deallocate(pathPoints.m_data, cap * sizeof(hkVector4));
         }
-        int reqBytes = this->m_kPoints.m_iElementCount * sizeof(hkVector4);
-        out.m_data = (hkVector4*)mgr->allocate(&reqBytes);
-        out.m_iCapacityState = reqBytes / 16;
+        int reqBytes = this->m_points.m_iElementCount * sizeof(hkVector4);
+        pathPoints.m_data = (hkVector4*)mgr->allocate(&reqBytes);
+        pathPoints.m_iCapacityState = reqBytes / 16;
     }
-    int count = this->m_kPoints.m_iElementCount;
-    out.m_iElementCount = count;
-    LocalM128* dst = (LocalM128*)out.m_data;
-    const LocalM128* src = (const LocalM128*)this->m_kPoints.m_data;
+    int count = this->m_points.m_iElementCount;
+    pathPoints.m_iElementCount = count;
+    LocalM128* dst = (LocalM128*)pathPoints.m_data;
+    const LocalM128* src = (const LocalM128*)this->m_points.m_data;
     for (int i = 0; i < count; ++i)
     {
         dst[i] = src[i];
@@ -460,9 +475,9 @@ static const float curveZero = 0.0f;
 static const float DAT_01012068 = 1.0f;
 
 // @fnv 0x00e48030
-hkpLinearParametricCurve::hkpLinearParametricCurve() throw() : m_fSmoothingValue(0.01f), m_bClosedLoop(false)
+hkpLinearParametricCurve::hkpLinearParametricCurve() throw() : m_smoothingFactor(0.01f), m_closedLoop(false)
 {
-    m_kVector4.set(curveZero, DAT_01012068, curveZero, curveZero);
+    m_dirNotParallelToTangentAlongWholePath.set(curveZero, DAT_01012068, curveZero, curveZero);
 }
 
 
@@ -503,13 +518,13 @@ static __forceinline hkSimdReal curveLane(const hkVector4& vector, int i)
 struct LinearCurveClone : public hkpLinearParametricCurve
 {
     LinearCurveClone* hkpLinearParametricCurve_clone();
-    void FUN_00e47e80(const hkVector4*);
+    void hkpLinearParametricCurve_addPoint(const hkVector4*);
 };
 static __forceinline LinearCurveClone* createCurve()
 {
     CurveThreadMemory* memory = (CurveThreadMemory*)hkMemoryRouter_getInstance();
     void* chunk = memory->m_pThreadAllocator->allocateChunk(0x40);
-    ((hkReferencedObject*)chunk)->m_usMemSizeAndFlags = 0x40;
+    ((hkReferencedObject*)chunk)->m_memSizeAndFlags = 0x40;
     return static_cast<LinearCurveClone*>(::new (chunk) hkpLinearParametricCurve);
 }
 template <class T> static __forceinline void arrCopy_e48090(T* dst, int start, const T* src, int n)
@@ -537,25 +552,26 @@ static __forceinline void copyFromArray_e48090(hkArray<T>& self, Allocator* allo
 }
 // @fnv 0x00e48090
 // src: HAVOK_SRC 0x00e48090
+// pdb: hkpLinearParametricCurve::clone | hkpLinearParametricCurve.obj | retail, upstream name already matches, high
 LinearCurveClone* LinearCurveClone::hkpLinearParametricCurve_clone()
 {
     LinearCurveClone* clone = createCurve();
-    int numPoints = this->m_kPoints.m_iElementCount;
+    int numPoints = this->m_points.m_iElementCount;
     if (0 < numPoints)
     {
         for (int i = 0; i < numPoints; ++i)
         {
-            clone->FUN_00e47e80(&this->m_kPoints.m_data[i]);
+            clone->hkpLinearParametricCurve_addPoint(&this->m_points.m_data[i]);
         }
     }
-    clone->m_bClosedLoop = this->m_bClosedLoop;
-    clone->m_kVector4.set(curveLane(m_kVector4, 0),
-                         curveLane(m_kVector4, 1),
-                         curveLane(m_kVector4, 2), 0.0f);
-    copyFromArray_e48090(clone->m_fClosestPointDistanceSquared,
+    clone->m_closedLoop = this->m_closedLoop;
+    clone->m_dirNotParallelToTangentAlongWholePath.set(curveLane(m_dirNotParallelToTangentAlongWholePath, 0),
+                         curveLane(m_dirNotParallelToTangentAlongWholePath, 1),
+                         curveLane(m_dirNotParallelToTangentAlongWholePath, 2), 0.0f);
+    copyFromArray_e48090(clone->m_distance,
                          ((CurveThreadMemory*)hkMemoryRouter_getInstance())->m_pThreadAllocator,
-                         this->m_fClosestPointDistanceSquared);
-    clone->m_fSmoothingValue = this->m_fSmoothingValue;
+                         this->m_distance);
+    clone->m_smoothingFactor = this->m_smoothingFactor;
     return clone;
 }
 
@@ -646,6 +662,9 @@ struct LinearCurve : public hkpLinearParametricCurve
 // Computes a normalized up vector for the curve at t by crossing or perpendicularizing the tangent against m_kVector4.
 // @fnv 0x00e47cb0
 // src: HAVOK_SRC 0x00e47cb0
+// pdb: hkpLinearParametricCurve::getBinormal | hkpLinearParametricCurve.obj | retail, upstream name already matches, high
+// pdb params: t, up
+// pdb locals: tangent
 void LinearCurve::hkpLinearParametricCurve_getBinormal(hkReal t, hkVector4& up) const
 {
     hkVector4 tangent;
@@ -654,7 +673,7 @@ void LinearCurve::hkpLinearParametricCurve_getBinormal(hkReal t, hkVector4& up) 
     hkVector4& out = up;
     if (hkDot3(DAT_01268380, tangent) < (double)0.98f)
     {
-        hkSetCross(out, tangent, m_kVector4);
+        hkSetCross(out, tangent, m_dirNotParallelToTangentAlongWholePath);
     }
     else
     {

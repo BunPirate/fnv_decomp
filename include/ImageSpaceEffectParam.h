@@ -1,5 +1,6 @@
 #pragma once
 
+// pdb: class ImageSpaceEffectParam, size 0x24 (here 0x1), 2 members
 class ImageSpaceEffectParam
 {
 public:

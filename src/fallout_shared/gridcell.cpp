@@ -22,6 +22,7 @@
 #include "../../include/TESObjectWEAP.h"
 // fallout_shared/gridcell.cpp: GridCellArray and helpers (43 functions)
 
+// pdb: structure GridCell, size 0x4, 1 members
 class GridCell
 {
   public:
@@ -29,6 +30,7 @@ class GridCell
 };
 
 // @fnv 0x004ba5e0
+// pdb: GridCellArray::Init | GridCell.obj | retail, upstream name already matches, high
 void GridCellArray::Init(void)
 {
     GridArray::Init();
@@ -37,27 +39,36 @@ void GridCellArray::Init(void)
 
 // Returns the grid cell at (gridX, gridY) if both are within the array dimension, otherwise returns null.
 // @fnv 0x004ba490
-GridCell* GridCellArray::Get(unsigned int gridX, unsigned int gridY)
+// pdb: GridCellArray::Get | GridCell.obj | debug, upstream name already matches, high
+// pdb params: aiX, aiY
+// pdb locals: idim
+GridCell* GridCellArray::Get(unsigned int aiX, unsigned int aiY)
 {
     unsigned int dimension = GetGridDimension();
-    if (gridX >= dimension || gridY >= dimension)
+    if (aiX >= dimension || aiY >= dimension)
         return 0;
-    return &m_pGridCells[GetGridDimension() * gridX + gridY];
+    return &pGridCellA[GetGridDimension() * aiX + aiY];
 }
 
 // Detaches the grid cell at (gridX, gridY) if it has a cell, then nulls that grid slot.
 // @fnv 0x004ba6b0
-void GridCellArray::Detach(unsigned int gridX, unsigned int gridY)
+// pdb: GridCellArray::Detach | GridCell.obj | retail, upstream name already matches, high
+// pdb params: aiX, aiY
+// pdb locals: pgridcell
+void GridCellArray::Detach(unsigned int aiX, unsigned int aiY)
 {
-    GridCell* gridCell = Get(gridX, gridY);
+    GridCell* gridCell = Get(aiX, aiY);
     if (gridCell->pCell)
     {
         gridCell->pCell->Detach(true);
-        ClearTileExtraPair(gridX, gridY);
+        ClearTileExtraPair(aiX, aiY);
     }
 }
 
 // @fnv 0x004ba8d0
+// pdb: GridCellArray::ToggleCollisionGeometry | GridCell.obj | retail, object-file run extension, low
+// pdb note: debug build links it to GridCellArray::UpdateDistantLandBlending
+// pdb locals: pw, btd, x, y, pgridcell
 void GridCellArray::ReleaseGridCells(void)
 {
     unsigned int dimension = GetGridDimension();
@@ -87,6 +98,8 @@ struct FUN_00440460_S
 // Copies the V3 pointed to by k into the t member.
 // @fnv 0x00440460
 // src: XBOX_PDB 0x00440460
+// pdb: NiAVObject::SetTranslate | ModelLoader.obj | debug, object-file gap fill, medium
+// pdb params: kTrn
 void FUN_00440460_S::NiAVObject_SetTranslate(const V3* k)
 {
     t = *k;
@@ -111,14 +124,15 @@ BSTextureManager* __stdcall BSShaderManager_GetTextureManager();
 
 // @fnv 0x004baec0
 // src: XBOX_PDB 0x004baec0
+// pdb: GridCellArray::ClearCanopyShadowMaskTexture | GridCell.obj | retail, upstream name already matches, high
 void GridCellArray::ClearCanopyShadowMaskTexture()
 {
-    if (reinterpret_cast<RenderedTextureString*>(&spRT)->operator const char*())
+    if (reinterpret_cast<RenderedTextureString*>(&spTexRendered)->operator const char*())
     {
         BSShaderManager_SetProjectedShadowMaskTexture(0);
         BSShaderManager_GetTextureManager()->AddRenderedTexture(reinterpret_cast<BSRenderedTexture*>(const_cast<char*>(
-            reinterpret_cast<RenderedTextureString*>(&spRT)->operator const char*())));
-        reinterpret_cast<NiPointer<NiNode>*>(&spRT)->operator=(0);
+            reinterpret_cast<RenderedTextureString*>(&spTexRendered)->operator const char*())));
+        reinterpret_cast<NiPointer<NiNode>*>(&spTexRendered)->operator=(0);
         DAT_01189184 = 1;
     }
 }
@@ -132,6 +146,8 @@ struct FUN_004bc1f0_S
 // Stores the given x, y and z into the t point of this object.
 // @fnv 0x004bc1f0
 // src: XBOX_PDB 0x004bc1f0
+// pdb: NiAVObject::SetTranslate | GridCell.obj | debug, call graph, high
+// pdb params: x, y, z
 void FUN_004bc1f0_S::NiAVObject_SetTranslate_004bc1f0(float x, float y, float z)
 {
     t = NiPoint3(x, y, z);
@@ -151,6 +167,8 @@ struct FUN_004bc280_S
 // Copies the C3 value pointed to by k into c, then calls IncRevisionID.
 // @fnv 0x004bc280
 // src: COMMUNITY 0x004bc280
+// pdb: NiLight::SetAmbientColor | GridCell.obj | debug, upstream name already matches, high
+// pdb params: color
 void FUN_004bc280_S::NiLight_SetAmbientColor(const C3* apColor)
 {
     c = *apColor;
@@ -159,6 +177,8 @@ void FUN_004bc280_S::NiLight_SetAmbientColor(const C3* apColor)
 
 // Stores the given NiColor at offset 0xD4 of this object and increments the revision ID.
 // @fnv 0x004bc2e0
+// pdb: NiLight::SetDiffuseColor | GridCell.obj | debug, call graph, medium
+// pdb params: color
 void NiDynamicEffect::SetEffectColor(const NiColor& color)
 {
     *reinterpret_cast<NiColor*>(reinterpret_cast<char*>(this) + 0xD4) = color;
@@ -191,6 +211,8 @@ struct FUN_004bc450_S
 // Copies the C3 value pointed to by k into the c member and calls FUN_004bc480 with 1.
 // @fnv 0x004bc450
 // src: XBOX_PDB 0x004bc450
+// pdb: NiMaterialProperty::SetEmittance | GridCell.obj | debug, upstream name already matches, high
+// pdb params: c
 void FUN_004bc450_S::NiMaterialProperty_SetEmittance(const C3* apColor)
 {
     c = *apColor;
@@ -213,6 +235,9 @@ void _Dummy_004bc4a0::SetAccumulate(bool abTF)
 }
 
 // @fnv 0x004ba5a0
+// pdb: GridCellArray::GetAttached | GridCell.obj | debug, object-file gap fill, medium
+// pdb params: aiX, aiY
+// pdb locals: pgridcell
 bool GridCellArray::IsOutdoorCell(unsigned int aiX, unsigned int aiY)
 {
     GridCell* pgridcell = Get(aiX, aiY);
@@ -234,6 +259,8 @@ extern int DAT_011f91d8;
 
 // @fnv 0x004bc3e0
 // src: COMMUNITY 0x004bc3e0
+// pdb: atoi | atox.obj | debug, call graph, medium
+// pdb params: nptr
 int __cdecl BSShaderManager_GetEnabledPasses()
 {
     return DAT_011f91d8;
@@ -248,6 +275,7 @@ extern Flt g_011c73b4;
 
 // @fnv 0x004bc3f0
 // src: XBOX_PDB 0x004bc3f0
+// pdb: Renderer::GetNIRenderer | BSDiscErrorThread.obj | debug, upstream name already matches, high
 unsigned int Renderer_GetNIRenderer()
 {
     return g_011c73b4.operator unsigned int();
@@ -275,16 +303,22 @@ void ShadowLightShader_SetProjectedShadowMaskWidth(float value)
 
 // Clears the grid cell at (aiX, aiY) by nulling its pCell and the byte at offset 0x20 of this.
 // @fnv 0x004ba700
+// pdb: GridCellArray::ClearItem | GridCell.obj | debug, vtable slot, medium
+// pdb params: aiX, aiY
+// pdb locals: pgridcell
 void GridCellArray::ClearTileExtraPair(unsigned int aiX, unsigned int aiY)
 {
     GridCell* pgridcell = Get(aiX, aiY);
     pgridcell->pCell = 0;
-    *reinterpret_cast<char*>(&unk20) = 0;
+    *reinterpret_cast<char*>(&bLandAttached) = 0;
 }
 
 void _Deallocate(void*);
 // Stores apCell into the grid cell at (aiX, aiY), or clears that cell when apCell is null.
 // @fnv 0x004ba550
+// pdb: GridCellArray::Set | GridCell.obj | debug, object-file gap fill, medium
+// pdb params: aiX, aiY, apCell
+// pdb locals: pgridcell
 void GridCellArray::SetCellAt(unsigned int aiX, unsigned int aiY, TESObjectCELL* apCell)
 {
     GridCell* pgridcell;
@@ -312,6 +346,7 @@ void TESObjectCELL_KillStatics();
 // Calls CallVirtualMethod2 on this, then calls FUN_00541c00 if g_dataHandler->FUN_004226e0() returns true.
 // @fnv 0x004ba600
 // src: XBOX_PDB 0x004ba600
+// pdb: GridCellArray::KillAll | GridCell.obj | retail, upstream name already matches, high
 void GridCellArray::KillAll()
 {
     ((FUN_004b9e90_shell*)this)->CallVirtualMethod2();
@@ -322,22 +357,27 @@ void GridCellArray::KillAll()
 extern "C" void TESObjectCELL_MoveExteriorWorld(float*);
 
 // @fnv 0x004ba630
+// pdb: GridCellArray::SetCenter | GridCell.obj | retail, vtable slot, high
+// pdb params: aiX, aiY
+// pdb locals: bretval
 bool GridCellArray::SetGridCellPosition(int aiX, int aiY)
 {
     bool bretval = false;
     if (GridArray::SetGridPosition(aiX, aiY))
     {
-        fX = static_cast<float>(aiX << 12);
+        WorldCenter = static_cast<float>(aiX << 12);
         fY = static_cast<float>(aiY << 12);
         *reinterpret_cast<float*>(&unk1c) = 0.0f;
-        TESObjectCELL_MoveExteriorWorld(&fX);
+        TESObjectCELL_MoveExteriorWorld(&WorldCenter);
         bretval = true;
-        *reinterpret_cast<char*>(&unk20) = 0;
+        *reinterpret_cast<char*>(&bLandAttached) = 0;
     }
     return bretval;
 }
 
 // @fnv 0x004ba740
+// pdb: GridCellArray::MoveItem | GridCell.obj | debug, vtable slot, medium
+// pdb params: aiX1, aiY1, aiX2, aiY2
 void GridCellArray::SetFrom(unsigned int aiX1, unsigned int aiY1, unsigned int aiX2, unsigned int aiY2)
 {
     SetCellAtXY(aiX2, aiY2, Get(aiX1, aiY1));
@@ -345,6 +385,9 @@ void GridCellArray::SetFrom(unsigned int aiX1, unsigned int aiY1, unsigned int a
 
 // Copies the cell at (aiX1, aiY1) into a temporary, then swaps the cells at the two coordinate pairs via SetCellAtXY.
 // @fnv 0x004ba770
+// pdb: GridCellArray::SwapItem | GridCell.obj | retail, vtable slot, high
+// pdb params: aiX1, aiY1, aiX2, aiY2
+// pdb locals: tempgridcell, pgc
 void GridCellArray::SwapCells(unsigned int aiX1, unsigned int aiY1, unsigned int aiX2, unsigned int aiY2)
 {
     GridCell tempgridcell;
@@ -362,6 +405,9 @@ struct FUN_00552970_Call
 // Gets the grid cell at (aiX, aiY) and, if it has a cell, forwards apRoot to that cell's UpdateCellScene.
 // @fnv 0x004ba960
 // src: COMMUNITY 0x004ba960
+// pdb: GridCellArray::AttachToWorld | GridCell.obj | debug, upstream name already matches, high
+// pdb params: apRoot, aiX, aiY
+// pdb locals: pgridcell
 void GridCellArray::AttachToWorld(NiNode* apRoot, unsigned int aiX, unsigned int aiY)
 {
     GridCell* pgridcell;
@@ -374,6 +420,7 @@ struct Arr
 {
     unsigned int* GetAt(int);
 };
+// pdb: class KFModel, size 0x14 (here 0x1), 5 members
 struct KFModel
 {
     void* GetControllerSequence();
@@ -386,6 +433,8 @@ struct CLS_004bc240
 };
 // @fnv 0x004bc240
 // src: COMMUNITY 0x004bc240
+// pdb: NiTexturingProperty::GetBaseTexture | GridCell.obj | debug, upstream name already matches, high
+// pdb locals: pkBaseMap
 void* CLS_004bc240::NiTexturingProperty_GetBaseTexture()
 {
     KFModel* p = *(KFModel**)arr.GetAt(0);
@@ -413,6 +462,8 @@ struct bhkWorld;
 bool __fastcall bhkWorld_QDebugDisplay(char const*);
 // @fnv 0x004bad40
 // src: COMMUNITY 0x004bad40
+// pdb: GridCellArray::ToggleCollisionGeometry | GridCell.obj | debug, call graph, high
+// pdb locals: pw, btd, x, y, pgridcell
 void GridCellArray::ToggleCollisionGeometry_004bad40()
 {
     bhkWorld* pWorld = TESObjectCELL::GetExteriorbhkWorld();
@@ -434,8 +485,11 @@ struct FUN_005549d0_shell
     void TESObjectCELL_TogglePrimitives(bool);
 };
 // @fnv 0x004bae20
-// src: COMMUNITY 0x004bae20
-void GridCellArray::TogglePrimitives_004bae20(bool detach)
+// src: XBOX_RETAIL_PDB 0x004bae20 (was COMMUNITY)
+// pdb: GridCellArray::ShowPrimitives | GridCell.obj | retail, object-file run extension, high
+// pdb params: abShow
+// pdb locals: pw, x, y, pgridcell
+void GridCellArray::ShowPrimitives(bool abShow)
 {
     bhkWorld* world = TESObjectCELL::GetExteriorbhkWorld();
     if (world)
@@ -446,7 +500,7 @@ void GridCellArray::TogglePrimitives_004bae20(bool detach)
             {
                 GridCell* cell = Get(x, y);
                 if (cell->pCell && cell->pCell->IsOutdoorCell())
-                    ((FUN_005549d0_shell*)cell->pCell)->TESObjectCELL_TogglePrimitives(detach);
+                    ((FUN_005549d0_shell*)cell->pCell)->TESObjectCELL_TogglePrimitives(abShow);
             }
         }
     }
@@ -459,6 +513,8 @@ struct FUN_00553820_shell
 // Iterates every grid cell and calls FUN_00553820 on each cell's pCell when it is non-null.
 // @fnv 0x004baba0
 // src: COMMUNITY 0x004baba0
+// pdb: GridCellArray::RunAnimations | GridCell.obj | retail, object-file gap fill, high
+// pdb locals: x, y, pgridcell
 void GridCellArray::RunAnimations_004baba0()
 {
     unsigned int i;
@@ -476,11 +532,13 @@ void GridCellArray::RunAnimations_004baba0()
 
 struct CellOwner
 {
-    void PlayCellSoundEffects();
+    void TESObjectCELL_UpdateRefSounds();
 };
 // Iterates every grid cell and calls PlayCellSoundEffects on each cell's pCell when both the cell and its pCell are non-null.
 // @fnv 0x004bac20
 // src: COMMUNITY 0x004bac20
+// pdb: GridCellArray::UpdateRefSounds | GridCell.obj | retail, object-file gap fill, high
+// pdb locals: x, y, pGridCell
 void GridCellArray::UpdateRefSounds_004bac20()
 {
     for (unsigned int x = 0; x < GetGridDimension(); ++x)
@@ -489,7 +547,7 @@ void GridCellArray::UpdateRefSounds_004bac20()
         {
             GridCell* cell = Get(x, y);
             if (cell && cell->pCell)
-                ((CellOwner*)cell->pCell)->PlayCellSoundEffects();
+                ((CellOwner*)cell->pCell)->TESObjectCELL_UpdateRefSounds();
         }
     }
 }
@@ -502,6 +560,9 @@ struct LAND_x
 // Iterates every grid cell and, for cells whose cell has a LAND, calls FUN_0053fa40 with abShow.
 // @fnv 0x004baca0
 // src: COMMUNITY 0x004baca0
+// pdb: GridCellArray::ShowLandBorders | GridCell.obj | retail, upstream name already matches, high
+// pdb params: abShow
+// pdb locals: x, y, pgridcell, pland
 void GridCellArray::ShowLandBorders(bool abShow)
 {
     for (unsigned int x = 0; x < GetGridDimension(); ++x)
@@ -532,9 +593,11 @@ void __fastcall TESObjectLAND_Attach3D(TESObjectLAND* land);
 
 // @fnv 0x004ba7d0
 // src: COMMUNITY 0x004ba7d0
+// pdb: GridCellArray::AttachAllLand3D | GridCell.obj | retail, upstream name already matches, high
+// pdb locals: idim, tempMemContext, ix, iy, pgc
 void GridCellArray::AttachAllLand3D()
 {
-    if (*reinterpret_cast<bool*>(&unk20))
+    if (*reinterpret_cast<bool*>(&bLandAttached))
         return;
 
     unsigned int idim;
@@ -555,7 +618,7 @@ void GridCellArray::AttachAllLand3D()
         }
     }
 
-    *reinterpret_cast<bool*>(&unk20) = true;
+    *reinterpret_cast<bool*>(&bLandAttached) = true;
 }
 
 void __cdecl CallIfPresent(float value);
@@ -564,11 +627,15 @@ extern bool DAT_011c642c;
 
 struct Zt5Cell
 {
-    void TESObjectCELL_UpdateManagedNodes(float value, bool flag);
+    void TESObjectCELL_UpdateManagedNodes(float afTime, bool abLargeOnly);
 };
 
 // @fnv 0x004ba9a0
-void GridCellArray::UpdateCellGrid(float value)
+// src: XBOX_RETAIL_PDB 0x004ba9a0
+// pdb: GridCellArray::UpdateManagedNodes | GridCell.obj | retail, call graph, high
+// pdb params: afTime
+// pdb locals: idim, idimedge, x, y, bupdateall, pgridcell
+void GridCellArray::UpdateManagedNodes(float afTime)
 {
     GridCell* idim;
     unsigned int idimedge;
@@ -577,7 +644,7 @@ void GridCellArray::UpdateCellGrid(float value)
     bool bupdate;
     unsigned int pgridcell;
 
-    CallIfPresent(value);
+    CallIfPresent(afTime);
 
     y = GetGridDimension();
     pgridcell = y - 1;
@@ -603,7 +670,7 @@ void GridCellArray::UpdateCellGrid(float value)
 
             if (idim->pCell != 0)
             {
-                reinterpret_cast<Zt5Cell*>(idim->pCell)->TESObjectCELL_UpdateManagedNodes(value, !bupdate);
+                reinterpret_cast<Zt5Cell*>(idim->pCell)->TESObjectCELL_UpdateManagedNodes(afTime, !bupdate);
             }
         }
     }
@@ -622,6 +689,8 @@ struct FUN_004bc320_shell
 // Returns the unsigned int value of the texture at aiIndex, or 0 when this is null.
 // @fnv 0x004bc320
 // src: COMMUNITY 0x004bc320
+// pdb: BSRenderedTexture::GetTexture | GridCell.obj | retail, upstream name already matches, high
+// pdb params: aiIndex
 unsigned int FUN_004bc320_shell::BSRenderedTexture_GetTexture(int aiIndex)
 {
     return (this ? m_textures[aiIndex] : GO(0)).operator unsigned int();
@@ -631,16 +700,20 @@ void _Deallocate(void*);
 
 // Calls FUN_004ba600 and FUN_004baec0, then deallocates the grid cell storage.
 // @fnv 0x004ba400
+// pdb: GridCellArray::~GridCellArray | GridCell.obj | retail, upstream name already matches, high
 GridCellArray::~GridCellArray()
 {
     KillAll();
     ClearCanopyShadowMaskTexture();
-    void* p = m_pGridCells;
+    void* p = pGridCellA;
     _Deallocate(p);
 }
 
 // Stores the cell pointer from apCell into the grid at (aiX, aiY) if in bounds, or clears that grid slot when apCell is null.
 // @fnv 0x004ba4e0
+// pdb: GridCellArray::Set | GridCell.obj | debug, call graph, medium
+// pdb params: aiX, aiY, apGridCell
+// pdb locals: idim
 void GridCellArray::SetCellAtXY(unsigned int aiX, unsigned int aiY, GridCell* apCell)
 {
     unsigned int dim = GetGridDimension();
@@ -650,7 +723,7 @@ void GridCellArray::SetCellAtXY(unsigned int aiX, unsigned int aiY, GridCell* ap
     }
     if (apCell != 0)
     {
-        m_pGridCells[GetGridDimension() * aiX + aiY].pCell = apCell->pCell;
+        pGridCellA[GetGridDimension() * aiX + aiY].pCell = apCell->pCell;
     }
     else
     {
@@ -668,6 +741,8 @@ extern bool DAT_011c642d;
 // Flips DAT_011c642d, then for each grid cell on the border whose checkerboard parity matches, calls FUN_00552840 on the cell's pCell if non-null.
 // @fnv 0x004baab0
 // src: COMMUNITY 0x004baab0
+// pdb: GridCellArray::UpdateManagedNodeTransforms | GridCell.obj | retail, upstream name already matches, high
+// pdb locals: idim, idimedge, x, y, bupdate, pgridcell
 void GridCellArray::UpdateManagedNodeTransforms()
 {
     unsigned int dim = this->GetGridDimension();
@@ -719,6 +794,8 @@ struct FUN_004bcc30_List
 // Walks the linked entries and sums the short value of each item whose check returns true, stopping at the first null entry or null item pointer.
 // @fnv 0x004bcc30
 // src: XBOX_PDB 0x004bcc30
+// pdb: ItemChange::NumberLeveledExtra | InventoryChanges.obj | retail, upstream name already matches, high
+// pdb locals: icount, pkFirst, pExtra
 int FUN_004bcc30_List::ItemChange_NumberLeveledExtra()
 {
     LinkedEntry* pEntry = first;
@@ -766,6 +843,9 @@ struct FUN_004bcdb0_shell
 };
 // @fnv 0x004bcdb0
 // src: XBOX_PDB 0x004bcdb0
+// pdb: ItemChange::GetItemHealth | InventoryChanges.obj | retail, upstream name already matches, high
+// pdb params: abPercentage
+// pdb locals: phealth, iFormHealth, pkFirst, pform, pextra
 float FUN_004bcdb0_shell::ItemChange_GetItemHealth(bool bPercent)
 {
     HealthForm4bcdb0* pkHealth = GetHealthForm(m_pkForm);
@@ -981,14 +1061,14 @@ struct LoadInfo
 
 struct Cell
 {
-    int GetTexInfo(Obj** apTex, LoadInfo** apInfo);
+    int GetTexInfo(Obj** apOutTex, LoadInfo** apOutRect);
 };
 
 struct Holder
 {
     unsigned int GetObj();
 };
-Holder* GetHolder();
+Holder* TESRegionDataLandscape_GetDefaultFullMaskTextureProp();
 
 void* AllocShort(unsigned int);
 void SetRenderFlags(int);
@@ -1009,6 +1089,8 @@ extern char DAT_011a9b7c;
 // Builds a grid of textured cell meshes, sets up an orthographic camera and light, and renders the scene into a render target texture.
 // @fnv 0x004baf10
 // src: COMMUNITY 0x004baf10
+// pdb: GridCellArray::RecreateCanopyShadowMaskTexture | GridCell.obj | retail, upstream name already matches, high
+// pdb locals: ptmin, oldcolor, pcell, UpdateData6, UpdateData4, spaccum, spnodeCamera, spgeomdata, spnolightingprop, spcamera, fwidth, UpdateData5, idim, ballfull, tempMemContext, estate, prect, splight, ptexCell, spgeom, fminmax, culler, spnodeScene, x ...
 void GridCellArray::RecreateCanopyShadowMaskTexture()
 {
     Obj* pStencil4;
@@ -1052,7 +1134,7 @@ void GridCellArray::RecreateCanopyShadowMaskTexture()
         return;
     fSize6 = (float)(GetGridDimension() << 12);
     fHalf5 = 2048.0 - fSize6 / 2.0;
-    SetOrigin(Pt2(fX + fHalf5, fY + fHalf5));
+    SetOrigin(Pt2(WorldCenter + fHalf5, fY + fHalf5));
     SetScale(fSize6);
     SetRenderFlags(GetRenderFlags() | 0x20);
     if (uiDimVal == 0 || GetRenderer() == 0)
@@ -1139,7 +1221,7 @@ void GridCellArray::RecreateCanopyShadowMaskTexture()
 
     if (bAllEmpty7)
     {
-        SetTexture(GetHolder()->GetObj());
+        SetTexture(TESRegionDataLandscape_GetDefaultFullMaskTextureProp()->GetObj());
         return;
     }
     else if (bAllLoaded7)
@@ -1183,9 +1265,9 @@ void GridCellArray::RecreateCanopyShadowMaskTexture()
     pStencil4->SetMode(3);
     m_pMenuLightParameters->AttachProperty(reinterpret_cast<NiObject*>(pStencil4));
 
-    if (spRT.Check(0))
+    if (spTexRendered.Check(0))
     {
-        spRT = GetTexMgr()->Create(MakeFormat(0x17, 0, 0, 0));
+        spTexRendered = GetTexMgr()->Create(MakeFormat(0x17, 0, 0, 0));
     }
     GetRenderer()->GetBackground(&kColorA);
     GetRenderer()->SetBackground(&DAT_011a9bd0);
@@ -1200,13 +1282,13 @@ void GridCellArray::RecreateCanopyShadowMaskTexture()
     GridCellObjectRefView spMeshB(new RTex(0x63, 1, 0x2f7));
     kVis.SetCamera(spMeshB.operator->());
     spMeshB->SetEnabled(false);
-    RenderA(7, spRT->GetRT());
+    RenderA(7, spTexRendered->GetRT());
     RenderB(spData_.operator->(), reinterpret_cast<Obj*>(m_pMenuLightParameters.operator->()), &kVis);
     RenderC(spData_.operator->(), spMeshB.operator->(), 0);
     RenderD();
     kVis.SetCamera(0);
     spMeshB = 0;
-    SetTexture(spRT->GetTexIdx(0));
+    SetTexture(spTexRendered->GetTexIdx(0));
     GetSys()->SetEnabled(true);
     GetRenderer()->SetBackground(&kColorA);
 }

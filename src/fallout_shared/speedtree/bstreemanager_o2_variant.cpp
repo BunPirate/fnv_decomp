@@ -9,7 +9,7 @@
 #include "../../../include/Setting.h"
 #include "../../../include/NiRenderer.h"
 #include "../../../include/NiDX9Renderer.h"
-void* BSTreeManager_GetInstance(bool create);
+void* BSTreeManager_GetInstance(bool abCreateIfNotFound);
 void SetGlobalFloatFromUInt(unsigned int value);
 void ClampAndStoreValue(float value);
 extern NP DAT_011f95e4;
@@ -26,29 +26,32 @@ unsigned char BSTreeManager_GetTreesEnabled(bool abCreateIfNotFound);
 
 struct GraphicsRenderer : public NiRenderer
 {
-    bool BeginUsingRenderTargetGroup(NiRenderTargetGroup* pkTarget, unsigned int uiClone);
+    bool BeginUsingRenderTargetGroup(NiRenderTargetGroup* pkTarget, unsigned int uiClearMode);
 };
 
 void __cdecl PushRefCountedSlot(NiRenderTargetGroup* pkTarget);
 
 // @fnv 0x00b6b7d0
 // src: COMMUNITY 0x00b6b7d0
-void BSRenderedTexture_Begin(NiRenderTargetGroup* pkTarget, unsigned int uiClone)
+// pdb: BSRenderedTexture::Begin | BSRenderedTexture.obj | retail, upstream name already matches, high
+// pdb params: apTargetGroup, aiClearMode
+// pdb locals: pr
+void BSRenderedTexture_Begin(NiRenderTargetGroup* apTargetGroup, unsigned int aiClearMode)
 {
     NiRenderer* pkRenderer = NiRenderer::ms_pRenderer;
-    if (pkTarget == 0)
+    if (apTargetGroup == 0)
     {
-        pkTarget = static_cast<NiDX9Renderer*>(pkRenderer)->GetDefaultRT();
+        apTargetGroup = static_cast<NiDX9Renderer*>(pkRenderer)->GetDefaultRT();
     }
     if (pkRenderer->m_bRenderTargetGroupActive)
     {
         pkRenderer->TryUnlock();
     }
-    NiRenderTargetGroup* pkTarget2 = pkTarget;
+    NiRenderTargetGroup* pkTarget2 = apTargetGroup;
     if (pkTarget2 == 0)
     {
         pkTarget2 = static_cast<NiDX9Renderer*>(NiRenderer::ms_pRenderer)->GetDefaultRT();
     }
-    ((GraphicsRenderer*)NiRenderer::ms_pRenderer)->BeginUsingRenderTargetGroup(pkTarget2, uiClone);
-    PushRefCountedSlot(pkTarget);
+    ((GraphicsRenderer*)NiRenderer::ms_pRenderer)->BeginUsingRenderTargetGroup(pkTarget2, aiClearMode);
+    PushRefCountedSlot(apTargetGroup);
 }

@@ -6,6 +6,7 @@
 
 struct BSPMatrix;
 
+// pdb: class NiBSPNode, size 0xf0 (here 0xcc), bases: NiNode, 2 members
 class NiBSPNode : public NiNode
 {
 public:

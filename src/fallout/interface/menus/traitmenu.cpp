@@ -37,7 +37,7 @@ class NiNodeBooleanState_traitmenu
 public:
     NiPointer<NiNode> pData;
 
-    __declspec(noinline) bool GetBooleanValue();
+    __declspec(noinline) bool QReadyToLevelUp();
     void CharacterProgression_FinishLevelUp();
 };
 
@@ -74,9 +74,10 @@ extern HUDMainMenu DAT_011f2250;
 
 // @fnv 0x007e73c0
 // src: XBOX_PDB 0x007e73c0
+// pdb: TraitMenu::DoIdle | TraitMenu.obj | debug, vtable slot, medium
 void TraitMenu::DoIdle_007e73c0()
 {
-    if ((int)m_eFadeState == 4)
+    if ((int)xFadeState == 4)
     {
         if (!DAT_011f2250.RefreshTargetDisplay())
         {
@@ -91,6 +92,8 @@ extern int DAT_011daf74;
 
 // @fnv 0x007e7630
 // src: GUESS 0x007e7630 (confidence: medium)
+// pdb: TraitMenu::ResetPerksFunc | TraitMenu.obj | debug, object-file run extension, low
+// pdb params: apTile, apPerk
 void Tile_ClearTraitAndUpdateEffectChanges(Tile* apTile)
 {
     if (apTile->ContainsTrait(DAT_011daf5c))
@@ -120,6 +123,9 @@ struct TraitmenuInterfaceView
 }  // namespace fnv_007e75d0
 
 // @fnv 0x007e75d0
+// pdb: TraitMenu::DoGamepadUpEvent | TraitMenu.obj | retail, vtable slot, high
+// pdb params: aiButton, afValue
+// pdb locals: bhandled
 bool TraitMenu::HandleButton(int aiButton, float afValue)
 {
     bool bhandled = false;
@@ -164,6 +170,8 @@ int _sprintf_s(char*, unsigned int, const char*, ...);
 unsigned int BSStringLength(const char*);
 // Initializes the LUM_PerkTemplate list and adds a tile per perk with its name and rank, setting two tile values.
 // @fnv 0x007e7030
+// pdb: TraitMenu::InitLists | TraitMenu.obj | debug, object-file gap fill, medium
+// pdb locals: itotalSkillPoints, inumSkills, pcurrentPerk, pnew, icurrRank, strtemp
 void TraitMenu::PopulatePerkList()
 {
     int itotalSkillPoints = 0;
@@ -194,21 +202,22 @@ struct ListBox_TESObjectREFR
 };
 
 extern Actor* _g_thePlayer;
-extern void __cdecl _FUN_007df4e0();
+extern void __cdecl StatsMenu_UpdatePlayerName();
 void __cdecl HUDMainMenu_ClearXPMeterFinishedMoving();
 void __cdecl TraitMenu_IncreaseSelectedTraitRank(Tile*, void*);
 // @fnv 0x007e6e10
 // src: XBOX_PDB 0x007e6e10
+// pdb: TraitMenu::Close | TraitMenu.obj | retail, upstream name already matches, high
 void __cdecl TraitMenu_Close()
 {
     HUDMainMenu_ClearXPMeterFinishedMoving();
     if (DAT_011daf74)
     {
         ((ListBox_TESObjectREFR*)((char*)DAT_011daf74 + 0x54))->Traverse(TraitMenu_IncreaseSelectedTraitRank, 0, 0x7fffffff);
-        if (((NiNodeBooleanState_traitmenu*)((PlayerCharacter*)_g_thePlayer)->GetCharacterProgressionInfo())->GetBooleanValue())
+        if (((NiNodeBooleanState_traitmenu*)((PlayerCharacter*)_g_thePlayer)->GetCharacterProgressionInfo())->QReadyToLevelUp())
             _g_thePlayer->ConfigureActorState(true, false);
-        _FUN_007df4e0();
-        StatsMenu::UpdateStatusEffects();
+        StatsMenu_UpdatePlayerName();
+        StatsMenu::UpdatePlayerTitle();
         ((Menu*)DAT_011daf74)->FUN_00726070()->Set(0x1772, 1);
         ((Menu*)DAT_011daf74)->LoadMenuData();
         DAT_011daf74 = 0;
@@ -227,6 +236,9 @@ int __cdecl BSstrcmp(char const*, char const*);
 
 // @fnv 0x007e7740
 // src: COMMUNITY 0x007e7740
+// pdb: TraitMenu::SetDisplayString | TraitMenu.obj | debug, object-file run extension, low
+// pdb params: apTile
+// pdb locals: idisplayValue, strtemp
 int Trait_CompareForSorting(TraitMenu::ListBoxItem<BGSPerk*>* apItem1, TraitMenu::ListBoxItem<BGSPerk*>* apItem2)
 {
     int iresult;
@@ -290,6 +302,7 @@ struct CharGenConstructor_traitmenu : CharGenConstructorBase_traitmenu
     CharGenConstructor_traitmenu();
 };
 // @fnv 0x00753230
+// pdb: CharGenMenu::CharGenMenu | CharGenMenu.obj | retail, string-set bridge, high
 CharGenConstructor_traitmenu::CharGenConstructor_traitmenu()
 {
     DAT_011d9210 = Tile_AddUserTrait(str_01071ba0, -1);
@@ -306,6 +319,7 @@ CharGenConstructor_traitmenu::CharGenConstructor_traitmenu()
 
 extern int DAT_011daf74;
 // @fnv 0x007e6910
+// pdb: TraitMenu::~TraitMenu | TraitMenu.obj | retail, upstream name already matches, high
 TraitMenu::~TraitMenu()
 {
     DAT_011daf74 = 0;
@@ -319,6 +333,8 @@ extern MessageTemplate DAT_011d4558, DAT_011d2c10;
 int _sprintf_s(char*, unsigned, const char*, ...);
 // Computes lastValue - firstValue, formats it into a message via one of two templates, and passes it to tile38 with a fixed id.
 // @fnv 0x007e71b0
+// pdb: TraitMenu::UpdatePointCounter | TraitMenu.obj | retail, call graph, high
+// pdb locals: ipointsLeft, strtemp
 void TraitMenu::UpdateValueDifferenceMessage()
 {
     char message[64];
@@ -351,10 +367,13 @@ unsigned int gm_GetTickCount();
 int Tile_TextToTrait(const char*);
 
 // @fnv 0x007e73f0
-bool TraitMenu::HandleKey(int key, int unused)
+// pdb: TraitMenu::DoGamepad | TraitMenu.obj | retail, vtable slot, high
+// pdb params: aiButton, afValue
+// pdb locals: bhandled, iyAxis, iscrollDelta, pscrollbar, icurrScrollbarValue, iUT_CurrentValue
+bool TraitMenu::HandleKey(int aiButton, int afValue)
 {
     bool handled = false;
-    switch (key)
+    switch (aiButton)
     {
     case 9:
         if (list.GetHighlightedItem())
@@ -455,10 +474,13 @@ extern int DAT_011daf78;
 extern int DAT_011daf5c;
 
 // @fnv 0x007e7850
-void TraitMenu::UpdateEffectChanges(Tile* tile)
+// pdb: TraitMenu::ApplyPerkEffects | TraitMenu.obj | debug, call graph, high
+// pdb params: apTile
+// pdb locals: pcurrPerkEntry, uccurrPerkRank, pprevRankEntry, pcurrPerk, pprevRankEffectList, peffectList, peffectObj, perkEffect, pprevRankEffectObj
+void TraitMenu::UpdateEffectChanges(Tile* apTile)
 {
-    PerkRankList* item7 = list54.FindItemData(tile);
-    unsigned char rank4 = (unsigned char)tile->GetFloat(DAT_011daf78);
+    PerkRankList* item7 = list54.FindItemData(apTile);
+    unsigned char rank4 = (unsigned char)apTile->GetFloat(DAT_011daf78);
     PerkEntry* cur = item7->GetRank(rank4);
     PerkEntry* prev6 = rank4 > 1 ? item7->GetRank(rank4 - 1) : 0;
     if (cur && cur->GetType() == 1)
@@ -480,9 +502,9 @@ void TraitMenu::UpdateEffectChanges(Tile* tile)
                 if ((*prevNodeTmp->GetItem())->FUN_00403ea0() == id9)
                     changeVal.magnitude -= (*prevNodeTmp->GetItem())->GetMagnitude();
             }
-            if (!tile->IsTraitNonZero(DAT_011daf5c))
+            if (!apTile->IsTraitNonZero(DAT_011daf5c))
                 changeVal.magnitude *= -1;
-            if ((*node3->GetItem())->GetEffectSetting()->IsDetrimentalToActorValue(id9))
+            if ((*node3->GetItem())->GetEffectSetting()->ShouldNegateMagnitude(id9))
                 changeVal.magnitude *= -1;
             g_011daff0.Add(&changeVal);
         }
@@ -514,6 +536,8 @@ void __cdecl Tile_UpdateState_007e7670(Tile*, void*);
 // Loads trait_menu.xml, builds the trait menu, fills its perk list with eligible perks, sets its labels and counts, and returns the menu tile or 0 on failure.
 // @fnv 0x007e6990
 // src: XBOX_PDB 0x007e6990
+// pdb: TraitMenu::Create | TraitMenu.obj | retail, upstream name already matches, high
+// pdb locals: pin, ptile, pold_menu_tile, nTraitPoints, strtemp, pcurrentPerk, pperk, badd
 Tile* __cdecl TraitMenu_Create()
 {
     TraitMenu* oldMenu = Tile_GetMenuByClass(1084);
@@ -580,14 +604,17 @@ void __cdecl Interface_PlayMenuSound(int);
 
 // For id 10, fills the icon and description tiles from the perk list item, toggles their visibility, and updates the scroll tile's current value.
 // @fnv 0x007e6ea0
-void TraitMenu::UpdatePerkTile(int id, Tile* tile)
+// pdb: TraitMenu::DoEnter | TraitMenu.obj | retail, vtable slot, high
+// pdb params: aiID, apTarget
+// pdb locals: strDescription, pscrollbar, iUT_CurrentValue
+void TraitMenu::UpdatePerkTile(int aiID, Tile* apTarget)
 {
-    switch (id)
+    switch (aiID)
     {
     case 10:
-        this->tile30->SetString(0xFCC, this->list54.GetItemForTile(tile)->TESIcon::GetTextureResourceName(), true);
+        this->tile30->SetString(0xFCC, this->list54.GetItemForTile(apTarget)->TESIcon::GetTextureResourceName(), true);
         char buf[0x200];
-        this->list54.GetItemForTile(tile)->GetDescription(buf, 0x200);
+        this->list54.GetItemForTile(apTarget)->GetDescription(buf, 0x200);
         this->tile34->SetString(0xFC4, buf, true);
         if (BSStringLength(this->tile30->GetString(0xFCC)) > 1)
         {
@@ -616,20 +643,22 @@ void __cdecl Tile_ClearTraitAndUpdateEffectChanges(Tile* apTile);
 
 // Handles tile actions by ID: toggles perk selection and refreshes the tile, or resets the selection and traverses the list.
 // @fnv 0x007e7280
-void TraitMenu::HandleTileAction(int aiTileID, Tile* apTile)
+// pdb: TraitMenu::DoClick | TraitMenu.obj | retail, vtable slot, high
+// pdb params: aiID, apTarget
+void TraitMenu::HandleTileAction(int aiID, Tile* apTarget)
 {
-    switch (aiTileID)
+    switch (aiID)
     {
     case 10:
-        if (kList.IsSelected(apTile))
+        if (kList.IsSelected(apTarget))
         {
-            kList.Deselect(apTile);
-            RefreshTile(apTile);
+            kList.Deselect(apTarget);
+            RefreshTile(apTarget);
         }
-        else if (apTile->GetFloat(DAT_011daf70) == 255.0 && iNumSelected < iMaxSelected)
+        else if (apTarget->GetFloat(DAT_011daf70) == 255.0 && iNumSelected < iMaxSelected)
         {
-            kList.Select(apTile);
-            RefreshTile(apTile);
+            kList.Select(apTarget);
+            RefreshTile(apTarget);
         }
         iNumSelected = kList.GetSelectedCount();
         GetTile()->Set(DAT_011daf64, iNumSelected);

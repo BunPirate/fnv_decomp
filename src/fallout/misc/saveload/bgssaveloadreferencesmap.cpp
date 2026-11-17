@@ -4,11 +4,13 @@
 #include "../../../../include/DummyPointerMap.h"
 
 // @fnv 0x00852B60
+// pdb: BGSSaveLoadReferencesMap::Clear | BGSSaveLoadReferencesMap.obj | retail, upstream name already matches, high
+// pdb locals: it, pcellNumericIDArrayMap, iworldSpaceID
 void BGSSaveLoadReferencesMap::Clear()
 {
-    m_kReferenceIDMap.RemoveAll();
-    m_kCellReferences.Clear();
-    void* position = m_kWorldspaceCellReferenceMaps.GetFirstPos();
+    MovedReferencesMap.RemoveAll();
+    InteriorReferencesMap.Clear();
+    void* position = WorldspaceReferencesMap.GetFirstPos();
     while (position)
     {
         struct WorldspaceReferences
@@ -18,13 +20,15 @@ void BGSSaveLoadReferencesMap::Clear()
         } entry;
         entry.worldspaceID = 0;
         entry.referencesMap = 0;
-        m_kWorldspaceCellReferenceMaps.GetNext(position, entry.worldspaceID, entry.referencesMap);
+        WorldspaceReferencesMap.GetNext(position, entry.worldspaceID, entry.referencesMap);
         delete entry.referencesMap;
     }
-    m_kWorldspaceCellReferenceMaps.RemoveAll();
+    WorldspaceReferencesMap.RemoveAll();
 }
 
 // @fnv 0x008528D0
+// pdb: BGSCellNumericIDArrayMap::Clear | BGSSaveLoadReferencesMap.obj | retail, upstream name already matches, high
+// pdb locals: it, pnumericIDArray, icellID
 void BGSCellNumericIDArrayMap::Clear()
 {
     void* position = GetFirstPos();
@@ -44,6 +48,9 @@ void BGSCellNumericIDArrayMap::Clear()
 }
 
 // @fnv 0x00852D20
+// pdb: BGSSaveLoadReferencesMap::LoadReferencesForCell | BGSSaveLoadReferencesMap.obj | debug, object-file gap fill, medium
+// pdb params: apCell, apReconstructForms
+// pdb locals: pcellNumericIDArrayMap, tempAutoEvent, icellID, pnumericIDArray, i
 void BGSSaveLoadReferencesMap::LoadCellReferences(TESObjectCELL* cell, BGSReconstructFormsInAllFilesMap* forms)
 {
     struct CellReferences
@@ -56,12 +63,12 @@ void BGSSaveLoadReferencesMap::LoadCellReferences(TESObjectCELL* cell, BGSRecons
     if (cell->IsCellInterior())
     {
         cellReferences.cellKey = cell->GetFormID();
-        cellReferences.referencesMap = &m_kCellReferences;
+        cellReferences.referencesMap = &InteriorReferencesMap;
     }
     else
     {
         cellReferences.cellKey = TESWorldSpace::BuildCellKey(cell->GetCellGridX(), cell->GetCellGridY());
-        m_kWorldspaceCellReferenceMaps.GetAt(cell->GetParentWorldSpace()->GetFormID(), cellReferences.referencesMap);
+        WorldspaceReferencesMap.GetAt(cell->GetParentWorldSpace()->GetFormID(), cellReferences.referencesMap);
     }
     if (cellReferences.referencesMap)
     {
@@ -97,18 +104,22 @@ struct FUN_00852a70
 };
 // Initializes members a and c with 0x25 and default-constructs b.
 // @fnv 0x00852a70
+// pdb: BGSSaveLoadReferencesMap::BGSSaveLoadReferencesMap | BGSSaveLoadReferencesMap.obj | retail, call graph, high
 FUN_00852a70::FUN_00852a70() : a(0x25), c(0x25)
 {}
 
 extern "C" bool __cdecl Actor_AreReferencedValuesEqual(const unsigned int&, const unsigned int&);
 
 // @fnv 0x00852a10
-void BGSCellNumericIDArrayMap::RemoveReference(unsigned int auiKey, unsigned int a2)
+// pdb: BGSCellNumericIDArrayMap::RemoveReference | BGSSaveLoadReferencesMap.obj | retail, upstream name already matches, high
+// pdb params: aiCellID, aiReferenceID
+// pdb locals: pnumericIDArray, iindex
+void BGSCellNumericIDArrayMap::RemoveReference(unsigned int aiCellID, unsigned int aiReferenceID)
 {
     BSSimpleArray<unsigned int, 1024>* referenceIDs = 0;
-    if (GetAt(auiKey, referenceIDs))
+    if (GetAt(aiCellID, referenceIDs))
     {
-        unsigned int idx = referenceIDs->Find(a2, 0, Actor_AreReferencedValuesEqual);
+        unsigned int idx = referenceIDs->Find(aiReferenceID, 0, Actor_AreReferencedValuesEqual);
         if (idx != 0xFFFFFFFF)
         {
             referenceIDs->UpdateEntryValue(idx, 1);
@@ -117,6 +128,7 @@ void BGSCellNumericIDArrayMap::RemoveReference(unsigned int auiKey, unsigned int
 }
 
 // @fnv 0x00852810
+// pdb: BGSCellNumericIDArrayMap::BGSCellNumericIDArrayMap | BGSSaveLoadReferencesMap.obj | retail, upstream name already matches, high
 BGSCellNumericIDArrayMap::BGSCellNumericIDArrayMap() : NiTMap(0x25)
 {}
 
@@ -126,6 +138,9 @@ struct FUN_00852cd0_shell
 };
 // Looks up the numeric ID array for aiCellID and removes the reference keyed by the world coordinate of arPos.
 // @fnv 0x00852cd0
+// pdb: BGSSaveLoadReferencesMap::RemoveReference | BGSSaveLoadReferencesMap.obj | debug, object-file gap fill, medium
+// pdb params: aiWorldSpaceID, aiReferenceID, arReferenceLocation
+// pdb locals: pcellNumericIDArrayMap, icellKey
 void FUN_00852cd0_shell::RemoveReferenceFromCell(unsigned int aiCellID, unsigned int aiReferenceID,
                                                  NiPoint3 const& arPos)
 {
@@ -140,24 +155,31 @@ void FUN_00852cd0_shell::RemoveReferenceFromCell(unsigned int aiCellID, unsigned
 
 struct FUN_00852c00_shell
 {
-    void AddReferenceToCell(unsigned int aiCellID, unsigned int aiReferenceID, NiPoint3 const& arPos);
+    void BGSSaveLoadReferencesMap_AddReference(unsigned int aiWorldSpaceID, unsigned int aiReferenceID, NiPoint3 const& arReferenceLocation);
 };
 // Looks up or creates the per-cell numeric ID map for aiCellID, then inserts aiReferenceID under the key derived from arPos.
 // @fnv 0x00852c00
-void FUN_00852c00_shell::AddReferenceToCell(unsigned int aiCellID, unsigned int aiReferenceID, NiPoint3 const& arPos)
+// src: XBOX_RETAIL_PDB 0x00852c00
+// pdb: BGSSaveLoadReferencesMap::AddReference | BGSSaveLoadReferencesMap.obj | retail, call graph (shared callers), high
+// pdb params: aiWorldSpaceID, aiReferenceID, arReferenceLocation
+// pdb locals: pcellNumericIDArrayMap, icellKey
+void FUN_00852c00_shell::BGSSaveLoadReferencesMap_AddReference(unsigned int aiWorldSpaceID, unsigned int aiReferenceID, NiPoint3 const& arReferenceLocation)
 {
     BGSCellNumericIDArrayMap* pNumericIDArray = 0;
-    if (!((DummyPointerMap*)((char*)this + 0x20))->GetAt(aiCellID, (unsigned int&)pNumericIDArray))
+    if (!((DummyPointerMap*)((char*)this + 0x20))->GetAt(aiWorldSpaceID, (unsigned int&)pNumericIDArray))
     {
         pNumericIDArray = new BGSCellNumericIDArrayMap;
-        ((DummyPointerMap*)((char*)this + 0x20))->SetAt(aiCellID, (unsigned int)pNumericIDArray);
+        ((DummyPointerMap*)((char*)this + 0x20))->SetAt(aiWorldSpaceID, (unsigned int)pNumericIDArray);
     }
-    int key = TESWorldSpace::GetKeyForWorldCoord(arPos);
+    int key = TESWorldSpace::GetKeyForWorldCoord(arReferenceLocation);
     pNumericIDArray->GetOrCreateEntryAdd(key, reinterpret_cast<void*>(aiReferenceID));
 }
 
 // Looks up or creates the cell's reference ID array, then adds the reference ID.
 // @fnv 0x00852950
+// pdb: BGSCellNumericIDArrayMap::AddReference | BGSSaveLoadReferencesMap.obj | debug, object-file gap fill, medium
+// pdb params: aiCellID, aiReferenceID
+// pdb locals: pnumericIDArray
 unsigned int BGSCellNumericIDArrayMap::GetOrCreateEntryAdd(unsigned int aiKey, void* apValue)
 {
     BSSimpleArray<unsigned int, 1024>* pEntry = 0;
@@ -201,6 +223,10 @@ class FUN_00852ae0 : public B852AE0Base
 };
 
 // @fnv 0x00852ae0
+// pdb: BGSCellNumericIDArrayMap::AddReference | BGSSaveLoadReferencesMap.obj | retail, object-file run extension, low
+// pdb note: debug build links it to BGSSaveLoadReferencesMap::~BGSSaveLoadReferencesMap
+// pdb params: aiCellID, aiReferenceID
+// pdb locals: pnumericIDArray
 FUN_00852ae0::~FUN_00852ae0()
 {
     Clear();
@@ -235,7 +261,7 @@ struct Info2e40
     bool ReferenceInitialData_GetOriginalLocationCellAndWorld(TESObjectCELL**, TESWorldSpace**);
 };
 void __cdecl BGSSaveLoadInitialData_LoadInitialDataStruct(void*, int, Info2e40*);
-TESObjectCELL* __cdecl ResolveReferenceForm(unsigned int, Info2e40*, bool);
+TESObjectCELL* __cdecl BGSSaveLoadInitialData_CreateReference(unsigned int, Info2e40*, bool);
 struct Forms2e40
 {
     void BGSReconstructFormsInAllFilesMap_AddReference(TESObjectCELL*, unsigned int, bool);
@@ -247,31 +273,34 @@ struct Target2e40
 };
 // @fnv 0x00852e40
 // src: XBOX_PDB 0x00852e40
-void Target2e40::BGSSaveLoadReferencesMap_LoadChangedReference(unsigned int uiRefID, Forms2e40* forms)
+// pdb: BGSSaveLoadReferencesMap::LoadChangedReference | BGSSaveLoadReferencesMap.obj | retail, string-set bridge, high
+// pdb params: aiRefID, apReconstructForms
+// pdb locals: pchanges, refData, einitialDataType, pform, pcell, pworld
+void Target2e40::BGSSaveLoadReferencesMap_LoadChangedReference(unsigned int aiRefID, Forms2e40* apReconstructForms)
 {
-    Change2e40* change = DAT_011ddf38->Modelloader_GetReferencedThis()->FUN_009a4250(uiRefID);
+    Change2e40* change = DAT_011ddf38->Modelloader_GetReferencedThis()->FUN_009a4250(aiRefID);
     if (change)
     {
-        int iChangeType = BGSSaveLoadInitialData_GetInitialDataType(uiRefID, 0x3a, change->key);
+        int iChangeType = BGSSaveLoadInitialData_GetInitialDataType(aiRefID, 0x3a, change->key);
         if (iChangeType != 5 && iChangeType != 6)
         {
             SaveGameWarning(
                 "SAVELOAD: Ref %08X is in the references map but is neither a created reference or a moved reference",
-                uiRefID);
+                aiRefID);
             return;
         }
         if (!change->loader.Modelloader_GetReferencedThis())
         {
             SaveGameWarning(
                 "SAVELOAD: Ref %08X is in the references map but there is no unloaded buffer for it in the changes map",
-                uiRefID);
+                aiRefID);
             return;
         }
         Info2e40 changeInfo;
         BGSSaveLoadInitialData_LoadInitialDataStruct(change->loader.BGSUnloadedFormBuffer_GetAdvancedBuffer(), iChangeType, &changeInfo);
         if (iChangeType == 5)
         {
-            TESObjectCELL* cell = ResolveReferenceForm(uiRefID, &changeInfo, false);
+            TESObjectCELL* cell = BGSSaveLoadInitialData_CreateReference(aiRefID, &changeInfo, false);
             if (cell)
                 DAT_011ddf38->ApplyUnloadedChanges(cell);
         }
@@ -282,20 +311,21 @@ void Target2e40::BGSSaveLoadReferencesMap_LoadChangedReference(unsigned int uiRe
             if (changeInfo.ReferenceInitialData_GetOriginalLocationCellAndWorld(&interior, &world))
             {
                 if (interior)
-                    forms->BGSReconstructFormsInAllFilesMap_AddReference(interior, uiRefID, false);
+                    apReconstructForms->BGSReconstructFormsInAllFilesMap_AddReference(interior, aiRefID, false);
                 else
-                    forms->BGSReconstructFormsInAllFilesMap_AddReference_008438b0(world, changeInfo.x, changeInfo.y, uiRefID, false);
+                    apReconstructForms->BGSReconstructFormsInAllFilesMap_AddReference_008438b0(world, changeInfo.x, changeInfo.y, aiRefID, false);
             }
             else
             {
                 SaveGameWarning("CELLS: Could not find cell or worldspace %08X for moved reference %08X",
-                             changeInfo.cellID, uiRefID);
+                             changeInfo.cellID, aiRefID);
             }
         }
     }
 }
 
 // @fnv 0x00852870
+// pdb: BGSCellNumericIDArrayMap::~BGSCellNumericIDArrayMap | BGSSaveLoadReferencesMap.obj | debug, upstream name already matches, high
 BGSCellNumericIDArrayMap::~BGSCellNumericIDArrayMap()
 {
     Clear();

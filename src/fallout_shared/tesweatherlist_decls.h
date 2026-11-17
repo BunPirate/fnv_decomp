@@ -11,12 +11,13 @@
 
 class TESWeather;
 
+// pdb: structure WeatherEntry, size 0xc, 3 members
 class WeatherEntry
 {
   public:
-    TESWeather* m_weather;
-    unsigned int m_uiFilterValue;
-    TESGlobal* m_otherWeather;
+    TESWeather* pWeather; // src: XBOX_RETAIL_PDB +0x0 (old: m_weather)
+    unsigned int uiChance; // src: XBOX_RETAIL_PDB +0x4 (old: m_uiFilterValue)
+    TESGlobal* pChanceVar; // src: XBOX_RETAIL_PDB +0x8 (old: m_otherWeather)
     WeatherEntry();
 };
 

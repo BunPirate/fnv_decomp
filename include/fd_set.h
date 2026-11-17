@@ -1,5 +1,6 @@
 #pragma once
 
+// pdb: structure fd_set, size 0x104, 2 members
 class fd_set
 {
 public:

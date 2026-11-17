@@ -33,8 +33,8 @@ struct StrBufD32
     int m_iCapacityState;
     char m_kStorage[0x80];
 
-    void InitBuffer();
-    void UpdateFields_00cbbd40();
+    void hkStringBuf_ctor();
+    void Writer_MemberWriteFlags_dtor();
 };
 void __cdecl hkStringBuf_printf(StrBufD32* pBuf, const char* pcFmt, ...);
 
@@ -44,8 +44,8 @@ struct OstreamD32
     int unk04;
     int unk08;
 
-    void FUN_00cb1600(char* pcBuf, int iSize);
-    OstreamD32& InvokeFromRequest(const StrBufD32& kStr);
+    void FUN_00cb1600(char* buf, int bufSize);
+    OstreamD32& InvokeFromRequest(const StrBufD32& str);
     void FUN_00cc00e0();
 };
 
@@ -62,10 +62,12 @@ extern ErrorD32* DAT_01268360;
 
 // @fnv 0x00da3230
 // src: HAVOK_LIB 0x00da3230
+// pdb: hkBsdSocket::pollForNewClient | hkBsdSocket.obj | retail, upstream name already matches, high
+// pdb locals: assertBuf, ostr, readFds, t, exceptFds, from, fromlen, rs, reportBuf, optval
 void* hkBsdSocket::pollForNewClient()
 {
     using namespace fnv_00da3230;
-    if (m_pSocket != -1)
+    if (m_socket != -1)
     {
         fd_set readFds;
         (((fd_set*)(&readFds))->fd_count = 0);
@@ -74,7 +76,7 @@ void* hkBsdSocket::pollForNewClient()
             unsigned int __i;
             for (__i = 0; __i < ((fd_set*)(&readFds))->fd_count; __i++)
             {
-                if (((fd_set*)(&readFds))->fd_array[__i] == (m_pSocket))
+                if (((fd_set*)(&readFds))->fd_array[__i] == (m_socket))
                 {
                     break;
                 }
@@ -83,7 +85,7 @@ void* hkBsdSocket::pollForNewClient()
             {
                 if (((fd_set*)(&readFds))->fd_count < 64)
                 {
-                    ((fd_set*)(&readFds))->fd_array[__i] = (m_pSocket);
+                    ((fd_set*)(&readFds))->fd_array[__i] = (m_socket);
                     ((fd_set*)(&readFds))->fd_count++;
                 }
             }
@@ -95,7 +97,7 @@ void* hkBsdSocket::pollForNewClient()
             unsigned int __i;
             for (__i = 0; __i < ((fd_set*)(&exceptFds))->fd_count; __i++)
             {
-                if (((fd_set*)(&exceptFds))->fd_array[__i] == (m_pSocket))
+                if (((fd_set*)(&exceptFds))->fd_array[__i] == (m_socket))
                 {
                     break;
                 }
@@ -104,7 +106,7 @@ void* hkBsdSocket::pollForNewClient()
             {
                 if (((fd_set*)(&exceptFds))->fd_count < 64)
                 {
-                    ((fd_set*)(&exceptFds))->fd_array[__i] = (m_pSocket);
+                    ((fd_set*)(&exceptFds))->fd_array[__i] = (m_socket);
                     ((fd_set*)(&exceptFds))->fd_count++;
                 }
             }
@@ -112,16 +114,16 @@ void* hkBsdSocket::pollForNewClient()
         timeval t;
         t.tv_sec = 0;
         t.tv_usec = 0;
-        int nfds = int(m_pSocket);
+        int nfds = int(m_socket);
         nfds++;
         int numHits = select_0(nfds, &readFds, 0, &exceptFds, &t);
-        if ((numHits > 0) && _WSAFDIsSet_0(m_pSocket, &readFds))
+        if ((numHits > 0) && _WSAFDIsSet_0(m_socket, &readFds))
         {
             sockaddr_in from;
             int iFromLen = sizeof(from);
-            unsigned int s = accept_0(m_pSocket, &from, &iFromLen);
+            unsigned int s = accept_0(m_socket, &from, &iFromLen);
             StrBufD32 kMsg;
-            kMsg.InitBuffer();
+            kMsg.hkStringBuf_ctor();
             hkStringBuf_printf(&kMsg, "Socket got connection from [%s:%d]\n", inet_ntoa_0(from.sin_addr.S_un.S_addr),
                          ntohs_0(from.sin_port));
             {
@@ -134,7 +136,7 @@ void* hkBsdSocket::pollForNewClient()
             }
             if (s == -1)
             {
-                kMsg.UpdateFields_00cbbd40();
+                kMsg.Writer_MemberWriteFlags_dtor();
                 return 0;
             }
             int iNoDelay = 1;
@@ -142,7 +144,7 @@ void* hkBsdSocket::pollForNewClient()
             void* p = GetHeapAllocator(hkMemoryRouter::getInstance()).blockAlloc(0x24);
             ((unsigned short*)p)[2] = 0x24;
             void* pkSocket = ((hkBsdSocket*)p)->InitWithParam(s);
-            kMsg.UpdateFields_00cbbd40();
+            kMsg.Writer_MemberWriteFlags_dtor();
             return pkSocket;
         }
     }

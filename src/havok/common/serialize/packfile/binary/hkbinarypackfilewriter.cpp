@@ -31,6 +31,7 @@ struct FUN_00dbc670
 extern void FUN_00dbe4d0();
 // Calls FUN_00dbe4d0, sets m_vft, then calls FUN_00dbdef0 and FUN_00dbdf30 on four global objects with DAT_011b7aec.
 // @fnv 0x00dbc670
+// pdb: hkBinaryPackfileWriter::hkBinaryPackfileWriter | hkBinaryPackfileWriter.obj | retail, call graph, high
 FUN_00dbc670::FUN_00dbc670()
 {
     FUN_00dbe4d0();
@@ -78,6 +79,7 @@ struct FUN_00dbd730_class
     void* ForwardToTarget(void* value);
 };
 // @fnv 0x00dbd730
+// pdb: hkSubStreamWriter::isOk | hkBinaryPackfileWriter.obj | retail, vtable slot, high
 void* FUN_00dbd730_class::ForwardToTarget(void* value)
 {
     target->Send(value);
@@ -104,6 +106,7 @@ struct S_00dbd770
 };
 
 // @fnv 0x00dbd770
+// pdb: hkSubStreamWriter::seekTellSupported | hkBinaryPackfileWriter.obj | retail, vtable slot, high
 void* S_00dbd770::ForwardToInner(void* apArg)
 {
     unk8->unk18(apArg);
@@ -131,6 +134,7 @@ struct FUN_00dbd7d0_Class
     int GetAdjustedValue();
 };
 // @fnv 0x00dbd7d0
+// pdb: hkSubStreamWriter::tell | hkBinaryPackfileWriter.obj | retail, vtable slot, high
 int FUN_00dbd7d0_Class::GetAdjustedValue()
 {
     return object->f8() - offset;
@@ -174,7 +178,7 @@ struct FUN_00dbc6f0_cls_callee
 struct FUN_00dbc6f0_cls_store
 {
     int unk00;
-    void Store(void* apNode, int aiDiff);
+    void Store(void* key, int val);
 };
 
 struct FUN_00dbc6f0_cls_owner
@@ -247,20 +251,24 @@ static inline int S_Rev(int v)
 }
 
 // @fnv 0x00dbc6f0
-void __stdcall WriteNodeDiff(FUN_00dbc6f0_cls_owner* apOwner, FUN_00dbc6f0_cls_source* apSource, int aiDiff)
+// src: XBOX_RETAIL_PDB 0x00dbc6f0
+// pdb: hkBinaryPackfileWriter::writeClassName | hkBinaryPackfileWriter.obj | retail, call graph, high
+// pdb params: context, k, absoluteDataStart
+// pdb locals: sig, s, u
+void __stdcall hkBinaryPackfileWriter_writeClassName(FUN_00dbc6f0_cls_owner* context, FUN_00dbc6f0_cls_source* k, int absoluteDataStart)
 {
-    int x = apSource->Lookup(0);
-    if (apOwner->m_byReverse != 0)
+    int x = k->Lookup(0);
+    if (context->m_byReverse != 0)
         x = S_Rev(x);
     FUN_00dbc6f0_cls_key key;
     key.m_iValue = x;
     key.m_byTag = 9;
-    apOwner->m_pCallee->Write(&key, 5);
-    void* pNode = apSource->Resolve();
-    int iDiff = apOwner->m_pCallee->Count() - aiDiff;
-    apOwner->m_store.Store(pNode, iDiff);
-    void** pVtable = *(void***)apOwner->m_pCallee;
-    ((S_WriteFn)pVtable[4])(apOwner->m_pCallee, pNode, hkString_strLen(pNode) + 1);
+    context->m_pCallee->Write(&key, 5);
+    void* pNode = k->Resolve();
+    int iDiff = context->m_pCallee->Count() - absoluteDataStart;
+    context->m_store.Store(pNode, iDiff);
+    void** pVtable = *(void***)context->m_pCallee;
+    ((S_WriteFn)pVtable[4])(context->m_pCallee, pNode, hkString_strLen(pNode) + 1);
 }
 
 struct Target
@@ -329,9 +337,12 @@ struct FUN_00dbd820_cls
 };
 
 extern void* hkMemoryRouter_getInstance();
-extern void __cdecl ResizeAudioStream(void* allocator, void* vec, unsigned int elemSize);
+extern void __cdecl ResizeAudioStream(void* mem, void* array, unsigned int sizeElem);
 
 // @fnv 0x00dbd820
+// pdb: hkRelocationInfo::addLocal | hkBinaryPackfileWriter.obj | retail, object-file run extension, low
+// pdb note: debug build links it to hkStringMap<int,hkContainerHeapAllocator>::hasKey
+// pdb params: fromOffset, toOffset
 void FUN_00dbd820_cls::AppendPair(FUN_00dbd820_pair aPair)
 {
     FUN_00dbd820_pair entry;
@@ -374,7 +385,7 @@ struct S_00dbd8a0_Mem20
     int unk4;
     int unk8;
     int unkC;
-    S_00dbd8a0_Mem20(S_00dbd8a0_Sub* p);
+    S_00dbd8a0_Mem20(S_00dbd8a0_Sub* layout);
 };
 
 struct S_00dbd8a0_Mem30
@@ -383,7 +394,7 @@ struct S_00dbd8a0_Mem30
     int unk4;
     int unk8;
     int unkC;
-    S_00dbd8a0_Mem30(S_00dbd8a0_Byte b);
+    S_00dbd8a0_Mem30(S_00dbd8a0_Byte ops);
 };
 
 extern char DAT_011b7b89;
@@ -398,14 +409,16 @@ struct FUN_00dbd8a0
     S_00dbd8a0_Mem30 unk30;
     Triple third;
     bool unk4c;
-    FUN_00dbd8a0(S_00dbd8a0_Arg* p);
+    FUN_00dbd8a0(S_00dbd8a0_Arg* options);
 };
 
 // Initialises members from p: stores p, builds unk20 from p->unk04 and unk30 from byte 0, and sets unk4c by comparing DAT_011b7b89 with p->unk04.unk1.
 // @fnv 0x00dbd8a0
-FUN_00dbd8a0::FUN_00dbd8a0(S_00dbd8a0_Arg* apArg) : unk00(apArg), unk20(&apArg->unk04), unk30(S_00dbd8a0_Byte(0))
+// pdb: hkBinaryPackfileWriter::SaveContext::SaveContext | hkBinaryPackfileWriter.obj | retail, call graph, high
+// pdb params: options
+FUN_00dbd8a0::FUN_00dbd8a0(S_00dbd8a0_Arg* options) : unk00(options), unk20(&options->unk04), unk30(S_00dbd8a0_Byte(0))
 {
-    unk4c = DAT_011b7b89 != apArg->unk04.unk1;
+    unk4c = DAT_011b7b89 != options->unk04.unk1;
 }
 
 class BDBD910Allocator
@@ -518,6 +531,7 @@ class FUN_00dbd910_cls
 
 // Destructor for the container class; the member arrays and members are destroyed automatically by their own destructors.
 // @fnv 0x00dbd910
+// pdb: hkBinaryPackfileWriter::SaveContext::~SaveContext | hkBinaryPackfileWriter.obj | retail, call graph, high
 FUN_00dbd910_cls::~FUN_00dbd910_cls() throw()
 {}
 
@@ -569,7 +583,7 @@ struct S_00dbd620_Obj
     int unk44;
     int unk48;
     char unk4c;
-    S_00dbd620_Obj(S_00dbd620_Arg* p);
+    S_00dbd620_Obj(S_00dbd620_Arg* options);
     void FUN_00dbd8a0(S_00dbd620_Arg* p);
 };
 
@@ -584,37 +598,40 @@ extern int DAT_0102e388;
 
 unsigned int __cdecl Object_ComputeValue_00dbd720(unsigned int arg);
 
-static __declspec(noinline) void S_00dbd620_Helper(void* a, void* b, void* c, void* d)
+static __declspec(noinline) void S_00dbd620_Helper(void* writer, void* stream, void* options, void* numSections)
 {
-    int n = *(int*)b;
+    int n = *(int*)stream;
     for (int i = 0; i < n; i++)
-        ((S_00dbd620_Poly*)a)->v3();
-    *(int*)c += n + *(int*)d;
+        ((S_00dbd620_Poly*)writer)->v3();
+    *(int*)options += n + *(int*)numSections;
 }
 
 struct S_00dbd620_Owner
 {
     void hkBinaryPackfileWriter_fillSectionTags(void* p);
-    void hkBinaryPackfileWriter_writeAllObjects(void* p);
-    void WriteSectionsAndFixups(void* p, void* q);
-    void* ProcessPoly(S_00dbd620_Poly* a1, S_00dbd620_Arg* a2);
+    void hkBinaryPackfileWriter_writeAllObjects(void* context);
+    void hkBinaryPackfileWriter_doDeferredWrites(void* p, void* sectionHeadersStart);
+    void* ProcessPoly(S_00dbd620_Poly* origStream, S_00dbd620_Arg* options);
 };
 
 // @fnv 0x00dbd620
-void* S_00dbd620_Owner::ProcessPoly(S_00dbd620_Poly* pPoly, S_00dbd620_Arg* a2)
+// pdb: hkBinaryPackfileWriter::save | hkBinaryPackfileWriter.obj | retail, vtable slot, high
+// pdb params: origStream, options
+// pdb locals: context, subStream
+void* S_00dbd620_Owner::ProcessPoly(S_00dbd620_Poly* origStream, S_00dbd620_Arg* options)
 {
-    S_00dbd620_Obj obj(a2);
+    S_00dbd620_Obj obj(options);
     S_00dbd620_Writer writer;
 
     writer.unk06 = 1;
     writer.vtbl = &DAT_010d65ec;
-    writer.unk08 = pPoly;
+    writer.unk08 = origStream;
     writer.unk0c = writer.unk08->v8();
 
     obj.unk1c = &writer;
     hkBinaryPackfileWriter_fillSectionTags(&obj);
 
-    S_00dbd620_Helper((void*)&obj.unk20, (void*)a2, obj.unk1c, obj.unk08);
+    S_00dbd620_Helper((void*)&obj.unk20, (void*)options, obj.unk1c, obj.unk08);
 
     void* pSaved = ((S_00dbd620_Poly*)&writer)->v8();
 
@@ -625,7 +642,7 @@ void* S_00dbd620_Owner::ProcessPoly(S_00dbd620_Poly* pPoly, S_00dbd620_Arg* a2)
 
     void* pSaved2 = ((S_00dbd620_Poly*)&writer)->v8();
 
-    WriteSectionsAndFixups(&obj, pSaved);
+    hkBinaryPackfileWriter_doDeferredWrites(&obj, pSaved);
 
     ((S_00dbd620_Poly*)&writer)->v7(pSaved2, 0);
 
@@ -658,7 +675,7 @@ __forceinline hkMemoryRouter& S_GetRouter() throw()
 {
     return *(hkMemoryRouter*)hkMemoryRouter_getInstance();
 }
-void __cdecl hkArrayUtil__reserve(S_00db8670_Heap& alloc, void* array, int reqCapacity, int sizeElem) throw();
+void __cdecl hkArrayUtil__reserve(S_00db8670_Heap& mem, void* array, int numElem, int sizeElem) throw();
 
 template <typename T> __forceinline void S_ConstructWithCopy(T* p, int n, const T& fill) throw()
 {
@@ -866,7 +883,7 @@ struct S_00db8670_MultiMap64
 
     int AllocateSlot() throw();
     int CallHelperWithDefaults(S_00db8670_Uint64 key) const throw();
-    void Insert(S_00db8670_Uint64 key, const int& value) throw();
+    void hkSerializeMultiMap_unsigned_int64_int_insert(S_00db8670_Uint64 k, const int& value) throw();
     int GetNextChainIndex(int i) const throw()
     {
         return m_kChainValues[i].next;
@@ -899,13 +916,14 @@ struct S_00db8670_MultiMapUlong
     }
 };
 
-__declspec(noinline) void S_00db8670_MultiMap64::Insert(S_00db8670_Uint64 key, const int& value) throw()
+// src: XBOX_RETAIL_PDB 0x00dba360
+__declspec(noinline) void S_00db8670_MultiMap64::hkSerializeMultiMap_unsigned_int64_int_insert(S_00db8670_Uint64 k, const int& value) throw()
 {
-    int oldHead = (int)m_pHashFunction.hkMapBase_unsigned_int64_unsigned_int64_struct_hkMapOperations_unsigned_int64_getWithDefault(key, S_00db8670_Uint64(-1));
+    int oldHead = (int)m_pHashFunction.hkMapBase_unsigned_int64_unsigned_int64_struct_hkMapOperations_unsigned_int64_getWithDefault(k, S_00db8670_Uint64(-1));
     int newHead = AllocateSlot();
     m_kChainValues[newHead].value = value;
     m_kChainValues[newHead].next = oldHead;
-    m_pHashFunction.InsertKeyValue((S_00db8670_Heap&)S_GetRouter().heap(), key, newHead);
+    m_pHashFunction.InsertKeyValue((S_00db8670_Heap&)S_GetRouter().heap(), k, newHead);
 }
 // src: XBOX_PDB 0x00dc9ec0
 __declspec(noinline) void S_00db8670_MultiMapUlong::hkSerializeMultiMap_hkDataClassDict_hkDataClassDict_insert(S_00db8670_Ulong key, const int& value) throw()
@@ -981,9 +999,9 @@ __declspec(noinline) int __cdecl Hkversionpatchmanager_EvaluateValue_00db7cb0(co
 }
 int __cdecl hkString_strCmp(const char* a, const char* b) throw();
 int __cdecl hkMemoryRouter_ProcessEntries_00db7e70(int from, int to, const S_00db8670_MultiMapUlong& deps, S_00db8670_MapUlong& visited) throw();
-int __cdecl hkIntArray_ProcessEntries_00db83c0(int index, S_00db8670_ArrayLocalForm<int>& order, const S_00db8670_MultiMapUlong& deps, int next,
-                         S_00db8670_ArrayLocalForm<int>& stack,
-                         const S_00db8670_ArrayLocalForm<const S_00db8670_PatchInfo*>& patches) throw();
+int __cdecl walkDependencies(int curIndex, S_00db8670_ArrayLocalForm<int>& order, const S_00db8670_MultiMapUlong& incoming, int next,
+                         S_00db8670_ArrayLocalForm<int>& pending,
+                         const S_00db8670_ArrayLocalForm<const S_00db8670_PatchInfo*>& patchInfos) throw();
 
 struct S_00db8670_PatchManager
 {
@@ -1000,6 +1018,8 @@ struct S_00db8670_PatchManager
 // Validates patch info, builds dependency and rename maps, topologically sorts m_kPatchInfos, and rebuilds m_kPatchInfoIndexMap.
 // @fnv 0x00db8670
 // src: XBOX_PDB 0x00db8670
+// pdb: hkVersionPatchManager::recomputePatchDependencies | hkVersionPatchManager.obj | retail, upstream name already matches, high
+// pdb locals: order, lastClassPatchIndexesFromClassName, incoming, allPatchInfos, pending, patchIndexFromClassName, idxNewSrcFromUid, multiIncoming, idxDstFromUid, i, assertBuf, ostr, curIdx, dstIdx, dpOutputIdx, prevIdx, done, startIndex
 int S_00db8670_PatchManager::hkVersionPatchManager_recomputePatchDependencies() throw()
 {
     S_00db8670_Map64 newClassIndexFromUid;
@@ -1044,7 +1064,7 @@ int S_00db8670_PatchManager::hkVersionPatchManager_recomputePatchDependencies() 
             {
                 const char* name = p->m_newName ? p->m_newName : p->m_oldName;
                 S_00db8670_Uint64 uid = uidFromClassVersion->ComputeValue_00db7d60(name, p->m_newVersion);
-                patchesFromUid.Insert(uid, i);
+                patchesFromUid.hkSerializeMultiMap_unsigned_int64_int_insert(uid, i);
             }
         }
     }
@@ -1163,7 +1183,7 @@ int S_00db8670_PatchManager::hkVersionPatchManager_recomputePatchDependencies() 
     int next = 0;
     for (int i = 0; i < sorted.GetLogicalSize(); i++)
     {
-        next = hkIntArray_ProcessEntries_00db83c0(i, newIndex, dependencies, next, stack, sorted);
+        next = walkDependencies(i, newIndex, dependencies, next, stack, sorted);
     }
 
     m_kPatchInfos.SetSizeAndGrow(sorted.GetLogicalSize());
@@ -1254,12 +1274,15 @@ extern "C" void __cdecl hkString_memSet(void* dst, int a, int b);
 extern "C" void __cdecl hkString_memCpy(void* dst, void* src, int n);
 extern "C" void __cdecl CopyIfNonEmpty(void* dst, void* src, int n);
 extern "C" void __cdecl hkPackfileWriter_getCurrentVersion(void* dst, int n);
-extern int DAT_0126c6c8;
+extern int hkPackfileHeaderClass; // src: XBOX_RETAIL_PDB 0x0126c6c8 (old: DAT_0126c6c8/g_0126c6c8)
 
 // Builds a Dbc860Header and initializes a Dbc860Frame, then calls sink->Call with the value, header, DAT_0126c6c8, and frame.
 // @fnv 0x00dbc860
 // src: XBOX_PDB 0x00dbc860
-static __declspec(noinline) void __cdecl saveFileHeader(Dbc860Src* apSrc, int value, int extra, Dbc860Sink* sink)
+// pdb: saveFileHeader | hkBinaryPackfileWriter.obj | retail, upstream name already matches, high
+// pdb params: writer, stream, options, numSections
+// pdb locals: header, fixups
+static __declspec(noinline) void __cdecl saveFileHeader(Dbc860Src* writer, int stream, int options, Dbc860Sink* numSections)
 {
     Dbc860Header header;
     Dbc860Frame f;
@@ -1268,18 +1291,18 @@ static __declspec(noinline) void __cdecl saveFileHeader(Dbc860Src* apSrc, int va
     header.magic0 = 0x57e0e057;
     header.magic1 = 0x10c0c010;
     header.guid.b0 = 0;
-    header.id = apSrc->m_00;
+    header.id = writer->m_00;
     header.type = 7;
-    hkString_memCpy(&header.data, &apSrc->m_04, 4);
-    header.extra = extra;
+    hkString_memCpy(&header.data, &writer->m_04, 4);
+    header.extra = options;
     hkString_memSet(&header.tail0, -1, 8);
-    if (apSrc->m_0c == 0)
+    if (writer->m_0c == 0)
     {
         hkPackfileWriter_getCurrentVersion(&header.guid, 0x10);
     }
     else
     {
-        CopyIfNonEmpty(&header.guid, apSrc->m_0c, 0x10);
+        CopyIfNonEmpty(&header.guid, writer->m_0c, 0x10);
     }
     f.first.z = (int)0x80000000;
     f.second.z = (int)0x80000000;
@@ -1294,7 +1317,7 @@ static __declspec(noinline) void __cdecl saveFileHeader(Dbc860Src* apSrc, int va
     f.fourth.x = 0;
     f.fourth.y = 0;
     f.trailing = 0;
-    sink->Call(value, &header, &DAT_0126c6c8, &f);
+    numSections->Call(stream, &header, &hkPackfileHeaderClass, &f);
     f.FUN_00e028e0();
 }
 
@@ -1345,7 +1368,7 @@ struct S00dbcdd0_Arr
     int u7;
 };
 
-extern void hkArrayUtil__reserve(void* alloc, void** pData, int newCap, int flag);
+extern void hkArrayUtil__reserve(void* mem, void** array, int numElem, int sizeElem);
 extern void FUN_00ec61c0(void* dst, int value, int n);
 
 template <class T> __forceinline void S00dbcdd0_Construct(T* p, int n, const T& fill)
@@ -1358,31 +1381,34 @@ template <class T> __forceinline void S00dbcdd0_Construct(T* p, int n, const T& 
 
 // Fills count bytes with -1, calls obj->unk10 when r is nonzero, then frees the buffer if heap-allocated.
 // @fnv 0x00dbcdd0
-// src: GUESS 0x00dbcdd0 (confidence: low)
-static __declspec(noinline) void hkMemoryRouter_UpdateState_00dbcdd0(S00dbcdd0_Obj* obj, unsigned int count)
+// src: XBOX_RETAIL_PDB 0x00dbcdd0
+// pdb: padUp | hkBinaryPackfileWriter.obj | retail, call graph, high
+// pdb params: w, pad
+// pdb locals: buf
+static __declspec(noinline) void padUp(S00dbcdd0_Obj* w, unsigned int pad)
 {
-    int value = (int)obj->unk20();
+    int value = (int)w->unk20();
     S00dbcdd0_Arr arr;
     arr.m_data = &arr.u0;
     arr.m_iElementCount = 0;
     arr.m_capFlags = 0x80000020;
     S00dbcdd0_Alloc& heap = (S00dbcdd0_Alloc&)((hkMemoryRouter*)hkMemoryRouter_getInstance())->heap();
     int cap = (int)(arr.m_capFlags & 0x3fffffff);
-    if (cap < (int)count)
+    if (cap < (int)pad)
     {
         int newCap = cap + cap;
-        if ((int)count >= newCap)
+        if ((int)pad >= newCap)
         {
-            newCap = (int)count;
+            newCap = (int)pad;
         }
         hkArrayUtil__reserve(&heap, &arr.m_data, newCap, 1);
     }
-    S00dbcdd0_Construct((char*)arr.m_data + arr.m_iElementCount, (int)count - arr.m_iElementCount, (char)-1);
-    int r = ((int)count - 1) & value;
-    arr.m_iElementCount = (int)count;
+    S00dbcdd0_Construct((char*)arr.m_data + arr.m_iElementCount, (int)pad - arr.m_iElementCount, (char)-1);
+    int r = ((int)pad - 1) & value;
+    arr.m_iElementCount = (int)pad;
     if (r != 0)
     {
-        obj->unk10(arr.m_data, count - r);
+        w->unk10(arr.m_data, pad - r);
     }
     S00dbcdd0_Alloc& heap2 = (S00dbcdd0_Alloc&)((hkMemoryRouter*)hkMemoryRouter_getInstance())->heap();
     unsigned int capFlags = arr.m_capFlags;
@@ -1395,7 +1421,7 @@ static __declspec(noinline) void hkMemoryRouter_UpdateState_00dbcdd0(S00dbcdd0_O
 
 void S00dbcdd0_Entry(S00dbcdd0_Obj* obj, unsigned int count)
 {
-    hkMemoryRouter_UpdateState_00dbcdd0(obj, count);
+    padUp(obj, count);
 }
 
 namespace fnv_00dbd7f0 {
@@ -1425,6 +1451,7 @@ struct FUN_00dbd7f0 : S_00dbd7f0_RefObj
     virtual ~FUN_00dbd7f0();
 };
 // @fnv 0x00dbd7f0
+// pdb: hkBinaryPackfileWriter::`scalar deleting destructor' | hkBinaryPackfileWriter.obj | retail, vtable slot, high
 FUN_00dbd7f0::FUN_00dbd7f0()
 {}
 }  // namespace fnv_00dbd7f0
@@ -1450,7 +1477,7 @@ struct BinaryWriter
     int mode;
     int state;
     int extra;
-    void hkOArchive_InitializeWriterWithByteSwap(void*, WriterBool);
+    void hkOArchive_ctor(void*, WriterBool);
     void ReleaseReference_00d60590();
     void WriteInt(int);
     void hkOArchive_WriteSwapped_Thunk_00d60b00(int*, int);
@@ -1528,7 +1555,7 @@ struct WriterOwner
     int a88;
     int rootIndex;
     int objectIndex;
-    void WriteSectionsAndFixups(struct SourceData*, int);
+    void hkBinaryPackfileWriter_doDeferredWrites(struct SourceData*, int);
 };
 struct PointerPair
 {
@@ -1606,7 +1633,7 @@ struct SectionContext
     int trailing;
     void FUN_00e028e0();
 };
-extern int DAT_0126c698;
+extern int hkPackfileSectionHeaderClass; // src: XBOX_RETAIL_PDB 0x0126c698 (old: DAT_0126c698/g_0126c698)
 struct Serializer
 {
     virtual void v00();
@@ -1682,11 +1709,14 @@ template <class T> __forceinline void ArrayBase<T>::releaseOnly()
 }
 // Writes global and local fixup data for each section, then serializes each section and writes the root object header to the stream.
 // @fnv 0x00dbc960
-// src: GUESS 0x00dbc960 (confidence: medium)
-void WriterOwner::WriteSectionsAndFixups(SourceData* source, int position)
+// src: XBOX_RETAIL_PDB 0x00dbc960
+// pdb: hkBinaryPackfileWriter::doDeferredWrites | hkBinaryPackfileWriter.obj | retail, call graph, high
+// pdb params: context, sectionHeadersStart
+// pdb locals: endianStream, layout, outHeader, sectionIndex, fixups, assertBuf, ostr, dummyReloc
+void WriterOwner::hkBinaryPackfileWriter_doDeferredWrites(SourceData* source, int sectionHeadersStart)
 {
     BinaryWriter values;
-    values.hkOArchive_InitializeWriterWithByteSwap(source->stream, source->reverse);
+    values.hkOArchive_ctor(source->stream, source->reverse);
     SectionRecord* kIter;
     {
         int ptr = 0;
@@ -1756,19 +1786,19 @@ void WriterOwner::WriteSectionsAndFixups(SourceData* source, int position)
             } while (++ptr < source->sections.size);
         }
     }
-    source->stream->seek(position, 0);
+    source->stream->seek(sectionHeadersStart, 0);
     for (int s = 0; s < source->sections.size; s++)
     {
         SectionContext context;
         context.trailing = 0;
-        source->serializer.serialize(source->stream, &source->sections.data[s], &DAT_0126c698, &context);
+        source->serializer.serialize(source->stream, &source->sections.data[s], &hkPackfileSectionHeaderClass, &context);
         context.FUN_00e028e0();
     }
     source->stream->seek(24, 0);
     WriterBool p;
     p.value = (unsigned char)(((unsigned int)*source->serializer.hkPlatformObjectWriter_getLayout()) >> 8) != (unsigned char)DAT_011b7b89;
     BinaryWriter ptr;
-    ptr.hkOArchive_InitializeWriterWithByteSwap(source->stream, p);
+    ptr.hkOArchive_ctor(source->stream, p);
     ptr.WriteInt(source->pointers.data[rootIndex].first);
     ptr.WriteInt(source->pointers.data[rootIndex].second);
     RootObject* section;
@@ -1806,7 +1836,7 @@ struct FUN_00d874b0_class
 };
 struct FUN_00dbdd40_s
 {
-    int GetOrAddString(int v);
+    int hkPackfileWriter_sectionTagToIndex(int sectionTag);
 };
 struct FUN_00dce8d0_class
 {
@@ -1831,7 +1861,7 @@ struct Ctx
     void* unk04;
     void* unk08;
     void* unk0c;
-    void hkOArchive_InitializeWriterWithByteSwap(ClockObj* c, int f);
+    void hkOArchive_ctor(ClockObj* c, int f);
     void ReleaseReference_00d60590();
     void WriteSwapped(void* data, int elem, int count);
 };
@@ -1851,8 +1881,8 @@ struct LocObj
     int l04;
     int l08;
     int l0c;
-    void FUN_00d87790(MapBool a);
-    void hkCachedHashMap_hkStringMapOperations_hkContainerHeapAllocator_insert(const char* s, int f);
+    void FUN_00d87790(MapBool ops);
+    void hkCachedHashMap_hkStringMapOperations_hkContainerHeapAllocator_insert(const char* key, int val);
     void* FindStringKey(const char* s);
     MapBool SetBoolFromThreshold(int v);
     void FreeBuffer();
@@ -2017,23 +2047,23 @@ struct ThisCls
     int unk24;
     int unk28;
     PairMap map2c;
-    void WriteNodeDiff(Src* src, void* glob, int diff);
+    void hkBinaryPackfileWriter_writeClassName(Src* context, void* k, int absoluteDataStart);
     int GetOrAddString(int v);
-    void hkBinaryPackfileWriter_writeAllObjects(Src* arg);
+    void hkBinaryPackfileWriter_writeAllObjects(Src* context);
 };
 extern int DAT_011b7aec;
 void* hkMemoryRouter_getInstance();
-extern void __cdecl ResizeAudioStream(void* allocator, void* vec, unsigned int elemSize);
-extern void __cdecl hkArrayUtil__reserve(void* a, void* vec, int n, int elem);
+extern void __cdecl ResizeAudioStream(void* mem, void* array, unsigned int sizeElem);
+extern void __cdecl hkArrayUtil__reserve(void* mem, void* array, int numElem, int sizeElem);
 extern int __cdecl hkString_strLen(void* p);
 extern void* __cdecl memset(void*, int, unsigned int);
 extern "C" void _ReadWriteBarrier();
 
 extern void FUN_00ec61c0(void* dst, int value, int n);
-// src: GUESS 0x00dbcdd0 (confidence: low)
-static __declspec(noinline) void hkMemoryRouter_UpdateState_00dbcdd0(ClockObj* obj0, unsigned int count)
+// src: XBOX_RETAIL_PDB 0x00dbcdd0
+static __declspec(noinline) void padUp(ClockObj* w, unsigned int pad)
 {
-    S00dbcdd0_Obj* obj = (S00dbcdd0_Obj*)obj0;
+    S00dbcdd0_Obj* obj = (S00dbcdd0_Obj*)w;
     int value = (int)obj->unk20();
     S00dbcdd0_Arr arr;
     arr.m_data = &arr.u0;
@@ -2041,26 +2071,26 @@ static __declspec(noinline) void hkMemoryRouter_UpdateState_00dbcdd0(ClockObj* o
     arr.m_capFlags = 0x80000020;
     S00dbcdd0_Alloc& heap = (S00dbcdd0_Alloc&)((hkMemoryRouter*)hkMemoryRouter_getInstance())->heap();
     int cap = (int)(arr.m_capFlags & 0x3fffffff);
-    if (cap < (int)count)
+    if (cap < (int)pad)
     {
         int newCap = cap + cap;
-        if ((int)count >= newCap)
+        if ((int)pad >= newCap)
         {
-            newCap = (int)count;
+            newCap = (int)pad;
         }
         hkArrayUtil__reserve(&heap, &arr, newCap, 1);
     }
     int end = (int)arr.m_data + arr.m_iElementCount;
-    int fill = (int)count - arr.m_iElementCount;
+    int fill = (int)pad - arr.m_iElementCount;
     if (fill > 0)
     {
         FUN_00ec61c0((void*)end, -1, fill);
     }
-    int r = ((int)count - 1) & value;
-    arr.m_iElementCount = (int)count;
+    int r = ((int)pad - 1) & value;
+    arr.m_iElementCount = (int)pad;
     if (r != 0)
     {
-        obj->unk10(arr.m_data, count - r);
+        obj->unk10(arr.m_data, pad - r);
     }
     S00dbcdd0_Alloc& heap2 = (S00dbcdd0_Alloc&)((hkMemoryRouter*)hkMemoryRouter_getInstance())->heap();
     unsigned int capFlags = arr.m_capFlags;
@@ -2165,14 +2195,17 @@ __forceinline MapIter NextPair(PairMap* map, MapIter previous)
 // Calls WriteNodeDiff for four globals and unseen entries, writes per-counter data, records timings, and resizes two arrays.
 // @fnv 0x00dbcea0
 // src: XBOX_PDB 0x00dbcea0
-void ThisCls::hkBinaryPackfileWriter_writeAllObjects(Src* apSrc)
+// pdb: hkBinaryPackfileWriter::writeAllObjects | hkBinaryPackfileWriter.obj | retail, upstream name already matches, high
+// pdb params: context
+// pdb locals: classSectionIndex, specialClasses, writtenClassnames, oa, fixups, assertBuf, ostr
+void ThisCls::hkBinaryPackfileWriter_writeAllObjects(Src* context)
 {
     int i, j, counter, iResult;
     int objectBytes;
     (void)objectBytes;
     (void)counter;
-    Stats* stats = apSrc->unk04;
-    stats->start = apSrc->clock1c->Get20();
+    Stats* stats = context->unk04;
+    stats->start = context->clock1c->Get20();
     {
         LocObj locObj;
         locObj.FUN_00d87790(MapBool(false));
@@ -2186,7 +2219,7 @@ void ThisCls::hkBinaryPackfileWriter_writeAllObjects(Src* apSrc)
             FUN_00d46d40_s* g = (FUN_00d46d40_s*)tbl[i];
             const char* name = g->FUN_00d46d40();
             locObj.hkCachedHashMap_hkStringMapOperations_hkContainerHeapAllocator_insert(name, 1);
-            WriteNodeDiff(apSrc, tbl[i], stats->start);
+            hkBinaryPackfileWriter_writeClassName(context, tbl[i], stats->start);
         }
         for (j = 0, objectBytes = 0; j < entries.m_iElementCount; j++, objectBytes += sizeof(ThisEntry))
         {
@@ -2196,11 +2229,11 @@ void ThisCls::hkBinaryPackfileWriter_writeAllObjects(Src* apSrc)
             {
                 const char* name = ((ThisEntry*)((char*)entries.m_data + objectBytes))->getName();
                 locObj.hkCachedHashMap_hkStringMapOperations_hkContainerHeapAllocator_insert(name, 1);
-                WriteNodeDiff(apSrc, (void*)((ThisEntry*)((char*)entries.m_data + objectBytes))->t04, stats->start);
+                hkBinaryPackfileWriter_writeClassName(context, (void*)((ThisEntry*)((char*)entries.m_data + objectBytes))->t04, stats->start);
             }
         }
-        hkMemoryRouter_UpdateState_00dbcdd0(apSrc->clock1c, 16);
-        int d = apSrc->clock1c->Get20() - stats->start;
+        padUp(context->clock1c, 16);
+        int d = context->clock1c->Get20() - stats->start;
         stats->end1 = d;
         stats->end2 = d;
         stats->end3 = d;
@@ -2209,15 +2242,15 @@ void ThisCls::hkBinaryPackfileWriter_writeAllObjects(Src* apSrc)
         stats->end6 = d;
         locObj.FreeBuffer();
     }
-    Resize8(apSrc->arr10, entries.m_iElementCount);
-    Resize52(apSrc->arr40, apSrc->count08);
-    iResult = ((FUN_00dbdd40_s*)this)->GetOrAddString(DAT_011b7aec);
-    for (counter = 1; counter < apSrc->count08; counter++)
+    Resize8(context->arr10, entries.m_iElementCount);
+    Resize52(context->arr40, context->count08);
+    iResult = ((FUN_00dbdd40_s*)this)->hkPackfileWriter_sectionTagToIndex(DAT_011b7aec);
+    for (counter = 1; counter < context->count08; counter++)
     {
-        stats = apSrc->unk04 + counter;
-        stats->start = apSrc->clock1c->Get20();
+        stats = context->unk04 + counter;
+        stats->start = context->clock1c->Get20();
         Work work;
-        SrcOptions* u0 = apSrc->unk00;
+        SrcOptions* u0 = context->unk00;
         if (u0->flag08 != 0 || counter != iResult)
         {
             for (int idx = 0; idx < entries.m_iElementCount; idx++)
@@ -2228,16 +2261,16 @@ void ThisCls::hkBinaryPackfileWriter_writeAllObjects(Src* apSrc)
                     int saved0 = pEntry->t00;
                     int saved4 = pEntry->t04;
                     int ai = idx;
-                    apSrc->arr10.m_data[ai].p0 = counter;
-                    Pair8* pair = &apSrc->arr10.m_data[ai];
-                    pair->p1 = apSrc->clock1c->Get20() - stats->start;
+                    context->arr10.m_data[ai].p0 = counter;
+                    Pair8* pair = &context->arr10.m_data[ai];
+                    pair->p1 = context->clock1c->Get20() - stats->start;
                     if (saved4 != 0)
                     {
-                        apSrc->sub20.write(apSrc->clock1c, saved0, saved4, &work.a1);
+                        context->sub20.write(context->clock1c, saved0, saved4, &work.a1);
                     }
                     else
                     {
-                        apSrc->clock1c->c10(pEntry->t00, pEntry->t14);
+                        context->clock1c->c10(pEntry->t00, pEntry->t14);
                     }
                 }
             }
@@ -2252,8 +2285,8 @@ void ThisCls::hkBinaryPackfileWriter_writeAllObjects(Src* apSrc)
                 {
                     if (((ThisEntry*)((char*)entries.m_data + objectBytes))->t10 == iResult)
                     {
-                        apSrc->arr10.m_data[idx].p0 = -1;
-                        apSrc->arr10.m_data[idx].p1 = -1;
+                        context->arr10.m_data[idx].p0 = -1;
+                        context->arr10.m_data[idx].p1 = -1;
                     }
                     objectBytes += sizeof(ThisEntry);
                 } while (++idx < entries.m_iElementCount);
@@ -2286,19 +2319,19 @@ void ThisCls::hkBinaryPackfileWriter_writeAllObjects(Src* apSrc)
             }
         }
         Ctx ctx;
-        ctx.hkOArchive_InitializeWriterWithByteSwap(apSrc->clock1c, apSrc->flag4c);
-        stats->end1 = apSrc->clock1c->Get20() - stats->start;
+        ctx.hkOArchive_ctor(context->clock1c, context->flag4c);
+        stats->end1 = context->clock1c->Get20() - stats->start;
         ctx.WriteSwapped(work.a1.m_data, 4, work.a1.m_iElementCount * 2);
-        hkMemoryRouter_UpdateState_00dbcdd0(apSrc->clock1c, 16);
-        stats->end2 = apSrc->clock1c->Get20() - stats->start;
-        apSrc->clock1c->c1c(work.a2.m_iElementCount * 12, 1);
-        ((FUN_00d9ec10_cls*)&apSrc->arr40.m_data[counter].second)->SwapThreeInts((int*)&work.a2);
-        hkMemoryRouter_UpdateState_00dbcdd0(apSrc->clock1c, 16);
-        stats->end3 = apSrc->clock1c->Get20() - stats->start;
-        apSrc->clock1c->c1c(work.a3.m_iElementCount * 12, 1);
-        ((FUN_00d9ec10_cls*)&apSrc->arr40.m_data[counter].third)->SwapThreeInts((int*)&work.a3);
-        hkMemoryRouter_UpdateState_00dbcdd0(apSrc->clock1c, 16);
-        stats->end4 = apSrc->clock1c->Get20() - stats->start;
+        padUp(context->clock1c, 16);
+        stats->end2 = context->clock1c->Get20() - stats->start;
+        context->clock1c->c1c(work.a2.m_iElementCount * 12, 1);
+        ((FUN_00d9ec10_cls*)&context->arr40.m_data[counter].second)->SwapThreeInts((int*)&work.a2);
+        padUp(context->clock1c, 16);
+        stats->end3 = context->clock1c->Get20() - stats->start;
+        context->clock1c->c1c(work.a3.m_iElementCount * 12, 1);
+        ((FUN_00d9ec10_cls*)&context->arr40.m_data[counter].third)->SwapThreeInts((int*)&work.a3);
+        padUp(context->clock1c, 16);
+        stats->end4 = context->clock1c->Get20() - stats->start;
         {
             MapIter idx = BeginPairs(&map2c);
             bool flag = false;
@@ -2315,12 +2348,12 @@ void ThisCls::hkBinaryPackfileWriter_writeAllObjects(Src* apSrc)
                         if (pEntry->t10 == counter)
                         {
                             int second = (map2c.data + (int)idx)->p1;
-                            int av = apSrc->arr10.m_data[foundIdx].p1;
+                            int av = context->arr10.m_data[foundIdx].p1;
                             flag = true;
                             ((FUN_00d60940_Class*)&ctx)->WriteInt((unsigned int)av);
                             int r = hkString_strLen((void*)second);
                             ((FUN_00d607b0_s*)&ctx)->writeVec(second, r + 1);
-                            hkMemoryRouter_UpdateState_00dbcdd0(apSrc->clock1c, 4);
+                            padUp(context->clock1c, 4);
                         }
                     }
                     idx = NextPair(&map2c, idx);
@@ -2331,25 +2364,25 @@ void ThisCls::hkBinaryPackfileWriter_writeAllObjects(Src* apSrc)
             if (flag)
             {
                 ((FUN_00d60940_Class*)&ctx)->WriteInt((unsigned int)-1);
-                hkMemoryRouter_UpdateState_00dbcdd0(apSrc->clock1c, 16);
+                padUp(context->clock1c, 16);
             }
         }
-        stats->end5 = apSrc->clock1c->Get20() - stats->start;
+        stats->end5 = context->clock1c->Get20() - stats->start;
         for (int k = 0; k < work.a4.m_iElementCount; k++)
         {
             Pair8* pr = work.a4.m_data + k;
             ((FUN_00d60940_Class*)&ctx)->WriteInt((unsigned int)pr->p0);
             int r = hkString_strLen((void*)pr->p1);
             ((FUN_00d607b0_s*)&ctx)->writeVec(pr->p1, r + 1);
-            hkMemoryRouter_UpdateState_00dbcdd0(apSrc->clock1c, 4);
+            padUp(context->clock1c, 4);
         }
         if (work.a4.m_iElementCount != 0)
         {
             ((FUN_00d60940_Class*)&ctx)->WriteInt((unsigned int)-1);
-            ((FUN_00d9ec10_cls*)&apSrc->arr40.m_data[counter].fourth)->SwapThreeInts((int*)&work.a4);
-            hkMemoryRouter_UpdateState_00dbcdd0(apSrc->clock1c, 16);
+            ((FUN_00d9ec10_cls*)&context->arr40.m_data[counter].fourth)->SwapThreeInts((int*)&work.a4);
+            padUp(context->clock1c, 16);
         }
-        stats->end6 = apSrc->clock1c->Get20() - stats->start;
+        stats->end6 = context->clock1c->Get20() - stats->start;
         ctx.ReleaseReference_00d60590();
         work.FUN_00e028e0();
     }
@@ -2413,6 +2446,8 @@ struct Writer
 // Resizes the header array to tagCount, initializes its data range to -1, and copies 19 bytes from each tag.
 // @fnv 0x00dbc7a0
 // src: XBOX_PDB 0x00dbc7a0
+// pdb: hkBinaryPackfileWriter::fillSectionTags | hkBinaryPackfileWriter.obj | retail, upstream name already matches, high
+// pdb params: context
 void Writer::hkBinaryPackfileWriter_fillSectionTags(Context* context)
 {
     HeaderArray* headers = &context->headers;

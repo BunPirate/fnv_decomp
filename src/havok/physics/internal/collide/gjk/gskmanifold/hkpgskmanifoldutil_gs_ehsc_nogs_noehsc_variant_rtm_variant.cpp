@@ -30,7 +30,7 @@ struct S_00dad640_Target
     virtual void unk10();
     virtual void Release(unsigned short id, void* arg);
 };
-void ReleaseAllEntries(S_00dad640_Set* set, S_00dad640_Target* target, void* arg);
+void hkGskManifold_cleanup(S_00dad640_Set* manifold, S_00dad640_Target* mgr, void* constraintOwner);
 struct S_00dad4d0_Key
 {
     unsigned short ids[4];
@@ -231,8 +231,8 @@ static inline S_00dad4d0_Entry& ContactEntry(ContactManifold* set, unsigned inde
     return *reinterpret_cast<S_00dad4d0_Entry*>(reinterpret_cast<char*>(set) + 4 + index * 8);
 }
 static void __fastcall hkGskManifold_garbageCollect(int, ContactManifold* set);
-int hkGskManifold_addPoint(ContactManifold* set, void* a, void* b, void* c, ContactContext* context, S_00dad4d0_Key* key,
-                 ContactRecord* point, ContactCache* cache, ContactManager* manager, int defer);
+int hkGskManifold_addPoint(ContactManifold* manifold, void* bodyA, void* bodyB, void* input, ContactContext* output, S_00dad4d0_Key* newPoint,
+                 ContactRecord* newCdPointInResultArray, ContactCache* resultPointArray, ContactManager* mgr, int mgrHandling);
 // src: COMMUNITY 0x00dae220
 static __declspec(noinline) void __fastcall hkGskManifold_garbageCollect(int, ContactManifold* set)
 {
@@ -854,39 +854,41 @@ static __declspec(noinline) void hkGskManifold_garbageCollect(Manifold* manifold
 
 // @fnv 0x00dae3a0
 // src: COMMUNITY 0x00dae3a0
-void __cdecl hkGskManifold_verifyAndGetPoints(Manifold& manifold, const WorkData& data, int start, ProcessOutput& output, Manager* mgr)
+// pdb: hkGskManifold_verifyAndGetPoints | hkpGskManifoldUtil.obj | retail, upstream name already matches, high
+// pdb params: manifold, work, firstPointIndex, processOut, contactMgr
+void __cdecl hkGskManifold_verifyAndGetPoints(Manifold& manifold, const WorkData& work, int firstPointIndex, ProcessOutput& processOut, Manager* contactMgr)
 {
     unsigned int oldCount = manifold.count;
     unsigned int count = oldCount;
-    for (unsigned int index = start; index < count; ++index)
+    for (unsigned int index = firstPointIndex; index < count; ++index)
     {
-        ProcessPoint* point = output.reserve(1);
+        ProcessPoint* point = processOut.reserve(1);
         Feature& feature = manifold.features[index];
         Converted converted;
         converted.position.setZero4();
         converted.difference.setZero4();
         converted.normal.setZero4();
-        int result = convert(data, feature, converted);
+        int result = convert(work, feature, converted);
         if (result == 0)
         {
             const ManifoldVector4& normal = converted.normal;
             float distance = normal.dot3(converted.difference);
-            float radiusSum = data.radiusA + data.radiusB;
-            Scalar shift = data.radiusB - distance;
+            float radiusSum = work.radiusA + work.radiusB;
+            Scalar shift = work.radiusB - distance;
             distance -= radiusSum;
-            if (distance < data.tolerance)
+            if (distance < work.tolerance)
             {
                 point->position.setAddMul4(converted.position, normal, shift);
                 point->normal = normal;
                 point->normal(3) = distance;
                 point->id = feature.id;
-                output.commit(1);
+                processOut.commit(1);
                 continue;
             }
         }
-        output.abort(1);
+        processOut.abort(1);
         if (feature.id != 0xffff)
-            mgr->remove(feature.id, output.owner.val());
+            contactMgr->remove(feature.id, processOut.owner.val());
         --count;
         feature = manifold.features[count];
         --index;

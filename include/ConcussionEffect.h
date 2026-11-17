@@ -2,15 +2,16 @@
 
 #include "ActiveEffect.h"
 
+// pdb: class ConcussionEffect, size 0x4c, bases: ActiveEffect, 1 members
 class ConcussionEffect : public ActiveEffect
 {
 public:
     virtual ActiveEffect* Copy();
-    virtual void Update(float deltaTime);
-    virtual bool IsEffectValid(MagicTarget* target);
+    virtual void Update(float afSecondsElapsed);
+    virtual bool IsEffectValid(MagicTarget* apTarget);
 
-    float m_fPackageValue;
+    float fTimer; // src: XBOX_RETAIL_PDB +0x48 (old: m_fPackageValue)
 
     ConcussionEffect(MagicCaster*, MagicItem*, EffectItem*);
-    void ApplyConcussion(Actor* target);
+    void CheckApplyConcussion(Actor* apTarget);
 };

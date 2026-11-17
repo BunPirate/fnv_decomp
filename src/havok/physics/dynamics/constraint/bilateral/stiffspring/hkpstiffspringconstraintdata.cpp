@@ -20,7 +20,7 @@ void __stdcall hkpStiffSpringConstraintData_getRuntimeInfo(char a, int* pData)
     }
 }
 
-extern "C" void* __cdecl hkpConstraintData_getConstraintInfoUtil(void* a, int b, int c);
+extern "C" void* __cdecl hkpConstraintData_getConstraintInfoUtil(void* a, int b, int infoOut);
 
 struct FUN_00d4f070_t
 {

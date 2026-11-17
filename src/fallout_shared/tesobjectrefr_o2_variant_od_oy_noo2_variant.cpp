@@ -38,7 +38,7 @@ void FalloutRadio_NewCellEntered();
 void TESWaterSystem_SetPlayerForceUnderwater(unsigned char value);
 float BSAudio_GetMinDialogDist();
 float BSAudio_GetMaxDialogDist();
-void CheckWithinMultiBoundTask_CancelAttachment(unsigned int index);
+void CheckWithinMultiBoundTask_CancelAttachment(unsigned int apMoribundRef);
 struct FUN_00c9c240_holder
 {
     void* m0;
@@ -70,7 +70,7 @@ struct FUN_00c9d4c0_holder
 };
 struct CallRet
 {
-    void hkpWorld_updateCollisionFilterOnEntity(void* a, int b, int c);
+    void hkpWorld_updateCollisionFilterOnEntity(void* a, int updateMode, int updateShapeCollectionFilter);
 };
 struct Holder00c9d5d0
 {
@@ -129,7 +129,7 @@ struct FUN_00c9f3b0 : FUN_00c876a0_holder
 };
 struct WorldHolder
 {
-    void UpdatePhantom(void* a, int b);
+    void hkpWorld_updateCollisionFilterOnPhantom(void* phantom, int updateShapeCollectionFilter);
 };
 extern float DAT_010c72bc;
 struct InnerS
@@ -141,7 +141,7 @@ struct MyObj
 {
     char pad[8];
     InnerS* p8;
-    void __thiscall bhkShape_CopyCinfo(void* a);
+    void __thiscall bhkShape_CopyCinfo(void* arInfo);
 };
 struct OutS
 {
@@ -212,7 +212,7 @@ struct S_00cb3070
 };
 struct MM
 {
-    void Deallocate(void* p);
+    void Deallocate(void* apMem);
     void FUN_00cb2ff0();
     void* FUN_00cb30a0(unsigned int);
 };
@@ -431,8 +431,8 @@ struct WorldObjectView
     virtual void v43();
     virtual void v44();
     virtual CollisionResult* GetResult(unsigned char* used);
-    void bhkSerializable_CopyMembers(int a, int b);
-    void bhkWorldObject_CopyMembers(int a, int b);
+    void bhkSerializable_CopyMembers(int pDest, int arCloneData);
+    void bhkWorldObject_CopyMembers(int apDest, int arCloneData);
 };
 #include "../../include/NiTMallocInterface.h"
 #include "../../include/NiTPrimitiveArray.h"
@@ -499,7 +499,7 @@ struct HeapContextGuard
     }
 };
 char* MakeDebugHeader(const char* name);
-char* MakeDebugLine(const char* label, const char* value);
+char* MakeDebugLine(const char* pcPrefix, const char* pcValue);
 int SprintfS(char* buf, int size, const char* fmt, ...);
 extern const char* g_debugHeaderName;
 struct bhkBase_c878c0
@@ -733,8 +733,8 @@ inline void* operator new(unsigned int n)
 }
 struct FUN_00c9efa0_cls
 {
-    void bhkWorldObject_CopyMembers(FUN_00c6d190* p, unsigned int flag);
-    bhkRefObject* bhkSimpleShapePhantom_CreateClone(unsigned int flag);
+    void bhkWorldObject_CopyMembers(FUN_00c6d190* apDest, unsigned int arCloneData);
+    bhkRefObject* bhkSimpleShapePhantom_CreateClone(unsigned int arCloneData);
 };
 struct S_00c9f1e0_Shape
 {
@@ -952,7 +952,7 @@ struct S_00c9f1e0_Obj
     virtual S_00c9f1e0_Holder* GetWorld();
     int unk04;
     S_00c9f1e0_Ctx* ctx;
-    void bhkSimpleShapePhantom_GetFixedClosestPoints(S_00c9f1e0_Range* r);
+    void bhkSimpleShapePhantom_GetFixedClosestPoints(S_00c9f1e0_Range* arCollector);
 };
 extern __declspec(thread) int g_iC9F270MemContext;
 class C9F270MemContext
@@ -997,8 +997,8 @@ class C9F270StrArray
 class C9F270Object
 {
   public:
-    void GetViewerStringsBase(C9F270StrArray* pkStrings);
-    void bhkSimpleShapePhantom_GetViewerStrings(C9F270StrArray* pkStrings);
+    void GetViewerStringsBase(C9F270StrArray* apStrings);
+    void bhkSimpleShapePhantom_GetViewerStrings(C9F270StrArray* apStrings);
 };
 extern __declspec(thread) int tlsMode;
 struct ReleaseObject
@@ -1011,7 +1011,7 @@ struct FUN_00c9f320_object
     int unk04;
     int unk08;
     int unk0c;
-    void bhkAabbPhantom_KillCinfo(char release);
+    void bhkAabbPhantom_KillCinfo(char abCreated);
 };
 struct TlsGuard
 {
@@ -1085,8 +1085,8 @@ void __cdecl bhkSerializable_CloneCritLock();
 void __cdecl bhkSerializable_CloneCritUnlock();
 struct ProjectileCreator
 {
-    void __thiscall bhkWorldObject_CopyMembers(Object_00c9f5a0* projectile, int mode);
-    Object_00c9f5a0* __thiscall bhkAabbPhantom_CreateClone(int mode);
+    void __thiscall bhkWorldObject_CopyMembers(Object_00c9f5a0* apDest, int arCloneData);
+    Object_00c9f5a0* __thiscall bhkAabbPhantom_CreateClone(int arCloneData);
 };
 struct TLSBlock
 {
@@ -1302,7 +1302,7 @@ struct FUN_00cf2cb0
         return p;
     }
     static void operator delete(void*, unsigned int);
-    FUN_00cf2cb0(void* contents, int tag);
+    FUN_00cf2cb0(void* aabb, int collisionFilterInfo);
 };
 extern "C" void __fastcall FUN_00c905b0(FUN_00cf2cb0*);
 struct Input
@@ -1361,7 +1361,7 @@ struct Receiver
     virtual void v45();
     virtual void v46();
     virtual void finish(void*);
-    void bhkAabbPhantom_Init(Input* input);
+    void bhkAabbPhantom_Init(Input* arInfo);
 };
 extern __declspec(thread) int g_iC9F970AllocTag;
 struct BC9F970AllocTagScope
@@ -1385,8 +1385,8 @@ char* __cdecl NiViewerStrings_NiGetViewerString_Title(const char* pcString);
 class FUN_00c9f970_cls
 {
   public:
-    void bhkPhantom_GetViewerStrings(BC9F970StringArray* pkArray);
-    void bhkAabbPhantom_GetViewerStrings(BC9F970StringArray* pkArray);
+    void bhkPhantom_GetViewerStrings(BC9F970StringArray* apStrings);
+    void bhkAabbPhantom_GetViewerStrings(BC9F970StringArray* apStrings);
 };
 struct MemContextTLS
 {
@@ -1446,7 +1446,7 @@ struct SphereShapeBase
 {
     void* vtbl;
     int unk04;
-    void BaseGetViewerStrings(ViewerStringArray* apViewerStrings);
+    void BaseGetViewerStrings(ViewerStringArray* apStrings);
 };
 struct SphereShape : SphereShapeBase
 {
@@ -1455,7 +1455,7 @@ struct SphereShape : SphereShapeBase
     {
         return (this && pHkShape) ? pHkShape->fRadius : DAT_010c72bc;
     }
-    void bhkConvexShape_GetViewerStrings(ViewerStringArray* apViewerStrings);
+    void bhkConvexShape_GetViewerStrings(ViewerStringArray* apStrings);
 };
 extern int DAT_0126825c;
 class FUN_00c9fd70_cls : public FUN_00c9fb00
@@ -1679,7 +1679,7 @@ struct FUN_00ca0090_cls
     void* m08;
     void* m0C;
     void bhkConvexShape_CopyCinfo(void* a);
-    void* bhkBoxShape_CreateCinfo(unsigned char* out);
+    void* bhkBoxShape_CreateCinfo(unsigned char* arCreated);
 };
 class CA0540Base
 {
@@ -1716,8 +1716,8 @@ char* __cdecl NiViewerStrings_NiGetViewerString_Title(const char* pcString);
 class FUN_00ca05b0_cls
 {
   public:
-    void bhkShape_GetViewerStrings(BCA05B0StringArray* pkArray);
-    void bhkSphereRepShape_GetViewerStrings(BCA05B0StringArray* pkArray);
+    void bhkShape_GetViewerStrings(BCA05B0StringArray* apStrings);
+    void bhkSphereRepShape_GetViewerStrings(BCA05B0StringArray* apStrings);
 };
 extern int DAT_01268280;
 class FUN_00ca0660_base
@@ -1780,7 +1780,7 @@ class CA0840Constraint
     CA0840Output* m_pkOutput;
 
     void SetOutput(CA0840Output* pkOutput);
-    CA0840Output* bhkSphereShape_CreateCinfo(bool* pbCreated);
+    CA0840Output* bhkSphereShape_CreateCinfo(bool* arCreated);
 };
 class CAACF0Base
 {
@@ -1937,27 +1937,30 @@ class S00560c20_Object
     virtual void vfD0();
     virtual void vfD4();
     virtual const S00560c20_Value* vfD8(S00560c20_Value* pOut);
-    void bhkRigidBody_GetRotation(S00560c20_Target* pTarget);
+    void bhkRigidBody_GetRotation(S00560c20_Target* arRot);
 };
 
 // @fnv 0x00560c20
 // src: XBOX_PDB 0x00560c20
-void S00560c20_Object::bhkRigidBody_GetRotation(S00560c20_Target* pTarget)
+// pdb: bhkRigidBody::GetRotation | TESObjectREFR.obj | debug, call graph, high
+// pdb params: arRot
+// pdb locals: hkq
+void S00560c20_Object::bhkRigidBody_GetRotation(S00560c20_Target* arRot)
 {
     S00560c20_Value kValue;
-    CopyModifierSettings(pTarget, vfD8(&kValue));
+    CopyModifierSettings(arRot, vfD8(&kValue));
 }
 
 class S00561150_Value
 {
   public:
     S00561150_Value();  // FUN_006240d0
-    void normalize_005611c0();
+    void hkQuaternion_normalize();
     __m128 m_vComponents;
 };
 
 class S00561150_Source;
-void __cdecl NI2HK_00561500(S00561150_Value* pOut, const S00561150_Source* pSource);
+void __cdecl NI2HK_00561500(S00561150_Value* arhkQ, const S00561150_Source* arNiQ);
 
 class S00561150_Object
 {
@@ -2019,16 +2022,19 @@ class S00561150_Object
     virtual void vfD8();
     virtual void vfDC();
     virtual void vfE0(const S00561150_Value* pValue);
-    void bhkRigidBody_SetNiRotation(const S00561150_Source* pSource);
+    void bhkRigidBody_SetNiRotation(const S00561150_Source* arRot);
 };
 
 // @fnv 0x00561150
 // src: COMMUNITY 0x00561150
-void S00561150_Object::bhkRigidBody_SetNiRotation(const S00561150_Source* pSource)
+// pdb: bhkRigidBody::SetRotation | TESObjectREFR.obj | debug, call graph, high
+// pdb params: arRot
+// pdb locals: hkrot
+void S00561150_Object::bhkRigidBody_SetNiRotation(const S00561150_Source* arRot)
 {
     S00561150_Value kValue;
-    NI2HK_00561500(&kValue, pSource);
-    kValue.normalize_005611c0();
+    NI2HK_00561500(&kValue, arRot);
+    kValue.hkQuaternion_normalize();
     vfE0(&kValue);
 }
 
@@ -2042,6 +2048,8 @@ struct S005611e0_Vector
 
 // @fnv 0x005611e0
 // src: COMMUNITY 0x005611e0
+// pdb: hkVector4::normalize4 | TESObjectREFR.obj | debug, upstream name already matches, high
+// pdb locals: scale
 void S005611e0_Vector::hkVector4_normalize4()
 {
     S005611e0_Vector kScale;
@@ -2068,6 +2076,8 @@ typedef __m128 hkQuadReal;
 
 
 // @fnv 0x005612a0
+// pdb: hkVector4::lengthInverse4 | TESObjectREFR.obj | debug, upstream name already matches, high
+// pdb locals: zero, lenInv4, temp, mask, res
 hkSimdReal hkVector4::lengthInverse4() const
 {
     const hkQuadReal half = _mm_set_ss(0.5f);
@@ -2081,9 +2091,12 @@ hkSimdReal hkVector4::lengthInverse4() const
 }
 
 // @fnv 0x00561440
-hkSimdReal hkVector4::dot4(const hkVector4& v) const
+// pdb: hkVector4::dot4 | bhkRagdollController.obj | debug, upstream name already matches, high
+// pdb params: x
+// pdb locals: res
+hkSimdReal hkVector4::dot4(const hkVector4& x) const
 {
-    __m128 x2 = _mm_mul_ps(m_vComponents, v.m_vComponents);
+    __m128 x2 = _mm_mul_ps(m_vComponents, x.m_vComponents);
     __m128 sum = _mm_add_ps(_mm_shuffle_ps(x2, x2, 0x4e), x2);
     __m128 swapped = _mm_shuffle_ps(sum, sum, 0xb1);
     return hkSimdReal(_mm_add_ps(sum, swapped));
@@ -2094,18 +2107,21 @@ struct AlignedLocal5615
     __m128 m_v;
     AlignedLocal5615();
 };
-void* NI2HK(AlignedLocal5615* local, int value);
+void* NI2HK(AlignedLocal5615* arhkTran, int arNiTran);
 struct Owner5615
 {
-    void bhkRigidBody_SetLinearVelocity_00561690(void* p);
-    void bhkRigidBody_SetLinearVelocity(int value);
+    void bhkRigidBody_SetLinearVelocity_00561690(void* arVel);
+    void bhkRigidBody_SetLinearVelocity(int arVel);
 };
 // @fnv 0x005615d0
 // src: XBOX_PDB 0x005615d0
-void Owner5615::bhkRigidBody_SetLinearVelocity(int value)
+// pdb: bhkRigidBody::SetLinearVelocity | TESObjectREFR.obj | retail, upstream name already matches, high
+// pdb params: arVel
+// pdb locals: hkv
+void Owner5615::bhkRigidBody_SetLinearVelocity(int arVel)
 {
     AlignedLocal5615 local;
-    bhkRigidBody_SetLinearVelocity_00561690(NI2HK(&local, value));
+    bhkRigidBody_SetLinearVelocity_00561690(NI2HK(&local, arVel));
 }
 
 
@@ -2115,15 +2131,18 @@ struct __declspec(align(16)) HKVector4
     HKVector4();
 };
 
-void* __cdecl FUN_00553fc0(void* pFrom, const NiPoint3& vec);
+void* __cdecl FUN_00553fc0(void* arhkV, const NiPoint3& arNiP);
 
 
 // @fnv 0x00561630
 // src: XBOX_PDB 0x00561630
-void bhkCharacterController::bhkRigidBody_SetAngularVelocity(const NiPoint3& param_1)
+// pdb: bhkRigidBody::SetAngularVelocity | TESObjectREFR.obj | retail, upstream name already matches, high
+// pdb params: arVel
+// pdb locals: hkv
+void bhkCharacterController::bhkRigidBody_SetAngularVelocity(const NiPoint3& arVel)
 {
     HKVector4 local;
-    bhkRigidBody_SetAngularVelocity_005617c0(FUN_00553fc0(&local, param_1));
+    bhkRigidBody_SetAngularVelocity_005617c0(FUN_00553fc0(&local, arVel));
 }
 
 class S00561730_Comparison
@@ -2147,6 +2166,9 @@ class S00561730_Vector
 
 // @fnv 0x00561730
 // src: XBOX_PDB 0x00561730
+// pdb: hkVector4::equals4 | TESObjectREFR.obj | debug, upstream name already matches, high
+// pdb params: v, epsilon
+// pdb locals: t, epsilon_v
 bool S00561730_Vector::hkVector4_equals4(const S00561730_Vector* v, float epsilon) const
 {
     S00561730_Vector kDiff;
@@ -2165,22 +2187,25 @@ class S005620e0_Vector
 };
 
 class S005620e0_Source;
-const S005620e0_Vector* __cdecl NI2HK(S005620e0_Vector* pOut, const S005620e0_Source* pSource);
+const S005620e0_Vector* __cdecl NI2HK(S005620e0_Vector* arhkTran, const S005620e0_Source* arNiTran);
 
 // The shared controller has no declaration for this vector setter yet.
 class ControllerVectorSetter
 {
   public:
-    void bhkCharacterController_SetPosition(const S005620e0_Vector* pValue);
+    void bhkCharacterController_SetPosition(const S005620e0_Vector* arPos);
 };
 
 // @fnv 0x005620e0
 // src: XBOX_PDB 0x005620e0
-void bhkCharacterController::SetPosition_005620e0(void* pSource)
+// pdb: bhkCharacterController::SetPosition | TESObjectREFR.obj | debug, call graph, high
+// pdb params: arPos
+// pdb locals: hkp
+void bhkCharacterController::SetPosition_005620e0(void* arPos)
 {
     S005620e0_Vector kValue;
     reinterpret_cast<ControllerVectorSetter*>(this)->bhkCharacterController_SetPosition(
-        NI2HK(&kValue, static_cast<const S005620e0_Source*>(pSource)));
+        NI2HK(&kValue, static_cast<const S005620e0_Source*>(arPos)));
 }
 
 class S0056e810_Vector
@@ -2263,6 +2288,9 @@ class S0056e810_Object
 
 // @fnv 0x0056e810
 // src: XBOX_PDB 0x0056e810
+// pdb: bhkBoxShape::Init | TESObjectREFR.obj | debug, call graph, medium
+// pdb params: arExt
+// pdb locals: ci
 void S0056e810_Object::bhkBoxShape_Init(const S0056e810_Vector& v)
 {
     S0056e810_Rotation kRotationBasis;
@@ -2277,15 +2305,15 @@ void S0056e810_Object::bhkBoxShape_Init(const S0056e810_Vector& v)
 
 
 
-void __cdecl NI2HK(hkVector4& kOut, const NiPoint3& kIn);
-void __cdecl NI2HK_00561500(hkQuaternion& kOut, const hkVector4& kIn);
+void __cdecl NI2HK(hkVector4& arhkTran, const NiPoint3& arNiTran);
+void __cdecl NI2HK_00561500(hkQuaternion& arhkQ, const hkVector4& arNiQ);
 
 class SceneNodeF14
 {
   public:
     void SetScale(float fScale);
     void SetColor(const NiUpdateData& kColor);
-    void GetRotation(hkVector4& kRot);
+    void GetRotation(hkVector4& kQuat);
     void AttachController(void* pvCtlr);
 };
 
@@ -2304,7 +2332,7 @@ class OwnerRootF14
 class SystemF14
 {
   public:
-    void AddObject(void* pvObject);
+    void AddObject(void* apObj);
 };
 
 class SystemSrcF14
@@ -2318,7 +2346,7 @@ extern float g_fRadiusF14;
 class ShapeF14
 {
   public:
-    static void* operator new(unsigned int uiSize);
+    static void* operator new(unsigned int nbytes);
     static void operator delete(void* pv);
     ShapeF14(const hkVector4& m_kPoint2, float fRadius);
     char m_acData[0x30];
@@ -2327,7 +2355,7 @@ class ShapeF14
 class MaterialF14
 {
   public:
-    static void* operator new(unsigned int uiSize);
+    static void* operator new(unsigned int nbytes);
     static void operator delete(void* pv);
     MaterialF14();
     char m_acData[0x10];
@@ -2336,7 +2364,7 @@ class MaterialF14
 class WrapperF14
 {
   public:
-    static void* operator new(unsigned int uiSize);
+    static void* operator new(unsigned int nbytes);
     static void operator delete(void* pv);
     WrapperF14(ShapeF14* pkShape, MaterialF14* pkMaterial);
     char m_acData[0x1c];
@@ -2347,9 +2375,9 @@ class BodyInfoF14
   public:
     BodyInfoF14();
     ~BodyInfoF14();
-    void SetMotionType(int iType);
-    void SetPosition(const hkVector4& kPos);
-    void SetRotation(const hkQuaternion& kRot);
+    void SetMotionType(int aeType);
+    void SetPosition(const hkVector4& arPos);
+    void SetRotation(const hkQuaternion& arRot);
     unsigned int m_uiFilterInfo;
     WrapperF14* m_pkShape;
     __m128 m_akData[13];
@@ -2359,8 +2387,8 @@ class BodyInfoF14
 class BodyF14 : public NiMemObject
 {
   public:
-    BodyF14(const BodyInfoF14& kInfo);
-    void Attach(SceneNodeF14* pkNode, int iFlags);
+    BodyF14(const BodyInfoF14& arInfo);
+    void Attach(SceneNodeF14* apObject, int aiKey);
     char m_acData[0x1c];
 };
 
@@ -2368,7 +2396,7 @@ class BodyWrapF14 : public NiMemObject
 {
   public:
     BodyWrapF14(SceneNodeF14* pkNode);
-    void SetBody(BodyF14* pkBody);
+    void SetBody(BodyF14* apWorldObject);
     char m_acData[0x14];
 };
 
@@ -2511,13 +2539,15 @@ class P107RefF14
     virtual const NiPoint3* GetPos();
     OwnerRootF14* GetOwnerRoot();
     SystemSrcF14* GetSystemSrc();
-    void SetScaleF14(float fScale);
+    void SetScaleF14(float newscale);
     NiMatrix3 GetRotationMatrix();
     void TESObjectREFR_InitHavokForAcousticSpace();
 };
 
 // @fnv 0x0056f140
 // src: XBOX_PDB 0x0056f140
+// pdb: TESObjectREFR::InitHavokForAcousticSpace | TESObjectREFR.obj | retail, upstream name already matches, high
+// pdb locals: pprim, pw, trn, transform, pflags, elayer, info, UpdateData, bvShape, phantomShape, pcollobj, quat, hkvec, pshape, hkquat, position, ifilterset, rigidBody
 void P107RefF14::TESObjectREFR_InitHavokForAcousticSpace()
 {
     OwnerF14* pkOwner = GetOwnerRoot()->GetOwner();
@@ -2722,7 +2752,7 @@ extern SettingsQ* g_pkSettingsQ;
 class ManagerQ
 {
   public:
-    void SetLocked(bool bLocked);
+    void SetLocked(bool abLock);
 };
 extern ManagerQ* g_pkManagerQ;
 
@@ -2742,9 +2772,9 @@ class CellQ
 class ListQ;
 extern ListQ g_kWaterListQ;
 
-NodeQ* __cdecl bhkUtilFunctions_FindCollisionObjectBFS(void* pvName, int iFlag);
-BodyRefQ* __cdecl FindFirstCollisionObject(void* pvTarget);
-void __cdecl bhkWorld_SetMotion(void* pvRoot, int a, int b, int c, int d);
+NodeQ* __cdecl bhkUtilFunctions_FindCollisionObjectBFS(void* apObject, int auiMaxLevel);
+BodyRefQ* __cdecl FindFirstCollisionObject(void* ap3D);
+void __cdecl bhkWorld_SetMotion(void* apObject, int aeType, int abRecurse, int abForce, int abAllowActivate);
 void* __cdecl hkVector4_getZero();
 void __cdecl TESHavokUtilities_AddVelocity(void* pvRoot, NiPoint3* pkPos, int iFlag);
 bool __cdecl NiObject_IsKindOf(ListQ* pkList, void* pvRoot);
@@ -2897,7 +2927,7 @@ class ReferencePhysicsAttachment
     ProcessQ* GetProcess();
     bool IsInWaterVolume();
     bool IsSubmerged();
-    void SetSubmerged(int iFlag);
+    void SetSubmerged(int abVal);
     void UpdateAttachment(NiAVObject* pkRoot);
     void Finish(int a, int b);
 
@@ -2908,6 +2938,8 @@ class ReferencePhysicsAttachment
 #pragma strict_gs_check(push, on)
 // @fnv 0x005768b0
 // src: XBOX_PDB 0x005768b0
+// pdb: TESObjectREFR::InitHavok | TESObjectREFR.obj | retail, upstream name already matches, high
+// pdb locals: pav, proot, pn, pcol, pwater, pcell, pw, pwo, vel, prb, prbHK, velocity
 void ReferencePhysicsAttachment::TESObjectREFR_InitHavok()
 {
     if (m_pkCell && !m_pkCell->IsLoaded() && !m_pkCell->IsAttached())

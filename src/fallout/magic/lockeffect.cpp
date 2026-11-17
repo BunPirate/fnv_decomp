@@ -22,6 +22,8 @@ struct FUN_0080f3c0 : FUN_0080f390
 };
 // Allocates a FUN_0080f390 from three fields of this object, copies into it via the object's vtable slot 0x11, and returns the new object.
 // @fnv 0x0080f3c0
+// pdb: LockEffect::Copy | LockEffect.obj | retail, vtable slot, high
+// pdb locals: presult
 void* __thiscall FUN_0080f3c0::Copy()
 {
     FUN_0080f390* pCopy =
@@ -41,6 +43,8 @@ struct LockExtraData
 };
 
 // @fnv 0x0080f470
+// pdb: LockEffect::Start | LockEffect.obj | retail, vtable slot, high
+// pdb locals: plock, pnaTarget
 void ActiveEffect::ApplyLockEffect()
 {
     NonActorMagicTarget* pTarget = dynamic_cast<NonActorMagicTarget*>(GetTarget());
@@ -70,6 +74,9 @@ struct S_80f580_cls
 // Checks whether the parent reference's base object is a TESObjectDOOR or TESObjectCONT.
 // @fnv 0x0080f580
 // src: COMMUNITY 0x0080f580
+// pdb: OpenEffect::CheckTarget | OpenEffect.obj | retail, vtable slot, high
+// pdb params: apTarget
+// pdb locals: pcontainer, pnaTarget, pdoor
 bool S_80f580_cls::LockEffect_CheckTarget(MagicTarget* apTarget)
 {
     NonActorMagicTarget* t = dynamic_cast<NonActorMagicTarget*>(apTarget);

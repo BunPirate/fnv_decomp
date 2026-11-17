@@ -4,6 +4,9 @@
 
 #include "navmesh_decls.h"
 // @fnv 0x00558220
+// pdb: NavMesh::GetCenter | TESObjectCELL.obj | debug, call graph, medium
+// pdb params: apTriangle
+// pdb locals: v5, val, ptri, v2, v4, v1, v3
 NiPoint3 NavMesh::GetNavMeshData(unsigned short m_usTriangleID)
 {
     NavMeshTriangle* pTriangle = GetTriangle(m_usTriangleID);

@@ -3,6 +3,7 @@
 class NiProperty;
 class Property;
 
+// pdb: class NiPropertyState, size 0x1c, 1 members
 class NiPropertyState
 {
 public:
@@ -12,5 +13,5 @@ public:
     NiPropertyState& operator=(const NiPropertyState& other);
     static void* operator new(unsigned int amount);
     void SetSlot(Property* property);
-    void ReleaseAllRefs();
+    void NiPropertyState_dtor();
 };

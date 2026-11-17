@@ -13,10 +13,11 @@ class hkQuaternion;
 class hkAabb;
 class hkTransform;
 
+// pdb: class bhkRigidBody, size 0x1c, bases: bhkEntity, 1 members
 class bhkRigidBody : public bhkEntity
 {
 public:
-    BSSimpleList<NiPointer<bhkSerializable> > m_kSerializableList;
+    BSSimpleList<NiPointer<bhkSerializable> > ActionConstraint; // src: XBOX_RETAIL_PDB +0x14 (old: m_kSerializableList)
 
     virtual const NiRTTI* GetRTTI() const;
     virtual unsigned int slotA8();
@@ -52,7 +53,7 @@ public:
     void bhkRigidBody_ApplyKeyframe(const hkVector4&, const hkQuaternion&, float, float);
     void bhkWorldObject_LinkObject(NiStream*);
     void bhkRigidBody_AddActCon(NiObject*);
-    void ProcessListNodes();
+    void RemoveActionConstraintsFromWorld();
     void Remove_00c8eb00();
     void bhkEntity_Remove();
     void LinkObject_00c8f3c0(NiStream*);

@@ -134,17 +134,17 @@ public:
     void Unitize_004a0c10();
     float FUN_004a7290();
     float FUN_004a7290() const;
-    LocalVec3 FUN_004b3800(const LocalVec3& other) const;
+    LocalVec3 FUN_004b3800(const LocalVec3& pt) const;
     LocalVec3 ProcessAndReturnValue_0053d280(float divisor);
     float NiPoint3_XYLength();
     float NiPoint3_XYLength() const;
     void ComputeValue_0063c8a0(const LocalVec3* other);
     void ComputeValue_0063c8a0(void* other);
     void FUN_006815c0();
-    float CVec3_Distance(LocalVec3* other);
-    float CVec3_Distance(const LocalVec3& other) const;
-    LocalVec3 TransformPointByMatrix4(const Mat& matrix);
-    LocalVec3 TransformPointByMatrix4(const Matrix4* matrix);
+    float CVec3_Distance(LocalVec3* cVec);
+    float CVec3_Distance(const LocalVec3& cVec) const;
+    LocalVec3 TransformPointByMatrix4(const Mat& cTransform);
+    LocalVec3 TransformPointByMatrix4(const Matrix4* cTransform);
     void Normalize_00b12790();
     LocalVec3 Diff_00b13040(void* other);
     LocalVec3 Diff_00b13040(const LocalVec3& other) const;
@@ -281,10 +281,13 @@ void* __stdcall BSSimpleArray_bhkRagdollController_BoneTransf_1024_Allocate(unsi
 // Allocates a+n bytes from _g_memoryManager, aligns the returned pointer to 16 bytes and stores the alignment offset in the byte before it.
 // @fnv 0x00c66170
 // src: XBOX_PDB 0x00c66170
-void* __stdcall bhkMemoryAllocator_blockAlloc(unsigned int uiSize)
+// pdb: bhkMemoryAllocator::blockAlloc | bhkWorld.obj | retail, upstream name already matches, high
+// pdb params: nbytes
+// pdb locals: p
+void* __stdcall bhkMemoryAllocator_blockAlloc(unsigned int nbytes)
 {
     unsigned char n = 0x10;
-    unsigned char* p = (unsigned char*)_g_memoryManager.Allocate(uiSize + n);
+    unsigned char* p = (unsigned char*)_g_memoryManager.Allocate(nbytes + n);
     n -= (unsigned char)((unsigned int)p & 0xf);
     p += n;
     p[-1] = n;
@@ -293,6 +296,8 @@ void* __stdcall bhkMemoryAllocator_blockAlloc(unsigned int uiSize)
 
 // @fnv 0x00c661a0
 // src: XBOX_PDB 0x00c661a0
+// pdb: bhkMemoryAllocator::`scalar deleting destructor' | bhkWorld.obj | retail, object-file run extension, low
+// pdb note: debug build links it to bhkMemoryAllocator::blockFree
 void __stdcall bhkMemoryAllocator_blockFree(void* apBlock, void* apUnused)
 {
     if (apBlock)
@@ -314,6 +319,8 @@ void __cdecl bhkWorld_ClearPickData()
 }
 
 // @fnv 0x00c66260
+// pdb: bhkWorld::EnableObject | bhkWorld.obj | debug, object-file run extension, low
+// pdb params: apCollision, arData
 void SetFlagFromField(unsigned short* pFlags, unsigned int* pSource)
 {
     if (pSource[3])
@@ -324,10 +331,13 @@ void SetFlagFromField(unsigned short* pFlags, unsigned int* pSource)
 
 // @fnv 0x00c662b0
 // src: COMMUNITY 0x00c662b0
-bool __cdecl bhkWorld_DebugDisplayObject(void* pObject, void* pOther)
+// pdb: bhkWorld::DebugDisplayObject | bhkWorld.obj | debug, upstream name already matches, high
+// pdb params: apCollision, arData
+// pdb locals: bdisplay
+bool __cdecl bhkWorld_DebugDisplayObject(void* apCollision, void* arData)
 {
     return reinterpret_cast<bool(__thiscall*)(void*, bool)>(reinterpret_cast<void***>(
-        reinterpret_cast<void**>(pObject)[0])[48])(pObject, reinterpret_cast<void**>(pOther)[3] != 0);
+        reinterpret_cast<void**>(apCollision)[0])[48])(apCollision, reinterpret_cast<void**>(arData)[3] != 0);
 }
 
 namespace fnv_00c66480 {
@@ -340,6 +350,7 @@ struct FUN_00c66480_cls
 };
 // Sets p to point at DAT_010c3b98 and, when f has bit 0 set, deallocates this via _g_memoryManager, then returns this.
 // @fnv 0x00c66480
+// pdb: hkpShapeCollectionFilter::`scalar deleting destructor' | bhkWorld.obj | retail, vtable slot, high
 FUN_00c66480_cls* FUN_00c66480_cls::FUN_00c66480(bool abFree)
 {
     p = (void*)&DAT_010c3b98;
@@ -358,6 +369,7 @@ struct FUN_00c664b0_cls
     FUN_00c664b0_cls* __thiscall FUN_00c664b0(int flag);
 };
 // @fnv 0x00c664b0
+// pdb: hkpRayShapeCollectionFilter::`scalar deleting destructor' | bhkWorld.obj | retail, vtable slot, high
 FUN_00c664b0_cls* __thiscall FUN_00c664b0_cls::FUN_00c664b0(int aiFlags)
 {
     m_p = &DAT_010c3bac;
@@ -377,6 +389,8 @@ struct FUN_00c664e0
 };
 // Sets the vtable pointer and, when bit 0 of f is set, deallocates this object through the memory manager.
 // @fnv 0x00c664e0
+// pdb: hkpBroadPhaseCastCollector::`scalar deleting destructor' | bhkWorld.obj | retail, vtable slot, high
+// pdb params: this
 FUN_00c664e0::FUN_00c664e0(int aiFlags)
 {
     vft = &DAT_010c3bb8;
@@ -428,6 +442,7 @@ struct FUN_00c66fb0_Class
 
 // @fnv 0x00c66fb0
 // src: XBOX_PDB 0x00c66fb0
+// pdb: bhkPickData::GetNiAVObject | bhkWorld.obj | debug, upstream name already matches, high
 void* FUN_00c66fb0_Class::bhkPickData_GetNiAVObject()
 {
     void* p = *(void**)((char*)this + 0x80);
@@ -438,6 +453,7 @@ void* FUN_00c66fb0_Class::bhkPickData_GetNiAVObject()
 
 // @fnv 0x00c66fd0
 // src: XBOX_PDB 0x00c66fd0
+// pdb: bhkPickData::GethkRigidBody | bhkWorld.obj | debug, upstream name already matches, high
 char* __fastcall bhkPickData_GethkRigidBody(struct BhkPickData* self)
 {
     char* p = *(char**)((char*)self + 0x80);
@@ -457,6 +473,8 @@ struct FUN_00c6a620_cls
     void SetField(void* a);
 };
 // @fnv 0x00c6a620
+// pdb: bhkWorld::AddWaterListener | bhkWorld.obj | debug, call graph, medium
+// pdb params: apListener
 void FUN_00c6a620_cls::SetField(void* pValue)
 {
     ((FUN_005533f0_cls*)this)->bhkWorld_AddEntityListener((unsigned int)pValue);
@@ -465,14 +483,17 @@ void FUN_00c6a620_cls::SetField(void* pValue)
 
 struct FUN_00c6c870_class
 {
-    void __thiscall bhkCharacterListener_contactPointRemovedCallback(unsigned int a, unsigned int b);
+    void __thiscall bhkCharacterListener_contactPointRemovedCallback(unsigned int a, unsigned int arPoint);
 };
 
 // @fnv 0x00c6c870
 // src: XBOX_PDB 0x00c6c870
-void __thiscall FUN_00c6c870_class::bhkCharacterListener_contactPointRemovedCallback(unsigned int auiUnused, unsigned int auiSource)
+// pdb: bhkCharacterListener::contactPointRemovedCallback | bhkCharacterListener.obj | debug, upstream name already matches, high
+// pdb params: __formal, arPoint
+// pdb locals: Filter
+void __thiscall FUN_00c6c870_class::bhkCharacterListener_contactPointRemovedCallback(unsigned int auiUnused, unsigned int arPoint)
 {
-    unsigned int* p = *(unsigned int**)((char*)auiSource + 0x48);
+    unsigned int* p = *(unsigned int**)((char*)arPoint + 0x48);
     if ((p[7] & 0x7f) == 0x1e && *(unsigned int*)((char*)this + 0x6c) > 0)
         *(unsigned int*)((char*)this + 0x6c) = *(unsigned int*)((char*)this + 0x6c) - 1;
 }
@@ -484,6 +505,7 @@ struct FUN_00c6cba0_class
 
 // @fnv 0x00c6cba0
 // src: COMMUNITY 0x00c6cba0
+// pdb: bhkCharacterListener::~bhkCharacterListener | bhkCharacterListener.obj | debug, object-file run extension, low
 void FUN_00c6cba0_class::bhkCharacterController_UpdateState()
 {
     if (*(int*)((char*)this + 0x520) != 0xb)
@@ -529,14 +551,16 @@ extern float DAT_01267bcc;
 
 struct FUN_00c6d4b0_Class
 {
-    void bhkCharacterController_Jump(float f);
+    void bhkCharacterController_Jump(float afHeight);
 };
 
 // @fnv 0x00c6d4b0
 // src: COMMUNITY 0x00c6d4b0
-void FUN_00c6d4b0_Class::bhkCharacterController_Jump(float afValue)
+// pdb: bhkCharacterController::Jump | bhkCharacterController.obj | debug, upstream name already matches, high
+// pdb params: afHeight
+void FUN_00c6d4b0_Class::bhkCharacterController_Jump(float afHeight)
 {
-    *(float*)((char*)this + 0x540) = DAT_01267bcc * afValue;
+    *(float*)((char*)this + 0x540) = DAT_01267bcc * afHeight;
     *(int*)((char*)this + 0x520) = 1;
 }
 
@@ -550,6 +574,7 @@ struct FUN_00c6e2e0_cls
 };
 // @fnv 0x00c6e2e0
 // src: COMMUNITY 0x00c6e2e0
+// pdb: bhkCharacterController::UpdateFalling | bhkCharacterController.obj | debug, upstream name already matches, high
 void __thiscall FUN_00c6e2e0_cls::bhkCharacterController_UpdateFalling()
 {
     f_548 = f_4e8 + f_548;
@@ -580,6 +605,7 @@ struct FUN_00c6fd40_class
 
 // @fnv 0x00c6fd40
 // src: COMMUNITY 0x00c6fd40
+// pdb: bhkCharacterController::GetBumpedBody | bhkCharacterController.obj | debug, upstream name already matches, high
 int* FUN_00c6fd40_class::bhkCharacterController_GetBumpedBody()
 {
     int* p = *(int**)((char*)this + 0x630);
@@ -594,6 +620,7 @@ struct FUN_00c6fd60_Class
 };
 // @fnv 0x00c6fd60
 // src: XBOX_PDB 0x00c6fd60
+// pdb: bhkCharacterController::GetBumpedCharacterController | bhkCharacterController.obj | debug, upstream name already matches, high
 void* __thiscall FUN_00c6fd60_Class::bhkCharacterController_GetBumpedCharacterController()
 {
     void* p = *(void**)((char*)this + 0x638);
@@ -711,15 +738,18 @@ void __fastcall Init(ObjectMapBase* self, void*)
 
 struct FUN_00c76220_Class
 {
-    int hkaRagdollInstance_getRigidBodyOfBone(int idx);
+    int hkaRagdollInstance_getRigidBodyOfBone(int i);
 };
 
 // @fnv 0x00c76220
 // src: HAVOK_LIB 0x00c76220
-int FUN_00c76220_Class::hkaRagdollInstance_getRigidBodyOfBone(int aiIndex)
+// pdb: hkaRagdollInstance::getRigidBodyOfBone | bhkRagdollController.obj | debug, upstream name already matches, high
+// pdb params: i
+// pdb locals: rbIdx
+int FUN_00c76220_Class::hkaRagdollInstance_getRigidBodyOfBone(int i)
 {
     int* p = *(int**)((char*)this + 0x20);
-    int v = p[aiIndex];
+    int v = p[i];
     if (v < 0)
         return 0;
     int* q = *(int**)((char*)this + 8);
@@ -801,6 +831,7 @@ struct FUN_00c66560_class
 };
 // @fnv 0x00c66560
 // src: GUESS 0x00c66560 (confidence: low)
+// pdb: hkMemoryAllocator::`scalar deleting destructor' | bhkWorld.obj | debug, vtable slot, medium
 void* __thiscall FUN_00c66560_class::ProcessAndReturnValue_00c66560(int a)
 {
     UpdateFields_00cbf1a0();
@@ -810,6 +841,8 @@ void* __thiscall FUN_00c66560_class::ProcessAndReturnValue_00c66560(int a)
 void __cdecl ProcessPendingItems();
 // @fnv 0x00c68a00
 // src: COMMUNITY 0x00c68a00
+// pdb: bhkWorld::ProcessBatchRemovals | bhkWorld.obj | retail, upstream name already matches, high
+// pdb params: abAllowPartial
 void __fastcall bhkWorld_ProcessBatchRemovals(bhkWorld* self, void*, bool a)
 {
     ProcessPendingItems();
@@ -818,7 +851,7 @@ void __fastcall bhkWorld_ProcessBatchRemovals(bhkWorld* self, void*, bool a)
     if (a)
         self->FlushEntries();
     else
-        self->ClearEntries();
+        self->RemoveBatchedEntities();
 }
 
 struct FUN_00c75ad0_T
@@ -909,11 +942,12 @@ void FUN_00c7fb40::UpdateFields_00c7fb40()
     ((FUN_009ba5f0_shell*)this)->SetChildObject(0);
 }
 
-bool __cdecl AreVectorsEqual(NiPoint3 const& a, NiPoint3 const& b, float c);
+bool __cdecl AreVectorsEqual(NiPoint3 const& arP1, NiPoint3 const& arP2, float afEpsilon);
 
 // Checks each of three consecutive point pairs with AreVectorsEqual and returns false as soon as one pair fails, otherwise true.
 // @fnv 0x00c6b5f0
 // src: XBOX_PDB 0x00c6b5f0
+// pdb: bhkNiCollisionObject::`scalar deleting destructor' | bhkNiCollisionObject.obj | debug, object-file run extension, low
 bool __cdecl CloseTo(NiPoint3 const* apPointsA, NiPoint3 const* apPointsB, float c)
 {
     unsigned int i;
@@ -941,6 +975,9 @@ struct FUN_00c663d0_Ref
 };
 // Copy-assigns a ref-counted pointer: releases the old object when its count drops to zero, then retains the new one.
 // @fnv 0x00c663d0
+// pdb: bhkWorld::AdjustForceAddCount | bhkWorld.obj | retail, object-file run extension, low
+// pdb params: apObject, abIncrement, abRecurse, abForce
+// pdb locals: bres, recData
 template <> NiPointer<FUN_00c663d0_Ref>& NiPointer<FUN_00c663d0_Ref>::operator=(const NiPointer& kSrc)
 {
     FUN_00c663d0_Ref* pOld = m_pObject;
@@ -973,20 +1010,23 @@ struct FUN_00c66e20_Class
     int m_iWordAt00;
     int m_iWordAt04;
     int m_8;
-    void bhkWorld_UpdateListeners(float a);
+    void bhkWorld_UpdateListeners(float afDelta);
 };
 // If m_8 is set, iterates the objects in the array at offset 0x70 up to the count at 0x74 and calls v6(a) on each non-null object when a is non-zero.
 // @fnv 0x00c66e20
 // src: COMMUNITY 0x00c66e20
-void FUN_00c66e20_Class::bhkWorld_UpdateListeners(float afValue)
+// pdb: bhkWorld::UpdateListeners | bhkWorld.obj | retail, upstream name already matches, high
+// pdb params: afDelta
+// pdb locals: pw, I, pl
+void FUN_00c66e20_Class::bhkWorld_UpdateListeners(float afDelta)
 {
     if (m_8)
     {
         for (int i = 0; i < *(int*)((char*)this + 0x74); ++i)
         {
             FUN_00c66e20_vtbl* obj = (FUN_00c66e20_vtbl*)(*(int**)((char*)this + 0x70))[i];
-            if (obj && afValue != 0.0f)
-                obj->v6(afValue);
+            if (obj && afDelta != 0.0f)
+                obj->v6(afDelta);
         }
     }
 }
@@ -1041,6 +1081,7 @@ struct FUN_00c7a690_class
 };
 // Sets the vtable, frees m_p via DAT_010c4dc0 and clears the pointers, then deallocates this if bit 0 of a is set.
 // @fnv 0x00c7a690
+// pdb: NiTMap<NiAVObject *,short>::`scalar deleting destructor' | bhkRagdollController.obj | retail, object-file run extension, low
 void* __thiscall FUN_00c7a690_class::FUN_00c7a690(int aiFlags)
 {
     void* old = m_p;
@@ -1106,6 +1147,7 @@ struct FUN_00c7a6e0_class
 
 // Sets the vtable, frees m_p via DAT_010c4cec and clears the pointers, then deallocates this if flags bit 0 is set.
 // @fnv 0x00c7a6e0
+// pdb: BSSimpleArray<bhkRagdollController::BoneTransf,1024>::`scalar deleting destructor' | bhkRagdollController.obj | retail, object-file run extension, low
 FUN_00c7a6e0_class* __thiscall FUN_00c7a6e0_class::FUN_00c7a6e0(unsigned int flags)
 {
     int* p = this->m_p;
@@ -1132,6 +1174,7 @@ struct FUN_00c66420
 };
 // Sets the object's vtbl to DAT_010c3b80 and, if bit 0 of a is set, deallocates this via the memory manager; returns this.
 // @fnv 0x00c66420
+// pdb: hkpCollidableCollidableFilter::`scalar deleting destructor' | bhkWorld.obj | retail, vtable slot, high
 int FUN_00c66420::Init(int aiFlags)
 {
     vtbl = &DAT_010c3b80;
@@ -1150,6 +1193,7 @@ struct FUN_00c66450
 
 // Sets the object's vtbl to DAT_010c3b8c and, if bit 0 of a is set, deallocates the object via _g_memoryManager.
 // @fnv 0x00c66450
+// pdb: hkpRayCollidableFilter::`scalar deleting destructor' | bhkWorld.obj | retail, vtable slot, high
 FUN_00c66450::FUN_00c66450(char acFlags)
 {
     vtbl = &DAT_010c3b8c;
@@ -1160,13 +1204,15 @@ FUN_00c66450::FUN_00c66450(char acFlags)
 void __cdecl SetNiPoint3FromHkVector4(const hkVector4&, void*);
 struct FUN_00c66be0_class
 {
-    void bhkWorld_GetOrigin(unsigned int a);
+    void bhkWorld_GetOrigin(unsigned int arOrigin);
 };
 // @fnv 0x00c66be0
 // src: XBOX_PDB 0x00c66be0
-void FUN_00c66be0_class::bhkWorld_GetOrigin(unsigned int auiVectorAddress)
+// pdb: bhkWorld::GetOrigin | bhkWorld.obj | debug, upstream name already matches, high
+// pdb params: arOrigin
+void FUN_00c66be0_class::bhkWorld_GetOrigin(unsigned int arOrigin)
 {
-    SetNiPoint3FromHkVector4(*(const hkVector4*)auiVectorAddress, (char*)this + 0x60);
+    SetNiPoint3FromHkVector4(*(const hkVector4*)arOrigin, (char*)this + 0x60);
 }
 
 struct FUN_00c67110_v
@@ -1223,6 +1269,9 @@ struct FUN_00c67110_s
 };
 // @fnv 0x00c67110
 // src: COMMUNITY 0x00c67110
+// pdb: bhkWorld::RemoveObject | bhkWorld.obj | debug, upstream name already matches, high
+// pdb params: apCollision, __formal
+// pdb locals: pwo
 void bhkWorld_RemoveObject(FUN_00c67110_s* pObject)
 {
     FUN_00c67110_v* v = pObject->pv;
@@ -1291,7 +1340,7 @@ struct FUN_00c68a40_Class
 
 struct FUN_00c676e0_Class
 {
-    void __thiscall ClearIndexedValues();
+    void __thiscall bhkWorld_AddBatchedPhantoms();
 };
 
 struct FUN_00c6aac0_Class
@@ -1301,12 +1350,12 @@ struct FUN_00c6aac0_Class
 
 struct FUN_00c67850_Class
 {
-    void __thiscall ProcessConstraints();
+    void __thiscall bhkWorld_AddBatchedConstraints();
 };
 
 struct FUN_00c97d30_Class
 {
-    void __thiscall hkpWorld_addConstraint(hkReferencedObject* a);
+    void __thiscall hkpWorld_addConstraint(hkReferencedObject* constraint);
 };
 
 struct FUN_00c6b320_Base
@@ -1404,6 +1453,8 @@ struct FUN_00c6b320_Class : FUN_00c6b320_Base
 
 // @fnv 0x00c6b320
 // src: XBOX_PDB 0x00c6b320
+// pdb: bhkWorld::Add | bhkWorld.obj | retail, object-file run extension, low
+// pdb params: apObj
 void __thiscall FUN_00c6b320_Class::bhkWorld_Add_00c6b320(hkReferencedObject* a)
 {
     if (this == 0)
@@ -1418,9 +1469,9 @@ void __thiscall FUN_00c6b320_Class::bhkWorld_Add_00c6b320(hkReferencedObject* a)
         if (this->m_uiItemCount >= 0xc8)
         {
             ((FUN_00c68a40_Class*)this)->bhkWorld_AddBatchedEntities();
-            ((FUN_00c676e0_Class*)this)->ClearIndexedValues();
+            ((FUN_00c676e0_Class*)this)->bhkWorld_AddBatchedPhantoms();
             ((FUN_00c6aac0_Class*)this)->bhkWorld_AddBatchedActions();
-            ((FUN_00c67850_Class*)this)->ProcessConstraints();
+            ((FUN_00c67850_Class*)this)->bhkWorld_AddBatchedConstraints();
         }
 
         ((AddReferenceHelper*)a)->RetainReference();
@@ -1459,6 +1510,8 @@ struct FUN_00c6b950 : NiCollisionObject
     FUN_00c6b950(void* a);
 };
 // @fnv 0x00c6b950
+// pdb: bhkNiCollisionObject::bhkNiCollisionObject | bhkNiCollisionObject.obj | debug, call graph (shared callers), low
+// pdb params: apObject
 FUN_00c6b950::FUN_00c6b950(void* a) : NiCollisionObject(a)
 {
     *(int*)this = (int)&DAT_010c4314;
@@ -1471,6 +1524,9 @@ FUN_00c6b950::FUN_00c6b950(void* a) : NiCollisionObject(a)
 // An unused EDX parameter keeps the original ECX/stack calling convention.
 void SetCollisionInterpolator(bhkNiCollisionObject*, void*);
 // @fnv 0x00c6bb70
+// pdb: bhkNiCollisionObject::LinkObject | bhkNiCollisionObject.obj | retail, object-file gap fill, high
+// pdb params: arStream
+// pdb locals: pbody, apObject
 // Keep this external entry independent of the stream tag used by each header snapshot.
 void __fastcall LinkCollisionObject(bhkNiCollisionObject* self, void*, void* stream)
 {
@@ -1482,11 +1538,14 @@ void __fastcall LinkCollisionObject(bhkNiCollisionObject* self, void*, void* str
     reinterpret_cast<void (__thiscall*)(bhkNiCollisionObject*, void*)>(SetCollisionInterpolator)(self, aStream.GetLoadedObject());
 }
 
-void __cdecl bhkNiCollisionObject_SynchronizeRec(int a, int b);
+void __cdecl bhkNiCollisionObject_SynchronizeRec(int apObject, int abUpdate);
 
 // Saves the thread-local value, sets it to b, calls FUN_00c6c110(a, 0), then restores the saved value.
 // @fnv 0x00c6c3d0
-void __cdecl SetTlsValueAndReset(int aiArg, int aiValue)
+// pdb: bhkNiCollisionObject::Synchronize | bhkNiCollisionObject.obj | retail, call graph, high
+// pdb params: apObject, aeMode
+// pdb locals: eoldMode
+void __cdecl SetTlsValueAndReset(int apObject, int aeMode)
 {
     struct TLSData
     {
@@ -1496,8 +1555,8 @@ void __cdecl SetTlsValueAndReset(int aiArg, int aiValue)
     static __declspec(thread) TLSData tls;
 
     int oldValue = tls.value;
-    tls.value = aiValue;
-    bhkNiCollisionObject_SynchronizeRec(aiArg, 0);
+    tls.value = aeMode;
+    bhkNiCollisionObject_SynchronizeRec(apObject, 0);
     tls.value = oldValue;
 }
 
@@ -1565,6 +1624,7 @@ struct FUN_00c6cb70_class
 };
 // Sets the vtable pointer and, when bit 0 of a is set, frees the object via the memory manager, then returns this.
 // @fnv 0x00c6cb70
+// pdb: bhkCharacterListener::`scalar deleting destructor' | bhkCharacterListener.obj | debug, object-file run extension, low
 void* __thiscall FUN_00c6cb70_class::FUN_00c6cb70(int aiFlags)
 {
     vtbl = &DAT_010c446c;
@@ -1620,17 +1680,19 @@ struct FUN_00c6d770_class
     char pad[0x594];
     void* m_594;
     void* m_598;
-    void bhkCharacterController_SetCollisionGroup(unsigned int a);
+    void bhkCharacterController_SetCollisionGroup(unsigned int aiGroup);
 };
 // Forwards a to FUN_00c85ce0 on m_594 and m_598 when each pointer is non-null.
 // @fnv 0x00c6d770
 // src: COMMUNITY 0x00c6d770
-void FUN_00c6d770_class::bhkCharacterController_SetCollisionGroup(unsigned int auiValue)
+// pdb: bhkCharacterController::SetCollisionGroup | bhkCharacterController.obj | retail, upstream name already matches, high
+// pdb params: aiGroup
+void FUN_00c6d770_class::bhkCharacterController_SetCollisionGroup(unsigned int aiGroup)
 {
     if (m_594)
-        ((S_00c85ce0*)m_594)->bhkWorldObject_SetCollisionGroup(auiValue);
+        ((S_00c85ce0*)m_594)->bhkWorldObject_SetCollisionGroup(aiGroup);
     if (m_598)
-        ((S_00c85ce0*)m_598)->bhkWorldObject_SetCollisionGroup(auiValue);
+        ((S_00c85ce0*)m_598)->bhkWorldObject_SetCollisionGroup(aiGroup);
 }
 
 struct FUN_008d1160_Class
@@ -1675,6 +1737,8 @@ FUN_00c74760::FUN_00c74760()
 // Allocates a+0x10 bytes from _g_memoryManager, aligns the returned pointer to 16 bytes and stores the alignment offset in the byte before it.
 // @fnv 0x00c74ea0
 // src: COMMUNITY 0x00c74ea0
+// pdb: bhkConstraint::Getbhk | bhkRagdollController.obj | debug, object-file run extension, low
+// pdb params: apConstraint
 void* MemoryManager_AlignedAllocate16(unsigned int uiSize)
 {
     unsigned char* p = (unsigned char*)((Heap*)&_g_memoryManager)->Allocate(uiSize + 0x10);
@@ -1792,6 +1856,8 @@ struct FUN_00c66250_cls
 
 // @fnv 0x00c66250
 // src: COMMUNITY 0x00c66250
+// pdb: bhkWorld::NI2HKObject | bhkWorld.obj | debug, upstream name already matches, high
+// pdb params: apCollision, __formal
 void bhkWorld_NI2HKObject(FUN_00c66250_cls* p)
 {
     p->m_0c |= 0x40;
@@ -1858,6 +1924,9 @@ struct FUN_00c66280_arg
 
 // Calls the virtual method v2c on a1, passing a2->m_0c, zero, and whether a2->m_10 is nonzero, and returns its result.
 // @fnv 0x00c66280
+// pdb: bhkWorld::DoEnableCollision | bhkWorld.obj | debug, object-file run extension, low
+// pdb params: apCollision, arData
+// pdb locals: prb
 int CallVirtualWithArg(FUN_00c66280_obj* pObj, FUN_00c66280_arg* a2)
 {
     return pObj->v2c(a2->m_0c, 0, a2->m_10 != 0);
@@ -1903,6 +1972,9 @@ struct Param2Struct
 
 // If param_1 is non-null, gets its vf3C result and calls UpdateCountdown or InitOnce on it depending on whether param_2->unk0C is zero.
 // @fnv 0x00c662d0
+// pdb: bhkWorld::GroupObject | bhkWorld.obj | debug, object-file run extension, low
+// pdb params: apCollision, arData
+// pdb locals: pwo
 void __cdecl DispatchOnParamFlag(FUN_00c662d0_Obj* pObj, Param2Struct* pParams)
 {
     if (pObj != NULL)
@@ -1939,6 +2011,8 @@ struct FUN_00c66510_cls
 
 // Sets the vtable pointer, calls BaseRelease, and if bit 0 of acFlags is set frees this through the allocator from FUN_00c85750 using m_uSize.
 // @fnv 0x00c66510
+// pdb: bhkOnExitCallback::`scalar deleting destructor' | bhkWorld.obj | retail, object-file run extension, low
+// pdb note: debug build links it to ahkpWorld::operator new
 FUN_00c66510_cls* FUN_00c66510_cls::FUN_00c66510(unsigned char acFlags)
 {
     m_vptr = (int)&DAT_010c3bc4;
@@ -1978,6 +2052,7 @@ extern ThreadObserver* DAT_01268450;
 
 // Creates a ThreadMemoryScope and, if DAT_01268450 is non-null, calls its notify with 1.
 // @fnv 0x00c66570
+// pdb: bhkCollisionFilter::bhkCollisionFilter | bhkWorld.obj | debug, object-file run extension, low
 void __cdecl NotifyThreadObserverEnabled()
 {
     ThreadMemoryScope scope;
@@ -2258,22 +2333,25 @@ class FUN_00c66de0_cls
     int unk348;
     int unk34C;
     FUN_00c66de0_cls* m_350;
-    void Reset(bool flag);
-    void bhkWorld_Link(bool flag);
+    void Reset(bool abAttach);
+    void bhkWorld_Link(bool abAttach);
 };
 
 // If this is non-null, stores this (or null when flag is false) into the m_350 field of the object returned by v94, then calls Reset(flag).
 // @fnv 0x00c66de0
 // src: XBOX_PDB 0x00c66de0
-void FUN_00c66de0_cls::bhkWorld_Link(bool flag)
+// pdb: bhkWorld::Link | bhkWorld.obj | retail, upstream name already matches, high
+// pdb params: abAttach
+// pdb locals: pw
+void FUN_00c66de0_cls::bhkWorld_Link(bool abAttach)
 {
     if (this != 0)
     {
         FUN_00c66de0_cls* p = this->v94();
         if (p != 0)
-            p->m_350 = flag ? this : 0;
+            p->m_350 = abAttach ? this : 0;
     }
-    this->Reset(flag);
+    this->Reset(abAttach);
 }
 
 extern __declspec(thread) int hkThreadHeapState;
@@ -2305,16 +2383,19 @@ struct FUN_00c66e70_Class
     int unk08;
     char* objectData;
 
-    void bhkWorld_KillCinfo(char destroy);
+    void bhkWorld_KillCinfo(char abCreated);
 };
 
 // If destroy is set, releases the HavokOwner stored before objectData and clears objectData.
 // @fnv 0x00c66e70
 // src: XBOX_PDB 0x00c66e70
-void FUN_00c66e70_Class::bhkWorld_KillCinfo(char destroy)
+// pdb: bhkWorld::KillCinfo | bhkWorld.obj | retail, upstream name already matches, high
+// pdb params: abCreated
+// pdb locals: tempMemContext, pi
+void FUN_00c66e70_Class::bhkWorld_KillCinfo(char abCreated)
 {
     HavokThreadStateScope scope;
-    if (destroy)
+    if (abCreated)
     {
         if (objectData)
         {
@@ -2388,6 +2469,8 @@ struct FUN_00c66f90_Class
 
 // @fnv 0x00c66f90
 // src: XBOX_PDB 0x00c66f90
+// pdb: bhkWorld::HasActiveItems | bhkWorld.obj | retail, upstream name already matches, high
+// pdb locals: pw, bres
 bool FUN_00c66f90_Class::bhkWorld_HasActiveItems()
 {
     bool result = false;
@@ -2601,49 +2684,52 @@ void __cdecl AssignSystemGroup(Target* t, UpdateData* d);
 // Updates the controlled object's sub-object and flags from the update data, syncs the target source, runs the updater, and increments the data count.
 // @fnv 0x00c66ff0
 // src: COMMUNITY 0x00c66ff0
-void __cdecl bhkWorld_AddObject(ControlledObj* pControlledObj, UpdateData* data)
+// pdb: bhkWorld::AddObject | bhkWorld.obj | retail, upstream name already matches, high
+// pdb params: apCollision, arData
+// pdb locals: pwo, UpdateData, pav, bnotify, pbc
+void __cdecl bhkWorld_AddObject(ControlledObj* apCollision, UpdateData* arData)
 {
-    Target* target = pControlledObj->pTarget;
+    Target* target = apCollision->pTarget;
     if (target)
     {
-        SubObj* sub = pControlledObj->GetSub();
+        SubObj* sub = apCollision->GetSub();
         if (sub)
         {
-            if (data->iCount == 0)
+            if (arData->iCount == 0)
                 sub->usFlags |= 0x100;
             else
                 sub->usFlags &= ~0x100;
         }
-        bool bPending = data->bPending;
+        bool bPending = arData->bPending;
         if (bPending)
-            pControlledObj->usFlags |= 4;
+            apCollision->usFlags |= 4;
         else
-            pControlledObj->usFlags &= ~4;
+            apCollision->usFlags &= ~4;
         if (bPending)
-            pControlledObj->usFlags |= 8;
+            apCollision->usFlags |= 8;
         if (DAT_011afe58)
-            AssignSystemGroup(target, data);
-        int iSourceID = data->pSource->GetID();
+            AssignSystemGroup(target, arData);
+        int iSourceID = arData->pSource->GetID();
         if (target->GetID() != iSourceID)
         {
-            if (data->iMode)
-                pControlledObj->usFlags |= 0x40;
+            if (arData->iMode)
+                apCollision->usFlags |= 0x40;
             else
-                pControlledObj->usFlags &= ~0x40;
-            target->SetSource(data->pSource);
+                apCollision->usFlags &= ~0x40;
+            target->SetSource(arData->pSource);
         }
         UpdateParams params;
-        pControlledObj->pUpdater->Update(&params);
-        if (data->pSource->bEnabled)
-            pControlledObj->Activate(true);
+        apCollision->pUpdater->Update(&params);
+        if (arData->pSource->bEnabled)
+            apCollision->Activate(true);
     }
-    data->bPending = 0;
-    data->iCount++;
+    arData->bPending = 0;
+    arData->iCount++;
 }
 
 struct FUN_00c85d20_Class
 {
-    void __thiscall bhkWorldObject_EnableCollision(bool enabled);
+    void __thiscall bhkWorldObject_EnableCollision(bool abTF);
 };
 
 struct FUN_00c67130_First
@@ -2902,7 +2988,7 @@ void __cdecl SetTargetFloat(FUN_00c67180_Owner* owner, FUN_00c67180_Arg* volatil
 
 struct FUN_00561580_class
 {
-    void bhkRigidBody_SetActive(bool enabled);
+    void bhkRigidBody_SetActive(bool abTF);
 };
 struct FUN_00c671b0_dispatch
 {
@@ -2957,7 +3043,7 @@ void __cdecl SetEnabledOnDispatcherObject(FUN_00c671b0_source* source, FUN_00c67
 class C67240RefObject
 {
   public:
-    void SetLayer(unsigned int uiLayer);
+    void SetLayer(unsigned int aiGroup);
 };
 
 struct C67240WorldObject
@@ -3047,6 +3133,9 @@ struct C67260Context
 
 // If the object's body shape has an entity whose check returns true, increments pkContext->iCount, then clears pkContext->bRecurse.
 // @fnv 0x00c67260
+// pdb: bhkWorld::ActivateObject | bhkWorld.obj | retail, object-file run extension, low
+// pdb params: apCollision, arData
+// pdb locals: prb, pwo
 void CountEntityAndClearRecurse(C67260CollisionObject* pkObject, C67260Context* pkContext)
 {
     C67260Body* pkBody = pkObject->m_pkBody;
@@ -3068,7 +3157,7 @@ struct BodyView : hkReferencedObject
 };
 struct SpaceView
 {
-    void DispatchOrQueue(BodyView*);
+    void hkpWorld_removeAction(BodyView*);
 };
 extern __declspec(thread) int threadContext;
 struct ContextGuard
@@ -3142,6 +3231,8 @@ struct WorldView
     void ReleaseBodies();
 };
 // @fnv 0x00c67cd0
+// pdb: bhkWorld::RemoveBatchedActions | bhkWorld.obj | retail, call graph, high
+// pdb locals: tempMemContext, pw, i
 void WorldView::ReleaseBodies()
 {
     ContextGuard guard;
@@ -3155,7 +3246,7 @@ void WorldView::ReleaseBodies()
             for (unsigned int i = 0; i < count; ++i)
             {
                 if (bodies[i] && bodies[i]->world)
-                    space->DispatchOrQueue(bodies[i]);
+                    space->hkpWorld_removeAction(bodies[i]);
                 if (bodies[i])
                     bodies[i]->removeReference();
             }
@@ -3391,6 +3482,8 @@ struct PendingWorld : FUN_00c6b320_Base
     void __thiscall ProcessPendingItems();
 };
 // @fnv 0x00c67df0
+// pdb: bhkWorld::RemoveBatchedConstraints | bhkWorld.obj | retail, call graph, high
+// pdb locals: tempMemContext, pw, i
 void PendingWorld::ProcessPendingItems()
 {
     ContextGuard guard(16);
@@ -3439,7 +3532,7 @@ class C67F20RefObject
 
 struct C67F20Heap
 {
-    void Deallocate(void* pvMem);
+    void Deallocate(void* apMem);
 };
 
 extern C67F20Heap g_kC67F20Heap;
@@ -3469,6 +3562,8 @@ class C67F20List
 // Deletes every node in the list, unlinking each one, then releases the owner pointer.
 // @fnv 0x00c67f20
 // src: GUESS 0x00c67f20 (confidence: medium)
+// pdb: bhkWorld::UpdateContactPoints | bhkWorld.obj | debug, object-file run extension, low
+// pdb locals: pw
 void C67F20List::DeleteListNodesAndReleaseOwner()
 {
     while (m_pkHead)
@@ -3546,7 +3641,7 @@ struct FNVEntryKey
 class FNVEntryTarget
 {
   public:
-    void hkDebugDisplay_setGeometryColor(unsigned int a, unsigned int b, int c);
+    void hkDebugDisplay_setGeometryColor(unsigned int color, unsigned int id, int tag);
 };
 
 class FUN_00c688b0_cls
@@ -3564,6 +3659,9 @@ class FUN_00c688b0_cls
 // If m_0x10 is nonzero, calls FUN_00c984a0 on each of the m_0x80 entries in m_0x7c in reverse order, then resets m_0x80 to 0.
 // @fnv 0x00c688b0
 // src: GUESS 0x00c688b0 (confidence: low)
+// pdb: bhkWorld::DoObjects | bhkWorld.obj | debug, object-file run extension, low
+// pdb params: apObject, arData, apFunc
+// pdb locals: bres
 void FUN_00c688b0_cls::ProcessEntries_00c688b0()
 {
     if (m_0x10 == 0)
@@ -3659,37 +3757,40 @@ struct S_00c68900_Context
 
 typedef void(__cdecl* S_00c68900_Callback)(void* object, S_00c68900_Context* context);
 
-void __cdecl FUN_005171c4(S_00c68900_Node* node, S_00c68900_Context* context, S_00c68900_Callback callback);
+void __cdecl FUN_005171c4(S_00c68900_Node* apObject, S_00c68900_Context* arData, S_00c68900_Callback apFunc);
 
 // @fnv 0x00c68900
 // src: COMMUNITY 0x00c68900
-void __cdecl bhkWorld_DoObjectRec(S_00c68900_Node* node, S_00c68900_Context* context, S_00c68900_Callback callback)
+// pdb: bhkWorld::DoObjectRec | bhkWorld.obj | retail, upstream name already matches, high
+// pdb params: apObject, arData, apFunc
+// pdb locals: pcol, pnode, I, pchild
+void __cdecl bhkWorld_DoObjectRec(S_00c68900_Node* apObject, S_00c68900_Context* arData, S_00c68900_Callback apFunc)
 {
-    if (!node)
+    if (!apObject)
         return;
 
     void* object;
-    if (node->m_pReference)
-        object = node->m_pReference->v14();
+    if (apObject->m_pReference)
+        object = apObject->m_pReference->v14();
     else
         object = 0;
 
-    if (!context->unk08)
-        node->m_flags = (node->m_flags & 0xffffffef) | 6;
+    if (!arData->unk08)
+        apObject->m_flags = (apObject->m_flags & 0xffffffef) | 6;
 
     if (object)
-        callback(object, context);
+        apFunc(object, arData);
 
-    if (context->m_bEnableState)
+    if (arData->m_bEnableState)
     {
-        NiNode* items = node->v3();
+        NiNode* items = apObject->v3();
         if (items)
         {
             unsigned int index = 0;
             while (index < items->m_kChildren.m_usSize)
             {
                 S_00c68900_Node* child = reinterpret_cast<S_00c68900_Node*>(items->m_kChildren.m_pBase[index].m_pObject);
-                FUN_005171c4(child, context, callback);
+                FUN_005171c4(child, arData, apFunc);
                 ++index;
             }
         }
@@ -3904,6 +4005,9 @@ struct PhysOwner
 // Gets the body from pOwner, resolves its shape body, and calls v57(4) when the shape is missing or its m_nShapeType is 5.
 // @fnv 0x00c689c0
 // src: COMMUNITY 0x00c689c0
+// pdb: bhkWorld::FixedToKeyframedObject | bhkWorld.obj | retail, upstream name already matches, high
+// pdb params: apCollision, __formal
+// pdb locals: prb, pwo
 void __cdecl bhkWorld_FixedToKeyframedObject(PhysOwner* pOwner)
 {
     PhysBody* pBody = pOwner->m_pPhysicsBody;
@@ -3941,12 +4045,14 @@ struct ScopedHavokThreadMode
 
 struct FUN_00c674d0_Call
 {
-    void __thiscall bhkWorld_AddEntities(unsigned int resource, unsigned int count);
+    void __thiscall bhkWorld_AddEntities(unsigned int apEntityA, unsigned int auiNumEntities);
 };
 
 // Clamps the count at offset 0x30 to 3000, passes it with the resource at 0x2c to FUN_00c674d0, then resets the count to 0.
 // @fnv 0x00c68a40
 // src: COMMUNITY 0x00c68a40
+// pdb: bhkWorld::AddBatchedEntities | bhkWorld.obj | retail, upstream name already matches, high
+// pdb locals: tempMemContext
 void FUN_00c68a40_Class::bhkWorld_AddBatchedEntities()
 {
     ScopedHavokThreadMode threadMode;
@@ -3999,6 +4105,9 @@ struct Holder_b5063
 
 // Creates a Holder_b5063 for this owner, then calls LockOwner; the holder releases the owner's reference on destruction.
 // @fnv 0x00c68ae0
+// pdb: bhkWorld::AddBatchedEntitiesPartial | bhkWorld.obj | retail, object-file run extension, low
+// pdb params: __formal, abIgnoreFrameLimit
+// pdb locals: uinum, uistart
 void Owner_b5063::LockOwnerAndRelease()
 {
     Holder_b5063 holder(this);
@@ -4062,7 +4171,7 @@ struct FUN_00c68f50_cls;
 
 struct FUN_00aa4060_cls
 {
-    void MemoryManager_Deallocate(FUN_00c68f50_cls* node);
+    void MemoryManager_Deallocate(FUN_00c68f50_cls* apMem);
 };
 
 extern FUN_00aa4060_cls DAT_011f6238;
@@ -4158,28 +4267,31 @@ struct S_00c69f50_Obj
     int unk0c;
 };
 
-S_00c69f50_Obj* GetExtraDataChecked(S_00c69f50_Obj* obj);
-void bhkWorld_DoObjectRec(S_00c69f50_Obj* obj, int* ctx, void* g);
+S_00c69f50_Obj* GetExtraDataChecked(S_00c69f50_Obj* apObject);
+void bhkWorld_DoObjectRec(S_00c69f50_Obj* apObject, int* arData, void* apFunc);
 
 // @fnv 0x00c69f50
 // src: XBOX_PDB 0x00c69f50
-bool bhkWorld_UpdatePosition(S_00c69f50_Obj* obj, unsigned char ucValue, unsigned char ucForce)
+// pdb: bhkWorld::UpdatePosition | bhkWorld.obj | retail, upstream name already matches, high
+// pdb params: apObject, abRecurse, abForce
+// pdb locals: bres, recData
+bool bhkWorld_UpdatePosition(S_00c69f50_Obj* apObject, unsigned char abRecurse, unsigned char abForce)
 {
     bool result = false;
-    if (obj)
+    if (apObject)
     {
         S_00c69f50_Obj* info;
-        if (ucForce || ((info = GetExtraDataChecked(obj)) ? (info->unk0c & 2) : 0))
+        if (abForce || ((info = GetExtraDataChecked(apObject)) ? (info->unk0c & 2) : 0))
         {
             int ctx[7];
             result = true;
-            *(unsigned char*)&ctx[1] = ucValue;
+            *(unsigned char*)&ctx[1] = abRecurse;
             void* g = DAT_011afe90;
             ctx[0] = 0;
             ctx[2] = 2;
             if (g)
             {
-                bhkWorld_DoObjectRec(obj, &ctx[0], g);
+                bhkWorld_DoObjectRec(apObject, &ctx[0], g);
             }
         }
     }
@@ -4205,20 +4317,23 @@ struct DispatchPacket
     unsigned int unk18;
 };
 
-extern DispatchState* __cdecl GetExtraDataChecked(int object);
-extern "C" void __cdecl bhkWorld_DoObjectRec(int object, DispatchPacket* packet, unsigned int dispatcher);
+extern DispatchState* __cdecl GetExtraDataChecked(int apObject);
+extern "C" void __cdecl bhkWorld_DoObjectRec(int apObject, DispatchPacket* arData, unsigned int apFunc);
 extern "C" unsigned int DAT_011afe94;
 
 // @fnv 0x00c6a040
 // src: XBOX_PDB 0x00c6a040
-unsigned char __cdecl bhkWorld_Enable(int object, unsigned char selection, unsigned char mode, unsigned char overrideCheck)
+// pdb: bhkWorld::Enable | bhkWorld.obj | retail, upstream name already matches, high
+// pdb params: apObject, abEnable, abRecurse, abForce
+// pdb locals: bres, recData
+unsigned char __cdecl bhkWorld_Enable(int apObject, unsigned char abEnable, unsigned char abRecurse, unsigned char abForce)
 {
     unsigned char result = 0;
-    if (object)
+    if (apObject)
     {
-        if (!overrideCheck)
+        if (!abForce)
         {
-            DispatchState* state = GetExtraDataChecked(object);
+            DispatchState* state = GetExtraDataChecked(apObject);
             if (!state)
                 goto exit;
 
@@ -4229,14 +4344,14 @@ unsigned char __cdecl bhkWorld_Enable(int object, unsigned char selection, unsig
         }
 
         DispatchPacket packet;
-        packet.mode = mode;
+        packet.mode = abRecurse;
         result = 1;
         packet.status = 0;
         packet.opcode = 3;
-        packet.selection = selection;
+        packet.selection = abEnable;
 
         if (DAT_011afe94)
-            bhkWorld_DoObjectRec(object, &packet, DAT_011afe94);
+            bhkWorld_DoObjectRec(apObject, &packet, DAT_011afe94);
     }
 exit:
     return result;
@@ -4266,8 +4381,8 @@ struct C6A2E0Properties
     unsigned int m_uiValue1;
 };
 
-extern "C" C6A2E0Properties* GetExtraDataChecked(C6A2E0AVObject* pkObject);
-void bhkWorld_DoObjectRec(C6A2E0AVObject* pkObject, C6A2E0Context* pkContext, C6A2E0Callback pfnCallback);
+extern "C" C6A2E0Properties* GetExtraDataChecked(C6A2E0AVObject* apObject);
+void bhkWorld_DoObjectRec(C6A2E0AVObject* apObject, C6A2E0Context* arData, C6A2E0Callback apFunc);
 extern C6A2E0Callback g_pfnC6A2E0Callback;
 
 static inline unsigned int C6A2E0IsEnabled(C6A2E0AVObject* pkObject)
@@ -4278,18 +4393,21 @@ static inline unsigned int C6A2E0IsEnabled(C6A2E0AVObject* pkObject)
 
 // @fnv 0x00c6a2e0
 // src: COMMUNITY 0x00c6a2e0
-bool bhkWorld_KillHavok(C6A2E0AVObject* pkObject, bool bRecurse, bool bForce)
+// pdb: bhkWorld::KillHavok | bhkWorld.obj | retail, upstream name already matches, high
+// pdb params: apObject, abRecurse, abForce
+// pdb locals: bres, recData
+bool bhkWorld_KillHavok(C6A2E0AVObject* apObject, bool abRecurse, bool abForce)
 {
     bool bResult = false;
-    if (pkObject && (bForce || C6A2E0IsEnabled(pkObject)))
+    if (apObject && (abForce || C6A2E0IsEnabled(apObject)))
     {
         C6A2E0Context kContext;
-        kContext.bRecurse = bRecurse;
+        kContext.bRecurse = abRecurse;
         bResult = true;
         kContext.pCurrentObject = 0;
         kContext.uiTraversalFlags = 4;
         if (g_pfnC6A2E0Callback)
-            bhkWorld_DoObjectRec(pkObject, &kContext, g_pfnC6A2E0Callback);
+            bhkWorld_DoObjectRec(apObject, &kContext, g_pfnC6A2E0Callback);
     }
     return bResult;
 }
@@ -4304,7 +4422,7 @@ class FUN_00c6a810_cls
     int unk10;
     unsigned short unk14;
     unsigned char m_16;
-    void bhkWorld_SetDebugDisplay(void* target, unsigned char value);
+    void bhkWorld_SetDebugDisplay(void* apRoot, unsigned char abTF);
 };
 
 struct FlagRequestB3610
@@ -4324,18 +4442,20 @@ struct FlagFrameB3610
 };
 
 extern void* DAT_011afea0;
-void __cdecl SpawnHelperB3610(void* target, FlagRequestB3610* req, void* ctx);
+void __cdecl SpawnHelperB3610(void* apObject, FlagRequestB3610* arData, void* apFunc);
 
 // Stores value into m_16 and, if target is non-null and DAT_011afea0 is set, sends a flag request with type 6 and the stored flag's boolean value.
 // @fnv 0x00c6a810
 // src: XBOX_PDB 0x00c6a810
-void FUN_00c6a810_cls::bhkWorld_SetDebugDisplay(void* target, unsigned char value)
+// pdb: bhkWorld::SetDebugDisplay | bhkWorld.obj | debug, upstream name already matches, high
+// pdb params: apRoot, abTF
+void FUN_00c6a810_cls::bhkWorld_SetDebugDisplay(void* apRoot, unsigned char abTF)
 {
-    if (m_16 != value)
+    if (m_16 != abTF)
     {
-        m_16 = value;
+        m_16 = abTF;
     }
-    if (target != 0)
+    if (apRoot != 0)
     {
         FlagFrameB3610 frame;
         frame.zero = 0;
@@ -4344,7 +4464,7 @@ void FUN_00c6a810_cls::bhkWorld_SetDebugDisplay(void* target, unsigned char valu
         frame.req.value = m_16 != 0;
         if (DAT_011afea0 != 0)
         {
-            SpawnHelperB3610(target, (FlagRequestB3610*)&frame, DAT_011afea0);
+            SpawnHelperB3610(apRoot, (FlagRequestB3610*)&frame, DAT_011afea0);
         }
     }
 }
@@ -4362,6 +4482,8 @@ struct FUN_00c6b070_cls : public FUN_00c6aca0_holder
 };
 
 // @fnv 0x00c6b070
+// pdb: bhkWorld::ProcessBatchAdds | bhkWorld.obj | retail, object-file run extension, low
+// pdb params: abAllowPartial, abIgnoreFrameLimit
 FUN_00c6b070_cls* FUN_00c6b070_cls::FUN_00c6b070(unsigned char auFlags)
 {
     this->FUN_00c6aca0();
@@ -4626,6 +4748,8 @@ struct FUN_00c6b670_cls : FUN_00c6b670_obj
 
 // Checks the TLS state and m_0c flags, calls v2B/v2A/v29 or v2D as needed, then invokes m_08->Call() if m_08 is set.
 // @fnv 0x00c6b670
+// pdb: bhkNiCollisionObject::UpdateWorldData | bhkNiCollisionObject.obj | retail, vtable slot, high
+// pdb params: __formal
 void FUN_00c6b670_cls::UpdateState(int a1)
 {
     FUN_00c6b670_tls* tls = &g_fun00c6b670Tls;
@@ -4697,7 +4821,7 @@ struct FUN_00c6b730_cls
     int unk08;
     int unk0C;
     FUN_00c6b730_target* m_pFlagTarget;
-    void Helper(int a1);
+    void Helper(int kStream);
     void DispatchToTarget(int a1);
 };
 
@@ -4748,28 +4872,31 @@ struct S_00c6b760_Cls
     unsigned short unk0e;
     S_00c6b760_Obj* m_10;
     bool FUN_00a81060(S_00c6b760_Cls* other);
-    bool bhkNiCollisionObject_IsEqual(S_00c6b760_Cls* other);
+    bool bhkNiCollisionObject_IsEqual(S_00c6b760_Cls* apObject);
 };
 
 // Compares this object with another: first via FUN_00a81060, then compares m_10 (via v5c or null check) and m_0c.
 // @fnv 0x00c6b760
 // src: XBOX_PDB 0x00c6b760
-bool S_00c6b760_Cls::bhkNiCollisionObject_IsEqual(S_00c6b760_Cls* other)
+// pdb: bhkNiCollisionObject::IsEqual | bhkNiCollisionObject.obj | retail, upstream name already matches, high
+// pdb params: apObject
+// pdb locals: bres, pobj
+bool S_00c6b760_Cls::bhkNiCollisionObject_IsEqual(S_00c6b760_Cls* apObject)
 {
-    bool r = FUN_00a81060(other);
+    bool r = FUN_00a81060(apObject);
     if (r)
     {
         S_00c6b760_Obj* p = m_10;
         if (p != 0)
         {
-            S_00c6b760_Obj* a = other->m_10;
+            S_00c6b760_Obj* a = apObject->m_10;
             r = p->v5c(a);
         }
         else
         {
-            r = other->m_10 == 0;
+            r = apObject->m_10 == 0;
         }
-        r = r & (other->m_0c == m_0c);
+        r = r & (apObject->m_0c == m_0c);
     }
     return r;
 }
@@ -4860,16 +4987,19 @@ class FnvProbeObj
 // If a is non-null, resolves a target object from b (or falls back to a) and returns whether its m_f84 is greater than zero.
 // @fnv 0x00c6b7b0
 // src: XBOX_PDB 0x00c6b7b0
-bool bhkNiCollisionObject_GetFaceUp(FnvProbeObj* pObj, void* b)
+// pdb: bhkNiCollisionObject::GetFaceUp | bhkNiCollisionObject.obj | retail, upstream name already matches, high
+// pdb params: apRoot, apName
+// pdb locals: bfaceUp, pav
+bool bhkNiCollisionObject_GetFaceUp(FnvProbeObj* apRoot, void* apName)
 {
     bool result = false;
-    if (pObj)
+    if (apRoot)
     {
-        FnvProbeObj* obj = pObj;
+        FnvProbeObj* obj = apRoot;
         FnvProbeObj* target = 0;
-        if (b)
+        if (apName)
         {
-            NiFixedString name(static_cast<const char*>(FUN_00a5b690(b)), 0);
+            NiFixedString name(static_cast<const char*>(FUN_00a5b690(apName)), 0);
             target = (FnvProbeObj*)obj->v39(&name);
         }
         if (!target)
@@ -4962,19 +5092,22 @@ struct FUN_00c6b860_Object
 };
 // @fnv 0x00c6b860
 // src: XBOX_PDB 0x00c6b860
-bool __cdecl bhkNiCollisionObject_GetLeftUp(FUN_00c6b860_Object* object, unsigned int key)
+// pdb: bhkNiCollisionObject::GetLeftUp | bhkNiCollisionObject.obj | retail, upstream name already matches, high
+// pdb params: apRoot, apName
+// pdb locals: bleftUp, pav
+bool __cdecl bhkNiCollisionObject_GetLeftUp(FUN_00c6b860_Object* apRoot, unsigned int apName)
 {
     bool result = false;
-    if (object)
+    if (apRoot)
     {
         FUN_00c6b860_Object* selected = 0;
-        if (key)
+        if (apName)
         {
-            NiFixedString name(key);
-            selected = object->Find(&name);
+            NiFixedString name(apName);
+            selected = apRoot->Find(&name);
         }
         if (!selected)
-            selected = object;
+            selected = apRoot;
         result = selected->unk88 > 0.0f;
     }
     return result;
@@ -5010,26 +5143,29 @@ struct OwnerProxy
 };
 // @fnv 0x00c6ba30
 // src: XBOX_PDB 0x00c6ba30
-void OwnerProxy::bhkNiCollisionObject_CopyMembers(OwnerProxy* dest, CloneProcess* process)
+// pdb: bhkNiCollisionObject::CopyMembers | bhkNiCollisionObject.obj | retail, upstream name already matches, high
+// pdb params: apDest, arCloneData
+// pdb locals: spmyObject, pc, spcopyObject
+void OwnerProxy::bhkNiCollisionObject_CopyMembers(OwnerProxy* apDest, CloneProcess* arCloneData)
 {
-    NiCollisionObject_CopyMembers(dest, process);
-    dest->unk0c = unk0c;
+    NiCollisionObject_CopyMembers(apDest, arCloneData);
+    apDest->unk0c = unk0c;
     NiPointer<NiInterpolator> source = object;
     if (source)
     {
         NiPointer<NiInterpolator> clone;
         NiInterpolator* result;
-        if (process->map->FUN_00a53c30(source, result))
+        if (arCloneData->map->FUN_00a53c30(source, result))
             clone = result;
         else
-            clone = static_cast<NiInterpolator*>(source->MakeClone(*reinterpret_cast<CloningProcess*>(process)));
-        dest->bhkNiCollisionObject_SetWorldObject(clone);
+            clone = static_cast<NiInterpolator*>(source->MakeClone(*reinterpret_cast<CloningProcess*>(arCloneData)));
+        apDest->bhkNiCollisionObject_SetWorldObject(clone);
         clone = 0;
         source = 0;
     }
 }
 
-bool __cdecl AreVectorsEqual(NiPoint3 const& a, NiPoint3 const& b, float c);
+bool __cdecl AreVectorsEqual(NiPoint3 const& arP1, NiPoint3 const& arP2, float afEpsilon);
 bool __cdecl CloseTo(NiPoint3 const* a, NiPoint3 const* b, float c);
 
 typedef void(__cdecl* TransformCallback)(bhkNiCollisionObject*, int);
@@ -5037,6 +5173,9 @@ extern bool DAT_01267b6c;
 extern TransformCallback DAT_01267b68;
 
 // @fnv 0x00c6bbb0
+// pdb: bhkNiCollisionObject::SetTransform | bhkNiCollisionObject.obj | retail, vtable slot, high
+// pdb params: arTrans
+// pdb locals: pobj, pparent, etf, lt, ptrans
 void __fastcall UpdateWorldTransform(bhkNiCollisionObject* self, void*, const NiTransform& kWorld)
 {
     NiAVObject* pkObject = self->m_pkSceneObject;
@@ -5112,6 +5251,9 @@ struct TreeHost_cls
 
 // @fnv 0x00c6bd00
 // src: XBOX_PDB 0x00c6bd00
+// pdb: bhkNiCollisionObject::ResetSim | bhkNiCollisionObject.obj | retail, upstream name already matches, high
+// pdb params: apObject, abRecurse
+// pdb locals: pcon, pnode, i
 void bhkNiCollisionObject_ResetSim(NiAVObject* node, bool recurse)
 {
     if (node == 0)
@@ -5151,7 +5293,7 @@ void bhkNiCollisionObject_ResetSim(NiAVObject* node, bool recurse)
 class C6C0E0RefObject
 {
   public:
-    void SetFlag(int iFlag);
+    void SetFlag(int abTF);
 };
 
 struct C6C0E0WorldObject
@@ -5198,15 +5340,19 @@ class C6C0E0AVObject
 
 // If the object has a collision object with a world object and ref object, forwards the flag to the ref object's SetFlag.
 // @fnv 0x00c6c0e0
-void SetCollisionRefFlag(C6C0E0AVObject* pkObject, int aiFlag)
+// src: XBOX_RETAIL_PDB 0x00c6c0e0
+// pdb: bhkNiCollisionObject::EnableCollision | bhkNiCollisionObject.obj | retail, object-file gap fill, high
+// pdb params: apObject, abEnable
+// pdb locals: pco, prb
+void bhkNiCollisionObject_EnableCollision(C6C0E0AVObject* apObject, int abEnable)
 {
-    C6C0E0CollisionObject* pkCollision = pkObject->m_spCollisionObject;
+    C6C0E0CollisionObject* pkCollision = apObject->m_spCollisionObject;
     if (pkCollision)
     {
         C6C0E0WorldObject* pkWorldObject = pkCollision->GetWorldObject();
         C6C0E0RefObject* pkRefObject;
         if (pkWorldObject && (pkRefObject = pkWorldObject->m_pPointer) != 0)
-            pkRefObject->SetFlag(aiFlag);
+            pkRefObject->SetFlag(abEnable);
     }
 }
 
@@ -5314,6 +5460,10 @@ class C6C210AVObject
 };
 
 // @fnv 0x00c6c210
+// pdb: bhkNiCollisionObject::SetRigidBodyName | bhkNiCollisionObject.obj | retail, object-file run extension, low
+// pdb note: debug build links it to bhkBlendCollisionObject::bhkBlendCollisionObject
+// pdb params: apObject
+// pdb locals: pcollisionObj, pnode, pworldObj, prigidBody, phavokRigidBody, inumChildren, ichildIdx
 void PropagateNameToHavokEntity(C6C210AVObject* pkObject)
 {
     if (!pkObject)
@@ -5415,12 +5565,14 @@ class FUN_00c6c290 : public C6C290Base
   public:
     NiPointer<C6C290Object> m_pReferencedObject;
 
-    void bhkNiCollisionObject_SetWorldObject(int iValue);
+    void bhkNiCollisionObject_SetWorldObject(int apWorldObject);
     virtual ~FUN_00c6c290();
 };
 
 // Decrements g_iC6C290Count, detaches the held C6C290Object if present, then calls FUN_00c6b980(0).
 // @fnv 0x00c6c290
+// pdb: bhkNiCollisionObject::~bhkNiCollisionObject | bhkNiCollisionObject.obj | retail, object-file run extension, low
+// pdb note: debug build links it to bhkBlendCollisionObject::~bhkBlendCollisionObject
 FUN_00c6c290::~FUN_00c6c290()
 {
     g_iC6C290Count--;
@@ -5621,7 +5773,7 @@ class BC6C330HavokCollision : public BC6C330CollisionObject
 {
   public:
     virtual void LoadBinary(BC6C330Stream& kStream);
-    void bhkNiCollisionObject_LoadBinary(BC6C330Stream& kStream);
+    void bhkNiCollisionObject_LoadBinary(BC6C330Stream& arStream);
 
     int unk04;
     int unk08;
@@ -5630,11 +5782,13 @@ class BC6C330HavokCollision : public BC6C330CollisionObject
 
 // @fnv 0x00c6c330
 // src: XBOX_PDB 0x00c6c330
-void BC6C330HavokCollision::bhkNiCollisionObject_LoadBinary(BC6C330Stream& kStream)
+// pdb: bhkNiCollisionObject::LoadBinary | bhkNiCollisionObject.obj | retail, upstream name already matches, high
+// pdb params: arStream
+void BC6C330HavokCollision::bhkNiCollisionObject_LoadBinary(BC6C330Stream& arStream)
 {
-    BC6C330CollisionObject::LoadBinary(kStream);
-    BC6C330LoadBinary(kStream, m_usFlags);
-    kStream.ResetStreamState();
+    BC6C330CollisionObject::LoadBinary(arStream);
+    BC6C330LoadBinary(arStream, m_usFlags);
+    arStream.ResetStreamState();
 }
 
 extern int DAT_010c446c;
@@ -5880,7 +6034,7 @@ struct S_00c6c840_class
     unsigned char unk6b;
     int unk6c;
 
-    void __thiscall bhkCharacterListener_contactPointAddedCallback(int a, S_00c6c840_Param* b);
+    void __thiscall bhkCharacterListener_contactPointAddedCallback(int apProxy, S_00c6c840_Param* arPoint);
 };
 
 struct S_00c6c840_Pad
@@ -6937,9 +7091,12 @@ extern int DAT_011f426c;
 // Checks whether the value's low 7 bits equal 0x1e; if so increments unk6c and, when unk69 is set, calls FUN_00926980 with DAT_011f426c.
 // @fnv 0x00c6c840
 // src: XBOX_PDB 0x00c6c840
-void __thiscall S_00c6c840_class::bhkCharacterListener_contactPointAddedCallback(int a, S_00c6c840_Param* b)
+// pdb: bhkCharacterListener::contactPointAddedCallback | bhkCharacterListener.obj | debug, upstream name already matches, high
+// pdb params: apProxy, arPoint
+// pdb locals: Filter, pController
+void __thiscall S_00c6c840_class::bhkCharacterListener_contactPointAddedCallback(int apProxy, S_00c6c840_Param* arPoint)
 {
-    S_00c6c840_Value* value = reinterpret_cast<S_00c6c840_Value*>(b->m_pObject_48);
+    S_00c6c840_Value* value = reinterpret_cast<S_00c6c840_Value*>(arPoint->m_pObject_48);
 
     if ((value->m_value_1c & 0x7f) == 0x1e)
     {
@@ -7003,7 +7160,7 @@ struct SpawnBase
 
 struct SpawnField
 {
-    SpawnField(int a1);
+    SpawnField(int apStartCollector);
     ~SpawnField();
     int unk00;
 };
@@ -7025,6 +7182,7 @@ struct FUN_00c6ce80_cls : SpawnBase, SpawnSlot
 
 // Increments g_spawnCount and initializes the SpawnField member m_10 with 0.
 // @fnv 0x00c6ce80
+// pdb: bhkCharacterProxy::bhkCharacterProxy | bhkCharacterController.obj | retail, call graph, medium
 FUN_00c6ce80_cls::FUN_00c6ce80_cls() : m_10(0)
 {
     ++g_spawnCount;
@@ -7039,7 +7197,7 @@ int __cdecl bhkCharacterProxy_GetCinfoSize()
 
 struct FUN_00c6cef0_target
 {
-    void ahkpCharacterProxy_checkSupport(int a, int b);
+    void ahkpCharacterProxy_checkSupport(int direction, int ground);
 };
 
 struct FUN_00c6cef0_cls
@@ -7053,6 +7211,10 @@ struct FUN_00c6cef0_cls
 
 // If this and m_08 are non-null, calls FUN_00cac110 before and after forwarding a and b to m_08's FUN_00cafd00.
 // @fnv 0x00c6cef0
+// pdb: bhkCharacterProxy::CheckSupport | bhkCharacterController.obj | retail, object-file run extension, low
+// pdb note: debug build links it to bhkCharacterProxy::Getbhk
+// pdb params: arDirection, arGround
+// pdb locals: pp
 void FUN_00c6cef0_cls::CallTargetWithArgs(int a, int b)
 {
     if (this != 0)
@@ -7077,6 +7239,7 @@ struct FUN_00c6d010_Class
 
 // Calls FUN_00cabf50, then frees this with operator delete when bit 0 of flags is set, and returns this.
 // @fnv 0x00c6d010
+// pdb: bhkCharacterProxy::`scalar deleting destructor' | bhkCharacterController.obj | debug, object-file run extension, low
 FUN_00c6d010_Class* __thiscall FUN_00c6d010_Class::FUN_00c6d010(unsigned char flags)
 {
     FUN_00cabf50();
@@ -7118,29 +7281,30 @@ class FUN_00c6d1e0 : public C6D1E0Base
     FUN_00c6d1e0(int a, int b);
     virtual ~FUN_00c6d1e0();
 
-    void Init(int a, int b);
+    void Init(int arInfo, int apCharController);
 };
 
 // Constructs the object and forwards both arguments to Init.
 // @fnv 0x00c6d1e0
+// pdb: bhkCollisionBox::`scalar deleting destructor' | bhkCharacterController.obj | retail, object-file run extension, low
 FUN_00c6d1e0::FUN_00c6d1e0(int a, int b)
 {
     Init(a, b);
 }
 
-extern int DAT_01268444;
+extern int bhkCollisionBox_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01268444 (old: DAT_01268444/g_01268444/g_kRTTI9C64/g_pcCBEA40Name)
 
 // @fnv 0x00c6d250
 // src: COMMUNITY 0x00c6d250
 void* __cdecl bhkCollisionBox_GetRTTI()
 {
-    return &DAT_01268444;
+    return &bhkCollisionBox_ms_RTTI;
 }
 
 namespace fnv_00c6d260 {
 struct FUN_00aa4060_class
 {
-    void __thiscall MemoryManager_Deallocate(void* p);
+    void __thiscall MemoryManager_Deallocate(void* apMem);
 };
 
 extern FUN_00aa4060_class DAT_011f6238;
@@ -7211,6 +7375,8 @@ struct FUN_00c6d290 : public ChainB_cls
 
 // Calls the base SetListShape with a, then increments DAT_012681a0.
 // @fnv 0x00c6d290
+// pdb: bhkListShape::bhkListShape | bhkCharacterController.obj | retail, call graph, medium
+// pdb params: arInfo
 FUN_00c6d290::FUN_00c6d290(unsigned int a)
 {
     ((FUN_00c8b090_owner*)this)->SetListShape(a);
@@ -7766,7 +7932,7 @@ void BC6D6B0Tracker::UpdateDistance(const BC6D6B0Point3& kPos, BC6D6B0AVObject* 
 
 struct S_00c6d7a0_Handler
 {
-    void bhkWorldObject_SetAVObject(int arg, int dflt);
+    void bhkWorldObject_SetAVObject(int apObject, int aiKey);
 };
 
 struct S_00c6d7a0_Obj
@@ -7814,18 +7980,20 @@ struct S_00c6d7a0_Obj
     int unk580, unk584, unk588, unk58c, unk590;
     S_00c6d7a0_Handler* unk594;
     S_00c6d7a0_Handler* unk598;
-    void bhkCharacterController_SetNiObject(int arg);
+    void bhkCharacterController_SetNiObject(int apObject);
 };
 
 // Forwards arg to the handler objects at unk594 and unk598, calling each with a default of 0 when present.
 // @fnv 0x00c6d7a0
 // src: XBOX_PDB 0x00c6d7a0
-void S_00c6d7a0_Obj::bhkCharacterController_SetNiObject(int arg)
+// pdb: bhkCharacterController::SetNiObject | bhkCharacterController.obj | retail, upstream name already matches, high
+// pdb params: apObject
+void S_00c6d7a0_Obj::bhkCharacterController_SetNiObject(int apObject)
 {
     if (unk594)
-        unk594->bhkWorldObject_SetAVObject(arg, 0);
+        unk594->bhkWorldObject_SetAVObject(apObject, 0);
     if (unk598)
-        unk598->bhkWorldObject_SetAVObject(arg, 0);
+        unk598->bhkWorldObject_SetAVObject(apObject, 0);
 }
 
 extern "C" __declspec(dllimport) long __stdcall InterlockedDecrement(volatile long* p);
@@ -7859,6 +8027,7 @@ class Holder
 };
 
 // @fnv 0x00c6d960
+// pdb: bhkCharacterController::GetShape | bhkCharacterController.obj | retail, call graph (shared callers), medium
 RefObject* Holder::GetCurrentObject()
 {
     return m_iIndex < 2 ? m_aspObj[m_iIndex] : NiPointer<RefObject>(0);
@@ -7966,6 +8135,7 @@ class FUN_00c6de10
 
 // Destructor that releases the referenced shape by assigning null to m_spShape, dropping its reference.
 // @fnv 0x00c6de10
+// pdb: bhkCharacterControllerCinfo::~bhkCharacterControllerCinfo | bhkCharacterController.obj | debug, call graph, medium
 FUN_00c6de10::~FUN_00c6de10()
 {
     m_spShape = 0;
@@ -8001,6 +8171,9 @@ struct FnvLookup_Container
 
 // Looks up uiKey in pContainer and returns the first pointer of the result, or null if pContainer is null.
 // @fnv 0x00c6dec0
+// pdb: bhkCharacterController::FindBSReference | bhkCharacterController.obj | retail, object-file run extension, low
+// pdb params: aiKey, apPhantom
+// pdb locals: pobj, vl
 void* __cdecl LookupFirstByKey(unsigned int uiKey, FnvLookup_Container* pContainer)
 {
     FnvLookup_Result result;
@@ -8030,11 +8203,14 @@ struct C6E030Holder
     int unk04;
     C6E030Body* m_pkBody;
 
-    void ResetState();
+    void bhkCharacterController_ClearManifold();
 };
 
 // @fnv 0x00c6e030
-void C6E030Holder::ResetState()
+// src: XBOX_RETAIL_PDB 0x00c6e030
+// pdb: bhkCharacterController::ClearManifold | bhkCharacterController.obj | retail, object-file gap fill, high
+// pdb locals: pproxy
+void C6E030Holder::bhkCharacterController_ClearManifold()
 {
     if (this && m_pkBody)
         m_pkBody->GetState()->m_iArrayLength = 0;
@@ -8433,6 +8609,8 @@ extern char DAT_0126832c;
 extern float DAT_010c72bc;
 
 // @fnv 0x00c6e280
+// pdb: bhkCharacterController::GetRadius | bhkCharacterController.obj | retail, object-file run extension, high
+// pdb locals: pcs
 float FUN_00c6e280_cls::GetSettingFloat()
 {
     volatile float result;
@@ -8486,6 +8664,9 @@ struct ControllerShell
     }
 };
 // @fnv 0x00c70830
+// pdb: bhkCharacterController::SetShapeType | bhkCharacterController.obj | retail, object-file run extension, low
+// pdb params: aeType
+// pdb locals: bdebugDisp
 void ControllerShell::SetMode(int mode)
 {
     if (selectedMode() != mode && mode < 2 && availableMode(mode) != 0)
@@ -8891,25 +9072,28 @@ class FUN_00c708a0_cls
     unsigned int unk5FC;
     int m_600;
     void SetMode(int a1);
-    void bhkCharacterController_SetSize(float a1);
+    void bhkCharacterController_SetSize(float afRadius);
 };
 
 // @fnv 0x00c708a0
 // src: COMMUNITY 0x00c708a0
-void FUN_00c708a0_cls::bhkCharacterController_SetSize(float afValue)
+// pdb: bhkCharacterController::SetSize | bhkCharacterController.obj | retail, upstream name already matches, high
+// pdb params: afRadius
+// pdb locals: fdr
+void FUN_00c708a0_cls::bhkCharacterController_SetSize(float afRadius)
 {
     if ((m_414 & 1) != 0)
     {
         return;
     }
     double scaled = (double)m_5f4 * DAT_01011588;
-    double d = (afValue > scaled) ? (double)(float)scaled : (double)afValue;
+    double d = (afRadius > scaled) ? (double)(float)scaled : (double)afRadius;
     if (d <= 0.0)
     {
         d = m_5f0;
     }
-    afValue = (float)d;
-    if (afValue != m_5f8)
+    afRadius = (float)d;
+    if (afRadius != m_5f8)
     {
         if (m_5a0 == 2)
         {
@@ -8917,7 +9101,7 @@ void FUN_00c708a0_cls::bhkCharacterController_SetSize(float afValue)
             SetMode(0);
         }
         m_600 = 2;
-        m_5f8 = afValue;
+        m_5f8 = afRadius;
     }
 }
 
@@ -9245,22 +9429,25 @@ class C70B60Character
     int unk3DC;
     char m_acState[4];
 
-    void bhkCharacterController_ChangeSize(float fTime);
-    void bhkCharacterController_MoveImmobile(C70B60UpdateData* pkData, bool bForce);
+    void bhkCharacterController_ChangeSize(float afTime);
+    void bhkCharacterController_MoveImmobile(C70B60UpdateData* arData, bool abAllowFalling);
 };
 
 // @fnv 0x00c70b60
 // src: XBOX_PDB 0x00c70b60
-void C70B60Character::bhkCharacterController_MoveImmobile(C70B60UpdateData* pkData, bool bForce)
+// pdb: bhkCharacterController::MoveImmobile | bhkCharacterController.obj | retail, upstream name already matches, high
+// pdb params: arData, abAllowFalling
+// pdb locals: bfalling
+void C70B60Character::bhkCharacterController_MoveImmobile(C70B60UpdateData* arData, bool abAllowFalling)
 {
     bool bStatic = hkpCharacterContext_getState(m_acState) == 2;
-    if (bForce && bStatic)
+    if (abAllowFalling && bStatic)
     {
-        pkData->m_kValue = g_kC70B60Zero;
-        ApplyUpdate(pkData);
+        arData->m_kValue = g_kC70B60Zero;
+        ApplyUpdate(arData);
         return;
     }
-    bhkCharacterController_ChangeSize(pkData->m_fTime);
+    bhkCharacterController_ChangeSize(arData->m_fTime);
 }
 
 namespace fnv_00c70bd0 {
@@ -9286,7 +9473,7 @@ struct ListNode_b4889
 
 struct PoolAllocator_b4889
 {
-    void Free(void* apPtr);
+    void Free(void* apMem);
 };
 
 extern PoolAllocator_b4889 DAT_011f6238;
@@ -9704,6 +9891,7 @@ class FUN_00c70bd0_cls
 
 // Releases and frees all pooled nodes and list nodes until both m_648 and m_64c are empty, decrementing object refcounts and destroying them at zero.
 // @fnv 0x00c70bd0
+// pdb: bhkCharacterController::ClearHurtfulHits | bhkCharacterController.obj | retail, object-file run extension, low
 void FUN_00c70bd0_cls::ClearList()
 {
     for (;;)
@@ -9984,6 +10172,10 @@ struct MapTable
 
 // Looks up key in the hash bucket, updates the entry's value if found, otherwise allocates, initializes and prepends a new entry and increments count.
 // @fnv 0x00c74910
+// pdb: NiTMapBase<DFALL<NiTMapItem<bhkRigidBody *,unsigned short> >,bhkRigidBody *,unsigned short>::SetAt | LoadedAreaBound.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiTMapBase<DFALL<NiTMapItem<bhkRigidBody *,unsigned short> >,bhkRigidBody *,unsigned short>::RemoveAll
+// pdb params: key, val
+// pdb locals: pkItem, uiIndex, uiDepth
 void MapTable::InsertOrUpdate(unsigned int key, unsigned int value)
 {
     unsigned int bucket = Hash(key);
@@ -10021,12 +10213,16 @@ class FUN_00c74990_cls
     unsigned int m_uiHashSize;
     FUN_00c74990_node** m_ppkHashTable;
     unsigned int m_uiCount;
-    bool LookupValue(unsigned int key, unsigned short* out);
+    bool NiTMapBase_DFALL_NiTMapItem_bhkRigidBody_unsigned_short_bhkRigidBody_unsigned_short_GetAt(unsigned int key, unsigned short* val);
 };
 
 // Hashes the key, walks the bucket chain comparing keys, and writes the matching node's value to out, returning whether a match was found.
 // @fnv 0x00c74990
-bool FUN_00c74990_cls::LookupValue(unsigned int key, unsigned short* pusValue)
+// src: XBOX_RETAIL_PDB 0x00c74990
+// pdb: NiTMapBase<DFALL<NiTMapItem<bhkRigidBody *,unsigned short> >,bhkRigidBody *,unsigned short>::GetAt | LoadedAreaBound.obj | retail, call graph (shared callers), high
+// pdb params: key, val
+// pdb locals: pkItem, uiIndex
+bool FUN_00c74990_cls::NiTMapBase_DFALL_NiTMapItem_bhkRigidBody_unsigned_short_bhkRigidBody_unsigned_short_GetAt(unsigned int key, unsigned short* val)
 {
     unsigned int idx = KeyToHashIndex(key);
     FUN_00c74990_node* cur = m_ppkHashTable[idx];
@@ -10034,7 +10230,7 @@ bool FUN_00c74990_cls::LookupValue(unsigned int key, unsigned short* pusValue)
     {
         if (IsKeyEqual(key, cur->key))
         {
-            *pusValue = cur->value;
+            *val = cur->value;
             return true;
         }
         cur = cur->next;
@@ -10064,6 +10260,9 @@ struct C749F0Entry
 
 // Overlap-safe element move.
 // @fnv 0x00c749f0
+// pdb: operator/ | bhkRagdollController.obj | debug, object-file run extension, low
+// pdb params: v0, v1
+// pdb locals: v1Recip, res
 void __stdcall CopyEntries(C749F0Entry* pkDst, const C749F0Entry* pkSrc, unsigned int ItemUpdateArray)
 {
     if (ItemUpdateArray > 0)
@@ -10154,6 +10353,7 @@ struct RouteWrapper
 
 // Saves the thread routing mode, sets it to 16, and if target is non-null calls target->Run(1), then restores the previous mode.
 // @fnv 0x00c75100
+// pdb: hkaRaycastInterface::`scalar deleting destructor' | bhkRagdollController.obj | retail, object-file run extension, low
 void RouteWrapper::RunTargetWithMode()
 {
     RoutingModeScope modeScope;
@@ -10270,6 +10470,8 @@ class C75850Body
 };
 
 // @fnv 0x00c75850
+// pdb: bhkRagdollController::IsPoweredRagdoll | bhkRagdollController.obj | retail, object-file run extension, low
+// pdb locals: bret, pdata, constraintsA, i, plimData, pragData
 int C75850Body::IsBodyValid()
 {
     bool bValid = true;
@@ -10318,6 +10520,8 @@ struct FUN_00c759f0_Class
 
 // @fnv 0x00c759f0
 // src: COMMUNITY 0x00c759f0
+// pdb: bhkRagdollController::ResetDriveGains | bhkRagdollController.obj | debug, upstream name already matches, high
+// pdb locals: rcontrolData
 void FUN_00c759f0_Class::bhkRagdollController_ResetDriveGains()
 {
     void* sourceOwner = member_at<void*>(this, 0x2a4);
@@ -10389,7 +10593,7 @@ void __stdcall AllocCountedBytes(unsigned int count)
 namespace fnv_00c76010 {
 struct S_00aa4060_cls
 {
-    void __thiscall MemoryManager_Deallocate(NiTMapItem<NiAVObject*, short>* a);
+    void __thiscall MemoryManager_Deallocate(NiTMapItem<NiAVObject*, short>* apMem);
 };
 
 extern S_00aa4060_cls DAT_011f6238;
@@ -10530,6 +10734,7 @@ class C761F0Character
 
 // @fnv 0x00c761f0
 // src: HAVOK_LIB 0x00c761f0
+// pdb: hkpEntity::isFixedOrKeyframed | bhkRagdollController.obj | debug, upstream name already matches, high
 C761F0Bool C761F0Character::hkpEntity_isFixedOrKeyframed() const
 {
     return m_uiContentCount == 5 || m_uiContentCount == 4;
@@ -10554,7 +10759,7 @@ struct StrTarget_b5394
 
 struct Heap_b5394
 {
-    void Free(void* p);
+    void Free(void* apMem);
 };
 
 extern Heap_b5394 g_strHeap_b5394;
@@ -10580,6 +10785,9 @@ class FUN_00c76240_cls : public Base_b5394
 
 // Destructor that decrements reference counts on m_08, m_10 and m_14, deletes m_0c, and releases and frees the string at m_1c.
 // @fnv 0x00c76240
+// pdb: hkaRagdollInstance::getBoneIndexOfRigidBody | bhkRagdollController.obj | debug, object-file run extension, low
+// pdb params: rb
+// pdb locals: rbIndex
 FUN_00c76240_cls::~FUN_00c76240_cls()
 {
     if (m_08)
@@ -11059,12 +11267,15 @@ struct C78090Mesh
         return m_uiVertexCount > uiIndex ? m_ppkVertices[uiIndex] : 0;
     }
 
-    bool HasVisibleVertex();
+    bool bhkRagdollController_Leg3DSelectiveUpdate();
 };
 
 // Scans the mesh's triangles and returns true as soon as any of a triangle's three vertices exists and is not hidden.
 // @fnv 0x00c78090
-bool C78090Mesh::HasVisibleVertex()
+// src: XBOX_RETAIL_PDB 0x00c78090
+// pdb: bhkRagdollController::Leg3DSelectiveUpdate | bhkRagdollController.obj | retail, object-file gap fill, high
+// pdb locals: bret, i, pankle3D, pknee3D, phip3D
+bool C78090Mesh::bhkRagdollController_Leg3DSelectiveUpdate()
 {
     bool bFound = false;
     for (int i = 0; i < m_iTriangleCount && !bFound; i++)
@@ -11256,13 +11467,16 @@ class FUN_00c79d60_cls
     int unk7c;
     int unk80;
     FUN_00c79d60_P* m_84;
-    void bhkRagdollController_ShowDebugLines(bool a1, bool a2, bool a3);
+    void bhkRagdollController_UpdateDebugSkeleton(bool a1, bool a2, bool a3);
 };
 
 // Sets or clears bit 0 of the m_30 flags on the three entries in m_84->m_a0 based on a1/a2/a3, then calls v3a or v37 on the object from m_58->v03().
 // @fnv 0x00c79d60
-// src: COMMUNITY 0x00c79d60
-void FUN_00c79d60_cls::bhkRagdollController_ShowDebugLines(bool abFlag1, bool abFlag2, bool abFlag3)
+// src: XBOX_RETAIL_PDB 0x00c79d60 (was COMMUNITY)
+// pdb: bhkRagdollController::UpdateDebugSkeleton | bhkRagdollController.obj | retail, object-file gap fill, high
+// pdb params: abKeyframed, abRagdoll, abFinal
+// pdb locals: pragdollNode, pparNode
+void FUN_00c79d60_cls::bhkRagdollController_UpdateDebugSkeleton(bool abFlag1, bool abFlag2, bool abFlag3)
 {
     FUN_00c79d60_Q* q = m_84->m_a0;
     FUN_00c79d60_R* r = q->m_00;
@@ -11582,12 +11796,15 @@ class FUN_00c7a230_cls
     int unk40;
     int unk44;
     ListOwner* m_48;
-    void bhkRagdollController_UpdateConstraintsWorld(bool abActive);
+    void bhkRagdollController_UpdateConstraintsWorld(bool abAdd);
 };
 
 // @fnv 0x00c7a230
 // src: COMMUNITY 0x00c7a230
-void FUN_00c7a230_cls::bhkRagdollController_UpdateConstraintsWorld(bool abActive)
+// pdb: bhkRagdollController::UpdateConstraintsWorld | bhkRagdollController.obj | retail, upstream name already matches, high
+// pdb params: abAdd
+// pdb locals: powner, pbhkWorld, constraintsA, pworld, i
+void FUN_00c7a230_cls::bhkRagdollController_UpdateConstraintsWorld(bool abAdd)
 {
     ListOwner* owner = m_48;
     int firstFlag = (owner->m_14[0] != 0) ? owner->m_14[0]->m_08 : 0;
@@ -11602,7 +11819,7 @@ void FUN_00c7a230_cls::bhkRagdollController_UpdateConstraintsWorld(bool abActive
     {
         return;
     }
-    if (abActive)
+    if (abAdd)
     {
         if (firstFlag != 0)
         {
@@ -11617,7 +11834,7 @@ void FUN_00c7a230_cls::bhkRagdollController_UpdateConstraintsWorld(bool abActive
         }
     }
     ListMgr* mgr = d->m_350;
-    if (abActive)
+    if (abAdd)
     {
         for (int i = 0; i < owner->m_18; ++i)
         {
@@ -11738,15 +11955,19 @@ struct Behavior
     void hkpRagdollConstraintData_setTarget(int*);
 };
 // @fnv 0x00c7a2d0
-void __cdecl EnableBehaviorsByKind(InputMap* input)
+// src: XBOX_RETAIL_PDB 0x00c7a2d0
+// pdb: bhkRagdollController::bhkRagdollPoweredConstraintController::startMotors | bhkRagdollController.obj | retail, object-file gap fill, high
+// pdb params: ragdoll
+// pdb locals: numBones, b, constraint, constraintData, pmalData, lhc, rc
+void __cdecl bhkRagdollController_bhkRagdollPoweredConstraintController_startMotors(InputMap* ragdoll)
 {
-    int count = input->counts->count;
+    int count = ragdoll->counts->count;
     for (int i = 0; i < count; ++i)
     {
-        int index = input->indices[i] - 1;
+        int index = ragdoll->indices[i] - 1;
         if (index < 0)
             continue;
-        Record* item = input->records[index];
+        Record* item = ragdoll->records[index];
         if (!item)
             continue;
         Behavior* behavior = item->behavior;
@@ -11829,15 +12050,19 @@ struct ObjectContext
 };
 
 // @fnv 0x00c7a380
-void __cdecl UpdateEntriesByKind(ObjectContext* context)
+// src: XBOX_RETAIL_PDB 0x00c7a380
+// pdb: bhkRagdollController::bhkRagdollPoweredConstraintController::stopMotors | bhkRagdollController.obj | retail, object-file gap fill, high
+// pdb params: ragdoll
+// pdb locals: numBones, b, constraint, constraintData, pmalData, lhc, rc
+void __cdecl bhkRagdollController_bhkRagdollPoweredConstraintController_stopMotors(ObjectContext* ragdoll)
 {
-    const int count = context->length->count;
+    const int count = ragdoll->length->count;
     for (int index = 0; index < count; ++index)
     {
-        int entryIndex = context->indices[index] - 1;
+        int entryIndex = ragdoll->indices[index] - 1;
         if (entryIndex >= 0)
         {
-            ComponentEntry* entry = context->entries[entryIndex];
+            ComponentEntry* entry = ragdoll->entries[entryIndex];
             if (entry != 0)
             {
                 ObjectView* view = entry->view;
@@ -11915,6 +12140,8 @@ struct S_c7a730
 
 // Grows the buffer when full (doubling up to 0x400, then +0x400) and returns the index of the next appended slot.
 // @fnv 0x00c7a730
+// pdb: BSSimpleArray<bhkRagdollController::BoneTransf,1024>::AddUninitialized | bhkRagdollController.obj | retail, object-file run extension, low
+// pdb locals: inewSize
 int S_c7a730::AppendSlot()
 {
     if (unk08 == unk0c)
@@ -12006,32 +12233,36 @@ struct FUN_00c7a790_Data
     int m_3c;
     U16Array m_ppData;
 
-    void CopyFrom(const FUN_00c7a790_Data& src);
+    void RagdollFeedbackData_Copy(const FUN_00c7a790_Data& arData);
 };
 
 // Copies the U16Array contents and all scalar fields from src into this object.
 // @fnv 0x00c7a790
-void FUN_00c7a790_Data::CopyFrom(const FUN_00c7a790_Data& src)
+// src: XBOX_RETAIL_PDB 0x00c7a790
+// pdb: RagdollFeedbackData::Copy | bhkRagdollController.obj | retail, call graph, high
+// pdb params: arData
+// pdb locals: ui
+void FUN_00c7a790_Data::RagdollFeedbackData_Copy(const FUN_00c7a790_Data& arData)
 {
-    m_ppData.SetSize(src.m_ppData.m_iElementCount);
-    for (unsigned int i = 0; i < src.m_ppData.m_iElementCount; i++)
-        m_ppData.m_data[i] = src.m_ppData.m_data[i];
-    m_00 = src.m_00;
-    m_04 = src.m_04;
-    m_08 = src.m_08;
-    m_0c = src.m_0c;
-    m_10 = src.m_10;
-    m_14 = src.m_14;
-    m_18 = src.m_18;
-    m_1c = src.m_1c;
-    m_20 = src.m_20;
-    m_24 = src.m_24;
-    m_28 = src.m_28;
-    m_2c = src.m_2c;
-    m_30 = src.m_30;
-    m_34 = src.m_34;
-    m_38 = src.m_38;
-    m_3c = src.m_3c;
+    m_ppData.SetSize(arData.m_ppData.m_iElementCount);
+    for (unsigned int i = 0; i < arData.m_ppData.m_iElementCount; i++)
+        m_ppData.m_data[i] = arData.m_ppData.m_data[i];
+    m_00 = arData.m_00;
+    m_04 = arData.m_04;
+    m_08 = arData.m_08;
+    m_0c = arData.m_0c;
+    m_10 = arData.m_10;
+    m_14 = arData.m_14;
+    m_18 = arData.m_18;
+    m_1c = arData.m_1c;
+    m_20 = arData.m_20;
+    m_24 = arData.m_24;
+    m_28 = arData.m_28;
+    m_2c = arData.m_2c;
+    m_30 = arData.m_30;
+    m_34 = arData.m_34;
+    m_38 = arData.m_38;
+    m_3c = arData.m_3c;
 }
 
 namespace fnv_00c7a990 {
@@ -12068,7 +12299,7 @@ struct S_item
 };
 
 extern "C" void* hkMemoryRouter_getInstance();
-extern "C" void ResizeAudioStream(void* allocator, S_arr* arr, unsigned int growBy);
+extern "C" void ResizeAudioStream(void* mem, S_arr* array, unsigned int sizeElem);
 extern int DAT_0126818c;
 
 static __forceinline bool S_IsKind(S_node* r)
@@ -12084,25 +12315,29 @@ static __forceinline bool S_IsKind(S_node* r)
 
 // Appends item->m_value08 to arr, then walks item->m_list14 and appends each matching node's m_value08 to arr2, growing both arrays as needed.
 // @fnv 0x00c7a990
-void CollectItemValues(S_item* item, S_arr* pValues, S_arr* pLinkedValues)
+// src: XBOX_RETAIL_PDB 0x00c7a990
+// pdb: bhkRagdollController::AddToArrays | bhkRagdollController.obj | retail, object-file gap fill, high
+// pdb params: apRB, arRigidBodies, arConstraints
+// pdb locals: plist, pcon
+void bhkRagdollController_AddToArrays(S_item* apRB, S_arr* arRigidBodies, S_arr* arConstraints)
 {
-    if (item == 0)
+    if (apRB == 0)
     {
         return;
     }
-    int value = item->m_value08;
+    int value = apRB->m_value08;
     hkMemoryRouter* holder = (hkMemoryRouter*)hkMemoryRouter_getInstance();
-    if (pValues->m_uiSize == (pValues->m_uiValue1 & 0x3fffffff))
+    if (arRigidBodies->m_uiSize == (arRigidBodies->m_uiValue1 & 0x3fffffff))
     {
-        ResizeAudioStream(holder->m_heap, pValues, 4);
+        ResizeAudioStream(holder->m_heap, arRigidBodies, 4);
     }
-    int* slot = pValues->m_pBuffer + pValues->m_uiSize;
+    int* slot = arRigidBodies->m_pBuffer + arRigidBodies->m_uiSize;
     for (int k = 0; k < 1; k++)
         slot[k] = value;
     unsigned int uiIncrement = 1;
-    pValues->m_uiSize += uiIncrement;
+    arRigidBodies->m_uiSize += uiIncrement;
 
-    S_listentry* entry = &item->m_list14;
+    S_listentry* entry = &apRB->m_list14;
     while (entry != 0)
     {
         S_node* node = entry->m_pReferencedNode;
@@ -12118,14 +12353,14 @@ void CollectItemValues(S_item* item, S_arr* pValues, S_arr* pLinkedValues)
             S_item* obj = (S_item*)pSelectedNode;
             int v = obj->m_value08;
             holder = (hkMemoryRouter*)hkMemoryRouter_getInstance();
-            if (pLinkedValues->m_uiSize == (pLinkedValues->m_uiValue1 & 0x3fffffff))
+            if (arConstraints->m_uiSize == (arConstraints->m_uiValue1 & 0x3fffffff))
             {
-                ResizeAudioStream(holder->m_heap, pLinkedValues, 4);
+                ResizeAudioStream(holder->m_heap, arConstraints, 4);
             }
-            int* piLinkedSlot = pLinkedValues->m_pBuffer + pLinkedValues->m_uiSize;
+            int* piLinkedSlot = arConstraints->m_pBuffer + arConstraints->m_uiSize;
             for (int k = 0; k < 1; k++)
                 piLinkedSlot[k] = v;
-            pLinkedValues->m_uiSize += uiIncrement;
+            arConstraints->m_uiSize += uiIncrement;
         }
         entry = entry->m_pNext;
     }
@@ -12155,6 +12390,9 @@ struct FUN_00c7b0b0_class
 
 // @fnv 0x00c7b0b0
 // src: GUESS 0x00c7b0b0 (confidence: low)
+// pdb: BSSimpleArray<bhkRagdollController::BoneTransf,1024>::Add | bhkRagdollController.obj | retail, object-file run extension, low
+// pdb params: aValue
+// pdb locals: iindex
 void FUN_00c7b0b0_class::UpdateState_00c7b0b0()
 {
     void* pObject = hkMemoryRouter_getInstance();
@@ -12198,7 +12436,7 @@ void FUN_00c7b130_cls::UpdateState_00c7b130()
 struct NiRTTI;
 
 extern const NiRTTI g_C7B140CollisionRTTI;
-extern const NiRTTI g_C7B140FilterRTTI;
+extern const NiRTTI WeaponObject_ms_RTTI; // src: XBOX_RETAIL_PDB 0x0126817c (old: DAT_0126817c/g_0126817c/g_C7B140FilterRTTI)
 extern const NiRTTI g_C7B140BodyRTTI;
 extern const NiRTTI g_C7B140NodeRTTI;
 
@@ -12228,10 +12466,13 @@ struct C7B140AVObject : C7B140Object
     C7B140Object* m_spCollisionObject;
 };
 
-void __cdecl CollectItemValues(C7B140Object* pkBody, void* pArg1, void* pArg2);
+void __cdecl bhkRagdollController_AddToArrays(C7B140Object* apRB, void* arRigidBodies, void* arConstraints);
 
 // Recursively visits the object's collision body (skipping filter collisions) and calls CollectItemValues on it, then recurses into child nodes.
 // @fnv 0x00c7b140
+// pdb: bhkRagdollController::FindBones | bhkRagdollController.obj | retail, object-file run extension, low
+// pdb params: apObject, arRigidBodies, arConstraints
+// pdb locals: pcol, pnode, pweap, prb, I
 void __cdecl ApplyToCollisionBodies(C7B140AVObject* pkObject, void* pArg1, void* pArg2)
 {
     if (!pkObject)
@@ -12242,12 +12483,12 @@ void __cdecl ApplyToCollisionBodies(C7B140AVObject* pkObject, void* pArg1, void*
             (C7B140Collision*)pkObject->m_spCollisionObject->DynamicCast(&g_C7B140CollisionRTTI);
         if (pkCollision)
         {
-            C7B140Object* pkFilter = pkCollision->DynamicCast(&g_C7B140FilterRTTI);
+            C7B140Object* pkFilter = pkCollision->DynamicCast(&WeaponObject_ms_RTTI);
             if (pkCollision->m_pkWorldObject)
             {
                 C7B140Object* pkBody = pkCollision->m_pkWorldObject->DynamicCast(&g_C7B140BodyRTTI);
                 if (pkBody && !pkFilter)
-                    CollectItemValues(pkBody, pArg1, pArg2);
+                    bhkRagdollController_AddToArrays(pkBody, pArg1, pArg2);
             }
         }
     }
@@ -12281,6 +12522,7 @@ struct FUN_00c7bf50_cls
 
 // @fnv 0x00c7bf50
 // src: GUESS 0x00c7bf50 (confidence: low)
+// pdb: hkaPoseMatchingUtility::~hkaPoseMatchingUtility | bhkRagdollController.obj | debug, object-file run extension, low
 void FUN_00c7bf50_cls::UpdateState_00c7bf50()
 {
     hkMemoryRouter* holder = ::GetAllocHolder();
@@ -12316,6 +12558,9 @@ struct FUN_00c7bf90_cls
 };
 
 // @fnv 0x00c7bf90
+// pdb: hkaSkeletonMapper::operator new | bhkRagdollController.obj | debug, object-file run extension, low
+// pdb params: nbytes
+// pdb locals: b
 void FUN_00c7bf90_cls::ReleaseBuffer()
 {
     hkMemoryRouter* holder = ::GetAllocHolder();
@@ -12358,6 +12603,8 @@ struct FUN_00c7fc60_cls
 
 // Ensures capacity by allocating or growing the buffer, then increments iSize and returns the index of the newly added slot.
 // @fnv 0x00c7fc60
+// pdb: BSSimpleArray<DetailedActorPathHandler::ActorAvoidanceData,1024>::AddUninitialized | DetailedActorPathHandler.obj | retail, call graph, medium
+// pdb locals: inewSize
 unsigned int FUN_00c7fc60_cls::PushSlot()
 {
     if (iSize == SimpleArrayStorage)
@@ -12398,11 +12645,14 @@ float __cdecl BSMIN(float, float);
 // Accumulates elapsed time, clamps it, and computes the number of simulation steps and step size according to the current time mode.
 // @fnv 0x00c66760
 // src: COMMUNITY 0x00c66760
-void __cdecl bhkWorld_SetDeltaTime(float elapsed, bool singleStep, bool force)
+// pdb: bhkWorld::SetDeltaTime | bhkWorld.obj | debug, upstream name already matches, high
+// pdb params: afDeltaTime, abQuickSimulate, abSimulateEveryFrame
+// pdb locals: imaxSteps
+void __cdecl bhkWorld_SetDeltaTime(float afDeltaTime, bool abQuickSimulate, bool abSimulateEveryFrame)
 {
-    DAT_011afe68 = elapsed;
-    bool forced = force || DAT_01267b4c;
-    DAT_011afe64 = elapsed + DAT_012677b0;
+    DAT_011afe68 = afDeltaTime;
+    bool forced = abSimulateEveryFrame || DAT_01267b4c;
+    DAT_011afe64 = afDeltaTime + DAT_012677b0;
     if (DAT_011afe64 > 166.6666717529296875f)
         DAT_011afe64 = 166.6666717529296875f;
     if (DAT_011afe64 <= 0.0f)
@@ -12411,7 +12661,7 @@ void __cdecl bhkWorld_SetDeltaTime(float elapsed, bool singleStep, bool force)
         DAT_012677ac = 0.0f;
         return;
     }
-    unsigned int maxSteps = singleStep ? 1 : 3;
+    unsigned int maxSteps = abQuickSimulate ? 1 : 3;
     switch (DAT_012677b8)
     {
     case 10:
@@ -12445,7 +12695,7 @@ void __cdecl bhkWorld_SetDeltaTime(float elapsed, bool singleStep, bool force)
         break;
     case 2:
         DAT_012677b4 = 1;
-        DAT_012677ac = elapsed;
+        DAT_012677ac = afDeltaTime;
         break;
     case 1:
     adaptive:
@@ -12575,10 +12825,10 @@ struct ChildBase
 {
     unsigned short m_usMemSizeAndFlags;
     unsigned short m_sReferenceCount;
-    ChildBase(Owner* owner, int id);
+    ChildBase(Owner* owner, int sdkversion);
     virtual ~ChildBase();
     void removeReference();
-    void Attach(WorldEntry* w, hkBoolArg b, int a, int c);
+    void Attach(WorldEntry* w, hkBoolArg runUpdateCollisionFilterOnWorld, int a, int updateShapeCollectionFilter);
     static void* operator new(unsigned int n)
     {
         ChildBase* p = (ChildBase*)(&GetAllocHolder()->heap())->blockAlloc(n);
@@ -12903,6 +13153,9 @@ struct Controller
 };
 
 // @fnv 0x00c66c90
+// pdb: bhkWorld::Init | bhkWorld.obj | debug, object-file run extension, low
+// pdb params: arInfo
+// pdb locals: po, tempMemContext, cinfo
 void Controller::CreateChildAndNotifySim(OwnerB* p)
 {
     ThreadMemoryScope scope;
@@ -12945,7 +13198,7 @@ struct BC66F10WorldObject : public BC66F10Pad, public BC66F10FilterBase
 class BC66F10RefObject
 {
   public:
-    void SetSystemGroup(unsigned int uiRenderPassIndex);
+    void SetSystemGroup(unsigned int aiGroup);
 
     int unk00;
     int unk04;
@@ -12966,6 +13219,9 @@ extern unsigned int g_uiC66F10NextGroup;
 
 // Resolves a system group from the object's filter info or the entry's group, stores it on the entry and applies it via SetSystemGroup.
 // @fnv 0x00c66f10
+// pdb: bhkWorld::SetCollisionGroup | bhkWorld.obj | debug, object-file gap fill, medium
+// pdb params: apObject, arData
+// pdb locals: bres, ifilter, igroup
 bool __cdecl AssignSystemGroup(BC66F10RefObject* pkObject, BC66F10Entry* pkEntry)
 {
     bool bAssigned = false;
@@ -13058,7 +13314,10 @@ struct WorldImpl : public FUN_00c6b320_Base
 };
 
 // @fnv 0x00c67850
-void FUN_00c67850_Class::ProcessConstraints()
+// src: XBOX_RETAIL_PDB 0x00c67850
+// pdb: bhkWorld::AddBatchedConstraints | bhkWorld.obj | retail, object-file gap fill, high
+// pdb locals: tempMemContext, pw, i
+void FUN_00c67850_Class::bhkWorld_AddBatchedConstraints()
 {
     WorldImpl* self = (WorldImpl*)this;
     ScopedMemContext_00c67850 ctx(16);
@@ -13197,7 +13456,7 @@ class C687B0Object : public C687B0ObjectBase, public C687B0Listener
 
 struct C687B0World
 {
-    void hkpWorld_getCinfo(C687B0Object* pkObject);
+    void hkpWorld_getCinfo(C687B0Object* info);
 };
 
 class C687B0Owner
@@ -13250,6 +13509,9 @@ class C687B0Owner
 };
 
 // @fnv 0x00c687b0
+// pdb: bhkWorld::Init | bhkWorld.obj | retail, object-file run extension, low
+// pdb params: arInfo
+// pdb locals: po, tempMemContext, cinfo
 C687B0Listener* C687B0Owner::GetOrCreateListener(bool* pbCreated)
 {
     C687B0AllocTagScope kScope(0x10);
@@ -13315,24 +13577,28 @@ class CC68B50Stack
     NiPointer<CC68B50Object> m_spTop;
     CC68B50Node* m_pkNext;
 
-    void Push(const NiPointer<CC68B50Object>& spRetainedObject);
+    void BSSimpleList_NiPointer_ObstacleData_AddHead(const NiPointer<CC68B50Object>& item);
 };
 
 // @fnv 0x00c68b50
-void CC68B50Stack::Push(const NiPointer<CC68B50Object>& apObject)
+// src: XBOX_RETAIL_PDB 0x00c68b50
+// pdb: BSSimpleList<NiPointer<ObstacleData> >::AddHead | NavMeshObstacleManager.obj | retail, call graph, high
+// pdb params: item
+// pdb locals: pkTmp
+void CC68B50Stack::BSSimpleList_NiPointer_ObstacleData_AddHead(const NiPointer<CC68B50Object>& item)
 {
-    if (apObject)
+    if (item)
     {
         if (m_spTop)
         {
             CC68B50Node* pkNode = new CC68B50Node(m_spTop);
             pkNode->m_pkNext = m_pkNext;
             m_pkNext = pkNode;
-            m_spTop = apObject;
+            m_spTop = item;
         }
         else
         {
-            m_spTop = apObject;
+            m_spTop = item;
         }
     }
 }
@@ -13368,7 +13634,7 @@ struct C68CB0Result
 class C68CB0HavokWorld
 {
   public:
-    C68CB0Phantom* RegisterPhantom(C68CB0Phantom* pkPhantom);
+    C68CB0Phantom* RegisterPhantom(C68CB0Phantom* phantom);
 };
 
 class C68CB0World
@@ -13438,6 +13704,8 @@ class C68CB0World
 
 // @fnv 0x00c68cb0
 // src: XBOX_PDB 0x00c68cb0
+// pdb: bhkWorld::Remove | bhkWorld.obj | retail, object-file run extension, low
+// pdb params: apObj
 bool C68CB0World::bhkWorld_Remove_00c68cb0(C68CB0Phantom* pkPhantom)
 {
     bool bResult = false;
@@ -13489,7 +13757,7 @@ struct C68D50Result
 class C68D50HavokWorld
 {
   public:
-    C68D50Result RegisterEntity(C68D50Entity* pkEntity);
+    C68D50Result RegisterEntity(C68D50Entity* constraint);
 };
 
 class C68D50World
@@ -13563,6 +13831,8 @@ class C68D50World
 
 // @fnv 0x00c68d50
 // src: XBOX_PDB 0x00c68d50
+// pdb: bhkWorld::Remove | bhkWorld.obj | retail, call graph, low
+// pdb params: apObj
 bool C68D50World::bhkWorld_Remove_00c68d50(C68D50Entity* pkEntity)
 {
     bool bResult = false;
@@ -13628,23 +13898,26 @@ struct ReportOwner
     void AppendReport(StrArr*);
 };
 // @fnv 0x00c69240
-void ReportOwner::AppendReport(StrArr* result)
+// pdb: bhkWorld::GetViewerStrings | bhkWorld.obj | retail, string-set bridge, high
+// pdb params: apStrings
+// pdb locals: tempMemContext
+void ReportOwner::AppendReport(StrArr* apStrings)
 {
     ThreadMemoryScope scope;
-    bhkSerializable_GetViewerStrings(result);
-    AppendReportString(result, NiViewerStrings_NiGetViewerString_Title(g_012681e8_arg1));
+    bhkSerializable_GetViewerStrings(apStrings);
+    AppendReportString(apStrings, NiViewerStrings_NiGetViewerString_Title(g_012681e8_arg1));
     ReportBool enabledValue(enabled);
-    AppendReportString(result, NiGetViewerString("Enabled", enabledValue));
+    AppendReportString(apStrings, NiGetViewerString("Enabled", enabledValue));
     ReportBool debugValue(debug != 0);
-    AppendReportString(result, NiGetViewerString("Vis Debug", debugValue));
-    AppendReportString(result, NiGetViewerString_00a7d510("Worlds", DAT_012677a4));
-    AppendReportString(result, NiGetViewerString_00a7d510("Actions", DAT_01268154));
-    AppendReportString(result, NiGetViewerString_00a7d510("Contraints", DAT_01268188));
-    AppendReportString(result, NiGetViewerString_00a7d510("Entities", DAT_012681fc));
-    AppendReportString(result, NiGetViewerString_00a7d510("RigidBodies", DAT_012681bc));
-    AppendReportString(result, NiGetViewerString_00a7d510("Shapes", DAT_012680f8));
-    AppendReportString(result, NiGetViewerString_00a7d510("Phantoms", DAT_01268238));
-    AppendReportString(result, NiGetViewerString_00a7d510("MoppBVTreeShapes", DAT_01268654));
+    AppendReportString(apStrings, NiGetViewerString("Vis Debug", debugValue));
+    AppendReportString(apStrings, NiGetViewerString_00a7d510("Worlds", DAT_012677a4));
+    AppendReportString(apStrings, NiGetViewerString_00a7d510("Actions", DAT_01268154));
+    AppendReportString(apStrings, NiGetViewerString_00a7d510("Contraints", DAT_01268188));
+    AppendReportString(apStrings, NiGetViewerString_00a7d510("Entities", DAT_012681fc));
+    AppendReportString(apStrings, NiGetViewerString_00a7d510("RigidBodies", DAT_012681bc));
+    AppendReportString(apStrings, NiGetViewerString_00a7d510("Shapes", DAT_012680f8));
+    AppendReportString(apStrings, NiGetViewerString_00a7d510("Phantoms", DAT_01268238));
+    AppendReportString(apStrings, NiGetViewerString_00a7d510("MoppBVTreeShapes", DAT_01268654));
 }
 
 struct CollisionObjectCountContext
@@ -13659,25 +13932,29 @@ struct CollisionObjectCountContext
 };
 
 typedef void (*CollisionObjectCountCallback)(NiCollisionObject*, CollisionObjectCountContext*);
-void bhkWorld_DoObjectRec(NiAVObject* pkObject, CollisionObjectCountContext* pkContext,
-                  CollisionObjectCountCallback pfnCallback);
+void bhkWorld_DoObjectRec(NiAVObject* apObject, CollisionObjectCountContext* arData,
+                  CollisionObjectCountCallback apFunc);
 extern CollisionObjectCountCallback DAT_011afec8;
 
 // If pkObject is non-null and enabled (or bForce), fills a context with fValue and traversal flags and runs the collision-object callback over it.
 // @fnv 0x00c6a190
-bool ApplyCollisionObjectCount(NiAVObject* pkObject, float fValue, bool bRecurse, bool bForce)
+// src: XBOX_RETAIL_PDB 0x00c6a190
+// pdb: bhkWorld::SetFriction | bhkWorld.obj | retail, object-file gap fill, high
+// pdb params: apObject, afFriction, abRecurse, abForce
+// pdb locals: bres, recData
+bool bhkWorld_SetFriction(NiAVObject* apObject, float afFriction, bool abRecurse, bool abForce)
 {
     bool bResult = false;
-    if (pkObject && (bForce || C6A2E0IsEnabled((C6A2E0AVObject*)pkObject)))
+    if (apObject && (abForce || C6A2E0IsEnabled((C6A2E0AVObject*)apObject)))
     {
         CollisionObjectCountContext kContext;
         bResult = true;
         kContext.pCurrentObject = 0;
-        kContext.bRecurse = bRecurse;
+        kContext.bRecurse = abRecurse;
         kContext.uiTraversalFlags = 0x10;
-        kContext.fValue = fValue;
+        kContext.fValue = afFriction;
         if (DAT_011afec8)
-            bhkWorld_DoObjectRec(pkObject, &kContext, DAT_011afec8);
+            bhkWorld_DoObjectRec(apObject, &kContext, DAT_011afec8);
     }
     return bResult;
 }
@@ -13813,24 +14090,27 @@ class ViewerCollision
             faceDown = m_sceneObject->m_vScale < 0.0f;
         return faceDown;
     }
-    void AppendDebugInfo(ViewerStrings* strings);
+    void AppendDebugInfo(ViewerStrings* apStrings);
 };
 // Appends collision debug strings: base info, bhkWorldObject pointer, and the active/reset/notify/setlocal/keyframe/facedown flags.
 // @fnv 0x00c6c430
-void ViewerCollision::AppendDebugInfo(ViewerStrings* strings)
+// pdb: bhkNiCollisionObject::AddViewerStrings | bhkNiCollisionObject.obj | retail, string-set bridge, high
+// pdb params: apStrings
+// pdb locals: tempMemContext, pstr
+void ViewerCollision::AppendDebugInfo(ViewerStrings* apStrings)
 {
     ThreadMemoryScope memoryScope;
-    WriteToStream(strings);
-    strings->Add(NiViewerStrings_NiGetViewerString_Title(reinterpret_cast<const char*>(DAT_01267b70)));
+    WriteToStream(apStrings);
+    apStrings->Add(NiViewerStrings_NiGetViewerString_Title(reinterpret_cast<const char*>(DAT_01267b70)));
     char buffer[32];
     BSsprintf(buffer, 32, "0x%8X", m_pEntity);
-    strings->Add(NiGetViewerString_00a7d5e0("bhkWorldObject", buffer));
-    strings->Add(NiGetViewerString("bActive", GetActive()));
-    strings->Add(NiGetViewerString("bReset", GetReset()));
-    strings->Add(NiGetViewerString("bNotify", GetNotify()));
-    strings->Add(NiGetViewerString("bSetLocal", GetSetLocal()));
-    strings->Add(NiGetViewerString("bKeyframe", IsKeyframed()));
-    strings->Add(NiGetViewerString("bFaceDown", GetFaceDown()));
+    apStrings->Add(NiGetViewerString_00a7d5e0("bhkWorldObject", buffer));
+    apStrings->Add(NiGetViewerString("bActive", GetActive()));
+    apStrings->Add(NiGetViewerString("bReset", GetReset()));
+    apStrings->Add(NiGetViewerString("bNotify", GetNotify()));
+    apStrings->Add(NiGetViewerString("bSetLocal", GetSetLocal()));
+    apStrings->Add(NiGetViewerString("bKeyframe", IsKeyframed()));
+    apStrings->Add(NiGetViewerString("bFaceDown", GetFaceDown()));
 }
 
 // Whether the world's constraint list contains an entry for the given object (checked under the world lock).
@@ -13902,6 +14182,7 @@ class D8A0Wrapper
 
 // Locks the wrapper, checks whether m_pkWorld contains pvObject, unlocks, and returns whether it was found.
 // @fnv 0x00c6d8a0
+// pdb: bhkCharacterStateClimbing::`scalar deleting destructor' | bhkCharacterController.obj | debug, object-file run extension, low
 bool D8A0Wrapper::ContainsObject(void* pvObject)
 {
     D8A0World* pkWorld = m_pkWorld;
@@ -13946,7 +14227,7 @@ class BC6DF60Phantom
         GetRouterHeap(*BC6DF60GetRouter()).blockFree(pvMem, sizeof(BC6DF60Phantom));
     }
 
-    BC6DF60Phantom(bool bFlag);
+    BC6DF60Phantom(bool abDefaultStates);
 
     int unk00;
     int unk04;
@@ -14002,7 +14283,7 @@ class BC6DF60Wrapper
 {
   public:
     void LinkPhantom(BC6DF60Phantom* pkPhantom);
-    BC6DF60Phantom* GetOrCreatePhantom(bool* pbCreated);
+    BC6DF60Phantom* GetOrCreatePhantom(bool* arCreated);
 
     int unk00;
     int unk04;
@@ -14012,11 +14293,14 @@ class BC6DF60Wrapper
 
 // Returns m_pkPhantom, creating it and linking it to m_pkWorld when absent, and stores whether it was created in *pbCreated.
 // @fnv 0x00c6df60
-BC6DF60Phantom* BC6DF60Wrapper::GetOrCreatePhantom(bool* pbCreated)
+// pdb: bhkCharacterController::CreateCinfo | bhkCharacterController.obj | retail, vtable slot, high
+// pdb params: arCreated
+// pdb locals: tempMemContext
+BC6DF60Phantom* BC6DF60Wrapper::GetOrCreatePhantom(bool* arCreated)
 {
     BC6DF60AllocTagScope kScope(0x10);
     bool bCreate = m_pkPhantom == 0;
-    *pbCreated = bCreate;
+    *arCreated = bCreate;
     if (bCreate)
     {
         m_pkPhantom = new BC6DF60Phantom(true);
@@ -14253,6 +14537,10 @@ class C75910Water
 
 // Copies scaled settings from m_pkSource->m_pkSettings into the shader params and computes reflection width/height as a quarter of the settings values.
 // @fnv 0x00c75910
+// pdb: bhkRagdollController::ResetPose | bhkRagdollController.obj | retail, object-file run extension, low
+// pdb note: debug build links it to bhkRagdollController::DampenDriveGains
+// pdb params: apSkeleton, arPoseA, abPrevUseVel, aePrevMotion
+// pdb locals: data, ui
 void C75910Water::UpdateShaderParams()
 {
     if (!m_pkSource->m_pkSettings)
@@ -14354,6 +14642,9 @@ struct SearchObject
 };
 // Recursively searches object and its child nodes for a PhysicsBody whose collidable layer field equals layer, returning it or null.
 // @fnv 0x00c7ff40
+// pdb: bhkUtilFunctions::FindBipedPart | bhkUtilFunctions.obj | debug, call graph, medium
+// pdb params: apObject, aePart
+// pdb locals: pbody, pc, pnode, pb, ifilter, I
 PhysicsBody* __cdecl FindPhysicsBodyByLayer(SearchObject* object, unsigned int layer)
 {
     PhysicsBody* result = 0;
@@ -14428,19 +14719,22 @@ struct S_00c69e10_This
     int unk0c;
     int unk10;
     char unk14;
-    bool SetCollisionObjectFlag(S_00c69e10_Obj* obj, bool kind, bool f, int value, bool force);
+    bool SetCollisionObjectFlag(S_00c69e10_Obj* apObject, bool abRecurse, bool abNotify, int aiGroup, bool abForce);
 };
 // If obj is non-null and enabled (or force is set), builds a context from kind, f and value and dispatches it through the collision-object callbacks.
 // @fnv 0x00c69e10
-bool S_00c69e10_This::SetCollisionObjectFlag(S_00c69e10_Obj* obj, bool kind, bool abFlag, int value, bool force)
+// pdb: bhkWorld::AddObjects | bhkWorld.obj | retail, object-file gap fill, high
+// pdb params: apObject, abRecurse, abNotify, aiGroup, abForce
+// pdb locals: bres, tempAutoEvent, recData, inotify
+bool S_00c69e10_This::SetCollisionObjectFlag(S_00c69e10_Obj* apObject, bool abRecurse, bool abNotify, int aiGroup, bool abForce)
 {
     bool ret = false;
-    if (obj != 0)
+    if (apObject != 0)
     {
-        bool ok = force;
+        bool ok = abForce;
         if (!ok)
         {
-            if (C69E10IsEnabled(obj) != 0)
+            if (C69E10IsEnabled(apObject) != 0)
                 ok = true;
         }
         if (ok)
@@ -14448,23 +14742,23 @@ bool S_00c69e10_This::SetCollisionObjectFlag(S_00c69e10_Obj* obj, bool kind, boo
             S_00c69e10_Ctx r;
             unk14 = 1;
             r.owner = this;
-            r.kind = kind;
+            r.kind = abRecurse;
             if (DAT_012677a1)
             {
                 r.type = 10;
                 if (DAT_011afeb0)
-                    bhkWorld_DoObjectRec((NiAVObject*)obj, (CollisionObjectCountContext*)&r, DAT_011afeb0);
+                    bhkWorld_DoObjectRec((NiAVObject*)apObject, (CollisionObjectCountContext*)&r, DAT_011afeb0);
             }
-            int fl = abFlag != 0;
-            if (obj->unk1c == 0)
+            int fl = abNotify != 0;
+            if (apObject->unk1c == 0)
                 fl = 0;
             r.flag = fl;
             r.type = 0;
-            r.value = value;
+            r.value = aiGroup;
             r.unk14 = 0;
             r.one = 1;
             if (DAT_011afe88)
-                bhkWorld_DoObjectRec((NiAVObject*)obj, (CollisionObjectCountContext*)&r, DAT_011afe88);
+                bhkWorld_DoObjectRec((NiAVObject*)apObject, (CollisionObjectCountContext*)&r, DAT_011afe88);
             ret = true;
         }
     }
@@ -14589,6 +14883,8 @@ struct S_c6c1d0_Cls
 // Finds the target via m_holder and returns true when its m_type is 4 or 5, otherwise false (true when no target).
 // @fnv 0x00c6c1d0
 // src: XBOX_PDB 0x00c6c1d0
+// pdb: bhkNiCollisionObject::QKeyframe | bhkNiCollisionObject.obj | debug, upstream name already matches, high
+// pdb locals: bres, pbody, pwo
 bool S_c6c1d0_Cls::bhkNiCollisionObject_QKeyframe()
 {
     bool result = true;
@@ -15027,12 +15323,14 @@ struct FUN_00c6e0b0_Class
     int unk590;
     Container148* m_594;
 
-    void* __thiscall bhkCharacterController_GetCollisionDebugNode();
+    void* __thiscall bhkCharacterController_FindDisplayGeometry();
 };
 
 // @fnv 0x00c6e0b0
-// src: COMMUNITY 0x00c6e0b0
-void* FUN_00c6e0b0_Class::bhkCharacterController_GetCollisionDebugNode()
+// src: XBOX_RETAIL_PDB 0x00c6e0b0 (was COMMUNITY)
+// pdb: bhkCharacterController::FindDisplayGeometry | bhkCharacterController.obj | retail, call graph, high
+// pdb locals: pdebug, pav, pnode, collisionName, iEnd, i
+void* FUN_00c6e0b0_Class::bhkCharacterController_FindDisplayGeometry()
 {
     Scene148* result = 0;
     if (unk414 & 0x8000)
@@ -15178,16 +15476,20 @@ absent:
 }
 // @fnv 0x00c75180
 // src: COMMUNITY 0x00c75180
-int __stdcall bhkRagdollController_GetCapsuleBoneShapeInfo(Input134* input)
+// pdb: bhkRagdollController::GetCapsuleBoneShapeInfo | bhkRagdollController.obj | retail, upstream name already matches, high
+// pdb params: apBone
+// pdb locals: pboneShape, pboneCO, pboneCapsuleInfo, pboneRB, cinfo
+int __stdcall bhkRagdollController_GetCapsuleBoneShapeInfo(Input134* apBone)
 {
-    Owner134* owner = Resolve134(input);
+    Owner134* owner = Resolve134(apBone);
     int result = 0;
     if (owner)
-        result = owner->Query((void**)&input);
+        result = owner->Query((void**)&apBone);
     return result;
 }
 
 // @fnv 0x00c66240
+// pdb: NiCollisionObject::~NiCollisionObject | NiCollisionObject.obj | debug, upstream name already matches, high
 void NiAVObject::FUN_00c66240(NiObject* a)
 {
     bhkRefObject_SethkObject(a);
@@ -15237,21 +15539,25 @@ static inline unsigned int C6A120IsEnabled(int object)
 }
 
 // @fnv 0x00c6a120
-bool __cdecl SetSelectionValue(int object, float value, unsigned char mode, unsigned char overrideCheck)
+// src: XBOX_RETAIL_PDB 0x00c6a120
+// pdb: bhkWorld::SetRestitution | bhkWorld.obj | retail, object-file gap fill, high
+// pdb params: apObject, afRestitution, abRecurse, abForce
+// pdb locals: bres, recData
+bool __cdecl bhkWorld_SetRestitution(int apObject, float afRestitution, unsigned char abRecurse, unsigned char abForce)
 {
     bool bResult = false;
-    if (object)
+    if (apObject)
     {
-        if (overrideCheck || C6A120IsEnabled(object))
+        if (abForce || C6A120IsEnabled(apObject))
         {
             bResult = true;
             DispatchPacket kPacket;
             kPacket.status = 0;
-            kPacket.mode = mode;
+            kPacket.mode = abRecurse;
             kPacket.opcode = 0xf;
-            *(float*)&kPacket.selection = value;
+            *(float*)&kPacket.selection = afRestitution;
             if (DAT_011afec4)
-                bhkWorld_DoObjectRec(object, &kPacket, DAT_011afec4);
+                bhkWorld_DoObjectRec(apObject, &kPacket, DAT_011afec4);
         }
     }
     return bResult;
@@ -15260,6 +15566,9 @@ bool __cdecl SetSelectionValue(int object, float value, unsigned char mode, unsi
 void __cdecl FUN_00a810b0();
 // @fnv 0x00c6b5e0
 // src: XBOX_PDB 0x00c6b5e0
+// pdb: bhkNiCollisionObject::SetSceneGraphObject | bhkNiCollisionObject.obj | debug, upstream name already matches, high
+// pdb params: apSceneObject
+// pdb locals: psceneName
 void __cdecl bhkNiCollisionObject_SetSceneGraphObject()
 {
     FUN_00a810b0();
@@ -15304,12 +15613,15 @@ inline float acos(float r)
 struct C74C20Quat
 {
     float m_vec[4];
-    float GetAngle() const;
+    float hkQuaternion_getAngle() const;
 };
 
 // Returns twice the arc-cosine of the absolute value of m_vec[3], clamped by AHMath::acos.
 // @fnv 0x00c74c20
-float C74C20Quat::GetAngle() const
+// src: XBOX_DEBUG_PDB 0x00c74c20
+// pdb: hkQuaternion::getAngle | bhkRagdollController.obj | debug, call graph, high
+// pdb locals: angle
+float C74C20Quat::hkQuaternion_getAngle() const
 {
     float angle = AHMath::fabs(m_vec[3]);
     angle = AHMath::acos(angle);
@@ -15338,6 +15650,7 @@ struct FUN_00c7bf10_cls
 
 // @fnv 0x00c7bf10
 // src: GUESS 0x00c7bf10 (confidence: low)
+// pdb: hkaPose::~hkaPose | bhkRagdollController.obj | debug, object-file run extension, low
 void __thiscall FUN_00c7bf10_cls::UpdateState_00c7bf10()
 {
     hkMemoryRouter* holder = (hkMemoryRouter*)hkMemoryRouter_getInstance();
@@ -15355,6 +15668,8 @@ void __thiscall FUN_00c7bf10_cls::UpdateState_00c7bf10()
 // If pkObject is enabled, calls FUN_00c68900 with pkContext and pfnCallback and returns true; otherwise returns false.
 // @fnv 0x00c68ec0
 // src: COMMUNITY 0x00c68ec0
+// pdb: bhkWorld::ProcessBatchAdds | bhkWorld.obj | debug, object-file run extension, low
+// pdb params: abAllowPartial, abIgnoreFrameLimit
 bool _bhkWorld_DoObjects(C6A2E0AVObject* pkObject, CollisionObjectCountContext* pkContext,
                   CollisionObjectCountCallback pfnCallback)
 {
@@ -15420,7 +15735,7 @@ __declspec(noinline) void S69580_Queue::RemoveKey(NiPointer<S69580_Ref>* key)
 }
 struct S69580_Access
 {
-    void DispatchOrQueue(S69580_Item* item);
+    void hkpWorld_removeAction(S69580_Item* action);
 };
 struct S69580_World
 {
@@ -15506,6 +15821,8 @@ struct S69580_World
 };
 // Adds an item to the world's pending list, flushing it when full, or dispatches it via the access object.
 // @fnv 0x00c69580
+// pdb: bhkWorld::Remove | bhkWorld.obj | retail, object-file run extension, low
+// pdb params: apObj
 bool S69580_World::AddItem(S69580_Item* item)
 {
     S69580_Scope scope;
@@ -15533,7 +15850,7 @@ bool S69580_World::AddItem(S69580_Item* item)
         }
         else
         {
-            access->DispatchOrQueue(item);
+            access->hkpWorld_removeAction(item);
         }
         result = true;
     }
@@ -15552,20 +15869,23 @@ struct Info
     int unk8, unk12, unk16, unk20, unk24;
 };
 extern void* DAT_011afea4;
-Form* __cdecl GetExtraDataChecked(void* p);
-void __cdecl bhkWorld_DoObjectRec(void* p, Info* info, void* g);
+Form* __cdecl GetExtraDataChecked(void* apObject);
+void __cdecl bhkWorld_DoObjectRec(void* apObject, Info* arData, void* apFunc);
 // @fnv 0x00c6a3d0
 // src: XBOX_PDB 0x00c6a3d0
-bool __cdecl bhkWorld_SetGroup(void* p, int b, char c, char abForce)
+// pdb: bhkWorld::SetGroup | bhkWorld.obj | retail, upstream name already matches, high
+// pdb params: apObject, aiGroup, abRecurse, abForce
+// pdb locals: bres, recData
+bool __cdecl bhkWorld_SetGroup(void* apObject, int aiGroup, char abRecurse, char abForce)
 {
     bool r = false;
-    if (p)
+    if (apObject)
     {
         Form* f = 0;
         unsigned int bits = 0;
         if (!abForce)
         {
-            f = GetExtraDataChecked(p);
+            f = GetExtraDataChecked(apObject);
             if (f)
             {
                 bits = f->flags;
@@ -15575,8 +15895,8 @@ bool __cdecl bhkWorld_SetGroup(void* p, int b, char c, char abForce)
         if (abForce || (f && bits))
         {
             Info info;
-            unsigned char cc = *(volatile unsigned char*)&c;
-            int bb = b;
+            unsigned char cc = *(volatile unsigned char*)&abRecurse;
+            int bb = aiGroup;
             info.unk4 = cc;
             void* g = DAT_011afea4;
             r = true;
@@ -15584,7 +15904,7 @@ bool __cdecl bhkWorld_SetGroup(void* p, int b, char c, char abForce)
             info.unk8 = 7;
             info.unk12 = bb;
             if (g)
-                bhkWorld_DoObjectRec(p, &info, g);
+                bhkWorld_DoObjectRec(apObject, &info, g);
         }
     }
     return r;
@@ -15617,16 +15937,18 @@ class LookupTarget
 // If an entry with key 0x1300 exists, returns m_val0xc0 of the object FindEntry returns for that key; otherwise returns 0.
 // @fnv 0x00c6d900
 // src: COMMUNITY 0x00c6d900
-unsigned int __stdcall bhkCharacterController_Getbhk(SearchOwner* owner)
+// pdb: bhkCharacterController::Getbhk | bhkCharacterController.obj | debug, upstream name already matches, high
+// pdb params: apPhantom
+unsigned int __stdcall bhkCharacterController_Getbhk(SearchOwner* apPhantom)
 {
-    if (owner != 0)
+    if (apPhantom != 0)
     {
-        for (int i = 0; i < owner->m_uiItemCount; ++i)
+        for (int i = 0; i < apPhantom->m_uiItemCount; ++i)
         {
-            if (owner->m_pEntries[i].m_key == 0x1300)
+            if (apPhantom->m_pEntries[i].m_key == 0x1300)
             {
                 unsigned int out[2];
-                unsigned int* r = owner->FindEntry(out, 0x1300, 0);
+                unsigned int* r = apPhantom->FindEntry(out, 0x1300, 0);
                 return ((LookupTarget*)*r)->m_val0xc0;
             }
         }
@@ -15753,6 +16075,10 @@ struct MotionParams_c672
 // Updates the motion type on the entity's body when the new type differs from the current one and matches the required type, then calls UpdateMotion.
 // @fnv 0x00c672a0
 // src: COMMUNITY 0x00c672a0
+// pdb: bhkWorld::QActiveObject | bhkWorld.obj | retail, object-file run extension, low
+// pdb note: debug build links it to bhkWorld::ChangeLayerObject
+// pdb params: apCollision, arData
+// pdb locals: prb, pwo
 void __cdecl bhkWorld_ChangeLayerObject(EntityRef_c672* pkRef, MotionParams_c672* pkParams)
 {
     Entity_c672* pkEntity = pkRef->m_pkEntity;
@@ -15802,7 +16128,7 @@ struct EntityRecord
 };
 struct Processor
 {
-    void RemoveEntities(EntityRecord**, unsigned int);
+    void hkpWorld_removeEntityBatch(EntityRecord**, unsigned int);
 };
 struct World
 {
@@ -15864,7 +16190,7 @@ struct World
     int unk48;
     EntityRecord** entries;
     unsigned int count;
-    void ClearEntries();
+    void bhkWorld_RemoveBatchedEntities();
 };
 struct WorldObjectC67
 {
@@ -15889,7 +16215,10 @@ inline WorldObjectC67* GetEntityC67(const OffsetKindRecord* c)
 void* _fnv_zlib_memset(void*, int, unsigned int);
 // Processes up to 3000 entity entries via the processor, clears a flag on each entry's user data, releases references, and zeroes the entry array.
 // @fnv 0x00c679a0
-void World::ClearEntries()
+// src: XBOX_RETAIL_PDB 0x00c679a0
+// pdb: bhkWorld::RemoveBatchedEntities | bhkWorld.obj | retail, call graph, high
+// pdb locals: tempMemContext, pw, i, pbody, pcol
+void World::bhkWorld_RemoveBatchedEntities()
 {
     ContextGuard context;
     if (count > 0)
@@ -15899,7 +16228,7 @@ void World::ClearEntries()
         Processor* processor = GetProcessor();
         if (processor)
         {
-            processor->RemoveEntities(entries, count);
+            processor->hkpWorld_removeEntityBatch(entries, count);
             for (unsigned int i = 0; i < count; ++i)
             {
                 WorldObjectC67* pWorldObject = GetEntityC67(&entries[i]->link);
@@ -15934,15 +16263,18 @@ extern "C" unsigned int DAT_011afeb8;
 // Unless param_4 is set, requires bit 2 of the extra-data flags, then calls the DAT_011afeb8 callback on param_1 with a context built from param_2 and param_3.
 // @fnv 0x00c6a270
 // src: XBOX_PDB 0x00c6a270
-bool __cdecl bhkWorld_Activate(int param_1, unsigned char param_2, unsigned char param_3, char abForce)
+// pdb: bhkWorld::Activate | bhkWorld.obj | retail, upstream name already matches, high
+// pdb params: apObject, abActivate, abRecurse, abForce
+// pdb locals: bres, recData
+bool __cdecl bhkWorld_Activate(int apObject, unsigned char abActivate, unsigned char abRecurse, char abForce)
 {
     bool result = false;
-    if (param_1 != 0)
+    if (apObject != 0)
     {
         int iFlag = 0;
         if (abForce == 0)
         {
-            DispatchState* state = GetExtraDataChecked(param_1);
+            DispatchState* state = GetExtraDataChecked(apObject);
             if (state != 0)
                 iFlag = state->flags & 2;
         }
@@ -15952,12 +16284,12 @@ bool __cdecl bhkWorld_Activate(int param_1, unsigned char param_2, unsigned char
         {
             FUN_00c6a270_Context context;
             result = true;
-            context.m_04 = param_3;
+            context.m_04 = abRecurse;
             context.m_00 = 0;
             context.m_08 = 0xC;
-            context.m_0C = param_2;
+            context.m_0C = abActivate;
             if (DAT_011afeb8 != 0)
-                bhkWorld_DoObjectRec(reinterpret_cast<NiAVObject*>(param_1),
+                bhkWorld_DoObjectRec(reinterpret_cast<NiAVObject*>(apObject),
                              reinterpret_cast<CollisionObjectCountContext*>(&context),
                              reinterpret_cast<CollisionObjectCountCallback>(DAT_011afeb8));
         }
@@ -15980,6 +16312,9 @@ extern "C" unsigned int DAT_011afea8;
 
 // Unless param_3 is set, requires bit 2 of the extra-data flags; calls the DAT_011afea8 callback and returns whether the context's m_0C ends up nonzero.
 // @fnv 0x00c6a440
+// pdb: bhkWorld::DebugDisplay | bhkWorld.obj | retail, object-file run extension, low
+// pdb params: apObject, abEnabled, abRecurse, abForce
+// pdb locals: bres, recData
 bool __cdecl HasCollisionObject(int param_1, unsigned char param_2, char param_3)
 {
     bool result = false;
@@ -16026,17 +16361,20 @@ void __cdecl FUN_00a68bf0();
 // Updates collision-bearing objects and their children, then updates the world bound.
 // @fnv 0x00c6c110
 // src: XBOX_PDB 0x00c6c110
-void bhkNiCollisionObject_SynchronizeRec(NiAVObject* apNode, bool bForce)
+// pdb: bhkNiCollisionObject::SynchronizeRec | bhkNiCollisionObject.obj | retail, upstream name already matches, high
+// pdb params: apObject, abUpdate
+// pdb locals: pcol, pnode, UpdateData, I
+void bhkNiCollisionObject_SynchronizeRec(NiAVObject* apObject, bool abUpdate)
 {
-    if (apNode)
+    if (apObject)
     {
-        NiCollisionObject* p = apNode->m_spCollisionObject;
+        NiCollisionObject* p = apObject->m_spCollisionObject;
         int r = 0;
         if (p)
             r = reinterpret_cast<int>(p->IsBhkNiCollisionObject());
-        if (r || bForce)
+        if (r || abUpdate)
         {
-            reinterpret_cast<void(__thiscall*)(NiAVObject*)>(FUN_00a68bf0)(apNode);
+            reinterpret_cast<void(__thiscall*)(NiAVObject*)>(FUN_00a68bf0)(apObject);
             Tmp_c6c1 t;
             t.m_f00 = 0.0f;
             t.m_b04 = 0;
@@ -16044,16 +16382,16 @@ void bhkNiCollisionObject_SynchronizeRec(NiAVObject* apNode, bool bForce)
             t.m_b06 = 0;
             t.m_b07 = 0;
             t.m_b08 = 0;
-            apNode->UpdateWorldData(*reinterpret_cast<NiUpdateData*>(&t));
-            bForce = true;
+            apObject->UpdateWorldData(*reinterpret_cast<NiUpdateData*>(&t));
+            abUpdate = true;
         }
-        NiNode* c = apNode->IsSceneNode();
+        NiNode* c = apObject->IsSceneNode();
         if (c)
         {
             for (unsigned int i = 0; i < c->m_kChildren.m_usSize; ++i)
-                bhkNiCollisionObject_SynchronizeRec(c->m_kChildren.m_pBase[i], bForce);
+                bhkNiCollisionObject_SynchronizeRec(c->m_kChildren.m_pBase[i], abUpdate);
         }
-        apNode->UpdateWorldBound();
+        apObject->UpdateWorldBound();
     }
 }
 
@@ -16095,15 +16433,17 @@ class CollisionLoad : public FakeThis00a81040
     unsigned short unk0e;   // +0x0e
     int m_i10;              // +0x10
 
-    void bhkNiCollisionObject_SaveBinary(void* stream);
+    void bhkNiCollisionObject_SaveBinary(void* arStream);
 };
 
 // Calls the base routine FUN_00a81040, then loads m_us0c from the stream with BinLoad and passes m_i10 to kStream.v30.
 // @fnv 0x00c6c380
 // src: XBOX_PDB 0x00c6c380
-void CollisionLoad::bhkNiCollisionObject_SaveBinary(void* stream)
+// pdb: bhkNiCollisionObject::SaveBinary | bhkNiCollisionObject.obj | retail, upstream name already matches, high
+// pdb params: arStream
+void CollisionLoad::bhkNiCollisionObject_SaveBinary(void* arStream)
 {
-    NiStream& kStream = *static_cast<NiStream*>(stream);
+    NiStream& kStream = *static_cast<NiStream*>(arStream);
     FUN_00a81040(kStream);
     BinLoad(**reinterpret_cast<CBinaryStream**>(reinterpret_cast<char*>(&kStream) + 0x250), &m_us0c);
     kStream.SaveLinkID(reinterpret_cast<const NiObject*>(m_i10));
@@ -16520,7 +16860,7 @@ struct S00c6d040_C : public S00c6d040_B
 struct FUN_00c6d040 : public S00c6d040_C
 {
     FUN_00c6d040(unsigned int a);
-    void bhkCachingShapePhantom_Init(unsigned int a);
+    void bhkCachingShapePhantom_Init(unsigned int arInfo);
 };
 
 // Constructs the object by setting the vft, calling FUN_00cc2530 with a, incrementing DAT_012685a0, and zeroing m_14.
@@ -16549,45 +16889,48 @@ struct FUN_00c6d7e0_Parent
     FUN_00c6d7e0_Child* m_pChildObject;
 };
 
-unsigned int __stdcall bhkShape_GetSubshapeMaterial(int v);
-extern unsigned int DAT_01267bc8;
+unsigned int __stdcall bhkShape_GetSubshapeMaterial(int aiKey);
+extern unsigned int bhkCharacterController_pfGetMaterialStairCallback; // src: XBOX_RETAIL_PDB 0x01267bc8 (old: DAT_01267bc8)
 
 // With a set and a child object, returns whether DAT_01267bc8 gave 0 for c (or child m_uiValue1 & 0x1f); otherwise 1 if a or b is set, else 0.
 // @fnv 0x00c6d7e0
 // src: COMMUNITY 0x00c6d7e0
-char __cdecl bhkCharacterController_IsShapeConsideredPenetrating(FUN_00c6d7e0_Parent* apParent, bool abFlag1, bool abFlag2, int aiValue)
+// pdb: bhkCharacterController::IsShapeConsideredPenetrating | bhkCharacterController.obj | retail, upstream name already matches, high
+// pdb params: apShape, abPenetrating, abStairsMaterialOnly, auiShapeKey
+// pdb locals: bconsideredPenetrating, pshape, emat
+char __cdecl bhkCharacterController_IsShapeConsideredPenetrating(FUN_00c6d7e0_Parent* apShape, bool abPenetrating, bool abStairsMaterialOnly, int auiShapeKey)
 {
-    if (!abFlag1 && abFlag2 != abFlag1)
+    if (!abPenetrating && abStairsMaterialOnly != abPenetrating)
         return 1;
     try
     {
-        if (abFlag1 == 0)
+        if (abPenetrating == 0)
             goto RETA;
     }
     catch (...)
     {
         throw;
     }
-    if (apParent != 0 && apParent->m_pChildObject != 0)
+    if (apShape != 0 && apShape->m_pChildObject != 0)
     {
         unsigned int t;
-        if (aiValue != -1)
+        if (auiShapeKey != -1)
         {
-            t = bhkShape_GetSubshapeMaterial(aiValue);
+            t = bhkShape_GetSubshapeMaterial(auiShapeKey);
         }
         else
         {
-            t = apParent->m_pChildObject->m_uiValue1 & 0x1f;
+            t = apShape->m_pChildObject->m_uiValue1 & 0x1f;
         }
         unsigned char r = 0;
-        if (DAT_01267bc8)
+        if (bhkCharacterController_pfGetMaterialStairCallback)
         {
-            r = (unsigned char)((unsigned char(__cdecl*)(unsigned int))DAT_01267bc8)(t);
+            r = (unsigned char)((unsigned char(__cdecl*)(unsigned int))bhkCharacterController_pfGetMaterialStairCallback)(t);
         }
         return !r;
     }
 RETA:
-    return abFlag1;
+    return abPenetrating;
 }
 
 class FUN_00c6def0_obj;
@@ -16660,26 +17003,29 @@ class FUN_00c6def0_obj
     unsigned char m_e8;
 };
 
-extern float DAT_01267bc0;
-extern "C" bool __cdecl bhkRigidBody_IsMotionTypeDynamic(unsigned int* p);
+extern float bhkCharacterController_fMinHurtfulMass; // src: XBOX_RETAIL_PDB 0x01267bc0 (old: DAT_01267bc0)
+extern "C" bool __cdecl bhkRigidBody_IsMotionTypeDynamic(unsigned int* areMotion);
 // Returns true if p is non-null and either FUN_00c8cce0 accepts m_e8 and m_e0.FUN_00c86430() exceeds DAT_01267bc0, or (m_2c & 0x7f) == 6.
 // @fnv 0x00c6def0
 // src: COMMUNITY 0x00c6def0
-bool __cdecl bhkCharacterController_IsHurtfulBody(FUN_00c6def0_obj* p)
+// pdb: bhkCharacterController::IsHurtfulBody | bhkCharacterController.obj | retail, upstream name already matches, high
+// pdb params: apBody
+// pdb locals: bresult
+bool __cdecl bhkCharacterController_IsHurtfulBody(FUN_00c6def0_obj* apBody)
 {
     bool result = false;
-    if (p != 0)
+    if (apBody != 0)
     {
-        unsigned int v = p->m_e8;
+        unsigned int v = apBody->m_e8;
         if (bhkRigidBody_IsMotionTypeDynamic(&v))
         {
-            float f = p->m_e0.FUN_00c86430();
-            if (f > DAT_01267bc0)
+            float f = apBody->m_e0.FUN_00c86430();
+            if (f > bhkCharacterController_fMinHurtfulMass)
                 result = true;
         }
         if (!result)
         {
-            if ((p->m_2c & 0x7f) == 6)
+            if ((apBody->m_2c & 0x7f) == 6)
                 result = true;
         }
     }
@@ -17058,24 +17404,27 @@ struct S00c6e050_Obj
     int unk058c;
     int unk0590;
     S00c6e050_Ptr* m_594;
-    void __thiscall bhkCharacterController_SetBSReference(volatile int a, volatile int b);
+    void __thiscall bhkCharacterController_SetBSReference(volatile int aiKey, volatile int apObject);
 };
 // Unless m_594->ContainsObject(a), calls FUN_00a29680, then m_594->m_08->AddEntry(a, b), then FUN_00a29680 again.
 // @fnv 0x00c6e050
 // src: XBOX_PDB 0x00c6e050
-void S00c6e050_Obj::bhkCharacterController_SetBSReference(volatile int a, volatile int b)
+// pdb: bhkCharacterController::SetBSReference | bhkCharacterController.obj | retail, upstream name already matches, high
+// pdb params: aiKey, apObject
+// pdb locals: pp, vl
+void S00c6e050_Obj::bhkCharacterController_SetBSReference(volatile int aiKey, volatile int apObject)
 {
     S00c6e050_Ptr* p = m_594;
     if (!p)
         return;
-    if (p->ContainsObject(a))
+    if (p->ContainsObject(aiKey))
         return;
     S00c6e050_Sub* s = p->m_08;
-    long long v = (long long)b;
+    long long v = (long long)apObject;
     if (!s)
         return;
     p->Object_DoNothing();
-    s->AddEntry(a, v);
+    s->AddEntry(aiKey, v);
     p->Object_DoNothing();
 }
 
@@ -17084,6 +17433,7 @@ extern "C" double __cdecl fabs(double);
 
 // Returns acos(fValue), except returns 0.0f when |fValue| is at least 1 and positive, and pi when it is at least 1 and not positive.
 // @fnv 0x00c74a70
+// pdb: hkQsTransform::hkQsTransform | bhkRagdollController.obj | debug, object-file run extension, low
 float ClampedAcos(float fValue)
 {
     if ((float)fabs(fValue) >= 1.0f)
@@ -17383,6 +17733,8 @@ extern "C" __declspec(dllimport) long __stdcall InterlockedDecrement(long volati
 extern "C" __declspec(dllimport) long __stdcall InterlockedIncrement(long volatile*);
 
 // @fnv 0x00c7beb0
+// pdb: hkaPoseMatchingUtility::operator delete | bhkRagdollController.obj | debug, object-file run extension, low
+// pdb params: p
 template <> void NiTMap<const char*, NiPointer<bhkPoseArray> >::DeleteItem(NiTMapItem<const char*, NiPointer<bhkPoseArray> >* item)
 {
     item->m_val = 0;
@@ -18047,6 +18399,8 @@ struct FUN_00c6cbc0_class
 // Stores threshold and value into unk528 and unk52C when the absolute value of threshold exceeds the absolute value of unk528.
 // @fnv 0x00c6cbc0
 // src: GUESS 0x00c6cbc0 (confidence: medium)
+// pdb: hkMath::sin | bhkCharacterListener.obj | debug, object-file run extension, low
+// pdb params: r
 void __thiscall FUN_00c6cbc0_class::UpdateLargestAbsoluteThreshold(float threshold, float value)
 {
     if (fabs(threshold) > fabs(unk528))
@@ -18118,6 +18472,7 @@ struct FUN_00c6d150_class
 // If the int at offset 0x590 is nonzero, zeroes the 16 bytes at offset 0x580 and sets the int at 0x590 to 0.
 // @fnv 0x00c6d150
 // src: COMMUNITY 0x00c6d150
+// pdb: bhkCharacterController::ClearPush | bhkCharacterController.obj | debug, upstream name already matches, high
 void FUN_00c6d150_class::bhkCharacterController_ClearPush()
 {
     if (*reinterpret_cast<int*>(reinterpret_cast<char*>(this) + 0x590) != 0)
@@ -18459,6 +18814,8 @@ struct S_00c6d5c0
 // If m_524 is positive, adds m_500 scaled by m_524 to m_4f0 when m_414 lacks 0x1800; otherwise resets m_500 from DAT_01267e30.
 // @fnv 0x00c6d5c0
 // src: COMMUNITY 0x00c6d5c0
+// pdb: bhkCharacterController::ApplyVelocityMod | bhkCharacterController.obj | debug, upstream name already matches, high
+// pdb locals: mod
 void S_00c6d5c0::bhkCharacterController_ApplyVelocityMod()
 {
     if (m_524 > 0.0f)
@@ -18991,44 +19348,47 @@ struct Controller047
     unsigned int unk58c;
     unsigned int unk590;
     Handler047* handler;
-    int bhkCharacterController_GetCollisionDebugNode();
+    int bhkCharacterController_FindDisplayGeometry();
     Scene047* GetCurrentObject();
-    void AttachSceneNode(Scene047* node);
+    void AttachSceneNode(Scene047* apNode);
 };
 // Clones node into a new object, sets its position to offset times 1/node->scale and its scale to |1/node->scale|, then attaches it to the current object.
 // @fnv 0x00c6fd80
-void Controller047::AttachSceneNode(Scene047* node)
+// pdb: bhkCharacterController::BuildDisplayGeometry | bhkCharacterController.obj | retail, vtable slot, high
+// pdb params: apNode
+// pdb locals: pav, tempMemContext, pchar, nip
+void Controller047::AttachSceneNode(Scene047* apNode)
 {
     ThreadMemoryScope memoryScope;
-    if (bhkCharacterController_GetCollisionDebugNode())
+    if (bhkCharacterController_FindDisplayGeometry())
         return;
-    if (!node)
+    if (!apNode)
     {
         if (!handler)
             goto done;
         Scene047* object = handler->bhkWorldObject_GetAVObject(0);
         if (!object)
             goto done;
-        node = object->asNode();
-        if (!node)
+        apNode = object->asNode();
+        if (!apNode)
             goto done;
-        if (node->count)
+        if (apNode->count)
         {
-            SettingHolder* child = node->NiNode_GetAtChecked(0);
+            SettingHolder* child = apNode->NiNode_GetAtChecked(0);
             if (!child)
                 goto done;
-            node = (Scene047*)child->FUN_00653290(&DAT_011f4428);
+            apNode = (Scene047*)child->FUN_00653290(&DAT_011f4428);
         }
-        if (!node)
+        if (!apNode)
             goto done;
     }
     if (!GetCurrentObject())
         goto done;
     {
         FUN_00a5ecb0* created = new FUN_00a5ecb0(0);
-        node->clone(created, 1);
+        apNode->clone(created, 1);
         created->AssignFixedString(NiFixedString(static_cast<const char*>(&DAT_010c43d8)));
-        float inverse = 1.0f / node->scale;
+        float inverse = 1.0f / apNode->scale;
         NiPoint3 buffer;
         const NiPoint3* result = FUN_00458620(&buffer, &offset);
         NiPoint3 scaled;
@@ -19036,9 +19396,9 @@ void Controller047::AttachSceneNode(Scene047* node)
         scaled.y = result->y * inverse;
         scaled.z = result->z * inverse;
         memcpy(&created->position, &scaled, sizeof(scaled));
-        if (node->scale != 0.0f)
+        if (apNode->scale != 0.0f)
         {
-            float value = 1.0f / node->scale;
+            float value = 1.0f / apNode->scale;
             value = fabs(value);
             created->scale = value;
         }
@@ -19087,6 +19447,8 @@ FUN_00c74ed0::FUN_00c74ed0()
 extern "C" void __cdecl bhkNiCollisionObject_CopyMembers();
 // @fnv 0x00c657f0
 // src: XBOX_PDB 0x00c657f0
+// pdb: bhkPCollisionObject::CopyMembers | bhkPCollisionObject.obj | debug, upstream name already matches, high
+// pdb params: apDest, arCloneData
 void __cdecl bhkPCollisionObject_CopyMembers()
 {
     bhkNiCollisionObject_CopyMembers();
@@ -19095,6 +19457,8 @@ void __cdecl bhkPCollisionObject_CopyMembers()
 extern "C" void __cdecl FUN_00c6bb70();
 // @fnv 0x00c65810
 // src: XBOX_PDB 0x00c65810
+// pdb: bhkCollisionObject::LinkObject | bhkCollisionObject.obj | debug, upstream name already matches, high
+// pdb params: arStream
 void __cdecl bhkCollisionObject_LinkObject()
 {
     FUN_00c6bb70();
@@ -19103,11 +19467,14 @@ void __cdecl bhkCollisionObject_LinkObject()
 extern "C" void __cdecl bhkNiCollisionObject_SaveBinary();
 // @fnv 0x00c65820
 // src: XBOX_PDB 0x00c65820
+// pdb: bhkCollisionObject::SaveBinary | bhkCollisionObject.obj | debug, upstream name already matches, high
+// pdb params: arStream
 void __cdecl bhkCollisionObject_SaveBinary()
 {
     bhkNiCollisionObject_SaveBinary();
 }
 
+// pdb: class Key, size 0x8 (here 0xc), 2 members
 struct Key
 {
     int a;
@@ -19171,15 +19538,18 @@ struct Owner67430
     virtual void v35();
     virtual void v36();
     virtual void* GetTarget();
-    bool bhkWorld_SaveSnapshot(int v);
+    bool bhkWorld_SaveSnapshot(int apFileName);
 };
 
 // Builds a Key from v and returns the ok flag of FUN_00cc0d60 called with GetTarget() and the key's c field.
 // @fnv 0x00c67430
 // src: COMMUNITY 0x00c67430
-bool Owner67430::bhkWorld_SaveSnapshot(int aiKey)
+// pdb: bhkWorld::SaveSnapshot | bhkWorld.obj | retail, upstream name already matches, high
+// pdb params: apFileName
+// pdb locals: bres, outfile
+bool Owner67430::bhkWorld_SaveSnapshot(int apFileName)
 {
-    Key key(aiKey);
+    Key key(apFileName);
     Result r = hkpHavokSnapshot_save_00cc0d60(Pair(reinterpret_cast<int>(GetTarget()), key.c), Tag(), 0, 0);
     return r.ok != 0;
 }
@@ -19197,16 +19567,19 @@ struct Event
 
 extern Handler* DAT_011afe88[];
 
-void bhkWorld_DoObjectRec(void* pvContext, Event* pkEvent, Handler* pkHandler);
+void bhkWorld_DoObjectRec(void* apObject, Event* arData, Handler* apFunc);
 
 // Looks up the handler for pkEvent->m_iType in DAT_011afe88 and calls FUN_00c68900 with pvContext, pkEvent, and the handler if found.
 // @fnv 0x00c68e90
 // src: COMMUNITY 0x00c68e90
-void bhkWorld_DoObjects(void* pvContext, Event* pkEvent)
+// pdb: bhkWorld::DoObjects | bhkWorld.obj | retail, upstream name already matches, high
+// pdb params: apObject, arData
+// pdb locals: pfunc
+void bhkWorld_DoObjects(void* apObject, Event* arData)
 {
-    Handler* pkHandler = DAT_011afe88[pkEvent->m_iType];
+    Handler* pkHandler = DAT_011afe88[arData->m_iType];
     if (pkHandler)
-        bhkWorld_DoObjectRec(pvContext, pkEvent, pkHandler);
+        bhkWorld_DoObjectRec(apObject, arData, pkHandler);
 }
 
 }
@@ -19220,6 +19593,9 @@ struct ObjectProperties
 
 // If object is non-null and enabled (or skipFlagCheck), fills a C6A2E0Context and calls FUN_00c68900 when DAT_011afeac is set; returns 1 if enabled, else 0.
 // @fnv 0x00c6a4c0
+// pdb: bhkWorld::IsActive | bhkWorld.obj | retail, object-file run extension, low
+// pdb params: apObject, abRecurse, abForce
+// pdb locals: bres, recData
 unsigned char __cdecl TraverseObject(C6A2E0AVObject* object, void* userData, unsigned int count, bool recurse,
                                      bool skipFlagCheck)
 {
@@ -19587,6 +19963,9 @@ static inline float Len2(__m128 v)
     return r;
 }
 // @fnv 0x00c6d4d0
+// pdb: bhkCharacterController::SetVelocityModifier | bhkCharacterController.obj | debug, call graph (shared callers), medium
+// pdb params: arVelocity, afTime
+// pdb locals: nvm
 void Owner274::UpdateMaxVelocity(const float* param_1, float afDuration)
 {
     __m128 values;
@@ -19633,6 +20012,9 @@ struct QuatResult
 // Combines the two 4-float vectors a and b with SSE (cross terms, w-scaled terms, 4-component dot in w) and stores the result in value.
 // @fnv 0x00c74b70
 // src: COMMUNITY 0x00c74b70
+// pdb: hkQuaternion::setInverseMul | bhkRagdollController.obj | debug, upstream name already matches, high
+// pdb params: q0, q1
+// pdb locals: xyz, w
 void __thiscall QuatResult::hkQuaternion_setInverseMul(const float* a, const float* b)
 {
     __m128 xmm1 = _mm_load_ps(a);
@@ -19687,7 +20069,7 @@ struct SavedNodeArray
     unsigned int size;
 };
 void __cdecl bhkWorld_SetMotion(NiNode*, int, bool, bool, bool);
-void __cdecl SetFlagRecursive(int, void*);
+void __cdecl bhkUtilFunctions_SetCOUseVel(int, void*);
 // @fnv 0x00c75c00
 void __cdecl RestoreNodeTransforms(NiNode* root, SavedNodeArray* saved, int flags, int mode)
 {
@@ -19701,7 +20083,7 @@ void __cdecl RestoreNodeTransforms(NiNode* root, SavedNodeArray* saved, int flag
     if (mode != 4 && mode != 0)
         bhkWorld_SetMotion(root, mode, true, false, true);
     if ((unsigned char)flags)
-        SetFlagRecursive(flags, root);
+        bhkUtilFunctions_SetCOUseVel(flags, root);
 }
 
 struct XBase0
@@ -19739,11 +20121,14 @@ struct XRef
 
 // @fnv 0x00c7ffd0
 // src: COMMUNITY 0x00c7ffd0
-int __cdecl bhkUtilFunctions_FindbhkShapeCollection(XRef* apRef)
+// pdb: bhkUtilFunctions::FindbhkShapeCollection | bhkUtilFunctions.obj | retail, upstream name already matches, high
+// pdb params: arBody
+// pdb locals: pbody, psc, ps, phc
+int __cdecl bhkUtilFunctions_FindbhkShapeCollection(XRef* arBody)
 {
-    XObj** ppObj = apRef->p;
+    XObj** ppObj = arBody->p;
     if (!ppObj)
-        ppObj = (XObj**)apRef;
+        ppObj = (XObj**)arBody;
     int r = 0;
     if (ppObj)
     {
@@ -20730,6 +21115,8 @@ struct C66A00This
 // Depending on whether DAT_012677b8 is 2, computes a step count, its reciprocal and interval values from DAT globals and stores them in the Unk_25() object.
 // @fnv 0x00c66a00
 // src: COMMUNITY 0x00c66a00
+// pdb: bhkWorld::ScaleSolverInfo | bhkWorld.obj | retail, upstream name already matches, high
+// pdb locals: phkWorld, defaultNumSolverSubsteps, timeDilation, defaultTau, scaledTau, scaledDamping, numSubsteps, timePerSubstep
 void C66A00This::bhkWorld_ScaleSolverInfo()
 {
     C66A00Res* world = this ? Unk_25() : 0;
@@ -20919,17 +21306,20 @@ __forceinline bool C67320Vec4::Near(const C67320Vec4& rhs, float epsilon) const
 // Adds params->vector to the node position; if info->amount < 1 it scales by info->scale first and skips when amount is 0 or the scaled vector is near zero.
 // @fnv 0x00c67320
 // src: COMMUNITY 0x00c67320
-void __cdecl bhkWorld_ShiftPosition(C67320Source* source, C67320Params* params)
+// pdb: bhkWorld::ShiftPosition | bhkWorld.obj | retail, upstream name already matches, high
+// pdb params: apObject, arOffset, abRecurse, abForce
+// pdb locals: hkoffset, bres, recData
+void __cdecl bhkWorld_ShiftPosition(C67320Source* apCollision, C67320Params* arData)
 {
-    C67320Info* info = source->GetInfo();
-    C67320Root* root = source->root;
+    C67320Info* info = apCollision->GetInfo();
+    C67320Root* root = apCollision->root;
     if (!root)
         return;
     C67320Node* __restrict node = root->GetNode();
-    if (!node || !params->vector)
+    if (!node || !arData->vector)
         return;
     C67320Vec4 delta;
-    delta.v = params->vector->v;
+    delta.v = arData->vector->v;
     if (info && info->amount < 1.0f)
     {
         if (info->amount == 0.0f)
@@ -20999,7 +21389,7 @@ struct FUN_00cbc460 : EntryBase
     int unk00, unk04, unk08, unk0c, unk10, unk14, unk18, unk1c;
     int unk20, unk24, unk28, unk2c, unk30;
     FUN_00cbc460();
-    void registerState(hkReferencedObject* obj, int id);
+    void registerState(hkReferencedObject* state, int stateType);
 };
 struct FUN_00cd47e0 : EntryBase
 {
@@ -21124,11 +21514,14 @@ struct FUN_00c6da50 : FUN_00c6cde0
     float m_ac;
     int m_b0;
     int m_b4;
-    FUN_00c6da50(bool a1);
+    FUN_00c6da50(bool abDefaultStates);
 };
 // Initializes fields and a wrapping counter; if a1, creates the global DAT_01267bb8 with seven entries on first use and stores it in m_a4.
 // @fnv 0x00c6da50
-FUN_00c6da50::FUN_00c6da50(bool a1)
+// pdb: bhkCharacterControllerCinfo::bhkCharacterControllerCinfo | bhkCharacterController.obj | debug, call graph, high
+// pdb params: abDefaultStates
+// pdb locals: tempMemContext, ps
+FUN_00c6da50::FUN_00c6da50(bool abDefaultStates)
 {
     m_a8 = (float)(DAT_01267bcc * 31.0);
     m_b0 = 1;
@@ -21153,7 +21546,7 @@ FUN_00c6da50::FUN_00c6da50(bool a1)
     m_44 = 0.0f;
     m_48 = 0;
     m_20 = 1.0f;
-    if (a1)
+    if (abDefaultStates)
     {
         if (DAT_01267bb8 == 0)
         {
@@ -21595,13 +21988,16 @@ struct C6E180Owner
     int unk5A0;
     C6E180Object* m_pkNode;
 
-    void __thiscall bhkCharacterController_SetCapsuleRadius(float fNewScale);
+    void __thiscall bhkCharacterController_SetRadius(float afRadius);
 };
 
 // Sets the motion transform's scale to fNewScale, adding (old - new scale) to the translate Z component and subtracting it from the rotate Z component.
 // @fnv 0x00c6e180
-// src: COMMUNITY 0x00c6e180
-void __thiscall C6E180Owner::bhkCharacterController_SetCapsuleRadius(float fNewScale)
+// src: XBOX_RETAIL_PDB 0x00c6e180 (was COMMUNITY)
+// pdb: bhkCharacterController::SetRadius | bhkCharacterController.obj | retail, call graph, high
+// pdb params: afRadius
+// pdb locals: pcs, fraddiff, top, bottom, foldRadius
+void __thiscall C6E180Owner::bhkCharacterController_SetRadius(float afRadius)
 {
     if (m_pkNode)
     {
@@ -21610,7 +22006,7 @@ void __thiscall C6E180Owner::bhkCharacterController_SetCapsuleRadius(float fNewS
         {
 
             float delta =
-                (pkCast->m_kMotionTransform ? pkCast->m_kMotionTransform->m_vScale : DAT_010c72bc) - fNewScale;
+                (pkCast->m_kMotionTransform ? pkCast->m_kMotionTransform->m_vScale : DAT_010c72bc) - afRadius;
             C6E180Vec4 kPos;
             kPos.vector = (pkCast->m_kMotionTransform ? pkCast->m_kMotionTransform->m_translate
                                                       : *(const C6E180Vec4*)&DAT_01267e30)
@@ -21638,7 +22034,7 @@ void __thiscall C6E180Owner::bhkCharacterController_SetCapsuleRadius(float fNewS
             }
             if (pkCast->m_kMotionTransform)
             {
-                pkCast->m_kMotionTransform->m_vScale = fNewScale;
+                pkCast->m_kMotionTransform->m_vScale = afRadius;
             }
         }
     }
@@ -22155,6 +22551,8 @@ struct FUN_00c705c0 : DtorBase, SecondaryBase, ListenerBase
 };
 // Destructor that, if world data's m_350 is set, removes this from m_object, then resets the ref630, ref638 and ref60c Havok pointers.
 // @fnv 0x00c705c0
+// pdb: bhkCharacterController::~bhkCharacterController | bhkCharacterController.obj | retail, object-file run extension, low
+// pdb locals: pw, tempMemContext
 FUN_00c705c0::~FUN_00c705c0()
 {
     Scope705 mode(array);
@@ -22219,7 +22617,7 @@ struct C70940Src
 struct C70940Obj
 {
     void SetMode(int state);
-    void bhkCharacterController_ChangeSize(float delta);
+    void bhkCharacterController_ChangeSize(float afTime);
     __forceinline unsigned char GetFlags() const
     {
         return flags414 >> 20;
@@ -22617,7 +23015,10 @@ struct C70940Obj
 // While mode600 is 2, moves the cast scale toward GetCurrent() by delta*5.0, shifts vecA and vecB Z, then updates mode600 and state5a0 on arrival.
 // @fnv 0x00c70940
 // src: XBOX_PDB 0x00c70940
-void C70940Obj::bhkCharacterController_ChangeSize(float delta)
+// pdb: bhkCharacterController::ChangeSize | bhkCharacterController.obj | retail, upstream name already matches, high
+// pdb params: afTime
+// pdb locals: fcurRad, pcs, fraddiff, top, fadjRad, bottom
+void C70940Obj::bhkCharacterController_ChangeSize(float afTime)
 {
     if (mode600 != 2)
         return;
@@ -22626,11 +23027,11 @@ void C70940Obj::bhkCharacterController_ChangeSize(float delta)
     if (src5a4 && (cast = src5a4->FUN_00653290(&g_0126832c)) != 0)
     {
         if (GetFlags() & 1)
-            delta = DAT_01016410;
+            afTime = DAT_01016410;
         C70940Node* node = cast->node;
         float step = cast->GetScale();
         value = step;
-        step = delta * 5.0;
+        step = afTime * 5.0;
         if (value > GetCurrent())
         {
             float candidate = value - step;
@@ -22709,12 +23110,12 @@ extern "C" __declspec(dllimport) long __stdcall InterlockedIncrement(volatile lo
 extern __declspec(thread) unsigned int t_uiMemContextC73;
 inline AutoMemContext::AutoMemContext(int context)
 {
-    m_eMemoryContext = static_cast<MEM_CONTEXT>(t_uiMemContextC73);
+    iOldMemContext = static_cast<MEM_CONTEXT>(t_uiMemContextC73);
     t_uiMemContextC73 = context;
 }
 inline AutoMemContext::~AutoMemContext()
 {
-    t_uiMemContextC73 = m_eMemoryContext;
+    t_uiMemContextC73 = iOldMemContext;
 }
 
 struct EntryC73
@@ -22951,7 +23352,7 @@ struct NodeC73
     unsigned int unka8;
     unsigned int unkac;
     bool m_bDecalsEnabled;
-    void Apply(FlagsC73*);
+    void hkpCharacterProxy_addCharacterProxyListener(FlagsC73*);
 };
 int __cdecl MakeValueC73(float, float, float, float);
 extern float DAT_010c44ac;
@@ -23408,52 +23809,55 @@ struct ControllerC73
 // Initialises the controller from pkInput, configures its primary and secondary resources, copies input values, and applies flags to pkNode.
 // @fnv 0x00c73ed0
 // src: COMMUNITY 0x00c73ed0
-void ControllerC73::bhkCharacterController_Init(InputC73* pkInput)
+// pdb: bhkCharacterController::Init | bhkCharacterController.obj | retail, upstream name already matches, high
+// pdb params: arInfo
+// pdb locals: pproxy, tempMemContext, cinfo, spci, tempCinfo
+void ControllerC73::bhkCharacterController_Init(InputC73* arInfo)
 {
     AutoMemContext kContext(0x10);
-    SetScale(pkInput->fValueac * pkInput->fValuea8);
-    Initialize(pkInput);
+    SetScale(arInfo->fValueac * arInfo->fValuea8);
+    Initialize(arInfo);
     ResourceC73* pkCur = kPrimary.m_pObject;
     if (!pkCur)
     {
         DescriptorC73 kDesc;
-        kDesc.iValue = pkInput->unk84;
+        kDesc.iValue = arInfo->unk84;
         ResourceC73* pkSource = GetSource();
         kDesc.pvHandle = pkSource ? pkSource->pvHandle : 0;
         kPrimary = new ResourceC73(&kDesc);
     }
-    if (pkInput->pkProperty)
+    if (arInfo->pkProperty)
     {
         if (kPrimary.m_pObject)
         {
-            kPrimary.m_pObject->SetProperty(pkInput->pkProperty);
+            kPrimary.m_pObject->SetProperty(arInfo->pkProperty);
             ResourceC73* pkRes = kPrimary.m_pObject;
-            PropertyC73* pkProp = pkInput->pkProperty;
+            PropertyC73* pkProp = arInfo->pkProperty;
             pkProp->Configure(pkRes, MakeValueC73(1.0f, 1.0f, 0.0f, DAT_010c44ac));
-            if (pkInput->pkProperty->bEnabled)
+            if (arInfo->pkProperty->bEnabled)
                 Toggle(0);
         }
         if (pkSecondary)
-            pkSecondary->SetProperty(pkInput->pkProperty);
+            pkSecondary->SetProperty(arInfo->pkProperty);
     }
-    iValue520 = pkInput->iValue9c;
-    fValue534 = pkInput->fValue8c;
-    fValue54c = pkInput->fValue90;
-    iValue604 = pkInput->iValueb4;
-    pkInput->pvHandle = kPrimary.m_pObject ? kPrimary.m_pObject->pvHandle : 0;
-    Update(pkInput);
+    iValue520 = arInfo->iValue9c;
+    fValue534 = arInfo->fValue8c;
+    fValue54c = arInfo->fValue90;
+    iValue604 = arInfo->iValueb4;
+    arInfo->pvHandle = kPrimary.m_pObject ? kPrimary.m_pObject->pvHandle : 0;
+    Update(arInfo);
     if (pkNode->m_bDecalsEnabled)
         pkNode->m_bDecalsEnabled = true;
     else
         pkNode->m_bDecalsEnabled = true;
     FlagsC73& kFlagsRef = kFlags;
-    kFlagsRef.SetBit(0x2000000, pkInput->bFlag97 != 0);
-    kFlagsRef.SetBit(0x4000000, pkInput->bFlag98 != 0);
+    kFlagsRef.SetBit(0x2000000, arInfo->bFlag97 != 0);
+    kFlagsRef.SetBit(0x4000000, arInfo->bFlag98 != 0);
     NodeC73* pkN = pkNode;
     if (pkN)
     {
         Sync();
-        pkN->Apply(&kFlagsRef);
+        pkN->hkpCharacterProxy_addCharacterProxyListener(&kFlagsRef);
         Sync();
     }
 }
@@ -23518,19 +23922,22 @@ struct Vec74
 struct Quat74
 {
     Vec74 value;
-    void setMulInverse(const Quat74& a, const Quat74& b);
+    void setMulInverse(const Quat74& q0, const Quat74& q1);
 };
 // Combines quaternions a and b: xyz from b cross a, minus a.w times b, plus b.w times a, with w set from the 4D dot of a and b.
 // @fnv 0x00c74ac0
 // src: COMMUNITY 0x00c74ac0
-void Quat74::setMulInverse(const Quat74& a, const Quat74& b)
+// pdb: hkQuaternion::setMulInverse | bhkRagdollController.obj | debug, call graph, high
+// pdb params: q0, q1
+// pdb locals: xyz, w
+void Quat74::setMulInverse(const Quat74& q0, const Quat74& q1)
 {
     Vec74 xyz;
-    xyz.cross(b.value, a.value);
-    xyz.subtractScaled(a.value.component(3), b.value);
-    xyz.addScaled(b.value.component(3), a.value);
+    xyz.cross(q1.value, q0.value);
+    xyz.subtractScaled(q0.value.component(3), q1.value);
+    xyz.addScaled(q1.value.component(3), q0.value);
     Vec74 w;
-    w.splat(a.value.dot(b.value));
+    w.splat(q0.value.dot(q1.value));
     value.combine(xyz, w);
 }
 
@@ -23763,12 +24170,15 @@ struct ControllerLocal
     StateLocal states[2];
     unsigned short ids[7];
     unsigned char active, unk21f;
-    void bhkRagdollController_DoGrabIK(void* arg);
+    void bhkRagdollController_DoGrabIK(void* arWorldFromModel);
 };
 // For each active state, blends position when not fading, moves weight toward 1 (0 if fading), then deactivates it once faded out or emits via FUN_00cdbae0.
 // @fnv 0x00c751f0
 // src: COMMUNITY 0x00c751f0
-void ControllerLocal::bhkRagdollController_DoGrabIK(void* arg)
+// pdb: bhkRagdollController::DoGrabIK | bhkRagdollController.obj | retail, upstream name already matches, high
+// pdb params: arWorldFromModel
+// pdb locals: i, desiredWeight, targetWS, targetMS, normalWS, currentTargetLoc, hingeAxisTest, setup
+void ControllerLocal::bhkRagdollController_DoGrabIK(void* arWorldFromModel)
 {
     float zero = 0.0f;
     unsigned char result;
@@ -23822,7 +24232,7 @@ void ControllerLocal::bhkRagdollController_DoGrabIK(void* arg)
             else
             {
                 TransformedPosition transformed;
-                transformed.hkVector4_setTransformedInversePos_00c7f840(arg, &state->position);
+                transformed.hkVector4_setTransformedInversePos_00c7f840(arWorldFromModel, &state->position);
                 DescriptorLocal descriptor;
                 descriptor.FUN_00c74ed0();
                 descriptor.weight0 = state->weight;
@@ -24430,6 +24840,9 @@ struct ControllerRay
 // Reuses a cached ray result if from/to match, else casts via an object or ray world; writes hit, fraction and normal and updates the cache.
 // @fnv 0x00c77460
 // src: XBOX_PDB 0x00c77460
+// pdb: bhkRagdollController::castRay | bhkRagdollController.obj | retail, upstream name already matches, high
+// pdb params: arFromWS, arToWS, arHitFractionOut, arNormalWSOut
+// pdb locals: bcastResult, intersectionPointWorld, hitLoc, ullLayer, rayflt, pickData, pw, castInput, castOutput, pelvisTranslWS, upMS, fnewHitFrac
 bool* ControllerRay::bhkRagdollController_castRay(bool* hitOut, const Vec& from, const Vec& to, float* fraction, Vec& normal)
 {
     bool hit = false;
@@ -24653,7 +25066,7 @@ struct S00c79e20_Ostream
     void* m_vtbl;
     int m_iObjectReferenceCount;
     void* m_pStreamWriter;
-    void FUN_00cb1600(char* buf, int size);
+    void FUN_00cb1600(char* buf, int bufSize);
     S00c79e20_Ostream(char* buf, int size)
     {
         FUN_00cb1600(buf, size);
@@ -24893,6 +25306,8 @@ struct S00c79e20_Ctrl
 // Logs mappings where bone B locks translation, no target matches and translation length exceeds 0.01; returns true if it logged or a mapper is missing.
 // @fnv 0x00c79e20
 // src: XBOX_PDB 0x00c79e20
+// pdb: bhkRagdollController::CheckMappersForWarnings | bhkRagdollController.obj | retail, upstream name already matches, high
+// pdb locals: bret, i, rboneA, boneIdA, prb, prbBHK, rboneB, boneIdB, prbT, simpleMapping, err, trans, assertBuf, ostr, rBoneA, rBoneB
 bool S00c79e20_Ctrl::bhkRagdollController_CheckMappersForWarnings()
 {
     bool warned = false;
@@ -25127,24 +25542,27 @@ inline SmallFlag S_00c7fb50_node::Broken(const S_00c7fb50_item* x) const
 // Returns portal if all items are type 11 or broken type 12; otherwise recurses into the other body of the first item that is neither.
 // @fnv 0x00c7fb50
 // src: COMMUNITY 0x00c7fb50
-S_00c7fb50_portal* __cdecl bhkUtilFunctions_FindConstrainedSystemRoot(S_00c7fb50_portal* portal)
+// pdb: bhkUtilFunctions::FindConstrainedSystemRoot | bhkUtilFunctions.obj | retail, upstream name already matches, high
+// pdb params: apBody
+// pdb locals: mark, bonlyMasterContact, i, pcon, bbrokenConstraint, pdata, pmasterBody
+S_00c7fb50_portal* __cdecl bhkUtilFunctions_FindConstrainedSystemRoot(S_00c7fb50_portal* apBody)
 {
-    if (portal)
+    if (apBody)
     {
 
         bool all = true;
-        for (int i = 0; i < portal->Count(); ++i)
+        for (int i = 0; i < apBody->Count(); ++i)
         {
             if (!all)
                 break;
-            const S_00c7fb50_node* node = portal->At(i).item->Data();
+            const S_00c7fb50_node* node = apBody->At(i).item->Data();
             all = node->vtbl->get_type((S_00c7fb50_node*)node) == 11;
         }
         if (!all)
         {
-            for (int j = 0; j < portal->Count(); ++j)
+            for (int j = 0; j < apBody->Count(); ++j)
             {
-                S_00c7fb50_item* item = portal->At(j).item;
+                S_00c7fb50_item* item = apBody->At(j).item;
                 if (item->Data()->vtbl->get_type((S_00c7fb50_node*)item->Data()) != 11)
                 {
                     bool broken = false;
@@ -25155,14 +25573,14 @@ S_00c7fb50_portal* __cdecl bhkUtilFunctions_FindConstrainedSystemRoot(S_00c7fb50
                     }
                     if (!broken)
                     {
-                        S_00c7fb50_portal* next = item->BodyA() == portal ? item->BodyB() : item->BodyA();
+                        S_00c7fb50_portal* next = item->BodyA() == apBody ? item->BodyB() : item->BodyA();
                         return bhkUtilFunctions_FindConstrainedSystemRoot(next);
                     }
                 }
             }
         }
     }
-    return portal;
+    return apBody;
 }
 
 namespace fnv_00c68de0 {
@@ -25226,6 +25644,7 @@ struct FNV_C68DE0_OWNER
 // If o10 is set, calls o10->v3(0.0f), passes the TLS value to FUN_00cb0da0 and calls w9 on the holder's h18 object, then calls FUN_00c688b0.
 // @fnv 0x00c68de0
 // src: COMMUNITY 0x00c68de0
+// pdb: bhkWorld::UpdateDebugger | bhkWorld.obj | retail, upstream name already matches, high
 void FNV_C68DE0_OWNER::bhkWorld_UpdateDebugger()
 {
     if (o10)
@@ -25295,7 +25714,7 @@ struct hkEntityStub
 // 0x00c97370 belongs to Havok hkpWorld (action insertion), not the bhkWorld wrapper.
 struct ActionWorld
 {
-    void AddEntityStub(struct hkEntityRefStub* e);
+    void AddEntityStub(struct hkEntityRefStub* action);
 };
 
 struct hkEntityRefStub
@@ -25390,6 +25809,8 @@ struct FUN_00c6aac0_Owner : FUN_00c6aac0_Base
 
 // @fnv 0x00c6aac0
 // src: COMMUNITY 0x00c6aac0
+// pdb: bhkWorld::AddBatchedActions | bhkWorld.obj | retail, upstream name already matches, high
+// pdb locals: tempMemContext, pw, i, entities, bentInWorld, j
 void FUN_00c6aac0_Owner::bhkWorld_AddBatchedActions()
 {
     TlsStateScope scope;
@@ -25623,7 +26044,7 @@ struct S00c78160_Pose
     hkQsTransform* m_pModelPose;
     int unk14, unk18;
     unsigned int* m_pBoneFlags;
-    const hkQsTransform& hkaPose_calculateBoneModelSpace(int boneIdx);
+    const hkQsTransform& hkaPose_calculateBoneModelSpace(int theBoneIdx);
     const S00c78160_V4& hkaPose_accessBoneLocalSpace(int boneIdx);
     __forceinline const hkQsTransform& getBoneModelSpace(int boneIdx)
     {
@@ -25667,6 +26088,8 @@ struct S00c78160_This
 
 // @fnv 0x00c78160
 // src: XBOX_PDB 0x00c78160
+// pdb: bhkRagdollController::AdjustCurrentTarget | bhkRagdollController.obj | retail, upstream name already matches, high
+// pdb locals: forwardMS, targetPosMS, headPosWS, animHeadFwdWS, fwdLS, currTargetPosMS, newTargetWS, bodyPosWS, ftempOffset, ftrackLen, lookDir
 void S00c78160_This::bhkRagdollController_AdjustCurrentTarget()
 {
     S00c78160_V4 direction;
@@ -26042,6 +26465,8 @@ struct PoseControllerLocal
 
 // @fnv 0x00c79a50
 // src: COMMUNITY 0x00c79a50
+// pdb: bhkRagdollController::SetSGPoseLocalSpace | bhkRagdollController.obj | retail, upstream name already matches, high
+// pdb locals: fragdollScaleInv, inumSkelBones, i, transf, pcol, pobj, pblendCol
 void PoseControllerLocal::bhkRagdollController_SetSGPoseLocalSpace()
 {
     int count = source->hierarchy->count;
@@ -26183,8 +26608,8 @@ struct P103Pose
     unsigned int unk20, unk24;
     bool localSynced;
     bool modelSynced;
-    P103Transform* accessBoneModelSpace(int bone, int mode);
-    P103Transform* hkaPose_calculateBoneModelSpace(int bone);
+    P103Transform* accessBoneModelSpace(int bone, int propagateOrNot);
+    P103Transform* hkaPose_calculateBoneModelSpace(int theBoneIdx);
     void hkaPose_setToReferencePose();
     __forceinline void storeModel(int selected, const P103Transform& target);
     __forceinline const P103Transform& localAt(int index);
@@ -26425,19 +26850,22 @@ struct P103Controller
     float pitch;
     float yaw;
     void bhkRagdollController_AdjustCurrentTarget();
-    bool bhkRagdollController_BoneTrack(int mode, const P103Transform& transform);
-    void bhkRagdollController_DoLookAtIK(P103Transform* transform);
+    bool bhkRagdollController_BoneTrack(int aeBone, const P103Transform& arWorldFromModel);
+    void bhkRagdollController_DoLookAtIK(P103Transform* arWorldFromModel);
 };
 // Stores the bone's transform in pose, combines it with the given transform, and sets pitch/yaw from referencePose, marking changed past the limits.
 // @fnv 0x00c7aa60
 // src: XBOX_PDB 0x00c7aa60
-void P103Controller::bhkRagdollController_DoLookAtIK(P103Transform* transform)
+// pdb: bhkRagdollController::DoLookAtIK | bhkRagdollController.obj | retail, upstream name already matches, high
+// pdb params: arWorldFromModel
+// pdb locals: currHeadMS, worldFromHead, upHS, fwdEyeHS, forwardHS, rightHS
+void P103Controller::bhkRagdollController_DoLookAtIK(P103Transform* arWorldFromModel)
 {
     bhkRagdollController_AdjustCurrentTarget();
     if (changed || !enabled)
     {
         forceChanged = 1;
-        bhkRagdollController_BoneTrack(1, *transform);
+        bhkRagdollController_BoneTrack(1, *arWorldFromModel);
     }
     P103Transform& target = *pose->accessBoneModelSpace(bone, 1);
     ((P103Quaternion*)&target.rotation)->setMul(&target.rotation, (const __m128*)&unk0c0);
@@ -26447,9 +26875,9 @@ void P103Controller::bhkRagdollController_DoLookAtIK(P103Transform* transform)
         P103Transform* boneTransform = pose->modelAt(bone);
         P103Transform combined;
         combined.translation =
-            _mm_add_ps(P103Rotate(transform->rotation, boneTransform->translation), transform->translation);
-        ((P103Quaternion*)&combined.rotation)->setMul(&transform->rotation, &boneTransform->rotation);
-        combined.scale = _mm_mul_ps(transform->scale, boneTransform->scale);
+            _mm_add_ps(P103Rotate(arWorldFromModel->rotation, boneTransform->translation), arWorldFromModel->translation);
+        ((P103Quaternion*)&combined.rotation)->setMul(&arWorldFromModel->rotation, &boneTransform->rotation);
+        combined.scale = _mm_mul_ps(arWorldFromModel->scale, boneTransform->scale);
         changed = bhkRagdollController_BoneTrack(0, combined) || forceChanged != 0;
         __m128 right = _mm_setr_ps(1.0f, 0.0f, 0.0f, 0.0f);
         __m128 axis = _mm_setr_ps(0.0f, 1.0f, 0.0f, 0.0f);
@@ -26520,7 +26948,7 @@ struct bhkCollisionProxy : public bhkNiCollisionObject
     unsigned short m_ucFlags;
     bool GetFlag(unsigned int bit) const { return (m_ucFlags >> bit) & 1; }
     bhkWorld* m_pkWorld;
-    void bhkNiCollisionObject_SetDebugDisplay(bool bEnable);
+    void bhkNiCollisionObject_SetDebugDisplay(bool abTF);
 };
 
 extern unsigned int DAT_0126fd98;
@@ -26542,11 +26970,14 @@ struct CollisionTlsGuard
 // If bEnable, creates a bhkColDisp node under the parent and sets flag 0x10; otherwise looks up bhkColDisp children of the parent and clears flag 0x10.
 // @fnv 0x00c6bd60
 // src: XBOX_PDB 0x00c6bd60
-void bhkCollisionProxy::bhkNiCollisionObject_SetDebugDisplay(bool bEnable)
+// pdb: bhkNiCollisionObject::SetDebugDisplay | bhkNiCollisionObject.obj | retail, upstream name already matches, high
+// pdb params: abTF
+// pdb locals: tempMemContext, pb, pparent, spav, ptarget, proot, UpdateData, spTempAVObject, ichildren, I, pav
+void bhkCollisionProxy::bhkNiCollisionObject_SetDebugDisplay(bool abTF)
 {
     CollisionTlsGuard guard(0x10);
 
-    if (bEnable)
+    if (abTF)
     {
         if (GetFlag(4))
         {
@@ -26555,7 +26986,7 @@ void bhkCollisionProxy::bhkNiCollisionObject_SetDebugDisplay(bool bEnable)
         bhkWorld* world = m_pkWorld;
         if (world)
         {
-            bhkSubData* updateData = world->m_pHavokObject ? &reinterpret_cast<bhkWorldSub*>(world->m_pHavokObject)->sub : 0;
+            bhkSubData* updateData = world->phkObject ? &reinterpret_cast<bhkWorldSub*>(world->phkObject)->sub : 0;
             int val = updateData ? updateData->unk1C : 0;
             if ((val & 0x7F) == 0x11)
             {
@@ -27292,43 +27723,46 @@ struct C70CharacterController
     int unk590;
     ConstraintProxy* constraint594;
     ConstraintProxy* constraint598;
-    void ToggleAndUpdate();
+    void bhkCharacterProxy_CleanUp();
     void bhkCharacterController_SetSize(float);
-    void bhkCharacterController_SetCapsuleRadius(float);
+    void bhkCharacterController_SetRadius(float);
     void bhkCharacterController_SetWorld(WorldProxy*);
 };
 // Moves the character controller between worlds by detaching constraints from the old world and attaching them to the new one.
 // @fnv 0x00c70c90
 // src: XBOX_PDB 0x00c70c90
-void C70CharacterController::bhkCharacterController_SetWorld(WorldProxy* world)
+// pdb: bhkCharacterController::SetWorld | bhkCharacterController.obj | retail, upstream name already matches, high
+// pdb params: apWorld
+// pdb locals: pw
+void C70CharacterController::bhkCharacterController_SetWorld(WorldProxy* apWorld)
 {
     BodyProxy* body = link ? link->hkpCharacterProxy_getShapePhantom() : 0;
     WorldProxy* current = body->unk08 ? body->unk08->world : 0;
-    if (current != world)
+    if (current != apWorld)
     {
         if (current)
         {
-            ToggleAndUpdate();
+            bhkCharacterProxy_CleanUp();
             constraint594->Detach();
             constraint598->Detach();
         }
         if (link)
             link->ahkpCharacterProxy_GetCdPoints()->unk04 = 0;
-        if (world)
+        if (apWorld)
         {
             if (constraint594)
             {
                 if (!(*(unsigned char*)&flags & 1) && !((unsigned char)(flags >> 20) & 1))
                 {
                     bhkCharacterController_SetSize((float)(DAT_01267bcc * 0.009999999776482582));
-                    bhkCharacterController_SetCapsuleRadius((float)(DAT_01267bcc * 0.009999999776482582));
+                    bhkCharacterController_SetRadius((float)(DAT_01267bcc * 0.009999999776482582));
                     bhkCharacterController_SetSize(0.0f);
                 }
-                constraint594->attach(world);
+                constraint594->attach(apWorld);
                 ConstraintProxy* c = constraint594;
-                world->bhkWorld_SetDebugObjectColor(c, PackColorBigEndian(1.0f, 1.0f, 0.0f, 0.75f));
+                apWorld->bhkWorld_SetDebugObjectColor(c, PackColorBigEndian(1.0f, 1.0f, 0.0f, 0.75f));
             }
-            constraint598->Attach(world);
+            constraint598->Attach(apWorld);
         }
     }
 }
@@ -27396,6 +27830,7 @@ class FUN_00c71120
 
 // Destructor for FUN_00c71120; the body is empty because the C71120ArrayBase and C71120Array members handle their own cleanup.
 // @fnv 0x00c71120
+// pdb: hkListShapeCinfo::~hkListShapeCinfo | bhkCharacterController.obj | retail, call graph, high
 FUN_00c71120::~FUN_00c71120()
 {}
 
@@ -27562,13 +27997,16 @@ struct Shell_c6a540
     int unk88;
     int unk8c;
     C6A540ActionList m_kList;
-    void bhkWorld_UpdateActions(float afValue);
+    void bhkWorld_UpdateActions(float afDelta);
 };
 
 // Iterates m_kList; items whose v37() returns false are removed from the list, others get v49(afValue).
 // @fnv 0x00c6a540
 // src: COMMUNITY 0x00c6a540
-void Shell_c6a540::bhkWorld_UpdateActions(float afValue)
+// pdb: bhkWorld::UpdateActions | bhkWorld.obj | retail, upstream name already matches, high
+// pdb params: afDelta
+// pdb locals: plist, paction, pnext
+void Shell_c6a540::bhkWorld_UpdateActions(float afDelta)
 {
     FUN_00c68f50_cls* pIter = &m_kList;
     while (pIter && (pIter->m_next || pIter->m_key.m_pObject))
@@ -27585,7 +28023,7 @@ void Shell_c6a540::bhkWorld_UpdateActions(float afValue)
                 m_kList.RemoveKey((FUN_00c663d0_Ref**)&spItem);
             }
             else
-                pItem->v49(afValue);
+                pItem->v49(afDelta);
         }
         pIter = pNext;
     }
@@ -27629,6 +28067,8 @@ void __cdecl bhkCharacterControllerCinfo_ReleaseDefaultShape();
 // Runs FUN_00c66570, FUN_00c6d340 and FUN_00c6d3c0, releases DAT_012677a8, deletes DAT_012677d0, calls v02(3) and v00(0) on DAT_012677d4, then clears it.
 // @fnv 0x00c66670
 // src: XBOX_PDB 0x00c66670
+// pdb: bhkWorld::QuitSystem | bhkWorld.obj | retail, upstream name already matches, high
+// pdb locals: tempMemContext
 void __cdecl bhkWorld_QuitSystem()
 {
     ThreadMemoryScope scope;
@@ -27678,11 +28118,11 @@ struct RetC
     int m_08;
     int m_0c;
 };
-RetC* __cdecl GetExtraDataChecked(struct C69960Arg* a);
+RetC* __cdecl GetExtraDataChecked(struct C69960Arg* apObject);
 void* __cdecl MemoryManager_AlignedAllocate16(int size);
 void __cdecl FUN_0056df80(void* dst, void* src);
-void __cdecl bhkWorld_DoObjects(struct C69960Arg* a, void* ctx);
-void __cdecl bhkWorld_DoObjectRec(struct C69960Arg* a, void* ctx, int cb);
+void __cdecl bhkWorld_DoObjects(struct C69960Arg* apObject, void* arData);
+void __cdecl bhkWorld_DoObjectRec(struct C69960Arg* apObject, void* arData, int apFunc);
 struct NodeBase
 {
     virtual void Slot00();
@@ -27754,7 +28194,7 @@ struct __declspec(align(16)) C69960Node : NodeBase
 {
     Vec4 m_20;
     Vec4 m_30;
-    C69960Node(C69960Node* a);
+    C69960Node(C69960Node* apBody);
     static void* operator new(unsigned int size);
     static void operator delete(void* p);
 };
@@ -27810,8 +28250,8 @@ struct ResObj
     virtual void Extraac();
     virtual void Extrab0();
     virtual bool GetB4();
-    void __thiscall bhkNiCollisionObject_SetWorldObject(C69960Node* a);
-    void __thiscall AttachTarget(void* a);
+    void __thiscall bhkNiCollisionObject_SetWorldObject(C69960Node* apWorldObject);
+    void __thiscall AttachTarget(void* pkCollisionObject);
 };
 struct C69960Arg
 {
@@ -27830,7 +28270,7 @@ struct C69960Arg
     int m_30;
     Mat9 m_34;
     NiPoint3 m_58;
-    void __thiscall AttachTarget(void* a);
+    void __thiscall AttachTarget(void* pkCollisionObject);
 };
 struct LocalRef
 {
@@ -27935,11 +28375,14 @@ struct Host
     char m_16;
     char m_17;
     int m_18;
-    bool __thiscall bhkWorld_AddObjectsAndMoveController(C69960Arg* arg1, C69960Arg* arg2);
+    bool __thiscall bhkWorld_AddObjectsAndMoveController(C69960Arg* apObject, C69960Arg* apRoot);
 };
 // @fnv 0x00c69960
 // src: XBOX_PDB 0x00c69960
-bool __thiscall Host::bhkWorld_AddObjectsAndMoveController(C69960Arg* apSource, C69960Arg* apTarget)
+// pdb: bhkWorld::AddObjectsAndMoveController | bhkWorld.obj | retail, upstream name already matches, high
+// pdb params: apObject, apRoot
+// pdb locals: bres, tempMemContext, tempAutoEvent, recData, pcol, inotify, pwo, pbody, spbhkBody, localRot, localPos, pos, tmpRot, rot, tmp, objectTrans
+bool __thiscall Host::bhkWorld_AddObjectsAndMoveController(C69960Arg* apObject, C69960Arg* apRoot)
 {
     __m128 matrixStorage[4];
     Mat44& matTransform = *reinterpret_cast<Mat44*>(matrixStorage);
@@ -27960,10 +28403,10 @@ bool __thiscall Host::bhkWorld_AddObjectsAndMoveController(C69960Arg* apSource, 
     bool flagA = false;
     int state2 = 0;
     ResObj* result1 = 0;
-    if (apSource && apTarget && IsEnabled(apTarget))
+    if (apObject && apRoot && IsEnabled(apRoot))
     {
         {
-            ResObj* p1 = apSource->m_1c;
+            ResObj* p1 = apObject->m_1c;
             state2 = 0;
             if (p1)
             {
@@ -27976,7 +28419,7 @@ bool __thiscall Host::bhkWorld_AddObjectsAndMoveController(C69960Arg* apSource, 
                     {
                         m_14 = 1;
                         flagA = 1;
-                        if (apTarget != apSource)
+                        if (apRoot != apObject)
                         {
                             C69960Node* work = 0;
                             if (NiObject_IsKindOf(&g_012683c8, node))
@@ -28006,7 +28449,7 @@ bool __thiscall Host::bhkWorld_AddObjectsAndMoveController(C69960Arg* apSource, 
                         main_block:
                             if (work)
                             {
-                                FUN_0056df80(&matTransform, &apSource->m_34);
+                                FUN_0056df80(&matTransform, &apObject->m_34);
                                 Rotate((*reinterpret_cast<__m128*>(&vTemp)), (*reinterpret_cast<__m128*>(&work->m_20)), (*reinterpret_cast<__m128*>(&work->m_30)));
                                 objAC.setTransformedPos_00c7f640(&matTransform, &vTemp);
                                 obj60.FUN_00cb26e0(&matTransform);
@@ -28014,17 +28457,17 @@ bool __thiscall Host::bhkWorld_AddObjectsAndMoveController(C69960Arg* apSource, 
                                 RotateInverse((*reinterpret_cast<__m128*>(&vTemp)), (*reinterpret_cast<__m128*>(&work->m_20)), (*reinterpret_cast<__m128*>(&objAC.m_00)));
                                 (*reinterpret_cast<__m128*>(&work->m_30)) = (*reinterpret_cast<__m128*>(&vTemp));
                                 (*reinterpret_cast<__m128*>(&work->m_20)) = (*reinterpret_cast<__m128*>(&obj74.m_00));
-                                ((ResObj*)apTarget)->AttachTarget(result1);
-                                apSource->AttachTarget(0);
-                                apSource->m_30 = (apSource->m_30 & ~0x10) | 6;
+                                ((ResObj*)apRoot)->AttachTarget(result1);
+                                apObject->AttachTarget(0);
+                                apObject->m_30 = (apObject->m_30 & ~0x10) | 6;
                             }
                             else
                             {
-                                ((ResObj*)apTarget)->AttachTarget(result1);
-                                apSource->AttachTarget(0);
-                                apSource->m_34 = DAT_011a9448;
-                                apSource->m_58 = *(const NiPoint3*)&DAT_011f426c;
-                                apSource->m_30 = (apSource->m_30 & ~0x10) | 6;
+                                ((ResObj*)apRoot)->AttachTarget(result1);
+                                apObject->AttachTarget(0);
+                                apObject->m_34 = DAT_011a9448;
+                                apObject->m_58 = *(const NiPoint3*)&DAT_011f426c;
+                                apObject->m_30 = (apObject->m_30 & ~0x10) | 6;
                             }
                         }
                     }
@@ -28037,7 +28480,7 @@ bool __thiscall Host::bhkWorld_AddObjectsAndMoveController(C69960Arg* apSource, 
             if (DAT_012677a1)
             {
                 ctx.m_08 = 0xa;
-                bhkWorld_DoObjects(apTarget, &ctx);
+                bhkWorld_DoObjects(apRoot, &ctx);
             }
             ctx.m_08 = 0;
             ctx.m_0c = state2;
@@ -28046,7 +28489,7 @@ bool __thiscall Host::bhkWorld_AddObjectsAndMoveController(C69960Arg* apSource, 
             ctx.m_18 = 1;
             int cb = (int)DAT_011afe88;
             if (cb)
-                bhkWorld_DoObjectRec(apTarget, &ctx, cb);
+                bhkWorld_DoObjectRec(apRoot, &ctx, cb);
         }
     }
     return flagA;
@@ -28054,15 +28497,17 @@ bool __thiscall Host::bhkWorld_AddObjectsAndMoveController(C69960Arg* apSource, 
 
 struct Stub65800 : BC6C330HavokCollision
 {
-    void bhkNiCollisionObject_LoadBinary(BC6C330Stream& kStream);
-    void bhkCollisionObject_LoadBinary(BC6C330Stream& kStream);
+    void bhkNiCollisionObject_LoadBinary(BC6C330Stream& arStream);
+    void bhkCollisionObject_LoadBinary(BC6C330Stream& arStream);
 };
 
 // @fnv 0x00c65800
 // src: XBOX_PDB 0x00c65800
-void Stub65800::bhkCollisionObject_LoadBinary(BC6C330Stream& kStream)
+// pdb: bhkCollisionObject::LoadBinary | bhkCollisionObject.obj | debug, upstream name already matches, high
+// pdb params: arStream
+void Stub65800::bhkCollisionObject_LoadBinary(BC6C330Stream& arStream)
 {
-    bhkNiCollisionObject_LoadBinary(kStream);
+    bhkNiCollisionObject_LoadBinary(arStream);
 }
 
 

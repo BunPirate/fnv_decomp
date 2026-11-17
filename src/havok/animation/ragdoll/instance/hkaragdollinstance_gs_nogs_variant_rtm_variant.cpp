@@ -131,7 +131,7 @@ struct FUN_00ce26f0_Class
 
     void hkaRagdollInstance_getPoseWorldSpace_00ce18d0(FUN_00ce2430_Transform* a);
     void ApplyValueToTransforms(float a, FUN_00ce2430_Transform* b);
-    void hkaRagdollInstance_getApproxCurrentPoseWorldSpace(FUN_00ce2430_Transform* a);
+    void hkaRagdollInstance_getApproxCurrentPoseWorldSpace(FUN_00ce2430_Transform* poseWorldSpaceOut);
 };
 typedef unsigned int hk_size_tR;
 class hkMemoryAllocatorR
@@ -156,7 +156,7 @@ struct hkMemoryRouterR
     }
 };
 hkMemoryRouterR& __cdecl GetMemoryRouterR() throw();
-void __cdecl hkArrayUtil_reserveR(hkMemoryAllocatorR& kAlloc, void* pkArray, int iNumElements, int iSizeElem) throw();
+void __cdecl hkArrayUtil_reserveR(hkMemoryAllocatorR& mem, void* array, int numElem, int sizeElem) throw();
 
 template <typename T> __forceinline T* hkAllocateStackR(int n)
 {
@@ -197,7 +197,7 @@ class hkReferencedObjectR
 class hkpConstraintInstanceR : public hkReferencedObjectR
 {
   public:
-    hkpConstraintInstanceR* clone(hkpRigidBody* pkEntityA, hkpRigidBody* pkEntityB, int eCloneMode) const throw();
+    hkpConstraintInstanceR* clone(hkpRigidBody* newEntityA, hkpRigidBody* newEntityB, int mode) const throw();
 };
 
 #include "../../../../../include/hkaRagdollInstance.h"
@@ -224,15 +224,15 @@ struct FUN_00ce1680_Body
 };
 struct FUN_00c94bd0_Obj
 {
-    void hkpWorld_addEntityBatch(void* objects, int count, int flag);
+    void hkpWorld_addEntityBatch(void* entityBatch, int numEntities, int initialActivationState);
 };
 struct FUN_00c97d30_Obj
 {
-    void hkpWorld_addConstraint(void* object);
+    void hkpWorld_addConstraint(void* constraint);
 };
 struct CallRet
 {
-    void hkpWorld_updateCollisionFilterOnEntity(void* object, int a, int b);
+    void hkpWorld_updateCollisionFilterOnEntity(void* object, int updateMode, int updateShapeCollectionFilter);
 };
 class FUN_00ce1680_Ragdoll : public hkReferencedObject
 {
@@ -254,7 +254,7 @@ struct RagdollInstance_ce24
     hkArray<ReferenceObject*> m_ppConstraints;
     hkArray<int> m_kBoneMap;
     hkaSkeleton* m_pSkeleton;
-    void hkaRagdollInstance_commonInit(const hkArray<ReferenceObject*>& bodies, const hkArray<ReferenceObject*>& constraints,
+    void hkaRagdollInstance_commonInit(const hkArray<ReferenceObject*>& rigidBodies, const hkArray<ReferenceObject*>& constraints,
                       hkaSkeleton* skeleton);
     RagdollInstance_ce24* hkaRagdollInstance_hkaRagdollInstance(const hkArray<ReferenceObject*>& bodies,
                                        const hkArray<ReferenceObject*>& constraints, hkaSkeleton* skeleton);
@@ -274,7 +274,7 @@ struct Vec4x3
     __m128 r1;
     __m128 r2;
 };
-void __cdecl hkaSkeletonMapper_additivePoseFromCombinedPoseAndReferencePose(unsigned int arg0, unsigned int arg1, unsigned int arg2, int count, unsigned int arg4);
+void __cdecl hkaSkeletonMapper_additivePoseFromCombinedPoseAndReferencePose(unsigned int combinedPose, unsigned int referencePose, unsigned int boneToTrackIndices, int numBones, unsigned int additivePoseOut);
 extern float DAT_01267e30;
 extern float DAT_01017d00;
 extern float DAT_01017d10;
@@ -308,7 +308,7 @@ struct FUN_00ce2510
     InitArray<int> m_kBoneMap;
     int m_2c;
 
-    void hkaRagdollInstance_commonInit(int a, int b, int c);
+    void hkaRagdollInstance_commonInit(int rigidBodies, int b, int c);
     FUN_00ce2510(int a, int b, int c, ObjectArray<int>* d);
 };
 
@@ -498,10 +498,10 @@ struct PoseVelocity_MyQuaternion
 {
     PoseVelocity_MyVector4 m_vec;
     inline void __thiscall setMul(const PoseVelocity_MyQuaternion& a, const PoseVelocity_MyQuaternion& b);
-    inline void __thiscall normalize_005611c0();
-    inline void __thiscall setMulInverse(const PoseVelocity_MyQuaternion& a, const PoseVelocity_MyQuaternion& b);
-    inline void __thiscall hkQuaternion_getAxis(PoseVelocity_MyVector4& axis);
-    inline float __thiscall GetAngle();
+    inline void __thiscall hkQuaternion_normalize();
+    inline void __thiscall setMulInverse(const PoseVelocity_MyQuaternion& q0, const PoseVelocity_MyQuaternion& q1);
+    inline void __thiscall hkQuaternion_getAxis(PoseVelocity_MyVector4& axisOut);
+    inline float __thiscall hkQuaternion_getAngle();
 
     __forceinline bool hasValidAxis() const
     {
@@ -509,8 +509,8 @@ struct PoseVelocity_MyQuaternion
     }
 };
 
-// src: COMMUNITY 0x005611c0
-inline void PoseVelocity_MyQuaternion::normalize_005611c0()
+// src: XBOX_DEBUG_PDB 0x005611c0 (was COMMUNITY)
+inline void PoseVelocity_MyQuaternion::hkQuaternion_normalize()
 {
     m_vec.normalize(4);
 }
@@ -532,21 +532,21 @@ inline void PoseVelocity_MyQuaternion::setMul(const PoseVelocity_MyQuaternion& f
     m_vec.combine(imaginary, real);
 }
 // src: COMMUNITY 0x00c74ac0
-inline void PoseVelocity_MyQuaternion::setMulInverse(const PoseVelocity_MyQuaternion& first,
-                                                    const PoseVelocity_MyQuaternion& second)
+inline void PoseVelocity_MyQuaternion::setMulInverse(const PoseVelocity_MyQuaternion& q0,
+                                                    const PoseVelocity_MyQuaternion& q1)
 {
     PoseVelocity_MyVector4 imaginary;
-    imaginary.crossOf(second.m_vec, first.m_vec);
-    PoseVelocity_ScalarLane firstReal(_mm_shuffle_ps(first.m_vec.quad, first.m_vec.quad, 255));
-    imaginary.quad = _mm_sub_ps(imaginary.quad, _mm_mul_ps(firstReal.splat(), second.m_vec.quad));
-    PoseVelocity_ScalarLane secondReal(_mm_shuffle_ps(second.m_vec.quad, second.m_vec.quad, 255));
-    imaginary.addProduct(secondReal, first.m_vec);
+    imaginary.crossOf(q1.m_vec, q0.m_vec);
+    PoseVelocity_ScalarLane firstReal(_mm_shuffle_ps(q0.m_vec.quad, q0.m_vec.quad, 255));
+    imaginary.quad = _mm_sub_ps(imaginary.quad, _mm_mul_ps(firstReal.splat(), q1.m_vec.quad));
+    PoseVelocity_ScalarLane secondReal(_mm_shuffle_ps(q1.m_vec.quad, q1.m_vec.quad, 255));
+    imaginary.addProduct(secondReal, q0.m_vec);
     PoseVelocity_MyVector4 real;
-    real.quad = first.m_vec.dot4(second.m_vec).splat();
+    real.quad = q0.m_vec.dot4(q1.m_vec).splat();
     m_vec.combine(imaginary, real);
 }
 // src: COMMUNITY 0x00c74c90
-inline void PoseVelocity_MyQuaternion::hkQuaternion_getAxis(PoseVelocity_MyVector4& output)
+inline void PoseVelocity_MyQuaternion::hkQuaternion_getAxis(PoseVelocity_MyVector4& axisOut)
 {
     PoseVelocity_MyVector4 axis;
     axis = m_vec;
@@ -556,7 +556,7 @@ inline void PoseVelocity_MyQuaternion::hkQuaternion_getAxis(PoseVelocity_MyVecto
         static const PoseVelocity_QuadBits sign = {0x80000000, 0x80000000, 0x80000000, 0x80000000};
         axis.quad = _mm_xor_ps(axis.quad, *reinterpret_cast<const __m128*>(&sign));
     }
-    output = axis;
+    axisOut = axis;
 }
 extern "C" double __cdecl acos(double);
 extern "C" double __cdecl fabs(double);
@@ -566,7 +566,8 @@ inline float PoseVelocity_safeAcos(float input)
         return input > 0.0f ? 0.0f : 3.14159265358979f;
     return (float)acos(input);
 }
-inline float PoseVelocity_MyQuaternion::GetAngle()
+// src: XBOX_DEBUG_PDB 0x00c74c20
+inline float PoseVelocity_MyQuaternion::hkQuaternion_getAngle()
 {
     float value = (float)fabs(reinterpret_cast<const float*>(&m_vec)[3]);
     value = PoseVelocity_safeAcos(value);
@@ -600,30 +601,33 @@ struct PoseVelocity_RagdollPoseUpdater : public hkaRagdollInstance
 
 // @fnv 0x00ce1ca0
 // src: GUESS 0x00ce1ca0 (confidence: low)
+// pdb: hkaRagdollInstance::setPoseAndVelocitiesModelSpace | hkaRagdollInstance.obj | retail, object-file run extension, low
+// pdb params: poseModelSpaceA, worldFromModelA, poseModelSpaceB, worldFromModelB, timestep
+// pdb locals: invTimestep, rbTransformB, linearVelocity, angularVelocity, quatDif
 void PoseVelocity_RagdollPoseUpdater::ProcessEntries_00ce1ca0(const PoseVelocity_MyQsTransform* poseA,
                                                    const PoseVelocity_MyQsTransform& worldFromModelA,
                                                    const PoseVelocity_MyQsTransform* poseB,
                                                    const PoseVelocity_MyQsTransform& worldFromModelB, float deltaTime)
 {
     float inverseDeltaTime;
-    long boneCount = m_pSkeleton->m_kBones.m_iElementCount;
+    long boneCount = m_skeleton->m_bones.m_iElementCount;
     inverseDeltaTime = 1.0f / deltaTime;
     for (int i = 0; i < boneCount; ++i)
     {
-        int bodyIndex = m_kBoneMap.m_data[i];
+        int bodyIndex = m_boneToRigidBodyMap.m_data[i];
         if (bodyIndex >= 0)
         {
             hkpRigidBody* body;
-            body = (hkpRigidBody*)m_ppRigidBodies.m_data[bodyIndex];
+            body = (hkpRigidBody*)m_rigidBodies.m_data[bodyIndex];
             if ((bool)body)
             {
                 PoseVelocity_MyQsTransform worldPoseA;
                 worldPoseA.SetProduct(worldFromModelA, poseA[i]);
-                worldPoseA.m_rotation.normalize_005611c0();
+                worldPoseA.m_rotation.hkQuaternion_normalize();
 
                 PoseVelocity_MyQsTransform worldPoseB;
                 worldPoseB.SetProduct(worldFromModelB, poseB[i]);
-                worldPoseB.m_rotation.normalize_005611c0();
+                worldPoseB.m_rotation.hkQuaternion_normalize();
 
                 body->SetPositionAndRotation(reinterpret_cast<const NiPoint3&>(worldPoseB.m_vTranslation),
                                              reinterpret_cast<const NiQuaternion&>(worldPoseB.m_rotation));
@@ -632,16 +636,16 @@ void PoseVelocity_RagdollPoseUpdater::ProcessEntries_00ce1ca0(const PoseVelocity
                 linearVelocity.setSub4(worldPoseB.m_vTranslation, worldPoseA.m_vTranslation);
                 linearVelocity.mul4(inverseDeltaTime);
                 if (!linearVelocity.equals4(
-                        reinterpret_cast<const PoseVelocity_MyVector4&>(body->m_pMotionState.m_kTranslationalVelocity),
+                        reinterpret_cast<const PoseVelocity_MyVector4&>(body->m_motion.m_kTranslationalVelocity),
                         DAT_01017d00))
                 {
                     body->activate_00c9c1d0();
-                    body->m_pMotionState.SetTranslationalVelocity(reinterpret_cast<const hkVector4&>(linearVelocity));
+                    body->m_motion.SetTranslationalVelocity(reinterpret_cast<const hkVector4&>(linearVelocity));
                 }
 
                 PoseVelocity_MyQuaternion relativeRotation;
                 relativeRotation.setMulInverse(worldPoseB.m_rotation, worldPoseA.m_rotation);
-                relativeRotation.normalize_005611c0();
+                relativeRotation.hkQuaternion_normalize();
 
                 PoseVelocity_MyVector4 angularVelocity;
                 if (!relativeRotation.hasValidAxis())
@@ -650,17 +654,17 @@ void PoseVelocity_RagdollPoseUpdater::ProcessEntries_00ce1ca0(const PoseVelocity
                 }
                 else
                 {
-                    float angle = relativeRotation.GetAngle();
+                    float angle = relativeRotation.hkQuaternion_getAngle();
                     relativeRotation.hkQuaternion_getAxis(angularVelocity);
                     angularVelocity.mul4(angle * inverseDeltaTime);
                 }
 
                 if (!angularVelocity.equals4(
-                        reinterpret_cast<const PoseVelocity_MyVector4&>(body->m_pMotionState.m_kAngularVelocity),
+                        reinterpret_cast<const PoseVelocity_MyVector4&>(body->m_motion.m_kAngularVelocity),
                         DAT_01017d00))
                 {
                     body->activate_00c9c1d0();
-                    body->m_pMotionState.SetRotationalVelocity(reinterpret_cast<const hkVector4&>(angularVelocity));
+                    body->m_motion.SetRotationalVelocity(reinterpret_cast<const hkVector4&>(angularVelocity));
                 }
             }
         }

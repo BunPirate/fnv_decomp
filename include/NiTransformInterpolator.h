@@ -7,6 +7,7 @@
 
 class NiTransformData;
 
+// pdb: class NiTransformInterpolator, size 0x48, bases: NiKeyBasedInterpolator, 7 members
 class NiTransformInterpolator : public NiKeyBasedInterpolator
 {
   public:
@@ -37,17 +38,17 @@ class NiTransformInterpolator : public NiKeyBasedInterpolator
     virtual unsigned char GetColorKeySize(unsigned short) const;
     virtual void vf61(unsigned short);
 
-    void CopyMemberData(NiTransformInterpolator*, CloningProcess&);
+    void CopyMembers(NiTransformInterpolator*, CloningProcess&);
     void CopyMemberData(int);
     bool Update(float, NiObjectNET*, NiQuatTransform&);
 
-    NiQuatTransform m_kDefaultTransform;
-    NiPointer<NiTransformData> m_spTransformData;
-    unsigned short m_usLastRotationKeyIndex;
-    unsigned short m_usLastPositionKeyIndex;
-    unsigned short m_usLastScaleKeyIndex;
+    NiQuatTransform m_kTransformValue; // src: XBOX_RETAIL_PDB +0xc (old: m_kDefaultTransform)
+    NiPointer<NiTransformData> m_spData; // src: XBOX_RETAIL_PDB +0x2c (old: m_spTransformData)
+    unsigned short m_usLastTransIdx; // src: XBOX_RETAIL_PDB +0x30 (old: m_usLastRotationKeyIndex)
+    unsigned short m_usLastRotIdx; // src: XBOX_RETAIL_PDB +0x32 (old: m_usLastPositionKeyIndex)
+    unsigned short m_usLastScaleIdx; // src: XBOX_RETAIL_PDB +0x34 (old: m_usLastScaleKeyIndex)
     unsigned char layoutPadding36[2];
-    NiPoint3 m_kDefaultTranslation;
-    bool m_bPoseValid;
+    NiPoint3 m_origTranslate; // src: XBOX_RETAIL_PDB +0x38 (old: m_kDefaultTranslation)
+    bool bPose; // src: XBOX_RETAIL_PDB +0x44 (old: m_bPoseValid)
     unsigned char layoutPadding45[3];
 };

@@ -16,6 +16,7 @@ typedef unsigned char hkUint8;
 typedef unsigned int hkUint32;
 typedef unsigned long hkUlong;
 
+// pdb: class hkpConstraintInstance, size 0x38, bases: hkReferencedObject, 12 members
 class hkpConstraintInstance : public hkReferencedObject
 {
 public:
@@ -72,8 +73,8 @@ public:
         static void __cdecl operator delete[](void* p, void* placement);
 
         void* m_data;
-        hkUint16 m_iElementCount;
-        hkUint16 m_iCapacityState;
+        hkUint16 m_size; // src: XBOX_RETAIL_PDB +0x4 (old: m_iElementCount)
+        hkUint16 m_capacityAndFlags; // src: XBOX_RETAIL_PDB +0x6 (old: m_iCapacityState)
     };
 
     static const ClassMemberDescriptor Members[];
@@ -91,19 +92,19 @@ public:
     hkpConstraintOwner* getOwner() const;
     hkBool isConstrainedToWorld() const throw();
     ConstraintPriority getPriority() const { return (ConstraintPriority)m_priority; }
-    hkpConstraintInstance* clone_00cf3fa0(hkpEntity* pkEntityA, hkpEntity* pkEntityB, int eMode) const throw();
+    hkpConstraintInstance* clone_00cf3fa0(hkpEntity* newEntityA, hkpEntity* newEntityB, int mode) const throw();
 
-    hkpConstraintOwner* m_pOwnerObject;
+    hkpConstraintOwner* m_owner; // src: XBOX_RETAIL_PDB +0x8 (old: m_pOwnerObject)
     hkpConstraintData* m_data;
-    hkpModifierConstraintAtom* m_pConstraintModifier;
-    hkpEntity* m_kActorEntries[2];
+    hkpModifierConstraintAtom* m_constraintModifiers; // src: XBOX_RETAIL_PDB +0x10 (old: m_pConstraintModifier)
+    hkpEntity* m_entities[2]; // src: XBOX_RETAIL_PDB +0x14 (old: m_kActorEntries)
     hkUint8 m_priority;
-    hkBool m_bWantRuntime;
-    hkUint8 m_eDestructionRemapInfo;
+    hkBool m_wantRuntime; // src: XBOX_RETAIL_PDB +0x1d (old: m_bWantRuntime)
+    hkUint8 m_destructionRemapInfo; // src: XBOX_RETAIL_PDB +0x1e (old: m_eDestructionRemapInfo)
     char pad1F[1];
-    hkpConstraintInstanceSmallArraySerializeOverrideType m_kListeners;
+    hkpConstraintInstanceSmallArraySerializeOverrideType m_listeners; // src: XBOX_RETAIL_PDB +0x20 (old: m_kListeners)
     hkStringPtr m_name;
-    hkUlong m_ulUserData;
-    ConstraintRuntimeInfo* m_pConstraintInternal;
-    hkUint32 m_uiUniqueId;
+    hkUlong m_userData; // src: XBOX_RETAIL_PDB +0x2c (old: m_ulUserData)
+    ConstraintRuntimeInfo* m_internal; // src: XBOX_RETAIL_PDB +0x30 (old: m_pConstraintInternal)
+    hkUint32 m_uid; // src: XBOX_RETAIL_PDB +0x34 (old: m_uiUniqueId)
 };

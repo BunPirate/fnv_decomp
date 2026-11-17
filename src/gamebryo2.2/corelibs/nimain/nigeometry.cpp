@@ -195,6 +195,7 @@ struct NiGeometryProperties
 };
 
 // @fnv 0x00a89ab0
+// pdb: NiPropertyState::NiPropertyState | NiPropertyState.obj | retail, call graph, medium
 NiGeometry* NiGeometry::CopyMemberData()
 {
     unsigned int* fields = (unsigned int*)this;
@@ -210,20 +211,26 @@ NiGeometry* NiGeometry::CopyMemberData()
 }
 
 // @fnv 0x00a7fd90
-void NiGeometry::OnVisible(NiCullingProcess& process)
+// pdb: NiGeometry::OnVisible | NiGeometry.obj | debug, upstream name already matches, high
+// pdb params: kCuller
+void NiGeometry::OnVisible(NiCullingProcess& kCuller)
 {
-    process.Append(this);
+    kCuller.Append(this);
 }
 
 // @fnv 0x00a80b50
-void NiGeometry::LinkObject(NiStream& stream)
+// pdb: NiGeometry::LinkObject | NiGeometry.obj | retail, upstream name already matches, high
+// pdb params: kStream
+void NiGeometry::LinkObject(NiStream& kStream)
 {
-    NiAVObject::LinkObject(stream);
-    m_spModelData = (NiGeometryData*)stream.GetLoadedObject();
-    *(NiPointer<NiObject>*)&m_spSkinInstance = stream.GetLoadedObject();
+    NiAVObject::LinkObject(kStream);
+    m_spModelData = (NiGeometryData*)kStream.GetLoadedObject();
+    *(NiPointer<NiObject>*)&m_spSkinInstance = kStream.GetLoadedObject();
 }
 
 // @fnv 0x00a80680
+// pdb: NiGeometry::~NiGeometry | NiGeometry.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiGeometry::SetModelData
 void NiGeometry::ReplaceModelData(NiGeometryData* data)
 {
     if (data)
@@ -253,12 +260,15 @@ void NiGeometry::ReplaceModelData(NiGeometryData* data)
 }
 
 // @fnv 0x00a80820
-void NiGeometry::UpdatePropertiesDownwardPass(NiPropertyState* state)
+// pdb: NiGeometry::UpdatePropertiesDownward | NiGeometry.obj | retail, call graph (shared callers), high
+// pdb params: pkParentState
+// pdb locals: kPos
+void NiGeometry::UpdatePropertiesDownwardPass(NiPropertyState* pkParentState)
 {
-    NiAVObject::UpdatePropertiesDownwardPass(state);
+    NiAVObject::UpdatePropertiesDownwardPass(pkParentState);
     ((RecursiveSpinLock*)&DAT_011f42a0)->Lock(0);
     NiPropertyState* propertyState = (NiPropertyState*)((char*)this + 0x9c);
-    *propertyState = *state;
+    *propertyState = *pkParentState;
     NiPropertyNode* node = *(NiPropertyNode**)((char*)this + 0x24);
     while (node)
     {
@@ -273,6 +283,9 @@ void NiGeometry::UpdatePropertiesDownwardPass(NiPropertyState* state)
 
 // @fnv 0x00a5ac90
 // src: XBOX_PDB 0x00a5ac90
+// pdb: NiAVObject::CopyMembers | NiAVObject.obj | retail, call graph (shared callers), low
+// pdb params: pkDest, kCloning
+// pdb locals: pColObj
 void NiAVObject::CopyMembers_00a5ac90(NiAVObject* dest, CloningProcess& process)
 {
     ((NiObjectNET*)this)->CopyMemberData((NiObjectNET*)dest, process);
@@ -286,6 +299,8 @@ void NiAVObject::CopyMembers_00a5ac90(NiAVObject* dest, CloningProcess& process)
 
 // Copies the previous world bound, and if flags 19/13 conditions or a zero radius apply, allocates or updates m_kWorldBound and refreshes the flag bit 22.
 // @fnv 0x00a80710
+// pdb: NiGeometry::UpdateWorldBound | NiGeometry.obj | retail, upstream name already matches, high
+// pdb locals: oldBound
 void NiGeometry::UpdateWorldBound()
 {
     NiBound* world = (NiBound*)m_kWorldBound;
@@ -330,22 +345,25 @@ void NiGeometry::UpdateWorldBound()
 }
 
 // @fnv 0x00a80a10
-void NiGeometry::ProcessClone(CloningProcess& process)
+// pdb: NiGeometry::ProcessClone | NiGeometry.obj | retail, upstream name already matches, high
+// pdb params: kCloning
+// pdb locals: bCloned, pkClone, pkGeom, pkShader
+void NiGeometry::ProcessClone(CloningProcess& kCloning)
 {
-    NiAVObject::ProcessClone(process);
+    NiAVObject::ProcessClone(kCloning);
 
     ShaderBufferRecord* clone = 0;
-    process.m_pCloneMap->GetAt((const char*)this, clone);
+    kCloning.m_pCloneMap->GetAt((const char*)this, clone);
     NiGeometry* geometryClone = (NiGeometry*)clone;
     if (m_spSkinInstance)
     {
-        if (process.m_pCloneMap->GetAt((const char*)m_spSkinInstance.m_pObject, clone))
+        if (kCloning.m_pCloneMap->GetAt((const char*)m_spSkinInstance.m_pObject, clone))
             *(NiPointer<NiAVObject>*)&geometryClone->m_spSkinInstance = (NiAVObject*)clone;
         else
         {
             *(NiPointer<NiAVObject>*)&geometryClone->m_spSkinInstance =
-                (NiAVObject*)((NiObject*)m_spSkinInstance.m_pObject)->MakeClone(process);
-            ((NiObject*)m_spSkinInstance.m_pObject)->ProcessClone(process);
+                (NiAVObject*)((NiObject*)m_spSkinInstance.m_pObject)->MakeClone(kCloning);
+            ((NiObject*)m_spSkinInstance.m_pObject)->ProcessClone(kCloning);
         }
     }
     NiD3DShaderInterface* shader = 0;
@@ -397,6 +415,8 @@ struct DummyController
 
 // Stores a pointer to this object's offset 0x9c into the renderer and, if the controller at this+0xc exists, runs its pre-display iterate.
 // @fnv 0x00a80610
+// pdb: NiGeometry::RenderImmediate | NiGeometry.obj | debug, upstream name already matches, high
+// pdb params: pkRenderer
 void NiGeometry::RenderImmediate(NiRenderer* pkRenderer)
 {
     pkRenderer->m_pkCurrProp = (NiPropertyState*)((char*)this + 0x9c);
@@ -421,6 +441,8 @@ struct NiUpdateData;
 
 // Stores a pointer to this+0x9C in the renderer and calls the virtual at offset 0xA8 on each node in the linked list at this+0x0C.
 // @fnv 0x00a80650
+// pdb: NiGeometry::OnlyRenderImmediate | NiGeometry.obj | debug, object-file run extension, low
+// pdb params: pkRenderer
 void NiGeometry::RenderWithRenderer(NiRenderer* pkRenderer)
 {
     pkRenderer->m_pkCurrProp = (NiPropertyState*)((char*)this + 0x9C);
@@ -443,6 +465,8 @@ struct blob16
 
 // Calls FUN_00a5a450, then if the field at offset 0xbc is nonzero sets flags 4 and 2 at 0x30, sets *bSelectiveUpdate true and *bRigid false.
 // @fnv 0x00a808f0
+// pdb: NiGeometry::SetSelectiveUpdateFlags | NiGeometry.obj | retail, upstream name already matches, high
+// pdb params: bSelectiveUpdate, bSelectiveUpdateTransforms, bRigid
 void NiGeometry::SetSelectiveUpdateFlags(bool& bSelectiveUpdate, bool bSelectiveUpdateTransforms,
                                                     bool& bRigid)
 {
@@ -597,6 +621,9 @@ struct SkinView
 };
 // Scans the controller list and skin partition, then passes a consistency flag (0x4000 or 0) to the object at offset 0xb8.
 // @fnv 0x00a80930
+// pdb: NiGeometry::CalculateConsistency | NiGeometry.obj | retail, upstream name already matches, high
+// pdb params: bTool
+// pdb locals: eConsistency, pkController, pkSkin, pkRenderer
 } // namespace fnv_00a80930
 
 void NiGeometry::CalculateConsistency(bool bTool)
@@ -637,6 +664,8 @@ void NiGeometry::CalculateConsistency(bool bTool)
 
 // Registers the model data and skin instance after registering the geometry.
 // @fnv 0x00a80430
+// pdb: NiGeometry::RegisterStreamables | NiGeometry.obj | retail, upstream name already matches, high
+// pdb params: kStream
 bool NiGeometry::RegisterStreamables(NiStream& kStream)
 {
     if (!FUN_00a59f00(kStream))
@@ -658,21 +687,25 @@ const NiRTTI* NiGeometry::GetRTTI() const
 }
 
 // @fnv 0x00a809b0
-void NiGeometry::PurgeRendererData(NiRenderer* pkRenderer)
+// pdb: NiGeometry::PurgeRendererData | NiGeometry.obj | retail, upstream name already matches, high
+// pdb params: apkRenderer
+// pdb locals: pkRenderer
+void NiGeometry::PurgeRendererData(NiRenderer* apkRenderer)
 {
-    NiAVObject::PurgeRendererData(pkRenderer);
-    (*(void(__thiscall**)(NiRenderer*, void*))(*(char**)pkRenderer + 0xf0))(
-        pkRenderer, *(void**)((char*)this + 0xb8));
+    NiAVObject::PurgeRendererData(apkRenderer);
+    (*(void(__thiscall**)(NiRenderer*, void*))(*(char**)apkRenderer + 0xf0))(
+        apkRenderer, *(void**)((char*)this + 0xb8));
     void* p = *(void**)((char*)this + 0xbc);
     if (p)
     {
-        (*(void(__thiscall**)(NiRenderer*, void*))(*(char**)pkRenderer + 0x104))(pkRenderer, p);
-        (*(void(__thiscall**)(NiRenderer*, void*))(*(char**)pkRenderer + 0x100))(
-            pkRenderer, *(void**)((char*)*(void**)((char*)this + 0xbc) + 0xc));
+        (*(void(__thiscall**)(NiRenderer*, void*))(*(char**)apkRenderer + 0x104))(apkRenderer, p);
+        (*(void(__thiscall**)(NiRenderer*, void*))(*(char**)apkRenderer + 0x100))(
+            apkRenderer, *(void**)((char*)*(void**)((char*)this + 0xbc) + 0xc));
     }
 }
 
 // @fnv 0x00a7ff60
+// pdb: NiGeometry::CalculateNormals | NiGeometry.obj | debug, upstream name already matches, high
 
 void NiGeometry::CalculateNormals()
 {
@@ -681,9 +714,12 @@ void NiGeometry::CalculateNormals()
 
 
 // @fnv 0x00a80470
-bool NiGeometry::IsEqual(NiObject* object) const
+// pdb: NiGeometry::IsEqual | NiGeometry.obj | retail, upstream name already matches, high
+// pdb params: pkObject
+// pdb locals: pkGeom
+bool NiGeometry::IsEqual(NiObject* pkObject) const
 {
-    NiGeometry* apData = (NiGeometry*)object;
+    NiGeometry* apData = (NiGeometry*)pkObject;
     if (!const_cast<NiGeometry*>(this)->FUN_00a5a260(apData))  // NiAVObject::IsEqual
         return false;
 
@@ -743,9 +779,11 @@ struct SkinInstanceInfo : NiObject
     SkinPartition* partition;
 };
 // @fnv 0x00a80e70
-void NiGeometry::GetViewerStrings(NiViewerStringsArray* array)
+// pdb: NiGeometry::GetViewerStrings | NiGeometry.obj | retail, string-set bridge, high
+// pdb params: pkStrings
+void NiGeometry::GetViewerStrings(NiViewerStringsArray* pkStrings)
 {
-    ViewerStrings* strings = (ViewerStrings*)array;
+    ViewerStrings* strings = (ViewerStrings*)pkStrings;
     FUN_00a5ad00(strings);
     strings->Add(NiViewerStrings_NiGetViewerString_Title(DAT_011f4acc));
     strings->Add(NiGetViewerString_00a7d5a0("GeomData", static_cast<NiGeometryData*>(m_spModelData)));
@@ -800,8 +838,8 @@ void LoadUIntBinary(GeomStream& stream, unsigned int& value) throw();
 struct GeomStream
 {
     void ResetStreamState() throw();
-    void ReadStringTableEntry(GeomFixedString& value) throw();
-    void ReadFixedString(GeomFixedString& value) throw();
+    void ReadStringTableEntry(GeomFixedString& kString) throw();
+    void ReadFixedString(GeomFixedString& kString) throw();
     unsigned int GetFileVersion() const
     {
         return m_uiNifVersion;
@@ -962,6 +1000,9 @@ struct GeomStream
 
 
 // @fnv 0x00a80bf0
+// pdb: NiGeometry::LoadBinary | NiGeometry.obj | retail, upstream name already matches, high
+// pdb params: kStream
+// pdb locals: m_uiActiveMaterial_notused, uiNumMaterials, i, uiMaterialExtraData, kName, bShader, kShaderName, uiImplementation, bDefaultMaterialDirtyFlag
 void NiGeometry::LoadBinary(NiStream& stream)
 {
     GeomStream& kStream = (GeomStream&)stream;
@@ -1022,19 +1063,22 @@ template <class T> inline void SaveBinaryValue(NiBinaryStream* stream, T& value)
 }
 
 // @fnv 0x00a80db0
-void NiGeometry::SaveBinary(NiStream& stream)
+// pdb: NiGeometry::SaveBinary | NiGeometry.obj | retail, upstream name already matches, high
+// pdb params: kStream
+// pdb locals: bDefaultMaterialDirtyFlag, uiNumMaterials
+void NiGeometry::SaveBinary(NiStream& kStream)
 {
-    NiAVObject::SaveBinary(stream);
-    stream.SaveLinkID(m_spModelData.m_pObject);
-    stream.SaveLinkID((NiObject*)m_spSkinInstance.m_pObject);
+    NiAVObject::SaveBinary(kStream);
+    kStream.SaveLinkID(m_spModelData.m_pObject);
+    kStream.SaveLinkID((NiObject*)m_spSkinInstance.m_pObject);
     unsigned int uiData0 = 0;
-    SaveBinaryValue(stream.m_pkOstr, uiData0);
+    SaveBinaryValue(kStream.m_pkOstr, uiData0);
     {
         unsigned int uiData1 = 0;
-        SaveBinaryValue(stream.m_pkOstr, uiData1);
+        SaveBinaryValue(kStream.m_pkOstr, uiData1);
     }
     unsigned char ucData2 = 0;
-    SaveBinaryValue(stream.m_pkOstr, ucData2);
+    SaveBinaryValue(kStream.m_pkOstr, ucData2);
 }
 
 class NiObjectNET_stub
@@ -1046,13 +1090,17 @@ class NiObjectNET_stub
 
 // @fnv 0x00a7fdc0
 // src: XBOX_PDB 0x00a7fdc0
-void NiObjectNET_stub::NiGeometry_PostLinkObject(int a1)
+// pdb: NiGeometry::PostLinkObject | NiGeometry.obj | debug, upstream name already matches, high
+// pdb params: kStream
+void NiObjectNET_stub::NiGeometry_PostLinkObject(int kStream)
 {
-    NiObjectNET_PostLinkObject(a1);
+    NiObjectNET_PostLinkObject(kStream);
 }
 
 // @fnv 0x00a804e0
-NiGeometry::NiGeometry(NiGeometryData* apModelData) : m_spModelData(apModelData)
+// pdb: NiGeometry::NiGeometry | NiGeometry.obj | retail, call graph (shared callers), high
+// pdb params: pkModelData
+NiGeometry::NiGeometry(NiGeometryData* pkModelData) : m_spModelData(pkModelData)
 {
     m_spShader = 0;
 }
@@ -1116,7 +1164,10 @@ inline S00a7ff70_P3 operator*(const S00a7ff70_P3& p, const GeometryMatrix& m)
 }
 // Updates the vertices, normals, and model bound using the supplied transform.
 // @fnv 0x00a7ff70
-void NiGeometry::ApplyTransform(const NiMatrix3& rotation, const NiPoint3& position, bool bOnLeft)
+// pdb: NiGeometry::ApplyTransform | NiGeometry.obj | retail, upstream name already matches, high
+// pdb params: kMat, kTrn, bOnLeft
+// pdb locals: pkNormal, pkVertex, i, usVertices, kM1, kT1, kInvM1, kInvMat
+void NiGeometry::ApplyTransform(const NiMatrix3& kMat, const NiPoint3& kTrn, bool bOnLeft)
 {
     unsigned short usVertices = m_spModelData.m_pObject->GetVertexCount();
     S00a7ff70_P3* pkVertex = (S00a7ff70_P3*)m_spModelData.m_pObject->m_pkVertex;
@@ -1124,9 +1175,9 @@ void NiGeometry::ApplyTransform(const NiMatrix3& rotation, const NiPoint3& posit
     unsigned short i;
     if (bOnLeft)
     {
-        const GeometryMatrix& kRot = ((const GeometryMatrix&)m_kLocal.m_Rotate).FUN_00a588a0((*(const GeometryMatrix*)&rotation).FUN_0043f8d0((const GeometryMatrix&)m_kLocal.m_Rotate));
+        const GeometryMatrix& kRot = ((const GeometryMatrix&)m_kLocal.m_Rotate).FUN_00a588a0((*(const GeometryMatrix*)&kMat).FUN_0043f8d0((const GeometryMatrix&)m_kLocal.m_Rotate));
         S00a7ff70_P3 kTrans =
-            (((*(const S00a7ff70_P3*)&position) + (*(const GeometryMatrix*)&rotation) * (*(const S00a7ff70_P3*)&m_kLocal.m_Translate) - (*(const S00a7ff70_P3*)&m_kLocal.m_Translate)) * (const GeometryMatrix&)m_kLocal.m_Rotate) /
+            (((*(const S00a7ff70_P3*)&kTrn) + (*(const GeometryMatrix*)&kMat) * (*(const S00a7ff70_P3*)&m_kLocal.m_Translate) - (*(const S00a7ff70_P3*)&m_kLocal.m_Translate)) * (const GeometryMatrix&)m_kLocal.m_Rotate) /
             m_kLocal.m_fScale;
         if (pkVertex)
         {
@@ -1146,12 +1197,12 @@ void NiGeometry::ApplyTransform(const NiMatrix3& rotation, const NiPoint3& posit
         if (pkVertex)
         {
             for (i = 0; i < usVertices; i++)
-                pkVertex[i] = (*(const GeometryMatrix*)&rotation) * pkVertex[i] + (*(const S00a7ff70_P3*)&position);
+                pkVertex[i] = (*(const GeometryMatrix*)&kMat) * pkVertex[i] + (*(const S00a7ff70_P3*)&kTrn);
         }
         if (pkNormal)
         {
             GeometryMatrix kInv;
-            (*(const GeometryMatrix*)&rotation).FUN_004b46a0(kInv);
+            (*(const GeometryMatrix*)&kMat).FUN_004b46a0(kInv);
             for (i = 0; i < usVertices; i++)
                 pkNormal[i] = pkNormal[i] * kInv;
         }

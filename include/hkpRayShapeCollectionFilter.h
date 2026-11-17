@@ -9,6 +9,7 @@ struct ShapeRayCastQuery;
 struct hkBoolRet;
 struct ClassMemberDescriptor;
 
+// pdb: class hkpRayShapeCollectionFilter, size 0x4, 0 members
 class hkpRayShapeCollectionFilter
 {
 public:

@@ -5,6 +5,7 @@
 
 class hkStreamWriter;
 
+// pdb: class hkFileSystem, size 0x8, bases: hkReferencedObject, hkSingleton<hkFileSystem>, 0 members
 class hkFileSystem : public hkReferencedObject, public hkSingleton<hkFileSystem>
 {
 public:

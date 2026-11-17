@@ -24,16 +24,20 @@ struct B6AB20CloningProcess
 
 struct B6AB20Object
 {
-    void Process(void* pkTarget, B6AB20CloningProcess& kCloning);
-    void CloneToTarget(void* pkTarget);
+    void Process(void* pDest, B6AB20CloningProcess& arCloneData);
+    void WaterShaderProperty_Copy(void* pDest);
 };
 
 // Creates a cloning process with hash size 0x101 and runs Process on pkTarget with it.
 // @fnv 0x00b6ab20
-void B6AB20Object::CloneToTarget(void* pkTarget)
+// src: XBOX_RETAIL_PDB 0x00b6ab20
+// pdb: WaterShaderProperty::Copy | WaterShaderProperty.obj | retail, object-file gap fill, high
+// pdb params: pDest
+// pdb locals: kclone
+void B6AB20Object::WaterShaderProperty_Copy(void* pDest)
 {
     B6AB20CloningProcess kCloning(0x101);
-    Process(pkTarget, kCloning);
+    Process(pDest, kCloning);
 }
 
 extern "C" __declspec(dllimport) long __stdcall InterlockedDecrement(long volatile* plAddend);
@@ -144,6 +148,7 @@ struct FUN_00b6abb0 : CmBase
 
 // Initialises the object's fields to their default values: flags, floats, counters and the two integer fields set to 0x11 and 0xe.
 // @fnv 0x00b6abb0
+// pdb: WaterShaderProperty::WaterShaderProperty | WaterShaderProperty.obj | retail, call graph (shared callers), high
 FUN_00b6abb0::FUN_00b6abb0()
 {
     m_sp148 = 0;

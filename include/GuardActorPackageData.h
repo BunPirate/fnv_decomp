@@ -4,6 +4,7 @@
 
 class Actor;
 
+// pdb: class GuardActorPackageData, size 0x14, bases: ActorPackageData, 4 members
 class GuardActorPackageData : public ActorPackageData
 {
 public:
@@ -22,11 +23,11 @@ public:
     virtual void SetReferenceTarget(TESObjectREFR* apReference);
     virtual PTYPE GetPackageType();
     virtual void SaveGame(BGSSaveFormBuffer* apBuffer);
-    virtual void LoadGame(BGSLoadFormBuffer* apBuffer);
-    virtual void InitLoadGame(BGSLoadFormBuffer* apBuffer);
+    virtual void LoadGame(BGSLoadFormBuffer* apLoadGameBuffer);
+    virtual void InitLoadGame(BGSLoadFormBuffer* apLoadGameBuffer);
 
     GUARD_STATE eState;
-    Actor* pWarningTarget;
+    Actor* pGuardWarnedActor; // src: XBOX_RETAIL_PDB +0x8 (old: pWarningTarget)
     int iWarningCount;
-    float m_fWarningTimer;
+    float fGuardTimer; // src: XBOX_RETAIL_PDB +0x10 (old: m_fWarningTimer)
 };

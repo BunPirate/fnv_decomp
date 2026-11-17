@@ -53,6 +53,7 @@ class CircularArc
     int direction;
     bool AngleSinCosArc_WithinRange(const SineCosine&) const;
 };
+// pdb: structure Sphere, size 0x10, 2 members
 class Sphere
 {
   public:
@@ -76,26 +77,34 @@ float sqrt_004019b0(float);
 
 // Copies min, max, vertices and triangles from this NavMeshBounds into dest.
 // @fnv 0x0069cc80
-void NavMeshBounds::CopyTo(NavMeshBounds* dest)
+// pdb: NavMeshBounds::CopyTo | NavMeshBounds.obj | retail, upstream name already matches, high
+// pdb params: apDestBounds
+void NavMeshBounds::CopyTo(NavMeshBounds* apDestBounds)
 {
-    dest->min = min;
-    dest->max = max;
-    vertices.CopyTo<1024>(&dest->vertices);
-    triangles.CopyTo<1024>(&dest->triangles);
+    apDestBounds->BoundingBoxMin = BoundingBoxMin;
+    apDestBounds->BoundingBoxMax = BoundingBoxMax;
+    Vertices.CopyTo<1024>(&apDestBounds->Vertices);
+    Triangles.CopyTo<1024>(&apDestBounds->Triangles);
 }
 // Picks start/end by direction, computes the span and the angle relative to the first endpoint, and tests the relative angle against the span.
 // @fnv 0x006a0660
 // src: XBOX_PDB 0x006a0660
-bool CircularArc::AngleSinCosArc_WithinRange(const SineCosine& angle) const
+// pdb: AngleSinCosArc::WithinRange | NavMeshPOVSearch.obj | retail, upstream name already matches, high
+// pdb params: aAngle
+// pdb locals: ccwStart, ccwEnd, Delta, relativeAngle
+bool CircularArc::AngleSinCosArc_WithinRange(const SineCosine& aAngle) const
 {
     const SineCosine& first9182 = direction == 0 ? start : end;
     const SineCosine& last81336 = direction == 0 ? end : start;
     const SineCosine span32329 = last81336 - first9182;
-    const SineCosine relative34769 = angle - first9182;
+    const SineCosine relative34769 = aAngle - first9182;
     return relative34769.CompareKeysBySignAndTime(span32329);
 }
 // Computes up to two tangent directions between two spheres along the center line and stores them in out, returning the count.
 // @fnv 0x006bb570
+// pdb: NavMeshMath::CircleSegmentIntersection | NavMeshMath.obj | retail, object-file run extension, low
+// pdb params: aCircle, aSegment, aResults
+// pdb locals: bdox, relativeSegment, delta, result0, result1, fr2, fradius, fEpsilon, fdeltaCos, finvDeltaX, fm, fp, fb, fp2, fm2, fnom, resultParam, finvDenom, result1Param, result0Param, fsqrtDelta, finvDeltaY, fdeltaSin, bgood ...
 int NavMeshPOVSearch::FindSphereTangents(const Sphere& aSphereA, const Sphere& aSphereB, ANGLE_DIRECTION direction,
                                          SphereTangents& aTangents)
 {
@@ -178,6 +187,7 @@ struct FUN_00404920
 };
 // Stores x into a8 and y into a4.
 // @fnv 0x00404920
+// pdb: NiPointer<NiInterpolator>::~NiPointer<NiInterpolator> | EffectItem.obj | debug, object-file run extension, low
 FUN_00404920::FUN_00404920(int aiA8, int aiA4)
 {
     a8 = aiA8;
@@ -203,6 +213,7 @@ struct NTL
 };
 // Calls NiTLargePrimitiveArray(0, 1) on self, sets self's vtable pointer to DAT_010326fc, and returns self.
 // @fnv 0x006197c0
+// pdb: TopicInfoArray::TopicInfoArray | TESTopic.obj | debug, object-file gap fill, medium
 void* __fastcall InitLargePrimitiveArray(void* self)
 {
     ((NTL*)self)->NiTLargePrimitiveArray(0, 1);
@@ -226,6 +237,8 @@ struct FUN_0069e0c0_shell
 
 // Builds a point from the shell's stored cosine and sine scaled by afRadius, with z set to 0.0f.
 // @fnv 0x0069e0c0
+// pdb: AngleSinCos::ComputePoint3 | NavMeshPOVSearch.obj | debug, call graph, high
+// pdb params: afRadius
 FakePoint3 FUN_0069e0c0_shell::MakePointOnCircle(float afRadius)
 {
     return FakePoint3(afRadius * fCos, afRadius * fSin, 0.0f);
@@ -240,6 +253,7 @@ struct _Dummy_0069e390
 };
 
 // @fnv 0x0069e390
+// pdb: PathingRequest::GetAvoidNodeArray | NavMeshPOVSearch.obj | debug, call graph, high
 const char* _Dummy_0069e390::GetString() const
 {
     return m_str;
@@ -254,12 +268,13 @@ float __fastcall GetFloatAtOffset68(const char* pThis)
 void __fastcall _ref_006815c0(void*);
 
 // @fnv 0x006a0480
-// src: GUESS 0x006a0480 (confidence: low)
-void* __fastcall Object_ProcessAndReturnValue_006a0480(void* pThis)
+// src: XBOX_DEBUG_PDB 0x006a0480
+// pdb: FastNavMeshEdgeLocation::FastNavMeshEdgeLocation | NavMeshPOVSearch.obj | debug, call graph, high
+void* __fastcall FastNavMeshEdgeLocation_ctor(void* aLocation)
 {
-    ((NiBound*)pThis)->NiBound::NiBound();
-    _ref_006815c0((char*)pThis + 0xC);
-    return pThis;
+    ((NiBound*)aLocation)->NiBound::NiBound();
+    _ref_006815c0((char*)aLocation + 0xC);
+    return aLocation;
 }
 
 struct AngleSinCosHelper
@@ -272,11 +287,14 @@ struct FUN_006a05e0_cls
     AngleSinCosHelper a;
     AngleSinCosHelper b;
     int dir;
-    FUN_006a05e0_cls* Init(const AngleSinCosHelper* aStart, const AngleSinCosHelper* aEnd, int aeDir);
+    FUN_006a05e0_cls* AngleSinCosArc_ctor(const AngleSinCosHelper* aStart, const AngleSinCosHelper* aEnd, int aeDir);
 };
 // Copies the start and end angle values and the direction into the object and returns this.
 // @fnv 0x006a05e0
-FUN_006a05e0_cls* FUN_006a05e0_cls::Init(const AngleSinCosHelper* aStart, const AngleSinCosHelper* aEnd, int aeDir)
+// src: XBOX_DEBUG_PDB 0x006a05e0
+// pdb: AngleSinCosArc::AngleSinCosArc | NavMeshPOVSearch.obj | debug, call graph, high
+// pdb params: aStart, aEnd, aeDir
+FUN_006a05e0_cls* FUN_006a05e0_cls::AngleSinCosArc_ctor(const AngleSinCosHelper* aStart, const AngleSinCosHelper* aEnd, int aeDir)
 {
     a = *aStart;
     b = *aEnd;
@@ -296,16 +314,19 @@ struct AngleSinCosArc_Helper
     AngleSinCos_Helper start;
     AngleSinCos_Helper end;
     int dir;
-    AngleSinCosArc_Helper& Assign(const AngleSinCosArc_Helper& other);
+    AngleSinCosArc_Helper& AngleSinCosArc_ctor(const AngleSinCosArc_Helper& aRange);
 };
 
 // Copies other's start and end via CopyFloatPair, copies dir, and returns *this.
 // @fnv 0x006a0620
-AngleSinCosArc_Helper& AngleSinCosArc_Helper::Assign(const AngleSinCosArc_Helper& other)
+// src: XBOX_DEBUG_PDB 0x006a0620
+// pdb: AngleSinCosArc::AngleSinCosArc | NavMeshPOVSearch.obj | debug, call graph, high
+// pdb params: aRange
+AngleSinCosArc_Helper& AngleSinCosArc_Helper::AngleSinCosArc_ctor(const AngleSinCosArc_Helper& aRange)
 {
-    start.CopyFloatPair(other.start);
-    end.CopyFloatPair(other.end);
-    dir = other.dir;
+    start.CopyFloatPair(aRange.start);
+    end.CopyFloatPair(aRange.end);
+    dir = aRange.dir;
     return *this;
 }
 
@@ -319,6 +340,7 @@ float __cdecl atan2_004b5570(float, float);
 // Returns the result of FUN_004b5570 called with the object's second float and first float.
 // @fnv 0x006a0840
 // src: COMMUNITY 0x006a0840
+// pdb: AngleSinCos::GetAngle | NavMeshPOVSearch.obj | debug, upstream name already matches, high
 float FUN_006a0840_shell::AngleSinCos_GetAngle()
 {
     return atan2_004b5570(((float*)this)[1], ((float*)this)[0]);
@@ -351,6 +373,9 @@ struct E6a0e50
 };
 // @fnv 0x006a0e50
 // src: GUESS 0x006a0e50 (confidence: medium)
+// pdb: BSSimpleArray<BSSimpleArray<NavMeshPOV *,1024>,1024>::Clear | NavMeshPOVSearch.obj | retail, object-file run extension, low
+// pdb note: debug build links it to FastNavMeshEdgeLocation::FastNavMeshEdgeLocation
+// pdb params: abFreeMemory
 E6a0e50* E6a0e50::CopyNavMeshEdgeDataAndLocation(const E6a0e50* apOther)
 {
     ((Hh6a0e50*)this)->NavMeshEdgeData(apOther);
@@ -366,6 +391,8 @@ struct ASC6a0e90
     ASC6a0e90* Multiply(ASC6a0e90* out, const ASC6a0e90* a);
 };
 // @fnv 0x006a0e90
+// pdb: NavMeshPOV::NavMeshPOV | NavMeshPOVSearch.obj | retail, object-file run extension, low
+// pdb note: debug build links it to AngleSinCos::operator+
 ASC6a0e90* ASC6a0e90::Multiply(ASC6a0e90* out, const ASC6a0e90* apOther)
 {
     ASC6a0e90 ret;
@@ -383,6 +410,8 @@ struct S3e60
 };
 // @fnv 0x006a1400
 // src: XBOX_PDB 0x006a1400
+// pdb: BSSimpleArray<PathingAvoidNode,1024>::GetAt | NavMeshPOVSearch.obj | debug, call graph, medium
+// pdb params: aiIndex
 bool S3e60::BSSimpleArray_PathingAvoidNode_1024_GetAt(unsigned int auiFlag)
 {
     return GetFlag(auiFlag);
@@ -399,6 +428,8 @@ struct S2f760
 };
 // Copies 8 bytes from p into buf, then sleeps for t milliseconds.
 // @fnv 0x0082f760
+// pdb: `anonymous namespace'::FAMThread::Signal | FalloutAudioMedia.obj | debug, object-file run extension, low
+// pdb params: info
 void S2f760::CopyAndSleep(const void* apData)
 {
     memcpy(buf, apData, 8);
@@ -413,6 +444,7 @@ struct FUN_0069e1d0_shell
 
 // Calls FUN_0069e200, then deletes this when flags has bit 0 set, and returns this.
 // @fnv 0x0069e1d0
+// pdb: NavMeshPOVSearch::`scalar deleting destructor' | NavMeshPOVSearch.obj | retail, vtable slot, high
 void* FUN_0069e1d0_shell::DestroyIfFlagged(unsigned int flags)
 {
     FUN_0069e200();
@@ -463,6 +495,8 @@ struct This_006a08a0
 };
 // Returns true when the node's name entry has eType equal to 4.
 // @fnv 0x006a08a0
+// pdb: NavMeshPOVSearch::IsGoalNode | NavMeshPOVSearch.obj | debug, vtable slot, medium
+// pdb params: apNode
 bool This_006a08a0::IsTypeFour(const SeqObj* apNode)
 {
     return apNode->GetName().m_pAvoidNode->eType == 4;
@@ -481,6 +515,8 @@ struct FUN_006a0c10
     FUN_006a0c10(NavMeshEdgeData const&, S12 const&);
 };
 // @fnv 0x006a0c10
+// pdb: FastNavMeshEdgeLocation::FastNavMeshEdgeLocation | NavMeshPOVSearch.obj | debug, call graph, medium
+// pdb params: aHandle, aLocation
 FUN_006a0c10::FUN_006a0c10(NavMeshEdgeData const& aSource, S12 const& aOther) : m1(aSource), m2(aOther)
 {}
 
@@ -496,6 +532,7 @@ struct C006a14b0
 // Sets the vtable pointer to DAT_0106b3b0, calls FUN_006b3eb0 with 0, 0, and returns this.
 // @fnv 0x006a14b0
 // src: GUESS 0x006a14b0 (confidence: low)
+// pdb: BSSimpleArray<NavMeshPOV *,1024>::BSSimpleArray<NavMeshPOV *,1024> | NavMeshPOVSearch.obj | debug, call graph, medium
 C006a14b0* C006a14b0::SetVtableAndProcessState_006a14b0()
 {
     *(void**)this = (void*)&DAT_0106b3b0;
@@ -2680,6 +2717,7 @@ class FUN_0069e110 : public SpawnedBase_b7454
 
 // Default constructor for the class; initializes its member subobjects and base class.
 // @fnv 0x0069e110
+// pdb: NavMeshPOVSearch::NavMeshPOVSearch | NavMeshPOVSearch.obj | retail, object-file run extension, high
 FUN_0069e110::FUN_0069e110()
 {}
 
@@ -2927,6 +2965,7 @@ class FUN_0069e200_cls : public Base_69e200
 
 // Destructor for the class; the body is empty and member destructors run automatically.
 // @fnv 0x0069e200
+// pdb: NavMeshPOVSearch::~NavMeshPOVSearch | NavMeshPOVSearch.obj | retail, call graph (shared callers), high
 FUN_0069e200_cls::~FUN_0069e200_cls()
 {}
 
@@ -2967,7 +3006,7 @@ struct OuterArr
     InnerArr* GetAt(unsigned int idx);
 };
 
-bool NavMeshMath_DoCircleAndSegmentIntersect(const NiPoint3& center, float radius, const NiPoint3& a, const NiPoint3& b);
+bool NavMeshMath_DoCircleAndSegmentIntersect(const NiPoint3& aCircleCenter, float afCircleRadius, const NiPoint3& aSegmentStart, const NiPoint3& aSegmentEnd);
 
 extern float fCostType5;
 extern float fCostOther;
@@ -3235,26 +3274,30 @@ struct NavOwner
     int unk2040, unk2044, unk2048, unk204C, unk2050, unk2054, unk2058, unk205C;
     int unk2060, unk2064;
     OuterArr groups;
-    float ComputePathCost(NavObj* apSelf, const NiPoint3& aStart, const NiPoint3& aEnd, NavObj* apIgnore);
+    float NavMeshPOVSearch_CheckSegmentAgainstPOVs(NavObj* apThisPOV, const NiPoint3& aStart, const NiPoint3& aGoal, NavObj* apIgnorePOV);
 };
 
 // @fnv 0x006a0ac0
-float NavOwner::ComputePathCost(NavObj* apSelf, const NiPoint3& aStart, const NiPoint3& aEnd, NavObj* apIgnore)
+// src: XBOX_RETAIL_PDB 0x006a0ac0
+// pdb: NavMeshPOVSearch::CheckSegmentAgainstPOVs | NavMeshPOVSearch.obj | retail, object-file run extension, high
+// pdb params: apThisPOV, aStart, aGoal, apIgnorePOV
+// pdb locals: i, j, ppov
+float NavOwner::NavMeshPOVSearch_CheckSegmentAgainstPOVs(NavObj* apThisPOV, const NiPoint3& aStart, const NiPoint3& aGoal, NavObj* apIgnorePOV)
 {
     for (unsigned int i = 0; i < groups.GetCount(); i++)
     {
         for (unsigned int j = 0; j < groups.GetAt(i)->GetCount(); j++)
         {
             NavObj* pObj = groups.GetAt(i)->GetAt(j);
-            if (pObj == apIgnore)
+            if (pObj == apIgnorePOV)
                 continue;
-            if (pObj == apSelf)
+            if (pObj == apThisPOV)
                 continue;
-            if (pObj->pList->Find(apSelf, 0, CompareObj) != -1)
+            if (pObj->pList->Find(apThisPOV, 0, CompareObj) != -1)
                 continue;
             if ((pObj->pos - aStart).Len() < pObj->radius * pObj->radius)
                 continue;
-            if (NavMeshMath_DoCircleAndSegmentIntersect(pObj->pos, pObj->radius, aStart, aEnd))
+            if (NavMeshMath_DoCircleAndSegmentIntersect(pObj->pos, pObj->radius, aStart, aGoal))
             {
                 if (pObj->type == 5)
                     return fCostType5;
@@ -3356,13 +3399,16 @@ class B6A1330NodePtr
 
 extern B6A1330NodePtr g_spB6A1330Root;
 
-B6A1330Node* __cdecl MakeLine(const char* pcPath, int iParamB, int iParamA, int iParamB2, bool bFlag);
+B6A1330Node* __cdecl MakeLine(const char* aStart, int aStartColor, int aEnd, int aEndColor, bool abWithNoLightingProp);
 
 // @fnv 0x006a1330
 // src: COMMUNITY 0x006a1330
-void __cdecl NavMeshPOVSearch_DrawLine(const char* pcPath, int iParamA, int iParamB)
+// pdb: NavMeshPOVSearch::DrawLine | NavMeshPOVSearch.obj | retail, upstream name already matches, high
+// pdb params: aStart, aGoal, aColor
+// pdb locals: UpdateData, splines
+void __cdecl NavMeshPOVSearch_DrawLine(const char* aStart, int aGoal, int aColor)
 {
-    B6A1330NodePtr spNode7 = MakeLine(pcPath, iParamB, iParamA, iParamB, true);
+    B6A1330NodePtr spNode7 = MakeLine(aStart, aColor, aGoal, aColor, true);
     B6A1330UpdateData kData(0.0f, false, false);
     spNode7->UpdatePropertiesUpward();
     spNode7->Update(kData);
@@ -3405,6 +3451,7 @@ class FUN_0069e2c0
 
 // Initializes the index to -1, the point to ZERO, the value to 0.0f and the scale to 1.0f, then allocates a Helper69E for m_pkHelper.
 // @fnv 0x0069e2c0
+// pdb: NavMeshPOV::NavMeshPOV | NavMeshPOVSearch.obj | debug, object-file run extension, low
 FUN_0069e2c0::FUN_0069e2c0() : m_iIndex(-1), m_kPathOffset(NiPoint3::ZERO), m_fValue(0.0f), m_fScale(1.0f)
 {
     m_pkHelper = new Helper69E;
@@ -5597,6 +5644,9 @@ struct Owner
     bool BuildGroups(Input*, Groups*);
 };
 // @fnv 0x0069e3b0
+// pdb: NavMeshPOVSearch::BuildPOVListForTriangles | NavMeshPOVSearch.obj | debug, object-file run extension, low
+// pdb params: apList, aRetPOVs
+// pdb locals: povs, fSqrDuplicateTolerance, thisTriPOVs, obstaclePovs, RemoveIndices, i, icount, j, hthisPov, pov, ppov, verts2, verts1, ptri1, ptri2, psecondPOV, ii, jj, debugPOV
 bool Owner::BuildGroups(Input* input, Groups* output)
 {
     groups.ResizeElementStorage(input->Count() + 1, 1);
@@ -5781,7 +5831,7 @@ struct P072Handle
     unsigned short unk06;
     int edge;
     P072Point pos;
-    void Object_ProcessAndReturnValue_006a0480();
+    void FastNavMeshEdgeLocation_ctor();
     P072Handle& CopyFields_006cf900(const P072Handle&);
 };
 struct P072Details
@@ -7910,19 +7960,22 @@ struct P072Search
     int unk2078, unk207c, unk2080, unk2084;
     P072Location location;
     bool FindNeighborNodes(P072Node*, P072List*);
-    bool TraceArcOnBall(const P072Handle&, const P072Point&, P072Arc, P072Handle&);
+    bool NavMeshPOVSearch_CheckArcAgainstNavMesh2(const P072Handle&, const P072Point&, P072Arc, P072Handle&);
     float NavMeshPOVSearch_CheckArcAgainstPOVs(P072Data*, P072Arc, P072Data*);
     bool FindPath(const P072Handle&, const P072Point&, P072Handle&);
-    float ComputePathCost(P072Data*, const P072Point&, const P072Point&, P072Data*);
+    float NavMeshPOVSearch_CheckSegmentAgainstPOVs(P072Data*, const P072Point&, const P072Point&, P072Data*);
     unsigned int GetKeyForNode(P072Data*, int);
-    int InsertOrUpdateNode(unsigned int, float, P072Node**);
+    int AStarSearch_PathSmootherPOVNode_PathSmootherPOVLink_GetOrCreateAStarNode(unsigned int, float, P072Node**);
     void SetEdgeFromSphere(P072Node*, P072Data*, int, unsigned int);
 };
 // @fnv 0x0069f9d0
-bool P072Search::FindNeighborNodes(P072Node* pInputNode, P072List* pOutputList)
+// pdb: NavMeshPOVSearch::GetNodeConnections | NavMeshPOVSearch.obj | retail, vtable slot, high
+// pdb params: apNode, apRetNodes
+// pdb locals: parentPOVNode, parentPOVLink, imasterSize, imaster, isize, thisPOVArray, i, fzSqrDist, pPOV, thisPOVSphere, tangentResults, iValidSideCount, fxySqrDist, parentPOVSphere, vecToNode, e, arcToTangent, delta, parentEntryLocation, entryLoc, cross1, favoidNodeArcFactor, exitLocation, entryLocation ...
+bool P072Search::FindNeighborNodes(P072Node* apNode, P072List* apRetNodes)
 {
-    P072Input* info = pInputNode->FUN_00413f40();
-    P072Details* groupCount = pInputNode->FUN_007d6bb0();
+    P072Input* info = apNode->FUN_00413f40();
+    P072Details* groupCount = apNode->FUN_007d6bb0();
     unsigned int details = groups.FUN_0044ddc0();
     for (unsigned int group = info->group; group < details; group++)
     {
@@ -7934,7 +7987,7 @@ bool P072Search::FindNeighborNodes(P072Node* pInputNode, P072List* pOutputList)
             P072Data* object = objectCount->FUN_00877a30(item);
             if (object == info->object)
                 continue;
-            if (pInputNode->GetField54() && object == pInputNode->GetField54()->FUN_00413f40()->object)
+            if (apNode->GetField54() && object == apNode->GetField54()->FUN_00413f40()->object)
                 continue;
             P072Point tangents = object->pos.SubtractIntoVector(info->object->pos);
             int self;
@@ -7957,7 +8010,7 @@ bool P072Search::FindNeighborNodes(P072Node* pInputNode, P072List* pOutputList)
                 P072Handle arc2;
                 P072Point start;
                 float endBlockTmp;
-                if (pInputNode->GetField54())
+                if (apNode->GetField54())
                 {
                     P072Angle previous;
                     previous.CopyFloatPair(groupCount->angle);
@@ -8006,8 +8059,8 @@ bool P072Search::FindNeighborNodes(P072Node* pInputNode, P072List* pOutputList)
                     }
                 }
                 P072Arc node(groupCount->angle, distance.tangents[tangent].start, info->direction);
-                arc2.Object_ProcessAndReturnValue_006a0480();
-                if (!pInputNode->GetField54())
+                arc2.FastNavMeshEdgeLocation_ctor();
+                if (!apNode->GetField54())
                 {
                     NavMeshPtr mesh;
                     unsigned short triangle;
@@ -8022,12 +8075,12 @@ bool P072Search::FindNeighborNodes(P072Node* pInputNode, P072List* pOutputList)
                     arc2.CopyFields_006cf900(groupCount->handle);
                 endBlockTmp = 1.0f;
                 P072Handle cost;
-                cost.Object_ProcessAndReturnValue_006a0480();
-                if (!pInputNode->GetField54())
+                cost.FastNavMeshEdgeLocation_ctor();
+                if (!apNode->GetField54())
                     cost.CopyFields_006cf900(arc2);
                 else
                 {
-                    if (!TraceArcOnBall(arc2, tangentCount.center, node, cost))
+                    if (!NavMeshPOVSearch_CheckArcAgainstNavMesh2(arc2, tangentCount.center, node, cost))
                     {
                         if (DAT_011d6dcc)
                             NavMeshPOVSearch_DrawArc(tangentCount.center, tangentCount.radius, node.start, node.end, node.direction,
@@ -8046,7 +8099,7 @@ bool P072Search::FindNeighborNodes(P072Node* pInputNode, P072List* pOutputList)
                     }
                 }
                 P072Handle crossFirst;
-                crossFirst.Object_ProcessAndReturnValue_006a0480();
+                crossFirst.FastNavMeshEdgeLocation_ctor();
                 P072Point initialPoint5 =
                     delta.center.FUN_00439e90(distance.tangents[tangent].end.MakePointOnCircle(delta.radius));
                 if (!FindPath(cost, initialPoint5, crossFirst))
@@ -8057,7 +8110,7 @@ bool P072Search::FindNeighborNodes(P072Node* pInputNode, P072List* pOutputList)
                 }
                 if (FUN_00408840(crossFirst.pos.SubtractIntoVector(delta.center).z) >= 180.0)
                     continue;
-                float crossSecond = ComputePathCost(info->object, cost.pos, crossFirst.pos, object);
+                float crossSecond = NavMeshPOVSearch_CheckSegmentAgainstPOVs(info->object, cost.pos, crossFirst.pos, object);
                 if (crossSecond == 3.4028234663852886e38)
                 {
                     if (DAT_011d6dcc)
@@ -8066,18 +8119,18 @@ bool P072Search::FindNeighborNodes(P072Node* pInputNode, P072List* pOutputList)
                 }
                 if (DAT_011d6dcc)
                 {
-                    if (pInputNode->GetField54())
+                    if (apNode->GetField54())
                         NavMeshPOVSearch_DrawArc(tangentCount.center, tangentCount.radius, node.start, node.end, node.direction,
                                      &DAT_011a9c00);
                     NavMeshPOVSearch_DrawLine(cost.pos, crossFirst.pos, &DAT_011a9c00);
                 }
-                float direction = pInputNode->AStarSearch_EvaluateValue_006a7f50();
-                if (pInputNode->GetField54())
+                float direction = apNode->AStarSearch_EvaluateValue_006a7f50();
+                if (apNode->GetField54())
                     direction += node.FUN_006a07a0(info->object->radius) * (object->cost + endBlockTmp + crossSecond);
                 direction += crossFirst.pos.SubtractIntoVector(cost.pos).FUN_00457990();
                 P072Node* arcCost;
                 switch (
-                    InsertOrUpdateNode(GetKeyForNode(object, distance.tangents[tangent].direction), direction, &arcCost))
+                    AStarSearch_PathSmootherPOVNode_PathSmootherPOVLink_GetOrCreateAStarNode(GetKeyForNode(object, distance.tangents[tangent].direction), direction, &arcCost))
                 {
                 case 0:
                     SetEdgeFromSphere(arcCost, object, distance.tangents[tangent].direction, group);
@@ -8087,7 +8140,7 @@ bool P072Search::FindNeighborNodes(P072Node* pInputNode, P072List* pOutputList)
                     arcCost->start.CopyFloatPair(distance.tangents[tangent].start);
                     arcCost->end.CopyFloatPair(distance.tangents[tangent].end);
                     arcCost->TESRegionPoint_SetX(direction);
-                    pOutputList->FUN_007cb2e0(arcCost);
+                    apRetNodes->FUN_007cb2e0(arcCost);
                     break;
                 }
             }
@@ -8130,6 +8183,8 @@ struct Edge6a08d0
 // This is a NavObj: type at 0, position at 4 and radius at 0x10; Sphere has its center at 0.
 // Stores the sphere pointer and two ints into the edge's name and sets f04 to 0.75 times the distance from the sphere center to unk207c's position.
 // @fnv 0x006a08d0
+// pdb: NavMeshPOVSearch::SetNodeData | NavMeshPOVSearch.obj | debug, object-file gap fill, medium
+// pdb params: apNode, apPOV, aDirection, aiMasterIndex
 void Ctx6a08d0::SetEdgeFromSphere(Edge6a08d0* a1, NavObj* pSphere, int a3, int a4)
 {
     a1->GetName().a = (int)pSphere;
@@ -8170,47 +8225,51 @@ struct Edge
 struct Search
 {
     bool Test(Edge&, const NiPoint3&, Edge&);
-    bool TraceArcOnBall(const Edge&, const Ball&, Arc, Edge&);
+    bool NavMeshPOVSearch_CheckArcAgainstNavMesh2(const Edge&, const Ball&, Arc, Edge&);
 };
 // @fnv 0x006a0c50
-bool Search::TraceArcOnBall(const Edge& aStartEdge, const Ball& ball, Arc arc, Edge& aOutputEdge)
+// src: XBOX_DEBUG_PDB 0x006a0c50
+// pdb: NavMeshPOVSearch::CheckArcAgainstNavMesh2 | NavMeshPOVSearch.obj | debug, call graph, high
+// pdb params: aEntryLocation, aSphere, aArc, apReturnLocation
+// pdb locals: aAngleStep, icount, currentGoalAngle, currentStartLocation, iIgnoreEdge, currentStartAngle, lastGoalLoc, currentGoalLoc, currentEndLocation
+bool Search::NavMeshPOVSearch_CheckArcAgainstNavMesh2(const Edge& aEntryLocation, const Ball& aSphere, Arc aArc, Edge& apReturnLocation)
 {
-    Angle edge(arc.direction == 0 ? 0.2617993950843811f : -0.2617993950843811f);
-    Angle last(arc.start);
+    Angle edge(aArc.direction == 0 ? 0.2617993950843811f : -0.2617993950843811f);
+    Angle last(aArc.start);
     Angle step = last + edge;
-    NiPoint3 current = ball.center + last.GetPoint(ball.radius);
-    Edge nextAngle(aStartEdge);
+    NiPoint3 current = aSphere.center + last.GetPoint(aSphere.radius);
+    Edge nextAngle(aEntryLocation);
     Edge point;
     unsigned hit = 0;
     int endpoint = -1;
-    while (arc.Contains(step) && hit < 24)
+    while (aArc.Contains(step) && hit < 24)
     {
         nextAngle.triangle = -1;
         if (!Test(nextAngle, current, point))
         {
-            aOutputEdge = point;
+            apReturnLocation = point;
             return false;
         }
         nextAngle = point;
         last = step;
         step = last + edge;
-        current = ball.center + step.GetPoint(ball.radius);
+        current = aSphere.center + step.GetPoint(aSphere.radius);
         endpoint = point.triangle;
         hit = hit + 1;
     }
     if (hit == 24)
     {
-        aOutputEdge = point;
+        apReturnLocation = point;
         return false;
     }
-    NiPoint3 count = ball.center + arc.end.GetPoint(ball.radius);
+    NiPoint3 count = aSphere.center + aArc.end.GetPoint(aSphere.radius);
     nextAngle.triangle = -1;
     if (!Test(nextAngle, count, point))
     {
-        aOutputEdge = point;
+        apReturnLocation = point;
         return false;
     }
-    aOutputEdge = point;
+    apReturnLocation = point;
     return true;
 }
 
@@ -8262,7 +8321,7 @@ struct Vertices
 };
 struct Mesh
 {
-    Hit FindEdgeIntersection(unsigned short, int, const NiPoint3&, const NiPoint3&);
+    Hit FindInterectingEdge2(unsigned short, int, const NiPoint3&, const NiPoint3&);
     bool MatchNavMesh(const Handle&, NeighborEdgeHandle&);
     Triangle* FUN_005582f0(unsigned short);
     EdgeInfo* GetEdgeExtraInfo(unsigned short, int);
@@ -10370,6 +10429,10 @@ struct Walker
     bool FindPath(const Start*, const NiPoint3&, Output*);
 };
 // @fnv 0x006a0ef0
+// pdb: NavMeshPOVSearch::CheckArcAgainstNavMesh2 | NavMeshPOVSearch.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NavMeshPOVSearch::CheckSegmentAgainstNavMesh
+// pdb params: aEntryLocation, aSphere, aArc, apReturnLocation
+// pdb locals: aAngleStep, icount, currentGoalAngle, currentStartLocation, iIgnoreEdge, currentStartAngle, lastGoalLoc, currentGoalLoc, currentEndLocation
 bool Walker::FindPath(const Start* start, const NiPoint3& target, Output* output)
 {
     NiPoint3 origin6 = start->position;
@@ -10381,7 +10444,7 @@ bool Walker::FindPath(const Start* start, const NiPoint3& target, Output* output
     handle8.FastNavMeshEdgeHandle_FastNavMeshEdgeHandle(start->handle);
     while (true)
     {
-        Hit hit2 = handle8.mesh->FindEdgeIntersection(handle8.triangle, handle8.edge, current, destination5);
+        Hit hit2 = handle8.mesh->FindInterectingEdge2(handle8.triangle, handle8.edge, current, destination5);
         if (!hit2.mesh)
         {
             output->CopyFields_006cf900(PathResult(handle8, destination5));
@@ -10452,36 +10515,39 @@ struct ArcRange
     bool Contains(const ArcAngle&) const;
 };
 
-void __cdecl ArcSegmentStep(ArcPoint3* apFrom, ArcPoint3* apTo, int aiParam);
+void __cdecl ArcSegmentStep(ArcPoint3* aStart, ArcPoint3* aGoal, int aColor);
 
 // @fnv 0x006a1180
 // src: COMMUNITY 0x006a1180
-void __cdecl NavMeshPOVSearch_DrawArc(const ArcPoint3& akCenter, float afRadius, const ArcAngle* apStart, const ArcAngle* apEnd,
-                          int aeDir, int aiParam)
+// pdb: NavMeshPOVSearch::DrawArc | NavMeshPOVSearch.obj | retail, upstream name already matches, high
+// pdb params: aCenter, afRadius, aStartAngle, aGoalAngle, aDirection, aColor
+// pdb locals: aAngleStep, icount, currentGoalAngle, arc, currentStartAngle, lastGoalLoc, currentStartLoc, currentGoalLoc
+void __cdecl NavMeshPOVSearch_DrawArc(const ArcPoint3& aCenter, float afRadius, const ArcAngle* aStartAngle, const ArcAngle* aGoalAngle,
+                          int aDirection, int aColor)
 {
-    ArcRange kArc(apStart, apEnd, aeDir);
+    ArcRange kArc(aStartAngle, aGoalAngle, aDirection);
     ArcAngle kStep5;
-    kStep5.SetAngle(aeDir == 0 ? DAT_01064f64 : DAT_0106b3a8);
+    kStep5.SetAngle(aDirection == 0 ? DAT_01064f64 : DAT_0106b3a8);
     ArcAngle kCur4;
-    kCur4 = *apStart;
+    kCur4 = *aStartAngle;
     ArcAngle kNext = kCur4 + kStep5;
-    ArcPoint3 kFromX = akCenter + kCur4.GetOffset(afRadius);
-    ArcPoint3 kTo5 = akCenter + kNext.GetOffset(afRadius);
+    ArcPoint3 kFromX = aCenter + kCur4.GetOffset(afRadius);
+    ArcPoint3 kTo5 = aCenter + kNext.GetOffset(afRadius);
     unsigned int uiStepCount;
     uiStepCount = 0;
     while (kArc.Contains(kNext) && uiStepCount < 24)
     {
-        ArcSegmentStep(&kFromX, &kTo5, aiParam);
+        ArcSegmentStep(&kFromX, &kTo5, aColor);
         kFromX = kTo5;
         kCur4 = kNext;
         kNext = kCur4 + kStep5;
-        kTo5 = akCenter + kNext.GetOffset(afRadius);
+        kTo5 = aCenter + kNext.GetOffset(afRadius);
         uiStepCount++;
     }
     if (uiStepCount == 24)
         return;
-    ArcPoint3 kEnd = akCenter + apEnd->GetOffset(afRadius);
-    ArcSegmentStep(&kFromX, &kTo5, aiParam);
+    ArcPoint3 kEnd = aCenter + aGoalAngle->GetOffset(afRadius);
+    ArcSegmentStep(&kFromX, &kTo5, aColor);
 }
 
 namespace fnv_006a0940 {
@@ -10497,30 +10563,33 @@ struct ArcStandIn
     int direction;
 };
 // Sphere constructor 0x006a04b0 is also bound by pathsmootherpov_decl_variant; center at 0, radius at 0xC.
-bool __cdecl ArcBlockedBySphere(const Sphere& aSelf, const ArcStandIn& aArc, const Sphere& aOther);
+bool __cdecl ArcBlockedBySphere(const Sphere& aCircle1, const ArcStandIn& aArc, const Sphere& aCircle2);
 
 struct NavOwnerArc : NavOwner
 {
-    float NavMeshPOVSearch_CheckArcAgainstPOVs(NavObj* apSelf, ArcStandIn aArc, NavObj* apIgnore);
+    float NavMeshPOVSearch_CheckArcAgainstPOVs(NavObj* apThisPOV, ArcStandIn aArc, NavObj* apIgnorePOV);
 };
 
 // Checks grouped NavObj spheres against the arc and returns a matching object's type cost, or 1.0f.
 // @fnv 0x006a0940
 // src: COMMUNITY 0x006a0940
-float NavOwnerArc::NavMeshPOVSearch_CheckArcAgainstPOVs(NavObj* apSelf, ArcStandIn aArc, NavObj* apIgnore)
+// pdb: NavMeshPOVSearch::CheckArcAgainstPOVs | NavMeshPOVSearch.obj | retail, upstream name already matches, high
+// pdb params: apThisPOV, aArc, apIgnorePOV
+// pdb locals: start, thisSphere, i, j, otherSphere, ppov
+float NavOwnerArc::NavMeshPOVSearch_CheckArcAgainstPOVs(NavObj* apThisPOV, ArcStandIn aArc, NavObj* apIgnorePOV)
 {
-    Sphere kSelf((const NiPoint3&)apSelf->pos, apSelf->radius);
+    Sphere kSelf((const NiPoint3&)apThisPOV->pos, apThisPOV->radius);
     NiPoint3 kPoint = kSelf.Center + aArc.start.PointAt(kSelf.fRadius);
     for (unsigned int i_ = 0; i_ < groups.GetCount(); i_++)
     {
         for (unsigned int j2 = 0; j2 < groups.GetAt(i_)->GetCount(); j2++)
         {
             NavObj* pObj = groups.GetAt(i_)->GetAt(j2);
-            if (pObj == apIgnore)
+            if (pObj == apIgnorePOV)
                 continue;
-            if (pObj == apSelf)
+            if (pObj == apThisPOV)
                 continue;
-            if (pObj->pList->Find(apSelf, 0, CompareObj) != -1)
+            if (pObj->pList->Find(apThisPOV, 0, CompareObj) != -1)
                 continue;
             Sphere kOther4((const NiPoint3&)pObj->pos, pObj->radius);
             if ((kOther4.Center - kPoint).FUN_004a7290() < kOther4.fRadius * kOther4.fRadius)

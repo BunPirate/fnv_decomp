@@ -3,6 +3,7 @@
 class hkClass;
 class hkReferencedObject;
 
+// pdb: class hkRefVariant, size 0x4, bases: hkRefPtr<hkReferencedObject>, 0 members
 class hkRefVariant
 {
 public:

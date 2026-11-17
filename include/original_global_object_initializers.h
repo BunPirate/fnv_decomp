@@ -5316,7 +5316,7 @@ extern GlobalObject_0040c150 g_011c3a70;
 extern GlobalObject_0040e0b0 g_011c3a7c;
 extern GlobalObject_0040c150 g_011c3a94;
 extern GlobalObject_00a2e180 g_011c3aa8;
-extern GlobalObject_0044fae0 g_011c3b6c;
+extern GlobalObject_0044fae0 LoadedFile_LSAccessCrit; // src: XBOX_RETAIL_PDB 0x011c3b6c (old: g_011c3b6c)
 extern GlobalObject_0044fae0 g_011c3b88;
 extern GlobalObject_0044f440 g_011c3bb8;
 extern GlobalObject_00a2e180 g_011c3bd8;
@@ -6041,7 +6041,7 @@ extern GlobalObject_00633c90 g_011ca0d8;
 extern GlobalObject_00559cc0 g_011ca0e0;
 extern GlobalObject_00559e50 g_011ca0f4;
 extern GlobalObject_0045cf30 g_011ca118;
-extern GlobalObject_0040c150 g_011ca130;
+extern GlobalObject_0040c150 TESObjectCELL_sDefaultCellName; // src: XBOX_RETAIL_PDB 0x011ca130 (old: g_011ca130)
 extern GlobalObject_004ee810 g_011ca174;
 extern GlobalObject_0096a2d0 g_011ca1a0;
 extern GlobalObject_0045cf30 g_011ca2dc;
@@ -8315,10 +8315,10 @@ extern GlobalObject_0045cfe0 g_011dfb34;
 extern GlobalObject_0045cf30 g_011dfb68;
 extern GlobalObject_0045cf30 g_011dfb88;
 extern GlobalObject_008caab0 g_011dfb98;
-extern GlobalObject_0044fae0 g_011dfbe8;
-extern GlobalObject_0044fae0 g_011dfc04;
+extern GlobalObject_0044fae0 UpdatingDetection; // src: XBOX_RETAIL_PDB 0x011dfbe8 (old: g_011dfbe8)
+extern GlobalObject_0044fae0 UpdatingMovement; // src: XBOX_RETAIL_PDB 0x011dfc04 (old: g_011dfc04)
 extern GlobalObject_008caae0 g_011dfc24;
-extern GlobalObject_0044fae0 g_011dfc38;
+extern GlobalObject_0044fae0 UpdatingActors; // src: XBOX_RETAIL_PDB 0x011dfc38 (old: g_011dfc38)
 extern GlobalObject_0045cf30 g_011dfc70;
 extern GlobalObject_00a2e180 g_011dfc7c;
 extern GlobalObject_00a2e180 g_011dfcfc;
@@ -8565,7 +8565,7 @@ extern GlobalObject_00b3f100 g_011f8c05;
 extern GlobalObject_00b43ae0 g_011f8ec0;
 extern GlobalObject_00a7b610 g_01202804;
 extern GlobalObject_00a7b610 g_01202810;
-extern GlobalObject_00a7b610 g_01202818;
+extern GlobalObject_00a7b610 BSMultiBoundOBB_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01202818 (old: g_01202818)
 extern GlobalObject_00a7b610 g_01202820;
 extern GlobalObject_00a7b610 g_01202828;
 extern GlobalObject_00a7b610 g_01202de0;
@@ -8593,13 +8593,13 @@ extern GlobalObject_00a7b610 g_01203348;
 extern GlobalObject_00a7b610 g_0120436c;
 extern GlobalObject_00a7b610 g_01204378;
 extern GlobalObject_00a7b610 g_01204380;
-extern GlobalObject_00a7b610 g_01204388;
+extern GlobalObject_00a7b610 BSPSysStripUpdateModifier_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01204388 (old: g_01204388)
 extern GlobalObject_00a7b610 g_01204390;
 extern GlobalObject_00a7b610 g_01204398;
 extern GlobalObject_00a7b610 g_012043a4;
 extern GlobalObject_00a7b610 g_012043b0;
 extern GlobalObject_00a7b610 g_012043b8;
-extern GlobalObject_00a7b610 g_012043c8;
+extern GlobalObject_00a7b610 BSParentVelocityModifier_ms_RTTI; // src: XBOX_RETAIL_PDB 0x012043c8 (old: g_012043c8)
 extern GlobalObject_00a7b610 g_012043d4;
 extern GlobalObject_00a7b610 g_012043dc;
 extern GlobalObject_00a7b610 g_012043e4;

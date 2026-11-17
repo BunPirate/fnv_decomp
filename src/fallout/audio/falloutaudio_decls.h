@@ -16,6 +16,7 @@ struct RegionSound
     unsigned int chance;
 };
 
+// pdb: class SkySound, size 0x1c (here 0xc), 5 members
 class SkySound : public BSSoundHandle
 {
   public:
@@ -39,22 +40,24 @@ struct RegionSoundOffset
     float x;
 };
 
+// pdb: class TaskQueueInterface, size 0x10 (here 0x1), 4 members
 class TaskQueueInterface
 {
   public:
     static void CopyStringToBuffer(char*, unsigned int, const char*);
 };
 
-class SoundPlaybackManager
+// pdb: class FalloutAudio, size 0x1, 0 members
+class FalloutAudio // src: XBOX_RETAIL_PDB 0x0082d280 (first retail link of 6 high-tier links to its methods; old: SoundPlaybackManager)
 {
   public:
-    static void ProcessPendingSounds();
-    static bool ResolveSoundFile(const char*, char*, unsigned int*, void**);
-    static void ResetAcousticSpace(BGSAcousticSpace*);
-    static bool CanPlaySoundAt(TESSound*, NiPoint3, float);
+    static void UpdateRegionSounds();
+    static bool ResolveSoundName(const char*, char*, unsigned int*, void**);
+    static void ClearAcousticSpace(BGSAcousticSpace*);
+    static bool SoundDistanceTest(TESSound*, NiPoint3, float);
     static void LoadGame(BGSLoadGameBuffer*);
     static void SetAcousticSpace(BGSAcousticSpace*);
-    static void InitFootstepImpacts();
+    static void ImpactMixer_InitFootsteps();
     static void InitializeSlots();
 };
 namespace std {

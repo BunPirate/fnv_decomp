@@ -12,17 +12,24 @@
 
 // Initializes the PathingSolution object by setting two local sentinel values to -1 and clearing the boolean member.
 // @fnv 0x006e7650
+// pdb: BSSimpleArray<NavMeshPtr,1024>::_DestructItems | ExtraDataList.obj | retail, call graph, low
+// pdb note: debug build links it to PathingSolution::PathingSolution
+// pdb params: apFirstAddr, aiCount
+// pdb locals: i
 PathingSolution::PathingSolution()
 {
     volatile int first;
     volatile int second;
     second = -1;
     first = -1;
-    m_bHasValidPath = false;
+    bIncompletePath = false;
 }
 
 // @fnv 0x006e7800
-float PathingSolution::CalculatePathLength()
+// src: XBOX_DEBUG_PDB 0x006e7800
+// pdb: PathingSolution::ComputeVirtualPathLength | PathingSolution.obj | debug, call graph (shared callers), high
+// pdb locals: isize, pnextNode, plastNode, ftotalLength, i
+float PathingSolution::ComputeVirtualPathLength()
 {
 // distinct from Stack: exe 0x006e7800 uses three PointStorage locals and traversal state, not items/top.
     struct PathLengthFrameView
@@ -69,14 +76,16 @@ struct GlobalObject_00869f00
 
 // Clears the three members of the pathing solution, sets member1's two values to -1 and clears the flag.
 // @fnv 0x006e77b0
-void __fastcall ResetPathingSolution(PathingSolution* self)
+// src: XBOX_RETAIL_PDB 0x006e77b0
+// pdb: PathingSolution::Clear | PathingSolution.obj | retail, call graph (shared callers), high
+void __fastcall PathingSolution_Clear(PathingSolution* self)
 {
     ((PSClearStub*)&self->member1)->Clear(true);
     ((PSNodeStub*)&self->member2)->FUN_006cf120(true);
     ((GlobalObject_00869f00*)&self->member3)->Clear(true);
     self->member1.firstValue = -1;
     self->member1.secondValue = -1;
-    self->m_bHasValidPath = false;
+    self->bIncompletePath = false;
 }
 
 // SolutionNodePool: unit-local view of PathingSolution's node pool (member1), not PathBuilder: 0x006e78b0 and 0x006e8f60 call its slot lookup 0x006e8f40
@@ -87,6 +96,8 @@ struct SolutionNodePool
 
 // @fnv 0x006e78b0
 // src: XBOX_PDB 0x006e78b0
+// pdb: PathingSolution::GetVirtualNode | PathBuilder.obj | debug, call graph (shared callers), medium
+// pdb params: aiIndex
 LocationDescriptor* PathingSolution::GetVirtualNode_006e78b0(unsigned int aiIndex)
 {
     return (LocationDescriptor*)((SolutionNodePool*)&member1)->GetElementAddress30_006e8f40((void*)aiIndex);
@@ -99,6 +110,8 @@ struct Dummy_006e8f80
 
 // @fnv 0x006e7970
 // src: XBOX_PDB 0x006e7970
+// pdb: PathingSolution::GetNode | PathingDebugGeometry.obj | debug, call graph, medium
+// pdb params: aiIndex
 const PathingGraphNode* PathingSolution::GetNode_006e7970(unsigned int aiIndex)
 {
     return (const PathingGraphNode*)((Dummy_006e8f80*)&member2)->GetPathingGraphNodeAddress(aiIndex);
@@ -112,6 +125,9 @@ struct FUN_00457990_shell
 // Returns 0.0f if the index is at or past the last element, otherwise computes a value from the positions of the element at the index and the next one.
 // @fnv 0x006e7990
 // src: COMMUNITY 0x006e7990
+// pdb: PathingSpline::Interpolate | PathingSolution.obj | retail, object-file run extension, low
+// pdb note: debug build links it to PathingSolution::ComputeSplineLength
+// pdb params: aKey1, aKey2
 float PathingSolution::ComputeSplineLength(int aiIndex)
 {
     if (aiIndex >= (int)GetObjectFlags() - 1)
@@ -145,6 +161,7 @@ struct FUN_006e7b60 : BaseS
 };
 // Constructs the object by running the BaseS constructor and default-constructing its two MemS members.
 // @fnv 0x006e7b60
+// pdb: PathingSpline::PathingSpline | PathingDebugGeometry.obj | debug, call graph, low
 FUN_006e7b60::FUN_006e7b60()
 {}
 
@@ -163,6 +180,8 @@ void __fastcall PathingSpline_ComputeHermiteBasis(void* pThis, float arg);
 
 // @fnv 0x006e7c20
 // src: COMMUNITY 0x006e7c20
+// pdb: PathingSpline::SetParameter | PathingDebugGeometry.obj | debug, upstream name already matches, high
+// pdb params: afParameter
 void __fastcall PathingSpline_SetParameter(void* pThis, float arg)
 {
     PathingSpline_ComputeHermiteBasis(pThis, arg);
@@ -215,6 +234,8 @@ struct OwnS
 // Calls FUN_006e7d10 on s1 with a and on s2 with b, then returns FUN_006e7d60(a, b).
 // @fnv 0x006e7cc0
 // src: COMMUNITY 0x006e7cc0
+// pdb: PathingSpline::Interpolate | PathingSolution.obj | debug, call graph, medium
+// pdb params: aKey1, aKey2
 RetS OwnS::PathingSpline_Interpolate(int aiFirst, int aiSecond)
 {
     s1.PathingSolution_CopyVectorPair(aiFirst);
@@ -270,6 +291,10 @@ struct OwnS2
 };
 // Builds an M24 from the object's location and tangent and returns it.
 // @fnv 0x006e7e10
+// pdb: BSSimpleArray<PathingNode,1024>::_ConstructItems | PathingSolution.obj | retail, object-file run extension, low
+// pdb note: debug build links it to PathingNode::GetSplineKey
+// pdb params: apFirstAddr, aiCount
+// pdb locals: i
 M24 OwnS2::GetLocationAndTangent()
 {
     M24 m;
@@ -318,6 +343,8 @@ struct FUN_006e7d10_caller
 // Forwards each of the two key arguments to the corresponding key object's FUN_006e7d10 method.
 // @fnv 0x006e8450
 // src: COMMUNITY 0x006e8450
+// pdb: PathingSpline::SetKeys | PathingDebugGeometry.obj | debug, upstream name already matches, high
+// pdb params: aKey1, aKey2
 void FUN_006e8450_shell::PathingSpline_SetKeys(void* aKey1, void* aKey2)
 {
     reinterpret_cast<FUN_006e7d10_caller*>(this->Key1)->PathingSolution_CopyVectorPair(aKey1);
@@ -335,6 +362,8 @@ class SolutionNodePool
 
 // @fnv 0x006e8f60
 // src: XBOX_PDB 0x006e8f60
+// pdb: BSSimpleArray<VirtualPathingNode,1024>::GetAt | PathingSolution.obj | debug, call graph, medium
+// pdb params: aiIndex
 void* SolutionNodePool::BSSimpleArray_VirtualPathingNode_1024_GetAt(void* apArg)
 {
     return GetElementAddress30_006e8f40(apArg);
@@ -348,15 +377,18 @@ struct S3e60
 };
 // @fnv 0x006e8fa0
 // src: XBOX_PDB 0x006e8fa0
+// pdb: BSSimpleArray<PathingNode,1024>::GetAt | PathingSolution.obj | debug, call graph, medium
+// pdb params: aiIndex
 bool S3e60::BSSimpleArray_PathingNode_1024_GetAt(unsigned int auiFlag)
 {
     return GetFlag(auiFlag);
 }
 
 // @fnv 0x006e7720
+// pdb: PathingSolution::~PathingSolution | PathingSolution.obj | retail, upstream name already matches, high
 PathingSolution::~PathingSolution()
 {
-    ResetPathingSolution(this);
+    PathingSolution_Clear(this);
 }
 
 namespace fnv_006e78d0 {
@@ -367,6 +399,8 @@ struct NiPoint3H
 // Sums the lengths of the segments between consecutive path nodes and returns the total length.
 } // namespace fnv_006e78d0
 // @fnv 0x006e78d0
+// pdb: PathingSolution::ComputeDetailedPathLength | PathingSolution.obj | debug, call graph (shared callers), medium
+// pdb locals: isize, pnextNode, plastNode, ftotalLength, i
 float PathingSolution::GetTotalPathLength()
 {
     float ftotalLength = 0.0f;
@@ -391,21 +425,24 @@ float PathingSolution::GetTotalPathLength()
 struct FUN_006e7d60_stub
 {
     float ComputeWeightedSum(float*, float*, float*, float*);
-    NiPoint3 PathingSpline_InterpolateNoZ(char* p3, char* p4);
+    NiPoint3 PathingSpline_InterpolateNoZ(char* aKey1, char* aKey2);
 };
 // Computes a vector from two structures by calling ComputeWeightedSum on each of the x, y and z component pairs.
 // @fnv 0x006e7d60
 // src: COMMUNITY 0x006e7d60
-NiPoint3 FUN_006e7d60_stub::PathingSpline_InterpolateNoZ(char* pFirst, char* pSecond)
+// pdb: PathingSpline::InterpolateNoZ | PathingDebugGeometry.obj | debug, upstream name already matches, high
+// pdb params: aKey1, aKey2
+// pdb locals: retVec
+NiPoint3 FUN_006e7d60_stub::PathingSpline_InterpolateNoZ(char* aKey1, char* aKey2)
 {
     NiPoint3 vecResult;
-    vecResult.x = ComputeWeightedSum((float*)pFirst, (float*)pSecond, (float*)(pFirst + 0xc), (float*)(pSecond + 0xc));
-    vecResult.y = ComputeWeightedSum((float*)(pFirst + 4), (float*)(pSecond + 4), (float*)(pFirst + 0x10),
-                                     (float*)(pSecond + 0x10));
+    vecResult.x = ComputeWeightedSum((float*)aKey1, (float*)aKey2, (float*)(aKey1 + 0xc), (float*)(aKey2 + 0xc));
+    vecResult.y = ComputeWeightedSum((float*)(aKey1 + 4), (float*)(aKey2 + 4), (float*)(aKey1 + 0x10),
+                                     (float*)(aKey2 + 0x10));
     {
         float a = 0.0f;
         float b = 0.0f;
-        vecResult.z = ComputeWeightedSum((float*)(pFirst + 8), (float*)(pSecond + 8), &b, &a);
+        vecResult.z = ComputeWeightedSum((float*)(aKey1 + 8), (float*)(aKey2 + 8), &b, &a);
     }
     return vecResult;
 }
@@ -417,6 +454,8 @@ struct FUN_006e8f40_shell
 
 // @fnv 0x006e8f40
 // src: GUESS 0x006e8f40 (confidence: low)
+// pdb: BSSimpleArray<VirtualPathingNode,1024>::operator[] | PathBuilder.obj | debug, call graph (shared callers), medium
+// pdb params: aiIndex
 int FUN_006e8f40_shell::GetElementAddress30_006e8f40(int aiIndex) const
 {
     return aiIndex * 0x30 + *(int*)((char*)this + 4);
@@ -463,7 +502,7 @@ struct FUN_006e7b60
     ~FUN_006e7b60();
     void PathingSpline_SetKeys(const SplineLocationTangent&, const SplineLocationTangent&);
     bool FindPointAtDistance(float, float, bool, float*, NiPoint3*, float);
-    float MeasurePathLength(float, float, unsigned int);
+    float PathingSpline_ApproxLength(float, float, unsigned int);
     CubicHermiteWeights SplinePath;
     SplineLocationTangent Key1;
     SplineLocationTangent Key2;
@@ -473,6 +512,9 @@ struct FUN_006e7b60
 } // namespace fnv_006e7e70
 // @fnv 0x006e7e70
 // src: XBOX_PDB 0x006e7e70
+// pdb: PathingSolution::FindPointOnPath | PathingSolution.obj | retail, upstream name already matches, high
+// pdb params: afCurrentParameter, afDist, abForward, apNewParameter, apNewPoint
+// pdb locals: bfound, isize, fdist, spline, icurrentSpline, fcurrentParam
 bool PathingSolution::FindPointOnPath(float afCurrentParameter, float afDist, bool abForward, float* apNewParameter,
                                       NiPoint3* apNewPoint)
 {
@@ -501,7 +543,7 @@ bool PathingSolution::FindPointOnPath(float afCurrentParameter, float afDist, bo
                                             apNewPoint, 1.0f);
         while (!bfound)
         {
-            fdist -= spline.MeasurePathLength(fcurrentParam - icurrentSpline, 1.0f, 2);
+            fdist -= spline.PathingSpline_ApproxLength(fcurrentParam - icurrentSpline, 1.0f, 2);
             ++icurrentSpline;
             fcurrentParam = icurrentSpline;
             if (icurrentSpline >= isize - 1)
@@ -548,7 +590,7 @@ bool PathingSolution::FindPointOnPath(float afCurrentParameter, float afDist, bo
                                             apNewPoint, 1.0f);
         while (!bfound)
         {
-            fdist -= spline.MeasurePathLength(0.0f, fcurrentParam - icurrentSpline, 2);
+            fdist -= spline.PathingSpline_ApproxLength(0.0f, fcurrentParam - icurrentSpline, 2);
             --icurrentSpline;
             fcurrentParam = icurrentSpline + 1;
             if (icurrentSpline < 0)
@@ -604,11 +646,13 @@ struct PathingSolutionOperations : public PathingSolution
     void SaveGame(SaveBuffer*);
 };
 // @fnv 0x006e8ab0
+// pdb: PathingSolution::CopyTo | PathingSolution.obj | debug, object-file run extension, low
+// pdb params: apDest
 void PathingSolutionOperations::CopyTo(PathingSolution* apTarget)
 {
     apTarget->member1.firstValue = member1.firstValue;
     apTarget->member1.secondValue = member1.secondValue;
-    apTarget->m_bHasValidPath = m_bHasValidPath;
+    apTarget->bIncompletePath = bIncompletePath;
     ((HelperA*)&member1)->BSSimpleArray_VirtualPathingNode_1024_Copy(&apTarget->member1);
     ((HelperB*)&member2)->BSSimpleArray_PathingNode_1024_Copy(&apTarget->member2);
 }
@@ -621,6 +665,8 @@ struct BSSimpleArray_PathingNode_1024
 };
 // @fnv 0x006e8f80
 // src: GUESS 0x006e8f80 (confidence: medium)
+// pdb: BSSimpleArray<PathingNode,1024>::operator[] | NavMeshPOVSearch.obj | debug, call graph, medium
+// pdb params: aiIndex
 PathingGraphNode* BSSimpleArray_PathingNode_1024::GetPathingGraphNodeAddress(unsigned int aiIndex)
 {
     return (PathingGraphNode*)((char*)m_pBase + aiIndex * 0x3C);
@@ -640,6 +686,8 @@ struct OwnS
 };
 // @fnv 0x006e9ab0
 // src: COMMUNITY 0x006e9ab0
+// pdb: PathingSpline::Interpolate | PathingDebugGeometry.obj | debug, call graph (shared callers), medium
+// pdb params: afParameter
 RetS OwnS::PathingSpline_Interpolate_1(float f)
 {
     PathingSpline_SetParameter(this, f);
@@ -695,6 +743,9 @@ struct OwnS
 // Clamps the spline parameter to the last node and returns the interpolated location between the surrounding nodes into aOutLoc.
 } // namespace fnv_006e7a10
 // @fnv 0x006e7a10
+// pdb: PathingSolution::ComputeLocationFromParameter | PathingSolution.obj | retail, call graph (shared callers), high
+// pdb params: afCurrentSplineParameter, aOutLoc
+// pdb locals: currentnode, isize, spline, remainder
 void PathingSolution::GetLocationAtSplineParameter(float afCurrentSplineParameter, NiPoint3* aOutLoc)
 {
     unsigned int uiNodeIndex = (int)afCurrentSplineParameter;
@@ -741,11 +792,14 @@ struct FUN_006e8450_shell
 };
 struct FUN_006e9af0_S
 {
-    float MeasurePathLength(float, float, unsigned int);
+    float PathingSpline_ApproxLength(float, float, unsigned int);
 };
 
 } // namespace fnv_006e84b0
 // @fnv 0x006e84b0
+// pdb: PathingSolution::ComputeDistanceToParameter | PathingSolution.obj | debug, object-file run extension, low
+// pdb params: afParameter
+// pdb locals: inode, spline, ftotalLength, i
 float PathingSolution::GetSplineLengthAtParameter(float afParameter)
 {
     if (GetObjectFlags() == 0)
@@ -760,12 +814,12 @@ float PathingSolution::GetSplineLengthAtParameter(float afParameter)
         ((fnv_006e84b0::FUN_006e8450_shell*)&spline)
             ->PathingSpline_SetKeys(((fnv_006e84b0::OwnS2*)GetNode_006e7970(i))->GetLocationAndTangent(),
                            ((fnv_006e84b0::OwnS2*)GetNode_006e7970(i + 1))->GetLocationAndTangent());
-        ftotalLength += ((fnv_006e84b0::FUN_006e9af0_S*)&spline)->MeasurePathLength(0.0f, 1.0f, 2);
+        ftotalLength += ((fnv_006e84b0::FUN_006e9af0_S*)&spline)->PathingSpline_ApproxLength(0.0f, 1.0f, 2);
     }
     ((fnv_006e84b0::FUN_006e8450_shell*)&spline)
         ->PathingSpline_SetKeys(((fnv_006e84b0::OwnS2*)GetNode_006e7970(inode))->GetLocationAndTangent(),
                        ((fnv_006e84b0::OwnS2*)GetNode_006e7970(inode + 1))->GetLocationAndTangent());
-    ftotalLength += ((fnv_006e84b0::FUN_006e9af0_S*)&spline)->MeasurePathLength(0.0f, afParameter - inode, 2);
+    ftotalLength += ((fnv_006e84b0::FUN_006e9af0_S*)&spline)->PathingSpline_ApproxLength(0.0f, afParameter - inode, 2);
     return ftotalLength;
 }
 
@@ -774,6 +828,9 @@ void __cdecl BSClamp_float(float&, float, float);
 extern double _gModifierZero;
 } // namespace fnv_006e8680
 // @fnv 0x006e8680
+// pdb: PathingSolution::GetSplineParametersFromPercentage | PathingSolution.obj | debug, object-file run extension, low
+// pdb params: afPathPercent, afPathLength, aiOutNodeIndex
+// pdb locals: bFoundSpline, ftotal, distTraveled, fsplineT, i, fsplineLength
 float PathingSolution::FindSegmentAtFraction(float afPosition, float afScale, unsigned int* piNode)
 {
     bool bFound;
@@ -840,9 +897,12 @@ struct FUN_006a7ad0_shell
 
 // Loads pathing solution data from a BGSLoadFormBuffer: fixed fields, then virtual nodes, pathing nodes, avoid nodes, and door IDs when version >= 0x12.
 // @fnv 0x006e8d50
+// pdb: PathingSolution::LoadGame | PathingSolution.obj | retail, upstream name already matches, high
+// pdb params: apLoadGameBuffer
+// pdb locals: avoidNodeArrayDummy, isaveGameCount, i, virtualNode, pathingNode, avoidNode, idoorID
 void PathingSolution::LoadGame(BGSLoadFormBuffer* apLoadGameBuffer)
 {
-    apLoadGameBuffer->BGSLoadGameBuffer::ReadTypedData((void*)&m_bHasValidPath, 1u);
+    apLoadGameBuffer->BGSLoadGameBuffer::ReadTypedData((void*)&bIncompletePath, 1u);
     apLoadGameBuffer->BGSLoadGameBuffer::ReadTypedData((void*)&member1.firstValue, 4u);
     apLoadGameBuffer->BGSLoadGameBuffer::ReadTypedData((void*)&member1.secondValue, 4u);
     {
@@ -866,7 +926,7 @@ void PathingSolution::LoadGame(BGSLoadFormBuffer* apLoadGameBuffer)
     PathingAvoidNodeArray avoidNodeArray;
     {
         unsigned int isaveGameCount = apLoadGameBuffer->BGSLoadGameBuffer::ReadElementCount();
-        avoidNodeArray.SetSize(isaveGameCount, true);
+        avoidNodeArray.BSSimpleArray_PathingAvoidNode_1024_SetSize(isaveGameCount, true);
         for (unsigned int i = 0; i < isaveGameCount; i++)
         {
             PathingAvoidNode* avoidNode = avoidNodeArray.BSSimpleArray_PathingAvoidNode_1024_GetAt(i);
@@ -908,11 +968,15 @@ class FUN_006e9af0_cls
 {
   public:
     void Eval(PathVec3* out, float t);
-    float MeasurePathLength(float a, float b, unsigned int n);
+    float PathingSpline_ApproxLength(float afStartParam, float afEndParam, unsigned int aiSubdivisions);
 };
 
 // @fnv 0x006e9af0
-float FUN_006e9af0_cls::MeasurePathLength(float afStart, float afEnd, unsigned int uiSteps)
+// src: XBOX_DEBUG_PDB 0x006e9af0
+// pdb: PathingSpline::ApproxLength | PathingSpline.obj | debug, call graph, high
+// pdb params: afStartParam, afEndParam, aiSubdivisions
+// pdb locals: lastPoint, ftotalDistance, i, t, newPoint, vec
+float FUN_006e9af0_cls::PathingSpline_ApproxLength(float afStartParam, float afEndParam, unsigned int aiSubdivisions)
 {
     float sum_2;
     PathVec3 p9;
@@ -921,11 +985,11 @@ float FUN_006e9af0_cls::MeasurePathLength(float afStart, float afEnd, unsigned i
     PathVec3 p5;
     float t;
 
-    this->Eval(&p9, afStart);
+    this->Eval(&p9, afStartParam);
     sum_2 = 0.0f;
-    for (idx = 0; idx < uiSteps; idx++)
+    for (idx = 0; idx < aiSubdivisions; idx++)
     {
-        t = (afEnd - afStart) * (float)(idx + 1) / (float)uiSteps + afStart;
+        t = (afEndParam - afStartParam) * (float)(idx + 1) / (float)aiSubdivisions + afStartParam;
         PathClampHelper(&t, 0.0f, 1.0f);
         this->Eval(&p5, t);
         ((PathVecHelper*)&p5)->Combine(&p3, &p9);
@@ -935,6 +999,7 @@ float FUN_006e9af0_cls::MeasurePathLength(float afStart, float afEnd, unsigned i
     return sum_2;
 }
 
+// pdb: class Key, size 0x8 (here 0x18), 2 members
 struct Key
 {
     float x, y, z, tx, ty, tz;
@@ -960,11 +1025,14 @@ struct SplinePath
     Key first, second;
 
     void PathingSpline_SetKeys(Key*, Key*);
-    float MeasurePathLength(float, float, unsigned int);
+    float PathingSpline_ApproxLength(float, float, unsigned int);
     bool FindPointOnSpline(float, float, bool, float*, NiPoint3*, float);
 };
 // Walks the spline nodes from the given position until the remaining distance is consumed, returning the interpolated point or the tail location.
 // @fnv 0x006e8790
+// pdb: PathingSolution::ComputeApproxLocationForDistance | PathingSolution.obj | debug, call graph, low
+// pdb params: afCurrentParameter, afDistanceTraveled
+// pdb locals: inodeIndex, fsplineDist, spline, key2, fDistanceLeft, fparam, key1, retPoint, fdummy
 NiPoint3 PathingSolution::GetPointAtDistance(float position, float distance)
 {
     if (!GetNodeCount())
@@ -978,7 +1046,7 @@ NiPoint3 PathingSolution::GetPointAtDistance(float position, float distance)
     Key current = ((Node*)GetNode_006e7970(index))->GetLocationAndTangent();
     SplinePath spline3;
     ((SplinePath*)&spline3)->PathingSpline_SetKeys(&current, &next2);
-    float lengthVal = ((SplinePath*)&spline3)->MeasurePathLength(parameterTmp, 1.0f, 2);
+    float lengthVal = ((SplinePath*)&spline3)->PathingSpline_ApproxLength(parameterTmp, 1.0f, 2);
     while (index < (int)(GetNodeCount() - 2) && lengthVal < remaining7)
     {
         remaining7 -= lengthVal;
@@ -987,7 +1055,7 @@ NiPoint3 PathingSolution::GetPointAtDistance(float position, float distance)
         next2.PathingSolution_CopyVectorPair(((Node*)GetNode_006e7970(index + 1))->GetLocationAndTangent());
         ((SplinePath*)&spline3)->PathingSpline_SetKeys(&current, &next2);
         parameterTmp = 0.0f;
-        lengthVal = ((SplinePath*)&spline3)->MeasurePathLength(0.0f, 1.0f, 2);
+        lengthVal = ((SplinePath*)&spline3)->PathingSpline_ApproxLength(0.0f, 1.0f, 2);
     }
     if (lengthVal > remaining7)
     {
@@ -1049,9 +1117,12 @@ struct SaveArrayD
 };
 // Writes flags, unk18 and unk1c to the buffer, then serializes the counts and entries of first, second, a local PathingAvoidNodeArray and fourth.
 // @fnv 0x006e8b10
+// pdb: PathingSolution::SaveGame | PathingSolution.obj | debug, object-file run extension, low
+// pdb params: apSaveGameBuffer
+// pdb locals: avoidNodeArrayDummy, isaveGameCount, i, virtualNode, pathingNode, avoidNode, idoorID
 void PathingSolutionOperations::SaveGame(SaveBuffer* buffer)
 {
-    buffer->SaveData(&m_bHasValidPath, 1, 0);
+    buffer->SaveData(&bIncompletePath, 1, 0);
     buffer->SaveData(&member1.firstValue, 4, 0);
     buffer->SaveData(&member1.secondValue, 4, 0);
     unsigned int countA9 = &member1 ? ((CountView*)&member1)->Count() : 0;
@@ -1111,6 +1182,9 @@ struct FUN_006e9830_shell
 
 // Binary-searches the segment parameter so the point is within tolerance of afDistance from the point at afT, writing the found t and point to the outputs.
 // @fnv 0x006e9830
+// pdb: PathingSpline::FindPointOnSpline | PathingSpline.obj | debug, call graph, medium
+// pdb params: afStartParameter, afDistance, abForward, apfReturnParameter, apReturnPoint, afEpsilon
+// pdb locals: fgoalDistMinusEpsSqr, fcurrentMinParam, fcurrentMaxParam, bfoundParam, currentLocation, fcurrentParam, startLocation, fgoalDistPlusEpsSqr, fdistSqr
 bool FUN_006e9830_shell::FindPointAtDistance(float afT, float afDistance, bool abForward, float* apfOutT,
                                              NiPoint3* apkOutPoint, float afTolerance)
 {

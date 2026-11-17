@@ -20,6 +20,7 @@ namespace MagicSystem
     };
 }
 
+// pdb: class MagicItem, size 0x1c, bases: TESFullName, EffectItemList, 0 members
 class MagicItem : public TESFullName, public EffectItemList
 {
 public:
@@ -43,18 +44,18 @@ public:
 
     void Endian();
 
-    static MagicItem* GetMagicItemByID(unsigned int auiID);
+    static MagicItem* GetMagicItemByNumericID(unsigned int aiFormID);
     EffectSetting* GetEffectSettingForRange(MagicSystem::Range aeRange);
     void ClearEffectList();
-    void Preload(bool abPreload);
+    void Preload(bool abNow);
     void Unload(bool abUnload);
     bool IsLoaded();
     bool IsLoading();
-    void LoadEffectsFromForm(TESForm* apForm);
+    void MagicItemInitItem(TESForm* apForm);
 
     void FUN_00403600(MagicItem* source);
     EffectSettingQ* FUN_0040a300(int iUnk);
-    bool SpellItem_CompareMagicItemData(MagicItem* p);
+    bool SpellItem_CompareMagicItemData(MagicItem* apCompare);
     const char* TESModel_GetModel();
     void FUN_0040b800(int);
     void FUN_0040b800(bool);

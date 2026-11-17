@@ -7,11 +7,12 @@ class NiD3DShaderProgramCreator;
 struct ShaderBufferRecord;
 template <class TVAL> class NiTStringPointerMap;
 
+// pdb: class NiD3DShaderProgramFactory, size 0x1c, bases: NiRefObject, 3 members
 class NiD3DShaderProgramFactory : public NiRefObject
 {
 public:
-    NiTPointerList<char*> m_kDirectoryList;
-    NiTStringPointerMap<ShaderBufferRecord*>* m_pVertexShaderMap;
+    NiTPointerList<char*> m_kProgramDirectories; // src: XBOX_RETAIL_PDB +0x8 (old: m_kDirectoryList)
+    NiTStringPointerMap<ShaderBufferRecord*>* m_pkVertexShaderMap; // src: XBOX_RETAIL_PDB +0x14 (old: m_pVertexShaderMap)
     union
     {
         NiTStringPointerMap<ShaderBufferRecord*>* m_pPixelShaderMap;
@@ -20,8 +21,8 @@ public:
 
     char* GetFirstName(void**);
     const char* GetNextName(void*&);
-    void AddDirectory(const char* pacDirectory);
-    void LoadProgramByName(const char*);
+    void AddProgramDirectory(const char* pacDirectory);
+    void RemoveProgramDirectory(const char*);
     void RemoveDirectoryEntry(const char* pcDirectory);
     ShaderBufferRecord* __thiscall FindVertexShader(const char* pcShaderName);
     ShaderBufferRecord* __thiscall FindPixelShader(const char* pcShaderName);

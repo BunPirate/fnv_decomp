@@ -56,7 +56,7 @@ class InventoryInterface
     static bool GetSelectedTargetIndex(enumMenus);
     static bool IsSaveLoadActive();
     static FOPipboyManager* GetPipboyManagerInstance();
-    static void SetTileFormattedText(Tile*, int, const char*, ...);
+    static void Interface_InitializeTabline(Tile*, int, const char*, ...);
     static bool ShowMessage(const char*, int, const char*, const char*, float, bool);
 };
 class InventoryMenuSetting
@@ -104,6 +104,8 @@ void InventoryMenu::AssignTileByID(int aiTileIndex, Tile* tile)
 }
 
 // @fnv 0x0077fa00
+// pdb: InventoryMenu::InventoryMenu | InventoryMenu.obj | retail, string-set bridge, high
+// pdb locals: iPageCt
 InventoryMenu::InventoryMenu()
 {
     ms_iValueTileID = Tile::GetTraitID("_Value");
@@ -121,6 +123,8 @@ InventoryMenu::InventoryMenu()
 
 // Handles hotkey selection for the inventory menu: toggles hotkey slots, shows messages for invalid items, and updates the item card display.
 // @fnv 0x00781ba0
+// pdb: InventoryMenu::DoIdle | InventoryMenu.obj | retail, vtable slot, high
+// pdb locals: icurrTabIndex, icurrHighlight, bbuttonPressed, ihotkeyCt
 void InventoryMenu::UpdateDialog()
 {
     if (!InventoryInterface::GetSelectedTargetIndex(InventoryInterface::kInventory) ||
@@ -173,8 +177,8 @@ void InventoryMenu::UpdateDialog()
         {
             m_pTiles[20]->Set(0xfa3, 1);
             m_pTiles[22]->Set(0xfa3, 1);
-            InterfaceManager::UpdateContainerMenu(0, 0, m_pTiles[20], ms_pActionPointSource, true);
-            InterfaceManager::UpdateContainerMenu(0, 0, m_pTiles[22], ms_pActionPointSource, true);
+            InterfaceManager::UpdatePipBoyInventoryEffects(0, 0, m_pTiles[20], ms_pActionPointSource, true);
+            InterfaceManager::UpdatePipBoyInventoryEffects(0, 0, m_pTiles[22], ms_pActionPointSource, true);
         }
     }
     else
@@ -221,11 +225,11 @@ void InventoryMenu::UpdateDialog()
     iPage = ms_pInventoryMenu->m_iCurrentTab + 24;
     if (iPage == 24)
     {
-        InterfaceManager::UpdateContainerMenu(m_pTiles[14], m_pTiles[15], m_pTiles[16], ms_pActionPointSource, false);
+        InterfaceManager::UpdatePipBoyInventoryEffects(m_pTiles[14], m_pTiles[15], m_pTiles[16], ms_pActionPointSource, false);
     }
     else if (iPage == 25)
     {
-        InterfaceManager::UpdateContainerMenu(
+        InterfaceManager::UpdatePipBoyInventoryEffects(
             ms_pActionPointSource &&
                     static_cast<TESObjectARMO*>(ms_pActionPointSource->FUN_0044ddc0())->GetArmorRating() != 0.0
                 ? m_pTiles[17]
@@ -237,12 +241,14 @@ void InventoryMenu::UpdateDialog()
             0, ms_pActionPointSource, false);
     }
     m_pTiles[2]->Set(0xfa9, 0.0f, true);
-    InterfaceManager::UpdateContainerMenu(g_thePlayer->GetCurrentActorValue(static_cast<ActorValue::Index>(18)) != 0.0 ? m_pTiles[2] : 0,
+    InterfaceManager::UpdatePipBoyInventoryEffects(g_thePlayer->GetCurrentActorValue(static_cast<ActorValue::Index>(18)) != 0.0 ? m_pTiles[2] : 0,
                                           m_pTiles[21], 0, ms_pActionPointSource, false);
 }
 
 // Loads inventory_menu.xml, stores the InventoryMenu, initializes its list and title tiles, and returns the tile or 0 on failure.
 // @fnv 0x0077fc10
+// pdb: InventoryMenu::Create | InventoryMenu.obj | retail, upstream name already matches, high
+// pdb locals: pin, ftop_depth, ptile, pold_menu_tile
 Tile* InventoryMenu::Create()
 {
     InterfaceManager* pMenuInterfaceManager = InterfaceManager_GetSingleton();
@@ -252,7 +258,7 @@ Tile* InventoryMenu::Create()
         delete oldMenu;
     Tile* pTile = pMenuInterfaceManager->CombatController_GetCombatState()->ReadFile("Data\\Menus\\Main\\inventory_menu.xml");
     ms_pInventoryMenu = static_cast<InventoryMenu*>(pTile->GetMenu());
-    Menu::ReadMenuDefinition("Data\\Menus\\Main\\inventory_menu.xml", ms_pInventoryMenu);
+    Menu::RemoveFromXMLArchive("Data\\Menus\\Main\\inventory_menu.xml", ms_pInventoryMenu);
     if (ms_pInventoryMenu && ms_pInventoryMenu->GetClass() == GetClassStatic())
     {
         ms_pInventoryMenu->SetTileMenu(reinterpret_cast<TileMenu*>(pTile), false);
@@ -268,7 +274,7 @@ Tile* InventoryMenu::Create()
         InterfaceManager_GetSingleton()->kTutorialManager.ShowMessage(34, GetClassStatic(), 512);
         ms_pInventoryMenu->m_kItemList.Initialize(ms_pInventoryMenu->m_pTiles[4], "IM_InventoryListTemplate");
         ms_pInventoryMenu->m_kItemList.FUN_007a1930(false);
-        InventoryInterface::SetTileFormattedText(ms_pInventoryMenu->m_pTiles[13], 24, DAT_011d29b8.FUN_00403df0(),
+        InventoryInterface::Interface_InitializeTabline(ms_pInventoryMenu->m_pTiles[13], 24, DAT_011d29b8.FUN_00403df0(),
                                         DAT_011d4d50.FUN_00403df0(), DAT_011d40b4.FUN_00403df0(),
                                         DAT_011d2acc.FUN_00403df0(), DAT_011d3258.FUN_00403df0(), 0);
         ms_pInventoryMenu->m_kMenuData.Initialize(ms_pInventoryMenu->m_pTiles[5]);
@@ -317,6 +323,7 @@ bool InventoryMenu::IsWellFormedMenu_0077ff90()
 
 // @fnv 0x00704390
 // src: XBOX_PDB 0x00704390
+// pdb: StatsMenu::ResetHealingMode | Interface.obj | debug, upstream name already matches, high
 void __cdecl StatsMenu_ResetHealingMode()
 {
     if (StatsMenu::ms_pInventoryMenu != 0)
@@ -340,6 +347,8 @@ extern double _gModifierZero;
 // Sets tile property 0xFA3 to whether the float from property 0xFAC is greater than or equal to _gModifierZero.
 // @fnv 0x00780c00
 // src: XBOX_PDB 0x00780c00
+// pdb: InventoryMenu::SetVisibleFunc | InventoryMenu.obj | retail, upstream name already matches, high
+// pdb params: apTile, apItem
 void __cdecl InventoryMenu_SetVisibleFunc(Tile* pTile)
 {
     pTile->Set(0xFA3, static_cast<const Tile*>(pTile)->GetFloat(0xFAC) >= _gModifierZero);
@@ -354,22 +363,26 @@ struct FUN_00781620_shell : public InventoryMenu
 };
 // @fnv 0x00781620
 // src: XBOX_PDB 0x00781620
+// pdb: InventoryMenu::DoLeave | InventoryMenu.obj | retail, upstream name already matches, high
+// pdb params: aiID, apTarget
 void __thiscall FUN_00781620_shell::InventoryMenu_DoLeave(int aiID, Tile* apTarget)
 {
     if (aiID == 0x1D || aiID == 0x1E)
     {
         if (!_FUN_004b71d0() || Interface_GetTopMenuID() != 0x3F8)
-            ClearActionPointSource();
+            ClearCurrentItem();
         this->FUN_00726070()->Set(InventoryMenu::ms_iEquippableItemTileID, 0);
     }
 }
 
 // @fnv 0x00782470
 // src: XBOX_PDB 0x00782470
-void InventoryMenu_SetKnobPosition(bool a1)
+// pdb: InventoryMenu::SetKnobPosition | InventoryMenu.obj | debug, upstream name already matches, high
+// pdb params: abPlaySounds
+void InventoryMenu_SetKnobPosition(bool abPlaySounds)
 {
     if (InventoryMenu::ms_pInventoryMenu)
-        InterfaceManager_GetSingleton()->GetPipboyManagerInstance()->SetValue(InventoryMenu::ms_pInventoryMenu->m_iCurrentTab, a1);
+        InterfaceManager_GetSingleton()->GetPipboyManagerInstance()->SetTabKnobPosition(InventoryMenu::ms_pInventoryMenu->m_iCurrentTab, abPlaySounds);
 }
 
 // @fnv 0x007824b0
@@ -387,6 +400,8 @@ unsigned char InventoryMenu_GetCurrentInventoryPage()
 unsigned int __fastcall FUN_0044ddc0(void*);
 // Returns 0 when a1 is non-null and its form type is 0x2E, otherwise returns 1.
 // @fnv 0x00782810
+// pdb: InventoryMenu::KeyFilterFunc | InventoryMenu.obj | debug, object-file gap fill, medium
+// pdb params: apItem
 unsigned char __cdecl IsNotFormType2E(void* a1)
 {
     int v;
@@ -399,6 +414,8 @@ unsigned char __cdecl IsNotFormType2E(void* a1)
 
 // @fnv 0x007800c0
 // src: XBOX_PDB 0x007800c0
+// pdb: InventoryMenu::LoadPageState | InventoryMenu.obj | retail, upstream name already matches, high
+// pdb locals: iindex
 void __cdecl InventoryMenu_LoadPageState()
 {
     int iElementIndex;
@@ -434,6 +451,8 @@ extern GlobalObject_0040c150 g_011d478c;
 
 // @fnv 0x00781680
 // src: XBOX_PDB 0x00781680
+// pdb: InventoryMenu::UpdateButtons | InventoryMenu.obj | retail, upstream name already matches, high
+// pdb locals: icurrTabIndex
 void InventoryMenu::UpdateButtons()
 {
     int icurrTabIndex;
@@ -490,6 +509,9 @@ struct FUN_007823d0_shell : public InventoryMenu
 
 // Handles inventory menu buttons 16 and 10 when the inventory interface is open, hiding a tile and returning whether the button was handled.
 // @fnv 0x007823d0
+// pdb: InventoryMenu::DoGamepadUpEvent | InventoryMenu.obj | retail, vtable slot, high
+// pdb params: aiButton, afValue
+// pdb locals: bhandled
 bool __thiscall FUN_007823d0_shell::HandleInventoryButton(int aiButton, float afValue)
 {
     bool bhandled;
@@ -542,6 +564,9 @@ int __cdecl BSstrcmp(char const*, char const*);
 
 // @fnv 0x007824e0
 // src: COMMUNITY 0x007824e0
+// pdb: InventoryMenu::SortFunc | InventoryMenu.obj | retail, object-file run extension, low
+// pdb params: apItem1, apItem2
+// pdb locals: iresult
 int __cdecl InventoryMenu_CompareForSorting(ListBoxItem<InventoryStackRecord*>* apItem1, ListBoxItem<InventoryStackRecord*>* apItem2)
 {
     int iresult;
@@ -617,7 +642,11 @@ extern int _DAT_011f4270;
 extern int _DAT_011f4274;
 
 // @fnv 0x00780c50
-void __cdecl DropInventoryItem(int aiAmountChosen)
+// src: XBOX_DEBUG_PDB 0x00780c50
+// pdb: InventoryMenu::DropCurrentItem | InventoryMenu.obj | debug, call graph, high
+// pdb params: aiAmountChosen
+// pdb locals: pextra, pobjectRef, dropPoint
+void __cdecl InventoryMenu_DropCurrentItem(int aiAmountChosen)
 {
     ExtraDataList* pextra;
     TESBoundObject* pobjectRef;
@@ -666,6 +695,7 @@ extern int DAT_011d9ea4;
 
 // Clears the global inventory menu pointer when the object is destroyed.
 // @fnv 0x0077fb80
+// pdb: InventoryMenu::~InventoryMenu | InventoryMenu.obj | retail, upstream name already matches, high
 InventoryMenu::~InventoryMenu()
 {
     DAT_011d9ea4 = 0;
@@ -674,7 +704,10 @@ InventoryMenu::~InventoryMenu()
 extern int DAT_011d9eb8;
 
 // @fnv 0x0077ffd0
-void __cdecl UpdateCurrentValue()
+// src: XBOX_RETAIL_PDB 0x0077ffd0
+// pdb: InventoryMenu::SavePageState | InventoryMenu.obj | retail, call graph, high
+// pdb locals: iindex
+void __cdecl InventoryMenu_SavePageState()
 {
     int tab;
     int idx;
@@ -705,6 +738,8 @@ extern char* DAT_011dea3c;
 // Checks indices 25 through 30 of the input interface and returns true if any first value is less than its second value.
 // @fnv 0x00780f70
 // src: XBOX_PDB 0x00780f70
+// pdb: IsDrBagUsable | InventoryMenu.obj | debug, upstream name already matches, high
+// pdb locals: eav
 bool __cdecl IsDrBagUsable()
 {
     for (int index = 25; index < 31; ++index)
@@ -765,15 +800,18 @@ int BSstrcmp(const char*, const char*);
 void FUN_00406d30(char*, unsigned int, const char*);
 unsigned int BSstrlen(const char*);
 void* FUN_00479430(Form*);
-const char* GetMenuIconName(void*);
+const char* GetEquipTypeIconFilename(void*);
 void FUN_00406d50(char*, unsigned int, const char*);
 }  // namespace InventorySelection
 
 // On action 29 refreshes the selected item's label, stats, description, ammo and icon; on action 30 resets the description and button text.
 // @fnv 0x00780ff0
-void InventoryMenu::UpdateItemDisplay(int action, Tile* changed)
+// pdb: InventoryMenu::DoEnter | InventoryMenu.obj | retail, string-set bridge, high
+// pdb params: aiID, apTarget
+// pdb locals: inewHighlightIndex, uiMinNameLength, pweap, strSmallIconName, fMaintainValue, strtemp
+void InventoryMenu::UpdateItemDisplay(int aiID, Tile* apTarget)
 {
-    if (action == 29)
+    if (aiID == 29)
     {
         InventorySelection::DAT_011d9ea8 = InventorySelection::GetSelectedInventoryItem(&m_kItemList);
         if (InventorySelection::DAT_011d9ea8)
@@ -832,7 +870,7 @@ void InventoryMenu::UpdateItemDisplay(int action, Tile* changed)
             char path[260];
             InventorySelection::FUN_00406d30(path, 260, InventorySelection::DAT_0106eb24);
             unsigned int prefixLengthSlot0 = InventorySelection::BSstrlen(path);
-            InventorySelection::FUN_00406d50(path, 260, InventorySelection::GetMenuIconName(InventorySelection::FUN_00479430(InventorySelection::DAT_011d9ea8->FUN_0044ddc0())));
+            InventorySelection::FUN_00406d50(path, 260, InventorySelection::GetEquipTypeIconFilename(InventorySelection::FUN_00479430(InventorySelection::DAT_011d9ea8->FUN_0044ddc0())));
             if (InventorySelection::BSstrlen(path) > prefixLengthSlot0)
             {
                 (*reinterpret_cast<InventorySelection::TileHolder*>(m_pTiles[5])->tile.NiTPointerListBase_NiTPointerAllocator_unsigned_int_Tile_GetHead())->Tile_Set_00a01350(0xfcc, path, 1);
@@ -845,9 +883,9 @@ void InventoryMenu::UpdateItemDisplay(int action, Tile* changed)
             UpdateButtons();
         }
     }
-    else if (action == 30)
+    else if (aiID == 30)
     {
-        ClearActionPointSource();
+        ClearCurrentItem();
         m_pTiles[11]->Tile_Set_00a01350(0xfcc, InventorySelection::DAT_01073aac, 1);
         if (!m_kMenuData.GetVisible())
             m_pTiles[11]->FUN_00700320(0xfa3, 1);
@@ -890,35 +928,38 @@ struct EntryListNode
 };
 struct Changes
 {
-    void FilterInventoryChanges(Form*, EntryListNode*);
+    void InventoryChanges_GetRepairItemGroup(Form*, EntryListNode*);
 };
 Changes* __cdecl FUN_004bf220(void*);
 extern void* player;
 float __cdecl FUN_00476b20(float);
 struct InventoryCheck
 {
-    bool InventoryMenu_IsItemRepairable(Entry* entry);
+    bool InventoryMenu_IsItemRepairable(Entry* apItem);
 };
 // @fnv 0x00781860
 // src: XBOX_PDB 0x00781860
-bool InventoryCheck::InventoryMenu_IsItemRepairable(Entry* entry)
+// pdb: InventoryMenu::IsItemRepairable | InventoryMenu.obj | retail, upstream name already matches, high
+// pdb params: apItem
+// pdb locals: pobj, bcanRepair, pinventory, pnewItemGroup, pextra, ptemp, pcurrItemObj, pcurrExtra, pcurrObj
+bool InventoryCheck::InventoryMenu_IsItemRepairable(Entry* apItem)
 {
     bool result5 = false;
-    Form* form4 = entry ? entry->FUN_0044ddc0() : 0;
-    if (entry && FUN_00476b20(entry->ItemChange_GetItemHealth(true)) == 100.0)
+    Form* form4 = apItem ? apItem->FUN_0044ddc0() : 0;
+    if (apItem && FUN_00476b20(apItem->ItemChange_GetItemHealth(true)) == 100.0)
         return result5;
-    if (entry && form4 && (form4->FUN_00401170() == 40 || form4->FUN_00401170() == 24) &&
-        entry->ItemChange_GetItemHealth(true) < 100.0)
+    if (apItem && form4 && (form4->FUN_00401170() == 40 || form4->FUN_00401170() == 24) &&
+        apItem->ItemChange_GetItemHealth(true) < 100.0)
     {
-        if (entry->FUN_00726070() > 1)
+        if (apItem->FUN_00726070() > 1)
             result5 = true;
         else
         {
             EntryListNode list6;
             Changes* changes = FUN_004bf220(player);
-            Extra* originalExtra = entry->Modelloader_GetReferencedThis() ? *entry->Modelloader_GetReferencedThis()->FUN_006815c0() : 0;
+            Extra* originalExtra = apItem->Modelloader_GetReferencedThis() ? *apItem->Modelloader_GetReferencedThis()->FUN_006815c0() : 0;
             EntryListNode* cleanup = &list6;
-            changes->FilterInventoryChanges(form4, &list6);
+            changes->InventoryChanges_GetRepairItemGroup(form4, &list6);
             for (EntryListNode* node9 = &list6; node9 && *node9->FUN_006815c0(); node9 = node9->FUN_00726070())
             {
                 Form* otherForm2 = (*node9->FUN_006815c0())->FUN_0044ddc0();
@@ -946,7 +987,7 @@ bool InventoryCheck::InventoryMenu_IsItemRepairable(Entry* entry)
 struct ItemLabelSource : InventoryStackRecord
 {
     int FUN_00726070();
-    unsigned char FUN_004bd820();
+    unsigned char ItemChange_GetModSlots();
     const char* GetTargetFullName();
     bool ItemChange_GetWorn(bool);
 };
@@ -961,42 +1002,46 @@ struct ItemLabelChildren
 int __cdecl _sprintf_s(char*, unsigned int, const char*, ...);
 
 // @fnv 0x00782850
-void __cdecl UpdateItemLabel(Tile* tile, ItemLabelSource* item)
+// src: XBOX_RETAIL_PDB 0x00782850
+// pdb: InventoryMenu::InitFunc | InventoryMenu.obj | retail, string-set bridge, high
+// pdb params: apTile, apItem
+// pdb locals: strtemp
+void __cdecl InventoryMenu_InitFunc(Tile* apTile, ItemLabelSource* apItem)
 {
     char label[128];
-    if (item)
+    if (apItem)
     {
-        if (item->FUN_00726070() > 1)
+        if (apItem->FUN_00726070() > 1)
         {
-            if (item->FUN_004bd820())
-                _sprintf_s(label, 128, "%s+ (%d)", item->GetTargetFullName(), item->FUN_00726070());
+            if (apItem->ItemChange_GetModSlots())
+                _sprintf_s(label, 128, "%s+ (%d)", apItem->GetTargetFullName(), apItem->FUN_00726070());
             else
-                _sprintf_s(label, 128, "%s (%d)", item->GetTargetFullName(), item->FUN_00726070());
-            tile->Set(0xfc4, label, true);
+                _sprintf_s(label, 128, "%s (%d)", apItem->GetTargetFullName(), apItem->FUN_00726070());
+            apTile->Set(0xfc4, label, true);
         }
-        tile->Set(0xfaa, 29);
-        if (item->FUN_0044ddc0()->GetFormType() == 41 || item->FUN_0044ddc0()->GetFormType() == 24 ||
-            item->FUN_0044ddc0()->GetFormType() == 40)
+        apTile->Set(0xfaa, 29);
+        if (apItem->FUN_0044ddc0()->GetFormType() == 41 || apItem->FUN_0044ddc0()->GetFormType() == 24 ||
+            apItem->FUN_0044ddc0()->GetFormType() == 40)
         {
-            if (!g_thePlayer->PlayerCharacter_CanEquipOrUseObject(item))
-                (*reinterpret_cast<ItemLabelChildren*>(&tile->m_kChildTileList)->FUN_007b5370())->Set(0xfa9, 127);
+            if (!g_thePlayer->PlayerCharacter_CanEquipOrUseObject(apItem))
+                (*reinterpret_cast<ItemLabelChildren*>(&apTile->xChildren)->FUN_007b5370())->Set(0xfa9, 127);
             else
-                (*reinterpret_cast<ItemLabelChildren*>(&tile->m_kChildTileList)->FUN_007b5370())->Set(0xfa9, 255);
+                (*reinterpret_cast<ItemLabelChildren*>(&apTile->xChildren)->FUN_007b5370())->Set(0xfa9, 255);
         }
-        if (item->FUN_0044ddc0()->GetFormType() == 41 &&
+        if (apItem->FUN_0044ddc0()->GetFormType() == 41 &&
             reinterpret_cast<TESObjectWEAP*>(g_thePlayer->Actor_GetCurrentWeapon()))
         {
-            (*reinterpret_cast<ItemLabelChildren*>(&tile->m_kChildTileList)->AddEight(reinterpret_cast<ItemLabelChildren*>(&tile->m_kChildTileList)->Modelloader_GetReferencedThis()))
+            (*reinterpret_cast<ItemLabelChildren*>(&apTile->xChildren)->AddEight(reinterpret_cast<ItemLabelChildren*>(&apTile->xChildren)->Modelloader_GetReferencedThis()))
                 ->Set(0xfa3,
-                      static_cast<bool>(item && item->FUN_0044ddc0() ==
+                      static_cast<bool>(apItem && apItem->FUN_0044ddc0() ==
                                                     reinterpret_cast<TESBoundObject*>(
                                                         reinterpret_cast<TESObjectWEAP*>(g_thePlayer->Actor_GetCurrentWeapon())
                                                             ->GetCurrentAmmo(reinterpret_cast<Actor*>(g_thePlayer)))));
         }
         else
         {
-            (*reinterpret_cast<ItemLabelChildren*>(&tile->m_kChildTileList)->AddEight(reinterpret_cast<ItemLabelChildren*>(&tile->m_kChildTileList)->Modelloader_GetReferencedThis()))
-                ->Set(0xfa3, item && item->ItemChange_GetWorn(false) ? 1 : 0);
+            (*reinterpret_cast<ItemLabelChildren*>(&apTile->xChildren)->AddEight(reinterpret_cast<ItemLabelChildren*>(&apTile->xChildren)->Modelloader_GetReferencedThis()))
+                ->Set(0xfa3, apItem && apItem->ItemChange_GetWorn(false) ? 1 : 0);
         }
     }
 }
@@ -1024,7 +1069,7 @@ struct Sh004bddd0
     bool ItemChange_GetWorn(bool arg);
 };
 
-unsigned __cdecl FUN_0058db10(int arg);
+unsigned __cdecl FUN_0058db10(int aeObject);
 unsigned __cdecl TESForm_GetFormByNumericID(int arg);
 
 class SettingString
@@ -1037,7 +1082,10 @@ extern "C" SettingString DAT_011d2af0;
 
 // 0x00780d60 uses InventoryMenu offsets 0xB8/0x11C and AddHead at 0x005ae3d0; the shared class lacks this method.
 // @fnv 0x00780d60
-void __fastcall RefreshInventorySelection(InventoryMenu* menu)
+// src: XBOX_DEBUG_PDB 0x00780d60
+// pdb: InventoryMenu::SelectCurrentItem | InventoryMenu.obj | debug, call graph, high
+// pdb locals: pextra, pobjectRef
+void __fastcall InventoryMenu_SelectCurrentItem(InventoryMenu* menu)
 {
     void* a = (void*)FUN_0044ddc0(DAT_011d9ea8);
     void* b = Modelloader_GetReferencedThis(DAT_011d9ea8) ? (void*)*((Sh006815c0*)Modelloader_GetReferencedThis(DAT_011d9ea8))->FUN_006815c0() : 0;
@@ -1148,7 +1196,7 @@ class VTTarget
 class VTAction
 {
   public:
-    VTAction(VTForm* pkTargetNum, Tile* pkTile);
+    VTAction(VTForm* apObject, Tile* aiNumber);
     int unk00;
     int unk04;
     int unk08;
@@ -1553,13 +1601,13 @@ struct VTSoundHandle
     unsigned int m_uiState;
     unsigned int m_uiValue1;
     ~VTSoundHandle();
-    bool FUN_00ad8830(bool bLoop);
+    bool FUN_00ad8830(bool abLoopPlayback);
 };
 class VTAudio
 {
   public:
     static VTAudio* BSAudio_QInstance();
-    VTSoundHandle BSAudio_GetSoundHandleByEditorName(const char* pcName, int iFlags);
+    VTSoundHandle BSAudio_GetSoundHandleByEditorName(const char* apSoundName, int aiTypeFlags);
 };
 
 extern VTTarget* DAT_011d9ea8;
@@ -1576,18 +1624,18 @@ extern VTSetting DAT_011d3d30;
 extern VTCounter DAT_011d2418;
 
 void InventoryMenu_LoadPageState();
-void InventoryMenu_SetKnobPosition(int iFlag);
+void InventoryMenu_SetKnobPosition(int abPlaySounds);
 int GetClassStatic();
-void InterfaceManager_PlayMenuSound(int iMenu);
-void RepairMenu_InitRepairMenu(VTTarget* pkTargetNum);
+void InterfaceManager_PlayMenuSound(int aeMenuSound);
+void RepairMenu_InitRepairMenu(VTTarget* apBrokenItem);
 VTCombat* FUN_004bf220(PlayerCharacter* pkPlayer);
-void ItemModMenu_InitItemModMenu(VTTarget* pkTargetNum, int iFlag);
+void ItemModMenu_InitItemModMenu(VTTarget* apBrokenItem, int bCheckEquip);
 bool InterfaceManager_Has360Controller();
 void InventoryMenu_UpdateInventoryMenu();
 void DispatchMessageToSink(const char* pcText, int iA, const char* pcIcon, const char* pcSound, float fTime, int iB);
-void CreateQuantityMenu(Tile* pkTile, void (*pfnCallback)(int), int iMax);
+void QuantityMenu_Create(Tile* aiMaxAmount, void (*afpCallback)(int), int aiStartAmount);
 void InventoryMenu_FilterFunc();
-void UpdateItemLabel(Tile* pkTile);
+void InventoryMenu_InitFunc(Tile* apTile);
 void IsNotFormType2E();
 
 }  // namespace fnv_00780140
@@ -1595,44 +1643,47 @@ void IsNotFormType2E();
 // Dispatches mode changes and item actions.
 // 0x00780140 uses InventoryMenu's tiles +0x28, tab +0x84, list +0xB8 and hotkeys +0xE8/+0x11C.
 // @fnv 0x00780140
-void InventoryMenu::Select(int m_uiSoundID, int pkTile)
+// pdb: InventoryMenu::DoClick | InventoryMenu.obj | retail, vtable slot, high
+// pdb params: aiID, apTarget
+// pdb locals: iprevTab, pinventory, bupdatePlayerModel, parrows, pCurrentWeapon, pAmmo, pQueuedAttachWeapon, pextra, pobjectRef, dropPoint
+void InventoryMenu::Select(int aiID, int apTarget)
 {
     using namespace fnv_00780140;
-    if (!pkTile && m_uiSoundID >= 0 && m_uiSoundID < 0x17)
-        pkTile = reinterpret_cast<int>(m_pTiles[m_uiSoundID]);
-    switch (m_uiSoundID)
+    if (!apTarget && aiID >= 0 && aiID < 0x17)
+        apTarget = reinterpret_cast<int>(m_pTiles[aiID]);
+    switch (aiID)
     {
     case 24:
     case 25:
     case 26:
     case 27:
     case 28:
-        if (m_iCurrentTab != m_uiSoundID - 0x18)
+        if (m_iCurrentTab != aiID - 0x18)
         {
             int iOldMode = m_iCurrentTab;
             if (FUN_00726070()->IsTraitNonZero(DAT_011d9eb8))
                 FUN_00726070()->FUN_00700320(DAT_011d9eb8, 0);
-            ClearActionPointSource();
-            UpdateCurrentValue();
-            m_iCurrentTab = m_uiSoundID - 0x18;
+            ClearCurrentItem();
+            InventoryMenu_SavePageState();
+            m_iCurrentTab = aiID - 0x18;
             m_pTiles[13]->FUN_00700320(DAT_011d9eac, m_iCurrentTab);
-            ::InterfaceManager_GetSingleton()->GetPipboyManagerInstance()->StartBurst(*DAT_011db458.Setting_Float_00403e20(), *DAT_011db37c.Setting_Float_00403e20(), 0.5f);
-            ::InterfaceManager_GetSingleton()->SetInventoryPageNumber(m_uiSoundID);
+            ::InterfaceManager_GetSingleton()->GetPipboyManagerInstance()->TriggerBurst(*DAT_011db458.Setting_Float_00403e20(), *DAT_011db37c.Setting_Float_00403e20(), 0.5f);
+            ::InterfaceManager_GetSingleton()->SetInventoryPageNumber(aiID);
             m_kItemList.ApplyFilter(fnv_00780140::InventoryMenu_FilterFunc);
             m_kItemList.ListBox_ItemChange_Traverse(InventoryMenu_SetVisibleFunc, -1, 0x7fffffff);
             fnv_00780140::InventoryMenu_LoadPageState();
             fnv_00780140::InventoryMenu_SetKnobPosition(1);
         }
-        if (m_uiSoundID == 0x18)
+        if (aiID == 0x18)
             m_pTiles[19]->FUN_00700320(0xfa3, 1);
-        else if (m_uiSoundID == 0x1c)
+        else if (aiID == 0x1c)
         {
             ::InterfaceManager_GetSingleton()->kTutorialManager.ShowMessage(0x24, GetClassStatic(), 0x1f4);
-            ((InventoryMenu*)DAT_011d9ea4)->m_kItemList.ListBox_ItemChange_Traverse(fnv_00780140::UpdateItemLabel, 0, 0x7fffffff);
+            ((InventoryMenu*)DAT_011d9ea4)->m_kItemList.ListBox_ItemChange_Traverse(fnv_00780140::InventoryMenu_InitFunc, 0, 0x7fffffff);
         }
         else
         {
-            if (m_uiSoundID == 0x19)
+            if (aiID == 0x19)
                 ::InterfaceManager_GetSingleton()->kTutorialManager.ShowMessage(0x23, GetClassStatic(), 0x200);
             m_pTiles[19]->FUN_00700320(0xfa3, 0);
             m_pTiles[20]->FUN_00700320(0xfa3, 0);
@@ -1643,7 +1694,7 @@ void InventoryMenu::Select(int m_uiSoundID, int pkTile)
         if (fnv_00780140::DAT_011d9ea8)
         {
             InterfaceManager_PlayMenuSound(0x24);
-            UpdateCurrentValue();
+            InventoryMenu_SavePageState();
             RepairMenu_InitRepairMenu(fnv_00780140::DAT_011d9ea8);
         }
         break;
@@ -1651,7 +1702,7 @@ void InventoryMenu::Select(int m_uiSoundID, int pkTile)
         if (fnv_00780140::DAT_011d9ea8 && fnv_00780140::DAT_011d9ea8->FUN_0044ddc0()->FUN_00401170() == 0x28)
         {
             InterfaceManager_PlayMenuSound(0x24);
-            UpdateCurrentValue();
+            InventoryMenu_SavePageState();
             if (fnv_00780140::DAT_011d9ea8->Modelloader_GetReferencedThis() && !*fnv_00780140::DAT_011d9ea8->Modelloader_GetReferencedThis()->FUN_006815c0())
             {
                 VTCombat* pkCombat = FUN_004bf220((PlayerCharacter*)DAT_011dea3c);
@@ -1687,7 +1738,7 @@ void InventoryMenu::Select(int m_uiSoundID, int pkTile)
             }
             else
             {
-                RefreshInventorySelection(this);
+                InventoryMenu_SelectCurrentItem(this);
                 bResume = true;
             }
             if (bResume)
@@ -1719,11 +1770,11 @@ void InventoryMenu::Select(int m_uiSoundID, int pkTile)
     case 30:
         if (!m_kMenuData.GetVisible())
         {
-            UpdateCurrentValue();
+            InventoryMenu_SavePageState();
             FUN_00726070()->FUN_00700320(DAT_011d9eb8, 1);
             m_kItemList.ApplyFilter(fnv_00780140::IsNotFormType2E);
             m_kItemList.ListBox_ItemChange_Traverse(InventoryMenu_SetVisibleFunc, -1, 0x7fffffff);
-            ClearActionPointSource();
+            ClearCurrentItem();
             fnv_00780140::InventoryMenu_LoadPageState();
         }
         else
@@ -1732,7 +1783,7 @@ void InventoryMenu::Select(int m_uiSoundID, int pkTile)
                                   "UIVATSInsufficientAP", 2.0f, 0);
         break;
     case 10:
-        UpdateCurrentValue();
+        InventoryMenu_SavePageState();
         FUN_00726070()->FUN_00700320(DAT_011d9eb8, 0);
         m_kItemList.ApplyFilter(fnv_00780140::InventoryMenu_FilterFunc);
         m_kItemList.ListBox_ItemChange_Traverse(InventoryMenu_SetVisibleFunc, -1, 0x7fffffff);
@@ -1759,9 +1810,9 @@ void InventoryMenu::Select(int m_uiSoundID, int pkTile)
             else
             {
                 if ((int)fnv_00780140::DAT_011d9ea8->FUN_00726070() > *DAT_011d2418.Setting_Int())
-                    CreateQuantityMenu(fnv_00780140::DAT_011d9ea8->FUN_00726070(), DropInventoryItem, 0x7fffffff);
+                    QuantityMenu_Create(fnv_00780140::DAT_011d9ea8->FUN_00726070(), InventoryMenu_DropCurrentItem, 0x7fffffff);
                 else
-                    DropInventoryItem(1);
+                    InventoryMenu_DropCurrentItem(1);
                 ((PlayerCharacter*)DAT_011dea3c)->PlayerCharacter_UpdatePlayer3d();
                 reinterpret_cast<VTProcess*>(((PlayerCharacter*)DAT_011dea3c)->FUN_008d8520())->SetQueued(1, 0, 0);
                 ((PlayerCharacter*)DAT_011dea3c)->Update();
@@ -1825,11 +1876,14 @@ FilterList* __cdecl FUN_00483a00(int*);
 // Returns whether a form fails the current tab's checks, including type, item, and condition-index checks.
 // @fnv 0x00782620
 // src: COMMUNITY 0x00782620
-bool __cdecl InventoryMenu_FilterFunc(Entry* entry)
+// pdb: InventoryMenu::FilterFunc | InventoryMenu.obj | retail, upstream name already matches, high
+// pdb params: apItem
+// pdb locals: pbipedForm, eid, icurrTabIndex, pobj, pammo, pList
+bool __cdecl InventoryMenu_FilterFunc(Entry* apItem)
 {
     if (DAT_011d9ea4)
     {
-        FilterForm* form4 = entry ? (FilterForm*)entry->FUN_0044ddc0() : 0;
+        FilterForm* form4 = apItem ? (FilterForm*)apItem->FUN_0044ddc0() : 0;
         int tab3 = ((InventoryMenu*)DAT_011d9ea4)->m_iCurrentTab + 24;
         if (!form4)
             return tab3 != 27;
@@ -1871,7 +1925,9 @@ struct FUN_0073ac90_shell
 
 // Clears the static action point source and resets several inventory menu tiles and a related tile to 0.
 // @fnv 0x00781b10
-void Menu::ClearActionPointSource()
+// src: XBOX_RETAIL_PDB 0x00781b10
+// pdb: InventoryMenu::ClearCurrentItem | InventoryMenu.obj | retail, call graph, high
+void Menu::InventoryMenu_ClearCurrentItem()
 {
     InventoryMenu::ms_pActionPointSource = 0;
 

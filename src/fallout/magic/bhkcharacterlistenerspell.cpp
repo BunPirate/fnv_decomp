@@ -6,12 +6,12 @@
 #include "../../../include/NiRTTI.h"
 #include "../../../include/bhkCharacterProxy.h"
 
-extern const NiRTTI g_01268344;
+extern const NiRTTI bhkCharacterProxy_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01268344 (old: g_01268344)
 
 // @fnv 0x00806f00
 const NiRTTI* bhkCharacterProxy::GetRTTI() const
 {
-    return &g_01268344;
+    return &bhkCharacterProxy_ms_RTTI;
 }
 
 // @fnv 0x00806f10
@@ -34,6 +34,8 @@ struct Holder00807080
 // Looks up a proxy holder via GetReferenceFlags; if found, returns its FUN_00cac950 result, otherwise returns FUN_00458b20's result.
 // @fnv 0x00807080
 // src: XBOX_PDB 0x00807080
+// pdb: bhkCharacterProxy::GethkLinearVelocity | bhkCharacterListenerSpell.obj | retail, upstream name already matches, high
+// pdb locals: vretVal, pp
 const char* Holder00807080::bhkCharacterProxy_GethkLinearVelocity()
 {
     ProxyHolder* pProxy = (ProxyHolder*)GetReferenceFlags(this);
@@ -165,20 +167,23 @@ int __cdecl hkpGetRigidBody(void* p);
 struct ProxyUpdate
 {
     int __thiscall bhkCharacterProxy_GethkLinearVelocity();
-    int __thiscall bhkCharacterListenerSpell_GetObjectREFR(void* p);
-    void __thiscall bhkCharacterListenerSpell_processConstraintsCallback(Owner1* a1, Arg2* a2);
+    int __thiscall bhkCharacterListenerSpell_GetObjectREFR(void* apCollidable);
+    void __thiscall bhkCharacterListenerSpell_processConstraintsCallback(Owner1* arManifold, Arg2* arInput);
 };
 
 // For each item, checks its node's m_48 and calls FUN_004a3f10 on the item when branch conditions are met.
 // @fnv 0x00806f20
 // src: COMMUNITY 0x00806f20
-void ProxyUpdate::bhkCharacterListenerSpell_processConstraintsCallback(Owner1* apOwner, Arg2* apArgs)
+// pdb: bhkCharacterListenerSpell::processConstraintsCallback | bhkCharacterListenerSpell.obj | retail, upstream name already matches, high
+// pdb params: arManifold, arInput
+// pdb locals: iorigConstraints, i, elayer, pbody, ifilter, rsurface, rpnt, ptarget
+void ProxyUpdate::bhkCharacterListenerSpell_processConstraintsCallback(Owner1* arManifold, Arg2* arInput)
 {
-    int count = apArgs->m_4C;
+    int count = arInput->m_4C;
     for (int i = 0; i < count; i++)
     {
-        Item* item = apArgs->m_48 + i;
-        Node* pNode = apOwner->EvaluateValue_00807770(i);
+        Item* item = arInput->m_48 + i;
+        Node* pNode = arManifold->EvaluateValue_00807770(i);
         int iResult1 = hkpGetRigidBody(pNode->m_48);
         Str20 s;
         s.FUN_008c71b0(pNode->m_48->hkpCollidable_getCollisionFilterInfo());

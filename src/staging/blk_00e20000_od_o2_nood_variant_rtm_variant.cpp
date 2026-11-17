@@ -88,7 +88,7 @@ struct E29Out1 { E29Item item; void* ptr30; int one34; int zero38; char unk3c; c
 struct E29Out2 { E29Item items[4]; int count; char flagC4; void* ptrs[4]; int unkD8; int unkDC; int zeros[4]; int unkF0; };
 void Runtime_ProcessEntries_00e29a10(E29SrcList* src, const LocalM128* posA, const LocalM128* posB, char* base, E29Out1* out1, int* outCount1, E29Out2* out2, int* outCount2);
 inline void* operator new(unsigned int, void* p) { return p; }
-void __cdecl ResizeAudioStream(void* mem, void* array, int sizeOfElement);
+void __cdecl ResizeAudioStream(void* mem, void* array, int sizeElem);
 struct __declspec(align(16)) Key_e3a1 {
     float m_ax, m_ay, m_az, m_aw;
     float m_bx, m_by, m_bz, m_bw;
@@ -99,7 +99,7 @@ struct Track_e3a1 {
     int m_numKeys;
     int m_pRayCursor;
     hkArray<Key_e3a1> m_keys;
-    void hkpTyremarksWheel_setNumPoints(int numKeys);
+    void hkpTyremarksWheel_setNumPoints(int num_points);
 };
 extern "C" LocalM128 _mm_load_ss(const float*);
 extern "C" LocalM128 _mm_unpacklo_ps(LocalM128, LocalM128);
@@ -342,7 +342,7 @@ template <class T> __forceinline void ArrClearFree(hkArray<T>& arr)
     arr.m_data = 0;
     arr.m_iCapacityState = 0x80000000;
 }
-void __cdecl hkTreeBundleRayCastUtil_startWorldRayCastWithAutoBundleJobs(int a, int b, int n, float f1, float f2, JobSource* pSrc, JobQueue* m_pPrimaryTaskProcessor, JobWaiter* pWaiter, int iParam, bool bAuto);
+void __cdecl hkTreeBundleRayCastUtil_startWorldRayCastWithAutoBundleJobs(int rayFrom, int rayTo, int numRays, float angleVariance, float distanceVariance2, JobSource* worldRayCastJob, JobQueue* jobQueue, JobWaiter* jobThreadPool, int resultBuffer, bool scanAllInJobs);
 extern "C" LocalM128 _mm_max_ps(LocalM128, LocalM128);
 namespace SplineMax {
 // Kept POD: FUN_00e314c0 returns this vector by value through the hidden pointer.
@@ -455,6 +455,8 @@ __forceinline void hkArrayBase<T>::pushBackUnchecked(const T& t)
 
 // @fnv 0x00e29b80
 // src: GUESS 0x00e29b80 (confidence: low)
+// pdb: hkTreeBundleRayCastUtil::splitToOctant | hkTreeBundleRaycastUtil.obj | retail, object-file run extension, low
+// pdb params: rayFrom, rayTo, numRays, rayVectorNormalized, rayLength, dividedRayIdx, numRaysEachOctant
 void __cdecl Object_ProcessEntries_00e29b80(int a, int b, int numRays, void* p1, void* p2, void* p3, SplitResult* pOut)
 {
     for (int i = 0; i < numRays; i++)

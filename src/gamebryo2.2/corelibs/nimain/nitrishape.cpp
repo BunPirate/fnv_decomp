@@ -11,17 +11,20 @@
 #include "../../../../include/StrArr.h"
 
 // @fnv 0x00A74410
-NiTriShape::NiTriShape(unsigned short numVertices, NiPoint3* vertices, NiPoint3* normals, NiColorA* colors,
-                       NiPoint2* textures, unsigned short numTriangles, NiGeometryData__DataFlags dataFlags,
-                       unsigned short sharedNormalsArraySize, unsigned short* m_kNavMeshTriangleList)
-    : NiTriBasedGeom(new NiTriShapeData(numVertices, vertices, normals, colors, textures, numTriangles, dataFlags,
-                                        sharedNormalsArraySize, m_kNavMeshTriangleList))
+// pdb: NiTriShape::NiTriShape | NiTriShape.obj | retail, call graph, high
+// pdb params: usVertices, pkVertex, pkNormal, pkColor, pkTexture, usNumTextureSets, eNBTMethod, usTriangles, pusTriList
+NiTriShape::NiTriShape(unsigned short usVertices, NiPoint3* pkVertex, NiPoint3* pkNormal, NiColorA* pkColor,
+                       NiPoint2* pkTexture, unsigned short usNumTextureSets, NiGeometryData__DataFlags eNBTMethod,
+                       unsigned short usTriangles, unsigned short* pusTriList)
+    : NiTriBasedGeom(new NiTriShapeData(usVertices, pkVertex, pkNormal, pkColor, pkTexture, usNumTextureSets, eNBTMethod,
+                                        usTriangles, pusTriList))
 {}
 
 void __fastcall FUN_00a89760(void* pThis);
 
 // Calls FUN_00a89760 on pThis, frees pThis with operator delete when flags has bit 0 set, and returns pThis.
 // @fnv 0x00a74530
+// pdb: NiTriShape::NiTriShape | NiTriShape.obj | debug, object-file run extension, low
 void* __fastcall DestroyNiTriShape(void* pThis, int, unsigned int flags)
 {
     FUN_00a89760(pThis);
@@ -32,6 +35,9 @@ void* __fastcall DestroyNiTriShape(void* pThis, int, unsigned int flags)
 
 // Calls FUN_00a80610 on this, then if the renderer's state at offset 0x200 is 1 or 2 and byte 0x208 is 1, invokes renderer vtable slot 0x1b4 with this.
 // @fnv 0x00a74600
+// pdb: NiTriShape::OnlyRenderImmediate | NiTriShape.obj | debug, vtable slot, medium
+// pdb params: apkRenderer
+// pdb locals: pkRenderer
 void NiTriShape::RenderWithRenderer(NiRenderer* apkRenderer)
 {
     NiGeometry::RenderImmediate(apkRenderer);
@@ -48,6 +54,8 @@ NiTriBasedGeom* __fastcall InitTriBasedGeom(NiTriBasedGeom* self) throw();
 extern const void* const NiTriShape_vftable[];
 
 // @fnv 0x00a744a0
+// pdb: NiTriShape::NiTriShape | NiTriShape.obj | retail, call graph, medium
+// pdb params: usVertices, pkVertex, pkNormal, pkColor, pkTexture, usNumTextureSets, eNBTMethod, usTriangles, pusTriList
 NiTriShape* __fastcall InitTriShape(NiTriShape* self) throw()
 {
     InitTriBasedGeom(self);
@@ -56,6 +64,8 @@ NiTriShape* __fastcall InitTriShape(NiTriShape* self) throw()
 }
 
 // @fnv 0x00a744d0
+// pdb: NiTriShape::CreateObject | NiTriShape.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 NiObject* NiTriShape::CreateObject()
 {
     NiTriShape* self = static_cast<NiTriShape*>(NiMemObject::operator new(sizeof(NiTriShape)));
@@ -73,6 +83,9 @@ const char* __cdecl NiTriShape_GetRTTI()
 }
 
 // @fnv 0x00a74560
+// pdb: NiTriShape::GetModelTriangle | NiTriShape.obj | debug, vtable slot, medium
+// pdb params: usTriangle, pkP0, pkP1, pkP2
+// pdb locals: pkVertex, pusTriList, pkModelData, usStart
 void NiTriShape::GetTrianglePoints(unsigned short ausTriangleIndex, NiPoint3** pkP0, NiPoint3** pkP1,
                                    NiPoint3** pkP2)
 {
@@ -86,6 +99,9 @@ void NiTriShape::GetTrianglePoints(unsigned short ausTriangleIndex, NiPoint3** p
 }
 
 // @fnv 0x00a74640
+// pdb: NiTriShape::CreateClone | NiTriShape.obj | retail, object-file run extension, low
+// pdb params: kCloning
+// pdb locals: pkObject
 NiObject* NiTriShape::MakeClone(CloningProcess& kCloning)
 {
     NiTriShape* pkClone = static_cast<NiTriShape*>(CreateObject());
@@ -94,11 +110,16 @@ NiObject* NiTriShape::MakeClone(CloningProcess& kCloning)
 }
 
 // @fnv 0x00a89720
+// pdb: NiTriBasedGeom::NiTriBasedGeom | NiTriBasedGeom.obj | retail, call graph (shared callers), medium
+// pdb params: pkModelData
 __declspec(noinline) NiTriBasedGeom::NiTriBasedGeom(NiTriBasedGeomData* data) throw() : NiGeometry(data)
 {}
 
 // Calls the base renderer, then submits this shape through renderer slot 107 when a render target is active.
 // @fnv 0x00a745c0
+// pdb: NiTriShape::RenderImmediate | NiTriShape.obj | retail, upstream name already matches, high
+// pdb params: apkRenderer
+// pdb locals: pkRenderer
 void NiTriShape::RenderImmediate(NiRenderer* apkRenderer)
 {
     NiRenderer* pkRenderer = apkRenderer;
@@ -117,6 +138,8 @@ extern const char* const g_011f5b34_arg1;
 
 // Calls the base handler, resolves g_011f5b34_arg1 to a string, grows pkStrings if its index reached the size, then stores the string at that index.
 // @fnv 0x00a74690
+// pdb: NiTriShape::GetViewerStrings | NiTriShape.obj | retail, upstream name already matches, high
+// pdb params: pkStrings
 void NiTriShape::GetViewerStrings(NiViewerStringsArray* strings)
 {
     StrArr* pkStrings = reinterpret_cast<StrArr*>(strings);
@@ -130,7 +153,10 @@ void NiTriShape::GetViewerStrings(NiViewerStringsArray* strings)
 
 // The shared NiTriShape has no constructor taking NiTriBasedGeomData*.
 // @fnv 0x00a74480
-NiTriShape* __fastcall InitTriShapeWithData(NiTriShape* self, void*, NiTriBasedGeomData* geometry)
+// src: XBOX_RETAIL_PDB 0x00a74480
+// pdb: NiTriShape::NiTriShape | NiTriShape.obj | retail, call graph, high
+// pdb params: usVertices, pkVertex, pkNormal, pkColor, pkTexture, usNumTextureSets, eNBTMethod, usTriangles, pusTriList
+NiTriShape* __fastcall NiTriShape_ctor(NiTriShape* self, void*, NiTriBasedGeomData* geometry)
 {
     self->NiTriBasedGeom::NiTriBasedGeom(geometry);
     *reinterpret_cast<const void* const**>(self) = NiTriShape_vftable;
@@ -141,6 +167,8 @@ extern void __cdecl NiParticleMeshes_CopyMembers();
 
 // @fnv 0x00a744c0
 // src: XBOX_PDB 0x00a744c0
+// pdb: NiTriShape::CopyMembers | NiTriShape.obj | debug, upstream name already matches, high
+// pdb params: pkDest, kCloning
 void __cdecl NiTriShape_CopyMembers()
 {
     NiParticleMeshes_CopyMembers();
@@ -149,6 +177,8 @@ void __cdecl NiTriShape_CopyMembers()
 void NiLines_RegisterStreamables();
 // @fnv 0x00a74500
 // src: XBOX_PDB 0x00a74500
+// pdb: NiParticleMeshes::RegisterStreamables | NiParticleMeshes.obj | debug, upstream name already matches, high
+// pdb params: kStream
 void NiParticleMeshes_RegisterStreamables()
 {
     NiLines_RegisterStreamables();
@@ -157,24 +187,30 @@ void NiParticleMeshes_RegisterStreamables()
 void NiLines_IsEqual();
 // @fnv 0x00a74510
 // src: XBOX_PDB 0x00a74510
+// pdb: NiParticleMeshes::IsEqual | NiParticleMeshes.obj | debug, upstream name already matches, high
+// pdb params: pkObject
 void NiParticleMeshes_IsEqual()
 {
     NiLines_IsEqual();
 }
 
-void NiLines_LinkObject(NiStream& stream);
+void NiLines_LinkObject(NiStream& kStream);
 
 // @fnv 0x00a98eb0
 // src: XBOX_PDB 0x00a98eb0
-void NiParticleMeshes_LinkObject(NiStream& stream)
+// pdb: NiParticleMeshes::LinkObject | NiParticleMeshes.obj | debug, upstream name already matches, high
+// pdb params: kStream
+void NiParticleMeshes_LinkObject(NiStream& kStream)
 {
-    NiLines_LinkObject(stream);
+    NiLines_LinkObject(kStream);
 }
 
 void __cdecl NiLines_SaveBinary();
 
 // @fnv 0x00a71d10
 // src: XBOX_PDB 0x00a71d10
+// pdb: NiParticleMeshes::SaveBinary | NiParticleMeshes.obj | debug, upstream name already matches, high
+// pdb params: kStream
 void __cdecl NiParticleMeshes_SaveBinary()
 {
     NiLines_SaveBinary();

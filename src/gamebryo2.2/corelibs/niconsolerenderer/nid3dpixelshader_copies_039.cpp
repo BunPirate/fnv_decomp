@@ -15,7 +15,7 @@
 // @fnv 0x0086cf00
 void NiD3DPixelShader::SetD3DPixelShader(GeometryRelatedType* const pixelShader)
 {
-    m_pD3DPixelShader = pixelShader;
+    m_hShader = pixelShader;
 }
 
 // Keep the duplicate entry point's pointer argument on the stack under __fastcall.
@@ -26,7 +26,9 @@ struct PixelShaderArgument
 
 // @fnv 0x00c3cf40
 // src: XBOX_PDB 0x00c3cf40
+// pdb: QueuedFileEntry::SetFileEntry | QueuedFiles.obj | debug, upstream name already matches, high
+// pdb params: apEntry
 void __fastcall QueuedFileEntry_SetFileEntry(NiD3DPixelShader* shader, PixelShaderArgument argument)
 {
-    shader->m_pD3DPixelShader = argument.pixelShader;
+    shader->m_hShader = argument.pixelShader;
 }

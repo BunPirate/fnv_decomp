@@ -10,6 +10,7 @@ template <> struct hkSizeOfTypeOrVoid<void> { enum { val = 1 }; };
 // (destructor 0x00cbf1a0, Xbox PDB). Declarations only: a unit whose original inlines a body defines it out of class.
 // src: HAVOK_SRC (class name, MemoryStatistics, the 13 virtual slots and their names; destructor address per
 // src: XBOX_PDB)
+// pdb: class hkMemoryAllocator, size 0x4, 0 members
 class hkMemoryAllocator
 {
 public:
@@ -35,7 +36,7 @@ public:
     virtual void* bufRealloc(void* pPold, int iOldNumBytes, int& kReqNumBytesInOut);
   public:  // batches and capacity queries (slots 6-9)
     virtual void blockAllocBatch(void** pPtrsOut, int iNumPtrs, int iBlockSize);
-    virtual void blockFreeBatch(void** pPtrsIn, int iNumPtrs, int iBlockSize);
+    virtual void blockFreeBatch(void** ptrsIn, int numPtrs, int blockSize);
     virtual bool canAllocSingleBlock(int iNumBytes);
     virtual bool canAllocTotal(int iNumBytes);
   public:  // statistics (slots 10-12)

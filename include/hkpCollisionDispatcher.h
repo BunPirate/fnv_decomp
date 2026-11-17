@@ -75,6 +75,7 @@ namespace hkAgent3
 
 #include "hkpCollisionQualityInfo.h"
 
+// pdb: class hkpCollisionDispatcher, size 0x1e50 (here 0x1e40), bases: hkReferencedObject, 24 members
 class hkpCollisionDispatcher : public hkReferencedObject
 {
 public:
@@ -221,8 +222,8 @@ public:
     void internalRegisterCollisionAgent(hkUchar agentTypesTable[HK_MAX_SHAPE_TYPE][HK_MAX_SHAPE_TYPE], int agentType,
                                         hkpShapeType typeA, hkpShapeType typeB, hkpShapeType origA,
                                         hkpShapeType origB, DebugTable* debugTable, int recursionDepth);
-    void RegisterAgentType(signed char (*table)[32], signed char agentType, int typeA, int typeB,
-                           signed char origA, signed char origB, CollisionAgentEntry (*entries)[32], int depth);
+    void RegisterAgentType(signed char (*agentTypesTable)[32], signed char agentType, int typeA, int typeB,
+                           signed char origA, signed char origB, CollisionAgentEntry (*debugTable)[32], int depth);
     void registerAlternateShapeType(int primaryType, int alternateType);
     void debugPrintTable();
     void updateShapeInheritance(int primaryType, int alternateType, bool recurse);
@@ -240,7 +241,7 @@ public:
     void AddSpawnEntry(SpawnRequest* request, int typeA, int typeB);
     void AddSpawnEntry(CollisionAgentFunctionTable* record, int typeA, int typeB);
     int AddEntry(SrcRec* record, int typeA, int typeB);
-    int AddEntry(Agent3FunctionTable* record, int typeA, int typeB);
+    int registerAgent3(Agent3FunctionTable* f, int typeA, int typeB);
     void Destroy();
     hkpCollisionDispatcher* hkpCollisionDispatcher_hkpCollisionDispatcher(unsigned int creationFunction, unsigned int factory);
     void Reset_cfb080();

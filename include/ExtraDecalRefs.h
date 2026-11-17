@@ -9,11 +9,12 @@ class ReferenceIntersectionData;
 class TESForm;
 class TESObjectREFR;
 
+// pdb: class ExtraDecalRefs, size 0x14, bases: BSExtraData, 1 members
 class ExtraDecalRefs : public BSExtraData
 {
 public:
     ExtraDecalRefs();
-    void InitItem_00433db0(TESForm* form);
+    void InitItem_00433db0(TESForm* apOwner);
 
     ReferenceIntersectionData* FindDecalReference(TESObjectREFR*);
     void Copy(BSExtraDataEx* apSource);

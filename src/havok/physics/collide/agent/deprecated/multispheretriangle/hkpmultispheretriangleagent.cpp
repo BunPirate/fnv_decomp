@@ -57,21 +57,24 @@ extern const unsigned hkpSymmetricMultiSphereTriangleAgent_vtable[];
 // The shared iterative base has no usable constructor. Initialize the checked
 // agent layout directly, including the symmetric wrapper's final vtable.
 // @fnv 0x00d37e60
-hkpCollisionAgent* CreateTriAgent2(const hkpCdBody& bodyA, const hkpCdBody& bodyB, const void* input,
-                                  void* mgr)
+// src: XBOX_RETAIL_PDB 0x00d37e60
+// pdb: hkpMultiSphereTriangleAgent::createTriangleMultiSphereAgent | hkpMultiSphereTriangleAgent.obj | retail, object-file gap fill, high
+// pdb params: bodyA, bodyB, input, contactMgr
+hkpCollisionAgent* hkpMultiSphereTriangleAgent_createTriangleMultiSphereAgent(const hkpCdBody& bodyA, const hkpCdBody& bodyB, const void* input,
+                                  void* contactMgr)
 {
     hkpMultiSphereTriangleAgent* agent = static_cast<hkpMultiSphereTriangleAgent*>(
         hkMemoryRouter_getInstance()->heap().AllocateMemoryBlock(sizeof(hkpMultiSphereTriangleAgent)));
-    agent->m_usMemSizeAndFlags = (unsigned short)sizeof(hkpMultiSphereTriangleAgent);
+    agent->m_memSizeAndFlags = (unsigned short)sizeof(hkpMultiSphereTriangleAgent);
     if (agent != 0)
     {
-        agent->m_sReferenceCount = 1;
-        agent->m_pContactManager = static_cast<hkpContactMgr*>(mgr);
+        agent->m_referenceCount = 1;
+        agent->m_contactMgr = static_cast<hkpContactMgr*>(contactMgr);
         *reinterpret_cast<const unsigned**>(agent) = hkpMultiSphereTriangleAgent_vtable;
         for (int i = 0; i < 8; i++)
-            agent->m_ids[i] = 0xffff;
-        hkpCollideTriangleUtil_setupClosestPointTriangleCache(static_cast<const hkpTriangleShape*>(bodyA.m_pCollisionShape)->m_kVertices,
-                      &agent->m_kTriangleNormal);
+            agent->m_contactPointId[i] = 0xffff;
+        hkpCollideTriangleUtil_setupClosestPointTriangleCache(static_cast<const hkpTriangleShape*>(bodyA.m_shape)->m_kVertices,
+                      &agent->m_closestPointTriangleCache);
         *reinterpret_cast<const unsigned**>(agent) = hkpSymmetricMultiSphereTriangleAgent_vtable;
     }
     return agent;
@@ -88,14 +91,17 @@ struct D38AC0Data
     int unk08;
 };
 // @fnv 0x00d38ac0
-// src: GUESS 0x00d38ac0 (confidence: low)
-void __cdecl Object_UpdateFields_00d38ac0(void* first, void* second, void* third, int fourth)
+// src: XBOX_RETAIL_PDB 0x00d38ac0
+// pdb: hkpSymmetricAgentLinearCast<hkpMultiSphereTriangleAgent>::staticGetPenetrations | hkpMultiSphereTriangleAgent.obj | retail, object-file gap fill, high
+// pdb params: bodyA, bodyB, input, collector
+// pdb locals: flip
+void __cdecl hkpSymmetricAgentLinearCast_hkpMultiSphereTriangleAgent_staticGetPenetrations(void* bodyA, void* bodyB, void* input, int collector)
 {
     D38AC0Data data;
-    data.unk08 = fourth;
+    data.unk08 = collector;
     data.unk04 = 0;
     data.unk00 = (int)DAT_010ce81c;
-    hkpMultiSphereTriangleAgent_staticGetPenetrations(second, first, third, &data);
+    hkpMultiSphereTriangleAgent_staticGetPenetrations(bodyB, bodyA, input, &data);
 }
 
 struct CpuCallData
@@ -114,27 +120,32 @@ struct CpuObject
 // Builds a CpuCallData from fourth, DAT_0104da48 and DAT_010ce7fc, then forwards second, first and third to FUN_00d38390.
 // @fnv 0x00d38e90
 // src: XBOX_PDB 0x00d38e90
-void CpuObject::hkpSymmetricAgentLinearCast_hkpMultiSphereTriangleAgent_getClosestPoints(void* first, void* second, unsigned int third, unsigned int fourth)
+// pdb: hkpSymmetricAgentLinearCast<hkpMultiSphereTriangleAgent>::getClosestPoints | hkpMultiSphereTriangleAgent.obj | retail, vtable slot, high
+// pdb params: bodyA, bodyB, input, collector
+// pdb locals: flip
+void CpuObject::hkpSymmetricAgentLinearCast_hkpMultiSphereTriangleAgent_getClosestPoints(void* bodyA, void* bodyB, unsigned int input, unsigned int collector)
 {
     CpuCallData data;
-    data.value = fourth;
+    data.value = collector;
     data.bound = DAT_0104da48;
     data.descriptor = &DAT_010ce7fc;
-    FUN_00d38390(second, first, third, &data);
+    FUN_00d38390(bodyB, bodyA, input, &data);
 }
 
 // Removes each stored contact point, then destroys the agent.
 // @fnv 0x00d37e10
-void hkpMultiSphereTriangleAgent::vf07(int arg)
+// pdb: hkpMultiSphereTriangleAgent::cleanup | hkpMultiSphereTriangleAgent.obj | retail, vtable slot, high
+// pdb params: constraintOwner
+void hkpMultiSphereTriangleAgent::vf07(int constraintOwner)
 {
-    unsigned short* p = m_ids;
+    unsigned short* p = m_contactPointId;
     int n = 8;
     do
     {
         unsigned short w = *p;
         if (w != 0xffff)
         {
-            m_pContactManager->removeContactPointImpl(w, *reinterpret_cast<hkpConstraintOwner*>(arg));
+            m_contactMgr->removeContactPointImpl(w, *reinterpret_cast<hkpConstraintOwner*>(constraintOwner));
         }
         ++p;
         --n;
@@ -158,19 +169,22 @@ extern const unsigned vtable_010ce81c[];
 struct Operation
 {
     void getPenetrations_00d37ed0(unsigned second, unsigned first, unsigned third, CallbackState* callback);
-    void hkpSymmetricAgentLinearCast_hkpMultiSphereTriangleAgent_getPenetrations(unsigned first, unsigned second, unsigned third, unsigned context);
+    void hkpSymmetricAgentLinearCast_hkpMultiSphereTriangleAgent_getPenetrations(unsigned bodyA, unsigned bodyB, unsigned input, unsigned collector);
 };
 
 // Initialises a CallbackState with the given context and vtable, then calls FUN_00d37ed0 with the reordered arguments and the callback.
 // @fnv 0x00d38a80
 // src: XBOX_PDB 0x00d38a80
-void Operation::hkpSymmetricAgentLinearCast_hkpMultiSphereTriangleAgent_getPenetrations(unsigned first, unsigned second, unsigned third, unsigned context)
+// pdb: hkpSymmetricAgentLinearCast<hkpMultiSphereTriangleAgent>::getPenetrations | hkpMultiSphereTriangleAgent.obj | retail, vtable slot, high
+// pdb params: bodyA, bodyB, input, collector
+// pdb locals: flip
+void Operation::hkpSymmetricAgentLinearCast_hkpMultiSphereTriangleAgent_getPenetrations(unsigned bodyA, unsigned bodyB, unsigned input, unsigned collector)
 {
     CallbackState callback;
-    callback.context = context;
+    callback.context = collector;
     callback.completed = false;
     callback.type = vtable_010ce81c;
-    getPenetrations_00d37ed0(second, first, third, &callback);
+    getPenetrations_00d37ed0(bodyB, bodyA, input, &callback);
 }
 
 // Stand-in for the 12-byte record the callee receives by pointer.
@@ -191,19 +205,22 @@ extern char unk_10ce7fc[];
 
 // Callee at 0x00d386c0: __cdecl, four arguments,
 // the last one being a pointer to the record built on the stack.
-void __cdecl Object_ProcessEntries_00d386c0(int unk04, int unk08, int unk0c, FUN_00d38ed0_Local* unk10);
+void __cdecl hkpMultiSphereTriangleAgent_staticGetClosestPoints(int unk04, int unk08, int unk0c, FUN_00d38ed0_Local* unk10);
 
 // @fnv 0x00d38ed0
-// src: GUESS 0x00d38ed0 (confidence: low)
-void __cdecl hkpMultiSphereTriangleAgent_UpdateState_00d38ed0(int aiArg1, int aiArg2, int aiArg3, int aiArg4)
+// src: XBOX_RETAIL_PDB 0x00d38ed0
+// pdb: hkpSymmetricAgentLinearCast<hkpMultiSphereTriangleAgent>::staticGetClosestPoints | hkpMultiSphereTriangleAgent.obj | retail, object-file gap fill, high
+// pdb params: bodyA, bodyB, input, collector
+// pdb locals: flip
+void __cdecl hkpSymmetricAgentLinearCast_hkpMultiSphereTriangleAgent_staticGetClosestPoints(int bodyA, int bodyB, int input, int collector)
 {
     FUN_00d38ed0_Local local;
 
     local.unk04 = unk_104da48;
-    local.unk08 = aiArg4;
+    local.unk08 = collector;
     local.unk00 = unk_10ce7fc;
 
-    Object_ProcessEntries_00d386c0(aiArg2, aiArg1, aiArg3, &local);
+    hkpMultiSphereTriangleAgent_staticGetClosestPoints(bodyB, bodyA, input, &local);
 }
 
 extern "C"
@@ -256,51 +273,53 @@ struct Simplex
 
 struct AgentBase
 {
-    void hkpMultiSphereTriangleAgent_processCollision(int a, int b, int c, Simplex* s);
+    void hkpMultiSphereTriangleAgent_processCollision(int bodyA, int bodyB, int c, Simplex* result);
 };
 
 struct Agent : AgentBase
 {
-    void hkpSymmetricAgentLinearCast_hkpMultiSphereTriangleAgent_processCollision(int a, int b, int c, Simplex* s);
+    void hkpSymmetricAgentLinearCast_hkpMultiSphereTriangleAgent_processCollision(int bodyA, int bodyB, int input, Simplex* result);
 };
 
 // @fnv 0x00d38f10
 // src: XBOX_PDB 0x00d38f10
-void Agent::hkpSymmetricAgentLinearCast_hkpMultiSphereTriangleAgent_processCollision(int a, int b, int c, Simplex* s)
+// pdb: hkpSymmetricAgentLinearCast<hkpMultiSphereTriangleAgent>::processCollision | hkpMultiSphereTriangleAgent.obj | retail, vtable slot, high
+// pdb params: bodyA, bodyB, input, result
+void Agent::hkpSymmetricAgentLinearCast_hkpMultiSphereTriangleAgent_processCollision(int bodyA, int bodyB, int input, Simplex* result)
 {
-    SimplexVertex* v = s->m_kRayEnd;
-    float oldDistance = s->m_fClosestPointDistanceSquared;
-    AgentBase::hkpMultiSphereTriangleAgent_processCollision(b, a, c, s);
-    for (; v < s->m_kRayEnd; v++)
+    SimplexVertex* v = result->m_kRayEnd;
+    float oldDistance = result->m_fClosestPointDistanceSquared;
+    AgentBase::hkpMultiSphereTriangleAgent_processCollision(bodyB, bodyA, input, result);
+    for (; v < result->m_kRayEnd; v++)
     {
         const LocalM128* pb = &v->m_kPointB;
         LocalM128 w = _mm_shuffle_ps(*pb, *pb, 0xff);
         v->m_kPointA = _mm_add_ps(_mm_mul_ps(w, v->m_kPointB), v->m_kPointA);
         v->m_kPointB = _mm_xor_ps(v->m_kPointB, DAT_010c4c00);
     }
-    if (oldDistance != s->m_fClosestPointDistanceSquared)
+    if (oldDistance != result->m_fClosestPointDistanceSquared)
     {
-        LocalM128* n = &s->m_vHitNormal;
+        LocalM128* n = &result->m_vHitNormal;
         *n = _mm_xor_ps(*n, DAT_010c4c00);
         {
-            unsigned char t = s->m_dims.m_ucLowNibble;
-            s->m_dims.m_ucLowNibble = s->m_dims.m_ucHighNibble;
-            s->m_dims.m_ucHighNibble = t;
+            unsigned char t = result->m_dims.m_ucLowNibble;
+            result->m_dims.m_ucLowNibble = result->m_dims.m_ucHighNibble;
+            result->m_dims.m_ucHighNibble = t;
         }
         {
-            unsigned char t = s->m_ucDimensionA;
-            s->m_ucDimensionA = s->m_ucDimensionB;
-            s->m_ucDimensionB = t;
+            unsigned char t = result->m_ucDimensionA;
+            result->m_ucDimensionA = result->m_ucDimensionB;
+            result->m_ucDimensionB = t;
         }
-        int last = s->m_ucDimensionA + s->m_ucDimensionB - 1;
-        unsigned short t0 = s->m_ids[0];
-        s->m_ids[0] = s->m_ids[last];
-        s->m_ids[last] = t0;
-        if ((s->m_ucDimensionA & s->m_ucDimensionB) == 2)
+        int last = result->m_ucDimensionA + result->m_ucDimensionB - 1;
+        unsigned short t0 = result->m_ids[0];
+        result->m_ids[0] = result->m_ids[last];
+        result->m_ids[last] = t0;
+        if ((result->m_ucDimensionA & result->m_ucDimensionB) == 2)
         {
-            unsigned short t1 = s->m_ids[1];
-            s->m_ids[1] = s->m_ids[2];
-            s->m_ids[2] = t1;
+            unsigned short t1 = result->m_ids[1];
+            result->m_ids[1] = result->m_ids[2];
+            result->m_ids[2] = t1;
         }
     }
 }
@@ -328,7 +347,7 @@ struct hkTransformf
 
 __forceinline float hkpTriangleShape::getRadius() const
 {
-    return m_fSphereRadius;
+    return m_radius;
 }
 
 struct CollisionDistanceInfo
@@ -340,7 +359,7 @@ struct CollisionDistanceInfo
     int unk1C;
 };
 void __cdecl hkpCollideTriangleUtil_closestPointTriangle(const hkVector4& position, const hkVector4* triangle, const hkpMultiSphereTriangleAgent::TriangleNormal& cache,
-                          CollisionDistanceInfo& result, void* featureOut);
+                          CollisionDistanceInfo& result, void* featureOutput);
 
 static __forceinline LocalM128 SetTransformedPoint(const LocalM128& c0, const LocalM128& c1, const LocalM128& c2, const LocalM128& t,
                                                 const LocalM128& b)
@@ -374,28 +393,31 @@ static __forceinline void TransformPointArray(const hkTransformf& t, const hkVec
 
 // @fnv 0x00d37ed0
 // src: HAVOK_SRC 0x00d37ed0
+// pdb: hkpMultiSphereTriangleAgent::getPenetrations | hkpMultiSphereTriangleAgent.obj | retail, vtable slot, high
+// pdb params: bodyA, bodyB, input, collector
+// pdb locals: triVertices, worldSpheres, cptr
 void hkpMultiSphereTriangleAgent::getPenetrations_00d37ed0(const hkpCdBody& bodyA, const hkpCdBody& bodyB, const void* input,
                                                hkpCdBodyPairCollector& collector)
 {
-    const hkpMultiSphereShape* msA = reinterpret_cast<const hkpMultiSphereShape*>(bodyA.m_pCollisionShape);
-    const hkpTriangleShape* triB = reinterpret_cast<const hkpTriangleShape*>(bodyB.m_pCollisionShape);
+    const hkpMultiSphereShape* msA = reinterpret_cast<const hkpMultiSphereShape*>(bodyA.m_shape);
+    const hkpTriangleShape* triB = reinterpret_cast<const hkpTriangleShape*>(bodyB.m_shape);
 
     const hkVector4* localVertices = &triB->m_kVertices[0];
     LocalM128 triVertexStorage[3];
     hkVector4* triVertices = reinterpret_cast<hkVector4*>(triVertexStorage);
-    TransformPointArray(*static_cast<const hkTransformf*>(bodyB.m_pMotionState), localVertices, 3, &triVertices[0]);
+    TransformPointArray(*static_cast<const hkTransformf*>(bodyB.m_motion), localVertices, 3, &triVertices[0]);
 
-    const hkVector4* localSpheres = &msA->m_kSpheres[0];
+    const hkVector4* localSpheres = &msA->m_spheres[0];
     LocalM128 worldSphereStorage[8];
     hkVector4* worldSpheres = reinterpret_cast<hkVector4*>(worldSphereStorage);
-    const int nsphere = msA->m_iSphereCount;
-    TransformPointArray(*static_cast<const hkTransformf*>(bodyA.m_pMotionState), localSpheres, nsphere, &worldSpheres[0]);
+    const int nsphere = msA->m_numSpheres;
+    TransformPointArray(*static_cast<const hkTransformf*>(bodyA.m_motion), localSpheres, nsphere, &worldSpheres[0]);
 
     for (int i = 0; i < nsphere; ++i)
     {
         float radiusSum = triB->getRadius() + localSpheres[i].m_vComponents.m128_f32[3];
         CollisionDistanceInfo cpr;
-        hkpCollideTriangleUtil_closestPointTriangle(worldSpheres[i], &triVertices[0], m_kTriangleNormal, cpr, 0);
+        hkpCollideTriangleUtil_closestPointTriangle(worldSpheres[i], &triVertices[0], m_closestPointTriangleCache, cpr, 0);
         if (cpr.distance < radiusSum)
         {
             collector.AddCdBodyPair(bodyA, bodyB);
@@ -405,32 +427,35 @@ void hkpMultiSphereTriangleAgent::getPenetrations_00d37ed0(const hkpCdBody& body
 }
 
 void __cdecl hkpCollideTriangleUtil_closestPointTriangle(const hkVector4& position, const hkVector4* triangle, const hkpMultiSphereTriangleAgent::TriangleNormal& cache,
-                          CollisionDistanceInfo& result, void* featureOut);
+                          CollisionDistanceInfo& result, void* featureOutput);
 // @fnv 0x00d38130
 // src: XBOX_PDB 0x00d38130
+// pdb: hkpMultiSphereTriangleAgent::staticGetPenetrations | hkpMultiSphereTriangleAgent.obj | retail, upstream name already matches, high
+// pdb params: bodyA, bodyB, input, collector
+// pdb locals: triVertices, closestPointTriangleCache, worldSpheres, cptr
 void __cdecl hkpMultiSphereTriangleAgent_staticGetPenetrations(const hkpCdBody& bodyA, const hkpCdBody& bodyB, const void* input,
                           hkpCdBodyPairCollector& collector)
 {
-    const hkpMultiSphereShape* msA = reinterpret_cast<const hkpMultiSphereShape*>(bodyA.m_pCollisionShape);
-    const hkpTriangleShape* triB = reinterpret_cast<const hkpTriangleShape*>(bodyB.m_pCollisionShape);
+    const hkpMultiSphereShape* msA = reinterpret_cast<const hkpMultiSphereShape*>(bodyA.m_shape);
+    const hkpTriangleShape* triB = reinterpret_cast<const hkpTriangleShape*>(bodyB.m_shape);
 
     const hkVector4* localVertices = &triB->m_kVertices[0];
     LocalM128 triVertexStorage[3];
     hkVector4* triVertices = reinterpret_cast<hkVector4*>(triVertexStorage);
-    TransformPointArray(*static_cast<const hkTransformf*>(bodyB.m_pMotionState), localVertices, 3, &triVertices[0]);
+    TransformPointArray(*static_cast<const hkTransformf*>(bodyB.m_motion), localVertices, 3, &triVertices[0]);
 
-    const hkVector4* localSpheres = &msA->m_kSpheres[0];
+    const hkVector4* localSpheres = &msA->m_spheres[0];
     LocalM128 worldSphereStorage[8];
     hkVector4* worldSpheres = reinterpret_cast<hkVector4*>(worldSphereStorage);
-    const int nsphere = msA->m_iSphereCount;
-    TransformPointArray(*static_cast<const hkTransformf*>(bodyA.m_pMotionState), localSpheres, nsphere, &worldSpheres[0]);
+    const int nsphere = msA->m_numSpheres;
+    TransformPointArray(*static_cast<const hkTransformf*>(bodyA.m_motion), localSpheres, nsphere, &worldSpheres[0]);
 
     hkpMultiSphereTriangleAgent::TriangleNormal cache;
     hkpCollideTriangleUtil_setupClosestPointTriangleCache(localVertices, &cache);
 
     for (int i = 0; i < nsphere; ++i)
     {
-        float radiusSum = triB->m_fSphereRadius + localSpheres[i].m_vComponents.m128_f32[3];
+        float radiusSum = triB->m_radius + localSpheres[i].m_vComponents.m128_f32[3];
         CollisionDistanceInfo cpr;
         hkpCollideTriangleUtil_closestPointTriangle(worldSpheres[i], &triVertices[0], cache, cpr, 0);
         if (cpr.distance < radiusSum)

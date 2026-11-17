@@ -48,45 +48,48 @@ extern "C" unsigned int DAT_011f5fc4[];
 
 inline ScriptAttributeTypes::AttributeType NiShaderConstantMapEntry::GetAttributeType() const
 {
-    return static_cast<ScriptAttributeTypes::AttributeType>(DAT_011f5fc4[m_uiValue1 & 0xff]);
+    return static_cast<ScriptAttributeTypes::AttributeType>(DAT_011f5fc4[m_uiFlags & 0xff]);
 }
 
 typedef void(__stdcall* S_00e89a40_Callback)(void* object, void* source, void* destination, unsigned int stride);
 
 struct S_00e89a40_Shell : NiD3DPixelShader
 {
-    bool NiD3DPixelShader_SetShaderConstantArray(NiShaderConstantMapEntry* data, void* destination, unsigned int count, unsigned int stride,
-                      const unsigned short* indices);
+    bool NiD3DPixelShader_SetShaderConstantArray(NiShaderConstantMapEntry* pkEntry, void* pvDataSource, unsigned int uiNumEntries, unsigned int uiRegistersPerEntry,
+                      const unsigned short* pusReorderArray);
 };
 
 // @fnv 0x00e89a40
 // src: XBOX_PDB 0x00e89a40
-bool __thiscall S_00e89a40_Shell::NiD3DPixelShader_SetShaderConstantArray(NiShaderConstantMapEntry* data, void* destination, unsigned int count,
-                                               unsigned int stride, const unsigned short* indices)
+// pdb: NiD3DPixelShader::SetShaderConstantArray | NiD3DPixelShader.obj | retail, upstream name already matches, high
+// pdb params: pkEntry, pvDataSource, uiNumEntries, uiRegistersPerEntry, pusReorderArray
+// pdb locals: uiRegister, i, usNewIndex, bSuccess
+bool __thiscall S_00e89a40_Shell::NiD3DPixelShader_SetShaderConstantArray(NiShaderConstantMapEntry* pkEntry, void* pvDataSource, unsigned int uiNumEntries,
+                                               unsigned int uiRegistersPerEntry, const unsigned short* pusReorderArray)
 {
-    unsigned int type = DAT_011f5fc4[data->m_uiValue1 & 0xff];
+    unsigned int type = DAT_011f5fc4[pkEntry->m_uiFlags & 0xff];
 
     if (type != 8 && type != 9)
         return false;
 
-    void* source = reinterpret_cast<void*>(data->m_uiValue3);
+    void* source = reinterpret_cast<void*>(pkEntry->m_uiShaderRegister);
 
-    for (unsigned int index = 0; index < count; ++index)
+    for (unsigned int index = 0; index < uiNumEntries; ++index)
     {
-        void* renderer = m_pRenderState;
+        void* renderer = m_pkD3DRenderState;
         void* object = *reinterpret_cast<void**>(reinterpret_cast<unsigned char*>(renderer) + 0x10f8);
         void** vtable = *reinterpret_cast<void***>(object);
 
         S_00e89a40_Callback callback = reinterpret_cast<S_00e89a40_Callback>(vtable[0x1b4 / sizeof(void*)]);
 
-        unsigned int item = static_cast<unsigned int>(indices[index]);
-        item *= stride;
+        unsigned int item = static_cast<unsigned int>(pusReorderArray[index]);
+        item *= uiRegistersPerEntry;
         item <<= 4;
 
-        void* target = reinterpret_cast<void*>(reinterpret_cast<unsigned char*>(destination) + item);
+        void* target = reinterpret_cast<void*>(reinterpret_cast<unsigned char*>(pvDataSource) + item);
 
-        callback(object, source, target, stride);
-        source = reinterpret_cast<void*>(reinterpret_cast<unsigned char*>(source) + stride);
+        callback(object, source, target, uiRegistersPerEntry);
+        source = reinterpret_cast<void*>(reinterpret_cast<unsigned char*>(source) + uiRegistersPerEntry);
     }
 
     return true;
@@ -140,15 +143,18 @@ struct FUN_00e899a0_shell : NiD3DPixelShader
 
 // @fnv 0x00e899a0
 // src: XBOX_PDB 0x00e899a0
+// pdb: NiD3DPixelShader::SetShaderConstant | NiD3DPixelShader.obj | retail, upstream name already matches, high
+// pdb params: pkEntry, pvDataSource, uiRegisterCount
+// pdb locals: eAttributeType
 bool FUN_00e899a0_shell::NiD3DPixelShader_SetShaderConstant(NiShaderConstantMapEntry* pkEntry, const void* pvDataSource,
                                       unsigned int uiRegisterCount)
 {
     if (!pvDataSource)
-        pvDataSource = pkEntry->m_pConstantData;
+        pvDataSource = pkEntry->m_pvDataSource;
 
     if (!uiRegisterCount)
     {
-        uiRegisterCount = pkEntry->m_uiValue4;
+        uiRegisterCount = pkEntry->m_uiRegisterCount;
         if (!uiRegisterCount)
             uiRegisterCount = 1;
     }
@@ -157,18 +163,18 @@ bool FUN_00e899a0_shell::NiD3DPixelShader_SetShaderConstant(NiShaderConstantMapE
 
     if (eAttributeType == ScriptAttributeTypes::ATTRIB_TYPE_BOOL)
     {
-        return reinterpret_cast<ShaderConstantRenderState*>(m_pRenderState)
-            ->SetPixelShaderConstantB(pkEntry->m_uiValue3, static_cast<const int*>(pvDataSource), uiRegisterCount);
+        return reinterpret_cast<ShaderConstantRenderState*>(m_pkD3DRenderState)
+            ->SetPixelShaderConstantB(pkEntry->m_uiShaderRegister, static_cast<const int*>(pvDataSource), uiRegisterCount);
     }
     else if (eAttributeType == ScriptAttributeTypes::ATTRIB_TYPE_INT)
     {
-        return reinterpret_cast<ShaderConstantRenderState*>(m_pRenderState)
-            ->SetPixelShaderConstantI(pkEntry->m_uiValue3, static_cast<const int*>(pvDataSource), uiRegisterCount);
+        return reinterpret_cast<ShaderConstantRenderState*>(m_pkD3DRenderState)
+            ->SetPixelShaderConstantI(pkEntry->m_uiShaderRegister, static_cast<const int*>(pvDataSource), uiRegisterCount);
     }
     else
     {
-        return reinterpret_cast<ShaderConstantRenderState*>(m_pRenderState)
-            ->SetPixelShaderConstantF(pkEntry->m_uiValue3, static_cast<const float*>(pvDataSource), uiRegisterCount);
+        return reinterpret_cast<ShaderConstantRenderState*>(m_pkD3DRenderState)
+            ->SetPixelShaderConstantF(pkEntry->m_uiShaderRegister, static_cast<const float*>(pvDataSource), uiRegisterCount);
     }
 }
 }  // namespace fnv_00e899a0

@@ -6,6 +6,7 @@ class hkpCdBody;
 class hkpCdBodyPairCollector;
 struct CollisionAgentContext;
 
+// pdb: class hkpListAgent, size 0x1c, bases: hkpCollisionAgent, 2 members
 class hkpListAgent : public hkpCollisionAgent
 {
 public:
@@ -22,5 +23,5 @@ public:
     virtual void vf12();
     virtual void vf13();
 
-    char m0[0x10];
+    char m_dispatcher[0x10]; // src: XBOX_RETAIL_PDB +0xc (old: m0)
 };

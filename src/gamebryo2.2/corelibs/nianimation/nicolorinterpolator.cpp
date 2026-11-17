@@ -52,7 +52,7 @@ class ColorAnimationKey : public NiAnimationKey
 {
   public:
     NiColorA m_kRgbaColor;
-    static NiColorA InterpolatePosition(float, ColorAnimationKey*, KeyType, unsigned int, unsigned int&,
+    static NiColorA NiColorKey_GenInterp(float, ColorAnimationKey*, KeyType, unsigned int, unsigned int&,
                                          unsigned char);
 };
 inline void NiRefObject::IncRefCount()
@@ -66,6 +66,9 @@ inline void NiRefObject::DecRefCount()
 }
 
 // @fnv 0x00a3bfb0
+// pdb: NiColorInterpolator::Update | NiColorInterpolator.obj | retail, upstream name already matches, high
+// pdb params: fTime, pkInterpTarget, kValue
+// pdb locals: uiNumKeys, pkKeys, ucSize, eType
 bool NiColorInterpolator::Update(float fTime, NiObjectNET*, NiColorA& kValue)
 {
     if (m_fLastTime == fTime)
@@ -79,12 +82,12 @@ bool NiColorInterpolator::Update(float fTime, NiObjectNET*, NiColorA& kValue)
     if (m_spColorData.m_pObject)
     {
         unsigned int uiNumKeys = m_spColorData.m_pObject->m_uiNumKeys;
-        NiAnimationKey::KeyType eType = m_spColorData.m_pObject->m_eRequestType;
-        unsigned char ucKeySize = m_spColorData.m_pObject->m_ucKeyDataSize;
-        ColorAnimationKey* pkKeys = m_spColorData.m_pObject->m_pKeyArray;
+        NiAnimationKey::KeyType eType = m_spColorData.m_pObject->m_eType;
+        unsigned char ucKeySize = m_spColorData.m_pObject->m_ucKeySize;
+        ColorAnimationKey* pkKeys = m_spColorData.m_pObject->m_pkKeys;
         if (uiNumKeys > 0)
             m_kColorValue =
-                ColorAnimationKey::InterpolatePosition(fTime, pkKeys, eType, uiNumKeys, m_uiLastKeyIndex, ucKeySize);
+                ColorAnimationKey::NiColorKey_GenInterp(fTime, pkKeys, eType, uiNumKeys, m_uiLastIdx, ucKeySize);
     }
 
     if (m_kColorValue.operator==(DAT_011a9430))
@@ -103,6 +106,8 @@ extern int DAT_011a943c;
 
 
 // @fnv 0x00a3bd10
+// pdb: NiColorInterpolator::NiColorInterpolator | NiColorInterpolator.obj | retail, object-file run extension, low
+// pdb params: pkColorData
 NiColorInterpolator* __fastcall NiColorInterpolatorConstructor(NiColorInterpolator* pThis, int, void* pkColorData)
 {
     reinterpret_cast<NiKeyBasedInterpolator*>(pThis)->NiKeyBasedInterpolator::NiKeyBasedInterpolator();
@@ -118,12 +123,12 @@ NiColorInterpolator* __fastcall NiColorInterpolatorConstructor(NiColorInterpolat
 }
 }  // namespace fnv_00a3bd10
 
-extern "C" void* g_011f3730;
+extern "C" void* NiColorInterpolator_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f3730 (old: _g_011f3730/g_011f3730)
 
 // @fnv 0x00a3bd70
 const NiRTTI* NiColorInterpolator::GetRTTI() const
 {
-    return reinterpret_cast<const NiRTTI*>(&g_011f3730);
+    return reinterpret_cast<const NiRTTI*>(&NiColorInterpolator_ms_RTTI);
 }
 
 // @fnv 0x00a487f0
@@ -160,6 +165,8 @@ struct InterpolatorSaveBase
     void SaveBinary(NiStream*);
 };
 // @fnv 0x00a3bce0
+// pdb: NiColorInterpolator::SaveBinary | NiColorInterpolator.obj | retail, upstream name already matches, high
+// pdb params: kStream
 void NiColorInterpolator::SaveBinary(NiStream& kStream)
 {
     ((InterpolatorSaveBase*)this)->SaveBinary(&kStream);
@@ -173,6 +180,8 @@ extern int DAT_011a9438;
 extern int DAT_011a943c;
 // @fnv 0x00a3c130
 // src: EXE 0x00a3c130
+// pdb: NiColorInterpolator::CreateObject | NiColorInterpolator.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 NiColorInterpolator* NiColorInterpolator_CreateObject()
 {
     NiColorInterpolator* p = (NiColorInterpolator*)NiColorInterpolator::operator new(0x24);
@@ -196,6 +205,8 @@ NiColorInterpolator* NiColorInterpolator_CreateObject()
 
 // Loads the base interpolator and color value from the stream, then stores the stream's next object as the color data pointer.
 // @fnv 0x00a48990
+// pdb: NiColorInterpolator::LoadBinary | NiColorInterpolator.obj | retail, upstream name already matches, high
+// pdb params: kStream
 void NiColorInterpolator::LoadBinary(NiStream& kStream)
 {
     NiKeyBasedInterpolator::LoadBinary(kStream);
@@ -208,6 +219,8 @@ struct InterpolatorRegisterBase
     bool RegisterStreamables(NiStream*);
 };
 // @fnv 0x00a489f0
+// pdb: NiColorInterpolator::RegisterStreamables | NiColorInterpolator.obj | retail, upstream name already matches, high
+// pdb params: kStream
 bool NiColorInterpolator::RegisterStreamables(NiStream& kStream)
 {
     if (!((InterpolatorRegisterBase*)this)->RegisterStreamables(&kStream))
@@ -221,6 +234,9 @@ bool NiColorInterpolator::RegisterStreamables(NiStream& kStream)
 
 // Initializes a color interpolator from the four RGBA bit patterns.
 // @fnv 0x00a3bd80
+// pdb: NiColorInterpolator::NiColorInterpolator | NiColorInterpolator.obj | retail, call graph, medium
+// pdb note: debug build links it to NiColorInterpolator::GetChannelPosed
+// pdb params: pkColorData
 NiColorInterpolator* __fastcall ConstructColorValue(NiColorInterpolator* pThis, int,
     unsigned int r, unsigned int g, unsigned int b, unsigned int a)
 {
@@ -231,7 +247,7 @@ NiColorInterpolator* __fastcall ConstructColorValue(NiColorInterpolator* pThis, 
     *(volatile unsigned int*)&pThis->m_kColorValue.a = a;
     *(volatile unsigned int*)pThis = (unsigned int)&DAT_01096e14;
     *(NiColorData* volatile*)&pThis->m_spColorData.m_pObject = 0;
-    *(volatile unsigned int*)&pThis->m_uiLastKeyIndex = 0;
+    *(volatile unsigned int*)&pThis->m_uiLastIdx = 0;
     return pThis;
 }
 
@@ -239,13 +255,15 @@ inline ColorAnimationKey* ComputePositionAtTime(NiColorData* d, unsigned int& n,
                                                 unsigned char& s)
 {
     n = d->m_uiNumKeys;
-    t = d->m_eRequestType;
-    s = d->m_ucKeyDataSize;
-    return d->m_pKeyArray;
+    t = d->m_eType;
+    s = d->m_ucKeySize;
+    return d->m_pkKeys;
 }
 
 // If the color data has zero or one key, or all keys are equal for linear/step interpolation, clears m_spColorData and stores the single color value.
 // @fnv 0x00a3bdc0
+// pdb: NiColorInterpolator::Collapse | NiColorInterpolator.obj | retail, upstream name already matches, high
+// pdb locals: uiNumKeys, pkKeys, ucSize, eType, kValue, bCollapse, ui
 void NiColorInterpolator::Collapse()
 {
     if (m_spColorData)
@@ -286,24 +304,27 @@ void NiColorInterpolator::Collapse()
 
 struct InterpolatorTimeRangeClone
 {
-    NiColorInterpolator* CloneForTimeRange(float startTime, float endTime);
+    NiColorInterpolator* CloneForTimeRange(float fStartTime, float fEndTime);
 };
 struct ColorDataTimeRangeClone
 {
-    void BuildAndSetData(float startTime, float endTime, NiColorData** clippedData);
+    void NiColorData_GetSequenceData(float fStartTime, float fEndTime, NiColorData** aspColorData);
 };
 // Creates a color interpolator for the given time range and, if color data exists, clips it and assigns the clipped data to the new interpolator.
 // @fnv 0x00a3bef0
-NiInterpolator* NiColorInterpolator::CloneForTimeRange(float startTime, float endTime)
+// pdb: NiColorInterpolator::GetSequenceInterpolator | NiColorInterpolator.obj | retail, object-file gap fill, high
+// pdb params: fStartTime, fEndTime
+// pdb locals: pkSeqInterp, spNewColorData
+NiInterpolator* NiColorInterpolator::CloneForTimeRange(float fStartTime, float fEndTime)
 {
-    NiColorInterpolator* interpolator = reinterpret_cast<InterpolatorTimeRangeClone*>(this)->CloneForTimeRange(startTime, endTime);
+    NiColorInterpolator* interpolator = reinterpret_cast<InterpolatorTimeRangeClone*>(this)->CloneForTimeRange(fStartTime, fEndTime);
     if (m_spColorData.m_pObject)
     {
         NiColorData* clippedData = 0;
         reinterpret_cast<ColorDataTimeRangeClone*>(m_spColorData.m_pObject)
-            ->BuildAndSetData(startTime, endTime, &clippedData);
+            ->NiColorData_GetSequenceData(fStartTime, fEndTime, &clippedData);
         interpolator->m_spColorData = clippedData;
-        interpolator->m_uiLastKeyIndex = 0;
+        interpolator->m_uiLastIdx = 0;
         if (clippedData)
             clippedData->DecRefCount();
     }
@@ -315,6 +336,8 @@ struct ColorInterpolatorCopyBase
     void CopyMembers(NiObject*, CloningProcess&);
 };
 // @fnv 0x00a3c0a0
+// pdb: NiColorInterpolator::CopyMembers | NiColorInterpolator.obj | debug, object-file run extension, low
+// pdb params: pkDest, kCloning
 void __fastcall CopyColorMembers(NiColorInterpolator* pThis, int, NiColorInterpolator* apDest, void* proc)
 {
     ((ColorInterpolatorCopyBase*)pThis)->CopyMembers(apDest, *(CloningProcess*)proc);
@@ -325,7 +348,7 @@ void __fastcall CopyColorMembers(NiColorInterpolator* pThis, int, NiColorInterpo
     d4[2] = s4[2];
     d4[3] = s4[3];
     apDest->m_spColorData = pThis->m_spColorData;
-    apDest->m_uiLastKeyIndex = pThis->m_uiLastKeyIndex;
+    apDest->m_uiLastIdx = pThis->m_uiLastIdx;
 }
 
 struct ViewerArray
@@ -341,7 +364,7 @@ struct ViewerArray
 };
 
 void* NiViewerStrings_NiGetViewerString_Title(void* arg);
-void* NiGetViewerString_00a7d5a0(const char* name, unsigned int value);
+void* NiGetViewerString_00a7d5a0(const char* pcPrefix, unsigned int pvValue);
 
 struct InterpolatorViewerBase
 {
@@ -349,11 +372,13 @@ struct InterpolatorViewerBase
 };
 
 // @fnv 0x00a3c270
-void NiColorInterpolator::GetViewerStrings(NiViewerStringsArray* strings)
+// pdb: NiColorInterpolator::GetViewerStrings | NiColorInterpolator.obj | retail, string-set bridge, high
+// pdb params: pkStrings
+void NiColorInterpolator::GetViewerStrings(NiViewerStringsArray* pkStrings)
 {
-    ViewerArray* out = reinterpret_cast<ViewerArray*>(strings);
+    ViewerArray* out = reinterpret_cast<ViewerArray*>(pkStrings);
     ((InterpolatorViewerBase*)this)->GetViewerStrings(out);
-    void* pValue = NiViewerStrings_NiGetViewerString_Title(g_011f3730);
+    void* pValue = NiViewerStrings_NiGetViewerString_Title(NiColorInterpolator_ms_RTTI);
     unsigned int uiIndex = out->m_usNext;
     if (uiIndex >= out->m_usMax)
     {
@@ -389,7 +414,7 @@ inline void* __cdecl operator new(unsigned int, void* p) throw()
     return p;
 }
 inline NiColorInterpolator::NiColorInterpolator(NiColorData* data) throw()
-    : m_kColorValue(DAT_011a9430), m_spColorData(data), m_uiLastKeyIndex(0)
+    : m_kColorValue(DAT_011a9430), m_spColorData(data), m_uiLastIdx(0)
 {}
 struct ColorInterpolatorCloneSource
 {
@@ -398,11 +423,14 @@ struct ColorInterpolatorCloneSource
 };
 // Allocates a NiColorInterpolator with null color data, initializes it via FUN_00a3c0a0 with arg, and returns it.
 // @fnv 0x00a3c1f0
-NiColorInterpolator* ColorInterpolatorCloneSource::CreateColorInterpolator(int arg)
+// pdb: NiColorInterpolator::CreateClone | NiColorInterpolator.obj | retail, object-file gap fill, high
+// pdb params: kCloning
+// pdb locals: pkObject
+NiColorInterpolator* ColorInterpolatorCloneSource::CreateColorInterpolator(int kCloning)
 {
     void* memory = Object_DispatchCommandFour(sizeof(NiColorInterpolator));
     NiColorInterpolator* interpolator = memory ? ::new (memory) NiColorInterpolator(0) : 0;
-    CopyMembers(interpolator, arg);
+    CopyMembers(interpolator, kCloning);
     return interpolator;
 }
 
@@ -414,6 +442,9 @@ struct InterpolatorComparisonBase
 
 // Returns false when the base check, color check, or color-data check fails.
 // @fnv 0x00a3c190
+// pdb: NiColorInterpolator::IsEqual | NiColorInterpolator.obj | retail, upstream name already matches, high
+// pdb params: pkObject
+// pdb locals: pkDest
 bool NiColorInterpolator::IsEqual(NiObject* pkObject) const
 {
     if (!((InterpolatorComparisonBase*)this)->IsEqual(pkObject))

@@ -98,6 +98,7 @@ class S00d862a0_Spring : public S00d862a0_Limited
 // Allocates a new S00d862a0_Spring via the Havok heap and initializes it as a copy of the current object.
 // @fnv 0x00d862a0
 // src: HAVOK_LIB 0x00d862a0
+// pdb: hkpSpringDamperConstraintMotor::clone | hkpSpringDamperConstraintMotor.obj | retail, upstream name already matches, high
 S00d862a0_Spring* S00d862a0_Spring::hkpSpringDamperConstraintMotor_clone() const
 {
     return new S00d862a0_Spring(*this);

@@ -17,6 +17,9 @@ inline void NiBound::SetCenterAndRadius(const NiPoint3& center, float radius)
 }
 
 // @fnv 0x00c2d720
+// pdb: NiPSysBoundUpdateModifier::SetUpdateSkip | NiPSysBoundUpdateModifier.obj | retail, call graph (shared callers), low
+// pdb params: sUpdateSkip
+// pdb locals: iLoop
 void NiPSysBoundUpdateModifier::SetUpdateSkipCounter(int iUpdateSkip)
 {
     m_usUpdateSkip = (short)iUpdateSkip;

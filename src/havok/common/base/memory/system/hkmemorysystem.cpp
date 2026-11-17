@@ -121,33 +121,35 @@ struct S00cbc000_Stats
 // Formats values derived from S00cbc000_Stats and limit through FUN_00cc0410.
 // @fnv 0x00cbc000
 // src: HAVOK_LIB 0x00cbc000
-static __declspec(noinline) void printDetailedStatistics(S00cbc000_Stats* apStats, unsigned int limit, int handle,
-                                              const char* name)
+// pdb: printDetailedStatistics | hkMemorySystem.obj | retail, upstream name already matches, high
+// pdb params: what, ostr, u, softLimit
+static __declspec(noinline) void printDetailedStatistics(S00cbc000_Stats* what, unsigned int ostr, int u,
+                                              const char* softLimit)
 {
-    unsigned int total = S00cbc000_max(apStats->unk00, apStats->unk04);
-    int diff = total - apStats->unk04 - apStats->unk0c;
+    unsigned int total = S00cbc000_max(what->unk00, what->unk04);
+    int diff = total - what->unk04 - what->unk0c;
     float fDiff = (float)diff;
-    unsigned int sum = apStats->unk04 + apStats->unk0c;
+    unsigned int sum = what->unk04 + what->unk0c;
     float fRatio = fDiff / (float)sum;
-    if (limit == 0 || limit == 0x7fffffff)
-        limit = total;
-    float fLimit = (float)limit;
+    if (ostr == 0 || ostr == 0x7fffffff)
+        ostr = total;
+    float fLimit = (float)ostr;
     unsigned int comp = (unsigned int)((1.0f - fRatio) * fLimit);
-    unsigned int reserved = total - limit;
-    unsigned int soft = limit < comp ? limit : comp;
+    unsigned int reserved = total - ostr;
+    unsigned int soft = ostr < comp ? ostr : comp;
     float invPct = (float)(100.0 / (float)soft);
-    hkOstream_printf(handle, str_010c9078, name);
-    hkOstream_printf(handle, str_010c9058, total);
-    if (limit < total)
+    hkOstream_printf(u, str_010c9078, softLimit);
+    hkOstream_printf(u, str_010c9058, total);
+    if (ostr < total)
     {
-        hkOstream_printf(handle, str_010c902c, reserved, (double)(((float)reserved * 100.0) / (float)comp));
-        hkOstream_printf(handle, str_010c900c, limit);
+        hkOstream_printf(u, str_010c902c, reserved, (double)(((float)reserved * 100.0) / (float)comp));
+        hkOstream_printf(u, str_010c900c, ostr);
     }
-    hkOstream_printf(handle, str_010c8fe0, diff, (double)((fDiff * 100.0) / fLimit));
-    hkOstream_printf(handle, str_010c8fc0, comp);
-    hkOstream_printf(handle, str_010c8f94, apStats->unk04, (double)((float)apStats->unk04 * invPct));
-    hkOstream_printf(handle, str_010c8f68, apStats->unk0c, (double)((float)apStats->unk0c * invPct));
-    hkOstream_printf(handle, str_010c8f3c, apStats->unk08, (double)((float)apStats->unk08 * invPct));
+    hkOstream_printf(u, str_010c8fe0, diff, (double)((fDiff * 100.0) / fLimit));
+    hkOstream_printf(u, str_010c8fc0, comp);
+    hkOstream_printf(u, str_010c8f94, what->unk04, (double)((float)what->unk04 * invPct));
+    hkOstream_printf(u, str_010c8f68, what->unk0c, (double)((float)what->unk0c * invPct));
+    hkOstream_printf(u, str_010c8f3c, what->unk08, (double)((float)what->unk08 * invPct));
 }
 
 void S00cbc000_Caller(S00cbc000_Stats* s, int handle, unsigned int limit, const char* name)
@@ -217,13 +219,13 @@ template <typename T> inline T min2(T x, T y)
 }
 
 // src: HAVOK_LIB 0x00cbc000
-static __declspec(noinline) void printDetailedStatistics(hkOstream* ostr, const char* name, const SixUnsignedValueRecord& s,
+static __declspec(noinline) void printDetailedStatistics(hkOstream* what, const char* ostr, const SixUnsignedValueRecord& u,
                                               unsigned int softLimit)
 {
-    unsigned int total = MathUtilities::max2(s.m_uiFirstValue, s.m_pAllocationMap);
-    int overhead = total - s.m_pAllocationMap - s.m_uiFourthUnsignedValue;
+    unsigned int total = MathUtilities::max2(u.m_uiFirstValue, u.m_pAllocationMap);
+    int overhead = total - u.m_pAllocationMap - u.m_uiFourthUnsignedValue;
     float fOverhead = (float)overhead;
-    float overheadRatio = fOverhead / (float)(s.m_pAllocationMap + s.m_uiFourthUnsignedValue);
+    float overheadRatio = fOverhead / (float)(u.m_pAllocationMap + u.m_uiFourthUnsignedValue);
     if (softLimit == 0 || softLimit == 0x7fffffff)
         softLimit = total;
     float fLimit = (float)softLimit;
@@ -231,36 +233,39 @@ static __declspec(noinline) void printDetailedStatistics(hkOstream* ostr, const 
     unsigned int reserved = total - softLimit;
     unsigned int avail = MathUtilities::min2(softLimit, available);
     float scale = (float)(100.0 / avail);
-    hkOstream_printf(ostr, "\t%s:\n", name);
-    hkOstream_printf(ostr, "            totalSize:   %10i\n", total);
+    hkOstream_printf(what, "\t%s:\n", ostr);
+    hkOstream_printf(what, "            totalSize:   %10i\n", total);
     if (softLimit < total)
     {
-        hkOstream_printf(ostr, "\n            - reserved:  %10i (%4.1f%%)\n", reserved, reserved * 100.0 / available);
-        hkOstream_printf(ostr, "            = softlimit: %10i\n", softLimit);
+        hkOstream_printf(what, "\n            - reserved:  %10i (%4.1f%%)\n", reserved, reserved * 100.0 / available);
+        hkOstream_printf(what, "            = softlimit: %10i\n", softLimit);
     }
-    hkOstream_printf(ostr, "            - overhead:  %10i (%4.1f%%)\n", overhead, fOverhead * 100.0 / fLimit);
-    hkOstream_printf(ostr, "            = available: %10i\n", available);
-    hkOstream_printf(ostr, "              used:      %10i (%4.1f%%)\n", s.m_pAllocationMap, s.m_pAllocationMap * scale);
-    hkOstream_printf(ostr, "              free:      %10i (%4.1f%%)\n", s.m_uiFourthUnsignedValue,
-                 s.m_uiFourthUnsignedValue * scale);
-    hkOstream_printf(ostr, "              peak:      %10i (%4.1f%%)\n\n", s.m_uiThirdValue, s.m_uiThirdValue * scale);
+    hkOstream_printf(what, "            - overhead:  %10i (%4.1f%%)\n", overhead, fOverhead * 100.0 / fLimit);
+    hkOstream_printf(what, "            = available: %10i\n", available);
+    hkOstream_printf(what, "              used:      %10i (%4.1f%%)\n", u.m_pAllocationMap, u.m_pAllocationMap * scale);
+    hkOstream_printf(what, "              free:      %10i (%4.1f%%)\n", u.m_uiFourthUnsignedValue,
+                 u.m_uiFourthUnsignedValue * scale);
+    hkOstream_printf(what, "              peak:      %10i (%4.1f%%)\n\n", u.m_uiThirdValue, u.m_uiThirdValue * scale);
 }
 
 // Writes heap, thread, stack, solver, and debug memory statistics to ostr using info and FUN_00cbc000.
 // @fnv 0x00cbc220
 // src: HAVOK_LIB 0x00cbc220
-void __stdcall hkMemorySystem__printStatistics(hkOstream* ostr, MemSystemInfo* info)
+// pdb: hkMemorySystem::_printStatistics | hkMemorySystem.obj | retail, string-set bridge, high
+// pdb params: ostr, input
+// pdb locals: u
+void __stdcall hkMemorySystem__printStatistics(hkOstream* ostr, MemSystemInfo* input)
 {
     SixUnsignedValueRecord stats;
-    info->m_pStreamAllocator->getMemoryStatistics(reinterpret_cast<hkMemoryAllocator::MemoryStatistics&>(stats));
+    input->m_pStreamAllocator->getMemoryStatistics(reinterpret_cast<hkMemoryAllocator::MemoryStatistics&>(stats));
     unsigned int heapInUse = stats.m_pAllocationMap;
-    printDetailedStatistics(ostr, "Heap", stats, info->m_heapSoftLimit);
+    printDetailedStatistics(ostr, "Heap", stats, input->m_heapSoftLimit);
 
     hkOstream_printf(ostr, "\tThreadMemory (=CachedHeapMemory)\n");
     int total = 0;
-    for (int i = 0; i < info->m_threadMemory.GetLogicalSize(); i++)
+    for (int i = 0; i < input->m_threadMemory.GetLogicalSize(); i++)
     {
-        unsigned int iStackSize = info->m_threadMemory[i]->ComputeWeightedSum();
+        unsigned int iStackSize = input->m_threadMemory[i]->ComputeWeightedSum();
         if (iStackSize > 0)
         {
             hkOstream_printf(ostr, "            Thread %i  size %10i\n", i, iStackSize);
@@ -271,9 +276,9 @@ void __stdcall hkMemorySystem__printStatistics(hkOstream* ostr, MemSystemInfo* i
 
     hkOstream_printf(ostr, "\tStackMemory\n");
     int stackTotal = 0;
-    for (int iStackIndex = 0; iStackIndex < info->m_kAllocatorList.GetLogicalSize(); iStackIndex++)
+    for (int iStackIndex = 0; iStackIndex < input->m_kAllocatorList.GetLogicalSize(); iStackIndex++)
     {
-        hkStackMemory* pStackTriple = info->m_kAllocatorList[iStackIndex];
+        hkStackMemory* pStackTriple = input->m_kAllocatorList[iStackIndex];
         int used;
         int iStackSize = (char*)pStackTriple->m_end.val() - (char*)pStackTriple->m_start.val();
         stackTotal += iStackSize;
@@ -281,9 +286,9 @@ void __stdcall hkMemorySystem__printStatistics(hkOstream* ostr, MemSystemInfo* i
         hkOstream_printf(ostr, "            Thread %i  size %10i      used:    %6i (%4.1f%%)\n", iStackIndex, iStackSize,
                      used, used * 100.0 / iStackSize);
     }
-    if (info->m_kAllocatorList.GetLogicalSize() == 0)
+    if (input->m_kAllocatorList.GetLogicalSize() == 0)
     {
-        stackTotal = info->m_stackTotal;
+        stackTotal = input->m_stackTotal;
     }
     hkOstream_printf(ostr, "            = total %i\n\n", stackTotal);
 

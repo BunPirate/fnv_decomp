@@ -23,9 +23,9 @@ struct ShaderPropertyConversionData
 {
     void Convert(NiAVObject*, unsigned int);
     void CheckTextureAlphas();
-    void AddShaderProperty(NiAVObject*);
-    void AddMaterialProperty(NiAVObject*);
-    void AddAlphaProperty(NiAVObject*);
+    void BSShaderData_AddAlphaProperty(NiAVObject*);
+    void BSShaderData_AddMaterialProperty(NiAVObject*);
+    void BSShaderData_AddShaderProperty(NiAVObject*);
     BSShaderProperty* GetShaderProperty();
     void SetupShaderFlags(BSShaderProperty*, NiAVObject*);
     void SetupTexturesPPLightingShader(BSShaderPPLightingProperty*);
@@ -96,19 +96,22 @@ struct ShaderPropertyConversionData
 typedef char _sizecheck_BSShaderData[sizeof(ShaderPropertyConversionData) == 184 ? 1 : -1];
 struct FUN_00bb0180_shell : public ShaderPropertyConversionData
 {
-    void AddProperties(NiAVObject*, unsigned int);
+    void BSShaderData_Convert(NiAVObject*, unsigned int);
 };
 
 // Adds an alpha, material and/or shader property to apTarget according to the bits set in auiProperties.
 // @fnv 0x00bb0180
-void FUN_00bb0180_shell::AddProperties(NiAVObject* apTarget, unsigned int auiProperties)
+// src: XBOX_RETAIL_PDB 0x00bb0180
+// pdb: BSShaderData::Convert | BSShaderData.obj | retail, call graph (shared callers), high
+// pdb params: apTarget, auiProperties
+void FUN_00bb0180_shell::BSShaderData_Convert(NiAVObject* apTarget, unsigned int auiProperties)
 {
     if (auiProperties & 1)
-        AddAlphaProperty(apTarget);
+        BSShaderData_AddShaderProperty(apTarget);
     if (auiProperties & 2)
-        AddMaterialProperty(apTarget);
+        BSShaderData_AddMaterialProperty(apTarget);
     if (auiProperties & 4)
-        AddShaderProperty(apTarget);
+        BSShaderData_AddAlphaProperty(apTarget);
 }
 
 extern int DAT_012005e0;
@@ -159,7 +162,10 @@ struct PrecipShaderDef
 };
 
 // @fnv 0x00bb0360
-void __fastcall CreatePrecipitationPixelShaders(BSShader* shader, void*)
+// src: XBOX_RETAIL_PDB 0x00bb0360
+// pdb: PrecipitationShader::LoadPixelShaders | PrecipitationShader.obj | retail, string-set bridge, high
+// pdb locals: ptempFName, pcacheFName, pshader, i
+void __fastcall PrecipitationShader_LoadPixelShaders(BSShader* shader, void*)
 {
     PrecipShaderDef ShaderDefs[2];
     ShaderDefs[0].pFile = "precipitation\\precipitation.p.hlsl";
@@ -195,7 +201,10 @@ extern ShaderPtr<NiD3DVertexShader> DAT_012005d0[4];
 extern "C" void* __cdecl fnv_zlib_memset(void*, int, unsigned int);
 
 // @fnv 0x00bb01c0
-void __fastcall CreatePrecipitationVertexShaders(BSShader* shader, void*)
+// src: XBOX_RETAIL_PDB 0x00bb01c0
+// pdb: PrecipitationShader::LoadVertexShaders | PrecipitationShader.obj | retail, string-set bridge, high
+// pdb locals: ptempFName, pcacheFName, pshader, i
+void __fastcall PrecipitationShader_LoadVertexShaders(BSShader* shader, void*)
 {
     PrecipShaderDef shaderDefs[4];
     shaderDefs[0].pFile = "precipitation\\precipitation.v.hlsl";

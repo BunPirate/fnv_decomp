@@ -4,6 +4,7 @@
 
 class TESForm;
 
+// pdb: class BGSClipRoundsForm, size 0x8, bases: BaseFormComponent, 1 members
 class BGSClipRoundsForm : public BaseFormComponent
 {
 public:
@@ -13,8 +14,8 @@ public:
 
     virtual void Init();
     virtual void Free();
-    virtual void CopyFromBase(BaseFormComponent* component);
-    virtual bool CompareWithBase(BaseFormComponent* component);
+    virtual void CopyFromBase(BaseFormComponent* apCopyFC);
+    virtual bool CompareWithBase(BaseFormComponent* apCompareFC);
 
     void InitializeComponent();
     void ClearComponent();
@@ -25,6 +26,6 @@ public:
     int GetClipRounds();
     void SetFormClipRounds(int rounds);
 
-    unsigned char m_ucClipRounds;
+    unsigned char cClipRounds; // src: XBOX_RETAIL_PDB +0x4 (old: m_ucClipRounds)
     unsigned char layoutPadding5[3];
 };

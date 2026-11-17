@@ -20,6 +20,6 @@ class DirectoryIterator
     DirectoryFindData m_kFindData;
     char m_acSearchPath[260];
     BSSystemFile__ErrorCode m_eErrorCode;
-    BSSystemFile__ErrorCode NextEntry(bool& finished);
+    BSSystemFile__ErrorCode BSSystemDir_NextEntry(bool& abIsComplete);
 };
 #endif

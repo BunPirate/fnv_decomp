@@ -2,6 +2,7 @@
 
 #include "NiProperty.h"
 
+// pdb: class NiShadeProperty, size 0x20, bases: NiProperty, 2 members
 class NiShadeProperty : public NiProperty
 {
   public:
@@ -15,7 +16,7 @@ class NiShadeProperty : public NiProperty
     virtual bool RegisterStreamables(NiStream& stream);
     virtual void SaveBinary(NiStream& stream);
     virtual bool IsEqual(NiObject* object) const;
-    virtual void GetViewerStrings(NiViewerStringsArray* strings);
+    virtual void GetViewerStrings(NiViewerStringsArray* pkStrings);
 
     void CopyMemberData(NiShadeProperty* property, CloningProcess* cloning);
     void CopyMemberData(NiShadeProperty* property, CloningProcess& cloning);

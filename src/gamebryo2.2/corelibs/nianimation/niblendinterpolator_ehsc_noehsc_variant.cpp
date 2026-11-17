@@ -65,6 +65,8 @@ struct BlendItem
 
 // @fnv 0x00a370b0
 // src: EXE 0x00a370b0
+// pdb: NiBlendInterpolator::NiBlendInterpolator | NiBlendInterpolator.obj | retail, call graph (shared callers), medium
+// pdb params: bManagerControlled, fWeightThreshold, ucArraySize
 S_00a370b0_Class* __thiscall S_00a370b0_Class::NiBlendInterpolator_NiBlendInterpolator_00a370b0(bool bFlags, float fWeightThreshold,
                                                             unsigned char volatile ucArraySize)
 {

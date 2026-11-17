@@ -5,6 +5,7 @@
 
 struct ShapeCallbackDispatchTable;
 
+// pdb: class hkpCylinderShape, size 0x60, bases: hkpConvexShape, 6 members
 class hkpCylinderShape : public hkpConvexShape
 {
 public:
@@ -36,7 +37,7 @@ public:
     virtual void GetVerticesFromIds(const hkpVertexId* ids, int numIds, Vector4WithInt24W* verticesOut) const;
     virtual void GetCentre(hkVector4& centreOut) const;
 
-    const hkVector4* GetIndexedVertices() const { return &m_kVertexA; }
+    const hkVector4* GetIndexedVertices() const { return &m_vertexA; }
     const hkVector4& getVertex(int i) const;
     void setVertex(int i, const hkVector4& position);
     hkReal GetCylinderRadius() const;
@@ -60,11 +61,11 @@ public:
     static hkReal ms_fRoundUpThreshold;
     static hkReal ms_fRoundUpThresholdInverse;
 
-    hkReal m_fCylinderRadius;
-    hkReal m_fCylinderRadiusSquared;
+    hkReal m_cylRadius; // src: XBOX_RETAIL_PDB +0x14 (old: m_fCylinderRadius)
+    hkReal m_cylBaseRadiusFactorForHeightFieldCollisions; // src: XBOX_RETAIL_PDB +0x18 (old: m_fCylinderRadiusSquared)
     char pad1C[0x4];
-    hkVector4 m_kVertexA;
-    hkVector4 m_kVertexB;
-    hkVector4 m_kPerpendicular1;
-    hkVector4 m_kPerpendicular2;
+    hkVector4 m_vertexA; // src: XBOX_RETAIL_PDB +0x20 (old: m_kVertexA)
+    hkVector4 m_vertexB; // src: XBOX_RETAIL_PDB +0x30 (old: m_kVertexB)
+    hkVector4 m_perpendicular1; // src: XBOX_RETAIL_PDB +0x40 (old: m_kPerpendicular1)
+    hkVector4 m_perpendicular2; // src: XBOX_RETAIL_PDB +0x50 (old: m_kPerpendicular2)
 };

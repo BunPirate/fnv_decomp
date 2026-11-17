@@ -18,12 +18,17 @@
 extern void* DAT_11ac230;
 // @fnv 0x00aa1ab0
 // src: XBOX_PDB 0x00aa1ab0
+// pdb: NiFile::DirectoryExists | NiFile.obj | debug, upstream name already matches, high
+// pdb params: pcDirName
 void __cdecl NiFile_DirectoryExists()
 {
     ((void (*)())DAT_11ac230)();
 }
 
 // @fnv 0x00a8d8b0
+// pdb: NiStreamLoadBinary<unsigned char> | NiD3DGPUProgramCache.obj | retail, call graph (shared callers), low
+// pdb note: debug build links it to NiStreamLoadBinary<char>
+// pdb params: binstream, value, uiNumEls
 void __cdecl AdvancePosition(NiBinaryStream* apState, void* b, unsigned int c)
 {
     unsigned int tmp = 1;
@@ -39,6 +44,7 @@ struct SomeClass
     void* FUN_00ee90b0(unsigned int);
 };
 // @fnv 0x00ee90b0
+// pdb: NiTFixedStringMap<NiPointer<NiGPUProgramCache::NiGPUProgramDesc> >::`scalar deleting destructor' | NiGPUProgramCache.obj | retail, object-file run extension, low
 void* SomeClass::FUN_00ee90b0(unsigned int uiFlags)
 {
     *(int*)this = (int)&DAT_01101388;
@@ -58,6 +64,7 @@ struct FUN_00ee9ca0_shell
     void* __thiscall FUN_00ee9ca0(unsigned int flags);
 };
 // @fnv 0x00ee9ca0
+// pdb: NiGPUProgramCache::`scalar deleting destructor' | NiGPUProgramCache.obj | retail, object-file gap fill, high
 void* __thiscall FUN_00ee9ca0_shell::FUN_00ee9ca0(unsigned int flags)
 {
     FUN_00ee9a60();
@@ -67,16 +74,19 @@ void* __thiscall FUN_00ee9ca0_shell::FUN_00ee9ca0(unsigned int flags)
 }
 
 // @fnv 0x00ee8e70
+// pdb: NiGPUProgramCache::Clear | NiGPUProgramCache.obj | retail, object-file gap fill, high
 bool __thiscall NiGPUProgramCache::vf28()
 {
     m_kObjectMap.RemoveAll();
-    m_bLoadComplete = false;
+    m_bLoaded = false;
     return true;
 }
 
 void __cdecl NiFreeAlias(void*);
 // Sets the vtable, removes all entries, frees the table, and optionally deallocates this instance.
 // @fnv 0x00ee9070
+// pdb: NiStreamSaveBinary<unsigned char> | NiGPUProgramCache.obj | retail, object-file run extension, low
+// pdb params: binstream, value, uiNumEls
 void* NiTFixedStringMap_NiAVObject___::Destroy(int b)
 {
     *(void**)this = &DAT_01101378;
@@ -183,6 +193,9 @@ class FixedStringMap
 
 // Reads the current item's key and value into key and val, advances pos to the next item or the next non-empty hash bucket, or sets pos to 0 at the end.
 // @fnv 0x00ee8f10
+// pdb: NiTFixedStringMapBase<DFALL<NiTMapItem<NiFixedString,NiPointer<NiGPUProgramCache::NiGPUProgramDesc> > >,NiPointer<NiGPUProgramCache::NiGPUProgramDesc> >::GetNext | NiGPUProgramCache.obj | retail, object-file run extension, low
+// pdb params: pos, kKey, val
+// pdb locals: pkItem, i
 void FixedStringMap::GetNextEntry(MapItem*& pos, NiFixedString& key, NiObjPtr& val)
 {
     MapItem* pkItem = pos;
@@ -213,7 +226,7 @@ int __cdecl BuildAbsolutePath(char*, unsigned int, const char*, const char*) thr
 // @fnv 0x00ee8af0
 bool NiGPUProgramCache::SetString(const NiFixedString& akString) throw()
 {
-    NiFixedString kOld = this->m_pcWorkingDir;
+    NiFixedString kOld = this->m_kWorkingDir;
 
     if (akString.m_kHandle != _EmptyFS && Path_IsRelative(akString.m_kHandle))
     {
@@ -224,7 +237,7 @@ bool NiGPUProgramCache::SetString(const NiFixedString& akString) throw()
             char acFullPath[260];
             if (BuildAbsolutePath(acFullPath, 260, pcHandle, acDir))
             {
-                this->m_pcWorkingDir = static_cast<const char*>(acFullPath);
+                this->m_kWorkingDir = static_cast<const char*>(acFullPath);
             }
             else
             {
@@ -238,10 +251,10 @@ bool NiGPUProgramCache::SetString(const NiFixedString& akString) throw()
     }
     else
     {
-        this->m_pcWorkingDir = akString;
+        this->m_kWorkingDir = akString;
     }
 
-    if (kOld.m_kHandle != this->m_pcWorkingDir.m_kHandle)
+    if (kOld.m_kHandle != this->m_kWorkingDir.m_kHandle)
     {
         this->UpdatePathString();
     }
@@ -256,37 +269,37 @@ char* __cdecl FUN_00a5b690(char* str);
 // @fnv 0x00ee8c10
 void NiGPUProgramCache::UpdatePathString() throw()
 {
-    if (m_pcWorkingDir.m_kHandle != _EmptyFS && m_18.m_kHandle != _EmptyFS)
+    if (m_kWorkingDir.m_kHandle != _EmptyFS && m_kFilename.m_kHandle != _EmptyFS)
     {
-        if (m_pcCacheFileName.m_kHandle != _EmptyFS)
-            InterlockedIncrement((long*)(m_pcCacheFileName.m_kHandle - 8));
+        if (m_kPathAndFilename.m_kHandle != _EmptyFS)
+            InterlockedIncrement((long*)(m_kPathAndFilename.m_kHandle - 8));
 
         char buffer[0x104];
-        char* old = m_pcCacheFileName.m_kHandle;
-        BuildAbsolutePath(buffer, 0x104, m_18.m_kHandle, m_pcWorkingDir.m_kHandle);
+        char* old = m_kPathAndFilename.m_kHandle;
+        BuildAbsolutePath(buffer, 0x104, m_kFilename.m_kHandle, m_kWorkingDir.m_kHandle);
 
-        char* rel = m_pcCacheFileName.m_kHandle;
+        char* rel = m_kPathAndFilename.m_kHandle;
         if (rel != buffer)
         {
-            m_pcCacheFileName.m_kHandle = FUN_00a5b690(buffer);
+            m_kPathAndFilename.m_kHandle = FUN_00a5b690(buffer);
             if (rel != _EmptyFS)
                 InterlockedDecrement((long*)(rel - 8));
         }
-        if (old != m_pcCacheFileName.m_kHandle)
+        if (old != m_kPathAndFilename.m_kHandle)
             vf28();
         if (old != _EmptyFS)
             InterlockedDecrement((long*)(old - 8));
     }
     else
     {
-        char* cur = m_pcCacheFileName.m_kHandle;
+        char* cur = m_kPathAndFilename.m_kHandle;
         if (cur != 0)
         {
-            m_pcCacheFileName.m_kHandle = FUN_00a5b690(0);
+            m_kPathAndFilename.m_kHandle = FUN_00a5b690(0);
             if (cur != _EmptyFS)
                 InterlockedDecrement((long*)(cur - 8));
         }
-        m_bLoadComplete = 0;
+        m_bLoaded = 0;
     }
 }
 
@@ -302,6 +315,8 @@ struct S_00ee8e10_Arr
 // Releases each stored string pointer, decrementing its reference count when non-null and not the empty-string sentinel, then resets size to 0.
 // @fnv 0x00ee8e10
 // src: XBOX_PDB 0x00ee8e10
+// pdb: NiTPtrSet<NiFixedString,NiTNewInterface<NiFixedString> >::RemoveAll | NiGPUProgramCache.obj | retail, object-file gap fill, high
+// pdb locals: ui
 void S_00ee8e10_Arr::NiTPtrSet_NiFixedString_NiTNewInterface_NiFixedString_RemoveAll()
 {
     for (unsigned int i = 0; i < count; i++)
@@ -331,6 +346,9 @@ class FUN_00ee8fe0_cls
 
 // Removes the element at idx by shifting later slots down with refcount updates, then decrements m_uiSize and releases the last slot.
 // @fnv 0x00ee8fe0
+// pdb: NiTPtrSet<NiPointer<NiMaterialResource>,NiTNewInterface<NiPointer<NiMaterialResource> > >::OrderedRemoveAt | NiGPUProgramCache.obj | retail, object-file run extension, low
+// pdb params: uiIndex
+// pdb locals: ui
 void FUN_00ee8fe0_cls::RemoveAt(unsigned int uiIndex)
 {
     if (uiIndex < m_uiSize - 1)
@@ -371,24 +389,27 @@ void __cdecl AdvancePosition(NiBinaryStream* a, void* b, unsigned int c);
 
 // Reads a length-prefixed string and advances the stream position; returns false for a zero size or null buffer.
 // @fnv 0x00ee92d0
-// src: GAMEBRYO_LIB 0x00ee92d0
-bool __stdcall NiGPUProgramCache_LoadStringA(NiBinaryStream* self, unsigned int pBuffer, unsigned int a3)
+// src: XBOX_RETAIL_PDB 0x00ee92d0 (was GAMEBRYO_LIB)
+// pdb: NiGPUProgramCache::LoadString | NiGPUProgramCache.obj | retail, object-file gap fill, high
+// pdb params: kStream, pcBuffer, stBufferSize
+// pdb locals: stLength
+bool __stdcall NiGPUProgramCache_LoadString(NiBinaryStream* kStream, unsigned int pcBuffer, unsigned int stBufferSize)
 {
-    if (a3 == 0)
+    if (stBufferSize == 0)
         goto fail;
-    char* out = (char*)pBuffer;
+    char* out = (char*)pcBuffer;
     if (out != 0)
     {
-        unsigned int* pLength = &a3;
+        unsigned int* pLength = &stBufferSize;
         *pLength = 0;
-        unsigned int* pReadSize = &pBuffer;
+        unsigned int* pReadSize = &pcBuffer;
         *pReadSize = 4;
-        unsigned int n = (*(NiBinaryStream::ReadFunction*)((char*)self + 8))(self, pLength, 4, pReadSize, 1);
-        *(int*)((char*)self + 4) += (int)n;
+        unsigned int n = (*(NiBinaryStream::ReadFunction*)((char*)kStream + 8))(kStream, pLength, 4, pReadSize, 1);
+        *(int*)((char*)kStream + 4) += (int)n;
         unsigned int v = *pLength;
         if (v == 0)
             goto zero;
-        AdvancePosition(self, out, *pLength);
+        AdvancePosition(kStream, out, *pLength);
         out[*(volatile unsigned int*)pLength + 1] = 0;
         return true;
     zero:
@@ -429,32 +450,35 @@ __forceinline void S_00ee97e0_Write(NiFile* s, void* data)
 }
 
 // @fnv 0x00ee97e0
-bool NiGPUProgramCache::WriteToStream(NiFile* pStream, NiRefObject* pObject, int* piValue)
+// pdb: NiGPUProgramCache::SaveEntry | NiGPUProgramCache.obj | retail, object-file gap fill, high
+// pdb params: kStream, pkDesc, kName
+// pdb locals: uiResCount, ui, uiObjectType, uiCount, uiExtraData, uiSource, pkRes
+bool NiGPUProgramCache::WriteToStream(NiFile* kStream, NiRefObject* pkDesc, int* kName)
 {
-    S_00ee97e0_Obj* pObj = reinterpret_cast<S_00ee97e0_Obj*>(pObject);
-    S_00ee97e0_Write(pStream, &m_uiReserved);
-    NiGPUProgramCache_SaveString(pStream, *piValue);
+    S_00ee97e0_Obj* pObj = reinterpret_cast<S_00ee97e0_Obj*>(pkDesc);
+    S_00ee97e0_Write(kStream, &m_uiVersion);
+    NiGPUProgramCache_SaveString(kStream, *kName);
     int f8 = pObj->unk08;
-    if (!vf90(pStream, f8))
+    if (!vf90(kStream, f8))
         return false;
     unsigned int count = pObj->unk14;
-    S_00ee97e0_Write(pStream, &count);
+    S_00ee97e0_Write(kStream, &count);
     for (unsigned int i = 0; i < count; i++)
     {
         S_00ee97e0_Elem* e = pObj->unk0c[i];
-        NiGPUProgramCache_SaveString(pStream, *e->GetFilename_00a62660());
-        NiGPUProgramCache_SaveString(pStream, *e->NiMaterialResource_GetSemantic());
-        NiGPUProgramCache_SaveString(pStream, *e->NiMaterialResource_GetLabel());
-        NiGPUProgramCache_SaveString(pStream, *e->NiMaterialResource_GetVariable());
-        NiGPUProgramCache_SaveString(pStream, *e->NiMaterialResource_GetDefaultValue());
+        NiGPUProgramCache_SaveString(kStream, *e->GetFilename_00a62660());
+        NiGPUProgramCache_SaveString(kStream, *e->NiMaterialResource_GetSemantic());
+        NiGPUProgramCache_SaveString(kStream, *e->NiMaterialResource_GetLabel());
+        NiGPUProgramCache_SaveString(kStream, *e->NiMaterialResource_GetVariable());
+        NiGPUProgramCache_SaveString(kStream, *e->NiMaterialResource_GetDefaultValue());
         int a = e->NiRenderTargetGroup_GetBufferCount();
-        S_00ee97e0_Write(pStream, &a);
+        S_00ee97e0_Write(kStream, &a);
         int b = e->NiFile_GetBuffer();
-        S_00ee97e0_Write(pStream, &b);
+        S_00ee97e0_Write(kStream, &b);
         int c = e->NiRenderTargetGroup_GetRendererData();
-        S_00ee97e0_Write(pStream, &c);
+        S_00ee97e0_Write(kStream, &c);
         int iValD = e->NiD3DShader_GetShaderDecl();
-        S_00ee97e0_Write(pStream, &iValD);
+        S_00ee97e0_Write(kStream, &iValD);
     }
     return true;
 }
@@ -474,6 +498,8 @@ struct RecordPair
 extern "C" MemoryManager DAT_011f6238;
 
 // @fnv 0x00ee99b0
+// pdb: NiTFixedStringMap<NiPointer<NiGPUProgramCache::NiGPUProgramDesc> >::NewItem | NiGPUProgramCache.obj | retail, object-file gap fill, high
+// pdb locals: pkTMapItem
 RecordPair* __cdecl CreateRecordPair()
 {
     RecordPair* pRecord = (RecordPair*)DAT_011f6238.Game_DoHeapAlloc(0xc);
@@ -541,11 +567,13 @@ struct ItemWithDtor
 
 // Clears the item's key and value, then deletes the item through its custom operator delete.
 // @fnv 0x00ee99d0
-void __stdcall ClearAndDeleteItem(ItemWithDtor* pItem)
+// pdb: NiTFixedStringMap<NiPointer<NiGPUProgramCache::NiGPUProgramDesc> >::DeleteItem | NiGPUProgramCache.obj | retail, object-file gap fill, high
+// pdb params: pkItem
+void __stdcall ClearAndDeleteItem(ItemWithDtor* pkItem)
 {
-    AssignFixedStringIfPresent(pItem->m_key, (const char*)0);
-    pItem->m_val = (NiRefObject*)0;
-    delete pItem;
+    AssignFixedStringIfPresent(pkItem->m_key, (const char*)0);
+    pkItem->m_val = (NiRefObject*)0;
+    delete pkItem;
 }
 
 extern long DAT_011f4400;
@@ -600,6 +628,7 @@ class FUN_00ee9a60_cls : public NiRefObject
 
 // Destructor: clears the map at m_mapHead, frees its table, then releases the four NiFixedString handles and the base.
 // @fnv 0x00ee9a60
+// pdb: NiGPUProgramCache::~NiGPUProgramCache | NiGPUProgramCache.obj | retail, object-file gap fill, high
 FUN_00ee9a60_cls::~FUN_00ee9a60_cls() throw()
 {
     reinterpret_cast<MapClearHelper*>(&m_mapHead)->NiTPtrSet_NiFixedString_NiTNewInterface_NiFixedString_RemoveAll();
@@ -628,7 +657,7 @@ struct Ee9b10_Map
     int unk00;
     unsigned int m_uiHashSize;
     MapItem** m_ppkHashTable;
-    bool __declspec(noinline) Lookup(NiFixedString& key, Ee9b10_Value*& val);
+    bool __declspec(noinline) Lookup(NiFixedString& kKey, Ee9b10_Value*& val);
 };
 
 struct Ee9b10_Visitor
@@ -650,16 +679,16 @@ void* __cdecl FUN_00a5b690(const char* str);
 // Hash the key handle, walk the bucket chain and publish the entry that
 // matches; the old value is released and the new one referenced, exactly like
 // the game's map lookup does.
-bool Ee9b10_Map::Lookup(NiFixedString& key, Ee9b10_Value*& val)
+bool Ee9b10_Map::Lookup(NiFixedString& kKey, Ee9b10_Value*& val)
 {
     MapItem* node = 0;
     if (m_uiHashSize != 0 && m_ppkHashTable != 0)
     {
-        unsigned int slot = (unsigned int)((size_t)key.m_kHandle / m_uiHashSize);
+        unsigned int slot = (unsigned int)((size_t)kKey.m_kHandle / m_uiHashSize);
         node = m_ppkHashTable[slot];
         while (node != 0)
         {
-            if (node->m_key.m_kHandle == key.m_kHandle)
+            if (node->m_key.m_kHandle == kKey.m_kHandle)
                 break;
             node = node->m_pkNext;
         }
@@ -683,15 +712,18 @@ bool Ee9b10_Map::Lookup(NiFixedString& key, Ee9b10_Value*& val)
 }  // namespace fnv_00ee9b10
 
 // @fnv 0x00ee9b10
-void* NiGPUProgramCache::LookupAndVisit(const char* name, void* pvVisitor)
+// pdb: NiGPUProgramCache::FindCachedProgram | NiGPUProgramCache.obj | retail, object-file gap fill, high
+// pdb params: pcName, kUniforms
+// pdb locals: spDesc, kKey, ui
+void* NiGPUProgramCache::LookupAndVisit(const char* pcName, void* kUniforms)
 {
     using namespace fnv_00ee9b10;
-    Ee9b10_Visitor* visitor = static_cast<Ee9b10_Visitor*>(pvVisitor);
+    Ee9b10_Visitor* visitor = static_cast<Ee9b10_Visitor*>(kUniforms);
     char* h;
-    if (!name)
+    if (!pcName)
         h = _EmptyFS;
     else
-        h = (char*)fnv_00ee9b10::FUN_00a5b690(name);
+        h = (char*)fnv_00ee9b10::FUN_00a5b690(pcName);
     NiFixedString& key = *reinterpret_cast<NiFixedString*>(&h);
     Ee9b10_Value* val = 0;
     if (reinterpret_cast<fnv_00ee9b10::Ee9b10_Map*>(&m_kObjectMap)->Lookup(key, val))
@@ -765,15 +797,17 @@ struct FUN_00ee9bf0 : NiRefObject
     unsigned char unk39;
     unsigned char unk3a;
     virtual void vf1();
-    FUN_00ee9bf0(void* a, unsigned char b, unsigned char c);
+    FUN_00ee9bf0(void* uiVersion, unsigned char bAutoWriteCacheToDisk, unsigned char bLocked);
 };
 // @fnv 0x00ee9bf0
-FUN_00ee9bf0::FUN_00ee9bf0(void* a, unsigned char b, unsigned char c)
+// pdb: NiGPUProgramCache::NiGPUProgramCache | NiGPUProgramCache.obj | retail, object-file gap fill, high
+// pdb params: uiVersion, bAutoWriteCacheToDisk, bLocked
+FUN_00ee9bf0::FUN_00ee9bf0(void* uiVersion, unsigned char bAutoWriteCacheToDisk, unsigned char bLocked)
 {
-    unk34 = a;
-    unk38 = b;
+    unk34 = uiVersion;
+    unk38 = bAutoWriteCacheToDisk;
     unk39 = 0;
-    unk3a = c;
+    unk3a = bLocked;
 }
 }  // namespace fnv_00ee9bf0
 
@@ -828,6 +862,9 @@ struct FUN_00ee90f0_cls
 
 // Marks entries whose keys appear in a1, then removes every unmarked entry from a2 by index in reverse order and returns true.
 // @fnv 0x00ee90f0
+// pdb: NiGPUProgramCache::PruneUnusedConstants | NiGPUProgramCache.obj | retail, object-file run extension, low
+// pdb params: pkProgram, kUniforms
+// pdb locals: abKeepEntries, uiUniformSize, ui, pcVarName, uiUniformIdx, pkRes, iIdx
 bool __stdcall RemoveMissingKeys(KeyObj* apKeyObj, FUN_00ee90f0_cls* apEntryList)
 {
     unsigned char flags[0x400];
@@ -868,31 +905,31 @@ bool __stdcall RemoveMissingKeys(KeyObj* apKeyObj, FUN_00ee90f0_cls* apEntryList
 // src: XBOX_PDB 0x00ee8a70
 int* NiGPUProgramCache::GetValidCompileTargetsForPlatform()
 {
-    return reinterpret_cast<int*>(&unk28);
+    return reinterpret_cast<int*>(&m_kValidTargets);
 }
 
 // @fnv 0x00ee8a80
 // src: XBOX_PDB 0x00ee8a80
 char* NiGPUProgramCache::GetShaderProfile()
 {
-    return reinterpret_cast<char*>(&m_s3);
+    return reinterpret_cast<char*>(&m_kShaderProfile);
 }
 
 // @fnv 0x00ee8a90
 // src: XBOX_PDB 0x00ee8a90
 char* NiGPUProgramCache::GetWorkingDirectory()
 {
-    return reinterpret_cast<char*>(&m_pcWorkingDir);
+    return reinterpret_cast<char*>(&m_kWorkingDir);
 }
 
 // @fnv 0x00ee8aa0
 // src: COMMUNITY 0x00ee8aa0
 char __thiscall NiGPUProgramCache::IsLoaded_00ee8aa0()
 {
-    return m_bLoadComplete;
+    return m_bLoaded;
 }
 
-bool NiFile_Access(const char* pcName, int iMode);
+bool NiFile_Access(const char* pcName, int eMode);
 
 // Retained: CanCreateDirectory and LoadFromFile are nonvirtual in the shared cache.
 class NiFileLoaderW
@@ -934,7 +971,7 @@ class NiFileLoaderW
     virtual void Vf84();
     virtual bool LoadFromFile(NiFile* pkFile, void* pvArg, void* pvArgCur);
 
-    bool NiGPUProgramCache_AppendEntry(void* pvArg, void* pvArgCur);
+    bool NiGPUProgramCache_AppendEntry(void* pkDesc, void* kName);
     bool CanOpen()
     {
         if (m_pcFileName.m_kHandle == DAT_0109b220)
@@ -952,7 +989,10 @@ class NiFileLoaderW
 
 // @fnv 0x00ee8d60
 // src: XBOX_PDB 0x00ee8d60
-bool NiFileLoaderW::NiGPUProgramCache_AppendEntry(void* pvArg, void* pvArgCur)
+// pdb: NiGPUProgramCache::AppendEntry | NiGPUProgramCache.obj | retail, upstream name already matches, high
+// pdb params: pkDesc, kName
+// pdb locals: pkFile, bSuccess
+bool NiFileLoaderW::NiGPUProgramCache_AppendEntry(void* pkDesc, void* kName)
 {
     if (!CanOpen())
         return false;
@@ -962,7 +1002,7 @@ bool NiFileLoaderW::NiGPUProgramCache_AppendEntry(void* pvArg, void* pvArgCur)
         return false;
     if (pkFile->operator bool() == true)
     {
-        bool bResult = LoadFromFile(pkFile, pvArg, pvArgCur);
+        bool bResult = LoadFromFile(pkFile, pkDesc, kName);
         delete pkFile;
         return bResult;
     }
@@ -974,7 +1014,7 @@ bool NiFileLoaderW::NiGPUProgramCache_AppendEntry(void* pvArg, void* pvArgCur)
 // src: COMMUNITY 0x00ee8ab0
 unsigned char NiGPUProgramCache::IsLocked_00ee8ab0()
 {
-    return m_3a;
+    return m_bLocked;
 }
 
 #include <windows.h>
@@ -994,9 +1034,12 @@ struct NigpuprogramcacheMapView
 };
 // Finds the value for key, updates the reference in out with reference-count adjustments, and returns whether the key was found.
 // @fnv 0x00ee8e90
-bool NigpuprogramcacheMapView::Lookup(unsigned int* key, NiRefObject** ppOut)
+// pdb: NiTFixedStringMapBase<DFALL<NiTMapItem<NiFixedString,NiPointer<NiGPUProgramCache::NiGPUProgramDesc> > >,NiPointer<NiGPUProgramCache::NiGPUProgramDesc> >::GetAt | NiGPUProgramCache.obj | retail, call graph, high
+// pdb params: kKey, val
+// pdb locals: pkItem, uiIndex
+bool NigpuprogramcacheMapView::Lookup(unsigned int* kKey, NiRefObject** ppOut)
 {
-    unsigned int value = *key;
+    unsigned int value = *kKey;
     Node* node = buckets[value % bucketCount];
     while (node && value != node->key)
         node = node->next;
@@ -1024,44 +1067,49 @@ inline void S_00ee9230_WriteBinary(NiBinaryStream* pkStream, const void* pvBuffe
 // Writes a length-prefixed null-terminated string to pkStream, using a zero length when pcString is null.
 // @fnv 0x00ee9230
 // src: GAMEBRYO_LIB 0x00ee9230
-bool __stdcall NiGPUProgramCache_SaveString(NiBinaryStream* pkStream, const char* pcString)
+// pdb: NiGPUProgramCache::SaveString | NiGPUProgramCache.obj | retail, upstream name already matches, high
+// pdb params: kStream, pcString
+// pdb locals: stLength
+bool __stdcall NiGPUProgramCache_SaveString(NiBinaryStream* kStream, const char* pcString)
 {
     if (pcString == 0)
     {
         int iLength = 0;
-        S_00ee9230_WriteBinary(pkStream, &iLength, sizeof(iLength), sizeof(iLength));
+        S_00ee9230_WriteBinary(kStream, &iLength, sizeof(iLength), sizeof(iLength));
     }
     else
     {
         int iLength = (int)strlen(pcString) + 1;
-        S_00ee9230_WriteBinary(pkStream, &iLength, sizeof(iLength), sizeof(iLength));
-        S_00ee9230_WriteBinary(pkStream, pcString, iLength, 1);
+        S_00ee9230_WriteBinary(kStream, &iLength, sizeof(iLength), sizeof(iLength));
+        S_00ee9230_WriteBinary(kStream, pcString, iLength, 1);
     }
     return true;
 }
 
 extern bool DAT_011c2fdd;
 bool __cdecl NiFile_DirectoryExists(const char* pcName);
-bool __cdecl NiFile_CreateDirectoryRecursive(const char* pcName);
-NiFile* __cdecl FUN_00aa1a20(const char* pcName, int eMode, unsigned int uiBufferSize);
+bool __cdecl NiFile_CreateDirectoryRecursive(const char* pcFullPath);
+NiFile* __cdecl FUN_00aa1a20(const char* pcName, int eMode, unsigned int uiSize);
 void __cdecl AdvancePosition(NiFile* pkFile, char* pcBuffer, unsigned int uiLen);
-int __cdecl FUN_00aa1360(const char* pc1, const char* pc2);
+int __cdecl FUN_00aa1360(const char* s1, const char* s2);
 void __cdecl InvokeAndAccumulate(NiFile* pkFile, bool* pbValue);
 void __cdecl NiStreamLoadBinary_00a575b0(NiFile* pkFile, unsigned int* puiValue);
 
 // Loads the GPU program cache file, validates header, version, and identifiers, then reads all records and marks loading complete.
 // @fnv 0x00ee9350
+// pdb: NiGPUProgramCache::Load | NiGPUProgramCache.obj | retail, object-file gap fill, high
+// pdb locals: pkFile, acString, kBool, uiNumPrograms, uiNumProgramsAdded, bIsLittleEndian, uiCacheFileVersion, bAnyDeprecated, pcHeader, acBuffer, bDeprecated, bSuccess
 bool NiGPUProgramCache::LoadCacheFile()
 {
-    bool bExists = m_pcWorkingDir != DAT_0109b220 && (NiFile_DirectoryExists(m_pcWorkingDir) || NiFile_CreateDirectoryRecursive(m_pcWorkingDir));
+    bool bExists = m_kWorkingDir != DAT_0109b220 && (NiFile_DirectoryExists(m_kWorkingDir) || NiFile_CreateDirectoryRecursive(m_kWorkingDir));
     if (!bExists)
         return false;
 
-    if (m_bLoadComplete)
+    if (m_bLoaded)
         return true;
 
     char acBuffer[0x200];
-    NiFile* pkFile = FUN_00aa1a20(m_pcCacheFileName, 0, 0x8000);
+    NiFile* pkFile = FUN_00aa1a20(m_kPathAndFilename, 0, 0x8000);
     if (pkFile)
     {
         if (pkFile->operator bool() == true)
@@ -1086,19 +1134,19 @@ bool NiGPUProgramCache::LoadCacheFile()
                 return false;
             }
 
-            NiGPUProgramCache_LoadStringA(pkFile, acBuffer, 0x200);
+            NiGPUProgramCache_LoadString(pkFile, acBuffer, 0x200);
             if (FUN_00aa1360(acBuffer, GetShaderType()) != 0)
             {
                 delete pkFile;
                 return false;
             }
-            NiGPUProgramCache_LoadStringA(pkFile, acBuffer, 0x200);
+            NiGPUProgramCache_LoadString(pkFile, acBuffer, 0x200);
             if (FUN_00aa1360(acBuffer, GetRendererName()) != 0)
             {
                 delete pkFile;
                 return false;
             }
-            NiGPUProgramCache_LoadStringA(pkFile, acBuffer, 0x200);
+            NiGPUProgramCache_LoadString(pkFile, acBuffer, 0x200);
             if (FUN_00aa1360(acBuffer, GetPlatformName()) != 0)
             {
                 delete pkFile;
@@ -1119,7 +1167,7 @@ bool NiGPUProgramCache::LoadCacheFile()
             }
 
             delete pkFile;
-            m_bLoadComplete = true;
+            m_bLoaded = true;
             if (bUpdated && DAT_011c2fdd)
                 Clear();
             return true;
@@ -1131,7 +1179,7 @@ bool NiGPUProgramCache::LoadCacheFile()
 
 extern "C" size_t strlen(const char*);
 extern char* _EmptyFS;
-bool __cdecl NiFile_CreateDirectoryRecursive(const char* h);
+bool __cdecl NiFile_CreateDirectoryRecursive(const char* pcFullPath);
 void __cdecl Runtime_UpdateState_00e984d0(void* s, const char* name, unsigned int len);
 
 inline unsigned int NiBinaryStream::BinaryWrite(const void* p, unsigned int n, unsigned int* pSize, unsigned int c)
@@ -1181,17 +1229,19 @@ __declspec(noinline) void OwnerMap::GetNextEntry(MapItem*& pos, NiFixedString& k
 
 __forceinline bool NiGPUProgramCache::CanSave()
 {
-    return static_cast<const NiFixedString&>(m_pcWorkingDir).Exists() && (((bool(__cdecl*)(const char*))NiFile_DirectoryExists)(m_pcWorkingDir) || NiFile_CreateDirectoryRecursive(m_pcWorkingDir));
+    return static_cast<const NiFixedString&>(m_kWorkingDir).Exists() && (((bool(__cdecl*)(const char*))NiFile_DirectoryExists)(m_kWorkingDir) || NiFile_CreateDirectoryRecursive(m_kWorkingDir));
 }
 
 // Writes the GPU cache file header and all map entries to a stream opened from m_20, returning true on success.
 // @fnv 0x00ee9620
 // src: XBOX_PDB 0x00ee9620
+// pdb: NiGPUProgramCache::Save | NiGPUProgramCache.obj | retail, object-file gap fill, high
+// pdb locals: pkFile, kBool, uiCacheFileVersion, kIter, pcHeader, spDesc, bSuccess, kName
 bool NiGPUProgramCache::Save_00ee9620()
 {
     if (!CanSave())
         return false;
-    const char* pcName = m_pcCacheFileName;
+    const char* pcName = m_kPathAndFilename;
     NiFile* s = static_cast<NiFile*>(NiFile::GetFile(pcName, NiFile::WRITE_ONLY, 0x8000));
     if (s && s->operator bool() == true)
     {

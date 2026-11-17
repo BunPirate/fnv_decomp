@@ -19,72 +19,73 @@ __forceinline bool pixelCompressed(int f)
 
 // Initializes pixel format, mipmap levels, faces, per-level widths/heights/offsets, allocates data and copies the level tables.
 // @fnv 0x00a7c190
-NiPixelData::NiPixelData(unsigned int width, unsigned int height, const NiPixelFormat& format,
-                         unsigned int mipmapLevels, unsigned int faces) throw()
+// pdb: NiPixelData::NiPixelData | NiPixelData.obj | retail, call graph, high
+NiPixelData::NiPixelData(unsigned int uiWidth, unsigned int uiHeight, const NiPixelFormat& kFormat,
+                         unsigned int uiMipmapLevels, unsigned int uiFaces) throw()
 {
-    m_bOwnsPixelData = false;
-    m_kPixelFormat = format;
+    bNoConvert = false;
+    m_kPixelFormat = kFormat;
 
-    if (mipmapLevels == 0)
-        m_uiMipmapLevels = CalculateMipmapLevels(width, height);
+    if (uiMipmapLevels == 0)
+        m_uiMipmapLevels = CalculateMipmapLevels(uiWidth, uiHeight);
     else
-        m_uiMipmapLevels = mipmapLevels;
-    m_uiFaces = faces;
+        m_uiMipmapLevels = uiMipmapLevels;
+    m_uiFaces = uiFaces;
 
     unsigned int offsets[16];
     unsigned int widths[16];
     unsigned int heights[16];
     offsets[0] = 0;
 
-    if (!pixelCompressed(format.unk04))
+    if (!pixelCompressed(kFormat.unk04))
     {
-        m_uiPixelStride = reinterpret_cast<const unsigned char*>(&format.unk00)[1] >> 3;
+        m_uiPixelStride = reinterpret_cast<const unsigned char*>(&kFormat.unk00)[1] >> 3;
         if (m_uiPixelStride != 0)
         {
             for (unsigned int level = 0; level < m_uiMipmapLevels; ++level)
             {
-                unsigned int levelWidth = width ? width : 1;
+                unsigned int levelWidth = uiWidth ? uiWidth : 1;
                 widths[level] = levelWidth;
-                unsigned int levelHeight = height ? height : 1;
+                unsigned int levelHeight = uiHeight ? uiHeight : 1;
                 heights[level] = levelHeight;
                 offsets[level + 1] = offsets[level] + levelWidth * levelHeight * m_uiPixelStride;
-                width >>= 1;
-                height >>= 1;
+                uiWidth >>= 1;
+                uiHeight >>= 1;
             }
         }
         else
         {
             for (unsigned int level = 0; level < m_uiMipmapLevels; ++level)
             {
-                unsigned int levelWidth = width ? width : 1;
+                unsigned int levelWidth = uiWidth ? uiWidth : 1;
                 widths[level] = levelWidth;
-                unsigned int levelHeight = height ? height : 1;
+                unsigned int levelHeight = uiHeight ? uiHeight : 1;
                 heights[level] = levelHeight;
                 offsets[level + 1] = offsets[level] + ((levelWidth * levelHeight) >> 1);
-                width >>= 1;
-                height >>= 1;
+                uiWidth >>= 1;
+                uiHeight >>= 1;
             }
         }
     }
     else
     {
         m_uiPixelStride = 0;
-        unsigned int blockSize = format.unk04 == 4 ? 8 : 16;
+        unsigned int blockSize = kFormat.unk04 == 4 ? 8 : 16;
         for (unsigned int level = 0; level < m_uiMipmapLevels; ++level)
         {
-            unsigned int levelWidth = width ? width : 1;
+            unsigned int levelWidth = uiWidth ? uiWidth : 1;
             widths[level] = levelWidth;
-            unsigned int levelHeight = height ? height : 1;
+            unsigned int levelHeight = uiHeight ? uiHeight : 1;
             heights[level] = levelHeight;
             unsigned int blockWidth = (levelWidth + 3) & ~3u;
             unsigned int blockHeight = (levelHeight + 3) & ~3u;
             offsets[level + 1] = offsets[level] + ((blockWidth * blockHeight) >> 4) * blockSize;
-            width >>= 1;
-            height >>= 1;
+            uiWidth >>= 1;
+            uiHeight >>= 1;
         }
     }
 
-    AllocateData(m_uiMipmapLevels, faces, offsets[m_uiMipmapLevels]);
+    AllocateData(m_uiMipmapLevels, uiFaces, offsets[m_uiMipmapLevels]);
     unsigned int uiTableBytes = m_uiMipmapLevels * sizeof(unsigned int);
     fnv_zlib_memcpy(m_puiWidth, widths, uiTableBytes);
     fnv_zlib_memcpy(m_puiHeight, heights, uiTableBytes);
@@ -94,12 +95,13 @@ NiPixelData::NiPixelData(unsigned int width, unsigned int height, const NiPixelF
 
 #include "../../../../include/NiMemObject.h"
 
-void __fastcall ReleaseSpawnedRefs(void*);
+void __fastcall NiPixelData_dtor(void*);
 
 // @fnv 0x00a7c450
+// pdb: NiPixelData::`scalar deleting destructor' | NiPixelData.obj | retail, object-file gap fill, high
 void* __fastcall FUN_00a7c450(void* pThis, int, unsigned int flags)
 {
-    ReleaseSpawnedRefs(pThis);
+    NiPixelData_dtor(pThis);
     if (flags & 1)
         NiMemObject::operator delete(pThis, 0x74);
     return pThis;
@@ -109,18 +111,20 @@ struct GlobalObjectO2_00a7b610
 {
     int pad;
 };
-extern GlobalObjectO2_00a7b610 g_011f4a90;
+extern GlobalObjectO2_00a7b610 NiPixelData_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f4a90 (old: DAT_011f4a90/g_011f4a90)
 // @fnv 0x00a7c020
 const NiRTTI* NiPixelData::GetRTTI() const
 {
-    return reinterpret_cast<const NiRTTI*>(&g_011f4a90);
+    return reinterpret_cast<const NiRTTI*>(&NiPixelData_ms_RTTI);
 }
 
 
 // @fnv 0x00a7bee0
-bool NiPixelData::RegisterStreamables(NiStream& stream)
+// pdb: NiPixelData::RegisterStreamables | NiPixelData.obj | retail, upstream name already matches, high
+// pdb params: kStream
+bool NiPixelData::RegisterStreamables(NiStream& kStream)
 {
-    bool ok = NiObject::RegisterStreamables(stream);
+    bool ok = NiObject::RegisterStreamables(kStream);
     if (!ok)
     {
         return ok;
@@ -128,7 +132,7 @@ bool NiPixelData::RegisterStreamables(NiStream& stream)
     NiPalette* target = static_cast<NiPalette*>(m_spPalette.value);
     if (target != 0)
     {
-        target->RegisterStreamables(stream);
+        target->RegisterStreamables(kStream);
     }
     return true;
 }
@@ -156,6 +160,8 @@ static __forceinline void InitializePixelData(NiPixelData* data)
 
 // Allocates and initializes the default pixel data object.
 // @fnv 0x00a7c3f0
+// pdb: NiPixelData::CreateObject | NiPixelData.obj | retail, object-file gap fill, high
+// pdb locals: pkObject
 void* __cdecl CreateSpawnedPixelData()
 {
     NiPixelData* data = static_cast<NiPixelData*>(Object_DispatchCommandFour(sizeof(NiPixelData)));
@@ -197,6 +203,9 @@ static __forceinline void TransferData(NiStream* stream, const void* bytes, unsi
 
 // Serializes the pixel format, palette, mipmap level/stride/width/height/offset arrays, face count and pixel data through the stream.
 // @fnv 0x00a7c670
+// pdb: NiPixelData::SaveBinary | NiPixelData.obj | retail, upstream name already matches, high
+// pdb params: kStream
+// pdb locals: i
 void NiPixelData::SaveBinary(NiStream& kStream)
 {
     NiStream* stream = &kStream;
@@ -254,6 +263,9 @@ template <class T> static __forceinline void ReadBinaryValue(NiStream& stream, T
 
 // Loads pixel format, mipmap levels, per-mipmap width/height/offset, faces and pixel data from the stream, then allocates and copies them.
 // @fnv 0x00a7c470
+// pdb: NiPixelData::LoadBinary | NiPixelData.obj | retail, upstream name already matches, high
+// pdb params: kStream
+// pdb locals: auiOffsetInBytes, auiHeight, auiWidth, uiDestSize, i
 void NiPixelData::LoadBinary(NiStream& kStream)
 {
     NiStream& stream = kStream;
@@ -304,7 +316,7 @@ inline void StrArr::AppendReference(char*& element)
 
 struct Base00a5d6e0
 {
-    void AppendCameraPathEntries(StrArr* pkStrings);
+    void AppendCameraPathEntries(StrArr* pStrings);
 };
 inline unsigned int PixelFaceSize(const NiPixelData* p)
 {
@@ -316,11 +328,13 @@ inline unsigned int PixelTotalSize(const NiPixelData* p)
 }
 // Appends the base debug strings plus Width, Height, mipmap level, face count, total and per-face byte sizes to pkStrings.
 // @fnv 0x00a7c820
+// pdb: NiPixelData::GetViewerStrings | NiPixelData.obj | retail, string-set bridge, high
+// pdb params: pkStrings
 void NiPixelData::GetViewerStrings(NiViewerStringsArray* strings)
 {
     StrArr* pkStrings = reinterpret_cast<StrArr*>(strings);
     ((Base00a5d6e0*)this)->AppendCameraPathEntries(pkStrings);
-    char* pcString = NiViewerStrings_NiGetViewerString_Title(*(char**)&g_011f4a90);
+    char* pcString = NiViewerStrings_NiGetViewerString_Title(*(char**)&NiPixelData_ms_RTTI);
     pkStrings->AppendReference(pcString);
     pcString = NiGetViewerString_00a7d510("Width", GetWidth());
     pkStrings->AppendReference(pcString);
@@ -360,6 +374,8 @@ static __forceinline void AssignPalette(NiPalettePointer& palette, NiObject* obj
 }
 // Calls the base LinkObject on kStream, then loads m_spPalette from the stream.
 // @fnv 0x00a7be80
+// pdb: NiPixelData::LinkObject | NiPixelData.obj | retail, upstream name already matches, high
+// pdb params: kStream
 void NiPixelData::LinkObject(NiStream& kStream)
 {
     reinterpret_cast<RendererDataBase_s*>(this)->LinkObject(kStream);
@@ -372,7 +388,9 @@ void __fastcall TeardownPixelDataBase(NiObject* data);
 
 // Releases the palette before and after freeing the pixel buffers, then tears down the base object.
 // @fnv 0x00a7c390
-void __fastcall ReleaseSpawnedRefs(void* object)
+// src: XBOX_RETAIL_PDB 0x00a7c390
+// pdb: NiPixelData::~NiPixelData | NiPixelData.obj | retail, object-file gap fill, high
+void __fastcall NiPixelData_dtor(void* object)
 {
     NiPixelData* data = static_cast<NiPixelData*>(object);
     *(void* volatile*)data = (void*)&DAT_0109dbb4;
@@ -406,6 +424,8 @@ static inline unsigned int Levels(unsigned int v)
 }
 // Returns the number of mip levels for a texture of the given width and height, or 0 if either dimension is zero.
 // @fnv 0x00a7be30
+// pdb: NiTriShapeData::GetTriList | NiTriShapeData.obj | debug, object-file run extension, low
+// pdb locals: plist, pd
 unsigned int NiPixelData::CalculateMipmapLevels(unsigned int width, unsigned int height)
 {
     if (!width || !height)
@@ -424,6 +444,9 @@ unsigned int NiPixelData::CalculateMipmapLevels(unsigned int width, unsigned int
 
 // Compares pixel format, palette, mipmap dimensions, face count, and pixel data of two NiPixelData objects, returning true only if all match.
 // @fnv 0x00a7bf10
+// pdb: NiPixelData::IsEqual | NiPixelData.obj | retail, upstream name already matches, high
+// pdb params: pkObject
+// pdb locals: pkPixelData, i
 bool NiPixelData::IsEqual(NiObject* pkObject) const
 {
     if (!const_cast<NiPixelData*>(this)->NiObject::IsEqual(pkObject))
@@ -510,13 +533,14 @@ class NiPalettePtr
 
 // @fnv 0x00a7c030
 // src: EXE 0x00a7c030
+// pdb: NiPixelData::NiPixelData | NiPixelData.obj | retail, object-file run extension, low
 NiPixelData* NiPixelData::NiPixelData_00a7c030(const NiPixelData& kSrc)
 {
     reinterpret_cast<NiObjectInitialization*>(this)->Construct();
     *reinterpret_cast<void**>(this) = &DAT_0109dbb4;
     reinterpret_cast<NiPixelFormatInitialization*>(&m_kPixelFormat)->Construct();
     m_spPalette = NiPalettePointer();
-    m_bOwnsPixelData = false;
+    bNoConvert = false;
     m_kPixelFormat = kSrc.m_kPixelFormat;
     if (reinterpret_cast<const NiPalettePtr&>(kSrc.m_spPalette))
         reinterpret_cast<NiPalettePtr&>(m_spPalette) = new NiPalette(*reinterpret_cast<const NiPalettePtr&>(kSrc.m_spPalette));

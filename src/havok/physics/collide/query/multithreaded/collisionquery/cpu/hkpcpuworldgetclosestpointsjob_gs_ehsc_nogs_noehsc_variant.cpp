@@ -297,7 +297,7 @@ inline QueryPoint* allocateResults(PairCommand* command, const QueryCollector& c
         return 0;
     }
 }
-void hkCpuPairGetClosestPointsImplementation(const QueryJob* job, const QueryInput* source, PairCommand* commands, int count);
+void hkCpuPairGetClosestPointsImplementation(const QueryJob* pairGetClosestPointsJob, const QueryInput* collisionInput, PairCommand* commandsBase, int numCommands);
 // FUN_00df6db0 - base-class adjustment thunk (8 bytes):
 //
 //     sub ecx, 4
@@ -418,7 +418,7 @@ CalculateAabb(localToWorld,tolerance,out);
 const hkTransform&hkpCdBody::getTransform()const
 {
 ;
-return*static_cast<const hkTransform*>(m_pMotionState);
+return*static_cast<const hkTransform*>(m_motion);
 }
 #include "../../../../../../../../include/hkpCollisionQualityInfo.h"
 class hkpCollisionDispatcher;
@@ -452,7 +452,7 @@ return m_pCollisionShape;
 struct ContactPointPair;
 void hkpCdPointCollector::reset()
 {
-m_fEarlyOutDistance=3.40282e+38f;
+m_earlyOutDistance=3.40282e+38f;
 }
 hkpCdPointCollector::hkpCdPointCollector()
 {
@@ -852,11 +852,11 @@ virtual hkBool ReportHit(hkPrimitiveId primId);
 virtual hkBool DidHit();
 virtual hkReal GetHitFraction();
 public:
-const hkpGroupFilter*m_iFilter;
-hkpFixedBufferCdPointCollector*m_pPointCollector;
-const hkpCollidable*m_kCollidable;
-hkpShapeType m_iType;
-ShapeSweepParameters m_pRayCastInput;};struct RootContactPoint;
+const hkpGroupFilter*m_filter; // src: XBOX_RETAIL_PDB +0xc (old: m_iFilter)
+hkpFixedBufferCdPointCollector*m_castCollector; // src: XBOX_RETAIL_PDB +0x10 (old: m_pPointCollector)
+const hkpCollidable*m_collidable; // src: XBOX_RETAIL_PDB +0x14 (old: m_kCollidable)
+hkpShapeType m_shapeType; // src: XBOX_RETAIL_PDB +0x18 (old: m_iType)
+ShapeSweepParameters m_input;};struct RootContactPoint; // src: XBOX_RETAIL_PDB +0x20 (old: m_pRayCastInput)
 
 struct CollisionQueryJobHeader
 {
@@ -911,10 +911,10 @@ const ContactPointResultBuffer*m_pCommands;
 int m_iCommandCount;};inline hkpFixedBufferCdPointCollector::~hkpFixedBufferCdPointCollector() {}
 __forceinline hkpFixedBufferCdPointCollector::hkpFixedBufferCdPointCollector(RootContactPoint*buffer,int capacity):hkpCdPointCollector()
 {
-m_pPointBuffer=buffer;
-m_pPointBufferEnd=buffer;
-m_pRayCursor=capacity;
-m_iPointCount=0;
+m_pointsArrayBase=buffer;
+m_nextFreePoint=buffer;
+m_capacity=capacity;
+m_numPoints=0;
 }
 class BroadPhaseCastCollector;
 hkpBroadPhase*__cdecl hk3AxisSweep32CreateBroadPhase(const hkVector4&worldMin,const hkVector4&worldMax,int numMarkers);
@@ -937,18 +937,21 @@ hkArray<hkPrimitiveId>::Temp*hitArray,hkKdTreeCastCollector*collector,hkPrimitiv
 
 // @fnv 0x00df6b50
 // src: XBOX_PDB 0x00df6b50
+// pdb: hkCpuWorldGetClosestPointsJob | hkpCpuWorldGetClosestPointsJob.obj | retail, string-set bridge, high
+// pdb params: jobQueue, nextJobOut
+// pdb locals: broadPhaseCollector, castCollector, assertBuf, ostr, aabb
 JobDispatcher::JobStatus __cdecl hkCpuWorldGetClosestPointsJob(JobDispatcher&jobQueue,JobDispatcher::JobQueueSlot&nextJobOut)
 {
 {hkMonitorStream&mStream=hkMonitorStream::getInstance();if(mStream.memoryAvailable()){hkMonitorStream::TimerCommand*h=reinterpret_cast<hkMonitorStream::TimerCommand*>(mStream.getEnd());h->m_commandAndMonitor="T" "t" "CollQueryWorldGetClosestPoints";h->setTime();mStream.setEnd((char*)(h+1));}};
 const ContactPointQueryJob&worldGetClosestPointsJob=reinterpret_cast<ContactPointQueryJob&>(nextJobOut);
 hkpFixedBufferCdPointCollector castCollector(0,1);
 hkCpuWorldGetClosestPointsCollector broadPhaseCollector;
-broadPhaseCollector.m_pRayCastInput.m_collisionQuality=false;
+broadPhaseCollector.m_input.m_collisionQuality=false;
 {
-broadPhaseCollector.m_iFilter=static_cast<const hkpGroupFilter*>(worldGetClosestPointsJob.m_pCollisionInput->m_iFilter.val());
-broadPhaseCollector.m_pPointCollector=&castCollector;
-static_cast<CollisionAgentContext&>(broadPhaseCollector.m_pRayCastInput)=*worldGetClosestPointsJob.m_pCollisionInput;
-broadPhaseCollector.m_pRayCastInput.m_pConfiguration=worldGetClosestPointsJob.m_pCollisionInput->m_pConfiguration;
+broadPhaseCollector.m_filter=static_cast<const hkpGroupFilter*>(worldGetClosestPointsJob.m_pCollisionInput->m_iFilter.val());
+broadPhaseCollector.m_castCollector=&castCollector;
+static_cast<CollisionAgentContext&>(broadPhaseCollector.m_input)=*worldGetClosestPointsJob.m_pCollisionInput;
+broadPhaseCollector.m_input.m_pConfiguration=worldGetClosestPointsJob.m_pCollisionInput->m_pConfiguration;
 }
 const hkp3AxisSweep*broadphase=static_cast<const hkp3AxisSweep*>(worldGetClosestPointsJob.m_pBroadPhaseRecord);
 const hkAabbTree<hkAabbTreeData::QuantizedAabb,hkUint16>*aabbTreeInt=worldGetClosestPointsJob.m_pQuantizedAabbTree;
@@ -964,9 +967,9 @@ const hkpShape*shape=command->m_kCollidable->getShape();
 const hkTransform&transform=*static_cast<const hkTransform*>(command->m_kCollidable->m_pMotionState);
 hkReal restTolerance=worldGetClosestPointsJob.m_fScalar-worldGetClosestPointsJob.m_pCollisionInput->getTolerance()*0.5f;
 shape->getAabb(transform,restTolerance,aabb);
-broadPhaseCollector.m_kCollidable=command->m_kCollidable;
-broadPhaseCollector.m_iType=shape->getType();
-broadPhaseCollector.m_pRayCastInput.setTolerance(worldGetClosestPointsJob.m_fScalar);
+broadPhaseCollector.m_collidable=command->m_kCollidable;
+broadPhaseCollector.m_shapeType=shape->getType();
+broadPhaseCollector.m_input.setTolerance(worldGetClosestPointsJob.m_fScalar);
 if(broadphase)
 {
 broadphase->CollectAabbCastResults(aabb,&broadPhaseCollector);
@@ -980,7 +983,7 @@ if(kdTree)
 KdTreeAabbQuery::queryAabbIterative(kdTree,aabb,&broadPhaseCollector);
 }
 }
-command->m_iResultCapacity=castCollector.m_iPointCount;
+command->m_iResultCapacity=castCollector.m_numPoints;
 }
 {hkMonitorStream&mStream=hkMonitorStream::getInstance();if(mStream.memoryAvailable()){hkMonitorStream::TimerCommand*h=reinterpret_cast<hkMonitorStream::TimerCommand*>(mStream.getEnd());h->m_commandAndMonitor="E" "t" "";h->setTime();mStream.setEnd((char*)(h+1));}};
 return jobQueue.GetNextJob(&nextJobOut,nextJobOut);

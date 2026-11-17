@@ -25,7 +25,10 @@ public:
 #include "../../../../include/GO.h"
 // Locks the map, iterates every entry, and deletes threats whose IsXLessThan(time) check passes, removing them by key.
 // @fnv 0x009a50b0
-void CombatTargetMap::ResetTargetMap()
+// src: XBOX_DEBUG_PDB 0x009a50b0
+// pdb: CombatThreatMap::UpdateThreats | CombatThreatMap.obj | debug, call graph, high
+// pdb locals: it, ftime, ithreatID, pthreat
+void CombatTargetMap::CombatThreatMap_UpdateThreats()
 {
     void* pIterPos = ((BGSReconstructFormsInAllFilesMap*)this)->GetFirstPos();
     if (pIterPos)
@@ -72,6 +75,7 @@ struct DelStandIn
 };
 // Runs the destructor, then frees this object when flags has bit 0 set, and returns this.
 // @fnv 0x009a3ec0
+// pdb: CombatTargetMap::`scalar deleting destructor' | CombatTargetMap.obj | retail, vtable slot, high
 void* DelStandIn::FUN_009a3ec0(unsigned int flags)
 {
     ((DtorStandIn*)this)->FUN_0083dec0();
@@ -89,6 +93,7 @@ struct FUN_009a3fb0_shell
 };
 // Calls FUN_009a3db0, then deallocates this when flags has bit 0 set, and returns this.
 // @fnv 0x009a3fb0
+// pdb: CombatTargetData::`scalar deleting destructor' | CombatTargetMap.obj | debug, object-file gap fill, medium
 void* FUN_009a3fb0_shell::FUN_009a3fb0(unsigned int flags)
 {
     FUN_009a3db0();
@@ -110,6 +115,7 @@ struct FUN_009a40c0 : FUN_009a42f0
 };
 // Initializes the FUN_009a42f0 base with (5, 0) and constructs member m with 0.
 // @fnv 0x009a40c0
+// pdb: CombatTargetData::CombatTargetData | CombatTargetMap.obj | debug, call graph, medium
 FUN_009a40c0::FUN_009a40c0() : FUN_009a42f0(5, 0), m(0)
 {}
 
@@ -137,6 +143,9 @@ extern const char str_0108e208[];
 
 // Looks up or creates a per-target data array and adds the attacker pointer to it.
 // @fnv 0x009a3fe0
+// pdb: CombatTargetMap::AddTargetAttacker | CombatTargetMap.obj | debug, unique string literal, high
+// pdb params: apTarget, apAttacker
+// pdb locals: ptargetData, tempMemContext
 void FUN_009a3fe0_struct::AddAttackerToTarget(void* apTarget, void* apAttacker)
 {
     FUN_009a40c0* ptargetData;
@@ -173,6 +182,8 @@ struct FUN_009a3ef0 : public FUN_009a4420
 
 // Destructor that iterates the map, calls FUN_009a3fb0 on each BGSReconstructFormsInFileMap value, then calls RemoveAll.
 // @fnv 0x009a3ef0
+// pdb: CombatTargetMap::~CombatTargetMap | CombatTargetMap.obj | debug, object-file gap fill, medium
+// pdb locals: it, ptargetData, ptarget
 FUN_009a3ef0::~FUN_009a3ef0()
 {
     void* it = ((BGSReconstructFormsInAllFilesMap*)this)->GetFirstPos();

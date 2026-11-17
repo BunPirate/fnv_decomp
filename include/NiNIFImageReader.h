@@ -2,6 +2,7 @@
 
 #include "NiImageReader.h"
 
+// pdb: class NiNIFImageReader, size 0x700 (here 0x148), bases: NiImageReader, 1 members
 class NiNIFImageReader : public NiImageReader
 {
 public:

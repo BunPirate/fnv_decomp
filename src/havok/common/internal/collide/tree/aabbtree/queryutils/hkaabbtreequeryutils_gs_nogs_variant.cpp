@@ -31,7 +31,7 @@ struct S_00d1bcb0_Router
     }
 };
 S_00d1bcb0_Router* hkMemoryRouter_getInstance();
-void ResizeAudioStream(S_00d1bcb0_Allocator& alloc, void* array, int sizeElem);
+void ResizeAudioStream(S_00d1bcb0_Allocator& mem, void* array, int sizeElem);
 struct S_00d1bcb0_Entry
 {
     int m_kPointA;
@@ -42,7 +42,7 @@ struct S_00d1bcb0
 {
     int unk00;
     S_00d1bcb0_Array* m_ppData;
-    bool AppendPointPairAndReturnFalse(int a, int b);
+    bool AppendPointPairAndReturnFalse(int leafA, int leafB);
 };
 extern int __cdecl Object_CollectAABBTreeHits(void*, int, int, int, int, int);
 int __cdecl CallWithDefaults(void* arg0, int arg1, int arg2);
@@ -127,6 +127,9 @@ extern const int kBitMasks[];
 
 // @fnv 0x00d1ca00
 // src: GUESS 0x00d1ca00 (confidence: low)
+// pdb: hkAabbTreeQueryUtils<hkAabbTreeData::hkAabbTreeAabb,unsigned short>::castRayBundleSpu | hkAabbTreeQueryUtils.obj | retail, object-file run extension, low
+// pdb params: tree, nodeSpu, escapeNode, rayBundle, collectors, earlyHitFractions
+// pdb locals: earlyHittFractionsV
 void Object_ProcessEntries_00d1ca00(RayTree* tree, Node* node, Node* endNode, const RayQuerySet* rayBundle, RayCollector** collectors,
                   const float* maxDistances)
 {

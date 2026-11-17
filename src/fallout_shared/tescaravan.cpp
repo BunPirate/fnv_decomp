@@ -71,6 +71,7 @@ class RegionDataEntry
 extern "C" void* memset(void* dst, int val, unsigned int size);
 
 // @fnv 0x0059a370
+// pdb: TESCaravanCard::TESCaravanCard | TESCaravan.obj | retail, upstream name already matches, high
 TESCaravanCard::TESCaravanCard()
 {
     SetFormType(static_cast<ENUM_FORM_ID>(0x73));
@@ -78,14 +79,16 @@ TESCaravanCard::TESCaravanCard()
 }
 
 // @fnv 0x0059a670
+// pdb: TESCaravanCard::InitializeData | TESCaravan.obj | retail, vtable slot, high
 void TESCaravanCard::ResetFormData()
 {
-    m_kFrontTexture.Init();
-    m_kBackTexture.Init();
+    faceTexture.Init();
+    backTexture.Init();
     memset(&data, 0, sizeof(data));
 }
 
 // @fnv 0x0059a6c0
+// pdb: TESCaravanCard::InitItem | TESCaravan.obj | retail, upstream name already matches, high
 void TESCaravanCard::InitItem()
 {
     if (IsFormInitialized())
@@ -98,13 +101,15 @@ void TESCaravanCard::InitItem()
 
 // Initializes both entries of the array by calling Init on each.
 // @fnv 0x0059b120
+// pdb: TESCaravanMoney::InitializeData | TESCaravan.obj | retail, vtable slot, high
 void TESCaravanMoney::ResetFormData()
 {
-    m_kModelTextureSwaps[0].Init();
-    m_kModelTextureSwaps[1].Init();
+    anteModels[0].Init();
+    anteModels[1].Init();
 }
 
 // @fnv 0x0059b160
+// pdb: TESCaravanMoney::InitItem | TESCaravan.obj | retail, upstream name already matches, high
 void TESCaravanMoney::InitItem()
 {
     if (IsFormInitialized())
@@ -115,6 +120,7 @@ void TESCaravanMoney::InitItem()
 }
 
 // @fnv 0x0059b880
+// pdb: TESCaravanDeck::TESCaravanDeck | TESCaravan.obj | retail, upstream name already matches, high
 TESCaravanDeck::TESCaravanDeck()
 {
     SetFormType(static_cast<ENUM_FORM_ID>(0x75));
@@ -122,6 +128,7 @@ TESCaravanDeck::TESCaravanDeck()
 }
 
 // @fnv 0x0059b9f0
+// pdb: TESCaravanDeck::InitializeData | TESCaravan.obj | retail, vtable slot, high
 void TESCaravanDeck::ResetFormData()
 {
     m_pCardListHeadCur = new BSSimpleList<TESCaravanCard*>();
@@ -130,37 +137,40 @@ void TESCaravanDeck::ResetFormData()
 
 // Reads a TESCaravanDeck record from file: validates form type 0x75, loads header, then processes EDID, OBND, FULL, DATA and CARD chunks.
 // @fnv 0x0059bb50
-bool TESCaravanDeck::Load(TESFile* file)
+// pdb: TESCaravanDeck::Load | TESCaravan.obj | retail, upstream name already matches, high
+// pdb params: apFile
+// pdb locals: chunkid, formid, pMessage, pForm, pCard, cardID
+bool TESCaravanDeck::Load(TESFile* apFile)
 {
-    unsigned char formType = file->GetTESForm();
+    unsigned char formType = apFile->GetTESForm();
     if (formType != 0x75)
         return false;
-    LoadRecordHeader(file);
+    LoadRecordHeader(apFile);
     SetInitializationState(false);
     int chunkID;
-    while ((chunkID = file->GetChunkID()) != 0)
+    while ((chunkID = apFile->GetChunkID()) != 0)
     {
         switch (chunkID)
         {
         case 0x44494445: {
-            char* editorID = static_cast<char*>(_alloca(file->GetChunkSize()));
-            file->GetChunkData(editorID, 0x200);
+            char* editorID = static_cast<char*>(_alloca(apFile->GetChunkSize()));
+            apFile->GetChunkData(editorID, 0x200);
             SetEditorID_AtRuntime(editorID);
             break;
         }
         case 0x444e424f:
-            readOBNDSubRecord(file);
+            readOBNDSubRecord(apFile);
             break;
         case 0x4c4c5546:
-            TESFullNameLoader::LoadFullNameChunk(static_cast<TESFullName*>(this), file);
+            TESFullNameLoader::LoadFullNameChunk(static_cast<TESFullName*>(this), apFile);
             break;
         case 0x41544144:
-            reinterpret_cast<BGSImpactData*>(this)->ReadTypedData(file, &data, 4);
+            reinterpret_cast<BGSImpactData*>(this)->ReadTypedData(apFile, &data, 4);
             break;
         case 0x44524143: {
             unsigned int formID;
-            file->GetChunkData(&formID);
-            RemapFormIDForFile(formID, file);
+            apFile->GetChunkData(&formID);
+            RemapFormIDForFile(formID, apFile);
             TESForm* form = TESForm::GetFormByID(formID);
             TESCaravanCard* card = static_cast<TESCaravanCard*>(form);
             if (!m_pCardListHeadCur || m_pCardListHeadCur->IsEmpty())
@@ -170,184 +180,190 @@ bool TESCaravanDeck::Load(TESFile* file)
             break;
         }
         }
-        if (chunkID == 0x41544144 && file->IsEndianConversionRequired())
+        if (chunkID == 0x41544144 && apFile->IsEndianConversionRequired())
             reinterpret_cast<RegionDataEntry*>(&data)->Endian();
-        if (!file->NextChunk())
+        if (!apFile->NextChunk())
             break;
     }
     return true;
 }
 
 // @fnv 0x0059b290
-bool TESCaravanMoney::Load(TESFile* file)
+// pdb: TESCaravanMoney::Load | TESCaravan.obj | retail, upstream name already matches, high
+// pdb params: apFile
+// pdb locals: chunkid, formid, pMessage, isize, pdata, itempint, pmessage
+bool TESCaravanMoney::Load(TESFile* apFile)
 {
-    unsigned char formType = file->GetTESForm();
+    unsigned char formType = apFile->GetTESForm();
     if (formType != 0x74)
         return false;
-    LoadRecordHeader(file);
+    LoadRecordHeader(apFile);
     SetInitializationState(false);
     int chunkID;
-    while ((chunkID = file->GetChunkID()) != 0)
+    while ((chunkID = apFile->GetChunkID()) != 0)
     {
         switch (chunkID)
         {
         case 0x44494445: {
-            char* editorID = static_cast<char*>(_alloca(file->GetChunkSize()));
-            file->GetChunkData(editorID, 0x200);
+            char* editorID = static_cast<char*>(_alloca(apFile->GetChunkSize()));
+            apFile->GetChunkData(editorID, 0x200);
             SetEditorID_AtRuntime(editorID);
             break;
         }
         case 0x444e424f:
-            readOBNDSubRecord(file);
+            readOBNDSubRecord(apFile);
             break;
         case 0x4c4c5546:
-            TESFullNameLoader::LoadFullNameChunk(this, file);
+            TESFullNameLoader::LoadFullNameChunk(this, apFile);
             break;
         case 0x4c444f4d:
         case 0x44444f4d:
         case 0x44534f4d:
         case 0x54444f4d:
-            TESModel::LoadModelData(this, file);
+            TESModel::LoadModelData(this, apFile);
             break;
         case 0x53444f4d: {
             char* textureSwapData;
-            unsigned int chunkSize = file->GetChunkSize();
+            unsigned int chunkSize = apFile->GetChunkSize();
             textureSwapData = static_cast<char*>(_alloca(chunkSize));
-            file->GetChunkData(textureSwapData, chunkSize);
-            ParseTextureSwapData(textureSwapData, chunkSize,
-                                 reinterpret_cast<TESFileFormVersion*>(file)->GetFormVersion());
+            apFile->GetChunkData(textureSwapData, chunkSize);
+            UnpackTextureSwapChunkData(textureSwapData, chunkSize,
+                                 reinterpret_cast<TESFileFormVersion*>(apFile)->GetFormVersion());
             break;
         }
         case 0x4e4f4349:
-            TESTextureLoader::ReadTextureData(static_cast<TESIcon*>(this), file);
+            TESTextureLoader::ReadTextureData(static_cast<TESIcon*>(this), apFile);
             break;
         case 0x4f43494d:
-            BGSMessageIcon::LoadMessageIconChunk(this, file);
+            BGSMessageIcon::LoadMessageIconChunk(this, apFile);
             break;
         case 0x4d414e59: {
             unsigned int id = 0;
-            file->GetChunkData(&id);
+            apFile->GetChunkData(&id);
             SetPickupSound(reinterpret_cast<TESSound*>(id));
             break;
         }
         case 0x4d414e5a: {
             unsigned int id = 0;
-            file->GetChunkData(&id);
+            apFile->GetChunkData(&id);
             SetPutdownSound(reinterpret_cast<TESSound*>(id));
             break;
         }
         case 0x41544144:
-            reinterpret_cast<BGSImpactData*>(this)->ReadTypedData(file, 0, 0);
+            reinterpret_cast<BGSImpactData*>(this)->ReadTypedData(apFile, 0, 0);
             break;
         case 0x32444f4d: {
-            char* model = static_cast<char*>(_alloca(file->GetChunkSize()));
-            file->GetChunkData(model, 0);
-            m_kModelTextureSwaps[0].SetModelFilePath(model);
-            TESModel::LoadTextureSwapData(&m_kModelTextureSwaps[0], file);
+            char* model = static_cast<char*>(_alloca(apFile->GetChunkSize()));
+            apFile->GetChunkData(model, 0);
+            anteModels[0].SetModelFilePath(model);
+            TESModel::LoadTextureSwapData(&anteModels[0], apFile);
             break;
         }
         case 0x33444f4d: {
-            char* model = static_cast<char*>(_alloca(file->GetChunkSize()));
-            file->GetChunkData(model, 0);
-            m_kModelTextureSwaps[1].SetModelFilePath(model);
-            TESModel::LoadTextureSwapData(&m_kModelTextureSwaps[1], file);
+            char* model = static_cast<char*>(_alloca(apFile->GetChunkSize()));
+            apFile->GetChunkData(model, 0);
+            anteModels[1].SetModelFilePath(model);
+            TESModel::LoadTextureSwapData(&anteModels[1], apFile);
             break;
         }
         }
-        if (!file->NextChunk())
+        if (!apFile->NextChunk())
             break;
     }
     return true;
 }
 
 // @fnv 0x0059a800
-bool TESCaravanCard::Load(TESFile* file)
+// pdb: TESCaravanCard::Load | TESCaravan.obj | retail, upstream name already matches, high
+// pdb params: apFile
+// pdb locals: chunkid, int1loaded, formid, pMessage, isize, pdata, tempint, itempint
+bool TESCaravanCard::Load(TESFile* apFile)
 {
-    unsigned char formType = file->GetTESForm();
+    unsigned char formType = apFile->GetTESForm();
     bool m_bHeaderParsed = false;
     if (formType != 0x73)
         return false;
-    LoadRecordHeader(file);
+    LoadRecordHeader(apFile);
     SetInitializationState(false);
     int chunkID;
-    while ((chunkID = file->GetChunkID()) != 0)
+    while ((chunkID = apFile->GetChunkID()) != 0)
     {
         switch (chunkID)
         {
         case 0x44494445: {
-            char* editorID = static_cast<char*>(_alloca(file->GetChunkSize()));
-            file->GetChunkData(editorID, 0x200);
+            char* editorID = static_cast<char*>(_alloca(apFile->GetChunkSize()));
+            apFile->GetChunkData(editorID, 0x200);
             SetEditorID_AtRuntime(editorID);
             break;
         }
         case 0x444e424f:
-            readOBNDSubRecord(file);
+            readOBNDSubRecord(apFile);
             break;
         case 0x4c4c5546:
-            TESFullNameLoader::LoadFullNameChunk(this, file);
+            TESFullNameLoader::LoadFullNameChunk(this, apFile);
             break;
         case 0x4c444f4d:
         case 0x44444f4d:
         case 0x44534f4d:
         case 0x54444f4d:
-            TESModel::LoadModelData(this, file);
+            TESModel::LoadModelData(this, apFile);
             break;
         case 0x53444f4d: {
             char* textureSwapData;
-            unsigned int chunkSize = file->GetChunkSize();
+            unsigned int chunkSize = apFile->GetChunkSize();
             textureSwapData = static_cast<char*>(_alloca(chunkSize));
-            file->GetChunkData(textureSwapData, chunkSize);
-            ParseTextureSwapData(textureSwapData, chunkSize,
-                                 reinterpret_cast<TESFileFormVersion*>(file)->GetFormVersion());
+            apFile->GetChunkData(textureSwapData, chunkSize);
+            UnpackTextureSwapChunkData(textureSwapData, chunkSize,
+                                 reinterpret_cast<TESFileFormVersion*>(apFile)->GetFormVersion());
             break;
         }
         case 0x4e4f4349:
-            TESTextureLoader::ReadTextureData(static_cast<TESIcon*>(this), file);
+            TESTextureLoader::ReadTextureData(static_cast<TESIcon*>(this), apFile);
             break;
         case 0x4f43494d:
-            BGSMessageIcon::LoadMessageIconChunk(this, file);
+            BGSMessageIcon::LoadMessageIconChunk(this, apFile);
             break;
         case 0x49524353: {
             unsigned int scriptID = 0;
-            file->GetChunkData(&scriptID);
+            apFile->GetChunkData(&scriptID);
             SetScript(reinterpret_cast<Script*>(scriptID));
             TESScriptableForm::InitItem(this);
             break;
         }
         case 0x4d414e59: {
             unsigned int id = 0;
-            file->GetChunkData(&id);
+            apFile->GetChunkData(&id);
             SetPickupSound(reinterpret_cast<TESSound*>(id));
             break;
         }
         case 0x4d414e5a: {
             unsigned int id = 0;
-            file->GetChunkData(&id);
+            apFile->GetChunkData(&id);
             SetPutdownSound(reinterpret_cast<TESSound*>(id));
             break;
         }
         case 0x41544144:
-            reinterpret_cast<BGSImpactData*>(this)->ReadTypedData(file, 0, 0);
+            reinterpret_cast<BGSImpactData*>(this)->ReadTypedData(apFile, 0, 0);
             break;
         case 0x30305854:
-            TESTextureLoader::ReadTextureData(&m_kFrontTexture, file);
+            TESTextureLoader::ReadTextureData(&faceTexture, apFile);
             break;
         case 0x31305854:
-            TESTextureLoader::ReadTextureData(&m_kBackTexture, file);
+            TESTextureLoader::ReadTextureData(&backTexture, apFile);
             break;
         case 0x56544e49:
             if (!m_bHeaderParsed)
             {
-                file->GetChunkData(&data.m_uiSecondValue);
+                apFile->GetChunkData(&data.m_uiSecondValue);
                 m_bHeaderParsed = true;
             }
             else
             {
-                file->GetChunkData(&data.m_uiFirstValue);
+                apFile->GetChunkData(&data.m_uiFirstValue);
             }
             break;
         }
-        if (!file->NextChunk())
+        if (!apFile->NextChunk())
             break;
     }
     return true;
@@ -357,7 +373,7 @@ bool TESCaravanCard::Load(TESFile* file)
 // src: XBOX_PDB 0x00503650
 TESTexture* TESCaravanCard::GetBackTexture()
 {
-    return &m_kBackTexture;
+    return &backTexture;
 }
 
 struct CaravanCardLoadGame : public TESCaravanCard
@@ -366,6 +382,8 @@ struct CaravanCardLoadGame : public TESCaravanCard
 };
 
 // @fnv 0x0059adf0
+// pdb: TESCaravanCard::LoadGame | TESCaravan.obj | debug, object-file run extension, low
+// pdb params: apLoadGameBuffer
 void CaravanCardLoadGame::LoadGame(void* arg)
 {
     TESForm::LoadGame(static_cast<BGSLoadFormBuffer*>(arg));
@@ -374,7 +392,7 @@ void CaravanCardLoadGame::LoadGame(void* arg)
 // @fnv 0x0059b270
 TESModelTextureSwap* TESCaravanMoney::GetModelTextureSwap(int index)
 {
-    return &m_kModelTextureSwaps[index];
+    return &anteModels[index];
 }
 
 struct List_009e03e0
@@ -392,6 +410,7 @@ struct FUN_0059b9c0_shell
 
 // Calls RemoveAll on the list and zeroes the 4-byte data field.
 // @fnv 0x0059b9c0
+// pdb: TESCaravanDeck::ClearData | TESCaravan.obj | retail, vtable slot, high
 void FUN_0059b9c0_shell::ClearListAndData()
 {
     m_pCardListHeadCur->RemoveAll();
@@ -404,7 +423,7 @@ struct FUN_0048e370_shell
 };
 struct FUN_0047b560_shell
 {
-    void LogFormIDs(void);
+    void BGSPickupPutdownSounds_Save(void);
 };
 struct FUN_004855a0
 {
@@ -424,6 +443,7 @@ struct FUN_00485e00_shell
 };
 
 // @fnv 0x0059b1b0
+// pdb: TESCaravanMoney::Save | TESCaravan.obj | retail, vtable slot, high
 void TESCaravanMoney::SaveForm()
 {
     TESForm::BeginFormRecord();
@@ -431,7 +451,7 @@ void TESCaravanMoney::SaveForm()
     reinterpret_cast<TESModelTextureSwap*>(reinterpret_cast<char*>(this) + sizeof(TESBoundObject) + sizeof(TESFullName))->ProcessAndFreeData(0x4c444f4d, 0x54444f4d, 0x53444f4d);
     ((FUN_0048e370_shell*)((char*)this + 0x5c))->TESTexture_Save(0x4e4f4349);
     BGSMessageIcon::Save(0x4f43494d);
-    ((FUN_0047b560_shell*)((char*)this + 0x80))->LogFormIDs();
+    ((FUN_0047b560_shell*)((char*)this + 0x80))->BGSPickupPutdownSounds_Save();
     ((FUN_00485e00_shell*)this)->TESForm_SaveData();
     ((TESModelTextureSwap*)GetModelTextureSwap(0))->ProcessAndFreeData(0x32444f4d, 0x54444f4d, 0x53444f4d);
     ((TESModelTextureSwap*)GetModelTextureSwap(1))->ProcessAndFreeData(0x33444f4d, 0x54444f4d, 0x53444f4d);
@@ -445,6 +465,7 @@ struct CaravanCardRelease : TESCaravanCard
 };
 // Destroy the card and deallocate it when the low bit of flags is set.
 // @fnv 0x0059a4c0
+// pdb: TESCaravanCard::`scalar deleting destructor' | TESCaravan.obj | retail, vtable slot, high
 void* CaravanCardRelease::Release(unsigned int flags)
 {
     TESCaravanCard::~TESCaravanCard();
@@ -463,7 +484,7 @@ struct S_0048cca0
 };
 struct FUN_0047b560_holder
 {
-    void LogFormIDs();
+    void BGSPickupPutdownSounds_Save();
 };
 extern "C" unsigned int _FUN_00485910(unsigned int, unsigned int);
 
@@ -473,6 +494,7 @@ struct CaravanCardWriter : TESCaravanCard
 };
 
 // @fnv 0x0059a720
+// pdb: TESCaravanCard::Save | TESCaravan.obj | retail, vtable slot, high
 void CaravanCardWriter::SaveForm()
 {
     TESForm::BeginFormRecord();
@@ -481,7 +503,7 @@ void CaravanCardWriter::SaveForm()
     ((FUN_0048e370_obj*)((char*)this + 0x5c))->TESTexture_Save(0x4e4f4349);
     BGSMessageIcon::Save(0x4f43494d);
     ((S_0048cca0*)((char*)this + 0x80))->Save_0048cca0();
-    ((FUN_0047b560_holder*)((char*)this + 0x8c))->LogFormIDs();
+    ((FUN_0047b560_holder*)((char*)this + 0x8c))->BGSPickupPutdownSounds_Save();
     ((FUN_0048e370_obj*)static_cast<CaravanCardAccess*>(static_cast<TESCaravanCard*>(this))->GetFrontTexture())->TESTexture_Save(0x30305854);
     ((FUN_0048e370_obj*)GetBackTexture())->TESTexture_Save(0x31305854);
     _FUN_00485910(0x56544e49, data.m_uiSecondValue);
@@ -495,6 +517,8 @@ struct CaravanCardSaveGame : TESCaravanCard
     void ForwardToBase(unsigned int flags);
 };
 // @fnv 0x0059add0
+// pdb: TESCaravanCard::SaveGame | TESCaravan.obj | debug, object-file run extension, low
+// pdb params: apSaveGameBuffer
 void CaravanCardSaveGame::ForwardToBase(unsigned int a)
 {
     TESForm::SaveGame(reinterpret_cast<BGSSaveFormBuffer*>(a));
@@ -503,6 +527,7 @@ void CaravanCardSaveGame::ForwardToBase(unsigned int a)
 void _Deallocate(void*);
 // Destroy the money form and deallocate it when the low bit of flags is set.
 // @fnv 0x0059af90
+// pdb: TESCaravanMoney::`scalar deleting destructor' | TESCaravan.obj | retail, vtable slot, high
 void* TESCaravanMoney::Release(unsigned int flags)
 {
     TESCaravanMoney::~TESCaravanMoney();
@@ -512,10 +537,11 @@ void* TESCaravanMoney::Release(unsigned int flags)
 }
 
 // @fnv 0x0059b0e0
+// pdb: TESCaravanMoney::ClearData | TESCaravan.obj | retail, upstream name already matches, high
 void TESCaravanMoney::ClearData()
 {
-    m_kModelTextureSwaps[0].Free();
-    m_kModelTextureSwaps[1].Free();
+    anteModels[0].Free();
+    anteModels[1].Free();
 }
 
 struct FUN_0059b910_shell
@@ -526,6 +552,7 @@ struct FUN_0059b910_shell
 void _Deallocate(void*);
 // Calls FUN_0059b940, then frees this object with _Deallocate when bit 0 of flags is set, and returns this.
 // @fnv 0x0059b910
+// pdb: TESCaravanDeck::`scalar deleting destructor' | TESCaravan.obj | retail, vtable slot, high
 void* FUN_0059b910_shell::FUN_0059b910(unsigned int flags)
 {
     FUN_0059b940();
@@ -569,6 +596,8 @@ struct FUN_0059ba80_shell : public FUN_004855a0
 
 // @fnv 0x0059ba80
 // src: COMMUNITY 0x0059ba80
+// pdb: TESCaravanDeck::Save | TESCaravan.obj | retail, vtable slot, high
+// pdb locals: pDeck
 void FUN_0059ba80_shell::TESCaravanDeck_SaveAlt()
 {
     M();
@@ -595,14 +624,16 @@ struct CaravanCardCleanup : TESCaravanCard
 };
 
 // @fnv 0x0059a620
+// pdb: TESCaravanCard::ClearData | TESCaravan.obj | retail, vtable slot, high
 void CaravanCardCleanup::ClearData()
 {
-    m_kFrontTexture.Free();
-    m_kBackTexture.Free();
+    faceTexture.Free();
+    backTexture.Free();
     memset(&data, 0, sizeof(data));
 }
 
 // @fnv 0x0059afc0
+// pdb: TESCaravanMoney::~TESCaravanMoney | TESCaravan.obj | retail, upstream name already matches, high
 TESCaravanMoney::~TESCaravanMoney()
 {
     TESCaravanMoney::ClearData();
@@ -626,22 +657,25 @@ struct CaravanMoneyCopy : TESCaravanMoney
 {
     void TESForm_CopyAllComponents(void* source);
     void FUN_004f15a0(void* type);
-    void CopyFrom(int source);
+    void CopyFrom(int apCopy);
 };
 
 // @fnv 0x0059b680
-void CaravanMoneyCopy::CopyFrom(int a1)
+// pdb: TESCaravanMoney::Copy | TESCaravan.obj | retail, vtable slot, high
+// pdb params: apCopy
+// pdb locals: pCopy
+void CaravanMoneyCopy::CopyFrom(int apCopy)
 {
-    void* p = FUN_00ec43fb(a1, 0, (unsigned int)DAT_01183028, (unsigned int)DAT_0118c5e4, 0);
+    void* p = FUN_00ec43fb(apCopy, 0, (unsigned int)DAT_01183028, (unsigned int)DAT_0118c5e4, 0);
     if (p == 0)
     {
     }
     else
     {
         TESForm_CopyAllComponents(p);
-        m_kModelTextureSwaps[0].SetModelFilePath(static_cast<TESCaravanMoney*>(p)->GetModelTextureSwap(0)->GetModelFilePath());
-        m_kModelTextureSwaps[1].SetModelFilePath(static_cast<TESCaravanMoney*>(p)->GetModelTextureSwap(1)->GetModelFilePath());
-        FUN_004f15a0(((FUN_00401170_shell*)a1)->FUN_00401170());
+        anteModels[0].SetModelFilePath(static_cast<TESCaravanMoney*>(p)->GetModelTextureSwap(0)->GetModelFilePath());
+        anteModels[1].SetModelFilePath(static_cast<TESCaravanMoney*>(p)->GetModelTextureSwap(1)->GetModelFilePath());
+        FUN_004f15a0(((FUN_00401170_shell*)apCopy)->FUN_00401170());
     }
 }
 }  // namespace fnv_0059b680
@@ -676,6 +710,7 @@ struct FUN_0059b940 : BaseDtor_b5117, SecondDtor_b5117
 };
 
 // @fnv 0x0059b940
+// pdb: TESCaravanDeck::~TESCaravanDeck | TESCaravan.obj | debug, object-file gap fill, medium
 FUN_0059b940::~FUN_0059b940()
 {
     unk0C();
@@ -725,15 +760,18 @@ struct FUN_0059bd50_cls
     unsigned int unk20;
     P24c* p24;
     DeckData f28;
-    void LoadDeckData(void* arg);
+    void LoadDeckData(void* apCopy);
 };
 
 L1c* __cdecl FUN_00ec43fb(void* arg, int a2, const char* a3, const char* a4, int a5);
 
 // @fnv 0x0059bd50
-void FUN_0059bd50_cls::LoadDeckData(void* arg)
+// pdb: TESCaravanDeck::Copy | TESCaravan.obj | retail, vtable slot, high
+// pdb params: apCopy
+// pdb locals: cardList, pCopy, cpyCard
+void FUN_0059bd50_cls::LoadDeckData(void* apCopy)
 {
-    L1c* rec = FUN_00ec43fb(arg, 0, DAT_01183028, DAT_0118643c, 0);
+    L1c* rec = FUN_00ec43fb(apCopy, 0, DAT_01183028, DAT_0118643c, 0);
     if (rec == 0)
     {
     }
@@ -758,6 +796,7 @@ void FUN_0059bd50_cls::LoadDeckData(void* arg)
 }
 
 // @fnv 0x0059a4f0
+// pdb: TESCaravanCard::~TESCaravanCard | TESCaravan.obj | retail, upstream name already matches, high
 TESCaravanCard::~TESCaravanCard()
 {
     static_cast<CaravanCardCleanup*>(this)->CaravanCardCleanup::ClearData();
@@ -785,19 +824,22 @@ struct CaravanCardCopy : TESCaravanCard
 {
     void TESForm_CopyAllComponents(CaravanCardAccess* source);
     void FUN_004f15a0(int type);
-    void CopyFrom(FormA* form);
+    void CopyFrom(FormA* apCopy);
 };
 // @fnv 0x0059ac20
-void CaravanCardCopy::CopyFrom(FormA* pForm)
+// pdb: TESCaravanCard::Copy | TESCaravan.obj | retail, vtable slot, high
+// pdb params: apCopy
+// pdb locals: pCopy
+void CaravanCardCopy::CopyFrom(FormA* apCopy)
 {
-    CaravanCardAccess* pSrc = (CaravanCardAccess*)FUN_00ec43fb(pForm, 0, &DAT_01183028, &DAT_0118c5c4, 0);
+    CaravanCardAccess* pSrc = (CaravanCardAccess*)FUN_00ec43fb(apCopy, 0, &DAT_01183028, &DAT_0118c5c4, 0);
     if (!pSrc)
         return;
     TESForm_CopyAllComponents(pSrc);
-    reinterpret_cast<StrSet*>(&m_kFrontTexture)->FUN_00489100(reinterpret_cast<StrB*>(pSrc->GetFrontTexture())->TESModel_GetModel());
-    reinterpret_cast<StrSet*>(&m_kBackTexture)->FUN_00489100(reinterpret_cast<StrB*>(pSrc->GetBackTexture())->TESModel_GetModel());
+    reinterpret_cast<StrSet*>(&faceTexture)->FUN_00489100(reinterpret_cast<StrB*>(pSrc->GetFrontTexture())->TESModel_GetModel());
+    reinterpret_cast<StrSet*>(&backTexture)->FUN_00489100(reinterpret_cast<StrB*>(pSrc->GetBackTexture())->TESModel_GetModel());
     data = *pSrc->GetCardData();
-    FUN_004f15a0(pForm->FUN_00401170());
+    FUN_004f15a0(apCopy->FUN_00401170());
 }
 }  // namespace fnv_0059ac20
 
@@ -816,22 +858,25 @@ int BSstrcmp(const char*, const char*);
 
 struct CaravanCardCompare : TESCaravanCard
 {
-    bool TESForm_CompareAllComponents(CaravanCardAccess* card);
-    bool IsDifferentFromCard(void* card);
+    bool TESForm_CompareAllComponents(CaravanCardAccess* apCompare);
+    bool IsDifferentFromCard(void* apCompare);
 };
 
 // Returns true if the cast fails or either compared string or the 8-byte data differs.
 // @fnv 0x0059acd0
-bool CaravanCardCompare::IsDifferentFromCard(void* apCard)
+// pdb: TESCaravanCard::Compare | TESCaravan.obj | retail, vtable slot, high
+// pdb params: apCompare
+// pdb locals: pComp
+bool CaravanCardCompare::IsDifferentFromCard(void* apCompare)
 {
-    CaravanCardAccess* card = (CaravanCardAccess*)FNV_DynamicCast(apCard, 0, &DAT_01183028, &DAT_0118c5c4, 0);
+    CaravanCardAccess* card = (CaravanCardAccess*)FNV_DynamicCast(apCompare, 0, &DAT_01183028, &DAT_0118c5c4, 0);
     if (!card)
         return true;
     if (this->TESForm_CompareAllComponents(card))
         return true;
-    if (BSstrcmp(reinterpret_cast<StrHelper_00408da0*>(&m_kFrontTexture)->TESModel_GetModel(), reinterpret_cast<StrHelper_00408da0*>(card->GetFrontTexture())->TESModel_GetModel()))
+    if (BSstrcmp(reinterpret_cast<StrHelper_00408da0*>(&faceTexture)->TESModel_GetModel(), reinterpret_cast<StrHelper_00408da0*>(card->GetFrontTexture())->TESModel_GetModel()))
         return true;
-    if (BSstrcmp(reinterpret_cast<StrHelper_00408da0*>(&m_kBackTexture)->TESModel_GetModel(), reinterpret_cast<StrHelper_00408da0*>(card->GetBackTexture())->TESModel_GetModel()))
+    if (BSstrcmp(reinterpret_cast<StrHelper_00408da0*>(&backTexture)->TESModel_GetModel(), reinterpret_cast<StrHelper_00408da0*>(card->GetBackTexture())->TESModel_GetModel()))
         return true;
     if (memcmp(&data, card->GetCardData(), 8))
         return true;
@@ -843,9 +888,12 @@ bool CaravanCardCompare::IsDifferentFromCard(void* apCard)
 
 // Returns true if the cast fails, FUN_00485270 returns true, card counts differ, a card from the other deck is absent here, or CaravanDeckData differs.
 // @fnv 0x0059be50
-bool TESCaravanDeck::Compare(TESForm* form)
+// pdb: TESCaravanDeck::Compare | TESCaravan.obj | retail, upstream name already matches, high
+// pdb params: apCompare
+// pdb locals: pComp, cardList
+bool TESCaravanDeck::Compare(TESForm* apCompare)
 {
-    TESCaravanDeck* pDeck2 = dynamic_cast<TESCaravanDeck*>(form);
+    TESCaravanDeck* pDeck2 = dynamic_cast<TESCaravanDeck*>(apCompare);
     if (!pDeck2)
         return true;
     if (TESForm::Compare(pDeck2))
@@ -867,9 +915,12 @@ bool TESCaravanDeck::Compare(TESForm* form)
 int __cdecl BSstrcmp(const char*, const char*);
 
 // @fnv 0x0059b740
-bool TESCaravanMoney::Compare(TESForm* other)
+// pdb: TESCaravanMoney::Compare | TESCaravan.obj | retail, upstream name already matches, high
+// pdb params: apCompare
+// pdb locals: pComp
+bool TESCaravanMoney::Compare(TESForm* apCompare)
 {
-    TESCaravanMoney* compared = dynamic_cast<TESCaravanMoney*>(other);
+    TESCaravanMoney* compared = dynamic_cast<TESCaravanMoney*>(apCompare);
 
     if (!compared)
         return true;
@@ -877,11 +928,11 @@ bool TESCaravanMoney::Compare(TESForm* other)
     if (TESForm::Compare(compared))
         return true;
 
-    if (BSstrcmp(m_kModelTextureSwaps[0].GetModelFilePath(),
+    if (BSstrcmp(anteModels[0].GetModelFilePath(),
                      compared->GetModelTextureSwap(0)->GetModelFilePath()))
         return true;
 
-    if (BSstrcmp(m_kModelTextureSwaps[1].GetModelFilePath(),
+    if (BSstrcmp(anteModels[1].GetModelFilePath(),
                      compared->GetModelTextureSwap(1)->GetModelFilePath()))
         return true;
 

@@ -4,6 +4,7 @@
 #include "../include/TESLandTexture.h"
 
 // @fnv 0x00540c50
+// pdb: TESLandTexture::TESLandTexture | TESLandTexture.obj | retail, upstream name already matches, high
 TESLandTexture::TESLandTexture()
 {
     SetFormType(ENUM_FORM_ID_LTEX_ID);
@@ -14,60 +15,65 @@ TESLandTexture::TESLandTexture()
 // @fnv 0x00540d80
 void TESLandTexture::ResetFormData()
 {
-    m_pTextureSet = 0;
-    LandTextureParameters.m_ucParameter1 = 2;
-    LandTextureParameters.m_ucParameter2 = 30;
-    LandTextureParameters.m_ucParameter3 = 30;
-    m_ucTextureTiling = 30;
+    pTextureSet = 0;
+    HavokData.m_ucParameter1 = 2;
+    HavokData.m_ucParameter2 = 30;
+    HavokData.m_ucParameter3 = 30;
+    cSpecularExponent = 30;
 }
 
 // @fnv 0x005412a0
-bool TESLandTexture::Load(TESFile* file)
+// pdb: TESLandTexture::Load | TESLandTexture.obj | retail, upstream name already matches, high
+// pdb params: apFile
+// pdb locals: formid, pMessage, itempint, tempint
+bool TESLandTexture::Load(TESFile* apFile)
 {
-    unsigned char formType = file->GetTESForm();
+    unsigned char formType = apFile->GetTESForm();
     if (formType != ENUM_FORM_ID_LTEX_ID)
         return false;
-    LoadRecordHeader(file);
+    LoadRecordHeader(apFile);
     do
     {
-        switch (static_cast<int>(file->GetChunkID()))
+        switch (static_cast<int>(apFile->GetChunkID()))
         {
         case 'DIDE': {
-            char* editorID = static_cast<char*>(_alloca(file->GetChunkSize()));
-            file->GetChunkData(editorID, 512);
+            char* editorID = static_cast<char*>(_alloca(apFile->GetChunkSize()));
+            apFile->GetChunkData(editorID, 512);
             SetEditorID_AtRuntime(editorID);
             break;
         }
         case 'DNBO':
-            readOBNDSubRecord(file);
+            readOBNDSubRecord(apFile);
             break;
         case 'MANT': {
             unsigned int textureID = 0;
-            file->GetChunkData(&textureID);
-            m_pTextureSet = reinterpret_cast<BGSTextureSet*>(textureID);
+            apFile->GetChunkData(&textureID);
+            pTextureSet = reinterpret_cast<BGSTextureSet*>(textureID);
             break;
         }
         case 'MANH':
-            file->GetChunkData(&LandTextureParameters, 3);
+            apFile->GetChunkData(&HavokData, 3);
             break;
         case 'MANS':
-            file->GetChunkData(&m_ucTextureTiling, 1);
+            apFile->GetChunkData(&cSpecularExponent, 1);
             break;
         case 'MANG': {
             unsigned int grassID = 0;
-            file->GetChunkData(&grassID);
+            apFile->GetChunkData(&grassID);
             if (grassID)
                 GetGrassList()->AddTail(reinterpret_cast<TESGrass*>(grassID));
             break;
         }
         }
-    } while (file->NextChunk());
+    } while (apFile->NextChunk());
     SetInitializationState(false);
     return true;
 }
 
 // Resolves the grass list and texture set form IDs, warns about missing entries, and marks the item initialized.
 // @fnv 0x00540fe0
+// pdb: TESLandTexture::InitItem | TESLandTexture.obj | retail, string-set bridge, high
+// pdb locals: plist, plastlist, tempint, pgrass
 void TESLandTexture::InitItem()
 {
     if (static_cast<const TESForm*>(this)->GetInitialized())
@@ -105,23 +111,23 @@ void TESLandTexture::InitItem()
             current = current->GetNext();
         }
     }
-    if (m_pTextureSet)
+    if (pTextureSet)
     {
-        unsigned int textureID = reinterpret_cast<unsigned int>(m_pTextureSet);
+        unsigned int textureID = reinterpret_cast<unsigned int>(pTextureSet);
         RemapFormIDForFile(textureID, GetFile(-1));
-        m_pTextureSet = dynamic_cast<BGSTextureSet*>(GetFormByID(textureID));
-        if (!m_pTextureSet)
+        pTextureSet = dynamic_cast<BGSTextureSet*>(GetFormByID(textureID));
+        if (!pTextureSet)
             Warning("MASTERFILE: Could not find Texture Set (%08X) for LandTexture '%s' (%08X).", textureID, GetName(),
                     GetFormID());
-        if (m_pTextureSet)
+        if (pTextureSet)
         {
-            if (!m_pTextureSet->GetTexture(BSShaderProperty::TEXTYPE_DIFFUSE))
+            if (!pTextureSet->GetTexture(BSShaderProperty::TEXTYPE_DIFFUSE))
                 Warning("MASTERFILE: TextureSet '%s' (%08X) missing diffuse texture (required for landscape textures).",
-                        m_pTextureSet->GetName(), m_pTextureSet->GetFormID());
-            if (!m_pTextureSet->GetTexture(BSShaderProperty::TEXTYPE_NORMAL))
+                        pTextureSet->GetName(), pTextureSet->GetFormID());
+            if (!pTextureSet->GetTexture(BSShaderProperty::TEXTYPE_NORMAL))
                 Warning("MASTERFILE: TextureSet '%s' (%08X) missing normal texture (required for landscape textures).",
-                        m_pTextureSet->GetName(), m_pTextureSet->GetFormID());
-            m_pTextureSet->SetHasSpecular(false);
+                        pTextureSet->GetName(), pTextureSet->GetFormID());
+            pTextureSet->SetHasSpecular(false);
         }
     }
     SetInitializationState(true);
@@ -139,6 +145,7 @@ void BGSTextureSet::SetHasSpecular(bool hasSpecular)
 
 void _Deallocate(void*);
 // @fnv 0x00540ce0
+// pdb: TESLandTexture::`scalar deleting destructor' | TESLandTexture.obj | retail, vtable slot, high
 void* TESLandTexture::Delete(unsigned int flags)
 {
     this->~TESLandTexture();
@@ -148,12 +155,14 @@ void* TESLandTexture::Delete(unsigned int flags)
 }
 
 // @fnv 0x00540dc0
+// pdb: TESLandTexture::ClearData | TESLandTexture.obj | debug, upstream name already matches, high
 void TESLandTexture::ClearData()
 {
     GetGrassList()->RemoveAll();
 }
 
 // @fnv 0x00540d10
+// pdb: TESLandTexture::~TESLandTexture | TESLandTexture.obj | debug, upstream name already matches, high
 TESLandTexture::~TESLandTexture()
 {
     TESLandTexture::ClearData();
@@ -162,22 +171,25 @@ TESLandTexture::~TESLandTexture()
 void MemCopy(void* dst, const void* src, unsigned int n);
 // Copies land texture data from pForm into this object, clearing and rebuilding the grass list from the source's grass entries.
 // @fnv 0x00540de0
-void TESLandTexture::CopyFrom(const TESForm* pForm)
+// pdb: TESLandTexture::Copy | TESLandTexture.obj | retail, vtable slot, high
+// pdb params: apCopy
+// pdb locals: plist, pcopy, pgrass
+void TESLandTexture::CopyFrom(const TESForm* apCopy)
 {
-    TESLandTexture* src = dynamic_cast<TESLandTexture*>(const_cast<TESForm*>(pForm));
+    TESLandTexture* src = dynamic_cast<TESLandTexture*>(const_cast<TESForm*>(apCopy));
     if (!src)
         return;
     BSSimpleList<TESGrass*>* node = 0;
     GetGrassList()->RemoveAll();
     TESForm::CopyFrom(src);
-    MemCopy(&LandTextureParameters, &src->LandTextureParameters, 3);
-    m_ucTextureTiling = src->m_ucTextureTiling;
-    m_pTextureSet = src->GetTextureSet();
+    MemCopy(&HavokData, &src->HavokData, 3);
+    cSpecularExponent = src->cSpecularExponent;
+    pTextureSet = src->GetTextureSet();
     node = src->GetGrassList();
     while (node && !node->IsEmpty())
     {
         TESGrass* g = node->GetItem();
-        m_kGrassList.AddTail(g);
+        TextureGrassList.AddTail(g);
         node = node->GetNext();
     }
 }
@@ -188,10 +200,12 @@ unsigned int __fastcall Cb_0084e3a0(void* self);
 void __cdecl Cb_00485910(unsigned int tag, unsigned int value);
 bool __cdecl Cb_00401500();
 void __cdecl Cb_00485990(unsigned int tag, void* data, unsigned int size);
-void __cdecl Cb_004858f0(unsigned int tag, unsigned int value);
+void __cdecl Cb_004858f0(unsigned int aeChunkID, unsigned int aiData);
 void __fastcall Cb_00485680(void* self);
 
 // @fnv 0x00541440
+// pdb: TESLandTexture::Save | TESLandTexture.obj | retail, vtable slot, high
+// pdb locals: plist, itempint, tempint, pgrass
 void TESLandTexture::SaveForm()
 {
     unsigned int formId;
@@ -202,21 +216,21 @@ void TESLandTexture::SaveForm()
 
         Cb_004855a0(this);
         Cb_00483710(this);
-        if (m_pTextureSet != 0)
+        if (pTextureSet != 0)
         {
-            formId = Cb_0084e3a0(m_pTextureSet);
+            formId = Cb_0084e3a0(pTextureSet);
             Cb_00485910(0x4d414e54, formId);
         }
         if (Cb_00401500())
         {
-            Cb_00483710(&LandTextureParameters);
+            Cb_00483710(&HavokData);
         }
-        Cb_00485990(0x4d414e48, &LandTextureParameters, 3);
+        Cb_00485990(0x4d414e48, &HavokData, 3);
         if (Cb_00401500())
         {
-            Cb_00483710(&LandTextureParameters);
+            Cb_00483710(&HavokData);
         }
-        Cb_004858f0(0x4d414e53, m_ucTextureTiling);
+        Cb_004858f0(0x4d414e53, cSpecularExponent);
         node3 = GetGrassList();
         while (node3 != 0 && !node3->IsEmpty())
         {
@@ -232,18 +246,21 @@ void TESLandTexture::SaveForm()
 #include <string.h>
 // Returns true if form is not a TESLandTexture or differs in base compare, parameters, tiling, texture set or grass list.
 // @fnv 0x00540ec0
-bool TESLandTexture::Compare(TESForm* apOther)
+// pdb: TESLandTexture::Compare | TESLandTexture.obj | retail, upstream name already matches, high
+// pdb params: apCompare
+// pdb locals: pcomp, plist, pcomplist
+bool TESLandTexture::Compare(TESForm* apCompare)
 {
-    TESLandTexture* other = dynamic_cast<TESLandTexture*>(apOther);
+    TESLandTexture* other = dynamic_cast<TESLandTexture*>(apCompare);
     if (!other)
         return true;
     if (TESForm::Compare(other))
         return true;
-    if (memcmp(&LandTextureParameters, &other->LandTextureParameters, 3))
+    if (memcmp(&HavokData, &other->HavokData, 3))
         return true;
-    if (m_ucTextureTiling != other->m_ucTextureTiling)
+    if (cSpecularExponent != other->cSpecularExponent)
         return true;
-    if (m_pTextureSet != other->GetTextureSet())
+    if (pTextureSet != other->GetTextureSet())
         return true;
     BSSimpleList<TESGrass*>* pGrassList = GetGrassList();
     BSSimpleList<TESGrass*>* pOtherGrassList = other->GetGrassList();

@@ -2,30 +2,37 @@
 // src/havok/physics/collide/query/collector/aabbtreecollector/hkpaabbtreecollidableraycaster.cpp - unit created 2026-10-16 from the whole-binary attribution (360 source path: d:/projects/fallout/code/havok/source/physics/collide/query/collector/aabbtreecollector/hkpaabbtreecollidableraycaster.cpp).
 // Functions are listed by their @fnv annotations; compile flags inferred from the PC code.
 
+// pdb: class hkpAabbTreeCollidableRaycaster, size 0x20 (here 0x1), bases: hkAabbTreeQueryUtils<hkAabbTreeData::hkAabbTreeAabb, hkAabbTreeQueryUtils<hkAabbTreeData::hkAabbTreeAabb16, 6 members
 struct hkpAabbTreeCollidableRaycaster
 {
-    void CollectRayHit(int);
+    void testCollidable(int);
     float addLeaf(int);
 };
 // @fnv 0x00d9a220
 // src: HAVOK_LIB 0x00d9a220
-float hkpAabbTreeCollidableRaycaster::addLeaf(int a)
+// pdb: hkpAabbTreeCollidableRaycaster::addLeaf | hkpAabbTreeCollidableRaycaster.obj | retail, vtable slot, high
+// pdb params: leaf
+// pdb locals: assertBuf, ostr
+float hkpAabbTreeCollidableRaycaster::addLeaf(int leaf)
 {
-    CollectRayHit(*(int*)(a + 0x20));
+    testCollidable(*(int*)(leaf + 0x20));
     return *(float*)((char*)this + 0x1c);
 }
 
 namespace fnv_00d9a240 {
 struct hkpAabbTreeCollidableRaycaster
 {
-    void __thiscall CollectRayHit(void*);
-    float __thiscall addLeaf_00d9a240(void* arg);
+    void __thiscall testCollidable(void*);
+    float __thiscall addLeaf_00d9a240(void* leaf);
 };
 // @fnv 0x00d9a240
 // src: HAVOK_LIB 0x00d9a240
-float __thiscall hkpAabbTreeCollidableRaycaster::addLeaf_00d9a240(void* arg)
+// pdb: hkpAabbTreeCollidableRaycaster::addLeaf | hkpAabbTreeCollidableRaycaster.obj | retail, vtable slot, high
+// pdb params: leaf
+// pdb locals: assertBuf, ostr
+float __thiscall hkpAabbTreeCollidableRaycaster::addLeaf_00d9a240(void* leaf)
 {
-    ((hkpAabbTreeCollidableRaycaster*)((char*)this - 4))->CollectRayHit(*(void**)((char*)arg + 12));
+    ((hkpAabbTreeCollidableRaycaster*)((char*)this - 4))->testCollidable(*(void**)((char*)leaf + 12));
     return *(float*)((char*)this + 0x18);
 }
 }  // namespace fnv_00d9a240
@@ -114,10 +121,14 @@ struct FnvRaycasterState
 
 // If the filter accepts, transforms the ray into the source's space and calls node->update or node->collect, rotating a collected hit position back.
 // @fnv 0x00d9a070
-void hkpAabbTreeCollidableRaycaster::CollectRayHit(int request)
+// src: XBOX_RETAIL_PDB 0x00d9a070
+// pdb: hkpAabbTreeCollidableRaycaster::testCollidable | hkpAabbTreeCollidableRaycaster.obj | retail, call graph (shared callers), high
+// pdb params: col
+// pdb locals: shapeInput
+void hkpAabbTreeCollidableRaycaster::testCollidable(int col)
 {
     FnvRaycasterState* st = (FnvRaycasterState*)this;
-    int* source = (int*)request;
+    int* source = (int*)col;
     FnvRayNode* node = (FnvRayNode*)source[0];
     if (!node)
         return;
@@ -218,6 +229,7 @@ struct FUN_00d9a270 : S_00d9a270_Base, S_00d9a270_Second
     FUN_00d9a270();
     // Empty virtual destructor for FUN_00d9a270, which inherits from S_00d9a270_Base and S_00d9a270_Second.
 // @fnv 0x00d9a270
+// pdb: hkpAabbTreeCollidableRaycaster::`scalar deleting destructor' | hkpAabbTreeCollidableRaycaster.obj | retail, vtable slot, high
     virtual ~FUN_00d9a270()
     {}
 };

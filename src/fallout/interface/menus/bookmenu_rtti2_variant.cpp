@@ -383,7 +383,7 @@ struct FUN_0073b0f0_cls
 {
     char _pad[0x30];
     Obj30_0073b0f0* m_0x30;
-    void __thiscall UpdateMenuTile();
+    void __thiscall Close();
     void __thiscall HandleMessage(int, int);
 };
 struct BookInput
@@ -424,7 +424,7 @@ struct BookMenu_Shell
     Tile* m_pObject;
 
     Tile* FUN_00726070();
-    void HandleScrollInput(int a1, int a2);
+    void HandleScrollInput(int aiID, int apTarget);
 };
 extern const char DAT_01070fa8[];
 extern const char DAT_01070f84[];
@@ -474,6 +474,9 @@ void* __fastcall FUN_00726070(Menu*);
 
 // @fnv 0x0073ad50
 // src: XBOX_PDB 0x0073ad50
+// pdb: BookMenu::Create | BookMenu.obj | retail, upstream name already matches, high
+// pdb params: apBook, apRef
+// pdb locals: pme, pin, pmenu, pbook, ftop_depth, ptile, pold_menu_tile
 Tile* __cdecl BookMenu_Create(TESObjectBOOK* apBook, TESObjectREFR* apRef)
 {
     BookMenu* g_pHudMainMenuInstance;

@@ -6,17 +6,20 @@
 // Converts forward slashes to backslashes, removes repeated backslashes after the first two characters, and returns whether either change occurred.
 // @fnv 0x00aa2a00
 // src: GAMEBRYO_LIB 0x00aa2a00
-bool NiPath_Standardize(char* path)
+// pdb: NiPath::Standardize | NiPath.obj | debug, upstream name already matches, high
+// pdb params: pcPath
+// pdb locals: bModified, bLastCharWasSlash, uiWrite, uiLen, uiRead, c, bThisCharIsSlash
+bool NiPath_Standardize(char* pcPath)
 {
     bool changed = false;
-    if (!path)
+    if (!pcPath)
         return changed;
-    unsigned int len = strlen(path);
+    unsigned int len = strlen(pcPath);
     bool prevSlash = false;
     unsigned int out = 0;
     for (unsigned int i = 0; i < len; i++)
     {
-        char cChar = path[i];
+        char cChar = pcPath[i];
         if (cChar == '/')
         {
             changed = true;
@@ -29,12 +32,12 @@ bool NiPath_Standardize(char* path)
         }
         else
         {
-            path[out] = cChar;
+            pcPath[out] = cChar;
             prevSlash = isSlash;
             out++;
         }
     }
-    path[out] = 0;
+    pcPath[out] = 0;
     return changed;
 }
 

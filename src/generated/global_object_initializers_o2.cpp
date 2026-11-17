@@ -18,6 +18,7 @@ GlobalObjectO2_00ec3289 g_0126fc94;
 // @fnv 0x00fb4a80
 GlobalObjectO2_00a7b610 g_011f36ac(g_011f36ac_arg0, g_011f36ac_arg1);
 // @fnv 0x00fb4aa0
+// pdb: `dynamic initializer for 'NiInterpController::ms_RTTI'' | NiInterpController.obj | debug, unique string literal, high
 GlobalObjectO2_00a7b610 g_011f36b4(g_011f36b4_arg0, g_011f36b4_arg1);
 // @fnv 0x00fb4ac0
 GlobalObjectO2_00a7b610 g_011f36bc(g_011f36bc_arg0, g_011f36bc_arg1);
@@ -28,23 +29,26 @@ GlobalObjectO2_00a7b610 g_011f36e4(g_011f36e4_arg0, g_011f36e4_arg1);
 // @fnv 0x00fb4b20
 GlobalObjectO2_00a7b610 g_011f36ec(g_011f36ec_arg0, g_011f36ec_arg1);
 // @fnv 0x00fb4b40
+// pdb: `dynamic initializer for 'NiBlendInterpolator::ms_RTTI'' | NiBlendInterpolator.obj | debug, unique string literal, high
 GlobalObjectO2_00a7b610 g_011f36fc(g_011f36fc_arg0, g_011f36fc_arg1);
 // @fnv 0x00fb4b90
+// pdb: `dynamic initializer for 'NiSingleInterpController::ms_RTTI'' | NiSingleInterpController.obj | debug, unique string literal, high
 GlobalObjectO2_00a7b610 g_011f3714(g_011f3714_arg0, g_011f3714_arg1);
 // @fnv 0x00fb4bb0
-GlobalObjectO2_00a7b610 g_011f371c(g_011f371c_arg0, g_011f371c_arg1);
+GlobalObjectO2_00a7b610 NiBlendAccumTransformInterpolator_ms_RTTI(g_011f371c_arg0, g_011f371c_arg1);
 // @fnv 0x00fb4bd0
-GlobalObjectO2_00a7b610 g_011f3728(g_011f3728_arg0, g_011f3728_arg1);
+GlobalObjectO2_00a7b610 NiGeomMorpherController_ms_RTTI(g_011f3728_arg0, g_011f3728_arg1);
 // @fnv 0x00fb4bf0
-GlobalObjectO2_00a7b610 g_011f3730(g_011f3730_arg0, g_011f3730_arg1);
+GlobalObjectO2_00a7b610 NiColorInterpolator_ms_RTTI(g_011f3730_arg0, g_011f3730_arg1);
 // @fnv 0x00fb4c10
 GlobalObjectO2_00a7b610 g_011f3738(g_011f3738_arg0, g_011f3738_arg1);
 // @fnv 0x00fb4c30
+// pdb: `dynamic initializer for 'NiKeyBasedInterpolator::ms_RTTI'' | NiKeyBasedInterpolator.obj | debug, unique string literal, high
 GlobalObjectO2_00a7b610 g_011f3740(g_011f3740_arg0, g_011f3740_arg1);
 // @fnv 0x00fb4c50
-GlobalObjectO2_00a7b610 g_011f3748(g_011f3748_arg0, g_011f3748_arg1);
+GlobalObjectO2_00a7b610 NiFloatData_ms_RTTI(g_011f3748_arg0, g_011f3748_arg1);
 // @fnv 0x00fb4c70
-GlobalObjectO2_00a7b610 g_011f3750(g_011f3750_arg0, g_011f3750_arg1);
+GlobalObjectO2_00a7b610 NiColorData_ms_RTTI(g_011f3750_arg0, g_011f3750_arg1);
 // @fnv 0x00fb4c90
 GlobalObjectO2_00a7b610 g_011f3e48(g_011f3e48_arg0, g_011f3e48_arg1);
 // @fnv 0x00fb4cb0
@@ -56,13 +60,13 @@ GlobalObjectO2_00a7b610 g_011f3e64(g_011f3e64_arg0, g_011f3e64_arg1);
 // @fnv 0x00fb4d10
 GlobalObjectO2_00a7b610 g_011f3e6c(g_011f3e6c_arg0, g_011f3e6c_arg1);
 // @fnv 0x00fb4d30
-GlobalObjectO2_00a7b610 g_011f3e74(g_011f3e74_arg0, g_011f3e74_arg1);
+GlobalObjectO2_00a7b610 NiMorphData_ms_RTTI(g_011f3e74_arg0, g_011f3e74_arg1);
 // @fnv 0x00fb4da0
-GlobalObjectO2_00a7b610 g_011f3ec8(g_011f3ec8_arg0, g_011f3ec8_arg1);
+GlobalObjectO2_00a7b610 BSFrustumFOVController_ms_RTTI(g_011f3ec8_arg0, g_011f3ec8_arg1);
 // @fnv 0x00fb4dc0
-GlobalObjectO2_00a7b610 g_011f3ed0(g_011f3ed0_arg0, g_011f3ed0_arg1);
+GlobalObjectO2_00a7b610 BSBlendTreadTransfInterpolator_ms_RTTI(g_011f3ed0_arg0, g_011f3ed0_arg1);
 // @fnv 0x00fb4de0
-GlobalObjectO2_00a7b610 g_011f3ed8(g_011f3ed8_arg0, g_011f3ed8_arg1);
+GlobalObjectO2_00a7b610 BSTreadTransfInterpolator_ms_RTTI(g_011f3ed8_arg0, g_011f3ed8_arg1);
 // @fnv 0x00fb4e00
 GlobalObjectO2_00a7b610 g_011f3ee0(g_011f3ee0_arg0, g_011f3ee0_arg1);
 // @fnv 0x00fb4e20
@@ -70,6 +74,7 @@ GlobalObjectO2_00a7b610 g_011f3ee8(g_011f3ee8_arg0, g_011f3ee8_arg1);
 // @fnv 0x00fb4e40
 GlobalObjectO2_00a7b610 g_011f3ef0(g_011f3ef0_arg0, g_011f3ef0_arg1);
 // @fnv 0x00fb4e60
+// pdb: `dynamic initializer for 'BSAnimNote::ms_RTTI'' | BSAnimNote.obj | debug, unique string literal, high
 GlobalObjectO2_00a7b610 g_011f3ef8(g_011f3ef8_arg0, g_011f3ef8_arg1);
 // @fnv 0x00fb4e80
 GlobalObjectO2_00a7b610 g_011f3f00(g_011f3f00_arg0, g_011f3f00_arg1);
@@ -80,7 +85,7 @@ GlobalObjectO2_00a7b610 g_011f3f10(g_011f3f10_arg0, g_011f3f10_arg1);
 // @fnv 0x00fb4ee0
 GlobalObjectO2_00a7b610 g_011f3f18(g_011f3f18_arg0, g_011f3f18_arg1);
 // @fnv 0x00fb4f00
-GlobalObjectO2_00a7b610 g_011f3f20(g_011f3f20_arg0, g_011f3f20_arg1);
+GlobalObjectO2_00a7b610 NiTextureTransformController_ms_RTTI(g_011f3f20_arg0, g_011f3f20_arg1);
 // @fnv 0x00fb4f20
 GlobalObjectO2_00a7b610 g_011f3f28(g_011f3f28_arg0, g_011f3f28_arg1);
 // @fnv 0x00fb4f40
@@ -88,13 +93,13 @@ GlobalObjectO2_00a7b610 g_011f3f30(g_011f3f30_arg0, g_011f3f30_arg1);
 // @fnv 0x00fb4f60
 GlobalObjectO2_00a7b610 g_011f3f38(g_011f3f38_arg0, g_011f3f38_arg1);
 // @fnv 0x00fb4f80
-GlobalObjectO2_00a7b610 g_011f3f48(g_011f3f48_arg0, g_011f3f48_arg1);
+GlobalObjectO2_00a7b610 NiSequence_ms_RTTI(g_011f3f48_arg0, g_011f3f48_arg1);
 // @fnv 0x00fb4fa0
-GlobalObjectO2_00a7b610 g_011f3f50(g_011f3f50_arg0, g_011f3f50_arg1);
+GlobalObjectO2_00a7b610 NiRotData_ms_RTTI(g_011f3f50_arg0, g_011f3f50_arg1);
 // @fnv 0x00fb4fc0
 GlobalObjectO2_00a7b610 g_011f3f58(g_011f3f58_arg0, g_011f3f58_arg1);
 // @fnv 0x00fb4fe0
-GlobalObjectO2_00a7b610 g_011f3f60(g_011f3f60_arg0, g_011f3f60_arg1);
+GlobalObjectO2_00a7b610 NiQuaternionInterpolator_ms_RTTI(g_011f3f60_arg0, g_011f3f60_arg1);
 // @fnv 0x00fb5000
 GlobalObjectO2_00a7b610 g_011f3f68(g_011f3f68_arg0, g_011f3f68_arg1);
 // @fnv 0x00fb5020
@@ -106,15 +111,15 @@ GlobalObjectO2_00a7b610 g_011f3f88(g_011f3f88_arg0, g_011f3f88_arg1);
 // @fnv 0x00fb5080
 GlobalObjectO2_00a7b610 g_011f3f90(g_011f3f90_arg0, g_011f3f90_arg1);
 // @fnv 0x00fb50a0
-GlobalObjectO2_00a7b610 g_011f3f98(g_011f3f98_arg0, g_011f3f98_arg1);
+GlobalObjectO2_00a7b610 NiLookAtController_ms_RTTI(g_011f3f98_arg0, g_011f3f98_arg1);
 // @fnv 0x00fb50c0
-GlobalObjectO2_00a7b610 g_011f3fa0(g_011f3fa0_arg0, g_011f3fa0_arg1);
+GlobalObjectO2_00a7b610 NiLightDimmerController_ms_RTTI(g_011f3fa0_arg0, g_011f3fa0_arg1);
 // @fnv 0x00fb50e0
 GlobalObjectO2_00a7b610 g_011f3fa8(g_011f3fa8_arg0, g_011f3fa8_arg1);
 // @fnv 0x00fb5100
-GlobalObjectO2_00a7b610 g_011f3fb4(g_011f3fb4_arg0, g_011f3fb4_arg1);
+GlobalObjectO2_00a7b610 NiKeyframeManager_ms_RTTI(g_011f3fb4_arg0, g_011f3fb4_arg1);
 // @fnv 0x00fb5120
-GlobalObjectO2_00a7b610 g_011f3fbc(g_011f3fbc_arg0, g_011f3fbc_arg1);
+GlobalObjectO2_00a7b610 NiTransformData_ms_RTTI(g_011f3fbc_arg0, g_011f3fbc_arg1);
 // @fnv 0x00fb5140
 GlobalObjectO2_00a7b610 g_011f3fc4(g_011f3fc4_arg0, g_011f3fc4_arg1);
 // @fnv 0x00fb5160
@@ -130,9 +135,9 @@ GlobalObjectO2_00a7b610 g_011f3ff4(g_011f3ff4_arg0, g_011f3ff4_arg1);
 // @fnv 0x00fb5250
 GlobalObjectO2_00a7b610 g_011f3ffc(g_011f3ffc_arg0, g_011f3ffc_arg1);
 // @fnv 0x00fb52c0
-GlobalObjectO2_00a7b610 g_011f4004(g_011f4004_arg0, g_011f4004_arg1);
+GlobalObjectO2_00a7b610 NiBSplineCompTransformInterpolator_ms_RTTI(g_011f4004_arg0, g_011f4004_arg1);
 // @fnv 0x00fb52e0
-GlobalObjectO2_00a7b610 g_011f4014(g_011f4014_arg0, g_011f4014_arg1);
+GlobalObjectO2_00a7b610 NiBSplineCompPoint3Interpolator_ms_RTTI(g_011f4014_arg0, g_011f4014_arg1);
 // @fnv 0x00fb5300
 GlobalObjectO2_00a7b610 g_011f401c(g_011f401c_arg0, g_011f401c_arg1);
 // @fnv 0x00fb5320
@@ -140,15 +145,15 @@ GlobalObjectO2_00a7b610 g_011f4024(g_011f4024_arg0, g_011f4024_arg1);
 // @fnv 0x00fb5340
 GlobalObjectO2_00a7b610 g_011f402c(g_011f402c_arg0, g_011f402c_arg1);
 // @fnv 0x00fb5360
-GlobalObjectO2_00a7b610 g_011f4034(g_011f4034_arg0, g_011f4034_arg1);
+GlobalObjectO2_00a7b610 NiBSplineData_ms_RTTI(g_011f4034_arg0, g_011f4034_arg1);
 // @fnv 0x00fb5380
 GlobalObjectO2_00a7b610 g_011f403c(g_011f403c_arg0, g_011f403c_arg1);
 // @fnv 0x00fb53a0
-GlobalObjectO2_00a7b610 g_011f4044(g_011f4044_arg0, g_011f4044_arg1);
+GlobalObjectO2_00a7b610 NiBoolTimelineInterpolator_ms_RTTI(g_011f4044_arg0, g_011f4044_arg1);
 // @fnv 0x00fb53c0
 GlobalObjectO2_00a7b610 g_011f404c(g_011f404c_arg0, g_011f404c_arg1);
 // @fnv 0x00fb53e0
-GlobalObjectO2_00a7b610 g_011f4054(g_011f4054_arg0, g_011f4054_arg1);
+GlobalObjectO2_00a7b610 NiBoolData_ms_RTTI(g_011f4054_arg0, g_011f4054_arg1);
 // @fnv 0x00fb5400
 GlobalObjectO2_00a7b610 g_011f405c(g_011f405c_arg0, g_011f405c_arg1);
 // @fnv 0x00fb5420
@@ -156,65 +161,85 @@ GlobalObjectO2_00a7b610 g_011f4064(g_011f4064_arg0, g_011f4064_arg1);
 // @fnv 0x00fb5440
 GlobalObjectO2_00a7b610 g_011f406c(g_011f406c_arg0, g_011f406c_arg1);
 // @fnv 0x00fb5460
-GlobalObjectO2_00a7b610 g_011f4074(g_011f4074_arg0, g_011f4074_arg1);
+GlobalObjectO2_00a7b610 NiBlendColorInterpolator_ms_RTTI(g_011f4074_arg0, g_011f4074_arg1);
 // @fnv 0x00fb5480
 GlobalObjectO2_00a7b610 g_011f407c(g_011f407c_arg0, g_011f407c_arg1);
 // @fnv 0x00fb54a0
-GlobalObjectO2_00a7b610 g_011f4084(g_011f4084_arg0, g_011f4084_arg1);
+GlobalObjectO2_00a7b610 NiAlphaController_ms_RTTI(g_011f4084_arg0, g_011f4084_arg1);
 // @fnv 0x00fb54c0
-GlobalObjectO2_00a7b610 g_011f4100(g_011f4100_arg0, g_011f4100_arg1);
+// pdb: `dynamic initializer for 'NiGeomMorpherUpdateTask::ms_RTTI'' | NiGeomMorpherUpdateTask.obj | debug, unique string literal, high
+GlobalObjectO2_00a7b610 NiGeomMorpherUpdateTask_ms_RTTI(g_011f4100_arg0, g_011f4100_arg1);
 // @fnv 0x00fb5510
+// pdb: `dynamic initializer for 'NiInterpolator::ms_RTTI'' | NiInterpolator.obj | debug, unique string literal, high
 GlobalObjectO2_00a7b610 g_011f4200(g_011f4200_arg0, g_011f4200_arg1);
 // @fnv 0x00fb5560
+// pdb: `dynamic initializer for 'NiExtraDataController::ms_RTTI'' | NiExtraDataController.obj | debug, unique string literal, high
 GlobalObjectO2_00a7b610 g_011f4218(g_011f4218_arg0, g_011f4218_arg1);
 // @fnv 0x00fb5580
+// pdb: `dynamic initializer for 'NiFloatInterpController::ms_RTTI'' | NiFloatInterpController.obj | debug, unique string literal, high
 GlobalObjectO2_00a7b610 g_011f4220(g_011f4220_arg0, g_011f4220_arg1);
 // @fnv 0x00fb55a0
+// pdb: `dynamic initializer for 'NiBoolInterpController::ms_RTTI'' | NiBoolInterpController.obj | debug, unique string literal, high
 GlobalObjectO2_00a7b610 g_011f4228(g_011f4228_arg0, g_011f4228_arg1);
 // @fnv 0x00fb55c0
+// pdb: `dynamic initializer for 'NiFloatController::ms_RTTI'' | NiFloatController.obj | debug, unique string literal, high
 GlobalObjectO2_00a7b610 g_011f4230(g_011f4230_arg0, g_011f4230_arg1);
 // @fnv 0x00fb55e0
+// pdb: `dynamic initializer for 'NiPoint3InterpController::ms_RTTI'' | NiPoint3InterpController.obj | debug, unique string literal, high
 GlobalObjectO2_00a7b610 g_011f4238(g_011f4238_arg0, g_011f4238_arg1);
 // @fnv 0x00fb5600
+// pdb: `dynamic initializer for 'NiBSplineInterpolator::ms_RTTI'' | NiBSplineInterpolator.obj | debug, unique string literal, high
 GlobalObjectO2_00a7b610 g_011f4240(g_011f4240_arg0, g_011f4240_arg1);
 // @fnv 0x00fb5620
+// pdb: `dynamic initializer for 'NiAVObject::ms_RTTI'' | NiAVObject.obj | debug, unique string literal, high
 GlobalObjectO2_00a7b610 g_011f4280(g_011f4280_arg0, g_011f4280_arg1);
 // @fnv 0x00fb5650
+// pdb: `dynamic initializer for 'NiObjectNET::ms_RTTI'' | NiObjectNET.obj | debug, unique string literal, high
 GlobalObjectO2_00a7b610 g_011f4304(g_011f4304_arg0, g_011f4304_arg1);
 // @fnv 0x00fb5690
-GlobalObjectO2_00a7b610 g_011f4408(g_011f4408_arg0, g_011f4408_arg1);
+// pdb: `dynamic initializer for 'NiMainSDMObject'' | NiObject.obj | debug, object-file run extension, low
+GlobalObjectO2_00a7b610 NiAlphaProperty_ms_RTTI(g_011f4408_arg0, g_011f4408_arg1);
 // @fnv 0x00fb56d0
+// pdb: `dynamic initializer for 'NiObject::ms_RTTI'' | NiObject.obj | debug, unique string literal, high
 GlobalObjectO2_00a7b610 g_011f4418(g_011f4418_arg0, (const char*)0);
 // @fnv 0x00fb56f0
+// pdb: `dynamic initializer for 'NiProperty::ms_RTTI'' | NiProperty.obj | debug, unique string literal, high
 GlobalObjectO2_00a7b610 g_011f4420(g_011f4420_arg0, g_011f4420_arg1);
 // @fnv 0x00fb5710
 GlobalObjectO2_00a7b610 g_011f4428(g_011f4428_arg0, g_011f4428_arg1);
 // @fnv 0x00fb5730
 GlobalObjectO2_00a7b610 g_011f4430(g_011f4430_arg0, g_011f4430_arg1);
 // @fnv 0x00fb5760
-GlobalObjectO2_00a7b610 g_011f443c(g_011f443c_arg0, g_011f443c_arg1);
+// pdb: `dynamic initializer for 'NiZBufferProperty::ms_RTTI'' | NiZBufferProperty.obj | debug, unique string literal, high
+GlobalObjectO2_00a7b610 NiZBufferProperty_ms_RTTI(g_011f443c_arg0, g_011f443c_arg1);
 // @fnv 0x00fb5790
 GlobalObjectO2_00a7b610 g_011f444c(g_011f444c_arg0, g_011f444c_arg1);
 // @fnv 0x00fb57b0
 GlobalObjectO2_00a7b610 g_011f4454(g_011f4454_arg0, g_011f4454_arg1);
 // @fnv 0x00fb57e0
+// pdb: `dynamic initializer for 'NiTexture::ms_RTTI'' | NiTexture.obj | debug, unique string literal, high
 GlobalObjectO2_00a7b610 g_011f450c(g_011f450c_arg0, g_011f450c_arg1);
 // @fnv 0x00fb5870
+// pdb: `dynamic initializer for 'NiRenderer::ms_RTTI'' | NiRenderer.obj | debug, unique string literal, high
 GlobalObjectO2_00a7b610 g_011f4758(g_011f4758_arg0, g_011f4758_arg1);
 // @fnv 0x00fb58f0
+// pdb: `dynamic initializer for 'NiGeometryData::ms_RTTI'' | NiGeometryData.obj | debug, unique string literal, high
 GlobalObjectO2_00a7b610 g_011f4884(g_011f4884_arg0, g_011f4884_arg1);
 // @fnv 0x00fb5930
+// pdb: `dynamic initializer for 'NiDynamicEffect::ms_RTTI'' | NiDynamicEffect.obj | debug, unique string literal, high
 GlobalObjectO2_00a7b610 g_011f4988(g_011f4988_arg0, g_011f4988_arg1);
 // @fnv 0x00fb5950
+// pdb: `dynamic initializer for 'NiCullingProcess::ms_RTTI'' | NiCullingProcess.obj | debug, unique string literal, high
 GlobalObjectO2_00a7b610 g_011f4990(g_011f4990_arg0, (const char*)0);
 // @fnv 0x00fb5970
-GlobalObjectO2_00a7b610 g_011f49a4(g_011f49a4_arg0, g_011f49a4_arg1);
+GlobalObjectO2_00a7b610 NiTexturingProperty_ms_RTTI(g_011f49a4_arg0, g_011f49a4_arg1);
 // @fnv 0x00fb59f0
 GlobalObjectO2_00a7b610 g_011f49d8(g_011f49d8_arg0, g_011f49d8_arg1);
 // @fnv 0x00fb5a30
+// pdb: `dynamic initializer for 'NiTimeController::ms_RTTI'' | NiTimeController.obj | debug, unique string literal, high
 GlobalObjectO2_00a7b610 g_011f49e4(g_011f49e4_arg0, g_011f49e4_arg1);
 // @fnv 0x00fb5aa0
-GlobalObjectO2_00a7b610 g_011f4a04(g_011f4a04_arg0, g_011f4a04_arg1);
+GlobalObjectO2_00a7b610 NiDefaultAVObjectPalette_ms_RTTI(g_011f4a04_arg0, g_011f4a04_arg1);
 // @fnv 0x00fb5ac0
 GlobalObjectO2_00a7b610 g_011f4a0c(g_011f4a0c_arg0, g_011f4a0c_arg1);
 // @fnv 0x00fb5af0
@@ -222,6 +247,7 @@ GlobalObjectO2_00a7b610 g_011f4a18(g_011f4a18_arg0, g_011f4a18_arg1);
 // @fnv 0x00fb5b10
 GlobalObjectO2_00a7b610 g_011f4a20(g_011f4a20_arg0, g_011f4a20_arg1);
 // @fnv 0x00fb5b30
+// pdb: `dynamic initializer for 'NiLight::ms_RTTI'' | NiLight.obj | debug, unique string literal, high
 GlobalObjectO2_00a7b610 g_011f4a28(g_011f4a28_arg0, g_011f4a28_arg1);
 // @fnv 0x00fb5b50
 GlobalObjectO2_00a7b610 g_011f4a30(g_011f4a30_arg0, g_011f4a30_arg1);
@@ -230,9 +256,9 @@ GlobalObjectO2_00a7b610 g_011f4a38(g_011f4a38_arg0, g_011f4a38_arg1);
 // @fnv 0x00fb5b90
 GlobalObjectO2_00a7b610 g_011f4a40(g_011f4a40_arg0, g_011f4a40_arg1);
 // @fnv 0x00fb5bb0
-GlobalObjectO2_00a7b610 g_011f4a48(g_011f4a48_arg0, g_011f4a48_arg1);
+GlobalObjectO2_00a7b610 NiLines_ms_RTTI(g_011f4a48_arg0, g_011f4a48_arg1);
 // @fnv 0x00fb5bd0
-GlobalObjectO2_00a7b610 g_011f4a5c(g_011f4a5c_arg0, g_011f4a5c_arg1);
+GlobalObjectO2_00a7b610 NiMaterialProperty_ms_RTTI(g_011f4a5c_arg0, g_011f4a5c_arg1);
 // @fnv 0x00fb5c00
 GlobalObjectO2_00a7b610 g_011f4a68(g_011f4a68_arg0, g_011f4a68_arg1);
 // @fnv 0x00fb5c20
@@ -242,30 +268,35 @@ GlobalObjectO2_00a7b610 g_011f4a80(g_011f4a80_arg0, g_011f4a80_arg1);
 // @fnv 0x00fb5c70
 GlobalObjectO2_00a7b610 g_011f4a88(g_011f4a88_arg0, g_011f4a88_arg1);
 // @fnv 0x00fb5c90
-GlobalObjectO2_00a7b610 g_011f4a90(g_011f4a90_arg0, g_011f4a90_arg1);
+GlobalObjectO2_00a7b610 NiPixelData_ms_RTTI(g_011f4a90_arg0, g_011f4a90_arg1);
 // @fnv 0x00fb5cb0
 GlobalObjectO2_00a7b610 g_011f4a98(g_011f4a98_arg0, g_011f4a98_arg1);
 // @fnv 0x00fb5cd0
 GlobalObjectO2_00a7b610 g_011f4aa0(g_011f4aa0_arg0, g_011f4aa0_arg1);
 // @fnv 0x00fb5cf0
-GlobalObjectO2_00a7b610 g_011f4aac(g_011f4aac_arg0, g_011f4aac_arg1);
+GlobalObjectO2_00a7b610 BSPackedAdditionalGeometryData_ms_RTTI(g_011f4aac_arg0, g_011f4aac_arg1);
 // @fnv 0x00fb5d10
 GlobalObjectO2_00a7b610 g_011f4ab8(g_011f4ab8_arg0, g_011f4ab8_arg1);
 // @fnv 0x00fb5d30
+// pdb: `dynamic initializer for 'NiRenderedTexture::ms_RTTI'' | NiRenderedTexture.obj | debug, unique string literal, high
 GlobalObjectO2_00a7b610 g_011f4ac4(g_011f4ac4_arg0, g_011f4ac4_arg1);
 // @fnv 0x00fb5d50
+// pdb: `dynamic initializer for 'NiGeometry::ms_RTTI'' | NiGeometry.obj | debug, unique string literal, high
 GlobalObjectO2_00a7b610 g_011f4acc(g_011f4acc_arg0, g_011f4acc_arg1);
 // @fnv 0x00fb5d70
+// pdb: `dynamic initializer for 'NiCollisionObject::ms_RTTI'' | NiCollisionObject.obj | debug, unique string literal, high
 GlobalObjectO2_00a7b610 g_011f4ad4(g_011f4ad4_arg0, g_011f4ad4_arg1);
 // @fnv 0x00fb5d90
 GlobalObjectO2_00a7b610 g_011f5ae0(g_011f5ae0_arg0, g_011f5ae0_arg1);
 // @fnv 0x00fb5dc0
 GlobalObjectO2_00a7b610 g_011f5af4(g_011f5af4_arg0, g_011f5af4_arg1);
 // @fnv 0x00fb5de0
+// pdb: `dynamic initializer for 'NiTask::ms_RTTI'' | NiTask.obj | debug, unique string literal, high
 GlobalObjectO2_00a7b610 g_011f5afc(g_011f5afc_arg0, g_011f5afc_arg1);
 // @fnv 0x00fb5e00
 GlobalObjectO2_00a7b610 g_011f5b0c(g_011f5b0c_arg0, g_011f5b0c_arg1);
 // @fnv 0x00fb5e20
+// pdb: `dynamic initializer for 'NiParallelUpdateTaskManager::SignalTask::ms_RTTI'' | NiParallelUpdateTaskManager.obj | debug, unique string literal, high
 GlobalObjectO2_00a7b610 g_011f5b14(g_011f5b14_arg0, g_011f5b14_arg1);
 // @fnv 0x00fb5e40
 GlobalObjectO2_00a7b610 g_011f5b1c(g_011f5b1c_arg0, g_011f5b1c_arg1);
@@ -274,71 +305,80 @@ GlobalObjectO2_00a7b610 g_011f5b24(g_011f5b24_arg0, g_011f5b24_arg1);
 // @fnv 0x00fb5e80
 GlobalObjectO2_00a7b610 g_011f5b2c(g_011f5b2c_arg0, g_011f5b2c_arg1);
 // @fnv 0x00fb5ea0
+// pdb: `dynamic initializer for 'BSResizableTriShape::ms_RTTI'' | BSResizableTriShape.obj | debug, unique string literal, high
 GlobalObjectO2_00a7b610 g_011f5b34(g_011f5b34_arg0, g_011f5b34_arg1);
 // @fnv 0x00fb5ec0
-GlobalObjectO2_00a7b610 g_011f5b40(g_011f5b40_arg0, g_011f5b40_arg1);
+GlobalObjectO2_00a7b610 BSSegmentedTriShape_ms_RTTI(g_011f5b40_arg0, g_011f5b40_arg1);
 // @fnv 0x00fb5ee0
-GlobalObjectO2_00a7b610 g_011f5b48(g_011f5b48_arg0, g_011f5b48_arg1);
+GlobalObjectO2_00a7b610 NiScreenElements_ms_RTTI(g_011f5b48_arg0, g_011f5b48_arg1);
 // @fnv 0x00fb5f00
-GlobalObjectO2_00a7b610 g_011f5b50(g_011f5b50_arg0, g_011f5b50_arg1);
+GlobalObjectO2_00a7b610 NiScreenElementsData_ms_RTTI(g_011f5b50_arg0, g_011f5b50_arg1);
 // @fnv 0x00fb5f20
+// pdb: `dynamic initializer for 'NiAVObjectPalette::ms_RTTI'' | NiAVObjectPalette.obj | debug, unique string literal, high
 GlobalObjectO2_00a7b610 g_011f5b58(g_011f5b58_arg0, g_011f5b58_arg1);
 // @fnv 0x00fb5fb0
-GlobalObjectO2_00a7b610 g_011f5b60(g_011f5b60_arg0, g_011f5b60_arg1);
+GlobalObjectO2_00a7b610 NiFloatsExtraData_ms_RTTI(g_011f5b60_arg0, g_011f5b60_arg1);
 // @fnv 0x00fb5fd0
-GlobalObjectO2_00a7b610 g_011f5b68(g_011f5b68_arg0, g_011f5b68_arg1);
+GlobalObjectO2_00a7b610 NiColorExtraData_ms_RTTI(g_011f5b68_arg0, g_011f5b68_arg1);
 // @fnv 0x00fb5ff0
+// pdb: `dynamic initializer for 'NiTriBasedGeom::ms_RTTI'' | NiTriBasedGeom.obj | debug, unique string literal, high
 GlobalObjectO2_00a7b610 g_011f5b70(g_011f5b70_arg0, g_011f5b70_arg1);
 // @fnv 0x00fb6010
 GlobalObjectO2_00a7b610 g_011f5b78(g_011f5b78_arg0, g_011f5b78_arg1);
 // @fnv 0x00fb6030
 GlobalObjectO2_00a7b610 g_011f5b88(g_011f5b88_arg0, g_011f5b88_arg1);
 // @fnv 0x00fb6050
+// pdb: `dynamic initializer for 'NiTriBasedGeomData::ms_RTTI'' | NiTriBasedGeomData.obj | debug, unique string literal, high
 GlobalObjectO2_00a7b610 g_011f5b90(g_011f5b90_arg0, g_011f5b90_arg1);
 // @fnv 0x00fb6070
-GlobalObjectO2_00a7b610 g_011f5c08(g_011f5c08_arg0, g_011f5c08_arg1);
+GlobalObjectO2_00a7b610 NiPalette_ms_RTTI(g_011f5c08_arg0, g_011f5c08_arg1);
 // @fnv 0x00fb60b0
+// pdb: `dynamic initializer for 'Ni2DBuffer::ms_RTTI'' | Ni2DBuffer.obj | debug, unique string literal, high
 GlobalObjectO2_00a7b610 g_011f5d00(g_011f5d00_arg0, g_011f5d00_arg1);
 // @fnv 0x00fb60d0
+// pdb: `dynamic initializer for 'NiShader::ms_RTTI'' | NiShader.obj | debug, unique string literal, high
 GlobalObjectO2_00a7b610 g_011f5d08(g_011f5d08_arg0, (const char*)0);
 // @fnv 0x00fb60f0
+// pdb: `dynamic initializer for 'NiShader::NiShaderInstanceDescriptor::ms_RTTI'' | NiShader.obj | debug, unique string literal, high
 GlobalObjectO2_00a7b610 g_011f5d10(g_011f5d10_arg0, (const char*)0);
 // @fnv 0x00fb6110
+// pdb: `dynamic initializer for 'NiTaskManager::ms_RTTI'' | NiTaskManager.obj | debug, unique string literal, high
 GlobalObjectO2_00a7b610 g_011f5d18(g_011f5d18_arg0, g_011f5d18_arg1);
 // @fnv 0x00fb6130
 GlobalObjectO2_00a7b610 g_011f5d20(g_011f5d20_arg0, g_011f5d20_arg1);
 // @fnv 0x00fb6160
+// pdb: `dynamic initializer for 'NiMaterial::ms_RTTI'' | NiMaterial.obj | debug, unique string literal, high
 GlobalObjectO2_00a7b610 g_011f5e38(g_011f5e38_arg0, (const char*)0);
 // @fnv 0x00fb6190
-GlobalObjectO2_00a7b610 g_011f5e54(g_011f5e54_arg0, g_011f5e54_arg1);
+GlobalObjectO2_00a7b610 NiScreenGeometryData_ms_RTTI(g_011f5e54_arg0, g_011f5e54_arg1);
 // @fnv 0x00fb61b0
 GlobalObjectO2_00a7b610 g_011f5e5c(g_011f5e5c_arg0, g_011f5e5c_arg1);
 // @fnv 0x00fb61d0
 GlobalObjectO2_00a7b610 g_011f5e64(g_011f5e64_arg0, g_011f5e64_arg1);
 // @fnv 0x00fb61f0
-GlobalObjectO2_00a7b610 g_011f5e6c(g_011f5e6c_arg0, g_011f5e6c_arg1);
+GlobalObjectO2_00a7b610 NiScreenSpaceCamera_ms_RTTI(g_011f5e6c_arg0, g_011f5e6c_arg1);
 // @fnv 0x00fb6210
-GlobalObjectO2_00a7b610 g_011f5e84(g_011f5e84_arg0, g_011f5e84_arg1);
+GlobalObjectO2_00a7b610 NiVectorExtraData_ms_RTTI(g_011f5e84_arg0, g_011f5e84_arg1);
 // @fnv 0x00fb6230
 GlobalObjectO2_00a7b610 g_011f5e8c(g_011f5e8c_arg0, g_011f5e8c_arg1);
 // @fnv 0x00fb6250
-GlobalObjectO2_00a7b610 g_011f5e94(g_011f5e94_arg0, g_011f5e94_arg1);
+GlobalObjectO2_00a7b610 NiTextureEffect_ms_RTTI(g_011f5e94_arg0, g_011f5e94_arg1);
 // @fnv 0x00fb62a0
-GlobalObjectO2_00a7b610 g_011f5eac(g_011f5eac_arg0, g_011f5eac_arg1);
+GlobalObjectO2_00a7b610 NiSwitchStringExtraData_ms_RTTI(g_011f5eac_arg0, g_011f5eac_arg1);
 // @fnv 0x00fb62c0
 GlobalObjectO2_00a7b610 g_011f5eb4(g_011f5eb4_arg0, g_011f5eb4_arg1);
 // @fnv 0x00fb62e0
-GlobalObjectO2_00a7b610 g_011f5ebc(g_011f5ebc_arg0, g_011f5ebc_arg1);
+GlobalObjectO2_00a7b610 NiStringsExtraData_ms_RTTI(g_011f5ebc_arg0, g_011f5ebc_arg1);
 // @fnv 0x00fb6300
-GlobalObjectO2_00a7b610 g_011f5ec4(g_011f5ec4_arg0, g_011f5ec4_arg1);
+GlobalObjectO2_00a7b610 NiSpotLight_ms_RTTI(g_011f5ec4_arg0, g_011f5ec4_arg1);
 // @fnv 0x00fb6320
-GlobalObjectO2_00a7b610 g_011f5ecc(g_011f5ecc_arg0, g_011f5ecc_arg1);
+GlobalObjectO2_00a7b610 NiSpecularProperty_ms_RTTI(g_011f5ecc_arg0, g_011f5ecc_arg1);
 // @fnv 0x00fb6350
-GlobalObjectO2_00a7b610 g_011f5ed8(g_011f5ed8_arg0, g_011f5ed8_arg1);
+GlobalObjectO2_00a7b610 NiSortAdjustNode_ms_RTTI(g_011f5ed8_arg0, g_011f5ed8_arg1);
 // @fnv 0x00fb6370
 GlobalObjectO2_00a7b610 g_011f5ee0(g_011f5ee0_arg0, g_011f5ee0_arg1);
 // @fnv 0x00fb6390
-GlobalObjectO2_00a7b610 g_011f5ee8(g_011f5ee8_arg0, g_011f5ee8_arg1);
+GlobalObjectO2_00a7b610 NiScreenLODData_ms_RTTI(g_011f5ee8_arg0, g_011f5ee8_arg1);
 // @fnv 0x00fb63b0
 GlobalObjectO2_00a7b610 g_011f5ef0(g_011f5ef0_arg0, g_011f5ef0_arg1);
 // @fnv 0x00fb63d0
@@ -346,11 +386,11 @@ GlobalObjectO2_00a7b610 g_011f5ef8(g_011f5ef8_arg0, g_011f5ef8_arg1);
 // @fnv 0x00fb63f0
 GlobalObjectO2_00a7b610 g_011f5f04(g_011f5f04_arg0, g_011f5f04_arg1);
 // @fnv 0x00fb6410
-GlobalObjectO2_00a7b610 g_011f5f0c(g_011f5f0c_arg0, g_011f5f0c_arg1);
+GlobalObjectO2_00a7b610 NiParticleMeshesData_ms_RTTI(g_011f5f0c_arg0, g_011f5f0c_arg1);
 // @fnv 0x00fb6430
-GlobalObjectO2_00a7b610 g_011f5f14(g_011f5f14_arg0, g_011f5f14_arg1);
+GlobalObjectO2_00a7b610 NiParticleMeshes_ms_RTTI(g_011f5f14_arg0, g_011f5f14_arg1);
 // @fnv 0x00fb6450
-GlobalObjectO2_00a7b610 g_011f5f1c(g_011f5f1c_arg0, g_011f5f1c_arg1);
+GlobalObjectO2_00a7b610 NiLODNode_ms_RTTI(g_011f5f1c_arg0, g_011f5f1c_arg1);
 // @fnv 0x00fb6470
 GlobalObjectO2_00a7b610 g_011f5f24(g_011f5f24_arg0, g_011f5f24_arg1);
 // @fnv 0x00fb6490
@@ -358,11 +398,11 @@ GlobalObjectO2_00a7b610 g_011f5f2c(g_011f5f2c_arg0, g_011f5f2c_arg1);
 // @fnv 0x00fb64b0
 GlobalObjectO2_00a7b610 g_011f5f34(g_011f5f34_arg0, g_011f5f34_arg1);
 // @fnv 0x00fb64e0
-GlobalObjectO2_00a7b610 g_011f5f40(g_011f5f40_arg0, g_011f5f40_arg1);
+GlobalObjectO2_00a7b610 NiFloatExtraData_ms_RTTI(g_011f5f40_arg0, g_011f5f40_arg1);
 // @fnv 0x00fb6500
-GlobalObjectO2_00a7b610 g_011f5f48(g_011f5f48_arg0, g_011f5f48_arg1);
+GlobalObjectO2_00a7b610 NiDitherProperty_ms_RTTI(g_011f5f48_arg0, g_011f5f48_arg1);
 // @fnv 0x00fb6530
-GlobalObjectO2_00a7b610 g_011f5f54(g_011f5f54_arg0, g_011f5f54_arg1);
+GlobalObjectO2_00a7b610 NiBSPNode_ms_RTTI(g_011f5f54_arg0, g_011f5f54_arg1);
 // @fnv 0x00fb6550
 GlobalObjectO2_00a7b610 g_011f5f5c(g_011f5f5c_arg0, g_011f5f5c_arg1);
 // @fnv 0x00fb6570
@@ -372,141 +412,186 @@ GlobalObjectO2_00a7b610 g_011f5f6c(g_011f5f6c_arg0, g_011f5f6c_arg1);
 // @fnv 0x00fb65b0
 GlobalObjectO2_00a7b610 g_011f5f74(g_011f5f74_arg0, g_011f5f74_arg1);
 // @fnv 0x00fb6600
-GlobalObjectO2_00a7b610 g_011f603c(g_011f603c_arg0, g_011f603c_arg1);
+// pdb: `dynamic initializer for 'NiDepthStencilBuffer::ms_RTTI'' | NiDepthStencilBuffer.obj | debug, unique string literal, high
+GlobalObjectO2_00a7b610 NiDepthStencilBuffer_ms_RTTI(g_011f603c_arg0, g_011f603c_arg1);
 // @fnv 0x00fb6620
-GlobalObjectO2_00a7b610 g_011f6048(g_011f6048_arg0, g_011f6048_arg1);
+// pdb: `dynamic initializer for 'NiSingleShaderMaterial::ms_RTTI'' | NiSingleShaderMaterial.obj | debug, unique string literal, high
+GlobalObjectO2_00a7b610 NiSingleShaderMaterial_ms_RTTI(g_011f6048_arg0, g_011f6048_arg1);
 // @fnv 0x00fb6640
+// pdb: `dynamic initializer for 'NiLODData::ms_RTTI'' | NiLODData.obj | debug, unique string literal, high
 GlobalObjectO2_00a7b610 g_011f6050(g_011f6050_arg0, g_011f6050_arg1);
 // @fnv 0x00fb6660
+// pdb: `dynamic initializer for 'NiBackToFrontAccumulator::ms_RTTI'' | NiBackToFrontAccumulator.obj | debug, unique string literal, high
 GlobalObjectO2_00a7b610 g_011f6058(g_011f6058_arg0, g_011f6058_arg1);
 // @fnv 0x00fb6680
+// pdb: `dynamic initializer for 'NiAccumulator::ms_RTTI'' | NiAccumulator.obj | debug, unique string literal, high
 GlobalObjectO2_00a7b610 g_011f6060(g_011f6060_arg0, g_011f6060_arg1);
 // @fnv 0x00fb94d0
 GlobalObjectO2_00a7b610 g_011f9140(g_011f9140_arg0, g_011f9140_arg1);
 // @fnv 0x00fb94f0
 // @fnv 0x00fdc780
+// pdb: `dynamic initializer for 'BSFadeNode::iMinNearDistance'' | BSFadeNode.obj | debug, unique string literal, high
 GlobalObjectO2_0045cfe0 g_011f9148(g_011f9148_arg0, 400);
 // @fnv 0x00fb9550
 // @fnv 0x00fdcbf0
+// pdb: `dynamic initializer for 'bDo30VFog'' | BSShaderManager.obj | debug, unique string literal, high
 GlobalObjectO2_0045cf30 g_011f94d4(g_011f94d4_arg0, 1);
 // @fnv 0x00fb9570
 // @fnv 0x00fdcc00
+// pdb: `dynamic initializer for 'bImageSpace'' | BSShaderManager.obj | debug, unique string literal, high
 GlobalObjectO2_0045cf30 g_011f94e0(g_011f94e0_arg0, 1);
 // @fnv 0x00fb9590
 // @fnv 0x00fdcc20
+// pdb: `dynamic initializer for 'iMaxAnisotropy'' | BSShaderManager.obj | debug, unique string literal, high
 GlobalObjectO2_004a4a40 g_011f94ec(g_011f94ec_arg0, 8);
 // @fnv 0x00fb95b0
 // @fnv 0x00fdcc10
+// pdb: `dynamic initializer for 'bDoTestHDR'' | BSShaderManager.obj | debug, unique string literal, high
 GlobalObjectO2_0045cf30 g_011f94f8(g_011f94f8_arg0, 0);
 // @fnv 0x00fb95d0
 GlobalObjectO2_00b54280 g_011f9504;
 // @fnv 0x00fb9850
-GlobalObjectO2_00a7b610 g_011f9648(g_011f9648_arg0, g_011f9648_arg1);
+// pdb: `dynamic initializer for 'DistantLODShaderProperty::ms_RTTI'' | DistantLODShaderProperty.obj | debug, unique string literal, high
+GlobalObjectO2_00a7b610 DistantLODShaderProperty_ms_RTTI(g_011f9648_arg0, g_011f9648_arg1);
 // @fnv 0x00fb9870
 // @fnv 0x00fdcc50
+// pdb: `dynamic initializer for 'iDistantLODGroupWidth'' | DistantLODShaderProperty.obj | debug, unique string literal, high
 GlobalObjectO2_0045cfe0 g_011f9650(g_011f9650_arg0, 8);
 // @fnv 0x00fb9890
 // @fnv 0x00fdcc60
+// pdb: `dynamic initializer for 'bDoRadialBlur'' | ImageSpaceEffectRadialBlur.obj | debug, unique string literal, high
 GlobalObjectO2_0045cf30 g_011f9688(g_011f9688_arg0, 1);
 // @fnv 0x00fb98b0
 // @fnv 0x00fdcc70
+// pdb: `dynamic initializer for 'iRadialBlurLevel'' | ImageSpaceEffectRadialBlur.obj | debug, unique string literal, high
 GlobalObjectO2_004a4a40 g_011f9694(g_011f9694_arg0, 0);
 // @fnv 0x00fb98d0
-GlobalObjectO2_00a7b610 g_011f9e80(g_011f9e80_arg0, g_011f9e80_arg1);
+// pdb: `dynamic initializer for 'ShadowSceneNode::ms_RTTI'' | ShadowSceneNode.obj | debug, unique string literal, high
+GlobalObjectO2_00a7b610 ShadowSceneNode_ms_RTTI(g_011f9e80_arg0, g_011f9e80_arg1);
 // @fnv 0x00fb9910
-GlobalObjectO2_00a7b610 g_011f9f00(g_011f9f00_arg0, g_011f9f00_arg1);
+// pdb: `dynamic initializer for 'ShadowSceneNode::SSNLightQueueCrit'' | ShadowSceneNode.obj | debug, object-file run extension, low
+GlobalObjectO2_00a7b610 TallGrassShaderProperty_ms_RTTI(g_011f9f00_arg0, g_011f9f00_arg1);
 // @fnv 0x00fb9930
-GlobalObjectO2_00a7b610 g_011fa000(g_011fa000_arg0, g_011fa000_arg1);
+// pdb: `dynamic initializer for 'BSShaderAccumulator::ms_RTTI'' | BSShaderAccumulator.obj | debug, unique string literal, high
+GlobalObjectO2_00a7b610 BSShaderAccumulator_ms_RTTI(g_011fa000_arg0, g_011fa000_arg1);
 // @fnv 0x00fb9960
 GlobalObjectO2_00a7b610 g_011fa010(g_011fa010_arg0, g_011fa010_arg1);
 // @fnv 0x00fb9980
 GlobalObjectO2_00a7b610 g_011fa018(g_011fa018_arg0, g_011fa018_arg1);
 // @fnv 0x00fb99d0
-GlobalObjectO2_00a7b610 g_011fa05c(g_011fa05c_arg0, g_011fa05c_arg1);
+GlobalObjectO2_00a7b610 BSShaderNoLightingProperty_ms_RTTI(g_011fa05c_arg0, g_011fa05c_arg1);
 // @fnv 0x00fb9a20
 // @fnv 0x00fdccf0
 GlobalObjectO2_00b9fda0 g_011fa310;
 // @fnv 0x00fb9a40
 GlobalObjectO2_00a7b610 g_011fa560(g_011fa560_arg0, g_011fa560_arg1);
 // @fnv 0x00fb9c50
+// pdb: `dynamic initializer for 'ShadowLightShader::ms_RTTI'' | ShadowLightShader.obj | debug, unique string literal, high
 GlobalObjectO2_00a7b610 g_011fed88(g_011fed88_arg0, g_011fed88_arg1);
 // @fnv 0x00fb9c80
-GlobalObjectO2_00a7b610 g_011fedc8(g_011fedc8_arg0, g_011fedc8_arg1);
+// pdb: `dynamic initializer for 'BSShaderBloodSplatter::ms_RTTI'' | BSShaderBloodSplatter.obj | debug, unique string literal, high
+GlobalObjectO2_00a7b610 BSShaderBloodSplatter_ms_RTTI(g_011fedc8_arg0, g_011fedc8_arg1);
 // @fnv 0x00fb9ca0
-GlobalObjectO2_00a7b610 g_011ff0f4(g_011ff0f4_arg0, g_011ff0f4_arg1);
+// pdb: `dynamic initializer for 'BSShaderBloodSplatterProperty::ms_RTTI'' | BSShaderBloodSplatterProperty.obj | debug, unique string literal, high
+GlobalObjectO2_00a7b610 BSShaderBloodSplatterProperty_ms_RTTI(g_011ff0f4_arg0, g_011ff0f4_arg1);
 // @fnv 0x00fb9cc0
-GlobalObjectO2_00a7b610 g_011ff498(g_011ff498_arg0, g_011ff498_arg1);
+// pdb: `dynamic initializer for 'WaterShader::ms_RTTI'' | WaterShader.obj | debug, unique string literal, high
+GlobalObjectO2_00a7b610 WaterShader_ms_RTTI(g_011ff498_arg0, g_011ff498_arg1);
 // @fnv 0x00fb9f40
-GlobalObjectO2_00a7b610 g_011ff8d8(g_011ff8d8_arg0, g_011ff8d8_arg1);
+// pdb: `dynamic initializer for 'SkyShader::ms_RTTI'' | SkyShader.obj | debug, unique string literal, high
+GlobalObjectO2_00a7b610 SkyShader_ms_RTTI(g_011ff8d8_arg0, g_011ff8d8_arg1);
 // @fnv 0x00fba000
+// pdb: `dynamic initializer for 'BSBatchRenderer::ms_RTTI'' | BSBatchRenderer.obj | debug, unique string literal, high
 GlobalObjectO2_00a7b610 g_011ffe3c(g_011ffe3c_arg0, g_011ffe3c_arg1);
 // @fnv 0x00fba0a0
 // @fnv 0x00fdced0
+// pdb: `dynamic initializer for 'iRenderingThread1HWThread'' | MTRenderingSystem.obj | debug, unique string literal, high
 GlobalObjectO2_0045cfe0 g_01200070(g_01200070_arg0, 0);
 // @fnv 0x00fba0c0
 // @fnv 0x00fdcee0
+// pdb: `dynamic initializer for 'iRenderingThread2HWThread'' | MTRenderingSystem.obj | debug, unique string literal, high
 GlobalObjectO2_0045cfe0 g_0120007c(g_0120007c_arg0, 1);
 // @fnv 0x00fba0e0
 // @fnv 0x00fdcec0
 GlobalObjectO2_00ba3690 g_01200088;
 // @fnv 0x00fba110
-GlobalObjectO2_00a7b610 g_012003f8(g_012003f8_arg0, g_012003f8_arg1);
+// pdb: `dynamic initializer for 'ParticleShader::ms_RTTI'' | ParticleShader.obj | debug, unique string literal, high
+GlobalObjectO2_00a7b610 ParticleShader_ms_RTTI(g_012003f8_arg0, g_012003f8_arg1);
 // @fnv 0x00fba130
-GlobalObjectO2_00a7b610 g_01200434(g_01200434_arg0, g_01200434_arg1);
+// pdb: `dynamic initializer for 'ParticleShaderProperty::ms_RTTI'' | ParticleShaderProperty.obj | debug, unique string literal, high
+GlobalObjectO2_00a7b610 ParticleShaderProperty_ms_RTTI(g_01200434_arg0, g_01200434_arg1);
 // @fnv 0x00fba150
-GlobalObjectO2_00a7b610 g_0120043c(g_0120043c_arg0, g_0120043c_arg1);
+// pdb: `dynamic initializer for 'SpeedTreeBillboardShaderProperty::ms_RTTI'' | SpeedTreeBillboardShaderProperty.obj | debug, unique string literal, high
+GlobalObjectO2_00a7b610 SpeedTreeBillboardShaderProperty_ms_RTTI(g_0120043c_arg0, g_0120043c_arg1);
 // @fnv 0x00fba170
+// pdb: `dynamic initializer for 'BSTextureSet::ms_RTTI'' | BSShaderTextureSet.obj | debug, unique string literal, high
 GlobalObjectO2_00a7b610 g_01200444(g_01200444_arg0, g_01200444_arg1);
 // @fnv 0x00fba190
-GlobalObjectO2_00a7b610 g_0120044c(g_0120044c_arg0, g_0120044c_arg1);
+GlobalObjectO2_00a7b610 BSShaderTextureSet_ms_RTTI(g_0120044c_arg0, g_0120044c_arg1);
 // @fnv 0x00fba1b0
 GlobalObjectO2_00a7b610 g_01200464(g_01200464_arg0, g_01200464_arg1);
 // @fnv 0x00fba1d0
-GlobalObjectO2_00a7b610 g_01200508(g_01200508_arg0, g_01200508_arg1);
+// pdb: `dynamic initializer for 'TallGrassShader::ms_RTTI'' | TallGrassShader.obj | debug, unique string literal, high
+GlobalObjectO2_00a7b610 TallGrassShader_ms_RTTI(g_01200508_arg0, g_01200508_arg1);
 // @fnv 0x00fba440
-GlobalObjectO2_00a7b610 g_012005b8(g_012005b8_arg0, g_012005b8_arg1);
+GlobalObjectO2_00a7b610 SkyShaderProperty_ms_RTTI(g_012005b8_arg0, g_012005b8_arg1);
 // @fnv 0x00fba460
+// pdb: `dynamic initializer for 'PrecipitationShader::ms_RTTI'' | PrecipitationShader.obj | debug, unique string literal, high
 GlobalObjectO2_00a7b610 g_012005c0(g_012005c0_arg0, g_012005c0_arg1);
 // @fnv 0x00fba510
-GlobalObjectO2_00a7b610 g_012005fc(g_012005fc_arg0, g_012005fc_arg1);
+// pdb: `dynamic initializer for 'PrecipitationShaderProperty::ms_RTTI'' | PrecipitationShaderProperty.obj | debug, unique string literal, high
+GlobalObjectO2_00a7b610 PrecipitationShaderProperty_ms_RTTI(g_012005fc_arg0, g_012005fc_arg1);
 // @fnv 0x00fba530
-GlobalObjectO2_00a7b610 g_01200610(g_01200610_arg0, g_01200610_arg1);
+// pdb: `dynamic initializer for 'SpeedTreeLeafShader::ms_RTTI'' | SpeedTreeLeafShader.obj | debug, unique string literal, high
+GlobalObjectO2_00a7b610 SpeedTreeLeafShader_ms_RTTI(g_01200610_arg0, g_01200610_arg1);
 // @fnv 0x00fba5f0
+// pdb: `dynamic initializer for 'SpeedTreeBranchShaderProperty::ms_RTTI'' | SpeedTreeBranchShaderProperty.obj | debug, unique string literal, high
 GlobalObjectO2_00a7b610 g_01200788(g_01200788_arg0, g_01200788_arg1);
 // @fnv 0x00fba610
+// pdb: `dynamic initializer for 'SpeedTreeShaderPPLightingProperty::ms_RTTI'' | SpeedTreeShaderProperty.obj | debug, unique string literal, high
 GlobalObjectO2_00a7b610 g_01200790(g_01200790_arg0, g_01200790_arg1);
 // @fnv 0x00fba630
+// pdb: `dynamic initializer for 'SpeedTreeShaderLightingProperty::ms_RTTI'' | SpeedTreeShaderProperty.obj | debug, unique string literal, high
 GlobalObjectO2_00a7b610 g_01200798(g_01200798_arg0, g_01200798_arg1);
 // @fnv 0x00fba650
+// pdb: `dynamic initializer for 'SpeedTreeLeafShaderProperty::ms_RTTI'' | SpeedTreeLeafShaderProperty.obj | debug, unique string literal, high
 GlobalObjectO2_00a7b610 g_012007a0(g_012007a0_arg0, g_012007a0_arg1);
 // @fnv 0x00fba670
-GlobalObjectO2_00a7b610 g_012007a8(g_012007a8_arg0, g_012007a8_arg1);
+// pdb: `dynamic initializer for 'GeometryDecalShaderProperty::ms_RTTI'' | GeometryDecalShaderProperty.obj | debug, unique string literal, high
+GlobalObjectO2_00a7b610 GeometryDecalShaderProperty_ms_RTTI(g_012007a8_arg0, g_012007a8_arg1);
 // @fnv 0x00fba690
 GlobalObjectO2_00a7b610 g_012007b0(g_012007b0_arg0, g_012007b0_arg1);
 // @fnv 0x00fba6b0
-GlobalObjectO2_00a7b610 g_012007bc(g_012007bc_arg0, g_012007bc_arg1);
+// pdb: `dynamic initializer for 'BSDistantTreeShader::ms_RTTI'' | BSDistantTreeShader.obj | debug, unique string literal, high
+GlobalObjectO2_00a7b610 BSDistantTreeShader_ms_RTTI(g_012007bc_arg0, g_012007bc_arg1);
 // @fnv 0x00fba6e0
-GlobalObjectO2_00a7b610 g_012007c8(g_012007c8_arg0, g_012007c8_arg1);
+GlobalObjectO2_00a7b610 BSDistantTreeShaderProperty_ms_RTTI(g_012007c8_arg0, g_012007c8_arg1);
 // @fnv 0x00fba710
-GlobalObjectO2_00a7b610 g_012007d8(g_012007d8_arg0, g_012007d8_arg1);
+GlobalObjectO2_00a7b610 TileShaderProperty_ms_RTTI(g_012007d8_arg0, g_012007d8_arg1);
 // @fnv 0x00fba730
-GlobalObjectO2_00a7b610 g_012007e0(g_012007e0_arg0, g_012007e0_arg1);
+// pdb: `dynamic initializer for 'BSFogProperty::ms_RTTI'' | BSFogProperty.obj | debug, unique string literal, high
+GlobalObjectO2_00a7b610 BSFogProperty_ms_RTTI(g_012007e0_arg0, g_012007e0_arg1);
 // @fnv 0x00fba920
-GlobalObjectO2_00a7b610 g_01201f20(g_01201f20_arg0, g_01201f20_arg1);
+// pdb: `dynamic initializer for 'Lighting30Shader::ms_RTTI'' | Lighting30Shader.obj | debug, unique string literal, high
+GlobalObjectO2_00a7b610 Lighting30Shader_ms_RTTI(g_01201f20_arg0, g_01201f20_arg1);
 // @fnv 0x00fba980
-GlobalObjectO2_00a7b610 g_01201f5c(g_01201f5c_arg0, g_01201f5c_arg1);
+// pdb: `dynamic initializer for 'BoltShader::ms_RTTI'' | BoltShader.obj | debug, unique string literal, high
+GlobalObjectO2_00a7b610 BoltShader_ms_RTTI(g_01201f5c_arg0, g_01201f5c_arg1);
 // @fnv 0x00fba9a0
-GlobalObjectO2_00a7b610 g_01201f68(g_01201f68_arg0, g_01201f68_arg1);
+// pdb: `dynamic initializer for 'BoltShaderProperty::ms_RTTI'' | BoltShaderProperty.obj | debug, unique string literal, high
+GlobalObjectO2_00a7b610 BoltShaderProperty_ms_RTTI(g_01201f68_arg0, g_01201f68_arg1);
 // @fnv 0x00fba9c0
-GlobalObjectO2_00a7b610 g_01201f74(g_01201f74_arg0, g_01201f74_arg1);
+// pdb: `dynamic initializer for 'BSClearZNode::ms_RTTI'' | BSClearZNode.obj | debug, unique string literal, high
+GlobalObjectO2_00a7b610 BSClearZNode_ms_RTTI(g_01201f74_arg0, g_01201f74_arg1);
 // @fnv 0x00fba9e0
-GlobalObjectO2_00a7b610 g_01201f7c(g_01201f7c_arg0, g_01201f7c_arg1);
+// pdb: `dynamic initializer for 'BSFadeNodeCuller::ms_RTTI'' | BSFadeNodeCuller.obj | debug, unique string literal, high
+GlobalObjectO2_00a7b610 BSFadeNodeCuller_ms_RTTI(g_01201f7c_arg0, g_01201f7c_arg1);
 // @fnv 0x00fbaa00
-GlobalObjectO2_00a7b610 g_01201f84(g_01201f84_arg0, g_01201f84_arg1);
+GlobalObjectO2_00a7b610 BSOrderedNode_ms_RTTI(g_01201f84_arg0, g_01201f84_arg1);
 // @fnv 0x00fbaa30
 GlobalObjectO2_00a7b610 g_01201f90(g_01201f90_arg0, g_01201f90_arg1);
 // @fnv 0x00fbaa60
-GlobalObjectO2_00a7b610 g_01201f9c(g_01201f9c_arg0, g_01201f9c_arg1);
+GlobalObjectO2_00a7b610 BSRefractionFirePeriodController_ms_RTTI(g_01201f9c_arg0, g_01201f9c_arg1);
 // @fnv 0x00fbaa90
 GlobalObjectO2_00a7b610 g_01201fa8(g_01201fa8_arg0, g_01201fa8_arg1);
 // @fnv 0x00fbaab0
@@ -514,45 +599,63 @@ GlobalObjectO2_00a7b610 g_01201fb0(g_01201fb0_arg0, g_01201fb0_arg1);
 // @fnv 0x00fbaad0
 GlobalObjectO2_00a7b610 g_01201fb8(g_01201fb8_arg0, g_01201fb8_arg1);
 // @fnv 0x00fbab00
-GlobalObjectO2_00a7b610 g_01201fc8(g_01201fc8_arg0, g_01201fc8_arg1);
+// pdb: `dynamic initializer for 'BeamShader::ms_RTTI'' | BeamShader.obj | debug, unique string literal, high
+GlobalObjectO2_00a7b610 BeamShader_ms_RTTI(g_01201fc8_arg0, g_01201fc8_arg1);
 // @fnv 0x00fbab40
-GlobalObjectO2_00a7b610 g_01201fd8(g_01201fd8_arg0, g_01201fd8_arg1);
+// pdb: `dynamic initializer for 'VolumetricFogShader::ms_RTTI'' | VolumetricFogShader.obj | debug, unique string literal, high
+GlobalObjectO2_00a7b610 VolumetricFogShader_ms_RTTI(g_01201fd8_arg0, g_01201fd8_arg1);
 // @fnv 0x00fbab60
-GlobalObjectO2_00a7b610 g_01202040(g_01202040_arg0, g_01202040_arg1);
+// pdb: `dynamic initializer for 'BSShaderNoLighting::ms_RTTI'' | BSShaderNoLighting.obj | debug, unique string literal, high
+GlobalObjectO2_00a7b610 BSShaderNoLighting_ms_RTTI(g_01202040_arg0, g_01202040_arg1);
 // @fnv 0x00fbac30
-GlobalObjectO2_00a7b610 g_012021b8(g_012021b8_arg0, g_012021b8_arg1);
+// pdb: `dynamic initializer for 'TileShader::ms_RTTI'' | TileShader.obj | debug, unique string literal, high
+GlobalObjectO2_00a7b610 TileShader_ms_RTTI(g_012021b8_arg0, g_012021b8_arg1);
 // @fnv 0x00fbac70
-GlobalObjectO2_00a7b610 g_01202228(g_01202228_arg0, g_01202228_arg1);
+// pdb: `dynamic initializer for 'GeometryDecalShader::ms_RTTI'' | GeometryDecalShader.obj | debug, unique string literal, high
+GlobalObjectO2_00a7b610 GeometryDecalShader_ms_RTTI(g_01202228_arg0, g_01202228_arg1);
 // @fnv 0x00fbacc0
-GlobalObjectO2_00a7b610 g_012022b4(g_012022b4_arg0, g_012022b4_arg1);
+// pdb: `dynamic initializer for 'ParallaxShader::ms_RTTI'' | ParallaxShader.obj | debug, unique string literal, high
+GlobalObjectO2_00a7b610 ParallaxShader_ms_RTTI(g_012022b4_arg0, g_012022b4_arg1);
 // @fnv 0x00fbad10
+// pdb: `dynamic initializer for 'SkinShader::ms_RTTI'' | SkinShader.obj | debug, unique string literal, high
 GlobalObjectO2_00a7b610 g_01202328(g_01202328_arg0, g_01202328_arg1);
 // @fnv 0x00fbad30
-GlobalObjectO2_00a7b610 g_01202330(g_01202330_arg0, g_01202330_arg1);
+// pdb: `dynamic initializer for 'HairShader::ms_RTTI'' | HairShader.obj | debug, unique string literal, high
+GlobalObjectO2_00a7b610 HairShader_ms_RTTI(g_01202330_arg0, g_01202330_arg1);
 // @fnv 0x00fbad50
-GlobalObjectO2_00a7b610 g_0120233c(g_0120233c_arg0, g_0120233c_arg1);
+// pdb: `dynamic initializer for 'SpeedTreeFrondShader::ms_RTTI'' | SpeedTreeFrondShader.obj | debug, unique string literal, high
+GlobalObjectO2_00a7b610 SpeedTreeFrondShader_ms_RTTI(g_0120233c_arg0, g_0120233c_arg1);
 // @fnv 0x00fbad70
-GlobalObjectO2_00a7b610 g_01202348(g_01202348_arg0, g_01202348_arg1);
+// pdb: `dynamic initializer for 'SpeedTreeBranchShader::ms_RTTI'' | SpeedTreeBranchShader.obj | debug, unique string literal, high
+GlobalObjectO2_00a7b610 SpeedTreeBranchShader_ms_RTTI(g_01202348_arg0, g_01202348_arg1);
 // @fnv 0x00fbadc0
-GlobalObjectO2_00a7b610 g_012023c8(g_012023c8_arg0, g_012023c8_arg1);
+// pdb: `dynamic initializer for 'DistantLODShader::ms_RTTI'' | DistantLODShader.obj | debug, unique string literal, high
+GlobalObjectO2_00a7b610 DistantLODShader_ms_RTTI(g_012023c8_arg0, g_012023c8_arg1);
 // @fnv 0x00fbade0
 // @fnv 0x00fdd380
+// pdb: `dynamic initializer for 'bDoDepthOfField'' | ImageSpaceEffectDepthOfField.obj | debug, unique string literal, high
 GlobalObjectO2_004de2f0 g_012023d0(g_012023d0_arg0, 1);
 // @fnv 0x00fbae30
-GlobalObjectO2_00a7b610 g_012023e8(g_012023e8_arg0, g_012023e8_arg1);
+// pdb: `dynamic initializer for 'BSCubeMapCamera::ms_RTTI'' | BSCubeMapCamera.obj | debug, unique string literal, high
+GlobalObjectO2_00a7b610 BSCubeMapCamera_ms_RTTI(g_012023e8_arg0, g_012023e8_arg1);
 // @fnv 0x00fbae70
 // @fnv 0x00fdd390
 GlobalObjectO2_00b8a9e0 g_01202410;
 // @fnv 0x00fbae90
 // @fnv 0x00fdd3a0
+// pdb: `dynamic initializer for 'bDoMotionBlur'' | ImageSpaceEffectMotionBlur.obj | debug, unique string literal, high
 GlobalObjectO2_0045cf30 g_0120249c(g_0120249c_arg0, 1);
 // @fnv 0x00fbaeb0
-GlobalObjectO2_00a7b610 g_012024b0(g_012024b0_arg0, g_012024b0_arg1);
+// pdb: `dynamic initializer for 'BeamShaderProperty::ms_RTTI'' | BeamShaderProperty.obj | debug, unique string literal, high
+GlobalObjectO2_00a7b610 BeamShaderProperty_ms_RTTI(g_012024b0_arg0, g_012024b0_arg1);
 // @fnv 0x00fbaed0
+// pdb: `dynamic initializer for 'TallGrassTriStrips::ms_RTTI'' | TallGrassTriStrips.obj | debug, unique string literal, high
 GlobalObjectO2_00a7b610 g_012024b8(g_012024b8_arg0, g_012024b8_arg1);
 // @fnv 0x00fbaef0
+// pdb: `dynamic initializer for 'TallGrassTriShape::ms_RTTI'' | TallGrassTriShape.obj | debug, unique string literal, high
 GlobalObjectO2_00a7b610 g_012024c0(g_012024c0_arg0, g_012024c0_arg1);
 // @fnv 0x00fbaf10
+// pdb: `dynamic initializer for 'SpeedTreeFrondShaderProperty::ms_RTTI'' | SpeedTreeFrondShaderProperty.obj | debug, unique string literal, high
 GlobalObjectO2_00a7b610 g_012024c8(g_012024c8_arg0, g_012024c8_arg1);
 // @fnv 0x00fbaf30
 GlobalObjectO2_00a7b610 g_012024e0(g_012024e0_arg0, g_012024e0_arg1);
@@ -569,49 +672,51 @@ GlobalObjectO2_00a7b610 g_01202518(g_01202518_arg0, g_01202518_arg1);
 // @fnv 0x00fbaff0
 GlobalObjectO2_00a7b610 g_01202528(g_01202528_arg0, g_01202528_arg1);
 // @fnv 0x00fbb010
-GlobalObjectO2_00a7b610 g_01202530(g_01202530_arg0, g_01202530_arg1);
+GlobalObjectO2_00a7b610 NiPSysMeshUpdateModifier_ms_RTTI(g_01202530_arg0, g_01202530_arg1);
 // @fnv 0x00fbb030
-GlobalObjectO2_00a7b610 g_01202538(g_01202538_arg0, g_01202538_arg1);
+GlobalObjectO2_00a7b610 NiMeshParticleSystem_ms_RTTI(g_01202538_arg0, g_01202538_arg1);
 // @fnv 0x00fbb050
+// pdb: `dynamic initializer for 'NiPSysEmitter::ms_RTTI'' | NiPSysEmitter.obj | debug, unique string literal, high
 GlobalObjectO2_00a7b610 g_01202540(g_01202540_arg0, g_01202540_arg1);
 // @fnv 0x00fbb070
 GlobalObjectO2_00a7b610 g_01202548(g_01202548_arg0, g_01202548_arg1);
 // @fnv 0x00fbb090
-GlobalObjectO2_00a7b610 g_01202550(g_01202550_arg0, g_01202550_arg1);
+GlobalObjectO2_00a7b610 NiPSysSpawnModifier_ms_RTTI(g_01202550_arg0, g_01202550_arg1);
 // @fnv 0x00fbb0b0
 GlobalObjectO2_00a7b610 g_01202558(g_01202558_arg0, g_01202558_arg1);
 // @fnv 0x00fbb0d0
 GlobalObjectO2_00a7b610 g_01202560(g_01202560_arg0, g_01202560_arg1);
 // @fnv 0x00fbb0f0
-GlobalObjectO2_00a7b610 g_01202580(g_01202580_arg0, g_01202580_arg1);
+// pdb: `dynamic initializer for 'NiPSysUpdateTask::ms_RTTI'' | NiPSysUpdateTask.obj | debug, unique string literal, high
+GlobalObjectO2_00a7b610 NiPSysUpdateTask_ms_RTTI(g_01202580_arg0, g_01202580_arg1);
 // @fnv 0x00fbb140
 GlobalObjectO2_00a7b610 g_01202680(g_01202680_arg0, g_01202680_arg1);
 // @fnv 0x00fbb160
 GlobalObjectO2_00a7b610 g_01202688(g_01202688_arg0, g_01202688_arg1);
 // @fnv 0x00fbb180
-GlobalObjectO2_00a7b610 g_01202690(g_01202690_arg0, g_01202690_arg1);
+GlobalObjectO2_00a7b610 NiPSysUpdateCtlr_ms_RTTI(g_01202690_arg0, g_01202690_arg1);
 // @fnv 0x00fbb1a0
 GlobalObjectO2_00a7b610 g_01202698(g_01202698_arg0, g_01202698_arg1);
 // @fnv 0x00fbb1c0
-GlobalObjectO2_00a7b610 g_012026a0(g_012026a0_arg0, g_012026a0_arg1);
+GlobalObjectO2_00a7b610 NiPSysSphericalCollider_ms_RTTI(g_012026a0_arg0, g_012026a0_arg1);
 // @fnv 0x00fbb1e0
-GlobalObjectO2_00a7b610 g_012026a8(g_012026a8_arg0, g_012026a8_arg1);
+GlobalObjectO2_00a7b610 NiPSysResetOnLoopCtlr_ms_RTTI(g_012026a8_arg0, g_012026a8_arg1);
 // @fnv 0x00fbb200
 GlobalObjectO2_00a7b610 g_012026b0(g_012026b0_arg0, g_012026b0_arg1);
 // @fnv 0x00fbb220
-GlobalObjectO2_00a7b610 g_012026b8(g_012026b8_arg0, g_012026b8_arg1);
+GlobalObjectO2_00a7b610 NiPSysPositionModifier_ms_RTTI(g_012026b8_arg0, g_012026b8_arg1);
 // @fnv 0x00fbb240
-GlobalObjectO2_00a7b610 g_012026c8(g_012026c8_arg0, g_012026c8_arg1);
+GlobalObjectO2_00a7b610 NiPSysPlanarCollider_ms_RTTI(g_012026c8_arg0, g_012026c8_arg1);
 // @fnv 0x00fbb260
-GlobalObjectO2_00a7b610 g_012026d0(g_012026d0_arg0, g_012026d0_arg1);
+GlobalObjectO2_00a7b610 NiPSysModifierActiveCtlr_ms_RTTI(g_012026d0_arg0, g_012026d0_arg1);
 // @fnv 0x00fbb280
-GlobalObjectO2_00a7b610 g_012026d8(g_012026d8_arg0, g_012026d8_arg1);
+GlobalObjectO2_00a7b610 NiPSysInitialRotSpeedVarCtlr_ms_RTTI(g_012026d8_arg0, g_012026d8_arg1);
 // @fnv 0x00fbb2a0
-GlobalObjectO2_00a7b610 g_012026e0(g_012026e0_arg0, g_012026e0_arg1);
+GlobalObjectO2_00a7b610 NiPSysInitialRotSpeedCtlr_ms_RTTI(g_012026e0_arg0, g_012026e0_arg1);
 // @fnv 0x00fbb2c0
 GlobalObjectO2_00a7b610 g_012026e8(g_012026e8_arg0, g_012026e8_arg1);
 // @fnv 0x00fbb2e0
-GlobalObjectO2_00a7b610 g_012026f0(g_012026f0_arg0, g_012026f0_arg1);
+GlobalObjectO2_00a7b610 NiPSysInitialRotAngleCtlr_ms_RTTI(g_012026f0_arg0, g_012026f0_arg1);
 // @fnv 0x00fbb300
 GlobalObjectO2_00a7b610 g_012026f8(g_012026f8_arg0, g_012026f8_arg1);
 // @fnv 0x00fbb320
@@ -621,7 +726,7 @@ GlobalObjectO2_00a7b610 g_01202708(g_01202708_arg0, g_01202708_arg1);
 // @fnv 0x00fbb360
 GlobalObjectO2_00a7b610 g_01202710(g_01202710_arg0, g_01202710_arg1);
 // @fnv 0x00fbb380
-GlobalObjectO2_00a7b610 g_01202718(g_01202718_arg0, g_01202718_arg1);
+GlobalObjectO2_00a7b610 NiPSysFieldMagnitudeCtlr_ms_RTTI(g_01202718_arg0, g_01202718_arg1);
 // @fnv 0x00fbb3a0
 GlobalObjectO2_00a7b610 g_01202720(g_01202720_arg0, g_01202720_arg1);
 // @fnv 0x00fbb3c0
@@ -631,23 +736,23 @@ GlobalObjectO2_00a7b610 g_01202730(g_01202730_arg0, g_01202730_arg1);
 // @fnv 0x00fbb400
 GlobalObjectO2_00a7b610 g_01202738(g_01202738_arg0, g_01202738_arg1);
 // @fnv 0x00fbb420
-GlobalObjectO2_00a7b610 g_01202740(g_01202740_arg0, g_01202740_arg1);
+GlobalObjectO2_00a7b610 NiPSysEmitterLifeSpanCtlr_ms_RTTI(g_01202740_arg0, g_01202740_arg1);
 // @fnv 0x00fbb440
 GlobalObjectO2_00a7b610 g_01202748(g_01202748_arg0, g_01202748_arg1);
 // @fnv 0x00fbb460
 GlobalObjectO2_00a7b610 g_01202750(g_01202750_arg0, g_01202750_arg1);
 // @fnv 0x00fbb480
-GlobalObjectO2_00a7b610 g_01202758(g_01202758_arg0, g_01202758_arg1);
+GlobalObjectO2_00a7b610 NiPSysEmitterDeclinationCtlr_ms_RTTI(g_01202758_arg0, g_01202758_arg1);
 // @fnv 0x00fbb4a0
-GlobalObjectO2_00a7b610 g_01202760(g_01202760_arg0, g_01202760_arg1);
+GlobalObjectO2_00a7b610 NiPSysEmitterCtlrData_ms_RTTI(g_01202760_arg0, g_01202760_arg1);
 // @fnv 0x00fbb4c0
 GlobalObjectO2_00a7b610 g_01202768(g_01202768_arg0, g_01202768_arg1);
 // @fnv 0x00fbb4e0
-GlobalObjectO2_00a7b610 g_01202770(g_01202770_arg0, g_01202770_arg1);
+GlobalObjectO2_00a7b610 NiPSysDragFieldModifier_ms_RTTI(g_01202770_arg0, g_01202770_arg1);
 // @fnv 0x00fbb500
 GlobalObjectO2_00a7b610 g_01202778(g_01202778_arg0, g_01202778_arg1);
 // @fnv 0x00fbb520
-GlobalObjectO2_00a7b610 g_01202780(g_01202780_arg0, g_01202780_arg1);
+GlobalObjectO2_00a7b610 NiPSysColliderManager_ms_RTTI(g_01202780_arg0, g_01202780_arg1);
 // @fnv 0x00fbb540
 GlobalObjectO2_00a7b610 g_01202788(g_01202788_arg0, g_01202788_arg1);
 // @fnv 0x00fbb560
@@ -661,115 +766,152 @@ GlobalObjectO2_00a7b610 g_012027a8(g_012027a8_arg0, g_012027a8_arg1);
 // @fnv 0x00fbb5e0
 GlobalObjectO2_00a7b610 g_012027b0(g_012027b0_arg0, g_012027b0_arg1);
 // @fnv 0x00fbb600
-GlobalObjectO2_00a7b610 g_012027b8(g_012027b8_arg0, g_012027b8_arg1);
+GlobalObjectO2_00a7b610 NiPSysAirFieldAirFrictionCtlr_ms_RTTI(g_012027b8_arg0, g_012027b8_arg1);
 // @fnv 0x00fbb620
 GlobalObjectO2_00a7b610 g_012027c0(g_012027c0_arg0, g_012027c0_arg1);
 // @fnv 0x00fbb640
+// pdb: `dynamic initializer for 'NiPSysModifierCtlr::ms_RTTI'' | NiPSysModifierCtlr.obj | debug, unique string literal, high
 GlobalObjectO2_00a7b610 g_012027c8(g_012027c8_arg0, g_012027c8_arg1);
 // @fnv 0x00fbb660
+// pdb: `dynamic initializer for 'NiPSysModifier::ms_RTTI'' | NiPSysModifier.obj | debug, unique string literal, high
 GlobalObjectO2_00a7b610 g_012027d0(g_012027d0_arg0, g_012027d0_arg1);
 // @fnv 0x00fbb680
+// pdb: `dynamic initializer for 'NiPSysVolumeEmitter::ms_RTTI'' | NiPSysVolumeEmitter.obj | debug, unique string literal, high
 GlobalObjectO2_00a7b610 g_012027d8(g_012027d8_arg0, g_012027d8_arg1);
 // @fnv 0x00fbb6a0
+// pdb: `dynamic initializer for 'NiPSysFieldModifier::ms_RTTI'' | NiPSysFieldModifier.obj | debug, unique string literal, high
 GlobalObjectO2_00a7b610 g_012027e0(g_012027e0_arg0, g_012027e0_arg1);
 // @fnv 0x00fbb6c0
+// pdb: `dynamic initializer for 'NiPSysCollider::ms_RTTI'' | NiPSysCollider.obj | debug, unique string literal, high
 GlobalObjectO2_00a7b610 g_012027e8(g_012027e8_arg0, g_012027e8_arg1);
 // @fnv 0x00fbb6e0
+// pdb: `dynamic initializer for 'NiPSysModifierBoolCtlr::ms_RTTI'' | NiPSysModifierBoolCtlr.obj | debug, unique string literal, high
 GlobalObjectO2_00a7b610 g_012027f0(g_012027f0_arg0, g_012027f0_arg1);
 // @fnv 0x00fbb700
+// pdb: `dynamic initializer for 'NiPSysModifierFloatCtlr::ms_RTTI'' | NiPSysModifierFloatCtlr.obj | debug, unique string literal, high
 GlobalObjectO2_00a7b610 g_012027f8(g_012027f8_arg0, g_012027f8_arg1);
 // @fnv 0x00fbca00
 GlobalObjectO2_00a7b610 g_012043f8(g_012043f8_arg0, g_012043f8_arg1);
 // @fnv 0x00fbca40
 // @fnv 0x00fddd70
+// pdb: `dynamic initializer for 'iHWThread1'' | bhkWorld.obj | debug, unique string literal, high
 GlobalObjectO2_0045cfe0 g_012677dc(g_012677dc_arg0, 4);
 // @fnv 0x00fbca60
 // @fnv 0x00fddd80
+// pdb: `dynamic initializer for 'iHWThread2'' | bhkWorld.obj | debug, unique string literal, high
 GlobalObjectO2_0045cfe0 g_012677e8(g_012677e8_arg0, 4);
 // @fnv 0x00fbca80
 // @fnv 0x00fddd90
+// pdb: `dynamic initializer for 'iHWThread3'' | bhkWorld.obj | debug, unique string literal, high
 GlobalObjectO2_0045cfe0 g_012677f4(g_012677f4_arg0, 4);
 // @fnv 0x00fbcaa0
 // @fnv 0x00fddda0
+// pdb: `dynamic initializer for 'iHWThread4'' | bhkWorld.obj | debug, unique string literal, high
 GlobalObjectO2_0045cfe0 g_01267800(g_01267800_arg0, 5);
 // @fnv 0x00fbcac0
 // @fnv 0x00fdddb0
+// pdb: `dynamic initializer for 'iHWThread5'' | bhkWorld.obj | debug, unique string literal, high
 GlobalObjectO2_0045cfe0 g_0126780c(g_0126780c_arg0, 5);
 // @fnv 0x00fbcae0
 // @fnv 0x00fdddc0
+// pdb: `dynamic initializer for 'iHWThread6'' | bhkWorld.obj | debug, unique string literal, high
 GlobalObjectO2_0045cfe0 g_01267818(g_01267818_arg0, 5);
 // @fnv 0x00fbcb00
+// pdb: `dynamic initializer for 'bhkWorld::ms_RTTI'' | bhkWorld.obj | debug, unique string literal, high
 GlobalObjectO2_00a7b610 g_01267824(g_01267824_arg0, g_01267824_arg1);
 // @fnv 0x00fbcb20
 // @fnv 0x00fddd60
 GlobalObjectO2_00c67fe0 g_01267830;
 // @fnv 0x00fbcbd0
 // @fnv 0x00fddde0
+// pdb: `dynamic initializer for 'bhkWorld::iMinNumSubSteps'' | bhkWorld.obj | debug, unique string literal, high
 GlobalObjectO2_0045cfe0 g_01267b1c(g_01267b1c_arg0, 8);
 // @fnv 0x00fbcbf0
 // @fnv 0x00fdddf0
+// pdb: `dynamic initializer for 'bhkWorld::bHavokDebug'' | bhkWorld.obj | debug, unique string literal, high
 GlobalObjectO2_0045cf30 g_01267b28(g_01267b28_arg0, 0);
 // @fnv 0x00fbcc40
 // @fnv 0x00fdde10
+// pdb: `dynamic initializer for 'bhkWorld::bFindContactPointsOnAddS'' | bhkWorld.obj | debug, unique string literal, high
 GlobalObjectO2_0045cf30 g_01267b40(g_01267b40_arg0, 1);
 // @fnv 0x00fbcc60
+// pdb: `dynamic initializer for 'bhkNiCollisionObject::ms_RTTI'' | bhkNiCollisionObject.obj | debug, unique string literal, high
 GlobalObjectO2_00a7b610 g_01267b70(g_01267b70_arg0, g_01267b70_arg1);
 // @fnv 0x00fbcc90
 // @fnv 0x00fdde20
+// pdb: `dynamic initializer for 'bhkNiCollisionObject::bWONameSync'' | bhkNiCollisionObject.obj | debug, unique string literal, high
 GlobalObjectO2_0045cf30 g_01267ba0(g_01267ba0_arg0, 1);
 // @fnv 0x00fbcd70
 // @fnv 0x00fdde90
+// pdb: `dynamic initializer for 'bhkRagdollController::bRagdollAnim'' | bhkRagdollController.obj | debug, unique string literal, high
 GlobalObjectO2_0045cf30 g_01267c24(g_01267c24_arg0, 1);
 // @fnv 0x00fbcd90
 // @fnv 0x00fddea0
+// pdb: `dynamic initializer for 'bhkRagdollController::bFootIK'' | bhkRagdollController.obj | debug, unique string literal, high
 GlobalObjectO2_0045cf30 g_01267c30(g_01267c30_arg0, 1);
 // @fnv 0x00fbcdb0
 // @fnv 0x00fddeb0
+// pdb: `dynamic initializer for 'bhkRagdollController::bGrabIK'' | bhkRagdollController.obj | debug, unique string literal, high
 GlobalObjectO2_0045cf30 g_01267c3c(g_01267c3c_arg0, 1);
 // @fnv 0x00fbcdd0
 // @fnv 0x00fddec0
+// pdb: `dynamic initializer for 'bhkRagdollController::bLookIK'' | bhkRagdollController.obj | debug, unique string literal, high
 GlobalObjectO2_0045cf30 g_01267c48(g_01267c48_arg0, 1);
 // @fnv 0x00fbcdf0
 // @fnv 0x00fdded0
+// pdb: `dynamic initializer for 'bhkRagdollController::bRagdollFeedback'' | bhkRagdollController.obj | debug, unique string literal, high
 GlobalObjectO2_0045cf30 g_01267c54(g_01267c54_arg0, 1);
 // @fnv 0x00fbce10
 // @fnv 0x00fddee0
+// pdb: `dynamic initializer for 'bhkRagdollController::bPoseMatching'' | bhkRagdollController.obj | debug, unique string literal, high
 GlobalObjectO2_0045cf30 g_01267c60(g_01267c60_arg0, 1);
 // @fnv 0x00fbd280
 // @fnv 0x00fde060
+// pdb: `dynamic initializer for 'bhkRagdollController::bFootPlacementOn'' | bhkRagdollController.obj | debug, unique string literal, high
 GlobalObjectO2_0045cf30 g_01267d80(g_01267d80_arg0, 1);
 // @fnv 0x00fbd390
 // @fnv 0x00fde0c0
+// pdb: `dynamic initializer for 'bhkRagdollController::iNumFramesFootEaseOut'' | bhkRagdollController.obj | debug, unique string literal, high
 GlobalObjectO2_0045cfe0 g_01267dc8(g_01267dc8_arg0, 30);
 // @fnv 0x00fbd470
 // @fnv 0x00fde110
+// pdb: `dynamic initializer for 'bhkRagdollController::uiFeedbackTimeout'' | bhkRagdollController.obj | debug, unique string literal, high
 GlobalObjectO2_0045cfe0 g_01267e04(g_01267e04_arg0, 1500);
 // @fnv 0x00fbd4c0
 // @fnv 0x00fde130
+// pdb: `dynamic initializer for 'bhkRagdollController::bRigidBodyController'' | bhkRagdollController.obj | debug, unique string literal, high
 GlobalObjectO2_0045cf30 g_01267e1c(g_01267e1c_arg0, 1);
 // @fnv 0x00fbd5d0
 GlobalObjectO2_00a7b610 g_01267e64(g_01267e64_arg0, g_01267e64_arg1);
 // @fnv 0x00fbd5f0
+// pdb: `dynamic initializer for 'bhkShape::ms_RTTI'' | bhkShape.obj | debug, unique string literal, high
 GlobalObjectO2_00a7b610 g_01268100(g_01268100_arg0, g_01268100_arg1);
 // @fnv 0x00fbd630
 GlobalObjectO2_00a7b610 g_01268110(g_01268110_arg0, g_01268110_arg1);
 // @fnv 0x00fbd650
+// pdb: `dynamic initializer for 'bhkUnaryAction::ms_RTTI'' | bhkUnaryAction.obj | debug, unique string literal, high
 GlobalObjectO2_00a7b610 g_0126811c(g_0126811c_arg0, g_0126811c_arg1);
 // @fnv 0x00fbd690
-GlobalObjectO2_00a7b610 g_0126812c(g_0126812c_arg0, g_0126812c_arg1);
+GlobalObjectO2_00a7b610 bhkMouseSpringAction_ms_RTTI(g_0126812c_arg0, g_0126812c_arg1);
 // @fnv 0x00fbd6b0
+// pdb: `dynamic initializer for 'bhkSerializable::ms_RTTI'' | bhkSerializable.obj | debug, unique string literal, high
 GlobalObjectO2_00a7b610 g_01268134(g_01268134_arg0, g_01268134_arg1);
 // @fnv 0x00fbd6f0
+// pdb: `dynamic initializer for 'bhkAction::ms_RTTI'' | bhkAction.obj | debug, unique string literal, high
 GlobalObjectO2_00a7b610 g_01268158(g_01268158_arg0, g_01268158_arg1);
 // @fnv 0x00fbd710
+// pdb: `dynamic initializer for 'bhkRefObject::ms_RTTI'' | bhkRefObject.obj | debug, unique string literal, high
 GlobalObjectO2_00a7b610 g_01268160(g_01268160_arg0, g_01268160_arg1);
 // @fnv 0x00fbd750
 GlobalObjectO2_00a7b610 g_01268168(g_01268168_arg0, g_01268168_arg1);
 // @fnv 0x00fbd790
-GlobalObjectO2_00a7b610 g_0126817c(g_0126817c_arg0, g_0126817c_arg1);
+// pdb: `dynamic initializer for 'WeaponObject::ms_RTTI'' | WeaponObject.obj | debug, unique string literal, high
+GlobalObjectO2_00a7b610 WeaponObject_ms_RTTI(g_0126817c_arg0, g_0126817c_arg1);
 // @fnv 0x00fbd7b0
+// pdb: `dynamic initializer for 'bhkConstraint::ms_RTTI'' | bhkConstraint.obj | debug, unique string literal, high
 GlobalObjectO2_00a7b610 g_0126818c(g_0126818c_arg0, g_0126818c_arg1);
 // @fnv 0x00fbd7d0
+// pdb: `dynamic initializer for 'bhkBinaryAction::ms_RTTI'' | bhkBinaryAction.obj | debug, unique string literal, high
 GlobalObjectO2_00a7b610 g_01268198(g_01268198_arg0, g_01268198_arg1);
 // @fnv 0x00fbd810
 GlobalObjectO2_00a7b610 g_012681a8(g_012681a8_arg0, g_012681a8_arg1);
@@ -778,102 +920,115 @@ GlobalObjectO2_00a7b610 g_012681b4(g_012681b4_arg0, g_012681b4_arg1);
 // @fnv 0x00fbd870
 GlobalObjectO2_00a7b610 g_012681c0(g_012681c0_arg0, g_012681c0_arg1);
 // @fnv 0x00fbd890
-GlobalObjectO2_00a7b610 g_012681cc(g_012681cc_arg0, g_012681cc_arg1);
+// pdb: `dynamic initializer for 'bhkBlendCollisionObjectAddRotation::ms_RTTI'' | bhkBlendCollisionObjectAddRotation.obj | debug, unique string literal, high
+GlobalObjectO2_00a7b610 bhkBlendCollisionObjectAddRotation_ms_RTTI(g_012681cc_arg0, g_012681cc_arg1);
 // @fnv 0x00fbd940
+// pdb: `dynamic initializer for 'bhkWorldM::ms_RTTI'' | bhkWorldM.obj | debug, unique string literal, high
 GlobalObjectO2_00a7b610 g_012681e8(g_012681e8_arg0, g_012681e8_arg1);
 // @fnv 0x00fbd980
 GlobalObjectO2_00a7b610 g_012681f0(g_012681f0_arg0, g_012681f0_arg1);
 // @fnv 0x00fbd9a0
+// pdb: `dynamic initializer for 'bhkEntity::ms_RTTI'' | bhkEntity.obj | debug, unique string literal, high
 GlobalObjectO2_00a7b610 g_01268200(g_01268200_arg0, g_01268200_arg1);
 // @fnv 0x00fbd9e0
+// pdb: `dynamic initializer for 'bhkShapePhantom::ms_RTTI'' | bhkShapePhantom.obj | debug, unique string literal, high
 GlobalObjectO2_00a7b610 g_01268224(g_01268224_arg0, g_01268224_arg1);
 // @fnv 0x00fbda00
 GlobalObjectO2_00a7b610 g_01268230(g_01268230_arg0, g_01268230_arg1);
 // @fnv 0x00fbda20
+// pdb: `dynamic initializer for 'bhkPhantom::ms_RTTI'' | bhkPhantom.obj | debug, unique string literal, high
 GlobalObjectO2_00a7b610 g_0126823c(g_0126823c_arg0, g_0126823c_arg1);
 // @fnv 0x00fbda40
 GlobalObjectO2_00a7b610 g_01268248(g_01268248_arg0, g_01268248_arg1);
 // @fnv 0x00fbda60
+// pdb: `dynamic initializer for 'bhkConvexShape::ms_RTTI'' | bhkConvexShape.obj | debug, unique string literal, high
 GlobalObjectO2_00a7b610 g_01268254(g_01268254_arg0, g_01268254_arg1);
 // @fnv 0x00fbdaa0
-GlobalObjectO2_00a7b610 g_01268264(g_01268264_arg0, g_01268264_arg1);
+GlobalObjectO2_00a7b610 bhkBoxShape_ms_RTTI(g_01268264_arg0, g_01268264_arg1);
 // @fnv 0x00fbdac0
+// pdb: `dynamic initializer for 'bhkSphereRepShape::ms_RTTI'' | bhkSphereRepShape.obj | debug, unique string literal, high
 GlobalObjectO2_00a7b610 g_01268278(g_01268278_arg0, g_01268278_arg1);
 // @fnv 0x00fbdb00
-GlobalObjectO2_00a7b610 g_01268288(g_01268288_arg0, g_01268288_arg1);
+GlobalObjectO2_00a7b610 bhkSphereShape_ms_RTTI(g_01268288_arg0, g_01268288_arg1);
 // @fnv 0x00fbdbd0
-GlobalObjectO2_00a7b610 g_012682bc(g_012682bc_arg0, g_012682bc_arg1);
+GlobalObjectO2_00a7b610 hkPackedNiTriStripsData_ms_RTTI(g_012682bc_arg0, g_012682bc_arg1);
 // @fnv 0x00fbdc10
+// pdb: `dynamic initializer for 'bhkBvTreeShape::ms_RTTI'' | bhkBvTreeShape.obj | debug, unique string literal, high
 GlobalObjectO2_00a7b610 g_012682d0(g_012682d0_arg0, g_012682d0_arg1);
 // @fnv 0x00fbdc30
 GlobalObjectO2_00a7b610 g_012682dc(g_012682dc_arg0, g_012682dc_arg1);
 // @fnv 0x00fbdc50
 GlobalObjectO2_00a7b610 g_012682e8(g_012682e8_arg0, g_012682e8_arg1);
 // @fnv 0x00fbdca0
+// pdb: `dynamic initializer for 'bhkAvoidBox::ms_RTTI'' | bhkAvoidBox.obj | debug, unique string literal, high
 GlobalObjectO2_00a7b610 g_01268304(g_01268304_arg0, g_01268304_arg1);
 // @fnv 0x00fbdcc0
 GlobalObjectO2_00a7b610 g_01268310(g_01268310_arg0, g_01268310_arg1);
 // @fnv 0x00fbdce0
-GlobalObjectO2_00a7b610 g_0126831c(g_0126831c_arg0, g_0126831c_arg1);
+GlobalObjectO2_00a7b610 bhkLimitedHingeConstraint_ms_RTTI(g_0126831c_arg0, g_0126831c_arg1);
 // @fnv 0x00fbdd20
 GlobalObjectO2_00a7b610 g_0126832c(g_0126832c_arg0, g_0126832c_arg1);
 // @fnv 0x00fbdd40
-GlobalObjectO2_00a7b610 g_01268344(g_01268344_arg0, g_01268344_arg1);
+// pdb: `dynamic initializer for 'bhkCharacterProxy::ms_RTTI'' | bhkCharacterProxy.obj | debug, unique string literal, high
+GlobalObjectO2_00a7b610 bhkCharacterProxy_ms_RTTI(g_01268344_arg0, g_01268344_arg1);
 // @fnv 0x00fbdd60
-GlobalObjectO2_00a7b610 g_01268350(g_01268350_arg0, g_01268350_arg1);
+// pdb: `dynamic initializer for 'bhkTriSampledHeightFieldBvTreeShape::ms_RTTI'' | bhkTriSampledHeightFieldBvTreeShape.obj | debug, unique string literal, high
+GlobalObjectO2_00a7b610 bhkTriSampledHeightFieldBvTreeShape_ms_RTTI(g_01268350_arg0, g_01268350_arg1);
 // @fnv 0x00fbde70
 GlobalObjectO2_00a7b610 g_012683c8(g_012683c8_arg0, g_012683c8_arg1);
 // @fnv 0x00fbdeb0
 GlobalObjectO2_00a7b610 g_012683d0(g_012683d0_arg0, g_012683d0_arg1);
 // @fnv 0x00fbded0
-GlobalObjectO2_00a7b610 g_012683e0(g_012683e0_arg0, g_012683e0_arg1);
+GlobalObjectO2_00a7b610 bhkMultiSphereShape_ms_RTTI(g_012683e0_arg0, g_012683e0_arg1);
 // @fnv 0x00fbdef0
 GlobalObjectO2_00a7b610 g_012683ec(g_012683ec_arg0, g_012683ec_arg1);
 // @fnv 0x00fbdf10
+// pdb: `dynamic initializer for 'bhkForceController::ms_RTTI'' | bhkForceController.obj | debug, unique string literal, high
 GlobalObjectO2_00a7b610 g_012683f4(g_012683f4_arg0, g_012683f4_arg1);
 // @fnv 0x00fbdf50
 GlobalObjectO2_00a7b610 g_01268400(g_01268400_arg0, g_01268400_arg1);
 // @fnv 0x00fbdf70
-GlobalObjectO2_00a7b610 g_01268408(g_01268408_arg0, g_01268408_arg1);
+GlobalObjectO2_00a7b610 bhkRagdollTemplate_ms_RTTI(g_01268408_arg0, g_01268408_arg1);
 // @fnv 0x00fbdfd0
 GlobalObjectO2_00a7b610 g_01268420(g_01268420_arg0, g_01268420_arg1);
 // @fnv 0x00fbe030
-GlobalObjectO2_00a7b610 g_01268438(g_01268438_arg0, g_01268438_arg1);
+GlobalObjectO2_00a7b610 bhkHingeConstraint_ms_RTTI(g_01268438_arg0, g_01268438_arg1);
 // @fnv 0x00fbe070
-GlobalObjectO2_00a7b610 g_01268444(g_01268444_arg0, g_01268444_arg1);
+// pdb: `dynamic initializer for 'bhkCollisionBox::ms_RTTI'' | bhkCollisionBox.obj | debug, unique string literal, high
+GlobalObjectO2_00a7b610 bhkCollisionBox_ms_RTTI(g_01268444_arg0, g_01268444_arg1);
 // @fnv 0x00fbe250
 GlobalObjectO2_00d472a0 g_01268560(g_01268560_arg0, (const char*)0, 12, 0, 0, (const char*)0, 0, (const char*)0, 0,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fbe280
-GlobalObjectO2_00a7b610 g_01268590(g_01268590_arg0, g_01268590_arg1);
+GlobalObjectO2_00a7b610 bhkPoseArray_ms_RTTI(g_01268590_arg0, g_01268590_arg1);
 // @fnv 0x00fbe2a0
 GlobalObjectO2_00a7b610 g_01268598(g_01268598_arg0, g_01268598_arg1);
 // @fnv 0x00fbe2c0
 GlobalObjectO2_00a7b610 g_012685a4(g_012685a4_arg0, g_012685a4_arg1);
 // @fnv 0x00fbe2e0
-GlobalObjectO2_00a7b610 g_012685b0(g_012685b0_arg0, g_012685b0_arg1);
+GlobalObjectO2_00a7b610 bhkSpringAction_ms_RTTI(g_012685b0_arg0, g_012685b0_arg1);
 // @fnv 0x00fbe300
 GlobalObjectO2_00a7b610 g_012685bc(g_012685bc_arg0, g_012685bc_arg1);
 // @fnv 0x00fbe320
-GlobalObjectO2_00a7b610 g_012685c8(g_012685c8_arg0, g_012685c8_arg1);
+GlobalObjectO2_00a7b610 bhkDashpotAction_ms_RTTI(g_012685c8_arg0, g_012685c8_arg1);
 // @fnv 0x00fbe340
 GlobalObjectO2_00a7b610 g_012685d4(g_012685d4_arg0, g_012685d4_arg1);
 // @fnv 0x00fbe360
 GlobalObjectO2_00a7b610 g_012685e0(g_012685e0_arg0, g_012685e0_arg1);
 // @fnv 0x00fbe380
-GlobalObjectO2_00a7b610 g_012685ec(g_012685ec_arg0, g_012685ec_arg1);
+GlobalObjectO2_00a7b610 bhkWheelConstraint_ms_RTTI(g_012685ec_arg0, g_012685ec_arg1);
 // @fnv 0x00fbe3a0
 GlobalObjectO2_00a7b610 g_012685f8(g_012685f8_arg0, g_012685f8_arg1);
 // @fnv 0x00fbe3c0
 GlobalObjectO2_00a7b610 g_01268604(g_01268604_arg0, g_01268604_arg1);
 // @fnv 0x00fbe3e0
-GlobalObjectO2_00a7b610 g_01268610(g_01268610_arg0, g_01268610_arg1);
+GlobalObjectO2_00a7b610 bhkRagdollConstraint_ms_RTTI(g_01268610_arg0, g_01268610_arg1);
 // @fnv 0x00fbe400
 GlobalObjectO2_00a7b610 g_0126861c(g_0126861c_arg0, g_0126861c_arg1);
 // @fnv 0x00fbe420
 GlobalObjectO2_00a7b610 g_01268628(g_01268628_arg0, g_01268628_arg1);
 // @fnv 0x00fbe440
-GlobalObjectO2_00a7b610 g_01268634(g_01268634_arg0, g_01268634_arg1);
+GlobalObjectO2_00a7b610 bhkHingeLimitsConstraint_ms_RTTI(g_01268634_arg0, g_01268634_arg1);
 // @fnv 0x00fbe460
 GlobalObjectO2_00a7b610 g_01268640(g_01268640_arg0, g_01268640_arg1);
 // @fnv 0x00fbe480
@@ -883,83 +1038,101 @@ GlobalObjectO2_00a7b610 g_01268658(g_01268658_arg0, g_01268658_arg1);
 // @fnv 0x00fbe4c0
 GlobalObjectO2_00a7b610 g_01268664(g_01268664_arg0, g_01268664_arg1);
 // @fnv 0x00fbe4e0
-GlobalObjectO2_00a7b610 g_01268670(g_01268670_arg0, g_01268670_arg1);
+GlobalObjectO2_00a7b610 bhkPlaneShape_ms_RTTI(g_01268670_arg0, g_01268670_arg1);
 // @fnv 0x00fbe500
-GlobalObjectO2_00a7b610 g_0126867c(g_0126867c_arg0, g_0126867c_arg1);
+GlobalObjectO2_00a7b610 bhkExtendedMeshShape_ms_RTTI(g_0126867c_arg0, g_0126867c_arg1);
 // @fnv 0x00fbe520
-GlobalObjectO2_00a7b610 g_01268684(g_01268684_arg0, g_01268684_arg1);
+GlobalObjectO2_00a7b610 bhkExtendedMeshShapeData_ms_RTTI(g_01268684_arg0, g_01268684_arg1);
 // @fnv 0x00fbe560
-GlobalObjectO2_00a7b610 g_01268694(g_01268694_arg0, g_01268694_arg1);
+GlobalObjectO2_00a7b610 bhkCylinderShape_ms_RTTI(g_01268694_arg0, g_01268694_arg1);
 // @fnv 0x00fbe5a0
 GlobalObjectO2_00a7b610 g_012686a0(g_012686a0_arg0, g_012686a0_arg1);
 // @fnv 0x00fbe5c0
 GlobalObjectO2_00a7b610 g_012686b0(g_012686b0_arg0, g_012686b0_arg1);
 // @fnv 0x00fbe5e0
-GlobalObjectO2_00a7b610 g_012686b8(g_012686b8_arg0, g_012686b8_arg1);
+GlobalObjectO2_00a7b610 bhkConvexSweepShape_ms_RTTI(g_012686b8_arg0, g_012686b8_arg1);
 // @fnv 0x00fbe600
-GlobalObjectO2_00a7b610 g_012686c4(g_012686c4_arg0, g_012686c4_arg1);
+GlobalObjectO2_00a7b610 bhkConvexListShape_ms_RTTI(g_012686c4_arg0, g_012686c4_arg1);
 // @fnv 0x00fbe620
+// pdb: `dynamic initializer for 'bhkShapeCollection::ms_RTTI'' | bhkShapeCollection.obj | debug, unique string literal, high
 GlobalObjectO2_00a7b610 g_012686d4(g_012686d4_arg0, g_012686d4_arg1);
 // @fnv 0x00fbe6c0
-GlobalObjectO2_00a7b610 g_012686e8(g_012686e8_arg0, g_012686e8_arg1);
+// pdb: `dynamic initializer for 'bhkCharControllerShape::ms_RTTI'' | bhkCharControllerShape.obj | debug, unique string literal, high
+GlobalObjectO2_00a7b610 bhkCharControllerShape_ms_RTTI(g_012686e8_arg0, g_012686e8_arg1);
 // @fnv 0x00fbe710
-GlobalObjectO2_00a7b610 g_01268730(g_01268730_arg0, (const char*)0);
+// pdb: `dynamic initializer for 'bhkPositionConstraintMotor::ms_RTTI'' | bhkPositionConstraintMotor.obj | debug, unique string literal, high
+GlobalObjectO2_00a7b610 bhkPositionConstraintMotor_ms_RTTI(g_01268730_arg0, (const char*)0);
 // @fnv 0x00fbe730
-GlobalObjectO2_00a7b610 g_01268738(g_01268738_arg0, (const char*)0);
+// pdb: `dynamic initializer for 'bhkVelocityConstraintMotor::ms_RTTI'' | bhkVelocityConstraintMotor.obj | debug, unique string literal, high
+GlobalObjectO2_00a7b610 bhkVelocityConstraintMotor_ms_RTTI(g_01268738_arg0, (const char*)0);
 // @fnv 0x00fbe750
-GlobalObjectO2_00a7b610 g_01268740(g_01268740_arg0, (const char*)0);
+// pdb: `dynamic initializer for 'bhkSpringDamperConstraintMotor::ms_RTTI'' | bhkSpringDamperConstraintMotor.obj | debug, unique string literal, high
+GlobalObjectO2_00a7b610 bhkSpringDamperConstraintMotor_ms_RTTI(g_01268740_arg0, (const char*)0);
 // @fnv 0x00fbe770
 GlobalObjectO2_00d472a0 g_01268748(g_01268748_arg0, g_01268748_arg1, 8, 0, 0, (const char*)0, 0, g_01268748_arg7, 2,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fbe7e0
-GlobalObjectO2_00d472a0 g_01268798(g_01268798_arg0, g_01268798_arg1, 128, 0, 0, (const char*)0, 0, (const char*)0, 0,
+GlobalObjectO2_00d472a0 hkpSimpleConstraintContactMgrClass(g_01268798_arg0, g_01268798_arg1, 128, 0, 0, (const char*)0, 0, (const char*)0, 0,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fbe830
-GlobalObjectO2_00d472a0 g_012687cc(g_012687cc_arg0, g_012687cc_arg1, 108, 0, 0, (const char*)0, 0, (const char*)0, 0,
+// pdb: `dynamic initializer for 'hkpSimulationIslandClass'' | hkpSimulationIsland.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpSimulationIslandClass(g_012687cc_arg0, g_012687cc_arg1, 108, 0, 0, (const char*)0, 0, (const char*)0, 0,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fbe860
 GlobalObjectO2_00d107b0 g_012687fc;
 // @fnv 0x00fbe880
+// pdb: `dynamic initializer for 'hkpWorldObjectClass'' | hkpWorldObjectClass.obj | retail, unique string literal, high
 GlobalObjectO2_00d472a0 g_01268808(g_01268808_arg0, g_01268808_arg1, 140, 0, 0, g_01268808_arg5, 2, g_01268808_arg7, 8,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fbe8c0
-GlobalObjectO2_00d472a0 g_01268838(g_01268838_arg0, (const char*)0, 8, 0, 0, (const char*)0, 0, g_01268838_arg7, 3,
+// pdb: `dynamic initializer for 'hkpEntitySmallArraySerializeOverrideTypeClass'' | hkpEntityClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpEntitySmallArraySerializeOverrideTypeClass(g_01268838_arg0, (const char*)0, 8, 0, 0, (const char*)0, 0, g_01268838_arg7, 3,
                                    (const char*)0, (const char*)0, 0, 1);
 // @fnv 0x00fbe8f0
-GlobalObjectO2_00d472a0 g_01268868(g_01268868_arg0, (const char*)0, 8, 0, 0, (const char*)0, 0, g_01268868_arg7, 4,
+// pdb: `dynamic initializer for 'hkpEntitySpuCollisionCallbackClass'' | hkpEntityClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpEntitySpuCollisionCallbackClass(g_01268868_arg0, (const char*)0, 8, 0, 0, (const char*)0, 0, g_01268868_arg7, 4,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fbe920
-GlobalObjectO2_00d472a0 g_01268898(g_01268898_arg0, (const char*)0, 16, 0, 0, (const char*)0, 0, g_01268898_arg7, 2,
+// pdb: `dynamic initializer for 'hkpEntityExtendedListenersClass'' | hkpEntityClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpEntityExtendedListenersClass(g_01268898_arg0, (const char*)0, 16, 0, 0, (const char*)0, 0, g_01268898_arg7, 2,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fbe950
 GlobalObjectO2_00d472a0 g_012688c8(g_012688c8_arg0, g_012688c8_arg1, 544, 0, 0, g_012688c8_arg5, 1, g_012688c8_arg7, 21,
                                    g_012688c8_arg9, (const char*)0, 0, 2);
 // @fnv 0x00fbe9d0
+// pdb: `dynamic initializer for 'hkpShapeClass'' | hkpShapeClass.obj | retail, unique string literal, high
 GlobalObjectO2_00d472a0 g_01268910(g_01268910_arg0, g_01268910_arg1, 16, 0, 0, (const char*)0, 0, g_01268910_arg7, 2,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fbea00
+// pdb: `dynamic initializer for 'hkpConvexShapeClass'' | hkpConvexShapeClass.obj | retail, unique string literal, high
 GlobalObjectO2_00d472a0 g_01268940(g_01268940_arg0, g_01268940_arg1, 20, 0, 0, g_01268940_arg5, 1, g_01268940_arg7, 1,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fbea40
+// pdb: `dynamic initializer for 'hkpConvexTransformShapeBaseClass'' | hkpConvexShapeClass.obj | retail, unique string literal, high
 GlobalObjectO2_00d472a0 g_01268970(g_01268970_arg0, g_01268970_arg1, 32, 0, 0, (const char*)0, 0, g_01268970_arg7, 2,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fbea70
+// pdb: `dynamic initializer for 'hkBufferedStreamWriterClass'' | hkBufferedStreamWriter.obj | retail, unique string literal, high
 GlobalObjectO2_00d472a0 g_012689e4(g_012689e4_arg0, (const char*)0, 28, 0, 0, (const char*)0, 0, (const char*)0, 0,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fbeaa0
+// pdb: `dynamic initializer for 'hkpUnaryActionClass'' | hkpUnaryActionClass.obj | retail, unique string literal, high
 GlobalObjectO2_00d472a0 g_01268a14(g_01268a14_arg0, g_01268a14_arg1, 28, 0, 0, (const char*)0, 0, g_01268a14_arg7, 1,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fbead0
 GlobalObjectO2_00d472a0 g_01268a48(g_01268a48_arg0, g_01268a48_arg1, 48, 0, 0, (const char*)0, 0, g_01268a48_arg7, 1,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fbeb40
+// pdb: `dynamic initializer for 'hkArrayStreamWriterClass'' | hkArrayStreamWriter.obj | retail, unique string literal, high
 GlobalObjectO2_00d472a0 g_01268ad8(g_01268ad8_arg0, (const char*)0, 20, 0, 0, (const char*)0, 0, (const char*)0, 0,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fbebc0
-GlobalObjectO2_00d472a0 g_01268b24(g_01268b24_arg0, (const char*)0, 12, 0, 0, (const char*)0, 0, g_01268b24_arg7, 3,
+// pdb: `dynamic initializer for 'hkRootLevelContainerNamedVariantClass'' | hkRootLevelContainerClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkRootLevelContainerNamedVariantClass(g_01268b24_arg0, (const char*)0, 12, 0, 0, (const char*)0, 0, g_01268b24_arg7, 3,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fbebf0
-GlobalObjectO2_00d472a0 g_01268b54(g_01268b54_arg0, (const char*)0, 12, 0, 0, (const char*)0, 0, g_01268b54_arg7, 1,
+// pdb: `dynamic initializer for 'hkRootLevelContainerClass'' | hkRootLevelContainerClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkRootLevelContainerClass(g_01268b54_arg0, (const char*)0, 12, 0, 0, (const char*)0, 0, g_01268b54_arg7, 1,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fbec20
 GlobalObjectO2_00d472a0 g_01268b9c(g_01268b9c_arg0, g_01268b9c_arg1, 24, 0, 0, (const char*)0, 0, g_01268b9c_arg7, 2,
@@ -968,825 +1141,1032 @@ GlobalObjectO2_00d472a0 g_01268b9c(g_01268b9c_arg0, g_01268b9c_arg1, 24, 0, 0, (
 GlobalObjectO2_00d472a0 g_01268bcc(g_01268bcc_arg0, g_01268bcc_arg1, 544, 0, 0, (const char*)0, 0, (const char*)0, 0,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fbed00
-GlobalObjectO2_00d472a0 g_01268c14(g_01268c14_arg0, g_01268c14_arg1, 128, 0, 0, (const char*)0, 0, g_01268c14_arg7, 2,
+GlobalObjectO2_00d472a0 hkpStorageSampledHeightFieldShapeClass(g_01268c14_arg0, g_01268c14_arg1, 128, 0, 0, (const char*)0, 0, g_01268c14_arg7, 2,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fbed90
+// pdb: `dynamic initializer for 'hkpSampledHeightFieldShapeClass'' | hkpSampledHeightFieldShapeClass.obj | retail, unique string literal, high
 GlobalObjectO2_00d472a0 g_01268c5c(g_01268c5c_arg0, g_01268c5c_arg1, 96, 0, 0, g_01268c5c_arg5, 1, g_01268c5c_arg7, 9,
                                    g_01268c5c_arg9, (const char*)0, 0, 0);
 // @fnv 0x00fbedd0
-GlobalObjectO2_00d472a0 g_01268c8c(g_01268c8c_arg0, g_01268c8c_arg1, 12, 0, 0, (const char*)0, 0, g_01268c8c_arg7, 3,
+// pdb: `dynamic initializer for 'hkpStorageExtendedMeshShapeMaterialClass'' | hkpStorageExtendedMeshShapeClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpStorageExtendedMeshShapeMaterialClass(g_01268c8c_arg0, g_01268c8c_arg1, 12, 0, 0, (const char*)0, 0, g_01268c8c_arg7, 3,
                                    (const char*)0, (const char*)0, 0, 1);
 // @fnv 0x00fbee00
-GlobalObjectO2_00d472a0 g_01268cbc(g_01268cbc_arg0, g_01268cbc_arg1, 104, 0, 0, (const char*)0, 0, g_01268cbc_arg7, 8,
+GlobalObjectO2_00d472a0 hkpStorageExtendedMeshShapeMeshSubpartStorageClass(g_01268cbc_arg0, g_01268cbc_arg1, 104, 0, 0, (const char*)0, 0, g_01268cbc_arg7, 8,
                                    (const char*)0, (const char*)0, 0, 3);
 // @fnv 0x00fbee70
-GlobalObjectO2_00d472a0 g_01268d04(g_01268d04_arg0, g_01268d04_arg1, 44, 0, 0, (const char*)0, 0, g_01268d04_arg7, 3,
+GlobalObjectO2_00d472a0 hkpStorageExtendedMeshShapeShapeSubpartStorageClass(g_01268d04_arg0, g_01268d04_arg1, 44, 0, 0, (const char*)0, 0, g_01268d04_arg7, 3,
                                    (const char*)0, (const char*)0, 0, 2);
 // @fnv 0x00fbeee0
-GlobalObjectO2_00d472a0 g_01268d4c(g_01268d4c_arg0, g_01268d4c_arg1, 272, 0, 0, (const char*)0, 0, g_01268d4c_arg7, 2,
+GlobalObjectO2_00d472a0 hkpStorageExtendedMeshShapeClass(g_01268d4c_arg0, g_01268d4c_arg1, 272, 0, 0, (const char*)0, 0, g_01268d4c_arg7, 2,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fbef80
+// pdb: `dynamic initializer for 'hkpExtendedMeshShapeSubpartClass'' | hkpExtendedMeshShapeClass.obj | retail, unique string literal, high
 GlobalObjectO2_00d472a0 g_01268d94(g_01268d94_arg0, (const char*)0, 20, 0, 0, (const char*)0, 0, g_01268d94_arg7, 8,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fbefc0
-GlobalObjectO2_00d472a0 g_01268dc4(g_01268dc4_arg0, g_01268dc4_arg1, 96, 0, 0, (const char*)0, 0, g_01268dc4_arg7, 11,
+// pdb: `dynamic initializer for 'hkpExtendedMeshShapeTrianglesSubpartClass'' | hkpExtendedMeshShapeClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpExtendedMeshShapeTrianglesSubpartClass(g_01268dc4_arg0, g_01268dc4_arg1, 96, 0, 0, (const char*)0, 0, g_01268dc4_arg7, 11,
                                    g_01268dc4_arg9, (const char*)0, 0, 2);
 // @fnv 0x00fbf000
-GlobalObjectO2_00d472a0 g_01268df4(g_01268df4_arg0, g_01268df4_arg1, 64, 0, 0, (const char*)0, 0, g_01268df4_arg7, 3,
+// pdb: `dynamic initializer for 'hkpExtendedMeshShapeShapesSubpartClass'' | hkpExtendedMeshShapeClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpExtendedMeshShapeShapesSubpartClass(g_01268df4_arg0, g_01268df4_arg1, 64, 0, 0, (const char*)0, 0, g_01268df4_arg7, 3,
                                    (const char*)0, (const char*)0, 0, 1);
 // @fnv 0x00fbf040
 GlobalObjectO2_00d472a0 g_01268e24(g_01268e24_arg0, g_01268e24_arg1, 240, 0, 0, g_01268e24_arg5, 3, g_01268e24_arg7, 13,
                                    g_01268e24_arg9, (const char*)0, 0, 2);
 // @fnv 0x00fbf0c0
-GlobalObjectO2_00d472a0 g_01268e6c(g_01268e6c_arg0, g_01268e6c_arg1, 80, 0, 0, (const char*)0, 0, g_01268e6c_arg7, 6,
+GlobalObjectO2_00d472a0 hkpStorageMeshShapeSubpartStorageClass(g_01268e6c_arg0, g_01268e6c_arg1, 80, 0, 0, (const char*)0, 0, g_01268e6c_arg7, 6,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fbf130
-GlobalObjectO2_00d472a0 g_01268eb4(g_01268eb4_arg0, g_01268eb4_arg1, 112, 0, 0, (const char*)0, 0, g_01268eb4_arg7, 1,
+GlobalObjectO2_00d472a0 hkpStorageMeshShapeClass(g_01268eb4_arg0, g_01268eb4_arg1, 112, 0, 0, (const char*)0, 0, g_01268eb4_arg7, 1,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fbf1c0
-GlobalObjectO2_00d472a0 g_01268efc(g_01268efc_arg0, (const char*)0, 56, 0, 0, (const char*)0, 0, g_01268efc_arg7, 15,
+// pdb: `dynamic initializer for 'hkpMeshShapeSubpartClass'' | hkpMeshShapeClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpMeshShapeSubpartClass(g_01268efc_arg0, (const char*)0, 56, 0, 0, (const char*)0, 0, g_01268efc_arg7, 15,
                                    g_01268efc_arg9, (const char*)0, 0, 0);
 // @fnv 0x00fbf200
 GlobalObjectO2_00d472a0 g_01268f2c(g_01268f2c_arg0, g_01268f2c_arg1, 96, 0, 0, g_01268f2c_arg5, 2, g_01268f2c_arg7, 7,
                                    g_01268f2c_arg9, (const char*)0, 0, 0);
 // @fnv 0x00fbf280
+// pdb: `dynamic initializer for 'bhkGenericConstraint::ms_RTTI'' | bhkGenericConstraint.obj | debug, unique string literal, high
 GlobalObjectO2_00a7b610 g_01268f78(g_01268f78_arg0, g_01268f78_arg1);
 // @fnv 0x00fbf2a0
-GlobalObjectO2_00a7b610 g_01268f84(g_01268f84_arg0, g_01268f84_arg1);
+// pdb: `dynamic initializer for 'bhkConstraintChain::ms_RTTI'' | bhkConstraintChain.obj | debug, unique string literal, high
+GlobalObjectO2_00a7b610 bhkConstraintChain_ms_RTTI(g_01268f84_arg0, g_01268f84_arg1);
 // @fnv 0x00fbf2c0
+// pdb: `dynamic initializer for 'bhkHeightFieldShape::ms_RTTI'' | bhkHeightFieldShape.obj | debug, unique string literal, high
 GlobalObjectO2_00a7b610 g_01268f90(g_01268f90_arg0, g_01268f90_arg1);
 // @fnv 0x00fbf430
+// pdb: `dynamic initializer for 'hkpPhantomClass'' | hkpPhantomClass.obj | retail, unique string literal, high
 GlobalObjectO2_00d472a0 g_0126902c(g_0126902c_arg0, g_0126902c_arg1, 164, 0, 0, (const char*)0, 0, g_0126902c_arg7, 2,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fbf470
-GlobalObjectO2_00d472a0 g_0126905c(g_0126905c_arg0, (const char*)0, 8, 0, 0, (const char*)0, 0, g_0126905c_arg7, 3,
+// pdb: `dynamic initializer for 'hkpConstraintInstanceSmallArraySerializeOverrideTypeClass'' | hkpConstraintInstanceClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpConstraintInstanceSmallArraySerializeOverrideTypeClass(g_0126905c_arg0, (const char*)0, 8, 0, 0, (const char*)0, 0, g_0126905c_arg7, 3,
                                    (const char*)0, (const char*)0, 0, 1);
 // @fnv 0x00fbf4c0
 GlobalObjectO2_00d472a0 g_0126908c(g_0126908c_arg0, g_0126908c_arg1, 56, 0, 0, g_0126908c_arg5, 5, g_0126908c_arg7, 12,
                                    (const char*)0, (const char*)0, 0, 1);
 // @fnv 0x00fbf540
+// pdb: `dynamic initializer for 'hkpActionClass'' | hkpActionClass.obj | retail, unique string literal, high
 GlobalObjectO2_00d472a0 g_012690d4(g_012690d4_arg0, g_012690d4_arg1, 24, 0, 0, (const char*)0, 0, g_012690d4_arg7, 4,
                                    (const char*)0, g_012690d4_arg10, 0, 0);
 // @fnv 0x00fbf5b0
-GlobalObjectO2_00d472a0 g_01269104(g_01269104_arg0, g_01269104_arg1, 240, 0, 0, g_01269104_arg5, 5, g_01269104_arg7, 54,
+GlobalObjectO2_00d472a0 hkpWorldCinfoClass(g_01269104_arg0, g_01269104_arg1, 240, 0, 0, g_01269104_arg5, 5, g_01269104_arg7, 54,
                                    g_01269104_arg9, (const char*)0, 0, 8);
 // @fnv 0x00fbf630
+// pdb: `dynamic initializer for 'bhkPointToPathConstraint::ms_RTTI'' | bhkPointToPathConstraint.obj | debug, unique string literal, high
 GlobalObjectO2_00a7b610 g_01269160(g_01269160_arg0, g_01269160_arg1);
 // @fnv 0x00fbf650
+// pdb: `dynamic initializer for 'hkpBinaryActionClass'' | hkpBinaryActionClass.obj | retail, unique string literal, high
 GlobalObjectO2_00d472a0 g_01269168(g_01269168_arg0, g_01269168_arg1, 32, 0, 0, (const char*)0, 0, g_01269168_arg7, 2,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fbf690
+// pdb: `dynamic initializer for 'hkpShapeCollectionClass'' | hkpShapeCollectionClass.obj | retail, unique string literal, high
 GlobalObjectO2_00d472a0 g_01269198(g_01269198_arg0, g_01269198_arg1, 24, 0, 1, g_01269198_arg5, 1, g_01269198_arg7, 2,
                                    g_01269198_arg9, (const char*)0, 0, 0);
 // @fnv 0x00fbf6d0
+// pdb: `dynamic initializer for 'hkBaseObjectClass'' | hkBaseObjectClass.obj | retail, unique string literal, high
 GlobalObjectO2_00d472a0 g_012691c8(g_012691c8_arg0, (const char*)0, 4, 0, 1, (const char*)0, 0, (const char*)0, 0,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fbf730
-GlobalObjectO2_00d472a0 g_01269514(g_01269514_arg0, g_01269514_arg1, 44, 0, 0, g_01269514_arg5, 3, g_01269514_arg7, 9,
+GlobalObjectO2_00d472a0 hkpSimulationClass(g_01269514_arg0, g_01269514_arg1, 44, 0, 0, g_01269514_arg5, 3, g_01269514_arg7, 9,
                                    (const char*)0, (const char*)0, 1, 0);
 // @fnv 0x00fbf7b0
-GlobalObjectO2_00d472a0 g_0126955c(g_0126955c_arg0, g_0126955c_arg1, 16, 0, 0, (const char*)0, 0, (const char*)0, 0,
+GlobalObjectO2_00d472a0 hkpDefaultToiResourceMgrClass(g_0126955c_arg0, g_0126955c_arg1, 16, 0, 0, (const char*)0, 0, (const char*)0, 0,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fbf7e0
-GlobalObjectO2_00d472a0 g_0126958c(g_0126958c_arg0, (const char*)0, 8, 0, 0, (const char*)0, 0, g_0126958c_arg7, 1,
+// pdb: `dynamic initializer for 'hkpPropertyValueClass'' | hkpPropertyClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpPropertyValueClass(g_0126958c_arg0, (const char*)0, 8, 0, 0, (const char*)0, 0, g_0126958c_arg7, 1,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fbf810
+// pdb: `dynamic initializer for 'hkpPropertyClass'' | hkpPropertyClass.obj | retail, unique string literal, high
 GlobalObjectO2_00d472a0 g_012695bc(g_012695bc_arg0, (const char*)0, 16, 0, 0, (const char*)0, 0, g_012695bc_arg7, 3,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fbf840
+// pdb: `dynamic initializer for 'hkMultiThreadCheckClass'' | hkMultiThreadCheckClass.obj | retail, unique string literal, high
 GlobalObjectO2_00d472a0 g_012695ec(g_012695ec_arg0, (const char*)0, 8, 0, 0, g_012695ec_arg5, 2, g_012695ec_arg7, 3,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fbf870
+// pdb: `dynamic initializer for 'hkpLinkedCollidableClass'' | hkpLinkedCollidableClass.obj | retail, unique string literal, high
 GlobalObjectO2_00d472a0 g_0126961c(g_0126961c_arg0, g_0126961c_arg1, 92, 0, 0, (const char*)0, 0, g_0126961c_arg7, 1,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fbf8a0
+// pdb: `dynamic initializer for 'hkLocalFrameClass'' | hkLocalFrameClass.obj | retail, unique string literal, high
 GlobalObjectO2_00d472a0 g_0126964c(g_0126964c_arg0, g_0126964c_arg1, 8, 0, 0, (const char*)0, 0, (const char*)0, 0,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fbf8d0
-GlobalObjectO2_00d472a0 g_0126967c(g_0126967c_arg0, g_0126967c_arg1, 12, 0, 0, (const char*)0, 0, g_0126967c_arg7, 1,
+GlobalObjectO2_00d472a0 hkLocalFrameGroupClass(g_0126967c_arg0, g_0126967c_arg1, 12, 0, 0, (const char*)0, 0, g_0126967c_arg7, 1,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fbf940
-GlobalObjectO2_00d472a0 g_012696c4(g_012696c4_arg0, g_012696c4_arg1, 112, 0, 0, (const char*)0, 0, g_012696c4_arg7, 5,
+GlobalObjectO2_00d472a0 hkSimpleLocalFrameClass(g_012696c4_arg0, g_012696c4_arg1, 112, 0, 0, (const char*)0, 0, g_012696c4_arg7, 5,
                                    (const char*)0, (const char*)0, 0, 1);
 // @fnv 0x00fbf9b0
 GlobalObjectO2_00d472a0 g_0126970c(g_0126970c_arg0, g_0126970c_arg1, 288, 0, 0, (const char*)0, 0, (const char*)0, 0,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fbfa20
-GlobalObjectO2_00d472a0 g_01269754(g_01269754_arg0, g_01269754_arg1, 288, 0, 0, (const char*)0, 0, (const char*)0, 0,
+GlobalObjectO2_00d472a0 hkpMaxSizeMotionClass(g_01269754_arg0, g_01269754_arg1, 288, 0, 0, (const char*)0, 0, (const char*)0, 0,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fbfaa0
+// pdb: `dynamic initializer for 'hkpMaterialClass'' | hkpMaterialClass.obj | retail, unique string literal, high
 GlobalObjectO2_00d472a0 g_0126979c(g_0126979c_arg0, (const char*)0, 12, 0, 0, g_0126979c_arg5, 1, g_0126979c_arg7, 3,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fbfad0
+// pdb: `dynamic initializer for 'hkRangeRealAttributeClass'' | hkAttributesClass.obj | retail, unique string literal, high
 GlobalObjectO2_00d472a0 g_012697cc(g_012697cc_arg0, (const char*)0, 16, 0, 0, (const char*)0, 0, g_012697cc_arg7, 4,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fbfb00
+// pdb: `dynamic initializer for 'hkRangeInt32AttributeClass'' | hkAttributesClass.obj | retail, unique string literal, high
 GlobalObjectO2_00d472a0 g_012697fc(g_012697fc_arg0, (const char*)0, 16, 0, 0, (const char*)0, 0, g_012697fc_arg7, 4,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fbfb40
+// pdb: `dynamic initializer for 'hkUiAttributeClass'' | hkAttributesClass.obj | retail, unique string literal, high
 GlobalObjectO2_00d472a0 g_0126982c(g_0126982c_arg0, (const char*)0, 20, 0, 0, g_0126982c_arg5, 1, g_0126982c_arg7, 8,
                                    (const char*)0, (const char*)0, 0, 2);
 // @fnv 0x00fbfb80
+// pdb: `dynamic initializer for 'hkGizmoAttributeClass'' | hkAttributesClass.obj | retail, unique string literal, high
 GlobalObjectO2_00d472a0 g_0126985c(g_0126985c_arg0, (const char*)0, 12, 0, 0, g_0126985c_arg5, 1, g_0126985c_arg7, 3,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fbfbc0
+// pdb: `dynamic initializer for 'hkModelerNodeTypeAttributeClass'' | hkAttributesClass.obj | retail, unique string literal, high
 GlobalObjectO2_00d472a0 g_0126988c(g_0126988c_arg0, (const char*)0, 1, 0, 0, g_0126988c_arg5, 1, g_0126988c_arg7, 1,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fbfc00
+// pdb: `dynamic initializer for 'hkLinkAttributeClass'' | hkAttributesClass.obj | retail, unique string literal, high
 GlobalObjectO2_00d472a0 g_012698bc(g_012698bc_arg0, (const char*)0, 1, 0, 0, g_012698bc_arg5, 1, g_012698bc_arg7, 1,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fbfc40
-GlobalObjectO2_00d472a0 g_012698ec(g_012698ec_arg0, (const char*)0, 1, 0, 0, g_012698ec_arg5, 1, g_012698ec_arg7, 1,
+// pdb: `dynamic initializer for 'hkSemanticsAttributeClass'' | hkAttributesClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkSemanticsAttributeClass(g_012698ec_arg0, (const char*)0, 1, 0, 0, g_012698ec_arg5, 1, g_012698ec_arg7, 1,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fbfc70
+// pdb: `dynamic initializer for 'hkDescriptionAttributeClass'' | hkAttributesClass.obj | retail, unique string literal, high
 GlobalObjectO2_00d472a0 g_0126991c(g_0126991c_arg0, (const char*)0, 4, 0, 0, (const char*)0, 0, g_0126991c_arg7, 1,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fbfcb0
+// pdb: `dynamic initializer for 'hkArrayTypeAttributeClass'' | hkAttributesClass.obj | retail, unique string literal, high
 GlobalObjectO2_00d472a0 g_0126994c(g_0126994c_arg0, (const char*)0, 1, 0, 0, g_0126994c_arg5, 1, g_0126994c_arg7, 1,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fbfce0
+// pdb: `dynamic initializer for 'hkDataObjectTypeAttributeClass'' | hkAttributesClass.obj | retail, unique string literal, high
 GlobalObjectO2_00d472a0 g_0126997c(g_0126997c_arg0, (const char*)0, 4, 0, 0, (const char*)0, 0, g_0126997c_arg7, 1,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fbfd10
+// pdb: `dynamic initializer for 'hkDocumentationAttributeClass'' | hkAttributesClass.obj | retail, unique string literal, high
 GlobalObjectO2_00d472a0 g_012699ac(g_012699ac_arg0, (const char*)0, 4, 0, 0, (const char*)0, 0, g_012699ac_arg7, 1,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fbfd40
+// pdb: `dynamic initializer for 'hkpShapeContainerClass'' | hkpShapeContainerClass.obj | retail, unique string literal, high
 GlobalObjectO2_00d472a0 g_012699dc(g_012699dc_arg0, (const char*)0, 4, 0, 1, (const char*)0, 0, (const char*)0, 0,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fbfd70
-GlobalObjectO2_00d472a0 g_01269a0c(g_01269a0c_arg0, g_01269a0c_arg1, 8, 0, 0, (const char*)0, 0, g_01269a0c_arg7, 1,
+GlobalObjectO2_00d472a0 hkpSingleShapeContainerClass(g_01269a0c_arg0, g_01269a0c_arg1, 8, 0, 0, (const char*)0, 0, g_01269a0c_arg7, 1,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fbfde0
+// pdb: `dynamic initializer for 'hkpSphereRepShapeClass'' | hkpSphereRepShapeClass.obj | retail, unique string literal, high
 GlobalObjectO2_00d472a0 g_01269a54(g_01269a54_arg0, g_01269a54_arg1, 16, 0, 0, (const char*)0, 0, (const char*)0, 0,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fbff00
 GlobalObjectO2_00d472a0 g_01269b28(g_01269b28_arg0, g_01269b28_arg1, 68, 0, 0, (const char*)0, 0, g_01269b28_arg7, 7,
                                    g_01269b28_arg9, (const char*)0, 0, 0);
 // @fnv 0x00fbffe0
+// pdb: `dynamic initializer for 'hkpHeightFieldShapeClass'' | hkpHeightFieldShapeClass.obj | retail, unique string literal, high
 GlobalObjectO2_00d472a0 g_01269b84(g_01269b84_arg0, g_01269b84_arg1, 16, 0, 0, (const char*)0, 0, (const char*)0, 0,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc0010
-GlobalObjectO2_00d472a0 g_01269bb4(g_01269bb4_arg0, g_01269bb4_arg1, 8, 0, 0, (const char*)0, 0, g_01269bb4_arg7, 1,
+// pdb: `dynamic initializer for 'hkpNamedMeshMaterialClass'' | hkpNamedMeshMaterialClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpNamedMeshMaterialClass(g_01269bb4_arg0, g_01269bb4_arg1, 8, 0, 0, (const char*)0, 0, g_01269bb4_arg7, 1,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc0040
+// pdb: `dynamic initializer for 'hkpMeshMaterialClass'' | hkpMeshMaterialClass.obj | retail, unique string literal, high
 GlobalObjectO2_00d472a0 g_01269be4(g_01269be4_arg0, (const char*)0, 4, 0, 0, (const char*)0, 0, g_01269be4_arg7, 1,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc0070
-GlobalObjectO2_00d472a0 g_01269c14(g_01269c14_arg0, (const char*)0, 1, 0, 0, g_01269c14_arg5, 3, (const char*)0, 0,
+// pdb: `dynamic initializer for 'hkpWeldingUtilityClass'' | hkpWeldingUtilityClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpWeldingUtilityClass(g_01269c14_arg0, (const char*)0, 1, 0, 0, g_01269c14_arg5, 3, (const char*)0, 0,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc00a0
-GlobalObjectO2_00d472a0 g_01269c44(g_01269c44_arg0, g_01269c44_arg1, 40, 0, 0, (const char*)0, 0, g_01269c44_arg7, 7,
+GlobalObjectO2_00d472a0 hkpBreakableConstraintDataClass(g_01269c44_arg0, g_01269c44_arg1, 40, 0, 0, (const char*)0, 0, g_01269c44_arg7, 7,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc0120
+// pdb: `dynamic initializer for 'hkpBvTreeShapeClass'' | hkpBvTreeShapeClass.obj | retail, unique string literal, high
 GlobalObjectO2_00d472a0 g_01269c8c(g_01269c8c_arg0, g_01269c8c_arg1, 20, 0, 0, g_01269c8c_arg5, 1, g_01269c8c_arg7, 1,
                                    g_01269c8c_arg9, (const char*)0, 0, 0);
 // @fnv 0x00fc01f0
+// pdb: `dynamic initializer for 'hkpConstraintAtomClass'' | hkpConstraintAtomClass.obj | retail, unique string literal, high
 GlobalObjectO2_00d472a0 g_01269ce8(g_01269ce8_arg0, (const char*)0, 2, 0, 0, g_01269ce8_arg5, 2, g_01269ce8_arg7, 1,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc0220
-GlobalObjectO2_00d472a0 g_01269d18(g_01269d18_arg0, g_01269d18_arg1, 12, 0, 0, (const char*)0, 0, g_01269d18_arg7, 2,
+// pdb: `dynamic initializer for 'hkpBridgeConstraintAtomClass'' | hkpConstraintAtomClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpBridgeConstraintAtomClass(g_01269d18_arg0, g_01269d18_arg1, 12, 0, 0, (const char*)0, 0, g_01269d18_arg7, 2,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc0250
-GlobalObjectO2_00d472a0 g_01269d48(g_01269d48_arg0, (const char*)0, 12, 0, 0, (const char*)0, 0, g_01269d48_arg7, 1,
+// pdb: `dynamic initializer for 'hkpBridgeAtomsClass'' | hkpConstraintAtomClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpBridgeAtomsClass(g_01269d48_arg0, (const char*)0, 12, 0, 0, (const char*)0, 0, g_01269d48_arg7, 1,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc0280
-GlobalObjectO2_00d472a0 g_01269d78(g_01269d78_arg0, g_01269d78_arg1, 48, 0, 0, (const char*)0, 0, g_01269d78_arg7, 8,
+// pdb: `dynamic initializer for 'hkpSimpleContactConstraintAtomClass'' | hkpConstraintAtomClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpSimpleContactConstraintAtomClass(g_01269d78_arg0, g_01269d78_arg1, 48, 0, 0, (const char*)0, 0, g_01269d78_arg7, 8,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc02e0
-GlobalObjectO2_00d472a0 g_01269da8(g_01269da8_arg0, g_01269da8_arg1, 8, 0, 0, (const char*)0, 0, g_01269da8_arg7, 3,
+// pdb: `dynamic initializer for 'hkpBallSocketConstraintAtomClass'' | hkpConstraintAtomClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpBallSocketConstraintAtomClass(g_01269da8_arg0, g_01269da8_arg1, 8, 0, 0, (const char*)0, 0, g_01269da8_arg7, 3,
                                    g_01269da8_arg9, (const char*)0, 0, 1);
 // @fnv 0x00fc0320
-GlobalObjectO2_00d472a0 g_01269dd8(g_01269dd8_arg0, g_01269dd8_arg1, 8, 0, 0, (const char*)0, 0, g_01269dd8_arg7, 1,
+// pdb: `dynamic initializer for 'hkpStiffSpringConstraintAtomClass'' | hkpConstraintAtomClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpStiffSpringConstraintAtomClass(g_01269dd8_arg0, g_01269dd8_arg1, 8, 0, 0, (const char*)0, 0, g_01269dd8_arg7, 1,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc0350
-GlobalObjectO2_00d472a0 g_01269e08(g_01269e08_arg0, g_01269e08_arg1, 144, 0, 0, (const char*)0, 0, g_01269e08_arg7, 2,
+// pdb: `dynamic initializer for 'hkpSetLocalTransformsConstraintAtomClass'' | hkpConstraintAtomClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpSetLocalTransformsConstraintAtomClass(g_01269e08_arg0, g_01269e08_arg1, 144, 0, 0, (const char*)0, 0, g_01269e08_arg7, 2,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc0390
-GlobalObjectO2_00d472a0 g_01269e38(g_01269e38_arg0, g_01269e38_arg1, 48, 0, 0, (const char*)0, 0, g_01269e38_arg7, 2,
+// pdb: `dynamic initializer for 'hkpSetLocalTranslationsConstraintAtomClass'' | hkpConstraintAtomClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpSetLocalTranslationsConstraintAtomClass(g_01269e38_arg0, g_01269e38_arg1, 48, 0, 0, (const char*)0, 0, g_01269e38_arg7, 2,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc03c0
-GlobalObjectO2_00d472a0 g_01269e68(g_01269e68_arg0, g_01269e68_arg1, 112, 0, 0, (const char*)0, 0, g_01269e68_arg7, 2,
+// pdb: `dynamic initializer for 'hkpSetLocalRotationsConstraintAtomClass'' | hkpConstraintAtomClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpSetLocalRotationsConstraintAtomClass(g_01269e68_arg0, g_01269e68_arg1, 112, 0, 0, (const char*)0, 0, g_01269e68_arg7, 2,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc03f0
-GlobalObjectO2_00d472a0 g_01269e98(g_01269e98_arg0, g_01269e98_arg1, 4, 0, 0, (const char*)0, 0, g_01269e98_arg7, 1,
+// pdb: `dynamic initializer for 'hkpOverwritePivotConstraintAtomClass'' | hkpConstraintAtomClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpOverwritePivotConstraintAtomClass(g_01269e98_arg0, g_01269e98_arg1, 4, 0, 0, (const char*)0, 0, g_01269e98_arg7, 1,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc0420
-GlobalObjectO2_00d472a0 g_01269ec8(g_01269ec8_arg0, g_01269ec8_arg1, 4, 0, 0, (const char*)0, 0, g_01269ec8_arg7, 1,
+// pdb: `dynamic initializer for 'hkpLinConstraintAtomClass'' | hkpConstraintAtomClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpLinConstraintAtomClass(g_01269ec8_arg0, g_01269ec8_arg1, 4, 0, 0, (const char*)0, 0, g_01269ec8_arg7, 1,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc0450
-GlobalObjectO2_00d472a0 g_01269ef8(g_01269ef8_arg0, g_01269ef8_arg1, 12, 0, 0, (const char*)0, 0, g_01269ef8_arg7, 3,
+// pdb: `dynamic initializer for 'hkpLinSoftConstraintAtomClass'' | hkpConstraintAtomClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpLinSoftConstraintAtomClass(g_01269ef8_arg0, g_01269ef8_arg1, 12, 0, 0, (const char*)0, 0, g_01269ef8_arg7, 3,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc0480
-GlobalObjectO2_00d472a0 g_01269f28(g_01269f28_arg0, g_01269f28_arg1, 12, 0, 0, (const char*)0, 0, g_01269f28_arg7, 3,
+// pdb: `dynamic initializer for 'hkpLinLimitConstraintAtomClass'' | hkpConstraintAtomClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpLinLimitConstraintAtomClass(g_01269f28_arg0, g_01269f28_arg1, 12, 0, 0, (const char*)0, 0, g_01269f28_arg7, 3,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc04b0
-GlobalObjectO2_00d472a0 g_01269f58(g_01269f58_arg0, g_01269f58_arg1, 4, 0, 0, (const char*)0, 0, g_01269f58_arg7, 1,
+// pdb: `dynamic initializer for 'hkp2dAngConstraintAtomClass'' | hkpConstraintAtomClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkp2dAngConstraintAtomClass(g_01269f58_arg0, g_01269f58_arg1, 4, 0, 0, (const char*)0, 0, g_01269f58_arg7, 1,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc04e0
-GlobalObjectO2_00d472a0 g_01269f88(g_01269f88_arg0, g_01269f88_arg1, 4, 0, 0, (const char*)0, 0, g_01269f88_arg7, 2,
+// pdb: `dynamic initializer for 'hkpAngConstraintAtomClass'' | hkpConstraintAtomClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpAngConstraintAtomClass(g_01269f88_arg0, g_01269f88_arg1, 4, 0, 0, (const char*)0, 0, g_01269f88_arg7, 2,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc0510
-GlobalObjectO2_00d472a0 g_01269fb8(g_01269fb8_arg0, g_01269fb8_arg1, 16, 0, 0, (const char*)0, 0, g_01269fb8_arg7, 5,
+// pdb: `dynamic initializer for 'hkpAngLimitConstraintAtomClass'' | hkpConstraintAtomClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpAngLimitConstraintAtomClass(g_01269fb8_arg0, g_01269fb8_arg1, 16, 0, 0, (const char*)0, 0, g_01269fb8_arg7, 5,
                                    g_01269fb8_arg9, (const char*)0, 0, 0);
 // @fnv 0x00fc0550
-GlobalObjectO2_00d472a0 g_01269fe8(g_01269fe8_arg0, g_01269fe8_arg1, 20, 0, 0, (const char*)0, 0, g_01269fe8_arg7, 6,
+// pdb: `dynamic initializer for 'hkpTwistLimitConstraintAtomClass'' | hkpConstraintAtomClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpTwistLimitConstraintAtomClass(g_01269fe8_arg0, g_01269fe8_arg1, 20, 0, 0, (const char*)0, 0, g_01269fe8_arg7, 6,
                                    g_01269fe8_arg9, (const char*)0, 0, 0);
 // @fnv 0x00fc05a0
-GlobalObjectO2_00d472a0 g_0126a018(g_0126a018_arg0, g_0126a018_arg1, 20, 0, 0, g_0126a018_arg5, 1, g_0126a018_arg7, 8,
+// pdb: `dynamic initializer for 'hkpConeLimitConstraintAtomClass'' | hkpConstraintAtomClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpConeLimitConstraintAtomClass(g_0126a018_arg0, g_0126a018_arg1, 20, 0, 0, g_0126a018_arg5, 1, g_0126a018_arg7, 8,
                                    g_0126a018_arg9, (const char*)0, 0, 0);
 // @fnv 0x00fc05e0
-GlobalObjectO2_00d472a0 g_0126a048(g_0126a048_arg0, g_0126a048_arg1, 12, 0, 0, (const char*)0, 0, g_0126a048_arg7, 4,
+// pdb: `dynamic initializer for 'hkpAngFrictionConstraintAtomClass'' | hkpConstraintAtomClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpAngFrictionConstraintAtomClass(g_0126a048_arg0, g_0126a048_arg1, 12, 0, 0, (const char*)0, 0, g_0126a048_arg7, 4,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc0610
-GlobalObjectO2_00d472a0 g_0126a078(g_0126a078_arg0, g_0126a078_arg1, 20, 0, 0, (const char*)0, 0, g_0126a078_arg7, 7,
+// pdb: `dynamic initializer for 'hkpAngMotorConstraintAtomClass'' | hkpConstraintAtomClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpAngMotorConstraintAtomClass(g_0126a078_arg0, g_0126a078_arg1, 20, 0, 0, (const char*)0, 0, g_0126a078_arg7, 7,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc0640
-GlobalObjectO2_00d472a0 g_0126a0a8(g_0126a0a8_arg0, g_0126a0a8_arg1, 80, 0, 0, (const char*)0, 0, g_0126a0a8_arg7, 5,
+// pdb: `dynamic initializer for 'hkpRagdollMotorConstraintAtomClass'' | hkpConstraintAtomClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpRagdollMotorConstraintAtomClass(g_0126a0a8_arg0, g_0126a0a8_arg1, 80, 0, 0, (const char*)0, 0, g_0126a0a8_arg7, 5,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc0670
-GlobalObjectO2_00d472a0 g_0126a0d8(g_0126a0d8_arg0, g_0126a0d8_arg1, 8, 0, 0, (const char*)0, 0, g_0126a0d8_arg7, 3,
+// pdb: `dynamic initializer for 'hkpLinFrictionConstraintAtomClass'' | hkpConstraintAtomClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpLinFrictionConstraintAtomClass(g_0126a0d8_arg0, g_0126a0d8_arg1, 8, 0, 0, (const char*)0, 0, g_0126a0d8_arg7, 3,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc06a0
-GlobalObjectO2_00d472a0 g_0126a108(g_0126a108_arg0, g_0126a108_arg1, 16, 0, 0, (const char*)0, 0, g_0126a108_arg7, 6,
+// pdb: `dynamic initializer for 'hkpLinMotorConstraintAtomClass'' | hkpConstraintAtomClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpLinMotorConstraintAtomClass(g_0126a108_arg0, g_0126a108_arg1, 16, 0, 0, (const char*)0, 0, g_0126a108_arg7, 6,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc06d0
-GlobalObjectO2_00d472a0 g_0126a138(g_0126a138_arg0, g_0126a138_arg1, 64, 0, 0, (const char*)0, 0, g_0126a138_arg7, 4,
+// pdb: `dynamic initializer for 'hkpPulleyConstraintAtomClass'' | hkpConstraintAtomClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpPulleyConstraintAtomClass(g_0126a138_arg0, g_0126a138_arg1, 64, 0, 0, (const char*)0, 0, g_0126a138_arg7, 4,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc0700
+// pdb: `dynamic initializer for 'hkpModifierConstraintAtomClass'' | hkpConstraintAtomClass.obj | retail, unique string literal, high
 GlobalObjectO2_00d472a0 g_0126a168(g_0126a168_arg0, g_0126a168_arg1, 32, 0, 0, (const char*)0, 0, g_0126a168_arg7, 4,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc0730
-GlobalObjectO2_00d472a0 g_0126a198(g_0126a198_arg0, g_0126a198_arg1, 48, 0, 0, (const char*)0, 0, g_0126a198_arg7, 2,
+// pdb: `dynamic initializer for 'hkpSoftContactModifierConstraintAtomClass'' | hkpConstraintAtomClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpSoftContactModifierConstraintAtomClass(g_0126a198_arg0, g_0126a198_arg1, 48, 0, 0, (const char*)0, 0, g_0126a198_arg7, 2,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc0760
-GlobalObjectO2_00d472a0 g_0126a1c8(g_0126a1c8_arg0, g_0126a1c8_arg1, 64, 0, 0, (const char*)0, 0, g_0126a1c8_arg7, 2,
+// pdb: `dynamic initializer for 'hkpMassChangerModifierConstraintAtomClass'' | hkpConstraintAtomClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpMassChangerModifierConstraintAtomClass(g_0126a1c8_arg0, g_0126a1c8_arg1, 64, 0, 0, (const char*)0, 0, g_0126a1c8_arg7, 2,
                                    (const char*)0, (const char*)0, 0, 1);
 // @fnv 0x00fc0790
-GlobalObjectO2_00d472a0 g_0126a1f8(g_0126a1f8_arg0, g_0126a1f8_arg1, 64, 0, 0, (const char*)0, 0, g_0126a1f8_arg7, 2,
+// pdb: `dynamic initializer for 'hkpCenterOfMassChangerModifierConstraintAtomClass'' | hkpConstraintAtomClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpCenterOfMassChangerModifierConstraintAtomClass(g_0126a1f8_arg0, g_0126a1f8_arg1, 64, 0, 0, (const char*)0, 0, g_0126a1f8_arg7, 2,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc07c0
-GlobalObjectO2_00d472a0 g_0126a228(g_0126a228_arg0, g_0126a228_arg1, 32, 0, 0, (const char*)0, 0, (const char*)0, 0,
+// pdb: `dynamic initializer for 'hkpViscousSurfaceModifierConstraintAtomClass'' | hkpConstraintAtomClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpViscousSurfaceModifierConstraintAtomClass(g_0126a228_arg0, g_0126a228_arg1, 32, 0, 0, (const char*)0, 0, (const char*)0, 0,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc07f0
-GlobalObjectO2_00d472a0 g_0126a258(g_0126a258_arg0, g_0126a258_arg1, 48, 0, 0, (const char*)0, 0, g_0126a258_arg7, 1,
+// pdb: `dynamic initializer for 'hkpMovingSurfaceModifierConstraintAtomClass'' | hkpConstraintAtomClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpMovingSurfaceModifierConstraintAtomClass(g_0126a258_arg0, g_0126a258_arg1, 48, 0, 0, (const char*)0, 0, g_0126a258_arg7, 1,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc0820
-GlobalObjectO2_00d472a0 g_0126a288(g_0126a288_arg0, g_0126a288_arg1, 32, 0, 0, (const char*)0, 0, (const char*)0, 0,
+// pdb: `dynamic initializer for 'hkpIgnoreModifierConstraintAtomClass'' | hkpConstraintAtomClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpIgnoreModifierConstraintAtomClass(g_0126a288_arg0, g_0126a288_arg1, 32, 0, 0, (const char*)0, 0, (const char*)0, 0,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc0850
+// pdb: `dynamic initializer for 'hkpConstraintDataClass'' | hkpConstraintDataClass.obj | retail, unique string literal, high
 GlobalObjectO2_00d472a0 g_0126a2b8(g_0126a2b8_arg0, g_0126a2b8_arg1, 12, 0, 0, g_0126a2b8_arg5, 1, g_0126a2b8_arg7, 1,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc0890
+// pdb: `dynamic initializer for 'hkWorldMemoryAvailableWatchDogClass'' | hkpWorldMemoryAvailableWatchDogClass.obj | retail, unique string literal, high
 GlobalObjectO2_00d472a0 g_0126a2e8(g_0126a2e8_arg0, g_0126a2e8_arg1, 8, 0, 0, (const char*)0, 0, (const char*)0, 0,
                                    (const char*)0, (const char*)0, 0, 1);
 // @fnv 0x00fc08c0
+// pdb: `dynamic initializer for 'hkpConvexListFilterClass'' | hkpConvexListFilterClass.obj | retail, unique string literal, high
 GlobalObjectO2_00d472a0 g_0126a318(g_0126a318_arg0, g_0126a318_arg1, 8, 0, 0, g_0126a318_arg5, 1, (const char*)0, 0,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc0900
+// pdb: `dynamic initializer for 'hkpCollisionFilterClass'' | hkpCollisionFilterClass.obj | retail, unique string literal, high
 GlobalObjectO2_00d472a0 g_0126a348(g_0126a348_arg0, g_0126a348_arg1, 48, 0, 4, g_0126a348_arg5, 1, g_0126a348_arg7, 3,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc0940
-GlobalObjectO2_00d472a0 g_0126a378(g_0126a378_arg0, (const char*)0, 32, 0, 0, (const char*)0, 0, g_0126a378_arg7, 2,
+// pdb: `dynamic initializer for 'hkAabbClass'' | hkAabbClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkAabbClass(g_0126a378_arg0, (const char*)0, 32, 0, 0, (const char*)0, 0, g_0126a378_arg7, 2,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc0970
-GlobalObjectO2_00d472a0 g_0126a3a8(g_0126a3a8_arg0, (const char*)0, 32, 0, 0, (const char*)0, 0, g_0126a3a8_arg7, 6,
+// pdb: `dynamic initializer for 'hkAabbUint32Class'' | hkAabbClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkAabbUint32Class(g_0126a3a8_arg0, (const char*)0, 32, 0, 0, (const char*)0, 0, g_0126a3a8_arg7, 6,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc09e0
-GlobalObjectO2_00d472a0 g_0126a430(g_0126a430_arg0, g_0126a430_arg1, 848, 0, 0, g_0126a430_arg5, 3, g_0126a430_arg7, 83,
+GlobalObjectO2_00d472a0 hkpWorldClass(g_0126a430_arg0, g_0126a430_arg1, 848, 0, 0, g_0126a430_arg5, 3, g_0126a430_arg7, 83,
                                    (const char*)0, (const char*)0, 1, 0);
 // @fnv 0x00fc0a60
-GlobalObjectO2_00d472a0 g_0126a478(g_0126a478_arg0, (const char*)0, 44, 0, 0, (const char*)0, 0, g_0126a478_arg7, 10,
+// pdb: `dynamic initializer for 'hkpCollidableBoundingVolumeDataClass'' | hkpCollidableClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpCollidableBoundingVolumeDataClass(g_0126a478_arg0, (const char*)0, 44, 0, 0, (const char*)0, 0, g_0126a478_arg7, 10,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc0a90
+// pdb: `dynamic initializer for 'hkpCollidableClass'' | hkpCollidableClass.obj | retail, unique string literal, high
 GlobalObjectO2_00d472a0 g_0126a4a8(g_0126a4a8_arg0, g_0126a4a8_arg1, 80, 0, 0, g_0126a4a8_arg5, 1, g_0126a4a8_arg7, 6,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc0ae0
+// pdb: `dynamic initializer for 'hkpMotionClass'' | hkpMotionClass.obj | retail, unique string literal, high
 GlobalObjectO2_00d472a0 g_0126a4d8(g_0126a4d8_arg0, g_0126a4d8_arg1, 288, 0, 0, g_0126a4d8_arg5, 1, g_0126a4d8_arg7, 12,
                                    (const char*)0, (const char*)0, 0, 3);
 // @fnv 0x00fc0b30
+// pdb: `dynamic initializer for 'hkaAnimationClass'' | hkaAnimationClass.obj | retail, unique string literal, high
 GlobalObjectO2_00d472a0 g_0126a508(g_0126a508_arg0, g_0126a508_arg1, 40, 0, 0, g_0126a508_arg5, 1, g_0126a508_arg7, 6,
                                    (const char*)0, (const char*)0, 0, 1);
 // @fnv 0x00fc0b70
+// pdb: `dynamic initializer for 'hkaAnimatedReferenceFrameClass'' | hkaAnimatedReferenceFrameClass.obj | retail, unique string literal, high
 GlobalObjectO2_00d472a0 g_0126a538(g_0126a538_arg0, g_0126a538_arg1, 8, 0, 0, (const char*)0, 0, (const char*)0, 0,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc0ba0
+// pdb: `dynamic initializer for 'hkpVehicleWheelCollideClass'' | hkpVehicleWheelCollideClass.obj | retail, unique string literal, high
 GlobalObjectO2_00d472a0 g_0126a568(g_0126a568_arg0, g_0126a568_arg1, 12, 0, 0, g_0126a568_arg5, 1, g_0126a568_arg7, 2,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc0be0
+// pdb: `dynamic initializer for 'hkpVehicleVelocityDamperClass'' | hkpVehicleVelocityDamperClass.obj | retail, unique string literal, high
 GlobalObjectO2_00d472a0 g_0126a598(g_0126a598_arg0, g_0126a598_arg1, 8, 0, 0, (const char*)0, 0, (const char*)0, 0,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc0c10
+// pdb: `dynamic initializer for 'hkpVehicleTransmissionClass'' | hkpVehicleTransmissionClass.obj | retail, unique string literal, high
 GlobalObjectO2_00d472a0 g_0126a5c8(g_0126a5c8_arg0, g_0126a5c8_arg1, 8, 0, 0, (const char*)0, 0, (const char*)0, 0,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc0c40
-GlobalObjectO2_00d472a0 g_0126a5f8(g_0126a5f8_arg0, (const char*)0, 48, 0, 0, (const char*)0, 0, g_0126a5f8_arg7, 3,
+// pdb: `dynamic initializer for 'hkpVehicleSuspensionSuspensionWheelParametersClass'' | hkpVehicleSuspensionClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpVehicleSuspensionSuspensionWheelParametersClass(g_0126a5f8_arg0, (const char*)0, 48, 0, 0, (const char*)0, 0, g_0126a5f8_arg7, 3,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc0c70
+// pdb: `dynamic initializer for 'hkpVehicleSuspensionClass'' | hkpVehicleSuspensionClass.obj | retail, unique string literal, high
 GlobalObjectO2_00d472a0 g_0126a628(g_0126a628_arg0, g_0126a628_arg1, 20, 0, 0, (const char*)0, 0, g_0126a628_arg7, 1,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc0ca0
+// pdb: `dynamic initializer for 'hkpVehicleSteeringClass'' | hkpVehicleSteeringClass.obj | retail, unique string literal, high
 GlobalObjectO2_00d472a0 g_0126a658(g_0126a658_arg0, g_0126a658_arg1, 8, 0, 0, (const char*)0, 0, (const char*)0, 0,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc0cd0
+// pdb: `dynamic initializer for 'hkpVehicleEngineClass'' | hkpVehicleEngineClass.obj | retail, unique string literal, high
 GlobalObjectO2_00d472a0 g_0126a688(g_0126a688_arg0, g_0126a688_arg1, 8, 0, 0, (const char*)0, 0, (const char*)0, 0,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc0d00
+// pdb: `dynamic initializer for 'hkpVehicleDriverInputStatusClass'' | hkpVehicleDriverInputClass.obj | retail, unique string literal, high
 GlobalObjectO2_00d472a0 g_0126a6b8(g_0126a6b8_arg0, g_0126a6b8_arg1, 8, 0, 0, (const char*)0, 0, (const char*)0, 0,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc0d30
+// pdb: `dynamic initializer for 'hkpVehicleDriverInputClass'' | hkpVehicleDriverInputClass.obj | retail, unique string literal, high
 GlobalObjectO2_00d472a0 g_0126a6e8(g_0126a6e8_arg0, g_0126a6e8_arg1, 8, 0, 0, (const char*)0, 0, (const char*)0, 0,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc0d60
+// pdb: `dynamic initializer for 'hkpVehicleCastBatchingManagerClass'' | hkpVehicleCastBatchingManagerClass.obj | retail, unique string literal, high
 GlobalObjectO2_00d472a0 g_0126a718(g_0126a718_arg0, g_0126a718_arg1, 24, 0, 0, (const char*)0, 0, g_0126a718_arg7, 1,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc0d90
+// pdb: `dynamic initializer for 'hkpVehicleBrakeClass'' | hkpVehicleBrakeClass.obj | retail, unique string literal, high
 GlobalObjectO2_00d472a0 g_0126a748(g_0126a748_arg0, g_0126a748_arg1, 8, 0, 0, (const char*)0, 0, (const char*)0, 0,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc0dc0
+// pdb: `dynamic initializer for 'hkpVehicleAerodynamicsClass'' | hkpVehicleAerodynamicsClass.obj | retail, unique string literal, high
 GlobalObjectO2_00d472a0 g_0126a778(g_0126a778_arg0, g_0126a778_arg1, 8, 0, 0, (const char*)0, 0, (const char*)0, 0,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc0df0
+// pdb: `dynamic initializer for 'hkpShapePhantomClass'' | hkpShapePhantomClass.obj | retail, unique string literal, high
 GlobalObjectO2_00d472a0 g_0126a7a8(g_0126a7a8_arg0, g_0126a7a8_arg1, 352, 0, 0, (const char*)0, 0, g_0126a7a8_arg7, 1,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc0e30
+// pdb: `dynamic initializer for 'hkpParametricCurveClass'' | hkpParametricCurveClass.obj | retail, unique string literal, high
 GlobalObjectO2_00d472a0 g_0126a7d8(g_0126a7d8_arg0, g_0126a7d8_arg1, 8, 0, 0, (const char*)0, 0, (const char*)0, 0,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc0e60
+// pdb: `dynamic initializer for 'hkpLimitedForceConstraintMotorClass'' | hkpLimitedForceConstraintMotorClass.obj | retail, unique string literal, high
 GlobalObjectO2_00d472a0 g_0126a808(g_0126a808_arg0, g_0126a808_arg1, 20, 0, 0, (const char*)0, 0, g_0126a808_arg7, 2,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc0ea0
+// pdb: `dynamic initializer for 'hkpConstraintMotorClass'' | hkpConstraintMotorClass.obj | retail, unique string literal, high
 GlobalObjectO2_00d472a0 g_0126a838(g_0126a838_arg0, g_0126a838_arg1, 12, 0, 0, g_0126a838_arg5, 1, g_0126a838_arg7, 1,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc0ee0
+// pdb: `dynamic initializer for 'hkpConstraintChainDataClass'' | hkpConstraintChainDataClass.obj | retail, unique string literal, high
 GlobalObjectO2_00d472a0 g_0126a868(g_0126a868_arg0, g_0126a868_arg1, 12, 0, 0, (const char*)0, 0, (const char*)0, 0,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc0f10
-GlobalObjectO2_00d472a0 g_0126a898(g_0126a898_arg0, g_0126a898_arg1, 8, 0, 0, (const char*)0, 0, (const char*)0, 0,
+// pdb: `dynamic initializer for 'hkpBreakableBodyClass'' | hkpBreakableBodyClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpBreakableBodyClass(g_0126a898_arg0, g_0126a898_arg1, 8, 0, 0, (const char*)0, 0, (const char*)0, 0,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc0f40
-GlobalObjectO2_00d472a0 g_0126a8c8(g_0126a8c8_arg0, g_0126a8c8_arg1, 36, 0, 0, (const char*)0, 0, g_0126a8c8_arg7, 1,
+// pdb: `dynamic initializer for 'hkpArrayActionClass'' | hkpArrayActionClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpArrayActionClass(g_0126a8c8_arg0, g_0126a8c8_arg1, 36, 0, 0, (const char*)0, 0, g_0126a8c8_arg7, 1,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc0f70
-GlobalObjectO2_00d472a0 g_0126a8f8(g_0126a8f8_arg0, (const char*)0, 4, 0, 1, (const char*)0, 0, (const char*)0, 0,
+// pdb: `dynamic initializer for 'hkpShapeCollectionFilterClass'' | hkpShapeCollectionFilterClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpShapeCollectionFilterClass(g_0126a8f8_arg0, (const char*)0, 4, 0, 1, (const char*)0, 0, (const char*)0, 0,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc0fa0
-GlobalObjectO2_00d472a0 g_0126a928(g_0126a928_arg0, (const char*)0, 4, 0, 1, (const char*)0, 0, (const char*)0, 0,
+// pdb: `dynamic initializer for 'hkpRayShapeCollectionFilterClass'' | hkpRayShapeCollectionFilterClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpRayShapeCollectionFilterClass(g_0126a928_arg0, (const char*)0, 4, 0, 1, (const char*)0, 0, (const char*)0, 0,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc0fd0
-GlobalObjectO2_00d472a0 g_0126a958(g_0126a958_arg0, (const char*)0, 4, 0, 1, (const char*)0, 0, (const char*)0, 0,
+// pdb: `dynamic initializer for 'hkpRayCollidableFilterClass'' | hkpRayCollidableFilterClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpRayCollidableFilterClass(g_0126a958_arg0, (const char*)0, 4, 0, 1, (const char*)0, 0, (const char*)0, 0,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc1000
-GlobalObjectO2_00d472a0 g_0126a988(g_0126a988_arg0, g_0126a988_arg1, 16, 0, 0, (const char*)0, 0, (const char*)0, 0,
+// pdb: `dynamic initializer for 'hkpPhantomCallbackShapeClass'' | hkpPhantomCallbackShapeClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpPhantomCallbackShapeClass(g_0126a988_arg0, g_0126a988_arg1, 16, 0, 0, (const char*)0, 0, (const char*)0, 0,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc1030
-GlobalObjectO2_00d472a0 g_0126a9b8(g_0126a9b8_arg0, (const char*)0, 4, 0, 1, (const char*)0, 0, (const char*)0, 0,
+// pdb: `dynamic initializer for 'hkpCollidableCollidableFilterClass'' | hkpCollidableCollidableFilterClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpCollidableCollidableFilterClass(g_0126a9b8_arg0, (const char*)0, 4, 0, 1, (const char*)0, 0, (const char*)0, 0,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc1060
+// pdb: `dynamic initializer for 'hkMoppBvTreeShapeBaseClass'' | hkpMoppBvTreeShapeClass.obj | retail, unique string literal, high
 GlobalObjectO2_00d472a0 g_0126a9e8(g_0126a9e8_arg0, g_0126a9e8_arg1, 48, 0, 0, (const char*)0, 0, g_0126a9e8_arg7, 4,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc1090
-GlobalObjectO2_00d472a0 g_0126aa18(g_0126aa18_arg0, g_0126aa18_arg1, 64, 0, 0, (const char*)0, 0, g_0126aa18_arg7, 2,
+GlobalObjectO2_00d472a0 hkpMoppBvTreeShapeClass(g_0126aa18_arg0, g_0126aa18_arg1, 64, 0, 0, (const char*)0, 0, g_0126aa18_arg7, 2,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc1100
-GlobalObjectO2_00d472a0 g_0126aa60(g_0126aa60_arg0, g_0126aa60_arg1, 8, 0, 0, g_0126aa60_arg5, 2, (const char*)0, 0,
+// pdb: `dynamic initializer for 'hkMeshVertexBufferClass'' | hkMeshVertexBufferClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkMeshVertexBufferClass(g_0126aa60_arg0, g_0126aa60_arg1, 8, 0, 0, g_0126aa60_arg5, 2, (const char*)0, 0,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc1130
-GlobalObjectO2_00d472a0 g_0126aa90(g_0126aa90_arg0, g_0126aa90_arg1, 8, 0, 0, (const char*)0, 0, (const char*)0, 0,
+// pdb: `dynamic initializer for 'hkMeshMaterialClass'' | hkMeshShapeClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkMeshMaterialClass(g_0126aa90_arg0, g_0126aa90_arg1, 8, 0, 0, (const char*)0, 0, (const char*)0, 0,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc1180
-GlobalObjectO2_00d472a0 g_0126aac0(g_0126aac0_arg0, (const char*)0, 40, 0, 0, g_0126aac0_arg5, 2, g_0126aac0_arg7, 10,
+// pdb: `dynamic initializer for 'hkMeshSectionClass'' | hkMeshShapeClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkMeshSectionClass(g_0126aac0_arg0, (const char*)0, 40, 0, 0, g_0126aac0_arg5, 2, g_0126aac0_arg7, 10,
                                    (const char*)0, (const char*)0, 0, 1);
 // @fnv 0x00fc11d0
-GlobalObjectO2_00d472a0 g_0126aaf0(g_0126aaf0_arg0, (const char*)0, 32, 0, 0, (const char*)0, 0, g_0126aaf0_arg7, 8,
+// pdb: `dynamic initializer for 'hkMeshSectionCinfoClass'' | hkMeshShapeClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkMeshSectionCinfoClass(g_0126aaf0_arg0, (const char*)0, 32, 0, 0, (const char*)0, 0, g_0126aaf0_arg7, 8,
                                    (const char*)0, (const char*)0, 0, 1);
 // @fnv 0x00fc1200
+// pdb: `dynamic initializer for 'hkMeshShapeClass'' | hkMeshShapeClass.obj | retail, unique string literal, high
 GlobalObjectO2_00d472a0 g_0126ab20(g_0126ab20_arg0, g_0126ab20_arg1, 8, 0, 0, g_0126ab20_arg5, 1, (const char*)0, 0,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc1230
+// pdb: `dynamic initializer for 'hkResourceBaseClass'' | hkResourceHandleClass.obj | retail, unique string literal, high
 GlobalObjectO2_00d472a0 g_0126ab50(g_0126ab50_arg0, g_0126ab50_arg1, 8, 0, 0, g_0126ab50_arg5, 1, (const char*)0, 0,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc1260
+// pdb: `dynamic initializer for 'hkResourceHandleClass'' | hkResourceHandleClass.obj | retail, unique string literal, high
 GlobalObjectO2_00d472a0 g_0126ab80(g_0126ab80_arg0, g_0126ab80_arg1, 8, 0, 0, (const char*)0, 0, (const char*)0, 0,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc1290
+// pdb: `dynamic initializer for 'hkResourceContainerClass'' | hkResourceHandleClass.obj | retail, unique string literal, high
 GlobalObjectO2_00d472a0 g_0126abb0(g_0126abb0_arg0, g_0126abb0_arg1, 8, 0, 0, (const char*)0, 0, (const char*)0, 0,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc12c0
-GlobalObjectO2_00d472a0 g_0126abe0(g_0126abe0_arg0, (const char*)0, 8, 0, 0, (const char*)0, 0, g_0126abe0_arg7, 2,
+// pdb: `dynamic initializer for 'hkMemoryResourceHandleExternalLinkClass'' | hkResourceHandleClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkMemoryResourceHandleExternalLinkClass(g_0126abe0_arg0, (const char*)0, 8, 0, 0, (const char*)0, 0, g_0126abe0_arg7, 2,
                                    (const char*)0, (const char*)0, 0, 1);
 // @fnv 0x00fc12f0
-GlobalObjectO2_00d472a0 g_0126ac10(g_0126ac10_arg0, g_0126ac10_arg1, 28, 0, 0, (const char*)0, 0, g_0126ac10_arg7, 3,
+GlobalObjectO2_00d472a0 hkMemoryResourceHandleClass(g_0126ac10_arg0, g_0126ac10_arg1, 28, 0, 0, (const char*)0, 0, g_0126ac10_arg7, 3,
                                    (const char*)0, (const char*)0, 0, 2);
 // @fnv 0x00fc1360
-GlobalObjectO2_00d472a0 g_0126ac58(g_0126ac58_arg0, g_0126ac58_arg1, 40, 0, 0, (const char*)0, 0, g_0126ac58_arg7, 4,
+GlobalObjectO2_00d472a0 hkMemoryResourceContainerClass(g_0126ac58_arg0, g_0126ac58_arg1, 40, 0, 0, (const char*)0, 0, g_0126ac58_arg7, 4,
                                    (const char*)0, (const char*)0, 0, 1);
 // @fnv 0x00fc13d0
-GlobalObjectO2_00d472a0 g_0126aca0(g_0126aca0_arg0, g_0126aca0_arg1, 8, 0, 0, g_0126aca0_arg5, 1, (const char*)0, 0,
+// pdb: `dynamic initializer for 'hkStreamWriterClass'' | hkStreamWriterClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkStreamWriterClass(g_0126aca0_arg0, g_0126aca0_arg1, 8, 0, 0, g_0126aca0_arg5, 1, (const char*)0, 0,
                                    (const char*)0, (const char*)0, 1, 0);
 // @fnv 0x00fc1400
-GlobalObjectO2_00d472a0 g_0126acd0(g_0126acd0_arg0, (const char*)0, 48, 0, 0, (const char*)0, 0, g_0126acd0_arg7, 12,
+// pdb: `dynamic initializer for 'hkaKeyFrameHierarchyUtilityControlDataClass'' | hkaKeyFrameHierarchyUtilityClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkaKeyFrameHierarchyUtilityControlDataClass(g_0126acd0_arg0, (const char*)0, 48, 0, 0, (const char*)0, 0, g_0126acd0_arg7, 12,
                                    g_0126acd0_arg9, (const char*)0, 0, 0);
 // @fnv 0x00fc1430
-GlobalObjectO2_00d472a0 g_0126ad00(g_0126ad00_arg0, (const char*)0, 1, 0, 0, (const char*)0, 0, (const char*)0, 0,
+// pdb: `dynamic initializer for 'hkaKeyFrameHierarchyUtilityClass'' | hkaKeyFrameHierarchyUtilityClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkaKeyFrameHierarchyUtilityClass(g_0126ad00_arg0, (const char*)0, 1, 0, 0, (const char*)0, 0, (const char*)0, 0,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc1460
-GlobalObjectO2_00d472a0 g_0126ad30(g_0126ad30_arg0, (const char*)0, 36, 0, 0, (const char*)0, 0, g_0126ad30_arg7, 10,
+// pdb: `dynamic initializer for 'hkaWaveletCompressedAnimationCompressionParamsClass'' | hkaWaveletCompressedAnimationClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkaWaveletCompressedAnimationCompressionParamsClass(g_0126ad30_arg0, (const char*)0, 36, 0, 0, (const char*)0, 0, g_0126ad30_arg7, 10,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc1490
-GlobalObjectO2_00d472a0 g_0126ad60(g_0126ad60_arg0, (const char*)0, 20, 0, 0, (const char*)0, 0, g_0126ad60_arg7, 6,
+// pdb: `dynamic initializer for 'hkaWaveletCompressedAnimationQuantizationFormatClass'' | hkaWaveletCompressedAnimationClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkaWaveletCompressedAnimationQuantizationFormatClass(g_0126ad60_arg0, (const char*)0, 20, 0, 0, (const char*)0, 0, g_0126ad60_arg7, 6,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc14c0
-GlobalObjectO2_00d472a0 g_0126ad90(g_0126ad90_arg0, g_0126ad90_arg1, 112, 0, 0, (const char*)0, 0, g_0126ad90_arg7, 12,
+GlobalObjectO2_00d472a0 hkaWaveletCompressedAnimationClass(g_0126ad90_arg0, g_0126ad90_arg1, 112, 0, 0, (const char*)0, 0, g_0126ad90_arg7, 12,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc1550
-GlobalObjectO2_00d472a0 g_0126add8(g_0126add8_arg0, (const char*)0, 28, 0, 0, g_0126add8_arg5, 2, g_0126add8_arg7, 12,
+// pdb: `dynamic initializer for 'hkaSplineCompressedAnimationTrackCompressionParamsClass'' | hkaSplineCompressedAnimationClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkaSplineCompressedAnimationTrackCompressionParamsClass(g_0126add8_arg0, (const char*)0, 28, 0, 0, g_0126add8_arg5, 2, g_0126add8_arg7, 12,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc1580
-GlobalObjectO2_00d472a0 g_0126ae08(g_0126ae08_arg0, (const char*)0, 4, 0, 0, (const char*)0, 0, g_0126ae08_arg7, 2,
+// pdb: `dynamic initializer for 'hkaSplineCompressedAnimationAnimationCompressionParamsClass'' | hkaSplineCompressedAnimationClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkaSplineCompressedAnimationAnimationCompressionParamsClass(g_0126ae08_arg0, (const char*)0, 4, 0, 0, (const char*)0, 0, g_0126ae08_arg7, 2,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc15b0
-GlobalObjectO2_00d472a0 g_0126ae38(g_0126ae38_arg0, g_0126ae38_arg1, 132, 0, 0, (const char*)0, 0, g_0126ae38_arg7, 13,
+GlobalObjectO2_00d472a0 hkaSplineCompressedAnimationClass(g_0126ae38_arg0, g_0126ae38_arg1, 132, 0, 0, (const char*)0, 0, g_0126ae38_arg7, 13,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc1630
-GlobalObjectO2_00d472a0 g_0126ae80(g_0126ae80_arg0, (const char*)0, 64, 0, 0, (const char*)0, 0, g_0126ae80_arg7, 3,
+// pdb: `dynamic initializer for 'hkaSkeletonMapperDataSimpleMappingClass'' | hkaSkeletonMapperDataClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkaSkeletonMapperDataSimpleMappingClass(g_0126ae80_arg0, (const char*)0, 64, 0, 0, (const char*)0, 0, g_0126ae80_arg7, 3,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc1660
-GlobalObjectO2_00d472a0 g_0126aeb0(g_0126aeb0_arg0, (const char*)0, 112, 0, 0, (const char*)0, 0, g_0126aeb0_arg7, 6,
+// pdb: `dynamic initializer for 'hkaSkeletonMapperDataChainMappingClass'' | hkaSkeletonMapperDataClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkaSkeletonMapperDataChainMappingClass(g_0126aeb0_arg0, (const char*)0, 112, 0, 0, (const char*)0, 0, g_0126aeb0_arg7, 6,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc16a0
-GlobalObjectO2_00d472a0 g_0126aee0(g_0126aee0_arg0, (const char*)0, 112, 0, 0, g_0126aee0_arg5, 1, g_0126aee0_arg7, 8,
+// pdb: `dynamic initializer for 'hkaSkeletonMapperDataClass'' | hkaSkeletonMapperDataClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkaSkeletonMapperDataClass(g_0126aee0_arg0, (const char*)0, 112, 0, 0, g_0126aee0_arg5, 1, g_0126aee0_arg7, 8,
                                    (const char*)0, (const char*)0, 0, 1);
 // @fnv 0x00fc16d0
-GlobalObjectO2_00d472a0 g_0126af10(g_0126af10_arg0, (const char*)0, 8, 0, 0, (const char*)0, 0, g_0126af10_arg7, 2,
+// pdb: `dynamic initializer for 'hkaSkeletonLocalFrameOnBoneClass'' | hkaSkeletonClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkaSkeletonLocalFrameOnBoneClass(g_0126af10_arg0, (const char*)0, 8, 0, 0, (const char*)0, 0, g_0126af10_arg7, 2,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc1700
-GlobalObjectO2_00d472a0 g_0126af40(g_0126af40_arg0, g_0126af40_arg1, 72, 0, 0, (const char*)0, 0, g_0126af40_arg7, 6,
+GlobalObjectO2_00d472a0 hkaSkeletonClass(g_0126af40_arg0, g_0126af40_arg1, 72, 0, 0, (const char*)0, 0, g_0126af40_arg7, 6,
                                    (const char*)0, (const char*)0, 0, 2);
 // @fnv 0x00fc1770
-GlobalObjectO2_00d472a0 g_0126af88(g_0126af88_arg0, (const char*)0, 12, 0, 0, (const char*)0, 0, g_0126af88_arg7, 1,
+// pdb: `dynamic initializer for 'hkaMeshBindingMappingClass'' | hkaMeshBindingClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkaMeshBindingMappingClass(g_0126af88_arg0, (const char*)0, 12, 0, 0, (const char*)0, 0, g_0126af88_arg7, 1,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc17a0
-GlobalObjectO2_00d472a0 g_0126afb8(g_0126afb8_arg0, g_0126afb8_arg1, 44, 0, 0, (const char*)0, 0, g_0126afb8_arg7, 5,
+GlobalObjectO2_00d472a0 hkaMeshBindingClass(g_0126afb8_arg0, g_0126afb8_arg1, 44, 0, 0, (const char*)0, 0, g_0126afb8_arg7, 5,
                                    (const char*)0, (const char*)0, 0, 1);
 // @fnv 0x00fc1810
-GlobalObjectO2_00d472a0 g_0126b000(g_0126b000_arg0, (const char*)0, 20, 0, 0, (const char*)0, 0, g_0126b000_arg7, 6,
+// pdb: `dynamic initializer for 'hkaDeltaCompressedAnimationQuantizationFormatClass'' | hkaDeltaCompressedAnimationClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkaDeltaCompressedAnimationQuantizationFormatClass(g_0126b000_arg0, (const char*)0, 20, 0, 0, (const char*)0, 0, g_0126b000_arg7, 6,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc1840
-GlobalObjectO2_00d472a0 g_0126b030(g_0126b030_arg0, g_0126b030_arg1, 120, 0, 0, (const char*)0, 0, g_0126b030_arg7, 14,
+GlobalObjectO2_00d472a0 hkaDeltaCompressedAnimationClass(g_0126b030_arg0, g_0126b030_arg1, 120, 0, 0, (const char*)0, 0, g_0126b030_arg7, 14,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc18b0
-GlobalObjectO2_00d472a0 g_0126b078(g_0126b078_arg0, (const char*)0, 8, 0, 0, (const char*)0, 0, g_0126b078_arg7, 2,
+// pdb: `dynamic initializer for 'hkaBoneClass'' | hkaBoneClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkaBoneClass(g_0126b078_arg0, (const char*)0, 8, 0, 0, (const char*)0, 0, g_0126b078_arg7, 2,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc18e0
-GlobalObjectO2_00d472a0 g_0126b0a8(g_0126b0a8_arg0, (const char*)0, 8, 0, 0, (const char*)0, 0, g_0126b0a8_arg7, 2,
+// pdb: `dynamic initializer for 'hkaAnnotationTrackAnnotationClass'' | hkaAnnotationTrackClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkaAnnotationTrackAnnotationClass(g_0126b0a8_arg0, (const char*)0, 8, 0, 0, (const char*)0, 0, g_0126b0a8_arg7, 2,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc1910
-GlobalObjectO2_00d472a0 g_0126b0d8(g_0126b0d8_arg0, (const char*)0, 16, 0, 0, (const char*)0, 0, g_0126b0d8_arg7, 2,
+// pdb: `dynamic initializer for 'hkaAnnotationTrackClass'' | hkaAnnotationTrackClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkaAnnotationTrackClass(g_0126b0d8_arg0, (const char*)0, 16, 0, 0, (const char*)0, 0, g_0126b0d8_arg7, 2,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc1940
-GlobalObjectO2_00d472a0 g_0126b108(g_0126b108_arg0, (const char*)0, 96, 0, 0, (const char*)0, 0, g_0126b108_arg7, 4,
+// pdb: `dynamic initializer for 'hkpVehicleLinearCastWheelCollideWheelStateClass'' | hkpVehicleLinearCastWheelCollideClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpVehicleLinearCastWheelCollideWheelStateClass(g_0126b108_arg0, (const char*)0, 96, 0, 0, (const char*)0, 0, g_0126b108_arg7, 4,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc1970
-GlobalObjectO2_00d472a0 g_0126b138(g_0126b138_arg0, g_0126b138_arg1, 52, 0, 0, (const char*)0, 0, g_0126b138_arg7, 5,
+GlobalObjectO2_00d472a0 hkpVehicleLinearCastWheelCollideClass(g_0126b138_arg0, g_0126b138_arg1, 52, 0, 0, (const char*)0, 0, g_0126b138_arg7, 5,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc19e0
-GlobalObjectO2_00d472a0 g_0126b180(g_0126b180_arg0, (const char*)0, 224, 0, 0, (const char*)0, 0, g_0126b180_arg7, 17,
+// pdb: `dynamic initializer for 'hkpVehicleInstanceWheelInfoClass'' | hkpVehicleInstanceClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpVehicleInstanceWheelInfoClass(g_0126b180_arg0, (const char*)0, 224, 0, 0, (const char*)0, 0, g_0126b180_arg7, 17,
                                    (const char*)0, (const char*)0, 0, 1);
 // @fnv 0x00fc1a10
-GlobalObjectO2_00d472a0 g_0126b1b0(g_0126b1b0_arg0, g_0126b1b0_arg1, 212, 0, 0, (const char*)0, 0, g_0126b1b0_arg7, 25,
+GlobalObjectO2_00d472a0 hkpVehicleInstanceClass(g_0126b1b0_arg0, g_0126b1b0_arg1, 212, 0, 0, (const char*)0, 0, g_0126b1b0_arg7, 25,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc1a90
-GlobalObjectO2_00d472a0 g_0126b1f8(g_0126b1f8_arg0, (const char*)0, 100, 0, 0, (const char*)0, 0, g_0126b1f8_arg7, 10,
+// pdb: `dynamic initializer for 'hkpVehicleFrictionDescriptionAxisDescriptionClass'' | hkpVehicleFrictionClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpVehicleFrictionDescriptionAxisDescriptionClass(g_0126b1f8_arg0, (const char*)0, 100, 0, 0, (const char*)0, 0, g_0126b1f8_arg7, 10,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc1ac0
-GlobalObjectO2_00d472a0 g_0126b228(g_0126b228_arg0, (const char*)0, 208, 0, 0, (const char*)0, 0, g_0126b228_arg7, 3,
+// pdb: `dynamic initializer for 'hkpVehicleFrictionDescriptionClass'' | hkpVehicleFrictionClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpVehicleFrictionDescriptionClass(g_0126b228_arg0, (const char*)0, 208, 0, 0, (const char*)0, 0, g_0126b228_arg7, 3,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc1af0
-GlobalObjectO2_00d472a0 g_0126b258(g_0126b258_arg0, (const char*)0, 36, 0, 0, (const char*)0, 0, g_0126b258_arg7, 9,
+// pdb: `dynamic initializer for 'hkpVehicleFrictionStatusAxisStatusClass'' | hkpVehicleFrictionClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpVehicleFrictionStatusAxisStatusClass(g_0126b258_arg0, (const char*)0, 36, 0, 0, (const char*)0, 0, g_0126b258_arg7, 9,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc1b20
-GlobalObjectO2_00d472a0 g_0126b288(g_0126b288_arg0, (const char*)0, 72, 0, 0, (const char*)0, 0, g_0126b288_arg7, 1,
+// pdb: `dynamic initializer for 'hkpVehicleFrictionStatusClass'' | hkpVehicleFrictionClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpVehicleFrictionStatusClass(g_0126b288_arg0, (const char*)0, 72, 0, 0, (const char*)0, 0, g_0126b288_arg7, 1,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc1b50
-GlobalObjectO2_00d472a0 g_0126b2b8(g_0126b2b8_arg0, (const char*)0, 12, 0, 0, (const char*)0, 0, g_0126b2b8_arg7, 3,
+// pdb: `dynamic initializer for 'hkpVehicleDefaultSuspensionWheelSpringSuspensionParametersClass'' | hkpVehicleDefaultSuspensionClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpVehicleDefaultSuspensionWheelSpringSuspensionParametersClass(g_0126b2b8_arg0, (const char*)0, 12, 0, 0, (const char*)0, 0, g_0126b2b8_arg7, 3,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc1b80
-GlobalObjectO2_00d472a0 g_0126b2e8(g_0126b2e8_arg0, g_0126b2e8_arg1, 32, 0, 0, (const char*)0, 0, g_0126b2e8_arg7, 1,
+GlobalObjectO2_00d472a0 hkpVehicleDefaultSuspensionClass(g_0126b2e8_arg0, g_0126b2e8_arg1, 32, 0, 0, (const char*)0, 0, g_0126b2e8_arg7, 1,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc1bf0
-GlobalObjectO2_00d472a0 g_0126b330(g_0126b330_arg0, (const char*)0, 12, 0, 0, (const char*)0, 0, g_0126b330_arg7, 3,
+// pdb: `dynamic initializer for 'hkpVehicleDefaultBrakeWheelBrakingPropertiesClass'' | hkpVehicleDefaultBrakeClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpVehicleDefaultBrakeWheelBrakingPropertiesClass(g_0126b330_arg0, (const char*)0, 12, 0, 0, (const char*)0, 0, g_0126b330_arg7, 3,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc1c20
-GlobalObjectO2_00d472a0 g_0126b360(g_0126b360_arg0, g_0126b360_arg1, 24, 0, 0, (const char*)0, 0, g_0126b360_arg7, 2,
+GlobalObjectO2_00d472a0 hkpVehicleDefaultBrakeClass(g_0126b360_arg0, g_0126b360_arg1, 24, 0, 0, (const char*)0, 0, g_0126b360_arg7, 2,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc1c90
-GlobalObjectO2_00d472a0 g_0126b3a8(g_0126b3a8_arg0, (const char*)0, 40, 0, 0, (const char*)0, 0, g_0126b3a8_arg7, 10,
+// pdb: `dynamic initializer for 'hkpVehicleDataWheelComponentParamsClass'' | hkpVehicleDataClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpVehicleDataWheelComponentParamsClass(g_0126b3a8_arg0, (const char*)0, 40, 0, 0, (const char*)0, 0, g_0126b3a8_arg7, 10,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc1cc0
-GlobalObjectO2_00d472a0 g_0126b3d8(g_0126b3d8_arg0, g_0126b3d8_arg1, 416, 0, 0, (const char*)0, 0, g_0126b3d8_arg7, 19,
+GlobalObjectO2_00d472a0 hkpVehicleDataClass(g_0126b3d8_arg0, g_0126b3d8_arg1, 416, 0, 0, (const char*)0, 0, g_0126b3d8_arg7, 19,
                                    g_0126b3d8_arg9, (const char*)0, 0, 1);
 // @fnv 0x00fc1d40
-GlobalObjectO2_00d472a0 g_0126b420(g_0126b420_arg0, (const char*)0, 32, 0, 0, (const char*)0, 0, g_0126b420_arg7, 2,
+// pdb: `dynamic initializer for 'hkpTyremarkPointClass'' | hkpTyremarksInfoClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpTyremarkPointClass(g_0126b420_arg0, (const char*)0, 32, 0, 0, (const char*)0, 0, g_0126b420_arg7, 2,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc1d70
-GlobalObjectO2_00d472a0 g_0126b450(g_0126b450_arg0, g_0126b450_arg1, 28, 0, 0, (const char*)0, 0, g_0126b450_arg7, 3,
+GlobalObjectO2_00d472a0 hkpTyremarksWheelClass(g_0126b450_arg0, g_0126b450_arg1, 28, 0, 0, (const char*)0, 0, g_0126b450_arg7, 3,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc1de0
-GlobalObjectO2_00d472a0 g_0126b498(g_0126b498_arg0, g_0126b498_arg1, 28, 0, 0, (const char*)0, 0, g_0126b498_arg7, 3,
+GlobalObjectO2_00d472a0 hkpTyremarksInfoClass(g_0126b498_arg0, g_0126b498_arg1, 28, 0, 0, (const char*)0, 0, g_0126b498_arg7, 3,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc1e50
+// pdb: `dynamic initializer for 'hkpSerializedTrack1nInfoClass'' | hkpSerializedAgentNnEntryClass.obj | retail, unique string literal, high
 GlobalObjectO2_00d472a0 g_0126b528(g_0126b528_arg0, (const char*)0, 24, 0, 0, (const char*)0, 0, g_0126b528_arg7, 2,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc1e80
-GlobalObjectO2_00d472a0 g_0126b4e0(g_0126b4e0_arg0, g_0126b4e0_arg1, 32, 0, 0, (const char*)0, 0, g_0126b4e0_arg7, 2,
+// pdb: `dynamic initializer for 'hkpSerializedSubTrack1nInfoClass'' | hkpSerializedAgentNnEntryClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpSerializedSubTrack1nInfoClass(g_0126b4e0_arg0, g_0126b4e0_arg1, 32, 0, 0, (const char*)0, 0, g_0126b4e0_arg7, 2,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc1ec0
-GlobalObjectO2_00d472a0 g_0126b558(g_0126b558_arg0, g_0126b558_arg1, 320, 0, 0, g_0126b558_arg5, 1, g_0126b558_arg7, 14,
+GlobalObjectO2_00d472a0 hkpSerializedAgentNnEntryClass(g_0126b558_arg0, g_0126b558_arg1, 320, 0, 0, g_0126b558_arg5, 1, g_0126b558_arg7, 14,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc1f40
-GlobalObjectO2_00d472a0 g_0126b5d0(g_0126b5d0_arg0, (const char*)0, 80, 0, 0, (const char*)0, 0, g_0126b5d0_arg7, 2,
+// pdb: `dynamic initializer for 'hkpSerializedDisplayRbTransformsDisplayTransformPairClass'' | hkpSerializedDisplayRbTransformsClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpSerializedDisplayRbTransformsDisplayTransformPairClass(g_0126b5d0_arg0, (const char*)0, 80, 0, 0, (const char*)0, 0, g_0126b5d0_arg7, 2,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc1f70
-GlobalObjectO2_00d472a0 g_0126b588(g_0126b588_arg0, g_0126b588_arg1, 20, 0, 0, (const char*)0, 0, g_0126b588_arg7, 1,
+GlobalObjectO2_00d472a0 hkpSerializedDisplayRbTransformsClass(g_0126b588_arg0, g_0126b588_arg1, 20, 0, 0, (const char*)0, 0, g_0126b588_arg7, 1,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc1fe0
-GlobalObjectO2_00d472a0 g_0126b678(g_0126b678_arg0, (const char*)0, 8, 0, 0, (const char*)0, 0, g_0126b678_arg7, 2,
+// pdb: `dynamic initializer for 'hkpPoweredChainMapperTargetClass'' | hkpPoweredChainMapperClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpPoweredChainMapperTargetClass(g_0126b678_arg0, (const char*)0, 8, 0, 0, (const char*)0, 0, g_0126b678_arg7, 2,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc2010
-GlobalObjectO2_00d472a0 g_0126b648(g_0126b648_arg0, (const char*)0, 12, 0, 0, (const char*)0, 0, g_0126b648_arg7, 3,
+// pdb: `dynamic initializer for 'hkpPoweredChainMapperLinkInfoClass'' | hkpPoweredChainMapperClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpPoweredChainMapperLinkInfoClass(g_0126b648_arg0, (const char*)0, 12, 0, 0, (const char*)0, 0, g_0126b648_arg7, 3,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc2040
-GlobalObjectO2_00d472a0 g_0126b600(g_0126b600_arg0, g_0126b600_arg1, 44, 0, 0, (const char*)0, 0, g_0126b600_arg7, 3,
+GlobalObjectO2_00d472a0 hkpPoweredChainMapperClass(g_0126b600_arg0, g_0126b600_arg1, 44, 0, 0, (const char*)0, 0, g_0126b600_arg7, 3,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc20b0
-GlobalObjectO2_00d472a0 g_0126b6a8(g_0126b6a8_arg0, (const char*)0, 80, 0, 0, (const char*)0, 0, g_0126b6a8_arg7, 4,
+// pdb: `dynamic initializer for 'hkpMassPropertiesClass'' | hkpInertiaTensorComputerClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpMassPropertiesClass(g_0126b6a8_arg0, (const char*)0, 80, 0, 0, (const char*)0, 0, g_0126b6a8_arg7, 4,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc20e0
-GlobalObjectO2_00d472a0 g_0126b6d8(g_0126b6d8_arg0, (const char*)0, 128, 0, 0, (const char*)0, 0, g_0126b6d8_arg7, 19,
+// pdb: `dynamic initializer for 'hkpCharacterProxyCinfoClass'' | hkpCharacterProxyCinfoClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpCharacterProxyCinfoClass(g_0126b6d8_arg0, (const char*)0, 128, 0, 0, (const char*)0, 0, g_0126b6d8_arg7, 19,
                                    g_0126b6d8_arg9, (const char*)0, 0, 0);
 // @fnv 0x00fc2120
-GlobalObjectO2_00d472a0 g_0126b708(g_0126b708_arg0, (const char*)0, 8, 0, 0, (const char*)0, 0, g_0126b708_arg7, 2,
+// pdb: `dynamic initializer for 'hkpMoppCodeReindexedTerminalClass'' | hkpMoppCodeClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpMoppCodeReindexedTerminalClass(g_0126b708_arg0, (const char*)0, 8, 0, 0, (const char*)0, 0, g_0126b708_arg7, 2,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc2150
-GlobalObjectO2_00d472a0 g_0126b738(g_0126b738_arg0, (const char*)0, 16, 0, 0, (const char*)0, 0, g_0126b738_arg7, 1,
+// pdb: `dynamic initializer for 'hkpMoppCodeCodeInfoClass'' | hkpMoppCodeClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpMoppCodeCodeInfoClass(g_0126b738_arg0, (const char*)0, 16, 0, 0, (const char*)0, 0, g_0126b738_arg7, 1,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc2190
-GlobalObjectO2_00d472a0 g_0126b768(g_0126b768_arg0, g_0126b768_arg1, 48, 0, 0, g_0126b768_arg5, 1, g_0126b768_arg7, 3,
+GlobalObjectO2_00d472a0 hkpMoppCodeClass(g_0126b768_arg0, g_0126b768_arg1, 48, 0, 0, g_0126b768_arg5, 1, g_0126b768_arg7, 3,
                                    g_0126b768_arg9, (const char*)0, 0, 0);
 // @fnv 0x00fc2210
-GlobalObjectO2_00d472a0 g_0126b7b0(g_0126b7b0_arg0, (const char*)0, 32, 0, 0, (const char*)0, 0, g_0126b7b0_arg7, 3,
+// pdb: `dynamic initializer for 'hkpSimpleContactConstraintDataInfoClass'' | hkpSimpleContactConstraintInfoClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpSimpleContactConstraintDataInfoClass(g_0126b7b0_arg0, (const char*)0, 32, 0, 0, (const char*)0, 0, g_0126b7b0_arg7, 3,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc2240
-GlobalObjectO2_00d472a0 g_0126b7e0(g_0126b7e0_arg0, (const char*)0, 304, 0, 0, g_0126b7e0_arg5, 1, g_0126b7e0_arg7, 7,
+// pdb: `dynamic initializer for 'hkpWheelConstraintDataAtomsClass'' | hkpWheelConstraintDataClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpWheelConstraintDataAtomsClass(g_0126b7e0_arg0, (const char*)0, 304, 0, 0, g_0126b7e0_arg5, 1, g_0126b7e0_arg7, 7,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc2280
-GlobalObjectO2_00d472a0 g_0126b810(g_0126b810_arg0, g_0126b810_arg1, 352, 0, 0, (const char*)0, 0, g_0126b810_arg7, 3,
+GlobalObjectO2_00d472a0 hkpWheelConstraintDataClass(g_0126b810_arg0, g_0126b810_arg1, 352, 0, 0, (const char*)0, 0, g_0126b810_arg7, 3,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc2300
-GlobalObjectO2_00d472a0 g_0126b858(g_0126b858_arg0, (const char*)0, 64, 0, 0, (const char*)0, 0, g_0126b858_arg7, 2,
+// pdb: `dynamic initializer for 'hkpStiffSpringConstraintDataAtomsClass'' | hkpStiffSpringConstraintDataClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpStiffSpringConstraintDataAtomsClass(g_0126b858_arg0, (const char*)0, 64, 0, 0, (const char*)0, 0, g_0126b858_arg7, 2,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc2330
-GlobalObjectO2_00d472a0 g_0126b888(g_0126b888_arg0, g_0126b888_arg1, 80, 0, 0, (const char*)0, 0, g_0126b888_arg7, 1,
+GlobalObjectO2_00d472a0 hkpStiffSpringConstraintDataClass(g_0126b888_arg0, g_0126b888_arg1, 80, 0, 0, (const char*)0, 0, g_0126b888_arg7, 1,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc23a0
-GlobalObjectO2_00d472a0 g_0126b8d0(g_0126b8d0_arg0, (const char*)0, 48, 0, 0, (const char*)0, 0, g_0126b8d0_arg7, 3,
+// pdb: `dynamic initializer for 'hkpStiffSpringChainDataConstraintInfoClass'' | hkpStiffSpringChainDataClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpStiffSpringChainDataConstraintInfoClass(g_0126b8d0_arg0, (const char*)0, 48, 0, 0, (const char*)0, 0, g_0126b8d0_arg7, 3,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc23d0
-GlobalObjectO2_00d472a0 g_0126b900(g_0126b900_arg0, g_0126b900_arg1, 48, 0, 0, (const char*)0, 0, g_0126b900_arg7, 5,
+GlobalObjectO2_00d472a0 hkpStiffSpringChainDataClass(g_0126b900_arg0, g_0126b900_arg1, 48, 0, 0, (const char*)0, 0, g_0126b900_arg7, 5,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc2440
-GlobalObjectO2_00d472a0 g_0126b948(g_0126b948_arg0, (const char*)0, 4, 0, 0, (const char*)0, 0, g_0126b948_arg7, 1,
+// pdb: `dynamic initializer for 'hkpSimpleShapePhantomCollisionDetailClass'' | hkpSimpleShapePhantomClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpSimpleShapePhantomCollisionDetailClass(g_0126b948_arg0, (const char*)0, 4, 0, 0, (const char*)0, 0, g_0126b948_arg7, 1,
                                    (const char*)0, (const char*)0, 1, 0);
 // @fnv 0x00fc2470
-GlobalObjectO2_00d472a0 g_0126b978(g_0126b978_arg0, g_0126b978_arg1, 368, 0, 0, (const char*)0, 0, g_0126b978_arg7, 2,
+GlobalObjectO2_00d472a0 hkpSimpleShapePhantomClass(g_0126b978_arg0, g_0126b978_arg1, 368, 0, 0, (const char*)0, 0, g_0126b978_arg7, 2,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc24f0
-GlobalObjectO2_00d472a0 g_0126b9c0(g_0126b9c0_arg0, (const char*)0, 128, 0, 0, (const char*)0, 0, g_0126b9c0_arg7, 2,
+// pdb: `dynamic initializer for 'hkpRotationalConstraintDataAtomsClass'' | hkpRotationalConstraintDataClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpRotationalConstraintDataAtomsClass(g_0126b9c0_arg0, (const char*)0, 128, 0, 0, (const char*)0, 0, g_0126b9c0_arg7, 2,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc2520
-GlobalObjectO2_00d472a0 g_0126b9f0(g_0126b9f0_arg0, g_0126b9f0_arg1, 144, 0, 0, (const char*)0, 0, g_0126b9f0_arg7, 1,
+GlobalObjectO2_00d472a0 hkpRotationalConstraintDataClass(g_0126b9f0_arg0, g_0126b9f0_arg1, 144, 0, 0, (const char*)0, 0, g_0126b9f0_arg7, 1,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc25a0
-GlobalObjectO2_00d472a0 g_0126ba38(g_0126ba38_arg0, (const char*)0, 176, 0, 0, g_0126ba38_arg5, 1, g_0126ba38_arg7, 4,
+// pdb: `dynamic initializer for 'hkpRagdollLimitsDataAtomsClass'' | hkpRagdollLimitsDataClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpRagdollLimitsDataAtomsClass(g_0126ba38_arg0, (const char*)0, 176, 0, 0, g_0126ba38_arg5, 1, g_0126ba38_arg7, 4,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc25e0
-GlobalObjectO2_00d472a0 g_0126ba68(g_0126ba68_arg0, g_0126ba68_arg1, 192, 0, 0, (const char*)0, 0, g_0126ba68_arg7, 1,
+GlobalObjectO2_00d472a0 hkpRagdollLimitsDataClass(g_0126ba68_arg0, g_0126ba68_arg1, 192, 0, 0, (const char*)0, 0, g_0126ba68_arg7, 1,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc2660
-GlobalObjectO2_00d472a0 g_0126bab0(g_0126bab0_arg0, (const char*)0, 304, 0, 0, g_0126bab0_arg5, 1, g_0126bab0_arg7, 7,
+// pdb: `dynamic initializer for 'hkpRagdollConstraintDataAtomsClass'' | hkpRagdollConstraintDataClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpRagdollConstraintDataAtomsClass(g_0126bab0_arg0, (const char*)0, 304, 0, 0, g_0126bab0_arg5, 1, g_0126bab0_arg7, 7,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc26a0
-GlobalObjectO2_00d472a0 g_0126bae0(g_0126bae0_arg0, g_0126bae0_arg1, 320, 0, 0, g_0126bae0_arg5, 1, g_0126bae0_arg7, 1,
+GlobalObjectO2_00d472a0 hkpRagdollConstraintDataClass(g_0126bae0_arg0, g_0126bae0_arg1, 320, 0, 0, g_0126bae0_arg5, 1, g_0126bae0_arg7, 1,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc2720
-GlobalObjectO2_00d472a0 g_0126bb28(g_0126bb28_arg0, (const char*)0, 112, 0, 0, (const char*)0, 0, g_0126bb28_arg7, 2,
+// pdb: `dynamic initializer for 'hkpPulleyConstraintDataAtomsClass'' | hkpPulleyConstraintDataClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpPulleyConstraintDataAtomsClass(g_0126bb28_arg0, (const char*)0, 112, 0, 0, (const char*)0, 0, g_0126bb28_arg7, 2,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc2750
-GlobalObjectO2_00d472a0 g_0126bb58(g_0126bb58_arg0, g_0126bb58_arg1, 128, 0, 0, (const char*)0, 0, g_0126bb58_arg7, 1,
+GlobalObjectO2_00d472a0 hkpPulleyConstraintDataClass(g_0126bb58_arg0, g_0126bb58_arg1, 128, 0, 0, (const char*)0, 0, g_0126bb58_arg7, 1,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc27d0
-GlobalObjectO2_00d472a0 g_0126bba0(g_0126bba0_arg0, (const char*)0, 192, 0, 0, g_0126bba0_arg5, 1, g_0126bba0_arg7, 7,
+// pdb: `dynamic initializer for 'hkpPrismaticConstraintDataAtomsClass'' | hkpPrismaticConstraintDataClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpPrismaticConstraintDataAtomsClass(g_0126bba0_arg0, (const char*)0, 192, 0, 0, g_0126bba0_arg5, 1, g_0126bba0_arg7, 7,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc2810
-GlobalObjectO2_00d472a0 g_0126bbd0(g_0126bbd0_arg0, g_0126bbd0_arg1, 208, 0, 0, (const char*)0, 0, g_0126bbd0_arg7, 1,
+GlobalObjectO2_00d472a0 hkpPrismaticConstraintDataClass(g_0126bbd0_arg0, g_0126bbd0_arg1, 208, 0, 0, (const char*)0, 0, g_0126bbd0_arg7, 1,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc2890
-GlobalObjectO2_00d472a0 g_0126bc18(g_0126bc18_arg0, (const char*)0, 80, 0, 0, (const char*)0, 0, g_0126bc18_arg7, 6,
+// pdb: `dynamic initializer for 'hkpPoweredChainDataConstraintInfoClass'' | hkpPoweredChainDataClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpPoweredChainDataConstraintInfoClass(g_0126bc18_arg0, (const char*)0, 80, 0, 0, (const char*)0, 0, g_0126bc18_arg7, 6,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc28c0
 GlobalObjectO2_00d472a0 g_0126bc48(g_0126bc48_arg0, g_0126bc48_arg1, 64, 0, 0, (const char*)0, 0, g_0126bc48_arg7, 9,
                                    g_0126bc48_arg9, (const char*)0, 0, 0);
 // @fnv 0x00fc2940
+// pdb: `dynamic initializer for 'hkpPointToPlaneConstraintDataAtomsClass'' | hkpPointToPlaneConstraintDataClass.obj | retail, unique string literal, high
 GlobalObjectO2_00d472a0 g_0126bc90(g_0126bc90_arg0, (const char*)0, 160, 0, 0, (const char*)0, 0, g_0126bc90_arg7, 2,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc2970
 GlobalObjectO2_00d472a0 g_0126bcc0(g_0126bcc0_arg0, g_0126bcc0_arg1, 176, 0, 0, (const char*)0, 0, g_0126bcc0_arg7, 1,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc29f0
-GlobalObjectO2_00d472a0 g_0126bd08(g_0126bd08_arg0, (const char*)0, 208, 0, 0, g_0126bd08_arg5, 1, g_0126bd08_arg7, 6,
+// pdb: `dynamic initializer for 'hkpLimitedHingeConstraintDataAtomsClass'' | hkpLimitedHingeConstraintDataClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpLimitedHingeConstraintDataAtomsClass(g_0126bd08_arg0, (const char*)0, 208, 0, 0, g_0126bd08_arg5, 1, g_0126bd08_arg7, 6,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc2a30
-GlobalObjectO2_00d472a0 g_0126bd38(g_0126bd38_arg0, g_0126bd38_arg1, 224, 0, 0, (const char*)0, 0, g_0126bd38_arg7, 1,
+GlobalObjectO2_00d472a0 hkpLimitedHingeConstraintDataClass(g_0126bd38_arg0, g_0126bd38_arg1, 224, 0, 0, (const char*)0, 0, g_0126bd38_arg7, 1,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc2ab0
-GlobalObjectO2_00d472a0 g_0126bd80(g_0126bd80_arg0, (const char*)0, 144, 0, 0, g_0126bd80_arg5, 1, g_0126bd80_arg7, 3,
+// pdb: `dynamic initializer for 'hkpHingeLimitsDataAtomsClass'' | hkpHingeLimitsDataClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpHingeLimitsDataAtomsClass(g_0126bd80_arg0, (const char*)0, 144, 0, 0, g_0126bd80_arg5, 1, g_0126bd80_arg7, 3,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc2af0
-GlobalObjectO2_00d472a0 g_0126bdb0(g_0126bdb0_arg0, g_0126bdb0_arg1, 160, 0, 0, (const char*)0, 0, g_0126bdb0_arg7, 1,
+GlobalObjectO2_00d472a0 hkpHingeLimitsDataClass(g_0126bdb0_arg0, g_0126bdb0_arg1, 160, 0, 0, (const char*)0, 0, g_0126bdb0_arg7, 1,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc2b70
-GlobalObjectO2_00d472a0 g_0126bdf8(g_0126bdf8_arg0, (const char*)0, 160, 0, 0, g_0126bdf8_arg5, 1, g_0126bdf8_arg7, 3,
+// pdb: `dynamic initializer for 'hkpHingeConstraintDataAtomsClass'' | hkpHingeConstraintDataClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpHingeConstraintDataAtomsClass(g_0126bdf8_arg0, (const char*)0, 160, 0, 0, g_0126bdf8_arg5, 1, g_0126bdf8_arg7, 3,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc2bb0
-GlobalObjectO2_00d472a0 g_0126be28(g_0126be28_arg0, g_0126be28_arg1, 176, 0, 0, (const char*)0, 0, g_0126be28_arg7, 1,
+GlobalObjectO2_00d472a0 hkpHingeConstraintDataClass(g_0126be28_arg0, g_0126be28_arg1, 176, 0, 0, (const char*)0, 0, g_0126be28_arg7, 1,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc2c30
-GlobalObjectO2_00d472a0 g_0126be70(g_0126be70_arg0, (const char*)0, 16, 0, 0, (const char*)0, 0, g_0126be70_arg7, 4,
+// pdb: `dynamic initializer for 'hkpGenericConstraintDataSchemeConstraintInfoClass'' | hkpGenericConstraintSchemeClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpGenericConstraintDataSchemeConstraintInfoClass(g_0126be70_arg0, (const char*)0, 16, 0, 0, (const char*)0, 0, g_0126be70_arg7, 4,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc2c60
-GlobalObjectO2_00d472a0 g_0126bea0(g_0126bea0_arg0, (const char*)0, 64, 0, 0, (const char*)0, 0, g_0126bea0_arg7, 5,
+// pdb: `dynamic initializer for 'hkpGenericConstraintDataSchemeClass'' | hkpGenericConstraintSchemeClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpGenericConstraintDataSchemeClass(g_0126bea0_arg0, (const char*)0, 64, 0, 0, (const char*)0, 0, g_0126bea0_arg7, 5,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc2c90
-GlobalObjectO2_00d472a0 g_0126bed0(g_0126bed0_arg0, (const char*)0, 32, 0, 0, (const char*)0, 0, g_0126bed0_arg7, 2,
+// pdb: `dynamic initializer for 'hkpBallSocketChainDataConstraintInfoClass'' | hkpBallSocketChainDataClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpBallSocketChainDataConstraintInfoClass(g_0126bed0_arg0, (const char*)0, 32, 0, 0, (const char*)0, 0, g_0126bed0_arg7, 2,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc2cc0
-GlobalObjectO2_00d472a0 g_0126bf00(g_0126bf00_arg0, g_0126bf00_arg1, 52, 0, 0, (const char*)0, 0, g_0126bf00_arg7, 6,
+GlobalObjectO2_00d472a0 hkpBallSocketChainDataClass(g_0126bf00_arg0, g_0126bf00_arg1, 52, 0, 0, (const char*)0, 0, g_0126bf00_arg7, 6,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc2d30
-GlobalObjectO2_00d472a0 g_0126bf48(g_0126bf48_arg0, (const char*)0, 64, 0, 0, (const char*)0, 0, g_0126bf48_arg7, 2,
+// pdb: `dynamic initializer for 'hkpBallAndSocketConstraintDataAtomsClass'' | hkpBallAndSocketConstraintDataClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpBallAndSocketConstraintDataAtomsClass(g_0126bf48_arg0, (const char*)0, 64, 0, 0, (const char*)0, 0, g_0126bf48_arg7, 2,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc2d60
-GlobalObjectO2_00d472a0 g_0126bf78(g_0126bf78_arg0, g_0126bf78_arg1, 80, 0, 0, (const char*)0, 0, g_0126bf78_arg7, 1,
+GlobalObjectO2_00d472a0 hkpBallAndSocketConstraintDataClass(g_0126bf78_arg0, g_0126bf78_arg1, 80, 0, 0, (const char*)0, 0, g_0126bf78_arg7, 1,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc2dd0
-GlobalObjectO2_00d472a0 g_0126bfc0(g_0126bfc0_arg0, g_0126bfc0_arg1, 12, 0, 0, (const char*)0, 0, g_0126bfc0_arg7, 4,
+// pdb: `dynamic initializer for 'hkpTypedBroadPhaseHandleClass'' | hkpTypedBroadPhaseHandleClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpTypedBroadPhaseHandleClass(g_0126bfc0_arg0, g_0126bfc0_arg1, 12, 0, 0, (const char*)0, 0, g_0126bfc0_arg7, 4,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc2e00
-GlobalObjectO2_00d472a0 g_0126bff0(g_0126bff0_arg0, (const char*)0, 16, 0, 0, (const char*)0, 0, g_0126bff0_arg7, 4,
+// pdb: `dynamic initializer for 'hkpSimpleMeshShapeTriangleClass'' | hkpSimpleMeshShapeClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpSimpleMeshShapeTriangleClass(g_0126bff0_arg0, (const char*)0, 16, 0, 0, (const char*)0, 0, g_0126bff0_arg7, 4,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc2e40
-GlobalObjectO2_00d472a0 g_0126c020(g_0126c020_arg0, g_0126c020_arg1, 68, 0, 0, (const char*)0, 0, g_0126c020_arg7, 5,
+GlobalObjectO2_00d472a0 hkpSimpleMeshShapeClass(g_0126c020_arg0, g_0126c020_arg1, 68, 0, 0, (const char*)0, 0, g_0126c020_arg7, 5,
                                    g_0126c020_arg9, (const char*)0, 0, 0);
 // @fnv 0x00fc2ec0
-GlobalObjectO2_00d472a0 g_0126c068(g_0126c068_arg0, (const char*)0, 32, 0, 0, (const char*)0, 0, g_0126c068_arg7, 2,
+// pdb: `dynamic initializer for 'hkpMultiRayShapeRayClass'' | hkpMultiRayShapeClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpMultiRayShapeRayClass(g_0126c068_arg0, (const char*)0, 32, 0, 0, (const char*)0, 0, g_0126c068_arg7, 2,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc2ef0
-GlobalObjectO2_00d472a0 g_0126c098(g_0126c098_arg0, g_0126c098_arg1, 32, 0, 0, (const char*)0, 0, g_0126c098_arg7, 2,
+GlobalObjectO2_00d472a0 hkpMultiRayShapeClass(g_0126c098_arg0, g_0126c098_arg1, 32, 0, 0, (const char*)0, 0, g_0126c098_arg7, 2,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc2f60
-GlobalObjectO2_00d472a0 g_0126c0e0(g_0126c0e0_arg0, (const char*)0, 16, 0, 0, (const char*)0, 0, g_0126c0e0_arg7, 4,
+// pdb: `dynamic initializer for 'hkpListShapeChildInfoClass'' | hkpListShapeClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpListShapeChildInfoClass(g_0126c0e0_arg0, (const char*)0, 16, 0, 0, (const char*)0, 0, g_0126c0e0_arg7, 4,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc2f90
-GlobalObjectO2_00d472a0 g_0126c110(g_0126c110_arg0, g_0126c110_arg1, 112, 0, 0, g_0126c110_arg5, 1, g_0126c110_arg7, 6,
+GlobalObjectO2_00d472a0 hkpListShapeClass(g_0126c110_arg0, g_0126c110_arg1, 112, 0, 0, g_0126c110_arg5, 1, g_0126c110_arg7, 6,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc3010
-GlobalObjectO2_00d472a0 g_0126c158(g_0126c158_arg0, (const char*)0, 48, 0, 0, (const char*)0, 0, g_0126c158_arg7, 3,
+// pdb: `dynamic initializer for 'hkpConvexVerticesShapeFourVectorsClass'' | hkpConvexVerticesShapeClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpConvexVerticesShapeFourVectorsClass(g_0126c158_arg0, (const char*)0, 48, 0, 0, (const char*)0, 0, g_0126c158_arg7, 3,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc3040
-GlobalObjectO2_00d472a0 g_0126c188(g_0126c188_arg0, g_0126c188_arg1, 112, 0, 0, (const char*)0, 0, g_0126c188_arg7, 7,
+GlobalObjectO2_00d472a0 hkpConvexVerticesShapeClass(g_0126c188_arg0, g_0126c188_arg1, 112, 0, 0, (const char*)0, 0, g_0126c188_arg7, 7,
                                    (const char*)0, (const char*)0, 0, 3);
 // @fnv 0x00fc30b0
-GlobalObjectO2_00d472a0 g_0126c1d0(g_0126c1d0_arg0, (const char*)0, 80, 0, 0, (const char*)0, 0, g_0126c1d0_arg7, 8,
+// pdb: `dynamic initializer for 'hkpCompressedMeshShapeChunkClass'' | hkpCompressedMeshShapeClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpCompressedMeshShapeChunkClass(g_0126c1d0_arg0, (const char*)0, 80, 0, 0, (const char*)0, 0, g_0126c1d0_arg7, 8,
                                    (const char*)0, (const char*)0, 0, 4);
 // @fnv 0x00fc30e0
-GlobalObjectO2_00d472a0 g_0126c200(g_0126c200_arg0, (const char*)0, 16, 0, 0, (const char*)0, 0, g_0126c200_arg7, 5,
+// pdb: `dynamic initializer for 'hkpCompressedMeshShapeBigTriangleClass'' | hkpCompressedMeshShapeClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpCompressedMeshShapeBigTriangleClass(g_0126c200_arg0, (const char*)0, 16, 0, 0, (const char*)0, 0, g_0126c200_arg7, 5,
                                    (const char*)0, (const char*)0, 0, 1);
 // @fnv 0x00fc3110
-GlobalObjectO2_00d472a0 g_0126c230(g_0126c230_arg0, (const char*)0, 64, 0, 0, (const char*)0, 0, g_0126c230_arg7, 6,
+// pdb: `dynamic initializer for 'hkpCompressedMeshShapeConvexPieceClass'' | hkpCompressedMeshShapeClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpCompressedMeshShapeConvexPieceClass(g_0126c230_arg0, (const char*)0, 64, 0, 0, (const char*)0, 0, g_0126c230_arg7, 6,
                                    (const char*)0, (const char*)0, 0, 3);
 // @fnv 0x00fc3160
-GlobalObjectO2_00d472a0 g_0126c260(g_0126c260_arg0, g_0126c260_arg1, 240, 0, 0, g_0126c260_arg5, 1, g_0126c260_arg7, 21,
+GlobalObjectO2_00d472a0 hkpCompressedMeshShapeClass(g_0126c260_arg0, g_0126c260_arg1, 240, 0, 0, g_0126c260_arg5, 1, g_0126c260_arg7, 21,
                                    g_0126c260_arg9, (const char*)0, 0, 8);
 // @fnv 0x00fc31e0
+// pdb: `dynamic initializer for 'hkpCdBodyClass'' | hkpCdBodyClass.obj | retail, unique string literal, high
 GlobalObjectO2_00d472a0 g_0126c2a8(g_0126c2a8_arg0, (const char*)0, 16, 0, 0, (const char*)0, 0, g_0126c2a8_arg7, 4,
                                    (const char*)0, (const char*)0, 0, 1);
 // @fnv 0x00fc3210
+// pdb: `dynamic initializer for 'hkpBroadPhaseHandleClass'' | hkpBroadPhaseHandleClass.obj | retail, unique string literal, high
 GlobalObjectO2_00d472a0 g_0126c2d8(g_0126c2d8_arg0, (const char*)0, 4, 0, 0, (const char*)0, 0, g_0126c2d8_arg7, 1,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc3240
-GlobalObjectO2_00d472a0 g_0126c308(g_0126c308_arg0, (const char*)0, 512, 0, 0, (const char*)0, 0, g_0126c308_arg7, 5,
+// pdb: `dynamic initializer for 'hkpAgent1nSectorClass'' | hkpAgent1nTrackClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkpAgent1nSectorClass(g_0126c308_arg0, (const char*)0, 512, 0, 0, (const char*)0, 0, g_0126c308_arg7, 5,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc3290
-GlobalObjectO2_00d472a0 g_0126c338(g_0126c338_arg0, (const char*)0, 12, 0, 0, (const char*)0, 0, g_0126c338_arg7, 4,
+// pdb: `dynamic initializer for 'hkxVertexDescriptionElementDeclClass'' | hkxVertexDescriptionClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkxVertexDescriptionElementDeclClass(g_0126c338_arg0, (const char*)0, 12, 0, 0, (const char*)0, 0, g_0126c338_arg7, 4,
                                    (const char*)0, (const char*)0, 0, 1);
 // @fnv 0x00fc32c0
-GlobalObjectO2_00d472a0 g_0126c368(g_0126c368_arg0, (const char*)0, 12, 0, 0, g_0126c368_arg5, 2, g_0126c368_arg7, 1,
+// pdb: `dynamic initializer for 'hkxVertexDescriptionClass'' | hkxVertexDescriptionClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkxVertexDescriptionClass(g_0126c368_arg0, (const char*)0, 12, 0, 0, g_0126c368_arg5, 2, g_0126c368_arg7, 1,
                                    (const char*)0, (const char*)0, 0, 1);
 // @fnv 0x00fc32f0
-GlobalObjectO2_00d472a0 g_0126c398(g_0126c398_arg0, (const char*)0, 84, 0, 0, (const char*)0, 0, g_0126c398_arg7, 11,
+// pdb: `dynamic initializer for 'hkxVertexBufferVertexDataClass'' | hkxVertexBufferClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkxVertexBufferVertexDataClass(g_0126c398_arg0, (const char*)0, 84, 0, 0, (const char*)0, 0, g_0126c398_arg7, 11,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc3320
-GlobalObjectO2_00d472a0 g_0126c3c8(g_0126c3c8_arg0, g_0126c3c8_arg1, 104, 0, 0, (const char*)0, 0, g_0126c3c8_arg7, 2,
+GlobalObjectO2_00d472a0 hkxVertexBufferClass(g_0126c3c8_arg0, g_0126c3c8_arg1, 104, 0, 0, (const char*)0, 0, g_0126c3c8_arg7, 2,
                                    (const char*)0, (const char*)0, 0, 1);
 // @fnv 0x00fc3390
-GlobalObjectO2_00d472a0 g_0126c410(g_0126c410_arg0, (const char*)0, 8, 0, 0, (const char*)0, 0, g_0126c410_arg7, 2,
+// pdb: `dynamic initializer for 'hkxNodeAnnotationDataClass'' | hkxNodeClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkxNodeAnnotationDataClass(g_0126c410_arg0, (const char*)0, 8, 0, 0, (const char*)0, 0, g_0126c410_arg7, 2,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc33c0
-GlobalObjectO2_00d472a0 g_0126c440(g_0126c440_arg0, g_0126c440_arg1, 72, 0, 0, (const char*)0, 0, g_0126c440_arg7, 7,
+GlobalObjectO2_00d472a0 hkxNodeClass(g_0126c440_arg0, g_0126c440_arg1, 72, 0, 0, (const char*)0, 0, g_0126c440_arg7, 7,
                                    (const char*)0, (const char*)0, 0, 1);
 // @fnv 0x00fc3440
-GlobalObjectO2_00d472a0 g_0126c488(g_0126c488_arg0, (const char*)0, 12, 0, 0, (const char*)0, 0, g_0126c488_arg7, 3,
+// pdb: `dynamic initializer for 'hkxMaterialTextureStageClass'' | hkxMaterialClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkxMaterialTextureStageClass(g_0126c488_arg0, (const char*)0, 12, 0, 0, (const char*)0, 0, g_0126c488_arg7, 3,
                                    g_0126c488_arg9, (const char*)0, 0, 0);
 // @fnv 0x00fc3470
-GlobalObjectO2_00d472a0 g_0126c4b8(g_0126c4b8_arg0, g_0126c4b8_arg1, 128, 0, 0, g_0126c4b8_arg5, 1, g_0126c4b8_arg7, 8,
+GlobalObjectO2_00d472a0 hkxMaterialClass(g_0126c4b8_arg0, g_0126c4b8_arg1, 128, 0, 0, g_0126c4b8_arg5, 1, g_0126c4b8_arg7, 8,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc34f0
-GlobalObjectO2_00d472a0 g_0126c500(g_0126c500_arg0, (const char*)0, 8, 0, 0, (const char*)0, 0, g_0126c500_arg7, 2,
+// pdb: `dynamic initializer for 'hkxEnvironmentVariableClass'' | hkxEnvironmentClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkxEnvironmentVariableClass(g_0126c500_arg0, (const char*)0, 8, 0, 0, (const char*)0, 0, g_0126c500_arg7, 2,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc3520
-GlobalObjectO2_00d472a0 g_0126c530(g_0126c530_arg0, g_0126c530_arg1, 20, 0, 0, (const char*)0, 0, g_0126c530_arg7, 1,
+GlobalObjectO2_00d472a0 hkxEnvironmentClass(g_0126c530_arg0, g_0126c530_arg1, 20, 0, 0, (const char*)0, 0, g_0126c530_arg7, 1,
                                    (const char*)0, (const char*)0, 0, 1);
 // @fnv 0x00fc3590
-GlobalObjectO2_00d472a0 g_0126c578(g_0126c578_arg0, (const char*)0, 8, 0, 0, (const char*)0, 0, g_0126c578_arg7, 2,
+// pdb: `dynamic initializer for 'hkxEnumItemClass'' | hkxSparselyAnimatedEnumClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkxEnumItemClass(g_0126c578_arg0, (const char*)0, 8, 0, 0, (const char*)0, 0, g_0126c578_arg7, 2,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc35c0
-GlobalObjectO2_00d472a0 g_0126c5a8(g_0126c5a8_arg0, g_0126c5a8_arg1, 20, 0, 0, (const char*)0, 0, g_0126c5a8_arg7, 1,
+GlobalObjectO2_00d472a0 hkxEnumClass(g_0126c5a8_arg0, g_0126c5a8_arg1, 20, 0, 0, (const char*)0, 0, g_0126c5a8_arg7, 1,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc3630
-GlobalObjectO2_00d472a0 g_0126c5f0(g_0126c5f0_arg0, g_0126c5f0_arg1, 36, 0, 0, (const char*)0, 0, g_0126c5f0_arg7, 1,
+GlobalObjectO2_00d472a0 hkxSparselyAnimatedEnumClass(g_0126c5f0_arg0, g_0126c5f0_arg1, 36, 0, 0, (const char*)0, 0, g_0126c5f0_arg7, 1,
                                    (const char*)0, (const char*)0, 0, 1);
 // @fnv 0x00fc36a0
-GlobalObjectO2_00d472a0 g_0126c638(g_0126c638_arg0, (const char*)0, 16, 0, 0, (const char*)0, 0, g_0126c638_arg7, 2,
+// pdb: `dynamic initializer for 'hkxAttributeGroupClass'' | hkxAttributeGroupClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkxAttributeGroupClass(g_0126c638_arg0, (const char*)0, 16, 0, 0, (const char*)0, 0, g_0126c638_arg7, 2,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc36d0
-GlobalObjectO2_00d472a0 g_0126c668(g_0126c668_arg0, (const char*)0, 8, 0, 0, g_0126c668_arg5, 1, g_0126c668_arg7, 2,
+// pdb: `dynamic initializer for 'hkxAttributeClass'' | hkxAttributeClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkxAttributeClass(g_0126c668_arg0, (const char*)0, 8, 0, 0, g_0126c668_arg5, 1, g_0126c668_arg7, 2,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc3700
-GlobalObjectO2_00d472a0 g_0126c698(g_0126c698_arg0, (const char*)0, 48, 0, 0, (const char*)0, 0, g_0126c698_arg7, 9,
+// pdb: `dynamic initializer for 'hkPackfileSectionHeaderClass'' | hkPackfileSectionHeaderClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkPackfileSectionHeaderClass(g_0126c698_arg0, (const char*)0, 48, 0, 0, (const char*)0, 0, g_0126c698_arg7, 9,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc3730
-GlobalObjectO2_00d472a0 g_0126c6c8(g_0126c6c8_arg0, (const char*)0, 64, 0, 0, (const char*)0, 0, g_0126c6c8_arg7, 11,
+// pdb: `dynamic initializer for 'hkPackfileHeaderClass'' | hkPackfileHeaderClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkPackfileHeaderClass(g_0126c6c8_arg0, (const char*)0, 64, 0, 0, (const char*)0, 0, g_0126c6c8_arg7, 11,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc3760
-GlobalObjectO2_00d472a0 g_0126c6f8(g_0126c6f8_arg0, (const char*)0, 32, 0, 0, (const char*)0, 0, g_0126c6f8_arg7, 1,
+// pdb: `dynamic initializer for 'hkTraceStreamTitleClass'' | hkTraceStreamClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkTraceStreamTitleClass(g_0126c6f8_arg0, (const char*)0, 32, 0, 0, (const char*)0, 0, g_0126c6f8_arg7, 1,
                                    (const char*)0, (const char*)0, 1, 0);
 // @fnv 0x00fc3790
-GlobalObjectO2_00d472a0 g_0126c728(g_0126c728_arg0, g_0126c728_arg1, 28, 0, 1, (const char*)0, 0, g_0126c728_arg7, 3,
+GlobalObjectO2_00d472a0 hkTraceStreamClass(g_0126c728_arg0, g_0126c728_arg1, 28, 0, 1, (const char*)0, 0, g_0126c728_arg7, 3,
                                    (const char*)0, (const char*)0, 1, 0);
 // @fnv 0x00fc3800
-GlobalObjectO2_00d472a0 g_0126c770(g_0126c770_arg0, (const char*)0, 80, 0, 0, (const char*)0, 0, g_0126c770_arg7, 5,
+// pdb: `dynamic initializer for 'hkSweptTransformClass'' | hkSweptTransformClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkSweptTransformClass(g_0126c770_arg0, (const char*)0, 80, 0, 0, (const char*)0, 0, g_0126c770_arg7, 5,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc3830
-GlobalObjectO2_00d472a0 g_0126c7a0(g_0126c7a0_arg0, (const char*)0, 16, 0, 0, (const char*)0, 0, g_0126c7a0_arg7, 1,
+// pdb: `dynamic initializer for 'hkSphereClass'' | hkSphereClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkSphereClass(g_0126c7a0_arg0, (const char*)0, 16, 0, 0, (const char*)0, 0, g_0126c7a0_arg7, 1,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc3860
-GlobalObjectO2_00d472a0 g_0126c7d0(g_0126c7d0_arg0, (const char*)0, 176, 0, 0, (const char*)0, 0, g_0126c7d0_arg7, 9,
+// pdb: `dynamic initializer for 'hkMotionStateClass'' | hkMotionStateClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkMotionStateClass(g_0126c7d0_arg0, (const char*)0, 176, 0, 0, (const char*)0, 0, g_0126c7d0_arg7, 9,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc3890
-GlobalObjectO2_00d472a0 g_0126c800(g_0126c800_arg0, (const char*)0, 16, 0, 0, (const char*)0, 0, g_0126c800_arg7, 2,
+// pdb: `dynamic initializer for 'hkMonitorStreamStringMapStringMapClass'' | hkMonitorStreamAnalyzerClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkMonitorStreamStringMapStringMapClass(g_0126c800_arg0, (const char*)0, 16, 0, 0, (const char*)0, 0, g_0126c800_arg7, 2,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc38c0
-GlobalObjectO2_00d472a0 g_0126c830(g_0126c830_arg0, (const char*)0, 12, 0, 0, (const char*)0, 0, g_0126c830_arg7, 1,
+// pdb: `dynamic initializer for 'hkMonitorStreamStringMapClass'' | hkMonitorStreamAnalyzerClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkMonitorStreamStringMapClass(g_0126c830_arg0, (const char*)0, 12, 0, 0, (const char*)0, 0, g_0126c830_arg7, 1,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc3900
-GlobalObjectO2_00d472a0 g_0126c860(g_0126c860_arg0, (const char*)0, 36, 0, 0, g_0126c860_arg5, 1, g_0126c860_arg7, 9,
+// pdb: `dynamic initializer for 'hkMonitorStreamFrameInfoClass'' | hkMonitorStreamAnalyzerClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkMonitorStreamFrameInfoClass(g_0126c860_arg0, (const char*)0, 36, 0, 0, g_0126c860_arg5, 1, g_0126c860_arg7, 9,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc3940
-GlobalObjectO2_00d472a0 g_0126c890(g_0126c890_arg0, (const char*)0, 8, 0, 0, (const char*)0, 0, g_0126c890_arg7, 2,
+// pdb: `dynamic initializer for 'hkMonitorStreamColorTableColorPairClass'' | hkMonitorStreamAnalyzerClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkMonitorStreamColorTableColorPairClass(g_0126c890_arg0, (const char*)0, 8, 0, 0, (const char*)0, 0, g_0126c890_arg7, 2,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc3970
-GlobalObjectO2_00d472a0 g_0126c8c0(g_0126c8c0_arg0, g_0126c8c0_arg1, 24, 0, 0, (const char*)0, 0, g_0126c8c0_arg7, 2,
+GlobalObjectO2_00d472a0 hkMonitorStreamColorTableClass(g_0126c8c0_arg0, g_0126c8c0_arg1, 24, 0, 0, (const char*)0, 0, g_0126c8c0_arg7, 2,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc39e0
-GlobalObjectO2_00d472a0 g_0126c908(g_0126c908_arg0, (const char*)0, 16, 0, 0, (const char*)0, 0, g_0126c908_arg7, 4,
+// pdb: `dynamic initializer for 'hkGeometryTriangleClass'' | hkGeometryClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkGeometryTriangleClass(g_0126c908_arg0, (const char*)0, 16, 0, 0, (const char*)0, 0, g_0126c908_arg7, 4,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc3a10
-GlobalObjectO2_00d472a0 g_0126c938(g_0126c938_arg0, (const char*)0, 24, 0, 0, (const char*)0, 0, g_0126c938_arg7, 2,
+// pdb: `dynamic initializer for 'hkGeometryClass'' | hkGeometryClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkGeometryClass(g_0126c938_arg0, (const char*)0, 24, 0, 0, (const char*)0, 0, g_0126c938_arg7, 2,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc3a40
-GlobalObjectO2_00d472a0 g_0126c968(g_0126c968_arg0, (const char*)0, 12, 0, 0, (const char*)0, 0, g_0126c968_arg7, 2,
+// pdb: `dynamic initializer for 'hkCustomAttributesAttributeClass'' | hkCustomAttributesClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkCustomAttributesAttributeClass(g_0126c968_arg0, (const char*)0, 12, 0, 0, (const char*)0, 0, g_0126c968_arg7, 2,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc3a70
-GlobalObjectO2_00d472a0 g_0126c998(g_0126c998_arg0, (const char*)0, 8, 0, 0, (const char*)0, 0, g_0126c998_arg7, 1,
+// pdb: `dynamic initializer for 'hkCustomAttributesClass'' | hkCustomAttributesClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkCustomAttributesClass(g_0126c998_arg0, (const char*)0, 8, 0, 0, (const char*)0, 0, g_0126c998_arg7, 1,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc3aa0
-GlobalObjectO2_00d472a0 g_0126c9c8(g_0126c9c8_arg0, (const char*)0, 8, 0, 0, g_0126c9c8_arg5, 1, g_0126c9c8_arg7, 5,
+// pdb: `dynamic initializer for 'hkContactPointMaterialClass'' | hkContactPointMaterialClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkContactPointMaterialClass(g_0126c9c8_arg0, (const char*)0, 8, 0, 0, g_0126c9c8_arg5, 1, g_0126c9c8_arg7, 5,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc3ad0
-GlobalObjectO2_00d472a0 g_0126c9f8(g_0126c9f8_arg0, (const char*)0, 32, 0, 0, (const char*)0, 0, g_0126c9f8_arg7, 2,
+// pdb: `dynamic initializer for 'hkContactPointClass'' | hkContactPointClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkContactPointClass(g_0126c9f8_arg0, (const char*)0, 32, 0, 0, (const char*)0, 0, g_0126c9f8_arg7, 2,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc3b00
-GlobalObjectO2_00d472a0 g_0126ca28(g_0126ca28_arg0, (const char*)0, 1, 0, 0, g_0126ca28_arg5, 1, (const char*)0, 0,
+// pdb: `dynamic initializer for 'hkColorClass'' | hkColorClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkColorClass(g_0126ca28_arg0, (const char*)0, 1, 0, 0, g_0126ca28_arg5, 1, (const char*)0, 0,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc3b50
 GlobalObjectO2_00d472a0 g_0126ca58(g_0126ca58_arg0, (const char*)0, 24, 0, 0, g_0126ca58_arg5, 3, g_0126ca58_arg7, 9,
@@ -1801,211 +2181,212 @@ GlobalObjectO2_00d472a0 g_0126cab8(g_0126cab8_arg0, (const char*)0, 20, 0, 0, g_
 GlobalObjectO2_00d472a0 g_0126cae8(g_0126cae8_arg0, (const char*)0, 48, 0, 0, g_0126cae8_arg5, 2, g_0126cae8_arg7, 10,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc3c30
-GlobalObjectO2_00d472a0 g_0126cb18(g_0126cb18_arg0, (const char*)0, 16, 0, 0, (const char*)0, 0, g_0126cb18_arg7, 2,
+// pdb: `dynamic initializer for 'hkBitFieldClass'' | hkBitFieldClass.obj | retail, unique string literal, high
+GlobalObjectO2_00d472a0 hkBitFieldClass(g_0126cb18_arg0, (const char*)0, 16, 0, 0, (const char*)0, 0, g_0126cb18_arg7, 2,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc3c60
-GlobalObjectO2_00d472a0 g_0126cb48(g_0126cb48_arg0, g_0126cb48_arg1, 48, 0, 0, (const char*)0, 0, g_0126cb48_arg7, 4,
+GlobalObjectO2_00d472a0 hkaRagdollInstanceClass(g_0126cb48_arg0, g_0126cb48_arg1, 48, 0, 0, (const char*)0, 0, g_0126cb48_arg7, 4,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc3cd0
-GlobalObjectO2_00d472a0 g_0126cb90(g_0126cb90_arg0, g_0126cb90_arg1, 128, 0, 0, g_0126cb90_arg5, 1, g_0126cb90_arg7, 1,
+GlobalObjectO2_00d472a0 hkaSkeletonMapperClass(g_0126cb90_arg0, g_0126cb90_arg1, 128, 0, 0, g_0126cb90_arg5, 1, g_0126cb90_arg7, 1,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc3d50
-GlobalObjectO2_00d472a0 g_0126cbd8(g_0126cbd8_arg0, g_0126cbd8_arg1, 64, 0, 0, (const char*)0, 0, g_0126cbd8_arg7, 2,
+GlobalObjectO2_00d472a0 hkaInterleavedUncompressedAnimationClass(g_0126cbd8_arg0, g_0126cbd8_arg1, 64, 0, 0, (const char*)0, 0, g_0126cbd8_arg7, 2,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc3dc0
-GlobalObjectO2_00d472a0 g_0126cc20(g_0126cc20_arg0, g_0126cc20_arg1, 152, 0, 0, (const char*)0, 0, g_0126cc20_arg7, 14,
+GlobalObjectO2_00d472a0 hkaFootstepAnalysisInfoClass(g_0126cc20_arg0, g_0126cc20_arg1, 152, 0, 0, (const char*)0, 0, g_0126cc20_arg7, 14,
                                    (const char*)0, (const char*)0, 0, 1);
 // @fnv 0x00fc3e40
-GlobalObjectO2_00d472a0 g_0126cc68(g_0126cc68_arg0, g_0126cc68_arg1, 20, 0, 0, (const char*)0, 0, g_0126cc68_arg7, 1,
+GlobalObjectO2_00d472a0 hkaFootstepAnalysisInfoContainerClass(g_0126cc68_arg0, g_0126cc68_arg1, 20, 0, 0, (const char*)0, 0, g_0126cc68_arg7, 1,
                                    (const char*)0, (const char*)0, 0, 1);
 // @fnv 0x00fc3eb0
-GlobalObjectO2_00d472a0 g_0126ccb0(g_0126ccb0_arg0, g_0126ccb0_arg1, 64, 0, 0, (const char*)0, 0, g_0126ccb0_arg7, 4,
+GlobalObjectO2_00d472a0 hkaDefaultAnimatedReferenceFrameClass(g_0126ccb0_arg0, g_0126ccb0_arg1, 64, 0, 0, (const char*)0, 0, g_0126ccb0_arg7, 4,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc3f20
-GlobalObjectO2_00d472a0 g_0126ccf8(g_0126ccf8_arg0, g_0126ccf8_arg1, 96, 0, 0, (const char*)0, 0, g_0126ccf8_arg7, 5,
+GlobalObjectO2_00d472a0 hkaBoneAttachmentClass(g_0126ccf8_arg0, g_0126ccf8_arg1, 96, 0, 0, (const char*)0, 0, g_0126ccf8_arg7, 5,
                                    (const char*)0, (const char*)0, 0, 1);
 // @fnv 0x00fc3f90
-GlobalObjectO2_00d472a0 g_0126cd40(g_0126cd40_arg0, g_0126cd40_arg1, 20, 0, 0, (const char*)0, 0, g_0126cd40_arg7, 1,
+GlobalObjectO2_00d472a0 hkaAnimationPreviewColorContainerClass(g_0126cd40_arg0, g_0126cd40_arg1, 20, 0, 0, (const char*)0, 0, g_0126cd40_arg7, 1,
                                    (const char*)0, (const char*)0, 0, 1);
 // @fnv 0x00fc4000
-GlobalObjectO2_00d472a0 g_0126cd88(g_0126cd88_arg0, g_0126cd88_arg1, 68, 0, 0, (const char*)0, 0, g_0126cd88_arg7, 5,
+GlobalObjectO2_00d472a0 hkaAnimationContainerClass(g_0126cd88_arg0, g_0126cd88_arg1, 68, 0, 0, (const char*)0, 0, g_0126cd88_arg7, 5,
                                    (const char*)0, (const char*)0, 0, 1);
 // @fnv 0x00fc4080
-GlobalObjectO2_00d472a0 g_0126cdd0(g_0126cdd0_arg0, g_0126cdd0_arg1, 44, 0, 0, g_0126cdd0_arg5, 1, g_0126cdd0_arg7, 5,
+GlobalObjectO2_00d472a0 hkaAnimationBindingClass(g_0126cdd0_arg0, g_0126cdd0_arg1, 44, 0, 0, g_0126cdd0_arg5, 1, g_0126cdd0_arg7, 5,
                                    (const char*)0, (const char*)0, 0, 1);
 // @fnv 0x00fc4100
-GlobalObjectO2_00d472a0 g_0126ce18(g_0126ce18_arg0, g_0126ce18_arg1, 36, 0, 0, (const char*)0, 0, g_0126ce18_arg7, 3,
+GlobalObjectO2_00d472a0 hkpVehicleRayCastWheelCollideClass(g_0126ce18_arg0, g_0126ce18_arg1, 36, 0, 0, (const char*)0, 0, g_0126ce18_arg7, 3,
                                    (const char*)0, (const char*)0, 0, 1);
 // @fnv 0x00fc4170
-GlobalObjectO2_00d472a0 g_0126ce60(g_0126ce60_arg0, g_0126ce60_arg1, 24, 0, 0, (const char*)0, 0, (const char*)0, 0,
+GlobalObjectO2_00d472a0 hkpVehicleRayCastBatchingManagerClass(g_0126ce60_arg0, g_0126ce60_arg1, 24, 0, 0, (const char*)0, 0, (const char*)0, 0,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc41e0
 GlobalObjectO2_00d472a0 g_0126cea8(g_0126cea8_arg0, g_0126cea8_arg1, 20, 0, 0, (const char*)0, 0, g_0126cea8_arg7, 1,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc4250
-GlobalObjectO2_00d472a0 g_0126cef0(g_0126cef0_arg0, g_0126cef0_arg1, 24, 0, 0, (const char*)0, 0, (const char*)0, 0,
+GlobalObjectO2_00d472a0 hkpVehicleLinearCastBatchingManagerClass(g_0126cef0_arg0, g_0126cef0_arg1, 24, 0, 0, (const char*)0, 0, (const char*)0, 0,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc42c0
-GlobalObjectO2_00d472a0 g_0126cf38(g_0126cf38_arg0, g_0126cf38_arg1, 20, 0, 0, (const char*)0, 0, g_0126cf38_arg7, 4,
+GlobalObjectO2_00d472a0 hkpVehicleDriverInputAnalogStatusClass(g_0126cf38_arg0, g_0126cf38_arg1, 20, 0, 0, (const char*)0, 0, g_0126cf38_arg7, 4,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc4330
-GlobalObjectO2_00d472a0 g_0126cf80(g_0126cf80_arg0, g_0126cf80_arg1, 24, 0, 0, (const char*)0, 0, g_0126cf80_arg7, 4,
+GlobalObjectO2_00d472a0 hkpVehicleDefaultAnalogDriverInputClass(g_0126cf80_arg0, g_0126cf80_arg1, 24, 0, 0, (const char*)0, 0, g_0126cf80_arg7, 4,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc43a0
-GlobalObjectO2_00d472a0 g_0126cfc8(g_0126cfc8_arg0, g_0126cfc8_arg1, 20, 0, 0, (const char*)0, 0, g_0126cfc8_arg7, 3,
+GlobalObjectO2_00d472a0 hkpVehicleDefaultVelocityDamperClass(g_0126cfc8_arg0, g_0126cfc8_arg1, 20, 0, 0, (const char*)0, 0, g_0126cfc8_arg7, 3,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc4410
-GlobalObjectO2_00d472a0 g_0126d010(g_0126d010_arg0, g_0126d010_arg1, 52, 0, 0, (const char*)0, 0, g_0126d010_arg7, 7,
+GlobalObjectO2_00d472a0 hkpVehicleDefaultTransmissionClass(g_0126d010_arg0, g_0126d010_arg1, 52, 0, 0, (const char*)0, 0, g_0126d010_arg7, 7,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc4480
-GlobalObjectO2_00d472a0 g_0126d058(g_0126d058_arg0, g_0126d058_arg1, 28, 0, 0, (const char*)0, 0, g_0126d058_arg7, 3,
+GlobalObjectO2_00d472a0 hkpVehicleDefaultSteeringClass(g_0126d058_arg0, g_0126d058_arg1, 28, 0, 0, (const char*)0, 0, g_0126d058_arg7, 3,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc44f0
-GlobalObjectO2_00d472a0 g_0126d0a0(g_0126d0a0_arg0, g_0126d0a0_arg1, 48, 0, 0, (const char*)0, 0, g_0126d0a0_arg7, 10,
+GlobalObjectO2_00d472a0 hkpVehicleDefaultEngineClass(g_0126d0a0_arg0, g_0126d0a0_arg1, 48, 0, 0, (const char*)0, 0, g_0126d0a0_arg7, 10,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc4560
-GlobalObjectO2_00d472a0 g_0126d0e8(g_0126d0e8_arg0, g_0126d0e8_arg1, 48, 0, 0, (const char*)0, 0, g_0126d0e8_arg7, 5,
+GlobalObjectO2_00d472a0 hkpVehicleDefaultAerodynamicsClass(g_0126d0e8_arg0, g_0126d0e8_arg1, 48, 0, 0, (const char*)0, 0, g_0126d0e8_arg7, 5,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc45d0
-GlobalObjectO2_00d472a0 g_0126d130(g_0126d130_arg0, g_0126d130_arg1, 16, 0, 1, (const char*)0, 0, g_0126d130_arg7, 1,
+GlobalObjectO2_00d472a0 hkpRejectChassisListenerClass(g_0126d130_arg0, g_0126d130_arg1, 16, 0, 1, (const char*)0, 0, g_0126d130_arg7, 1,
                                    (const char*)0, (const char*)0, 0, 1);
 // @fnv 0x00fc4640
-GlobalObjectO2_00d472a0 g_0126d190(g_0126d190_arg0, g_0126d190_arg1, 96, 0, 0, (const char*)0, 0, g_0126d190_arg7, 8,
+GlobalObjectO2_00d472a0 hkpSpringActionClass(g_0126d190_arg0, g_0126d190_arg1, 96, 0, 0, (const char*)0, 0, g_0126d190_arg7, 8,
                                    g_0126d190_arg9, (const char*)0, 0, 0);
 // @fnv 0x00fc46c0
-GlobalObjectO2_00d472a0 g_0126d1d8(g_0126d1d8_arg0, g_0126d1d8_arg1, 20, 0, 0, (const char*)0, 0, g_0126d1d8_arg7, 1,
+GlobalObjectO2_00d472a0 hkpSerializedDisplayMarkerListClass(g_0126d1d8_arg0, g_0126d1d8_arg1, 20, 0, 0, (const char*)0, 0, g_0126d1d8_arg7, 1,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc4730
-GlobalObjectO2_00d472a0 g_0126d220(g_0126d220_arg0, g_0126d220_arg1, 80, 0, 0, (const char*)0, 0, g_0126d220_arg7, 1,
+GlobalObjectO2_00d472a0 hkpSerializedDisplayMarkerClass(g_0126d220_arg0, g_0126d220_arg1, 80, 0, 0, (const char*)0, 0, g_0126d220_arg7, 1,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc47a0
-GlobalObjectO2_00d472a0 g_0126d268(g_0126d268_arg0, g_0126d268_arg1, 80, 0, 0, (const char*)0, 0, g_0126d268_arg7, 4,
+GlobalObjectO2_00d472a0 hkpReorientActionClass(g_0126d268_arg0, g_0126d268_arg1, 80, 0, 0, (const char*)0, 0, g_0126d268_arg7, 4,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc4810
-GlobalObjectO2_00d472a0 g_0126d298(g_0126d298_arg0, g_0126d298_arg1, 64, 0, 0, (const char*)0, 0, g_0126d298_arg7, 6,
+GlobalObjectO2_00d472a0 hkpProjectileGunClass(g_0126d298_arg0, g_0126d298_arg1, 64, 0, 0, (const char*)0, 0, g_0126d298_arg7, 6,
                                    g_0126d298_arg9, (const char*)0, 0, 0);
 // @fnv 0x00fc4890
-GlobalObjectO2_00d472a0 g_0126d2f8(g_0126d2f8_arg0, g_0126d2f8_arg1, 80, 0, 0, (const char*)0, 0, g_0126d2f8_arg7, 1,
+GlobalObjectO2_00d472a0 hkpPhysicsSystemWithContactsClass(g_0126d2f8_arg0, g_0126d2f8_arg1, 80, 0, 0, (const char*)0, 0, g_0126d2f8_arg7, 1,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc4900
-GlobalObjectO2_00d472a0 g_0126d328(g_0126d328_arg0, g_0126d328_arg1, 96, 0, 0, (const char*)0, 0, g_0126d328_arg7, 8,
+GlobalObjectO2_00d472a0 hkpMouseSpringActionClass(g_0126d328_arg0, g_0126d328_arg1, 96, 0, 0, (const char*)0, 0, g_0126d328_arg7, 8,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc4970
-GlobalObjectO2_00d472a0 g_0126d370(g_0126d370_arg0, g_0126d370_arg1, 112, 0, 0, (const char*)0, 0, g_0126d370_arg7, 1,
+GlobalObjectO2_00d472a0 hkpMountedBallGunClass(g_0126d370_arg0, g_0126d370_arg1, 112, 0, 0, (const char*)0, 0, g_0126d370_arg7, 1,
                                    g_0126d370_arg9, (const char*)0, 0, 0);
 // @fnv 0x00fc49f0
-GlobalObjectO2_00d472a0 g_0126d3d0(g_0126d3d0_arg0, g_0126d3d0_arg1, 64, 0, 0, (const char*)0, 0, g_0126d3d0_arg7, 4,
+GlobalObjectO2_00d472a0 hkpMotorActionClass(g_0126d3d0_arg0, g_0126d3d0_arg1, 64, 0, 0, (const char*)0, 0, g_0126d3d0_arg7, 4,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc4a60
-GlobalObjectO2_00d472a0 g_0126d418(g_0126d418_arg0, g_0126d418_arg1, 180, 0, 0, (const char*)0, 0, g_0126d418_arg7, 2,
+GlobalObjectO2_00d472a0 hkpGroupCollisionFilterClass(g_0126d418_arg0, g_0126d418_arg1, 180, 0, 0, (const char*)0, 0, g_0126d418_arg7, 2,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc4ae0
-GlobalObjectO2_00d472a0 g_0126d448(g_0126d448_arg0, g_0126d448_arg1, 96, 0, 0, (const char*)0, 0, g_0126d448_arg7, 8,
+GlobalObjectO2_00d472a0 hkpGravityGunClass(g_0126d448_arg0, g_0126d448_arg1, 96, 0, 0, (const char*)0, 0, g_0126d448_arg7, 8,
                                    g_0126d448_arg9, (const char*)0, 0, 0);
 // @fnv 0x00fc4b70
 GlobalObjectO2_00d472a0 g_0126d490(g_0126d490_arg0, g_0126d490_arg1, 32, 0, 0, g_0126d490_arg5, 2, g_0126d490_arg7, 4,
                                    g_0126d490_arg9, (const char*)0, 0, 0);
 // @fnv 0x00fc4bf0
-GlobalObjectO2_00d472a0 g_0126d4d8(g_0126d4d8_arg0, g_0126d4d8_arg1, 80, 0, 0, (const char*)0, 0, g_0126d4d8_arg7, 3,
+GlobalObjectO2_00d472a0 hkpDisplayBindingDataRigidBodyClass(g_0126d4d8_arg0, g_0126d4d8_arg1, 80, 0, 0, (const char*)0, 0, g_0126d4d8_arg7, 3,
                                    (const char*)0, (const char*)0, 0, 1);
 // @fnv 0x00fc4c60
-GlobalObjectO2_00d472a0 g_0126d508(g_0126d508_arg0, g_0126d508_arg1, 24, 0, 0, (const char*)0, 0, g_0126d508_arg7, 2,
+GlobalObjectO2_00d472a0 hkpDisplayBindingDataPhysicsSystemClass(g_0126d508_arg0, g_0126d508_arg1, 24, 0, 0, (const char*)0, 0, g_0126d508_arg7, 2,
                                    (const char*)0, (const char*)0, 0, 1);
 // @fnv 0x00fc4cd0
-GlobalObjectO2_00d472a0 g_0126d550(g_0126d550_arg0, g_0126d550_arg1, 32, 0, 0, (const char*)0, 0, g_0126d550_arg7, 2,
+GlobalObjectO2_00d472a0 hkpDisplayBindingDataClass(g_0126d550_arg0, g_0126d550_arg1, 32, 0, 0, (const char*)0, 0, g_0126d550_arg7, 2,
                                    (const char*)0, (const char*)0, 0, 1);
 // @fnv 0x00fc4d40
-GlobalObjectO2_00d472a0 g_0126d5c8(g_0126d5c8_arg0, g_0126d5c8_arg1, 64, 0, 1, (const char*)0, 0, g_0126d5c8_arg7, 1,
+GlobalObjectO2_00d472a0 hkpDisableEntityCollisionFilterClass(g_0126d5c8_arg0, g_0126d5c8_arg1, 64, 0, 1, (const char*)0, 0, g_0126d5c8_arg7, 1,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc4db0
-GlobalObjectO2_00d472a0 g_0126d610(g_0126d610_arg0, g_0126d610_arg1, 96, 0, 0, (const char*)0, 0, g_0126d610_arg7, 4,
+GlobalObjectO2_00d472a0 hkpDashpotActionClass(g_0126d610_arg0, g_0126d610_arg1, 96, 0, 0, (const char*)0, 0, g_0126d610_arg7, 4,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc4e20
-GlobalObjectO2_00d472a0 g_0126d658(g_0126d658_arg0, g_0126d658_arg1, 56, 0, 1, (const char*)0, 0, g_0126d658_arg7, 1,
+GlobalObjectO2_00d472a0 hkpConstrainedSystemFilterClass(g_0126d658_arg0, g_0126d658_arg1, 56, 0, 1, (const char*)0, 0, g_0126d658_arg7, 1,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc4e90
 GlobalObjectO2_00d472a0 g_0126d688(g_0126d688_arg0, g_0126d688_arg1, 96, 0, 0, (const char*)0, 0, g_0126d688_arg7, 7,
                                    g_0126d688_arg9, (const char*)0, 0, 0);
 // @fnv 0x00fc4f10
-GlobalObjectO2_00d472a0 g_0126d6e8(g_0126d6e8_arg0, g_0126d6e8_arg1, 64, 0, 0, (const char*)0, 0, g_0126d6e8_arg7, 3,
+GlobalObjectO2_00d472a0 hkpAngularDashpotActionClass(g_0126d6e8_arg0, g_0126d6e8_arg1, 64, 0, 0, (const char*)0, 0, g_0126d6e8_arg7, 3,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc4f80
-GlobalObjectO2_00d472a0 g_0126d718(g_0126d718_arg0, g_0126d718_arg1, 44, 0, 0, (const char*)0, 0, g_0126d718_arg7, 3,
+GlobalObjectO2_00d472a0 hkpConvexPieceStreamDataClass(g_0126d718_arg0, g_0126d718_arg1, 44, 0, 0, (const char*)0, 0, g_0126d718_arg7, 3,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc4ff0
-GlobalObjectO2_00d472a0 g_0126d760(g_0126d760_arg0, g_0126d760_arg1, 32, 0, 0, (const char*)0, 0, g_0126d760_arg7, 3,
+GlobalObjectO2_00d472a0 hkpVelocityConstraintMotorClass(g_0126d760_arg0, g_0126d760_arg1, 32, 0, 0, (const char*)0, 0, g_0126d760_arg7, 3,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc5060
-GlobalObjectO2_00d472a0 g_0126d7a8(g_0126d7a8_arg0, g_0126d7a8_arg1, 288, 0, 0, (const char*)0, 0, (const char*)0, 0,
+GlobalObjectO2_00d472a0 hkpThinBoxMotionClass(g_0126d7a8_arg0, g_0126d7a8_arg1, 288, 0, 0, (const char*)0, 0, (const char*)0, 0,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc50d0
-GlobalObjectO2_00d472a0 g_0126d7f0(g_0126d7f0_arg0, g_0126d7f0_arg1, 28, 0, 0, (const char*)0, 0, g_0126d7f0_arg7, 2,
+GlobalObjectO2_00d472a0 hkpSpringDamperConstraintMotorClass(g_0126d7f0_arg0, g_0126d7f0_arg1, 28, 0, 0, (const char*)0, 0, g_0126d7f0_arg7, 2,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc5140
-GlobalObjectO2_00d472a0 g_0126d838(g_0126d838_arg0, g_0126d838_arg1, 288, 0, 0, (const char*)0, 0, (const char*)0, 0,
+GlobalObjectO2_00d472a0 hkpSphereMotionClass(g_0126d838_arg0, g_0126d838_arg1, 288, 0, 0, (const char*)0, 0, (const char*)0, 0,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc51b0
-GlobalObjectO2_00d472a0 g_0126d880(g_0126d880_arg0, g_0126d880_arg1, 36, 0, 0, (const char*)0, 0, g_0126d880_arg7, 4,
+GlobalObjectO2_00d472a0 hkpPositionConstraintMotorClass(g_0126d880_arg0, g_0126d880_arg1, 36, 0, 0, (const char*)0, 0, g_0126d880_arg7, 4,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc5230
 GlobalObjectO2_00d472a0 g_0126d8c8(g_0126d8c8_arg0, g_0126d8c8_arg1, 176, 0, 0, g_0126d8c8_arg5, 1, g_0126d8c8_arg7, 5,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc52b0
-GlobalObjectO2_00d472a0 g_0126d910(g_0126d910_arg0, g_0126d910_arg1, 32, 0, 0, (const char*)0, 0, g_0126d910_arg7, 3,
+GlobalObjectO2_00d472a0 hkpMalleableConstraintDataClass(g_0126d910_arg0, g_0126d910_arg1, 32, 0, 0, (const char*)0, 0, g_0126d910_arg7, 3,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc5320
-GlobalObjectO2_00d472a0 g_0126d958(g_0126d958_arg0, g_0126d958_arg1, 64, 0, 0, (const char*)0, 0, g_0126d958_arg7, 5,
+GlobalObjectO2_00d472a0 hkpLinearParametricCurveClass(g_0126d958_arg0, g_0126d958_arg1, 64, 0, 0, (const char*)0, 0, g_0126d958_arg7, 5,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc5390
-GlobalObjectO2_00d472a0 g_0126d9a0(g_0126d9a0_arg0, g_0126d9a0_arg1, 88, 0, 0, (const char*)0, 0, g_0126d9a0_arg7, 2,
+GlobalObjectO2_00d472a0 hkpGenericConstraintDataClass(g_0126d9a0_arg0, g_0126d9a0_arg1, 88, 0, 0, (const char*)0, 0, g_0126d9a0_arg7, 2,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc5400
-GlobalObjectO2_00d472a0 g_0126d9e8(g_0126d9e8_arg0, g_0126d9e8_arg1, 288, 0, 0, (const char*)0, 0, (const char*)0, 0,
+GlobalObjectO2_00d472a0 hkpFixedRigidMotionClass(g_0126d9e8_arg0, g_0126d9e8_arg1, 288, 0, 0, (const char*)0, 0, (const char*)0, 0,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc5470
-GlobalObjectO2_00d472a0 g_0126da30(g_0126da30_arg0, g_0126da30_arg1, 12, 0, 0, (const char*)0, 0, g_0126da30_arg7, 1,
+GlobalObjectO2_00d472a0 hkpDefaultWorldMemoryWatchDogClass(g_0126da30_arg0, g_0126da30_arg1, 12, 0, 0, (const char*)0, 0, g_0126da30_arg7, 1,
                                    (const char*)0, (const char*)0, 0, 1);
 // @fnv 0x00fc54e0
-GlobalObjectO2_00d472a0 g_0126da78(g_0126da78_arg0, g_0126da78_arg1, 28, 0, 0, (const char*)0, 0, g_0126da78_arg7, 1,
+GlobalObjectO2_00d472a0 hkpConstraintChainInstanceActionClass(g_0126da78_arg0, g_0126da78_arg1, 28, 0, 0, (const char*)0, 0, g_0126da78_arg7, 1,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc5550
-GlobalObjectO2_00d472a0 g_0126dac0(g_0126dac0_arg0, g_0126dac0_arg1, 72, 0, 0, (const char*)0, 0, g_0126dac0_arg7, 2,
+GlobalObjectO2_00d472a0 hkpConstraintChainInstanceClass(g_0126dac0_arg0, g_0126dac0_arg1, 72, 0, 0, (const char*)0, 0, g_0126dac0_arg7, 2,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc55c0
-GlobalObjectO2_00d472a0 g_0126db08(g_0126db08_arg0, g_0126db08_arg1, 288, 0, 0, (const char*)0, 0, (const char*)0, 0,
+GlobalObjectO2_00d472a0 hkpCharacterMotionClass(g_0126db08_arg0, g_0126db08_arg1, 288, 0, 0, (const char*)0, 0, (const char*)0, 0,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc5640
-GlobalObjectO2_00d472a0 g_0126db50(g_0126db50_arg0, g_0126db50_arg1, 40, 0, 0, g_0126db50_arg5, 1, g_0126db50_arg7, 5,
+GlobalObjectO2_00d472a0 hkpCallbackConstraintMotorClass(g_0126db50_arg0, g_0126db50_arg1, 40, 0, 0, g_0126db50_arg5, 1, g_0126db50_arg7, 5,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc56c0
-GlobalObjectO2_00d472a0 g_0126db98(g_0126db98_arg0, g_0126db98_arg1, 368, 0, 0, (const char*)0, 0, g_0126db98_arg7, 2,
+GlobalObjectO2_00d472a0 hkpCachingShapePhantomClass(g_0126db98_arg0, g_0126db98_arg1, 368, 0, 0, (const char*)0, 0, g_0126db98_arg7, 2,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc5740
 GlobalObjectO2_00d472a0 g_0126dbe0(g_0126dbe0_arg0, g_0126dbe0_arg1, 288, 0, 0, (const char*)0, 0, (const char*)0, 0,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc57b0
-GlobalObjectO2_00d472a0 g_0126dc28(g_0126dc28_arg0, g_0126dc28_arg1, 224, 0, 0, (const char*)0, 0, g_0126dc28_arg7, 3,
+GlobalObjectO2_00d472a0 hkpAabbPhantomClass(g_0126dc28_arg0, g_0126dc28_arg1, 224, 0, 0, (const char*)0, 0, g_0126dc28_arg7, 3,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc5840
-GlobalObjectO2_00d472a0 g_0126dc70(g_0126dc70_arg0, g_0126dc70_arg1, 96, 0, 0, (const char*)0, 0, g_0126dc70_arg7, 7,
+GlobalObjectO2_00d472a0 hkpTriangleShapeClass(g_0126dc70_arg0, g_0126dc70_arg1, 96, 0, 0, (const char*)0, 0, g_0126dc70_arg7, 7,
                                    g_0126dc70_arg9, (const char*)0, 0, 0);
 // @fnv 0x00fc58c0
-GlobalObjectO2_00d472a0 g_0126dcb8(g_0126dcb8_arg0, g_0126dcb8_arg1, 64, 0, 0, (const char*)0, 0, g_0126dcb8_arg7, 5,
+GlobalObjectO2_00d472a0 hkpTriSampledHeightFieldCollectionClass(g_0126dcb8_arg0, g_0126dcb8_arg1, 64, 0, 0, (const char*)0, 0, g_0126dcb8_arg7, 5,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc5930
-GlobalObjectO2_00d472a0 g_0126dd00(g_0126dd00_arg0, g_0126dd00_arg1, 48, 0, 0, (const char*)0, 0, g_0126dd00_arg7, 4,
+GlobalObjectO2_00d472a0 hkpTriSampledHeightFieldBvTreeShapeClass(g_0126dd00_arg0, g_0126dd00_arg1, 48, 0, 0, (const char*)0, 0, g_0126dd00_arg7, 4,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc59a0
-GlobalObjectO2_00d472a0 g_0126dd48(g_0126dd48_arg0, g_0126dd48_arg1, 112, 0, 0, (const char*)0, 0, g_0126dd48_arg7, 4,
+GlobalObjectO2_00d472a0 hkpTransformShapeClass(g_0126dd48_arg0, g_0126dd48_arg1, 112, 0, 0, (const char*)0, 0, g_0126dd48_arg7, 4,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc5a10
-GlobalObjectO2_00d472a0 g_0126dd90(g_0126dd90_arg0, g_0126dd90_arg1, 32, 0, 0, (const char*)0, 0, g_0126dd90_arg7, 1,
+GlobalObjectO2_00d472a0 hkpSphereShapeClass(g_0126dd90_arg0, g_0126dd90_arg1, 32, 0, 0, (const char*)0, 0, g_0126dd90_arg7, 1,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc5a80
-GlobalObjectO2_00d472a0 g_0126ddd8(g_0126ddd8_arg0, g_0126ddd8_arg1, 112, 0, 0, (const char*)0, 0, g_0126ddd8_arg7, 6,
+GlobalObjectO2_00d472a0 hkpShapeInfoClass(g_0126ddd8_arg0, g_0126ddd8_arg1, 112, 0, 0, (const char*)0, 0, g_0126ddd8_arg7, 6,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc5af0
-GlobalObjectO2_00d472a0 g_0126de20(g_0126de20_arg0, g_0126de20_arg1, 28, 0, 1, (const char*)0, 0, g_0126de20_arg7, 2,
+GlobalObjectO2_00d472a0 hkpRemoveTerminalsMoppModifierClass(g_0126de20_arg0, g_0126de20_arg1, 28, 0, 1, (const char*)0, 0, g_0126de20_arg7, 2,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc5b60
 GlobalObjectO2_00d472a0 g_0126de68(g_0126de68_arg0, g_0126de68_arg1, 64, 0, 0, (const char*)0, 0, g_0126de68_arg7, 3,
@@ -2014,142 +2395,142 @@ GlobalObjectO2_00d472a0 g_0126de68(g_0126de68_arg0, g_0126de68_arg1, 64, 0, 0, (
 GlobalObjectO2_00d472a0 g_0126deb0(g_0126deb0_arg0, g_0126deb0_arg1, 48, 0, 0, (const char*)0, 0, (const char*)0, 0,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc5c40
-GlobalObjectO2_00d472a0 g_0126def8(g_0126def8_arg0, g_0126def8_arg1, 160, 0, 0, (const char*)0, 0, g_0126def8_arg7, 2,
+GlobalObjectO2_00d472a0 hkpMultiSphereShapeClass(g_0126def8_arg0, g_0126def8_arg1, 160, 0, 0, (const char*)0, 0, g_0126def8_arg7, 2,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc5cc0
-GlobalObjectO2_00d472a0 g_0126df40(g_0126df40_arg0, g_0126df40_arg1, 256, 0, 0, (const char*)0, 0, g_0126df40_arg7, 3,
+GlobalObjectO2_00d472a0 hkpGroupFilterClass(g_0126df40_arg0, g_0126df40_arg1, 256, 0, 0, (const char*)0, 0, g_0126df40_arg7, 3,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc5d40
-GlobalObjectO2_00d472a0 g_0126df88(g_0126df88_arg0, g_0126df88_arg1, 96, 0, 0, (const char*)0, 0, (const char*)0, 0,
+GlobalObjectO2_00d472a0 hkpFastMeshShapeClass(g_0126df88_arg0, g_0126df88_arg1, 96, 0, 0, (const char*)0, 0, (const char*)0, 0,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc5db0
-GlobalObjectO2_00d472a0 g_0126dfd0(g_0126dfd0_arg0, g_0126dfd0_arg1, 8, 0, 0, (const char*)0, 0, (const char*)0, 0,
+GlobalObjectO2_00d472a0 hkpDefaultConvexListFilterClass(g_0126dfd0_arg0, g_0126dfd0_arg1, 8, 0, 0, (const char*)0, 0, (const char*)0, 0,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc5e20
-GlobalObjectO2_00d472a0 g_0126e018(g_0126e018_arg0, g_0126e018_arg1, 96, 0, 0, g_0126e018_arg5, 1, g_0126e018_arg7, 6,
+GlobalObjectO2_00d472a0 hkpCylinderShapeClass(g_0126e018_arg0, g_0126e018_arg1, 96, 0, 0, g_0126e018_arg5, 1, g_0126e018_arg7, 6,
                                    g_0126e018_arg9, (const char*)0, 0, 0);
 // @fnv 0x00fc5ea0
-GlobalObjectO2_00d472a0 g_0126e060(g_0126e060_arg0, g_0126e060_arg1, 32, 0, 0, (const char*)0, 0, g_0126e060_arg7, 2,
+GlobalObjectO2_00d472a0 hkpConvexVerticesConnectivityClass(g_0126e060_arg0, g_0126e060_arg1, 32, 0, 0, (const char*)0, 0, g_0126e060_arg7, 2,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc5f10
-GlobalObjectO2_00d472a0 g_0126e0a8(g_0126e0a8_arg0, g_0126e0a8_arg1, 48, 0, 0, (const char*)0, 0, g_0126e0a8_arg7, 1,
+GlobalObjectO2_00d472a0 hkpConvexTranslateShapeClass(g_0126e0a8_arg0, g_0126e0a8_arg1, 48, 0, 0, (const char*)0, 0, g_0126e0a8_arg7, 1,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc5f80
-GlobalObjectO2_00d472a0 g_0126e0f0(g_0126e0f0_arg0, g_0126e0f0_arg1, 96, 0, 0, (const char*)0, 0, g_0126e0f0_arg7, 1,
+GlobalObjectO2_00d472a0 hkpConvexTransformShapeClass(g_0126e0f0_arg0, g_0126e0f0_arg1, 96, 0, 0, (const char*)0, 0, g_0126e0f0_arg7, 1,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc5ff0
-GlobalObjectO2_00d472a0 g_0126e138(g_0126e138_arg0, g_0126e138_arg1, 36, 0, 0, (const char*)0, 0, g_0126e138_arg7, 3,
+GlobalObjectO2_00d472a0 hkpConvexPieceMeshShapeClass(g_0126e138_arg0, g_0126e138_arg1, 36, 0, 0, (const char*)0, 0, g_0126e138_arg7, 3,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc6060
-GlobalObjectO2_00d472a0 g_0126e180(g_0126e180_arg0, g_0126e180_arg1, 80, 0, 1, (const char*)0, 0, g_0126e180_arg7, 5,
+GlobalObjectO2_00d472a0 hkpConvexListShapeClass(g_0126e180_arg0, g_0126e180_arg1, 80, 0, 1, (const char*)0, 0, g_0126e180_arg7, 5,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc60d0
-GlobalObjectO2_00d472a0 g_0126e1c8(g_0126e1c8_arg0, g_0126e1c8_arg1, 128, 0, 0, (const char*)0, 0, g_0126e1c8_arg7, 4,
+GlobalObjectO2_00d472a0 hkpCompressedSampledHeightFieldShapeClass(g_0126e1c8_arg0, g_0126e1c8_arg1, 128, 0, 0, (const char*)0, 0, g_0126e1c8_arg7, 4,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc6150
-GlobalObjectO2_00d472a0 g_0126e210(g_0126e210_arg0, g_0126e210_arg1, 60, 0, 0, (const char*)0, 0, g_0126e210_arg7, 1,
+GlobalObjectO2_00d472a0 hkpCollisionFilterListClass(g_0126e210_arg0, g_0126e210_arg1, 60, 0, 0, (const char*)0, 0, g_0126e210_arg7, 1,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc61c0
-GlobalObjectO2_00d472a0 g_0126e258(g_0126e258_arg0, g_0126e258_arg1, 64, 0, 0, g_0126e258_arg5, 1, g_0126e258_arg7, 2,
+GlobalObjectO2_00d472a0 hkpCapsuleShapeClass(g_0126e258_arg0, g_0126e258_arg1, 64, 0, 0, g_0126e258_arg5, 1, g_0126e258_arg7, 2,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc6240
-GlobalObjectO2_00d472a0 g_0126e2a0(g_0126e2a0_arg0, g_0126e2a0_arg1, 28, 0, 0, (const char*)0, 0, g_0126e2a0_arg7, 2,
+GlobalObjectO2_00d472a0 hkpBvShapeClass(g_0126e2a0_arg0, g_0126e2a0_arg1, 28, 0, 0, (const char*)0, 0, g_0126e2a0_arg7, 2,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc62b0
-GlobalObjectO2_00d472a0 g_0126e2e8(g_0126e2e8_arg0, g_0126e2e8_arg1, 48, 0, 0, (const char*)0, 0, g_0126e2e8_arg7, 1,
+GlobalObjectO2_00d472a0 hkpBoxShapeClass(g_0126e2e8_arg0, g_0126e2e8_arg1, 48, 0, 0, (const char*)0, 0, g_0126e2e8_arg7, 1,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc6320
-GlobalObjectO2_00d472a0 g_0126e330(g_0126e330_arg0, g_0126e330_arg1, 48, 0, 0, (const char*)0, 0, g_0126e330_arg7, 4,
+GlobalObjectO2_00d472a0 hkMemoryMeshShapeClass(g_0126e330_arg0, g_0126e330_arg1, 48, 0, 0, (const char*)0, 0, g_0126e330_arg7, 4,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc6390
-GlobalObjectO2_00d472a0 g_0126e378(g_0126e378_arg0, g_0126e378_arg1, 20, 0, 0, (const char*)0, 0, g_0126e378_arg7, 1,
+GlobalObjectO2_00d472a0 hkxVertexVectorDataChannelClass(g_0126e378_arg0, g_0126e378_arg1, 20, 0, 0, (const char*)0, 0, g_0126e378_arg7, 1,
                                    (const char*)0, (const char*)0, 0, 1);
 // @fnv 0x00fc6400
-GlobalObjectO2_00d472a0 g_0126e3c0(g_0126e3c0_arg0, g_0126e3c0_arg1, 20, 0, 0, (const char*)0, 0, g_0126e3c0_arg7, 1,
+GlobalObjectO2_00d472a0 hkxVertexSelectionChannelClass(g_0126e3c0_arg0, g_0126e3c0_arg1, 20, 0, 0, (const char*)0, 0, g_0126e3c0_arg7, 1,
                                    (const char*)0, (const char*)0, 0, 1);
 // @fnv 0x00fc6470
-GlobalObjectO2_00d472a0 g_0126e408(g_0126e408_arg0, g_0126e408_arg1, 20, 0, 0, (const char*)0, 0, g_0126e408_arg7, 1,
+GlobalObjectO2_00d472a0 hkxVertexIntDataChannelClass(g_0126e408_arg0, g_0126e408_arg1, 20, 0, 0, (const char*)0, 0, g_0126e408_arg7, 1,
                                    (const char*)0, (const char*)0, 0, 1);
 // @fnv 0x00fc64f0
-GlobalObjectO2_00d472a0 g_0126e450(g_0126e450_arg0, g_0126e450_arg1, 24, 0, 0, g_0126e450_arg5, 1, g_0126e450_arg7, 2,
+GlobalObjectO2_00d472a0 hkxVertexFloatDataChannelClass(g_0126e450_arg0, g_0126e450_arg1, 24, 0, 0, g_0126e450_arg5, 1, g_0126e450_arg7, 2,
                                    (const char*)0, (const char*)0, 0, 1);
 // @fnv 0x00fc6570
-GlobalObjectO2_00d472a0 g_0126e498(g_0126e498_arg0, g_0126e498_arg1, 20, 0, 0, (const char*)0, 0, g_0126e498_arg7, 1,
+GlobalObjectO2_00d472a0 hkxTriangleSelectionChannelClass(g_0126e498_arg0, g_0126e498_arg1, 20, 0, 0, (const char*)0, 0, g_0126e498_arg7, 1,
                                    (const char*)0, (const char*)0, 0, 1);
 // @fnv 0x00fc65e0
-GlobalObjectO2_00d472a0 g_0126e4e0(g_0126e4e0_arg0, g_0126e4e0_arg1, 32, 0, 0, (const char*)0, 0, g_0126e4e0_arg7, 4,
+GlobalObjectO2_00d472a0 hkxTextureInplaceClass(g_0126e4e0_arg0, g_0126e4e0_arg1, 32, 0, 0, (const char*)0, 0, g_0126e4e0_arg7, 4,
                                    (const char*)0, (const char*)0, 0, 1);
 // @fnv 0x00fc6650
-GlobalObjectO2_00d472a0 g_0126e528(g_0126e528_arg0, g_0126e528_arg1, 20, 0, 0, (const char*)0, 0, g_0126e528_arg7, 3,
+GlobalObjectO2_00d472a0 hkxTextureFileClass(g_0126e528_arg0, g_0126e528_arg1, 20, 0, 0, (const char*)0, 0, g_0126e528_arg7, 3,
                                    (const char*)0, (const char*)0, 0, 1);
 // @fnv 0x00fc66c0
-GlobalObjectO2_00d472a0 g_0126e570(g_0126e570_arg0, g_0126e570_arg1, 32, 0, 0, (const char*)0, 0, g_0126e570_arg7, 2,
+GlobalObjectO2_00d472a0 hkxSparselyAnimatedStringClass(g_0126e570_arg0, g_0126e570_arg1, 32, 0, 0, (const char*)0, 0, g_0126e570_arg7, 2,
                                    (const char*)0, (const char*)0, 0, 2);
 // @fnv 0x00fc6730
 GlobalObjectO2_00d472a0 g_0126e5b8(g_0126e5b8_arg0, g_0126e5b8_arg1, 32, 0, 0, (const char*)0, 0, g_0126e5b8_arg7, 2,
                                    (const char*)0, (const char*)0, 0, 1);
 // @fnv 0x00fc67a0
-GlobalObjectO2_00d472a0 g_0126e600(g_0126e600_arg0, g_0126e600_arg1, 32, 0, 0, (const char*)0, 0, g_0126e600_arg7, 2,
+GlobalObjectO2_00d472a0 hkxSparselyAnimatedBoolClass(g_0126e600_arg0, g_0126e600_arg1, 32, 0, 0, (const char*)0, 0, g_0126e600_arg7, 2,
                                    (const char*)0, (const char*)0, 0, 1);
 // @fnv 0x00fc6810
-GlobalObjectO2_00d472a0 g_0126e648(g_0126e648_arg0, g_0126e648_arg1, 112, 0, 0, (const char*)0, 0, g_0126e648_arg7, 4,
+GlobalObjectO2_00d472a0 hkxSkinBindingClass(g_0126e648_arg0, g_0126e648_arg1, 112, 0, 0, (const char*)0, 0, g_0126e648_arg7, 4,
                                    (const char*)0, (const char*)0, 0, 2);
 // @fnv 0x00fc6880
-GlobalObjectO2_00d472a0 g_0126e690(g_0126e690_arg0, g_0126e690_arg1, 176, 0, 0, (const char*)0, 0, g_0126e690_arg7, 13,
+GlobalObjectO2_00d472a0 hkxSceneClass(g_0126e690_arg0, g_0126e690_arg1, 176, 0, 0, (const char*)0, 0, g_0126e690_arg7, 13,
                                    g_0126e690_arg9, (const char*)0, 0, 1);
 // @fnv 0x00fc6900
-GlobalObjectO2_00d472a0 g_0126e6d8(g_0126e6d8_arg0, g_0126e6d8_arg1, 36, 0, 0, (const char*)0, 0, g_0126e6d8_arg7, 2,
+GlobalObjectO2_00d472a0 hkxNodeSelectionSetClass(g_0126e6d8_arg0, g_0126e6d8_arg1, 36, 0, 0, (const char*)0, 0, g_0126e6d8_arg7, 2,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc6970
-GlobalObjectO2_00d472a0 g_0126e720(g_0126e720_arg0, g_0126e720_arg1, 28, 0, 0, (const char*)0, 0, g_0126e720_arg7, 2,
+GlobalObjectO2_00d472a0 hkxMeshUserChannelInfoClass(g_0126e720_arg0, g_0126e720_arg1, 28, 0, 0, (const char*)0, 0, g_0126e720_arg7, 2,
                                    (const char*)0, (const char*)0, 0, 0);
 // @fnv 0x00fc69e0
-GlobalObjectO2_00d472a0 g_0126e768(g_0126e768_arg0, g_0126e768_arg1, 32, 0, 0, (const char*)0, 0, g_0126e768_arg7, 2,
+GlobalObjectO2_00d472a0 hkxMeshClass(g_0126e768_arg0, g_0126e768_arg1, 32, 0, 0, (const char*)0, 0, g_0126e768_arg7, 2,
                                    (const char*)0, (const char*)0, 0, 1);
 // @fnv 0x00fc6a50
-GlobalObjectO2_00d472a0 g_0126e7b0(g_0126e7b0_arg0, g_0126e7b0_arg1, 40, 0, 0, (const char*)0, 0, g_0126e7b0_arg7, 4,
+GlobalObjectO2_00d472a0 hkxMeshSectionClass(g_0126e7b0_arg0, g_0126e7b0_arg1, 40, 0, 0, (const char*)0, 0, g_0126e7b0_arg7, 4,
                                    (const char*)0, (const char*)0, 0, 1);
 // @fnv 0x00fc6ac0
-GlobalObjectO2_00d472a0 g_0126e7f8(g_0126e7f8_arg0, g_0126e7f8_arg1, 20, 0, 0, (const char*)0, 0, g_0126e7f8_arg7, 1,
+GlobalObjectO2_00d472a0 hkxMaterialShaderSetClass(g_0126e7f8_arg0, g_0126e7f8_arg1, 20, 0, 0, (const char*)0, 0, g_0126e7f8_arg7, 1,
                                    (const char*)0, (const char*)0, 0, 1);
 // @fnv 0x00fc6b40
-GlobalObjectO2_00d472a0 g_0126e840(g_0126e840_arg0, g_0126e840_arg1, 40, 0, 0, g_0126e840_arg5, 1, g_0126e840_arg7, 6,
+GlobalObjectO2_00d472a0 hkxMaterialShaderClass(g_0126e840_arg0, g_0126e840_arg1, 40, 0, 0, g_0126e840_arg5, 1, g_0126e840_arg7, 6,
                                    (const char*)0, (const char*)0, 0, 1);
 // @fnv 0x00fc6bd0
-GlobalObjectO2_00d472a0 g_0126e888(g_0126e888_arg0, g_0126e888_arg1, 28, 0, 0, g_0126e888_arg5, 1, g_0126e888_arg7, 3,
+GlobalObjectO2_00d472a0 hkxMaterialEffectClass(g_0126e888_arg0, g_0126e888_arg1, 28, 0, 0, g_0126e888_arg5, 1, g_0126e888_arg7, 3,
                                    (const char*)0, (const char*)0, 0, 1);
 // @fnv 0x00fc6c60
-GlobalObjectO2_00d472a0 g_0126e8d0(g_0126e8d0_arg0, g_0126e8d0_arg1, 64, 0, 0, g_0126e8d0_arg5, 1, g_0126e8d0_arg7, 5,
+GlobalObjectO2_00d472a0 hkxLightClass(g_0126e8d0_arg0, g_0126e8d0_arg1, 64, 0, 0, g_0126e8d0_arg5, 1, g_0126e8d0_arg7, 5,
                                    (const char*)0, (const char*)0, 0, 1);
 // @fnv 0x00fc6cf0
-GlobalObjectO2_00d472a0 g_0126e918(g_0126e918_arg0, g_0126e918_arg1, 44, 0, 0, g_0126e918_arg5, 1, g_0126e918_arg7, 5,
+GlobalObjectO2_00d472a0 hkxIndexBufferClass(g_0126e918_arg0, g_0126e918_arg1, 44, 0, 0, g_0126e918_arg5, 1, g_0126e918_arg7, 5,
                                    (const char*)0, (const char*)0, 0, 1);
 // @fnv 0x00fc6d70
-GlobalObjectO2_00d472a0 g_0126e960(g_0126e960_arg0, g_0126e960_arg1, 20, 0, 0, (const char*)0, 0, g_0126e960_arg7, 1,
+GlobalObjectO2_00d472a0 hkxEdgeSelectionChannelClass(g_0126e960_arg0, g_0126e960_arg1, 20, 0, 0, (const char*)0, 0, g_0126e960_arg7, 1,
                                    (const char*)0, (const char*)0, 0, 1);
 // @fnv 0x00fc6de0
-GlobalObjectO2_00d472a0 g_0126e9a8(g_0126e9a8_arg0, g_0126e9a8_arg1, 80, 0, 0, (const char*)0, 0, g_0126e9a8_arg7, 7,
+GlobalObjectO2_00d472a0 hkxCameraClass(g_0126e9a8_arg0, g_0126e9a8_arg1, 80, 0, 0, (const char*)0, 0, g_0126e9a8_arg7, 7,
                                    (const char*)0, (const char*)0, 0, 1);
 // @fnv 0x00fc6e50
 GlobalObjectO2_00d472a0 g_0126e9f0(g_0126e9f0_arg0, g_0126e9f0_arg1, 20, 0, 0, (const char*)0, 0, g_0126e9f0_arg7, 1,
                                    (const char*)0, (const char*)0, 0, 1);
 // @fnv 0x00fc6ed0
-GlobalObjectO2_00d472a0 g_0126ea38(g_0126ea38_arg0, g_0126ea38_arg1, 24, 0, 0, (const char*)0, 0, g_0126ea38_arg7, 2,
+GlobalObjectO2_00d472a0 hkxAnimatedVectorClass(g_0126ea38_arg0, g_0126ea38_arg1, 24, 0, 0, (const char*)0, 0, g_0126ea38_arg7, 2,
                                    (const char*)0, (const char*)0, 0, 1);
 // @fnv 0x00fc6f40
 GlobalObjectO2_00d472a0 g_0126ea80(g_0126ea80_arg0, g_0126ea80_arg1, 20, 0, 0, (const char*)0, 0, g_0126ea80_arg7, 1,
                                    (const char*)0, (const char*)0, 0, 1);
 // @fnv 0x00fc6fc0
-GlobalObjectO2_00d472a0 g_0126eac8(g_0126eac8_arg0, g_0126eac8_arg1, 24, 0, 0, (const char*)0, 0, g_0126eac8_arg7, 2,
+GlobalObjectO2_00d472a0 hkxAnimatedMatrixClass(g_0126eac8_arg0, g_0126eac8_arg1, 24, 0, 0, (const char*)0, 0, g_0126eac8_arg7, 2,
                                    (const char*)0, (const char*)0, 0, 1);
 // @fnv 0x00fc7040
-GlobalObjectO2_00d472a0 g_0126eb10(g_0126eb10_arg0, g_0126eb10_arg1, 24, 0, 0, (const char*)0, 0, g_0126eb10_arg7, 2,
+GlobalObjectO2_00d472a0 hkxAnimatedFloatClass(g_0126eb10_arg0, g_0126eb10_arg1, 24, 0, 0, (const char*)0, 0, g_0126eb10_arg7, 2,
                                    (const char*)0, (const char*)0, 0, 1);
 // @fnv 0x00fc70b0
-GlobalObjectO2_00d472a0 g_0126eb58(g_0126eb58_arg0, g_0126eb58_arg1, 24, 0, 0, (const char*)0, 0, g_0126eb58_arg7, 9,
+GlobalObjectO2_00d472a0 hkAlignSceneToNodeOptionsClass(g_0126eb58_arg0, g_0126eb58_arg1, 24, 0, 0, (const char*)0, 0, g_0126eb58_arg7, 9,
                                    (const char*)0, (const char*)0, 0, 2);
 // @fnv 0x00fc7120
-GlobalObjectO2_00d472a0 g_0126eba0(g_0126eba0_arg0, g_0126eba0_arg1, 12, 0, 0, (const char*)0, 0, g_0126eba0_arg7, 1,
+GlobalObjectO2_00d472a0 hkOstreamClass(g_0126eba0_arg0, g_0126eba0_arg1, 12, 0, 0, (const char*)0, 0, g_0126eba0_arg7, 1,
                                    (const char*)0, (const char*)0, 1, 0);
 // @fnv 0x00fc71a0
 GlobalObjectO2_00d472a0 g_0126ed90(g_0126ed90_arg0, (const char*)0, 36, 0, 0, (const char*)0, 0, g_0126ed90_arg7, 7,
@@ -2169,6 +2550,7 @@ GlobalObjectO2_00d472a0 g_0126ee50(g_0126ee50_arg0, (const char*)0, 12, 0, 0, (c
 // @fnv 0x00fc72a0
 GlobalObjectO2_00a7b610 g_0126f0f0(g_0126f0f0_arg0, g_0126f0f0_arg1);
 // @fnv 0x00fc7300
+// pdb: `dynamic initializer for 'NiD3DDefaultShader::ms_RTTI'' | NiD3DDefaultShader.obj | debug, unique string literal, high
 GlobalObjectO2_00a7b610 g_0126f554(g_0126f554_arg0, g_0126f554_arg1);
 // @fnv 0x00fc7320
 GlobalObjectO2_00a7b610 g_0126f59c(g_0126f59c_arg0, (const char*)0);
@@ -2191,19 +2573,26 @@ GlobalObjectO2_00a7b610 g_0126f5e8(g_0126f5e8_arg0, g_0126f5e8_arg1);
 // @fnv 0x00fc7470
 GlobalObjectO2_00a7b610 g_0126f5f0(g_0126f5f0_arg0, g_0126f5f0_arg1);
 // @fnv 0x00fc74c0
+// pdb: `dynamic initializer for 'NiD3DShader::ms_RTTI'' | NiD3DShader.obj | debug, unique string literal, high
 GlobalObjectO2_00a7b610 g_0126f754(g_0126f754_arg0, g_0126f754_arg1);
 // @fnv 0x00fc74e0
+// pdb: `dynamic initializer for 'NiD3DShaderInterface::ms_RTTI'' | NiD3DShaderInterface.obj | debug, unique string literal, high
 GlobalObjectO2_00a7b610 g_0126f75c(g_0126f75c_arg0, g_0126f75c_arg1);
 // @fnv 0x00fc7500
-GlobalObjectO2_00a7b610 g_0126f7c4(g_0126f7c4_arg0, (const char*)0);
+// pdb: `dynamic initializer for 'NiD3DShaderConstantMap::ms_RTTI'' | NiD3DShaderConstantMap.obj | debug, unique string literal, high
+GlobalObjectO2_00a7b610 NiD3DShaderConstantMap_ms_RTTI(g_0126f7c4_arg0, (const char*)0);
 // @fnv 0x00fc7520
+// pdb: `dynamic initializer for 'NiD3DShaderProgram::ms_RTTI'' | NiD3DShaderProgram.obj | debug, unique string literal, high
 GlobalObjectO2_00a7b610 g_0126f9a4(g_0126f9a4_arg0, g_0126f9a4_arg1);
 // @fnv 0x00fc7540
+// pdb: `dynamic initializer for 'NiD3DPixelShader::ms_RTTI'' | NiD3DPixelShader.obj | debug, unique string literal, high
 GlobalObjectO2_00a7b610 g_0126f9ac(g_0126f9ac_arg0, g_0126f9ac_arg1);
 // @fnv 0x00fc7560
+// pdb: `dynamic initializer for 'NiD3DVertexShader::ms_RTTI'' | NiD3DVertexShader.obj | debug, unique string literal, high
 GlobalObjectO2_00a7b610 g_0126f9b4(g_0126f9b4_arg0, g_0126f9b4_arg1);
 // @fnv 0x00fc75a0
-GlobalObjectO2_00a7b610 g_0126f9d0(g_0126f9d0_arg0, g_0126f9d0_arg1);
+// pdb: `dynamic initializer for 'NiD3DController::ms_RTTI'' | NiD3DController.obj | debug, unique string literal, high
+GlobalObjectO2_00a7b610 NiD3DController_ms_RTTI(g_0126f9d0_arg0, g_0126f9d0_arg1);
 // @fnv 0x00fc75c0
 GlobalObjectO2_00a7b610 g_0126f9d8(g_0126f9d8_arg0, g_0126f9d8_arg1);
 // @fnv 0x00fc75e0
@@ -2213,26 +2602,37 @@ GlobalObjectO2_00a7b610 g_0126f9f0(g_0126f9f0_arg0, g_0126f9f0_arg1);
 // @fnv 0x00fc7620
 GlobalObjectO2_00a7b610 g_0126f9f8(g_0126f9f8_arg0, g_0126f9f8_arg1);
 // @fnv 0x00fc7640
-GlobalObjectO2_00a7b610 g_0126fa40(g_0126fa40_arg0, g_0126fa40_arg1);
+// pdb: `dynamic initializer for 'NiD3DHLSLPixelShader::ms_RTTI'' | NiD3DHLSLPixelShader.obj | debug, unique string literal, high
+GlobalObjectO2_00a7b610 NiD3DHLSLPixelShader_ms_RTTI(g_0126fa40_arg0, g_0126fa40_arg1);
 // @fnv 0x00fc7660
-GlobalObjectO2_00a7b610 g_0126fa48(g_0126fa48_arg0, g_0126fa48_arg1);
+// pdb: `dynamic initializer for 'NiD3DHLSLVertexShader::ms_RTTI'' | NiD3DHLSLVertexShader.obj | debug, unique string literal, high
+GlobalObjectO2_00a7b610 NiD3DHLSLVertexShader_ms_RTTI(g_0126fa48_arg0, g_0126fa48_arg1);
 // @fnv 0x00fc76b0
-GlobalObjectO2_00a7b610 g_0126fab4(g_0126fab4_arg0, g_0126fab4_arg1);
+GlobalObjectO2_00a7b610 NiCollisionData_ms_RTTI(g_0126fab4_arg0, g_0126fab4_arg1);
 // @fnv 0x00fc7950
-GlobalObjectO2_00a7b610 g_012708e4(g_012708e4_arg0, g_012708e4_arg1);
+// pdb: `dynamic initializer for 'NiRenderedCubeMap::ms_RTTI'' | NiRenderedCubeMap.obj | debug, unique string literal, high
+GlobalObjectO2_00a7b610 NiRenderedCubeMap_ms_RTTI(g_012708e4_arg0, g_012708e4_arg1);
 // @fnv 0x00fc7970
-GlobalObjectO2_00a7b610 g_012708ec(g_012708ec_arg0, g_012708ec_arg1);
+// pdb: `dynamic initializer for 'NiRenderTargetGroup::ms_RTTI'' | NiRenderTargetGroup.obj | debug, unique string literal, high
+GlobalObjectO2_00a7b610 NiRenderTargetGroup_ms_RTTI(g_012708ec_arg0, g_012708ec_arg1);
 // @fnv 0x00fc7990
-GlobalObjectO2_00a7b610 g_012708f8(g_012708f8_arg0, g_012708f8_arg1);
+// pdb: `dynamic initializer for 'NiFragmentMaterial::ms_RTTI'' | NiFragmentMaterial.obj | debug, unique string literal, high
+GlobalObjectO2_00a7b610 NiFragmentMaterial_ms_RTTI(g_012708f8_arg0, g_012708f8_arg1);
 // @fnv 0x00fc79b0
-GlobalObjectO2_00a7b610 g_01270900(g_01270900_arg0, g_01270900_arg1);
+// pdb: `dynamic initializer for 'NiShaderDeclaration::ms_RTTI'' | NiShaderDeclaration.obj | debug, unique string literal, high
+GlobalObjectO2_00a7b610 NiShaderDeclaration_ms_RTTI(g_01270900_arg0, g_01270900_arg1);
 // @fnv 0x00fc79d0
-GlobalObjectO2_00a7b610 g_01270908(g_01270908_arg0, g_01270908_arg1);
+// pdb: `dynamic initializer for 'NiSCMExtraData::ms_RTTI'' | NiSCMExtraData.obj | debug, unique string literal, high
+GlobalObjectO2_00a7b610 NiSCMExtraData_ms_RTTI(g_01270908_arg0, g_01270908_arg1);
 // @fnv 0x00fc79f0
+// pdb: `dynamic initializer for 'NiGPUProgram::ms_RTTI'' | NiGPUProgram.obj | debug, unique string literal, high
 GlobalObjectO2_00a7b610 g_01270910(g_01270910_arg0, (const char*)0);
 // @fnv 0x00fc7a10
-GlobalObjectO2_00a7b610 g_01270918(g_01270918_arg0, g_01270918_arg1);
+// pdb: `dynamic initializer for 'NiFragmentShaderInstanceDescriptor::ms_RTTI'' | NiFragmentShaderInstanceDescriptor.obj | debug, unique string literal, high
+GlobalObjectO2_00a7b610 NiFragmentShaderInstanceDescriptor_ms_RTTI(g_01270918_arg0, g_01270918_arg1);
 // @fnv 0x00fc7a30
-GlobalObjectO2_00a7b610 g_01270920(g_01270920_arg0, (const char*)0);
+// pdb: `dynamic initializer for 'NiGPUProgramCache::ms_RTTI'' | NiGPUProgramCache.obj | debug, unique string literal, high
+GlobalObjectO2_00a7b610 NiGPUProgramCache_ms_RTTI(g_01270920_arg0, (const char*)0);
 // @fnv 0x00fc7a50
-GlobalObjectO2_00a7b610 g_01270928(g_01270928_arg0, (const char*)0);
+// pdb: `dynamic initializer for 'NiMaterialNode::ms_RTTI'' | NiMaterialNode.obj | debug, unique string literal, high
+GlobalObjectO2_00a7b610 NiMaterialNode_ms_RTTI(g_01270928_arg0, (const char*)0);

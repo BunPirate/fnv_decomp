@@ -3,6 +3,7 @@
 #include "ImageSpaceModifierInstanceTemp.h"
 #include "NiPoint2.h"
 
+// pdb: class ImageSpaceModifierInstanceRB, size 0x38, bases: ImageSpaceModifierInstanceTemp, 5 members
 class ImageSpaceModifierInstanceRB : public ImageSpaceModifierInstanceTemp
 {
   public:

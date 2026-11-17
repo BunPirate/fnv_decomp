@@ -11,13 +11,14 @@ class NiAVObject;
 class NiSourceTexture;
 class ParticleShaderProperty;
 
+// pdb: class TESEffectShader, size 0x170, bases: TESForm, 4 members
 class TESEffectShader : public TESForm
 {
 public:
     EffectShaderData Data;
-    TESTexture m_kFillTexture;
-    TESTexture m_kParticleShaderTexture;
-    TESTexture m_kHolesTexture;
+    TESTexture TextureShaderTexture; // src: XBOX_RETAIL_PDB +0x14c (old: m_kFillTexture)
+    TESTexture ParticleShaderTexture; // src: XBOX_RETAIL_PDB +0x158 (old: m_kParticleShaderTexture)
+    TESTexture BlockOutTexture; // src: XBOX_RETAIL_PDB +0x164 (old: m_kHolesTexture)
 
     TESEffectShader();
     virtual ~TESEffectShader();
@@ -29,7 +30,7 @@ public:
     virtual bool Compare(TESForm* form);
 
     void ResetFormData();
-    bool Load(TESFile* file);
+    bool Load(TESFile* apFile);
     EffectShaderData* GetData();
     BGSDebris* GetAddonModels();
     void SetAddonModels(BGSDebris* models);
@@ -48,5 +49,5 @@ public:
     void StopParticleShader(NiAVObject*, ParticleShaderProperty*);
     BSShaderPPLightingProperty::TextureEffectData* CreateEffectData(
         NiAVObject*, NiSourceTexture*, NiSourceTexture*);
-    void ApplyShaderToTree(NiAVObject*, BSShaderPPLightingProperty::TextureEffectData*);
+    void StartTextureShader(NiAVObject*, BSShaderPPLightingProperty::TextureEffectData*);
 };

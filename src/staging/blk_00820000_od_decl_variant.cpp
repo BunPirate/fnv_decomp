@@ -103,12 +103,12 @@ struct FUN_00836240
 };
 struct FUN_00836630
 {
-    void LoadGame(BGSLoadFormBuffer* buffer);
+    void FalloutRadio_FORadioStation_LoadGame(BGSLoadFormBuffer* apLoadGameBuffer);
 };
 extern int DAT_011a1888[];
 extern int DAT_011dd87c[];
 int __cdecl ImpactMixer_GetMaterialSoundName(int index);
-extern "C" void __cdecl FalloutAudio_FUN_00839ab0();
+extern "C" void __cdecl ImpactMixer_InitFootsteps();
 extern unsigned char DAT_011dd85c;
 void ResetFootstepSounds();
 extern "C" void* DAT_0107d9c4;
@@ -193,6 +193,7 @@ struct FUN_0083b770
     BSSoundHandle b;
     FUN_0083b770();
 };
+// pdb: class Date, size 0x4 (here 0x1), 2 members
 struct Date
 {
     ~Date();
@@ -216,11 +217,12 @@ struct FUN_0083d0d0_Class
 {
     void RefreshObjectRef(int a);
 };
+// pdb: structure WeatherEntry, size 0xc, 3 members
 struct WeatherEntry
 {
-    int a;
-    int b;
-    int c;
+    int pWeather; // src: XBOX_RETAIL_PDB +0x0 (old: a)
+    int uiChance; // src: XBOX_RETAIL_PDB +0x4 (old: b)
+    int pChanceVar; // src: XBOX_RETAIL_PDB +0x8 (old: c)
     WeatherEntry();
 };
 struct G2
@@ -277,7 +279,7 @@ struct FUN_0083d1e0
     unsigned int unk24;
     unsigned int unk28;
     FUN_0083d1e0();
-    void DialogueResponse_LoadGameBGS(BGSLoadFormBuffer* buffer);
+    void DialogueResponse_LoadGame(BGSLoadFormBuffer* apLoadGameBuffer);
 };
 struct DialogueResponseList
 {
@@ -295,7 +297,7 @@ struct DialogueItem_shell
     unsigned int speaker;
     FUN_0083d1e0* GetResponseByIndex(short id);
     void FUN_0083c8a0(FUN_0083d1e0* response);
-    void LoadDialogueItem(BGSLoadFormBuffer* buffer);
+    void DialogueItem_LoadGame(BGSLoadFormBuffer* apLoadGameBuffer);
 };
 struct ListX
 {
@@ -376,7 +378,7 @@ struct FUN_0082cf80
     unsigned char m_data[0x48];
     __fastcall FUN_0082cf80(int, int, int);
 };
-void* __cdecl CreateFUN0082cf80(int a, int b, int c);
+void* __cdecl VampirismEffect_Instantiate(int apCaster, int apSpell, int apEffect);
 struct GlobalObject_0082ee80
 {
     ~GlobalObject_0082ee80();
@@ -419,7 +421,7 @@ struct GlobalObject_0083b5e0
 TESForm* __cdecl _ref_004839c0(unsigned int formID);
 struct FUN_0083d740_Class
 {
-    void __thiscall DialogueResponse_LoadGameBGS(BGSLoadGameBuffer* buffer);
+    void __thiscall DialogueResponse_LoadGame(BGSLoadGameBuffer* apLoadGameBuffer);
 };
 struct Str6a70
 {
@@ -429,7 +431,7 @@ TESForm* __cdecl _ref_004839c0(unsigned int formID);
 extern void* _DAT_01183028;
 struct FUN_0083fbe0_Class
 {
-    void __thiscall ExtraInfoGeneralTopic_Data_LoadGame(BGSLoadGameBuffer* buffer);
+    void __thiscall ExtraInfoGeneralTopic_Data_LoadGame(BGSLoadGameBuffer* apLoadGameBuffer);
 };
 // FUN_00822440 - 0x00822440, 99 bytes.
 //
@@ -554,7 +556,7 @@ struct FUN_00825ea0 : S_00825ea0_A, S_00825ea0_B
 };
 struct DataHandler
 {
-    TESSound* LookupSound(unsigned int formID);
+    TESSound* LookupSound(unsigned int aiSearchID);
 };
 extern DataHandler* g_dataHandler;
 int strcpy_s(char* dest, unsigned int size, const char* src);
@@ -793,7 +795,7 @@ struct ArchiveStream
 // signals the object at +0x34, waits for the worker thread to leave, closes its
 // handle, then runs the base class destructor.
 extern "C" __declspec(dllimport) int __stdcall CloseHandle(void* hObject);
-void __cdecl BSSleep(int milliseconds);
+void __cdecl BSSleep(int auiMSec);
 struct FUN_00aa63c0
 {
     virtual ~FUN_00aa63c0();
@@ -1089,7 +1091,7 @@ extern SettingObj DAT_011dd034;
 extern SettingObj DAT_011dd0ac;
 extern SettingObj DAT_011dcff4;
 extern Entry DAT_011dd9e8[20];
-void __cdecl PlayWeaponSound(Weap* a0, VObj1d0* a1, ListObj* a2, bool a3);
+void __cdecl ImpactMixer_PlayGunshot(Weap* a0, VObj1d0* a1, ListObj* aOriginNode, bool abPlayer);
 class B3B6B0MapBase
 {
   public:
@@ -1145,7 +1147,7 @@ struct FUN_008216c0_shell
     float time;
     EffectCollection effects;
     EffectHandle active;
-    void UpdateEffectTimes();
+    void MagicShaderHitEffect_ResetAlphaTimer();
 };
 // Minimal declarations for the process list and its polymorphic entries.
 #include "../../include/MobileObjectProcessArray.h"
@@ -1627,7 +1629,7 @@ extern unsigned int DAT_011dd360;
 extern unsigned int DAT_011dd364;
 extern int DAT_011dd368;
 extern char DAT_011dd1f8[];
-int __cdecl RunAudioChannel(int* param);
+int __cdecl FalloutAudioMedia_ThreadProc(int* input);
 struct FUN_00831f10_Target
 {
     virtual void unk00();
@@ -1674,6 +1676,8 @@ struct BraceString530 : BSStringT<char>
 };
 // @fnv 0x0083d8b0
 // src: COMMUNITY 0x0083d8b0
+// pdb: BSStringT<char>::RemoveCurlyContent | DialogueResponse.obj | retail, call graph, high
+// pdb locals: destiter, sCulled, chariter, bInCurlys
 BSStringT<char> BraceString530::BSStringT_char_RemoveCurlyContent()
 {
     unsigned int output6 = 0;  // next output character

@@ -8,6 +8,7 @@ class CSpeedTreeRT;
 class NiTexturingProperty;
 class bhkSimpleShapePhantom;
 
+// pdb: class BSTreeNode, size 0x130, bases: BSFadeNode, 5 members
 class BSTreeNode : public BSFadeNode
 {
   public:
@@ -18,8 +19,8 @@ class BSTreeNode : public BSFadeNode
 
     virtual const NiRTTI* GetRTTI() const;
     virtual void GetViewerStrings(NiViewerStringsArray*);
-    virtual void UpdateDownwardPass(NiUpdateData& data, unsigned int flags);
-    virtual void UpdateSelectedDownwardPass(NiUpdateData& data, unsigned int flags);
+    virtual void UpdateDownwardPass(NiUpdateData& UpdateData, unsigned int uFlags);
+    virtual void UpdateSelectedDownwardPass(NiUpdateData& UpdateData, unsigned int uFlags);
     virtual void OnVisible(NiCullingProcess&);
 
     virtual BSTreeModel* GetModelFilePath();
@@ -73,10 +74,10 @@ class BSTreeNode : public BSFadeNode
             unsigned char unkF8[24];
         };
     };
-    char m_pRenderedNodeEntry[4];
-    void* m_pSpeedTreeData;
-    void* m_pTreeModelData;
-    char m_ucTreeFlags[4];
-    float m_fTreeWindTime;
+    char spModel[4]; // src: XBOX_RETAIL_PDB +0x110 (old: m_pRenderedNodeEntry)
+    void* pspBranches; // src: XBOX_RETAIL_PDB +0x114 (old: m_pSpeedTreeData)
+    void* pspLeaves; // src: XBOX_RETAIL_PDB +0x118 (old: m_pTreeModelData)
+    char spBillboard[4]; // src: XBOX_RETAIL_PDB +0x11c (old: m_ucTreeFlags)
+    float fNextCollisionCheck; // src: XBOX_RETAIL_PDB +0x120 (old: m_fTreeWindTime)
     char _pad_124[12];
 };

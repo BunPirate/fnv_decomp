@@ -7,33 +7,34 @@
 #include "../../../../include/NiStream.h"
 #include "../../../../include/NiObject.h"
 
-extern "C" void* g_01202760;
+extern "C" void* NiPSysEmitterCtlrData_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01202760 (old: g_01202760)
 
 // @fnv 0x00c2baa0
 // src: COMMUNITY 0x00c2baa0
 void* __cdecl NiPSysEmitterCtlrData_GetRTTI()
 {
-    return &g_01202760;
+    return &NiPSysEmitterCtlrData_ms_RTTI;
 }
 
 extern void(__cdecl* DAT_011f38a0[])(void*);
 extern unsigned char DAT_011f3758[];
 // No shared NiPSysEmitterCtlrData header is available yet; all emitter methods use
 // this single layout (birth-rate keys at 0x08 and emitter-active keys at 0x18).
+// pdb: class NiPSysEmitterCtlrData, size 0x28, bases: NiObject, 8 members
 class NiPSysEmitterCtlrData : public NiObject
 {
   public:
     unsigned int m_uiNumBirthRateKeys;
     unsigned char* m_pkBirthRateKeys;
     int m_eBirthRateKeyType;
-    unsigned char m_ucBirthRateKeySize;
+    unsigned char m_ucBirthRateSize; // src: XBOX_RETAIL_PDB +0x14 (old: m_ucBirthRateKeySize)
     unsigned int m_uiNumEmitterActiveKeys;
     unsigned char* m_pkEmitterActiveKeys;
     unsigned int m_eEmitterActiveKeyType;
-    unsigned char m_ucEmitterActiveKeySize;
+    unsigned char m_ucEmitterActiveSize; // src: XBOX_RETAIL_PDB +0x24 (old: m_ucEmitterActiveKeySize)
 
-    void ReplaceBirthRateKeys(void* keys, unsigned int numKeys, int type);
-    void ReplaceEmitterActiveKeys(void* keys, unsigned int numKeys, int type);
+    void ReplaceBirthRateKeys(void* pkKeys, unsigned int uiNumKeys, int eType);
+    void ReplaceEmitterActiveKeys(void* pkKeys, unsigned int uiNumKeys, int eType);
     void* Destroy(unsigned int);
     void AppendBirthRateKeys(StrArr* pkStrings);
     bool Equals(NiPSysEmitterCtlrData* other);
@@ -41,23 +42,26 @@ class NiPSysEmitterCtlrData : public NiObject
     virtual void SaveBinary(NiStream& kStream);
 };
 // @fnv 0x00c2bb70
-void NiPSysEmitterCtlrData::ReplaceBirthRateKeys(void* keys, unsigned int numKeys, int type)
+// pdb: NiPSysEmitterCtlrData::ReplaceBirthRateKeys | NiPSysEmitterCtlrData.obj | retail, upstream name already matches, high
+// pdb params: pkKeys, uiNumKeys, eType
+// pdb locals: pfnDeleteFunc
+void NiPSysEmitterCtlrData::ReplaceBirthRateKeys(void* pkKeys, unsigned int uiNumKeys, int eType)
 {
     if (m_pkBirthRateKeys)
         DAT_011f38a0[m_eBirthRateKeyType](m_pkBirthRateKeys);
-    if (keys && numKeys)
+    if (pkKeys && uiNumKeys)
     {
-        m_ucBirthRateKeySize = DAT_011f3758[type];
-        m_pkBirthRateKeys = (unsigned char*)keys;
-        m_uiNumBirthRateKeys = numKeys;
-        m_eBirthRateKeyType = type;
+        m_ucBirthRateSize = DAT_011f3758[eType];
+        m_pkBirthRateKeys = (unsigned char*)pkKeys;
+        m_uiNumBirthRateKeys = uiNumKeys;
+        m_eBirthRateKeyType = eType;
     }
     else
     {
         m_uiNumBirthRateKeys = 0;
         m_pkBirthRateKeys = 0;
         m_eBirthRateKeyType = 0;
-        m_ucBirthRateKeySize = 0;
+        m_ucBirthRateSize = 0;
     }
 }
 
@@ -67,6 +71,7 @@ extern void(__cdecl* DAT_011f38a0[])(void*);
 extern void(__cdecl* DAT_011f3918[])(NiAnimationKey*);
 void __cdecl _delete(void*, unsigned int);
 // @fnv 0x00c2bc30
+// pdb: NiPSysEmitterCtlrData::`scalar deleting destructor' | NiPSysEmitterCtlrData.obj | retail, object-file gap fill, high
 void* NiPSysEmitterCtlrData::Destroy(unsigned int flags)
 {
     void* pkKeys = *(void**)((char*)this + 0xc);
@@ -88,6 +93,9 @@ char* __cdecl NiGetViewerString_00a7d510(char const*, unsigned int);
 char* __cdecl NiGetViewerString_00a7d5e0(char const*, char const*);
 
 // @fnv 0x00c2bf00
+// pdb: NiPSysEmitterCtlrData::GetViewerStrings | NiPSysEmitterCtlrData.obj | retail, string-set bridge, high
+// pdb params: pkStrings
+// pdb locals: pcBirthRateKeyType
 void NiPSysEmitterCtlrData::AppendBirthRateKeys(StrArr* pkStrings)
 {
     unsigned int uiIndex;
@@ -96,7 +104,7 @@ void NiPSysEmitterCtlrData::AppendBirthRateKeys(StrArr* pkStrings)
 
     AppendCameraPathEntries(pkStrings);
 
-    pcValue = (char*)_FUN_00a7d330(g_01202760);
+    pcValue = (char*)_FUN_00a7d330(NiPSysEmitterCtlrData_ms_RTTI);
     uiIndex = pkStrings->m_usSize;
     if (uiIndex >= pkStrings->m_usMaxSize)
     {
@@ -148,6 +156,9 @@ void NiPSysEmitterCtlrData::AppendBirthRateKeys(StrArr* pkStrings)
 extern bool(__cdecl* DAT_011f3ae0[])(unsigned char*, unsigned char*);
 
 // @fnv 0x00c2bab0
+// pdb: NiPSysEmitterCtlrData::IsEqual | NiPSysEmitterCtlrData.obj | retail, object-file run extension, low
+// pdb params: pkObject
+// pdb locals: pkDest, pfnEqualFunc, ui
 bool NiPSysEmitterCtlrData::Equals(NiPSysEmitterCtlrData* other)
 {
     if (!NiObject::IsSameAs(other))
@@ -162,15 +173,15 @@ bool NiPSysEmitterCtlrData::Equals(NiPSysEmitterCtlrData* other)
     if (other->m_uiNumEmitterActiveKeys != m_uiNumEmitterActiveKeys)
         return false;
 
-    if (other->m_ucBirthRateKeySize != m_ucBirthRateKeySize)
+    if (other->m_ucBirthRateSize != m_ucBirthRateSize)
         return false;
 
     bool(__cdecl * pfnCompare)(unsigned char*, unsigned char*) = DAT_011f3ae0[m_eBirthRateKeyType];
 
     for (unsigned int i = 0; i < m_uiNumBirthRateKeys; ++i)
     {
-        unsigned char* key = m_pkBirthRateKeys + i * m_ucBirthRateKeySize;
-        unsigned char* otherKey = other->m_pkBirthRateKeys + i * m_ucBirthRateKeySize;
+        unsigned char* key = m_pkBirthRateKeys + i * m_ucBirthRateSize;
+        unsigned char* otherKey = other->m_pkBirthRateKeys + i * m_ucBirthRateSize;
 
         if (!pfnCompare(otherKey, key))
             return false;
@@ -178,8 +189,8 @@ bool NiPSysEmitterCtlrData::Equals(NiPSysEmitterCtlrData* other)
 
     for (unsigned int i = 0; i < m_uiNumEmitterActiveKeys; ++i)
     {
-        unsigned char* key = m_pkEmitterActiveKeys + i * m_ucEmitterActiveKeySize;
-        unsigned char* otherKey = other->m_pkEmitterActiveKeys + i * m_ucEmitterActiveKeySize;
+        unsigned char* key = m_pkEmitterActiveKeys + i * m_ucEmitterActiveSize;
+        unsigned char* otherKey = other->m_pkEmitterActiveKeys + i * m_ucEmitterActiveSize;
 
         if (!pfnCompare(otherKey, key))
             return false;
@@ -191,23 +202,26 @@ bool NiPSysEmitterCtlrData::Equals(NiPSysEmitterCtlrData* other)
 extern void(__cdecl* DAT_011f38a0[])(void*);
 extern unsigned char DAT_011f3758[];
 // @fnv 0x00c2bbd0
-void NiPSysEmitterCtlrData::ReplaceEmitterActiveKeys(void* keys, unsigned int numKeys, int type)
+// pdb: NiPSysEmitterCtlrData::ReplaceEmitterActiveKeys | NiPSysEmitterCtlrData.obj | retail, upstream name already matches, high
+// pdb params: pkKeys, uiNumKeys, eType
+// pdb locals: pfnDeleteFunc
+void NiPSysEmitterCtlrData::ReplaceEmitterActiveKeys(void* pkKeys, unsigned int uiNumKeys, int eType)
 {
     if (m_pkEmitterActiveKeys)
         DAT_011f38a0[m_eEmitterActiveKeyType](m_pkEmitterActiveKeys);
-    if (keys && numKeys)
+    if (pkKeys && uiNumKeys)
     {
-        unsigned char size = DAT_011f3758[type + 30];
-        m_ucEmitterActiveKeySize = size;
-        m_pkEmitterActiveKeys = (unsigned char*)keys;
-        m_uiNumEmitterActiveKeys = numKeys;
-        m_eEmitterActiveKeyType = type;
+        unsigned char size = DAT_011f3758[eType + 30];
+        m_ucEmitterActiveSize = size;
+        m_pkEmitterActiveKeys = (unsigned char*)pkKeys;
+        m_uiNumEmitterActiveKeys = uiNumKeys;
+        m_eEmitterActiveKeyType = eType;
     }
     else
     {
         m_uiNumEmitterActiveKeys = 0;
         m_pkEmitterActiveKeys = 0;
-        m_ucEmitterActiveKeySize = 0;
+        m_ucEmitterActiveSize = 0;
     }
 }
 
@@ -263,6 +277,9 @@ extern KeyLoadFn DAT_011f3ac8[];
 
 // Saves the emitter controller key groups through the original stream callbacks.
 // @fnv 0x00c2bdf0
+// pdb: NiPSysEmitterCtlrData::SaveBinary | NiPSysEmitterCtlrData.obj | retail, upstream name already matches, high
+// pdb params: kStream
+// pdb locals: pfnSaveFunc, ui
 void NiPSysEmitterCtlrData::SaveBinary(NiStream& kStream)
 {
     NiObject::SaveBinary(kStream);
@@ -355,6 +372,9 @@ inline unsigned char GetKeySize2(KeyType e)
 }
 // Reads birth rate and emitter active key groups from the stream, creating and filling keys based on the key type and format version.
 // @fnv 0x00c2bc90
+// pdb: NiPSysEmitterCtlrData::LoadBinary | NiPSysEmitterCtlrData.obj | retail, upstream name already matches, high
+// pdb params: kStream
+// pdb locals: uiNumEmitterActiveKeys, uiNumBirthRateKeys, pkBirthRateKeys, pfnCreateFunc, eBirthRateKeyType, ucSize, pfnFillDerivedFunc, eEmitterActiveKeyType, pkEmitterActiveKeys
 void NiPSysEmitterCtlrData::LoadBinary(NiStream& kStream)
 {
     NiObject::LoadBinary(kStream);

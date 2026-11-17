@@ -7,7 +7,7 @@ struct Inner62
     int bhkWorldObject_GethkWorld();
 };
 
-int __cdecl bhkWorld_Getbhk(int value);
+int __cdecl bhkWorld_Getbhk(int apWorld);
 
 struct FUN_00621440_cls
 {
@@ -20,6 +20,8 @@ struct FUN_00621440_cls
 // If FUN_00559450 returns non-null, passes the result of its FUN_00c87a40 call through FUN_00621480; otherwise returns 0.
 // @fnv 0x00621440
 // src: XBOX_PDB 0x00621440
+// pdb: CameraCaster::GetWorld | CameraCaster.obj | debug, upstream name already matches, high
+// pdb locals: pw
 int FUN_00621440_cls::CameraCaster_GetWorld()
 {
     int result = 0;
@@ -70,14 +72,14 @@ struct SpawnedObject
     virtual void v37();
     virtual void v38();
     virtual void v39(SpawnedObject* obj);
-    void bhkWorld_SetDebugObjectColor(SpawnedObject* a, unsigned int b);
+    void bhkWorld_SetDebugObjectColor(SpawnedObject* apObject, unsigned int aiColor);
 };
 
 class ScopeGuard
 {
   public:
     unsigned int m_unk00;
-    ScopeGuard(unsigned int a, unsigned int b, const char* file, unsigned int line);
+    ScopeGuard(unsigned int memContext, unsigned int overridable, const char* file, unsigned int aiLine);
     ~ScopeGuard();
 };
 
@@ -87,21 +89,24 @@ class FUN_00631ca0_cls
 {
   public:
     SpawnedObject* Modelloader_GetReferencedThis();
-    void ViewCaster_Add(SpawnedObject* obj);
+    void ViewCaster_Add(SpawnedObject* apWorld);
 };
 
 // Creates a scope guard, and if the stored object is non-null, calls v39 on it and then FUN_00c68e30 with the object and a computed value.
 // @fnv 0x00631ca0
 // src: XBOX_PDB 0x00631ca0
-void FUN_00631ca0_cls::ViewCaster_Add(SpawnedObject* obj)
+// pdb: ViewCaster::Add | ViewCaster.obj | retail, upstream name already matches, high
+// pdb params: apWorld
+// pdb locals: tempMemContext
+void FUN_00631ca0_cls::ViewCaster_Add(SpawnedObject* apWorld)
 {
     ScopeGuard guard(0x10, 1, "D:\\_Fallout3\\Platforms\\Common\\Code\\Fallout Shared\\Havok\\ViewCaster.cpp", 0x74);
     if (this->Modelloader_GetReferencedThis() != 0)
     {
-        this->Modelloader_GetReferencedThis()->v39(obj);
-        if (obj != 0)
+        this->Modelloader_GetReferencedThis()->v39(apWorld);
+        if (apWorld != 0)
         {
-            obj->bhkWorld_SetDebugObjectColor(this->Modelloader_GetReferencedThis(), PackBytesBigEndian(0x58, 0xad, 0x56, 0x19));
+            apWorld->bhkWorld_SetDebugObjectColor(this->Modelloader_GetReferencedThis(), PackBytesBigEndian(0x58, 0xad, 0x56, 0x19));
         }
     }
 }
@@ -147,6 +152,8 @@ struct FUN_00632d40_shell : PathingCopyBase
 // Copy-assigns all members of the source object into this object and returns a reference to this.
 // @fnv 0x00632d40
 // src: XBOX_PDB 0x00632d40
+// pdb: hkpRootCdPoint::hkpRootCdPoint | ViewCaster.obj | debug, call graph, medium
+// pdb params: __that
 FUN_00632d40_shell& FUN_00632d40_shell::hkpRootCdPoint_hkpRootCdPoint(const FUN_00632d40_shell& other)
 {
     PathingCopyBase::operator=(other);

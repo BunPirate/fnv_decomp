@@ -37,6 +37,8 @@ class TESRegion : public TESForm
     NiColor m_kDiffuseColor;                           // +0x2C
 
 // @fnv 0x005d8a70
+// pdb: Script::ClearScreenSplatter | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
     NiColor* GetDiffuseColor()
     {
         return &m_kDiffuseColor;

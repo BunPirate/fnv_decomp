@@ -15,6 +15,7 @@
 #include "../../../include/ExtraDataList.h"
 
 // @fnv 0x00568e50
+// pdb: TESObjectREFR::GetTeleport | TESObjectREFR.obj | debug, call graph, high
 ExtraRadioData* TESObjectREFR::GetExtraRadioData()
 {
     return GetExtraData()->GetExtraRadioData();

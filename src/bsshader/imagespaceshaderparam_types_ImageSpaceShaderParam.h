@@ -109,6 +109,7 @@ FNV_STATIC_ASSERT(offsetof(NiTMapBase_DFALL_NiTMapItem_unsigned_int_unsigned_int
 #pragma pack(pop)
 FNV_STATIC_ASSERT(sizeof(NiTMap<unsigned int, unsigned int>) == 16);
 #pragma pack(push, 4)
+// pdb: class ImageSpaceShaderParam, size 0x88, bases: ImageSpaceEffectParam, 13 members
 class ImageSpaceShaderParam : public ShaderEffectParamLocal_00b8a9e0
 {
   public:
@@ -127,12 +128,12 @@ class ImageSpaceShaderParam : public ShaderEffectParamLocal_00b8a9e0
     NiTObjectArray<NiPointer<NiTexture> > m_kShaderTextures;                        // +0x58, 16 bytes
     NiTPrimitiveArray_enum_NiTexturingProperty__FilterMode_ m_kTextureFilterModes;  // +0x68, 16 bytes
     NiTPointerMap<unsigned int, unsigned int> m_kRenderStateMap;                    // +0x78, 16 bytes
-    void AllocateShaderConstants(int vertexCount, int pixelCount);
+    void AllocateShaderConstants(int aiVSize, int aiPSize);
     void ClearConstantGroups();
     void SetBlurClearMode();
     void CopyParamData(int index, const float* data, unsigned int size);
     void SetShaderConstantVector4(int index, float x, float y, float z, float w);
-    void SetRenderState(unsigned int state, unsigned int value);
+    void SetRenderState(unsigned int auiState, unsigned int auiValue);
     // ImageSpaceShaderParam
     // void __cdecl ImageSpaceShaderParam::*()
     // void __cdecl ImageSpaceShaderParam::*(int, int)

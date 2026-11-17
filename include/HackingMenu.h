@@ -7,6 +7,7 @@ class HackEntry;
 class Entry28;
 class ScriptObj;
 
+// pdb: class HackingMenu, size 0x1dc, bases: Menu, 28 members
 class HackingMenu : public Menu
 {
 public:
@@ -53,7 +54,7 @@ public:
 
         PairState();
         ~PairState();
-        void FreeAll();
+        void HackingMenu_WordList_Flush();
     };
 
     virtual ~HackingMenu();
@@ -119,7 +120,7 @@ public:
             int unk0dc;
         };
     };
-    AnimState anim;
+    AnimState xEntryText; // src: XBOX_RETAIL_PDB +0xe0 (old: anim)
     union
     {
         Tile* m_pTiles[8];
@@ -135,58 +136,58 @@ public:
             int unk128;
         };
     };
-    BSSoundHandle sounds[5];
-    ListState list168;
-    ListState list174;
-    PairState pair180;
-    ListState list188;
-    int unk194;
-    int unk198;
-    int unk19c;
-    int unk1a0;
-    int unk1a4;
-    int unk1a8;
-    int unk1ac;
-    int unk1b0;
-    int unk1b4;
-    int unk1b8;
-    int unk1bc;
-    int unk1c0;
-    int m_iStage;
-    Tile* m_pkCursorTile;
-    int m_iCursorIndex;
-    int unk1d0;
-    int unk1d4;
-    bool m_bBlink;
-    unsigned char unk1d9[3];
+    BSSoundHandle Sounds[5]; // src: XBOX_RETAIL_PDB +0x12c (old: sounds)
+    ListState xLogTiles; // src: XBOX_RETAIL_PDB +0x168 (old: list168)
+    ListState xGuessTiles; // src: XBOX_RETAIL_PDB +0x174 (old: list174)
+    PairState wordList; // src: XBOX_RETAIL_PDB +0x180 (old: pair180)
+    ListState xUsedBonuses; // src: XBOX_RETAIL_PDB +0x188 (old: list188)
+    int pTerminal; // src: XBOX_RETAIL_PDB +0x194 (old: unk194)
+    int pTerminalRef; // src: XBOX_RETAIL_PDB +0x198 (old: unk198)
+    int pPassword; // src: XBOX_RETAIL_PDB +0x19c (old: unk19c)
+    int iNumGuesses; // src: XBOX_RETAIL_PDB +0x1a0 (old: unk1a0)
+    int iTotGuesses; // src: XBOX_RETAIL_PDB +0x1a4 (old: unk1a4)
+    int iWordsHave; // src: XBOX_RETAIL_PDB +0x1a8 (old: unk1a8)
+    int iWordLength; // src: XBOX_RETAIL_PDB +0x1ac (old: unk1ac)
+    int iBufferPos; // src: XBOX_RETAIL_PDB +0x1b0 (old: unk1b0)
+    int iYStart; // src: XBOX_RETAIL_PDB +0x1b4 (old: unk1b4)
+    int iYInterval; // src: XBOX_RETAIL_PDB +0x1b8 (old: unk1b8)
+    int iLastOffset; // src: XBOX_RETAIL_PDB +0x1bc (old: unk1bc)
+    int pLastTarget; // src: XBOX_RETAIL_PDB +0x1c0 (old: unk1c0)
+    int eStage; // src: XBOX_RETAIL_PDB +0x1c4 (old: m_iStage)
+    Tile* pOverTile; // src: XBOX_RETAIL_PDB +0x1c8 (old: m_pkCursorTile)
+    int iCursorX; // src: XBOX_RETAIL_PDB +0x1cc (old: m_iCursorIndex)
+    int dwAccessTime; // src: XBOX_RETAIL_PDB +0x1d0 (old: unk1d0)
+    int pCursorVis; // src: XBOX_RETAIL_PDB +0x1d4 (old: unk1d4)
+    bool bSuppressEntry; // src: XBOX_RETAIL_PDB +0x1d8 (old: m_bBlink)
+    unsigned char bUsedReset[3]; // src: XBOX_RETAIL_PDB +0x1d9 (old: unk1d9)
 
     HackingMenu();
     void* Destroy(unsigned int flags);
     void ClearTilePayloadPair();
     void SetTile(int aiID, Tile* apTile);
     bool HasAllSlots(int*);
-    int GetScaledValue();
-    Tile* FindTile(int iColumn, int iNewRow);
-    bool HandleKey(int iKey, int iUnused);
+    int GetCharHit();
+    Tile* FindTile(int aiIndex, int aiCol);
+    bool HandleKey(int aiButton, int afValue);
     void HandleClick(int m_uiSoundID, int iUnk);
     int __thiscall GetClass_00765870();
     void DoLeave_00767ff0(int, void*);
     void __thiscall AccessTerminal();
     void __thiscall TransitionToComputersMenu();
-    unsigned int __thiscall CountMatchingChars(const char*, const char*);
-    void __thiscall SelectWordSet(unsigned int);
+    unsigned int __thiscall CommonPositions(const char*, const char*);
+    void __thiscall Prepare(unsigned int);
     void __thiscall UpdateFade();
     void __thiscall FormatHexWord(unsigned short, char*);
-    void __thiscall AddValueRows(unsigned int, const unsigned int*);
+    void __thiscall ScrollLog(unsigned int, const unsigned int*);
     void DoShutdown();
     void GetGarbageString(int, const char*);
-    void __thiscall UpdateActiveNodeProperty();
-    void BuildHackingGuessTemplate();
+    void __thiscall UpdateCursorPos();
+    void MakeGuessBlock();
     void RemoveRandomWord();
-    void BuildHackingPasswordFile();
+    void MakePasswordFile();
     void DoIntro();
     void UpdateHighlight();
     void __thiscall ClearEntry();
-    void __thiscall PositionTileFromEntry(HackEntry*);
-    void __thiscall PositionTileFromEntry(Entry28*);
+    void __thiscall UpdateScrollingCursor(HackEntry*);
+    void __thiscall UpdateScrollingCursor(Entry28*);
 };

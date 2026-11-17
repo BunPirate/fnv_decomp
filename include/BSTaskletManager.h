@@ -2,6 +2,7 @@
 
 // vftable 0x010a48ac (10 slots). Slots 2..8 are _purecall (0x00ec60fa) here; BSWin32TaskletManager
 // (vftable 0x010a4880) supplies them.
+// pdb: class BSTaskletManager, size 0x14 (here 0x10), 3 members
 class BSTaskletManager
 {
 public:

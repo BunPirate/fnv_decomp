@@ -118,11 +118,14 @@ struct CollFilterS : hkReferencedObject, FilterS
 // The shared phantom header does not yet declare this linear-cast entry point.
 struct PhantomS : hkpAabbPhantom
 {
-    void hkpAabbPhantom_linearCast(const hkpCollidable* collA, const LinCastInputS& input, void* castCollector, void* startCollector);
+    void hkpAabbPhantom_linearCast(const hkpCollidable* toBeCast, const LinCastInputS& input, void* castCollector, void* startCollector);
 };
 // @fnv 0x00cf2880
 // src: EXE 0x00cf2880
-void PhantomS::hkpAabbPhantom_linearCast(const hkpCollidable* collA, const LinCastInputS& input, void* castCollector,
+// pdb: hkpAabbPhantom::linearCast | hkpAabbPhantom.obj | retail, string-set bridge, high
+// pdb params: toBeCast, input, castCollector, startCollector
+// pdb locals: numCollidables, lccInput, assertBuf, ostr
+void PhantomS::hkpAabbPhantom_linearCast(const hkpCollidable* toBeCast, const LinCastInputS& input, void* castCollector,
                             void* startCollector)
 {
     union
@@ -144,9 +147,9 @@ void PhantomS::hkpAabbPhantom_linearCast(const hkpCollidable* collA, const LinCa
         }
     }
     __m128 path = _mm_sub_ps(*reinterpret_cast<const __m128*>(&input.m_vTo),
-                             *reinterpret_cast<const __m128*>(static_cast<const char*>(collA->m_pMotionState) + 48));
+                             *reinterpret_cast<const __m128*>(static_cast<const char*>(toBeCast->m_pMotionState) + 48));
     LcInput lcInput;
-    lcInput.set(*static_cast<const ProcInput*>(static_cast<const hkpWorld*>(m_pOwningWorld)->m_pCollisionInput));
+    lcInput.set(*static_cast<const ProcInput*>(static_cast<const hkpWorld*>(m_world)->m_collisionInput));
     _mm_store_ps(lcInput.m_path.m_f, path);
     {
         __m128 l = _mm_mul_ps(path, path);
@@ -156,18 +159,18 @@ void PhantomS::hkpAabbPhantom_linearCast(const hkpCollidable* collA, const LinCa
     }
     lcInput.m_fScalar.v = input.m_fMaxExtraPenetrationAgainstFixed;
     lcInput.m_fMaxExtraPenetration = input.m_fMaxExtraPenetration;
-    hkpCollisionDispatcher* dispatcher = static_cast<hkpCollisionDispatcher*>(static_cast<hkpWorld*>(m_pOwningWorld)->m_pDispatcher);
-    CollFilterS* filter = static_cast<CollFilterS*>(static_cast<hkpWorld*>(m_pOwningWorld)->m_pCollisionFilter);
-    int n = m_ppOverlappingCollidables.m_iElementCount;
+    hkpCollisionDispatcher* dispatcher = static_cast<hkpCollisionDispatcher*>(static_cast<hkpWorld*>(m_world)->m_collisionDispatcher);
+    CollFilterS* filter = static_cast<CollFilterS*>(static_cast<hkpWorld*>(m_world)->m_collisionFilter);
+    int n = m_overlappingCollidables.m_iElementCount;
     for (sh.i = 0; sh.i < n; sh.i++)
     {
-        const hkpCollidable* collB = static_cast<const hkpCollidable*>(m_ppOverlappingCollidables.m_data[sh.i]);
+        const hkpCollidable* collB = static_cast<const hkpCollidable*>(m_overlappingCollidables.m_data[sh.i]);
         bool r;
-        bool* enabled = filter->IsCollisionEnabled(&r, *collA, *collB);
-        if (collB->m_pCollisionShape && *enabled && collB != collA)
+        bool* enabled = filter->IsCollisionEnabled(&r, *toBeCast, *collB);
+        if (collB->m_pCollisionShape && *enabled && collB != toBeCast)
         {
-            int t = dispatcher->m_agent2TypeMap[*reinterpret_cast<const int*>(&collA->m_pCollisionShape->m_type)][*reinterpret_cast<const int*>(&collB->m_pCollisionShape->m_type)];
-            dispatcher->m_agent2Funcs[t].m_pLinearCastFunc(*reinterpret_cast<const hkpCdBody*>(collA),
+            int t = dispatcher->m_agent2TypeMap[*reinterpret_cast<const int*>(&toBeCast->m_pCollisionShape->m_type)][*reinterpret_cast<const int*>(&collB->m_pCollisionShape->m_type)];
+            dispatcher->m_agent2Funcs[t].m_pLinearCastFunc(*reinterpret_cast<const hkpCdBody*>(toBeCast),
                 *reinterpret_cast<const hkpCdBody*>(collB), *reinterpret_cast<const ShapeSweepParameters*>(&lcInput),
                 *static_cast<hkpCdPointCollector*>(castCollector), static_cast<hkpCdPointCollector*>(startCollector));
         }
@@ -219,6 +222,9 @@ class Phantom_00cf2510 : public hkpAabbPhantom
 
 // @fnv 0x00cf2510
 // src: XBOX_PDB 0x00cf2510
+// pdb: hkpAabbPhantom::castRay | hkpAabbPhantom.obj | retail, object-file run extension, low
+// pdb params: input, collector
+// pdb locals: sinput, assertBuf, ostr
 void Phantom_00cf2510::hkpAabbPhantom_castRay(const WorldRayCastInput& input, hkpRayHitCollector& collector) const
 {
     {
@@ -240,11 +246,11 @@ void Phantom_00cf2510::hkpAabbPhantom_castRay(const WorldRayCastInput& input, hk
     sinput.m_uiFilterInfo = input.m_uiFilterInfo;
     sinput.m_pRayShapeCollectionFilter =
         (input.m_bEnableShapeCollectionFilter)
-            ? static_cast<const hkpRayShapeCollectionFilter*>(static_cast<const hkpCollisionFilter*>(((hkpWorld*)m_pOwningWorld)->m_pCollisionFilter))
+            ? static_cast<const hkpRayShapeCollectionFilter*>(static_cast<const hkpCollisionFilter*>(((hkpWorld*)m_world)->m_collisionFilter))
             : 0;
 
-    hkpCollidable** cols = (hkpCollidable**)m_ppOverlappingCollidables.m_data;
-    for (int i = m_ppOverlappingCollidables.m_iElementCount - 1; i >= 0; i--)
+    hkpCollidable** cols = (hkpCollidable**)m_overlappingCollidables.m_data;
+    for (int i = m_overlappingCollidables.m_iElementCount - 1; i >= 0; i--)
     {
         const hkpShape* shape = (const hkpShape*)(*cols)->m_pCollisionShape;
         if (shape)

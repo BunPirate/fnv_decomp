@@ -15,6 +15,8 @@ struct FUN_00a8ff10_shell : FUN_00a8fdb0_shell
 
 // Calls the base cleanup, then frees this object with _delete when flags has bit 0 set, and returns this.
 // @fnv 0x00a8ff10
+// pdb: NiMaterialLibrary::`scalar deleting destructor' | NiMaterialLibrary.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiMaterialLibrary::SetName
 void* __thiscall FUN_00a8ff10_shell::FUN_00a8ff10(unsigned int flags)
 {
     ProcessEntries_00a8fdb0();

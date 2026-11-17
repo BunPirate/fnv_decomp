@@ -32,10 +32,10 @@ struct TrackAnalysis
     int sum;
     int max;
 };
-void AnalyzeTrackBits(const unsigned short* values, unsigned int count, TrackAnalysis* result);
-void AnalyzeTrackBits(const unsigned short* values, unsigned int count, TrackAnalysis* result);
-void AnalyzeTrackWithZeroCount(const unsigned short* aFirstValues, const unsigned short* values,
-                               unsigned int firstCount, unsigned int count, TrackAnalysis* result);
+void hkaTrackAnalysis_calcDynamicStatsQsTransform(const unsigned short* mask, unsigned int numTracks, TrackAnalysis* out);
+void hkaTrackAnalysis_calcDynamicStatsQsTransform(const unsigned short* mask, unsigned int numTracks, TrackAnalysis* out);
+void AnalyzeTrackWithZeroCount(const unsigned short* staticMaskT, const unsigned short* staticMaskF,
+                               unsigned int numTracksT, unsigned int numTracksF, TrackAnalysis* out);
 struct TraceSink
 {
     virtual void ReportDiagnostic();
@@ -92,7 +92,7 @@ struct TrackStatistics
     int total0;
     int total1;
     float rate;
-    void LogStatistics();
+    void hkaTrackAnalysis_AnalysisStats_displayReport();
 };
 struct TrackHeader_e50650
 {
@@ -120,7 +120,7 @@ struct TrackBuffers_e50650
 
     void ReleaseFiveArrays();
 };
-void hkaTrackAnalysis_analyzeQsTransform(TrackBuffers_e50650* pkBuffers, void* pkArg, void* pkArgCur, hkBool bFlag);
+void hkaTrackAnalysis_analyzeQsTransform(TrackBuffers_e50650* input, void* staticMask, void* staticDOFs, hkBool displayStatsReport);
 void ExpandTrackSource(const TrackSource_e50650* pkSource, void* pkArg, void* pkArgCur);
 struct StatsB0
 {
@@ -132,13 +132,13 @@ __declspec(noinline) void __cdecl Analyze(const unsigned short* p, unsigned int 
     for (unsigned int i = 0; i < count; i++)
         s->m_1c += p[i] & 3;
 }
-__declspec(noinline) void __cdecl CountTail(const unsigned short* p, void* a1, unsigned int count, unsigned int a3,
-                                            StatsB0* s)
+__declspec(noinline) void __cdecl CountTail(const unsigned short* staticMaskT, void* staticMaskF, unsigned int numTracksT, unsigned int numTracksF,
+                                            StatsB0* out)
 {
-    Analyze(p, count, s);
-    Analyze((const unsigned short*)a1, a3, s);
+    Analyze(staticMaskT, numTracksT, out);
+    Analyze((const unsigned short*)staticMaskF, numTracksF, out);
 }
-void __cdecl hkaTrackAnalysis_calcStats(const unsigned short* p, void* a1, unsigned int count, unsigned int a3, StatsB0* s);
+void __cdecl hkaTrackAnalysis_calcStats(const unsigned short* staticMaskT, void* staticMaskF, unsigned int numTracksT, unsigned int numTracksF, StatsB0* out);
 #include <xmmintrin.h>
 #include <math.h>
 struct PerTransformIn
@@ -172,9 +172,9 @@ static __forceinline void ClearStatistics(TrackStatistics& s)
     s.rate = 0.0f;
 }
 typedef void(__cdecl* QsAnalyzeFn)(TrackBuffers_e50650*, void*, void*, hkBool);
-void __cdecl hkaTrackAnalysis_calcStatsQsTransform(const unsigned short* mask, unsigned int count, TrackStatistics* result);
-void __cdecl hkaTrackAnalysis_calcStats(const unsigned short* maskT, const unsigned short* maskF, unsigned int numT,
-                          unsigned int numF, TrackStatistics* result);
+void __cdecl hkaTrackAnalysis_calcStatsQsTransform(const unsigned short* mask, unsigned int numTracks, TrackStatistics* out);
+void __cdecl hkaTrackAnalysis_calcStats(const unsigned short* staticMaskT, const unsigned short* staticMaskF, unsigned int numTracksT,
+                          unsigned int numTracksF, TrackStatistics* out);
 struct FloatLocalArray
 {
     hkArray<float> values;
@@ -618,7 +618,7 @@ struct TrackReport
           clearScale(0), dynamicPosition(0), dynamicRotation(0), dynamicScale(0), dynamicFloat(0), transformDofs(0),
           floatDofs(0), ratio(0.0f)
     {}
-    void LogStatistics();
+    void hkaTrackAnalysis_AnalysisStats_displayReport();
 };
 void hkaTrackAnalysis_calcStatsQsTransform(const unsigned short*, unsigned int, TrackReport&);
 
@@ -849,14 +849,17 @@ static __forceinline void analyzeTransformTracks(const TrackInput& input, unsign
     {
         TrackReport stats;
         hkaTrackAnalysis_calcStatsQsTransform(flags, input.tracks, stats);
-        stats.LogStatistics();
+        stats.hkaTrackAnalysis_AnalysisStats_displayReport();
     }
 }
 
 // @fnv 0x00e4f910
 // src: XBOX_PDB 0x00e4f910
-void __cdecl hkaTrackAnalysis_analyzeQsTransform(TrackBuffers_e50650* buffers, void* masks, void* values, hkBool report)
+// pdb: hkaTrackAnalysis::analyzeQsTransform | hkaTrackAnalysis.obj | retail, upstream name already matches, high
+// pdb params: input, staticMask, staticDOFs, displayStatsReport
+// pdb locals: positionAabbExtentsVector, avgData, maxPos, minPos, relativePositionTolerance, assertBuf, ostr, aComp, stats
+void __cdecl hkaTrackAnalysis_analyzeQsTransform(TrackBuffers_e50650* input, void* staticMask, void* staticDOFs, hkBool displayStatsReport)
 {
-    analyzeTransformTracks(*reinterpret_cast<const TrackInput*>(buffers), static_cast<unsigned short*>(masks),
-                           static_cast<float*>(values), reinterpret_cast<const hkBool&>(report));
+    analyzeTransformTracks(*reinterpret_cast<const TrackInput*>(input), static_cast<unsigned short*>(staticMask),
+                           static_cast<float*>(staticDOFs), reinterpret_cast<const hkBool&>(displayStatsReport));
 }

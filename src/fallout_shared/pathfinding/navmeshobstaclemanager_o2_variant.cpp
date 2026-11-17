@@ -34,6 +34,7 @@ struct ArrayHolder : ArrayHolderBase
 
 // @fnv 0x00b61890
 // src: COMMUNITY 0x00b61890
+// pdb: TallGrassShaderProperty::GetCachedGeometryMap | TallGrassShaderProperty.obj | retail, upstream name already matches, high
 ArrayHolder* __cdecl TallGrassShaderProperty_GetCachedGeometryMap()
 {
     static ArrayHolder obj;

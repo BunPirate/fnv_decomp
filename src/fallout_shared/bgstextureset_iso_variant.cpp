@@ -76,9 +76,10 @@ struct DecalDataDeleter : public DecalData
 };
 
 // ModelLoader queue call (0x00443af0) on the global at 0x011c3b3c.
+// pdb: class ModelLoader, size 0x30 (here 0x1), 12 members
 struct ModelLoader
 {
-    void QueueTextureFile(BSFileEntry* apEntry, int aePriority, QueuedFile* apQueuedFile);
+    void QueueTextureFile(BSFileEntry* apTextureFileEntry, int aePriority, QueuedFile* apParent);
 };
 extern ModelLoader* g_pModelLoader;
 
@@ -102,6 +103,7 @@ struct TESTextureLoader
 {
     static void ReadTextureData(TESTexture*, TESFile*);
 };
+// pdb: class TaskQueueInterface, size 0x10 (here 0x1), 4 members
 struct TaskQueueInterface
 {
     static void CopyStringToBuffer(char*, unsigned int, const char*);
@@ -114,6 +116,7 @@ class FileNameHash
   public:
     static void CreateDirectoryAndFileHashes(const char*, FileNameHash&, FileNameHash&);
 };
+// pdb: class ArchiveManager, size 0x1, 0 members
 struct ArchiveManager
 {
     static BSFileEntry* FindFileEntry(ARCHIVE_TYPE_INDEX, FileNameHash&, FileNameHash&, const char*);
@@ -155,7 +158,7 @@ struct FUN_005e79a0_t : public TESForm
 };
 struct FUN_005932e0_shell
 {
-    bool Compare(void*);
+    bool DecalData_Compare(void*);
 };
 struct FUN_005926f0_entry
 {
@@ -170,7 +173,7 @@ struct DecalDataOwned : public DecalData
 };
 struct DecalDataCopier
 {
-    void Copy(DecalData* apSrc);
+    void Copy(DecalData* apCopy);
 };
 int FUN_00406d30(char*, unsigned int, const char*);
 namespace s593030 {
@@ -181,7 +184,7 @@ struct ValueList
     int unk04;
     int unk08;
 
-    void FUN_00489100(int iValue);
+    void FUN_00489100(int apFullName);
 };
 
 struct Owner
@@ -228,6 +231,7 @@ void Owner::BGSTextureSet_SetTexturePath(unsigned int uiType, int iValue)
 }
 
 // @fnv 0x005923c0
+// pdb: BGSTextureSet::~BGSTextureSet | BGSTextureSet.obj | retail, upstream name already matches, high
 BGSTextureSet::~BGSTextureSet()
 {
     ClearData();

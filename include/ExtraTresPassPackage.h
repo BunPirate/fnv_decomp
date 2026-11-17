@@ -4,6 +4,7 @@
 
 class TrespassPackage;
 
+// pdb: class ExtraTresPassPackage, size 0x10, bases: BSExtraData, 1 members
 class ExtraTresPassPackage : public BSExtraData
 {
 public:

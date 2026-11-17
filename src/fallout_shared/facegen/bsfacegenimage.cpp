@@ -12,6 +12,7 @@ struct BSFaceGenImageDeleteFlags
 };
 
 // @fnv 0x0064cdf0
+// pdb: BSFaceGenImage::`scalar deleting destructor' | BSFaceGenImage.obj | retail, vtable slot, high
 void* __fastcall FUN_0064cdf0(BSFaceGenImage* self, BSFaceGenImageDeleteFlags flags)
 {
     self->BSFaceGenImage::~BSFaceGenImage();

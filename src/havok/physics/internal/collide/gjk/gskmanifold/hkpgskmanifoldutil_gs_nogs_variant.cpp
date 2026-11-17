@@ -28,7 +28,7 @@ struct S_00dad640_Target
     virtual void unk10();
     virtual void Release(unsigned short id, void* arg);
 };
-void ReleaseAllEntries(S_00dad640_Set* set, S_00dad640_Target* target, void* arg);
+void hkGskManifold_cleanup(S_00dad640_Set* manifold, S_00dad640_Target* mgr, void* constraintOwner);
 struct S_00dad4d0_Key
 {
     unsigned short ids[4];

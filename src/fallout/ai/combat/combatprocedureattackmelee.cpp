@@ -120,15 +120,17 @@ struct ActorMeleeCalls : Actor
 };
 
 // @fnv 0x008d7f80
+// pdb: CombatTimer::Check | HighProcess.obj | debug, call graph, high
 bool TimeoutTimer::CheckTimer() const
 {
-    return Actor::GetActorScale() - m_fStartTime > m_fTimeout;
+    return Actor::GetActorScale() - fStartTime > fTargetTime;
 }
 
 char __fastcall GetByteAtOffset70(char*);
 
 // @fnv 0x0097f2d0
 // src: XBOX_PDB 0x0097f2d0
+// pdb: CombatController::HasLineOfSight | CombatController.obj | debug, upstream name already matches, high
 char __fastcall CombatController_HasLineOfSight(char* this_)
 {
     return GetByteAtOffset70(*(char**)(this_ + 0x9c));
@@ -207,18 +209,22 @@ struct Obj
 };
 // @fnv 0x00644580
 // src: XBOX_PDB 0x00644580
-float CombatFormulas_ChooseBlock(Obj* p, int percent, int unused, bool abApplySetting, bool abUseAltValue)
+// pdb: CombatFormulas::ChooseBlock | CombatFormulas.obj | debug, upstream name already matches, high
+// pdb params: apCombatStyle, aiSkill, aiLuck, abHasShield, abTargetAttacking
+// pdb locals: fchance, fskill
+float CombatFormulas_ChooseBlock(Obj* apCombatStyle, int aiSkill, int aiLuck, bool abHasShield, bool abTargetAttacking)
 {
     float fPercentScale;
     float fResult;
-    fPercentScale = percent / g_d100;
-    fResult = p->InterfaceManager_IsDebugTextVisible() + p->GetE0() + p->GetFieldDC() * fPercentScale;
-    fResult = fResult * (abUseAltValue ? p->GetFieldE4Float() : p->GetFieldE8Float());
-    return abApplySetting ? fResult
-                          : fResult * *originalRuntimeFloatSetting592.Float() * (abUseAltValue ? 1.0f : 0.25f);
+    fPercentScale = aiSkill / g_d100;
+    fResult = apCombatStyle->InterfaceManager_IsDebugTextVisible() + apCombatStyle->GetE0() + apCombatStyle->GetFieldDC() * fPercentScale;
+    fResult = fResult * (abTargetAttacking ? apCombatStyle->GetFieldE4Float() : apCombatStyle->GetFieldE8Float());
+    return abHasShield ? fResult
+                          : fResult * *originalRuntimeFloatSetting592.Float() * (abTargetAttacking ? 1.0f : 0.25f);
 }
 
 // @fnv 0x009cc220
+// pdb: CombatProcedureAttackMelee::~CombatProcedureAttackMelee | CombatProcedureAttackMelee.obj | debug, upstream name already matches, high
 CombatProcedureAttackMelee::~CombatProcedureAttackMelee()
 {}
 
@@ -229,6 +235,8 @@ struct FUN_009cc4d0_shell : CombatProcedure
 };
 // Gets the attacker Actor, runs the base procedure, then calls two functions on the attacker with false.
 // @fnv 0x009cc4d0
+// pdb: CombatProcedureAttackMelee::Shutdown | CombatProcedureAttackMelee.obj | retail, vtable slot, high
+// pdb locals: pattacker
 void FUN_009cc4d0_shell::RunCombatProcedure()
 {
     Actor* pattacker = CombatProcedure_GetAttacker();
@@ -240,20 +248,23 @@ void FUN_009cc4d0_shell::RunCombatProcedure()
 struct FUN_009cce70_shell : AnimIdle
 {
     Actor* CombatProcedure_GetAttacker();
-    void CombatProcedureAttackMelee_StartAttack(int attack, int arg2);
+    void CombatProcedureAttackMelee_StartAttack(int aeAttack, int abSwitchAttack);
 };
 // @fnv 0x009cce70
 // src: XBOX_PDB 0x009cce70
-void FUN_009cce70_shell::CombatProcedureAttackMelee_StartAttack(int attack, int arg2)
+// pdb: CombatProcedureAttackMelee::StartAttack | CombatProcedureAttackMelee.obj | retail, upstream name already matches, high
+// pdb params: aeAttack, abSwitchAttack
+// pdb locals: bstarted, pattacker
+void FUN_009cce70_shell::CombatProcedureAttackMelee_StartAttack(int aeAttack, int abSwitchAttack)
 {
-    if (attack == 0xff || !GetSection())
+    if (aeAttack == 0xff || !GetSection())
         return;
     Actor* pattacker = CombatProcedure_GetAttacker();
-    bool queued = ((ActorMeleeCalls*)pattacker)->TryAttack(attack);
+    bool queued = ((ActorMeleeCalls*)pattacker)->TryAttack(aeAttack);
     if (queued)
     {
         ((FUN_009cf6d0_shell*)this)->CombatProcedureAttackMelee_SetCombatState(0);
-        ((int*)this)[7] = attack;
+        ((int*)this)[7] = aeAttack;
     }
 }
 
@@ -265,6 +276,7 @@ struct FUN_009cd3d0_shell : AnimIdle
 // If GetSection() returns 2 and the timer at offset 0x20 has elapsed, calls FUN_009cf6d0 with 3.
 // @fnv 0x009cd3d0
 // src: COMMUNITY 0x009cd3d0
+// pdb: CombatProcedureAttackMelee::HandleHold | CombatProcedureAttackMelee.obj | debug, upstream name already matches, high
 void FUN_009cd3d0_shell::CombatProcedureAttackMelee_HandleHold()
 {
     if (GetSection() != 2)
@@ -281,6 +293,7 @@ struct FUN_009cd410_shell
 };
 // @fnv 0x009cd410
 // src: XBOX_PDB 0x009cd410
+// pdb: CombatProcedureAttackMelee::StartEngage | CombatProcedureAttackMelee.obj | retail, upstream name already matches, high
 void FUN_009cd410_shell::CombatProcedureAttackMelee_StartEngage()
 {
     SetMode(0);
@@ -313,6 +326,8 @@ struct FUN_009cde10_shell
 };
 // @fnv 0x009cde10
 // src: XBOX_PDB 0x009cde10
+// pdb: CombatProcedureAttackMelee::HandleIdle | CombatProcedureAttackMelee.obj | retail, upstream name already matches, high
+// pdb locals: ptarget, freach, fdistance
 void FUN_009cde10_shell::CombatProcedureAttackMelee_HandleIdle()
 {
     ActorMeleeCalls* ptarget;
@@ -354,24 +369,25 @@ struct FUN_008d7f40_shell
 struct FUN_009ce190_shell
 {
     void SetMoveMode_00996e20(int);
-    void UpdateMeleeCombat();
+    void CombatProcedureAttackMelee_HandleAdvance();
     void SetMode(int);
     void CombatProcedureAttackMelee_StartAdvance();
 };
 // Calls SetMode(4), FUN_00996e20(3), FUN_008d7f40(3.0f) on the object at offset 0x28, then UpdateMeleeCombat.
 // @fnv 0x009ce190
 // src: XBOX_PDB 0x009ce190
+// pdb: CombatProcedureAttackMelee::StartAdvance | CombatProcedureAttackMelee.obj | retail, upstream name already matches, high
 void FUN_009ce190_shell::CombatProcedureAttackMelee_StartAdvance()
 {
     SetMode(4);
     SetMoveMode_00996e20(3);
     ((FUN_008d7f40_shell*)((char*)this + 0x28))->FUN_008d7f40(3.0f);
-    UpdateMeleeCombat();
+    CombatProcedureAttackMelee_HandleAdvance();
 }
 
 extern double _gModifierZero;
 int __fastcall GetCurrentWeapon(int);
-float __cdecl GetActorReach(Actor*, int);
+float __cdecl CombatUtilities_GetWeaponReach(Actor*, int);
 struct FUN_009ce560_shell
 {
     Actor* CombatProcedure_GetAttacker();
@@ -380,11 +396,13 @@ struct FUN_009ce560_shell
 // Returns the cached modifier value, recomputing it from the attacker and the value at offset 4 when it is below _gModifierZero.
 // @fnv 0x009ce560
 // src: XBOX_PDB 0x009ce560
+// pdb: CombatProcedureAttackMelee::GetCurrentAttackReach | CombatProcedureAttackMelee.obj | retail, upstream name already matches, high
+// pdb locals: pattacker
 float FUN_009ce560_shell::CombatProcedureAttackMelee_GetCurrentAttackReach()
 {
     Actor* pattacker = CombatProcedure_GetAttacker();
     if (((float*)this)[0x16] < _gModifierZero)
-        ((float*)this)[0x16] = GetActorReach(pattacker, GetCurrentWeapon(((int*)this)[1]));
+        ((float*)this)[0x16] = CombatUtilities_GetWeaponReach(pattacker, GetCurrentWeapon(((int*)this)[1]));
     return ((float*)this)[0x16];
 }
 
@@ -399,6 +417,7 @@ char FUN_009cefb0_shell::CombatController_ShouldInitPowerAttackDistances()
     return *((char*)this + 0xf9);
 }
 
+// pdb: class Date, size 0x4 (here 0x1), 2 members
 struct Date
 {
     ~Date();
@@ -410,6 +429,8 @@ struct FUN_009cf660_shell
     void SetMode(int mode);
 };
 // @fnv 0x009cf660
+// pdb: CombatProcedureAttackMelee::SetManeuverState | CombatProcedureAttackMelee.obj | debug, call graph, medium
+// pdb params: aeManeuverState
 void FUN_009cf660_shell::SetMode(int mode)
 {
     if (((int*)this)[4] != mode)
@@ -430,15 +451,18 @@ struct FUN_009cdde0_shell
 };
 struct FUN_009cfbd0_shell
 {
-    char CombatProcedureAttackMelee_CheckDodge(unsigned short mask);
+    char CombatProcedureAttackMelee_CheckDodge(unsigned short asMoveDirection);
 };
 // Forwards the mask to the HasNoFlag method of the object at offset 0x64 and returns its result.
 // @fnv 0x009cfbd0
 // src: XBOX_PDB 0x009cfbd0
-char FUN_009cfbd0_shell::CombatProcedureAttackMelee_CheckDodge(unsigned short mask)
+// pdb: CombatProcedureAttackMelee::CheckDodge | CombatProcedureAttackMelee.obj | debug, upstream name already matches, high
+// pdb params: asMoveDirection
+// pdb locals: bsafe
+char FUN_009cfbd0_shell::CombatProcedureAttackMelee_CheckDodge(unsigned short asMoveDirection)
 {
     char result = 1;
-    result = ((FUN_009cdde0_shell*)((char*)this + 0x64))->HasNoFlag(mask);
+    result = ((FUN_009cdde0_shell*)((char*)this + 0x64))->HasNoFlag(asMoveDirection);
     return result;
 }
 }  // namespace fnv_009cfbd0
@@ -451,6 +475,8 @@ struct FUN_009cfc00_shell
 // Gets the attacker via FUN_00996de0 and, if FUN_008b3bd0 returns false, calls FUN_009cfc40(1) on the object at this+0x64.
 // @fnv 0x009cfc00
 // src: XBOX_PDB 0x009cfc00
+// pdb: CombatProcedureAttackMelee::CheckResetMovementRestrictions | CombatProcedureAttackMelee.obj | debug, upstream name already matches, high
+// pdb locals: pattacker
 void FUN_009cfc00_shell::CombatProcedureAttackMelee_CheckResetMovementRestrictions()
 {
     Actor* pattacker = CombatProcedure_GetAttacker();
@@ -468,6 +494,8 @@ struct FUN_009cfc60_shell
 // Gets an Actor via FUN_00996de0, calls FUN_008b3a50 and FUN_008b3ab0 on it, then calls StopIfSpeakerOutOfRange.
 // @fnv 0x009cfc60
 // src: XBOX_PDB 0x009cfc60
+// pdb: CombatProcedureAttackMelee::StopMoving | CombatProcedureAttackMelee.obj | retail, upstream name already matches, high
+// pdb locals: pattacker
 void FUN_009cfc60_shell::CombatProcedureAttackMelee_StopMoving()
 {
     Actor* pattacker = CombatProcedure_GetAttacker();
@@ -486,6 +514,7 @@ struct FUN_009cfd20_shell
     float GetModifierValue();
 };
 // @fnv 0x009cfd20
+// pdb: CombatProcedureAttackMelee::GetFacingTargetDistance | CombatProcedureAttackMelee.obj | retail, call graph, high
 float FUN_009cfd20_shell::GetModifierValue()
 {
     if (((float*)this)[0x17] < _gModifierZero)
@@ -515,6 +544,7 @@ struct FUN_009cff10_shell
 };
 // Resets all flags, clears c and d, sets v to _NiPoint3_ZERO, constructs m, and returns this.
 // @fnv 0x009cff10
+// pdb: CombatMovementRestrictions::CombatMovementRestrictions | CombatProcedureAttackMelee.obj | debug, object-file run extension, low
 FUN_009cff10_shell* FUN_009cff10_shell::Reset()
 {
     a = false;
@@ -546,14 +576,17 @@ namespace fnv_009d0590 {
 
 struct FUN_009d0590_shell
 {
-    bool CombatMovementRestrictions_IsLocationSafe(TESObjectREFR* ref, const NiPoint3* pt);
+    bool CombatMovementRestrictions_IsLocationSafe(TESObjectREFR* apAttacker, const NiPoint3* aLocation);
 };
 // @fnv 0x009d0590
 // src: COMMUNITY 0x009d0590
-bool FUN_009d0590_shell::CombatMovementRestrictions_IsLocationSafe(TESObjectREFR* ref, const NiPoint3* pt)
+// pdb: CombatMovementRestrictions::IsLocationSafe | CombatProcedureAttackMelee.obj | debug, upstream name already matches, high
+// pdb params: apAttacker, aLocation
+// pdb locals: pathingLocation1
+bool FUN_009d0590_shell::CombatMovementRestrictions_IsLocationSafe(TESObjectREFR* apAttacker, const NiPoint3* aLocation)
 {
-    PathingLocation loc(ref);
-    return Pathing::FindPathingLocation(loc, *pt, 0, static_cast<void*>(0));
+    PathingLocation loc(apAttacker);
+    return Pathing::FindPathingLocation(loc, *aLocation, 0, static_cast<void*>(0));
 }
 }  // namespace fnv_009d0590
 
@@ -572,14 +605,16 @@ struct FUN_009d0610_shell
     bool active;
     unsigned int elapsed;
     unsigned int __thiscall UpdateDirection(unsigned int, unsigned int);
-    void CombatMovementRestrictions_Update(TESAmmoInitCalls* src);
+    void CombatMovementRestrictions_Update(TESAmmoInitCalls* apCombatController);
 };
 // @fnv 0x009d0610
 // src: XBOX_PDB 0x009d0610
-void FUN_009d0610_shell::CombatMovementRestrictions_Update(TESAmmoInitCalls* pAmmoInitCalls)
+// pdb: CombatMovementRestrictions::Update | CombatProcedureAttackMelee.obj | retail, upstream name already matches, high
+// pdb params: apCombatController
+void FUN_009d0610_shell::CombatMovementRestrictions_Update(TESAmmoInitCalls* apCombatController)
 {
     if (((TimeoutTimer*)((char*)this + 0x1c))->CheckTimer() || elapsed > 0)
-        elapsed = UpdateDirection(pAmmoInitCalls->GetFieldBC(), elapsed) + elapsed;
+        elapsed = UpdateDirection(apCombatController->GetFieldBC(), elapsed) + elapsed;
     if (elapsed >= 4)
     {
         active = false;
@@ -596,22 +631,24 @@ struct FUN_009a5eb0_shell
 };
 }  // namespace fnv_009d0690
 // @fnv 0x009d0690
-void CombatProcedureAttackMelee::SaveGame(BGSSaveFormBuffer* buf)
+// pdb: CombatProcedureAttackMelee::SaveGame | CombatProcedureAttackMelee.obj | retail, upstream name already matches, high
+// pdb params: apSaveGameBuffer
+void CombatProcedureAttackMelee::SaveGame(BGSSaveFormBuffer* apSaveGameBuffer)
 {
-    CombatProcedure::SaveGame(buf);
-    buf->SaveData((char*)this + 0x10, 4, 0);
-    buf->SaveData((char*)this + 0x14, 4, 0);
-    buf->SaveData((char*)this + 0x18, 4, 0);
-    buf->SaveData((char*)this + 0x1c, 4, 0);
-    ((fnv_009d0690::FUN_009a5eb0_shell*)((char*)this + 0x20))->FUN_009a5eb0(buf);
-    ((fnv_009d0690::FUN_009a5eb0_shell*)((char*)this + 0x28))->FUN_009a5eb0(buf);
-    ((fnv_009d0690::FUN_009a5eb0_shell*)((char*)this + 0x30))->FUN_009a5eb0(buf);
-    ((fnv_009d0690::FUN_009a5eb0_shell*)((char*)this + 0x38))->FUN_009a5eb0(buf);
-    ((fnv_009d0690::FUN_009a5eb0_shell*)((char*)this + 0x40))->FUN_009a5eb0(buf);
-    ((fnv_009d0690::FUN_009a5eb0_shell*)((char*)this + 0x48))->FUN_009a5eb0(buf);
-    ((CombatTargetTimestamp*)((char*)this + 0x60))->SaveTimeStamp(buf);
-    buf->SaveData((char*)this + 0x50, 1, 0);
-    buf->SaveData((char*)this + 0x54, 4, 0);
+    CombatProcedure::SaveGame(apSaveGameBuffer);
+    apSaveGameBuffer->SaveData((char*)this + 0x10, 4, 0);
+    apSaveGameBuffer->SaveData((char*)this + 0x14, 4, 0);
+    apSaveGameBuffer->SaveData((char*)this + 0x18, 4, 0);
+    apSaveGameBuffer->SaveData((char*)this + 0x1c, 4, 0);
+    ((fnv_009d0690::FUN_009a5eb0_shell*)((char*)this + 0x20))->FUN_009a5eb0(apSaveGameBuffer);
+    ((fnv_009d0690::FUN_009a5eb0_shell*)((char*)this + 0x28))->FUN_009a5eb0(apSaveGameBuffer);
+    ((fnv_009d0690::FUN_009a5eb0_shell*)((char*)this + 0x30))->FUN_009a5eb0(apSaveGameBuffer);
+    ((fnv_009d0690::FUN_009a5eb0_shell*)((char*)this + 0x38))->FUN_009a5eb0(apSaveGameBuffer);
+    ((fnv_009d0690::FUN_009a5eb0_shell*)((char*)this + 0x40))->FUN_009a5eb0(apSaveGameBuffer);
+    ((fnv_009d0690::FUN_009a5eb0_shell*)((char*)this + 0x48))->FUN_009a5eb0(apSaveGameBuffer);
+    ((CombatTargetTimestamp*)((char*)this + 0x60))->SaveTimeStamp(apSaveGameBuffer);
+    apSaveGameBuffer->SaveData((char*)this + 0x50, 1, 0);
+    apSaveGameBuffer->SaveData((char*)this + 0x54, 4, 0);
 }
 
 namespace fnv_009d0790 {
@@ -622,23 +659,25 @@ struct FUN_009a5e_timer
 }  // namespace fnv_009d0790
 // Loads the base form data, four 4-byte fields, six timers, a version-gated object, then a 1-byte and a 4-byte field from the buffer.
 // @fnv 0x009d0790
-void CombatProcedureAttackMelee::LoadGame(BGSLoadFormBuffer* apBuffer)
+// pdb: CombatProcedureAttackMelee::LoadGame | CombatProcedureAttackMelee.obj | retail, upstream name already matches, high
+// pdb params: apLoadGameBuffer
+void CombatProcedureAttackMelee::LoadGame(BGSLoadFormBuffer* apLoadGameBuffer)
 {
-    CombatProcedure::LoadGame(apBuffer);
-    apBuffer->ReadTypedData((char*)this + 0x10, 4);
-    apBuffer->ReadTypedData((char*)this + 0x14, 4);
-    apBuffer->ReadTypedData((char*)this + 0x18, 4);
-    apBuffer->ReadTypedData((char*)this + 0x1c, 4);
-    ((fnv_009d0790::FUN_009a5e_timer*)((char*)this + 0x20))->LoadGame(apBuffer);
-    ((fnv_009d0790::FUN_009a5e_timer*)((char*)this + 0x28))->LoadGame(apBuffer);
-    ((fnv_009d0790::FUN_009a5e_timer*)((char*)this + 0x30))->LoadGame(apBuffer);
-    ((fnv_009d0790::FUN_009a5e_timer*)((char*)this + 0x38))->LoadGame(apBuffer);
-    ((fnv_009d0790::FUN_009a5e_timer*)((char*)this + 0x40))->LoadGame(apBuffer);
-    ((fnv_009d0790::FUN_009a5e_timer*)((char*)this + 0x48))->LoadGame(apBuffer);
-    if (apBuffer->GetVersion() >= 0x12)
-        ((CombatTargetTimestamp*)((char*)this + 0x60))->LoadGame(apBuffer);
-    apBuffer->ReadTypedData((char*)this + 0x50, 1);
-    apBuffer->ReadTypedData((char*)this + 0x54, 4);
+    CombatProcedure::LoadGame(apLoadGameBuffer);
+    apLoadGameBuffer->ReadTypedData((char*)this + 0x10, 4);
+    apLoadGameBuffer->ReadTypedData((char*)this + 0x14, 4);
+    apLoadGameBuffer->ReadTypedData((char*)this + 0x18, 4);
+    apLoadGameBuffer->ReadTypedData((char*)this + 0x1c, 4);
+    ((fnv_009d0790::FUN_009a5e_timer*)((char*)this + 0x20))->LoadGame(apLoadGameBuffer);
+    ((fnv_009d0790::FUN_009a5e_timer*)((char*)this + 0x28))->LoadGame(apLoadGameBuffer);
+    ((fnv_009d0790::FUN_009a5e_timer*)((char*)this + 0x30))->LoadGame(apLoadGameBuffer);
+    ((fnv_009d0790::FUN_009a5e_timer*)((char*)this + 0x38))->LoadGame(apLoadGameBuffer);
+    ((fnv_009d0790::FUN_009a5e_timer*)((char*)this + 0x40))->LoadGame(apLoadGameBuffer);
+    ((fnv_009d0790::FUN_009a5e_timer*)((char*)this + 0x48))->LoadGame(apLoadGameBuffer);
+    if (apLoadGameBuffer->GetVersion() >= 0x12)
+        ((CombatTargetTimestamp*)((char*)this + 0x60))->LoadGame(apLoadGameBuffer);
+    apLoadGameBuffer->ReadTypedData((char*)this + 0x50, 1);
+    apLoadGameBuffer->ReadTypedData((char*)this + 0x54, 4);
 }
 
 struct FUN_00996de0_Class
@@ -654,18 +693,21 @@ struct FUN_009cefd0_shell
 {
     int m_00;
     FUN_00980070_shell* m_04;
-    char IsWithinThreshold(float a, float b, float c);
+    char IsWithinThreshold(float afDistance, float afReach, float aeAttackWithinReach);
 };
 
 // Calls FUN_00996de0 and FUN_00980070, checks whether GetByteAtOffset8C returns at least 100, and returns 1 when a is not greater than b.
 // @fnv 0x009cefd0
-char FUN_009cefd0_shell::IsWithinThreshold(float afValue, float afLimit, float afUnused)
+// pdb: CombatProcedureAttackMelee::WithinAttackRange | CombatProcedureAttackMelee.obj | retail, object-file run extension, high
+// pdb params: afDistance, afReach, aeAttackWithinReach
+// pdb locals: bresult, ffudge, bpowerAttacksOnly, pattacker
+char FUN_009cefd0_shell::IsWithinThreshold(float afDistance, float afReach, float aeAttackWithinReach)
 {
     char bResult = 0;
     unsigned int pTarget3 = ((FUN_00996de0_Class*)this)->CombatProcedure_GetAttacker();
     bool bFlag = ((CombatNode_combatprocedureattackmelee*)this->m_04->GetCurrentCombatStyle())->GetByteAtOffset8C() >= 100;
     float fElapsed3 = 0.0f;
-    if (afValue <= afLimit + fElapsed3)
+    if (afDistance <= afReach + fElapsed3)
     {
         bResult = 1;
     }
@@ -847,6 +889,9 @@ extern int DAT_011a8244;
 
 // Chooses a melee attack id from distance, reach, power-attack and animation state, setting the power-attack and switch-attack flags.
 // @fnv 0x009ccb20
+// pdb: CombatProcedureAttackMelee::SelectAttack | CombatProcedureAttackMelee.obj | debug, object-file gap fill, medium
+// pdb params: abMidAttack, afDistance, afReach, abTargetAttacking, abTargetPostAttack, abTargetRecoiling, abDoPowerAttack, abSwitchAttack
+// pdb locals: pweapon, bwithinNormalReach, ptarget, eattack, pattacker
 int CombatProcedureAttackMelee::ChooseMeleeAttack(bool abMidAttack, float afDistance, float afReach, bool abTargetAttacking,
                                              bool abTargetPostAttack, bool abTargetRecoiling, bool* abDoPowerAttack,
                                              bool* abSwitchAttack)
@@ -861,13 +906,13 @@ int CombatProcedureAttackMelee::ChooseMeleeAttack(bool abMidAttack, float afDist
     ptarget = (ActorV*)((FUN_00996e00_shell*)this)->GetTarget_00996e00();
     *abSwitchAttack = false;
     iAttack = 0xff;
-    pweapon = (TESObjectWEAP*)GetCurrentWeapon((int)m_pCombatController);
+    pweapon = (TESObjectWEAP*)GetCurrentWeapon((int)pCombatController);
     if (!ptarget)
         return iAttack;
     if (pattacker->V218() && ((MobileObject*)pattacker)->IsSwimming_005a2030())
         *abDoPowerAttack = false;
     else
-        *abDoPowerAttack = CheckChanceSuccess(((FUN_00980070_shell*)m_pCombatController)->GetCurrentCombatStyle(), ((Actor*)pattacker)->GetFatiguePercentage(),
+        *abDoPowerAttack = CheckChanceSuccess(((FUN_00980070_shell*)pCombatController)->GetCurrentCombatStyle(), ((Actor*)pattacker)->GetFatiguePercentage(),
                                               abTargetRecoiling, ptarget->V230(), 0);
     if ((int)((BSAudio*)this)->GetAudioBackendData() == 4)
     {
@@ -945,9 +990,12 @@ struct TargetInterface
 
 // Forwards the argument to the movement controller virtual method at slot 0x0C.
 // @fnv 0x008b3a20
-void Actor::DispatchToTarget(int aiValue)
+// src: XBOX_DEBUG_PDB 0x008b3a20
+// pdb: Actor::ForceMoveMode | Actor.obj | debug, call graph (shared callers), high
+// pdb params: auiMoveMode
+void Actor::ForceMoveMode(int auiMoveMode)
 {
-    ((TargetInterface*)m_pActorMover)->v0c(aiValue);
+    ((TargetInterface*)pActorMover)->v0c(auiMoveMode);
 }
 
 struct CombatProcBase
@@ -1005,6 +1053,7 @@ struct FUN_009cc0c0 : CombatProcBase
 
 // Initializes the combat procedure object's fields to defaults, sets the value to negative fCombatMaxValue, and stores it in val60.
 // @fnv 0x009cc0c0
+// pdb: CombatProcedureAttackMelee::CombatProcedureAttackMelee | CombatProcedureAttackMelee.obj | debug, call graph, medium
 FUN_009cc0c0::FUN_009cc0c0()
 {
     unk04 = 0;
@@ -1359,6 +1408,8 @@ struct This
 };
 // @fnv 0x009cc510
 // src: XBOX_PDB 0x009cc510
+// pdb: CombatProcedureAttackMelee::MeleeDecision | CombatProcedureAttackMelee.obj | retail, upstream name already matches, high
+// pdb locals: freach, bfollowThrough, brecoiling, eanimAction, ptarget, bmidAttack, btargetRecoiling, fdistance, btargetPostAttack, etargetAnimAction, btargetAttacking, btargetInCombat, panim, btargetBlocking, pattacker, bpostAttack, fattackScore, fholdScore, fblockScore, ptargetWeap, isum, fdieRoll, btargetDown, bcanAttack ...
 void This::CombatProcedureAttackMelee_MeleeDecision()
 {
     float n44;
@@ -1497,11 +1548,13 @@ struct FUN_009cced0_cls
 };
 
 unsigned short __fastcall Animation_GetGroup(AnimDataV* p);
-unsigned char __cdecl FUN_005f2540(int v);
-unsigned char __cdecl TESAnimGroup_IsAttackSpinAction(unsigned int v);
+unsigned char __cdecl FUN_005f2540(int asGroup);
+unsigned char __cdecl TESAnimGroup_IsAttackSpinAction(unsigned int asGroup);
 
 // @fnv 0x009cced0
 // src: COMMUNITY 0x009cced0
+// pdb: CombatProcedureAttackMelee::HandleAttack | CombatProcedureAttackMelee.obj | retail, upstream name already matches, high
+// pdb locals: ptarget, bmidAttack, pattacker, pweapon
 void FUN_009cced0_cls::CombatProcedureAttackMelee_HandleAttack()
 {
     if (FUN_00825c00())
@@ -1652,6 +1705,8 @@ extern double _gModifierZero;
 // In mode 1, checks the actor's readiness, timer value and attack state, and either sets state 3, finishes, or continues the melee procedure.
 // @fnv 0x009ccfb0
 // src: COMMUNITY 0x009ccfb0
+// pdb: CombatProcedureAttackMelee::HandleBlock | CombatProcedureAttackMelee.obj | retail, upstream name already matches, high
+// pdb locals: ptarget, pattacker, pblockingItem, brecoiling, braiseOrLower, fcondition
 void MeleeProc::CombatProcedureAttackMelee_HandleBlock()
 {
     if (GetModeM() != 1)
@@ -1704,7 +1759,7 @@ struct Controller9cd430
 
 extern Setting originalRuntimeFloatSetting593;
 
-bool __cdecl IsTargetInCone(Actor*, void*, int);
+bool __cdecl CombatUtilities_IsTargetWithinStrikeAngle(Actor*, void*, int);
 bool __cdecl FUN_005f2670(unsigned int);
 
 struct CombatProc9cd430
@@ -1717,8 +1772,8 @@ struct CombatProc9cd430
     void* GetTarget();
     float GetF1();
     float GetF2();
-    bool Test9cefd0(float a, float b, int c);
-    bool Test9cf030(float a, float b, int c);
+    bool Test9cefd0(float afDistance, float afReach, int aeAttackWithinReach);
+    bool Test9cf030(float afDistance, float afReach, int aeAttackWithinReach);
     void Do9ce190();
     int Get825c00();
     void Do9cd150();
@@ -1731,6 +1786,8 @@ struct CombatProc9cd430
 // Chooses a combat action from range, controller state and target checks, calling Do9ce190, Do9cd150, Do9cdf00 or Do9cd5e0.
 // @fnv 0x009cd430
 // src: XBOX_PDB 0x009cd430
+// pdb: CombatProcedureAttackMelee::HandleEngage | CombatProcedureAttackMelee.obj | retail, upstream name already matches, high
+// pdb locals: freach, bwithinAttackReach, fmax, ballowedToBackUpIfTooClose, ptarget, fdistance, foptimal, pattacker, bmidPowerAttack
 void CombatProc9cd430::CombatProcedureAttackMelee_HandleEngage()
 {
     if (Check44edb0())
@@ -1742,7 +1799,7 @@ void CombatProc9cd430::CombatProcedureAttackMelee_HandleEngage()
     float m_fGlyphExtent = 0.0f;
     float fImpulseRadiusSquared = 0.0f;
     bool inRange = Test9cefd0(distance, reachDist, 0);
-    if (inRange && !m_04->CombatController_HasLineOfSight() && IsTargetInCone(actor, target, 0))
+    if (inRange && !m_04->CombatController_HasLineOfSight() && CombatUtilities_IsTargetWithinStrikeAngle(actor, target, 0))
     {
         Do9ce190();
         return;
@@ -1914,7 +1971,7 @@ struct CombatVec3
     float y;
     float z;
 };
-void __cdecl CombatUtilities_ComputeFaceTargetLocation(CombatVec3* out, void* a, CombatAttackVT* b, int c, float f);
+void __cdecl CombatUtilities_ComputeFaceTargetLocation(CombatVec3* apAttacker, void* apTarget, CombatAttackVT* arTargetLocation, int afAttackerReach, float f);
 
 class CombatAttackHelper
 {
@@ -1924,13 +1981,15 @@ class CombatAttackHelper
     void SetMoveMode_00996e20(int);
     void SetMode(int mode);
     float CombatProcedureAttackMelee_GetCurrentAttackReach();
-    void CombatProcedureAttackMelee_MoveToFaceTargetLocation(CombatVec3* out);
-    void UpdateCombatMovement();
+    void CombatProcedureAttackMelee_MoveToFaceTargetLocation(CombatVec3* arFaceTargetLocation);
+    void CombatProcedureAttackMelee_HandleClose();
     void CombatProcedureAttackMelee_StartClose();
 };
 
 // @fnv 0x009cdf00
 // src: XBOX_PDB 0x009cdf00
+// pdb: CombatProcedureAttackMelee::StartClose | CombatProcedureAttackMelee.obj | retail, upstream name already matches, high
+// pdb locals: ptarget, faceTargetLocation, pattacker
 void CombatAttackHelper::CombatProcedureAttackMelee_StartClose()
 {
     void* a;
@@ -1942,7 +2001,7 @@ void CombatAttackHelper::CombatProcedureAttackMelee_StartClose()
     SetMoveMode_00996e20(1);
     CombatUtilities_ComputeFaceTargetLocation(&out4, a, b, b->v07d(), CombatProcedureAttackMelee_GetCurrentAttackReach());
     CombatProcedureAttackMelee_MoveToFaceTargetLocation(&out4);
-    UpdateCombatMovement();
+    CombatProcedureAttackMelee_HandleClose();
 }
 
 struct AttackDirection
@@ -1979,7 +2038,7 @@ struct AttackData
 {
     float GetFloatAtOffsetB0();
     bool HasCombatFlag(int);
-    bool DispatchByType(int);
+    bool TESCombatStyle_GetPowerAttackChance(int);
 };
 
 struct AttackInfo
@@ -1993,7 +2052,7 @@ struct CombatCtrl
     AttackData* GetCurrentCombatStyle();
     bool FUN_00981970();
     bool CombatController_ShouldInitPowerAttackDistances();
-    void UpdateActorValues();
+    void DeterminePowerAttackDeltas();
     bool FUN_008d8220();
     float CombatController_GetPowerAttackRange(int);
     float CombatController_GetPowerAttackHitTime_009cef90(int);
@@ -2012,6 +2071,9 @@ struct ProcX
 // Chooses a melee attack id from five candidates based on distance, reach, weapon speed and actor state, then logs the selection.
 // @fnv 0x009ce870
 // src: XBOX_PDB 0x009ce870
+// pdb: CombatProcedureAttackMelee::SelectPowerAttack | CombatProcedureAttackMelee.obj | retail, string-set bridge, high
+// pdb params: afDistance, afReach, abTargetAttacking, abtargetPostAttack, abForwardOnly
+// pdb locals: pcombatStyle, brushing, ftargetVelocity, frangeMult, eresult, echosenAttack, movedelta, buseInRangeAttacks, bcanDoMovementPowerAttacks, einRangeAttacks, bpowerAttackInRange, fattackSpeed, bcanDo, panim, fmodifiedReach, iinRangeAttackCount, pattacker, i, fpowerAttackRange, fpowerAttackHitTime, fattackRange, epowerAttack, fmodifiedDistance, j ...
 int S009ce870::CombatProcedureAttackMelee_SelectPowerAttack(float afDistance, float afReach, bool, bool, int)
 {
     bool bSelected9 = false;
@@ -2026,7 +2088,7 @@ int S009ce870::CombatProcedureAttackMelee_SelectPowerAttack(float afDistance, fl
     if (((ProcX*)this)->m_04->FUN_00981970())
         return 0xff;
     if (!((ProcX*)this)->m_04->CombatController_ShouldInitPowerAttackDistances())
-        ((ProcX*)this)->m_04->UpdateActorValues();
+        ((ProcX*)this)->m_04->DeterminePowerAttackDeltas();
     bool bPower7 = ((ProcX*)this)->m_04->FUN_008d8220() && !((ProcX*)this)->IsWithinThreshold(afDistance, afReach, 0);
     float fMultX = bPower7 ? pDataVal->GetFloatAtOffsetB0() : 1.0f;
     WeapObj* pWeap4 = (WeapObj*)pActorF->GetAnimData();
@@ -2048,7 +2110,7 @@ int S009ce870::CombatProcedureAttackMelee_SelectPowerAttack(float afDistance, fl
         if (fTime < DAT_01012060)
             continue;
         int aiSoundId = i + 0x5c;
-        if (pDataVal->HasCombatFlag(1) && !pDataVal->DispatchByType(aiSoundId))
+        if (pDataVal->HasCombatFlag(1) && !pDataVal->TESCombatStyle_GetPowerAttackChance(aiSoundId))
             continue;
         float fDistB = fTime * fRateB / fSpeed7 + afDistance;
         if (fDistB <= fScaledValue && (fMin <= fReach5 || fScaledValue * DAT_01090d68 < fDistB))
@@ -2109,7 +2171,7 @@ int S009ce870::CombatProcedureAttackMelee_SelectPowerAttack(float afDistance, fl
             for (unsigned int u = 0; u < 5; u++)
             {
                 int aiSoundId = u + 0x5c;
-                aucWeightsA[u] = pDataVal->DispatchByType(aiSoundId);
+                aucWeightsA[u] = pDataVal->TESCombatStyle_GetPowerAttackChance(aiSoundId);
             }
             unsigned int uiTotal = 0;
             for (unsigned int u = 0; u < (unsigned int)count; u++)
@@ -2159,11 +2221,15 @@ struct MeleeProcedure
     int unk00;
     CombatContext* context;
     Actor* CombatProcedure_GetAttacker();
-    bool IsActionAvailable(unsigned);
+    bool CombatProcedureAttackMelee_CanDoPowerAttack(unsigned);
 };
 // Returns true if the combat node's value exceeds DAT_01012060 and, when flag 1 is set, the per-action check for action 92-96 is positive.
 // @fnv 0x009cf420
-bool MeleeProcedure::IsActionAvailable(unsigned action)
+// src: XBOX_DEBUG_PDB 0x009cf420
+// pdb: CombatProcedureAttackMelee::CanDoPowerAttack | CombatProcedureAttackMelee.obj | debug, call graph, high
+// pdb params: aePowerAttack
+// pdb locals: bcanDo, pattacker
+bool MeleeProcedure::CombatProcedureAttackMelee_CanDoPowerAttack(unsigned aePowerAttack)
 {
     Actor* actor = CombatProcedure_GetAttacker();
     bool result = false;
@@ -2172,7 +2238,7 @@ bool MeleeProcedure::IsActionAvailable(unsigned action)
         result = true;
         if (context->GetCurrentCombatStyle()->HasCombatFlag(1))
         {
-            switch (action)
+            switch (aePowerAttack)
             {
             case 92:
                 result = context->GetCurrentCombatStyle()->FUN_0073cb80() > 0;
@@ -2271,6 +2337,8 @@ struct Procedure
     void EvaluateReaction();
 };
 // @fnv 0x009cd5e0
+// pdb: CombatProcedureAttackMelee::ManeuverDecision | CombatProcedureAttackMelee.obj | retail, string-set bridge, high
+// pdb locals: btargetRanged, ptarget, fdieRoll, btargetAttacking, fdodgeScore, pattacker, freach, fdistance, smoveMode, bdodgerAttacking, panim, emove, bsafeToMove, fmaneuverTime, fmoveCycleDuration
 void Procedure::EvaluateReaction()
 {
     Actor* actor2 = CombatProcedure_GetAttacker();
@@ -2336,7 +2404,7 @@ void Procedure::EvaluateReaction()
                     float current = actor2->Actor_GetAnimGroupDuration(state);
                     duration3 = BSMAX_00404010(current, duration3);
                     float amount_2 = 0.0f;
-                    actor2->DispatchToTarget(targetState3 && amount_2 > *DAT_011ce380.Setting_Float_00403e20() ? action | 512
+                    actor2->ForceMoveMode(targetState3 && amount_2 > *DAT_011ce380.Setting_Float_00403e20() ? action | 512
                                                                                                      : action | 256);
                     reactionTimer.FUN_008d7f40(duration3);
                     durationTimer.FUN_008d7f40(current);
@@ -2755,7 +2823,7 @@ struct Process98
 };
 struct Context98
 {
-    bool FUN_009818b0();
+    bool CombatController_IsTargetUndetectable();
 };
 struct Procedure98
 {
@@ -2771,6 +2839,8 @@ struct Procedure98
 };
 // Gets the actor and dispatches on FUN_00825c00(); in case 3 it checks the process state, context and actor test before calling FUN_009cc510().
 // @fnv 0x009cf570
+// pdb: CombatProcedureAttackMelee::AttackDecision | CombatProcedureAttackMelee.obj | retail, call graph (shared callers), high
+// pdb locals: ptarget, etargetFadeState
 void Procedure98::UpdateState()
 {
     Actor* actor = GetTarget_00996e00();
@@ -2787,7 +2857,7 @@ void Procedure98::UpdateState()
         break;
     case 3: {
         int result = actor && actor->GetProcess() ? ((Process98*)actor->GetProcess())->State() : 0;
-        if (!context->FUN_009818b0() && !result && (!actor || !actor->HasHealth(false)))
+        if (!context->CombatController_IsTargetUndetectable() && !result && (!actor || !actor->HasHealth(false)))
             CombatProcedureAttackMelee_MeleeDecision();
         break;
     }
@@ -2846,7 +2916,10 @@ struct MeleeDebugProcedure
 };
 // Builds description strings from move, attack and delay timers and prints the procedure's move/attack state and flags via output->Print.
 // @fnv 0x009cf700
-void MeleeDebugProcedure::PrintDebugInfo(MeleeDebugOutput* output, int x, int y)
+// pdb: CombatProcedureAttackMelee::DisplayDebugText | CombatProcedureAttackMelee.obj | retail, string-set bridge, high
+// pdb params: apDebugText, aeLocation, aeJustify
+// pdb locals: stimerString, smoveMode, pattacker
+void MeleeDebugProcedure::PrintDebugInfo(MeleeDebugOutput* apDebugText, int aeLocation, int aeJustify)
 {
     Actor* actor = CombatProcedure_GetAttacker();
     short sMovementFlags = (short)actor->GetActorStateFlags();
@@ -2871,7 +2944,7 @@ void MeleeDebugProcedure::PrintDebugInfo(MeleeDebugOutput* output, int x, int y)
         description[0] = 0;
         break;
     }
-    output->Print(x, y, DAT_01090e30, DAT_011a5aa4[moveState], description);
+    apDebugText->Print(aeLocation, aeJustify, DAT_01090e30, DAT_011a5aa4[moveState], description);
     switch (attackState)
     {
     case 0:
@@ -2893,15 +2966,15 @@ void MeleeDebugProcedure::PrintDebugInfo(MeleeDebugOutput* output, int x, int y)
         break;
     }
     if (delayTimer.CombatTimer_IsSet())
-        output->Print(x, y, DAT_01090dc8, delayTimer.FUN_00435e00(), delayTimer.CombatTimer_GetTargetTime());
-    output->Print(x, y, DAT_01090db8, DAT_011a5ab8[attackState], description);
+        apDebugText->Print(aeLocation, aeJustify, DAT_01090dc8, delayTimer.FUN_00435e00(), delayTimer.CombatTimer_GetTargetTime());
+    apDebugText->Print(aeLocation, aeJustify, DAT_01090db8, DAT_011a5ab8[attackState], description);
     if (stateFlags.FUN_004a8ae0() && !actor->IsPathing())
-        output->Print(x, y, DAT_01090d8c, stateFlags.HasNoFlag(4) ? DAT_01017b68 : DAT_01017b64,
+        apDebugText->Print(aeLocation, aeJustify, DAT_01090d8c, stateFlags.HasNoFlag(4) ? DAT_01017b68 : DAT_01017b64,
                       stateFlags.HasNoFlag(8) ? DAT_01017b68 : DAT_01017b64,
                       stateFlags.HasNoFlag(1) ? DAT_01017b68 : DAT_01017b64,
                       stateFlags.HasNoFlag(2) ? DAT_01017b68 : DAT_01017b64);
     if (stateFlags.TESTextureList_GetTextureCount())
-        output->Print(x, y, DAT_01090d70);
+        apDebugText->Print(aeLocation, aeJustify, DAT_01090d70);
 }
 
 
@@ -2953,6 +3026,8 @@ class Dialogue9CF
 };
 
 // @fnv 0x009cfc90
+// pdb: CombatProcedureAttackMelee::CheckMovementRestrictionsDistance | CombatProcedureAttackMelee.obj | retail, call graph (shared callers), high
+// pdb locals: distance, pattacker
 void Dialogue9CF::StopIfSpeakerOutOfRange()
 {
     if (!IsMenuMode9CF())
@@ -2974,6 +3049,8 @@ struct CombatProcStub
 };
 // Checks the actor is alive, projects a point ahead of it along its heading, and returns whether the target is at least range*range away from that point.
 // @fnv 0x009cfd70
+// pdb: CombatProcedureAttackMelee::IsTargetMovingAway | CombatProcedureAttackMelee.obj | retail, call graph (shared callers), high
+// pdb locals: attackerVector, foldDistance, newTargetPos, targetVector, newDistance, fnewDistanceSquared
 bool CombatProcStub::IsTargetOutOfRange()
 {
     NiPoint3 unusedPos8 = kPt3Zero;
@@ -3273,6 +3350,9 @@ struct State057
 };
 // Initializes direction flags from controls, updates position, and for the given direction tests a rotated offset point, storing the result via UpdateFlags.
 // @fnv 0x009cff90
+// pdb: CombatMovementRestrictions::CheckMovementRestrictions | CombatProcedureAttackMelee.obj | debug, object-file run extension, low
+// pdb params: apAttacker, aiWhichDirection
+// pdb locals: flength, imoveMode, fratio, fwidth, rot, distance, backward, forward, left, right
 int State057::UpdateDirection(Actor* actor, unsigned direction)
 {
     if (!initialized)
@@ -3390,7 +3470,7 @@ struct Sub48_9cc240
     bool FUN_008d7f80();
     void TESWeightForm_InitializeDataComponent();
 };
-P12_9cc240* GetTargetLocationWithOffset(P12_9cc240* r, Tgt9cc240* t, int n);
+P12_9cc240* CombatUtilities_GetTargetFiringLocation(P12_9cc240* r, Tgt9cc240* t, int n);
 struct CPAM9cc240
 {
     int m0;
@@ -3411,10 +3491,10 @@ struct CPAM9cc240
     unsigned int TESMain_GetThread();
     void CombatProcedure_SetFailed(const char*);
     void CombatProcedureAttackMelee_HandleEngage();
-    void UpdateDodge();
+    void CombatProcedureAttackMelee_HandleDodge();
     void CombatProcedureAttackMelee_HandleIdle();
-    void UpdateCombatMovement();
-    void UpdateMeleeCombat();
+    void CombatProcedureAttackMelee_HandleClose();
+    void CombatProcedureAttackMelee_HandleAdvance();
     float GetModifierValue();
     float CombatProcedureAttackMelee_GetCurrentAttackReach();
     void SetLookAtPoint(P12_9cc240*, int);
@@ -3422,6 +3502,8 @@ struct CPAM9cc240
     void UpdateCombatState();
 };
 // @fnv 0x009cc240
+// pdb: CombatProcedureAttackMelee::Update | CombatProcedureAttackMelee.obj | retail, string-set bridge, high
+// pdb locals: buseLookAtTarget, ptarget, pattacker, freach, fdistance, targetLoc
 void CPAM9cc240::UpdateCombatState()
 {
     float _v;
@@ -3468,16 +3550,16 @@ void CPAM9cc240::UpdateCombatState()
         CombatProcedureAttackMelee_HandleEngage();
         break;
     case 2:
-        UpdateDodge();
+        CombatProcedureAttackMelee_HandleDodge();
         break;
     case 1:
         CombatProcedureAttackMelee_HandleIdle();
         break;
     case 3:
-        UpdateCombatMovement();
+        CombatProcedureAttackMelee_HandleClose();
         break;
     case 4:
-        UpdateMeleeCombat();
+        CombatProcedureAttackMelee_HandleAdvance();
         break;
     }
     bool bDone6;
@@ -3499,7 +3581,7 @@ void CPAM9cc240::UpdateCombatState()
     }
     if (bDone6)
     {
-        GetTargetLocationWithOffset(&dst2, idxTmp, 2);
+        CombatUtilities_GetTargetFiringLocation(&dst2, idxTmp, 2);
         SetLookAtPoint(&dst2, 4);
     }
     else
@@ -3520,7 +3602,7 @@ struct Anim150
 struct State150
 {
     bool GetModifierKey();
-    void FUN_009818e0(int);
+    void CombatController_SetBlock(int);
 };
 unsigned int FUN_00487f50();
 struct C150
@@ -3537,6 +3619,8 @@ struct C150
 };
 // @fnv 0x009cd150
 // src: COMMUNITY 0x009cd150
+// pdb: CombatProcedureAttackMelee::CheckStopBlocking | CombatProcedureAttackMelee.obj | retail, upstream name already matches, high
+// pdb locals: ptarget, pattacker, freach, fdistance, btargetPostAttack, btargetAttacking, btargetDown, bbow, btargetBlocking
 void C150::CombatProcedureAttackMelee_CheckStopBlocking()
 {
     if (((Anim150*)CombatProcedure_GetAttacker()->GetAnimData()) && ((Anim150*)CombatProcedure_GetAttacker()->GetAnimData())->Animation_GetCurrentSequence(2) &&
@@ -3550,7 +3634,7 @@ void C150::CombatProcedureAttackMelee_CheckStopBlocking()
         {
             if (actor2->GetBlocked())
                 actor2->Actor_SetBlock(false);
-            m04->FUN_009818e0(0);
+            m04->CombatController_SetBlock(0);
             if (FUN_00825c00() == 1)
                 CombatProcedureAttackMelee_SetCombatState(3);
             return;
@@ -3570,7 +3654,7 @@ void C150::CombatProcedureAttackMelee_CheckStopBlocking()
         {
             if (actor2->GetBlocked())
                 actor2->Actor_SetBlock(false);
-            m04->FUN_009818e0(0);
+            m04->CombatController_SetBlock(0);
             if (FUN_00825c00() == 1)
                 CombatProcedureAttackMelee_SetCombatState(3);
         }
@@ -3590,13 +3674,16 @@ struct CombatProcedure_shell : public FUN_009cde10_shell
     void CombatProcedureAttackMelee_StartAdvance();
     void CombatProcedureAttackMelee_MoveToFaceTargetLocation(CombatVec3*);
     unsigned char IsWithinThreshold(float, float, int);
-    void UpdateCombatMovement();
+    void CombatProcedureAttackMelee_HandleClose();
 };
 
 float __cdecl CombatUtilities_GetAttackerTargetExtentSum(ActorMeleeCalls*, Actor*);
 
 // @fnv 0x009cdf80
-void CombatProcedure_shell::UpdateCombatMovement()
+// src: XBOX_RETAIL_PDB 0x009cdf80
+// pdb: CombatProcedureAttackMelee::HandleClose | CombatProcedureAttackMelee.obj | retail, call graph, high
+// pdb locals: freach, faceTargetLoc, ptarget, fdistance, smoveMode, pattacker, currentGoal, bgoalWithinRange, factorExtentSum, ffacedistance
+void CombatProcedure_shell::CombatProcedureAttackMelee_HandleClose()
 {
     ActorMeleeCalls* actor;
     unsigned short wVal;
@@ -4088,7 +4175,7 @@ struct ZActor
 };
 void __cdecl CombatUtilities_ComputeFaceTargetLocation(ZPoint*, ZActor*, ZActor*, const ZPoint&, float);
 float __cdecl CombatUtilities_GetAttackerTargetExtentSum(ZActor*, ZActor*);
-bool __cdecl IsTargetInCone(ZActor*, ZActor*, int);
+bool __cdecl CombatUtilities_IsTargetWithinStrikeAngle(ZActor*, ZActor*, int);
 extern Setting g_011cf27c;
 extern double DAT_01017a40;
 struct ZMelee
@@ -4109,11 +4196,14 @@ struct ZMelee
     void CombatProcedureAttackMelee_StartClose();
     int FUN_00825c00();
     void CombatProcedureAttackMelee_StartAttack(int, int);
-    void TryAttackTarget(float, float);
-    void UpdateMeleeCombat();
+    void CombatProcedureAttackMelee_CheckForwardPowerAttack(float, float);
+    void CombatProcedureAttackMelee_HandleAdvance();
 };
 // @fnv 0x009ce1d0
-void ZMelee::UpdateMeleeCombat()
+// src: XBOX_RETAIL_PDB 0x009ce1d0
+// pdb: CombatProcedureAttackMelee::HandleAdvance | CombatProcedureAttackMelee.obj | retail, call graph, high
+// pdb locals: freach, btargetMovingAway, ptarget, fdistance, pprocess, pattacker, targetLoc, currentGoal, bgoalWithinRange, factorExtentSum, ffacedistance, pweapon, eattack
+void ZMelee::CombatProcedureAttackMelee_HandleAdvance()
 {
     if (TESMain_GetThread() != 4)
         return;
@@ -4157,7 +4247,7 @@ void ZMelee::UpdateMeleeCombat()
     else if (FUN_00825c00() && IsWithinThreshold(distance3, kReach * 2.0f, 0) && CombatController_HasLineOfSight((void*)unk04) &&
              actor2->Check() && process2 && process2->Check())
     {
-        if (IsTargetInCone(actor2, target2, 0))
+        if (CombatUtilities_IsTargetWithinStrikeAngle(actor2, target2, 0))
         {
             int topicB = GetCurrentWeapon((int)unk04);
             if (DialogueRandom() % 100 < (int)(*g_011cf27c.Float() * DAT_01017a40))
@@ -4172,7 +4262,7 @@ void ZMelee::UpdateMeleeCombat()
         }
     }
     else if (unk14)
-        TryAttackTarget(distance3, kReach);
+        CombatProcedureAttackMelee_CheckForwardPowerAttack(distance3, kReach);
 }
 
 struct AnimData_9cf
@@ -4461,7 +4551,7 @@ struct CTSHelper
     float FUN_00435e00();
 };
 
-bool __cdecl IsTargetInCone(ActorMeleeCalls*, ActorMeleeCalls*, int);
+bool __cdecl CombatUtilities_IsTargetWithinStrikeAngle(ActorMeleeCalls*, ActorMeleeCalls*, int);
 bool __cdecl CombatUtilities_CalculateLOS(ActorMeleeCalls*, ActorMeleeCalls*, void*, void*, int, int);
 float __cdecl CombatTimer_GetTimer();
 
@@ -4478,15 +4568,19 @@ struct FUN_009cf090_Class
     ActorMeleeCalls* CombatProcedure_GetAttacker();
     ActorMeleeCalls* GetTarget_00996e00();
     int CombatProcedureAttackMelee_SelectPowerAttack(float, float, bool, bool, int);
-    bool IsActionAvailable(int);
+    bool CombatProcedureAttackMelee_CanDoPowerAttack(int);
     void CombatProcedureAttackMelee_StartAttack(int, int);
     void SetMode(int);
 
-    void TryAttackTarget(float a1, float a2);
+    void CombatProcedureAttackMelee_CheckForwardPowerAttack(float afDistance, float afReach);
 };
 
 // @fnv 0x009cf090
-void FUN_009cf090_Class::TryAttackTarget(float afArg1, float afArg2)
+// src: XBOX_RETAIL_PDB 0x009cf090
+// pdb: CombatProcedureAttackMelee::CheckForwardPowerAttack | CombatProcedureAttackMelee.obj | retail, call graph, high
+// pdb params: afDistance, afReach
+// pdb locals: ptarget, bmidAttack, btargetRecoiling, btargetPostAttack, etargetAnimAction, btargetAttacking, eattack, btargetBlocking, pattacker, idieRoll, fattackScore, fholdScore, fblockScore
+void FUN_009cf090_Class::CombatProcedureAttackMelee_CheckForwardPowerAttack(float afDistance, float afReach)
 {
     ActorMeleeCalls* pkActorVal;
     bool bTargetRecoiling;
@@ -4547,7 +4641,7 @@ void FUN_009cf090_Class::TryAttackTarget(float afArg1, float afArg2)
             return;
         }
 
-        if (!IsTargetInCone(pkActorVal, pkTarget5, 0))
+        if (!CombatUtilities_IsTargetWithinStrikeAngle(pkActorVal, pkTarget5, 0))
         {
             return;
         }
@@ -4558,10 +4652,10 @@ void FUN_009cf090_Class::TryAttackTarget(float afArg1, float afArg2)
         bTargetPostAttack_2 = (iAnimAction4 == 8 || iAnimAction4 == 10);
         bTargetRecoiling = pkTarget5->GetBlocked();
 
-        iAttack4 = this->CombatProcedureAttackMelee_SelectPowerAttack(afArg1, afArg2, bTargetAttacking4, bTargetMidAttack3, 1);
+        iAttack4 = this->CombatProcedureAttackMelee_SelectPowerAttack(afDistance, afReach, bTargetAttacking4, bTargetMidAttack3, 1);
         if (iAttack4 != 0xff)
         {
-            if (this->IsActionAvailable(iAttack4))
+            if (this->CombatProcedureAttackMelee_CanDoPowerAttack(iAttack4))
             {
                 iRandA = DialogueRandom() % 100;
                 if (iRandA < this->m_04->GetCurrentCombatStyle()->GetByteAtOffsetAD())
@@ -4671,14 +4765,17 @@ class xMelee
     void Stop();
     float GetDistance();
     float GetLimit();
-    bool TryMove(float a, float b, int c);
+    bool TryMove(float afDistance, float afReach, int aeAttackWithinReach);
     void Strike();
-    void UpdateDodge();
+    void CombatProcedureAttackMelee_HandleDodge();
 };
 
 // Advances the dodge reaction timer, checks actor readiness and distance, and triggers a block, strike, or combat notification.
 // @fnv 0x009cdb00
-void xMelee::UpdateDodge()
+// src: XBOX_RETAIL_PDB 0x009cdb00
+// pdb: CombatProcedureAttackMelee::HandleDodge | CombatProcedureAttackMelee.obj | retail, string-set bridge, high
+// pdb locals: freach, imoveMode, ptarget, fdistance, etargetAnimAction, pattacker, fdieRoll
+void xMelee::CombatProcedureAttackMelee_HandleDodge()
 {
     if (GetState() != 2)
         return;
@@ -4728,10 +4825,10 @@ void xMelee::UpdateDodge()
                 }
             }
             else
-                qfTOqo->DispatchToTarget(qSVM | 1);
+                qfTOqo->ForceMoveMode(qSVM | 1);
         }
         else if (qrEZrs < *xS_eb98.Float() && (qSVM & 1))
-            qfTOqo->DispatchToTarget(qSVM & ~1);
+            qfTOqo->ForceMoveMode(qSVM & ~1);
     }
     else if (qSVM & 1)
     {
@@ -4746,10 +4843,10 @@ void xMelee::UpdateDodge()
     {
         float qxQHW = (float)(xRandom() % 100);
         if ((qSVM & 0x100) && !m_pCtx->IsBusy() && qxQHW > *xS_e380.Float())
-            qfTOqo->DispatchToTarget((qSVM | 0x200) & ~0x100);
+            qfTOqo->ForceMoveMode((qSVM | 0x200) & ~0x100);
     }
     else if (qSVM & 0x200)
-        qfTOqo->DispatchToTarget((qSVM | 0x100) & ~0x200);
+        qfTOqo->ForceMoveMode((qSVM | 0x100) & ~0x200);
     xCombatMgr->Notify(m_pCtx, 2, 0, 0);
 }
 
@@ -4769,6 +4866,8 @@ struct FUN_009cfe90_Vector
 
 // @fnv 0x009cfe90
 // src: COMMUNITY 0x009cfe90
+// pdb: CombatProcedureAttackMelee::GetMovingTargetVelocity | CombatProcedureAttackMelee.obj | retail, upstream name already matches, high
+// pdb locals: targetVector
 float ProcX::CombatProcedureAttackMelee_GetMovingTargetVelocity()
 {
     FUN_009cfe90_Vector value;
@@ -4842,19 +4941,22 @@ struct C009ce5b0
     Act* CombatProcedure_GetAttacker();
     Targ* GetTarget_00996e00();
     float CombatProcedureAttackMelee_GetCurrentAttackReach();
-    void CombatProcedureAttackMelee_MoveToFaceTargetLocation(NiPoint3* pos);
+    void CombatProcedureAttackMelee_MoveToFaceTargetLocation(NiPoint3* arFaceTargetLocation);
 };
 // Builds a request using an avoidance shape when both checks pass, otherwise builds one from target data.
 // @fnv 0x009ce5b0
 // src: XBOX_PDB 0x009ce5b0
-void C009ce5b0::CombatProcedureAttackMelee_MoveToFaceTargetLocation(NiPoint3* apPosition)
+// pdb: CombatProcedureAttackMelee::MoveToFaceTargetLocation | CombatProcedureAttackMelee.obj | retail, upstream name already matches, high
+// pdb params: arFaceTargetLocation
+// pdb locals: ptarget, pathingRequest, faceTargetPathingLocation, pattacker, spavoidNodeArray, fradius
+void C009ce5b0::CombatProcedureAttackMelee_MoveToFaceTargetLocation(NiPoint3* arFaceTargetLocation)
 {
     Act* actor2 = CombatProcedure_GetAttacker();
     Targ* target = GetTarget_00996e00();
     Req request;
-    PathingLocation location(*(const NiPoint3*)apPosition, (void*)actor2);
-    if (location.IsDistanceBelowThreshold(actor2->FUN_008be1b0()) &&
-        CombatUtilities_CalculateLOS(actor2, target, apPosition, target->v07d(), 0, 30))
+    PathingLocation location(*(const NiPoint3*)arFaceTargetLocation, (void*)actor2);
+    if (location.IsValidLocation(actor2->FUN_008be1b0()) &&
+        CombatUtilities_CalculateLOS(actor2, target, arFaceTargetLocation, target->v07d(), 0, 30))
     {
         Ptr avoidX(new Avoid);
         avoidX.Modelloader_GetReferencedThis()->AppendNode(Shape(target->v07d(), *((Setting*)&DAT_011cf4e0)->Setting_Float_00403e20(),
@@ -4886,7 +4988,10 @@ struct FUN_00980070_shellQ
 // Returns 1 if a is at least b, otherwise 0, ignoring the c parameter.
 // @fnv 0x009cf030
 // src: XBOX_PDB 0x009cf030
-unsigned char FUN_009cde10_shell::CombatProcedureAttackMelee_OutsideAttackRange(float a, float b, int aiUnused)
+// pdb: CombatProcedureAttackMelee::OutsideAttackRange | CombatProcedureAttackMelee.obj | retail, upstream name already matches, high
+// pdb params: afDistance, afReach, aeAttackWithinReach
+// pdb locals: bresult, ffudge, bpowerAttacksOnly, pattacker
+unsigned char FUN_009cde10_shell::CombatProcedureAttackMelee_OutsideAttackRange(float afDistance, float afReach, int aeAttackWithinReach)
 {
     Actor* pTarget3;
     bool bFlag;
@@ -4896,7 +5001,7 @@ unsigned char FUN_009cde10_shell::CombatProcedureAttackMelee_OutsideAttackRange(
     pTarget3 = ((FUN_00996de0_ClassQ*)this)->CombatProcedure_GetAttacker();
     bFlag = ((CombatNode_combatprocedureattackmelee*)(*(FUN_00980070_shellQ**)((char*)this + 4))->GetCurrentCombatStyle())->GetByteAtOffset8C() >= 100;
     m_fPackageValue = 0.0f;
-    if (a >= b + m_fPackageValue)
+    if (afDistance >= afReach + m_fPackageValue)
     {
         bResult = 1;
     }

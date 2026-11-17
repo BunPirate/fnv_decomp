@@ -86,6 +86,9 @@ struct BoundsWorker {
 
 // @fnv 0x00e645b0
 // src: GUESS 0x00e645b0 (confidence: low)
+// pdb: hkpMoppEarlyExitObbVirtualMachine::generateQueryFromNode | hkpMoppEarlyExitObbVirtualMachine.obj | retail, object-file run extension, low
+// pdb params: extent, BvToWorld, radius, query
+// pdb locals: max, rad4, min
 void BoundsWorker::ComputeValues_00e645b0(const void* a, PointerArg b, const void* c, S_00e647e0_Local* out) {
     const __m128* pExt = (const __m128*)a;
     const S_00e645b0_Transform* t = (const S_00e645b0_Transform*)b.p;

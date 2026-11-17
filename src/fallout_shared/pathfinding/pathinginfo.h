@@ -4,6 +4,7 @@
 // Exe ctor 0x004968b0 stores NiRefObject RTTI vftable 0x0101dce4, not PathingInfo.
 #include "../../../include/NiRefObject.h"
 // @fnv 0x004968b0
+// pdb: NiRefObject::NiRefObject | Animation.obj | debug, upstream name already matches, high
 NiRefObject::NiRefObject()
 {
 

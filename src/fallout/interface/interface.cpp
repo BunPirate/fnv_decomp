@@ -41,8 +41,8 @@ class InterfaceInterfaceView
     static bool IsInterfaceOpen();
     static float GetInterfaceFloat();
     static void* GetPrimaryInterfaceTile();
-    static void* GetSecondaryInterfaceTile();
-    static NiNode* GetInterfaceNode();
+    static void* Interface_GetStringRoot();
+    static NiNode* Interface_GetInterfaceRoot();
     static bool IsAnyMenuOpen();
 
     static bool IsWorldSpaceEnabled(TESWorldSpace* apSpace);
@@ -100,17 +100,17 @@ class InterfaceInterfaceView
     };
     static void Init(bool);
     static void RefreshInterfaceState();
-    static void SetQuestTarget(TESForm*, bool);
+    static void Interface_CreateLoadingMenu(TESForm*, bool);
     static bool IsPipBoyOpen();
-    static bool GetStatsMenuVisible();
+    static bool Interface_GetStatsMenuVisible();
     static bool IsGamePaused();
-    static bool ContainerIsRecipe();
-    static bool ContainerIsBarter();
-    static void SetLookAtReference(TESObjectREFR*);
+    static bool Interface_ContainerIsRecipe();
+    static bool Interface_ContainerIsBarter();
+    static void Interface_SetCrosshairTargetType(TESObjectREFR*);
     static bool PlayNifSounds(NiControllerSequence*);
     static Menu* GetMenuById(int);
-    static void SetHUDVisible(bool);
-    static void SetTileFormattedText(void*, int, const char*, ...);
+    static void Interface_SetGunScopeVisible(bool);
+    static void Interface_InitializeTabline(void*, int, const char*, ...);
 };
 
 bool __cdecl Interface_IsMenuIDVisible(InterfaceInterfaceView::enumMenus, unsigned int);
@@ -260,60 +260,72 @@ bool InterfaceInterfaceView::IsInterfaceActive()
 }
 
 // @fnv 0x00706df0
+// pdb: Interface::GetScreenHeight | Interface.obj | debug, call graph, medium
 float InterfaceInterfaceView::GetFirstInterfaceFloat()
 {
     return InterfaceManager_GetScreenHeight();
 }
 
 // @fnv 0x00706e00
+// pdb: Interface::GetScreenWidth | Interface.obj | debug, call graph, medium
 float InterfaceInterfaceView::UpdateInterfaceState()
 {
     return InterfaceManager::UpdateInterfaceState();
 }
 
 // @fnv 0x00706e10
+// pdb: Interface::GetRealScreenHeight | Interface.obj | debug, call graph, medium
 float InterfaceInterfaceView::GetThirdInterfaceFloat()
 {
     return InterfaceManager_GetRealScreenHeight();
 }
 
 // @fnv 0x00706e40
+// pdb: Interface::GetRealScreenWidth | Interface.obj | debug, call graph, medium
 float InterfaceInterfaceView::GetFourthInterfaceFloat()
 {
     return InterfaceManager_GetRealScreenWidth();
 }
 
 // @fnv 0x00707b40
+// pdb: Interface::IsWideScreen | Interface.obj | debug, call graph, medium
 bool InterfaceInterfaceView::IsInterfaceOpen()
 {
     return Renderer_GetWidescreen();
 }
 
 // @fnv 0x00706e70
+// pdb: Interface::GetAspectRatioRatio | Interface.obj | debug, call graph, medium
 float InterfaceInterfaceView::GetInterfaceFloat()
 {
     return InterfaceManager_GetSingleton()->fScreenAspectRatio;
 }
 
 // @fnv 0x00706cd0
+// pdb: Interface::GetMenusRoot | Interface.obj | debug, call graph, high
 void* InterfaceInterfaceView::GetPrimaryInterfaceTile()
 {
     return InterfaceManager_GetSingleton()->CombatController_GetCombatState();
 }
 
 // @fnv 0x00706cf0
-void* InterfaceInterfaceView::GetSecondaryInterfaceTile()
+// src: XBOX_DEBUG_PDB 0x00706cf0
+// pdb: Interface::GetStringRoot | Interface.obj | debug, call graph, high
+void* InterfaceInterfaceView::Interface_GetStringRoot()
 {
     return InterfaceManager_GetSingleton()->GetAVEffect();
 }
 
 // @fnv 0x00706d30
-NiNode* InterfaceInterfaceView::GetInterfaceNode()
+// src: XBOX_DEBUG_PDB 0x00706d30
+// pdb: Interface::GetInterfaceRoot | Interface.obj | debug, call graph, high
+NiNode* InterfaceInterfaceView::Interface_GetInterfaceRoot()
 {
     return InterfaceManager_GetSingleton()->FUN_004fb070();
 }
 
 // @fnv 0x00706d70
+// pdb: Interface::GetFirstChanceTextureRelease | Interface.obj | debug, call graph (shared callers), medium
 bool InterfaceInterfaceView::IsAnyMenuOpen()
 {
     return InterfaceManager_GetSingleton()->GetIsEmergencyTextureRelease();
@@ -351,6 +363,9 @@ bool Renderer_GetWidescreen()
 
 // Creates an AutoMemContext for the interface and calls InterfaceManager::Initialize with 1 and initializeRender.
 // @fnv 0x00702250
+// pdb: Interface::Init | Interface.obj | debug, object-file run extension, low
+// pdb params: abInitialLoad
+// pdb locals: tempMemContext
 void InterfaceInterfaceView::Init(bool initializeRender)
 {
     AutoMemContext context(MEM_CONTEXT_MEM_CONTEXT_INTERFACE, true,
@@ -360,6 +375,8 @@ void InterfaceInterfaceView::Init(bool initializeRender)
 
 // Creates an AutoMemContext for the interface and calls InterfaceManager::Initialize with 2 and true.
 // @fnv 0x007022c0
+// pdb: Interface::InitSecond | Interface.obj | debug, object-file run extension, low
+// pdb locals: tempMemContext
 void InterfaceInterfaceView::RefreshInterfaceState()
 {
     AutoMemContext context(MEM_CONTEXT_MEM_CONTEXT_INTERFACE, true,
@@ -368,20 +385,26 @@ void InterfaceInterfaceView::RefreshInterfaceState()
 }
 
 // @fnv 0x00705e00
-void InterfaceInterfaceView::SetQuestTarget(TESForm* location, bool flag)
+// src: XBOX_RETAIL_PDB 0x00705e00
+// pdb: Interface::CreateLoadingMenu | Interface.obj | retail, call graph (shared callers), high
+// pdb params: apLocation
+void InterfaceInterfaceView::Interface_CreateLoadingMenu(TESForm* location, bool flag)
 {
     MessageMenu::SetMessageMenuActive(true);
     LoadingMenu::Create(location, true, flag);
 }
 
 // @fnv 0x00704ad0
+// pdb: Interface::GetInventoryMenuVisible | Interface.obj | debug, call graph (shared callers), high
 bool InterfaceInterfaceView::IsPipBoyOpen()
 {
     return Menu::IsMenuVisible(static_cast<Interface::enumMenus>(eInventoryMenu));
 }
 
 // @fnv 0x00704df0
-bool InterfaceInterfaceView::GetStatsMenuVisible()
+// src: XBOX_DEBUG_PDB 0x00704df0
+// pdb: Interface::GetStatsMenuVisible | Interface.obj | debug, call graph, high
+bool InterfaceInterfaceView::Interface_GetStatsMenuVisible()
 {
     return Menu::IsMenuVisible(static_cast<Interface::enumMenus>(eStatsMenu));
 }
@@ -393,23 +416,30 @@ bool InterfaceInterfaceView::IsGamePaused()
 }
 
 // @fnv 0x00705000
-bool InterfaceInterfaceView::ContainerIsRecipe()
+// src: XBOX_RETAIL_PDB 0x00705000
+// pdb: Interface::ContainerIsRecipe | Interface.obj | retail, call graph, high
+bool InterfaceInterfaceView::Interface_ContainerIsRecipe()
 {
     return Tile::FindMenuById(eRecipeMenu) != 0;
 }
 
 // @fnv 0x00705020
-bool InterfaceInterfaceView::ContainerIsBarter()
+// src: XBOX_RETAIL_PDB 0x00705020
+// pdb: Interface::ContainerIsBarter | Interface.obj | retail, call graph, high
+bool InterfaceInterfaceView::Interface_ContainerIsBarter()
 {
     return Tile::FindMenuById(eBarterMenu) != 0;
 }
 
 // If the player and its NiNode exist, forwards the target reference to HUDMainMenu with a false flag.
 // @fnv 0x00703860
-void InterfaceInterfaceView::SetLookAtReference(TESObjectREFR* target)
+// src: XBOX_RETAIL_PDB 0x00703860
+// pdb: Interface::SetCrosshairTargetType | Interface.obj | retail, call graph, high
+// pdb params: apObject
+void InterfaceInterfaceView::Interface_SetCrosshairTargetType(TESObjectREFR* apObject)
 {
     if (g_thePlayer && g_thePlayer->GetNiNode())
-        HUDMainMenu::SetCrosshairTarget(target, false);
+        HUDMainMenu::SetTargetType(apObject, false);
 }
 
 // @fnv 0x0059f3a0
@@ -419,9 +449,10 @@ signed char TESCreature::GetCreatureType() const
 }
 
 // @fnv 0x007037c0
+// pdb: BGSMenuPacker::RecomputePacking | BGSMenuPacker.obj | debug, call graph, medium
 void TESRecipe::SetRequiredSkill(ActorValue::Index skill)
 {
-    kData.eReqSkill = skill;
+    data.eReqSkill = skill;
 }
 
 // @fnv 0x00705cf0
@@ -438,24 +469,28 @@ LOD_MULT_TYPE BSFadeNode::GetLODMultType() const
 
 // If initialized, culls the first three button objects and un-culls the object at index button - 1 when button is greater than zero.
 // @fnv 0x007fa010
-void FOPipboyManager::ActivateButton(const unsigned int button)
+// pdb: FOPipboyManager::ActivateButton | FOPipboyManager.obj | debug, upstream name already matches, high
+// pdb params: aiButton
+void FOPipboyManager::ActivateButton(const unsigned int aiButton)
 {
     if (!GetInitialized())
         return;
 
-    if (m_pButtonGlowObjects[0])
-        static_cast<NiAVObject*>(m_pButtonGlowObjects[0])->SetAppCulled(true);
-    if (m_pButtonGlowObjects[1])
-        static_cast<NiAVObject*>(m_pButtonGlowObjects[1])->SetAppCulled(true);
-    if (m_pButtonGlowObjects[2])
-        static_cast<NiAVObject*>(m_pButtonGlowObjects[2])->SetAppCulled(true);
+    if (spButtonGlow[0])
+        static_cast<NiAVObject*>(spButtonGlow[0])->SetAppCulled(true);
+    if (spButtonGlow[1])
+        static_cast<NiAVObject*>(spButtonGlow[1])->SetAppCulled(true);
+    if (spButtonGlow[2])
+        static_cast<NiAVObject*>(spButtonGlow[2])->SetAppCulled(true);
 
-    if (button > 0 && m_pButtonGlowObjects[button - 1])
-        static_cast<NiAVObject*>(m_pButtonGlowObjects[button - 1])->SetAppCulled(false);
+    if (aiButton > 0 && spButtonGlow[aiButton - 1])
+        static_cast<NiAVObject*>(spButtonGlow[aiButton - 1])->SetAppCulled(false);
 }
 
 // Returns p1stPersonAnimation when firstPerson is set, otherwise delegates to Actor::GetAnimation().
 // @fnv 0x00950a60
+// pdb: PlayerCharacter::GetAnimation | PlayerCharacter.obj | debug, call graph, medium
+// pdb params: abFirstPerson
 Animation* PlayerCharacter::GetAnimation(bool firstPerson) const
 {
     if (firstPerson)
@@ -465,7 +500,11 @@ Animation* PlayerCharacter::GetAnimation(bool firstPerson) const
 
 // Creates a TabButtonTemplate tile per label from the varargs list, sets its string/name/indices, then positions each tab by accumulated width.
 // @fnv 0x00707be0
-void InterfaceInterfaceView::SetTileFormattedText(void* parent, int firstID, const char* firstLabel, ...)
+// src: XBOX_RETAIL_PDB 0x00707be0
+// pdb: Interface::InitializeTabline | Interface.obj | retail, string-set bridge, high
+// pdb params: apTabline, aiStartingID, axFirstText, icurrX
+// pdb locals: itabsTotalWidth, buttonTextList, ileftLineLength, strbuttonText, itabCt, ptemp
+void InterfaceInterfaceView::Interface_InitializeTabline(void* parent, int firstID, const char* firstLabel, ...)
 {
     BSStringT<char> buttonLabel;
     int count = 0;
@@ -508,27 +547,32 @@ void InterfaceInterfaceView::SetTileFormattedText(void* parent, int firstID, con
 }
 
 // @fnv 0x00707e10
+// pdb: Tile::SetName | TESScriptFunctions.obj | debug, call graph, medium
+// pdb params: apName
 void Tile::SetName(const char* name)
 {
-    StringProvider = name;
+    xName = name;
 }
 
 // @fnv 0x00707970
 bool InterfaceInterfaceView::PlayNifSounds(NiControllerSequence* sequence)
 {
-    return BSAnimGroupSequence::PlayAnimSounds(sequence, 0);
+    return BSAnimGroupSequence::PlaySounds(sequence, 0);
 }
 
 // @fnv 0x00707990
 Menu* InterfaceInterfaceView::GetMenuById(int menuClass)
 {
-    return MenuSystem::Instance(true)->GetMenuById(menuClass);
+    return MenuSystem::Instance(true)->MenuManager_CreateMenuByClass(menuClass);
 }
 
 // @fnv 0x00709c40
-void InterfaceInterfaceView::SetHUDVisible(bool visible)
+// src: XBOX_DEBUG_PDB 0x00709c40
+// pdb: Interface::SetGunScopeVisible | Interface.obj | debug, call graph, high
+// pdb params: abVisibleFlag
+void InterfaceInterfaceView::Interface_SetGunScopeVisible(bool abVisibleFlag)
 {
-    HUDMainMenu::SetHUDVisible(visible);
+    HUDMainMenu::SetGunScopeVisible(abVisibleFlag);
 }
 
 struct FUN_00424940_shell : public InterfaceManager
@@ -560,6 +604,9 @@ struct ListStandIn
 };
 // @fnv 0x0057cbe0
 // src: XBOX_PDB 0x0057cbe0
+// pdb: NiTPointerListBase<NiTPointerAllocator<unsigned int>,RaceSexMenu::MenuOption *>::GetNext | RaceSexMenu.obj | debug, call graph, medium
+// pdb params: kPos
+// pdb locals: element
 int* ListStandIn::NiTPointerListBase_NiTPointerAllocator_unsigned_int_Tile_GetNext(int** pos)
 {
     int* element = reinterpret_cast<int*>(*pos) + 2;
@@ -579,6 +626,7 @@ bool FUN_00644640_shell::InterfaceManager_IsDebugTextVisible()
     return *((bool*)((char*)this + 0x7c));
 }
 
+// pdb: class Modifier, size 0x8 (here 0x1), 2 members
 class Modifier
 {
   public:
@@ -590,6 +638,7 @@ bool __fastcall InterfaceManager_IsDebugTextVisible(void*);
 // Returns true when FUN_004b7210 yields a Modifier whose GetKey is nonzero and FUN_00644640 accepts that same object; otherwise false.
 // @fnv 0x00702360
 // src: XBOX_PDB 0x00702360
+// pdb: Interface::IsInMenuMode | Interface.obj | retail, upstream name already matches, high
 bool Interface_IsInMenuMode()
 {
     if (InterfaceManager_GetSingleton() && static_cast<unsigned char>(reinterpret_cast<Modifier*>(InterfaceManager_GetSingleton())->GetKey()))
@@ -600,6 +649,7 @@ bool Interface_IsInMenuMode()
 
 // @fnv 0x007023a0
 // src: XBOX_PDB 0x007023a0
+// pdb: InterfaceManager::IsInMenuMode | Interface.obj | retail, upstream name already matches, high
 bool InterfaceManager::IsInMenuMode()
 {
     return uiCurrentMode != 1;
@@ -615,6 +665,8 @@ class Modifier
 
 // @fnv 0x007023c0
 // src: XBOX_PDB 0x007023c0
+// pdb: InterfaceManager::GetCurrentRenderedMenu | Interface.obj | retail, object-file run extension, low
+// pdb note: debug build links it to Interface::GetTopMenuID
 int Interface_GetTopMenuID()
 {
     if (InterfaceManager_GetSingleton() && reinterpret_cast<Modifier*>(InterfaceManager_GetSingleton())->GetKey())
@@ -631,10 +683,12 @@ struct Modifier
 };
 // @fnv 0x00702400
 // src: COMMUNITY 0x00702400
-int Interface_GetMenuID(int a)
+// pdb: Interface::GetMenuID | Interface.obj | debug, upstream name already matches, high
+// pdb params: aiIndex
+int Interface_GetMenuID(int aiIndex)
 {
     if (InterfaceManager_GetSingleton() && reinterpret_cast<Modifier*>(InterfaceManager_GetSingleton())->GetKey())
-        return reinterpret_cast<Modifier*>(InterfaceManager_GetSingleton())->GetMenuStackEntry(a);
+        return reinterpret_cast<Modifier*>(InterfaceManager_GetSingleton())->GetMenuStackEntry(aiIndex);
     return 0;
 }
 }  // namespace fnv_00702400
@@ -649,6 +703,9 @@ class Modifier
 
 // @fnv 0x00702450
 // src: XBOX_PDB 0x00702450
+// pdb: Interface::IsTopMenuID | Interface.obj | retail, upstream name already matches, high
+// pdb params: aeMenuID
+// pdb locals: topid
 bool __cdecl Interface_IsTopMenuID(InterfaceInterfaceView::enumMenus aeMenuID)
 {
     if (InterfaceManager_GetSingleton() && (unsigned char)((Modifier*)InterfaceManager_GetSingleton())->GetKey())
@@ -680,6 +737,9 @@ class Modifier
 
 // @fnv 0x00702640
 // src: XBOX_PDB 0x00702640
+// pdb: Interface::InitSecond | Interface.obj | retail, object-file run extension, low
+// pdb note: debug build links it to Interface::GetMenuModeType
+// pdb locals: tempMemContext
 int Interface_GetMenuModeType()
 {
     if (InterfaceManager_GetSingleton() && reinterpret_cast<Modifier*>(InterfaceManager_GetSingleton())->GetKey())
@@ -716,6 +776,7 @@ void __fastcall UpdateStartMenuState(InterfaceManager*);
 // If FUN_004b7210 returns a Modifier with a nonzero key, calls UpdateStartMenuState with that manager.
 // @fnv 0x007027e0
 // src: COMMUNITY 0x007027e0
+// pdb: Interface::PreIdleStuff | Interface.obj | debug, upstream name already matches, high
 void Interface_PreIdleStuff()
 {
     if (InterfaceManager_GetSingleton() && reinterpret_cast<Modifier*>(InterfaceManager_GetSingleton())->GetKey())
@@ -735,6 +796,7 @@ void __fastcall UpdateInterface(InterfaceManager*);
 // If FUN_004b7210() returns a non-null object whose GetKey() is nonzero, calls UpdateInterface with that object.
 // @fnv 0x00702810
 // src: COMMUNITY 0x00702810
+// pdb: Interface::Idle | Interface.obj | debug, upstream name already matches, high
 void Interface_Idle()
 {
     if (InterfaceManager_GetSingleton() && static_cast<unsigned char>(reinterpret_cast<Modifier*>(InterfaceManager_GetSingleton())->GetKey()))
@@ -754,6 +816,7 @@ void __fastcall UpdateMenuSelection(InterfaceManager* pThis);
 // If FUN_004b7210 returns a Modifier whose GetKey is nonzero, calls UpdateMenuSelection with that object.
 // @fnv 0x00702840
 // src: COMMUNITY 0x00702840
+// pdb: Interface::PostIdleStuff | Interface.obj | debug, upstream name already matches, high
 void Interface_PostIdleStuff()
 {
     if (InterfaceManager_GetSingleton() && reinterpret_cast<Modifier*>(InterfaceManager_GetSingleton())->GetKey())
@@ -773,6 +836,7 @@ void __fastcall InterfaceManager_Accumulate(InterfaceManager*);
 
 // @fnv 0x00702870
 // src: COMMUNITY 0x00702870
+// pdb: Interface::Accumulate | Interface.obj | retail, upstream name already matches, high
 void Interface_Accumulate()
 {
     if (InterfaceManager_GetSingleton() && reinterpret_cast<Modifier*>(InterfaceManager_GetSingleton())->GetKey() && !DAT_0126fac4->IsPlaying())
@@ -804,12 +868,16 @@ struct IM_Stub
 extern BGSMoviePlayer* DAT_0126fac4;
 
 // @fnv 0x007028b0
-void __cdecl RenderOrFallback(int aiArg1, int aiArg2)
+// src: XBOX_RETAIL_PDB 0x007028b0
+// pdb: Interface::Click | Interface.obj | retail, call graph, high
+// pdb params: ap3DTarget, pMenuFXTexture
+// pdb locals: bclick
+void __cdecl Interface_Click(int ap3DTarget, int pMenuFXTexture)
 {
     bool bRendered = false;
     if (InterfaceManager_GetSingleton() && ((Modifier*)InterfaceManager_GetSingleton())->GetKey() && !DAT_0126fac4->IsPlaying())
     {
-        ((IM_Stub*)InterfaceManager_GetSingleton())->RenderMenu(aiArg1, aiArg2);
+        ((IM_Stub*)InterfaceManager_GetSingleton())->RenderMenu(ap3DTarget, pMenuFXTexture);
         bRendered = true;
     }
     if (!bRendered)
@@ -841,6 +909,7 @@ struct FUN_00703060_shell : public InterfaceManager
 
 // @fnv 0x00703060
 // src: XBOX_PDB 0x00703060
+// pdb: InterfaceManager::GetSceneGraph | Interface.obj | debug, object-file run extension, low
 void FUN_00703060_shell::InterfaceManager_SetDebugTextVisible(bool abVisible)
 {
     reinterpret_cast<unsigned char*>(this)[0x7C] = abVisible;
@@ -855,6 +924,8 @@ struct Modifier
 // Gets the InterfaceManager and, if it exists and its key check passes, returns the reference from the modifier; otherwise returns 0.
 // @fnv 0x00703180
 // src: XBOX_PDB 0x00703180
+// pdb: Interface::GetTargetREFR | Interface.obj | debug, upstream name already matches, high
+// pdb locals: pim
 TESObjectREFR* Interface_GetTargetREFR()
 {
     InterfaceManager* pim = InterfaceManager_GetSingleton();
@@ -876,6 +947,7 @@ struct ConsoleManager
 };
 // @fnv 0x00703d50
 // src: XBOX_PDB 0x00703d50
+// pdb: Interface::IsConsoleVisible | Interface.obj | retail, upstream name already matches, high
 bool Interface_IsConsoleVisible()
 {
     if (InterfaceManager_GetSingleton() && reinterpret_cast<Modifier*>(InterfaceManager_GetSingleton())->GetKey() && ConsoleManager::Instance(false))
@@ -898,6 +970,7 @@ struct ConsoleManager
 };
 // @fnv 0x00703da0
 // src: XBOX_PDB 0x00703da0
+// pdb: Interface::CloseConsole | Interface.obj | retail, upstream name already matches, high
 void Interface_CloseConsole()
 {
     if (InterfaceManager_GetSingleton() && reinterpret_cast<Modifier*>(InterfaceManager_GetSingleton())->GetKey() && ConsoleManager::Instance(false) &&
@@ -911,6 +984,8 @@ void Interface_CloseConsole()
 
 // Reads the char at offset 0xE4 of the object returned by FUN_004b7210, sets that byte to -1, and returns the original value.
 // @fnv 0x00703fa0
+// pdb: Interface::GetMessageMenuResult | Interface.obj | debug, call graph, medium
+// pdb locals: cresult
 char ConsumeByteAtE4()
 {
     char cresult = *reinterpret_cast<char*>(reinterpret_cast<char*>(InterfaceManager_GetSingleton()) + 0xE4);
@@ -930,6 +1005,7 @@ int __cdecl MapMenu_Create();
 // If FUN_004b7210 returns a Modifier whose GetKey is nonzero, returns FUN_00796b90(); otherwise returns 0.
 // @fnv 0x00704140
 // src: XBOX_PDB 0x00704140
+// pdb: Interface::CreateMapMenu | Interface.obj | debug, upstream name already matches, high
 int Interface_CreateMapMenu()
 {
     if (InterfaceManager_GetSingleton() && reinterpret_cast<Modifier*>(InterfaceManager_GetSingleton())->GetKey())
@@ -950,6 +1026,7 @@ int __cdecl MapMenu_Create();
 // If FUN_004b7210() returns non-null and its GetKey() is nonzero, returns FUN_00796b90(); otherwise returns 0.
 // @fnv 0x00704490
 // src: XBOX_PDB 0x00704490
+// pdb: Interface::CreateRepairMenu | Interface.obj | debug, upstream name already matches, high
 int Interface_CreateRepairMenu()
 {
     if (InterfaceManager_GetSingleton() && reinterpret_cast<Modifier*>(InterfaceManager_GetSingleton())->GetKey())
@@ -970,6 +1047,7 @@ int __cdecl MapMenu_Create();
 // If FUN_004b7210 returns a Modifier whose GetKey is nonzero, returns FUN_00796b90(); otherwise returns 0.
 // @fnv 0x007046c0
 // src: XBOX_PDB 0x007046c0
+// pdb: Interface::CreateItemModMenu | Interface.obj | debug, upstream name already matches, high
 int Interface_CreateItemModMenu()
 {
     if (InterfaceManager_GetSingleton() && reinterpret_cast<Modifier*>(InterfaceManager_GetSingleton())->GetKey())
@@ -987,6 +1065,7 @@ class Modifier
 
 // Returns InventoryMenu::Create() when FUN_004b7210() is non-null and its GetKey() is nonzero, otherwise returns 0.
 // @fnv 0x007048c0
+// pdb: Interface::CreateInventoryMenu | Interface.obj | debug, call graph, medium
 void* CreateInventoryMenuIfModifierKey()
 {
     if (InterfaceManager_GetSingleton() && reinterpret_cast<Modifier*>(InterfaceManager_GetSingleton())->GetKey())
@@ -1007,6 +1086,7 @@ int __cdecl StatsMenu_Create();
 // If FUN_004b7210 returns a non-null Modifier whose GetKey is nonzero, returns FUN_007da2c0(); otherwise returns 0.
 // @fnv 0x00704be0
 // src: XBOX_PDB 0x00704be0
+// pdb: Interface::CreateStatsMenu | Interface.obj | debug, upstream name already matches, high
 int Interface_CreateStatsMenu()
 {
     if (InterfaceManager_GetSingleton() && static_cast<unsigned char>(reinterpret_cast<Modifier*>(InterfaceManager_GetSingleton())->GetKey()))
@@ -1025,6 +1105,7 @@ class Modifier
 // If FUN_004b7210 returns an object whose GetKey() is nonzero, calls ContainerMenu::Close().
 // @fnv 0x00704f50
 // src: XBOX_PDB 0x00704f50
+// pdb: Interface::CloseContainer | Interface.obj | debug, upstream name already matches, high
 void Interface_CloseContainer()
 {
     if (InterfaceManager_GetSingleton() && static_cast<unsigned char>(reinterpret_cast<Modifier*>(InterfaceManager_GetSingleton())->GetKey()))
@@ -1045,13 +1126,16 @@ extern TimeGlobal g_timeGlobal;
 
 // @fnv 0x00705070
 // src: XBOX_PDB 0x00705070
-void* Interface_CreateDialogMenu(void* apArg1, void* apArg2, void* apArg3)
+// pdb: Interface::CreateDialogMenu | Interface.obj | retail, upstream name already matches, high
+// pdb params: apSpeaker, apGreetTopic, apSpeakeras
+// pdb locals: ptile
+void* Interface_CreateDialogMenu(void* apSpeaker, void* apGreetTopic, void* apSpeakeras)
 {
     void* r;
     g_timeGlobal.SetGlobalTimeMultiplier(1.0f, true);
     if (InterfaceManager_GetSingleton() && reinterpret_cast<Modifier*>(InterfaceManager_GetSingleton())->GetKey())
     {
-        r = DialogMenu::Create(apArg1, apArg2, apArg3);
+        r = DialogMenu::Create(apSpeaker, apGreetTopic, apSpeakeras);
         return r;
     }
     return 0;
@@ -1067,6 +1151,7 @@ class Modifier
 
 // @fnv 0x007050d0
 // src: XBOX_PDB 0x007050d0
+// pdb: Interface::InDialog | Interface.obj | debug, upstream name already matches, high
 bool Interface_InDialog()
 {
     if (InterfaceManager_GetSingleton() && static_cast<unsigned char>(reinterpret_cast<Modifier*>(InterfaceManager_GetSingleton())->GetKey()))
@@ -1085,6 +1170,7 @@ class Modifier
 // If FUN_004b7210() returns a non-null Modifier whose GetKey() is nonzero, calls StartMenu::Create(false, false).
 // @fnv 0x007053f0
 // src: COMMUNITY 0x007053f0
+// pdb: Interface::CreateMainMenu | Interface.obj | debug, upstream name already matches, high
 void Interface_CreateMainMenu()
 {
     if (InterfaceManager_GetSingleton() && static_cast<unsigned char>(reinterpret_cast<Modifier*>(InterfaceManager_GetSingleton())->GetKey()))
@@ -1104,6 +1190,7 @@ void __fastcall InterfaceManager_LastMinuteUpdate(InterfaceManager*);
 // If FUN_004b7210() returns a Modifier whose GetKey() is nonzero, calls FUN_00713c70 with the InterfaceManager from FUN_004b7210().
 // @fnv 0x007058e0
 // src: COMMUNITY 0x007058e0
+// pdb: Interface::LastMinuteUpdate | Interface.obj | debug, upstream name already matches, high
 void Interface_LastMinuteUpdate()
 {
     if (InterfaceManager_GetSingleton() && static_cast<unsigned char>(reinterpret_cast<Modifier*>(InterfaceManager_GetSingleton())->GetKey()))
@@ -1119,6 +1206,7 @@ struct Modifier
 // If FUN_004b7210() returns a Modifier whose GetKey() is true, returns the TESNPC result of FUN_00602170(); otherwise returns 0.
 // @fnv 0x00705910
 // src: XBOX_PDB 0x00705910
+// pdb: Interface::GetVATSEffect | Interface.obj | debug, upstream name already matches, high
 int Interface_GetVATSEffect()
 {
     if (InterfaceManager_GetSingleton() && reinterpret_cast<Modifier*>(InterfaceManager_GetSingleton())->GetKey())
@@ -1140,6 +1228,7 @@ struct Modifier
 // If FUN_004b7210() returns a Modifier whose GetKey() is true, returns its Pipboy manager; otherwise returns 0.
 // @fnv 0x00705990
 // src: XBOX_PDB 0x00705990
+// pdb: Interface::GetPipboy | Interface.obj | debug, upstream name already matches, high
 int Interface_GetPipboy()
 {
     if (InterfaceManager_GetSingleton() && reinterpret_cast<Modifier*>(InterfaceManager_GetSingleton())->GetKey())
@@ -1163,8 +1252,9 @@ void __fastcall ResetWidget(InterfaceManager*);
 
 // If FUN_004b7210 returns a Modifier whose GetKey is nonzero, calls ResetWidget with that InterfaceManager.
 // @fnv 0x007059d0
-// src: COMMUNITY 0x007059d0
-void Interface_ReinitialisePipboyManager()
+// src: XBOX_DEBUG_PDB 0x007059d0 (was COMMUNITY)
+// pdb: Interface::ResetPipboy | Interface.obj | debug, call graph, high
+void Interface_ResetPipboy()
 {
     if (InterfaceManager_GetSingleton() && static_cast<unsigned char>(reinterpret_cast<Modifier*>(InterfaceManager_GetSingleton())->GetKey()))
         ResetWidget(InterfaceManager_GetSingleton());
@@ -1183,6 +1273,7 @@ bool __cdecl Interface_IsPipboyOpen();
 
 // @fnv 0x00705a00
 // src: XBOX_PDB 0x00705a00
+// pdb: Interface::IsInPipboyMenu | Interface.obj | debug, upstream name already matches, high
 bool __cdecl Interface_IsInPipboyMenu()
 {
     if (InterfaceManager_GetSingleton() && (unsigned char)((Modifier*)InterfaceManager_GetSingleton())->GetKey())
@@ -1205,7 +1296,9 @@ class Modifier
 
 // Returns the LOD mult type of the fade node from FUN_004b7210 when it exists and its key is nonzero, otherwise 0.
 // @fnv 0x00705a90
-int GetLODMultTypeIfKeySet()
+// src: XBOX_DEBUG_PDB 0x00705a90
+// pdb: Interface::GetDragDroppingState | Interface.obj | debug, call graph, high
+int Interface_GetDragDroppingState()
 {
     if (InterfaceManager_GetSingleton() && static_cast<unsigned char>(reinterpret_cast<Modifier*>(InterfaceManager_GetSingleton())->GetKey()))
         return reinterpret_cast<const BSFadeNode*>(InterfaceManager_GetSingleton())->GetLODMultType();
@@ -1239,10 +1332,12 @@ struct IMStandIn
 // If FUN_004b7210() returns an object whose GetKey() is true, forwards a to its FUN_00716010 method.
 // @fnv 0x00705b30
 // src: COMMUNITY 0x00705b30
-void __cdecl Interface_ClearReferencePointers(int a)
+// pdb: Interface::ClearReferencePointers | Interface.obj | debug, upstream name already matches, high
+// pdb params: apObject
+void __cdecl Interface_ClearReferencePointers(int apObject)
 {
     if (InterfaceManager_GetSingleton() && reinterpret_cast<Modifier*>(InterfaceManager_GetSingleton())->GetKey())
-        reinterpret_cast<IMStandIn*>(InterfaceManager_GetSingleton())->InterfaceManager_ClearReferencePointers(a);
+        reinterpret_cast<IMStandIn*>(InterfaceManager_GetSingleton())->InterfaceManager_ClearReferencePointers(apObject);
 }
 }  // namespace fnv_00705b30
 
@@ -1261,6 +1356,7 @@ struct DummyVtable_00705e30
 
 // @fnv 0x00705e30
 // src: XBOX_PDB 0x00705e30
+// pdb: Interface::CloseLoadingMenu | Interface.obj | retail, upstream name already matches, high
 void Interface_CloseLoadingMenu()
 {
     delete (DummyVtable_00705e30*)BSSystemUtility::s_iUpdateEnabled;
@@ -1272,6 +1368,8 @@ extern MapMenu* DAT_011da368;
 
 // @fnv 0x007069d0
 // src: COMMUNITY 0x007069d0
+// pdb: MapMenu::SetCurrentMapPage | Interface.obj | debug, upstream name already matches, high
+// pdb params: acPage
 void MapMenu_SetCurrentMapPage(unsigned char acPage)
 {
     if (DAT_011da368)
@@ -1282,25 +1380,32 @@ void MapMenu_SetCurrentMapPage(unsigned char acPage)
 
 // Calls HandleSelection with the argument offset by 0x20 and zero.
 // @fnv 0x007069f0
+// pdb: MapMenu::SetPageNumber | Interface.obj | debug, call graph, medium
+// pdb params: aiNewPage
 void MapMenu::SetCurrentPage(int aiValue)
 {
     this->HandleSelection(aiValue + 0x20, 0);
 }
 
-void __cdecl SetInventoryTab(unsigned char);
+void __cdecl InventoryMenu_SetCurrentTab(unsigned char);
 
 // @fnv 0x00706a20
 // src: COMMUNITY 0x00706a20
+// pdb: InventoryMenu::SetCurrentInventoryPage | Interface.obj | debug, upstream name already matches, high
+// pdb params: acPage
 void __cdecl InventoryMenu_SetCurrentInventoryPage(unsigned char acPage)
 {
-    SetInventoryTab(acPage);
+    InventoryMenu_SetCurrentTab(acPage);
 }
 
 int __cdecl MinInt(int, int);
 
 
 // @fnv 0x00706a40
-void __cdecl SetInventoryTab(int aiTab)
+// src: XBOX_RETAIL_PDB 0x00706a40
+// pdb: InventoryMenu::SetCurrentTab | Interface.obj | retail, call graph, high
+// pdb params: aiTab
+void __cdecl InventoryMenu_SetCurrentTab(int aiTab)
 {
     if (InventoryMenu::ms_pInventoryMenu)
     {
@@ -1313,20 +1418,22 @@ void __cdecl SetInventoryTab(int aiTab)
 namespace fnv_00706a90 {
 
 void __cdecl StatsMenu_UpdatePerks();
-void __cdecl UpdateStatsMenuLevelText();
+void __cdecl StatsMenu_UpdatePlayerName();
 void __cdecl ClearMapMenuNote();
 
 // @fnv 0x00706a90
 // src: COMMUNITY 0x00706a90
+// pdb: Interface::FinishLoadGame | Interface.obj | retail, call graph, medium
+// pdb params: apLoadGameBuffer
 void __cdecl InterfaceManager_FinishLoadGame()
 {
     StatsMenu_UpdatePerks();
-    UpdateStatsMenuLevelText();
-    StatsMenu::UpdateStatusEffects();
+    StatsMenu_UpdatePlayerName();
+    StatsMenu::UpdatePlayerTitle();
     MapMenu::SetMapPositionToPlayer();
     ClearMapMenuNote();
     MapMenu::UpdateMapPosition();
-    SurgeryMenu::UpdatePerkEntries();
+    SurgeryMenu::ResetAllLimbs();
 }
 }  // namespace fnv_00706a90
 
@@ -1368,6 +1475,8 @@ struct TutorialManagerLayout
 };
 
 // @fnv 0x00706b90
+// pdb: Interface::Revert | Interface.obj | debug, object-file run extension, low
+// pdb params: apLoadGameBuffer
 void __fastcall ResetEntries(TutorialManagerLayout* pThis)
 {
     for (unsigned int i = 0; i < 0x29; ++i)
@@ -1398,9 +1507,12 @@ class NiAVObject_Attach : public NiAVObject
 };
 
 // @fnv 0x00706d50
-void AttachFaceGenAnimationData(NiAVObject* apObject)
+// src: XBOX_DEBUG_PDB 0x00706d50
+// pdb: Interface::AttachDefaultAlphaProperty | Interface.obj | debug, call graph, high
+// pdb params: apNode
+void Interface_AttachDefaultAlphaProperty(NiAVObject* apNode)
 {
-    reinterpret_cast<NiAVObject_Attach*>(apObject)->AttachProperty(
+    reinterpret_cast<NiAVObject_Attach*>(apNode)->AttachProperty(
         reinterpret_cast<NiObject*>(reinterpret_cast<BSFaceGenNiNode*>(InterfaceManager_GetSingleton())->BSFaceGenNiNode::GetAnimationData()));
 }
 
@@ -1422,6 +1534,7 @@ int __cdecl Renderer_GetScreenHeight();
 
 // @fnv 0x00706e20
 // src: XBOX_PDB 0x00706e20
+// pdb: InterfaceManager::GetRealScreenHeight | Interface.obj | debug, upstream name already matches, high
 float InterfaceManager_GetRealScreenHeight()
 {
     return (float)Renderer_GetScreenHeight();
@@ -1431,6 +1544,7 @@ int __cdecl Renderer_GetScreenWidth();
 
 // @fnv 0x00706e50
 // src: XBOX_PDB 0x00706e50
+// pdb: InterfaceManager::GetRealScreenWidth | Interface.obj | debug, upstream name already matches, high
 float __cdecl InterfaceManager_GetRealScreenWidth()
 {
     return (float)Renderer_GetScreenWidth();
@@ -1538,6 +1652,8 @@ struct DummyRenderer_00706e90
 // Returns FUN_00706e80() multiplied by the default render target group's height divided by its width.
 // @fnv 0x00706e90
 // src: COMMUNITY 0x00706e90
+// pdb: Interface::GetRenderedMenuScreenHeight | Interface.obj | debug, call graph (shared callers), medium
+// pdb locals: apRenderer
 float __cdecl CalculateScaledHeight()
 {
     DummyRenderer_00706e90* apRenderer = (DummyRenderer_00706e90*)NiXenonRenderer_GetRenderer();
@@ -1549,6 +1665,8 @@ void __cdecl InterfaceManager_NewTimer(void*, float);
 
 // @fnv 0x00706f50
 // src: XBOX_PDB 0x00706f50
+// pdb: Interface::NewTimer | Interface.obj | debug, upstream name already matches, high
+// pdb params: apPointer, afLength
 void __cdecl Interface_NewTimer(void* apPointer, float afLength)
 {
     InterfaceManager_NewTimer(apPointer, afLength);
@@ -1558,6 +1676,7 @@ void __fastcall UpdateNodeTimers(InterfaceManager*);
 
 // @fnv 0x00706f70
 // src: XBOX_PDB 0x00706f70
+// pdb: Interface::UpdateAllTimers | Interface.obj | debug, upstream name already matches, high
 void Interface_UpdateAllTimers()
 {
     UpdateNodeTimers(InterfaceManager_GetSingleton());
@@ -1570,6 +1689,8 @@ struct FUN_00714d90_struct
 
 // @fnv 0x00706fb0
 // src: COMMUNITY 0x00706fb0
+// pdb: Interface::AddToEnterStack | Interface.obj | debug, upstream name already matches, high
+// pdb params: aiID, abForceRemoval
 void Interface_AddToEnterStack(int aiID)
 {
     ((FUN_00714d90_struct*)InterfaceManager_GetSingleton())->PushMenuStackEntry(aiID);
@@ -1578,6 +1699,8 @@ void Interface_AddToEnterStack(int aiID)
 
 // @fnv 0x00706fd0
 // src: XBOX_PDB 0x00706fd0
+// pdb: Interface::PopFromEnterStack | Interface.obj | debug, upstream name already matches, high
+// pdb params: aiID, abForceRemoval
 int __cdecl Interface_PopFromEnterStack(int aiID, bool abForceRemoval)
 {
     return reinterpret_cast<InterfaceManager*>(InterfaceManager_GetSingleton())
@@ -1586,17 +1709,20 @@ int __cdecl Interface_PopFromEnterStack(int aiID, bool abForceRemoval)
 
 struct IMStandIn
 {
-    void InterfaceManager_SetCurrentFocusTarget(int a, int b, int c);
+    void InterfaceManager_SetCurrentFocusTarget(int apTarget, int aiType, int abPlaySounds);
 };
 // @fnv 0x00706ff0
 // src: XBOX_PDB 0x00706ff0
-void __cdecl Interface_SetCurrentFocusTarget(int a)
+// pdb: Interface::SetCurrentFocusTarget | Interface.obj | debug, upstream name already matches, high
+// pdb params: apTile
+void __cdecl Interface_SetCurrentFocusTarget(int apTile)
 {
-    reinterpret_cast<IMStandIn*>(InterfaceManager_GetSingleton())->InterfaceManager_SetCurrentFocusTarget(a, 0xfc3, 1);
+    reinterpret_cast<IMStandIn*>(InterfaceManager_GetSingleton())->InterfaceManager_SetCurrentFocusTarget(apTile, 0xfc3, 1);
 }
 
 // @fnv 0x00707040
 // src: COMMUNITY 0x00707040
+// pdb: Interface::GetOverTileTarget | Interface.obj | debug, object-file gap fill, medium
 void* InterfaceManager_GetOverTileTarget()
 {
     return *(Tile**)((char*)InterfaceManager_GetSingleton() + 0xcc);
@@ -1604,12 +1730,15 @@ void* InterfaceManager_GetOverTileTarget()
 
 // @fnv 0x00707050
 // src: XBOX_PDB 0x00707050
+// pdb: Interface::SetOverTileTarget | Interface.obj | debug, upstream name already matches, high
+// pdb params: apTile
 void Interface_SetOverTileTarget(void* apTile)
 {
     *(Tile**)((char*)InterfaceManager_GetSingleton() + 0xcc) = static_cast<Tile*>(apTile);
 }
 
 // @fnv 0x00707070
+// pdb: Interface::GetOverTileMenu | Interface.obj | debug, object-file gap fill, medium
 int __cdecl GetFieldD0()
 {
     return *(int*)((char*)InterfaceManager_GetSingleton() + 0xd0);
@@ -1617,17 +1746,21 @@ int __cdecl GetFieldD0()
 
 // @fnv 0x00707080
 // src: XBOX_PDB 0x00707080
+// pdb: Interface::SetOverTileMenu | Interface.obj | debug, upstream name already matches, high
+// pdb params: apMenu
 void Interface_SetOverTileMenu(Menu* apMenu)
 {
     *(Menu**)((char*)InterfaceManager_GetSingleton() + 0xd0) = apMenu;
 }
 
 // @fnv 0x007070a0
+// pdb: Interface::GetCursorTile | Interface.obj | debug, object-file gap fill, medium
 void* GetNextTile()
 {
     return (Tile*)((TESResponse*)InterfaceManager_GetSingleton())->GetNext();
 }
 
+// pdb: class ModelLoader, size 0x30 (here 0x1), 12 members
 class ModelLoader
 {
   public:
@@ -1637,27 +1770,30 @@ extern ModelLoader* g_modelLoader;
 
 // @fnv 0x00707640
 // src: XBOX_PDB 0x00707640
-void Interface_ReleaseModelFile(const char* apPath)
+// pdb: Interface::ReleaseModelFile | Interface.obj | debug, upstream name already matches, high
+// pdb params: apFilename
+void Interface_ReleaseModelFile(const char* apFilename)
 {
     if (g_modelLoader)
-        g_modelLoader->ModelLoader_ReleaseFile(apPath);
+        g_modelLoader->ModelLoader_ReleaseFile(apFilename);
 }
 
 struct S_004431f0
 {
-    void* FUN_004431f0(unsigned int);
+    void* Model_ScalarDtor(unsigned int);
 };
 extern S_004431f0* DAT_011d890c;
 
 // Calls FUN_004431f0(1) on DAT_011d890c if it is non-null, then sets DAT_011d890c to null.
 // @fnv 0x00707820
 // src: COMMUNITY 0x00707820
+// pdb: Interface::ClearTempModel | Interface.obj | retail, upstream name already matches, high
 void Interface_ClearTempModel()
 {
     S_004431f0* p0;
     S_004431f0* p1 = DAT_011d890c;
     p0 = p1;
-    p0 ? p0->FUN_004431f0(1) : 0;
+    p0 ? p0->Model_ScalarDtor(1) : 0;
     DAT_011d890c = 0;
 }
 
@@ -1668,9 +1804,11 @@ struct Modifier
 };
 // @fnv 0x00707930
 // src: XBOX_PDB 0x00707930
-void Interface_SetNeedToUpdate(bool a)
+// pdb: Interface::SetNeedToUpdate | Interface.obj | debug, upstream name already matches, high
+// pdb params: abSet
+void Interface_SetNeedToUpdate(bool abSet)
 {
-    reinterpret_cast<Modifier*>(InterfaceManager_GetSingleton())->SetNeed(a);
+    reinterpret_cast<Modifier*>(InterfaceManager_GetSingleton())->SetNeed(abSet);
 }
 }  // namespace fnv_00707930
 
@@ -1680,6 +1818,8 @@ struct FUN_00707950_shell : public InterfaceManager
 };
 
 // @fnv 0x00707950
+// pdb: Interface::PlayNifSounds | Interface.obj | debug, object-file run extension, low
+// pdb params: apSequence
 void FUN_00707950_shell::SetNeed(bool abNeed)
 {
     *((bool*)((char*)this + 0xb0)) = abNeed;
@@ -1692,6 +1832,7 @@ bool __fastcall InterfaceManager_IsInRenderedMenu(InterfaceManager*);
 // Returns false if FUN_00705a00() is true and the rendered menu is not initialized; otherwise returns FUN_007079f0(FUN_004b7210()).
 // @fnv 0x007079b0
 // src: XBOX_PDB 0x007079b0
+// pdb: Interface::IsInRenderedMenu | Interface.obj | retail, upstream name already matches, high
 bool Interface_IsInRenderedMenu()
 {
     if (Interface_IsInPipboyMenu() && !Interface_GetPipboy()->GetInitialized())
@@ -1709,6 +1850,7 @@ bool __cdecl InterfaceManager_IsInPipboyMenu();
 // Returns true if the byte at offset 0x168 of this InterfaceManager is set, otherwise returns the result of FUN_007178a0.
 // @fnv 0x007079f0
 // src: XBOX_PDB 0x007079f0
+// pdb: InterfaceManager::IsInRenderedMenu | Interface.obj | debug, upstream name already matches, high
 bool FUN_007079f0_shell::InterfaceManager_IsInRenderedMenu()
 {
     return *((bool*)this + 0x168) || InterfaceManager_IsInPipboyMenu();
@@ -1717,6 +1859,7 @@ FORenderedMenu* __fastcall FUN_00707af0(InterfaceManager*);
 
 // @fnv 0x00707ad0
 // src: XBOX_PDB 0x00707ad0
+// pdb: Interface::GetCurrentRenderedMenu | Interface.obj | retail, upstream name already matches, high
 FORenderedMenu* Interface_GetCurrentRenderedMenu()
 {
     return FUN_00707af0(InterfaceManager_GetSingleton());
@@ -1726,6 +1869,7 @@ int __cdecl Renderer_GetScreenHeight();
 
 // @fnv 0x00707b60
 // src: COMMUNITY 0x00707b60
+// pdb: Interface::SizeOfAScreenPixelInCrazyAssMenuCoordinates | Interface.obj | retail, upstream name already matches, high
 float Interface_SizeOfAScreenPixelInCrazyAssMenuCoordinates()
 {
     static float s_val = InterfaceInterfaceView::GetFirstInterfaceFloat() / Renderer_GetScreenHeight();
@@ -1749,6 +1893,8 @@ void __cdecl Interface_ClearMenuQueue();
 
 // @fnv 0x00709470
 // src: XBOX_PDB 0x00709470
+// pdb: Interface::QueueMenuCreate | Interface.obj | retail, upstream name already matches, high
+// pdb params: aeMenuType, apMenuRef, apGreeting, apSpeakAs, aeContainerMode, bModeless
 void __cdecl Interface_QueueMenuCreate(int param_1, int param_2, int param_3, int param_4, int param_5)
 {
     if (param_1 != 7)
@@ -1776,6 +1922,7 @@ void __cdecl Interface_QueueMenuCreate(int param_1, int param_2, int param_3, in
 
 // @fnv 0x00709bc0
 // src: XBOX_PDB 0x00709bc0
+// pdb: Interface::IsPipboyOpening | Interface.obj | debug, upstream name already matches, high
 bool Interface_IsPipboyOpening()
 {
     return *(int*)((char*)InterfaceManager_GetSingleton() + 0x4bc) == 2;
@@ -1783,6 +1930,7 @@ bool Interface_IsPipboyOpening()
 
 // @fnv 0x00709c00
 // src: XBOX_PDB 0x00709c00
+// pdb: Interface::IsPipboyOpen | Interface.obj | debug, upstream name already matches, high
 bool __cdecl Interface_IsPipboyOpen()
 {
     return *(int*)((char*)InterfaceManager_GetSingleton() + 0x4bc) == 3;
@@ -1809,6 +1957,7 @@ struct StrOwner
 };
 // @fnv 0x007fa950
 // src: COMMUNITY 0x007fa950
+// pdb: SkyObject::GetRoot | SkyObject.obj | debug, vtable slot, medium
 const char* StrOwner::SkyObject_GetNiNode()
 {
     return s;
@@ -1833,6 +1982,8 @@ bool QueueMessage(const char*, const char*, const char*, int, void*, int, int, c
 // Shows a warning message via QueueMessage when the interface manager's modifier key is held, returning the result; otherwise returns false.
 // @fnv 0x00703e80
 // src: XBOX_PDB 0x00703e80
+// pdb: Interface::CreateMessageMenu | Interface.obj | retail, upstream name already matches, high
+// pdb params: aText, apcIconFilename, apcTitle, afpResult, aiFirstButtonResult, aiWarningContext, afBackgroundTextureOpacityOverride, afMenuWidthOverride, axFirst, xlist
 bool Interface_CreateMessageMenu(const char* aText, const char* apcIconFilename, const char* apcTitle, void* afpResult,
                   int aiFirstButtonResult, int aiWarningContext, float afBackgroundTextureOpacityOverride,
                   float afMenuWidthOverride, const char* axFirst, ...)
@@ -1901,6 +2052,8 @@ int _max(int, char);
 // If the interface manager exists and a key is pressed, updates the stats, inventory and map tab states and selects the given menu, defaulting to 0x3eb.
 // @fnv 0x00705b70
 // src: COMMUNITY 0x00705b70
+// pdb: Interface::SetMainMenuDefaults | Interface.obj | retail, upstream name already matches, high
+// pdb params: aiStatsTab, aiInventoryTab, aiMapTab, aiWhichMenu
 void Interface_SetMainMenuDefaults(char aiStatsTab, char aiInventoryTab, char aiMapTab, int aiWhichMenu)
 {
     if (InterfaceManager_GetSingleton() && ((Modifier*)InterfaceManager_GetSingleton())->GetKey())
@@ -1921,7 +2074,7 @@ struct DialogH
 };
 struct fnv_007aa480
 {
-    static void ClearAllElements();
+    static void MessageMenu_ClearMessageQueue();
 };
 struct FocusH
 {
@@ -1934,7 +2087,7 @@ struct Im7181
 extern PlayerCharacter* g_thePlayer;
 extern unsigned char DAT_011d8a85;
 InterfaceManager* InterfaceManager_GetSingleton();
-MobileObject* GetDialogCastSound();
+MobileObject* Interface_InDialogWith();
 void HUDMainMenu_ResetQueuedMessagesAndSubtitles_();
 void VATSCameraData_Accept();
 void Interface_CloseAllSupportMenus(int);
@@ -1944,7 +2097,7 @@ void Interface_PopFromEnterStack(int, int);
 void VATSMenu_ClearTargetList();
 void MenuTopicManager_Destroy();
 void ResetHUDMainMenu();
-MobileObject* GetDialogCastSound();
+MobileObject* Interface_InDialogWith();
 // @fnv 0x00706ae0
 void ResetInterfaceState()
 {
@@ -1953,16 +2106,16 @@ void ResetInterfaceState()
     ResetHUDMainMenu();
     if (DialogH::IsInDialog())
     {
-        ((FocusH*)g_thePlayer)->FocusOnActor(GetDialogCastSound(), 0.0f, true);
+        ((FocusH*)g_thePlayer)->FocusOnActor(Interface_InDialogWith(), 0.0f, true);
         MenuTopicManager_Destroy();
     }
     VATSCameraData_Accept();
     VATSMenu_ClearTargetList();
     Interface_CloseAllSupportMenus(0);
-    fnv_007aa480::ClearAllElements();
+    fnv_007aa480::MessageMenu_ClearMessageQueue();
     StatsMenu::ClearPerks();
     ClearMapMenuNote();
-    MapMenu::StopMapMenuSounds();
+    MapMenu::ClearAudioLogSubtites();
     Interface_PopFromEnterStack(1, 1);
     ((Im7181*)InterfaceManager_GetSingleton())->SetRenderedMenu(0);
     *(int*)((char*)InterfaceManager_GetSingleton() + 0x4bc) = 0;
@@ -1984,22 +2137,26 @@ struct FUN_00706cb0_shell2
 };
 InterfaceManager* InterfaceManager_GetSingleton();
 // @fnv 0x00706c20
-void ClearInterfaceRefs(unsigned int a)
+// src: XBOX_DEBUG_PDB 0x00706c20
+// pdb: Interface::TileIsBeingDeleted | Interface.obj | debug, call graph, high
+// pdb params: apTile
+// pdb locals: pim
+void Interface_TileIsBeingDeleted(unsigned int apTile)
 {
     InterfaceManager* im = InterfaceManager_GetSingleton();
-    if (*(unsigned int*)((char*)im + 0xcc) == a)
+    if (*(unsigned int*)((char*)im + 0xcc) == apTile)
     {
         *(unsigned int*)((char*)im + 0xcc) = 0;
         *(unsigned int*)((char*)im + 0xd0) = 0;
     }
-    if (*(unsigned int*)((char*)im + 0xd4) == a)
+    if (*(unsigned int*)((char*)im + 0xd4) == apTile)
     {
         *(unsigned int*)((char*)im + 0xd4) = 0;
         *(unsigned int*)((char*)im + 0xd8) = 0;
     }
-    if (((TESAmmoInitCalls*)im)->GetFieldBC() == a)
+    if (((TESAmmoInitCalls*)im)->GetFieldBC() == apTile)
         ((FUN_00706cb0_shell2*)im)->ResetFieldBC();
-    ((S3de0*)im)->InterfaceManager_RemoveTileFromUpdateList((NavMesh*)a);
+    ((S3de0*)im)->InterfaceManager_RemoveTileFromUpdateList((NavMesh*)apTile);
 }
 
 struct QuantityData
@@ -2009,6 +2166,9 @@ struct QuantityData
 
 // @fnv 0x00707a30
 // src: COMMUNITY 0x00707a30
+// pdb: Interface::GetRenderedMenuScreenHeight | Interface.obj | retail, call graph, low
+// pdb note: debug build links it to Interface::IsRenderedMenu
+// pdb locals: apRenderer
 bool Menu_ShouldScaleByResolutionRatio(QuantityData* apComponent)
 {
     Tile* pTile = apComponent ? apComponent->GetItem() : 0;
@@ -2027,7 +2187,7 @@ struct Modifier
 bool __cdecl Interface_IsMenuIDVisible(int, unsigned int);
 struct MenuHelper
 {
-    void UpdateOption(int);
+    void StatsMenu_UpdateHealingOptions(int);
 };
 void __cdecl BarterMenu_ForceBarterUpdate(int);
 void __cdecl RecipeMenu_ForceRecipeUpdate(int);
@@ -2035,6 +2195,7 @@ void __cdecl ContainerMenu_ForceContainerUpdate();
 
 // @fnv 0x00704af0
 // src: COMMUNITY 0x00704af0
+// pdb: Interface::UpdateInventory | Interface.obj | retail, upstream name already matches, high
 void Interface_UpdateInventory()
 {
     if (InterfaceManager_GetSingleton())
@@ -2045,10 +2206,10 @@ void Interface_UpdateInventory()
             {
                 InventoryMenu::UpdateItemList();
             }
-            else if (InterfaceInterfaceView::GetStatsMenuVisible())
+            else if (InterfaceInterfaceView::Interface_GetStatsMenuVisible())
             {
                 reinterpret_cast<MenuHelper*>(reinterpret_cast<Tile*>(Tile::FindMenuById(0x3eb))->GetMenu())
-                    ->UpdateOption(4);
+                    ->StatsMenu_UpdateHealingOptions(4);
             }
             else if (Interface_IsMenuIDVisible(0x41d, 0))
             {
@@ -2083,24 +2244,27 @@ struct AttachMsg
     char name[260];
     char flag;
 };
-void __cdecl ShowRegionData(AttachMsg*);
+void __cdecl HUDMainMenu_SetRegionText(AttachMsg*);
 
 // @fnv 0x00705420
 // src: COMMUNITY 0x00705420
-void __cdecl Interface_SetRegionText(int a, ::BSStringT<char> name, bool flag)
+// pdb: Interface::SetRegionText | Interface.obj | retail, upstream name already matches, high
+// pdb params: apRegion, xDisplayText, bUpdateLastRegion
+// pdb locals: hrd
+void __cdecl Interface_SetRegionText(int apRegion, ::BSStringT<char> xDisplayText, bool bUpdateLastRegion)
 {
     if (InterfaceManager_GetSingleton())
     {
         if (reinterpret_cast<Modifier*>(InterfaceManager_GetSingleton())->GetKey())
         {
             AttachMsg msg;
-            msg.flag = flag;
-            msg.a = a;
-            if ((const char*)name)
-                TaskQueueInterface::CopyStringToBuffer(msg.name, 260, (const char*)name);
+            msg.flag = bUpdateLastRegion;
+            msg.a = apRegion;
+            if ((const char*)xDisplayText)
+                TaskQueueInterface::CopyStringToBuffer(msg.name, 260, (const char*)xDisplayText);
             else
                 msg.name[0] = 0;
-            ShowRegionData(&msg);
+            HUDMainMenu_SetRegionText(&msg);
         }
     }
 }
@@ -2118,6 +2282,7 @@ extern "C" void __cdecl InterfaceManager_Destroy(void);
 // Calls FUN_004b7210, and if it returns non-null and its GetKey result is nonzero, calls FUN_0070a0b0.
 // @fnv 0x00702330
 // src: COMMUNITY 0x00702330
+// pdb: Interface::Free | Interface.obj | debug, upstream name already matches, high
 void Interface_Free()
 {
     if (InterfaceManager_GetSingleton() && reinterpret_cast<Modifier*>(InterfaceManager_GetSingleton())->GetKey())
@@ -2130,6 +2295,9 @@ bool __cdecl Interface_IsPipboyOpen();
 
 // @fnv 0x00702680
 // src: XBOX_PDB 0x00702680
+// pdb: Interface::IsMenuIDVisible | Interface.obj | retail, upstream name already matches, high
+// pdb params: aeMenuID, abFadeStatesThatCountAsVisible
+// pdb locals: ptile
 bool __cdecl Interface_IsMenuIDVisible(InterfaceInterfaceView::enumMenus aeMenuID, unsigned int abFadeStatesThatCountAsVisible)
 {
     Tile* ptile;
@@ -2164,8 +2332,9 @@ extern BGSMoviePlayer* DAT_0126fac4;
 
 // If FUN_004b7210() returns non-null and its GetKey() is nonzero, calls FUN_00ec17c0() on DAT_0126fac4.
 // @fnv 0x00702960
-// src: GUESS 0x00702960 (confidence: low)
-void Object_ProcessState_00702960()
+// src: XBOX_DEBUG_PDB 0x00702960
+// pdb: Interface::SwapBuffers | Interface.obj | debug, call graph, high
+void Interface_SwapBuffers()
 {
     if (InterfaceManager_GetSingleton() && reinterpret_cast<Modifier*>(InterfaceManager_GetSingleton())->GetKey())
         DAT_0126fac4->IsPlaying();
@@ -2182,6 +2351,7 @@ struct Modifier
 // If FUN_004b7210 returns a Modifier whose GetKey is nonzero, calls FUN_00703030 on it.
 // @fnv 0x00703000
 // src: XBOX_PDB 0x00703000
+// pdb: Interface::ToggleDebugTextVisible | Interface.obj | debug, upstream name already matches, high
 void Interface_ToggleDebugTextVisible()
 {
     if (InterfaceManager_GetSingleton() && reinterpret_cast<Modifier*>(InterfaceManager_GetSingleton())->GetKey())
@@ -2199,10 +2369,12 @@ struct Modifier
 // If FUN_004b7210() returns a Modifier whose GetKey() is nonzero, forwards a1 and a2 to its SetTileValues.
 // @fnv 0x007030c0
 // src: COMMUNITY 0x007030c0
-void Interface_UpdateScreenShape(int aiArg1, int aiArg2)
+// pdb: Interface::UpdateScreenShape | Interface.obj | debug, upstream name already matches, high
+// pdb params: isizex, isizey
+void Interface_UpdateScreenShape(int isizex, int isizey)
 {
     if (InterfaceManager_GetSingleton() && reinterpret_cast<Modifier*>(InterfaceManager_GetSingleton())->GetKey())
-        reinterpret_cast<Modifier*>(InterfaceManager_GetSingleton())->SetTileValues(aiArg1, aiArg2);
+        reinterpret_cast<Modifier*>(InterfaceManager_GetSingleton())->SetTileValues(isizex, isizey);
 }
 }  // namespace fnv_007030c0
 
@@ -2222,6 +2394,7 @@ struct FUN_009b4440_holder
 // If FUN_004b7210() returns a Modifier with a nonzero key, returns its FUN_009b4440() result; otherwise returns 0.
 // @fnv 0x00703390
 // src: XBOX_PDB 0x00703390
+// pdb: Interface::GetTelekinesisREFR | Interface.obj | debug, upstream name already matches, high
 void* Interface_GetTelekinesisREFR()
 {
     if (InterfaceManager_GetSingleton() && reinterpret_cast<Modifier*>(InterfaceManager_GetSingleton())->GetKey())
@@ -2235,6 +2408,7 @@ extern char DAT_0119f349;
 
 // @fnv 0x00704130
 // src: GUESS 0x00704130 (confidence: low)
+// pdb: ModalMessageMenuCallback | Interface.obj | debug, object-file gap fill, medium
 void __cdecl Interface_SetDAT0119f349()
 {
     DAT_0119f349 = ConsumeByteAtE4();
@@ -2250,6 +2424,7 @@ bool GetMapMenuFogOfWar();
 
 // @fnv 0x007043d0
 // src: XBOX_PDB 0x007043d0
+// pdb: Interface::GetFogOfWarEnabled | Interface.obj | debug, upstream name already matches, high
 bool Interface_GetFogOfWarEnabled()
 {
     if (InterfaceManager_GetSingleton() && reinterpret_cast<Modifier*>(InterfaceManager_GetSingleton())->GetKey())
@@ -2269,6 +2444,8 @@ bool SetMapMenuFogOfWar(bool);
 // If FUN_004b7210 returns a non-null object whose GetKey is nonzero, forwards abSetTo to FUN_00704450.
 // @fnv 0x00704420
 // src: XBOX_PDB 0x00704420
+// pdb: Interface::SetFogOfWarEnabled | Interface.obj | debug, upstream name already matches, high
+// pdb params: abSetTo
 void Interface_SetFogOfWarEnabled(bool abSetTo)
 {
     if (InterfaceManager_GetSingleton() && reinterpret_cast<Modifier*>(InterfaceManager_GetSingleton())->GetKey())
@@ -2280,10 +2457,12 @@ extern MapMenu* DAT_011da368;
 
 // @fnv 0x00704450
 // src: COMMUNITY 0x00704450
+// pdb: Interface::NoteRemoved | Interface.obj | debug, object-file run extension, low
+// pdb params: apNote
 void SetMapMenuFogOfWar(char bShow)
 {
     if (DAT_011da368)
-        reinterpret_cast<char&>(DAT_011da368->m_bNeedsMapUpdate) = bShow;
+        reinterpret_cast<char&>(DAT_011da368->bFogOfWarEnabled) = bShow;
 }
 
 extern "C" void __cdecl MapMenu_ResetCurrentNoteIfEqualTo(int);
@@ -2309,6 +2488,8 @@ void CreateRepairServicesMenu(unsigned int);
 // If FUN_004b7210 returns a Modifier whose GetKey is nonzero, forwards arg to CreateRepairServicesMenu.
 // @fnv 0x00704690
 // src: COMMUNITY 0x00704690
+// pdb: Interface::CreateRepairServicesMenu | Interface.obj | debug, object-file gap fill, medium
+// pdb params: apVendor
 void RepairServicesMenu_Create_(unsigned int arg)
 {
     if (InterfaceManager_GetSingleton() && reinterpret_cast<Modifier*>(InterfaceManager_GetSingleton())->GetKey())
@@ -2320,6 +2501,7 @@ extern ContainerMenu* DAT_011d93f8;
 
 // @fnv 0x00704bc0
 // src: COMMUNITY 0x00704bc0
+// pdb: ContainerMenu::ForceContainerUpdate | Interface.obj | debug, upstream name already matches, high
 void ContainerMenu_ForceContainerUpdate()
 {
     if (DAT_011d93f8)
@@ -2332,14 +2514,16 @@ struct Modifier
     bool GetKey();
 };
 
-extern "C" void __cdecl InitInventoryMenu(unsigned int, unsigned int);
+extern "C" void __cdecl BarterMenu_Create(unsigned int, unsigned int);
 
 // @fnv 0x00704f80
 // src: COMMUNITY 0x00704f80
+// pdb: Interface::CreateBarterMenu | Interface.obj | debug, object-file gap fill, medium
+// pdb params: apVendor, aiDiscount
 void ShowBarterMenu_(unsigned int a1, unsigned int a2)
 {
     if (InterfaceManager_GetSingleton() && reinterpret_cast<Modifier*>(InterfaceManager_GetSingleton())->GetKey())
-        InitInventoryMenu(a1, a2);
+        BarterMenu_Create(a1, a2);
 }
 }  // namespace fnv_00704f80
 
@@ -2350,14 +2534,16 @@ class Modifier
     unsigned char GetKey();
 };
 
-extern "C" void __cdecl CreateRecipeMenu(int, int);
+extern "C" void __cdecl RecipeMenu_Create(int, int);
 
 // @fnv 0x00704fc0
 // src: COMMUNITY 0x00704fc0
-void Interface_CreateRecipeMenu(int a1, int a2)
+// pdb: Interface::CreateRecipeMenu | Interface.obj | debug, upstream name already matches, high
+// pdb params: apVendor, pCategory
+void Interface_CreateRecipeMenu(int apVendor, int pCategory)
 {
     if (InterfaceManager_GetSingleton() && reinterpret_cast<Modifier*>(InterfaceManager_GetSingleton())->GetKey())
-        CreateRecipeMenu(a1, a2);
+        RecipeMenu_Create(apVendor, pCategory);
 }
 }  // namespace fnv_00704fc0
 
@@ -2375,6 +2561,7 @@ extern ContainerMenu* DAT_011d93f8;
 
 // @fnv 0x00705050
 // src: COMMUNITY 0x00705050
+// pdb: Interface::GetContainerMode | Interface.obj | debug, object-file run extension, low
 void* GetContainerMenuMode()
 {
     if (DAT_011d93f8)
@@ -2404,6 +2591,7 @@ class Modifier
 
 // @fnv 0x00705800
 // src: COMMUNITY 0x00705800
+// pdb: Interface::ForceReload | Interface.obj | debug, upstream name already matches, high
 void Interface_ForceReload()
 {
     if (InterfaceManager_GetSingleton() && reinterpret_cast<Modifier*>(InterfaceManager_GetSingleton())->GetKey())
@@ -2417,14 +2605,17 @@ struct Modifier
     unsigned char GetKey();
 };
 
-void CreateLockpickMenu(int, int, unsigned char);
+void LockPickMenu_Create(int, int, unsigned char);
 
 // @fnv 0x00705830
 // src: XBOX_PDB 0x00705830
+// pdb: Interface::CloseVATSMenu | Interface.obj | retail, object-file run extension, low
+// pdb note: debug build links it to Interface::CreateLockPickMenu
+// pdb locals: pmenu, ptile
 void Interface_CreateLockPickMenu(int a1, int a2, unsigned char a3)
 {
     if (InterfaceManager_GetSingleton() && reinterpret_cast<Modifier*>(InterfaceManager_GetSingleton())->GetKey())
-        CreateLockpickMenu(a1, a2, a3);
+        LockPickMenu_Create(a1, a2, a3);
 }
 }  // namespace fnv_00705830
 
@@ -2433,11 +2624,13 @@ extern int g_011d8950;
 extern int DAT_011d8960;
 
 void DialogMenu_ServiceStart();
-void GetOrCreateMenuTile(int);
+void RaceSexMenu_Create(int);
 
 // @fnv 0x00705870
 // src: COMMUNITY 0x00705870
-void Interface_CreateRaceSexMenu(int arg)
+// pdb: Interface::CreateRaceSexMenu | Interface.obj | retail, upstream name already matches, high
+// pdb params: aeContext
+void Interface_CreateRaceSexMenu(int aeContext)
 {
     if (DialogMenu_IsDialogActive())
         DialogMenu_ServiceStart();
@@ -2445,11 +2638,11 @@ void Interface_CreateRaceSexMenu(int arg)
     if (*g_011c3ea4.Int() > 1 && g_011d8950 == 0)
     {
         g_011d8950 = 5;
-        DAT_011d8960 = arg;
+        DAT_011d8960 = aeContext;
     }
     else
     {
-        GetOrCreateMenuTile(arg);
+        RaceSexMenu_Create(aeContext);
     }
 }
 
@@ -2462,6 +2655,7 @@ struct Modifier
 
 // @fnv 0x00705a60
 // src: COMMUNITY 0x00705a60
+// pdb: Interface::DumpMenuPackingInfo | Interface.obj | debug, upstream name already matches, high
 void Interface_DumpMenuPackingInfo()
 {
     if (InterfaceManager_GetSingleton() && reinterpret_cast<Modifier*>(InterfaceManager_GetSingleton())->GetKey())
@@ -2483,10 +2677,12 @@ struct FUN_00705b10_Dummy
 
 // @fnv 0x00705ad0
 // src: COMMUNITY 0x00705ad0
-void Interface_SetDragDroppingState(int arg)
+// pdb: Interface::SetDragDroppingState | Interface.obj | debug, upstream name already matches, high
+// pdb params: abSetTo
+void Interface_SetDragDroppingState(int abSetTo)
 {
     if (InterfaceManager_GetSingleton() && reinterpret_cast<Modifier*>(InterfaceManager_GetSingleton())->GetKey())
-        reinterpret_cast<FUN_00705b10_Dummy*>(InterfaceManager_GetSingleton())->Set(arg);
+        reinterpret_cast<FUN_00705b10_Dummy*>(InterfaceManager_GetSingleton())->Set(abSetTo);
 }
 }  // namespace fnv_00705ad0
 
@@ -2499,6 +2695,7 @@ struct Modifier
 
 // @fnv 0x00705d90
 // src: COMMUNITY 0x00705d90
+// pdb: Interface::GetCurrentMainMenu | Interface.obj | debug, call graph, medium
 int Interface_GetLastPipboyTab()
 {
     if (InterfaceManager_GetSingleton() && reinterpret_cast<Modifier*>(InterfaceManager_GetSingleton())->GetKey())
@@ -2518,10 +2715,12 @@ extern "C" void __cdecl SurgeryMenu_SetCursorPos(int, int);
 // If FUN_004b7210 returns a Modifier whose GetKey is nonzero, forwards a and b to FUN_007e41f0.
 // @fnv 0x00706230
 // src: COMMUNITY 0x00706230
-void Interface_SetSurgeryCursorPos(int aiArg1, int aiArg2)
+// pdb: Interface::SetSurgeryCursorPos | Interface.obj | debug, upstream name already matches, high
+// pdb params: aiXPos, aiYPos
+void Interface_SetSurgeryCursorPos(int aiXPos, int aiYPos)
 {
     if (InterfaceManager_GetSingleton() && reinterpret_cast<Modifier*>(InterfaceManager_GetSingleton())->GetKey())
-        SurgeryMenu_SetCursorPos(aiArg1, aiArg2);
+        SurgeryMenu_SetCursorPos(aiXPos, aiYPos);
 }
 }  // namespace fnv_00706230
 
@@ -2536,8 +2735,9 @@ void LevelUpMenu_Create();
 
 // If FUN_004b7210 returns a Modifier whose GetKey is nonzero, calls FUN_00784c80.
 // @fnv 0x00706270
-// src: COMMUNITY 0x00706270
-void LevelUpMenu_Create_()
+// src: XBOX_DEBUG_PDB 0x00706270 (was COMMUNITY)
+// pdb: Interface::CreateLevelUpMenu | Interface.obj | debug, call graph, high
+void Interface_CreateLevelUpMenu()
 {
     if (InterfaceManager_GetSingleton() && reinterpret_cast<Modifier*>(InterfaceManager_GetSingleton())->GetKey())
         LevelUpMenu_Create();
@@ -2553,7 +2753,7 @@ char MapMenu_GetCurrentMapPage()
 {
     int v;
     if (DAT_011da368)
-        v = DAT_011da368->m_iMapDisplayMode - 0x20;
+        v = DAT_011da368->iCurrentPage - 0x20;
     else
         v = 4;
     return (char)v;
@@ -2563,27 +2763,32 @@ char MapMenu_GetCurrentMapPage()
 unsigned int __fastcall GetInterfaceAuxiliaryNode(InterfaceManager*);
 // @fnv 0x00706d10
 // src: COMMUNITY 0x00706d10
+// pdb: Interface::GetDebugTextRoot | Interface.obj | debug, upstream name already matches, high
 unsigned int Interface_GetDebugTextRoot()
 {
     return GetInterfaceAuxiliaryNode(InterfaceManager_GetSingleton());
 }
 
-void __cdecl InterfaceManager_PlayMenuSound(int aiSoundIndex);
+void __cdecl InterfaceManager_PlayMenuSound(int aeMenuSound);
 
 // @fnv 0x00706f30
 // src: XBOX_PDB 0x00706f30
+// pdb: Interface::PlayMenuSound | Interface.obj | debug, upstream name already matches, high
+// pdb params: aiSoundIndex
 void Interface_PlayMenuSound(int aiSoundIndex)
 {
     InterfaceManager_PlayMenuSound(aiSoundIndex);
 }
 
-void __cdecl RemoveNodeById(int);
+void __cdecl InterfaceManager_ClearTimer(int);
 // @fnv 0x00706f90
 // src: COMMUNITY 0x00706f90
-void __cdecl Interface_ClearTimer(int aiValue)
+// pdb: Interface::ClearTimer | Interface.obj | debug, upstream name already matches, high
+// pdb params: apPointer
+void __cdecl Interface_ClearTimer(int apPointer)
 {
     InterfaceManager_GetSingleton();
-    RemoveNodeById(aiValue);
+    InterfaceManager_ClearTimer(apPointer);
 }
 
 
@@ -2594,6 +2799,7 @@ const char* Tile::GetTypeName()
 }
 
 // @fnv 0x00709970
+// pdb: NiTPointerListBase<NiTPointerAllocator<unsigned int>,Tile *>::NiTPointerListBase<NiTPointerAllocator<unsigned int>,Tile *> | TESScriptFunctions.obj | debug, object-file gap fill, medium
 const char* TileRect::GetTypeName()
 {
     return "RECT";
@@ -2606,18 +2812,22 @@ const char* __fastcall GetTileMenuTypeName(TileMenu* menu)
 }
 
 // @fnv 0x00709be0
-bool IsSomethingZero()
+// src: XBOX_DEBUG_PDB 0x00709be0
+// pdb: Interface::IsPipboyClosed | Interface.obj | debug, call graph (shared callers), high
+bool Interface_IsPipboyClosed()
 {
     return *(int*)((char*)InterfaceManager_GetSingleton() + 0x4bc) == 0;
 }
 
-void HUDMainMenu_InitGunScope(int a1);
+void HUDMainMenu_InitGunScope(int apModelFilename);
 
 // @fnv 0x00709c20
 // src: XBOX_PDB 0x00709c20
-void Interface_InitGunScope(int a1)
+// pdb: Interface::InitGunScope | Interface.obj | debug, upstream name already matches, high
+// pdb params: apModelFilename
+void Interface_InitGunScope(int apModelFilename)
 {
-    HUDMainMenu_InitGunScope(a1);
+    HUDMainMenu_InitGunScope(apModelFilename);
 }
 
 extern int DAT_011da204;
@@ -2640,6 +2850,7 @@ extern "C" unsigned char __cdecl Interface_GetFullHelp();
 // If FUN_004b7210 returns a Modifier whose GetKey is nonzero, returns the byte at offset 0xdd of that object; otherwise returns 0.
 // @fnv 0x00703150
 // src: XBOX_PDB 0x00703150
+// pdb: Interface::GetFullHelp | Interface.obj | debug, upstream name already matches, high
 unsigned char Interface_GetFullHelp()
 {
     if (InterfaceManager_GetSingleton() && reinterpret_cast<Modifier*>(InterfaceManager_GetSingleton())->GetKey())
@@ -2671,6 +2882,7 @@ class FUN_00714d90_struct
 
 // @fnv 0x00703e10
 // src: COMMUNITY 0x00703e10
+// pdb: Interface::OpenConsole | Interface.obj | retail, upstream name already matches, high
 void __cdecl Interface_OpenConsole()
 {
     if (InterfaceManager_GetSingleton() != 0 && ((Modifier*)InterfaceManager_GetSingleton())->GetKey() != 0 && ConsoleManager::Instance(0) != 0 &&
@@ -2688,7 +2900,7 @@ char __cdecl GetMapMenuFogOfWar()
 {
     if (DAT_011da368 != 0)
     {
-        return reinterpret_cast<char&>(DAT_011da368->m_bNeedsMapUpdate);
+        return reinterpret_cast<char&>(DAT_011da368->bFogOfWarEnabled);
     }
     else
     {
@@ -2706,6 +2918,7 @@ class Modifier
 // If FUN_004b7210() returns a modifier whose GetKey() is nonzero, returns its IsDone() result; otherwise returns -1.
 // @fnv 0x00705cb0
 // src: COMMUNITY 0x00705cb0
+// pdb: Interface::GetInventoryPageNumber | Interface.obj | debug, upstream name already matches, high
 char Interface_GetInventoryPageNumber()
 {
     if (InterfaceManager_GetSingleton() && reinterpret_cast<Modifier*>(InterfaceManager_GetSingleton())->GetKey())
@@ -2724,6 +2937,8 @@ extern TESSaveLoadGame* g_TESSaveLoadGame;
 
 // Reads the inventory, stats, map and magic tab values plus the current main menu, clamps each tab to at least 1, and writes them to the save/load game.
 // @fnv 0x00706610
+// pdb: Interface::SaveGame | Interface.obj | debug, call graph, high
+// pdb locals: icurrentMainMenu, acStatsTab, acMapTab, acInventoryTab, acMagicTab
 void __cdecl SaveMenuTabStates()
 {
     char acInventoryTab;
@@ -2761,6 +2976,9 @@ struct FUN_00406f90_this
 // Calls the object's FUN_00406f90 with apFormat and the address just past it, then returns its result.
 // @fnv 0x00406f60
 // src: XBOX_PDB 0x00406f60
+// pdb: BSStringT<char>::SPrintF | EffectItemList.obj | debug, call graph, medium
+// pdb params: apFormat, ires
+// pdb locals: marker
 int __cdecl BSStringT_char_SPrintF(FUN_00406f90_this* p, char const* apFormat, ...)
 {
     int ires;
@@ -2782,6 +3000,7 @@ struct FUN_00703060_shell
 // Calls FUN_00703060 with 0 when b7c is set, otherwise with 1.
 // @fnv 0x00703030
 // src: XBOX_PDB 0x00703030
+// pdb: InterfaceManager::ToggleDebugTextVisible | Interface.obj | debug, upstream name already matches, high
 void FUN_00703060_shell::InterfaceManager_ToggleDebugTextVisible()
 {
     if (b7c)
@@ -2803,10 +3022,12 @@ struct Holder
 // If FUN_004b7210() returns a non-null object whose GetKey() is nonzero, calls UpdateTilePosition(a1, a2) on it.
 // @fnv 0x00703080
 // src: COMMUNITY 0x00703080
-void Interface_SetCursorPos(float afValue1, float afValue2)
+// pdb: Interface::SetCursorPos | Interface.obj | debug, upstream name already matches, high
+// pdb params: afX, afY
+void Interface_SetCursorPos(float afX, float afY)
 {
     if (InterfaceManager_GetSingleton() && (unsigned char)reinterpret_cast<Modifier*>(InterfaceManager_GetSingleton())->GetKey())
-        reinterpret_cast<Holder*>(InterfaceManager_GetSingleton())->UpdateTilePosition(afValue1, afValue2);
+        reinterpret_cast<Holder*>(InterfaceManager_GetSingleton())->UpdateTilePosition(afX, afY);
 }
 }  // namespace fnv_00703080
 
@@ -2820,6 +3041,7 @@ class Modifier
 // If FUN_004b7210 returns a Modifier whose GetKey is nonzero, calls ClearMenuIDs on it.
 // @fnv 0x007037e0
 // src: XBOX_PDB 0x007037e0
+// pdb: Interface::EmergencyCloseAllMenusAndBreakStuff | Interface.obj | debug, upstream name already matches, high
 void Interface_EmergencyCloseAllMenusAndBreakStuff()
 {
     if (InterfaceManager_GetSingleton() && (unsigned char)reinterpret_cast<Modifier*>(InterfaceManager_GetSingleton())->GetKey())
@@ -2837,6 +3059,8 @@ InterfaceManager* InterfaceManager_GetSingleton();
 // If the interface manager exists and its modifier key is set, culls or unculls the tile's scene node according to abVisible.
 // @fnv 0x00703810
 // src: COMMUNITY 0x00703810
+// pdb: Interface::SetMenuSystemVisible | Interface.obj | debug, upstream name already matches, high
+// pdb params: abVisible
 void Interface_SetMenuSystemVisible(bool abVisible)
 {
     if (InterfaceManager_GetSingleton() && (unsigned char)((Modifier*)InterfaceManager_GetSingleton())->GetKey())
@@ -2858,6 +3082,7 @@ struct IdleAnimationManager
 // Returns FUN_00843150's result when FUN_004b7210 is non-null and GetKey is nonzero; otherwise returns -1.
 // @fnv 0x00705d10
 // src: COMMUNITY 0x00705d10
+// pdb: Interface::GetMagicPageNumber | Interface.obj | debug, upstream name already matches, high
 char Interface_GetMagicPageNumber()
 {
     if (InterfaceManager_GetSingleton() && (unsigned char)reinterpret_cast<Modifier*>(InterfaceManager_GetSingleton())->GetKey())
@@ -2878,6 +3103,7 @@ struct Byte15Accessor
 // If FUN_004b7210() returns a non-null object whose GetKey() is nonzero, returns the result of GetByte15() on it; otherwise returns -1.
 // @fnv 0x00705d50
 // src: COMMUNITY 0x00705d50
+// pdb: Interface::GetMapPageNumber | Interface.obj | debug, upstream name already matches, high
 char Interface_GetMapPageNumber()
 {
     if (InterfaceManager_GetSingleton() && (unsigned char)reinterpret_cast<Modifier*>(InterfaceManager_GetSingleton())->GetKey())
@@ -2894,6 +3120,7 @@ struct UnnamedClass_00705dd0
 };
 // @fnv 0x00705dd0
 // src: COMMUNITY 0x00705dd0
+// pdb: InterfaceManager::GetCurrentMainMenu | Interface.obj | debug, object-file gap fill, medium
 int UnnamedClass_00705dd0::InterfaceManager_GetLastPipboyTab()
 {
     return (int)m_9c->GetFloat(0x1771);
@@ -2917,6 +3144,7 @@ struct FUN_00706810_Class
 
 // @fnv 0x00706810
 // src: COMMUNITY 0x00706810
+// pdb: InterfaceManager::TutorialManager::GetSaveLoadSize | Interface.obj | debug, upstream name already matches, high
 int __thiscall FUN_00706810_Class::InterfaceManager_TutorialManager_GetSaveLoadSize()
 {
     return MinInt(1, 1) + 5;
@@ -2930,9 +3158,11 @@ Dummy00712450* __stdcall _FUN_004b7210(int, float, float);
 // Calls _FUN_004b7210 with a, b and c, then returns the result of SetNodeAlpha on the returned object.
 // @fnv 0x00707010
 // src: COMMUNITY 0x00707010
-int Interface_RecursiveFade(int aiArg, float afArg1, float afArg2)
+// pdb: Interface::RecursiveFade | Interface.obj | debug, upstream name already matches, high
+// pdb params: apNode, afAmount, afLastAlpha
+int Interface_RecursiveFade(int apNode, float afAmount, float afLastAlpha)
 {
-    return _FUN_004b7210(aiArg, afArg1, afArg2)->SetNodeAlpha();
+    return _FUN_004b7210(apNode, afAmount, afLastAlpha)->SetNodeAlpha();
 }
 
 class NiQuaternion;
@@ -2956,7 +3186,10 @@ struct TutorialState
 void* memset(void*, int, unsigned int);
 // Reads menu page indices and map magnifications from the load buffer, applies them to the UI, and reads a settings blob when the version is at least 12.
 // @fnv 0x00706860
-void LoadMenuState(BGSLoadGameBuffer* apLoadGameBuffer)
+// src: XBOX_RETAIL_PDB 0x00706860
+// pdb: Interface::LoadGame | Interface.obj | retail, call graph, high
+// pdb locals: icurrentMainMenu, acStatsTab, acMapTab, acInventoryTab, acMagicTab
+void Interface_LoadGame(BGSLoadGameBuffer* apLoadGameBuffer)
 {
     unsigned char cstatsPage;
     int ifrontMostMenu;
@@ -3019,6 +3252,8 @@ void __cdecl CloseStartMenu(bool);
 
 // @fnv 0x00703610
 // src: XBOX_PDB 0x00703610
+// pdb: Interface::HideMenus | Interface.obj | retail, upstream name already matches, high
+// pdb locals: pinv, prepair, pstat, pim, pmap, pitemmod
 void __cdecl Interface_HideMenus()
 {
     Tile* pinv;
@@ -3083,6 +3318,8 @@ Menu* __cdecl FindMenuById(int);
 // Checks the current modifier and interface menu, resolves a tile for the active menu, and returns whether its menu's thread ID equals 1.
 // @fnv 0x007024e0
 // src: COMMUNITY 0x007024e0
+// pdb: Interface::IsTopMenuFadedIn | Interface.obj | retail, upstream name already matches, high
+// pdb locals: ptile, topid
 bool Interface_IsTopMenuFadedIn()
 {
     Tile* ptile;
@@ -3162,6 +3399,9 @@ void __cdecl ResetRepairMenu();
 void __cdecl MapMenu_SetKnobPosition(bool);
 
 // @fnv 0x00704170
+// pdb: Interface::SetMapMenuVisible | Interface.obj | retail, call graph, high
+// pdb params: abVisibility, abAnyVisibleState
+// pdb locals: pinv, prepair, bis_vis, pstat, pmap, pitemmod
 void __cdecl UpdatePipboyMapVisibility(bool abVisibility, bool abAnyVisibleState)
 {
     if (InterfaceManager_GetSingleton() != 0 && reinterpret_cast<Modifier*>(InterfaceManager_GetSingleton())->GetKey() != 0)
@@ -3216,7 +3456,7 @@ void __cdecl UpdatePipboyMapVisibility(bool abVisibility, bool abAnyVisibleState
             if (pmap != 0)
                 reinterpret_cast<Menu*>(pmap->GetMenu())->UnloadMenuData();
 
-            MapMenu::MenuDepthController();
+            MapMenu::UpdateMenu();
         }
         else if (!abVisibility && bMapVisible)
         {
@@ -3256,6 +3496,7 @@ Modifier* __cdecl _FUN_004b7210();
 
 // @fnv 0x007056f0
 // src: COMMUNITY 0x007056f0
+// pdb: SleepWaitMenu::UpdateSleeping | SleepWaitMenu.obj | retail, upstream name already matches, high
 bool SleepWaitMenu_UpdateSleeping()
 {
     SleepWaitMenu* pSleepWaitMenu;
@@ -3282,6 +3523,7 @@ class FUN_004b7210_class
 // Returns the perk list from the object obtained via _FUN_004b7210 when its key is nonzero, otherwise returns null.
 // @fnv 0x00705950
 // src: XBOX_PDB 0x00705950
+// pdb: Interface::GetHUDEffects | Interface.obj | debug, upstream name already matches, high
 BSSimpleList<BGSPerk*>* Interface_GetHUDEffects()
 {
     if (_FUN_004b7210() && _FUN_004b7210()->GetKey())
@@ -3313,7 +3555,11 @@ extern unsigned int __security_cookie;
 
 // Looks up a game or INI setting by name (stripping a leading '&' or '-') and writes its string, int, float or bool value into axStringOut.
 // @fnv 0x007073d0
-bool ResolveSettingString(const char* apString, char* apValueOut)
+// src: XBOX_RETAIL_PDB 0x007073d0
+// pdb: Interface::TestConstantForGameSettings | Interface.obj | retail, string-set bridge, high
+// pdb params: apString, axStringOut
+// pdb locals: psetting, istartIndex, xstr
+bool Interface_TestConstantForGameSettings(const char* apString, char* axStringOut)
 {
     Setting* psetting;
     int istartIndex;
@@ -3345,24 +3591,24 @@ bool ResolveSettingString(const char* apString, char* apValueOut)
     {
         if (xstr[0] == 's' || xstr[0] == 'S')
         {
-            ___insecure_strcpy(apValueOut, psetting->String());
+            ___insecure_strcpy(axStringOut, psetting->String());
         }
         else if (xstr[0] == 'i' || xstr[0] == 'I')
         {
             _sprintf(xstr, "%i", *psetting->Int());
-            ___insecure_strcpy(apValueOut, xstr);
+            ___insecure_strcpy(axStringOut, xstr);
         }
         else if (xstr[0] == 'f' || xstr[0] == 'F')
         {
             _sprintf(xstr, "%i", *psetting->Float());
-            ___insecure_strcpy(apValueOut, xstr);
+            ___insecure_strcpy(axStringOut, xstr);
         }
         else if (xstr[0] == 'b' || xstr[0] == 'B')
         {
             if (*psetting->Bool() == 1)
-                ___insecure_strcpy(apValueOut, "&true;");
+                ___insecure_strcpy(axStringOut, "&true;");
             else
-                ___insecure_strcpy(apValueOut, "&false;");
+                ___insecure_strcpy(axStringOut, "&false;");
         }
 
         return true;
@@ -3397,18 +3643,21 @@ class TL
 NiAVObject* __fastcall GetCursorSceneNode(InterfaceManager*);
 
 void* _FUN_004b7210();
-void UpdateVisibility(void*, bool, bool, bool);
+void Interface_IsolateElementsOfMenu(void*, bool, bool, bool);
 
 // @fnv 0x00702c80
 // src: COMMUNITY 0x00702c80
-void Interface_IsolateMenuElements(bool abFlag1, bool abFlag2)
+// pdb: Interface::IsolateMenuElements | Interface.obj | retail, upstream name already matches, high
+// pdb params: abGlowOnly, abPipBoyOnly
+// pdb locals: xelem, proot, pim, pmenutile
+void Interface_IsolateMenuElements(bool abGlowOnly, bool abPipBoyOnly)
 {
     if (_FUN_004b7210())
     {
         if (reinterpret_cast<Modifier*>(_FUN_004b7210())->GetKey())
         {
             void* current = _FUN_004b7210();
-            if (abFlag1 && !abFlag2)
+            if (abGlowOnly && !abPipBoyOnly)
             {
                 reinterpret_cast<List_009e03e0*>(reinterpret_cast<char*>(current) + 0x4c4)->RemoveAll();
             }
@@ -3422,10 +3671,10 @@ void Interface_IsolateMenuElements(bool abFlag1, bool abFlag2)
                 void* item =
                     *reinterpret_cast<void**>(reinterpret_cast<TL*>(reinterpret_cast<char*>(p2) + 4)->GetNext(tile));
 
-                UpdateVisibility(item, abFlag1, abFlag2, true);
+                Interface_IsolateElementsOfMenu(item, abGlowOnly, abPipBoyOnly, true);
             }
 
-            if (!abFlag1 && !abFlag2)
+            if (!abGlowOnly && !abPipBoyOnly)
             {
                 if (GetInterfaceAuxiliaryNode(reinterpret_cast<InterfaceManager*>(_FUN_004b7210())))
                 {
@@ -3471,7 +3720,7 @@ struct StubTile
 struct StubPipboy
 {
     void DoA();
-    void ActivateBtn(unsigned int button);
+    void ActivateBtn(unsigned int aiButton);
     bool IsInit();
 };
 struct StubIM
@@ -3485,11 +3734,14 @@ StubTile* __cdecl MenuByClass(int aiClass);
 bool __cdecl MenuVisible(int aiID, unsigned int auFade);
 StubTile* __cdecl CreateMenuX();
 void __cdecl AfterCloseX();
-void __cdecl SetPipboyX(bool ab);
+void __cdecl SetPipboyX(bool abPlaySounds);
 
 // @fnv 0x007044c0
 // src: XBOX_PDB 0x007044c0
-void Interface_SetRepairMenuVisible(bool abShow, bool abInstant, bool abActivate)
+// pdb: Interface::SetRepairMenuVisible | Interface.obj | retail, upstream name already matches, high
+// pdb params: abVisibility, abAnyVisibleState, abTriggerPipboyEffect
+// pdb locals: pinv, prepair, bisVisible, pstat, pmap, pitemmod
+void Interface_SetRepairMenuVisible(bool abVisibility, bool abAnyVisibleState, bool abTriggerPipboyEffect)
 {
     if (GetIM() && GetIM()->KeyX())
     {
@@ -3498,8 +3750,8 @@ void Interface_SetRepairMenuVisible(bool abShow, bool abInstant, bool abActivate
         StubTile* pCA = MenuByClass(0x40b);
         StubTile* pD = MenuByClass(0x425);
         StubTile* pE2 = MenuByClass(0x3ff);
-        bool bVisible = MenuVisible(0x40b, abInstant ? 0xb : 0);
-        if (abShow)
+        bool bVisible = MenuVisible(0x40b, abAnyVisibleState ? 0xb : 0);
+        if (abVisibility)
         {
             if (!pCA)
                 pCA = CreateMenuX();
@@ -3521,7 +3773,7 @@ void Interface_SetRepairMenuVisible(bool abShow, bool abInstant, bool abActivate
             }
             if (pCA)
                 GetIM()->RootX()->SetX(0x1771, 0x40b);
-            if (abActivate)
+            if (abTriggerPipboyEffect)
             {
                 GetIM()->PipboyX()->DoA();
                 GetIM()->PipboyX()->ActivateBtn(2);
@@ -3529,7 +3781,7 @@ void Interface_SetRepairMenuVisible(bool abShow, bool abInstant, bool abActivate
             if (GetIM()->PipboyX()->IsInit())
                 SetPipboyX(false);
         }
-        else if (!abShow && bVisible && pCA)
+        else if (!abVisibility && bVisible && pCA)
         {
             pCA->GetMenuX()->CloseA();
         }
@@ -3703,8 +3955,8 @@ class B706130Manager
 };
 
 B706130Manager* __cdecl B706130GetManager();
-B706130Tile* __cdecl CreateComputerMenu(int m_uiSoundID);
-void __cdecl B706130UpdateAllTiles(bool bForce);
+B706130Tile* __cdecl ComputersMenu_Create(int apTerminalRef);
+void __cdecl B706130UpdateAllTiles(bool abDoNiUpdate);
 
 extern Setting g_kB706130Setting;
 
@@ -3714,7 +3966,7 @@ bool __cdecl Interface_CreateComputerMenu(int m_uiSoundID)
 {
     if (B706130GetManager() && B706130GetManager()->GetKey())
     {
-        B706130Tile* pkTile = CreateComputerMenu(m_uiSoundID);
+        B706130Tile* pkTile = ComputersMenu_Create(m_uiSoundID);
         B706130UpdateAllTiles(false);
         if (*g_kB706130Setting.Bool())
         {
@@ -3750,22 +4002,25 @@ struct FUN_00707870_Target
 };
 
 extern FUN_00707870_Owner* DAT_011dea10;
-bool __cdecl HasMorpherController(unsigned int a);
+bool __cdecl HasMorpherController(unsigned int apObj);
 
 // Constructs a temporary with value 1.0 and dispatches it to DAT_011dea10 or to the object at a1 depending on FUN_004b5bf0(a1).
 // @fnv 0x00707870
 // src: COMMUNITY 0x00707870
-unsigned int __cdecl Interface_CopyOrDeepCopyNode(unsigned int a1)
+// pdb: Interface::CopyOrDeepCopyNode | Interface.obj | retail, upstream name already matches, high
+// pdb params: apNode
+// pdb locals: cloneData
+unsigned int __cdecl Interface_CopyOrDeepCopyNode(unsigned int apNode)
 {
     unsigned int pad[6];
     FUN_00707870_Temp t(1.0f);
-    if (HasMorpherController(a1) != 0)
+    if (HasMorpherController(apNode) != 0)
     {
-        return DAT_011dea10->TES_CreateDeepCopySameTextures(a1, &t);
+        return DAT_011dea10->TES_CreateDeepCopySameTextures(apNode, &t);
     }
     else
     {
-        return reinterpret_cast<FUN_00707870_Target*>(a1)->FUN_00a5d2c0(&t);
+        return reinterpret_cast<FUN_00707870_Target*>(apNode)->FUN_00a5d2c0(&t);
     }
 }
 
@@ -3780,6 +4035,7 @@ void ProgramFlow(const char* pcMessage);
 // Switches on ConsumeByteAtE4: for 1 or 3 warns and exits the process, for 2 calls FUN_00703fd0.
 // @fnv 0x0086a530
 // src: COMMUNITY 0x0086a530
+// pdb: MessageMenuCallback | Main.obj | debug, upstream name already matches, high
 void MessageMenuCallback()
 {
     switch (ConsumeByteAtE4())
@@ -4182,6 +4438,8 @@ struct Player
 };
 // Returns early if the player is busy or the active object is type 26; otherwise builds a menu context, opens a dialog, and activates the interface.
 // @fnv 0x008a7760
+// pdb: Actor::InitiateBackUpPackage | Actor.obj | debug, call graph, medium
+// pdb locals: pBackUpPack, pPack, ppack
 void Player::OpenDialogMenu()
 {
     ActiveObject* active = FUN_008d8520()->CurrentObject();
@@ -4520,33 +4778,37 @@ struct VisibilityManager
 };
 
 // @fnv 0x00702990
-void UpdateVisibility(Tile* tile, bool show, bool alternate, bool queue)
+// src: XBOX_RETAIL_PDB 0x00702990
+// pdb: Interface::IsolateElementsOfMenu | Interface.obj | retail, object-file run extension, high
+// pdb params: apMenuTile, abGlowOnly, abPipBoyOnly, abUpdateGlowBranchList
+// pdb locals: bfound_glow, xelem2, bis_pipboy, proot, bfound_noglow, pim, pglow, pnoglow, ptile
+void Interface_IsolateElementsOfMenu(Tile* apMenuTile, bool abGlowOnly, bool abPipBoyOnly, bool abUpdateGlowBranchList)
 {
-    if (!tile)
+    if (!apMenuTile)
         return;
     Tile* _node = InterfaceManager_GetSingleton()->CombatController_GetCombatState();
     InterfaceManager* current = InterfaceManager_GetSingleton();
     bool _unused = false;
     bool _found = false;
-    bool _visible = tile->FUN_00a011b0(0xfaa) == 112.0;
-    if ((alternate && !_visible) || (!alternate && _visible))
-        tile->SetInt(0x1779, 0);
+    bool _visible = apMenuTile->FUN_00a011b0(0xfaa) == 112.0;
+    if ((abPipBoyOnly && !_visible) || (!abPipBoyOnly && _visible))
+        apMenuTile->SetInt(0x1779, 0);
     else
-        tile->SetInt(0x1779, 1);
+        apMenuTile->SetInt(0x1779, 1);
 
-    void* _n = ((TileListAccess*)&tile->m_kChildTileList)->GetHeadPos();
+    void* _n = ((TileListAccess*)&apMenuTile->xChildren)->GetHeadPos();
     while (_n)
     {
-        Tile* _first = (Tile*)((TileListAccess*)&_node->m_kChildTileList)->GetNext(_n);
+        Tile* _first = (Tile*)((TileListAccess*)&_node->xChildren)->GetNext(_n);
         Tile* _child = _first->FUN_00a011b0(0xfaa) == 110.0 ? _first : 0;
         Tile* _second = _first->FUN_00a011b0(0xfaa) == 111.0 ? _first : 0;
         if (_child)
         {
             _unused = true;
-            if (show)
+            if (abGlowOnly)
             {
                 _child->SetInt(0x1779, 1);
-                if (queue && !alternate && !_visible)
+                if (abUpdateGlowBranchList && !abPipBoyOnly && !_visible)
                     ((VisibilityManager*)current)->visibilityQueue.AddTail(_child);
             }
             else
@@ -4557,7 +4819,7 @@ void UpdateVisibility(Tile* tile, bool show, bool alternate, bool queue)
         if (_second)
         {
             _found = true;
-            if (!show)
+            if (!abGlowOnly)
                 _second->SetInt(0x1779, 1);
             else
                 _second->SetInt(0x1779, 0);
@@ -4570,11 +4832,11 @@ void UpdateVisibility(Tile* tile, bool show, bool alternate, bool queue)
         if (_second && ((Tile*)_second)->GetModel_0056c7f0())
             ((Tile*)_second)
                 ->GetModel_0056c7f0()
-                ->SetAppCulled(show || ((Tile*)_second)->FUN_00a011b0(0xfa3) == 0.0 ||
+                ->SetAppCulled(abGlowOnly || ((Tile*)_second)->FUN_00a011b0(0xfa3) == 0.0 ||
                                ((Tile*)_second)->FUN_00a011b0(0x1779) == 0.0);
     }
-    if (tile->GetModel_0056c7f0())
-        tile->GetModel_0056c7f0()->SetAppCulled(tile->FUN_00a011b0(0xfa3) == 0.0 || tile->FUN_00a011b0(0x1779) == 0.0);
+    if (apMenuTile->GetModel_0056c7f0())
+        apMenuTile->GetModel_0056c7f0()->SetAppCulled(apMenuTile->FUN_00a011b0(0xfa3) == 0.0 || apMenuTile->FUN_00a011b0(0x1779) == 0.0);
 }
 
 
@@ -4601,16 +4863,19 @@ public:
 
 // If the menu is open, walks the root tile's children and culls each tile's node when its float at 0xfa3 or 0x1779 is zero.
 // @fnv 0x00702dd0
-void UpdateMenuTileVisibility()
+// src: XBOX_RETAIL_PDB 0x00702dd0
+// pdb: Interface::RestoreMenuElements | Interface.obj | retail, call graph (shared callers), high
+// pdb locals: xelem, proot, pglow, pnoglow, pmenutile
+void Interface_RestoreMenuElements()
 {
     if (InterfaceManager_GetSingleton() && static_cast<InterfaceManager*>(InterfaceManager_GetSingleton())->TESTextureList_GetTextureCount())
     {
         Tile* pRoot4 = InterfaceManager_GetSingleton()->CombatController_GetCombatState();
-        void* pPosVal = reinterpret_cast<TileChildList_interface*>(&pRoot4->m_kChildTileList)->GetHeadPos();
+        void* pPosVal = reinterpret_cast<TileChildList_interface*>(&pRoot4->xChildren)->GetHeadPos();
         while (pPosVal)
         {
             Tile* pTile2 =
-                static_cast<Tile*>(reinterpret_cast<TileChildList_interface*>(&pRoot4->m_kChildTileList)->GetNext(pPosVal));
+                static_cast<Tile*>(reinterpret_cast<TileChildList_interface*>(&pRoot4->xChildren)->GetNext(pPosVal));
             Tile* pChildA2 = static_cast<Tile*>(pTile2->GetChildById(0x6e));
             Tile* pChildB5 = static_cast<Tile*>(pTile2->GetChildById(0x6f));
             pTile2->SetInt(0x1779, 1);
@@ -4633,6 +4898,7 @@ void UpdateMenuTileVisibility()
 // If FUN_004b7210 returns non-null and its FUN_009373f0 check passes, flips the byte at offset 0xdd of its padding field between 0 and 1.
 // @fnv 0x00703100
 // src: COMMUNITY 0x00703100
+// pdb: Interface::ToggleFullHelp | Interface.obj | debug, call graph, medium
 void __cdecl ToggleFullHelp()
 {
     if (InterfaceManager_GetSingleton() != 0)
@@ -4650,6 +4916,8 @@ extern "C" void __cdecl Interface_SetInventoryMenuVisible(int, int, int);
 extern "C" void __cdecl ShowStatsMenu(int, int);
 
 // @fnv 0x00703500
+// pdb: Interface::ShowMenus | Interface.obj | debug, call graph, high
+// pdb locals: ifrontmost, pim
 void __cdecl HandleMenuKeyInput(void)
 {
     if (InterfaceManager_GetSingleton() != 0)
@@ -4681,11 +4949,13 @@ void __cdecl HandleMenuKeyInput(void)
     }
 }
 
-bool __cdecl QueueMessage(int a1, int a2, int a3, int a4, int a5, int a6, int a7, int a10, va_list* args, int enabled,
-                          int left, int right, float zero, float x, float y);
+bool __cdecl QueueMessage(int axText, int apcIconFilename, int apcTitle, int apcSound, int afpResult, int aiFirstButtonResult, int aiWarningContext, int axFirst, va_list* axList, int abModal,
+                          int aiXPosOverride, int aiYPosOverride, float afSecondsVisible, float afBackgroundTextureOpacityOverride, float afMenuWidthOverride);
 
 // @fnv 0x00703f10
 // src: COMMUNITY 0x00703f10
+// pdb: Interface::CreateMessageMenuSound | Interface.obj | retail, upstream name already matches, high
+// pdb params: aText, apcIconFilename, apcTitle, apcSound, afpResult, aiFirstButtonResult, aiWarningContext, afBackgroundTextureOpacityOverride, afMenuWidthOverride, axFirst, xlist
 bool __cdecl Interface_CreateMessageMenuSound(int a1, int a2, int a3, int a4, int a5, int a6, int a7, float x, float y, int a10, ...)
 {
     if (InterfaceManager_GetSingleton() && ((InterfaceManager*)InterfaceManager_GetSingleton())->TESTextureList_GetTextureCount())
@@ -4705,7 +4975,7 @@ typedef MSG WinMessage;
 
 struct InterfaceControl
 {
-    void FUN_007010e0(bool, bool);
+    void RemoveFader(bool, bool);
 };
 extern InterfaceInterfaceView* DAT_011d8804;
 bool __cdecl QueueMessage(const char*, int, int, int, void (*)(), int, int, int, va_list*, bool, int, int, float, float,
@@ -4721,15 +4991,18 @@ extern OSGlobals* g_osGlobals;
 void Interface_PreIdleStuff();
 void Interface_Idle();
 void Interface_PostIdleStuff();
-void RenderOrFallback(int, int);
-void Object_ProcessState_00702960();
+void Interface_Click(int, int);
+void Interface_SwapBuffers();
 // @fnv 0x00704010
 // src: COMMUNITY 0x00704010
+// pdb: Interface::CreateModalMessageMenu | Interface.obj | retail, upstream name already matches, high
+// pdb params: aText, aiFirstButtonResult, aiWarningContext, axFirst, bresult
+// pdb locals: xlist
 char __cdecl Interface_CreateModalMessageMenu(const char* text, int aiArg1, int aiArg2, int aiArg3, ...)
 {
     DAT_0119f349 = -1;
     bool success = false;
-    ((InterfaceControl*)DAT_011d8804)->FUN_007010e0(true, true);
+    ((InterfaceControl*)DAT_011d8804)->RemoveFader(true, true);
     if (InterfaceManager_GetSingleton() && ((InterfaceManager*)InterfaceManager_GetSingleton())->TESTextureList_GetTextureCount())
     {
         va_list args;
@@ -4753,8 +5026,8 @@ char __cdecl Interface_CreateModalMessageMenu(const char* text, int aiArg1, int 
             Interface_PreIdleStuff();
             Interface_Idle();
             Interface_PostIdleStuff();
-            RenderOrFallback(0, 0);
-            Object_ProcessState_00702960();
+            Interface_Click(0, 0);
+            Interface_SwapBuffers();
         }
         return DAT_0119f349;
     }
@@ -4764,7 +5037,7 @@ char __cdecl Interface_CreateModalMessageMenu(const char* text, int aiArg1, int 
 struct MenuProxy
 {
     void FUN_00a1d910();
-    void InitializeStatsMenu();
+    void StatsMenu_UpdateAll();
     void FUN_00a1db20();
 };
 struct TileProxy
@@ -4775,7 +5048,7 @@ TileProxy* Tile_GetMenuByClass(int);
 TileProxy* Interface_CreateStatsMenu();
 void ResetRepairMenu();
 void ResetItemModMenu();
-void PlayPipboyPageSound(bool);
+void StatsMenu_SetKnobPosition(bool);
 struct PipProxy
 {
     void FOPipboyManager_TriggerRandomEffect();
@@ -4788,7 +5061,10 @@ struct InterfaceProxy
 };
 // Shows or hides the stats menu and its related tiles, updating the Pip-Boy interface when shown.
 // @fnv 0x00704c10
-void ShowStatsMenu(bool show, bool fades)
+// pdb: Interface::SetStatsMenuVisible | Interface.obj | retail, call graph, high
+// pdb params: abVisibility, abAnyVisibleState
+// pdb locals: pinv, prepair, bis_vis, pstat, pmap, pitemmod
+void ShowStatsMenu(bool abVisibility, bool abAnyVisibleState)
 {
     if (InterfaceManager_GetSingleton() && ((InterfaceManager*)InterfaceManager_GetSingleton())->TESTextureList_GetTextureCount())
     {
@@ -4797,8 +5073,8 @@ void ShowStatsMenu(bool show, bool fades)
         TileProxy* repair2 = Tile_GetMenuByClass(1035);
         TileProxy* barterX = Tile_GetMenuByClass(1061);
         TileProxy* map3 = Tile_GetMenuByClass(1023);
-        bool visible2 = Interface_IsMenuIDVisible(InterfaceInterfaceView::eStatsMenu, fades ? 11 : 0);
-        if (show && !visible2)
+        bool visible2 = Interface_IsMenuIDVisible(InterfaceInterfaceView::eStatsMenu, abAnyVisibleState ? 11 : 0);
+        if (abVisibility && !visible2)
         {
             if (inv)
                 inv->Tile_GetMenu()->FUN_00a1d910();
@@ -4819,21 +5095,21 @@ void ShowStatsMenu(bool show, bool fades)
             if (stats)
             {
                 InterfaceManager_GetSingleton()->CombatController_GetCombatState()->SetInt(6001, 1003);
-                stats->Tile_GetMenu()->InitializeStatsMenu();
+                stats->Tile_GetMenu()->StatsMenu_UpdateAll();
                 stats->Tile_GetMenu()->FUN_00a1db20();
             }
         }
-        else if (!show && visible2)
+        else if (!abVisibility && visible2)
         {
             if (stats)
                 stats->Tile_GetMenu()->FUN_00a1d910();
         }
-        if (show)
+        if (abVisibility)
         {
             ((InterfaceProxy*)InterfaceManager_GetSingleton())->FUN_00704370()->FOPipboyManager_TriggerRandomEffect();
             ((InterfaceProxy*)InterfaceManager_GetSingleton())->FUN_00704370()->FUN_007fa010(1);
             if (((InterfaceProxy*)InterfaceManager_GetSingleton())->FUN_00704370()->IsUnk28Set())
-                PlayPipboyPageSound(false);
+                StatsMenu_SetKnobPosition(false);
         }
     }
 }
@@ -4857,7 +5133,7 @@ struct DecompVec3
 
 struct DecompTarget
 {
-    void HUDMainMenu_ShowSubtitle(int a1, DecompArg12 a2, DecompVec3 a3, int a4, bool a5);
+    void HUDMainMenu_ShowSubtitle(int apString, DecompArg12 ahandle, DecompVec3 aSpeakerLoc, int apTarget, bool abForceShow);
 };
 
 extern unsigned int DAT_011d96c0;
@@ -4865,12 +5141,15 @@ extern unsigned int DAT_011d96c0;
 // If the interface manager and its shell are available and DAT_011d96c0 is set, forwards the arguments to FUN_00774fd0 on DAT_011d96c0; always returns false.
 // @fnv 0x00705210
 // src: XBOX_PDB 0x00705210
-bool __cdecl Interface_ShowSubtitle(int aiArg1, DecompArg12 aArg12, DecompVec3 aVec3, int aiArg4, bool a5)
+// pdb: Interface::ShowSubtitle | Interface.obj | retail, upstream name already matches, high
+// pdb params: apString, ahandle, aSpeakerLoc, apTarget, abForceShow
+// pdb locals: tempMemContext
+bool __cdecl Interface_ShowSubtitle(int apString, DecompArg12 ahandle, DecompVec3 aSpeakerLoc, int apTarget, bool abForceShow)
 {
     AutoMemContext guard(13, 1, "D:\\_Fallout3\\Platforms\\Common\\Code\\Fallout\\Interface\\Interface.cpp", 0x8ec);
     if (InterfaceManager_GetSingleton() && ((InterfaceManager*)InterfaceManager_GetSingleton())->TESTextureList_GetTextureCount() && DAT_011d96c0)
     {
-        ((DecompTarget*)DAT_011d96c0)->HUDMainMenu_ShowSubtitle(aiArg1, aArg12, aVec3, aiArg4, a5);
+        ((DecompTarget*)DAT_011d96c0)->HUDMainMenu_ShowSubtitle(apString, ahandle, aSpeakerLoc, apTarget, abForceShow);
     }
     return false;
 }
@@ -4882,6 +5161,7 @@ struct FUN_0047ee30_shell : public InterfaceManager
 
 // If FUN_004b7210 returns a non-null object whose FUN_009373f0 is true, returns its GetAssistance result; otherwise returns -1.
 // @fnv 0x00705c70
+// pdb: Interface::GetStatsPageNumber | Interface.obj | debug, call graph, medium
 extern "C" char __cdecl GetInterfaceManagerResult()
 {
     if (InterfaceManager_GetSingleton() && reinterpret_cast<InterfaceManager*>(InterfaceManager_GetSingleton())->TESTextureList_GetTextureCount())
@@ -4912,7 +5192,9 @@ float GetTileFloatOrDefault();
 void ourMemset(void*, int, unsigned);
 // @fnv 0x007066d0
 // src: COMMUNITY 0x007066d0
-void Interface_SaveGame(Buffer* buffer)
+// pdb: Interface::SaveGame | Interface.obj | retail, call graph, high
+// pdb locals: icurrentMainMenu, acStatsTab, acMapTab, acInventoryTab, acMagicTab
+void Interface_SaveGame(Buffer* apSaveGameBuffer)
 {
     char y[100];
     float text;
@@ -4920,19 +5202,19 @@ void Interface_SaveGame(Buffer* buffer)
     char third = GetStatsMenuPage();
     unsigned char x = InventoryMenu_GetCurrentInventoryPage();
     char value = MapMenu_GetCurrentMapPage();
-    buffer->SaveData(&length, 4, 0);
-    buffer->SaveData(&third, 1, 0);
-    buffer->SaveData(&x, 1, 0);
-    buffer->SaveData(&value, 1, 0);
+    apSaveGameBuffer->SaveData(&length, 4, 0);
+    apSaveGameBuffer->SaveData(&third, 1, 0);
+    apSaveGameBuffer->SaveData(&x, 1, 0);
+    apSaveGameBuffer->SaveData(&value, 1, 0);
     float first = GetMapMenuFloatSetting();
     text = GetTileFloatOrDefault();
-    buffer->SaveData(&first, 4, 0);
-    buffer->SaveData(&text, 4, 0);
+    apSaveGameBuffer->SaveData(&first, 4, 0);
+    apSaveGameBuffer->SaveData(&text, 4, 0);
     ourMemset(y, 0, 100);
     int second = InterfaceManager_GetSingleton()->kTutorialManager.GetSaveLoadSize();
     reinterpret_cast<TutorialState*>(&InterfaceManager_GetSingleton()->kTutorialManager)->GetData(y);
-    buffer->SaveData(&second, 4, 0);
-    buffer->SaveData(y, second, 0);
+    apSaveGameBuffer->SaveData(&second, 4, 0);
+    apSaveGameBuffer->SaveData(y, second, 0);
 }
 
 struct FUN_00703960_Class
@@ -4959,10 +5241,10 @@ struct Player_StandIn : public PlayerCharacter
     int GetSex();
 };
 
-int __cdecl FindSettingIndex(const char* apName);
-void __cdecl GetControlLabel(int a1, char* a2, bool a3);
-bool __cdecl ResolveSettingString(const char* a1, char* a2);
-TESForm* __cdecl FUN_00483a00(const char* apName);
+int __cdecl Interface_MatchTextReplaceConstantToGameSettings(const char* apString);
+void __cdecl Interface_GetControlPushTextFor(int aiIndex, char* axReturn, bool abAddPushText);
+bool __cdecl Interface_TestConstantForGameSettings(const char* a1, char* axStringOut);
+TESForm* __cdecl FUN_00483a00(const char* apSearchID);
 
 int __cdecl sprintf_s(char* apBuffer, unsigned int auiBufferSize, const char* apFormat, ...);
 int __cdecl CopyInterfaceString(char* apDest, unsigned int auiDestSize, const char* apSrc);
@@ -4970,71 +5252,75 @@ int __cdecl CompareInterfaceStringsIgnoreCase(const char* apStr1, const char* ap
 
 // @fnv 0x007070c0
 // src: XBOX_PDB 0x007070c0
-bool __cdecl Interface_FindTextReplacementString(const char* apName, char* apBuffer, unsigned int auiBufferSize, bool abArg4)
+// pdb: Interface::FindTextReplacementString | Interface.obj | retail, string-set bridge, high
+// pdb params: apString, apOutBuffer, aiBufferSize, abAddPushText
+// pdb locals: bfound, iindex, pform, pglob
+bool __cdecl Interface_FindTextReplacementString(const char* apString, char* apOutBuffer, unsigned int aiBufferSize, bool abAddPushText)
 {
     bool bFound = false;
-    if (apName && *apName && apBuffer && auiBufferSize)
+    if (apString && *apString && apOutBuffer && aiBufferSize)
     {
-        int iSettingIndex = FindSettingIndex(apName);
+        int iSettingIndex = Interface_MatchTextReplaceConstantToGameSettings(apString);
         if (iSettingIndex < 28)
         {
-            GetControlLabel(iSettingIndex, apBuffer, abArg4);
+            Interface_GetControlPushTextFor(iSettingIndex, apOutBuffer, abAddPushText);
             bFound = true;
         }
         if (!bFound)
         {
-            TESForm* pForm = FUN_00483a00(apName);
+            TESForm* pForm = FUN_00483a00(apString);
             if (pForm && ((TESForm*)pForm)->FUN_00401170() == 6)
             {
                 TESGlobal* pGlobalForm = (TESGlobal*)pForm;
                 if (GetGlobalValueType(pGlobalForm) == 'f')
                 {
-                    sprintf_s(apBuffer, auiBufferSize, "%.2f", pGlobalForm->GetValue());
+                    sprintf_s(apOutBuffer, aiBufferSize, "%.2f", pGlobalForm->GetValue());
                 }
                 else
                 {
-                    sprintf_s(apBuffer, auiBufferSize, "%i", (int)pGlobalForm->GetValue());
+                    sprintf_s(apOutBuffer, aiBufferSize, "%i", (int)pGlobalForm->GetValue());
                 }
                 bFound = true;
             }
         }
-        if (!bFound && CompareInterfaceStringsIgnoreCase(apName, "PCName") == 0)
+        if (!bFound && CompareInterfaceStringsIgnoreCase(apString, "PCName") == 0)
         {
-            CopyInterfaceString(apBuffer, auiBufferSize, ((Player_StandIn*)g_thePlayer)->GetFullName());
+            CopyInterfaceString(apOutBuffer, aiBufferSize, ((Player_StandIn*)g_thePlayer)->GetFullName());
             bFound = true;
         }
-        if (!bFound && CompareInterfaceStringsIgnoreCase(apName, "PCRace") == 0)
+        if (!bFound && CompareInterfaceStringsIgnoreCase(apString, "PCRace") == 0)
         {
-            CopyInterfaceString(apBuffer, auiBufferSize, ((Player_StandIn*)g_thePlayer)->Actor_GetRaceFullName());
+            CopyInterfaceString(apOutBuffer, aiBufferSize, ((Player_StandIn*)g_thePlayer)->Actor_GetRaceFullName());
             bFound = true;
         }
-        if (!bFound && CompareInterfaceStringsIgnoreCase(apName, "PCSex") == 0)
+        if (!bFound && CompareInterfaceStringsIgnoreCase(apString, "PCSex") == 0)
         {
-            CopyInterfaceString(apBuffer, auiBufferSize, DAT_0119b354[((Player_StandIn*)g_thePlayer)->GetSex()]->String());
+            CopyInterfaceString(apOutBuffer, aiBufferSize, DAT_0119b354[((Player_StandIn*)g_thePlayer)->GetSex()]->String());
             bFound = true;
         }
-        if (!bFound && CompareInterfaceStringsIgnoreCase(apName, "PCSexPronoun") == 0)
+        if (!bFound && CompareInterfaceStringsIgnoreCase(apString, "PCSexPronoun") == 0)
         {
-            CopyInterfaceString(apBuffer, auiBufferSize, DAT_0119b364[((Player_StandIn*)g_thePlayer)->GetSex()]->String());
+            CopyInterfaceString(apOutBuffer, aiBufferSize, DAT_0119b364[((Player_StandIn*)g_thePlayer)->GetSex()]->String());
             bFound = true;
         }
-        if (!bFound && CompareInterfaceStringsIgnoreCase(apName, "PCSexPossessive") == 0)
+        if (!bFound && CompareInterfaceStringsIgnoreCase(apString, "PCSexPossessive") == 0)
         {
-            CopyInterfaceString(apBuffer, auiBufferSize, DAT_0119b35c[((Player_StandIn*)g_thePlayer)->GetSex()]->String());
+            CopyInterfaceString(apOutBuffer, aiBufferSize, DAT_0119b35c[((Player_StandIn*)g_thePlayer)->GetSex()]->String());
             bFound = true;
         }
         if (!bFound)
         {
-            bFound = ResolveSettingString(apName, apBuffer);
+            bFound = Interface_TestConstantForGameSettings(apString, apOutBuffer);
         }
     }
     return bFound;
 }
 
+// pdb: class Model, size 0x10, 4 members
 class Model
 {
   public:
-    unsigned int unk00, unk04, unk08, unk0C;
+    unsigned int pFilename, iRefCount, iManualRefCount, spObject3D; // src: XBOX_RETAIL_PDB pFilename +0x0 (old: unk00); iRefCount +0x4 (old: unk04); iManualRefCount +0x8 (old: unk08); spObject3D +0xc (old: unk0C)
     Model(const char*, BSStream*, bool, bool);
     NiNode* GetObject3D();
 };
@@ -5043,6 +5329,7 @@ struct Loader_S
     NiNode* ModelLoader_LoadFile(const char*, int, bool, bool, bool, bool);
 };
 extern bool DAT_011d8908;
+// pdb: class FileFinder, size 0x10 (here 0x1), 1 members
 class FileFinder
 {
   public:
@@ -5055,23 +5342,26 @@ class FileFinder
 // Clears the flag, then loads a model from path via the model loader or a BSStream and returns its NiNode, or null on failure.
 // @fnv 0x00707660
 // src: COMMUNITY 0x00707660
-NiNode* Interface_LoadModelFile(const char* path, bool* flag)
+// pdb: Interface::LoadModelFile | Interface.obj | retail, upstream name already matches, high
+// pdb params: apFilename, arbFromModelLoader
+// pdb locals: stream
+NiNode* Interface_LoadModelFile(const char* apFilename, bool* arbFromModelLoader)
 {
-    *flag = false;
+    *arbFromModelLoader = false;
     if (g_modelLoader && !DAT_011d8908)
     {
-        *flag = true;
-        return ((Loader_S*)g_modelLoader)->ModelLoader_LoadFile(path, 0, true, false, false, false);
+        *arbFromModelLoader = true;
+        return ((Loader_S*)g_modelLoader)->ModelLoader_LoadFile(apFilename, 0, true, false, false, false);
     }
-    else if (FileFinder::Exist(path, 0, 0, -1))
+    else if (FileFinder::Exist(apFilename, 0, 0, -1))
     {
         BSStream stream;
-        if (stream.BSStream_Load(path, false))
+        if (stream.BSStream_Load(apFilename, false))
         {
             S_004431f0* previous = DAT_011d890c;
             S_004431f0* old = previous;
-            old ? old->FUN_004431f0(1) : 0;
-            DAT_011d890c = (S_004431f0*)new Model(path, &stream, true, false);
+            old ? old->Model_ScalarDtor(1) : 0;
+            DAT_011d890c = (S_004431f0*)new Model(apFilename, &stream, true, false);
             return ((Model*)DAT_011d890c)->GetObject3D();
         }
     }
@@ -5103,6 +5393,7 @@ class FUN_007ab690_cls : public Menu
 
 // Stores the player's TESNPC reference, then shows the name text entry prompt with the NPC's current full name, or calls Finish(0) if there is no NPC.
 // @fnv 0x007ab690
+// pdb: PlayerNameEntryMenu::PlayerNameEntryMenu | PlayerNameEntryMenu.obj | retail, object-file run extension, low
 FUN_007ab690_cls::FUN_007ab690_cls()
 {
     m_pkNPC = g_pkB7AB690Player ? dynamic_cast<TESNPC*>(g_pkB7AB690Player->GetObjectReference()) : 0;
@@ -5146,7 +5437,10 @@ extern const char* DAT_011977a4[];
 int FUN_00406d30(char*, unsigned int, const char*);
 // Loads up to 12 weapon wobble NIF models from Meshes\Characters\WeaponWobbles, storing each node and a copy of its name, then sets DAT_01185520 to true.
 // @fnv 0x008d66b0
-void LoadWeaponWobbleModels()
+// src: XBOX_RETAIL_PDB 0x008d66b0
+// pdb: InitGunWobble | GunWobble.obj | retail, unique string literal, high
+// pdb locals: filename, n, iBoneNameLen
+void InitGunWobble()
 {
     memset(DAT_011e0110, 0, 12);
     memset(DAT_011e00e0, 0, 12);
@@ -5175,33 +5469,37 @@ void LoadWeaponWobbleModels()
 struct TESObjectREFRMine : TESObjectREFR
 {
     TESForm* GetOwner();
-    bool CanBeUsed(Actor* apActor, bool abUnk);
+    bool CanBeUsed(Actor* pOwner, bool abUnk);
 };
 
-int ContainerMenu_Create(TESObjectREFR* apRef, int aType);
+int ContainerMenu_Create(TESObjectREFR* apContainer, int aeContainerMode);
 
 // If the interface manager key is held, adjusts aType to 2 for owned non-actor refs that cannot be used, then calls FUN_0075b310; otherwise returns 0.
 // @fnv 0x00704ed0
 // src: XBOX_PDB 0x00704ed0
-int Interface_CreateContainerMenu(TESObjectREFR* apRef, int aType)
+// pdb: Interface::CreateContainerMenu | Interface.obj | retail, upstream name already matches, high
+// pdb params: apContainer, aeMode
+int Interface_CreateContainerMenu(TESObjectREFR* apContainer, int aeMode)
 {
     if (InterfaceManager_GetSingleton() && ((InterfaceManager*)InterfaceManager_GetSingleton())->TESTextureList_GetTextureCount())
     {
-        if (aType == 1)
+        if (aeMode == 1)
         {
-            if (!((TESObjectREFRMine*)apRef)->IsActor() && ((TESObjectREFRMine*)apRef)->GetOwner() &&
-                !((TESObjectREFRMine*)apRef)->CanBeUsed(g_thePlayer, true))
+            if (!((TESObjectREFRMine*)apContainer)->IsActor() && ((TESObjectREFRMine*)apContainer)->GetOwner() &&
+                !((TESObjectREFRMine*)apContainer)->CanBeUsed(g_thePlayer, true))
             {
-                aType = 2;
+                aeMode = 2;
             }
         }
-        return ContainerMenu_Create(apRef, aType);
+        return ContainerMenu_Create(apContainer, aeMode);
     }
     return 0;
 }
 
 // @fnv 0x0040fbe0
 // src: XBOX_PDB 0x0040fbe0
+// pdb: ProgramFlow | EffectSettingCollection.obj | debug, upstream name already matches, high
+// pdb params: apMessage, varArgs
 void __cdecl ProgramFlow()
 {}
 
@@ -5213,6 +5511,7 @@ struct MgrQ
 // Returns the result of MgrQ::FUN_00644640 when FUN_004b7210 is non-null and MgrQ::FUN_009373f0 is true, otherwise false.
 // @fnv 0x00702fc0
 // src: XBOX_PDB 0x00702fc0
+// pdb: Interface::IsDebugTextVisible | Interface.obj | debug, upstream name already matches, high
 bool Interface_IsDebugTextVisible()
 {
     if (InterfaceManager_GetSingleton() && ((MgrQ*)InterfaceManager_GetSingleton())->TESTextureList_GetTextureCount())
@@ -5237,7 +5536,7 @@ struct M70Trait
 struct M70Hud
 {
     void FOPipboyManager_TriggerRandomEffect();
-    void FUN_007fa010(int a);
+    void FUN_007fa010(int aiButton);
     bool IsUnk28Set();
 };
 struct M70Player
@@ -5254,13 +5553,16 @@ void StatsMenu_ResetHealingMode();
 void ResetRepairMenu();
 void ResetItemModMenu();
 void InventoryMenu_UpdateInventoryMenu();
-void InventoryMenu_SetKnobPosition(int a);
-void UpdateCurrentValue();
+void InventoryMenu_SetKnobPosition(int abPlaySounds);
+void InventoryMenu_SavePageState();
 
 // Shows or hides the inventory menu, closing related menus and resetting HUD state as needed.
 // @fnv 0x007048f0
 // src: XBOX_PDB 0x007048f0
-void Interface_SetInventoryMenuVisible(bool show, bool fade, bool reset)
+// pdb: Interface::SetInventoryMenuVisible | Interface.obj | retail, upstream name already matches, high
+// pdb params: abVisibility, abAnyVisibleState, abTriggerPipboyEffect
+// pdb locals: pinv, prepair, bisVisible, pstat, pmap, pitemmod
+void Interface_SetInventoryMenuVisible(bool abVisibility, bool abAnyVisibleState, bool abTriggerPipboyEffect)
 {
     M70Menu* pMenu3eb;
     M70Menu* pMenu3ea;
@@ -5276,8 +5578,8 @@ void Interface_SetInventoryMenuVisible(bool show, bool fade, bool reset)
         pMenu40bB = Tile_GetMenuByClass(0x40b);
         aPMenu425 = Tile_GetMenuByClass(0x425);
         pMenu3ff8 = Tile_GetMenuByClass(0x3ff);
-        bOpen = Interface_IsMenuIDVisible(0x3ea, fade ? 0xb : 0);
-        if (show)
+        bOpen = Interface_IsMenuIDVisible(0x3ea, abAnyVisibleState ? 0xb : 0);
+        if (abVisibility)
         {
             if (!pMenu3ea)
             {
@@ -5314,7 +5616,7 @@ void Interface_SetInventoryMenuVisible(bool show, bool fade, bool reset)
                 InventoryMenu_UpdateInventoryMenu();
                 InterfaceManager_GetSingleton()->CombatController_GetCombatState()->FUN_00700320(0x1771, 0x3ea);
             }
-            if (reset)
+            if (abTriggerPipboyEffect)
             {
                 InterfaceManager_GetSingleton()->FUN_00704370()->FOPipboyManager_TriggerRandomEffect();
                 InterfaceManager_GetSingleton()->FUN_00704370()->FUN_007fa010(2);
@@ -5324,10 +5626,10 @@ void Interface_SetInventoryMenuVisible(bool show, bool fade, bool reset)
                 InventoryMenu_SetKnobPosition(0);
             }
         }
-        else if (!show && bOpen && pMenu3ea)
+        else if (!abVisibility && bOpen && pMenu3ea)
         {
             pMenu3ea->Tile_GetMenu()->FUN_00a1d910();
-            UpdateCurrentValue();
+            InventoryMenu_SavePageState();
         }
     }
 }
@@ -5422,6 +5724,7 @@ FUN_00705fe0::FUN_00705fe0() : node(0)
 
 // Destructor for Tile; performs no additional cleanup beyond the default body.
 // @fnv 0x00709930
+// pdb: Tile::`scalar deleting destructor' | Interface.obj | retail, vtable slot, high
 Tile::~Tile()
 {}
 
@@ -5956,7 +6259,7 @@ struct ChainObj
     void TESObjectCELL_GetIntSeenSection(int, int, int);
     void TESObjectCELL_GetExteriorLocalMapTexture(Local12*);
     void GetInteriorLocalMapTexture(int, int, Local12*);
-    void CollectCellReferences(unsigned int*);
+    void BuildLocalMapDoorList(unsigned int*);
     unsigned int FUN_0059bb30();
 };
 struct Mesh34
@@ -6217,7 +6520,10 @@ extern unsigned int DAT_011f4418;
 // Builds and attaches a map mesh; when param_1 is set, it builds a path and passes it with collected references to another function.
 // @fnv 0x0079ffb0
 // src: XBOX_PDB 0x0079ffb0
-void __cdecl MapMenu_RenderLocalMapGrid(char param_1)
+// pdb: MapMenu::RenderLocalMapGrid | MapMenu.obj | retail, upstream name already matches, high
+// pdb params: abSaveToDisk
+// pdb locals: oldSunColor, tintColor, igridSize, imapSize, bisInInterior, sectoffset, ptrilist, UpdateData, isubgridSize, inumVerts, ivertsPerSide, bwaterCulled, ptex, pcolor, playerLoc, pseencell, plandlod, blandCulled, ptsp, palpha, itilesPerSide, isecty, pverts, inumTiles ...
+void __cdecl MapMenu_RenderLocalMapGrid(char abSaveToDisk)
 {
     RenderColor savedColor1;
     int size27;
@@ -6306,8 +6612,8 @@ void __cdecl MapMenu_RenderLocalMapGrid(char param_1)
     if (cMenuOk4 == '\0')
         pMenu25->FUN_00450f90(1);
 
-    cellX17 = DAT_011da368->m_uiMapMarkerCount % *DAT_011c63cc.Setting_Int();
-    cellY10 = DAT_011da368->m_uiMapMarkerCount / *DAT_011c63cc.Setting_Int();
+    cellX17 = DAT_011da368->uiNextLocalMapGrid % *DAT_011c63cc.Setting_Int();
+    cellY10 = DAT_011da368->uiNextLocalMapGrid / *DAT_011c63cc.Setting_Int();
 
     Local12 local1415(0);
     pSub10 = 0;
@@ -6336,7 +6642,7 @@ void __cdecl MapMenu_RenderLocalMapGrid(char param_1)
             static_cast<ChainObj*>(pSub10)->GetInteriorLocalMapTexture(insideTileX1, insideTileY1, &local1415);
             static_cast<ChainObj*>(static_cast<void*>(NiXenonRenderer_GetRenderer()))->NiXenonRenderer_UnlockRenderer();
             if (cellX17 == 0 && cellY10 == 0)
-                static_cast<ChainObj*>(pSub10)->CollectCellReferences(
+                static_cast<ChainObj*>(pSub10)->BuildLocalMapDoorList(
                     reinterpret_cast<unsigned int*>(&DAT_011da368->LocalMapMarkerList));
         }
     }
@@ -6361,12 +6667,12 @@ void __cdecl MapMenu_RenderLocalMapGrid(char param_1)
             static_cast<ChainObj*>(static_cast<void*>(NiXenonRenderer_GetRenderer()))->NiXenonRenderer_LockRenderer();
             static_cast<ChainObj*>(pSub10)->TESObjectCELL_GetExteriorLocalMapTexture(&local1415);
             static_cast<ChainObj*>(static_cast<void*>(NiXenonRenderer_GetRenderer()))->NiXenonRenderer_UnlockRenderer();
-            static_cast<ChainObj*>(pSub10)->CollectCellReferences(
+            static_cast<ChainObj*>(pSub10)->BuildLocalMapDoorList(
                 reinterpret_cast<unsigned int*>(&DAT_011da368->LocalMapMarkerList));
         }
     }
 
-    if (static_cast<unsigned char>(param_1) != 0)
+    if (static_cast<unsigned char>(abSaveToDisk) != 0)
     {
         char pathB41[0x104];
         C39* p3925;
@@ -6398,8 +6704,8 @@ void __cdecl MapMenu_RenderLocalMapGrid(char param_1)
         p3925 = static_cast<C39*>(NiObject_DynamicCast(reinterpret_cast<unsigned int>(&DAT_011f4418),
                                                reinterpret_cast<ChainObj*>(local1415.Modelloader_GetReferencedThis())->FUN_0059bb30()));
         NiRenderedTexture_SaveToFile(pathB41, 3, p3925->v039(0));
-        DAT_011da368->m_uiMapMarkerCount =
-            DAT_011da368->m_uiMapMarkerCount + 1;
+        DAT_011da368->uiNextLocalMapGrid =
+            DAT_011da368->uiNextLocalMapGrid + 1;
         return;
     }
 
@@ -6432,7 +6738,7 @@ void __cdecl MapMenu_RenderLocalMapGrid(char param_1)
             NiPt3 mk324(static_cast<float>(j17) * fStep27, static_cast<float>(i17) * fStep27, 0.0f);
             mk324.ComputeValue_0063c8a0(reinterpret_cast<NiPt3*>(&base9c33));
             float hgt = FLT_0101e570;
-            if (DAT_011da368->m_bNeedsMapUpdate != 0)
+            if (DAT_011da368->bFogOfWarEnabled != 0)
                 hgt = static_cast<float>(TESObjectCELL_GetSeenValue(reinterpret_cast<V3Maker*>(&mk324)));
             static_cast<NiCol*>(pvC52)[idx19] = NiCol(1.0f, 1.0f, 1.0f, hgt / DBL_0101db80);
             idx19++;
@@ -6546,10 +6852,10 @@ void __cdecl MapMenu_RenderLocalMapGrid(char param_1)
         reinterpret_cast<void*>(
             reinterpret_cast<Tile30*>(DAT_011da368->m_pTiles[2])->GetModel_0056c7f0()))
         ->NiAVObject_Update(&mk8c26);
-    DAT_011da368->m_uiMapMarkerCount = DAT_011da368->m_uiMapMarkerCount + 1;
+    DAT_011da368->uiNextLocalMapGrid = DAT_011da368->uiNextLocalMapGrid + 1;
     if (MapMenu_ShouldRenderLocalMap() == 0)
     {
-        if (DAT_011da368->m_pMapTile == DAT_011da368->m_pTiles[2])
+        if (DAT_011da368->pMapTile == DAT_011da368->m_pTiles[2])
             DAT_011da368->UpdateLocalMap();
     }
 }
@@ -6642,15 +6948,18 @@ class SpawnedObject
 };
 InterfaceManager* InterfaceManager_GetSingleton();
 IMHelper* __stdcall Getter2(SpawnedObject* obj);
-ValueHolder* HackingMenu_Create(void* a);
-void Tile_UpdateAll(int a);
+ValueHolder* HackingMenu_Create(void* apTerminalRef);
+void Tile_UpdateAll(int abDoNiUpdate);
 // @fnv 0x00705ec0
 // src: COMMUNITY 0x00705ec0
-bool Interface_CreateHackingMenu(void* arg)
+// pdb: Interface::CreateHackingMenu | Interface.obj | retail, upstream name already matches, high
+// pdb params: apTerminalRef
+// pdb locals: pmenu, prm
+bool Interface_CreateHackingMenu(void* apTerminalRef)
 {
     if (InterfaceManager_GetSingleton() != 0 && ((IMHelper*)InterfaceManager_GetSingleton())->TESTextureList_GetTextureCount())
     {
-        ValueHolder* v = HackingMenu_Create(arg);
+        ValueHolder* v = HackingMenu_Create(apTerminalRef);
         if (*DAT_011db620.FUN_00408d60())
         {
             Tile_UpdateAll(0);
@@ -6689,7 +6998,10 @@ void InventoryMenu_SetKnobPosition(int);
 // Shows or hides a menu tile and, when showing it, hides several other menu tiles.
 // @fnv 0x007046f0
 // src: XBOX_PDB 0x007046f0
-void Interface_SetItemModMenuVisible(bool abShow, bool abInstant, bool abActivate)
+// pdb: Interface::SetItemModMenuVisible | Interface.obj | retail, upstream name already matches, high
+// pdb params: abVisibility, abAnyVisibleState, abTriggerPipboyEffect
+// pdb locals: pinv, pmod, prepair, bisVisible, pstat, pmap
+void Interface_SetItemModMenuVisible(bool abVisibility, bool abAnyVisibleState, bool abTriggerPipboyEffect)
 {
     if (InterfaceManager_GetSingleton() && ((IMQ*)InterfaceManager_GetSingleton())->TESTextureList_GetTextureCount())
     {
@@ -6698,8 +7010,8 @@ void Interface_SetItemModMenuVisible(bool abShow, bool abInstant, bool abActivat
         Tile* pMap = Tile_GetMenuByClass(0x40b);
         Tile* pRepair5 = Tile_GetMenuByClass(0x3ff);
         Tile* pMenu2 = Tile_GetMenuByClass(0x425);
-        bool bVisible8 = Interface_IsMenuIDVisible(0x425, abInstant ? 0xb : 0);
-        if (abShow)
+        bool bVisible8 = Interface_IsMenuIDVisible(0x425, abAnyVisibleState ? 0xb : 0);
+        if (abVisibility)
         {
             if (!pMenu2)
                 pMenu2 = Interface_CreateItemModMenu();
@@ -6721,7 +7033,7 @@ void Interface_SetItemModMenuVisible(bool abShow, bool abInstant, bool abActivat
             }
             if (pMenu2)
                 ((Tile*)InterfaceManager_GetSingleton()->CombatController_GetCombatState())->FUN_00700320(0x1771, 0x425);
-            if (abActivate)
+            if (abTriggerPipboyEffect)
             {
                 ((IMQ*)InterfaceManager_GetSingleton())->FUN_00704370()->FOPipboyManager_TriggerRandomEffect();
                 ((IMQ*)InterfaceManager_GetSingleton())->FUN_00704370()->FUN_007fa010(2);
@@ -6729,7 +7041,7 @@ void Interface_SetItemModMenuVisible(bool abShow, bool abInstant, bool abActivat
             if (((IMQ*)InterfaceManager_GetSingleton())->FUN_00704370()->IsUnk28Set())
                 InventoryMenu_SetKnobPosition(0);
         }
-        else if (!abShow && bVisible8 && pMenu2)
+        else if (!abVisibility && bVisible8 && pMenu2)
         {
             pMenu2->Tile_GetMenu()->LoadMenuData();
         }
@@ -6802,13 +7114,13 @@ extern int DAT_011d8998;
 extern int DAT_011d899c;
 
 InterfaceManager* InterfaceManager_GetSingleton();
-int Interface_CreateContainerMenu(TESObjectREFR* pkRef, int iArg);
-bool Interface_CreateHackingMenu(TESObjectREFR* pkRef);
+int Interface_CreateContainerMenu(TESObjectREFR* apContainer, int aeMode);
+bool Interface_CreateHackingMenu(TESObjectREFR* apTerminalRef);
 bool Interface_CreateComputerMenu(TESObjectREFR* pkRef);
-int Interface_CreateDialogMenu(TESObjectREFR* pkRef, int iArg0, int iArg1);
-int GetOrCreateMenuTile(int iArg);
-bool InitStartMenu(int iArg0, int iArg1);
-void HUDMainMenu_UpdateVisibilityState(int iArg);
+int Interface_CreateDialogMenu(TESObjectREFR* apSpeaker, int apGreetTopic, int apSpeakeras);
+int RaceSexMenu_Create(int aeContext);
+bool InitStartMenu(int abInGame, int abForceReload);
+void HUDMainMenu_UpdateVisibilityState(int aeMenuMode);
 bool MessageMenu_Create();
 bool DestroyCompanionWheelMenu(Actor* pkActor);
 
@@ -6817,6 +7129,8 @@ static const char s_szPlayerNameEntryMenu[] = "Player Name Entry Menu";
 // Processes pending action requests stored in DAT_011d8950 and DAT_011d8998, executing the corresponding logic and clearing the flags on success.
 // @fnv 0x007094f0
 // src: COMMUNITY 0x007094f0
+// pdb: Interface::HandleQueuedMenuOpen | Interface.obj | retail, upstream name already matches, high
+// pdb locals: bMenuCreated, bMessageCreated
 void Interface_HandleQueuedMenuOpen()
 {
     DAT_011d89c0.BSSpinLock_Lock(0);
@@ -6839,7 +7153,7 @@ void Interface_HandleQueuedMenuOpen()
                 bPickResultFound = Interface_CreateDialogMenu(DAT_011d8954, DAT_011d8958, DAT_011d895c) ? 1 : 0;
             break;
         case 5:
-            bPickResultFound = GetOrCreateMenuTile(DAT_011d8960) ? 1 : 0;
+            bPickResultFound = RaceSexMenu_Create(DAT_011d8960) ? 1 : 0;
             break;
         case 6:
             bPickResultFound = InitStartMenu(1, 0);
@@ -6908,7 +7222,7 @@ struct DisplayEffects
 {
     int unk00;
     DisplayList effects;
-    void BuildDescription(char*, int);
+    void EffectItemList_BuildMenuString(char*, int);
 };
 
 struct DisplayItem
@@ -6916,7 +7230,7 @@ struct DisplayItem
     DisplayForm* FUN_0044ddc0();
     DisplayForm* GetExtraForm();
     float FUN_004bd400();
-    unsigned char FUN_004bd820();
+    unsigned char ItemChange_GetModSlots();
     bool HasEffect(int);
     float ItemChange_GetItemHealth(bool);
     DisplayList* Modelloader_GetReferencedThis();
@@ -7384,7 +7698,10 @@ int BSstrcmp(const char*, const char*);
 // Populates the inventory item detail panel tiles with type-specific stats, effects, and value labels.
 // @fnv 0x00707e30
 // src: XBOX_PDB 0x00707e30
-void Interface_PopulateItemStatsDisplay(DisplayItem* item, Tile* root)
+// pdb: Interface::PopulateItemStatsDisplay | Interface.obj | retail, upstream name already matches, high
+// pdb params: apCurrItem, apDisplayTile
+// pdb locals: iUT_Title, iUT_Value, fweight, fModThreeSpot, iUT_CNDValue, fModTwoSpot, ppdisplayTilesA, uiVisibleFlag, fvalue, strtemp, xelem, bHasMods, feffectsY, fPackRat, strMod, peffectList, itileCt, pAmmo, fSTRMOD, fweapDPS, pweaponForm, fcondition, iSTRMOD, istrreq ...
+void Interface_PopulateItemStatsDisplay(DisplayItem* apCurrItem, Tile* apDisplayTile)
 {
 
     {
@@ -7399,23 +7716,23 @@ void Interface_PopulateItemStatsDisplay(DisplayItem* item, Tile* root)
         float modY4 = 0.0f;
         float aModZ = 0.0f;
 
-        float _worth = item->FUN_004bd400();
+        float _worth = apCurrItem->FUN_004bd400();
         float weight =
-            FUN_0048ebc0(item->FUN_0044ddc0(), reinterpret_cast<DisplayPlayer*>(g_thePlayer)->PlayerCharacter_IsHardcore());
+            FUN_0048ebc0(apCurrItem->FUN_0044ddc0(), reinterpret_cast<DisplayPlayer*>(g_thePlayer)->PlayerCharacter_IsHardcore());
 
         Tile* tiles3[13];
         char worthBufTmp[16];
         char weightBuf[32];
 
-        if (item && root)
+        if (apCurrItem && apDisplayTile)
         {
 
-            void* pos = reinterpret_cast<NiTPointerListBase<NiTPointerAllocator<unsigned int>, Tile*>*>(&root->m_kChildTileList)->GetHeadPos();
+            void* pos = reinterpret_cast<NiTPointerListBase<NiTPointerAllocator<unsigned int>, Tile*>*>(&apDisplayTile->xChildren)->GetHeadPos();
             int indexB = 0;
 
             while (pos && indexB < 13)
             {
-                tiles3[indexB] = reinterpret_cast<NiTPointerListBase<NiTPointerAllocator<unsigned int>, Tile*>*>(&root->m_kChildTileList)->GetNext(pos);
+                tiles3[indexB] = reinterpret_cast<NiTPointerListBase<NiTPointerAllocator<unsigned int>, Tile*>*>(&apDisplayTile->xChildren)->GetNext(pos);
                 ++indexB;
             }
 
@@ -7425,26 +7742,26 @@ void Interface_PopulateItemStatsDisplay(DisplayItem* item, Tile* root)
                 ++indexB;
             }
 
-            Tile* position = Tile_GetTileByName(root, DAT_0106ed0c);
-            Tile* reference8 = Tile_GetTileByName(root, DAT_0106ecfc);
+            Tile* position = Tile_GetTileByName(apDisplayTile, DAT_0106ed0c);
+            Tile* reference8 = Tile_GetTileByName(apDisplayTile, DAT_0106ecfc);
 
             position->Tile_Set(0xfb0, reference8->FUN_00a011b0(0xfb0), true);
 
             position->Tile_Set(0xfa2, reference8->FUN_00a011b0(0xfa2), true);
 
-            bool modified3 = item->FUN_004bd820();
+            bool modified3 = apCurrItem->ItemChange_GetModSlots();
 
             char _modName[128];
             float perk;
             float width;
 
-            switch (item->FUN_0044ddc0()->FUN_00401170())
+            switch (apCurrItem->FUN_0044ddc0()->FUN_00401170())
             {
 
             case 0x29: {
 
                 maskB = 12;
-                DisplayForm* book = item->FUN_0044ddc0();
+                DisplayForm* book = apCurrItem->FUN_0044ddc0();
                 char desc[256];
                 book->TESAmmo_BuildMenuString(desc, 256);
 
@@ -7461,7 +7778,7 @@ void Interface_PopulateItemStatsDisplay(DisplayItem* item, Tile* root)
 
             case 0x28: {
 
-                DisplayForm* weapon = item->FUN_0044ddc0();
+                DisplayForm* weapon = apCurrItem->FUN_0044ddc0();
                 tiles3[4]->FUN_00700320(0x100a, true);
 
                 DisplayForm* ammoForm = 0;
@@ -7479,7 +7796,7 @@ void Interface_PopulateItemStatsDisplay(DisplayItem* item, Tile* root)
                     actor_11 = reinterpret_cast<DisplayPlayer*>(g_thePlayer);
                 }
 
-                weight = weapon->FUN_004be380(item->HasEffect(4));
+                weight = weapon->FUN_004be380(apCurrItem->HasEffect(4));
 
                 if (weight >= 10.0)
                 {
@@ -7488,24 +7805,24 @@ void Interface_PopulateItemStatsDisplay(DisplayItem* item, Tile* root)
                     weight *= multiplier;
                 }
 
-                float conditionB = item->ItemChange_GetItemHealth(true) / 100.0;
+                float conditionB = apCurrItem->ItemChange_GetItemHealth(true) / 100.0;
                 int ap_10 = weapon->GetField19C();
                 float damage3 = 0.0f;
                 float kDps = 0.0f;
 
-                kDps = FUN_00645380(reinterpret_cast<DisplayPlayer*>(g_thePlayer), weapon, conditionB, true, item, 0, 0,
+                kDps = FUN_00645380(reinterpret_cast<DisplayPlayer*>(g_thePlayer), weapon, conditionB, true, apCurrItem, 0, 0,
                                     -1, 0.0f, 0.0f, 0, 0, ammoForm);
 
                 if (conditionB <= 0.0)
                     damage3 = 0.0f;
                 else
-                    damage3 = GetWeaponDamage(weapon, conditionB, item, ammoForm);
+                    damage3 = GetWeaponDamage(weapon, conditionB, apCurrItem, ammoForm);
 
                 char weaponBuf4[128];
                 BSsprintf(weaponBuf4, 128, DAT_01020764, (int)FUN_004bd510(kDps, 1.0f));
                 tiles3[1]->Tile_Set_00a01350(text3, weaponBuf4, true);
 
-                unsigned int projectiles_4 = weapon->FUN_00525b20(item->HasEffect(12), 0, actor_11);
+                unsigned int projectiles_4 = weapon->FUN_00525b20(apCurrItem->HasEffect(12), 0, actor_11);
 
                 if (projectiles_4 > 1)
                 {
@@ -7545,12 +7862,12 @@ void Interface_PopulateItemStatsDisplay(DisplayItem* item, Tile* root)
                     if (!name2 || !*name2)
                         name2 = weapon->TESObjectWEAP_GetCurrentAmmo(actor_11)->name.TESModel_GetModel();
 
-                    if (currentWeapon && currentWeapon->Modelloader_GetReferencedThis() && item->Modelloader_GetReferencedThis() &&
-                        *currentWeapon->Modelloader_GetReferencedThis()->FUN_006815c0() == *item->Modelloader_GetReferencedThis()->FUN_006815c0())
+                    if (currentWeapon && currentWeapon->Modelloader_GetReferencedThis() && apCurrItem->Modelloader_GetReferencedThis() &&
+                        *currentWeapon->Modelloader_GetReferencedThis()->FUN_006815c0() == *apCurrItem->Modelloader_GetReferencedThis()->FUN_006815c0())
                         loaded = currentAmmo2 ? currentAmmo2->FUN_00726070() : 0;
 
                     else
-                        loaded = MinInt(weapon->GetFlaggedValue(item->HasEffect(2)), total);
+                        loaded = MinInt(weapon->GetFlaggedValue(apCurrItem->HasEffect(2)), total);
 
                     bool unlimited2 = weapon->GetAmmoRegenRate(0) == 0.0 ? false : true;
 
@@ -7571,14 +7888,14 @@ void Interface_PopulateItemStatsDisplay(DisplayItem* item, Tile* root)
             case 0x1a: {
 
                 tiles3[4]->FUN_00700320(0x100a, false);
-                float conditionArmor = item->ItemChange_GetItemHealth(true) / 100.0;
+                float conditionArmor = apCurrItem->ItemChange_GetItemHealth(true) / 100.0;
                 maskB = 0x3c;
 
                 char armorBuf_[128];
                 FUN_00406d30(armorBuf_, 128, DAT_01047008);
 
                 TESObjectARMO* armor =
-                    dynamic_cast<TESObjectARMO*>(reinterpret_cast<TESBoundObject*>(item->FUN_0044ddc0()));
+                    dynamic_cast<TESObjectARMO*>(reinterpret_cast<TESBoundObject*>(apCurrItem->FUN_0044ddc0()));
 
                 if (armor)
                 {
@@ -7592,8 +7909,8 @@ void Interface_PopulateItemStatsDisplay(DisplayItem* item, Tile* root)
 
                 tiles3[5]->Tile_Set_00a01350(label3, armorBuf_, true);
 
-                float dt3 = FUN_00646360((int)item->FUN_0044ddc0()->TESObjectARMO_GetArmorRating(), conditionArmor);
-                float dr2 = FUN_00646360((int)item->FUN_0044ddc0()->TESObjectARMO_GetDamageThreshold(), conditionArmor);
+                float dt3 = FUN_00646360((int)apCurrItem->FUN_0044ddc0()->TESObjectARMO_GetArmorRating(), conditionArmor);
+                float dr2 = FUN_00646360((int)apCurrItem->FUN_0044ddc0()->TESObjectARMO_GetDamageThreshold(), conditionArmor);
 
                 if (dt3 == 0.0 && dr2 == 0.0)
                 {
@@ -7621,8 +7938,8 @@ void Interface_PopulateItemStatsDisplay(DisplayItem* item, Tile* root)
                 tiles3[4]->Tile_Set(
                     value,
                     BSMIN(1.0f,
-                                 item->ItemChange_GetItemHealth(false) /
-                                     (FUN_004873d0(item->FUN_0044ddc0()) ? FUN_004873d0(item->FUN_0044ddc0()) : 1)),
+                                 apCurrItem->ItemChange_GetItemHealth(false) /
+                                     (FUN_004873d0(apCurrItem->FUN_0044ddc0()) ? FUN_004873d0(apCurrItem->FUN_0044ddc0()) : 1)),
                     true);
                 break;
             }
@@ -7633,15 +7950,15 @@ void Interface_PopulateItemStatsDisplay(DisplayItem* item, Tile* root)
 
             DisplayEffects* effects5 = 0;
 
-            if (item->FUN_0044ddc0()->FUN_00401170() == 0x1d)
-                effects5 = static_cast<EffectForm*>(reinterpret_cast<EffectForm*>(item->GetExtraForm()));
+            if (apCurrItem->FUN_0044ddc0()->FUN_00401170() == 0x1d)
+                effects5 = static_cast<EffectForm*>(reinterpret_cast<EffectForm*>(apCurrItem->GetExtraForm()));
 
-            else if (item->FUN_0044ddc0()->FUN_00401170() == 0x2f)
-                effects5 = static_cast<EffectForm*>(reinterpret_cast<EffectForm*>(item->FUN_0044ddc0()));
+            else if (apCurrItem->FUN_0044ddc0()->FUN_00401170() == 0x2f)
+                effects5 = static_cast<EffectForm*>(reinterpret_cast<EffectForm*>(apCurrItem->FUN_0044ddc0()));
 
             else
             {
-                EnchantForm* enchant = FUN_004be330(item->FUN_0044ddc0());
+                EnchantForm* enchant = FUN_004be330(apCurrItem->FUN_0044ddc0());
                 if (enchant && !enchant->FUN_0040e210(4))
                     effects5 = enchant;
             }
@@ -7649,7 +7966,7 @@ void Interface_PopulateItemStatsDisplay(DisplayItem* item, Tile* root)
             if (effects5 && *effects5->effects.FUN_006815c0())
             {
                 char effectBuf[256];
-                effects5->BuildDescription(effectBuf, 256);
+                effects5->EffectItemList_BuildMenuString(effectBuf, 256);
                 if (BSstrlen(effectBuf) > 0)
                 {
                     tiles3[6]->Tile_Set_00a01350(text3, effectBuf, true);
@@ -7659,12 +7976,12 @@ void Interface_PopulateItemStatsDisplay(DisplayItem* item, Tile* root)
                     maskB &= ~64;
             }
 
-            else if (item->FUN_0044ddc0()->FUN_00401170() != 0x29)
+            else if (apCurrItem->FUN_0044ddc0()->FUN_00401170() != 0x29)
                 maskB &= ~64;
 
-            if (item->FUN_0044ddc0()->FUN_00401170() == 0x67)
+            if (apCurrItem->FUN_0044ddc0()->FUN_00401170() == 0x67)
             {
-                DescriptionForm* note = reinterpret_cast<DescriptionForm*>(item->FUN_0044ddc0());
+                DescriptionForm* note = reinterpret_cast<DescriptionForm*>(apCurrItem->FUN_0044ddc0());
                 tiles3[6]->Tile_Set_00a01350(text3, note->description.Text(0, 0x43534544), true);
                 maskB |= 64;
             }
@@ -7672,9 +7989,9 @@ void Interface_PopulateItemStatsDisplay(DisplayItem* item, Tile* root)
             if (modified3)
             {
 
-                DisplayForm* modWeapon5 = item->FUN_0044ddc0();
+                DisplayForm* modWeapon5 = apCurrItem->FUN_0044ddc0();
                 DisplayForm* mod_16 = 0;
-                unsigned char flags = item->FUN_004bd820();
+                unsigned char flags = apCurrItem->ItemChange_GetModSlots();
                 bool labeled = false;
 
                 if (flags & 1)
@@ -7733,9 +8050,9 @@ void Interface_PopulateItemStatsDisplay(DisplayItem* item, Tile* root)
             if (_worth > 0.0)
             {
                 if (_worth >= 1.0)
-                    BSsprintf(worthBufTmp, 16, DAT_0106ecc8, _worth * item->FUN_00726070());
+                    BSsprintf(worthBufTmp, 16, DAT_0106ecc8, _worth * apCurrItem->FUN_00726070());
                 else
-                    BSsprintf(worthBufTmp, 16, DAT_01020768, _worth * item->FUN_00726070());
+                    BSsprintf(worthBufTmp, 16, DAT_01020768, _worth * apCurrItem->FUN_00726070());
             }
             else
                 FUN_00406d30(worthBufTmp, 16, DAT_01047008);
@@ -7748,7 +8065,7 @@ void Interface_PopulateItemStatsDisplay(DisplayItem* item, Tile* root)
                 weight *= *DAT_011c64a8.Setting_Float_00403e20();
 
             if (weight > 0.0)
-                BSsprintf(weightBuf, 32, DAT_01030018, weight * item->FUN_00726070());
+                BSsprintf(weightBuf, 32, DAT_01030018, weight * apCurrItem->FUN_00726070());
             else
                 FUN_00406d30(weightBuf, 32, DAT_01047008);
 
@@ -7806,7 +8123,7 @@ void Interface_PopulateItemStatsDisplay(DisplayItem* item, Tile* root)
                 tiles3[10]->Tile_Set(0xfa9, 255.0f, true);
             }
 
-            width = root->FUN_00a011b0(0xfb0) / 2.0 - 20.0;
+            width = apDisplayTile->FUN_00a011b0(0xfb0) / 2.0 - 20.0;
             if ((maskB & 0x10) || (maskB & 0x20))
                 width *= 2.0f;
 

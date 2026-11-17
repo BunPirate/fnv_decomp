@@ -11,8 +11,8 @@
 // src: HAVOK_LIB 0x00d86960
 const hkVariant* hkClassMember::getAttribute_00d86960(const char* name) const throw()
 {
-    if (m_pCustomAttributes)
-        return m_pCustomAttributes->getAttribute(name);
+    if (m_attributes)
+        return m_attributes->getAttribute(name);
     return 0;
 }
 
@@ -30,18 +30,20 @@ int __cdecl FUN_00d86980();
 // Stores v into p as a char, short or int depending on the size returned by FUN_00d86980.
 // @fnv 0x00d86bc0
 // src: HAVOK_LIB 0x00d86bc0
-void __stdcall hkClassMember_setEnumValue(int apTarget, int aiValue)
+// pdb: hkClassMember::setEnumValue | hkClassMember.obj | retail, upstream name already matches, high
+// pdb params: memberAddress, value
+void __stdcall hkClassMember_setEnumValue(int memberAddress, int value)
 {
     switch (FUN_00d86980())
     {
     case 1:
-        *(char*)apTarget = (char)aiValue;
+        *(char*)memberAddress = (char)value;
         break;
     case 2:
-        *(short*)apTarget = (short)aiValue;
+        *(short*)memberAddress = (short)value;
         break;
     case 4:
-        *(int*)apTarget = aiValue;
+        *(int*)memberAddress = value;
         break;
     default:
         break;
@@ -79,7 +81,7 @@ const hkClass* hkClassMember::getClass() const throw()
 // @fnv 0x00d86930
 hkClassEnum* __fastcall GetMemberEnum(const hkClassMember* member)
 {
-    return member->m_pClassEnum;
+    return member->m_enum;
 }
 
 struct FUN_00dba990_Obj
@@ -92,6 +94,9 @@ typedef void (__thiscall* MemberValueSetter)(hkClassMember*, int, int);
 
 // @fnv 0x00dc1bf0
 // src: GUESS 0x00dc1bf0 (confidence: low)
+// pdb: Copier::fillNativeEnumMember | hkDataObjectUtil.obj | retail, object-file run extension, low
+// pdb params: address, member, value, klass
+// pdb locals: assertBuf, ostr
 unsigned int __stdcall hkClassMember_UpdateState_00dc1bf0(int aiArg, int pMember, int pSource, int aiUnused)
 {
     hkClassMember* member = (hkClassMember*)pMember;
@@ -100,14 +105,14 @@ unsigned int __stdcall hkClassMember_UpdateState_00dc1bf0(int aiArg, int pMember
     switch (type)
     {
     case 0x18:
-        if (member->m_pClassEnum != 0)
+        if (member->m_enum != 0)
         {
             int result = ((FUN_00dba990_Obj*)pSource)->ForwardCall_00dba990();
             ((MemberValueSetter)&hkClassMember_setEnumValue)(member, aiArg, result);
         }
         return 0;
     case 0x1f:
-        if (member->m_pClassEnum != 0)
+        if (member->m_enum != 0)
         {
             ((MemberValueSetter)&hkClassMember_setEnumValue)(member, aiArg, ((FUN_00dba990_Obj*)pSource)->ForwardCall_00dba990());
         }
@@ -128,11 +133,12 @@ int __fastcall GetNumMembers(const hkClass* klass);
 
 // Returns the memory alignment of this class member, derived from its type, struct member alignments, or explicit ALIGN_8/ALIGN_16 flags.
 // @fnv 0x00d86a90
+// pdb: hkClassMember::getAlignment | hkClassMember.obj | retail, call graph, medium
 int __fastcall GetMemberAlignment(const hkClassMember* member)
 {
     int type = member->m_type;
     if (type == hkClassMember::TYPE_ENUM || type == hkClassMember::TYPE_FLAGS)
-        type = member->m_eSubtype;
+        type = member->m_subtype;
 
     int align;
     if (type == hkClassMember::TYPE_STRUCT)
@@ -175,12 +181,14 @@ extern void __cdecl hkStringBuf_printf(TypeNameOutput*, const char*, const char*
 // Writes the selected type name to output, calling FUN_00d61d00 with that name and detail when detail is non-null.
 // @fnv 0x00d868e0
 // src: HAVOK_LIB 0x00d868e0
-static __declspec(noinline) void getSimpleTypeName(TypeNameOutput* output, const char* detail, int type)
+// pdb: getSimpleTypeName | hkClassMember.obj | debug, upstream name already matches, high
+// pdb params: type, nelem, ret
+static __declspec(noinline) void getSimpleTypeName(TypeNameOutput* output, const char* nelem, int ret)
 {
-    if (!detail)
-        output->FUN_00d61c10(DAT_011b6ab4[type].name);
+    if (!nelem)
+        output->FUN_00d61c10(DAT_011b6ab4[ret].name);
     else
-        hkStringBuf_printf(output, str_010d3a74, DAT_011b6ab4[type].name, detail);
+        hkStringBuf_printf(output, str_010d3a74, DAT_011b6ab4[ret].name, nelem);
 }
 void formatTypeName(TypeNameOutput* output, const char* detail, int type)
 {
@@ -191,7 +199,7 @@ void formatTypeName(TypeNameOutput* output, const char* detail, int type)
 // src: XBOX_PDB 0x00d86940
 __declspec(noinline) int hkClassMember::getCstyleArraySize() const throw()
 {
-    return m_iArraySize;
+    return m_cArraySize;
 }
 
 struct TypeProps_d869
@@ -211,6 +219,7 @@ static inline const TypeProps_d869* typeProps_d869()
 
 // For handled types, multiplies the selected type-property value or referenced class alignment by the member count; otherwise returns -1.
 // @fnv 0x00d86980
+// pdb: hkClassMember::getSizeInBytes | hkClassMember.obj | retail, call graph (shared callers), medium
 int __fastcall GetMemberSize(const hkClassMember* member)
 {
     int size = -1;
@@ -251,7 +260,7 @@ int __fastcall GetMemberSize(const hkClassMember* member)
     case hkClassMember::TYPE_ENUM:
     case hkClassMember::TYPE_FLAGS: {
         int nelem = member->getCstyleArraySize() ? member->getCstyleArraySize() : 1;
-        size = nelem * typeProps_d869()[member->m_eSubtype].m_iElementCount;
+        size = nelem * typeProps_d869()[member->m_subtype].m_iElementCount;
     }
     break;
     case hkClassMember::TYPE_STRUCT: {

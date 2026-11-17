@@ -11,6 +11,7 @@ extern "C" void __cdecl _Deallocate(void*);
 
 // Calls FUN_00807910, then frees this with _Deallocate when flags has bit 0 set, and returns this.
 // @fnv 0x008078e0
+// pdb: bhkTelekinesisListener::`scalar deleting destructor' | bhkTelekinesisListener.obj | retail, vtable slot, high
 void* bhkTelekinesisListener::Destroy(unsigned int flags)
 {
     this->bhkTelekinesisListener::~bhkTelekinesisListener();
@@ -47,6 +48,8 @@ struct FUN_00807980_shell
 // Calls FUN_00807cb0 on the object at this-4 with apEntity, then deletes that object as a DelVirt.
 // @fnv 0x00807980
 // src: COMMUNITY 0x00807980
+// pdb: bhkTelekinesisListener::entityDeletedCallback | bhkTelekinesisListener.obj | retail, upstream name already matches, high
+// pdb params: apEntity
 void FUN_00807980_shell::bhkTelekinesisListener_entityDeletedCallback(void* apEntity)
 {
     bhkTelekinesisListener_Remove((void*)((char*)this - 4), apEntity);
@@ -56,15 +59,17 @@ void FUN_00807980_shell::bhkTelekinesisListener_entityDeletedCallback(void* apEn
 struct FUN_008079e0_shell
 {
     void bhkTelekinesisListener_Finish(hkpEntity*);
-    void bhkTelekinesisListener_entityDeactivatedCallback(hkpEntity* entity);
+    void bhkTelekinesisListener_entityDeactivatedCallback(hkpEntity* apEntity);
 };
 // If the byte at offset 0x10 of this is set, calls FUN_00807a10 on the object at this-8 with entity.
 // @fnv 0x008079e0
 // src: COMMUNITY 0x008079e0
-void FUN_008079e0_shell::bhkTelekinesisListener_entityDeactivatedCallback(hkpEntity* entity)
+// pdb: bhkTelekinesisListener::entityDeactivatedCallback | bhkTelekinesisListener.obj | debug, upstream name already matches, high
+// pdb params: apEntity
+void FUN_008079e0_shell::bhkTelekinesisListener_entityDeactivatedCallback(hkpEntity* apEntity)
 {
     if (*(unsigned char*)((char*)this + 0x10))
-        ((FUN_008079e0_shell*)((char*)this - 8))->bhkTelekinesisListener_Finish(entity);
+        ((FUN_008079e0_shell*)((char*)this - 8))->bhkTelekinesisListener_Finish(apEntity);
 }
 
 struct ITopic
@@ -119,11 +124,16 @@ struct FUN_00807c50
 };
 // Default constructor that default-constructs the two FUN_00807d10 members m00 and m08.
 // @fnv 0x00807c50
+// pdb: hkpEntity::ExtendedListeners::ExtendedListeners | bhkTelekinesisListener.obj | debug, object-file run extension, low
 FUN_00807c50::FUN_00807c50()
 {}
 
 // @fnv 0x00807cb0
 // src: XBOX_PDB 0x00807cb0
+// pdb: hkpEntity::removeEntityListener | hkpEntity.obj | retail, call graph (shared callers), low
+// pdb note: debug build links it to bhkTelekinesisListener::Remove
+// pdb params: el
+// pdb locals: assertBuf, ostr
 void __cdecl bhkTelekinesisListener_Remove(char* listener, hkpEntity* entity)
 {
     entity->RemoveContactListener(listener);
@@ -194,6 +204,7 @@ void Object_DispatchSizedBlock_00807dc0(int aiArg1, int aiArg2)
 // hkpEntityListener (+0x04) and bhkContactListener (+0x00) without storing this class's vftables.
 // It is emitted here because Destroy calls it.
 // @fnv 0x00807910 (bhkTelekinesisListener::~bhkTelekinesisListener, implicit)
+// pdb: bhkTelekinesisListener::~bhkTelekinesisListener | bhkTelekinesisListener.obj | debug, upstream name already matches, high
 
 // ---------------------------------------------------------------------------
 // GetOrCreate807c50 - the lazy "get or create" accessor of hkpEntity's
@@ -248,11 +259,11 @@ struct FNV_807c50
 // @fnv 0x00807b50
 FNV_807c50* __fastcall GetOrCreate807c50(hkpEntity* entity)
 {
-    if (entity->m_pExtendedListeners == 0)
+    if (entity->m_extendedListeners == 0)
     {
-        entity->m_pExtendedListeners = reinterpret_cast<hkpEntityExtendedListeners*>(new FNV_807c50());
+        entity->m_extendedListeners = reinterpret_cast<hkpEntityExtendedListeners*>(new FNV_807c50());
     }
-    return reinterpret_cast<FNV_807c50*>(entity->m_pExtendedListeners);
+    return reinterpret_cast<FNV_807c50*>(entity->m_extendedListeners);
 }
 
 namespace TelekinesisRemovalDetail {
@@ -275,10 +286,13 @@ extern "C" void* __cdecl FNV_DynamicCast(void* object, unsigned long displacemen
 // Iterates activation listeners on the hkpEntity and calls FUN_00807a10 on any that are telekinesis shells.
 // @fnv 0x00807ac0
 // src: XBOX_PDB 0x00807ac0
-void __cdecl bhkTelekinesisListener_RemoveTelekinesisListeners(void* body)
+// pdb: bhkTelekinesisListener::RemoveTelekinesisListeners | bhkTelekinesisListener.obj | retail, upstream name already matches, high
+// pdb params: apBody
+// pdb locals: pbody, i, ptl, pl
+void __cdecl bhkTelekinesisListener_RemoveTelekinesisListeners(void* apBody)
 {
     using namespace TelekinesisRemovalDetail;
-    hkpEntity* entity = Bipedanim_GetReferenceFlagsOrZero(body);
+    hkpEntity* entity = Bipedanim_GetReferenceFlagsOrZero(apBody);
     {
         int index;
         for (index = 0; index < (int)reinterpret_cast<ActivationArray*>(
@@ -444,7 +458,7 @@ struct TelekinesisFinishReceiver : ::bhkTelekinesisListener
     TelekinesisReferenceView* pRef;
     TelekinesisBodyView* pBody;
     unsigned int m_Filter;
-    void bhkTelekinesisListener_Finish(::hkpEntity* entity);
+    void bhkTelekinesisListener_Finish(::hkpEntity* apEntity);
 };
 
 extern "C" int DAT_01186044;
@@ -453,7 +467,10 @@ extern "C" int DAT_0119ba28;
 // If pRef is set, casts its v116() result and calls FUN_00b4dec0(2) on success; then calls FUN_00626cb0, FUN_00807cb0, and deletes this receiver.
 // @fnv 0x00807a10
 // src: XBOX_PDB 0x00807a10
-void TelekinesisFinishReceiver::bhkTelekinesisListener_Finish(::hkpEntity* entity)
+// pdb: bhkTelekinesisListener::Finish | bhkTelekinesisListener.obj | retail, upstream name already matches, high
+// pdb params: apEntity
+// pdb locals: pavlod, pav
+void TelekinesisFinishReceiver::bhkTelekinesisListener_Finish(::hkpEntity* apEntity)
 {
     TelekinesisFadeNodeView* pavlod;
     void* pav;
@@ -471,7 +488,7 @@ void TelekinesisFinishReceiver::bhkTelekinesisListener_Finish(::hkpEntity* entit
 
     pBody->bhkWorldObject_SetCollisionFilter(m_Filter);
 
-    ::bhkTelekinesisListener_Remove(reinterpret_cast<char*>(this), entity);
+    ::bhkTelekinesisListener_Remove(reinterpret_cast<char*>(this), apEntity);
 
     delete reinterpret_cast< ::DelVirt*>(this);
 }

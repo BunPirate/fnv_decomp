@@ -12,12 +12,15 @@ public:
 class ScriptLoader : public Script
 {
   public:
-    bool Script_Load(TESFile* file);
+    bool Script_Load(TESFile* pFile);
 };
 
 // @fnv 0x005ab9f0
 // src: XBOX_PDB 0x005ab9f0
-bool ScriptLoader::Script_Load(TESFile* file)
+// pdb: Script::Load | TESScript.obj | retail, string-set bridge, high
+// pdb params: pFile
+// pdb locals: chunkid, pNewVariable, n, pMessage, pNewItem, tempID, refvidx
+bool ScriptLoader::Script_Load(TESFile* pFile)
 {
     ScriptVariableInfo* chunk = 0;
     unsigned int reference;
@@ -27,49 +30,49 @@ bool ScriptLoader::Script_Load(TESFile* file)
     unsigned int unusedID;
     ScriptReferencedObject* referenceID;
     unsigned int editorID;
-    if (reinterpret_cast<TESFileFormInt_tesscript*>(file)->GetTESForm() != ENUM_FORM_ID_SCPT_ID)
+    if (reinterpret_cast<TESFileFormInt_tesscript*>(pFile)->GetTESForm() != ENUM_FORM_ID_SCPT_ID)
         return false;
-    LoadRecordHeader(file);
-    while (size = file->GetChunkID())
+    LoadRecordHeader(pFile);
+    while (size = pFile->GetChunkID())
     {
         switch (size)
         {
         case 0x44494445:
-            variable = (char*)_alloca(file->GetChunkSize());
-            file->GetChunkData(variable, 0x200);
+            variable = (char*)_alloca(pFile->GetChunkSize());
+            pFile->GetChunkData(variable, 0x200);
             SetEditorID_AtRuntime(variable);
             break;
         case 0x444e424f:
-            readOBNDSubRecord(file);
+            readOBNDSubRecord(pFile);
             break;
         case 0x52484353:
-            file->GetChunkData(&m_kHeader, 0);
-            if (file->IsEndianConversionRequired())
-                m_kHeader.Endian();
+            pFile->GetChunkData(&m_header, 0);
+            if (pFile->IsEndianConversionRequired())
+                m_header.Endian();
             break;
         case 0x44534c53:
             chunk = new ScriptVariableInfo;
-            chunk->Load(file);
+            chunk->Load(pFile);
             GetVariableList()->AddTail(chunk);
             break;
         case 0x52564353:
             if (chunk)
             {
-                variableName = (char*)_alloca(file->GetChunkSize());
-                file->GetChunkData(variableName, 0x200);
+                variableName = (char*)_alloca(pFile->GetChunkSize());
+                pFile->GetChunkData(variableName, 0x200);
                 chunk->name.Set(variableName, 0);
             }
             break;
         case 0x41444353:
-            reference = file->GetChunkSize();
-            m_data = AllocateZeroed(1, reference);
+            reference = pFile->GetChunkSize();
+            m_data = ourCalloc(1, reference);
             memset(m_data, 0, reference);
-            file->GetChunkData(m_data, 0);
+            pFile->GetChunkData(m_data, 0);
             break;
         case 0x4f524353:
         case 0x56524353:
             referenceID = new ScriptReferencedObject;
-            file->GetChunkData(&unusedID);
+            pFile->GetChunkData(&unusedID);
             if (size == 0x4f524353)
                 referenceID->pForm = (TESForm*)unusedID;
             else
@@ -81,12 +84,12 @@ bool ScriptLoader::Script_Load(TESFile* file)
         case 0x44484353:
             break;
         case 0x4d414e52:
-            file->GetChunkData(&editorID);
+            pFile->GetChunkData(&editorID);
         }
-        if (!file->NextChunk())
+        if (!pFile->NextChunk())
             break;
     }
     if (!m_data)
-        Warning("MASTERFILE: Script '%s' in file '%s' has not been compiled.\r\n", GetName(), file->GetFilename());
+        Warning("MASTERFILE: Script '%s' in file '%s' has not been compiled.\r\n", GetName(), pFile->GetFilename());
     return true;
 }

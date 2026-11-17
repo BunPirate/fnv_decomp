@@ -62,6 +62,8 @@ class FUN_00b2e680_cls
 
 // Copies the fields of src into this, delegating the embedded Sub14_cls member to AssignSubstring with DAT_010173f0.
 // @fnv 0x00b2e680
+// pdb: CIndexedGeometry::DeleteIndexData | IndexedGeometry.obj | retail, object-file run extension, low
+// pdb locals: i, j
 FUN_00b2e680_cls::FUN_00b2e680_cls(const FUN_00b2e680_cls& src)
 {
     Scratch_cls scratch;
@@ -81,7 +83,7 @@ struct S_00b3cf40_Random
 {
     S_00b3cf40_Random();
     ~S_00b3cf40_Random();
-    float FUN_00b3f130(float lo, float hi);
+    float FUN_00b3f130(float lo, float fMax);
 };
 
 static const float DAT_01022958 = 10000.0f;
@@ -114,6 +116,9 @@ struct S_00b3cf40
 };
 
 // @fnv 0x00b3cf40
+// pdb: SIdvLeafInfo::InitTables | LeafInfo.obj | debug, object-file run extension, low
+// pdb params: nNumTextures
+// pdb locals: cDice, pTexCoord, nTotalSize, i, j
 void S_00b3cf40::Init(int size)
 {
     m_iElementCount = size;

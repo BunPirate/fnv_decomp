@@ -40,46 +40,49 @@ struct List
 };
 // @fnv 0x00405760
 // src: XBOX_PDB 0x00405760
-void List::EffectItemList_Load(File* file, const char* name)
+// pdb: EffectItemList::Load | EffectItemList.obj | retail, upstream name already matches, high
+// pdb params: apFile, apSpellName
+// pdb locals: peffectSetting, ieffectID, peffect, i
+void List::EffectItemList_Load(File* apFile, const char* apSpellName)
 {
     unsigned id;
     EffectSetting* effect;
     Item* actorValue;
     int item;
-    switch (file->TESFile_GetTESChunk())
+    switch (apFile->TESFile_GetTESChunk())
     {
     case 0x44494645:
-        file->ReadChunkInt(&id);
-        ResolveFormID(&id, file);
+        apFile->ReadChunkInt(&id);
+        ResolveFormID(&id, apFile);
         effect = dynamic_cast<EffectSetting*>(TESForm_GetFormByNumericID(id));
         if (effect)
         {
             actorValue = new Item(effect);
-            file->FUN_004726f0();
+            apFile->FUN_004726f0();
             if (effect->HasFlag2() && effect->GetAssociatedActorValue() == 0x36)
                 item = 0;
-            if (actorValue->FUN_00404120(file, name))
+            if (actorValue->FUN_00404120(apFile, apSpellName))
                 FUN_00405d20(actorValue);
             else
             {
-                Warning_005b5e40(&DAT_010125c0, static_cast<const char*>(effect->GetEffectName()), name == 0 ? &DAT_010120d8 : name);
+                Warning_005b5e40(&DAT_010125c0, static_cast<const char*>(effect->GetEffectName()), apSpellName == 0 ? &DAT_010120d8 : apSpellName);
                 delete actorValue;
                 actorValue = 0;
             }
             *(Item**)&DAT_011c33d4 = actorValue;
         }
         else
-            Warning_005b5e40(&DAT_01012578, id, name == 0 ? &DAT_010120d8 : name);
+            Warning_005b5e40(&DAT_01012578, id, apSpellName == 0 ? &DAT_010120d8 : apSpellName);
         break;
     case 0x41445443:
         if (*(Item**)&DAT_011c33d4)
         {
-            (*(Item**)&DAT_011c33d4)->FUN_00404120(file, name);
+            (*(Item**)&DAT_011c33d4)->FUN_00404120(apFile, apSpellName);
             if ((*(Item**)&DAT_011c33d4)->FUN_00404710())
                 count++;
         }
         else
-            Warning_005b5e40(&DAT_01012520, name == 0 ? &DAT_010120d8 : name);
+            Warning_005b5e40(&DAT_01012520, apSpellName == 0 ? &DAT_010120d8 : apSpellName);
         break;
     }
 }

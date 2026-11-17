@@ -12,47 +12,54 @@
 #include "tesidlemanager_decls.h"
 
 // @fnv 0x006008f0
-TESObject* IdleAnimationManager::GetCurrentUsedItem()
+TESObject* TESIdleManager::GetCurrentUsedItem()
 {
     return fnv_tesidlemanager_used_item;
 }
 
 // @fnv 0x00600930
-bool IdleAnimationManager::GetUsedItemActivate()
+bool TESIdleManager::GetUsedItemActivate()
 {
     return fnv_tesidlemanager_used_item_activate;
 }
 
 // @fnv 0x00600690
-NiFormArray* IdleAnimationManager::GetIdleArray(TESForm* form)
+// pdb: TESIdleManager::GetLooseIdleArray | TESIdleManager.obj | retail, object-file run extension, high
+// pdb params: apIdleDir
+// pdb locals: pretarray, proot
+NiFormArray* TESIdleManager::GetIdleArray(TESForm* apForm)
 {
     NiFormArray* result = 0;
     char buffer[264];
 
-    if (form)
+    if (apForm)
     {
-        BuildIdlePath(TESModel::GetModelFilePath((TESObject*)form), buffer);
-        result = GetIdleFormArray(buffer);
+        GetIdleDirName(TESModel::GetModelFilePath((TESObject*)apForm), buffer);
+        result = GetLooseIdleArray(buffer);
     }
     return result;
 }
 
 // @fnv 0x006007f0
-void IdleAnimationManager::BuildIdlePath(const char* source, char* destination)
+// src: XBOX_RETAIL_PDB 0x006007f0
+// pdb: TESIdleManager::GetIdleDirName | TESIdleManager.obj | retail, call graph, high
+// pdb params: apInDir, apOutDir
+// pdb locals: ptempstring, pfind
+void TESIdleManager::GetIdleDirName(const char* apInDir, char* apOutDir)
 {
     char buffer[260];
     char* match;
 
-    destination[0] = 0;
-    if (source && source[0])
+    apOutDir[0] = 0;
+    if (apInDir && apInDir[0])
     {
-        TaskQueueInterface::CopyStringToBuffer(buffer, sizeof(buffer), source);
+        TaskQueueInterface::CopyStringToBuffer(buffer, sizeof(buffer), apInDir);
         match = FUN_004812f0(buffer, fnv_tesidlemanager_idle_anims);
         if (match)
         {
             match += BSStringLength<char>(fnv_tesidlemanager_idle_anims);
             *match = 0;
-            TaskQueueInterface::CopyStringToBuffer(destination, sizeof(buffer), buffer);
+            TaskQueueInterface::CopyStringToBuffer(apOutDir, sizeof(buffer), buffer);
         }
         else
         {
@@ -61,8 +68,8 @@ void IdleAnimationManager::BuildIdlePath(const char* source, char* destination)
             {
                 ++match;
                 *match = 0;
-                TaskQueueInterface::CopyStringToBuffer(destination, sizeof(buffer), buffer);
-                strcat_s(destination, sizeof(buffer), fnv_tesidlemanager_idle_anims);
+                TaskQueueInterface::CopyStringToBuffer(apOutDir, sizeof(buffer), buffer);
+                strcat_s(apOutDir, sizeof(buffer), fnv_tesidlemanager_idle_anims);
             }
         }
     }
@@ -70,22 +77,25 @@ void IdleAnimationManager::BuildIdlePath(const char* source, char* destination)
 
 // Builds a path from directory and the idle anims folder, looks it up in the map, and returns the weapon's list from the found entry.
 // @fnv 0x00600700
-BSSimpleList<const char*>* IdleAnimationManager::FindIdleArrayEntry(const char* directory,
-                                                                    ANIM_GROUP_WEAPON_ENUM weapon)
+// pdb: TESIdleManager::GetRootFilenameList | TESIdleManager.obj | retail, call graph (shared callers), high
+// pdb params: apIdleDir, aeWeaponGroup
+// pdb locals: pret, plastSlash, searchPath, proot
+BSSimpleList<const char*>* TESIdleManager::FindIdleArrayEntry(const char* apIdleDir,
+                                                                    ANIM_GROUP_WEAPON_ENUM aeWeaponGroup)
 {
     BSSimpleList<const char*>* result = 0;
-    if (directory && directory[0])
+    if (apIdleDir && apIdleDir[0])
     {
         IdleAnimationDirectoryEntry* pIdleEntry = 0;
         {
             char buffer[128];
             {
-                TaskQueueInterface::CopyStringToBuffer(buffer, 128, directory);
+                TaskQueueInterface::CopyStringToBuffer(buffer, 128, apIdleDir);
                 char* match = strrchr_0040ab30(buffer, '\\');
                 TaskQueueInterface::CopyStringToBuffer(match + 1, 128 - (match - buffer) - 1,
                                                        fnv_tesidlemanager_idle_anims);
                 if (GetAt(buffer, pIdleEntry) && pIdleEntry)
-                    result = pIdleEntry->m_ppFileListsByWeapon[weapon];
+                    result = pIdleEntry->m_ppFileListsByWeapon[aeWeaponGroup];
             }
         }
     }
@@ -93,30 +103,35 @@ BSSimpleList<const char*>* IdleAnimationManager::FindIdleArrayEntry(const char* 
 }
 
 // @fnv 0x005ffc20
-void IdleAnimationManager::InitializeIdleAnimations()
+// pdb: TESIdleManager::InitLoadedIdles | TESIdleManager.obj | debug, object-file gap fill, medium
+// pdb locals: isize, iter, i, pidle, proot, pignore, icount, tempstring
+void TESIdleManager::InitializeIdleAnimations()
 {
-    unsigned int count = idleForms.GetSize();
+    unsigned int count = LoadedIdleArray.GetSize();
     for (unsigned int i = 0; i < count; ++i)
     {
-        TESIdleForm* idle = (TESIdleForm*)idleForms.GetAt(i);
+        TESIdleForm* idle = (TESIdleForm*)LoadedIdleArray.GetAt(i);
         if (idle && !idle->GetInitialized())
             idle->InitItem();
         else
-            idleForms.SetAt(i, const_cast<BGSCameraPath*&>(static_cast<BGSCameraPath* const&>((BGSCameraPath*)0)));
+            LoadedIdleArray.SetAt(i, const_cast<BGSCameraPath*&>(static_cast<BGSCameraPath* const&>((BGSCameraPath*)0)));
     }
     for (unsigned int uiIndex2 = 0; uiIndex2 < count; ++uiIndex2)
     {
-        TESIdleForm* idle = (TESIdleForm*)idleForms.GetAt(uiIndex2);
-        if (idle && idle->HasMissingPathArray())
-            idleForms.SetAt(uiIndex2,
+        TESIdleForm* idle = (TESIdleForm*)LoadedIdleArray.GetAt(uiIndex2);
+        if (idle && idle->InitParents())
+            LoadedIdleArray.SetAt(uiIndex2,
                             const_cast<BGSCameraPath*&>(static_cast<BGSCameraPath* const&>((BGSCameraPath*)0)));
     }
-    idleForms.Compact();
-    loadedIdles = true;
+    LoadedIdleArray.Compact();
+    bInitialized = true;
 }
 
 // @fnv 0x00600950
-TESIdleForm* IdleAnimationManager::FindIdleFormForObject(TESObjectREFR* action, TESObjectREFR* target)
+// pdb: TESIdleManager::GetIdleToPlay | TESIdleManager.obj | retail, call graph (shared callers), medium
+// pdb params: apActionRef, apTargetRef
+// pdb locals: pretidle, pactionAnim, idledir, parray, icount, i, pidle
+TESIdleForm* TESIdleManager::FindIdleFormForObject(TESObjectREFR* action, TESObjectREFR* target)
 {
     TESIdleForm* result = 0;
     NiFormArray* idles;
@@ -124,9 +139,9 @@ TESIdleForm* IdleAnimationManager::FindIdleFormForObject(TESObjectREFR* action, 
     {
         char buffer[264];
         {
-            BuildIdlePath(action->GetModelFilePath(), buffer);
+            GetIdleDirName(action->GetModelFilePath(), buffer);
             AnimData* anim = action->GetAnimData();
-            idles = GetFormArrayForIdleDir(buffer);
+            idles = GetRootIdleArray(buffer);
             if (idles)
             {
                 unsigned int count = idles->GetSize();
@@ -141,19 +156,23 @@ TESIdleForm* IdleAnimationManager::FindIdleFormForObject(TESObjectREFR* action, 
             }
         }
     }
-    if (result && result->TESIdleForm_GetAllowNoFile() && !result->IsIdleFile())
+    if (result && result->TESIdleForm_GetAllowNoFile() && !result->CheckIdleFile())
         result = 0;
     return result;
 }
 
 // @fnv 0x005ff950
-void IdleAnimationDirectoryEntry::SetWeaponFiles(BSSimpleList<const char*>* files)
+// src: XBOX_RETAIL_PDB 0x005ff950
+// pdb: IDLE_ANIM_ROOT::AddRootFilenameList | TESIdleManager.obj | retail, string-set bridge, high
+// pdb params: apList
+// pdb locals: eanimWeapon, bpowerArmor, eanimMove, pfilename, plastSlash
+void IdleAnimationDirectoryEntry::IDLE_ANIM_ROOT_AddRootFilenameList(BSSimpleList<const char*>* apList)
 {
-    if (!files)
+    if (!apList)
         return;
-    while (!files->IsEmpty())
+    while (!apList->IsEmpty())
     {
-        const char* filename = files->GetItem();
+        const char* filename = apList->GetItem();
         {
             ANIM_GROUP_MOVE_ENUM move;
             bool flag;
@@ -176,48 +195,52 @@ void IdleAnimationDirectoryEntry::SetWeaponFiles(BSSimpleList<const char*>* file
                 if (!m_ppFileListsByWeapon[weapon])
                     m_ppFileListsByWeapon[weapon] = new BSSimpleList<const char*>;
                 m_ppFileListsByWeapon[weapon]->AddHead(filename);
-                files->RemoveHead();
+                apList->RemoveHead();
             }
         }
     }
-    delete files;
+    delete apList;
 }
 
 // @fnv 0x00600170
-IdleAnimationDirectoryEntry* IdleAnimationManager::ClearIdleData(const char* directory,
-                                                                 BSSimpleList<const char*>* files, bool force)
+// src: XBOX_RETAIL_PDB 0x00600170
+// pdb: TESIdleManager::AddRootIdleArray | TESIdleManager.obj | retail, call graph (shared callers), high
+// pdb params: apIdleDir, apList, abForceList
+// pdb locals: pretarray, proot, plastSlash, searchPath
+IdleAnimationDirectoryEntry* TESIdleManager::AddRootIdleArray(const char* apIdleDir,
+                                                                 BSSimpleList<const char*>* apList, bool abForceList)
 {
     IdleAnimationDirectoryEntry* result = 0;
     {
         IdleAnimationDirectoryEntry* fallback;
         {
             IdleAnimationDirectoryEntry* supplied;
-            if ((!DAT_011cb71c || force) && directory && directory[0])
+            if ((!DAT_011cb71c || abForceList) && apIdleDir && apIdleDir[0])
             {
-                result = (IdleAnimationDirectoryEntry*)GetFormArrayForIdleDir(directory);
+                result = (IdleAnimationDirectoryEntry*)GetRootIdleArray(apIdleDir);
                 if (!result)
                 {
-                    if (files)
+                    if (apList)
                     {
                         char buffer[128];
                         {
-                            TaskQueueInterface::CopyStringToBuffer(buffer, 128, directory);
+                            TaskQueueInterface::CopyStringToBuffer(buffer, 128, apIdleDir);
                             char* slash = strrchr_0040ab30(buffer, '\\');
                             TaskQueueInterface::CopyStringToBuffer(slash + 1, 128 - (slash - buffer) - 1,
                                                                    fnv_tesidlemanager_idle_anims);
-                            supplied = new IdleAnimationDirectoryEntry(directory);
-                            supplied->SetWeaponFiles(g_modelLoader->FindNIFFileListEntry(files, 0));
+                            supplied = new IdleAnimationDirectoryEntry(apIdleDir);
+                            supplied->IDLE_ANIM_ROOT_AddRootFilenameList(g_modelLoader->FindNIFFileListEntry(apList, 0));
                             InsertOrUpdate(buffer, supplied);
                             result = supplied;
                             return result;
                         }
                     }
-                    fallback = new IdleAnimationDirectoryEntry(directory);
+                    fallback = new IdleAnimationDirectoryEntry(apIdleDir);
                     DAT_011cb71c = true;
-                    fallback->SetWeaponFiles(
-                        g_modelLoader->GetModelFileList(directory, true, false, ANIM_GROUP_WEAPON_ENUM_AGW_NONE));
+                    fallback->IDLE_ANIM_ROOT_AddRootFilenameList(
+                        g_modelLoader->GetModelFileList(apIdleDir, true, false, ANIM_GROUP_WEAPON_ENUM_AGW_NONE));
                     DAT_011cb71c = false;
-                    InsertOrUpdate(directory, fallback);
+                    InsertOrUpdate(apIdleDir, fallback);
                     result = fallback;
                 }
             }
@@ -231,8 +254,10 @@ const char** __fastcall _ref_006815c0(BSSimpleList<const char*>*);
 void __fastcall _ref_0063f7b0(BSSimpleList<const char*>*);
 
 // @fnv 0x006003c0
-// src: COMMUNITY 0x006003c0
-void __fastcall TESIdleManager_InitRootIdleArrays(void* thisPtr)
+// src: XBOX_RETAIL_PDB 0x006003c0 (was COMMUNITY)
+// pdb: TESIdleManager::RebuildRootFilenameLists | TESIdleManager.obj | retail, call graph, high
+// pdb locals: iter, pidledir, proot, n, pfilename
+void __fastcall TESIdleManager_RebuildRootFilenameLists(void* thisPtr)
 {
     void* pIter = ((NiTPointerMap<unsigned int, void*>*)thisPtr)->GetFirstPos();
     while (pIter)
@@ -256,38 +281,46 @@ void __fastcall TESIdleManager_InitRootIdleArrays(void* thisPtr)
                     root->m_ppFileListsByWeapon[i] = 0;
                 }
             }
-            root->SetWeaponFiles(g_modelLoader->GetModelFileList(path, true, false, 0));
+            root->IDLE_ANIM_ROOT_AddRootFilenameList(g_modelLoader->GetModelFileList(path, true, false, 0));
         }
     }
 }
 
-struct FUN_006004f0_shell : public IdleAnimationManager
+struct FUN_006004f0_shell : public TESIdleManager
 {
-    NiFormArray* GetFormArray(TESForm*);
+    NiFormArray* TESIdleManager_AddRootIdleArray(TESForm*);
 };
 
 // @fnv 0x006004f0
-NiFormArray* FUN_006004f0_shell::GetFormArray(TESForm* apForm)
+// src: XBOX_RETAIL_PDB 0x006004f0
+// pdb: TESIdleManager::AddRootIdleArray | TESIdleManager.obj | retail, call graph, high
+// pdb params: apIdleDir, apList, abForceList
+// pdb locals: pretarray, proot, plastSlash, searchPath
+NiFormArray* FUN_006004f0_shell::TESIdleManager_AddRootIdleArray(TESForm* apForm)
 {
     IdleAnimationDirectoryEntry* pretarray = 0;
     if (apForm)
     {
         char idledir[260];
-        BuildIdlePath(TESModel::GetModelFilePath((TESObject*)apForm), idledir);
-        pretarray = ClearIdleData(idledir, 0, false);
+        GetIdleDirName(TESModel::GetModelFilePath((TESObject*)apForm), idledir);
+        pretarray = AddRootIdleArray(idledir, 0, false);
     }
     return (NiFormArray*)pretarray;
 }
 
 namespace fnv_00600560 {
-struct FUN_00600560_shell : public IdleAnimationManager
+struct FUN_00600560_shell : public TESIdleManager
 {
-    NiFormArray* GetFormArrayForIdleDir(TESForm*);
+    NiFormArray* TESIdleManager_GetRootIdleArray(TESForm*);
 };
 
 // Looks up apIdleDir in the map and returns the stored NiFormArray pointer, or null if the key is missing or empty.
 // @fnv 0x00600560
-NiFormArray* FUN_00600560_shell::GetFormArrayForIdleDir(TESForm* apIdleDir)
+// src: XBOX_RETAIL_PDB 0x00600560
+// pdb: TESIdleManager::GetRootIdleArray | TESIdleManager.obj | retail, object-file run extension, high
+// pdb params: apIdleDir
+// pdb locals: pretarray, proot
+NiFormArray* FUN_00600560_shell::TESIdleManager_GetRootIdleArray(TESForm* apIdleDir)
 {
     NiFormArray* pretarray = 0;
     if (apIdleDir && *(const char*)apIdleDir)
@@ -303,14 +336,18 @@ NiFormArray* FUN_00600560_shell::GetFormArrayForIdleDir(TESForm* apIdleDir)
 }  // namespace fnv_00600560
 
 namespace fnv_00600630 {
-struct FUN_00600630_shell : public IdleAnimationManager
+struct FUN_00600630_shell : public TESIdleManager
 {
-    NiFormArray* GetIdleFormArray(TESForm*);
+    NiFormArray* TESIdleManager_GetLooseIdleArray(TESForm*);
 };
 
 // Looks up apIdleDir in the map and returns the NiFormArray at offset 0x18 of the found entry, or null if the key is empty or missing.
 // @fnv 0x00600630
-NiFormArray* FUN_00600630_shell::GetIdleFormArray(TESForm* apIdleDir)
+// src: XBOX_RETAIL_PDB 0x00600630
+// pdb: TESIdleManager::GetLooseIdleArray | TESIdleManager.obj | retail, object-file run extension, high
+// pdb params: apIdleDir
+// pdb locals: pretarray, proot
+NiFormArray* FUN_00600630_shell::TESIdleManager_GetLooseIdleArray(TESForm* apIdleDir)
 {
     NiFormArray* pretarray = 0;
     if (apIdleDir && *(const char*)apIdleDir != '\0')
@@ -368,6 +405,7 @@ struct S005fff90
     void* FUN_005fff90(unsigned int);
 };
 // @fnv 0x005fff90
+// pdb: IDLE_ANIM_ROOT::`scalar deleting destructor' | TESIdleManager.obj | debug, object-file gap fill, medium
 void* S005fff90::FUN_005fff90(unsigned int flags)
 {
     FUN_005fffc0();
@@ -376,21 +414,24 @@ void* S005fff90::FUN_005fff90(unsigned int flags)
     return this;
 }
 
-struct FUN_006005c0_shell : public IdleAnimationManager
+struct FUN_006005c0_shell : public TESIdleManager
 {
-    NiFormArray* _TESIdleManager_GetIdleAnimRoot(const char* path);
+    NiFormArray* _TESIdleManager_GetIdleAnimRoot(const char* apForm);
 };
 
 // @fnv 0x006005c0
 // src: COMMUNITY 0x006005c0
-NiFormArray* FUN_006005c0_shell::_TESIdleManager_GetIdleAnimRoot(const char* path)
+// pdb: TESIdleManager::GetRootIdleArray | TESIdleManager.obj | retail, object-file run extension, high
+// pdb params: apIdleDir
+// pdb locals: pretarray, proot
+NiFormArray* FUN_006005c0_shell::_TESIdleManager_GetIdleAnimRoot(const char* apForm)
 {
     NiFormArray* result = 0;
-    if (path)
+    if (apForm)
     {
         char directory[260];
-        IdleAnimationManager::BuildIdlePath(TESModel::GetModelFilePath((TESObject*)path), directory);
-        result = GetFormArrayForIdleDir(directory);
+        TESIdleManager::GetIdleDirName(TESModel::GetModelFilePath((TESObject*)apForm), directory);
+        result = GetRootIdleArray(directory);
     }
     return result;
 }
@@ -412,6 +453,7 @@ struct FUN_005fffc0
 
 // Destroys the directory entry's form arrays and list data.
 // @fnv 0x005fffc0
+// pdb: IDLE_ANIM_ROOT::~IDLE_ANIM_ROOT | TESIdleManager.obj | debug, object-file gap fill, medium
 FUN_005fffc0::~FUN_005fffc0()
 {}
 
@@ -450,6 +492,8 @@ struct IdleCleanup
 };
 // Iterates the container, deleting each root's forms, file lists and filenames, then deletes all forms in forms and clears both containers.
 // @fnv 0x005ffd20
+// pdb: TESIdleManager::DestroyRootIdleArrays | TESIdleManager.obj | debug, object-file gap fill, medium
+// pdb locals: isize, iter, proot, pignore, icount, i, pidle, n, pfilename
 void IdleCleanup::DeleteAllOwnedForms()
 {
     void* position = ((NiTPointerMap<unsigned int, RootData*>*)this)->GetFirstPos();
@@ -502,7 +546,9 @@ void __fastcall ClearIdleFormArray(NiFormArray* array);
 
 // @fnv 0x00600030
 // src: GUESS 0x00600030 (confidence: low)
-void IdleAnimationManager::ReleaseStorage_00600030()
+// pdb: TESIdleManager::DestroyRootIdleArrayForms | TESIdleManager.obj | debug, object-file gap fill, medium
+// pdb locals: iter, proot, pignore, icount, i, pidle
+void TESIdleManager::ReleaseStorage_00600030()
 {
     void* a = ((NiTPointerMap<void*, NiFormArray*>*)this)->GetFirstPos();
     while (a != 0)

@@ -16,6 +16,9 @@ struct ValueModifierEffectSerialization
 
 // @fnv 0x0080df90
 // src: XBOX_PDB 0x0080df90
+// pdb: FrenzyEffect::GetSaveSize | FrenzyEffect.obj | debug, vtable slot, medium
+// pdb params: apActor
+// pdb locals: isize
 unsigned short FrenzyEffect::GetSaveSize_0080df90(Actor* apActor)
 {
     unsigned short isize = 0;
@@ -30,6 +33,8 @@ extern float DAT_011dc778;
 // Subtracts FUN_00404010(0.0f, value) from DAT_011dc778 and stores the result back into DAT_011dc778.
 // @fnv 0x0080fc90
 // src: COMMUNITY 0x0080fc90
+// pdb: MagicProjectile::RemoveTrackedProjectile | MagicBallProjectile.obj | debug, object-file gap fill, medium
+// pdb params: afProjectileWeight
 void _11DC778_Subtract(float value)
 {
     DAT_011dc778 = DAT_011dc778 - BSMAX_00404010(0.0f, value);
@@ -42,11 +47,12 @@ struct ValueModifierEffectCtor
 };
 // Runs the ValueModifierEffect constructor, installs the vtable pointer at DAT_0107a16c, clears the byte at offset 0x4c, and returns this.
 // @fnv 0x0080dbb0
+// pdb: FrenzyEffect::~FrenzyEffect | FrenzyEffect.obj | debug, object-file run extension, low
 void* FrenzyEffect::ConstructFrenzyEffect(void* apArg1, void* apArg2, void* apArg3)
 {
     ((ValueModifierEffectCtor*)this)->FUN_0080dbb0_ctor(apArg1, apArg2, apArg3);
     *reinterpret_cast<void**>(this) = &DAT_0107a16c;
-    exhausted = 0;
+    bStartedInCombat = 0;
     return this;
 }
 
@@ -54,19 +60,23 @@ extern TESSaveLoadGame* g_TESSaveLoadGame;
 // Calls FUN_00802db0 on the actor, then passes this+0x4c and 1 to TESSaveLoadGame::FUN_008579b0.
 // @fnv 0x0080dfd0
 // src: XBOX_PDB 0x0080dfd0
-void __thiscall FrenzyEffect::SaveGame_0080dfd0(Actor* actor)
+// pdb: FrenzyEffect::SaveGame | FrenzyEffect.obj | retail, vtable slot, high
+// pdb params: apActor
+void __thiscall FrenzyEffect::SaveGame_0080dfd0(Actor* apActor)
 {
-    reinterpret_cast<ValueModifierEffectSerialization*>(this)->FUN_00802db0(actor);
-    g_TESSaveLoadGame->TESSaveLoadGame_SaveGameDataOLD(&exhausted, 1);
+    reinterpret_cast<ValueModifierEffectSerialization*>(this)->FUN_00802db0(apActor);
+    g_TESSaveLoadGame->TESSaveLoadGame_SaveGameDataOLD(&bStartedInCombat, 1);
 }
 
 
 // @fnv 0x0080e000
 // src: XBOX_PDB 0x0080e000
+// pdb: FrenzyEffect::LoadGame | FrenzyEffect.obj | retail, vtable slot, high
+// pdb params: apActor
 void FrenzyEffect::LoadGame_0080e000(Actor* apActor)
 {
     reinterpret_cast<ValueModifierEffectSerialization*>(this)->FUN_00802dd0(apActor);
-    g_TESSaveLoadGame->ReadTypedData(&exhausted, 1);
+    g_TESSaveLoadGame->ReadTypedData(&bStartedInCombat, 1);
 }
 
 struct Proc_S
@@ -76,28 +86,34 @@ struct Proc_S
 // Calls FUN_0082c000, resolves target and caster, and sets byte at offset 0x4c to 1 when both exist and the target check passes.
 // @fnv 0x0080dd30
 // src: XBOX_PDB 0x0080dd30
+// pdb: FrenzyEffect::Start | FrenzyEffect.obj | retail, vtable slot, high
+// pdb locals: ptargetActor, pcasterActor
 void FrenzyEffect::Start_0080dd30()
 {
     ValueModifierEffect::Start();
     Actor* target = ActiveEffect::FUN_0059bb30() ? ActiveEffect::FUN_0059bb30()->GetOwnerActor() : 0;
     Actor* caster = ((Proc_S*)this)->GetNext() ? ((MagicCaster*)((Proc_S*)this)->GetNext())->GetCasterActor() : 0;
     if (target && caster && target->HasCombatState())
-        exhausted = 1;
+        bStartedInCombat = 1;
 }
 
 // Allocates a FrenzyEffect, copies exhausted, calls CopyData and returns the copy.
 // @fnv 0x0080dbf0
 // src: XBOX_PDB 0x0080dbf0
+// pdb: FrenzyEffect::Copy | FrenzyEffect.obj | retail, vtable slot, high
+// pdb locals: presult
 FrenzyEffect* FrenzyEffect::Copy_0080dbf0()
 {
     FrenzyEffect* copy = new FrenzyEffect(m_pEffectInstance, pSpell, pEffect);
-    copy->exhausted = exhausted;
+    copy->bStartedInCombat = bStartedInCombat;
     CopyData(copy);
     return copy;
 }
 
 // Allocates and constructs a FrenzyEffect from three pointers and returns it.
 // @fnv 0x0080df10
+// pdb: FrenzyEffect::Instantiate | FrenzyEffect.obj | retail, object-file run extension, low
+// pdb params: apCaster, apSpell, apEffect
 void* __cdecl CreateFrenzyEffectObject(void* apFirst, void* apSecond, void* apThird)
 {
     return new FrenzyEffect(apFirst, apSecond, apThird);
@@ -118,10 +134,12 @@ extern "C" World DAT_011e0e80;
 
 // @fnv 0x0080ddd0
 // src: XBOX_PDB 0x0080ddd0
+// pdb: FrenzyEffect::Finish | FrenzyEffect.obj | retail, vtable slot, high
+// pdb locals: ptargetActor, parray, i, pmob, pactor
 void FrenzyEffect::Finish_0080ddd0()
 {
     ApplyEffect();
-    if (exhausted)
+    if (bStartedInCombat)
         return;
     {
         Actor* actor = ActiveEffect::FUN_0059bb30() ? ActiveEffect::FUN_0059bb30()->FUN_00822b40() : 0;
@@ -348,6 +366,9 @@ bool MagicFormulas_CheckTargetLevelMagnitude(int aiLevel, float afMagnitude);
 // Checks whether apTarget is a valid, non-dead, non-immune character that passes the level and magnitude check for the Frenzy effect.
 // @fnv 0x0080dca0
 // src: XBOX_PDB 0x0080dca0
+// pdb: FrenzyEffect::CheckTarget | FrenzyEffect.obj | retail, vtable slot, high
+// pdb params: apTarget
+// pdb locals: pactor
 bool FrenzyEffect::CheckTarget_0080dca0(MagicTarget* apTarget)
 {
     FrenzyCheckCharacter* pChar =

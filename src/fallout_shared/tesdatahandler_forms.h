@@ -158,5 +158,5 @@ int Warning(const char*, ...);
 
 
 extern TES* g_TES;
-void RegisterEffectSetting(EffectSetting*);
+void EffectSettingCollection_AddEffect(EffectSetting*);
 #endif

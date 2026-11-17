@@ -17,10 +17,10 @@ class Matrix9C64
 {
   public:
     Matrix9C64();
-    void SetZRotation(float fAngleDifference);
-    void SetXRotation(float fAngleDifference);
+    void SetZRotation(float fAngle);
+    void SetXRotation(float fAngle);
     Matrix9C64 operator*(const Matrix9C64& kMat) const;
-    void GetCol(unsigned int uiCol, NiPoint3& kCol) const;
+    void GetCol(unsigned int uiCol, NiPoint3& col) const;
     float m00, m01, m02;
     float m10, m11, m12;
     float m20, m21, m22;
@@ -79,7 +79,7 @@ class PickData9C64
   public:
     PickData9C64();
     void SetFrom(const NiPoint3& kFrom);
-    void SetTo(const NiPoint3& kTo);
+    void SetTo(const NiPoint3& arLength);
     void SetCollector(AllRayHits9C64* pkCollector);
     AllRayHits9C64* GetCollector();
     hkVector4 m_kFrom;
@@ -520,22 +520,22 @@ class Event9C64
     unsigned int m_uiData;
 };
 
-extern NiRTTI g_kRTTI9C64;
+extern NiRTTI bhkCollisionBox_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01268444 (old: DAT_01268444/g_01268444/g_kRTTI9C64/g_pcCBEA40Name)
 
 Ref9C64* __cdecl GetReferenceFromObject(void* pvObject);
 NiPoint3& __cdecl FUN_00458620(NiPoint3& kOut, const hkVector4& kIn);
-NiPoint3& __cdecl HK2NINS(NiPoint3& kOut, const hkVector4& kIn);
+NiPoint3& __cdecl HK2NINS(NiPoint3& arNiP, const hkVector4& arhkV);
 void* __cdecl hkpGetPhantom(const void* pvObject);
-WorldObject9C64* __cdecl bhkEntity_Getbhk(void* pvEntry);
+WorldObject9C64* __cdecl bhkEntity_Getbhk(void* apEnt);
 bool __cdecl Script_SetActionFlag(void* pvForm, ExtraList9C64* pkExtra, unsigned int uiFlag);
 bool __cdecl NiObject_IsKindOf(NiRTTI* pkRTTI, WorldObject9C64* pkObject);
-CollisionObject9C64* __cdecl FindFirstCollisionObject(Node9C64* pkNode);
-bool __cdecl Projectile_PickSceneGraph(PickData9C64* pkPick, Node9C64* pkNode, bool bCheckMotion, bool bUpdate);
+CollisionObject9C64* __cdecl FindFirstCollisionObject(Node9C64* ap3D);
+bool __cdecl Projectile_PickSceneGraph(PickData9C64* apPickData, Node9C64* apObject, bool abIgnoreHead, bool abSort);
 
 class Listener9C64
 {
   public:
-    void ProjectileListener_contactPointAddedCallback(void* pvUnused, Event9C64* pkEvent);
+    void ProjectileListener_contactPointAddedCallback(void* apProxy, Event9C64* point);
     unsigned int unk00;
     unsigned int unk04;
     unsigned int unk08;
@@ -687,18 +687,21 @@ class Listener9C64
 #pragma strict_gs_check(push, on)
 // @fnv 0x009c6490
 // src: COMMUNITY 0x009c6490
-void Listener9C64::ProjectileListener_contactPointAddedCallback(void* pvUnused, Event9C64* pkEvent)
+// pdb: ProjectileListener::contactPointAddedCallback | ProjectileListener.obj | retail, upstream name already matches, high
+// pdb params: apProxy, point
+// pdb locals: pprojectile, pphantom, normal, ptarget, pcollidable, bignoreThisImpact, pbp, outputShapeKey, contact, pcol, pav, pfirstbody, collector, bhit, origin, rot2, rot, direction, length, pd, castHit, hitVector, i
+void Listener9C64::ProjectileListener_contactPointAddedCallback(void* apProxy, Event9C64* point)
 {
     Owner9C64* pkOwner = m_pkOwnerManager;
     if (!pkOwner)
         return;
-    Ref9C64* pkRef = GetReferenceFromObject(pkEvent->m_pvObject);
+    Ref9C64* pkRef = GetReferenceFromObject(point->m_pvObject);
     NiPoint3 kPoint;
-    FUN_00458620(kPoint, pkEvent->GetPosition());
+    FUN_00458620(kPoint, point->GetPosition());
     NiPoint3 kNormal;
-    HK2NINS(kNormal, pkEvent->GetPlaneNormal());
-    void* pvObject = pkEvent->m_pvObject;
-    unsigned int uiData = pkEvent->m_uiData;
+    HK2NINS(kNormal, point->GetPlaneNormal());
+    void* pvObject = point->m_pvObject;
+    unsigned int uiData = point->m_uiData;
     void* pvEntry = hkpGetPhantom(pvObject);
     WorldObject9C64* pkWorldObject = pvEntry ? bhkEntity_Getbhk(pvEntry) : 0;
     if (pkRef && pkWorldObject &&
@@ -710,7 +713,7 @@ void Listener9C64::ProjectileListener_contactPointAddedCallback(void* pvUnused, 
         return;
     }
     bool bBlocked = false;
-    if (pkWorldObject && (NiObject_IsKindOf(&g_kRTTI9C64, pkWorldObject) || pkWorldObject->GetFilter().GetLayer() == 0x1e))
+    if (pkWorldObject && (NiObject_IsKindOf(&bhkCollisionBox_ms_RTTI, pkWorldObject) || pkWorldObject->GetFilter().GetLayer() == 0x1e))
     {
         bBlocked = true;
         Node9C64* pkNode = pkRef ? pkRef->Get3D() : 0;

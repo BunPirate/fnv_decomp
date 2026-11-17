@@ -180,7 +180,7 @@ class NiTexture;
 extern "C" bool __cdecl fnv_NiStreamGetTexture(const char* textureName, NiPointer<NiTexture>& texture);
 extern "C" void __cdecl fnv_CopyFilePath(char* destination, unsigned int destinationSize, const char* source,
                                          unsigned int sourceSize);
-extern "C" bool __cdecl fnv_StandardizeFilePath(char* path);
+extern "C" bool __cdecl fnv_StandardizeFilePath(char* pcPath);
 extern "C" char fnv_NiStreamCriticalSection;
 extern "C" void(__stdcall* fnv_EnterCriticalSection)(void* section);
 extern "C" void(__stdcall* fnv_LeaveCriticalSection)(void* section);
@@ -219,6 +219,8 @@ NiObjectGroup* NiStream::GetObjectGroup(unsigned int groupID)
 }
 
 // @fnv 0x00A63430
+// pdb: NiPointer<NiPSysCollider>::operator= | NiPSysColliderManager.obj | debug, call graph, medium
+// pdb params: pObject
 __declspec(noinline) NiObject* NiStream::GetLoadedObject()
 {
     unsigned int linkIndex = m_uiLinkIndex;
@@ -230,7 +232,9 @@ __declspec(noinline) NiObject* NiStream::GetLoadedObject()
 }
 
 // @fnv 0x00A64700
-void NiStream::SetLinkIDCount(unsigned int numberOfLinkIDs)
+// pdb: NiStream::SetNumberOfLinkIDs | NiStream.obj | retail, call graph, high
+// pdb params: uiLinks
+void NiStream::SetLinkIDCount(unsigned int uiLinks)
 {
     NiTPrimitiveSet<unsigned int>& linkIDBlocks = (NiTPrimitiveSet<unsigned int>&)m_kLinkIDBlocks;
     if (linkIDBlocks.m_uiUsed == linkIDBlocks.m_uiAlloced)
@@ -242,11 +246,13 @@ void NiStream::SetLinkIDCount(unsigned int numberOfLinkIDs)
             allocationCount = 1;
         linkIDBlocks.Realloc(allocationCount);
     }
-    static_cast<unsigned int*>(linkIDBlocks.m_pBase)[linkIDBlocks.m_uiUsed] = numberOfLinkIDs;
+    static_cast<unsigned int*>(linkIDBlocks.m_pBase)[linkIDBlocks.m_uiUsed] = uiLinks;
     ++linkIDBlocks.m_uiUsed;
 }
 
 // @fnv 0x00A635B0
+// pdb: NiStream::RegisterObjects | NiStream.obj | retail, upstream name already matches, high
+// pdb locals: i, pkObject
 void NiStream::RegisterObjects()
 {
     for (unsigned int index = 0; index < m_kTopObjects.m_uiSize; ++index)
@@ -257,51 +263,62 @@ void NiStream::RegisterObjects()
 }
 
 // @fnv 0x00A63380
-bool NiStream::Save(NiBinaryStream* stream)
+// pdb: NiStream::Save | NiStream.obj | retail, vtable slot, high
+// pdb params: pcFileName
+// pdb locals: pkOstr, bResult
+bool NiStream::Save(NiBinaryStream* pkOstr)
 {
-    m_pkOstr = stream;
+    m_pkOstr = pkOstr;
     bool result = SaveStream();
     m_pkOstr = 0;
     return result;
 }
 
 // @fnv 0x00A633D0
-void NiStream::GetTexture(const char* textureName, NiPointer<NiTexture>& texture)
+// pdb: NiStream::GetTexture | NiStream.obj | debug, upstream name already matches, high
+// pdb params: pcURL, arTexture
+void NiStream::GetTexture(const char* pcURL, NiPointer<NiTexture>& arTexture)
 {
-    fnv_NiStreamGetTexture(textureName, texture);
+    fnv_NiStreamGetTexture(pcURL, arTexture);
 }
 
 // @fnv 0x00A636F0
+// pdb: NiStream::SetFilePath | NiStream.obj | retail, object-file run extension, low
+// pdb params: pcFilePath
 void NiStream::SetStreamPath(const char* path)
 {
     if (path != 0 && path[0] != '\0')
     {
-        char* destination = m_acStreamPath;
+        char* destination = m_acFilePath;
         fnv_CopyFilePath(destination, 0x104, path, 0x103);
         fnv_StandardizeFilePath(destination);
     }
     else
     {
-        m_acStreamPath[0] = '\0';
+        m_acFilePath[0] = '\0';
     }
 }
 
 // @fnv 0x00A63330
-bool NiStream::Load(NiBinaryStream* stream)
+// pdb: NiStream::Load | NiStream.obj | retail, vtable slot, high
+// pdb params: pcFileName
+// pdb locals: bResult, kIst
+bool NiStream::Load(NiBinaryStream* pkIstr)
 {
     typedef bool(__thiscall * StreamReadyFunction)(NiBinaryStream*);
-    if (!((StreamReadyFunction*)(*reinterpret_cast<void***>(stream)))[1](stream))
+    if (!((StreamReadyFunction*)(*reinterpret_cast<void***>(pkIstr)))[1](pkIstr))
     {
         m_pkIstr = 0;
         return false;
     }
-    m_pkIstr = stream;
+    m_pkIstr = pkIstr;
     bool result = LoadStream();
     m_pkIstr = 0;
     return result;
 }
 
 // @fnv 0x00A644F0
+// pdb: NiStream::RemoveAllObjects | NiStream.obj | retail, call graph, high
 void NiStream::ClearTopLevelObjects()
 {
     fnv_EnterCriticalSection(&fnv_NiStreamCriticalSection);
@@ -315,25 +332,34 @@ void NiStream::ClearTopLevelObjects()
 }
 
 // @fnv 0x00A64920
+// pdb: NiStream::RegisterPostProcessFunction | NiStream.obj | retail, call graph, medium
+// pdb params: pfnFunc
+// pdb locals: ui, pfnExistingFunc
 void NiStream::RegisterPostProcess(NiStreamPostProcess function)
 {
     DAT_011f4788->AddFirstEmpty(function);
 }
 
 // @fnv 0x00A64900
+// pdb: NiStream::RegisterLoader | NiStream.obj | retail, call graph, high
+// pdb params: pcName, pfnFunc
+// pdb locals: pfnExistingFunc, bRegistered
 // Physics bootstrap calls the original out-of-line registration function.
-__declspec(noinline) int NiStream::RegisterObjectLoader(const char* name, NiObject*(__cdecl* loader)())
+__declspec(noinline) int NiStream::RegisterObjectLoader(const char* pcName, NiObject*(__cdecl* pfnFunc)())
 {
-    DAT_011f4784->SetAt(name, (NiShader*)loader);
+    DAT_011f4784->SetAt(pcName, (NiShader*)pfnFunc);
     return 0;
 }
 
 // @fnv 0x00A636B0
-bool NiStream::GetLastLoadedFilePath(char* buffer, unsigned int size)
+// src: XBOX_RETAIL_PDB 0x00a636b0
+// pdb: NiStream::GetNextSearchPath | NiStream.obj | retail, object-file run extension, high
+// pdb params: pcPath, uiStringLen
+bool NiStream::GetNextSearchPath(char* pcPath, unsigned int uiStringLen)
 {
     if (DAT_011f4780)
     {
-        fnv_CopyFilePath(buffer, 0x104, m_acStreamPath, 0x103);
+        fnv_CopyFilePath(pcPath, 0x104, m_acFilePath, 0x103);
         DAT_011f4780 = false;
         return true;
     }
@@ -341,32 +367,40 @@ bool NiStream::GetLastLoadedFilePath(char* buffer, unsigned int size)
 }
 
 // @fnv 0x00A632F0
-bool NiStream::Load(char* buffer, int size)
+// pdb: NiStream::Load | NiStream.obj | retail, vtable slot, high
+// pdb params: pcFileName
+// pdb locals: bResult, kIst
+bool NiStream::Load(char* pcBuffer, int iBufferSize)
 {
     // The explicit initialization and teardown below own the stream lifetime.
     unsigned int streamStorage[sizeof(NiMemStream) / sizeof(unsigned int)];
     NiMemStream& stream = *reinterpret_cast<NiMemStream*>(streamStorage);
-    stream.FUN_00aa2fb0(buffer, size);
+    stream.FUN_00aa2fb0(pcBuffer, iBufferSize);
     bool result = Load(reinterpret_cast<NiBinaryStream*>(&stream));
     stream.NiMemStreamDestructor();
     return result;
 }
 
 // @fnv 0x00A635E0
-bool NiStream::Save(char*& buffer, int& size)
+// pdb: NiStream::Save | NiStream.obj | retail, vtable slot, high
+// pdb params: pcFileName
+// pdb locals: pkOstr, bResult
+bool NiStream::Save(char*& pcBuffer, int& iBufferSize)
 {
     // The explicit initialization and teardown below own the stream lifetime.
     unsigned int streamStorage[sizeof(NiMemStream) / sizeof(unsigned int)];
     NiMemStream& stream = *reinterpret_cast<NiMemStream*>(streamStorage);
     stream.NiMemStream_NiMemStream();
     bool result = Save(reinterpret_cast<NiBinaryStream*>(&stream));
-    size = stream.m_uiLogicalSize;
-    buffer = stream.NiMemStream_Str();
+    iBufferSize = stream.m_uiLogicalSize;
+    pcBuffer = stream.NiMemStream_Str();
     stream.NiMemStreamDestructor();
     return result;
 }
 
 // @fnv 0x00A64620
+// pdb: NiStream::ResolveLinkID | NiStream.obj | retail, call graph, high
+// pdb locals: uiLinkID
 NiObject* NiStream::DeserializeObject()
 {
     unsigned int linkID;
@@ -377,18 +411,22 @@ NiObject* NiStream::DeserializeObject()
 }
 
 // @fnv 0x00A64550
-void NiStream::ChangeObject(NiObject* object)
+// pdb: NiStream::ChangeObject | NiStream.obj | retail, upstream name already matches, high
+// pdb params: pkNewObject
+void NiStream::ChangeObject(NiObject* pkNewObject)
 {
-    NiObject* pointer = object;
-    if (object)
-        object->IncRefCount();
+    NiObject* pointer = pkNewObject;
+    if (pkNewObject)
+        pkNewObject->IncRefCount();
     ((NiStreamTopObjects&)m_kObjects)
         .SetAt(m_uiLoad, reinterpret_cast<const NiPointer<NiObject>&>(pointer));
-    if (object)
-        object->DecRefCount();
+    if (pkNewObject)
+        pkNewObject->DecRefCount();
 }
 
 // @fnv 0x00A63D80
+// pdb: NiStream::SaveTopLevelObjects | NiStream.obj | retail, upstream name already matches, high
+// pdb locals: uiTopObjects, i
 void NiStream::SaveTopLevelObjects()
 {
     unsigned int count = m_kTopObjects.m_uiSize;
@@ -398,18 +436,21 @@ void NiStream::SaveTopLevelObjects()
 }
 
 // @fnv 0x00A66370
-void NiStream::InsertObject(NiObject* object)
+// pdb: NiStream::InsertObject | NiStream.obj | retail, upstream name already matches, high
+// pdb params: pkObject
+// pdb locals: i
+void NiStream::InsertObject(NiObject* pkObject)
 {
-    NiObject* pointer = object;
-    if (object)
-        object->IncRefCount();
+    NiObject* pointer = pkObject;
+    if (pkObject)
+        pkObject->IncRefCount();
     NiStreamTopObjects& objects = (NiStreamTopObjects&)m_kTopObjects;
     unsigned int index = objects.m_uiSize;
     if (index >= objects.m_uiMaxSize)
         objects.SetSize(index + objects.m_uiGrowBy);
     objects.SetAt(index, reinterpret_cast<const NiPointer<NiObject>&>(pointer));
-    if (object)
-        object->DecRefCount();
+    if (pkObject)
+        pkObject->DecRefCount();
 }
 
 extern __declspec(thread) unsigned int t_uiMemContextC68;
@@ -417,15 +458,16 @@ extern __declspec(thread) unsigned int t_uiMemContextC68;
 // The scoped Havok context at 0x00c68230 saves and restores TLS 0x012722b4.
 inline AutoMemContext::AutoMemContext(int context)
 {
-    m_eMemoryContext = static_cast<MEM_CONTEXT>(t_uiMemContextC68);
+    iOldMemContext = static_cast<MEM_CONTEXT>(t_uiMemContextC68);
     t_uiMemContextC68 = context;
 }
 inline AutoMemContext::~AutoMemContext()
 {
-    t_uiMemContextC68 = m_eMemoryContext;
+    t_uiMemContextC68 = iOldMemContext;
 }
 
 // RTTI at vftable 0x010c3af8 names bhkMemoryAllocator (4 bytes); allocation/free slots are 0x00c66170/0x00c661a0.
+// pdb: class bhkMemoryAllocator, size 0x4, bases: hkMemoryAllocator, 0 members
 class bhkMemoryAllocator : public hkMemoryAllocator
 {
   public:
@@ -441,6 +483,7 @@ class bhkMemoryAllocator : public hkMemoryAllocator
 hkMemoryRouter* __cdecl GetMemoryRouterC68();
 
 // No include/ header yet: constructor 0x00cd0a60, setAllocator 0x00cd06c0.
+// pdb: class hkFreeListMemorySystem, size 0x3394 (here 0x4), bases: hkMemorySystem, 10 members
 class hkFreeListMemorySystem : public hkMemorySystem
 {
   public:
@@ -451,7 +494,7 @@ class hkFreeListMemorySystem : public hkMemorySystem
     void operator delete(void*, void*)
     {}
     hkFreeListMemorySystem();
-    void setAllocator(hkMemoryAllocator* pkAllocator);
+    void setAllocator(hkMemoryAllocator* a);
 };
 
 typedef void(__cdecl* hkErrorReportFunctionC68)(const char* pcMessage, void* pvObject);
@@ -462,8 +505,8 @@ class hkBaseSystemC68
     {
         return s_bInitialized;
     }
-    static int __cdecl init(hkMemoryRouter* pkRouter, hkErrorReportFunctionC68 pfnErrorReport,
-                            void* pvErrorReportObject);
+    static int __cdecl init(hkMemoryRouter* memoryRouter, hkErrorReportFunctionC68 errorReportFunction,
+                            void* errorReportObject);
     static bool s_bInitialized;
 };
 void __cdecl HavokErrorReportC68(const char* pcMessage, void* pvObject);
@@ -472,13 +515,13 @@ inline void* hkReferencedObject::operator new(std::size_t uiBytes)
 {
     hkReferencedObject* b =
         static_cast<hkReferencedObject*>(GetMemoryRouterC68()->heap().blockAlloc(uiBytes));
-    b->m_usMemSizeAndFlags = static_cast<unsigned short>(uiBytes);
+    b->m_memSizeAndFlags = static_cast<unsigned short>(uiBytes);
     return b;
 }
 inline void hkReferencedObject::operator delete(void* p)
 {
     hkReferencedObject* b = static_cast<hkReferencedObject*>(p);
-    GetMemoryRouterC68()->heap().blockFree(p, b->m_usMemSizeAndFlags);
+    GetMemoryRouterC68()->heap().blockFree(p, b->m_memSizeAndFlags);
 }
 
 class bhkWorldListenerBaseC68 : public hkReferencedObject,
@@ -528,73 +571,87 @@ class bhkSingletonC68
     unsigned int unk18;
 };
 
+// pdb: class bhkAngularDashpotAction, size 0x10 (here 0x1), bases: bhkBinaryAction, 0 members
 class bhkAngularDashpotAction
 {
   public:
     static NiObject* __cdecl CreateObject();
 };
+// pdb: class bhkDashpotAction, size 0x10 (here 0x1), bases: bhkBinaryAction, 0 members
 class bhkDashpotAction
 {
   public:
     static NiObject* __cdecl CreateObject();
 };
+// pdb: class bhkMotorAction, size 0x10 (here 0x1), bases: bhkUnaryAction, 0 members
 class bhkMotorAction
 {
   public:
     static NiObject* __cdecl CreateObject();
 };
+// pdb: class bhkOrientHingedBodyAction, size 0x10 (here 0x1), bases: bhkUnaryAction, 0 members
 class bhkOrientHingedBodyAction
 {
   public:
     static NiObject* __cdecl CreateObject();
 };
+// pdb: class bhkSpringAction, size 0x10 (here 0x1), bases: bhkBinaryAction, 0 members
 class bhkSpringAction
 {
   public:
     static NiObject* __cdecl CreateObject();
 };
+// pdb: class bhkPCollisionObject, size 0x14 (here 0x1), bases: bhkNiCollisionObject, 0 members
 class bhkPCollisionObject
 {
   public:
     static NiObject* __cdecl CreateObject();
 };
+// pdb: class bhkSPCollisionObject, size 0x14 (here 0x1), bases: bhkPCollisionObject, 0 members
 class bhkSPCollisionObject
 {
   public:
     static NiObject* __cdecl CreateObject();
 };
 
+// pdb: class bhkBlendController, size 0x5c (here 0x1), bases: NiTimeController, 5 members
 class bhkBlendController
 {
   public:
     static NiObject* __cdecl CreateObject();
 };
+// pdb: class bhkRigidBodyT, size 0x40 (here 0x1), bases: bhkRigidBody, 2 members
 class bhkRigidBodyT
 {
   public:
     static NiObject* __cdecl CreateObject();
 };
+// pdb: class bhkSimpleShapePhantom, size 0x18 (here 0x1), bases: bhkShapePhantom, 0 members
 class bhkSimpleShapePhantom
 {
   public:
     static NiObject* __cdecl CreateObject();
 };
+// pdb: class bhkCachingShapePhantom, size 0x18 (here 0x1), bases: bhkShapePhantom, 0 members
 class bhkCachingShapePhantom
 {
   public:
     static NiObject* __cdecl CreateObject();
 };
+// pdb: class bhkExtraData, size 0x24 (here 0x1), bases: NiExtraData, 1 members
 class bhkExtraData
 {
   public:
     static NiObject* __cdecl CreateObject();
 };
+// pdb: class bhkRagdollTemplate, size 0x1c (here 0x1), bases: NiExtraData, 1 members
 class bhkRagdollTemplate
 {
   public:
     static NiObject* __cdecl CreateObject();
 };
 
+// pdb: class bhkPoseArray, size 0x18 (here 0x1), bases: NiObject, 4 members
 class bhkPoseArray
 {
   public:
@@ -615,6 +672,8 @@ extern char g_acStackBufferC68[0x60000];
 
 // Initializes the Havok physics system, sets up memory router and stack, registers Havok object loaders, and creates the world listener and singleton.
 // @fnv 0x00c68230
+// pdb: bhkWorld::InitSystem | bhkWorld.obj | retail, string-set bridge, high
+// pdb locals: tempMemContext, pmemoryRouter, isize, pstack, idif, pfreeListSystem, frameInfo
 void InitHavokPhysics()
 {
     AutoMemContext kContext(0x10);
@@ -624,7 +683,7 @@ void InitHavokPhysics()
         static bhkMemoryAllocator s_kMallocAllocator;
 
         hkMemorySystem::FrameInfo kInfo;
-        kInfo.m_iSolverBufferSize = 0;
+        kInfo.m_stackSize = 0;
         hkFreeListMemorySystem* pkMemorySystem = new (g_acMemorySystemBufferC68) hkFreeListMemorySystem;
         pkMemorySystem->setAllocator(&s_kMallocAllocator);
         g_pkMemorySystemC68 = pkMemorySystem;
@@ -717,6 +776,7 @@ extern char* DAT_011f3ec0;
 extern char* DAT_011f3ec4;
 
 // @fnv 0x00a42230
+// pdb: NiActorManager::_SDMShutdown | NiActorManager.obj | retail, object-file run extension, low
 void __cdecl ClearGlobalStrings()
 {
     char* old = DAT_011f3ec0;
@@ -917,12 +977,16 @@ struct S_00a48070_Obj
     char m_acLastPath[0x104];
     void FUN_00a66150();
     void Object_ReleaseStorage_00a65300();
-    bool OpenFile(const char* p);
+    bool OpenFile(const char* pcFileName);
 };
 
-void FUN_00a47f40(S_00a48070_Obj* obj, int a, NiObject** b, void* c);
+void NiSequence_CreateFromKFFile(S_00a48070_Obj* kStream, int uiIndex, NiObject** aspSequence, void* pcSequenceName);
 // Initializes obj, releases and clears p3 when OpenFile returns false, otherwise calls FUN_00a47f40, then finalizes obj.
 // @fnv 0x00a48070
+// pdb: NiSequence::CreateFromKFFile | NiSequence.obj | retail, call graph, medium
+// pdb note: debug build links it to NiRotData::GetSequenceData
+// pdb params: pcSequenceFile, uiIndex, aspSequence, pcSequenceName
+// pdb locals: kStream
 void CreateOrReleaseRef(const char* apPath, int p2, NiObject** ppRef, void* p4)
 {
     S_00a48070_Obj obj;
@@ -939,7 +1003,7 @@ void CreateOrReleaseRef(const char* apPath, int p2, NiObject** ppRef, void* p4)
     }
     else
     {
-        FUN_00a47f40(&obj, p2, ppRef, p4);
+        NiSequence_CreateFromKFFile(&obj, p2, ppRef, p4);
     }
     obj.Object_ReleaseStorage_00a65300();
 }
@@ -957,6 +1021,8 @@ struct Obj
 };
 // @fnv 0x00a48110
 // src: EXE 0x00a48110
+// pdb: NiRotData::CreateObject | NiRotData.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 void* NiRotData_CreateObject()
 {
     Obj* p = (Obj*)BSFadeNode::operator new(0x18);
@@ -973,7 +1039,7 @@ void* NiRotData_CreateObject()
     return 0;
 }
 
-void __cdecl FUN_00a61c50(NiObject* pkObject, void* pvArg);
+void __cdecl FUN_00a61c50(NiObject* apTex, void* apEntry);
 
 // @fnv 0x00a633b0
 // src: COMMUNITY 0x00a633b0
@@ -1025,6 +1091,9 @@ struct FUN_00a63480_holder
 
 // @fnv 0x00a63480
 // src: XBOX_PDB 0x00a63480
+// pdb: NiStream::GetLinkIDFromObject | NiStream.obj | retail, upstream name already matches, high
+// pdb params: pkObject
+// pdb locals: uiLinkID
 unsigned int __fastcall NiStream_GetLinkIDFromObject(FUN_00a63480_holder* self, int, const char* name)
 {
     if (!name)
@@ -1052,6 +1121,9 @@ void* InvokeNamedFunction(const char* name)
 // Searches the array at pThis+0xcc for val and returns its index, or 0 if not found.
 // @fnv 0x00a634f0
 // src: COMMUNITY 0x00a634f0
+// pdb: NiStream::GetIDFromGroup | NiStream.obj | debug, upstream name already matches, high
+// pdb params: pkGroup
+// pdb locals: uiGroup
 unsigned int __fastcall NiStream_GetIDFromGroup(char* pThis, int, int aiValue)
 {
     unsigned int count = *(unsigned short*)(pThis + 0xd2);
@@ -1068,11 +1140,13 @@ extern void* DAT_011f4784;
 
 // @fnv 0x00a63520
 // src: COMMUNITY 0x00a63520
-void __cdecl NiStream_UnregisterLoader(const char* apKey)
+// pdb: NiStream::UnregisterLoader | NiStream.obj | debug, upstream name already matches, high
+// pdb params: pcClassName
+void __cdecl NiStream_UnregisterLoader(const char* pcClassName)
 {
     NiTPointerMap<const char*, NiObject*(__cdecl*)()>* map =
         reinterpret_cast<NiTPointerMap<const char*, NiObject*(__cdecl*)()>*>(DAT_011f4784);
-    map->RemoveAt(apKey);
+    map->RemoveAt(pcClassName);
 }
 }  // namespace fnv_00a63520
 
@@ -1101,6 +1175,10 @@ typedef void (*S_00a63540_PostProcess)(void*);
 extern NiTPrimitiveArray<S_00a63540_PostProcess>* DAT_011f4788;
 // Removes the given post-process callback from the global post-process array by finding and removing the matching entry.
 // @fnv 0x00a63540
+// pdb: NiStream::CreateObjectByRTTI | NiStream.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiStream::RegisterPostProcessFunction
+// pdb params: pcRTTI
+// pdb locals: bFound, pfnCreate
 void RemovePostProcess(S_00a63540_PostProcess apPostProcess)
 {
     for (unsigned int ui = 0; ui < DAT_011f4788->GetSize(); ui++)
@@ -1121,12 +1199,15 @@ extern long __cdecl FUN_00eca6d3(const char* text);
 // Copies text into a 16-byte buffer, splits it on '.' with strtok_s, and packs each token's FUN_00eca6d3 value into a 32-bit integer.
 // @fnv 0x00a63630
 // src: XBOX_PDB 0x00a63630
-unsigned int __cdecl NiStream_GetVersionFromString(const char* text)
+// pdb: NiStream::GetVersionFromString | NiStream.obj | retail, upstream name already matches, high
+// pdb params: pcVersionString
+// pdb locals: iShift, acVS, pcD, uiVersion, pcContext, iD
+unsigned int __cdecl NiStream_GetVersionFromString(const char* pcVersionString)
 {
     char buffer[16];
     char* context;
 
-    strcpy_s(buffer, 16, text);
+    strcpy_s(buffer, 16, pcVersionString);
     int shift = 24;
     unsigned int value = 0;
     char* token = strtok_s(buffer, ".", &context);
@@ -1146,6 +1227,8 @@ template <> void NiTLargeArray<NiFixedString, NiTNewInterface<NiFixedString> >::
 
 // Stores element at uiIndex in m_pBase, growing m_uiSize if needed and adjusting m_uiESize when the slot's emptiness changes.
 // @fnv 0x00a63730
+// pdb: NiTLargeArray<NiFixedString,NiTNewInterface<NiFixedString> >::RemoveAll | NiStream.obj | retail, object-file run extension, low
+// pdb locals: i
 template <> __declspec(noinline) void NiTLargeArray<NiFixedString, NiTNewInterface<NiFixedString> >::SetAt(unsigned int uiIndex, const NiFixedString& element) throw()
 {
     if (uiIndex >= m_uiSize)
@@ -1205,6 +1288,8 @@ struct FUN_00a63910 : S_00a63910_Map
 
 // Frees the m_key strings of all hash table items when m_bCopy is set, then defers to the base class destructor.
 // @fnv 0x00a63910
+// pdb: NiTStringTemplateMap<NiTPointerMap<char const *,unsigned short>,unsigned short>::~NiTStringTemplateMap<NiTPointerMap<char const *,unsigned short>,unsigned short> | NiStream.obj | retail, call graph, medium
+// pdb locals: i, pkItem, pkSave
 FUN_00a63910::~FUN_00a63910() throw()
 {
     if (m_bCopy)
@@ -1224,22 +1309,25 @@ FUN_00a63910::~FUN_00a63910() throw()
 
 #include <string.h>
 
-void NiPath_Standardize(char* path);
+void NiPath_Standardize(char* pcPath);
 
 // Copies name into m_acInputFilePath, calls FUN_00aa2a00, attempts to get a file, and calls LoadFile if it is good.
 // @fnv 0x00a63be0
-bool NiStream::Load(const char* apFilePath)
+// pdb: NiStream::Load | NiStream.obj | retail, string-set bridge, high
+// pdb params: pcFileName
+// pdb locals: bResult, kIst
+bool NiStream::Load(const char* pcFileName)
 {
-    strcpy_s(m_acFileName, 0x104, apFilePath);
+    strcpy_s(m_acFileName, 0x104, pcFileName);
     NiPath_Standardize(m_acFileName);
     if (m_acFileName && m_acFileName[0])
     {
-        strncpy_s(m_acStreamPath, 0x104, m_acFileName, 0x103);
-        NiPath_Standardize(m_acStreamPath);
+        strncpy_s(m_acFilePath, 0x104, m_acFileName, 0x103);
+        NiPath_Standardize(m_acFilePath);
     }
     else
     {
-        m_acStreamPath[0] = 0;
+        m_acFilePath[0] = 0;
     }
     NiFile* f = NiFile::GetFile(m_acFileName, 0, 0x8000);
     if (f && static_cast<bool>(*f))
@@ -1249,7 +1337,7 @@ bool NiStream::Load(const char* apFilePath)
         return b;
     }
     delete f;
-    m_uiNativeThreadId = 1;
+    m_uiLastError = 1;
     strcpy_s(m_acLastErrorMessage, 0x104, "Cannot open file.");
     return false;
 }
@@ -1272,21 +1360,25 @@ struct Arg
 };
 struct ThisObj
 {
-    void SetFlagsRecursively(Arg* p);
+    void NiStream_SetSelectiveUpdateFlagsTTTFRecursive(Arg* pkAVObject);
 };
 // Clears bit 0x10, sets mask 0xE in m_flags, then recurses on each non-null element in the f3() holder.
 // @fnv 0x00a63cb0
-void ThisObj::SetFlagsRecursively(Arg* apArg)
+// src: XBOX_RETAIL_PDB 0x00a63cb0
+// pdb: NiStream::SetSelectiveUpdateFlagsTTTFRecursive | NiStream.obj | retail, object-file gap fill, high
+// pdb params: pkAVObject
+// pdb locals: pkNode, ui, pkChild
+void ThisObj::NiStream_SetSelectiveUpdateFlagsTTTFRecursive(Arg* pkAVObject)
 {
-    apArg->m_flags = (apArg->m_flags & ~0x10) | 0xE;
-    Holder* h = apArg->f3();
+    pkAVObject->m_flags = (pkAVObject->m_flags & ~0x10) | 0xE;
+    Holder* h = pkAVObject->f3();
     if (h)
     {
         for (unsigned int i = 0; i < h->m_usElementCount; ++i)
         {
             Arg* child = (Arg*)h->m_pBase[i];
             if (child)
-                SetFlagsRecursively(child);
+                NiStream_SetSelectiveUpdateFlagsTTTFRecursive(child);
         }
     }
 }
@@ -1439,12 +1531,14 @@ struct Receiver
     Item** unk1f0;
     int unk1f4;
     unsigned int count;
-    void SetFlagsRecursively(Item* item);
+    void NiStream_SetSelectiveUpdateFlagsTTTFRecursive(Item* pkAVObject);
     void __thiscall NiStream_SetSelectiveUpdateFlagsForOldVersions();
 };
 // Iterates the Item array and calls SetFlagsRecursively on items whose Query() chain reaches g_011f4280 and whose unk18 is zero.
 // @fnv 0x00a63d10
 // src: XBOX_PDB 0x00a63d10
+// pdb: NiStream::SetSelectiveUpdateFlagsForOldVersions | NiStream.obj | retail, upstream name already matches, high
+// pdb locals: i, pkObject, pkAVObject
 void __thiscall Receiver::NiStream_SetSelectiveUpdateFlagsForOldVersions()
 {
     if (unk0d8 >= 0x401000cU)
@@ -1465,7 +1559,7 @@ void __thiscall Receiver::NiStream_SetSelectiveUpdateFlagsForOldVersions()
                     if (value == (Link*)&g_011f4280)
                     {
                         if (item->unk18 == 0)
-                            SetFlagsRecursively(item);
+                            NiStream_SetSelectiveUpdateFlagsTTTFRecursive(item);
                         break;
                     }
                     value = value->unk04;
@@ -1493,6 +1587,8 @@ template <class T> inline void StreamLoadBinary(NiBinaryStream& kStream, T& kVal
 // Reads m_kObjects.m_uiSize binary values from m_pkOstr and returns the stream position captured before the reads.
 }  // namespace sa63df0
 // @fnv 0x00a63df0
+// pdb: NiStream::PreSaveObjectSizeTable | NiStream.obj | retail, upstream name already matches, high
+// pdb locals: uiOffset, uiStandInValue, ui
 unsigned int NiStream::PreSaveObjectSizeTable()
 {
     int iPosition = m_pkOstr->GetPosition();
@@ -1511,9 +1607,12 @@ template <class T> inline void NiStreamSaveBinaryA63E(NiBinaryStream& binstream,
 
 // Seeks back to uiStartPos and writes the object-size table.
 // @fnv 0x00a63e60
-bool NiStream::SaveObjectSizeTable(unsigned int uiStartPos)
+// pdb: NiStream::SaveObjectSizeTable | NiStream.obj | retail, upstream name already matches, high
+// pdb params: uiStartOffset
+// pdb locals: iOffsetFromCurrentPosition, ui, uiObjectSize
+bool NiStream::SaveObjectSizeTable(unsigned int uiStartOffset)
 {
-    unsigned int uiDelta = m_pkOstr->GetPosition() - uiStartPos;
+    unsigned int uiDelta = m_pkOstr->GetPosition() - uiStartOffset;
     m_pkOstr->Seek(-(int)uiDelta);
     for (unsigned int i = 0; i < m_kObjectSizes.m_uiSize; i++)
     {
@@ -1548,6 +1647,8 @@ inline unsigned int GetSize_a63ee0(const char* self)
 // Writes the string array size, max length, and each string's length and data to the binary stream at offset 0x250.
 // @fnv 0x00a63ee0
 // src: XBOX_PDB 0x00a63ee0
+// pdb: NiStream::SaveFixedStringTable | NiStream.obj | retail, upstream name already matches, high
+// pdb locals: stMaxLength, uiMaxLength, us, stLength, kString, uiLength, pcString
 void FUN_00a63ee0_shell::NiStream_SaveFixedStringTable()
 {
     char* self = (char*)this;
@@ -1582,24 +1683,27 @@ void FUN_00a63ee0_shell::NiStream_SaveFixedStringTable()
 namespace fnv_00a640b0 {
 int strcpy_s(char* dest, unsigned int size, const char* src);
 void _fnv_CopyFilePath(char* dest, unsigned int destSize, const char* src, unsigned int count);
-void _fnv_StandardizeFilePath(char* path);
+void _fnv_StandardizeFilePath(char* pcPath);
 
 
 }  // namespace fnv_00a640b0
 // Copies and standardizes the input file path, opens it read-only via NiFile::GetFile, and delegates to Load if the file is valid.
 // @fnv 0x00a640b0
+// pdb: NiStream::Save | NiStream.obj | retail, object-file gap fill, high
+// pdb params: pcFileName
+// pdb locals: pkOstr, bResult
 bool NiStream::Save(const char* name)
 {
     fnv_00a640b0::strcpy_s(m_acFileName, 0x104, name);
     fnv_00a640b0::_fnv_StandardizeFilePath(m_acFileName);
     if (m_acFileName && m_acFileName[0])
     {
-        fnv_00a640b0::_fnv_CopyFilePath(m_acStreamPath, 0x104, m_acFileName, 0x103);
-        fnv_00a640b0::_fnv_StandardizeFilePath(m_acStreamPath);
+        fnv_00a640b0::_fnv_CopyFilePath(m_acFilePath, 0x104, m_acFileName, 0x103);
+        fnv_00a640b0::_fnv_StandardizeFilePath(m_acFilePath);
     }
     else
     {
-        m_acStreamPath[0] = 0;
+        m_acFilePath[0] = 0;
     }
     NiFile* file = NiFile::GetFile(m_acFileName, static_cast<NiFile::OpenMode>(1), 0x8000);
     if (file)
@@ -1636,16 +1740,19 @@ static __forceinline void S_Save(NiStreamW* o, const void* v, unsigned int n, un
 // Writes the length of str and, if non-zero, the string bytes to m_250 via S_Save.
 // @fnv 0x00a64160
 // src: XBOX_PDB 0x00a64160
-void NiStream::SaveCString(const char* apString)
+// pdb: NiStream::SaveCString | NiStream.obj | retail, upstream name already matches, high
+// pdb params: pcString
+// pdb locals: uiLength
+void NiStream::SaveCString(const char* pcString)
 {
     unsigned int len;
-    if (apString != 0)
-        len = (unsigned int)strlen(apString);
+    if (pcString != 0)
+        len = (unsigned int)strlen(pcString);
     else
         len = 0;
     S_Save(reinterpret_cast<NiStreamW*>(m_pkOstr), &len, 4, 4);
     if (len > 0)
-        S_Save(reinterpret_cast<NiStreamW*>(m_pkOstr), apString, len, 1);
+        S_Save(reinterpret_cast<NiStreamW*>(m_pkOstr), pcString, len, 1);
 }
 
 typedef unsigned int(__cdecl* StreamWriteFn)(NiStreamW* s, const void* buf, unsigned int size, unsigned int* pCount,
@@ -1844,6 +1951,8 @@ struct NiStreamLoader
 // Reads a 4-byte value from m_pStreamLoader, grows m_ppData if full, and appends the value to m_ppData.
 // @fnv 0x00a645b0
 // src: XBOX_PDB 0x00a645b0
+// pdb: NiStream::ReadLinkID | NiStream.obj | retail, upstream name already matches, high
+// pdb locals: uiLinkID
 void NiStream::ReadLinkID()
 {
     unsigned int value;
@@ -2095,6 +2204,8 @@ inline void ReadStreamCount(S_00a64670_Ctx* ctx, int* output, int size)
 // Reads a count, appends it to the array, then calls FUN_00a645b0 once per count.
 // @fnv 0x00a64670
 // src: XBOX_PDB 0x00a64670
+// pdb: NiStream::ReadMultipleLinkIDs | NiStream.obj | retail, upstream name already matches, high
+// pdb locals: uiNum, ui
 void S_00a64670_Foo::NiStream_ReadMultipleLinkIDs()
 {
     unsigned int count;
@@ -2118,6 +2229,8 @@ void S_00a64670_Foo::NiStream_ReadMultipleLinkIDs()
 
 // Reads one 4-byte object size for each loaded object.
 // @fnv 0x00a64740
+// pdb: NiStream::LoadObjectSizeTable | NiStream.obj | retail, upstream name already matches, high
+// pdb locals: ui, uiSizeInBytes
 bool NiStream::LoadObjectSizeTable()
 {
     NiTLargePrimitiveArray<unsigned int>& links = (NiTLargePrimitiveArray<unsigned int>&)m_kObjectSizes;
@@ -2168,7 +2281,10 @@ namespace fnv_00a647f0 {
 // Reads the group count from the stream, resizes the group array, and allocates NiObjectGroup instances for each group.
 // @fnv 0x00a647f0
 }  // namespace fnv_00a647f0
-void NiStream::LoadGroups()
+// src: XBOX_RETAIL_PDB 0x00a647f0
+// pdb: NiStream::LoadObjectGroups | NiStream.obj | retail, call graph (shared callers), high
+// pdb locals: uiNumGroups, uiGroup, uiSize, pkGroup
+void NiStream::LoadObjectGroups()
 {
     unsigned int uiNumGroups;
     fnv_00a647f0::QLoadB(**(NiBinaryStream**)((char*)this + 0x24c), uiNumGroups);
@@ -2195,6 +2311,8 @@ extern unsigned int g_uiNifMaxUserVersion_011a9b10;
 
 // Writes the NIF header (version, endianness, object count, and optional creator/export info) to the backing stream.
 // @fnv 0x00a64940
+// pdb: NiStream::SaveHeader | NiStream.obj | retail, string-set bridge, high
+// pdb locals: bPlatformLittle, ucsize
 void NiStream::SaveHeader()
 {
     m_pkOstr->SetEndianSwap(false);
@@ -2208,16 +2326,16 @@ void NiStream::SaveHeader()
     }
     if (g_uiNifMaxUserVersion_011a9b10)
     {
-        WriteStreamValues(m_pkOstr, &m_kHeader.m_uiVersion);
-        unsigned char ucLength = (unsigned char)(strlen(m_kHeader.m_acAuthor) + 1);
+        WriteStreamValues(m_pkOstr, &m_BSStreamHeader.uiVersion);
+        unsigned char ucLength = (unsigned char)(strlen(m_BSStreamHeader.pAuthor) + 1);
         WriteStreamValues(m_pkOstr, &ucLength);
-        WriteStreamValues(m_pkOstr, m_kHeader.m_acAuthor, ucLength);
-        ucLength = (unsigned char)(strlen(m_kHeader.m_acProcessScript) + 1);
+        WriteStreamValues(m_pkOstr, m_BSStreamHeader.pAuthor, ucLength);
+        ucLength = (unsigned char)(strlen(m_BSStreamHeader.pProcessScript) + 1);
         WriteStreamValues(m_pkOstr, &ucLength);
-        WriteStreamValues(m_pkOstr, m_kHeader.m_acProcessScript, ucLength);
-        ucLength = (unsigned char)(strlen(m_kHeader.m_acExportScript) + 1);
+        WriteStreamValues(m_pkOstr, m_BSStreamHeader.pProcessScript, ucLength);
+        ucLength = (unsigned char)(strlen(m_BSStreamHeader.pExportScript) + 1);
         WriteStreamValues(m_pkOstr, &ucLength);
-        WriteStreamValues(m_pkOstr, m_kHeader.m_acExportScript, ucLength);
+        WriteStreamValues(m_pkOstr, m_BSStreamHeader.pExportScript, ucLength);
     }
     m_pkOstr->SetEndianSwap(m_bSaveLittleEndian ^ true);
 }
@@ -2313,7 +2431,7 @@ class ImageSpaceShaderParam
 class ImageSpaceShaderW
 {
   public:
-    void UpdateTextureSwapList();
+    void NiStream_UpdateObjectGroups();
     unsigned int FindTexture(SwapTextureView_00a64b80* pkTexture) const
     {
         for (unsigned int k = 0; k < m_kTextureSwapList.m_usSize; k++)
@@ -2452,7 +2570,10 @@ class ImageSpaceShaderW
 
 // Rebuilds m_kTextureSwapList from shader params and accumulates GetCount into each texture's m_uiValueBeforeCount.
 // @fnv 0x00a64b80
-void ImageSpaceShaderW::UpdateTextureSwapList()
+// src: XBOX_RETAIL_PDB 0x00a64b80
+// pdb: NiStream::UpdateObjectGroups | NiStream.obj | retail, call graph, high
+// pdb locals: i, pkObject, pkGroup
+void ImageSpaceShaderW::NiStream_UpdateObjectGroups()
 {
     m_kTextureSwapList.SetSize(1);
     m_kTextureSwapList.SetAt(0, 0);
@@ -2495,6 +2616,8 @@ extern "C" __declspec(dllimport) void __stdcall LeaveCriticalSection(void*);
 
 // Locks the critical section, removes all top objects, zeroes four fields, and unlocks the section.
 // @fnv 0x00a64ca0
+// pdb: NiStream::FreeLoadData | NiStream.obj | retail, call graph, high
+// pdb locals: pos, acMsg, i, kTypeToCount, pkObject, uiCount, pcRTTIName
 void NiStream::ResetStreamState()
 {
     EnterCriticalSection(&_fnv_NiStreamCriticalSection);
@@ -2511,6 +2634,9 @@ void* __cdecl _NiMalloc(size_t);
 
 // Reads a length-prefixed null-terminated string from the stream into pcString, allocating memory when the length is positive.
 // @fnv 0x00a64ce0
+// pdb: NiStream::LoadCString | NiStream.obj | retail, call graph, high
+// pdb params: pcString
+// pdb locals: iLength
 void NiStream::ReadCString(char*& pcString)
 {
     int iStringLength;
@@ -2543,7 +2669,10 @@ void NiStream::ReadCString(char*& pcString)
 
 // @fnv 0x00a64d80
 // src: XBOX_PDB 0x00a64d80
-__declspec(noinline) void NiStream::LoadRTTIString(unsigned int param)
+// pdb: NiStream::LoadRTTIString | NiStream.obj | retail, upstream name already matches, high
+// pdb params: pcString
+// pdb locals: uiLength
+__declspec(noinline) void NiStream::LoadRTTIString(unsigned int pcString)
 {
     unsigned int count;
     NiBinaryStream* s = m_pkIstr;
@@ -2556,9 +2685,9 @@ __declspec(noinline) void NiStream::LoadRTTIString(unsigned int param)
     {
         // the raw block that follows the length
         unsigned int size = 1;
-        StreamPosition(s) += StreamReadCallback(s)(s, reinterpret_cast<void*>(param), count, &size, 1);
+        StreamPosition(s) += StreamReadCallback(s)(s, reinterpret_cast<void*>(pcString), count, &size, 1);
     }
-    reinterpret_cast<unsigned char*>(count)[param] = 0;
+    reinterpret_cast<unsigned char*>(count)[pcString] = 0;
 }
 
 typedef char*(__cdecl* StrMakeFn)(char* p);
@@ -2613,13 +2742,16 @@ class Cls_a64ea0
     unsigned int unk220, unk224, unk228, unk22C, unk230, unk234, unk238, unk23C;
     unsigned int unk240, unk244, unk248;
     NiBinaryStream* m_stream;
-    void NiStream_LoadCStringAsFixedString(char** target);
+    void NiStream_LoadCStringAsFixedString(char** kString);
 };
 
 // Reads a length-prefixed string into *target, using allocated storage for lengths >= 0x400 and a stack buffer for positive smaller lengths.
 // @fnv 0x00a64ea0
 // src: XBOX_PDB 0x00a64ea0
-void Cls_a64ea0::NiStream_LoadCStringAsFixedString(char** apString)
+// pdb: NiStream::LoadCStringAsFixedString | NiStream.obj | retail, upstream name already matches, high
+// pdb params: kString
+// pdb locals: iLength, pcString, acString
+void Cls_a64ea0::NiStream_LoadCStringAsFixedString(char** kString)
 {
     unsigned int len;
     char buf[0x400];
@@ -2629,10 +2761,10 @@ void Cls_a64ea0::NiStream_LoadCStringAsFixedString(char** apString)
         char* tmp = _NiMalloc_00aa1070(len + 1);
         ReadStream(m_stream, tmp, len);
         tmp[len] = 0;
-        char* old = *apString;
+        char* old = *kString;
         if (old != tmp)
         {
-            *apString = FUN_00a5b690(tmp);
+            *kString = FUN_00a5b690(tmp);
             if (old != NiGlobalStringTable::ms_pcEmptyString)
                 InterlockedDecrement((long volatile*)(old - 8));
         }
@@ -2642,20 +2774,20 @@ void Cls_a64ea0::NiStream_LoadCStringAsFixedString(char** apString)
     {
         ReadStream(m_stream, buf, len);
         buf[len] = 0;
-        char* old = *apString;
+        char* old = *kString;
         if (old != buf)
         {
-            *apString = FUN_00a5b690(buf);
+            *kString = FUN_00a5b690(buf);
             if (old != NiGlobalStringTable::ms_pcEmptyString)
                 InterlockedDecrement((long volatile*)(old - 8));
         }
     }
     else
     {
-        char* old = *apString;
+        char* old = *kString;
         if (old != 0)
         {
-            *apString = FUN_00a5b690(0);
+            *kString = FUN_00a5b690(0);
             if (old != NiGlobalStringTable::ms_pcEmptyString)
                 InterlockedDecrement((long volatile*)(old - 8));
         }
@@ -2670,6 +2802,9 @@ void __cdecl FUN_00a47600(void*);
 
 // Resizes the large array to uiMaxSize, copying existing elements, zeroing new slots, and freeing the old buffer.
 // @fnv 0x00a64fe0
+// pdb: NiTLargeArray<NiPointer<NiObject>,NiTNewInterface<NiPointer<NiObject> > >::SetSize | BSStream.obj | retail, call graph, medium
+// pdb params: uiMaxSize
+// pdb locals: pSaveBase, i
 template <> void NiTLargeArray<NiPointer<NiObject>, NiTNewInterface<NiPointer<NiObject> > >::SetSize(unsigned int uiMaxSize)
 {
     if (uiMaxSize == m_uiMaxSize)
@@ -2759,6 +2894,7 @@ struct FUN_00a65300_holder
 // Calls Del(1) on three members, clears top-level objects and the map, and passes stored pointers to cleanup routines.
 // @fnv 0x00a65300
 // src: GUESS 0x00a65300 (confidence: low)
+// pdb: NiStream::~NiStream | NiStream.obj | retail, call graph, high
 void __fastcall Object_ReleaseStorage_00a65300(FUN_00a65300_holder* s)
 {
     s->vt = &DAT_0109bdcc;
@@ -2802,11 +2938,13 @@ extern unsigned int g_uiNifMaxUserVersion_011a9b10;
 
 void __cdecl NiStreamLoadBinary_char_00a643b0(NiStream& kStream, unsigned char& ucValue);
 void __cdecl NiStreamLoadBinary_float(NiStream& kStream, unsigned int& uiValue);
-void __cdecl NiStreamLoadBinary_char(NiStream& kStream, char* pcString, unsigned int uiLength);
+void __cdecl NiStreamLoadBinary_char(NiStream& kStream, char* pValue, unsigned int uiLength);
 
 
 // Reads and validates the NIF file header from m_pUnderlyingStream, storing version, endian, and object count, returning false on any validation failure.
 // @fnv 0x00a65400
+// pdb: NiStream::LoadHeader | NiStream.obj | retail, string-set bridge, high
+// pdb locals: acLine, bPlatformLittle, uiObjects, iLineCount, bskip, iud, ucsize
 }  // namespace fnv_00a65400
 bool NiStream::LoadHeader()
 {
@@ -2814,7 +2952,7 @@ bool NiStream::LoadHeader()
     m_pkIstr->GetLine(acBuffer, 0x80);
     if (!fnv_00a65400::strstr(acBuffer, "File Format"))
     {
-        m_uiNativeThreadId = 2;
+        m_uiLastError = 2;
         fnv_00a65400::strcpy_s(m_acLastErrorMessage, 0x104, "Not a NIF file");
         return false;
     }
@@ -2822,13 +2960,13 @@ bool NiStream::LoadHeader()
     m_pkIstr->BinaryRead(&m_uiNifFileVersion);
     if (m_uiNifFileVersion < fnv_00a65400::g_uiNifMinVersion_011a9b08)
     {
-        m_uiNativeThreadId = 3;
+        m_uiLastError = 3;
         fnv_00a65400::strcpy_s(m_acLastErrorMessage, 0x104, "NIF version is too old.");
         return false;
     }
     if (m_uiNifFileVersion > fnv_00a65400::g_uiNifMaxVersion_011a9b0c)
     {
-        m_uiNativeThreadId = 4;
+        m_uiLastError = 4;
         fnv_00a65400::strcpy_s(m_acLastErrorMessage, 0x104, "Unknown NIF version.");
         return false;
     }
@@ -2837,7 +2975,7 @@ bool NiStream::LoadHeader()
         fnv_00a65400::NiStreamLoadBinary_char_00a643b0(*this, reinterpret_cast<unsigned char&>(m_bSourceIsLittleEndian));
     if (reinterpret_cast<unsigned char&>(m_bSourceIsLittleEndian) != 1 && fnv_00a65400::NiBinaryStream_GetEndianMatchHint())
     {
-        m_uiNativeThreadId = 6;
+        m_uiLastError = 6;
         fnv_00a65400::FUN_00404d80(m_acLastErrorMessage, 0x104, "Endian mismatch.");
         return false;
     }
@@ -2849,38 +2987,38 @@ bool NiStream::LoadHeader()
     }
     if (m_uiNifFileUserDefinedVersion < fnv_00a65400::g_uiNifMinUserVersion_011f478c)
     {
-        m_uiNativeThreadId = 3;
+        m_uiLastError = 3;
         fnv_00a65400::strcpy_s(m_acLastErrorMessage, 0x104, "NIF user defined version is too old.");
         return false;
     }
     if (m_uiNifFileUserDefinedVersion > fnv_00a65400::g_uiNifMaxUserVersion_011a9b10)
     {
-        m_uiNativeThreadId = 4;
+        m_uiLastError = 4;
         fnv_00a65400::FUN_00404d80(m_acLastErrorMessage, 0x104, "Unknown NIF user defined version.");
         return false;
     }
     unsigned int uiObjects;
     fnv_00a65400::NiStreamLoadBinary_float(*this, uiObjects);
     reinterpret_cast<NiStreamTopObjects*>(&m_kObjects)->SetSize(uiObjects);
-    m_kHeader.m_uiVersion = 0;
+    m_BSStreamHeader.uiVersion = 0;
     if (m_uiNifFileVersion > 0xa000100 && (m_uiNifFileVersion <= 0xa000108 || m_uiNifFileUserDefinedVersion))
     {
         if (m_uiNifFileVersion > 0xa000101)
         {
-            fnv_00a65400::NiStreamLoadBinary_float(*this, m_kHeader.m_uiVersion);
+            fnv_00a65400::NiStreamLoadBinary_float(*this, m_BSStreamHeader.uiVersion);
             if (m_uiNifFileVersion == 0xa000102)
                 m_uiNifFileVersion = 0xa000101;
         }
         unsigned char ucLength;
         fnv_00a65400::NiStreamLoadBinary_char_00a643b0(*this, ucLength);
-        fnv_00a65400::NiStreamLoadBinary_char(*this, m_kHeader.m_acAuthor, ucLength);
+        fnv_00a65400::NiStreamLoadBinary_char(*this, m_BSStreamHeader.pAuthor, ucLength);
         fnv_00a65400::NiStreamLoadBinary_char_00a643b0(*this, ucLength);
-        fnv_00a65400::NiStreamLoadBinary_char(*this, m_kHeader.m_acProcessScript, ucLength);
+        fnv_00a65400::NiStreamLoadBinary_char(*this, m_BSStreamHeader.pProcessScript, ucLength);
         fnv_00a65400::NiStreamLoadBinary_char_00a643b0(*this, ucLength);
-        fnv_00a65400::NiStreamLoadBinary_char(*this, m_kHeader.m_acExportScript, ucLength);
-        if (m_kHeader.m_uiVersion < 0x15)
+        fnv_00a65400::NiStreamLoadBinary_char(*this, m_BSStreamHeader.pExportScript, ucLength);
+        if (m_BSStreamHeader.uiVersion < 0x15)
         {
-            m_uiNativeThreadId = 3;
+            m_uiLastError = 3;
             fnv_00a65400::FUN_00404d80(m_acLastErrorMessage, 0x104, "NIF BSversion is too old");
             return false;
         }
@@ -2905,6 +3043,8 @@ inline NiObject* NiStream::GetLoadedObject(unsigned int id)
 }
 
 // @fnv 0x00a65720
+// pdb: NiStream::LoadTopLevelObjects | NiStream.obj | retail, upstream name already matches, high
+// pdb locals: uiTopObjects, i, uiLinkID, pkObject
 void NiStream::LoadTopLevelObjects()
 {
     unsigned int count;
@@ -2946,6 +3086,8 @@ extern LoaderMap* g_pkLoaders_011f4784;
 
 // Reads RTTI class names and object indices from m_pUnderlyingStream, resolves create functions, and instantiates objects into m_kThirdFollowingStreamField.
 // @fnv 0x00a65800
+// pdb: NiStream::LoadRTTI | NiStream.obj | retail, unique string literal, high
+// pdb locals: usRTTICount, i, ppfnCreate, bFound, aucRTTI, bSkippable, usRTTI, pkObject
 }  // namespace fnv_00a65800
 bool NiStream::LoadRTTIAndObjects()
 {
@@ -2962,13 +3104,13 @@ bool NiStream::LoadRTTIAndObjects()
         acClassName[uiLength] = 0;
         if (m_uiNifFileVersion < 0x14010001 && fnv_00a65800::strcmp(acClassName, "NiControllerManager") == 0)
         {
-            m_uiNativeThreadId = 3;
+            m_uiLastError = 3;
             fnv_00a65800::strcpy_s(m_acLastErrorMessage, 0x104, "Older files may not contain animation data. Reexport required.");
             return false;
         }
         if (!fnv_00a65800::g_pkLoaders_011f4784->FUN_00a53c30(acClassName, ppkCreate[i]))
         {
-            m_uiNativeThreadId = 5;
+            m_uiLastError = 5;
             fnv_00a65800::strcpy_s(m_acLastErrorMessage, 0x104, acClassName);
             fnv_00a65800::strcat_s(m_acLastErrorMessage, 0x104, ": cannot find create function.");
             ppkCreate[i] = 0;
@@ -3178,6 +3320,8 @@ class StreamEx
 
 // Reads a count and string lengths from m_spIStream, allocates a buffer, loads each string into m_kFixedStringTable via FUN_00a63730, and frees the buffer.
 // @fnv 0x00a65b00
+// pdb: NiStream::LoadFixedStringTable | NiStream.obj | retail, call graph, high
+// pdb locals: uiStringCount, uiMaxStringSize, pcString, us, uiLength
 bool StreamEx::LoadFixedStrings()
 {
     unsigned int ItemUpdateArray;
@@ -3275,7 +3419,7 @@ struct NiStreamLs
     void FUN_00a644f0();
     bool LoadRTTIAndObjects();
     bool LoadFixedStrings();
-    void LoadGroups();
+    void LoadObjectGroups();
     void Clear();
     void NiStream_SetSelectiveUpdateFlagsForOldVersions();
     bool NiStream_LoadStream();
@@ -3284,6 +3428,8 @@ struct NiStreamLs
 // Loads a NIF stream by reading the header, objects, and top-level links, then runs post-process functions and cleans up.
 // @fnv 0x00a65c60
 // src: XBOX_PDB 0x00a65c60
+// pdb: NiStream::LoadStream | NiStream.obj | retail, upstream name already matches, high
+// pdb locals: uiObjects, bNew, pkObject, uiCurrentPos, uiStreamedSizeInBytes, uiBytesRead, uiCurrentPosition, ui, pkTopObject, uj, pfnFunc
 bool NiStreamLs::NiStream_LoadStream()
 {
     if (!LoadHeader())
@@ -3300,7 +3446,7 @@ bool NiStreamLs::NiStream_LoadStream()
     if (m_uiNifVersion >= 0x14010001 && !LoadFixedStrings())
         return false;
     if (m_uiNifVersion >= 0x05000006)
-        LoadGroups();
+        LoadObjectGroups();
 
     unsigned int uiObjects = m_kThirdFollowingStreamField.m_uiMaxSize;
     for (; StreamThreadContext < uiObjects; StreamThreadContext++)
@@ -3401,6 +3547,9 @@ bool NiStreamLs::NiStream_LoadStream()
 }
 
 // @fnv 0x00a65f80
+// pdb: NiTLargeArray<NiFixedString,NiTNewInterface<NiFixedString> >::AddFirstEmpty | NiStream.obj | retail, object-file run extension, low
+// pdb params: element
+// pdb locals: i
 template <> unsigned int NiTLargeArray<NiFixedString, NiTNewInterface<NiFixedString> >::AddFirstEmpty(const NiFixedString& element)
 {
     if (element == NiFixedString())
@@ -3550,6 +3699,7 @@ extern bool DAT_011f4780;
 // Allocates a global A660A0Map and the post-process function array, and sets the DAT_011f4780 flag to true.
 // @fnv 0x00a660a0
 // src: COMMUNITY 0x00a660a0
+// pdb: NiStream::_SDMInit | NiStream.obj | retail, upstream name already matches, high
 void __cdecl NiStream__SDMInit()
 {
     DAT_011f4784 = new A660A0Map;
@@ -3734,6 +3884,7 @@ struct FUN_00a66150 : VPtr_a66150
 
 // Initializes the NifStream object, its stream arrays, maps, thread state, and error fields.
 // @fnv 0x00a66150
+// pdb: NiStream::NiStream | NiStream.obj | retail, call graph, high
 FUN_00a66150::FUN_00a66150()
     : VPtr_a66150(&DAT_0109bdcc), m_kObjectGroups(&DAT_0109bd90, 0, 1),
       m_kThirdFollowingStreamField(&DAT_0109bf6c, 0, 1024), ObjectSerializationStream(&DAT_01081ef0, 0, 1),
@@ -3763,6 +3914,7 @@ struct FUN_00a66350_obj
 };
 // Calls the NiStream destructor alias and deallocates the object via g_memoryManager when the low bit of flags is set.
 // @fnv 0x00a66350
+// pdb: NiStream::`scalar deleting destructor' | NiStream.obj | retail, object-file gap fill, high
 FUN_00a66350_obj* __fastcall NiStreamDtor(FUN_00a66350_obj* apStream, int, unsigned int flags)
 {
     apStream->_NiStreamDtorAlias();
@@ -3788,17 +3940,20 @@ struct FUN_00b57ea0_cls
 
 // Adds object to linkMap and objects array, incrementing its reference count, then decrements it and returns true.
 // @fnv 0x00a663e0
-bool NiStream::RegisterSaveObject(NiObject* object)
+// pdb: NiStream::RegisterSaveObject | NiStream.obj | retail, upstream name already matches, high
+// pdb params: pkObject
+// pdb locals: uiLinkID
+bool NiStream::RegisterSaveObject(NiObject* pkObject)
 {
-    NiObject* obj = object;
+    NiObject* obj = pkObject;
     FUN_00a53c30_cls* map = reinterpret_cast<FUN_00a53c30_cls*>(&m_kRegisterMap);
-    if (map->FUN_00a53c30(obj, &object))
+    if (map->FUN_00a53c30(obj, &pkObject))
     {
         return false;
     }
     UnsignedIntValue count = {m_kObjects.m_uiSize};
     ((FUN_00b57ea0_cls*)map)->FUN_00b57ea0(obj, count);
-    object = obj;
+    pkObject = obj;
     if (obj != 0)
     {
         InterlockedIncrement(reinterpret_cast<volatile long*>(&obj->m_uiRefCount));
@@ -3809,7 +3964,7 @@ bool NiStream::RegisterSaveObject(NiObject* object)
     {
         arr->SetSize(arr->m_uiGrowBy + index);
     }
-    arr->SetAt(index, reinterpret_cast<const NiPointer<NiObject>&>(object));
+    arr->SetAt(index, reinterpret_cast<const NiPointer<NiObject>&>(pkObject));
     if (obj != 0)
     {
         long rc = InterlockedDecrement(reinterpret_cast<volatile long*>(&obj->m_uiRefCount));
@@ -3826,14 +3981,16 @@ extern char* _EmptyFS;
 
 // Adds str to names if Find(str) returns -1, then returns true.
 // @fnv 0x00a66480
-bool NiStream::RegisterFixedString(const NiFixedString& str)
+// pdb: NiStream::RegisterFixedString | NiStream.obj | retail, upstream name already matches, high
+// pdb params: kString
+bool NiStream::RegisterFixedString(const NiFixedString& kString)
 {
     int index = -1;
-    if (str.m_kHandle != _EmptyFS)
+    if (kString.m_kHandle != _EmptyFS)
     {
         for (unsigned int i = 0; i < m_kFixedStrings.m_uiSize; i++)
         {
-            if (str.m_kHandle == m_kFixedStrings.m_pBase[i].m_kHandle)
+            if (kString.m_kHandle == m_kFixedStrings.m_pBase[i].m_kHandle)
             {
                 index = i;
                 break;
@@ -3841,7 +3998,7 @@ bool NiStream::RegisterFixedString(const NiFixedString& str)
         }
     }
     if (index == -1)
-        reinterpret_cast<NiStreamFixedStrings*>(&m_kFixedStrings)->AddFirstEmpty(str);
+        reinterpret_cast<NiStreamFixedStrings*>(&m_kFixedStrings)->AddFirstEmpty(kString);
     return true;
 }
 
@@ -3861,6 +4018,8 @@ extern NiTStringPointerMap<ObjectFactory>* DAT_011f4784;
 
 // Looks up a class factory by name, creates and ref-counts a NiObject, adds it to topObjects, and calls load on it.
 // @fnv 0x00a664e0
+// pdb: NiStream::LoadObject | NiStream.obj | retail, string-set bridge, high
+// pdb locals: bFound, aucRTTI, pfnCreate, pkObject
 }  // namespace fnv_00a664e0
 bool NiStream::LoadObject()
 {
@@ -3873,7 +4032,7 @@ bool NiStream::LoadObject()
     LoadRTTIString(reinterpret_cast<unsigned int>(className));
     if (!fnv_00a664e0::DAT_011f4784->GetAt(className, creation.factory))
     {
-        m_uiNativeThreadId = 5;
+        m_uiLastError = 5;
         strcpy_s(m_acLastErrorMessage, 260, className);
         strcat_s(m_acLastErrorMessage, 260, ": cannot find create function.");
         return false;
@@ -3967,7 +4126,7 @@ class RtMapBase
         }
         return false;
     }
-    bool FUN_00c74990(const char* key, unsigned short& val) const;
+    bool NiTMapBase_DFALL_NiTMapItem_bhkRigidBody_unsigned_short_bhkRigidBody_unsigned_short_GetAt(const char* key, unsigned short& val) const;
     void FUN_00a643e0(const char* key, unsigned short val);
     void FUN_00a63910();
 
@@ -4010,12 +4169,15 @@ struct RtStream
     NiBinaryStream* m_pBackingStream;
 
     void SaveCString(const char* pcString);
-    void WriteRTTIHeader();
+    void NiStream_SaveRTTI();
 };
 
 // Writes the RTTI name table and per-object RTTI IDs (with clone flag) to the backing stream.
 // @fnv 0x00a665f0
-void RtStream::WriteRTTIHeader()
+// src: XBOX_RETAIL_PDB 0x00a665f0
+// pdb: NiStream::SaveRTTI | NiStream.obj | retail, call graph, high
+// pdb locals: pos, ppcRTTI, kRTTIMap, i, usRTTICount, pkObject, usRTTI, pcRTTI, bSkippable, bFound
+void RtStream::NiStream_SaveRTTI()
 {
     RtStringMap kRTTIMap;
     unsigned int i;
@@ -4023,7 +4185,7 @@ void RtStream::WriteRTTIHeader()
     {
         const char* pcName = m_ppkObjects[i]->GetStreamableRTTI()->m_pcName;
         unsigned short usID;
-        if (!kRTTIMap.FUN_00c74990(pcName, usID))
+        if (!kRTTIMap.NiTMapBase_DFALL_NiTMapItem_bhkRigidBody_unsigned_short_bhkRigidBody_unsigned_short_GetAt(pcName, usID))
             kRTTIMap.FUN_00a643e0(pcName, (unsigned short)kRTTIMap.GetCount());
     }
 
@@ -4118,15 +4280,17 @@ struct VStream
     virtual void v20();
     virtual unsigned int GetStartingOffset();
     virtual void BackPatch(unsigned int);
-    void WriteRTTIHeader();
+    void NiStream_SaveRTTI();
     void NiStream_SaveFixedStringTable();
-    void UpdateTextureSwapList();
-    void WriteData();
+    void NiStream_UpdateObjectGroups();
+    void NiStream_SaveObjectGroups();
 };
 
 // Registers save objects, writes the header and each object's binary data, records per-object sizes, then back-patches and clears the object lists.
 // @fnv 0x00a66850
 // src: XBOX_PDB 0x00a66850
+// pdb: NiStream::SaveStream | NiStream.obj | retail, upstream name already matches, high
+// pdb locals: uiStartingOffset, i, uiStartInBytes, uiSizeInBytes, pkObject
 bool FUN_00a66850_shell::NiStream_SaveStream()
 {
     VStream* pkThis = (VStream*)this;
@@ -4134,11 +4298,11 @@ bool FUN_00a66850_shell::NiStream_SaveStream()
     SizeArray& kObjectSizes = *(SizeArray*)((char*)this + 0x204);
     kObjectSizes.SetSize(*(unsigned int*)((char*)this + 0x1f8));
     pkThis->SaveHeader();
-    pkThis->WriteRTTIHeader();
+    pkThis->NiStream_SaveRTTI();
     unsigned int uiStartingOffset = pkThis->GetStartingOffset();
     pkThis->NiStream_SaveFixedStringTable();
-    pkThis->UpdateTextureSwapList();
-    pkThis->WriteData();
+    pkThis->NiStream_UpdateObjectGroups();
+    pkThis->NiStream_SaveObjectGroups();
     for (unsigned int i = 0; i < *(unsigned int*)((char*)this + 0x1f8); i++)
     {
         NiObject* pkObject = (*(NiObject***)((char*)this + 0x1f0))[i];
@@ -4161,11 +4325,12 @@ void NiFreeAlias(void*);
 
 // Sets the vtable pointer, frees the buffer at offset 0x10 if the flags at 0x20 and 0x21 are clear, and calls the NiBinaryStream destructor.
 // @fnv 0x00aa2d30
+// pdb: NiMemStream::~NiMemStream | NiMemStream.obj | retail, call graph (shared callers), medium
 __declspec(noinline) void NiMemStream::NiMemStreamDestructor()
 {
     *(void**)this = &DAT_010a256c;
     if (!m_bFlag20 && !m_bFlag21)
-        NiFreeAlias(m_kRayStart);
+        NiFreeAlias(m_pBuffer);
     NiBinaryStream::~NiBinaryStream();
 }
 
@@ -4209,13 +4374,16 @@ struct TaskManager
     BSThreadCriticalSectionPC m_cs;
     AudioTlsState m_threads[16];
     int m_uiNumThreads;
-    void RegisterThread();
+    void bhkTaskletManagerCallback_bhkThreadState_CreateThreadMemory();
 };
 
 
 // Registers the calling thread in the task manager by allocating a 0x5000 stack and initializing its memory router under a critical section.
 // @fnv 0x00c68050
-void TaskManager::RegisterThread()
+// src: XBOX_RETAIL_PDB 0x00c68050
+// pdb: bhkTaskletManagerCallback::bhkThreadState::CreateThreadMemory | bhkWorld.obj | retail, unique string literal, high
+// pdb locals: pElem, tempMemContext
+void TaskManager::bhkTaskletManagerCallback_bhkThreadState_CreateThreadMemory()
 {
     TaskManager* pThis = reinterpret_cast<TaskManager*>(this);
     EnterCriticalSection(&pThis->m_cs);
@@ -4240,14 +4408,14 @@ void TaskManager::RegisterThread()
 
 struct GlobalObjectO2_00c67fe0
 {
-    void RegisterThread();
+    void bhkTaskletManagerCallback_bhkThreadState_CreateThreadMemory();
 };
 extern GlobalObjectO2_00c67fe0 g_01267830;
 // @fnv 0x00c681b0
 // src: GUESS 0x00c681b0 (confidence: medium)
 void NiStream_RegisterThread_Thunk()
 {
-    g_01267830.RegisterThread();
+    g_01267830.bhkTaskletManagerCallback_bhkThreadState_CreateThreadMemory();
 }
 
 #include <xmmintrin.h>
@@ -4440,18 +4608,21 @@ struct FUN_00c89860_cls
     virtual void vb0();
     virtual ObjBase* Resolve(int* apOut);
 
-    void bhkSerializable_LinkObject(Stream* apStream);
-    void bhkConstraint_LinkObject(Stream* apStream);
+    void bhkSerializable_LinkObject(Stream* arStream);
+    void bhkConstraint_LinkObject(Stream* arStream);
 };
 
 // Reads two Thing values from apStream, resolves a Derived object, and stores the values into m_iFirst and m_iSecond before calling FUN_00c87670.
 // @fnv 0x00c89860
 // src: XBOX_PDB 0x00c89860
-void FUN_00c89860_cls::bhkConstraint_LinkObject(Stream* apStream)
+// pdb: bhkConstraint::LinkObject | bhkConstraint.obj | retail, upstream name already matches, high
+// pdb params: arStream
+// pdb locals: pentb, penta, cinfo
+void FUN_00c89860_cls::bhkConstraint_LinkObject(Stream* arStream)
 {
-    apStream->FUN_00a63460();
-    Thing* pFirst = apStream->FUN_00a63430();
-    Thing* pSecond = apStream->FUN_00a63430();
+    arStream->FUN_00a63460();
+    Thing* pFirst = arStream->FUN_00a63430();
+    Thing* pSecond = arStream->FUN_00a63430();
 
     int iOut;
     Derived* pObject = static_cast<Derived*>(Resolve(&iOut));
@@ -4462,7 +4633,7 @@ void FUN_00c89860_cls::bhkConstraint_LinkObject(Stream* apStream)
         pObject->m_iSecond = (pSecond != 0) ? pSecond->m_iValue : 0;
     }
 
-    bhkSerializable_LinkObject(apStream);
+    bhkSerializable_LinkObject(arStream);
 }
 
 struct S_00ca76b0_Obj
@@ -4513,11 +4684,11 @@ struct S_00ca76b0_Elem
 // This element carries both a reference and a second dword; its original
 // SetAt updates the extent without treating either field as an empty slot.
 template <> void NiTLargeArray<S_00ca76b0_Elem, NiTNewInterface<S_00ca76b0_Elem> >::SetSize(unsigned int);
-template <> __declspec(noinline) void NiTLargeArray<S_00ca76b0_Elem, NiTNewInterface<S_00ca76b0_Elem> >::SetAt(unsigned int index, const S_00ca76b0_Elem& value)
+template <> __declspec(noinline) void NiTLargeArray<S_00ca76b0_Elem, NiTNewInterface<S_00ca76b0_Elem> >::SetAt(unsigned int uiIndex, const S_00ca76b0_Elem& element)
 {
-    if (index >= m_uiSize)
-        m_uiSize = index + 1;
-    m_pBase[index] = value;
+    if (uiIndex >= m_uiSize)
+        m_uiSize = uiIndex + 1;
+    m_pBase[uiIndex] = element;
 }
 
 struct S_00ca76b0_Holder
@@ -4584,18 +4755,21 @@ struct S_00ca76b0_Cls
     virtual void vfn_b0();
     virtual S_00ca76b0_Holder* vfn_b4(char* flag);
     void bhkShape_LinkObject(S_00ca76b0_Stream* s);
-    void bhkNiTriStripsShape_LinkObject(S_00ca76b0_Stream* s);
+    void bhkNiTriStripsShape_LinkObject(S_00ca76b0_Stream* arStream);
 };
 
 // Reads a count and objects from s, conditionally prepares the holder array, fills entries, and calls FUN_00c84cc0.
 // @fnv 0x00ca76b0
 // src: XBOX_PDB 0x00ca76b0
-void S_00ca76b0_Cls::bhkNiTriStripsShape_LinkObject(S_00ca76b0_Stream* apStream)
+// pdb: bhkNiTriStripsShape::LinkObject | bhkNiTriStripsShape.obj | retail, upstream name already matches, high
+// pdb params: arStream
+// pdb locals: ilinks, cinfo, I, data, ui, pdata
+void S_00ca76b0_Cls::bhkNiTriStripsShape_LinkObject(S_00ca76b0_Stream* arStream)
 {
     char flag;
     S_00ca76b0_Holder* h = vfn_b4(&flag);
-    unsigned int count = apStream->FUN_00a63460();
-    if (apStream->unk04 < 2)
+    unsigned int count = arStream->FUN_00a63460();
+    if (arStream->unk04 < 2)
     {
         NiTLargeObjectArray<S_00ca76b0_Elem>* arr = &h->arr;
         arr->SetSize(count);
@@ -4607,7 +4781,7 @@ void S_00ca76b0_Cls::bhkNiTriStripsShape_LinkObject(S_00ca76b0_Stream* apStream)
     }
     for (unsigned int i = 0; i < count; i++)
     {
-        S_00ca76b0_Obj* o = apStream->FUN_00a63430();
+        S_00ca76b0_Obj* o = arStream->FUN_00a63430();
         o->FUN_00a67000();
         S_00ca76b0_Obj*& slot = h->arr.m_pBase[i].p;
         S_00ca76b0_Obj* old = slot;
@@ -4620,13 +4794,13 @@ void S_00ca76b0_Cls::bhkNiTriStripsShape_LinkObject(S_00ca76b0_Stream* apStream)
                 InterlockedIncrement(&o->m_rc);
         }
     }
-    bhkShape_LinkObject(apStream);
+    bhkShape_LinkObject(arStream);
 }
 
 
 struct ExtraBase
 {
-    void LinkObject(NiStream& stream);
+    void LinkObject(NiStream& kStream);
 };
 
 struct LinkedHolder : ExtraBase
@@ -4703,20 +4877,23 @@ struct S_00cc4870
     virtual void vfn_ac();
     virtual void vfn_b0();
     virtual void vfn_b4(char* out);
-    void bhkConstraint_LinkObject(S_00cc4870_Stream* stream);
-    void bhkBreakableConstraint_LinkObject(S_00cc4870_Stream* stream);
+    void bhkConstraint_LinkObject(S_00cc4870_Stream* arStream);
+    void bhkBreakableConstraint_LinkObject(S_00cc4870_Stream* arStream);
 };
 // Calls vfn_b4 and FUN_00c89860, then calls FUN_00a63460 once and FUN_00a63430 twice.
 // @fnv 0x00cc4870
 // src: XBOX_PDB 0x00cc4870
-void S_00cc4870::bhkBreakableConstraint_LinkObject(S_00cc4870_Stream* stream)
+// pdb: bhkBreakableConstraint::LinkObject | bhkBreakableConstraint.obj | retail, upstream name already matches, high
+// pdb params: arStream
+// pdb locals: pc, bcreated
+void S_00cc4870::bhkBreakableConstraint_LinkObject(S_00cc4870_Stream* arStream)
 {
     char tmp;
     vfn_b4(&tmp);
-    bhkConstraint_LinkObject(stream);
-    stream->FUN_00a63460();
-    stream->FUN_00a63430();
-    stream->FUN_00a63430();
+    bhkConstraint_LinkObject(arStream);
+    arStream->FUN_00a63460();
+    arStream->FUN_00a63430();
+    arStream->FUN_00a63430();
 }
 
 namespace fnv_00a64df0 {
@@ -4725,14 +4902,17 @@ namespace fnv_00a64df0 {
 
 }  // namespace fnv_00a64df0
 // @fnv 0x00a64df0
-void NiStream::ReadFixedString(NiFixedString& result)
+// pdb: NiStream::LoadFixedString | NiStream.obj | retail, call graph, high
+// pdb params: kString
+// pdb locals: uiStringID
+void NiStream::ReadFixedString(NiFixedString& kString)
 {
     unsigned int id;
     m_pkIstr->Read(&id, 4);
     if (id == 0xffffffffu)
-        result = static_cast<const char*>(0);
+        kString = static_cast<const char*>(0);
     else
-        result = m_kFixedStrings.m_pBase[id];
+        kString = m_kFixedStrings.m_pBase[id];
 }
 
 extern "C" __declspec(dllimport) void __stdcall DeleteCriticalSection(void* section);
@@ -4781,6 +4961,8 @@ FUN_00c68150::~FUN_00c68150()
 
 // Stores object at index, extends m_uiSize to index + 1 when needed, and adjusts m_uiESize based on the slot and object.
 // @fnv 0x00cc1a10
+// pdb: NiPointer<NiObject>::NiPointer<NiObject> | ModelLoader.obj | debug, call graph (shared callers), low
+// pdb params: pObject
 template <> void NiTLargeArray<NiPointer<NiObject>, NiTNewInterface<NiPointer<NiObject> > >::SetAt(unsigned int index, const NiPointer<NiObject>& object) throw()
 {
     if (index >= m_uiSize)

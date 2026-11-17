@@ -12,12 +12,15 @@ struct THREADNAME_INFO
 };
 
 // @fnv 0x00aa2740
-void __cdecl SetDebuggerThreadName(unsigned long dwThreadID, const char* szThreadName)
+// pdb: SetThreadPriority | xthread.obj | retail, call graph, high
+// pdb params: hThread, nPriority
+// pdb locals: Thread
+void __cdecl SetDebuggerThreadName(unsigned long hThread, const char* nPriority)
 {
     THREADNAME_INFO info;
     info.dwType = 0x1000;
-    info.szName = szThreadName;
-    info.dwThreadID = dwThreadID;
+    info.szName = nPriority;
+    info.dwThreadID = hThread;
     info.dwFlags = 0;
     __try
     {

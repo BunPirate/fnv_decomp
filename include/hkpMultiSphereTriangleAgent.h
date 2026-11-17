@@ -8,6 +8,7 @@ class hkpSimpleClosestContactCollector;
 class hkpCdPointCollector;
 class ShapeSweepParameters;
 
+// pdb: class hkpMultiSphereTriangleAgent, size 0x2c, bases: hkpIterativeLinearCastAgent, 2 members
 class hkpMultiSphereTriangleAgent : public hkpIterativeLinearCastAgent
 {
 public:
@@ -19,8 +20,8 @@ public:
         int unk0C;
     };
 
-    TriangleNormal m_kTriangleNormal;
-    unsigned short m_ids[8];
+    TriangleNormal m_closestPointTriangleCache; // src: XBOX_RETAIL_PDB +0xc (old: m_kTriangleNormal)
+    unsigned short m_contactPointId[8]; // src: XBOX_RETAIL_PDB +0x1c (old: m_ids)
 
     hkpMultiSphereTriangleAgent(const hkpCdBody& bodyA, void* mgr);
 
@@ -32,7 +33,7 @@ public:
                       const ShapeSweepParameters* input, hkpCdPointCollector* castCollector,
                       hkpCdPointCollector* startCollector);
     virtual void vf06();
-    virtual void vf07(int arg);
+    virtual void vf07(int constraintOwner);
     virtual void vf08();
     virtual void vf09();
     virtual void vf10();

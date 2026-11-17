@@ -9,6 +9,7 @@ class NiLines;
 class BSFadeNode;
 class TESCombatStyle;
 
+// pdb: class BGSPrimitive, size 0x34, 7 members
 class BGSPrimitive
 {
 public:
@@ -20,13 +21,13 @@ public:
     virtual bool vf04(TESCombatStyle& point);
     virtual void* vf05(int unused);
 
-    static BGSPrimitive* __cdecl Copy(BGSPrimitive* apSource);
+    static BGSPrimitive* __cdecl Copy(BGSPrimitive* apCopy);
 
     int eType;
     NiColorA Color;
     NiPoint3 m_kRadii;
     NiPointer<NiGeometry> m_kGeometry;
-    NiPointer<NiLines> m_kLines;
+    NiPointer<NiLines> spFrame; // src: XBOX_RETAIL_PDB +0x28 (old: m_kLines)
     NiPointer<BSFadeNode> m_pController;
-    unsigned int m_uiPrimitiveFlags;
+    unsigned int iScaleHandlesEnabled; // src: XBOX_RETAIL_PDB +0x30 (old: m_uiPrimitiveFlags)
 };

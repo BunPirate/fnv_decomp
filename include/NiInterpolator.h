@@ -10,6 +10,7 @@ class NiPoint3;
 class NiQuaternion;
 class NiBoolInterpolator;
 
+// pdb: class NiInterpolator, size 0xc, bases: NiObject, 1 members
 class NiInterpolator : public NiObject
 {
   public:
@@ -34,7 +35,7 @@ class NiInterpolator : public NiObject
     virtual void Collapse();
     virtual void GetInterpolatorTimeRange(float& arBeginKeyTime, float& arEndKeyTime) const;
     virtual void SetActiveTimeRange(float afStartTime, float afEndTime);
-    virtual NiInterpolator* CloneForTimeRange(float afStartTime, float afEndTime);
+    virtual NiInterpolator* CloneForTimeRange(float fStartTime, float fEndTime);
     virtual bool IsPoseValue();
     virtual bool IsTimeVarying();
     virtual bool AlwaysUpdate() const;

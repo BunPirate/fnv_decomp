@@ -13,6 +13,7 @@ void* __cdecl NiPSysEmitterDeclinationVarCtlr_GetRTTI()
     return &g_01202750;
 }
 
+// pdb: class NiPSysEmitterDeclinationVarCtlr, size 0x40, bases: NiPSysModifierFloatCtlr, 0 members
 struct NiPSysEmitterDeclinationVarCtlr : NiPSysModifierFloatCtlr
 {
     void SetTargetValueAtOffset24(float fValue);
@@ -23,14 +24,14 @@ struct NiPSysEmitterDeclinationVarCtlr : NiPSysModifierFloatCtlr
 // src: GUESS 0x00c2a0b0 (confidence: medium)
 void NiPSysEmitterDeclinationVarCtlr::SetTargetValueAtOffset24(float fValue)
 {
-    *(float*)((char*)m_pkTargetModifier + 0x24) = fValue;
+    *(float*)((char*)m_pkModifier + 0x24) = fValue;
 }
 
 // @fnv 0x00c2b8c0
 // src: GUESS 0x00c2b8c0 (confidence: low)
 void NiPSysEmitterDeclinationVarCtlr::UpdateFields_00c2b8c0(float& fValue)
 {
-    fValue = *(float*)((char*)m_pkTargetModifier + 0x24);
+    fValue = *(float*)((char*)m_pkModifier + 0x24);
 }
 
 void __stdcall NiPSysModifierFloatCtlr_GetViewerStrings(StrArr* pArr);
@@ -38,14 +39,16 @@ char* NiViewerStrings_NiGetViewerString_Title(char* s);
 
 // @fnv 0x00c2b920
 // src: XBOX_PDB 0x00c2b920
-void __stdcall NiPSysEmitterDeclinationVarCtlr_GetViewerStrings(StrArr* pStringArray)
+// pdb: NiPSysEmitterDeclinationVarCtlr::GetViewerStrings | NiPSysEmitterDeclinationVarCtlr.obj | retail, upstream name already matches, high
+// pdb params: pkStrings
+void __stdcall NiPSysEmitterDeclinationVarCtlr_GetViewerStrings(StrArr* pkStrings)
 {
-    NiPSysModifierFloatCtlr_GetViewerStrings(pStringArray);
+    NiPSysModifierFloatCtlr_GetViewerStrings(pkStrings);
     char* s = NiViewerStrings_NiGetViewerString_Title((char*)g_01202750);
-    unsigned int uiIndex = pStringArray->m_usSize;
-    if (uiIndex >= pStringArray->m_usMaxSize)
-        pStringArray->SetSize(uiIndex + pStringArray->m_usGrowBy);
-    pStringArray->SetAt(uiIndex, s);
+    unsigned int uiIndex = pkStrings->m_usSize;
+    if (uiIndex >= pkStrings->m_usMaxSize)
+        pkStrings->SetSize(uiIndex + pkStrings->m_usGrowBy);
+    pkStrings->SetAt(uiIndex, s);
 }
 
 extern int DAT_010bfb54;
@@ -78,12 +81,15 @@ struct FUN_00c2b8d0_cls
 {
     void FUN_00c32de0(SpawnedObject* obj, void* arg);
 
-    SpawnedObject* NiPSysEmitterDeclinationVarCtlr_CreateClone(void* arg);
+    SpawnedObject* NiPSysEmitterDeclinationVarCtlr_CreateClone(void* kCloning);
 };
 
 // @fnv 0x00c2b8d0
 // src: XBOX_PDB 0x00c2b8d0
-SpawnedObject* FUN_00c2b8d0_cls::NiPSysEmitterDeclinationVarCtlr_CreateClone(void* arg)
+// pdb: NiPSysEmitterDeclinationVarCtlr::CreateClone | NiPSysEmitterDeclinationVarCtlr.obj | retail, upstream name already matches, high
+// pdb params: kCloning
+// pdb locals: pkObject
+SpawnedObject* FUN_00c2b8d0_cls::NiPSysEmitterDeclinationVarCtlr_CreateClone(void* kCloning)
 {
     SpawnedObject* obj = (SpawnedObject*)Object_DispatchCommandFour(0x40);
     if (obj != 0)
@@ -95,6 +101,6 @@ SpawnedObject* FUN_00c2b8d0_cls::NiPSysEmitterDeclinationVarCtlr_CreateClone(voi
     {
         obj = 0;
     }
-    this->FUN_00c32de0(obj, arg);
+    this->FUN_00c32de0(obj, kCloning);
     return obj;
 }

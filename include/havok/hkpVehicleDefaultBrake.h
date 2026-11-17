@@ -7,11 +7,12 @@
 #include "hkpVehicleBrake.h"
 class hkpVehicleDefaultBrakeWheelBrakingProperties;
 #pragma pack(push, 1)
+// pdb: class hkpVehicleDefaultBrake, size 0x18, bases: hkpVehicleBrake, 2 members
 class hkpVehicleDefaultBrake : public hkpVehicleBrake
 {
   public:
-    hkArray<hkpVehicleDefaultBrakeWheelBrakingProperties> m_kWheelBrakingProperties;  // +0x8
-    hkReal m_fWheelBlockTime;                                                         // +0x14
+    hkArray<hkpVehicleDefaultBrakeWheelBrakingProperties> m_wheelBrakingProperties;  // +0x8 // src: XBOX_RETAIL_PDB +0x8 (old: m_kWheelBrakingProperties)
+    hkReal m_wheelsMinTimeToBlock;                                                         // +0x14 // src: XBOX_RETAIL_PDB +0x14 (old: m_fWheelBlockTime)
 };
 #pragma pack(pop)
 typedef char fnv_hk_size_hkpVehicleDefaultBrake[(sizeof(hkpVehicleDefaultBrake) == 0x18) ? 1 : -1];

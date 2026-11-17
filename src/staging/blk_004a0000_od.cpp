@@ -179,6 +179,7 @@ void* __fastcall hkpShapeRayCastOutput_hkpShapeRayCastOutput(void* self);
 // Calls FUN_004a3d20 on self, sets the int at offset 0x50 to 0, and returns self.
 // @fnv 0x004a3d00
 // src: XBOX_PDB 0x004a3d00
+// pdb: hkpWorldRayCastOutput::hkpWorldRayCastOutput | BGSDecalManager.obj | debug, object-file gap fill, medium
 void* __fastcall hkpWorldRayCastOutput_hkpWorldRayCastOutput(void* self)
 {
     hkpShapeRayCastOutput_hkpShapeRayCastOutput(self);
@@ -248,21 +249,25 @@ struct FUN_004a40a0_Class
 
 // @fnv 0x004a40a0
 // src: XBOX_PDB 0x004a40a0
+// pdb: BGSImpactData::GetDecalMinWidth | BGSDecalManager.obj | debug, upstream name already matches, high
 float FUN_004a40a0_Class::BGSImpactData_GetDecalMinWidth()
 {
     return ((RegionPoint*)((char*)this + 0x54))->GetX();
 }
 
+// pdb: class Modifier, size 0x8 (here 0x1), 2 members
 struct Modifier
 {
     float GetValue();
 };
 struct FUN_004a40c0_Class
 {
-    float GetModifierValue();
+    float BGSImpactData_GetDecalMaxWidth();
 };
 // @fnv 0x004a40c0
-float FUN_004a40c0_Class::GetModifierValue()
+// src: XBOX_DEBUG_PDB 0x004a40c0
+// pdb: BGSImpactData::GetDecalMaxWidth | BGSDecalManager.obj | debug, call graph, high
+float FUN_004a40c0_Class::BGSImpactData_GetDecalMaxWidth()
 {
     return ((Modifier*)((char*)this + 0x54))->GetValue();
 }
@@ -274,6 +279,7 @@ struct FUN_004a4120_class
 
 // @fnv 0x004a4120
 // src: COMMUNITY 0x004a4120
+// pdb: BGSImpactData::GetAlphaBlending | BGSDecalManager.obj | debug, object-file run extension, low
 char FUN_004a4120_class::ImpactDecalData_GetIsParallax()
 {
     return (((const unsigned char*)this)[0x1d] & 1) != 0;
@@ -286,6 +292,7 @@ struct FUN_004a4160_Class
 
 // @fnv 0x004a4160
 // src: COMMUNITY 0x004a4160
+// pdb: BGSImpactData::GetDecalParallaxScale | BGSDecalManager.obj | debug, object-file run extension, low
 bool FUN_004a4160_Class::ImpactDecalData_GetIsAlphaBlend()
 {
     return reinterpret_cast<unsigned char*>(this)[0x1d] & 2;
@@ -297,6 +304,7 @@ struct FUN_004a41a0_Class
 };
 // @fnv 0x004a41a0
 // src: GUESS 0x004a41a0 (confidence: medium)
+// pdb: BGSImpactData::GetDecalColor | BGSDecalManager.obj | debug, object-file run extension, low
 bool FUN_004a41a0_Class::GetMaskedValue4()
 {
     return ((unsigned char*)this)[0x1d] & 4;
@@ -322,6 +330,7 @@ struct MersenneTwister
 
 // @fnv 0x004a4240
 // src: XBOX_PDB 0x004a4240
+// pdb: RandomFloatTwoPi | BGSDecalManager.obj | retail, upstream name already matches, high
 void* RandomFloatTwoPi()
 {
     return MersenneTwister::GetRandomGenerator()->BSRandom_FloatTwoPi();
@@ -335,6 +344,7 @@ struct FUN_004a4440_Class
 
 // @fnv 0x004a4440
 // src: GUESS 0x004a4440 (confidence: low)
+// pdb: hkInplaceArray<hkpWorldRayCastOutput,8,hkContainerHeapAllocator>::~hkInplaceArray<hkpWorldRayCastOutput,8,hkContainerHeapAllocator> | BGSDecalManager.obj | debug, object-file run extension, low
 void __thiscall FUN_004a4440_Class::ForwardCall_004a4440()
 {
     FUN_004a46d0();
@@ -347,6 +357,8 @@ struct FUN_004a4840_class
 };
 // @fnv 0x004a4840
 // src: XBOX_PDB 0x004a4840
+// pdb: hkContainerHeapAllocator::get | BGSDecalManager.obj | retail, upstream name already matches, high
+// pdb params: __formal
 void FUN_004a4840_class::hkContainerHeapAllocator_get(int unused)
 {
     hkMemoryRouter_getInstance()->GetAudioBackendData();
@@ -355,16 +367,18 @@ void FUN_004a4840_class::hkContainerHeapAllocator_get(int unused)
 struct FUN_004a49e0_shell
 {
     void __thiscall Deallocate(void* p);
-    void __thiscall NiTPointerListBase_NiTPointerAllocator_unsigned_int_BSOcclusionPlane_DeleteItem(void* item);
+    void __thiscall NiTPointerListBase_NiTPointerAllocator_unsigned_int_BSOcclusionPlane_DeleteItem(void* pkItem);
 };
 
 // Clears the int at offset 8 of item, then calls Deallocate on the object at this+8 to free it.
 // @fnv 0x004a49e0
 // src: XBOX_PDB 0x004a49e0
-void __thiscall FUN_004a49e0_shell::NiTPointerListBase_NiTPointerAllocator_unsigned_int_BSOcclusionPlane_DeleteItem(void* item)
+// pdb: NiTPointerListBase<NiTPointerAllocator<unsigned int>,Tile *>::DeleteItem | Interface.obj | debug, call graph (shared callers), high
+// pdb params: pkItem
+void __thiscall FUN_004a49e0_shell::NiTPointerListBase_NiTPointerAllocator_unsigned_int_BSOcclusionPlane_DeleteItem(void* pkItem)
 {
-    *reinterpret_cast<int*>(reinterpret_cast<char*>(item) + 8) = 0;
-    reinterpret_cast<FUN_004a49e0_shell*>(reinterpret_cast<char*>(this) + 8)->Deallocate(item);
+    *reinterpret_cast<int*>(reinterpret_cast<char*>(pkItem) + 8) = 0;
+    reinterpret_cast<FUN_004a49e0_shell*>(reinterpret_cast<char*>(this) + 8)->Deallocate(pkItem);
 }
 
 struct FUN_004a5250_shell
@@ -376,6 +390,8 @@ struct FUN_004a5230_class
     void __thiscall ForwardToMember(void* arg);
 };
 // @fnv 0x004a5230
+// pdb: NiGeometryData::SetBound | BGSPrimitive.obj | debug, object-file gap fill, medium
+// pdb params: kBound
 void __thiscall FUN_004a5230_class::ForwardToMember(void* arg)
 {
     ((FUN_004a5250_shell*)((char*)this + 0x10))->AssignFromBound(arg);
@@ -418,6 +434,8 @@ struct FUN_004a9bf0_class
 // Calls FUN_004a9c50 with a, stores the address of DAT_0101ed6c at this, and returns this.
 // @fnv 0x004a9bf0
 // src: EXE 0x004a9bf0
+// pdb: NiTMap<NiTexture *,bool>::NiTMap<NiTexture *,bool> | BGSSceneInfo.obj | debug, object-file run extension, low
+// pdb params: uiHashSize
 void* FUN_004a9bf0_class::NiTMap_NiTexture_bool_NiTMap(int a)
 {
     NiTMapBase_DFALL_NiTMapItem_NiTexture_bool_NiTexture_bool_NiTMapBase_DFALL_NiTMapItem_NiTexture_bool_NiTexture_bool(a);
@@ -457,6 +475,7 @@ struct FUN_004a9de0_class
 };
 // @fnv 0x004a9de0
 // src: GUESS 0x004a9de0 (confidence: medium)
+// pdb: BSSimpleArray<SCENE_INFO_DATA_STRUCT,1024>::~BSSimpleArray<SCENE_INFO_DATA_STRUCT,1024> | BGSSceneInfo.obj | debug, object-file run extension, low
 void FUN_004a9de0_class::ResetVirtualTableAndClear_004a9de0()
 {
     p = (int*)&DAT_0101edac;
@@ -474,6 +493,8 @@ struct FUN_004a9e90_cls
 // Calls FUN_004a9ef0 with a, sets m_p to DAT_0101edc0, and returns this.
 // @fnv 0x004a9e90
 // src: EXE 0x004a9e90
+// pdb: NiTMap<TESActorBase *,bool>::NiTMap<TESActorBase *,bool> | BGSSceneInfo.obj | debug, object-file run extension, low
+// pdb params: uiHashSize
 FUN_004a9e90_cls* FUN_004a9e90_cls::NiTMap_TESActorBase_bool_NiTMap(int a)
 {
     NiTMapBase_DFALL_NiTMapItem_TESActorBase_bool_TESActorBase_bool_NiTMapBase_DFALL_NiTMapItem_TESActorBase_bool_TESActorBase_bool(a);
@@ -520,6 +541,8 @@ FUN_004aa1b0_class* __thiscall FUN_004aa1b0_class::NiTMap_ShadowSceneLight_int_N
 
 // RTTI at vftable 0x0101fb8c identifies the pointer-to-pointer map.
 // @fnv 0x004afb20
+// pdb: NiTPointerMap<NiObject *,NiObject *>::NiTPointerMap<NiObject *,NiObject *> | BipedAnim.obj | debug, call graph, medium
+// pdb params: uiHashSize
 template <>
 NiTPointerMap<NiObject*, NiObject*>::NiTPointerMap(unsigned int uiHashSize)
     : NiTMapBase<NiTPointerAllocator<unsigned int>, NiObject*, NiObject*>(uiHashSize)
@@ -527,6 +550,8 @@ NiTPointerMap<NiObject*, NiObject*>::NiTPointerMap(unsigned int uiHashSize)
 
 // RTTI at vftable 0x0101fbac identifies the pointer-to-bool map.
 // @fnv 0x004afb50
+// pdb: NiTPointerMap<NiObject *,bool>::NiTPointerMap<NiObject *,bool> | BipedAnim.obj | debug, object-file run extension, low
+// pdb params: uiHashSize
 template <>
 NiTPointerMap<NiObject*, bool>::NiTPointerMap(unsigned int uiHashSize)
     : NiTMapBase<NiTPointerAllocator<unsigned int>, NiObject*, bool>(uiHashSize)
@@ -566,6 +591,7 @@ struct FUN_004afc20
 };
 // Sets the object's vtbl to DAT_0101fbcc and calls FUN_004b0220 with data.
 // @fnv 0x004afc20
+// pdb: NiTArray<NiPointer<NiAVObject>,NiTNewInterface<NiPointer<NiAVObject> > >::~NiTArray<NiPointer<NiAVObject>,NiTNewInterface<NiPointer<NiAVObject> > > | BipedAnim.obj | debug, call graph (shared callers), high
 void FUN_004afc20::Init()
 {
     vtbl = &DAT_0101fbcc;
@@ -643,9 +669,11 @@ float __cdecl fmodf(float, float);
 
 // @fnv 0x004b1500
 // src: XBOX_PDB 0x004b1500
-float __cdecl fmod_004b1500(float a, float b)
+// pdb: fmod | GlobalFunc.obj | debug, call graph (shared callers), high
+// pdb params: _X, _Y
+float __cdecl fmod_004b1500(float _X, float _Y)
 {
-    return fmodf(a, b);
+    return fmodf(_X, _Y);
 }
 
 extern int DAT_011aa050;
@@ -660,11 +688,13 @@ int __cdecl NiProcessorSpecificCode_ms_pPointsTransform_(unsigned short a1, int 
 struct FUN_004b4ab0_Class
 {
     void __thiscall hkVector4_setRotatedInverseDir(int a, int b);
-    void __thiscall hkVector4__setRotatedInverseDir(int a, int b);
+    void __thiscall hkVector4__setRotatedInverseDir(int r, int v);
 };
 
 // @fnv 0x004b4ab0
 // src: COMMUNITY 0x004b4ab0
+// pdb: hkVector4::setRotatedInverseDir | GlobalFunc.obj | debug, object-file run extension, low
+// pdb params: t, v
 void __thiscall FUN_004b4ab0_Class::hkVector4_setRotatedInverseDir(int a, int b)
 {
     hkVector4__setRotatedInverseDir(a, b);
@@ -675,9 +705,11 @@ extern "C" double __cdecl atan2(double, double);
 // Returns the atan2 of a and b, computed in double precision and cast back to float.
 // @fnv 0x004b5590
 // src: COMMUNITY 0x004b5590
-float atan2f(float afY, float afX)
+// pdb: atan2f | GlobalFunc.obj | debug, upstream name already matches, high
+// pdb params: _Y, _X
+float atan2f(float _Y, float _X)
 {
-    return (float)atan2((double)afY, (double)afX);
+    return (float)atan2((double)_Y, (double)_X);
 }
 
 // If p is non-null, calls p->Deallocate() and returns its result; otherwise returns 0.
@@ -701,14 +733,16 @@ struct FUN_004b9950_class
 {
     int* p;
     void NiTMapBase_DFALL_NiTMapItem_unsigned_int_VertexDist_unsigned_int_VertexDist_NiTMapBase_DFALL_NiTMapItem_unsigned_int_VertexDist_unsigned_int_VertexDist(int arg);
-    FUN_004b9950_class* NiTMap_unsigned_int_VertexDist_NiTMap(int arg);
+    FUN_004b9950_class* NiTMap_unsigned_int_VertexDist_ctor(int uiHashSize);
 };
 // Calls FUN_004b99b0 with arg, sets p to point at DAT_010205b4, and returns this.
 // @fnv 0x004b9950
-// src: EXE 0x004b9950
-FUN_004b9950_class* FUN_004b9950_class::NiTMap_unsigned_int_VertexDist_NiTMap(int arg)
+// src: XBOX_DEBUG_PDB 0x004b9950 (was EXE)
+// pdb: NiTMap<unsigned int,VertexDist>::NiTMap<unsigned int,VertexDist> | GlobalFunc.obj | debug, call graph, high
+// pdb params: uiHashSize
+FUN_004b9950_class* FUN_004b9950_class::NiTMap_unsigned_int_VertexDist_ctor(int uiHashSize)
 {
-    NiTMapBase_DFALL_NiTMapItem_unsigned_int_VertexDist_unsigned_int_VertexDist_NiTMapBase_DFALL_NiTMapItem_unsigned_int_VertexDist_unsigned_int_VertexDist(arg);
+    NiTMapBase_DFALL_NiTMapItem_unsigned_int_VertexDist_unsigned_int_VertexDist_NiTMapBase_DFALL_NiTMapItem_unsigned_int_VertexDist_unsigned_int_VertexDist(uiHashSize);
     p = &DAT_010205b4;
     return this;
 }
@@ -725,6 +759,7 @@ struct FUN_004b9d60_class
 
 // @fnv 0x004b9d60
 // src: GUESS 0x004b9d60 (confidence: low)
+// pdb: NiTMap<unsigned int,VertexDist>::NewItem | GlobalFunc.obj | debug, vtable slot, medium
 void FUN_004b9d60_class::ForwardCall_004b9d60()
 {
     ((FUN_004b9de0_class*)((char*)this + 0xc))->FUN_004b9de0();
@@ -747,6 +782,8 @@ struct FUN_004b9d80_Class
 // Calls FUN_0065de30(0) on the object at param+8, then FreeMemory(param) on the object at this+0xc.
 // @fnv 0x004b9d80
 // src: GUESS 0x004b9d80 (confidence: medium)
+// pdb: NiTMap<unsigned int,VertexDist>::~NiTMap<unsigned int,VertexDist> | GlobalFunc.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiTMap<unsigned int,VertexDist>::DeleteItem
 void FUN_004b9d80_Class::ReleaseStorage_004b9d80(void* pObject)
 {
     ((Unk65*)((char*)pObject + 8))->FUN_0065de30(0);
@@ -761,6 +798,7 @@ struct FUN_004b9de0
 };
 
 // @fnv 0x004b9de0
+// pdb: DFALL<NiTMapItem<unsigned int,VertexDist> >::Allocate | GlobalFunc.obj | debug, object-file run extension, low
 void* __thiscall FUN_004b9de0::Alloc()
 {
     void* p = operator new(0x14);
@@ -817,13 +855,14 @@ struct FUN_004a98b0_Class
     void* m_vtbl;
     int m_auiShapeKeys;
     void* m_p;
-    void UpdateState_004a98b0();
+    void NiTMapBase_DFALL_NiTMapItem_NiTexture_TEX_USER_DATA_NiTexture_TEX_USER_DATA_dtor();
 };
 
 // Resets the vtable pointer, clears the pointer map contents, and frees m_p.
 // @fnv 0x004a98b0
-// src: GUESS 0x004a98b0 (confidence: low)
-void FUN_004a98b0_Class::UpdateState_004a98b0()
+// src: XBOX_DEBUG_PDB 0x004a98b0
+// pdb: NiTMapBase<DFALL<NiTMapItem<NiTexture *,TEX_USER_DATA *> >,NiTexture *,TEX_USER_DATA *>::~NiTMapBase<DFALL<NiTMapItem<NiTexture *,TEX_USER_DATA *> >,NiTexture *,TEX_USER_DATA *> | BGSSceneInfo.obj | debug, call graph (shared callers), high
+void FUN_004a98b0_Class::NiTMapBase_DFALL_NiTMapItem_NiTexture_TEX_USER_DATA_NiTexture_TEX_USER_DATA_dtor()
 {
     m_vtbl = &DAT_0101ed2c;
     ((NiTPointerMap<int, int>*)this)->RemoveAll();
@@ -932,12 +971,14 @@ extern int DAT_010205d4;
 
 struct FUN_004b9d30 : NiTPointerMap<int, int>
 {
-    void Init();
+    void NiTMapBase_DFALL_NiTMapItem_unsigned_int_VertexDist_unsigned_int_VertexDist_dtor();
 };
 
 // Sets the vtable pointer, clears all entries with RemoveAll, then frees the pointer stored at offset 8 via _NiFreeAlias.
 // @fnv 0x004b9d30
-void __thiscall FUN_004b9d30::Init()
+// src: XBOX_DEBUG_PDB 0x004b9d30
+// pdb: NiTMapBase<DFALL<NiTMapItem<unsigned int,VertexDist> >,unsigned int,VertexDist>::~NiTMapBase<DFALL<NiTMapItem<unsigned int,VertexDist> >,unsigned int,VertexDist> | GlobalFunc.obj | debug, call graph (shared callers), high
+void __thiscall FUN_004b9d30::NiTMapBase_DFALL_NiTMapItem_unsigned_int_VertexDist_unsigned_int_VertexDist_dtor()
 {
     *(int**)((char*)this + 0) = &DAT_010205d4;
     RemoveAll();
@@ -948,10 +989,12 @@ void __fastcall ProcessState_00c4ed40(void*);
 void __cdecl operator delete(void*);
 struct FUN_004a4410_Class
 {
-    void* __thiscall FUN_004a4410(unsigned int flags);
+    void* __thiscall BSOcclusionQuery_ScalarDtor(unsigned int flags);
 };
 // @fnv 0x004a4410
-void* __thiscall FUN_004a4410_Class::FUN_004a4410(unsigned int flags)
+// src: XBOX_DEBUG_PDB 0x004a4410
+// pdb: BSOcclusionQuery::`scalar deleting destructor' | BGSDecalManager.obj | debug, call graph, high
+void* __thiscall FUN_004a4410_Class::BSOcclusionQuery_ScalarDtor(unsigned int flags)
 {
     ProcessState_00c4ed40(this);
     if (flags & 1)
@@ -967,6 +1010,7 @@ struct FUN_004a4bd0_shell
 };
 // Calls FUN_004a4bd0, then frees this with Deallocate when flags has bit 0 set, and returns this.
 // @fnv 0x004a4ba0
+// pdb: BGSPrimitive::`scalar deleting destructor' | BGSPrimitive.obj | debug, vtable slot, medium
 void* __thiscall FUN_004a4bd0_shell::FUN_004a4ba0(unsigned int flags)
 {
     FUN_004a4bd0();
@@ -977,13 +1021,14 @@ void* __thiscall FUN_004a4bd0_shell::FUN_004a4ba0(unsigned int flags)
 
 struct FUN_004a99d0_Class
 {
-    void __thiscall SetVtableAndProcessState_004a99d0();
+    void __thiscall NiTMapBase_DFALL_NiTMapItem_TESObjectCELL_bool_TESObjectCELL_bool_dtor();
     void* __thiscall FUN_004a9a30(unsigned int flags);
 };
 // @fnv 0x004a9a30
+// pdb: NiTMapBase<DFALL<NiTMapItem<TESObjectCELL *,bool> >,TESObjectCELL *,bool>::`scalar deleting destructor' | BGSSceneInfo.obj | retail, vtable slot, high
 void* FUN_004a99d0_Class::FUN_004a9a30(unsigned int flags)
 {
-    SetVtableAndProcessState_004a99d0();
+    NiTMapBase_DFALL_NiTMapItem_TESObjectCELL_bool_TESObjectCELL_bool_dtor();
     if (flags & 1)
         operator delete(this);
     return this;
@@ -998,6 +1043,7 @@ struct GlobalObject_004a9bf0
 };
 // Calls the object's destructor, frees the object with Deallocate when bit 0 of flags is set, and returns the object pointer.
 // @fnv 0x004a9c20
+// pdb: NiTMap<NiTexture *,bool>::`scalar deleting destructor' | BGSSceneInfo.obj | retail, vtable slot, high
 GlobalObject_004a9bf0* GlobalObject_004a9bf0::FUN_004a9c20(unsigned int flags)
 {
     this->dtor();
@@ -1015,6 +1061,7 @@ struct FUN_004a9ff0_Class
 };
 // Calls FUN_004a9fc0, deletes this when flags has bit 0 set, and returns this.
 // @fnv 0x004a9ff0
+// pdb: NiTMapBase<DFALL<NiTMapItem<TESActorBase *,bool> >,TESActorBase *,bool>::`scalar deleting destructor' | BGSSceneInfo.obj | retail, vtable slot, high
 void* __thiscall FUN_004a9ff0_Class::FUN_004a9ff0(unsigned int flags)
 {
     ReleaseStorage_004a9fc0();
@@ -1031,6 +1078,7 @@ struct FUN_004aa150_Class
 
 // Calls FUN_004aa150, then deletes this if bit 0 of flags is set, and returns this.
 // @fnv 0x004aa180
+// pdb: NiTMapBase<DFALL<NiTMapItem<int,int> >,int,int>::`scalar deleting destructor' | BGSSceneInfo.obj | retail, vtable slot, high
 void* __thiscall FUN_004aa150_Class::FUN_004aa180(unsigned int flags)
 {
     SetVtableAndProcessState_004aa150();
@@ -1046,6 +1094,7 @@ struct FUN_004aa310_Class : FUN_004aa2e0_Class
     FUN_004aa310_Class* __thiscall FUN_004aa310(unsigned int flags);
 };
 // @fnv 0x004aa310
+// pdb: NiTMapBase<DFALL<NiTMapItem<ShadowSceneLight *,int> >,ShadowSceneLight *,int>::`scalar deleting destructor' | BGSSceneInfo.obj | retail, vtable slot, high
 FUN_004aa310_Class* __thiscall FUN_004aa310_Class::FUN_004aa310(unsigned int flags)
 {
     ReleaseStorage_004aa2e0();
@@ -1063,6 +1112,7 @@ struct FUN_004b0160_class
 };
 // Calls FUN_004afc20, then deletes this when flags has bit 0 set, and returns this.
 // @fnv 0x004b0160
+// pdb: NiTArray<NiPointer<NiAVObject>,NiTNewInterface<NiPointer<NiAVObject> > >::`scalar deleting destructor' | BipedAnim.obj | debug, vtable slot, medium
 void* __thiscall FUN_004b0160_class::FUN_004b0160(unsigned int flags)
 {
     FUN_004afc20();
@@ -1081,6 +1131,7 @@ struct FUN_004b01f0_Class
 
 // Calls FUN_004b0100, then deallocates this when flags has bit 0 set, and returns this.
 // @fnv 0x004b01f0
+// pdb: NiTMapBase<NiTPointerAllocator<unsigned int>,NiObject *,bool>::`scalar deleting destructor' | BipedAnim.obj | retail, vtable slot, high
 void* __thiscall FUN_004b01f0_Class::FUN_004b01f0(unsigned int flags)
 {
     ReleaseStorage_004b0100();
@@ -1097,6 +1148,7 @@ struct FUN_004b0850_Class
 };
 // Calls FUN_004b07b0, then frees this when flags has bit 0 set, and returns this.
 // @fnv 0x004b0850
+// pdb: NiTArray<BSAnimNoteReceiver::BSAnimNoteReceiverType *,NiTMallocInterface<BSAnimNoteReceiver::BSAnimNoteReceiverType *> >::`scalar deleting destructor' | BSAnimNoteReceiver.obj | debug, vtable slot, medium
 FUN_004b0850_Class* __thiscall FUN_004b0850_Class::FUN_004b0850(unsigned int flags)
 {
     SetVtableAndProcessState_004b07b0();
@@ -1114,6 +1166,7 @@ struct FUN_004b08e0_Class
 // Calls FUN_004b0cf0, then deletes this if bit 0 of flags is set, and returns this.
 // @fnv 0x004b08e0
 // src: COMMUNITY 0x004b08e0
+// pdb: BSClonePools::ClonePool::`scalar deleting destructor' | BSClonePool.obj | debug, object-file run extension, low
 void* __thiscall FUN_004b08e0_Class::BSClonePools_ClonePool_Destroy(unsigned int flags)
 {
     FUN_004b0cf0();
@@ -1124,7 +1177,9 @@ void* __thiscall FUN_004b08e0_Class::BSClonePools_ClonePool_Destroy(unsigned int
 
 // Destroys the NiFixedString and, if the flags bit 0 is set, frees the object's memory, returning this.
 // @fnv 0x004b9900
-void* NiFixedString::FUN_004b9900(unsigned int flags)
+// src: XBOX_DEBUG_PDB 0x004b9900
+// pdb: NiFixedString::`scalar deleting destructor' | GlobalFunc.obj | debug, call graph (shared callers), high
+void* NiFixedString::NiFixedString_ScalarDtor(unsigned int flags)
 {
     NiFixedString::~NiFixedString();
     if (flags & 1)
@@ -1141,6 +1196,7 @@ struct FUN_004b9980_Class
 };
 
 // @fnv 0x004b9980
+// pdb: NiTMap<unsigned int,VertexDist>::`scalar deleting destructor' | GlobalFunc.obj | retail, vtable slot, high
 void* __thiscall FUN_004b9980_Class::FUN_004b9980(unsigned int flags)
 {
     FUN_004b9cd0();
@@ -1166,6 +1222,7 @@ extern NiRenderer* DAT_011f9508;
 
 // @fnv 0x004a0e90
 // src: COMMUNITY 0x004a0e90
+// pdb: BSShaderManager::GetRenderer | BGSDecalManager.obj | debug, upstream name already matches, high
 unsigned int BSShaderManager_GetRenderer()
 {
     return *(Flt*)&DAT_011f9508;
@@ -1191,6 +1248,7 @@ struct FUN_004a3cc0_Class
 };
 // @fnv 0x004a3cc0
 // src: XBOX_PDB 0x004a3cc0
+// pdb: hkpWorldRayCastInput::hkpWorldRayCastInput | BGSDecalManager.obj | debug, upstream name already matches, high
 FUN_004a3cc0_Class* __thiscall FUN_004a3cc0_Class::hkpWorldRayCastInput_hkpWorldRayCastInput()
 {
     a._ref_006815c0();
@@ -1211,6 +1269,9 @@ struct BSRandomHelper
 };
 // @fnv 0x004a4260
 // src: XBOX_PDB 0x004a4260
+// pdb: BGSDecalManager::AddDecalEmitter | BGSDecalManager.obj | retail, object-file run extension, low
+// pdb note: debug build links it to BSRandom::FloatTwoPi
+// pdb params: apEmitter
 float __thiscall BSRandomHelper::BSRandom_FloatTwoPi()
 {
     unsigned int val = ((UnsignedIntHelper*)this)->GetRandomUInt();
@@ -1229,6 +1290,8 @@ struct FUN_004a4650_ListBase
 // Iterates the linked list from m_pItemHead, deleting each item via DeleteItem, then clears the head, prev and tail pointers.
 // @fnv 0x004a4650
 // src: XBOX_PDB 0x004a4650
+// pdb: NiTPointerListBase<NiTPointerAllocator<unsigned int>,NiPointer<BSTempEffectSimpleDecal> >::RemoveAll | BGSDecalManager.obj | debug, call graph, disputed (was high), not renamed: the public Xbox 360 symbol already names it; the code is probably folded with another original
+// pdb locals (of the disputed candidate, unverified): pkCurr, pkDel
 void __fastcall NiTPointerListBase_NiTPointerAllocator_unsigned_int_NiPointer_BSMultiBoundRoom_RemoveAll(FUN_004a4650_ListBase* self)
 {
     NiTListItem<NiPointer<ObstacleData> >* item = self->m_pItemHead;
@@ -1252,6 +1315,8 @@ struct FUN_004a4930_class
 // Clears the object at p+8 via assignment of 0, then calls _m.Deallocate(p).
 // @fnv 0x004a4930
 // src: XBOX_PDB 0x004a4930
+// pdb: NiTPointerListBase<NiTPointerAllocator<unsigned int>,NiPointer<BSTempEffectSimpleDecal> >::DeleteItem | BGSDecalManager.obj | debug, call graph (shared callers), low
+// pdb params: pkItem
 void __thiscall FUN_004a4930_class::NiTPointerListBase_NiTPointerAllocator_unsigned_int_NiPointer_BSMultiBoundRoom_DeleteItem(void* apObject)
 {
     ((GO*)((char*)apObject + 8))->operator=(0);
@@ -1265,6 +1330,8 @@ struct FUN_004a4960_class
 // Stores a, b and c (with the high bit set) into the object's first three fields and returns this.
 // @fnv 0x004a4960
 // src: XBOX_PDB 0x004a4960
+// pdb: NiPointer<BSTempEffectSimpleDecal>::NiPointer<BSTempEffectSimpleDecal> | BGSDecalManager.obj | debug, object-file run extension, low
+// pdb params: ptr
 void* __thiscall FUN_004a4960_class::hkArrayBase_hkpWorldRayCastOutput_hkArrayBase_hkpWorldRayCastOutput(void* pFirst, void* pSecond, unsigned int c)
 {
     *(void**)((char*)this) = pFirst;
@@ -1291,6 +1358,9 @@ struct FUN_004a4990_s
 };
 // @fnv 0x004a4990
 // src: XBOX_PDB 0x004a4990
+// pdb: NiTPointerListBase<NiTPointerAllocator<unsigned int>,Tile *>::FindPos | Interface.obj | debug, object-file run extension, low
+// pdb params: element, kStart
+// pdb locals: kPos
 void __thiscall FUN_004a4990_s::hkArrayBase_hkpWorldRayCastOutput_clearAndDeallocate(int pTarget)
 {
     hkArrayBase_hkpRootCdBodyPair_clear();
@@ -1312,6 +1382,9 @@ struct FUN_004a4a10_Holder
 // Calls vf10 with a1 and a2 multiplied by 0x60.
 // @fnv 0x004a4a10
 // src: XBOX_PDB 0x004a4a10
+// pdb: BSSimpleArray<DebugText::sPrintData *,1024>::_DestructItems | Interface.obj | debug, object-file run extension, low
+// pdb params: apFirstAddr, aiCount
+// pdb locals: i
 void __thiscall FUN_004a4a10_Holder::hkMemoryAllocator_bufFree_hkpWorldRayCastOutput(int aiArg1, int aiArg2)
 {
     int v = 0x60;
@@ -1326,11 +1399,13 @@ struct FUN_004a4c50_Class
     GO m0;
     GO m1;
     GO m2;
-    void __thiscall ClearSlots();
+    void __thiscall BGSPrimitive_ClearGeometryData();
 };
 // Sets the three pointer slots at offsets 0x24, 0x28 and 0x2c of this object to null.
 // @fnv 0x004a4c50
-void __thiscall FUN_004a4c50_Class::ClearSlots()
+// src: XBOX_DEBUG_PDB 0x004a4c50
+// pdb: BGSPrimitive::ClearGeometryData | BGSPrimitive.obj | debug, call graph, high
+void __thiscall FUN_004a4c50_Class::BGSPrimitive_ClearGeometryData()
 {
     ((GO*)((char*)this + 0x24))->operator=(0);
     ((GO*)((char*)this + 0x28))->operator=(0);
@@ -1358,6 +1433,9 @@ struct Mid
 };
 // @fnv 0x004a8b00
 // src: XBOX_PDB 0x004a8b00
+// pdb: bhkNiCollisionObject::GetbhkNiCollisionObject | BGSSceneInfo.obj | debug, upstream name already matches, high
+// pdb params: apObject
+// pdb locals: pc
 unsigned int bhkNiCollisionObject_GetbhkNiCollisionObject(BGSBodyPart* apObject)
 {
     const char* pc = apObject->GetPartName();
@@ -1377,6 +1455,9 @@ struct FUN_004a97e0_Class
 // Sets the vtable, stores a count, allocates count*4 bytes, zeroes them and stores the pointer in m_p.
 // @fnv 0x004a97e0
 // src: XBOX_PDB 0x004a97e0
+// pdb: NiTMapBase<DFALL<NiTMapItem<NiTexture *,TEX_USER_DATA *> >,NiTexture *,TEX_USER_DATA *>::NiTMapBase<DFALL<NiTMapItem<NiTexture *,TEX_USER_DATA *> >,NiTexture *,TEX_USER_DATA *> | BGSSceneInfo.obj | debug, object-file run extension, low
+// pdb params: uiHashSize
+// pdb locals: uiSize
 void* __thiscall FUN_004a97e0_Class::NiTMapBase_DFALL_NiTMapItem_NiTexture_TEX_USER_DATA_NiTexture_TEX_USER_DATA_NiTMapBase_DFALL_NiTMapItem_NiTexture_TEX_USER_DATA_NiTexture_TEX_USER_DATA(unsigned int a)
 {
     m_vtbl = &DAT_0101ed2c;
@@ -1415,9 +1496,10 @@ struct FUN_004a9a00_Class
 };
 // Calls FUN_004a98b0 on this, frees this when flags has bit 0 set, and returns this.
 // @fnv 0x004a9a00
+// pdb: NiTMapBase<DFALL<NiTMapItem<NiTexture *,TEX_USER_DATA *> >,NiTexture *,TEX_USER_DATA *>::`scalar deleting destructor' | BGSSceneInfo.obj | retail, vtable slot, high
 void* __thiscall FUN_004a9a00_Class::FUN_004a9a00(unsigned int flags)
 {
-    ((FUN_004a98b0_Class*)this)->UpdateState_004a98b0();
+    ((FUN_004a98b0_Class*)this)->NiTMapBase_DFALL_NiTMapItem_NiTexture_TEX_USER_DATA_NiTexture_TEX_USER_DATA_dtor();
     if (flags & 1)
         _Deallocate(this);
     return this;
@@ -1436,6 +1518,9 @@ struct FUN_004a9c50_class
 // Sets the vtable, stores the count, allocates count*4 bytes for data, zeroes it, and returns this.
 // @fnv 0x004a9c50
 // src: COMMUNITY 0x004a9c50
+// pdb: NiTMapBase<DFALL<NiTMapItem<NiTexture *,bool> >,NiTexture *,bool>::NiTMapBase<DFALL<NiTMapItem<NiTexture *,bool> >,NiTexture *,bool> | BGSSceneInfo.obj | debug, object-file run extension, low
+// pdb params: uiHashSize
+// pdb locals: uiSize
 FUN_004a9c50_class* FUN_004a9c50_class::NiTMapBase_DFALL_NiTMapItem_NiTexture_bool_NiTexture_bool_NiTMapBase_DFALL_NiTMapItem_NiTexture_bool_NiTexture_bool(unsigned int a)
 {
     vtbl = (void*)&DAT_0101ed8c;
@@ -1453,6 +1538,7 @@ struct FUN_004a9d50_Self
     void* __thiscall FUN_004a9d50(unsigned int);
 };
 // @fnv 0x004a9d50
+// pdb: NiTMapBase<DFALL<NiTMapItem<NiTexture *,bool> >,NiTexture *,bool>::`scalar deleting destructor' | BGSSceneInfo.obj | retail, vtable slot, high
 void* __thiscall FUN_004a9d50_Self::FUN_004a9d50(unsigned int flags)
 {
     ((FUN_004a9d20_Class*)this)->ReleaseStorage_004a9d20();
@@ -1468,6 +1554,7 @@ struct GlobalObject_004a9d80
 };
 // Runs the destructor and, when bit 0 of flags is set, frees the object with operator delete; returns the object pointer.
 // @fnv 0x004a9db0
+// pdb: BSSimpleArray<SCENE_INFO_DATA_STRUCT,1024>::`scalar deleting destructor' | BGSSceneInfo.obj | retail, vtable slot, high
 void* __thiscall GlobalObject_004a9d80::FUN_004a9db0(unsigned int flags)
 {
     ((GlobalObject_004a9d80*)this)->GlobalObject_004a9d80::~GlobalObject_004a9d80();
@@ -1508,6 +1595,9 @@ struct FUN_004aa210_class
 // Sets the vtable, stores n as count, allocates count*4 bytes with NiMalloc, zeroes them with memset, and returns this.
 // @fnv 0x004aa210
 // src: COMMUNITY 0x004aa210
+// pdb: NiTMapBase<DFALL<NiTMapItem<ShadowSceneLight *,int> >,ShadowSceneLight *,int>::NiTMapBase<DFALL<NiTMapItem<ShadowSceneLight *,int> >,ShadowSceneLight *,int> | BGSSceneInfo.obj | debug, object-file run extension, low
+// pdb params: uiHashSize
+// pdb locals: uiSize
 FUN_004aa210_class* __thiscall FUN_004aa210_class::NiTMapBase_DFALL_NiTMapItem_ShadowSceneLight_int_ShadowSceneLight_int_NiTMapBase_DFALL_NiTMapItem_ShadowSceneLight_int_ShadowSceneLight_int(int aiCount)
 {
     vtbl = &DAT_0101ee60;
@@ -1553,6 +1643,7 @@ struct StandIn004b01c0
     void* FUN_004b01c0(unsigned int);
 };
 // @fnv 0x004b01c0
+// pdb: NiTMapBase<NiTPointerAllocator<unsigned int>,NiObject *,NiObject *>::`scalar deleting destructor' | BipedAnim.obj | retail, vtable slot, high
 void* StandIn004b01c0::FUN_004b01c0(unsigned int flags)
 {
     ((FUN_004b0000_class*)this)->ReleaseStorage_004b0000();
@@ -1588,6 +1679,7 @@ struct FUN_004b07b0_Struct
 // Sets the object's vtbl to DAT_0101fc8c and deallocates the pointer member through NiTMallocInterface<void*>::Deallocate.
 // @fnv 0x004b07b0
 // src: GUESS 0x004b07b0 (confidence: low)
+// pdb: NiTArray<BSAnimNoteReceiver::BSAnimNoteReceiverType *,NiTMallocInterface<BSAnimNoteReceiver::BSAnimNoteReceiverType *> >::~NiTArray<BSAnimNoteReceiver::BSAnimNoteReceiverType *,NiTMallocInterface<BSAnimNoteReceiver::BSAnimNoteReceiverType *> > | BSAnimNoteReceiver.obj | debug, call graph (shared callers), high
 void __thiscall FUN_004b07b0_Struct::SetVtableAndProcessState_004b07b0()
 {
     vtbl = (void*)&DAT_0101fc8c;
@@ -1600,15 +1692,17 @@ struct FUN_004b0da0_Class
     void* b;
     int c;
     void __thiscall BSCloneReserver_MakeClones();
-    FUN_004b0da0_Class* __thiscall BSCloneReserver_BSCloneReserver(void* a, void* b);
+    FUN_004b0da0_Class* __thiscall BSCloneReserver_BSCloneReserver(void* apLoadedObject, void* aiCloneCount);
 };
 // Stores the two given pointers into the object, resets the counter to zero, calls FUN_004b0eb0, and returns this.
 // @fnv 0x004b0da0
 // src: COMMUNITY 0x004b0da0
-FUN_004b0da0_Class* __thiscall FUN_004b0da0_Class::BSCloneReserver_BSCloneReserver(void* pFirst, void* pSecond)
+// pdb: BSCloneReserver::BSCloneReserver | BSClonePool.obj | retail, upstream name already matches, high
+// pdb params: apLoadedObject, aiCloneCount
+FUN_004b0da0_Class* __thiscall FUN_004b0da0_Class::BSCloneReserver_BSCloneReserver(void* apLoadedObject, void* aiCloneCount)
 {
-    this->a = pFirst;
-    this->b = pSecond;
+    this->a = apLoadedObject;
+    this->b = aiCloneCount;
     this->c = 0;
     BSCloneReserver_MakeClones();
     return this;
@@ -1628,6 +1722,7 @@ struct Holder_004b0de0
 // If both m0 and m1 are non-zero, calls ProcessKeyedEntry on the object returned by GetOrCreateInstance(1) with m0 and m1.
 // @fnv 0x004b0de0
 // src: GUESS 0x004b0de0 (confidence: low)
+// pdb: BSCloneReserver::~BSCloneReserver | BSClonePool.obj | debug, object-file run extension, low
 void __thiscall Holder_004b0de0::ProcessState_004b0de0()
 {
     if (m0 && m1)
@@ -1645,6 +1740,8 @@ extern FUN_004b0880* DAT_011c5f40;
 
 // Returns the global instance, allocating a new one first if it is null and create is true.
 // @fnv 0x004b0e20
+// pdb: BSClonePools::GetInstance | BSClonePool.obj | debug, object-file run extension, low
+// pdb params: abCreate
 FUN_004b0880* GetOrCreateInstance(bool create)
 {
     if (!DAT_011c5f40 && create)
@@ -1656,7 +1753,7 @@ namespace fnv_004b0eb0 {
 int __cdecl GetOrCreateInstance(int);
 struct FUN_004b0910_This
 {
-    void __thiscall AddKeyedItems(void* a, void* b);
+    void __thiscall BSClonePools_MakeClones(void* apLoadedObject, void* aiCloneCount);
 };
 struct FUN_004b0eb0_class
 {
@@ -1670,7 +1767,7 @@ struct FUN_004b0eb0_class
 void __thiscall FUN_004b0eb0_class::BSCloneReserver_MakeClones()
 {
     if (f0 && f4)
-        ((FUN_004b0910_This*)GetOrCreateInstance(1))->AddKeyedItems(f0, f4);
+        ((FUN_004b0910_This*)GetOrCreateInstance(1))->BSClonePools_MakeClones(f0, f4);
 }
 }  // namespace fnv_004b0eb0
 
@@ -1686,6 +1783,7 @@ struct FUN_004b0f40_Holder
 };
 // Calls FUN_004b0de0 on this, frees this when flags has bit 0 set, and returns this.
 // @fnv 0x004b0f40
+// pdb: BSCloneReserver::`scalar deleting destructor' | BSClonePool.obj | debug, object-file run extension, low
 void* __thiscall FUN_004b0f40_Holder::FUN_004b0f40(unsigned int flags)
 {
     ((FUN_004b0de0_Holder*)this)->ProcessState_004b0de0();
@@ -1701,6 +1799,7 @@ struct Helper62d0
 };
 // If other is non-null, assigns it to this object via operator=; otherwise returns without change.
 // @fnv 0x004b0f70
+// pdb: BSSimpleList<NiPointer<NiAVObject> >::BSSimpleList<NiPointer<NiAVObject> > | BSClonePool.obj | debug, object-file run extension, low
 void __thiscall Helper62d0::AssignNodePointer(const NiPointer<NiNode>& other)
 {
     if (((const NiPointerComparisons<NiNode>*)&other)->Equals(0))
@@ -1713,16 +1812,18 @@ struct FUN_004b0fc0_Struct
 {
     unsigned short m0;
     unsigned short m1;
-    FUN_004b0fc0_Struct* __thiscall Date_Date(unsigned short a, unsigned short b, unsigned short c);
+    FUN_004b0fc0_Struct* __thiscall Date_Date(unsigned short asDay, unsigned short asMonth, unsigned short asYear);
 };
 // Sets m0 to the result of FUN_004b10f0(a, b) and m1 to c, then returns this.
 // @fnv 0x004b0fc0
 // src: XBOX_PDB 0x004b0fc0
-FUN_004b0fc0_Struct* __thiscall FUN_004b0fc0_Struct::Date_Date(unsigned short ausValue, unsigned short ausValue2,
-                                                                  unsigned short c)
+// pdb: Date::Date | Date.obj | retail, upstream name already matches, high
+// pdb params: asDay, asMonth, asYear
+FUN_004b0fc0_Struct* __thiscall FUN_004b0fc0_Struct::Date_Date(unsigned short asDay, unsigned short asMonth,
+                                                                  unsigned short asYear)
 {
-    m0 = Date_CalculateDate(ausValue, ausValue2);
-    m1 = c;
+    m0 = Date_CalculateDate(asDay, asMonth);
+    m1 = asYear;
     return this;
 }
 
@@ -1759,6 +1860,8 @@ int __cdecl IsAFloat(char* pcString)
 }
 
 // @fnv 0x004b45b0
+// pdb: NiMatrix3::Inverse | GlobalFunc.obj | debug, call graph, high
+// pdb locals: inv
 NiMatrix3 NiMatrix3::Inverse() const
 {
     NiMatrix3 tmp;
@@ -1768,6 +1871,7 @@ NiMatrix3 NiMatrix3::Inverse() const
 }
 
 // @fnv 0x004b4600
+// pdb: NiMatrix3::MakeZero | GlobalFunc.obj | debug, upstream name already matches, high
 void NiMatrix3::MakeZero()
 {
     SetCol(0, 0.0f, 0.0f, 0.0f);
@@ -1814,9 +1918,10 @@ struct Holder_004b9db0
 };
 // Initializes the object via Init, then deallocates it if the flags bit 0 is set, and returns the object pointer.
 // @fnv 0x004b9db0
+// pdb: NiTMapBase<DFALL<NiTMapItem<unsigned int,VertexDist> >,unsigned int,VertexDist>::`scalar deleting destructor' | GlobalFunc.obj | retail, vtable slot, high
 void* __thiscall Holder_004b9db0::FUN_004b9db0(unsigned int flags)
 {
-    ((FUN_004b9d30*)this)->Init();
+    ((FUN_004b9d30*)this)->NiTMapBase_DFALL_NiTMapItem_unsigned_int_VertexDist_unsigned_int_VertexDist_dtor();
     if (flags & 1)
         _Deallocate(this);
     return this;
@@ -1838,10 +1943,13 @@ struct FUN_004bcbd0_Node
 struct FUN_004bcbd0_Class
 {
     FUN_004bcbd0_Node* m_pFirstNode;
-    void __thiscall ProcessNodes();
+    void __thiscall ItemChange_RemoveOriginalChanges();
 };
 // @fnv 0x004bcbd0
-void __thiscall FUN_004bcbd0_Class::ProcessNodes()
+// src: XBOX_RETAIL_PDB 0x004bcbd0
+// pdb: ItemChange::RemoveOriginalChanges | InventoryChanges.obj | retail, object-file gap fill, high
+// pdb locals: pkFirst, pExtra
+void __thiscall FUN_004bcbd0_Class::ItemChange_RemoveOriginalChanges()
 {
     FUN_004bcbd0_Node* node = m_pFirstNode;
     while (node && *node->_ref_006815c0())
@@ -1855,12 +1963,15 @@ void __thiscall FUN_004bcbd0_Class::ProcessNodes()
 
 struct FUN_004be1a0_Class
 {
-    unsigned int GetFormTypeCategory();
+    unsigned int ItemChange_GetTypeforMenu();
 };
 
 // Reads the TESForm at offset 8, switches on its form type, and returns 3 for 0x28, 4 for 0x18/0x1a, otherwise 5.
 // @fnv 0x004be1a0
-unsigned int FUN_004be1a0_Class::GetFormTypeCategory()
+// src: XBOX_DEBUG_PDB 0x004be1a0
+// pdb: ItemChange::GetTypeforMenu | InventoryChanges.obj | debug, call graph, high
+// pdb locals: ivalue
+unsigned int FUN_004be1a0_Class::ItemChange_GetTypeforMenu()
 {
     unsigned int result = 0;
     switch (((TESForm**)((char*)this + 8))[0]->FNV_GetFormType())
@@ -1896,6 +2007,10 @@ struct FUN_004a5280
 // Allocates a FUN_004a5280, applies ui via vfn_08, sets fValue and fAdd to half of af[0] and af[1], fMult to 1.0 and type to 3, then returns it.
 // @fnv 0x004a4f80
 // src: COMMUNITY 0x004a4f80
+// pdb: BGSPrimitive::CreatePlane | BGSPrimitive.obj | retail, object-file run extension, low
+// pdb note: debug build links it to BGSPrimitive::CreateLine
+// pdb params: aSize, aColor
+// pdb locals: pprimitive
 FUN_004a5280* BGSPrimitivePlane_CreateObject(const float* afValues, unsigned int ui)
 {
     FUN_004a5280* p = new FUN_004a5280;
@@ -1915,6 +2030,9 @@ struct FUN_004a9b50_Class
 };
 
 // @fnv 0x004a9b50
+// pdb: BSSimpleArray<SCENE_INFO_DATA_STRUCT,1024>::_ReallocateBuffer | BGSSceneInfo.obj | debug, object-file run extension, low
+// pdb params: aiNewSize, aiCopyCount
+// pdb locals: pnewBuffer
 void FUN_004a9b50_Class::CopyBlocks(char* apDest, char* apSource, unsigned int count)
 {
     if (count <= 0)
@@ -1969,16 +2087,20 @@ struct Struct_004b0680
 struct FUN_004b05d0_Class
 {
     int FindPairIndex(float*, float*);
-    char AddPairIfMissing(float* a, float* b);
+    char BSAnimNoteReceiver_Register(float* aeType, float* apCallbackFunc);
 };
 // @fnv 0x004b05d0
-char FUN_004b05d0_Class::AddPairIfMissing(float* pfFirst, float* pfSecond)
+// src: XBOX_DEBUG_PDB 0x004b05d0
+// pdb: BSAnimNoteReceiver::Register | BSAnimNoteReceiver.obj | debug, call graph, high
+// pdb params: aeType, apCallbackFunc
+// pdb locals: bret, pReceiverType
+char FUN_004b05d0_Class::BSAnimNoteReceiver_Register(float* aeType, float* apCallbackFunc)
 {
     char r = 0;
-    if (FindPairIndex(pfFirst, pfSecond) == -1)
+    if (FindPairIndex(aeType, apCallbackFunc) == -1)
     {
         ((NiTPrimitiveArray<unsigned int>*)((char*)this + 8))
-            ->AddFirstEmpty((unsigned int)new Struct_004b0680(pfFirst, pfSecond));
+            ->AddFirstEmpty((unsigned int)new Struct_004b0680(aeType, apCallbackFunc));
     }
     return r;
 }
@@ -2003,6 +2125,8 @@ struct FUN_004a2c70
 };
 // Initialises the helper from apObject, stores aiRefCount and apObject2, and clears the owned flag.
 // @fnv 0x004a2c70
+// pdb: BGSDecalEmitter::BGSDecalEmitter | BGSDecalManager.obj | debug, object-file run extension, low
+// pdb params: apParticleData, apImpactData, aiNumDecals
 FUN_004a2c70::FUN_004a2c70(void* apObject, int aiRefCount, void* apObject2) : m_helper(0)
 {
     m_helper.operator=(apObject);
@@ -2011,6 +2135,7 @@ FUN_004a2c70::FUN_004a2c70(void* apObject, int aiRefCount, void* apObject2) : m_
     m_bIsOwned = 0;
 }
 
+// pdb: class Date, size 0x4 (here 0x1), 2 members
 struct Date
 {
     ~Date();
@@ -2022,6 +2147,9 @@ struct FUN_004a46d0 : Date
 };
 // Destructor that calls FUN_004a4810 before the base Date destructor runs.
 // @fnv 0x004a46d0
+// pdb: NiTPointerListBase<NiTPointerAllocator<unsigned int>,BGSDecalEmitter *>::AddTail | BGSDecalManager.obj | debug, object-file run extension, low
+// pdb params: element
+// pdb locals: pkNode
 FUN_004a46d0::~FUN_004a46d0()
 {
     hkArray_hkpWorldRayCastOutput_hkContainerHeapAllocator_clearAndDeallocate();
@@ -2068,6 +2196,9 @@ struct FUN_004a9ef0_Class
 };
 // @fnv 0x004a9ef0
 // src: COMMUNITY 0x004a9ef0
+// pdb: NiTMapBase<DFALL<NiTMapItem<TESActorBase *,bool> >,TESActorBase *,bool>::NiTMapBase<DFALL<NiTMapItem<TESActorBase *,bool> >,TESActorBase *,bool> | BGSSceneInfo.obj | debug, object-file run extension, low
+// pdb params: uiHashSize
+// pdb locals: uiSize
 FUN_004a9ef0_Class* __thiscall FUN_004a9ef0_Class::NiTMapBase_DFALL_NiTMapItem_TESActorBase_bool_TESActorBase_bool_NiTMapBase_DFALL_NiTMapItem_TESActorBase_bool_TESActorBase_bool(int aiCount)
 {
     unsigned int uiSize;
@@ -2094,6 +2225,9 @@ struct FUN_004aa080_t
 // Sets the vtable, stores the count, allocates count*4 bytes, zeroes them, and returns this.
 // @fnv 0x004aa080
 // src: COMMUNITY 0x004aa080
+// pdb: NiTMapBase<DFALL<NiTMapItem<int,int> >,int,int>::NiTMapBase<DFALL<NiTMapItem<int,int> >,int,int> | BGSSceneInfo.obj | debug, object-file run extension, low
+// pdb params: uiHashSize
+// pdb locals: uiSize
 void* FUN_004aa080_t::NiTMapBase_DFALL_NiTMapItem_int_int_int_int_NiTMapBase_DFALL_NiTMapItem_int_int_int_int(int aiCount)
 {
     m_vtbl = &DAT_0101ee20;
@@ -2118,6 +2252,9 @@ struct FUN_004aff30_Class
 // Sets the vtable, stores aSize and allocates a zeroed array of aSize 4-byte elements into m_data.
 // @fnv 0x004aff30
 // src: EXE 0x004aff30
+// pdb: NiTArray<NiPointer<NiAVObject>,NiTNewInterface<NiPointer<NiAVObject> > >::`scalar deleting destructor' | BipedAnim.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiPointer<NiSkinPartition>::NiPointer<NiSkinPartition>
+// pdb params: this
 FUN_004aff30_Class* __thiscall FUN_004aff30_Class::NiTMapBase_NiTPointerAllocator_unsigned_int_NiObject_NiObject_NiTMapBase(unsigned int aSize)
 {
     unsigned int uiByteCount;
@@ -2138,6 +2275,9 @@ struct FUN_004b06b0_Class
 };
 // Scans arr for the last entry whose two leading ints equal a and b, returning its index or -1 if none match.
 // @fnv 0x004b06b0
+// pdb: BSAnimNoteReceiver::Registered | BSAnimNoteReceiver.obj | debug, object-file run extension, low
+// pdb params: aeType, apCallbackFunc
+// pdb locals: ireg, ui
 int FUN_004b06b0_Class::FindPairIndex(int aiFirst, int aiSecond)
 {
     int result = -1;
@@ -2159,6 +2299,8 @@ struct FUN_004b07e0_Class
 };
 
 // @fnv 0x004b07e0
+// pdb: NiTArray<BSAnimNoteReceiver::BSAnimNoteReceiverType *,NiTMallocInterface<BSAnimNoteReceiver::BSAnimNoteReceiverType *> >::GetAt | BSAnimNoteReceiver.obj | debug, object-file run extension, low
+// pdb params: uiIndex
 void* FUN_004b07e0_Class::PopElement()
 {
     if (!*((unsigned short*)(this) + 5))
@@ -2174,6 +2316,8 @@ void* FUN_004b07e0_Class::PopElement()
 extern "C" const short DAT_01188ecc[];
 // @fnv 0x004b10f0
 // src: XBOX_PDB 0x004b10f0
+// pdb: Date::CalculateDate | Date.obj | debug, upstream name already matches, high
+// pdb params: aFullDate
 unsigned short Date_CalculateDate(unsigned short start, unsigned short count)
 {
     unsigned short value = 0;
@@ -2200,6 +2344,8 @@ struct S0042fa20
 extern GlobalObject_0045cfe0 g_011c63cc;
 // @fnv 0x004bc4c0
 // src: COMMUNITY 0x004bc4c0
+// pdb: InventoryChanges::KillTempRef | InventoryChanges.obj | retail, object-file run extension, low
+// pdb note: debug build links it to GridCellArray::FixGridsToLoadINISetting
 void GridCellArray_FixGridsToLoadINISetting()
 {
     bool flag = false;
@@ -2219,6 +2365,7 @@ struct FUN_004a46b0_class
 };
 
 // @fnv 0x004a46b0
+// pdb: NiTPointerListBase<NiTPointerAllocator<unsigned int>,BGSDecalEmitter *>::~NiTPointerListBase<NiTPointerAllocator<unsigned int>,BGSDecalEmitter *> | BGSDecalManager.obj | debug, object-file run extension, low
 char* FUN_004a46b0_class::GetEntryAt(int aiIndex)
 {
     return m_p + aiIndex * 0x60;
@@ -2226,13 +2373,17 @@ char* FUN_004a46b0_class::GetEntryAt(int aiIndex)
 
 // Allocates a box, applies its color and half extents, and sets its primitive type.
 // @fnv 0x004a5040
-BGSPrimitiveBox* __cdecl CreatePrimitiveBox(NiPoint3* point, int iSize)
+// src: XBOX_RETAIL_PDB 0x004a5040
+// pdb: BGSPrimitive::CreateBox | BGSPrimitive.obj | retail, object-file run extension, high
+// pdb params: aSize, aColor
+// pdb locals: pprimitive, size
+BGSPrimitiveBox* __cdecl BGSPrimitive_CreateBox(NiPoint3* aSize, int aColor)
 {
     BGSPrimitiveBox* box = new BGSPrimitiveBox;
     // BGSPrimitive still declares its shared color API with NiColorA.
-    box->ApplyColor(*reinterpret_cast<NiColorA*>(iSize));
+    box->ApplyColor(*reinterpret_cast<NiColorA*>(aColor));
 
-    NiPoint3 position = point->operator*(0.5f);
+    NiPoint3 position = aSize->operator*(0.5f);
     box->vf03(*reinterpret_cast<NiPoint3*>(&position));
 
     box->eType = 1;
@@ -2247,6 +2398,7 @@ struct FUN_004b05b0_Struct
 
 // @fnv 0x004b05b0
 // src: GUESS 0x004b05b0 (confidence: low)
+// pdb: NiTPrimitiveArray<BSAnimNoteReceiver::BSAnimNoteReceiverType *>::~NiTPrimitiveArray<BSAnimNoteReceiver::BSAnimNoteReceiverType *> | BSAnimNoteReceiver.obj | debug, object-file gap fill, medium
 void FUN_004b05b0_Struct::ForwardCall_004b05b0()
 {
     SetVtableAndProcessState_004b07b0();
@@ -2343,6 +2495,7 @@ struct FUN_004a2cf0
     ~FUN_004a2cf0();
 };
 // @fnv 0x004a2cf0
+// pdb: BGSDecalEmitter::~BGSDecalEmitter | BGSDecalManager.obj | debug, object-file run extension, low
 FUN_004a2cf0::~FUN_004a2cf0()
 {
     m_iThirdValue.FUN_0066b0d0(0);
@@ -2374,6 +2527,8 @@ struct FUN_004ed900_cls
 
 // @fnv 0x004a42a0
 // src: COMMUNITY 0x004a42a0
+// pdb: BGSDecalManager::RemoveAllDecals | BGSDecalManager.obj | retail, upstream name already matches, high
+// pdb locals: emitterList, iter, pemitter
 void __cdecl BGSDecalManager_RemoveAllDecals()
 {
     DAT_011c57e4 = 0;
@@ -2467,6 +2622,8 @@ struct FUN_004a4730 : S_004a4730_Base
 
 // Constructs the object by initializing its base with the inline array of 8 elements and the given count.
 // @fnv 0x004a4730
+// pdb: hkInplaceArray<hkpWorldRayCastOutput,8,hkContainerHeapAllocator>::hkInplaceArray<hkpWorldRayCastOutput,8,hkContainerHeapAllocator> | BGSDecalManager.obj | debug, call graph, medium
+// pdb params: size
 FUN_004a4730::FUN_004a4730(int a) : S_004a4730_Base(unk10, a, 8)
 {}
 
@@ -2511,6 +2668,9 @@ extern RefBoolMap4A8 g_kRefBoolMap4A8;
 
 // If the reference's bool in g_kRefBoolMap4A8 is unset or false, adds iAmount to **ppiCount and sets the reference's bool to true.
 // @fnv 0x004a8b40
+// pdb: BGSSceneInfo::TexUseCB | BGSSceneInfo.obj | debug, object-file gap fill, medium
+// pdb params: apTexture, aulMemorySize, apParam
+// pdb locals: pparam, bchecked, bfound, bignore
 void AddToRefCountIfNotFlagged(TESObjectREFR* pkRef, int iAmount, int** ppiCount)
 {
     int** ppiTarget = ppiCount;
@@ -2544,6 +2704,7 @@ class FUN_004a9850 : public FUN_004a9850_base
 
 // Calls unk08() during destruction of the object.
 // @fnv 0x004a9850
+// pdb: NiTMap<NiTexture *,TEX_USER_DATA *>::~NiTMap<NiTexture *,TEX_USER_DATA *> | BGSSceneInfo.obj | debug, call graph (shared callers), high
 FUN_004a9850::~FUN_004a9850()
 {
     this->unk08();
@@ -2582,6 +2743,7 @@ class C4A9A60Array
 
 // Allocates a slot in the entry array, constructs it, copies the given entry into it, and returns the slot index.
 // @fnv 0x004a9a60
+// pdb: DFALL<NiTMapItem<NiTexture *,TEX_USER_DATA *> >::Allocate | BGSSceneInfo.obj | debug, object-file run extension, low
 int C4A9A60Array::AddEntry(const C4A9A60Entry& kEntry)
 {
     int iIndex = AllocIndex();
@@ -2624,6 +2786,8 @@ struct FUN_004a9ab0_cls
 
 // Placement-constructs count ScanItem64 objects at base, each 64 bytes apart.
 // @fnv 0x004a9ab0
+// pdb: BSSimpleArray<SCENE_INFO_DATA_STRUCT,1024>::AddUninitialized | BGSSceneInfo.obj | debug, object-file run extension, low
+// pdb locals: inewSize
 void FUN_004a9ab0_cls::ConstructScanItems(int base, unsigned int count)
 {
 
@@ -2644,6 +2808,7 @@ struct FUN_004a9cc0_cls : Base
     virtual ~FUN_004a9cc0_cls();
 };
 // @fnv 0x004a9cc0
+// pdb: NiTMap<NiTexture *,bool>::~NiTMap<NiTexture *,bool> | BGSSceneInfo.obj | debug, object-file run extension, low
 FUN_004a9cc0_cls::~FUN_004a9cc0_cls()
 {
     Cleanup();
@@ -2662,6 +2827,7 @@ struct FUN_004a9f60 : FUN_004a9fc0
 
 // Destructor that calls FUN_00438af0 before the object is destroyed.
 // @fnv 0x004a9f60
+// pdb: NiTMap<TESActorBase *,bool>::~NiTMap<TESActorBase *,bool> | BGSSceneInfo.obj | debug, object-file run extension, low
 FUN_004a9f60::~FUN_004a9f60()
 {
     FUN_00438af0();
@@ -2741,24 +2907,26 @@ class Obj2_cls
   public:
     void RemoveObject_00b5b1c0(Ref_cls* p);
 };
-void __cdecl RecursivelyRemoveAllDecals(Ref_cls* p);
+void __cdecl RecursivelyRemoveAllDecals(Ref_cls* apRoot);
 Obj2_cls* __cdecl FUN_00450b80(int a);
-void __cdecl bhkWorld_RemoveObjects(Ref_cls* p, int a, int b);
+void __cdecl bhkWorld_RemoveObjects(Ref_cls* apObject, int abRecurse, int abForce);
 
 // @fnv 0x004ab0c0
 // src: XBOX_PDB 0x004ab0c0
-void __cdecl BipedAnim_RunBiped3DDetach(Ref_cls* apRef)
+// pdb: BipedAnim::RunBiped3DDetach | BipedAnim.obj | retail, upstream name already matches, high
+// pdb params: ap3D
+void __cdecl BipedAnim_RunBiped3DDetach(Ref_cls* ap3D)
 {
     Vt_cls* v;
-    if (apRef == 0)
+    if (ap3D == 0)
         return;
-    RecursivelyRemoveAllDecals(apRef);
-    FUN_00450b80(0)->RemoveObject_00b5b1c0(apRef);
-    if (apRef->NiAVObject_GetParent() != 0)
+    RecursivelyRemoveAllDecals(ap3D);
+    FUN_00450b80(0)->RemoveObject_00b5b1c0(ap3D);
+    if (ap3D->NiAVObject_GetParent() != 0)
     {
-        bhkWorld_RemoveObjects(apRef, 1, 0);
-        v = (Vt_cls*)apRef->NiAVObject_GetParent();
-        v->v3a(apRef);
+        bhkWorld_RemoveObjects(ap3D, 1, 0);
+        v = (Vt_cls*)ap3D->NiAVObject_GetParent();
+        v->v3a(ap3D);
     }
 }
 
@@ -2773,6 +2941,8 @@ struct Pn4afe
 
 // Decrements unk0A while the last entry of the unk04 pointer array is null, stopping at the first non-null entry or zero.
 // @fnv 0x004afe50
+// pdb: NiTArray<NiPointer<NiAVObject>,NiTNewInterface<NiPointer<NiAVObject> > >::Compact | BipedAnim.obj | retail, call graph, high
+// pdb locals: pSaveBase, j, i
 void Pn4afe::TrimTrailingNullPointers()
 {
     while (unk0A > 0)
@@ -2786,6 +2956,7 @@ void Pn4afe::TrimTrailingNullPointers()
 }
 
 // @fnv 0x004affa0
+// pdb: NiPointer<NiSkinPartition>::~NiPointer<NiSkinPartition> | BipedAnim.obj | debug, object-file run extension, low
 template <>
 NiTPointerMap<NiObject*, NiObject*>::~NiTPointerMap()
 {
@@ -2851,6 +3022,10 @@ struct FUN_004b0cf0
 };
 // Resets unk00 to 0, then repeatedly pushes a null NiPointer and pops until the queue q is empty.
 // @fnv 0x004b0cf0
+// pdb: BSClonePools::KillClones | BSClonePool.obj | retail, object-file run extension, low
+// pdb note: debug build links it to BSClonePools::ClonePool::~ClonePool
+// pdb params: apLoadedObject, aiCloneCount
+// pdb locals: plist, ppool, boldreporthit, pitem, i
 FUN_004b0cf0::~FUN_004b0cf0()
 {
     unk00 = 0;
@@ -2877,6 +3052,7 @@ struct FUN_004b0ef0_cls
 // Calls FUN_004019a0 on unk08; if it returns 0, calls FUN_004b0f40(1) on this as a FUN_004b0f40_Holder.
 // @fnv 0x004b0ef0
 // src: XBOX_PDB 0x004b0ef0
+// pdb: BSCloneReserver::DecRefCount | BSClonePool.obj | retail, upstream name already matches, high
 void FUN_004b0ef0_cls::BSCloneReserver_DecRefCount()
 {
     if (FUN_004019a0(&unk08) == 0)
@@ -2890,22 +3066,25 @@ void FUN_004b0ef0_cls::BSCloneReserver_DecRefCount()
 namespace fnv_004b3570 {
 void* __cdecl NiMalloc(unsigned int);
 
-void __cdecl InitGeometryShader(NiAVObject* apObject, int a, int b);
+void __cdecl InitGeometryShader(NiAVObject* apObject, int abFaceGenModel, int abSkipPreCache);
 
 // Builds a three-vertex NiTriShape from three points and a color, optionally attaching a lighting property and initializing the geometry shader.
 // @fnv 0x004b3570
 // src: COMMUNITY 0x004b3570
-NiTriShape* __cdecl MakeTriangle(NiPoint3 kP0, NiPoint3 kP1, NiPoint3 kP2, const NiColorA& kColor,
-                                 bool bEnableLighting)
+// pdb: MakeTriangle | GlobalFunc.obj | retail, upstream name already matches, high
+// pdb params: aPt1, aPt2, aPt3, aColor, abWithNoLightingProp
+// pdb locals: ptrilist, ptri, pverts, pcolors, pshprop
+NiTriShape* __cdecl MakeTriangle(NiPoint3 aPt1, NiPoint3 aPt2, NiPoint3 aPt3, const NiColorA& aColor,
+                                 bool abWithNoLightingProp)
 {
     NiPoint3* aPVerts = new NiPoint3[3];
-    aPVerts[0] = kP0;
-    aPVerts[1] = kP1;
-    aPVerts[2] = kP2;
+    aPVerts[0] = aPt1;
+    aPVerts[1] = aPt2;
+    aPVerts[2] = aPt3;
     NiColorA* pColors2 = new NiColorA[3];
-    pColors2[0] = kColor;
-    pColors2[1] = kColor;
-    pColors2[2] = kColor;
+    pColors2[0] = aColor;
+    pColors2[1] = aColor;
+    pColors2[2] = aColor;
     unsigned short* pTris = (unsigned short*)NiMalloc(12);
     pTris[0] = 0;
     pTris[1] = 2;
@@ -2914,7 +3093,7 @@ NiTriShape* __cdecl MakeTriangle(NiPoint3 kP0, NiPoint3 kP1, NiPoint3 kP2, const
     pTris[4] = 1;
     pTris[5] = 2;
     NiTriShape* pShape_ = new NiTriShape(3, (NiPoint3*)aPVerts, 0, (void*)pColors2, (NiPoint2*)0, 0, 0, 2, pTris);
-    if (bEnableLighting)
+    if (abWithNoLightingProp)
     {
         BSShaderNoLightingProperty* pProp2 = new BSShaderNoLightingProperty;
         pShape_->AttachProperty(reinterpret_cast<NiObject*>(pProp2));
@@ -2935,6 +3114,9 @@ int __cdecl NiProcessorSpecificCode_ms_pPointsTransform_(unsigned short a1, int 
 
 // Allocates an array of points sized by source->FUN_00456650() and fills it via FUN_004b4a10, returning null if source is null or its count is zero.
 // @fnv 0x004b4910
+// pdb: CreateWorldVertices | GlobalFunc.obj | debug, call graph, medium
+// pdb params: apGeom
+// pdb locals: preturn
 NiPoint3* __cdecl CreateElementArray(FUN_004b4910_Source* source)
 {
     NiPoint3* elements = 0;
@@ -2990,12 +3172,15 @@ struct FNVNode
     virtual int IsTerminalNode();
 
     unsigned int __thiscall FUN_0043b480();
-    FNVNode* __thiscall FUN_0043b4a0(unsigned int index);
+    FNVNode* __thiscall FUN_0043b4a0(unsigned int i);
     FNVForm* __thiscall FUN_00a59d30(void* context);
 };
 
 // Recursively walks child nodes; for leaf nodes with a form whose FUN_00441110 value is 8-12, returns that form pointer as an unsigned int.
 // @fnv 0x004b55e0
+// pdb: FindPerPixelLighting_Recurse | GlobalFunc.obj | retail, object-file run extension, low
+// pdb params: apNode
+// pdb locals: icount, pretprop, iindex, pobj, pnode, pproperty, pchildgeom, plightingProperty
 unsigned int __cdecl FindAcceptedForm(FNVNode* root)
 {
     unsigned int found = 0;
@@ -3051,6 +3236,8 @@ struct FUN_004b99b0_cls
 // Initialises the object: stores a global pointer and count, allocates count*4 bytes, zero-fills them and stores the pointer.
 // @fnv 0x004b99b0
 // src: XBOX_PDB 0x004b99b0
+// pdb: NiPointer<BSShaderPPLightingProperty::TextureEffectData>::NiPointer<BSShaderPPLightingProperty::TextureEffectData> | GlobalFunc.obj | debug, object-file run extension, low
+// pdb params: pObject
 FUN_004b99b0_cls* FUN_004b99b0_cls::NiTMapBase_DFALL_NiTMapItem_unsigned_int_VertexDist_unsigned_int_VertexDist_NiTMapBase_DFALL_NiTMapItem_unsigned_int_VertexDist_unsigned_int_VertexDist(int count)
 {
     m_00 = (int)&DAT_010205d4;
@@ -3192,6 +3379,7 @@ struct FUN_004b9cd0 : Base_b9225
 
 // Destructor that calls FUN_00438af0 before destroying the base object.
 // @fnv 0x004b9cd0
+// pdb: NiTMap<unsigned int,VertexDist>::~NiTMap<unsigned int,VertexDist> | GlobalFunc.obj | debug, call graph, high
 FUN_004b9cd0::~FUN_004b9cd0()
 {
     FUN_00438af0();
@@ -3231,6 +3419,7 @@ struct FUN_004ba280 : Base_4ba280
 };
 
 // @fnv 0x004ba280
+// pdb: GridCellArray::GridCellArray | GridCell.obj | debug, object-file run extension, low
 FUN_004ba280::FUN_004ba280() : m_pController(0)
 {
     GridCellArray_FixGridsToLoadINISetting();
@@ -3335,6 +3524,7 @@ class FUN_004a4860_cls
 };
 
 // @fnv 0x004a4860
+// pdb: DECAL_CREATION_DATA::DECAL_CREATION_DATA | BGSDecalManager.obj | retail, object-file run extension, low
 NiPointer<NiNode> FUN_004a4860_cls::PopFront()
 {
     FUN_004a4860_node* node = m_pHead;
@@ -3363,6 +3553,9 @@ NiTPointerMap<NiObject*, bool>::~NiTPointerMap()
 void __cdecl FUN_00b57e30(NiTriShape*, int, int);
 // Builds an octahedron NiTriShape from six vertices and 24 indices around a given size and color, optionally attaching a lighting property.
 // @fnv 0x004b29b0
+// pdb: MakeTriPoint | GlobalFunc.obj | retail, object-file run extension, low
+// pdb params: afDrawSize, aColor, abWithNoLightingProp
+// pdb locals: ptrilist, ptri, pverts, pcolors, pshprop
 NiTriShape* __cdecl CreateOctahedron(float size, const NiColorA* color, bool lighting)
 {
     NiPoint3* indices = new NiPoint3[6];
@@ -3420,6 +3613,9 @@ void* _NiMalloc_00aa1070(unsigned int);
 void FUN_00b57e30(NiTriShape*, int, int);
 // Builds an 8-vertex box mesh from eight corner positions and a color, with 72 triangle indices, and optionally attaches extra data.
 // @fnv 0x004b2eb0
+// pdb: MakeQuadBox | GlobalFunc.obj | retail, object-file run extension, low
+// pdb params: aPoint1, aPoint2, aPoint3, aPoint4, aPoint5, aPoint6, aPoint7, aPoint8, aColor, abWithNoLightingProp
+// pdb locals: ptrilist, ptri, pverts, pcolors, pshprop
 NiTriShape* CreateBoxMesh(const NiPoint3& aCorner0, const NiPoint3& aCorner1, const NiPoint3& aCorner2, const NiPoint3& aCorner3,
                       const NiPoint3& aCorner4, const NiPoint3& aCorner5, const NiPoint3& aCorner6, const NiPoint3& aCorner7,
                       const NiColorA& color, bool extra)
@@ -3588,22 +3784,25 @@ void FUN_00b57e30(FUN_00a746e0*, unsigned int, unsigned int);
 
 // @fnv 0x004b3890
 // src: XBOX_PDB 0x004b3890
-FUN_00a746e0* __cdecl MakeLine(const NiPoint3& aStartVertex, const NiColorA& startColor,
-                                   const NiPoint3& aEndVertex, const NiColorA& endColor, bool addShader)
+// pdb: MakeLine | GlobalFunc.obj | retail, upstream name already matches, high
+// pdb params: aStart, aStartColor, aEnd, aEndColor, abWithNoLightingProp
+// pdb locals: pverts, pcolors, pbools, plines, pshprop
+FUN_00a746e0* __cdecl MakeLine(const NiPoint3& aStart, const NiColorA& aStartColor,
+                                   const NiPoint3& aEnd, const NiColorA& aEndColor, bool abWithNoLightingProp)
 {
     NiPoint3* vertices = new NiPoint3[2];
-    vertices[0] = aStartVertex;
-    vertices[1] = aEndVertex;
+    vertices[0] = aStart;
+    vertices[1] = aEnd;
     NiColorA* colors = new NiColorA[2];
-    colors[0] = startColor;
-    colors[1] = endColor;
+    colors[0] = aStartColor;
+    colors[1] = aEndColor;
     // Each flag enables the outgoing segment from the corresponding vertex.
     bool* lines = new bool[2];
     lines[0] = true;
     lines[1] = false;
     // The geometry owns the vertex, color and segment buffers.
     FUN_00a746e0* connections = new FUN_00a746e0(2, vertices, colors, 0, 0, 0, lines);
-    if (addShader)
+    if (abWithNoLightingProp)
     {
         BSShaderNoLightingProperty* shader = new BSShaderNoLightingProperty;
         connections->NiAVObject_AttachProperty(shader);
@@ -3646,6 +3845,8 @@ struct Owner4a4
 
 // @fnv 0x004a4340
 // src: COMMUNITY 0x004a4340
+// pdb: BGSDecalManager::ClearPendingQueries | BGSDecalManager.obj | debug, upstream name already matches, high
+// pdb locals: prev, iter, pdecal, iresult
 void Owner4a4::BGSDecalManager_ClearPendingQueries()
 {
     if (m_kNode.FUN_0044ddc0() > 0)
@@ -3676,48 +3877,51 @@ struct Target004a4d40
     float __thiscall FUN_004a7bd0() const;
 };
 
-extern void* __cdecl BGSPrimitive_CreateSphere(float value, NiColorA* color);
+extern void* __cdecl BGSPrimitive_CreateSphere(float afRadius, NiColorA* aColor);
 
 // The game fills these aligned color buffers through its output routine;
 // constructing NiColorA here would add initialization calls absent from the original.
 // @fnv 0x004a4d40
 // src: COMMUNITY 0x004a4d40
-void* __cdecl BGSPrimitive_Copy(Target004a4d40* pTarget)
+// pdb: BGSPrimitive::Copy | BGSPrimitive.obj | retail, upstream name already matches, high
+// pdb params: apCopy
+// pdb locals: pprimitive, pt2Tmp, radii, color, colorTmp
+void* __cdecl BGSPrimitive_Copy(Target004a4d40* apCopy)
 {
     {
         void* bResult = 0;
 
-        if (3 == pTarget->FUN_00726070())
+        if (3 == apCopy->FUN_00726070())
         {
             float colorA[sizeof(NiColorA) / sizeof(float)];
             {
-                NiPoint3 w = pTarget->FUN_00413fc0() * 2.0f;
+                NiPoint3 w = apCopy->FUN_00413fc0() * 2.0f;
             }
-            pTarget->BGSPrimitive_GetColor(reinterpret_cast<NiColorA*>(colorA));
+            apCopy->BGSPrimitive_GetColor(reinterpret_cast<NiColorA*>(colorA));
 
             float kIter[sizeof(NiColorA) / sizeof(float)];
             {
-                NiPoint2 point(pTarget->FUN_00413fc0().x * 2.0, pTarget->FUN_00413fc0().z * 2.0f);
-                pTarget->BGSPrimitive_GetColor(reinterpret_cast<NiColorA*>(kIter));
+                NiPoint2 point(apCopy->FUN_00413fc0().x * 2.0, apCopy->FUN_00413fc0().z * 2.0f);
+                apCopy->BGSPrimitive_GetColor(reinterpret_cast<NiColorA*>(kIter));
                 bResult = BGSPrimitivePlane_CreateObject((const float*)&point, (unsigned int)&kIter);
             }
         }
 
-        if (pTarget->FUN_00726070() == 1)
+        if (apCopy->FUN_00726070() == 1)
         {
             float colorA[sizeof(NiColorA) / sizeof(float)];
             {
-                NiPoint3 point = pTarget->FUN_00413fc0() * 2.0f;
-                pTarget->BGSPrimitive_GetColor(reinterpret_cast<NiColorA*>(colorA));
-                bResult = CreatePrimitiveBox(&point, (int)&colorA);
+                NiPoint3 point = apCopy->FUN_00413fc0() * 2.0f;
+                apCopy->BGSPrimitive_GetColor(reinterpret_cast<NiColorA*>(colorA));
+                bResult = BGSPrimitive_CreateBox(&point, (int)&colorA);
             }
         }
 
-        if (pTarget->FUN_00726070() == 2)
+        if (apCopy->FUN_00726070() == 2)
         {
             float cnt[sizeof(NiColorA) / sizeof(float)];
-            pTarget->BGSPrimitive_GetColor(reinterpret_cast<NiColorA*>(cnt));
-            bResult = BGSPrimitive_CreateSphere(pTarget->FUN_004a7bd0(), reinterpret_cast<NiColorA*>(cnt));
+            apCopy->BGSPrimitive_GetColor(reinterpret_cast<NiColorA*>(cnt));
+            bResult = BGSPrimitive_CreateSphere(apCopy->FUN_004a7bd0(), reinterpret_cast<NiColorA*>(cnt));
         }
 
         return bResult;
@@ -3739,14 +3943,14 @@ struct AVObjAB
     virtual void v14();
     virtual void v18();
     virtual void* GetAsTriBasedGeom();
-    ExtraAB* GetExtraData(const NiFixedString& kName);
+    ExtraAB* GetExtraData(const NiFixedString& kKey);
     bool RemoveExtraDataByName(const NiFixedString& kName);
 };
 
 struct NodeAB : AVObjAB
 {
     unsigned int FUN_0043b480();
-    AVObjAB* FUN_0043b4a0(unsigned int uiIndex);
+    AVObjAB* FUN_0043b4a0(unsigned int i);
 };
 
 struct GeomAB : AVObjAB
@@ -3769,22 +3973,25 @@ struct ExtraAB
 struct BipedAB
 {
     AVObjAB* FUN_004ab230(int iIndex);
-    void BipedAnim_RecursivelyRemoveAllDecalPlacementVectorDataFromWeaponBone(AVObjAB* pkObject);
+    void BipedAnim_RecursivelyRemoveAllDecalPlacementVectorDataFromWeaponBone(AVObjAB* apRoot);
 };
 
 // @fnv 0x004ab130
 // src: XBOX_PDB 0x004ab130
-void BipedAB::BipedAnim_RecursivelyRemoveAllDecalPlacementVectorDataFromWeaponBone(AVObjAB* pkObject)
+// pdb: BipedAnim::RecursivelyRemoveAllDecalPlacementVectorDataFromWeaponBone | BipedAnim.obj | retail, upstream name already matches, high
+// pdb params: apRoot
+// pdb locals: pextra, pweaponBone, pdpvExtra, pgeom, pnode, i
+void BipedAB::BipedAnim_RecursivelyRemoveAllDecalPlacementVectorDataFromWeaponBone(AVObjAB* apRoot)
 {
-    if (!pkObject)
+    if (!apRoot)
         return;
     AVObjAB* pkRootNode = FUN_004ab230(1);
     ExtraAB* pkExtra = pkRootNode->GetExtraData(FixedStrings_QDVPG());
     if (!pkExtra)
         return;
-    if (pkObject->GetAsTriBasedGeom())
+    if (apRoot->GetAsTriBasedGeom())
     {
-        GeomAB* pkGeom = (GeomAB*)pkObject;
+        GeomAB* pkGeom = (GeomAB*)apRoot;
         ExtraAB* pkList = pkExtra;
         if (pkGeom->NiGeometry_GetSkinInstance())
         {
@@ -3794,7 +4001,7 @@ void BipedAB::BipedAnim_RecursivelyRemoveAllDecalPlacementVectorDataFromWeaponBo
     }
     else
     {
-        NodeAB* pkNode = pkObject->GetAsNode();
+        NodeAB* pkNode = apRoot->GetAsNode();
         if (pkNode)
         {
             for (unsigned int i = 0; i < pkNode->FUN_0043b480(); i++)
@@ -3805,7 +4012,7 @@ void BipedAB::BipedAnim_RecursivelyRemoveAllDecalPlacementVectorDataFromWeaponBo
 
 struct AGItem
 {
-    void* GetExtraLeveledItem();
+    void* ExtraDataList_GetLeveledItem();
     void BaseExtraList_RemoveExtra(void* p, int n);
     bool FUN_004bca60();
 };
@@ -3821,21 +4028,23 @@ struct AGList : AGNode
 struct AGOwner
 {
     AGList* m_pEntries;
-    void* ProcessEntries_004bcd10();
+    void* ItemChange_RemoveLeveledItemExtra();
 };
 
 // @fnv 0x004bcd10
-// src: GUESS 0x004bcd10 (confidence: low)
-void* AGOwner::ProcessEntries_004bcd10()
+// src: XBOX_RETAIL_PDB 0x004bcd10
+// pdb: ItemChange::RemoveLeveledItemExtra | InventoryChanges.obj | retail, object-file run extension, high
+// pdb locals: pextralevel, pkFirst, pExtra
+void* AGOwner::ItemChange_RemoveLeveledItemExtra()
 {
     AGNode* pNode = m_pEntries;
     void* pResult = 0;
     while (pNode && *pNode->_ref_006815c0())
     {
         AGItem* pItem = *pNode->_ref_006815c0();
-        if (pItem && pItem->GetExtraLeveledItem())
+        if (pItem && pItem->ExtraDataList_GetLeveledItem())
         {
-            pResult = pItem->GetExtraLeveledItem();
+            pResult = pItem->ExtraDataList_GetLeveledItem();
             pItem->BaseExtraList_RemoveExtra(pResult, 0);
             if (pItem->FUN_004bca60())
                 m_pEntries->RemoveMatchingItem(&pItem);
@@ -3882,6 +4091,7 @@ struct FUN_004aa0f0 : PointerMapBase4aa0f0
 
 // Destructor that calls FUN_00438af0; the base destructor then runs implicitly.
 // @fnv 0x004aa0f0
+// pdb: NiTMap<int,int>::~NiTMap<int,int> | BGSSceneInfo.obj | debug, object-file run extension, low
 FUN_004aa0f0::~FUN_004aa0f0()
 {
     FUN_00438af0();
@@ -3902,6 +4112,7 @@ class FUN_004aa280 : public FUN_004aa2e0
 };
 
 // @fnv 0x004aa280
+// pdb: NiTMap<ShadowSceneLight *,int>::~NiTMap<ShadowSceneLight *,int> | BGSSceneInfo.obj | debug, object-file run extension, low
 FUN_004aa280::~FUN_004aa280()
 {
     FUN_00438af0();
@@ -3920,13 +4131,14 @@ struct FUN_004a4bd0
     FUN_0045cec0 m_0024;
     FUN_0045cec0 m_0028;
     FUN_0045cec0 m_002c;
-    void __thiscall ClearSlots();
+    void __thiscall BGSPrimitive_ClearGeometryData();
 };
 // Destructor that calls ClearSlots.
 // @fnv 0x004a4bd0
+// pdb: BGSPrimitive::~BGSPrimitive | BGSPrimitive.obj | debug, object-file gap fill, medium
 FUN_004a4bd0::~FUN_004a4bd0()
 {
-    ClearSlots();
+    BGSPrimitive_ClearGeometryData();
 }
 
 void __cdecl _NiFree(void*);
@@ -3936,12 +4148,13 @@ struct S_004a99d0
     void* vtbl;
     int f04;
     void* p08;
-    void __thiscall SetVtableAndProcessState_004a99d0();
+    void __thiscall NiTMapBase_DFALL_NiTMapItem_TESObjectCELL_bool_TESObjectCELL_bool_dtor();
 };
 // Stores &DAT_0101ed4c in the first member, calls RemoveAll treating this as an NiTPointerMap, then calls a function on p08.
 // @fnv 0x004a99d0
-// src: GUESS 0x004a99d0 (confidence: low)
-void __thiscall S_004a99d0::SetVtableAndProcessState_004a99d0()
+// src: XBOX_DEBUG_PDB 0x004a99d0
+// pdb: NiTMapBase<DFALL<NiTMapItem<TESObjectCELL *,bool> >,TESObjectCELL *,bool>::~NiTMapBase<DFALL<NiTMapItem<TESObjectCELL *,bool> >,TESObjectCELL *,bool> | BGSSceneInfo.obj | debug, call graph (shared callers), high
+void __thiscall S_004a99d0::NiTMapBase_DFALL_NiTMapItem_TESObjectCELL_bool_TESObjectCELL_bool_dtor()
 {
     *(void**)this = (void*)&DAT_0101ed4c;
     ((NiTPointerMap<void*, void*>*)(void*)this)->RemoveAll();
@@ -3957,6 +4170,7 @@ struct FUN_004a9ec0 : GlobalObject_004a9e90
     virtual ~FUN_004a9ec0();
 };
 // @fnv 0x004a9ec0
+// pdb: NiTMap<TESActorBase *,bool>::`scalar deleting destructor' | BGSSceneInfo.obj | retail, vtable slot, high
 FUN_004a9ec0::~FUN_004a9ec0()
 {}
 
@@ -3965,6 +4179,7 @@ struct FUN_004aa050
     virtual ~FUN_004aa050();
 };
 // @fnv 0x004aa050
+// pdb: NiTMap<int,int>::`scalar deleting destructor' | BGSSceneInfo.obj | retail, vtable slot, high
 FUN_004aa050::~FUN_004aa050()
 {}
 
@@ -3973,6 +4188,7 @@ struct FUN_004aa1e0
     virtual ~FUN_004aa1e0();
 };
 // @fnv 0x004aa1e0
+// pdb: NiTMap<ShadowSceneLight *,int>::`scalar deleting destructor' | BGSSceneInfo.obj | retail, vtable slot, high
 FUN_004aa1e0::~FUN_004aa1e0()
 {}
 
@@ -3986,6 +4202,7 @@ struct FUN_004b0190 : GlobalObject_004aff00
 };
 // Destructor with an empty body; the base class destructor runs implicitly.
 // @fnv 0x004b0190
+// pdb: NiTObjectArray<NiPointer<NiAVObject> >::`scalar deleting destructor' | BipedAnim.obj | debug, vtable slot, medium
 FUN_004b0190::~FUN_004b0190()
 {}
 

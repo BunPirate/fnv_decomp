@@ -67,7 +67,10 @@ struct FUN_00aa7400 : Heap
 extern char DAT_010824fc, DAT_010824f0, DAT_010824e4;
 // Clears the context heap array, allocates three heaps, assigns them to context slots, and resets the physical heap count.
 // @fnv 0x00866e00
-void MemoryManager::InitializeHeaps()
+// src: XBOX_RETAIL_PDB 0x00866e00
+// pdb: MemoryManager::SpecifyMemoryLayout | AppMemory_Xenon.obj | retail, unique string literal, high
+// pdb locals: imem
+void MemoryManager::SpecifyMemoryLayout()
 {
     ourMemset(pHeapsByContextA, 0, 0x108);
     iNumHeaps = 3;

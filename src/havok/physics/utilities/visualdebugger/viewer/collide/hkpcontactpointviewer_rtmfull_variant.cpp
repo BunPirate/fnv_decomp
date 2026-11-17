@@ -15,7 +15,7 @@
 #include "../../../../../../../include/hkpWorldViewerBase.h"
 #include "../../../../../../../include/hkpContactPointViewer.h"
 
-struct Context { void hkpWorld_addWorldPostSimulationListener(void* value); };
+struct Context { void hkpWorld_addWorldPostSimulationListener(void* worldListener); };
 // Registers the viewer's post-simulation listener with the world.
 // @fnv 0x00de2950
 void hkpPhysicsContextWorldListener::WorldAddedCallback(hkpWorld* world) {
@@ -40,8 +40,10 @@ void hkpPhysicsContextWorldListener::UpdateFields_00de2980(void* world) throw()
 
 // Initializes the base with owner, sets the float member to 0.0f and stores userData in the pointer member.
 // @fnv 0x00de29b0
-hkpContactPointViewer::hkpContactPointViewer(void* owner, void* userData)
-    : hkpWorldViewerBase(static_cast<const void*>(owner)), m_uiFilterValue(0.0f), m_ulUserData(userData)
+// pdb: hkpContactPointViewer::hkpContactPointViewer | hkpContactPointViewer.obj | retail, upstream name already matches, high
+// pdb params: contexts, color
+hkpContactPointViewer::hkpContactPointViewer(void* contexts, void* color)
+    : hkpWorldViewerBase(static_cast<const void*>(contexts)), m_limit(0.0f), m_color(color)
 {
 }
 
@@ -54,7 +56,9 @@ __forceinline hkpContactPointViewer::~hkpContactPointViewer() throw() {
         this->hkpPhysicsContextWorldListener::UpdateFields_00de2980(this->contacts->data[i]);
 }
 // @fnv 0x00de2a40
-void hkpContactPointViewer::DestroyContactPointViewer() throw() {
+// src: XBOX_RETAIL_PDB 0x00de2a40
+// pdb: hkpContactPointViewer::~hkpContactPointViewer | hkpContactPointViewer.obj | retail, object-file gap fill, high
+void hkpContactPointViewer::hkpContactPointViewer_dtor() throw() {
     this->hkpContactPointViewer::~hkpContactPointViewer();
 }
 
@@ -65,17 +69,18 @@ struct SpawnedSub {
 
 // Iterates the list stored in the process and passes each entry to its callback.
 // @fnv 0x00de2a00
+// pdb: hkpContactPointViewer::init | hkpContactPointViewer.obj | retail, upstream name already matches, high
 void hkpContactPointViewer::ProcessSpawnedList()
 {
-    ContactArray* list = reinterpret_cast<ContactArray*>(unk14);
+    ContactArray* list = reinterpret_cast<ContactArray*>(m_processHandler);
     int i = 0;
     while (list != 0) {
         if (i >= list->size) {
             break;
         }
-        reinterpret_cast<SpawnedSub*>(&unk10)->v04(list->data[i]);
+        reinterpret_cast<SpawnedSub*>(&m_displayHandler)->v04(list->data[i]);
         ++i;
-        list = reinterpret_cast<ContactArray*>(unk14);
+        list = reinterpret_cast<ContactArray*>(m_processHandler);
     }
 }
 
@@ -110,11 +115,13 @@ struct S_00de2fa0_Base0 {
 
 struct S_00de2fa0 : S_00de2fa0_Base0, hkpWorldPostSimulationListener {
     virtual void postSimulationCallback(hkpWorld* a);
-    void drawAllContactPointsInIsland_00de2da0(void* elem);
+    void drawAllContactPointsInIsland_00de2da0(void* island);
 };
 
 // Writes profiler markers to the TLS stream, then iterates the array returned by vfn_0c and calls FUN_00de2da0 on each element.
 // @fnv 0x00de2fa0
+// pdb: hkpContactPointViewer::postSimulationCallback | hkpContactPointViewer.obj | retail, vtable slot, high
+// pdb params: world
 void S_00de2fa0::postSimulationCallback(hkpWorld* apArg) {
     hkMonitorStream* stream = (hkMonitorStream*)TlsGetValue(DAT_0126835c);
     char* p = stream->m_end.m_storage;
@@ -180,7 +187,7 @@ struct HkDisplayConvexObj
 };
 
 HkAllocHolder* __cdecl hkMemoryRouter_getInstance() throw();
-void __cdecl ResizeAudioStream(HkAllocator* a1, HkArrayRaw* a2, int a3);
+void __cdecl ResizeAudioStream(HkAllocator* mem, HkArrayRaw* array, int sizeElem);
 
 struct FUN_00de4340_cls
 {
@@ -194,6 +201,8 @@ struct FUN_00de4340_cls
 
 // Lazily allocates a pair block and a convex object, stores the convex in m_pConvex, appends it to a1, and returns m_pConvex.
 // @fnv 0x00de4340
+// pdb: hkpConvexRadiusBuilder::getCurrentRawGeometry | hkpConvexRadiusBuilder.obj | retail, object-file run extension, low
+// pdb params: displayGeometries
 HkDisplayConvexObj* FUN_00de4340_cls::GetOrCreateConvex(HkArrayRaw* a1)
 {
     int zero = 0;
@@ -272,7 +281,7 @@ extern "C" LocalM128 _mm_add_ps(LocalM128,LocalM128);
 extern "C" LocalM128 _mm_add_ss(LocalM128,LocalM128);
 extern "C" float _mm_cvtss_f32(LocalM128);
 extern "C" void _mm_store_ps(float*,LocalM128);
-__declspec(noinline) void hkContactPointViewer_displayArrow(Target* context, Contact67* volatile contact, const Vec67* normal, int color, void* body, int tag);
+__declspec(noinline) void hkContactPointViewer_displayArrow(Target* handler, Contact67* volatile contact, const Vec67* normal, int color, void* body, int tag);
 
 struct ContactIdStackArray : hkArrayBase<unsigned short> { // distinct from Arr: 0x00de2da0 uses a contact-viewer scratch array with a stack-save pointer at +0x0c beyond shared hkArrayBase storage; it restores a 0x200-byte scratch allocation.
 
@@ -427,7 +436,10 @@ struct Cont {
 
 // @fnv 0x00de2da0
 // src: EXE 0x00de2da0
-void hkpContactPointViewer::drawAllContactPointsInIsland_00de2da0(Cont* c)
+// pdb: hkpContactPointViewer::drawAllContactPointsInIsland | hkpContactPointViewer.obj | retail, string-set bridge, high
+// pdb params: island
+// pdb locals: HKLOOP_sectorIndex, contactPoints
+void hkpContactPointViewer::drawAllContactPointsInIsland_00de2da0(Cont* island)
 
 {
 
@@ -450,13 +462,13 @@ void hkpContactPointViewer::drawAllContactPointsInIsland_00de2da0(Cont* c)
 
     { int cnt = 0;
 
-    while (cnt < c->unk60) {
+    while (cnt < island->unk60) {
 
-        char* e = c->unk5c[cnt];
+        char* e = island->unk5c[cnt];
 
         cnt += 1; _ReadWriteBarrier();
 
-        if (cnt == c->unk60) { f = e + c->unk58; _ReadWriteBarrier(); } else { f = e + 0x200; _ReadWriteBarrier(); }
+        if (cnt == island->unk60) { f = e + island->unk58; _ReadWriteBarrier(); } else { f = e + 0x200; _ReadWriteBarrier(); }
 
         for (; e < f; e += ((Rec*)e)->size) {
 
@@ -482,14 +494,14 @@ void hkpContactPointViewer::drawAllContactPointsInIsland_00de2da0(Cont* c)
 
                  value = o->GetFloat(m[i]);
 
-                if (!(*value < m_uiFilterValue)) {
+                if (!(*value < m_limit)) {
 
                     PointContext67* volatile v = o->unk74->slot[o->unk74->index];
 
                     { int h = GetOperationType();
 
-                    int color=reinterpret_cast<int>(m_ulUserData); 
-                    hkContactPointViewer_displayArrow(reinterpret_cast<Target*>(unk10), y, &y->normal, color, &v->value10, h); }
+                    int color=reinterpret_cast<int>(m_color);
+                    hkContactPointViewer_displayArrow(reinterpret_cast<Target*>(m_displayHandler), y, &y->normal, color, &v->value10, h); }
 
                 } } i++; } }
 
@@ -608,7 +620,10 @@ static inline float contactArrowAbs67(float r) { return (float)fabs(r); }
 
 // @fnv 0x00de2aa0
 // src: XBOX_PDB 0x00de2aa0
-static __declspec(noinline) void hkContactPointViewer_displayArrow(Target* self, Contact67* contact, const Vec67* direction, int color, void* id, int tag)
+// pdb: hkContactPointViewer_displayArrow | hkpContactPointViewer.obj | retail, upstream name already matches, high
+// pdb params: handler, from, dir, color, id, tag
+// pdb locals: p1, p0, to, ort
+static __declspec(noinline) void hkContactPointViewer_displayArrow(Target* handler, Contact67* contact, const Vec67* direction, int color, void* id, int tag)
 
 {
 
@@ -717,11 +732,11 @@ static __declspec(noinline) void hkContactPointViewer_displayArrow(Target* self,
 
     p2.m_vComponents = _mm_add_ps(_mm_mul_ps(_mm_shuffle_ps(r2, r2, 0), ort.m_vComponents), p.m_vComponents);
 
-    self->Draw((const Vec67*)&from, (const Vec67*)&to, color, id, tag);
+    handler->Draw((const Vec67*)&from, (const Vec67*)&to, color, id, tag);
 
-    self->Draw((const Vec67*)&to, (const Vec67*)&geometry.p1, color, id, tag);
+    handler->Draw((const Vec67*)&to, (const Vec67*)&geometry.p1, color, id, tag);
 
-    self->Draw((const Vec67*)&to, (const Vec67*)&p2, color, id, tag);
+    handler->Draw((const Vec67*)&to, (const Vec67*)&p2, color, id, tag);
 
     markContactArrowProfile67("Et");
 

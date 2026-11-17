@@ -1,6 +1,7 @@
 
 // Functions are listed by their @fnv annotations; compile flags inferred from the PC code.
 
+// pdb: structure ID3DXBuffer, size 0x4, bases: IUnknown, 0 members
 struct ID3DXBuffer
 {
     virtual long __stdcall QueryInterface(const void* riid, void** ppv) = 0;
@@ -14,7 +15,7 @@ extern "C" long __stdcall D3DXAssembleShaderFromFileA(const char* pSrcFile, cons
                                                       unsigned long Flags, ID3DXBuffer** ppShader,
                                                       ID3DXBuffer** ppErrorMsgs);
 
-bool ResolveShaderPath(const char* pcName, char* pcPath, unsigned int uiSize);
+bool NiD3DShaderProgramFactory_ResolveShaderFileName(const char* pcOriginalName, char* pcTrueName, unsigned int uiStringLen);
 int ShaderLog(int iLevel, int aiMemoryContext, const char* pcFormat, ...);
 void* NiMalloc(unsigned int uiSize);
 void NiFree(void* pvMem);
@@ -32,28 +33,31 @@ struct ShaderLoader
     void* m_vtbl;
     unsigned int m_uiValue1;
 
-    bool AssembleShaderFile(const char* pcFile, void** ppvData, unsigned int* puiSize, int* piUnk0, int* piUnk1,
-                            int pcContext);
+    bool AssembleShaderFile(const char* pcFileName, void** pvCode, unsigned int* uiCodeSize, int* pvConstantData, int* uiConstantSize,
+                            int bRecoverable);
 };
 
 // Resolves the shader path, assembles it with D3DXAssembleShaderFromFileA, copies the bytecode into a NiMalloc buffer, and logs errors on failure.
 // @fnv 0x00e97ea0
-bool ShaderLoader::AssembleShaderFile(const char* pcFile, void** ppvBytecode, unsigned int* puiBytecodeSize,
-                                      int* piUnk0, int* piUnk1, int pcLogContext)
+// pdb: NiD3DShaderProgramCreatorAsm::LoadShaderCodeFromFile | NiD3DShaderProgramCreatorAsm_Xenon.obj | retail, string-set bridge, high
+// pdb params: pcFileName, pvCode, uiCodeSize, pvConstantData, uiConstantSize, bRecoverable
+// pdb locals: uiFlags, pkErrors, acShaderPath, eResult, pkCode, pcErr, pvBuff, uiLen
+bool ShaderLoader::AssembleShaderFile(const char* pcFileName, void** pvCode, unsigned int* uiCodeSize,
+                                      int* pvConstantData, int* uiConstantSize, int bRecoverable)
 {
-    *ppvBytecode = 0;
-    *puiBytecodeSize = 0;
-    *piUnk0 = 0;
-    *piUnk1 = 0;
+    *pvCode = 0;
+    *uiCodeSize = 0;
+    *pvConstantData = 0;
+    *uiConstantSize = 0;
 
-    if (pcFile && *pcFile)
+    if (pcFileName && *pcFileName)
     {
         ID3DXBuffer* pkErrors;
         ID3DXBuffer* pkShader;
         char acPath[260];
-        if (!ResolveShaderPath(pcFile, acPath, 260))
+        if (!NiD3DShaderProgramFactory_ResolveShaderFileName(pcFileName, acPath, 260))
         {
-            ShaderLog(1, pcLogContext, "Failed to find shader program file %s\n", pcFile);
+            ShaderLog(1, bRecoverable, "Failed to find shader program file %s\n", pcFileName);
             return false;
         }
 
@@ -69,13 +73,13 @@ bool ShaderLoader::AssembleShaderFile(const char* pcFile, void** ppvBytecode, un
                     unsigned int uiErrorLen = pkErrors->GetBufferSize();
                     pcErrorText = (char*)NiMalloc(uiErrorLen);
                     strcpy_s(pcErrorText, uiErrorLen, pcErrorMsg);
-                    ShaderLog(1, pcLogContext, "Failed to assemble shader %s\nError: %s\n", pcFile, pcErrorText);
+                    ShaderLog(1, bRecoverable, "Failed to assemble shader %s\nError: %s\n", pcFileName, pcErrorText);
                 }
                 pkErrors->Release();
             }
             else
             {
-                ShaderLog(1, pcLogContext, "Failed to assemble shader %s\nError: NONE REPORTED\n", pcFile);
+                ShaderLog(1, bRecoverable, "Failed to assemble shader %s\nError: NONE REPORTED\n", pcFileName);
             }
             NiFree(pcErrorText);
             if (pkShader)
@@ -83,9 +87,9 @@ bool ShaderLoader::AssembleShaderFile(const char* pcFile, void** ppvBytecode, un
             return false;
         }
 
-        *puiBytecodeSize = pkShader->GetBufferSize();
-        *ppvBytecode = NiMalloc(*puiBytecodeSize);
-        NiMemcpy(*ppvBytecode, pkShader->GetBufferPointer(), *puiBytecodeSize);
+        *uiCodeSize = pkShader->GetBufferSize();
+        *pvCode = NiMalloc(*uiCodeSize);
+        NiMemcpy(*pvCode, pkShader->GetBufferPointer(), *uiCodeSize);
         pkShader->Release();
         if (pkErrors)
             pkErrors->Release();
@@ -116,61 +120,64 @@ struct FUN_00e98080_shell
 // Assembles source, logs failures, and copies successful output into a newly allocated buffer returned through data.
 // @fnv 0x00e98080
 // src: COMMUNITY 0x00e98080
-bool FUN_00e98080_shell::NiD3DShaderProgramCreatorAsm_LoadShaderCodeFromBuffer(const char* source, unsigned int length, void** ppBytecode,
-                                      unsigned int* puiBytecodeSize, void** reserved, unsigned int* reservedSize,
-                                      int context)
+// pdb: NiD3DShaderProgramCreatorAsm::LoadShaderCodeFromBuffer | NiD3DShaderProgramCreatorAsm_Xenon.obj | retail, string-set bridge, high
+// pdb params: pvBuffer, uiBufferSize, pvCode, uiCodeSize, pvConstantData, uiConstantSize, bRecoverable
+// pdb locals: uiFlags, pkErrors, eResult, pkCode, pcErr, pvBuff, uiLen
+bool FUN_00e98080_shell::NiD3DShaderProgramCreatorAsm_LoadShaderCodeFromBuffer(const char* pvBuffer, unsigned int uiBufferSize, void** pvCode,
+                                      unsigned int* uiCodeSize, void** pvConstantData, unsigned int* uiConstantSize,
+                                      int bRecoverable)
 {
-    void** const volatile& originalData = ppBytecode;
+    void** const volatile& originalData = pvCode;
     void** dataOut = originalData;
-    unsigned int* sizeOut = puiBytecodeSize;
+    unsigned int* sizeOut = uiCodeSize;
     *dataOut = 0;
     *sizeOut = 0;
-    *reserved = 0;
-    *reservedSize = 0;
+    *pvConstantData = 0;
+    *uiConstantSize = 0;
 
-    if (!source || !length)
+    if (!pvBuffer || !uiBufferSize)
         goto invalid;
 
     {
         unsigned int options = (flags | g_uiShaderAssembleFlags) & 3;
         long status =
-            D3DXAssembleShader_00ee6e52(source, length, 0, 0, options, (ID3DXBuffer**)&ppBytecode, (ID3DXBuffer**)&puiBytecodeSize);
+            D3DXAssembleShader_00ee6e52(pvBuffer, uiBufferSize, 0, 0, options, (ID3DXBuffer**)&pvCode, (ID3DXBuffer**)&uiCodeSize);
         if (status < 0)
         {
             char* pszError = 0;
-            ID3DXBuffer* error = (ID3DXBuffer*)puiBytecodeSize;
+            ID3DXBuffer* error = (ID3DXBuffer*)uiCodeSize;
             if (error)
             {
                 char* text = (char*)error->GetBufferPointer();
                 if (text)
                 {
-                    unsigned int n = ((ID3DXBuffer*)puiBytecodeSize)->GetBufferSize();
+                    unsigned int n = ((ID3DXBuffer*)uiCodeSize)->GetBufferSize();
                     pszError = (char*)NiMalloc(n);
                     strcpy_s(pszError, n, text);
-                    ShaderLog(1, context, "Failed to assemble shader from memory\nError: %s\n", pszError);
+                    ShaderLog(1, bRecoverable, "Failed to assemble shader from memory\nError: %s\n", pszError);
                 }
-                ((ID3DXBuffer*)puiBytecodeSize)->Release();
+                ((ID3DXBuffer*)uiCodeSize)->Release();
             }
             else
             {
-                ShaderLog(1, context, "Failed to assemble shader from memory\nError: NONE REPORTED\n");
+                ShaderLog(1, bRecoverable, "Failed to assemble shader from memory\nError: NONE REPORTED\n");
             }
             NiFree(pszError);
-            if (ppBytecode)
-                ((ID3DXBuffer*)ppBytecode)->Release();
+            if (pvCode)
+                ((ID3DXBuffer*)pvCode)->Release();
             return false;
         }
 
-        *sizeOut = ((ID3DXBuffer*)ppBytecode)->GetBufferSize();
+        *sizeOut = ((ID3DXBuffer*)pvCode)->GetBufferSize();
         *dataOut = NiMalloc(*sizeOut);
-        Move266(*dataOut, ((ID3DXBuffer*)ppBytecode)->GetBufferPointer(), *sizeOut);
-        ((ID3DXBuffer*)ppBytecode)->Release();
-        if (puiBytecodeSize)
-            ((ID3DXBuffer*)puiBytecodeSize)->Release();
+        Move266(*dataOut, ((ID3DXBuffer*)pvCode)->GetBufferPointer(), *sizeOut);
+        ((ID3DXBuffer*)pvCode)->Release();
+        if (uiCodeSize)
+            ((ID3DXBuffer*)uiCodeSize)->Release();
         return true;
     }
 
 invalid:
-    ShaderLog(1, context, "Invalid shader buffer\n");
+    ShaderLog(1, bRecoverable, "Invalid shader buffer\n");
     return false;
 }

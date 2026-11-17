@@ -4,6 +4,7 @@
 
 class TESGlobal;
 
+// pdb: class ExtraGlobal, size 0x10, bases: BSExtraData, 1 members
 class ExtraGlobal : public BSExtraData
 {
 public:

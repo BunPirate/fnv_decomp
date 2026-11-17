@@ -186,8 +186,8 @@ struct SSaveGame
 {
     unsigned int FUN_00825c00();
     bool TESSaveLoadGame_UseSaveGameBlocks();
-    void TESSaveLoadGame_SaveGameDataOLD(void* data, int size);
-    void TESSaveLoadGame_SaveNumericID(void* data, int size);
+    void TESSaveLoadGame_SaveGameDataOLD(void* apData, int aiSize);
+    void TESSaveLoadGame_SaveNumericID(void* apFormID, int aiSize);
     unsigned char FUN_008df040();
     FormIDEntry* FUN_004fd3e0();
 };
@@ -213,11 +213,11 @@ void __cdecl ProgramFlow(const char* fmt, ...);
 void __cdecl Warning_005b5e40(const char* fmt, ...);
 SForm* __cdecl TESForm_GetFormByNumericID(unsigned int id);
 unsigned char __cdecl BSstrlen(char* s);
-void __cdecl ActiveEffect_SaveActiveEffectList(void* p, int a);
+void __cdecl ActiveEffect_SaveActiveEffectList(void* apActiveEffectList, int a);
 
 struct SaveShell : public ExtraDataList
 {
-    void ExtraDataList_SaveGameTES(unsigned int flags, SForm* form);
+    void ExtraDataList_SaveGameTES(unsigned int aiFlags, SForm* apRef);
 };
 
 }
@@ -225,7 +225,10 @@ namespace extra_save {
 
 // @fnv 0x004235e0
 // src: COMMUNITY 0x004235e0
-void SaveShell::ExtraDataList_SaveGameTES(unsigned int flags, SForm* form)
+// pdb: ExtraDataList::SaveGame | ExtraDataList.obj | retail, unique string literal, high
+// pdb params: aiFlags, apRef
+// pdb locals: icount, itempStartPosition, iblockSize, pcount, work, pblockSize, iblockHeader, cextratype, ptempBuffer, inum, fhealth, cuses, cWeaponModsActive, ftimeleft, fcharge, ikeyID, plock, fscale, iownerID, iglobalID, irank, iscriptID, pscriptlocals, pleveleditem ...
+void SaveShell::ExtraDataList_SaveGameTES(unsigned int aiFlags, SForm* apRef)
 {
     unsigned int blkA4;
     GenericExtra* extra;
@@ -261,7 +264,7 @@ void SaveShell::ExtraDataList_SaveGameTES(unsigned int flags, SForm* form)
         switch (extra->TESRegionData_GetOverride())
         {
         case 36:
-            if (flags & 0)
+            if (aiFlags & 0)
             {
                 DAT_011de45c->TESSaveLoadGame_SaveGameDataOLD(&type, 1);
                 short v = extra->d.s;
@@ -269,7 +272,7 @@ void SaveShell::ExtraDataList_SaveGameTES(unsigned int flags, SForm* form)
             }
             break;
         case 37:
-            if (flags & 0)
+            if (aiFlags & 0)
             {
                 DAT_011de45c->TESSaveLoadGame_SaveGameDataOLD(&type, 1);
                 float v = extra->d.f;
@@ -277,7 +280,7 @@ void SaveShell::ExtraDataList_SaveGameTES(unsigned int flags, SForm* form)
             }
             break;
         case 38:
-            if (flags & 0)
+            if (aiFlags & 0)
             {
                 DAT_011de45c->TESSaveLoadGame_SaveGameDataOLD(&type, 1);
                 char v = extra->d.c;
@@ -285,7 +288,7 @@ void SaveShell::ExtraDataList_SaveGameTES(unsigned int flags, SForm* form)
             }
             break;
         case 141:
-            if (flags & 0)
+            if (aiFlags & 0)
             {
                 DAT_011de45c->TESSaveLoadGame_SaveGameDataOLD(&type, 1);
                 char v = extra->d.c;
@@ -293,7 +296,7 @@ void SaveShell::ExtraDataList_SaveGameTES(unsigned int flags, SForm* form)
             }
             break;
         case 39:
-            if (flags & 0)
+            if (aiFlags & 0)
             {
                 DAT_011de45c->TESSaveLoadGame_SaveGameDataOLD(&type, 1);
                 float v = extra->d.f;
@@ -301,7 +304,7 @@ void SaveShell::ExtraDataList_SaveGameTES(unsigned int flags, SForm* form)
             }
             break;
         case 40:
-            if (flags & 0)
+            if (aiFlags & 0)
             {
                 DAT_011de45c->TESSaveLoadGame_SaveGameDataOLD(&type, 1);
                 float v = extra->d.f;
@@ -309,7 +312,7 @@ void SaveShell::ExtraDataList_SaveGameTES(unsigned int flags, SForm* form)
             }
             break;
         case 42:
-            if (flags & 0x1000)
+            if (aiFlags & 0x1000)
             {
                 DAT_011de45c->TESSaveLoadGame_SaveGameDataOLD(&type, 1);
                 LockSaveData* p = extra->d.p;
@@ -324,7 +327,7 @@ void SaveShell::ExtraDataList_SaveGameTES(unsigned int flags, SForm* form)
             }
             break;
         case 48:
-            if (flags & 0)
+            if (aiFlags & 0)
             {
                 DAT_011de45c->TESSaveLoadGame_SaveGameDataOLD(&type, 1);
                 float v = extra->d.f;
@@ -332,7 +335,7 @@ void SaveShell::ExtraDataList_SaveGameTES(unsigned int flags, SForm* form)
             }
             break;
         case 33:
-            if (flags & 0)
+            if (aiFlags & 0)
             {
                 DAT_011de45c->TESSaveLoadGame_SaveGameDataOLD(&type, 1);
                 unsigned int id = extra->d.form->GetHavokWorldObjectCountInSceneGraph_0084e3a0();
@@ -340,7 +343,7 @@ void SaveShell::ExtraDataList_SaveGameTES(unsigned int flags, SForm* form)
             }
             break;
         case 34:
-            if (flags & 0)
+            if (aiFlags & 0)
             {
                 DAT_011de45c->TESSaveLoadGame_SaveGameDataOLD(&type, 1);
                 unsigned int id = extra->d.form->GetHavokWorldObjectCountInSceneGraph_0084e3a0();
@@ -348,7 +351,7 @@ void SaveShell::ExtraDataList_SaveGameTES(unsigned int flags, SForm* form)
             }
             break;
         case 35:
-            if (flags & 0)
+            if (aiFlags & 0)
             {
                 DAT_011de45c->TESSaveLoadGame_SaveGameDataOLD(&type, 1);
                 int v = extra->d.i;
@@ -359,7 +362,7 @@ void SaveShell::ExtraDataList_SaveGameTES(unsigned int flags, SForm* form)
         case 23:
         case 62:
         case 71:
-            if (flags & 0)
+            if (aiFlags & 0)
             {
                 DAT_011de45c->TESSaveLoadGame_SaveGameDataOLD(&type, 1);
             }
@@ -368,7 +371,7 @@ void SaveShell::ExtraDataList_SaveGameTES(unsigned int flags, SForm* form)
             DAT_011de45c->TESSaveLoadGame_SaveGameDataOLD(&type, 1);
             break;
         case 13:
-            if (flags & 0)
+            if (aiFlags & 0)
             {
                 DAT_011de45c->TESSaveLoadGame_SaveGameDataOLD(&type, 1);
                 unsigned int id = extra->d.form->GetHavokWorldObjectCountInSceneGraph_0084e3a0();
@@ -378,7 +381,7 @@ void SaveShell::ExtraDataList_SaveGameTES(unsigned int flags, SForm* form)
             }
             break;
         case 47:
-            if (flags & 0)
+            if (aiFlags & 0)
             {
                 DAT_011de45c->TESSaveLoadGame_SaveGameDataOLD(&type, 1);
                 ::ExtraLeveledItem* x = dynamic_cast< ::ExtraLeveledItem*>((::BSExtraData*)extra);
@@ -398,8 +401,8 @@ void SaveShell::ExtraDataList_SaveGameTES(unsigned int flags, SForm* form)
             DAT_011de45c->TESSaveLoadGame_SaveNumericID(&id, 4);
             DAT_011de45c->TESSaveLoadGame_SaveGameDataOLD(&x->unk10, 4);
             DAT_011de45c->TESSaveLoadGame_SaveNumericID(&iD8, 4);
-            DAT_011de45c->TESSaveLoadGame_SaveGameDataOLD(&x->unk18, 1);
-            DAT_011de45c->TESSaveLoadGame_SaveGameDataOLD(&x->unk19, 1);
+            DAT_011de45c->TESSaveLoadGame_SaveGameDataOLD(&x->bActionComplete, 1);
+            DAT_011de45c->TESSaveLoadGame_SaveGameDataOLD(&x->bActivated, 1);
             if (DAT_011de45c->FUN_008df040() >= 0x40 && DAT_011c3f2c->FUN_00469860(id))
             {
                 unsigned char b = x->package->FUN_0041ca90();
@@ -409,7 +412,7 @@ void SaveShell::ExtraDataList_SaveGameTES(unsigned int flags, SForm* form)
             break;
         }
         case 26:
-            if (flags & 0)
+            if (aiFlags & 0)
             {
                 DAT_011de45c->TESSaveLoadGame_SaveGameDataOLD(&type, 1);
                 ExtraTresPassPackage* x =
@@ -427,16 +430,16 @@ void SaveShell::ExtraDataList_SaveGameTES(unsigned int flags, SForm* form)
             }
             break;
         case 28:
-            if (flags & 0)
+            if (aiFlags & 0)
             {
                 DAT_011de45c->TESSaveLoadGame_SaveGameDataOLD(&type, 1);
                 ::ExtraReferencePointer* x = dynamic_cast< ::ExtraReferencePointer*>((::BSExtraData*)extra);
-                unsigned int id = x->ref->GetHavokWorldObjectCountInSceneGraph_0084e3a0();
+                unsigned int id = x->pRef->GetHavokWorldObjectCountInSceneGraph_0084e3a0();
                 DAT_011de45c->TESSaveLoadGame_SaveNumericID(&id, 4);
             }
             break;
         case 46:
-            if (flags & 0)
+            if (aiFlags & 0)
             {
                 DAT_011de45c->TESSaveLoadGame_SaveGameDataOLD(&type, 1);
             }
@@ -474,7 +477,7 @@ void SaveShell::ExtraDataList_SaveGameTES(unsigned int flags, SForm* form)
             else
             {
                 Warning_005b5e40("SAVELOAD: Saving package start location on %08X %s, but the location is NULL.",
-                             form->GetHavokWorldObjectCountInSceneGraph_0084e3a0(), form->vf130());
+                             apRef->GetHavokWorldObjectCountInSceneGraph_0084e3a0(), apRef->vf130());
             }
             DAT_011de45c->TESSaveLoadGame_SaveNumericID(&iD, 4);
             DAT_011de45c->TESSaveLoadGame_SaveGameDataOLD(x->pos, 0xc);
@@ -503,7 +506,7 @@ void SaveShell::ExtraDataList_SaveGameTES(unsigned int flags, SForm* form)
             break;
         }
         case 50:
-            if (flags & 0)
+            if (aiFlags & 0)
             {
                 DAT_011de45c->TESSaveLoadGame_SaveGameDataOLD(&type, 1);
                 ::NonActorMagicCaster* X = dynamic_cast< ::NonActorMagicCaster*>((::BSExtraData*)extra);
@@ -528,7 +531,7 @@ void SaveShell::ExtraDataList_SaveGameTES(unsigned int flags, SForm* form)
             }
             break;
         case 51:
-            if (flags & 0)
+            if (aiFlags & 0)
             {
                 DAT_011de45c->TESSaveLoadGame_SaveGameDataOLD(&type, 1);
                 ::NonActorMagicTarget* x = dynamic_cast< ::NonActorMagicTarget*>((::BSExtraData*)extra);
@@ -542,7 +545,7 @@ void SaveShell::ExtraDataList_SaveGameTES(unsigned int flags, SForm* form)
             }
             break;
         case 43:
-            if (flags & 0x20000)
+            if (aiFlags & 0x20000)
             {
                 DAT_011de45c->TESSaveLoadGame_SaveGameDataOLD(&type, 1);
                 ::ExtraTeleport* x = dynamic_cast< ::ExtraTeleport*>((::BSExtraData*)extra);
@@ -550,7 +553,7 @@ void SaveShell::ExtraDataList_SaveGameTES(unsigned int flags, SForm* form)
             }
             break;
         case 63:
-            if (flags & 0)
+            if (aiFlags & 0)
             {
                 DAT_011de45c->TESSaveLoadGame_SaveGameDataOLD(&type, 1);
                 ::ExtraPoison* x = dynamic_cast< ::ExtraPoison*>((::BSExtraData*)extra);
@@ -559,7 +562,7 @@ void SaveShell::ExtraDataList_SaveGameTES(unsigned int flags, SForm* form)
             }
             break;
         case 65:
-            if (flags & 0x10000000)
+            if (aiFlags & 0x10000000)
             {
                 DAT_011de45c->TESSaveLoadGame_SaveGameDataOLD(&type, 1);
                 ::ExtraLastFinishedSequence* x = dynamic_cast< ::ExtraLastFinishedSequence*>((::BSExtraData*)extra);
@@ -569,7 +572,7 @@ void SaveShell::ExtraDataList_SaveGameTES(unsigned int flags, SForm* form)
             }
             break;
         case 44:
-            if (flags & 0)
+            if (aiFlags & 0)
             {
                 DAT_011de45c->TESSaveLoadGame_SaveGameDataOLD(&type, 1);
                 ::ExtraMapMarker* x = dynamic_cast< ::ExtraMapMarker*>((::BSExtraData*)extra);
@@ -578,21 +581,21 @@ void SaveShell::ExtraDataList_SaveGameTES(unsigned int flags, SForm* form)
             }
             break;
         case 144:
-            if (flags & 0)
+            if (aiFlags & 0)
             {
                 DAT_011de45c->TESSaveLoadGame_SaveGameDataOLD(&type, 1);
                 ::ExtraAudioMarker* x = dynamic_cast< ::ExtraAudioMarker*>((::BSExtraData*)extra);
             }
             break;
         case 145:
-            if (flags & 0)
+            if (aiFlags & 0)
             {
                 DAT_011de45c->TESSaveLoadGame_SaveGameDataOLD(&type, 1);
                 ::ExtraAudioBuoyMarker* x = dynamic_cast< ::ExtraAudioBuoyMarker*>((::BSExtraData*)extra);
             }
             break;
         case 12:
-            if (form && form->vf100())
+            if (apRef && apRef->vf100())
             {
                 DAT_011de45c->TESSaveLoadGame_SaveGameDataOLD(&type, 1);
                 ExtraPersistentCell* x =
@@ -610,9 +613,9 @@ void SaveShell::ExtraDataList_SaveGameTES(unsigned int flags, SForm* form)
             DAT_011de45c->TESSaveLoadGame_SaveGameDataOLD(&type, 1);
             ::ExtraItemDropper* x = dynamic_cast< ::ExtraItemDropper*>((::BSExtraData*)extra);
             unsigned int id = 0;
-            if (x->dropper)
+            if (x->pDropper)
             {
-                id = x->dropper->GetHavokWorldObjectCountInSceneGraph_0084e3a0();
+                id = x->pDropper->GetHavokWorldObjectCountInSceneGraph_0084e3a0();
             }
             DAT_011de45c->TESSaveLoadGame_SaveNumericID(&id, 4);
             break;
@@ -622,15 +625,15 @@ void SaveShell::ExtraDataList_SaveGameTES(unsigned int flags, SForm* form)
             DAT_011de45c->TESSaveLoadGame_SaveGameDataOLD(&type, 1);
             ExtraHeadingTarget* x = dynamic_cast< ::ExtraHeadingTarget*>((::BSExtraData*)extra);
             unsigned int id = 0;
-            if (x->target)
+            if (x->pheadingtarget)
             {
-                id = x->target->GetHavokWorldObjectCountInSceneGraph_0084e3a0();
+                id = x->pheadingtarget->GetHavokWorldObjectCountInSceneGraph_0084e3a0();
             }
             DAT_011de45c->TESSaveLoadGame_SaveNumericID(&id, 4);
             break;
         }
         case 73:
-            if (flags & 0)
+            if (aiFlags & 0)
             {
                 DAT_011de45c->TESSaveLoadGame_SaveGameDataOLD(&type, 1);
                 unsigned int id = extra->d.form->GetHavokWorldObjectCountInSceneGraph_0084e3a0();
@@ -638,7 +641,7 @@ void SaveShell::ExtraDataList_SaveGameTES(unsigned int flags, SForm* form)
             }
             break;
         case 74:
-            if (flags & 0)
+            if (aiFlags & 0)
             {
                 DAT_011de45c->TESSaveLoadGame_SaveGameDataOLD(&type, 1);
                 char v = extra->d.c;
@@ -657,7 +660,7 @@ void SaveShell::ExtraDataList_SaveGameTES(unsigned int flags, SForm* form)
         case 78: {
             DAT_011de45c->TESSaveLoadGame_SaveGameDataOLD(&type, 1);
             ::ExtraHasNoRumors* x = dynamic_cast< ::ExtraHasNoRumors*>((::BSExtraData*)extra);
-            DAT_011de45c->TESSaveLoadGame_SaveGameDataOLD(&x->value, 1);
+            DAT_011de45c->TESSaveLoadGame_SaveGameDataOLD(&x->bNoRumors, 1);
         }
         }
         if (before != DAT_011de45c->FUN_00825c00())
@@ -990,7 +993,7 @@ extern char DAT_01184638;
 extern char DAT_0118444c;
 void* FUN_00ec43fb(void*, int, void*, void*, int);
 TESForm* TESForm_GetFormByNumericID(G*);
-int FUN_0040a250(G*);
+int GetMagicItemByNumericID(G*);
 int FUN_00825550(G*);
 void ActiveEffect_InitLoadGameActiveEffectList(int, int);
 class ListQ
@@ -1019,6 +1022,9 @@ class ThisQ
 };
 // @fnv 0x00426020
 // src: XBOX_PDB 0x00426020
+// pdb: ExtraDataList::InitLoadGame | ExtraDataList.obj | debug, object-file gap fill, medium
+// pdb params: aiFlags, aiOldFlags, apRef, apBaseObject
+// pdb locals: ptarget, bisActor, pscriptExtra, pscriptableForm, iscriptID, pactorBase, pactor, prefptr, irefID, ppoisonExtra, ipoisonID, ppoison, pfollow, pextraPackage, itargetID, ptrespass, plist, iactorID, pnonactorCaster, pnonactorTarget, icasterObjectID, idesiredTargetID, icurrentSpellID, pteleport ...
 void ThisQ::ExtraDataList_InitLoadGame(unsigned int a1, int a2, O* a3, void* a4)
 {
     bool b = false;
@@ -1124,7 +1130,7 @@ void ThisQ::ExtraDataList_InitLoadGame(unsigned int a1, int a2, O* a3, void* a4)
                     G* v60 = (G*)x->GetCurrentMagicTarget();
                     G* v58 = (G*)x->GetCasterReference();
                     if (v5c)
-                        x->SetSelectedMagicItem((MagicItem*)FUN_0040a250(v5c));
+                        x->SetSelectedMagicItem((MagicItem*)GetMagicItemByNumericID(v5c));
                     if (v60)
                         x->SetMagicTarget((MagicTarget*)FUN_00825550(v60));
                     if (v58)

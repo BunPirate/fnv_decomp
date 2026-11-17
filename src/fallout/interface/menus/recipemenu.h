@@ -7,6 +7,6 @@
 void RecipeMenu::AssignTileByID(int tileID, Tile* tile)
 {
     if (tileID >= 0 && tileID < 14)
-        reinterpret_cast<Tile**>(layoutExtension)[tileID] = tile;
+        reinterpret_cast<Tile**>(pTiles)[tileID] = tile;
 }
 #endif

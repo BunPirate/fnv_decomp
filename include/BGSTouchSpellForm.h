@@ -5,6 +5,7 @@
 class MagicItemForm;
 class TESForm;
 
+// pdb: class BGSTouchSpellForm, size 0xc, bases: BaseFormComponent, 2 members
 class BGSTouchSpellForm : public BaseFormComponent
 {
 public:
@@ -19,7 +20,7 @@ public:
     void InitializeComponent();
     void ClearComponent();
     void Save();
-    void InitItem(TESForm* owner);
+    void InitItem(TESForm* apOwner);
     void BaseFormRecord(BaseFormComponent* component);
     bool IsEqualToBase(BaseFormComponent* component);
     void Initialize(unsigned int value);
@@ -31,7 +32,7 @@ public:
     unsigned short GetFormTouchSpellAnimation();
     void SetFormTouchSpellAnimation(unsigned short animation);
 
-    MagicItemForm* m_pMagicItem;
-    unsigned short m_usTouchSpellType;
+    MagicItemForm* pFormTouchSpell; // src: XBOX_RETAIL_PDB +0x4 (old: m_pMagicItem)
+    unsigned short iTouchSpellAnimation; // src: XBOX_RETAIL_PDB +0x8 (old: m_usTouchSpellType)
     unsigned char layoutPaddingA[2];
 };

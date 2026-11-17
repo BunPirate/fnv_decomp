@@ -38,10 +38,10 @@ class SpawnedHelper
     unsigned int unk08;
     unsigned int unk0C;
 
-    SpawnedHelper(LocalTag tag) throw();
+    SpawnedHelper(LocalTag ops) throw();
     ~SpawnedHelper() throw();
 
-    void hkCachedHashMap_hkStringMapOperations_hkContainerHeapAllocator_insert(void* value, FirstNode* node) throw();
+    void hkCachedHashMap_hkStringMapOperations_hkContainerHeapAllocator_insert(void* key, FirstNode* val) throw();
     FoundEntry* GetValue(void* key, int zero) throw();
 };
 
@@ -62,6 +62,9 @@ struct SecondNode
 
 // Builds a SpawnedHelper from list1 nodes, then for each list2 node looks up its key and copies the found slot pointer, invoking it if non-null.
 // @fnv 0x00cf6a00
+// pdb: hkSingletonInitNode::populate | hkSingleton.obj | retail, object-file run extension, low
+// pdb params: dstBase, srcBase
+// pdb locals: srcNodeFromName
 void __cdecl RelinkSecondListFromHelper(SecondNode* pSecondList, FirstNode* pFirstList) throw()
 {
     LocalTag tag;
@@ -119,13 +122,16 @@ struct StringMap
     unsigned int unk08;
     unsigned int unk0c;
 
-    void FUN_00d87790(NameFlag aFlag);
-    void hkCachedHashMap_hkStringMapOperations_hkContainerHeapAllocator_insert(const char* aKey, int aValue);
+    void FUN_00d87790(NameFlag ops);
+    void hkCachedHashMap_hkStringMapOperations_hkContainerHeapAllocator_insert(const char* key, int val);
     void* GetValue(const char* aKey, int aDefault);
     void FreeBuffer();
 };
 
 // @fnv 0x00cf6a90
+// pdb: hkSingletonInitNode::depopulate | hkSingleton.obj | retail, object-file run extension, low
+// pdb params: dstBase, srcBase
+// pdb locals: srcNodeFromName
 void ClearMatchingRefs(FirstNode* pNodesToClear, FirstNode* pKeyNodes)
 {
     NameFlag flag;

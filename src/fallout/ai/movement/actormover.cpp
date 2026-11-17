@@ -64,11 +64,13 @@ bool __fastcall GetPathingSolutionFlag40(PathingSolution* solution);
 extern "C" const NiPoint3 NiPoint3_ZERO;
 
 // @fnv 0x008b3d10
+// pdb: Actor::HasLookAtTarget | Actor.obj | debug, object-file gap fill, medium
 bool ActorMover::HasLookAtTarget()
 {
-    return m_bHasLookAtTarget;
+    return bFaceTargetPoint;
 }
 // @fnv 0x009ddb50
+// pdb: ActorMover::IsMoving | ActorMover.obj | debug, object-file gap fill, medium
 bool ActorMover::IsMovementActive()
 {
     return eState == 4;
@@ -76,11 +78,12 @@ bool ActorMover::IsMovementActive()
 // @fnv 0x009de080
 void ActorMover::ResetMovementData()
 {
-    m_bHasMovementData = false;
-    m_uiMovementFlags = 0;
+    bForceMoveMode = false;
+    uiForcedMoveMode = 0;
 }
 
 // @fnv 0x009dd0a0
+// pdb: ActorMover::StopMoving | ActorMover.obj | debug, upstream name already matches, high
 void ActorMover::StopMoving()
 {
     ClearMovementPath();
@@ -90,83 +93,95 @@ void ActorMover::StopMoving()
 // @fnv 0x00931850
 unsigned int MobileObject::GetCurrentProcessLevel()
 {
-    if (m_pBaseProcess)
-        return m_pBaseProcess->GetProcessLevel();
+    if (pCurrentProcess)
+        return pCurrentProcess->GetProcessLevel();
     return PROCESS_TYPE_PROCESS_TYPE_NONE;
 }
 // Returns the preferred move mode type when pathing failed, otherwise returns the stored move mode.
 // @fnv 0x009ddb70
+// pdb: ActorMover::GetMoveMode | ActorMover.obj | debug, vtable slot, medium
+// pdb locals: ireturnMoveMode
 unsigned int ActorMover::GetActorStateFlags()
 {
-    unsigned int uiMoveMode = bPathingFailed ? GetPreferredMoveModeType() : m_uiMovementMode;
+    unsigned int uiMoveMode = bPathingFailed ? GetPreferredMoveModeType() : iCachedLastValidMoveMode;
     return uiMoveMode;
 }
 // @fnv 0x009de230
+// pdb: ActorMover::ClearLookAtTarget | ActorMover.obj | debug, object-file gap fill, medium
 void ActorMover::RunProcedure()
 {
-    memcpy(&m_kLookAtTargetPosition, &NiPoint3_ZERO, sizeof(NiPoint3));
-    m_bHasLookAtTarget = false;
+    memcpy(&LookAtPoint, &NiPoint3_ZERO, sizeof(NiPoint3));
+    bFaceTargetPoint = false;
     RefreshMovementState();
 }
 // @fnv 0x009dc590
-void ActorMover::UpdateMovement(float elapsed)
+// pdb: ActorMover::UpdateMovement | ActorMover.obj | retail, upstream name already matches, high
+// pdb params: fdeltaT
+// pdb locals: eresult
+void ActorMover::UpdateMovement(float fdeltaT)
 {
-    if (m_bMovementPaused)
+    if (bInDialog)
         return;
-    ActorPathHandler::PATH_HANDLER_RESULT result = m_pPathHandler->vfn_0c(elapsed);
+    ActorPathHandler::PATH_HANDLER_RESULT result = m_pPathHandler->vfn_0c(fdeltaT);
     HandlePathingResult(result);
 }
 // @fnv 0x009ddbb0
 bool ActorMover::GetPathingDelta(NiPoint3& delta)
 {
     bool valid = false;
-    if (m_bHasPathingDelta)
+    if (bHaveValidDeltaThisFrame)
     {
-        m_bHasPathingDelta = false;
-        memcpy(&delta, &m_kPathingDelta, sizeof(NiPoint3));
+        bHaveValidDeltaThisFrame = false;
+        memcpy(&delta, &CachedMoveDelta, sizeof(NiPoint3));
         valid = true;
     }
     return valid;
 }
 // @fnv 0x009dd150
+// pdb: ActorMover::DoStopMoving | ActorMover.obj | retail, call graph, high
 void ActorMover::ClearMovementPath()
 {
     if (eState != 6)
     {
         if (m_pPathHandler && !m_pPathHandler->vfn_34())
             eState = 6;
-        m_bMovementComplete = true;
+        bStopMovementNextUpdate = true;
     }
     if (bPathingFailed)
-        m_bMovementComplete = true;
+        bStopMovementNextUpdate = true;
     UpdateMovementStatus(false);
 }
 // @fnv 0x009dcdb0
+// pdb: ActorMover::SetGoalAndAngle | ActorMover.obj | retail, object-file run extension, low
+// pdb note: debug build links it to ActorMover::IsPathing
+// pdb params: aGoalLocation, apCell, apWorldSpace, afAngleToFace, afTargetRadius, apAvoidNodes
+// pdb locals: request
 bool ActorMover::HasActiveMovement()
 {
-    if (m_bHasMovementData)
+    if (bForceMoveMode)
         return false;
     if (eState == 4)
         return true;
-    if (m_bMovementActive)
+    if (bWaitingForPath)
         return true;
-    if (!m_pActorNode.operator->() || !m_pActorNode->PathingSolution_IsValid() || bPathingFailed)
+    if (!spCurrentPath.operator->() || !spCurrentPath->PathingSolution_IsValid() || bPathingFailed)
         return false;
     return true;
 }
 
 // New bodies are reconstructed from the complete supplied PC instruction spans.
 // @fnv 0x009dd0c0
+// pdb: ActorMover::ForceStopMoving | ActorMover.obj | retail, upstream name already matches, high
 void ActorMover::ForceStopMoving()
 {
     ClearMovementPath();
-    if (m_bMovementComplete)
+    if (bStopMovementNextUpdate)
     {
-        m_bMovementComplete = false;
+        bStopMovementNextUpdate = false;
         SetMovementMode(true);
-        m_uiMovementMode = GetPreferredMoveModeType();
-        memcpy(&m_kPathingDelta, &NiPoint3_ZERO, sizeof(NiPoint3));
-        m_bHasPathingDelta = true;
+        iCachedLastValidMoveMode = GetPreferredMoveModeType();
+        memcpy(&CachedMoveDelta, &NiPoint3_ZERO, sizeof(NiPoint3));
+        bHaveValidDeltaThisFrame = true;
     }
     DebugOnStopMoving();
 }
@@ -198,6 +213,8 @@ struct FUN_0040e0b0 : public FUN_0040e130
     FUN_0040e0b0(int a, float b);
 };
 // @fnv 0x0040e0b0
+// pdb: SpellItem::SaveMagicItemData | SpellItem.obj | retail, object-file run extension, low
+// pdb note: debug build links it to SettingT<GameSettingCollection>::SettingT<GameSettingCollection>
 FUN_0040e0b0::FUN_0040e0b0(int a, float b) : FUN_0040e130(a, b)
 {
     GameSettingCollection::Instance()->v1(this);
@@ -205,6 +222,7 @@ FUN_0040e0b0::FUN_0040e0b0(int a, float b) : FUN_0040e130(a, b)
 
 // @fnv 0x009daf80
 // src: XBOX_PDB 0x009daf80
+// pdb: ActorMover::ClearCurrentData | ActorMover.obj | retail, upstream name already matches, high
 void __fastcall ActorMover_ClearCurrentData(TESForm* pForm)
 {
     *(int*)((char*)pForm + 0x6c) = 6;
@@ -226,6 +244,8 @@ void __fastcall ActorMover_ClearCurrentData(TESForm* pForm)
 
 // @fnv 0x009dba30
 // src: XBOX_PDB 0x009dba30
+// pdb: ActorMover::SetGoal | ActorMover.obj | debug, call graph, high
+// pdb params: apRequest
 bool ActorMover::SetGoal(const PathingRequest* apRequest)
 {
     return BackGroundBuildPath(apRequest);
@@ -238,6 +258,7 @@ struct ArrHelper
 
 // @fnv 0x009dc530
 // src: COMMUNITY 0x009dc530
+// pdb: PathingSolution::IsValid | ActorMover.obj | debug, upstream name already matches, high
 bool ActorMover::PathingSolution_IsValid()
 {
     if (((ArrHelper*)((char*)this + 8))->NiTListBase_DFALL_NiTListItem_BSAnimGroupSequence_const_BSAnimGroupSequence_const_IsEmpty())
@@ -257,6 +278,8 @@ struct FUN_009dc950_Arg
 
 // If pThis->m_pPathHandler is set, calls its vtable slot v5c with a1.val.
 // @fnv 0x009dc950
+// pdb: ActorMover::HandleDeletedReference | ActorMover.obj | debug, object-file gap fill, medium
+// pdb params: apRef
 void __fastcall ForwardValueToVtbl(ActorMover* pThis, FUN_009dc950_Arg aArg)
 {
     if (pThis->m_pPathHandler)
@@ -269,6 +292,7 @@ extern PlayerCharacter* pPlayer;
 
 // @fnv 0x009dcae0
 // src: XBOX_PDB 0x009dcae0
+// pdb: ActorMover::IsActorInLoadedArea | ActorMover.obj | retail, upstream name already matches, high
 bool __fastcall ActorMover_IsActorInLoadedArea(ActorMover* pMover)
 {
     if (!((BSOcclusionPlane*)pMover->pActor)->GetCullResult() ||
@@ -282,9 +306,13 @@ bool __fastcall ActorMover_IsActorInLoadedArea(ActorMover* pMover)
 
 // @fnv 0x009dcd40
 // src: XBOX_PDB 0x009dcd40
+// pdb: ActorMover::SetGoalAndAngle | ActorMover.obj | retail, object-file run extension, low
+// pdb note: debug build links it to ActorMover::IsPathingComplete
+// pdb params: aGoalLocation, apCell, apWorldSpace, afAngleToFace, afTargetRadius, apAvoidNodes
+// pdb locals: request
 bool ActorMover::IsPathingComplete()
 {
-    if (m_bMovementActive)
+    if (bWaitingForPath)
     {
         return false;
     }
@@ -292,8 +320,8 @@ bool ActorMover::IsPathingComplete()
     {
         return true;
     }
-    else if (((NiNode*)m_pActorNode &&
-              ((NiNode*)(NiNode*)m_pActorNode)->PathingSolution_IsValid()) ||
+    else if (((NiNode*)spCurrentPath &&
+              ((NiNode*)(NiNode*)spCurrentPath)->PathingSolution_IsValid()) ||
              eState == 4)
     {
         return false;
@@ -308,11 +336,13 @@ bool ActorMover::IsPathingComplete()
 // src: XBOX_PDB 0x009dd130
 unsigned int ActorMover::GetPreferredMoveModeType_009dd130()
 {
-    return unk34 & 0xff00;
+    return uiPreferredMoveMode & 0xff00;
 }
 
 // @fnv 0x009dd1c0
 // src: XBOX_PDB 0x009dd1c0
+// pdb: ActorMover::FinishMoving | ActorMover.obj | retail, upstream name already matches, high
+// pdb params: abClearHandler
 void ActorMover::FinishMoving(bool abClearHandler)
 {
     switch (eState)
@@ -325,16 +355,16 @@ void ActorMover::FinishMoving(bool abClearHandler)
         break;
     }
 
-    request.operator=(0);
-    m_pActorNode.operator=(0);
+    spCurrentRequest.operator=(0);
+    spCurrentPath.operator=(0);
 
     if (m_pPathHandler && abClearHandler)
         m_pPathHandler->vf28();
 
-    if (m_bMovementActive)
+    if (bWaitingForPath)
     {
-        m_queue = new ActorPathingMessageQueue;
-        m_bMovementActive = false;
+        spMessageQueue = new ActorPathingMessageQueue;
+        bWaitingForPath = false;
     }
 
     UpdateMovementStatus(false);
@@ -355,6 +385,8 @@ struct Dummy_0xe4
 
 // Stores the high byte of auiPreferredMoveMode into bits 8-15 of the field at offset 0x34, lazily creating the object at 0x24, and the low nibble into bits 0-3.
 // @fnv 0x009ddf60
+// pdb: ActorMover::SetMoveModePreference | ActorMover.obj | retail, vtable slot, high
+// pdb params: auiPreferredMoveMode
 void ActorMover::SetMoveModeFlags(unsigned int auiPreferredMoveMode)
 {
     if (auiPreferredMoveMode & 0xff00)
@@ -363,13 +395,13 @@ void ActorMover::SetMoveModeFlags(unsigned int auiPreferredMoveMode)
         {
             *(void**)((char*)this + 0x24) = new Dummy_0xe4(*(void**)((char*)this + 0x28), this);
         }
-        unk34 =
-            (unk34 & 0xf) | (auiPreferredMoveMode & 0xff00);
+        uiPreferredMoveMode =
+            (uiPreferredMoveMode & 0xf) | (auiPreferredMoveMode & 0xff00);
     }
     if (auiPreferredMoveMode & 0xf)
     {
-        unk34 =
-            (auiPreferredMoveMode & 0xf) | (unk34 & 0xff00);
+        uiPreferredMoveMode =
+            (auiPreferredMoveMode & 0xf) | (uiPreferredMoveMode & 0xff00);
     }
 }
 
@@ -388,6 +420,7 @@ typedef char _sizecheck_BGSLoadFormBuffer[sizeof(BGSLoadFormBuffer) == 48 ? 1 : 
 using ::NiMemObject;
 typedef char _sizecheck_NiMemObject[sizeof(NiMemObject) == 1 ? 1 : -1];
 
+// pdb: class PathManager, size 0x8 (here 0x4), 2 members
 class PathManager
 {
   public:
@@ -399,10 +432,13 @@ class PathManager
 
 // @fnv 0x009dfa00
 // src: XBOX_PDB 0x009dfa00
+// pdb: ActorMover::FinishLoadGame | ActorMover.obj | retail, vtable slot, high
+// pdb params: apLoadGameBuffer
+// pdb locals: bforceFail, plosRequest
 void ActorMover::FinishLoadGame_009dfa00(BGSLoadFormBuffer* apLoadGameBuffer)
 {
     using namespace fnv_009dfa00;
-    if (m_bMovementActive && *(NiPointer<PathingRequest>*)((char*)this + 0x1c))
+    if (bWaitingForPath && *(NiPointer<PathingRequest>*)((char*)this + 0x1c))
     {
         bool bforceFail = false;
         if ((*(NiPointer<PathingRequest>*)((char*)this + 0x1c))->GetType() == 5)
@@ -419,7 +455,7 @@ void ActorMover::FinishLoadGame_009dfa00(BGSLoadFormBuffer* apLoadGameBuffer)
                                                  *(NiPointer<ActorPathingMessageQueue>*)((char*)this + 0x30), true))
         {
             UpdateMovementStatus(true);
-            m_bMovementActive = false;
+            bWaitingForPath = false;
         }
     }
 }
@@ -431,6 +467,7 @@ namespace p07 {
 } // namespace p07
 
 // @fnv 0x009daec0
+// pdb: ActorMover::`scalar deleting destructor' | ActorMover.obj | retail, vtable slot, high
 void* ActorMover::DestroyIfFlagged(unsigned int flags)
 {
     using namespace p07;
@@ -448,13 +485,16 @@ float __cdecl GetDirectionAngle(const NiPoint3&);
 
 // @fnv 0x009dce20
 // src: XBOX_PDB 0x009dce20
-void* ActorMover::RequestRotateActor(NiPoint3 aPoint, bool abFlag)
+// pdb: ActorMover::RequestRotateActor | ActorMover.obj | retail, call graph (shared callers), high
+// pdb params: aTargetPoint, abForceTurn
+// pdb locals: ftargetangle, movedir
+void* ActorMover::RequestRotateActor(NiPoint3 aTargetPoint, bool abForceTurn)
 {
     using namespace p07;
-    NiPoint3 kDelta = aPoint - *static_cast<const Actor*>(pActor)->GetPos();
+    NiPoint3 kDelta = aTargetPoint - *static_cast<const Actor*>(pActor)->GetPos();
     {
         float fDistance = GetDirectionAngle(kDelta);
-        return (this->*reinterpret_cast<void* (ActorMover::*)(float, bool)>(&ActorMover::RequestRotateActor_009dce80))(fDistance, abFlag);
+        return (this->*reinterpret_cast<void* (ActorMover::*)(float, bool)>(&ActorMover::RequestRotateActor_009dce80))(fDistance, abForceTurn);
     }
 }
 
@@ -464,34 +504,39 @@ namespace fnv_009de420 {
 } // namespace fnv_009de420
 
 // @fnv 0x009de420
+// pdb: ActorMover::IsPathIncomplete | ActorMover.obj | debug, object-file gap fill, medium
 bool ActorMover::HasPathingSolution()
 {
     using namespace fnv_009de420;
-    if ((NiNode*)m_pActorNode &&
-        GetPathingSolutionFlag40((PathingSolution*)(unsigned int)(NiNode*)m_pActorNode))
+    if ((NiNode*)spCurrentPath &&
+        GetPathingSolutionFlag40((PathingSolution*)(unsigned int)(NiNode*)spCurrentPath))
         return true;
     return false;
 }
 
 // @fnv 0x009daef0
+// pdb: ActorMover::~ActorMover | ActorMover.obj | retail, upstream name already matches, high
 ActorMover::~ActorMover()
 {
     ::ActorMover_ClearCurrentData((TESForm*)this);
 }
 
 // @fnv 0x009db950
-void ActorMover::ResetMoverState(bool clearWaiting)
+// src: XBOX_RETAIL_PDB 0x009db950
+// pdb: ActorMover::ClearDataForNewPathingRequest | ActorMover.obj | retail, call graph, high
+// pdb params: abClearWaitingFlag
+void ActorMover::ClearDataForNewPathingRequest(bool abClearWaitingFlag)
 {
-    m_bMovementComplete = false;
+    bStopMovementNextUpdate = false;
     ResetMovementData();
-    request = (PathingRequest*)0;
-    if (m_bMovementActive)
+    spCurrentRequest = (PathingRequest*)0;
+    if (bWaitingForPath)
     {
-        m_queue = new ActorPathingMessageQueue();
-        if (clearWaiting)
-            m_bMovementActive = false;
+        spMessageQueue = new ActorPathingMessageQueue();
+        if (abClearWaitingFlag)
+            bWaitingForPath = false;
     }
-    m_pActorNode = (NiNode*)0;
+    spCurrentPath = (NiNode*)0;
     UpdateMovementStatus(false);
     ((TESForm*)this)->TESForm::ClearData();
 }
@@ -507,6 +552,9 @@ void __cdecl SetupPathingRequest(void* actor, PathingRequestHelper* request, int
 // Builds a PathingRequestHelper via SetupPathingRequest from pActor and the given arguments, then returns the result of FUN_009dba30 on it.
 // @fnv 0x009dba50
 // src: XBOX_PDB 0x009dba50
+// pdb: ActorMover::SetGoal | ActorMover.obj | debug, object-file run extension, low
+// pdb params: aGoalLocation, apCell, apWorldSpace, afTargetRadius, apAvoidNodes
+// pdb locals: request
 bool ActorMover::SetGoal_009dba50(int aiArg1, int aiArg2, int aiArg3, float afArg4, int aiArg5)
 {
     PathingRequestHelper request;
@@ -528,6 +576,9 @@ void __cdecl SetupPathingRequest(void* actor, PathingRequestHelper* request, int
 
 // @fnv 0x009dbb60
 // src: COMMUNITY 0x009dbb60
+// pdb: ActorMover::SetGoalAndAngle | ActorMover.obj | debug, object-file run extension, low
+// pdb params: aGoalLocation, apCell, apWorldSpace, afAngleToFace, afTargetRadius, apAvoidNodes
+// pdb locals: request
 bool ActorMover::SetGoalAndAngle(int aiArg1, int aiArg2, int aiArg3, float afValue, float afArg4, int aiArg5)
 {
     using namespace fnv_009dbb60;
@@ -552,6 +603,9 @@ struct FUN_00564db0_cls
 
 // @fnv 0x00564db0
 // src: XBOX_PDB 0x00564db0
+// pdb: TESObjectREFR::SetTargeted | TESObjectREFR.obj | debug, upstream name already matches, high
+// pdb params: abVal
+// pdb locals: iflags
 void __thiscall FUN_00564db0_cls::TESObjectREFR_SetTargeted(bool abVal)
 {
     int iflags = ((ActormoverOffset08View*)this)->GetFlags();
@@ -582,6 +636,9 @@ struct FUN_00691c90_shell
 };
 // @fnv 0x00691c90
 // src: COMMUNITY 0x00691c90
+// pdb: BSSimpleArray<NavMeshEdgeHandle,1024>::RemoveFast | NavMeshObstacleManager.obj | debug, call graph, medium
+// pdb params: aiIndex, aiHowMany
+// pdb locals: iitemsToMove
 void FUN_00691c90_shell::BSSimpleArray_RemoveFast_0(unsigned int auiIndex, unsigned int auiCount)
 {
     unsigned int uiMoveCount = FUN_0042f5a0(iSize - auiIndex - auiCount, auiCount);
@@ -603,10 +660,12 @@ void FUN_006d3ae0::SetValue(float value)
 
 // @fnv 0x009de060
 // src: XBOX_PDB 0x009de060
-void ActorMover::ForceMoveMode(int aiValue)
+// pdb: ActorMover::ForceMoveMode | ActorMover.obj | debug, upstream name already matches, high
+// pdb params: aiMoveMode
+void ActorMover::ForceMoveMode(int aiMoveMode)
 {
-    m_bHasMovementData = true;
-    m_uiMovementFlags = aiValue;
+    bForceMoveMode = true;
+    uiForcedMoveMode = aiMoveMode;
 }
 
 namespace fnv_009de160 {
@@ -665,11 +724,13 @@ struct Dummy_0xe4 : ActorPathHandler
 } // namespace fnv_009de160
 
 // @fnv 0x009de160
+// pdb: ActorMover::SetLookAtTarget | ActorMover.obj | debug, object-file gap fill, medium
+// pdb params: aPoint
 void ActorMover::SetMoveTarget(NiPoint3 aTarget)
 {
     using namespace fnv_009de160;
-    memcpy(&m_kLookAtTargetPosition, &aTarget, sizeof(NiPoint3));
-    m_bHasLookAtTarget = true;
+    memcpy(&LookAtPoint, &aTarget, sizeof(NiPoint3));
+    bFaceTargetPoint = true;
     if (((MobileObject*)pActor)->GetCurrentProcessLevel())
         return;
     if (!m_pPathHandler)
@@ -694,36 +755,38 @@ extern NiPoint3 _NiPoint3_ZERO;
 } // namespace fnv_009dfb80
 
 // @fnv 0x009dfb80
+// pdb: ActorMover::Revert | ActorMover.obj | retail, vtable slot, high
+// pdb params: apLoadGameBuffer
 void ActorMover::ResetPathingState(BGSLoadFormBuffer* apLoadGameBuffer)
 {
     using namespace fnv_009dfb80;
-    if (m_bMovementActive)
-        m_queue = new ActorPathingMessageQueue;
+    if (bWaitingForPath)
+        spMessageQueue = new ActorPathingMessageQueue;
     eState = 0;
-    request = (PathingRequest*)0;
-    m_pActorNode = (NiNode*)0;
+    spCurrentRequest = (PathingRequest*)0;
+    spCurrentPath = (NiNode*)0;
     delete m_pPathHandler;
     m_pPathHandler = 0;
-    unk34 = 0x101;
+    uiPreferredMoveMode = 0x101;
     UpdateMovementStatus(false);
-    currentNode = 0xffff;
-    lastNode = 0xffff;
-    m_bMovementStateFlag = false;
-    m_bMovementComplete = false;
-    m_bMovementActive = false;
-    m_bMovementPaused = false;
-    memcpy(&m_kLookAtTargetPosition, &_NiPoint3_ZERO, sizeof(NiPoint3));
-    memcpy(&m_kPathingDelta, &_NiPoint3_ZERO, sizeof(NiPoint3));
-    m_bHasLookAtTarget = false;
-    m_bHasMovementData = false;
-    unk78 = false;
-    m_bHasPathingDelta = false;
-    m_uiMovementFlags = 0;
-    m_uiMovementMode = 0;
-    unk2C = 0;
-    retries = 0;
-    lastTime = 0;
-    startTime = 0;
+    iPreviousNode = 0xffff;
+    iNextNode = 0xffff;
+    bActorChangedProcessLevel = false;
+    bStopMovementNextUpdate = false;
+    bWaitingForPath = false;
+    bInDialog = false;
+    memcpy(&LookAtPoint, &_NiPoint3_ZERO, sizeof(NiPoint3));
+    memcpy(&CachedMoveDelta, &_NiPoint3_ZERO, sizeof(NiPoint3));
+    bFaceTargetPoint = false;
+    bForceMoveMode = false;
+    bStopCurrentMoveAnim = false;
+    bHaveValidDeltaThisFrame = false;
+    uiForcedMoveMode = 0;
+    iCachedLastValidMoveMode = 0;
+    DetectionDoorID = 0;
+    iContinuedFailureCount = 0;
+    iLastFailureTimeStamp = 0;
+    iFirstFailureTimeStamp = 0;
 }
 
 // @fnv 0x0045cec0
@@ -742,6 +805,7 @@ struct FUN_009dfd50Class
 
 // @fnv 0x009ddb30
 // src: XBOX_PDB 0x009ddb30
+// pdb: PathingSolution::GetLastVirtualNode | ActorMover.obj | debug, upstream name already matches, high
 void __thiscall ActorMover::PathingSolution_GetLastVirtualNode()
 {
     ((FUN_009dfd50Class*)((char*)this + 8))->BSSimpleArray_VirtualPathingNode_1024_GetLast();
@@ -749,6 +813,8 @@ void __thiscall ActorMover::PathingSolution_GetLastVirtualNode()
 
 // @fnv 0x009dbb10
 // src: XBOX_PDB 0x009dbb10
+// pdb: ActorMover::SetGoal | ActorMover.obj | debug, object-file run extension, low
+// pdb params: apReference, afTargetRadius, apAvoidNodes
 bool ActorMover::SetGoal_009dbb10(TESObjectREFR* apRef, float afValue, int aiValue)
 {
     return SetGoal_009dba50((int)((const TESObjectREFR*)apRef)->GetPos(), (int)((LowProcess*)apRef)->LowProcess::GetTarget(), (int)apRef->GetParentWorldSpace(),
@@ -760,6 +826,8 @@ class TESSound;
 // Calls FUN_009dbb60 with the reference's position, target sound, world space, Z angle, and the two given values.
 // @fnv 0x009dbc30
 // src: COMMUNITY 0x009dbc30
+// pdb: ActorMover::SetGoalAndAngle | ActorMover.obj | debug, object-file run extension, low
+// pdb params: apReference, afTargetRadius, apAvoidNodes
 void ActorMover::SetGoalAndAngle_(TESObjectREFR* apReference, float afValue, int aiValue)
 {
     SetGoalAndAngle(((const TESObjectREFR*)apReference)->GetPos(), ((LowProcess*)apReference)->LowProcess::GetTarget(), apReference->GetParentWorldSpace(),
@@ -769,6 +837,7 @@ void ActorMover::SetGoalAndAngle_(TESObjectREFR* apReference, float afValue, int
 // Returns the value from the inner object's f12() if p is non-null, otherwise returns 0.
 // @fnv 0x009dcab0
 // src: XBOX_PDB 0x009dcab0
+// pdb: ActorMover::GetCurrentNodeIndex | ActorMover.obj | debug, upstream name already matches, high
 int ActorMover::GetCurrentNodeIndex()
 {
     if (m_pPathHandler != 0)
@@ -780,9 +849,12 @@ int ActorMover::GetCurrentNodeIndex()
 // Queries the handler when a valid movement path is present.
 // @fnv 0x009dcb30
 // src: XBOX_PDB 0x009dcb30
+// pdb: ActorMover::ComputeApproximateLocation | ActorMover.obj | retail, object-file run extension, low
+// pdb note: debug build links it to ActorMover::IsWaitingForAvoidance
+// pdb params: afDeltaT
 bool ActorMover::IsWaitingForAvoidance()
 {
-    if (m_pPathHandler && (NiNode*)m_pActorNode && ((NiNode*)(NiNode*)m_pActorNode)->PathingSolution_IsValid())
+    if (m_pPathHandler && (NiNode*)spCurrentPath && ((NiNode*)(NiNode*)spCurrentPath)->PathingSolution_IsValid())
         return m_pPathHandler->vfn_3c();
     return true;
 }
@@ -794,10 +866,11 @@ namespace fnv_009dcb90 {
 
 // @fnv 0x009dcb90
 // src: XBOX_PDB 0x009dcb90
+// pdb: ActorMover::IsMovementBlocked | ActorMover.obj | debug, upstream name already matches, high
 bool ActorMover::IsMovementBlocked()
 {
     using namespace fnv_009dcb90;
-    if (m_pPathHandler && (NiNode*)m_pActorNode && ((NiNode*)(NiNode*)m_pActorNode)->PathingSolution_IsValid())
+    if (m_pPathHandler && (NiNode*)spCurrentPath && ((NiNode*)(NiNode*)spCurrentPath)->PathingSolution_IsValid())
         return m_pPathHandler->vfn_40();
     return 0;
 }
@@ -805,6 +878,7 @@ bool ActorMover::IsMovementBlocked()
 // Returns the value from pHandler if it is set, otherwise returns 0.0f.
 // @fnv 0x009dcbf0
 // src: COMMUNITY 0x009dcbf0
+// pdb: ActorMover::GetCurrentPercent | ActorMover.obj | debug, upstream name already matches, high
 float ActorMover::GetCurrentPercent()
 {
     if (m_pPathHandler)
@@ -816,6 +890,7 @@ float ActorMover::GetCurrentPercent()
 // Returns the value from mPtr by calling its F6 method, or 0.0f when mPtr is null.
 // @fnv 0x009dcc20
 // src: COMMUNITY 0x009dcc20
+// pdb: ActorMover::GetDistanceTraveled | ActorMover.obj | debug, upstream name already matches, high
 float ActorMover::GetDistanceTraveled()
 {
     if (m_pPathHandler)
@@ -827,6 +902,7 @@ float ActorMover::GetDistanceTraveled()
 // Returns the value from the handler pointer if set, otherwise returns 0.0f.
 // @fnv 0x009dcc50
 // src: COMMUNITY 0x009dcc50
+// pdb: ActorMover::GetDistanceRemaining | ActorMover.obj | debug, upstream name already matches, high
 float ActorMover::GetDistanceRemaining()
 {
     if (m_pPathHandler)
@@ -837,9 +913,12 @@ float ActorMover::GetDistanceRemaining()
 
 // @fnv 0x009dccf0
 // src: COMMUNITY 0x009dccf0
+// pdb: ActorMover::SetGoal | ActorMover.obj | retail, object-file run extension, low
+// pdb note: debug build links it to ActorMover::ComputePathPassesThroughPlayersArea
+// pdb params: apRequest
 bool ActorMover::ComputePathPassesThroughPlayersArea()
 {
-    if (!(NiNode*)m_pActorNode || !((NiNode*)(NiNode*)m_pActorNode)->PathingSolution_IsValid())
+    if (!(NiNode*)spCurrentPath || !((NiNode*)(NiNode*)spCurrentPath)->PathingSolution_IsValid())
         return false;
     return m_pPathHandler->vfn_44();
 }
@@ -847,7 +926,7 @@ bool ActorMover::ComputePathPassesThroughPlayersArea()
 // @fnv 0x009de040
 void ActorMover::ClearFlags(unsigned int mask)
 {
-    unk34 &= ~mask;
+    uiPreferredMoveMode &= ~mask;
 }
 
 namespace fnv_009de110 {
@@ -857,36 +936,42 @@ namespace fnv_009de110 {
 
 // @fnv 0x009de110
 // src: XBOX_PDB 0x009de110
-bool ActorMover::GetNodeLocation(int aiArg1, int aiArg2)
+// pdb: ActorMover::GetNodeLocation | ActorMover.obj | debug, upstream name already matches, high
+// pdb params: aiIndex, arLocation
+bool ActorMover::GetNodeLocation(int aiIndex, int arLocation)
 {
     using namespace fnv_009de110;
-    if ((NiNode*)m_pActorNode && m_pPathHandler)
-        return m_pPathHandler->vfn_24((unsigned int)aiArg1, *(NiPoint3*)aiArg2);
+    if ((NiNode*)spCurrentPath && m_pPathHandler)
+        return m_pPathHandler->vfn_24((unsigned int)aiIndex, *(NiPoint3*)arLocation);
     return false;
 }
 
 // Stores the form's form ID at offset 0x2c, or 0 when pForm is null.
 // @fnv 0x009de3a0
+// pdb: ActorMover::SetPathingDoorReference | ActorMover.obj | debug, object-file run extension, low
+// pdb params: apDoor
 void ActorMover::SetFormID(TESForm* pForm)
 {
-    unk2C = pForm ? pForm->GetFormID() : 0;
+    DetectionDoorID = pForm ? pForm->GetFormID() : 0;
 }
 
 // @fnv 0x009de3e0
 // src: XBOX_PDB 0x009de3e0
+// pdb: ActorMover::IsPathValid | ActorMover.obj | debug, upstream name already matches, high
 bool ActorMover::IsPathValid()
 {
-    if ((NiNode*)m_pActorNode && ((NiNode*)(NiNode*)m_pActorNode)->PathingSolution_IsValid())
+    if ((NiNode*)spCurrentPath && ((NiNode*)(NiNode*)spCurrentPath)->PathingSolution_IsValid())
         return true;
     return false;
 }
 
 // Returns a pointer to m_pathingLocation if its FUN_006a9520 check fails, otherwise returns null.
 // @fnv 0x009de460
+// pdb: ActorMover::GetFailedPathDestination | ActorMover.obj | debug, object-file gap fill, medium
 PathingLocation* ActorMover::GetPathingLocation()
 {
-    if (!m_pathingLocation.QUnused())
-        return &m_pathingLocation;
+    if (!FailedPathDestination.QUnused())
+        return &FailedPathDestination;
     return 0;
 }
 
@@ -938,12 +1023,15 @@ struct FUN_006e29f0_sub
 };
 struct FUN_006e29f0_shell
 {
-    void InitFromActor(Actor* apActor);
+    void PathingRequest_SetOrigin(Actor* apActor);
 };
 
 // Copies pathing location, value, flags and actor-base data from apActor into this object.
 // @fnv 0x006e29f0
-void FUN_006e29f0_shell::InitFromActor(Actor* apActor)
+// src: XBOX_RETAIL_PDB 0x006e29f0
+// pdb: PathingRequest::SetOrigin | PathingRequest.obj | retail, call graph (shared callers), high
+// pdb params: apActor
+void FUN_006e29f0_shell::PathingRequest_SetOrigin(Actor* apActor)
 {
     *(PathingLocation*)((char*)this + 0xc) = PathingLocation((TESObjectREFR*)apActor);
     ((FUN_006d3ae0*)this)->SetValue((float)(Actor_GetWidth(apActor) * DAT_010290b8));
@@ -968,7 +1056,7 @@ class _Mem_2064
 
 struct PathingRequest_b
 {
-    void SetAvoidNodeArray(void* apAvoidNodes);
+    void SetAvoidNodeArray(void* apAvoidNodeArray);
 };
 
 struct FUN_006e2b50_shell
@@ -1009,6 +1097,9 @@ struct ActorBaseComponent30
 };
 
 // @fnv 0x009dbc90
+// pdb: ActorMover::BuildRequest | ActorMover.obj | debug, object-file run extension, low
+// pdb params: apActor, apRequest, aGoalLocation, apCell, apWorldSpace, afTargetRadius, apAvoidNodes
+// pdb locals: dest
 void __cdecl SetupPathingRequest(Actor* apActor, PathingRequest* apRequest, NiPoint3 const& aGoalLocation,
                                  TESObjectCELL* apCell, TESWorldSpace* apWorldSpace, float afTargetRadius,
                                  void* apAvoidNodes)
@@ -1051,6 +1142,7 @@ struct ActorStub_009dc7f0
 } // namespace fnv_009dc7f0
 
 // @fnv 0x009dc7f0
+// pdb: ActorMover::OnMoveToHigh | ActorMover.obj | debug, object-file gap fill, medium
 void ActorMover::UpdateTeleportPathState()
 {
     using namespace fnv_009dc7f0;
@@ -1066,19 +1158,19 @@ void ActorMover::UpdateTeleportPathState()
         if (!g_BGSSaveLoadGame->BGSSaveLoadGame_GetSaveGameLoading())
             ((ActorStub_009dc7f0*)pActor)->TryMove(0);
     }
-    else if (m_bMovementStateFlag && m_pPathHandler->vfn_34())
+    else if (bActorChangedProcessLevel && m_pPathHandler->vfn_34())
     {
-        if (!m_pActorNode)
+        if (!spCurrentPath)
             return;
-        if (currentNode == lastNode && currentNode < ((PathingSolution*)(NiNode*)m_pActorNode)->GetVirtualNodeCount() - 1)
+        if (iPreviousNode == iNextNode && iPreviousNode < ((PathingSolution*)(NiNode*)spCurrentPath)->GetVirtualNodeCount() - 1)
             return;
-        m_bMovementStateFlag = false;
+        bActorChangedProcessLevel = false;
     }
     else
     {
         if (m_pPathHandler->vfn_34())
             return;
-        m_bMovementStateFlag = true;
+        bActorChangedProcessLevel = true;
     }
 }
 
@@ -1150,16 +1242,19 @@ struct SPathReq
 
 // @fnv 0x009df8c0
 // src: XBOX_PDB 0x009df8c0
+// pdb: ActorMover::InitLoadGame | ActorMover.obj | retail, vtable slot, high
+// pdb params: apLoadGameBuffer
+// pdb locals: pcombatController, plosRequest
 void ActorMover::InitLoadGame_009df8c0(BGSLoadFormBuffer* apLoadGameBuffer)
 {
     using namespace fnv_009df8c0;
     if (m_pPathHandler)
         m_pPathHandler->LoadGame(apLoadGameBuffer);
-    if ((PathingRequest*)request)
+    if ((PathingRequest*)spCurrentRequest)
     {
-        if (((SPathReq*)(unsigned int)(PathingRequest*)request)->GetType() == 5)
+        if (((SPathReq*)(unsigned int)(PathingRequest*)spCurrentRequest)->GetType() == 5)
         {
-            PathingRequestLOS* plosRequest = (PathingRequestLOS*)(unsigned int)(PathingRequest*)request;
+            PathingRequestLOS* plosRequest = (PathingRequestLOS*)(unsigned int)(PathingRequest*)spCurrentRequest;
             CombatController* pcombatController = pActor->GetCombatController();
             if (pcombatController && pcombatController->GetCombatGroup())
             {
@@ -1167,8 +1262,8 @@ void ActorMover::InitLoadGame_009df8c0(BGSLoadFormBuffer* apLoadGameBuffer)
                 plosRequest->AssignAtOffsetB0(reinterpret_cast<const NiPointer<void>&>(kGraph));
             }
         }
-        ((SPathReq*)(unsigned int)(PathingRequest*)request)->LoadGame(apLoadGameBuffer);
-        *(PathingActorData*)(unsigned int)(PathingRequest*)request =
+        ((SPathReq*)(unsigned int)(PathingRequest*)spCurrentRequest)->LoadGame(apLoadGameBuffer);
+        *(PathingActorData*)(unsigned int)(PathingRequest*)spCurrentRequest =
             *(PathingActorData*)pActor;
     }
 }
@@ -1195,9 +1290,12 @@ struct FUN_006d0b80
 // Constructs a FUN_006d0b80 from the request and solution, then returns the result of FUN_006c93d0 on it.
 // @fnv 0x006d53b0
 // src: COMMUNITY 0x006d53b0
-int Pathing_UpdateSolutionMoveToLow(PathingRequest* pRequest, PathingSolution* b)
+// pdb: Pathing::UpdateSolutionMoveToLow | Pathfind.obj | retail, upstream name already matches, high
+// pdb params: apRequest, apSolution
+// pdb locals: builder
+int Pathing_UpdateSolutionMoveToLow(PathingRequest* apRequest, PathingSolution* apSolution)
 {
-    FUN_006d0b80 obj(pRequest, b);
+    FUN_006d0b80 obj(apRequest, apSolution);
     return obj.PathBuilder_UpdatePathMoveToLow();
 }
 
@@ -1699,13 +1797,16 @@ struct Proc11 : public ProcVt11
 
 // @fnv 0x009dc120
 // src: XBOX_PDB 0x009dc120
-void ActorMover::Update_009dc120(float f)
+// pdb: ActorMover::Update | ActorMover.obj | retail, vtable slot, high
+// pdb params: fdeltaT
+// pdb locals: pprocess, msg, ilastLoadedVirtualNodeIndex, plastLoadedVirtualNode
+void ActorMover::Update_009dc120(float fdeltaT)
 {
-    if (m_bMovementComplete)
+    if (bStopMovementNextUpdate)
     {
-        unk78 = 1;
+        bStopCurrentMoveAnim = 1;
         FinishMoving(1);
-        m_bMovementComplete = 0;
+        bStopMovementNextUpdate = 0;
     }
     if (pActor->HasHealth(false))
     {
@@ -1731,58 +1832,58 @@ void ActorMover::Update_009dc120(float f)
             goto END;
         if (proc->v6fc())
             goto END;
-        if (m_bMovementStateFlag)
+        if (bActorChangedProcessLevel)
         {
-            m_bMovementStateFlag = 0;
+            bActorChangedProcessLevel = 0;
             UpdatePathMovement();
         }
         if (!bPathingFailed)
         {
-            if (!m_bMovementActive)
+            if (!bWaitingForPath)
             {
-                if ((Sol11*)(*(NiPointer<Sol11>*)&m_pActorNode) && ((Sol11*)(*(NiPointer<Sol11>*)&m_pActorNode))->PathingSolution_IsValid())
+                if ((Sol11*)(*(NiPointer<Sol11>*)&spCurrentPath) && ((Sol11*)(*(NiPointer<Sol11>*)&spCurrentPath))->PathingSolution_IsValid())
                 {
                     eState = 3;
-                    FUN_009dc590(f);
+                    FUN_009dc590(fdeltaT);
                     goto END;
                 }
             }
             else
             {
                 Msg11 msg;
-                if (((QueueVt11*)(*(NiPointer<QueueVt11>*)&m_queue))->v10(&msg))
+                if (((QueueVt11*)(*(NiPointer<QueueVt11>*)&spMessageQueue))->v10(&msg))
                 {
                     switch (msg.m_type)
                     {
                     case 0:
                         eState = 3;
-                        m_bMovementActive = 0;
-                        (*(NiPointer<Sol11>*)&m_pActorNode) = msg.m_sol;
-                        UpdatePathingState(f);
+                        bWaitingForPath = 0;
+                        (*(NiPointer<Sol11>*)&spCurrentPath) = msg.m_sol;
+                        UpdatePathingState(fdeltaT);
                         break;
                     case 1: {
-                        m_bMovementActive = 0;
-                        (*(NiPointer<Sol11>*)&m_pActorNode) = msg.m_sol;
-                        if ((Sol11*)(*(NiPointer<Sol11>*)&m_pActorNode) && ((Sol11*)(*(NiPointer<Sol11>*)&m_pActorNode))->PathingSolution_IsValid() && ((Req11*)(*(NiPointer<Req11>*)&request))->GetByteAtOffset9B())
+                        bWaitingForPath = 0;
+                        (*(NiPointer<Sol11>*)&spCurrentPath) = msg.m_sol;
+                        if ((Sol11*)(*(NiPointer<Sol11>*)&spCurrentPath) && ((Sol11*)(*(NiPointer<Sol11>*)&spCurrentPath))->PathingSolution_IsValid() && ((Req11*)(*(NiPointer<Req11>*)&spCurrentRequest))->GetByteAtOffset9B())
                         {
                             eState = 3;
-                            UpdatePathingState(f);
+                            UpdatePathingState(fdeltaT);
                             break;
                         }
                         eState = 7;
                         SetEnabled(1);
-                        if ((Sol11*)(*(NiPointer<Sol11>*)&m_pActorNode))
+                        if ((Sol11*)(*(NiPointer<Sol11>*)&spCurrentPath))
                         {
-                            int idx = ((Sol11*)(*(NiPointer<Sol11>*)&m_pActorNode))->FUN_00441110();
+                            int idx = ((Sol11*)(*(NiPointer<Sol11>*)&spCurrentPath))->FUN_00441110();
                             if (idx != -1)
                             {
-                                if (((Sol11*)(*(NiPointer<Sol11>*)&m_pActorNode))->PathingSolution_GetVirtualNodeCount() > 0)
+                                if (((Sol11*)(*(NiPointer<Sol11>*)&spCurrentPath))->PathingSolution_GetVirtualNodeCount() > 0)
                                 {
-                                    void* node = ((Sol11*)(*(NiPointer<Sol11>*)&m_pActorNode))->GetVirtualNode_006e78b0(idx);
+                                    void* node = ((Sol11*)(*(NiPointer<Sol11>*)&spCurrentPath))->GetVirtualNode_006e78b0(idx);
                                     if (node)
                                     {
-                                        (*(Loc11*)&m_pathingLocation) = *(Loc11*)((Node11*)node)->FUN_00717e50();
-                                        (*(Loc11*)&m_pathingLocation).FUN_006ddbe0();
+                                        (*(Loc11*)&FailedPathDestination) = *(Loc11*)((Node11*)node)->FUN_00717e50();
+                                        (*(Loc11*)&FailedPathDestination).FUN_006ddbe0();
                                     }
                                 }
                             }
@@ -1800,11 +1901,11 @@ void ActorMover::Update_009dc120(float f)
         }
     }
 SECB:
-    if (!((Sol11*)(*(NiPointer<Sol11>*)&m_pActorNode) && ((Sol11*)(*(NiPointer<Sol11>*)&m_pActorNode))->PathingSolution_IsValid() && !bPathingFailed))
+    if (!((Sol11*)(*(NiPointer<Sol11>*)&spCurrentPath) && ((Sol11*)(*(NiPointer<Sol11>*)&spCurrentPath))->PathingSolution_IsValid() && !bPathingFailed))
     {
         if (m_pPathHandler)
         {
-            if (m_pPathHandler->vfn_10(f) == 5)
+            if (m_pPathHandler->vfn_10(fdeltaT) == 5)
             {
                 eState = 6;
             }
@@ -1819,6 +1920,7 @@ END:
 
 // Tracks whether the shared handler is active.
 // @fnv 0x009dc780
+// pdb: ActorMover::OnMoveToLow | ActorMover.obj | debug, object-file gap fill, medium
 void ActorMover::UpdateFlagFromTarget()
 {
     if (m_pPathHandler == 0)
@@ -1826,9 +1928,9 @@ void ActorMover::UpdateFlagFromTarget()
     }
     else
     {
-        if (m_bMovementStateFlag != 0 && m_pPathHandler->vfn_34() == 0)
+        if (bActorChangedProcessLevel != 0 && m_pPathHandler->vfn_34() == 0)
         {
-            m_bMovementStateFlag = 0;
+            bActorChangedProcessLevel = 0;
         }
         else
         {
@@ -1837,7 +1939,7 @@ void ActorMover::UpdateFlagFromTarget()
             }
             else
             {
-                m_bMovementStateFlag = 1;
+                bActorChangedProcessLevel = 1;
             }
         }
     }
@@ -1857,10 +1959,13 @@ struct DcVec
 struct ActorMoverVectorResults : ActorMover
 {
     NiPoint3 GetVec(float);
-    NiPoint3 GetHandlerPosition();
+    NiPoint3 ActorMover_GetNextNodeLocation();
 };
 
 // @fnv 0x009dcc80
+// pdb: ActorMover::SetGoal | ActorMover.obj | retail, object-file run extension, low
+// pdb note: debug build links it to ActorMover::ComputeApproximateLocation
+// pdb params: apRequest
 NiPoint3 ActorMoverVectorResults::GetVec(float f)
 {
     if (m_pPathHandler != 0)
@@ -1883,9 +1988,11 @@ struct PkgTriple
 
 // Returns a triple: copies it from m_28's GetTriple when the m_20 helper check fails or m_24 is null, otherwise lets m_24 fill it via ProcessOut.
 // @fnv 0x009de0a0
-NiPoint3 ActorMoverVectorResults::GetHandlerPosition()
+// src: XBOX_DEBUG_PDB 0x009de0a0
+// pdb: ActorMover::GetNextNodeLocation | ActorMover.obj | debug, call graph, high
+NiPoint3 ActorMoverVectorResults::ActorMover_GetNextNodeLocation()
 {
-    if (reinterpret_cast<NiPointer<NiNode>*>(&m_pActorNode)->operator->() == 0 || m_pPathHandler == 0)
+    if (reinterpret_cast<NiPointer<NiNode>*>(&spCurrentPath)->operator->() == 0 || m_pPathHandler == 0)
     {
         return *static_cast<const Actor*>(pActor)->GetPos();
     }
@@ -1905,16 +2012,19 @@ struct PathQuery
 };
 
 // @fnv 0x009de2b0
-bool ActorMover::GetPathCoordinate(NiPoint3* position)
+// pdb: ActorMover::GetCurrentGoal | ActorMover.obj | debug, call graph (shared callers), high
+// pdb params: apRetLocation
+// pdb locals: pnode
+bool ActorMover::GetPathCoordinate(NiPoint3* apRetLocation)
 {
-    if (m_pActorNode.operator->() && m_pActorNode.operator->()->PathingSolution_IsValid())
+    if (spCurrentPath.operator->() && spCurrentPath.operator->()->PathingSolution_IsValid())
     {
-        PathQuery* query = reinterpret_cast<PathNode*>(m_pActorNode.operator->())->PathingSolution_GetLastVirtualNode();
+        PathQuery* query = reinterpret_cast<PathNode*>(spCurrentPath.operator->())->PathingSolution_GetLastVirtualNode();
         if (query)
         {
             // Raw output storage avoids an outlined call to the shared empty constructor.
             void* coordinateStorage[sizeof(NiPoint3) / sizeof(void*)];
-            memcpy(position, query->FUN_00717e50((NiPoint3*)coordinateStorage)->FUN_005c3420(), sizeof(NiPoint3));
+            memcpy(apRetLocation, query->FUN_00717e50((NiPoint3*)coordinateStorage)->FUN_005c3420(), sizeof(NiPoint3));
             return true;
         }
     }
@@ -1943,11 +2053,11 @@ bool ActorMover::ApplyNodeLookup(Fx_Arg* arg)
 {
     Fx_Obj* obj;
 
-    if (((NiPointer<Fx_Node>*)&m_pActorNode)->operator->() != 0)
+    if (((NiPointer<Fx_Node>*)&spCurrentPath)->operator->() != 0)
     {
-        if (((NiPointer<Fx_Node>*)&m_pActorNode)->operator->()->Test())
+        if (((NiPointer<Fx_Node>*)&spCurrentPath)->operator->()->Test())
         {
-            obj = ((NiPointer<Fx_Node>*)&m_pActorNode)->operator->()->Find();
+            obj = ((NiPointer<Fx_Node>*)&spCurrentPath)->operator->()->Find();
             if (obj != 0)
             {
                 arg->Apply(obj->Lookup());
@@ -1961,7 +2071,7 @@ bool ActorMover::ApplyNodeLookup(Fx_Arg* arg)
 // Declare only the missing 0x00881860 operation; Actor supplies the entire shared layout.
 struct ActorMovementOperation : Actor
 {
-    void TryMove(int flag);
+    void TryMove(int abForceMove);
 };
 
 // These folded accessors are not declared by PathingSolution.h.
@@ -2040,24 +2150,27 @@ struct FUN_009ea770
     void* member14;
     void* member18;
     void* member1c;
-    FUN_009ea770(Actor* a, ActorMover* b, NiPointer<PathingSolution>& c, PathingRequest* d);
+    FUN_009ea770(Actor* apActor, ActorMover* apActorMover, NiPointer<PathingSolution>& apPath, PathingRequest* apRequest);
 };
 
-int QueryPathScope(PathingRequest* a, PathingSolution* b, int c);
+int QueryPathScope(PathingRequest* apRequest, PathingSolution* apSolution, int aiCurrentVirtualNodeIndex);
 
 // Checks the pathing request/solution state, swaps m_24 for a new handler, then calls vfn_04 and HandlePathResult with the result.
 // @fnv 0x009dbdc0
+// pdb: ActorMover::DoStartMoving | ActorMover.obj | debug, object-file run extension, low
+// pdb params: afDelta
+// pdb locals: bdetailed, eresult, poldPathHandler
 void ActorMover::UpdatePathingState(float a1)
 {
     FUN_00483710();
     bool flag;
-    if ((*(NiPointer<PathingSolution>*)&m_pActorNode).operator->()->GetObjectFlags() > 0)
+    if ((*(NiPointer<PathingSolution>*)&spCurrentPath).operator->()->GetObjectFlags() > 0)
     {
         if (pActor->FUN_00931850())
         {
             flag = false;
-            request.operator->()->FUN_006e2b20(pActor);
-            switch (Pathing_UpdateSolutionMoveToLow(request.operator->(), (PathingSolution*)(*(NiPointer<PathingSolution>*)&m_pActorNode).operator->()))
+            spCurrentRequest.operator->()->FUN_006e2b20(pActor);
+            switch (Pathing_UpdateSolutionMoveToLow(spCurrentRequest.operator->(), (PathingSolution*)(*(NiPointer<PathingSolution>*)&spCurrentPath).operator->()))
             {
                 break;
             case -1:
@@ -2077,8 +2190,8 @@ void ActorMover::UpdatePathingState(float a1)
         if (!pActor->FUN_00931850())
         {
             flag = true;
-            request.operator->()->FUN_006e2b20(pActor);
-            switch (QueryPathScope(request.operator->(), (PathingSolution*)(*(NiPointer<PathingSolution>*)&m_pActorNode).operator->(), 0))
+            spCurrentRequest.operator->()->FUN_006e2b20(pActor);
+            switch (QueryPathScope(spCurrentRequest.operator->(), (PathingSolution*)(*(NiPointer<PathingSolution>*)&spCurrentPath).operator->(), 0))
             {
                 break;
             case -1:
@@ -2096,10 +2209,10 @@ void ActorMover::UpdatePathingState(float a1)
     }
     if (flag)
     {
-        currentNode = GetPathingCurrentNodeIndex((*(NiPointer<PathingSolution>*)&m_pActorNode).operator->());
-        lastNode = GetPathingLastNodeIndex((*(NiPointer<PathingSolution>*)&m_pActorNode).operator->());
+        iPreviousNode = GetPathingCurrentNodeIndex((*(NiPointer<PathingSolution>*)&spCurrentPath).operator->());
+        iNextNode = GetPathingLastNodeIndex((*(NiPointer<PathingSolution>*)&spCurrentPath).operator->());
         ActorPathHandler* old = m_pPathHandler;
-        m_pPathHandler = (ActorPathHandler*)new FUN_009e0190(pActor, this, (*(NiPointer<PathingSolution>*)&m_pActorNode), request.operator->());
+        m_pPathHandler = (ActorPathHandler*)new FUN_009e0190(pActor, this, (*(NiPointer<PathingSolution>*)&spCurrentPath), spCurrentRequest.operator->());
         m_pPathHandler->vf22(old);
         if (old)
         {
@@ -2108,13 +2221,13 @@ void ActorMover::UpdatePathingState(float a1)
     }
     else
     {
-        currentNode = 0;
-        lastNode = (*(NiPointer<PathingSolution>*)&m_pActorNode).operator->()->PathingSolution_GetVirtualNodeCount() - 1;
+        iPreviousNode = 0;
+        iNextNode = (*(NiPointer<PathingSolution>*)&spCurrentPath).operator->()->PathingSolution_GetVirtualNodeCount() - 1;
         if (m_pPathHandler)
         {
             delete m_pPathHandler;
         }
-        m_pPathHandler = (ActorPathHandler*)new FUN_009ea770(pActor, this, (*(NiPointer<PathingSolution>*)&m_pActorNode), request.operator->());
+        m_pPathHandler = (ActorPathHandler*)new FUN_009ea770(pActor, this, (*(NiPointer<PathingSolution>*)&spCurrentPath), spCurrentRequest.operator->());
     }
     int res = m_pPathHandler->vfn_04(0.0f, a1);
     HandlePathResult(res);
@@ -2124,6 +2237,9 @@ void __fastcall ActorMover_ClearPath(ActorMover* apMover);
 
 // Handles a pathing result code: on failure sets state 7 and resets the path, on success checks completion and distance to the last node.
 // @fnv 0x009dc5e0
+// pdb: ActorMover::HandleMovementResult | ActorMover.obj | debug, object-file gap fill, medium
+// pdb params: aeResult
+// pdb locals: endOfPathResult, diff
 void ActorMover::HandlePathResult(int aiResult)
 {
     switch (aiResult)
@@ -2139,7 +2255,7 @@ void ActorMover::HandlePathResult(int aiResult)
     case 5:
     case 6: {
         int iUpdateResult = UpdatePathHandler();
-        if (!((PathingSolution*)m_pActorNode.operator->())->IsIncomplete())
+        if (!((PathingSolution*)spCurrentPath.operator->())->IsIncomplete())
         {
             if (aiResult == 6 && eState != 7)
             {
@@ -2149,12 +2265,12 @@ void ActorMover::HandlePathResult(int aiResult)
         }
         else if (iUpdateResult != 1)
         {
-            if (((PathingSolution*)m_pActorNode.operator->())->GetNodeCount() > 0)
+            if (((PathingSolution*)spCurrentPath.operator->())->GetNodeCount() > 0)
             {
                 NiPoint3 kDelta =
-                    reinterpret_cast<PathingGraphNode*>(((PathingSolution*)m_pActorNode.operator->())->GetVirtualNode(GetPathingLastNodeIndex((PathingSolution*)m_pActorNode.operator->())))->FUN_00717e50().GetPoint() -
+                    reinterpret_cast<PathingGraphNode*>(((PathingSolution*)spCurrentPath.operator->())->GetVirtualNode(GetPathingLastNodeIndex((PathingSolution*)spCurrentPath.operator->())))->FUN_00717e50().GetPoint() -
                     *static_cast<const Actor*>(pActor)->GetPos();
-                if (kDelta.GetSquaredXYLength() <= request.operator->()->FUN_009b0bd0() * request.operator->()->FUN_009b0bd0())
+                if (kDelta.GetSquaredXYLength() <= spCurrentRequest.operator->()->FUN_009b0bd0() * spCurrentRequest.operator->()->FUN_009b0bd0())
                 {
                     break;
                 }
@@ -2171,19 +2287,22 @@ void ActorMover::HandlePathResult(int aiResult)
 
 struct MovementStatus
 {
-    bool IsHighestPriority();
+    bool Animation_ShouldBeMoving();
 };
 // Actor.h lacks the no-argument movement query at 0x008843a0.
 bool __fastcall CanActorMove(Actor*);
 
 // @fnv 0x009dce80
 // src: XBOX_PDB 0x009dce80
-bool ActorMover::RequestRotateActor_009dce80(float delta, bool force)
+// pdb: ActorMover::RequestRotateActor | ActorMover.obj | retail, call graph (shared callers), high
+// pdb params: aTargetPoint, abForceTurn
+// pdb locals: ftargetangle, movedir
+bool ActorMover::RequestRotateActor_009dce80(float afTargetAngle, bool abForceTurn)
 {
     bool result = false;
-    ResetMoverState(1);
-    if (reinterpret_cast<MovementStatus*>(pActor->GetAnimData()) && reinterpret_cast<MovementStatus*>(pActor->GetAnimData())->IsHighestPriority())
-        unk78 = true;
+    ClearDataForNewPathingRequest(1);
+    if (reinterpret_cast<MovementStatus*>(pActor->GetAnimData()) && reinterpret_cast<MovementStatus*>(pActor->GetAnimData())->Animation_ShouldBeMoving())
+        bStopCurrentMoveAnim = true;
     if (!CanActorMove(pActor) || pActor->GetSitSleepState())
     {
         eState = 6;
@@ -2192,7 +2311,7 @@ bool ActorMover::RequestRotateActor_009dce80(float delta, bool force)
     else if (!ActorMover_IsActorInLoadedArea(this))
     {
         eState = 6;
-        pActor->SetFurnitureHeading(delta);
+        pActor->SetFurnitureHeading(afTargetAngle);
         result = true;
     }
     if (!result)
@@ -2204,7 +2323,7 @@ bool ActorMover::RequestRotateActor_009dce80(float delta, bool force)
         }
         if (!m_pPathHandler)
             m_pPathHandler = (ActorPathHandler*)new Dummy_0xe4(pActor, this);
-        if (m_pPathHandler->vfn_08(delta, force))
+        if (m_pPathHandler->vfn_08(afTargetAngle, abForceTurn))
         {
             eState = 4;
             result = true;
@@ -2279,6 +2398,8 @@ struct RegularPathActor
 
 // Advances the actor along the path: recomputes the current segment from handler progress, updates or extends the path, and rebuilds the handler.
 // @fnv 0x009dd2d0
+// pdb: ActorMover::HandleProcessLevelChange | ActorMover.obj | debug, object-file gap fill, medium
+// pdb locals: iclosestVirtualNode, fdist, fpercentTraveled, icurrentNode, res, firstLoadedVirtualNodeLoc, floadedPathDistance, lastLoadedVirtualNodeLoc
 void ActorMover::UpdatePathMovement()
 {
     unsigned current;
@@ -2286,7 +2407,7 @@ void ActorMover::UpdatePathMovement()
     unsigned next;
     int result6;
     float fraction;
-    if (!(*(NiPointer<PathSolution>*)&m_pActorNode).operator->() || !(*(NiPointer<PathRequest>*)&request).operator->())
+    if (!(*(NiPointer<PathSolution>*)&spCurrentPath).operator->() || !(*(NiPointer<PathRequest>*)&spCurrentRequest).operator->())
     {
         delete m_pPathHandler;
         m_pPathHandler = 0;
@@ -2298,22 +2419,22 @@ void ActorMover::UpdatePathMovement()
     {
         if (!m_pPathHandler->vfn_34())
             return;
-        if (lastNode == currentNode)
-            current = lastNode + 1;
+        if (iNextNode == iPreviousNode)
+            current = iNextNode + 1;
         else
         {
             progress = m_pPathHandler->vfn_1c();
-            current = (unsigned)(int)RoundPath((lastNode - currentNode) * progress);
-            current += currentNode;
+            current = (unsigned)(int)RoundPath((iNextNode - iPreviousNode) * progress);
+            current += iPreviousNode;
         }
-        if (current > (*(NiPointer<PathSolution>*)&m_pActorNode).operator->()->Count() - 1)
-            current = (*(NiPointer<PathSolution>*)&m_pActorNode).operator->()->Count() - 1;
-        (*(NiPointer<PathRequest>*)&request).operator->()->Update(((PathActor_actormover*)pActor));
-        switch (UpdatePath((*(NiPointer<PathRequest>*)&request).operator->(), (*(NiPointer<PathSolution>*)&m_pActorNode).operator->()))
+        if (current > (*(NiPointer<PathSolution>*)&spCurrentPath).operator->()->Count() - 1)
+            current = (*(NiPointer<PathSolution>*)&spCurrentPath).operator->()->Count() - 1;
+        (*(NiPointer<PathRequest>*)&spCurrentRequest).operator->()->Update(((PathActor_actormover*)pActor));
+        switch (UpdatePath((*(NiPointer<PathRequest>*)&spCurrentRequest).operator->(), (*(NiPointer<PathSolution>*)&spCurrentPath).operator->()))
         {
         case 1:
-            currentNode = (unsigned short)current;
-            lastNode = (unsigned short)((*(NiPointer<PathSolution>*)&m_pActorNode).operator->()->Count() - 1);
+            iPreviousNode = (unsigned short)current;
+            iNextNode = (unsigned short)((*(NiPointer<PathSolution>*)&spCurrentPath).operator->()->Count() - 1);
             break;
         case -1:
         case 0:
@@ -2322,37 +2443,37 @@ void ActorMover::UpdatePathMovement()
             return;
         }
         delete m_pPathHandler;
-        m_pPathHandler = new SmallPathHandler(((PathActor_actormover*)pActor), this, ((NiPointer<PathSolution>*)&m_pActorNode), (*(NiPointer<PathRequest>*)&request).operator->());
-        m_pPathHandler->vfn_04((float)currentNode, 0.0f);
+        m_pPathHandler = new SmallPathHandler(((PathActor_actormover*)pActor), this, ((NiPointer<PathSolution>*)&spCurrentPath), (*(NiPointer<PathRequest>*)&spCurrentRequest).operator->());
+        m_pPathHandler->vfn_04((float)iPreviousNode, 0.0f);
         return;
     }
     if (m_pPathHandler->vfn_34())
-        next = currentNode + 1;
+        next = iPreviousNode + 1;
     else
         next = (unsigned int)m_pPathHandler->vfn_30() > 0 ? (unsigned int)m_pPathHandler->vfn_30() - 1 : 0;
-    if (next >= (*(NiPointer<PathSolution>*)&m_pActorNode).operator->()->Count() - 1)
+    if (next >= (*(NiPointer<PathSolution>*)&spCurrentPath).operator->()->Count() - 1)
     {
         if (SpecialMovement())
-            GetSpecialActor(((PathActor_actormover*)pActor))->MoveTo((*(NiPointer<PathSolution>*)&m_pActorNode).operator->()->Last()->GetData()->GetPosition());
+            GetSpecialActor(((PathActor_actormover*)pActor))->MoveTo((*(NiPointer<PathSolution>*)&spCurrentPath).operator->()->Last()->GetData()->GetPosition());
         else
             reinterpret_cast<Actor*>(((PathActor_actormover*)pActor))->SetPos(
-                const_cast<NiPoint3*>(reinterpret_cast<const NiPoint3*>(&((NiPointer<PathSolution>*)&m_pActorNode)->operator->()->Last()->GetData()->GetPosition())));
+                const_cast<NiPoint3*>(reinterpret_cast<const NiPoint3*>(&((NiPointer<PathSolution>*)&spCurrentPath)->operator->()->Last()->GetData()->GetPosition())));
         FinishMoving(1);
         return;
     }
-    (*(NiPointer<PathRequest>*)&request).operator->()->Update(((PathActor_actormover*)pActor));
-    switch (ExtendPath((*(NiPointer<PathRequest>*)&request).operator->(), (*(NiPointer<PathSolution>*)&m_pActorNode).operator->(), next))
+    (*(NiPointer<PathRequest>*)&spCurrentRequest).operator->()->Update(((PathActor_actormover*)pActor));
+    switch (ExtendPath((*(NiPointer<PathRequest>*)&spCurrentRequest).operator->(), (*(NiPointer<PathSolution>*)&spCurrentPath).operator->(), next))
     {
     case 2:
-        currentNode = (*(NiPointer<PathSolution>*)&m_pActorNode).operator->()->Start();
-        lastNode = (*(NiPointer<PathSolution>*)&m_pActorNode).operator->()->End();
+        iPreviousNode = (*(NiPointer<PathSolution>*)&spCurrentPath).operator->()->Start();
+        iNextNode = (*(NiPointer<PathSolution>*)&spCurrentPath).operator->()->End();
         break;
     case -1:
     case 0:
-        if ((*(NiPointer<PathSolution>*)&m_pActorNode).operator->()->IsValid() && (*(NiPointer<PathRequest>*)&request).operator->()->IsValid() && (*(NiPointer<PathSolution>*)&m_pActorNode).operator->()->Extra())
+        if ((*(NiPointer<PathSolution>*)&spCurrentPath).operator->()->IsValid() && (*(NiPointer<PathRequest>*)&spCurrentRequest).operator->()->IsValid() && (*(NiPointer<PathSolution>*)&spCurrentPath).operator->()->Extra())
         {
-            currentNode = (*(NiPointer<PathSolution>*)&m_pActorNode).operator->()->Start();
-            lastNode = (*(NiPointer<PathSolution>*)&m_pActorNode).operator->()->End();
+            iPreviousNode = (*(NiPointer<PathSolution>*)&spCurrentPath).operator->()->Start();
+            iNextNode = (*(NiPointer<PathSolution>*)&spCurrentPath).operator->()->End();
         }
         else
         {
@@ -2363,7 +2484,7 @@ void ActorMover::UpdatePathMovement()
         }
         break;
     }
-    if (currentNode == lastNode)
+    if (iPreviousNode == iNextNode)
     {
         FinishMoving(1);
         return;
@@ -2371,13 +2492,13 @@ void ActorMover::UpdatePathMovement()
     fraction = 0.0f;
     if (!m_pPathHandler->vfn_34())
     {
-        PathVec startPoint = (*(NiPointer<PathSolution>*)&m_pActorNode).operator->()->At((*(NiPointer<PathSolution>*)&m_pActorNode).operator->()->Start())->GetData()->GetPosition();
-        PathVec endPoint6 = (*(NiPointer<PathSolution>*)&m_pActorNode).operator->()->At((*(NiPointer<PathSolution>*)&m_pActorNode).operator->()->End())->GetData()->GetPosition();
+        PathVec startPoint = (*(NiPointer<PathSolution>*)&spCurrentPath).operator->()->At((*(NiPointer<PathSolution>*)&spCurrentPath).operator->()->Start())->GetData()->GetPosition();
+        PathVec endPoint6 = (*(NiPointer<PathSolution>*)&spCurrentPath).operator->()->At((*(NiPointer<PathSolution>*)&spCurrentPath).operator->()->End())->GetData()->GetPosition();
         float distance = (endPoint6 - startPoint).Length();
         fraction = m_pPathHandler->vfn_18() / distance;
     }
     delete m_pPathHandler;
-    m_pPathHandler = new LargePathHandler(((PathActor_actormover*)pActor), this, ((NiPointer<PathSolution>*)&m_pActorNode), (*(NiPointer<PathRequest>*)&request).operator->());
+    m_pPathHandler = new LargePathHandler(((PathActor_actormover*)pActor), this, ((NiPointer<PathSolution>*)&spCurrentPath), (*(NiPointer<PathRequest>*)&spCurrentRequest).operator->());
     result6 = m_pPathHandler->vfn_04(fraction, 0.0f);
     if (result6 == 5 || result6 == 6)
     {
@@ -2434,13 +2555,16 @@ extern double DAT_01016978;
 } // namespace ActorMovement
 
 // @fnv 0x009de490
-void ActorMover::SetEnabled(bool abEnabled)
+// pdb: ActorMover::SetPathingFailed | ActorMover.obj | retail, call graph, high
+// pdb params: abValue
+// pdb locals: fthreshold, ftimeSinceFirstFaillure, ftimeSinceLastFaillure, cellY, cellX, pdestCell, porCell, bdestUnderWater, borUnderWater
+void ActorMover::SetEnabled(bool abValue)
 {
     using namespace ActorMovement;
-    bPathingFailed = abEnabled;
-    if (!abEnabled)
-        ((ActorMovement::Queue*)&m_pathingLocation)->FUN_006d2c00();
-    if (abEnabled)
+    bPathingFailed = abValue;
+    if (!abValue)
+        ((ActorMovement::Queue*)&FailedPathDestination)->FUN_006d2c00();
+    if (abValue)
     {
         if (pActor->FUN_00931850() == 3 && (!pActor->FUN_008d6f30() || !reinterpret_cast<Cell*>(pActor->FUN_008d6f30())->FUN_00425fd0()))
         {
@@ -2450,46 +2574,46 @@ void ActorMover::SetEnabled(bool abEnabled)
                 !DAT_011dea10
                      ->TES_GetNavMeshInfoMap(reinterpret_cast<World*>(pActor->TESObjectREFR_GetWorldSpace()), PackShortPair((unsigned short)xSlot14, (unsigned short)y))
                      ->FindNavMeshInfoForCellKey())
-                pActor->Actor_MoveActorAndFollowers(((NiPointer<ActorMovement::Request>*)&request)->operator->()->NiAVObject_GetRotate_006a9540()->FUN_005c3420(), 0.0f,
-                                    ((NiPointer<ActorMovement::Request>*)&request)->operator->()->NiAVObject_GetRotate_006a9540()->NiAVObject_GetParent(),
-                                    ((NiPointer<ActorMovement::Request>*)&request)->operator->()->NiAVObject_GetRotate_006a9540()->FUN_00441110(), 0, 1);
+                pActor->Actor_MoveActorAndFollowers(((NiPointer<ActorMovement::Request>*)&spCurrentRequest)->operator->()->NiAVObject_GetRotate_006a9540()->FUN_005c3420(), 0.0f,
+                                    ((NiPointer<ActorMovement::Request>*)&spCurrentRequest)->operator->()->NiAVObject_GetRotate_006a9540()->NiAVObject_GetParent(),
+                                    ((NiPointer<ActorMovement::Request>*)&spCurrentRequest)->operator->()->NiAVObject_GetRotate_006a9540()->FUN_00441110(), 0, 1);
         }
         float intervalSlot1 = pActor->FUN_008b0190(7) ? DAT_0109222c : DAT_01092230;
-        if (((NiPointer<ActorMovement::Request>*)&request)->operator->())
+        if (((NiPointer<ActorMovement::Request>*)&spCurrentRequest)->operator->())
         {
-            Cell* fromSlot12 = ((NiPointer<ActorMovement::Request>*)&request)->operator->()->GetOffsetC()->FUN_006dd4f0();
-            Cell* to = ((NiPointer<ActorMovement::Request>*)&request)->operator->()->NiAVObject_GetRotate_006a9540()->FUN_006dd4f0();
+            Cell* fromSlot12 = ((NiPointer<ActorMovement::Request>*)&spCurrentRequest)->operator->()->GetOffsetC()->FUN_006dd4f0();
+            Cell* to = ((NiPointer<ActorMovement::Request>*)&spCurrentRequest)->operator->()->NiAVObject_GetRotate_006a9540()->FUN_006dd4f0();
             if (fromSlot12 && to)
             {
                 bool fromAboveSlot13 = DAT_011dea10->GetCellHeightAtPosition(
-                                           ((NiPointer<ActorMovement::Request>*)&request)->operator->()->GetOffsetC()->FUN_005c3420(), fromSlot12) >
-                                       ((NiPointer<ActorMovement::Request>*)&request)->operator->()->GetOffsetC()->FUN_005c3420().z;
+                                           ((NiPointer<ActorMovement::Request>*)&spCurrentRequest)->operator->()->GetOffsetC()->FUN_005c3420(), fromSlot12) >
+                                       ((NiPointer<ActorMovement::Request>*)&spCurrentRequest)->operator->()->GetOffsetC()->FUN_005c3420().z;
                 bool toAboveSlot1 =
-                    DAT_011dea10->GetCellHeightAtPosition(((NiPointer<ActorMovement::Request>*)&request)->operator->()->NiAVObject_GetRotate_006a9540()->FUN_005c3420(), to) >
-                    ((NiPointer<ActorMovement::Request>*)&request)->operator->()->NiAVObject_GetRotate_006a9540()->FUN_005c3420().z;
+                    DAT_011dea10->GetCellHeightAtPosition(((NiPointer<ActorMovement::Request>*)&spCurrentRequest)->operator->()->NiAVObject_GetRotate_006a9540()->FUN_005c3420(), to) >
+                    ((NiPointer<ActorMovement::Request>*)&spCurrentRequest)->operator->()->NiAVObject_GetRotate_006a9540()->FUN_005c3420().z;
                 if (fromAboveSlot13 != toAboveSlot1)
                     intervalSlot1 = DAT_01092234;
             }
         }
-        float elapsedSlot0 = (DAT_011f6394.FUN_00825c00() - lastTime) * DAT_01016978;
-        float total = (DAT_011f6394.FUN_00825c00() - startTime) * DAT_01016978;
+        float elapsedSlot0 = (DAT_011f6394.FUN_00825c00() - iLastFailureTimeStamp) * DAT_01016978;
+        float total = (DAT_011f6394.FUN_00825c00() - iFirstFailureTimeStamp) * DAT_01016978;
         if (elapsedSlot0 >= intervalSlot1)
         {
-            retries = 0;
-            lastTime = DAT_011f6394.FUN_00825c00();
-            startTime = DAT_011f6394.FUN_00825c00();
+            iContinuedFailureCount = 0;
+            iLastFailureTimeStamp = DAT_011f6394.FUN_00825c00();
+            iFirstFailureTimeStamp = DAT_011f6394.FUN_00825c00();
         }
-        else if (total >= intervalSlot1 && retries >= 2)
+        else if (total >= intervalSlot1 && iContinuedFailureCount >= 2)
         {
             UpdateTargeting();
-            retries = 0;
-            lastTime = DAT_011f6394.FUN_00825c00();
-            startTime = DAT_011f6394.FUN_00825c00();
+            iContinuedFailureCount = 0;
+            iLastFailureTimeStamp = DAT_011f6394.FUN_00825c00();
+            iFirstFailureTimeStamp = DAT_011f6394.FUN_00825c00();
         }
         else
         {
-            ++retries;
-            lastTime = DAT_011f6394.FUN_00825c00();
+            ++iContinuedFailureCount;
+            iLastFailureTimeStamp = DAT_011f6394.FUN_00825c00();
         }
         FUN_00483710();
     }
@@ -2514,7 +2638,7 @@ struct PLoc
     ~PLoc();
     unsigned int FUN_006dd4f0() const;
     NiPoint3 FUN_005c3420();
-    void FUN_006dd6f0(int a);
+    void FUN_006dd6f0(int apFilter);
     bool FUN_006dd6a0();
 };
 struct Req
@@ -2707,7 +2831,7 @@ struct RefrV
 // and 0x008be280. Retain this local actor view until those are shared.
 struct Actor13 : public RefrV
 {
-    bool Actor_IsFollowing_008bc7f0(void* player);
+    bool Actor_IsFollowing_008bc7f0(void* apLeader);
     void Actor_InitiateMovementBlockedPackage();
     int FUN_00931850();
     ProjBase* FUN_004181e0();
@@ -2724,7 +2848,7 @@ extern "C" float _runtimeFloatSettingDefault38;
 extern "C" double _gModifierZero;
 
 TESWorldSpace* __fastcall TESObjectREFR_GetWorldSpace(TESObjectREFR* refr);
-void __cdecl TESObjectREFR_MoveRefToNewSpace(void* actor, void* cell, void* ws);
+void __cdecl TESObjectREFR_MoveRefToNewSpace(void* actor, void* apInterior, void* apWorld);
 struct Helper13
 {
     int m_00;
@@ -2773,8 +2897,8 @@ struct Helper13
     int m_b0;
     Helper13();
     ~Helper13();
-    void AssignPathingLocation(PLoc* loc);
-    void FUN_006d1bc0(const PLoc& loc);
+    void AssignPathingLocation(PLoc* aOrigin);
+    void FUN_006d1bc0(const PLoc& aDestination);
     void FUN_006d3b00(float f);
     void FUN_006d3ae0(float f);
     void FUN_006e2b20(void* actor);
@@ -2817,11 +2941,13 @@ struct Sol13
     float GetTotalPathLength();
     NiPoint3 GetPointAtDistance(float a, float b);
 };
-bool __cdecl FUN_006d0900(Helper13* h, Sol13* s);
+bool __cdecl FUN_006d0900(Helper13* apRequest, Sol13* apSolution);
 
 } // namespace fnv_009de8b0
 
 // @fnv 0x009de8b0
+// pdb: ActorMover::WarpToNextNode | ActorMover.obj | debug, object-file run extension, low
+// pdb locals: bShouldUseBackwardsPath, actorLoc, pdestCell, porCell, bdestUnderWater, borUnderWater, tempSolution, pwarpToCell, tempRequest, warpToLoc, fwarpToDistance, fpathLength, fwarpMax
 void ActorMover::UpdateTargeting()
 {
     using namespace fnv_009de8b0;
@@ -2840,17 +2966,17 @@ void ActorMover::UpdateTargeting()
     unsigned int zX;
     bool iAB;
     iAB = false;
-    if ((PathingRequest*)request == 0)
+    if ((PathingRequest*)spCurrentRequest == 0)
         return;
     if (((Actor13*)pActor)->Actor_IsFollowing_008bc7f0(g_thePlayer))
     {
         if (m_pPathHandler != 0)
         {
-            if (((NiPointer<PathingSolution>*)&m_pActorNode)->operator->() != 0)
+            if (((NiPointer<PathingSolution>*)&spCurrentPath)->operator->() != 0)
             {
                 if (!m_pPathHandler->vfn_34())
                 {
-                    if (!GetPathingSolutionFlag40((PathingSolution*)((NiPointer<PathingSolution>*)&m_pActorNode)->operator->()))
+                    if (!GetPathingSolutionFlag40((PathingSolution*)((NiPointer<PathingSolution>*)&spCurrentPath)->operator->()))
                     {
                         ((Actor13*)pActor)->Actor_InitiateMovementBlockedPackage();
                         return;
@@ -2859,21 +2985,21 @@ void ActorMover::UpdateTargeting()
             }
         }
         if (((Actor13*)pActor)->GetPos()->SubtractIntoVector(g_thePlayer->GetPos()).NiPoint3_XYLength() >
-            ((Req*)(PathingRequest*)request)->FUN_009b0bd0() * 2)
+            ((Req*)(PathingRequest*)spCurrentRequest)->FUN_009b0bd0() * 2)
             iAB = true;
     }
     if (((Actor13*)pActor)->FUN_00931850() == 0)
     {
-        bA4 = ((Req*)(PathingRequest*)request)->GetOffsetC()->FUN_006dd4f0();
-        zX = ((Req*)(PathingRequest*)request)->NiAVObject_GetRotate_006a9540()->FUN_006dd4f0();
+        bA4 = ((Req*)(PathingRequest*)spCurrentRequest)->GetOffsetC()->FUN_006dd4f0();
+        zX = ((Req*)(PathingRequest*)spCurrentRequest)->NiAVObject_GetRotate_006a9540()->FUN_006dd4f0();
         if (0 != bA4 && 0 != zX)
         {
             bool resultB;
-            resultB = g_TES->GetCellHeightAtPosition(&((Req*)(PathingRequest*)request)->GetOffsetC()->FUN_005c3420(), bA4) >
-                      ((Req*)(PathingRequest*)request)->GetOffsetC()->FUN_005c3420().z;
+            resultB = g_TES->GetCellHeightAtPosition(&((Req*)(PathingRequest*)spCurrentRequest)->GetOffsetC()->FUN_005c3420(), bA4) >
+                      ((Req*)(PathingRequest*)spCurrentRequest)->GetOffsetC()->FUN_005c3420().z;
             bool y6;
-            y6 = g_TES->GetCellHeightAtPosition(&((Req*)(PathingRequest*)request)->NiAVObject_GetRotate_006a9540()->FUN_005c3420(), zX) >
-                 ((Req*)(PathingRequest*)request)->NiAVObject_GetRotate_006a9540()->FUN_005c3420().z;
+            y6 = g_TES->GetCellHeightAtPosition(&((Req*)(PathingRequest*)spCurrentRequest)->NiAVObject_GetRotate_006a9540()->FUN_005c3420(), zX) >
+                 ((Req*)(PathingRequest*)spCurrentRequest)->NiAVObject_GetRotate_006a9540()->FUN_005c3420().z;
             if (resultB != y6)
                 iAB = true;
         }
@@ -2885,7 +3011,7 @@ void ActorMover::UpdateTargeting()
     if (iAB)
     {
         Helper13 solution4;
-        solution4.AssignPathingLocation(((Req*)(PathingRequest*)request)->NiAVObject_GetRotate_006a9540());
+        solution4.AssignPathingLocation(((Req*)(PathingRequest*)spCurrentRequest)->NiAVObject_GetRotate_006a9540());
         solution4.FUN_006d1bc0(((Actor13*)pActor));
         solution4.FUN_006d3b00(10.0f);
         solution4.FUN_006d3ae0((float)(((Actor13*)pActor)->Actor_GetWidth() * (double)0.6f));
@@ -2975,48 +3101,51 @@ struct SavedLocation
 // Writes movement, pathing, state and timing fields to the save buffer, then saves the location, reference, request, path and handler.
 // @fnv 0x009df100
 // src: XBOX_PDB 0x009df100
-void ActorMover::SaveGame_009df100(BGSSaveFormBuffer* buffer)
+// pdb: ActorMover::SaveGame | ActorMover.obj | retail, vtable slot, high
+// pdb params: apSaveGameBuffer
+// pdb locals: ioffset, cflags, ctype
+void ActorMover::SaveGame_009df100(BGSSaveFormBuffer* apSaveGameBuffer)
 {
-    buffer->FUN_00865e50(&currentNode, 2, 0);
-    buffer->FUN_00865e50(&lastNode, 2, 0);
-    buffer->FUN_00865e50(&bPathingFailed, 1, 0);
-    buffer->FUN_00865e50(&unk34, 4, 0);
-    buffer->FUN_00865e50(&m_bHasMovementData, 1, 0);
-    buffer->FUN_00865e50(&m_uiMovementFlags, 4, 0);
-    buffer->FUN_00865e50(&m_bMovementComplete, 1, 0);
-    buffer->FUN_00865e50(&m_bHasLookAtTarget, 1, 0);
-    buffer->FUN_00865e50(&m_kLookAtTargetPosition, 12, 0);
-    buffer->FUN_00865e50(&m_kPathingDelta, 12, 0);
-    buffer->FUN_00865e50(&m_uiMovementMode, 4, 0);
-    buffer->FUN_00865e50(&m_bMovementActive, 1, 0);
-    buffer->FUN_00865e50(&m_bMovementStateFlag, 1, 0);
-    buffer->FUN_00865e50(&m_bHasPathingDelta, 1, 0);
-    buffer->FUN_00865e50(&m_bMovementPaused, 1, 0);
-    buffer->FUN_00865e50(&unk78, 1, 0);
-    buffer->FUN_00865e50(&eState, 4, 0);
-    unsigned int elapsed = g_timeGlobal.GetTimeStamp() - lastTime;
-    buffer->FUN_00865e50(&elapsed, 4, 0);
-    buffer->FUN_00865e50(&retries, 4, 0);
-    ((SavedLocation*)&m_pathingLocation)->Save(buffer);
-    buffer->FUN_00865db0(unk2C, 0);
+    apSaveGameBuffer->FUN_00865e50(&iPreviousNode, 2, 0);
+    apSaveGameBuffer->FUN_00865e50(&iNextNode, 2, 0);
+    apSaveGameBuffer->FUN_00865e50(&bPathingFailed, 1, 0);
+    apSaveGameBuffer->FUN_00865e50(&uiPreferredMoveMode, 4, 0);
+    apSaveGameBuffer->FUN_00865e50(&bForceMoveMode, 1, 0);
+    apSaveGameBuffer->FUN_00865e50(&uiForcedMoveMode, 4, 0);
+    apSaveGameBuffer->FUN_00865e50(&bStopMovementNextUpdate, 1, 0);
+    apSaveGameBuffer->FUN_00865e50(&bFaceTargetPoint, 1, 0);
+    apSaveGameBuffer->FUN_00865e50(&LookAtPoint, 12, 0);
+    apSaveGameBuffer->FUN_00865e50(&CachedMoveDelta, 12, 0);
+    apSaveGameBuffer->FUN_00865e50(&iCachedLastValidMoveMode, 4, 0);
+    apSaveGameBuffer->FUN_00865e50(&bWaitingForPath, 1, 0);
+    apSaveGameBuffer->FUN_00865e50(&bActorChangedProcessLevel, 1, 0);
+    apSaveGameBuffer->FUN_00865e50(&bHaveValidDeltaThisFrame, 1, 0);
+    apSaveGameBuffer->FUN_00865e50(&bInDialog, 1, 0);
+    apSaveGameBuffer->FUN_00865e50(&bStopCurrentMoveAnim, 1, 0);
+    apSaveGameBuffer->FUN_00865e50(&eState, 4, 0);
+    unsigned int elapsed = g_timeGlobal.GetTimeStamp() - iLastFailureTimeStamp;
+    apSaveGameBuffer->FUN_00865e50(&elapsed, 4, 0);
+    apSaveGameBuffer->FUN_00865e50(&iContinuedFailureCount, 4, 0);
+    ((SavedLocation*)&FailedPathDestination)->Save(apSaveGameBuffer);
+    apSaveGameBuffer->FUN_00865db0(DetectionDoorID, 0);
     unsigned char flags = 0;
-    if (((NiPointer<SavedRequest>*)&request)->operator->())
+    if (((NiPointer<SavedRequest>*)&spCurrentRequest)->operator->())
         flags |= 1;
-    if (((NiPointer<SavedSolution>*)&m_pActorNode)->operator->())
+    if (((NiPointer<SavedSolution>*)&spCurrentPath)->operator->())
         flags |= 2;
     if (m_pPathHandler)
         flags |= m_pPathHandler->vfn_34() ? 8 : 4;
-    buffer->FUN_00865e50(&flags, 1, 0);
-    if (((NiPointer<SavedRequest>*)&request)->operator->())
+    apSaveGameBuffer->FUN_00865e50(&flags, 1, 0);
+    if (((NiPointer<SavedRequest>*)&spCurrentRequest)->operator->())
     {
-        unsigned char type = ((NiPointer<SavedRequest>*)&request)->operator->()->GetType();
-        buffer->FUN_00865e50(&type, 1, 0);
-        ((NiPointer<SavedRequest>*)&request)->operator->()->Save(buffer);
+        unsigned char type = ((NiPointer<SavedRequest>*)&spCurrentRequest)->operator->()->GetType();
+        apSaveGameBuffer->FUN_00865e50(&type, 1, 0);
+        ((NiPointer<SavedRequest>*)&spCurrentRequest)->operator->()->Save(apSaveGameBuffer);
     }
-    if (((NiPointer<SavedSolution>*)&m_pActorNode)->operator->())
-        ((NiPointer<SavedSolution>*)&m_pActorNode)->operator->()->FUN_006e8b10(buffer);
+    if (((NiPointer<SavedSolution>*)&spCurrentPath)->operator->())
+        ((NiPointer<SavedSolution>*)&spCurrentPath)->operator->()->FUN_006e8b10(apSaveGameBuffer);
     if (m_pPathHandler)
-        m_pPathHandler->Save(buffer);
+        m_pPathHandler->Save(apSaveGameBuffer);
 }
 
 namespace loadpath {
@@ -3078,7 +3207,7 @@ struct Request
     virtual void Load(Buffer*);
     void Attach(void*);
 };
-Request* MakeRequest(unsigned int);
+Request* CreatePathingRequest(unsigned int);
 struct ProcessFlags
 {
     bool Test(int);
@@ -3164,57 +3293,60 @@ void Warning(const char*, ...);
 
 // @fnv 0x009df3d0
 // src: XBOX_PDB 0x009df3d0
-void ActorMover::LoadGame_009df3d0(BGSLoadFormBuffer* buffer)
+// pdb: ActorMover::LoadGame | ActorMover.obj | retail, string-set bridge, high
+// pdb params: apLoadGameBuffer
+// pdb locals: cflags, clearStaleNavPath, ioffset, ctype, i
+void ActorMover::LoadGame_009df3d0(BGSLoadFormBuffer* apLoadGameBuffer)
 {
     using namespace loadpath;
-    ((loadpath::Buffer*)buffer)->Read(&currentNode, 2);
-    ((loadpath::Buffer*)buffer)->Read(&lastNode, 2);
-    ((loadpath::Buffer*)buffer)->Read(&bPathingFailed, 1);
-    ((loadpath::Buffer*)buffer)->Read(&unk34, 4);
-    ((loadpath::Buffer*)buffer)->Read(&m_bHasMovementData, 1);
-    ((loadpath::Buffer*)buffer)->Read(&m_uiMovementFlags, 4);
-    ((loadpath::Buffer*)buffer)->Read(&m_bMovementComplete, 1);
-    ((loadpath::Buffer*)buffer)->Read(&m_bHasLookAtTarget, 1);
-    ((loadpath::Buffer*)buffer)->Read(&m_kLookAtTargetPosition, 12);
-    ((loadpath::Buffer*)buffer)->Read(&m_kPathingDelta, 12);
-    ((loadpath::Buffer*)buffer)->Read(&m_uiMovementMode, 4);
-    ((loadpath::Buffer*)buffer)->Read(&m_bMovementActive, 1);
-    ((loadpath::Buffer*)buffer)->Read(&m_bMovementStateFlag, 1);
-    ((loadpath::Buffer*)buffer)->Read(&m_bHasPathingDelta, 1);
-    ((loadpath::Buffer*)buffer)->Read(&m_bMovementPaused, 1);
-    ((loadpath::Buffer*)buffer)->Read(&unk78, 1);
-    ((loadpath::Buffer*)buffer)->Read(&eState, 4);
-    if (((loadpath::Buffer*)buffer)->Version() >= 14)
+    ((loadpath::Buffer*)apLoadGameBuffer)->Read(&iPreviousNode, 2);
+    ((loadpath::Buffer*)apLoadGameBuffer)->Read(&iNextNode, 2);
+    ((loadpath::Buffer*)apLoadGameBuffer)->Read(&bPathingFailed, 1);
+    ((loadpath::Buffer*)apLoadGameBuffer)->Read(&uiPreferredMoveMode, 4);
+    ((loadpath::Buffer*)apLoadGameBuffer)->Read(&bForceMoveMode, 1);
+    ((loadpath::Buffer*)apLoadGameBuffer)->Read(&uiForcedMoveMode, 4);
+    ((loadpath::Buffer*)apLoadGameBuffer)->Read(&bStopMovementNextUpdate, 1);
+    ((loadpath::Buffer*)apLoadGameBuffer)->Read(&bFaceTargetPoint, 1);
+    ((loadpath::Buffer*)apLoadGameBuffer)->Read(&LookAtPoint, 12);
+    ((loadpath::Buffer*)apLoadGameBuffer)->Read(&CachedMoveDelta, 12);
+    ((loadpath::Buffer*)apLoadGameBuffer)->Read(&iCachedLastValidMoveMode, 4);
+    ((loadpath::Buffer*)apLoadGameBuffer)->Read(&bWaitingForPath, 1);
+    ((loadpath::Buffer*)apLoadGameBuffer)->Read(&bActorChangedProcessLevel, 1);
+    ((loadpath::Buffer*)apLoadGameBuffer)->Read(&bHaveValidDeltaThisFrame, 1);
+    ((loadpath::Buffer*)apLoadGameBuffer)->Read(&bInDialog, 1);
+    ((loadpath::Buffer*)apLoadGameBuffer)->Read(&bStopCurrentMoveAnim, 1);
+    ((loadpath::Buffer*)apLoadGameBuffer)->Read(&eState, 4);
+    if (((loadpath::Buffer*)apLoadGameBuffer)->Version() >= 14)
     {
         unsigned int uiSavedTime = 0;
-        ((loadpath::Buffer*)buffer)->Read(&uiSavedTime, 4);
+        ((loadpath::Buffer*)apLoadGameBuffer)->Read(&uiSavedTime, 4);
         if (uiSavedTime < loadpath::g_timeGlobal.Now())
-            lastTime = loadpath::g_timeGlobal.Now() - uiSavedTime;
-        ((loadpath::Buffer*)buffer)->Read(&retries, 4);
+            iLastFailureTimeStamp = loadpath::g_timeGlobal.Now() - uiSavedTime;
+        ((loadpath::Buffer*)apLoadGameBuffer)->Read(&iContinuedFailureCount, 4);
     }
-    if (((loadpath::Buffer*)buffer)->Version() >= 7)
-        ((loadpath::Location*)&m_pathingLocation)->Load((loadpath::Buffer*)buffer);
-    ((loadpath::Buffer*)buffer)->ReadRef(&unk2C);
+    if (((loadpath::Buffer*)apLoadGameBuffer)->Version() >= 7)
+        ((loadpath::Location*)&FailedPathDestination)->Load((loadpath::Buffer*)apLoadGameBuffer);
+    ((loadpath::Buffer*)apLoadGameBuffer)->ReadRef(&DetectionDoorID);
     unsigned char uiStaleFlags = 0;
-    ((loadpath::Buffer*)buffer)->Read(&uiStaleFlags, 1);
+    ((loadpath::Buffer*)apLoadGameBuffer)->Read(&uiStaleFlags, 1);
     if (uiStaleFlags & 1)
     {
         unsigned char uiRequestKind = 0;
-        ((loadpath::Buffer*)buffer)->Read(&uiRequestKind, 1);
-        ((NiPointer<loadpath::Request>*)&request)->operator=(MakeRequest(uiRequestKind));
-        ((loadpath::Request*)*(NiPointer<loadpath::Request>*)&request)->Load((loadpath::Buffer*)buffer);
+        ((loadpath::Buffer*)apLoadGameBuffer)->Read(&uiRequestKind, 1);
+        ((NiPointer<loadpath::Request>*)&spCurrentRequest)->operator=(CreatePathingRequest(uiRequestKind));
+        ((loadpath::Request*)*(NiPointer<loadpath::Request>*)&spCurrentRequest)->Load((loadpath::Buffer*)apLoadGameBuffer);
         if (pActor && pActor->GetProcess() && !reinterpret_cast<loadpath::Process*>(pActor->GetProcess())->flags.Test(0))
-            ((loadpath::Request*)*(NiPointer<loadpath::Request>*)&request)->Attach(pActor);
+            ((loadpath::Request*)*(NiPointer<loadpath::Request>*)&spCurrentRequest)->Attach(pActor);
     }
     bool flags = false;
     if (uiStaleFlags & 2)
     {
-        ((NiPointer<loadpath::Solution>*)&m_pActorNode)->operator=(new Solution);
-        ((loadpath::Solution*)*(NiPointer<loadpath::Solution>*)&m_pActorNode)->FUN_006e8d50((loadpath::Buffer*)buffer);
-        for (unsigned int index = 0; index < ((loadpath::Solution*)*(NiPointer<loadpath::Solution>*)&m_pActorNode)->PathingSolution_GetVirtualNodeCount(); ++index)
+        ((NiPointer<loadpath::Solution>*)&spCurrentPath)->operator=(new Solution);
+        ((loadpath::Solution*)*(NiPointer<loadpath::Solution>*)&spCurrentPath)->FUN_006e8d50((loadpath::Buffer*)apLoadGameBuffer);
+        for (unsigned int index = 0; index < ((loadpath::Solution*)*(NiPointer<loadpath::Solution>*)&spCurrentPath)->PathingSolution_GetVirtualNodeCount(); ++index)
         {
-            if (((loadpath::Solution*)*(NiPointer<loadpath::Solution>*)&m_pActorNode)->GetVirtualNode_006e78b0(index)->Valid() &&
-                !((ObjectResolver*)((loadpath::Solution*)*(NiPointer<loadpath::Solution>*)&m_pActorNode)->GetVirtualNode_006e78b0(index)->Data())->Resolve())
+            if (((loadpath::Solution*)*(NiPointer<loadpath::Solution>*)&spCurrentPath)->GetVirtualNode_006e78b0(index)->Valid() &&
+                !((ObjectResolver*)((loadpath::Solution*)*(NiPointer<loadpath::Solution>*)&spCurrentPath)->GetVirtualNode_006e78b0(index)->Data())->Resolve())
             {
                 Warning("PATHFINDING: Actor %s (0x%08x) is using a stale path (the navmesh changed), forcing a failure",
                         pActor->GetName(), pActor->ID());
@@ -3225,14 +3357,14 @@ void ActorMover::LoadGame_009df3d0(BGSLoadFormBuffer* buffer)
     }
     if (uiStaleFlags & 4)
     {
-        m_pPathHandler = new VirtualHandler(pActor, this, *(NiPointer<loadpath::Solution>*)&m_pActorNode, *(NiPointer<loadpath::Request>*)&request);
+        m_pPathHandler = new VirtualHandler(pActor, this, *(NiPointer<loadpath::Solution>*)&spCurrentPath, *(NiPointer<loadpath::Request>*)&spCurrentRequest);
     }
     else if (uiStaleFlags & 8)
     {
-        m_pPathHandler = new NormalHandler(pActor, this, *(NiPointer<loadpath::Solution>*)&m_pActorNode, *(NiPointer<loadpath::Request>*)&request);
+        m_pPathHandler = new NormalHandler(pActor, this, *(NiPointer<loadpath::Solution>*)&spCurrentPath, *(NiPointer<loadpath::Request>*)&spCurrentRequest);
     }
     if (m_pPathHandler)
-        m_pPathHandler->Load(buffer);
+        m_pPathHandler->Load(apLoadGameBuffer);
     if (flags)
     {
         ActorMover_ClearCurrentData();
@@ -3508,15 +3640,18 @@ extern Actor* g_thePlayer;
 
 // Returns false if the actor is loading, has anim action 7, or is the busy player, otherwise true.
 // @fnv 0x00884750
-bool __fastcall IsActorReadyForMovement(Actor* actor)
+// src: XBOX_DEBUG_PDB 0x00884750
+// pdb: Actor::CanRun | Actor.obj | debug, call graph, high
+// pdb locals: eact
+bool __fastcall Actor_CanRun(Actor* actor)
 {
     if (IsActorLoading(actor))
         return false;
     int iAction = actor->GetAnimAction();
     if (iAction == 7)
         return false;
-    if (actor == g_thePlayer && actor->m_pBaseProcess &&
-        reinterpret_cast<Process884750*>(actor->m_pBaseProcess)->IsBusy())
+    if (actor == g_thePlayer && actor->pCurrentProcess &&
+        reinterpret_cast<Process884750*>(actor->pCurrentProcess)->IsBusy())
         return false;
     return true;
 }
@@ -3531,6 +3666,7 @@ void __cdecl FUN_00fc8480();
 void __cdecl _atexit(void(__cdecl*)(void));
 // Returns a pointer to a function-local static PathManager.
 // @fnv 0x0047d0b0
+// pdb: PathManager::QInstance | TESActorBaseData.obj | retail, object-file run extension, high
 PathManager* __cdecl GetPathManager()
 {
     static PathManager pManager;
@@ -3558,13 +3694,15 @@ class FUN_00491040_shell
 class AnimData : public FUN_00491040_shell
 {
   public:
-    void GetMovement(NiPoint3* outDelta, Actor* actor, int a3, int a4);
-    bool IsHighestPriority();
+    void GetMovement(NiPoint3* delta, Actor* apRef, int applyRot, int zeroZ);
+    bool Animation_ShouldBeMoving();
 };
 
 // Computes the actor's movement delta from animation or pathing, adjusts movement mode flags, and stores the result in m_kPathingDelta.
 // @fnv 0x009ddc00
 // src: XBOX_PDB 0x009ddc00
+// pdb: ActorMover::SetCurrentFrameMoveModeAndDelta | ActorMover.obj | retail, upstream name already matches, high
+// pdb locals: movedelta, bvalid, imovemode, panim
 void ActorMover::SetCurrentFrameMoveModeAndDelta()
 {
     bool bHaveValidDelta = false;
@@ -3573,9 +3711,9 @@ void ActorMover::SetCurrentFrameMoveModeAndDelta()
     void* moveDelta[sizeof(NiPoint3) / sizeof(void*)];
     memcpy(&moveDelta, &NiPoint3_ZERO, sizeof(NiPoint3));
 
-    if (this->m_bHasMovementData)
+    if (this->bForceMoveMode)
     {
-        mode = this->m_uiMovementFlags;
+        mode = this->uiForcedMoveMode;
         AnimData* anim = this->pActor->GetAnimData();
         if (anim)
         {
@@ -3609,7 +3747,7 @@ void ActorMover::SetCurrentFrameMoveModeAndDelta()
             {
                 bHaveValidDelta = true;
             }
-            if (this->unk78)
+            if (this->bStopCurrentMoveAnim)
             {
                 mode &= ~0xF;
                 memcpy(&moveDelta, &NiPoint3_ZERO, sizeof(NiPoint3));
@@ -3619,14 +3757,14 @@ void ActorMover::SetCurrentFrameMoveModeAndDelta()
                 case 0xc:
                 case 0xd:
                 case 0xe:
-                    this->unk78 = false;
+                    this->bStopCurrentMoveAnim = false;
                     bHaveValidDelta = false;
                     break;
                 default:
                     AnimData* anim = this->pActor->GetAnimData();
-                    if (!anim || !anim->IsHighestPriority())
+                    if (!anim || !anim->Animation_ShouldBeMoving())
                     {
-                        this->unk78 = false;
+                        this->bStopCurrentMoveAnim = false;
                     }
                     break;
                 }
@@ -3636,7 +3774,7 @@ void ActorMover::SetCurrentFrameMoveModeAndDelta()
 
     if (mode & 0x200)
     {
-        if (!IsActorReadyForMovement(this->pActor))
+        if (!Actor_CanRun(this->pActor))
         {
             mode &= ~0x200;
             mode |= 0x100;
@@ -3651,7 +3789,7 @@ void ActorMover::SetCurrentFrameMoveModeAndDelta()
         }
     }
 
-    if ((mode & 0x400) != (this->m_uiMovementMode & 0x400))
+    if ((mode & 0x400) != (this->iCachedLastValidMoveMode & 0x400))
     {
         AnimData* anim = this->pActor->GetAnimData();
         if (!anim || (anim->Animation_GetCurrentSequence(0) && anim->Animation_GetCurrentSequence(0)->GetState() != 1) ||
@@ -3660,13 +3798,13 @@ void ActorMover::SetCurrentFrameMoveModeAndDelta()
             this->pActor->GetAnimAction_008a7570() != -1)
         {
             mode &= ~0x400;
-            mode |= (this->m_uiMovementMode & 0x400);
+            mode |= (this->iCachedLastValidMoveMode & 0x400);
         }
     }
 
-    this->m_uiMovementMode = mode;
-    memcpy(&this->m_kPathingDelta, &moveDelta, sizeof(NiPoint3));
-    this->m_bHasPathingDelta = bHaveValidDelta;
+    this->iCachedLastValidMoveMode = mode;
+    memcpy(&this->CachedMoveDelta, &moveDelta, sizeof(NiPoint3));
+    this->bHaveValidDeltaThisFrame = bHaveValidDelta;
     FUN_00483710();
 }
 
@@ -4130,13 +4268,16 @@ extern PlayerCharacter* _g_thePlayer;
 // Builds a request from apRequest, notifies the handler when present, then submits it to the path manager or returns early.
 // @fnv 0x009db090
 // src: XBOX_PDB 0x009db090
+// pdb: ActorMover::BackGroundBuildPath | ActorMover.obj | retail, upstream name already matches, high
+// pdb params: apRequest
+// pdb locals: bplayerWaiting, bretVal, bdestinationUnderWater, bexterior, origin, poriginCell, destination, boriginUnderWater, bsameSpace, goaldelta, retval, sWarning
 bool ActorMover::BackGroundBuildPath(const PathingRequest* apRequest)
 {
     bool result5 = false;
     bool sleeping;
     ((BackgroundPathRequest14*)apRequest)->vfn_0c();
     eState = 1;
-    ResetMoverState(0);
+    ClearDataForNewPathingRequest(0);
     if (!((BackgroundPathRequest14*)apRequest)->NiAVObject_GetRotate_006a9540()->PathingLocation_QUnused())
     {
         BackgroundPathLocation14* locA5 = &((BackgroundPathRequest14*)apRequest)->GetOffsetC();
@@ -4170,46 +4311,46 @@ bool ActorMover::BackGroundBuildPath(const PathingRequest* apRequest)
     switch (((BackgroundPathRequest14*)apRequest)->vfn_10())
     {
     case 0: {
-        (*(NiPointer<BackgroundPathRequest14>*)&request) = new FUN_006e26a0((const BackgroundPathRequest14*)apRequest);
+        (*(NiPointer<BackgroundPathRequest14>*)&spCurrentRequest) = new FUN_006e26a0((const BackgroundPathRequest14*)apRequest);
         break;
     }
     case 3: {
-        (*(NiPointer<BackgroundPathRequest14>*)&request) = new FUN_006e5400((const BackgroundPathRequest14*)apRequest);
+        (*(NiPointer<BackgroundPathRequest14>*)&spCurrentRequest) = new FUN_006e5400((const BackgroundPathRequest14*)apRequest);
         break;
     }
     case 4: {
-        (*(NiPointer<BackgroundPathRequest14>*)&request) = new FUN_006e5640((const BackgroundPathRequest14*)apRequest);
+        (*(NiPointer<BackgroundPathRequest14>*)&spCurrentRequest) = new FUN_006e5640((const BackgroundPathRequest14*)apRequest);
         break;
     }
     case 5: {
-        (*(NiPointer<BackgroundPathRequest14>*)&request) = new FUN_006e5940((const BackgroundPathRequest14*)apRequest);
+        (*(NiPointer<BackgroundPathRequest14>*)&spCurrentRequest) = new FUN_006e5940((const BackgroundPathRequest14*)apRequest);
         break;
     }
     case 6: {
-        (*(NiPointer<BackgroundPathRequest14>*)&request) = new FUN_006e6010((const BackgroundPathRequest14*)apRequest);
+        (*(NiPointer<BackgroundPathRequest14>*)&spCurrentRequest) = new FUN_006e6010((const BackgroundPathRequest14*)apRequest);
         break;
     }
     case 7: {
-        (*(NiPointer<BackgroundPathRequest14>*)&request) = new FUN_006e5db0((const BackgroundPathRequest14*)apRequest);
+        (*(NiPointer<BackgroundPathRequest14>*)&spCurrentRequest) = new FUN_006e5db0((const BackgroundPathRequest14*)apRequest);
         break;
     }
     case 8: {
-        (*(NiPointer<BackgroundPathRequest14>*)&request) = new FUN_006e4d20((const BackgroundPathRequest14*)apRequest);
+        (*(NiPointer<BackgroundPathRequest14>*)&spCurrentRequest) = new FUN_006e4d20((const BackgroundPathRequest14*)apRequest);
         break;
     }
     }
-    ((BackgroundPathRequest14*)(*(NiPointer<BackgroundPathRequest14>*)&request))->GetOffsetC().FUN_006ddbe0();
-    ((BackgroundPathRequest14*)(*(NiPointer<BackgroundPathRequest14>*)&request))->NiAVObject_GetRotate_006a9540()->FUN_006ddbe0();
-    ((BackgroundPathRequest14*)(*(NiPointer<BackgroundPathRequest14>*)&request))->FUN_006e2b20(((MobileObject_Helper*)pActor));
+    ((BackgroundPathRequest14*)(*(NiPointer<BackgroundPathRequest14>*)&spCurrentRequest))->GetOffsetC().FUN_006ddbe0();
+    ((BackgroundPathRequest14*)(*(NiPointer<BackgroundPathRequest14>*)&spCurrentRequest))->NiAVObject_GetRotate_006a9540()->FUN_006ddbe0();
+    ((BackgroundPathRequest14*)(*(NiPointer<BackgroundPathRequest14>*)&spCurrentRequest))->FUN_006e2b20(((MobileObject_Helper*)pActor));
     DebugOnStopMoving();
-    ((BackgroundPathRequest14*)(*(NiPointer<BackgroundPathRequest14>*)&request))->FUN_009db930(retries + 3);
+    ((BackgroundPathRequest14*)(*(NiPointer<BackgroundPathRequest14>*)&spCurrentRequest))->FUN_009db930(iContinuedFailureCount + 3);
     if (!bPathingFailed && m_pPathHandler != 0)
     {
-        m_pPathHandler->vfn_38((PathingRequest*)(BackgroundPathRequest14*)(*(NiPointer<BackgroundPathRequest14>*)&request));
+        m_pPathHandler->vfn_38((PathingRequest*)(BackgroundPathRequest14*)(*(NiPointer<BackgroundPathRequest14>*)&spCurrentRequest));
     }
     if (m_pPathHandler != 0 && m_pPathHandler->vfn_34())
     {
-        DetailedActorPathHandler_UpdateAvoidNodesForPath(((MobileObject_Helper*)pActor), (BackgroundPathRequest14*)(*(NiPointer<BackgroundPathRequest14>*)&request), m_pPathHandler);
+        DetailedActorPathHandler_UpdateAvoidNodesForPath(((MobileObject_Helper*)pActor), (BackgroundPathRequest14*)(*(NiPointer<BackgroundPathRequest14>*)&spCurrentRequest), m_pPathHandler);
     }
     else
     {
@@ -4217,17 +4358,17 @@ bool ActorMover::BackGroundBuildPath(const PathingRequest* apRequest)
         {
             if (TESObjectCELL_GetAttached(((MobileObject_Helper*)pActor)->FUN_008d6f30()))
             {
-                DetailedActorPathHandler_UpdateAvoidNodesForPath(((MobileObject_Helper*)pActor), (BackgroundPathRequest14*)(*(NiPointer<BackgroundPathRequest14>*)&request), 0);
+                DetailedActorPathHandler_UpdateAvoidNodesForPath(((MobileObject_Helper*)pActor), (BackgroundPathRequest14*)(*(NiPointer<BackgroundPathRequest14>*)&spCurrentRequest), 0);
             }
         }
     }
     {
         sleeping = _g_thePlayer->IsSleepingOrResting();
-        if ((ActorPathingMessageQueue*)m_queue == 0)
+        if ((ActorPathingMessageQueue*)spMessageQueue == 0)
         {
-            m_queue = new ActorPathingMessageQueue();
+            spMessageQueue = new ActorPathingMessageQueue();
         }
-        if (!((PathManager14*)GetPathManager())->BuildPath((*(NiPointer<BackgroundPathRequest14>*)&request), m_queue, !sleeping))
+        if (!((PathManager14*)GetPathManager())->BuildPath((*(NiPointer<BackgroundPathRequest14>*)&spCurrentRequest), spMessageQueue, !sleeping))
         {
             (::ActorMover_ClearCurrentData)((TESForm*)this);
             eState = 7;
@@ -4235,7 +4376,7 @@ bool ActorMover::BackGroundBuildPath(const PathingRequest* apRequest)
         }
         else
         {
-            m_bMovementActive = 1;
+            bWaitingForPath = 1;
             result5 = true;
         }
     }
@@ -4244,6 +4385,7 @@ bool ActorMover::BackGroundBuildPath(const PathingRequest* apRequest)
 
 bool IsConditionMet();
 
+// pdb: class TaskQueueInterface, size 0x10 (here 0x1), 4 members
 struct TaskQueueInterface
 {
     static TaskQueueInterface* GetInstance();
@@ -4256,7 +4398,7 @@ struct FUN_0087b650_shell
 
 struct FUN_0087b190_shell
 {
-    void QueueActorTask(Actor*);
+    void TaskQueueInterface_QueueActorMoveCharController(Actor*);
 };
 
 struct SetLoc_S
@@ -4280,12 +4422,15 @@ struct TESObjectREFR_Ext : TESObjectREFR
 
 // @fnv 0x009df010
 // src: XBOX_PDB 0x009df010
+// pdb: ActorMover::MoveActorToLocation | ActorMover.obj | retail, upstream name already matches, high
+// pdb params: aNewLoc
+// pdb locals: pcurrentCell, pworld, pnewcell
 bool ActorMover::MoveActorToLocation(const NiPoint3& aNewLoc)
 {
     if (IsConditionMet())
     {
         ((FUN_0087b650_shell*)TaskQueueInterface::GetInstance())->QueueActorLocationTask(pActor, &aNewLoc);
-        ((FUN_0087b190_shell*)TaskQueueInterface::GetInstance())->QueueActorTask(pActor);
+        ((FUN_0087b190_shell*)TaskQueueInterface::GetInstance())->TaskQueueInterface_QueueActorMoveCharController(pActor);
     }
     else
     {
@@ -4330,21 +4475,23 @@ void __fastcall PathingSolution_ClearCurrentDetailedPath(Solution*);
 
 // @fnv 0x009dc980
 // src: COMMUNITY 0x009dc980
+// pdb: ActorMover::EndOfCurrentPathCheck | ActorMover.obj | retail, upstream name already matches, high
+// pdb locals: pnode
 int ActorMover::EndOfCurrentPathCheck()
 {
     using namespace PathEndCheck14;
     Node* pnode;
-    if (!lastNode)
+    if (!iNextNode)
     {
         eState = 7;
         SetEnabled(true);
         FUN_009dd0a0();
         return 2;
     }
-    currentNode = lastNode;
-    if (((NiPointer<PathEndCheck14::Solution>*)&m_pActorNode)->operator->()->GetObjectFlags() > 0)
+    iPreviousNode = iNextNode;
+    if (((NiPointer<PathEndCheck14::Solution>*)&spCurrentPath)->operator->()->GetObjectFlags() > 0)
     {
-        pnode = &((NiPointer<PathEndCheck14::Solution>*)&m_pActorNode)->operator->()->PathingSolution_GetLastNode();
+        pnode = &((NiPointer<PathEndCheck14::Solution>*)&spCurrentPath)->operator->()->PathingSolution_GetLastNode();
         if (pnode->PathingNode_IsTeleportDoorNode())
         {
             if (!pnode->PathingNode_ActivateNode(pActor) && !pActor->GetCurrentAIProcess()->GetCurrentFadeState())
@@ -4356,12 +4503,12 @@ int ActorMover::EndOfCurrentPathCheck()
             }
             else
             {
-                PathingSolution_ClearCurrentDetailedPath(((NiPointer<PathEndCheck14::Solution>*)&m_pActorNode)->operator->());
+                PathingSolution_ClearCurrentDetailedPath(((NiPointer<PathEndCheck14::Solution>*)&spCurrentPath)->operator->());
                 return 1;
             }
         }
     }
-    if (currentNode >= ((NiPointer<PathEndCheck14::Solution>*)&m_pPathHandler->pCurrentPathingSolution)->operator->()->PathingSolution_GetVirtualNodeCount() - 1)
+    if (iPreviousNode >= ((NiPointer<PathEndCheck14::Solution>*)&m_pPathHandler->pCurrentPathingSolution)->operator->()->PathingSolution_GetVirtualNodeCount() - 1)
         FUN_009dd150();
     return 0;
 }

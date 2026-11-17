@@ -17,6 +17,9 @@ struct FUN_005ff560_shell
 
 // If the child array exists, links the next child's region to the previous child, then removes the child at index and compacts the array.
 // @fnv 0x005ff560
+// pdb: TESIdleForm::RemoveChildAtIndex | TESIdleForm.obj | debug, call graph, medium
+// pdb params: aiIndex
+// pdb locals: pnextidle, pprevidle
 void FUN_005ff560_shell::RemoveChildAndRelinkNeighbors(unsigned int index)
 {
     if (*(void**)(this + 0x40))

@@ -13,19 +13,22 @@ extern float DAT_0109696c;
 extern unsigned char DAT_0109a914;
 
 // @fnv 0x00a56880
-bool NiBlendBoolInterpolator::Update(float time, NiObjectNET* target, bool& value)
+// pdb: NiBlendBoolInterpolator::Update | NiBlendBoolInterpolator.obj | retail, upstream name already matches, high
+// pdb params: fTime, pkInterpTarget, bValue
+// pdb locals: bReturnValue
+bool NiBlendBoolInterpolator::Update(float fTime, NiObjectNET* pkInterpTarget, bool& bValue)
 {
     bool updated = false;
     if (m_ucInterpCount == 1)
     {
-        updated = UpdateAccumulatedTransform(time, target, value);
+        updated = StoreSingleValue(fTime, pkInterpTarget, bValue);
     }
     else if (m_ucInterpCount > 0)
     {
         NiBlendInterpolator::NormalizeWeights();
-        updated = UpdateSingleInterpolator(time, target, value);
+        updated = BlendValues(fTime, pkInterpTarget, bValue);
     }
-    m_fLastTime = time;
+    m_fLastTime = fTime;
     return updated;
 }
 
@@ -40,6 +43,8 @@ extern int DAT_0109a67c;
 
 // @fnv 0x00a565c0
 // src: EXE 0x00a565c0
+// pdb: NiBlendBoolInterpolator::CreateObject | NiBlendBoolInterpolator.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 void* __cdecl NiBlendBoolInterpolator_CreateObject()
 {
     void* p = BSFadeNode::operator new(0x34);
@@ -54,16 +59,20 @@ void* __cdecl NiBlendBoolInterpolator_CreateObject()
 }
 
 // @fnv 0x00a568e0
-void NiBlendBoolInterpolator::LoadBinary(NiStream& stream)
+// pdb: NiBlendBoolInterpolator::LoadBinary | NiBlendBoolInterpolator.obj | retail, upstream name already matches, high
+// pdb params: kStream
+void NiBlendBoolInterpolator::LoadBinary(NiStream& kStream)
 {
-    NiBlendInterpolator::LoadBinary(stream);
-    NiBinaryStream* __restrict input = stream.m_pkIstr;
+    NiBlendInterpolator::LoadBinary(kStream);
+    NiBinaryStream* __restrict input = kStream.m_pkIstr;
     unsigned int size = 1;
     input->m_uiAbsoluteCurrentPos += input->m_pfnRead(input, &m_bBoolValue, 1, &size, 1);
 }
 
 // Constructs a NiBlendInterpolator with the given arguments, installs the vtable at DAT_0109a67c and sets byte 0x30 from DAT_0109a914.
 // @fnv 0x00a56560
+// pdb: NiBlendBoolInterpolator::NiBlendBoolInterpolator | NiBlendBoolInterpolator.obj | retail, call graph, medium
+// pdb params: bManagerControlled, fWeightThreshold, ucArraySize
 NiBlendInterpolator* __fastcall ConstructBlendInterpolator(NiBlendInterpolator* self, int unused, bool a, float b,
                                                            unsigned char c)
 {
@@ -106,6 +115,10 @@ void* __fastcall FUN_00a56630(void* self, int, unsigned int flags)
 }
 
 // @fnv 0x00a56650
+// pdb: NiBlendBoolInterpolator::CreateClone | NiBlendBoolInterpolator.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiBlendBoolInterpolator::InterpolatorIsCorrectType
+// pdb params: kCloning
+// pdb locals: pkObject
 NiBlendBoolInterpolator* __fastcall CloneBoolInterpolator(NiBlendBoolInterpolator* self, int, void* cloning)
 {
     NiBlendBoolInterpolator* object = static_cast<NiBlendBoolInterpolator*>(
@@ -126,23 +139,29 @@ NiBlendBoolInterpolator* __fastcall CloneBoolInterpolator(NiBlendBoolInterpolato
 }
 
 // @fnv 0x00a566a0
-bool NiBlendBoolInterpolator::UpdateAccumulatedTransform(float time, NiObjectNET* target, bool& value)
+// src: XBOX_RETAIL_PDB 0x00a566a0
+// pdb: NiBlendBoolInterpolator::StoreSingleValue | NiBlendBoolInterpolator.obj | retail, object-file run extension, high
+// pdb params: fTime, pkInterpTarget, bValue
+// pdb locals: bSuccess
+bool NiBlendBoolInterpolator::StoreSingleValue(float fTime, NiObjectNET* pkInterpTarget, bool& bValue)
 {
-    if (m_uiObjectFlags & 1)
-        time = m_fSingleInterpolatorTime;
-    if (time == DAT_0109696c)
+    if (m_uFlags & 1)
+        fTime = m_fSingleTime;
+    if (fTime == DAT_0109696c)
         return false;
-    if (m_pSingleInterpolator->UpdateBool(time, target, value))
+    if (m_pkSingleInterpolator->UpdateBool(fTime, pkInterpTarget, bValue))
     {
-        m_bBoolValue = value;
+        m_bBoolValue = bValue;
         return true;
     }
-    value = false;
+    bValue = false;
     m_bBoolValue = DAT_0109a914;
     return false;
 }
 
 // @fnv 0x00a56920
+// pdb: NiBlendBoolInterpolator::SaveBinary | NiBlendBoolInterpolator.obj | retail, object-file gap fill, high
+// pdb params: kStream
 void __fastcall SaveBoolInterpolator(NiBlendBoolInterpolator* self, int, NiStream* stream)
 {
     self->NiBlendInterpolator::SaveBinary(*stream);
@@ -179,6 +198,8 @@ char* __cdecl NiViewerStrings_NiGetViewerString_Title(M76Glob*);
 char* __cdecl NiGetViewerString_00a7d410(const char*, unsigned int);
 // Calls FUN_00a38080, then appends the result of FUN_00a7d330 and the formatted "m_bBoolValue" string to pkStrings.
 // @fnv 0x00a56960
+// pdb: NiBlendBoolInterpolator::GetViewerStrings | NiBlendBoolInterpolator.obj | retail, string-set bridge, high
+// pdb params: pkStrings
 void __fastcall AddBoolValueStrings(NiBlendBoolInterpolator* self, int, M76Arr* pkStrings)
 {
     self->NiBlendInterpolator::AppendInterpolatorStrings(reinterpret_cast<StrArr*>(pkStrings));
@@ -217,7 +238,7 @@ inline bool GetUpdateTimeForItem(NiBlendBoolInterpolator* self, float& time,
     NiInterpolator* interpolator = item.m_spControllerInterpolator;
     if (interpolator && item.m_fNormalizedWeight != 0.0f)
     {
-        if (self->m_uiObjectFlags & 1)
+        if (self->m_uFlags & 1)
             time = item.m_fLastEvaluationTime;
         if (time == DAT_0109696c)
             return false;
@@ -228,7 +249,11 @@ inline bool GetUpdateTimeForItem(NiBlendBoolInterpolator* self, float& time,
 
 // Accumulates successful interpolator updates by normalized weight; when any update succeeds, sets both boolean values using a 0.5 threshold.
 // @fnv 0x00a56710
-bool NiBlendBoolInterpolator::UpdateSingleInterpolator(float fTime, NiObjectNET* pkInterpTarget, bool& bValue)
+// src: XBOX_RETAIL_PDB 0x00a56710
+// pdb: NiBlendBoolInterpolator::BlendValues | NiBlendBoolInterpolator.obj | retail, object-file run extension, high
+// pdb params: fTime, pkInterpTarget, bValue
+// pdb locals: bModifiedValue, fTotalNormalizedWeights, fBlendValue, uc, pkInterpolator, fUpdateTime, bSuccess, fValue
+bool NiBlendBoolInterpolator::BlendValues(float fTime, NiObjectNET* pkInterpTarget, bool& bValue)
 {
     float fTotalValue = 0.0f;
     float fTotalWeight = 1.0f;
@@ -236,11 +261,11 @@ bool NiBlendBoolInterpolator::UpdateSingleInterpolator(float fTime, NiObjectNET*
     for (unsigned char uc = 0; uc < m_ucArraySize; uc++)
     {
         unsigned int uOff = uc * sizeof(NiBlendInterpolator__InterpArrayItem);
-        NiBlendInterpolator__InterpArrayItem& kItem = m_pInterpArray[uc];
-        if (kItem.m_spControllerInterpolator && m_pInterpArray[uc].m_fNormalizedWeight > 0.0f)
+        NiBlendInterpolator__InterpArrayItem& kItem = m_pkInterpArray[uc];
+        if (kItem.m_spControllerInterpolator && m_pkInterpArray[uc].m_fNormalizedWeight > 0.0f)
         {
             float fUpdateTime = fTime;
-            if (!::GetUpdateTimeForItem(this, fUpdateTime, m_pInterpArray[uc]))
+            if (!::GetUpdateTimeForItem(this, fUpdateTime, m_pkInterpArray[uc]))
             {
                 fTotalWeight -= kItem.m_fNormalizedWeight;
                 continue;
@@ -249,14 +274,14 @@ bool NiBlendBoolInterpolator::UpdateSingleInterpolator(float fTime, NiObjectNET*
             if (kItem.m_spControllerInterpolator->UpdateBool(fUpdateTime, pkInterpTarget, reinterpret_cast<bool&>(bInterpValue)))
             {
                 int iV;
-                NiBlendInterpolator__InterpArrayItem* pA = m_pInterpArray;
+                NiBlendInterpolator__InterpArrayItem* pA = m_pkInterpArray;
                 *(volatile int*)&iV = bInterpValue;
                 fTotalValue += ((NiBlendInterpolator__InterpArrayItem*)((char*)pA + uOff))->m_fNormalizedWeight * iV;
                 bModifiedValue = true;
             }
             else
             {
-                fTotalWeight -= m_pInterpArray[uc].m_fNormalizedWeight;
+                fTotalWeight -= m_pkInterpArray[uc].m_fNormalizedWeight;
             }
         }
     }

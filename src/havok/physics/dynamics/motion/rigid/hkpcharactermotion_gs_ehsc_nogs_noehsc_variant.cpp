@@ -32,5 +32,5 @@ void __fastcall GetCharacterProjectedPointVelocity(const hkpCharacterMotion* mot
     __m128 sum = _mm_add_ss(a2, l2);
     float fv = _mm_cvtss_f32(sum);
     *out_vel = fv;
-    *out_inv_mass = motion->m_kInertiaAndMassInv.w;
+    *out_inv_mass = motion->m_inertiaAndMassInv.w;
 }

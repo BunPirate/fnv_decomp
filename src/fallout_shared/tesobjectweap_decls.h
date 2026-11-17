@@ -115,6 +115,7 @@ class TESFileChunkData16 : public TESFile
 #include "../../include/TESSound.h"
 #include "../../include/TESObjectSTAT.h"
 #include "../../include/TESObjectIMOD.h"
+// pdb: class ModelLoader, size 0x30 (here 0x1), 12 members
 class ModelLoader
 {
   public:

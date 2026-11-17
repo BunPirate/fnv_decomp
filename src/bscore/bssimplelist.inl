@@ -11,12 +11,17 @@ template<class T> BSSimpleList<T>::BSSimpleList()
 }
 
 // @fnv 0x00470440
+// pdb: NiTMapBase<NiTPointerAllocator<unsigned int>,TESForm *,bool>::`scalar deleting destructor' | TESDataHandler.obj | debug, object-file run extension, low
 template<class T> BSSimpleList<T>::BSSimpleList(T& item)
     : m_item(item), m_pkNext(0)
 {
 }
 
 // @fnv 0x00905820
+// pdb: BSSimpleList<VATS_COMMAND *>::AddTail | VATS.obj | retail, call graph, low
+// pdb note: debug build links it to BSSimpleList<ExtraFollowerSwimBreadcrumb *>::AddTail
+// pdb params: item
+// pdb locals: pkCur
 template<class T> void BSSimpleList<T>::AddTail(T& item)
 {
     if (!item)
@@ -37,18 +42,23 @@ template<class T> T& BSSimpleList<T>::GetItem()
 }
 
 // @fnv 0x00726070
+// pdb: BSstrcat | EffectItemList.obj | debug, call graph, medium
+// pdb params: apString1, aiSize, apString2
 template<class T> BSSimpleList<T>* BSSimpleList<T>::GetNext()
 {
     return m_pkNext;
 }
 
 // @fnv 0x008256d0
+// pdb: BSSimpleList<SpellDispelData *>::~BSSimpleList<SpellDispelData *> | MagicTarget.obj | debug, object-file run extension, low
 template<class T> bool BSSimpleList<T>::IsEmpty()
 {
     return !m_pkNext && !m_item;
 }
 
 // @fnv 0x00470470
+// pdb: BSSimpleList<VATS_COMMAND *>::RemoveAll | VATS.obj | retail, call graph, medium
+// pdb locals: pkSave
 template<class T> void BSSimpleList<T>::RemoveAll()
 {
     while (m_pkNext)
@@ -102,23 +112,32 @@ template class BSSimpleList<InventoryStackRecord*>;
 
 #include "bssimplelist_packet.h"
 // @fnv 0x00413f40
+// pdb: NiFixedString::operator char const * | ModelLoader.obj | debug, call graph, medium
 BSSimpleList<TESTopic*>* TESTopicInfoData::GetLinkToList() { return &m_kLinkToList; }
 // @fnv 0x00500940
 PerkEntryConditionSet* BGSCameraPath::GetConditions() { return &Conditions; }
 // @fnv 0x00891170
-BSSimpleList<BGSCameraShot*>* BGSCameraPath::GetShotList() { return &m_kCameraShotList; }
+BSSimpleList<BGSCameraShot*>* BGSCameraPath::GetShotList() { return &ShotList; }
 // @fnv 0x005a7be0
+// pdb: TESRecipeComponent::TESRecipeComponent | TESRecipe.obj | debug, call graph, high
 QuantityData::QuantityData() { SetQuantity(0); }
 // @fnv 0x00519550
+// pdb: TESObjectDOOR::ClearRandomTeleportList | TESObjectDOOR.obj | debug, upstream name already matches, high
 void TESObjectDOOR::ClearRandomTeleportList() { reinterpret_cast<BSSimpleList<ActorCause*>*>(&m_kRandomTeleportTargets)->RemoveAll(); }
 // @fnv 0x00944460
+// pdb: RandomInt | TESRegionDataSound.obj | debug, call graph, medium
+// pdb params: aiMin, aiMax
 unsigned int GetRandomNumberInRange(int min, int max) { return MersenneTwister::GetRandomGenerator()->IntInRange(min,max); }
 // @fnv 0x005e7790
-void BGSHeadPart::AddExtraPart(BGSHeadPart* part) { reinterpret_cast<BSSimpleList<SpellItem*>*>(&m_kExtraParts)->AddHead(reinterpret_cast<SpellItem*&>(part)); }
+// pdb: BGSHeadPart::AddExtraPart | BGSHeadPart.obj | debug, upstream name already matches, high
+// pdb params: apPart
+void BGSHeadPart::AddExtraPart(BGSHeadPart* apPart) { reinterpret_cast<BSSimpleList<SpellItem*>*>(&ExtraParts)->AddHead(reinterpret_cast<SpellItem*&>(apPart)); }
 // @fnv 0x004b0680
 template <> BSSimpleList<TESWeather::WeatherSound*>::BSSimpleList(TESWeather::WeatherSound* item, BSSimpleList* next) : m_item(item),m_pkNext(next) {}
 // @fnv 0x00501170
-void BGSTerminal::AddMenuItem(TerminalMenuItem* item) { if(item) reinterpret_cast<BSSimpleList<ScriptVariableInfo*>*>(&m_kMenuItems)->AddTail(reinterpret_cast<ScriptVariableInfo* const&>(item)); }
+// pdb: BGSTerminal::AddMenuItem | BGSTerminal.obj | debug, upstream name already matches, high
+// pdb params: apItem
+void BGSTerminal::AddMenuItem(TerminalMenuItem* apItem) { if(apItem) reinterpret_cast<BSSimpleList<ScriptVariableInfo*>*>(&m_kMenuItems)->AddTail(reinterpret_cast<ScriptVariableInfo* const&>(apItem)); }
 
 // @fnv 0x006130e0
 BSSimpleList<TESClass*>* TESDataHandler::GetTESClassList() { return reinterpret_cast<BSSimpleList<TESClass*>*>(listClasses); }

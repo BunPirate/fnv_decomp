@@ -69,6 +69,9 @@ struct SortPair
 };
 // @fnv 0x00d36520
 // src: GUESS 0x00d36520 (confidence: low)
+// pdb: hkAlgorithm::quickSortRecursive<hkShapeKeyPair,hkAlgorithm::less<hkShapeKeyPair> > | hkpCollectionCollectionAgent3.obj | retail, object-file run extension, low
+// pdb params: pArr, d, h, cmpLess
+// pdb locals: str
 extern "C" void Object_ProcessEntries_00d36520(SortPair* arr, int lo, int hi, unsigned int extra)
 {
     int i;
@@ -115,8 +118,8 @@ extern "C" void Object_ProcessEntries_00d36520(SortPair* arr, int lo, int hi, un
         lo = i;
     }
 }
-void __cdecl hkpCollectionAgent3_initAgentFunc(hkpCollisionDispatcher::Agent3FunctionTable& kFuncs);
-void __cdecl hkpCollectionAgent3_registerAgent3(hkpCollisionDispatcher* pkDispatcher);
+void __cdecl hkpCollectionAgent3_initAgentFunc(hkpCollisionDispatcher::Agent3FunctionTable& f);
+void __cdecl hkpCollectionAgent3_registerAgent3(hkpCollisionDispatcher* dispatcher);
 void InitOutputDefaults();
 void Runtime_ReleaseHandles_Thunk();
 void ReleaseHandles();
@@ -125,7 +128,7 @@ void InsertIntoSlotArray();
 void nullsub_15();
 void hkCollideCapsuleUtilCapsVsTri_ProcessEntries_00d39150();
 void hkCapsuleTriangleAgent3_process();
-void __cdecl hkCapsuleTriangleAgent3_registerAgent3(hkpCollisionDispatcher* pkDispatcher);
+void __cdecl hkCapsuleTriangleAgent3_registerAgent3(hkpCollisionDispatcher* dispatcher);
 extern "C"
 {
     __m128 _mm_set_ps1(float a);
@@ -281,18 +284,21 @@ struct MoppCastCastGeometry
     MoppCastMatrix relative;
 };
 // @fnv 0x00d2f0d0
-// src: GUESS 0x00d2f0d0 (confidence: low)
-void __cdecl hkTransform_setMulInverseMul_ComputeValues_00d2f0d0(MoppCastBody* a, MoppCastBody* b, MoppCastInput* c, int d, int e)
+// src: XBOX_RETAIL_PDB 0x00d2f0d0
+// pdb: hkpMoppAgent::staticLinearCast | hkpMoppAgent.obj | retail, string-set bridge, high
+// pdb params: bodyA, bodyB, input, collector, startCollector
+// pdb locals: ai, machine, aabb, tol4, bTa
+void __cdecl hkpMoppAgent_staticLinearCast(MoppCastBody* bodyA, MoppCastBody* bodyB, MoppCastInput* c, int d, int startCollector)
 {
     ProfMark(DAT_010ce8e8);
     // Preserve uninitialized scratch storage without vector constructors or a GS buffer.
     __declspec(align(16)) void* geometryStorage[sizeof(MoppCastCastGeometry) / sizeof(void*)];
     MoppCastCastGeometry& ls = *(MoppCastCastGeometry*)geometryStorage;
-    ls.relative.hkTransform_setMulInverseMul(b->transform, a->transform);
+    ls.relative.hkTransform_setMulInverseMul(bodyB->transform, bodyA->transform);
 
-    a->shape->Eval(&ls.relative, c->tolerance, &ls.bounds);
+    bodyA->shape->Eval(&ls.relative, c->tolerance, &ls.bounds);
 
-    ls.direction.hkVector4_setRotatedInverseDir(*(const hkRotation*)b->transform, c->direction);
+    ls.direction.hkVector4_setRotatedInverseDir(*(const hkRotation*)bodyB->transform, c->direction);
 
     float tolerance = c->tolerance;
     MoppSimd::LocalM128 scalarHalf = MoppSimd::_mm_load_ss(&DAT_01016248);
@@ -306,10 +312,10 @@ void __cdecl hkTransform_setMulInverseMul_ComputeValues_00d2f0d0(MoppCastBody* a
         MoppSimd::_mm_mul_ps(MoppSimd::_mm_shuffle_ps(scalarHalf, scalarHalf, 0),
                              MoppSimd::_mm_sub_ps((MoppSimd::LocalM128&)ls.bounds.max, (MoppSimd::LocalM128&)ls.bounds.min)),
         MoppSimd::_mm_shuffle_ps(MoppSimd::_mm_load_ss(&tolerance), MoppSimd::_mm_load_ss(&tolerance), 0));
-    ls.query.a = a;
-    ls.query.b = b;
+    ls.query.a = bodyA;
+    ls.query.b = bodyB;
     (MoppSimd::LocalM128&)ls.query.radius = radius;
     ls.query.input = c;
-    ls.collector.ProcessAndReturnValue_00da8180(&ls.query, d, e);
+    ls.collector.ProcessAndReturnValue_00da8180(&ls.query, d, startCollector);
     ProfMark(DAT_010c41f8);
 }

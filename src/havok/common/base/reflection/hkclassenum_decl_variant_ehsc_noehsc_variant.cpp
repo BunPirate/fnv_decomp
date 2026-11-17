@@ -23,9 +23,12 @@ class hkClassEnumItem
 int __cdecl hkString_strLen(const char*);
 // @fnv 0x00db7600
 // src: HAVOK_LIB 0x00db7600
-void hkClassEnum::writeSignature(hkStreamWriter* writer) const
+// pdb: hkClassEnum::writeSignature | hkClassEnum.obj | retail, upstream name already matches, high
+// pdb params: w
+// pdb locals: oa
+void hkClassEnum::writeSignature(hkStreamWriter* w) const
 {
-    hkOArchive archive(writer, false);
+    hkOArchive archive(w, false);
     const char* name = m_name;
     archive.WriteRaw(name, hkString_strLen(name));
     int count = m_items.m_iElementCount;

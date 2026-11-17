@@ -2,6 +2,7 @@
 
 #include "hkpGskfAgent.h"
 
+// pdb: class hkpPredGskfAgent, size 0x80 (here 0x60), bases: hkpGskfAgent, 0 members
 class hkpPredGskfAgent : public hkpGskfAgent
 {
 public:

@@ -2,6 +2,7 @@
 
 #include "NiTimeController.h"
 
+// pdb: class BSPlayerDistanceCheckController, size 0x3c, bases: NiTimeController, 2 members
 class BSPlayerDistanceCheckController : public NiTimeController
 {
 public:
@@ -15,9 +16,9 @@ public:
     const NiRTTI* const* GetNiRTTI();
     double NiControllerSequence_GetLastTime();
     int GetField38();
-    void UpdateDoorSpawn(unsigned int unkArg);
+    void UpdateDoorSpawn(unsigned int UpdateData);
     void TargetIsRequiredType();
 
-    unsigned int unk34;
-    void (__cdecl* m_callback)(void*);
+    unsigned int fCheckDistance; // src: XBOX_RETAIL_PDB +0x34 (old: unk34)
+    void (__cdecl* pfnCallback)(void*); // src: XBOX_RETAIL_PDB +0x38 (old: m_callback)
 };

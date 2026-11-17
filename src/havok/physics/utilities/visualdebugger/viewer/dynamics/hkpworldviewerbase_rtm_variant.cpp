@@ -2,7 +2,7 @@
 // with VC9 RTM (cl 15.00.21022.08, the compiler the game was built with). Declarations copied from that unit's skeleton.
 
 
-unsigned int hkpMeshWeldingUtility_modifyCombinedEdgesBitcode(unsigned int auiValue, unsigned int auiIndex, unsigned int auiFieldValue);
+unsigned int hkpMeshWeldingUtility_modifyCombinedEdgesBitcode(unsigned int combinedBitcode, unsigned int edgeIndex, unsigned int bitcode);
 int __cdecl ExtractBitField(unsigned short ausValue, char acShiftIndex);
 struct DDCC60BaseObject
 {
@@ -283,15 +283,18 @@ struct Hit
 };
 // @fnv 0x00ddd0b0
 // src: COMMUNITY 0x00ddd0b0
-Hit __cdecl hkClipEdgeAgainstPlanes(const ClipVectorLocal_00ddc& start, const ClipVectorLocal_00ddc& end, int planeCount, const ClipVectorLocal_00ddc* planes,
-                         float* first, float* last)
+// pdb: hkClipEdgeAgainstPlanes | hkpMeshWeldingUtility.obj | retail, upstream name already matches, high
+// pdb params: v0, v1, planeCount, planeEquations, lo, hi
+// pdb locals: plane, t
+Hit __cdecl hkClipEdgeAgainstPlanes(const ClipVectorLocal_00ddc& v0, const ClipVectorLocal_00ddc& v1, int planeCount, const ClipVectorLocal_00ddc* planeEquations,
+                         float* lo, float* hi)
 {
-    ClipVectorLocal_00ddc a = start;
-    ClipVectorLocal_00ddc b = end;
+    ClipVectorLocal_00ddc a = v0;
+    ClipVectorLocal_00ddc b = v1;
     const ClipSimd::LocalM128& ONE = g_kQuadRealConstant;
     for (int i = 0; i < planeCount; ++i)
     {
-        ClipVectorLocal_00ddc plane = planes[i];
+        ClipVectorLocal_00ddc plane = planeEquations[i];
         float w = plane(3);
         float da = w + dot3(plane.q, a.q);
         float db = w + dot3(b.q, plane.q);
@@ -312,12 +315,12 @@ Hit __cdecl hkClipEdgeAgainstPlanes(const ClipVectorLocal_00ddc& start, const Cl
                 b.q = p;
         }
     }
-    ClipSimd::LocalM128 origin = start.q;
-    ClipSimd::LocalM128 direction = ClipSimd::_mm_sub_ps(end.q, origin);
+    ClipSimd::LocalM128 origin = v0.q;
+    ClipSimd::LocalM128 direction = ClipSimd::_mm_sub_ps(v1.q, origin);
     float lengthSquared = dot3(direction, direction);
     float firstFraction = dot3(ClipSimd::_mm_sub_ps(a.q, origin), direction) / lengthSquared;
     float lastFraction = dot3(ClipSimd::_mm_sub_ps(b.q, origin), direction) / lengthSquared;
-    *first = firstFraction;
-    *last = lastFraction;
+    *lo = firstFraction;
+    *hi = lastFraction;
     return Hit(true);
 }

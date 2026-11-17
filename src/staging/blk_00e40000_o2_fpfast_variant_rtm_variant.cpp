@@ -18,9 +18,9 @@
 struct FUN_00e428f0_class
 {
     void Remove(void*);
-    void hkpVehicleCastBatchingManager_removeVehicle(void* p);
+    void hkpVehicleCastBatchingManager_removeVehicle(void* vehicle);
 };
-int __cdecl hkpVehicleCastBatchingManager_getStandardFilterSize(int p);
+int __cdecl hkpVehicleCastBatchingManager_getStandardFilterSize(int world);
 extern "C" void __cdecl FUN_00cb0a60();
 struct FUN_00e4e400_class
 {
@@ -45,12 +45,12 @@ struct GlobalObjectO2_00d472a0
 {
     int x;
 };
-extern GlobalObjectO2_00d472a0 g_0126e600;
+extern GlobalObjectO2_00d472a0 hkxSparselyAnimatedBoolClass; // src: XBOX_RETAIL_PDB 0x0126e600 (old: DAT_0126e600/g_0126e600)
 void __stdcall FindResourceWithExpectedName(int, GlobalObjectO2_00d472a0*);
 void __stdcall Runtime_ForwardCall_00e5c5b0(int a);
 extern "C" void __stdcall FindResourceWithExpectedName(int, int);
 struct GlobalObjectO2_00d472a0;
-extern GlobalObjectO2_00d472a0 g_0126c5f0;
+extern GlobalObjectO2_00d472a0 hkxSparselyAnimatedEnumClass; // src: XBOX_RETAIL_PDB 0x0126c5f0 (old: DAT_0126c5f0/g_0126c5f0)
 void __stdcall Runtime_ForwardCall_00e5c5f0(int a);
 struct FUN_00e459c0_class
 {
@@ -106,8 +106,8 @@ struct FUN_00e426f0_class
     unsigned short m_10;
     unsigned short m_12;
     unsigned short m_14;
-    void AddObject(void* p);
-    void AddByteFromObject(void* p);
+    void AddObject(void* vehicle);
+    void AddByteFromObject(void* vehicle);
 };
 struct FUN_00e61480_class
 {
@@ -145,11 +145,11 @@ extern const char* const g_0126c5f0_arg1;
 void __stdcall FindResourceWithExpectedName(int, int);
 void __stdcall Runtime_ForwardCall_00e5c5d0(int a);
 struct GlobalObjectO2_00d472a0;
-extern GlobalObjectO2_00d472a0 g_0126eb10;
+extern GlobalObjectO2_00d472a0 hkxAnimatedFloatClass; // src: XBOX_RETAIL_PDB 0x0126eb10 (old: DAT_0126eb10/g_0126eb10)
 void __stdcall FindResourceWithExpectedName(int a, GlobalObjectO2_00d472a0* b);
 void __stdcall Runtime_ForwardCall_00e5c630(int a);
 struct GlobalObjectO2_00d472a0;
-extern GlobalObjectO2_00d472a0 g_0126eac8;
+extern GlobalObjectO2_00d472a0 hkxAnimatedMatrixClass; // src: XBOX_RETAIL_PDB 0x0126eac8 (old: DAT_0126eac8/g_0126eac8)
 void __stdcall FindResourceWithExpectedName(int, GlobalObjectO2_00d472a0*);
 void __stdcall CallWithGlobalObject(int a);
 struct FUN_00e406d0_cls
@@ -177,7 +177,7 @@ struct FUN_00e406d0_cls
     float* m_50;
     void ClampBoundsAt(int index, float value);
 };
-void __cdecl ResizeAudioStream(void* pAllocator, void* pArray, unsigned int auiNewSize);
+void __cdecl ResizeAudioStream(void* mem, void* array, unsigned int sizeElem);
 struct ValueArray
 {
     unsigned int* m_pData;
@@ -239,7 +239,7 @@ struct FUN_00e42650_cls
     EventListener** m_08;
     int m_0c;
 
-    void hkpVehicleManager_addToWorld(int a);
+    void hkpVehicleManager_addToWorld(int world);
 };
 struct FUN_00e42680_Item
 {
@@ -421,7 +421,7 @@ struct FUN_00e49fe0 : FUN_00cbfba0
     virtual void d14();
 };
 struct E4AAA0Allocator;
-void __cdecl hkArrayUtil__reserve(E4AAA0Allocator* alloc, void* array, int numElements, int sizeElem);
+void __cdecl hkArrayUtil__reserve(E4AAA0Allocator* mem, void* array, int numElem, int sizeElem);
 void __cdecl hkMemUtil_memMove(void* dst, const void* src, unsigned int nbytes);
 struct E4AAA0Element
 {
@@ -655,7 +655,7 @@ void __cdecl ComputeBasisFunctions(int span, float u, int degree, float** knots,
 int __cdecl FindInsertIndex(float value, float** table, int count);
 int __cdecl CountRuns(float** param_1, int param_2);
 bool* __cdecl IsSampleBoundary(bool* result, int index, float** samples, int endIndex);
-int __cdecl hkaNURBS_MinIndex(float** array, int count);
+int __cdecl hkaNURBS_MinIndex(float** arr, int len);
 void __cdecl hkaNURBS_Point_Dot(int a, int b);
 struct FUN_00e54ad0_cls
 {
@@ -816,7 +816,7 @@ class AttrTmp_b5103
 class AttrWriter_b5103
 {
   public:
-    AttrWriter_b5103(unsigned int* buf, unsigned int size) throw();
+    AttrWriter_b5103(unsigned int* buf, unsigned int bufSize) throw();
     int m_unk00;
     int m_unk04;
     int m_unk08;
@@ -841,7 +841,7 @@ class FUN_00e5c6b0_cls
   public:
     AttrEntry_b5103* FindPrimary(const char* name) throw();
     AttrEntry_b5103* FindSecondary(const char* name) throw();
-    int GetBoolAttribute(const char* name, bool required, unsigned char* out);
+    int hkxAttributeGroup_getBoolValue(const char* name, bool warnIfNotFound, unsigned char* boolOut);
 };
 struct ConfigValue
 {
@@ -871,7 +871,7 @@ struct ConfigTable
     ConfigValue* Runtime_ForwardCall_00e5c5d0(const char*);
     ConfigValue* Runtime_ForwardCall_00e5c5b0(const char*);
     ConfigValue* Runtime_ForwardCall_00e5c5f0(const char*);
-    int GetUnsignedValue(const char*, bool, unsigned*);
+    int hkxAttributeGroup_getIntValue(const char*, bool, unsigned*);
 };
 struct FUN_00e5c8b0_Node
 {
@@ -898,7 +898,7 @@ struct FUN_00e5c8b0_Str
     int m_00;
     int m_04;
     int m_08;
-    void Set(char* buf, unsigned int len);
+    void Set(char* buf, unsigned int bufSize);
     FUN_00e5c8b0_Str* Chain5(const char* s0, int a1, const char* s2, int a3, const char* s4);
     FUN_00e5c8b0_Str* Chain0();
     FUN_00e5c8b0_Str* ChainB();
@@ -913,7 +913,7 @@ struct FUN_00e5c8b0_cls
     int unk0C;
     FUN_00e5c8b0_Rec* Runtime_ForwardCall_00e5c610(int a);
     FUN_00e5c8b0_Rec* Runtime_ForwardCall_00e5c5f0(int a);
-    int GetAttributeValue(int a, bool flag, unsigned int* out);
+    int hkxAttributeGroup_getStringValue(int name, bool warnIfNotFound, unsigned int* stringOut);
 };
 struct FUN_00e5c8b0_Logger
 {
@@ -1067,7 +1067,7 @@ class AttrLogBuilder
     unsigned short m_sLen;
     unsigned short m_sMaxLen;
     unsigned int m_08;
-    void Init(AttrLogBuf* buf, unsigned int size);
+    void Init(AttrLogBuf* buf, unsigned int bufSize);
     AttrLogBuilder* Build(const char* a, const char* name, const char* b, void* self, const char* c);
     AttrLogBuilder* Chain();
     AttrLogBuilder* Other();
@@ -1114,7 +1114,7 @@ struct S_00e65ee0_Class
     int unk08;
     int unk0c;
 
-    void __thiscall queryOnTree(int* buffer, int value);
+    void __thiscall queryOnTree(int* query, int PC);
 };
 void __cdecl _hkMoppFindAllVirtualMachine_getAllKeys(S_00e5cfb0_Object* object, int value);
 extern float DAT_0104e148;
@@ -1528,7 +1528,7 @@ struct Entry
 struct Allocator
 {
 };
-int hkMeshPrimitiveUtil_calculateNumIndices(unsigned char type, int count);
+int hkMeshPrimitiveUtil_calculateNumIndices(unsigned char type, int numPrims);
 extern "C" void hkArrayUtil__reserve(Allocator*, void*, int, int);
 void hkString_memCpy(void*, const void*, int);
 struct String
@@ -1661,7 +1661,7 @@ struct FloatArrayRef
     int size;
     unsigned int capacity;
 };
-int __cdecl hkaNURBS_DegreeElevateKnotVector(FloatArrayRef* array, int count);
+int __cdecl hkaNURBS_DegreeElevateKnotVector(FloatArrayRef* array, int m);
 struct ArrayAllocator;
 
 void hkArrayUtil__reserve(ArrayAllocator* alloc, hkArrayBase<float>* arr, int newCap, int elemSize);
@@ -1676,7 +1676,7 @@ static __forceinline void FloatArray_reserve(hkArrayBase<float>& self, ArrayAllo
             hkArrayUtil__reserve(&alloc, (&self), n < c ? c : n, 4);
         }
     }
-int RemoveAdjacentDuplicates(hkArrayBase<float>* arr, int last);
+int hkaNURBS_DegreeLowerKnotVector(hkArrayBase<float>* arr, int m);
 // Element-wise subtract another matrix of the same shape from this one.
 class E87E0Matrix
 {
@@ -1809,7 +1809,7 @@ struct E473C0Owner
     int unk00;
     unsigned short unk04;
 
-    void __thiscall FUN_00e47020();
+    void __thiscall hkpBallGun_dtor();
     E473C0Owner* __thiscall FUN_00e473c0(unsigned char flags);
 };
 struct FnvCpu_FUN_00e473f0_CpuObject
@@ -1962,9 +1962,9 @@ struct E5B110Obj
     int unk80, unk84, unk88, unk8c, unk90, unk94, unk98, unk9c;
     E5B110Ref* unka0;
 };
-static void _copyAtoms(E5B110Obj* obj, void* p);
+static void _copyAtoms(E5B110Obj* atomsIn, void* atomsOut);
 void E5B110Caller(char* q, int a, int b, int c);
-int GetUnsignedValue(const char*, bool, unsigned*);
+int hkxAttributeGroup_getIntValue(const char*, bool, unsigned*);
 int Object_GetUnsignedValue_Thunk(const char* p, bool b, unsigned* u);
 struct FUN_00e47390_obj
 {

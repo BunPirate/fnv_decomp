@@ -61,6 +61,7 @@ struct FUN_009c8660_Class
 };
 // @fnv 0x009c8660
 // src: XBOX_PDB 0x009c8660
+// pdb: BGSCameraShot::GetTargetNode | DebugTextVATS.obj | debug, upstream name already matches, high
 void FUN_009c8660_Class::BGSCameraShot_GetTargetNode()
 {
     ((Flt*)((char*)this + 0x64))->operator unsigned int();
@@ -103,6 +104,7 @@ struct FUN_009d3370_Class
 
 // @fnv 0x009d3370
 // src: XBOX_PDB 0x009d3370
+// pdb: CombatCoverLocation::IsLedgeCover | CombatCoverMap.obj | debug, upstream name already matches, high
 void FUN_009d3370_Class::CombatCoverLocation_IsLedgeCover()
 {
     ((FUN_006e4820_Class*)((char*)this + 0x14))->IsLedgeCover_006e4820();
@@ -175,6 +177,7 @@ struct FUN_009d7c40_Class
 
 // @fnv 0x009d7c40
 // src: XBOX_PDB 0x009d7c40
+// pdb: CombatState::TryReserveSecondaryCoverLocation | CombatProcedureMove.obj | debug, upstream name already matches, high
 void FUN_009d7c40_Class::CombatState_TryReserveSecondaryCoverLocation()
 {
     CombatState_TryReserveCoverLocation(m_e8);
@@ -227,6 +230,7 @@ void* PathBuilder::BSSimpleArray_VirtualPathingNode_1024_GetLast()
 
 // VATS (singleton 0x011f2250, 0x48 bytes): the current weapon object is at +0x40, its extra data at +0x44;
 // 0x009c8950 is VATS's command-playback update.
+// pdb: class VATS, size 0x48 (here 0x1), 17 members
 struct VATS
 {
     void QuitVATSPlayback(bool abForceQuit, bool abFinishCommandPlayback);
@@ -234,6 +238,8 @@ struct VATS
 };
 
 // @fnv 0x009c8a90
+// pdb: VATS::QuitVATSPlayback | VATS.obj | debug, object-file gap fill, medium
+// pdb params: apObject, apExtra
 void VATS::SetPointers(void* pFirst, void* pSecond)
 {
     *(void**)((char*)this + 0x40) = pFirst;
@@ -266,6 +272,9 @@ struct FUN_009c1aa0_Class
 // Copies src into this: calls FUN_009c1b00 on src, copies 8 ints from offset 8 and m_40.
 // @fnv 0x009c1aa0
 // src: GUESS 0x009c1aa0 (confidence: low)
+// pdb: hkpShapeRayCastOutput::operator= | Projectile.obj | debug, object-file run extension, low
+// pdb params: __that
+// pdb locals: S1
 FUN_009c1aa0_Class& __thiscall FUN_009c1aa0_Class::ProcessEntries_009c1aa0(FUN_009c1aa0_Class const& aSource)
 {
     FUN_009c1b00((int)&aSource);
@@ -292,6 +301,9 @@ struct FUN_009c1b00
     FUN_009c1b00* __thiscall Set(FUN_009c1b00 const* s);
 };
 // @fnv 0x009c1b00
+// pdb: hkpShapeRayCastCollectorOutput::operator= | Projectile.obj | debug, object-file run extension, low
+// pdb params: __that
+// pdb locals: S2
 FUN_009c1b00* FUN_009c1b00::Set(FUN_009c1b00 const* apSource)
 {
     ((T_*)this)->SetValue((void*)apSource);
@@ -311,24 +323,29 @@ struct Call741e0
 };
 struct FUN_009c6440_Class
 {
-    int ProjectileListener_ProjectileListener(int a, int b);
+    int ProjectileListener_ProjectileListener(int arInfo, int apProjectile);
 };
 // @fnv 0x009c6440
 // src: EXE 0x009c6440
-int FUN_009c6440_Class::ProjectileListener_ProjectileListener(int a, int aiStoredValue)
+// pdb: ProjectileListener::ProjectileListener | ProjectileListener.obj | retail, upstream name already matches, high
+// pdb params: arInfo, apProjectile
+int FUN_009c6440_Class::ProjectileListener_ProjectileListener(int arInfo, int apProjectile)
 {
-    ((Call741e0*)this)->FUN_00c741e0(a);
+    ((Call741e0*)this)->FUN_00c741e0(arInfo);
     *(int*)this = (int)&DAT_01090594;
     *(int*)((char*)this + 0x3e0) = (int)&DAT_01090584;
     *(int*)((char*)this + 0x410) = (int)&DAT_01090568;
-    *(int*)((char*)this + 0x650) = aiStoredValue;
+    *(int*)((char*)this + 0x650) = apProjectile;
     return (int)this;
 }
 
-extern "C" NiAVObject* __cdecl bhkUtilFunctions_GetNiAVObject(NiAVObject* object);
+extern "C" NiAVObject* __cdecl bhkUtilFunctions_GetNiAVObject(NiAVObject* apCollidable);
 
 // Converts object via FUN_00c7fa90 and, if the result is non-null, returns the TESObjectREFR obtained from it; otherwise returns null.
 // @fnv 0x009c69e0
+// pdb: ProjectileListener::GetObjectREFR | ProjectileListener.obj | debug, object-file run extension, low
+// pdb params: apCollidable
+// pdb locals: pav, pref
 TESObjectREFR* GetReferenceFromObject(NiAVObject* object)
 {
     TESObjectREFR* reference = 0;
@@ -358,21 +375,23 @@ void bhkWorld_SetVatsReplay(unsigned char value)
 
 struct FUN_009ca4c0_shell
 {
-    void FreeStoredPointer();
+    void VATS_COMMAND_dtor();
 };
 
 void __cdecl Deallocate(void*);
 
 struct FUN_009c8870_Class : FUN_009ca4c0_shell
 {
-    void* FUN_009c8870(unsigned int flags);
+    void* VATS_COMMAND_ScalarDtor(unsigned int flags);
 };
 
 // Calls FreeStoredPointer, then deallocates this if flags has bit 1 set, and returns this.
 // @fnv 0x009c8870
-void* FUN_009c8870_Class::FUN_009c8870(unsigned int flags)
+// src: XBOX_DEBUG_PDB 0x009c8870
+// pdb: VATS_COMMAND::`scalar deleting destructor' | VATS.obj | debug, call graph (shared callers), high
+void* FUN_009c8870_Class::VATS_COMMAND_ScalarDtor(unsigned int flags)
 {
-    FreeStoredPointer();
+    VATS_COMMAND_dtor();
     if (flags & 1)
         Deallocate(this);
     return this;
@@ -389,15 +408,17 @@ struct FUN_009d7c80_Class
 {
     bool CombatProcedureMove_CreatePath();
     void UpdateOutput(PathingRequestAvoidPointer*);
-    bool UpdateMovementRequest(PathingRequestAvoidPointer*);
+    bool CreatePath(PathingRequestAvoidPointer*);
 };
 // @fnv 0x009d7c80
 // src: XBOX_PDB 0x009d7c80
+// pdb: CombatProcedureMove::CreatePath | CombatProcedureMove.obj | debug, call graph, high
+// pdb locals: spavoidNodeArray
 bool FUN_009d7c80_Class::CombatProcedureMove_CreatePath()
 {
     PathingRequestAvoidPointer t(0);
     UpdateOutput(&t);
-    return UpdateMovementRequest(&t);
+    return CreatePath(&t);
 }
 
 extern int DAT_011f21b8;
@@ -475,6 +496,8 @@ struct FUN_009c1a00_Class
 };
 
 // @fnv 0x009c1a00
+// pdb: bhkPickData::GetLength | Projectile.obj | debug, object-file run extension, low
+// pdb params: arLength
 CF845* __thiscall FUN_009c1a00_Class::ConstructCF845(CF845* pObject)
 {
     pObject->CF845::CF845(m_24);
@@ -483,7 +506,7 @@ CF845* __thiscall FUN_009c1a00_Class::ConstructCF845(CF845* pObject)
 
 struct FUN_0058d510_class
 {
-    NiPoint3* GetCameraPosition(NiPoint3*);
+    NiPoint3* GetTargetPos(NiPoint3*);
 };
 
 
@@ -510,6 +533,8 @@ struct FUN_009c8ac0_class
 
 // @fnv 0x009c8ac0
 // src: COMMUNITY 0x009c8ac0
+// pdb: VATS::GetTargetPos | VATS.obj | debug, object-file gap fill, medium
+// pdb locals: pos
 NiPoint3* FUN_009c8ac0_class::VATS_GetCamshotTargetPos(NiPoint3* result)
 {
     NiPoint3 point = NiPoint3::ZERO;
@@ -518,7 +543,7 @@ NiPoint3* FUN_009c8ac0_class::VATS_GetCamshotTargetPos(NiPoint3* result)
     {
         // Output storage avoids introducing a default-constructor call in this /Od unit.
         float sourcePoint[sizeof(NiPoint3) / sizeof(float)];
-        point = *m_10->GetCameraPosition(reinterpret_cast<NiPoint3*>(sourcePoint));
+        point = *m_10->GetTargetPos(reinterpret_cast<NiPoint3*>(sourcePoint));
     }
 
     if (point.HasEqualComponents(NiPoint3::ZERO))
@@ -553,6 +578,7 @@ struct FUN_009cbad0 : FUN_009ca680
 };
 // Initializes the object: stores the address of DAT_01090aec and zeroes m_10, m_14 and m_1c.
 // @fnv 0x009cbad0
+// pdb: CombatProcedureAttackLow::CombatProcedureAttackLow | CombatProcedureAttackLow.obj | debug, call graph, medium
 FUN_009cbad0::FUN_009cbad0()
 {
     m_iWordAt00 = (int)&DAT_01090aec;
@@ -572,6 +598,7 @@ struct FUN_009d1b90_Class
 };
 
 // @fnv 0x009d1b90
+// pdb: CombatState::ClearFiringStartedTimeStamp | CombatProcedureAttackRanged.obj | debug, call graph, high
 void FUN_009d1b90_Class::SetNegatedTimestamp()
 {
     CombatTargetTimestamp timestampValue(-DAT_01090e90);
@@ -612,6 +639,7 @@ class FUN_009c5ee0_cls
 // Clears m_00, calls m_04.Init(0), copies NiPoint3::ZERO into m_08, and returns this.
 // @fnv 0x009c5ee0
 // src: XBOX_PDB 0x009c5ee0
+// pdb: ProjectileTarget::ProjectileTarget | Projectile.obj | debug, object-file run extension, low
 FUN_009c5ee0_cls* FUN_009c5ee0_cls::ProjectileTarget_ProjectileTarget()
 {
     m_00 = 0;
@@ -628,7 +656,7 @@ struct OrientationObject
 {
     void** vtable;
     float __thiscall FUN_00931d70();
-    void __thiscall ClampLookAngle(float value);
+    void __thiscall MobileObject_SetLooking(float value);
     OrientationSource* __thiscall FUN_004181e0();
     void __thiscall SetOrientationFromDirection(NiPoint3 input);
 };
@@ -641,6 +669,9 @@ typedef void*(__thiscall* GetContextFn)(OrientationObject*);
 typedef float(__thiscall* GetAngleFn)(OrientationObject*, int);
 typedef void(__thiscall* SetAngleFn)(OrientationObject*, float);
 // @fnv 0x009c6030
+// pdb: Projectile::AimAtPoint | Projectile.obj | debug, object-file run extension, low
+// pdb params: aTargetLocation
+// pdb locals: fheading, delta, flooking, direction, fgravity
 void OrientationObject::SetOrientationFromDirection(NiPoint3 aDirection)
 {
     // The callee fills this storage; the original has no default-constructor call.
@@ -660,12 +691,12 @@ void OrientationObject::SetOrientationFromDirection(NiPoint3 aDirection)
     {
         ((SetAngleFn*)vtable)[177](this, e);
     }
-    ClampLookAngle(d);
+    MobileObject_SetLooking(d);
 }
 
 struct InputX
 {
-    void Rumble(int aiType);
+    void Rumble(int aeAction);
 };
 struct OSX
 {
@@ -692,13 +723,13 @@ struct IdlePtrX
 };
 struct SeqHolderX
 {
-    void* GetSeq(int aiArg);
+    void* GetSeq(int i);
 };
 struct AnimX
 {
     char _pad00[0x124];
     IdlePtrX kIdle;
-    void PlayIdle(IdleX* apIdle, int aiSeq);
+    void PlayIdle(IdleX* apIdleForm, int aeSection);
     SeqHolderX* GetHolder();
     unsigned short GetGroup(int aiArg);
 };
@@ -1159,7 +1190,7 @@ struct Obj3DX
 struct DialogueBodyPartLookup
 {
     void* GetRotate();
-    Obj3DX* GetPartByIndex(int aiPart);
+    Obj3DX* GetPartByIndex(int aeIndex);
     Obj3DX* GetDefaultPart(int aiArg);
 };
 struct ActorBaseX
@@ -1523,14 +1554,14 @@ struct RefX
     void SetWeaponOut(bool abOut);
     bool IsSwimming();
     bool IsInWater();
-    void ForceSneak(int aiFlag, bool abSet);
+    void ForceSneak(int aiMoveMode, bool abValue);
     void SetSneak(bool abSet);
-    void SetControls(int aiArg);
+    void SetControls(int abFirst);
     void* GetLoadedForm();
     void AddAV(int aeAV, float afValue);
     int GetVoiceType();
     ActorBaseX* GetActorBase();
-    bool HasBodyPart(int aiPart);
+    bool GetDismembered(int aeLimb);
     bool HasFlag(int aiFlag);
     void ClearFlag(int aiFlag, int aiArg);
 };
@@ -1565,12 +1596,12 @@ struct ShotX
     ShotSubX kList;
     bool IsActive();
     int GetCount();
-    void Stop();
+    void BGSCameraShot_FreeCamera();
     float GetDuration();
     bool IsPlayerShot();
     float GetTime();
     int GetActionType();
-    void SetActors(RefX* apActor, int aiMode);
+    void InitCamera(RefX* apTargetRef, int aeZoom);
     bool UsesCombatTarget();
     void PerformAction(void* apTarget);
     void SetTarget(void* apTarget);
@@ -1595,7 +1626,7 @@ struct CamDataX
 };
 struct CamMgrX
 {
-    CamDataX* GetCamData(RefX* apSpeaker, RefX* apTarget);
+    CamDataX* GetCamData(RefX* apActionRef, RefX* apTargetRef);
 };
 struct ImodX
 {
@@ -1608,7 +1639,7 @@ struct FadeX
 };
 struct TargetsX
 {
-    void Add(RefX* apActor);
+    void Add(RefX* apVictim);
 };
 struct TopicListX
 {
@@ -1633,11 +1664,11 @@ struct DialogueCameraX : public TopicListX
     int iPerk;
     bool Advance();
     void StartTopic(TopicX* apTopic);
-    void EndShot(int aiArg);
-    void FinishTopic(TopicX* apTopic);
+    void EndShot(int apProjectile);
+    void UpdateMeleeAttack(TopicX* apCommand);
     void UpdateShot(TopicX* apTopic);
     void Reset(bool abArg1, bool abArg2);
-    bool IsTopicDone(TopicX* apTopic);
+    bool VATS_IsMeleeCommand(TopicX* apCommand);
     void AdvanceTopic();
     void Close(int aiArg, bool abArg);
     int GetState();
@@ -1648,9 +1679,9 @@ float __cdecl xGetFrameScale();
 float __cdecl xGetTimeScale();
 bool __cdecl xIsGreeting(int aiType);
 bool __cdecl xIsGoodbye(int aiType);
-bool __cdecl xIsGroupDone(unsigned short ausGroup);
+bool __cdecl xIsGroupDone(unsigned short asGroup);
 void* __cdecl xGetNode(void* apRoot, void* apObject);
-ImodX* __cdecl xTriggerImod(void* apList, float afStrength, void* apTarget);
+ImodX* __cdecl xTriggerImod(void* apMod, float afStrength, void* apTarget);
 void __cdecl xApplyPerkModifiers(int aeEntry, RefX* apActor, void* apWeapon, RefX* apTarget, float* apValue);
 extern OSX* xpOS;
 extern TimerX xkTimer;
@@ -1731,7 +1762,7 @@ void DialogueCameraX::VATS_Update()
         }
         else if (pShot && qJDuOZ != xpLastTopic)
         {
-            pShot->Stop();
+            pShot->BGSCameraShot_FreeCamera();
             xiShotIndex = 0;
             pShot = 0;
             pShots = 0;
@@ -1811,7 +1842,7 @@ void DialogueCameraX::VATS_Update()
                 }
             }
             if (qBLsiu)
-                FinishTopic(qJDuOZ);
+                UpdateMeleeAttack(qJDuOZ);
             xpLastTopic = qJDuOZ;
             if (xiTopicCount > 1)
                 xiTopicCount = 0;
@@ -1838,11 +1869,11 @@ void DialogueCameraX::VATS_Update()
                         fShotDelay = *xsShotDelay.Float();
                     if (!qJDuOZ->pActor || (!pShot->GetActionType() && qJDuOZ->iType != 0x12))
                     {
-                        pShot->SetActors(xpSpeaker, xiCamMode);
+                        pShot->InitCamera(xpSpeaker, xiCamMode);
                     }
                     else
                     {
-                        pShot->SetActors(qJDuOZ->pActor, xiCamMode);
+                        pShot->InitCamera(qJDuOZ->pActor, xiCamMode);
                     }
                     qZNIZJV = xpSpeaker->GetAnimation()->GetHolder()->GetSeq(0);
                     qpydTG = 0;
@@ -1868,7 +1899,7 @@ void DialogueCameraX::VATS_Update()
                                     qoqcoe = qgqKr->GetPartByIndex(qJDuOZ->iPart);
                                     if (qoqcoe)
                                     {
-                                        if (qXSF->HasBodyPart(qJDuOZ->pPartData->iPart))
+                                        if (qXSF->GetDismembered(qJDuOZ->pPartData->iPart))
                                         {
                                             qVCM = qXSF->GetProcess()->GetPartNode(qJDuOZ->pPartData->iPart);
                                             if (qVCM)
@@ -2019,7 +2050,7 @@ void DialogueCameraX::VATS_Update()
         qfTOqo = 0.0f;
         if (xIsGreeting(qJDuOZ->iType))
         {
-            if (!IsTopicDone(qJDuOZ) && !xIsGoodbye(qJDuOZ->iType) && qJDuOZ->iType != 6 &&
+            if (!VATS_IsMeleeCommand(qJDuOZ) && !xIsGoodbye(qJDuOZ->iType) && qJDuOZ->iType != 6 &&
                 xpPlayer->GetAnimAction() != 9 && xpPlayer->GetAnimAction() != 0x11)
             {
                 qxQHW->Rumble(6);
@@ -2034,7 +2065,7 @@ void DialogueCameraX::VATS_Update()
                 qVar = false;
                 if (!pShot || fShotDelay == 0.0)
                 {
-                    if (IsTopicDone(qJDuOZ))
+                    if (VATS_IsMeleeCommand(qJDuOZ))
                     {
                         UpdateShot(qJDuOZ);
                         if (xpSpeaker->GetAnimAction() == -1 || xIsGroupDone(xpSpeaker->GetAnimation()->GetGroup(4)))
@@ -2182,20 +2213,22 @@ class FUN_009c8b90_cls
     int unk14;
     int unk18;
     TESObjectREFR* m_1c;
-    void VATS_SetFirstProjectile(TESObjectREFR* a1);
+    void VATS_SetFirstProjectile(TESObjectREFR* apProjectile);
 };
 
 // @fnv 0x009c8b90
 // src: XBOX_PDB 0x009c8b90
-void FUN_009c8b90_cls::VATS_SetFirstProjectile(TESObjectREFR* a1)
+// pdb: VATS::SetFirstProjectile | VATS.obj | retail, upstream name already matches, high
+// pdb params: apProjectile
+void FUN_009c8b90_cls::VATS_SetFirstProjectile(TESObjectREFR* apProjectile)
 {
     if (m_pEntryObject != 0)
     {
         if (m_pEntryObject->Q() == 1)
         {
-            if (a1 != 0)
+            if (apProjectile != 0)
             {
-                m_pEntryObject->S(reinterpret_cast<int>(a1->GetNiNode()));
+                m_pEntryObject->S(reinterpret_cast<int>(apProjectile->GetNiNode()));
             }
             else
             {
@@ -2204,9 +2237,9 @@ void FUN_009c8b90_cls::VATS_SetFirstProjectile(TESObjectREFR* a1)
         }
         if (m_pEntryObject->R() == 1)
         {
-            if (a1 != 0)
+            if (apProjectile != 0)
             {
-                m_pEntryObject->T(reinterpret_cast<int>(a1->GetNiNode()));
+                m_pEntryObject->T(reinterpret_cast<int>(apProjectile->GetNiNode()));
             }
             else
             {
@@ -2214,7 +2247,7 @@ void FUN_009c8b90_cls::VATS_SetFirstProjectile(TESObjectREFR* a1)
             }
         }
     }
-    m_1c = a1;
+    m_1c = apProjectile;
 }
 
 struct FUN_009d1b70_Class
@@ -2248,6 +2281,8 @@ struct FUN_009d4f50_cls
 
 // @fnv 0x009d4f50
 // src: XBOX_PDB 0x009d4f50
+// pdb: CombatProcedureEngageTarget::CanAttackerSneak | CombatProcedureEngageTarget.obj | retail, upstream name already matches, high
+// pdb locals: targetVec, targetLoc, attackerLoc
 bool FUN_009d4f50_cls::CombatProcedureEngageTarget_CanAttackerSneak()
 {
     // Keep the original uninitialized vector buffers and explicit output-parameter call.
@@ -2270,19 +2305,21 @@ bool FUN_009d4f50_cls::CombatProcedureEngageTarget_CanAttackerSneak()
 
 struct LinkedObject
 {
-    void __thiscall CopyElementsTo(void* ownerData);
+    void __thiscall CopyElementsTo(void* aDestArray);
 };
 
 struct FUN_009d9ee0_Class
 {
-    void __thiscall PathingRequestLOS_SetIgnoreLocations(LinkedObject* linked);
+    void __thiscall PathingRequestLOS_SetIgnoreLocations(LinkedObject* aLocations);
 };
 
 // @fnv 0x009d9ee0
 // src: XBOX_PDB 0x009d9ee0
-void FUN_009d9ee0_Class::PathingRequestLOS_SetIgnoreLocations(LinkedObject* linked)
+// pdb: PathingRequestLOS::SetIgnoreLocations | CombatProcedureSearch.obj | debug, upstream name already matches, high
+// pdb params: aLocations
+void FUN_009d9ee0_Class::PathingRequestLOS_SetIgnoreLocations(LinkedObject* aLocations)
 {
-    linked->CopyElementsTo(reinterpret_cast<char*>(this) + 0xb4);
+    aLocations->CopyElementsTo(reinterpret_cast<char*>(this) + 0xb4);
 }
 
 struct RefPtrStub
@@ -2296,7 +2333,7 @@ struct RefPtrStub
 struct QueuePtrStub
 {
     void* m_pObject;
-    QueuePtrStub(void* object);
+    QueuePtrStub(void* pObject);
     ~QueuePtrStub();
     QueuePtrStub& operator=(void* object);
 };
@@ -2355,6 +2392,8 @@ class FUN_009dad00
 
 // Initializes the object's fields: zeroes pointers and positions, stores param in unk28, sets unk34 to 0x101, calls Reset(0), and sets unk40/unk42 to 0xffff.
 // @fnv 0x009dad00
+// pdb: ActorMover::ActorMover | ActorMover.obj | debug, object-file run extension, low
+// pdb params: apActor
 FUN_009dad00::FUN_009dad00(int param)
     : pos04(NiPoint3::ZERO), pos10(NiPoint3::ZERO), ptr1C(0), ptr20(0), queue30(0), unk6C(0)
 {
@@ -2440,6 +2479,8 @@ struct FUN_009dfe40_cls
 
 // Initializes m_04, m_08, m_0c and m_10 from the four constructor arguments.
 // @fnv 0x009dfe40
+// pdb: ActorPathHandler::ActorPathHandler | ActorPathHandler.obj | debug, object-file gap fill, medium
+// pdb params: apActor, apActorMover, apPath, apRequest
 FUN_009dfe40_cls::FUN_009dfe40_cls(int aiField04, int aiField08, int aiSubValue, int aiTailValue)
     : m_04(aiField04), m_08(aiField08), m_0c(aiSubValue), m_10(aiTailValue)
 {}
@@ -2463,6 +2504,7 @@ class FUN_009dfed0_cls
 };
 
 // @fnv 0x009dfed0
+// pdb: ActorPathHandler::~ActorPathHandler | ActorPathHandler.obj | retail, call graph, high
 FUN_009dfed0_cls::~FUN_009dfed0_cls()
 {}
 
@@ -2616,7 +2658,7 @@ struct ImpImpact
     ImpTexture kTexture;
     void* FUN_006733e0();
     float BGSImpactData_GetDecalMinWidth();
-    float GetModifierValue();
+    float BGSImpactData_GetDecalMaxWidth();
     float GetNestedValue();
     unsigned char BGSImpactData_GetIsAlphaBlend();
     unsigned char CallMemberAtOffset54();
@@ -2635,7 +2677,7 @@ struct ImpImpact
 
 struct ImpImpactSet
 {
-    ImpImpact* TESObjectWEAP_GetImpactData(int aiMaterial);
+    ImpImpact* TESObjectWEAP_GetImpactData(int aehkMatType);
 };
 
 struct ImpSurface
@@ -2667,10 +2709,10 @@ struct ImpResults
 
 struct ImpDecal
 {
-    void FUN_006233c0(int aiValue);
-    void DecalCaster_SetCollision(int aiFlag, int aiValue);
-    void DecalCaster_Add(void* apNode);
-    void DecalCaster_GetPenetrations(ImpPoint* apPos, ImpResults* apResults);
+    void DecalCaster_SetCustomPickCollisions(int aeCustomPick);
+    void DecalCaster_SetCollision(int aeLayer, int abEnable);
+    void DecalCaster_Add(void* apWorld);
+    void DecalCaster_GetPenetrations(ImpPoint* arPos, ImpResults* arCollector);
 };
 
 struct ImpCell
@@ -2853,7 +2895,7 @@ struct ImpDecalParams
 
 struct ImpDecalManager
 {
-    void TESObjectCELL_AddDecal(ImpDecalParams* apParams, int a2, int a3);
+    void TESObjectCELL_AddDecal(ImpDecalParams* arDecalData, int aeDecalType, int abForceAdd);
 };
 
 struct ImpDecalSystem
@@ -2944,12 +2986,12 @@ struct ImpSound
     int iData[3];
     ~ImpSound();
     void FUN_00ad8b60(float afX, float afY, float afZ);
-    void FUN_00ad8830(int aiFlags);
+    void FUN_00ad8830(int abLoopPlayback);
 };
 
 struct ImpAudio
 {
-    ImpSound BSAudio_GetSoundHandleByFilename(void* apSound, int aiFlags, ImpSoundDesc* apDesc);
+    ImpSound BSAudio_GetSoundHandleByFilename(void* apFilename, int aiTypeFlags, ImpSoundDesc* apSettingsContext);
 };
 
 extern Setting DAT_011ce26c;
@@ -2957,21 +2999,21 @@ extern ImpDecalSystem* DAT_011dea10;
 extern char DAT_011f4a20;
 ImpCamera* Main_WorldRootCamera();
 bool Main_GetSceneIsComplex();
-bool __cdecl PointInFrustum(ImpPoint kPosOut, ImpCamera* apCamera, float afRadius);
+bool __cdecl PointInFrustum(ImpPoint aTestLocation, ImpCamera* apCamera, float afDistance);
 void __cdecl Script_SetActionFlag(void* apOwner, ImpExtraList* apExtra, int aiFlags);
 float __cdecl FUN_00476b70(float afMin, float afMax);
 ImpDecal* __cdecl FUN_00622a70(float afSize, int aiFlags);
 float __cdecl RandomFloatTwoPi();
 float __cdecl FUN_00406cc0(float afValue);
-ImpMaterial* __cdecl bhkShape_Getbhk(void* apObject);
+ImpMaterial* __cdecl bhkShape_Getbhk(void* apShape);
 void* __cdecl hkpGetRigidBody(ImpSurface* apSurface);
 ImpAttachHandle __cdecl bhkWorldObject_GetProperty(void* apObject, void* apType);
-ImpAttach* __cdecl bhkUtilFunctions_GetNiAVObject(ImpSurface* apSurface);
+ImpAttach* __cdecl bhkUtilFunctions_GetNiAVObject(ImpSurface* apCollidable);
 void* __cdecl TESObjectREFR_FindReferenceFor3D(ImpAttach* apAttach);
-bool __cdecl IsAcousticSpaceFormTypeAllowed(void* apGeometry, int aiFlags);
+bool __cdecl BGSDecalManager_IsValidDecalImpact(void* apCollidee, int aeDecalType);
 ImpPoint __cdecl FUN_004a3760(float afScale, const ImpPoint& arPoint);
-void __cdecl BSTempEffectParticle_Spawn(ImpCell* apCell, float afSize, const char* apTexture, ImpPoint kWorldPosition, ImpPoint kPos,
-                          float afScale, int aiFlags, int a7);
+void __cdecl BSTempEffectParticle_Spawn(ImpCell* apCell, float afLifetime, const char* apParticleFilename, ImpPoint aVector, ImpPoint aPosition,
+                          float afScale, int aiFlags, int apFollowObject);
 ImpAudio* BSAudio_QInstance();
 
 struct ImpProjectile
@@ -3080,6 +3122,9 @@ struct ImpProjectile
 
 // Applies impact decals, splatter, and sounds to the target surface at apPos using pImpacts and aiMaterial.
 // @fnv 0x009c20e0
+// pdb: Projectile::SpawnCollisionEffects | Projectile.obj | debug, object-file gap fill, medium
+// pdb params: apCollidee, aContactPoint, aContactNormal, apTargetCollidable, aeMaterial
+// pdb locals: distance, bcreateParticles, emat, pimpactData, pcause, pimpactSound1, pset, pimpactSound2, pcell, pw, dir, pcaster, origin, collector, csubtex, ihits, frotation, plastCol, I, pcol, ekey, ematerialB, pshape, pshapeCol ...
 void ImpProjectile::ApplyImpact(ImpTarget* apTarget, ImpPoint* apPos, ImpPoint* apNormal, int a4, int aiMaterial)
 {
     bool bSplatterTmp = true;
@@ -3106,9 +3151,9 @@ void ImpProjectile::ApplyImpact(ImpTarget* apTarget, ImpPoint* apPos, ImpPoint* 
                 kNormal.Unitize_004a0c10();
                 ImpPoint kPosOut = *apPos;
                 if (m_fLifetime == 0.0)
-                    m_fLifetime = FUN_00476b70(pImpactTmp->BGSImpactData_GetDecalMinWidth(), pImpactTmp->GetModifierValue());
+                    m_fLifetime = FUN_00476b70(pImpactTmp->BGSImpactData_GetDecalMinWidth(), pImpactTmp->BGSImpactData_GetDecalMaxWidth());
                 ImpDecal* pNewDecal = FUN_00622a70(m_fLifetime, 1);
-                pNewDecal->FUN_006233c0(0);
+                pNewDecal->DecalCaster_SetCustomPickCollisions(0);
                 pNewDecal->DecalCaster_SetCollision(8, 0);
                 pNewDecal->DecalCaster_SetCollision(0x1d, 0);
                 ImpCell* pCellPtr = FUN_008d6f30();
@@ -3166,7 +3211,7 @@ void ImpProjectile::ApplyImpact(ImpTarget* apTarget, ImpPoint* apPos, ImpPoint* 
                                 }
                                 void* pGeometryRef = TESObjectREFR_FindReferenceFor3D(pAttach);
                                 if (!bHasAnimation &&
-                                    (!pGeometryRef || !IsAcousticSpaceFormTypeAllowed(pGeometryRef, 1)))
+                                    (!pGeometryRef || !BGSDecalManager_IsValidDecalImpact(pGeometryRef, 1)))
                                     continue;
                                 ImpDecalManager* pManager = DAT_011dea10->TES_GetCellForPoint(*apPos);
                                 ImpDecalParams kParamsCur;

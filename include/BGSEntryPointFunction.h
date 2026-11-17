@@ -3,6 +3,7 @@
 #define FNV_BGSENTRYPOINTFUNCTION_H
 #include "layout_support.h"
 #pragma pack(push, 4)
+// pdb: class BGSEntryPointFunction, size 0x1, 0 members
 class BGSEntryPointFunction
 {
   public:

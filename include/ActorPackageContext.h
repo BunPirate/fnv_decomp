@@ -18,7 +18,7 @@ public:
     unsigned int iFlags;
 
     void Clear();
-    void SetPackageAndTarget(TESPackage*, TESObjectREFR*);
+    void ActorPackage_InitFromPackage(TESPackage*, TESObjectREFR*);
     void MoveTo(ActorPackageContext*);
     void MovePackageData(ActorPackageContext*);
     void SetReferenceTarget(TESObjectREFR*);
@@ -33,14 +33,14 @@ public:
     void NullInstanceData();
     unsigned short GetSaveSize(unsigned int);
     void SaveGame(BGSSaveFormBuffer*);
-    void SaveGame(unsigned int);
+    void TESSaveLoadGame_SaveGameDataOLDEndian(unsigned int);
     void LoadGame(BGSLoadFormBuffer*);
     void LoadGame(unsigned int, unsigned int);
     void InitLoadGame(BGSLoadFormBuffer*);
-    void InitLoadGame(unsigned int, unsigned int);
+    void ActorPackage_InitLoadGame(unsigned int, unsigned int);
     void Revert(BGSLoadFormBuffer*);
-    void Revert(unsigned int);
-    void ApplyLoadBuffer(BGSLoadFormBuffer*);
+    void ActorPackage_Revert(unsigned int);
+    void ActorPackage_FinishLoadGame(BGSLoadFormBuffer*);
     void SetTarget(TESObjectREFR*);
     TESObjectREFR* GetTarget();
     void SetFlag(int, bool);

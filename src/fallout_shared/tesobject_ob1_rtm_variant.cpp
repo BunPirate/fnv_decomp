@@ -422,7 +422,7 @@ inline bool operator!=(const BxString& _Left, const char* _Right)
 }
 struct GvFileHandle;
 extern "C" int __cdecl fseek(GvFileHandle* _File, long _Offset, int _Origin);
-void futSetLastError(int code, BxString message);
+void futSetLastError(int err, BxString txt);
 }
 
 struct SeekBinaryFile
@@ -437,6 +437,9 @@ struct SeekBinaryFile
 
 // @fnv 0x00ac53a0
 // src: GUESS 0x00ac53a0 (confidence: low)
+// pdb: FutBinaryFileC::FutBinaryFileC | binaryFile.obj | retail, object-file run extension, low
+// pdb note: debug build links it to FutBinaryFileC::seek
+// pdb params: a_fileId
 bool SeekBinaryFile::ProcessAndReturnValue_00ac53a0(long offset)
 {
     if (pFile == 0)

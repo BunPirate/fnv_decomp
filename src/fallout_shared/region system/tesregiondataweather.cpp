@@ -14,36 +14,43 @@ struct RegionDataAccess : TESRegionData
 
 struct WeatherListAccess : TESWeatherList
 {
-    void WriteWeatherList(unsigned int);
+    void TESWeatherList_Save(unsigned int);
     void CopyWeatherList(TESWeatherList*, int);
     bool IsEmpty();
 };
 
 // @fnv 0x004f51f0
-void TESRegionDataWeather::LoadWeatherData(TESFile* file, TESRegion* region)
+// pdb: TESRegionDataWeather::LoadRegionDataWeather | TESRegionDataWeather.obj | retail, string-set bridge, high
+// pdb params: apFile, apRegion
+// pdb locals: icount
+void TESRegionDataWeather::LoadWeatherData(TESFile* apFile, TESRegion* apRegion)
 {
     int warnings = Warning();
     SetWarningState(true);
-    TESWeatherList::LoadWeatherEntries(&weatherList, file, region);
+    TESWeatherList::LoadWeatherListChunk(&weatherList, apFile, apRegion);
     SetWarningState(false);
-    if (Warning() > warnings && region)
-        Warning("Warnings were encountered while loading weather list chunk from region %s", region->GetName());
+    if (Warning() > warnings && apRegion)
+        Warning("Warnings were encountered while loading weather list chunk from region %s", apRegion->GetName());
 }
 
 // Also emits the scalar deleting destructor at 0x004f50b0.
 // @fnv 0x004f5040
+// pdb: TESRegionDataWeather::TESRegionDataWeather | TESRegionDataWeather.obj | retail, upstream name already matches, high
 TESRegionDataWeather::TESRegionDataWeather()
 {}
 
 // @fnv 0x004f51c0
+// pdb: TESRegionDataWeather::Save | TESRegionDataWeather.obj | retail, upstream name already matches, high
 void TESRegionDataWeather::Save()
 {
     TESRegionData::Save();
-    static_cast<WeatherListAccess*>(&weatherList)->WriteWeatherList(0x54574452);
+    static_cast<WeatherListAccess*>(&weatherList)->TESWeatherList_Save(0x54574452);
 }
 
 void* __cdecl operator new(unsigned int);
 // @fnv 0x004f5260
+// pdb: TESRegionDataWeather::Copy | TESRegionDataWeather.obj | retail, vtable slot, high
+// pdb locals: pdata
 TESRegionData* TESRegionDataWeather::Clone()
 {
     TESRegionDataWeather* pdata = new TESRegionDataWeather(*this);
@@ -51,6 +58,9 @@ TESRegionData* TESRegionDataWeather::Clone()
 }
 
 // @fnv 0x004f52e0
+// pdb: TESRegionDataWeather::Blend | TESRegionDataWeather.obj | retail, vtable slot, high
+// pdb params: apRegionData
+// pdb locals: pdata
 TESRegionData* TESRegionDataWeather::CopyFrom(const TESRegionData* apRegionData)
 {
     TESRegionData* pdata = Clone();
@@ -59,6 +69,7 @@ TESRegionData* TESRegionDataWeather::CopyFrom(const TESRegionData* apRegionData)
 }
 
 // @fnv 0x004f5570
+// pdb: TESRegionDataWeather::Validate | TESRegionDataWeather.obj | debug, vtable slot, medium
 bool TESRegionDataWeather::IsValid()
 {
     return !static_cast<WeatherListAccess*>(&weatherList)->IsEmpty();
@@ -66,10 +77,13 @@ bool TESRegionDataWeather::IsValid()
 
 double _floor(float);
 // @fnv 0x004f5320
-void TESRegionDataWeather::SetFromData(const TESRegionData* apOther, unsigned int enabled)
+// pdb: TESRegionDataWeather::BlendInto | TESRegionDataWeather.obj | retail, vtable slot, high
+// pdb params: apRegionData, aiTotalBlending
+// pdb locals: pdataIn, fnewPriority
+void TESRegionDataWeather::SetFromData(const TESRegionData* apRegionData, unsigned int aiTotalBlending)
 {
-    TESRegionDataWeather* other = (TESRegionDataWeather*)apOther;
-    if (!apOther || const_cast<TESRegionData*>(apOther)->GetType() != 3 || !enabled)
+    TESRegionDataWeather* other = (TESRegionDataWeather*)apRegionData;
+    if (!apRegionData || const_cast<TESRegionData*>(apRegionData)->GetType() != 3 || !aiTotalBlending)
         return;
     if (m_bHasRegionData)
     {

@@ -2,6 +2,7 @@
 
 #include "NiBlendInterpolator.h"
 
+// pdb: class NiBlendTransformInterpolator, size 0x30, bases: NiBlendInterpolator, 0 members
 class NiBlendTransformInterpolator : public NiBlendInterpolator
 {
   public:
@@ -10,9 +11,9 @@ class NiBlendTransformInterpolator : public NiBlendInterpolator
 
     virtual bool UpdateTransform(float fTime, NiObjectNET* pkObject, NiQuatTransform& kTransform);
 
-    bool Update(float fTime, NiObjectNET* pkObject, NiQuatTransform& kTransform);
-    bool UpdateAccumulatedTransform(float fTime, NiObjectNET* pkObject, NiQuatTransform& kTransform);
-    bool UpdateSingleInterpolator(float fTime, NiObjectNET* pkObject, NiQuatTransform& kTransform);
-    bool StoreSingleValue(float time, NiObjectNET* object, NiQuatTransform& value);
+    bool Update(float fTime, NiObjectNET* pkInterpTarget, NiQuatTransform& kValue);
+    bool UpdateAccumulatedTransform(float fTime, NiObjectNET* pkInterpTarget, NiQuatTransform& kValue);
+    bool UpdateSingleInterpolator(float fTime, NiObjectNET* pkInterpTarget, NiQuatTransform& kValue);
+    bool StoreSingleValue(float fTime, NiObjectNET* pkInterpTarget, NiQuatTransform& kValue);
 
 };

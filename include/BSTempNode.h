@@ -2,14 +2,15 @@
 
 #include "NiNode.h"
 
+// pdb: class BSTempNode, size 0xe0 (here 0xb0), bases: NiNode, 1 members
 class BSTempNode : public NiNode
 {
 public:
-    BSTempNode(float value);
-    void BSTempNodeManager_RemoveExpired(float value);
-    void UpdateDownwardPass(NiUpdateData& data, unsigned int flags);
-    void UpdateSelectedDownwardPass(NiUpdateData& data, unsigned int flags);
-    void UpdateRigidDownwardPass(NiUpdateData& data, unsigned int flags);
+    BSTempNode(float afTime);
+    void BSTempNodeManager_RemoveExpired(float afTime);
+    void UpdateDownwardPass(NiUpdateData& UpdateData, unsigned int uFlags);
+    void UpdateSelectedDownwardPass(NiUpdateData& UpdateData, unsigned int uFlags);
+    void UpdateRigidDownwardPass(NiUpdateData& UpdateData, unsigned int uFlags);
     static void operator delete(void*, unsigned int);
 
     float UpdateTime(float value);

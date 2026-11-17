@@ -25,6 +25,7 @@ class ShadowSceneLight;
 class ShadowSceneNode;
 class BSTPersistentList_NiTPointerAllocator_unsigned_int__NiGeometry_____ListItem;
 
+// pdb: class BSShaderAccumulator, size 0x280, bases: NiAlphaAccumulator, 43 members
 class BSShaderAccumulator : public NiAlphaAccumulator
 {
 public:
@@ -80,8 +81,8 @@ public:
     static void operator delete(void* pvMem, unsigned int uiSize);
 
     void ClearActivePasses();
-    void SetupDepth(NiCamera* camera, NiCamera* firstPersonCamera, BSRenderedTexture* texture);
-    void SetupDepthCameras(NiCamera* camera, NiCamera* firstPersonCamera);
+    void SetupDepth(NiCamera* apWorldCamera, NiCamera* ap1stPersonCamera, BSRenderedTexture* apCurRenderTarget);
+    void SetupDepthCameras(NiCamera* apWorldCamera, NiCamera* ap1stPersonCamera);
     void SetAccumulate(bool bAccumulate);
     bool __thiscall HasListedItemInRange(unsigned int a, int b);
     void BSShaderAccumulator_SetShadowSceneNode(void*);
@@ -92,11 +93,11 @@ public:
     void BSShaderAccumulator_SetRenderDecals(bool);
     void MobileObject_SetSoundCallBackSuccess(bool);
     void __thiscall GetWaterRefractionPassWithinRange(unsigned int a, int b);
-    void BSShaderAccumulator_RenderNormals(void* camera, BSRenderedTexture* texture);
+    void BSShaderAccumulator_RenderNormals(void* apCamera, BSRenderedTexture* apCurRenderTarget);
 
-    etAccumulationMode _unverified_eAccumulationMode;
+    etAccumulationMode eAccumulationMode; // src: XBOX_RETAIL_PDB +0x34 (old: _unverified_eAccumulationMode)
     bool bWorldGeometry;
-    bool _unverified_bCacheGeometry;
+    bool bCacheGeometry; // src: XBOX_RETAIL_PDB +0x39 (old: _unverified_bCacheGeometry)
     bool bDoDepthPasses;
     unsigned char _pad3B[1];
     unsigned int uiSunPixelCount;
@@ -146,13 +147,14 @@ public:
 };
 
 #if defined(FNV64_INCLUDE_BSMULTIBOUND_CAPSULE)
+// pdb: class BSMultiBoundCapsule, size 0x28, bases: BSMultiBoundShape, 3 members
 class BSMultiBoundCapsule : public BSMultiBoundShape
 {
 public:
     BSMultiBoundCapsule();
 
-    NiPoint3 unk0C;
-    NiPoint3 unk18;
-    float unk24;
+    NiPoint3 PointA; // src: XBOX_RETAIL_PDB +0xc (old: unk0C)
+    NiPoint3 PointB; // src: XBOX_RETAIL_PDB +0x18 (old: unk18)
+    float Radius; // src: XBOX_RETAIL_PDB +0x24 (old: unk24)
 };
 #endif

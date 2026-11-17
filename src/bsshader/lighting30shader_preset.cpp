@@ -81,8 +81,8 @@ struct Pass
     unsigned int refCount;
 
     void Release();
-    void SetVertex(AtomicObject* value);
-    void SetPixel(AtomicObject* value);
+    void SetVertex(AtomicObject* pkVertexShader);
+    void SetPixel(AtomicObject* pkPixelShader);
     __forceinline void SetState(unsigned int state, unsigned int value, bool save)
     {
         if (!states)
@@ -187,7 +187,7 @@ __declspec(noinline) unsigned char MakeFlags(char a, char b, char c, char d, cha
 struct PassManager
 {
     void Finish();
-    void ConfigureAllPasses();
+    void Lighting30Shader_PresetStages();
 };
 extern float DAT_01200458;
 extern PassRef DAT_01200ec0;
@@ -635,7 +635,10 @@ extern unsigned int DAT_01200bbc;
 extern unsigned int DAT_012009fc;
 
 // @fnv 0x00c072c0
-void PassManager::ConfigureAllPasses()
+// src: XBOX_RETAIL_PDB 0x00c072c0
+// pdb: Lighting30Shader::PresetStages | Lighting30Shader_Preset.obj | retail, call graph, high
+// pdb locals: fdepthBias, bspecularstage, sppass, spstage, fDefaultBias
+void PassManager::Lighting30Shader_PresetStages()
 {
     PassRef kIter;
     StageRef y;

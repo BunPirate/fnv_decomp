@@ -12,10 +12,10 @@
 // @fnv 0x00c903b0
 __declspec(noinline) void __fastcall ReleaseUnserializedReference(hkReferencedObject* object)
 {
-    if (object->m_usMemSizeAndFlags)
+    if (object->m_memSizeAndFlags)
     {
-        --object->m_sReferenceCount;
-        if (!object->m_sReferenceCount)
+        --object->m_referenceCount;
+        if (!object->m_referenceCount)
             ((void(__thiscall*)(void*, int))(*(void***)object)[0])(object, 1);
     }
 }
@@ -23,8 +23,8 @@ __declspec(noinline) void __fastcall ReleaseUnserializedReference(hkReferencedOb
 // @fnv 0x00c903a0
 __declspec(noinline) void __fastcall AddUnserializedReference(hkReferencedObject* object)
 {
-    if (object->m_usMemSizeAndFlags)
-        object->m_sReferenceCount++;
+    if (object->m_memSizeAndFlags)
+        object->m_referenceCount++;
 }
 
 extern int DAT_012681d4;
@@ -58,13 +58,15 @@ struct FUN_00cd29c0_class
 };
 // @fnv 0x00cd29c0
 // src: HAVOK_LIB 0x00cd29c0
-void FUN_00cd29c0_class::hkpWorldObject_setAiObjectData(RefObj* object)
+// pdb: hkpWorldObject::setAiObjectData | hkpWorldObject.obj | retail, upstream name already matches, high
+// pdb params: data
+void FUN_00cd29c0_class::hkpWorldObject_setAiObjectData(RefObj* data)
 {
-    object->RetainReference();
+    data->RetainReference();
     DDCC60World* pOldWorld = *reinterpret_cast<DDCC60World**>(reinterpret_cast<unsigned char*>(this) + 0x84);
     if (pOldWorld)
         pOldWorld->removeReference();
-    *reinterpret_cast<RefObj**>(reinterpret_cast<unsigned char*>(this) + 0x84) = object;
+    *reinterpret_cast<RefObj**>(reinterpret_cast<unsigned char*>(this) + 0x84) = data;
 }
 
 struct FUN_00cdf6e0_class
@@ -103,6 +105,8 @@ struct FUN_00d47750_class
 };
 
 // @fnv 0x00d47750
+// pdb: hkRefVariant::hkRefVariant | hkRefVariant.obj | retail, call graph, low
+// pdb params: o
 FUN_00d47750_class* FUN_00d47750_class::AssignObject(RefObj** pObject)
 {
     RefObj* object = *pObject;
@@ -132,17 +136,19 @@ struct FUN_00dee6f0_class
     int m_iFourthElementInteger;
     int m_usTrailingValue;
     RefObj* m_pObject;
-    void hkpPointToPathConstraintData_setPath(RefObj* pObject);
+    void hkpPointToPathConstraintData_setPath(RefObj* path);
 };
 // @fnv 0x00dee6f0
 // src: COMMUNITY 0x00dee6f0
-void FUN_00dee6f0_class::hkpPointToPathConstraintData_setPath(RefObj* pNewObject)
+// pdb: hkpPointToPathConstraintData::setPath | hkpPointToPathConstraintData.obj | retail, upstream name already matches, high
+// pdb params: path
+void FUN_00dee6f0_class::hkpPointToPathConstraintData_setPath(RefObj* path)
 {
-    if (pNewObject)
-        pNewObject->FUN_00c90510();
+    if (path)
+        path->FUN_00c90510();
     if (m_pObject)
         ((RefObj2*)m_pObject)->FUN_00c905b0();
-    m_pObject = pNewObject;
+    m_pObject = path;
 }
 }  // namespace fnv_00dee6f0
 
@@ -187,6 +193,9 @@ struct FUN_00e3e840_class
 };
 
 // @fnv 0x00e3e840
+// pdb: hkxAttributeHolder::findAttributeVariantByName | hkxAttributeHolder.obj | retail, object-file run extension, low
+// pdb params: name
+// pdb locals: v, var
 FUN_00e3e840_result* FUN_00e3e840_class::FindWorldByKey(FUN_00e3e840_result* result, int key)
 {
     FUN_00e3e840_data data;
@@ -457,7 +466,7 @@ extern "C" hkMemoryRouter& __cdecl hkMemoryRouter_getInstance() throw();
 inline void* hkReferencedObject::operator new(std::size_t nbytes)
 {
     hkReferencedObject* b = static_cast<hkReferencedObject*>(hkRouterC904::hkMemoryRouter_getInstance().heap().blockAlloc(nbytes));
-    b->m_usMemSizeAndFlags = (unsigned short)nbytes;
+    b->m_memSizeAndFlags = (unsigned short)nbytes;
     return b;
 }
 
@@ -474,7 +483,9 @@ extern int DAT_012681d8;
 
 // Increments the TLS-guarded counter if the TLS slot holds the sentinel, otherwise enters the critical section, resets the counter to 1 and sets the TLS slot.
 // @fnv 0x00c90490
-void __cdecl EnterTlsGuard()
+// src: XBOX_DEBUG_PDB 0x00c90490
+// pdb: hkReferencedObject::lockAll | hkReferencedObject.obj | debug, call graph, high
+void __cdecl hkReferencedObject_lockAll()
 {
     hkReferencedObjectLock* st = reinterpret_cast<hkReferencedObjectLock*>(DAT_012681d4);
     if ((int)TlsGetValue(DAT_012681d8) == 0x23df4554)
@@ -493,13 +504,14 @@ extern "C" __declspec(dllimport) void* __stdcall TlsGetValue(unsigned long dwTls
 extern "C" __declspec(dllimport) int __stdcall TlsSetValue(unsigned long dwTlsIndex, void* pvValue);
 
 // @fnv 0x00c905b0
+// pdb: hkReferencedObject::removeReference | hkReferencedObject.obj | retail, upstream name already matches, high
 void hkReferencedObject::removeReference() const
 {
-    if (m_usMemSizeAndFlags != 0)
+    if (m_memSizeAndFlags != 0)
     {
-        if (m_sReferenceCount == 1)
+        if (m_referenceCount == 1)
         {
-            m_sReferenceCount = 0;
+            m_referenceCount = 0;
             delete this;
             return;
         }
@@ -517,7 +529,7 @@ void hkReferencedObject::removeReference() const
                 pkLock->m_lLockCount = 1;
                 TlsSetValue(kTls, reinterpret_cast<void*>(0x23df4554));
             }
-            m_sReferenceCount--;
+            m_referenceCount--;
             if (--pkLock->m_lLockCount <= 0)
             {
                 TlsSetValue(kTls, 0);
@@ -526,7 +538,7 @@ void hkReferencedObject::removeReference() const
         }
         else
         {
-            m_sReferenceCount--;
+            m_referenceCount--;
         }
     }
 }
@@ -556,18 +568,21 @@ struct FUN_00ca9b40_class
     short m_uCount;
     int m_extraneousState;
     ObjectRef* m_pObject;
-    void UpdateFields_00ca9b40(ObjectRef* pObject);
+    void ahkpMalleableConstraintData_SetChild(ObjectRef* apData);
 };
 // @fnv 0x00ca9b40
-// src: GUESS 0x00ca9b40 (confidence: low)
-void FUN_00ca9b40_class::UpdateFields_00ca9b40(ObjectRef* pObject)
+// src: XBOX_RETAIL_PDB 0x00ca9b40
+// pdb: ahkpMalleableConstraintData::SetChild | bhkMalleableConstraint.obj | retail, call graph, high
+// pdb params: apData
+// pdb locals: tempMemContext
+void FUN_00ca9b40_class::ahkpMalleableConstraintData_SetChild(ObjectRef* apData)
 {
     ThreadFlagGuard guard;
-    if (pObject)
-        pObject->FUN_00c90510();
+    if (apData)
+        apData->FUN_00c90510();
     if (m_pObject)
         m_pObject->FUN_00c905b0();
-    m_pObject = pObject;
+    m_pObject = apData;
 }
 
 struct DeviceCallback
@@ -595,7 +610,7 @@ struct DeviceOwner
     int unk00, unk04, unk08, unk0c;
     DeviceSubobject m_subobject;
     int unk14, unk18, m_payload;
-    void UpdateFields_00ca9b40(Resource*);
+    void ahkpMalleableConstraintData_SetChild(Resource*);
 };
 struct InputObject
 {
@@ -613,15 +628,18 @@ struct FUN_00ca9ce0_class
     void ProcessInput(InputObject*);
 };
 // @fnv 0x00ca9ce0
-void FUN_00ca9ce0_class::ProcessInput(InputObject* input)
+// pdb: hkMalleableConstraintCinfo::LoadBinary | bhkMalleableConstraint.obj | retail, object-file gap fill, high
+// pdb params: arStream
+// pdb locals: pd, pcd
+void FUN_00ca9ce0_class::ProcessInput(InputObject* arStream)
 {
-    hkConstraintCinfo_LoadBinary(input);
+    hkConstraintCinfo_LoadBinary(arStream);
     DeviceOwner* owner = m_pOwnerObject;
-    Resource* resource = bhkConstraintManager_LoadBinary(input);
-    owner->UpdateFields_00ca9b40(resource);
+    Resource* resource = bhkConstraintManager_LoadBinary(arStream);
+    owner->ahkpMalleableConstraintData_SetChild(resource);
     owner->m_subobject.hkpBridgeConstraintAtom_init(owner);
     resource->FUN_00c905b0();
-    DeviceCallback* callback = input->GetCallback();
+    DeviceCallback* callback = arStream->GetCallback();
     callback->Process(&owner->m_payload);
 }
 
@@ -937,17 +955,19 @@ static inline void replaceInstanceC904(hkReferencedObjectLock* p)
 // Sets the singleton lock mode, creating the lock first if DAT_012681d4 is null.
 // @fnv 0x00c90420
 // src: HAVOK_LIB 0x00c90420
-void __cdecl hkReferencedObject_lockInit(int value)
+// pdb: hkReferencedObject::lockInit | hkReferencedObject.obj | retail, upstream name already matches, high
+// pdb params: lockMode
+void __cdecl hkReferencedObject_lockInit(int lockMode)
 {
     if (!hkSingletonC904::DAT_012681d4)
     {
         hkReferencedObjectLock* p = new hkReferencedObjectLock();
-        p->m_multiThreaded = value;
+        p->m_multiThreaded = lockMode;
         replaceInstanceC904(p);
     }
     else
     {
-        hkSingletonC904::DAT_012681d4->m_multiThreaded = value;
+        hkSingletonC904::DAT_012681d4->m_multiThreaded = lockMode;
     }
 }
 
@@ -959,9 +979,10 @@ extern void(__stdcall* DAT_00fdf05c)(void*);
 extern void(__stdcall* DAT_00fdf100)(void*);
 
 // @fnv 0x00c90510
+// pdb: hkReferencedObject::addReference | hkReferencedObject.obj | retail, upstream name already matches, high
 void hkReferencedObject::addReference() const
 {
-    if (!m_usMemSizeAndFlags)
+    if (!m_memSizeAndFlags)
         return;
 
     int* state = (int*)DAT_012681d4;
@@ -989,7 +1010,7 @@ void hkReferencedObject::addReference() const
                 setValue(DAT_012681d8, 0x23df4554);
             }
 
-            m_sReferenceCount += one;
+            m_referenceCount += one;
             --state[3];
 
             if (state[3] <= 0)
@@ -1002,7 +1023,7 @@ void hkReferencedObject::addReference() const
         }
     }
 
-    m_sReferenceCount += one;
+    m_referenceCount += one;
 }
 
 namespace fnv_00cc49b0 {
@@ -1048,7 +1069,7 @@ struct FUN_00cc49b0_class
     FUN_00c90510_class* owner;
     unsigned short state;
     unsigned short substate;
-    void ahkpBreakableConstraintData_SetChild(FUN_00c90510_class* value);
+    void ahkpBreakableConstraintData_SetChild(FUN_00c90510_class* apData);
 };
 struct ScopedThreadState
 {
@@ -1066,14 +1087,17 @@ struct ScopedThreadState
 // Retains value if present, releases owner if present, assigns value, copies two values from vf24, and calls subobject.FUN_00d21ce0(this).
 // @fnv 0x00cc49b0
 // src: XBOX_PDB 0x00cc49b0
-void FUN_00cc49b0_class::ahkpBreakableConstraintData_SetChild(FUN_00c90510_class* apOwner)
+// pdb: ahkpBreakableConstraintData::SetChild | bhkBreakableConstraint.obj | retail, upstream name already matches, high
+// pdb params: apData
+// pdb locals: info, tempMemContext
+void FUN_00cc49b0_class::ahkpBreakableConstraintData_SetChild(FUN_00c90510_class* apData)
 {
     ScopedThreadState thread;
-    if (apOwner)
-        apOwner->FUN_00c90510();
+    if (apData)
+        apData->FUN_00c90510();
     if (owner)
         owner->FUN_00c905b0();
-    owner = apOwner;
+    owner = apData;
     ShortPair result;
     owner->vf24(ByteFlag(true), &result);
     state = (unsigned short)result.first;
@@ -1103,17 +1127,17 @@ class WorldObjectStreamState
     int m_iLayer;
     unsigned char m_ucFlags;
 
-    void ahkpBreakableConstraintData_SetChild(hkReferencedObject* pkShape) throw();
+    void ahkpBreakableConstraintData_SetChild(hkReferencedObject* apData) throw();
 };
 
 class FUN_00d53200_class
 {
   public:
     virtual ~FUN_00d53200_class();
-    void hkConstraintCinfo_LoadBinary(NiStream& kStream);
+    void hkConstraintCinfo_LoadBinary(NiStream& arStream);
 };
 
-hkReferencedObject* __cdecl bhkConstraintManager_LoadBinary(NiStream& kStream) throw();
+hkReferencedObject* __cdecl bhkConstraintManager_LoadBinary(NiStream& arStream) throw();
 
 // This loader's state pointer is at +0x4; bhkWorldObject's inherited Havok pointer is at +0x8.
 class WorldObjectStreamLoader : public FUN_00d53200_class
@@ -1121,21 +1145,24 @@ class WorldObjectStreamLoader : public FUN_00d53200_class
   public:
     WorldObjectStreamState* m_pPointer;
 
-    void hkBreakableConstraintCinfo_LoadBinary(NiStream& kStream);
+    void hkBreakableConstraintCinfo_LoadBinary(NiStream& arStream);
 };
 
 // Reads a shape, attaches it to the hkpWorldObject, and deserializes its layer and flags from the stream.
 // @fnv 0x00cc4e10
 // src: XBOX_PDB 0x00cc4e10
-void WorldObjectStreamLoader::hkBreakableConstraintCinfo_LoadBinary(NiStream& kStream)
+// pdb: hkBreakableConstraintCinfo::LoadBinary | bhkBreakableConstraint.obj | retail, upstream name already matches, high
+// pdb params: arStream
+// pdb locals: pd, pcd
+void WorldObjectStreamLoader::hkBreakableConstraintCinfo_LoadBinary(NiStream& arStream)
 {
-    hkConstraintCinfo_LoadBinary(kStream);
+    hkConstraintCinfo_LoadBinary(arStream);
     WorldObjectStreamState* pkObject = m_pPointer;
-    hkReferencedObject* pkShape = bhkConstraintManager_LoadBinary(kStream);
+    hkReferencedObject* pkShape = bhkConstraintManager_LoadBinary(arStream);
     pkObject->ahkpBreakableConstraintData_SetChild(pkShape);
     pkShape->removeReference();
-    kStream.GetBinaryStream()->Read(pkObject->m_iLayer);
-    kStream.GetBinaryStream()->Read(pkObject->m_ucFlags);
+    arStream.GetBinaryStream()->Read(pkObject->m_iLayer);
+    arStream.GetBinaryStream()->Read(pkObject->m_ucFlags);
 }
 
 struct RcObject
@@ -1152,6 +1179,8 @@ struct SortEntry
 void __cdecl SiftDownHeap(SortEntry* entries, int index, int count, int compare);
 // Sorts an array of SortEntry in place using a heap sort, sifting down to build the heap and then extracting elements.
 // @fnv 0x00e3eff0
+// pdb: D3DXShader::HeapSort | cprogram.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
+// pdb params: pfnCompare, pVal, cVal, pContext
 void __cdecl HeapSort(SortEntry* entries, int count, int compare)
 {
     int remaining = count;
@@ -1298,6 +1327,9 @@ struct E5C4Foo
 // Looks up an entry by key in d; if missing, assigns a new object via k.AssignObject, then returns a copy of the stored E5C4Ref.
 // @fnv 0x00e5c4d0
 // src: GUESS 0x00e5c4d0 (confidence: medium)
+// pdb: hkxAttributeGroup::findAttributeVariantByName | hkxAttributeGroup.obj | retail, call graph, low
+// pdb params: name
+// pdb locals: v
 E5C4Ref E5C4Foo::FindOrCreateEntryReference(E5C4Key akKey)
 {
     int bCreated = 0;
@@ -1352,6 +1384,9 @@ struct S00e3eba0_class
 };
 // If m_pShape equals oldObject, replaces it with GetObject; then recursively applies the operation to every item in m_items.
 // @fnv 0x00e3eba0
+// pdb: TESContainer::ReplaceObject | TESContainer.obj | debug, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays; only the method name matches, on a class other than the PDB class, so its parameter names are not applied
+// pdb params (unverified): apObject, apReplace
+// pdb locals (unverified): pkList, pobj
 void S00e3eba0_class::ReplaceObject(hkReferencedObject* oldObject, hkReferencedObject* apNewObject)
 {
     if (m_pShape == (void*)oldObject)
@@ -1373,7 +1408,9 @@ void S00e3eba0_class::ReplaceObject(hkReferencedObject* oldObject, hkReferencedO
 // Calls FUN_00c903b0 for each strided item, acquiring the critical section when multi-threaded mode is enabled and TLS lacks the marker.
 // @fnv 0x00c90740
 // src: HAVOK_LIB 0x00c90740
-void __cdecl hkReferencedObject_removeReferences(void* items, int count, int stride)
+// pdb: hkReferencedObject::removeReferences | hkReferencedObject.obj | retail, upstream name already matches, high
+// pdb params: objects, numObjects, pointerStriding
+void __cdecl hkReferencedObject_removeReferences(void* objects, int numObjects, int pointerStriding)
 {
     hkReferencedObjectLock* guard = (hkReferencedObjectLock*)DAT_012681d4;
     if (guard->m_multiThreaded != 0 && TlsGetValue(DAT_012681d8) != (void*)0x23df4554)
@@ -1386,14 +1423,14 @@ void __cdecl hkReferencedObject_removeReferences(void* items, int count, int str
             guard->m_lLockCount = 1;
             TlsSetValue(DAT_012681d8, (void*)0x23df4554);
         }
-        if (count > 0)
+        if (numObjects > 0)
         {
-            char* item = (char*)items;
+            char* item = (char*)objects;
             do
             {
                 ReleaseUnserializedReference(*((hkReferencedObject**)item));
-                item += stride;
-            } while (--count);
+                item += pointerStriding;
+            } while (--numObjects);
         }
         if (--guard->m_lLockCount <= 0)
         {
@@ -1403,11 +1440,11 @@ void __cdecl hkReferencedObject_removeReferences(void* items, int count, int str
     }
     else
     {
-        if (count > 0)
+        if (numObjects > 0)
         {
-            int remaining = count;
-            int step = *(volatile int*)&stride;
-            char* item = (char*)items;
+            int remaining = numObjects;
+            int step = *(volatile int*)&pointerStriding;
+            char* item = (char*)objects;
             do
             {
                 ReleaseUnserializedReference(*((hkReferencedObject**)item));
@@ -1420,7 +1457,9 @@ void __cdecl hkReferencedObject_removeReferences(void* items, int count, int str
 // Calls FUN_00c903a0 on each object, acquiring the critical section when multi-threaded mode is enabled and TLS lacks the marker.
 // @fnv 0x00c90670
 // src: HAVOK_LIB 0x00c90670
-void __cdecl hkReferencedObject_addReferences(const void* objects, int numObjects, int stride)
+// pdb: hkReferencedObject::addReferences | hkReferencedObject.obj | retail, upstream name already matches, high
+// pdb params: objects, numObjects, pointerStriding
+void __cdecl hkReferencedObject_addReferences(const void* objects, int numObjects, int pointerStriding)
 {
     hkReferencedObjectLock* lock = (hkReferencedObjectLock*)DAT_012681d4;
     if (lock->m_multiThreaded && (unsigned int)TlsGetValue(DAT_012681d8) != 0x23df4554)
@@ -1438,7 +1477,7 @@ void __cdecl hkReferencedObject_addReferences(const void* objects, int numObject
         for (int i = 0; i < numObjects; ++i)
         {
             AddUnserializedReference(*(hkReferencedObject**)objects);
-            objects = (const char*)objects + stride;
+            objects = (const char*)objects + pointerStriding;
         }
         --lock->m_lLockCount;
         if (lock->m_lLockCount <= 0)
@@ -1452,7 +1491,7 @@ void __cdecl hkReferencedObject_addReferences(const void* objects, int numObject
         for (int i = 0; i < numObjects; ++i)
         {
             AddUnserializedReference(*(hkReferencedObject**)objects);
-            objects = (const char*)objects + stride;
+            objects = (const char*)objects + pointerStriding;
         }
     }
 }
@@ -1460,6 +1499,7 @@ void __cdecl hkReferencedObject_addReferences(const void* objects, int numObject
 // Decrements the lock count and, when it is nonpositive, clears the TLS slot and leaves the critical section.
 // @fnv 0x00c904e0
 // src: HAVOK_LIB 0x00c904e0
+// pdb: hkReferencedObject::unlockAll | hkReferencedObject.obj | debug, upstream name already matches, high
 void __cdecl hkReferencedObject_unlockAll()
 {
     hkReferencedObjectLock* lock = reinterpret_cast<hkReferencedObjectLock*>(DAT_012681d4);

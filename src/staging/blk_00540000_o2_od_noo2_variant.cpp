@@ -21,7 +21,7 @@ struct FUN_006815c0
 struct FUN_00404eb0
 {
     U32 flags;
-    FUN_00404eb0(int context, int enabled, const char* filename, int line);
+    FUN_00404eb0(int memContext, int overridable, const char* filename, int aiLine);
     ~FUN_00404eb0()
     {
         FUN_00404ee0();
@@ -216,7 +216,7 @@ struct ParticleSystem
     void bhkWorld_AddEntityListener(void*);
     void bhkWorld_AddTrapListener(CurveBase*);
     void SetField(void*);
-    void bhkWorld_AppendAcousticSpaceListener(void*);
+    void bhkWorld_AddAcousticSpaceListener(void*);
     void bhkWorld_AddContactListener(void*);
     void bhkWorld_SetOrigin(FUN_006815c0*);
     void bhkWorld_SetEnabled(bool);
@@ -281,7 +281,10 @@ extern void* __cdecl FOCollisionListener_GetSingleton();
 extern bool __cdecl TES_QCollisionDisableFlag();
 // @fnv 0x00554010
 // src: XBOX_PDB 0x00554010
-ParticleSystem* __cdecl TESObjectCELL_CreateWorld(const FUN_006815c0* origin)
+// pdb: TESObjectCELL::CreateWorld | TESObjectCELL.obj | retail, upstream name already matches, high
+// pdb params: arCenter
+// pdb locals: worldSize, hkwInfo, tempMemContext, org, pworld, borderSize
+ParticleSystem* __cdecl TESObjectCELL_CreateWorld(const FUN_006815c0* arCenter)
 {
     FUN_00404eb0 context(16, 1, str_0102ed68, 0x3c1b);
     FUN_00c681c0 source;
@@ -289,7 +292,7 @@ ParticleSystem* __cdecl TESObjectCELL_CreateWorld(const FUN_006815c0* origin)
     source.orientation.SetValue(reinterpret_cast<hkVector4*>(rotation)->hkVector4_hkVector4(0.0f, 0.0f, DAT_011ca158, 0.0f));
     source.hkpWorldCinfo_setBroadPhaseWorldSize(NI2HK_004a3e90(DAT_0102f104));
     FUN_006815c0 direction;
-    direction = *origin;
+    direction = *arCenter;
     direction.z = 0.0f;
     source.alpha = 1.0f;
     __declspec(align(16)) FUN_006815c0 velocity;
@@ -305,7 +308,7 @@ ParticleSystem* __cdecl TESObjectCELL_CreateWorld(const FUN_006815c0* origin)
     system->bhkWorld_AddEntityListener(new FUN_00554590());
     system->bhkWorld_AddTrapListener(new FUN_0062d5c0());
     system->SetField(TESWaterListener_GetExteriorListener());
-    system->bhkWorld_AppendAcousticSpaceListener(new FUN_0061f460());
+    system->bhkWorld_AddAcousticSpaceListener(new FUN_0061f460());
     system->bhkWorld_AddContactListener(FOCollisionListener_GetSingleton());
     system->bhkWorld_AddEntityListener(new FUN_0062a460());
     if (!DAT_011ca088)

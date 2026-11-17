@@ -14,19 +14,21 @@
 // src/gamebryo2.2/corelibs/nianimation/bsfrustumfovcontroller.cpp - unit created 2026-10-16 from the whole-binary attribution (360 source path: d:/_fallout3/platforms/common/code/gamebryo2.2/corelibs/nianimation/bsfrustumfovcontroller.cpp).
 // Functions are listed by their @fnv annotations; compile flags inferred from the PC code.
 
-extern "C" void* g_011f3ec8;
+extern "C" void* BSFrustumFOVController_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f3ec8 (old: g_011f3ec8)
 
 // @fnv 0x00a42e80
 // src: COMMUNITY 0x00a42e80
 void* __cdecl BSFrustumFOVController_GetRTTI()
 {
-    return &g_011f3ec8;
+    return &BSFrustumFOVController_ms_RTTI;
 }
 
 extern int DAT_0109780c;
 
 // @fnv 0x00a42ee0
 // src: EXE 0x00a42ee0
+// pdb: BSFrustumFOVController::CreateObject | BSFrustumFOVController.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 void* __cdecl BSFrustumFOVController_CreateObject()
 {
     void* p = BSFadeNode::operator new(0x38);
@@ -44,6 +46,10 @@ extern const char* const g_011f5e6c_arg1;
 // Walks pkTarget's NiRTTI chain and returns true if any entry matches g_011f5e6c_arg1, false otherwise or when pkTarget is null.
 // @fnv 0x00a42d90
 // src: XBOX_PDB 0x00a42d90
+// pdb: BSFrustumFOVController::GetTargetFloatValue | BSFrustumFOVController.obj | retail, object-file run extension, low
+// pdb note: debug build links it to BSFrustumFOVController::InterpTargetIsCorrectType
+// pdb params: fValue
+// pdb locals: pcam
 bool __stdcall BSFrustumFOVController_InterpTargetIsCorrectType(NiObjectNET* pkTarget)
 {
     if (!pkTarget)
@@ -53,7 +59,7 @@ bool __stdcall BSFrustumFOVController_InterpTargetIsCorrectType(NiObjectNET* pkT
     {
         if (pkRTTI == (const NiRTTI*)&g_011f5e6c_arg1)
             return true;
-        pkRTTI = pkRTTI->m_pBaseRTTI;
+        pkRTTI = pkRTTI->m_pkBaseRTTI;
     }
     return false;
 }
@@ -63,10 +69,12 @@ char* __cdecl _FUN_00a7d330(void*);
 
 // @fnv 0x00a42f10
 // src: XBOX_PDB 0x00a42f10
+// pdb: BSFrustumFOVController::GetViewerStrings | BSFrustumFOVController.obj | retail, upstream name already matches, high
+// pdb params: pkStrings
 void __stdcall BSFrustumFOVController_GetViewerStrings(StrArr* pkStrings)
 {
     NiFloatInterpController_GetViewerStrings(pkStrings);
-    char* pcString = _FUN_00a7d330(g_011f3ec8);
+    char* pcString = _FUN_00a7d330(BSFrustumFOVController_ms_RTTI);
     unsigned int uiIndex = pkStrings->m_usSize;
     unsigned int uiSize = pkStrings->m_usMaxSize;
     if (uiIndex >= uiSize)
@@ -122,31 +130,36 @@ struct Base840
 
 // @fnv 0x00a44ce0
 // src: XBOX_PDB 0x00a44ce0
+// pdb: BSFrustumFOVController::SaveBinary | BSFrustumFOVController.obj | debug, upstream name already matches, high
+// pdb params: kStream
 void Base840::BSFrustumFOVController_SaveBinary(NiStream& kStream)
 {
     NiBoolInterpController_SaveBinary(kStream);
 }
 
-extern const float DAT_01096324;
+extern const float NiInterpController_INVALID_TIME; // src: XBOX_RETAIL_PDB 0x01096324 (old: DAT_01096324/INVALID_TIME_A4F/g_fInvalidTimeBC3/kInvalidTime)
 
 // Updates the camera controller time and, if not skipped, applies the interpolator's value to the target's view frustum bounds.
 // @fnv 0x00a42dc0
-void BSFrustumFOVController::Update(NiUpdateData& kUpdateData)
+// pdb: BSFrustumFOVController::Update | BSFrustumFOVController.obj | retail, upstream name already matches, high
+// pdb params: UpdateData
+// pdb locals: ftanFOV, newFrustum, pcam
+void BSFrustumFOVController::Update(NiUpdateData& UpdateData)
 {
     if ((bool)((m_uiObjectFlags >> 5) & 1))
     {
-        m_fControllerTime = DAT_01096324;
+        m_fScaledTime = NiInterpController_INVALID_TIME;
     }
-    else if (DontDoUpdate(kUpdateData.fTime) &&
-             (!m_spControllerInterpolator.m_pObject || !m_spControllerInterpolator.m_pObject->AlwaysUpdate()))
+    else if (DontDoUpdate(UpdateData.fTime) &&
+             (!m_spInterpolator.m_pObject || !m_spInterpolator.m_pObject->AlwaysUpdate()))
     {
         return;
     }
 
-    if (m_spControllerInterpolator.m_pObject)
+    if (m_spInterpolator.m_pObject)
     {
         float fValue;
-        if (m_spControllerInterpolator.m_pObject->UpdateFloat(m_fControllerTime, m_pkTarget, fValue))
+        if (m_spInterpolator.m_pObject->UpdateFloat(m_fScaledTime, m_pkTarget, fValue))
         {
             NiCamera* pkCamera = static_cast<NiCamera*>(m_pkTarget);
             NiFrustum kFrustum = pkCamera->m_kViewFrustum;
@@ -166,6 +179,8 @@ extern void FUN_00a57c10();
 
 // @fnv 0x00a44cf0
 // src: XBOX_PDB 0x00a44cf0
+// pdb: BSFrustumFOVController::IsEqual | BSFrustumFOVController.obj | debug, upstream name already matches, high
+// pdb params: pkObject
 void BSFrustumFOVController_IsEqual()
 {
     FUN_00a57c10();

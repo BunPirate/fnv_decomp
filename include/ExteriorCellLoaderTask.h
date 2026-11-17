@@ -2,13 +2,14 @@
 
 #include "IOTask.h"
 
+// pdb: class ExteriorCellLoaderTask, size 0x20 (here 0x18), bases: IOTask, 2 members
 class ExteriorCellLoaderTask : public IOTask
 {
 public:
     virtual ~ExteriorCellLoaderTask();
     virtual void Run();
     virtual void Finish();
-    virtual void Cancel(BS_TASK_STATE state, void* parent);
+    virtual void Cancel(BS_TASK_STATE aePreviousState, void* apTaskOwner);
     virtual bool GetDescription(char* description, unsigned int bufferSize);
     virtual void ProcessLoadedAnimIdle();
     virtual void GenerateKey();

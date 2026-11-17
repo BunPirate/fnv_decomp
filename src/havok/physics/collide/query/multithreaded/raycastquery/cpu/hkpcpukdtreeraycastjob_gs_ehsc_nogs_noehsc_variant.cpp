@@ -93,6 +93,7 @@ struct FUN_00e4e3c0
     FUN_00e4e3c0();
 
 // @fnv 0x00e4e3c0
+// pdb: hkKdTreeCpuBroadphaseBundleCastCollector::`scalar deleting destructor' | hkpCpuKdTreeRayCastJob.obj | retail, vtable slot, high
     virtual ~FUN_00e4e3c0()
     {}
 
@@ -479,18 +480,21 @@ struct Cls
 
     int flags80[4];
 
-    void __thiscall hkKdTreeCpuBroadphaseBundleCastCollector_addMidPhaseHit(Param* p1, const Mask& p2);
+    void __thiscall hkKdTreeCpuBroadphaseBundleCastCollector_addMidPhaseHit(Param* primId, const Mask& mask);
 };
 
 // @fnv 0x00e4de10
 // src: HAVOK_SRC 0x00e4de10
-void __thiscall Cls::hkKdTreeCpuBroadphaseBundleCastCollector_addMidPhaseHit(Param* p1, const Mask& p2)
+// pdb: hkKdTreeCpuBroadphaseBundleCastCollector::addMidPhaseHit | hkpCpuKdTreeRayCastJob.obj | retail, upstream name already matches, high
+// pdb params: primId, mask
+// pdb locals: bundleOutput
+void __thiscall Cls::hkKdTreeCpuBroadphaseBundleCastCollector_addMidPhaseHit(Param* primId, const Mask& mask)
 {
-    HeadObj* head = p1->head;
+    HeadObj* head = primId->head;
     if (head)
     {
-        const Mat4& transform = p1->getTransform();
-        if (!f04 || f04->inner.Query(f08, p1).b)
+        const Mat4& transform = primId->getTransform();
+        if (!f04 || f04->inner.Query(f08, primId).b)
         {
             work.from[0].SetTransformedPosition(transform, f08[0].r0);
             work.to[0].SetTransformedPosition(transform, f08[0].r1);
@@ -528,7 +532,7 @@ void __thiscall Cls::hkKdTreeCpuBroadphaseBundleCastCollector_addMidPhaseHit(Par
             LocalArr bundleOutput;
             bundleOutput.FUN_00d98390();
             bundleOutput.FUN_00d98300();
-            head->V28(&work, &bundleOutput, p2);
+            head->V28(&work, &bundleOutput, mask);
             for (int i = 0; i < 4; i++)
             {
                 if (bundleOutput.entries[i].gate < 1.0f &&
@@ -537,7 +541,7 @@ void __thiscall Cls::hkKdTreeCpuBroadphaseBundleCastCollector_addMidPhaseHit(Par
                     DestEntry* dst = &f0c->entries[i];
                     ((FUN_009c1aa0_Class*)dst)->ProcessEntries_009c1aa0(bundleOutput.entries[i]);
                     dst->info50 = *(int*)&(&bundleOutput.entries[i])[1].x;
-                    f0c->entries[i].field50 = p1;
+                    f0c->entries[i].field50 = primId;
                     const KdRayRotation& rot = transform.getRotation();
                     ((HkVec4&)f0c->entries[i].u.row).SetRotatedDirection(rot, (const HkVec4&)bundleOutput.entries[i]);
                     float v;

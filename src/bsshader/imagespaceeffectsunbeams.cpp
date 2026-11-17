@@ -59,7 +59,7 @@ struct Node_cls
     int unk80;
     int unk84;
     Node_cls();
-    void FUN_00b8ab10(int a1, int a2);
+    void FUN_00b8ab10(int aiVSize, int aiPSize);
     void FUN_00b8a790(int a1, float f0, float f1, float f2, float f3);
     static void* operator new(unsigned int size) throw()
     {
@@ -168,7 +168,7 @@ struct FUN_00c04aa0_cls
     unsigned char unk56;
     unsigned char unk57;
     float m_58;
-    void SetTextureArraySize(int a1);
+    void SetTextureArraySize(int aiCount);
     void SetArrayEntry(int a1, int a2, int a3, int a4, int a5);
     void FUN_00ba3c70(int a1, int a2, Node_cls* a3, int a4);
     void InitNode(Ctx_cls* a1, int a2);

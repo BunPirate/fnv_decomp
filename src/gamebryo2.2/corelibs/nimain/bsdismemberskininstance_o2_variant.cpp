@@ -18,7 +18,7 @@ struct DismemberOperations : BSDismemberSkinInstance
     void CopyPartitions(BSDismemberSkinInstance* dest, CloningProcess& cloning);
     BSDismemberSkinInstance* Clone(CloningProcess& cloning);
     void LoadPartitions(A6C900Stream& stream);
-    void SavePartitions(OutputStream& stream);
+    void SavePartitions(OutputStream& kStream);
     void AppendViewerStrings(NiTPrimitiveArray<char*>* strings);
 };
 
@@ -29,6 +29,8 @@ inline void* __cdecl operator new(unsigned int, void* p)
 }
 // @fnv 0x00a6c8a0
 // src: EXE 0x00a6c8a0
+// pdb: BSDismemberSkinInstance::CreateObject | BSDismemberSkinInstance.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 BSDismemberSkinInstance* BSDismemberSkinInstance_CreateObject()
 {
     BSDismemberSkinInstance* p = (BSDismemberSkinInstance*)BSFadeNode::operator new(sizeof(BSDismemberSkinInstance));
@@ -44,8 +46,8 @@ BSDismemberSkinInstance* BSDismemberSkinInstance_CreateObject()
         p->unk24 = 0;
         p->unk28 = 0;
         p->unk30 = 0;
-        p->unk34 = 0;
-        p->unk38 = 0;
+        p->uiPartitionDataArraySize = 0;
+        p->pPartitionDataArray = 0;
         p->unk18 = -1;
         *(void**)p = (void*)&DAT_01069a84;
         return p;
@@ -66,26 +68,30 @@ inline void* __cdecl operator new[](unsigned int size)
 }
 
 // @fnv 0x00a6c720
+// pdb: BSDismemberSkinInstance::CopyMembers | BSDismemberSkinInstance.obj | retail, call graph, low
+// pdb note: debug build links it to BSDismemberSkinInstance::SetPartitionDataArray
+// pdb params: pkDest, kCloning
+// pdb locals: ui
 void DismemberOperations::CopyPartitions(BSDismemberSkinInstance* pkDest, CloningProcess& kCloning)
 {
     NiSkinInstance::CopyMemberData(pkDest, kCloning);
 
-    pkDest->unk34 = unk34;
-    if (unk34 > 0)
+    pkDest->uiPartitionDataArraySize = uiPartitionDataArraySize;
+    if (uiPartitionDataArraySize > 0)
     {
-        pkDest->unk38 = new Partition[unk34];
-        for (unsigned int ui = 0; ui < unk34; ++ui)
+        pkDest->pPartitionDataArray = new Partition[uiPartitionDataArraySize];
+        for (unsigned int ui = 0; ui < uiPartitionDataArraySize; ++ui)
         {
-            pkDest->unk38[ui].enabled = unk38[ui].enabled;
-            pkDest->unk38[ui].unk01 = unk38[ui].unk01;
-            pkDest->unk38[ui].bodyPart = unk38[ui].bodyPart;
+            pkDest->pPartitionDataArray[ui].enabled = pPartitionDataArray[ui].enabled;
+            pkDest->pPartitionDataArray[ui].unk01 = pPartitionDataArray[ui].unk01;
+            pkDest->pPartitionDataArray[ui].bodyPart = pPartitionDataArray[ui].bodyPart;
         }
     }
     else
     {
-        pkDest->unk38 = 0;
+        pkDest->pPartitionDataArray = 0;
     }
-    pkDest->unk3C = unk3C;
+    pkDest->bVisiblePartitions = bVisiblePartitions;
 }
 
 // Clone lookup uses object-pointer keys; 0x00a53c30 is also bound to NiTMapBase's pointer-key GetAt in nitimecontroller.cpp.
@@ -117,12 +123,15 @@ static inline BSDismemberSkinInstance* InitializeDismember(BSDismemberSkinInstan
     p->unk28 = 0;
     p->unk30 = 0;
     *(void**)p = &DAT_01069a84;
-    p->unk34 = 0;
-    p->unk38 = 0;
+    p->uiPartitionDataArraySize = 0;
+    p->pPartitionDataArray = 0;
     return p;
 }
 
 // @fnv 0x00a6c7c0
+// pdb: BSDismemberSkinInstance::CreateClone | BSDismemberSkinInstance.obj | retail, vtable slot, high
+// pdb params: kCloning
+// pdb locals: uiBoneCount, bCloned, pkClone, pkSkinInstance, i
 BSDismemberSkinInstance* DismemberOperations::Clone(CloningProcess& kCloning)
 {
     BSDismemberSkinInstance* allocated = (BSDismemberSkinInstance*)BSFadeNode::operator new(sizeof(BSDismemberSkinInstance));
@@ -330,22 +339,25 @@ inline void A6C900BinaryStreamLoad(A6C900BinaryStream& kIstr, T* pValue, unsigne
 }
 
 // @fnv 0x00a6c900
+// pdb: BSDismemberSkinInstance::LoadBinary | BSDismemberSkinInstance.obj | retail, vtable slot, high
+// pdb params: kStream
+// pdb locals: uicomponentSizes, ui
 void DismemberOperations::LoadPartitions(A6C900Stream& kStream)
 {
     NiSkinInstance::LoadBinary((NiStream&)kStream);
-    A6C900LoadBinary(kStream, unk34);
-    unk38 = new Partition[unk34];
+    A6C900LoadBinary(kStream, uiPartitionDataArraySize);
+    pPartitionDataArray = new Partition[uiPartitionDataArraySize];
     unsigned int auiComponentSizes[3] = {1, 1, 2};
-    A6C900BinaryStreamLoad(*kStream.m_pUnderlyingStream, unk38, unk34, auiComponentSizes, 3);
-    unk3C = 0;
-    for (unsigned int i = 0; i < unk34; i++)
-        unk3C |= unk38[i].enabled;
+    A6C900BinaryStreamLoad(*kStream.m_pUnderlyingStream, pPartitionDataArray, uiPartitionDataArraySize, auiComponentSizes, 3);
+    bVisiblePartitions = 0;
+    for (unsigned int i = 0; i < uiPartitionDataArraySize; i++)
+        bVisiblePartitions |= pPartitionDataArray[i].enabled;
 }
 
 int sprintf_s(char* buffer, unsigned int size, const char* format, ...);
 char* CreateDebugString(const char* pcName);
 char* CreateDebugString(const char* pcName, unsigned int uiValue);
-char* CreateDebugString(const char* pcName, bool bValue);
+char* CreateDebugString(const char* pcPrefix, bool bValue);
 
 #include "../../../../include/NiTMallocInterface.h"
 #include "../../../../include/NiTPrimitiveArray.h"
@@ -386,17 +398,20 @@ template <class T, class TAlloc> inline void NiTArray<T, TAlloc>::SetAt(unsigned
 extern NiRTTI g_kDismemberSkinRTTI;
 
 // @fnv 0x00a6cac0
+// pdb: BSDismemberSkinInstance::GetViewerStrings | BSDismemberSkinInstance.obj | retail, string-set bridge, high
+// pdb params: pkStrings
+// pdb locals: ui, strpartInfo
 void DismemberOperations::AppendViewerStrings(NiTPrimitiveArray<char*>* pkStrings)
 {
     NiSkinInstance::GetViewerStrings((NiViewerStringsArray*)pkStrings);
 
     pkStrings->Add(CreateDebugString(g_kDismemberSkinRTTI.m_pcName));
-    pkStrings->Add(CreateDebugString("Num Partitions", unk34));
-    pkStrings->Add(CreateDebugString("Visible", reinterpret_cast<const bool&>(unk3C)));
+    pkStrings->Add(CreateDebugString("Num Partitions", uiPartitionDataArraySize));
+    pkStrings->Add(CreateDebugString("Visible", reinterpret_cast<const bool&>(bVisiblePartitions)));
 
-    for (unsigned int i = 0; i < unk34; i++)
+    for (unsigned int i = 0; i < uiPartitionDataArraySize; i++)
     {
-        BSDismemberSkinInstance::Partition& kData = unk38[i];
+        BSDismemberSkinInstance::Partition& kData = pPartitionDataArray[i];
         char acTemp[64];
         sprintf_s(acTemp, 64, "%d = BodyPart %d [%s%s]", i, kData.bodyPart, kData.enabled ? "Enabled" : "Disabled",
                   kData.unk01 ? ", State Change" : "");
@@ -589,31 +604,34 @@ static inline void Swap32(BSDismemberSkinInstance::Partition& value)
     *p = _byteswap_ulong(in);
 }
 // @fnv 0x00a6c9c0
-void DismemberOperations::SavePartitions(OutputStream& stream)
+// pdb: BSDismemberSkinInstance::SaveBinary | BSDismemberSkinInstance.obj | retail, vtable slot, high
+// pdb params: kStream
+// pdb locals: i, pto, pfrom
+void DismemberOperations::SavePartitions(OutputStream& kStream)
 {
-    NiSkinInstance::SaveBinary((NiStream&)stream);
+    NiSkinInstance::SaveBinary((NiStream&)kStream);
     {
-        stream.m_pRayCastOutput->Write(&unk34, 4);
+        kStream.m_pRayCastOutput->Write(&uiPartitionDataArraySize, 4);
     }
-    if (stream.m_bLittleEndian != 1)
+    if (kStream.m_bLittleEndian != 1)
     {
-        for (unsigned int i = 0; i < unk34;)
+        for (unsigned int i = 0; i < uiPartitionDataArraySize;)
         {
             unsigned int j = i;
-            Swap16(unk38[j].bodyPart);
+            Swap16(pPartitionDataArray[j].bodyPart);
             ++i;
-            Swap32(unk38[j]);
+            Swap32(pPartitionDataArray[j]);
         }
     }
     {
-        stream.m_pRayCastOutput->Write(unk38, unk34 * 4);
+        kStream.m_pRayCastOutput->Write(pPartitionDataArray, uiPartitionDataArraySize * 4);
     }
-    if (stream.m_bLittleEndian != 1)
+    if (kStream.m_bLittleEndian != 1)
     {
-        for (unsigned int i = 0; i < unk34; ++i)
+        for (unsigned int i = 0; i < uiPartitionDataArraySize; ++i)
         {
-            Swap32(unk38[i]);
-            Swap16(unk38[i].bodyPart);
+            Swap32(pPartitionDataArray[i]);
+            Swap16(pPartitionDataArray[i].bodyPart);
         }
     }
 }

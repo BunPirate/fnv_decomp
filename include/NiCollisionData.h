@@ -5,6 +5,7 @@
 #include "NiPoint3.h"
 #include "StrArr.h"
 
+// pdb: class NiCollisionData, size 0x50, bases: NiCollisionObject, 16 members
 class NiCollisionData : public NiCollisionObject
 {
   public:
@@ -17,21 +18,21 @@ class NiCollisionData : public NiCollisionObject
     virtual void LinkObject(NiStream& arStream);
     virtual bool RegisterStreamables(NiStream& arStream);
     virtual void SaveBinary(NiStream& arStream);
-    virtual bool IsEqual(NiObject* apObject) const;
+    virtual bool IsEqual(NiObject* pkObject) const;
     virtual void GetViewerStrings(NiViewerStringsArray* apStrings);
     virtual void AddViewerStrings(NiViewerStringsArray* apStrings);
     virtual void SetSceneObject(NiAVObject*);
     virtual void Unk_24(NiUpdateData&);
     virtual NiPoint3 GetVelocity();
 
-    void SetBoundingVolume(NiBoundingVolume* pkBV);
+    void SetModelSpaceABV(NiBoundingVolume* pkBV);
     void CreateTriData(int);
     void CloneCollisionData(NiCollisionData* pkDest, CloningProcess& kCloning);
     void* DestroyIfFlagged(unsigned int);
     void VirtAt64(StrArr*);
     void FUN_00a81100(StrArr*);
     void NiCollisionObject_CopyMembers(NiCollisionData*, CloningProcess&);
-    void UpdateFields_00eacde0();
+    void NiCollisionData_dtor();
     void CreateWorldVertices();
     void UpdateWorldVertices();
     void SetSceneGraphObject(NiAVObject* pkSceneObject);
@@ -43,16 +44,16 @@ class NiCollisionData : public NiCollisionObject
     int m_ePropagationMode;
     int m_eCollisionMode;
     NiBoundingVolume* m_pkModelABV;
-    NiBoundingVolume* unk30;
-    void* m_pCollisionObject;
-    unsigned int unk38;
-    unsigned int unk3C;
-    void* m_pWorldVertices;
-    void* unk44;
-    unsigned char unk48;
-    unsigned char unk49;
-    unsigned short unk4A;
-    unsigned short unk4C;
-    unsigned char unk4E;
+    NiBoundingVolume* m_pkWorldABV; // src: XBOX_RETAIL_PDB +0x30 (old: unk30)
+    void* m_pkOBBRoot; // src: XBOX_RETAIL_PDB +0x34 (old: m_pCollisionObject)
+    unsigned int m_pfnCollideCallback; // src: XBOX_RETAIL_PDB +0x38 (old: unk38)
+    unsigned int m_pvCollideCallbackData; // src: XBOX_RETAIL_PDB +0x3c (old: unk3C)
+    void* m_pkWorldVertex; // src: XBOX_RETAIL_PDB +0x40 (old: m_pWorldVertices)
+    void* m_pkWorldNormal; // src: XBOX_RETAIL_PDB +0x44 (old: unk44)
+    unsigned char m_bWorldVerticesNeedUpdate; // src: XBOX_RETAIL_PDB +0x48 (old: unk48)
+    unsigned char m_bWorldNormalsNeedUpdate; // src: XBOX_RETAIL_PDB +0x49 (old: unk49)
+    unsigned short m_usNumVertices; // src: XBOX_RETAIL_PDB +0x4a (old: unk4A)
+    unsigned short m_usNumTriangles; // src: XBOX_RETAIL_PDB +0x4c (old: unk4C)
+    unsigned char m_bAuxCallbacks; // src: XBOX_RETAIL_PDB +0x4e (old: unk4E)
     unsigned char unk4F;
 };

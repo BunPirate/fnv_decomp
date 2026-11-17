@@ -48,28 +48,30 @@ class FUN_00cb0c00_class
 
 inline void hkReferencedObject::operator delete(void* p)
 {
-    hkMemoryRouter_getInstance().heap().blockFree(p, static_cast<hkReferencedObject*>(p)->m_usMemSizeAndFlags);
+    hkMemoryRouter_getInstance().heap().blockFree(p, static_cast<hkReferencedObject*>(p)->m_memSizeAndFlags);
 }
 
 // The reflected layout is 0x18 bytes; no include/ header exists for these options yet.
+// pdb: class hkAlignSceneToNodeOptions, size 0x18, bases: hkReferencedObject, 9 members
 class hkAlignSceneToNodeOptions : public hkReferencedObject
 {
   public:
-    char m_bOption1;
-    char m_bOption2;
-    char m_bOption3;
-    char m_bOption4;
-    char m_bOption5;
-    char m_bOption6;
-    char m_bOption7;
-    int m_iOptionValue;
-    FUN_00cb0c00_class m_kNodeName;
+    char m_invert; // src: XBOX_RETAIL_PDB +0x8 (old: m_bOption1)
+    char m_transformPositionX; // src: XBOX_RETAIL_PDB +0x9 (old: m_bOption2)
+    char m_transformPositionY; // src: XBOX_RETAIL_PDB +0xa (old: m_bOption3)
+    char m_transformPositionZ; // src: XBOX_RETAIL_PDB +0xb (old: m_bOption4)
+    char m_transformRotation; // src: XBOX_RETAIL_PDB +0xc (old: m_bOption5)
+    char m_transformScale; // src: XBOX_RETAIL_PDB +0xd (old: m_bOption6)
+    char m_transformSkew; // src: XBOX_RETAIL_PDB +0xe (old: m_bOption7)
+    int m_keyframe; // src: XBOX_RETAIL_PDB +0x10 (old: m_iOptionValue)
+    FUN_00cb0c00_class m_nodeName; // src: XBOX_RETAIL_PDB +0x14 (old: m_kNodeName)
 
     hkAlignSceneToNodeOptions* FUN_00e4afa0(unsigned int uiFlags) throw();
 };
 
 // Destroys the object and, when uiFlags has bit 0 set, frees its memory via operator delete; returns this.
 // @fnv 0x00e4afa0
+// pdb: hkAlignSceneToNodeOptions::`scalar deleting destructor' | hkAlignSceneToNodeOptions.obj | retail, vtable slot, high
 hkAlignSceneToNodeOptions* hkAlignSceneToNodeOptions::FUN_00e4afa0(unsigned int uiFlags) throw()
 {
     this->hkAlignSceneToNodeOptions::~hkAlignSceneToNodeOptions();

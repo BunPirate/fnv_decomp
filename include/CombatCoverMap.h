@@ -15,6 +15,7 @@ template <class T> struct CoverMapPointer
 };
 
 // RTTI: CombatCoverMap : NiTMap<unsigned int,ReservedCoverLocation *>, vftable 0x0108d0e4 (destructor 0x00983100).
+// pdb: class CombatCoverMap, size 0x1c, bases: NiTMap<unsigned int, 2 members
 class CombatCoverMap : public NiTMap<unsigned int, ReservedCoverLocation*>
 {
 public:
@@ -25,7 +26,7 @@ public:
         unsigned int m_uiWriterThreadId;
     };
 
-    CoverMapPointer<CoverMapOwnerEx> m_spOwner;
+    CoverMapPointer<CoverMapOwnerEx> spCoverSearchDebugGeometry; // src: XBOX_RETAIL_PDB +0x10 (old: m_spOwner)
     ReadWriteLock Lock;
 
 

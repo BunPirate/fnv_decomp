@@ -115,17 +115,17 @@ public:
     void Unitize_004a0c10();
     float FUN_004a7290();
     float FUN_004a7290() const;
-    LocalVec3 FUN_004b3800(const LocalVec3& other) const;
+    LocalVec3 FUN_004b3800(const LocalVec3& pt) const;
     LocalVec3 ProcessAndReturnValue_0053d280(float divisor);
     float NiPoint3_XYLength();
     float NiPoint3_XYLength() const;
     void ComputeValue_0063c8a0(const LocalVec3* other);
     void ComputeValue_0063c8a0(void* other);
     void FUN_006815c0();
-    float CVec3_Distance(LocalVec3* other);
-    float CVec3_Distance(const LocalVec3& other) const;
-    LocalVec3 TransformPointByMatrix4(const Mat& matrix);
-    LocalVec3 TransformPointByMatrix4(const Matrix4* matrix);
+    float CVec3_Distance(LocalVec3* cVec);
+    float CVec3_Distance(const LocalVec3& cVec) const;
+    LocalVec3 TransformPointByMatrix4(const Mat& cTransform);
+    LocalVec3 TransformPointByMatrix4(const Matrix4* cTransform);
     void Normalize_00b12790();
     LocalVec3 Diff_00b13040(void* other);
     LocalVec3 Diff_00b13040(const LocalVec3& other) const;
@@ -181,9 +181,9 @@ inline LocalVec3& LocalVec3::AddComponents(void* ptr)
     return *this;
 }
 // src: COMMUNITY 0x00b04d40
-inline float LocalVec3::CVec3_Distance(LocalVec3* rhs)
+inline float LocalVec3::CVec3_Distance(LocalVec3* cVec)
 {
-    float squared = (rhs->z - z) * (rhs->z - z) + (rhs->y - y) * (rhs->y - y) + (rhs->x - x) * (rhs->x - x);
+    float squared = (cVec->z - z) * (cVec->z - z) + (cVec->y - y) * (cVec->y - y) + (cVec->x - x) * (cVec->x - x);
     int bits = *(int*)&squared;
     bits = (bits >> 1) + 0x1fc00000;
     return *(float*)&bits;
@@ -216,11 +216,11 @@ struct GameContext
     LocalVec3 location;
     void CBillboardLeaf_GetColor(float*);
 // src: COMMUNITY 0x00b404c0
-    void CBillboardLeaf_SetColor(const Color& values, bool adjust)
+    void CBillboardLeaf_SetColor(const Color& cColor, bool bApplyDimming)
     {
-        unsigned int packed = PackChannel(values.r, adjust, alpha18);
-        packed += PackChannel(values.g, adjust, alpha18) << 8;
-        packed += PackChannel(values.b, adjust, alpha18) << 16;
+        unsigned int packed = PackChannel(cColor.r, bApplyDimming, alpha18);
+        packed += PackChannel(cColor.g, bApplyDimming, alpha18) << 8;
+        packed += PackChannel(cColor.b, bApplyDimming, alpha18) << 16;
         packed14 = packed - 0x1000000;
     }
     void CBillboardLeaf_AdjustStaticLighting(int, LocalVec3*, float);
@@ -303,18 +303,21 @@ struct Scene
     {
         return blend70;
     }
-    void CLightingEngine_ComputeLeafStaticLighting(int output, Record* records, int count);
+    void CLightingEngine_ComputeLeafStaticLighting(int cTreeCenter, Record* pLeafLods, int nNumLeafLods);
 };
 // @fnv 0x00b2a210
 // src: COMMUNITY 0x00b2a210
-void Scene::CLightingEngine_ComputeLeafStaticLighting(int output, Record* records, int count)
+// pdb: CLightingEngine::ComputeLeafStaticLighting | LightingEngine.obj | retail, upstream name already matches, high
+// pdb params: cTreeCenter, pLeafLods, nNumLeafLods
+// pdb locals: nLod, i, cVertex, fMaxDotProduct, cDiffuseColor, cDominantLight, cNormal, cColor, nLight, cLightPos, fDotProduct, cLightVector, cDiffuse, cEmissive, fAttenuation, cAmbient, fDenominator, fDistance
+void Scene::CLightingEngine_ComputeLeafStaticLighting(int cTreeCenter, Record* pLeafLods, int nNumLeafLods)
 {
     if (state38 == 1 && flags74 != 0)
     {
-        for (int i = 0; i < count; ++i)
+        for (int i = 0; i < nNumLeafLods; ++i)
         {
-            Iterator it = records[i].begin();
-            for (; it != records[i].end(); it.ProcessAndReturnValue_00b2abc0())
+            Iterator it = pLeafLods[i].begin();
+            for (; it != pLeafLods[i].end(); it.ProcessAndReturnValue_00b2abc0())
             {
                 void* location = &it->location;
                 void* rotationW = &it->rotation;
@@ -376,7 +379,7 @@ void Scene::CLightingEngine_ComputeLeafStaticLighting(int output, Record* record
                 }
                 if ((flags74 & 2) != 0)
                 {
-                    it->CBillboardLeaf_AdjustStaticLighting(output, &best, blend70);
+                    it->CBillboardLeaf_AdjustStaticLighting(cTreeCenter, &best, blend70);
                 }
             }
         }
@@ -438,48 +441,51 @@ struct LightQ
     int iX;
     int iY;
     float afC[13];
-    void CLightingEngine_Parse(Parser* p);
+    void CLightingEngine_Parse(Parser* cFile);
 };
 // @fnv 0x00b2a940
 // src: COMMUNITY 0x00b2a940
-void LightQ::CLightingEngine_Parse(Parser* p)
+// pdb: CLightingEngine::Parse | LightingEngine.obj | retail, string-set bridge, high
+// pdb params: cFile
+// pdb locals: nToken, i
+void LightQ::CLightingEngine_Parse(Parser* cFile)
 {
     DeadTop();
-    int iToken = p->GetNextElement();
+    int iToken = cFile->GetNextElement();
     do
     {
         switch (iToken)
         {
         case 0x1f42:
-            iMode = p->GetNextElement();
+            iMode = cFile->GetNextElement();
             break;
         case 0x1f43:
             for (int i = 0; i < 13; i++)
-                afA[i] = p->CTreeFileAccess_ParseFloat();
+                afA[i] = cFile->CTreeFileAccess_ParseFloat();
             break;
         case 0x1f44:
-            iCount = p->GetNextElement();
+            iCount = cFile->GetNextElement();
             break;
         case 0x1f45:
             for (int j = 0; j < 13; j++)
-                afB[j] = p->CTreeFileAccess_ParseFloat();
+                afB[j] = cFile->CTreeFileAccess_ParseFloat();
             break;
         case 0x1f46:
-            fScale = p->CTreeFileAccess_ParseFloat();
+            fScale = cFile->CTreeFileAccess_ParseFloat();
             break;
         case 0x1f47:
-            iX = p->GetNextElement();
+            iX = cFile->GetNextElement();
             break;
         case 0x1f48:
-            iY = p->GetNextElement();
+            iY = cFile->GetNextElement();
             break;
         case 0x1f49:
             for (int k = 0; k < 13; k++)
-                afC[k] = p->CTreeFileAccess_ParseFloat();
+                afC[k] = cFile->CTreeFileAccess_ParseFloat();
             break;
         default:
             throw FUN_00b09480("malformed lighting information", false);
         }
-        iToken = p->GetNextElement();
+        iToken = cFile->GetNextElement();
     } while (iToken != 0x1f41);
 }

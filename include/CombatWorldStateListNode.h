@@ -8,8 +8,8 @@ public:
     UnsignedIdHandle* item;
     CombatWorldStateListNode* next;
 
-    void AddSoundEntry(int, int);
-    void RemoveItemByOwner(int);
+    void CombatWorldStateList_AddWorldState(int, int);
+    void CombatWorldStateList_RemoveWorldState(int);
     CombatWorldStateListNode* GetNext();
     CombatWorldStateListNode* operator->();
 };

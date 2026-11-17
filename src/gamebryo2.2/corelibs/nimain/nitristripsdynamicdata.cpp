@@ -14,6 +14,7 @@ inline void* operator new(unsigned int, void* pointer)
     return pointer;
 }
 
+// pdb: class NiTriStripsDynamicData, size 0x54, bases: NiTriStripsData, 2 members
 struct NiTriStripsDynamicData : NiTriStripsData
 {
     unsigned short m_usActiveVertices;
@@ -43,6 +44,9 @@ struct NiTriStripsDynamicData : NiTriStripsData
 
 // Compares this dynamic strips data with pkObject: true if IsEqual and both active vertex and triangle counts match.
 // @fnv 0x00a92430
+// pdb: NiTriStripsDynamicData::IsEqual | NiTriStripsDynamicData.obj | retail, object-file run extension, low
+// pdb params: pkObject
+// pdb locals: pkData
 bool NiTriStripsDynamicData::IsEqualDynamic(NiObject* pkObject)
 {
     NiTriStripsDynamicData* pkData = (NiTriStripsDynamicData*)pkObject;
@@ -68,14 +72,16 @@ struct FUN_00a92480_shell : NiTriStripsData
 {
     unsigned short m_usActiveVertices;
     unsigned short m_usActiveTriangles;
-    void __thiscall NiTriStripsDynamicData_SetActiveVertexCount(short value);
+    void __thiscall NiTriStripsDynamicData_SetActiveVertexCount(short usActiveVertices);
 };
 
 // @fnv 0x00a92480
 // src: XBOX_PDB 0x00a92480
-void __thiscall FUN_00a92480_shell::NiTriStripsDynamicData_SetActiveVertexCount(short value)
+// pdb: NiTriStripsDynamicData::SetActiveVertexCount | NiTriStripsDynamicData.obj | debug, upstream name already matches, high
+// pdb params: usActiveVertices
+void __thiscall FUN_00a92480_shell::NiTriStripsDynamicData_SetActiveVertexCount(short usActiveVertices)
 {
-    m_usActiveVertices = value;
+    m_usActiveVertices = usActiveVertices;
 }
 
 extern int DAT_0109fc54;
@@ -83,6 +89,7 @@ extern int DAT_0109fc54;
 // Allocates the dynamic strips data, constructs its shared base, initializes the active counts and vtable, and returns it or null.
 // @fnv 0x00a923f0
 // src: EXE 0x00a923f0
+// pdb: NiTriStripsDynamicData::CreateObject | NiTriStripsDynamicData.obj | retail, upstream name already matches, high
 void* __cdecl NiTriStripsDynamicData_CreateObject()
 {
     void* pNode = BSFadeNode::operator new(0x54);
@@ -123,6 +130,9 @@ struct FUN_00a92340 : NiTriStripsData
 };
 // Initializes the base class with the given arguments and stores the active vertex and triangle counts.
 // @fnv 0x00a92340
+// pdb: NiTriStripsDynamicData::NiTriStripsDynamicData | NiTriStripsDynamicData.obj | retail, call graph, low
+// pdb note: debug build links it to NiVectorExtraData::`scalar deleting destructor'
+// pdb params: usVertices, pkVertex, pkNormal, pkColor, pkTexture, usNumTextureSets, eNBTMethod, usTriangles, usStrips, pusStripLengths, pusStripLists, usActiveVertices, usActiveTriangles
 FUN_00a92340::FUN_00a92340(unsigned int a1, unsigned int a2, unsigned int a3, unsigned int a4, unsigned int a5,
                            unsigned int a6, unsigned int a7, unsigned int a8, unsigned int a9, unsigned int a10,
                            unsigned int a11, unsigned short ausActiveVertices, unsigned short ausActiveTriangles)
@@ -171,17 +181,19 @@ struct DynStripsData : NiTriStripsData
 {
     unsigned short m_usActiveVertices;
     unsigned short m_usActiveTriangles;
-    void NiTriStripsDynamicData_LoadBinary(NiStream& stream);
+    void NiTriStripsDynamicData_LoadBinary(NiStream& kStream);
 };
 
 // Loads the base NiTriStripsData from the stream, then reads the active vertex and triangle counts.
 // @fnv 0x00a924d0
 // src: XBOX_PDB 0x00a924d0
-void DynStripsData::NiTriStripsDynamicData_LoadBinary(NiStream& stream)
+// pdb: NiTriStripsDynamicData::LoadBinary | NiTriStripsDynamicData.obj | retail, upstream name already matches, high
+// pdb params: kStream
+void DynStripsData::NiTriStripsDynamicData_LoadBinary(NiStream& kStream)
 {
-    NiTriStripsData::LoadBinary(stream);
-    ReadBinaryValue(stream, m_usActiveVertices);
-    ReadBinaryValue(stream, m_usActiveTriangles);
+    NiTriStripsData::LoadBinary(kStream);
+    ReadBinaryValue(kStream, m_usActiveVertices);
+    ReadBinaryValue(kStream, m_usActiveTriangles);
 }
 
 inline const char* NiRTTI::GetName() const
@@ -221,6 +233,8 @@ struct A92590TriShapeData : NiTriStripsData
 // Appends the RTTI name and the active vertex and triangle counts to the viewer string array.
 // @fnv 0x00a92590
 // src: XBOX_PDB 0x00a92590
+// pdb: NiTriStripsDynamicData::GetViewerStrings | NiTriStripsDynamicData.obj | retail, upstream name already matches, high
+// pdb params: pkStrings
 void A92590TriShapeData::NiTriStripsDynamicData_GetViewerStrings(A92590StringArray* pkStrings)
 {
     GetBaseViewerStrings(pkStrings);
@@ -251,10 +265,12 @@ struct DynamicStripCountWriter : NiTriStripsData
 
 // @fnv 0x00a92530
 // src: XBOX_PDB 0x00a92530
-void __thiscall DynamicStripCountWriter::NiTriStripsDynamicData_SaveBinary(void* stream)
+// pdb: NiTriStripsDynamicData::SaveBinary | NiTriStripsDynamicData.obj | retail, upstream name already matches, high
+// pdb params: kStream
+void __thiscall DynamicStripCountWriter::NiTriStripsDynamicData_SaveBinary(void* kStream)
 {
-    NiTriStripsData::SaveBinary(*(NiStream*)stream);
-    NiBinaryStream* pBuffer = *(NiBinaryStream**)((char*)stream + 0x250);
+    NiTriStripsData::SaveBinary(*(NiStream*)kStream);
+    NiBinaryStream* pBuffer = *(NiBinaryStream**)((char*)kStream + 0x250);
     {
         // The by-value parameter's stack slot is dead here, so MSVC reuses it
         // for this address-taken local - that is where the original's
@@ -262,7 +278,7 @@ void __thiscall DynamicStripCountWriter::NiTriStripsDynamicData_SaveBinary(void*
         unsigned int count = 2;
         pBuffer->BinaryWrite(&m_usActiveVertices, 2, &count, 1);
     }
-    pBuffer = *(NiBinaryStream**)((char*)stream + 0x250);
+    pBuffer = *(NiBinaryStream**)((char*)kStream + 0x250);
     {
         unsigned int count = 2;
         pBuffer->BinaryWrite(&m_usActiveTriangles, 2, &count, 1);
@@ -277,6 +293,7 @@ struct TriStrips_A923B0 : NiTriStripsData
 };
 // @fnv 0x00a923b0
 // src: XBOX_PDB 0x00a923b0
+// pdb: NiTriStripsDynamicData::GetActiveTriangleCount | NiTriStripsDynamicData.obj | debug, upstream name already matches, high
 unsigned short TriStrips_A923B0::NiTriStripsDynamicData_GetActiveTriangleCount() const
 {
     return m_usActiveTriangles;

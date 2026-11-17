@@ -16,6 +16,7 @@ template <> struct FNVAssert<1>
 // These private helpers use the game's sized deallocation during constructor unwinding.
 #include "../../../include/NiMemObject.h"
 
+// pdb: class FaderManager, size 0x8, 2 members
 class FaderManager
 {
   public:
@@ -23,10 +24,10 @@ class FaderManager
     NiNode* m_pRootAboveMenus;  // +0x4
     bool HasFader(FADER_ENUM eFader);
     float GetFadeValue(FADER_ENUM eFader);
-    void StopFader(FADER_ENUM eFader, bool bForce);
-    void AdvanceFaders(bool bUpdate);
-    void AddFader(FADER_ENUM eFader, float fDuration, bool bFadeOut);
-    void AddRoot(NiNode* pParent, float m_fProjectionDepth, bool m_bUseAlternateRoot);
+    void RemoveFader(FADER_ENUM aeFader, bool abForce);
+    void UpdateFaders(bool abUpdateLoading);
+    void AddFader(FADER_ENUM aeFader, float afFadeSpeed, bool abBeginBlack);
+    void AddRoot(NiNode* apNode, float afOneToOneDistance, bool m_bUseAlternateRoot);
 };
 FNV_STATIC_ASSERT(sizeof(FaderManager) == 8);
 FNV_STATIC_ASSERT(offsetof(FaderManager, m_pRootBelowMenus) == 0);

@@ -91,7 +91,7 @@ struct FUN_00d85360_cls {
 
     FUN_00d85360_cls* FUN_00d54290();
 };
-FUN_00d85360_cls* __cdecl hkpConstraintDataUtils_copyAtoms_hkpBallAndSocketConstraintData_(int pSource);
+FUN_00d85360_cls* __cdecl hkpConstraintDataUtils_copyAtoms_hkpBallAndSocketConstraintData_(int constraintIn);
 struct S_00d85af0_Base {
     int unk00;
     int unk04;
@@ -146,7 +146,7 @@ struct S_00d85af0_Cls : S_00d85af0_Base {
     S_00d85af0_Cls* AssignFrom(const S_00d85af0_Cls* o);
 };
 struct CpuOpaque;
-extern CpuOpaque DAT_01269514;
+extern CpuOpaque hkpSimulationClass; // src: XBOX_RETAIL_PDB 0x01269514 (old: DAT_01269514/g_01269514)
 CpuOpaque* __cdecl Object_GetGlobalObjectAddress_00d9f6c0();
 extern int DAT_010cc4f4;
 unsigned int __cdecl Object_ComputeValue_00d9f6e0();
@@ -210,7 +210,7 @@ public:
     int m_iData098;
     int m_iData09C;
 };
-D85660Object* __cdecl copyConstraintAtoms_class_hkpHingeLimitsData(const D85660Object* pkSource);
+D85660Object* __cdecl copyConstraintAtoms_class_hkpHingeLimitsData(const D85660Object* constraintIn);
 extern int DAT_010d3838;
 struct FUN_00d86260_Class {
     unsigned int m_vptr;
@@ -506,11 +506,11 @@ struct StringBuf {
     int unk88;
 
     void FUN_00d61a50(const char* s);
-    void FUN_00d61fc0(int from, int len);
+    void FUN_00d61fc0(int startOffset, int length);
     int Object_ForwardCall_00d616e0(const char* other);
-    void UpdateFields_00cbbd40();
+    void Writer_MemberWriteFlags_dtor();
 };
-int __cdecl GetTypeCode(const char* typeName);
+int __cdecl hkClassMember_getTypeOf(const char* typeName);
 struct B { char pad[0x12]; unsigned short w12; };
 struct S {
     unsigned int m0;
@@ -744,7 +744,7 @@ extern "C" {
     void _ReadWriteBarrier(void);
     __declspec(dllimport) void* __stdcall TlsGetValue(unsigned int dwTlsIndex);
     extern unsigned int DAT_0126835c;
-    void __cdecl Object_ProcessAndReturnValue_00d89f80(void* p, int a2, int a3, int a4, bool* pb);
+    void __cdecl hkSolveIntegrateVelocitiesByTheSteps(void* p, int a2, int accumulators, int accumulatorsEnd, bool* outSolveFinished);
 }
 struct TargetObj {
     int dummy;
@@ -779,13 +779,13 @@ struct Arg2 {
     char unk2c;
 };
 struct Arg1 {
-    void ProcessCallback(Arg2* a1, Arg2* a2, int a3);
+    void ProcessCallback(Arg2* oldJob, Arg2* jobOut, int waitStatus);
 };
-void LogIntegrateVelocity(Arg0* a1, Arg1* a2, Arg2* a3);
+void hkCpuSolveIntegrateVelocitiesJob(Arg0* tl, Arg1* jobQueue, Arg2* jobInOut);
 extern "C" char str_010d4030[];
 void __cdecl hkStringBuf_printf(unsigned int* result, char* text, double d0,
                           int value0, double d1, int value1, double d2);
-unsigned int __cdecl hkVector4Util_toString3(float* values, unsigned int* result, signed char value);
+unsigned int __cdecl hkVector4Util_toString3(float* x, unsigned int* s, signed char separator);
 void __cdecl hkStringBuf_printf(...);
 struct FUN_00d97680_Vec {
     float x;
@@ -842,7 +842,7 @@ struct FNV_00d99f50_Result {
     ~FNV_00d99f50_Result() {}
 };
 extern "C" void __cdecl hkKdTreeUtils_castRayIterative(unsigned char* scratch, const FNV_00d99f50_Entry* entry, void* context, void* left, void* right);
-FNV_00d99f50_Result __cdecl hkKdTreeUtils_castRayMultiTree(int count, const FNV_00d99f50_Entry* const* entries, void* context, void* left, void* right);
+FNV_00d99f50_Result __cdecl hkKdTreeUtils_castRayMultiTree(int numTrees, const FNV_00d99f50_Entry* const* trees, void* start, void* end, void* collector);
 struct FUN_00d9a4a0_Param {
     int unk00;
     int unk04;
@@ -865,7 +865,7 @@ struct FUN_00d9a4a0_Obj {
     int unk0C;
     FUN_00d9a4a0_Float* unk10;
 
-    void __thiscall InvokeCallback(int a1);
+    void __thiscall hkpAabbTreeWorldLinearCaster_hkAabbTreeData_hkAabbTreeAabb16_testCollidable(int collB);
 };
 float __fastcall Object_ProcessAndReturnValue_00d9a4a0( FUN_00d9a4a0_Obj* self, int unused, FUN_00d9a4a0_Param* param);
 struct IdxStand_ {
@@ -938,7 +938,7 @@ static __declspec(noinline) D85Ctn* Object_ProcessEntries_00d85d40(D85Ctn* c) {
     }
     return c;
 }
-void __cdecl hkpConstraintCallbackUtil_fireConstraintBroken(D85Msg a);
+void __cdecl hkpConstraintCallbackUtil_fireConstraintBroken(D85Msg event);
 
 template <class T>
 inline void NiStreamSaveBinaryD861(NiBinaryStream& kStream, const T& value)
@@ -1108,8 +1108,8 @@ struct S00d881a0_Obj {
     S00d881a0_Mid* m00;
 };
 int __cdecl hkRigidMotionUtilApplyAccumulators(void* a0, void* a1, void* a2, void* a3, void* a4, int a5);
-void __cdecl hkpEntityAabbUtil_entityBatchRecalcAabb(int a0, void* a1, void* a2);
-int hkConstraintSolverSetup_integrate2(void* p, void* ecxv, char* eaxv, S00d881a0_Obj* esi, void* edi);
+void __cdecl hkpEntityAabbUtil_entityBatchRecalcAabb(int collisionInput, void* entityBatch, void* numEntities);
+int hkConstraintSolverSetup_integrate2(void* si, void* info, char* accumulators, S00d881a0_Obj* bodies, void* numBodies);
 int S00d881a0_Wrap(void* p);
 static unsigned char* S00d96870_outp;
 void spawnBuildJacobiansJobs(unsigned char* self, int* src, unsigned char* out);
@@ -1165,7 +1165,7 @@ struct FUN_00d9a410_Stub {
     int unk1c;
     unsigned char* unk20;
 
-    void __thiscall InvokeCallback(int* param);
+    void __thiscall hkpAabbTreeWorldLinearCaster_hkAabbTreeData_hkAabbTreeAabb16_testCollidable(int* collB);
 };
 struct ArgD9A4 {
     int unk00, unk04, unk08, unk0C;
@@ -1188,8 +1188,8 @@ public:
     int unk0C;
     InnerD9A4* m_pkInner;
 
-    void InvokeCallback(int iValue);
-    virtual float ProcessAndReturnValue_00d9a480(ArgD9A4* pkArg);
+    void hkpAabbTreeWorldLinearCaster_hkAabbTreeData_hkAabbTreeAabb16_testCollidable(int collB);
+    virtual float ProcessAndReturnValue_00d9a480(ArgD9A4* leaf);
 };
 struct __declspec(align(16)) FUN_00d9a4e0_Obj {
     __m128 unk00;
@@ -1222,9 +1222,11 @@ struct BoolResult {
 
 // @fnv 0x00d84c50
 // src: HAVOK_LIB 0x00d84c50
-BoolResult hkpConstraintPivotsUtil_constraintSupportsPivotGetSet(const Shape* pkShape)
+// pdb: hkpConstraintPivotsUtil::constraintSupportsPivotGetSet | hkpConstraintPivotsUtil.obj | retail, upstream name already matches, high
+// pdb params: data
+BoolResult hkpConstraintPivotsUtil_constraintSupportsPivotGetSet(const Shape* data)
 {
-    switch (pkShape->GetType())
+    switch (data->GetType())
     {
     case 0:
     case 1:
@@ -1396,7 +1398,7 @@ static void Object_ProcessEntries_00d85d40(ResizableArray<hkpConstraintListener*
         }
     }
 }
-void __cdecl NotifyConstraintRemoved(hkpConstraintInstance* constraint);
+void __cdecl hkpConstraintCallbackUtil_fireConstraintRemoved(hkpConstraintInstance* constraint);
 void __cdecl hkArrayUtil__reserve(AllocIface& kAlloc, void* apvArray, int aiNumElements, int iSizeElem) throw();
 
 extern const char DAT_010d3aa0[];
@@ -1405,7 +1407,7 @@ int __cdecl j_strncmp(const char*, const char*, int) throw();
 int __cdecl hkString_strLen(const char*) throw();
 const char* __cdecl hkString_strChr(const char*, int) throw();
 int __cdecl CallWithZeroMiddleArg(const char*, int) throw();
-int __cdecl GetTypeCode(const char*) throw();
+int __cdecl hkClassMember_getTypeOf(const char*) throw();
 struct HkTempAllocator {
     virtual void slot00();
     virtual void slot04();
@@ -1450,9 +1452,9 @@ struct FUN_00d61b10 {
         m_kStringBuffer.m_data = 0;
     }
 };
-int __cdecl GetTypeCodeFromString(const char* name) throw();
+int __cdecl hkClassMember_getSubtypeOf(const char* name) throw();
 struct FUN_00d87180_cls : S {
-    FUN_00d87180_cls* hkClassMemberAccessor_hkClassMemberAccessor(unsigned int a, B* b);
+    FUN_00d87180_cls* hkClassMemberAccessor_hkClassMemberAccessor(unsigned int obj, B* mem);
 };
 class OwnerD87A {
 public:
@@ -1539,7 +1541,7 @@ struct CleanupObject {
     void* unk78;
 
 };
-void deleteTaskHeaderResources(CleanupObject* self);
+void deleteTaskHeaderResources(CleanupObject* taskHeader);
 extern CleanupObject* volatile cleanupInput;
 void CleanupEntry();
 extern "C" void _ReadWriteBarrier(void);
@@ -1576,9 +1578,9 @@ struct S00d944d0_Arg2 {
     int m_24;
 };
 struct S00d944d0_Arg1 {
-    void ProcessCallback(S00d944d0_Arg2* a1, S00d944d0_Arg2* a2, int a3);
+    void ProcessCallback(S00d944d0_Arg2* oldJob, S00d944d0_Arg2* jobOut, int waitStatus);
 };
-void __cdecl hkCpuSolveApplyGravityJob(S00d944d0_Obj* a1, S00d944d0_Arg1* a2, S00d944d0_Arg2* a3);
+void __cdecl hkCpuSolveApplyGravityJob(S00d944d0_Obj* tl, S00d944d0_Arg1* jobQueue, S00d944d0_Arg2* jobInOut);
 extern char DAT_010cc5c4[];
 extern char DAT_010d3eb8[];
 extern char DAT_01076f38[];
@@ -1602,7 +1604,7 @@ struct SolverObject {
     SolverTarget* target;
 };
 void __cdecl hkExportImpulsesAndRhs(TargetObj*, int, int, int);
-void __cdecl hkCpuSolveExportResultsJob(Arg0* world, Arg1* context, SolverObject* object);
+void __cdecl hkCpuSolveExportResultsJob(Arg0* tl, Arg1* jobQueue, SolverObject* jobInOut);
 struct StructItem {
     short* unk00;
     int unk04;
@@ -1642,8 +1644,8 @@ struct StructB {
 };
 extern double DAT_010c9300;
 struct LocalFlag { unsigned char value; };
-void __cdecl hkSimpleContactConstraintDataBuildJacobian(short* a1, StructB* a2, LocalFlag a3, int** a4);
-void __cdecl hkSolverBuildJacobianFromAtomsNotContact(short* a1, unsigned short a2, StructB* a3, int** a4);
+void __cdecl hkSimpleContactConstraintDataBuildJacobian(short* a1, StructB* a2, LocalFlag writeHeaderSchemas, int** a4);
+void __cdecl hkSolverBuildJacobianFromAtomsNotContact(short* a1, unsigned short a2, StructB* tmpIn, int** a4);
 void WriteItems(StructA* a, StructB* b);
 extern "C" StructA* input_a();
 extern "C" StructB* input_b();
@@ -1712,7 +1714,7 @@ struct __declspec(align(16)) S00d96970_Local {
     unsigned int unk1C;
 };
 struct S00d96970_Target {
-    void __thiscall InsertItemAndNotify(int value, S00d96970_Local* local, int flag);
+    void __thiscall hkJobQueue_addJobQueueLocked(int data, S00d96970_Local* job, int priority);
 };
 struct S00d96970_Obj {
     int unk00;
@@ -1726,7 +1728,7 @@ struct S00d96970_Obj {
     unsigned char unk20;
     unsigned char unk21;
 };
-void spawnSplitSimulationIslandJob(S00d96970_Obj* self, const S00d96970_Local* src, S00d96970_Target* target, int value);
+void spawnSplitSimulationIslandJob(S00d96970_Obj* dynamicsJob, const S00d96970_Local* localTaskHeader, S00d96970_Target* queue, int data);
 void S00d96970_Entry(S00d96970_Obj* self, const S00d96970_Local* src, S00d96970_Target* target, int value);
 extern float DAT_01017b78;
 extern float DAT_01012068;
@@ -1807,6 +1809,9 @@ struct TransformShape : Shape {
 
 // @fnv 0x00d85040
 // src: GUESS 0x00d85040 (confidence: low)
+// pdb: hkpConstraintPivotsUtil::setPivotTransform | hkpConstraintPivotsUtil.obj | retail, object-file run extension, low
+// pdb params: data, pivot, index
+// pdb locals: assertBuf, ostr
 void Object_ProcessEntries_00d85040(Shape* pkShape, const Transform& kTransform, int iIndex)
 {
     for (;;)
@@ -1880,7 +1885,7 @@ extern unsigned int DAT_0126835c;
 typedef void* (__stdcall *D94TlsGetFn)(unsigned long);
 extern D94TlsGetFn DAT_00fdf044;
 extern const char str_010d3ef4[];
-void __cdecl hkRigidMotionUtilApplyForcesAndBuildAccumulators(char* p, unsigned int a, unsigned int b, unsigned int c, unsigned int d);
+void __cdecl hkRigidMotionUtilApplyForcesAndBuildAccumulators(char* info, unsigned int motions, unsigned int numMotions, unsigned int motionOffset, unsigned int accumulatorsOut);
 struct D94Sub {
     int u00;
     int u04;
@@ -1910,9 +1915,9 @@ struct D94Body {
     unsigned short us26;
 };
 struct D94Obj {
-    int ProcessCallback(D94Body* a, D94Body* b, int c);
+    int ProcessCallback(D94Body* oldJob, D94Body* jobOut, int waitStatus);
 };
-int __cdecl hkCpuBuildAccumulatorsJob(char* a1, D94Obj* a2, D94Body* a3);
+int __cdecl hkCpuBuildAccumulatorsJob(char* tl, D94Obj* jobQueue, D94Body* nextJobOut);
 #include <string.h>
 struct S00d967a0_Obj {
     void** vptr;
@@ -2056,7 +2061,7 @@ struct D96600Blob {
     int unk78;
     int unk7c;
 
-    int hkpBroadPhaseJob_popJobTask(int** slot, D96600Blob* dst);
+    int hkpBroadPhaseJob_popJobTask(int** islands, D96600Blob* out);
 };
 static __forceinline int popPart(D96600Blob* src, D96600Blob* dst)
 {
@@ -2217,12 +2222,12 @@ struct __declspec(align(16)) S00d94a80_Local {
     unsigned int unk90;
     char* unk94;
 };
-void __cdecl hkSolverBuildJacobianFromAtomsNotContact(char* atom, int count, S00d94a80_Local* ctx, int** cursor);
+void __cdecl hkSolverBuildJacobianFromAtomsNotContact(char* atom, int count, S00d94a80_Local* tmpIn, int** cursor);
 struct S00d94a80_Bool {
     bool m_cBooleanValue;
     S00d94a80_Bool(bool v) { m_cBooleanValue = v; }
 };
-void __cdecl hkSimpleContactConstraintDataBuildJacobian(char* atom, S00d94a80_Local* ctx, S00d94a80_Bool bCopy, int** cursor);
+void __cdecl hkSimpleContactConstraintDataBuildJacobian(char* atom, S00d94a80_Local* ctx, S00d94a80_Bool writeHeaderSchemas, int** cursor);
 inline S00d94a80_Bool S00d94a80_True() { S00d94a80_Bool r(true); return r; }
 struct S00d94a80_A0 {
     SubObj* unk00;
@@ -2328,7 +2333,7 @@ static __forceinline void S00d94a80_Process(Arg0* a1, Arg2* p)
     }
 
 }
-void __cdecl hkCpuBuildJacobiansJob(Arg0* a1, Arg1* a2, Arg2* a3);
+void __cdecl hkCpuBuildJacobiansJob(Arg0* tl, Arg1* jobQueue, Arg2* jobInOut);
 extern const float g_011c5874_arg1;
 extern const float runtimeFloatSettingDefault262;
 extern double DAT_01035718;
@@ -2551,6 +2556,9 @@ __forceinline float decodeSplit(unsigned short s, float bias, float scale) { ret
 namespace RayTraversal {
 // @fnv 0x00d98ca0
 // src: XBOX_PDB 0x00d98ca0
+// pdb: hkKdTreeUtils::castRayIterative | hkKdTreeUtils.obj | retail, upstream name already matches, high
+// pdb params: tree, start, end, collector
+// pdb locals: A, orig, projectedEntries, offset, B, scale, stackSize, spuNode, aabb, narrowPhaseHit
 extern "C" FNV_00d99f50_Result __cdecl hkKdTreeUtils_castRayIterative(const TreeData* tree, const RayVector& start, const RayVector& end, RayCollector* collector) {
     PrimitiveRecord* primitives = tree->primitives;
     RayVector boundsMin = tree->minimum;
@@ -2737,33 +2745,36 @@ __forceinline ::__m128 Scale(::__m128 v, float x) { D863_Quad t; t.v = (::_mm_lo
 struct D863_Owner {
     int unk00;
     D863_Rec* m_src;
-    void hkPointToPathConstraintCinfo_CloneData(D863_Rec* dst, D863_Params* p);
-    void ReleaseObject(D863_Rec* dst, D863_Params* p);
+    void hkPointToPathConstraintCinfo_CloneData(D863_Rec* apData, D863_Params* arCloneData);
+    void ReleaseObject(D863_Rec* apData, D863_Params* p);
 };
 
 // @fnv 0x00d86300
 // src: XBOX_PDB 0x00d86300
-void D863_Owner::hkPointToPathConstraintCinfo_CloneData(D863_Rec* dst, D863_Params* p)
+// pdb: hkPointToPathConstraintCinfo::CloneData | bhkPointToPathConstraint.obj | retail, upstream name already matches, high
+// pdb params: apData, arCloneData
+// pdb locals: pnd, fscale, tempMemContext, pd
+void D863_Owner::hkPointToPathConstraintCinfo_CloneData(D863_Rec* apData, D863_Params* arCloneData)
 {
     D863MemoryContext guard;
     D863_Rec* s = m_src;
-    if (!dst) {
-        dst = (D863_Rec*)new FUN_00dee750;
+    if (!apData) {
+        apData = (D863_Rec*)new FUN_00dee750;
     }
-    dst->unk1c = s->unk1c;
-    dst->unk20 = s->unk20;
-    dst->unk30 = s->unk30;
-    dst->unk40 = s->unk40;
-    dst->unk50 = s->unk50;
-    dst->unk60 = s->unk60;
-    dst->unk70 = s->unk70;
-    dst->unk80 = s->unk80;
-    dst->unk90 = s->unk90;
-    dst->unka0 = s->unka0;
-    float k = p->unk10;
+    apData->unk1c = s->unk1c;
+    apData->unk20 = s->unk20;
+    apData->unk30 = s->unk30;
+    apData->unk40 = s->unk40;
+    apData->unk50 = s->unk50;
+    apData->unk60 = s->unk60;
+    apData->unk70 = s->unk70;
+    apData->unk80 = s->unk80;
+    apData->unk90 = s->unk90;
+    apData->unka0 = s->unka0;
+    float k = arCloneData->unk10;
     if (k != 1.0f) {
-        (::_mm_store_ps)((float*)&dst->unk60, Scale(dst->unk60, k));
-        dst->unka0 = Scale(dst->unka0, k);
+        (::_mm_store_ps)((float*)&apData->unk60, Scale(apData->unk60, k));
+        apData->unka0 = Scale(apData->unka0, k);
     }
-    ReleaseObject(dst, p);
+    ReleaseObject(apData, arCloneData);
 }

@@ -3,7 +3,7 @@
 class ChallengeData
 {
 public:
-    void SwapEndianFields();
+    void CHALLENGE_DATA_Endian();
 
     int m_iPrimaryValue;
     int m_iAuxiliaryValue;

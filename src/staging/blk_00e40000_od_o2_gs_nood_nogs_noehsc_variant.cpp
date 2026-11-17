@@ -30,6 +30,9 @@ struct AttributeHolder
 
 // @fnv 0x00e5ca80
 // src: GUESS 0x00e5ca80 (confidence: low)
+// pdb: hkxAttributeGroup::getVectorValue | hkxAttributeGroup.obj | retail, object-file run extension, low
+// pdb params: name, warnIfNotFound, vectorOut
+// pdb locals: assertBuf, ostr
 int AttributeHolder::ProcessAndReturnValue_00e5ca80(const char* name, unsigned char warn, hkVector4& out)
 {
     VectorAttribute* attr = Runtime_ForwardCall_00e5c650(name);

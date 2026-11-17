@@ -362,7 +362,7 @@ struct FUN_0058efd0
 struct CellExtra
 {
     unsigned int unk00, unk04, unk08, unk0c, unk10, unk14, unk18, unk1c;
-    void LoadExtraData(CellFile*, CellForm*);
+    void ExtraDataList_Load(CellFile*, CellForm*);
     FUN_0058efd0* ExtraDataList_GetImpactSwap();
     void ExtraDataList_SetImpactSwap(FUN_0058efd0*);
 };
@@ -377,7 +377,7 @@ struct CellExterior
 };
 struct CellInterior
 {
-    void SwapBytes();
+    void INTERIOR_DATA_Endian();
 };
 struct CellEnvironment
 {
@@ -426,45 +426,48 @@ struct CellLoader : CellForm, CellFullName
     void CallWithThis(CellFile*);
     CellExtra* GetExtraDataList();
     void TESObjectCELL_SetWaterHeight(float);
-    void ResetCellData();
+    void CreateCellData();
     bool FUN_00425fd0();
     void SetInteriorDataValue(void*);
     CellExterior* GetExteriorData_005445d0();
     CellInterior* GetInteriorData_00544600();
     void FUN_00484ab0(bool);
-    bool TESObjectCELL_Load(CellFile* file);
+    bool TESObjectCELL_Load(CellFile* apFile);
 };
 // @fnv 0x005422d0
 // src: XBOX_PDB 0x005422d0
-bool CellLoader::TESObjectCELL_Load(CellFile* file)
+// pdb: TESObjectCELL::Load | TESObjectCELL.obj | retail, upstream name already matches, high
+// pdb params: apFile
+// pdb locals: chunkid, iformoffset, formid, pMessage, pswap, iid, isize, ptemp, ival, pdata
+bool CellLoader::TESObjectCELL_Load(CellFile* apFile)
 {
-    unsigned char formTypeSlot15 = file->FUN_00472660();
+    unsigned char formTypeSlot15 = apFile->FUN_00472660();
     if (formTypeSlot15 != 0x39)
         return false;
     void* savedSourceSlot15 = 0;
-    if (file->FUN_00471c20())
-        savedSourceSlot15 = file->FUN_00467bb0();
-    CallWithThis(file);
+    if (apFile->FUN_00471c20())
+        savedSourceSlot15 = apFile->FUN_00467bb0();
+    CallWithThis(apFile);
     do
     {
-        int chunk = file->TESFile_GetTESChunk();
+        int chunk = apFile->TESFile_GetTESChunk();
         switch (chunk)
         {
         case 0x44494445:  // EDID
         {
-            char* editorId = (char*)_alloca(file->GetField25C());
-            file->FUN_00472890(editorId, 512);
+            char* editorId = (char*)_alloca(apFile->GetField25C());
+            apFile->FUN_00472890(editorId, 512);
             SetEditorId(editorId);
             break;
         }
         case 0x444e424f:  // OBND
         {
-            LoadBound(file);
+            LoadBound(apFile);
             break;
         }
         case 0x4c4c5546:  // FULL
         {
-            ReadFullName(static_cast<CellFullName*>(this), file);
+            ReadFullName(static_cast<CellFullName*>(this), apFile);
             break;
         }
         case 0x41505058:  // XPPA
@@ -544,12 +547,12 @@ bool CellLoader::TESObjectCELL_Load(CellFile* file)
         case 0x54574358:  // XCWT
         case 0x57544c58:  // XLTW
         {
-            extra.LoadExtraData(file, this);
+            extra.ExtraDataList_Load(apFile, this);
             break;
         }
         case 0x574c4358:  // XCLW
         {
-            file->ReadChunkInt(&waterHeight);
+            apFile->ReadChunkInt(&waterHeight);
             break;
         }
         case 0x46504d49:  // IMPF
@@ -561,49 +564,49 @@ bool CellLoader::TESObjectCELL_Load(CellFile* file)
                 imageSpace = new ::FUN_0058efd0;
                 GetExtraDataList()->ExtraDataList_SetImpactSwap(imageSpace);
             }
-            imageSpace->FUN_0058f180(file);
+            imageSpace->FUN_0058f180(apFile);
             break;
         }
         case 0x504d544c:  // LTMP
         {
             unsigned int templateId = 0;
-            file->ReadChunkInt(&templateId);
+            apFile->ReadChunkInt(&templateId);
             lightingTemplate = templateId;
             break;
         }
         case 0x4d414e58:  // XNAM
         {
-            unsigned int textSize = file->GetField25C();
+            unsigned int textSize = apFile->GetField25C();
             if (textSize)
             {
                 char* text = (char*)_alloca(textSize);
-                file->FUN_00472890(text, textSize);
+                apFile->FUN_00472890(text, textSize);
                 name.FUN_00489100(text);
             }
             break;
         }
         case 0x4d414e4c:  // LNAM
         {
-            file->ReadChunkInt(&lightingInheritance);
+            apFile->ReadChunkInt(&lightingInheritance);
             break;
         }
         case 0x41544144:  // DATA
         {
-            if (file->GetField25C() == 4)
+            if (apFile->GetField25C() == 4)
             {
                 unsigned int oldFlags = 0;
-                file->ReadChunkInt(&oldFlags);
+                apFile->ReadChunkInt(&oldFlags);
                 flags = (unsigned char)oldFlags;
             }
             else
-                file->FUN_00472890(&flags, 1);
+                apFile->FUN_00472890(&flags, 1);
             if (!(flags & 1))
                 flags |= 2;
             if ((flags & 1) && (flags & 0x80))
                 TESObjectCELL_SetWaterHeight(DAT_01016970);
             if (!DAT_011c3f2c->TESDataHandler_GetSaveLoadGame())
                 flags &= ~0x40;
-            ResetCellData();
+            CreateCellData();
             if (FUN_00425fd0() && savedSourceSlot15)
                 SetInteriorDataValue(savedSourceSlot15);
             break;
@@ -613,10 +616,10 @@ bool CellLoader::TESObjectCELL_Load(CellFile* file)
             CellExterior* exterior = GetExteriorData_005445d0();
             if (exterior)
             {
-                if (file->FUN_00401680() && file->GetField25C() != 12)
+                if (apFile->FUN_00401680() && apFile->GetField25C() != 12)
                     exterior->TwoValues_Endian();
-                file->FUN_00472890(exterior, 12);
-                if (file->FUN_00401680())
+                apFile->FUN_00472890(exterior, 12);
+                if (apFile->FUN_00401680())
                     exterior->TwoValues_Endian();
             }
             break;
@@ -626,16 +629,16 @@ bool CellLoader::TESObjectCELL_Load(CellFile* file)
             CellInterior* interior = GetInteriorData_00544600();
             if (interior)
             {
-                if (file->FUN_00401680() && file->GetField25C() != 44)
-                    interior->SwapBytes();
-                file->FUN_00472890(interior, 44);
-                if (file->FUN_00401680())
-                    interior->SwapBytes();
+                if (apFile->FUN_00401680() && apFile->GetField25C() != 44)
+                    interior->INTERIOR_DATA_Endian();
+                apFile->FUN_00472890(interior, 44);
+                if (apFile->FUN_00401680())
+                    interior->INTERIOR_DATA_Endian();
             }
             break;
         }
         }
-    } while (file->FUN_004726f0());
+    } while (apFile->FUN_004726f0());
     FUN_00484ab0(false);
     return true;
 }

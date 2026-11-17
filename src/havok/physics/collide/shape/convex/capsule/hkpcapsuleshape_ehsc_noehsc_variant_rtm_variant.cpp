@@ -13,7 +13,7 @@ typedef union __declspec(intrin_type) __declspec(align(16)) {
 // Functions are listed by their @fnv annotations; compile flags inferred from the PC code.
 #include "havok/hkpCapsuleShape.h"
 extern char const* const g_01268970_arg1;
-void __cdecl hkReferencedObject_calcContentStatistics(char const* const* arg1, char const* const* arg2);
+void __cdecl hkReferencedObject_calcContentStatistics(char const* const* collector, char const* const* cls);
 void __cdecl hkpCapsuleShape_calcContentStatistics(char const* const* arg1, char const* const* arg2);
 int __cdecl FUN_00d22350();
 int __stdcall FUN_00d22d60(int a, int b);
@@ -113,7 +113,7 @@ extern "C" LocalM128 _mm_add_ps(LocalM128,LocalM128);
 extern "C" LocalM128 _mm_add_ss(LocalM128,LocalM128);
 extern "C" LocalM128 _mm_load_ss(const float*);
 extern "C" void _mm_store_ss(float*,LocalM128);
-void __cdecl hkpCapsuleShape_closestPointLineSeg(float* arg1, float* arg2, float* arg3, float* out);
+void __cdecl hkpCapsuleShape_closestPointLineSeg(float* A, float* B, float* B2, float* pt);
 
 extern "C" LocalM128 _mm_mul_ps(LocalM128,LocalM128);
 extern "C" LocalM128 _mm_add_ps(LocalM128,LocalM128);
@@ -310,6 +310,9 @@ public:
 
 // @fnv 0x00d22760
 // src: XBOX_PDB 0x00d22760
+// pdb: hkpCapsuleShape::castRayImpl | hkpCapsuleShape.obj | retail, string-set bridge, high
+// pdb params: input, results
+// pdb locals: dA, ipT, res, dB, subInput
 __declspec(noinline) S00d22760_Bool S00d22760_Capsule::hkpCapsuleShape_castRayImpl(const S00d22760_Input& input, S00d22760_Output& results) const
 {
     {
@@ -328,7 +331,7 @@ __declspec(noinline) S00d22760_Bool S00d22760_Capsule::hkpCapsuleShape_castRayIm
         S00d22760_Vec join;
         join.setSub4(input.m_vFrom, res);
         float sToCylDistSq = join.lengthSquared3();
-        if (sToCylDistSq < m_fSphereRadius * m_fSphereRadius) {
+        if (sToCylDistSq < m_radius * m_radius) {
             goto returnFalse;
         }
         float infInfDistSquared = 3.40282e+38f;
@@ -341,7 +344,7 @@ __declspec(noinline) S00d22760_Bool S00d22760_Capsule::hkpCapsuleShape_castRayIm
         S00d22760_Vec p;
         S00d22760_Vec q;
         GetClosestLinePoints(input.m_vFrom, dA, getVertex(0), dB, infInfDistSquared, t, u, p, q);
-        if (infInfDistSquared > m_fSphereRadius * m_fSphereRadius) {
+        if (infInfDistSquared > m_radius * m_radius) {
             goto returnFalse;
         }
         S00d22760_Vec axis;
@@ -362,7 +365,7 @@ __declspec(noinline) S00d22760_Bool S00d22760_Capsule::hkpCapsuleShape_castRayIm
             flatDir.setAddMul4(dir, axis, -component);
             const float flatDirLengthSquared3 = flatDir.lengthSquared3();
             if (flatDirLengthSquared3 != 0.0f) {
-                float d = (m_fSphereRadius * m_fSphereRadius - infInfDistSquared) / flatDirLengthSquared3;
+                float d = (m_radius * m_radius - infInfDistSquared) / flatDirLengthSquared3;
                 ipT = t - S00d22760_sqrtf(d);
             } else {
                 ipT = -1.0f;
@@ -395,14 +398,14 @@ __declspec(noinline) S00d22760_Bool S00d22760_Capsule::hkpCapsuleShape_castRayIm
             fromPtProjAxis.setInterpolate4(getVertex(0), getVertex(1), projParam / axisLength);
             S00d22760_Vec axisToRayStart;
             axisToRayStart.setSub4(input.m_vFrom, fromPtProjAxis);
-            if (ipT < 0.0f && axisToRayStart.lengthSquared3() > m_fSphereRadius * m_fSphereRadius) {
+            if (ipT < 0.0f && axisToRayStart.lengthSquared3() > m_radius * m_radius) {
                 goto returnFalse;
             }
             S00d22760_Input subInput;
             const int extra = (ptHeight <= 0.0f) ? HIT_CAP0 : HIT_CAP1;
             subInput.m_vFrom.setSub4(input.m_vFrom, getVertex(extra));
             subInput.m_vTo.setSub4(input.m_vTo, getVertex(extra));
-            if (Object_ProcessAndReturnValue_00cd85c0(m_fSphereRadius, subInput, results)) {
+            if (Object_ProcessAndReturnValue_00cd85c0(m_radius, subInput, results)) {
                 results.m_iExtraInfo = extra;
                 return S00d22760_Bool(true);
             }

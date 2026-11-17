@@ -9,7 +9,7 @@
 // src: XBOX_PDB 0x00aa2500
 void NiSearchPath::Reset_00aa2500()
 {
-    m_uiSearchPathValue = 0;
+    m_uiNextPath = 0;
 }
 
 extern void _fnv_StandardizeFilePath(char*);
@@ -21,17 +21,17 @@ void NiSearchPath::SetPath(const char* pcFilePath)
 {
     if (pcFilePath && *pcFilePath)
     {
-        _fnv_CopyFilePath(m_acFilePathBuffer, 0x104, pcFilePath, 0x103);
-        _fnv_StandardizeFilePath(m_acFilePathBuffer);
+        _fnv_CopyFilePath(m_acFilePath, 0x104, pcFilePath, 0x103);
+        _fnv_StandardizeFilePath(m_acFilePath);
     }
     else
     {
-        m_acFilePathBuffer[0] = 0;
+        m_acFilePath[0] = 0;
     }
 }
 
 int _strcpy_s(char* dst, unsigned int size, const char* src);
-void _fnv_StandardizeFilePath(char* path);
+void _fnv_StandardizeFilePath(char* pcPath);
 extern char DAT_011f6120[];
 struct FileNameComponents
 {
@@ -63,8 +63,8 @@ struct FileNameComponents
 // @fnv 0x00aa2580
 bool NiSearchPath::ResolveSearchPath(char* pcOutPath, unsigned int uiOutLen)
 {
-    FileNameComponents kFullPath(m_acFilePathBuffer);
-    switch (m_uiSearchPathValue)
+    FileNameComponents kFullPath(m_acFilePath);
+    switch (m_uiNextPath)
     {
     case 0:
         break;
@@ -74,14 +74,14 @@ bool NiSearchPath::ResolveSearchPath(char* pcOutPath, unsigned int uiOutLen)
         break;
     case 2: {
         kFullPath.SetDrive("");
-        kFullPath.SetDir(m_acResolvedPath);
-        FileNameComponents inputURL(m_acFilePathBuffer);
+        kFullPath.SetDir(m_acReferencePath);
+        FileNameComponents inputURL(m_acFilePath);
         kFullPath.SetPlatformSubDir(inputURL.GetDir());
     }
     break;
     case 3:
         kFullPath.SetDrive("");
-        kFullPath.SetDir(m_acResolvedPath);
+        kFullPath.SetDir(m_acReferencePath);
         kFullPath.SetPlatformSubDir("");
         break;
     case 4:
@@ -95,7 +95,7 @@ bool NiSearchPath::ResolveSearchPath(char* pcOutPath, unsigned int uiOutLen)
     }
     kFullPath.NiFilename_GetFullPath(pcOutPath, uiOutLen);
     _fnv_StandardizeFilePath(pcOutPath);
-    m_uiSearchPathValue++;
+    m_uiNextPath++;
     return true;
 }
 

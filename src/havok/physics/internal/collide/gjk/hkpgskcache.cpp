@@ -81,13 +81,16 @@ class Cls_dafcd0
     unsigned char m_ucLowNibble : 4;
     unsigned char m_ucHighNibble : 4;
     unsigned char m_0b;
-    void hkpGskCache_init(Node* a, Node* b, const Vec4Blk* m);
+    void hkpGskCache_init(Node* shapeA, Node* shapeB, const Vec4Blk* aTb);
 };
 
 // Queries both nodes via v3c, v38 and the matrix m, then stores two shorts and flag bytes, two clamped v2c nibbles, and zeroes m_04, m_06 and m_0b.
 // @fnv 0x00dafcd0
 // src: XBOX_PDB 0x00dafcd0
-void Cls_dafcd0::hkpGskCache_init(Node* apNodeA, Node* apNodeB, const Vec4Blk* apMatrix)
+// pdb: hkpGskCache::init | hkpGskCache.obj | retail, upstream name already matches, high
+// pdb params: shapeA, shapeB, aTb
+// pdb locals: centerA, zero, support, centerB, supportingVertexA, supportingVertexB, supportB
+void Cls_dafcd0::hkpGskCache_init(Node* shapeA, Node* shapeB, const Vec4Blk* aTb)
 {
     Vec4Blk Q;
     Vec4Blk P;
@@ -96,22 +99,22 @@ void Cls_dafcd0::hkpGskCache_init(Node* apNodeA, Node* apNodeB, const Vec4Blk* a
     Vec4Blk out60;
     {
         int flag = 0;
-        apNodeA->v3c(&flag, 1, &t40);
-        apNodeB->v3c(&flag, 1, &P);
+        shapeA->v3c(&flag, 1, &t40);
+        shapeB->v3c(&flag, 1, &P);
     }
 
     LocalM128 pv = _mm_load_ps(&P.x);
-    const Xform& X = *(const Xform*)apMatrix;
+    const Xform& X = *(const Xform*)aTb;
     LocalM128 R = _mm_add_ps(
         _mm_add_ps(_mm_mul_ps(_mm_shuffle_ps(pv, pv, 0x55), X.c1), _mm_mul_ps(_mm_shuffle_ps(pv, pv, 0), X.c0)),
         _mm_add_ps(_mm_mul_ps(_mm_shuffle_ps(pv, pv, 0xaa), X.c2), X.t));
     Vec4 C(_mm_sub_ps(R, _mm_load_ps(&t40.x)));
-    apNodeA->v38(C, &Q);
+    shapeA->v38(C, &Q);
 
     LocalM128 D = _mm_sub_ps(R, _mm_load_ps(&Q.x));
-    LocalM128 c0 = _mm_load_ps(&apMatrix[0].x);
-    LocalM128 c1 = _mm_load_ps(&apMatrix[1].x);
-    LocalM128 c2 = _mm_load_ps(&apMatrix[2].x);
+    LocalM128 c0 = _mm_load_ps(&aTb[0].x);
+    LocalM128 c1 = _mm_load_ps(&aTb[1].x);
+    LocalM128 c2 = _mm_load_ps(&aTb[2].x);
     {
         LocalM128 tmp = _mm_unpacklo_ps(c0, c1);
         LocalM128 ctmp = _mm_unpackhi_ps(c0, c1);
@@ -125,7 +128,7 @@ void Cls_dafcd0::hkpGskCache_init(Node* apNodeA, Node* apNodeB, const Vec4Blk* a
                    _mm_mul_ps(_mm_shuffle_ps(D, D, 0xaa), c2));
     C.m_vComponents = D;
     S = _mm_xor_ps(S, DAT_010c44d0);
-    apNodeB->v38(Vec4(S), &out60);
+    shapeB->v38(Vec4(S), &out60);
 
     m_02 = *(short*)((char*)&out60 + 0xc);
     m_00 = *(short*)((char*)&Q + 0xc);
@@ -134,8 +137,8 @@ void Cls_dafcd0::hkpGskCache_init(Node* apNodeA, Node* apNodeB, const Vec4Blk* a
     m_08 = 1;
     m_09 = 1;
 
-    int n1 = apNodeA->v2c();
-    int n2 = apNodeB->v2c();
+    int n1 = shapeA->v2c();
+    int n2 = shapeB->v2c();
     if (n1 > 3)
     {
         n1 = 0xf;
@@ -236,8 +239,8 @@ class FUN_00dafe70_cls
     unsigned char m_bA;
     unsigned char m_bB;
 
-    void hkpGskCache_init(Iface* a1, Src* a2, const unsigned int* a3);
-    void hkpGskCache_initTriangle(Iface* a1, Src* a2, const unsigned int* a3);
+    void hkpGskCache_init(Iface* shapeA, Src* shapeB, const unsigned int* aTb);
+    void hkpGskCache_initTriangle(Iface* shapeA, Src* shapeB, const unsigned int* btoa);
 };
 
 extern "C"
@@ -264,17 +267,20 @@ __declspec(align(16)) struct Frame3
 
 // @fnv 0x00dafe70
 // src: XBOX_PDB 0x00dafe70
-void FUN_00dafe70_cls::hkpGskCache_initTriangle(Iface* apIface, Src* apSrc, const unsigned int* apMatrix)
+// pdb: hkpGskCache::initTriangle | hkpGskCache.obj | retail, upstream name already matches, high
+// pdb params: shapeA, shapeB, btoa
+// pdb locals: centerA, suportingVertex, support, verticesBinB
+void FUN_00dafe70_cls::hkpGskCache_initTriangle(Iface* shapeA, Src* shapeB, const unsigned int* btoa)
 {
-    if (apSrc->m_flag17 != 0)
+    if (shapeB->m_flag17 != 0)
     {
-        hkpGskCache_init(apIface, apSrc, apMatrix);
+        hkpGskCache_init(shapeA, shapeB, btoa);
         return;
     }
     m_w2 = 0;
     unsigned short* pWords = &m_w2;
     m_w4 = 1;
-    const unsigned int* pMatrix = apMatrix;
+    const unsigned int* pMatrix = btoa;
     m_w6 = 2;
 
     UQ row0, row1, row2, row3;
@@ -300,7 +306,7 @@ void FUN_00dafe70_cls::hkpGskCache_initTriangle(Iface* apIface, Src* apSrc, cons
     row3.wb = pMatrix[15];
     LocalM128 r3 = row3.v;
 
-    const LocalM128* vin = (const LocalM128*)&apSrc->m_v20;
+    const LocalM128* vin = (const LocalM128*)&shapeB->m_v20;
     LocalM128* out = pv;
     for (int k = 2; k >= 0; --k)
     {
@@ -317,7 +323,7 @@ void FUN_00dafe70_cls::hkpGskCache_initTriangle(Iface* apIface, Src* apSrc, cons
     UQ vResult;
     nq.v = _mm_sub_ps(t2, t1);
 
-    apIface->v0F(pWords, 1, &hit);
+    shapeA->v0F(pWords, 1, &hit);
 
     LocalM128 dt = _mm_mul_ps(_mm_sub_ps(hit.v, pv[0]), nq.v);
     LocalM128 vSum = _mm_add_ss(_mm_shuffle_ps(dt, dt, 0x55), dt);
@@ -325,12 +331,12 @@ void FUN_00dafe70_cls::hkpGskCache_initTriangle(Iface* apIface, Src* apSrc, cons
     LocalM128 bc = _mm_shuffle_ps(vSum, vSum, 0);
     nq.v = _mm_xor_ps(_mm_and_ps(bc, DAT_010c44d0), nq.v);
 
-    apIface->v0E(&nq, &vResult);
+    shapeA->v0E(&nq, &vResult);
 
     unk00 = *(unsigned short*)((char*)&vResult + 0xc);
     m_b8 = 1;
     m_b9 = 3;
-    int c = apIface->v0B();
+    int c = shapeA->v0B();
     if (c > 3)
     {
         c = 0xf;

@@ -15,6 +15,7 @@ class Label109;
 
 // LoveTesterMenu (FNV menu class 1074): ctor 0x00720550 installs vftable 0x01070174; MenuSystem::GetMenuById
 // allocates 0x230 (the ctor's last arrays end at +0x230). The old 0x4014 was RouletteMenu's (ctor 0x007b8d30).
+// pdb: class LoveTesterMenu, size 0x230, bases: Menu, 20 members
 class LoveTesterMenu : public Menu
 {
 public:
@@ -186,13 +187,13 @@ public:
     LoveTesterMenu();
     bool InitializeCollection(int* missingIndex);
     void Setup();
-    void* GetNode();
-    void StepPosition(int);
-    bool StepPosition(bool increase);
+    void* InitCamera();
+    void TurnPage(int);
+    bool TurnPage(bool bForward);
     bool HandleKeyInput(int key);
-    void HandleButton(int button, int unused);
+    void HandleButton(int aiID, int apTarget);
     void HandleClick(int id, int unused);
-    bool HandleMenuKey(int key, int unused);
+    bool HandleMenuKey(int aiButton, int afValue);
     void UpdateAnimation();
     int GetSelectedIndex();
     int GetCount();
@@ -200,6 +201,6 @@ public:
     int LoveTesterMenu_GetCurrentStatesActorValue();
     int SPECIALBookMenu_GetTotalPointsUsed();
     void RefreshPage();
-    void VigorTester_InitTextures();
+    void LoadButtonAndTextImages();
     void FUN_00a1d910();
 };

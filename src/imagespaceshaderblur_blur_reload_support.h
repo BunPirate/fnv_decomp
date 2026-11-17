@@ -17,6 +17,7 @@ typedef char ShaderMacroSize[(sizeof(BSShaderManager::BSShaderMacro) == 76) ? 1 
 #include "../include/NiTPrimitiveArray.h"
 class ImageSpaceTexture;
 class ImageSpaceEffectParam;
+// pdb: class ImageSpaceEffect, size 0x58, 7 members
 class ImageSpaceEffect
 {
   public:

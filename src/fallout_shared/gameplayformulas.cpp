@@ -7,7 +7,7 @@
 class ActorValueUtility_gameplayformulas
 {
 public:
-    static int __cdecl ConvertActorValue(int);
+    static int __cdecl GamePlayFormulas_GetRequiredExperiencePoints(int);
 };
 #include "../../include/GameSettingCollection.h"
 #include "../../include/InventoryStackRecord.h"
@@ -20,14 +20,18 @@ extern SettingT_GameSettingCollection_ iXPBumpBase;
 
 // Returns 0 for levels <= 1, otherwise sums iXPBase plus repeated iXPBump increments across levels up to aiLevel - 1.
 // @fnv 0x00648b50
-int ActorValueUtility_gameplayformulas::ConvertActorValue(int aiLevel)
+// src: XBOX_DEBUG_PDB 0x00648b50
+// pdb: GamePlayFormulas::GetRequiredExperiencePoints | GamePlayFormulas.obj | debug, call graph, high
+// pdb params: aiWhichLevel
+// pdb locals: iresult, ixpBump, ixpBumpBase, i
+int ActorValueUtility_gameplayformulas::GamePlayFormulas_GetRequiredExperiencePoints(int aiWhichLevel)
 {
-    if (aiLevel <= 1)
+    if (aiWhichLevel <= 1)
         return 0;
     int iTotal = *reinterpret_cast<int*>(iXPBase.Int());
     int iBase = iTotal;
     int iBump = *reinterpret_cast<int*>(iXPBumpBase.Int());
-    for (int i = 1; i < aiLevel - 1; ++i)
+    for (int i = 1; i < aiWhichLevel - 1; ++i)
     {
         iBase += iBump;
         iTotal += iBase;
@@ -69,17 +73,20 @@ float __cdecl ComputeItemValue(float afItemValue, float afItemHealthPercent)
     return fabsf_00408860(fvalue) >= 1.0 ? InventoryStackRecord::RoundToNearestStep(fvalue, 1.0f) : fvalue;
 }
 
-extern SettingT_GameSettingCollection_ originalRuntimeFloatSetting830;
+extern SettingT_GameSettingCollection_ fMoveRunMult; // src: XBOX_RETAIL_PDB 0x011d0898 (old: originalRuntimeFloatSetting830)
 float __cdecl GamePlayFormulas_GetActorWalkSpeed(void*, void*, void*, bool, bool, bool, bool);
 
 // @fnv 0x00647f00
 // src: XBOX_PDB 0x00647f00
-float __cdecl GamePlayFormulas_GetActorRunSpeed(void* apActor, void* apWeapon, void* pArmor, bool abNoWeapon, bool abIsNpc,
+// pdb: GamePlayFormulas::GetActorRunSpeed | GamePlayFormulas.obj | retail, upstream name already matches, high
+// pdb params: apActor, pWeap, pArmor, abNoWeapon, abIsNpc, abIsSneaking, abOverEncumbered
+// pdb locals: runSpeed
+float __cdecl GamePlayFormulas_GetActorRunSpeed(void* apActor, void* pWeap, void* pArmor, bool abNoWeapon, bool abIsNpc,
                            bool abIsSneaking, bool abOverEncumbered)
 {
     float runSpeed = 0.0f;
-    runSpeed += GamePlayFormulas_GetActorWalkSpeed(apActor, apWeapon, pArmor, abIsSneaking, abNoWeapon, abIsNpc, abOverEncumbered);
-    runSpeed *= originalRuntimeFloatSetting830.Float()->f;
+    runSpeed += GamePlayFormulas_GetActorWalkSpeed(apActor, pWeap, pArmor, abIsSneaking, abNoWeapon, abIsNpc, abOverEncumbered);
+    runSpeed *= fMoveRunMult.Float()->f;
     return runSpeed;
 }
 
@@ -89,6 +96,9 @@ extern SettingT_GameSettingCollection_ originalRuntimeFloatSetting862;
 // Returns the sum of the base float setting and aiEndurance multiplied by the per-point float setting.
 // @fnv 0x00648a10
 // src: COMMUNITY 0x00648a10
+// pdb: Actor::IsPointDeepUnderWater | Actor.obj | retail, call graph (shared callers), low
+// pdb note: debug build links it to GamePlayFormulas::SwimBreathTime
+// pdb params: aPoint, apCell, afHeight
 float __cdecl GamePlayFormulas_SwimBreathTime(int aiEndurance)
 {
     return originalRuntimeFloatSetting861.Float()->f +
@@ -101,6 +111,9 @@ double __cdecl _floor(float);
 
 // Computes a floored value from aiIntelligence and DAT_01011588 plus 10, adding 1 when aiLevel is even and aiIntelligence is odd.
 // @fnv 0x00648c10
+// pdb: GamePlayFormulas::GetLevelUpSkillPoints | GamePlayFormulas.obj | retail, call graph (shared callers), high
+// pdb params: apActor
+// pdb locals: iresult
 int __cdecl ComputeIntelligenceResult(int aiIntelligence, int aiLevel)
 {
     float fresult = (double)aiIntelligence * DAT_01011588 + 10.0;
@@ -116,10 +129,13 @@ float __cdecl GamePlayFormulas_GetActorWalkSpeed(void*, void*, void*, bool, bool
 
 // @fnv 0x00647f50
 // src: XBOX_PDB 0x00647f50
-float __cdecl GamePlayFormulas_GetActorSwimWalkSpeed(void* apActor, void* apWeapon, void* pArmor, bool abIsNpc, bool abIsSneaking,
+// pdb: GamePlayFormulas::GetActorSwimWalkSpeed | GamePlayFormulas.obj | debug, upstream name already matches, high
+// pdb params: apActor, pWeap, pArmor, abNoWeapon, abIsNpc, abOverEncumbered
+// pdb locals: swimSpeed
+float __cdecl GamePlayFormulas_GetActorSwimWalkSpeed(void* apActor, void* pWeap, void* pArmor, bool abNoWeapon, bool abIsSneaking,
                            bool abOverEncumbered)
 {
-    float runSpeed = GamePlayFormulas_GetActorWalkSpeed(apActor, apWeapon, pArmor, false, abIsNpc, abIsSneaking, abOverEncumbered);
+    float runSpeed = GamePlayFormulas_GetActorWalkSpeed(apActor, pWeap, pArmor, false, abNoWeapon, abIsSneaking, abOverEncumbered);
     return runSpeed;
 }
 
@@ -174,42 +190,45 @@ extern SettingT_GameSettingCollection_ originalRuntimeFloatSetting1087;
 
 // @fnv 0x00647d10
 // src: XBOX_PDB 0x00647d10
-float GamePlayFormulas_GetActorWalkSpeed(ActorValueOwner* pActor, TESObjectWEAP* pWeapon, TESObjectARMO* pArmor, bool bSneaking,
-                   bool bIsPlayer, bool bScoped, bool bIgnoreSkill)
+// pdb: GamePlayFormulas::GetActorWalkSpeed | GamePlayFormulas.obj | retail, upstream name already matches, high
+// pdb params: apActor, pWeap, pArmor, abSneaking, abNoWeapon, abIsNpc, abOverEncumbered
+// pdb locals: fbaseSpeed, fcrippledTotal, fWeightFactor, fspeed, fwalkSpeed, flegConditionSpeedMult, eArmor
+float GamePlayFormulas_GetActorWalkSpeed(ActorValueOwner* apActor, TESObjectWEAP* pWeap, TESObjectARMO* pArmor, bool abSneaking,
+                   bool abNoWeapon, bool abIsNpc, bool abOverEncumbered)
 {
     float fMult = 0.0f;
     if (pArmor)
     {
-        unsigned char ucWeight = pArmor->GetArmorType();
+        unsigned char ucWeight = pArmor->GetArmorWeight();
         if (ucWeight == 1)
             fMult += originalRuntimeFloatSetting827.Float()->f;
         else if (ucWeight == 2)
             fMult += originalRuntimeFloatSetting826.Float()->f;
     }
-    if (pWeapon && !bIsPlayer && pWeapon->IsTwoHandedWeapon())
+    if (pWeap && !abNoWeapon && pWeap->IsTwoHandedWeapon())
     {
-        if (static_cast<const TESObjectWEAP*>(pWeapon)->GetWeaponType() == 8 ||
-            static_cast<const TESObjectWEAP*>(pWeapon)->GetWeaponType() == 9)
+        if (static_cast<const TESObjectWEAP*>(pWeap)->GetWeaponType() == 8 ||
+            static_cast<const TESObjectWEAP*>(pWeap)->GetWeaponType() == 9)
             fMult += originalRuntimeFloatSetting829.Float()->f;
-        else if (static_cast<const TESObjectWEAP*>(pWeapon)->GetWeaponType() != 2)
+        else if (static_cast<const TESObjectWEAP*>(pWeap)->GetWeaponType() != 2)
             fMult += originalRuntimeFloatSetting828.Float()->f;
     }
-    float fPenalty = (1.0f - CombatDamageCalculator::GetActorValueMultiplier(pActor, (ActorValue::Index)0x1d, false)) +
-                     (1.0f - CombatDamageCalculator::GetActorValueMultiplier(pActor, (ActorValue::Index)0x1e, false));
+    float fPenalty = (1.0f - CombatDamageCalculator::GetActorValueMultiplier(apActor, (ActorValue::Index)0x1d, false)) +
+                     (1.0f - CombatDamageCalculator::GetActorValueMultiplier(apActor, (ActorValue::Index)0x1e, false));
     float fBase = 1.0f;
     if (fPenalty == 1.0)
         fBase = originalRuntimeFloatSetting1087.Float()->f;
     else if (fPenalty == 2.0)
         fBase = originalRuntimeFloatSetting1088.Float()->f;
-    if (!bIgnoreSkill && pActor->GetActorValue((ActorValue::Index)0x48))
+    if (!abOverEncumbered && apActor->GetActorValue((ActorValue::Index)0x48))
         fBase = 1.0f;
-    float fResult = pActor->GetCurrentActorValue((ActorValue::Index)0x15) * 0.01;
+    float fResult = apActor->GetCurrentActorValue((ActorValue::Index)0x15) * 0.01;
     float fCrippled = fResult * originalRuntimeFloatSetting833.Float()->f * fBase;
     float fSkill = fCrippled;
-    if (bScoped && bIsPlayer)
+    if (abIsNpc && abNoWeapon)
         fSkill *= originalRuntimeFloatSetting831.Float()->f;
     fSkill = (1.0f - fMult) * fSkill;
-    if (bSneaking)
+    if (abSneaking)
         fSkill *= originalRuntimeFloatSetting832.Float()->f;
     if (fSkill < _gModifierZero)
         return 0.0f;
@@ -228,23 +247,27 @@ extern SettingT_GameSettingCollection_ originalRuntimeFloatSetting940;
 extern SettingT_GameSettingCollection_ originalRuntimeFloatSetting943;
 
 // @fnv 0x00648090
-float ComputeSkillValue(int aiSkill, float afA, float afB, int* apResult)
+// src: XBOX_DEBUG_PDB 0x00648090
+// pdb: GamePlayFormulas::GetRepairedCondition | GamePlayFormulas.obj | debug, call graph (shared callers), high
+// pdb params: aiRepairSkill, afCondition1, afCondition2, apiMinSkillNeeded
+// pdb locals: fskillCap, fskillFactor, fresult, fitemFactor, fbestCondition
+float GamePlayFormulas_GetRepairedCondition(int aiRepairSkill, float afCondition1, float afCondition2, int* apiMinSkillNeeded)
 {
     float fMaxBonus;
     float fTotal = 0.0f;
-    afA = afA / 10.0;
-    afB = afB / 10.0;
-    fMaxBonus = (originalRuntimeFloatSetting941.Float()->f - originalRuntimeFloatSetting940.Float()->f) * aiSkill / g_d100;
-    float fSkillValue = originalRuntimeFloatSetting942.Float()->f * BSMIN(afA, afB);
+    afCondition1 = afCondition1 / 10.0;
+    afCondition2 = afCondition2 / 10.0;
+    fMaxBonus = (originalRuntimeFloatSetting941.Float()->f - originalRuntimeFloatSetting940.Float()->f) * aiRepairSkill / g_d100;
+    float fSkillValue = originalRuntimeFloatSetting942.Float()->f * BSMIN(afCondition1, afCondition2);
     float fMin = originalRuntimeFloatSetting943.Float()->f +
-                 (originalRuntimeFloatSetting944.Float()->f - originalRuntimeFloatSetting943.Float()->f) * aiSkill / 100.0f;
-    float fSkillBonus = BSMAX_00404010(afA, afB);
+                 (originalRuntimeFloatSetting944.Float()->f - originalRuntimeFloatSetting943.Float()->f) * aiRepairSkill / 100.0f;
+    float fSkillBonus = BSMAX_00404010(afCondition1, afCondition2);
     fTotal = fSkillBonus + originalRuntimeFloatSetting940.Float()->f + fMaxBonus + fSkillValue;
-    if (apResult)
+    if (apiMinSkillNeeded)
     {
         if ((int)InventoryStackRecord::RoundToNearestStep(fTotal * g_d100, 1.0f) <=
             (int)InventoryStackRecord::RoundToNearestStep(fSkillBonus * g_d100, 1.0f))
-            *apResult = (int)((fSkillBonus + (double)0.1f - originalRuntimeFloatSetting943.Float()->f) * g_d100 /
+            *apiMinSkillNeeded = (int)((fSkillBonus + (double)0.1f - originalRuntimeFloatSetting943.Float()->f) * g_d100 /
                               (originalRuntimeFloatSetting944.Float()->f - originalRuntimeFloatSetting943.Float()->f));
     }
     return fTotal * 10.0;
@@ -260,7 +283,10 @@ struct MersenneTwister
 };
 
 // @fnv 0x00648fa0
-void ComputeMedicineHealing(float& afLimbHealPercent, float& afHealthDamagePercent, int aiMedicineSkill,
+// src: XBOX_RETAIL_PDB 0x00648fa0
+// pdb: GamePlayFormulas::GetSurgeryAutoAttemptPercentages | GamePlayFormulas.obj | retail, call graph, high
+// pdb params: afLimbHealPercent, afHealthDamagePercent, aiMedicineSkill, abMorphineUsed, afWoundPercent
+void GamePlayFormulas_GetSurgeryAutoAttemptPercentages(float& afLimbHealPercent, float& afHealthDamagePercent, int aiMedicineSkill,
                             bool abMorphineUsed, float afWoundPercent)
 {
     afLimbHealPercent = MersenneTwister::GetRandomGenerator()->Float(0.0f, aiMedicineSkill * g_d100 / g_d100 *
@@ -273,11 +299,15 @@ void ComputeMedicineHealing(float& afLimbHealPercent, float& afHealthDamagePerce
 float __cdecl GamePlayFormulas_GetActorRunSpeed(void*, void*, void*, bool, bool, bool, bool);
 // Calls FUN_00647f00 with the given actor, weapon, armor and flags, passing false for the sixth argument, and returns the resulting swim speed.
 // @fnv 0x00647f90
-float __cdecl GetSwimSpeed(void* apActor, void* apWeapon, void* pArmor, bool abNoWeapon, bool abIsNpc,
+// src: XBOX_DEBUG_PDB 0x00647f90
+// pdb: GamePlayFormulas::GetActorSwimRunSpeed | GamePlayFormulas.obj | debug, call graph, high
+// pdb params: apActor, pWeap, pArmor, abNoWeapon, abIsNpc, abOverEncumbered
+// pdb locals: swimSpeed
+float __cdecl GamePlayFormulas_GetActorSwimRunSpeed(void* apActor, void* pWeap, void* pArmor, bool abNoWeapon, bool abIsNpc,
                            bool abOverEncumbered)
 {
     float swimSpeed;
-    swimSpeed = GamePlayFormulas_GetActorRunSpeed(apActor, apWeapon, pArmor, abNoWeapon, abIsNpc, false, abOverEncumbered);
+    swimSpeed = GamePlayFormulas_GetActorRunSpeed(apActor, pWeap, pArmor, abNoWeapon, abIsNpc, false, abOverEncumbered);
     return swimSpeed;
 }
 
@@ -295,10 +325,14 @@ extern double _DAT_01012640;
 extern SettingT_GameSettingCollection_ originalRuntimeFloatSetting1092;
 extern SettingT_GameSettingCollection_ originalRuntimeFloatSetting1093;
 // @fnv 0x00648b00
-float __cdecl ScaleFloatSetting(float afValue, bool abApplySettings)
+// src: XBOX_DEBUG_PDB 0x00648b00
+// pdb: GamePlayFormulas::GetHealingRate | GamePlayFormulas.obj | debug, call graph, high
+// pdb params: afHealingRate, abIsSleeping
+// pdb locals: fresult
+float __cdecl GamePlayFormulas_GetHealingRate(float afHealingRate, bool abIsSleeping)
 {
-    float result = afValue / _DAT_01012640;
-    if (abApplySettings)
+    float result = afHealingRate / _DAT_01012640;
+    if (abIsSleeping)
     {
         result = originalRuntimeFloatSetting1092.Float()->f / _DAT_01012640 +
                  result * originalRuntimeFloatSetting1093.Float()->f;
@@ -313,11 +347,14 @@ int __cdecl ComputeIntelligenceResult(int, int);
 // Computes the intelligence result from the capped permanent actor value and owner type.
 // @fnv 0x00648bc0
 // src: COMMUNITY 0x00648bc0
-int __cdecl GamePlayFormulas_GetLevelUpSkillPoints_0(ActorValueOwner* apActorValueOwner)
+// pdb: GamePlayFormulas::GetLevelUpSkillPoints | GamePlayFormulas.obj | retail, call graph, high
+// pdb params: apActor
+// pdb locals: iresult
+int __cdecl GamePlayFormulas_GetLevelUpSkillPoints_0(ActorValueOwner* apActor)
 {
     int v;
-    v = ComputeIntelligenceResult(MinInt(apActorValueOwner->GetPermanentActorValue((ActorValue::Index)9), 10),
-                                  apActorValueOwner->GetActorValueOwnerType());
+    v = ComputeIntelligenceResult(MinInt(apActor->GetPermanentActorValue((ActorValue::Index)9), 10),
+                                  apActor->GetActorValueOwnerType());
     return v;
 }
 
@@ -327,6 +364,8 @@ int __cdecl MinInt(int, int);
 int __cdecl BSMAX_00647b70(int, int);
 // @fnv 0x00648d30
 // src: XBOX_PDB 0x00648d30
+// pdb: GamePlayFormulas::GetForceLockChance | GamePlayFormulas.obj | debug, upstream name already matches, high
+// pdb params: aiPlayerSkill, aiLockLevelMax
 int GamePlayFormulas_GetForceLockChance(int aiPlayerSkill, int aiLockLevelMax)
 {
     return BSMAX_00647b70(MinInt(aiPlayerSkill - aiLockLevelMax + (int)originalRuntimeFloatSetting1069.Float()->f, 100), 0);
@@ -344,6 +383,9 @@ extern SettingT_GameSettingCollection_ originalRuntimeFloatSetting840;
 
 // @fnv 0x00647fd0
 // src: XBOX_PDB 0x00647fd0
+// pdb: GamePlayFormulas::GetActorFlySpeed | GamePlayFormulas.obj | retail, upstream name already matches, high
+// pdb params: apActor, afEncumbrance
+// pdb locals: flyMagnitude, flySpeed
 float __cdecl GamePlayFormulas_GetActorFlySpeed(ActorValueOwner* actor)
 {
     float result;        // Actor-value coefficient.
@@ -367,52 +409,55 @@ extern SettingT_GameSettingCollection_ DAT_011d022c;
 
 // Computes two values from afBase, afDivisor and game settings, then applies type-dependent multipliers and flags to both.
 // @fnv 0x006482f0
-void __cdecl ComputeDerivedValues(float* afValue1, float* afValue2, float afDivisor, float afBase, int aiType,
-                                  bool abFlag1, float afMult1, float afMult2, float afMult3, bool abFlag2)
+// src: XBOX_DEBUG_PDB 0x006482f0
+// pdb: GamePlayFormulas::CalculatePotionDurationMagnitude | GamePlayFormulas.obj | debug, call graph, high
+// pdb params: aiMagnitude, aiDuration, afEffectCost, afPotionStrength, aiEquipment, bhostile, afRetortQuality, afAlembicQuality, afCalcinatorQuality, abPoison
+void __cdecl GamePlayFormulas_CalculatePotionDurationMagnitude(float* aiMagnitude, float* aiDuration, float afEffectCost, float afPotionStrength, int aiEquipment,
+                                  bool bhostile, float afRetortQuality, float afAlembicQuality, float afCalcinatorQuality, bool abPoison)
 {
-    *afValue1 = pow_004dd130(afBase * DAT_011d00e4.Float()->f / afDivisor, 1.0 / (DAT_011d198c.Float()->f + 1.0));
-    *afValue2 = *afValue1 / DAT_011d00e4.Float()->f / DAT_011d1998.Float()->f;
+    *aiMagnitude = pow_004dd130(afPotionStrength * DAT_011d00e4.Float()->f / afEffectCost, 1.0 / (DAT_011d198c.Float()->f + 1.0));
+    *aiDuration = *aiMagnitude / DAT_011d00e4.Float()->f / DAT_011d1998.Float()->f;
 
-    switch (aiType)
+    switch (aiEquipment)
     {
     case 1:
-        if (!abFlag1 && !abFlag2)
+        if (!bhostile && !abPoison)
         {
-            *afValue1 += afMult1 * DAT_011d06b8.Float()->f * *afValue1;
-            *afValue2 += afMult1 * DAT_011d0568.Float()->f * *afValue2;
+            *aiMagnitude += afRetortQuality * DAT_011d06b8.Float()->f * *aiMagnitude;
+            *aiDuration += afRetortQuality * DAT_011d0568.Float()->f * *aiDuration;
         }
     case 2:
-        if (abFlag1 && !abFlag2)
+        if (bhostile && !abPoison)
         {
-            *afValue1 += afMult2 * DAT_011d02b0.Float()->f * *afValue1;
-            *afValue2 += afMult2 * DAT_011d009c.Float()->f * *afValue2;
+            *aiMagnitude += afAlembicQuality * DAT_011d02b0.Float()->f * *aiMagnitude;
+            *aiDuration += afAlembicQuality * DAT_011d009c.Float()->f * *aiDuration;
         }
         break;
     case 5:
-        if (abFlag1 && !abFlag2)
+        if (bhostile && !abPoison)
         {
-            *afValue1 += afMult2 * DAT_011d02b0.Float()->f * *afValue1 + afMult3 * DAT_011d022c.Float()->f * *afValue1;
-            *afValue2 += afMult2 * DAT_011d009c.Float()->f * *afValue2 + afMult3 * DAT_011d022c.Float()->f * *afValue2;
+            *aiMagnitude += afAlembicQuality * DAT_011d02b0.Float()->f * *aiMagnitude + afCalcinatorQuality * DAT_011d022c.Float()->f * *aiMagnitude;
+            *aiDuration += afAlembicQuality * DAT_011d009c.Float()->f * *aiDuration + afCalcinatorQuality * DAT_011d022c.Float()->f * *aiDuration;
         }
         else
         {
-            *afValue1 += afMult3 * DAT_011d022c.Float()->f * *afValue1;
-            *afValue2 += afMult3 * DAT_011d022c.Float()->f * *afValue2;
+            *aiMagnitude += afCalcinatorQuality * DAT_011d022c.Float()->f * *aiMagnitude;
+            *aiDuration += afCalcinatorQuality * DAT_011d022c.Float()->f * *aiDuration;
         }
     case 3:
-        *afValue1 += afMult3 * DAT_011d022c.Float()->f * *afValue1;
-        *afValue2 += afMult3 * DAT_011d022c.Float()->f * *afValue2;
+        *aiMagnitude += afCalcinatorQuality * DAT_011d022c.Float()->f * *aiMagnitude;
+        *aiDuration += afCalcinatorQuality * DAT_011d022c.Float()->f * *aiDuration;
         break;
     case 4:
-        if (!abFlag1 && !abFlag2)
+        if (!bhostile && !abPoison)
         {
-            *afValue1 += *afValue1 * afMult1 * DAT_011d06b8.Float()->f + *afValue2 * afMult3 * DAT_011d022c.Float()->f;
-            *afValue2 += *afValue2 * afMult1 * DAT_011d0568.Float()->f + *afValue2 * afMult3 * DAT_011d022c.Float()->f;
+            *aiMagnitude += *aiMagnitude * afRetortQuality * DAT_011d06b8.Float()->f + *aiDuration * afCalcinatorQuality * DAT_011d022c.Float()->f;
+            *aiDuration += *aiDuration * afRetortQuality * DAT_011d0568.Float()->f + *aiDuration * afCalcinatorQuality * DAT_011d022c.Float()->f;
         }
         else
         {
-            *afValue1 += afMult3 * DAT_011d022c.Float()->f * *afValue1;
-            *afValue2 += afMult3 * DAT_011d022c.Float()->f * *afValue2;
+            *aiMagnitude += afCalcinatorQuality * DAT_011d022c.Float()->f * *aiMagnitude;
+            *aiDuration += afCalcinatorQuality * DAT_011d022c.Float()->f * *aiDuration;
         }
         break;
     }
@@ -425,46 +470,49 @@ extern SettingT_GameSettingCollection_ originalRuntimeFloatSetting956;
 
 // Divides afValue by afDivisor and a runtime setting into pfResult, then adds scaled adjustments selected by aiType and the two flags.
 // @fnv 0x00648620
-void __cdecl ComputeScaledResult(float* pfResult, float afDivisor, float afValue, int aiType, bool abFlagA,
-                                 float afScaleA, float afScaleB, float afScaleC, bool abFlagB)
+// src: XBOX_DEBUG_PDB 0x00648620
+// pdb: GamePlayFormulas::CalculatePotionDuration | GamePlayFormulas.obj | debug, call graph, high
+// pdb params: aiDuration, afEffectCost, afPotionStrength, aiEquipment, bhostile, afRetortQuality, afAlembicQuality, afCalcinatorQuality, abPoison
+void __cdecl GamePlayFormulas_CalculatePotionDuration(float* aiDuration, float afEffectCost, float afPotionStrength, int aiEquipment, bool bhostile,
+                                 float afRetortQuality, float afAlembicQuality, float afCalcinatorQuality, bool abPoison)
 {
-    *pfResult = afValue / afDivisor / originalRuntimeFloatSetting1115.Float()->f;
-    switch (aiType)
+    *aiDuration = afPotionStrength / afEffectCost / originalRuntimeFloatSetting1115.Float()->f;
+    switch (aiEquipment)
     {
     case 1:
-        if (!abFlagA && !abFlagB)
+        if (!bhostile && !abPoison)
         {
-            *pfResult += *pfResult * afScaleA * originalRuntimeFloatSetting954.Float()->f;
+            *aiDuration += *aiDuration * afRetortQuality * originalRuntimeFloatSetting954.Float()->f;
         }
     case 2:
-        if (abFlagA && !abFlagB)
+        if (bhostile && !abPoison)
         {
-            *pfResult += *pfResult * afScaleB * originalRuntimeFloatSetting956.Float()->f;
+            *aiDuration += *aiDuration * afAlembicQuality * originalRuntimeFloatSetting956.Float()->f;
         }
         break;
     case 3:
-        *pfResult += *pfResult * afScaleC * originalRuntimeFloatSetting955.Float()->f;
+        *aiDuration += *aiDuration * afCalcinatorQuality * originalRuntimeFloatSetting955.Float()->f;
         break;
     case 5:
-        if (abFlagA && !abFlagB)
+        if (bhostile && !abPoison)
         {
-            *pfResult += *pfResult * afScaleB * originalRuntimeFloatSetting956.Float()->f +
-                         *pfResult * afScaleC * originalRuntimeFloatSetting955.Float()->f;
+            *aiDuration += *aiDuration * afAlembicQuality * originalRuntimeFloatSetting956.Float()->f +
+                         *aiDuration * afCalcinatorQuality * originalRuntimeFloatSetting955.Float()->f;
         }
         else
         {
-            *pfResult += *pfResult * afScaleC * originalRuntimeFloatSetting955.Float()->f;
+            *aiDuration += *aiDuration * afCalcinatorQuality * originalRuntimeFloatSetting955.Float()->f;
         }
         break;
     case 4:
-        if (!abFlagA && !abFlagB)
+        if (!bhostile && !abPoison)
         {
-            *pfResult += *pfResult * afScaleA * originalRuntimeFloatSetting954.Float()->f +
-                         *pfResult * afScaleC * originalRuntimeFloatSetting955.Float()->f;
+            *aiDuration += *aiDuration * afRetortQuality * originalRuntimeFloatSetting954.Float()->f +
+                         *aiDuration * afCalcinatorQuality * originalRuntimeFloatSetting955.Float()->f;
         }
         else
         {
-            *pfResult += *pfResult * afScaleC * originalRuntimeFloatSetting955.Float()->f;
+            *aiDuration += *aiDuration * afCalcinatorQuality * originalRuntimeFloatSetting955.Float()->f;
         }
         break;
     }
@@ -479,6 +527,8 @@ extern SettingT_GameSettingCollection_ originalRuntimeFloatSetting1209;
 
 // Computes a value from a and b via FUN_004dd130 and applies per-kind setting-based multipliers to it, writing the result to out.
 // @fnv 0x00648810
+// pdb: GamePlayFormulas::CalculatePotionMagnitude | GamePlayFormulas.obj | debug, object-file gap fill, medium
+// pdb params: aiMagnitude, afEffectCost, afPotionStrength, aiEquipment, bhostile, afRetortQuality, afAlembicQuality, afCalcinatorQuality, abPoison
 void __cdecl ComputeSettingAdjustedValue(float* pfResult, float afDivisor, float afDividend, int kind, bool flag,
                                          float x, float y, float z, bool other)
 {
@@ -520,6 +570,9 @@ extern SettingT_GameSettingCollection_ originalRuntimeFloatSetting1089;
 extern SettingT_GameSettingCollection_ originalRuntimeFloatSetting1090;
 extern SettingT_GameSettingCollection_ originalRuntimeFloatSetting1091;
 // @fnv 0x00648a80
+// pdb: GamePlayFormulas::CalcImpactShaderAmount | GamePlayFormulas.obj | debug, object-file run extension, low
+// pdb params: afDistance
+// pdb locals: fnormalizedDistance
 float ComputeSettingLerp(float fValue)
 {
     if (fValue > originalRuntimeFloatSetting1089.Float()->f)
@@ -539,6 +592,8 @@ extern SettingT_GameSettingCollection_ DAT_011d0fd8;
 // Returns the sum of two setting values, with the second multiplied by fValue times 10.0f.
 // @fnv 0x00648050
 // src: COMMUNITY 0x00648050
+// pdb: GamePlayFormulas::GetFatigueReturnRate | GamePlayFormulas.obj | debug, call graph, medium
+// pdb params: afActorEndurance
 float __cdecl GamePlayFormulas_CalcFatigueReturn(float fValue)
 {
     return DAT_011d05ec.Float()->f + DAT_011d0fd8.Float()->f * (fValue * 10.0f);
@@ -553,14 +608,18 @@ int __cdecl BSMAX_00647b70(int iValue, int iMin);
 
 // Computes a level-scaled multiplier from base/max settings and difficulty, clamps it to a minimum of 1.0, and returns the integer result.
 // @fnv 0x00648230
-int __cdecl GetLevelAdjustedMult(int iLevel, float fDiff, float fMult)
+// src: XBOX_DEBUG_PDB 0x00648230
+// pdb: GamePlayFormulas::GetRepairCost | GamePlayFormulas.obj | debug, call graph, high
+// pdb params: aiVendorRepairSkill, afCondition, afValue
+// pdb locals: fskillCap, iresult, fresult
+int __cdecl GamePlayFormulas_GetRepairCost(int aiVendorRepairSkill, float afCondition, float afValue)
 {
     int iResult = 0;
     float fValue = 0.0f;
     float fLevelValue =
-        g_kSettingBaseD8230.Float()->f + (g_kSettingMaxD8230.Float()->f - g_kSettingBaseD8230.Float()->f) * iLevel / 100.0f;
-    fDiff = fDiff / 10.0;
-    fValue = g_kSettingMultD8230.Float()->f * fMult * ((fLevelValue - fDiff) / 10.0);
+        g_kSettingBaseD8230.Float()->f + (g_kSettingMaxD8230.Float()->f - g_kSettingBaseD8230.Float()->f) * aiVendorRepairSkill / 100.0f;
+    afCondition = afCondition / 10.0;
+    fValue = g_kSettingMultD8230.Float()->f * afValue * ((fLevelValue - afCondition) / 10.0);
     if (fValue > 0.5)
         iResult = BSMAX_00647b70((int)FUN_004bd510(fValue, 1.0f), 1);
     return iResult;
@@ -574,6 +633,8 @@ extern SettingT_GameSettingCollection_ DAT_011d0370;
 // Computes buy and sell price multipliers from skill-based float settings and writes them to the output pointers.
 // @fnv 0x00649050
 // src: GUESS 0x00649050 (confidence: high)
+// pdb: GamePlayFormulas::GetBarterMultipliers | GamePlayFormulas.obj | debug, call graph, medium
+// pdb params: aiBarterSkill, afBuyMult, afSellMult
 void Gameplayformulas_GetSkillPriceMultipliers(int iSkill, float* pfBuyMult, float* pfSellMult)
 {
     *pfBuyMult = DAT_011d03c4.Float()->f + DAT_011d040c.Float()->f * iSkill / 100.0f;

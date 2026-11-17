@@ -22,6 +22,7 @@ extern "C" void* __cdecl _Deallocate(void*);
 
 // Returns this, and if bit 0 of flags is set, deallocates this before returning it.
 // @fnv 0x007bfbd0
+// pdb: SleepWaitMenu::`scalar deleting destructor' | SleepWaitMenu.obj | retail, vtable slot, high
 void* SleepWaitMenu::FUN_007bfbd0(unsigned int flags)
 {
     this->SleepWaitMenu::~SleepWaitMenu();
@@ -34,15 +35,18 @@ void* SleepWaitMenu::FUN_007bfbd0(unsigned int flags)
 struct Time
 {
     float FUN_00867da0();
-    ::BSStringT<char> FormatDate();
-    const char* GetDayName();
+    ::BSStringT<char> Calendar_GetDateString();
+    const char* Calendar_GetDayOfWeekString();
 };
 extern Time DAT_011de7b8;
 extern Setting DAT_011d24fc, DAT_011d27f0;
 int __cdecl sprintf_s(char*, unsigned, const char*, ...);
 // Builds a 12-hour clock string from the current game time and passes it to the tile via FUN_00a01350.
 // @fnv 0x007c0000
-void Menu::UpdateClockText()
+// src: XBOX_RETAIL_PDB 0x007c0000
+// pdb: SleepWaitMenu::SetTimeText | SleepWaitMenu.obj | retail, string-set bridge, high
+// pdb locals: iMinute, fHour, iHour, strtemp
+void Menu::SleepWaitMenu_SetTimeText()
 {
     char szClockText[260];
     int hour;
@@ -55,8 +59,8 @@ void Menu::UpdateClockText()
                 hour = 12;
             else if (time >= 13.0)
                 hour -= 12;
-            sprintf_s(szClockText, 260, "%s, %s, %d:%02d %s", DAT_011de7b8.GetDayName(),
-                      DAT_011de7b8.FormatDate().String(), hour, minute,
+            sprintf_s(szClockText, 260, "%s, %s, %d:%02d %s", DAT_011de7b8.Calendar_GetDayOfWeekString(),
+                      DAT_011de7b8.Calendar_GetDateString().String(), hour, minute,
                       time < 12.0 ? DAT_011d24fc.FUN_00403df0() : DAT_011d27f0.FUN_00403df0());
         }
     }
@@ -67,7 +71,7 @@ namespace fnv_007c01b0 {
 // Exe 0x007c01b0: unit-local Interface view; declarations and layout are preserved.
 struct SleepwaitmenuInterfaceView
 {
-    void FUN_007010e0(int, int);
+    void RemoveFader(int, int);
 };
 extern BGSSaveLoadGame* g_BGSSaveLoadGame;
 extern ProcessLists DAT_011e0e80;
@@ -76,14 +80,15 @@ extern SleepWaitMenu* DAT_011da920;
 
 // @fnv 0x007c01b0
 // src: XBOX_PDB 0x007c01b0
+// pdb: SleepWaitMenu::Close | SleepWaitMenu.obj | retail, upstream name already matches, high
 void SleepWaitMenu_Close()
 {
     if (DAT_011da920)
     {
         if (!g_BGSSaveLoadGame->BGSSaveLoadGame_GetSaveGameLoading())
-            DAT_011e0e80.UpdateActor3D();
+            DAT_011e0e80.Update3DAfterResting();
         if (DAT_011da920->m_bState2)
-            DAT_011d8804->FUN_007010e0(0, 0);
+            DAT_011d8804->RemoveFader(0, 0);
         DAT_011da920->FUN_00726070()->Set(0x1772, 1);
         DAT_011da920->FUN_00a1d910();
     }
@@ -95,6 +100,7 @@ void* __cdecl Tile_TextToTrait(const char* asName);
 
 // Initializes m_fCameraTransitionTime, m_bState1, m_fWaitTime and m_bState3 to zero and stores the result of FUN_00a01860("_current_value") in DAT_011da918.
 // @fnv 0x007bfb30
+// pdb: SleepWaitMenu::SleepWaitMenu | SleepWaitMenu.obj | retail, upstream name already matches, high
 SleepWaitMenu::SleepWaitMenu()
 {
     m_fCameraTransitionTime = 0.0f;
@@ -150,15 +156,17 @@ void __cdecl SleepWaitMenu_Close();
 
 // @fnv 0x007c0220
 // src: XBOX_PDB 0x007c0220
-void SleepWaitMenu::DoClick_007c0220(int slot, int value)
+// pdb: SleepWaitMenu::DoClick | SleepWaitMenu.obj | retail, vtable slot, high
+// pdb params: aiID, apTarget
+void SleepWaitMenu::DoClick_007c0220(int aiID, int apTarget)
 {
     using namespace fnv_007c0220;
     using fnv_007c0220::DAT_011da918;
-    if (value == 0 && slot >= 0 && slot < 6)
+    if (apTarget == 0 && aiID >= 0 && aiID < 6)
     {
-        value = reinterpret_cast<int>(m_pTiles[slot]);
+        apTarget = reinterpret_cast<int>(m_pTiles[aiID]);
     }
-    switch (slot)
+    switch (aiID)
     {
     case 4:
         InterfaceManager_PlayMenuSound(1);
@@ -205,7 +213,10 @@ int __cdecl Tile_TextToTrait(const char* s);
 
 // @fnv 0x007c04d0
 // src: XBOX_PDB 0x007c04d0
-bool SleepWaitMenu::DoGamepad_007c04d0(int a1, int aiUnused)
+// pdb: SleepWaitMenu::DoGamepad | SleepWaitMenu.obj | retail, string-set bridge, high
+// pdb params: aiButton, afValue
+// pdb locals: bhandled
+bool SleepWaitMenu::DoGamepad_007c04d0(int aiButton, int afValue)
 {
     using namespace fnv_007c04d0;
     using fnv_007c04d0::DAT_011da918;
@@ -213,11 +224,11 @@ bool SleepWaitMenu::DoGamepad_007c04d0(int a1, int aiUnused)
     bool done = false;
     if (m_pTiles[TI_WAIT_BUTTON]->IsTraitNonZero(0xfaf))
     {
-        if (a1 == 0xf || a1 == 0x10)
+        if (aiButton == 0xf || aiButton == 0x10)
         {
             // Preserve the unused second argument passed by the original getter call.
             m_pTiles[TI_SCROLLBAR]->Tile_Set(DAT_011da918,
-                (m_pTiles[TI_SCROLLBAR]->*reinterpret_cast<float (Tile::*)(int, int)>(static_cast<float (Tile::*)(int)>(&Tile::FUN_00a011b0)))(DAT_011da918, 0) + (a1 == 0xf ? DAT_0104a494 : DAT_010162c0));
+                (m_pTiles[TI_SCROLLBAR]->*reinterpret_cast<float (Tile::*)(int, int)>(static_cast<float (Tile::*)(int)>(&Tile::FUN_00a011b0)))(DAT_011da918, 0) + (aiButton == 0xf ? DAT_0104a494 : DAT_010162c0));
             m_pTiles[TI_SCROLLBAR]->SetTraitFloat(Tile_TextToTrait(str_01070250), 1.0f);
             done = true;
         }
@@ -235,6 +246,8 @@ void __cdecl Interface_PlayMenuSound(int a);
 
 // When the gauge value for DAT_011da918 changes, updates the cached value, optionally triggers FUN_00706f30(4), and writes a formatted string to the tile.
 // @fnv 0x007c03a0
+// pdb: SleepWaitMenu::DoIdle | SleepWaitMenu.obj | retail, string-set bridge, high
+// pdb locals: strtemp
 void SleepWaitMenu::UpdateGaugeDisplay()
 {
     using namespace fnv_007c03a0;
@@ -324,7 +337,7 @@ bool SleepWaitMenu::UpdateSleep()
     DAT_011dea3c->PlayerCharacter_PlayerSleep();
     m_pTiles[TI_SCROLLBAR]->FUN_00700320((int)Tile_TextToTrait("_current_value"), DAT_011dea3c->PlayerCharacter_GetSleepHours() - 1);
     m_pTiles[TI_SCROLLBAR]->SetTraitFloat((int)Tile_TextToTrait("_SetInCode"), 1.0f);
-    UpdateClockText();
+    SleepWaitMenu_SetTimeText();
     return true;
 }
 
@@ -353,7 +366,7 @@ struct SwSoundHandle
 struct SwAudio
 {
     static SwAudio* GetSingleton();
-    SwSoundHandle BSAudio_GetSoundHandleByEditorName(const char* pcName, unsigned int uiFlags, int i);
+    SwSoundHandle BSAudio_GetSoundHandleByEditorName(const char* apSoundName, unsigned int aiTypeFlags, int i);
 };
 
 extern Setting g_s_011d3948;
@@ -373,7 +386,11 @@ extern const char g_szSleepWaitEnd[] = "";
 
 // Creates the sleep/wait menu from s_szMenuPath, sets its title, verb, hour, clock, and background, and returns the root tile or 0 on failure.
 // @fnv 0x007bfc30
-Tile* __cdecl CreateSleepWaitMenu(bool bSleep)
+// src: XBOX_RETAIL_PDB 0x007bfc30
+// pdb: SleepWaitMenu::Create | SleepWaitMenu.obj | retail, unique string literal, high
+// pdb params: abSleep
+// pdb locals: pin, ptile, pold_menu_tile, strWaitorSleep, strtemp
+Tile* __cdecl SleepWaitMenu_Create(bool abSleep)
 {
     SwInterface* pkInterfaceY = InterfaceManager_GetSingleton();
     Menu* pkOld_ = Tile_GetMenuByClass(ret_1012());
@@ -392,9 +409,9 @@ Tile* __cdecl CreateSleepWaitMenu(bool bSleep)
         SwAudio::GetSingleton()->BSAudio_GetSoundHandleByEditorName(s_szSound, 0x121, 0).FUN_00ad8830();
         if (pkTileTmp2->FUN_00a011b0(0xfa7) == 6006.0 || pkTileTmp2->FUN_00a011b0(0xfa7) == 102.0)
             pkTileTmp2->Tile_Set(0xfad, FUN_00a01530(), true);
-        g_pkSleepWaitMenu_011da920->m_bSleep = bSleep;
+        g_pkSleepWaitMenu_011da920->m_bSleep = abSleep;
         char acVerb[0x104];
-        if (bSleep)
+        if (abSleep)
             FUN_00406d30(acVerb, 0x104, g_s_011d3948.FUN_00403df0());
         else
             FUN_00406d30(acVerb, 0x104, g_s_011d23ac.FUN_00403df0());
@@ -405,7 +422,7 @@ Tile* __cdecl CreateSleepWaitMenu(bool bSleep)
         g_pkSleepWaitMenu_011da920->m_pTiles[SleepWaitMenu::TI_WAIT_BUTTON]->Tile_Set_00a01350(0xfc4, acVerb, true);
         BSsprintf(acText, 0x104, s_szHourFormat, g_s_011d448c.FUN_00403df0());
         g_pkSleepWaitMenu_011da920->m_pTiles[SleepWaitMenu::TI_HOURS_TEXT]->Tile_Set_00a01350(0xfc4, acText, true);
-        g_pkSleepWaitMenu_011da920->UpdateClockText();
+        g_pkSleepWaitMenu_011da920->SleepWaitMenu_SetTimeText();
         g_pkSleepWaitMenu_011da920->m_pTiles[SleepWaitMenu::TI_CANCEL_BUTTON]->Tile_Set_00a01350(0xfc4, g_s_011d29f4.FUN_00403df0(), true);
         g_pkSleepWaitMenu_011da920->FUN_00726070()
             ->GetNamedChild(s_szBackground)
@@ -424,6 +441,7 @@ Tile* __cdecl CreateSleepWaitMenu(bool bSleep)
 extern int DAT_011da920;
 // Clears the active menu before the base menu is destroyed.
 // @fnv 0x007bfc00
+// pdb: SleepWaitMenu::~SleepWaitMenu | SleepWaitMenu.obj | debug, upstream name already matches, high
 SleepWaitMenu::~SleepWaitMenu()
 {
     DAT_011da920 = 0;

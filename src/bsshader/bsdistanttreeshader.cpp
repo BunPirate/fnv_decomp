@@ -44,13 +44,13 @@ inline void NiD3DPass::DecRefCount()
 inline NiColorA::NiColorA(float red, float green, float blue, float alpha)
     : r(red), g(green), b(blue), a(alpha) {}
 
-extern int g_012007bc;
+extern int BSDistantTreeShader_ms_RTTI; // src: XBOX_RETAIL_PDB 0x012007bc (old: g_012007bc)
 
 // @fnv 0x00bb6490
 // src: XBOX_PDB 0x00bb6490
 int* __cdecl BSDistantTreeShader_GetRTTI()
 {
-    return &g_012007bc;
+    return &BSDistantTreeShader_ms_RTTI;
 }
 
 extern int DAT_0126f74c;
@@ -66,9 +66,11 @@ struct Unknown_00bb62b0
 // Stores m_6c or m_70 into DAT_0126f74c based on a, then replaces the GPU program pointer at offset 0x28 with m_80.
 // @fnv 0x00bb62b0
 // src: XBOX_PDB 0x00bb62b0
-NiPointer_NiGPUProgram_& Unknown_00bb62b0::BSDistantTreeShader_InitPass(int a)
+// pdb: BSDistantTreeShader::InitPass | BSDistantTreeShader.obj | debug, upstream name already matches, high
+// pdb params: auiCurrentPass
+NiPointer_NiGPUProgram_& Unknown_00bb62b0::BSDistantTreeShader_InitPass(int auiCurrentPass)
 {
-    switch (a)
+    switch (auiCurrentPass)
     {
     case 0x236:
         DAT_0126f74c = m_6c;
@@ -92,9 +94,12 @@ struct S_00bb6b60_b
 };
 // @fnv 0x00bb6b60
 // src: XBOX_PDB 0x00bb6b60
-void __stdcall BSDistantTreeShader_PostGeometry(S_00bb6b60_b* p)
+// pdb: BSDistantTreeShader::PostGeometry | BSDistantTreeShader.obj | debug, upstream name already matches, high
+// pdb params: apState
+// pdb locals: pprop
+void __stdcall BSDistantTreeShader_PostGeometry(S_00bb6b60_b* apState)
 {
-    S_00bb6b60_a* pFlagHolder = p->m_C;
+    S_00bb6b60_a* pFlagHolder = apState->m_C;
     if (pFlagHolder && ((pFlagHolder->m_24 & 0x10000) > 0))
         BSRenderState_SetWireframeEnable(0, 0);
 }
@@ -103,11 +108,13 @@ void __cdecl _delete(void*, unsigned int);
 struct Struct00bb6e00
 {
     void FUN_00bb6300();
-    void* FUN_00bb6e00(unsigned int);
+    void* BSDistantTreeShader_ScalarDtor(unsigned int);
 };
 // Calls FUN_00bb6300, then deletes this with size 0xfc when flags has bit 0 set, and returns this.
 // @fnv 0x00bb6e00
-void* Struct00bb6e00::FUN_00bb6e00(unsigned int flags)
+// src: XBOX_RETAIL_PDB 0x00bb6e00
+// pdb: BSDistantTreeShader::`scalar deleting destructor' | BSDistantTreeShader.obj | retail, object-file gap fill, high
+void* Struct00bb6e00::BSDistantTreeShader_ScalarDtor(unsigned int flags)
 {
     FUN_00bb6300();
     if (flags & 1)
@@ -167,6 +174,8 @@ struct ShPtr
 
 // @fnv 0x00bb6060
 // src: COMMUNITY 0x00bb6060
+// pdb: BSDistantTreeShader::LoadShaders | BSDistantTreeShader.obj | retail, string-set bridge, high
+// pdb locals: ptempFName, vertexShaderParamsTex, pcacheFName, pixelShaderParamsTexSilhouette, pixelShaderParamsTex
 void FUN_00bb6060_shell::BSDistantTreeShader_LoadShaders()
 {
     char tempName[260];
@@ -226,6 +235,8 @@ struct FUN_00bb6300 : BSShader
 };
 // Releases the shader's pass, vertex, pixel and declaration references, frees the instances buffer, and clears the declaration pointer.
 // @fnv 0x00bb6300
+// pdb: BSDistantTreeShader::~BSDistantTreeShader | BSDistantTreeShader.obj | debug, call graph, medium
+// pdb locals: ui
 FUN_00bb6300::~FUN_00bb6300()
 {
     for (unsigned int i = 0; i < 2; ++i)
@@ -430,17 +441,19 @@ struct FUN_00bb6c30 : public BSShader
     NiColorA m_kColor4;
     NiColorA m_kColor5;
 
-    FUN_00bb6c30(NiD3DVertexDeclaration* pDecl);
+    FUN_00bb6c30(NiD3DVertexDeclaration* apDecl);
     virtual ~FUN_00bb6c30();
     virtual BSShader* CreateShader();
 };
 
 // Initializes the shader: stores the declaration, sets a value to 25, and allocates the instance array sized by GetMaxCount().
 // @fnv 0x00bb6c30
-FUN_00bb6c30::FUN_00bb6c30(NiD3DVertexDeclaration* pDecl)
+// pdb: BSDistantTreeShader::BSDistantTreeShader | BSDistantTreeShader.obj | retail, call graph, high
+// pdb params: apDecl
+FUN_00bb6c30::FUN_00bb6c30(NiD3DVertexDeclaration* apDecl)
 {
     iShaderType = 25;
-    m_spVertexDeclaration = pDecl;
+    m_spVertexDeclaration = apDecl;
     m_pInstances = new DistantTreeInstance[DistantTreeInstance::GetMaxCount()];
 }
 
@@ -642,6 +655,8 @@ struct FUN_00bb6c30
     void BSDistantTreeShader_LoadStagesAndPasses();
 };
 // @fnv 0x00bb6e30
+// pdb: BSDistantTreeShader::CreateShader | BSDistantTreeShader.obj | retail, call graph, high
+// pdb locals: pdecl, eInput, pshader
 FUN_00bb6c30* CreateTreeShader()
 {
     TreeVertexDecl* declaration = NiDX9ShaderDeclaration_Create(DAT_011f9508, 4, true);
@@ -1110,11 +1125,15 @@ struct ZTree
     NiColorA unk84, unk94;
     int unkA4, unkA8;
     NiColorA unkAC, unkBC, unkCC;
-    void UpdateLighting(int);
+    void BSDistantTreeShader_SetupPassConstants(int);
 };
 // Sets the tree's fog and ambient/directional light colors from the current fog, sky, or scene light, depending on DAT_011f91b8.
 // @fnv 0x00bb6700
-void ZTree::UpdateLighting(int arg)
+// src: XBOX_RETAIL_PDB 0x00bb6700
+// pdb: BSDistantTreeShader::SetupPassConstants | BSDistantTreeShader.obj | retail, object-file run extension, high
+// pdb params: auiCurrentPass
+// pdb locals: pbsfog, kfogcolor, knear, fpower, kfar, plight, kptup, ksundir, pdirlight, kcolor
+void ZTree::BSDistantTreeShader_SetupPassConstants(int auiCurrentPass)
 {
     ZFog* fog = BSShaderManager_GetFogProperty(DAT_011f91c4);
     if (fog)
@@ -1185,12 +1204,15 @@ struct This
     char m_bc[0xcc - 0xbc];
     char m_cc[0xdc - 0xcc];
 
-    void InitShaderParams();
+    void BSDistantTreeShader_CreateConstantMaps();
 };
 
 // Creates the two NiD3DShaderConstantMap instances if missing and, for the second, registers the WorldViewProjTranspose, fog, instances and light shader parameters.
 // @fnv 0x00bb6f40
-void This::InitShaderParams()
+// src: XBOX_RETAIL_PDB 0x00bb6f40
+// pdb: BSDistantTreeShader::CreateConstantMaps | BSDistantTreeShader.obj | retail, unique string literal, high
+// pdb locals: uiDefinedMatrixFlags, uiConstantPoint4Flags, uiConstantMatrix4Flags
+void This::BSDistantTreeShader_CreateConstantMaps()
 {
     if (this->m_30 == 0)
     {
@@ -1264,6 +1286,8 @@ struct BSDistantTreeShaderPasses : public BSDistantTreeShader
 // Creates two D3D passes, configures a beam texture stage for each, and assigns the tree vertex and pixel shader variants to the pass data.
 // @fnv 0x00bb64a0
 // src: COMMUNITY 0x00bb64a0
+// pdb: BSDistantTreeShader::LoadStagesAndPasses | BSDistantTreeShader.obj | retail, upstream name already matches, high
+// pdb locals: spStage
 bool BSDistantTreeShaderPasses::BSDistantTreeShader_LoadStagesAndPasses()
 {
     NiD3DPass::CreateD3DPass(spRenderPass[0]);
@@ -1535,6 +1559,9 @@ struct GeomShader
 };
 // Sets up geometry, then calls Render on the two GeomRenderer slots if their settings flags are non-zero.
 // @fnv 0x00bb6a80
+// pdb: BSDistantTreeShader::SetupGeometryConstants | BSDistantTreeShader.obj | debug, object-file gap fill, medium
+// pdb params: apState
+// pdb locals: pgeometry, worldTransform, apRenderPass, worldBound, pprop, pbufferData, pskin
 void GeomShader::RenderGeometry(int arg)
 {
     GeomObj* geom = *DAT_011f91e0;

@@ -3,6 +3,7 @@
 #include "NiExtraData.h"
 #include "NiIntegerStreamArray.h"
 
+// pdb: class NiIntegersExtraData, size 0x14, bases: NiExtraData, 2 members
 class NiIntegersExtraData : public NiExtraData
 {
   public:
@@ -13,8 +14,8 @@ class NiIntegersExtraData : public NiExtraData
     }
     virtual ~NiIntegersExtraData();
 
-    virtual void LoadBinary(NiStream& stream);
-    virtual void GetViewerStrings(NiViewerStringsArray* pkStrings);
+    virtual void LoadBinary(NiStream& arStream);
+    virtual void GetViewerStrings(NiViewerStringsArray* pStrings);
 
     void AssignPointerArray(int a, int b);
     void SetVtableAndProcessState_00a99950();
@@ -22,7 +23,7 @@ class NiIntegersExtraData : public NiExtraData
     NiIntegersExtraData* FUN_00a99a50(int flag);
     bool IsEqual_00a998e0(NiIntegersExtraData* pObject);
     void CopyMembers_00a99870(NiIntegersExtraData* pDest, void* pCloning);
-    NiExtraData* CreateClone_00a999b0(void* pvProcess);
+    NiExtraData* CreateClone_00a999b0(void* kCloning);
     void BaseGetViewerStrings(NiViewerStringsArray* pkStrings);
 
     union

@@ -17,6 +17,7 @@ class BGSSaveFormBuffer;
 
 template <class T> class PlayerList;
 
+// pdb: class TESQuest, size 0x6c, bases: TESForm, TESScriptableForm, TESIcon, TESFullName, 7 members
 class TESQuest : public TESForm, public TESScriptableForm, public TESIcon, public TESFullName
 {
 public:
@@ -28,70 +29,70 @@ public:
 
     QuestDataDefaults data;
     BSSimpleList<QuestStage*> m_kStageList;
-    BSSimpleList<BGSQuestObjective*> m_kObjectives;
-    PerkEntryConditionSet m_kInfoConditions;
+    BSSimpleList<BGSQuestObjective*> m_listObjectives; // src: XBOX_RETAIL_PDB +0x4c (old: m_kObjectives)
+    PerkEntryConditionSet objConditions; // src: XBOX_RETAIL_PDB +0x54 (old: m_kInfoConditions)
     ScriptLocals* m_pScriptLocals;
     unsigned char m_ucEnabled;
     unsigned char layoutPadding61[3];
-    BSStringT<char> strEditorID;
+    BSStringT<char> cFormEditorID; // src: XBOX_RETAIL_PDB +0x64 (old: strEditorID)
 
     TESQuest();
     virtual ~TESQuest();
     virtual void ClearData();
-    virtual void LoadGame(BGSLoadFormBuffer* buffer);
-    virtual void Revert(BGSLoadFormBuffer* buffer);
+    virtual void LoadGame(BGSLoadFormBuffer* apLoadGameBuffer);
+    virtual void Revert(BGSLoadFormBuffer* apLoadGameBuffer);
     virtual void InitItem();
     virtual const char* GetEditorName() const;
 
     void ResetFormData();
-    void RemoveAllStages();
-    void ClearObjectives();
+    void ClearStageList();
+    void ClearObjectiveList();
     unsigned int GetStageMask();
     void UpdateStageMask();
     bool HasStage(unsigned char index);
-    bool IsStageComplete(unsigned char index);
-    BGSQuestObjective* GetObjective(unsigned int index);
-    void GetTargetsAndObjectives(BSSimpleList<RegionObjectEntry*>* targets,
-                                 BSSimpleList<BGSQuestObjective*>* objectives);
-    bool HasTargetsAndObjectives(BSSimpleList<RegionObjectEntry*>* targets,
-                                 BSSimpleList<BGSQuestObjective*>* objectives);
-    void GetTargetsAndObjectives(PlayerList<RegionObjectEntry*>* targets,
-                                 PlayerList<BGSQuestObjective*>* objectives);
-    bool HasTargetsAndObjectives(PlayerList<RegionObjectEntry*>* targets,
-                                 PlayerList<BGSQuestObjective*>* objectives);
-    bool Load(TESFile* file);
+    bool SetStageDone(unsigned char aucIndex);
+    BGSQuestObjective* GetObjective(unsigned int aiIndex);
+    void GetTargetsAndObjectives(BSSimpleList<RegionObjectEntry*>* apListToFill,
+                                 BSSimpleList<BGSQuestObjective*>* apPlayerObjectiveList);
+    bool ValidateTargetList(BSSimpleList<RegionObjectEntry*>* apListToValidate,
+                                 BSSimpleList<BGSQuestObjective*>* apPlayerObjectiveList);
+    void GetTargetsAndObjectives(PlayerList<RegionObjectEntry*>* apListToFill,
+                                 PlayerList<BGSQuestObjective*>* apPlayerObjectiveList);
+    bool ValidateTargetList(PlayerList<RegionObjectEntry*>* apListToValidate,
+                                 PlayerList<BGSQuestObjective*>* apPlayerObjectiveList);
+    bool Load(TESFile* apFile);
     bool GetEnabled();
-    void SetEnabled(bool enabled);
+    void SetEnabled(bool abEnabled);
     bool GetCompleted();
     bool GetAllowRepeatStages();
     bool GetAllowRepeatedTopics();
     void RunScript();
-    void SetStartsEnabled(bool enabled);
+    void SetStartsEnabled(bool abVal);
     PerkEntryConditionSet* GetConditions();
     ScriptLocals* GetScriptLocalData();
     BSSimpleList<QuestStage*>* GetStageList();
     BSSimpleList<BGSQuestObjective*>* GetObjectiveList();
-    QuestStage* GetStage(unsigned char index);
+    QuestStage* GetStage(unsigned char acIndex);
     void AddStageDataAtIndex(QuestStage* stage);
     void AddObjective(BGSQuestObjective* objective);
     void MarkCompleted(bool completed);
-    void SetQuestCompleted(bool failed);
+    void SetQuestCompleted(bool abFailed);
     bool HasFlag40();
     bool HasFlag20();
     bool HasFlag0x10();
-    void SetFlag20(bool set);
-    void WriteToBuffer(BGSSaveFormBuffer* buffer);
+    void SetDisplayedInHUD(bool abVal);
+    void WriteToBuffer(BGSSaveFormBuffer* apSaveGameBuffer);
     void SaveIfChanged(BGSSaveFormBuffer* buffer);
-    void LoadQuestData(unsigned int flags, unsigned int extra);
-    void SetAllObjectivesComplete(int value);
-    void FUN_0060c9c0(bool set);
+    void LoadQuestData(unsigned int aiFlags, unsigned int aiCurrentFlags);
+    void SetAllObjectivesComplete(int abComplete);
+    void FUN_0060c9c0(bool abEnabled);
     void SetCompleted(bool set);
-    void SetFailed(bool set);
+    void SetFailed(bool abFailed);
     void ProcessEntries_0060d720();
     void Save_0060cd60();
-    unsigned short GetSaveSize_0060dba0(unsigned int changedFlags);
-    void SaveGame_0060dd50(unsigned int flags);
-    void RevertTES_0060e6a0(unsigned int flags);
+    unsigned short GetSaveSize_0060dba0(unsigned int aiFlags);
+    void SaveGame_0060dd50(unsigned int aiFlags);
+    void RevertTES_0060e6a0(unsigned int aiFlags);
     void CheckSaveGame(BGSSaveFormBuffer* buffer);
     float QueuedModel_GetOverriddenVisualDistance();
     QuestObjectiveList* FUN_005d43e0();

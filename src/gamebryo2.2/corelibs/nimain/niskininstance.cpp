@@ -5,30 +5,38 @@
 #include "../../../../include/NiTPointerMap.h"
 #include "niskininstance_decls.h"
 // @fnv 0x00a86340
-void NiSkinInstance::LoadBinary(NiStream& stream)
+// pdb: NiSkinInstance::LoadBinary | NiSkinInstance.obj | retail, upstream name already matches, high
+// pdb params: kStream
+void NiSkinInstance::LoadBinary(NiStream& kStream)
 {
-    NiObject::LoadBinary(stream);
-    stream.ResetStreamState();
-    if (stream.m_uiNifFileVersion >= 0x0a010065)
-        stream.ResetStreamState();
-    stream.ResetStreamState();
-    stream.ReadUnsignedInteger();
+    NiObject::LoadBinary(kStream);
+    kStream.ResetStreamState();
+    if (kStream.m_uiNifFileVersion >= 0x0a010065)
+        kStream.ResetStreamState();
+    kStream.ResetStreamState();
+    kStream.ReadUnsignedInteger();
 }
 // @fnv 0x00a86380
-void NiSkinInstance::LinkObject(NiStream& stream)
+// pdb: NiSkinInstance::LinkObject | NiSkinInstance.obj | retail, upstream name already matches, high
+// pdb params: kStream
+// pdb locals: uiBoneCount, i
+void NiSkinInstance::LinkObject(NiStream& kStream)
 {
-    NiObject::LinkObject(stream);
-    m_pSkinData = stream.GetLoadedObject();
-    if (stream.m_uiNifFileVersion >= 0x0a010065)
-        m_pkSkinMeshPartition = stream.GetLoadedObject();
-    m_pRootParent = stream.GetLoadedObject();
-    unsigned int count = stream.GetLinkID();
+    NiObject::LinkObject(kStream);
+    m_pSkinData = kStream.GetLoadedObject();
+    if (kStream.m_uiNifFileVersion >= 0x0a010065)
+        m_pkSkinMeshPartition = kStream.GetLoadedObject();
+    m_pRootParent = kStream.GetLoadedObject();
+    unsigned int count = kStream.GetLinkID();
     m_ppBones = (NiObject**)_NiMalloc(count * sizeof(NiObject*));
     for (unsigned int i = 0; i < count; ++i)
-        m_ppBones[i] = stream.GetLoadedObject();
+        m_ppBones[i] = kStream.GetLoadedObject();
 }
 
 // @fnv 0x00a864d0
+// pdb: NiSkinInstance::IsEqual | NiSkinInstance.obj | retail, upstream name already matches, high
+// pdb params: pkObject
+// pdb locals: pkSkinInstance
 bool NiSkinInstance::IsEqual(NiObject* pkObject) const
 {
     NiSkinInstance* pkSkinInstance = (NiSkinInstance*)pkObject;
@@ -55,6 +63,9 @@ __forceinline void VisitLinkedObject(NiObject* object, NiStream& stream)
     object->RegisterStreamables(stream);
 }
 // @fnv 0x00a86460
+// pdb: NiSkinInstance::RegisterStreamables | NiSkinInstance.obj | retail, upstream name already matches, high
+// pdb params: kStream
+// pdb locals: uiBoneCount, i
 bool NiSkinInstance::RegisterStreamables(NiStream& stream)
 {
     if (!NiObject::RegisterStreamables(stream))
@@ -79,9 +90,11 @@ class NiPtrAssignHelper
 };
 
 // @fnv 0x00a86740
-void NiSkinInstance::PostLinkObject(NiStream& stream)
+// pdb: NiSkinInstance::PostLinkObject | NiSkinInstance.obj | retail, upstream name already matches, high
+// pdb params: kStream
+void NiSkinInstance::PostLinkObject(NiStream& kStream)
 {
-    if (stream.m_uiNifFileVersion >= 0xa010065)
+    if (kStream.m_uiNifFileVersion >= 0xa010065)
     {
         return;
     }
@@ -129,6 +142,9 @@ inline void* operator new(size_t, unsigned int uiSize) throw()
 // Clones the skin instance when cloneable, remapping the skin root and bone objects through the cloning map and copying the bone pointer array.
 // @fnv 0x00a86830
 // src: XBOX_PDB 0x00a86830
+// pdb: NiSkinInstance::CreateClone | NiSkinInstance.obj | retail, object-file gap fill, high
+// pdb params: kCloning
+// pdb locals: uiBoneCount, bCloned, pkClone, pkSkinInstance, i
 NiSkinInstance* NiSkinInstance::CreateClone_00a86830(CloningProcess& kCloning)
 {
     if (!IsCloneable(kCloning))
@@ -184,6 +200,9 @@ inline void SerializeValue(NiStream& kStream, const unsigned int& uiValue)
 
 // Writes the skin instance's link IDs, bone count and each bone's link ID to the stream.
 // @fnv 0x00a867a0
+// pdb: NiSkinInstance::SaveBinary | NiSkinInstance.obj | retail, upstream name already matches, high
+// pdb params: kStream
+// pdb locals: uiBoneCount, i
 void NiSkinInstance::SaveBinary(NiStream& kStream)
 {
     NiObject::SaveBinary(kStream);
@@ -300,9 +319,12 @@ struct BonePtr
 };
 // Adds skin and parent labels, hardware partition and bone count values, sorted bone labels, then calls partition->Describe.
 // @fnv 0x00a86920
-void NiSkinInstance::GetViewerStrings(NiViewerStringsArray* strings)
+// pdb: NiSkinInstance::GetViewerStrings | NiSkinInstance.obj | retail, upstream name already matches, high
+// pdb params: pkStrings
+// pdb locals: pkSkinData, pkParent, ppcNames, b, pkPartition, uiPartitions, uiBones, pstring, acBone
+void NiSkinInstance::GetViewerStrings(NiViewerStringsArray* pkStrings)
 {
-    Strings* apStrings = (Strings*)strings;
+    Strings* apStrings = (Strings*)pkStrings;
     ClearStrings(apStrings);
     apStrings->Add(CopyName(globalName));
     if (m_pRootParent)

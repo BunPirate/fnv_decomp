@@ -2,33 +2,34 @@
 
 #include "hkVector4.h"
 
+// pdb: class hkMatrix4, size 0x40, 4 members
 class hkMatrix4
 {
 public:
-    hkVector4 m_kColumn0;
-    hkVector4 m_kColumn1;
-    hkVector4 m_kColumn2;
-    hkVector4 m_kColumn3;
+    hkVector4 m_col0; // src: XBOX_RETAIL_PDB +0x0 (old: m_kColumn0)
+    hkVector4 m_col1; // src: XBOX_RETAIL_PDB +0x10 (old: m_kColumn1)
+    hkVector4 m_col2; // src: XBOX_RETAIL_PDB +0x20 (old: m_kColumn2)
+    hkVector4 m_col3; // src: XBOX_RETAIL_PDB +0x30 (old: m_kColumn3)
 
     __forceinline hkMatrix4()
     {}
 
     __forceinline void operator=(const hkMatrix4& o)
     {
-        m_kColumn0.m_vComponents = o.m_kColumn0.m_vComponents;
-        m_kColumn1.m_vComponents = o.m_kColumn1.m_vComponents;
-        m_kColumn2.m_vComponents = o.m_kColumn2.m_vComponents;
-        m_kColumn3.m_vComponents = o.m_kColumn3.m_vComponents;
+        m_col0.m_vComponents = o.m_col0.m_vComponents;
+        m_col1.m_vComponents = o.m_col1.m_vComponents;
+        m_col2.m_vComponents = o.m_col2.m_vComponents;
+        m_col3.m_vComponents = o.m_col3.m_vComponents;
     }
 
     __forceinline hkVector4& getColumn(int x)
     {
-        return (&m_kColumn0)[x];
+        return (&m_col0)[x];
     }
 
     __forceinline const hkVector4& getColumn(int x) const
     {
-        return (&m_kColumn0)[x];
+        return (&m_col0)[x];
     }
 
     float& operator()(int r, int c);

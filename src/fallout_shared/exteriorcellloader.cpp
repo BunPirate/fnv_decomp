@@ -28,6 +28,8 @@ extern "C" char* __cdecl _sprintf_s(char*, unsigned int, const char*, ...);
 
 // Formats the cell coordinates of the task's cell into apDescription using _sprintf_s and returns true.
 // @fnv 0x00527df0
+// pdb: ExteriorCellLoaderTask::GetDescription | ExteriorCellLoader.obj | retail, string-set bridge, high
+// pdb params: apDescription, aiBufferSize
 bool ExteriorCellLoaderTask::GetDescription(char* apDescription, unsigned int aiBufferSize)
 {
     _sprintf_s(apDescription, aiBufferSize, "ExteriorCellLoaderTask for cell ( %i, %i )",
@@ -39,7 +41,7 @@ bool ExteriorCellLoaderTask::GetDescription(char* apDescription, unsigned int ai
 // @fnv 0x00528790
 char __fastcall GetTESRegionState(TES* tes)
 {
-    return (char)tes->m_bHasCurrentRegion;
+    return (char)tes->bShowLANDborders;
 }
 
 struct FUN_005287e0_shell
@@ -87,6 +89,7 @@ void FUN_00528820_shell::ClearField()
 extern "C" void __cdecl _Deallocate(void*);
 
 // @fnv 0x00527c70
+// pdb: ExteriorCellLoaderTask::~ExteriorCellLoaderTask | ExteriorCellLoader.obj | retail, upstream name already matches, high
 ExteriorCellLoaderTask::~ExteriorCellLoaderTask()
 {
     char* p = *(char**)((char*)this + 0x1c);
@@ -103,6 +106,8 @@ struct FUN_005287b0_shell
 // If the cell has a node, add it to the TES cell buffer.
 // @fnv 0x005287b0
 // src: XBOX_PDB 0x005287b0
+// pdb: ExteriorCellLoader::AttachLoadedCell | ExteriorCellLoader.obj | retail, upstream name already matches, high
+// pdb params: apCell
 void FUN_005287b0_shell::ExteriorCellLoader_AttachLoadedCell(TESObjectCELL* apCell)
 {
     if (apCell)
@@ -120,6 +125,8 @@ struct DH
 };
 extern DH* g_dataHandler;
 // @fnv 0x00527d80
+// pdb: ExteriorCellLoaderTask::Cancel | ExteriorCellLoader.obj | retail, upstream name already matches, high
+// pdb params: aePreviousState, apTaskOwner
 void ExteriorCellLoaderTask::Cancel(BS_TASK_STATE, void*)
 {
     if (*(int*)(*(char**)((char*)this + 0x1c) + 0xc) && ((TES*)g_TES)->IsCellBuffered((TESObjectCELL*)*(int*)(*(char**)((char*)this + 0x1c) + 0xc), false))
@@ -134,6 +141,7 @@ struct FUN_00528840_shell : public FUN_00528800_shell
 
 // Calls FUN_00528800, then deallocates this when flags has bit 0 set, and returns this.
 // @fnv 0x00528840
+// pdb: LockFreeMap<unsigned int,NiPointer<ExteriorCellLoaderTask> >::LockFreeMapIterator::`scalar deleting destructor' | ExteriorCellLoader.obj | retail, vtable slot, high
 void* FUN_00528840_shell::FUN_00528840(unsigned int flags)
 {
     UpdateFields_00528800();
@@ -144,7 +152,7 @@ void* FUN_00528840_shell::FUN_00528840(unsigned int flags)
 
 struct LoaderDummy
 {
-    void ExteriorCellLoader_LoadCellData(IntPoint2D* p);
+    void ExteriorCellLoader_LoadCellData(IntPoint2D* apCellData);
 };
 struct MyCellEx
 {
@@ -152,6 +160,7 @@ struct MyCellEx
     TESObjectCELL* pObj;
 };
 // @fnv 0x00527cb0
+// pdb: ExteriorCellLoaderTask::Run | ExteriorCellLoader.obj | retail, upstream name already matches, high
 void ExteriorCellLoaderTask::Run()
 {
     (*(LoaderDummy**)((char*)this + 0x18))->ExteriorCellLoader_LoadCellData(*(IntPoint2D**)((char*)this + 0x1c));
@@ -159,6 +168,7 @@ void ExteriorCellLoaderTask::Run()
 }
 
 // @fnv 0x00527d00
+// pdb: ExteriorCellLoaderTask::PostProcess | ExteriorCellLoader.obj | retail, vtable slot, high
 void ExteriorCellLoaderTask::Finish()
 {
     if (!IOTask::BSTask_int64_GetTaskCanceled())
@@ -178,13 +188,13 @@ void ExteriorCellLoaderTask::Finish()
 struct CellEffects;
 struct WorldSpaceAccess : TESWorldSpace
 {
-    CellEffects* __thiscall TESWorldSpace_LoadCell(int x, int y);
+    CellEffects* __thiscall TESWorldSpace_LoadCell(int aiX, int aiY);
 };
 // FUN_00546fb0 returns landscape data, not a scene node.
 struct LandscapeEffects
 {
-    void __thiscall TESObjectLAND_LoadVertices(bool value);
-    void __thiscall TESObjectLAND_DrawLandBorder(unsigned char value);
+    void __thiscall TESObjectLAND_LoadVertices(bool abLoad3D);
+    void __thiscall TESObjectLAND_DrawLandBorder(unsigned char bShow);
     void __thiscall TESObjectLAND_GetMinMaxLandHeight();
 };
 // Supplemental method declarations absent from the shared TESObjectCELL header.
@@ -211,7 +221,7 @@ struct GlobalSettings
     unsigned char* __thiscall FUN_00408d60();
 };
 extern GlobalSettings DAT_011c7adc;
-void __cdecl BGSAutoWater_GeneratePlaceableWaterForCell(CellEffects* cell);
+void __cdecl BGSAutoWater_GeneratePlaceableWaterForCell(CellEffects* apCell);
 struct CellLoadData : IntPoint2D
 {
     WorldSpaceAccess* worldSpace;
@@ -220,42 +230,45 @@ struct CellLoadData : IntPoint2D
 };
 struct CellLoader
 {
-    void __thiscall ExteriorCellLoader_LoadCellData(CellLoadData* data);
+    void __thiscall ExteriorCellLoader_LoadCellData(CellLoadData* apCellData);
 };
 // @fnv 0x00528620
 // src: XBOX_PDB 0x00528620
-void CellLoader::ExteriorCellLoader_LoadCellData(CellLoadData* pLoadData)
+// pdb: ExteriorCellLoader::LoadCellData | ExteriorCellLoader.obj | retail, upstream name already matches, high
+// pdb params: apCellData
+// pdb locals: pland, extents
+void CellLoader::ExteriorCellLoader_LoadCellData(CellLoadData* apCellData)
 {
-    if (pLoadData != 0)
+    if (apCellData != 0)
     {
-        if (pLoadData->cell == 0)
-            pLoadData->cell = pLoadData->worldSpace->TESWorldSpace_LoadCell(pLoadData->iX, pLoadData->iY);
-        if (pLoadData->cell == 0)
-            pLoadData->cell = DAT_011c3f2c->FUN_00461330(0, pLoadData->iX, pLoadData->iY, pLoadData->worldSpace);
-        pLoadData->cell->GetOrCreateWidget();
-        LandscapeEffects* pLandscape = pLoadData->cell->TESObjectCELL_GetLand();
+        if (apCellData->cell == 0)
+            apCellData->cell = apCellData->worldSpace->TESWorldSpace_LoadCell(apCellData->iX, apCellData->iY);
+        if (apCellData->cell == 0)
+            apCellData->cell = DAT_011c3f2c->FUN_00461330(0, apCellData->iX, apCellData->iY, apCellData->worldSpace);
+        apCellData->cell->GetOrCreateWidget();
+        LandscapeEffects* pLandscape = apCellData->cell->TESObjectCELL_GetLand();
         if (pLandscape != 0)
         {
             pLandscape->TESObjectLAND_LoadVertices(true);
             pLandscape->TESObjectLAND_DrawLandBorder(GetTESRegionState(DAT_011dea10));
         }
-        if (!pLoadData->cell->TESClimate_GetVolatilityIndex())
+        if (!apCellData->cell->TESClimate_GetVolatilityIndex())
         {
             // Avoid invoking NiPoint2's out-of-line default constructor.
             float position[2];
-            pLoadData->cell->TESObjectCELL_GetLand((NiPoint2*)position)->TESObjectLAND_GetMinMaxLandHeight();
-            pLoadData->cell->SetFlag2(position[0] < pLoadData->cell->TESObjectCELL_GetWaterHeight());
-            if (*DAT_011c7adc.FUN_00408d60() && pLoadData->cell->FUN_004518e0() && !pLoadData->cell->TESClimate_GetVolatilityIndex())
+            apCellData->cell->TESObjectCELL_GetLand((NiPoint2*)position)->TESObjectLAND_GetMinMaxLandHeight();
+            apCellData->cell->SetFlag2(position[0] < apCellData->cell->TESObjectCELL_GetWaterHeight());
+            if (*DAT_011c7adc.FUN_00408d60() && apCellData->cell->FUN_004518e0() && !apCellData->cell->TESClimate_GetVolatilityIndex())
             {
-                BGSAutoWater_GeneratePlaceableWaterForCell(pLoadData->cell);
+                BGSAutoWater_GeneratePlaceableWaterForCell(apCellData->cell);
             }
-            pLoadData->cell->SetByteAt54(true);
+            apCellData->cell->SetByteAt54(true);
         }
-        pLoadData->loaded = true;
+        apCellData->loaded = true;
     }
 }
 
-void BSSleep(unsigned long ulMilliseconds);
+void BSSleep(unsigned long auiMSec);
 struct QueuedTask
 {
     virtual void Unk_00();
@@ -265,52 +278,56 @@ struct QueuedTask
     int m_04;
     int m_08;
     int m_eAnimationState;
-    bool SetState(int eExpected, int eNew);
+    bool BSTask_int64_SwitchState(int eExpected, int eNew);
     void Model_IncManualRefCount();
     void BSTask_int64_DecRefCount();
 };
 struct FUN_00528870_shell
 {
     void BSTaskManager_int64_RemoveTask(QueuedTask* pTask);
-    bool RunQueuedTask(QueuedTask* pTask, void* pArg);
+    bool BSTaskManager_int64_TryCancelTask(QueuedTask* apTask, void* apTaskOwner);
 };
 
 // @fnv 0x00528870
-bool FUN_00528870_shell::RunQueuedTask(QueuedTask* pTask, void* pArg)
+// src: XBOX_DEBUG_PDB 0x00528870
+// pdb: BSTaskManager<__int64>::TryCancelTask | ExteriorCellLoader.obj | debug, call graph (shared callers), high
+// pdb params: apTask, apTaskOwner
+// pdb locals: estate
+bool FUN_00528870_shell::BSTaskManager_int64_TryCancelTask(QueuedTask* apTask, void* apTaskOwner)
 {
     while (true)
     {
-        int eState = pTask->m_eAnimationState;
+        int eState = apTask->m_eAnimationState;
         switch (eState)
         {
         case 0:
-            if (pTask->SetState(eState, 6))
+            if (apTask->BSTask_int64_SwitchState(eState, 6))
             {
-                pTask->Run(eState, pArg);
+                apTask->Run(eState, apTaskOwner);
                 return true;
             }
             break;
         case 1:
-            if (pTask->SetState(eState, 6))
+            if (apTask->BSTask_int64_SwitchState(eState, 6))
             {
-                pTask->Model_IncManualRefCount();
-                BSTaskManager_int64_RemoveTask(pTask);
-                pTask->Run(eState, pArg);
-                pTask->BSTask_int64_DecRefCount();
+                apTask->Model_IncManualRefCount();
+                BSTaskManager_int64_RemoveTask(apTask);
+                apTask->Run(eState, apTaskOwner);
+                apTask->BSTask_int64_DecRefCount();
                 return true;
             }
             break;
         case 2:
-            while (pTask->m_eAnimationState == 3)
+            while (apTask->m_eAnimationState == 3)
                 BSSleep(0);
             break;
         case 3:
         case 4:
             return false;
         case 5:
-            if (pTask->SetState(eState, 6))
+            if (apTask->BSTask_int64_SwitchState(eState, 6))
             {
-                pTask->Run(eState, pArg);
+                apTask->Run(eState, apTaskOwner);
                 return true;
             }
             break;

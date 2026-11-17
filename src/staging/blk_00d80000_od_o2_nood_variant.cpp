@@ -25,8 +25,8 @@ inline void hkVector4::setZero4()
 
 __forceinline hkContactPoint& hkContactPoint::operator=(const hkContactPoint& other)
 {
-    m_vContactPosition = other.m_vContactPosition;
-    m_vSeparatingNormal = other.m_vSeparatingNormal;
+    m_position = other.m_position;
+    m_separatingNormal = other.m_separatingNormal;
     return *this;
 }
 
@@ -108,6 +108,8 @@ struct ObjD85 : BaseD85
 
 // @fnv 0x00d85ba0
 // src: GUESS 0x00d85ba0 (confidence: low)
+// pdb: hkpRagdollConstraintData::Atoms::operator= | hkpConstraintDataCloningUtil.obj | retail, call graph, medium
+// pdb params: __that
 ObjD85& ObjD85::ProcessAndReturnValue_00d85ba0(const ObjD85& o)
 {
     Assign(o);
@@ -186,12 +188,12 @@ __forceinline hkContactPoint* hkpSimpleContactConstraintAtom::getContactPoints()
 
 __forceinline UInt32Value* hkpSimpleContactConstraintAtom::getContactPointPropertiesStream() const
 {
-    return (UInt32Value*)((char*)getContactPoints() + sizeof(hkContactPoint) * m_usMaxNumContactPoints);
+    return (UInt32Value*)((char*)getContactPoints() + sizeof(hkContactPoint) * m_numReservedContactPoints);
 }
 
 __forceinline int hkpSimpleContactConstraintAtom::getContactPointPropertiesStriding() const
 {
-    return m_ucContactPointPropertiesStriding;
+    return m_contactPointPropertiesStriding;
 }
 
 namespace fnv_00d925b0 {
@@ -221,19 +223,22 @@ __forceinline void memCpy4(void* dst, const void* src, int numWords)
 }
 
 // @fnv 0x00d925b0
-// src: GUESS 0x00d925b0 (confidence: low)
-void hkpSimpleContactConstraintAtom_ProcessEntries_00d925b0(hkpSimpleContactConstraintAtom* dst, const hkpSimpleContactConstraintAtom* src)
+// src: XBOX_RETAIL_PDB 0x00d925b0
+// pdb: hkpSimpleContactConstraintAtomUtil::copyContents | hkpConstraintAtomUtil.obj | retail, object-file run extension, high
+// pdb params: dst, src
+// pdb locals: assertBuf, ostr
+void hkpSimpleContactConstraintAtomUtil_copyContents(hkpSimpleContactConstraintAtom* dst, const hkpSimpleContactConstraintAtom* src)
 {
-    *(hkpSimpleContactConstraintDataInfo*)&dst->m_infoFlags =
-        *(const hkpSimpleContactConstraintDataInfo*)&src->m_infoFlags;
-    dst->m_usNumContactPoints = src->m_usNumContactPoints;
+    *(hkpSimpleContactConstraintDataInfo*)&dst->m_info =
+        *(const hkpSimpleContactConstraintDataInfo*)&src->m_info;
+    dst->m_numContactPoints = src->m_numContactPoints;
 
     hkContactPoint* dstCp = dst->getContactPoints();
     UInt32Value* dstProps = dst->getContactPointPropertiesStream();
     const hkContactPoint* srcCp = src->getContactPoints();
     const UInt32Value* srcProps = src->getContactPointPropertiesStream();
     int striding = src->getContactPointPropertiesStriding();
-    for (int i = 0; i < src->m_usNumContactPoints; i++)
+    for (int i = 0; i < src->m_numContactPoints; i++)
     {
         *(dstCp++) = *(srcCp++);
         memCpy4(dstProps, srcProps, striding >> 2);
@@ -290,6 +295,9 @@ struct ShapeWithTransforms : ShapeStub
 
 // @fnv 0x00d84ee0
 // src: GUESS 0x00d84ee0 (confidence: low)
+// pdb: hkpConstraintPivotsUtil::getPivotTransform | hkpConstraintPivotsUtil.obj | retail, object-file run extension, low
+// pdb params: data, index, pivot
+// pdb locals: assertBuf, ostr
 void hkTransform_ProcessEntries_00d84ee0(ShapeStub* shape, int key, hkTransform* out)
 {
     for (;;)

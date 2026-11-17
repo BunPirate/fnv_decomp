@@ -108,7 +108,7 @@ class FaceGenTriData
     unsigned int data[60];
     FaceGenTriData();
     ~FaceGenTriData();
-    unsigned int ProcessEntries_0065a5a0();
+    unsigned int FffTriFileDataS_numModelVtx();
     unsigned int std_vector_FR2Vect3TC_float_std_allocator_FR2Vect3TC_float_size();
     NiPoint3& GetCheckedElement(unsigned int);
 };
@@ -144,6 +144,7 @@ class CloningProcess
     CloningProcess(float);
     ~CloningProcess();
 };
+// pdb: class ModelLoader, size 0x30 (here 0x1), 12 members
 class ModelLoader
 {
   public:
@@ -164,78 +165,81 @@ int Warning(const char*, ...);
 int NiTexturingProperty_GetType();
 bool fffReadTriFile(const NarrowString&, FaceGenTriData*);
 FaceGenTextureFile* BSFaceGenModel_EGTData_Create(const char*);
-NiAVObject* GetGeomExtraData(NiAVObject*);
+NiAVObject* BSFaceGenManager_GetFaceGenModelExtraData(NiAVObject*);
 
 // @fnv 0x00659ce0
-bool BSFaceGenModel::LoadModelMesh(const char* egmPath, const char* nifPath, const char* triPath, HAIR_PART part,
-                                   bool keepProperty)
+// pdb: BSFaceGenModel::LoadModelMesh | BSFaceGenModel.obj | retail, upstream name already matches, high
+// pdb params: apEGMFilename, apNIFFilename, apTRIFilename, aeHairPart, abIsAccessory
+// pdb locals: tempMemContext, pn, iobjCount, pobjTemp, iobj, cloneProc, updateData, pmodelData, ivert
+bool BSFaceGenModel::LoadModelMesh(const char* apEGMFilename, const char* apNIFFilename, const char* apTRIFilename, HAIR_PART aeHairPart,
+                                   bool abIsAccessory)
 {
-    if (m_pGeometryModel || !egmPath)
+    if (pMeshData || !apEGMFilename)
         return true;
     AutoMemContext context(MEM_CONTEXT_MEM_CONTEXT_FACEGEN_EGM, true,
                            "D:\\_Fallout3\\Platforms\\Common\\Code\\Fallout Shared\\FaceGen\\BSFaceGenModel.cpp", 286);
-    m_pGeometryModel = new FaceGenGeometryModel;
-    m_pGeometryModel->m_kEGMFileName.Set(egmPath, 0);
-    if (nifPath)
+    pMeshData = new FaceGenGeometryModel;
+    pMeshData->m_kEGMFileName.Set(apEGMFilename, 0);
+    if (apNIFFilename)
     {
         unsigned int count;
         NiAVObject* i;
         unsigned int child;
-        NiNode* root = g_modelLoader->LoadFile(nifPath + 7, 0, true, false, true, true);
+        NiNode* root = g_modelLoader->LoadFile(apNIFFilename + 7, 0, true, false, true, true);
         if (root)
         {
             CloningProcess cloning(1.0f);
-            m_pGeometryModel->m_spModelRoot = g_TES->CreateDeepCopySameTextures(root, cloning);
-            if (m_pGeometryModel->m_spModelRoot)
+            pMeshData->m_spModelRoot = g_TES->CreateDeepCopySameTextures(root, cloning);
+            if (pMeshData->m_spModelRoot)
             {
-                child = m_pGeometryModel->m_spModelRoot->FUN_0043b480();
+                child = pMeshData->m_spModelRoot->FUN_0043b480();
                 for (count = 0; count < child; count++)
                 {
-                    i = m_pGeometryModel->m_spModelRoot->FUN_0043b4a0(count);
+                    i = pMeshData->m_spModelRoot->FUN_0043b4a0(count);
                     if (i)
                     {
-                        switch (part)
+                        switch (aeHairPart)
                         {
                         case HAIR_PART_HAIR_PART_NORMAL:
                             if (child == 1)
                             {
-                                ((NiPointer<NiAVObject>&)m_pGeometryModel->m_pRenderedNodeEntry) = i->IsTriBasedGeometry();
+                                ((NiPointer<NiAVObject>&)pMeshData->m_pRenderedNodeEntry) = i->IsTriBasedGeometry();
                             }
                             else
                             {
                             case HAIR_PART_HAIR_PART_HAT:
-                                if (!BSstricmp(i->GetName(), DAT_0119b734[part]))
-                                    ((NiPointer<NiAVObject>&)m_pGeometryModel->m_pRenderedNodeEntry) = i->IsTriBasedGeometry();
+                                if (!BSstricmp(i->GetName(), DAT_0119b734[aeHairPart]))
+                                    ((NiPointer<NiAVObject>&)pMeshData->m_pRenderedNodeEntry) = i->IsTriBasedGeometry();
                             }
                             break;
                         default:
-                            ((NiPointer<NiAVObject>&)m_pGeometryModel->m_pRenderedNodeEntry) = i->IsTriBasedGeometry();
+                            ((NiPointer<NiAVObject>&)pMeshData->m_pRenderedNodeEntry) = i->IsTriBasedGeometry();
                             break;
                         }
                     }
-                    if (((const NiPointer<NiAVObject>&)m_pGeometryModel->m_pRenderedNodeEntry).operator NiAVObject*())
+                    if (((const NiPointer<NiAVObject>&)pMeshData->m_pRenderedNodeEntry).operator NiAVObject*())
                         break;
                 }
-                if (((const NiPointer<NiAVObject>&)m_pGeometryModel->m_pRenderedNodeEntry).operator NiAVObject*())
+                if (((const NiPointer<NiAVObject>&)pMeshData->m_pRenderedNodeEntry).operator NiAVObject*())
                 {
-                    if (!keepProperty)
-                        ((NiTriBasedGeom*)((const NiPointer<NiAVObject>&)m_pGeometryModel->m_pRenderedNodeEntry).operator->())
+                    if (!abIsAccessory)
+                        ((NiTriBasedGeom*)((const NiPointer<NiAVObject>&)pMeshData->m_pRenderedNodeEntry).operator->())
                             ->RemoveProperty(NiTexturingProperty_GetType());
-                    ((NiTriBasedGeom*)((const NiPointer<NiAVObject>&)m_pGeometryModel->m_pRenderedNodeEntry).operator->())
+                    ((NiTriBasedGeom*)((const NiPointer<NiAVObject>&)pMeshData->m_pRenderedNodeEntry).operator->())
                         ->RemoveAllControllers();
-                    ((NiTriBasedGeom*)((const NiPointer<NiAVObject>&)m_pGeometryModel->m_pRenderedNodeEntry).operator->())
+                    ((NiTriBasedGeom*)((const NiPointer<NiAVObject>&)pMeshData->m_pRenderedNodeEntry).operator->())
                         ->UpdateModelBound();
-                    if (((NiTriBasedGeom*)((const NiPointer<NiAVObject>&)m_pGeometryModel->m_pRenderedNodeEntry).operator->())
+                    if (((NiTriBasedGeom*)((const NiPointer<NiAVObject>&)pMeshData->m_pRenderedNodeEntry).operator->())
                             ->GetSkinInstance())
-                        ((BGSQuestObjective*)((NiTriBasedGeom*)((const NiPointer<NiAVObject>&)m_pGeometryModel->m_pRenderedNodeEntry)
+                        ((BGSQuestObjective*)((NiTriBasedGeom*)((const NiPointer<NiAVObject>&)pMeshData->m_pRenderedNodeEntry)
                                                   .
                                                   operator->())
                              ->GetSkinInstance())
                             ->SetOwnerQuest(
-                                (TESQuest*)(NiTriBasedGeom*)((const NiPointer<NiAVObject>&)m_pGeometryModel->m_pRenderedNodeEntry)
+                                (TESQuest*)(NiTriBasedGeom*)((const NiPointer<NiAVObject>&)pMeshData->m_pRenderedNodeEntry)
                                     .
                                     operator NiAVObject*());
-                    ((NiTriBasedGeom*)((const NiPointer<NiAVObject>&)m_pGeometryModel->m_pRenderedNodeEntry).operator->())
+                    ((NiTriBasedGeom*)((const NiPointer<NiAVObject>&)pMeshData->m_pRenderedNodeEntry).operator->())
                         ->SetSortObject(true);
                 }
                 root->UpdateSceneObject();
@@ -245,83 +249,92 @@ bool BSFaceGenModel::LoadModelMesh(const char* egmPath, const char* nifPath, con
         }
         else
         {
-            Warning("MODELS: Failed to load '%s' in BSFaceGenModel::LoadModelMesh.", nifPath);
+            Warning("MODELS: Failed to load '%s' in BSFaceGenModel::LoadModelMesh.", apNIFFilename);
             return false;
         }
     }
-    if (triPath)
+    if (apTRIFilename)
     {
         FaceGenTriData* i = new FaceGenTriData;
         unsigned int tri;
-        if (fffReadTriFile(triPath, i) &&
-            ((NiTriBasedGeom*)((const NiPointer<NiAVObject>&)m_pGeometryModel->m_pRenderedNodeEntry).operator->())->GetVertexCount() ==
-                i->ProcessEntries_0065a5a0())
+        if (fffReadTriFile(apTRIFilename, i) &&
+            ((NiTriBasedGeom*)((const NiPointer<NiAVObject>&)pMeshData->m_pRenderedNodeEntry).operator->())->GetVertexCount() ==
+                i->FffTriFileDataS_numModelVtx())
         {
-            if (part != HAIR_PART_HAIR_PART_NONE)
-                ((NiPointer<NiAVObject>&)m_pGeometryModel->m_spFaceMorphData) =
+            if (aeHairPart != HAIR_PART_HAIR_PART_NONE)
+                ((NiPointer<NiAVObject>&)pMeshData->m_spFaceMorphData) =
                     (NiAVObject*)new BSFaceGenMorphDataHair(i);
             else
             {
-                ((NiPointer<NiAVObject>&)m_pGeometryModel->m_spFaceMorphData) =
+                ((NiPointer<NiAVObject>&)pMeshData->m_spFaceMorphData) =
                     (NiAVObject*)new BSFaceGenMorphDataHead(i);
                 if (i->std_vector_FR2Vect3TC_float_std_allocator_FR2Vect3TC_float_size() >
-                    ((NiTriBasedGeom*)((const NiPointer<NiAVObject>&)m_pGeometryModel->m_pRenderedNodeEntry).operator->())
+                    ((NiTriBasedGeom*)((const NiPointer<NiAVObject>&)pMeshData->m_pRenderedNodeEntry).operator->())
                         ->GetVertexCount())
                 {
-                    m_pGeometryModel->m_uiAdditionalVertexCount =
+                    pMeshData->m_uiAdditionalVertexCount =
                         i->std_vector_FR2Vect3TC_float_std_allocator_FR2Vect3TC_float_size() -
-                        ((NiTriBasedGeom*)((const NiPointer<NiAVObject>&)m_pGeometryModel->m_pRenderedNodeEntry).operator->())
+                        ((NiTriBasedGeom*)((const NiPointer<NiAVObject>&)pMeshData->m_pRenderedNodeEntry).operator->())
                             ->GetVertexCount();
-                    m_pGeometryModel->pAdditionalVertices = new NiPoint3[m_pGeometryModel->m_uiAdditionalVertexCount];
-                    for (tri = 0; tri < m_pGeometryModel->m_uiAdditionalVertexCount; tri++)
+                    pMeshData->pAdditionalVertices = new NiPoint3[pMeshData->m_uiAdditionalVertexCount];
+                    for (tri = 0; tri < pMeshData->m_uiAdditionalVertexCount; tri++)
                     {
-                        m_pGeometryModel->pAdditionalVertices[tri] = NiPoint3(
-                            i->GetCheckedElement(i->ProcessEntries_0065a5a0() + tri).x, i->GetCheckedElement(i->ProcessEntries_0065a5a0() + tri).y,
-                            i->GetCheckedElement(i->ProcessEntries_0065a5a0() + tri).z);
+                        pMeshData->pAdditionalVertices[tri] = NiPoint3(
+                            i->GetCheckedElement(i->FffTriFileDataS_numModelVtx() + tri).x, i->GetCheckedElement(i->FffTriFileDataS_numModelVtx() + tri).y,
+                            i->GetCheckedElement(i->FffTriFileDataS_numModelVtx() + tri).z);
                     }
                 }
             }
         }
         delete i;
     }
-    if (m_pGeometryModel && ((const NiPointer<NiAVObject>&)m_pGeometryModel->m_pRenderedNodeEntry).operator NiAVObject*())
-        ((NiTriBasedGeom*)((const NiPointer<NiAVObject>&)m_pGeometryModel->m_pRenderedNodeEntry).operator->())->SetDataConsistency(false);
+    if (pMeshData && ((const NiPointer<NiAVObject>&)pMeshData->m_pRenderedNodeEntry).operator NiAVObject*())
+        ((NiTriBasedGeom*)((const NiPointer<NiAVObject>&)pMeshData->m_pRenderedNodeEntry).operator->())->SetDataConsistency(false);
     return true;
 }
 
 // @fnv 0x0065c2c0
+// pdb: BSFaceGenModel::LoadEGTData | BSFaceGenModel.obj | retail, call graph, high
+// pdb locals: tempMemContext
 bool BSFaceGenModel::LoadFaceGenTexture()
 {
     AutoMemContext context(MEM_CONTEXT_MEM_CONTEXT_FACEGEN_EGT, true,
                            "D:\\_Fallout3\\Platforms\\Common\\Code\\Fallout Shared\\FaceGen\\BSFaceGenModel.cpp", 1336);
-    if (!m_kTextureSlots)
+    if (!pTextureData)
         return false;
-    if (!m_kTextureSlots->m_pTextureData)
+    if (!pTextureData->m_pTextureData)
     {
-        if (!m_kTextureSlots->EGTFileName.Length())
+        if (!pTextureData->EGTFileName.Length())
             return false;
-        m_kTextureSlots->m_pTextureData = BSFaceGenModel_EGTData_Create(m_kTextureSlots->EGTFileName.String());
+        pTextureData->m_pTextureData = BSFaceGenModel_EGTData_Create(pTextureData->EGTFileName.String());
     }
     return true;
 }
 
 // @fnv 0x0065a760
-bool BSFaceGenModel::LoadFaceGenTexture(const char* filename)
+// src: XBOX_RETAIL_PDB 0x0065a760
+// pdb: BSFaceGenModel::LoadModelTexture | BSFaceGenModel.obj | retail, call graph, high
+// pdb params: apEGTFilename
+// pdb locals: tempMemContext
+bool BSFaceGenModel::LoadModelTexture(const char* apEGTFilename)
 {
-    if (m_kTextureSlots || !filename)
+    if (pTextureData || !apEGTFilename)
         return true;
     AutoMemContext context(MEM_CONTEXT_MEM_CONTEXT_FACEGEN_EGT, true,
                            "D:\\_Fallout3\\Platforms\\Common\\Code\\Fallout Shared\\FaceGen\\BSFaceGenModel.cpp", 448);
-    m_kTextureSlots = new BSFaceGenTexture;
-    m_kTextureSlots->EGTFileName.Set(filename, 0);
+    pTextureData = new BSFaceGenTexture;
+    pTextureData->EGTFileName.Set(apEGTFilename, 0);
     return true;
 }
 
 // Resolves the given object via GetGeomExtraData and returns the result of its vfn_94 virtual call, or null if resolution fails.
 // @fnv 0x006530e0
-NiAVObject* BSFaceGenModel::GetFaceGenModelNode(NiAVObject* object)
+// pdb: BSFaceGenManager::GetFaceGenModel | BSFaceGenManager.obj | debug, call graph, high
+// pdb params: apGeom
+// pdb locals: pextra
+NiAVObject* BSFaceGenModel::GetFaceGenModelNode(NiAVObject* apGeom)
 {
-    NiAVObject* result = GetGeomExtraData(object);
+    NiAVObject* result = BSFaceGenManager_GetFaceGenModelExtraData(apGeom);
     // Preserve the resolver's untyped virtual call at slot 0x94.
     typedef NiAVObject* (__thiscall *ResolveNode)(NiAVObject*);
     return result ? reinterpret_cast<ResolveNode>((*reinterpret_cast<void***>(result))[0x94 / 4])(result) : 0;
@@ -341,6 +354,8 @@ struct Dummy_00659780
 // Allocates a Dummy_00659780 object, constructing it from apEGTFilename, and returns it as a pointer.
 // @fnv 0x00659780
 // src: COMMUNITY 0x00659780
+// pdb: EGTData::Create | BSFaceGenModel.obj | debug, call graph, high
+// pdb params: apEGTFilename
 FaceGenTextureFile* __cdecl BSFaceGenModel_EGTData_Create(const char* apEGTFilename)
 {
     return (FaceGenTextureFile*)new Dummy_00659780(apEGTFilename);
@@ -357,6 +372,7 @@ struct FUN_00659b20_thiscall
 
 // Calls FUN_00659b50 on this, frees this with NiMemObject::operator delete when flags has bit 1 set, and returns this.
 // @fnv 0x00659b20
+// pdb: BSFaceGenModel::`scalar deleting destructor' | BSFaceGenModel.obj | retail, vtable slot, high
 void* FUN_00659b20_thiscall::FUN_00659b20(unsigned int flags)
 {
     FUN_00659b50(this);
@@ -374,6 +390,9 @@ bool __cdecl BSFaceGenManager_GetUseFaceGenHeads(void);
 
 // @fnv 0x00659c70
 // src: COMMUNITY 0x00659c70
+// pdb: BSFaceGenModel::LoadModel | BSFaceGenModel.obj | retail, upstream name already matches, high
+// pdb params: apEGMFilename, apNIFFilename, apTRIFilename, apEGTFilename, aeHairPart, abIsAccessory
+// pdb locals: breturn
 bool FUN_00659c70_shell::BSFaceGenModel_LoadModel(char* apEGMFilename, char* apNIFFilename, char* apTRIFilename,
                                       char* apEGTFilename, int aeHairPart, bool abIsAccessory)
 {
@@ -382,7 +401,7 @@ bool FUN_00659c70_shell::BSFaceGenModel_LoadModel(char* apEGMFilename, char* apN
         return false;
     breturn |=
         LoadModelMesh(apEGMFilename, apNIFFilename, apTRIFilename, static_cast<HAIR_PART>(aeHairPart), abIsAccessory);
-    breturn |= LoadFaceGenTexture(apEGTFilename);
+    breturn |= LoadModelTexture(apEGTFilename);
     return breturn;
 }
 
@@ -395,8 +414,10 @@ class StatisticalArray
 };
 
 // @fnv 0x0065a5a0
-// src: GUESS 0x0065a5a0 (confidence: low)
-unsigned int FaceGenTriData::ProcessEntries_0065a5a0()
+// src: XBOX_DEBUG_PDB 0x0065a5a0
+// pdb: FffTriFileDataS::numModelVtx | BSFaceGenModel.obj | debug, call graph, high
+// pdb locals: numVtx, xx
+unsigned int FaceGenTriData::FffTriFileDataS_numModelVtx()
 {
     unsigned int uiMinValue = std_vector_FR2Vect3TC_float_std_allocator_FR2Vect3TC_float_size();
     for (unsigned int uiIndex = 0; uiIndex < ((StatisticalArray*)((char*)this + 0xd8))->EvaluateValue_0065cc30(); ++uiIndex)
@@ -425,6 +446,8 @@ struct NiStream;
 
 // Forwards eConsistency to the model data consistency setter.
 // @fnv 0x0065a620
+// pdb: NiGeometry::SetConsistency | BSFaceGenModel.obj | debug, object-file gap fill, medium
+// pdb params: eConsistency
 void NiGeometry::SetDataConsistency(int eConsistency)
 {
     m_spModelData->SetDataConsistency(eConsistency);
@@ -490,6 +513,8 @@ struct FUN_0065a680
 };
 
 // @fnv 0x0065a680
+// pdb: BSFaceGenModelMeshData::BSFaceGenModelMeshData | BSFaceGenModel.obj | retail, object-file run extension, low
+// pdb note: debug build links it to FffTriFileDataS::~FffTriFileDataS
 FUN_0065a680::~FUN_0065a680()
 {}
 
@@ -526,8 +551,9 @@ extern NiFixedString* DAT_011d5b50;
 
 // Allocates the interned "FMD" name and stores it in DAT_011d5b50.
 // @fnv 0x0065c570
-// src: COMMUNITY 0x0065c570
-void __cdecl BSFaceGenModelExtraData_InitTag()
+// src: XBOX_RETAIL_PDB 0x0065c570 (was COMMUNITY)
+// pdb: BSFaceGenModelExtraData::InitSDM | BSFaceGenModel.obj | retail, call graph, high
+void __cdecl BSFaceGenModelExtraData_InitSDM()
 {
     DAT_011d5b50 = ::new NiFixedString("FMD");
 }
@@ -546,6 +572,7 @@ struct _Vec12
 
 // @fnv 0x0065c700
 // src: COMMUNITY 0x0065c700
+// pdb: std::vector<FR2Vect3TC<float>,std::allocator<FR2Vect3TC<float> > >::~vector<FR2Vect3TC<float>,std::allocator<FR2Vect3TC<float> > > | BSFaceGenModel.obj | debug, object-file gap fill, medium
 unsigned int __fastcall std_vector_FR2Vect3TC_float_std_allocator_FR2Vect3TC_float_size(const _Vec12* pVec)
 {
     return pVec->_Mylast - pVec->_Myfirst;
@@ -556,6 +583,8 @@ void __cdecl FUN_00ec7c56();
 // Bounds-checks _Pos against FUN_0065c700() and returns the NiPoint3 element at that index from the array at data[3].
 // @fnv 0x0065c720
 // src: GUESS 0x0065c720 (confidence: medium)
+// pdb: std::vector<FR2Vect3TC<float>,std::allocator<FR2Vect3TC<float> > >::operator[] | BSFaceGenModel.obj | debug, call graph, medium
+// pdb params: _Pos
 NiPoint3& FaceGenTriData::GetCheckedElement(unsigned int uiIndex)
 {
     if (uiIndex >= std_vector_FR2Vect3TC_float_std_allocator_FR2Vect3TC_float_size())
@@ -626,6 +655,7 @@ struct FUN_0065a4c0
 };
 // Default constructor for FUN_0065a4c0 that initializes its member subobjects.
 // @fnv 0x0065a4c0
+// pdb: FffTriFileDataS::FffTriFileDataS | BSFaceGenModel.obj | debug, call graph, high
 FUN_0065a4c0::FUN_0065a4c0()
 {}
 
@@ -645,6 +675,8 @@ struct FUN_00559450_h
 
 // @fnv 0x0065a910
 // src: COMMUNITY 0x0065a910
+// pdb: BSFaceGenModel::ApplyCoordinateToNewMesh | BSFaceGenModel.obj | retail, upstream name already matches, high
+// pdb params: apCoord, aspReturnMesh
 bool FUN_0065a910_shell::BSFaceGenModel_ApplyCoordinateToNewMesh(void* apCoord, void* aspReturnMesh)
 {
     if (!apCoord)
@@ -680,6 +712,7 @@ struct FUN_00659b50 : EBase
     virtual ~FUN_00659b50();
 };
 // @fnv 0x00659b50
+// pdb: BSFaceGenModel::~BSFaceGenModel | BSFaceGenModel.obj | debug, call graph, medium
 FUN_00659b50::~FUN_00659b50()
 {
     if (m_pGeometryModel)
@@ -700,6 +733,7 @@ struct DelStandIn
 };
 // Calls the destructor on this, then frees this via Deallocate when flags has bit 1 set, and returns this.
 // @fnv 0x0065a650
+// pdb: FffTriFileDataS::`scalar deleting destructor' | BSFaceGenModel.obj | debug, object-file gap fill, medium
 void* DelStandIn::FUN_0065a650(unsigned int flags)
 {
     ((DtorStandIn*)this)->FUN_0083dec0();
@@ -727,6 +761,7 @@ struct FUN_0065bee0_shell
 };
 
 // @fnv 0x0065bee0
+// pdb: BSFaceGenModelExtraData::GetModel | BSFaceGenModel.obj | debug, object-file gap fill, medium
 GlobalObject_00a7b610* __thiscall FUN_0065bee0_shell::GetGlobalObject()
 {
     return &g_011d5b58;
@@ -743,7 +778,7 @@ struct FUN_0065cca0
     FUN_0065cca0();
     ~FUN_0065cca0();
 };
-void __cdecl fffReadEgmFile(const NarrowString& kName, void* pHeader, void* pSym, void* pAsym);
+void __cdecl fffReadEgmFile(const NarrowString& fname, void* basisKey, void* symm, void* asym);
 struct FUN_00659560
 {
     unsigned int m_uiScaleCount;
@@ -773,6 +808,7 @@ struct FUN_00659800
 };
 
 // @fnv 0x00659800
+// pdb: BSFaceGenModelMeshData::BSFaceGenModelMeshData | BSFaceGenModel.obj | debug, call graph, high
 FUN_00659800::FUN_00659800() : m_spModelRoot(0), m_pRenderedNodeEntry(0), m_spFaceMorphData(0)
 {
     m_pModelData = 0;
@@ -847,9 +883,11 @@ struct FUN_0065a840_t : public BSFaceGenModel
 
 // @fnv 0x0065a840
 // src: COMMUNITY 0x0065a840
+// pdb: BSFaceGenModel::ForceLoadModelTexture | BSFaceGenModel.obj | retail, string-set bridge, high
+// pdb locals: pegmfile, pext, pegtfile
 void FUN_0065a840_t::BSFaceGenModel_ForceLoadModelTexture()
 {
-    if (!m_kTextureSlots)
+    if (!pTextureData)
     {
         const char* pegmfile = GetFloatValue();
         if (pegmfile)
@@ -861,7 +899,7 @@ void FUN_0065a840_t::BSFaceGenModel_ForceLoadModelTexture()
             {
                 *pExtension = 0;
                 strcat_s(pegtfile, 260, ".egt");
-                LoadFaceGenTexture(pegtfile);
+                LoadModelTexture(pegtfile);
                 LoadFaceGenTexture();
             }
         }
@@ -897,18 +935,22 @@ struct FUN_00659560
 };
 
 // @fnv 0x0065bf80
+// pdb: BSFaceGenModel::CreateNewMesh | BSFaceGenModel.obj | retail, object-file run extension, low
+// pdb note: debug build links it to BSFaceGenModel::LoadEGMData
+// pdb params: aspReturnMesh
+// pdb locals: spskinPartition, spTempObject, pmorphBase, spdata, pskin, spTempSkinObject
 bool FUN_0065bf80_shell::EnsureMorphData()
 {
     AutoMemHelper tempMemContext(
         0x38, true, "D:\\_Fallout3\\Platforms\\Common\\Code\\Fallout Shared\\FaceGen\\BSFaceGenModel.cpp", 0x4f0);
-    if (!m_pGeometryModel)
+    if (!pMeshData)
         return false;
-    if (!*(FUN_00659560**)((char*)m_pGeometryModel + 8))
+    if (!*(FUN_00659560**)((char*)pMeshData + 8))
     {
-        if (!((S7010*)m_pGeometryModel)->Length())
+        if (!((S7010*)pMeshData)->Length())
             return false;
-        *(FUN_00659560**)((char*)m_pGeometryModel + 8) =
-            new FUN_00659560((const char*)Modelloader_GetReferencedThis((int*)m_pGeometryModel));
+        *(FUN_00659560**)((char*)pMeshData + 8) =
+            new FUN_00659560((const char*)Modelloader_GetReferencedThis((int*)pMeshData));
     }
     return true;
 }
@@ -922,19 +964,21 @@ struct FUN_0065c110_t : public BSFaceGenModel
 
 // Sums the size of the EGM data: base struct plus per-morph list and delta sizes for both morph lists, returning the total.
 // @fnv 0x0065c110
+// pdb: BSFaceGenModel::GetEGMDataSize | BSFaceGenModel.obj | debug, call graph (shared callers), high
+// pdb locals: cnt2, size, cnt
 unsigned int FUN_0065c110_t::GetEGMSize()
 {
     unsigned int uiSize = 0;
     unsigned int i;
     unsigned int j;
-    if (m_pGeometryModel && m_pGeometryModel->m_pModelData)
+    if (pMeshData && pMeshData->m_pModelData)
     {
         uiSize = sizeof(FaceGenMorphData);
         for (i = 0; i < 2; i++)
         {
-            uiSize += m_pGeometryModel->m_pModelData->modes[i].size() * 0x18;
-            for (j = 0; j < m_pGeometryModel->m_pModelData->modes[i].size(); j++)
-                uiSize += Object_GetPointerSpanCount_00657bc0(&m_pGeometryModel->m_pModelData->modes[i][j].kVertexPositionLocal) * 6;
+            uiSize += pMeshData->m_pModelData->modes[i].size() * 0x18;
+            for (j = 0; j < pMeshData->m_pModelData->modes[i].size(); j++)
+                uiSize += Object_GetPointerSpanCount_00657bc0(&pMeshData->m_pModelData->modes[i][j].kVertexPositionLocal) * 6;
         }
     }
     return uiSize;
@@ -960,7 +1004,7 @@ struct FileSizeInfo
     bool bSynchronousNoBuffer;
     bool bIsOpen;
     void* hFile;
-    FileSizeInfo(const char* apcPath, AccessMode aeAccessMode, OpenMode aeOpenMode, bool abSynchronousNoBuffer);
+    FileSizeInfo(const char* apName, AccessMode aeAccessMode, OpenMode aeOpenMode, bool abAllowAsync);
     ~FileSizeInfo();
     ErrorCode Modelloader_GetReferencedThis();
     ErrorCode BSSystemFile_GetSize(unsigned __int64& auiSize);
@@ -1000,14 +1044,15 @@ struct FUN_0065c400_t : public BSFaceGenModel
 
 // @fnv 0x0065c400
 // src: COMMUNITY 0x0065c400
+// pdb: BSFaceGenModel::KillTextureData | BSFaceGenModel.obj | retail, upstream name already matches, high
 void FUN_0065c400_t::BSFaceGenModel_KillTextureData()
 {
-    if (m_kTextureSlots)
+    if (pTextureData)
     {
-        delete ((FUN_00659c40*)m_kTextureSlots)->m_pTextureData;
-        ((FUN_00659c40*)m_kTextureSlots)->m_pTextureData = 0;
-        delete (FUN_00659c40*)m_kTextureSlots;
-        m_kTextureSlots = 0;
+        delete ((FUN_00659c40*)pTextureData)->m_pTextureData;
+        ((FUN_00659c40*)pTextureData)->m_pTextureData = 0;
+        delete (FUN_00659c40*)pTextureData;
+        pTextureData = 0;
     }
 }
 }  // namespace fnv_0065c400
@@ -1032,6 +1077,7 @@ void __cdecl _Deallocate(void*);
 
 // Calls FUN_006598d0, then deallocates this when flags has bit 0 set, and returns this.
 // @fnv 0x00659c10
+// pdb: BSFaceGenModelMeshData::`scalar deleting destructor' | BSFaceGenModel.obj | debug, object-file gap fill, medium
 void* __thiscall FUN_00659c10_shell::FUN_00659c10(unsigned int flags)
 {
     FUN_006598d0();
@@ -1045,6 +1091,7 @@ extern "C" void __cdecl _delete(void*, unsigned int);
 
 // Calls FUN_0065bf20, frees this with _delete when flags has bit 0 set, and returns this.
 // @fnv 0x0065bef0
+// pdb: BSFaceGenModelExtraData::`scalar deleting destructor' | BSFaceGenModel.obj | debug, object-file gap fill, medium
 void* BSFaceGenModelExtraData::FUN_0065bef0(unsigned int flags)
 {
     this->FUN_0065bf20();
@@ -1064,6 +1111,8 @@ struct EGMMorphList
 unsigned int __cdecl FUN_00ec7c56(void);
 // Bounds-checks idx against the morph count, then returns the address of the entry at idx (stride 0x1c) from _base.
 // @fnv 0x00657c20
+// pdb: std::vector<FffModeGS,std::allocator<FffModeGS> >::operator[] | BSFaceGenManager.obj | debug, call graph (shared callers), medium
+// pdb params: _Pos
 int EGMMorphList::GetMorphEntry(unsigned int idx)
 {
     if (idx >= GetCount())
@@ -1083,6 +1132,7 @@ struct Unk_006599d0
 };
 // Calls FUN_00659600, then deallocates this when flags has bit 0 set, and returns this.
 // @fnv 0x006599d0
+// pdb: EGMData::`scalar deleting destructor' | BSFaceGenModel.obj | debug, object-file run extension, low
 void* Unk_006599d0::FUN_006599d0(unsigned int flags)
 {
     FUN_00659600();
@@ -1100,6 +1150,7 @@ struct FUN_00659a00 : StrMem
 };
 // Initializes the _8 member to 0 after the base StrMem constructor runs.
 // @fnv 0x00659a00
+// pdb: BSFaceGenModelTextureData::BSFaceGenModelTextureData | BSFaceGenModel.obj | debug, call graph, medium
 FUN_00659a00::FUN_00659a00()
 {
     _8 = 0;
@@ -1111,6 +1162,10 @@ extern NiFixedString* DAT_011d5b50;
 // Calls FUN_004b9900(1) on DAT_011d5b50 if it is non-null, then sets DAT_011d5b50 to null.
 // @fnv 0x0065c5f0
 // src: GUESS 0x0065c5f0 (confidence: low)
+// pdb: std::_Allocate<FR2Vect3TC<short> > | BSFaceGenModel.obj | retail, object-file run extension, low
+// pdb note: debug build links it to BSFaceGenModelExtraData::KillSDM
+// pdb params: _Count, __formal
+// pdb locals: _Ptr
 void NiFixedString_UpdateState_0065c5f0()
 {
     NiFixedString* pName;
@@ -1120,7 +1175,7 @@ void NiFixedString_UpdateState_0065c5f0()
         {
             void* iRes;
             if (pName)
-                iRes = pName->FUN_004b9900(1);
+                iRes = pName->NiFixedString_ScalarDtor(1);
             else
                 iRes = 0;
         }
@@ -1140,6 +1195,7 @@ struct FUN_0065c6a0 : FUN_0065cfb0
     ~FUN_0065c6a0();
 };
 // @fnv 0x0065c6a0
+// pdb: std::vector<FR2Vect3TC<float>,std::allocator<FR2Vect3TC<float> > >::vector<FR2Vect3TC<float>,std::allocator<FR2Vect3TC<float> > > | BSFaceGenModel.obj | debug, object-file gap fill, medium
 FUN_0065c6a0::~FUN_0065c6a0()
 {
     FUN_0065d050();
@@ -1156,6 +1212,7 @@ struct Cls_659ab0
 
 // Calls FUN_00659710, then if bit 0 of flags is set calls FUN_00401030 on this, and returns this.
 // @fnv 0x00659ab0
+// pdb: EGTData::`scalar deleting destructor' | BSFaceGenModel.obj | debug, call graph, medium
 void* Cls_659ab0::FUN_00659ab0(unsigned int flags)
 {
     FUN_00659710();
@@ -1165,6 +1222,7 @@ void* Cls_659ab0::FUN_00659ab0(unsigned int flags)
 }
 
 // @fnv 0x0065bf20
+// pdb: BSFaceGenModelExtraData::~BSFaceGenModelExtraData | BSFaceGenModel.obj | retail, upstream name already matches, high
 BSFaceGenModelExtraData::~BSFaceGenModelExtraData()
 {}
 
@@ -1186,6 +1244,8 @@ struct FUN_0065c090_shell
 
 // @fnv 0x0065c090
 // src: GUESS 0x0065c090 (confidence: low)
+// pdb: BSFaceGenModelExtraData::KillSDM | BSFaceGenModel.obj | retail, object-file run extension, low
+// pdb note: debug build links it to BSFaceGenModel::UnloadEGMData
 bool FUN_0065c090_shell::UpdateState_0065c090()
 {
     if (unk08 && unk08->unk08)
@@ -1222,6 +1282,7 @@ class FUN_00659ae0 : public FUN_004968b0
 };
 // Initializes the vtable pointer to DAT_01065af4 and zeroes the two integer members.
 // @fnv 0x00659ae0
+// pdb: BSFaceGenModel::BSFaceGenModel | BSFaceGenModel.obj | debug, object-file gap fill, medium
 FUN_00659ae0::FUN_00659ae0()
 {
     m_vt = &DAT_01065af4;
@@ -1231,33 +1292,36 @@ FUN_00659ae0::FUN_00659ae0()
 
 struct FUN_0065a970_shell : BSFaceGenModel
 {
-    bool ApplyMorphs(FaceGenCoordinate* apCoordinate, NiTriBasedGeom* apGeometry, bool abIncludeZero);
+    bool ApplyMorphs(FaceGenCoordinate* apCoord, NiTriBasedGeom* apMesh, bool abForceBaseMorph);
 };
 
 // Applies face-gen morph data to apGeometry vertices using apCoordinate weights, updating positions and additional geometry data in place.
 // @fnv 0x0065a970
-bool FUN_0065a970_shell::ApplyMorphs(FaceGenCoordinate* apCoordinate, NiTriBasedGeom* apGeometry, bool abIncludeZero)
+// pdb: BSFaceGenModel::ApplyCoordinateToExistingMesh | BSFaceGenModel.obj | retail, call graph (shared callers), high
+// pdb params: apCoord, apMesh, abForceBaseMorph
+// pdb locals: pskinInstance, pexDestPos, basisVect, pexDestBase, psrc, pdestPos, pextraBase, ibasisSize, ivbstride, pdestBase, fcoeff, brefresh, uipartitionCount, bdbuffered, ppartitions, iter, iverts, pmd, isymm, ibasis, pskinPartition, vcoeff, xbsrcVect, ppartition ...
+bool FUN_0065a970_shell::ApplyMorphs(FaceGenCoordinate* apCoord, NiTriBasedGeom* apMesh, bool abForceBaseMorph)
 {
-    if (!m_pGeometryModel)
+    if (!pMeshData)
         return false;
-    if (!apCoordinate)
-        apCoordinate = reinterpret_cast<FaceGenCoordinate*>(BSFaceGenManager::GetFaceGenCoordinates());
-    if (!apCoordinate)
+    if (!apCoord)
+        apCoord = reinterpret_cast<FaceGenCoordinate*>(BSFaceGenManager::GetFaceGenCoordinates());
+    if (!apCoord)
         return false;
 
     BSFaceGenManager_LockFaceGenAccess();
     if (!BSFaceGenManager_LoadEGMData(this))
     {
-        if (!m_pGeometryModel->m_pModelData)
+        if (!pMeshData->m_pModelData)
         {
-            if (!m_pGeometryModel->m_kEGMFileName.Length())
+            if (!pMeshData->m_kEGMFileName.Length())
             {
                 BSFaceGenManager_UnlockFaceGenAccess();
                 return false;
             }
-            m_pGeometryModel->m_pModelData = new FaceGenMorphData(m_pGeometryModel->m_kEGMFileName.String());
+            pMeshData->m_pModelData = new FaceGenMorphData(pMeshData->m_kEGMFileName.String());
         }
-        if (!m_pGeometryModel->m_pModelData)
+        if (!pMeshData->m_pModelData)
         {
             BSFaceGenManager_UnlockFaceGenAccess();
             return false;
@@ -1268,14 +1332,14 @@ bool FUN_0065a970_shell::ApplyMorphs(FaceGenCoordinate* apCoordinate, NiTriBased
     NiPoint3* pAdditional = 0;
     NiPoint3* pVerticesCount = 0;
     NiPoint3* pThePositions = 0;
-    BSFaceGenBaseMorphExtraData* pLastMorphExtra = GetExtraDataIfPresent(apGeometry);
+    BSFaceGenBaseMorphExtraData* pLastMorphExtra = GetExtraDataIfPresent(apMesh);
     NiPoint3* pExtraVerticesTmp = pLastMorphExtra ? pLastMorphExtra->GetVertices() : 0;
     NiPoint3* pExtra = 0;
     bool bPackedResult = false;
     GeometryBufferView kIteratorNum;
-    if (apGeometry)
+    if (apMesh)
     {
-        NiGeometryData* pData = apGeometry->GetModelData();
+        NiGeometryData* pData = apMesh->GetModelData();
         if (pData && pData->HasAdditionalGeometryData(1))
         {
             pData->NiGeometryData_GetVerticesIterator(kIteratorNum);
@@ -1287,7 +1351,7 @@ bool FUN_0065a970_shell::ApplyMorphs(FaceGenCoordinate* apCoordinate, NiTriBased
     unsigned int uiNumVertices;
     if (pVerticesCount)
     {
-        uiNumVertices = apGeometry->GetVertexCount();
+        uiNumVertices = apMesh->GetVertexCount();
     }
     else
     {
@@ -1298,28 +1362,28 @@ bool FUN_0065a970_shell::ApplyMorphs(FaceGenCoordinate* apCoordinate, NiTriBased
     unsigned int uiMorphCountVal;
     for (unsigned int uiMode = 0; uiMode < 2; uiMode++)
     {
-        uiMorphCountVal = m_pGeometryModel->m_pModelData->modes[uiMode].size();
+        uiMorphCountVal = pMeshData->m_pModelData->modes[uiMode].size();
         for (unsigned int i = 0; i < uiMorphCountVal; i++)
         {
-            if (m_pGeometryModel->m_pModelData->modes[uiMode][i].kVertexPositionLocal.size() < uiNumVertices)
-                uiNumVertices = m_pGeometryModel->m_pModelData->modes[uiMode][i].kVertexPositionLocal.size();
+            if (pMeshData->m_pModelData->modes[uiMode][i].kVertexPositionLocal.size() < uiNumVertices)
+                uiNumVertices = pMeshData->m_pModelData->modes[uiMode][i].kVertexPositionLocal.size();
         }
     }
 
     float fWeightCur = 0.0f;
     for (unsigned int uiMode = 0; uiMode < 2; uiMode++)
     {
-        uiMorphCountVal = m_pGeometryModel->m_pModelData->modes[uiMode].size();
+        uiMorphCountVal = pMeshData->m_pModelData->modes[uiMode].size();
         for (unsigned int i = 0; i < uiMorphCountVal; i++)
         {
-            fWeightCur = *apCoordinate[uiMode](i, 0) * m_pGeometryModel->m_pModelData->modes[uiMode][i].scale;
-            if (fWeightCur == 0.0 && !abIncludeZero)
+            fWeightCur = *apCoord[uiMode](i, 0) * pMeshData->m_pModelData->modes[uiMode][i].scale;
+            if (fWeightCur == 0.0 && !abForceBaseMorph)
                 continue;
 
             pThePositions = pVerticesCount;
             pExtra = pExtraVerticesTmp;
             FaceGenIterator<ThreeComponentVector<short> > kDelta;
-            kDelta = m_pGeometryModel->m_pModelData->modes[uiMode][i].kVertexPositionLocal.begin();
+            kDelta = pMeshData->m_pModelData->modes[uiMode][i].kVertexPositionLocal.begin();
             unsigned int j;
             for (j = 0; j + 3 < uiNumVertices; j += 4)
             {
@@ -1407,9 +1471,9 @@ bool FUN_0065a970_shell::ApplyMorphs(FaceGenCoordinate* apCoordinate, NiTriBased
         }
     }
 
-    if (apGeometry->GetShaderFromMaterial() && apGeometry->GetModelData()->GetConsistency_00457b80() != 0x4000)
-        apGeometry->GetModelData()->SetDirtyFlags(1);
-    apGeometry->GetModelData()->NiGeometryData_UnlockPackedVertexData();
+    if (apMesh->GetShaderFromMaterial() && apMesh->GetModelData()->GetConsistency_00457b80() != 0x4000)
+        apMesh->GetModelData()->SetDirtyFlags(1);
+    apMesh->GetModelData()->NiGeometryData_UnlockPackedVertexData();
     BSFaceGenManager_UnlockFaceGenAccess();
     return true;
 }
@@ -1435,6 +1499,9 @@ struct FUN_0065c630 : public Base65C630
 
 // Default constructor that initializes the base with a default allocator and calls Init with zero.
 // @fnv 0x0065c630
+// pdb: std::_Allocate<FffModeGS> | BSFaceGenModel.obj | retail, object-file run extension, low
+// pdb params: _Count, __formal
+// pdb locals: _Ptr
 FUN_0065c630::FUN_0065c630() : Base65C630(Allocator65C630())
 {
     Init(0);
@@ -1453,6 +1520,7 @@ struct FUN_00659c40_shell : FUN_00659a20
 };
 // Deletes the object, then calls _Deallocate on it if the low bit of flags is set, and returns the original this pointer.
 // @fnv 0x00659c40
+// pdb: BSFaceGenModelTextureData::`scalar deleting destructor' | BSFaceGenModel.obj | debug, call graph (shared callers), high
 void* FUN_00659c40_shell::FUN_00659c40(unsigned int flags)
 {
     delete this;

@@ -5,7 +5,7 @@
 
 // src/havok/physics/collide/agent/convexagent/spheresphere/hkpspheresphereagent.cpp - unit created 2026-10-16 from the whole-binary attribution (360 source path: d:/projects/fallout/code/havok/source/physics/collide/agent/convexagent/spheresphere/hkpspheresphereagent.cpp).
 // Functions are listed by their @fnv annotations; compile flags inferred from the PC code.
-extern "C" void __cdecl hkpSphereSphereAgent_staticGetPenetrations(void* a, void* b, void* c, void* d);
+extern "C" void __cdecl hkpSphereSphereAgent_staticGetPenetrations(void* bodyA, void* bodyB, void* input, void* collector);
 void __stdcall hkpSphereSphereAgent_getPenetrations(void* a, void* c, void* b, void* d);
 struct S_00d3f660_Owner
 {
@@ -22,7 +22,7 @@ struct S_00d3f660
     int unk4;
     S_00d3f660_Owner* unk8;
     unsigned short unkC;
-    void ReleaseAndDelete(void* arg);
+    void ReleaseAndDelete(void* constraintOwner);
 };
 
 #include <xmmintrin.h>
@@ -101,7 +101,9 @@ struct SListener
 };
 // @fnv 0x00d3f6a0
 // src: XBOX_PDB 0x00d3f6a0
-extern "C" void __cdecl hkpSphereSphereAgent_staticGetPenetrations(void* a, void* b, void* c, void* d)
+// pdb: hkpSphereSphereAgent::staticGetPenetrations | hkpSphereSphereAgent.obj | retail, upstream name already matches, high
+// pdb params: bodyA, bodyB, input, collector
+extern "C" void __cdecl hkpSphereSphereAgent_staticGetPenetrations(void* bodyA, void* bodyB, void* input, void* collector)
 {
     STraceBuf* pBuf = (STraceBuf*)TlsGetValue(DAT_0126835c);
     if (pBuf->unk04 < pBuf->unk0C)
@@ -115,15 +117,15 @@ extern "C" void __cdecl hkpSphereSphereAgent_staticGetPenetrations(void* a, void
         }
         pBuf->unk04 = pRec + 1;
     }
-    SProxy* pA = (SProxy*)a;
-    SProxy* pB = (SProxy*)b;
+    SProxy* pA = (SProxy*)bodyA;
+    SProxy* pB = (SProxy*)bodyB;
     Vect delta;
     delta.sub(pB->m_pCenter->m_vCenter, pA->m_pCenter->m_vCenter);
     float sumRadius = pA->m_pProxyRadius->getRadius() + pB->m_pProxyRadius->getRadius();
     float dist2 = delta.lengthSquared();
     if (dist2 < sumRadius * sumRadius)
     {
-        ((SListener*)d)->v04(pA, pB);
+        ((SListener*)collector)->v04(pA, pB);
     }
     STraceBuf* pBuf2 = (STraceBuf*)TlsGetValue(DAT_0126835c);
     if (pBuf2->unk04 < pBuf2->unk0C)

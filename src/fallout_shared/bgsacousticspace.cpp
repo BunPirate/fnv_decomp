@@ -34,13 +34,15 @@ void BGSAcousticSpace::ResetFormData()
     pDuskSound = 0;
     pNightSound = 0;
     pWallaSound = 0;
-    m_iFlags = 0;
-    m_bIsInterior = true;
-    pRegion = 0;
-    m_eCellEnvironmentType = CELL_ENVIRO_TYPE_CET_DEFAULT;
+    iWallaPop = 0;
+    bIsInterior = true;
+    pSoundRegion = 0;
+    eEnvType = CELL_ENVIRO_TYPE_CET_DEFAULT;
 }
 
 // @fnv 0x005899f0
+// pdb: BGSAcousticSpace::InitItem | BGSAcousticSpace.obj | retail, string-set bridge, high
+// pdb locals: itempint
 void BGSAcousticSpace::InitItem()
 {
     unsigned int formID;
@@ -78,12 +80,12 @@ void BGSAcousticSpace::InitItem()
         if (!pNightSound)
             Warning(s_kAcousticNightSoundWarning, formID, GetName(), GetFormID());
     }
-    formID = reinterpret_cast<unsigned int>(pRegion);
+    formID = reinterpret_cast<unsigned int>(pSoundRegion);
     if (formID)
     {
         RemapFormIDForFile(formID, GetFile(-1));
-        pRegion = dynamic_cast<TESRegion*>(TESForm::GetFormByID(formID));
-        if (!pRegion)
+        pSoundRegion = dynamic_cast<TESRegion*>(TESForm::GetFormByID(formID));
+        if (!pSoundRegion)
             Warning(s_kAcousticRegionWarning, formID, GetName(), GetFormID());
     }
     formID = reinterpret_cast<unsigned int>(pWallaSound);
@@ -99,30 +101,33 @@ void BGSAcousticSpace::InitItem()
 
 // Loads an acoustic space record from a TESFile, reading the editor ID, OBND, SNAM sound slots, WNAM, RDAT region, ANAM type and INAM interior flag chunks.
 // @fnv 0x00589d30
-bool BGSAcousticSpace::Load(TESFile* file)
+// pdb: BGSAcousticSpace::Load | BGSAcousticSpace.obj | retail, upstream name already matches, high
+// pdb params: apFile
+// pdb locals: itempint, chunkid, soundcount, pMessage, iValue
+bool BGSAcousticSpace::Load(TESFile* apFile)
 {
     unsigned int soundFormID = 0;
-    LoadRecordHeader(file);
+    LoadRecordHeader(apFile);
     SetInitializationState(false);
     int m_uiSoundEntryCount = 0;
     int chunk;
-    while ((chunk = file->GetChunkID()) != 0)
+    while ((chunk = apFile->GetChunkID()) != 0)
     {
         switch (chunk)
         {
         case 0x44494445:  // EDID
         {
-            char* buffer = static_cast<char*>(_alloca(file->GetChunkSize()));
-            file->GetChunkData(buffer, 0x200);
+            char* buffer = static_cast<char*>(_alloca(apFile->GetChunkSize()));
+            apFile->GetChunkData(buffer, 0x200);
             SetEditorID_AtRuntime(buffer);
             break;
         }
         case 0x444E424F:  // OBND
-            readOBNDSubRecord(file);
+            readOBNDSubRecord(apFile);
             break;
         case 0x4D414E53:  // SNAM
             soundFormID = 0;
-            file->GetChunkData(&soundFormID);
+            apFile->GetChunkData(&soundFormID);
             if (m_uiSoundEntryCount == 4)
                 SetWallaSound(reinterpret_cast<TESSound*>(soundFormID));
             else if (m_uiSoundEntryCount == 3)
@@ -136,29 +141,29 @@ bool BGSAcousticSpace::Load(TESFile* file)
             m_uiSoundEntryCount++;
             break;
         case 0x4D414E57:  // WNAM
-            file->GetChunkData(reinterpret_cast<unsigned int*>(&m_iFlags));
+            apFile->GetChunkData(reinterpret_cast<unsigned int*>(&iWallaPop));
             break;
         case 0x54414452:  // RDAT
             soundFormID = 0;
-            file->GetChunkData(&soundFormID);
+            apFile->GetChunkData(&soundFormID);
             SetRegion(reinterpret_cast<TESRegion*>(soundFormID));
             break;
         case 0x4D414E41:  // ANAM
-            file->GetChunkData(&soundFormID);
+            apFile->GetChunkData(&soundFormID);
             SetListenerID(static_cast<CELL_ENVIRO_TYPE>(soundFormID));
             break;
         case 0x4D414E49:  // INAM
         {
             unsigned int interiorFlag;
-            file->GetChunkData(&interiorFlag);
+            apFile->GetChunkData(&interiorFlag);
             if (interiorFlag == 0)
-                m_bIsInterior = false;
+                bIsInterior = false;
             else
-                m_bIsInterior = true;
+                bIsInterior = true;
             break;
         }
         }
-        if (!file->NextChunk())
+        if (!apFile->NextChunk())
             break;
     }
     return true;
@@ -176,6 +181,9 @@ struct FUN_00589f50_shell
 };
 
 // @fnv 0x00589f50
+// pdb: ExtraDataList::SetSound | ExtraDataList.obj | retail, upstream name already matches, high; only the method name matches, on a class other than the PDB class, so its parameter names are not applied
+// pdb params (unverified): afSound
+// pdb locals (unverified): pSound
 void __thiscall FUN_00589f50_shell::SetSound(void* apSound)
 {
     *(int*)((char*)this + 0x4c) = (int)apSound;
@@ -189,6 +197,7 @@ struct Standin00589930
 void __cdecl _Deallocate(void*);
 // Calls FUN_00589960, then deallocates this if flags has bit 0 set, and returns this.
 // @fnv 0x00589930
+// pdb: BGSAcousticSpace::`scalar deleting destructor' | BGSAcousticSpace.obj | retail, vtable slot, high
 void* Standin00589930::FUN_00589930(unsigned int flags)
 {
     UpdateFields_00589960();
@@ -199,17 +208,20 @@ void* Standin00589930::FUN_00589930(unsigned int flags)
 
 // Returns the BGSCameraPath at index idx from the form array, or null if the array is absent or the form is not a camera path.
 // @fnv 0x0058b630
-BGSCameraPath* BGSCameraPath::GetCameraPathAt(unsigned int uiIndex)
+// pdb: BGSCameraPath::GetChildByIndex | BGSCameraPath.obj | debug, call graph, high
+// pdb params: aiIndex
+// pdb locals: pretpath
+BGSCameraPath* BGSCameraPath::GetCameraPathAt(unsigned int aiIndex)
 {
     BGSCameraPath* result = 0;
-    if (m_pPathArray)
-        result = dynamic_cast<BGSCameraPath*>(m_pPathArray->GetFormAt(uiIndex));
+    if (pChildPaths)
+        result = dynamic_cast<BGSCameraPath*>(pChildPaths->GetFormAt(aiIndex));
     return result;
 }
 
 extern int DAT_010320fc;
 
-void __fastcall UpdateState_0050e9f0(void*);
+void __fastcall TESBoundObject_dtor(void*);
 
 struct FUN_00589960_shell
 {
@@ -218,10 +230,11 @@ struct FUN_00589960_shell
 
 // @fnv 0x00589960
 // src: GUESS 0x00589960 (confidence: low)
+// pdb: BGSAcousticSpace::~BGSAcousticSpace | BGSAcousticSpace.obj | debug, object-file run extension, low
 void __thiscall FUN_00589960_shell::UpdateFields_00589960()
 {
     *reinterpret_cast<int**>(this) = &DAT_010320fc;
-    UpdateState_0050e9f0(this);
+    TESBoundObject_dtor(this);
 }
 
 struct FUN_0058a120_shell : BGSAcousticSpace
@@ -250,6 +263,9 @@ struct FUN_0068a810_shell
 };
 // Casts apCopy to BGSAcousticSpace, copies its sound, index, region and environment fields into this, then calls FUN_004851b0.
 // @fnv 0x0058a120
+// pdb: BGSAcousticSpace::Copy | BGSAcousticSpace.obj | retail, vtable slot, high
+// pdb params: apCopy
+// pdb locals: pcopy
 void FUN_0058a120_shell::CopyFromAcousticSpace(TESForm* apCopy)
 {
     BGSAcousticSpace* pcopy = dynamic_cast<BGSAcousticSpace*>(apCopy);
@@ -291,6 +307,8 @@ struct FUN_00589f70_shell
 
 // @fnv 0x00589f70
 // src: XBOX_PDB 0x00589f70
+// pdb: BGSAcousticSpace::Save | BGSAcousticSpace.obj | retail, upstream name already matches, high
+// pdb locals: soundid, itempint
 void FUN_00589f70_shell::BGSAcousticSpace_Save()
 {
     unsigned int questFormID;
@@ -374,6 +392,9 @@ struct FUN_0058a220_shell
 };
 
 // @fnv 0x0058a220
+// pdb: BGSAcousticSpace::Compare | BGSAcousticSpace.obj | retail, vtable slot, high
+// pdb params: apCompare
+// pdb locals: pcomp
 bool FUN_0058a220_shell::IsNotEqual(TESForm* apCompare)
 {
     BGSAcousticSpace* pcomp = dynamic_cast<BGSAcousticSpace*>(apCompare);
@@ -434,6 +455,7 @@ class FUN_005898c0 : public FUN_0050e820
 
 // Sets the form type to ASPC and calls FUN_00589980.
 // @fnv 0x005898c0
+// pdb: BGSAcousticSpace::BGSAcousticSpace | BGSAcousticSpace.obj | retail, call graph, high
 FUN_005898c0::FUN_005898c0()
 {
     SetFormType(static_cast<ENUM_FORM_ID>(14));  // ASPC

@@ -27,7 +27,7 @@ extern "C" void _mm_store_ss(float*, LocalM128);
 #include <string.h>
 
 void* hkMemoryRouter_getInstance();
-void __cdecl ResizeAudioStream(void* pvAllocator, void* apvArray, int iElemSize);
+void __cdecl ResizeAudioStream(void* mem, void* array, int sizeElem);
 
 // Only the thread allocator at +0x10 is used here; this is a view of the TLS allocation context.
 struct CurveAllocationContext
@@ -54,21 +54,24 @@ template <class T> static __forceinline T* appendCurveElement(hkArray<T>& array,
 // The shared curve lacks addPoint. This helper keeps the original ECX receiver and stack point
 // argument; the unused EDX parameter preserves that ABI without another curve class declaration.
 // @fnv 0x00e47e80
-float* __fastcall appendLinearCurvePoint(hkpLinearParametricCurve* curve, void*, const hkVector4& kPoint) throw()
+// src: XBOX_RETAIL_PDB 0x00e47e80
+// pdb: hkpLinearParametricCurve::addPoint | hkpLinearParametricCurve.obj | retail, object-file gap fill, high
+// pdb params: p
+float* __fastcall hkpLinearParametricCurve_addPoint(hkpLinearParametricCurve* curve, void*, const hkVector4& kPoint) throw()
 {
-    appendCurveElement(curve->m_kPoints, kPoint);
-    if (curve->m_kPoints.GetLogicalSize() == 1)
-        return appendCurveElement(curve->m_fClosestPointDistanceSquared, 0.0f);
+    appendCurveElement(curve->m_points, kPoint);
+    if (curve->m_points.GetLogicalSize() == 1)
+        return appendCurveElement(curve->m_distance, 0.0f);
 
     hkVector4 kPrev;
-    memcpy(&kPrev, &curve->m_kPoints[curve->m_kPoints.GetLogicalSize() - 2], sizeof(kPrev));
+    memcpy(&kPrev, &curve->m_points[curve->m_points.GetLogicalSize() - 2], sizeof(kPrev));
     LocalM128 kDiff = _mm_sub_ps(kPoint.m_vComponents, kPrev.m_vComponents);
     LocalM128 kSq = _mm_mul_ps(kDiff, kDiff);
     LocalM128 kSum = _mm_add_ss(_mm_shuffle_ps(kSq, kSq, 0xaa), _mm_add_ss(_mm_shuffle_ps(kSq, kSq, 0x55), kSq));
     LocalM128 kLen =
         _mm_add_ss(_mm_sqrt_ss(kSum),
-                   _mm_load_ss(&curve->m_fClosestPointDistanceSquared[curve->m_fClosestPointDistanceSquared.GetLogicalSize() - 1]));
+                   _mm_load_ss(&curve->m_distance[curve->m_distance.GetLogicalSize() - 1]));
     float fDist;
     _mm_store_ss(&fDist, kLen);
-    return appendCurveElement(curve->m_fClosestPointDistanceSquared, fDist);
+    return appendCurveElement(curve->m_distance, fDist);
 }

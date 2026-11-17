@@ -7,6 +7,7 @@ class PathingAvoidNodeArray;
 class PathingRequestOwner;
 namespace FleeUpdate { class Actor; }
 
+// pdb: class PathingRequestFlee, size 0xb4, bases: PathingRequest, 1 members
 class PathingRequestFlee : public PathingRequest
 {
 public:
@@ -20,7 +21,7 @@ public:
 
     void* DestroyAndFree(unsigned int flags);
     void CopyToWithFleeData(PathingRequest* apDest);
-    void InitFromActor(Actor* actor);
+    void PathingRequest_SetOrigin(Actor* actor);
     void InitFromActor(FleeActor* actor);
     void InitFromActor(FleeUpdate::Actor* actor);
     void SetInitialPathHeading(float heading);
@@ -33,5 +34,5 @@ public:
     void FUN_006d1bc0(const PathingLocation&);
     void PathingRequest_SetNoDestination();
 
-    float fleeRadius;
+    float fMinFleeDistance; // src: XBOX_RETAIL_PDB +0xb0 (old: fleeRadius)
 };

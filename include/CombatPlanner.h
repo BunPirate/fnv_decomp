@@ -10,6 +10,7 @@ class CPOutArray;
 class CPOutItem;
 class Owner;
 
+// pdb: class CombatPlanner, size 0x21d8, bases: AStarSearch<CombatPlanNode *, 4 members
 class CombatPlanner : public AStarSearch<CombatPlanNode *, CombatPlanLink *>
 {
 public:
@@ -64,7 +65,7 @@ public:
 
     CombatPlanner();
     virtual ~CombatPlanner();
-    virtual bool ExpandNode(CPNode* pkNode, CPOutArray* pkOut);
+    virtual bool ExpandNode(CPNode* apNode, CPOutArray* apRetNodes);
     virtual bool IsGoalNode_00995800(const AStarNode<CombatPlanNode *, CombatPlanLink *>* p);
 
     Owner* BuildPlan(void*, int);

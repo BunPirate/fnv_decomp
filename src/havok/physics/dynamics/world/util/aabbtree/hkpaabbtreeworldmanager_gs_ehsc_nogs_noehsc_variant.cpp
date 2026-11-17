@@ -173,12 +173,15 @@ struct S00d09020_This
     int unk20;
     int unk24;
     S00d09020_Inner* m_inner;
-    void hkpAabbTreeWorldManager_buildInactiveTree(hkArray<hkpCollidable*>* arg, int p2, int p3);
+    void hkpAabbTreeWorldManager_buildInactiveTree(hkArray<hkpCollidable*>* collidables, int jobQueue, int jobThreadPool);
 };
 
 // @fnv 0x00d09020
 // src: XBOX_PDB 0x00d09020
-void S00d09020_This::hkpAabbTreeWorldManager_buildInactiveTree(hkArray<hkpCollidable*>* arg, int p2, int p3)
+// pdb: hkpAabbTreeWorldManager::buildInactiveTree | hkpAabbTreeWorldManager.obj | retail, upstream name already matches, high
+// pdb params: collidables, jobQueue, jobThreadPool
+// pdb locals: leaves, tree, aabbs, userDatas
+void S00d09020_This::hkpAabbTreeWorldManager_buildInactiveTree(hkArray<hkpCollidable*>* collidables, int jobQueue, int jobThreadPool)
 {
     union BuilderTime
     {
@@ -187,7 +190,7 @@ void S00d09020_This::hkpAabbTreeWorldManager_buildInactiveTree(hkArray<hkpCollid
     } builder;
     builder.ptr = m_builder;
     volatile unsigned int timestamp;
-    int n = arg->m_iElementCount;
+    int n = collidables->m_iElementCount;
 
     TreeBuildScratchArray<S00d09020_Aabb> aabbs(n);
     aabbs._setSize(getTreeBuildHeap(hkMemoryRouter::getInstance()), n);
@@ -210,7 +213,7 @@ void S00d09020_This::hkpAabbTreeWorldManager_buildInactiveTree(hkArray<hkpCollid
     for (int i = 0; i < n; i++)
     {
         // Quantized bounds occupy two 16-byte rows, including their packed expansion bytes.
-        const unsigned int* q = reinterpret_cast<const unsigned int*>(&arg->m_data[i]->m_kBoundingVolumeData);
+        const unsigned int* q = reinterpret_cast<const unsigned int*>(&collidables->m_data[i]->m_boundingVolumeData);
         S00d09020_Aabb* base = aabbs.m_data;
         if (q[0] <= q[4])
         {
@@ -234,10 +237,10 @@ void S00d09020_This::hkpAabbTreeWorldManager_buildInactiveTree(hkArray<hkpCollid
         }
         else
         {
-            arg->m_data[i]->m_pCollisionShape->CalculateAabb(
-                arg->m_data[i]->getTransform(), 0.0f, reinterpret_cast<hkAabb&>(base[i]));
+            collidables->m_data[i]->m_pCollisionShape->CalculateAabb(
+                collidables->m_data[i]->getTransform(), 0.0f, reinterpret_cast<hkAabb&>(base[i]));
         }
-        elems.m_data[i] = arg->m_data[i];
+        elems.m_data[i] = collidables->m_data[i];
     }
     {
         hkMonitorStream* s = (hkMonitorStream*)TlsGetValue(DAT_0126835c);
@@ -281,5 +284,5 @@ void S00d09020_This::hkpAabbTreeWorldManager_buildInactiveTree(hkArray<hkpCollid
     }
 
     for (int j = 0; j < n; j++)
-        DispatchToOffsetTarget(arg->m_data[j], ids.m_data[j]);
+        DispatchToOffsetTarget(collidables->m_data[j], ids.m_data[j]);
 }

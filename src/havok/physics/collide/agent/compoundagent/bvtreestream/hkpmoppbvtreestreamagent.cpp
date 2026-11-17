@@ -22,6 +22,7 @@ struct FUN_00d2dc40
     static void operator delete(void* p);
 };
 // @fnv 0x00d2dc40
+// pdb: hkpSymmetricAgentFlipBodyCollector::`scalar deleting destructor' | hkpMoppBvTreeStreamAgent.obj | retail, vtable slot, high
 FUN_00d2dc40::~FUN_00d2dc40()
 {}
 void FUN_00d2dc40::operator delete(void* p)

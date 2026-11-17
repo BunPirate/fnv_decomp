@@ -4,6 +4,9 @@
 #include "../../../../include/StrArr.h"
 
 // @fnv 0x00C318B0
+// pdb: NiPSysModifier::LoadBinary | NiPSysModifier.obj | retail, upstream name already matches, high
+// pdb params: kStream
+// pdb locals: bActive
 void NiPSysModifier::LoadBinary(NiStream& kStream)
 {
     NiObject::LoadBinary(kStream);
@@ -20,7 +23,10 @@ void NiPSysModifier::LoadBinary(NiStream& kStream)
 }
 
 // @fnv 0x00C31780
-void NiPSysModifier::CopyMemberData(NiPSysModifier* pkDest, CloningProcess& kCloning)
+// src: XBOX_RETAIL_PDB 0x00c31780
+// pdb: NiPSysModifier::CopyMembers | NiPSysModifier.obj | retail, call graph (shared callers), high
+// pdb params: pkDest, kCloning
+void NiPSysModifier::CopyMembers(NiPSysModifier* pkDest, CloningProcess& kCloning)
 {
     NiObject::CreateVertexBufferSet(pkDest, kCloning);
     char* pcName = m_kName.m_kHandle;
@@ -38,6 +44,9 @@ void NiPSysModifier::CopyMemberData(NiPSysModifier* pkDest, CloningProcess& kClo
 }
 
 // @fnv 0x00C317E0
+// pdb: NiPSysModifier::ProcessClone | NiPSysModifier.obj | retail, upstream name already matches, high
+// pdb params: kCloning
+// pdb locals: bCloned, pkClone, pkDest
 void NiPSysModifier::ProcessClone(CloningProcess& kCloning)
 {
     NiObject::ProcessClone(kCloning);
@@ -49,6 +58,8 @@ void NiPSysModifier::ProcessClone(CloningProcess& kCloning)
 }
 
 // @fnv 0x00C31650
+// pdb: NiPSysModifier::LinkObject | NiPSysModifier.obj | retail, upstream name already matches, high
+// pdb params: kStream
 void NiPSysModifier::LinkObject(NiStream& kStream)
 {
     NiObject::LinkObject(kStream);
@@ -70,8 +81,11 @@ const char* const* __cdecl NiPSysModifier_GetRTTI()
     return &g_01202528_arg1;
 }
 
-bool __stdcall IsSameAs(NiObject* pkObject);
+bool __stdcall IsSameAs(NiObject* pObject);
 // @fnv 0x00c31830
+// pdb: NiPSysModifier::IsEqual | NiPSysModifier.obj | retail, upstream name already matches, high
+// pdb params: pkObject
+// pdb locals: pkDest
 bool NiPSysModifier::IsEqual(NiObject* pkObject) const
 {
     NiPSysModifier* pkDest = static_cast<NiPSysModifier*>(pkObject);
@@ -82,6 +96,8 @@ bool NiPSysModifier::IsEqual(NiObject* pkObject) const
 }
 
 // @fnv 0x00c31670
+// pdb: NiPSysModifier::RegisterStreamables | NiPSysModifier.obj | retail, upstream name already matches, high
+// pdb params: kStream
 bool NiPSysModifier::RegisterStreamables(NiStream& kStream)
 {
     if (!NiObject::RegisterStreamables(kStream))
@@ -108,13 +124,15 @@ __forceinline void BooleanWrite(NiBinaryStream* stream, bool value)
     WriteComponents(stream, &value, 1, &size, 1);
 }
 // @fnv 0x00c31950
-void NiPSysModifier::SaveBinary(NiStream& stream)
+// pdb: NiPSysModifier::SaveBinary | NiPSysModifier.obj | retail, upstream name already matches, high
+// pdb params: kStream
+void NiPSysModifier::SaveBinary(NiStream& kStream)
 {
-    NiObject::SaveBinary(stream);
-    stream.SerializeString(reinterpret_cast<const char*>(&m_kName));
-    PrimitiveWrite(stream.m_pkOstr, m_uiUpdateOrder);
-    stream.SaveLinkID(reinterpret_cast<NiObject*>(m_pkTarget));
-    BooleanWrite(stream.m_pkOstr, m_bModifierActive);
+    NiObject::SaveBinary(kStream);
+    kStream.SerializeString(reinterpret_cast<const char*>(&m_kName));
+    PrimitiveWrite(kStream.m_pkOstr, m_uiUpdateOrder);
+    kStream.SaveLinkID(reinterpret_cast<NiObject*>(m_pkTarget));
+    BooleanWrite(kStream.m_pkOstr, m_bModifierActive);
 }
 
 extern "C" char* DAT_0109b220;
@@ -124,6 +142,8 @@ extern "C" void(__stdcall* DAT_00fdf1c4)(char*);
 // Keep constructor entry points here until their overloads are declared by the shared headers.
 void __fastcall ConstructNiObject(NiObject* object);
 // @fnv 0x00c316a0
+// pdb: NiPSysModifier::NiPSysModifier | NiPSysModifier.obj | debug, call graph (shared callers), low
+// pdb params: kName, uiOrder
 NiPSysModifier* __fastcall ConstructNiPSysModifier(NiPSysModifier* modifier, void*,
                                                 char* volatile* newName, unsigned int newOrder)
 {
@@ -152,7 +172,7 @@ __forceinline void StrArr::AppendInline(char* pElement)
         SetSize(uiIndex + m_usGrowBy);
     SetAt(uiIndex, pElement);
 }
-void __stdcall AppendCameraPathEntries(StrArr* apViewerStrings);
+void __stdcall AppendCameraPathEntries(StrArr* pStrings);
 char* __cdecl NiViewerStrings_NiGetViewerString_Title(const char* pcText);
 char* __cdecl NiGetViewerString_00a7d5e0(const char* pcPrefix, const char* pcValue);
 char* __cdecl NiGetViewerString_00a7d510(const char* pcPrefix, unsigned int uiValue);
@@ -162,6 +182,8 @@ extern const char g_011d4e34_arg1[];
 // Appends the modifier's name, order and active flag as formatted strings to the given string array.
 // The shared class inherits GetViewerStrings without declaring this override.
 // @fnv 0x00c319e0
+// pdb: NiPSysModifier::GetViewerStrings | NiPSysModifier.obj | retail, string-set bridge, high
+// pdb params: pkStrings
 void __fastcall GetNiPSysModifierViewerStrings(NiPSysModifier* modifier, void*, StrArr* apViewerStrings)
 {
     AppendCameraPathEntries(apViewerStrings);
@@ -174,6 +196,7 @@ void __fastcall GetNiPSysModifierViewerStrings(NiPSysModifier* modifier, void*, 
 
 // The scalar deleting destructor keeps the modifier vtable installed while releasing its name.
 // @fnv 0x00c31870
+// pdb: NiPSysModifier::`scalar deleting destructor' | NiPSysModifier.obj | retail, object-file gap fill, high
 NiPSysModifier* __fastcall DestroyNiPSysModifier(NiPSysModifier* modifier, void*, unsigned int uiFlags)
 {
     *reinterpret_cast<void**>(modifier) = &DAT_010c09cc;

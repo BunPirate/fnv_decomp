@@ -935,7 +935,7 @@ extern const double DAT_01020998, DAT_0101ffa0, DAT_01018a90, DAT_01011588;
 GrabPhysics* bhkRigidBody_FindHeaviestRigidBody(GrabRef*);
 int GetBSXFlags(GrabRef*, int);
 bool Script_SetActionFlag(int, void*, unsigned);
-void GetScalarAndVector(GrabRef*, GrabVector*, float*);
+void bhkRigidBody_CalculateTotalCenterOfMass(GrabRef*, GrabVector*, float*);
 bool Interface_IsActivatePickFuzzy();
 GrabPhysics* ViewCaster_GetFuzzyBody();
 GrabRef* FUN_004b5a20(GrabBody*);
@@ -952,13 +952,16 @@ float LinearInterpolate(float, float, float, float, float);
 
 // @fnv 0x0095f930
 // src: COMMUNITY 0x0095f930
-void GrabHost::PlayerCharacter_CreateMouseSpring(GrabRef* ref, int newMode, float range)
+// pdb: PlayerCharacter::CreateMouseSpring | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb params: apObject, aeGrabType, afDistance
+// pdb locals: pprojectile, pgrenade, pbody, pav, pw, fmassTotal, dir, bcomplex, hkvCenterOfMass, hktemp, ci, hkv, phkbody, pcon, point, bnormalGrabSuccess, fltr, pd, ppickedAV, pcol, prb, ppickedRef, springLoc, pbhkbody ...
+void GrabHost::PlayerCharacter_CreateMouseSpring(GrabRef* apObject, int aeGrabType, float afDistance)
 {
-    if (!*DAT_011e0b1c.FUN_00408d60() && ref->IsDead() && !ref->AllowGrab(0))
+    if (!*DAT_011e0b1c.FUN_00408d60() && apObject->IsDead() && !apObject->AllowGrab(0))
         return;
-    if (ref && ref->IsActor())
+    if (apObject && apObject->IsActor())
     {
-        GrabRef* actor = ref;
+        GrabRef* actor = apObject;
         if (actor->GetState() == 3)
         {
             GrabRef* actor2 = actor;
@@ -966,24 +969,24 @@ void GrabHost::PlayerCharacter_CreateMouseSpring(GrabRef* ref, int newMode, floa
                 return;
         }
     }
-    if (ref && ref->FUN_008d6f30())
+    if (apObject && apObject->FUN_008d6f30())
     {
-        GrabRef* root = ref->Get3D();
+        GrabRef* root = apObject->Get3D();
         GrabPhysics* physics = bhkRigidBody_FindHeaviestRigidBody(root);
         if (physics)
         {
-            bool character = GetBSXFlags(root, 8) || ref->IsDead();
-            target = ref;
+            bool character = GetBSXFlags(root, 8) || apObject->IsDead();
+            target = apObject;
             Script_SetActionFlag(0, target->BSFile_GetDevice(), 0x80000);
-            mode = newMode;
-            distance = range;
+            mode = aeGrabType;
+            distance = afDistance;
             GrabConstraintData data;
             data.FUN_004b4f40();
             float ignored = 0.0f;
             GrabVector center;
             center.FUN_006815c0();
-            if (character && ref->IsDead())
-                GetScalarAndVector(root, &center, &ignored);
+            if (character && apObject->IsDead())
+                bhkRigidBody_CalculateTotalCenterOfMass(root, &center, &ignored);
             else
                 physics->GetNavMeshData(&center);
             GrabPoint direction;
@@ -992,7 +995,7 @@ void GrabHost::PlayerCharacter_CreateMouseSpring(GrabRef* ref, int newMode, floa
             origin.FUN_006815c0();
             GetCameraPosAndDir(&origin, &direction, true);
             bool selected = false;
-            GrabWorld* world = ref->FUN_008d6f30()->TESObjectCELL_GetbhkWorld();
+            GrabWorld* world = apObject->FUN_008d6f30()->TESObjectCELL_GetbhkWorld();
             if (mode == 1 && world && !DAT_011ddf38->BGSSaveLoadGame_GetSaveGameLoading())
             {
                 if (!Interface_IsActivatePickFuzzy() || !ViewCaster_GetFuzzyBody())
@@ -1012,7 +1015,7 @@ void GrabHost::PlayerCharacter_CreateMouseSpring(GrabRef* ref, int newMode, floa
                         GrabRef* hitRef = FUN_004b5a20(hit);
                         GrabRef* hitNode = hitRef ? hitRef->FUN_0044ddc0() : 0;
                         GrabRef* resolved = TESObjectREFR_FindReferenceFor3D(hitNode);
-                        if (hit && resolved == ref)
+                        if (hit && resolved == apObject)
                         {
                             if (!character)
                             {
@@ -1065,7 +1068,7 @@ void GrabHost::PlayerCharacter_CreateMouseSpring(GrabRef* ref, int newMode, floa
                 data.body = physics->Bipedanim_GetReferenceFlagsOrZero();
             }
             if (mode == 1)
-                SetEffectValue(5, DAT_01017868, ref);
+                SetEffectValue(5, DAT_01017868, apObject);
             GrabBody* body = data.body;
             if (!body->FUN_0044ddc0() || body->hkpRigidBody_getMotionType() == 5 || body->hkpRigidBody_getMotionType() == 4)
             {
@@ -1144,14 +1147,14 @@ void GrabHost::PlayerCharacter_CreateMouseSpring(GrabRef* ref, int newMode, floa
             GrabConstraint* created = constraint.Modelloader_GetReferencedThis();
             created->SetWorld(target->FUN_008d6f30()->TESObjectCELL_GetbhkWorld());
             target->FUN_008d6f30()->TESObjectCELL_GetbhkWorld()->FUN_005533c0();
-            mass = TESHavokUtilities_GetSceneGraphMass(ref->Get3D());
+            mass = TESHavokUtilities_GetSceneGraphMass(apObject->Get3D());
         }
-        else if (newMode == 2)
+        else if (aeGrabType == 2)
         {
-            target = ref;
+            target = apObject;
             Script_SetActionFlag(0, target->BSFile_GetDevice(), 0x80000);
             mode = 2;
-            distance = range;
+            distance = afDistance;
         }
     }
 }
@@ -1173,7 +1176,7 @@ class HkVec
     void AddVec(HkVec* p);
     HkVec Delta(void) const;
     float Length3() const;
-    void MulVec(HkVec* p);
+    void MulVec(HkVec* s);
     float& At(int i);
     void Set(float x, float y, float z, float w);
     void SetRotated(void* p);
@@ -1337,7 +1340,7 @@ struct VObj
     VObj* GetChild(int i);
     VObj* GetFirst();
     void* GetRot();
-    void ApplyVel(HkVec* p);
+    void ApplyVel(HkVec* arVel);
 };
 struct ItemList
 {
@@ -1396,7 +1399,7 @@ struct ObjF0
     ObjF0();
     void SetHandle(Handle h);
     void SetOrigin(NiPoint3* p);
-    void SetDir(const NiPoint3& v);
+    void SetDir(const NiPoint3& arLength);
     void Run(Obj430* out);
     void SetTarget(NiPoint3* p);
     VObj* GetHit();
@@ -1417,14 +1420,14 @@ extern const double DAT_01072f98;
 extern const double DAT_0101a6b0;
 extern const double DAT_01012060;
 extern const double DAT_01020998;
-VObj* GetPf8(VObj* p);
-VObj* LookupForm(int id);
+VObj* GetPf8(VObj* apEnt);
+VObj* LookupForm(int aphkCol);
 VObj* AsActor(VObj* p);
 float MaxF(float a, float b);
 float ClampF(float f);
 int HasFlag(VObj* p, int flag);
-VObj* GetProcess(VObj* p);
-float GetScale(VObj* p);
+VObj* GetProcess(VObj* apBody);
+float GetScale(VObj* apObject);
 float MinF(float a, float b);
 float Lerp(float a, float b, float c, float d, float e);
 void ToNiPoint(NiPoint3* out, HkVec* in);
@@ -1436,7 +1439,10 @@ void ApplyImpulse(VObj* p, NiPoint3* v, int flag);
 // Keep its original offsets until the function's owning type is identified.
 // @fnv 0x00960520
 // src: XBOX_PDB 0x00960520
-void Projectile::PlayerCharacter_UpdateMouseSpring(int a)
+// pdb: PlayerCharacter::UpdateMouseSpring | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb params: afTimeDelta
+// pdb locals: pcollector, dir, origin, fpickLength, fmodelRadius, phkbody, springPos, pcon, filter, pd, pbhkbody, fhitFraction, i, pav, point, pref, lostPick, boundCenter, pObj, ppickedRef, connectionPoint, bcomplex, springPoint, fmassRatio ...
+void Projectile::PlayerCharacter_UpdateMouseSpring(int afTimeDelta)
 {
     using namespace fnv_00960520;
     if ((*reinterpret_cast<VObj**>(reinterpret_cast<char*>(this) + 0x638)) == 0 || (*reinterpret_cast<RefHandle*>(reinterpret_cast<char*>(this) + 0x634)).Get() == 0 || (*reinterpret_cast<RefHandle*>(reinterpret_cast<char*>(this) + 0x634)).Get()->GetRace() == 0)

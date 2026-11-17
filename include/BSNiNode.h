@@ -2,6 +2,7 @@
 
 #include "NiNode.h"
 
+// pdb: class BSNiNode, size 0xd0 (here 0xac), bases: NiNode, 0 members
 class BSNiNode : public NiNode
 {
   public:

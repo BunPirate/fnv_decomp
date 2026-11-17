@@ -8,6 +8,8 @@
 #include "../../../include/EffectItem.h"
 
 // @fnv 0x00829b90
+// pdb: DispelEffect::CopyData | DispelEffect.obj | debug, upstream name already matches, high
+// pdb params: apDestination
 void DispelEffect::CopyData(ActiveEffect* apDestination)
 {
     ActiveEffect::CopyData(apDestination);
@@ -15,6 +17,8 @@ void DispelEffect::CopyData(ActiveEffect* apDestination)
 
 // Returns true if apTarget is a Character, using a dynamic_cast.
 // @fnv 0x0082d060
+// pdb: VampirismEffect::CheckTarget | VampirismEffect.obj | retail, object-file gap fill, high
+// pdb params: apTarget
 bool DispelEffect::IsEffectValid(MagicTarget* apTarget)
 {
     return dynamic_cast<Character*>(apTarget) != 0;
@@ -23,6 +27,8 @@ bool DispelEffect::IsEffectValid(MagicTarget* apTarget)
 void* operator new(unsigned int size) throw();
 
 // @fnv 0x0080d950
+// pdb: DispelEffect::Copy | DispelEffect.obj | retail, upstream name already matches, high
+// pdb locals: presult
 ActiveEffect* DispelEffect::Copy()
 {
     ActiveEffect* e = new DispelEffect(m_pEffectInstance, pSpell, pEffect);
@@ -63,6 +69,8 @@ extern DatObj DAT_011d1b20;
 MagicCaster* __fastcall GetEffectCaster(ActiveEffect*);
 
 // @fnv 0x0080da00
+// pdb: DispelEffect::Start | DispelEffect.obj | retail, upstream name already matches, high
+// pdb locals: plist, bselfCast, pcasterActor, pnext, peffect, pspell
 void DispelEffect::Start()
 {
     BSSimpleList<ActiveEffect*>* cur = FUN_0059bb30()->GetActiveEffectList();

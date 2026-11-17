@@ -20,26 +20,29 @@ static const char s_kTalkingVoiceTypeWarning[] =
     "MASTERFILE: Could not find voice type (%08X) for activator '%s' (%08X).";
 
 // @fnv 0x004fe7a0
+// pdb: BGSTalkingActivator::InitializeData | BGSTalkingActivator.obj | debug, object-file gap fill, medium
 void BGSTalkingActivator::ResetFormData()
 {
-    m_kFactionList = 0;
+    pVoiceType = 0;
     TESObjectACTI::ResetFormData();
 }
 
 // @fnv 0x004fe7c0
+// pdb: BGSTalkingActivator::InitItem | BGSTalkingActivator.obj | retail, string-set bridge, high
+// pdb locals: itempint
 void BGSTalkingActivator::InitItem()
 {
     unsigned int voiceTypeID;
     if (GetInitialized())
         return;
     TESObjectACTI::InitItem();
-    m_pTempRef = 0;
-    voiceTypeID = reinterpret_cast<unsigned int>(m_kFactionList);
+    pTempRef = 0;
+    voiceTypeID = reinterpret_cast<unsigned int>(pVoiceType);
     if (voiceTypeID)
     {
         RemapFormIDForFile(voiceTypeID, GetFile(-1));
-        m_kFactionList = dynamic_cast<BGSVoiceType*>(TESFormInitFlag::GetFormByID(voiceTypeID));
-        if (!m_kFactionList)
+        pVoiceType = dynamic_cast<BGSVoiceType*>(TESFormInitFlag::GetFormByID(voiceTypeID));
+        if (!pVoiceType)
             Warning(s_kTalkingVoiceTypeWarning, voiceTypeID, GetName(), GetFormID());
     }
     SetInitializationState(true);
@@ -51,6 +54,7 @@ class PathingActorData;
 #include "../../include/RADIO_RANGE_TYPE.h"
 
 
+// pdb: structure ParentSpaceNode, size 0xc, 3 members
 class ParentSpaceNode
 {
   public:
@@ -58,6 +62,7 @@ class ParentSpaceNode
     TESWorldSpace* m_pContainingWorldspace;
     TESObjectCELL* m_pReferenceCell;
 };
+// pdb: structure TeleportLink, size 0x10, 2 members
 class TeleportLink
 {
   public:
@@ -82,15 +87,18 @@ FNV_STATIC_ASSERT(sizeof(RadioPathingPath) == 56);
 FNV_STATIC_ASSERT(sizeof(ParentSpaceNode) == 12);
 
 // @fnv 0x004ff1a0
-void BGSTalkingActivator::FindRadioStations(TESObjectREFR* ref, BSSimpleList<TESObjectREFR*>* stations,
-                                            BSSimpleList<float>* distances)
+// pdb: BGSTalkingActivator::GetRadioStationsInRangeOfRef | BGSTalkingActivator.obj | retail, string-set bridge, high
+// pdb params: apListenRef, apOutList, apDistancesList
+// pdb locals: plist, plistenint, plistenworld, fdist, badd, pref, pstationworld, pposref, path, isize, i, ptestworld
+void BGSTalkingActivator::FindRadioStations(TESObjectREFR* apListenRef, BSSimpleList<TESObjectREFR*>* apOutList,
+                                            BSSimpleList<float>* apDistancesList)
 {
-    if (!stations || !ref || !ref->GetParentCell())
+    if (!apOutList || !apListenRef || !apListenRef->GetParentCell())
         return;
-    TESWorldSpace* m_pContainingWorldspace = ref->GetParentWorldSpace();
+    TESWorldSpace* m_pContainingWorldspace = apListenRef->GetParentWorldSpace();
     TESObjectCELL* m_pReferenceCell = 0;
     if (!m_pContainingWorldspace)
-        m_pReferenceCell = ref->GetParentCell();
+        m_pReferenceCell = apListenRef->GetParentCell();
     float fDistance = FLT_MAX;
     bool bReferencePresent = false;
     BSSimpleList<TESObjectREFR*>* pCurrent = &ms_kRadioStations;
@@ -114,10 +122,10 @@ void BGSTalkingActivator::FindRadioStations(TESObjectREFR* ref, BSSimpleList<TES
                 else
                 {
                     if (m_pContainingWorldspace && m_pContainingWorldspace == pStationWorldSpace)
-                        fDistance = ref->GetLightLevelAtPoint(*static_cast<const TESObjectREFR*>(pExteriorRef)->GetPos());
+                        fDistance = apListenRef->GetLightLevelAtPoint(*static_cast<const TESObjectREFR*>(pExteriorRef)->GetPos());
                     else if (!m_pContainingWorldspace)
-                        fDistance = Pathing::FindPathDistance(
-                            PathingLocation(pCurrentRadioStation), PathingLocation(ref),
+                        fDistance = Pathing::ComputeTeleportDoorPathLength(
+                            PathingLocation(pCurrentRadioStation), PathingLocation(apListenRef),
                             pCurrentRadioStation->GetRadioStationRange(), 0, Pathing::RADIO_LOCKS);
                     if (fDistance < pCurrentRadioStation->GetRadioStationRange())
                         bReferencePresent = true;
@@ -145,7 +153,7 @@ void BGSTalkingActivator::FindRadioStations(TESObjectREFR* ref, BSSimpleList<TES
                 else
                 {
                     RadioPathingPath path;
-                    if (Pathing::FindRouteBetweenLocations(PathingLocation(pCurrentRadioStation), PathingLocation(ref),
+                    if (Pathing::FindRouteBetweenLocations(PathingLocation(pCurrentRadioStation), PathingLocation(apListenRef),
                                                            &path, Pathing::ONE_WORLDSPACE, 0.0f, 0,
                                                            Pathing::IGNORE_LOCKS))
                     {
@@ -169,9 +177,9 @@ void BGSTalkingActivator::FindRadioStations(TESObjectREFR* ref, BSSimpleList<TES
                 if (m_pReferenceCell)
                 {
                     RadioPathingPath path;
-                    if ((ref->GetParentCell() && pCurrentRadioStation->GetParentCell() &&
-                         ref->GetParentCell() == pCurrentRadioStation->GetParentCell()) ||
-                        Pathing::FindRouteBetweenLocations(PathingLocation(pCurrentRadioStation), PathingLocation(ref),
+                    if ((apListenRef->GetParentCell() && pCurrentRadioStation->GetParentCell() &&
+                         apListenRef->GetParentCell() == pCurrentRadioStation->GetParentCell()) ||
+                        Pathing::FindRouteBetweenLocations(PathingLocation(pCurrentRadioStation), PathingLocation(apListenRef),
                                                            &path, Pathing::INTERIOR_ONLY, 0.0f, 0,
                                                            Pathing::IGNORE_LOCKS))
                     {
@@ -190,8 +198,8 @@ void BGSTalkingActivator::FindRadioStations(TESObjectREFR* ref, BSSimpleList<TES
                 }
                 break;
             case RADIO_RANGE_TYPE_RADIO_RANGE_CURRENT_CELL:
-                if (ref->GetParentCell() && pCurrentRadioStation->GetParentCell() &&
-                    ref->GetParentCell() == pCurrentRadioStation->GetParentCell())
+                if (apListenRef->GetParentCell() && pCurrentRadioStation->GetParentCell() &&
+                    apListenRef->GetParentCell() == pCurrentRadioStation->GetParentCell())
                 {
                     bReferencePresent = true;
                     fDistance = -1.0f;
@@ -200,9 +208,9 @@ void BGSTalkingActivator::FindRadioStations(TESObjectREFR* ref, BSSimpleList<TES
             }
             if (bReferencePresent)
             {
-                stations->AddHead(pCurrentRadioStation);
-                if (distances)
-                    distances->AddHead(fDistance);
+                apOutList->AddHead(pCurrentRadioStation);
+                if (apDistancesList)
+                    apDistancesList->AddHead(fDistance);
             }
         }
         pCurrent = pCurrent->GetNext();
@@ -213,60 +221,63 @@ void BGSTalkingActivator::FindRadioStations(TESObjectREFR* ref, BSSimpleList<TES
 
 // Reads the record header and iterates chunks, dispatching each to the matching sub-record loader until no chunks remain, then returns true.
 // @fnv 0x004fe890
-bool BGSTalkingActivator::Load(TESFile* file)
+// pdb: BGSTalkingActivator::Load | BGSTalkingActivator.obj | retail, upstream name already matches, high
+// pdb params: apFile
+// pdb locals: chunkid, pMessage, isize, pdata, tempint, itempint
+bool BGSTalkingActivator::Load(TESFile* apFile)
 {
-    LoadRecordHeader(file);
+    LoadRecordHeader(apFile);
     SetInitializationState(false);
     int chunk;
-    while ((chunk = file->GetChunkID()) != 0)
+    while ((chunk = apFile->GetChunkID()) != 0)
     {
         switch (chunk)
         {
         case 'DIDE': {
-            char* editorID = static_cast<char*>(_alloca(file->GetChunkSize()));
-            file->GetChunkData(editorID, 512);
+            char* editorID = static_cast<char*>(_alloca(apFile->GetChunkSize()));
+            apFile->GetChunkData(editorID, 512);
             SetEditorID_AtRuntime(editorID);
         }
         break;
         case 'DNBO':
-            readOBNDSubRecord(file);
+            readOBNDSubRecord(apFile);
             break;
         case 'LLUF':
-            TESFullNameLoader::LoadFullNameChunk(this, file);
+            TESFullNameLoader::LoadFullNameChunk(this, apFile);
             break;
         case 'LDOM':
         case 'TDOM':
         case 'DDOM':
         case 'DSOM':
-            TESModel::LoadModelData(this, file);
+            TESModel::LoadModelData(this, apFile);
             break;
         case 'SDOM': {
-            unsigned int size = file->GetChunkSize();
+            unsigned int size = apFile->GetChunkSize();
             void* pChunkData = _alloca(size);
-            file->GetChunkData(pChunkData, size);
-            ParseTextureSwapData(pChunkData, size, static_cast<TESFileFormVersion*>(file)->GetFormVersion());
+            apFile->GetChunkData(pChunkData, size);
+            UnpackTextureSwapChunkData(pChunkData, size, static_cast<TESFileFormVersion*>(apFile)->GetFormVersion());
         }
         break;
         case 'IRCS': {
             unsigned int scriptID = 0;
-            file->GetChunkData(&scriptID);
+            apFile->GetChunkData(&scriptID);
             SetScript(reinterpret_cast<Script*>(scriptID));
             TESScriptableForm::InitItem(this);
         }
         break;
         case 'TSED':
         case 'DTSD':
-            BGSDestructibleObjectForm::LoadDestructibleData(this, file);
+            BGSDestructibleObjectForm::LoadDestructibleData(this, apFile);
             break;
         case 'MANS': {
             unsigned int soundID = 0;
-            file->GetChunkData(&soundID);
+            apFile->GetChunkData(&soundID);
             SetLoopingSound(reinterpret_cast<TESSound*>(soundID));
         }
         break;
         case 'MANI': {
             unsigned int templateID = 0;
-            file->GetChunkData(&templateID);
+            apFile->GetChunkData(&templateID);
             // Radio-template setter is folded with this canonical +0x7C setter.
             reinterpret_cast<EffectSetting*>(this)->SetEnchantEffectShader(
                 reinterpret_cast<TESEffectShader*>(templateID));
@@ -274,12 +285,12 @@ bool BGSTalkingActivator::Load(TESFile* file)
         break;
         case 'MANV': {
             unsigned int voiceID = 0;
-            file->GetChunkData(&voiceID);
+            apFile->GetChunkData(&voiceID);
             SetVoiceType(reinterpret_cast<BGSVoiceType*>(voiceID));
         }
         break;
         }
-        if (!file->NextChunk())
+        if (!apFile->NextChunk())
             break;
     }
     return true;
@@ -287,12 +298,15 @@ bool BGSTalkingActivator::Load(TESFile* file)
 
 // Returns true if form is a talking activator (form type 0x16) whose IsRadioStation check succeeds.
 // @fnv 0x004fede0
-bool BGSTalkingActivator::IsRadioStation(TESForm* form, unsigned int data)
+// pdb: BGSTalkingActivator::IsRadioStation | BGSTalkingActivator.obj | debug, call graph (shared callers), high
+// pdb params: apForm, aiData
+// pdb locals: bretval, ptact
+bool BGSTalkingActivator::IsRadioStation(TESForm* apForm, unsigned int aiData)
 {
     bool result = false;
-    if (form && form->GetFormType() == 0x16)
+    if (apForm && apForm->GetFormType() == 0x16)
     {
-        BGSTalkingActivator* activator = static_cast<BGSTalkingActivator*>(form);
+        BGSTalkingActivator* activator = static_cast<BGSTalkingActivator*>(apForm);
         if (activator->IsRadioStation())
             result = true;
     }
@@ -301,16 +315,18 @@ bool BGSTalkingActivator::IsRadioStation(TESForm* form, unsigned int data)
 
 // If ref is non-null and its object reference is a radio station, adds ref to the head of the list.
 // @fnv 0x004ff150
-void BGSTalkingActivator::AddRadioStation(TESObjectREFR* ref)
+// pdb: BGSTalkingActivator::AddRadioStation | BGSTalkingActivator.obj | retail, upstream name already matches, high
+// pdb params: apRef
+void BGSTalkingActivator::AddRadioStation(TESObjectREFR* apRef)
 {
-    if (ref && IsRadioStation(ref->GetObjectReference(), 0))
-        ms_kRadioStations.AddHead(ref);
+    if (apRef && IsRadioStation(apRef->GetObjectReference(), 0))
+        ms_kRadioStations.AddHead(apRef);
 }
 
 // @fnv 0x004febf0
 void BGSTalkingActivator::SetVoiceType(BGSVoiceType* apVoiceType)
 {
-    m_kFactionList = apVoiceType;
+    pVoiceType = apVoiceType;
 }
 
 // @fnv 0x004febb0
@@ -326,6 +342,7 @@ void EffectSetting::SetEnchantEffectShader(TESEffectShader* shader)
 }
 
 // @fnv 0x004fedc0
+// pdb: BGSTalkingActivator::IsRadioStation | BGSTalkingActivator.obj | debug, call graph (shared callers), high
 bool BGSTalkingActivator::IsRadioStation()
 {
     return TESForm::IsRadioStationObject();
@@ -361,6 +378,8 @@ struct StackIdx
 
 // @fnv 0x006a1440
 // src: GUESS 0x006a1440 (confidence: low)
+// pdb: BSSimpleArray<NiPoint3,1024>::operator[] | BGSAutoWater.obj | debug, call graph, medium
+// pdb params: aiIndex
 Elem12& __fastcall Object_GetIndexedValue_006a1440(ArrayObj* pThis, StackIdx aiIndex)
 {
     return pThis->m_pBase[aiIndex.i];
@@ -368,6 +387,7 @@ Elem12& __fastcall Object_GetIndexedValue_006a1440(ArrayObj* pThis, StackIdx aiI
 
 // @fnv 0x004ff190
 // src: COMMUNITY 0x004ff190
+// pdb: BGSTalkingActivator::ClearRadioStationList | BGSTalkingActivator.obj | debug, upstream name already matches, high
 void BGSTalkingActivator_ClearRadioStationList()
 {
     BGSTalkingActivator::ms_kRadioStations.RemoveAll();
@@ -381,6 +401,7 @@ struct FUN_004fe6e0_Class
 };
 // Calls FUN_004fe710, then deallocates this if bit 0 of flags is set, and returns this.
 // @fnv 0x004fe6e0
+// pdb: BGSTalkingActivator::`scalar deleting destructor' | BGSTalkingActivator.obj | retail, vtable slot, high
 void* __thiscall FUN_004fe6e0_Class::FUN_004fe6e0(unsigned int flags)
 {
     FUN_004fe710();
@@ -398,6 +419,9 @@ struct FUN_004fecf0_ : BGSTalkingActivator
     void CopyVoiceTypeFromActivator(TESForm*);
 };
 // @fnv 0x004fecf0
+// pdb: BGSTalkingActivator::Copy | BGSTalkingActivator.obj | retail, vtable slot, high
+// pdb params: apCopy
+// pdb locals: acti
 void FUN_004fecf0_::CopyVoiceTypeFromActivator(TESForm* apCopy)
 {
     BGSTalkingActivator* acti = dynamic_cast<BGSTalkingActivator*>(apCopy);
@@ -428,6 +452,8 @@ struct FUN_004ff800_shell : public FUN_00511860_shell
 };
 // @fnv 0x004ff800
 // src: XBOX_PDB 0x004ff800
+// pdb: BGSTalkingActivator::SaveGame | BGSTalkingActivator.obj | retail, upstream name already matches, high
+// pdb params: apSaveGameBuffer
 void FUN_004ff800_shell::BGSTalkingActivator_SaveGame(BGSSaveFormBuffer* apSaveGameBuffer)
 {
     FUN_00511860_shell::TESObjectACTI_SaveGame(apSaveGameBuffer);
@@ -447,6 +473,8 @@ struct FUN_004ff850_shell
     void LoadForm(BGSLoadFormBuffer*);
 };
 // @fnv 0x004ff850
+// pdb: BGSTalkingActivator::LoadGame | BGSTalkingActivator.obj | retail, vtable slot, high
+// pdb params: apLoadGameBuffer
 void FUN_004ff850_shell::LoadForm(BGSLoadFormBuffer* apLoadGameBuffer)
 {
     ((Base005118c0*)this)->TESObjectACTI_LoadGame(apLoadGameBuffer);
@@ -463,6 +491,8 @@ struct FUN_004ff930_shell : TESForm
     void RevertAndClearField(BGSLoadFormBuffer*);
 };
 // @fnv 0x004ff930
+// pdb: BGSTalkingActivator::Revert | BGSTalkingActivator.obj | retail, vtable slot, high
+// pdb params: apLoadGameBuffer
 void FUN_004ff930_shell::RevertAndClearField(BGSLoadFormBuffer* apLoadGameBuffer)
 {
     TESForm::Revert((unsigned int)apLoadGameBuffer);
@@ -502,6 +532,8 @@ struct FUN_004fec10_shell
 };
 // @fnv 0x004fec10
 // src: XBOX_PDB 0x004fec10
+// pdb: BGSTalkingActivator::Save | BGSTalkingActivator.obj | retail, upstream name already matches, high
+// pdb locals: itempint
 void FUN_004fec10_shell::BGSTalkingActivator_Save()
 {
     reinterpret_cast<FUN_004855a0*>(this)->M();
@@ -543,6 +575,7 @@ struct FUN_004fe640 : public TESObjectACTI
 };
 
 // @fnv 0x004fe640
+// pdb: BGSTalkingActivator::BGSTalkingActivator | BGSTalkingActivator.obj | retail, call graph, high
 FUN_004fe640::FUN_004fe640()
 {
     SetFormType((ENUM_FORM_ID)0x16);
@@ -628,6 +661,10 @@ class FUN_004fe710 : public C4FE710Activator
 };
 
 // @fnv 0x004fe710
+// pdb: BSSimpleList<float>::AddHead | BGSTalkingActivator.obj | retail, object-file run extension, low
+// pdb note: debug build links it to BGSTalkingActivator::~BGSTalkingActivator
+// pdb params: item
+// pdb locals: pkTmp
 FUN_004fe710::~FUN_004fe710()
 {
     ClearData();
@@ -640,46 +677,51 @@ struct FUN_004534f0_shell
 TESForm* __cdecl TESForm_GetFormByNumericID(unsigned int a);
 struct FUN_004ff8a0_shell : public BGSTalkingActivator
 {
-    void BGSTalkingActivator_InitLoadGame(BGSLoadFormBuffer* arg);
+    void BGSTalkingActivator_InitLoadGame(BGSLoadFormBuffer* apLoadGameBuffer);
 };
 // Calls FUN_004534f0, then conditionally replaces m_pTempRef with an Actor cast of the form returned by FUN_004839c0.
 // @fnv 0x004ff8a0
 // src: COMMUNITY 0x004ff8a0
-void FUN_004ff8a0_shell::BGSTalkingActivator_InitLoadGame(BGSLoadFormBuffer* arg)
+// pdb: BGSTalkingActivator::InitLoadGame | BGSTalkingActivator.obj | retail, upstream name already matches, high
+// pdb params: apLoadGameBuffer
+void FUN_004ff8a0_shell::BGSTalkingActivator_InitLoadGame(BGSLoadFormBuffer* apLoadGameBuffer)
 {
-    ((FUN_004534f0_shell*)this)->FUN_004534f0(arg);
-    if (arg->GetChangeFlags(0x800000).operator bool())
+    ((FUN_004534f0_shell*)this)->FUN_004534f0(apLoadGameBuffer);
+    if (apLoadGameBuffer->GetChangeFlags(0x800000).operator bool())
     {
-        m_pTempRef =
-            (TESObjectREFR*)(m_pTempRef != 0 ? dynamic_cast<Actor*>(TESForm_GetFormByNumericID((unsigned int)m_pTempRef)) : 0);
+        pTempRef =
+            (TESObjectREFR*)(pTempRef != 0 ? dynamic_cast<Actor*>(TESForm_GetFormByNumericID((unsigned int)pTempRef)) : 0);
     }
 }
 
 struct ActivatorComparison
 {
-    bool __thiscall TESObjectACTI_Compare(TESForm* form);
+    bool __thiscall TESObjectACTI_Compare(TESForm* apCompare);
 };
 
 struct TalkingActivatorComparison : BGSTalkingActivator
 {
     BGSVoiceType* __thiscall FUN_009185e0();
-    bool __thiscall BGSTalkingActivator_Compare(TESForm* form);
+    bool __thiscall BGSTalkingActivator_Compare(TESForm* apCompare);
 };
 
 BGSVoiceType* __thiscall TalkingActivatorComparison::FUN_009185e0()
 {
-    return m_kFactionList;
+    return pVoiceType;
 }
 
 // Returns true if form is not a BGSTalkingActivator, FUN_005111e0 returns true, or the two FUN_009185e0 results differ.
 // @fnv 0x004fed50
 // src: XBOX_PDB 0x004fed50
-bool __thiscall TalkingActivatorComparison::BGSTalkingActivator_Compare(TESForm* form)
+// pdb: BGSTalkingActivator::Compare | BGSTalkingActivator.obj | retail, upstream name already matches, high
+// pdb params: apCompare
+// pdb locals: pComp
+bool __thiscall TalkingActivatorComparison::BGSTalkingActivator_Compare(TESForm* apCompare)
 {
-    BGSTalkingActivator* activator = dynamic_cast<BGSTalkingActivator*>(form);
+    BGSTalkingActivator* activator = dynamic_cast<BGSTalkingActivator*>(apCompare);
     if (!activator)
         return true;
-    if (reinterpret_cast<ActivatorComparison*>(this)->TESObjectACTI_Compare(form))
+    if (reinterpret_cast<ActivatorComparison*>(this)->TESObjectACTI_Compare(apCompare))
         return true;
     if (FUN_009185e0() != static_cast<TalkingActivatorComparison*>(activator)->FUN_009185e0())
         return true;

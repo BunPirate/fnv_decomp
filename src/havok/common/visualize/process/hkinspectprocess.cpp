@@ -42,12 +42,14 @@ public:
 
 inline hkProcess::hkProcess(hkBool selectable)
 {
-    *reinterpret_cast<hkBool*>(&unk04) = selectable;
+    *reinterpret_cast<hkBool*>(&m_selectable) = selectable;
 }
 inline hkProcess::~hkProcess() throw()
 {}
 
 // @fnv 0x00ddb2f0
+// pdb: hkIArchive::read32u | hkInspectProcess.obj | debug, object-file run extension, low
+// pdb locals: t
 void __stdcall GetPunctuationChars(char** apOutString, int* apiLength)
 {
     *apOutString = "!\"#$%";
@@ -55,13 +57,15 @@ void __stdcall GetPunctuationChars(char** apOutString, int* apiLength)
 }
 
 extern hkProcess* DAT_01269cd0;
-extern hkInspectProcess* DAT_01269cd4;
+extern hkInspectProcess* hkInspectProcess_m_tag; // src: XBOX_RETAIL_PDB 0x01269cd4 (old: DAT_01269cd4)
 void __cdecl hkInspectProcess_create(hkProcess*);
 extern hkProcessFactory* hkProcessFactory_registerProcess;
 // @fnv 0x00ddb750
-void __cdecl RegisterObjectInspectionProcess()
+// src: XBOX_RETAIL_PDB 0x00ddb750
+// pdb: hkInspectProcess::registerProcess | hkInspectProcess.obj | retail, string-set bridge, high
+void __cdecl hkInspectProcess_registerProcess()
 {
-    DAT_01269cd4 = hkProcessFactory_registerProcess->RegisterProcess("ObjectInspection", hkInspectProcess_create);
+    hkInspectProcess_m_tag = hkProcessFactory_registerProcess->RegisterProcess("ObjectInspection", hkInspectProcess_create);
 }
 
 
@@ -69,25 +73,29 @@ void __cdecl RegisterObjectInspectionProcess()
 // If addObject is set, calls WriteObjectHeader with object, type and flags; otherwise calls RemovePair with object.
 // @fnv 0x00ddb5d0
 // src: HAVOK_LIB 0x00ddb5d0
-void __cdecl myTrackedObjectCallback(void* object, int type, char addObject, int flags, hkInspectProcess* inspectProcess)
+// pdb: myTrackedObjectCallback | hkInspectProcess.obj | debug, upstream name already matches, high
+// pdb params: ptr, klass, wasAdded, tagId, userCallbackHandle
+void __cdecl myTrackedObjectCallback(void* ptr, int klass, char wasAdded, int tagId, hkInspectProcess* userCallbackHandle)
 {
-    if (addObject)
+    if (wasAdded)
     {
-        inspectProcess->WriteObjectHeader(object, reinterpret_cast<const hkClass*>(type), flags);
+        userCallbackHandle->addTopLevelObject(ptr, reinterpret_cast<const hkClass*>(klass), tagId);
     }
     else
     {
-        inspectProcess->RemovePair(object);
+        userCallbackHandle->RemovePair(ptr);
     }
 }
 
 void __cdecl CreateImpl(hkProcess*);
-extern hkInspectProcess* DAT_01269cd8;
+extern hkInspectProcess* hkStatisticsProcess_m_tag; // src: XBOX_RETAIL_PDB 0x01269cd8 (old: DAT_01269cd8)
 
 // @fnv 0x00ddc1a0
-hkInspectProcess* __cdecl CreateStatisticsProcess()
+// src: XBOX_RETAIL_PDB 0x00ddc1a0
+// pdb: hkStatisticsProcess::registerProcess | hkStatisticsProcess.obj | retail, string-set bridge, high
+hkInspectProcess* __cdecl hkStatisticsProcess_registerProcess()
 {
-    return DAT_01269cd8 = ((hkProcessFactory*)DAT_01269cd0)->RegisterProcess("Statistics", CreateImpl);
+    return hkStatisticsProcess_m_tag = ((hkProcessFactory*)DAT_01269cd0)->RegisterProcess("Statistics", CreateImpl);
 }
 
 
@@ -95,7 +103,7 @@ hkInspectProcess* __cdecl CreateStatisticsProcess()
 // src: GUESS 0x00ddbeb0 (confidence: low)
 hkInspectProcess* hkInspectProcess_GetDAT01269cd4()
 {
-    return DAT_01269cd4;
+    return hkInspectProcess_m_tag;
 }
 
 class hkSourceDDB6
@@ -126,7 +134,7 @@ struct hkInspectArray
     }
 };
 
-void __cdecl myTrackedObjectCallback(void* userData);
+void __cdecl myTrackedObjectCallback(void* ptr);
 
 // These callbacks are not yet declared by ProcessContext's shared layout.
 extern "C" void FUN_00cd13c0();
@@ -136,15 +144,17 @@ typedef void (__thiscall* RemoveInspectCallback)(ProcessContext*,
     void(__cdecl*)(void*, int, char, int, hkInspectProcess*));
 
 // @fnv 0x00ddb600
-hkInspectProcess::hkInspectProcess(const hkSourceListDDB6& sources) throw()
+// pdb: hkInspectProcess::hkInspectProcess | hkInspectProcess.obj | retail, upstream name already matches, high
+// pdb params: contexts
+hkInspectProcess::hkInspectProcess(const hkSourceListDDB6& contexts) throw()
     : hkProcess(true)
 {
-    reinterpret_cast<hkInspectArray*>(&unk20)->initialize();
-    context = sources.m_iElementCount > 0 ? (ProcessContext*)sources.m_data[0]->m_target : 0;
-    if (context)
+    reinterpret_cast<hkInspectArray*>(&m_autoUpdateList)->initialize();
+    m_vdb = contexts.m_iElementCount > 0 ? (ProcessContext*)contexts.m_data[0]->m_target : 0;
+    if (m_vdb)
     {
-        reinterpret_cast<hkReferencedObject*>(context)->addReference();
-        reinterpret_cast<AddInspectCallback>(FUN_00cd13c0)(context, myTrackedObjectCallback, this);
+        reinterpret_cast<hkReferencedObject*>(m_vdb)->addReference();
+        reinterpret_cast<AddInspectCallback>(FUN_00cd13c0)(m_vdb, myTrackedObjectCallback, this);
     }
 }
 
@@ -206,30 +216,33 @@ __forceinline void hkArrayBase<T>::removeAt(int index)
 }
 
 // @fnv 0x00ddb670
+// pdb: hkInspectProcess::~hkInspectProcess | hkInspectProcess.obj | retail, upstream name already matches, high
 hkInspectProcess::~hkInspectProcess() throw()
 {
     using namespace fnv_00ddb670;
-    ProcessContext* pkContext = context;
+    ProcessContext* pkContext = m_vdb;
     if (pkContext)
     {
         for (int i = 0; i < pkContext->unk2c; i++)
             RemovePair(reinterpret_cast<hkProcessObjectDDB6*>(pkContext->unk28)[i].m_object);
-        reinterpret_cast<RemoveInspectCallback>(FUN_00cd1140)(context, myTrackedObjectCallback);
-        reinterpret_cast<hkReferencedObject*>(context)->removeReference();
+        reinterpret_cast<RemoveInspectCallback>(FUN_00cd1140)(m_vdb, myTrackedObjectCallback);
+        reinterpret_cast<hkReferencedObject*>(m_vdb)->removeReference();
     }
-    reinterpret_cast<hkArray<hkInspectEntryDDB6>*>(&unk20)->_clearAndDeallocate(fnv_00ddb670::hkMemoryRouter_getInstance().heap());
+    reinterpret_cast<hkArray<hkInspectEntryDDB6>*>(&m_autoUpdateList)->_clearAndDeallocate(fnv_00ddb670::hkMemoryRouter_getInstance().heap());
 }
 
 void* __cdecl hkMemoryRouter_getInstance();
 // @fnv 0x00ddb710
 // src: HAVOK_LIB 0x00ddb710
-void* __cdecl hkInspectProcess_create(unsigned int value)
+// pdb: hkInspectProcess::create | hkInspectProcess.obj | retail, upstream name already matches, high
+// pdb params: contexts
+void* __cdecl hkInspectProcess_create(unsigned int contexts)
 {
     hkMemoryRouterQ_hkinspectprocess* pCpuHolder = static_cast<hkMemoryRouterQ_hkinspectprocess*>(hkMemoryRouter_getInstance());
     hkInspectProcess* pCpuBlock =
         static_cast<hkInspectProcess*>(pCpuHolder->heap().blockAlloc(48));
-    pCpuBlock->m_usMemSizeAndFlags = 48;
-    pCpuBlock = ::new (pCpuBlock) hkInspectProcess(*reinterpret_cast<const hkSourceListDDB6*>(value));
+    pCpuBlock->m_memSizeAndFlags = 48;
+    pCpuBlock = ::new (pCpuBlock) hkInspectProcess(*reinterpret_cast<const hkSourceListDDB6*>(contexts));
     if (pCpuBlock)
         return reinterpret_cast<char*>(pCpuBlock) + 8;
     return 0;
@@ -238,25 +251,28 @@ void* __cdecl hkInspectProcess_create(unsigned int value)
 inline void hkReferencedObject::operator delete(void* p)
 {
     hkMemoryRouterQ_hkinspectprocess* mem = static_cast<hkMemoryRouterQ_hkinspectprocess*>(hkMemoryRouter_getInstance());
-    mem->heap().blockFree(p, static_cast<hkReferencedObject*>(p)->m_usMemSizeAndFlags);
+    mem->heap().blockFree(p, static_cast<hkReferencedObject*>(p)->m_memSizeAndFlags);
 }
 
 // Writes a 25-byte object header to the archive, resolving the actual class via the vtable registry when available.
 // @fnv 0x00ddb310
-int hkInspectProcess::WriteObjectHeader(void* object, const hkClass* pClassInfo, unsigned int flags)
+// src: XBOX_RETAIL_PDB 0x00ddb310
+// pdb: hkInspectProcess::addTopLevelObject | hkInspectProcess.obj | retail, call graph, high
+// pdb params: ptr, klass, tag
+int hkInspectProcess::addTopLevelObject(void* ptr, const hkClass* klass, unsigned int tag)
 {
-    reinterpret_cast<hkOArchive*>(unk0c)->WriteUint32(25);
-    const hkClass* pActualClass = pClassInfo;
-    if (context->registry && pClassInfo->GetLastNodeFlag())
+    reinterpret_cast<hkOArchive*>(m_outStream)->WriteUint32(25);
+    const hkClass* pActualClass = klass;
+    if (m_vdb->registry && klass->GetLastNodeFlag())
     {
-        pActualClass = context->registry->GetClassFromVirtualInstance(object);
+        pActualClass = m_vdb->registry->GetClassFromVirtualInstance(ptr);
         if (!pActualClass)
-            pActualClass = pClassInfo;
+            pActualClass = klass;
     }
-    reinterpret_cast<hkOArchive*>(unk0c)->WriteUint8(33);
-    reinterpret_cast<hkOArchive*>(unk0c)->WriteUint64(reinterpret_cast<unsigned int>(object));
-    reinterpret_cast<hkOArchive*>(unk0c)->WriteUint64(reinterpret_cast<unsigned int>(pActualClass));
-    reinterpret_cast<hkOArchive*>(unk0c)->WriteUint64(flags);
+    reinterpret_cast<hkOArchive*>(m_outStream)->WriteUint8(33);
+    reinterpret_cast<hkOArchive*>(m_outStream)->WriteUint64(reinterpret_cast<unsigned int>(ptr));
+    reinterpret_cast<hkOArchive*>(m_outStream)->WriteUint64(reinterpret_cast<unsigned int>(pActualClass));
+    reinterpret_cast<hkOArchive*>(m_outStream)->WriteUint64(tag);
     return 25;
 }
 
@@ -281,22 +297,23 @@ struct TrackedObjectDDB3
 
 // Writes layout rules and each tracked object entry to the output archive.
 // @fnv 0x00ddb3a0
+// pdb: hkInspectProcess::init | hkInspectProcess.obj | retail, upstream name already matches, high
 void hkInspectProcess::init()
 {
-    if (!context)
+    if (!m_vdb)
         return;
-    reinterpret_cast<hkOArchive*>(unk0c)->WriteUint32(0xd);
-    reinterpret_cast<hkOArchive*>(unk0c)->WriteUint8(0x20);
-    reinterpret_cast<hkOArchive*>(unk0c)->WriteInt64(reinterpret_cast<int>(&g_0126cae8), 0);
-    reinterpret_cast<hkOArchive*>(unk0c)->WriteUint8(DAT_011b7b88.m_ucBytesInPointer);
-    reinterpret_cast<hkOArchive*>(unk0c)->WriteUint8(DAT_011b7b88.m_bLittleEndian);
-    reinterpret_cast<hkOArchive*>(unk0c)->WriteUint8(DAT_011b7b88.m_bReusePaddingOptimization);
-    reinterpret_cast<hkOArchive*>(unk0c)->WriteUint8(DAT_011b7b88.m_bEmptyBaseClassOptimization);
-    hkArray<TrackedObjectDDB3>& kObjects = *reinterpret_cast<hkArray<TrackedObjectDDB3>*>(&context->unk28);
+    reinterpret_cast<hkOArchive*>(m_outStream)->WriteUint32(0xd);
+    reinterpret_cast<hkOArchive*>(m_outStream)->WriteUint8(0x20);
+    reinterpret_cast<hkOArchive*>(m_outStream)->WriteInt64(reinterpret_cast<int>(&g_0126cae8), 0);
+    reinterpret_cast<hkOArchive*>(m_outStream)->WriteUint8(DAT_011b7b88.m_ucBytesInPointer);
+    reinterpret_cast<hkOArchive*>(m_outStream)->WriteUint8(DAT_011b7b88.m_bLittleEndian);
+    reinterpret_cast<hkOArchive*>(m_outStream)->WriteUint8(DAT_011b7b88.m_bReusePaddingOptimization);
+    reinterpret_cast<hkOArchive*>(m_outStream)->WriteUint8(DAT_011b7b88.m_bEmptyBaseClassOptimization);
+    hkArray<TrackedObjectDDB3>& kObjects = *reinterpret_cast<hkArray<TrackedObjectDDB3>*>(&m_vdb->unk28);
     for (int i = 0; i < kObjects.GetLogicalSize(); i++)
     {
         TrackedObjectDDB3& kEntry = kObjects[i];
-        WriteObjectHeader(kEntry.m_pvObject, kEntry.m_iType, kEntry.m_iFlags);
+        addTopLevelObject(kEntry.m_pvObject, kEntry.m_iType, kEntry.m_iFlags);
     }
 }
 
@@ -311,17 +328,19 @@ struct hkPairDDB5
 
 // Writes a removal header and key, removes the matching inspection pair, and returns 9.
 // @fnv 0x00ddb550
+// pdb: hkInspectProcess::removeTopLevelObject | hkInspectProcess.obj | retail, object-file run extension, low
+// pdb params: ptr
 int hkInspectProcess::RemovePair(int iKey)
 {
     using namespace fnv_00ddb550;
-    reinterpret_cast<hkOArchive*>(unk0c)->WriteUint32(9);
-    reinterpret_cast<hkOArchive*>(unk0c)->WriteUint8(0x22);
-    reinterpret_cast<hkOArchive*>(unk0c)->WriteInt64(iKey, 0);
+    reinterpret_cast<hkOArchive*>(m_outStream)->WriteUint32(9);
+    reinterpret_cast<hkOArchive*>(m_outStream)->WriteUint8(0x22);
+    reinterpret_cast<hkOArchive*>(m_outStream)->WriteInt64(iKey, 0);
     for (int i = 0; i < unk24; i++)
     {
-        if (reinterpret_cast<hkPairDDB5*>(unk20)[i].m_key == iKey)
+        if (reinterpret_cast<hkPairDDB5*>(m_autoUpdateList)[i].m_key == iKey)
         {
-            reinterpret_cast<hkArray<hkPairDDB5>*>(&unk20)->removeAt(i);
+            reinterpret_cast<hkArray<hkPairDDB5>*>(&m_autoUpdateList)->removeAt(i);
             break;
         }
     }
@@ -329,7 +348,7 @@ int hkInspectProcess::RemovePair(int iKey)
 }
 
 
-void __cdecl ResizeAudioStream(hkMemoryAllocator* alloc, void* array, int sizeElem) throw();
+void __cdecl ResizeAudioStream(hkMemoryAllocator* mem, void* array, int sizeElem) throw();
 
 template <typename T> struct hkArrQLocalForm
 { // local form of hkArray: 0x00ddb770 needs the original inline/out-of-line helper split; shared replacement changes bytes.
@@ -399,9 +418,10 @@ struct hkLayoutRulesQ
 extern hkLayoutRulesQ DAT_010d6ae8;
 
 // Constructor at 0x00dc1680 is hkStructureLayout; no shared header is available yet.
+// pdb: class hkStructureLayout, size 0x4, 1 members
 struct hkStructureLayout
 {
-    hkLayoutRulesQ m_kLayoutRules;
+    hkLayoutRulesQ m_rules; // src: XBOX_RETAIL_PDB +0x0 (old: m_kLayoutRules)
     hkStructureLayout(const hkLayoutRulesQ& rules) throw();
 };
 
@@ -432,61 +452,64 @@ __forceinline int hkInspectProcess::sendRecursiveQ(const void* object, const hkC
 
 // @fnv 0x00ddb770
 // src: HAVOK_LIB 0x00ddb770
-int hkInspectProcess::writeObject(const void* object, const hkClass* pClassInfo, hkBool recurse,
-                                    hkArrQLocalForm<hkWrittenObjectQ>* written) throw()
+// pdb: hkInspectProcess::writeObject | hkInspectProcess.obj | retail, upstream name already matches, high
+// pdb params: ptr, klass, recurse, recursionStack
+// pdb locals: refs, buffer, pcLayout, asw
+int hkInspectProcess::writeObject(const void* ptr, const hkClass* klass, hkBool recurse,
+                                    hkArrQLocalForm<hkWrittenObjectQ>* recursionStack) throw()
 {
     hkStructureLayout layout(DAT_010d6ae8);
     hkArrQLocalForm<hkObjectPatchQ> patches;
 
-    const hkClass* realClass = pClassInfo;
-    if (context->registry && pClassInfo->GetLastNodeFlag())
+    const hkClass* realClass = klass;
+    if (m_vdb->registry && klass->GetLastNodeFlag())
     {
-        realClass = context->registry->GetClassFromVirtualInstance(object);
+        realClass = m_vdb->registry->GetClassFromVirtualInstance(ptr);
         if (!realClass)
         {
-            realClass = pClassInfo;
+            realClass = klass;
         }
     }
 
     if (recurse)
     {
         int i;
-        for (i = 0; i < written->GetLogicalSize(); i++)
+        for (i = 0; i < recursionStack->GetLogicalSize(); i++)
         {
-            if ((*written)[i].m_object == object)
+            if ((*recursionStack)[i].m_object == ptr)
             {
                 break;
             }
         }
-        if (i < written->GetLogicalSize())
+        if (i < recursionStack->GetLogicalSize())
         {
             return 0;
         }
         hkWrittenObjectQ w;
-        w.m_object = object;
+        w.m_object = ptr;
         w.m_class = realClass;
-        written->AddBack(w);
+        recursionStack->AddBack(w);
     }
 
     hkArrQLocalForm<char> buffer;
     hkArrayStreamWriter writer(reinterpret_cast<hkCharArray*>(&buffer), 1);
-    int size = hkObjectSerialize_writeObject(&writer, &layout, object, 0, object, realClass, &patches);
+    int size = hkObjectSerialize_writeObject(&writer, &layout, ptr, 0, ptr, realClass, &patches);
     if (size != buffer.GetLogicalSize() || size < 1)
     {
         return -1;
     }
 
     int total = size + 1;
-    reinterpret_cast<hkOArchive*>(unk0c)->WriteUint32(total);
-    reinterpret_cast<hkOArchive*>(unk0c)->WriteUint8(0x24);
-    reinterpret_cast<hkOArchive*>(unk0c)->WriteRaw(buffer.m_data, buffer.GetLogicalSize());
+    reinterpret_cast<hkOArchive*>(m_outStream)->WriteUint32(total);
+    reinterpret_cast<hkOArchive*>(m_outStream)->WriteUint8(0x24);
+    reinterpret_cast<hkOArchive*>(m_outStream)->WriteRaw(buffer.m_data, buffer.GetLogicalSize());
     if (recurse)
     {
         for (int i = 0; i < patches.GetLogicalSize(); i++)
         {
             const void* obj = patches[i].m_object;
             const hkClass* cls = patches[i].m_class;
-            total += sendRecursiveQ(obj, cls, written);
+            total += sendRecursiveQ(obj, cls, recursionStack);
         }
     }
     return total;
@@ -504,6 +527,8 @@ static __forceinline int nextIndex(const hkPathArray* path, int i)
 // Walks a hkPathArray through hkClassMember types to compute and return the pointer to a nested member within data.
 // @fnv 0x00ddb450
 // src: HAVOK_LIB 0x00ddb450
+// pdb: _FindMemberItem | hkInspectProcess.obj | retail, upstream name already matches, high
+// pdb params: memberPtr, memberPath, curMemberIndex, t, subType, member
 static __declspec(noinline) void* __cdecl _FindMemberItem(const hkClassMember* member, char* data, const hkPathArray* path,
                                                        int type, int aiIndex)
 {
@@ -546,7 +571,7 @@ static __declspec(noinline) void* __cdecl _FindMemberItem(const hkClassMember* m
             int iIndex = path->unk00[aiIndex + 1];
             {
                 char* next = *(char**)p + member->GetTagValue() * iIndex;
-                type = member->m_eSubtype;
+                type = member->m_subtype;
                 ++aiIndex;
                 p = next;
             }

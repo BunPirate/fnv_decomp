@@ -68,7 +68,9 @@ struct FUN_00d3b3d0_Class
 
 // Calls invoke on unk08 for each of the three IDs at unk0C unless it is 0xffff, then releases the object.
 // @fnv 0x00d3b3d0
-void FUN_00d3b3d0_Class::InvokeCallbacksAndRelease(int value)
+// pdb: hkpCapsuleCapsuleAgent::cleanup | hkpCapsuleCapsuleAgent.obj | retail, vtable slot, high
+// pdb params: constraintOwner
+void FUN_00d3b3d0_Class::InvokeCallbacksAndRelease(int constraintOwner)
 {
     unsigned short* id = &unk0C;
     int iRemaining = 3;
@@ -76,7 +78,7 @@ void FUN_00d3b3d0_Class::InvokeCallbacksAndRelease(int value)
     {
         unsigned short usId = *id;
         if (usId != 0xffff)
-            unk08->invoke(usId, value);
+            unk08->invoke(usId, constraintOwner);
         ++id;
         --iRemaining;
     } while (iRemaining != 0);
@@ -89,7 +91,7 @@ typedef void (__cdecl* HandlerFn)();
 
 void __cdecl hkpCapsuleCapsuleAgent_createCapsuleCapsuleAgent();
 void __cdecl hkpCapsuleCapsuleAgent_staticGetPenetrations();
-void __cdecl UpdateFields_00d3bd80();
+void __cdecl staticGetClosestPoints();
 void __cdecl Object_ProcessEntries_00daf8e0();
 
 struct HandlerSet {
@@ -102,25 +104,29 @@ struct HandlerSet {
 };
 
 struct Registry {
-    void AppendRecordAndRegisterAgents(HandlerSet* apHandlers, int aiFirst, int aiSecond);
+    void AppendRecordAndRegisterAgents(HandlerSet* f, int typeA, int typeB);
 };
 
 // Fills a HandlerSet with four handler functions and zeroed flags, then registers it with the registry using 5 and 5.
 // @fnv 0x00d3c010
-void __cdecl RegisterHandlers(Registry* apRegistry)
+// src: XBOX_RETAIL_PDB 0x00d3c010
+// pdb: hkpCapsuleCapsuleAgent::registerAgent | hkpCapsuleCapsuleAgent.obj | retail, call graph, high
+// pdb params: dispatcher
+// pdb locals: af
+void __cdecl hkpCapsuleCapsuleAgent_registerAgent(Registry* dispatcher)
 {
     HandlerSet kHandlers;
     kHandlers.m_cFlagA = 0;
     kHandlers.m_cFlagB = 0;
     kHandlers.m_pfnFirst = hkpCapsuleCapsuleAgent_createCapsuleCapsuleAgent;
     kHandlers.m_pfnSecond = hkpCapsuleCapsuleAgent_staticGetPenetrations;
-    kHandlers.m_pfnThird = UpdateFields_00d3bd80;
+    kHandlers.m_pfnThird = staticGetClosestPoints;
     kHandlers.m_pfnFourth = Object_ProcessEntries_00daf8e0;
 
-    apRegistry->AppendRecordAndRegisterAgents(&kHandlers, 5, 5);
+    dispatcher->AppendRecordAndRegisterAgents(&kHandlers, 5, 5);
 }
 
-void __cdecl hkpCapsuleCapsuleAgent_staticGetPenetrations(const void* a, const void* b, const void* c, void* d);
+void __cdecl hkpCapsuleCapsuleAgent_staticGetPenetrations(const void* bodyA, const void* bodyB, const void* input, void* collector);
 
 struct D3B6D0Agent {
     virtual void ForwardToHandler(const void* a, const void* b, const void* c, void* d);
@@ -157,24 +163,27 @@ struct BlendParameter {
     float fraction;
 };
 
-void __cdecl hkCollideCapsuleUtilClostestPointCapsVsCaps(const void* a, float fraction, const void* b, float weightA, float weightB, int flags);
+void __cdecl hkCollideCapsuleUtilClostestPointCapsVsCaps(const void* a, float fraction, const void* b, float weightA, float weightB, int cpoint);
 
 // Transforms each bone's two frameVectors by its matrix, then calls FUN_00cd6260 with the results, each bone's blend value and the parameter's fraction.
 // @fnv 0x00d3b8e0
 // src: XBOX_PDB 0x00d3b8e0
-static __declspec(noinline) void __cdecl getClosestPointInternal_00d3b8e0(TransformInput* first, TransformInput* second, const BlendParameter* parameter, int flags)
+// pdb: getClosestPointInternal | hkpCapsuleCapsuleAgent.obj | retail, object-file gap fill, high
+// pdb params: bodyA, bodyB, input, cpoint
+// pdb locals: pB, pA
+static __declspec(noinline) void __cdecl getClosestPointInternal_00d3b8e0(TransformInput* bodyA, TransformInput* bodyB, const BlendParameter* input, int cpoint)
 {
-    JointTransform* firstBone = first->bone;
-    JointTransform* secondBone = second->bone;
+    JointTransform* firstBone = bodyA->bone;
+    JointTransform* secondBone = bodyB->bone;
     __declspec(align(16)) LocalM128 firstResult[2];
     MatrixRow a0;
-    a0.scalar = first->matrix->row0;
+    a0.scalar = bodyA->matrix->row0;
     MatrixRow a1;
-    a1.scalar = first->matrix->row1;
+    a1.scalar = bodyA->matrix->row1;
     MatrixRow a2;
-    a2.scalar = first->matrix->row2;
+    a2.scalar = bodyA->matrix->row2;
     MatrixRow a3;
-    a3.scalar = first->matrix->row3;
+    a3.scalar = bodyA->matrix->row3;
 
     for (int index = 1; index >= 0; --index) {
         LocalM128 v = _mm_load_ps(firstBone->frameVectors + index * 4);
@@ -186,13 +195,13 @@ static __declspec(noinline) void __cdecl getClosestPointInternal_00d3b8e0(Transf
 
     __declspec(align(16)) LocalM128 secondResult[2];
     MatrixRow b0;
-    b0.scalar = second->matrix->row0;
+    b0.scalar = bodyB->matrix->row0;
     MatrixRow b1;
-    b1.scalar = second->matrix->row1;
+    b1.scalar = bodyB->matrix->row1;
     MatrixRow b2;
-    b2.scalar = second->matrix->row2;
+    b2.scalar = bodyB->matrix->row2;
     MatrixRow b3;
-    b3.scalar = second->matrix->row3;
+    b3.scalar = bodyB->matrix->row3;
 
     for (int index = 1; index >= 0; --index) {
         LocalM128 v = _mm_load_ps(secondBone->frameVectors + index * 4);
@@ -202,10 +211,10 @@ static __declspec(noinline) void __cdecl getClosestPointInternal_00d3b8e0(Transf
         secondResult[index] = _mm_add_ps(xy, zw);
     }
 
-    volatile float fraction = parameter->fraction;
+    volatile float fraction = input->fraction;
     volatile float weightB = secondBone->blend;
     volatile float weightA = firstBone->blend;
-    hkCollideCapsuleUtilClostestPointCapsVsCaps(firstResult, weightA, secondResult, weightB, fraction, flags);
+    hkCollideCapsuleUtilClostestPointCapsVsCaps(firstResult, weightA, secondResult, weightB, fraction, cpoint);
 }
 TransformInput* volatile inputFirst;
 TransformInput* volatile inputSecond;
@@ -299,11 +308,11 @@ typedef hkUint32 hkpShapeKey;
 __forceinline const hkTransform&hkpCdBody::getTransform()const
 {
 ;
-return*static_cast<const hkTransform*>(m_pMotionState);
+return*static_cast<const hkTransform*>(m_motion);
 }
 __forceinline const hkpShape*hkpCdBody::getShape()const
 {
-return m_pCollisionShape;
+return m_shape;
 }
 struct GskAgentInput;
 struct WorldOperationEntry;
@@ -326,10 +335,11 @@ const hkpCdBody&m_pBodyA;
 const hkpCdBody&m_pBodyB;};
 
 
+// pdb: class hkpCapsuleCapsuleAgent, size 0x14, bases: hkpIterativeLinearCastAgent, 1 members
 class hkpCapsuleCapsuleAgent:public hkpIterativeLinearCastAgent
 {
 public:
-static void __cdecl UpdateFields_00d3bd80(const hkpCdBody&bodyA,const hkpCdBody&bodyB,const CollisionAgentContext&input,hkpCdPointCollector&collector);
+static void __cdecl staticGetClosestPoints(const hkpCdBody&bodyA,const hkpCdBody&bodyB,const CollisionAgentContext&input,hkpCdPointCollector&collector);
 static void __cdecl RegisterCapsuleCapsuleAgent(hkpCollisionDispatcher*dispatcher);
 virtual inline void ProcessAgent(const hkpCdBody&bodyA,const hkpCdBody&bodyB,const GskAgentInput&input,WorldOperationEntry&result);
 virtual void getClosestPoints(const hkpCdBody&bodyA,const hkpCdBody&bodyB,const CollisionAgentContext&input,hkpCdPointCollector&pointDetails);
@@ -340,16 +350,16 @@ protected:
 __forceinline hkpCapsuleCapsuleAgent(const hkpCdBody&bodyA,const hkpCdBody&bodyB,const CollisionAgentContext&input,hkpContactMgr*mgr);
 static hkpCollisionAgent*__cdecl createCapsuleCapsuleAgent(const hkpCdBody&bodyA,const hkpCdBody&bodyB,const CollisionAgentContext&input,hkpContactMgr*mgr);
 protected:
-hkContactPointId m_usContactPointId[3];
+hkContactPointId m_contactPointId[3]; // src: XBOX_RETAIL_PDB +0xc (old: m_usContactPointId)
 };
 
 __forceinline const hkVector4*hkpCapsuleShape::GetIndexedVertices()const
 {
-return&m_kVertexA;
+return&m_vertexA;
 }
 extern "C"
 {
-hkResult __cdecl FindCapsuleCapsuleContact(const hkVector4*capsA,hkReal capsARadius,const hkVector4*capsB,hkReal capsBRadius,hkReal collisionTolerance,hkContactPoint&pointOut);}
+hkResult __cdecl FindCapsuleCapsuleContact(const hkVector4*capsA,hkReal capsARadius,const hkVector4*capsB,hkReal capsBRadius,hkReal collisionTolerance,hkContactPoint&cpoint);}
 namespace hkVector4Util_S
 {
 __forceinline void __cdecl TransformPointArray(const hkTransform&t,const hkVector4*vectorsIn,int numVectors,hkVector4*vectorsOut);}
@@ -369,8 +379,11 @@ hkVector4 pA[2];hkVector4Util_S::TransformPointArray(bodyA.getTransform(),capsul
 hkVector4 pB[2];hkVector4Util_S::TransformPointArray(bodyB.getTransform(),capsuleB->GetIndexedVertices(),2,pB);
 return FindCapsuleCapsuleContact(pA,capsuleA->getRadius(),pB,capsuleB->getRadius(),input.getTolerance(),cpoint);}
 // @fnv 0x00d3bd80
-// src: GUESS 0x00d3bd80 (confidence: low)
-void __cdecl hkpCapsuleCapsuleAgent::UpdateFields_00d3bd80(const hkpCdBody&bodyA,const hkpCdBody&bodyB,const CollisionAgentContext&input,hkpCdPointCollector&collector)
+// src: XBOX_RETAIL_PDB 0x00d3bd80
+// pdb: hkpCapsuleCapsuleAgent::staticGetClosestPoints | hkpCapsuleCapsuleAgent.obj | retail, object-file gap fill, high
+// pdb params: bodyA, bodyB, input, collector
+// pdb locals: event
+void __cdecl hkpCapsuleCapsuleAgent::staticGetClosestPoints(const hkpCdBody&bodyA,const hkpCdBody&bodyB,const CollisionAgentContext&input,hkpCdPointCollector&collector)
 {
 {hkMonitorStream&mStream=hkMonitorStream::getInstance();if(mStream.getEnd()<mStream.getCapacityMinus16()){hkMonitorStream::TimerCommand*h=reinterpret_cast<hkMonitorStream::TimerCommand*>(mStream.getEnd());h->m_commandAndMonitor="T" "t" "CapsCaps";h->setTime();mStream.setEnd((char*)(h+1));}};
 ContactPointPair event(bodyA,bodyB);
@@ -473,6 +486,9 @@ extern "C" hkResult __cdecl hkCollideCapsuleUtilClostestPointCapsVsCaps(const Ca
 // Transforms two capsule endpoint pairs into world space, queries their contact point, and adds it to the collector on success.
 // @fnv 0x00d3baf0
 // src: HAVOK_SRC 0x00d3baf0
+// pdb: hkpCapsuleCapsuleAgent::getClosestPoints | hkpCapsuleCapsuleAgent.obj | retail, upstream name already matches, high
+// pdb params: bodyA, bodyB, input, collector
+// pdb locals: event
 void __stdcall hkpCapsuleCapsuleAgent_getClosestPoints(const hkpCdBody& bodyA, const hkpCdBody& bodyB, const CollisionAgentContext& input, hkpCdPointCollector& collector)
 {
     volatile unsigned int ticks;

@@ -132,7 +132,7 @@ struct FUN_00474760_This
 {
     const char* p;
     ActorCombatGroup* q;
-    void __thiscall ReleaseStorage_00474760();
+    void __thiscall NiTArray_unsigned_int_NiTMallocInterface_unsigned_int_dtor();
 };
 extern "C" void* DAT_0101a3b8;
 struct BFC_s
@@ -163,8 +163,9 @@ struct FUN_00476a20_Class
 struct FUN_00476ae0_class
 {
     void SetTaskFlag(bool a);
-    void BSFadeNode_SetFadingFlag(bool a);
+    void BSFadeNode_SetFadingFlag(bool aFade);
 };
+// pdb: class TaskQueueInterface, size 0x10 (here 0x1), 4 members
 struct TaskQueueInterface
 {
     void SetTaskFlagDWord(bool enabled, unsigned int flag);
@@ -213,12 +214,12 @@ struct S47
 struct FUN_0047ebb0_Class
 {
     void FUN_005fc970(int, char);
-    void TESFaction_SetPCMurder(int value);
+    void TESFaction_SetPCMurder(int abVal);
 };
 struct FUN_0047ebd0_Class
 {
     void __thiscall FUN_005fc970(int b, int a);
-    void __thiscall TESFaction_SetPCAttack(bool value);
+    void __thiscall TESFaction_SetPCAttack(bool abVal);
 };
 struct FUN_0047ff50_class
 {
@@ -276,7 +277,7 @@ struct FUN_004747f0_class
 };
 struct FUN_00473f00_class
 {
-    void __thiscall ForwardToHolder();
+    void __thiscall NiTPrimitiveArray_unsigned_int_dtor();
 };
 void __cdecl Deallocate(void*);
 struct FUN_00474850_class : public FUN_00473f00_class
@@ -329,6 +330,7 @@ struct S69570
 {
     unsigned char BGSSaveLoadGame_GetLoadingMovedRefs();
 };
+// pdb: class KFModel, size 0x14 (here 0x1), 5 members
 struct KFModel
 {
     void* GetControllerSequence();
@@ -477,7 +479,7 @@ struct FUN_004791f0_holder2
 };
 struct FUN_0047b470_This
 {
-    bool __thiscall bhkCollisionObject_GetUseVelocity();
+    bool __thiscall bhkCollisionObject_QUseVel();
 };
 struct Actor;
 struct LH
@@ -519,7 +521,7 @@ struct FUN_00476ec0_Class
 bool __cdecl NiObject_IsKindOf(GlobalObject_00a7b610*, NiAVObject*);
 extern GlobalObject_00a7b610 g_01202e8c;
 void __cdecl BGSDestructibleObjectForm_UpdateDamageStageNodes(NiAVObject*, int);
-void __cdecl BGSDestructibleObjectForm_UpdateDamageStageNodes(NiAVObject* object, int flag);
+void __cdecl BGSDestructibleObjectForm_UpdateDamageStageNodes(NiAVObject* apRoot, int aiStageIndex);
 struct FUN_00478130_class
 {
     void __thiscall SAVE_DESTRUCTIBLE_OBJECT_STAGE_Endian();
@@ -549,7 +551,7 @@ struct FUN_00478570_holder
 {
     char m_iWordAt00[0x14];
     B2_4fe* m_cByteAtOffset1;
-    void EnsureB2_4fe();
+    void DestructibleObjectStage_CreateReplacementModel();
 };
 struct FUN_0047bac0_NPC : TESForm
 {
@@ -578,6 +580,7 @@ struct FUN_0046fdd0_Class
 };
 extern int DAT_01019a24;
 extern int DAT_0101a644;
+// pdb: class Date, size 0x4, 2 members
 struct Date
 {
     virtual ~Date();
@@ -716,7 +719,7 @@ struct Node
 struct NodeChildren
 {
     unsigned int FUN_0043b480();
-    Node* FUN_0043b4a0(unsigned int index);
+    Node* FUN_0043b4a0(unsigned int i);
 };
 struct Context
 {
@@ -725,7 +728,7 @@ struct Context
 };
 struct Receiver
 {
-    void FUN_004fa6f0(int value);
+    void FUN_004fa6f0(int apCell);
 };
 extern unsigned char __cdecl NiObject_IsKindOf(const void* descriptor, Node* node);
 struct Walk
@@ -737,8 +740,8 @@ struct FUN_00477090_Space;
 struct FUN_00477090_Handle
 {
     float GetLevel();
-    void SetLevel(float level);
-    void PlayAt(FUN_00477090_Sound* sound, FUN_00477090_Space* space);
+    void SetLevel(float afHealth);
+    void PlayAt(FUN_00477090_Sound* apModelSwap, FUN_00477090_Space* apModelSwapForm);
 };
 struct FUN_00477090_Ref
 {
@@ -891,7 +894,7 @@ struct FUN_00477230_item
 {
     FUN_00477230_owner* GetOwner();
     unsigned int GetCount();
-    struct FUN_00477230_node* GetChild(unsigned int index);
+    struct FUN_00477230_node* GetChild(unsigned int i);
 };
 struct FUN_00477230_arg
 {
@@ -906,7 +909,7 @@ struct FUN_00477230_node
 };
 struct FUN_00477230_cls
 {
-    void BGSDestructibleObjectForm_FindModelSwapNodes(FUN_00477230_node* node, FUN_00477230_arg* arg);
+    void BGSDestructibleObjectForm_FindModelSwapNodes(FUN_00477230_node* apRoot, FUN_00477230_arg* arNodeArray);
 };
 FUN_00477230_owner* SceneHelperA();
 bool __cdecl SceneHelperB(FUN_00477230_owner* a, FUN_00477230_owner* b);
@@ -1000,7 +1003,7 @@ struct EffectData
     int count0c;
     int count10;
     FUN_0048a3d0* effect14;
-    void DestructibleObjectStage_Copy(const EffectData* source);
+    void DestructibleObjectStage_Copy(const EffectData* apCopy);
 };
 class B479260MapBase
 {
@@ -1023,10 +1026,10 @@ struct FUN_0047ead0_cls
     FUN_0047ead0_cls* FUN_004181e0(FUN_0047ead0_cls* a, int b);
     int GetFactionRank();
     FUN_0047ead0_cls* FUN_00726070();
-    void TESFaction_SetPCAttack(int v);
-    void TESFaction_SetPCMurder(int v);
+    void TESFaction_SetPCAttack(int abVal);
+    void TESFaction_SetPCMurder(int abVal);
     void ForwardCall_0047eb90(int v);
-    void TESActorBaseData_SetPCFactionFlags(int mode);
+    void TESActorBaseData_SetPCFactionFlags(int aeflag);
 };
 extern FUN_0047ead0_cls* DAT_011dea3c;
 struct FUN_0047fe80_class : BaseFormComponent
@@ -1035,7 +1038,7 @@ struct FUN_0047fe80_class : BaseFormComponent
     virtual void FUN_0047fe80_v2();
     virtual void FUN_0047fe80_v3();
     virtual unsigned short GetAttackDamage();
-    bool __thiscall IsAttackDamageDifferent(BaseFormComponent* other);
+    bool __thiscall IsAttackDamageDifferent(BaseFormComponent* apCompareFC);
 };
 extern double DAT_01017a40;
 extern const float DAT_01012054;
@@ -1126,7 +1129,7 @@ World_47ab40* __fastcall TESObjectCELL_GetbhkWorld(Cell_47ab40* cell);
 struct TaskQueue_47ab40
 {
     static TaskQueue_47ab40* GetInstance();
-    void HandlerRegistration(NiNode* node);
+    void HandlerRegistration(NiNode* ap3D);
 };
 struct Ref_47ab40
 {
@@ -1249,9 +1252,9 @@ struct Ref_47ab40
     virtual NiNode* Get3D();
     Cell_47ab40* GetParentCell();
 };
-bool BGSOpenCloseForm_HandleAnimEndHavok(Ref_47ab40* ref, NamedObject_47ab40* obj);
+bool BGSOpenCloseForm_HandleAnimEndHavok(Ref_47ab40* apAnimRef, NamedObject_47ab40* apEndSeq);
 FUN_0047b470_This* __cdecl bhkUtilFunctions_FindNextCollisionObject(NiNode*);
-void __cdecl SetFlagRecursive(int, void*);
+void __cdecl bhkUtilFunctions_SetCOUseVel(int, void*);
 struct RefWithGetNiNode
 {
     virtual void v00();
@@ -1525,7 +1528,7 @@ struct ArmorStub : ItemForm
     int unk14C;
     int unk150;
     ListStub list154;
-    bool GetHeavyFlag();
+    bool GetArmorWeight();
 };
 struct PlayerStub;
 extern PlayerStub* g_thePlayer;
@@ -1564,6 +1567,7 @@ class VoiceStr
     VoiceStr* FUN_00726070();
 };
 
+// pdb: class DialogueResponse, size 0x2c (here 0x1), 9 members
 class DialogueResponse
 {
   public:
@@ -1572,7 +1576,7 @@ class DialogueResponse
 
 struct FUN_00585940_shell
 {
-    bool FindCellByEditorID(char*, int*, int*);
+    bool TESWorldSpace_GetExtCellDataFromFileByEditorID(char*, int*, int*);
 };
 
 
@@ -1597,13 +1601,16 @@ struct TESFileArray
 
 // @fnv 0x00461cf0
 // src: XBOX_PDB 0x00461cf0
-int TESFileArray::TESDataHandler_GetExtCellDataFromFileByEditorID(char* name, int* out1, int* out2)
+// pdb: TESDataHandler::GetExtCellDataFromFileByEditorID | TESDataHandler.obj | retail, upstream name already matches, high
+// pdb params: apCellID, aiOutX, aiOutY
+// pdb locals: pcellworld, tempMemContext, boptimized, i, pworldlist, pworld, pfile, bfound, pFORM, badvanced, ifileindex, iformID, pformfile, chunk, isize, pfileID, data, bgoodform, formtype
+int TESFileArray::TESDataHandler_GetExtCellDataFromFileByEditorID(char* apCellID, int* aiOutX, int* aiOutY)
 {
     AutoMemContext ctx(0x16, true, (char*)DAT_010186b8, 0x1041);
     int result = 0;
-    *out1 = 0;
-    *out2 = 0;
-    if (name && *name)
+    *aiOutX = 0;
+    *aiOutY = 0;
+    if (apCellID && *apCellID)
     {
         bool found = false;
         for (unsigned int i = 0; i < mCount; i++)
@@ -1621,7 +1628,7 @@ int TESFileArray::TESDataHandler_GetExtCellDataFromFileByEditorID(char* name, in
             {
                 void* v = *p->FUN_006815c0();
                 p = p->FUN_00726070();
-                if (((FUN_00585940_shell*)v)->FindCellByEditorID(name, out1, out2))
+                if (((FUN_00585940_shell*)v)->TESWorldSpace_GetExtCellDataFromFileByEditorID(apCellID, aiOutX, aiOutY))
                 {
                     result = (int)v;
                     break;
@@ -1689,7 +1696,7 @@ int TESFileArray::TESDataHandler_GetExtCellDataFromFileByEditorID(char* name, in
                                     char* ptr = (char*)operator new(len);
                                     memset(ptr, 0, len);
                                     f->FUN_00472890(ptr, 0);
-                                    if (BSstricmp(ptr, name) == 0)
+                                    if (BSstricmp(ptr, apCellID) == 0)
                                     {
                                         got = true;
                                         while (chunk)
@@ -1701,8 +1708,8 @@ int TESFileArray::TESDataHandler_GetExtCellDataFromFileByEditorID(char* name, in
                                                 f->FUN_00472890(&v, sizeof(v));
                                                 if (f->IsEndianConversionRequired())
                                                     v.TwoValues_Endian();
-                                                *out1 = v.x;
-                                                *out2 = v.y;
+                                                *aiOutX = v.x;
+                                                *aiOutY = v.y;
                                                 chunk = 0;
                                             }
                                             else if (f->FUN_004726f0())

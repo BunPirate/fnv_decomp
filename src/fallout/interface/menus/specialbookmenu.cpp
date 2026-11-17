@@ -26,6 +26,7 @@ extern "C" bool __cdecl _FUN_004b71d0();
 // Returns pageIndex + 4 when pageIndex is between 1 and 8, adding 4 more for slot 8 if _FUN_004b71d0() is true; otherwise returns -1.
 // @fnv 0x007ca030
 // src: XBOX_PDB 0x007ca030
+// pdb: SPECIALBookMenu::GetCurrentStatesActorValue | SPECIALBookMenu.obj | debug, upstream name already matches, high
 int SPECIALBookMenu::GetCurrentStatesActorValue()
 {
     if (this->pageIndex > 0 && this->pageIndex < 9)
@@ -43,6 +44,7 @@ int SPECIALBookMenu::GetCurrentStatesActorValue()
 extern "C" int __cdecl SPECIALBookMenu_GetClassStatic();
 // NiNode.h does not declare this cleanup helper; fastcall passes the node in ECX.
 void __fastcall RemoveSpecialBookSceneChildren(NiNode* node);
+// pdb: class ModelLoader, size 0x30 (here 0x1), 12 members
 struct ModelLoader
 {
     void ModelLoader_ReleaseFile(const char*);
@@ -62,6 +64,8 @@ Menu* __cdecl FindMenuById(int);
 
 // @fnv 0x007c6120
 // src: XBOX_PDB 0x007c6120
+// pdb: SPECIALBookMenu::Close | SPECIALBookMenu.obj | retail, string-set bridge, high
+// pdb locals: ptile, epage
 void __cdecl SPECIALBookMenu_Close()
 {
     int i;
@@ -90,6 +94,7 @@ void __cdecl SPECIALBookMenu_Close()
 // Returns selectedStat + 4 when pageIndex is 8 and _FUN_004b71d0() is true, pageIndex + 4 when pageIndex is between 1 and 7, otherwise -1.
 // @fnv 0x00794d30
 // src: XBOX_PDB 0x00794d30
+// pdb: LoveTesterMenu::GetCurrentStatesActorValue | LoveTesterMenu.obj | debug, upstream name already matches, high
 int SPECIALBookMenu::LoveTesterMenu_GetCurrentStatesActorValue()
 {
     if (pageIndex == 8)
@@ -109,16 +114,19 @@ struct FUN_007ca080
     int m_04;
     NiPointer<NiAVObject> m_pController;
     void* m_0c;
-    FUN_007ca080(int a, int b, const char* name);
+    FUN_007ca080(int apButtonClick, int apRefresh, const char* apButtonName);
 };
 
 // @fnv 0x007ca080
-FUN_007ca080::FUN_007ca080(int aiValueA, int aiValueB, const char* name) : m_pController(0)
+// pdb: SPECIALBookMenu::SpecialBookButton::SpecialBookButton | SPECIALBookMenu.obj | retail, call graph, high
+// pdb params: apButtonClick, apRefresh, apButtonName
+// pdb locals: pobj
+FUN_007ca080::FUN_007ca080(int apButtonClick, int apRefresh, const char* apButtonName) : m_pController(0)
 {
-    m_00 = aiValueA;
-    m_04 = aiValueB;
-    m_pController = DAT_011daa38->pRoot->GetObjectByName(NiFixedString(name));
-    NiAVObject* pAnimIdle = DAT_011daa38->pRoot->GetObjectByName(NiFixedString(name));
+    m_00 = apButtonClick;
+    m_04 = apRefresh;
+    m_pController = DAT_011daa38->pRoot->GetObjectByName(NiFixedString(apButtonName));
+    NiAVObject* pAnimIdle = DAT_011daa38->pRoot->GetObjectByName(NiFixedString(apButtonName));
     m_0c = (!((NiAVObject*)pAnimIdle)->GetProperty(3)
                 ? 0
                 : (((NiTimeController*)((NiAVObject*)pAnimIdle)->GetProperty(3))->FUN_00441110() >= 8 &&
@@ -129,6 +137,10 @@ FUN_007ca080::FUN_007ca080(int aiValueA, int aiValueB, const char* name) : m_pCo
 
 
 // @fnv 0x007c6c50
+// pdb: SPECIALBookMenu::DecreaseActorValue | SPECIALBookMenu.obj | retail, object-file run extension, low
+// pdb note: debug build links it to SPECIALBookMenu::DoKey
+// pdb params: apAVButton, eav
+// pdb locals: ioldValue, psoundHand
 bool SPECIALBookMenu::HandleInput(int aiKey)
 {
     bool bhandled = false;
@@ -177,6 +189,8 @@ NiTimeController* __cdecl NiObject_DynamicCast(const int*, NiTimeController*);
 // Checks a key press to trigger Handle(4,0), otherwise advances the scene's controller sequence by elapsed time and updates the scene.
 // @fnv 0x007c6200
 // src: XBOX_PDB 0x007c6200
+// pdb: SPECIALBookMenu::DoIdle | SPECIALBookMenu.obj | retail, vtable slot, high
+// pdb locals: update, pspecialBookGeomController, pspecialBookGeomControllerManager, pseq, pmt, UpdateData
 void SPECIALBookMenu::DoIdle_007c6200()
 {
     if (!Interface_IsTopMenuID(0x424))
@@ -290,12 +304,15 @@ struct Player6440
 };
 extern Player6440* g_thePlayer;
 // @fnv 0x007c6440
-bool SPECIALBookMenu::HandleSpecialBookKey(unsigned int key, int unused)
+// pdb: SPECIALBookMenu::DoGamepad | SPECIALBookMenu.obj | retail, vtable slot, high
+// pdb params: aiButton, afValue
+// pdb locals: eav
+bool SPECIALBookMenu::HandleSpecialBookKey(unsigned int aiButton, int afValue)
 {
     if (Interface_IsTopMenuID(0x424))
     {
         int index = GetCurrentStatesActorValue();
-        switch (key)
+        switch (aiButton)
         {
         case 4:
         case 10:
@@ -317,7 +334,7 @@ class C7CA200NavMesh;
 class C7CA200Base
 {
   public:
-    C7CA200Base(int iArg1, int iArg2, int iArg3);
+    C7CA200Base(int apButtonClick, int apRefresh, int apButtonName);
     ~C7CA200Base();
 
     int unk00;
@@ -352,6 +369,9 @@ class FUN_007ca200 : public C7CA200Base
 
 // Initializes the base with three arguments, stores iArg4, and adds iNumNavMeshes nav mesh pointers from the variadic argument list to m_kNavMeshes.
 // @fnv 0x007ca200
+// pdb: SPECIALBookMenu::ActorValueButton::ActorValueButton | SPECIALBookMenu.obj | retail, call graph, high
+// pdb params: apButtonClick, apRefresh, apButtonName, aeActorValue, aiNumAffectedFields, pargs
+// pdb locals: i
 FUN_007ca200::FUN_007ca200(int iArg1, int iArg2, int iArg3, int iArg4, int iNumNavMeshes, ...)
     : C7CA200Base(iArg1, iArg2, iArg3)
 {
@@ -371,23 +391,25 @@ struct FUN_007ca2c0
     NiAVObject* m_0c;
     NiAVObject* m_10;
     int m_14;
-    FUN_007ca2c0(int a, const char* first, const char* second, int d);
+    FUN_007ca2c0(int apRefreshFieldCallback, const char* apTextObjectName1, const char* apTextObjectName2, int aeActorValue);
 };
 // Stores the given ints, looks up two named objects under the scene root, and caches each object's property 3 controller when its value is between 8 and 12.
 // @fnv 0x007ca2c0
-FUN_007ca2c0::FUN_007ca2c0(int a, const char* apFirstName, const char* apSecondName, int d)
+// pdb: SPECIALBookMenu::SpecialBookTextItem::SpecialBookTextItem | SPECIALBookMenu.obj | retail, call graph, high
+// pdb params: apRefreshFieldCallback, apTextObjectName1, apTextObjectName2, aeActorValue
+FUN_007ca2c0::FUN_007ca2c0(int apRefreshFieldCallback, const char* apTextObjectName1, const char* apTextObjectName2, int aeActorValue)
 {
-    m_00 = a;
-    m_14 = d;
-    m_0c = (NiAVObject*)DAT_011daa38->pRoot->GetObjectByName(NiFixedString(apFirstName));
+    m_00 = apRefreshFieldCallback;
+    m_14 = aeActorValue;
+    m_0c = (NiAVObject*)DAT_011daa38->pRoot->GetObjectByName(NiFixedString(apTextObjectName1));
     m_04 = (!m_0c->GetProperty(3) ? 0
                                   : (((NiTimeController*)m_0c->GetProperty(3))->FUN_00441110() >= 8 &&
                                      ((NiTimeController*)m_0c->GetProperty(3))->FUN_00441110() <= 12))
                ? (NiTimeController*)m_0c->GetProperty(3)
                : 0;
-    if (apSecondName)
+    if (apTextObjectName2)
     {
-        m_10 = (NiAVObject*)DAT_011daa38->pRoot->GetObjectByName(NiFixedString(apSecondName));
+        m_10 = (NiAVObject*)DAT_011daa38->pRoot->GetObjectByName(NiFixedString(apTextObjectName2));
         m_08 = (!m_10->GetProperty(3) ? 0
                                       : (((NiTimeController*)m_10->GetProperty(3))->FUN_00441110() >= 8 &&
                                          ((NiTimeController*)m_10->GetProperty(3))->FUN_00441110() <= 12))
@@ -405,7 +427,7 @@ FUN_007ca2c0::FUN_007ca2c0(int a, const char* apFirstName, const char* apSecondN
 struct G_011dea10_cls
 {
 
-    void FUN_004568c0(char* a, int* b, int c, int d);
+    void FUN_004568c0(char* apfilename, int* aspSourceTexture, int abNoFileOK, int d);
 };
 
 extern G_011dea10_cls* g_011dea10;
@@ -458,8 +480,10 @@ extern const char str_01076c94[];
 
 
 // @fnv 0x007cadd0
-// src: COMMUNITY 0x007cadd0
-void SPECIALBookMenu::LoadBBTextures()
+// src: XBOX_RETAIL_PDB 0x007cadd0 (was COMMUNITY)
+// pdb: SPECIALBookMenu::LoadButtonAndTextImages | SPECIALBookMenu.obj | retail, string-set bridge, high
+// pdb locals: strPlatform, strtmp, pfilepath, i
+void SPECIALBookMenu::LoadButtonAndTextImages()
 
 {
 
@@ -480,7 +504,7 @@ void SPECIALBookMenu::LoadBBTextures()
 
         FUN_004b7240(auStack_220, auStack_218, 0x104);
 
-        g_011dea10->FUN_004568c0(auStack_218, &m180[auStack_110], 0, 0);
+        g_011dea10->FUN_004568c0(auStack_218, &spAVValues[auStack_110], 0, 0);
     }
 
     for (iStack_228 = 1; iStack_228 < 5; iStack_228++)
@@ -509,11 +533,11 @@ void SPECIALBookMenu::LoadBBTextures()
 
     FUN_004b7240(auStack_220, auStack_218, 0x104);
 
-    g_011dea10->FUN_004568c0(auStack_218, &m1bc, 0, 0);
+    g_011dea10->FUN_004568c0(auStack_218, &spNextPageButtonImage, 0, 0);
 
     BSsprintf(auStack_218, 0x104, str_01076c94, str_01076cc0, iStack_224, str_01074c1c);
 
-    g_011dea10->FUN_004568c0(auStack_218, &m1c4, 0, 0);
+    g_011dea10->FUN_004568c0(auStack_218, &spPreviousPageButtonImage, 0, 0);
 
     BSsprintf(auStack_220, 0x104, str_01074c08, str_01076cc0, str_01074c14);
 
@@ -523,7 +547,7 @@ void SPECIALBookMenu::LoadBBTextures()
 
     BSsprintf(auStack_218, 0x104, str_01076c94, str_01076cc0, iStack_224, str_01074c00);
 
-    g_011dea10->FUN_004568c0(auStack_218, &m1cc, 0, 0);
+    g_011dea10->FUN_004568c0(auStack_218, &spOpenCloseBookButtonImage, 0, 0);
 
     BSsprintf(auStack_218, 0x104, str_01076c94, str_01076cc0, iStack_224, str_01074bf8);
 
@@ -533,7 +557,7 @@ void SPECIALBookMenu::LoadBBTextures()
 
     FUN_004b7240(auStack_220, auStack_218, 0x104);
 
-    g_011dea10->FUN_004568c0(auStack_218, &m1d4, 0, 0);
+    g_011dea10->FUN_004568c0(auStack_218, &spAVLeftArrowButtonImage, 0, 0);
 
     BSsprintf(auStack_220, 0x104, str_01074c08, str_01076cc0, str_01074bd8);
 
@@ -545,7 +569,7 @@ void SPECIALBookMenu::LoadBBTextures()
 
     FUN_004b7240(auStack_220, auStack_218, 0x104);
 
-    g_011dea10->FUN_004568c0(auStack_218, &m1dc, 0, 0);
+    g_011dea10->FUN_004568c0(auStack_218, &spAVRightArrowButtonImage, 0, 0);
 
     BSsprintf(auStack_220, 0x104, str_01074c08, str_01076cc0, str_01074bb8);
 
@@ -569,10 +593,13 @@ extern const char* DAT_011a0878[8];
 
 // @fnv 0x007c9dc0
 // src: XBOX_PDB 0x007c9dc0
-bool SPECIALBookMenu::TurnPage(bool forward)
+// pdb: SPECIALBookMenu::TurnPage | SPECIALBookMenu.obj | retail, string-set bridge, high
+// pdb params: bForward
+// pdb locals: brunAnim, psoundHand, pSPECIALBookGeomController, pSPECIALBookGeomControllerManager, pseq
+bool SPECIALBookMenu::TurnPage(bool bForward)
 {
     bool turned = false;
-    if (forward)
+    if (bForward)
     {
         DAT_011a0854 = true;
         if (pageIndex < 9)
@@ -670,7 +697,7 @@ struct BkLight
     void NiAVObject_SetTranslate(const BkColor& c);
     void SetEffectColor(const BkColor& c);
     void FUN_0050dd50(const BkColor& c);
-    void NiLight_SetDimmer(float f);
+    void NiLight_SetDimmer(float fDimmer);
     void NiAVObject_Update(const BkPoint3& p);
 };
 struct BkScene
@@ -751,7 +778,7 @@ struct BkButton : BkItemBase
     int unk08;
     int unk0C;
     int unk10;
-    BkButton(ItemCb a, ItemCb b, const char* name);
+    BkButton(ItemCb apButtonClick, ItemCb apRefresh, const char* apButtonName);
 };
 struct BkStepButton : BkButton
 {
@@ -770,20 +797,23 @@ struct BkDisplay : BkItemBase
     int unk0C;
     int unk10;
     int unk14;
-    BkDisplay(ItemCb cb, const char* name, const char* name2, int stat);
+    BkDisplay(ItemCb apRefreshFieldCallback, const char* apTextObjectName1, const char* apTextObjectName2, int aeActorValue);
 };
 
 extern BkLoader* DAT_011c3b3c;
 extern BkTimer DAT_011f6394;
-void __cdecl FUN_004b7660(NiNode* node);
-void __cdecl NiTimeController_StartAnimations(NiNode* node);
+void __cdecl FUN_004b7660(NiNode* ap3D);
+void __cdecl NiTimeController_StartAnimations(NiNode* pkObj);
 void* __cdecl NiObject_DynamicCast(void* rtti, NiTimeController* obj);
 BkScene* __cdecl FUN_00450b80(int a);
 
 
 // Loads the Babybook02.NIF scene, sets up its transform and animation, then creates and registers the displays and buttons for all nine menu groups.
 // @fnv 0x007c6ce0
-void SPECIALBookMenu::InitMenu()
+// src: XBOX_RETAIL_PDB 0x007c6ce0
+// pdb: SPECIALBookMenu::InitBook | SPECIALBookMenu.obj | retail, unique string literal, high
+// pdb locals: pPointsToAwardNum, update, fradius, pDownButton, pUpButton, pNextPage, pPreviousPage, inumlights, pSPECIALBookGeomController, UpdateData1, pActorValueNumber, pPointsToAwardText, pSPECIALBookGeomControllerManager, pseq, pmt, UpdateData, ud, plight, epage, i
+void SPECIALBookMenu::InitBook()
 {
     BkDisplay* pDigits;
     BkPoint3 pos;
@@ -1031,7 +1061,7 @@ void SPECIALBookMenu::InitMenu()
     pLeft = new BkButton(Runtime_TurnPageBackwardAndInvokeCallbacks, Object_ProcessState_007ca8a0, "Index_LT_Btn:0");
     m_groups[8].buttons.FUN_007cb2e0(pLeft);
 
-    LoadBBTextures();
+    LoadButtonAndTextImages();
     for (int iGroup = 0; iGroup < 9; iGroup++)
     {
         for (unsigned int iItem = 0; iItem < m_groups[iGroup].displays.FUN_0044ddc0(); iItem++)
@@ -1205,10 +1235,13 @@ struct BookScene
 
 // Dispatches key values to page, stat, callback, and button handling; key 4 calls FUN_007c6120 when page index equals limit.
 // @fnv 0x007c6550
-void SPECIALBookMenu::HandleKey(unsigned int key, int unused)
+// pdb: SPECIALBookMenu::DoClick | SPECIALBookMenu.obj | retail, vtable slot, high
+// pdb params: aiID, apTarget
+// pdb locals: bPageTurned, inewValue, ioldValue, eav, psoundHand, cy, pim, cx, iindex, dir, origin, activatePick, ipickIndex, ppickRecord
+void SPECIALBookMenu::HandleKey(unsigned int aiID, int apTarget)
 {
     bool turned = false;
-    switch (key)
+    switch (aiID)
     {
     case 4:
         if (SPECIALBookMenu_GetTotalPointsUsed() == limit)
@@ -1220,11 +1253,11 @@ void SPECIALBookMenu::HandleKey(unsigned int key, int unused)
     case 1:
         if (finished)
         {
-            if (key == 0)
+            if (aiID == 0)
                 turned = TurnPage(true);
             else
                 turned = TurnPage(false);
-            InvokeCallbacksForSlot();
+            RefreshPage();
         }
         break;
     case 2:
@@ -1234,7 +1267,7 @@ void SPECIALBookMenu::HandleKey(unsigned int key, int unused)
         if (GetCurrentStatesActorValue() != -1)
         {
             oldValue9 = ((BookPlayer*)g_thePlayer)->values.GetBaseValue(GetCurrentStatesActorValue());
-            if (key == 2)
+            if (aiID == 2)
             {
                 if (SPECIALBookMenu_GetTotalPointsUsed() < limit)
                     ((BookPlayer*)g_thePlayer)->PlayerCharacter_SetActorBaseValue(GetCurrentStatesActorValue(), MinInt(oldValue9 + 1, 10));
@@ -1249,7 +1282,7 @@ void SPECIALBookMenu::HandleKey(unsigned int key, int unused)
         {
             int stat = selectedStat + 4;
             oldValue9 = ((BookPlayer*)g_thePlayer)->values.GetBaseValue(stat);
-            if (key == 2)
+            if (aiID == 2)
             {
                 if (SPECIALBookMenu_GetTotalPointsUsed() < limit)
                     ((BookPlayer*)g_thePlayer)->PlayerCharacter_SetActorBaseValue(stat, MinInt(oldValue9 + 1, 10));
@@ -1266,7 +1299,7 @@ void SPECIALBookMenu::HandleKey(unsigned int key, int unused)
             sound = reinterpret_cast<const BSSoundHandle&>(BSAudio::GetSingleton()->BSAudio_GetSoundHandleByEditorName("OBJBookSpecialNumber", 0x121));
             sound.Play(false);
         }
-        InvokeCallbacksForSlot();
+        RefreshPage();
         break;
     }
     case 5:
@@ -1308,7 +1341,7 @@ void SPECIALBookMenu::HandleKey(unsigned int key, int unused)
             selectedStat--;
             reinterpret_cast<BSSoundHandle&>(BSAudio::GetSingleton()->BSAudio_GetSoundHandleByEditorName("OBJBookSpecialFocus", 0x121)).Play(false);
         }
-        InvokeCallbacksForSlot();
+        RefreshPage();
         break;
     case 7:
         if (pageIndex == 8 && selectedStat < 7)
@@ -1316,7 +1349,7 @@ void SPECIALBookMenu::HandleKey(unsigned int key, int unused)
             selectedStat++;
             reinterpret_cast<BSSoundHandle&>(BSAudio::GetSingleton()->BSAudio_GetSoundHandleByEditorName("OBJBookSpecialFocus", 0x121)).Play(false);
         }
-        InvokeCallbacksForSlot();
+        RefreshPage();
         break;
     }
 }

@@ -54,7 +54,7 @@ struct FUN_00cfae50_cls
     int unk1c;
     unsigned char* m_20;
 
-    float InvokeSlotHandler(SlotRecord* a1, int a2);
+    float InvokeSlotHandler(SlotRecord* broadPhaseHandle, int castIndex);
 };
 
 #include <xmmintrin.h>
@@ -233,6 +233,9 @@ struct S_00cfaed0_Vec
 };
 // @fnv 0x00cfaed0
 // src: GUESS 0x00cfaed0 (confidence: low)
+// pdb: hkpWorldLinearCaster::linearCast | hkpWorldLinearCaster.obj | retail, object-file run extension, low
+// pdb params: broadphase, collA, input, filter, collInput, config, m_broadPhaseCache, castCollector, startPointCollector
+// pdb locals: ci, assertBuf, ostr, aabb
 void S_00cfaed0_This::ComputeValues_00cfaed0(S_00cfaed0_Iface* p1, S_00cfaed0_P2* a2, S_00cfaed0_P3* a3, int a4,
                                    S_00cfaed0_P5* a5, int a6, int a7, int a8, int a9)
 {

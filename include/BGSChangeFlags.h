@@ -2,10 +2,11 @@
 
 class TESForm;
 
+// pdb: class BGSChangeFlags, size 0x4, 1 members
 struct BGSChangeFlags
 {
 public:
-    unsigned int uiFlags;
+    unsigned int iFlags; // src: XBOX_RETAIL_PDB +0x0 (old: uiFlags)
 
     BGSChangeFlags();
     BGSChangeFlags(unsigned int auiFlags);

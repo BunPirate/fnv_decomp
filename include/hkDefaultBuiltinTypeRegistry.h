@@ -2,6 +2,7 @@
 
 #include "hkBuiltinTypeRegistry.h"
 
+// pdb: class hkDefaultBuiltinTypeRegistry, size 0x8 (here 0xc), bases: hkBuiltinTypeRegistry, 0 members
 class hkDefaultBuiltinTypeRegistry : public hkBuiltinTypeRegistry
 {
 public:

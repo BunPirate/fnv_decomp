@@ -51,15 +51,18 @@ struct ParseState
 // Checks the object and parse state, returning 1 when the buffer comparison or manager check succeeds.
 // @fnv 0x00d49240
 // src: XBOX_PDB 0x00d49240
-int hkSerializeUtil_isLoadable(Object* object)
+// pdb: hkSerializeUtil::isLoadable | hkSerializeUtil.obj | retail, upstream name already matches, high
+// pdb params: sr
+// pdb locals: details
+int hkSerializeUtil_isLoadable(Object* sr)
 {
-    if (!object || !object->vf0c().value)
+    if (!sr || !sr->vf0c().value)
         return 0;
-    if (hkTagfileReader_detectFormat(object).value > 1)
+    if (hkTagfileReader_detectFormat(sr).value > 1)
         return 1;
     ParseState parseState;
     parseState.buffer.FUN_00cb0a60();
-    hkSerializeUtil_detectFormat(object, &parseState.status);
+    hkSerializeUtil_detectFormat(sr, &parseState.status);
     if (parseState.status == 2)
     {
         if (hkString_memCmp(&parseState.bits, &DAT_011b7b88, 4) != 0)

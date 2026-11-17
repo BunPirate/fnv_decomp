@@ -13,6 +13,7 @@ struct FUN_00e00910_cls
 
 // Destroys the object, calling the destructor and freeing memory when acFlags has bit 0 set.
 // @fnv 0x00e00910
+// pdb: hkpMoppModifier::`scalar deleting destructor' | hkpRemoveTerminalsMoppModifierClass.obj | retail, vtable slot, high
 FUN_00e00910_cls* FUN_00e00910_cls::Destroy(unsigned char acFlags)
 {
     this->FUN_00e00910_cls::~FUN_00e00910_cls();

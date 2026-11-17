@@ -31,55 +31,58 @@ struct FUN_00cc6540_Class
     unsigned char m_auiShapeKeys[4];
     void* m_pUserData;
 
-    void hkConstraintCinfo_GetViewerStrings(StrArr* array);
-    void hkRagdollLimitsConstraintCinfo_GetViewerStrings(StrArr* array);
+    void hkConstraintCinfo_GetViewerStrings(StrArr* apStrings);
+    void hkRagdollLimitsConstraintCinfo_GetViewerStrings(StrArr* apStrings);
 };
 
 char* __cdecl NiGetViewerString_00a7d550(char const* name, float value);
 
 // @fnv 0x00cc6540
 // src: XBOX_PDB 0x00cc6540
-void FUN_00cc6540_Class::hkRagdollLimitsConstraintCinfo_GetViewerStrings(StrArr* array)
+// pdb: hkRagdollLimitsConstraintCinfo::GetViewerStrings | bhkRagdollLimitsConstraint.obj | retail, string-set bridge, high
+// pdb params: apStrings
+// pdb locals: pd
+void FUN_00cc6540_Class::hkRagdollLimitsConstraintCinfo_GetViewerStrings(StrArr* apStrings)
 {
-    hkConstraintCinfo_GetViewerStrings(array);
+    hkConstraintCinfo_GetViewerStrings(apStrings);
 
     unsigned char* data = static_cast<unsigned char*>(m_pUserData);
     if (data)
     {
         char* value = NiGetViewerString_00a7d550("ConeMinAngle", *reinterpret_cast<float*>(data + 0xa0));
-        unsigned int index = array->m_usSize;
-        unsigned int size = array->m_usMaxSize;
+        unsigned int index = apStrings->m_usSize;
+        unsigned int size = apStrings->m_usMaxSize;
         if (index >= size)
-            array->SetSize(index + array->m_usGrowBy);
-        array->SetAt(index, value);
+            apStrings->SetSize(index + apStrings->m_usGrowBy);
+        apStrings->SetAt(index, value);
 
         value = NiGetViewerString_00a7d550("PlaneMinAngle", *reinterpret_cast<float*>(data + 0xb0));
-        index = array->m_usSize;
-        size = array->m_usMaxSize;
+        index = apStrings->m_usSize;
+        size = apStrings->m_usMaxSize;
         if (index >= size)
-            array->SetSize(index + array->m_usGrowBy);
-        array->SetAt(index, value);
+            apStrings->SetSize(index + apStrings->m_usGrowBy);
+        apStrings->SetAt(index, value);
 
         value = NiGetViewerString_00a7d550("PlaneMaxAngle", *reinterpret_cast<float*>(data + 0xb4));
-        index = array->m_usSize;
-        size = array->m_usMaxSize;
+        index = apStrings->m_usSize;
+        size = apStrings->m_usMaxSize;
         if (index >= size)
-            array->SetSize(index + array->m_usGrowBy);
-        array->SetAt(index, value);
+            apStrings->SetSize(index + apStrings->m_usGrowBy);
+        apStrings->SetAt(index, value);
 
         value = NiGetViewerString_00a7d550("TwistMinAngle", *reinterpret_cast<float*>(data + 0x88));
-        index = array->m_usSize;
-        size = array->m_usMaxSize;
+        index = apStrings->m_usSize;
+        size = apStrings->m_usMaxSize;
         if (index >= size)
-            array->SetSize(index + array->m_usGrowBy);
-        array->SetAt(index, value);
+            apStrings->SetSize(index + apStrings->m_usGrowBy);
+        apStrings->SetAt(index, value);
 
         value = NiGetViewerString_00a7d550("TwistMaxAngle", *reinterpret_cast<float*>(data + 0x8c));
-        index = array->m_usSize;
-        size = array->m_usMaxSize;
+        index = apStrings->m_usSize;
+        size = apStrings->m_usMaxSize;
         if (index >= size)
-            array->SetSize(index + array->m_usGrowBy);
-        array->SetAt(index, value);
+            apStrings->SetSize(index + apStrings->m_usGrowBy);
+        apStrings->SetAt(index, value);
     }
 }
 
@@ -92,7 +95,7 @@ struct GlobalObjectO2_00a7b610
 };
 
 extern __declspec(thread) GlobalObjectO2_00a7b610 g_tls_object;
-extern GlobalObjectO2_00a7b610* g_01268740;
+extern GlobalObjectO2_00a7b610* bhkSpringDamperConstraintMotor_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01268740 (old: DAT_01268740/g_01268740)
 
 char* __cdecl _FUN_00a7d330(GlobalObjectO2_00a7b610* object);
 
@@ -113,16 +116,19 @@ struct TLSGuard
 
 // @fnv 0x00cf46e0
 // src: XBOX_PDB 0x00cf46e0
-void __stdcall bhkSpringDamperConstraintMotor_GetViewerStrings(StrArr* array)
+// pdb: bhkSpringDamperConstraintMotor::GetViewerStrings | bhkSpringDamperConstraintMotor.obj | retail, upstream name already matches, high
+// pdb params: pkStrings
+// pdb locals: tempMemContext
+void __stdcall bhkSpringDamperConstraintMotor_GetViewerStrings(StrArr* pkStrings)
 {
     TLSGuard guard;
-    char* value = _FUN_00a7d330(g_01268740);
-    unsigned int index = array->m_usSize;
+    char* value = _FUN_00a7d330(bhkSpringDamperConstraintMotor_ms_RTTI);
+    unsigned int index = pkStrings->m_usSize;
 
-    if (index >= array->m_usMaxSize)
-        array->SetSize(static_cast<unsigned int>(index + array->m_usGrowBy));
+    if (index >= pkStrings->m_usMaxSize)
+        pkStrings->SetSize(static_cast<unsigned int>(index + pkStrings->m_usGrowBy));
 
-    array->SetAt(index, value);
+    pkStrings->SetAt(index, value);
 }
 }  // namespace fnv_00cf46e0
 
@@ -130,6 +136,8 @@ void __stdcall bhkSpringDamperConstraintMotor_GetViewerStrings(StrArr* array)
 // The explicit ECX receiver and unused EDX argument preserve the original member ABI.
 // @fnv 0x00a5b4b0
 // src: COMMUNITY 0x00a5b4b0
+// pdb: NiGlobalStringTable::InstanceRemoveUnusedStrings | NiGlobalStringTable.obj | retail, object-file run extension, low
+// pdb locals: khandle, ui, arraySize, arrayPos, pkMem
 int __fastcall NiTPrimitiveArray_DWORD_AddFirstEmpty(StrArr* array, void*, char*& value)
 {
     if (value == 0)
@@ -175,18 +183,21 @@ char* __cdecl NiViewerStrings_NiGetViewerString_Title(const char* pcString);
 class FUN_00c8ad40_cls
 {
   public:
-    void C8AD40BaseGetViewerStrings(StrArr* pkArray);
-    void bhkBinaryAction_GetViewerStrings(StrArr* pkArray);
+    void C8AD40BaseGetViewerStrings(StrArr* apStrings);
+    void bhkBinaryAction_GetViewerStrings(StrArr* apStrings);
 };
 
 // @fnv 0x00c8ad40
 // src: XBOX_PDB 0x00c8ad40
-void FUN_00c8ad40_cls::bhkBinaryAction_GetViewerStrings(StrArr* pkArray)
+// pdb: bhkBinaryAction::GetViewerStrings | bhkBinaryAction.obj | retail, upstream name already matches, high
+// pdb params: apStrings
+// pdb locals: tempMemContext
+void FUN_00c8ad40_cls::bhkBinaryAction_GetViewerStrings(StrArr* apStrings)
 {
     BC8AD40AllocTagScope kScope(0x10);
-    C8AD40BaseGetViewerStrings(pkArray);
+    C8AD40BaseGetViewerStrings(apStrings);
     char* pcName = NiViewerStrings_NiGetViewerString_Title(g_pcC8AD40Name);
-    AddViewerString(pkArray, pcName);
+    AddViewerString(apStrings, pcName);
 }
 
 namespace fnv_00cc31c0 {
@@ -208,23 +219,26 @@ class CC31C0MemContext
     int m_iPrevious;
 };
 
-extern const char* g_pcCC31C0ClassName;
+extern const char* bhkSpringAction_ms_RTTI; // src: XBOX_RETAIL_PDB 0x012685b0 (old: DAT_012685b0/g_012685b0/g_pcCC31C0ClassName)
 extern "C" char* __cdecl NiViewerStrings_NiGetViewerString_Title(const char* pcName);
 
 class CC31C0Object
 {
   public:
-    void GetViewerStringsBase(StrArr* pkStrings);
-    void bhkSpringAction_GetViewerStrings(StrArr* pkStrings);
+    void GetViewerStringsBase(StrArr* apStrings);
+    void bhkSpringAction_GetViewerStrings(StrArr* apStrings);
 };
 
 // @fnv 0x00cc31c0
 // src: XBOX_PDB 0x00cc31c0
-void CC31C0Object::bhkSpringAction_GetViewerStrings(StrArr* pkStrings)
+// pdb: bhkSpringAction::GetViewerStrings | bhkSpringAction.obj | retail, upstream name already matches, high
+// pdb params: apStrings
+// pdb locals: tempMemContext
+void CC31C0Object::bhkSpringAction_GetViewerStrings(StrArr* apStrings)
 {
     CC31C0MemContext kContext(0x10);
-    GetViewerStringsBase(pkStrings);
-    AddViewerString(pkStrings, NiViewerStrings_NiGetViewerString_Title(g_pcCC31C0ClassName));
+    GetViewerStringsBase(apStrings);
+    AddViewerString(apStrings, NiViewerStrings_NiGetViewerString_Title(bhkSpringAction_ms_RTTI));
 }
 }  // namespace fnv_00cc31c0
 
@@ -251,11 +265,14 @@ struct ViewerConstraint
     int priority;
     void* entityA;
     void* entityB;
-    void hkConstraintCinfo_GetViewerStrings(StrArr* array);
+    void hkConstraintCinfo_GetViewerStrings(StrArr* apStrings);
 };
 // @fnv 0x00c8a560
 // src: XBOX_PDB 0x00c8a560
-void ViewerConstraint::hkConstraintCinfo_GetViewerStrings(StrArr* array)
+// pdb: hkConstraintCinfo::GetViewerStrings | bhkConstraint.obj | retail, string-set bridge, high
+// pdb params: apStrings
+// pdb locals: tempMemContext, pstr
+void ViewerConstraint::hkConstraintCinfo_GetViewerStrings(StrArr* apStrings)
 {
     BC8AD40AllocTagScope scope(16);
     char* text;
@@ -263,16 +280,16 @@ void ViewerConstraint::hkConstraintCinfo_GetViewerStrings(StrArr* array)
     if (object)
     {
         text = MakeViewerString("Type", TypeName(object->GetType()));
-        AddViewerString(array, text);
+        AddViewerString(apStrings, text);
     }
     FormatViewer(buffer, 32, "0x%8X", entityA);
     text = MakeViewerString("hkpEntityA", buffer);
-    AddViewerString(array, text);
+    AddViewerString(apStrings, text);
     FormatViewer(buffer, 32, "0x%8X", entityB);
     text = MakeViewerString("hkpEntityB", buffer);
-    AddViewerString(array, text);
+    AddViewerString(apStrings, text);
     text = NiGetViewerString_00a7d4d0("ePriority", priority);
-    AddViewerString(array, text);
+    AddViewerString(apStrings, text);
 }
 
 // Appends this class name to the viewer strings after the base entries, under the Havok allocation tag.
@@ -301,23 +318,26 @@ char* __cdecl NiViewerStrings_NiGetViewerString_Title(const char* pcString);
 class CC4740Base
 {
   public:
-    void GetViewerStrings(StrArr* pkArray);
+    void GetViewerStrings(StrArr* apStrings);
 };
 
 class CC4740Derived : public CC4740Base
 {
   public:
-    void bhkAngularDashpotAction_GetViewerStrings(StrArr* pkArray);
+    void bhkAngularDashpotAction_GetViewerStrings(StrArr* apStrings);
 };
 
 // @fnv 0x00cc4740
 // src: XBOX_PDB 0x00cc4740
-void CC4740Derived::bhkAngularDashpotAction_GetViewerStrings(StrArr* pkArray)
+// pdb: bhkAngularDashpotAction::GetViewerStrings | bhkAngularDashpotAction.obj | retail, upstream name already matches, high
+// pdb params: apStrings
+// pdb locals: tempMemContext
+void CC4740Derived::bhkAngularDashpotAction_GetViewerStrings(StrArr* apStrings)
 {
     BCC4740AllocTagScope kScope(0x10);
-    CC4740Base::GetViewerStrings(pkArray);
+    CC4740Base::GetViewerStrings(apStrings);
     char* pcName = NiViewerStrings_NiGetViewerString_Title(g_pcCC4740Name);
-    AddViewerString(pkArray, pcName);
+    AddViewerString(apStrings, pcName);
 }
 
 extern __declspec(thread) int g_iCC4740AllocTag;
@@ -334,15 +354,18 @@ struct CF4520AllocTagScope
         g_iCC4740AllocTag = saved;
     }
 };
-extern const char* DAT_01268738;
+extern const char* bhkVelocityConstraintMotor_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01268738 (old: DAT_01268738/g_01268738)
 char* __cdecl NiViewerStrings_NiGetViewerString_Title(const char* name);
 // @fnv 0x00cf4520
 // src: XBOX_PDB 0x00cf4520
-void __stdcall bhkVelocityConstraintMotor_GetViewerStrings(StrArr* array)
+// pdb: bhkVelocityConstraintMotor::GetViewerStrings | bhkVelocityConstraintMotor.obj | retail, upstream name already matches, high
+// pdb params: pkStrings
+// pdb locals: tempMemContext
+void __stdcall bhkVelocityConstraintMotor_GetViewerStrings(StrArr* pkStrings)
 {
     CF4520AllocTagScope tag(16);
-    char* element = NiViewerStrings_NiGetViewerString_Title(DAT_01268738);
-    AddViewerString(array, element);
+    char* element = NiViewerStrings_NiGetViewerString_Title(bhkVelocityConstraintMotor_ms_RTTI);
+    AddViewerString(pkStrings, element);
 }
 
 extern __declspec(thread) int g_iCCCFD0AllocTag;
@@ -361,27 +384,30 @@ struct BCCCFD0AllocTagScope
     }
 };
 
-extern const char* g_pcCCCFD0Name;
+extern const char* bhkExtendedMeshShape_ms_RTTI; // src: XBOX_RETAIL_PDB 0x0126867c (old: DAT_0126867c/g_0126867c/g_pcCCCFD0Name)
 
 class CCCFD0Base
 {
   public:
-    void GetViewerStrings(StrArr* pkStrings);
+    void GetViewerStrings(StrArr* apStrings);
 };
 
 class CCCFD0Derived : public CCCFD0Base
 {
   public:
-    void bhkExtendedMeshShape_GetViewerStrings(StrArr* pkStrings);
+    void bhkExtendedMeshShape_GetViewerStrings(StrArr* apStrings);
 };
 
 // @fnv 0x00cccfd0
 // src: XBOX_PDB 0x00cccfd0
-void CCCFD0Derived::bhkExtendedMeshShape_GetViewerStrings(StrArr* pkStrings)
+// pdb: bhkExtendedMeshShape::GetViewerStrings | bhkExtendedMeshShape.obj | retail, upstream name already matches, high
+// pdb params: apStrings
+// pdb locals: tempMemContext
+void CCCFD0Derived::bhkExtendedMeshShape_GetViewerStrings(StrArr* apStrings)
 {
     BCCCFD0AllocTagScope kScope(0x10);
-    CCCFD0Base::GetViewerStrings(pkStrings);
-    AddViewerString(pkStrings, NiViewerStrings_NiGetViewerString_Title(g_pcCCCFD0Name));
+    CCCFD0Base::GetViewerStrings(apStrings);
+    AddViewerString(apStrings, NiViewerStrings_NiGetViewerString_Title(bhkExtendedMeshShape_ms_RTTI));
 }
 
 extern "C" void _ReadWriteBarrier();
@@ -406,7 +432,7 @@ struct CAA010Shell
     virtual void OpD();
     virtual void OpE();
     virtual void PassArray(StrArr* array);
-    void SetChildObject(CAA010Inner* inner);
+    void SetChildObject(CAA010Inner* apData);
 };
 
 struct CAA010Data
@@ -437,27 +463,30 @@ struct CAA010TagScope
     }
 };
 
-CAA010Shell* __cdecl CreateSaver(void* p);
+CAA010Shell* __cdecl CreateSaver(void* aiType);
 
 struct CAA010This
 {
     int unk00;
     void* m_pUserData;
-    void hkConstraintCinfo_GetViewerStrings(StrArr* array);
+    void hkConstraintCinfo_GetViewerStrings(StrArr* apStrings);
     CAA010Inner* GetObj()
     {
         return m_pUserData ? ((CAA010Data*)m_pUserData)->m_obj : 0;
     }
-    void hkMalleableConstraintCinfo_GetViewerStrings(StrArr* array);
+    void hkMalleableConstraintCinfo_GetViewerStrings(StrArr* apStrings);
 };
 
 // @fnv 0x00caa010
 // src: XBOX_PDB 0x00caa010
-void CAA010This::hkMalleableConstraintCinfo_GetViewerStrings(StrArr* array)
+// pdb: hkMalleableConstraintCinfo::GetViewerStrings | bhkMalleableConstraint.obj | retail, string-set bridge, high
+// pdb params: apStrings
+// pdb locals: tempMemContext, pd, pi
+void CAA010This::hkMalleableConstraintCinfo_GetViewerStrings(StrArr* apStrings)
 {
     CAA010TagScope scope(16);
-    hkConstraintCinfo_GetViewerStrings(array);
-    SetViewerStringAtGrow(array, array->m_usSize, NiGetViewerString_00a7d550("Strength", m_pUserData ? ((CAA010Data*)m_pUserData)->m_f : 0.0f));
+    hkConstraintCinfo_GetViewerStrings(apStrings);
+    SetViewerStringAtGrow(apStrings, apStrings->m_usSize, NiGetViewerString_00a7d550("Strength", m_pUserData ? ((CAA010Data*)m_pUserData)->m_f : 0.0f));
     CAA010Inner* inner = GetObj();
     _ReadWriteBarrier();
     if (inner)
@@ -466,7 +495,7 @@ void CAA010This::hkMalleableConstraintCinfo_GetViewerStrings(StrArr* array)
         if (shell)
         {
             shell->SetChildObject(inner);
-            shell->PassArray(array);
+            shell->PassArray(apStrings);
             shell->Activate(1);
             return;
         }
@@ -474,16 +503,19 @@ void CAA010This::hkMalleableConstraintCinfo_GetViewerStrings(StrArr* array)
     }
 }
 
-extern const char* DAT_01268730;
+extern const char* bhkPositionConstraintMotor_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01268730 (old: DAT_01268730/g_01268730)
 // @fnv 0x00cf4300
 // src: XBOX_PDB 0x00cf4300
-void __stdcall bhkPositionConstraintMotor_GetViewerStrings(StrArr* pkArray)
+// pdb: bhkPositionConstraintMotor::GetViewerStrings | bhkPositionConstraintMotor.obj | retail, upstream name already matches, high
+// pdb params: pkStrings
+// pdb locals: tempMemContext
+void __stdcall bhkPositionConstraintMotor_GetViewerStrings(StrArr* pkStrings)
 
 {
 
     CF4520AllocTagScope scope(16);
 
-    char* pcElement = NiViewerStrings_NiGetViewerString_Title(DAT_01268730);
+    char* pcElement = NiViewerStrings_NiGetViewerString_Title(bhkPositionConstraintMotor_ms_RTTI);
 
-    AddViewerString(pkArray, pcElement);
+    AddViewerString(pkStrings, pcElement);
 }

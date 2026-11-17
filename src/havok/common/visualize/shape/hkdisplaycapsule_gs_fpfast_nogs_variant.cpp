@@ -10,7 +10,7 @@
 
 struct StaticHelper
 {
-    static void HandleObjectEvent(void* a, void* b, float c, void* d, void* e, void* f, void* g);
+    static void HandleObjectEvent(void* start, void* end, float c, void* heightSamples, void* thetaSamples, void* f, void* geometryOut);
 };
 void __stdcall nullsub_74(int, int);
 

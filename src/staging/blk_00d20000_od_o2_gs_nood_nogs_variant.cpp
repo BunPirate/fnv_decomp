@@ -60,6 +60,9 @@ void __cdecl hkCollideCapsuleUtilCapsVsTri(const __m128*, float, const __m128*, 
 
 // @fnv 0x00d39150
 // src: GUESS 0x00d39150 (confidence: low)
+// pdb: hkCapsuleTriangleAgent3::sepNormal | hkpCapsuleTriangleAgent3.obj | debug, object-file run extension, low
+// pdb params: input, entry, agentData, separatingNormalOut
+// pdb locals: endPoints, points, triVertices
 void __cdecl hkCollideCapsuleUtilCapsVsTri_ProcessEntries_00d39150(BodyPair* bodies, void* unused, QueryInput* input, __m128* output)
 {
     ShapeGeometry* shapeA = bodies->a->shape;

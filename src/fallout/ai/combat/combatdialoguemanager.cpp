@@ -11,6 +11,8 @@ struct CombatDialogueHandler
 // Starts dialogue with the combat controller's actors, dialogue type, topic and interrupt flag.
 // @fnv 0x00983970
 // src: XBOX_PDB 0x00983970
+// pdb: CombatDialogueManager::StartDialogue | CombatDialogueManager.obj | retail, upstream name already matches, high
+// pdb params: apCombatController, aiDialogueType, aiDialogueTopic, abInterrupt
 bool CombatDialogueHandler::CombatDialogueManager_StartDialogue(CombatController* apCombatController, int aiDialogueType, int aiDialogueTopic,
                                          bool abInterrupt)
 {

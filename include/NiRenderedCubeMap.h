@@ -2,6 +2,7 @@
 
 #include "NiRenderedTexture.h"
 
+// pdb: class NiRenderedCubeMap, size 0x64, bases: NiRenderedTexture, 2 members
 class NiRenderedCubeMap : public NiRenderedTexture
 {
   public:
@@ -13,6 +14,6 @@ class NiRenderedCubeMap : public NiRenderedTexture
     static NiRenderedCubeMap* Create_00ee8330(unsigned int uiFaceSize, NiRenderer* pkRenderer,
                                          NiTexture::TextureFormatPreferences& kPrefs);
 
-    int unk48;
+    int m_eFace; // src: XBOX_RETAIL_PDB +0x48 (old: unk48)
     void* m_ppCubeMapFaces[6];
 };

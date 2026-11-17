@@ -16,6 +16,8 @@ struct ActorCreatureStandIn
     float FUN_0088b850();
 // @fnv 0x008d4750
 // src: COMMUNITY 0x008d4750
+// pdb: Creature::GetReach | Creature.obj | retail, upstream name already matches, high
+// pdb locals: freach, pcreature
     float Creature_GetReach()
     {
         float j = 0.0f;

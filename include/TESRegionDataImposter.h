@@ -7,6 +7,7 @@
 class TESObjectREFR;
 class TESForm;
 
+// pdb: class TESRegionDataImposter, size 0x10, bases: TESRegionData, 1 members
 class TESRegionDataImposter : public TESRegionData
 {
 public:
@@ -24,5 +25,5 @@ public:
 
     bool ClearList();
     bool AddImposter(TESObjectREFR* ref);
-    void InitItem(TESForm* form);
+    void InitItem(TESForm* apOwner);
 };

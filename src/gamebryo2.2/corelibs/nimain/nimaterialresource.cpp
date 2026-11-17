@@ -42,6 +42,7 @@ struct C00be0ad0
 
 // @fnv 0x00be0ad0
 // src: COMMUNITY 0x00be0ad0
+// pdb: StructArrayImplementation::getSize | hkDataObjectDict.obj | debug, vtable slot, medium
 int C00be0ad0::NiRenderTargetGroup_GetBufferCount()
 {
     return m1c;

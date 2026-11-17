@@ -48,6 +48,7 @@ struct AllocatorOwner
     void ReleaseEntries();
 };
 // @fnv 0x00d0b570
+// pdb: hkpBroadPhaseBorder::deactivate | hkpBroadPhaseBorder.obj | retail, vtable slot, high
 void AllocatorOwner::ReleaseEntries()
 {
     if (manager == 0)
@@ -95,25 +96,28 @@ struct Dispatcher
     unsigned int unknown28;
     unsigned int unknown2c;
     int mode;
-    void DispatchItemByMode(DispatchItem* item);
+    void DispatchItemByMode(DispatchItem* entity);
 };
 // Switches on mode: for modes 0 and 1 calls item->FUN_00ca8420(5,1,0); for mode 2, if item->owner equals owner, calls owner->ProcessTarget(&success, item).
 // @fnv 0x00d0b5f0
-void Dispatcher::DispatchItemByMode(DispatchItem* item)
+// pdb: hkpBroadPhaseBorder::maxPositionExceededCallback | hkpBroadPhaseBorder.obj | retail, vtable slot, high
+// pdb params: entity
+// pdb locals: assertBuf, ostr
+void Dispatcher::DispatchItemByMode(DispatchItem* entity)
 {
     switch (mode)
     {
     case 0:
-        item->hkpRigidBody_setMotionType(5, 1, 0);
+        entity->hkpRigidBody_setMotionType(5, 1, 0);
         break;
     case 1:
-        item->hkpRigidBody_setMotionType(5, 1, 0);
+        entity->hkpRigidBody_setMotionType(5, 1, 0);
         break;
     case 2:
-        if (item->owner == owner)
+        if (entity->owner == owner)
         {
             bool success;
-            owner->ProcessTarget(&success, item);
+            owner->ProcessTarget(&success, entity);
         }
         break;
     }
@@ -131,6 +135,8 @@ typedef bool (*S_00e10760_Less)(S_00e10760_Item* a, S_00e10760_Item* b);
 // Sorts the range [d, h] of pArr in place using a Hoare-partition quicksort with cmpLess, recursing on the left part and looping on the right.
 // @fnv 0x00e10760
 // src: XBOX_PDB 0x00e10760
+// pdb: hkAlgorithm::quickSortRecursive<hkpEntity *,bool (__cdecl*)(hkpEntity const *,hkpEntity const *)> | hkpBroadPhaseBorder.obj | retail, call graph, medium
+// pdb params: pArr, d, h, cmpLess
 void hkAlgorithm_quickSortRecursive_hkMonitorStreamAnalyzerPrintByTypeInfo_bool_cdecl_hkMonitorStreamAnalyzerPrintByTypeInfo_const_hkMonitorStreamAnalyzerPrintByTypeInfo_const(S_00e10760_Item** apItems, int aiLow, int aiHigh, S_00e10760_Less apLess)
 {
     int i, iRight;
@@ -172,7 +178,7 @@ begin:
 
 struct OwnerDest
 {
-    void hkpWorld_removeWorldDeletionListener(void* p);
+    void hkpWorld_removeWorldDeletionListener(void* worldListener);
     void ClearValue(void* p);
 };
 
@@ -183,12 +189,14 @@ struct FUN_00d0b530_cls
     int unk08;
     OwnerDest* m_0C;
 
-    void hkpBroadPhaseBorder_worldDeletedCallback(int unused);
+    void hkpBroadPhaseBorder_worldDeletedCallback(int world);
 };
 
 // @fnv 0x00d0b530
 // src: HAVOK_LIB 0x00d0b530
-void FUN_00d0b530_cls::hkpBroadPhaseBorder_worldDeletedCallback(int unused)
+// pdb: hkpBroadPhaseBorder::worldDeletedCallback | hkpBroadPhaseBorder.obj | retail, upstream name already matches, high
+// pdb params: world
+void FUN_00d0b530_cls::hkpBroadPhaseBorder_worldDeletedCallback(int world)
 {
     m_0C->hkpWorld_removeWorldDeletionListener(((char*)this - 8) ? (void*)this : 0);
     m_0C->ClearValue(((char*)this - 8) ? (void*)((char*)this + 8) : 0);
@@ -199,7 +207,7 @@ struct D0B630Entity;
 
 int __cdecl CompareByOffsetD4(const void* a, const void* b);
 void __cdecl hkAlgorithm_quickSortRecursive_hkMonitorStreamAnalyzerPrintByTypeInfo_bool_cdecl_hkMonitorStreamAnalyzerPrintByTypeInfo_const_hkMonitorStreamAnalyzerPrintByTypeInfo_const(D0B630Entity** data, int lo, int hi, int(__cdecl* cmp)(const void*, const void*));
-void __cdecl hkReferencedObject_removeReferences(D0B630Entity** objects, int numObjects, int strideInBytes);
+void __cdecl hkReferencedObject_removeReferences(D0B630Entity** objects, int numObjects, int pointerStriding);
 
 class D0B630Primary
 {
@@ -223,7 +231,7 @@ class D0B630Secondary
 class D0B630Collector : public D0B630Primary, public D0B630Secondary
 {
   public:
-    virtual void FlushDeferredEntities(const void* event);
+    virtual void FlushDeferredEntities(const void* world);
 
     int unk14;
     int unk18;
@@ -239,7 +247,9 @@ class D0B630Collector : public D0B630Primary, public D0B630Secondary
 };
 
 // @fnv 0x00d0b630
-void D0B630Collector::FlushDeferredEntities(const void* event)
+// pdb: hkpBroadPhaseBorder::postSimulationCallback | hkpBroadPhaseBorder.obj | retail, vtable slot, high
+// pdb params: world
+void D0B630Collector::FlushDeferredEntities(const void* world)
 {
     if (m_numDeferred)
     {
@@ -253,7 +263,7 @@ void D0B630Collector::FlushDeferredEntities(const void* event)
 }
 
 extern "C" hkMemoryRouter& __cdecl hkMemoryRouter_getInstance();
-void __cdecl ResizeAudioStream(void* alloc, void* array, int sizeElem);
+void __cdecl ResizeAudioStream(void* mem, void* array, int sizeElem);
 
 struct D0B6A0Collidable
 {
@@ -333,6 +343,8 @@ class D0B6A0Collector : public D0B6A0Primary, public D0B6A0Secondary
 
 // Handles an event: if the collidable's m_type is 1, gets its owner entity and either defers it into m_deferredEntities or calls entityAdded.
 // @fnv 0x00d0b6a0
+// pdb: hkpBroadPhaseBorder::collidableAddedCallback | hkpBroadPhaseBorder.obj | retail, vtable slot, high
+// pdb params: event
 void D0B6A0Collector::HandleEvent(const D0B6A0Event& event)
 {
     const D0B6A0Collidable* collidable = event.m_kCollidable;
@@ -395,6 +407,7 @@ static inline void ResetBaseVptrs(int* vptrs)
 }
 
 // @fnv 0x00d0bb20
+// pdb: hkpBroadPhaseBorder::~hkpBroadPhaseBorder | hkpBroadPhaseBorder.obj | retail, object-file run extension, low
 void FUN_00d0bb20_cls::Destroy()
 {
     m_vptr00 = (int)&DAT_010cd3c4;
@@ -548,6 +561,7 @@ struct FUN_00d0bbf0
 
 // Empty destructor; the class's operator delete returns the block to the allocator using the size stored in unk04.
 // @fnv 0x00d0bbf0
+// pdb: hkpBroadPhaseBorder::`scalar deleting destructor' | hkpBroadPhaseBorder.obj | retail, vtable slot, high
 FUN_00d0bbf0::~FUN_00d0bbf0()
 {}
 }  // namespace fnv_00d0bbf0

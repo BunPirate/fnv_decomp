@@ -9,6 +9,7 @@ class NiControllerManager;
 class TESObjectREFR;
 class PickWrapper;
 
+// pdb: class LockPickMenu, size 0x100 (here 0xe4), bases: Menu, 23 members
 class LockPickMenu : public Menu
 {
 public:
@@ -91,13 +92,13 @@ public:
     void* FUN_0078dad0(unsigned int flags);
     void DoEnter_007902b0(int, Tile*);
     void DoLeave_007902f0(int, Tile*);
-    void HandleLockPickAction(int aiCode, int aiUnused);
-    void UpdateLockRotation(float amount);
-    void AdvanceSequence(float afDelta);
+    void HandleLockPickAction(int aiID, int apTarget);
+    void RotateLockpickModel(float afNewArrowX);
+    void RotateLock(float afAngleOffset);
     void RotateLockpick();
     bool LockPickMenu_IsTurningLock(bool);
-    void UpdateSweetSpot();
-    void InitLockInterface();
+    void CreateSweetSpot();
+    void Prepare3DElements();
     void* Create3DCamera();
     bool LockPickMenu_HasTiles();
     void DoIdle_0078eb50();

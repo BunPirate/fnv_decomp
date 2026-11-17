@@ -40,7 +40,7 @@ struct D0B6A0Allocator
 inline void* __cdecl hkReferencedObject::operator new(std::size_t nbytes)
 {
     hkReferencedObject* b = static_cast<hkReferencedObject*>(hkMemoryRouter_getInstance().heap().AllocateMemoryBlock(nbytes));
-    b->m_usMemSizeAndFlags = static_cast<unsigned short>(nbytes);
+    b->m_memSizeAndFlags = static_cast<unsigned short>(nbytes);
     return b;
 }
 
@@ -76,7 +76,7 @@ struct hkpBroadPhaseBorder : hkReferencedObject,
     {
         hkpAabbPhantom* phantom =
             static_cast<hkpAabbPhantom*>(hkReferencedObject::operator new(0xe0))->FUN_00cf2cb0(aabb, 0);
-        phantom->m_kCollidable.m_kBroadPhaseHandle.setType(3);
+        phantom->m_kCollidable.m_broadPhaseHandle.setType(3);
         phantom->addPhantomOverlapListener_00d07de0(this);
         m_kPhantoms[i] = phantom;
         world->hkpWorld_addPhantom(phantom);
@@ -91,6 +91,9 @@ struct hkpBroadPhaseBorder : hkReferencedObject,
 }
 
 // @fnv 0x00d0b710
+// pdb: hkpBroadPhaseBorder::hkpBroadPhaseBorder | hkpBroadPhaseBorder.obj | retail, upstream name already matches, high
+// pdb params: world, type, postponeAndSortCallbacks
+// pdb locals: infoAABB, maxExtents, minExtents
 bpb::hkpBroadPhaseBorder::hkpBroadPhaseBorder(hkpWorld* world, int type, bool postponeAndSortCallbacks)
 {
     m_type = type;
@@ -111,8 +114,8 @@ bpb::hkpBroadPhaseBorder::hkpBroadPhaseBorder(hkpWorld* world, int type, bool po
     __declspec(align(16)) float maximum[4];
     hkVector4& wMin = reinterpret_cast<hkVector4&>(minimum);
     hkVector4& wMax = reinterpret_cast<hkVector4&>(maximum);
-    memcpy(&wMin, &m_pOwningWorld->m_kBroadPhaseAabb[0], sizeof(wMin));
-    memcpy(&wMax, &m_pOwningWorld->m_kBroadPhaseAabb[1], sizeof(wMax));
+    memcpy(&wMin, &m_pOwningWorld->m_broadPhaseExtents[0], sizeof(wMin));
+    memcpy(&wMax, &m_pOwningWorld->m_broadPhaseExtents[1], sizeof(wMax));
     hkVector4& maximumCorner = reinterpret_cast<hkVector4&>(bounds.maximumCorner);
     hkVector4& minimumCorner = reinterpret_cast<hkVector4&>(bounds.minimumCorner);
     hkAabb& aabb = reinterpret_cast<hkAabb&>(bounds.face);

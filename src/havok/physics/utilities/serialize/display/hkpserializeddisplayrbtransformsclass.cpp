@@ -19,6 +19,7 @@ struct Owner
 };
 // Calls FUN_00e3a3d0, and if flags has bit 0 set, releases this object through the BSAudio allocator using size4 bytes, then returns this.
 // @fnv 0x00dfc490
+// pdb: hkpSerializedDisplayRbTransforms::`scalar deleting destructor' | hkpSerializedDisplayRbTransformsClass.obj | retail, vtable slot, high
 Owner* Owner::FUN_00dfc490(unsigned int flags)
 {
     FUN_00e3a3d0();

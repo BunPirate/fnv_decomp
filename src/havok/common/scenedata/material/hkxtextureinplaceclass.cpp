@@ -25,6 +25,7 @@ struct CpuObject
     CpuObject* DestroyIfFlagged(unsigned int flags);
 };
 // @fnv 0x00e017a0
+// pdb: hkxTextureInplace::`scalar deleting destructor' | hkxTextureInplaceClass.obj | retail, vtable slot, high
 CpuObject* CpuObject::DestroyIfFlagged(unsigned int flags)
 {
     FUN_00e01750();

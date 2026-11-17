@@ -8,13 +8,17 @@
 
 // Constructs a ValueModifierEffect subobject and sets its vtable pointer to DAT_01079d2c.
 // @fnv 0x0080c460
-DarknessEffect::DarknessEffect(void* apArg1, void* apArg2, void* apArg3)
-    : ValueModifierEffect(apArg1, apArg2, apArg3)
+// pdb: DarknessEffect::DarknessEffect | DarknessEffect.obj | debug, upstream name already matches, high
+// pdb params: apCaster, apSpell, apEffect
+DarknessEffect::DarknessEffect(void* apCaster, void* apSpell, void* apEffect)
+    : ValueModifierEffect(apCaster, apSpell, apEffect)
 {
 }
 
 void __cdecl BSShaderManager_RecursiveSetForcedDarkness(int, float);
 // @fnv 0x0080c850
+// pdb: DarknessEffect::Revert | DarknessEffect.obj | retail, upstream name already matches, high
+// pdb params: apActor
 void DarknessEffect::Revert(Actor* apActor)
 {
     reinterpret_cast<TESForm*>(this)->TESForm::Revert(reinterpret_cast<BGSLoadFormBuffer*>(apActor));
@@ -25,12 +29,16 @@ void DarknessEffect::Revert(Actor* apActor)
 // Allocates and constructs a new DarknessEffect from the three given arguments and returns it.
 // @fnv 0x0080c730
 // src: COMMUNITY 0x0080c730
+// pdb: DarknessEffect::Instantiate | DarknessEffect.obj | retail, object-file run extension, low
+// pdb params: apCaster, apSpell, apEffect
 DarknessEffect* __cdecl DarknessEffect_Create(void* a, void* b, void* c)
 {
     return new DarknessEffect(a, b, c);
 }
 
 // @fnv 0x0080c4c0
+// pdb: DarknessEffect::Copy | DarknessEffect.obj | retail, upstream name already matches, high
+// pdb locals: presult
 ActiveEffect* DarknessEffect::Copy()
 {
     ActiveEffect* presult = new DarknessEffect(m_pEffectInstance, pSpell, pEffect);
@@ -42,6 +50,8 @@ double _DAT_01012060;
 double g_d100;
 
 // @fnv 0x0080c570
+// pdb: DarknessEffect::Start | DarknessEffect.obj | retail, upstream name already matches, high
+// pdb locals: ptargetActor, fnewDarkness
 void DarknessEffect::Start()
 {
     Actor* ptargetActor;
@@ -54,7 +64,7 @@ void DarknessEffect::Start()
     if (ptargetActor && ptargetActor->GetNiNode())
     {
         fnewDarkness = static_cast<float>(
-            1.0 - ptargetActor->GetCurrentActorValue(m_eActorValue) / g_d100);
+            1.0 - ptargetActor->GetCurrentActorValue(eWhichActorValue) / g_d100);
 
         if (fnewDarkness < _DAT_01012060)
             fnewDarkness = 0.0f;
@@ -67,6 +77,8 @@ void DarknessEffect::Start()
 }
 
 // @fnv 0x0080c650
+// pdb: DarknessEffect::Finish | DarknessEffect.obj | retail, upstream name already matches, high
+// pdb locals: ptargetActor, fnewDarkness
 void DarknessEffect::Finish()
 {
     ValueModifierEffect::ApplyEffect();
@@ -76,7 +88,7 @@ void DarknessEffect::Finish()
 
     if (ptargetActor && ptargetActor->GetNiNode())
     {
-        fnewDarkness = 1.0 - ptargetActor->GetCurrentActorValue(m_eActorValue) / g_d100;
+        fnewDarkness = 1.0 - ptargetActor->GetCurrentActorValue(eWhichActorValue) / g_d100;
 
         if (fnewDarkness < _DAT_01012060)
             fnewDarkness = 0.0f;
@@ -88,11 +100,14 @@ void DarknessEffect::Finish()
 }
 
 // @fnv 0x0080c7b0
+// pdb: DarknessEffect::FinishInitLoadGame | DarknessEffect.obj | retail, vtable slot, high
+// pdb params: apActor
+// pdb locals: fnewDarkness
 void DarknessEffect::FinishLoadGameTES(Actor* apActor)
 {
     reinterpret_cast<InvisibilityEffect*>(this)->ValueModifierEffect_FinishInitLoadGame(apActor);
 
-    float fnewDarkness = 1.0 - apActor->GetCurrentActorValue(m_eActorValue) / g_d100;
+    float fnewDarkness = 1.0 - apActor->GetCurrentActorValue(eWhichActorValue) / g_d100;
 
     if (fnewDarkness < 0.0)
         fnewDarkness = 0.0f;

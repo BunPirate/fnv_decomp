@@ -22,6 +22,7 @@ class TESTopic;
 typedef ActorValue::Index ActorValue__Index;
 
 #pragma pack(push, 4)
+// pdb: class LowProcess, size 0xb4, bases: BaseProcess, 25 members
 class LowProcess : public BaseProcess
 {
 public:
@@ -55,7 +56,7 @@ public:
     virtual void SetAnimationComplete(bool abVal);
     virtual bool IsMovementComplete() const;
     virtual TESObjectREFR* GetTarget() const;
-    virtual void SetTarget(TESObjectREFR* apTarget);
+    virtual void SetTarget(TESObjectREFR* apRef);
     virtual unsigned int GetPackageObjectType() const;
     virtual bool IsAnimationStateActive() const;
     virtual void SetAnimationStateActive(bool abVal);
@@ -74,7 +75,7 @@ public:
     virtual void ProcessDialogueTopic(Actor* apActor, TESTopic* apTopic, bool abForceSub, bool abStop, bool abQueue, bool abSayCallBack);
     virtual void SetActorProcessTime(Actor* apActor, float afTimeDelta);
     virtual bool IsCurrentlyAlerted() const;
-    virtual void SetAlert(bool abVal);
+    virtual void SetAlert(bool abFlag);
     virtual bool ShouldAttackTarget(Actor* apActor, Actor* apTarget, bool, bool abIsEvil, ActorCombatGroup* apCombatGroup, bool, bool, bool abIsAggressor, bool, bool abIgnoreActorLimit, bool, bool, TESPackage* apPackage);
     virtual bool IsCurrentProcessComplete() const;
     virtual void SetCurrentProcessComplete(bool abVal);
@@ -93,7 +94,7 @@ public:
     virtual void UpdateCurrentPackage(Actor* apActor);
     virtual unsigned short GetSaveSize(unsigned int auiFlags, MobileObject* apObject);
     virtual void SaveGameBGS(BGSSaveGameBuffer* apBuffer);
-    virtual void SaveGameTES(unsigned int auiFlags, MobileObject* apObject);
+    virtual void SaveGameTES(unsigned int aiFlags, MobileObject* pmob);
     virtual void LoadGameBGS(BGSLoadFormBuffer* apBuffer);
     virtual void LoadGameTES(unsigned int auiFlags, unsigned int auiCurrentFlags, MobileObject* apObject);
     virtual void InitLoadGameBGS(BGSLoadFormBuffer* apBuffer);
@@ -140,34 +141,34 @@ public:
     virtual TESObjectREFR* vfn_814(Actor*, TESPackage*, bool);
     virtual void vfn_818(Actor*);
 
-    unsigned char m_uiObjectFlags;
+    unsigned char m_uFlags; // src: XBOX_RETAIL_PDB +0x30 (old: m_uiObjectFlags)
     unsigned char layoutPadding31;
     unsigned short layoutPadding32;
-    TESBoundObject* m_pCurrentWeapon;
-    TimeoutTimer m_kProcessData38;
+    TESBoundObject* pItemBeingUsed; // src: XBOX_RETAIL_PDB +0x34 (old: m_pCurrentWeapon)
+    TimeoutTimer fCombatDelayTimer; // src: XBOX_RETAIL_PDB +0x38 (old: m_kProcessData38)
     TESObjectREFR* pTarget;
-    TESObjectREFR* m_pReference40;
-    TESObjectREFR* m_pReference44;
-    BGSListForm* m_pFormList;
-    short m_sFourthValue;
+    TESObjectREFR* pGenericLocation; // src: XBOX_RETAIL_PDB +0x44 (old: m_pReference40)
+    TESObjectREFR* pGenericSecondLocation; // src: XBOX_RETAIL_PDB +0x48 (old: m_pReference44)
+    BGSListForm* pTargetFormList; // src: XBOX_RETAIL_PDB +0x4c (old: m_pFormList)
+    short sFormListNumb; // src: XBOX_RETAIL_PDB +0x50 (old: m_sFourthValue)
     unsigned short layoutPadding52;
-    TESObjectREFR* m_pObjectReference;
-    int m_iValue58;
-    BSSimpleList<TargetDoorController*> ReferenceListNode;
-    TargetDoorController* m_pDetectionData60;
-    TargetDoorController* m_pDetectionData64;
-    BSSimpleList<TESObjectREFR*> m_kReferenceList68;
-    BSSimpleList<TargetDoorController*> m_kDetectionDataList;
-    BSSimpleList<TESObjectREFR*> m_kReferenceList70;
-    TESBoundObject* m_pBoundObject74;
-    TESBoundObject* m_pBoundObject78;
-    PACKAGE_OBJECT_TYPE m_eReferenceTypeInfo;
-    TESFaction* PackageFactionTarget;
-    ActorValueModifierList m_kActorValueModifiers;
-    float m_fValue88;
-    float m_fValue8C;
-    float m_fValue90;
-    bool m_bHasBoundObject;
+    TESObjectREFR* pPatrolLocation; // src: XBOX_RETAIL_PDB +0x54 (old: m_pObjectReference)
+    int iNumberItemsActivate; // src: XBOX_RETAIL_PDB +0x58 (old: m_iValue58)
+    BSSimpleList<TargetDoorController*> ObjectList; // src: XBOX_RETAIL_PDB +0x5c (old: ReferenceListNode)
+    TargetDoorController* pAcquireObject; // src: XBOX_RETAIL_PDB +0x64 (old: m_pDetectionData60)
+    TargetDoorController* pSavedAcquireObject; // src: XBOX_RETAIL_PDB +0x68 (old: m_pDetectionData64)
+    BSSimpleList<TESObjectREFR*> GenericLocationsList; // src: XBOX_RETAIL_PDB +0x6c (old: m_kReferenceList68)
+    BSSimpleList<TargetDoorController*> TempObjectList; // src: XBOX_RETAIL_PDB +0x74 (old: m_kDetectionDataList)
+    BSSimpleList<TESObjectREFR*> TempLocList; // src: XBOX_RETAIL_PDB +0x7c (old: m_kReferenceList70)
+    TESBoundObject* pObjecttoAcquire; // src: XBOX_RETAIL_PDB +0x84 (old: m_pBoundObject74)
+    TESBoundObject* pObjectForLocation; // src: XBOX_RETAIL_PDB +0x88 (old: m_pBoundObject78)
+    PACKAGE_OBJECT_TYPE eFormType; // src: XBOX_RETAIL_PDB +0x8c (old: m_eReferenceTypeInfo)
+    TESFaction* pFactiontoAquire; // src: XBOX_RETAIL_PDB +0x90 (old: PackageFactionTarget)
+    ActorValueModifierList pDamageModifiers; // src: XBOX_RETAIL_PDB +0x94 (old: m_kActorValueModifiers)
+    float fEssentialDownTimer; // src: XBOX_RETAIL_PDB +0xa4 (old: m_fValue88)
+    float fDeathTime; // src: XBOX_RETAIL_PDB +0xa8 (old: m_fValue8C)
+    float fTrackedDamage; // src: XBOX_RETAIL_PDB +0xac (old: m_fValue90)
+    bool bSkippedTimeStampForPathing; // src: XBOX_RETAIL_PDB +0xb0 (old: m_bHasBoundObject)
     unsigned char layoutPaddingB1;
     unsigned short layoutPaddingB2;
 
@@ -176,12 +177,12 @@ public:
     void SetFlag(bool, unsigned char);
     bool GetFlag(unsigned char) const;
     void UpdateTargetFromPackage();
-    void SetFlag40(int);
+    void SetPackageIdleDone(int);
     void HandlePackageChange(LowProcess*);
     void ClearData();
     int GetActorValue(TESActorBase*, ActorValue__Index, Actor*);
     bool CanProcessActor(Actor*, bool);
-    bool SelectNextPackage(Actor*);
+    bool SetCurrentPackageFromSchedule(Actor*);
     bool CanRunPackage(TESPackage*, bool);
     float GetCurrentActorValue(TESActorBase*, ActorValue__Index, Actor*);
     static bool HandlePackageTargetLoaded(TESObjectREFR*, long);
@@ -189,15 +190,15 @@ public:
     void Revert(BGSLoadFormBuffer*);
     void LoadGame(BGSLoadFormBuffer*);
     void InitLoadGame(BGSLoadFormBuffer*);
-    float GetActorTimeDelta(Actor*);
+    float GetTimeDelta(Actor*);
     TESObjectREFR* ResolvePackageLocation(Actor*, TESPackage*, bool);
     bool FindPatrolTarget(Actor*, PatrolActorPackageData*);
-    void ProcessPatrolPackage(Actor*, PatrolActorPackageData*);
-    float RunProcessUpdate(Actor*, PatrolActorPackageData*, float);
-    void HandlePatrolArrival(Actor*, PatrolActorPackageData*);
+    void ProcessPatrolStartTravelToNextRef(Actor*, PatrolActorPackageData*);
+    float ProcessPatrolTravelingToNextRef(Actor*, PatrolActorPackageData*, float);
+    void ProcessPatrolStartAtRefBehavior(Actor*, PatrolActorPackageData*);
     float UpdatePatrolProgress(Actor*, PatrolActorPackageData*, float);
     TESObjectREFR* ResolvePackageTarget(Actor*, TESPackage*);
-    void MiddleLowProcess_ProcessCombat(Actor* source);
+    void MiddleLowProcess_ProcessCombat(Actor* apActor);
     using BaseProcess::GetCurrentBoundObject;
     float GetPotentialThreatDamage(Actor*, Actor*);
     bool IsProcedureTypeAllowed();
@@ -238,7 +239,7 @@ public:
     TESObjectCELL* GetProcedureCell(Actor*);
     void* GetCurrentDestinationWorldSpace(Actor*);
     void SaveToStream(unsigned int, unsigned int);
-    void CollectSearchResults(TESObjectREFR*, TESObjectREFR*, int);
+    void BuildMulitTargetObjectList(TESObjectREFR*, TESObjectREFR*, int);
     void UpdateFollowerList(TESObjectREFR*, float);
     void StartPackagePathing(Actor*, TESForm*);
     void ProcessEscort(Actor*);

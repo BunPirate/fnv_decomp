@@ -1,6 +1,7 @@
 #pragma once
 #include <stddef.h>
 
+// pdb: structure NiMemObject, size 0x1, 0 members
 class NiMemObject
 {
   public:

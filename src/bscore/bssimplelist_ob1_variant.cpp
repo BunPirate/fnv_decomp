@@ -17,6 +17,7 @@ struct Node185
     Node185* next;
     void ProcessEntries_00ae83e0();
 // @fnv 0x00ae83e0
+// pdb: BSSimpleList<BSContentPackage *>::~BSSimpleList<BSContentPackage *> | BSDLCSystemUtility_Xenon.obj | debug, call graph, low
     inline ~Node185()
     {
         ProcessEntries_00ae83e0();
@@ -41,7 +42,7 @@ void Node185::ProcessEntries_00ae83e0()
 
 struct Mem_00a0cbe0
 {
-    void Deallocate(void* p);
+    void Deallocate(void* apMem);
 };
 extern Mem_00a0cbe0 DAT_011f6238;
 

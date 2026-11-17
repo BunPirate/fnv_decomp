@@ -56,10 +56,13 @@ class AccumWIP : public BSShaderAccumulator
 {
   public:
     void SetShaderPassEnabled(unsigned int uiRenderPassIndex, bool bFlag);
-    void RenderPassGroup(int eFirst, int eLast, bool bFlag, int iGroup);
+    void RenderPassGroup(int aePass, int aePassEnd, bool abAlphaPass, int aeGroup);
 };
 
 // @fnv 0x00b639e0
+// pdb: BSShaderAccumulator::RenderGeometryGroup | BSShaderAccumulator.obj | retail, call graph, medium
+// pdb params: auiGeometryGroup, abAlphaPass
+// pdb locals: i
 void AccumWIP::SetShaderPassEnabled(unsigned int uiGroupIndex, bool bFlag)
 {
     GroupView* pkGroup = reinterpret_cast<GroupView*>(pBatchRenderer[0]->pGeometryGroupsA[uiGroupIndex]);
@@ -110,6 +113,8 @@ template <> void BSSimpleList<unsigned short>::RemoveAll()
 
 // Iterates over the active passes and calls RemoveAll on each pass's list.
 // @fnv 0x00b65580
+// pdb: BSShaderAccumulator::ClearActivePasses | BSShaderAccumulator.obj | retail, upstream name already matches, high
+// pdb locals: i
 void BSShaderAccumulator::ClearActivePasses()
 {
     for (unsigned int i = 0; i < uiBatchRendererCount; ++i)
@@ -117,9 +122,11 @@ void BSShaderAccumulator::ClearActivePasses()
 }
 
 // @fnv 0x00b65550
-void BSShaderAccumulator::SetupDepth(NiCamera* camera, NiCamera* firstPersonCamera, BSRenderedTexture*)
+// pdb: BSShaderAccumulator::SetupDepth | BSShaderAccumulator.obj | retail, upstream name already matches, high
+// pdb params: apWorldCamera, ap1stPersonCamera, apCurRenderTarget
+void BSShaderAccumulator::SetupDepth(NiCamera* apWorldCamera, NiCamera* ap1stPersonCamera, BSRenderedTexture*)
 {
-    SetupDepthCameras(camera, firstPersonCamera);
+    SetupDepthCameras(apWorldCamera, ap1stPersonCamera);
 }
 
 struct NiPoint3;
@@ -134,6 +141,8 @@ __declspec(thread) char tls_data[0x2c0];
 void __fastcall AddSortedGroup(void* pThis, int, void* aBound, bool abZPrePass, void* pkCamera, bool bFlag);
 
 // @fnv 0x00b63500
+// pdb: BSShaderAccumulator::StartGroupingAlphas | BSShaderAccumulator.obj | debug, call graph, medium
+// pdb params: aBound, abZPrePass
 void FUN_00b63500_shell::RenderBound(void* aBound, bool abZPrePass)
 {
     unsigned int uiIndex = *(unsigned int*)&tls_data[0x2bc] % *(unsigned int*)((char*)this + 0x18c);
@@ -190,6 +199,9 @@ static inline BSBatchRenderer__GeometryGroup*& GetNextAlphaGroup(
 
 // @fnv 0x00b64f20
 // src: COMMUNITY 0x00b64f20
+// pdb: BSBatchRenderer::ClearAlphaLists | BSShaderAccumulator.obj | retail, upstream name already matches, high
+// pdb params: aiSide
+// pdb locals: kiter, pgroup
 void __fastcall BSBatchRenderer_ClearAlphaLists(BSBatchRenderer* pThis, int, unsigned int uiIndex)
 {
     pThis->pAlphaGroupA[uiIndex]->ClearPassTextureSlots();
@@ -233,6 +245,8 @@ struct Self_00b655b0
 // Pops every node from the list, frees each node's element and payload, and returns the nodes to a free pool.
 // @fnv 0x00b655b0
 // src: XBOX_PDB 0x00b655b0
+// pdb: BSShaderAccumulator::ClearAllBoundVolumes | BSShaderAccumulator.obj | retail, upstream name already matches, high
+// pdb locals: pvolume
 void __fastcall BSShaderAccumulator_ClearAllBoundVolumes(Self_00b655b0* self)
 {
     while (self->count != 0)
@@ -282,6 +296,7 @@ extern const void* const* vftable_BSBatchRenderer__PassList;
 
 // @fnv 0x00b656b0
 // src: GUESS 0x00b656b0 (confidence: medium)
+// pdb: BSShaderAccumulator::ClearVolumetricFogGeometry | BSShaderAccumulator.obj | debug, object-file run extension, low
 void __fastcall BSBatchRenderer__PassList_ResetPassListAndStorage(BSBatchRenderer__PassList* pThis, int)
 {
     *(volatile unsigned int*)pThis = (unsigned int)&vftable_BSBatchRenderer__PassList;
@@ -301,6 +316,9 @@ struct NodePoolView
 
 // If bFlag is set, allocates a node via AddHead, links it before the current head at p+0x10, updates the count and returns true.
 // @fnv 0x00b65a90
+// pdb: BSShaderAccumulator::RegisterObject_Interface | BSShaderAccumulator.obj | retail, object-file run extension, low
+// pdb params: apAccumulator, apGeometry, apState, apShaderProp, apShader
+// pdb locals: errormesg
 bool __cdecl InsertNodeAtHead(void* pList, void* data, void* arg3, void* arg4, int bInsert)
 {
     if (!bInsert)
@@ -429,13 +447,15 @@ public:
 
 // @fnv 0x00b65e80
 // src: COMMUNITY 0x00b65e80
-void __cdecl BSShaderAccumulator_FinishAccumulating_Interface(void* pObject)
+// pdb: BSShaderAccumulator::FinishAccumulating_Interface | BSShaderAccumulator.obj | retail, upstream name already matches, high
+// pdb params: apAccumulator
+void __cdecl BSShaderAccumulator_FinishAccumulating_Interface(void* apAccumulator)
 {
-    if (*(int*)((unsigned char*)pObject + 8))
+    if (*(int*)((unsigned char*)apAccumulator + 8))
     {
-        *(int*)((unsigned char*)pObject + 0x18) = 0;
-        reinterpret_cast<V42*>(pObject)->f40();
-        BSShaderAccumulator_RenderTiles(pObject);
+        *(int*)((unsigned char*)apAccumulator + 0x18) = 0;
+        reinterpret_cast<V42*>(apAccumulator)->f40();
+        BSShaderAccumulator_RenderTiles(apAccumulator);
         BSRenderStateManager_bsshaderaccumulator::SetDepthBufferEnabled(0, 0);
     }
 }
@@ -472,6 +492,8 @@ extern AccumulatorPointer<NiGPUProgram> DAT_011f956c;
 // If a renderer exists, creates the shader when missing and then calls DrawSlots(0) on it.
 // @fnv 0x00b55a10
 // src: COMMUNITY 0x00b55a10
+// pdb: BSShaderManager::RenderDebugTexture | BSShaderManager.obj | retail, upstream name already matches, high
+// pdb locals: pNiShader, pDebugShader
 void BSShaderManager_RenderDebugTexture()
 {
     if (DAT_011f9508)
@@ -527,6 +549,8 @@ struct AccumStub
 // For each of the three entries, queries the stub, releases and deallocates it, clears the pointer and flag, then clears m_b40.
 // @fnv 0x00b63620
 // src: COMMUNITY 0x00b63620
+// pdb: BSShaderAccumulator::ClearSunQueries | BSShaderAccumulator.obj | debug, upstream name already matches, high
+// pdb locals: i, result
 void __fastcall BSShaderAccumulator_ClearSunQueries(AccumStub* self)
 {
     for (int i = 0; i < 3; ++i)
@@ -674,6 +698,8 @@ struct AccumStub
 // Calls FUN_00b99a10 on each of the m_uiCount batch renderers, passing m_i8 and m_c31.
 // @fnv 0x00b63a50
 // src: COMMUNITY 0x00b63a50
+// pdb: BSShaderAccumulator::SortAlphaPasses | BSShaderAccumulator.obj | retail, upstream name already matches, high
+// pdb locals: i
 void __fastcall BSShaderAccumulator_SortAlphaPasses(AccumStub* pAccum)
 {
     for (unsigned int i = 0; i < pAccum->m_uiCount; ++i)
@@ -691,22 +717,24 @@ void __fastcall BSShaderLightingProperty_ClearLights_Thunk(char* self, int unuse
 }  // namespace fnv_00b65570
 
 struct GlobalObjectO2_00a7b610;
-extern GlobalObjectO2_00a7b610 g_011fa000;
+extern GlobalObjectO2_00a7b610 BSShaderAccumulator_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011fa000 (old: DAT_011fa000/g_011fa000)
 // @fnv 0x00b65a80
 // src: XBOX_PDB 0x00b65a80
 GlobalObjectO2_00a7b610* __cdecl BSShaderAccumulator_GetRTTI()
 {
-    return &g_011fa000;
+    return &BSShaderAccumulator_ms_RTTI;
 }
 
 void __cdecl BSShaderAccumulator_FinishAccumulating_Standard_PreResolveDepth(void*);
 void __cdecl BSShaderAccumulator_FinishAccumulating_Standard_PostResolveDepth(void*);
 // @fnv 0x00b665a0
 // src: COMMUNITY 0x00b665a0
-void __cdecl BSShaderAccumulator_FinishAccumulating_Standard(void* p)
+// pdb: BSShaderAccumulator::FinishAccumulating_Standard | BSShaderAccumulator.obj | retail, upstream name already matches, high
+// pdb params: apAccumulator
+void __cdecl BSShaderAccumulator_FinishAccumulating_Standard(void* apAccumulator)
 {
-    BSShaderAccumulator_FinishAccumulating_Standard_PreResolveDepth(p);
-    BSShaderAccumulator_FinishAccumulating_Standard_PostResolveDepth(p);
+    BSShaderAccumulator_FinishAccumulating_Standard_PreResolveDepth(apAccumulator);
+    BSShaderAccumulator_FinishAccumulating_Standard_PostResolveDepth(apAccumulator);
 }
 
 namespace fnv_00b64f90 {
@@ -780,6 +808,8 @@ struct AccumS
 // Calls FUN_00b988e0, applies FUN_00b994f0 to each pass from First/Next, then drains pList or kList and calls FUN_00b988e0 again.
 // @fnv 0x00b64f90
 // src: COMMUNITY 0x00b64f90
+// pdb: BSShaderAccumulator::RenderAlphaGeometry | BSShaderAccumulator.obj | retail, call graph, medium
+// pdb locals: pkItem, acount
 void AccumS::BSShaderAccumulator_RenderTiles()
 {
     BSBatchRenderer_EndPass();
@@ -1074,9 +1104,12 @@ extern NiRenderer* DAT_011f9508;
 
 // @fnv 0x00b65c60
 // src: COMMUNITY 0x00b65c60
-void BSShaderAccumulator_FinishAccumulating_Standard_PostResolveDepth(AccumWIP* apAccum)
+// pdb: BSShaderAccumulator::FinishAccumulating_Standard_PostResolveDepth | BSShaderAccumulator.obj | retail, upstream name already matches, high
+// pdb params: apAccumulator
+// pdb locals: prenderer, pktarget, irendersteps, pcam, pssnode, irender, pdebugnode, kcam, knrect, kfrustum, kupdatedata, fscale, kaspect, ichildcnt, i, pchild, pchildnode, igchildcnt, j, pgchild, prplist, uscount, pgeom, pprop
+void BSShaderAccumulator_FinishAccumulating_Standard_PostResolveDepth(AccumWIP* apAccumulator)
 {
-    if (*((unsigned char*)apAccum + 0x38) && ((AccumStub*)apAccum)->GetWaterRefractionPassWithinRange(0x288, 0x2ce))
+    if (*((unsigned char*)apAccumulator + 0x38) && ((AccumStub*)apAccumulator)->GetWaterRefractionPassWithinRange(0x288, 0x2ce))
     {
         if (DAT_011f9438)
         {
@@ -1086,25 +1119,25 @@ void BSShaderAccumulator_FinishAccumulating_Standard_PostResolveDepth(AccumWIP* 
             DAT_011f91ac->ImageSpaceManager_RenderEffect(0x22, DAT_011f9508, DAT_011f9438, DAT_011f943c, 0, true);
             BSRenderedTexture_StartOffscreen(0, DAT_011f9438->GetGroup());
         }
-        DAT_011f9508->SetCurrentCamera(*(NiCamera**)((char*)apAccum + 8));
+        DAT_011f9508->SetCurrentCamera(*(NiCamera**)((char*)apAccumulator + 8));
     }
-    apAccum->RenderPassGroup(0x288, 0x289, false, -1);
-    apAccum->RenderPassGroup(0x28a, 0x2ab, false, -1);
-    apAccum->RenderPassGroup(0x2ac, 0x2ce, false, -1);
-    if (*((unsigned char*)apAccum + 0x38))
+    apAccumulator->RenderPassGroup(0x288, 0x289, false, -1);
+    apAccumulator->RenderPassGroup(0x28a, 0x2ab, false, -1);
+    apAccumulator->RenderPassGroup(0x2ac, 0x2ce, false, -1);
+    if (*((unsigned char*)apAccumulator + 0x38))
     {
         DAT_011f91a8->AddRenderedTexture(DAT_011f943c);
         DAT_011f943c = 0;
     }
-    apAccum->SetShaderPassEnabled(9, true);
-    if (*((unsigned char*)apAccum + 0x167))
-        ((AccumStub*)apAccum)->UpdatePasses(true);
+    apAccumulator->SetShaderPassEnabled(9, true);
+    if (*((unsigned char*)apAccumulator + 0x167))
+        ((AccumStub*)apAccumulator)->UpdatePasses(true);
     else
-        ((AccumStub*)apAccum)->UpdatePasses(false);
+        ((AccumStub*)apAccumulator)->UpdatePasses(false);
     BSRenderStateManager_bsshaderaccumulator::SetDepthBufferEnabled(false, 0);
     BSRenderStateManager_bsshaderaccumulator::SetDepthBufferEnabled(false, 0);
-    apAccum->RenderPassGroup(0x2cf, 0x2d7, false, -1);
-    apAccum->SetShaderPassEnabled(1, false);
+    apAccumulator->RenderPassGroup(0x2cf, 0x2d7, false, -1);
+    apAccumulator->SetShaderPassEnabled(1, false);
 }
 }  // namespace fnv_00b65c60
 
@@ -1115,7 +1148,7 @@ extern int DAT_011a9608;
 void __cdecl _FUN_00b98280(int, int, int, int, int, int, int);
 struct AccumView
 {
-    void* CreateRenderPassesNode();
+    void* BSShaderAccumulator_CreateRenderPassTree();
     void BSShaderAccumulator_SortAlphaPasses();
     void UpdatePasses(bool);
     void BSShaderAccumulator_RenderBlendedDecals();
@@ -1123,54 +1156,57 @@ struct AccumView
 
 // @fnv 0x00b65ae0
 // src: XBOX_PDB 0x00b65ae0
-void __cdecl BSShaderAccumulator_FinishAccumulating_Standard_PreResolveDepth(AccumWIP* pAccum)
+// pdb: BSShaderAccumulator::FinishAccumulating_Standard_PreResolveDepth | BSShaderAccumulator.obj | retail, upstream name already matches, high
+// pdb params: apAccumulator
+// pdb locals: isaveaniso, prenderer
+void __cdecl BSShaderAccumulator_FinishAccumulating_Standard_PreResolveDepth(AccumWIP* apAccumulator)
 {
-    if (pAccum->m_pkCamera)
+    if (apAccumulator->m_pkCamera)
     {
-        unsigned char* raw = (unsigned char*)pAccum;
+        unsigned char* raw = (unsigned char*)apAccumulator;
         int mode = *(int*)(raw + 0x19c);
         if (mode == 8)
         {
-            pAccum->RenderPassGroup(6, mode, false, -1);
-            pAccum->RenderPassGroup(0x1d3, 0x1d6, false, -1);
-            pAccum->ClearActivePasses();
+            apAccumulator->RenderPassGroup(6, mode, false, -1);
+            apAccumulator->RenderPassGroup(0x1d3, 0x1d6, false, -1);
+            apAccumulator->ClearActivePasses();
             return;
         }
         if (mode == 7)
         {
-            pAccum->RenderPassGroup(0x10, 0x13, false, -1);
-            pAccum->RenderPassGroup(0x1c8, 0x1cb, false, -1);
-            pAccum->ClearActivePasses();
+            apAccumulator->RenderPassGroup(0x10, 0x13, false, -1);
+            apAccumulator->RenderPassGroup(0x1c8, 0x1cb, false, -1);
+            apAccumulator->ClearActivePasses();
             return;
         }
-        pAccum->SetShaderPassEnabled(10, false);
+        apAccumulator->SetShaderPassEnabled(10, false);
         if (DAT_011f9fc1 && *(int*)(raw + 0x19c) != 7)
         {
-            DAT_011fa008 = ((AccumView*)pAccum)->CreateRenderPassesNode();
+            DAT_011fa008 = ((AccumView*)apAccumulator)->BSShaderAccumulator_CreateRenderPassTree();
             DAT_011f9fc1 = false;
         }
         if (*(bool*)(raw + 0x164))
         {
-            pAccum->RenderPassGroup(1, 0x237, false, -1);
+            apAccumulator->RenderPassGroup(1, 0x237, false, -1);
             _FUN_00b98280(0, 0, 0, 0, 0, 0, 0);
-            pAccum->RenderPassGroup(0x238, 0x25b, false, -1);
+            apAccumulator->RenderPassGroup(0x238, 0x25b, false, -1);
             _FUN_00b98280(1, 0, 0, 0, 0, 0, 0);
         }
         else
         {
-            pAccum->RenderPassGroup(1, 0x25b, false, -1);
+            apAccumulator->RenderPassGroup(1, 0x25b, false, -1);
         }
         int saved = DAT_011a9608;
         DAT_011a9608 = 1;
-        pAccum->SetShaderPassEnabled(0, false);
+        apAccumulator->SetShaderPassEnabled(0, false);
         DAT_011a9608 = saved;
-        ((AccumView*)pAccum)->BSShaderAccumulator_RenderBlendedDecals();
-        pAccum->RenderPassGroup(0x25c, 0x287, false, -1);
-        ((AccumView*)pAccum)->BSShaderAccumulator_SortAlphaPasses();
+        ((AccumView*)apAccumulator)->BSShaderAccumulator_RenderBlendedDecals();
+        apAccumulator->RenderPassGroup(0x25c, 0x287, false, -1);
+        ((AccumView*)apAccumulator)->BSShaderAccumulator_SortAlphaPasses();
         if (*(bool*)(raw + 0x167))
-            ((AccumView*)pAccum)->UpdatePasses(false);
+            ((AccumView*)apAccumulator)->UpdatePasses(false);
         else
-            ((AccumView*)pAccum)->UpdatePasses(true);
+            ((AccumView*)apAccumulator)->UpdatePasses(true);
     }
 }
 }  // namespace fnv_00b65ae0
@@ -1188,7 +1224,10 @@ inline NiUpdateData::NiUpdateData() {}
 
 // Creates a NiNode named "RenderPasses", initializes a NiUpdateData with zeroed flags, updates the node, and returns it.
 // @fnv 0x00b63420
-NiNode* __cdecl CreateRenderPassesNode()
+// src: XBOX_RETAIL_PDB 0x00b63420
+// pdb: BSShaderAccumulator::CreateRenderPassTree | BSShaderAccumulator.obj | retail, string-set bridge, high
+// pdb locals: UpdateData, pbaseNode, i
+NiNode* __cdecl BSShaderAccumulator_CreateRenderPassTree()
 {
     NiUpdateData UpdateData;
     NiNode* pNode = new NiNode(0);
@@ -1320,13 +1359,15 @@ class FUN_00b65ec0_cls
     FUN_00b65ec0_item* m_items[6];
     unsigned int m_uiItemCount;
 
-    void Reset(unsigned int a, unsigned int b, int c, int d);
+    void Reset(unsigned int aePass, unsigned int aePassEnd, int abAlphaPass, int aeGroup);
     void BSShaderAccumulator_RenderScreenSplatter();
 };
 
 // Calls Begin on each item's sub with 0x2f0 and 0x2f1, then Reset, then End on each item's sub.
 // @fnv 0x00b65ec0
 // src: COMMUNITY 0x00b65ec0
+// pdb: BSShaderAccumulator::RenderScreenSplatter | BSShaderAccumulator.obj | retail, upstream name already matches, high
+// pdb locals: i
 void FUN_00b65ec0_cls::BSShaderAccumulator_RenderScreenSplatter()
 {
     unsigned int a;
@@ -1368,22 +1409,25 @@ struct RenderGroup
 };
 struct RenderAccumulator : BSShaderAccumulator
 {
-    void BSShaderAccumulator_RenderBatches(unsigned int first, unsigned int last, bool flag, int group);
+    void BSShaderAccumulator_RenderBatches(unsigned int aePass, unsigned int aePassEnd, bool abAlphaPass, int aeGroup);
 };
 // Runs each renderer's passes in priority order, choosing the next pass by pass id, sub-index and flag, then finalizes the groups.
 // @fnv 0x00b63770
 // src: COMMUNITY 0x00b63770
-void RenderAccumulator::BSShaderAccumulator_RenderBatches(unsigned int uiFirstPass, unsigned int last, bool flag, int group)
+// pdb: BSShaderAccumulator::RenderBatches | BSShaderAccumulator.obj | retail, upstream name already matches, high
+// pdb params: aePass, aePassEnd, abAlphaPass, aeGroup
+// pdb locals: uicurrentBatchRenderer, pgeometryGroupA, uistart, i, pbatchRendererA, uiend, bfoundActive
+void RenderAccumulator::BSShaderAccumulator_RenderBatches(unsigned int aePass, unsigned int aePassEnd, bool abAlphaPass, int aeGroup)
 {
     RenderBatch* renderers[2];
     RenderGroup* groups[2];
     if (DAT_011f94a6)
         FUN_00bbb840();
-    if (group > -1)
+    if (aeGroup > -1)
     {
         for (unsigned int i = 0; i < uiBatchRendererCount; ++i)
         {
-            groups[i] = (RenderGroup*)pBatchRenderer[i]->pGeometryGroupsA[group];
+            groups[i] = (RenderGroup*)pBatchRenderer[i]->pGeometryGroupsA[aeGroup];
             renderers[i] = groups[i]->renderer;
         }
     }
@@ -1400,8 +1444,8 @@ void RenderAccumulator::BSShaderAccumulator_RenderBatches(unsigned int uiFirstPa
         puicurrentPassA[i] = 0;
         if (renderers[i])
         {
-            renderers[i]->uiCurrentFirstPass = uiFirstPass;
-            renderers[i]->uiCurrentLastPass = last;
+            renderers[i]->uiCurrentFirstPass = aePass;
+            renderers[i]->uiCurrentLastPass = aePassEnd;
             pbcurrentActiveA[i] =
                 renderers[i]->FUN_00b9a090(&puicurrentPassA[i], &picurrentBucketA[i], &pbcurrentFirstPassA[i]);
         }
@@ -1443,7 +1487,7 @@ void RenderAccumulator::BSShaderAccumulator_RenderBatches(unsigned int uiFirstPa
         else
         {
             pbcurrentActiveA[selected] = renderers[selected]->BSBatchRenderer_RenderNextRenderPass(
-                &puicurrentPassA[selected], &picurrentBucketA[selected], &pbcurrentFirstPassA[selected], flag);
+                &puicurrentPassA[selected], &picurrentBucketA[selected], &pbcurrentFirstPassA[selected], abAlphaPass);
         }
     }
     for (unsigned int i = 0; i < uiBatchRendererCount; ++i)
@@ -1495,6 +1539,8 @@ struct ViewX
 };
 // Runs both passes while either returns a value above the float minimum, then finalizes each active pass.
 // @fnv 0x00b650c0
+// pdb: BSShaderAccumulator::RenderAlphaGeometry | BSShaderAccumulator.obj | retail, call graph, medium
+// pdb locals: pkItem, acount
 void ViewX::UpdatePasses(void* p)
 {
     BSBatchRenderer_EndPass();
@@ -1566,6 +1612,9 @@ class RefVolAccum : public BSShaderAccumulator
 };
 
 // @fnv 0x00b65f60
+// pdb: BSShaderAccumulator::AddAndUpdateBoundVolume | BSShaderAccumulator.obj | retail, object-file run extension, low
+// pdb params: auiReferenceID, aBound, abRunTest
+// pdb locals: boundListIter, pvolume
 void RefVolAccum::UpdateOrAddItem(unsigned int key, const RefVolSrc* src, bool flag)
 {
     RefVolList* list = (RefVolList*)&ReferenceVolumeList;
@@ -1939,7 +1988,7 @@ struct ShRenderer
 };
 BSRenderedTexture* __cdecl FUN_00b4f530();
 void __cdecl FUN_00b6b790();
-void __cdecl BSRenderedTexture_StartOffscreen(int aiType, NiRenderTargetGroup* aiValue);
+void __cdecl BSRenderedTexture_StartOffscreen(int aiClearMode, NiRenderTargetGroup* apTarget);
 extern ShRenderer* g_pShRenderer;
 
 struct FUN_00b64a00_Pass
@@ -1948,13 +1997,16 @@ struct FUN_00b64a00_Pass
     int unk04;
     ShCamera* m_pkAccumulationCamera;
     void FUN_00b639e0(int aiPass, int aiFlags);
-    void BSShaderAccumulator_RenderDepth(ShCamera* pkCamera, ShCamera* pkOther);
+    void BSShaderAccumulator_RenderDepth(ShCamera* apWorldCamera, ShCamera* ap1stPersonCamera);
 };
 
 // Sets a white background, configures the accumulation camera, and issues pass commands, optionally using pkOther's frustum.
 // @fnv 0x00b64a00
 // src: XBOX_PDB 0x00b64a00
-void FUN_00b64a00_Pass::BSShaderAccumulator_RenderDepth(ShCamera* pkCamera, ShCamera* pkOther)
+// pdb: BSShaderAccumulator::RenderDepth | BSShaderAccumulator.obj | retail, upstream name already matches, high
+// pdb params: apWorldCamera, ap1stPersonCamera
+// pdb locals: pdepthBuffer, pRenderer, oldColor
+void FUN_00b64a00_Pass::BSShaderAccumulator_RenderDepth(ShCamera* apWorldCamera, ShCamera* ap1stPersonCamera)
 {
     ShRenderer* pkRenderer = g_pShRenderer;
     NiColorA kSaved;
@@ -1966,15 +2018,15 @@ void FUN_00b64a00_Pass::BSShaderAccumulator_RenderDepth(ShCamera* pkCamera, ShCa
         FUN_00b6b790();
     BSRenderedTexture_StartOffscreen(7, pkManager->GetGroup());
 
-    m_pkAccumulationCamera = pkCamera;
+    m_pkAccumulationCamera = apWorldCamera;
     pkRenderer->SetCurrentCamera(m_pkAccumulationCamera->m_kWorldTranslate, m_pkAccumulationCamera->m_kWorldRotate,
                                  m_pkAccumulationCamera->m_kViewFrustum, m_pkAccumulationCamera->m_kPort);
     FUN_00b639e0(0xb, 0);
 
-    if (pkOther)
+    if (ap1stPersonCamera)
     {
         pkRenderer->SetCurrentCamera(m_pkAccumulationCamera->m_kWorldTranslate, m_pkAccumulationCamera->m_kWorldRotate,
-                                     pkOther->m_kViewFrustum, m_pkAccumulationCamera->m_kPort);
+                                     ap1stPersonCamera->m_kViewFrustum, m_pkAccumulationCamera->m_kPort);
         FUN_00b639e0(0xc, 0);
     }
 
@@ -2299,7 +2351,7 @@ struct ShRenderer
     }
 };
 void __cdecl FUN_00b6b790();
-void __cdecl BSRenderedTexture_StartOffscreen(int aiType, NiRenderTargetGroup* aiValue);
+void __cdecl BSRenderedTexture_StartOffscreen(int aiClearMode, NiRenderTargetGroup* apTarget);
 extern ShRenderer* g_pShRenderer;
 
 struct Sh651_BaseA
@@ -2701,13 +2753,16 @@ struct Sh651_Batch
     int unk88;
     int unk8C;
     Sh651_List m_kList;
-    bool BSShaderAccumulator_RenderVolumetricFog(ShCamera* pkCamera, BSRenderedTexture* pkManager);
+    bool BSShaderAccumulator_RenderVolumetricFog(ShCamera* apCamera, BSRenderedTexture* apCurRenderTarget);
 };
 
 // Renders items whose geometry passes the type check, issuing selected passes and updating fog state.
 // @fnv 0x00b651e0
 // src: COMMUNITY 0x00b651e0
-bool Sh651_Batch::BSShaderAccumulator_RenderVolumetricFog(ShCamera* pkCamera, BSRenderedTexture* pkManager)
+// pdb: BSShaderAccumulator::RenderVolumetricFog | BSShaderAccumulator.obj | debug, upstream name already matches, high
+// pdb params: apCamera, apCurRenderTarget
+// pdb locals: uNumItems, pvolumetricFogBuffer, pRenderer, busesinglepass, oldColor, renderpass, itrenderPass, pOldCamera, pkItem, pprop
+bool Sh651_Batch::BSShaderAccumulator_RenderVolumetricFog(ShCamera* apCamera, BSRenderedTexture* apCurRenderTarget)
 {
     unsigned int ItemUpdateArray = m_kList.m_uiCount;
     if (ItemUpdateArray > 0)
@@ -2720,7 +2775,7 @@ bool Sh651_Batch::BSShaderAccumulator_RenderVolumetricFog(ShCamera* pkCamera, BS
         Sh651_Pass kPass;
         bool bFlag = g_bSh651Flag;
         ShCamera* pkSavedCamera = m_pkAccumulationCamera;
-        m_pkAccumulationCamera = pkCamera;
+        m_pkAccumulationCamera = apCamera;
         pkRenderer->GetBackgroundColor(kSaved);
         pkRenderer->SetBackgroundColor(NiColorA(0.0f, 0.0f, 0.0f, 1.0f));
         m_pkList = &m_kList;
@@ -2755,12 +2810,12 @@ bool Sh651_Batch::BSShaderAccumulator_RenderVolumetricFog(ShCamera* pkCamera, BS
                         pkItem->Render(g_pShRenderer);
                     }
                     FUN_00b6b790();
-                    fnv_00b651e0::BSRenderedTexture_StartOffscreen(0, pkManager->GetGroup());
+                    fnv_00b651e0::BSRenderedTexture_StartOffscreen(0, apCurRenderTarget->GetGroup());
                     NiColorA kColor = pkGeom->m_kFogTint;
                     Sh651_Cam* pkCam = g_pSh651Holder->m_pkScene->m_pkCam;
                     pkCam->m_bValueAt0C = true;
                     pkCam->m_kFogTint = kColor;
-                    g_pSh651Holder->ImageSpaceManager_RenderEffect(0xd, pkRenderer, pkManager, pkManager, 0, 1);
+                    g_pSh651Holder->ImageSpaceManager_RenderEffect(0xd, pkRenderer, apCurRenderTarget, apCurRenderTarget, 0, 1);
                 }
             }
         }
@@ -2848,7 +2903,7 @@ void __fastcall BSShaderAccumulator_RenderBlendedDecals(AccumWIP*);
 class AccumWIP2 : public AccumWIP
 {
   public:
-    void* CreateRenderPassesNode();
+    void* BSShaderAccumulator_CreateRenderPassTree();
     void BSShaderAccumulator_SortAlphaPasses();
     void UpdatePasses(int);
 };
@@ -2908,7 +2963,7 @@ void __cdecl RenderAccumulationPasses(AccumWIP2* apAccumWIP)
 
     if (DAT_011f9fc1)
     {
-        DAT_011fa008 = apAccumWIP->CreateRenderPassesNode();
+        DAT_011fa008 = apAccumWIP->BSShaderAccumulator_CreateRenderPassTree();
         DAT_011f9fc1 = false;
     }
 
@@ -2937,7 +2992,7 @@ void __cdecl RenderAccumulationPasses(AccumWIP2* apAccumWIP)
 extern "C" void _ReadWriteBarrier(void);
 struct S00b66050_heap
 {
-    void Free(void* p);
+    void Free(void* apMem);
 };
 
 struct S00b66050_obj
@@ -3060,6 +3115,9 @@ class S00b66050_cls
 
 // Finds the entry with the given key in the linked list, frees its object and the entry itself, then removes the node from the list.
 // @fnv 0x00b66050
+// pdb: NiD3DShaderConstantMap::RemoveEntry | NiD3DShaderConstantMap.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays; only the method name matches, on a class other than the PDB class, so its parameter names are not applied
+// pdb params (unverified): pszKey
+// pdb locals (unverified): uiIndex, pkEntry, kKey
 void S00b66050_cls::RemoveEntry(unsigned int key)
 {
     S00b66050_node* node = m_kNode.m_pFirstNode;
@@ -3097,7 +3155,7 @@ void S00b66050_cls::RemoveEntry(unsigned int key)
 class RenderQuery
 {
   public:
-    unsigned char BSOcclusionQuery_GetResultNoWait(unsigned int* result, int wait);
+    unsigned char BSOcclusionQuery_GetResultNoWait(unsigned int* pResult, int bFlush);
     void ProcessState_00c4ed40();
 };
 extern double DAT_010737c8;
@@ -3573,27 +3631,30 @@ void __cdecl BSRenderedTexture_StartOffscreen(int, NiRenderTargetGroup*);
 extern bool DAT_011f9fc2;
 struct LightingShaderView
 {
-    void AddTexture(NiRefObject*);
+    void DebugShader_SetTextureToRender(NiRefObject*);
 };
 extern RenderManagerView* DAT_011f4748;
 LightingShaderView* __cdecl BSShaderManager_GetShader(int);
 struct DepthAccumulator : BSShaderAccumulator
 {
     void FUN_00b639e0(int, bool);
-    bool BSShaderAccumulator_RenderNormals(NiCamera* camera, BSRenderedTexture* target);
+    bool BSShaderAccumulator_RenderNormals(NiCamera* apCamera, BSRenderedTexture* apCurRenderTarget);
 };
 // Processes geometry groups using a depth surface and may update a lighting shader texture; restores the saved rectangle and camera.
 // @fnv 0x00b64570
 // src: XBOX_PDB 0x00b64570
-bool DepthAccumulator::BSShaderAccumulator_RenderNormals(NiCamera* camera, BSRenderedTexture* target)
+// pdb: BSShaderAccumulator::RenderNormals | BSShaderAccumulator.obj | retail, upstream name already matches, high
+// pdb params: apCamera, apCurRenderTarget
+// pdb locals: i1stPersonNonRefractiveGeometryGroupCount, pRenderer, pRefractionNormalBuffer, uNumItems, bhad1stPerson, bResetColor, oldColor, i, pOldCamera, pktarget, bclear
+bool DepthAccumulator::BSShaderAccumulator_RenderNormals(NiCamera* apCamera, BSRenderedTexture* apCurRenderTarget)
 {
-    if (!target)
+    if (!apCurRenderTarget)
         return false;
     bool changedRect = false;
     bool rendered = false;
     RenderRect oldRect(0, 0, 0, 0);
     const NiCamera* savedCamera = m_pkCamera;
-    m_pkCamera = camera;
+    m_pkCamera = apCamera;
     RenderManagerView* renderer = (RenderManagerView*)DAT_011f4748;
     BSRenderedTexture* depth = DAT_011f91ac->node->provider->FUN_00bd9380(false);
     FUN_00b98380(15, 0);
@@ -3602,7 +3663,7 @@ bool DepthAccumulator::BSShaderAccumulator_RenderNormals(NiCamera* camera, BSRen
         preCount += ((CountView*)pBatchRenderer[i]->pGeometryGroupsA[8])->count;
     if (depth && preCount > 0)
     {
-        RenderSurface* source = reinterpret_cast<RenderSurface*>(target->GetGroup());
+        RenderSurface* source = reinterpret_cast<RenderSurface*>(apCurRenderTarget->GetGroup());
         RenderSurface* destination = reinterpret_cast<RenderSurface*>(depth->GetGroup());
         destination->SetData(source->GetData());
         renderer->GetRect(oldRect);
@@ -3633,7 +3694,7 @@ bool DepthAccumulator::BSShaderAccumulator_RenderNormals(NiCamera* camera, BSRen
                 depth = DAT_011f91ac->node->provider->FUN_00bd9380(true);
                 fallback = true;
             }
-            RenderSurface* source = reinterpret_cast<RenderSurface*>(target->GetGroup());
+            RenderSurface* source = reinterpret_cast<RenderSurface*>(apCurRenderTarget->GetGroup());
             RenderSurface* destination = reinterpret_cast<RenderSurface*>(depth->GetGroup());
             destination->SetData(source->GetData());
             renderer->GetRect(oldRect);
@@ -3653,14 +3714,14 @@ bool DepthAccumulator::BSShaderAccumulator_RenderNormals(NiCamera* camera, BSRen
             NiRefObject* texture =
                 (depth ? reinterpret_cast<const AccumulatorPointer<NiRefObject>&>(depth->spTexture[0]) : (const AccumulatorPointer<NiRefObject>&)AccumulatorPointer<NiRefObject>()).m_pObject;
             LightingShaderView* shader = BSShaderManager_GetShader(9);
-            shader->AddTexture(texture);
+            shader->DebugShader_SetTextureToRender(texture);
         }
     }
     if (rendered || count > 0)
         FUN_00b6b790();
     if (depth)
     {
-        RenderSurface* source = reinterpret_cast<RenderSurface*>(target->GetGroup());
+        RenderSurface* source = reinterpret_cast<RenderSurface*>(apCurRenderTarget->GetGroup());
         RenderSurface* destination = reinterpret_cast<RenderSurface*>(depth->GetGroup());
         destination->SetData(source->GetData());
     }
@@ -4011,6 +4072,9 @@ struct RenderTLS
 };
 extern __declspec(thread) RenderTLS g_renderTLS;
 // @fnv 0x00b660d0
+// pdb: BSShaderAccumulator::BSShaderAccumulator | BSShaderAccumulator.obj | debug, call graph, medium
+// pdb params: aeBatchRendererCreationType, auiBatchRendererCount, auiPassesPerBatchRenderer
+// pdb locals: i
 FUN_00b660d0::FUN_00b660d0(int flags, unsigned count, unsigned pass)
     : silhouette(0, 0, 0, 0), alpha(0, 0x2f5, true, 0, 0), room(37)
 {

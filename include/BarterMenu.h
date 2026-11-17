@@ -8,6 +8,7 @@ class TESObjectREFR;
 class TESBoundObject;
 class InventoryStackRecord;
 
+// pdb: class BarterMenu, size 0x120, bases: Menu, 17 members
 class BarterMenu : public Menu
 {
 public:
@@ -63,10 +64,10 @@ public:
     virtual void HandleControllerConnectOrDisconnect(bool);
 
     unsigned char HasNoZeroEntries();
-    void RebuildInventoryLists(int);
-    void RebuildInventoryLists(TESBoundObject*);
-    void CompleteBarterTransaction();
-    void UpdateTileText(int);
+    void UpdateLists(int);
+    void UpdateLists(TESBoundObject*);
+    void CompleteTransaction();
+    void SetFilterModeTitle(int);
     void HandleTileClick(int, Tile*);
     void UpdateTileState(int, void*);
     bool HandleAction(int, int);

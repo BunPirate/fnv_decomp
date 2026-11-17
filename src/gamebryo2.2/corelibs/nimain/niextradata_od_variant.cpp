@@ -21,6 +21,7 @@ struct FUN_0066b640
 };
 
 // @fnv 0x0066b640
+// pdb: bhkCollisionObject::bhkCollisionObject | BSTreeNode.obj | debug, object-file gap fill, medium
 FUN_0066b640::FUN_0066b640()
 {
     NiRTTI_UpdateState_00c6b910(this);
@@ -37,6 +38,8 @@ class FUN_00539f50 : public NiExtraData
 };
 
 // @fnv 0x00539f50
+// pdb: NiBinaryExtraData::NiBinaryExtraData | TESLand.obj | retail, call graph, medium
+// pdb params: uiSize, pcBinaryData
 FUN_00539f50::FUN_00539f50(int iA, int iB)
 {
     Init(iA, iB);

@@ -31,6 +31,8 @@ extern void* DAT_0109e704;
 // The shared class has no scalar deleting destructor declaration; use the original register ABI here.
 // Sets the vtable pointer, calls FUN_00a89760 on this, and if flags bit 0 is set deletes this with size 0xd8, returning this.
 // @fnv 0x00a86da0
+// pdb: BSResizableTriShape::SaveBinary | BSResizableTriShape.obj | debug, object-file run extension, low
+// pdb params: kStream
 void* __fastcall DestroyResizableTriShape(BSResizableTriShape* self, void*, unsigned int flags)
 {
     ((void**)(self))[0] = &DAT_0109e704;
@@ -60,14 +62,14 @@ void BSResizableTriShape::RenderWithRenderer(NiRenderer* apRenderer)
 
 struct FUN_00a74480_holder
 {
-    void __thiscall FUN_00a74480(unsigned int);
+    void __thiscall NiTriShape_ctor(unsigned int);
 };
 // The shared class has no matching constructor declaration; initialise existing storage here.
 // Calls the base constructor with a, installs the vtable pointer, and zeroes the field at offset 0xC4.
 // @fnv 0x00a86dd0
 BSResizableTriShape* __fastcall ConstructResizableTriShape(BSResizableTriShape* self, void*, unsigned int a)
 {
-    ((FUN_00a74480_holder*)self)->FUN_00a74480(a);
+    ((FUN_00a74480_holder*)self)->NiTriShape_ctor(a);
     *(void**)self = (void*)&DAT_0109e704;
     *(unsigned int*)((char*)self + 0xC4) = 0;
     return self;
@@ -78,6 +80,9 @@ struct FUN_00a744c0_holder
     void __thiscall NiTriShape_CopyMembers(BSResizableTriShape* pkClone, CloningProcess& kCloning);
 };
 // @fnv 0x00a86e80
+// pdb: BSResizableTriShape::CreateClone | BSResizableTriShape.obj | retail, object-file run extension, low
+// pdb params: kCloning
+// pdb locals: pkObject
 NiObject* BSResizableTriShape::MakeClone(CloningProcess& kCloning)
 {
     BSResizableTriShape* pkObject;
@@ -103,6 +108,8 @@ struct FUN_00a71d10_shell
     void __thiscall NiParticleMeshes_SaveBinary(void*);
 };
 // @fnv 0x00a86ed0
+// pdb: BSResizableTriShape::SaveBinary | BSResizableTriShape.obj | retail, object-file run extension, low
+// pdb params: kStream
 void __fastcall SaveResizableTriShape(BSResizableTriShape* self, void*, void* stream)
 {
     ((FUN_00a71d10_shell*)self)->NiParticleMeshes_SaveBinary(stream);
@@ -118,6 +125,9 @@ struct BaseX86f10
 };
 // Calls FUN_00a98ea0, then reads 4 bytes into this+0xc4 and advances the binary stream position.
 // @fnv 0x00a86f10
+// pdb: BSResizableTriShape::LoadBinary | BSResizableTriShape.obj | retail, object-file run extension, low
+// pdb note: debug build links it to BSResizableTriShape::CopyMembers
+// pdb params: kStream
 void __fastcall LoadResizableTriShape(BSResizableTriShape* self, void*, void* stream)
 {
     ((BaseX86f10*)self)->NiParticleMeshes_LoadBinary(stream);
@@ -179,6 +189,8 @@ struct WBHelper
 };
 // Allocates and initialises the world bound if absent, then updates it from the object's bound and transform.
 // @fnv 0x00c1a4a0
+// pdb: BSResizableTriShape::UpdateWorldBound | BSResizableTriShape.obj | debug, upstream name already matches, high
+// pdb locals: kBound
 void BSResizableTriShape::UpdateWorldBound()
 {
     NiBound* kBound;
@@ -207,9 +219,11 @@ char* __cdecl NiGetViewerString_00a7d510(char const* text, char const* value);
 extern char str_0109e800[];
 
 // @fnv 0x00a86f50
-void BSResizableTriShape::GetViewerStrings(NiViewerStringsArray* array)
+// pdb: BSResizableTriShape::GetViewerStrings | BSResizableTriShape.obj | retail, string-set bridge, high
+// pdb params: pkStrings
+void BSResizableTriShape::GetViewerStrings(NiViewerStringsArray* pkStrings)
 {
-    StrArr* strings = (StrArr*)array;
+    StrArr* strings = (StrArr*)pkStrings;
     char* value;
     unsigned int index;
     unsigned int count;
@@ -258,6 +272,8 @@ void __fastcall RenderResizableTriShape(BSResizableTriShape* self, void*)
 void __cdecl NiParticleMeshes_LinkObject();
 // @fnv 0x00a86d40
 // src: XBOX_PDB 0x00a86d40
+// pdb: BSResizableTriShape::LinkObject | BSResizableTriShape.obj | debug, upstream name already matches, high
+// pdb params: kStream
 void __cdecl BSResizableTriShape_LinkObject()
 {
     NiParticleMeshes_LinkObject();
@@ -267,6 +283,8 @@ void __cdecl NiParticleMeshes_IsEqual();
 
 // @fnv 0x00a877f0
 // src: XBOX_PDB 0x00a877f0
+// pdb: BSResizableTriShape::IsEqual | BSResizableTriShape.obj | debug, upstream name already matches, high
+// pdb params: pkObject
 void __cdecl BSResizableTriShape_IsEqual()
 {
     NiParticleMeshes_IsEqual();
@@ -297,6 +315,8 @@ struct BoundCenterBits
 
 // Keep the original centre/radius value arguments: the shared NiBound has a nontrivial copy constructor.
 // @fnv 0x00a86d50
+// pdb: BSResizableTriShape::RegisterStreamables | BSResizableTriShape.obj | debug, object-file run extension, low
+// pdb params: kStream
 void __fastcall SetResizableTriShapeBounds(BSResizableTriShape* self, void*, BoundCenterBits p, BoundRadiusValue rw)
 {
     *(float*)((char*)self + 0xd4) = rw.v;

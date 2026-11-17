@@ -95,7 +95,7 @@ struct FUN_004512a0_shell
 extern char DAT_01189184;
 void GridCellArray_SetRecreateCanopyShadowMaskTexture(unsigned char value);
 extern NP DAT_011f95e8;
-void BSShaderManager_SetProjectedShadowMaskTexture(void* arg);
+void BSShaderManager_SetProjectedShadowMaskTexture(void* apTexture);
 extern unsigned char DAT_011ad86c;
 void TallGrassShaderProperty_SetUseBackgroundLoading(unsigned char value);
 struct AlchemyItem;
@@ -186,7 +186,7 @@ struct FUN_00452440_shell
 };
 struct FUN_004e32c0_shell
 {
-    bool __thiscall HasFlags(int arg);
+    bool __thiscall IsFlagSet(int aeFlag);
 };
 extern unsigned char DAT_0119b8c8;
 unsigned char BSTreeManager_GetUseCanopyShadows();
@@ -266,6 +266,7 @@ struct TESObjectCELL;
 struct FileEntryList;
 struct FileEntryListCollection;
 struct ModelLoadData;
+// pdb: class ModelLoader, size 0x30, 12 members
 struct ModelLoader
 {
     void LoadModelFileList(BSFile*, bool);
@@ -366,18 +367,18 @@ struct ModelLoader
     static int GetIOFileIndexForArchiveTypeIndex(int);
     void AddModelToMap(Model*, char*);
     void* __vecDelDtor(unsigned int);
-    void* m_pLoadedModelMap;
-    void* m_pLoadedKFModelMap;
-    void* m_pQueuedReferenceMap;
-    void* m_pQueuedReferenceUpdateMap;
-    void* m_pQueuedAnimIdleMap;
-    void* m_pQueuedReplacementKFListMap;
-    void* m_pQueuedHelmetMap;
-    void* m_pDistant3DTaskQueue;
-    void* m_pQueuedTextureMap;
-    void* m_pLoadedFileMap;
-    BackgroundCloneThread* m_pBackgroundCloneThread;
-    bool m_bLoadTexturesDegraded;
+    void* pModelMap; // src: XBOX_RETAIL_PDB +0x0 (old: m_pLoadedModelMap)
+    void* pKFModelMap; // src: XBOX_RETAIL_PDB +0x4 (old: m_pLoadedKFModelMap)
+    void* pQueuedReferencesMap; // src: XBOX_RETAIL_PDB +0x8 (old: m_pQueuedReferenceMap)
+    void* pReferencesToQueueMap; // src: XBOX_RETAIL_PDB +0xc (old: m_pQueuedReferenceUpdateMap)
+    void* pQueuedAnimIdleMap; // src: XBOX_RETAIL_PDB +0x10 (old: m_pQueuedAnimIdleMap)
+    void* pQueuedReplacementKFListMap; // src: XBOX_RETAIL_PDB +0x14 (old: m_pQueuedReplacementKFListMap)
+    void* pQueuedHelmetMap; // src: XBOX_RETAIL_PDB +0x18 (old: m_pQueuedHelmetMap)
+    void* pAttachDistant3DTaskQueue; // src: XBOX_RETAIL_PDB +0x1c (old: m_pDistant3DTaskQueue)
+    void* pQueuedTextureMap; // src: XBOX_RETAIL_PDB +0x20 (old: m_pQueuedTextureMap)
+    void* pLoadedFileMap; // src: XBOX_RETAIL_PDB +0x24 (old: m_pLoadedFileMap)
+    BackgroundCloneThread* pBackgroundCloneThread; // src: XBOX_RETAIL_PDB +0x28 (old: m_pBackgroundCloneThread)
+    bool bHasDelayedFree; // src: XBOX_RETAIL_PDB +0x2c (old: m_bLoadTexturesDegraded)
     char _pad_2d[3];
 };
 typedef char _sizecheck_ModelLoader[sizeof(ModelLoader) == 48 ? 1 : -1];
@@ -386,11 +387,11 @@ struct FUN_0045a5e0_shell : public ModelLoader
     void ModelLoader_ReleaseFile(char*);
 };
 void __cdecl CreateCSDFadeNode(void);
-void __cdecl CreateSpdFadeNode(void);
-void __cdecl BGSAddonNodeSoundHandleExtra_InitTag(void);
-void __cdecl BSFaceGenAnimationData_InitTag(void);
-void __cdecl BSFaceGenModelExtraData_InitTag(void);
-void __cdecl BSFaceGenBaseMorphExtraData_InitTag(void);
+void __cdecl BSSplatterExtraData_InitSDM(void);
+void __cdecl BGSAddonNodeSoundHandleExtra_InitSDM(void);
+void __cdecl BSFaceGenAnimationData_InitSDM(void);
+void __cdecl BSFaceGenModelExtraData_InitSDM(void);
+void __cdecl BSFaceGenBaseMorphExtraData_InitSDM(void);
 void __cdecl TES_InitSDM(void);
 struct FUN_0045c650_shell
 {
@@ -402,9 +403,9 @@ struct Flt
 };
 extern Flt g_011deb7c;
 unsigned int Main_GetWorldSceneGraph();
-void TESObjectREFR_AddMasterParticleAddonNodes(TESObjectREFR* self);
-void TESObjectREFR_RemoveMasterParticleAddonNodes(TESObjectREFR* self);
-void TES_RangedNodeVisibilityChangedCB(TESObjectREFR* arg, bool flag);
+void TESObjectREFR_AddMasterParticleAddonNodes(TESObjectREFR* apNode);
+void TESObjectREFR_RemoveMasterParticleAddonNodes(TESObjectREFR* apNode);
+void TES_RangedNodeVisibilityChangedCB(TESObjectREFR* apNode, bool abVisible);
 extern "C" double _gModifierZero;
 struct FUN_00451cd0_shell
 {
@@ -672,10 +673,12 @@ struct TES_00451a50
     bool m_bHasCurrentRegion;
     void TES_LoadGridCell(int aiGridX, int aiGridY, int aiCellX, int aiCellY);
 };
+// pdb: class Animation, size 0x13c (here 0x1), 33 members
 struct Animation
 {
     float FUN_00453700();
 };
+// pdb: class TaskQueueInterface, size 0x10 (here 0x1), 4 members
 struct TaskQueueInterface
 {
     static TaskQueueInterface* __cdecl GetInstance();
@@ -698,7 +701,7 @@ struct Zt5Cell
 };
 struct Zt5Grid
 {
-    void UpdateCellGrid(float);
+    void UpdateManagedNodes(float);
 };
 struct Zt5Listener
 {
@@ -754,7 +757,7 @@ struct FUN_00453490_shell
 {
     bool ContainsCell(TESObjectCELL*);
     bool TES_IsExteriorBuffered(TESObjectCELL*);
-    bool TES_IsBuffered(TESObjectCELL* cell);
+    bool TES_IsBuffered(TESObjectCELL* apCell);
 };
 struct FUN_00455400_cell : TESObjectCELL
 {
@@ -809,6 +812,7 @@ struct FUN_00454fc0_shell
 
     void CompactQueuedCells();
 };
+// pdb: class Calendar, size 0x1c (here 0x9c), 7 members
 struct Calendar : NiAVObject
 {
     Calendar* GetDaysPassed();
@@ -847,7 +851,7 @@ struct FUN_0045c780_shell
     FUN_0045c780_sound* sound;
 
     void InitSoundGrid();
-    void TES_SetHideLandBlendPassForGridCell(unsigned int index1, unsigned int index2, unsigned char value);
+    void TES_SetHideLandBlendPassForGridCell(unsigned int aiGridX, unsigned int aiGridY, unsigned char abFlag);
 };
 extern bool DAT_011c3c0c;
 extern const unsigned char DAT_01017830[5][5];
@@ -1012,7 +1016,7 @@ struct TES_ExteriorBuffer
 
     bool IsCellBuffered(ExtCell* apCell, bool abCheck);
     WorldSpaceView* GetParentWorldSpace();
-    unsigned int TES_FreeExteriorBuffer(bool abSkipLoaded, TESWorldSpace* apWorld);
+    unsigned int TES_FreeExteriorBuffer(bool abBufferedonly, TESWorldSpace* apWorldSpace);
 };
 struct FUN_0043d4d0_cls
 {
@@ -1055,7 +1059,7 @@ void __cdecl FindTextureByPath(void* object, LookupResult* result);
 void __cdecl BSTexturePalette_RemoveTexture(LookupEntry* entry);
 struct LookupHandler
 {
-    bool TES_FreeTexture(void* object, unsigned int limit);
+    bool TES_RemoveTextureImage(void* apfilename, unsigned int aiOtherRefs);
 };
 struct FUN_004570d0_node;
 struct FUN_004570d0_mgr
@@ -1200,7 +1204,7 @@ struct SaveSizeOwner
 struct FUN_00459920_reference
 {
     bool TESObjectCELL_GetAttached();
-    void QueueReferences(int changeFlag);
+    void QueueReferences(int abHighPriorityOnly);
 };
 struct FUN_00459920_grid
 {
@@ -1435,12 +1439,12 @@ struct FUN_0045afb0_cls
     unsigned int unkB8;
     NavMeshHolder* m_pNavMeshMaps;
 
-    void SetNavMeshMaps(NavMeshHolder* arg);
+    void SetNavMeshMaps(NavMeshHolder* apNavMeshInfoMap);
 };
 struct S_0045c8d0_Obj;
 struct S_0045c8d0_Tgt
 {
-    void BSShaderProperty_SetFlag(unsigned int a, unsigned char b);
+    void BSShaderProperty_SetFlag(unsigned int aiFlag, unsigned char abSetFlag);
 };
 struct S_0045c8d0_Obj
 {
@@ -1458,12 +1462,12 @@ struct S_0045c8d0_Virt
 };
 struct S_0045c8d0_Child
 {
-    int NiNode_GetAtChecked(int a);
-    S_0045c8d0_Virt* FUN_0043b4a0(int a);
+    int NiNode_GetAtChecked(int i);
+    S_0045c8d0_Virt* FUN_0043b4a0(int i);
 };
 struct S_0045c8d0_Cell
 {
-    S_0045c8d0_Child* GetCellNodeAt(int a);
+    S_0045c8d0_Child* TESObjectCELL_GetLandNode(int aiQuad);
 };
 struct S_0045c8d0_R
 {
@@ -1471,7 +1475,7 @@ struct S_0045c8d0_R
 };
 struct S_0045c8d0_A
 {
-    S_0045c8d0_R* FUN_004ba490(unsigned int a, unsigned int b);
+    S_0045c8d0_R* FUN_004ba490(unsigned int aiX, unsigned int aiY);
 };
 int NiShadeProperty_GetType();
 struct S_0045c8d0
@@ -1479,7 +1483,7 @@ struct S_0045c8d0
     int unk0;
     int unk4;
     S_0045c8d0_A* unk8;
-    void TES_SetHideLandBlendPassForGridCell(unsigned int a, unsigned int b, unsigned char c);
+    void TES_SetHideLandBlendPassForGridCell(unsigned int aiGridX, unsigned int aiGridY, unsigned char abFlag);
 };
 struct FUN_0045cb90_inner
 {
@@ -1538,7 +1542,7 @@ struct Grid4512
 struct Terrain4512
 {
     void UnloadAll_006fce00();
-    void Update_006fca90(void* position);
+    void Update_006fca90(void* aViewPosition);
 };
 struct World4512
 {
@@ -1739,12 +1743,12 @@ struct TES4512
     void TES_FreeExteriorBuffer(bool, TESWorldSpace*);
     void FUN_00452490(bool);
     void TES_InitModelsToLoad(bool);
-    void RefreshGrid();
+    void TES_GridArrayLoad();
     bool GetLandHeightAt(const NiPoint3&, float&);
     bool TES_CellTestRunning();
     void ProcessItemNodes();
     void TES_RunScripts();
-    void TES_ReloadGridCells(const NiPoint3* position, bool reload);
+    void TES_ReloadGridCells(const NiPoint3* apPos, bool abFullreload);
 };
 struct FUN_004516d0_shell
 {
@@ -2064,7 +2068,7 @@ extern AttachContext* DAT_011ddf38;
 extern AttachRef* DAT_011dea3c;
 void __cdecl Script_InitActionList(AttachRef*, void*);
 void __cdecl Script_SetActionFlag(AttachRef*, void*, unsigned int);
-void __cdecl FUN_004b6dc0(void*, unsigned int);
+void __cdecl SetReferenceIDOnScenegraph(void*, unsigned int);
 struct AttachmentHandler
 {
     void TES_CleanTemp3D(AttachRef*);
@@ -2113,7 +2117,7 @@ struct Loader
 {
     void BGSSaveLoadGame_SetDeferInitForms(bool);
     bool BGSSaveLoadGame_GetSaveGameLoading();
-    void ResetLoadBuffers(int);
+    void InitForms(int);
 };
 extern Loader* DAT_011ddf38;
 struct Main
@@ -2155,14 +2159,17 @@ struct Grid
     World* FUN_004fd3e0();
     void AddCellToBuffer(Cell*);
     CellHandle* NiAVObject_GetWorldTranslate(Cell**);
-    void RefreshGrid();
+    void TES_GridArrayLoad();
 };
 bool FUN_00705e80();
 void BSShaderManager_SetProjectedShadowMaskTexture(void*);
 void GridCellArray_SetRecreateCanopyShadowMaskTexture(unsigned char);
 extern const double DAT_01017a40;
 // @fnv 0x00452ff0
-void Grid::RefreshGrid()
+// src: XBOX_RETAIL_PDB 0x00452ff0
+// pdb: TES::GridArrayLoad | TES.obj | retail, call graph, high
+// pdb locals: icellX, bdelayedlandload, tempMemContext, icellY, icellsLoaded, bshowLoadingBar, x, y, pcell, fpercent, brestore, brestore2, pRoot, UpdateData
+void Grid::TES_GridArrayLoad()
 {
     Profile profile3(26, 1, DAT_01017874, 2262);
     int originX = centerX - (*DAT_011c63cc.Setting_Int() >> 1);
@@ -2210,7 +2217,7 @@ void Grid::RefreshGrid()
     }
     DAT_011ddf38->BGSSaveLoadGame_SetDeferInitForms(false);
     if (!DAT_011ddf38->BGSSaveLoadGame_GetSaveGameLoading())
-        DAT_011ddf38->ResetLoadBuffers(0);
+        DAT_011ddf38->InitForms(0);
     if (TESObjectCELL_ExteriorWorld())
         TESObjectCELL_ExteriorWorld()->bhkWorld_StartBatchingAdds();
     for (unsigned int x2 = 0; x2 < *DAT_011c63cc.Setting_Int(); ++x2)
@@ -2821,7 +2828,7 @@ struct SourceTextureStub
     static NiSourceTexture* Create(const FixedStr& arName, NiTextureFormatPrefs& arPrefs, bool abA, bool abB);
 };
 bool StreamGetTexture(const char* apPath, TexPtr<NiSourceTexture>* apTexture);
-void TextureLoaded(NiSourceTexture* apTexture, int aiUnk);
+void TextureLoaded(NiSourceTexture* apTex, int apEntry);
 void ModelWarning(const char* apFormat, ...);
 struct TESTexLoader
 {
@@ -2836,7 +2843,7 @@ void __cdecl TESObjectCELL_SetNodeCulled(int aiType, bool abFlag);
 struct FUN_00456fc0_ref
 {
     FUN_00450f90_obj* FUN_00456fc0(int aiType);
-    void TESObjectCELL_CullChildrenOfMultibounds(bool abFlag, int aiType);
+    void TESObjectCELL_CullChildrenOfMultibounds(bool abCull, int aeAsProxyForNode);
 };
 struct FUN_00456d00_cnt
 {
@@ -2863,7 +2870,7 @@ struct FUN_004571c0_obj
 };
 struct FUN_004571c0_cell : FUN_004570d0_node
 {
-    bool Apply(FUN_004571c0_obj* obj, int a2, int a3, float f, unsigned char b);
+    bool PickWorldDistance(FUN_004571c0_obj* apPick, int aOrigin, int aDir, float afDistance, unsigned char acNodeFlags);
 };
 struct FUN_004571c0_cls : FUN_004570d0_cls
 {
@@ -3029,7 +3036,7 @@ class Manager458
 {
   public:
     Ref458* GetDefaultRef();
-    bool PlaySoundOnRef(int iSound, NiPoint3 kPos, Ref458* pkRef);
+    bool PlaySoundOnRef(int aMapName, NiPoint3 aWorldLoc, Ref458* apWorldSpace);
 };
 struct SaveWriter : SaveState
 {
@@ -3220,7 +3227,7 @@ struct AddonParticleNode : NiNode
 };
 struct AddonParticleManager
 {
-    void BSParticleSystemManager_AddMasterParticleSystem(AddonParticleNode* node);
+    void BSParticleSystemManager_AddMasterParticleSystem(AddonParticleNode* apMasterParticleSystem);
 };
 AddonParticleManager* Main_GetMasterParticleSystemManager();
 extern ModelLoader* g_modelLoader;
@@ -3377,7 +3384,7 @@ class Owner45A
 extern float DAT_01015f5c;
 struct CellView : public TESObjectCELL
 {
-    bool CheckWaterHeight(const NiPoint3* apPos, float* apfHeight);
+    bool GetWaterHeight(const NiPoint3* arPos, float* apfHeight);
     int FUN_00544c30();
     int FUN_00544c60();
 };
@@ -3415,9 +3422,9 @@ class C6760Ref;
 class C6760Manager : public C6760Base, public C6760ManagerBase
 {
   public:
-    void AddPlanes(C6760Ref* pkRef);
-    void AddToLists(C6760Ref* pkRef);
-    void UpdateBounds(C6760Ref* pkRef);
+    void AddPlanes(C6760Ref* apZone);
+    void AddToLists(C6760Ref* apTarget);
+    void UpdateBounds(C6760Ref* apRef);
 };
 class C6760World
 {
@@ -3549,7 +3556,7 @@ __forceinline bool IsKindOfType(const NiRTTI* target, const NiAVObject* object)
     {
         if (rtti == target)
             return true;
-        rtti = rtti->m_pBaseRTTI;
+        rtti = rtti->m_pkBaseRTTI;
     }
     return false;
 }
@@ -3561,10 +3568,13 @@ __forceinline BSTempNode* CastNode(NiAVObject* object)
 }
 // @fnv 0x00c44ed0
 // src: XBOX_PDB 0x00c44ed0
-void BSTempNode::BSTempNodeManager_RemoveExpired(float f)
+// pdb: BSTempNodeManager::RemoveExpired | BSTempNodeManager.obj | retail, upstream name already matches, high
+// pdb params: afTime
+// pdb locals: I, fdelta, spTempAVObject, pav, ptn
+void BSTempNode::BSTempNodeManager_RemoveExpired(float afTime)
 {
     NiPointer<NiAVObject> spRemoved;
-    float delta = UpdateTime(f);
+    float delta = UpdateTime(afTime);
     {
         unsigned int i = m_kChildren.m_usSize;
         while (i--)

@@ -51,7 +51,7 @@ static __forceinline hkMemoryRouterq& hkGetMemoryRouter()
     return *(hkMemoryRouterq*)hkMemoryRouter_getInstance();
 }
 
-int __cdecl hkArrayUtil__reserve(hkMemoryAllocatorq& alloc, void* array, int numElements, int sizeElement) throw();
+int __cdecl hkArrayUtil__reserve(hkMemoryAllocatorq& mem, void* array, int numElem, int sizeElem) throw();
 int __cdecl hkString_vsnprintf(char* buf, int n, const char* fmt, hk_va_list args) throw();
 
 template <class T, int N> struct hkInplaceArrayq
@@ -99,6 +99,9 @@ template <class T, int N> struct hkInplaceArrayq
 
 // @fnv 0x00cb0c70
 // src: HAVOK_LIB 0x00cb0c70
+// pdb: hkStringPtr::printf | hkStringPtr.obj | debug, object-file run extension, low
+// pdb params: fmt, buf
+// pdb locals: args
 void hkStringPtr::printf_00cb0c70(const char* fmt, ...)
 {
     hkInplaceArrayq<char, 255> buf;

@@ -15,32 +15,34 @@ inline unsigned int* ComponentSize(const unsigned int& size)
 
 // Reads the control point count and compact control point count from the stream, allocating and reading the corresponding float and short arrays.
 // @fnv 0x00a52870
-void NiBSplineData::LoadBinary(NiStream& stream)
+// pdb: NiBSplineData::LoadBinary | NiBSplineData.obj | retail, upstream name already matches, high
+// pdb params: kStream
+void NiBSplineData::LoadBinary(NiStream& kStream)
 {
-    ReadGroup(stream);
+    ReadGroup(kStream);
 
-    NiBinaryStream* pStream = stream.m_pkIstr;
+    NiBinaryStream* pStream = kStream.m_pkIstr;
     unsigned int* puiControlPointCount = &m_uiControlPointCount;
     pStream->m_uiAbsoluteCurrentPos += pStream->m_pfnRead(pStream, puiControlPointCount, 4, ComponentSize(4), 1);
     if (*puiControlPointCount)
     {
         float* pfControlPoints = (float*)_NiMalloc_00aa1070(*puiControlPointCount * 4);
         unsigned int controlPointBytes = *puiControlPointCount * 4;
-        m_pfControlPoints = pfControlPoints;
-        pStream = stream.m_pkIstr;
+        m_pafControlPoints = pfControlPoints;
+        pStream = kStream.m_pkIstr;
         pStream->m_uiAbsoluteCurrentPos += pStream->m_pfnRead(
             pStream, pfControlPoints, controlPointBytes, ComponentSize(4), 1);
     }
 
-    pStream = stream.m_pkIstr;
+    pStream = kStream.m_pkIstr;
     puiControlPointCount = &m_uiCompactControlPointCount;
     pStream->m_uiAbsoluteCurrentPos += pStream->m_pfnRead(pStream, puiControlPointCount, 4, ComponentSize(4), 1);
     if (*puiControlPointCount)
     {
         short* psCompactControlPoints = (short*)_NiMalloc_00aa1070(*puiControlPointCount * 2);
         unsigned int compactControlPointBytes = *puiControlPointCount * 2;
-        m_psCompactControlPoints = psCompactControlPoints;
-        pStream = stream.m_pkIstr;
+        m_pasCompactControlPoints = psCompactControlPoints;
+        pStream = kStream.m_pkIstr;
         pStream->m_uiAbsoluteCurrentPos += pStream->m_pfnRead(
             pStream, psCompactControlPoints, compactControlPointBytes, ComponentSize(2), 1);
     }
@@ -48,6 +50,9 @@ void NiBSplineData::LoadBinary(NiStream& stream)
 
 // Evaluates the B-spline at the given time using the basis weights and control points, accumulating the weighted result into value.
 // @fnv 0x00a526b0
+// pdb: NiBSplineData::GetValueDegree3 | NiBSplineData.obj | retail, object-file run extension, low
+// pdb params: fTime, afPos, uiDimension, pkBasisData, kControlPointHandle
+// pdb locals: j, fBasisValue, iMax, iMin, kBasis, pfSource, iIndex, i
 void NiBSplineData::CalculateSplineValue(float time, float* value, unsigned int dimension,
                                          NiBSplineBasisData* basisData, unsigned int handle, float offset,
                                          float halfRange)
@@ -56,7 +61,7 @@ void NiBSplineData::CalculateSplineValue(float time, float* value, unsigned int 
     int iCount, max;
     basis.Compute(time, iCount, max);
     float points[16];
-    NiCompUtility_DecompressFloatArray(m_psCompactControlPoints + dimension * iCount + handle, dimension * 4, offset, halfRange, points,
+    NiCompUtility_DecompressFloatArray(m_pasCompactControlPoints + dimension * iCount + handle, dimension * 4, offset, halfRange, points,
                  dimension * 4);
     unsigned int index = 0;
     time = basis.weights[0];
@@ -123,24 +128,26 @@ inline void NiBinaryStream::BinaryWrite(const void* buffer, unsigned int totalBy
 
 // Saves the base spline data, then writes the control point count and array, followed by the compact control points.
 // @fnv 0x00a52950
+// pdb: NiBSplineData::SaveBinary | NiBSplineData.obj | retail, object-file gap fill, high
+// pdb params: kStream
 void __fastcall SaveSplineControlPoints(NiBSplineData* self, int, NiStream& stream)
 {
     self->NiObject::SaveBinary(stream);
     WriteSplineValue(stream.m_pkOstr, &self->m_uiControlPointCount);
     if (self->m_uiControlPointCount != 0)
     {
-        void* buf = self->m_pfControlPoints;
+        void* buf = self->m_pafControlPoints;
         unsigned int bytes = self->m_uiControlPointCount * 4;
         stream.m_pkOstr->BinaryWrite(buf, bytes, 4);
     }
     WriteSplineValue(stream.m_pkOstr, &self->m_uiCompactControlPointCount);
     if (self->m_uiCompactControlPointCount != 0)
     {
-        stream.m_pkOstr->BinaryWrite(self->m_psCompactControlPoints, self->m_uiCompactControlPointCount * 2, 2);
+        stream.m_pkOstr->BinaryWrite(self->m_pasCompactControlPoints, self->m_uiCompactControlPointCount * 2, 2);
     }
 }
 
-extern void* g_011f4034;
+extern void* NiBSplineData_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f4034 (old: g_011f4034)
 extern const char str_01099f08[];
 extern const char str_01099ee8[];
 
@@ -160,11 +167,13 @@ struct ArrayArg
 };
 
 // @fnv 0x00a52a20
+// pdb: NiBSplineData::GetViewerStrings | NiBSplineData.obj | retail, string-set bridge, high
+// pdb params: pStrings
 void __fastcall GetSplineViewerStrings(NiBSplineData* self, int, ArrayArg& kStream)
 {
     self->NiObject::AddViewerStrings(reinterpret_cast<NiViewerStringsArray*>(&kStream));
     {
-        void* p = NiViewerStrings_NiGetViewerString_Title(g_011f4034);
+        void* p = NiViewerStrings_NiGetViewerString_Title(NiBSplineData_ms_RTTI);
         unsigned int uiPos = kStream.m_0a;
         if (uiPos >= kStream.m_08)
         {
@@ -203,7 +212,7 @@ void __fastcall CalculateSplineValue(NiBSplineData* self, int, float fTime, floa
     kBasis.Compute(fTime, iMin, iMax);
 
     const int iFirst = iMin;
-    const float* pkSource = &self->m_pfControlPoints[uiControlPointOffset + iFirst * uiDimension];
+    const float* pkSource = &self->m_pafControlPoints[uiControlPointOffset + iFirst * uiDimension];
     float fBasisValue = kBasis.weights[0];
     unsigned int j;
     for (j = 0; j < uiDimension; j++)

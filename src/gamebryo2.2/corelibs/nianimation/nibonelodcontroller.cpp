@@ -90,6 +90,7 @@ inline NiTMapBase<TAlloc, TKEY, TVAL>::~NiTMapBase()
 }
 
 // @fnv 0x00a54370 (scalar deleting destructor)
+// pdb: NiTPointerMap<NiNode *,unsigned int>::`scalar deleting destructor' | NiBSBoneLODController.obj | debug, vtable slot, medium
 template <class TKEY, class TVAL>
 inline NiTPointerMap<TKEY, TVAL>::~NiTPointerMap()
 {
@@ -100,6 +101,9 @@ template class NiTPointerMap<NiNode*, unsigned int>;
 
 // Grows the set's storage when full, then stores the given value at the end and increments the count.
 // @fnv 0x00a543b0
+// pdb: NiTSet<NiGeometryGroup *,NiTMallocInterface<NiGeometryGroup *> >::Realloc | NiD3DGeometryGroupManager.obj | retail, call graph (shared callers), low
+// pdb params: uiNewSize
+// pdb locals: pNewBase, i
 void NiStreamLinkIDSet_nibonelodcontroller::Add(Item* item)
 {
     unsigned int* value = reinterpret_cast<unsigned int*>(item);
@@ -128,6 +132,9 @@ struct FUN_00a54410_shell
     void* FreeAndMaybeDeallocate(unsigned int);
 };
 // @fnv 0x00a54410
+// pdb: NiBoneLODController::PostLinkObject | NiBoneLODController.obj | retail, object-file run extension, low
+// pdb params: kStream
+// pdb locals: iLOD
 void* FUN_00a54410_shell::FreeAndMaybeDeallocate(unsigned int flags)
 {
     void* tmp = m_ptr;
@@ -160,6 +167,7 @@ extern int DAT_0109a2d4;
 void _delete(void*, unsigned int);
 
 // @fnv 0x00a553f0
+// pdb: NiBlendQuaternionInterpolator::NiBlendQuaternionInterpolator | NiBlendQuaternionInterpolator.obj | debug, object-file run extension, low
 void* NiBoneLODController::FUN_00a553f0(unsigned int flags)
 {
     *(void**)this = (void*)&DAT_0109a2d4;
@@ -204,7 +212,7 @@ bool NiBoneLODController::IsTargetOfType() const
     {
         if (pkRTTI == &DAT_011f4428)
             return true;
-        pkRTTI = pkRTTI->m_pBaseRTTI;
+        pkRTTI = pkRTTI->m_pkBaseRTTI;
     } while (pkRTTI);
     return false;
 }
@@ -260,9 +268,9 @@ bool NiBoneLODController::RegisterStreamables_00a53d00(NiStream& kStream)
     if (!NiTimeController::RegisterStreamables(kStream))
         return false;
 
-    for (unsigned int ui = 0; ui < m_kSkinInfoSets.GetSize(); ui++)
+    for (unsigned int ui = 0; ui < m_kSkinArray.GetSize(); ui++)
     {
-        SkinInfoSet* pkSkinInfoSet = m_kSkinInfoSets.GetAt(ui);
+        SkinInfoSet* pkSkinInfoSet = m_kSkinArray.GetAt(ui);
         if (pkSkinInfoSet)
         {
             for (unsigned int uj = 0; uj < pkSkinInfoSet->GetSize(); uj++)
@@ -359,11 +367,11 @@ struct BoneLODLevelMethods : NiBoneLODController
 // @fnv 0x00a541f0
 bool BoneLODLevelMethods::SetLOD(int desiredLOD)
 {
-    unsigned short& groupCount = m_kBoneSetArray.m_usSize;
-    NodeCollection**& nodeGroups = reinterpret_cast<NodeCollection**&>(m_kBoneSetArray.m_pBase);
-    PairCollection**& linkGroups = reinterpret_cast<PairCollection**&>(m_kSkinInfoSets.m_pBase);
-    unsigned int& defaultNodeCount = m_kShapeGroups.m_uiUsed;
-    LODNode**& defaultNodes = reinterpret_cast<LODNode**&>(m_kShapeGroups.m_pBase);
+    unsigned short& groupCount = m_kBoneArray.m_usSize;
+    NodeCollection**& nodeGroups = reinterpret_cast<NodeCollection**&>(m_kBoneArray.m_pBase);
+    PairCollection**& linkGroups = reinterpret_cast<PairCollection**&>(m_kSkinArray.m_pBase);
+    unsigned int& defaultNodeCount = m_kSkinSet.m_uiUsed;
+    LODNode**& defaultNodes = reinterpret_cast<LODNode**&>(m_kSkinSet.m_pBase);
     if (m_uiNumLODs > 0 && m_iLOD != desiredLOD &&
         (desiredLOD == -1 || (desiredLOD > -1 && (unsigned int)desiredLOD < m_uiNumLODs)))
     {
@@ -424,7 +432,7 @@ bool BoneLODLevelMethods::SetLOD(int desiredLOD)
 
 struct MemoryAllocator
 {
-    void MemoryManager_Deallocate(void* object);
+    void MemoryManager_Deallocate(void* apMem);
 };
 extern MemoryAllocator g_011f6238;
 extern "C" void __cdecl _NiFree_00aa10f0(void* object);
@@ -451,23 +459,23 @@ struct EntryGroup
 // @fnv 0x00a55190
 void NiBoneLODController::ClearEntries()
 {
-    for (unsigned int i = 0; i < m_kBoneSetArray.m_usSize; ++i)
+    for (unsigned int i = 0; i < m_kBoneArray.m_usSize; ++i)
     {
-        FirstEntry* entry = reinterpret_cast<FirstEntry**>(m_kBoneSetArray.m_pBase)[i];
+        FirstEntry* entry = reinterpret_cast<FirstEntry**>(m_kBoneArray.m_pBase)[i];
         if (entry)
         {
             _NiFree_00aa10f0(entry->allocation);
             g_011f6238.MemoryManager_Deallocate(entry);
         }
     }
-    for (unsigned short i = 0; i < m_kBoneSetArray.m_usSize; ++i)
-        reinterpret_cast<FirstEntry**>(m_kBoneSetArray.m_pBase)[i] = 0;
-    m_kBoneSetArray.m_usSize = 0;
-    m_kBoneSetArray.m_usESize = 0;
+    for (unsigned short i = 0; i < m_kBoneArray.m_usSize; ++i)
+        reinterpret_cast<FirstEntry**>(m_kBoneArray.m_pBase)[i] = 0;
+    m_kBoneArray.m_usSize = 0;
+    m_kBoneArray.m_usESize = 0;
 
-    for (unsigned int i = 0; i < m_kSkinInfoSets.m_usSize; ++i)
+    for (unsigned int i = 0; i < m_kSkinArray.m_usSize; ++i)
     {
-        EntryGroup* group = reinterpret_cast<EntryGroup**>(m_kSkinInfoSets.m_pBase)[i];
+        EntryGroup* group = reinterpret_cast<EntryGroup**>(m_kSkinArray.m_pBase)[i];
         if (group)
         {
             for (unsigned int j = 0; j < group->count; ++j)
@@ -485,11 +493,11 @@ void NiBoneLODController::ClearEntries()
             g_011f6238.MemoryManager_Deallocate(group);
         }
     }
-    for (unsigned short i = 0; i < m_kSkinInfoSets.m_usSize; ++i)
-        reinterpret_cast<EntryGroup**>(m_kSkinInfoSets.m_pBase)[i] = 0;
-    m_kSkinInfoSets.m_usSize = 0;
-    m_kSkinInfoSets.m_usESize = 0;
-    *(volatile unsigned int*)&m_kShapeGroups.m_uiUsed = 0;
+    for (unsigned short i = 0; i < m_kSkinArray.m_usSize; ++i)
+        reinterpret_cast<EntryGroup**>(m_kSkinArray.m_pBase)[i] = 0;
+    m_kSkinArray.m_usSize = 0;
+    m_kSkinArray.m_usESize = 0;
+    *(volatile unsigned int*)&m_kSkinSet.m_uiUsed = 0;
 }
 
 template <class T, class TAlloc> inline unsigned int NiTArray<T,TAlloc>::SetAtGrow(unsigned int i, const T& e) { if (i >= m_usMaxSize) SetSize(i + m_usGrowBy); SetAt(i,e); return i; }
@@ -504,6 +512,8 @@ char* __cdecl A55320GetViewerStringUInt(const char* pcPrefix, unsigned int uiVal
 
 // Appends the class name and formatted m_iLOD and m_uiNumLODs strings to pkStrings.
 // @fnv 0x00a55320
+// pdb: NiBlendQuaternionInterpolator::NiBlendQuaternionInterpolator | NiBlendQuaternionInterpolator.obj | debug, object-file run extension, low
+// pdb params: bManagerControlled, fWeightThreshold, ucArraySize
 void NiBoneLODController::AppendViewerStrings(NiViewerStringsArray* strings)
 {
     BA55320StringArray* pkStrings = reinterpret_cast<BA55320StringArray*>(strings);
@@ -569,18 +579,18 @@ bool NiBoneLODController::IsEqual_00a53ea0(NiObject* pkObject)
     NiBoneLODController* pkDest = (NiBoneLODController*)pkObject;
 
     if (m_iLOD != pkDest->m_iLOD || m_uiNumLODs != pkDest->m_uiNumLODs ||
-        m_kBoneSetArray.GetSize() != pkDest->m_kBoneSetArray.GetSize() ||
-        m_kSkinInfoSets.GetSize() != pkDest->m_kSkinInfoSets.GetSize() ||
-        m_kShapeGroups.GetSize() != pkDest->m_kShapeGroups.GetSize())
+        m_kBoneArray.GetSize() != pkDest->m_kBoneArray.GetSize() ||
+        m_kSkinArray.GetSize() != pkDest->m_kSkinArray.GetSize() ||
+        m_kSkinSet.GetSize() != pkDest->m_kSkinSet.GetSize())
     {
         return false;
     }
 
     unsigned int ui;
-    for (ui = 0; ui < m_kBoneSetArray.GetSize(); ui++)
+    for (ui = 0; ui < m_kBoneArray.GetSize(); ui++)
     {
-        EqNodeSet* pkSet = reinterpret_cast<EqNodeSet*>(m_kBoneSetArray.GetAt(ui));
-        EqNodeSet* pkDestSet = reinterpret_cast<EqNodeSet*>(pkDest->m_kBoneSetArray.GetAt(ui));
+        EqNodeSet* pkSet = reinterpret_cast<EqNodeSet*>(m_kBoneArray.GetAt(ui));
+        EqNodeSet* pkDestSet = reinterpret_cast<EqNodeSet*>(pkDest->m_kBoneArray.GetAt(ui));
         if ((pkSet && !pkDestSet) || (!pkSet && pkDestSet))
             return false;
         if (pkSet && pkDestSet)
@@ -595,10 +605,10 @@ bool NiBoneLODController::IsEqual_00a53ea0(NiObject* pkObject)
         }
     }
 
-    for (ui = 0; ui < m_kSkinInfoSets.GetSize(); ui++)
+    for (ui = 0; ui < m_kSkinArray.GetSize(); ui++)
     {
-        EqSkinInfoSet* pkSet = reinterpret_cast<EqSkinInfoSet*>(m_kSkinInfoSets.GetAt(ui));
-        EqSkinInfoSet* pkDestSet = reinterpret_cast<EqSkinInfoSet*>(pkDest->m_kSkinInfoSets.GetAt(ui));
+        EqSkinInfoSet* pkSet = reinterpret_cast<EqSkinInfoSet*>(m_kSkinArray.GetAt(ui));
+        EqSkinInfoSet* pkDestSet = reinterpret_cast<EqSkinInfoSet*>(pkDest->m_kSkinArray.GetAt(ui));
         if ((pkSet && !pkDestSet) || (!pkSet && pkDestSet))
             return false;
         if (pkSet && pkDestSet)
@@ -617,9 +627,9 @@ bool NiBoneLODController::IsEqual_00a53ea0(NiObject* pkObject)
         }
     }
 
-    for (ui = 0; ui < m_kShapeGroups.GetSize(); ui++)
+    for (ui = 0; ui < m_kSkinSet.GetSize(); ui++)
     {
-        if (!static_cast<const NiObject*>(reinterpret_cast<EqPrimitiveSet<NiObject*>&>(m_kShapeGroups).GetAt(ui))->IsEqual(reinterpret_cast<EqPrimitiveSet<NiObject*>&>(pkDest->m_kShapeGroups).GetAt(ui)))
+        if (!static_cast<const NiObject*>(reinterpret_cast<EqPrimitiveSet<NiObject*>&>(m_kSkinSet).GetAt(ui))->IsEqual(reinterpret_cast<EqPrimitiveSet<NiObject*>&>(pkDest->m_kSkinSet).GetAt(ui)))
             return false;
     }
 
@@ -726,6 +736,9 @@ template <class T> struct LinkGroupArray
 
 // Reads the current LOD, LOD count, node groups, skin groups and extra links from the stream, building the group arrays.
 // @fnv 0x00a54c40
+// pdb: NiBoneLODController::LoadBinary | NiBoneLODController.obj | retail, object-file run extension, low
+// pdb params: kStream
+// pdb locals: uiBoneArraySize, ui, uiSkinArraySize, uiSkinSetSize, uiSetSize, pkSet, uj, pkInfo
 void NiBoneLODController::ReadFromStream(NiStream* stream)
 {
     unsigned int i;
@@ -737,7 +750,7 @@ void NiBoneLODController::ReadFromStream(NiStream* stream)
     for (i = 0; i < nodeCount; i++)
     {
         LinkGroup<void*>* group = new LinkGroup<void*>;
-        reinterpret_cast<LinkGroupArray<void*>&>(m_kBoneSetArray).SetAt(i, group);
+        reinterpret_cast<LinkGroupArray<void*>&>(m_kBoneArray).SetAt(i, group);
         unsigned int childCount = 0;
         ReadLOD32(*stream, &childCount);
         for (unsigned int j = 0; j < childCount; j++)
@@ -752,7 +765,7 @@ void NiBoneLODController::ReadFromStream(NiStream* stream)
     for (i = 0; i < skinCount; i++)
     {
         LinkGroup<LinkSkinInfo*>* group = new LinkGroup<LinkSkinInfo*>;
-        reinterpret_cast<LinkGroupArray<LinkSkinInfo*>&>(m_kSkinInfoSets).SetAt(i, group);
+        reinterpret_cast<LinkGroupArray<LinkSkinInfo*>&>(m_kSkinArray).SetAt(i, group);
         unsigned int childCount = 0;
         ReadLOD32(*stream, &childCount);
         for (unsigned int j = 0; j < childCount; j++)
@@ -768,7 +781,7 @@ void NiBoneLODController::ReadFromStream(NiStream* stream)
     for (i = 0; i < extraCount; i++)
     {
         void* object = this;
-        reinterpret_cast<LinkGroup<void*>&>(m_kShapeGroups).Add(object);
+        reinterpret_cast<LinkGroup<void*>&>(m_kSkinSet).Add(object);
         stream->ReadLinkIDStub();
     }
 }
@@ -801,12 +814,15 @@ template <class T> inline void SaveStream(NiStream& kStream, const T& value)
 // Serializes the LOD level, node groups, skin groups, and default nodes of a bone LOD entry to the stream.
 // @fnv 0x00a549d0
 // src: XBOX_PDB 0x00a549d0
+// pdb: NiBoneLODController::SaveBinary | NiBoneLODController.obj | retail, object-file run extension, low
+// pdb params: kStream
+// pdb locals: ui, pkSet, uj, pkBone, pkInfo, pkGeom
 void NiBoneLODController::SaveBinary_00a549d0(NiStream& stream)
 {
     reinterpret_cast<NiTimeControllerStreamMethods*>(this)->NiTimeControllerStreamMethods::SaveBinary(stream);
-    NiTPrimitiveArray<BoneSet*>& nodes = m_kBoneSetArray;
-    NiTPrimitiveArray<SkinInfoSet*>& skins = m_kSkinInfoSets;
-    NodeCollection& defaultNodes = reinterpret_cast<NodeCollection&>(m_kShapeGroups);
+    NiTPrimitiveArray<BoneSet*>& nodes = m_kBoneArray;
+    NiTPrimitiveArray<SkinInfoSet*>& skins = m_kSkinArray;
+    NodeCollection& defaultNodes = reinterpret_cast<NodeCollection&>(m_kSkinSet);
     SaveStream(stream, m_iLOD);
     SaveStream(stream, m_uiNumLODs);
     {
@@ -906,11 +922,12 @@ __declspec(nothrow) inline NiTPrimitiveArray<NiBoneLODController::SkinInfoSet*>:
 }
 
 // @fnv 0x00a550b0
+// pdb: NiBoneLODController::NiBoneLODController | NiBoneLODController.obj | retail, upstream name already matches, high
 NiBoneLODController::NiBoneLODController() : m_iLOD(-1), m_uiNumLODs(0)
 {
-    m_kShapeGroups.m_pBase = 0;
-    m_kShapeGroups.m_uiAlloced = 0;
-    m_kShapeGroups.m_uiUsed = 0;
+    m_kSkinSet.m_pBase = 0;
+    m_kSkinSet.m_uiAlloced = 0;
+    m_kSkinSet.m_uiUsed = 0;
 }
 
 typedef NiTMapBase<NiTPointerAllocator<unsigned int>, NiObject*, NiObject*> CloneMap;
@@ -1160,20 +1177,23 @@ struct A54440CloneWork
 
 // Copies this manager's groups, links, and defaults into its mapped clone, applying mapped references where available.
 // @fnv 0x00a54440
+// pdb: NiBoneLODController::ProcessClone | NiBoneLODController.obj | retail, object-file run extension, low
+// pdb params: kCloning
+// pdb locals: pkDest, ui, bSuccess, iLOD, pkOldSet, pkNewSet, uj, pkOldBone, bCloned, pkNewBone, pkOldInfo, pkNewSkinGeom, pkNewInfo, pkOldSkinGeom
 void NiBoneLODController::CloneFrom(CloningProcess* process)
 {
     unsigned int i;
     FUN_00a6d0c0(process);
     A54440Remap* remap = reinterpret_cast<A54440Remap*>(process);
-    A54440Array& groups = reinterpret_cast<A54440Array&>(m_kBoneSetArray);
-    A54440Array& links = reinterpret_cast<A54440Array&>(m_kSkinInfoSets);
-    A54440GrowGroup& defaults = reinterpret_cast<A54440GrowGroup&>(m_kShapeGroups);
+    A54440Array& groups = reinterpret_cast<A54440Array&>(m_kBoneArray);
+    A54440Array& links = reinterpret_cast<A54440Array&>(m_kSkinArray);
+    A54440GrowGroup& defaults = reinterpret_cast<A54440GrowGroup&>(m_kSkinSet);
     A54440CloneWork work;
     remap->map->GetAt(this, reinterpret_cast<NiObject*&>(work.clone));
     i = 0;
     if (i < groups.count)
     {
-        work.boneArray = reinterpret_cast<A54440Array*>(&work.clone->m_kBoneSetArray);
+        work.boneArray = reinterpret_cast<A54440Array*>(&work.clone->m_kBoneArray);
         do
         {
             A54440PointerGroup* boneSource = (A54440PointerGroup*)groups.elements[i];
@@ -1205,7 +1225,7 @@ void NiBoneLODController::CloneFrom(CloningProcess* process)
         if (work.skinSet)
         {
             A54440LinkGroup* dst = new A54440LinkGroup;
-            reinterpret_cast<A54440Array&>(work.clone->m_kSkinInfoSets).SetAtGrow(i, dst);
+            reinterpret_cast<A54440Array&>(work.clone->m_kSkinArray).SetAtGrow(i, dst);
             for (work.skinIndex = 0; work.skinIndex < work.skinSet->count; work.skinIndex++)
             {
                 work.skinSource = (A54440SourceLink*)work.skinSet->entries[work.skinIndex];
@@ -1234,7 +1254,7 @@ void NiBoneLODController::CloneFrom(CloningProcess* process)
         }
         else
         {
-            reinterpret_cast<A54440Array&>(work.clone->m_kSkinInfoSets).SetAtGrow(i, 0);
+            reinterpret_cast<A54440Array&>(work.clone->m_kSkinArray).SetAtGrow(i, 0);
         }
     }
 
@@ -1243,9 +1263,9 @@ void NiBoneLODController::CloneFrom(CloningProcess* process)
         void* node = defaults.elements[i];
         CloneMapItem* entry = A54440Find(remap->map, node);
         if (entry)
-            reinterpret_cast<A54440GrowGroup&>(work.clone->m_kShapeGroups).Append(entry->m_val);
+            reinterpret_cast<A54440GrowGroup&>(work.clone->m_kSkinSet).Append(entry->m_val);
         else
-            reinterpret_cast<A54440GrowGroup&>(work.clone->m_kShapeGroups).Append(node);
+            reinterpret_cast<A54440GrowGroup&>(work.clone->m_kSkinSet).Append(node);
     }
     int lod = work.clone->m_iLOD;
     work.clone->m_iLOD = -1;
@@ -1286,9 +1306,9 @@ void NiBoneLODController::LinkObject_00a53d70(NiStream& kStream)
     NiTimeController::LinkObject(kStream);
 
     unsigned int i;
-    for (i = 0; i < m_kBoneSetArray.GetSize(); i++)
+    for (i = 0; i < m_kBoneArray.GetSize(); i++)
     {
-        NiTPrimitiveSet<NiNode*>* pkBones = m_kBoneSetArray.GetAt(i);
+        NiTPrimitiveSet<NiNode*>* pkBones = m_kBoneArray.GetAt(i);
         if (pkBones)
         {
             for (unsigned int j = 0; j < pkBones->GetSize(); j++)
@@ -1300,9 +1320,9 @@ void NiBoneLODController::LinkObject_00a53d70(NiStream& kStream)
         }
     }
 
-    for (i = 0; i < m_kSkinInfoSets.GetSize(); i++)
+    for (i = 0; i < m_kSkinArray.GetSize(); i++)
     {
-        NiTPrimitiveSet<GeometrySkinInstancePair*>* pkSkins = m_kSkinInfoSets.GetAt(i);
+        NiTPrimitiveSet<GeometrySkinInstancePair*>* pkSkins = m_kSkinArray.GetAt(i);
         if (pkSkins)
         {
             for (unsigned int j = 0; j < pkSkins->GetSize(); j++)
@@ -1314,11 +1334,11 @@ void NiBoneLODController::LinkObject_00a53d70(NiStream& kStream)
         }
     }
 
-    for (i = 0; i < m_kShapeGroups.GetSize(); i++)
+    for (i = 0; i < m_kSkinSet.GetSize(); i++)
         {
         NiTriBasedGeom* shape = (NiTriBasedGeom*)kStream.GetLoadedObject();
-        if (i < m_kShapeGroups.m_uiUsed)
-            m_kShapeGroups.m_pBase[i] = shape;
+        if (i < m_kSkinSet.m_uiUsed)
+            m_kSkinSet.m_pBase[i] = shape;
     }
 }
 

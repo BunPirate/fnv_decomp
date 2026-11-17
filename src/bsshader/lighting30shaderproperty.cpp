@@ -7,25 +7,27 @@ struct GlobalObjectO2_00a7b610
 {
     GlobalObjectO2_00a7b610();
 };
-extern GlobalObjectO2_00a7b610 g_011f4a5c;
+extern GlobalObjectO2_00a7b610 NiMaterialProperty_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f4a5c (old: DAT_011f4a5c/g_011f4a5c)
 
 // Returns the address of the global object g_011f4a5c.
 // @fnv 0x00a756c0
 // src: COMMUNITY 0x00a756c0
 GlobalObjectO2_00a7b610* __cdecl NiMaterialProperty_GetRTTI()
 {
-    return &g_011f4a5c;
+    return &NiMaterialProperty_ms_RTTI;
 }
 
-void* __fastcall Lighting30shaderproperty_StoreAndAddReference_00a75650(void*);
+void* __fastcall NiMaterialProperty_ctor(void*);
 
 // @fnv 0x00a756d0
 // src: EXE 0x00a756d0
+// pdb: NiMaterialProperty::CreateObject | NiMaterialProperty.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 void* __cdecl NiMaterialProperty_CreateObject()
 {
     void* p = BSFadeNode::operator new(0x4c);
     if (p)
-        return Lighting30shaderproperty_StoreAndAddReference_00a75650(p);
+        return NiMaterialProperty_ctor(p);
     return 0;
 }
 
@@ -61,8 +63,9 @@ struct ObjectWithFloats
 };
 
 // @fnv 0x00a75650
-// src: GUESS 0x00a75650 (confidence: medium)
-void* __fastcall Lighting30shaderproperty_StoreAndAddReference_00a75650(void* self)
+// src: XBOX_RETAIL_PDB 0x00a75650
+// pdb: NiMaterialProperty::NiMaterialProperty | NiMaterialProperty.obj | retail, call graph, high
+void* __fastcall NiMaterialProperty_ctor(void* self)
 {
     ObjectWithFloats* p = (ObjectWithFloats*)self;
     FUN_00a5c200(self);

@@ -16,19 +16,22 @@ void __cdecl FUN_00458620(void* apTarget, const hkVector4& arVector);
 
 struct VectorSourceB00
 {
-    void SubtractVectors(hkVector4& arOut);
-    void bhkCharacterController_GetPosition(void* apTarget);
+    void SubtractVectors(hkVector4& arPos);
+    void bhkCharacterController_GetPosition(void* arPos);
 };
 
 // Preserve the original stack cookie with the shared vector's union layout.
 #pragma strict_gs_check(push, on)
 // @fnv 0x00812b00
 // src: XBOX_PDB 0x00812b00
-void VectorSourceB00::bhkCharacterController_GetPosition(void* apTarget)
+// pdb: bhkCharacterController::GetPosition | MagicBoltProjectile.obj | debug, call graph, high
+// pdb params: arPos
+// pdb locals: hkp
+void VectorSourceB00::bhkCharacterController_GetPosition(void* arPos)
 {
     hkVector4 kVector;
     SubtractVectors(kVector);
-    FUN_00458620(apTarget, kVector);
+    FUN_00458620(arPos, kVector);
 }
 #pragma strict_gs_check(pop)
 
@@ -364,6 +367,8 @@ struct xActor
 extern xActor* xg_player_11dea3c;
 // @fnv 0x0081eba0
 // src: XBOX_PDB 0x0081eba0
+// pdb: MagicProjectile::CheckShotBehindWall | MagicProjectile.obj | retail, upstream name already matches, high
+// pdb locals: pcollector, dir, origin, pav, spellPos, pcon, filter, pd, bsuccess, bcontinue, i, point, pbody, pref, hitPos
 void xActor::MagicProjectile_CheckShotBehindWall()
 {
     void* EFFECT = FUN_1d0();
@@ -490,6 +495,9 @@ struct ImpactOwner
 };
 // @fnv 0x0081f000
 // src: XBOX_PDB 0x0081f000
+// pdb: MagicProjectile::ApplyCollisionForce | MagicProjectile.obj | retail, upstream name already matches, high
+// pdb params: aContactPoint, aDirection, apTargetBody
+// pdb locals: pw, colfilter, impulse, fmass, location, fforce
 void ImpactOwner::MagicProjectile_ApplyCollisionForce(float x, float y, float z, float dx, float dy, float dz, ImpactObject* object)
 {
     if (!object)
@@ -635,7 +643,7 @@ struct xProj : xBase
     float m_b0;
     xSound m_b4;
     xOwner* m_c0;
-    xProj(int a, int b, int c, int d, xP3 kP1, xP3 kP2, void* apE, xOwner* apOwner);
+    xProj(int apCaster, int apSpell, int apDominantEffect, int apAVEffect, xP3 aOrigin, xP3 aRotation, void* apData3D, xOwner* apLight);
     xEffect* GetAVEffect();
     void TESObjectREFR_Set3DSimple(void*);
     void MagicProjectile_Load3D(int);
@@ -648,15 +656,18 @@ struct xProj : xBase
     xActorV* FUN_009185e0();
 };
 // @fnv 0x0080f810
-xProj::xProj(int a, int b, int c, int d, xP3 kP1, xP3 kP2, void* apE, xOwner* apOwner) : xBase(a, b, c, d, kP1, kP2)
+// pdb: MagicBallProjectile::MagicBallProjectile | MagicBallProjectile.obj | debug, call graph, high
+// pdb params: apCaster, apSpell, apDominantEffect, apAVEffect, aOrigin, aRotation, apData3D, apLight
+// pdb locals: initVelocity, pcaster, isoundFileID
+xProj::xProj(int apCaster, int apSpell, int apDominantEffect, int apAVEffect, xP3 aOrigin, xP3 aRotation, void* apData3D, xOwner* apLight) : xBase(apCaster, apSpell, apDominantEffect, apAVEffect, aOrigin, aRotation)
 {
     m_88 = ((xRadius*)GetAVEffect())->FUN_009b0bd0() * *xg_11d16f8.Setting_Float_00403e20();
     m_ac = 0;
     m_a8 = 0.0f;
     m_b0 = 1.0f;
     m_c0 = 0;
-    if (apE)
-        TESObjectREFR_Set3DSimple(apE);
+    if (apData3D)
+        TESObjectREFR_Set3DSimple(apData3D);
     else
         MagicProjectile_Load3D(0);
     ResetProjectileIdleAnimation();
@@ -671,10 +682,10 @@ xProj::xProj(int a, int b, int c, int d, xP3 kP1, xP3 kP2, void* apE, xOwner* ap
             m_b4.FUN_00ad8d10();
         m_b4 = PlaySoundByFormID(NAME, 1, 0x40000102, 1);
     }
-    if (apOwner)
+    if (apLight)
     {
-        apOwner->MagicLight_Transfer(this);
-        m_c0 = apOwner;
+        apLight->MagicLight_Transfer(this);
+        m_c0 = apLight;
     }
     MagicProjectile_CheckShotBehindWall();
     void* SHOOTER = FUN_009185e0() ? FUN_009185e0()->FUN_2c() : 0;

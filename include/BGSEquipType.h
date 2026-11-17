@@ -9,6 +9,7 @@ class TESForm;
 
 class BGSMenuIcon;
 
+// pdb: class BGSEquipType, size 0x8, bases: BaseFormComponent, 1 members
 class BGSEquipType : public BaseFormComponent
 {
 public:
@@ -39,8 +40,8 @@ public:
 
     virtual void Init();
     virtual void Free();
-    virtual void CopyFromBase(BaseFormComponent* component);
-    virtual bool CompareWithBase(BaseFormComponent* component);
+    virtual void CopyFromBase(BaseFormComponent* apCopyFC);
+    virtual bool CompareWithBase(BaseFormComponent* apCompareFC);
 
     void InitializeComponent();
     void ClearComponent();
@@ -48,14 +49,14 @@ public:
     bool IsEqualToBase(BaseFormComponent* component);
 
     void Save();
-    static EQUIP_TYPE GetEquipType(TESForm* form);
+    static EQUIP_TYPE GetEquipType(TESForm* apForm);
     int GetEquipType();
     void SetEquipType(EQUIP_TYPE type);
     void SetEquipType(int type);
     static BGSMenuIcon* GetEquipTypeIcon(EQUIP_TYPE type);
     static BGSMenuIcon* GetEquipTypeIcon(int type);
     static const char* GetEquipTypeName(EQUIP_TYPE type);
-    static char* GetEquipTypeName(int type);
+    static char* GetEquipTypeIconFilename(int type);
     static void GenerateDefaultMenuIcons();
 };
 

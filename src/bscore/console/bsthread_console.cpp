@@ -9,6 +9,7 @@ void BSThread::SetSchedulingPriority(unsigned int argument0)
 #include "bsthread_console_pc.h"
 
 // @fnv 0x00ad87c0
+// pdb: BSThread::ThreadProc | BSThread_Xenon.obj | debug, upstream name already matches, high
 unsigned int BSThread::ThreadProc()
 {
     return 0;
@@ -17,19 +18,24 @@ unsigned int BSThread::ThreadProc()
 #include "bsthread_console_pc.h"
 
 // @fnv 0x00aa6540
-void BSThread::SetName(const char* argument0)
+// pdb: BSThread::SetName | BSThread_Xenon.obj | debug, upstream name already matches, high
+// pdb params: apName
+void BSThread::SetName(const char* apName)
 {}
 
 // Creates the thread once, records its handle and id, sets its priority, and resumes it under the critical section.
 // @fnv 0x00aa6430
-void BSThread::Initialize(StackSize stackSize, const char* name, bool suspended)
+// pdb: BSThread::Initialize | BSThread_Xenon.obj | retail, upstream name already matches, high
+// pdb params: aeStackSize, apName, bSuspend
+// pdb locals: result
+void BSThread::Initialize(StackSize aeStackSize, const char* apName, bool bSuspend)
 {
     if (m_pThreadHandle)
         return;
 
     m_pCurrentThreadHandle = GetCurrentThread();
     m_uiCurrentThreadId = GetCurrentThreadId();
-    m_pThreadHandle = CreateThread(0, stackSize, RunThreadProc, this, suspended ? 4 : 0, &m_uiCreatedThreadId);
+    m_pThreadHandle = CreateThread(0, aeStackSize, RunThreadProc, this, bSuspend ? 4 : 0, &m_uiCreatedThreadId);
     fnv_EnterCriticalSection(&CriticalSection);
     SetThreadPriority(-1);
     m_bThreadStarted = true;
@@ -38,6 +44,7 @@ void BSThread::Initialize(StackSize stackSize, const char* name, bool suspended)
 }
 
 // @fnv 0x00aa6360
+// pdb: BSThread::BSThread | BSThread_Xenon.obj | retail, upstream name already matches, high
 BSThread::BSThread()
 {
     BSThreadCriticalSectionPC* criticalSection = &CriticalSection;
@@ -51,10 +58,12 @@ BSThread::BSThread()
 
 // If the stored thread handle is non-null, applies the given priority to it via SetThreadPriority.
 // @fnv 0x00aa6560
-void BSThread::SetThreadPriority(int priority)
+// pdb: BSThread::SetThreadPriority | BSThread_Xenon.obj | debug, upstream name already matches, high
+// pdb params: aiPriority
+void BSThread::SetThreadPriority(int aiPriority)
 {
     if (m_pThreadHandle)
-        ::SetThreadPriority(m_pThreadHandle, priority);
+        ::SetThreadPriority(m_pThreadHandle, aiPriority);
 }
 
 // @fnv 0x00aa64d0
@@ -81,6 +90,7 @@ struct FUN_00aa64f0_t
 };
 // If handle is set, clears running, closes handle under the critical section, and resets handle to 0.
 // @fnv 0x00aa64f0
+// pdb: BSThread::Close | BSThread_Xenon.obj | retail, call graph, high
 void FUN_00aa64f0_t::StopAndCloseHandle()
 {
     if (handle)

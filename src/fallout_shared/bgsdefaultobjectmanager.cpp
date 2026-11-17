@@ -12,21 +12,25 @@
 
 // Zeroes the default object array with memset.
 // @fnv 0x0058d840
+// pdb: BGSDefaultObjectManager::InitializeData | BGSDefaultObjectManager.obj | debug, call graph, high
 void BGSDefaultObjectManager::ResetFormData()
 {
     memset(m_apDefaultObjects, 0, sizeof(m_apDefaultObjects));
 }
 
 // @fnv 0x0058db10
-TESForm* BGSDefaultObjectManager::GetDefaultObjectByIndex(DEFAULT_OBJECT index)
+// pdb: BGSDefaultObjectManager::GetDefaultObject | BGSDefaultObjectManager.obj | retail, call graph (shared callers), high
+// pdb params: aeObject
+TESForm* BGSDefaultObjectManager::GetDefaultObjectByIndex(DEFAULT_OBJECT aeObject)
 {
     if (!Instance()->IsFormInitialized())
         return 0;
-    return Instance()->m_apDefaultObjects[index];
+    return Instance()->m_apDefaultObjects[aeObject];
 }
 
 // Returns the singleton BGSDefaultObjectManager, allocating it with new if it has not been created yet.
 // @fnv 0x0058d680
+// pdb: BGSDefaultObjectManager::Instance | BGSDefaultObjectManager.obj | retail, upstream name already matches, high
 BGSDefaultObjectManager* BGSDefaultObjectManager::Instance()
 {
     if (!ms_pSystemUtility)
@@ -38,27 +42,30 @@ BGSDefaultObjectManager* BGSDefaultObjectManager::Instance()
 
 // Reads a TESFile record of form type 100, loads the DATA chunk into the default object array and byte-swaps it when endian conversion is required.
 // @fnv 0x0058d920
-bool BGSDefaultObjectManager::Load(TESFile* file)
+// pdb: BGSDefaultObjectManager::Load | BGSDefaultObjectManager.obj | retail, upstream name already matches, high
+// pdb params: apFile
+// pdb locals: chunkid, formid, i
+bool BGSDefaultObjectManager::Load(TESFile* apFile)
 {
-    unsigned char form = file->GetTESForm();
+    unsigned char form = apFile->GetTESForm();
     if (form != 100)
         return false;
-    LoadRecordHeader(file);
+    LoadRecordHeader(apFile);
     SetInitializationState(false);
-    while (unsigned int chunk = file->GetChunkID())
+    while (unsigned int chunk = apFile->GetChunkID())
     {
         switch (chunk)
         {
         case 0x41544144:
-            file->GetChunkData(m_apDefaultObjects, sizeof(m_apDefaultObjects));
-            if (file->IsEndianConversionRequired())
+            apFile->GetChunkData(m_apDefaultObjects, sizeof(m_apDefaultObjects));
+            if (apFile->IsEndianConversionRequired())
             {
                 for (int i = 0; i < DEFAULT_OBJECT_DO_COUNT; ++i)
                     BSEndian((unsigned int*)&m_apDefaultObjects[i], EndianSizeTag<4>());
             }
             break;
         }
-        if (!file->NextChunk())
+        if (!apFile->NextChunk())
             break;
     }
     SetInitializationState(false);
@@ -68,6 +75,8 @@ bool BGSDefaultObjectManager::Load(TESFile* file)
 #include "bgsdefaultobjectmanager_decls.h"
 // If not yet initialized, resolves each of the 34 default object IDs to a form, clears mismatched types, warns on failures, then marks the manager initialized.
 // @fnv 0x0058da10
+// pdb: BGSDefaultObjectManager::InitItem | BGSDefaultObjectManager.obj | retail, string-set bridge, high
+// pdb locals: i, itempint
 void BGSDefaultObjectManager::InitItem()
 {
     if (GetInitialized())
@@ -89,16 +98,18 @@ void BGSDefaultObjectManager::InitItem()
 }
 
 // @fnv 0x0068eb80
-NavMesh::NavMesh() : POVPointerArray(37)
+// pdb: NavMesh::NavMesh | NavMesh.obj | retail, upstream name already matches, high
+NavMesh::NavMesh() : POVs(37)
 {
     SetFormType(ENUM_FORM_ID_NAVM_ID);
-    m_pOwningCell = 0;
-    m_pNavigationMesh = 0;
+    pParentCell = 0;
+    pNavMeshInfo = 0;
     pTriangleToObstacleMap = new NiTMap<unsigned short, NiPointer<ObstacleData> >(37);
 }
 
 // Deletes the BGSDefaultObjectManager singleton instance and clears its pointer if it is set.
 // @fnv 0x0058d710
+// pdb: BGSDefaultObjectManager::ReleaseInstance | BGSDefaultObjectManager.obj | debug, object-file gap fill, medium
 void DestroyDefaultObjectManager()
 {
     if (BGSDefaultObjectManager::ms_pSystemUtility)
@@ -109,6 +120,7 @@ void DestroyDefaultObjectManager()
 }
 
 // @fnv 0x0058d760
+// pdb: BGSDefaultObjectManager::BGSDefaultObjectManager | BGSDefaultObjectManager.obj | retail, upstream name already matches, high
 BGSDefaultObjectManager::BGSDefaultObjectManager() : TESForm()
 {
     SetFormType((ENUM_FORM_ID)100);
@@ -118,12 +130,15 @@ BGSDefaultObjectManager::BGSDefaultObjectManager() : TESForm()
 }
 
 // @fnv 0x0058d820
+// pdb: BGSDefaultObjectManager::~BGSDefaultObjectManager | BGSDefaultObjectManager.obj | debug, upstream name already matches, high
 BGSDefaultObjectManager::~BGSDefaultObjectManager()
 {
 }
 
 void __cdecl TESForm_AddChunkArray_00485710(unsigned int, unsigned int*, unsigned int);
 // @fnv 0x0058d870
+// pdb: BGSDefaultObjectManager::Save | BGSDefaultObjectManager.obj | retail, upstream name already matches, high
+// pdb locals: pidarray, i
 void BGSDefaultObjectManager::Save()
 {
     unsigned int pidarray4[34];

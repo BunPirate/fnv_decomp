@@ -38,6 +38,7 @@ public:
     unsigned char layoutPadding15[3];
 };
 
+// pdb: class LoadingMenu, size 0x5b0 (here 0x5c0), bases: Menu, 27 members
 class LoadingMenu : public Menu
 {
 public:
@@ -130,22 +131,22 @@ public:
     unsigned int m_uiSecondStateValue;
     int m_iStateFlags;
 
-    void InitLoadingMenu(TESForm*);
-    void SetTileVisible(TileIndex, bool);
-    void SetTileVisible(int, bool);
+    void _Create(TESForm*);
+    void HideAllBut(TileIndex, bool);
+    void HideAllBut(int, bool);
     void SetTileAlpha(Tile*, float);
     void SetTileAlpha(void*, float);
     void SetAlphaRecursive(NiNode*, float);
     void ToggleFlagBit(int);
     void UpdateLoadingScreenText(bool);
     void UpdateLoadingScreenText(int);
-    void UpdateLoadingScreens();
+    void MakeLoadScreenList();
     bool UpdateLoadingScreen();
     void ApplyLoadingScreenTexture(bool);
     void ApplyLoadingScreenTexture(int);
     void ApplyLoadingScreenTexture(void*);
     void ApplyLoadingScreenTexture(TileShaderProperty*);
-    void CopyTileLayout();
+    void GetPlayerTileDefaultSettings();
     void ApplySettings(int);
     void ApplySettings(LoadingStatsSettings*);
     void ApplySettingsToTiles(int);
@@ -163,9 +164,9 @@ public:
     void Update();
     void UpdateLoadScreen(TESLoadScreen*, float, int);
     void UpdateStatsTilesAlphas(float, int);
-    void UpdateTiles(float, int);
-    void FadeSlideTiles(float, int);
-    void UpdateLoadingTiles(float, int);
+    void UpdateObjectiveTilesAlphas(float, int);
+    void UpdateTipTilesAlphas(float, int);
+    void UpdateXPProgressTilesAlphas(float, int);
     void SetFloatFlag(int, bool);
 
     bool FUN_00458110(int);
@@ -179,7 +180,7 @@ public:
     void InitXPProgressTilesList();
     void InitTipTilesList();
     void Update_00789820();
-    void ResetLoadingPinwheelAnimation();
+    void UpdateWheel();
     void LoadingMenu_FlushLoadScreenList();
     void LoadingMenu_AdvanceScreen();
     void FUN_0078abd0();
@@ -190,8 +191,8 @@ public:
     void UpdateObjectiveTilesVisibilities(bool);
     void UpdateTipTilesVisibilities(bool);
     void UpdateXPProgressTilesVisibilities(bool);
-    void CalcLoadScreenTypeTextWindowVerts(void*);
-    void CalcLoadScreenTypeTextWindowVerts(int);
+    void CalcLoadScreenTypeTextWindowFaces(void*);
+    void CalcLoadScreenTypeTextWindowFaces(int);
     void InitPlayerTileSettings();
     void UpdatePlayerTileSettings(int);
     void UpdatePlayerTileSettings(BGSPerkEntry*);

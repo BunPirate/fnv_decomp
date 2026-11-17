@@ -9,6 +9,7 @@ class Obj;
 class NiLODData;
 class NiRangeLODData;
 
+// pdb: class NiLODNode, size 0x100 (here 0xd4), bases: NiSwitchNode, 2 members
 class NiLODNode : public NiSwitchNode
 {
   public:

@@ -22,6 +22,7 @@ struct InitObject
 
 // @fnv 0x00d97010
 // src: HAVOK_LIB 0x00d97010
+// pdb: hkpBroadPhase::hkpBroadPhase | hkpBroadPhase.obj | retail, upstream name already matches, high
 InitObject* InitObject::hkpBroadPhase_hkpBroadPhase()
 {
     m_w06 = 1;
@@ -67,7 +68,7 @@ class Spawned
 {
   public:
     virtual void v00();
-    Spawned* Init(void* a1);
+    Spawned* hkCriticalSection_ctor(void* a1);
 };
 
 class Obj
@@ -95,19 +96,21 @@ class Owner
     unsigned int unk04;
     SubObj m_08;
     Spawned* m_10;
-    void hkpBroadPhase_enableMultiThreading(void* a1);
+    void hkpBroadPhase_enableMultiThreading(void* spinCountForCriticalSection);
 };
 
 // @fnv 0x00d97070
 // src: HAVOK_LIB 0x00d97070
-void Owner::hkpBroadPhase_enableMultiThreading(void* apArg)
+// pdb: hkpBroadPhase::enableMultiThreading | hkpBroadPhase.obj | retail, upstream name already matches, high
+// pdb params: spinCountForCriticalSection
+void Owner::hkpBroadPhase_enableMultiThreading(void* spinCountForCriticalSection)
 {
     if (m_10 == 0)
     {
         Holder* h = hkMemoryRouter_getInstance();
         Obj* obj = h->m_10;
         Spawned* s = obj->v04(0x18);
-        m_10 = (s != 0) ? s->Init(apArg) : s;
+        m_10 = (s != 0) ? s->hkCriticalSection_ctor(spinCountForCriticalSection) : s;
         m_08.Reset();
     }
 }
@@ -132,14 +135,15 @@ struct CpuObject
 {
     unsigned int unk00;
     unsigned short size;
-    void UpdateFields_00d970c0();
+    void hkpBroadPhase_dtor();
     CpuObject* FUN_00d97100(unsigned int flags);
 };
 // Calls FUN_00d970c0, then if bit 0 of flags is set, invokes the allocator from FUN_00c85750 on this with size, and returns this.
 // @fnv 0x00d97100
+// pdb: hkpBroadPhase::`scalar deleting destructor' | hkpBroadPhase.obj | retail, vtable slot, high
 CpuObject* CpuObject::FUN_00d97100(unsigned int flags)
 {
-    UpdateFields_00d970c0();
+    hkpBroadPhase_dtor();
     if (flags & 1)
     {
         CpuAllocatorHolder* holder = hkMemoryRouter_getInstance();
@@ -180,7 +184,7 @@ struct FUN_00d970c0_cls
     int unk0c;
     void* m_pCs;
 
-    void UpdateFields_00d970c0();
+    void hkpBroadPhase_dtor();
 };
 
 struct FreeAllocator
@@ -192,8 +196,9 @@ struct FreeAllocator
 
 // Deletes the critical section m_pCs, frees it via the holder's allocator, clears m_pCs, and sets the vtable pointer to DAT_0102e388.
 // @fnv 0x00d970c0
-// src: GUESS 0x00d970c0 (confidence: low)
-void FUN_00d970c0_cls::UpdateFields_00d970c0()
+// src: XBOX_RETAIL_PDB 0x00d970c0
+// pdb: hkpBroadPhase::~hkpBroadPhase | hkpBroadPhase.obj | retail, call graph (shared callers), high
+void FUN_00d970c0_cls::hkpBroadPhase_dtor()
 {
     m_vptr = (int)&DAT_010d3f7c;
     void* pCs = m_pCs;

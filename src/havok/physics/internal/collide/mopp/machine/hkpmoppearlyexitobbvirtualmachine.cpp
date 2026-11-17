@@ -18,6 +18,9 @@ struct S_00e647e0 {
     hkBool SetupAndProcessShape(S_00e647e0_Input* input, const void* b, const void* c, const void* d);
 };
 // @fnv 0x00e647e0
+// pdb: hkpMoppEarlyExitObbVirtualMachine::queryObb | hkpMoppEarlyExitObbVirtualMachine.obj | retail, object-file run extension, low
+// pdb params: code, BvToWorld, extent, radius
+// pdb locals: query
 hkBool S_00e647e0::SetupAndProcessShape(S_00e647e0_Input* input, const void* b, const void* c, const void* d) {
     if (!DAT_0126efba) {
         ValidateHavokKeyCode(&DAT_0126efba);

@@ -84,7 +84,7 @@ public:
 class TESConditionSave_effectitem
 {
 public:
-    void ProcessItems();
+    void Save();
 };
 
 // Unit-specific declarations; TESForm is supplied by the shared headers.
@@ -98,18 +98,22 @@ void __cdecl _Deallocate(void* pointer);
 EffectSetting* __cdecl GetUsageMonitorEffectSetting();
 
 // @fnv 0x00404650
+// pdb: EffectItem::GetAssociatedSkill | EffectItem.obj | debug, call graph, medium
 int EffectItem::GetEffectID()
 {
     return m_pEffectSetting->GetEffectID();
 }
 
 // @fnv 0x00405e40
-bool EffectItem::IsDetrimental()
+// src: XBOX_DEBUG_PDB 0x00405e40
+// pdb: EffectItem::IsDisabled | EffectItemList.obj | debug, call graph, high
+bool EffectItem::IsDisabled()
 {
     return m_pEffectSetting->IsDetrimental();
 }
 
 // @fnv 0x00404710
+// pdb: EffectItem::IsHostile | EffectItem.obj | debug, upstream name already matches, high
 bool EffectItem::IsHostile()
 {
     return GetEffectSetting()->IsFlagSet(1);
@@ -117,13 +121,16 @@ bool EffectItem::IsHostile()
 
 // Returns whether GetEffectSetting() equals GetUsageMonitorEffectSetting().
 // @fnv 0x00404730
-bool EffectItem::IsScriptBasedEffect()
+// src: XBOX_RETAIL_PDB 0x00404730
+// pdb: EffectItem::IsUsageMonitorEffect | EffectItem.obj | retail, call graph (shared callers), high
+bool EffectItem::IsUsageMonitorEffect()
 {
     return GetEffectSetting() == GetUsageMonitorEffectSetting();
 }
 
 // Returns the effect name by delegating to the effect's GetEffectName method.
 // @fnv 0x00404670
+// pdb: EffectItem::GetEffectName | EffectItem.obj | retail, upstream name already matches, high
 BSStringT<char> EffectItem::GetEffectName()
 {
     return m_pEffectSetting->GetEffectName();
@@ -131,7 +138,9 @@ BSStringT<char> EffectItem::GetEffectName()
 
 // Destroys the effect item's contents and, if flags has bit 0 set, deallocates the object; returns this.
 // @fnv 0x004059d0
-EffectItem* EffectItem::Delete(unsigned int flags)
+// src: XBOX_DEBUG_PDB 0x004059d0
+// pdb: EffectItem::`scalar deleting destructor' | EffectItemList.obj | debug, call graph, high
+EffectItem* EffectItem::EffectItem_ScalarDtor(unsigned int flags)
 {
     DestroyContents();
     if (flags & 1)
@@ -140,9 +149,11 @@ EffectItem* EffectItem::Delete(unsigned int flags)
 }
 
 // @fnv 0x00405d20
+// pdb: EffectItemList::AddEffect | EffectItemList.obj | debug, call graph, medium
+// pdb params: apEffect
 void EffectItemList::AddItem(EffectItem* item)
 {
-    if (item->IsScriptBasedEffect() && GetScriptEffect())
+    if (item->IsUsageMonitorEffect() && GetUsageMonitorEffect())
         return;
 
     AddTail(item);
@@ -152,32 +163,36 @@ void EffectItemList::AddItem(EffectItem* item)
 
 // Constructs a ScriptEffect, storing its script and initializing the script locals to null.
 // @fnv 0x00827740
-ScriptEffect::ScriptEffect(MagicCaster* caster, MagicItem* item, EffectItem* effect)
-    : ActiveEffect(caster, item, effect)
+// pdb: ScriptEffect::ScriptEffect | ScriptEffect.obj | debug, upstream name already matches, high
+// pdb params: apCaster, apSpell, apEffect
+ScriptEffect::ScriptEffect(MagicCaster* apCaster, MagicItem* apSpell, EffectItem* apEffect)
+    : ActiveEffect(apCaster, apSpell, apEffect)
 {
-    pScript = static_cast<Script*>(effect->GetScript());
-    m_pScriptLocals = 0;
+    pScript = static_cast<Script*>(apEffect->GetScript());
+    pEffectLocals = 0;
 }
 
 // Loads an EffectItem from a TESFile chunk: reads the 20-byte effect data (with endian conversion) or loads its conditions, returning false on unknown chunk IDs.
 // @fnv 0x00404120
-bool EffectItem::Load(TESFile* file, const char* actorEffect)
+// pdb: EffectItem::Load | EffectItem.obj | retail, string-set bridge, high
+// pdb params: apFile, apSpellName
+bool EffectItem::Load(TESFile* apFile, const char* apSpellName)
 {
-    switch (file->GetChunkID())
+    switch (apFile->GetChunkID())
     {
     case 0x54494645:
         memset(this, 0, 20);
-        file->GetChunkData(this, 20);
-        if (file->IsEndianConversionRequired())
+        apFile->GetChunkData(this, 20);
+        if (apFile->IsEndianConversionRequired())
             reinterpret_cast<BGSImpactData__IMPACT_DATA_DATA*>(this)->Endian();
         if (!m_pEffectSetting)
             Warning("GAME EFFECTS: Unknown EffectSetting encountered when loading EffectItem in actor effect '%s'",
-                    actorEffect == 0 ? "{unknown}" : actorEffect);
-        else if (m_pEffectSetting->IsAssociatedActorValueUsed() && m_pEffectSetting->HasAssociatedActorValue())
+                    apSpellName == 0 ? "{unknown}" : apSpellName);
+        else if (m_pEffectSetting->IsAssociatedActorValueUsed() && m_pEffectSetting->IsAssociatedActorValueFixed())
             data.m_eAssociatedActorValue = m_pEffectSetting->GetAssociatedActorValue();
         break;
     case 0x41445443:
-        GetConditions()->Load(file);
+        GetConditions()->Load(apFile);
         break;
     default:
         return false;
@@ -187,6 +202,8 @@ bool EffectItem::Load(TESFile* file, const char* actorEffect)
 
 // Initializes the effect data with zero values and no associated actor value.
 // @fnv 0x00403ba0
+// pdb: EffectItem::EffectItem | EffectItem.obj | debug, object-file run extension, low
+// pdb params: apEffectSetting
 MagicEffectEntry::MagicEffectEntry()
 {
     m_iMagnitude = 0;
@@ -197,6 +214,7 @@ MagicEffectEntry::MagicEffectEntry()
 }
 
 // @fnv 0x00403c60
+// pdb: EffectSetting::IsAssociatedActorValueUsed | EffectItem.obj | debug, call graph (shared callers), high
 bool EffectSetting::HasFlag2()
 {
     return MagicEffectSystem_effectitem::IsFlagSet(GetArchetype(), 2);
@@ -220,6 +238,8 @@ void* __cdecl _fnv_zlib_memset(void* apDest, int aiValue, unsigned int aCount);
 
 // @fnv 0x00403d30
 // src: COMMUNITY 0x00403d30
+// pdb: ourMemset | EffectItem.obj | debug, upstream name already matches, high
+// pdb params: apDest, aiValue, aCount
 void __cdecl ourMemset(void* apDest, int aiValue, unsigned int aCount)
 {
     _fnv_zlib_memset(apDest, aiValue, aCount);
@@ -227,6 +247,8 @@ void __cdecl ourMemset(void* apDest, int aiValue, unsigned int aCount)
 
 // If apForm is not initialized, initializes the item's conditions with apForm.
 // @fnv 0x00403db0
+// pdb: EffectItem::InitItem | EffectItem.obj | debug, upstream name already matches, high
+// pdb params: apForm
 void EffectItem::InitItem(TESForm* apForm)
 {
     if (apForm->GetInitialized())
@@ -237,32 +259,38 @@ void EffectItem::InitItem(TESForm* apForm)
 
 // @fnv 0x00403e60
 // src: XBOX_PDB 0x00403e60
+// pdb: EffectSetting::IsFlagSet | EffectItem.obj | debug, call graph, medium
+// pdb params: aiFlag
 bool EffectSetting::IsFlagSet_00403e60(unsigned int auiFlag)
 {
     return GetFlag(auiFlag);
 }
 
 // @fnv 0x00403e80
-bool EffectSetting::HasAssociatedActorValue()
+// src: XBOX_DEBUG_PDB 0x00403e80
+// pdb: EffectSetting::IsAssociatedActorValueFixed | EffectItem.obj | debug, call graph (shared callers), high
+bool EffectSetting::IsAssociatedActorValueFixed()
 {
     return GetAssociatedActorValue() != -1;
 }
 
 // @fnv 0x00403ee0
 // src: XBOX_PDB 0x00403ee0
+// pdb: EffectItem::IsActorValueUsed | EffectItem.obj | debug, upstream name already matches, high
 bool EffectItem::IsActorValueUsed()
 {
     return m_pEffectSetting->IsAssociatedActorValueUsed();
 }
 
-float __cdecl CalcEffectCost(float, int, int, int, bool);
+float __cdecl MagicFormulas_GetMagicEffectCost(float, int, int, int, bool);
 
 // @fnv 0x00403f00
+// pdb: EffectItem::GetRawCost | EffectItem.obj | retail, upstream name already matches, high
 float EffectItem::GetRawCost()
 {
     if (m_fCost < 0.0)
     {
-        m_fCost = CalcEffectCost(((TESGrass*)GetEffectSetting())->TESGrass::GetLowestAllowedSlope(), GetArea(), GetDuration(),
+        m_fCost = MagicFormulas_GetMagicEffectCost(((TESGrass*)GetEffectSetting())->TESGrass::GetLowestAllowedSlope(), GetArea(), GetDuration(),
                                  GetMagnitude(), GetRange() == 2);
     }
     return m_fCost;
@@ -288,17 +316,20 @@ struct blob12
 typedef char _sizecheck_TESChildCell[sizeof(TESChildCell) == 4 ? 1 : -1];
 typedef char _sizecheck_ActorValueOwner[sizeof(ActorValueOwner) == 4 ? 1 : -1];
 typedef char _sizecheck_CachedValuesOwner[sizeof(CachedValuesOwner) == 4 ? 1 : -1];
-float __cdecl ScaleBySettingBlend(float, int, int);
+float __cdecl MagicFormulas_AdjustMagicSpellCost(float, int, int);
 float __cdecl FloatFloor(float);
 float __cdecl BSMAX_00404010(float, float);
 
 // @fnv 0x00403f80
+// pdb: EffectItem::GetCost | EffectItem.obj | retail, upstream name already matches, high
+// pdb params: apActor
+// pdb locals: fcost
 float EffectItem::GetCost(Actor* apActor)
 {
     float fcost = GetRawCost();
     if (apActor != 0)
     {
-        fcost = ScaleBySettingBlend(fcost,
+        fcost = MagicFormulas_AdjustMagicSpellCost(fcost,
                                     ((ActorValueOwner*)((char*)apActor + 0xa4))->GetActorValueAsInteger(GetEffectID()),
                                     ((ActorValueOwner*)((char*)apActor + 0xa4))->GetActorValueAsInteger(0xb));
     }
@@ -326,6 +357,9 @@ float __cdecl FloatFloor(float aIn)
 }
 
 // @fnv 0x004042a0
+// pdb: EffectItem::Compare | EffectItem.obj | retail, upstream name already matches, high
+// pdb params: apCompare
+// pdb locals: bresult
 bool EffectItem::Compare(EffectItem* apCompare)
 {
     bool bDifferent = apCompare->GetEffectSetting() != GetEffectSetting() ||
@@ -348,12 +382,14 @@ bool EffectItem::Compare(EffectItem* apCompare)
 
 // Returns 0 if the EffectSetting at offset 0x14 has flag 0x100 set, otherwise returns the int at offset 0 of this EffectItem.
 // @fnv 0x00404390
+// pdb: EffectItem::GetMagnitude | EffectItem.obj | debug, upstream name already matches, high
 int EffectItem::GetMagnitude()
 {
     return m_pEffectSetting->IsFlagSet(0x100) ? 0 : data.m_iMagnitude;
 }
 
 // @fnv 0x00404420
+// pdb: EffectItem::GetArea | EffectItem.obj | debug, upstream name already matches, high
 int EffectItem::GetArea()
 {
     return (!m_pEffectSetting->IsFlagSet(0x200) && GetRange() != 0) ? data.m_iArea : 0;
@@ -361,6 +397,7 @@ int EffectItem::GetArea()
 
 // Returns 0 if the EffectSetting at offset 0x14 has flag 0x80 set, otherwise returns the int at offset 0x8.
 // @fnv 0x004044d0
+// pdb: EffectItem::GetDuration | EffectItem.obj | debug, upstream name already matches, high
 int EffectItem::GetDuration()
 {
     return m_pEffectSetting->IsFlagSet(0x80) ? 0 : data.m_iPayloadInteger;
@@ -383,6 +420,8 @@ int __fastcall _FNV_GetFormType(int);
 }  // namespace fnv_004045e0
 
 // @fnv 0x004045e0
+// pdb: EffectItem::GetScript | EffectItem.obj | debug, upstream name already matches, high
+// pdb locals: psetting, pscript
 void* EffectItem::GetScript()
 {
     Script* pscript = 0;
@@ -404,6 +443,8 @@ char* __cdecl _strcpy(char*, const char*);
 
 // @fnv 0x004046f0
 // src: XBOX_PDB 0x004046f0
+// pdb: ourStrcpy | EffectItem.obj | debug, upstream name already matches, high
+// pdb params: apStrDest, apStrSource
 void __cdecl ourStrcpy(char* apStrDest, const char* apStrSource)
 {
     _strcpy(apStrDest, apStrSource);
@@ -411,31 +452,38 @@ void __cdecl ourStrcpy(char* apStrDest, const char* apStrSource)
 
 // Calls Enter with the given arguments and returns this.
 // @fnv 0x00404eb0
-AutoMemContext::AutoMemContext(int m, bool o, const char* f, int l)
+// pdb: AutoMemContext::AutoMemContext | EffectItem.obj | debug, upstream name already matches, high
+// pdb params: memContext, overridable, apFile, aiLine
+AutoMemContext::AutoMemContext(int memContext, bool overridable, const char* f, int aiLine)
 {
-    Enter(m, o, const_cast<char*>(f), l);
+    Enter(memContext, overridable, const_cast<char*>(f), aiLine);
 }
 
 int __cdecl GetTlsField();
 void __cdecl SetMemContext_00404f30(int);
 
 // @fnv 0x00404f00
+// pdb: AutoMemContext::Enter | EffectItem.obj | debug, upstream name already matches, high
+// pdb params: memContext, overridable, apFile, aiLine
 void AutoMemContext::Enter(int memContext, bool overridable, char* apFile, int aiLine)
 {
-    m_eMemoryContext = static_cast<MEM_CONTEXT>(GetTlsField());
+    iOldMemContext = static_cast<MEM_CONTEXT>(GetTlsField());
     SetMemContext_00404f30(memContext);
 }
 
 // @fnv 0x00404f70
+// pdb: AutoMemContext::Leave | EffectItem.obj | debug, upstream name already matches, high
 void AutoMemContext::Leave()
 {
-    SetMemContext_00404f30(m_eMemoryContext);
+    SetMemContext_00404f30(iOldMemContext);
 }
 
 unsigned int __cdecl _strlen(const char*);
 
 // @fnv 0x0044a670
 // src: XBOX_PDB 0x0044a670
+// pdb: BSstrlen | EffectItem.obj | debug, call graph, medium
+// pdb params: apString
 unsigned int __cdecl BSstrlen(const char* apString)
 {
     return _strlen(apString);
@@ -477,6 +525,7 @@ extern "C" bool __cdecl TESForm_QEndianSwapOnSave();
 extern "C" void __cdecl AppendChunk(unsigned int, void*, unsigned int);
 
 // @fnv 0x004040b0
+// pdb: EffectItem::Save | EffectItem.obj | retail, upstream name already matches, high
 void EffectItem::Save()
 {
     if (TESForm_QEndianSwapOnSave())
@@ -485,11 +534,14 @@ void EffectItem::Save()
     if (TESForm_QEndianSwapOnSave())
         reinterpret_cast<BGSImpactData__IMPACT_DATA_DATA*>(this)->Endian();
     if (GetConditions())
-        reinterpret_cast<TESConditionSave_effectitem*>(GetConditions())->ProcessItems();
+        reinterpret_cast<TESConditionSave_effectitem*>(GetConditions())->Save();
 }
 
 // @fnv 0x00404470
 // src: COMMUNITY 0x00404470
+// pdb: EffectItem::SetArea | EffectItem.obj | debug, object-file gap fill, medium
+// pdb params: aiArea
+// pdb locals: bresult
 bool EffectItem::SetArea_00404470(int range)
 {
     bool result = false;
@@ -519,6 +571,7 @@ void __cdecl SetMemContext_00404f30(int aiValue)
 }  // namespace fnv_00404f30
 
 // @fnv 0x00403d50
+// pdb: EffectItem::~EffectItem | EffectItem.obj | retail, upstream name already matches, high
 EffectItem::~EffectItem()
 {
     GetConditions()->InitializeConditionItems();
@@ -526,6 +579,9 @@ EffectItem::~EffectItem()
 
 // @fnv 0x004043d0
 // src: COMMUNITY 0x004043d0
+// pdb: EffectItem::SetMagnitude | EffectItem.obj | debug, object-file gap fill, medium
+// pdb params: aiMagnitude
+// pdb locals: bresult
 bool EffectItem::SetMagnitude_004043d0(int a)
 {
     bool result = false;
@@ -544,6 +600,9 @@ bool EffectItem::SetMagnitude_004043d0(int a)
 // Sets a non-negative duration and invalidates the cached cost when the effect permits a duration.
 // @fnv 0x00404510
 // src: COMMUNITY 0x00404510
+// pdb: EffectItem::SetDuration | EffectItem.obj | debug, object-file gap fill, medium
+// pdb params: aiDuration
+// pdb locals: bresult
 bool EffectItem::SetDuration_00404510(int aiValue)
 {
     bool b = false;
@@ -557,6 +616,7 @@ bool EffectItem::SetDuration_00404510(int aiValue)
 }
 
 // @fnv 0x004049a0
+// pdb: Setting::`scalar deleting destructor' | EffectItem.obj | retail, vtable slot, high
 void* Setting::FUN_004049a0(unsigned int flags)
 {
     FUN_00404950();
@@ -572,6 +632,7 @@ struct Dummy
 };
 // Calls FUN_00404c00, then deallocates this if flags has bit 0 set, and returns this.
 // @fnv 0x00404ca0
+// pdb: SettingCollectionMap<Setting>::`scalar deleting destructor' | EffectItem.obj | debug, vtable slot, medium
 void* Dummy::FUN_00404ca0(unsigned int flags)
 {
     FUN_00404c00();
@@ -600,6 +661,8 @@ struct FUN_00404f90_shell
 
 // If apSetting is non-null and has flags set, removes the entry keyed by those flags from _map.
 // @fnv 0x00404f90
+// pdb: SettingCollectionMap<Setting>::Remove | EffectItem.obj | debug, vtable slot, medium
+// pdb params: apSetting
 void FUN_00404f90_shell::RemoveSettingFromMap(EffectitemOffset08View* apSetting)
 {
     if (apSetting && apSetting->GetFlags())
@@ -627,6 +690,9 @@ int _data_011c16bc;
 // Iterates the map at offset 0x10c, calls FUN_00c33280 on each non-null Setting with apStringsA, and returns the count processed.
 // @fnv 0x00404fd0
 // src: XBOX_PDB 0x00404fd0
+// pdb: SettingCollectionMap<Setting>::GetViewerStrings | EffectItem.obj | retail, vtable slot, high
+// pdb params: apStringsA
+// pdb locals: I, cpkey, IT, tempMemContext, pval
 template <> unsigned int SettingCollectionMap<Setting>::GetViewerStrings_00404fd0(NiTPrimitiveArray<char*>* apStringsA)
 {
     unsigned int I;
@@ -654,6 +720,7 @@ template <> unsigned int SettingCollectionMap<Setting>::GetViewerStrings_00404fd
 
 // Initializes the effect data and conditions, then calls Init with the given value.
 // @fnv 0x00403b30
+// pdb: ScriptEffectSaveData::Endian | EffectItem.obj | debug, object-file run extension, low
 EffectItem::EffectItem(int aiValue) : data(), Conditions()
 {
     Init(aiValue);
@@ -664,6 +731,8 @@ extern float DAT_01012054;
 // Stores the effect setting, resets the fields, and selects its associated actor value or -1.
 // @fnv 0x00403be0
 // src: COMMUNITY 0x00403be0
+// pdb: EffectItem::Initialize | EffectItem.obj | debug, object-file run extension, low
+// pdb params: apEffectSetting
 void EffectItem::Initialize_00403be0(EffectSetting* manager)
 {
     m_pEffectSetting = manager;
@@ -697,6 +766,8 @@ struct EffectProcess
 };
 // If FUN_00404d30 succeeds, iterates the map at this+0x10c and ANDs ProcessEffect over each non-null effect; returns the result.
 // @fnv 0x004050a0
+// pdb: SettingCollectionMap<Setting>::WriteSettings | EffectItem.obj | retail, vtable slot, high
+// pdb locals: bres, pcur, IT, pkey
 bool EffectProcess::ProcessAllEffects()
 {
     bool result = FUN_00404d30();
@@ -723,6 +794,9 @@ extern const float DAT_01012054;
 
 // @fnv 0x00404560
 // src: COMMUNITY 0x00404560
+// pdb: EffectItem::SetRange | EffectItem.obj | debug, object-file gap fill, medium
+// pdb params: aiRange
+// pdb locals: bresult
 bool __thiscall EffectItem::SetRange_00404560(unsigned int value)
 {
     bool result = false;
@@ -757,6 +831,8 @@ struct SettingRegistry
 extern "C" bool __fastcall FUN_00404d30(SettingRegistry*);
 // @fnv 0x00405120
 // src: XBOX_PDB 0x00405120
+// pdb: SettingCollectionMap<Setting>::ReadSettings | EffectItem.obj | retail, vtable slot, high
+// pdb locals: bres, tempMemContext, pcur, IT, pkey
 bool SettingRegistry::SettingCollectionMap_Setting_ReadSettings()
 {
     int key;

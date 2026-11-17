@@ -57,6 +57,9 @@ struct BigState
 
 // @fnv 0x00d105b0
 // src: GUESS 0x00d105b0 (confidence: low)
+// pdb: hkLs_isAgentInteresting | hkpContinuousSimulation.obj | debug, object-file run extension, low
+// pdb params: entry, minPriorityToProcess
+// pdb locals: assertBuf, ostr
 BigState& BigState::UpdateState_00d105b0(const BigState& o)
 {
     unk00 = o.unk00;
@@ -234,13 +237,15 @@ struct __declspec(align(16)) FUN_00c9ce00_cls
     int unk214;
     int unk218;
     int unk21c;
-    void FUN_00c9ce00(int);
+    void hkpEntity_ctor(int);
 };
 // @fnv 0x00d1f1a0
 // src: HAVOK_LIB 0x00d1f1a0
+// pdb: getVtablehkpEntity | hkpEntityClass.obj | retail, upstream name already matches, high
+// pdb locals: u
 int getVtablehkpEntity()
 {
     FUN_00c9ce00_cls holder;
-    holder.FUN_00c9ce00(W().x);
+    holder.hkpEntity_ctor(W().x);
     return *(int*)&holder;
 }

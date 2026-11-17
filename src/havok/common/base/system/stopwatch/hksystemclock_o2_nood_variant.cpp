@@ -23,6 +23,8 @@ unsigned __int64 g_freq;
 
 // @fnv 0x00dd8e20
 // src: HAVOK_LIB 0x00dd8e20
+// pdb: hkWindowsSystemClock::getTicksPerSecond | hkSystemClock.obj | retail, upstream name already matches, high
+// pdb locals: qticks2, qticks, x
 unsigned __int64 Obj::hkWindowsSystemClock_getTicksPerSecond()
 {
     if (g_freq != 0)

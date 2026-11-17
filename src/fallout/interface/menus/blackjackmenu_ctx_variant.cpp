@@ -89,7 +89,7 @@ struct FUN_00739ad0_Holder
 {
     char _pad[0xDB4];
     NiAVObject* m_pTreeNode;
-    void __thiscall HideArrowNodes();
+    void __thiscall BlackJackMenu_ClearDeckHighlight();
 };
 struct FUN_00733fd0_shell
 {
@@ -133,7 +133,7 @@ extern NiPointer<AnimIdle> g_011d90bc;
 void __cdecl BlackJackMenu_DrawScene();
 struct FUN_00739650_shell : FUN_00734d50_holder
 {
-    bool BlackJackMenu_CanDoubleDown(bool bFlag);
+    bool BlackJackMenu_CanDoubleDown(bool isSplitHand);
 };
 extern GO g_011d9098;
 extern char str_01070e34[];
@@ -180,7 +180,7 @@ struct BlackJackMenu_Layout
     Tile* m50;
     Tile* m54;
 };
-void __cdecl UpdateBetTiles(bool bBetTiles);
+void __cdecl BlackJackMenu_SetBetTiles(bool bBetTiles);
 struct Padding16ByteBlock
 {
     int _pad[4];
@@ -207,7 +207,7 @@ struct FUN_007393f0_shell
 
     int DrawCard(int a1, int a2, int a3);
     int DrawCard(G2* hand, int a1, int a2);
-    void BlackJackMenu_GetHandValue(G2* hand);
+    void BlackJackMenu_GetHandValue(G2* pHand);
 
     void __thiscall DealInitialCards();
 };
@@ -335,7 +335,7 @@ struct BlackJackChipsX
     int iBet;
     char _pad70[0xdc4 - 0x70];
     NiAVObject* apChips[12];
-    void UpdateChipPositions();
+    void BlackJackMenu_SetBetChips();
 };
 struct Property90;
 extern NiPointer<NiNode> DAT_011d90bc;
@@ -1263,10 +1263,10 @@ struct Menu90
     void* anime64;
     void* anime68;
     void* anime6c;
-    void InitBlackjackScene();
-    void UpdateChipPositions();
+    void BlackJackMenu_Prepare3DElements();
+    void BlackJackMenu_SetBetChips();
     void BlackJackMenu_SetSideHandVisibility(int);
-    void HideArrowNodes();
+    void BlackJackMenu_ClearDeckHighlight();
     NiNode* BlackJackMenu_SetupCamera();
 };
 struct FUN_00733f50
@@ -1452,7 +1452,7 @@ struct BlackjackButtonMenu
     int state;
     bool HasFlag(unsigned int);
     void BlackJackMenu_SetTileTextAlpha(int, float);
-    void UpdateButtonState(int);
+    void BlackJackMenu_UpdateTileAlpha(int);
 };
 struct BJCard
 {
@@ -1532,11 +1532,11 @@ struct GlobalPtr
 };
 struct BlackjackMenuShell
 {
-    void BlackJackMenu_SwapCardTextures(int a1, int a2, CardInfo* a3);
+    void BlackJackMenu_SwapCardTextures(int aiHandIndex, int aiCardIndex, CardInfo* cd);
 };
 struct OwnQ
 {
-    int BlackJackMenu_GetHandValue(Node129* pList);
+    int BlackJackMenu_GetHandValue(Node129* pHand);
 };
 struct CardHand
 {
@@ -1593,7 +1593,7 @@ struct InputMenu
     CardHand* hand;
     CardHand* split;
     void HandleAction(int, void*);
-    void UpdateButtonState(int);
+    void BlackJackMenu_UpdateTileAlpha(int);
     bool HasFlag(int);
     void SetFlag(int, bool);
     int DrawCard(void*, bool, bool);
@@ -1602,7 +1602,7 @@ struct InputMenu
     void BlackJackMenu_SetTileTextAlpha(int, float);
     void DealInitialCards();
     bool BlackJackMenu_CanDoubleDown(bool);
-    void UpdateChipPositions();
+    void BlackJackMenu_SetBetChips();
     void BlackJackMenu_SwapCardTextures(int, int, CardInfo*);
     void BlackJackMenu_HighlightSelectedDeck();
 };
@@ -1858,20 +1858,22 @@ struct BlackjackUpdate
     int BlackJackMenu_GetHandValue(FUN_0096a2d0*);
     void BlackJackMenu_SwapCardTextures(int, int, BJCard*);
     void BlackJackMenu_CanSplitHand();
-    void UpdateButtonState(int);
+    void BlackJackMenu_UpdateTileAlpha(int);
     void BlackJackMenu_SetSideHandVisibility(bool);
     void UpdateCulledNodes();
     void UncullCardObjects();
     void ClearField();
-    void HideArrowNodes();
+    void BlackJackMenu_ClearDeckHighlight();
     int DrawCard(FUN_0096a2d0*, bool, bool);
-    void UpdateTileText();
+    void BlackJackMenu_UpdateEarningsString();
     void BlackJackMenu_Shuffle();
     void BlackJackMenu_DoIdle();
 };
 
 // @fnv 0x00734db0
 // src: XBOX_PDB 0x00734db0
+// pdb: BlackJackMenu::DoIdle | BlackJackMenu.obj | retail, upstream name already matches, high
+// pdb locals: ielaspedMillis, bisMenuOnTop, fxAxisRatio, i, pstring, tempcont, pScript, animOffset, UpdateData1, UpdateData0, pD, pPl, UpdateData2, UpdateData3, hValue, useSplit, counter, cd, ihand, update0, update1, iWinningLevel, iMax, iCurrentWinnings ...
 void BlackjackUpdate::BlackJackMenu_DoIdle()
 {
     int dt = 0;
@@ -2055,7 +2057,7 @@ void BlackjackUpdate::BlackJackMenu_DoIdle()
                             playerResult = 1;
                     }
                     if (!HasFlag(0x20))
-                        UpdateBetTiles(false);
+                        BlackJackMenu_SetBetTiles(false);
                     if (balance >= bet * 2)
                     {
                         if (value == 11)
@@ -2069,7 +2071,7 @@ void BlackjackUpdate::BlackJackMenu_DoIdle()
                         SetFlag(0x100, false);
                         SetFlag(4, false);
                     }
-                    UpdateButtonState(10);
+                    BlackJackMenu_UpdateTileAlpha(10);
                     endTime = 0.0f;
                     counts[2]++;
                     dealerAnim->FUN_0047b220(dealerSeq[previous], 0.0f);
@@ -2259,7 +2261,7 @@ void BlackjackUpdate::BlackJackMenu_DoIdle()
                 ClearField();
                 BlackJackMenu_SetSideHandVisibility(false);
                 sounded = false;
-                UpdateBetTiles(true);
+                BlackJackMenu_SetBetTiles(true);
                 int limit = ((CasinoUpdate*)DAT_011d9058)->TESCasino_GetData()->m_iFourthIntegerValue;
                 int winnings = DAT_011d9054->amount;
                 int curTier = DAT_011d9054->flags;
@@ -2298,7 +2300,7 @@ void BlackjackUpdate::BlackJackMenu_DoIdle()
         {
             SetFlag(0x400, true);
             SetFlag(0x800, true);
-            HideArrowNodes();
+            BlackJackMenu_ClearDeckHighlight();
             (BSAudio_QInstance()->*reinterpret_cast<EditorSoundHandleFunction>(&BSAudio::BSAudio_GetSoundHandleByEditorName))(DAT_01070d5c, 0x121).Play(false);
             dealerAnim->FUN_0047aab0(revealSeq, 0, 0, 1.0f, 0.0f, 0);
         }
@@ -2330,7 +2332,7 @@ void BlackjackUpdate::BlackJackMenu_DoIdle()
         if (DAT_011d90e0 == 0.0)
         {
             (BSAudio_QInstance()->*reinterpret_cast<EditorSoundHandleFunction>(&BSAudio::BSAudio_GetSoundHandleByEditorName))(DAT_01070d5c, 0x121).Play(false);
-            HideArrowNodes();
+            BlackJackMenu_ClearDeckHighlight();
             FUN_0096a2d0* curr = dealer;
             BJCard* last = 0;
             int drawn = 0;
@@ -2487,7 +2489,7 @@ void BlackjackUpdate::BlackJackMenu_DoIdle()
         ((BlackjackUpdate*)DAT_011d9050)->tile38->SetTraitFloat((int)DAT_011d9048, 1.0f);
         ((BlackjackUpdate*)DAT_011d9050)->tile38->FUN_00700320((int)DAT_011d9048, balance);
         DAT_011d9054->amount += payout;
-        UpdateTileText();
+        BlackJackMenu_UpdateEarningsString();
         if (payout > 0)
         {
             if (luckyWin)

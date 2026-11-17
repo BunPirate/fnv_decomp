@@ -29,6 +29,7 @@ template <> BSStringT<char>::~BSStringT()
 extern const char g_emptyTopicInfoPrompt[];
 // Resets several fields to zero and sets the prompt pointer to g_emptyTopicInfoPrompt.
 // @fnv 0x00510710
+// pdb: TESObjectACTI::InitializeData | TESObjectACTI.obj | debug, call graph, medium
 void TESObjectACTI::ResetFormData()
 {
     m_pSoundEffect = 0;
@@ -39,32 +40,35 @@ void TESObjectACTI::ResetFormData()
     m_kActivationPrompt = g_emptyTopicInfoPrompt;
 }
 // @fnv 0x00510a90
-bool TESObjectACTI::Load(TESFile* file)
+// pdb: TESObjectACTI::Load | TESObjectACTI.obj | retail, upstream name already matches, high
+// pdb params: apFile
+// pdb locals: chunkid, pMessage, isize, pdata, tempint, itempint, pbuffer
+bool TESObjectACTI::Load(TESFile* apFile)
 {
-    LoadRecordHeader(file);
+    LoadRecordHeader(apFile);
     SetInitializationState(false);
     int chunk;
-    while (chunk = file->GetChunkID())
+    while (chunk = apFile->GetChunkID())
     {
         switch (chunk)
         {
         case 0x44494445: {
-            char* editorID = (char*)_alloca(file->GetChunkSize());
-            file->GetChunkData(editorID, 512);
+            char* editorID = (char*)_alloca(apFile->GetChunkSize());
+            apFile->GetChunkData(editorID, 512);
             SetEditorID_AtRuntime(editorID);
             break;
         }
         case 0x444e424f:
-            readOBNDSubRecord(file);
+            readOBNDSubRecord(apFile);
             break;
         case 0x4c4c5546:
-            TESFullName::LoadFullNameChunk(this, file);
+            TESFullName::LoadFullNameChunk(this, apFile);
             break;
         case 0x4c444f4d:
         case 0x54444f4d:
         case 0x44444f4d:
         case 0x44534f4d:
-            TESModel::LoadModelData(this, file);
+            TESModel::LoadModelData(this, apFile);
             break;
         case 0x53444f4d: {
             struct TextureChunk
@@ -72,16 +76,16 @@ bool TESObjectACTI::Load(TESFile* file)
                 int size;
                 char* data;
             } textureChunk;
-            textureChunk.size = file->GetChunkSize();
+            textureChunk.size = apFile->GetChunkSize();
             textureChunk.data = (char*)_alloca(textureChunk.size);
-            file->GetChunkData(textureChunk.data, textureChunk.size);
-            ParseTextureSwapData(textureChunk.data, textureChunk.size,
-                                 reinterpret_cast<TESFileFormVersion*>(file)->GetFormVersion());
+            apFile->GetChunkData(textureChunk.data, textureChunk.size);
+            UnpackTextureSwapChunkData(textureChunk.data, textureChunk.size,
+                                 reinterpret_cast<TESFileFormVersion*>(apFile)->GetFormVersion());
             break;
         }
         case 0x49524353: {
             unsigned int script = 0;
-            file->GetChunkData(&script);
+            apFile->GetChunkData(&script);
             reinterpret_cast<CombatProcedure*>((char*)this + 0x5c)
                 ->Initialize(reinterpret_cast<CombatController*>(script));
             TESScriptableForm::InitItem(this);
@@ -89,51 +93,51 @@ bool TESObjectACTI::Load(TESFile* file)
         }
         case 0x54534544:
         case 0x44545344:
-            BGSDestructibleObjectForm::LoadDestructibleData(this, file);
+            BGSDestructibleObjectForm::LoadDestructibleData(this, apFile);
             break;
         case 0x4d414e53: {
             unsigned int sound = 0;
-            file->GetChunkData(&sound);
+            apFile->GetChunkData(&sound);
             SetLoopingSound(reinterpret_cast<TESSound*>(sound));
             break;
         }
         case 0x4d414e56: {
             unsigned int water = 0;
-            file->GetChunkData(&water);
+            apFile->GetChunkData(&water);
             reinterpret_cast<EffectSetting*>(this)->SetEffectShader(reinterpret_cast<TESEffectShader*>(water));
             break;
         }
         case 0x4d414e49: {
             unsigned int sound = 0;
-            file->GetChunkData(&sound);
+            apFile->GetChunkData(&sound);
             reinterpret_cast<EffectSetting*>(this)->SetEnchantEffectShader(reinterpret_cast<TESEffectShader*>(sound));
             break;
         }
         case 0x4d414e57: {
             unsigned int station = 0;
-            file->GetChunkData(&station);
+            apFile->GetChunkData(&station);
             reinterpret_cast<EffectSetting*>(this)->SetCastSound(reinterpret_cast<TESSound*>(station));
             break;
         }
         case 0x4d414e52: {
             unsigned int radioTemplate = 0;
-            file->GetChunkData(&radioTemplate);
+            apFile->GetChunkData(&radioTemplate);
             reinterpret_cast<EffectSetting*>(this)->SetBoltSound(reinterpret_cast<TESSound*>(radioTemplate));
             break;
         }
         case 0x4f544158: {
-            int size = file->GetChunkSize();
+            int size = apFile->GetChunkSize();
             if (size > 1)
             {
                 char* text = new char[size];
-                file->GetChunkData(text, size);
+                apFile->GetChunkData(text, size);
                 SetActivationPrompt(BSStringT<char>(text));
                 delete[] text;
             }
             break;
         }
         }
-        if (!file->NextChunk())
+        if (!apFile->NextChunk())
             break;
     }
     return true;
@@ -163,14 +167,16 @@ void* __fastcall BGSOpenCloseForm_BGSOpenCloseForm(void** pThis)
 
 struct FloatValueProvider : public TESObjectACTI
 {
-    void TESObjectACTI_SetActivationPrompt(BSStringT<char> s);
+    void TESObjectACTI_SetActivationPrompt(BSStringT<char> ActivateTextOverrideInput);
 };
 // Sets the activation prompt at offset 0x88 to the given string.
 // @fnv 0x00510ea0
 // src: COMMUNITY 0x00510ea0
-void FloatValueProvider::TESObjectACTI_SetActivationPrompt(BSStringT<char> s)
+// pdb: TESObjectACTI::SetActivationString | TESObjectACTI.obj | debug, call graph, high
+// pdb params: ActivateTextOverrideInput
+void FloatValueProvider::TESObjectACTI_SetActivationPrompt(BSStringT<char> ActivateTextOverrideInput)
 {
-    m_kActivationPrompt.Set(s);
+    m_kActivationPrompt.Set(ActivateTextOverrideInput);
 }
 
 struct TESFullName_ext : TESFullName
@@ -180,6 +186,7 @@ struct TESFullName_ext : TESFullName
 
 // @fnv 0x00511840
 // src: XBOX_PDB 0x00511840
+// pdb: TESSound::GetFilename | TESObjectACTI.obj | debug, upstream name already matches, high
 const char* __fastcall TESSound_GetFilename(char* apObject)
 {
     return ((TESFullName_ext*)(apObject + 0x30))->GetFullName();
@@ -192,6 +199,7 @@ struct Holder005105F0 : TESObjectACTI
 };
 // Destructs the TESObjectACTI base and, when flags has bit 0 set, deallocates this object; returns this.
 // @fnv 0x005105f0
+// pdb: TESObjectACTI::`scalar deleting destructor' | TESObjectACTI.obj | retail, vtable slot, high
 void* Holder005105F0::FUN_005105f0(unsigned int flags)
 {
     this->TESObjectACTI::~TESObjectACTI();
@@ -214,13 +222,16 @@ struct FUN_00511860_holder
 };
 // @fnv 0x00511860
 // src: XBOX_PDB 0x00511860
+// pdb: TESObjectACTI::SaveGame | TESObjectACTI.obj | retail, upstream name already matches, high
+// pdb params: apSaveGameBuffer
+// pdb locals: pfullname
 void FUN_00511860_holder::TESObjectACTI_SaveGame(BGSSaveFormBuffer* apSaveGameBuffer)
 {
     ((FUN_00484d60_holder*)this)->SaveIfChanged(apSaveGameBuffer);
     if (((BGSLoadFormBuffer*)apSaveGameBuffer)->GetChangeFlags(4).operator bool())
     {
         const char* pfullname = ((FNStub*)((char*)this + 0x30))->GetFullName();
-        ((BGSSaveGameBuffer*)apSaveGameBuffer)->SaveGameString(pfullname, 0);
+        ((BGSSaveGameBuffer*)apSaveGameBuffer)->SaveString(pfullname, 0);
     }
 }
 
@@ -237,6 +248,8 @@ struct FUN_00837250 : QBase
 };
 // Calls the QBase constructor with 0 and stores the given flags in field_30.
 // @fnv 0x00837250
+// pdb: RadioConvTask::RadioConvTask | FalloutRadio.obj | debug, object-file run extension, low
+// pdb params: apStation
 FUN_00837250::FUN_00837250(unsigned int auiFlags) : QBase(0)
 {
     field_30 = auiFlags;
@@ -250,6 +263,7 @@ struct FUN_005110e0_Holder
 };
 // Returns the BSStringT<char> member at offset 0x88 of the holder.
 // @fnv 0x005110e0
+// pdb: TESObjectACTI::GetActivationString | TESObjectACTI.obj | debug, call graph, high
 BSStringT<char> FUN_005110e0_Holder::GetString()
 {
     return m_88;
@@ -262,26 +276,28 @@ struct FUN_00510770_shell : public TESObjectACTI
 
 struct BGSDestructibleObjectFormInitItemProxy
 {
-    void InitItem(TESForm* form);
+    void InitItem(TESForm* apOwner);
 };
 
 struct TESModelTextureSwapInitItemProxy
 {
-    void InitItem(TESForm* form);
+    void InitItem(TESForm* apOwner);
 };
 
 TESForm* _GetFormByNumericID(unsigned int formID);
 void _FNV_Warning(const char* format, ...);
 
-void BGSDestructibleObjectFormInitItemProxy::InitItem(TESForm* form)
+void BGSDestructibleObjectFormInitItemProxy::InitItem(TESForm* apOwner)
 {}
 
-void TESModelTextureSwapInitItemProxy::InitItem(TESForm* form)
+void TESModelTextureSwapInitItemProxy::InitItem(TESForm* apOwner)
 {}
 
 // Resolves the activator's sound, water and radio-station form IDs, warns when a lookup fails, and initializes the scriptable, destructible and model sub-forms.
 // @fnv 0x00510770
 // src: XBOX_PDB 0x00510770
+// pdb: TESObjectACTI::InitItem | TESObjectACTI.obj | retail, string-set bridge, high
+// pdb locals: itempint
 void FUN_00510770_shell::TESObjectACTI_InitItem()
 {
     if (IsFormInitialized())
@@ -350,7 +366,7 @@ void FUN_00510770_shell::TESObjectACTI_InitItem()
 // BSStringT.h does not yet declare the string-to-string comparison at 0x00501c90.
 struct BSStringComparison
 {
-    int CompareString(const BSStringT<char>* apOther, bool abCaseInsensitive);
+    int CompareString(const BSStringT<char>* arString, bool abIgnoreCase);
 };
 
 struct ACTIView : public TESObjectACTI
@@ -360,16 +376,19 @@ struct ACTIView : public TESObjectACTI
     TESForm* GetFormThreeA();
     TESSound* GetFormFourA();
     BSStringT<char> GetPromptA();
-    bool CompareFormA(TESForm* apForm);
-    bool TESObjectACTI_Compare(TESForm* apForm);
+    bool CompareFormA(TESForm* apCompare);
+    bool TESObjectACTI_Compare(TESForm* apCompare);
 };
 
 // @fnv 0x005111e0
 // src: XBOX_PDB 0x005111e0
-bool ACTIView::TESObjectACTI_Compare(TESForm* apForm)
+// pdb: TESObjectACTI::Compare | TESObjectACTI.obj | retail, upstream name already matches, high
+// pdb params: apCompare
+// pdb locals: pComp
+bool ACTIView::TESObjectACTI_Compare(TESForm* apCompare)
 {
     int iCompare;
-    ACTIView* pOther = (ACTIView*)dynamic_cast<TESObjectACTI*>(apForm);
+    ACTIView* pOther = (ACTIView*)dynamic_cast<TESObjectACTI*>(apCompare);
     if (!pOther)
         return true;
     if (GetLoopSoundA() != pOther->GetLoopSoundA())
@@ -463,6 +482,8 @@ struct ActiSave
 
 // Runs the base save, saves the name, model, script and destruction chunks, writes each sound id under its tag, then writes the text chunk and finishes the save.
 // @fnv 0x00510f00
+// pdb: TESObjectACTI::Save | TESObjectACTI.obj | retail, vtable slot, high
+// pdb locals: itempint
 void ActiSave::Save()
 {
     BeginFormRecord();
@@ -504,7 +525,7 @@ void ActiSave::Save()
 
 struct FUN_00489100_cls
 {
-    void FUN_00489100(const char* src);
+    void FUN_00489100(const char* apFullName);
 };
 struct S_005118c0
 {
@@ -521,19 +542,22 @@ struct S_005118c0
     int unk28;
     int unk2c;
     FUN_00489100_cls unk30;
-    void FUN_00484da0(BGSLoadFormBuffer* stream);
-    void TESObjectACTI_LoadGame(BGSLoadFormBuffer* stream);
+    void FUN_00484da0(BGSLoadFormBuffer* apLoadGameBuffer);
+    void TESObjectACTI_LoadGame(BGSLoadFormBuffer* apLoadGameBuffer);
 };
 // Reads a flag from the stream, and if set reads a string into buf and stores it in unk30.
 // @fnv 0x005118c0
 // src: XBOX_PDB 0x005118c0
-void S_005118c0::TESObjectACTI_LoadGame(BGSLoadFormBuffer* stream)
+// pdb: TESObjectACTI::LoadGame | TESObjectACTI.obj | retail, upstream name already matches, high
+// pdb params: apLoadGameBuffer
+// pdb locals: pfullname
+void S_005118c0::TESObjectACTI_LoadGame(BGSLoadFormBuffer* apLoadGameBuffer)
 {
     char buf[260];
-    FUN_00484da0(stream);
-    if (stream->GetChangeFlags(4).operator bool())
+    FUN_00484da0(apLoadGameBuffer);
+    if (apLoadGameBuffer->GetChangeFlags(4).operator bool())
     {
-        stream->LoadString(buf);
+        apLoadGameBuffer->LoadString(buf);
         unk30.FUN_00489100(buf);
     }
 }
@@ -588,6 +612,7 @@ struct FUN_00510640 : FUN_0050f740, FUN_00591300, FUN_0048a490, Scriptable476, F
     virtual ~FUN_00510640();
 };
 // @fnv 0x00510640
+// pdb: TESObjectACTI::~TESObjectACTI | TESObjectACTI.obj | retail, call graph (shared callers), high
 FUN_00510640::~FUN_00510640()
 {}
 
@@ -689,14 +714,17 @@ class ActiV511
     void FUN_004fb090(TESSound* pkSound);
     void TESForm_CopyAllComponents(TESForm* pkForm);
 
-    void TESObjectACTI_Copy(TESForm* pkForm);
+    void TESObjectACTI_Copy(TESForm* apCopy);
 };
 
 // @fnv 0x00511120
 // src: XBOX_PDB 0x00511120
-void ActiV511::TESObjectACTI_Copy(TESForm* pkForm)
+// pdb: TESObjectACTI::Copy | TESObjectACTI.obj | retail, upstream name already matches, high
+// pdb params: apCopy
+// pdb locals: acti
+void ActiV511::TESObjectACTI_Copy(TESForm* apCopy)
 {
-    ActiV511* pkActi = (ActiV511*)dynamic_cast<TESObjectACTI*>(pkForm);
+    ActiV511* pkActi = (ActiV511*)dynamic_cast<TESObjectACTI*>(apCopy);
     if (!pkActi)
         return;
 
@@ -706,5 +734,5 @@ void ActiV511::TESObjectACTI_Copy(TESForm* pkForm)
     SetWaterForm(pkActi->GetWaterForm());
     FUN_004fb090(pkActi->BGSProjectile_GetExplosion());
     ((TESObjectACTI*)this)->SetActivationPrompt(pkActi->GetString());
-    TESForm_CopyAllComponents(pkForm);
+    TESForm_CopyAllComponents(apCopy);
 }

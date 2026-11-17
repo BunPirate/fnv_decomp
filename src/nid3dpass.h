@@ -43,6 +43,8 @@ NID3DPASS_STATIC_ASSERT(offsetof(D3DRenderStateGroup, m_pkRenderStateEntries) ==
 NID3DPASS_STATIC_ASSERT(offsetof(D3DRenderStateGroup, m_uiFreeEntryCount) == 12);
 NID3DPASS_STATIC_ASSERT(offsetof(D3DRenderStateGroup, m_pkFreeEntries) == 16);
 // @fnv 0x00b80040
+// pdb: NiD3DPass::SetSrcDestBlendRenderState | BSShaderBloodSplatter.obj | retail, call graph, medium
+// pdb params: auiSrcValue, auiDestValue, abSave
 void NiD3DPass::SetAlphaBlendMode(unsigned int uiSrcBlend, unsigned int uiDestBlend, bool bSrcAlpha)
 {
     if (!m_pkRenderStateGroup)

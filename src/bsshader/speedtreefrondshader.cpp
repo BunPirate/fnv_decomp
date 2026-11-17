@@ -66,7 +66,7 @@ template <class T> class NiPointer_s
 };
 struct SpeedTreeLeafShaderConstantMapSetup
 {
-    static void __cdecl ConfigureShaderConstantMap(NiD3DShaderConstantMap*, int);
+    static void __cdecl SpeedTreeShader_SetShaderConstants(NiD3DShaderConstantMap*, int);
 };
 
 extern const char _DAT_010A1E50[];
@@ -94,11 +94,14 @@ struct SpeedTreeFrondShader_s
     char pad2[0x88 - 0x38];
     float m_kPointLightPos[4];
     float m_kDirectionalLightDir[4];
-    void CreateConstantMap();
+    void SpeedTreeFrondShader_CreateConstantMaps();
 };
 
 // @fnv 0x00bd3000
-void SpeedTreeFrondShader_s::CreateConstantMap()
+// src: XBOX_RETAIL_PDB 0x00bd3000
+// pdb: SpeedTreeFrondShader::CreateConstantMaps | SpeedTreeFrondShader.obj | retail, string-set bridge, high
+// pdb locals: iconstantPoint4Flags, idefinedMatrix4Flags, iConstantPoint1Flags
+void SpeedTreeFrondShader_s::SpeedTreeFrondShader_CreateConstantMaps()
 {
     if (!(m_spConstantMap == 0))
         return;
@@ -120,12 +123,14 @@ void SpeedTreeFrondShader_s::CreateConstantMap()
     m_spConstantMap->SetConstant(_DAT_010AF5E4, uiPoint4Flags, 0, 15, 1, "", 0x10, 4, _DAT_011FA290, false);
     if (_DAT_011F941E)
         m_spConstantMap->SetConstant(_DAT_010B92DC, uiPoint1Flags, 0, 16, 1, "", 4, 4, &_DAT_011F918C, false);
-    SpeedTreeLeafShaderConstantMapSetup::ConfigureShaderConstantMap(m_spConstantMap, 0x11);
+    SpeedTreeLeafShaderConstantMapSetup::SpeedTreeShader_SetShaderConstants(m_spConstantMap, 0x11);
 }
 
 extern "C" void __cdecl ShadowLightShader_SetupPassConstants();
 // @fnv 0x00bd3270
 // src: COMMUNITY 0x00bd3270
+// pdb: SpeedTreeBranchShader::SetupPassConstants | SpeedTreeBranchShader.obj | debug, upstream name already matches, high
+// pdb params: auiCurrentPass
 void SpeedTreeBranchShader_SetupPassConstants()
 {
     ShadowLightShader_SetupPassConstants();
@@ -157,6 +162,8 @@ struct BranchShader
 };
 // @fnv 0x00bd3280
 // src: COMMUNITY 0x00bd3280
+// pdb: SpeedTreeBranchShader::LoadVertexShaders | SpeedTreeBranchShader.obj | retail, upstream name already matches, high
+// pdb locals: pvs1Shader, ptempFName, pcacheFName, i, pvs2Filename
 void BranchShader::SpeedTreeBranchShader_LoadVertexShaders()
 {
     ShaderProgram shaderPrograms1x[10] = {{"lighting\\1x\\v\\base.v.hlsl", {"TREE", "", 0}},
@@ -256,11 +263,14 @@ struct Frond
     char pad3[0x104 - 0xa8];
     NiPointer_s<NiD3DShaderConstantMap> m_slots[10];
     NiD3DShaderConstantMap* FUN_00be1750(char* buf, void* entryPart, const char* profile, char* psoName);
-    void CreateShaderConstantMaps();
+    void SpeedTreeBranchShader_LoadPixelShaders();
 };
 // Builds ten shader entry descriptors, then for each one formats its name and creates a shader constant map stored in m_slots.
 // @fnv 0x00bd3c60
-void Frond::CreateShaderConstantMaps()
+// src: XBOX_RETAIL_PDB 0x00bd3c60
+// pdb: SpeedTreeBranchShader::LoadPixelShaders | SpeedTreeBranchShader.obj | retail, unique string literal, high
+// pdb locals: ptempFName, specMult, ptarget, pcacheFName, i, pps1Shader
+void Frond::SpeedTreeBranchShader_LoadPixelShaders()
 {
     char specMultBuf[0x160];
     Entry shaderEntries[10];

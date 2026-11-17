@@ -26,24 +26,26 @@ struct RefBase_cls
     {}
 };
 
-class FUN_00dff010_cls : public RefBase_cls
+// pdb: class hkpSerializedDisplayMarkerList, size 0x14, bases: hkReferencedObject, 1 members
+class hkpSerializedDisplayMarkerList : public RefBase_cls // src: EXE 0x010e66fc (vtable; old: FUN_00dff010_cls)
 {
   public:
     int m_i04;
-    RefElem_t** m_ppData;
+    RefElem_t** m_markers; // src: XBOX_RETAIL_PDB +0x8 (old: m_ppData)
     int m_iArrayLength;
     unsigned int m_uCapacity;
 
-    ~FUN_00dff010_cls() throw();
+    ~hkpSerializedDisplayMarkerList() throw();
 };
 
 // Releases each element in m_ppData, frees the backing array through the allocator, and resets the count, pointer and capacity before destroying the base.
 // @fnv 0x00dff010
-FUN_00dff010_cls::~FUN_00dff010_cls() throw()
+// pdb: hkpSerializedDisplayMarkerList::~hkpSerializedDisplayMarkerList | hkpSerializedDisplayMarkerListClass.obj | retail, object-file run extension, low
+hkpSerializedDisplayMarkerList::~hkpSerializedDisplayMarkerList() throw()
 {
     for (int i = 0; i < m_iArrayLength; i++)
     {
-        m_ppData[i]->FUN_00c905b0();
+        m_markers[i]->FUN_00c905b0();
     }
 
     hkMemoryRouter* pAudioHolder = hkMemoryRouter_getInstance();
@@ -52,9 +54,9 @@ FUN_00dff010_cls::~FUN_00dff010_cls() throw()
     *(volatile int*)&m_iArrayLength = 0;
     if ((uiCapacity & 0x80000000) == 0)
     {
-        pAudioAllocator->bufFree(m_ppData, (uiCapacity & 0x3fffffff) * 4);
+        pAudioAllocator->bufFree(m_markers, (uiCapacity & 0x3fffffff) * 4);
     }
-    *(volatile RefElem_t***)&m_ppData = 0;
+    *(volatile RefElem_t***)&m_markers = 0;
     unsigned int* puiCapacity = &m_uCapacity;
     *puiCapacity = 0x80000000;
     this->RefBase_cls::~RefBase_cls();
@@ -84,6 +86,7 @@ struct FUN_00dff080 : FUN_00e05d10_Base
 
 // Constructor taking an unused int; the body is empty.
 // @fnv 0x00dff080
+// pdb: hkpSerializedDisplayMarkerList::`scalar deleting destructor' | hkpSerializedDisplayMarkerListClass.obj | retail, vtable slot, high
 FUN_00dff080::FUN_00dff080(int)
 {}
 }  // namespace fnv_00dff080

@@ -26,6 +26,9 @@ struct MyHost
 };
 // @fnv 0x00a5c570
 // src: GAMEBRYO_LIB 0x00a5c570
+// pdb: NiObjectNET::GetController | NiObjectNET.obj | retail, upstream name already matches, high
+// pdb params: pkRTTI
+// pdb locals: pkCtrl
 MyCtrl* MyHost::NiObjectNET_GetController(const MyRTTI* pkRTTI) const
 {
     MyCtrl* pkCtrl = m_pFirstNode;

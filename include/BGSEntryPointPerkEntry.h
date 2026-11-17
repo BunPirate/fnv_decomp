@@ -6,6 +6,7 @@
 class BGSEntryPointFunctionData;
 class PerkEntryConditionSet;
 
+// pdb: class BGSEntryPointPerkEntry, size 0x14, bases: BGSPerkEntry, 3 members
 class BGSEntryPointPerkEntry : public BGSPerkEntry
 {
 public:
@@ -14,16 +15,16 @@ public:
     BGSEntryPointFunctionData* m_pFunctionData;
     PerkEntryConditionSet* m_pConditions;
 
-    virtual bool CheckConditionFilters(unsigned int count, TESForm** subjects);
+    virtual bool CheckConditionFilters(unsigned int aiNumFilterForms, TESForm** apFilterForms);
     virtual unsigned char GetFunction();
     virtual void* GetFunctionData();
     virtual ~BGSEntryPointPerkEntry();
     virtual void ClearData();
-    virtual void InitItem(TESForm* form);
+    virtual void InitItem(TESForm* apOwner);
     virtual BGSPerkEntry* Duplicate();
     virtual bool Compare(BGSPerkEntry* entry);
     virtual void Save();
-    virtual bool Load(TESFile* file);
+    virtual bool Load(TESFile* apFile);
     virtual unsigned char GetEntryPoint();
     virtual void ApplyEntryPointEffect(Actor* actor, bool apply);
     virtual void RemoveEntryPointEffect(Actor* actor, bool remove);

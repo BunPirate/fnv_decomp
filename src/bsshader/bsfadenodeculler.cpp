@@ -6,25 +6,27 @@ class GlobalObjectO2_00a7b610
 {
 };
 
-extern GlobalObjectO2_00a7b610 g_01201f84;
+extern GlobalObjectO2_00a7b610 BSOrderedNode_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01201f84 (old: DAT_01201f84/g_01201f84)
 
 // @fnv 0x00bc2bc0
 // src: XBOX_PDB 0x00bc2bc0
 GlobalObjectO2_00a7b610* __cdecl BSOrderedNode_GetRTTI()
 {
-    return &g_01201f84;
+    return &BSOrderedNode_ms_RTTI;
 }
 
 struct FUN_00bc2b20_shell
 {
-    void __thiscall BSFadeNodeCuller_Process(int a, int b, int c);
+    void __thiscall BSFadeNodeCuller_Process(int apCamera, int apScene, int apVisibleSet);
 };
 
 // @fnv 0x00bc2b20
 // src: XBOX_PDB 0x00bc2b20
-void __thiscall FUN_00bc2b20_shell::BSFadeNodeCuller_Process(int a, int b, int c)
+// pdb: BSFadeNodeCuller::Process | BSFadeNodeCuller.obj | retail, upstream name already matches, high
+// pdb params: apCamera, apScene, apVisibleSet
+void __thiscall FUN_00bc2b20_shell::BSFadeNodeCuller_Process(int apCamera, int apScene, int apVisibleSet)
 {
-    *(int*)((char*)this + 0xc) = a;
+    *(int*)((char*)this + 0xc) = apCamera;
 }
 
 struct SpawnedBound
@@ -91,6 +93,9 @@ struct FUN_00bc2b30_cls
 
 // @fnv 0x00bc2b30
 // src: XBOX_PDB 0x00bc2b30
+// pdb: BSFadeNodeCuller::Process | BSFadeNodeCuller.obj | debug, vtable slot, medium
+// pdb params: apObject
+// pdb locals: pn, bvisible, i, iSide
 void FUN_00bc2b30_cls::BSFadeNodeCuller_Process_00bc2b30(SpawnedSource* apSource)
 {
     SpawnedObject* pTarget = apSource->GetTarget();

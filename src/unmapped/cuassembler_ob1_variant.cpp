@@ -191,6 +191,8 @@ extern char DAT_011f6c8c[];
 
 // @fnv 0x00ac6540
 // src: GUESS 0x00ac6540 (confidence: low)
+// pdb: D3DXShader::CUAssembler::CalculateExportCount | cuassembler.obj | retail, unique string literal, high
+// pdb locals: isFetch
 bool __cdecl Object_ProcessAndReturnValue_00ac6540(std::string& kString)
 {
     switch (DAT_011f6c88)

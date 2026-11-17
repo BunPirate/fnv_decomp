@@ -6,6 +6,7 @@
 
 class StrArr;
 
+// pdb: class NiPSysMeshUpdateModifier, size 0x28, bases: NiPSysModifier, 1 members
 class NiPSysMeshUpdateModifier : public NiPSysModifier
 {
 public:
@@ -14,14 +15,14 @@ public:
 
     virtual const NiRTTI* GetRTTI() const;
     virtual NiObject* MakeClone(CloningProcess& arCloning);
-    virtual void LoadBinary(NiStream& stream);
+    virtual void LoadBinary(NiStream& kStream);
     virtual void LinkObject(NiStream& stream);
     virtual bool RegisterStreamables(NiStream& stream);
     virtual void SaveBinary(NiStream& stream);
     virtual bool IsEqual(NiObject* object) const;
     virtual void GetViewerStrings(NiViewerStringsArray* apStrings);
     virtual void ProcessClone(CloningProcess& process);
-    virtual void PostLinkObject(NiStream& arStream);
+    virtual void PostLinkObject(NiStream& kStream);
     virtual void Update(float time, NiPSysData* data);
     virtual void Initialize(NiPSysData* data, unsigned short newParticle);
 

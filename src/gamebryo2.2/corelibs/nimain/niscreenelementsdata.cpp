@@ -38,7 +38,10 @@ inline NiPoint3* NiGeometryData::GetVertices()
 }
 
 // @fnv 0x00a88020
-bool NiScreenElementsData::SetRectangle(int iPolygon, float fLeft, float fTop, float afWidth, float afHeight)
+// pdb: NiScreenElementsData::SetRectangle | NiScreenElementsData.obj | retail, upstream name already matches, high
+// pdb params: iPolygon, fLeft, fTop, fWidth, fHeight
+// pdb locals: kPoly, fBottom, fRight, i
+bool NiScreenElementsData::SetRectangle(int iPolygon, float fLeft, float fTop, float fWidth, float fHeight)
 {
     if (iPolygon < 0 || iPolygon >= m_usMaxPQuantity)
         return false;
@@ -49,8 +52,8 @@ bool NiScreenElementsData::SetRectangle(int iPolygon, float fLeft, float fTop, f
     if (kPolygon.m_usVertexCount != 4)
         return false;
     unsigned int i = kPolygon.m_usVertexOffset;
-    float fRight = fLeft + afWidth;
-    float fBottom = fTop + afHeight;
+    float fRight = fLeft + fWidth;
+    float fBottom = fTop + fHeight;
     GetVertices()[i].x = fLeft;
     GetVertices()[i].y = fTop;
     GetVertices()[i].z = 0.0f;
@@ -67,11 +70,15 @@ bool NiScreenElementsData::SetRectangle(int iPolygon, float fLeft, float fTop, f
     GetVertices()[i].y = fTop;
     GetVertices()[i].z = 0.0f;
     SetDirtyFlags(1);
-    m_bGeometryInitialized = true;
+    m_bBoundNeedsUpdate = true;
     return true;
 }
 
 // @fnv 0x00a88130
+// pdb: NiScreenElementsData::SetTextures | NiScreenElementsData.obj | retail, object-file gap fill, medium
+// pdb note: debug build links it to NiScreenElementsData::GetRectangle
+// pdb params: iPolygon, usSet, akValue
+// pdb locals: kPoly, akTSet, akTexture, iNumBytes
 bool NiScreenElementsData::SetRectangleBounds(int iPolygonIndex, unsigned short usTextureSetIndex, float fLeft,
                                               float fTop, float fRight, float fBottom)
 {
@@ -101,13 +108,13 @@ bool NiScreenElementsData::SetRectangleBounds(int iPolygonIndex, unsigned short 
 }
 
 struct GlobalObjectO2_00a7b610;
-extern GlobalObjectO2_00a7b610 g_011f5b50;
+extern GlobalObjectO2_00a7b610 NiScreenElementsData_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f5b50 (old: g_011f5b50)
 
 // @fnv 0x00a87a90
 // src: COMMUNITY 0x00a87a90
 GlobalObjectO2_00a7b610* __cdecl NiScreenElementsData_GetRTTI()
 {
-    return &g_011f5b50;
+    return &NiScreenElementsData_ms_RTTI;
 }
 
 void __fastcall FUN_00a7b8c0(void*);
@@ -117,6 +124,8 @@ extern int DAT_0109ea94;
 // Scalar-deleting entry point: the shared layout supplies the members and object size.
 // An unused EDX argument preserves the original ECX object and stack-argument ABI.
 // @fnv 0x00a87aa0
+// pdb: NiScreenElementsData::`scalar deleting destructor' | NiScreenElementsData.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiScreenElementsData::~NiScreenElementsData
 void* __fastcall DestroyScreenElementsData(NiScreenElementsData* data, void*, unsigned int auiFlags)
 {
     void* p = data->m_akPolygon;
@@ -142,6 +151,8 @@ char* __cdecl NiGetViewerString_00a7d5a0(char const*, void*);
 
 // Appends the object's member names and values to the string array, growing it as needed via SetSize and SetAt.
 // @fnv 0x00a886f0
+// pdb: NiScreenElementsData::GetViewerStrings | NiScreenElementsData.obj | retail, string-set bridge, high
+// pdb params: pkStrings
 void NiScreenElementsData::GetViewerStrings(NiViewerStringsArray* pkStrings)
 {
     StrArr* strings = reinterpret_cast<StrArr*>(pkStrings);
@@ -150,7 +161,7 @@ void NiScreenElementsData::GetViewerStrings(NiViewerStringsArray* pkStrings)
 
     static_cast<TriShapeViewerStrings*>(static_cast<NiTriShapeData*>(this))->AppendViewerStrings(pkStrings);
 
-    value = _FUN_00a7d330(*reinterpret_cast<void**>(&g_011f5b50));
+    value = _FUN_00a7d330(*reinterpret_cast<void**>(&NiScreenElementsData_ms_RTTI));
     index = strings->m_usSize;
     if (index >= strings->m_usMaxSize)
         strings->SetSize(index + strings->m_usGrowBy);
@@ -250,24 +261,28 @@ extern const NiPoint3 DAT_011a9484;
 // The shared insertion declaration uses a different parameter and return signature.
 struct ScreenPolygonInsertion : NiScreenElementsData
 {
-    unsigned int InsertPolygon(unsigned short, unsigned short, const unsigned short*);
+    unsigned int NiScreenElementsData_Insert(unsigned short, unsigned short, const unsigned short*);
 };
 
 // @fnv 0x00a87ae0
-unsigned int ScreenPolygonInsertion::InsertPolygon(unsigned short usVertexCount, unsigned short usTriangleCount,
-                                                   const unsigned short* pusTriangleList)
+// src: XBOX_RETAIL_PDB 0x00a87ae0
+// pdb: NiScreenElementsData::Insert | NiScreenElementsData.obj | retail, call graph, high
+// pdb params: usNumVertices, usNumTriangles, ausTriList
+// pdb locals: kPoly, usPolygon, pusTriList, iDelta, iNumBytes, usNewMaxQuantity, fRatio, usChunks, uiDestBytes, i, ausNewPIndexer, akNewPolygon, usNumSets, akNewVertex, akNewNormal, akNewColor, iNewMaxQuantity, akNewTexture, usSet, iOffset, akSrcTexture, akDstTexture, ausNewTriList, uiLoop
+unsigned int ScreenPolygonInsertion::NiScreenElementsData_Insert(unsigned short usNumVertices, unsigned short usNumTriangles,
+                                                   const unsigned short* ausTriList)
 {
-    if (usVertexCount < 3)
+    if (usNumVertices < 3)
         return 0xffffffff;
 
-    if (usTriangleCount > 0)
+    if (usNumTriangles > 0)
     {
-        if (!pusTriangleList)
+        if (!ausTriList)
             return 0xffffffff;
     }
-    if (usTriangleCount == 0)
+    if (usNumTriangles == 0)
     {
-        usTriangleCount = usVertexCount - 2;
+        usNumTriangles = usNumVertices - 2;
     }
 
     unsigned short usPolygonIndex;
@@ -291,9 +306,9 @@ unsigned int ScreenPolygonInsertion::InsertPolygon(unsigned short usVertexCount,
     }
 
     NiScreenElementsData__Polygon* pkPolygon = &m_akPolygon[usPolygonIndex];
-    pkPolygon->m_usVertexCount = usVertexCount;
+    pkPolygon->m_usVertexCount = usNumVertices;
     pkPolygon->m_usVertexOffset = m_usVertices;
-    pkPolygon->m_usTriangleCount = usTriangleCount;
+    pkPolygon->m_usTriangleCount = usNumTriangles;
     pkPolygon->m_usTriangleIndexOffset = 3 * m_usTriangles;
 
     for (unsigned short i = 0; i < m_usPQuantity; i++)
@@ -362,8 +377,8 @@ unsigned int ScreenPolygonInsertion::InsertPolygon(unsigned short usVertexCount,
         m_usMaxVQuantity = usNewMaxVertices;
     }
 
-    m_usTriangles += usTriangleCount;
-    m_uiTriListLength += 3 * usTriangleCount;
+    m_usTriangles += usNumTriangles;
+    m_uiTriListLength += 3 * usNumTriangles;
     int idx;
     idx = 3 * m_usTriangles - m_usMaxIQuantity;
     if (idx > 0)
@@ -380,17 +395,17 @@ unsigned int ScreenPolygonInsertion::InsertPolygon(unsigned short usVertexCount,
     }
 
     unsigned short* pusTriListOut = &m_pusTriList[pkPolygon->m_usTriangleIndexOffset];
-    if (pusTriangleList)
+    if (ausTriList)
     {
-        FUN_00ec44d0(pusTriListOut, pusTriangleList, 3 * (unsigned int)usTriangleCount * sizeof(unsigned short));
-        for (unsigned int i = 0; i < 3 * (unsigned int)usTriangleCount; i++)
+        FUN_00ec44d0(pusTriListOut, ausTriList, 3 * (unsigned int)usNumTriangles * sizeof(unsigned short));
+        for (unsigned int i = 0; i < 3 * (unsigned int)usNumTriangles; i++)
         {
-            pusTriListOut[i] = pusTriangleList[i] + pkPolygon->m_usVertexOffset;
+            pusTriListOut[i] = ausTriList[i] + pkPolygon->m_usVertexOffset;
         }
     }
     else
     {
-        for (unsigned short i = 0; i < usTriangleCount; i++)
+        for (unsigned short i = 0; i < usNumTriangles; i++)
         {
             *pusTriListOut++ = pkPolygon->m_usVertexOffset;
             *pusTriListOut++ = pkPolygon->m_usVertexOffset + i + 1;
@@ -412,16 +427,20 @@ static inline NiPoint3 NegatePoint(const NiPoint3& p)
 }
 
 // The shared base declares no default constructor; call the original base entry point.
-void __fastcall InitializeTriShapeData(NiTriShapeData*);
+void __fastcall NiTriShapeData_ctor(NiTriShapeData*);
 
 // Allocates the screen-element arrays and clears their counts using the shared layout.
 // The unused EDX argument preserves the original constructor calling convention.
 // @fnv 0x00a881e0
-NiScreenElementsData* __fastcall InitializeScreenElementsData(
+// src: XBOX_RETAIL_PDB 0x00a881e0
+// pdb: NiScreenElementsData::NiScreenElementsData | NiScreenElementsData.obj | retail, call graph, high
+// pdb params: bWantNormals, bWantColors, usNumTextureSets, iMaxPQuantity, iPGrowBy, iMaxVQuantity, iVGrowBy, iMaxTQuantity, iTGrowBy
+// pdb locals: i, iQuantity
+NiScreenElementsData* __fastcall NiScreenElementsData_ctor(
     NiScreenElementsData* data, void*, bool bWantNormals, bool bWantColors, unsigned short usNumTextureSets,
     int iMaxPQuantity, int iPGrowBy, int iMaxVQuantity, int iVGrowBy, int iMaxTQuantity, int iTGrowBy)
 {
-    InitializeTriShapeData(data);
+    NiTriShapeData_ctor(data);
     *reinterpret_cast<void**>(data) = &DAT_0109ea94;
 
     data->m_usMaxPQuantity = (unsigned short)(iMaxPQuantity > 0 ? iMaxPQuantity : 1);
@@ -465,7 +484,7 @@ NiScreenElementsData* __fastcall InitializeScreenElementsData(
     data->m_usTriangles = 0;
     data->m_uiTriListLength = 0;
     data->m_pusTriList = (unsigned short*)_NiMalloc_00aa1070(data->m_usMaxIQuantity * sizeof(unsigned short));
-    data->m_bGeometryInitialized = false;
+    data->m_bBoundNeedsUpdate = false;
     return data;
 }
 
@@ -488,6 +507,9 @@ template <class T> inline void NiStreamLoadBinary(NiStream& kStream, T* pkValue,
 }
 void* __cdecl _NiMalloc_00aa1070(unsigned int bytes);
 // @fnv 0x00a88410
+// pdb: NiScreenElementsData::LoadBinary | NiScreenElementsData.obj | retail, upstream name already matches, high
+// pdb params: kStream
+// pdb locals: uiMaxPQuantity
 void NiScreenElementsData::LoadBinary(NiStream& kStream)
 {
     NiTriShapeData::LoadBinary(kStream);
@@ -526,6 +548,9 @@ template <class T> inline void SerializeValue(NiStream& kStream, const T* pValue
 }
 // Writes the base screen elements data and the polygon, indexer and quantity fields to the binary stream.
 // @fnv 0x00a88590
+// pdb: NiScreenElementsData::SaveBinary | NiScreenElementsData.obj | retail, upstream name already matches, high
+// pdb params: kStream
+// pdb locals: uiMaxPQuantity
 void NiScreenElementsData::SaveBinary(NiStream& kStream)
 {
     NiTriShapeData::SaveBinary(kStream);
@@ -544,9 +569,12 @@ void NiScreenElementsData::SaveBinary(NiStream& kStream)
 #include <string.h>
 // Compares this NiScreenElementsData with pkOther, checking base equality, quantity fields, polygon data, and polygon index arrays.
 // @fnv 0x00a87980
-bool NiScreenElementsData::IsEqual(NiObject* object) const
+// pdb: NiScreenElementsData::IsEqual | NiScreenElementsData.obj | retail, upstream name already matches, high
+// pdb params: pkObject
+// pdb locals: pkSED, iBytes
+bool NiScreenElementsData::IsEqual(NiObject* pkObject) const
 {
-    const NiScreenElementsData* pkOther = static_cast<const NiScreenElementsData*>(object);
+    const NiScreenElementsData* pkOther = static_cast<const NiScreenElementsData*>(pkObject);
     if (!const_cast<NiScreenElementsData*>(this)->NiTriShapeData::IsEqual_00a7b7e0(pkOther))
         return false;
 

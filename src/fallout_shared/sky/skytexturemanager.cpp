@@ -11,11 +11,15 @@
 
 void* __cdecl operator new(unsigned int size);
 void __cdecl operator delete(void* object);
-bool __cdecl CleanPath(const char* path, char* output, unsigned int outputSize);
+bool __cdecl CleanPath(const char* apInPath, char* output, unsigned int aiOutSize);
 extern IOManager* DAT_01202d98;
 
 // @fnv 0x0063fb70
-void SkyTextureManager::LoadTextureFromPath(NiPointer<NiTexture>* texture, const char* fileName)
+// src: XBOX_RETAIL_PDB 0x0063fb70
+// pdb: SkyTextureManager::LoadTextureInBackground | SkyTextureManager.obj | retail, call graph (shared callers), high
+// pdb params: apspTexture, apFilename
+// pdb locals: pnewtask, pfileName, pstandardizedFileName
+void SkyTextureManager::LoadTextureInBackground(NiPointer<NiTexture>* apspTexture, const char* apFilename)
 {
     struct TextureRequest
     {
@@ -24,33 +28,39 @@ void SkyTextureManager::LoadTextureFromPath(NiPointer<NiTexture>* texture, const
     } request;
     char standardizedPath[260];
     request.path = 0;
-    if (fileName)
+    if (apFilename)
     {
-        CleanPath(fileName, standardizedPath, sizeof(standardizedPath));
+        CleanPath(apFilename, standardizedPath, sizeof(standardizedPath));
         request.path = standardizedPath;
     }
-    request.task = new SkyTask(texture, fileName);
+    request.task = new SkyTask(apspTexture, apFilename);
     DAT_01202d98->AddTask(reinterpret_cast<QIOTask*>(request.task));
 }
 
 // Creates a sky memory context and requests the sky texture via BSShaderManager::GetTexture using GetFileName().
 // @fnv 0x0063fac0
+// pdb: SkyTask::Run | SkyTextureManager.obj | retail, upstream name already matches, high
+// pdb locals: tempMemContext
 void SkyTask::Run()
 {
     AutoMemContext context(static_cast<MEM_CONTEXT>(33), true,
                            "D:\\_Fallout3\\Platforms\\Common\\Code\\Fallout Shared\\sky\\SkyTextureManager.cpp", 50);
-    BSShaderManager::GetTexture(GetFileName(), true, *apTextureOutput, true, false);
+    BSShaderManager::GetTexture(GetFileName(), true, *pspTexture, true, false);
 }
 
 // @fnv 0x0063fa10
-SkyTask::SkyTask(NiPointer<NiTexture>* texture, const char* name) : QueuedFileEntry(3)
+// pdb: SkyTask::SkyTask | SkyTextureManager.obj | debug, upstream name already matches, high
+// pdb params: apspTexture, apFilename
+SkyTask::SkyTask(NiPointer<NiTexture>* apspTexture, const char* apFilename) : QueuedFileEntry(3)
 {
-    apTextureOutput = texture;
-    SetFileName_00c3cee0(name);
+    pspTexture = apspTexture;
+    SetFileName_00c3cee0(apFilename);
     LookupFileEntryByArchive(1);
 }
 
 // @fnv 0x0063fb40
+// pdb: SkyTask::GetDescription | SkyTextureManager.obj | debug, upstream name already matches, high
+// pdb params: apDescription, aiBufferSize
 bool SkyTask::GetDescription(char* apDescription, unsigned int aiBufferSize)
 {
     return QueuedFileEntry::GetDescription(apDescription, aiBufferSize, (char*)"skytask");

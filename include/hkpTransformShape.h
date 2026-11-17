@@ -5,6 +5,7 @@
 #include "hkQuaternion.h"
 #include "hkTransform.h"
 
+// pdb: class hkpTransformShape, size 0x70, bases: hkpShape, 4 members
 class hkpTransformShape : public hkpShape
 {
 public:
@@ -15,7 +16,7 @@ public:
     virtual const hkpShapeContainer* GetShapeContainer() const;
     virtual int CalcSizeForSpu(const PhysicsShape& input, int spuBufferSizeLeft) const;
     virtual void CalculateAabb(const hkTransform& localToWorld, hkReal tolerance, hkAabb& out) const;
-    virtual hkBool IntersectRayWithShape(const ShapeRayCastQuery& input, ShapeRayCastOutput& output) const;
+    virtual hkBool IntersectRayWithShape(const ShapeRayCastQuery& input, ShapeRayCastOutput& results) const;
     virtual void CastRayWithCollector(const ShapeRayCastQuery& input, const hkpCdBody& cdBody,
                                       hkpRayHitCollector& collector) const;
 
@@ -26,9 +27,9 @@ public:
     const hkpShape* GetShapeForKey() const;
     const hkTransform& getTransform() const;
 
-    hkpSingleShapeContainer m_pContainedShape;
-    int m_iChildShapeSize;
+    hkpSingleShapeContainer m_childShape; // src: XBOX_RETAIL_PDB +0x10 (old: m_pContainedShape)
+    int m_childShapeSize; // src: XBOX_RETAIL_PDB +0x18 (old: m_iChildShapeSize)
     char pad1C[4];
     hkQuaternion m_rotation;
-    hkTransform m_kMotionTransform;
+    hkTransform m_transform; // src: XBOX_RETAIL_PDB +0x30 (old: m_kMotionTransform)
 };

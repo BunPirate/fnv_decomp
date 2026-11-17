@@ -33,7 +33,7 @@ public:
     virtual ~TESObjectLIGH();
 
     virtual void InitItem();
-    NiAVObject* Get3DObject(TESObjectREFR* reference);
+    NiAVObject* Get3DObject(TESObjectREFR* apRef);
 
     void ResetFormData();
     void FUN_0050c9e0(int);
@@ -41,9 +41,9 @@ public:
     bool GetCanCarry();
     bool InvokeAction(unsigned int, unsigned int, bool, unsigned int, unsigned int);
     bool Activate_0050e4b0(unsigned int, unsigned int, bool, unsigned int, unsigned int);
-    NiNode* Create3DModel(TESObjectREFR* reference);
-    NiLight* CreateLight(TESObjectREFR* reference, NiAVObject* object, bool flag);
-    void* CreateLight(void* reference, void* object, bool flag);
+    NiNode* Create3DModel(TESObjectREFR* pRequester);
+    NiLight* GenDynamic(TESObjectREFR* pRequester, NiAVObject* pModel, bool abForceDynamic);
+    void* GenDynamic(void* pRequester, void* pModel, bool abForceDynamic);
     unsigned int GetColor();
     NiColor* GetLightColor();
     bool GetDynamic();
@@ -51,7 +51,7 @@ public:
     int FUN_0087eaa0();
 
     LightSourceData data;
-    float fFadeAmount;
-    TESSound* m_pGameSound;
-    NiColor m_kDiffuseColor;
+    float fFade; // src: XBOX_RETAIL_PDB +0xb4 (old: fFadeAmount)
+    TESSound* m_pSound; // src: XBOX_RETAIL_PDB +0xb8 (old: m_pGameSound)
+    NiColor EmittanceColor; // src: XBOX_RETAIL_PDB +0xbc (old: m_kDiffuseColor)
 };

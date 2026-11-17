@@ -15,14 +15,14 @@ __forceinline __m128 hkSimdReal::broadcast() const
     return _mm_shuffle_ps(m_vValue, m_vValue, 0);
 }
 
-__forceinline void hkVector4::setMul4(const hkSimdReal& r, const hkVector4& v)
+__forceinline void hkVector4::setMul4(const hkSimdReal& r, const hkVector4& x)
 {
-    m_vComponents = _mm_mul_ps(r.broadcast(), v.m_vComponents);
+    m_vComponents = _mm_mul_ps(r.broadcast(), x.m_vComponents);
 }
 
 struct CB20B0_Class
 {
-    void hkTransform_set4x4ColumnMajor(void* src);
+    void hkTransform_set4x4ColumnMajor(void* p);
 };
 struct SourceBlockCDF
 {
@@ -49,7 +49,7 @@ struct SourceBlockCDF
 };
 struct TargetBlockCDF
 {
-    void hkMatrix3_setMul(SourceBlockCDF* pkSource, int iArg);
+    void hkMatrix3_setMul(SourceBlockCDF* aTb, int bTc);
 };
 struct FUN_00cdf230_cls
 {
@@ -93,10 +93,10 @@ struct Row
 // src: GUESS 0x00de88a0 (confidence: low)
 __declspec(noinline) void hkMatrix4::ProcessAndReturnValue_00de88a0(const hkSimdReal& s, const hkMatrix4& m)
 {
-    m_kColumn0.setMul4(s, m.m_kColumn0);
-    m_kColumn1.setMul4(s, m.m_kColumn1);
-    m_kColumn2.setMul4(s, m.m_kColumn2);
-    m_kColumn3.setMul4(s, m.m_kColumn3);
+    m_col0.setMul4(s, m.m_col0);
+    m_col1.setMul4(s, m.m_col1);
+    m_col2.setMul4(s, m.m_col2);
+    m_col3.setMul4(s, m.m_col3);
 }
 
 static __forceinline float zvalue(const hkVector4& v)
@@ -118,37 +118,37 @@ struct S00de8910_Work_b10903
 // src: GUESS 0x00de8910 (confidence: low)
 int hkMatrix4::UpdateState_00de8910(float epsilon)
 {
-    const hkVector4& column2 = m_kColumn2;
+    const hkVector4& column2 = m_col2;
     const float& val2x = column2.m_vComponents.m128_f32[0];
     const float& val2y = column2.m_vComponents.m128_f32[1];
     const float& val2z = column2.m_vComponents.m128_f32[2];
     const float& val2w = column2.m_vComponents.m128_f32[3];
 
     float s0 =
-        -((*(const volatile float*)&m_kColumn0.m_vComponents.m128_f32[1]) * m_kColumn1.m_vComponents.m128_f32[0]) +
-        m_kColumn0.m_vComponents.m128_f32[0] * m_kColumn1.m_vComponents.m128_f32[1];
-    float s1 = -((*(const volatile float*)&m_kColumn0.m_vComponents.m128_f32[1]) * val2x) +
-               (*(const volatile float*)&val2y) * m_kColumn0.m_vComponents.m128_f32[0];
+        -((*(const volatile float*)&m_col0.m_vComponents.m128_f32[1]) * m_col1.m_vComponents.m128_f32[0]) +
+        m_col0.m_vComponents.m128_f32[0] * m_col1.m_vComponents.m128_f32[1];
+    float s1 = -((*(const volatile float*)&m_col0.m_vComponents.m128_f32[1]) * val2x) +
+               (*(const volatile float*)&val2y) * m_col0.m_vComponents.m128_f32[0];
     float s2 =
-        -((*(const volatile float*)&m_kColumn0.m_vComponents.m128_f32[1]) * m_kColumn3.m_vComponents.m128_f32[0]) +
-        m_kColumn0.m_vComponents.m128_f32[0] * m_kColumn3.m_vComponents.m128_f32[1];
-    float s3 = -(val2x * m_kColumn1.m_vComponents.m128_f32[1]) + val2y * m_kColumn1.m_vComponents.m128_f32[0];
-    float s4 = -(m_kColumn3.m_vComponents.m128_f32[0] * m_kColumn1.m_vComponents.m128_f32[1]) +
-               m_kColumn3.m_vComponents.m128_f32[1] * m_kColumn1.m_vComponents.m128_f32[0];
-    float s5 = -(m_kColumn3.m_vComponents.m128_f32[0] * val2y) + val2x * m_kColumn3.m_vComponents.m128_f32[1];
+        -((*(const volatile float*)&m_col0.m_vComponents.m128_f32[1]) * m_col3.m_vComponents.m128_f32[0]) +
+        m_col0.m_vComponents.m128_f32[0] * m_col3.m_vComponents.m128_f32[1];
+    float s3 = -(val2x * m_col1.m_vComponents.m128_f32[1]) + val2y * m_col1.m_vComponents.m128_f32[0];
+    float s4 = -(m_col3.m_vComponents.m128_f32[0] * m_col1.m_vComponents.m128_f32[1]) +
+               m_col3.m_vComponents.m128_f32[1] * m_col1.m_vComponents.m128_f32[0];
+    float s5 = -(m_col3.m_vComponents.m128_f32[0] * val2y) + val2x * m_col3.m_vComponents.m128_f32[1];
 
-    float c0 = -(m_kColumn1.m_vComponents.m128_f32[2] * m_kColumn0.m_vComponents.m128_f32[3]) +
-               m_kColumn1.m_vComponents.m128_f32[3] * m_kColumn0.m_vComponents.m128_f32[2];
-    float c1 = val2w * m_kColumn0.m_vComponents.m128_f32[2] -
-               (*(const volatile float*)&m_kColumn0.m_vComponents.m128_f32[3]) * (float)(+val2z);
-    float c2 = -(m_kColumn3.m_vComponents.m128_f32[2] * m_kColumn0.m_vComponents.m128_f32[3]) +
-               m_kColumn3.m_vComponents.m128_f32[3] * m_kColumn0.m_vComponents.m128_f32[2];
-    float c3 = -((*(const volatile float*)&m_kColumn1.m_vComponents.m128_f32[3]) * (*(const volatile float*)&val2z)) +
-               val2w * m_kColumn1.m_vComponents.m128_f32[2];
-    float c4 = -(m_kColumn3.m_vComponents.m128_f32[2] * m_kColumn1.m_vComponents.m128_f32[3]) +
-               (*(const volatile float*)&m_kColumn3.m_vComponents.m128_f32[3]) * m_kColumn1.m_vComponents.m128_f32[2];
-    float c5 = -(m_kColumn3.m_vComponents.m128_f32[2] * (*(const volatile float*)&val2w)) +
-               (*(const volatile float*)&m_kColumn3.m_vComponents.m128_f32[3]) * (float)(double)val2z;
+    float c0 = -(m_col1.m_vComponents.m128_f32[2] * m_col0.m_vComponents.m128_f32[3]) +
+               m_col1.m_vComponents.m128_f32[3] * m_col0.m_vComponents.m128_f32[2];
+    float c1 = val2w * m_col0.m_vComponents.m128_f32[2] -
+               (*(const volatile float*)&m_col0.m_vComponents.m128_f32[3]) * (float)(+val2z);
+    float c2 = -(m_col3.m_vComponents.m128_f32[2] * m_col0.m_vComponents.m128_f32[3]) +
+               m_col3.m_vComponents.m128_f32[3] * m_col0.m_vComponents.m128_f32[2];
+    float c3 = -((*(const volatile float*)&m_col1.m_vComponents.m128_f32[3]) * (*(const volatile float*)&val2z)) +
+               val2w * m_col1.m_vComponents.m128_f32[2];
+    float c4 = -(m_col3.m_vComponents.m128_f32[2] * m_col1.m_vComponents.m128_f32[3]) +
+               (*(const volatile float*)&m_col3.m_vComponents.m128_f32[3]) * m_col1.m_vComponents.m128_f32[2];
+    float c5 = -(m_col3.m_vComponents.m128_f32[2] * (*(const volatile float*)&val2w)) +
+               (*(const volatile float*)&m_col3.m_vComponents.m128_f32[3]) * (float)(double)val2z;
 
     S00de8910_Work_b10903 w;
     float det = (float)(s0)*c5 - s1 * c4 + s2 * c3 + s3 * c2 - s4 * c1 + s5 * c0;
@@ -160,42 +160,42 @@ int hkMatrix4::UpdateState_00de8910(float epsilon)
         return 1;
     }
 
-    w.adj.m_kColumn0.x = m_kColumn1.m_vComponents.m128_f32[1] * c5 - scalarIdentity(val2y) * c4 +
-                         m_kColumn3.m_vComponents.m128_f32[1] * c3;
-    w.adj.m_kColumn0.y = -(*(const volatile float*)&m_kColumn0.m_vComponents.m128_f32[1]) * c5 + val2y * c2 -
-                         m_kColumn3.m_vComponents.m128_f32[1] * c1;
-    w.adj.m_kColumn0.z = -m_kColumn1.m_vComponents.m128_f32[1] * c2 +
-                         (*(const volatile float*)&m_kColumn0.m_vComponents.m128_f32[1]) * c4 +
-                         m_kColumn3.m_vComponents.m128_f32[1] * scalarIdentity(c0);
-    w.adj.m_kColumn0.w = m_kColumn1.m_vComponents.m128_f32[1] * c1 -
-                         (*(const volatile float*)&m_kColumn0.m_vComponents.m128_f32[1]) * c3 - val2y * c0;
+    w.adj.m_col0.x = m_col1.m_vComponents.m128_f32[1] * c5 - scalarIdentity(val2y) * c4 +
+                         m_col3.m_vComponents.m128_f32[1] * c3;
+    w.adj.m_col0.y = -(*(const volatile float*)&m_col0.m_vComponents.m128_f32[1]) * c5 + val2y * c2 -
+                         m_col3.m_vComponents.m128_f32[1] * c1;
+    w.adj.m_col0.z = -m_col1.m_vComponents.m128_f32[1] * c2 +
+                         (*(const volatile float*)&m_col0.m_vComponents.m128_f32[1]) * c4 +
+                         m_col3.m_vComponents.m128_f32[1] * scalarIdentity(c0);
+    w.adj.m_col0.w = m_col1.m_vComponents.m128_f32[1] * c1 -
+                         (*(const volatile float*)&m_col0.m_vComponents.m128_f32[1]) * c3 - val2y * c0;
 
-    w.adj.m_kColumn1.x =
-        -m_kColumn1.m_vComponents.m128_f32[0] * c5 + val2x * c4 - m_kColumn3.m_vComponents.m128_f32[0] * c3;
-    w.adj.m_kColumn1.y =
-        m_kColumn0.m_vComponents.m128_f32[0] * c5 - val2x * c2 + m_kColumn3.m_vComponents.m128_f32[0] * c1;
-    w.adj.m_kColumn1.z = -m_kColumn0.m_vComponents.m128_f32[0] * c4 + m_kColumn1.m_vComponents.m128_f32[0] * c2 -
-                         m_kColumn3.m_vComponents.m128_f32[0] * c0;
-    w.adj.m_kColumn1.w =
-        m_kColumn0.m_vComponents.m128_f32[0] * c3 - m_kColumn1.m_vComponents.m128_f32[0] * c1 + val2x * c0;
+    w.adj.m_col1.x =
+        -m_col1.m_vComponents.m128_f32[0] * c5 + val2x * c4 - m_col3.m_vComponents.m128_f32[0] * c3;
+    w.adj.m_col1.y =
+        m_col0.m_vComponents.m128_f32[0] * c5 - val2x * c2 + m_col3.m_vComponents.m128_f32[0] * c1;
+    w.adj.m_col1.z = -m_col0.m_vComponents.m128_f32[0] * c4 + m_col1.m_vComponents.m128_f32[0] * c2 -
+                         m_col3.m_vComponents.m128_f32[0] * c0;
+    w.adj.m_col1.w =
+        m_col0.m_vComponents.m128_f32[0] * c3 - m_col1.m_vComponents.m128_f32[0] * c1 + val2x * c0;
 
-    w.adj.m_kColumn2.x =
-        m_kColumn1.m_vComponents.m128_f32[3] * s5 - val2w * s4 + m_kColumn3.m_vComponents.m128_f32[3] * s3;
-    w.adj.m_kColumn2.y =
-        -m_kColumn0.m_vComponents.m128_f32[3] * s5 + val2w * s2 - (float)(m_kColumn3.m_vComponents.m128_f32[3]) * s1;
-    w.adj.m_kColumn2.z = m_kColumn0.m_vComponents.m128_f32[3] * s4 - m_kColumn1.m_vComponents.m128_f32[3] * s2 +
-                         m_kColumn3.m_vComponents.m128_f32[3] * s0;
-    w.adj.m_kColumn2.w =
-        -m_kColumn0.m_vComponents.m128_f32[3] * s3 + m_kColumn1.m_vComponents.m128_f32[3] * s1 - val2w * s0;
+    w.adj.m_col2.x =
+        m_col1.m_vComponents.m128_f32[3] * s5 - val2w * s4 + m_col3.m_vComponents.m128_f32[3] * s3;
+    w.adj.m_col2.y =
+        -m_col0.m_vComponents.m128_f32[3] * s5 + val2w * s2 - (float)(m_col3.m_vComponents.m128_f32[3]) * s1;
+    w.adj.m_col2.z = m_col0.m_vComponents.m128_f32[3] * s4 - m_col1.m_vComponents.m128_f32[3] * s2 +
+                         m_col3.m_vComponents.m128_f32[3] * s0;
+    w.adj.m_col2.w =
+        -m_col0.m_vComponents.m128_f32[3] * s3 + m_col1.m_vComponents.m128_f32[3] * s1 - val2w * s0;
 
-    w.adj.m_kColumn3.x = -m_kColumn1.m_vComponents.m128_f32[2] * s5 + zvalue(m_kColumn2) * s4 -
-                         m_kColumn3.m_vComponents.m128_f32[2] * s3;
-    w.adj.m_kColumn3.y = m_kColumn0.m_vComponents.m128_f32[2] * s5 - *(&m_kColumn2.m_vComponents.m128_f32[2]) * s2 +
-                         m_kColumn3.m_vComponents.m128_f32[2] * s1;
-    w.adj.m_kColumn3.z = -m_kColumn0.m_vComponents.m128_f32[2] * s4 + m_kColumn1.m_vComponents.m128_f32[2] * s2 -
-                         m_kColumn3.m_vComponents.m128_f32[2] * s0;
-    w.adj.m_kColumn3.w =
-        m_kColumn0.m_vComponents.m128_f32[2] * s3 - m_kColumn1.m_vComponents.m128_f32[2] * s1 + (float)(+val2z) * s0;
+    w.adj.m_col3.x = -m_col1.m_vComponents.m128_f32[2] * s5 + zvalue(m_col2) * s4 -
+                         m_col3.m_vComponents.m128_f32[2] * s3;
+    w.adj.m_col3.y = m_col0.m_vComponents.m128_f32[2] * s5 - *(&m_col2.m_vComponents.m128_f32[2]) * s2 +
+                         m_col3.m_vComponents.m128_f32[2] * s1;
+    w.adj.m_col3.z = -m_col0.m_vComponents.m128_f32[2] * s4 + m_col1.m_vComponents.m128_f32[2] * s2 -
+                         m_col3.m_vComponents.m128_f32[2] * s0;
+    w.adj.m_col3.w =
+        m_col0.m_vComponents.m128_f32[2] * s3 - m_col1.m_vComponents.m128_f32[2] * s1 + (float)(+val2z) * s0;
 
     ProcessAndReturnValue_00de88a0(*(const hkSimdReal*)&w.invDetVec, w.adj);
     return 0;

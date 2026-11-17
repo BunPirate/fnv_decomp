@@ -7,6 +7,7 @@
 extern "C" void __cdecl Deallocate(void*);
 
 // @fnv 0x0067c010
+// pdb: TESFollowPackageData::`scalar deleting destructor' | PackageDataFollow.obj | retail, vtable slot, high
 void* __thiscall TESFollowPackageData::DestroyIfFlagged(unsigned int flags)
 {
     FUN_0067c080();
@@ -18,12 +19,14 @@ void* __thiscall TESFollowPackageData::DestroyIfFlagged(unsigned int flags)
 extern int DAT_01068988;
 // Calls FUN_0067ad20, sets vtbl to &DAT_01068988, stores a in m2, zeroes m1, and returns this.
 // @fnv 0x0067c040
+// pdb: TESFollowPackageData::TESFollowPackageData | PackageDataFollow.obj | debug, object-file gap fill, medium
+// pdb params: eFolData
 TESFollowPackageData* TESFollowPackageData::Construct(float afValue)
 {
     ((TESPackageData*)this)->TESPackageData::TESPackageData();
     *reinterpret_cast<void**>(this) = &DAT_01068988;
-    m_08 = afValue;
-    m_04 = 0;
+    fTriggerRadius = afValue;
+    pStartLocation = 0;
     return this;
 }
 
@@ -39,18 +42,20 @@ struct LocationDescriptor
     void Save(int);
 };
 // @fnv 0x0067c2b0
+// pdb: TESFollowPackageData::Save | PackageDataFollow.obj | retail, vtable slot, high
+// pdb locals: folstruct
 void TESFollowPackageData::SaveFloatRecord()
 {
     float fValue;
     memset(&fValue, 0, 4);
-    fValue = m_08;
+    fValue = fTriggerRadius;
     if (TESForm_QEndianSwapOnSave())
         ((BipedModelForm*)&fValue)->Endian();
     AppendChunk(0x44464b50, &fValue, 4);
     if (TESForm_QEndianSwapOnSave())
         ((BipedModelForm*)&fValue)->Endian();
-    if (m_04)
-        ((LocationDescriptor*)m_04)->Save(0x32444c50);
+    if (pStartLocation)
+        ((LocationDescriptor*)pStartLocation)->Save(0x32444c50);
 }
 
 struct FUN_00670b30_Object
@@ -59,40 +64,44 @@ struct FUN_00670b30_Object
 };
 // Destructor that deletes the follow package field.
 // @fnv 0x0067c080
+// pdb: TESFollowPackageData::~TESFollowPackageData | PackageDataFollow.obj | debug, upstream name already matches, high
 TESFollowPackageData::~TESFollowPackageData()
 {
-    delete reinterpret_cast<FUN_00670b30_Object*>(m_04);
+    delete reinterpret_cast<FUN_00670b30_Object*>(pStartLocation);
 }
 
 class FollowPackageField
 {
   public:
     int unk00;
-    bool Cmp(FollowPackageField* p);
+    bool PackageLocation_Compare(FollowPackageField* apCompare);
 };
 // @fnv 0x0067c220
 // src: XBOX_PDB 0x0067c220
-bool TESFollowPackageData::Compare_0067c220(TESPackageData* apData)
+// pdb: TESFollowPackageData::Compare | PackageDataFollow.obj | retail, vtable slot, high
+// pdb params: apCompare
+// pdb locals: pcomp
+bool TESFollowPackageData::Compare_0067c220(TESPackageData* apCompare)
 {
-    TESFollowPackageData* other = dynamic_cast<TESFollowPackageData*>(apData);
+    TESFollowPackageData* other = dynamic_cast<TESFollowPackageData*>(apCompare);
     if (other == 0)
     {
         return true;
     }
-    if (m_08 != other->m_08)
+    if (fTriggerRadius != other->fTriggerRadius)
     {
         return true;
     }
-    if (m_04 != 0)
+    if (pStartLocation != 0)
     {
-        if (m_04->Cmp(other->m_04))
+        if (pStartLocation->PackageLocation_Compare(other->pStartLocation))
         {
             return true;
         }
     }
     else
     {
-        if (other->m_04 != 0)
+        if (other->pStartLocation != 0)
         {
             return true;
         }
@@ -112,21 +121,24 @@ struct FUN_0067f030
 // For a compatible source, copies m_08, deletes the old m_04, and allocates and initializes m_04 when the source has one.
 // @fnv 0x0067c110
 // src: XBOX_PDB 0x0067c110
-void __thiscall TESFollowPackageData::Copy_0067c110(TESPackageData* other)
+// pdb: TESFollowPackageData::Copy | PackageDataFollow.obj | retail, vtable slot, high
+// pdb params: apCopy
+// pdb locals: pcopy
+void __thiscall TESFollowPackageData::Copy_0067c110(TESPackageData* apCopy)
 {
-    TESFollowPackageData* source = dynamic_cast<TESFollowPackageData*>(other);
+    TESFollowPackageData* source = dynamic_cast<TESFollowPackageData*>(apCopy);
     if (source)
     {
-        m_08 = source->m_08;
-        if (m_04)
+        fTriggerRadius = source->fTriggerRadius;
+        if (pStartLocation)
         {
-            delete reinterpret_cast<FUN_00670b30_Object*>(m_04);
-            m_04 = 0;
+            delete reinterpret_cast<FUN_00670b30_Object*>(pStartLocation);
+            pStartLocation = 0;
         }
-        if (source->m_04)
+        if (source->pStartLocation)
         {
-            m_04 = reinterpret_cast<FollowPackageField*>(new FUN_0067f030);
-            reinterpret_cast<FUN_0067f030*>(m_04)->FUN_0067f4d0(source->m_04, false);
+            pStartLocation = reinterpret_cast<FollowPackageField*>(new FUN_0067f030);
+            reinterpret_cast<FUN_0067f030*>(pStartLocation)->FUN_0067f4d0(source->pStartLocation, false);
         }
     }
 }

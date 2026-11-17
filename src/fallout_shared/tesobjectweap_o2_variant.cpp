@@ -44,7 +44,7 @@ Derived::Derived()
 
 #include <math.h>
 static float NI_HALF_PI;
-float NiFastATan2(float y, float x);
+float NiFastATan2(float fY, float fX);
 
 inline float NiASin(float fValue)
 {
@@ -66,35 +66,38 @@ struct RotationMatrix
     float m00, m01, m02;
     float m10, m11, m12;
     float m20, m21, m22;
-    bool NiMatrix3_ToEulerAnglesZXY(float& x, float& y, float& z);
+    bool NiMatrix3_ToEulerAnglesZXY(float& rfZAngle, float& rfXAngle, float& rfYAngle);
 };
 
 // @fnv 0x00a59400
 // src: GAMEBRYO_LIB 0x00a59400
-bool RotationMatrix::NiMatrix3_ToEulerAnglesZXY(float& x, float& y, float& z)
+// pdb: NiMatrix3::ToEulerAnglesZXY | NiMatrix3.obj | retail, upstream name already matches, high
+// pdb params: rfZAngle, rfXAngle, rfYAngle
+// pdb locals: fRmY, fRpY
+bool RotationMatrix::NiMatrix3_ToEulerAnglesZXY(float& rfZAngle, float& rfXAngle, float& rfYAngle)
 {
-    y = -NiASin(m21);
-    if (y < NI_HALF_PI)
+    rfXAngle = -NiASin(m21);
+    if (rfXAngle < NI_HALF_PI)
     {
-        if (y > -NI_HALF_PI)
+        if (rfXAngle > -NI_HALF_PI)
         {
-            x = -NiFastATan2(-m01, m11);
-            z = -NiFastATan2(-m20, m22);
+            rfZAngle = -NiFastATan2(-m01, m11);
+            rfYAngle = -NiFastATan2(-m20, m22);
             return true;
         }
         else
         {
             float fRmY = NiFastATan2(m02, m00);
-            z = 0.0f;
-            x = fRmY - z;
+            rfYAngle = 0.0f;
+            rfZAngle = fRmY - rfYAngle;
             return false;
         }
     }
     else
     {
         float fRpY = NiFastATan2(m02, m00);
-        z = 0.0f;
-        x = z - fRpY;
+        rfYAngle = 0.0f;
+        rfZAngle = rfYAngle - fRpY;
         return false;
     }
 }

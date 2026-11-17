@@ -25,6 +25,7 @@ struct Object
     Object* FUN_00e00070(unsigned int flags);
 };
 // @fnv 0x00e00070
+// pdb: hkpLinearParametricCurve::`scalar deleting destructor' | hkpLinearParametricCurveClass.obj | retail, vtable slot, high
 Object* Object::FUN_00e00070(unsigned int flags)
 {
     ReleaseBothArrays();

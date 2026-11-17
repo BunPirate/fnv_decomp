@@ -1,6 +1,7 @@
 #pragma once
 
-class CombatDamageCalculator
+// pdb: class CombatFormulas, size 0x1, 0 members
+class CombatFormulas // src: XBOX_DEBUG_PDB 0x00646360 (first debug link of 2 high-tier links to its methods; old: CombatDamageCalculator)
 {
   public:
     static float CalculateWeaponDamage(ActorValueOwner*, TESObjectWEAP*, float, bool, InventoryStackRecord*, bool, bool, int,
@@ -9,5 +10,5 @@ class CombatDamageCalculator
     static float GetWeaponConditionDamageMultiplier(int);
     static float GetActorValueMultiplier(ActorValueOwner*, ActorValue::Index, bool);
     static float GetDamageMultiplier(float, float);
-    static float CalculateArmorDamageThreshold(unsigned short rating, float condition);
+    static float CalculateArmorDamageThreshold(unsigned short asArmorRating, float afcondition);
 };

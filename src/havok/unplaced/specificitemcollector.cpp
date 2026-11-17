@@ -2,7 +2,7 @@
 // src/havok/unplaced/specificitemcollector.cpp - unit created 2026-10-16 from the whole-binary attribution (360 source path: d:/_fallout3/platforms/common/code/fallout shared/havok/specificitemcollector.cpp).
 // Functions are listed by their @fnv annotations; compile flags inferred from the PC code.
 
-void __fastcall Object_ForwardCall_0059cee0(void*);
+void __fastcall SpecificItemCollector_dtor(void*);
 void __cdecl Deallocate(void*);
 
 struct FUN_0062a2f0
@@ -12,9 +12,10 @@ struct FUN_0062a2f0
 
 // Calls FUN_0059cee0 on this, frees this via Deallocate when flags has bit 1 set, and returns this.
 // @fnv 0x0062a2f0
+// pdb: SpecificItemCollector::`scalar deleting destructor' | SpecificItemCollector.obj | debug, vtable slot, medium
 void* FUN_0062a2f0::DeleteThis(unsigned int flags)
 {
-    Object_ForwardCall_0059cee0(this);
+    SpecificItemCollector_dtor(this);
     if (flags & 1)
         Deallocate(this);
     return this;
@@ -52,23 +53,26 @@ struct S_0062a320
     char pad[0x70];
     S_0062a320_Key unk70;
     float unk74;
-    void SpecificItemCollector_addRayHit(S_0062a320_Arg* arg, S_0062a320_Data* data);
-    void hkpClosestRayHitCollector_addRayHit(S_0062a320_Arg* arg, S_0062a320_Data* data);
+    void SpecificItemCollector_addRayHit(S_0062a320_Arg* arBody, S_0062a320_Data* arHitInfo);
+    void hkpClosestRayHitCollector_addRayHit(S_0062a320_Arg* cdBody, S_0062a320_Data* hitInfo);
 };
 
 // @fnv 0x0062a320
 // src: XBOX_PDB 0x0062a320
-void S_0062a320::SpecificItemCollector_addRayHit(S_0062a320_Arg* arg, S_0062a320_Data* data)
+// pdb: SpecificItemCollector::addRayHit | SpecificItemCollector.obj | debug, upstream name already matches, high
+// pdb params: arBody, arHitInfo
+// pdb locals: pcol, ifltr
+void S_0062a320::SpecificItemCollector_addRayHit(S_0062a320_Arg* arBody, S_0062a320_Data* arHitInfo)
 {
-    S_0062a320_Node* node = arg->GetLastNode();
+    S_0062a320_Node* node = arBody->GetLastNode();
     if (node)
     {
         S_0062a320_Key nodeKey(node->hkpCollidable_getCollisionFilterInfo());
         if (nodeKey.CFilter_GetLayer() != unk70.CFilter_GetLayer() || nodeKey.CFilter_GetGroup() == unk70.CFilter_GetGroup())
         {
-            if (unk74 <= data->unk10)
+            if (unk74 <= arHitInfo->unk10)
             {
-                hkpClosestRayHitCollector_addRayHit(arg, data);
+                hkpClosestRayHitCollector_addRayHit(arBody, arHitInfo);
             }
         }
     }

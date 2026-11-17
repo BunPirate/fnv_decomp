@@ -1,5 +1,6 @@
 #pragma once
 
+// pdb: class NiRTTI, size 0x8, 2 members
 class NiRTTI
 {
 public:
@@ -12,5 +13,5 @@ public:
     bool IsExactly(const NiRTTI* type) const;
 
     const char* m_pcName;
-    const NiRTTI* m_pBaseRTTI;
+    const NiRTTI* m_pkBaseRTTI; // src: XBOX_RETAIL_PDB +0x4 (old: m_pBaseRTTI)
 };

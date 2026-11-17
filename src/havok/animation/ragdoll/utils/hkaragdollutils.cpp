@@ -40,19 +40,21 @@ extern "C"
 extern "C"
 {
     int __cdecl hkaRagdollUtils_reorderForRagdoll(void*, void*);
-    int __cdecl HkaragdollutilsFpfast_ProcessEntries_00ce9db0(void*, void*);
+    int __cdecl alignChildrenToConstraints(void*, void*);
     int __cdecl alignConstraintSpacesToChildren(void*);
 }
 
 // @fnv 0x00cea7c0
 // src: HAVOK_LIB 0x00cea7c0
-int __cdecl hkaRagdollUtils_reorderAndAlignForRagdoll(void* apFirst, void* apSecond, void* apThird)
+// pdb: hkaRagdollUtils::reorderAndAlignForRagdoll | hkaRagdollUtils.obj | retail, upstream name already matches, high
+// pdb params: rigidBodiesInOut, constraintsInOut, warnOnAlignment
+int __cdecl hkaRagdollUtils_reorderAndAlignForRagdoll(void* rigidBodiesInOut, void* constraintsInOut, void* warnOnAlignment)
 {
-    if (hkaRagdollUtils_reorderForRagdoll(apFirst, apSecond))
+    if (hkaRagdollUtils_reorderForRagdoll(rigidBodiesInOut, constraintsInOut))
         return 1;
-    if (HkaragdollutilsFpfast_ProcessEntries_00ce9db0(apSecond, apThird))
+    if (alignChildrenToConstraints(constraintsInOut, warnOnAlignment))
         return 1;
-    if (alignConstraintSpacesToChildren(apSecond))
+    if (alignConstraintSpacesToChildren(constraintsInOut))
         return 1;
     return 0;
 }
@@ -80,12 +82,14 @@ extern "C" void __cdecl AssignNodeFlags(int, int, int);
 // Sets unk2c of every item in the container to value, increments counter->unk30 and passes the new count to AssignNodeFlags with c->unk14 and c->unk18.
 // @fnv 0x00ce9fa0
 // src: HAVOK_LIB 0x00ce9fa0
-void __cdecl hkaRagdollUtils_setCollisionLayer(Container* pContainer, int value, Counter* counter)
+// pdb: hkaRagdollUtils::setCollisionLayer | hkaRagdollUtils.obj | debug, upstream name already matches, high
+// pdb params: ragdoll, layer, collisionFilter
+void __cdecl hkaRagdollUtils_setCollisionLayer(Container* ragdoll, int layer, Counter* collisionFilter)
 {
-    for (int i = 0; i < pContainer->unk0c; ++i)
-        pContainer->items[i]->unk2c = value;
-    int count = ++counter->unk30;
-    AssignNodeFlags(pContainer->unk14, pContainer->unk18, count);
+    for (int i = 0; i < ragdoll->unk0c; ++i)
+        ragdoll->items[i]->unk2c = layer;
+    int count = ++collisionFilter->unk30;
+    AssignNodeFlags(ragdoll->unk14, ragdoll->unk18, count);
 }
 
 struct Inner
@@ -111,9 +115,13 @@ extern hkError* DAT_01268360;
 
 // Returns true if obj->inner->getSomething() is one of 0,1,2,6,7,8; otherwise optionally reports an unsupported-constraint error and returns false.
 // @fnv 0x00ce9ba0
-static bool IsSupportedRagdollConstraint(Obj* obj, bool reportError) throw()
+// src: XBOX_RETAIL_PDB 0x00ce9ba0
+// pdb: _isConstraintSupported | hkaRagdollUtils.obj | retail, call graph, high
+// pdb params: constraint, warnIfNot
+// pdb locals: assertBuf, ostr
+static bool _isConstraintSupported(Obj* constraint, bool warnIfNot) throw()
 {
-    int val = obj->inner->getSomething();
+    int val = constraint->inner->getSomething();
     switch (val)
     {
     case 0:
@@ -126,7 +134,7 @@ static bool IsSupportedRagdollConstraint(Obj* obj, bool reportError) throw()
     default:
         break;
     }
-    if (reportError)
+    if (warnIfNot)
     {
         unsigned int buf[128];
         hkErrStream stream(buf, 512);
@@ -138,7 +146,7 @@ static bool IsSupportedRagdollConstraint(Obj* obj, bool reportError) throw()
 
 void caller(Obj* obj)
 {
-    IsSupportedRagdollConstraint(obj, true);
+    _isConstraintSupported(obj, true);
 }
 
 struct SpawnedAllocator
@@ -153,7 +161,7 @@ struct SpawnedObject
 {
     int unk00;
     unsigned short m_size04;
-    int Init(void* a, void* b, int c, void* d);
+    int Init(void* rigidBodies, void* constraints, int skeleton, void* boneToRigidBodyMap);
 };
 
 struct SourceRecord
@@ -174,6 +182,8 @@ struct SourceRecord
 
 // Allocates a 0x30-byte SpawnedObject from the global allocator and initializes it from src's fields, returning Init's result.
 // @fnv 0x00ce9ff0
+// pdb: hkaRagdollUtils::copyRagdollInstanceShallow | hkaRagdollUtils.obj | debug, object-file gap fill, medium
+// pdb params: original
 int __cdecl SpawnObjectFromRecord(SourceRecord* pSourceRecord)
 {
     hkMemoryRouter* holder = hkMemoryRouter_getInstance();
@@ -237,10 +247,10 @@ struct LogText
         FUN_00cc00e0();
     }
     LogText* ProcessAndReturnValue_00cc01c0(const char* value) throw();
-    LogText* WriteInt(int value) throw();
+    LogText* WriteInt(int i) throw();
     void FUN_00cc00e0() throw();
 };
-extern "C" void __cdecl hkArrayUtil__reserve(HeapAllocator* allocator, ScratchArray* array, int capacity, int itemSize);
+extern "C" void __cdecl hkArrayUtil__reserve(HeapAllocator* mem, ScratchArray* array, int numElem, int sizeElem);
 extern "C" const char DAT_010cbde0[];
 extern "C" const char DAT_010cbdec[];
 extern "C" const char DAT_010cbe00[];
@@ -384,10 +394,13 @@ static int findNode(const IntArray* nodes, void* value)
 // Checks link count and endpoint membership, then orders nodes by successor-chain length and reorders links accordingly.
 // @fnv 0x00cea030
 // src: HAVOK_LIB 0x00cea030
-extern "C" int __cdecl hkaRagdollUtils_reorderForRagdoll(void* apNodes, void* apLinks)
+// pdb: hkaRagdollUtils::reorderForRagdoll | hkaRagdollUtils.obj | retail, string-set bridge, high
+// pdb params: rigidBodies, constraints
+// pdb locals: numRigidBodies, numConstraints, hierarchy, associatedConstraints, assertBuf, ostr, depths
+extern "C" int __cdecl hkaRagdollUtils_reorderForRagdoll(void* rigidBodies, void* constraints)
 {
-    IntArray* nodes = static_cast<IntArray*>(apNodes);
-    NodeArray* links = static_cast<NodeArray*>(apLinks);
+    IntArray* nodes = static_cast<IntArray*>(rigidBodies);
+    NodeArray* links = static_cast<NodeArray*>(constraints);
     int nodeCount = nodes->count;
     int linkCount = links->count;
     if (linkCount != nodeCount - 1)
@@ -602,16 +615,19 @@ extern "C" void __cdecl MarkHierarchyDescendants(Skeleton*, int, char*, int) thr
 // Splits a Ragdoll into two output Ragdolls by partitioning bones into hierarchy descendants of source and the rest.
 // @fnv 0x00ceaf60
 // src: HAVOK_LIB 0x00ceaf60
-void __cdecl hkaRagdollUtils_splitRagdollInstanceShallow(Ragdoll* original, int aiSourceBone, Ragdoll** first, Ragdoll** second)
+// pdb: hkaRagdollUtils::splitRagdollInstanceShallow | hkaRagdollUtils.obj | retail, upstream name already matches, high
+// pdb params: original, splitBone, trunk, branch
+// pdb locals: branchMode, ragdollInstance, mode, rigidBodies, boneToRigidBody, constraints, body, constraint
+void __cdecl hkaRagdollUtils_splitRagdollInstanceShallow(Ragdoll* original, int splitBone, Ragdoll** trunk, Ragdoll** branch)
 {
     Ragdoll** outputs[2];
-    outputs[0] = first;
-    outputs[1] = second;
+    outputs[0] = trunk;
+    outputs[1] = branch;
     const char selectors[2] = {0, 1};
     int maskCount = original->skeleton->boneCount;
     char* mask = allocateBuffer<char>(scratchState()->heap, maskCount);
     int maskCapacity = maskCount ? maskCount : 0x80000000;
-    MarkHierarchyDescendants(original->skeleton, aiSourceBone, mask, 1);
+    MarkHierarchyDescendants(original->skeleton, splitBone, mask, 1);
     for (int partition = 0; partition < 2; ++partition)
     {
         Array<RigidBody*> bodies;
@@ -633,7 +649,7 @@ void __cdecl hkaRagdollUtils_splitRagdollInstanceShallow(Ragdoll* original, int 
             }
             remap.AddBack(bodies.GetLogicalSize());
             bodies.AddBack(body);
-            if (bone != aiSourceBone && bone != 0)
+            if (bone != splitBone && bone != 0)
                 constraints.AddBack(constraint);
         }
         Ragdoll* result = (Ragdoll*)scratchState()->heap->AllocateMemoryBlock(0x30);
@@ -724,9 +740,9 @@ inline void hkVector4::setMul4(const hkVector4& a, const hkVector4& b)
 {
     m_vComponents = _mm_mul_ps(a.m_vComponents, b.m_vComponents);
 }
-inline void hkVector4::setAddMul4(const hkVector4& a, const hkVector4& b, const hkVector4& c)
+inline void hkVector4::setAddMul4(const hkVector4& a, const hkVector4& b, const hkVector4& r)
 {
-    m_vComponents = _mm_add_ps(a.m_vComponents, _mm_mul_ps(b.m_vComponents, c.m_vComponents));
+    m_vComponents = _mm_add_ps(a.m_vComponents, _mm_mul_ps(b.m_vComponents, r.m_vComponents));
 }
 inline void hkVector4::addMul4(const hkVector4& a, const hkVector4& b)
 {
@@ -752,9 +768,9 @@ inline void hkVector4::setCross(const hkVector4& a, const hkVector4& b)
                                _mm_shuffle_ps(b.m_vComponents, b.m_vComponents, 201));
     m_vComponents = _mm_sub_ps(first, second);
 }
-inline hkSimdReal hkVector4::dot3(const hkVector4& a) const
+inline hkSimdReal hkVector4::dot3(const hkVector4& x) const
 {
-    LocalM128 products = _mm_mul_ps(m_vComponents, a.m_vComponents);
+    LocalM128 products = _mm_mul_ps(m_vComponents, x.m_vComponents);
     LocalM128 xy = _mm_add_ss(_mm_shuffle_ps(products, products, 85), products);
     return _mm_add_ss(_mm_shuffle_ps(products, products, 170), xy);
 }
@@ -999,8 +1015,8 @@ struct Body
     hkXform m_kMotionTransform;
     hkVector4 m_vCenterOfMass0;
     hkVector4 m_vCenterOfMass1;
-    void hkpRigidBody_setTransform(const hkXform& t);
-    void hkpRigidBody_setCenterOfMassLocal(const hkVector4& com);
+    void hkpRigidBody_setTransform(const hkXform& transform);
+    void hkpRigidBody_setCenterOfMassLocal(const hkVector4& centerOfMass);
 };
 void __cdecl hkpEntity_RemapSingleEntityCollisionShapes(Body* body, MassA* a, MassB* b);
 
@@ -1019,28 +1035,31 @@ static __forceinline ErrorIface* GetError()
 
 // @fnv 0x00ce9880
 // src: XBOX_PDB 0x00ce9880
-static __declspec(noinline) int moveRigidBodyPivot(const hkQsXform& t, Body* body)
+// pdb: moveRigidBodyPivot | hkaRagdollUtils.obj | retail, upstream name already matches, high
+// pdb params: rigidBody, localFromBone
+// pdb locals: worldFromBone, boneFromLocal, originalCenterOfMassWS, worldFromLocal, wasEnabled, theTransform, options, results, newTransform, newCenterOfMassLS
+static __declspec(noinline) int moveRigidBodyPivot(const hkQsXform& rigidBody, Body* localFromBone)
 {
-    if (t.ProcessAndReturnValue_00ce5120(DAT_01268700, DAT_01017d00).m_cBooleanValue == 0)
+    if (rigidBody.ProcessAndReturnValue_00ce5120(DAT_01268700, DAT_01017d00).m_cBooleanValue == 0)
     {
         hkQsXform bodyQs;
-        bodyQs.setFromTransformNoScale(&body->m_kMotionTransform);
+        bodyQs.setFromTransformNoScale(&localFromBone->m_kMotionTransform);
 
         hkQsXform combined;
-        combined.SetProduct(bodyQs, t);
+        combined.SetProduct(bodyQs, rigidBody);
         hkQsXform inv;
-        inv.SetConjugate(t);
-        hkVector4 com = body->m_vCenterOfMass1;
+        inv.SetConjugate(rigidBody);
+        hkVector4 com = localFromBone->m_vCenterOfMass1;
         hkBoolR bErrorEnabled = GetError()->isEnabled(0x2ff8c16f);
         GetError()->SetErrorCodeEnabled(0x2ff8c16f, false);
         hkXform kXform;
         {
-            void* shape = body->m_pCollisionShape;
+            void* shape = localFromBone->m_pCollisionShape;
             inv.CopyRotationAndTranslationToTarget(&kXform);
             ShapeObj* pShapeObj = (ShapeObj*)heap(hkMemoryRouter_getInstance()).allocate(0x70);
             pShapeObj->m_usMemSizeAndFlags = 0x70;
             ShapeObj* pTransformedShape = pShapeObj->FUN_00cf5990(shape, kXform);
-            body->SetCollisionShapeAndKey(pTransformedShape);
+            localFromBone->SetCollisionShapeAndKey(pTransformedShape);
             pTransformedShape->FUN_00c905b0();
         }
         {
@@ -1048,16 +1067,16 @@ static __declspec(noinline) int moveRigidBodyPivot(const hkQsXform& t, Body* bod
             a.FUN_00d733e0();
             MassB b;
             b.FUN_00d73410();
-            hkpEntity_RemapSingleEntityCollisionShapes(body, &a, &b);
+            hkpEntity_RemapSingleEntityCollisionShapes(localFromBone, &a, &b);
         }
         GetError()->SetErrorCodeEnabled(0x2ff8c16f, bErrorEnabled);
         combined.CopyRotationAndTranslationToTarget(&kXform);
-        body->hkpRigidBody_setTransform(kXform);
-        if (body->m_bFlag != 5)
+        localFromBone->hkpRigidBody_setTransform(kXform);
+        if (localFromBone->m_bFlag != 5)
         {
             hkVector4 lc;
             lc.hkVector4_setTransformedInversePos(reinterpret_cast<const hkTransform&>(kXform), com);
-            body->hkpRigidBody_setCenterOfMassLocal(lc);
+            localFromBone->hkpRigidBody_setCenterOfMassLocal(lc);
         }
     }
     return 0;

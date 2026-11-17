@@ -31,10 +31,11 @@ struct _AnimationGroupActionType
 };
 typedef _AnimationGroupActionType::Type ANIM_GROUP_ACTION_TYPE;
 
+// pdb: class TESAnimGroup, size 0x3c, bases: NiRefObject, 13 members
 class TESAnimGroup : public NiRefObject
 {
   public:
-    TESAnimGroup(unsigned short sGroup);
+    TESAnimGroup(unsigned short asType);
     virtual ~TESAnimGroup();
 
     void __thiscall FUN_005f22d0();
@@ -89,10 +90,10 @@ class TESAnimGroup : public NiRefObject
     static bool IsValidAnimationGroup(unsigned short);
     static bool IsIronSightsAction(unsigned short);
     static bool IsIronSightsAction(ANIM_GROUP_ENUM);
-    bool IsJumpAnimation() const;
+    bool IsJumpingLoopAnim() const;
     float GetAnimationSpeed() const;
-    static char* FindNextLine(char*);
-    void SetSoundsFromSequence(NiControllerSequence*);
+    static char* GetTextKey(char*);
+    void FillPriorityArray(NiControllerSequence*);
     void SetSpeed(NiPoint3* speed);
     bool SetActionTime(unsigned int action, float time);
     float GetActionTime(int action);

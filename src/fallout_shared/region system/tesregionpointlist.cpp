@@ -59,10 +59,11 @@ class RegionPointList : public BSSimpleList<RegionPoint*>
     unsigned int iCount;                   // +0x24
     ~RegionPointList();
     void Clear();
-    bool ReadPointsFromFile(TESFile* apFile);
+    bool TESRegionPointList_LoadPoints(TESFile* apFile);
 };
 
 // @fnv 0x004f7740
+// pdb: TESRegionPointList::~TESRegionPointList | TESRegionPointList.obj | debug, object-file run extension, low
 RegionPointList::~RegionPointList()
 {
     Clear();
@@ -72,7 +73,11 @@ RegionPointList::~RegionPointList()
 
 // Reads an RPLD chunk of NiPoint2 pairs, endian-swaps them, wraps each in a point object, updates bounds and adds it to the list.
 // @fnv 0x004f79f0
-bool RegionPointList::ReadPointsFromFile(TESFile* apFile)
+// src: XBOX_RETAIL_PDB 0x004f79f0
+// pdb: TESRegionPointList::LoadPoints | TESRegionPointList.obj | retail, string-set bridge, high
+// pdb params: apFile
+// pdb locals: iPtCount, iSize, pPtArray, i, pPt
+bool RegionPointList::TESRegionPointList_LoadPoints(TESFile* apFile)
 {
     if (!apFile || apFile->GetChunkID() != CHUNK_ID_RPLD_ID)
         return false;
@@ -116,19 +121,24 @@ bool RegionPointList::ReadPointsFromFile(TESFile* apFile)
 
 // Deletes the given region point list object.
 // @fnv 0x004f0a10
+// pdb: TESRegionPointList::~TESRegionPointList | TESRegionPointList.obj | retail, call graph, low
+// pdb note: debug build links it to TESRegionPointList::`scalar deleting destructor'
 void TESRegionPointList_Delete(RegionPointList* pointList)
 {
     delete pointList;
 }
 
 // @fnv 0x00547110
-TESRegionList* TESObjectCELL::GetRegionList(bool create)
+// pdb: TESObjectCELL::GetRegionList | TESObjectCELL.obj | retail, upstream name already matches, high
+// pdb params: abCreateIfNotFound
+// pdb locals: plist
+TESRegionList* TESObjectCELL::GetRegionList(bool abCreateIfNotFound)
 {
     TESRegionList* result = 0;
     if (IsCellInterior())
         return 0;
     result = reinterpret_cast<TESRegionPointList_CellExtraList*>(formData + 4)->ExtraDataList_GetRegionList();
-    if (!result && create)
+    if (!result && abCreateIfNotFound)
     {
         result = new TESRegionList(0);
         reinterpret_cast<TESRegionPointList_CellExtraList*>(formData + 4)->SetRegionList(result);
@@ -147,6 +157,8 @@ extern float const DAT_01015f5c;
 
 // @fnv 0x004f7dd0
 // src: COMMUNITY 0x004f7dd0
+// pdb: TESRegionPointList::Clear | TESRegionPointList.obj | retail, upstream name already matches, high
+// pdb locals: pdelete
 void FUN_004f7dd0_shell::TESRegionPointList_Clear()
 {
     RegionPoint* pdelete = 0;
@@ -180,6 +192,8 @@ struct FUN_004f8220_stub
 // Returns false if abMinPointsTest is set and GetThreadID() is below 3, or if FUN_004f8220(true) returns true; otherwise returns true.
 // @fnv 0x004f81e0
 // src: COMMUNITY 0x004f81e0
+// pdb: TESRegionPointList::Validate | TESRegionPointList.obj | retail, upstream name already matches, high
+// pdb params: abMinPointsTest
 bool FUN_004f81e0_shell::TESRegionPointList_Validate(bool abMinPointsTest)
 {
     if ((abMinPointsTest && ((BSThread*)this)->GetThreadID() < 3) || ((FUN_004f8220_stub*)this)->TESRegionPointList_SelfIntersects(true))
@@ -199,13 +213,16 @@ class TESRegionPointDist : public RegionPoint
 
 struct FUN_004f7ca0_shell : public RegionPointList
 {
-    bool CheckSomething(bool abFlag);
-    bool AddPoint(RegionPoint* apPoint, float afMinDistance);
+    bool CheckSomething(bool abClosePolygon);
+    bool TESRegionPointList_Add(RegionPoint* apPoint, float afMaxDelta);
 };
 
 // Adds apPoint to the list if it is at least afMinDistance from the region point, updates bounds and count, and returns whether it was added.
 // @fnv 0x004f7ca0
-bool FUN_004f7ca0_shell::AddPoint(RegionPoint* apPoint, float afMinDistance)
+// src: XBOX_RETAIL_PDB 0x004f7ca0
+// pdb: TESRegionPointList::Add | TESRegionPointList.obj | retail, object-file gap fill, high
+// pdb params: apPoint, afMaxDelta
+bool FUN_004f7ca0_shell::TESRegionPointList_Add(RegionPoint* apPoint, float afMaxDelta)
 {
     if (!apPoint)
     {
@@ -214,7 +231,7 @@ bool FUN_004f7ca0_shell::AddPoint(RegionPoint* apPoint, float afMinDistance)
     if (_ref_006815c0(this))
     {
         if (((TESRegionPointDist*)_ref_006815c0(this))->GetDistanceToOtherPoint(apPoint) <
-            afMinDistance * afMinDistance)
+            afMaxDelta * afMaxDelta)
         {
             return false;
         }
@@ -259,6 +276,8 @@ void* __fastcall FUN_00726070(void* pNode);
 
 // @fnv 0x004f7e80
 // src: COMMUNITY 0x004f7e80
+// pdb: TESRegionPointList::GetMinX | TESRegionPointList.obj | debug, upstream name already matches, high
+// pdb locals: fCurMinX, pcurrent
 float FUN_004f7e80_shell::TESRegionPointList_GetMinX()
 {
     float fMinValue = DAT_01016970;
@@ -289,11 +308,14 @@ struct RegionPointNode : BSSimpleList<RegionPoint*>
 
 struct FUN_004f7fa0_shell : RegionPointList
 {
-    float GetMinimumY();
+    float TESRegionPointList_GetMinY();
 };
 
 // @fnv 0x004f7fa0
-float FUN_004f7fa0_shell::GetMinimumY()
+// src: XBOX_DEBUG_PDB 0x004f7fa0
+// pdb: TESRegionPointList::GetMinY | TESRegionPointList.obj | debug, call graph, high
+// pdb locals: fCurMinY, pcurrent
+float FUN_004f7fa0_shell::TESRegionPointList_GetMinY()
 {
     float minimumY = DAT_01016970;
     RegionPointNode* current = (RegionPointNode*)this;
@@ -323,6 +345,8 @@ struct FUN_004f8030_shell : RegionPointList
 };
 // Returns Maximums.y if it exceeds DAT_010241b0, otherwise scans the list for the largest GetY() value, defaulting to DAT_01015f5c.
 // @fnv 0x004f8030
+// pdb: TESRegionPointList::GetMaxY | TESRegionPointList.obj | debug, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
+// pdb locals: pcurrent, fCurMaxY
 float FUN_004f8030_shell::GetMaxY()
 {
     float fMaximum = DAT_01015f5c;
@@ -341,12 +365,12 @@ float FUN_004f8030_shell::GetMaxY()
 struct TESRegionPointList_ref : RegionPointList
 {
     TESRegionPointList_ref(bool owns);
-    bool AddPoint(RegionPoint* point, float scale);
+    bool TESRegionPointList_Add(RegionPoint* point, float afMaxDelta);
     TESRegionPointList_ref* FUN_00726070();
 };
 struct TESRegionPoint_ref : RegionPoint
 {
-    RegionPoint* TESRegionPoint_Copy(int option);
+    RegionPoint* TESRegionPoint_Copy(int apCopyInto);
 };
 struct FUN_004f80c0_shell : RegionPointList
 {
@@ -354,6 +378,9 @@ struct FUN_004f80c0_shell : RegionPointList
 };
 // Builds a TESRegionPointList_ref from the points of the current list, cloning each point when the result owns its points, and returns it.
 // @fnv 0x004f80c0
+// pdb: TESRegionPointList::Copy | TESRegionPointList.obj | debug, object-file run extension, low
+// pdb params: apCopyInto
+// pdb locals: pcopy, ppointCopy, pcurrent
 RegionPointList* FUN_004f80c0_shell::CloneRegionPointList(RegionPointList* apOutList)
 {
     FUN_004f80c0_shell* current = this;
@@ -364,14 +391,14 @@ RegionPointList* FUN_004f80c0_shell::CloneRegionPointList(RegionPointList* apOut
         if (result->m_bOwnsPointMemory)
         {
             clonedPoint = reinterpret_cast<TESRegionPoint_ref*>(_ref_006815c0(current))->TESRegionPoint_Copy(0);
-            if (!reinterpret_cast<TESRegionPointList_ref*>(result)->AddPoint(clonedPoint, 0.0f))
+            if (!reinterpret_cast<TESRegionPointList_ref*>(result)->TESRegionPointList_Add(clonedPoint, 0.0f))
             {
                 delete clonedPoint;
             }
         }
         else
         {
-            reinterpret_cast<TESRegionPointList_ref*>(result)->AddPoint(_ref_006815c0(current), 0.0f);
+            reinterpret_cast<TESRegionPointList_ref*>(result)->TESRegionPointList_Add(_ref_006815c0(current), 0.0f);
         }
         current =
             reinterpret_cast<FUN_004f80c0_shell*>(reinterpret_cast<TESRegionPointList_ref*>(current)->FUN_00726070());
@@ -393,7 +420,10 @@ struct PointList : PointNode
 // Walks the point list and returns true if any four consecutive points pass the FUN_004f7310 test, wrapping to the head when closed.
 // @fnv 0x004f8220
 // src: COMMUNITY 0x004f8220
-bool PointList::TESRegionPointList_SelfIntersects(bool closed)
+// pdb: TESRegionPointList::SelfIntersects | TESRegionPointList.obj | retail, upstream name already matches, high
+// pdb params: abClosePolygon
+// pdb locals: pnext, pcurrentOther, pcurrent, pnextOther, bquitOther
+bool PointList::TESRegionPointList_SelfIntersects(bool abClosePolygon)
 {
     bool p = false;
     if (FUN_0059bb30() < 4)
@@ -414,7 +444,7 @@ bool PointList::TESRegionPointList_SelfIntersects(bool closed)
         {
             if (!l)
             {
-                if (closed && c != this)
+                if (abClosePolygon && c != this)
                 {
                     l = this;
                     p = true;
@@ -437,7 +467,7 @@ bool PointList::TESRegionPointList_SelfIntersects(bool closed)
 
 #include <string.h>
 void TESForm_AddChunk_00485910(unsigned int chunk, unsigned int value);
-void TESForm_AddChunkArray_00485710(unsigned int chunk, void* data, unsigned int points);
+void TESForm_AddChunkArray_00485710(unsigned int aeChunkID, void* apData, unsigned int aiCount);
 struct RegionPointAccess : RegionPoint
 {
     NiPoint2& FUN_006815c0();
@@ -454,6 +484,8 @@ struct FUN_004f77c0_shell : RegionPointList
 // Calls FUN_00485910 with the distance value, then conditionally calls FUN_00485710 with the collected points.
 // @fnv 0x004f77c0
 // src: COMMUNITY 0x004f77c0
+// pdb: TESRegionPointList::Save | TESRegionPointList.obj | retail, upstream name already matches, high
+// pdb locals: pList, iCount, pPoints, iCurrSize, iResizes, pTemp
 void FUN_004f77c0_shell::TESRegionPointList_Save()
 {
     TESForm_AddChunk_00485910(0x494c5052, m_uiDistanceInsideAtMax);
@@ -498,6 +530,8 @@ struct FUN_004f7f10_cls : public RegionPointList
 
 // @fnv 0x004f7f10
 // src: COMMUNITY 0x004f7f10
+// pdb: TESRegionPointList::GetMaxX | TESRegionPointList.obj | debug, upstream name already matches, high
+// pdb locals: pcurrent, fCurMaxX
 float FUN_004f7f10_cls::TESRegionPointList_GetMaxX()
 {
     float best3 = DAT_01015f5c;

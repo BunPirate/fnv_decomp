@@ -122,7 +122,7 @@ unsigned Object_ProcessAndReturnValue_00e00a60();
 class __declspec(align(16)) S00e000e0_Object
 {
   public:
-    S00e000e0_Object(FinishingFlag flag);  // FUN_00d50c00
+    S00e000e0_Object(FinishingFlag f);  // FUN_00d50c00
     void* m_ppVirtualMethodTable;
     int unk04;
     int unk08;
@@ -916,7 +916,7 @@ struct EdgeProcessor
     EdgePool vertices;
     EdgePool edges;
     void UpdateTriangleNormal(EdgeNode*);
-    void ProcessEntries_00e195c0(float threshold, float distance, const EdgeMesh* mesh);
+    void hkgpMesh_appendConcaveEdges(float minConcavity, float extrusion, const EdgeMesh* mesh);
 };
 
 #include "../../include/hkVector4.h"

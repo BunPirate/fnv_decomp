@@ -7,7 +7,7 @@ class MenuSystem
 {
   public:
     static MenuSystem* Instance(bool);
-    Menu* GetMenuById(int);
+    Menu* MenuManager_CreateMenuByClass(int);
     // void __cdecl MenuSystem::*()
     // void __cdecl MenuSystem::*()
     // MenuSystem* __cdecl MenuSystem::*(bool)

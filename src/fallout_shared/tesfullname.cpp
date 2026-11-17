@@ -38,6 +38,9 @@ struct FNStub
 
 // Casts apCopyFC to TESFullName and, if successful, copies its full name into this object's ::BSStringT<char> at offset 4.
 // @fnv 0x004870f0
+// pdb: TESFullName::CopyComponent | TESFullName.obj | retail, vtable slot, high
+// pdb params: apCopyFC
+// pdb locals: pCopy
 void FUN_004870f0_shell::CopyFullNameFrom(BaseFormComponent* apCopyFC)
 {
     TESFullName* pCopy = dynamic_cast<TESFullName*>(apCopyFC);
@@ -49,6 +52,9 @@ void FUN_004870f0_shell::CopyFullNameFrom(BaseFormComponent* apCopyFC)
 // Casts apObj to TESFullName and returns its full name, or an empty string if the cast fails.
 // @fnv 0x00482720
 // src: XBOX_PDB 0x00482720
+// pdb: TESFullName::GetFullName | TESContainer.obj | retail, upstream name already matches, high
+// pdb params: apObj
+// pdb locals: pFullName
 const char* TESFullName_GetFullName(TESForm* apObj)
 {
     TESFullName* pFullName = dynamic_cast<TESFullName*>(apObj);
@@ -67,14 +73,17 @@ class FullNameShell487 : public TESFullName
     unsigned int GetLength() const;
     const char* GetName() const;
 
-    bool CompareFullName(BaseFormComponent* pkComponent);
+    bool CompareFullName(BaseFormComponent* apCompareFC);
 };
 
 // Compares this full name with another TESFullName component: returns true if lengths differ or names differ case-insensitively, false if equal.
 // @fnv 0x00487140
-bool FullNameShell487::CompareFullName(BaseFormComponent* pkComponent)
+// pdb: TESFullName::CompareComponent | TESFullName.obj | retail, vtable slot, high
+// pdb params: apCompareFC
+// pdb locals: pCompare
+bool FullNameShell487::CompareFullName(BaseFormComponent* apCompareFC)
 {
-    TESFullName* pkOther = dynamic_cast<TESFullName*>(pkComponent);
+    TESFullName* pkOther = dynamic_cast<TESFullName*>(apCompareFC);
     if (!pkOther)
         return true;
     if (GetLength() || static_cast<FullNameShell487*>(pkOther)->GetLength())
@@ -90,11 +99,14 @@ bool FullNameShell487::CompareFullName(BaseFormComponent* pkComponent)
 
 struct TESFullNameSetter : public TESFullName
 {
-    void SetName(const char* text);
+    void SetName(const char* apFullName);
 };
 
 // Reads the FULL chunk from apFile and sets the name on apName via TESFullNameSetter::SetName.
 // @fnv 0x00487050
+// pdb: TESFullName::LoadFullNameChunk | TESFullName.obj | debug, call graph, medium
+// pdb params: apFullName, apFile
+// pdb locals: chunk, tmp, pMessage
 void ReadFullName(TESFullName* apName, TESFile* apFile)
 {
     if (!apFile || !apName)

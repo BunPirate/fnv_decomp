@@ -9,6 +9,7 @@ template <class T> class NiPointer;
 
 #include "_D3DXMACRO.h"
 
+// pdb: class BSShaderManager, size 0x1, 0 members
 class BSShaderManager
 {
 public:

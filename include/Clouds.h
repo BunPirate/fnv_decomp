@@ -6,6 +6,7 @@
 class NiGeometry;
 class NiTexture;
 
+// pdb: class Clouds, size 0x5c, bases: SkyObject, 5 members
 class Clouds : public SkyObject
 {
 public:
@@ -19,9 +20,9 @@ public:
     void ClearCloudLayers();
     void ForceTransTextureUpdate();
 
-    NiPointer<NiGeometry> m_pCloudLayerGeometry[4];
-    NiPointer<NiTexture> m_pCloudLayerTexture[4];
+    NiPointer<NiGeometry> spClouds[4]; // src: XBOX_RETAIL_PDB +0x8 (old: m_pCloudLayerGeometry)
+    NiPointer<NiTexture> spTransTexture[4]; // src: XBOX_RETAIL_PDB +0x18 (old: m_pCloudLayerTexture)
     NiColor pColors[4];
-    unsigned short m_usCloudCount;
+    unsigned short usNumLayers; // src: XBOX_RETAIL_PDB +0x58 (old: m_usCloudCount)
     bool bForceUpdate;
 };

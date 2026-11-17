@@ -42,10 +42,11 @@ MagicCaster* Actor::GetMagicCaster()
 // @fnv 0x0087d7f0
 int Actor::GetBaseLevel()
 {
-    return ActorProjectileState;
+    return iEmotionValue;
 }
 
 // @fnv 0x008a3b30
+// pdb: Actor::IsMoving | Animation.obj | retail, upstream name already matches, high
 bool Actor::IsMoving()
 {
     return GetActorStateFlags() & 0x30;
@@ -53,20 +54,25 @@ bool Actor::IsMoving()
 // @fnv 0x008d8100
 BSSimpleList<ActiveEffect*>* MiddleHighProcess::GetActiveEffectList() const
 {
-    return m_pActiveEffectList;
+    return pActiveEffectList;
 }
 // @fnv 0x004997b0
+// pdb: Actor::IsSneaking | Animation.obj | retail, upstream name already matches, high
 bool Actor::IsSneaking()
 {
     return (GetActorStateFlags() & 0x400) && !(GetActorStateFlags() & 0x800) ? true : false;
 }
 // @fnv 0x008a8290
+// pdb: Actor::GetStartingAngle | Actor.obj | debug, object-file run extension, low
+// pdb locals: point
 NiPoint3 Actor::GetMovementPosition()
 {
-    NiPoint3 result(0.0f, 0.0f, FormPositionData);
+    NiPoint3 result(0.0f, 0.0f, fEditorLocZRot);
     return result;
 }
 // @fnv 0x00952ff0
+// pdb: PlayerCharacter::GetLookingAtLocation | PlayerCharacter.obj | retail, object-file run extension, low
+// pdb locals: retval
 NiPoint3* Actor::GetMagicCaster(NiPoint3* output)
 {
     if (!*(unsigned char*)((char*)this + 0x64a) && DAT_011e07d0)
@@ -79,6 +85,9 @@ NiPoint3* Actor::GetMagicCaster(NiPoint3* output)
     return output;
 }
 // @fnv 0x00888070
+// pdb: Actor::UpdateAnimation | Actor.obj | debug, object-file run extension, low
+// pdb params: afDelta
+// pdb locals: frotateScale, panim, iframe, p3dObj, bshouldHaveRagDoll, pcreature, pseq
 void Actor::UpdateActorMovement(float delta)
 {
     Animation* pCurrentAnimation;
@@ -86,7 +95,7 @@ void Actor::UpdateActorMovement(float delta)
     if (((ActorPacketView*)this)->GetNiNode() && ((ActorPacketView*)this)->GetNiNode()->GetParent())
     {
         GetAnimation();
-        ((ActorProcessView*)m_pBaseProcess)->UpdateActor(this);
+        ((ActorProcessView*)pCurrentProcess)->UpdateActor(this);
         float speed;
         pCurrentAnimation = ((ActorPacketView*)this)->GetAnimData();
         if (((ActorPacketView*)this)->IsDead() && pCurrentAnimation && pCurrentAnimation->IsGroupQueued(0xe1) &&
@@ -107,7 +116,7 @@ void Actor::UpdateActorMovement(float delta)
                 ((ActorProcessView*)GetProcess())->SetTime(0);
             }
         }
-        if (m_bHasUpdated && GetProcess())
+        if (bDeadFlag && GetProcess())
         {
             NiAVObject* node = TESObjectREFR::Get3DSimple();  // include/Actor.h also declares a void* twin (0x0043fcd0)
             if (node)
@@ -131,21 +140,21 @@ void Actor::UpdateActorMovement(float delta)
                         pCurrentAnimation->UpdateMovement(this);
                     }
                     RefreshActorData();
-                    m_bHasUpdated = false;
+                    bDeadFlag = false;
                 }
             }
         }
-        if (m_pBaseProcess)
+        if (pCurrentProcess)
         {
             if (((BSSimpleArray<ParentSpaceNode, 1024>*)&DAT_011f2250)->GetSize() == 4 && this == DAT_011f21cc)
-                ((ActorProcessView*)m_pBaseProcess)
+                ((ActorProcessView*)pCurrentProcess)
                     ->Update(this, g_timeGlobal.FUN_0084d030() * DAT_011f2250.GetUpdateTimeScale());
             else
-                ((ActorProcessView*)m_pBaseProcess)->Update(this, g_timeGlobal.FUN_0084d030());
+                ((ActorProcessView*)pCurrentProcess)->Update(this, g_timeGlobal.FUN_0084d030());
         }
         if (!((ActorPacketView*)this)->IsMoving(false) && ((ActorProcessView*)GetProcess())->IsInIdleState() &&
             pCurrentAnimation && !pCurrentAnimation->GetControllerSequence(4))
-            SetAnimationForAction(17, pCurrentAnimation);
+            StartWeaponGroup(17, pCurrentAnimation);
         UpdateAnimationMovement(pCurrentAnimation, delta);
         if (!((ActorPacketView*)this)->IsDead())
             speed = ((PlayerCharacter*)this)->HasCombatState()

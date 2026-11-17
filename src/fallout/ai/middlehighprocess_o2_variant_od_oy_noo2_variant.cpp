@@ -17,7 +17,7 @@ struct __declspec(align(16)) hkVector4L
     __m128 m_vComponents;
     hkVector4L();
 };
-hkVector4L& NI2HK(hkVector4L& out, const NiPoint3& in);
+hkVector4L& NI2HK(hkVector4L& arhkTran, const NiPoint3& arNiTran);
 
 struct hkpRigidBodyL
 {
@@ -32,6 +32,9 @@ struct RigidBodyOwnerL
 
 // @fnv 0x00926980
 // src: COMMUNITY 0x00926980
+// pdb: bhkCharacterProxy::SetLinearVelocity | MiddleHighProcess.obj | debug, object-file gap fill, medium
+// pdb params: arVel
+// pdb locals: hkv, pp
 void RigidBodyOwnerL::bhkCharacterController_SetLinearVelocity_Ni(const NiPoint3& pos)
 {
     hkVector4L kPos;
@@ -210,14 +213,14 @@ class ProcessFlagsL
 {
   public:
     void ClearFlags(unsigned int uiMask);
-    void SetFlags(unsigned int uiMask, bool bSet);
+    void SetFlags(unsigned int aiFlags, bool abTF);
 };
 
 class CharControllerL
 {
   public:
     void SetEnabled(bool bEnabled);
-    void SetVelocity(NiPoint3L* pkVelocity);
+    void SetVelocity(NiPoint3L* arPos);
     void SetPosition(NiPoint3L* pkPosition);
     void SetWorld(void* pvWorld);
     void SetRotation(hkQuaternionL* pkRotation);
@@ -835,6 +838,9 @@ class PlayerL
 
 // @fnv 0x00928a50
 // src: COMMUNITY 0x00928a50
+// pdb: MiddleHighProcess::LoadCharController | MiddleHighProcess.obj | debug, object-file run extension, low
+// pdb params: apLoadGameBuffer
+// pdb locals: pactor, pcon, cwantState, iflags, linearVelocity, uisitState, cstate, pos, norm
 void PlayerL::BaseProcess_LoadCharController(BGSLoadFormBufferL* pkBuffer)
 {
     ActorL* pkActor = pkBuffer->GetForm();

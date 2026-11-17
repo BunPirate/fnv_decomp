@@ -12,16 +12,16 @@
 // @fnv 0x00a893b0
 void NiColorExtraData::SetColor(NiColorA kColor)
 {
-    m_kFogTint = kColor;
+    m_kColorA = kColor;
 }
 
-extern void* g_011f5b68;
+extern void* NiColorExtraData_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f5b68 (old: g_011f5b68)
 
 // @fnv 0x00a893f0
 // src: COMMUNITY 0x00a893f0
 void* __cdecl NiColorExtraData_GetRTTI()
 {
-    return &g_011f5b68;
+    return &NiColorExtraData_ms_RTTI;
 }
 
 extern "C" void __cdecl _FUN_00a7b300();
@@ -29,6 +29,8 @@ extern void __cdecl _delete(void*, unsigned int);
 extern int DAT_0109eccc;
 
 // @fnv 0x00a89560
+// pdb: NiColorExtraData::LinkObject | NiColorExtraData.obj | debug, object-file run extension, low
+// pdb params: kStream
 NiColorExtraData* __fastcall DestroyColorExtraData(NiColorExtraData* self, void*, unsigned int flags)
 {
     *reinterpret_cast<int**>(self) = &DAT_0109eccc;
@@ -45,19 +47,19 @@ static __forceinline NiColorExtraData* InitializeColorExtraData(NiColorExtraData
 {
     self->NiExtraData::FUN_00a7b2e0();
     *reinterpret_cast<int**>(self) = &DAT_0109eccc;
-    volatile float* pColor = &self->m_kFogTint.r;
+    volatile float* pColor = &self->m_kColorA.r;
     pColor[0] = 0.0f;
     pColor[1] = 0.0f;
     pColor[2] = 0.0f;
     pColor[3] = 0.0f;
-    self->m_kFogTint = kBlackColor;
+    self->m_kColorA = kBlackColor;
     return self;
 }
 
 static __forceinline void CopyColorExtraData(NiColorExtraData* self, NiColorExtraData* pkDest, CloningProcess& kCloning)
 {
     self->NiExtraData::CopyMembers_00a7b330(pkDest, &kCloning);
-    pkDest->m_kFogTint = self->m_kFogTint;
+    pkDest->m_kColorA = self->m_kColorA;
 }
 
 // @fnv 0x00a893d0
@@ -65,10 +67,13 @@ static __forceinline void CopyColorExtraData(NiColorExtraData* self, NiColorExtr
 void NiColorExtraData::SaveBinary_00a893d0(NiStream& kStream)
 {
     NiExtraData::SaveBinary(kStream);
-    m_kFogTint.SaveBinary(kStream);
+    m_kColorA.SaveBinary(kStream);
 }
 
 // @fnv 0x00a894f0
+// pdb: NiColorExtraData::LoadBinary | NiColorExtraData.obj | retail, object-file run extension, low
+// pdb params: kStream
+// pdb locals: kTmpColor
 void __fastcall LoadColorExtraData(NiColorExtraData* self, void*, NiStream& kStream)
 {
     self->NiExtraData::LoadBinary(kStream);
@@ -81,7 +86,7 @@ void __fastcall LoadColorExtraData(NiColorExtraData* self, void*, NiStream& kStr
         kTmpColor.g = 0.0f;
         kTmpColor.b = 0.0f;
         kTmpColor.LoadBinary(kStream);
-        float* pColor = (float*)&self->m_kFogTint;
+        float* pColor = (float*)&self->m_kColorA;
         pColor[0] = kTmpColor.r;
         pColor[1] = kTmpColor.g;
         pColor[2] = kTmpColor.b;
@@ -89,11 +94,15 @@ void __fastcall LoadColorExtraData(NiColorExtraData* self, void*, NiStream& kStr
     }
     else
     {
-        self->m_kFogTint.LoadBinary(kStream);
+        self->m_kColorA.LoadBinary(kStream);
     }
 }
 
 // @fnv 0x00a89400
+// pdb: NiColorExtraData::CreateClone | NiColorExtraData.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiColorExtraData::CopyMembers
+// pdb params: kCloning
+// pdb locals: pkObject
 NiColorExtraData* __fastcall CloneColorExtraData(NiColorExtraData* self, void*, CloningProcess& kCloning)
 {
     NiColorExtraData* pkDest = static_cast<NiColorExtraData*>(NiExtraData::operator new(sizeof(NiColorExtraData)));
@@ -103,16 +112,18 @@ NiColorExtraData* __fastcall CloneColorExtraData(NiColorExtraData* self, void*, 
 }
 
 // @fnv 0x00a89590
+// pdb: NiColorExtraData::RegisterStreamables | NiColorExtraData.obj | debug, object-file run extension, low
+// pdb params: kStream
 bool __fastcall EqualColorExtraData(NiColorExtraData* self, void*, NiColorExtraData* other)
 {
     if (!other)
         return false;
-    if (self->m_kFogTint.operator!=(other->m_kFogTint))
+    if (self->m_kColorA.operator!=(other->m_kColorA))
         return false;
     return true;
 }
 
-extern void* g_011f5b68;
+extern void* NiColorExtraData_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f5b68 (old: g_011f5b68)
 
 struct StreamShell
 {
@@ -131,10 +142,12 @@ void* __cdecl NiViewerStrings_NiGetViewerString_Title(void* pv);
 
 // Writes a pointer obtained from g_011f5b68 and the result of ToString("Color = ") into kStream, growing the stream when its position reaches its size.
 // @fnv 0x00a895c0
+// pdb: NiColorExtraData::GetViewerStrings | NiColorExtraData.obj | retail, string-set bridge, high
+// pdb params: pStrings
 void __fastcall WriteColorToStream(NiColorExtraData* self, void*, StreamShell& kStream)
 {
     FUN_00a7b580(&kStream);
-    void* p = NiViewerStrings_NiGetViewerString_Title(g_011f5b68);
+    void* p = NiViewerStrings_NiGetViewerString_Title(NiColorExtraData_ms_RTTI);
     unsigned int uiPos = kStream.m_usPos;
     unsigned int uiSize = kStream.m_usSize;
     if (uiPos >= uiSize)
@@ -142,7 +155,7 @@ void __fastcall WriteColorToStream(NiColorExtraData* self, void*, StreamShell& k
         kStream.FUN_0096ad30(uiPos + kStream.m_usAdd);
     }
     kStream.FUN_0096ae90(uiPos, &p);
-    p = self->m_kFogTint.GetViewerString("Color = ");
+    p = self->m_kColorA.GetViewerString("Color = ");
     uiPos = kStream.m_usPos;
     uiSize = kStream.m_usSize;
     if (uiPos >= uiSize)
@@ -162,6 +175,8 @@ extern int DAT_011a9bdc;
 // Obtains a 0x1c byte block, calls a method on it, writes a global pointer and four global values, and returns it.
 // @fnv 0x00a89490
 // src: EXE 0x00a89490
+// pdb: NiColorExtraData::CreateObject | NiColorExtraData.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 unsigned int* __cdecl NiColorExtraData_CreateObject()
 {
     unsigned int* ptr = (unsigned int*)Object_DispatchCommandFour(0x1c);

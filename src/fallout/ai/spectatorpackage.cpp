@@ -2,6 +2,7 @@
 #include "spectatorpackage_decls.h"
 
 // @fnv 0x009f9c80
+// pdb: SpectatorPackage::IsComplete | SpectatorPackage.obj | debug, upstream name already matches, high
 int SpectatorPackage::IsComplete(const SpectatorPackage& other)
 {
     if (&other != this)

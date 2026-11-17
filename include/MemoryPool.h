@@ -4,6 +4,7 @@
 
 class MemoryPool__FreePoolBlock;
 
+// pdb: class MemoryPool, size 0x30 (here 0x80), 11 members
 class MemoryPool
 {
 public:

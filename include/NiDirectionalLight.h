@@ -2,6 +2,7 @@
 
 #include "NiLight.h"
 
+// pdb: class NiDirectionalLight, size 0x130 (here 0xfc), bases: NiLight, 1 members
 class NiDirectionalLight : public NiLight
 {
   public:

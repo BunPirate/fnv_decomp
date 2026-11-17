@@ -21,6 +21,7 @@ struct _FightReaction
     };
 };
 
+// pdb: class TESFaction, size 0x4c, bases: TESForm, TESFullName, TESReactionForm, 5 members
 class TESFaction : public TESForm, public TESFullName, public TESReactionForm
 {
 public:
@@ -30,27 +31,27 @@ public:
     virtual ~TESFaction();
 
     virtual void ClearData();
-    virtual void Revert(BGSLoadFormBuffer* buffer);
+    virtual void Revert(BGSLoadFormBuffer* apLoadGameBuffer);
     virtual void InitItem();
 
     void ResetFormData();
-    void InitLoadGame(BGSLoadFormBuffer* buffer);
-    void ClearReactions();
-    virtual void LoadGame(BGSLoadFormBuffer* buffer);
+    void InitLoadGame(BGSLoadFormBuffer* apLoadGameBuffer);
+    void ClearRankDataList();
+    virtual void LoadGame(BGSLoadFormBuffer* apLoadGameBuffer);
     int InitializeFaction();
     BSSimpleList<FactionRankPresentation*>* GetRankDataList();
-    bool Load(TESFile* file);
+    bool Load(TESFile* apFile);
     bool GetPCAnEnemy() const;
     FIGHT_REACTION GetFactionReaction(TESFaction* faction);
-    void SetFactionFightReaction(TESFaction* faction, _FightReaction::Type reaction);
+    void SetFactionFightReaction(TESFaction* apFaction, _FightReaction::Type aiFightReaction);
     bool IsHiddenFlagSet();
     unsigned int GetFormID();
     bool GetEvil();
     void ForwardCall_0047eb90(bool value);
 
     FactionSaveData data;
-    TESReputation* pReputationData;
-    BSSimpleList<FactionRankPresentation*> m_kRankDataList;
-    int m_iFirstFactionValue;
-    int m_iSecondFactionValue;
+    TESReputation* pReputation; // src: XBOX_RETAIL_PDB +0x38 (old: pReputationData)
+    BSSimpleList<FactionRankPresentation*> m_rankDataList; // src: XBOX_RETAIL_PDB +0x3c (old: m_kRankDataList)
+    int iMajorCrime; // src: XBOX_RETAIL_PDB +0x44 (old: m_iFirstFactionValue)
+    int iMinorCrime; // src: XBOX_RETAIL_PDB +0x48 (old: m_iSecondFactionValue)
 };

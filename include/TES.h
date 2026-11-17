@@ -58,63 +58,64 @@ class TESWaterSystem;
 
 #define TES_ADD_DEAD_COUNT Add##Dead##Count
 
+// pdb: class TES, size 0xc4, 49 members
 class TES
 {
 public:
     virtual void vf00();
 
-    GridDistantArray* m_pGridDistantArray;
-    GridCellArray* m_pGridCells;
-    NiNode* m_pLandRootNode;
-    NiNode* m_pWaterRootNode;
-    NiNode* m_pDistantLandRootNode;
-    NiNode* m_pObjectRootNode;
-    NiDirectionalLight* m_pDirectionalLight;
-    NiFogProperty* m_pFogProperty;
-    int iFirstValue;
-    int iSecondValue;
-    int m_iGridWidth;
-    int m_iGridHeight;
-    TESObjectCELL* m_pReferenceCell;
-    TESObjectCELL** m_ppCellBufferA;
-    TESObjectCELL** m_ppCellBufferB;
-    unsigned int m_uiGridCellCountX;
-    unsigned int m_uiGridCellCountY;
-    int m_iCurrentGridX;
-    int m_iCurrentGridY;
-    bool m_bFirstCellGridFlag;
-    bool m_bSecondCellGridFlag;
-    bool m_bThirdCellGridFlag;
-    bool m_bFourthCellGridFlag;
-    void(__cdecl* m_pfnCellCallback)(TESObjectCELL*, void*);
-    void* m_pCellCallbackContext;
-    TESRegion* m_pCurrentRegion;
-    bool m_bHasCurrentRegion;
+    GridDistantArray* pGridDistantA; // src: XBOX_RETAIL_PDB +0x4 (old: m_pGridDistantArray)
+    GridCellArray* pGridCellA; // src: XBOX_RETAIL_PDB +0x8 (old: m_pGridCells)
+    NiNode* pObjRoot; // src: XBOX_RETAIL_PDB +0xc (old: m_pLandRootNode)
+    NiNode* pObjLandRoot; // src: XBOX_RETAIL_PDB +0x10 (old: m_pWaterRootNode)
+    NiNode* pObjLODWaterRoot; // src: XBOX_RETAIL_PDB +0x14 (old: m_pDistantLandRootNode)
+    NiNode* pTempNodeManager; // src: XBOX_RETAIL_PDB +0x18 (old: m_pObjectRootNode)
+    NiDirectionalLight* pObjLight; // src: XBOX_RETAIL_PDB +0x1c (old: m_pDirectionalLight)
+    NiFogProperty* pObjFog; // src: XBOX_RETAIL_PDB +0x20 (old: m_pFogProperty)
+    int iCurrentGridX; // src: XBOX_RETAIL_PDB +0x24 (old: iFirstValue)
+    int iCurrentGridY; // src: XBOX_RETAIL_PDB +0x28 (old: iSecondValue)
+    int iCurrentQueuedX; // src: XBOX_RETAIL_PDB +0x2c (old: m_iGridWidth)
+    int iCurrentQueuedY; // src: XBOX_RETAIL_PDB +0x30 (old: m_iGridHeight)
+    TESObjectCELL* pInteriorCell; // src: XBOX_RETAIL_PDB +0x34 (old: m_pReferenceCell)
+    TESObjectCELL** pInteriorBuffer; // src: XBOX_RETAIL_PDB +0x38 (old: m_ppCellBufferA)
+    TESObjectCELL** pExteriorBuffer; // src: XBOX_RETAIL_PDB +0x3c (old: m_ppCellBufferB)
+    unsigned int iTempInteriorBufferSize; // src: XBOX_RETAIL_PDB +0x40 (old: m_uiGridCellCountX)
+    unsigned int iTempExteriorBufferSize; // src: XBOX_RETAIL_PDB +0x44 (old: m_uiGridCellCountY)
+    int iSaveGridX; // src: XBOX_RETAIL_PDB +0x48 (old: m_iCurrentGridX)
+    int iSaveGridY; // src: XBOX_RETAIL_PDB +0x4c (old: m_iCurrentGridY)
+    bool bCollisionBoxes; // src: XBOX_RETAIL_PDB +0x50 (old: m_bFirstCellGridFlag)
+    bool bRunningCellTests; // src: XBOX_RETAIL_PDB +0x51 (old: m_bSecondCellGridFlag)
+    bool bRunningCellTests2; // src: XBOX_RETAIL_PDB +0x52 (old: m_bThirdCellGridFlag)
+    bool bRunningSubmergedObjectTest; // src: XBOX_RETAIL_PDB +0x53 (old: m_bFourthCellGridFlag)
+    void(__cdecl* pfnTACCallbackFunc)(TESObjectCELL*, void*); // src: XBOX_RETAIL_PDB +0x54 (old: m_pfnCellCallback)
+    void* pTACCallbackData; // src: XBOX_RETAIL_PDB +0x58 (old: m_pCellCallbackContext)
+    TESRegion* pTACRegionFilter; // src: XBOX_RETAIL_PDB +0x5c (old: m_pCurrentRegion)
+    bool bShowLANDborders; // src: XBOX_RETAIL_PDB +0x60 (old: m_bHasCurrentRegion)
     unsigned char layoutPadding61[3];
-    TESWaterSystem* m_pCurrentClimate;
-    Sky* pWeatherSky;
-    BSSimpleList<ImageSpaceModifierInstance*> m_kImageSpaceModifierInstances;
-    unsigned int m_uiNextImageSpaceModifierId;
-    unsigned int m_uiImageSpaceModifierCount;
-    bool m_bImageSpaceStateFlag;
-    bool m_bSkyStateFlag;
+    TESWaterSystem* pWaterSystem; // src: XBOX_RETAIL_PDB +0x64 (old: m_pCurrentClimate)
+    Sky* pSky; // src: XBOX_RETAIL_PDB +0x68 (old: pWeatherSky)
+    BSSimpleList<ImageSpaceModifierInstance*> listActiveImageSpaceModifiers; // src: XBOX_RETAIL_PDB +0x6c (old: m_kImageSpaceModifierInstances)
+    unsigned int iTotalToLoad; // src: XBOX_RETAIL_PDB +0x74 (old: m_uiNextImageSpaceModifierId)
+    unsigned int iLoaded; // src: XBOX_RETAIL_PDB +0x78 (old: m_uiImageSpaceModifierCount)
+    bool bDisablePercentageUpdate; // src: XBOX_RETAIL_PDB +0x7c (old: m_bImageSpaceStateFlag)
+    bool bUpdateGridString; // src: XBOX_RETAIL_PDB +0x7d (old: m_bSkyStateFlag)
     unsigned char layoutPadding7E[2];
-    float m_fFirstWorldspaceValue;
-    float m_fSecondWorldspaceValue;
-    TESWorldSpace* m_pContainingWorldspace;
-    BSSimpleList<TESObjectCELL*> m_kWorldspaceCellList;
-    BSSimpleList<TESObjectREFR*> m_kTemporaryReferences;
-    BSSimpleList<LeveledActorEntry*> m_kLeveledActorEntries;
-    QueuedFile* m_spWorldspaceQueuedFile;
-    NiSourceTexture* m_pSourceTexture;
-    QueuedFile* m_spQueuedFile;
-    TES__ParticleObjectCache* m_pParticleObjectCache;
-    bool m_bFirstTESStateFlag;
-    bool m_bSecondTESStateFlag;
+    float fCell_delta_x; // src: XBOX_RETAIL_PDB +0x80 (old: m_fFirstWorldspaceValue)
+    float fCell_delta_y; // src: XBOX_RETAIL_PDB +0x84 (old: m_fSecondWorldspaceValue)
+    TESWorldSpace* pWorldSpace; // src: XBOX_RETAIL_PDB +0x88 (old: m_pContainingWorldspace)
+    BSSimpleList<TESObjectCELL*> listLastLoadedExteriors; // src: XBOX_RETAIL_PDB +0x8c (old: m_kWorldspaceCellList)
+    BSSimpleList<TESObjectREFR*> ListofBedsAndChairs; // src: XBOX_RETAIL_PDB +0x94 (old: m_kTemporaryReferences)
+    BSSimpleList<LeveledActorEntry*> DeadCount; // src: XBOX_RETAIL_PDB +0x9c (old: m_kLeveledActorEntries)
+    QueuedFile* spPreloadedAddonNodes; // src: XBOX_RETAIL_PDB +0xa4 (old: m_spWorldspaceQueuedFile)
+    NiSourceTexture* BloodDecalPreload1; // src: XBOX_RETAIL_PDB +0xa8 (old: m_pSourceTexture)
+    QueuedFile* spPreloadedForms; // src: XBOX_RETAIL_PDB +0xac (old: m_spQueuedFile)
+    TES__ParticleObjectCache* pParticleCacheHead; // src: XBOX_RETAIL_PDB +0xb0 (old: m_pParticleObjectCache)
+    bool bFadeWhenLoading; // src: XBOX_RETAIL_PDB +0xb4 (old: m_bFirstTESStateFlag)
+    bool bAllowUnusedPurge; // src: XBOX_RETAIL_PDB +0xb5 (old: m_bSecondTESStateFlag)
     unsigned char layoutPaddingB6[2];
-    unsigned int m_uiNavMeshStateValue;
-    NavMeshInfoMap* m_pNavMeshInfoMap;
-    NiPointer<LoadedAreaBound> m_spLoadedAreaBound;  // +0xC0; FindCellAtPosition 0x00452580 reads it through operator T* (0x00559450)
+    unsigned int iPlaceableWaterCount; // src: XBOX_RETAIL_PDB +0xb8 (old: m_uiNavMeshStateValue)
+    NavMeshInfoMap* pNavMeshInfoMap; // src: XBOX_RETAIL_PDB +0xbc (old: m_pNavMeshInfoMap)
+    NiPointer<LoadedAreaBound> spLoadedAreaBound;  // +0xC0; FindCellAtPosition 0x00452580 reads it through operator T* (0x00559450) // src: XBOX_RETAIL_PDB +0xc0 (old: m_spLoadedAreaBound)
 
     void InitVars();
     NiNode* GetRoot();
@@ -323,19 +324,19 @@ public:
     void HideFarLandNormalMaps();
     void SetHideLandBlendPassForGridCell(int, int, bool);
     void SetHideLandNormalMapForGridCell(int, int, bool);
-    bool LoadCanopyShadowTexture(const char*, unsigned int);
+    bool RemoveTextureImage(const char*, unsigned int);
     int FindCellAtPosition(const NiPoint3*, bool);
     void InitFromMatrix();
     void InitSoundGrid();
     void RefreshWorldState(int, int, int);
-    void RefreshGrid();
+    void GridArrayLoad();
     static void RefreshWorldSpace();
     void ClearField88();
     void SetDawnSound(TESSound*);
     void ResetCachedValues();
     TESObjectCELL* GetPrevPath();
     TESWorldSpace* GetHitSound();
-    void ProcessItems(BGSLoadGameBuffer*);
+    void FinishLoadGame(BGSLoadGameBuffer*);
     TESWaterSystem* GetActorScale();
     void CreateTextureImage(const char*, NiSourceTexture*&, bool, bool);
     template <class TexturePointer>

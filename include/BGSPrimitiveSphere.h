@@ -4,6 +4,7 @@
 
 class TESCombatStyle;
 
+// pdb: class BGSPrimitiveSphere, size 0x34, bases: BGSPrimitive, 0 members
 class BGSPrimitiveSphere : public BGSPrimitive
 {
 public:
@@ -16,10 +17,10 @@ public:
     virtual void* vf05(int unused);
 
     void* FUN_004a71f0(unsigned int flags);
-    void SetRadii(NiPoint3& radii);
+    void SetRadii(NiPoint3& aRadii);
     bool IsInside(TESCombatStyle& point);
     void SetColor_004a7830(NiColorA& color);
 
     void CreateSphereGeometry();
-    void SetRadius(float radius);
+    void SetRadius(float fRadius);
 };

@@ -310,6 +310,8 @@ class FUN_00de49b0 : public S00de49b0_Base
 };
 
 // @fnv 0x00de49b0
+// pdb: hkDisplaySemiCircle::hkDisplaySemiCircle | hkDisplaySemiCircle.obj | retail, object-file run extension, low
+// pdb params: center, normal, startPerp, thetaMin, thetaMax, radius, numSegments
 FUN_00de49b0::FUN_00de49b0(const Vec4& kC, const Vec4& kA, const Vec4& kB, float f1,
                            float f2, float f3, int i1)
     : m_kA(kA), m_kB(kB), m_kC(kC), m_f90(f1), m_f94(f2), m_f98(f3), m_i9C(i1)
@@ -417,6 +419,8 @@ class FUN_00de53b0 : public S00de53b0_Base
 };
 
 // @fnv 0x00de53b0
+// pdb: hkDisplayCone::hkDisplayCone | hkDisplayCone.obj | retail, object-file run extension, low
+// pdb params: coneAngle, coneHeight, numSegments, coneAxis, startPos
 FUN_00de53b0::FUN_00de53b0(float f1, float f2, int i1, const Vec4& p1, const Vec4& p2)
     : m_v60(p2), m_v70(p1), m_i80(i1), m_f84(f1), m_f88(f2)
 {}
@@ -773,6 +777,8 @@ struct __declspec(align(16)) Holder
 
 // @fnv 0x00df6470
 // src: HAVOK_LIB 0x00df6470
+// pdb: getVtablehkpWorld | hkpWorldClass.obj | retail, upstream name already matches, high
+// pdb locals: u
 void* getVtablehkpWorld()
 {
     Holder holder;
@@ -1110,7 +1116,7 @@ void* Runtime_EvaluateValue_00dfc830()
 class __declspec(align(16)) S00dfcb70_Object
 {
   public:
-    S00dfcb70_Object(FinishingFlag flag);  // FUN_00e3b960
+    S00dfcb70_Object(FinishingFlag f);  // FUN_00e3b960
     void* m_ppVirtualMethodTable;
     int unk04;
     int unk08;
@@ -1142,7 +1148,7 @@ const void* __cdecl Runtime_GetVtableFromTemporary_00dfcb70()
 
 struct __declspec(align(16)) FUN_00d53df0
 {
-    FUN_00d53df0(FinishingFlag kHandle);
+    FUN_00d53df0(FinishingFlag f);
     int m_iResult;
     int unk04;
     int unk08;
@@ -1337,7 +1343,7 @@ struct __declspec(align(16)) Dfd630Obj
     int unk64;
     int unk68;
     int unk6C;
-    void FUN_00e3e380(FinishingFlag arg);
+    void FUN_00e3e380(FinishingFlag f);
 };
 
 // @fnv 0x00dfd630
@@ -1396,6 +1402,9 @@ struct __declspec(align(16)) FUN_00dfd9b0_holder
 
 // @fnv 0x00dfd9b0
 // src: GUESS 0x00dfd9b0 (confidence: low)
+// pdb: getVtablehkxMaterial | hkxMaterialClass.obj | retail, object-file run extension, low
+// pdb note: debug build links it to hkxMaterial::operator delete
+// pdb locals: u
 unsigned int* Runtime_UpdateState_00dfd9b0()
 {
     FUN_00dfd9b0_holder holder;
@@ -1505,6 +1514,8 @@ struct __declspec(align(16)) ZHolderDFE2F0
 
 // @fnv 0x00dfe2f0
 // src: HAVOK_LIB 0x00dfe2f0
+// pdb: getVtablehkaSkeletonMapper | hkaSkeletonMapperClass.obj | retail, upstream name already matches, high
+// pdb locals: u
 int* getVtablehkaSkeletonMapper()
 {
     ZHolderDFE2F0 holder;
@@ -1561,6 +1572,8 @@ struct __declspec(align(16)) FUN_00dfe440_obj
 
 // @fnv 0x00dfe440
 // src: HAVOK_LIB 0x00dfe440
+// pdb: getVtablehkaFootstepAnalysisInfo | hkaFootstepAnalysisInfoClass.obj | retail, upstream name already matches, high
+// pdb locals: u
 int getVtablehkaFootstepAnalysisInfo()
 {
     FUN_00dfe440_obj obj;
@@ -1600,6 +1613,8 @@ struct __declspec(align(16)) FUN_00dff130_obj
 };
 // @fnv 0x00dff130
 // src: HAVOK_LIB 0x00dff130
+// pdb: getVtablehkpReorientAction | hkpReorientActionClass.obj | retail, upstream name already matches, high
+// pdb locals: u
 int* __cdecl getVtablehkpReorientAction()
 {
     FinishingFlag kHandle(0);
@@ -2082,6 +2097,8 @@ class __declspec(align(16)) S00dfbe20_Object : public S00dfbe20_Mid
 
 // @fnv 0x00dfbe20
 // src: HAVOK_LIB 0x00dfbe20
+// pdb: getVtablehkpVehicleInstance | hkpVehicleInstanceClass.obj | retail, upstream name already matches, high
+// pdb locals: u
 const void* __cdecl getVtablehkpVehicleInstance()
 {
     FinishingFlag flag;
@@ -2090,21 +2107,21 @@ const void* __cdecl getVtablehkpVehicleInstance()
     return *reinterpret_cast<const void**>(&kObject);
 }
 
-class __declspec(align(16)) S00dfe5e0_Object
+class __declspec(align(16)) hkaBoneAttachment // src: EXE 0x010e587c (vtable; old: S00dfe5e0_Object)
 {
   public:
-    S00dfe5e0_Object(FinishingFlag flag)
+    hkaBoneAttachment(FinishingFlag flag)
     {
         FinishingFlag arg;
         arg.m_bFinishing = flag.m_bFinishing;
-        m_kFirst.ReturnSelf(arg);
-        m_kSecond.ReturnSelf(arg);
+        m_originalSkeletonName.ReturnSelf(arg);
+        m_name.ReturnSelf(arg);
     }
     virtual void vf00();
     int unk04;
-    FUN_00dfd9b0_sub m_kFirst;
+    FUN_00dfd9b0_sub m_originalSkeletonName; // src: XBOX_RETAIL_PDB +0x8 (old: m_kFirst)
     int unk0C;
-    int unk10;
+    int m_boneFromAttachment; // src: XBOX_RETAIL_PDB +0x10 (old: unk10)
     int unk14;
     int unk18;
     int unk1C;
@@ -2120,19 +2137,21 @@ class __declspec(align(16)) S00dfe5e0_Object
     int unk44;
     int unk48;
     int unk4C;
-    int unk50;
-    FUN_00dfd9b0_sub m_kSecond;
-    int unk58;
+    int m_attachment; // src: XBOX_RETAIL_PDB +0x50 (old: unk50)
+    FUN_00dfd9b0_sub m_name; // src: XBOX_RETAIL_PDB +0x54 (old: m_kSecond)
+    int m_boneIndex; // src: XBOX_RETAIL_PDB +0x58 (old: unk58)
     int unk5C;
 };
 
 // @fnv 0x00dfe5e0
 // src: HAVOK_LIB 0x00dfe5e0
+// pdb: getVtablehkaBoneAttachment | hkaBoneAttachmentClass.obj | retail, upstream name already matches, high
+// pdb locals: u
 const void* __cdecl getVtablehkaBoneAttachment()
 {
     FinishingFlag flag;
     flag.m_bFinishing = 0;
-    S00dfe5e0_Object kObject(flag);
+    hkaBoneAttachment kObject(flag);
     return *reinterpret_cast<const void**>(&kObject);
 }
 
@@ -2171,6 +2190,8 @@ class __declspec(align(16)) S00dfba10_Object
 
 // @fnv 0x00dfba10
 // src: HAVOK_LIB 0x00dfba10
+// pdb: getVtablehkaSkeleton | hkaSkeletonClass.obj | retail, upstream name already matches, high
+// pdb locals: u
 const void* __cdecl getVtablehkaSkeleton()
 {
     FinishingFlag flag;
@@ -2274,6 +2295,8 @@ class __declspec(align(16)) S00dfc400_Object
 
 // @fnv 0x00dfc400
 // src: HAVOK_LIB 0x00dfc400
+// pdb: getVtablehkpSerializedAgentNnEntry | hkpSerializedAgentNnEntryClass.obj | retail, upstream name already matches, high
+// pdb locals: u
 const void* __cdecl getVtablehkpSerializedAgentNnEntry()
 {
     FinishingFlag flag;
@@ -2306,6 +2329,8 @@ class __declspec(align(16)) AnimationBindingVtableProbe
 
 // @fnv 0x00dfe9b0
 // src: HAVOK_LIB 0x00dfe9b0
+// pdb: getVtablehkaAnimationBinding | hkaAnimationBindingClass.obj | retail, upstream name already matches, high
+// pdb locals: u
 const void* __cdecl getVtablehkaAnimationBinding()
 {
     FinishingFlag flag;
@@ -2385,6 +2410,8 @@ struct __declspec(align(16)) ContactSystemView
 
 // @fnv 0x00dff220
 // src: HAVOK_LIB 0x00dff220
+// pdb: getVtablehkpPhysicsSystemWithContacts | hkpPhysicsSystemWithContactsClass.obj | retail, upstream name already matches, high
+// pdb locals: u
 const void* __cdecl getVtablehkpPhysicsSystemWithContacts()
 {
     FinishingFlag flag(0);
@@ -2426,6 +2453,8 @@ struct __declspec(align(16)) VtableProbeDff2b0
 
 // @fnv 0x00dff2b0
 // src: GUESS 0x00dff2b0 (confidence: low)
+// pdb: getVtablehkpMouseSpringAction | hkpMouseSpringActionClass.obj | retail, object-file run extension, low
+// pdb locals: u
 const void* __cdecl Runtime_UpdateState_00dff2b0()
 {
     FinishingFlag flag(0);

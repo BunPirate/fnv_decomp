@@ -2,6 +2,7 @@
 
 enum BS_FACEGEN_MORPH_TYPE;
 
+// pdb: class BSFaceGenKeyframe, size 0xc, 2 members
 class BSFaceGenKeyframe
 {
 public:
@@ -30,7 +31,7 @@ public:
     bool SetTime(float time);
     double ActorPackage_GetPackageStartTime();
     bool FUN_006828a0(float fArg);
-    bool BSTempEffectDebris_Update(float fArg);
+    bool BSTempEffectDebris_Update(float afTimeDelta);
 
     BS_FACEGEN_MORPH_TYPE eType;
     float fTime;

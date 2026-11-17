@@ -8,14 +8,18 @@
 #include "../../include/TESSaveLoadGame.h"
 
 // @fnv 0x0048d0d0
+// pdb: TESSpellList::ClearDataComponent | TESSpellList.obj | debug, vtable slot, medium
 void TESSpellList::ClearComponent()
 {
-    ClearSpells();
+    FreeSpellList();
 }
 
 // Removes all entries from the spell list and from the list returned by GetOffsetC.
 // @fnv 0x0048d0f0
-void TESSpellList::ClearSpells()
+// src: XBOX_DEBUG_PDB 0x0048d0f0
+// pdb: TESSpellList::FreeSpellList | TESSpellList.obj | debug, call graph (shared callers), high
+// pdb locals: pList
+void TESSpellList::FreeSpellList()
 {
     BSSimpleList<InventoryStackRecord*>* pFirstList =
         reinterpret_cast<BSSimpleList<InventoryStackRecord*>*>(reinterpret_cast<BaseProcess*>(this)->BaseProcess::GetCurrentProcessData());
@@ -29,6 +33,7 @@ void TESSpellList::ClearSpells()
 }
 
 // @fnv 0x0047ffa0
+// pdb: TESAttributes::~TESAttributes | TESAttributes.obj | debug, upstream name already matches, high
 TESAttributes::~TESAttributes()
 {
     reinterpret_cast<TESForm*>(this)->IsInCombat();
@@ -36,13 +41,17 @@ TESAttributes::~TESAttributes()
 
 // Constructs a TESSpellList and calls IsInCombat on the object viewed as a TESForm.
 // @fnv 0x0048cfe0
+// pdb: TESSpellList::TESSpellList | TESSpellList.obj | debug, upstream name already matches, high
 TESSpellList::TESSpellList()
 {
     reinterpret_cast<TESForm*>(this)->IsInCombat();
 }
 
 // @fnv 0x0048d400
-void TESSpellList::InitItem(TESForm* owner)
+// pdb: TESSpellList::InitItem | TESSpellList.obj | retail, string-set bridge, high
+// pdb params: apOwner
+// pdb locals: pList, pLastList, pownerFile, tempint, pform, pSpell, pleveledSpell, pactorBase
+void TESSpellList::InitItem(TESForm* apOwner)
 {
     struct SpellCursor
     {
@@ -53,7 +62,7 @@ void TESSpellList::InitItem(TESForm* owner)
     listCursor.previous = 0;
     listCursor.current =
         reinterpret_cast<BSSimpleList<InventoryStackRecord*>*>(reinterpret_cast<BaseProcess*>(this)->BaseProcess::GetCurrentProcessData());
-    listCursor.file = owner ? owner->GetFile(-1) : 0;
+    listCursor.file = apOwner ? apOwner->GetFile(-1) : 0;
     while (listCursor.current && listCursor.current->GetItem())
     {
         struct ResolvedForm
@@ -84,14 +93,14 @@ void TESSpellList::InitItem(TESForm* owner)
                         listCursor.current = reinterpret_cast<BSSimpleList<InventoryStackRecord*>*>(
                             reinterpret_cast<BSSimpleList<BGSPerkEntry*>*>(listCursor.previous)->GetNext());
                     }
-                    if (owner)
+                    if (apOwner)
                     {
-                        if (reinterpret_cast<BGSCameraPath*>(owner)->HasNameForWarning())
+                        if (reinterpret_cast<BGSCameraPath*>(apOwner)->HasNameForWarning())
                             Warning("MASTERFILE: Unable to find Actor Effect (%08X) for owner object \"%s\".",
-                                    resolvedForm.id, owner->GetName());
+                                    resolvedForm.id, apOwner->GetName());
                         else
                             Warning("MASTERFILE: Unable to find Actor Effect (%08X) for owner object (%08X).",
-                                    resolvedForm.id, owner->GetFormID());
+                                    resolvedForm.id, apOwner->GetFormID());
                     }
                     else
                         Warning("MASTERFILE: Unable to find Actor Effect (%08X) for unknown owner.", resolvedForm.id);
@@ -141,6 +150,7 @@ struct FUN_0048d060 : public BaseFormComponent
     void ClearComponent();
 };
 // @fnv 0x0048d060
+// pdb: TESSpellList::~TESSpellList | TESSpellList.obj | retail, call graph, high
 FUN_0048d060::~FUN_0048d060()
 {
     ClearComponent();
@@ -164,22 +174,24 @@ struct PadX
 };
 struct FloatValueProvider
 {
-    bool TESSpellList_AddSpell(SpellItem* apSpell);
+    bool TESSpellList_AddSpell(SpellItem* apSpellIn);
 };
 struct ZX2 : public PadX, public FloatValueProvider
 {
 };
 // @fnv 0x0048d170
 // src: XBOX_PDB 0x0048d170
-bool FloatValueProvider::TESSpellList_AddSpell(SpellItem* apSpell)
+// pdb: TESSpellList::AddSpell | TESSpellList.obj | debug, call graph, high
+// pdb params: apSpellIn
+bool FloatValueProvider::TESSpellList_AddSpell(SpellItem* apSpellIn)
 {
-    if (!apSpell)
+    if (!apSpellIn)
         return false;
-    if (((LH*)reinterpret_cast<BaseProcess*>(this)->BaseProcess::GetCurrentProcessData())->IsInList(apSpell))
+    if (((LH*)reinterpret_cast<BaseProcess*>(this)->BaseProcess::GetCurrentProcessData())->IsInList(apSpellIn))
         return false;
-    ((LH*)reinterpret_cast<BaseProcess*>(this)->BaseProcess::GetCurrentProcessData())->AddHead(apSpell);
+    ((LH*)reinterpret_cast<BaseProcess*>(this)->BaseProcess::GetCurrentProcessData())->AddHead(apSpellIn);
     if (this == static_cast<FloatValueProvider*>((ZX2*)g_thePlayer->GetActorBase()) && !g_dataHandler->FUN_004516b0())
-        g_thePlayer->OnSpellRemoved(apSpell);
+        g_thePlayer->OnSpellRemoved(apSpellIn);
     return true;
 }
 
@@ -196,6 +208,9 @@ struct ZX2
 };
 // @fnv 0x0048d290
 // src: XBOX_PDB 0x0048d290
+// pdb: TESSpellList::AddSpell | TESSpellList.obj | debug, call graph, high
+// pdb params: apSpellIn
+// pdb locals: pspell, pleveledSpell
 bool FUN_0048d290_shell::TESSpellList_AddSpell_0048d290(TESForm* apSpellIn)
 {
     if (g_dataHandler->FUN_004516b0())
@@ -221,16 +236,19 @@ struct TesspelllistListNodeView
 };
 struct Holder_0048d830 : BaseProcess
 {
-    bool ContainsPackage(ActorPackageContext* package);
+    bool ContainsPackage(ActorPackageContext* apSpell);
 };
 // @fnv 0x0048d830
-bool Holder_0048d830::ContainsPackage(ActorPackageContext* package)
+// pdb: TESSpellList::HasSpell | TESSpellList.obj | debug, call graph, high
+// pdb params: apSpell
+// pdb locals: pList, spell
+bool Holder_0048d830::ContainsPackage(ActorPackageContext* apSpell)
 {
     TesspelllistListNodeView* node = reinterpret_cast<TesspelllistListNodeView*>(BaseProcess::GetCurrentProcessData());
     while (node)
     {
         ActorPackageContext* entry = node->_ref_006815c0();
-        if (entry == package)
+        if (entry == apSpell)
             return true;
         node = node->_ref_00726070();
     }
@@ -268,6 +286,8 @@ struct Host0048d8d0 : BaseProcess
     void ForwardToHelper(int);
 };
 // @fnv 0x0048d8d0
+// pdb: TESSpellList::RemoveSpell | TESSpellList.obj | debug, call graph, medium
+// pdb params: apSpell
 void Host0048d8d0::ForwardToHelper(int a)
 {
     ((Helper00905330*)BaseProcess::GetCurrentProcessData())->_ref_00905330(a);
@@ -281,7 +301,7 @@ struct SpellListHandle
 struct SpellListTask
 {
     SpellListHandle* GetOffsetC(TESLevSpell*& spell);
-    bool TESSpellList_AddSpell_0048d210(TESLevSpell* spell);
+    bool TESSpellList_AddSpell_0048d210(TESLevSpell* apSpellIn);
 };
 struct PlayerBaseData
 {
@@ -326,15 +346,17 @@ struct PlayerProcessAccessor
 };
 // @fnv 0x0048d210
 // src: XBOX_PDB 0x0048d210
-bool SpellListTask::TESSpellList_AddSpell_0048d210(TESLevSpell* spell)
+// pdb: TESSpellList::AddSpell | TESSpellList.obj | debug, call graph, high
+// pdb params: apSpellIn
+bool SpellListTask::TESSpellList_AddSpell_0048d210(TESLevSpell* apSpellIn)
 {
-    if (!spell)
+    if (!apSpellIn)
         return false;
     if (this == static_cast<SpellListTask*>(reinterpret_cast<PlayerProcessAccessor*>(g_thePlayer)->FUN_004181e0()))
         return false;
-    if (GetOffsetC(spell)->BSSimpleList_TESLevSpell_IsInList())
+    if (GetOffsetC(apSpellIn)->BSSimpleList_TESLevSpell_IsInList())
         return false;
-    GetOffsetC(spell)->FUN_005ae3d0();
+    GetOffsetC(apSpellIn)->FUN_005ae3d0();
     return true;
 }
 
@@ -349,16 +371,19 @@ struct SpellListView
 {
     SpellNode* SpellsHead();
     SpellNode* LevSpellsHead();
-    bool ContainsEntryA(void* spell);
+    bool ContainsEntryA(void* apSpell);
     bool ContainsEntryB(void* lev);
-    bool DiffersFrom(BaseFormComponent* apOther);
+    bool DiffersFrom(BaseFormComponent* apCompareFC);
 };
 
 // Compares this spell list against another TESSpellList, returning true if any spell or level spell is missing or the counts differ.
 // @fnv 0x0048d700
-bool SpellListView::DiffersFrom(BaseFormComponent* apOther)
+// pdb: TESSpellList::CompareComponent | TESSpellList.obj | retail, vtable slot, high
+// pdb params: apCompareFC
+// pdb locals: pCompare, iCount, pList, pspell
+bool SpellListView::DiffersFrom(BaseFormComponent* apCompareFC)
 {
-    SpellListView* pOtherList = (SpellListView*)dynamic_cast<TESSpellList*>(apOther);
+    SpellListView* pOtherList = (SpellListView*)dynamic_cast<TESSpellList*>(apCompareFC);
     if (!pOtherList)
         return true;
     int iSpellCount = 0;
@@ -424,10 +449,13 @@ struct LoadedSpells
 };
 // Reads a spell-list block from the save buffer, clearing and refilling the spell and leveled-spell lists and warning on header or size mismatches.
 // @fnv 0x0048dca0
-void LoadedSpells::LoadSpellList(unsigned int flags, unsigned int unused)
+// pdb: TESSpellList::LoadGame | TESSpellList.obj | retail, string-set bridge, high
+// pdb params: aiFlags, aiCurrentFlags
+// pdb locals: icount, istartBufferPosition, iblockSize, i, iblockHeader, pheader, pform, ispellID, pspell, pleveledSpell, badd, icurrentBufferPosition
+void LoadedSpells::LoadSpellList(unsigned int aiFlags, unsigned int aiCurrentFlags)
 {
     int p;
-    if (flags & 16)
+    if (aiFlags & 16)
     {
         unsigned short h = 0;
         unsigned int a = 0;
@@ -531,12 +559,14 @@ bool __fastcall IsDeleted(const TESForm* form);
 struct TESSpellListShell : TESSpellList
 {
     TesspelllistListNodeView* _ref_00717e50();
-    void TESSpellList_SaveSubRecord();
+    void TESSpellList_Save();
 };
 void __cdecl TESForm_AddChunk_00485910(unsigned int type, unsigned int formId);
 // @fnv 0x0048d330
-// src: COMMUNITY 0x0048d330
-void TESSpellListShell::TESSpellList_SaveSubRecord()
+// src: XBOX_DEBUG_PDB 0x0048d330 (was COMMUNITY)
+// pdb: TESSpellList::Save | TESSpellList.obj | debug, call graph, high
+// pdb locals: pSpell, pList, tempint
+void TESSpellListShell::TESSpellList_Save()
 {
     TesspelllistListNodeView* currentLeveledSpell = _ref_00717e50();
     unsigned int currentSpell;
@@ -602,14 +632,17 @@ extern "C" void ProgramFlow(const char* fmt, ...);
 class TESSpellList_Target : public TESSpellList
 {
   public:
-    void SaveSpellList(unsigned int flags);
+    void SaveSpellList(unsigned int aiFlags);
 };
 
 // If flags has bit 0x10, writes a BLOCK header and the spell count plus each spell's form ID to the save stream, with optional timing diagnostics.
 // @fnv 0x0048da20
-void TESSpellList_Target::SaveSpellList(unsigned int flags)
+// pdb: TESSpellList::SaveGame | TESSpellList.obj | retail, vtable slot, high
+// pdb params: aiFlags
+// pdb locals: icount, itempStartPosition, iblockSize, pcount, pblockSize, iblockHeader, plist, pspell, ispellID, icurrentBufferPosition, pheader, pform, istartBufferPosition
+void TESSpellList_Target::SaveSpellList(unsigned int aiFlags)
 {
-    if (flags & 0x10)
+    if (aiFlags & 0x10)
     {
         unsigned short unk0CVal = 0;
         unsigned short* pBlockSize3 = 0;
@@ -719,19 +752,22 @@ struct SpellNode
 struct SpellListAccess : TESSpellList
 {
     SpellNode* FUN_00717e50();
-    void TESSpellList_CopyComponent(BaseFormComponent* source);
+    void TESSpellList_CopyComponent(BaseFormComponent* apCopyFC);
 };
 
 // Copies all spells from the source TESSpellList into this list, clearing existing entries first.
 // @fnv 0x0048d630
 // src: XBOX_PDB 0x0048d630
-void SpellListAccess::TESSpellList_CopyComponent(BaseFormComponent* source)
+// pdb: TESSpellList::CopyComponent | TESSpellList.obj | retail, upstream name already matches, high
+// pdb params: apCopyFC
+// pdb locals: pCopy, pList, pCopyList, pspell
+void SpellListAccess::TESSpellList_CopyComponent(BaseFormComponent* apCopyFC)
 {
-    TESSpellList* a = dynamic_cast<TESSpellList*>(source);
+    TESSpellList* a = dynamic_cast<TESSpellList*>(apCopyFC);
     if (a == 0)
         return;
 
-    ClearSpells();
+    FreeSpellList();
 
     SpellNode* f = reinterpret_cast<SpellListAccess*>(a)->FUN_00717e50();
     SpellNode* b = FUN_00717e50();
@@ -868,16 +904,19 @@ struct S0048d8f0_SpellListSaveSizer
     void* vtable;
     S0048d8f0_SizedList spells;
     S0048d8f0_SizedList leveledSpells;
-    unsigned short TESSpellList_GetSaveSize(unsigned int saveFlags);
+    unsigned short TESSpellList_GetSaveSize(unsigned int aiFlags);
 };
 
 // When saveFlags bit 0x10 is set, adds two bytes and list-size contributions, plus six bytes when the save-state check succeeds.
 // @fnv 0x0048d8f0
 // src: XBOX_PDB 0x0048d8f0
-unsigned short S0048d8f0_SpellListSaveSizer::TESSpellList_GetSaveSize(unsigned int saveFlags)
+// pdb: TESSpellList::GetSaveSize | TESSpellList.obj | retail, upstream name already matches, high
+// pdb params: aiFlags
+// pdb locals: isize, itempStartSize, pheader, pform
+unsigned short S0048d8f0_SpellListSaveSizer::TESSpellList_GetSaveSize(unsigned int aiFlags)
 {
     unsigned short size = 0;
-    if (saveFlags & 0x10)
+    if (aiFlags & 0x10)
     {
         unsigned short start = size;
         if (DAT_011de45c->TESSaveLoadGame_UseSaveGameBlocks())

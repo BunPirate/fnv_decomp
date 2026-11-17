@@ -3,6 +3,7 @@
 #include "BSExtraData.h"
 #include "BSAnimNoteReceiver.h"
 
+// pdb: class ExtraAnimNoteReceiver, size 0x10, bases: BSExtraData, 1 members
 class ExtraAnimNoteReceiver : public BSExtraData
 {
 public:
@@ -12,5 +13,5 @@ public:
     void FUN_0057a8d0();
     void* FUN_0057a8a0(unsigned int flags);
 
-    BSAnimNoteReceiver* m_pReceiver;
+    BSAnimNoteReceiver* pReceiver; // src: XBOX_RETAIL_PDB +0xc (old: m_pReceiver)
 };

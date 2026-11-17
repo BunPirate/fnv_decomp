@@ -6,9 +6,12 @@
 #pragma optimize("", off)
 #pragma optimize("", on)
 
-extern unsigned int* DAT_011f4aa8;
+extern unsigned int* NiPoint3_ms_pSqrtTable; // src: XBOX_RETAIL_PDB 0x011f4aa8 (old: DAT_011f4aa8)
 // @fnv 0x00525340
 // src: XBOX_PDB 0x00525340
+// pdb: NiPoint3::UnitizeVector | TESObjectWEAP.obj | debug, upstream name already matches, high
+// pdb params: v
+// pdb locals: V
 void NiPoint3_UnitizeVector(float* v)
 {
     float len2;
@@ -28,7 +31,7 @@ void NiPoint3_UnitizeVector(float* v)
             *bits |= 0x800000;
         }
         e >>= 1;
-        *bits = DAT_011f4aa8[*bits >> 16] | ((e + 0x7f) << 23);
+        *bits = NiPoint3_ms_pSqrtTable[*bits >> 16] | ((e + 0x7f) << 23);
         len2 = 1.0f / len2;
     }
     v[0] = v[0] * len2;

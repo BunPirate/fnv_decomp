@@ -24,12 +24,13 @@ struct hkContactPt;
 
 #include "hkpSimpleContactConstraintData.h"
 
+// pdb: class hkpSimpleConstraintContactMgr, size 0x80, bases: hkpDynamicsContactMgr, 5 members
 class hkpSimpleConstraintContactMgr : public hkpDynamicsContactMgr
 {
 public:
     virtual void vf00();
     virtual void vf04();
-    virtual void calcContentStatistics_00cfd5e0(hkStatisticsCollector* pkCollector, const hkClass* pkClass) const throw();
+    virtual void calcContentStatistics_00cfd5e0(hkStatisticsCollector* collector, const hkClass* cls) const throw();
     virtual hkUint16 addContactPointImpl(const hkCdBodyStub& a, const hkCdBodyStub& b,
                                const hkProcessCollisionInputStub& input,
                                hkProcessCollisionOutputStub& output,
@@ -61,10 +62,10 @@ public:
 
     unsigned int processContactPoint(const hkpCdBody& a, const hkpCdBody& b,
                                     const GskAgentInput& input, WorldOperationEntry& output,
-                                    const ConvexFeaturePairCache* contactCache, hkContactPoint& cp);
+                                    const ConvexFeaturePairCache* contactCache, hkContactPoint& pcp);
     hkRigidBodyStub* setContactPointProperties(const hkCdBodyStub& a, const hkCdBodyStub& b,
-                                int maxImpulse, hkCPProperties* cpi);
-    void removeContactPointImpl_00cfd320(hkUint16 cpId, hkpConstraintOwner& kOwner) throw();
+                                int maxNumExtraDataInEvent, hkCPProperties* cpi);
+    void removeContactPointImpl_00cfd320(hkUint16 cpId, hkpConstraintOwner& constraintOwner) throw();
 
     int unk04;
     union

@@ -28,6 +28,8 @@ extern int EmptyFS;
 
 // @fnv 0x00a4f000
 // src: EXE 0x00a4f000
+// pdb: NiFloatsExtraDataController::CreateObject | NiFloatsExtraDataController.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 int* __cdecl NiFloatsExtraDataController_CreateObject()
 {
     int* p = static_cast<int*>(BSFadeNode::operator new(0x48));
@@ -53,12 +55,14 @@ NiFloatInterpolator* __fastcall CreateFloatsExtraDataInterpolator(
 {
     NiFloatInterpolator* p = (NiFloatInterpolator*)BSFadeNode::operator new(0x18);
     if (p)
-        return p->FUN_00a3c390(static_cast<NiFloatsExtraData*>(controller->m_pExtraData.m_pObject)->GetValueAt(
+        return p->FUN_00a3c390(static_cast<NiFloatsExtraData*>(controller->m_spExtraData.m_pObject)->GetValueAt(
             controller->m_iFloatsExtraDataIndex));
     return 0;
 }
 
 // @fnv 0x00a4efb0
+// pdb: NiFloatsExtraDataController::CopyMembers | NiFloatsExtraDataController.obj | debug, object-file run extension, low
+// pdb params: pkDest, kCloning
 NiFloatsExtraDataController* __fastcall CloneFloatsExtraDataController(
     NiFloatsExtraDataController* controller, void*, CloningProcess& kCloning)
 {
@@ -105,7 +109,7 @@ void NiFloatsExtraDataController::ApplyInterpolatorValue(NiInterpolator* pkInter
         pkFloatInterp = 0;
     else
         pkFloatInterp = (NiFloatInterpolator*)pkInterp->DynamicCast((const NiRTTI*)&g_011f3738);
-    pkFloatInterp->SetFloatValue(static_cast<NiFloatsExtraData*>(m_pExtraData.m_pObject)->GetValueAt(
+    pkFloatInterp->SetFloatValue(static_cast<NiFloatsExtraData*>(m_spExtraData.m_pObject)->GetValueAt(
         m_iFloatsExtraDataIndex));
 }
 
@@ -130,7 +134,7 @@ void __fastcall LoadFloatsExtraDataController(
 extern int DAT_01099270;
 void __stdcall FUN_00a57420(NiStream* stream);
 void* __cdecl NiViewerStrings_NiGetViewerString_Title(void* source);
-void* __cdecl NiGetViewerString_00a7d4d0(int* name, void* object);
+void* __cdecl NiGetViewerString_00a7d4d0(int* pcPrefix, void* iValue);
 
 // @fnv 0x00a4f1e0
 void __fastcall RegisterFloatsExtraDataController(
@@ -169,12 +173,15 @@ inline NiFixedString& NiFixedString::operator=(const char* pcStr)
 }
 
 // @fnv 0x00a4ebd0
+// pdb: NiFloatsExtraDataController::GetCtlrID | NiFloatsExtraDataController.obj | retail, unique string literal, medium
+// pdb note: debug build links it to NiFloatsExtraDataPoint3Controller::GetCtlrID
+// pdb locals: pcExtraDataName, acString, iLength
 char* __fastcall GetFloatsExtraDataControllerID(NiFloatsExtraDataController* controller)
 {
     if (controller->m_kCtlrID.m_kHandle != DAT_0109b220)
         return controller->m_kCtlrID.m_kHandle;
     controller->m_kCtlrID = static_cast<const char*>(0);
-    char* prefix = controller->m_kDataName.m_kHandle;
+    char* prefix = controller->m_kExtraDataName.m_kHandle;
     if (prefix)
     {
         unsigned int size = strlen(prefix) + 0xf;
@@ -186,53 +193,58 @@ char* __fastcall GetFloatsExtraDataControllerID(NiFloatsExtraDataController* con
     return controller->m_kCtlrID.m_kHandle;
 }
 
-extern float DAT_01096324;
+extern float NiInterpController_INVALID_TIME; // src: XBOX_RETAIL_PDB 0x01096324 (old: DAT_01096324/INVALID_TIME_A4F/g_fInvalidTimeBC3/kInvalidTime)
 
 // @fnv 0x00a4f0c0
 void __fastcall UpdateFloatsExtraDataController(NiFloatsExtraDataController* controller, void*, float* updateData)
 {
     if (((unsigned char)(controller->m_uiObjectFlags >> 5) & 1) != 0)
     {
-        controller->m_fControllerTime = DAT_01096324;
+        controller->m_fScaledTime = NiInterpController_INVALID_TIME;
     }
     else if (controller->DontDoUpdate(*updateData))
     {
-        if (!controller->m_spControllerInterpolator.m_pObject ||
-            !controller->m_spControllerInterpolator.m_pObject->AlwaysUpdate())
+        if (!controller->m_spInterpolator.m_pObject ||
+            !controller->m_spInterpolator.m_pObject->AlwaysUpdate())
             return;
     }
     float value;
-    if (controller->m_spControllerInterpolator.m_pObject &&
-        controller->m_spControllerInterpolator.m_pObject->UpdateFloat(
-            controller->m_fControllerTime, controller->m_pkTarget, value))
+    if (controller->m_spInterpolator.m_pObject &&
+        controller->m_spInterpolator.m_pObject->UpdateFloat(
+            controller->m_fScaledTime, controller->m_pkTarget, value))
     {
-        if (controller->m_pExtraData.m_pObject)
-            static_cast<NiFloatsExtraData*>(controller->m_pExtraData.m_pObject)->SetValue(
+        if (controller->m_spExtraData.m_pObject)
+            static_cast<NiFloatsExtraData*>(controller->m_spExtraData.m_pObject)->SetValue(
                 controller->m_iFloatsExtraDataIndex, value);
     }
 }
 
 // @fnv 0x00c312f0
+// pdb: NiPSysModifierCtlr::CopyMembers | NiPSysModifierCtlr.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiFloatExtraDataController::CopyMembers
+// pdb params: pkDest, kCloning
 void __fastcall CopyFloatsExtraDataController(
     NiFloatsExtraDataController* controller, void*, NiFloatsExtraDataController* pkDest, void* kCloning)
 {
     reinterpret_cast<NiTransformController*>(controller)->CopyMemberData(
         reinterpret_cast<NiTransformController*>(pkDest), kCloning);
-    char* pcName = controller->m_kDataName.m_kHandle;
-    if (pkDest->m_kDataName.m_kHandle != pcName)
+    char* pcName = controller->m_kExtraDataName.m_kHandle;
+    if (pkDest->m_kExtraDataName.m_kHandle != pcName)
     {
         if (pcName != (char*)EmptyFS)
             InterlockedIncrement((volatile long*)(pcName - 8));
-        char* pcOldName = pkDest->m_kDataName.m_kHandle;
+        char* pcOldName = pkDest->m_kExtraDataName.m_kHandle;
         if (pcOldName != (char*)EmptyFS)
             InterlockedDecrement((volatile long*)(pcOldName - 8));
-        pkDest->m_kDataName.m_kHandle = pcName;
+        pkDest->m_kExtraDataName.m_kHandle = pcName;
     }
 }
 
 void __cdecl FUN_00aa1460(void*, unsigned int);
 
 // @fnv 0x00a4f040
+// pdb: NiFloatsExtraDataController::LoadBinary | NiFloatsExtraDataController.obj | debug, object-file run extension, low
+// pdb params: kStream
 NiFloatsExtraDataController* __fastcall DestroyFloatsExtraDataController(
     NiFloatsExtraDataController* controller, void*, unsigned int destroyFlag)
 {

@@ -3,6 +3,7 @@
 #include "NiMemObject.h"
 
 // RTTI (.?AVNiRefObject@@): base NiMemObject, which supplies operator new (0x00aa13e0) and the sized delete (0x00aa1460).
+// pdb: class NiRefObject, size 0x8, bases: NiMemObject, 1 members
 class NiRefObject : public NiMemObject
 {
   public:

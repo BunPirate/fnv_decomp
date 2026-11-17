@@ -40,6 +40,9 @@ struct FUN_00c98820_Class
 
 // @fnv 0x00c98820
 // src: GUESS 0x00c98820 (confidence: low)
+// pdb: hkDebugDisplay::displayRay | hkDebugDisplay.obj | retail, object-file run extension, low
+// pdb params: start, direction, color, id, tag
+// pdb locals: end
 void __thiscall FUN_00c98820_Class::ProcessEntries_00c98820(void* first, void* second, void* third, void* fourth, void* fifth)
 {
     __m128 sum = _mm_add_ps(*(__m128*)second, *(__m128*)first);

@@ -6,11 +6,12 @@
 class Tile;
 class EqEntry;
 
+// pdb: class ItemModMenu, size 0x90, bases: Menu, 2 members
 class ItemModMenu : public Menu
 {
 public:
-    Tile* m_pTiles[14];
-    ListBox_ItemChange___ m_kItemList;
+    Tile* pTiles[14]; // src: XBOX_RETAIL_PDB +0x28 (old: m_pTiles)
+    ListBox_ItemChange___ lbItemModList; // src: XBOX_RETAIL_PDB +0x60 (old: m_kItemList)
 
     ItemModMenu();
     Tile* __cdecl Create();

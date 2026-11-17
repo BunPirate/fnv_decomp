@@ -35,14 +35,15 @@ int __cdecl BarterMenu_GetClassStatic()
 }
 
 char __cdecl ConsumeByteAtE4();
-void __cdecl UpdateTopicMenu();
+void __cdecl BarterMenu_Close();
 
 // @fnv 0x0072db40
 // src: XBOX_PDB 0x0072db40
+// pdb: BarterMenu::CancelConfirmFunc | BarterMenu.obj | retail, upstream name already matches, high
 void __cdecl BarterMenu_CancelConfirmFunc()
 {
     if (!ConsumeByteAtE4())
-        UpdateTopicMenu();
+        BarterMenu_Close();
 }
 
 extern int DAT_011d8fa4;
@@ -51,13 +52,15 @@ extern unsigned char DAT_011d8fc0;
 // If abNow is set, calls RebuildInventoryLists(0) on DAT_011d8fa4 when non-null and clears DAT_011d8fc0; otherwise sets DAT_011d8fc0 to 1.
 // @fnv 0x00730690
 // src: XBOX_PDB 0x00730690
+// pdb: BarterMenu::ForceBarterUpdate | BarterMenu.obj | retail, upstream name already matches, high
+// pdb params: abNow
 void __cdecl BarterMenu_ForceBarterUpdate(bool abNow)
 {
     if (abNow)
     {
         if (DAT_011d8fa4 != 0)
         {
-            reinterpret_cast<BarterMenu*>(DAT_011d8fa4)->RebuildInventoryLists(0);
+            reinterpret_cast<BarterMenu*>(DAT_011d8fa4)->UpdateLists(0);
         }
         DAT_011d8fc0 = 0;
     }
@@ -71,6 +74,7 @@ void __cdecl _Deallocate(void*);
 
 // Calls FUN_0072d0a0, then frees this when flags has bit 0 set, and returns this.
 // @fnv 0x0072d070
+// pdb: BarterMenu::`scalar deleting destructor' | BarterMenu.obj | retail, vtable slot, high
 void* BarterMenu::FUN_0072d070(unsigned int flags)
 {
     this->BarterMenu::~BarterMenu();
@@ -82,34 +86,39 @@ void* BarterMenu::FUN_0072d070(unsigned int flags)
 // Calls Set(0xfa3, 0) on the Tile objects at offsets 0x7c and 0x78 of this BarterMenu.
 // @fnv 0x0072e530
 // src: XBOX_PDB 0x0072e530
+// pdb: BarterMenu::DoLeave | BarterMenu.obj | retail, upstream name already matches, high
+// pdb params: aiID, apTarget
 void BarterMenu::DoLeave(int aiID, void* apTarget)
 {
     m_apTiles[21]->Set(0xfa3, 0);
     m_apTiles[20]->Set(0xfa3, 0);
 }
 
+// pdb: structure WeatherEntry, size 0xc (here 0x1), 3 members
 struct WeatherEntry
 {
 };
 
 struct FUN_0071a670_shell
 {
-    void UpdateItems();
+    void ListBox_ItemChange_Synchronize();
 };
 
 struct FUN_00730b80_shell
 {
     char pad[4];
     BSSimpleList<WeatherEntry*> list;
-    void SortWeatherEntries(int(__cdecl* fn)(WeatherEntry*, WeatherEntry*));
+    void SortWeatherEntries(int(__cdecl* apCompareFn)(WeatherEntry*, WeatherEntry*));
 };
 
 // Sorts the weather entry list with the given comparison function, then calls UpdateItems on this object.
 // @fnv 0x00730b80
-void FUN_00730b80_shell::SortWeatherEntries(int(__cdecl* fn)(WeatherEntry*, WeatherEntry*))
+// pdb: ListBox<ItemChange *>::Sort | BarterMenu.obj | retail, vtable slot, high
+// pdb params: apCompareFn
+void FUN_00730b80_shell::SortWeatherEntries(int(__cdecl* apCompareFn)(WeatherEntry*, WeatherEntry*))
 {
-    list.Sort(fn);
-    reinterpret_cast<FUN_0071a670_shell*>(this)->UpdateItems();
+    list.Sort(apCompareFn);
+    reinterpret_cast<FUN_0071a670_shell*>(this)->ListBox_ItemChange_Synchronize();
 }
 
 extern PlayerCharacter* g_thePlayer;
@@ -122,10 +131,13 @@ struct TopicMenu
     void FUN_00a1d910();
 };
 int __cdecl GetTopicSubTypeName(int a, int b);
-void __cdecl StartDialogueForTopic(int a);
+void __cdecl DialogMenu_ServiceEnd(int apTopic);
 
 // @fnv 0x0072d6d0
-void __cdecl UpdateTopicMenu()
+// src: XBOX_RETAIL_PDB 0x0072d6d0
+// pdb: BarterMenu::Close | BarterMenu.obj | retail, call graph (shared callers), high
+// pdb locals: ptopic
+void __cdecl BarterMenu_Close()
 {
     if (DAT_011d8fa4 != 0)
     {
@@ -135,7 +147,7 @@ void __cdecl UpdateTopicMenu()
         int iTopic = 0;
         if (((TopicMenu*)DAT_011d8fa4)->bFlag)
             iTopic = GetTopicSubTypeName(5, 4);
-        StartDialogueForTopic(iTopic);
+        DialogMenu_ServiceEnd(iTopic);
         ((TopicMenu*)DAT_011d8fa4)->pTile->SetInt(0x1772, 1);
         ((TopicMenu*)DAT_011d8fa4)->FUN_00a1d910();
     }
@@ -144,7 +156,10 @@ void __cdecl UpdateTopicMenu()
 bool TESContainer_IsGold(TESBoundObject*);
 // @fnv 0x0072e570
 // src: XBOX_PDB 0x0072e570
-bool BarterMenu_PlayerFirstPassFilterFunc(InventoryStackRecord* entry)
+// pdb: BarterMenu::PlayerFirstPassFilterFunc | BarterMenu.obj | retail, upstream name already matches, high
+// pdb params: apItem
+// pdb locals: pweap, pbipedForm, pammo, pfull, pobj, bisFiltered
+bool BarterMenu_PlayerFirstPassFilterFunc(InventoryStackRecord* apItem)
 {
     bool unavailable = false;
     {
@@ -158,14 +173,14 @@ bool BarterMenu_PlayerFirstPassFilterFunc(InventoryStackRecord* entry)
                     {
                         TESObjectARMO* armor;
 
-                        form = entry ? entry->FUN_0044ddc0() : 0;
+                        form = apItem ? apItem->FUN_0044ddc0() : 0;
                         biped = TESBipedModelForm::GetFormAsBipedModel(form);
                         name = dynamic_cast<TESFullName*>(form);
-                        armor = entry->FUN_0044ddc0()->FUN_00401170() == 0x28
-                                    ? static_cast<TESObjectARMO*>(entry->FUN_0044ddc0())
+                        armor = apItem->FUN_0044ddc0()->FUN_00401170() == 0x28
+                                    ? static_cast<TESObjectARMO*>(apItem->FUN_0044ddc0())
                                     : 0;
-                        weapon = entry->FUN_0044ddc0()->FUN_00401170() == 0x29
-                                     ? static_cast<TESObjectWEAP*>(entry->FUN_0044ddc0())
+                        weapon = apItem->FUN_0044ddc0()->FUN_00401170() == 0x29
+                                     ? static_cast<TESObjectWEAP*>(apItem->FUN_0044ddc0())
                                      : 0;
                         if (!form || (biped && !biped->TESBipedModelForm_GetPlayable()) || form->IsQuestItem() || TESContainer_IsGold(form) ||
                             !name || !name->GetModelLength() || (armor && !armor->IsFlag80Clear()) ||
@@ -189,14 +204,16 @@ struct FUN_0070ec70_This
 // For type 3 or 8, checks FUN_0070ec70() and calls Notify with 2/7 when negative, otherwise 4/9.
 // @fnv 0x0072f680
 // src: XBOX_PDB 0x0072f680
-void BarterMenu::DoWheelMove(int aiType, int aiUnused)
+// pdb: BarterMenu::DoWheelMove | BarterMenu.obj | retail, upstream name already matches, high
+// pdb params: aiID, apTarget
+void BarterMenu::DoWheelMove(int aiID, int apTarget)
 {
-    if (aiType == 3 || aiType == 8)
+    if (aiID == 3 || aiID == 8)
     {
         if (((FUN_0070ec70_This*)InterfaceManager_GetSingleton())->InterfaceManager_GetMouseWheel() < 0)
-            HandleSelection(aiType == 3 ? 2 : 7, 0);
+            HandleSelection(aiID == 3 ? 2 : 7, 0);
         else
-            HandleSelection(aiType == 3 ? 4 : 9, 0);
+            HandleSelection(aiID == 3 ? 4 : 9, 0);
     }
 }
 
@@ -208,6 +225,8 @@ struct S_Mgr
 extern S_Mgr* DAT_011c3f2c;
 
 // @fnv 0x0072d0a0
+// pdb: BarterMenu::~BarterMenu | BarterMenu.obj | retail, upstream name already matches, high
+// pdb locals: pcurrBuyItemRef, pcurrSellItemRef
 BarterMenu::~BarterMenu()
 {
     BSSimpleList<InventoryStackRecord*>* cur;
@@ -286,7 +305,7 @@ extern char* DAT_011dea3c;
 
 struct SubEA
 {
-    int FUN_0066ef20(int a);
+    int FUN_0066ef20(int aiWhich);
 };
 
 struct ErrLog
@@ -304,11 +323,15 @@ void __cdecl DialogMenu_ServiceStart();
 int __cdecl BSMAX_00647b70(int a, int b);
 int __cdecl MinInt(int a, int b);
 int __cdecl Gameplayformulas_GetSkillPriceMultipliers(int a, int* b, int* c);
-void __cdecl InterfaceManager_PlayMenuSound(int a);
+void __cdecl InterfaceManager_PlayMenuSound(int aeMenuSound);
 
 // Validates arg0, resolves the inventory menu object, initializes its labels and settings from the config, and stores it in DAT_011d8fa4.
 // @fnv 0x0072d250
-int __cdecl InitInventoryMenu(int arg0, int aiValue)
+// src: XBOX_DEBUG_PDB 0x0072d250
+// pdb: BarterMenu::Create | BarterMenu.obj | debug, unique string literal, high
+// pdb params: apVendor, aiDiscount
+// pdb locals: pim, ptile, pold_menu_tile
+int __cdecl BarterMenu_Create(int apVendor, int aiDiscount)
 {
     int aT30;
     BarterMenu* t2c15;
@@ -323,7 +346,7 @@ int __cdecl InitInventoryMenu(int arg0, int aiValue)
     ObjB* bb;
     ObjA* ah;
 
-    if (arg0 == 0)
+    if (apVendor == 0)
     {
         Warning_005b5e40(0x12, str_010707d0);
         return 0;
@@ -381,14 +404,14 @@ int __cdecl InitInventoryMenu(int arg0, int aiValue)
             ((BarterMenu*)DAT_011d8fa4)->m_apTiles[17]->Tile_Set_00a01350(xTmp14, DAT_011d20c4.FUN_00403df0(), true);
         if (((BarterMenu*)DAT_011d8fa4)->m_apTiles[18] != 0)
             ((BarterMenu*)DAT_011d8fa4)->m_apTiles[18]->Tile_Set_00a01350(xTmp14, DAT_011d396c.FUN_00403df0(), true);
-        ((BarterMenu*)DAT_011d8fa4)->m_pkMerchant = reinterpret_cast<TESObjectREFR*>(arg0);
-        ((BarterMenu*)DAT_011d8fa4)->unk88 = MinInt(BSMAX_00647b70(aiValue, -100), 100);
+        ((BarterMenu*)DAT_011d8fa4)->m_pkMerchant = reinterpret_cast<TESObjectREFR*>(apVendor);
+        ((BarterMenu*)DAT_011d8fa4)->unk88 = MinInt(BSMAX_00647b70(aiDiscount, -100), 100);
         ((BarterMenu*)DAT_011d8fa4)->m_fBarterTotal = 0.0f;
         Gameplayformulas_GetSkillPriceMultipliers(((SubEA*)((char*)DAT_011dea3c + 0xa4))->FUN_0066ef20(0x20), reinterpret_cast<int*>(&((BarterMenu*)DAT_011d8fa4)->m_f94),
                      reinterpret_cast<int*>(&((BarterMenu*)DAT_011d8fa4)->m_f98));
         InterfaceManager_PlayMenuSound(0x24);
         ((BarterMenu*)DAT_011d8fa4)->FUN_00a1dc20(0);
-        ((BarterMenu*)DAT_011d8fa4)->RebuildInventoryLists(0);
+        ((BarterMenu*)DAT_011d8fa4)->UpdateLists(0);
         return (int)bb;
     }
     else if (DAT_011d8fa4 != 0 && ((BarterMenu*)DAT_011d8fa4)->FUN_00726070() != 0)
@@ -429,7 +452,7 @@ struct BmItemList
 };
 struct BmFilteredList
 {
-    void ApplyFilter(int(__cdecl* pfnFilter)(void*));
+    void ApplyFilter(int(__cdecl* apFilterFn)(void*));
     int ListBox_ItemChange_NumUnfiltered();
 };
 
@@ -437,14 +460,14 @@ int __cdecl Tile_TextToTrait(const char* pName);
 int __cdecl TruncateFloatToInt(float f);
 bool __cdecl Interface_IsConsoleVisible();
 void __cdecl Interface_PrintLine(const char* pFormat, ...);
-void __cdecl UpdateBarterQuantity(int iCount);
-void __cdecl CreateQuantityMenu(int iCount, void(__cdecl* pfnCallback)(int), int iMax);
+void __cdecl BarterMenu_ItemSelectCallback(int aiAmountSelected);
+void __cdecl QuantityMenu_Create(int aiMaxAmount, void(__cdecl* afpCallback)(int), int aiStartAmount);
 void __cdecl BarterMenu_CancelConfirmFunc();
 void __cdecl Interface_CreateMessageMenu(int a1, int a2, const char* pMessage, void(__cdecl* pfnCallback)(), int a5, int a6, float f7,
                           float f8, const char* pButton1, const char* pButton2, int a11);
-void __cdecl UpdateTopicMenu();
+void __cdecl BarterMenu_Close();
 void __cdecl Interface_PlayMenuSound(void* pkTile);
-int __cdecl BarterMenu_FilterModeFunc(void* pkItem);
+int __cdecl BarterMenu_FilterModeFunc(void* apItem);
 
 static const char s_szNumBartered[] = "_NumBartered";
 static const char s_szOrigRef[] = "Original Container Ref: '%s' (%08x)";
@@ -452,18 +475,21 @@ static const char s_szOrigRefNone[] = "Original Container Ref: NONE";
 extern const char g_szBarterClickEnd[] = "";
 
 // @fnv 0x0072d770
-void BarterMenu::HandleTileClick(int iTileIndex, Tile* pkTile)
+// pdb: BarterMenu::DoClick | BarterMenu.obj | retail, string-set bridge, high
+// pdb params: aiID, apTarget
+// pdb locals: iitemCount, poriginalRef
+void BarterMenu::HandleTileClick(int aiID, Tile* apTarget)
 {
-    if (!pkTile && iTileIndex >= 0 && iTileIndex < 0x16)
-        pkTile = m_apTiles[iTileIndex];
-    switch (iTileIndex)
+    if (!apTarget && aiID >= 0 && aiID < 0x16)
+        apTarget = m_apTiles[aiID];
+    switch (aiID)
     {
     case 23:
-        if (g_pkSelectedItem_011d8fa8 && pkTile)
+        if (g_pkSelectedItem_011d8fa8 && apTarget)
         {
             g_bBarterFlag_0119fdb0 = 0;
             int iCount = g_pkSelectedItem_011d8fa8->FUN_00726070() -
-                         TruncateFloatToInt(pkTile->FUN_00a011b0(Tile_TextToTrait(s_szNumBartered)));
+                         TruncateFloatToInt(apTarget->FUN_00a011b0(Tile_TextToTrait(s_szNumBartered)));
             if (Interface_IsConsoleVisible())
             {
                 TESObjectREFR* pkOrig = g_pkSelectedItem_011d8fa8->Modelloader_GetReferencedThis() &&
@@ -479,25 +505,25 @@ void BarterMenu::HandleTileClick(int iTileIndex, Tile* pkTile)
             {
                 reinterpret_cast<BmPopup*>(m_pkActiveList)->FUN_007312e0();
                 reinterpret_cast<BmPopup*>(m_pkActiveList)->Destroy(false);
-                CreateQuantityMenu(iCount, UpdateBarterQuantity, 0x7fffffff);
+                QuantityMenu_Create(iCount, BarterMenu_ItemSelectCallback, 0x7fffffff);
             }
             else
             {
-                UpdateBarterQuantity(1);
+                BarterMenu_ItemSelectCallback(1);
             }
         }
         break;
     case 13:
         g_bBarterFlag_0119fdb0 = 0;
-        CompleteBarterTransaction();
-        RebuildInventoryLists(0);
+        CompleteTransaction();
+        UpdateLists(0);
         break;
     case 19:
         if (reinterpret_cast<BmItemList&>(m_kMerchantItems).FUN_005ae380() || reinterpret_cast<BmItemList&>(m_kPlayerItems).FUN_005ae380())
             Interface_CreateMessageMenu(0, 0, g_s_011d1fa4.FUN_00403df0(), BarterMenu_CancelConfirmFunc, 0, 0x17, 0.0f, 0.0f,
                          g_s_011d34f8.FUN_00403df0(), g_s_011d3684.FUN_00403df0(), 0);
         else
-            UpdateTopicMenu();
+            BarterMenu_Close();
         break;
     case 2:
     case 3:
@@ -505,12 +531,12 @@ void BarterMenu::HandleTileClick(int iTileIndex, Tile* pkTile)
         Interface_PlayMenuSound(unkA4);
         do
         {
-            m_iMerchantFilter += (iTileIndex != 2 ? 1 : -1);
+            m_iMerchantFilter += (aiID != 2 ? 1 : -1);
             if (m_iMerchantFilter < 0)
                 m_iMerchantFilter = 5;
             else if (m_iMerchantFilter > 5)
                 m_iMerchantFilter = 0;
-            UpdateTileText((int)m_apTiles[3]);
+            SetFilterModeTitle((int)m_apTiles[3]);
             reinterpret_cast<BmFilteredList&>(m_kMerchantList).ApplyFilter(BarterMenu_FilterModeFunc);
         } while (!reinterpret_cast<BmFilteredList&>(m_kMerchantList).ListBox_ItemChange_NumUnfiltered() && m_iMerchantFilter != 0);
         break;
@@ -520,12 +546,12 @@ void BarterMenu::HandleTileClick(int iTileIndex, Tile* pkTile)
         Interface_PlayMenuSound(unkA4);
         do
         {
-            m_iPlayerFilter += (iTileIndex != 7 ? 1 : -1);
+            m_iPlayerFilter += (aiID != 7 ? 1 : -1);
             if (m_iPlayerFilter < 0)
                 m_iPlayerFilter = 5;
             else if (m_iPlayerFilter > 5)
                 m_iPlayerFilter = 0;
-            UpdateTileText((int)m_apTiles[8]);
+            SetFilterModeTitle((int)m_apTiles[8]);
             reinterpret_cast<BmFilteredList&>(m_kPlayerList).ApplyFilter(BarterMenu_FilterModeFunc);
         } while (!reinterpret_cast<BmFilteredList&>(m_kPlayerList).ListBox_ItemChange_NumUnfiltered() && m_iPlayerFilter != 0);
         break;
@@ -555,6 +581,8 @@ extern "C" void __cdecl FUN_00ec408c();
 
 // Stores two values from global subsystems into m_8c and m_90, then formats each with a string and passes it to m_3c and m_50 via FUN_00a01350.
 // @fnv 0x0072db60
+// pdb: BarterMenu::UpdateCapsLabels | BarterMenu.obj | retail, string-set bridge, high
+// pdb locals: strtemp
 }  // namespace fnv_0072db60
 
 // src: XBOX_PDB 0x0072db60
@@ -571,7 +599,7 @@ void BarterMenu::UpdateCapsLabels()
 
 struct S_0072e370_Tile : Tile
 {
-    void Tile_Set_00a01350(int aiID, const char* str);
+    void Tile_Set_00a01350(int aiID, const char* apString);
 };
 
 struct S_0072e370_Item
@@ -638,21 +666,23 @@ struct S_0072e370
     S_0072e370_Sub* unk108;
 
     void* FUN_00726070();
-    void UpdateTileState(int a1, void* a2);
+    void UpdateTileState(int aiID, void* apTarget);
 };
 
 // @fnv 0x0072e370
-void S_0072e370::UpdateTileState(int aiIndex, void* pTile)
+// pdb: BarterMenu::DoEnter | BarterMenu.obj | retail, vtable slot, high
+// pdb params: aiID, apTarget
+void S_0072e370::UpdateTileState(int aiID, void* apTarget)
 {
-    if (pTile == 0)
+    if (apTarget == 0)
     {
-        if (aiIndex >= 0 && aiIndex < 22)
+        if (aiID >= 0 && aiID < 22)
         {
-            pTile = this->tiles[aiIndex];
+            apTarget = this->tiles[aiID];
         }
     }
 
-    switch (aiIndex)
+    switch (aiID)
     {
     case 0:
         this->vfn14(0x17, 0);
@@ -672,7 +702,7 @@ void S_0072e370::UpdateTileState(int aiIndex, void* pTile)
         DAT_0119fdb0 = 1;
         if (this->unk108 == 0)
         {
-            this->vfn10(this->subD8.ContainsKey(pTile, 0) ? 1 : 0);
+            this->vfn10(this->subD8.ContainsKey(apTarget, 0) ? 1 : 0);
         }
         DAT_011d8fa8 = this->unk108->FUN_007a1910();
         if (DAT_011d8fa8 != 0)
@@ -708,23 +738,26 @@ struct OwnCheck
     OwnCheck();
     ~OwnCheck();
     void FUN_00567ad0(void* pkOwner);
-    void TESObjectREFR_SetGlobal(void* pkRank);
-    void TESObjectREFR_SetRank(void* pkGlobal);
+    void TESObjectREFR_SetGlobal(void* apGlobal);
+    void TESObjectREFR_SetRank(void* aiRank);
     void TESObjectREFR_SetObjectReference(void* pkForm);
-    bool TESObjectREFR_IsAnOwner(TESObjectREFR* pkActor, int i);
+    bool TESObjectREFR_IsAnOwner(TESObjectREFR* pOwner, int i);
 };
 
 extern BarterMenu* g_pkBarterMenu_011d8fa4;
 
 // @fnv 0x0072eac0
 // src: XBOX_PDB 0x0072eac0
-void __cdecl BarterMenu_RemoveStolenItems(int iUnused, OwnItem* pkItem)
+// pdb: BarterMenu::RemoveStolenItems | BarterMenu.obj | retail, upstream name already matches, high
+// pdb params: apTile, apItem
+// pdb locals: pactor, removeList, pextraObj, pextra, ownedItem, premove
+void __cdecl BarterMenu_RemoveStolenItems(int apTile, OwnItem* apItem)
 {
     TESObjectREFR* pkMerchant_ = g_pkBarterMenu_011d8fa4->m_pkMerchant && g_pkBarterMenu_011d8fa4->m_pkMerchant->IsActor()
                                 ? g_pkBarterMenu_011d8fa4->m_pkMerchant
                                 : 0;
     BSSimpleList<OwnExtraList*> kRemoveY;
-    for (BSSimpleList<OwnExtraList*>* pkNode = pkItem->Modelloader_GetReferencedThis(); pkNode && pkNode->GetItem(); pkNode = pkNode->GetNext())
+    for (BSSimpleList<OwnExtraList*>* pkNode = apItem->Modelloader_GetReferencedThis(); pkNode && pkNode->GetItem(); pkNode = pkNode->GetNext())
     {
         OwnExtraList* pkExtra = pkNode->GetItem();
         if (pkMerchant_ && pkExtra->ExtraDataList_GetOwner())
@@ -733,15 +766,15 @@ void __cdecl BarterMenu_RemoveStolenItems(int iUnused, OwnItem* pkItem)
             kCheck.FUN_00567ad0(pkExtra->ExtraDataList_GetOwner());
             kCheck.TESObjectREFR_SetGlobal(pkExtra->ExtraDataList_GetGlobal());
             kCheck.TESObjectREFR_SetRank(pkExtra->ExtraDataList_GetRank());
-            kCheck.TESObjectREFR_SetObjectReference(pkItem->FUN_0044ddc0());
+            kCheck.TESObjectREFR_SetObjectReference(apItem->FUN_0044ddc0());
             if (kCheck.TESObjectREFR_IsAnOwner(pkMerchant_, 1))
                 kRemoveY.AddTail(pkExtra);
         }
     }
     for (BSSimpleList<OwnExtraList*>* pkIter = &kRemoveY; pkIter && pkIter->GetItem(); pkIter = pkIter->GetNext())
     {
-        pkItem->FUN_006ecd40(pkItem->FUN_00726070() - (pkIter->GetItem())->ExtraDataList_GetCount());
-        pkItem->Modelloader_GetReferencedThis()->Remove(pkIter->GetItem());
+        apItem->FUN_006ecd40(apItem->FUN_00726070() - (pkIter->GetItem())->ExtraDataList_GetCount());
+        apItem->Modelloader_GetReferencedThis()->Remove(pkIter->GetItem());
     }
     kRemoveY.RemoveAll();
 }
@@ -766,12 +799,15 @@ float __cdecl FUN_004bd510(float, float);
 
 // @fnv 0x0072ed00
 // src: XBOX_PDB 0x0072ed00
-float __cdecl BarterMenu_GetSortValue(Tile* tile, S_0072ed00_Item* item)
+// pdb: BarterMenu::GetSortValue | BarterMenu.obj | retail, upstream name already matches, high
+// pdb params: apTile, apItem
+// pdb locals: freturnVal, fsortValue, forigValue, bisBarterSelected, binVendorList, bNoBarter
+float __cdecl BarterMenu_GetSortValue(Tile* apTile, S_0072ed00_Item* apItem)
 {
-    float amount = item->FUN_004bd400();
+    float amount = apItem->FUN_004bd400();
     float base = amount;
-    bool b5 = reinterpret_cast<S_0072ed00_List&>(((BarterMenu*)DAT_011d8fa4)->m_kPlayerList).ContainsKey(tile);
-    bool b8 = tile->IsTraitNonZero(DAT_011d8fb4);
+    bool b5 = reinterpret_cast<S_0072ed00_List&>(((BarterMenu*)DAT_011d8fa4)->m_kPlayerList).ContainsKey(apTile);
+    bool b8 = apTile->IsTraitNonZero(DAT_011d8fb4);
     float result = 0.0f;
     if (amount < 0.0)
     {
@@ -779,7 +815,7 @@ float __cdecl BarterMenu_GetSortValue(Tile* tile, S_0072ed00_Item* item)
     }
     else if ((b5 && !b8) || (!b5 && b8))
     {
-        bool isEquip = item->FUN_0044ddc0()->FUN_00401170() == 0x6c || item->FUN_0044ddc0()->FUN_00401170() == 0x74;
+        bool isEquip = apItem->FUN_0044ddc0()->FUN_00401170() == 0x6c || apItem->FUN_0044ddc0()->FUN_00401170() == 0x74;
         amount *= isEquip ? 1.0f : ((BarterMenu*)DAT_011d8fa4)->unk94;
         if (((BarterMenu*)DAT_011d8fa4)->unk88 > 0)
         {
@@ -789,7 +825,7 @@ float __cdecl BarterMenu_GetSortValue(Tile* tile, S_0072ed00_Item* item)
         {
             amount = (FUN_00ec7d40(((BarterMenu*)DAT_011d8fa4)->unk88) / 100.0 + 1.0) * amount;
         }
-        FUN_005e58f0(0x11, g_thePlayer, item->FUN_0044ddc0(), &amount);
+        FUN_005e58f0(0x11, g_thePlayer, apItem->FUN_0044ddc0(), &amount);
         if (fabsf_00408860(amount) > 1.0)
             amount = FUN_004bd510(amount, 1.0f);
         else
@@ -798,7 +834,7 @@ float __cdecl BarterMenu_GetSortValue(Tile* tile, S_0072ed00_Item* item)
     }
     else if ((b5 && b8) || (!b5 && !b8))
     {
-        bool isEquip = item->FUN_0044ddc0()->FUN_00401170() == 0x6c || item->FUN_0044ddc0()->FUN_00401170() == 0x74;
+        bool isEquip = apItem->FUN_0044ddc0()->FUN_00401170() == 0x6c || apItem->FUN_0044ddc0()->FUN_00401170() == 0x74;
         amount *= isEquip ? 1.0f : ((BarterMenu*)DAT_011d8fa4)->unk98;
         if (((BarterMenu*)DAT_011d8fa4)->unk88 > 0)
         {
@@ -819,6 +855,9 @@ float __cdecl BarterMenu_GetSortValue(Tile* tile, S_0072ed00_Item* item)
 
 // Walks the linked list and returns the first entry whose FUN_0044ddc0 value and FUN_00559450 sub-node value both match the target's.
 // @fnv 0x0072f120
+// pdb: BarterMenu::GetTransactItem | BarterMenu.obj | debug, object-file gap fill, medium
+// pdb params: apItemList, apCompareItem
+// pdb locals: pfoundItem, pcurrItemRef, pcurrItem, pcurrItemExtra, paddItemExtra
 InventoryStackRecord* BarterMenu::FindMatchingEntry(BSSimpleList<InventoryStackRecord*>* head, InventoryStackRecord* target)
 {
     InventoryStackRecord* result2 = 0;
@@ -844,7 +883,7 @@ struct BarterTile
 {
     bool IsTraitNonZero(int m_uiSoundID);
     void FUN_00700320(int m_uiSoundID, int iValue);
-    void Tile_Set_00a01350(int m_uiSoundID, const char* pString, bool bPropagate);
+    void Tile_Set_00a01350(int m_uiSoundID, const char* apString, bool bPropagate);
     void FUN_00707e10(const char* pName);
     void Tile_Set(int m_uiSoundID, float fValue, bool bPropagate);
 };
@@ -853,7 +892,7 @@ extern BarterMenu* g_pkBarterMenu_011d8fa4;
 extern int g_iTileIDEquipped_011d8fb4;
 extern int g_iTileIDValue_011d8fb0;
 
-float __cdecl BarterMenu_GetSortValue(BarterTile* pkTile, InventoryStackRecord* pkItem);
+float __cdecl BarterMenu_GetSortValue(BarterTile* apTile, InventoryStackRecord* apItem);
 int __cdecl Tile_TextToTrait(const char* pName);
 int __cdecl Tile_AddUserTrait(const char* pName, int iDefault);
 int __cdecl BSsprintf(char* pBuffer, unsigned int uiSize, const char* pFormat, ...);
@@ -868,40 +907,44 @@ static const char s_szValueFormat0[] = "%.0f";
 extern const char g_szBarterTileEnd[] = "";
 
 // @fnv 0x0072f210
-void __cdecl UpdateBarterItemTile(BarterTile* pkTile, InventoryStackRecord* pkItem)
+// src: XBOX_RETAIL_PDB 0x0072f210
+// pdb: BarterMenu::InitFunc | BarterMenu.obj | retail, string-set bridge, high
+// pdb params: apTile, apItem
+// pdb locals: iitemCount, fsortValue, strtemp, ptransactItem
+void __cdecl BarterMenu_InitFunc(BarterTile* apTile, InventoryStackRecord* apItem)
 {
     char acBuffer[0x80];
-    float fValue = BarterMenu_GetSortValue(pkTile, pkItem);
+    float fValue = BarterMenu_GetSortValue(apTile, apItem);
     int iCount = 0;
-    if (!pkTile->IsTraitNonZero(g_iTileIDEquipped_011d8fb4))
+    if (!apTile->IsTraitNonZero(g_iTileIDEquipped_011d8fb4))
     {
         InventoryStackRecord* pkOther =
-            g_pkBarterMenu_011d8fa4->FindMatchingEntry(&g_pkBarterMenu_011d8fa4->m_kMerchantItems, pkItem);
+            g_pkBarterMenu_011d8fa4->FindMatchingEntry(&g_pkBarterMenu_011d8fa4->m_kMerchantItems, apItem);
         if (!pkOther)
-            pkOther = g_pkBarterMenu_011d8fa4->FindMatchingEntry(&g_pkBarterMenu_011d8fa4->m_kPlayerItems, pkItem);
-        iCount = pkItem->FUN_00726070() - (pkOther ? pkOther->FUN_00726070() : 0);
-        pkTile->FUN_00700320(Tile_TextToTrait(s_szNumBartered), pkOther ? pkOther->FUN_00726070() : 0);
+            pkOther = g_pkBarterMenu_011d8fa4->FindMatchingEntry(&g_pkBarterMenu_011d8fa4->m_kPlayerItems, apItem);
+        iCount = apItem->FUN_00726070() - (pkOther ? pkOther->FUN_00726070() : 0);
+        apTile->FUN_00700320(Tile_TextToTrait(s_szNumBartered), pkOther ? pkOther->FUN_00726070() : 0);
     }
     else
     {
-        iCount = pkItem->FUN_00726070();
+        iCount = apItem->FUN_00726070();
     }
     if (iCount > 1)
     {
-        BSsprintf(acBuffer, 0x80, s_szCountFormat, pkItem->GetFullName(), iCount);
-        pkTile->Tile_Set_00a01350(0xfc4, acBuffer, true);
+        BSsprintf(acBuffer, 0x80, s_szCountFormat, apItem->GetFullName(), iCount);
+        apTile->Tile_Set_00a01350(0xfc4, acBuffer, true);
     }
-    if (pkItem->ItemChange_GetWorn(0) && !pkTile->IsTraitNonZero(g_iTileIDEquipped_011d8fb4))
-        pkTile->FUN_00700320(Tile_AddUserTrait(s_szIsEquipped, -1), 1);
+    if (apItem->ItemChange_GetWorn(0) && !apTile->IsTraitNonZero(g_iTileIDEquipped_011d8fb4))
+        apTile->FUN_00700320(Tile_AddUserTrait(s_szIsEquipped, -1), 1);
     if (fValue <= 0.0)
         FUN_00406d30(acBuffer, 0x80, s_szNoValue);
     else if (fValue > 0.0 && fValue < 1.0)
         BSsprintf(acBuffer, 0x80, s_szValueFormat1, fValue);
     else
         BSsprintf(acBuffer, 0x80, s_szValueFormat0, fValue);
-    pkTile->Tile_Set_00a01350(g_iTileIDValue_011d8fb0, acBuffer, true);
-    pkTile->FUN_00707e10((const char*)pkItem->GetFullName());
-    pkTile->Tile_Set(0xfb0, 0.0f, true);
+    apTile->Tile_Set_00a01350(g_iTileIDValue_011d8fb0, acBuffer, true);
+    apTile->FUN_00707e10((const char*)apItem->GetFullName());
+    apTile->Tile_Set(0xfb0, 0.0f, true);
 }
 }  // namespace fnv_0072f210
 
@@ -914,7 +957,7 @@ struct FUN_007312e0_shell
 };
 struct FUN_00731360_shell
 {
-    void UpdateCurrentValueTile(int aiFlag);
+    void UpdateCurrentValueTile(int abPlayFocusSound);
 };
 struct FUN_00730e20_shell
 {
@@ -926,12 +969,15 @@ struct FUN_00726c40_shell
 };
 
 // @fnv 0x0072f4b0
-bool BarterMenu::HandleAction(int aiAction, int aiUnused)
+// pdb: BarterMenu::DoGamepad | BarterMenu.obj | retail, vtable slot, high
+// pdb params: aiButton, afValue
+// pdb locals: bresult
+bool BarterMenu::HandleAction(int aiButton, int afValue)
 {
     bool bHandled = false;
     if (Interface_IsTopMenuID(0x41d))
     {
-        switch (aiAction)
+        switch (aiButton)
         {
         case 13:
             if (!reinterpret_cast<FUN_00730e20_shell*>(&m_kMerchantList)->ListBox_ItemChange_IsEnabled())
@@ -962,13 +1008,13 @@ bool BarterMenu::HandleAction(int aiAction, int aiUnused)
             if (m_pkActiveList == &m_kMerchantList)
             {
                 reinterpret_cast<FUN_007312e0_shell*>(&m_kMerchantList)->FUN_007312e0();
-                HandleSelection((aiAction != 4) ? 4 : 2, 0);
+                HandleSelection((aiButton != 4) ? 4 : 2, 0);
                 reinterpret_cast<FUN_00731360_shell*>(&m_kMerchantList)->UpdateCurrentValueTile(0);
             }
             else
             {
                 reinterpret_cast<FUN_007312e0_shell*>(&m_kPlayerList)->FUN_007312e0();
-                HandleSelection((aiAction != 4) ? 9 : 7, 0);
+                HandleSelection((aiButton != 4) ? 9 : 7, 0);
                 reinterpret_cast<FUN_00731360_shell*>(&m_kPlayerList)->UpdateCurrentValueTile(0);
             }
             bHandled = true;
@@ -989,7 +1035,7 @@ struct QtyItemList
 
 struct QtyPlayer
 {
-    void PlayActorSound(TESBoundObject* pkForm, bool bMerchant, int iUnk);
+    void PlayActorSound(TESBoundObject* apobjREFR, bool abPickUp, int abUse);
 };
 extern QtyPlayer* g_thePlayer_011dea3c;
 
@@ -998,33 +1044,37 @@ extern int g_iTileIDEquipped_011d8fb4;
 extern int g_iTileIDValue_011d8fb0;
 extern int g_iTileIDState_011d8fbc;
 
-float __cdecl BarterMenu_GetSortValue(Tile* pkTile, InventoryStackRecord* pkItem);
-float __cdecl floorf(float f);
+float __cdecl BarterMenu_GetSortValue(Tile* apTile, InventoryStackRecord* apItem);
+float __cdecl floorf(float _X);
 int __cdecl TruncateFloatToInt(float f);
 int __cdecl MinInt(int a, int b);
-int __cdecl BSAbs(int i);
+int __cdecl BSAbs(int alValue);
 int __cdecl BSsprintf(char* pBuffer, unsigned int uiSize, const char* pFormat, ...);
 
 static const char s_szIntFormat[] = "%d";
 extern const char g_szBarterQtyEnd[] = "";
 
 // @fnv 0x0072f6f0
-void __cdecl UpdateBarterQuantity(int iCount)
+// src: XBOX_RETAIL_PDB 0x0072f6f0
+// pdb: BarterMenu::ItemSelectCallback | BarterMenu.obj | retail, call graph, high
+// pdb params: aiAmountSelected
+// pdb locals: pcurrTile, iwholeAmount, strtemp
+void __cdecl BarterMenu_ItemSelectCallback(int aiAmountSelected)
 {
     Tile* pkTile = reinterpret_cast<QtyItemList*>(g_pkBarterMenu_011d8fa4->m_pkActiveList)->FindItemData(&g_pkSelectedItem_011d8fa8);
-    if (!iCount || !g_pkSelectedItem_011d8fa8 || !pkTile)
+    if (!aiAmountSelected || !g_pkSelectedItem_011d8fa8 || !pkTile)
         return;
     g_pkBarterMenu_011d8fa4->m_fBarterTotal +=
         BarterMenu_GetSortValue(pkTile, g_pkSelectedItem_011d8fa8) *
-        (g_pkBarterMenu_011d8fa4->m_pkActiveList == &g_pkBarterMenu_011d8fa4->m_kMerchantList ? 1 : -1) * iCount;
+        (g_pkBarterMenu_011d8fa4->m_pkActiveList == &g_pkBarterMenu_011d8fa4->m_kMerchantList ? 1 : -1) * aiAmountSelected;
     g_thePlayer_011dea3c->PlayActorSound(
         g_pkSelectedItem_011d8fa8->FUN_0044ddc0(),
         g_pkBarterMenu_011d8fa4->m_pkActiveList == &g_pkBarterMenu_011d8fa4->m_kPlayerList, 0);
     if (pkTile->IsTraitNonZero(g_iTileIDEquipped_011d8fb4))
-        g_pkBarterMenu_011d8fa4->DecrementEntryCount(iCount);
+        g_pkBarterMenu_011d8fa4->DecrementEntryCount(aiAmountSelected);
     else
-        g_pkBarterMenu_011d8fa4->AddOrUpdateEntryCount(iCount);
-    g_pkBarterMenu_011d8fa4->RebuildInventoryLists(g_pkSelectedItem_011d8fa8->FUN_0044ddc0());
+        g_pkBarterMenu_011d8fa4->AddOrUpdateEntryCount(aiAmountSelected);
+    g_pkBarterMenu_011d8fa4->UpdateLists(g_pkSelectedItem_011d8fa8->FUN_0044ddc0());
     if (!g_pkBarterMenu_011d8fa4->m_kMerchantItems.IsEmpty() ||
         !g_pkBarterMenu_011d8fa4->m_kPlayerItems.IsEmpty())
     {
@@ -1077,6 +1127,9 @@ struct FC30Entry
 extern void* g_FC30Key;
 
 // @fnv 0x0072fc30
+// pdb: BarterMenu::RemoveTransactItem | BarterMenu.obj | debug, object-file gap fill, medium
+// pdb params: aiAmountSelected
+// pdb locals: ptransactItem, ptransactList, ptransactExtra
 void BarterMenu::DecrementEntryCount(int iCount)
 {
     int iValue;
@@ -1098,7 +1151,7 @@ struct LbTile
 {
     float FUN_00a011b0(int m_uiSoundID);
     void FUN_00700320(int m_uiSoundID, int iValue);
-    void FUN_00715c60(int m_uiSoundID, int iValue);
+    void FUN_00715c60(int aiTrait, int aiValue);
 };
 int __cdecl Tile_AddUserTrait(const char* pcName, int iDefault);
 
@@ -1121,16 +1174,19 @@ struct ListBoxImpl : ListBoxBase, BSSimpleList<LbItem*>
     unsigned short m_usElementCount;
     float m_fScroll;
 
-    void AccumulateTileHeight(LbTile* pkTile);
+    void AccumulateTileHeight(LbTile* apNewTile);
     void UpdateScrollPages();
     LbTile* ListBox_ItemChange_GetLastItem();
     void ListBox_ItemChange_UpdateHighlightBoxPos();
-    void ApplyFilter(bool(__cdecl* pfnFilter)(void* pkObject));
+    void ApplyFilter(bool(__cdecl* apFilterFn)(void* pkObject));
 };
 
 // Marks each item as filtered by pfnFilter, renumbers the visible tiles, updates the filtered count, and restores the selection.
 // @fnv 0x00730bb0
-void ListBoxImpl::ApplyFilter(bool(__cdecl* pfnFilter)(void* pkObject))
+// pdb: ListBox<ItemChange *>::Filter | BarterMenu.obj | retail, call graph, high
+// pdb params: apFilterFn
+// pdb locals: isaveHLIndex, uifilterCount, pnode
+void ListBoxImpl::ApplyFilter(bool(__cdecl* apFilterFn)(void* pkObject))
 {
     int iFilteredCount = 0;
     int iSelectedIndex = -1;
@@ -1139,7 +1195,7 @@ void ListBoxImpl::ApplyFilter(bool(__cdecl* pfnFilter)(void* pkObject))
     m_fScroll = 0.0f;
     for (BSSimpleList<LbItem*>* pkNode = this; pkNode && pkNode->GetItem(); pkNode = pkNode->GetNext())
     {
-        (pkNode->GetItem())->m_bFiltered = pfnFilter && pfnFilter((pkNode->GetItem())->m_pPointer) ? 1 : 0;
+        (pkNode->GetItem())->m_bFiltered = apFilterFn && apFilterFn((pkNode->GetItem())->m_pPointer) ? 1 : 0;
         if ((pkNode->GetItem())->m_bFiltered)
         {
             if ((pkNode->GetItem())->m_pkTile == m_pkSelected)
@@ -1183,6 +1239,7 @@ extern int g_i72CEB0Trait4;
 extern int g_i72CEB0Selected;
 
 // @fnv 0x0072ceb0
+// pdb: BarterMenu::BarterMenu | BarterMenu.obj | retail, string-set bridge, high
 BarterMenu::BarterMenu()
 {
     g_i72CEB0Trait0 = C72CEB0GetTraitID(g_ac72CEB0Trait0);
@@ -1225,44 +1282,48 @@ struct ListObj
     void* m_28;
     void* m_2c;
     void ListBox_ItemChange_RemoveItemGroup(int a);
-    int ListBox_ItemChange_AddItem(void* e, const char* s, int a, int b);
+    int ListBox_ItemChange_AddItem(void* aAssociatedData, const char* apcItemString, int apCompareFn, int apcTemplateName);
     void PopulateInventoryList(void* a, void* fn, int b, int c, int d, int e);
     void ListBox_ItemChange_Traverse(void* fn, int a, int b);
-    void ApplyFilter(void* fn);
+    void ApplyFilter(void* apFilterFn);
     unsigned int ListBox_ItemChange_NumUnfiltered();
-    void UpdateCurrentValueTile(int a);
+    void UpdateCurrentValueTile(int abPlayFocusSound);
     void FUN_007312e0();
     void* CallVirtualZero(int a, int b);
 };
 
 struct DataSource
 {
-    void FindEntriesByType(int arg, BSSimpleList<InventoryStackRecord*>* out);
+    void InventoryChanges_GetItemGroup(int apObj, BSSimpleList<InventoryStackRecord*>* apReturnList);
 };
 struct DataHandler
 {
     void* TESDataHandler_GetBarterContainer();
-    void UpdateInventoryForReference(void* a);
+    void UpdateInventoryForReference(void* apVendor);
 };
 
 extern DataHandler* g_dataHandler;
 extern PlayerCharacter* g_thePlayer;
 extern int DAT_011d8fb4;
 void* __cdecl FUN_004bf220(void* a);
-bool __cdecl IsFilteredFromBarter(InventoryStackRecord* e);
+bool __cdecl BarterMenu_VendorFirstPassFilterFunc(InventoryStackRecord* apItem);
 unsigned char __cdecl InterfaceManager_Has360Controller();
 void* __cdecl InterfaceManager_GetSingleton();
 void __cdecl AddHeadImpl(void* list, void** pp);
-void __cdecl UpdateBarterItemTile();
+void __cdecl BarterMenu_InitFunc();
 void __cdecl CompareF070Entries();
 struct IMObj
 {
-    void InterfaceManager_SetCurrentFocusTarget(void* a);
+    void InterfaceManager_SetCurrentFocusTarget(void* apTarget);
 };
 
 // Rebuilds the m_a8/m_d8 lists from the player and data handler for the given form, then selects and activates m_108 and calls FUN_0072db60.
 // @fnv 0x0072dc30
-void __thiscall BarterMenu::RebuildInventoryLists(int arg)
+// src: XBOX_RETAIL_PDB 0x0072dc30
+// pdb: BarterMenu::UpdateLists | BarterMenu.obj | retail, call graph (shared callers), high
+// pdb params: apUpdateObj
+// pdb locals: pnewHighlight, pnewItemGroup, pplayerInventory, pvendorInventory, pcurrItemObj, pcurrBuyItemRef, pnewExtra, pnewItem, pnewTile, pcurrSellItemRef
+void __thiscall BarterMenu::UpdateLists(int apUpdateObj)
 {
     long i = 0;
     if (reinterpret_cast<ListObj*>(m_pkActiveList) != 0)
@@ -1272,7 +1333,7 @@ void __thiscall BarterMenu::RebuildInventoryLists(int arg)
             reinterpret_cast<ListObj*>(m_pkActiveList)->FUN_007312e0();
         }
     }
-    if (arg != 0)
+    if (apUpdateObj != 0)
     {
         BSSimpleList<InventoryStackRecord*> b;
         void* n;
@@ -1280,8 +1341,8 @@ void __thiscall BarterMenu::RebuildInventoryLists(int arg)
         void* res = g_dataHandler->TESDataHandler_GetBarterContainer();
         if (n != 0)
         {
-            ((DataSource*)n)->FindEntriesByType(arg, &b);
-            reinterpret_cast<ListObj&>(m_kMerchantList).ListBox_ItemChange_RemoveItemGroup(arg);
+            ((DataSource*)n)->InventoryChanges_GetItemGroup(apUpdateObj, &b);
+            reinterpret_cast<ListObj&>(m_kMerchantList).ListBox_ItemChange_RemoveItemGroup(apUpdateObj);
             BSSimpleList<InventoryStackRecord*>* kZero = (BSSimpleList<InventoryStackRecord*>*)&b;
             for (; kZero != 0 && kZero->GetItem() != 0; kZero = kZero->GetNext())
             {
@@ -1298,13 +1359,13 @@ void __thiscall BarterMenu::RebuildInventoryLists(int arg)
         }
         if (res != 0)
         {
-            ((DataSource*)res)->FindEntriesByType(arg, &b);
-            reinterpret_cast<ListObj&>(m_kPlayerList).ListBox_ItemChange_RemoveItemGroup(arg);
+            ((DataSource*)res)->InventoryChanges_GetItemGroup(apUpdateObj, &b);
+            reinterpret_cast<ListObj&>(m_kPlayerList).ListBox_ItemChange_RemoveItemGroup(apUpdateObj);
             BSSimpleList<InventoryStackRecord*>* kZero;
             kZero = (BSSimpleList<InventoryStackRecord*>*)&b;
             for (; kZero != 0 && kZero->GetItem() != 0; kZero = kZero->GetNext())
             {
-                if (!(bool)IsFilteredFromBarter(kZero->GetItem()))
+                if (!(bool)BarterMenu_VendorFirstPassFilterFunc(kZero->GetItem()))
                 {
                     reinterpret_cast<ListObj&>(m_kPlayerList).ListBox_ItemChange_AddItem(kZero->GetItem(), (const char*)(kZero->GetItem())->GetFullName(), 0, 0);
                 }
@@ -1320,14 +1381,14 @@ void __thiscall BarterMenu::RebuildInventoryLists(int arg)
     {
         g_dataHandler->UpdateInventoryForReference(m_pkMerchant);
         reinterpret_cast<ListObj&>(m_kMerchantList).PopulateInventoryList((void*)g_thePlayer, (void*)::BarterMenu_PlayerFirstPassFilterFunc, 0, 0, 0, 0);
-        reinterpret_cast<ListObj&>(m_kPlayerList).PopulateInventoryList(m_pkMerchant, (void*)IsFilteredFromBarter, 0, 0, 0, 1);
+        reinterpret_cast<ListObj&>(m_kPlayerList).PopulateInventoryList(m_pkMerchant, (void*)BarterMenu_VendorFirstPassFilterFunc, 0, 0, 0, 1);
     }
     {
         BSSimpleList<InventoryStackRecord*>* kZero;
         kZero = reinterpret_cast<BSSimpleList<InventoryStackRecord*>*>(&m_kMerchantItems);
         for (; kZero != 0 && kZero->GetItem() != 0; kZero = kZero->GetNext())
         {
-            if (arg == 0 || (kZero->GetItem())->FUN_0044ddc0() == (void*)arg)
+            if (apUpdateObj == 0 || (kZero->GetItem())->FUN_0044ddc0() == (void*)apUpdateObj)
             {
                 int tmp;
                 InventoryStackRecord* r =
@@ -1351,7 +1412,7 @@ void __thiscall BarterMenu::RebuildInventoryLists(int arg)
         kZero = reinterpret_cast<BSSimpleList<InventoryStackRecord*>*>(&m_kPlayerItems);
         for (; kZero != 0 && kZero->GetItem() != 0; kZero = kZero->GetNext())
         {
-            if (arg == 0 || (kZero->GetItem())->FUN_0044ddc0() == (void*)arg)
+            if (apUpdateObj == 0 || (kZero->GetItem())->FUN_0044ddc0() == (void*)apUpdateObj)
             {
                 long tmp;
                 InventoryStackRecord* r;
@@ -1371,10 +1432,10 @@ void __thiscall BarterMenu::RebuildInventoryLists(int arg)
         }
     }
     reinterpret_cast<ListObj&>(m_kMerchantList).ListBox_ItemChange_Traverse((void*)BarterMenu_RemoveStolenItems, 0, 0x7fffffff);
-    reinterpret_cast<ListObj&>(m_kMerchantList).ListBox_ItemChange_Traverse((void*)UpdateBarterItemTile, 0, 0x7fffffff);
+    reinterpret_cast<ListObj&>(m_kMerchantList).ListBox_ItemChange_Traverse((void*)BarterMenu_InitFunc, 0, 0x7fffffff);
     reinterpret_cast<ListObj&>(m_kMerchantList).ApplyFilter((void*)BarterMenu_FilterModeFunc);
     reinterpret_cast<ListObj&>(m_kMerchantList).Virt20((void*)CompareF070Entries);
-    reinterpret_cast<ListObj&>(m_kPlayerList).ListBox_ItemChange_Traverse((void*)UpdateBarterItemTile, 0, 0x7fffffff);
+    reinterpret_cast<ListObj&>(m_kPlayerList).ListBox_ItemChange_Traverse((void*)BarterMenu_InitFunc, 0, 0x7fffffff);
     reinterpret_cast<ListObj&>(m_kPlayerList).ApplyFilter((void*)BarterMenu_FilterModeFunc);
     reinterpret_cast<ListObj&>(m_kPlayerList).Virt20((void*)CompareF070Entries);
     if (0 == reinterpret_cast<ListObj*>(m_pkActiveList))
@@ -1414,7 +1475,7 @@ void __thiscall BarterMenu::RebuildInventoryLists(int arg)
 
 // List sort comparator: entries whose tile has the highlight trait come first, then order by tile text.
 
-int __cdecl _mbscmp(const unsigned char* pucA, const unsigned char* pucB);
+int __cdecl _mbscmp(const unsigned char* _s1, const unsigned char* _s2);
 
 extern int g_iF070HighlightTrait;
 
@@ -1426,6 +1487,10 @@ struct F070Entry
 
 // Compares two entries by the highlight trait first, then by the string from trait 0xfc4, returning -1, 1 or the string comparison result.
 // @fnv 0x0072f070
+// pdb: BarterMenu::AddTransactItem | BarterMenu.obj | retail, object-file run extension, low
+// pdb note: debug build links it to BarterMenu::SortFunc
+// pdb params: aiAmountSelected
+// pdb locals: ptransactItem, ptransactList, ptransactExtra, pextra
 int CompareF070Entries(F070Entry* pkA, F070Entry* pkB)
 {
     void* pvItemA = pkA->m_pvItem;
@@ -1454,12 +1519,12 @@ struct TESQuestStageList
 
 struct ItemTransferManager
 {
-    void ProcessInventoryRecords(InventoryStackRecord* apItem, int aiCount, TESObjectREFR* apRef);
+    void TESDataHandler_RemoveItemBarterContainer(InventoryStackRecord* apitem, int aiNumber, TESObjectREFR* apVendor);
 };
 extern ItemTransferManager* g_transferMgr_011c3f2c;
 
 bool __cdecl Script_SetActionFlag(TESObjectREFR* apRef, ExtraDataList* apExtraList, unsigned int auiFlags);
-float __cdecl floorf(float afValue);
+float __cdecl floorf(float _X);
 int __cdecl TruncateFloatToInt(float afValue);
 extern "C" const char* __cdecl FUN_00ec7d40(int aiValue);
 void __cdecl FUN_004d5e10(int aiID, const char* apText);
@@ -1475,7 +1540,10 @@ int __cdecl MinInt(int aiValue, int aiValue2);
 typedef BSSoundHandle (BSAudio::*BarterSoundFactory)(const char*, unsigned int, bool);
 typedef bool (BSSoundHandle::*BarterSoundPlay)();
 
-void BarterMenu::CompleteBarterTransaction()
+// src: XBOX_RETAIL_PDB 0x0072fd10
+// pdb: BarterMenu::CompleteTransaction | BarterMenu.obj | retail, string-set bridge, high
+// pdb locals: pinventory, iwholeAmount, pammo, pvendorContainer, pcurrBuyItemRef, pbuyItem, pbuyExtra, pcurrSellItemRef, psellItem, psellExtra, tempGold
+void BarterMenu::CompleteTransaction()
 {
     TESObjectREFR* pTarget3 =
         reinterpret_cast<fnv_0072fd10::TESQuestStageList*>(m_merchant->BSFile_GetDevice())->FUN_00421400() ? reinterpret_cast<fnv_0072fd10::TESQuestStageList*>(m_merchant->BSFile_GetDevice())->FUN_00421400() : m_merchant;
@@ -1487,7 +1555,7 @@ void BarterMenu::CompleteBarterTransaction()
         ExtraDataList* pExtraList = pItem->Modelloader_GetReferencedThis() ? pItem->Modelloader_GetReferencedThis()->GetItem() : 0;
         if (pExtraList)
             fnv_0072fd10::Script_SetActionFlag(m_merchant, pExtraList, 0x4000);
-        fnv_0072fd10::g_transferMgr_011c3f2c->ProcessInventoryRecords(pItem, pItem->FUN_00726070(), m_merchant);
+        fnv_0072fd10::g_transferMgr_011c3f2c->TESDataHandler_RemoveItemBarterContainer(pItem, pItem->FUN_00726070(), m_merchant);
         delete pItem;
     }
 
@@ -1514,7 +1582,7 @@ void BarterMenu::CompleteBarterTransaction()
         InventoryStackRecord kCaps9(fnv_0072fd10::TESForm_GetFormByNumericID(0xf), 0);
         pChanges = InventoryChanges::GetOrAddInventoryChanges(pTarget3);
         if (pChanges)
-            fnv_0072fd10::g_transferMgr_011c3f2c->ProcessInventoryRecords(&kCaps9, fnv_0072fd10::MinInt(iAmount5, unk90), m_merchant);
+            fnv_0072fd10::g_transferMgr_011c3f2c->TESDataHandler_RemoveItemBarterContainer(&kCaps9, fnv_0072fd10::MinInt(iAmount5, unk90), m_merchant);
         ((BSAudio::GetSingleton()->*reinterpret_cast<BarterSoundFactory>(&BSAudio::BSAudio_GetSoundHandleByEditorName))(
             "ITMBottlecapsUp", 0x101, false).*reinterpret_cast<BarterSoundPlay>(&BSSoundHandle::Play))();
     }
@@ -1522,7 +1590,7 @@ void BarterMenu::CompleteBarterTransaction()
     {
         pChanges = InventoryChanges::GetOrAddInventoryChanges((TESObjectREFR*)fnv_0072fd10::g_player_011dea3c);
         if (pChanges)
-            pChanges->TransferItemToReference((TESObjectREFR*)fnv_0072fd10::g_player_011dea3c, -iAmount5, pTarget3);
+            pChanges->RemoveGold((TESObjectREFR*)fnv_0072fd10::g_player_011dea3c, -iAmount5, pTarget3);
         ((BSAudio::GetSingleton()->*reinterpret_cast<BarterSoundFactory>(&BSAudio::BSAudio_GetSoundHandleByEditorName))(
             "ITMBottlecapsDown", 0x101, false).*reinterpret_cast<BarterSoundPlay>(&BSSoundHandle::Play))();
     }
@@ -1538,7 +1606,7 @@ void BarterMenu::CompleteBarterTransaction()
 }
 
 extern double DAT_01012060;
-void __cdecl UpdateAnimationTileFade(int a0, int a1, int a2, S_0072e370_Item* a3, int a4);
+void __cdecl InterfaceManager_UpdatePipBoyInventoryEffects(int pTileFade1, int pTileFade2, int pTilePulseSTR, S_0072e370_Item* pItemPulseSTRREQ, int abSkill);
 
 struct TESBoundObjectExt
 {
@@ -1548,6 +1616,7 @@ struct TESBoundObjectExt
 
 // @fnv 0x007306d0
 // src: XBOX_PDB 0x007306d0
+// pdb: BarterMenu::DoIdle | BarterMenu.obj | retail, upstream name already matches, high
 void BarterMenu::DoIdle()
 {
     if (DAT_011d8fc0 == 1)
@@ -1560,7 +1629,7 @@ void BarterMenu::DoIdle()
         {
             if (((InventoryStackRecord*)DAT_011d8fa8)->FUN_0044ddc0()->FUN_00401170() == 0x28)
             {
-                UpdateAnimationTileFade(((int)m_apTiles[14]), ((int)m_apTiles[15]), ((int)m_apTiles[16]), DAT_011d8fa8, 0);
+                InterfaceManager_UpdatePipBoyInventoryEffects(((int)m_apTiles[14]), ((int)m_apTiles[15]), ((int)m_apTiles[16]), DAT_011d8fa8, 0);
                 return;
             }
         }
@@ -1569,7 +1638,7 @@ void BarterMenu::DoIdle()
             if (((InventoryStackRecord*)DAT_011d8fa8)->FUN_0044ddc0()->FUN_00401170() == 0x18)
             {
 
-                UpdateAnimationTileFade(
+                InterfaceManager_UpdatePipBoyInventoryEffects(
                     (DAT_011d8fa8 != 0 &&
                      DAT_01012060 !=
                          ((TESBoundObjectExt*)((InventoryStackRecord*)DAT_011d8fa8)->FUN_0044ddc0())->TESObjectARMO_GetArmorRating())
@@ -1594,7 +1663,7 @@ struct Holder7313
 
 struct IM7313
 {
-    void InterfaceManager_SetCurrentFocusTarget(Tile* pTile, int m_uiSoundID, bool bFlag);
+    void InterfaceManager_SetCurrentFocusTarget(Tile* apTarget, int aiType, bool abPlaySounds);
 };
 struct List7313
 {
@@ -1612,11 +1681,14 @@ struct List7313
     float m_24;
     float m_28;
     unsigned int ListBox_ItemChange_NumUnfiltered(int a);
-    void UpdateCurrentValueTile(bool abFlag);
+    void UpdateCurrentValueTile(bool abPlayFocusSound);
 };
 
 // @fnv 0x00731360
-void List7313::UpdateCurrentValueTile(bool abFlag)
+// pdb: ListBox<ItemChange *>::RestoreListState | BarterMenu.obj | retail, call graph, high
+// pdb params: abPlayFocusSound
+// pdb locals: pnewHighlight
+void List7313::UpdateCurrentValueTile(bool abPlayFocusSound)
 {
     Tile* pTile = 0;
     if (m_0c && m_14)
@@ -1624,7 +1696,7 @@ void List7313::UpdateCurrentValueTile(bool abFlag)
         m_14->Tile_Set(Tile_TextToTrait("_current_value"), m_28, false);
         m_14->SetTraitFloat(Tile_TextToTrait("_SetInCode"), 1.0f);
         pTile = GetTile7313((unsigned int)BSMIN(m_24, (float)(ListBox_ItemChange_NumUnfiltered(0) - 1.0)));
-        ((IM7313*)InterfaceManager_GetSingleton())->InterfaceManager_SetCurrentFocusTarget(pTile, 0xfc3, abFlag);
+        ((IM7313*)InterfaceManager_GetSingleton())->InterfaceManager_SetCurrentFocusTarget(pTile, 0xfc3, abPlayFocusSound);
         SetSelected7313(pTile);
         if (!InterfaceManager_Has360Controller())
         {
@@ -1688,7 +1760,11 @@ int __cdecl FUN_00479430(TESBoundObject*);
 
 // Checks if an inventory entry should be hidden from the barter menu based on merchant service flags and form validity.
 // @fnv 0x0072e6c0
-bool __cdecl IsFilteredFromBarter(InventoryStackRecord* apEntry)
+// src: XBOX_RETAIL_PDB 0x0072e6c0
+// pdb: BarterMenu::VendorFirstPassFilterFunc | BarterMenu.obj | retail, object-file run extension, high
+// pdb params: apItem
+// pdb locals: pweap, pbipedForm, pammo, pfull, pobj, bisFiltered, pactor
+bool __cdecl BarterMenu_VendorFirstPassFilterFunc(InventoryStackRecord* apItem)
 {
     MerchantActor* merchant4;
     bool filteredVal = false;
@@ -1701,10 +1777,10 @@ bool __cdecl IsFilteredFromBarter(InventoryStackRecord* apEntry)
         (((BarterMenu*)DAT_011d8fa4)->m_pkMerchant && ((BarterMenu*)DAT_011d8fa4)->m_pkMerchant->IsActor())
             ? (MerchantActor*)((BarterMenu*)DAT_011d8fa4)->m_pkMerchant
             : 0;
-    formTmp = apEntry ? ((InventoryStackRecord*)apEntry)->FUN_0044ddc0() : 0;
+    formTmp = apItem ? ((InventoryStackRecord*)apItem)->FUN_0044ddc0() : 0;
     if (merchant4)
     {
-        switch (((InventoryStackRecord*)apEntry)->FUN_0044ddc0()->FUN_00401170())
+        switch (((InventoryStackRecord*)apItem)->FUN_0044ddc0()->FUN_00401170())
         {
         case 40:
         case 41:
@@ -1730,7 +1806,7 @@ bool __cdecl IsFilteredFromBarter(InventoryStackRecord* apEntry)
             filteredVal = merchant4->FUN_004181e0()->services.HasFlags(8) == false;
             break;
         case 47:
-            switch (FUN_00479430(((InventoryStackRecord*)apEntry)->FUN_0044ddc0()))
+            switch (FUN_00479430(((InventoryStackRecord*)apItem)->FUN_0044ddc0()))
             {
             case 10:
                 filteredVal = merchant4->FUN_004181e0()->services.HasFlags(0x20) == false;
@@ -1750,11 +1826,11 @@ bool __cdecl IsFilteredFromBarter(InventoryStackRecord* apEntry)
     }
     bipedVal = TESBipedModelForm::GetFormAsBipedModel(formTmp);
     name = dynamic_cast<TESFullName*>(formTmp);
-    armor = ((InventoryStackRecord*)apEntry)->FUN_0044ddc0()->FUN_00401170() == 40
-                ? (TESObjectARMO*)((InventoryStackRecord*)apEntry)->FUN_0044ddc0()
+    armor = ((InventoryStackRecord*)apItem)->FUN_0044ddc0()->FUN_00401170() == 40
+                ? (TESObjectARMO*)((InventoryStackRecord*)apItem)->FUN_0044ddc0()
                 : 0;
-    weapon_ = ((InventoryStackRecord*)apEntry)->FUN_0044ddc0()->FUN_00401170() == 41
-                  ? (TESObjectWEAP*)((InventoryStackRecord*)apEntry)->FUN_0044ddc0()
+    weapon_ = ((InventoryStackRecord*)apItem)->FUN_0044ddc0()->FUN_00401170() == 41
+                  ? (TESObjectWEAP*)((InventoryStackRecord*)apItem)->FUN_0044ddc0()
                   : 0;
     if (!formTmp || (bipedVal && !bipedVal->TESBipedModelForm_GetPlayable()) || TESContainer_IsGold(formTmp) || !name ||
         !name->GetModelLength() || (armor && !armor->IsFlag80Clear()) || (weapon_ && !weapon_->FUN_004c94d0()))
@@ -1772,11 +1848,14 @@ struct Fr7304List
 // Evaluates the item type against a filter and, when a tile exists, combines the result with a comparison to _num_bartered.
 // @fnv 0x007304b0
 // src: XBOX_PDB 0x007304b0
-bool __cdecl BarterMenu_FilterModeFunc(InventoryStackRecord* pkItem)
+// pdb: BarterMenu::FilterModeFunc | BarterMenu.obj | retail, string-set bridge, high
+// pdb params: apItem
+// pdb locals: emode, eid, pcurrTile, bisFiltered
+bool __cdecl BarterMenu_FilterModeFunc(InventoryStackRecord* apItem)
 {
     bool bResult = false;
-    int iType = pkItem->FUN_0044ddc0()->FUN_00401170();
-    Tile* pkTile = reinterpret_cast<Fr7304List&>(((BarterMenu*)DAT_011d8fa4)->m_kMerchantList).FindItemData(&pkItem);
+    int iType = apItem->FUN_0044ddc0()->FUN_00401170();
+    Tile* pkTile = reinterpret_cast<Fr7304List&>(((BarterMenu*)DAT_011d8fa4)->m_kMerchantList).FindItemData(&apItem);
     int iFilter_2 = 0;
     if (pkTile)
     {
@@ -1784,7 +1863,7 @@ bool __cdecl BarterMenu_FilterModeFunc(InventoryStackRecord* pkItem)
     }
     else
     {
-        pkTile = reinterpret_cast<Fr7304List&>(((BarterMenu*)DAT_011d8fa4)->m_kPlayerList).FindItemData(&pkItem);
+        pkTile = reinterpret_cast<Fr7304List&>(((BarterMenu*)DAT_011d8fa4)->m_kPlayerList).FindItemData(&apItem);
         iFilter_2 = ((BarterMenu*)DAT_011d8fa4)->m_iPlayerFilter;
     }
     switch (iFilter_2)
@@ -1810,7 +1889,7 @@ bool __cdecl BarterMenu_FilterModeFunc(InventoryStackRecord* pkItem)
     if (pkTile)
     {
         bResult =
-            bResult || (double)pkItem->FUN_00726070() - pkTile->FUN_00a011b0(Tile_TextToTrait(s_szNumBartered)) <= 0.0;
+            bResult || (double)apItem->FUN_00726070() - pkTile->FUN_00a011b0(Tile_TextToTrait(s_szNumBartered)) <= 0.0;
     }
     return bResult;
 }

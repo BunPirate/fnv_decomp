@@ -8,6 +8,7 @@ class hkTransform;
 class hkVector4;
 class hkRotation;
 
+// pdb: class hkpRagdollConstraintData, size 0x140, bases: hkpConstraintData, 1 members
 class hkpRagdollConstraintData : public hkpConstraintData
 {
 public:

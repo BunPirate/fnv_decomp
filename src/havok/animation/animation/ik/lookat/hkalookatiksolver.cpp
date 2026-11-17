@@ -12,6 +12,8 @@ static const float kZero = 0.0f;       // the game's DAT_01011d78
 // Computes the three-component length; if it is not below the threshold, stores that length, a function of x and y, and a clamped asin of z over the length.
 // @fnv 0x00ce01c0
 // src: GUESS 0x00ce01c0 (confidence: low)
+// pdb: hkaLookAtIkSolver::sphericalFromCartesian | hkaLookAtIkSolver.obj | retail, object-file run extension, low
+// pdb params: cartesianInSphericalOut
 void __cdecl Object_ProcessAndReturnValue_00ce01c0(__m128* vec)
 {
     const float* pFloats = (const float*)vec;

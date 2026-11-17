@@ -54,6 +54,7 @@ struct FUN_00e3eaa0 : S_00e3eaa0_Base
 };
 // Destructor for the container; the array member is destroyed automatically after this body runs.
 // @fnv 0x00e3eaa0
+// pdb: hkxAttributeHolder::~hkxAttributeHolder | hkxAttributeHolder.obj | retail, call graph (shared callers), high
 FUN_00e3eaa0::~FUN_00e3eaa0() throw()
 {}
 
@@ -70,7 +71,7 @@ inline S_00e3e950_Heap& heap(hkMemoryRouter& holder)
     return *reinterpret_cast<S_00e3e950_Heap*>(holder.m_heap);
 }
 }
-int __cdecl hkArrayUtil__reserve(S_00e3e950_Heap& alloc, void* array, int n, int elemSize);
+int __cdecl hkArrayUtil__reserve(S_00e3e950_Heap& mem, void* array, int numElem, int sizeElem);
 
 struct S_00e3e950_Str
 {
@@ -191,6 +192,8 @@ struct FUN_00e3e950 : S_00e3e950_RefObj
 
 // Copy constructor: copies the element array from o into this object's array.
 // @fnv 0x00e3e950
+// pdb: hkxAttributeHolder::hkxAttributeHolder | hkxAttributeHolder.obj | retail, object-file run extension, low
+// pdb params: other
 FUN_00e3e950::FUN_00e3e950(const FUN_00e3e950& o)
 {
     m_aiIndexedValues = o.m_aiIndexedValues;
@@ -226,6 +229,7 @@ struct FUN_00dfe360_cls
 
 // @fnv 0x00dfe360
 // src: GUESS 0x00dfe360 (confidence: low)
+// pdb: hkaInterleavedUncompressedAnimation::~hkaInterleavedUncompressedAnimation | hkaInterleavedUncompressedAnimationClass.obj | retail, object-file run extension, low
 void FUN_00dfe360_cls::UpdateFields_00dfe360()
 {
     hkMemoryRouter* pHolder = hkMemoryRouter_getInstance();

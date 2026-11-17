@@ -2,6 +2,7 @@
 
 #include "QueuedKF.h"
 
+// pdb: class QueuedReplacementKF, size 0x40 (here 0x30), bases: QueuedKF, 2 members
 class QueuedReplacementKF : public QueuedKF
 {
 public:

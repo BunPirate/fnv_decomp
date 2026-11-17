@@ -44,10 +44,11 @@ struct Obj_d9be20 {
     int m10;
     void UpdateFields_00d9be20();
 };
+// pdb: class Key, size 0x8, 2 members
 struct Key {
-    int a;
-    int b;
-    Key& operator=(const Key& o) { a = o.a; b = o.b; a = o.a; return *this; }
+    int m_sKeyName; // src: XBOX_RETAIL_PDB +0x0 (old: a)
+    int m_pChildren; // src: XBOX_RETAIL_PDB +0x4 (old: b)
+    Key& operator=(const Key& o) { m_sKeyName = o.m_sKeyName; m_pChildren = o.m_pChildren; m_sKeyName = o.m_sKeyName; return *this; }
 };
 struct Elem {
     hkVector4 v0;
@@ -69,7 +70,7 @@ struct ElemPool {
     int m_unk08;
     IntArray m_freeArr;
 
-    void Grow(int newCapacity, int a, int b);
+    void Grow(int size, int rootNode, int rootIdx);
     int AllocElem(int a, int b, const Elem& e);
 };
 struct FUN_00d9ce00_Class
@@ -79,11 +80,11 @@ struct FUN_00d9ce00_Class
     int unk08;
     int* items;
     int count;
-    int hkAabbTree_struct_hkAabbTreeData_hkAabbTreeAabb_unsigned_int_NodeManager_reserve(int start, int first, int second);
+    int hkAabbTree_struct_hkAabbTreeData_hkAabbTreeAabb_unsigned_int_NodeManager_reserve(int size, int rootNode, int rootIdx);
     int* PopItem(int first, int second, int* output);
 };
 struct UnsignedShortArray { unsigned short* elements; unsigned int count; unsigned int capacity; };
-void __cdecl ResizeAudioStream(void* memory, UnsignedShortArray* buffer, unsigned int count);
+void __cdecl ResizeAudioStream(void* mem, UnsignedShortArray* array, unsigned int sizeElem);
 struct Owner { int unknown00, unknown04, unknown08; UnsignedShortArray buffer; hkMemoryRouter* hkMemoryRouter_getInstance(); unsigned short* AppendElement(unsigned short value); };
 struct Allocator {
     virtual void v00();
@@ -93,7 +94,7 @@ struct Allocator {
     virtual void Free(void* p, unsigned int bytes);
 };
 hkMemoryRouter* __cdecl hkMemoryRouter_getInstance();
-void __cdecl hkArrayUtil__reserve(Allocator* allocator, void** data, unsigned int capacity, unsigned int elemSize);
+void __cdecl hkArrayUtil__reserve(Allocator* mem, void** array, unsigned int numElem, unsigned int sizeElem);
 struct S_d9bf30_Rec {
     int unk0; int unk4; int unk8; int unkc;
     unsigned short unk10; unsigned short unk12;
@@ -156,7 +157,7 @@ struct S_00d9d650_Heap
     virtual void ReturnMemory(void* p, int numBytes);
 };
 namespace fnvc_adapt { hkMemoryRouter& __cdecl hkMemoryRouter_getInstance(); }
-void __cdecl hkArrayUtil__reserve(S_00d9d650_Heap& alloc, void* array, int reqCapacity, int sizeElem);
+void __cdecl hkArrayUtil__reserve(S_00d9d650_Heap& mem, void* array, int numElem, int sizeElem);
 template <typename T>
 struct S_00d9d650_Array
 {
@@ -217,7 +218,7 @@ struct S_00d9d650_Node
 };
 struct S_00d9d650_Pool
 {
-    void hkAabbTree_struct_hkAabbTreeData_hkAabbTreeAabb_unsigned_int_NodeManager_reserve(int numNodes, S_00d9d650_Node** root, int* a);
+    void hkAabbTree_struct_hkAabbTreeData_hkAabbTreeAabb_unsigned_int_NodeManager_reserve(int size, S_00d9d650_Node** rootNode, int* rootIdx);
     S_00d9d650_Node* PopItem(S_00d9d650_Node** root, int* a, int* b);
 };
 struct S_00d9d650_Tree
@@ -233,7 +234,7 @@ struct S_00d9d650_Tree
 
     void ProcessEntries_00d9d1c0(S_00d9d650_Aabb* aabbs, const int* keys, int n, S_00d9d650_Node* root, S_00d9d650_Array<int>& out, int depth);
     void MergeNode(S_00d9d650_Node* root, int a, int b);
-    void TraverseTree(S_00d9d650_Node* root, int a);
+    void hkAabbTree_hkAabbTreeData_hkAabbTreeAabb_unsigned_int_checkConsistency(S_00d9d650_Node* root, int skipNode);
     void BuildTree(const S_00d9d650_Aabb* aabbs, const int* keys, int n, S_00d9d650_Array<int>& out) throw();
 };
 struct Node_d9c520
@@ -268,7 +269,7 @@ struct Pool_d9c520
     int unk18;
     Resolver_d9c520 resolver;
 
-    void TraverseNodeTree(Node_d9c520* node, int second);
+    void hkAabbTree_hkAabbTreeData_hkAabbTreeAabb16_unsigned_short_checkConsistency(Node_d9c520* root, int skipNode);
 };
 void __cdecl AppendElement();
 void __cdecl Hkaabbtree_AppendElement_Thunk(int param_1, unsigned short param_2);
@@ -291,7 +292,7 @@ public:
     FreeListD9C7 m_kFreeList;
 
     void hkAabbTree_struct_hkAabbTreeData_hkAabbTreeAabb16_unsigned_short_removeLeafInternal(NodeD9C7* pkNode, NodeD9C7** ppkOut);
-    void hkAabbTree_struct_hkAabbTreeData_hkAabbTreeAabb16_unsigned_short_remove(NodeD9C7* pkNode);
+    void hkAabbTree_struct_hkAabbTreeData_hkAabbTreeAabb16_unsigned_short_remove(NodeD9C7* leafIdx);
 };
 extern hkVector4 DAT_01267e30;
 struct Range {
@@ -325,7 +326,7 @@ struct Handle_d9c4 {
 struct HandlePool_d9c4 {
     hkArray<Handle_d9c4> m_handles;
     hkArray<int> m_kFreeListEntries;
-    void hkAabbTree_struct_hkAabbTreeData_hkAabbTreeAabb_unsigned_int_NodeManager_reserve(int newSize, Handle_d9c4** ppHandle, const int* pIndex);
+    void hkAabbTree_struct_hkAabbTreeData_hkAabbTreeAabb_unsigned_int_NodeManager_reserve(int size, Handle_d9c4** rootNode, const int* rootIdx);
 };
 
 extern "C" __m128 _mm_add_ps(__m128, __m128);
@@ -428,6 +429,9 @@ struct S00d9c610_AabbTree {
 
 // @fnv 0x00d9c610
 // src: XBOX_PDB 0x00d9c610
+// pdb: hkAabbTree<hkAabbTreeData::hkAabbTreeAabb16,unsigned short>::add | hkAabbTree.obj | retail, object-file gap fill, high
+// pdb params: aabb, userData
+// pdb locals: leaf, newInternalNodeIdx
 unsigned short S00d9c610_AabbTree::hkAabbTree_hkAabbTreeData_hkAabbTreeAabb16_unsigned_short_add(const S00d9c610_Aabb& aabb, void* userData)
 {
     S00d9c610_AabbUint32 qAabb;

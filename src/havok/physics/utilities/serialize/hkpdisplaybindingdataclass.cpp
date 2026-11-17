@@ -34,6 +34,7 @@ class FUN_00dff640_cls : public RefBase_cls
 
 // Releases m_pB and m_pA, destroys the base, and if acFlags bit 0 is set frees this through the allocator with m_uSize.
 // @fnv 0x00dff640
+// pdb: hkpDisplayBindingData::RigidBody::`scalar deleting destructor' | hkpDisplayBindingDataClass.obj | retail, vtable slot, high
 FUN_00dff640_cls* FUN_00dff640_cls::FUN_00dff640(unsigned char acFlags)
 {
     if (m_pB != 0)
@@ -80,12 +81,14 @@ struct FUN_00dff730_cls
     int m_iCount1;
     unsigned int m_uCapBits1;
 
-    void ClearArrays();
+    void hkpDisplayBindingData_dtor();
 };
 
 // Releases and nulls every element of both pointer arrays, frees their storage via the audio allocator, and resets the vtable pointer.
 // @fnv 0x00dff730
-void FUN_00dff730_cls::ClearArrays()
+// src: XBOX_RETAIL_PDB 0x00dff730
+// pdb: hkpDisplayBindingData::~hkpDisplayBindingData | hkpDisplayBindingDataClass.obj | retail, object-file gap fill, high
+void FUN_00dff730_cls::hkpDisplayBindingData_dtor()
 {
     hkMemoryRouter* pHolder = (hkMemoryRouter*)hkMemoryRouter_getInstance();
     hkMemoryAllocator* pAllocator = reinterpret_cast<hkMemoryAllocator*>(pHolder->m_heap);
@@ -143,6 +146,7 @@ struct Owner
 };
 // Calls FUN_00dff6a0, and if flags has bit 0 set, releases this via the BSAudio allocator with size4 bytes, then returns this.
 // @fnv 0x00dff810
+// pdb: hkpDisplayBindingData::PhysicsSystem::`scalar deleting destructor' | hkpDisplayBindingDataClass.obj | retail, vtable slot, high
 Owner* Owner::FUN_00dff810(unsigned int flags)
 {
     FUN_00dff6a0();
@@ -162,13 +166,14 @@ struct CpuObject
 {
     unsigned int unk00;
     unsigned short size;
-    void ClearArrays();
+    void hkpDisplayBindingData_dtor();
     CpuObject* FUN_00dff840(unsigned int flags);
 };
 // @fnv 0x00dff840
+// pdb: hkpDisplayBindingData::`scalar deleting destructor' | hkpDisplayBindingDataClass.obj | retail, vtable slot, high
 CpuObject* CpuObject::FUN_00dff840(unsigned int flags)
 {
-    ClearArrays();
+    hkpDisplayBindingData_dtor();
     if (flags & 1)
     {
         hkMemoryRouter* holder = hkMemoryRouter_getInstance();

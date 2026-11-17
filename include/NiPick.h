@@ -10,6 +10,7 @@ class PickRecord;
 class PickNode;
 class NiPoint3;
 
+// pdb: class NiPick, size 0x34, 13 members
 class NiPick
 {
 public:
@@ -21,15 +22,15 @@ public:
     class Record
     {
     public:
-        NiPointer<NiAVObject> m_pReferencedObject;
-        NiPointer<NiNode> m_pParentNode;
-        NiPoint3 m_vPoint;
-        float m_fHitDistance;
-        unsigned short m_usFlags;
-        unsigned short m_ausPadding[3];
+        NiPointer<NiAVObject> m_spObject; // src: XBOX_RETAIL_PDB +0x0 (old: m_pReferencedObject)
+        NiPointer<NiNode> m_spProxyParent; // src: XBOX_RETAIL_PDB +0x4 (old: m_pParentNode)
+        NiPoint3 m_intersect; // src: XBOX_RETAIL_PDB +0x8 (old: m_vPoint)
+        float m_fDistance; // src: XBOX_RETAIL_PDB +0x14 (old: m_fHitDistance)
+        unsigned short m_usTriangleIndex; // src: XBOX_RETAIL_PDB +0x18 (old: m_usFlags)
+        unsigned short m_usVertexIndex[3]; // src: XBOX_RETAIL_PDB +0x1a (old: m_ausPadding)
         float m_texture[2];
-        NiPoint3 m_vHitNormal;
-        float m_kDiffuseColor[4];
+        NiPoint3 m_normal; // src: XBOX_RETAIL_PDB +0x28 (old: m_vHitNormal)
+        float m_color[4]; // src: XBOX_RETAIL_PDB +0x34 (old: m_kDiffuseColor)
 
         NiAVObject* AnimatingText_GetFullText();
         const NiPoint2* FUN_00891170();
@@ -65,37 +66,37 @@ public:
             m_pBase[index] = record;
         }
         Record* ProcessArray_GetItem(unsigned int);
-        void InvokeCallbacks();
-        void FindHighestPriorityCallback();
+        void SortResults();
+        void FindClosest();
         void Clear() throw();
     };
 
-    unsigned int pickType;
-    unsigned int sortType;
-    unsigned int intersectType;
-    unsigned int coordinateType;
-    unsigned char frontOnly;
-    unsigned char returnNormals;
+    unsigned int m_ePickType; // src: XBOX_RETAIL_PDB +0x0 (old: pickType)
+    unsigned int m_eSortType; // src: XBOX_RETAIL_PDB +0x4 (old: sortType)
+    unsigned int m_eIntersectType; // src: XBOX_RETAIL_PDB +0x8 (old: intersectType)
+    unsigned int m_eCoordinateType; // src: XBOX_RETAIL_PDB +0xc (old: coordinateType)
+    unsigned char m_bFrontOnly; // src: XBOX_RETAIL_PDB +0x10 (old: frontOnly)
+    unsigned char m_bObserveAppCullFlag; // src: XBOX_RETAIL_PDB +0x11 (old: returnNormals)
     unsigned char returnTextures;
     unsigned char returnColors;
-    void* root;
-    unsigned int resultVtable;
+    void* m_spRoot; // src: XBOX_RETAIL_PDB +0x14 (old: root)
+    unsigned int m_pickResults; // src: XBOX_RETAIL_PDB +0x18 (old: resultVtable)
     unsigned int resultData;
     unsigned int resultCapacity;
     unsigned int resultSize;
     unsigned int resultGrow;
-    unsigned int resultCount;
-    unsigned char flags30;
-    unsigned char flags31;
-    unsigned char flags32;
-    unsigned char flags33;
+    unsigned int m_pLastAddedRecord; // src: XBOX_RETAIL_PDB +0x2c (old: resultCount)
+    unsigned char m_bReturnTexture; // src: XBOX_RETAIL_PDB +0x30 (old: flags30)
+    unsigned char m_bReturnNormal; // src: XBOX_RETAIL_PDB +0x31 (old: flags31)
+    unsigned char m_bReturnSmoothNormal; // src: XBOX_RETAIL_PDB +0x32 (old: flags32)
+    unsigned char m_bReturnColor; // src: XBOX_RETAIL_PDB +0x33 (old: flags33)
 
     NiPick();
     NiPick(int, int);
     ~NiPick();
     NiAVObject* GetRoot() const
     {
-        return static_cast<NiAVObject*>(root);
+        return static_cast<NiAVObject*>(m_spRoot);
     }
     void SetTarget_00705fc0(NiAVObject*);
     void SetTarget_00705fc0(void*);

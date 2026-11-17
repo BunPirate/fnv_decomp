@@ -8,7 +8,7 @@
 __declspec(dllimport) int __stdcall VirtualFree(void*, unsigned long, unsigned long);
 struct FUN_00aa7ab0_s
 {
-    unsigned int MemoryHeap_CleanExtraPages(char* pBase, unsigned int uiElapsedMilliseconds, unsigned int uiSize);
+    unsigned int MemoryHeap_CleanExtraPages(char* apMem, unsigned int aiCurrentSize, unsigned int aiFreeBytes);
 };
 struct FUN_00aa7a30_shell
 {
@@ -30,7 +30,7 @@ struct FUN_00aa7c60_cls
 {
     char pad[0x20f0];
     bool m_bFlag;
-    void GetHeapStats(void* pStats, bool bFull);
+    void GetHeapStats(void* apStats, bool abFullBlockInfo);
     void UpdateStats(void* apStats, bool abFullBlockInfo);
 };
 struct FUN_00aa7d60_blk
@@ -42,7 +42,7 @@ struct FUN_00aa7d60_cls
 {
     char pad0[0x10];
     unsigned int m_uiPage;
-    void MemoryHeap_DecommitPages(FUN_00aa7d60_blk* pBlock);
+    void MemoryHeap_DecommitPages(FUN_00aa7d60_blk* apBlock);
 };
 extern MemoryManager g_memoryManager;
 struct FakeHeap
@@ -74,8 +74,8 @@ struct FUN_00aa7ca0_cls
 {
     char pad0[0x20f0];
     bool m_bFlag;
-    unsigned int WriteBucketInfo(FUN_00aa7ca0_obj* p);
-    unsigned int MemoryHeap_OutputBucketInfo(FUN_00aa7ca0_obj* p);
+    unsigned int WriteBucketInfo(FUN_00aa7ca0_obj* apFile);
+    unsigned int MemoryHeap_OutputBucketInfo(FUN_00aa7ca0_obj* apFile);
 };
 struct AA7D00Stream
 {
@@ -2195,8 +2195,8 @@ struct AA7D00Saver
     int unk20EC;
     bool m_bSkip;
 
-    int ValueReferencePair(AA7D00Stream* pkStream, bool bFlag);
-    int MemoryHeap_OutputBlockInfo(AA7D00Stream* pkStream, bool bFlag);
+    int ValueReferencePair(AA7D00Stream* apFile, bool abOutputWalk);
+    int MemoryHeap_OutputBlockInfo(AA7D00Stream* apFile, bool abOutputWalk);
 };
 
 struct BlockHeader
@@ -2228,13 +2228,16 @@ class HeapValidator
     virtual void slot2();
     virtual void slot3();
     virtual bool Contains(const void* pointer);
-    bool MemoryHeap_BlockIsOk(const void* pointer);
+    bool MemoryHeap_BlockIsOk(const void* apPointer);
 };
 
 // @fnv 0x00aa7b70
 // src: XBOX_PDB 0x00aa7b70
-bool HeapValidator::MemoryHeap_BlockIsOk(const void* pointer)
+// pdb: MemoryHeap::BlockIsOk | MemoryHeap.obj | debug, upstream name already matches, high
+// pdb params: apPointer
+// pdb locals: pblock
+bool HeapValidator::MemoryHeap_BlockIsOk(const void* apPointer)
 {
-    const BlockHeader* header = BlockHeader::FromMemory(pointer);
-    return Contains(pointer) && !header->IsFree() && header->GuardIntact();
+    const BlockHeader* header = BlockHeader::FromMemory(apPointer);
+    return Contains(apPointer) && !header->IsFree() && header->GuardIntact();
 }

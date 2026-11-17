@@ -6,6 +6,7 @@ class NiCamera;
 class NiGeometry;
 class NiVisibleArray;
 
+// pdb: class NiAccumulator, size 0xc, bases: NiObject, 1 members
 class NiAccumulator : public NiObject
 {
   public:

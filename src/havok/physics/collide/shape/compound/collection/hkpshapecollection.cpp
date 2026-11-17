@@ -31,7 +31,7 @@ int hkpShapeCollection_L::hkpShapeCollection_getContainer()
 }
 
 extern char const* const DAT_01268910;
-void __cdecl hkReferencedObject_calcContentStatistics(char const* const* first, char const* const* second);
+void __cdecl hkReferencedObject_calcContentStatistics(char const* const* collector, char const* const* cls);
 // @fnv 0x00d213e0
 // src: XBOX_PDB 0x00d213e0
 void __cdecl hkpShapeCollection_calcContentStatistics(char const* const* first, char const* const* ignored)
@@ -41,11 +41,17 @@ void __cdecl hkpShapeCollection_calcContentStatistics(char const* const* first, 
 
 // @fnv 0x00d213f0
 // src: COMMUNITY 0x00d213f0
+// pdb: hkpShapeCollection::setWeldingInfo | hkpShapeCollection.obj | debug, vtable slot, medium
+// pdb params: key, weldingInfo
+// pdb locals: assertBuf, ostr
 void __stdcall nullsub_53(int, int)
 {}
 
 // @fnv 0x00d21400
 // src: COMMUNITY 0x00d21400
+// pdb: hkpShapeCollection::initWeldingInfo | hkpShapeCollection.obj | debug, vtable slot, medium
+// pdb params: weldingType
+// pdb locals: assertBuf, ostr
 void __stdcall nullsub_52(int a1)
 {}
 
@@ -78,6 +84,7 @@ struct Holder
 };
 // Sets shapeVtable and vtable, then frees the object via the memory system allocator if the low bit of flags is set.
 // @fnv 0x00cf57e0
+// pdb: hkpShapeCollection::`scalar deleting destructor' | hkpShapeCollection.obj | retail, vtable slot, high
 Holder* __thiscall Holder::Destroy(unsigned char flags)
 {
     shapeVtable = &DAT_010c6fb0;
@@ -107,7 +114,7 @@ struct hkBoolRet
 class FUN_00d21450_Class : public hkpShapeCollection
 {
   public:
-    hkBoolRet hkpShapeCollection_castRayImpl(const ShapeRayCastQuery& input, ShapeRayCastOutput& output) const;
+    hkBoolRet hkpShapeCollection_castRayImpl(const ShapeRayCastQuery& input, ShapeRayCastOutput& results) const;
 };
 
 struct ShapeRayCastQuery
@@ -141,7 +148,10 @@ struct ShapeRayCastOutput
 // Casts a ray against each filtered child and stores the last hit shape key in output.m_uiShapeKeys.
 // @fnv 0x00d21450
 // src: HAVOK_LIB 0x00d21450
-hkBoolRet FUN_00d21450_Class::hkpShapeCollection_castRayImpl(const ShapeRayCastQuery& input, ShapeRayCastOutput& output) const
+// pdb: hkpShapeCollection::castRayImpl | hkpShapeCollection.obj | retail, upstream name already matches, high
+// pdb params: input, results
+// pdb locals: shapeBuffer
+hkBoolRet FUN_00d21450_Class::hkpShapeCollection_castRayImpl(const ShapeRayCastQuery& input, ShapeRayCastOutput& results) const
 {
     volatile unsigned int time;
     hkMonitorStream* stream = (hkMonitorStream*)TlsGetValue(DAT_0126835c);
@@ -155,7 +165,7 @@ hkBoolRet FUN_00d21450_Class::hkpShapeCollection_castRayImpl(const ShapeRayCastQ
         current += 12;
         stream->m_end.m_storage = current;
     }
-    output.m_uiShapeKeyIndex++;
+    results.m_uiShapeKeyIndex++;
     const hkpShapeContainer* container =
         reinterpret_cast<const hkpShapeContainer*>(reinterpret_cast<const char*>(this) + sizeof(hkpShape));
     hkpShapeKey uiHitKey = 0xffffffff;
@@ -167,7 +177,7 @@ hkBoolRet FUN_00d21450_Class::hkpShapeCollection_castRayImpl(const ShapeRayCastQ
         while (key != 0xffffffff)
         {
             const hkpShape* child = container->GetShapeForKey(key, *reinterpret_cast<hkpShapeBuffer*>(buffer));
-            hitResult.hkBool::hkBool(child->IntersectRayWithShape(input, output));
+            hitResult.hkBool::hkBool(child->IntersectRayWithShape(input, results));
             if (hitResult.m_cBooleanValue)
                 uiHitKey = key;
             key = container->GetNextShapeKey(key);
@@ -181,7 +191,7 @@ hkBoolRet FUN_00d21450_Class::hkpShapeCollection_castRayImpl(const ShapeRayCastQ
             if (input.m_pRayShapeCollectionFilter->IsCollisionEnabled(input, *this, *container, key).m_cBooleanValue)
             {
                 const hkpShape* child = container->GetShapeForKey(key, *reinterpret_cast<hkpShapeBuffer*>(buffer));
-                hitResult.hkBool::hkBool(child->IntersectRayWithShape(input, output));
+                hitResult.hkBool::hkBool(child->IntersectRayWithShape(input, results));
                 if (hitResult.m_cBooleanValue)
                     uiHitKey = key;
             }
@@ -189,10 +199,10 @@ hkBoolRet FUN_00d21450_Class::hkpShapeCollection_castRayImpl(const ShapeRayCastQ
         }
     }
 
-    output.m_uiShapeKeyIndex--;
+    results.m_uiShapeKeyIndex--;
     if (uiHitKey != 0xffffffff)
     {
-        output.m_uiShapeKeys[output.m_uiShapeKeyIndex] = uiHitKey;
+        results.m_uiShapeKeys[results.m_uiShapeKeyIndex] = uiHitKey;
     }
     hkMonitorStream* streamEnd = (hkMonitorStream*)TlsGetValue(DAT_0126835c);
     char* currentEnd = streamEnd->m_end.m_storage;
@@ -281,12 +291,15 @@ struct __declspec(align(16)) ShapeBuf_L
 class Owner_L : public hkpShapeCollection
 {
   public:
-    void hkpShapeCollection_castRayWithCollectorImpl(Arg0_L* arg0, Arg1_L* arg1, Arg2_L* arg2);
+    void hkpShapeCollection_castRayWithCollectorImpl(Arg0_L* input, Arg1_L* cdBody, Arg2_L* collector);
 };
 
 // @fnv 0x00d217d0
 // src: HAVOK_LIB 0x00d217d0
-void Owner_L::hkpShapeCollection_castRayWithCollectorImpl(Arg0_L* arg0, Arg1_L* arg1, Arg2_L* arg2)
+// pdb: hkpShapeCollection::castRayWithCollectorImpl | hkpShapeCollection.obj | retail, upstream name already matches, high
+// pdb params: input, cdBody, collector
+// pdb locals: shapeBuffer, assertBuf, ostr, childBody
+void Owner_L::hkpShapeCollection_castRayWithCollectorImpl(Arg0_L* input, Arg1_L* cdBody, Arg2_L* collector)
 {
     volatile unsigned int uiTimestamp;
     hkMonitorStream* pProfSlot = (hkMonitorStream*)TlsGetValue(DAT_0126835c);
@@ -303,7 +316,7 @@ void Owner_L::hkpShapeCollection_castRayWithCollectorImpl(Arg0_L* arg0, Arg1_L* 
     ShapeBuf_L buffer;
     Ctx_L ctx;
     int key;
-    if (arg0->m_iFilter == 0)
+    if (input->m_iFilter == 0)
     {
         key = (reinterpret_cast<const hkpShapeContainer*>(reinterpret_cast<const char*>(this) + sizeof(hkpShape)))->GetFirstKey();
         if (key != -1)
@@ -311,10 +324,10 @@ void Owner_L::hkpShapeCollection_castRayWithCollectorImpl(Arg0_L* arg0, Arg1_L* 
             do
             {
                 ctx.shape = reinterpret_cast<Shape_L*>(const_cast<hkpShape*>((reinterpret_cast<const hkpShapeContainer*>(reinterpret_cast<const char*>(this) + sizeof(hkpShape)))->GetShapeForKey(key, reinterpret_cast<hkpShapeBuffer&>(buffer))));
-                ctx.arg1 = arg1;
-                ctx.unk08 = arg1->unk08;
+                ctx.arg1 = cdBody;
+                ctx.unk08 = cdBody->unk08;
                 ctx.key = key;
-                ctx.shape->process_L(arg0, &ctx, arg2);
+                ctx.shape->process_L(input, &ctx, collector);
                 key = (reinterpret_cast<const hkpShapeContainer*>(reinterpret_cast<const char*>(this) + sizeof(hkpShape)))->GetNextShapeKey(key);
             } while (key != -1);
         }
@@ -326,13 +339,13 @@ void Owner_L::hkpShapeCollection_castRayWithCollectorImpl(Arg0_L* arg0, Arg1_L* 
         {
             do
             {
-                if (arg0->m_iFilter->IsCollisionEnabled(*reinterpret_cast<const ShapeRayCastQuery*>(arg0), *this, *(reinterpret_cast<const hkpShapeContainer*>(reinterpret_cast<const char*>(this) + sizeof(hkpShape))), key).m_cBooleanValue)
+                if (input->m_iFilter->IsCollisionEnabled(*reinterpret_cast<const ShapeRayCastQuery*>(input), *this, *(reinterpret_cast<const hkpShapeContainer*>(reinterpret_cast<const char*>(this) + sizeof(hkpShape))), key).m_cBooleanValue)
                 {
                     ctx.shape = reinterpret_cast<Shape_L*>(const_cast<hkpShape*>((reinterpret_cast<const hkpShapeContainer*>(reinterpret_cast<const char*>(this) + sizeof(hkpShape)))->GetShapeForKey(key, reinterpret_cast<hkpShapeBuffer&>(buffer))));
-                    ctx.arg1 = arg1;
-                    ctx.unk08 = arg1->unk08;
+                    ctx.arg1 = cdBody;
+                    ctx.unk08 = cdBody->unk08;
                     ctx.key = key;
-                    ctx.shape->process_L(arg0, &ctx, arg2);
+                    ctx.shape->process_L(input, &ctx, collector);
                 }
                 key = (reinterpret_cast<const hkpShapeContainer*>(reinterpret_cast<const char*>(this) + sizeof(hkpShape)))->GetNextShapeKey(key);
             } while (key != -1);
@@ -380,6 +393,9 @@ class CollectionProjectionTraversal : public hkpShapeCollection
 
 // Returns the largest child-shape projection, between two timer records.
 // @fnv 0x00d216e0
+// pdb: hkpShapeCollection::getMaximumProjection | hkpShapeCollection.obj | retail, string-set bridge, high
+// pdb params: direction
+// pdb locals: shapeBuffer
 hkReal CollectionProjectionTraversal::getMaximumProjection(const hkVector4& direction) const
 {
     volatile float maxProj;
@@ -441,8 +457,8 @@ class hkpShape_ctor : public hkpShape
   public:
     hkpShape_ctor(int type) : hkpShape(static_cast<hkpShapeType>(type))
     {
-        m_sReferenceCount = 1;
-        m_ulUserData = 0;
+        m_referenceCount = 1;
+        m_userData = 0;
         *reinterpret_cast<hkUint32*>(&m_type) = type;
     }
 };

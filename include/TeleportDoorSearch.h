@@ -11,6 +11,7 @@ class TESObjectCELL;
 class TESObjectREFR;
 class PathingActorData;
 
+// pdb: class TeleportDoorSearch, size 0x20b8, bases: AStarSearch<ParentSpaceNode, 8 members
 class TeleportDoorSearch : public AStarSearch<ParentSpaceNode, TeleportLink>
 {
 public:
@@ -24,13 +25,13 @@ public:
     char prefix[0x205c - sizeof(void*)];
     TESWorldSpace* startWorld;
     int pad;
-    PathingLocation location;
-    bool exterior;
+    PathingLocation StartLocation; // src: XBOX_RETAIL_PDB +0x2064 (old: location)
+    bool GoalNode; // src: XBOX_RETAIL_PDB +0x208c (old: exterior)
     TESWorldSpace* world;
     TESObjectCELL* cell;
-    int restriction;
-    float maxCost;
-    const PathingActorData* lockData;
-    BSSimpleArray<TESObjectREFR*, 1024> doors;
-    int disposition;
+    int Restrictions; // src: XBOX_RETAIL_PDB +0x2098 (old: restriction)
+    float fMaxDist; // src: XBOX_RETAIL_PDB +0x209c (old: maxCost)
+    const PathingActorData* pLockData; // src: XBOX_RETAIL_PDB +0x20a0 (old: lockData)
+    BSSimpleArray<TESObjectREFR*, 1024> DoorList; // src: XBOX_RETAIL_PDB +0x20a4 (old: doors)
+    int DoorLockDisposition; // src: XBOX_RETAIL_PDB +0x20b4 (old: disposition)
 };

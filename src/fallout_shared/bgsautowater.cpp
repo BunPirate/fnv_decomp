@@ -14,6 +14,7 @@
 extern void __cdecl __Dummy_00b6fef0(void*, unsigned int);
 
 // @fnv 0x0049ed40
+// pdb: NiStencilProperty::`scalar deleting destructor' | BGSAutoWater.obj | retail, vtable slot, high
 void* NiStencilProperty::DestroyAndFree(unsigned int flags)
 {
     this->NiStencilProperty::~NiStencilProperty();
@@ -34,6 +35,8 @@ struct FUN_0049ed90_shell : Flag512Receiver
 
 // @fnv 0x0049ed90
 // src: XBOX_PDB 0x0049ed90
+// pdb: NiAlphaProperty::SetAlphaBlending | MultiBoundMarkerData.obj | debug, upstream name already matches, high
+// pdb params: bAlpha
 void __thiscall FUN_0049ed90_shell::NiAlphaProperty_SetAlphaBlending(bool bAlpha)
 {
     this->NiAlphaProperty_SetBit(bAlpha, 1);
@@ -42,9 +45,11 @@ void __thiscall FUN_0049ed90_shell::NiAlphaProperty_SetAlphaBlending(bool bAlpha
 // Forwards the given texture slot to FUN_00439360 with flags 0xf000 and value 0xc.
 // @fnv 0x0049edb0
 // src: COMMUNITY 0x0049edb0
-void NiObjectNET::NiStencilProperty_SetStencilFunction(unsigned short argument0)
+// pdb: NiStencilProperty::SetStencilFunction | BGSAutoWater.obj | debug, upstream name already matches, high
+// pdb params: eFunc
+void NiObjectNET::NiStencilProperty_SetStencilFunction(unsigned short eFunc)
 {
-    SetField_00439360(argument0, 0xf000, 0xc);
+    SetField_00439360(eFunc, 0xf000, 0xc);
 }
 
 // Calls FUN_00439360 with argument0, 0x380 and 7.
@@ -54,6 +59,8 @@ struct AutoWaterStencilFlags : NiObjectNET
 };
 
 // @fnv 0x0049ede0
+// pdb: NiStencilProperty::SetStencilPassAction | BGSAutoWater.obj | debug, object-file gap fill, medium
+// pdb params: eAct
 void AutoWaterStencilFlags::SetStencilFunction(unsigned short argument0)
 {
     SetField_00439360(argument0, 0x380, 7);
@@ -61,19 +68,24 @@ void AutoWaterStencilFlags::SetStencilFunction(unsigned short argument0)
 
 // @fnv 0x0049ee10
 // src: COMMUNITY 0x0049ee10
-void NiObjectNET::NiStencilProperty_SetStencilPassZFailAction(unsigned short ausValue)
+// pdb: NiStencilProperty::SetStencilPassZFailAction | BGSAutoWater.obj | debug, upstream name already matches, high
+// pdb params: eAct
+void NiObjectNET::NiStencilProperty_SetStencilPassZFailAction(unsigned short eAct)
 {
-    SetField_00439360(ausValue, 0x70, 4);
+    SetField_00439360(eAct, 0x70, 4);
 }
 
 // Calls FUN_00439360 with the given unsigned short and the constants 0xc00 and 0xa.
 // @fnv 0x0049ee30
 // src: COMMUNITY 0x0049ee30
-void NiObjectNET::NiStencilProperty_SetDrawMode(unsigned short a)
+// pdb: NiStencilProperty::SetDrawMode | BGSAutoWater.obj | debug, upstream name already matches, high
+// pdb params: eDraw
+void NiObjectNET::NiStencilProperty_SetDrawMode(unsigned short eDraw)
 {
-    SetField_00439360(a, 0xc00, 0xa);
+    SetField_00439360(eDraw, 0xc00, 0xa);
 }
 
+// pdb: class TaskQueueInterface, size 0x10 (here 0x1), 4 members
 struct TaskQueueInterface
 {
     void SetTaskFlagDWord(bool, unsigned int);
@@ -84,6 +96,8 @@ void TaskQueueInterface::SetTaskFlagDWord(bool, unsigned int)
 {}
 
 // @fnv 0x0049ee80
+// pdb: NiAVObject::SetIgnoreFade | BGSAutoWater.obj | debug, object-file run extension, low
+// pdb params: abIgnore
 void TaskQueueInterface::SetEnabledFlag(bool enabled)
 {
     SetTaskFlagDWord(enabled, 0x8000);
@@ -92,6 +106,7 @@ void TaskQueueInterface::SetEnabledFlag(bool enabled)
 extern void* DAT_0101e07c;
 
 // @fnv 0x0049ed70
+// pdb: NiStencilProperty::~NiStencilProperty | BGSAutoWater.obj | debug, call graph, medium
 void NiStencilProperty::Destroy()
 {
     *reinterpret_cast<void**>(this) = &DAT_0101e07c;
@@ -109,6 +124,8 @@ void NiObjectNET::SetField_00439360(unsigned short value, unsigned int uiMask, u
 
 // @fnv 0x0049ee60
 // src: COMMUNITY 0x0049ee60
+// pdb: BSFadeNode::SetIgnoreFade | BGSAutoWater.obj | debug, upstream name already matches, high
+// pdb params: abIgnoreFade
 void BSFadeNode::SetIgnoreFade(bool enabled)
 {
     reinterpret_cast<TaskQueueInterface*>(this)->SetEnabledFlag(enabled);
@@ -123,6 +140,7 @@ struct FUN_0049eea0_shell
 
 // @fnv 0x0049eea0
 // src: XBOX_PDB 0x0049eea0
+// pdb: BSPolygon2D::GetRootNode | BGSAutoWater.obj | debug, object-file run extension, low
 void FUN_0049eea0_shell::TESObjectREFR_SetLocationOnReferenceSimple(const NiPoint3& arPoint)
 {
     m_kPoint = arPoint;
@@ -212,7 +230,7 @@ struct FUN_0049f640
     int allocator;
     FUN_0049f640();
     ~FUN_0049f640();
-    void InsertPlaneWithGrowth(int, const FUN_0049f1c0&);
+    void BSSimpleArray_BSSimpleArray_NiPoint3_1024_1024_Insert(int, const FUN_0049f1c0&);
     FUN_0049f1c0& GetElementAddress16(int) const;
 };
 struct ScriptProgram
@@ -243,10 +261,14 @@ extern bool __cdecl FloatKeyedRecord_CompareKeys(const MeshPoint&, const MeshPoi
 extern bool __cdecl Runtime_CompareFirstFloats(const MeshPoint&, const MeshPoint&);
 // Builds triangle geometry from the mesh's vertex data, clipping against a plane and collecting boundary edges into DAT_011c57ac.
 // @fnv 0x0049c930
-void BuildMeshBoundaryGeometry(MeshInput* pMeshInput)
+// src: XBOX_RETAIL_PDB 0x0049c930
+// pdb: BGSAutoWater::GatherLineSegments | BGSAutoWater.obj | retail, call graph, high
+// pdb params: apCell
+// pdb locals: fwaterHeight, pland, badjustlandheight, edgeIntersect, fbaseheight, pverts, bloaded, i, tmp, iblock, iindex, iv2idx, v2, iv3idx, v1, v3, iv1idx, v3flags, bcoPlanar, v1flags, waterplane, bvertIntersect, isect, ucount ...
+void BGSAutoWater_GatherLineSegments(MeshInput* apCell)
 {
-    ScriptProgram* mesh = pMeshInput->TESObjectCELL_GetLand();
-    float height = pMeshInput->TESObjectCELL_GetWaterHeight();
+    ScriptProgram* mesh = apCell->TESObjectCELL_GetLand();
+    float height = apCell->TESObjectCELL_GetWaterHeight();
     if (!DAT_011c57ac)
         DAT_011c57ac = new FUN_0049f1c0;
     else
@@ -260,11 +282,11 @@ void BuildMeshBoundaryGeometry(MeshInput* pMeshInput)
         for (int i = 0; i < 4; i++)
         {
             FUN_0049f1c0 temporary;
-            _list1.InsertPlaneWithGrowth(i, temporary);
+            _list1.BSSimpleArray_BSSimpleArray_NiPoint3_1024_1024_Insert(i, temporary);
         }
         bool offset6 = false;
         float _saved = 0.0f;
-        if (pMeshInput->FUN_0054ddd0() && pMeshInput->FUN_0054ddd0()->IsFlag80Set())
+        if (apCell->FUN_0054ddd0() && apCell->FUN_0054ddd0()->IsFlag80Set())
         {
             _saved = mesh->TESObjectLAND_GetBaseHeight();
             offset6 = true;
@@ -296,9 +318,9 @@ void BuildMeshBoundaryGeometry(MeshInput* pMeshInput)
                     unsigned short count8 = 0;
                     bool _done = false;
                     bool _active = false;
-                    int _bound = GetCellCornerFlags(pMeshInput, _cross);
-                    int aCount2 = GetCellCornerFlags(pMeshInput, _delta);
-                    int _current = GetCellCornerFlags(pMeshInput, _point);
+                    int _bound = GetCellCornerFlags(apCell, _cross);
+                    int aCount2 = GetCellCornerFlags(apCell, _delta);
+                    int _current = GetCellCornerFlags(apCell, _point);
                     MeshPoint _orient;
                     _orient.FUN_006815c0();
                     int result3 = NavMeshMath_SegmentPlaneIntersection(_cross, _delta, origin6, normalVal, _orient);
@@ -1065,7 +1087,11 @@ struct FUN_00c46970 : NiMemObject
 void __cdecl FUN_00b57e30(void*, int, int);
 
 // @fnv 0x0049e410
-void __cdecl CreateAutoWaterNode(ParamObj* a0)
+// src: XBOX_RETAIL_PDB 0x0049e410
+// pdb: BGSAutoWater::GeneratePlaceableWater | BGSAutoWater.obj | retail, unique string literal, high
+// pdb params: apCell
+// pdb locals: tempMemContext, worldtranslate, bcreatedHavok, next, iter, ppoly, minz, maxy, pwaterRef, pwatershadprop, pmbshape, maxx, pmbnode, pfadenode, pstencilprop, minx, pvertices, tmp, ptristrips, pmb, miny, maxz, halfextents, center ...
+void __cdecl BGSAutoWater_GeneratePlaceableWater(ParamObj* apCell)
 {
     AutoMemHelper aex(29, true, "D:\\_Fallout3\\Platforms\\Common\\Code\\Fallout Shared\\BGSAutoWater.cpp", 717);
     void* s;
@@ -1082,8 +1108,8 @@ void __cdecl CreateAutoWaterNode(ParamObj* a0)
             NodeObj* nodeX;
             if (0 != DAT_011c57b0)
             {
-                (*reinterpret_cast<NiPoint3*>(&origin.position)).Set(a0->TESObjectCELL_GetLand(0).TESObjectLAND_GetWorldOffsetForBlock()->x, a0->TESObjectCELL_GetLand(0).TESObjectLAND_GetWorldOffsetForBlock()->y,
-                                 a0->TESObjectCELL_GetWaterHeight());
+                (*reinterpret_cast<NiPoint3*>(&origin.position)).Set(apCell->TESObjectCELL_GetLand(0).TESObjectLAND_GetWorldOffsetForBlock()->x, apCell->TESObjectCELL_GetLand(0).TESObjectLAND_GetWorldOffsetForBlock()->y,
+                                 apCell->TESObjectCELL_GetWaterHeight());
                 origin.hasWaterForm = false;
                 s = DAT_011c57b0->Modelloader_GetReferencedThis();
                 i = 0;
@@ -1166,7 +1192,7 @@ void __cdecl CreateAutoWaterNode(ParamObj* a0)
                                                                                                                 ->NiAVObject_AttachProperty(
                                                                                                                     minY);
                                                                                                             p84->TESObjectREFR_SetObjectReference(
-                                                                                                                a0->Actor_GetRadiationLevel()
+                                                                                                                apCell->Actor_GetRadiationLevel()
                                                                                                                     ->GetPlaceableAutoWater());
                                                                                                             p80 =
                                                                                                                 new AutoWaterFadeNode;
@@ -1299,7 +1325,7 @@ void __cdecl CreateAutoWaterNode(ParamObj* a0)
                                                                                                                 false);
                                                                                                             p80->NiAVObject_Update(
                                                                                                                 &res);
-                                                                                                            a0->FUN_00548230(
+                                                                                                            apCell->FUN_00548230(
                                                                                                                 p84,
                                                                                                                 false);
                                                                                                             p84->FUN_00484490();
@@ -1356,18 +1382,21 @@ NiPoint3 __cdecl FUN_004a3760(float t, const NiPoint3& point);
 // Computes the intersection of the line through p0 and p1 with the plane defined by (*reinterpret_cast<NiPoint3*>(&p2Storage)) and p3, writing the result to out.
 // @fnv 0x006b9a10
 // src: COMMUNITY 0x006b9a10
-int __cdecl NavMeshMath_SegmentPlaneIntersection(const NiPoint3& apStart, const NiPoint3& apEnd, const NiPoint3& apPlanePoint,
-                         const NiPoint3& apPlaneNormal, NiPoint3& out)
+// pdb: NavMeshMath::SegmentPlaneIntersection | NavMeshMath.obj | debug, upstream name already matches, high
+// pdb params: aLineStart, aLineEnd, aPlaneV0, aPlaneNormal, apRet
+// pdb locals: D, N, SMALL_NUM, u, sI, w
+int __cdecl NavMeshMath_SegmentPlaneIntersection(const NiPoint3& aLineStart, const NiPoint3& aLineEnd, const NiPoint3& aPlaneV0,
+                         const NiPoint3& aPlaneNormal, NiPoint3& apRet)
 {
     float f3 = DAT_0106c288;
     float f2;
     float f28;
     float f6;
 
-    NiPoint3 v1 = apEnd.SubtractIntoVector(apStart);
-    NiPoint3 v6 = apStart.SubtractIntoVector(apPlanePoint);
-    f28 = apPlaneNormal.DotProduct(v1);
-    f2 = -apPlaneNormal.DotProduct(v6);
+    NiPoint3 v1 = aLineEnd.SubtractIntoVector(aLineStart);
+    NiPoint3 v6 = aLineStart.SubtractIntoVector(aPlaneV0);
+    f28 = aPlaneNormal.DotProduct(v1);
+    f2 = -aPlaneNormal.DotProduct(v6);
     if (f3 > FUN_00408840(f28))
     {
         if (f2 == DAT_01012060)
@@ -1384,7 +1413,7 @@ int __cdecl NavMeshMath_SegmentPlaneIntersection(const NiPoint3& apStart, const 
     {
         return 0;
     }
-    out = apStart.FUN_00439e90(FUN_004a3760(f6, v1));
+    apRet = aLineStart.FUN_00439e90(FUN_004a3760(f6, v1));
     return 1;
 }
 
@@ -1392,21 +1421,24 @@ struct WaterPointerList
 {
     void FUN_004ed900();
 };
-void BuildWaterSurfaces(MeshInput*);
+void BGSAutoWater_GeneratePolygons(MeshInput*);
 
 // Builds auto-water boundary geometry and creates the auto-water node for the given mesh input.
 // @fnv 0x0049c860
 // src: XBOX_PDB 0x0049c860
-void BGSAutoWater_GeneratePlaceableWaterForCell(MeshInput* apMeshInput)
+// pdb: BGSAutoWater::GeneratePlaceableWaterForCell | BGSAutoWater.obj | retail, upstream name already matches, high
+// pdb params: apCell
+// pdb locals: tempMemContext
+void BGSAutoWater_GeneratePlaceableWaterForCell(MeshInput* apCell)
 {
     AutoMemHelper context(29, true, "D:\\_Fallout3\\Platforms\\Common\\Code\\Fallout Shared\\BGSAutoWater.cpp", 83);
-    if (!apMeshInput || !reinterpret_cast<TESObjectCELL*>(apMeshInput)->HasWater())
+    if (!apCell || !reinterpret_cast<TESObjectCELL*>(apCell)->HasWater())
         return;
     if (DAT_011c57ac)
         DAT_011c57ac->FUN_008454f0(true);
     if (DAT_011c57b0)
         reinterpret_cast<WaterPointerList*>(DAT_011c57b0)->FUN_004ed900();
-    BuildMeshBoundaryGeometry(apMeshInput);
-    BuildWaterSurfaces(apMeshInput);
-    CreateAutoWaterNode(reinterpret_cast<ParamObj*>(apMeshInput));
+    BGSAutoWater_GatherLineSegments(apCell);
+    BGSAutoWater_GeneratePolygons(apCell);
+    BGSAutoWater_GeneratePlaceableWater(reinterpret_cast<ParamObj*>(apCell));
 }

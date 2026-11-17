@@ -38,6 +38,7 @@ FNV_STATIC_ASSERT(offsetof(BipedAnimObject, m_pModel) == 4);
 FNV_STATIC_ASSERT(offsetof(BipedAnimObject, m_pSceneObject) == 8);
 FNV_STATIC_ASSERT(offsetof(BipedAnimObject, bHasAnimation) == 12);
 #pragma pack(push, 4)
+// pdb: class BipedAnim, size 0x2b4, 6 members
 class BipedAnim
 {
   public:

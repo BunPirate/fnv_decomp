@@ -30,13 +30,15 @@ CacheLookup* GetArrayHolder();
 
 // @fnv 0x00b61940
 // src: COMMUNITY 0x00b61940
-bool TallGrassShaderProperty_ContainsChunk(void* entry, const char* key)
+// pdb: TallGrassShaderProperty::ContainsChunk | TallGrassShaderProperty.obj | retail, upstream name already matches, high
+// pdb params: apGrassParam, alTerrainChunkSeed
+bool TallGrassShaderProperty_ContainsChunk(void* aiGrassID, const char* alTerrainChunkSeed)
 {
-    const char* groupName = static_cast<CacheEntry*>(entry)->name;
-    entry = 0;
-    if (!GetArrayHolder()->FUN_00a53c30(groupName, entry))
+    const char* groupName = static_cast<CacheEntry*>(aiGrassID)->name;
+    aiGrassID = 0;
+    if (!GetArrayHolder()->FUN_00a53c30(groupName, aiGrassID))
         return false;
-    return static_cast<CacheEntry*>(entry)->lookup.FUN_00a53c30(key, entry);
+    return static_cast<CacheEntry*>(aiGrassID)->lookup.FUN_00a53c30(alTerrainChunkSeed, aiGrassID);
 }
 
 struct LandscapeSpecularView
@@ -62,26 +64,28 @@ struct LandscapeSpecularView
     void* textureBc;
     void* textureC0;
     unsigned char* specularExponents;
-    void BSShaderPPLightingProperty_SetLandscapeSpecularExponents(unsigned char a, unsigned char b, unsigned char c, unsigned char d, unsigned char e,
-                      unsigned char f, unsigned char g, unsigned char h, unsigned char i, unsigned char j);
+    void BSShaderPPLightingProperty_SetLandscapeSpecularExponents(unsigned char aucDefSpec, unsigned char aucSpec0, unsigned char aucSpec1, unsigned char aucSpec2, unsigned char aucSpec3,
+                      unsigned char aucSpec4, unsigned char aucSpec5, unsigned char aucSpec6, unsigned char aucSpec7, unsigned char aucSpec8);
 };
 // @fnv 0x00b66640
 // src: COMMUNITY 0x00b66640
-void LandscapeSpecularView::BSShaderPPLightingProperty_SetLandscapeSpecularExponents(unsigned char a, unsigned char b, unsigned char c, unsigned char d,
-                                         unsigned char e, unsigned char f, unsigned char g, unsigned char h,
-                                         unsigned char i, unsigned char j)
+// pdb: BSShaderPPLightingProperty::SetLandscapeSpecularExponents | BSShaderPPLightingProperty.obj | retail, upstream name already matches, high
+// pdb params: aucDefSpec, aucSpec0, aucSpec1, aucSpec2, aucSpec3, aucSpec4, aucSpec5, aucSpec6, aucSpec7, aucSpec8
+void LandscapeSpecularView::BSShaderPPLightingProperty_SetLandscapeSpecularExponents(unsigned char aucDefSpec, unsigned char aucSpec0, unsigned char aucSpec1, unsigned char aucSpec2,
+                                         unsigned char aucSpec3, unsigned char aucSpec4, unsigned char aucSpec5, unsigned char aucSpec6,
+                                         unsigned char aucSpec7, unsigned char aucSpec8)
 {
     if (textureCount == 9)
     {
-        specularExponents[0] = a;
-        specularExponents[1] = b;
-        specularExponents[2] = c;
-        specularExponents[3] = d;
-        specularExponents[4] = e;
-        specularExponents[5] = f;
-        specularExponents[6] = g;
-        specularExponents[7] = h;
-        specularExponents[8] = i;
+        specularExponents[0] = aucDefSpec;
+        specularExponents[1] = aucSpec0;
+        specularExponents[2] = aucSpec1;
+        specularExponents[3] = aucSpec2;
+        specularExponents[4] = aucSpec3;
+        specularExponents[5] = aucSpec4;
+        specularExponents[6] = aucSpec5;
+        specularExponents[7] = aucSpec6;
+        specularExponents[8] = aucSpec7;
     }
 }
 
@@ -855,6 +859,8 @@ class Mgr_e74120
 
 // @fnv 0x00e74120
 // src: COMMUNITY 0x00e74120
+// pdb: NiXenonRenderer::PerformPrecache | NiXenonRenderer.obj | retail, call graph (shared callers), medium
+// pdb locals: pkDeleteList, kIter, pkPrePack, pkVBBlock, uiLockBegin, pkIterator, pvLockedBuff, pkChip, uiLockSize, uiLockEnd, pkNext, pvDest, pkNewChip, akVertexElements, pkBuffData, pusIndexArray, pusIndexCount, uiIBSize, pkIB, uiIndexCount, uiMaxIndexCount, uiNumArrays, eType, pkData
 void Mgr_e74120::NiDX9Renderer_PerformPrecache()
 {
     EnterCriticalSection(&cs80);
@@ -1123,7 +1129,10 @@ struct CacheMap
 CacheMap* GetArrayHolder();
 // @fnv 0x00b61370
 // src: COMMUNITY 0x00b61370
-void TallGrassShaderProperty_RemoveFromTerrainChunk(const char* key)
+// pdb: TallGrassShaderProperty::RemoveFromTerrainChunk | TallGrassShaderProperty.obj | retail, upstream name already matches, high
+// pdb params: alTerrainChunkSeed
+// pdb locals: pcache, kiter, tempMemContext, pckey, pgroup, kprev, kgroupiter, iinstancesleft
+void TallGrassShaderProperty_RemoveFromTerrainChunk(const char* alTerrainChunkSeed)
 {
     CacheAllocationScope scope(0x1c);
     void* position = GetArrayHolder()->First();
@@ -1139,7 +1148,7 @@ void TallGrassShaderProperty_RemoveFromTerrainChunk(const char* key)
             } kv;
             GetArrayHolder()->FUN_00b57f20(position, kv.key, removed);
             CacheLookup* lookup = removed ? &removed->lookup : 0;
-            if (removed && lookup->FUN_00a53c30(key, kv.value))
+            if (removed && lookup->FUN_00a53c30(alTerrainChunkSeed, kv.value))
             {
                 CacheList* entries;
                 entries = &removed->entries;
@@ -1149,7 +1158,7 @@ void TallGrassShaderProperty_RemoveFromTerrainChunk(const char* key)
                     CacheListNode* bucket = node;
                     CacheItem*& slot = entries->GetNext(node);
                     CacheItem* item = slot;
-                    if (item && !item->TallGrassGroup_RemoveTerrainChunk(key))
+                    if (item && !item->TallGrassGroup_RemoveTerrainChunk(alTerrainChunkSeed))
                     {
                         entries->Remove(bucket, slot);
                         item->FUN_00bd8f90();
@@ -1157,7 +1166,7 @@ void TallGrassShaderProperty_RemoveFromTerrainChunk(const char* key)
                         DAT_011f9ef4--;
                     }
                 }
-                lookup->FUN_00e91fd0(key);
+                lookup->FUN_00e91fd0(alTerrainChunkSeed);
             }
         } while (position);
     }

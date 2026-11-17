@@ -34,6 +34,8 @@ public:
 
 // Clears the region's data list and deletes every point list held in the point list queue.
 // @fnv 0x004f0ef0
+// pdb: TESRegion::ClearData | TESRegion.obj | retail, upstream name already matches, high
+// pdb locals: pcurrentPointList
 void TESRegion::ClearData()
 {
     if (m_pRegionDataList)
@@ -51,6 +53,8 @@ void TESRegion::ClearData()
 }
 
 // @fnv 0x004f0f80
+// pdb: TESRegion::InitItem | TESRegion.obj | retail, upstream name already matches, high
+// pdb locals: itempint, pList, pworld
 void TESRegion::InitItem()
 {
     TESWorldSpace* world;
@@ -63,7 +67,7 @@ void TESRegion::InitItem()
         world = dynamic_cast<TESWorldSpace*>(GetFormByID(worldID));
     }
     if (world)
-        AssignWorldSpace(world);
+        SetWorldSpace(world);
     SetInitializationState(true);
     data = GetRegionDataList();
     while (data && data->GetItem())
@@ -75,7 +79,10 @@ void TESRegion::InitItem()
 
 // Loads a TESRegion from a TESFile: reads the EDID/OBND/WNAM/RPLI/RPLD chunks and region-type subrecords, then prunes invalid point lists.
 // @fnv 0x004f0b10
-bool TESRegion::Load(TESFile* file)
+// pdb: TESRegion::Load | TESRegion.obj | retail, upstream name already matches, high
+// pdb params: apFile
+// pdb locals: echunkID, plastPtList, formid, pMessage, itempint, itemp, pcurrent, pdelete
+bool TESRegion::Load(TESFile* apFile)
 {
     struct ReferenceItemCountEntry
     {
@@ -89,34 +96,34 @@ bool TESRegion::Load(TESFile* file)
         char padding0, padding1, padding2;
         unsigned char type;
     } loadState;
-    loadState.type = file->GetTESForm();
+    loadState.type = apFile->GetTESForm();
     loadState.pointList = 0;
     if (loadState.type != 55)
         return false;
-    LoadRecordHeader(file);
+    LoadRecordHeader(apFile);
     SetInitializationState(false);
-    while (loadState.chunk = file->GetChunkID())
+    while (loadState.chunk = apFile->GetChunkID())
     {
         switch (loadState.chunk)
         {
         case 0x44494445: {
-            loadState.editorID = (char*)_alloca(file->GetChunkSize());
-            file->GetChunkData(loadState.editorID, 512);
+            loadState.editorID = (char*)_alloca(apFile->GetChunkSize());
+            apFile->GetChunkData(loadState.editorID, 512);
             SetEditorID_AtRuntime(loadState.editorID);
             break;
         }
         case 0x444e424f:
-            readOBNDSubRecord(file);
+            readOBNDSubRecord(apFile);
             break;
         case 0x4d414e57: {
             loadState.worldID = 0;
-            file->GetChunkData(&loadState.worldID);
-            AssignWorldSpace((TESWorldSpace*)loadState.worldID);
+            apFile->GetChunkData(&loadState.worldID);
+            SetWorldSpace((TESWorldSpace*)loadState.worldID);
             break;
         }
         case 0x494c5052: {
             loadState.distance = 0;
-            file->GetChunkData(&loadState.distance);
+            apFile->GetChunkData(&loadState.distance);
             loadState.pointList = new RegionPointList(true);
             loadState.pointList->SetDistanceInsideAtMax(loadState.distance);
             GetRegionPointLists()->AddTail(loadState.pointList);
@@ -124,7 +131,7 @@ bool TESRegion::Load(TESFile* file)
         }
         case 0x444c5052:
             if (loadState.pointList)
-                loadState.pointList->ReadPointsFromFile(file);
+                loadState.pointList->TESRegionPointList_LoadPoints(apFile);
             break;
         case 0x424f4452:
         case 0x42534452:
@@ -140,10 +147,10 @@ bool TESRegion::Load(TESFile* file)
         case 0x53474452:
         case 0x54414452:
         case 0x54574452:
-            ((TESRegionLoadHandler*)g_dataHandler)->GetRegionDataManager()->ApplyEntry(file, this);
+            ((TESRegionLoadHandler*)g_dataHandler)->GetRegionDataManager()->ApplyEntry(apFile, this);
             break;
         }
-        if (!file->NextChunk())
+        if (!apFile->NextChunk())
             break;
     }
     loadState.lists = GetRegionPointLists();
@@ -177,6 +184,7 @@ void __fastcall TESWeatherList_GetRandomWeather(char*);
 
 // @fnv 0x004f10b0
 // src: COMMUNITY 0x004f10b0
+// pdb: TESRegionDataWeather::GetRandomWeather | TESRegion.obj | debug, object-file run extension, low
 void __fastcall TESWeatherList_GetRandomWeather_(char* param_1)
 {
     TESWeatherList_GetRandomWeather(param_1 + 8);
@@ -192,6 +200,7 @@ struct RDL_004f3330
 
 // Initialises the object: zeroes the point, allocates two members, sets form type 0x37, clears two pointers and sets a float to -1.
 // @fnv 0x004f0770
+// pdb: TESRegion::TESRegion | TESRegion.obj | retail, upstream name already matches, high
 TESRegion::TESRegion()
 {
     ((NiPoint3*)&m_kDiffuseColor)->Set(0.0f, 0.0f, 0.0f);
@@ -204,6 +213,8 @@ TESRegion::TESRegion()
 }
 
 // @fnv 0x004f08c0
+// pdb: TESRegion::~TESRegion | TESRegion.obj | retail, upstream name already matches, high
+// pdb locals: pcurrentPointList
 TESRegion::~TESRegion()
 {
     if (m_pRegionDataList != 0)
@@ -239,9 +250,12 @@ struct DataProxy
 };
 // Copies this region into destination (allocating one if null), copying its data and each list node's point proxy.
 // @fnv 0x004f10d0
-TESRegion* TESRegion::Clone(TESRegion* destination)
+// pdb: TESRegion::Copy | TESRegion.obj | retail, vtable slot, high
+// pdb params: apCopyInto
+// pdb locals: pcopy, pcurrent
+TESRegion* TESRegion::Clone(TESRegion* apCopyInto)
 {
-    TESRegion* result = destination ? destination : new TESRegion;
+    TESRegion* result = apCopyInto ? apCopyInto : new TESRegion;
     ListProxy* pNode = FUN_00441110();
     WarnCopyUnsupported(result);
     NiAVObject_GetParent()->TESRegionDataList_Copy(result->NiAVObject_GetParent());
@@ -276,16 +290,18 @@ struct S_004f1300_Mgr
 struct S_004f1300_Save
 {
     unsigned short* FUN_00825c00();
-    void TESSaveLoadGame_SaveGameDataOLD(void* apData, unsigned int auiSize);
-    void TESSaveLoadGame_SaveNumericID(void* apData, unsigned int auiSize);
+    void TESSaveLoadGame_SaveGameDataOLD(void* apData, unsigned int aiSize);
+    void TESSaveLoadGame_SaveNumericID(void* apFormID, unsigned int aiSize);
 };
 
 extern S_004f1300_Save* DAT_011de45c;
 extern S_004f1300_Mgr* DAT_011c3f2c;
 
 // @fnv 0x004f1300
-// src: GUESS 0x004f1300 (confidence: low)
-void __cdecl Object_ProcessEntries_004f1300()
+// src: XBOX_DEBUG_PDB 0x004f1300
+// pdb: TESRegion::SaveGame | TESRegion.obj | debug, call graph, high
+// pdb locals: icount, plist, pcount, iregionID, pregion, flastWeatherUpdate
+void __cdecl TESRegion_SaveGame()
 {
     unsigned short m_usPassCountLocal = 0;
     unsigned short* pusCount4 = DAT_011de45c->FUN_00825c00();
@@ -313,13 +329,15 @@ void __cdecl Object_ProcessEntries_004f1300()
 class B4F1050DataList
 {
   public:
-    TESRegionData* GetDataByType(int eType);
+    TESRegionData* GetDataByType(int aFind);
 };
 
 void* __fastcall B4F1050GetWeatherTypes(TESRegionDataWeather* pkWeather);
 
 // Clears m_pRegionWeather, then if m_pRegionDataList exists, gets the type-3 region data and stores its weather types.
 // @fnv 0x004f1050
+// pdb: TESRegion::UpdateWeather | TESRegion.obj | retail, upstream name already matches, high
+// pdb locals: pRDW
 void TESRegion::UpdateWeather()
 {
     m_pRegionWeather = 0;
@@ -359,6 +377,8 @@ struct LstBQ
 };
 // Calls FUN_004855a0, passes a reference-derived ID to FUN_00485910, traverses two lists calling FUN_004f77c0 and Save on their elements, then calls FUN_00485680.
 // @fnv 0x004f0a40
+// pdb: TESRegion::Save | TESRegion.obj | retail, vtable slot, high
+// pdb locals: pPList, pDataList, pworld, itempint
 void TESRegion::SaveForm()
 {
     BeginFormRecord();

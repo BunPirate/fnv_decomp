@@ -39,6 +39,8 @@ class FUN_00577110_slot
 
 // @fnv 0x00577110
 // src: GUESS 0x00577110 (confidence: low)
+// pdb: hkMatrix3::setZero | TESObjectREFR.obj | debug, object-file run extension, low
+// pdb locals: zero
 void FUN_00577110_cls::ProcessState_00577110()
 {
     LocalBlock20 local;
@@ -57,15 +59,18 @@ FUN_0056ded0& __cdecl FUN_0056df80(FUN_0056ded0& destination, const NiTransform&
 struct FUN_0056df20_Class
 {
     void bhkShapePhantom_setTransform(FUN_0056ded0*);
-    void bhkShapePhantom_SetTransform(const NiTransform& src);
+    void bhkShapePhantom_SetTransform(const NiTransform& arTrans);
 };
 // Built from prior 2026-10-25 contributions, with byte-addressable transform storage.
 // @fnv 0x0056df20
 // src: XBOX_PDB 0x0056df20
-void FUN_0056df20_Class::bhkShapePhantom_SetTransform(const NiTransform& src)
+// pdb: bhkShapePhantom::SetTransform | TESObjectREFR.obj | retail, upstream name already matches, high
+// pdb params: arTrans
+// pdb locals: hkt
+void FUN_0056df20_Class::bhkShapePhantom_SetTransform(const NiTransform& arTrans)
 {
     FUN_0056ded0 local;
-    bhkShapePhantom_setTransform(&FUN_0056df80(local, src));
+    bhkShapePhantom_setTransform(&FUN_0056df80(local, arTrans));
 }
 
 extern const NiMatrix3 g_kIdentity56D;
@@ -107,7 +112,7 @@ class BoxShape56D : public Shape56D
 class SphereShape56D : public Shape56D
 {
   public:
-    SphereShape56D(float fRadius, int iFlags);
+    SphereShape56D(float afRadius, int abBS);
 };
 
 class MotionInfo56D
@@ -173,7 +178,7 @@ class Body56D
     static void* operator new(unsigned int uiSize);
     static void operator delete(void* pvMem, unsigned int);
     Body56D(BodyCinfo56D& kInfo);
-    void SetTransform(const NiTransform& kXform);
+    void SetTransform(const NiTransform& arTrans);
     unsigned int unk00;
     unsigned int unk04;
     unsigned int unk08;
@@ -221,7 +226,7 @@ class Node56D
 class Physics56D
 {
   public:
-    void Attach(Node56D* pkNode, int iFlags);
+    void Attach(Node56D* apObject, int aiKey);
 };
 
 class Holder56D
@@ -267,7 +272,7 @@ class ExtraList56D
 class World56D
 {
   public:
-    void AddHolder(Physics56D* pkPhysics);
+    void AddHolder(Physics56D* apObj);
 };
 
 class Middle56D
@@ -276,7 +281,7 @@ class Middle56D
     World56D* GetWorld();
 };
 
-void __cdecl NI2HK(hkVector4& kOut, const NiPoint3& kIn);
+void __cdecl NI2HK(hkVector4& arhkTran, const NiPoint3& arNiTran);
 float __cdecl NI2HK_004a3e90(float fValue);
 
 class Ref56D
@@ -410,7 +415,7 @@ class Ref56D
     virtual const NiPoint3* GetPos();
     ExtraList56D* GetExtraData();
     Middle56D* GetMiddle();
-    void SetScale(float fScale);
+    void SetScale(float newscale);
     NiMatrix3 GetRotation();
     void TESObjectREFR_InitHavokForPrimitiveTrigger();
     unsigned int unk04;
@@ -444,6 +449,8 @@ class Ref56D
 #pragma strict_gs_check(push, on)
 // @fnv 0x0056d7e0
 // src: COMMUNITY 0x0056d7e0
+// pdb: TESObjectREFR::InitHavokForPrimitiveTrigger | TESObjectREFR.obj | retail, upstream name already matches, high
+// pdb locals: pprim, pw, trn, transform, pcoll, pflags, elayer, UpdateData, hkvec, pdata, pshape, info, nivec, ifilterset, pphantom
 void Ref56D::TESObjectREFR_InitHavokForPrimitiveTrigger()
 {
     PrimitiveCollisionSource* pkBound = GetExtraData()->GetBound();
@@ -621,19 +628,22 @@ struct Owner264
 };
 // @fnv 0x00576d50
 // src: COMMUNITY 0x00576d50
-void Owner264::TESObjectREFR_PreCalcTriStripsShapeAabb(Scene264* scene)
+// pdb: TESObjectREFR::PreCalcTriStripsShapeAabb | TESObjectREFR.obj | retail, upstream name already matches, high
+// pdb params: ap3D
+// pdb locals: niwtrans, hkwtrans, pbody, updatedata, pcol, pshape, pnode, pstripshape, ppackedStripShape, pbhkstripshape, pbhkshapecol, pbhktreeshape, icount, i
+void Owner264::TESObjectREFR_PreCalcTriStripsShapeAabb(Scene264* ap3D)
 {
-    if (!scene)
+    if (!ap3D)
         return;
     UpdateData264 update(0.0f, true, false);
-    scene->Update(update);
+    ap3D->Update(update);
     // Preserve the original raw transform copy without invoking member copy constructors.
     unsigned char transform[sizeof(NiTransform)];
-    memcpy(transform, &scene->NiAVObject_GetWorldRotate(), sizeof(transform));
+    memcpy(transform, &ap3D->NiAVObject_GetWorldRotate(), sizeof(transform));
     HavokTransform264 converted;
     converted.hkTransform_setIdentity();
     FUN_0056df80(&converted, reinterpret_cast<const NiTransform*>(transform));
-    Collision264* collision = FUN_0043b610(scene);
+    Collision264* collision = FUN_0043b610(ap3D);
     World264* world = collision ? collision->bhkNiCollisionObject_GetWorldObject() : 0;
     Shape264* shape = world ? world->bhkWorldObject_GetShape() : 0;
     if (shape)
@@ -670,7 +680,7 @@ void Owner264::TESObjectREFR_PreCalcTriStripsShapeAabb(Scene264* scene)
         if (nativeB)
             nativeB->hkPackedNiTriStripsShape_CalcWorldAabb(converted);
     }
-    SceneChildren264* children = scene->AsNode();
+    SceneChildren264* children = ap3D->AsNode();
     if (children)
     {
         unsigned int count = children->FUN_0043b480();

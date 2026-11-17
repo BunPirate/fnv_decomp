@@ -4,6 +4,7 @@
 
 class TESFile;
 
+// pdb: class BGSVoiceType, size 0x24, bases: TESForm, 2 members
 class BGSVoiceType : public TESForm
 {
 public:
@@ -23,14 +24,14 @@ public:
     virtual bool LoadForm2(TESFile* modInfo);
     virtual void SaveForm();
     virtual void CopyFrom(const TESForm* form);
-    virtual bool Compare(TESForm* form);
+    virtual bool Compare(TESForm* apCompare);
 
-    bool Load(TESFile* file);
+    bool Load(TESFile* apFile);
     void Save_005f0140();
-    void Copy_005f02a0(TESForm* form);
-    bool Compare_005f02f0(TESForm* form);
+    void Copy_005f02a0(TESForm* apCopy);
+    bool Compare_005f02f0(TESForm* apCompare);
     void TESForm_CopyAllComponents(TESForm* form);
-    bool TESForm_CompareAllComponents(TESForm* form);
+    bool TESForm_CompareAllComponents(TESForm* apCompare);
 
     union
     {

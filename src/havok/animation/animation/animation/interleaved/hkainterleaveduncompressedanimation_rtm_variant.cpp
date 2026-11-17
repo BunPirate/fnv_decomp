@@ -38,17 +38,17 @@ struct FUN_00e3f920_class
 };
 struct S00e3fb60_Anim : public hkaInterleavedUncompressedAnimation
 {
-    void hkaAnimation_getFrameAndDelta(float time, int& frameIndex, float& weight) const;
-    void hkaInterleavedUncompressedAnimation_sampleIndividualFloatTracks(float time, const short* tracks, int numTracks, float* out);
+    void hkaAnimation_getFrameAndDelta(float time, int& frameOut, float& deltaOut) const;
+    void hkaInterleavedUncompressedAnimation_sampleIndividualFloatTracks(float time, const short* tracks, int numTracks, float* floatTracksOut);
 };
 // src: HAVOK_LIB 0x00e2f7c0
-__declspec(noinline) void S00e3fb60_Anim::hkaAnimation_getFrameAndDelta(float time, int& frameIndex, float& weight) const
+__declspec(noinline) void S00e3fb60_Anim::hkaAnimation_getFrameAndDelta(float time, int& frameOut, float& deltaOut) const
 {
-    unsigned int numPoses = m_kTransforms.m_iElementCount / m_iNumTransformTracks;
-    float f = (time / m_fAnimationDuration) * (float)(numPoses - 1);
+    unsigned int numPoses = m_transforms.m_iElementCount / m_iNumTransformTracks;
+    float f = (time / m_duration) * (float)(numPoses - 1);
     unsigned int i = (unsigned int)f;
-    frameIndex = i;
-    weight = f - (float)i;
+    frameOut = i;
+    deltaOut = f - (float)i;
 }
 struct S00e3fd20_Desc
 {
@@ -66,7 +66,7 @@ struct S00e3fd20_Desc
     int m_2c;
     int m_30;
     int m_34;
-    void __thiscall hkaInterleavedUncompressedAnimation_getDataChunks(int scale, int unused1, int* out, int unused2);
+    void __thiscall hkaInterleavedUncompressedAnimation_getDataChunks(int frame, int delta, int* dataChunks, int numDataChunks);
 };
 #include <xmmintrin.h>
 #include "../../../../../../include/hkQsTransform.h"
@@ -162,7 +162,7 @@ inline SampleRec* S00e3ffc0_zero(SampleRec* recs)
 }
 struct FUN_00e2f7c0_Obj
 {
-    void hkaAnimation_getFrameAndDelta(float a1, int* a2, float* a3);
+    void hkaAnimation_getFrameAndDelta(float a1, int* frameOut, float* deltaOut);
 };
 __forceinline int S00e3ffc0_getFrame(FUN_00e2f7c0_Obj* o, float t, float* d)
 {
@@ -170,7 +170,7 @@ __forceinline int S00e3ffc0_getFrame(FUN_00e2f7c0_Obj* o, float t, float* d)
     o->hkaAnimation_getFrameAndDelta(t, &f, d);
     return f;
 }
-void __cdecl hkaInterleavedUncompressedAnimation_samplePartialWithDataChunks(int frame, float delta, unsigned int nT, QsT* tOut, unsigned int nF, float* fOut,
+void __cdecl hkaInterleavedUncompressedAnimation_samplePartialWithDataChunks(int frame, float delta, unsigned int nT, QsT* tOut, unsigned int nF, float* floatTracksOut,
                           SampleRec* recs, int n);
 struct hkaAnimSlot : hkaInterleavedUncompressedAnimation
 {
@@ -184,7 +184,7 @@ struct hkaAnimSlot : hkaInterleavedUncompressedAnimation
     virtual void v8();
     virtual void v9();
     virtual void SampleIndividualTracks(int frame, float delta, SampleRec* recs, int n);
-    void hkaInterleavedUncompressedAnimation_samplePartialTracks(float time, unsigned int nT, QsT* tOut, unsigned int nF, float* fOut, int a6);
+    void hkaInterleavedUncompressedAnimation_samplePartialTracks(float time, unsigned int maxNumTransformTracks, QsT* transformTracksOut, unsigned int maxNumFloatTracks, float* floatTracksOut, int cache);
 };
 
 namespace E3fda0Simd {
@@ -218,7 +218,7 @@ struct DataChunk
 struct FUN_005611c0_t
 {
     float x, y, z, w;
-    void normalize_005611c0();
+    void hkQuaternion_normalize();
 };
 
 extern ::__m128 DAT_010ec7f0;
@@ -250,8 +250,11 @@ struct TransformLane
 extern "C" void _ReadWriteBarrier();
 // @fnv 0x00e3fda0
 // src: XBOX_PDB 0x00e3fda0
-void hkaInterleavedUncompressedAnimation_samplePartialWithDataChunks(unsigned int frameIndex, float frameDelta, unsigned int maxNumTransformTracks,
-                  hkQsTransform* transformOutArg, int maxNumFloatTracks, float* floatOutArg,
+// pdb: hkaInterleavedUncompressedAnimation::samplePartialWithDataChunks | hkaInterleavedUncompressedAnimation.obj | retail, upstream name already matches, high
+// pdb params: frameIndex, delta, maxNumTransformTracks, transformTracksOut, maxNumFloatTracks, floatTracksOut, dataChunks, numDataChunks
+// pdb locals: assertBuf, ostr
+void hkaInterleavedUncompressedAnimation_samplePartialWithDataChunks(unsigned int frameIndex, float delta, unsigned int maxNumTransformTracks,
+                  hkQsTransform* transformOutArg, int maxNumFloatTracks, float* floatTracksOut,
                   const DataChunk* dataChunks, int numDataChunks)
 {
     const hkaAnimation* anim = (const hkaAnimation*)dataChunks[0].m_data;
@@ -268,7 +271,7 @@ void hkaInterleavedUncompressedAnimation_samplePartialWithDataChunks(unsigned in
                 E3fda0Simd::LocalM128 invScalar;
                 (void)invScalar;
 
-                E3fda0Simd::LocalM128 tss = E3fda0Simd::_mm_load_ss(&frameDelta);
+                E3fda0Simd::LocalM128 tss = E3fda0Simd::_mm_load_ss(&delta);
                 E3fda0Simd::LocalM128 tAll = E3fda0Simd::_mm_shuffle_ps(tss, tss, 0);
                 E3fda0Simd::LocalM128 ones = (*reinterpret_cast<const E3fda0Simd::LocalM128*>(&DAT_010ec7f0));
                 E3fda0Simd::LocalM128 inv = E3fda0Simd::_mm_sub_ps(ones, tAll);
@@ -312,7 +315,7 @@ void hkaInterleavedUncompressedAnimation_samplePartialWithDataChunks(unsigned in
                 E3fda0Simd::_mm_store_ps(&quat.x,
                                          E3fda0Simd::_mm_add_ps(E3fda0Simd::_mm_mul_ps(signedAll, pose1->rotation.v),
                                                                 E3fda0Simd::_mm_mul_ps(invAll, r0)));
-                quat.normalize_005611c0();
+                quat.hkQuaternion_normalize();
                 transformTracksOut->rotation.v = E3fda0Simd::_mm_load_ps(&quat.x);
                 pose0++;
                 pose1++;
@@ -334,12 +337,12 @@ void hkaInterleavedUncompressedAnimation_samplePartialWithDataChunks(unsigned in
         (void)oneMinus;
         a = (const float*)(floats->m_data + floats->m_offset);
         b = a + anim->m_iNumberOfFloatTracks;
-        t = frameDelta;
+        t = delta;
         oneMinus = 1.0f - t;
         unsigned int i = 0;
         for (; i < (unsigned int)maxNumFloatTracks; ++i)
         {
-            floatOutArg[i] = *a * oneMinus + t * *b;
+            floatTracksOut[i] = *a * oneMinus + t * *b;
             a++;
             b++;
         }

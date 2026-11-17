@@ -24,6 +24,8 @@ inline unsigned int NiStream::GetFileVersion() const
 }
 
 // @fnv 0x00a371f0
+// pdb: NiBlendInterpolator::InterpArrayItem::operator= | NiBlendInterpolator.obj | debug, call graph, medium
+// pdb params: __that
 NiBlendInterpolator__InterpArrayItem& NiBlendInterpolator__InterpArrayItem::operator=(
     const NiBlendInterpolator__InterpArrayItem& source)
 {
@@ -52,13 +54,13 @@ void NiBlendInterpolator::UpdatePriorityData()
     NiBlendInterpolator__InterpArrayItem* pSecondItem = 0;
     for (unsigned char index = 0; index < m_ucArraySize; ++index)
     {
-        if (m_pInterpArray[index].m_spControllerInterpolator.m_pObject)
+        if (m_pkInterpArray[index].m_spControllerInterpolator.m_pObject)
         {
             if (!pFirstItem)
-                pFirstItem = &m_pInterpArray[index];
+                pFirstItem = &m_pkInterpArray[index];
             else
             {
-                pSecondItem = &m_pInterpArray[index];
+                pSecondItem = &m_pkInterpArray[index];
                 break;
             }
         }
@@ -105,7 +107,7 @@ void NiBlendInterpolator::UpdatePriorityData()
         pSecondItem->m_fNormalizedWeight = secondWeight * inverseWeight;
     }
 
-    if (m_uiObjectFlags & 2)
+    if (m_uFlags & 2)
     {
         if (pFirstItem->m_fNormalizedWeight >= pSecondItem->m_fNormalizedWeight)
         {
@@ -137,17 +139,20 @@ void NiBlendInterpolator::UpdatePriorityData()
 }
 
 // @fnv 0x00a36970
+// pdb: NiBlendInterpolator::AddInterpInfo | NiBlendInterpolator.obj | retail, object-file run extension, low
+// pdb params: pkInterpolator, fWeight, cPriority, fEaseSpinner
+// pdb locals: kNewItem, ucIndex
 unsigned char NiBlendInterpolator::AddInterpolatorItem(NiInterpolator* interpolator, float weight, char priority,
                                                        float easeSpinner)
 {
     unsigned char index = 0;
     for (; index < m_ucArraySize; ++index)
-        if (!m_pInterpArray[index].m_spControllerInterpolator.m_pObject)
+        if (!m_pkInterpArray[index].m_spControllerInterpolator.m_pObject)
             break;
     if (index == m_ucArraySize && !GrowInterpolatorArray())
         return 0xff;
 
-    NiBlendInterpolator__InterpArrayItem& item = m_pInterpArray[index];
+    NiBlendInterpolator__InterpArrayItem& item = m_pkInterpArray[index];
     NiInterpolator* previous = item.m_spControllerInterpolator.m_pObject;
     if (previous != interpolator)
     {
@@ -177,26 +182,29 @@ unsigned char NiBlendInterpolator::AddInterpolatorItem(NiInterpolator* interpola
     if (m_ucInterpCount == 1)
     {
         m_ucSingleIdx = index;
-        m_pSingleInterpolator = interpolator;
+        m_pkSingleInterpolator = interpolator;
     }
     else
     {
-        m_fSingleInterpolatorTime = INVALID_TIME;
+        m_fSingleTime = INVALID_TIME;
         m_ucSingleIdx = 0xff;
-        m_pSingleInterpolator = 0;
+        m_pkSingleInterpolator = 0;
     }
     m_fHighSumOfWeights = INVALID_TIME;
-    m_uiObjectFlags |= 4;
+    m_uFlags |= 4;
     m_fNextHighSumOfWeights = INVALID_TIME;
-    m_fTrailingValue = INVALID_TIME;
+    m_fHighEaseSpinner = INVALID_TIME;
     return index;
 }
 
 // Removes the interpolator at index, releases it, recomputes high/next-high priorities and single-interpolator state, and invalidates cached weights.
 // @fnv 0x00a36a90
-void NiBlendInterpolator::RemoveInterpolatorAt(unsigned char index)
+// pdb: NiBlendInterpolator::RemoveInterpInfo | NiBlendInterpolator.obj | retail, call graph, high
+// pdb params: ucIndex
+// pdb locals: cPriority, kItem, uc, kTempItem
+void NiBlendInterpolator::RemoveInterpolatorAt(unsigned char ucIndex)
 {
-    NiBlendInterpolator__InterpArrayItem& item = m_pInterpArray[index];
+    NiBlendInterpolator__InterpArrayItem& item = m_pkInterpArray[ucIndex];
     char priority = item.m_cPriority;
     NiInterpolator* previous = item.m_spControllerInterpolator.m_pObject;
     if (previous)
@@ -211,7 +219,7 @@ void NiBlendInterpolator::RemoveInterpolatorAt(unsigned char index)
         m_cHighPriority = -128;
         for (unsigned char current = 0; current < m_ucArraySize; ++current)
         {
-            NiBlendInterpolator__InterpArrayItem& candidate = m_pInterpArray[current];
+            NiBlendInterpolator__InterpArrayItem& candidate = m_pkInterpArray[current];
             if (candidate.m_spControllerInterpolator.m_pObject && candidate.m_cPriority > m_cNextHighPriority)
             {
                 if (candidate.m_cPriority > m_cHighPriority)
@@ -228,55 +236,58 @@ void NiBlendInterpolator::RemoveInterpolatorAt(unsigned char index)
     if (m_ucInterpCount == 1)
     {
         if (m_ucArraySize == 2)
-            m_ucSingleIdx = !index;
+            m_ucSingleIdx = !ucIndex;
         else
         {
             for (unsigned char current = 0; current < m_ucArraySize; ++current)
-                if (m_pInterpArray[current].m_spControllerInterpolator.m_pObject)
+                if (m_pkInterpArray[current].m_spControllerInterpolator.m_pObject)
                 {
                     m_ucSingleIdx = current;
                     break;
                 }
         }
-        NiBlendInterpolator__InterpArrayItem& single = m_pInterpArray[m_ucSingleIdx];
-        m_pSingleInterpolator = single.m_spControllerInterpolator.m_pObject;
-        m_fSingleInterpolatorTime = single.m_fLastEvaluationTime;
+        NiBlendInterpolator__InterpArrayItem& single = m_pkInterpArray[m_ucSingleIdx];
+        m_pkSingleInterpolator = single.m_spControllerInterpolator.m_pObject;
+        m_fSingleTime = single.m_fLastEvaluationTime;
     }
     else if (m_ucInterpCount == 0)
     {
-        m_fSingleInterpolatorTime = INVALID_TIME;
+        m_fSingleTime = INVALID_TIME;
         m_cNextHighPriority = -128;
         m_cHighPriority = -128;
         m_ucSingleIdx = 0xff;
-        m_pSingleInterpolator = 0;
+        m_pkSingleInterpolator = 0;
     }
     m_fHighSumOfWeights = INVALID_TIME;
-    m_uiObjectFlags |= 4;
+    m_uFlags |= 4;
     m_fNextHighSumOfWeights = INVALID_TIME;
-    m_fTrailingValue = INVALID_TIME;
+    m_fHighEaseSpinner = INVALID_TIME;
 }
 
 // @fnv 0x00a36e80
-void NiBlendInterpolator::ProcessClone(CloningProcess& aCloneProcess)
+// pdb: NiBlendInterpolator::ProcessClone | NiBlendInterpolator.obj | retail, upstream name already matches, high
+// pdb params: kCloning
+// pdb locals: bCloned, pkClone, pkDest, uc, pkInterpolator, pkClonedInterpolator
+void NiBlendInterpolator::ProcessClone(CloningProcess& kCloning)
 {
-    NiObject::ProcessClone(aCloneProcess);
+    NiObject::ProcessClone(kCloning);
     NiObject* cloneObject = 0;
-    aCloneProcess.m_pCloneMap->GetAt(this, cloneObject);
+    kCloning.m_pCloneMap->GetAt(this, cloneObject);
     NiBlendInterpolator* clone = static_cast<NiBlendInterpolator*>(cloneObject);
     for (unsigned char index = 0; index < m_ucArraySize; ++index)
     {
-        NiInterpolator* interpolator = m_pInterpArray[index].m_spControllerInterpolator.m_pObject;
+        NiInterpolator* interpolator = m_pkInterpArray[index].m_spControllerInterpolator.m_pObject;
         if (interpolator)
-            interpolator->ProcessClone(aCloneProcess);
+            interpolator->ProcessClone(kCloning);
     }
-    if (m_pSingleInterpolator)
+    if (m_pkSingleInterpolator)
     {
         NiInterpolator* singleClone;
-        if (aCloneProcess.m_pCloneMap->GetAt(m_pSingleInterpolator, cloneObject))
+        if (kCloning.m_pCloneMap->GetAt(m_pkSingleInterpolator, cloneObject))
             singleClone = static_cast<NiInterpolator*>(cloneObject);
         else
-            singleClone = m_pSingleInterpolator;
-        clone->m_pSingleInterpolator = singleClone;
+            singleClone = m_pkSingleInterpolator;
+        clone->m_pkSingleInterpolator = singleClone;
     }
 }
 
@@ -298,6 +309,7 @@ struct InterpArrayItem_Temp
 
 // Sets the vtable pointer, destroys each element of the array at offset 0x14, frees it, then calls FUN_00a57010.
 // @fnv 0x00a37170
+// pdb: NiBlendInterpolator::~NiBlendInterpolator | NiBlendInterpolator.obj | retail, call graph, medium
 void __fastcall DestroyInterpolatorArray(NiBlendInterpolator* pThis, int)
 {
     *reinterpret_cast<int**>(pThis) = &DAT_0109697c;
@@ -356,6 +368,8 @@ struct NiBlendInterpolator_Layout
 
 // Recomputes per-item normalized blend weights from weights, ease spinners and priorities, applying the weight threshold and optional single-winner selection.
 // @fnv 0x00a37260
+// pdb: NiBlendInterpolator::ComputeNormalizedWeights | NiBlendInterpolator.obj | debug, call graph, medium
+// pdb locals: uc, fOneMinusHighEaseSpinner, fTotalSumOfWeights, fOneOverTotalSumOfWeights, fSumOfNormalizedWeights, kItem, fRealWeight, fOneOverSumOfNormalizedWeights, ucHighIndex, fHighest
 void FUN_00a37260_shell::UpdateNormalizedWeights()
 {
     NiBlendInterpolator_Layout* pThis = reinterpret_cast<NiBlendInterpolator_Layout*>(this);
@@ -650,6 +664,9 @@ struct BlendInterpS : InterpS
 };
 // @fnv 0x00a36e10
 // src: XBOX_PDB 0x00a36e10
+// pdb: NiBlendInterpolator::GuaranteeTimeRange | NiBlendInterpolator.obj | retail, upstream name already matches, high
+// pdb params: fStartTime, fEndTime
+// pdb locals: uc, kItem
 void __fastcall NiBlendInterpolator_GuaranteeTimeRange(BlendInterpS* self, int, float m_fStartTime, float m_fMaximumDistance)
 {
     if (self->m_ucInterpCount == 1)
@@ -670,7 +687,7 @@ namespace fnv_00a36f80 {
 struct InterpS
 {
     virtual void v0();
-    bool BSTextureSet_RegisterStreamables(NiStream& s);
+    bool BSTextureSet_RegisterStreamables(NiStream& kStream);
     virtual void v1();
     virtual void v2();
     virtual void v3();
@@ -737,6 +754,9 @@ struct BlendInterpS : InterpS
 // Registers the base streamables, then registers each item's interpolator when the flag bit is clear; returns false if the base call fails.
 // @fnv 0x00a36f80
 // src: XBOX_PDB 0x00a36f80
+// pdb: NiBlendInterpolator::RegisterStreamables | NiBlendInterpolator.obj | retail, upstream name already matches, high
+// pdb params: kStream
+// pdb locals: uc
 bool __fastcall NiBlendInterpolator_RegisterStreamables(BlendInterpS* self, int, NiStream& kStream)
 {
     if (!self->BSTextureSet_RegisterStreamables(kStream))
@@ -791,7 +811,7 @@ struct ItemS
     unsigned char c;
     float f10;
     int tail;
-    bool Equals(ItemS& o);
+    bool NiBlendInterpolator_InterpArrayItem_IsEqual(ItemS& kDest);
 };
 struct BlendS
 {
@@ -808,10 +828,13 @@ struct BlendS
     InterpS* m_pSingleInterpolator;
     float m_fWeightThreshold;
     float m_fSingleInterpolatorTime;
-    bool BSAnimNotes_IsEqual(ObjS* o);
+    bool BSAnimNotes_IsEqual(ObjS* apObject);
 };
 // @fnv 0x00a36fd0
 // src: XBOX_PDB 0x00a36fd0
+// pdb: NiBlendInterpolator::IsEqual | NiBlendInterpolator.obj | retail, upstream name already matches, high
+// pdb params: pkObject
+// pdb locals: us, pkDest
 bool __fastcall NiBlendInterpolator_IsEqual(BlendS* self, int, ObjS* pkObject)
 {
     if (!self->BSAnimNotes_IsEqual(pkObject))
@@ -821,7 +844,7 @@ bool __fastcall NiBlendInterpolator_IsEqual(BlendS* self, int, ObjS* pkObject)
         return false;
     for (unsigned char us = 0; us < self->m_ucArraySize; us++)
     {
-        if (!self->m_pInterpArray[us].Equals(pkDest->m_pInterpArray[us]))
+        if (!self->m_pInterpArray[us].NiBlendInterpolator_InterpArrayItem_IsEqual(pkDest->m_pInterpArray[us]))
             return false;
     }
     if (self->m_uiObjectFlags != pkDest->m_uiObjectFlags)
@@ -895,26 +918,29 @@ class FUN_00a36f10_cls
     float m_fB;
     unsigned char m_ucC;
     float m_fD;
-    bool Equals(FUN_00a36f10_cls* other);
+    bool NiBlendInterpolator_InterpArrayItem_IsEqual(FUN_00a36f10_cls* kDest);
 };
 
 // Compares peer pointers (both null or equal via v23) and the four value fields against another instance, returning true only if all match.
 // @fnv 0x00a36f10
-bool FUN_00a36f10_cls::Equals(FUN_00a36f10_cls* other)
+// src: XBOX_RETAIL_PDB 0x00a36f10
+// pdb: NiBlendInterpolator::InterpArrayItem::IsEqual | NiBlendInterpolator.obj | retail, object-file gap fill, high
+// pdb params: kDest
+bool FUN_00a36f10_cls::NiBlendInterpolator_InterpArrayItem_IsEqual(FUN_00a36f10_cls* kDest)
 {
-    if (m_pPeer != 0 && other->m_pPeer == 0)
+    if (m_pPeer != 0 && kDest->m_pPeer == 0)
         return false;
-    if (m_pPeer == 0 && other->m_pPeer != 0)
+    if (m_pPeer == 0 && kDest->m_pPeer != 0)
         return false;
-    if (m_pPeer != 0 && !m_pPeer->v23(other->m_pPeer))
+    if (m_pPeer != 0 && !m_pPeer->v23(kDest->m_pPeer))
         return false;
-    if (m_fCoefficientA != other->m_fCoefficientA)
+    if (m_fCoefficientA != kDest->m_fCoefficientA)
         return false;
-    if (m_fB != other->m_fB)
+    if (m_fB != kDest->m_fB)
         return false;
-    if (m_ucC != other->m_ucC)
+    if (m_ucC != kDest->m_ucC)
         return false;
-    if (m_fD != other->m_fD)
+    if (m_fD != kDest->m_fD)
         return false;
     return true;
 }
@@ -937,29 +963,31 @@ struct InterpItem
     char unk0d, unk0e, unk0f;
     float easeSpinner;
     float updateTime;
-    void WriteToStream(NiStream* stream);
+    void WriteToStream(NiStream* kStream);
 };
 // Writes the interpolator, weight, normalizedWeight, priority and easeSpinner to the stream via its writer, accumulating byte counts.
 // @fnv 0x00a378d0
-void InterpItem::WriteToStream(NiStream* stream)
+// pdb: NiBlendInterpolator::InterpArrayItem::SaveBinary | NiBlendInterpolator.obj | retail, object-file gap fill, high
+// pdb params: kStream
+void InterpItem::WriteToStream(NiStream* kStream)
 {
-    stream->SaveLinkID(reinterpret_cast<const NiObject*>(interpolator));
-    ObjectWriter* writer = *reinterpret_cast<ObjectWriter**>(reinterpret_cast<char*>(stream) + 0x250);
+    kStream->SaveLinkID(reinterpret_cast<const NiObject*>(interpolator));
+    ObjectWriter* writer = *reinterpret_cast<ObjectWriter**>(reinterpret_cast<char*>(kStream) + 0x250);
     {
         unsigned int bytes = 4;
         writer->totalBytes += writer->write(writer, &weight, 4, &bytes, 1);
     }
-    writer = *reinterpret_cast<ObjectWriter**>(reinterpret_cast<char*>(stream) + 0x250);
+    writer = *reinterpret_cast<ObjectWriter**>(reinterpret_cast<char*>(kStream) + 0x250);
     {
         unsigned int bytes = 4;
         writer->totalBytes += writer->write(writer, &normalizedWeight, 4, &bytes, 1);
     }
-    writer = *reinterpret_cast<ObjectWriter**>(reinterpret_cast<char*>(stream) + 0x250);
+    writer = *reinterpret_cast<ObjectWriter**>(reinterpret_cast<char*>(kStream) + 0x250);
     {
         unsigned int bytes = 1;
         writer->totalBytes += writer->write(writer, &priority, 1, &bytes, 1);
     }
-    writer = *reinterpret_cast<ObjectWriter**>(reinterpret_cast<char*>(stream) + 0x250);
+    writer = *reinterpret_cast<ObjectWriter**>(reinterpret_cast<char*>(kStream) + 0x250);
     {
         unsigned int bytes = 4;
         writer->totalBytes += writer->write(writer, &easeSpinner, 4, &bytes, 1);
@@ -997,13 +1025,17 @@ struct LoadInterpItem
     char unk0d, unk0e, unk0f;
     float m_fEaseSpinner;
     float m_fLastEvaluationTime;
-    void LoadFromStream(NiStream* stream);
+    void NiBlendInterpolator_InterpArrayItem_LoadBinary(NiStream* kStream);
 };
 
 // @fnv 0x00a377b0
-void LoadInterpItem::LoadFromStream(NiStream* stream)
+// src: XBOX_RETAIL_PDB 0x00a377b0
+// pdb: NiBlendInterpolator::InterpArrayItem::LoadBinary | NiBlendInterpolator.obj | retail, object-file gap fill, high
+// pdb params: kStream
+// pdb locals: iPriority
+void LoadInterpItem::NiBlendInterpolator_InterpArrayItem_LoadBinary(NiStream* kStream)
 {
-    NiInterpolator* pInterpolator = (NiInterpolator*)stream->DeserializeObject();
+    NiInterpolator* pInterpolator = (NiInterpolator*)kStream->DeserializeObject();
     if (m_spControllerInterpolator != pInterpolator)
     {
         if (m_spControllerInterpolator)
@@ -1012,12 +1044,12 @@ void LoadInterpItem::LoadFromStream(NiStream* stream)
         if (pInterpolator)
             pInterpolator->IncRefCount();
     }
-    LoadStreamBinary(reinterpret_cast<LoadBinStream*>(&stream->Istr()), m_fWeight);
-    LoadStreamBinary(reinterpret_cast<LoadBinStream*>(&stream->Istr()), m_fNormalizedWeight);
-    if (stream->GetFileVersion() < 0x0a01006e)
+    LoadStreamBinary(reinterpret_cast<LoadBinStream*>(&kStream->Istr()), m_fWeight);
+    LoadStreamBinary(reinterpret_cast<LoadBinStream*>(&kStream->Istr()), m_fNormalizedWeight);
+    if (kStream->GetFileVersion() < 0x0a01006e)
     {
         int priority;
-        LoadStreamBinary(reinterpret_cast<LoadBinStream*>(&stream->Istr()), priority);
+        LoadStreamBinary(reinterpret_cast<LoadBinStream*>(&kStream->Istr()), priority);
         if (priority == 0x80000000)
             m_cPriority = (char)0x80;
         else
@@ -1025,9 +1057,9 @@ void LoadInterpItem::LoadFromStream(NiStream* stream)
     }
     else
     {
-        LoadStreamBinary(reinterpret_cast<LoadBinStream*>(&stream->Istr()), m_cPriority);
+        LoadStreamBinary(reinterpret_cast<LoadBinStream*>(&kStream->Istr()), m_cPriority);
     }
-    LoadStreamBinary(reinterpret_cast<LoadBinStream*>(&stream->Istr()), m_fEaseSpinner);
+    LoadStreamBinary(reinterpret_cast<LoadBinStream*>(&kStream->Istr()), m_fEaseSpinner);
 }
 
 struct InterpolatorRegistry;
@@ -1081,70 +1113,73 @@ struct InterpolatorRegistry
 class BlendSerializer : public NiBlendInterpolator
 {
   public:
-    void NiBlendInterpolator_GetViewerStrings(NiViewerStringsArray* stream);
+    void NiBlendInterpolator_GetViewerStrings(NiViewerStringsArray* pkStrings);
 };
 // Appends viewer strings for the blend interpolator's fields and, for each array entry with a linked interpolator, its priority, weights and interpolator strings.
 // @fnv 0x00a38080
 // src: XBOX_PDB 0x00a38080
-void BlendSerializer::NiBlendInterpolator_GetViewerStrings(NiViewerStringsArray* stream)
+// pdb: NiBlendInterpolator::GetViewerStrings | NiBlendInterpolator.obj | retail, string-set bridge, high
+// pdb params: pkStrings
+// pdb locals: n, pseq
+void BlendSerializer::NiBlendInterpolator_GetViewerStrings(NiViewerStringsArray* pkStrings)
 {
-    this->NiInterpolator::GetViewerStrings(stream);
+    this->NiInterpolator::GetViewerStrings(pkStrings);
     const char* uiValue;
     {
         ViewerValue temp;
         temp.value = NiViewerStrings_NiGetViewerString_Title(DAT_011f36fc);
-        stream->Add(temp.value);
+        pkStrings->Add(temp.value);
         temp.value = NiGetViewerString_00a7d410(&UNK_01096b68, this->m_ucArraySize);
-        stream->Add(temp.value);
+        pkStrings->Add(temp.value);
         temp.value = NiGetViewerString_00a7d410(&UNK_01096b54, DAT_011a83ff);
-        stream->Add(temp.value);
-        temp.boolean.flag = (this->m_uiObjectFlags & 1) != 0;
+        pkStrings->Add(temp.value);
+        temp.boolean.flag = (this->m_uFlags & 1) != 0;
         temp.value = NiGetViewerString(&UNK_01096b40, temp.boolean);
-        stream->Add(temp.value);
+        pkStrings->Add(temp.value);
         temp.value = NiGetViewerString_00a7d550(&UNK_01096b2c, this->m_fWeightThreshold);
-        stream->Add(temp.value);
+        pkStrings->Add(temp.value);
         temp.value = NiGetViewerString_00a7d4d0(&UNK_01096b1c, this->m_cHighPriority);
-        stream->Add(temp.value);
+        pkStrings->Add(temp.value);
         temp.value = NiGetViewerString_00a7d4d0(&UNK_01096b08, this->m_cNextHighPriority);
-        stream->Add(temp.value);
+        pkStrings->Add(temp.value);
         temp.value = NiGetViewerString_00a7d550(&UNK_01096af4, this->m_fHighSumOfWeights);
-        stream->Add(temp.value);
+        pkStrings->Add(temp.value);
         temp.value = NiGetViewerString_00a7d550(&UNK_01096adc, this->m_fNextHighSumOfWeights);
-        stream->Add(temp.value);
-        temp.boolean.flag = ((this->m_uiObjectFlags >> 1) & 1) != 0;
+        pkStrings->Add(temp.value);
+        temp.boolean.flag = ((this->m_uFlags >> 1) & 1) != 0;
         temp.value = NiGetViewerString(&UNK_01096ac4, temp.boolean);
-        stream->Add(temp.value);
+        pkStrings->Add(temp.value);
         temp.value = NiGetViewerString_00a7d410(&UNK_01096ab4, this->m_ucInterpCount);
-        stream->Add(temp.value);
+        pkStrings->Add(temp.value);
         temp.value = NiGetViewerString_00a7d410(&UNK_01096aa4, this->m_ucSingleIdx);
-        stream->Add(temp.value);
+        pkStrings->Add(temp.value);
     }
     for (unsigned int index = 0; index < this->m_ucArraySize; ++index)
     {
-        if (this->m_pInterpArray[index].m_spControllerInterpolator.m_pObject && DAT_011f36f4)
+        if (this->m_pkInterpArray[index].m_spControllerInterpolator.m_pObject && DAT_011f36f4)
         {
             LinkedInterpolator* linked =
-                DAT_011f36f4->func_0x00a2e570(this->m_pInterpArray[index].m_spControllerInterpolator.m_pObject, 1);
+                DAT_011f36f4->func_0x00a2e570(this->m_pkInterpArray[index].m_spControllerInterpolator.m_pObject, 1);
             if (!linked && DAT_011f36f8)
             {
-                NiInterpolator* retryInterpolator = this->m_pInterpArray[index].m_spControllerInterpolator.m_pObject;
+                NiInterpolator* retryInterpolator = this->m_pkInterpArray[index].m_spControllerInterpolator.m_pObject;
                 linked = DAT_011f36f8->func_0x00a2e570(retryInterpolator, 1);
             }
             if (linked)
             {
                 void* linkedObject = linked->m_object;
                 uiValue = NiGetViewerString_00a7d5e0(&UNK_01095dbc, linkedObject);
-                stream->Add(uiValue);
-                uiValue = NiGetViewerString_00a7d410(&UNK_01096a98, (unsigned char)this->m_pInterpArray[index].m_cPriority);
-                stream->Add(uiValue);
-                uiValue = NiGetViewerString_00a7d550(&UNK_01096a8c, this->m_pInterpArray[index].m_fWeight);
-                stream->Add(uiValue);
-                uiValue = NiGetViewerString_00a7d550(&UNK_01096a78, this->m_pInterpArray[index].m_fNormalizedWeight);
-                stream->Add(uiValue);
-                uiValue = NiGetViewerString_00a7d550(&UNK_01096a68, this->m_pInterpArray[index].m_fEaseSpinner);
-                stream->Add(uiValue);
-                NiInterpolator* finalInterpolator = this->m_pInterpArray[index].m_spControllerInterpolator.m_pObject;
-                finalInterpolator->GetViewerStrings(stream);
+                pkStrings->Add(uiValue);
+                uiValue = NiGetViewerString_00a7d410(&UNK_01096a98, (unsigned char)this->m_pkInterpArray[index].m_cPriority);
+                pkStrings->Add(uiValue);
+                uiValue = NiGetViewerString_00a7d550(&UNK_01096a8c, this->m_pkInterpArray[index].m_fWeight);
+                pkStrings->Add(uiValue);
+                uiValue = NiGetViewerString_00a7d550(&UNK_01096a78, this->m_pkInterpArray[index].m_fNormalizedWeight);
+                pkStrings->Add(uiValue);
+                uiValue = NiGetViewerString_00a7d550(&UNK_01096a68, this->m_pkInterpArray[index].m_fEaseSpinner);
+                pkStrings->Add(uiValue);
+                NiInterpolator* finalInterpolator = this->m_pkInterpArray[index].m_spControllerInterpolator.m_pObject;
+                finalInterpolator->GetViewerStrings(pkStrings);
             }
         }
     }
@@ -1182,7 +1217,7 @@ struct SBEntry
     int unk10;
     int unk14;
 
-    void SaveBinary(NiStream& arStream);
+    void SaveBinary(NiStream& kStream);
 };
 
 struct SBBase
@@ -1210,32 +1245,35 @@ struct SBObject : SBBase
     int m_iValue28;
     int m_iValue2C;
 
-    void NiBlendInterpolator_SaveBinary(NiStream& arStream);
+    void NiBlendInterpolator_SaveBinary(NiStream& kStream);
 };
 
 // Serializes the base fields, then unless flag bit 1 is set writes the extra bytes and values, each entry, and the link ID.
 // @fnv 0x00a37ec0
 // src: XBOX_PDB 0x00a37ec0
-void SBObject::NiBlendInterpolator_SaveBinary(NiStream& arStream)
+// pdb: NiBlendInterpolator::SaveBinary | NiBlendInterpolator.obj | retail, upstream name already matches, high
+// pdb params: kStream
+// pdb locals: uc
+void SBObject::NiBlendInterpolator_SaveBinary(NiStream& kStream)
 {
-    SBBase::SaveBinary(arStream);
-    SBStreamSaveBinary(arStream, m_ucFlags);
-    SBStreamSaveBinary(arStream, m_ucEntryCount);
-    SBStreamSaveBinary(arStream, m_iValue1C);
+    SBBase::SaveBinary(kStream);
+    SBStreamSaveBinary(kStream, m_ucFlags);
+    SBStreamSaveBinary(kStream, m_ucEntryCount);
+    SBStreamSaveBinary(kStream, m_iValue1C);
     if (m_ucFlags & 1)
         return;
 
-    SBStreamSaveBinary(arStream, m_ucByte0E);
-    SBStreamSaveBinary(arStream, m_ucByte0F);
-    SBStreamSaveBinary(arStream, m_ucByte10);
-    SBStreamSaveBinary(arStream, m_ucByte11);
-    SBStreamSaveBinary(arStream, m_iValue20);
-    SBStreamSaveBinary(arStream, m_iValue24);
-    SBStreamSaveBinary(arStream, m_iValue28);
-    SBStreamSaveBinary(arStream, m_iValue2C);
+    SBStreamSaveBinary(kStream, m_ucByte0E);
+    SBStreamSaveBinary(kStream, m_ucByte0F);
+    SBStreamSaveBinary(kStream, m_ucByte10);
+    SBStreamSaveBinary(kStream, m_ucByte11);
+    SBStreamSaveBinary(kStream, m_iValue20);
+    SBStreamSaveBinary(kStream, m_iValue24);
+    SBStreamSaveBinary(kStream, m_iValue28);
+    SBStreamSaveBinary(kStream, m_iValue2C);
     for (unsigned char i = 0; i < m_ucEntryCount; i++)
-        m_pkEntryArray[i].SaveBinary(arStream);
-    arStream.SaveLinkID(reinterpret_cast<const NiObject*>(m_pkLinked));
+        m_pkEntryArray[i].SaveBinary(kStream);
+    kStream.SaveLinkID(reinterpret_cast<const NiObject*>(m_pkLinked));
 }
 
 // The engine replaces the global deallocation function with a sized variant;
@@ -1272,6 +1310,7 @@ struct FUN_00a37670_NiBlendInterpolator
 
 // Clears m_pInterpArray and m_pSingleInterpolator, then sets m_ucInterpCount to zero.
 // @fnv 0x00a37670
+// pdb: NiBlendInterpolator::`scalar deleting destructor' | NiBlendInterpolator.obj | retail, object-file gap fill, high
 FUN_00a37670_NiBlendInterpolator::~FUN_00a37670_NiBlendInterpolator()
 {
     // The real destructor walks the interpolator array and releases every

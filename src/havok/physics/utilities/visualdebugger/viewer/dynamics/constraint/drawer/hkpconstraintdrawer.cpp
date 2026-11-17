@@ -68,6 +68,7 @@ struct FUN_00de4470_class
 };
 // Resets the embedded state, then sets the float fields to fixed values and unk18 to 24, returning this.
 // @fnv 0x00de4470
+// pdb: hkpConstraintDrawer::hkpConstraintDrawer | hkpConstraintDrawer.obj | debug, object-file run extension, low
 void* __thiscall FUN_00de4470_class::InitializeDefaults()
 {
     reset.return_input_and_0_it_1();
@@ -125,6 +126,8 @@ struct DE44C0Object
 
 // @fnv 0x00de44c0
 // src: HAVOK_LIB 0x00de44c0
+// pdb: hkpConstraintDrawer::drawPivots | hkpConstraintDrawer.obj | retail, upstream name already matches, high
+// pdb params: id, tag
 void DE44C0Object::hkpConstraintDrawer_drawPivots(int id, int tag)
 {
     m_display.UpdateState_00e10bf0(&m_vFirstVector, &m_dirA, getScaledRadius(), 0xffff0000, id, tag);
@@ -231,7 +234,7 @@ void FUN_00de47a0_cls::SetField18_00de47a0(unsigned int value)
 
 extern float DAT_01016248;
 
-unsigned int PackColorBigEndian(float r, float g, float b, float a);
+unsigned int PackColorBigEndian(float red, float green, float blue, float alpha);
 
 struct Struct00e10d50
 {
@@ -261,13 +264,16 @@ struct FUN_00de4530Owner
     Vec4 unkb0;
     Struct00e10d50 unkc0;
 
-    void hkpConstraintDrawer_drawBodyFrames(int arg1, int arg2);
+    void hkpConstraintDrawer_drawBodyFrames(int id, int tag);
 };
 
 // Draws two triangles as six lines through unkc0.FUN_00e10d50, with width unk1c * unk0c * 0.2 and fixed or PackColorBigEndian colors.
 // @fnv 0x00de4530
 // src: COMMUNITY 0x00de4530
-void FUN_00de4530Owner::hkpConstraintDrawer_drawBodyFrames(int arg1, int arg2)
+// pdb: hkpConstraintDrawer::drawBodyFrames | hkpConstraintDrawer.obj | retail, upstream name already matches, high
+// pdb params: id, tag
+// pdb locals: Bz, Ay, Ax, Az, Bx, By
+void FUN_00de4530Owner::hkpConstraintDrawer_drawBodyFrames(int id, int tag)
 {
     unsigned int color1 = PackColorBigEndian(1.0f, 1.0f, 0.0f, 1.0f);
     unsigned int color2 = PackColorBigEndian(1.0f, DAT_01016248, 0.0f, 1.0f);
@@ -289,53 +295,55 @@ void FUN_00de4530Owner::hkpConstraintDrawer_drawBodyFrames(int arg1, int arg2)
     float width;
     width = unk1c * unk0c;
     width = width * (double)0.2f;
-    unkc0.ComputeValues_00e10d50(&unk20, &a0, &a1, 0xffff0000, width, arg1, arg2);
+    unkc0.ComputeValues_00e10d50(&unk20, &a0, &a1, 0xffff0000, width, id, tag);
     width = unk1c * unk0c;
     width = width * (double)0.2f;
-    unkc0.ComputeValues_00e10d50(&unk20, &a1, &a2, 0xff008000, width, arg1, arg2);
+    unkc0.ComputeValues_00e10d50(&unk20, &a1, &a2, 0xff008000, width, id, tag);
     width = unk1c * unk0c;
     width = width * (double)0.2f;
-    unkc0.ComputeValues_00e10d50(&unk20, &a2, &a0, 0xff0000ff, width, arg1, arg2);
+    unkc0.ComputeValues_00e10d50(&unk20, &a2, &a0, 0xff0000ff, width, id, tag);
     width = unk1c * unk0c;
     width = width * (double)0.2f;
-    unkc0.ComputeValues_00e10d50(&unk30, &b0, &b1, color1, width, arg1, arg2);
+    unkc0.ComputeValues_00e10d50(&unk30, &b0, &b1, color1, width, id, tag);
     width = unk1c * unk0c;
     width = width * (double)0.2f;
-    unkc0.ComputeValues_00e10d50(&unk30, &b1, &b2, color2, width, arg1, arg2);
+    unkc0.ComputeValues_00e10d50(&unk30, &b1, &b2, color2, width, id, tag);
     width = unk1c * unk0c;
     width = width * (double)0.2f;
-    unkc0.ComputeValues_00e10d50(&unk30, &b2, &b0, color3, width, arg1, arg2);
+    unkc0.ComputeValues_00e10d50(&unk30, &b2, &b0, color3, width, id, tag);
 }
 
 class FUN_00de47e0_cls
 {
   public:
-    void hkpConstraintDrawer_updateCommonParameters(char* a1, __m128* a2, __m128* a3);
+    void hkpConstraintDrawer_updateCommonParameters(char* a1, __m128* refLocalToWorld, __m128* attLocalToWorld);
 };
 
 // Copies 16-byte blocks from two objects at offset 0xf0 into a2 and a3, then stores them into this object at scattered offsets.
 // @fnv 0x00de47e0
 // src: COMMUNITY 0x00de47e0
-void FUN_00de47e0_cls::hkpConstraintDrawer_updateCommonParameters(char* a1, __m128* apOutA, __m128* apOutB)
+// pdb: hkpConstraintDrawer::updateCommonParameters | hkpConstraintDrawer.obj | retail, upstream name already matches, high
+// pdb params: constraint, refLocalToWorld, attLocalToWorld
+void FUN_00de47e0_cls::hkpConstraintDrawer_updateCommonParameters(char* a1, __m128* refLocalToWorld, __m128* attLocalToWorld)
 {
     char* pFirst = *(char**)(a1 + 0x18);
     char* pSecond = *(char**)(a1 + 0x14);
     __m128* pSrcA = (__m128*)(pFirst + 0xf0);
-    apOutA[0] = pSrcA[0];
-    apOutA[1] = pSrcA[1];
-    apOutA[2] = pSrcA[2];
-    apOutA[3] = pSrcA[3];
+    refLocalToWorld[0] = pSrcA[0];
+    refLocalToWorld[1] = pSrcA[1];
+    refLocalToWorld[2] = pSrcA[2];
+    refLocalToWorld[3] = pSrcA[3];
     __m128* pSrcB = (__m128*)(pSecond + 0xf0);
-    apOutB[0] = pSrcB[0];
-    apOutB[1] = pSrcB[1];
-    apOutB[2] = pSrcB[2];
-    apOutB[3] = pSrcB[3];
-    *(__m128*)((char*)this + 0x90) = apOutA[0];
-    *(__m128*)((char*)this + 0xa0) = apOutA[1];
-    *(__m128*)((char*)this + 0xb0) = apOutA[2];
-    *(__m128*)((char*)this + 0x60) = apOutB[0];
-    *(__m128*)((char*)this + 0x70) = apOutB[1];
-    *(__m128*)((char*)this + 0x80) = apOutB[2];
-    *(__m128*)((char*)this + 0x30) = apOutA[3];
-    *(__m128*)((char*)this + 0x20) = apOutB[3];
+    attLocalToWorld[0] = pSrcB[0];
+    attLocalToWorld[1] = pSrcB[1];
+    attLocalToWorld[2] = pSrcB[2];
+    attLocalToWorld[3] = pSrcB[3];
+    *(__m128*)((char*)this + 0x90) = refLocalToWorld[0];
+    *(__m128*)((char*)this + 0xa0) = refLocalToWorld[1];
+    *(__m128*)((char*)this + 0xb0) = refLocalToWorld[2];
+    *(__m128*)((char*)this + 0x60) = attLocalToWorld[0];
+    *(__m128*)((char*)this + 0x70) = attLocalToWorld[1];
+    *(__m128*)((char*)this + 0x80) = attLocalToWorld[2];
+    *(__m128*)((char*)this + 0x30) = refLocalToWorld[3];
+    *(__m128*)((char*)this + 0x20) = attLocalToWorld[3];
 }

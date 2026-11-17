@@ -26,7 +26,7 @@ struct FUN_00d5a5e0_ctxA
 
     void InitA();
     int FindB(void* a1, void* b);
-    void SetB(int zero, int a2);
+    void SetB(int inputs, int geometry);
     void FinishA();
 };
 struct FUN_00d5a5e0_ctxB
@@ -51,7 +51,7 @@ struct FUN_00d5a630_ctxA
 
     void InitA();
     int FindB(void* a1, void* b);
-    void SetB(int zero, int a2);
+    void SetB(int inputs, int geometry);
     void SetF(float f, int zero);
     void SetC(int a3);
     void FinishA();
@@ -118,7 +118,7 @@ struct D5C110Geometry
 };
 void __cdecl ProcessArg(const void* shape, D5C110VertexArray& vertices);
 void __cdecl InitAndSetB(const D5C110StridedVertices& vertices, D5C110Geometry& out);
-void __cdecl BuildGeometryFromShape(const void* shape, D5C110Geometry& aGeometry);
+void __cdecl hkGeometryUtility_createGeometryFromPlaneEquations(const void* planeEquationsIn, D5C110Geometry& geometryOut);
 struct D5C110VertexArray;
 void __cdecl ProcessArg(const void* shape, D5C110VertexArray& vertices);
 void __cdecl hkGeometryUtility_createVerticesFromPlaneEquations(const void* shape, D5C110VertexArray& vertices);
@@ -158,7 +158,7 @@ struct __declspec(align(16)) S00d5c060_Result
 char* __cdecl AllocateWithHeader(D5C110Allocator* alloc, int size);
 char* __cdecl hkMemoryRouter_easyFree(D5C110Allocator* owner, char* data);
 void __cdecl Hkgeometryutility_ProcessEntries_00d5beb0(S00d5c060_Result* self, char* data, int count, int flags, float scale);
-S00d5c060_Result hkGeometryUtility_createMinBoundingSphere(const S00d5c060_Src* src, float scale);
+S00d5c060_Result hkGeometryUtility_createMinBoundingSphere(const S00d5c060_Src* stridedVertsIn, float radiusEpsilon);
 extern "C" LocalM128 _mm_add_ss(LocalM128, LocalM128);
 extern "C" float _mm_cvtss_f32(LocalM128);
 extern "C" void _mm_store_ss(float*, LocalM128);
@@ -753,7 +753,7 @@ struct ObbVec
 
     void setTransformedPos_00c7f640(const void* transform, const ObbVec* v) throw();
 
-    void hkVector4_setRotatedDir(const void* transform, const ObbVec* v) throw();
+    void hkVector4_setRotatedDir(const void* quat, const ObbVec* direction) throw();
 };
 
 struct ObbRot
@@ -769,7 +769,7 @@ struct ObbXf
 
     ObbVec c0, c1, c2, c3;
 
-    void hkTransform_setInverse(const ObbXf* other) throw();
+    void hkTransform_setInverse(const ObbXf* t) throw();
 };
 
 struct ObbInput
@@ -814,7 +814,7 @@ inline ObbAllocator& GetHeap(hkMemoryRouter& router)
 
 void __cdecl ResizeAudioStream(void*, void*, int) throw();
 
-ObbVec* __cdecl hlpC(ObbVec* out, const ObbStride*, float) throw();
+ObbVec* __cdecl hlpC(ObbVec* stridedVertsIn, const ObbStride*, float) throw();
 
 struct ObbArray
 {
@@ -957,6 +957,9 @@ static __declspec(noinline) bool hlpB(const ObbVec* v, float eps) throw()
 
 // @fnv 0x00d5c6d0
 // src: XBOX_PDB 0x00d5c6d0
+// pdb: getIsBoxGeometry | hkGeometryUtility.obj | retail, object-file gap fill, high
+// pdb params: vertices, halfExtents, boxToGeom, epsilon
+// pdb locals: min_bounding_sphere, rot, possible_points, stridedVerts, geomToBox, boxVertex
 bool __cdecl ObbInput::getIsBoxGeometry(ObbVec& halfExtents, ObbXf& output, float tolerance) const
 {
 
@@ -1634,6 +1637,9 @@ class Ball
 
 // @fnv 0x00d5bce0
 // src: GUESS 0x00d5bce0 (confidence: low)
+// pdb: doSteepestDescent | hkGeometryUtility.obj | debug, object-file run extension, low
+// pdb params: vertexArray, numVertices, striding, axesIn, axesOut, maxIter
+// pdb locals: gradient
 static __declspec(noinline) Ball
     Object_ComputeValue_00d5bce0(const GeomUtilVector4& pA, const GeomUtilVector4& pB, const GeomUtilVector4& pC, const GeomUtilVector4& pD, float slack)
 {

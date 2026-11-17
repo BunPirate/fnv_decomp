@@ -13,7 +13,8 @@ class ScriptLocals;
 #pragma pack(push, 4)
 #include "Stack.h"
 
-class ExpressionEvaluator
+// pdb: class CExpression, size 0x710 (here 0x70c), 5 members
+class CExpression // src: XBOX_RETAIL_PDB 0x00593db0 (first retail link of 2 high-tier links to its methods; old: ExpressionEvaluator)
 {
 public:
     EXPRESSION_ERROR m_eExpressionError;
@@ -22,10 +23,10 @@ public:
     Stack<ExpressionOperator, 64> m_kOperatorStack;
     Stack<ExpressionValue, 32> m_kOperandStack;
 
-    ExpressionEvaluator();
-    ~ExpressionEvaluator();
-    double Eval(const char* data, TESObjectREFR* reference, TESObjectREFR* container,
-                Script* script, ScriptLocals* locals, int length, bool skip);
+    CExpression();
+    ~CExpression();
+    double Eval(const char* sptr, TESObjectREFR* apFunctionOwner, TESObjectREFR* apContainer,
+                Script* script, ScriptLocals* scriptLocals, int postfixSize, bool abEndian);
     EXPRESSION_ERROR ExpressionError();
     void SetError(EXPRESSION_ERROR error);
     int ParseToken(char** expression, char* token, ExpressionOperator* operation,

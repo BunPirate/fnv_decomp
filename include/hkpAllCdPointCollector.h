@@ -5,6 +5,7 @@
 
 struct hkBoolStub;
 
+// pdb: class hkpAllCdPointCollector, size 0x3a0, bases: hkpCdPointCollector, 1 members
 class hkpAllCdPointCollector : public hkpCdPointCollector
 {
 public:
@@ -21,5 +22,5 @@ public:
     void FUN_006211b0();
     void* FUN_00621140(unsigned int aiFlags);
 
-    ContactArray289 contacts;
+    ContactArray289 m_hits; // src: XBOX_RETAIL_PDB +0x10 (old: contacts)
 };

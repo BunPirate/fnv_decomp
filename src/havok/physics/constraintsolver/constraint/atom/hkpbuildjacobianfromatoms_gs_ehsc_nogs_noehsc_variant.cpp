@@ -149,7 +149,7 @@ struct S00d6d990_Rec
     float unk08;
     float unk0c;
 };
-void S00d6d990_Sink(S00d6d990_Tmp* t, WriterContext* obj, S00d6d990_Rec** cur);
+void S00d6d990_Sink(S00d6d990_Tmp* info, WriterContext* obj, S00d6d990_Rec** cur);
 static void Hkpbuildjacobianfromatoms_WriteFloatSolverRecord(S00d6d990_Src* src, S00d6d990_Rec** cur, WriterContext* obj, int a1);
 void S00d6d990_Caller(S00d6d990_Src* s, S00d6d990_Rec** c, WriterContext* o, int a);
 extern double _DAT_010c9300;
@@ -259,7 +259,7 @@ struct S00d6e280_Rec
     int i0c;
 };
 
-extern "C" void hk1dLinearFrictionBuildJacobian(S00d6e280_Call* p, S00d6e280_Other* o, S00d6e280_Rec** cursor);
+extern "C" void hk1dLinearFrictionBuildJacobian(S00d6e280_Call* info, S00d6e280_Other* o, S00d6e280_Rec** cursor);
 
 // @fnv 0x00d6e280
 // src: GUESS 0x00d6e280 (confidence: low)
@@ -388,8 +388,8 @@ union DispatchArgs
     unsigned char flag;
 };
 void __cdecl Hkpbuildjacobianfromatoms_WriteVectorPairRecordAndAdvance(__m128* a, __m128* b, void* dest);
-void __cdecl hkSimpleContactConstraintDataBuildJacobian(NodeKind* node, FnvPacket* packet, DispatchArgs args, void* dest);
-void __cdecl hkSolverBuildJacobianFromAtomsNotContact(NodeKind* node, DispatchArgs args, FnvPacket* packet, void* dest);
+void __cdecl hkSimpleContactConstraintDataBuildJacobian(NodeKind* node, FnvPacket* packet, DispatchArgs writeHeaderSchemas, void* dest);
+void __cdecl hkSolverBuildJacobianFromAtomsNotContact(NodeKind* node, DispatchArgs args, FnvPacket* tmpIn, void* dest);
 
 // @fnv 0x00d6ecb0
 // src: GUESS 0x00d6ecb0 (confidence: low)
@@ -668,6 +668,9 @@ extern const double DAT_010c9300;
 
 // @fnv 0x00d6f300
 // src: GUESS 0x00d6f300 (confidence: low)
+// pdb: buildJacobianFromLinMotorAtom | hkpBuildJacobianFromAtoms.obj | retail, object-file run extension, low
+// pdb params: atom, in, baseA, baseB, out
+// pdb locals: motorIn, motorOut
 static __declspec(noinline) void Object_ProcessAndReturnValue_00d6f300(S00d6f300_A* s, S00d6f300_O* o, S00d6f300_B* a2, __m128* a3,
                                               S00d6f300_Cmd** p)
 {

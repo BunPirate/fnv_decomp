@@ -70,7 +70,7 @@ void* GetLocalSubValue(TESObjectREFR* p, int a);
 struct FUN_004d85a0_Class
 {
     void* GetLocalSubValue(int a);
-    void* bhkListShape_GetChildShape(int a);
+    void* bhkListShape_GetChildShape(int aiAt);
 };
 struct FUN_004d8670_Class
 {
@@ -182,7 +182,7 @@ void RandomFloatNeg1To1();
 void _NiFreeAlias(void*);
 struct FUN_004d4f10_StandIn : public NiTPointerMap<int, int>
 {
-    void ReleaseStorage_004d4f10();
+    void NiTMapBase_DFALL_NiTMapItem_TESObject_bool_TESObject_bool_dtor();
 };
 extern "C" void NiFreeAlias(void*);
 extern int DAT_01021004;
@@ -211,7 +211,7 @@ struct FUN_004d4e40_Holder
 };
 struct FUN_004d4de0_Class
 {
-    void* __thiscall ProcessAndReturnValue_004d4de0(unsigned int);
+    void* __thiscall NiTMap_TESObject_bool_ctor(unsigned int);
 };
 extern "C" void* __cdecl NiMalloc(unsigned int size);
 extern "C" void* __cdecl memset(void* dest, int value, unsigned int count);
@@ -407,6 +407,7 @@ struct Flt
 {
     operator unsigned int();
 };
+// pdb: class Date, size 0x4 (here 0x1), 2 members
 struct Date
 {
     ~Date();
@@ -451,6 +452,8 @@ __pragma(comment(linker, "/alternatename:?GetAt@MyArr_GetAt@@QAEPAIH@Z=?GetAt@Ar
     // Returns the element at index from the array if index is within bounds, otherwise returns 0.
 // @fnv 0x004dcdf0
 // src: GUESS 0x004dcdf0 (confidence: high)
+// pdb: Renderer::Reposition | Renderer.obj | debug, object-file run extension, low
+// pdb params: aiX, aiY
     unsigned int __thiscall FUN_004dcdf0_Class::GetElementOrZero(unsigned int index)
 {
     if (index < _4.a.GetSize())
@@ -745,7 +748,7 @@ struct MsgStruct
     int unk38;
     int unk3C;
 };
-void __cdecl BSstrncpy(char* dst, const char* src, unsigned int count);
+void __cdecl BSstrncpy(char* apString1, const char* apString2, unsigned int aiLen);
 struct ObjClass : public FUN_004d7d50_StandIn
 {
     ItemClass* __thiscall GetByIndex(unsigned int);
@@ -1315,9 +1318,9 @@ extern C4DF040TexturePtr g_spDebrisTexture;
 extern C4DF040TexturePtr g_spDebrisNormalMap;
 extern C4DF040TexturePtr g_spDebrisShadowTexture;
 float __cdecl C4DF040Random();
-float __cdecl C4DF040RandomFloat(float fMin, float fScaledValue);
-bool __cdecl C4DF040RandomChance(float afChance);
-void __cdecl C4DF040UpdateProperties(C4DF040TriShape* pkShape, int iArg1, int iArg2);
+float __cdecl C4DF040RandomFloat(float afMin, float afMax);
+bool __cdecl C4DF040RandomChance(float afPercentTrue);
+void __cdecl C4DF040UpdateProperties(C4DF040TriShape* apObject, int abFaceGenModel, int abSkipPreCache);
 C4DF040Node* __cdecl CreateDebrisNode(unsigned int uiPieceCount, float fWidthScale, float fHeightScale);
 extern double DAT_010229b8;
 extern double DAT_01012070;
@@ -1343,7 +1346,7 @@ struct SavedSettingValue
     unsigned int unk00;
     unsigned int value;
 };
-void __cdecl ReadSavedSettings(BGSLoadGameBuffer* buffer);
+void __cdecl MiscStatManager_LoadGame(BGSLoadGameBuffer* apLoadGameBuffer);
 class ListT
 {
   public:
@@ -1499,7 +1502,7 @@ void Interface3DSceneGraph_Destroy();
 void BSTexturePalette_RemoveAll();
 void BSShaderManager_Reinitialize();
 void TESMain_CreateMenuRootNode();
-void FUN_004dc650();
+void CreateMenuRootNode3D();
 void FUN_007022c0();
 void Interface_CreateMainMenu();
 void __cdecl CopyStringToGlobal(const char* src);
@@ -1775,14 +1778,16 @@ struct Spectrum4d50
     int m_iStart;
     float** m_ppfBands;
     float** m_ppfPeaks;
-    float LipSynchAnim_GetPuppetValue(int iFrame);
+    float LipSynchAnim_GetPuppetValue(int aiFrame);
 };
 
 // @fnv 0x004d50e0
 // src: COMMUNITY 0x004d50e0
-float Spectrum4d50::LipSynchAnim_GetPuppetValue(int iFrame)
+// pdb: LipSynchAnim::GetPuppetValue | LipSynchAnim.obj | retail, upstream name already matches, high
+// pdb params: aiFrame
+float Spectrum4d50::LipSynchAnim_GetPuppetValue(int aiFrame)
 {
-    int iIndex2 = iFrame - m_iStart;
+    int iIndex2 = aiFrame - m_iStart;
     float fResult = 0.0f;
     if (iIndex2 < 0 || (unsigned int)iIndex2 >= m_uiCount)
         return 0.0f;

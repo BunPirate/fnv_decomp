@@ -151,7 +151,7 @@ inline NiFixedString& NiFixedString::operator=(const char* string)
 inline NiTexturingProperty::Map::TexturePtr::TexturePtr(NiTexture* pkTexture) : m_pObject(pkTexture)
 {
 }
-inline NiTexturingProperty::Map::Map() : m_usFlags(0), m_spTexture(0), m_pTextureTransform(0)
+inline NiTexturingProperty::Map::Map() : m_uFlags(0), m_spTexture(0), m_pkTextureTransform(0)
 {
     SetClampMode(WRAP_S_WRAP_T);
     SetFilterMode(FILTER_BILERP);
@@ -163,16 +163,16 @@ inline void* NiTexturingProperty::Map::operator new(size_t n)
 }
 inline void NiTexturingProperty::Map::SetClampMode(ClampMode mode)
 {
-    unsigned int flags = m_usFlags;
-    m_usFlags = (flags & ~0x3000) | (mode << 12);
+    unsigned int flags = m_uFlags;
+    m_uFlags = (flags & ~0x3000) | (mode << 12);
 }
-inline void NiTexturingProperty::Map::SetFilterMode(FilterMode mode)
+inline void NiTexturingProperty::Map::SetFilterMode(FilterMode eFilterMode)
 {
-    m_usFlags = (m_usFlags & ~0x0f00) | (mode << 8);
+    m_uFlags = (m_uFlags & ~0x0f00) | (eFilterMode << 8);
 }
 inline void NiTexturingProperty::Map::SetTextureIndex(unsigned int i)
 {
-    m_usFlags = (m_usFlags & ~0xff) | i;
+    m_uFlags = (m_uFlags & ~0xff) | i;
 }
 inline NiTexturingProperty::ShaderMap::ShaderMap(unsigned int id) : m_uiID(id)
 {
@@ -180,20 +180,20 @@ inline NiTexturingProperty::ShaderMap::ShaderMap(unsigned int id) : m_uiID(id)
 
 inline void NiTexturingProperty::SetApplyMode(ApplyMode mode)
 {
-    m_uiObjectFlags = (m_uiObjectFlags & ~0xe) | (mode << 1);
+    m_uFlags = (m_uFlags & ~0xe) | (mode << 1);
 }
 inline void NiTexturingProperty::SetMultiTexture(bool multi)
 {
     if (multi)
-        m_uiObjectFlags |= 1;
+        m_uFlags |= 1;
     else
-        m_uiObjectFlags &= ~1;
+        m_uFlags &= ~1;
 }
 inline void NiTexturingProperty::UpdateMultiTexture()
 {
-    unsigned int size = m_kStringArray.m_usSize;
+    unsigned int size = m_kMaps.m_usSize;
     for (unsigned int i = 1; i < size; ++i)
-        if (m_kStringArray.m_pBase[i])
+        if (m_kMaps.m_pBase[i])
         {
             SetMultiTexture(true);
             return;
@@ -221,6 +221,9 @@ template <> NiTPrimitiveArray<NiTexturingProperty::ShaderMap*>::NiTPrimitiveArra
 
 // Loads the texturing property from a stream: apply mode, map array, optional shader maps, then calls UpdateMultiTexture.
 // @fnv 0x00a6ad60
+// pdb: NiTexturingProperty::LoadBinary | NiTexturingProperty.obj | retail, upstream name already matches, high
+// pdb params: kStream
+// pdb locals: uiListSize, uiRealListSize, eApply, i, pkTemp, uiArrayIndex, bHasMap
 void NiTexturingProperty::LoadBinary(NiStream& stream)
 {
     NiProperty::LoadBinary(stream);
@@ -232,15 +235,15 @@ void NiTexturingProperty::LoadBinary(NiStream& stream)
     }
     else
     {
-        ReadBinaryValue(stream, m_uiObjectFlags);
-        m_uiObjectFlags &= ~0xff0;
+        ReadBinaryValue(stream, m_uFlags);
+        m_uFlags &= ~0xff0;
     }
     unsigned int count;
     ReadBinaryValue(stream, count);
     unsigned int size = count;
     if (stream.GetFileVersion() < 0x14020005 && size > 6)
         size += 2;
-    m_kStringArray.SetSize(size);
+    m_kMaps.SetSize(size);
     if (stream.GetFileVersion() < 0x0303000d)
         stream.SetLinkIDCount(count + 1);
     else
@@ -280,7 +283,7 @@ void NiTexturingProperty::LoadBinary(NiStream& stream)
                 mapEntry.map = new BumpMap;
                 mapEntry.map->LoadBinary(stream);
             }
-            SetMapAt(m_kStringArray, 5, mapEntry.map);
+            SetMapAt(m_kMaps, 5, mapEntry.map);
             continue;
         }
         else if (i == 7 && stream.GetFileVersion() >= 0x14020005)
@@ -291,7 +294,7 @@ void NiTexturingProperty::LoadBinary(NiStream& stream)
                 mapEntry.map = new ParallaxMap;
                 mapEntry.map->LoadBinary(stream);
             }
-            SetMapAt(m_kStringArray, 7, mapEntry.map);
+            SetMapAt(m_kMaps, 7, mapEntry.map);
             continue;
         }
         stream.SetLinkIDCount(exists);
@@ -300,7 +303,7 @@ void NiTexturingProperty::LoadBinary(NiStream& stream)
             mapEntry.map = new Map;
             mapEntry.map->LoadBinary(stream);
         }
-        m_kStringArray.SetAtGrow(index, mapEntry.map);
+        m_kMaps.SetAtGrow(index, mapEntry.map);
     }
     if (stream.GetFileVersion() >= 0x05000011)
     {
@@ -308,7 +311,7 @@ void NiTexturingProperty::LoadBinary(NiStream& stream)
         stream.SetLinkIDCount(count);
         if (count)
         {
-            m_pShaderMaps = new NiTPrimitiveArray<ShaderMap*>(count);
+            m_pkShaderMaps = new NiTPrimitiveArray<ShaderMap*>(count);
             for (unsigned int i = 0; i < count; ++i)
             {
                 bool exists;
@@ -321,7 +324,7 @@ void NiTexturingProperty::LoadBinary(NiStream& stream)
                     pLoadedShaderMap->LoadBinary(stream);
                     map = pLoadedShaderMap;
                 }
-                m_pShaderMaps->SetAt(i, map);
+                m_pkShaderMaps->SetAt(i, map);
             }
         }
     }
@@ -329,6 +332,7 @@ void NiTexturingProperty::LoadBinary(NiStream& stream)
 }
 
 // @fnv 0x00a6b410
+// pdb: NiTexturingProperty::_SDMInit | NiTexturingProperty.obj | retail, string-set bridge, high
 void NiTexturingProperty::InitializePoint3()
 {
     ms_pDefaultProperty = ::new (TEXTURING_PROPERTY_ALLOCATION) NiTexturingProperty;
@@ -346,6 +350,9 @@ void NiTexturingProperty::InitializePoint3()
 
 // Reads a texture map's clamp mode, filter mode, texture index, and optional transform from the stream based on its version.
 // @fnv 0x00a6b640
+// pdb: NiTexturingProperty::Map::LoadBinary | NiTexturingProperty.obj | retail, upstream name already matches, high
+// pdb params: kStream
+// pdb locals: eFilter, eClamp, uiTexCoord, sLandK, abManual, bTextureTransform
 void NiTexturingProperty::Map::LoadBinary(NiStream& stream)
 {
     stream.ResetStreamState();
@@ -366,7 +373,7 @@ void NiTexturingProperty::Map::LoadBinary(NiStream& stream)
         SetTextureIndex(index);
     }
     else
-        ReadBinaryValue(stream, m_usFlags);
+        ReadBinaryValue(stream, m_uFlags);
     if (stream.GetFileVersion() < 0x0a030004)
     {
         unsigned short unused;
@@ -380,13 +387,13 @@ void NiTexturingProperty::Map::LoadBinary(NiStream& stream)
     }
     if (stream.GetFileVersion() >= 0x0a00010a)
     {
-        m_pTextureTransform = 0;
+        m_pkTextureTransform = 0;
         bool hasTransform;
         ReadBinaryValue(stream, hasTransform);
         if (hasTransform == true)
         {
-            m_pTextureTransform = new TextureMapTransform;
-            m_pTextureTransform->LoadBinary(stream);
+            m_pkTextureTransform = new TextureMapTransform;
+            m_pkTextureTransform->LoadBinary(stream);
         }
     }
 }
@@ -397,6 +404,7 @@ void __fastcall ReleaseStorage_00a5a390(void* pThis);
 extern const void* const g_NiDynamicEffectVTable[];
 
 // @fnv 0x00a69030
+// pdb: NiDynamicEffect::~NiDynamicEffect | NiDynamicEffect.obj | retail, object-file run extension, low
 void __fastcall DestroyDynamicEffect(NiDynamicEffect* apEffect)
 {
     *reinterpret_cast<const void* const**>(apEffect) = g_NiDynamicEffectVTable;
@@ -410,6 +418,8 @@ bool __fastcall VisitSkinGraphLinks(void* pThis, int, NiStream& kStream);
 
 // @fnv 0x00a6c680
 // src: XBOX_PDB 0x00a6c680
+// pdb: BSDismemberSkinInstance::RegisterStreamables | BSDismemberSkinInstance.obj | retail, upstream name already matches, high
+// pdb params: kStream
 bool __fastcall BSDismemberSkinInstance_RegisterStreamables(void* pThis, int edx, NiStream& kStream)
 {
     if (!VisitSkinGraphLinks(pThis, edx, kStream))
@@ -435,6 +445,8 @@ struct FUN_00a69e00
     virtual void Dummy();
 };
 // @fnv 0x00a69e00
+// pdb: NiTexturingProperty::Map::Map | NiTexturingProperty.obj | debug, object-file run extension, low
+// pdb params: pkTexture, uiIndex, eClampMode, eFilterMode, pkTextureTransform
 FUN_00a69e00::FUN_00a69e00(void* apTexture, unsigned short ausLowFlags, short asMidFlags, unsigned short ausHighFlags,
                            void* apXform)
 {
@@ -454,12 +466,12 @@ int NiShadeProperty_Type()
 }
 
 struct GlobalObjectO2_00a7b610;
-extern GlobalObjectO2_00a7b610 g_011f49a4;
+extern GlobalObjectO2_00a7b610 NiTexturingProperty_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f49a4 (old: DAT_011f49a4/g_011f49a4/g_kTexturingPropertyRTTI)
 // @fnv 0x00a6a140
 // src: COMMUNITY 0x00a6a140
 GlobalObjectO2_00a7b610* NiTexturingProperty_GetRTTI()
 {
-    return &g_011f49a4;
+    return &NiTexturingProperty_ms_RTTI;
 }
 
 struct CloningProcess
@@ -479,6 +491,9 @@ struct TexturingPropertyCopyOperation
     void CloneTo(NiTexturingProperty*, CloningProcess*);
 };
 // @fnv 0x00a6c610
+// pdb: NiTexturingProperty::CreateClone | NiTexturingProperty.obj | retail, object-file run extension, low
+// pdb params: kCloning
+// pdb locals: pkObject
 NiObject* __fastcall CloneTexturingProperty(NiTexturingProperty* self, int, CloningProcess* pCloningProcess)
 {
     if (*reinterpret_cast<unsigned int*>(reinterpret_cast<unsigned char*>(self) + 0xc))
@@ -507,6 +522,9 @@ struct EqObj
 // Returns true if the base comparison passes, the counts match, and every element's a, b and c fields are equal.
 // @fnv 0x00a6c6a0
 // src: XBOX_PDB 0x00a6c6a0
+// pdb: BSDismemberSkinInstance::IsEqual | BSDismemberSkinInstance.obj | retail, upstream name already matches, high
+// pdb params: pkObject
+// pdb locals: pinstance, ui
 bool __fastcall BSDismemberSkinInstance_IsEqual(EqObj* self, int, EqObj* other)
 {
     if (!self->FUN_00a864d0(other))
@@ -529,30 +547,33 @@ extern "C" size_t __cdecl strlen(const char*);
 
 // Allocates a string and formats prefix with a texture address-mode suffix selected by mode, defaulting to UNKNOWN!!!.
 // @fnv 0x00a69b90
-char* BuildTextureAddressModeString(const char* prefix, int mode)
+// pdb: NiTexturingProperty::GetViewerString | NiTexturingProperty.obj | retail, string-set bridge, high
+// pdb params: pcPrefix, eMode
+// pdb locals: pcString, uiLen
+char* BuildTextureAddressModeString(const char* pcPrefix, int eMode)
 {
     char* result;
     unsigned int len;
     {
-        len = strlen(prefix);
+        len = strlen(pcPrefix);
     }
     result = (char*)NiMalloc(len + 0x14);
-    switch (mode)
+    switch (eMode)
     {
     case 0:
-        NiSprintf(result, len + 0x14, "%s = CLAMP_S_CLAMP_T", prefix);
+        NiSprintf(result, len + 0x14, "%s = CLAMP_S_CLAMP_T", pcPrefix);
         break;
     case 1:
-        NiSprintf(result, len + 0x14, "%s = CLAMP_S_WRAP_T", prefix);
+        NiSprintf(result, len + 0x14, "%s = CLAMP_S_WRAP_T", pcPrefix);
         break;
     case 2:
-        NiSprintf(result, len + 0x14, "%s = WRAP_S_CLAMP_T", prefix);
+        NiSprintf(result, len + 0x14, "%s = WRAP_S_CLAMP_T", pcPrefix);
         break;
     case 3:
-        NiSprintf(result, len + 0x14, "%s = WRAP_S_WRAP_T", prefix);
+        NiSprintf(result, len + 0x14, "%s = WRAP_S_WRAP_T", pcPrefix);
         break;
     default:
-        NiSprintf(result, len + 0x14, "%s = UNKNOWN!!!", prefix);
+        NiSprintf(result, len + 0x14, "%s = UNKNOWN!!!", pcPrefix);
         break;
     }
     return result;
@@ -569,6 +590,8 @@ inline bool MapNameEqual(const char* a, const char* b)
 }
 // Searches the ten texture map handles for one matching pkName and, on a match, stores its index in puiID and returns true.
 // @fnv 0x00a69d80
+// pdb: NiTexturingProperty::Map::~Map | NiTexturingProperty.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiTexturingProperty::GetMapIDFromName
 bool FindTextureMapIndexByName(NiFixedString* pkName, unsigned int* puiID)
 {
     for (unsigned int i = 0; i < 10; i++)
@@ -608,6 +631,7 @@ extern int DAT_0109c394;
 // The scalar deleting destructors use the shared array layouts. Keep the
 // entry-point wrappers here because C++ cannot name a scalar deleting destructor.
 // @fnv 0x00a6a050
+// pdb: NiTexturingProperty::ParallaxMap::`scalar deleting destructor' | NiTexturingProperty.obj | debug, object-file run extension, low
 void* __fastcall DestroyTextureMapArrayBase(
     NiTArray<NiTexturingProperty::Map*, NiTMallocInterface<NiTexturingProperty::Map*> >* self,
     int, unsigned int flags)
@@ -622,6 +646,7 @@ void* __fastcall DestroyTextureMapArrayBase(
 
 extern int DAT_0109c39c;
 // @fnv 0x00a6a080
+// pdb: NiTexturingProperty::ParallaxMap::~ParallaxMap | NiTexturingProperty.obj | debug, object-file run extension, low
 void* __fastcall DestroyShaderMapArrayBase(
     NiTArray<NiTexturingProperty::ShaderMap*, NiTMallocInterface<NiTexturingProperty::ShaderMap*> >* self,
     int, unsigned int flags)
@@ -651,6 +676,8 @@ struct MyThis
 };
 // Loads the base map from the stream, then reads a 4-byte value into the object at offset 0x10.
 // @fnv 0x00a6ba80
+// pdb: NiTexturingProperty::ShaderMap::LoadBinary | NiTexturingProperty.obj | retail, object-file gap fill, high
+// pdb params: kStream
 void MyThis::LoadMapBinary(NiStream& stream)
 {
     ((NiTexturingProperty::Map*)this)->NiTexturingProperty::Map::LoadBinary(stream);
@@ -726,6 +753,8 @@ struct Holder
 };
 // Calls the base class stream writer, then writes the 4-byte value at this+16 to the stream and advances its position.
 // @fnv 0x00a6bac0
+// pdb: NiTexturingProperty::ShaderMap::SaveBinary | NiTexturingProperty.obj | retail, object-file gap fill, high
+// pdb params: kStream
 void Holder::WriteToStream(NiStream& aStream)
 {
     ((MapBase*)this)->NiTexturingProperty_Map_SaveBinary(aStream);
@@ -762,6 +791,9 @@ int _NiSprintf(char*, unsigned int, const char*, ...);
 
 // Allocates a string sized to pcPrefix plus 30 and formats it as "<pcPrefix> = FILTER_..." based on eMode, defaulting to UNKNOWN!!!.
 // @fnv 0x00a69c50
+// pdb: NiTexturingProperty::GetViewerString | NiTexturingProperty.obj | retail, string-set bridge, high
+// pdb params: pcPrefix, eMode
+// pdb locals: pcString, uiLen
 char* BuildFilterModeString(const char* pcPrefix, unsigned int eMode)
 {
     char* pcString;
@@ -831,15 +863,18 @@ struct TexturingStreamableBase
 };
 
 // @fnv 0x00a6a560
+// pdb: NiTexturingProperty::RegisterStreamables | NiTexturingProperty.obj | retail, upstream name already matches, high
+// pdb params: kStream
+// pdb locals: i, pkMap
 bool NiTexturingProperty::RegisterStreamables(NiStream& stream)
 {
     if (!reinterpret_cast<TexturingStreamableBase*>(this)->NiSequenceStreamHelper_RegisterStreamables(reinterpret_cast<unsigned int>(&stream)))
     {
         return false;
     }
-    for (unsigned int i = 0; i < m_kStringArray.m_usSize; ++i)
+    for (unsigned int i = 0; i < m_kMaps.m_usSize; ++i)
     {
-        NiTexturingProperty::Map* map = m_kStringArray.m_pBase[i];
+        NiTexturingProperty::Map* map = m_kMaps.m_pBase[i];
         if (map != 0)
         {
             NiTexture* tex = map->m_spTexture.m_pObject;
@@ -849,11 +884,11 @@ bool NiTexturingProperty::RegisterStreamables(NiStream& stream)
             }
         }
     }
-    if (m_pShaderMaps != 0)
+    if (m_pkShaderMaps != 0)
     {
-        for (unsigned int j = 0; j < m_pShaderMaps->m_usSize; ++j)
+        for (unsigned int j = 0; j < m_pkShaderMaps->m_usSize; ++j)
         {
-            NiTexturingProperty::Map* map = m_pShaderMaps->m_pBase[j];
+            NiTexturingProperty::Map* map = m_pkShaderMaps->m_pBase[j];
             if (map != 0)
             {
                 NiTexture* tex = map->m_spTexture.m_pObject;
@@ -908,37 +943,40 @@ inline void SetTexturingMapAt(NiTPrimitiveArray<NiTexturingProperty::Map*>& maps
 __forceinline void InitializeTexturingProperty(NiTexturingProperty* self, NiPixelData* pkPrefs,
     const NiFixedString& kName, TextureFormatPreferences& kOther) throw()
 {
-    self->m_pShaderMaps = 0;
+    self->m_pkShaderMaps = 0;
     const char* pcName = kName.m_kHandle;
     NiTexture* pkTexture = NiSourceTexture_Create(pkPrefs, pcName, &kOther);
-    SetTexturingMapAt(self->m_kStringArray, 0, (NiTexturingProperty::Map*)new TexMapStub(pkTexture, 0, 3, 1, 0));
-    SetTexturingMapAt(self->m_kStringArray, 1, 0);
-    SetTexturingMapAt(self->m_kStringArray, 2, 0);
-    SetTexturingMapAt(self->m_kStringArray, 3, 0);
-    SetTexturingMapAt(self->m_kStringArray, 4, 0);
-    SetTexturingMapAt(self->m_kStringArray, 5, 0);
-    SetTexturingMapAt(self->m_kStringArray, 6, 0);
-    SetTexturingMapAt(self->m_kStringArray, 7, 0);
-    SetTexturingMapAt(self->m_kStringArray, 8, 0);
-    self->m_uiObjectFlags &= 0xf00f;
-    unsigned int size = self->m_kStringArray.m_usSize;
+    SetTexturingMapAt(self->m_kMaps, 0, (NiTexturingProperty::Map*)new TexMapStub(pkTexture, 0, 3, 1, 0));
+    SetTexturingMapAt(self->m_kMaps, 1, 0);
+    SetTexturingMapAt(self->m_kMaps, 2, 0);
+    SetTexturingMapAt(self->m_kMaps, 3, 0);
+    SetTexturingMapAt(self->m_kMaps, 4, 0);
+    SetTexturingMapAt(self->m_kMaps, 5, 0);
+    SetTexturingMapAt(self->m_kMaps, 6, 0);
+    SetTexturingMapAt(self->m_kMaps, 7, 0);
+    SetTexturingMapAt(self->m_kMaps, 8, 0);
+    self->m_uFlags &= 0xf00f;
+    unsigned int size = self->m_kMaps.m_usSize;
     unsigned int i;
     for (i = 1; i < size; ++i)
     {
-        if (self->m_kStringArray.m_pBase[i])
+        if (self->m_kMaps.m_pBase[i])
         {
-            self->m_uiObjectFlags |= 1;
+            self->m_uFlags |= 1;
             goto done;
         }
     }
-    self->m_uiObjectFlags &= ~1;
+    self->m_uFlags &= ~1;
 done:
-    self->m_uiObjectFlags = (self->m_uiObjectFlags & ~0xe) | (2 << 1);
+    self->m_uFlags = (self->m_uFlags & ~0xe) | (2 << 1);
 }
 
 // @fnv 0x00a6abb0
+// pdb: NiTexturingProperty::NiTexturingProperty | NiTexturingProperty.obj | debug, call graph, medium
+// pdb params: pkPixelData, kName, arPrefs
+// pdb locals: pkMap, pkTexture
 NiTexturingProperty::NiTexturingProperty(NiPixelData* pkPrefs, const NiFixedString& kName, TextureFormatPreferences& kOther)
-    : m_uiObjectFlags(0), m_kStringArray(9, 1)
+    : m_uFlags(0), m_kMaps(9, 1)
 {
     InitializeTexturingProperty(this, pkPrefs, kName, kOther);
 }
@@ -961,31 +999,34 @@ struct NiPropertySaveStub
 
 // Saves the base map array and optional shader map array to the stream, writing a count and a presence flag plus data for each map.
 // @fnv 0x00a6b250
+// pdb: NiTexturingProperty::SaveBinary | NiTexturingProperty.obj | retail, object-file gap fill, high
+// pdb params: kStream
+// pdb locals: uiListSize, i, pkMap, bHasMap
 void __fastcall SaveTexturingProperty(NiTexturingProperty* self, int, NiStream& kStream)
 {
     reinterpret_cast<NiPropertySaveStub*>(self)->SaveBinary(kStream);
 
-    SerializeValue(kStream, self->m_uiObjectFlags);
+    SerializeValue(kStream, self->m_uFlags);
 
-    unsigned int uiNumMaps = self->m_kStringArray.m_usSize;
+    unsigned int uiNumMaps = self->m_kMaps.m_usSize;
     SerializeValue(kStream, uiNumMaps);
     unsigned int i;
     for (i = 0; i < uiNumMaps; i++)
     {
-        NiTexturingProperty::Map* pkMap = self->m_kStringArray.m_pBase[i];
+        NiTexturingProperty::Map* pkMap = self->m_kMaps.m_pBase[i];
         bool bMap = (pkMap != 0);
         SerializeValue(kStream, bMap);
         if (bMap)
             pkMap->SaveBinary(kStream);
     }
 
-    if (self->m_pShaderMaps)
+    if (self->m_pkShaderMaps)
     {
-        uiNumMaps = self->m_pShaderMaps->m_usSize;
+        uiNumMaps = self->m_pkShaderMaps->m_usSize;
         SerializeValue(kStream, uiNumMaps);
         for (i = 0; i < uiNumMaps; i++)
         {
-            NiTexturingProperty::ShaderMap* pkMap = self->m_pShaderMaps->m_pBase[i];
+            NiTexturingProperty::ShaderMap* pkMap = self->m_pkShaderMaps->m_pBase[i];
             bool bMap = (pkMap != 0);
             SerializeValue(kStream, bMap);
             if (bMap)
@@ -1200,6 +1241,9 @@ class A6B830Helper
 // Writes the target link ID, flags, a child-present flag and, if present, the child's binary data to the stream.
 // @fnv 0x00a6b830
 // src: COMMUNITY 0x00a6b830
+// pdb: NiTexturingProperty::Map::SaveBinary | NiTexturingProperty.obj | retail, upstream name already matches, high
+// pdb params: kStream
+// pdb locals: bTextureTransform
 void A6B830Helper::NiTexturingProperty_Map_SaveBinary(A6B830Stream& kStream)
 {
     kStream.SaveLinkID(m_pkTarget);
@@ -1220,6 +1264,8 @@ class A6B8C0BumpMap : public NiTexturingProperty::BumpMap
 // Loads the base map data from kStream, then reads six float values into the bump map's luma and matrix fields.
 // @fnv 0x00a6b8c0
 // src: COMMUNITY 0x00a6b8c0
+// pdb: NiTexturingProperty::BumpMap::LoadBinary | NiTexturingProperty.obj | retail, upstream name already matches, high
+// pdb params: kStream
 void A6B8C0BumpMap::NiTexturingProperty_BumpMap_LoadBinary(NiStream& kStream)
 {
     Map::LoadBinary(kStream);
@@ -1400,6 +1446,8 @@ struct S_00a6b9a0
 };
 // Calls FUN_00a6b830, then writes six 4-byte values from unk10 through unk24 to the stream.
 // @fnv 0x00a6b9a0
+// pdb: NiTexturingProperty::BumpMap::SaveBinary | NiTexturingProperty.obj | retail, object-file gap fill, high
+// pdb params: kStream
 void S_00a6b9a0::ReadFromStream(S_00a6b9a0_Stream* pStream)
 {
     NiTexturingProperty_Map_SaveBinary(pStream);
@@ -1505,20 +1553,20 @@ extern int DAT_0109c514;
 void __fastcall NiTexturingPropertyDestructor(NiTexturingProperty* pThis)
 {
     *reinterpret_cast<void**>(pThis) = &DAT_0109c514;
-    for (unsigned int i = 0; i < pThis->m_kStringArray.m_usSize; ++i)
+    for (unsigned int i = 0; i < pThis->m_kMaps.m_usSize; ++i)
     {
-        delete pThis->m_kStringArray.m_pBase[i];
+        delete pThis->m_kMaps.m_pBase[i];
     }
-    if (pThis->m_pShaderMaps)
+    if (pThis->m_pkShaderMaps)
     {
-        for (unsigned int i = 0; i < pThis->m_pShaderMaps->m_usSize; ++i)
+        for (unsigned int i = 0; i < pThis->m_pkShaderMaps->m_usSize; ++i)
         {
-            delete pThis->m_pShaderMaps->m_pBase[i];
+            delete pThis->m_pkShaderMaps->m_pBase[i];
         }
-        delete pThis->m_pShaderMaps;
+        delete pThis->m_pkShaderMaps;
     }
-    *reinterpret_cast<void**>(&pThis->m_kStringArray) = &DAT_0109c394;
-    _NiFreeAlias(pThis->m_kStringArray.m_pBase);
+    *reinterpret_cast<void**>(&pThis->m_kMaps) = &DAT_0109c394;
+    _NiFreeAlias(pThis->m_kMaps.m_pBase);
     pThis->NiProperty::~NiProperty();
 }
 
@@ -1541,20 +1589,23 @@ struct TexturingEqualityBase
 };
 
 // @fnv 0x00a6a5f0
+// pdb: NiTexturingProperty::IsEqual | NiTexturingProperty.obj | retail, object-file gap fill, high
+// pdb params: pkObject
+// pdb locals: uiList2Size, uiList1Size, pkTex, i, pkMap1, pkMap2
 bool __fastcall TexturingPropertiesEqual(NiTexturingProperty* self, int, NiTexturingProperty* other)
 {
     if (!reinterpret_cast<TexturingEqualityBase*>(self)->NiSequenceStreamHelper_IsEqual(other))
         return false;
-    if (self->m_uiObjectFlags != other->m_uiObjectFlags)
+    if (self->m_uFlags != other->m_uFlags)
         return false;
-    unsigned int uiOtherCount = other->m_kStringArray.m_usSize;
-    unsigned int n = self->m_kStringArray.m_usSize;
+    unsigned int uiOtherCount = other->m_kMaps.m_usSize;
+    unsigned int n = self->m_kMaps.m_usSize;
     if (n != uiOtherCount)
         return false;
     for (unsigned int i = 0; i < n; ++i)
     {
-        void* a = self->m_kStringArray.m_pBase[i];
-        void* b = other->m_kStringArray.m_pBase[i];
+        void* a = self->m_kMaps.m_pBase[i];
+        void* b = other->m_kMaps.m_pBase[i];
         if (a != 0)
         {
             if (b == 0)
@@ -1580,17 +1631,17 @@ bool __fastcall TexturingPropertiesEqual(NiTexturingProperty* self, int, NiTextu
             goto fail;
         }
     }
-    if (self->m_pShaderMaps != 0)
+    if (self->m_pkShaderMaps != 0)
     {
-        if (other->m_pShaderMaps == 0)
+        if (other->m_pkShaderMaps == 0)
             return false;
-        unsigned int uiSubCount = self->m_pShaderMaps->m_usSize;
-        if (uiSubCount != other->m_pShaderMaps->m_usSize)
+        unsigned int uiSubCount = self->m_pkShaderMaps->m_usSize;
+        if (uiSubCount != other->m_pkShaderMaps->m_usSize)
             return false;
         for (unsigned int i = 0; i < uiSubCount; ++i)
         {
-            void* x = self->m_pShaderMaps->m_pBase[i];
-            void* y = other->m_pShaderMaps->m_pBase[i];
+            void* x = self->m_pkShaderMaps->m_pBase[i];
+            void* y = other->m_pkShaderMaps->m_pBase[i];
             if (x != 0)
             {
                 if (y == 0)
@@ -1605,7 +1656,7 @@ bool __fastcall TexturingPropertiesEqual(NiTexturingProperty* self, int, NiTextu
         }
         return true;
     }
-    if (other->m_pShaderMaps == 0)
+    if (other->m_pkShaderMaps == 0)
         return true;
 fail:
     return false;
@@ -1631,6 +1682,8 @@ template <> inline NiTArray<NiTexturingProperty::ShaderMap*, NiTMallocInterface<
 
 // Constructs the shader-map array with the original maximum size and growth increment.
 // @fnv 0x00a6a990
+// pdb: NiTPrimitiveArray<NiD3DShaderDeclaration::NiPackerEntry *>::NiTPrimitiveArray<NiD3DShaderDeclaration::NiPackerEntry *> | NiD3DShaderDeclaration.obj | retail, call graph, high
+// pdb params: uiMaxSize, uiGrowBy
 template <> NiTPrimitiveArray<NiTexturingProperty::ShaderMap*>::NiTPrimitiveArray(unsigned int uiMaxSize, unsigned int uiGrowBy) throw()
     : NiTArray<NiTexturingProperty::ShaderMap*, NiTMallocInterface<NiTexturingProperty::ShaderMap*> >(uiMaxSize, uiGrowBy)
 {}
@@ -1673,7 +1726,7 @@ struct GlobalObjectO2_00a7b610
 {
     char* m_pcName;
 };
-extern GlobalObjectO2_00a7b610 g_011f49a4;
+extern GlobalObjectO2_00a7b610 NiTexturingProperty_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f49a4 (old: DAT_011f49a4/g_011f49a4/g_kTexturingPropertyRTTI)
 int __cdecl NiSprintf(char*, unsigned int, const char*, ...);
 char* BuildTextureAddressModeString(const char*, int);
 char* BuildFilterModeString(const char*, int);
@@ -1691,15 +1744,15 @@ struct MapEx : NiTexturingProperty::Map
 {
     inline NiTexturingProperty::ClampMode GetClampMode() const
     {
-        return (NiTexturingProperty::ClampMode)((m_usFlags >> 12) & 3);
+        return (NiTexturingProperty::ClampMode)((m_uFlags >> 12) & 3);
     }
     inline NiTexturingProperty::FilterMode GetFilterMode() const
     {
-        return (NiTexturingProperty::FilterMode)((m_usFlags >> 8) & 15);
+        return (NiTexturingProperty::FilterMode)((m_uFlags >> 8) & 15);
     }
     inline unsigned int GetTextureIndex() const
     {
-        return m_usFlags & 0xff;
+        return m_uFlags & 0xff;
     }
 };
 
@@ -1707,28 +1760,31 @@ struct ShaderMapEx : NiTexturingProperty::ShaderMap
 {
     inline NiTexturingProperty::ClampMode GetClampMode() const
     {
-        return (NiTexturingProperty::ClampMode)((m_usFlags >> 12) & 3);
+        return (NiTexturingProperty::ClampMode)((m_uFlags >> 12) & 3);
     }
     inline NiTexturingProperty::FilterMode GetFilterMode() const
     {
-        return (NiTexturingProperty::FilterMode)((m_usFlags >> 8) & 15);
+        return (NiTexturingProperty::FilterMode)((m_uFlags >> 8) & 15);
     }
     inline unsigned int GetTextureIndex() const
     {
-        return m_usFlags & 0xff;
+        return m_uFlags & 0xff;
     }
 };
 
 // Appends the property name, apply mode, and per-map details (texture, clamp/filter mode, coord index) for each texture and shader map to strings.
 // @fnv 0x00a6bdd0
+// pdb: NiTexturingProperty::GetViewerStrings | NiTexturingProperty.obj | retail, string-set bridge, high
+// pdb params: pkStrings
+// pdb locals: acPrefix2, uiListSize, i, pkMap, acPrefix, pkBump, pkParallax, acBuf
 void __fastcall AppendTexturingPropertyInfo(NiTexturingProperty* self, int, NiTPrimitiveArray<char*>* strings)
 {
     reinterpret_cast<FUN_00a62a40_this*>(self)->AppendString(strings);
     {
-        char* header = NiViewerStrings_NiGetViewerString_Title(g_011f49a4.m_pcName);
+        char* header = NiViewerStrings_NiGetViewerString_Title(NiTexturingProperty_ms_RTTI.m_pcName);
         AppendString(strings, header);
     }
-    unsigned int count = self->m_kStringArray.m_usSize;
+    unsigned int count = self->m_kMaps.m_usSize;
     char prefix[64];
     {
         union
@@ -1739,12 +1795,12 @@ void __fastcall AppendTexturingPropertyInfo(NiTexturingProperty* self, int, NiTP
         char acApplyMode[64];
         char acDecalLabel[64];
         NiSprintf(acApplyMode, 64, "ApplyMode ");
-        int mode = (self->m_uiObjectFlags >> 1) & 7;
+        int mode = (self->m_uFlags >> 1) & 7;
         text = NiGetViewerString_00a7d4d0(acApplyMode, mode);
         AppendString(strings, text);
         for (unsigned int i = 0; i < count; ++i)
         {
-            NiTexturingProperty::Map* map = self->m_kStringArray.m_pBase[i];
+            NiTexturingProperty::Map* map = self->m_kMaps.m_pBase[i];
             if (!map)
                 continue;
             switch (i)
@@ -1800,7 +1856,7 @@ void __fastcall AppendTexturingPropertyInfo(NiTexturingProperty* self, int, NiTP
             case 7: {
                 text = NiGetViewerString_00a7d510("MultiTexture Parallax Map", i);
                 AddString(strings, text);
-                scalar = static_cast<NiTexturingProperty::ParallaxMap*>(map)->m_fParallaxOffset;
+                scalar = static_cast<NiTexturingProperty::ParallaxMap*>(map)->m_fOffset;
                 text = NiGetViewerString_00a7d550("m_fParallaxOffset", scalar);
                 AddString(strings, text);
                 break;
@@ -1828,12 +1884,12 @@ void __fastcall AppendTexturingPropertyInfo(NiTexturingProperty* self, int, NiTP
             AppendString(strings, text);
         }
     }
-    if (self->m_pShaderMaps)
+    if (self->m_pkShaderMaps)
     {
-        count = self->m_pShaderMaps->m_usSize;
+        count = self->m_pkShaderMaps->m_usSize;
         for (unsigned int j = 0; j < count; ++j)
         {
-            NiTexturingProperty::ShaderMap* map = self->m_pShaderMaps->m_pBase[j];
+            NiTexturingProperty::ShaderMap* map = self->m_pkShaderMaps->m_pBase[j];
             if (!map)
                 continue;
             AppendStringInline(strings, NiGetViewerString_00a7d510("Shader Map", j));
@@ -1856,7 +1912,8 @@ void __fastcall AppendTexturingPropertyInfo(NiTexturingProperty* self, int, NiTP
 
 // Constructs a parallax map, initializing m_fParallaxOffset to 0.5f.
 // @fnv 0x00a6a010
-NiTexturingProperty::ParallaxMap::ParallaxMap() throw() : m_fParallaxOffset(0.5f)
+// pdb: NiTexturingProperty::ParallaxMap::ParallaxMap | NiTexturingProperty.obj | debug, call graph, high
+NiTexturingProperty::ParallaxMap::ParallaxMap() throw() : m_fOffset(0.5f)
 {}
 
 // Reads texture maps and shader maps from the stream, relocates maps 6 and 7 to slots 8 and 9 for older versions, and updates the flags count.
@@ -1866,22 +1923,25 @@ struct TexturingLinkBase
 };
 inline void IncrementTexturingMapCount(NiTexturingProperty* property)
 {
-    property->m_uiObjectFlags = (property->m_uiObjectFlags & 0xf00f) |
-        (((((property->m_uiObjectFlags >> 4) & 255) + 1) << 4));
+    property->m_uFlags = (property->m_uFlags & 0xf00f) |
+        (((((property->m_uFlags >> 4) & 255) + 1) << 4));
 }
 
 // @fnv 0x00a6a240
+// pdb: NiTexturingProperty::LinkObject | NiTexturingProperty.obj | retail, object-file run extension, low
+// pdb params: kStream
+// pdb locals: uiSize, i, pkParallaxMap, pkNormalMap, uiShift, ui
 void __fastcall LinkTexturingProperty(NiTexturingProperty* self, int, NiStream& stream)
 {
     reinterpret_cast<TexturingLinkBase*>(self)->NiSequenceStreamHelper_LinkObject(stream);
     unsigned int count = stream.GetLinkID();
     unsigned int i;
-    self->m_uiObjectFlags &= 0xf00f;
+    self->m_uFlags &= 0xf00f;
     for (i = 0; i < count; ++i)
     {
         if (stream.GetLinkID())
         {
-            NiTexturingProperty::Map*& map = self->m_kStringArray.m_pBase[i];
+            NiTexturingProperty::Map*& map = self->m_kMaps.m_pBase[i];
             reinterpret_cast<NiPointer<NiTexture>&>(map->m_spTexture) = static_cast<NiTexture*>(stream.FUN_00a63430());
             if (i >= 8)
                 IncrementTexturingMapCount(self);
@@ -1891,10 +1951,10 @@ void __fastcall LinkTexturingProperty(NiTexturingProperty* self, int, NiStream& 
     {
         NiTexturingProperty::Map* pFirstMap = 0;
         NiTexturingProperty::Map* pSecondMap = 0;
-        if (self->m_kStringArray.m_usSize > 6)
-            pFirstMap = self->m_kStringArray.m_pBase[6];
-        if (self->m_kStringArray.m_usSize > 7)
-            pSecondMap = self->m_kStringArray.m_pBase[7];
+        if (self->m_kMaps.m_usSize > 6)
+            pFirstMap = self->m_kMaps.m_pBase[6];
+        if (self->m_kMaps.m_usSize > 7)
+            pSecondMap = self->m_kMaps.m_pBase[7];
         if (pFirstMap || pSecondMap)
         {
             unsigned int added = 0;
@@ -1902,34 +1962,34 @@ void __fastcall LinkTexturingProperty(NiTexturingProperty* self, int, NiStream& 
                 added++;
             if (pSecondMap)
                 added++;
-            if ((self->m_uiObjectFlags & 0xff0) > 0 && added != 0)
+            if ((self->m_uFlags & 0xff0) > 0 && added != 0)
             {
-                for (unsigned int j = self->m_kStringArray.m_usSize - 1; j >= 8; --j)
-                    self->m_kStringArray.SetAtGrow(added + j, self->m_kStringArray.m_pBase[j]);
+                for (unsigned int j = self->m_kMaps.m_usSize - 1; j >= 8; --j)
+                    self->m_kMaps.SetAtGrow(added + j, self->m_kMaps.m_pBase[j]);
             }
             if (pFirstMap)
             {
-                self->m_kStringArray.SetAtGrow(8, pFirstMap);
+                self->m_kMaps.SetAtGrow(8, pFirstMap);
                 NiTexturingProperty::Map* empty = 0;
-                self->m_kStringArray.SetAt(6, empty);
+                self->m_kMaps.SetAt(6, empty);
                 IncrementTexturingMapCount(self);
             }
             else
             {
                 NiTexturingProperty::Map* empty = 0;
-                self->m_kStringArray.SetAt(8, empty);
+                self->m_kMaps.SetAt(8, empty);
             }
             if (pSecondMap)
             {
-                self->m_kStringArray.SetAtGrow(9, pSecondMap);
+                self->m_kMaps.SetAtGrow(9, pSecondMap);
                 NiTexturingProperty::Map* empty = 0;
-                self->m_kStringArray.SetAt(7, empty);
+                self->m_kMaps.SetAt(7, empty);
                 IncrementTexturingMapCount(self);
             }
             else if (added == 2)
             {
                 NiTexturingProperty::Map* empty = 0;
-                self->m_kStringArray.SetAt(9, empty);
+                self->m_kMaps.SetAt(9, empty);
             }
         }
     }
@@ -1940,7 +2000,7 @@ void __fastcall LinkTexturingProperty(NiTexturingProperty* self, int, NiStream& 
         {
             if (stream.GetLinkID())
             {
-                NiTexturingProperty::ShaderMap*& map = self->m_pShaderMaps->m_pBase[i];
+                NiTexturingProperty::ShaderMap*& map = self->m_pkShaderMaps->m_pBase[i];
                 reinterpret_cast<NiPointer<NiTexture>&>(map->m_spTexture) = static_cast<NiTexture*>(stream.FUN_00a63430());
             }
         }
@@ -1982,6 +2042,7 @@ class FUN_00a69dd0_cls
 
 // Initialises the object: sets m_vtbl, zeroes m_spTexture and m_pTextureTransform, and sets m_usFlags to 0x3100.
 // @fnv 0x00a69dd0
+// pdb: NiTexturingProperty::Map::Map | NiTexturingProperty.obj | debug, call graph, medium
 FUN_00a69dd0_cls::FUN_00a69dd0_cls() : m_usFlags(0)
 {
     _ReadWriteBarrier();
@@ -1996,39 +2057,42 @@ FUN_00a69dd0_cls::FUN_00a69dd0_cls() : m_usFlags(0)
 
 struct TexturingMapUpdate
 {
-    void NiTexturingProperty_SetMultiTexture(NiTexturingProperty::Map* value);
+    void NiTexturingProperty_SetMultiTexture(NiTexturingProperty::Map* pkMap);
 };
 
 // @fnv 0x00a6a150
+// pdb: NiTexturingProperty::SetDecalMap | NiTexturingProperty.obj | retail, object-file run extension, low
+// pdb params: uiIndex, pkMap
+// pdb locals: uiDecalIndex, pkOld
 void __fastcall SetTexturingDecalMap(NiTexturingProperty* self, int, unsigned int index, NiTexturingProperty::Map* map)
 {
     NiTexturingProperty::Map* newMap;
     unsigned int position = index + 8;
 
-    if (position < self->m_kStringArray.m_usSize)
+    if (position < self->m_kMaps.m_usSize)
     {
-        NiTexturingProperty::Map* oldMap = self->m_kStringArray.m_pBase[position];
+        NiTexturingProperty::Map* oldMap = self->m_kMaps.m_pBase[position];
 
         if (map != 0)
         {
             if (oldMap == 0)
             {
-                unsigned short flags = self->m_uiObjectFlags;
+                unsigned short flags = self->m_uFlags;
                 unsigned int count = (flags >> 4) & 0xff;
                 count += 1;
-                self->m_uiObjectFlags = (unsigned short)((count << 4) | (flags & 0xf00f));
+                self->m_uFlags = (unsigned short)((count << 4) | (flags & 0xf00f));
             }
         }
         else if (oldMap != 0)
         {
-            unsigned short flags = self->m_uiObjectFlags;
+            unsigned short flags = self->m_uFlags;
             unsigned int count = (flags >> 4) & 0xff;
             count -= 1;
-            self->m_uiObjectFlags = (unsigned short)((count << 4) | (flags & 0xf00f));
+            self->m_uFlags = (unsigned short)((count << 4) | (flags & 0xf00f));
         }
 
         newMap = map;
-        self->m_kStringArray.SetAt(position, map);
+        self->m_kMaps.SetAt(position, map);
 
         if (oldMap != 0)
         {
@@ -2037,8 +2101,8 @@ void __fastcall SetTexturingDecalMap(NiTexturingProperty* self, int, unsigned in
     }
     else
     {
-        NiTPrimitiveArray<NiTexturingProperty::Map*>* maps = &self->m_kStringArray;
-        if (position >= self->m_kStringArray.m_usMaxSize)
+        NiTPrimitiveArray<NiTexturingProperty::Map*>* maps = &self->m_kMaps;
+        if (position >= self->m_kMaps.m_usMaxSize)
         {
             maps->SetSize(position + maps->m_usGrowBy);
         }
@@ -2048,10 +2112,10 @@ void __fastcall SetTexturingDecalMap(NiTexturingProperty* self, int, unsigned in
 
         if (newMap != 0)
         {
-            unsigned short flags = self->m_uiObjectFlags;
+            unsigned short flags = self->m_uFlags;
             unsigned int count = (flags >> 4) & 0xff;
             count += 1;
-            self->m_uiObjectFlags = (unsigned short)((count << 4) | (flags & 0xf00f));
+            self->m_uFlags = (unsigned short)((count << 4) | (flags & 0xf00f));
         }
     }
 
@@ -2082,49 +2146,52 @@ struct TexturingPropertyCopyBase
 };
 inline void SetTextureMapAtIndex(NiTexturingProperty* property, unsigned int i, TexMap* map)
 {
-    (&property->m_kStringArray)->SetAtGrow(i, map);
+    (&property->m_kMaps)->SetAtGrow(i, map);
 }
 inline TexBumpMap* GetBumpMap(NiTexturingProperty* property)
 {
-    return (TexBumpMap*)(&property->m_kStringArray)->m_pBase[5];
+    return (TexBumpMap*)(&property->m_kMaps)->m_pBase[5];
 }
 inline TexParallaxMap* GetParallaxMap(NiTexturingProperty* property)
 {
-    return (TexParallaxMap*)(&property->m_kStringArray)->m_pBase[7];
+    return (TexParallaxMap*)(&property->m_kMaps)->m_pBase[7];
 }
 // Copies texture map arrays and shader maps into the destination property.
 // @fnv 0x00a6bb00
+// pdb: NiTexturingProperty::CopyMembers | NiTexturingProperty.obj | retail, object-file gap fill, high
+// pdb params: pkDest, kCloning
+// pdb locals: uiMax, i
 void __fastcall CopyTexturingProperty(NiTexturingProperty* self, int, NiTexturingProperty* pkDest, CloneProc& kCloning)
 {
     reinterpret_cast<TexturingPropertyCopyBase*>(self)->NiProperty_CopyMembers(pkDest, kCloning);
-    pkDest->m_uiObjectFlags = self->m_uiObjectFlags;
-    unsigned int uiSize = (&self->m_kStringArray)->m_usSize;
-    (&pkDest->m_kStringArray)->SetSize(uiSize);
+    pkDest->m_uFlags = self->m_uFlags;
+    unsigned int uiSize = (&self->m_kMaps)->m_usSize;
+    (&pkDest->m_kMaps)->SetSize(uiSize);
     unsigned int i;
     for (i = 0; i < uiSize; i++)
     {
-        if ((&self->m_kStringArray)->GetAt(i))
+        if ((&self->m_kMaps)->GetAt(i))
         {
             if (i == 5)
                 SetTextureMapAtIndex(pkDest, 5, ::new (TEXTURE_MAP_ALLOCATION) TexBumpMap(*GetBumpMap(self)));
             else if (i == 7)
                 SetTextureMapAtIndex(pkDest, 7, ::new (TEXTURE_MAP_ALLOCATION) TexParallaxMap(*GetParallaxMap(self)));
             else
-                SetTextureMapAtIndex(pkDest, i, ::new (TEXTURE_MAP_ALLOCATION) TexMap(*(&self->m_kStringArray)->GetAt(i)));
+                SetTextureMapAtIndex(pkDest, i, ::new (TEXTURE_MAP_ALLOCATION) TexMap(*(&self->m_kMaps)->GetAt(i)));
         }
     }
-    if (self->m_pShaderMaps)
+    if (self->m_pkShaderMaps)
     {
-        if (!pkDest->m_pShaderMaps)
-            pkDest->m_pShaderMaps = new TexShaderMapArray;
-        uiSize = self->m_pShaderMaps->m_usSize;
-        pkDest->m_pShaderMaps->SetSize(uiSize);
+        if (!pkDest->m_pkShaderMaps)
+            pkDest->m_pkShaderMaps = new TexShaderMapArray;
+        uiSize = self->m_pkShaderMaps->m_usSize;
+        pkDest->m_pkShaderMaps->SetSize(uiSize);
         for (i = 0; i < uiSize; i++)
         {
-            if (self->m_pShaderMaps->m_pBase[i])
+            if (self->m_pkShaderMaps->m_pBase[i])
             {
-                TexShaderMap* pkMap = ::new (TEXTURE_MAP_ALLOCATION) TexShaderMap(*self->m_pShaderMaps->m_pBase[i]);
-                pkDest->m_pShaderMaps->SetAtGrow(i, pkMap);
+                TexShaderMap* pkMap = ::new (TEXTURE_MAP_ALLOCATION) TexShaderMap(*self->m_pkShaderMaps->m_pBase[i]);
+                pkDest->m_pkShaderMaps->SetAtGrow(i, pkMap);
             }
         }
     }
@@ -2133,12 +2200,12 @@ void __fastcall CopyTexturingProperty(NiTexturingProperty* self, int, NiTexturin
 
 struct DeallocHelper00aa4060
 {
-    void MemoryManager_Deallocate(void* p);
+    void MemoryManager_Deallocate(void* apMem);
 };
 
 NiTexturingProperty::Map::~Map()
 {
-    reinterpret_cast<DeallocHelper00aa4060*>(&g_memoryManager)->MemoryManager_Deallocate(m_pTextureTransform);
+    reinterpret_cast<DeallocHelper00aa4060*>(&g_memoryManager)->MemoryManager_Deallocate(m_pkTextureTransform);
     if (m_spTexture.m_pObject)
         m_spTexture.m_pObject->DecRefCount();
 }
@@ -2150,6 +2217,8 @@ struct MapScalarDtorCandidate : NiTexturingProperty::Map
 
 // Calls the base Map destructor, then frees this object via g_memoryManager when flags has bit 0 set, and returns this.
 // @fnv 0x00a6a9f0
+// pdb: NiTPrimitiveArray<NiD3DShaderDeclaration::NiPackerEntry *>::`scalar deleting destructor' | NiD3DShaderDeclaration.obj | retail, object-file run extension, low
+// pdb params: this
 void* MapScalarDtorCandidate::FUN_00a6a9f0(unsigned int flags)
 {
     this->NiTexturingProperty::Map::~Map();

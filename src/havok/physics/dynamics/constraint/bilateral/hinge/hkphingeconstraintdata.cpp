@@ -12,15 +12,16 @@ typedef unsigned short hkUint16;
 typedef unsigned int hkUint32;
 
 // No approved include/hkpHingeConstraintData.h exists yet; retain the reflected 0xB0 layout locally.
+// pdb: class hkpHingeConstraintData, size 0xb0, bases: hkpConstraintData, 1 members
 class hkpHingeConstraintData : public hkpConstraintData
 {
 public:
     char padC[4];
-    char m_kBridgeAtoms[0xA0];
+    char m_atoms[0xA0]; // src: XBOX_RETAIL_PDB +0x10 (old: m_kBridgeAtoms)
 
     void setMaxLinearImpulse(float value);
     float getMaxLinearImpulse();
-    void setBodyToNotify(int index);
+    void setBodyToNotify(int bodyIdx);
     unsigned int getNotifiedBodyIndex();
     void* __thiscall getConstraintInfo(int param);
     void SetLocalTransforms(const hkTransform& bodyATransform, const hkTransform& bodyBTransform,
@@ -32,12 +33,15 @@ public:
 
 // @fnv 0x00cbe1b0
 // src: HAVOK_LIB 0x00cbe1b0
-void hkpHingeConstraintData::setBodyToNotify(int index)
+// pdb: hkpHingeConstraintData::setBodyToNotify | hkpHingeConstraintData.obj | debug, upstream name already matches, high
+// pdb params: bodyIdx
+// pdb locals: assertBuf, ostr
+void hkpHingeConstraintData::setBodyToNotify(int bodyIdx)
 {
-    reinterpret_cast<unsigned char*>(this)[0xa6] = (unsigned char)(1 << index);
+    reinterpret_cast<unsigned char*>(this)[0xa6] = (unsigned char)(1 << bodyIdx);
 }
 
-extern "C" void* __cdecl hkpConstraintData_getConstraintInfoUtil(void* thisPtr, int size, int param);
+extern "C" void* __cdecl hkpConstraintData_getConstraintInfoUtil(void* thisPtr, int size, int infoOut);
 
 // @fnv 0x00cbe210
 // src: HAVOK_LIB 0x00cbe210
@@ -80,6 +84,8 @@ float hkpHingeConstraintData::getMaxLinearImpulse()
 
 // @fnv 0x00cbe1d0
 // src: HAVOK_LIB 0x00cbe1d0
+// pdb: hkpHingeConstraintData::getNotifiedBodyIndex | hkpHingeConstraintData.obj | debug, upstream name already matches, high
+// pdb locals: assertBuf, ostr
 unsigned int hkpHingeConstraintData::getNotifiedBodyIndex()
 {
     return (unsigned int)reinterpret_cast<const unsigned char*>(this)[0xA6] >> 1;
@@ -95,10 +101,11 @@ int __cdecl hkpHingeConstraintData_ReturnOne()
 // The old transform stand-in called hkRotation::IsOrthonormal (0x00CB2E70), as bound by other units.
 // @fnv 0x00cbe750
 // src: HAVOK_LIB 0x00cbe750
+// pdb: hkpPointToPlaneConstraintData::isValid | hkpPointToPlaneConstraintData.obj | retail, upstream name already matches, high
 hkBool hkpHingeConstraintData::hkpPointToPlaneConstraintData_isValid() const
 {
-    const hkTransform& transformA = *reinterpret_cast<const hkTransform*>(m_kBridgeAtoms + 0x10);
-    const hkTransform& transformB = *reinterpret_cast<const hkTransform*>(m_kBridgeAtoms + 0x50);
+    const hkTransform& transformA = *reinterpret_cast<const hkTransform*>(m_atoms + 0x10);
+    const hkTransform& transformB = *reinterpret_cast<const hkTransform*>(m_atoms + 0x50);
     return transformA.m_rotation.IsOrthonormal(0.001f) && transformB.m_rotation.IsOrthonormal(0.001f);
 }
 
@@ -215,11 +222,14 @@ static __forceinline void hkSetCross(hkVector4qView_00cbe240& out, const hkVecto
 
 // Builds a perpendicular basis from axis, then writes each body's rotation and translation (pivot) into m_kBridgeAtoms via FUN_004b4ab0 and FUN_00c7f690.
 // @fnv 0x00cbe240
+// pdb: hkpPointToPlaneConstraintData::setInWorldSpace | hkpPointToPlaneConstraintData.obj | debug, object-file run extension, low
+// pdb params: bodyATransform, bodyBTransform, pivotW, planeNormalW
+// pdb locals: assertBuf, ostr
 void hkpHingeConstraintData::SetLocalTransforms(const hkTransform& bodyATransform, const hkTransform& bodyBTransform,
                                                   const hkVector4& pivot, const hkVector4& axis)
 {
     using namespace fnv_00cbe240;
-    hkpSetLocalTransformsAtom& t = *reinterpret_cast<hkpSetLocalTransformsAtom*>(&m_kBridgeAtoms);
+    hkpSetLocalTransformsAtom& t = *reinterpret_cast<hkpSetLocalTransformsAtom*>(&m_atoms);
     const hkVector4qView_00cbe240& axle = reinterpret_cast<const hkVector4qView_00cbe240&>(axis);
 
     hkVector4qView_00cbe240 perpToAxle1;
@@ -350,11 +360,14 @@ static __forceinline void hkSetCross(hkVector4qView_00cbe400& out, const hkVecto
 // Stores pivotA and pivotB as translations, and builds rotation matrices for A and B from axisA and axisB using hkCalculatePerpendicularVector and hkSetCross.
 // @fnv 0x00cbe400
 // src: GUESS 0x00cbe400 (confidence: medium)
+// pdb: hkpPointToPlaneConstraintData::setInBodySpace | hkpPointToPlaneConstraintData.obj | debug, object-file run extension, low
+// pdb params: pivotA, pivotB, planeNormalB
+// pdb locals: assertBuf, ostr
 void hkpHingeConstraintData::SetConstraintPivotFrames(const hkVector4& pivotA, const hkVector4& pivotB, const hkVector4& axisA,
                                             const hkVector4& axisB)
 {
     using namespace fnv_00cbe400;
-    hkpHingeTransforms& t = *reinterpret_cast<hkpHingeTransforms*>(&m_kBridgeAtoms);
+    hkpHingeTransforms& t = *reinterpret_cast<hkpHingeTransforms*>(&m_atoms);
 
     t.m_kTranslationA.m_vComponents = reinterpret_cast<const hkVector4qView_00cbe400&>(pivotA).m_vComponents;
     t.m_kTranslationB.m_vComponents = reinterpret_cast<const hkVector4qView_00cbe400&>(pivotB).m_vComponents;

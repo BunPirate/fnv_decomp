@@ -43,17 +43,18 @@ struct SplatterShaderInfo
     const char* file;
     _D3DXMACRO macros[9];
 };
-extern int g_011fedc8;
+extern int BSShaderBloodSplatter_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011fedc8 (old: g_011fedc8)
 int* __cdecl BSShaderBloodSplatter_GetRTTI();
 
 struct FUN_0068ab60_shell
 {
-    void __thiscall ReleaseStorage_0068ab80();
-    void __thiscall ForwardCall_0068ab60();
+    void __thiscall NiTArray_NiAVObject_NiTMallocInterface_NiAVObject_dtor();
+    void __thiscall NiTPrimitiveArray_NiAVObject_dtor();
 };
 // @fnv 0x0068ab60
-// src: GUESS 0x0068ab60 (confidence: low)
-void __thiscall FUN_0068ab60_shell::ForwardCall_0068ab60()
+// src: XBOX_DEBUG_PDB 0x0068ab60
+// pdb: NiTPrimitiveArray<NiAVObject *>::~NiTPrimitiveArray<NiAVObject *> | BSTempEffectParticle.obj | debug, call graph (shared callers), high
+void __thiscall FUN_0068ab60_shell::NiTPrimitiveArray_NiAVObject_dtor()
 {
-    ReleaseStorage_0068ab80();
+    NiTArray_NiAVObject_NiTMallocInterface_NiAVObject_dtor();
 }

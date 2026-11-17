@@ -30,7 +30,10 @@
 #include "../../../include/BGSSaveFormBuffer.h"
 // Updates ambient and region sounds from the player's target acoustic space, weather and time of day, starting/stopping sound handles and pruning stale ones.
 // @fnv 0x0082d7c0
-void SoundPlaybackManager::ProcessPendingSounds()
+// src: XBOX_RETAIL_PDB 0x0082d7c0
+// pdb: FalloutAudio::UpdateRegionSounds | FalloutAudio.obj | retail, string-set bridge, high
+// pdb locals: ptmpHandle, soundList, psky, fEndTime, ftimeOfDay, plookup, fBeginTime, blistenerUnderwater, bregionSoundsUpdated, pregion, pRSD, fFadeInTime, numfound, bChange, bShouldUseWalla, pclist, pambSound, bisLoop, hndle, plistPtr, bisInMap, ikey, prgnSound, psoundData ...
+void FalloutAudio::UpdateRegionSounds()
 {
     bool updated = false;
     BSSoundHandle* pendingHandle = 0;
@@ -60,7 +63,7 @@ void SoundPlaybackManager::ProcessPendingSounds()
     }
     if (!DAT_011dcfa8)
     {
-        DAT_011dcfa8 = g_dataHandler->GetSoundByEditorID("UIActivateNothing");
+        DAT_011dcfa8 = g_dataHandler->GetSound("UIActivateNothing");
         if (DAT_011dcfa8)
             TESLandTexture::GetSoundSystem()->Precache(DAT_011dcfa8->TESSound_GetFilename(), 0x121, DAT_011dcfa8);
     }
@@ -68,7 +71,7 @@ void SoundPlaybackManager::ProcessPendingSounds()
         g_thePlayer->GetTarget()->GetAcousticSpace() != DAT_011dcfb4)
         SetAcousticSpace(g_thePlayer->GetTarget()->GetAcousticSpace());
     else if (!g_thePlayer || (!g_thePlayer->GetTarget() && !g_thePlayer->IsRegionSoundsEnabled()))
-        ResetAcousticSpace(0);
+        ClearAcousticSpace(0);
     if (DAT_011dcfb4 && reinterpret_cast<BGSImpactData*>(DAT_011dcfb4)->GetDecalTextureSet())
     {
         RegionSoundSource source;
@@ -89,7 +92,7 @@ void SoundPlaybackManager::ProcessPendingSounds()
     }
     else if ((!isSubmerged || !g_thePlayer->GetTarget()) && DAT_011dd0a0.IsPlaying())
         DAT_011dd0a0.FadeOutAndRelease(300);
-    InitFootstepImpacts();
+    ImpactMixer_InitFootsteps();
     InitializeSlots();
     if (DAT_011dcfa6)
         return;
@@ -367,101 +370,114 @@ void SoundPlaybackManager::ProcessPendingSounds()
 
 // Switches the sky mode, unloading textures and stopping sounds when leaving full/exterior mode, then updates HDR values.
 // @fnv 0x0063a3f0
-void Sky::SetMode(Sky::SKY_MODE mode)
+// pdb: Sky::SetMode | Sky.obj | retail, upstream name already matches, high
+// pdb params: aeNewMode
+void Sky::SetMode(Sky::SKY_MODE aeNewMode)
 {
-    if ((eMode == Sky::SM_NONE || eMode == Sky::SM_INTERIOR || eMode == Sky::SM_COUNT) && (mode == Sky::SM_FULL || mode == Sky::SM_FAKEEXTERIOR))
+    if ((eMode == Sky::SM_NONE || eMode == Sky::SM_INTERIOR || eMode == Sky::SM_COUNT) && (aeNewMode == Sky::SM_FULL || aeNewMode == Sky::SM_FAKEEXTERIOR))
     {
         LoadAllTextures();
-        if (m_pClouds)
-            m_pClouds->ForceTransTextureUpdate();
-        if (static_cast<NiAVObject*>(m_pRootNode))
-            static_cast<NiAVObject*>(m_pRootNode)->FUN_00450f90(false);
-        if (m_pSun)
-            static_cast<const SkyObject*>(m_pSun)->GetRoot()->FUN_00450f90(false);
+        if (pClouds)
+            pClouds->ForceTransTextureUpdate();
+        if (static_cast<NiAVObject*>(spRoot))
+            static_cast<NiAVObject*>(spRoot)->FUN_00450f90(false);
+        if (pSun)
+            static_cast<const SkyObject*>(pSun)->GetRoot()->FUN_00450f90(false);
     }
     else if ((eMode == Sky::SM_FULL || eMode == Sky::SM_FAKEEXTERIOR || eMode == Sky::SM_COUNT) &&
-             (mode == Sky::SM_NONE || mode == Sky::SM_INTERIOR))
+             (aeNewMode == Sky::SM_NONE || aeNewMode == Sky::SM_INTERIOR))
     {
         UnloadAllTextures();
-        if (static_cast<NiAVObject*>(m_pRootNode))
-            static_cast<NiAVObject*>(m_pRootNode)->FUN_00450f90(true);
-        if (m_pSun)
-            static_cast<const SkyObject*>(m_pSun)->GetRoot()->FUN_00450f90(true);
-        while (!m_pSkySounds->IsEmpty())
+        if (static_cast<NiAVObject*>(spRoot))
+            static_cast<NiAVObject*>(spRoot)->FUN_00450f90(true);
+        if (pSun)
+            static_cast<const SkyObject*>(pSun)->GetRoot()->FUN_00450f90(true);
+        while (!pSkySoundList->IsEmpty())
         {
-            if (m_pSkySounds->GetItem()->IsPlaying())
-                m_pSkySounds->GetItem()->Stop();
-            m_pSkySounds->GetItem()->Release();
-            delete m_pSkySounds->GetItem();
-            m_pSkySounds->RemoveHead();
+            if (pSkySoundList->GetItem()->IsPlaying())
+                pSkySoundList->GetItem()->Stop();
+            pSkySoundList->GetItem()->Release();
+            delete pSkySoundList->GetItem();
+            pSkySoundList->RemoveHead();
         }
         DAT_011ccb74 = false;
-        eMode = mode;
-        if (m_pPrecipitation)
-            m_pPrecipitation->Update(0.0f);
-        m_fWeatherFade = 0.0f;
+        eMode = aeNewMode;
+        if (pPrecip)
+            pPrecip->Update(0.0f);
+        fFlash = 0.0f;
     }
-    eMode = mode;
+    eMode = aeNewMode;
     UpdateHDRValues();
 }
 
 // @fnv 0x0082d280
-bool SoundPlaybackManager::ResolveSoundFile(const char* name, char* path, unsigned int* apuiFlags, void** extra)
+// src: XBOX_RETAIL_PDB 0x0082d280
+// pdb: FalloutAudio::ResolveSoundName | FalloutAudio.obj | retail, string-set bridge, high
+// pdb params: apFormName, apFilename, aiSoundTypeFlags, apSettingsContext
+// pdb locals: psound
+bool FalloutAudio::ResolveSoundName(const char* apFormName, char* apFilename, unsigned int* aiSoundTypeFlags, void** apSettingsContext)
 {
-    if (!name)
+    if (!apFormName)
         return false;
-    TESSound* sound = g_dataHandler->GetSoundByEditorID(name);
-    if (sound && sound->TESSound_GetFilename() && path)
+    TESSound* sound = g_dataHandler->GetSound(apFormName);
+    if (sound && sound->TESSound_GetFilename() && apFilename)
     {
-        TaskQueueInterface::CopyStringToBuffer(path, 260, sound->TESSound_GetFilename());
+        TaskQueueInterface::CopyStringToBuffer(apFilename, 260, sound->TESSound_GetFilename());
     }
     else
     {
         if (g_dataHandler && !g_dataHandler->FUN_004516b0() && g_dataHandler->GetFirstSceneObject())
-            Warning("Audio: Could not find TESSound corresponding to form name \"%s\"", name);
+            Warning("Audio: Could not find TESSound corresponding to form name \"%s\"", apFormName);
         return false;
     }
     if (sound->CopyBig().iFlags & 0x40)
     {
-        *apuiFlags |= 1;
-        *apuiFlags &= ~2;
+        *aiSoundTypeFlags |= 1;
+        *aiSoundTypeFlags &= ~2;
     }
-    else if (!(*apuiFlags & 1) && !(*apuiFlags & 2))
+    else if (!(*aiSoundTypeFlags & 1) && !(*aiSoundTypeFlags & 2))
     {
-        *apuiFlags |= 2;
-        *apuiFlags &= ~1;
+        *aiSoundTypeFlags |= 2;
+        *aiSoundTypeFlags &= ~1;
     }
     if (sound->CopyBig().iFlags & 1)
-        *apuiFlags |= 0x40;
+        *aiSoundTypeFlags |= 0x40;
     if (sound->CopyBig().iFlags & 0x800)
-        *apuiFlags |= 0x8000000;
-    *apuiFlags |= TESSound::GetPlaybackFlags(sound->CopyBig().iFlags);
-    *extra = sound;
+        *aiSoundTypeFlags |= 0x8000000;
+    *aiSoundTypeFlags |= TESSound::GetPlaybackFlags(sound->CopyBig().iFlags);
+    *apSettingsContext = sound;
     return true;
 }
 
 // Returns true if sound is non-null, the audio object exists, and position is within sound->GetField45()*100*scale of the listener position on all axes.
 // @fnv 0x0082eca0
-bool SoundPlaybackManager::CanPlaySoundAt(TESSound* sound, NiPoint3 position, float scale)
+// src: XBOX_RETAIL_PDB 0x0082eca0
+// pdb: FalloutAudio::SoundDistanceTest | FalloutAudio.obj | retail, call graph (shared callers), high
+// pdb params: apSound, aLoc, aMod
+// pdb locals: lsnrLoc, fMaxDist, plstnr
+bool FalloutAudio::SoundDistanceTest(TESSound* apSound, NiPoint3 aLoc, float aMod)
 {
     BSAudioListener* m_pAudioListener = static_cast<BSAudioListener*>(TESLandTexture::GetSoundSystem()->GetAudioBackendData());
-    if (!sound || !m_pAudioListener)
+    if (!apSound || !m_pAudioListener)
         return false;
     {
         NiPoint3 kListenerPosition = m_pAudioListener->GetPosition_00aeaad0();
-        float fDistance = sound->GetField45() * 100.0 * scale;
-        if (std::abs(position.x - kListenerPosition.x) > fDistance ||
-            std::abs(position.y - kListenerPosition.y) > fDistance ||
-            std::abs(position.z - kListenerPosition.z) > fDistance)
+        float fDistance = apSound->GetField45() * 100.0 * aMod;
+        if (std::abs(aLoc.x - kListenerPosition.x) > fDistance ||
+            std::abs(aLoc.y - kListenerPosition.y) > fDistance ||
+            std::abs(aLoc.z - kListenerPosition.z) > fDistance)
             return false;
     }
     return true;
 }
 
 // @fnv 0x0082eb70
-void SoundPlaybackManager::ResetAcousticSpace(BGSAcousticSpace* space)
+// src: XBOX_RETAIL_PDB 0x0082eb70
+// pdb: FalloutAudio::ClearAcousticSpace | FalloutAudio.obj | retail, call graph, high
+// pdb params: apSpace
+void FalloutAudio::ClearAcousticSpace(BGSAcousticSpace* apSpace)
 {
-    if (DAT_011dcfa7 || (space && space != DAT_011dcfb4) || !DAT_011dcfb4)
+    if (DAT_011dcfa7 || (apSpace && apSpace != DAT_011dcfb4) || !DAT_011dcfb4)
         return;
     DAT_011dd0d8.FadeOutAndRelease((unsigned int)(DAT_011dd050.Float()->f * 1000.0));
     DAT_011dd0d8.Clear();
@@ -471,21 +487,25 @@ void SoundPlaybackManager::ResetAcousticSpace(BGSAcousticSpace* space)
 }
 
 // @fnv 0x0082ec60
-void SoundPlaybackManager::LoadGame(BGSLoadGameBuffer* buffer)
+// pdb: FalloutAudio::LoadGame | FalloutAudio.obj | retail, object-file run extension, high
+// pdb params: apLoadGameBuffer
+void FalloutAudio::LoadGame(BGSLoadGameBuffer* apLoadGameBuffer)
 {
-    DAT_011dcfa8 = dynamic_cast<TESSound*>(TESForm::GetFormByID(buffer->ReadFormIdentifier()));
+    DAT_011dcfa8 = dynamic_cast<TESSound*>(TESForm::GetFormByID(apLoadGameBuffer->ReadFormIdentifier()));
 }
 
 // @fnv 0x0082eae0
-void SoundPlaybackManager::SetAcousticSpace(BGSAcousticSpace* space)
+// pdb: FalloutAudio::SetAcousticSpace | FalloutAudio.obj | retail, call graph (shared callers), high
+// pdb params: apSpace
+void FalloutAudio::SetAcousticSpace(BGSAcousticSpace* apSpace)
 {
-    if (DAT_011dcfb4 == space)
+    if (DAT_011dcfb4 == apSpace)
         return;
     DAT_011dd0d8.FadeOutAndRelease((unsigned int)(DAT_011dd050.Float()->f * 1000.0));
     DAT_011dd0d8.Clear();
-    if (space)
-        TESLandTexture::GetSoundSystem()->SetEnvironment(space->GetField4C());
-    DAT_011dcfb4 = space;
+    if (apSpace)
+        TESLandTexture::GetSoundSystem()->SetEnvironment(apSpace->GetField4C());
+    DAT_011dcfb4 = apSpace;
     DAT_011dcfb1 = true;
 }
 // @fnv 0x0082ea80
@@ -509,22 +529,29 @@ extern TESDataHandler* g_dataHandler;
 
 // Returns the cached TESSound named "UIActivateNothing", looking it up via g_dataHandler if not yet set.
 // @fnv 0x0082ec10
-TESSound* __cdecl GetUIActivateNothingSound()
+// src: XBOX_RETAIL_PDB 0x0082ec10
+// pdb: FalloutAudio::GetNoActivationSound | FalloutAudio.obj | retail, object-file run extension, high
+TESSound* __cdecl FalloutAudio_GetNoActivationSound()
 {
     if (DAT_011dcfa8 == 0)
-        DAT_011dcfa8 = g_dataHandler->GetSoundByEditorID("UIActivateNothing");
+        DAT_011dcfa8 = g_dataHandler->GetSound("UIActivateNothing");
     return DAT_011dcfa8;
 }
 
 // @fnv 0x0082ec40
 // src: COMMUNITY 0x0082ec40
+// pdb: FalloutAudio::SaveGame | FalloutAudio.obj | debug, object-file gap fill, medium
+// pdb params: apSaveGameBuffer
 void TESAudio_SaveGame(BGSSaveFormBuffer* buffer)
 {
     buffer->SerializeFormData(DAT_011dcfa8, 0);
 }
 
 // @fnv 0x0082ed80
-void __cdecl PlayMysteriousStrangerMusic()
+// src: XBOX_RETAIL_PDB 0x0082ed80
+// pdb: FalloutAudio::MysteriousStrangerAppears | FalloutAudio.obj | retail, string-set bridge, high
+// pdb locals: hndle
+void __cdecl FalloutAudio_MysteriousStrangerAppears()
 {
     BSSoundHandle hndle =
         TESLandTexture::GetSoundSystem()->GetSoundHandleByEditorID("MUSMysteriousStrangerA01", 0x210101);
@@ -533,7 +560,10 @@ void __cdecl PlayMysteriousStrangerMusic()
 }
 
 // @fnv 0x0082ee10
-void __cdecl PlayMysteriousStrangerSound()
+// src: XBOX_RETAIL_PDB 0x0082ee10
+// pdb: FalloutAudio::MysteriousStrangerKillsTarget | FalloutAudio.obj | retail, string-set bridge, high
+// pdb locals: hndle
+void __cdecl FalloutAudio_MysteriousStrangerKillsTarget()
 {
     BSSoundHandle hndle =
         TESLandTexture::GetSoundSystem()->GetSoundHandleByEditorID("MUSMysteriousStrangerA02", 0x200101);

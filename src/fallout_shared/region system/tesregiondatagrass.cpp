@@ -4,6 +4,7 @@
 #include "tesregiondatagrass_decls.h"
 // Default constructor for TESRegionDataGrass; the body is empty.
 // @fnv 0x004f1ed0
+// pdb: TESRegionDataImposter::TESRegionDataImposter | TESRegionDataImposter.obj | debug, call graph, medium
 LocalTESRegionDataGrass::LocalTESRegionDataGrass()
 {}
 
@@ -15,6 +16,7 @@ struct Dummy1690
 };
 // Calls FUN_004f1730, then frees this via _Deallocate when flags has bit 1 set, and returns this.
 // @fnv 0x004f1690
+// pdb: TESRegionDataGrass::`scalar deleting destructor' | TESRegionDataGrass.obj | retail, vtable slot, high
 void* Dummy1690::FUN_004f1690(unsigned int flags)
 {
     FUN_004f1730();
@@ -39,6 +41,8 @@ struct FUN_004f1b60_shell : LocalTESRegionDataGrass
 
 // @fnv 0x004f1b60
 // src: XBOX_PDB 0x004f1b60
+// pdb: TESRegionDataGrass::Copy | TESRegionDataGrass.obj | retail, upstream name already matches, high
+// pdb locals: pdata
 TESRegionData* FUN_004f1b60_shell::TESRegionDataGrass_Copy()
 {
     FUN_004f16c0* pdata = new FUN_004f16c0((const void*)this);
@@ -98,26 +102,29 @@ struct GrassRegion
     bool LoadGrassRecords(FileReader*);
 };
 // @fnv 0x004f1980
-bool GrassRegion::LoadGrassRecords(FileReader* file)
+// pdb: TESRegionDataGrass::LoadRegionDataGrass | TESRegionDataGrass.obj | retail, string-set bridge, high
+// pdb params: apFile
+// pdb locals: icount, isize, pdataArray, pobj, i
+bool GrassRegion::LoadGrassRecords(FileReader* apFile)
 {
     GrassRecord* records = 0;
     FUN_004f5620* objectX = 0;
-    if (!file || file->GetChunkID() != 0x53474452)
+    if (!apFile || apFile->GetChunkID() != 0x53474452)
         return false;
-    unsigned int size = file->GetChunkSize();
+    unsigned int size = apFile->GetChunkSize();
     unsigned int count_ = size / 8;
     if (size % 8)
     {
-        Warning("MODELS: Invalid Region Grass Object Data in file \"%s\".", file->GetFilename());
+        Warning("MODELS: Invalid Region Grass Object Data in file \"%s\".", apFile->GetFilename());
         return false;
     }
     if (count_)
     {
         records = new GrassRecord[count_];
-        file->GetChunkData(records, size);
+        apFile->GetChunkData(records, size);
         for (unsigned int index = 0; index < count_; index++)
         {
-            if (file->IsEndianConversionRequired())
+            if (apFile->IsEndianConversionRequired())
                 records[index].TwoValues_Endian();
             objectX = new FUN_004f5620(records[index]);
             if (objectX)
@@ -188,6 +195,8 @@ struct RegionSaveShell
 };
 
 // @fnv 0x004f17c0
+// pdb: TESRegionDataGrass::Save | TESRegionDataGrass.obj | retail, vtable slot, high
+// pdb locals: icount, pobjectArray, pList, i, pitem
 void RegionSaveShell::WriteRegionSaveChunk()
 {
     unsigned int count;
@@ -227,9 +236,9 @@ void RegionSaveShell::WriteRegionSaveChunk()
 
 struct GrassMergeList
 {
-    void ClearList();
-    void CopyTargetList(GrassMergeList* destination);
-    void TESRegionGrassObjectList_MergeLists(float ownWeight, GrassMergeList* priority, float sourceWeight);
+    void TESRegionGrassObjectList_Clear();
+    void CopyTargetList(GrassMergeList* apCopyInto);
+    void TESRegionGrassObjectList_MergeLists(float afPriority, GrassMergeList* apOtherList, float afOtherPriority);
 };
 float __cdecl floor(float value);
 struct GrassMergeRegion : TESRegionData
@@ -241,21 +250,24 @@ struct GrassMergeRegion : TESRegionData
     unsigned char TESRegionData_GetPriority();
     void FUN_004f15a0(int value);
     bool FUN_004f15c0(unsigned char value);
-    void MergeGrassRegion(GrassMergeRegion* data, void* context);
+    void MergeGrassRegion(GrassMergeRegion* apRegionData, void* aiTotalBlending);
 };
 // Merges another grass region's data into this one when the source type is 6, choosing between override, priority and weighted blending of the grass lists.
 // @fnv 0x004f1be0
-void GrassMergeRegion::MergeGrassRegion(GrassMergeRegion* apPriority, void* context)
+// pdb: TESRegionDataGrass::BlendInto | TESRegionDataGrass.obj | retail, vtable slot, high
+// pdb params: apRegionData, aiTotalBlending
+// pdb locals: pdataIn, fnewPriority
+void GrassMergeRegion::MergeGrassRegion(GrassMergeRegion* apRegionData, void* aiTotalBlending)
 {
-    GrassMergeRegion* priority = apPriority;
+    GrassMergeRegion* priority = apRegionData;
     float source;
-    if (!apPriority || apPriority->GetType() != 6 || !context)
+    if (!apRegionData || apRegionData->GetType() != 6 || !aiTotalBlending)
         return;
     if (m_bHasRegionData)
     {
         FUN_004f15a0(priority->TESRegionData_GetOverride());
         FUN_004f15c0(priority->TESRegionData_GetPriority());
-        GetGrassList()->ClearList();
+        GetGrassList()->TESRegionGrassObjectList_Clear();
         priority->GetGrassList()->CopyTargetList(GetGrassList());
     }
     else if (priority->m_bHasRegionData)
@@ -268,7 +280,7 @@ void GrassMergeRegion::MergeGrassRegion(GrassMergeRegion* apPriority, void* cont
         {
             FUN_004f15a0(priority->TESRegionData_GetOverride());
             FUN_004f15c0(priority->TESRegionData_GetPriority());
-            GetGrassList()->ClearList();
+            GetGrassList()->TESRegionGrassObjectList_Clear();
             priority->GetGrassList()->CopyTargetList(GetGrassList());
         }
     }
@@ -276,7 +288,7 @@ void GrassMergeRegion::MergeGrassRegion(GrassMergeRegion* apPriority, void* cont
     {
         FUN_004f15a0(priority->TESRegionData_GetOverride());
         FUN_004f15c0(priority->TESRegionData_GetPriority());
-        GetGrassList()->ClearList();
+        GetGrassList()->TESRegionGrassObjectList_Clear();
         priority->GetGrassList()->CopyTargetList(GetGrassList());
     }
     else

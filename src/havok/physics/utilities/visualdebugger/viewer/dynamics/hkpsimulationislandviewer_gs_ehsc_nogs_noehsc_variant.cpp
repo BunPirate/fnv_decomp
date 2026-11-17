@@ -16,7 +16,7 @@ struct Base0
 struct Base2;
 struct Target
 {
-    void hkpWorld_addWorldPostSimulationListener(Base2* p);
+    void hkpWorld_addWorldPostSimulationListener(Base2* worldListener);
 };
 struct Base1
 {
@@ -86,7 +86,7 @@ struct S_00d65180_Obj : S_00d65180_RefObj, S_00d65180_Base2
     int unk44;
     S_00d65180_Obj(void* arg) throw();
 };
-S_00d65180_Base2* hkpSimulationIslandViewer_create(void* arg);
+S_00d65180_Base2* hkpSimulationIslandViewer_create(void* contexts);
 extern int g_D651E0Value;
 int __cdecl Object_GetG_D651E0Value_00d651e0();
 struct S_Elem2
@@ -233,7 +233,7 @@ struct FUN_00d64ae0 : FUN_00ddcc60, S_D
 class RegistryOwner
 {
   public:
-    void* Register(const char* name, void (*callback)());
+    void* Register(const char* viewerName, void (*creationFunction)());
 };
 extern RegistryOwner* DAT_01269cd0;
 extern void* DAT_01268fdc;
@@ -248,7 +248,7 @@ class hkListenerD64A
 class hkEntityD64A
 {
   public:
-    void hkpWorld_addWorldPostSimulationListener(hkListenerD64A* pkListener) throw();
+    void hkpWorld_addWorldPostSimulationListener(hkListenerD64A* worldListener) throw();
 };
 class hkWorldD64A
 {
@@ -279,7 +279,7 @@ class hkBaseCD64A
 class FUN_00ddccb0 : public hkBaseAD64A, public hkBaseBD64A, public hkBaseCD64A
 {
   public:
-    FUN_00ddccb0(void* pkInfo) throw();
+    FUN_00ddccb0(void* contexts) throw();
     virtual ~FUN_00ddccb0() throw();
     hkWorldD64A* m_pOwningWorld;
 };
@@ -727,7 +727,7 @@ struct ThisCls
     unsigned short unk06;
     Cont m_contB;
     Cont m_contA;
-    void hkpSimulationIslandViewer_postSimulationCallback(Param* pParam);
+    void hkpSimulationIslandViewer_postSimulationCallback(Param* world);
 };
 
 struct ParentObject : Parent, ThisCls
@@ -736,7 +736,10 @@ struct ParentObject : Parent, ThisCls
 
 // @fnv 0x00d64c00
 // src: XBOX_PDB 0x00d64c00
-void ThisCls::hkpSimulationIslandViewer_postSimulationCallback(Param* pParam)
+// pdb: hkpSimulationIslandViewer::postSimulationCallback | hkpSimulationIslandViewer.obj | retail, string-set bridge, high
+// pdb params: world
+// pdb locals: displayGeometries, islandAabbs, minExtent, maxExtent, aabb
+void ThisCls::hkpSimulationIslandViewer_postSimulationCallback(Param* world)
 {
     TraceBuffer* pForm = (TraceBuffer*)TlsGetValue(DAT_0126835c);
     if (pForm->m_pCurrent < pForm->m_pRecordEnd)
@@ -757,16 +760,16 @@ void ThisCls::hkpSimulationIslandViewer_postSimulationCallback(Param* pParam)
     if (m_04)
     {
         eo = 0;
-        int freeBounds = pParam->active.count;
+        int freeBounds = world->active.count;
         if (freeBounds > m_contA.m_iArrayLength)
             m_contA.Resize(freeBounds);
-        int pRec = pParam->active.count;
+        int pRec = world->active.count;
         offsets.m_pData = 0;
         offsets.m_iArrayLength = 0;
         offsets.m_iCapacity = (int)0x80000000;
         GrowVec0c((hkArrayHeader*)&offsets, pRec, 4);
         offsets.m_iArrayLength = pRec;
-        int boundsCount = pParam->active.count;
+        int boundsCount = world->active.count;
         Vec20 item;
         item.m_pData = 0;
         item.m_iArrayLength = 0;
@@ -774,14 +777,14 @@ void ThisCls::hkpSimulationIslandViewer_postSimulationCallback(Param* pParam)
         GrowVec0c((hkArrayHeader*)&item, boundsCount, 0x20);
         item.m_iArrayLength = boundsCount;
         int z = 0;
-        if (z < pParam->active.count)
+        if (z < world->active.count)
         {
             seedHi = _mm_set1_ps(DAT_0104e148);
             seedLo = _mm_set1_ps(DAT_0104da48);
             int off = 0;
             do
             {
-                Src* src = &pParam->active.data[z]->items;
+                Src* src = &world->active.data[z]->items;
                 item.m_pData[off].m_ucHighNibble.v = seedHi;
                 item.m_pData[off].m_ucLowNibble.v = seedLo;
                 currentHi.v = seedHi;
@@ -793,7 +796,7 @@ void ThisCls::hkpSimulationIslandViewer_postSimulationCallback(Param* pParam)
                     {
                         continue;
                     }
-                    pParam->m_58->v15(&boundsVec->m_14, &out);
+                    world->m_58->v15(&boundsVec->m_14, &out);
                     currentHi.v = _mm_max_ps(currentHi.v, out.m_ucHighNibble.v);
                     currentLo.v = _mm_min_ps(currentLo.v, out.m_ucLowNibble.v);
                 }
@@ -802,7 +805,7 @@ void ThisCls::hkpSimulationIslandViewer_postSimulationCallback(Param* pParam)
                 offsets.m_pData[z] = (int)(m_contA.m_pData + eo);
                 eo += 1;
                 off++;
-            } while (++z < pParam->active.count);
+            } while (++z < world->active.count);
         }
         EmitObj* i = static_cast<ParentObject*>(this)->Parent::m_00;
         i->v14(&offsets, (int)0xff0000ff, 0, (int)DAT_01268fdc);
@@ -826,7 +829,7 @@ void ThisCls::hkpSimulationIslandViewer_postSimulationCallback(Param* pParam)
     }
     if (m_05)
     {
-        const WorldList& islandsB = pParam->Inactive();
+        const WorldList& islandsB = world->Inactive();
         int freeBounds = islandsB.size();
         if (freeBounds > m_contB.m_iArrayLength)
             m_contB.Resize(freeBounds);
@@ -853,7 +856,7 @@ void ThisCls::hkpSimulationIslandViewer_postSimulationCallback(Param* pParam)
                     {
                         continue;
                     }
-                    pParam->m_58->v15(&boundsVec->m_14, &out);
+                    world->m_58->v15(&boundsVec->m_14, &out);
                     currentLo.v = _mm_max_ps(currentLo.v, out.m_ucHighNibble.v);
                     currentHi.v = _mm_min_ps(currentHi.v, out.m_ucLowNibble.v);
                 }

@@ -20,6 +20,9 @@ struct FUN_00acb720_cls
 // If m_00 is set, gets its target via FUN_00acb770 and, when non-null, calls vDel(1) on it.
 // @fnv 0x00acb720
 // src: GUESS 0x00acb720 (confidence: low)
+// pdb: std::locale::facet::_Incref | algs.obj | retail, object-file run extension, low
+// pdb note: debug build links it to std::locale::~locale
+// pdb locals: _Lock
 void FUN_00acb720_cls::UpdateFields_00acb720()
 {
     ReleaseTarget_cls* tmp;

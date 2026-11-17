@@ -33,6 +33,8 @@ struct EB3830Triangle
 // Computes the cross product of m_kEdgeA and m_kEdgeB, normalizes it, and returns the resulting vector.
 // @fnv 0x00eb3830
 // src: COMMUNITY 0x00eb3830
+// pdb: NiTrigon::GetNormal | NiTrigon.obj | debug, upstream name already matches, high
+// pdb locals: kNormal
 EB3830Point3 EB3830Triangle::NiTrigon_GetNormal() const
 {
     EB3830Point3 kNormal = m_kEdgeA.Cross(m_kEdgeB);

@@ -85,7 +85,7 @@ struct CtxRec {
     unsigned int unk74;
     void* m_78;
 };
-void __cdecl hkpEntityAabbUtil_entityBatchRecalcAabb(void* mgr, OutSlot* out, int flag);
+void __cdecl hkpEntityAabbUtil_entityBatchRecalcAabb(void* collisionInput, OutSlot* entityBatch, int numEntities);
 class ListWalker {
 public:
     int m_vptr;
@@ -98,7 +98,7 @@ struct FUN_00d9e010_cls {
     unsigned int unk00;
     unsigned int unk04;
     Child* child;
-    unsigned int hkpCollidableMediator_getPrimitiveId(unsigned int index);
+    unsigned int hkpCollidableMediator_getPrimitiveId(unsigned int primitiveIdx);
 };
 #include "fnv_asm_helpers.h"   // project x87 helpers (fnv_SinCos, fnv_FloatToInt), kept last so earlier code is unchanged
 
@@ -222,19 +222,22 @@ static __forceinline void convertToUint32WithClip(const __m128& in, const __m128
 
 // @fnv 0x00d9e020
 // src: XBOX_PDB 0x00d9e020
-void __stdcall hkpCollidableMediator_projectPrimitive(const CollidableQ* collidable, __m128i* out)
+// pdb: hkpCollidableMediator::projectPrimitive | hkpCollidableMediator.obj | retail, upstream name already matches, high
+// pdb params: primitiveId, bounds
+// pdb locals: aabb, tempAabb
+void __stdcall hkpCollidableMediator_projectPrimitive(const CollidableQ* primitiveId, __m128i* bounds)
 {
     hkAabbUint32 aabb32;
-    const hkAabbUint32& bv = collidable->m_kBoundingVolumeData;
+    const hkAabbUint32& bv = primitiveId->m_kBoundingVolumeData;
     if (bv.m_kMinimumCorner[0] <= bv.m_kMaximumCorner[0])
     {
-        FUN_00cf8690(&aabb32, &collidable->m_kBoundingVolumeData);
+        FUN_00cf8690(&aabb32, &primitiveId->m_kBoundingVolumeData);
     }
     else
     {
         hkAabb aabb;
-        WorldQ* world = collidable->getOwner()->m_pOwningWorld;
-        collidable->m_pCollisionShape->getAabb(collidable->m_pMotionState, 0.0f, aabb);
+        WorldQ* world = primitiveId->getOwner()->m_pOwningWorld;
+        primitiveId->m_pCollisionShape->getAabb(primitiveId->m_pMotionState, 0.0f, aabb);
         BroadPhaseQ* bp = world->m_pJobSemaphore;
         __m128 maxVal = DAT_011b6d70;
         convertToUint32WithClip(aabb.m_kMinimumCorner.m_vComponents, bp->m_kVectorAt40, bp->m_vScale, maxVal, DAT_01267e30, aabb32.m_kMinimumCorner);
@@ -262,5 +265,5 @@ void __stdcall hkpCollidableMediator_projectPrimitive(const CollidableQ* collida
     r.m_u16[5] = ma.m128i_u16[3];
     r.m_u16[6] = ma.m128i_u16[5];
     r.m_u16[7] = ma.m128i_u16[7];
-    *out = r.m_vComponents;
+    *bounds = r.m_vComponents;
 }

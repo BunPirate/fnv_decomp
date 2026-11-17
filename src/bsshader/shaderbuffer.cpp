@@ -22,6 +22,9 @@ extern MemoryManager g_memoryManager;
 
 // Looks up the entry for name in the string-pointer map and returns it, or null if not found.
 // @fnv 0x00b7fac0
+// pdb: ShaderBuffer::Get | ShaderBuffer.obj | retail, object-file run extension, low
+// pdb params: apName
+// pdb locals: pentry
 ShaderBufferRecord* ShaderBufferCollection::Get(const char* name)
 {
     ShaderBufferRecord* entry = 0;
@@ -30,6 +33,7 @@ ShaderBufferRecord* ShaderBufferCollection::Get(const char* name)
 }
 
 // @fnv 0x00b7fd50
+// pdb: ShaderBuffer::~ShaderBuffer | ShaderBuffer.obj | retail, object-file run extension, low
 ShaderBufferCollection::~ShaderBufferCollection()
 {
     if (pFileName)
@@ -46,6 +50,9 @@ ShaderBufferCollection::~ShaderBufferCollection()
 
 // Clears two global tables and assigns sequential index values to a series of global slots.
 // @fnv 0x00b97c10
+// pdb: ImageSpaceManager::RenderEffect | ImageSpaceManager.obj | debug, object-file run extension, low
+// pdb params: aiEffect, apRenderer, apDestinationBuffer, apParam, abEndFrame
+// pdb locals: tempMemContext, dest, peffect
 void InitializeShaderBufferTables()
 {
     fnv_zlib_memset(DAT_011ffa30, -1, 0x3fc);
@@ -73,7 +80,7 @@ void InitializeShaderBufferTables()
 
 struct FUN_00aa4060_Manager
 {
-    void* MemoryManager_Deallocate(void* object);
+    void* MemoryManager_Deallocate(void* apMem);
 };
 
 extern FUN_00aa4060_Manager DAT_011f6238;
@@ -195,22 +202,24 @@ class SpawnedObject
     unsigned int unkFC;
     unsigned int m_100;
     void* m_104;
-    SpawnedObject* ShaderBufferData_ShaderBufferData(void* arg1, void* arg2, unsigned int arg3);
+    SpawnedObject* ShaderBufferData_ShaderBufferData(void* arg1, void* apData, unsigned int aiSize);
 };
 
 // Stores arg3 in m_100, looks up arg3 in DAT_011f6238 and registers arg2 when both are non-zero, clears the first 0x100 bytes, and sets arg1 as owner if non-null.
 // @fnv 0x00b7fa40
 // src: COMMUNITY 0x00b7fa40
-SpawnedObject* SpawnedObject::ShaderBufferData_ShaderBufferData(void* apOwner, void* apName, unsigned int auiKey)
+// pdb: ShaderBufferData::ShaderBufferData | ShaderBuffer.obj | retail, upstream name already matches, high
+// pdb params: apName, apData, aiSize
+SpawnedObject* SpawnedObject::ShaderBufferData_ShaderBufferData(void* apOwner, void* apData, unsigned int aiSize)
 {
-    m_100 = auiKey;
-    if (auiKey != 0)
+    m_100 = aiSize;
+    if (aiSize != 0)
     {
-        if (apName != 0)
+        if (apData != 0)
         {
-            void* found = DAT_011f6238.Find(auiKey);
+            void* found = DAT_011f6238.Find(aiSize);
             m_104 = found;
-            FNVRegisterEntry(found, apName, m_100);
+            FNVRegisterEntry(found, apData, m_100);
             goto done;
         }
     }

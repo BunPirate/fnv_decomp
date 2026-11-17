@@ -7,6 +7,8 @@ PerformanceMeasurement* PerformanceTimerManager::Register(char*, char*, bool, bo
     return reinterpret_cast<PerformanceMeasurement*>(this);
 }
 // @fnv 0x007005d0
+// pdb: FaderManager::FaderManager | FaderManager.obj | retail, object-file run extension, low
+// pdb locals: n
 PerformanceTimerManager* PerformanceTimerManager::BeginFrame()
 {
     m_ppMeasurements = 0;

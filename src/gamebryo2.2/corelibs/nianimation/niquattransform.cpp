@@ -29,23 +29,26 @@ __forceinline void NiBinaryStream::ReadScalar(void* data, unsigned int bytes)
 
 // Reads translation, rotation and scale from the stream; for older versions reads validity bytes and sets invalid components to kInvalidTransformValue.
 // @fnv 0x00a38bb0
-void NiQuatTransform::LoadBinary(NiStream& stream)
+// pdb: NiQuatTransform::LoadBinary | NiQuatTransform.obj | retail, upstream name already matches, high
+// pdb params: kStream
+// pdb locals: bValid
+void NiQuatTransform::LoadBinary(NiStream& kStream)
 {
-    reinterpret_cast<NiColor&>(x).LoadBinary(stream);
-    reinterpret_cast<NiColorA&>(qx).LoadBinary(stream);
-    stream.m_pkIstr->ReadScalar(&scale, 4);
-    if (stream.m_uiNifFileVersion < 0x0A01006E)
+    reinterpret_cast<NiColor&>(m_kTranslate).LoadBinary(kStream);
+    reinterpret_cast<NiColorA&>(m_kRotate).LoadBinary(kStream);
+    kStream.m_pkIstr->ReadScalar(&m_fScale, 4);
+    if (kStream.m_uiNifFileVersion < 0x0A01006E)
     {
         unsigned char valid;
-        stream.m_pkIstr->ReadScalar(&valid, 1);
+        kStream.m_pkIstr->ReadScalar(&valid, 1);
         if (!valid)
-            x = kInvalidTransformValue;
-        stream.m_pkIstr->ReadScalar(&valid, 1);
+            m_kTranslate = kInvalidTransformValue;
+        kStream.m_pkIstr->ReadScalar(&valid, 1);
         if (!valid)
             qy = kInvalidTransformValue;
-        stream.m_pkIstr->ReadScalar(&valid, 1);
+        kStream.m_pkIstr->ReadScalar(&valid, 1);
         if (!valid)
-            scale = kInvalidTransformValue;
+            m_fScale = kInvalidTransformValue;
     }
 }
 
@@ -62,6 +65,7 @@ struct Outer_00a2bdb0
 // Calls the inner object's method with four zero floats and returns this.
 // @fnv 0x00a2bdb0
 // src: GUESS 0x00a2bdb0 (confidence: medium)
+// pdb: NiTCBRotKey::NiTCBRotKey | NiTCBRotKey.obj | debug, object-file run extension, low
 Outer_00a2bdb0* __thiscall Outer_00a2bdb0::ClearInnerVector()
 {
     _4.Set(0.0f, 0.0f, 0.0f, 0.0f);
@@ -88,7 +92,7 @@ struct QXform
     }
     bool IsRotateValid() const
     {
-        return m_kRotate.m_fVectorY != -3.4028234663852886e38;
+        return m_kRotate.m_fX != -3.4028234663852886e38;
     }
     bool IsTranslateValid() const
     {
@@ -100,37 +104,40 @@ struct QXform
     }
     void MakeRotateInvalid()
     {
-        m_kRotate.m_fVectorY = kInvalidTransformValue;
+        m_kRotate.m_fX = kInvalidTransformValue;
     }
     void MakeTranslateInvalid()
     {
         m_kTranslate.x = kInvalidTransformValue;
     }
-    QXform ProcessAndReturnValue_00a38a00(const QXform& kXform) const;
+    QXform ProcessAndReturnValue_00a38a00(const QXform& kTransform) const;
 };
 // @fnv 0x00a38a00
 // src: GUESS 0x00a38a00 (confidence: low)
-QXform QXform::ProcessAndReturnValue_00a38a00(const QXform& kXform) const
+// pdb: NiQuatTransform::operator* | NiQuatTransform.obj | retail, object-file gap fill, high
+// pdb params: kTransform
+// pdb locals: kDest, fScale, kTempRot
+QXform QXform::ProcessAndReturnValue_00a38a00(const QXform& kTransform) const
 {
     QXform kResult;
-    if (IsScaleValid() && kXform.IsScaleValid())
-        kResult.m_fScale = kXform.m_fScale * m_fScale;
+    if (IsScaleValid() && kTransform.IsScaleValid())
+        kResult.m_fScale = kTransform.m_fScale * m_fScale;
     else
         kResult.MakeScaleInvalid();
-    if (IsRotateValid() && kXform.IsRotateValid())
+    if (IsRotateValid() && kTransform.IsRotateValid())
     {
-        NiQuaternion kRotate = ((const QQuatOps*)&m_kRotate)->MultiplyQuaternion(kXform.m_kRotate);
+        NiQuaternion kRotate = ((const QQuatOps*)&m_kRotate)->MultiplyQuaternion(kTransform.m_kRotate);
         ((QQuatOps*)&kRotate)->FUN_00a38560();
         *(NiQuaternionValue*)&kResult.m_kRotate = *(NiQuaternionValue*)&kRotate;
     }
     else
         kResult.MakeRotateInvalid();
-    if (IsTranslateValid() && kXform.IsTranslateValid())
+    if (IsTranslateValid() && kTransform.IsTranslateValid())
     {
         NiPoint3 kTranslate;
-        kTranslate.x = kXform.m_kTranslate.x + m_kTranslate.x;
-        kTranslate.y = kXform.m_kTranslate.y + m_kTranslate.y;
-        kTranslate.z = kXform.m_kTranslate.z + m_kTranslate.z;
+        kTranslate.x = kTransform.m_kTranslate.x + m_kTranslate.x;
+        kTranslate.y = kTransform.m_kTranslate.y + m_kTranslate.y;
+        kTranslate.z = kTransform.m_kTranslate.z + m_kTranslate.z;
         kResult.m_kTranslate = kTranslate;
     }
     else
@@ -143,11 +150,11 @@ char* GetViewerStringFloat(const char* pcName, float fValue);
 
 struct ViewerPoint3 : NiPoint3
 {
-    char* FormatToBuffer(const char* pcName) const;
+    char* FormatToBuffer(const char* pPrefix) const;
 };
 struct ViewerQuaternion : NiQuaternion
 {
-    char* FormatToBuffer(const char* pcName) const;
+    char* GetViewerString(const char* pcName) const;
 };
 
 struct ViewerStrings
@@ -178,6 +185,8 @@ struct QXformViewer : QXform
 // Appends the class name and, when valid, the translate, rotate and scale members to the viewer string list.
 // @fnv 0x00a38cb0
 // src: XBOX_PDB 0x00a38cb0
+// pdb: NiQuatTransform::GetViewerStrings | NiQuatTransform.obj | retail, string-set bridge, high
+// pdb params: pkStrings
 void QXformViewer::NiQuatTransform_GetViewerStrings(ViewerStrings* pkStrings)
 {
     char* pcString = GetViewerStringName("NiQuatTransform");
@@ -189,7 +198,7 @@ void QXformViewer::NiQuatTransform_GetViewerStrings(ViewerStrings* pkStrings)
     }
     if (IsRotateValid())
     {
-        char* pcString = static_cast<ViewerQuaternion&>(m_kRotate).FormatToBuffer("m_kRotate");
+        char* pcString = static_cast<ViewerQuaternion&>(m_kRotate).GetViewerString("m_kRotate");
         pkStrings->Add(pcString);
     }
     if (IsScaleValid())
@@ -246,24 +255,27 @@ struct QXform2
     }
     bool IsRotateValid() const
     {
-        return m_kRotate.m_fVectorY != -3.4028234663852886e38;
+        return m_kRotate.m_fX != -3.4028234663852886e38;
     }
     bool IsTranslateValid() const
     {
         return m_kTranslate.x != -3.4028234663852886e38;
     }
-    QXform2 NiQuatTransform_HierApply(const QXform2& kXform) const;
+    QXform2 NiQuatTransform_HierApply(const QXform2& kTransform) const;
 };
 
 // @fnv 0x00a38830
 // src: COMMUNITY 0x00a38830
-QXform2 QXform2::NiQuatTransform_HierApply(const QXform2& kXform) const
+// pdb: NiQuatTransform::HierApply | NiQuatTransform.obj | retail, upstream name already matches, high
+// pdb params: kTransform
+// pdb locals: kDest, fScale, kRotate, kTempRot
+QXform2 QXform2::NiQuatTransform_HierApply(const QXform2& kTransform) const
 {
     QXform2 kRes;
     float fScale = 1.0f;
-    if (IsScaleValid() && kXform.IsScaleValid())
+    if (IsScaleValid() && kTransform.IsScaleValid())
     {
-        float fNew = m_fScale * kXform.m_fScale;
+        float fNew = m_fScale * kTransform.m_fScale;
         kRes.m_fScale = fNew;
         fScale = fNew;
     }
@@ -272,20 +284,20 @@ QXform2 QXform2::NiQuatTransform_HierApply(const QXform2& kXform) const
         kRes.m_fScale = kInvalidTransformValue;
     }
     QMat3 kRot = kQMat3Identity;
-    if (IsRotateValid() && kXform.IsRotateValid())
+    if (IsRotateValid() && kTransform.IsRotateValid())
     {
-        NiQuaternion kQ = ((const QQuatOps*)&m_kRotate)->MultiplyQuaternion(kXform.m_kRotate);
+        NiQuaternion kQ = ((const QQuatOps*)&m_kRotate)->MultiplyQuaternion(kTransform.m_kRotate);
         ((QQuatOps*)&kQ)->FUN_00a38560();
         *(NiQuaternionValue*)&kRes.m_kRotate = *(NiQuaternionValue*)&kQ;
         ((const QQuatRot*)&m_kRotate)->ToRotationMatrix(kRot);
     }
     else
     {
-        kRes.m_kRotate.m_fVectorY = kInvalidTransformValue;
+        kRes.m_kRotate.m_fX = kInvalidTransformValue;
     }
-    if (IsTranslateValid() && kXform.IsTranslateValid())
+    if (IsTranslateValid() && kTransform.IsTranslateValid())
     {
-        PointStorage kS = ScalePoint(fScale, kRot.MulPoint(kXform.m_kTranslate));
+        PointStorage kS = ScalePoint(fScale, kRot.MulPoint(kTransform.m_kTranslate));
         NiPoint3 kSum;
         kSum.x = m_kTranslate.x + kS.x;
         kSum.y = m_kTranslate.y + kS.y;
@@ -322,11 +334,13 @@ template <class T> inline void SaveBinaryValue(NiStream& kStream, const T& value
 // The former DataA38 is a 32-byte transform: its calls bind to NiColor::SaveBinary (0x00a69780)
 // for translation and NiQuaternion::SaveBinary (0x00a6e4a0) for rotation, followed by scale.
 // @fnv 0x00a38b60
+// pdb: NiQuatTransform::SaveBinary | NiQuatTransform.obj | retail, upstream name already matches, high
+// pdb params: kStream
 void NiQuatTransform::SaveBinary(NiStream* kStream)
 {
-    reinterpret_cast<NiColor&>(x).SaveBinary(*kStream);
-    reinterpret_cast<NiQuaternion&>(qx).SaveBinary(kStream);
-    SaveBinaryValue(*kStream, scale);
+    reinterpret_cast<NiColor&>(m_kTranslate).SaveBinary(*kStream);
+    reinterpret_cast<NiQuaternion&>(m_kRotate).SaveBinary(kStream);
+    SaveBinaryValue(*kStream, m_fScale);
 }
 
 // local form of NiQuaternion: 0x00a2bcf0 needs POD result construction; the shared default ctor changes bytes.
@@ -339,6 +353,8 @@ struct QQ
 // Multiplies this quaternion by q using the Hamilton product and returns the resulting quaternion.
 // @fnv 0x00a2bcf0
 // src: GUESS 0x00a2bcf0 (confidence: medium)
+// pdb: NiQuaternion::operator* | NiTCBRotKey.obj | retail, call graph, high
+// pdb params: c
 QQ QQ::MultiplyQuaternion(const QQ& aQuat) const
 {
     QQ r;
@@ -411,17 +427,20 @@ struct FUN_00a386a0_shell : NiQuatTransform
 
 // Computes the inverse transform into kDest by inverting scale, conjugating and rotating the quaternion, and transforming the translation.
 // @fnv 0x00a386a0
+// pdb: NiMatrix3::Inverse | GlobalFunc.obj | retail, upstream name already matches, medium
+// pdb note: debug build links it to NiQuatTransform::HierInvert
+// pdb locals: inv
 void FUN_00a386a0_shell::Inverse(NiQuatTransform& kDest)
 {
     float fInvScale = 1.0f;
-    if (scale == DAT_010241b0)
+    if (m_fScale == DAT_010241b0)
     {
-        kDest.scale = DAT_01096b8c;
+        kDest.m_fScale = DAT_01096b8c;
     }
     else
     {
-        kDest.scale = 1.0f / scale;
-        fInvScale = kDest.scale;
+        kDest.m_fScale = 1.0f / m_fScale;
+        fInvScale = kDest.m_fScale;
     }
     NiMatrix3 kRot = *(NiMatrix3*)&DAT_011a9448;
     if (qy == DAT_010241b0)
@@ -430,16 +449,16 @@ void FUN_00a386a0_shell::Inverse(NiQuatTransform& kDest)
     }
     else
     {
-        *(LocalQuaternionConjugateValue*)&kDest.qx =
-            NiQuaternionConjugate(*(LocalQuaternionConjugateValue*)&qx);
-        ((QuatRotate*)&kDest.qx)->NiQuaternion_ToRotation(kRot);
+        *(LocalQuaternionConjugateValue*)&kDest.m_kRotate =
+            NiQuaternionConjugate(*(LocalQuaternionConjugateValue*)&m_kRotate);
+        ((QuatRotate*)&kDest.m_kRotate)->NiQuaternion_ToRotation(kRot);
     }
-    if (x == DAT_010241b0)
+    if (m_kTranslate == DAT_010241b0)
     {
-        kDest.x = DAT_01096b8c;
+        kDest.m_kTranslate = DAT_01096b8c;
     }
     else
     {
-        *(QuatPoint*)&kDest.x = ((const NiMatrix3_QuatPointView&)kRot * -*(QuatPoint*)&x) * fInvScale;
+        *(QuatPoint*)&kDest.m_kTranslate = ((const NiMatrix3_QuatPointView&)kRot * -*(QuatPoint*)&m_kTranslate) * fInvScale;
     }
 }

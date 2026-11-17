@@ -3,6 +3,7 @@
 #include "NiInterpController.h"
 #include "NiBlendTransformInterpolator.h"
 
+// pdb: class NiMultiTargetTransformController, size 0x40, bases: NiInterpController, 3 members
 class NiMultiTargetTransformController : public NiInterpController
 {
 public:
@@ -30,7 +31,7 @@ public:
     virtual void SetInterpolator(NiInterpolator* interpolator, unsigned short index);
     virtual void AdvanceControllerTime();
     virtual const char* GetControllerID() const;
-    virtual NiInterpolator* GetInterpolatorAtIndex(unsigned short index);
+    virtual NiInterpolator* GetInterpolatorAtIndex(unsigned short usIndex);
     virtual void SetInterpolatorForTarget(NiInterpolator* interpolator, unsigned short index);
     virtual NiBlendInterpolator* GetBlendInterpolator(unsigned short index, bool managerControlled,
                                                      bool accumulateAnimations, float threshold, unsigned char size);
@@ -39,14 +40,14 @@ public:
 
     void UpdateInterpolatorsAtTime(float time, bool selective);
     unsigned short GetNumTargets() const;
-    NiBlendTransformInterpolator* GetBlendInterpolator(unsigned short index);
+    NiBlendTransformInterpolator* GetBlendInterpolator(unsigned short usIndex);
     NiAVObject* GetTarget(unsigned short index) const;
     unsigned short FindTarget(NiAVObject* target) const;
     unsigned short AddTarget(NiAVObject* target);
     unsigned short FindIndexByValue(NiAVObject* target);
     void SetInterpolatorTarget(unsigned short index, NiAVObject* target);
     void CopyMemberData(NiMultiTargetTransformController* clone, CloningProcess& process);
-    void AllocateStorage(unsigned short n);
+    void AllocateStorage(unsigned short usCount);
     void ClearInterpolators();
 
     NiBlendTransformInterpolator* m_pkBlendInterpolators;

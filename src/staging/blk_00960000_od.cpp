@@ -114,6 +114,7 @@ struct FUN_00962cb0_Class
 };
 
 // @fnv 0x00962cb0
+// pdb: NiNode::QPickOff | PlayerCharacter.obj | debug, object-file run extension, low
 void FUN_00962cb0_Class::SetByteAtOffset49(unsigned char param)
 {
     *reinterpret_cast<unsigned char*>(reinterpret_cast<char*>(this) + 0x31) = param;
@@ -133,12 +134,13 @@ void FUN_00966a00_Class::Projectile_SetSpeedMult(float value)
 
 struct FUN_00966a50_Class
 {
-    int PlayerCharacter_GetNumNotes();
+    int PlayerCharacter_GetNumberofNotes();
 };
 
 // @fnv 0x00966a50
-// src: COMMUNITY 0x00966a50
-int FUN_00966a50_Class::PlayerCharacter_GetNumNotes()
+// src: XBOX_DEBUG_PDB 0x00966a50 (was COMMUNITY)
+// pdb: PlayerCharacter::GetNumberofNotes | PlayerCharacter.obj | debug, call graph, high
+int FUN_00966a50_Class::PlayerCharacter_GetNumberofNotes()
 {
     return reinterpret_cast<BSSimpleList<TESRace*>*>(reinterpret_cast<char*>(this) + 0x5e4)->ItemsInList();
 }
@@ -151,9 +153,11 @@ struct CombatGroupMemberArray
 
 // @fnv 0x00968630
 // src: XBOX_PDB 0x00968630
-Member* __thiscall ActorCombatGroup::CombatGroup_GetTarget(int a)
+// pdb: CombatGroup::GetTarget | PlayerCharacter.obj | debug, upstream name already matches, high
+// pdb params: aiIndex
+Member* __thiscall ActorCombatGroup::CombatGroup_GetTarget(int aiIndex)
 {
-    return *((CombatGroupMemberArray*)((char*)this + 8))->BSSimpleArray_CombatTarget_1024_GetAt(a);
+    return *((CombatGroupMemberArray*)((char*)this + 8))->BSSimpleArray_CombatTarget_1024_GetAt(aiIndex);
 }
 
 struct Arr
@@ -168,6 +172,7 @@ struct FUN_00968650_Class
 
 // @fnv 0x00968650
 // src: XBOX_PDB 0x00968650
+// pdb: CombatManager::GetCombatGroupCount | PlayerCharacter.obj | debug, upstream name already matches, high
 unsigned int FUN_00968650_Class::CombatManager_GetCombatGroupCount()
 {
     return ((Arr*)this)->GetSize();
@@ -177,6 +182,7 @@ TESForm* __cdecl GetFormByID(int);
 
 // @fnv 0x00969910
 // src: COMMUNITY 0x00969910
+// pdb: AudioMarkerData::GetLocationController | PlayerCharacter.obj | debug, call graph, medium
 TESForm* __thiscall TESRace::AudioMarker_GetMediaLocationController()
 {
     return GetFormByID(*(int*)((char*)this + 0x24));
@@ -191,6 +197,8 @@ struct FUN_0096a280_class
 };
 // @fnv 0x0096a280
 // src: EXE 0x0096a280
+// pdb: NiTMap<unsigned int,unsigned char>::NiTMap<unsigned int,unsigned char> | PlayerCharacter.obj | debug, object-file run extension, low
+// pdb params: uiHashSize
 void* __thiscall FUN_0096a280_class::NiTMap_unsigned_int_unsigned_char_NiTMap(void* p)
 {
     Init(p);
@@ -204,6 +212,7 @@ struct FUN_0096a350_class
 };
 
 // @fnv 0x0096a350
+// pdb: bhkRigidBody::operator* | GlobalFunc.obj | debug, call graph (shared callers), medium
 unsigned int FUN_0096a350_class::GetShortAtOffset4()
 {
     return *(unsigned short*)((char*)this + 4);
@@ -216,6 +225,7 @@ struct FUN_0096a370_Class
 
 // @fnv 0x0096a370
 // src: GUESS 0x0096a370 (confidence: low)
+// pdb: bhkRigidBody::Gethk | GlobalFunc.obj | debug, object-file run extension, low
 void* __thiscall FUN_0096a370_Class::GetElementAddress_0096a370(int index)
 {
     return reinterpret_cast<char*>(*reinterpret_cast<int**>(this)) + index * 0x30;
@@ -253,6 +263,8 @@ struct FUN_0096a570_Class
 // Sets the vtable to DAT_0108b4b4, calls FUN_006b3eb0 with 0, 0 on this, and returns this as an AX pointer.
 // @fnv 0x0096a570
 // src: EXE 0x0096a570
+// pdb: BSSimpleArray<ItemChange *,1024>::_Deallocate | PlayerCharacter.obj | debug, object-file run extension, low
+// pdb params: apBuffer
 AX* FUN_0096a570_Class::BSSimpleArray_ItemChange_1024_BSSimpleArray()
 {
     vtable = &DAT_0108b4b4;
@@ -272,6 +284,8 @@ struct GlobalObject_00869f00
 
 // @fnv 0x0096a5a0
 // src: GUESS 0x0096a5a0 (confidence: medium)
+// pdb: BSSimpleArray<ItemChange *,1024>::_Reallocate | PlayerCharacter.obj | debug, object-file run extension, low
+// pdb params: apBuffer, aiNewSizeInItem
 void GlobalObject_00869f00::ResetVirtualTableAndClear_0096a5a0()
 {
     p = &DAT_0108b4b4;
@@ -295,6 +309,7 @@ struct FUN_0096a5c0 : AX
 
 // Sets the vtable pointer to DAT_0108b4c8 and calls FUN_006b3eb0 with 0, 0.
 // @fnv 0x0096a5c0
+// pdb: BSSimpleArray<TESAmmo *,1024>::BSSimpleArray<TESAmmo *,1024> | PlayerCharacter.obj | debug, object-file run extension, low
 FUN_0096a5c0::FUN_0096a5c0()
 {
     vtable = &DAT_0108b4c8;
@@ -308,12 +323,13 @@ struct GlobalObject_00869f00
 {
     void* p;
     void Clear(bool);
-    void SetVtableAndProcessState_0096a5f0();
+    void BSSimpleArray_TESAmmo_1024_dtor();
 };
 
 // @fnv 0x0096a5f0
-// src: GUESS 0x0096a5f0 (confidence: low)
-void GlobalObject_00869f00::SetVtableAndProcessState_0096a5f0()
+// src: XBOX_DEBUG_PDB 0x0096a5f0
+// pdb: BSSimpleArray<TESAmmo *,1024>::~BSSimpleArray<TESAmmo *,1024> | PlayerCharacter.obj | debug, call graph, high
+void GlobalObject_00869f00::BSSimpleArray_TESAmmo_1024_dtor()
 {
     *(int*)this = (int)&DAT_0108b4c8;
     Clear(true);
@@ -329,6 +345,7 @@ struct FUN_0096a640_Class
 
 // Calls Initialize with the two arguments, then stores the address of DAT_0108b4dc into this and returns this.
 // @fnv 0x0096a640
+// pdb: BSSimpleList<AudioMarkerInfo *>::`scalar deleting destructor' | PlayerCharacter.obj | debug, object-file run extension, low
 int __thiscall FUN_0096a640_Class::InitVtable(int a, int b)
 {
     Initialize(a, b);
@@ -344,6 +361,7 @@ struct FUN_0096a730_class
 
 // @fnv 0x0096a730
 // src: GUESS 0x0096a730 (confidence: low)
+// pdb: NiTPrimitiveArray<TESRegion *>::~NiTPrimitiveArray<TESRegion *> | PlayerCharacter.obj | debug, object-file gap fill, medium
 void __thiscall FUN_0096a730_class::ForwardCall_0096a730()
 {
     SetVtableAndProcessState_0096a750();
@@ -351,15 +369,16 @@ void __thiscall FUN_0096a730_class::ForwardCall_0096a730()
 
 struct FUN_0096a930_class
 {
-    void ReleaseStorage_0096ad00();
+    void NiTArray_MobileObject_NiTMallocInterface_MobileObject_dtor();
     void ForwardCall_0096a930();
 };
 
 // @fnv 0x0096a930
 // src: GUESS 0x0096a930 (confidence: low)
+// pdb: NiTPrimitiveArray<MobileObject *>::~NiTPrimitiveArray<MobileObject *> | ProcessArray.obj | debug, call graph (shared callers), medium
 void FUN_0096a930_class::ForwardCall_0096a930()
 {
-    ReleaseStorage_0096ad00();
+    NiTArray_MobileObject_NiTMallocInterface_MobileObject_dtor();
 }
 
 namespace fnv_0096a950 {
@@ -371,6 +390,7 @@ struct FUN_0096a930_class
 
 // @fnv 0x0096a950
 // src: GUESS 0x0096a950 (confidence: low)
+// pdb: ProcessArray::~ProcessArray | ProcessArray.obj | debug, call graph, medium
 void FUN_0096a930_class::ForwardCall_0096a950()
 {
     ForwardCall_0096a930();
@@ -391,6 +411,8 @@ struct FUN_0096af30 : public FUN_0096afe0_base
 
 // Calls the base initializer with a and b, stores the address of DAT_0108c0d0 in this, and returns this.
 // @fnv 0x0096af30
+// pdb: NiTPrimitiveArray<MobileObject *>::NiTPrimitiveArray<MobileObject *> | ProcessArray.obj | debug, object-file run extension, low
+// pdb params: uiMaxSize, uiGrowBy
 FUN_0096af30* __thiscall FUN_0096af30::init(int aiArg1, int aiArg2)
 {
     FUN_0096afe0(aiArg1, aiArg2);
@@ -401,6 +423,8 @@ FUN_0096af30* __thiscall FUN_0096af30::init(int aiArg1, int aiArg2)
 void* __cdecl _NiMalloc(unsigned int);
 
 // @fnv 0x0096afc0
+// pdb: NiTMallocInterface<MobileObject *>::Allocate | ProcessArray.obj | debug, object-file run extension, low
+// pdb params: uiNumElements
 template <>
 ActorCombatGroup** NiTMallocInterface<ActorCombatGroup*>::Allocate(unsigned int a)
 {
@@ -459,6 +483,7 @@ struct GlobalObject_00869f00
 };
 
 // @fnv 0x00978a60
+// pdb: BSSimpleArray<Animation *,1024>::~BSSimpleArray<Animation *,1024> | ProcessLists.obj | debug, call graph (shared callers), medium
 void GlobalObject_00869f00::ResetToGlobalData()
 {
     data = &DAT_0108c23c;
@@ -481,6 +506,7 @@ struct FUN_00978cd0_Class
 
 // @fnv 0x00978cd0
 // src: GUESS 0x00978cd0 (confidence: low)
+// pdb: BSSimpleArray<EffectTaskData,1024>::~BSSimpleArray<EffectTaskData,1024> | ProcessLists.obj | debug, call graph (shared callers), medium
 void __thiscall FUN_00978cd0_Class::SetVtableAndProcessState_00978cd0()
 {
     *(int**)this = (int*)&DAT_0108c278;
@@ -510,6 +536,7 @@ struct FUN_0097f220_t
 
 // @fnv 0x0097f200
 // src: XBOX_PDB 0x0097f200
+// pdb: CombatController::ForcePlanUpdate | CombatController.obj | debug, upstream name already matches, high
 void CombatController::ForcePlanUpdate()
 {
     ((FUN_0097f220_t*)((char*)this + 0xb4))->CombatTimer_ForceTrigger();
@@ -598,16 +625,18 @@ void __thiscall FUN_00961230_Class::bhkMouseSpringAction_GetPositionInRbLocal(T_
 
 struct FUN_00962490_Class
 {
-    void PlayerCharacter_SetLightPointer(void* p, unsigned char flag);
+    void PlayerCharacter_SetLightPointer(void* apLight, unsigned char abFirstPerson);
 };
 // @fnv 0x00962490
 // src: COMMUNITY 0x00962490
-void FUN_00962490_Class::PlayerCharacter_SetLightPointer(void* p, unsigned char flag)
+// pdb: PlayerCharacter::SetLightPointer | PlayerCharacter.obj | debug, upstream name already matches, high
+// pdb params: apLight, abFirstPerson
+void FUN_00962490_Class::PlayerCharacter_SetLightPointer(void* apLight, unsigned char abFirstPerson)
 {
-    if (flag)
-        *(GO*)((char*)this + 0x864) = p;
+    if (abFirstPerson)
+        *(GO*)((char*)this + 0x864) = apLight;
     else
-        *(GO*)((char*)this + 0x868) = p;
+        *(GO*)((char*)this + 0x868) = apLight;
 }
 
 
@@ -637,15 +666,17 @@ struct FUN_0056aac0_map
 };
 struct FUN_00962850_Class
 {
-    void __thiscall PlayerCharacter_SetLastSpaceForDoor(TESSound* sound, bool flag);
+    void __thiscall PlayerCharacter_SetLastSpaceForDoor(TESSound* apDoor, bool acSpaceIndex);
 };
 // If sound is non-null, inserts the reference returned by sound->Deallocate() into the map at this+0x854 with the given flag.
 // @fnv 0x00962850
 // src: COMMUNITY 0x00962850
-void __thiscall FUN_00962850_Class::PlayerCharacter_SetLastSpaceForDoor(TESSound* sound, bool flag)
+// pdb: PlayerCharacter::SetLastSpaceForDoor | PlayerCharacter.obj | debug, upstream name already matches, high
+// pdb params: apDoor, acSpaceIndex
+void __thiscall FUN_00962850_Class::PlayerCharacter_SetLastSpaceForDoor(TESSound* apDoor, bool acSpaceIndex)
 {
-    if (sound)
-        ((FUN_0056aac0_map*)((char*)this + 0x854))->SetAt((TESObjectREFR*)sound->Deallocate(), flag);
+    if (apDoor)
+        ((FUN_0056aac0_map*)((char*)this + 0x854))->SetAt((TESObjectREFR*)apDoor->Deallocate(), acSpaceIndex);
 }
 
 struct IntegerPairPointerRecord
@@ -667,6 +698,8 @@ struct FUN_009640b0_Class
 };
 // @fnv 0x009640b0
 // src: COMMUNITY 0x009640b0
+// pdb: PlayerCharacter::GetRecentAction | PlayerCharacter.obj | debug, upstream name already matches, high
+// pdb locals: iaction
 unsigned int FUN_009640b0_Class::PlayerCharacter_GetRecentAction()
 {
     unsigned int result = 0;
@@ -697,6 +730,7 @@ struct FUN_0096a300_Class
 };
 // Calls FUN_0096a4b0, frees this when flags has bit 0 set, and returns this.
 // @fnv 0x0096a300
+// pdb: NiTMap<unsigned int,unsigned char>::`scalar deleting destructor' | PlayerCharacter.obj | retail, vtable slot, high
 void* __thiscall FUN_0096a300_Class::FUN_0096a300(unsigned int flags)
 {
     FUN_0096a4b0();
@@ -717,6 +751,8 @@ struct FUN_0096a390_Class
 };
 // Sets the vtable, stores n in m_p, allocates m_p*4 bytes into m_q, zeroes that buffer, and returns this.
 // @fnv 0x0096a390
+// pdb: CloseEnough | GlobalFunc.obj | debug, object-file run extension, low
+// pdb params: apt1, apt2, afDelta
 void* __thiscall FUN_0096a390_Class::Init(unsigned int auiCount)
 {
     m_vtbl = &DAT_0108b494;
@@ -737,6 +773,7 @@ struct FUN_0096a5a0_Class
 };
 
 // @fnv 0x0096a6a0
+// pdb: BSSimpleArray<ItemChange *,1024>::`scalar deleting destructor' | PlayerCharacter.obj | retail, vtable slot, high
 void* FUN_0096a5a0_Class::FUN_0096a6a0(unsigned int flags)
 {
     ResetVirtualTableAndClear_0096a5a0();
@@ -755,6 +792,7 @@ struct FUN_0096a730_Class
 
 // Calls FUN_0096a730, then frees this with _Deallocate when flags has bit 0 set, and returns this.
 // @fnv 0x0096a700
+// pdb: NiTPrimitiveArray<TESRegion *>::`scalar deleting destructor' | PlayerCharacter.obj | debug, vtable slot, medium
 void* __thiscall FUN_0096a730_Class::FUN_0096a700(unsigned int flags)
 {
     ForwardCall_0096a730();
@@ -787,6 +825,8 @@ struct FUN_0096ac30_Class
 // For each of four slots, resets the value at offset 0x30 to the lower bound at 0x10 when it is below that bound or at/above the upper bound at 0x20.
 // @fnv 0x0096ac30
 // src: COMMUNITY 0x0096ac30
+// pdb: ProcessArray::GetNextUpdateProcess | ProcessArray.obj | debug, object-file run extension, low
+// pdb params: aProcessLevel
 void __thiscall FUN_0096ac30_Class::ProcessArray_CheckNextUpdateBounds()
 {
     for (int i = 0; i < 4; i++)
@@ -809,12 +849,14 @@ struct FUN_00978b60 : public FUN_008c1cb0
     ~FUN_00978b60();
 };
 // @fnv 0x00978b60
+// pdb: BSScrapArray<Actor *,1024>::~BSScrapArray<Actor *,1024> | ProcessLists.obj | debug, call graph (shared callers), high
 FUN_00978b60::~FUN_00978b60()
 {
     Clear(true);
 }
 
 extern unsigned int DAT_010a2720;
+// pdb: structure ScrapHeapBuffer, size 0x8 (here 0x1), 2 members
 struct ScrapHeapBuffer
 {
     void* Allocate(unsigned int, unsigned int);
@@ -846,6 +888,7 @@ struct FUN_00978d80_Class
 };
 // Calls ResetToGlobalData, deletes this when flags has bit 0 set, and returns this.
 // @fnv 0x00978d80
+// pdb: BSSimpleArray<Animation *,1024>::`scalar deleting destructor' | ProcessLists.obj | retail, vtable slot, high
 void* FUN_00978d80_Class::FUN_00978d80(unsigned int flags)
 {
     ResetToGlobalData();
@@ -862,6 +905,7 @@ struct FUN_00978de0_Class
 
 // Calls FUN_00978b60, then deletes this if flags has bit 0 set, and returns this.
 // @fnv 0x00978de0
+// pdb: BSScrapArray<Actor *,1024>::`scalar deleting destructor' | ProcessLists.obj | retail, vtable slot, high
 void* __thiscall FUN_00978de0_Class::FUN_00978de0(unsigned int flags)
 {
     FUN_00978b60();
@@ -883,6 +927,7 @@ struct FUN_00978e10_Class
 };
 
 // @fnv 0x00978e10
+// pdb: BSSimpleArray<EffectTaskData,1024>::`scalar deleting destructor' | ProcessLists.obj | retail, vtable slot, high
 void* __thiscall FUN_00978e10_Class::FUN_00978e10(unsigned int flags)
 {
     ((FUN_00978cd0_Class*)this)->SetVtableAndProcessState_00978cd0();
@@ -901,6 +946,7 @@ struct FUN_00978e40_Class
     void* __thiscall FUN_00978e40(unsigned int flags);
 };
 // @fnv 0x00978e40
+// pdb: BSScrapArray<EffectTaskData,1024>::`scalar deleting destructor' | ProcessLists.obj | retail, vtable slot, high
 void* __thiscall FUN_00978e40_Class::FUN_00978e40(unsigned int flags)
 {
     ((FUN_00978cf0_Class*)this)->FUN_00978cf0();
@@ -917,6 +963,8 @@ struct FUN_00978f40_Class
 };
 // Calls FUN_00978f70, then frees this with Deallocate when flags has bit 0 set, and returns this.
 // @fnv 0x00978f40
+// pdb: ContinuousBeamProjectile::`scalar deleting destructor' | ContinuousBeamProjectile.obj | retail, vtable slot, high
+// pdb params: this
 void* __thiscall FUN_00978f40_Class::FUN_00978f40(unsigned int flags)
 {
     FUN_00978f70();
@@ -939,12 +987,14 @@ extern BSSimpleList<CombatAction*>* DAT_011f13d0;
 extern CombatAction* DAT_011f1420[27];
 
 // @fnv 0x0097a990
+// pdb: CombatAction::InitActions | CombatAction.obj | debug, call graph, medium
+// pdb locals: i, paction, plist, pstate
 void InitCombatActions()
 {
     memset(&DAT_011f13d0, 0, 0x50);
     for (unsigned int i = 0; i < 27; ++i)
     {
-        CombatAction* action = CombatAction::CreateAction(i);
+        CombatAction* action = CombatAction::CreateCombatAction(i);
         DAT_011f1420[i] = action;
         if (action)
         {
@@ -972,6 +1022,7 @@ struct FUN_0097ab00_Class
 };
 // Calls FUN_00979c80 on this, then deallocates this when flags has bit 0 set, and returns this.
 // @fnv 0x0097ab00
+// pdb: CombatAction::`scalar deleting destructor' | CombatAction.obj | debug, call graph, medium
 void* __thiscall FUN_0097ab00_Class::FUN_0097ab00(unsigned int flags)
 {
     ((FUN_00979c80_Class*)this)->FUN_00979c80();
@@ -1036,6 +1087,9 @@ struct FUN_0096aa40_Class : public FUN_0096ac30_Class
 
 // @fnv 0x0096aa40
 // src: XBOX_PDB 0x0096aa40
+// pdb: ProcessArray::RemoveActor | ProcessArray.obj | debug, object-file run extension, low
+// pdb params: auiIndex
+// pdb locals: ProcessLevel
 void FUN_0096aa40_Class::ProcessArray_RemoveActor(int aiIndex)
 {
     int local2 = FindRangeIndex(aiIndex);
@@ -1100,6 +1154,7 @@ struct FUN_009669c0_Class
 // Calls BlendWithSetting with the result of GetFloatAtOffset68 on the actor base pointer and the m_cc and m_d0 fields, returning the float result.
 // @fnv 0x009669c0
 // src: XBOX_PDB 0x009669c0
+// pdb: Projectile::GetSpeed | PlayerCharacter.obj | debug, upstream name already matches, high
 float FUN_009669c0_Class::Projectile_GetSpeed()
 {
     return BlendWithSetting(GetFloatAtOffset68((char const*)((XActor*)this)->GetActorBase()), m_cc, m_d0);
@@ -1211,6 +1266,8 @@ struct FUN_00962590_Class : public TES
 // If FUN_00570f60() returns a positive value, gets the log date, reads its ArrSI flags, and calls FUN_008ce180 with those flags when nonzero.
 // @fnv 0x00962590
 // src: COMMUNITY 0x00962590
+// pdb: PlayerCharacter::EnteringMenuMode | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb locals: pprocess, icount, pammo, pammoObject
 void FUN_00962590_Class::PlayerCharacter_EnteringMenuMode()
 {
     LogDate* pLogDate;
@@ -1248,18 +1305,21 @@ struct FUN_00962810_Class
     char m_ucUnknownByte[0x854];
     FUN_0057c850_cls m_854;
 
-    unsigned char PlayerCharacter_GetLastSpaceForDoor(TESSound* sound);
+    unsigned char PlayerCharacter_GetLastSpaceForDoor(TESSound* apDoor);
 };
 
 // If sound is non-null, deallocates it and passes the result to m_854.FUN_0057c850, returning the resulting byte (0xff otherwise).
 // @fnv 0x00962810
 // src: COMMUNITY 0x00962810
-unsigned char FUN_00962810_Class::PlayerCharacter_GetLastSpaceForDoor(TESSound* sound)
+// pdb: PlayerCharacter::GetLastSpaceForDoor | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb params: apDoor
+// pdb locals: cindex
+unsigned char FUN_00962810_Class::PlayerCharacter_GetLastSpaceForDoor(TESSound* apDoor)
 {
     unsigned char result = 0xff;
-    if (sound)
+    if (apDoor)
     {
-        m_854.NiTMapBase_NiTPointerAllocator_unsigned_int_TESObjectREFR_bool_GetAt(reinterpret_cast<void*>(sound->Deallocate()), reinterpret_cast<bool*>(&result));
+        m_854.NiTMapBase_NiTPointerAllocator_unsigned_int_TESObjectREFR_bool_GetAt(reinterpret_cast<void*>(apDoor->Deallocate()), reinterpret_cast<bool*>(&result));
     }
     return result;
 }
@@ -1269,16 +1329,18 @@ extern BSSimpleList<TESObjectREFR*> g_011e0ae8;
 
 struct FUN_00962cd0_Class
 {
-    void PlayerCharacter_RemoveConflictingObject(TESObjectREFR* a);
+    void PlayerCharacter_RemoveConflictingObject(TESObjectREFR* apRef);
 };
 
 // If a is non-null, passes its address to g_011e0ae8's list routine.
 // @fnv 0x00962cd0
 // src: COMMUNITY 0x00962cd0
-void FUN_00962cd0_Class::PlayerCharacter_RemoveConflictingObject(TESObjectREFR* pRef)
+// pdb: PlayerCharacter::RemoveConflictingObject | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb params: apRef
+void FUN_00962cd0_Class::PlayerCharacter_RemoveConflictingObject(TESObjectREFR* apRef)
 {
-    if (pRef)
-        g_011e0ae8.Remove(pRef);
+    if (apRef)
+        g_011e0ae8.Remove(apRef);
 }
 
 extern float _DAT_011f1c00;
@@ -1310,6 +1372,7 @@ struct FUN_0096a670_Class
 };
 // Calls FUN_0096a510, then deallocates this if flags has bit 1 set, and returns this.
 // @fnv 0x0096a670
+// pdb: NiTMapBase<DFALL<NiTMapItem<unsigned int,unsigned char> >,unsigned int,unsigned char>::`scalar deleting destructor' | PlayerCharacter.obj | retail, vtable slot, high
 void* FUN_0096a670_Class::FUN_0096a670(unsigned int flags)
 {
     UpdateState_0096a510();
@@ -1324,9 +1387,10 @@ struct FUN_0096a6d0_Class : GlobalObject_00869f00
 };
 // Calls FUN_0096a5f0, then deallocates this if the flags bit 0 is set, and returns this.
 // @fnv 0x0096a6d0
+// pdb: BSSimpleArray<TESAmmo *,1024>::`scalar deleting destructor' | PlayerCharacter.obj | retail, vtable slot, high
 void* FUN_0096a6d0_Class::FUN_0096a6d0(unsigned int flags)
 {
-    SetVtableAndProcessState_0096a5f0();
+    BSSimpleArray_TESAmmo_1024_dtor();
     if (flags & 1)
         _Deallocate(this);
     return this;
@@ -1342,6 +1406,7 @@ struct FUN_0096a750_layout
 // Sets the object's vtable to DAT_0108b4e4 and deallocates its p pointer via NiTMallocInterface<void*>::Deallocate.
 // @fnv 0x0096a750
 // src: GUESS 0x0096a750 (confidence: low)
+// pdb: NiTArray<TESRegion *,NiTMallocInterface<TESRegion *> >::~NiTArray<TESRegion *,NiTMallocInterface<TESRegion *> > | PlayerCharacter.obj | debug, object-file gap fill, medium
 void FUN_0096a730_class::SetVtableAndProcessState_0096a750()
 {
     reinterpret_cast<FUN_0096a750_layout*>(this)->vtable = &DAT_0108b4e4;
@@ -1355,6 +1420,7 @@ struct FUN_0096a780_Class : public FUN_0096a730_class
 
 // Calls FUN_0096a750, then deallocates this if the low bit of flags is set, and returns this.
 // @fnv 0x0096a780
+// pdb: NiTArray<TESRegion *,NiTMallocInterface<TESRegion *> >::`scalar deleting destructor' | PlayerCharacter.obj | debug, vtable slot, medium
 void* FUN_0096a780_Class::FUN_0096a780(unsigned int flags)
 {
     SetVtableAndProcessState_0096a750();
@@ -1368,8 +1434,9 @@ extern void* _DAT_0108c0c8;
 #include "../../include/NiTMallocInterface.h"
 
 // @fnv 0x0096ad00
-// src: GUESS 0x0096ad00 (confidence: medium)
-void FUN_0096a930_class::ReleaseStorage_0096ad00()
+// src: XBOX_DEBUG_PDB 0x0096ad00
+// pdb: NiTArray<MobileObject *,NiTMallocInterface<MobileObject *> >::~NiTArray<MobileObject *,NiTMallocInterface<MobileObject *> > | ProcessArray.obj | debug, call graph (shared callers), high
+void FUN_0096a930_class::NiTArray_MobileObject_NiTMallocInterface_MobileObject_dtor()
 {
     *((void**)this) = &_DAT_0108c0c8;
     NiTMallocInterface<void*>::Deallocate(*((void***)((char*)this + 4)));
@@ -1381,9 +1448,10 @@ struct FUN_0096af60_Class : public FUN_0096a930_class
 };
 // Calls FUN_0096ad00, then deallocates this if flags has bit 0 set, and returns this.
 // @fnv 0x0096af60
+// pdb: NiTArray<MobileObject *,NiTMallocInterface<MobileObject *> >::`scalar deleting destructor' | ProcessArray.obj | debug, vtable slot, medium
 void* FUN_0096af60_Class::FUN_0096af60(unsigned int flags)
 {
-    ReleaseStorage_0096ad00();
+    NiTArray_MobileObject_NiTMallocInterface_MobileObject_dtor();
     if (flags & 1)
         _Deallocate(this);
     return this;
@@ -1395,6 +1463,7 @@ struct FUN_0096af90_Class : public FUN_0096a930_class
 };
 
 // @fnv 0x0096af90
+// pdb: NiTPrimitiveArray<MobileObject *>::`scalar deleting destructor' | ProcessArray.obj | debug, vtable slot, medium
 void* FUN_0096af90_Class::FUN_0096af90(unsigned int flags)
 {
     ForwardCall_0096a930();
@@ -1411,6 +1480,7 @@ struct ScrapArrayDeletion : BSScrapArray<T, N>
     void* __thiscall DestroyAndFreeIfFlagged(unsigned int flags);
 };
 // @fnv 0x00978db0
+// pdb: BSScrapArray<Animation *,1024>::`scalar deleting destructor' | ProcessLists.obj | retail, vtable slot, high
 template <>
 void* ScrapArrayDeletion<Animation*>::DestroyAndFreeIfFlagged(unsigned int flags)
 {
@@ -1438,6 +1508,7 @@ struct FUN_0097be80_Class
 // Copies the perk returned by the list at offset 0x14 into dst and returns dst.
 // @fnv 0x0097be80
 // src: COMMUNITY 0x0097be80
+// pdb: CombatProcedureMove::GetDestinationPoint | CombatActions.obj | debug, object-file run extension, low
 BGSPerk* FUN_0097be80_Class::CombatProcedureMove_GetDestinationPos(BGSPerk* apPerkOut)
 {
     memcpy(apPerkOut, reinterpret_cast<EmbeddedRecordDataAccess*>(reinterpret_cast<char*>(this) + 0x14)->GetData(), 12);
@@ -1456,6 +1527,8 @@ struct FUN_0097f240_Class
 
 // @fnv 0x0097f240
 // src: COMMUNITY 0x0097f240
+// pdb: CombatState::SetLastFleeDoorTimeStamp | CombatController.obj | debug, object-file run extension, low
+// pdb params: afTime
 void FUN_0097f240_Class::CombatState_SetLastDoorFleeTime(float value)
 {
     CombatTargetTimestamp timestamp(value);
@@ -1538,6 +1611,8 @@ struct PlayerUIManager
 };
 // Walks the world's action list and calls Process(item, true) on each item's interaction handler, restarting from the head if the list changes.
 // @fnv 0x00962880
+// pdb: PlayerCharacter::HaveFollowersRecheckPackages | PlayerCharacter.obj | debug, object-file run extension, low
+// pdb locals: pfollower, plist, pact, pnext
 void PlayerUIManager::ProcessAllActions()
 {
     WorldData* world = DAT_011dea3c->BSFile_GetDevice()->ExtraDataList_GetFollowerExtra();
@@ -1574,14 +1649,16 @@ struct FUN_00962d00_Node
     FUN_00962d00_Node* GetNext();
     void PopHead(TESObjectREFR** out);
 };
-void __cdecl bhkWorld_EnableCollision(NiNode* ref, int a, int b, int c);
+void __cdecl bhkWorld_EnableCollision(NiNode* apObject, int abEnable, int abRecurse, int abForce);
 struct FUN_00962d00_Class
 {
-    bool ProcessLists_ProcessActors(NiNode* ref);
+    bool ProcessLists_ProcessActors(NiNode* apList);
     void PlayerCharacter_UpdateConflictingObjects();
 };
 // @fnv 0x00962d00
 // src: COMMUNITY 0x00962d00
+// pdb: PlayerCharacter::UpdateConflictingObjects | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb locals: plist, bremoveFromList, pobj, pref
 void FUN_00962d00_Class::PlayerCharacter_UpdateConflictingObjects()
 {
     if (reinterpret_cast<FUN_00962d00_Node*>(&g_011e0ae8)->IsEmpty())
@@ -1638,6 +1715,8 @@ class FUN_0096a400_cls
 };
 
 // @fnv 0x0096a400
+// pdb: CloseEnoughXY | GlobalFunc.obj | debug, object-file run extension, low
+// pdb params: apt1, apt2, afDelta
 void FUN_0096a400_cls::GetNextEntry(FUN_0096a400_Node** cursor, unsigned int* outKey, unsigned char* outFlag)
 {
     FUN_0096a400_Node* cur = *cursor;
@@ -1680,6 +1759,9 @@ struct FUN_0096a970_Class
 };
 
 // @fnv 0x0096a970
+// pdb: NiTArray<NiPointer<NiAVObject>,NiTNewInterface<NiPointer<NiAVObject> > >::InsertAt | NiNode.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays; only the method name matches, on a class other than the PDB class, so its parameter names are not applied
+// pdb params (unverified): uiIndex, element
+// pdb locals (unverified): isize, i, t
 void FUN_0096a970_Class::InsertAt(int aiValue, int index)
 {
     if (index != -1)
@@ -1718,6 +1800,9 @@ class B96AB20Ranges
 
 // Returns the index of the first of four min/max ranges that contains uiValue, or -1 if none does.
 // @fnv 0x0096ab20
+// pdb: ProcessArray::ChangeProcessLevel | ProcessArray.obj | debug, object-file run extension, low
+// pdb params: auiIndex, aDestList
+// pdb locals: tempActor, SourceList
 int B96AB20Ranges::FindRangeIndex(unsigned int uiValue)
 {
     for (int i = 0; i < 4; i++)
@@ -1759,6 +1844,9 @@ class FUN_0096abc0_cls
 
 // Scans entries from start until the count at offset 0x2c, returning the index whose key matches, or -1 if key is 0 or none match.
 // @fnv 0x0096abc0
+// pdb: ProcessArray::GetIndexFromActor | ProcessArray.obj | debug, object-file run extension, low
+// pdb params: apActor, aProcessLevel
+// pdb locals: returnval, i
 int FUN_0096abc0_cls::FindKeyIndex(int key, unsigned int start)
 {
     int found = -1;
@@ -1805,6 +1893,7 @@ PAVActor::~PAVActor()
 
 // Sets the vtable, stores a value from FUN_00401020()->GetContextTracker() at m_10, and calls FUN_006b3eb0(0, 0).
 // @fnv 0x00978ae0
+// pdb: BSScrapArray<Actor *,1024>::BSScrapArray<Actor *,1024> | ProcessLists.obj | debug, object-file run extension, low
 FUN_00978ae0::FUN_00978ae0()
 {
     *(void**)this = &DAT_0108c250;
@@ -1854,6 +1943,7 @@ struct FUN_00978cf0 : public FUN_00978cd0
 };
 // Destructor that calls FUN_008454f0 with the value 1.
 // @fnv 0x00978cf0
+// pdb: BSScrapArray<EffectTaskData,1024>::~BSScrapArray<EffectTaskData,1024> | ProcessLists.obj | debug, call graph, medium
 FUN_00978cf0::~FUN_00978cf0()
 {
     FUN_008454f0(1);
@@ -1994,7 +2084,7 @@ class BaseExtra978
 class Base978 : public TESForm, public BaseExtra978
 {
   public:
-    Base978(bool bFlag);
+    Base978(bool abAdd);
     virtual ~Base978();
 
     int unk01C;
@@ -2087,6 +2177,8 @@ class FUN_00978fd0 : public Base978
 
 // Initializes a Base978-derived form with form type 0x3f and clears the pathing solution reference.
 // @fnv 0x00978fd0
+// pdb: BeamProjectile::BeamProjectile | BeamProjectile.obj | debug, call graph, medium
+// pdb params: abAdd
 FUN_00978fd0::FUN_00978fd0(bool bFlag) : Base978(bFlag)
 {
     SetFormType(static_cast<ENUM_FORM_ID>(0x3f));
@@ -2200,6 +2292,8 @@ extern B97AA40CombatAction* g_apkB97AA40Actions[];
 extern B97AA40ActionList* g_apkB97AA40ActionLists[];
 
 // @fnv 0x0097aa40
+// pdb: CombatAction::DeleteActions | CombatAction.obj | debug, call graph, medium
+// pdb locals: i
 void __cdecl DestroyCombatActionTables()
 {
     for (unsigned int i = 0; i < 27; i++)
@@ -2252,6 +2346,8 @@ struct FUN_0097ede0_cls
 // Copies the global Triple12 into this object, clears m_0c, and returns this.
 // @fnv 0x0097ede0
 // src: XBOX_PDB 0x0097ede0
+// pdb: BGSWorldLocation::BGSWorldLocation | TeleportData.obj | debug, upstream name already matches, high
+// pdb params: arPoint, apSpace
 FUN_0097ede0_cls* FUN_0097ede0_cls::BGSWorldLocation_BGSWorldLocation()
 {
     *(Triple12*)this = DAT_011f426c;
@@ -2386,6 +2482,8 @@ struct FUN_0097f270_cls
 };
 
 // @fnv 0x0097f270
+// pdb: CombatController::AddFailedCombatProcedure | CombatController.obj | debug, object-file run extension, low
+// pdb params: apCombatProcedure
 void FUN_0097f270_cls::InitFromArg(FUN_0097f270_arg* arg)
 {
     FUN_00401460(&m_14c, &m_158, 0x30);
@@ -2684,14 +2782,17 @@ struct PKRef
     virtual PKPoint3* GetPos();
 
     PKHighProcess* FUN_009306d0();
-    bool ProcessLists_ProcessActors(void* apRoot);
+    bool ProcessLists_ProcessActors(void* apList);
 };
 
 // @fnv 0x00962950
 // src: XBOX_PDB 0x00962950
-bool PKRef::ProcessLists_ProcessActors(void* apRoot)
+// pdb: ProcessLists::ProcessActors | ProcessLists.obj | retail, upstream name already matches, high
+// pdb params: apList
+// pdb locals: pActList, pRef, isescorting, fdelta, fhour, flastprocesstime
+bool PKRef::ProcessLists_ProcessActors(void* apList)
 {
-    if (!apRoot)
+    if (!apList)
         return false;
 
     if (!g_pPKPick)
@@ -2706,7 +2807,7 @@ bool PKRef::ProcessLists_ProcessActors(void* apRoot)
     PKPoint3 kDir3(0.0f, 24.0f, 0.0f);
     bool bBlocked = false;
     kPos.z += g_pPKPlayer->GetHeight() * 0.25;
-    g_pPKPick->SetTarget(apRoot);
+    g_pPKPick->SetTarget(apList);
 
     if (g_pPKPick->PerformPick(kPos + kDir3, kDir3, false))
     {
@@ -3174,6 +3275,8 @@ struct PlayerDOFOwner
 
 // Creates the DOF instance if missing, then steps its distance toward a target setting and applies distance and strength.
 // @fnv 0x009650a0
+// pdb: PlayerCharacter::UpdateImageSpaceIronsights | PlayerCharacter.obj | debug, object-file run extension, low
+// pdb locals: fdofstrengthcap, fgunmotionblur, fdofcurrentstrength, fdoftargetstrength, fdelta
 void PlayerDOFOwner::UpdateDepthOfField()
 {
     if (dof == 0)
@@ -3597,6 +3700,8 @@ class EffectOwner : public TESObjectREFR
     void UpdateImageSpaceEffects();
 };
 // @fnv 0x00965270
+// pdb: PlayerCharacter::UpdateImageSpaceVATS | PlayerCharacter.obj | debug, call graph, low
+// pdb locals: fdrbcurrentstrength, fdofstrengthcap, fdrbtargetstrength, fdistance, fdrbstrengthcap, fdofcurrentstrength, fdoftargetstrength, fdelta
 void EffectOwner::UpdateImageSpaceEffects()
 {
     // Local spellings preserve the original MSVC9 stack layout.
@@ -3943,6 +4048,8 @@ struct FUN_0096d290
 
 // Destructor: deletes every item and list in the five lists, then clears the lists at unk70 and unk80.
 // @fnv 0x0096d290
+// pdb: ProcessLists::~ProcessLists | ProcessLists.obj | debug, object-file gap fill, medium
+// pdb locals: i, pGlobalCrimeList, pcrime
 FUN_0096d290::~FUN_0096d290()
 {
     for (int i = 0; i < 5; i++)
@@ -3974,10 +4081,13 @@ struct ActorUpdateManager
 {
     void* vtable;
     TopicInfoArray actors;
-    void UpdateActors();
+    void ProcessLists_ProcessHighActorsForFastTravel();
 };
 // @fnv 0x0096df40
-void ActorUpdateManager::UpdateActors()
+// src: XBOX_RETAIL_PDB 0x0096df40
+// pdb: ProcessLists::ProcessHighActorsForFastTravel | ProcessLists.obj | retail, call graph, high
+// pdb locals: i, pmob, pRef, isescorting, fdelta, fhour, flastprocesstime
+void ActorUpdateManager::ProcessLists_ProcessHighActorsForFastTravel()
 {
     for (unsigned int i = 0; i < actors.ProcessArray_GetProcessLevelTail(0); i++)
     {
@@ -4590,16 +4700,18 @@ struct FUN_00975930_shell
 };
 // @fnv 0x00975930
 // src: COMMUNITY 0x00975930
-void FUN_00975930_shell::ProcessLists_LoadGame(LoadBuffer* buffer)
+// pdb: ProcessLists::LoadGame | ProcessLists.obj | retail, upstream name already matches, high
+// pdb locals: i, icount, j, pcrime
+void FUN_00975930_shell::ProcessLists_LoadGame(LoadBuffer* apLoadGameBuffer)
 {
-    buffer->LoadData(&unk00154, 4);
-    if (buffer->GetVersion() >= 18)
-        buffer->LoadData(&unk00158, 4);
-    buffer->LoadData(&unk103B4, 4);
-    buffer->LoadData(&unk103B8, 4);
+    apLoadGameBuffer->LoadData(&unk00154, 4);
+    if (apLoadGameBuffer->GetVersion() >= 18)
+        apLoadGameBuffer->LoadData(&unk00158, 4);
+    apLoadGameBuffer->LoadData(&unk103B4, 4);
+    apLoadGameBuffer->LoadData(&unk103B8, 4);
     for (unsigned int i = 0; i < 5; ++i)
     {
-        unsigned int count = buffer->FUN_00864a60();
+        unsigned int count = apLoadGameBuffer->FUN_00864a60();
         if (count)
         {
             if (lists[i])
@@ -4609,7 +4721,7 @@ void FUN_00975930_shell::ProcessLists_LoadGame(LoadBuffer* buffer)
             for (unsigned int j = 0; j < count; ++j)
             {
                 LoadedEntry* item = new LoadedEntry;
-                item->ReadFromStream(buffer);
+                item->ReadFromStream(apLoadGameBuffer);
                 lists[i]->FUN_005ae3d0(item);
             }
         }
@@ -4628,6 +4740,7 @@ struct FUN_00978a80 : ScrapArrayBase
 };
 // Destructor that clears the array, releasing its memory.
 // @fnv 0x00978a80
+// pdb: BSScrapArray<Animation *,1024>::~BSScrapArray<Animation *,1024> | ProcessLists.obj | debug, call graph (shared callers), medium
 FUN_00978a80::~FUN_00978a80()
 {
     Clear(true);
@@ -5045,17 +5158,20 @@ struct Actor97
     virtual int IsEquipmentReady();
     Process97* GetProcess();
     int FUN_00575610(Equipment97* equipment);
-    void EquipObject(Equipment97* equipment, int count, void* extra, bool a, bool b, bool c);
-    bool UnEquipObject(Equipment97* equipment, int count, void* extra, bool a, bool b, bool c);
+    void EquipObject(Equipment97* apObject, int aiNumber, void* apExtra, bool abNow, bool abForceEquip, bool abPlayPickUpSounds);
+    bool UnEquipObject(Equipment97* equipment, int aiNumber, void* apExtra, bool abForceUnequip, bool abEquipCalling, bool abPlayPickUpSounds);
 };
 struct CombatData97
 {
     unsigned char BSFaceGenNiNode_GetApplyRotToParent();
     void CombatState_SetLastDoorFleeTime(float value);
     Equipment97* GetBestWeapon();
-    void CombatState_ChangeProcessLevel(int first, int second);
+    void CombatState_ChangeProcessLevel(int aeOldLevel, int aeNewLevel);
 };
 // @fnv 0x0097efe0
+// pdb: CombatController::ChangeProcessLevel | CombatController.obj | debug, object-file gap fill, medium
+// pdb params: aeOldLevel, aeNewLevel
+// pdb locals: bfleeing, pweapon, pcurrentWeaponItem, pcurrentWeapon
 void CombatController::UpdateCombatEquipment(int first, int second)
 {
     if (second == 0)
@@ -5090,7 +5206,7 @@ void CombatController::UpdateCombatEquipment(int first, int second)
     reinterpret_cast<CombatData97*>(combat)->CombatState_ChangeProcessLevel(first, second);
     if (first == 0 || second == 0)
     {
-        DestroyOwnedObject();
+        ClearCombatPlan();
         ClearProcedures();
         ClearBackgroundProcedures();
         lastUpdate = -1.0f;
@@ -5744,7 +5860,7 @@ struct ActorDecomp
     float unk7E4;
     ActorPoint3 unk7E8;
 
-    unsigned char PlayerCharacter_ToggleFlyCam(unsigned char value);
+    unsigned char PlayerCharacter_ToggleFlyCam(unsigned char abFreezeTime);
 };
 
 FUN_00961f30_Class* __cdecl Interface_GetHUDEffects();
@@ -5752,12 +5868,15 @@ FUN_00961f30_Class* __cdecl Interface_GetHUDEffects();
 // Toggles a global state, propagates it to DAT_011dea0c and FUN_00705950, and when enabled copies the actor's position and updates unk7E8.z, unk7E0 and unk7E4.
 // @fnv 0x00961e30
 // src: COMMUNITY 0x00961e30
-unsigned char ActorDecomp::PlayerCharacter_ToggleFlyCam(unsigned char value)
+// pdb: PlayerCharacter::ToggleFlyCam | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb params: abFreezeTime
+// pdb locals: bisFlyCam
+unsigned char ActorDecomp::PlayerCharacter_ToggleFlyCam(unsigned char abFreezeTime)
 {
     unsigned char state = (unsigned char)static_cast<OSGlobalFlagAccess*>(DAT_011dea0c)->IsFlycam();
     state = (state != 0) ? 0 : 1;
     static_cast<OSGlobalFlagAccess*>(DAT_011dea0c)->SetByteAtOffset6(state);
-    static_cast<OSGlobalFlagAccess*>(DAT_011dea0c)->SetByteAtOffset7(state && value);
+    static_cast<OSGlobalFlagAccess*>(DAT_011dea0c)->SetByteAtOffset7(state && abFreezeTime);
     Interface_GetHUDEffects()->SetByteAt54(state);
     if (state)
     {
@@ -5785,7 +5904,7 @@ struct TargetForm
 {
     int FUN_0041ca90();
     void SpectatorPackage_RemoveActorAsThreatSourceOrTarget(CombatActor*);
-    void RemoveRef(CombatActor*);
+    void RemoveAvoidedRef(CombatActor*);
 };
 
 struct CombatGroupManager
@@ -5796,7 +5915,7 @@ struct CombatGroupManager
 };
 struct GroupNotification
 {
-    void TryStartDialogue(CombatActor* chosen, void* owner, int type, int flags, int enabled, int mode);
+    void TryStartDialogue(CombatActor* chosen, void* apTarget, int aiDialogueType, int aiDialogueTopic, int abInterrupt, int apCombatController);
 };
 struct CombatActionNode
 {
@@ -6110,6 +6229,8 @@ public:
 
 // @fnv 0x00967da0
 // src: XBOX_PDB 0x00967da0
+// pdb: PlayerCharacter::AttemptYield | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb locals: plist, iyieldingActors, psplitGroup, pplayerGroup, peveryone, pcrimeList, inonTeamMateCount, iteamMateCount, iplayerGroupMemberCount, icombatGroupCount, i, pmember, pclosestMember, myLoc, bacceptNonTeammateYield, imemberCount, fclosestMemberDistanceSquared, phostileGroup, bacceptYield, j, efightReaction, k, pplayerMember, ptarget ...
 int CombatController::PlayerCharacter_AttemptYield()
 {
     using fnv_00967da0::Unk_8f25e0;
@@ -6328,7 +6449,7 @@ int CombatController::PlayerCharacter_AttemptYield()
                 else if (kind == 0x16)
                 {
                     TargetForm* effectForm = form;
-                    effectForm->RemoveRef(reinterpret_cast<CombatActor*>(DAT_011dea3c));
+                    effectForm->RemoveAvoidedRef(reinterpret_cast<CombatActor*>(DAT_011dea3c));
                     ref->Actor_EvaluatePackage(0, 0);
                 }
                 else if (kind == 10)
@@ -6878,13 +6999,13 @@ struct WTPlayerBounds
 
 struct WTProcessLists
 {
-    bool HasNearbyDetectedActor(bool abFlag);
+    bool ProcessLists_AreHostilActorsNear(bool abInterior);
     bool IsFlagged();
 };
 
 bool __cdecl QueueUIMessage(const char* apMessage, int aiUnk, const char* apIcon, const char* apSound, float afTime,
                             bool abFlag);
-void __cdecl Interface_CreateSleepMenu(bool abFlag);
+void __cdecl Interface_CreateSleepMenu(bool abSleep);
 
 extern WTSetting g_kWTMsgInCombat;
 extern WTSetting g_kWTMsgUnk28b0;
@@ -7204,7 +7325,7 @@ void WTActor::PlayerCharacter_CanPassTime()
         QueueUIMessage(g_kWTMsgEnemies.String(), 0, "Interface\\Icons\\Message Icons\\glow_message_vaultboy_sad.dds", 0,
                        g_fWTMessageTime, false);
     }
-    else if (g_kWTProcessLists.HasNearbyDetectedActor(g_pWTPlayer->TESObjectREFR_GetInterior()))
+    else if (g_kWTProcessLists.ProcessLists_AreHostilActorsNear(g_pWTPlayer->TESObjectREFR_GetInterior()))
     {
         QueueUIMessage(g_kWTMsgUnk2e50.String(), 0, "Interface\\Icons\\Message Icons\\glow_message_vaultboy_sad.dds", 0,
                        g_fWTMessageTime, false);
@@ -7367,6 +7488,8 @@ class FUN_00979070 : public Base979
 };
 // Constructs a solution form of type 0x3f, initializing its solution reference to null.
 // @fnv 0x00979070
+// pdb: BeamProjectile::BeamProjectile | BeamProjectile.obj | debug, object-file gap fill, medium
+// pdb params: apProjectileBase, apShooter, apFromWeapon, aOrigin, afZAngle, afXAngle
 FUN_00979070::FUN_00979070(void* a, void* b, void* c, NiPoint3 kPos, float f1, float f2)
     : Base979(a, b, c, kPos, f1, f2), m_spSolution(0)
 {
@@ -7385,7 +7508,7 @@ struct MoveTarget
     int u00, u04, u08, u0c, u10, u14, u18, u1c;
     MoveTarget* CombatLocation_CombatLocation();
     bool CombatLocation_GetFlag(int);
-    void CombatLocation_SetTarget(void*);
+    void CombatLocation_SetRef(void*);
     MovePoint* ref_006815c0();
     void AssignV4(MovePoint*);
 };
@@ -7415,7 +7538,7 @@ struct MoveBrain
 };
 struct MoveManager
 {
-    MoveActor* SelectActor(MoveActor*);
+    MoveActor* CombatGroup_GetBestTarget(MoveActor*);
     bool CombatGroup_IsSearching();
     bool GetDetectedTargetLocation(MoveActor*, MovePoint*);
 };
@@ -7605,6 +7728,8 @@ struct CombatMove
 // Updates the combat move state machine, selecting a new action (idle, travel, special) based on brain and target conditions.
 // @fnv 0x0097e4b0
 // src: COMMUNITY 0x0097e4b0
+// pdb: CombatController::UpdateLow | CombatController.obj | retail, upstream name already matches, high
+// pdb locals: attackerWorldLoc, enewState, targetWorldLoc, bproceduresFinished, coldFleeState, fleeLocation, pmovementProcedure, targetLocation, lastDetectedLocation
 void CombatMove::CombatController_UpdateLow()
 {
     if (!initialized)
@@ -7638,7 +7763,7 @@ void CombatMove::CombatController_UpdateLow()
         }
         if (!target)
         {
-            SetTarget_00980830(manager->SelectActor(actor));
+            SetTarget_00980830(manager->CombatGroup_GetBestTarget(actor));
             ClearProcedures();
             state = 0;
         }
@@ -7697,7 +7822,7 @@ void CombatMove::CombatController_UpdateLow()
             case 2: {
                 MoveTarget goal;
                 goal.CombatLocation_CombatLocation();
-                goal.CombatLocation_SetTarget(target);
+                goal.CombatLocation_SetRef(target);
                 if (brain->CombatState_CheckMovement_009a02a0(goal.ref_006815c0(), 1, 1))
                     SetMovementProcedure(new TravelAction(&goal, DAT_011a5654, 0));
                 break;
@@ -7854,6 +7979,7 @@ struct FUN_0096d020
 
 // Constructor: sets flag bytes, zeroes lists and entries under lock, copies a float setting into unk103bc, and calls DAT_00fdf0a4 on DAT_011e0e20.
 // @fnv 0x0096d020
+// pdb: ProcessLists::ProcessLists | ProcessLists.obj | debug, object-file gap fill, medium
 FUN_0096d020::FUN_0096d020() : semaphore(0, 40)
 {
     unk103a1 = true;

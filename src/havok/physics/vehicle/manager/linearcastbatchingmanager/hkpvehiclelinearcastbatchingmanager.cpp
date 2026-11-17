@@ -18,6 +18,9 @@ struct FUN_00e43060
 
 // Computes four aligned offsets from GetCount() and the 16-bit count at this+0x14, writes them to out, and advances a by each padding.
 // @fnv 0x00e43060
+// pdb: hkpVehicleLinearCastBatchingManager::getTotalNumCommands | hkpVehicleLinearCastBatchingManager.obj | retail, call graph (shared callers), low
+// pdb note: debug build links it to hkpVehicleLinearCastBatchingManager::getLinearCastBatchFromBuffer
+// pdb locals: assertBuf, ostr
 void __thiscall FUN_00e43060::DoWork(int iBaseOffset, int iUnused, int* paiOffsets)
 {
     int iCount = ((FUN_00e42fe0*)this)->GetCount();
@@ -39,11 +42,13 @@ void __thiscall FUN_00e43060::DoWork(int iBaseOffset, int iUnused, int* paiOffse
 
 struct FUN_00e43010
 {
-    int __thiscall ConvertReferences(int numVehicles);
+    int __thiscall ConvertReferences(int numJobs);
 };
 // Computes a 16-byte-aligned total from the object's count, a 16-bit field at offset 0x14, the count again, and numVehicles.
 // @fnv 0x00e43010
-int __thiscall FUN_00e43010::ConvertReferences(int numVehicles)
+// pdb: hkpVehicleLinearCastBatchingManager::getBufferSize | hkpVehicleLinearCastBatchingManager.obj | retail, vtable slot, high
+// pdb params: numJobs
+int __thiscall FUN_00e43010::ConvertReferences(int numJobs)
 {
     int count = ((FUN_00e42fe0*)this)->GetCount();
     unsigned int a = (unsigned int)(unsigned short)*(unsigned short*)((char*)this + 0x14);
@@ -55,7 +60,7 @@ int __thiscall FUN_00e43010::ConvertReferences(int numVehicles)
     int iCountSize2 = (count << 6) + 0xf;
     iCountSize2 &= 0xfffffff0;
     iTotal += iCountSize2;
-    int iVehicleSize = (numVehicles << 4) + 0xf;
+    int iVehicleSize = (numJobs << 4) + 0xf;
     iVehicleSize &= 0xfffffff0;
     iTotal += iVehicleSize;
     return iTotal;
@@ -152,7 +157,7 @@ struct HkArr
     }
 };
 
-extern "C" int __cdecl hkArrayUtil__reserve(AllocV& owner, void* arr, int newCap, int stride);
+extern "C" int __cdecl hkArrayUtil__reserve(AllocV& mem, void* array, int numElem, int sizeElem);
 
 inline void HkArr::reserve(AllocV& a, int n)
 {
@@ -263,13 +268,16 @@ struct S00e43320_Mgr
     Vehicle433** m_ppVehicles;
     int m_uiItemCount;
     void FUN_00e43060(void* a, void* b, Out433* out);
-    void hkpVehicleLinearCastBatchingManager_stepVehiclesUsingCastResults(void* param1, void* param2, void* param3);
+    void hkpVehicleLinearCastBatchingManager_stepVehiclesUsingCastResults(void* stepInfo, void* numJobs, void* buffer);
 };
 
 // Iterates over m_ppVehicles, gathers per-wheel data via Counted433, and calls FUN_00e39030 on each vehicle with the collected array.
 // @fnv 0x00e43320
 // src: HAVOK_LIB 0x00e43320
-void S00e43320_Mgr::hkpVehicleLinearCastBatchingManager_stepVehiclesUsingCastResults(void* param1, void* param2, void* param3)
+// pdb: hkpVehicleLinearCastBatchingManager::stepVehiclesUsingCastResults | hkpVehicleLinearCastBatchingManager.obj | retail, upstream name already matches, high
+// pdb params: stepInfo, numJobs, buffer
+// pdb locals: cdInfo
+void S00e43320_Mgr::hkpVehicleLinearCastBatchingManager_stepVehiclesUsingCastResults(void* stepInfo, void* numJobs, void* buffer)
 {
     int i;
     {
@@ -287,7 +295,7 @@ void S00e43320_Mgr::hkpVehicleLinearCastBatchingManager_stepVehiclesUsingCastRes
     Out433 out;
     S00e43320_Mgr* self = this;
     int count = self->m_uiItemCount;
-    FUN_00e43060(param3, param2, &out);
+    FUN_00e43060(buffer, numJobs, &out);
     char* savedVal = out.m_04;
     Slot433 slot;
     HkArr& arr = slot.m_aiIndexedValues;
@@ -321,7 +329,7 @@ void S00e43320_Mgr::hkpVehicleLinearCastBatchingManager_stepVehiclesUsingCastRes
                     savedVal += counted->M13(j) * 64;
                 }
             }
-            self->m_ppVehicles[i]->hkpVehicleInstance_stepVehicleUsingWheelCollideOutput(param1, arr.m_data);
+            self->m_ppVehicles[i]->hkpVehicleInstance_stepVehicleUsingWheelCollideOutput(stepInfo, arr.m_data);
         }
     }
     S00e43320_timer("Et");

@@ -9,6 +9,9 @@ int NiSprintf(char*, unsigned int, const char*, ...);
 // Formats and returns a string containing the prefix, center coordinates, and bound radius.
 // @fnv 0x00a7fb20
 // src: XBOX_PDB 0x00a7fb20
+// pdb: NiBound::GetViewerString | NiBound.obj | retail, string-set bridge, high
+// pdb params: pPrefix
+// pdb locals: pString, uiLen
 char* NiBound::GetViewerString_00a7fb20(const char* pPrefix)
 {
     char* pString;

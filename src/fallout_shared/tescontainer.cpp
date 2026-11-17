@@ -26,6 +26,7 @@ class TESObject;
 #include "../../include/InventoryChanges.h"
 #include "../../include/PatrolActorPackageData.h"
 
+// pdb: class ContainerItemExtra, size 0xc, 5 members
 class ContainerItemExtra
 {
   public:
@@ -48,8 +49,8 @@ class InventoryItemEntry
     int count;
     void* object;
     ContainerItemExtra* extra;
-    void Copy(InventoryItemEntry* other);
-    void InitItem(TESForm* form);
+    void ContainerObject_Copy(InventoryItemEntry* apCopy);
+    void InitItem(TESForm* apOwner);
 };
 
 struct ContainerCountState
@@ -66,34 +67,40 @@ struct CopyComponentState
 
 // Copies object, count and, when the source extra is non-default, allocates a new ContainerItemExtra and copies it.
 // @fnv 0x00481540
-void InventoryItemEntry::Copy(InventoryItemEntry* other)
+// src: XBOX_RETAIL_PDB 0x00481540
+// pdb: ContainerObject::Copy | TESContainer.obj | retail, object-file run extension, high
+// pdb params: apCopy
+void InventoryItemEntry::ContainerObject_Copy(InventoryItemEntry* apCopy)
 {
-    if (other)
+    if (apCopy)
     {
-        object = other->object;
-        count = other->count;
-        if (other->extra && !other->extra->IsDefault())
+        object = apCopy->object;
+        count = apCopy->count;
+        if (apCopy->extra && !apCopy->extra->IsDefault())
         {
             extra = new ContainerItemExtra();
-            extra->Copy(other->extra);
+            extra->Copy(apCopy->extra);
         }
     }
 }
 
 // Constructs a TESContainer, initializing its objectList and calling Init().
 // @fnv 0x00481610
+// pdb: TESContainer::TESContainer | TESContainer.obj | debug, upstream name already matches, high
 TESContainer::TESContainer() : objectList()
 {
     Init();
 }
 
 // @fnv 0x004816e0
+// pdb: TESContainer::ClearDataComponent | TESContainer.obj | debug, vtable slot, medium
 void TESContainer::Free()
 {
-    ClearObjects();
+    FreeObjectList();
 }
 
 // @fnv 0x00481680
+// pdb: TESContainer::~TESContainer | TESContainer.obj | retail, upstream name already matches, high
 TESContainer::~TESContainer()
 {
     Free();
@@ -101,13 +108,16 @@ TESContainer::~TESContainer()
 
 // Copies the object list from the source TESContainer component into this container, adding each item.
 // @fnv 0x00481c80
-void TESContainer::CopyFromBase(BaseFormComponent* component)
+// pdb: TESContainer::CopyComponent | TESContainer.obj | retail, vtable slot, high
+// pdb params: apCopyFC
+// pdb locals: pList, pCopy, obj
+void TESContainer::CopyFromBase(BaseFormComponent* apCopyFC)
 {
     CopyComponentState state;
-    state.source = dynamic_cast<TESContainer*>(component);
+    state.source = dynamic_cast<TESContainer*>(apCopyFC);
     if (state.source == 0)
         return;
-    ClearObjects();
+    FreeObjectList();
     state.list = state.source->GetObjectList();
     while (state.list != 0 && !state.list->IsEmpty())
     {
@@ -119,6 +129,10 @@ void TESContainer::CopyFromBase(BaseFormComponent* component)
 
 // Searches the container's object list for an entry whose object pointer equals object and returns whether one is found.
 // @fnv 0x00481eb0
+// pdb: InventoryChanges::GetObjectInList | InventoryChanges.obj | retail, call graph (shared callers), low
+// pdb note: debug build links it to TESContainer::HasObject
+// pdb params: apObj, ableveled, aId
+// pdb locals: bflag, pkFirst, pchange, pextra
 bool TESContainer::HasObjectOfType(TESObject* object)
 {
     BSSimpleList<InventoryStackRecord*>* list = GetObjectList();
@@ -136,6 +150,9 @@ bool TESContainer::HasObjectOfType(TESObject* object)
 
 // Counts how many items in the container's object list match the given object, summing their counts.
 // @fnv 0x00482a90
+// pdb: TESContainer::FreeObjectList | TESContainer.obj | retail, object-file run extension, low
+// pdb note: debug build links it to TESContainer::GetObjectCount
+// pdb locals: pCObj, pkList
 int TESContainer::GetObjectCount(TESObject* object)
 {
     ContainerCountState state;
@@ -151,6 +168,9 @@ int TESContainer::GetObjectCount(TESObject* object)
 }
 
 // @fnv 0x00481f30
+// pdb: TESContainer::Compare | TESContainer.obj | debug, object-file gap fill, medium
+// pdb params: obj1, obj2
+// pdb locals: type1, returnVal, type2, wtype2, wtype1
 bool TESContainer::IsValidContainerType(unsigned char type)
 {
     switch (type)
@@ -179,7 +199,10 @@ bool TESContainer::IsValidContainerType(unsigned char type)
 }
 
 // @fnv 0x00481700
-void TESContainer::ClearObjects()
+// src: XBOX_DEBUG_PDB 0x00481700
+// pdb: TESContainer::FreeObjectList | TESContainer.obj | debug, call graph (shared callers), high
+// pdb locals: pCObj, pkList
+void TESContainer::FreeObjectList()
 {
     BSSimpleList<InventoryStackRecord*>* list = GetObjectList();
     InventoryItemEntry* item;
@@ -193,14 +216,17 @@ void TESContainer::ClearObjects()
 }
 // Initializes each entry in the object list with form, removing and deleting entries whose object becomes null.
 // @fnv 0x00481bb0
-void TESContainer::InitItem(TESForm* form)
+// pdb: TESContainer::InitItem | TESContainer.obj | retail, upstream name already matches, high
+// pdb params: apOwner
+// pdb locals: plist, plastlist, pobj
+void TESContainer::InitItem(TESForm* apOwner)
 {
     BSSimpleList<InventoryStackRecord*>* list = GetObjectList();
     BSSimpleList<InventoryStackRecord*>* previous = 0;
     while (list != 0 && !list->IsEmpty())
     {
         InventoryItemEntry* item = reinterpret_cast<InventoryItemEntry*>(list->GetItem());
-        item->InitItem(form);
+        item->InitItem(apOwner);
         if (item->object == 0)
         {
             if (previous != 0)
@@ -232,12 +258,15 @@ struct ContainerObjectNew : InventoryItemEntry
 
 // If object is non-null, allocates a ContainerObjectNew, copies object into it, and adds it to the head of the object list.
 // @fnv 0x00481a90
+// pdb: TESContainer::AddDuplicateObject | TESContainer.obj | debug, object-file gap fill, medium
+// pdb params: pCObj
+// pdb locals: pnewobj
 void TESContainer::AddObject(InventoryItemEntry* object)
 {
     if (!object)
         return;
     InventoryItemEntry* newObj = new ContainerObjectNew;
-    newObj->Copy(object);
+    newObj->ContainerObject_Copy(object);
     GetObjectList()->AddHead((InventoryStackRecord*&)newObj);
 }
 
@@ -246,7 +275,11 @@ void* __fastcall _ref_00726070(void*);
 
 // Iterates the object list of apAddCont and adds each entry's object, count and extra to this container.
 // @fnv 0x00481fd0
-void TESContainer::MergeContainer(TESContainer* apAddCont)
+// src: XBOX_DEBUG_PDB 0x00481fd0
+// pdb: TESContainer::AddContainerContents | TESContainer.obj | debug, call graph, high
+// pdb params: apAddCont
+// pdb locals: paddlist, pcont
+void TESContainer::AddContainerContents(TESContainer* apAddCont)
 {
     if (apAddCont)
     {
@@ -268,6 +301,9 @@ void* __fastcall _ref_00726070(void*);
 
 // Walks the object list and multiplies each contained entry's count by aiMult.
 // @fnv 0x00482040
+// pdb: TESContainer::MultiplyContainerCounts | TESContainer.obj | debug, call graph, high
+// pdb params: aiMult
+// pdb locals: plist, pcont
 void TESContainer::ScaleEntryCounts(int aiMult)
 {
     void* pCurrentElementNext = (void*)GetObjectList();
@@ -297,6 +333,9 @@ struct ContainerItemExtra_helper
 // Walks the container's item list, creating each item's extra data if missing, applies afHealthPerc to it, and deletes extras that become default.
 // @fnv 0x00482090
 // src: COMMUNITY 0x00482090
+// pdb: TESContainer::ApplyHealthPercentToContainer | TESContainer.obj | retail, upstream name already matches, high
+// pdb params: afHealthPerc
+// pdb locals: plist, pcont
 void TESContainer::ApplyHealthPercentToContainer(float afHealthPerc)
 {
     void* pCurrentElementNext = (void*)GetObjectList();
@@ -362,6 +401,9 @@ struct TESLevFormStub : public TESLevPad, public TESLeveledList
 // Returns apForm cast to TESLeveledList when its form type is 0x34, 0x2C, 0x2D or 0x4C, otherwise null.
 // @fnv 0x00487be0
 // src: COMMUNITY 0x00487be0
+// pdb: TESLeveledList::GetFormAsLeveledList | TESLeveledList.obj | debug, upstream name already matches, high
+// pdb params: apForm
+// pdb locals: pretlist, ptest, plev
 TESLeveledList* __cdecl TESLeveledList_GetFormAsLeveledList(TESForm* apForm)
 {
     TESLeveledList* pLeveledList = 0;
@@ -406,6 +448,7 @@ struct DelStandIn
 };
 // Runs the destructor on this object, frees it with Deallocate when flags has bit 0 set, and returns this.
 // @fnv 0x00481760
+// pdb: LEVELED_OBJECT::`scalar deleting destructor' | TESLeveledList.obj | debug, call graph, medium
 void* DelStandIn::Destroy(unsigned int flags)
 {
     ((DtorStandIn*)this)->FUN_0083dec0();
@@ -442,15 +485,18 @@ struct ContainerObjectNew : public InventoryItemEntry
 
 // If apObj is non-null, allocates a fnv_004817f0::ContainerObjectNew copying its object and count, adds it to the head of the object list, and returns it.
 // @fnv 0x004817f0
-InventoryItemEntry* TESContainer::AddObject(ContainerChanges* apObj)
+// pdb: TESContainer::AddObject | TESContainer.obj | retail, object-file run extension, high
+// pdb params: apCOFile
+// pdb locals: pCO, pList
+InventoryItemEntry* TESContainer::AddObject(ContainerChanges* apCOFile)
 {
-    if (!apObj)
+    if (!apCOFile)
         return 0;
     InventoryItemEntry* pcobj;
     BSSimpleList<InventoryStackRecord*>* pList = GetObjectList();
     pcobj = new fnv_004817f0::ContainerObjectNew;
-    pcobj->object = *(void**)apObj;
-    pcobj->count = ((int*)apObj)[1];
+    pcobj->object = *(void**)apCOFile;
+    pcobj->count = ((int*)apCOFile)[1];
     GetObjectList()->AddHead(reinterpret_cast<InventoryStackRecord*&>(pcobj));
     return pcobj;
 }
@@ -465,12 +511,15 @@ struct FUN_00481470_shell
     int count;
     void* object;
     ContainerItemExtra* extra;
-    bool IsNotEqual(InventoryItemEntry* apCompare);
+    bool ContainerObject_Compare(InventoryItemEntry* apCompare);
 };
 
 // Returns true when apCompare is null or its count, object or extra differ from this shell's, comparing extras via CompareHelper::Compare.
 // @fnv 0x00481470
-bool FUN_00481470_shell::IsNotEqual(InventoryItemEntry* apCompare)
+// src: XBOX_RETAIL_PDB 0x00481470
+// pdb: ContainerObject::Compare | TESContainer.obj | retail, object-file run extension, high
+// pdb params: apCompare
+bool FUN_00481470_shell::ContainerObject_Compare(InventoryItemEntry* apCompare)
 {
     if (!apCompare)
         return true;
@@ -489,6 +538,8 @@ bool FUN_00481470_shell::IsNotEqual(InventoryItemEntry* apCompare)
 
 // @fnv 0x00481f10
 // src: XBOX_PDB 0x00481f10
+// pdb: TESContainer::IsGold | TESContainer.obj | debug, upstream name already matches, high
+// pdb params: pObj
 bool __cdecl TESContainer_IsGold(TESObject* pObj)
 {
     if (pObj && ((TESForm*)pObj)->GetHavokWorldObjectCountInSceneGraph_0084e3a0() == 0xF)
@@ -517,6 +568,9 @@ struct ContainerObjectNew
 
 // Finds a container entry matching apObj and apExtra, adds aiCount to its count, or creates a new entry and prepends it to the list.
 // @fnv 0x004818e0
+// pdb: TESContainer::AddObject | TESContainer.obj | debug, call graph, high
+// pdb params: apObj, aiCount, apExtra
+// pdb locals: plist, pcobj
 InventoryItemEntry* TESContainer::AddObject(TESObject* apObj, int aiCount, ContainerItemExtra* apExtra)
 {
     if (!apObj || !aiCount)
@@ -686,7 +740,11 @@ extern BGSSaveLoadGame* g_BGSSaveLoadGame;
 }  // namespace fnv_00482770
 
 // @fnv 0x00482770
-void TESContainer::AddInventoryChangesToContainer(int aiLevItemIndex, InventoryChanges* apChanges)
+// src: XBOX_RETAIL_PDB 0x00482770
+// pdb: TESContainer::AddLevItemContainerToChanges | TESContainer.obj | retail, call graph, high
+// pdb params: aiLevItemIndex, apChanges
+// pdb locals: bhadChanges, plist, pcont, pextra
+void TESContainer::AddLevItemContainerToChanges(int aiLevItemIndex, InventoryChanges* apChanges)
 {
     bool bhadChanges = false;
     if (apChanges)
@@ -732,7 +790,10 @@ struct FUN_00481310_shell
 // The shared header has no declaration for this operation; the free helper keeps the object in ECX.
 // Iterates the object list and calls FUN_00481310 on each item whose ref is not deleted.
 // @fnv 0x00481b40
-void __fastcall InitializeContainerItems(TESContainer* container)
+// src: XBOX_DEBUG_PDB 0x00481b40
+// pdb: TESContainer::Save | TESContainer.obj | debug, call graph, high
+// pdb locals: pkList, obj
+void __fastcall TESContainer_Save(TESContainer* container)
 {
     BSSimpleList<ItemNode*>* node = (BSSimpleList<ItemNode*>*)container->GetObjectList();
     if (!node->GetItem())
@@ -758,7 +819,10 @@ struct ContainerNode
 int __cdecl FUN_00ec7d40(int);
 double __cdecl FUN_0048ebc0(void*, unsigned char);
 // @fnv 0x00481e10
-float __thiscall TESContainer::GetContainerWeight(bool flag)
+// pdb: TESContainer::GetContainerWeight | TESContainer.obj | retail, upstream name already matches, high
+// pdb params: abIsHardcore
+// pdb locals: pkList, weight, obj
+float __thiscall TESContainer::GetContainerWeight(bool abIsHardcore)
 {
     ContainerNode* node;
     float sum = 0.0f;
@@ -771,7 +835,7 @@ float __thiscall TESContainer::GetContainerWeight(bool flag)
         node = node->FUN_00726070();
         if (reinterpret_cast<ObjectReference*>(entry->object)->FUN_00440d80())
             continue;
-        sum = static_cast<float>((double)FUN_00ec7d40(entry->count) * FUN_0048ebc0(entry->object, flag) + sum);
+        sum = static_cast<float>((double)FUN_00ec7d40(entry->count) * FUN_0048ebc0(entry->object, abIsHardcore) + sum);
     }
     return sum;
 }
@@ -804,11 +868,14 @@ const char* TESFullName_GetFullName(TESForm*);
 bool QueueUIMessage(const char*, int, const char*, const char*, float, bool);
 // @fnv 0x004821a0
 // src: COMMUNITY 0x004821a0
-void TESContainer::AddContainerToReference(TESObjectREFR* target, bool silent)
+// pdb: TESContainer::AddContainerToReference | TESContainer.obj | retail, upstream name already matches, high
+// pdb params: apRef, abSilent
+// pdb locals: plist, plast, pactor, pcont, pscript, inum, i, pextra, pref, pstring
+void TESContainer::AddContainerToReference(TESObjectREFR* apRef, bool abSilent)
 {
-    if (target)
+    if (apRef)
     {
-        Actor* last = dynamic_cast<Actor*>(target);
+        Actor* last = dynamic_cast<Actor*>(apRef);
         Item* actor = 0;
         Node* node = reinterpret_cast<Node*>(GetObjectList());
         while (node)
@@ -840,7 +907,7 @@ void TESContainer::AddContainerToReference(TESObjectREFR* target, bool silent)
                         if (last)
                             last->AddItem(item->form, extra, 1);
                         else
-                            target->TESObjectREFR_AddBoundObjectItem(item->form, extra, 1);
+                            apRef->TESObjectREFR_AddBoundObjectItem(item->form, extra, 1);
                     }
                 }
                 else
@@ -855,12 +922,12 @@ void TESContainer::AddContainerToReference(TESObjectREFR* target, bool silent)
                     if (last)
                         last->AddItem(item->form, data, item->count);
                     else
-                        target->TESObjectREFR_AddBoundObjectItem(item->form, data, item->count);
+                        apRef->TESObjectREFR_AddBoundObjectItem(item->form, data, item->count);
                 }
             }
             node = node->FUN_00726070();
         }
-        if (last == DAT_011dea3c && actor && !silent)
+        if (last == DAT_011dea3c && actor && !abSilent)
         {
             BSStringT<char> text;
             if (actor->count > 1)
@@ -883,11 +950,11 @@ void TESContainer::AddContainerToReference(TESObjectREFR* target, bool silent)
             case 115:
             case 116:
                 QueueUIMessage(text.String(), 0, "Interface\\Icons\\Message Icons\\glow_message_giftbox.dds",
-                               silent ? 0 : DAT_011dea3c->Actor_GetPickUpSoundName(actor->form, 1, 0), 2.0f, false);
+                               abSilent ? 0 : DAT_011dea3c->Actor_GetPickUpSoundName(actor->form, 1, 0), 2.0f, false);
                 break;
             case 24:
                 QueueUIMessage(text.String(), 0, "Interface\\Icons\\Message Icons\\glow_message_giftbox.dds",
-                               silent ? 0 : DAT_011dea3c->Actor_GetPickUpSoundName(actor->form, 1, 0), 2.0f, false);
+                               abSilent ? 0 : DAT_011dea3c->Actor_GetPickUpSoundName(actor->form, 1, 0), 2.0f, false);
                 break;
             }
         }
@@ -912,14 +979,17 @@ struct FUN_00482910_node
 
 struct FUN_00482910_obj
 {
-    float GetDesirability(FUN_00482910_rec* r);
+    float GetDesirability(FUN_00482910_rec* apForm);
 };
 
 int __cdecl FUN_00ec43fb(int a, int b, void* c, void* d, int e);
 
 // Scores each weapon and returns the one with the highest score above DAT_01015f5c.
 // @fnv 0x00482910
-TESObjectWEAP* TESContainer::GetBestWeapon(TESActorBase* pScorer)
+// pdb: TESContainer::GetBestWeapon | TESContainer.obj | retail, upstream name already matches, high
+// pdb params: apActorBase
+// pdb locals: fHighDesire, pBest, pList, pcont, pObj, fDesire
+TESObjectWEAP* TESContainer::GetBestWeapon(TESActorBase* apActorBase)
 {
     FUN_00482910_node* p = reinterpret_cast<FUN_00482910_node*>(GetObjectList());
     float best = DAT_01015f5c;
@@ -932,7 +1002,7 @@ TESObjectWEAP* TESContainer::GetBestWeapon(TESActorBase* pScorer)
             FUN_00482910_rec* r = (FUN_00482910_rec*)FUN_00ec43fb(t3->unk04, 0, &DAT_01183108, &DAT_01183998, 0);
             if (r != 0)
             {
-                float f7 = reinterpret_cast<FUN_00482910_obj*>(pScorer)->GetDesirability(r);
+                float f7 = reinterpret_cast<FUN_00482910_obj*>(apActorBase)->GetDesirability(r);
                 if (f7 > best)
                 {
                     best = f7;
@@ -949,9 +1019,12 @@ void* __fastcall _ref_00717e50(void*);
 int __fastcall _ref_005ae380(void*);
 // Compares this container's entries against another TESContainer's entries, returning true when they differ or the counts do not match.
 // @fnv 0x00481d10
-bool TESContainer::CompareWithBase(BaseFormComponent* other)
+// pdb: TESContainer::CompareComponent | TESContainer.obj | retail, vtable slot, high
+// pdb params: apCompareFC
+// pdb locals: iCount, pCompare, pCompList, pList, pobj, bFound, pcomp
+bool TESContainer::CompareWithBase(BaseFormComponent* apCompareFC)
 {
-    TESContainer* otherContainer = dynamic_cast<TESContainer*>(other);
+    TESContainer* otherContainer = dynamic_cast<TESContainer*>(apCompareFC);
     if (otherContainer == 0)
         return true;
     int matchCount = 0;
@@ -970,7 +1043,7 @@ bool TESContainer::CompareWithBase(BaseFormComponent* other)
                 InventoryItemEntry* compareItem = *_ref_006815c0(otherCurrent);
                 if (compareItem != 0)
                 {
-                    if (!reinterpret_cast<FUN_00481470_shell*>(compareItem)->IsNotEqual(itemBeingChecked))
+                    if (!reinterpret_cast<FUN_00481470_shell*>(compareItem)->ContainerObject_Compare(itemBeingChecked))
                     {
                         differenceFound = true;
                         break;
@@ -993,7 +1066,10 @@ void* __cdecl operator new(unsigned int);
 // The shared header has no declaration for this operation; the free helper keeps the object in ECX.
 // Copies the object list in reverse order, then removes entries that share the same object pointer.
 // @fnv 0x00482b00
-BSSimpleList<InventoryStackRecord*>* __fastcall CopyUniqueContainerObjects(TESContainer* container)
+// src: XBOX_DEBUG_PDB 0x00482b00
+// pdb: TESContainer::GetFilteredList | TESContainer.obj | debug, call graph, high
+// pdb locals: plist, pnewlist, pnext
+BSSimpleList<InventoryStackRecord*>* __fastcall TESContainer_GetFilteredList(TESContainer* container)
 {
     BSSimpleList<InventoryStackRecord*>* pNewList = new BSSimpleList<InventoryStackRecord*>;
     BSSimpleList<InventoryStackRecord*>* pList = &container->objectList;
@@ -1028,23 +1104,28 @@ struct VATS_CommandList
     void RemoveMatchingItem(VATSCommand* const& apCommand);
 };
 // @fnv 0x00481790
-void TESContainer::RemoveContainerObject(InventoryItemEntry* apEntry)
+// pdb: TESContainer::RemoveContainerObject | TESContainer.obj | retail, upstream name already matches, high
+// pdb params: apCObj
+void TESContainer::RemoveContainerObject(InventoryItemEntry* apCObj)
 {
-    if (!apEntry)
+    if (!apCObj)
         return;
-    ((VATS_CommandList*)GetObjectList())->RemoveMatchingItem((VATSCommand* const&)apEntry);
-    BGSPerkEntry* pkEntry = reinterpret_cast<BGSPerkEntry*>(apEntry);
+    ((VATS_CommandList*)GetObjectList())->RemoveMatchingItem((VATSCommand* const&)apCObj);
+    BGSPerkEntry* pkEntry = reinterpret_cast<BGSPerkEntry*>(apCObj);
     BGSPerkEntry* pkDeleteCur = pkEntry;
     pkDeleteCur ? pkDeleteCur->Destroy(1) : 0;
 }
 
 struct ArmorRater
 {
-    float GetDesirability(TESObjectARMO* armor);
+    float GetDesirability(TESObjectARMO* apForm);
 };
 static const float kNegInfinity = -3.402823466e+38f;
 // Scans the container's object list for armor matching the given biped slot and returns the one with the highest rater score, or null.
 // @fnv 0x004829c0
+// pdb: TESContainer::GetBestArmor | TESContainer.obj | retail, object-file run extension, low
+// pdb params: apActorBase, aeBodySlot
+// pdb locals: fHighDesire, pBest, pList, pcont, pObj, fDesire
 TESObjectARMO* TESContainer::FindBestArmor(TESActorBase* rater, int slot)
 {
     BSSimpleList<InventoryStackRecord*>* iter = GetObjectList();
@@ -1278,7 +1359,7 @@ struct RecipeActorForm
     int FUN_00401170();
     void* Actor_GetCurrentWeapon();
     int FUN_00575610(void* item);
-    void Actor_UnEquipObject(void* item, int count, void* extra, bool a4, bool a5, bool a6);
+    void Actor_UnEquipObject(void* item, int aiNumber, void* apExtra, bool abForceUnequip, bool abEquipCalling, bool abPlayPickUpSounds);
     RecipeProcess* FUN_008d8520();
     bool TESObjectWEAP_IsThrownWeapon();
     void TESObjectREFR_AddBoundObjectItem(void* item, int extra, int count);
@@ -1364,7 +1445,7 @@ struct GameSettingStr
 
 struct WeaponFormOps
 {
-    void* TESObjectWEAP_GetCurrentAmmo(void* actor);
+    void* TESObjectWEAP_GetCurrentAmmo(void* apWeaponHolder);
 };
 
 extern RecipeMenuState* DAT_011d8e90;
@@ -1385,6 +1466,9 @@ void __cdecl RecipeMenu_Close();
 
 // Removes recipe components from the crafter and adds the crafted item, queuing a UI message with the item name and quantity.
 // @fnv 0x007284f0
+// pdb: RecipeMenu::ItemSelectCallback | RecipeMenu.obj | debug, object-file gap fill, medium
+// pdb params: aiAmountSelected
+// pdb locals: pcurrTiple, pobject, pCompList, pForm, iQuantity, bAmmo, pactor, pstring
 void CraftRecipe(int count)
 {
     bool playedSound;
@@ -1553,6 +1637,9 @@ extern "C" void* __cdecl FNV_DynamicCast(void*, long, void*, void*, int);
 // Dynamic-casts apForm to TESScriptableForm and returns its script, or null if the cast fails.
 // @fnv 0x004826d0
 // src: XBOX_PDB 0x004826d0
+// pdb: TESScriptableForm::GetFormScript | TESContainer.obj | retail, upstream name already matches, high
+// pdb params: apForm
+// pdb locals: pSF
 Script* TESScriptableForm_GetFormScript(TESForm* apForm)
 {
     TESScriptableForm* pSF =

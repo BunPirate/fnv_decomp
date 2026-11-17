@@ -8,6 +8,9 @@
 #include <string.h>
 
 // @fnv 0x0040c230
+// pdb: MagicItemForm::Load | MagicItemForm.obj | debug, object-file run extension, low
+// pdb params: apFile
+// pdb locals: echunkid, pMessage
 bool MagicItemForm::LoadForm(TESFile* file)
 {
     LoadRecordHeader(file);
@@ -68,17 +71,20 @@ bool MagicItemForm::LoadForm(TESFile* file)
 }
 
 // @fnv 0x0040c5b0
+// pdb: MagicItemForm::InitItem | MagicItemForm.obj | retail, upstream name already matches, high
 void MagicItemForm::InitItem()
 {
     if (static_cast<const TESForm*>(this)->GetInitialized())
         return;
-    ((MagicItem*)((char*)this + 0x18))->LoadEffectsFromForm(this);
+    ((MagicItem*)((char*)this + 0x18))->MagicItemInitItem(this);
     SetInitializationState(true);
 }
 
 void __fastcall FUN_004056d0(void*);
 
 // @fnv 0x0040c1d0
+// pdb: SettingT<GameSettingCollection>::~SettingT<GameSettingCollection> | EffectItem.obj | retail, object-file run extension, low
+// pdb note: debug build links it to MagicItemForm::Save
 void MagicItemForm::SaveForm()
 {
     TESForm::BeginFormRecord();
@@ -90,6 +96,9 @@ void MagicItemForm::SaveForm()
 }
 
 // @fnv 0x0040c450
+// pdb: MagicItemForm::Compare | MagicItemForm.obj | retail, upstream name already matches, high
+// pdb params: apCompare
+// pdb locals: pmagicItem
 bool MagicItemForm::Compare(TESForm* apCompare)
 {
     MagicItemForm* pmagicItem = dynamic_cast<MagicItemForm*>(apCompare);
@@ -119,14 +128,17 @@ extern const char DAT_0118395c[];
 MagicItemForm* __cdecl FUN_00ec43fb(const TESForm* form, int a2, const char* a3, const char* a4, int a5);
 
 // @fnv 0x0040c510
-void MagicItemForm::CopyFrom(const TESForm* form)
+// pdb: MagicItemForm::Copy | MagicItemForm.obj | retail, object-file gap fill, high
+// pdb params: apCopy
+// pdb locals: pmagicItem
+void MagicItemForm::CopyFrom(const TESForm* apCopy)
 {
-    MagicItemForm* rec = FUN_00ec43fb(form, 0, DAT_01183028, DAT_0118395c, 0);
+    MagicItemForm* rec = FUN_00ec43fb(apCopy, 0, DAT_01183028, DAT_0118395c, 0);
     if (rec == 0)
     {
         return;
     }
-    TESForm::CopyFrom(form);
+    TESForm::CopyFrom(apCopy);
     ((MagicItem*)((char*)this + 0x18))->CopyMagicItemData(rec ? (MagicItem*)((char*)rec + 0x18) : 0);
-    ((EffectItemList*)((char*)this + 0x24))->CopyItemsFromList(rec ? (EffectItemList*)((char*)rec + 0x24) : 0);
+    ((EffectItemList*)((char*)this + 0x24))->Copy(rec ? (EffectItemList*)((char*)rec + 0x24) : 0);
 }

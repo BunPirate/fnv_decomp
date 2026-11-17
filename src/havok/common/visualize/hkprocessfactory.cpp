@@ -27,6 +27,7 @@ struct FUN_00dd9580_Class
 };
 // Calls FUN_00dd94c0, then if bit 0 of flags is set notifies the service interface with this and unk04, and returns this.
 // @fnv 0x00dd9580
+// pdb: hkProcessFactory::`scalar deleting destructor' | hkProcessFactory.obj | retail, vtable slot, high
 FUN_00dd9580_Class* FUN_00dd9580_Class::FUN_00dd9580(char flags)
 {
     FUN_00dd94c0();
@@ -48,7 +49,7 @@ struct FUN_00dd9460_Factory
 
 struct FUN_00dd9460_Child
 {
-    void* Make(int size);
+    void* hkCriticalSection_ctor(int size);
 };
 
 class FUN_00dd9460_cls
@@ -66,6 +67,7 @@ class FUN_00dd9460_cls
 };
 
 // @fnv 0x00dd9460
+// pdb: hkProcessFactory::hkProcessFactory | hkProcessFactory.obj | retail, object-file gap fill, high
 FUN_00dd9460_cls* FUN_00dd9460_cls::Initialize()
 {
     unk06 = 1;
@@ -79,7 +81,7 @@ FUN_00dd9460_cls* FUN_00dd9460_cls::Initialize()
     void* pBuffer = f->CreateBuffer(0x18);
     if (pBuffer != 0)
     {
-        unk18 = reinterpret_cast<FUN_00dd9460_Child*>(pBuffer)->Make(0x7d0);
+        unk18 = reinterpret_cast<FUN_00dd9460_Child*>(pBuffer)->hkCriticalSection_ctor(0x7d0);
     }
     else
     {
@@ -107,7 +109,9 @@ struct MyInterface
 
 // Gets a service, requests a factory of type 0x1c from its interface, sets the factory's unk04 to 0x1c and returns its init() result.
 // @fnv 0x00dd9550
-MyFactory* CreateFactory()
+// src: XBOX_RETAIL_PDB 0x00dd9550
+// pdb: hkProcessFactorycreate | hkProcessFactory.obj | retail, object-file gap fill, high
+MyFactory* hkProcessFactorycreate()
 {
     FUN_00dd9580_Service* service = hkMemoryRouter_getInstance();
     MyInterface* iface = (MyInterface*)service->unk10;
@@ -174,6 +178,7 @@ struct FUN_00dd94c0 : S_00dd94c0_Base
 
 // Deletes the critical section, calls notify with the lock and 0x18, then clears m_entries.
 // @fnv 0x00dd94c0
+// pdb: hkProcessFactory::~hkProcessFactory | hkProcessFactory.obj | retail, object-file gap fill, high
 FUN_00dd94c0::~FUN_00dd94c0() throw()
 {
     CRITICAL_SECTION* lock = m_lock;
@@ -232,7 +237,7 @@ struct S_00dd9380_Entry
     int m_iOwnerObjectOffset;
 };
 
-void hkArrayUtil__reserve(S_00dd9380_Allocator& alloc, void* array, int numElem, int sizeElem);
+void hkArrayUtil__reserve(S_00dd9380_Allocator& mem, void* array, int numElem, int sizeElem);
 
 struct S_00dd9380_ArrayLocalForm
 { // local form of hkArray: 0x00dd9380 needs the original inline/out-of-line helper split; shared replacement changes bytes.
@@ -275,19 +280,22 @@ struct S_00dd9380
     int m_nextId;
     S_00dd9380_ArrayLocalForm m_entries;
     CRITICAL_SECTION* m_lock;
-    int hkProcessFactory_registerProcess(const char* name, int value);
+    int hkProcessFactory_registerProcess(const char* viewerName, int creationFunction);
 };
 
 // Finds an entry by name or creates one with the supplied value and next owner offset, then returns its owner offset.
 // @fnv 0x00dd9380
 // src: HAVOK_LIB 0x00dd9380
-int S_00dd9380::hkProcessFactory_registerProcess(const char* name, int value)
+// pdb: hkProcessFactory::registerProcess | hkProcessFactory.obj | retail, upstream name already matches, high
+// pdb params: viewerName, creationFunction
+// pdb locals: assertBuf, ostr
+int S_00dd9380::hkProcessFactory_registerProcess(const char* viewerName, int creationFunction)
 {
     EnterCriticalSection(m_lock);
     S_00dd9380_Entry* e = 0;
     for (int i = 0; i < m_entries.m_iElementCount; i++)
     {
-        if (S_00dd9380_strCmp(m_entries.m_data[i].m_name.cString(), name) == 0)
+        if (S_00dd9380_strCmp(m_entries.m_data[i].m_name.cString(), viewerName) == 0)
         {
             e = &m_entries.m_data[i];
             break;
@@ -296,8 +304,8 @@ int S_00dd9380::hkProcessFactory_registerProcess(const char* name, int value)
     if (e == 0)
     {
         e = &m_entries.AllocatePair();
-        e->m_name.UpdateState_00cb0c10(name);
-        e->m_uiFilterValue = value;
+        e->m_name.UpdateState_00cb0c10(viewerName);
+        e->m_uiFilterValue = creationFunction;
         e->m_iOwnerObjectOffset = m_nextId++;
     }
     LeaveCriticalSection(m_lock);

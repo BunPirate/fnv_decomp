@@ -14,6 +14,7 @@ class PathingActorData;
 #include "../../include/NiPoint3.h"
 #include "../../include/RADIO_RANGE_TYPE.h"
 #include "../../include/TESObjectREFR.h"
+// pdb: structure ParentSpaceNode, size 0xc, 3 members
 class ParentSpaceNode
 {
   public:
@@ -21,6 +22,7 @@ class ParentSpaceNode
     TESWorldSpace* m_pContainingWorldspace;
     TESObjectCELL* m_pReferenceCell;
 };
+// pdb: structure TeleportLink, size 0x10, 2 members
 class TeleportLink
 {
   public:

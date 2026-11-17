@@ -151,7 +151,7 @@ struct ItemWithDtor
         g_memoryManager._DeallocateAlias(p);
     }
 };
-void __stdcall ClearAndDeleteItem(ItemWithDtor* pItem);
+void __stdcall ClearAndDeleteItem(ItemWithDtor* pkItem);
 extern long DAT_011f4400;
 extern char* DAT_0109b220;
 void __cdecl FreeTable(void* p);
@@ -237,7 +237,7 @@ struct FUN_00ee90f0_cls
     void RemoveAt(int index);
 };
 bool __stdcall RemoveMissingKeys(KeyObj* apKeyObj, FUN_00ee90f0_cls* apEntryList);
-bool NiFile_Access(const char* pcName, int iMode);
+bool NiFile_Access(const char* pcName, int eMode);
 #include <windows.h>
 #include "../../../../include/NiTFixedStringMap_NiAVObject___.h"
 struct Node
@@ -270,15 +270,15 @@ inline void S_00ee9230_WriteBinary(S_00ee9230_Stream* pkStream, const void* pvBu
 bool __stdcall NiGPUProgramCache_SaveString(S_00ee9230_Stream* pkStream, const char* pcString);
 extern bool DAT_011c2fdd;
 bool __cdecl NiFile_DirectoryExists(const char* pcName);
-bool __cdecl NiFile_CreateDirectoryRecursive(const char* pcName);
-NiFile* __cdecl FUN_00aa1a20(const char* pcName, int eMode, unsigned int uiBufferSize);
+bool __cdecl NiFile_CreateDirectoryRecursive(const char* pcFullPath);
+NiFile* __cdecl FUN_00aa1a20(const char* pcName, int eMode, unsigned int uiSize);
 void __cdecl AdvancePosition(NiFile* pkFile, char* pcBuffer, unsigned int uiLen);
-int __cdecl FUN_00aa1360(const char* pc1, const char* pc2);
+int __cdecl FUN_00aa1360(const char* s1, const char* s2);
 void __cdecl InvokeAndAccumulate(NiFile* pkFile, bool* pbValue);
 void __cdecl NiStreamLoadBinary_00a575b0(NiFile* pkFile, unsigned int* puiValue);
 extern "C" size_t strlen(const char*);
 extern char* _EmptyFS;
-bool __cdecl NiFile_CreateDirectoryRecursive(const char* h);
+bool __cdecl NiFile_CreateDirectoryRecursive(const char* pcFullPath);
 void __cdecl Runtime_UpdateState_00e984d0(void* s, const char* name, unsigned int len);
 struct StreamObj : public NiFile
 {
@@ -375,12 +375,12 @@ struct EntrySet
     void Add(ShaderEntry* const& p);
 };
 
-struct ShaderGroup : NiRefObject
+struct NiGPUProgramCache_NiGPUProgramDesc : NiRefObject // src: EXE 0x010f0134 (vtable; old: ShaderGroup)
 {
     ShaderPtr m_pGeometryShader;
     EntrySet m_kEntries;
-    virtual ~ShaderGroup();
-    ShaderGroup() throw()
+    virtual ~NiGPUProgramCache_NiGPUProgramDesc();
+    NiGPUProgramCache_NiGPUProgramDesc() throw()
     {
         m_pGeometryShader.m_p = 0;
         m_kEntries.m_pBase = 0;
@@ -391,8 +391,8 @@ struct ShaderGroup : NiRefObject
 
 struct GroupPtrArg
 {
-    ShaderGroup* m_p;
-    GroupPtrArg(ShaderGroup* p) : m_p(p)
+    NiGPUProgramCache_NiGPUProgramDesc* m_p;
+    GroupPtrArg(NiGPUProgramCache_NiGPUProgramDesc* p) : m_p(p)
     {
         if (m_p)
             InterlockedIncrement(reinterpret_cast<volatile long*>(&m_p->m_uiRefCount));
@@ -406,8 +406,8 @@ struct GroupPtrArg
 
 struct GroupMap
 {
-    bool GetAt(const NiFixedString& key, ShaderGroup*& val);
-    void SetAt(const NiFixedString& key, GroupPtrArg val);
+    bool GetAt(const NiFixedString& kKey, NiGPUProgramCache_NiGPUProgramDesc*& val);
+    void NiTFixedStringMapBase_DFALL_NiTMapItem_NiFixedString_NiPointer_NiGPUProgramCache_NiGPUProgramDesc_NiPointer_NiGPUProgramCache_NiGPUProgramDesc_SetAt(const NiFixedString& kKey, GroupPtrArg val);
 };
 
 static inline unsigned int ReadRaw(S_00a8d8b0* s, void* dst, unsigned int total, unsigned int elem)
@@ -504,7 +504,7 @@ class ShaderLib
     int unk30;
     int m_iSlotCount;
 
-    bool NiGPUProgramCache_LoadEntry(S_00a8d8b0* s, bool& changed);
+    bool NiGPUProgramCache_LoadEntry(S_00a8d8b0* kStream, bool& bDeprecated);
 };
 
 // The cache reader constructs strings in raw storage and releases them explicitly.
@@ -515,24 +515,27 @@ __declspec(nothrow) static __forceinline NiFixedString* ConstructCacheString(voi
 
 // @fnv 0x00ee9cc0
 // src: XBOX_PDB 0x00ee9cc0
-bool ShaderLib::NiGPUProgramCache_LoadEntry(S_00a8d8b0* s, bool& changed)
+// pdb: NiGPUProgramCache::LoadEntry | NiGPUProgramCache.obj | retail, upstream name already matches, high
+// pdb params: kStream, bDeprecated
+// pdb locals: pkProgram, uiVersion, bSkip, pkDesc, kName, uiResCount, acBuffer, spOtherDesc, ui, uiValue, pkRes
+bool ShaderLib::NiGPUProgramCache_LoadEntry(S_00a8d8b0* kStream, bool& bDeprecated)
 {
     char buf[0x200];
     int version;
-    ReadRaw(s, &version, 4, 4);
-    ReadStr0(s, buf);
+    ReadRaw(kStream, &version, 4, 4);
+    ReadStr0(kStream, buf);
     // These strings are released explicitly along each path, as in the game.
     void* nameStorage[sizeof(NiFixedString) / sizeof(void*)];
     NiFixedString& name = *ConstructCacheString(nameStorage, buf);
     bool skip = false;
     if (version != m_iSlotCount)
     {
-        changed = true;
+        bDeprecated = true;
         skip = true;
     }
     GroupMap* map;
     {
-        ShaderGroup* found = 0;
+        NiGPUProgramCache_NiGPUProgramDesc* found = 0;
         map = &m_kObjectGroups;
         if (map->GetAt(name, found))
             skip = true;
@@ -542,12 +545,12 @@ bool ShaderLib::NiGPUProgramCache_LoadEntry(S_00a8d8b0* s, bool& changed)
                 found->DeleteThis();
         }
     }
-    ShaderGroup* group = 0;
+    NiGPUProgramCache_NiGPUProgramDesc* group = 0;
     if (!skip)
-        group = new ShaderGroup;
+        group = new NiGPUProgramCache_NiGPUProgramDesc;
 
     void* shader = 0;
-    if (!LoadShader(s, name, shader, skip))
+    if (!LoadShader(kStream, name, shader, skip))
     {
         name.~NiFixedString();
         return false;
@@ -556,45 +559,45 @@ bool ShaderLib::NiGPUProgramCache_LoadEntry(S_00a8d8b0* s, bool& changed)
         group->m_pGeometryShader = shader;
 
     unsigned int count = 0;
-    ReadRaw(s, &count, 4, 4);
+    ReadRaw(kStream, &count, 4, 4);
     for (unsigned int i = 0; i < count; i++)
     {
         if (!skip)
         {
             ShaderEntry* e = new ShaderEntry;
-            ReadStr(s, buf);
+            ReadStr(kStream, buf);
             void* t1Storage[sizeof(NiFixedString) / sizeof(void*)];
             NiFixedString& t1 = *ConstructCacheString(t1Storage, buf);
             e->SetName(t1);
             t1.~NiFixedString();
-            ReadStr(s, buf);
+            ReadStr(kStream, buf);
             void* t2Storage[sizeof(NiFixedString) / sizeof(void*)];
             NiFixedString& t2 = *ConstructCacheString(t2Storage, buf);
             e->AssignReferencedString_00eea650(t2);
             t2.~NiFixedString();
-            ReadStr(s, buf);
+            ReadStr(kStream, buf);
             void* t3Storage[sizeof(NiFixedString) / sizeof(void*)];
             NiFixedString& t3 = *ConstructCacheString(t3Storage, buf);
             e->AssignReferencedString_00eea690(t3);
             t3.~NiFixedString();
-            ReadStr(s, buf);
+            ReadStr(kStream, buf);
             void* t4Storage[sizeof(NiFixedString) / sizeof(void*)];
             NiFixedString& t4 = *ConstructCacheString(t4Storage, buf);
             e->SetLookAtName(t4);
             t4.~NiFixedString();
-            ReadStr(s, buf);
+            ReadStr(kStream, buf);
             void* t5Storage[sizeof(NiFixedString) / sizeof(void*)];
             NiFixedString& t5 = *ConstructCacheString(t5Storage, buf);
             e->AssignRefCounted(t5);
             t5.~NiFixedString();
             unsigned int v;
-            ReadRaw(s, &v, 4, 4);
+            ReadRaw(kStream, &v, 4, 4);
             e->SetCreator_00eea540(v);
-            ReadRaw(s, &v, 4, 4);
+            ReadRaw(kStream, &v, 4, 4);
             e->NiMaterialResource_SetSource(v);
-            ReadRaw(s, &v, 4, 4);
+            ReadRaw(kStream, &v, 4, 4);
             e->NiMaterialResource_SetExtraData(v);
-            ReadRaw(s, &v, 4, 4);
+            ReadRaw(kStream, &v, 4, 4);
             e->NiMaterialResource_SetObjectType(v);
             {
                 ShaderEntry* sp = e;
@@ -610,21 +613,21 @@ bool ShaderLib::NiGPUProgramCache_LoadEntry(S_00a8d8b0* s, bool& changed)
         }
         else
         {
-            ReadStr(s, buf);
-            ReadStr(s, buf);
-            ReadStr(s, buf);
-            ReadStr(s, buf);
-            ReadStr(s, buf);
+            ReadStr(kStream, buf);
+            ReadStr(kStream, buf);
+            ReadStr(kStream, buf);
+            ReadStr(kStream, buf);
+            ReadStr(kStream, buf);
             unsigned int v;
-            ReadRaw(s, &v, 4, 4);
-            ReadRaw(s, &v, 4, 4);
-            ReadRaw(s, &v, 4, 4);
-            ReadRaw(s, &v, 4, 4);
+            ReadRaw(kStream, &v, 4, 4);
+            ReadRaw(kStream, &v, 4, 4);
+            ReadRaw(kStream, &v, 4, 4);
+            ReadRaw(kStream, &v, 4, 4);
         }
     }
     if (!skip && group->m_pGeometryShader.m_p)
     {
-        map->SetAt(name, group);
+        map->NiTFixedStringMapBase_DFALL_NiTMapItem_NiFixedString_NiPointer_NiGPUProgramCache_NiGPUProgramDesc_NiPointer_NiGPUProgramCache_NiGPUProgramDesc_SetAt(name, group);
     }
     name.~NiFixedString();
     return true;

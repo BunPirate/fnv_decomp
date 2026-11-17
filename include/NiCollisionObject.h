@@ -5,6 +5,7 @@
 class NiAVObject;
 class NiUpdateData;
 
+// pdb: class NiCollisionObject, size 0xc, bases: NiObject, 1 members
 class NiCollisionObject : public NiObject
 {
   public:

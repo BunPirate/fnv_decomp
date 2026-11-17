@@ -19,11 +19,13 @@ struct FUN_009d5ff0_shell : CombatProcedureEvade
 
 // @fnv 0x009d5ff0
 // src: XBOX_PDB 0x009d5ff0
-void FUN_009d5ff0_shell::CombatProcedureEvade_LoadGame(BGSLoadFormBuffer* buffer)
+// pdb: CombatProcedureEvade::LoadGame | CombatProcedureEvade.obj | retail, upstream name already matches, high
+// pdb params: apLoadGameBuffer
+void FUN_009d5ff0_shell::CombatProcedureEvade_LoadGame(BGSLoadFormBuffer* apLoadGameBuffer)
 {
-    CombatProcedure::LoadGame(buffer);
-    buffer->ReadTypedData((void*)((char*)this + 0x10), 4u);
-    buffer->ReadTypedData((void*)((char*)this + 0x14), 4u);
+    CombatProcedure::LoadGame(apLoadGameBuffer);
+    apLoadGameBuffer->ReadTypedData((void*)((char*)this + 0x10), 4u);
+    apLoadGameBuffer->ReadTypedData((void*)((char*)this + 0x14), 4u);
 }
 
 struct FUN_009ca6c0_shell
@@ -38,6 +40,7 @@ extern int DAT_01091984;
 
 // @fnv 0x009d5b40
 // src: GUESS 0x009d5b40 (confidence: low)
+// pdb: CombatProcedureEvade::~CombatProcedureEvade | CombatProcedureEvade.obj | debug, object-file gap fill, medium
 void FUN_009d5b40_shell::UpdateFields_009d5b40(void)
 {
     *reinterpret_cast<int**>(this) = &DAT_01091984;
@@ -60,6 +63,8 @@ struct FUN_009d5ad0 : FUN_009ca680
 };
 // Initializes the object's state to 0 and stores the given location value.
 // @fnv 0x009d5ad0
+// pdb: CombatProcedureEvade::CombatProcedureEvade | CombatProcedureEvade.obj | debug, call graph, medium
+// pdb params: aiLocation
 FUN_009d5ad0::FUN_009d5ad0(int aiLocation)
 {
     eState = 0;
@@ -72,6 +77,7 @@ struct FUN_009d5b10_shell : FUN_009d5b40_shell
     void* DestroyIfFlagged(unsigned int flags);
 };
 // @fnv 0x009d5b10
+// pdb: CombatProcedureEvade::`scalar deleting destructor' | CombatProcedureEvade.obj | debug, vtable slot, medium
 void* FUN_009d5b10_shell::DestroyIfFlagged(unsigned int flags)
 {
     UpdateFields_009d5b40();
@@ -90,6 +96,7 @@ struct FUN_009d5b60_shell : CombatProcedureEvade
 };
 // Stops the actor's movement and then runs the engage-target combat procedure on this object.
 // @fnv 0x009d5b60
+// pdb: CombatProcedureEvade::Shutdown | CombatProcedureEvade.obj | retail, vtable slot, high
 void FUN_009d5b60_shell::StopAndEngageTarget()
 {
     reinterpret_cast<FUN_009cc4d0_shell*>(this)->CombatProcedure_GetAttacker()->StopMoving();
@@ -106,6 +113,8 @@ struct FUN_009d5fb0_shell : CombatProcedureEvade
 };
 // Saves the base combat procedure, then writes the 4-byte values at offsets 0x10 and 0x14 into the save buffer.
 // @fnv 0x009d5fb0
+// pdb: CombatProcedureEvade::SaveGame | CombatProcedureEvade.obj | retail, vtable slot, high
+// pdb params: apSaveGameBuffer
 void FUN_009d5fb0_shell::SaveEvadeProcedure(BGSSaveFormBuffer* apSaveGameBuffer)
 {
     ((CombatProcedure_SaveHelper*)this)->SaveGame(apSaveGameBuffer);
@@ -338,12 +347,12 @@ struct EvadeController
 {
     void CombatState_BoostConfidence(int);
     void ClearAndDeletePointer();
-    void HandleMenuEvent(const EvadeWorldLocation*, int);
+    void CombatState_ReachedDestination(const EvadeWorldLocation*, int);
 };
 struct EvadeMovement
 {
     int CombatGroup_CreateMovementAvoidNodeArray(EvadeActor*, NiPoint3*, float, int, int);
-    int BuildAvoidNodes(EvadeActor*, int);
+    int CombatGroup_CreateFleeAvoidNodeArray(EvadeActor*, int);
 };
 struct EvadeContext
 {
@@ -384,6 +393,8 @@ extern float DAT_0101e704, DAT_01012054, DAT_01050b98;
 extern const char DAT_01091a08[], DAT_010919e8[], DAT_010919c8[];
 
 // @fnv 0x009d5b90
+// pdb: CombatProcedureEvade::Update | CombatProcedureEvade.obj | retail, unique string literal, high
+// pdb locals: pcombatState, pattacker, attackerLocation, fleeRequest, pavoidNodeArray, destination
 void EvadeProcedure::UpdateFleeState()
 {
     EvadeActor* actor = CombatProcedure_GetAttacker();
@@ -416,7 +427,7 @@ void EvadeProcedure::UpdateFleeState()
         case 12:
             fleeRequest.PathingRequestClosePoint_SetMinDistance(*DAT_011cea80.Setting_Float_00403e20());
             fleeRequest.PathingRequest_SetNoDestination();
-            destination = context->FUN_004fb070()->BuildAvoidNodes(actor, 0);
+            destination = context->FUN_004fb070()->CombatGroup_CreateFleeAvoidNodeArray(actor, 0);
             break;
         }
         fleeRequest.FUN_006d61e0(reinterpret_cast<PathingAvoidNodeArray*>(destination));
@@ -447,7 +458,7 @@ void EvadeProcedure::UpdateFleeState()
         }
         else if (actor->FUN_008b3bb0())
         {
-            pController->HandleMenuEvent(&actor->TESObjectREFR_GetWorldLocation(), location);
+            pController->CombatState_ReachedDestination(&actor->TESObjectREFR_GetWorldLocation(), location);
             SetState();
         }
         break;

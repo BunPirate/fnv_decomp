@@ -28,24 +28,27 @@ struct S_00d3ef70_Dispatcher {
 };
 
 S_00d3ef70_Agent* hkpSphereCapsuleAgent_createCapsuleSphereAgent(const S_00d3ef70_CdBody&, const S_00d3ef70_CdBody&, const S_00d3ef70_Input&, void*);
-void Object_UpdateFields_00d3f040(const S_00d3ef70_CdBody&, const S_00d3ef70_CdBody&, const S_00d3ef70_Input&, S_00d3ef70_Collector&);
-void Object_ProcessAndReturnValue_00d3f4c0(const S_00d3ef70_CdBody&, const S_00d3ef70_CdBody&, const S_00d3ef70_Input&, S_00d3ef70_Collector&);
+void hkpSymmetricAgentLinearCast_hkpSphereCapsuleAgent_staticGetPenetrations(const S_00d3ef70_CdBody&, const S_00d3ef70_CdBody&, const S_00d3ef70_Input&, S_00d3ef70_Collector&);
+void hkpSymmetricAgentLinearCast_hkpSphereCapsuleAgent_staticGetClosestPoints(const S_00d3ef70_CdBody&, const S_00d3ef70_CdBody&, const S_00d3ef70_Input&, S_00d3ef70_Collector&);
 void Object_UpdateFields_00d3ac80(const S_00d3ef70_CdBody&, const S_00d3ef70_CdBody&, const S_00d3ef70_Input&, S_00d3ef70_Collector&, S_00d3ef70_Collector*);
 S_00d3ef70_Agent* hkMemoryRouter_getInstance_AllocateAndInitializeObject16(const S_00d3ef70_CdBody&, const S_00d3ef70_CdBody&, const S_00d3ef70_Input&, void*);
 void hkpSphereCapsuleAgent_staticGetPenetrations(const S_00d3ef70_CdBody&, const S_00d3ef70_CdBody&, const S_00d3ef70_Input&, S_00d3ef70_Collector&);
-void FUN_00d3ebe0(const S_00d3ef70_CdBody&, const S_00d3ef70_CdBody&, const S_00d3ef70_Input&, S_00d3ef70_Collector&);
+void staticGetClosestPoints(const S_00d3ef70_CdBody&, const S_00d3ef70_CdBody&, const S_00d3ef70_Input&, S_00d3ef70_Collector&);
 void Object_ProcessEntries_00daf8e0(const S_00d3ef70_CdBody&, const S_00d3ef70_CdBody&, const S_00d3ef70_Input&, S_00d3ef70_Collector&, S_00d3ef70_Collector*);
 
 // Registers two collision agent function tables with the dispatcher for the type pairs (5,1) and (1,5).
 // @fnv 0x00d3ef70
 // src: HAVOK_LIB 0x00d3ef70
+// pdb: hkpSphereCapsuleAgent::registerAgent | hkpSphereCapsuleAgent.obj | retail, upstream name already matches, high
+// pdb params: dispatcher
+// pdb locals: af
 void hkpSphereCapsuleAgent_registerAgent(S_00d3ef70_Dispatcher* dispatcher)
 {
     {
         S_00d3ef70_AgentFuncs agentFuncs;
         agentFuncs.m_pCreateFunc = hkpSphereCapsuleAgent_createCapsuleSphereAgent;
-        agentFuncs.m_pQueryPenetrationsFunc = Object_UpdateFields_00d3f040;
-        agentFuncs.m_getClosestPointsFunc = Object_ProcessAndReturnValue_00d3f4c0;
+        agentFuncs.m_pQueryPenetrationsFunc = hkpSymmetricAgentLinearCast_hkpSphereCapsuleAgent_staticGetPenetrations;
+        agentFuncs.m_getClosestPointsFunc = hkpSymmetricAgentLinearCast_hkpSphereCapsuleAgent_staticGetClosestPoints;
         agentFuncs.m_pLinearCastFunc = Object_UpdateFields_00d3ac80;
         agentFuncs.m_bIsFlipped = true;
         agentFuncs.m_bIsPredictive = false;
@@ -55,7 +58,7 @@ void hkpSphereCapsuleAgent_registerAgent(S_00d3ef70_Dispatcher* dispatcher)
         S_00d3ef70_AgentFuncs agentFuncs;
         agentFuncs.m_pCreateFunc = hkMemoryRouter_getInstance_AllocateAndInitializeObject16;
         agentFuncs.m_pQueryPenetrationsFunc = hkpSphereCapsuleAgent_staticGetPenetrations;
-        agentFuncs.m_getClosestPointsFunc = FUN_00d3ebe0;
+        agentFuncs.m_getClosestPointsFunc = staticGetClosestPoints;
         agentFuncs.m_pLinearCastFunc = Object_ProcessEntries_00daf8e0;
         agentFuncs.m_bIsFlipped = false;
         agentFuncs.m_bIsPredictive = false;
@@ -86,17 +89,19 @@ public:
     int m_i04;
     InnerCls *m_pInner;
     unsigned short m_w0c;
-    void hkpSphereCapsuleAgent_cleanup(int a1);
+    void hkpSphereCapsuleAgent_cleanup(int constraintOwner);
 };
 
 // @fnv 0x00d3e2b0
+// pdb: hkpSphereCapsuleAgent::cleanup | hkpSphereCapsuleAgent.obj | retail, upstream name already matches, high
+// pdb params: constraintOwner
 inline void FUN_00d3e2b0_cls::v0(int aiValue) { aiValue; }
 
 // src: HAVOK_SRC 0x00d3e2b0
-void FUN_00d3e2b0_cls::hkpSphereCapsuleAgent_cleanup(int a1)
+void FUN_00d3e2b0_cls::hkpSphereCapsuleAgent_cleanup(int constraintOwner)
 {
     if (m_w0c != 0xffff) {
-        m_pInner->v5(m_w0c, a1);
+        m_pInner->v5(m_w0c, constraintOwner);
     }
     v0(1);
 }
@@ -120,13 +125,15 @@ hkMemoryRouter* hkMemoryRouter_getInstance();
 
 // @fnv 0x00d3e2f0
 // src: XBOX_PDB 0x00d3e2f0
-void __cdecl hkpSphereCapsuleAgent_createCapsuleSphereAgent(int aiUnused1, int aiUnused2, int aiUnused3, int aiValue) {
+// pdb: hkpSphereCapsuleAgent::createCapsuleSphereAgent | hkpSphereCapsuleAgent.obj | retail, upstream name already matches, high
+// pdb params: bodyA, bodyB, input, mgr
+void __cdecl hkpSphereCapsuleAgent_createCapsuleSphereAgent(int bodyA, int bodyB, int input, int mgr) {
     hkMemoryRouter* pAllocHolder = hkMemoryRouter_getInstance();
     ObjAllocator* allocator = (ObjAllocator*)pAllocHolder->m_heap;
     SmallRecord* pRecord = (SmallRecord*)allocator->Alloc(0x10);
     pRecord->m_w04 = 0x10;
     pRecord->m_w06 = 1;
-    pRecord->m_i08 = aiValue;
+    pRecord->m_i08 = mgr;
     pRecord->m_w0C = 0xffff;
     pRecord->m_vptr = DAT_010cf018;
 }
@@ -152,14 +159,17 @@ void __cdecl hkpSphereCapsuleAgent_staticGetPenetrations(unsigned int a, unsigne
 
 // Builds a FUN_00d3f040_tmp with value a3, flag 0 and str pointing at DAT_010ce81c, then calls FUN_00d3e330(a1, a0, a2, &t).
 // @fnv 0x00d3f040
-// src: GUESS 0x00d3f040 (confidence: low)
-void __cdecl Object_UpdateFields_00d3f040(unsigned int a0, unsigned int a1, unsigned int a2, unsigned int uiValue)
+// src: XBOX_RETAIL_PDB 0x00d3f040
+// pdb: hkpSymmetricAgentLinearCast<hkpSphereCapsuleAgent>::staticGetPenetrations | hkpSphereCapsuleAgent.obj | retail, object-file gap fill, high
+// pdb params: bodyA, bodyB, input, collector
+// pdb locals: flip
+void __cdecl hkpSymmetricAgentLinearCast_hkpSphereCapsuleAgent_staticGetPenetrations(unsigned int bodyA, unsigned int bodyB, unsigned int input, unsigned int collector)
 {
     FUN_00d3f040_tmp t;
-    t.value = uiValue;
+    t.value = collector;
     t.flag = 0;
     t.str = &DAT_010ce81c;
-    hkpSphereCapsuleAgent_staticGetPenetrations(a1, a0, a2, &t);
+    hkpSphereCapsuleAgent_staticGetPenetrations(bodyB, bodyA, input, &t);
 }
 
 extern char DAT_010ce81c;
@@ -170,15 +180,18 @@ struct AgentDispatchDescriptor {
 };
 struct CollisionDispatcher {
     void hkpSphereCapsuleAgent_getPenetrations(void* bodyB, void* bodyA, void* input, AgentDispatchDescriptor* descriptor);
-    void hkpSymmetricAgentLinearCast_hkpSphereCapsuleAgent_getPenetrations(void* bodyA, void* bodyB, void* volatile input, unsigned int tag);
+    void hkpSymmetricAgentLinearCast_hkpSphereCapsuleAgent_getPenetrations(void* bodyA, void* bodyB, void* volatile input, unsigned int collector);
 };
 // Builds an AgentDispatchDescriptor with the given tag and a fixed dispatch table, then calls FUN_00d3e510 with the bodies swapped.
 // @fnv 0x00d3f000
 // src: XBOX_PDB 0x00d3f000
-void CollisionDispatcher::hkpSymmetricAgentLinearCast_hkpSphereCapsuleAgent_getPenetrations(void* bodyA, void* bodyB, void* volatile input, unsigned int tag)
+// pdb: hkpSymmetricAgentLinearCast<hkpSphereCapsuleAgent>::getPenetrations | hkpSphereCapsuleAgent.obj | retail, vtable slot, high
+// pdb params: bodyA, bodyB, input, collector
+// pdb locals: flip
+void CollisionDispatcher::hkpSymmetricAgentLinearCast_hkpSphereCapsuleAgent_getPenetrations(void* bodyA, void* bodyB, void* volatile input, unsigned int collector)
 {
     AgentDispatchDescriptor descriptor;
-    descriptor.tag = tag;
+    descriptor.tag = collector;
     descriptor.isFlipped = false;
     descriptor.dispatchTable = &DAT_010ce81c;
     hkpSphereCapsuleAgent_getPenetrations(bodyB, bodyA, input, &descriptor);
@@ -294,6 +307,9 @@ struct Group2 {
 
 // @fnv 0x00d3e330
 // src: XBOX_PDB 0x00d3e330
+// pdb: hkpSphereCapsuleAgent::staticGetPenetrations | hkpSphereCapsuleAgent.obj | retail, upstream name already matches, high
+// pdb params: bodyA, bodyB, input, collector
+// pdb locals: result, capsB
 void hkpSphereCapsuleAgent_staticGetPenetrations(const S_00d3ef70_CdBody& bodyA, const S_00d3ef70_CdBody& bodyB, const S_00d3ef70_Input& input, S_00d3ef70_Collector& collector)
 {
     {

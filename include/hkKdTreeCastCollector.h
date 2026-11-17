@@ -5,6 +5,7 @@
 typedef unsigned long hkPrimitiveId;
 typedef float hkReal;
 
+// pdb: class hkKdTreeCastCollector, size 0x4, 0 members
 class hkKdTreeCastCollector
 {
 public:

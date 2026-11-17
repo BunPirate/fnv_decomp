@@ -57,7 +57,7 @@ void __stdcall nullsub_86(int a1, int a2, int a3)
 
 extern const hkClass DAT_01268910;
 
-int __cdecl hkStatisticsCollector_getAllocatedSize(const void* pvChunk, int iNumBytes) throw();
+int __cdecl hkStatisticsCollector_getAllocatedSize(const void* p, int size) throw();
 
 // The shared shape header has no multi-ray overrides; this adapter adds declarations, with no data of its own.
 class MultiRayShapeOperations : public hkpMultiRayShape
@@ -69,7 +69,7 @@ class MultiRayShapeOperations : public hkpMultiRayShape
 
 template <class T> static __forceinline void addArray(hkStatisticsCollector* collector, const char* name, const hkArray<T>& array)
 {
-    if ((array.m_iCapacityState & 0x80000000) == 0 || collector->m_reportInplaceAllocations)
+    if ((array.m_iCapacityState & 0x80000000) == 0 || collector->m_includeUnmanagedArrayMemory)
     {
         const T* pData = array.m_data;
         int iAllocated = hkStatisticsCollector_getAllocatedSize(pData, array.getCapacity() * sizeof(T));
@@ -79,10 +79,12 @@ template <class T> static __forceinline void addArray(hkStatisticsCollector* col
 
 // Adds the Rays array to the statistics collector, then reports the base shape's statistics with the class descriptor.
 // @fnv 0x00e3c620
-void MultiRayShapeOperations::calcContentStatistics(hkStatisticsCollector* pkCollector, const hkClass* pkClass) const
+// pdb: hkpMultiRayShape::calcContentStatistics | hkpMultiRayShape.obj | retail, string-set bridge, high
+// pdb params: collector, cls
+void MultiRayShapeOperations::calcContentStatistics(hkStatisticsCollector* collector, const hkClass* cls) const
 {
-    addArray(pkCollector, "Rays", m_kRays);
-    hkReferencedObject::calcContentStatistics(pkCollector, &DAT_01268910);
+    addArray(collector, "Rays", m_rays);
+    hkReferencedObject::calcContentStatistics(collector, &DAT_01268910);
 }
 
 extern float DAT_0104da48;
@@ -91,7 +93,7 @@ extern float DAT_0104e148;
 
 
 extern "C" hkMemoryRouter* hkMemoryRouter_getInstance() throw();
-void __cdecl hkArrayUtil__reserve(hkMemoryAllocator* alloc, void* array, int reqCapacity, int elemSize) throw();
+void __cdecl hkArrayUtil__reserve(hkMemoryAllocator* mem, void* array, int numElem, int sizeElem) throw();
 
 __forceinline hkMemoryAllocator& hkContainerHeapAllocator::get(const void*)
 {
@@ -181,11 +183,14 @@ static __forceinline void TransformPointArray(const hkTransform& t, const LocalM
 
 // Transforms the shape's rays into world space and computes their combined axis-aligned bounding box into out.
 // @fnv 0x00e3c800
+// pdb: hkpMultiRayShape::getAabbImpl | hkpMultiRayShape.obj | retail, vtable slot, high
+// pdb params: localToWorld, tolerance, out
+// pdb locals: absMin, absMax, worldRays
 void MultiRayShapeOperations::CalculateAabb(const hkTransform& localToWorld, hkReal tolerance, hkAabb& out) const
 {
     WorldRayScratch worldRays;
-    worldRays.SetSizeAndGrow(m_kRays.m_iElementCount);
-    TransformPointArray(localToWorld, reinterpret_cast<const LocalM128*>(m_kRays.m_data), m_kRays.m_iElementCount * 2,
+    worldRays.SetSizeAndGrow(m_rays.m_iElementCount);
+    TransformPointArray(localToWorld, reinterpret_cast<const LocalM128*>(m_rays.m_data), m_rays.m_iElementCount * 2,
                         &worldRays.m_data[0].start);
 
     LocalM128 mn = _mm_set_ps1(DAT_0104da48);
@@ -212,7 +217,7 @@ template <class T> __forceinline T* hkArrayBase<T>::_expandBy(hkMemoryAllocator&
 }
 
 template <class E, class S> __forceinline hkEnum<E, S>::hkEnum(E value) : m_kStorage(value) {}
-__forceinline hkpShape::hkpShape(hkpShapeType type) : m_ulUserData(0), m_type(type) {}
+__forceinline hkpShape::hkpShape(hkpShapeType type) : m_userData(0), m_type(type) {}
 
 static inline LocalM128 dot3(LocalM128 a)
 {
@@ -223,19 +228,21 @@ static inline LocalM128 dot3(LocalM128 a)
 
 // Copies rays, computes their length, normalizes the direction, and extends the end by m_fRayRadius.
 // @fnv 0x00e3c680
-hkpMultiRayShape::hkpMultiRayShape(const Ray* rays, int nRays, float rayPenetrationDistance) : hkpShape(static_cast<hkpShapeType>(0x18))
+// pdb: hkpMultiRayShape::hkpMultiRayShape | hkpMultiRayShape.obj | retail, upstream name already matches, high
+// pdb params: Rays, nRays, rayPenetrationDistance
+hkpMultiRayShape::hkpMultiRayShape(const Ray* Rays, int nRays, float rayPenetrationDistance) : hkpShape(static_cast<hkpShapeType>(0x18))
 {
-    m_fRayRadius = rayPenetrationDistance;
-    hkpMultiRayShape::Ray* ray = m_kRays.expandBy(nRays);
+    m_rayPenetrationDistance = rayPenetrationDistance;
+    hkpMultiRayShape::Ray* ray = m_rays.expandBy(nRays);
     for (int i = nRays - 1; i >= 0; i--)
     {
-        ray->m_kRayStart.m_vComponents = rays->m_kRayStart.m_vComponents;
-        ray->m_kRayEnd.m_vComponents = rays->m_kRayEnd.m_vComponents;
-        LocalM128 vec = _mm_sub_ps(ray->m_kRayEnd.m_vComponents, ray->m_kRayStart.m_vComponents);
+        ray->m_start.m_vComponents = Rays->m_start.m_vComponents;
+        ray->m_end.m_vComponents = Rays->m_end.m_vComponents;
+        LocalM128 vec = _mm_sub_ps(ray->m_end.m_vComponents, ray->m_start.m_vComponents);
         {
             float len;
             _mm_store_ss(&len, _mm_sqrt_ss(dot3(vec)));
-            ray->m_kRayStart.w = len;
+            ray->m_start.w = len;
         }
         {
             LocalM128 len2 = dot3(vec);
@@ -245,9 +252,9 @@ hkpMultiRayShape::hkpMultiRayShape(const Ray* rays, int nRays, float rayPenetrat
             r = _mm_andnot_ps(_mm_cmpeq_ss(len2, _mm_set_ss(0.0f)), r);
             vec = _mm_mul_ps(_mm_shuffle_ps(r, r, 0), vec);
         }
-        LocalM128 dd = _mm_load_ps1(&m_fRayRadius);
-        ray->m_kRayEnd.m_vComponents = _mm_add_ps(_mm_mul_ps(vec, dd), ray->m_kRayEnd.m_vComponents);
+        LocalM128 dd = _mm_load_ps1(&m_rayPenetrationDistance);
+        ray->m_end.m_vComponents = _mm_add_ps(_mm_mul_ps(vec, dd), ray->m_end.m_vComponents);
         ray++;
-        rays++;
+        Rays++;
     }
 }

@@ -40,11 +40,11 @@ extern "C" unsigned int __cdecl strlen(const char* s);
 void* NiMalloc(unsigned int uiSize);
 int NiSprintf(char* pcDest, unsigned int uiDestSize, const char* pcFormat, ...);
 
-inline char* NiPoint3::FormatToBuffer(const char* pcPrefix) const
+inline char* NiPoint3::FormatToBuffer(const char* pPrefix) const
 {
-    unsigned int uiLen = strlen(pcPrefix) + 64;
+    unsigned int uiLen = strlen(pPrefix) + 64;
     char* pcString = (char*)NiMalloc(uiLen);
-    NiSprintf(pcString, uiLen, "%s = (%g, %g, %g)", pcPrefix, x, y, z);
+    NiSprintf(pcString, uiLen, "%s = (%g, %g, %g)", pPrefix, x, y, z);
     return pcString;
 }
 
@@ -71,7 +71,7 @@ class NiBaseModifier
     void* m_ppVirtualMethodTable;
     int m_iRefCount;
     int m_unk08;
-    void GetViewerStrings(NiViewerStringsArray* pkStrings);
+    void GetViewerStrings(NiViewerStringsArray* apStrings);
 };
 
 class NiPointModifier : public NiBaseModifier
@@ -81,7 +81,7 @@ class NiPointModifier : public NiBaseModifier
     {
         return m_fValue;
     }
-    void BSMultiBoundCapsule_GetViewerStrings(NiViewerStringsArray* pkStrings);
+    void BSMultiBoundCapsule_GetViewerStrings(NiViewerStringsArray* apStrings);
 
     static NiRTTI ms_kRTTI;
     NiPoint3 m_kPathOffset;
@@ -91,11 +91,13 @@ class NiPointModifier : public NiBaseModifier
 
 // @fnv 0x00c61120
 // src: XBOX_PDB 0x00c61120
-void NiPointModifier::BSMultiBoundCapsule_GetViewerStrings(NiViewerStringsArray* pkStrings)
+// pdb: BSMultiBoundCapsule::GetViewerStrings | BSMultiBoundCapsule.obj | retail, string-set bridge, high
+// pdb params: apStrings
+void NiPointModifier::BSMultiBoundCapsule_GetViewerStrings(NiViewerStringsArray* apStrings)
 {
-    NiBaseModifier::GetViewerStrings(pkStrings);
-    pkStrings->Add(CreateDebugString(static_cast<const NiRTTI&>(ms_kRTTI).GetName()));
-    pkStrings->Add(m_kPathOffset.FormatToBuffer(str_010c3570));
-    pkStrings->Add(m_kLightVector.FormatToBuffer(str_010c3568));
-    pkStrings->Add(CreateDebugString(str_01015a9c, GetAttributeStrength()));
+    NiBaseModifier::GetViewerStrings(apStrings);
+    apStrings->Add(CreateDebugString(static_cast<const NiRTTI&>(ms_kRTTI).GetName()));
+    apStrings->Add(m_kPathOffset.FormatToBuffer(str_010c3570));
+    apStrings->Add(m_kLightVector.FormatToBuffer(str_010c3568));
+    apStrings->Add(CreateDebugString(str_01015a9c, GetAttributeStrength()));
 }

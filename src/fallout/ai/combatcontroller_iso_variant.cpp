@@ -20,6 +20,8 @@ struct FUN_0097fc70_shell
 
 // @fnv 0x0097fc70
 // src: XBOX_PDB 0x0097fc70
+// pdb: CombatController::GetAttackSkill | CombatController.obj | retail, upstream name already matches, high
+// pdb locals: iresult, pcreature
 int FUN_0097fc70_shell::CombatController_GetAttackSkill()
 {
     int iresult = 0;

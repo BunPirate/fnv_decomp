@@ -7,6 +7,7 @@ class hkpPhantomOverlapListener;
 struct OverlapCollidable;
 struct OverlapResult;
 
+// pdb: class hkpPhantom, size 0xa4, bases: hkpWorldObject, 2 members
 class hkpPhantom : public hkpWorldObject
 {
 public:
@@ -29,13 +30,13 @@ public:
     void* vfunc10();
     void vf0C();
     void firePhantomAdded();
-    void addPhantomOverlapListener_00d07de0(hkpPhantomOverlapListener* listener);
+    void addPhantomOverlapListener_00d07de0(hkpPhantomOverlapListener* el);
     void removePhantomOverlapListener_00d07c80(hkpPhantomOverlapListener* listener) throw();
 
-    void addPhantomOverlapListener(hkpPhantomOverlapListener* listener);
+    void addPhantomOverlapListener(hkpPhantomOverlapListener* el);
     void removePhantomOverlapListener(hkpPhantomOverlapListener* listener) throw();
     void firePhantomRemoved();
 
-    hkArray<void*> m_kPhantomOverlapListeners;
-    hkArray<void*> m_kPhantomListeners;
+    hkArray<void*> m_overlapListeners; // src: XBOX_RETAIL_PDB +0x8c (old: m_kPhantomOverlapListeners)
+    hkArray<void*> m_phantomListeners; // src: XBOX_RETAIL_PDB +0x98 (old: m_kPhantomListeners)
 };

@@ -216,7 +216,7 @@ static __forceinline void HfCollide_d49850(const HfShape_d49850& hf, const HfInp
         HfVec_d49850& output = *outputArray;
         output.m_vComponents = defaultOut.m_vComponents;
 
-        const HfVec_d49850& scale = HfQ_d49850(hf.m_kInverseScale);
+        const HfVec_d49850& scale = HfQ_d49850(hf.m_floatToIntScale);
         HfVec_d49850 sc;
         sc.m_vComponents = scale.m_vComponents;
         const HfVec_d49850& pos = *sphere;
@@ -227,7 +227,7 @@ static __forceinline void HfCollide_d49850(const HfShape_d49850& hf, const HfInp
             HfVec_d49850 v;
             unsigned int u[4];
         } fc;
-        fc.v.setAdd4(pos, HfQ_d49850(hf.m_kOffset));
+        fc.v.setAdd4(pos, HfQ_d49850(hf.m_floatToIntOffsetFloorCorrected));
         fc.v.mul4(sc);
         fc.v.add4(DAT_011b1bd0);
         struct
@@ -239,7 +239,7 @@ static __forceinline void HfCollide_d49850(const HfShape_d49850& hf, const HfInp
         int x = out.a;
         int z = out.c;
 
-        if (x >= hf.m_iXResolution - 1 || z >= hf.m_iZResolution - 1)
+        if (x >= hf.m_xRes - 1 || z >= hf.m_zRes - 1)
         {
             continue;
         }
@@ -309,9 +309,9 @@ static __forceinline void HfCollide_d49850(const HfShape_d49850& hf, const HfInp
         _mm_store_ps(&output(0), normal.m_vComponents);
 
         float dist;
-        if (!hf.m_bUseProjectionBasedHeight)
+        if (!hf.m_useProjectionBasedHeight)
         {
-            dist = (localPos(1) - height) * hf.m_kHeightScaleVector.y - (*sphere)(3);
+            dist = (localPos(1) - height) * hf.m_intToFloatScale.y - (*sphere)(3);
         }
         else
         {
@@ -319,7 +319,7 @@ static __forceinline void HfCollide_d49850(const HfShape_d49850& hf, const HfInp
             corner.set((float)cornerX, cornerH, (float)z, 0.0f);
             HfVec_d49850 d;
             d.setSub4(localPos, corner);
-            d.mul4(HfQ_d49850(hf.m_kHeightScaleVector));
+            d.mul4(HfQ_d49850(hf.m_intToFloatScale));
             dist = d.dot3(normal) - (*sphere)(3);
         }
         output(3) = dist;
@@ -328,6 +328,8 @@ static __forceinline void HfCollide_d49850(const HfShape_d49850& hf, const HfInp
 
 // Delegates to HfCollide_d49850 to compute sphere-heightfield collision results into outputArray.
 // @fnv 0x00d49850
+// pdb: hkpStorageSampledHeightFieldShape::collideSpheres | hkpStorageSampledHeightFieldShape.obj | retail, vtable slot, high
+// pdb params: input, outputArray
 void HfShape_d49850::Collide(const HfInput_d49850& input, HfVec_d49850* outputArray) const
 {
     HfCollide_d49850(*this, input, outputArray);
@@ -399,6 +401,8 @@ struct FUN_00d49750
 };
 // Copies resolution, scale, offset and flip settings from a HeightFieldSource, allocates a height buffer, and fills it with sampled heights.
 // @fnv 0x00d49750
+// pdb: hkpStorageSampledHeightFieldShape::hkpStorageSampledHeightFieldShape | hkpStorageSampledHeightFieldShape.obj | retail, object-file run extension, low
+// pdb params: info, samples, offset
 FUN_00d49750::FUN_00d49750(HeightFieldSource* source) : m_sReferenceCount(1)
 {
     m_ulUserData = 0;

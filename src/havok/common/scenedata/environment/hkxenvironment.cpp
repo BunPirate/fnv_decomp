@@ -27,7 +27,7 @@ struct HKXEnvironmentStandIn
 {
     char padding[4];
     unsigned short size;
-    void DestroyEnvironment();
+    void hkxEnvironment_dtor();
     HKXEnvironmentStandIn* FUN_00e3f8a0(unsigned char flags);
 };
 
@@ -35,9 +35,10 @@ HKXMemoryRouter* _D1A0E0GetMemoryRouter();
 
 // Calls DestroyEnvironment, then if bit 0 of flags is set frees this through the memory router's manager, and returns this.
 // @fnv 0x00e3f8a0
+// pdb: hkxEnvironment::`scalar deleting destructor' | hkxEnvironment.obj | retail, vtable slot, high
 HKXEnvironmentStandIn* HKXEnvironmentStandIn::FUN_00e3f8a0(unsigned char flags)
 {
-    DestroyEnvironment();
+    hkxEnvironment_dtor();
 
     if (flags & 1)
     {
@@ -101,14 +102,16 @@ struct EnvironmentLayout
 };
 // Releases the environment's variable array, then calls the hkBaseObject destructor.
 // @fnv 0x00e3f820
-void HKXEnvironmentStandIn::DestroyEnvironment()
+// src: XBOX_RETAIL_PDB 0x00e3f820
+// pdb: hkxEnvironment::~hkxEnvironment | hkxEnvironment.obj | retail, object-file gap fill, high
+void HKXEnvironmentStandIn::hkxEnvironment_dtor()
 {
     EnvironmentLayout* environment = reinterpret_cast<EnvironmentLayout*>(this);
     ReleaseEnvironmentVariables(environment->variables);
     reinterpret_cast<hkBaseObject*>(environment)->hkBaseObject::~hkBaseObject();
 }
 
-void ResizeAudioStream(void* pvAlloc, void* apvArray, int iSizeElem);
+void ResizeAudioStream(void* mem, void* array, int sizeElem);
 
 // The shared header omits the copy constructor at 0x00cb0bd0. This
 // one-pointer aggregate is passed on the stack; fastcall supplies this in ECX.
@@ -116,7 +119,7 @@ struct EnvironmentStringCopyArgument
 {
     const hkStringPtr* source;
 };
-void __fastcall CopyConstructEnvironmentString(hkStringPtr* destination, EnvironmentStringCopyArgument source) throw();
+void __fastcall CopyConstructEnvironmentString(hkStringPtr* strRef, EnvironmentStringCopyArgument source) throw();
 
 template <int ELEMENTSIZE> __forceinline void CopyAlignedWords(void* pvDst, const void* pvSrc)
 {
@@ -164,16 +167,19 @@ class hkxAttributeMapE3F3
     hkArray<EnvironmentVariable> m_pCustomAttributes;
 
     int FindEntryByKey(const char* pcName) throw();
-    int SetOrRemoveCustomAttribute(const char* pcName, const char* pcValue) throw();
+    int hkxEnvironment_setVariable(const char* name, const char* value) throw();
 };
 
 // Sets or removes a custom attribute by name, returning 1 if a missing attribute was requested for removal, otherwise 0.
 // @fnv 0x00e3f3b0
-// src: GUESS 0x00e3f3b0 (confidence: high)
-int hkxAttributeMapE3F3::SetOrRemoveCustomAttribute(const char* pcName, const char* pcValue) throw()
+// src: XBOX_RETAIL_PDB 0x00e3f3b0
+// pdb: hkxEnvironment::setVariable | hkxEnvironment.obj | retail, call graph, high
+// pdb params: name, value
+// pdb locals: newVar
+int hkxAttributeMapE3F3::hkxEnvironment_setVariable(const char* name, const char* value) throw()
 {
-    int iIndex = FindEntryByKey(pcName);
-    if (pcValue == 0)
+    int iIndex = FindEntryByKey(name);
+    if (value == 0)
     {
         if (iIndex == -1)
             return 1;
@@ -182,12 +188,12 @@ int hkxAttributeMapE3F3::SetOrRemoveCustomAttribute(const char* pcName, const ch
     }
     if (iIndex != -1)
     {
-        m_pCustomAttributes[iIndex].m_value = pcValue;
+        m_pCustomAttributes[iIndex].m_value = value;
         return 0;
     }
     EnvironmentVariable kPair;
-    kPair.m_name = pcName;
-    kPair.m_value = pcValue;
+    kPair.m_name = name;
+    kPair.m_value = value;
     m_pCustomAttributes.pushBack(kPair);
     return 0;
 }

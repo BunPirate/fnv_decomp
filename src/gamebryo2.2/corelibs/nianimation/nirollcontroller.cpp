@@ -33,6 +33,8 @@ extern int DAT_01098634;
 
 // @fnv 0x00a48750
 // src: EXE 0x00a48750
+// pdb: NiRollController::CreateObject | NiRollController.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 void* __cdecl NiRollController_CreateObject()
 {
     void* pFadeNode = BSFadeNode::operator new(0x3c);
@@ -63,6 +65,8 @@ char* __cdecl _FUN_00a7d330(const char*);
 // Appends the string returned by _FUN_00a7d330(g_011f3f58) to the StrArr, growing it via SetSize when full, then stores it with SetAt.
 // @fnv 0x00a48790
 // src: XBOX_PDB 0x00a48790
+// pdb: NiRollController::GetViewerStrings | NiRollController.obj | retail, object-file run extension, low
+// pdb params: pStrings
 void NiRollController::GetViewerStrings_00a48790(StrArr* pStrArr)
 {
     FUN_00a6d830(pStrArr);
@@ -80,7 +84,7 @@ static inline NiRollController* InitializeRollController(NiRollController* contr
     FUN_00a6d220(controller);
     controller->m_spFloatData = 0;
     // Preserve the original initialization store order.
-    *(volatile unsigned int*)&controller->unk34 = 0;
+    *(volatile unsigned int*)&controller->m_uiLastIdx = 0;
     *(int*)controller = (int)&DAT_01098634;
     return controller;
 }
@@ -88,6 +92,10 @@ static inline NiRollController* InitializeRollController(NiRollController* contr
 // Allocates a new controller, copies this object's state into it via the cloning process, and returns the clone.
 // @fnv 0x00a486f0
 // src: XBOX_PDB 0x00a486f0
+// pdb: NiRollController::CreateClone | NiRollController.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiRollController::CopyMembers
+// pdb params: kCloning
+// pdb locals: pkObject
 NiObject* NiRollController::CreateClone_00a486f0(CloningProcess& kCloning)
 {
     NiRollController* allocation = (NiRollController*)NiObject::operator new(sizeof(NiRollController));
@@ -100,6 +108,8 @@ void __cdecl LinkObject_00a57a70();
 
 // @fnv 0x00a48560
 // src: XBOX_PDB 0x00a48560
+// pdb: NiRollController::LinkObject | NiRollController.obj | debug, upstream name already matches, high
+// pdb params: stream
 void __cdecl NiRollController_LinkObject()
 {
     LinkObject_00a57a70();
@@ -108,6 +118,8 @@ void __cdecl NiRollController_LinkObject()
 void __cdecl RegisterStreamables_00a57ad0();
 // @fnv 0x00a48570
 // src: XBOX_PDB 0x00a48570
+// pdb: NiRollController::RegisterStreamables | NiRollController.obj | debug, upstream name already matches, high
+// pdb params: stream
 void __cdecl NiRollController_RegisterStreamables()
 {
     RegisterStreamables_00a57ad0();
@@ -117,6 +129,8 @@ void __cdecl SaveBinary_00a57b00();
 
 // @fnv 0x00a48580
 // src: XBOX_PDB 0x00a48580
+// pdb: NiRollController::SaveBinary | NiRollController.obj | debug, upstream name already matches, high
+// pdb params: stream
 void __cdecl NiRollController_SaveBinary() {
     SaveBinary_00a57b00();
 }
@@ -125,6 +139,8 @@ void __cdecl IsEqual_00a57b20();
 
 // @fnv 0x00a48590
 // src: XBOX_PDB 0x00a48590
+// pdb: NiRollController::IsEqual | NiRollController.obj | debug, upstream name already matches, high
+// pdb params: pObject
 void __cdecl NiRollController_IsEqual()
 {
     IsEqual_00a57b20();
@@ -135,15 +151,17 @@ void __cdecl NiRollController_IsEqual()
 void __cdecl LoadBinary_00a57970();
 // @fnv 0x00a48550
 // src: XBOX_PDB 0x00a48550
+// pdb: NiRollController::LoadBinary | NiRollController.obj | debug, upstream name already matches, high
+// pdb params: stream
 void __cdecl NiRollController_LoadBinary() { LoadBinary_00a57970(); }
 
 // one matrix row per macro use, entries in column order (the original update stores them in this order)
 #define ROLL_M3_ROW(r, a, b, c) m_pEntry[r][0] = a; m_pEntry[r][1] = b; m_pEntry[r][2] = c;
 // Inline the Z rotation used by the original update.
-inline void NiMatrix3::MakeZRotation(float fAngleDifference)
+inline void NiMatrix3::MakeZRotation(float fAngle)
 {
     float sn, cs;
-    fnv_SinCos(fAngleDifference, sn, cs);
+    fnv_SinCos(fAngle, sn, cs);
     ROLL_M3_ROW(0, cs, sn, 0.0f)
     ROLL_M3_ROW(1, -sn, cs, 0.0f)
     ROLL_M3_ROW(2, 0.0f, 0.0f, 1.0f)
@@ -156,6 +174,9 @@ float __cdecl InterpolateRollKey(float fTime, NiFloatKey* pkKeys, int eType,
 
 // @fnv 0x00a485e0
 // src: XBOX_PDB 0x00a485e0
+// pdb: NiRollController::Update | NiRollController.obj | retail, object-file run extension, low
+// pdb params: UpdateData
+// pdb locals: uiNumKeys, pkKeys, fRoll, roll, rot, ucSize, eType
 void NiRollController::Update_00a485e0(NiUpdateData& kUpdateData)
 {
     if (!m_pkTarget || DontDoUpdate(kUpdateData.fTime))
@@ -165,7 +186,7 @@ void NiRollController::Update_00a485e0(NiUpdateData& kUpdateData)
     int eType;
     unsigned char ucSize;
     NiFloatKey* pkKeys = GetFloatKeys(uiNumKeys, eType, ucSize);
-    float fRoll = InterpolateRollKey(m_fControllerTime, pkKeys, eType, uiNumKeys, unk34, ucSize);
+    float fRoll = InterpolateRollKey(m_fScaledTime, pkKeys, eType, uiNumKeys, m_uiLastIdx, ucSize);
 
     NiMatrix3 kRot;
     kRot = ((NiAVObject*)m_pkTarget)->m_kLocal.m_Rotate;

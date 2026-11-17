@@ -11,6 +11,7 @@ struct hkFinishLoadedObjectFlagCD2C;
 
 typedef unsigned long hkUlong;
 
+// pdb: class hkpWorldObject, size 0x8c, bases: hkReferencedObject, 8 members
 class hkpWorldObject : public hkReferencedObject
 {
 public:
@@ -37,12 +38,12 @@ public:
 
     hkpWorld* getWorld() const;
 
-    void* m_pOwningWorld;
-    hkUlong m_ulUserData;
+    void* m_world; // src: XBOX_RETAIL_PDB +0x8 (old: m_pOwningWorld)
+    hkUlong m_userData; // src: XBOX_RETAIL_PDB +0xc (old: m_ulUserData)
     hkpLinkedCollidable m_kCollidable;
-    hkMultiThreadCheck m_kMultiThreadCheck;
+    hkMultiThreadCheck m_multiThreadCheck; // src: XBOX_RETAIL_PDB +0x6c (old: m_kMultiThreadCheck)
     hkStringPtr m_name;
-    hkArray<hkpProperty> m_kProperties;
-    void* m_kNextStreamField;
-    void* m_pWorldObjectOwner;
+    hkArray<hkpProperty> m_properties; // src: XBOX_RETAIL_PDB +0x78 (old: m_kProperties)
+    void* m_aiData; // src: XBOX_RETAIL_PDB +0x84 (old: m_kNextStreamField)
+    void* m_treeData; // src: XBOX_RETAIL_PDB +0x88 (old: m_pWorldObjectOwner)
 };

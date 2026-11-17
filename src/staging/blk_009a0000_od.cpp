@@ -32,7 +32,7 @@ public:
     ~CombatThreatRecord_blk_009a0000_od();
     bool IsXLessThan(float);
     void LoadGame(BGSLoadGameBuffer*);
-    void __thiscall SetVtableAndProcessState_009a5e50();
+    void __thiscall NiTMapBase_DFALL_NiTMapItem_unsigned_int_CombatThreat_unsigned_int_CombatThreat_dtor();
 };
 #include "../../include/CombatThreatMap.h"
 #include "../../include/CombatWorldStateListNode.h"
@@ -94,6 +94,8 @@ struct FUN_009a0370_shell
 
 // Calls FUN_009a03d0 with 0 on this object, then stores a at offset 0xe4.
 // @fnv 0x009a0370
+// pdb: CombatState::SetCoverLocation | CombatState.obj | debug, object-file gap fill, medium
+// pdb params: apCombatCoverLocation
 void FUN_009a0370_shell::SetFieldE4(int aiValue)
 {
     ((FUN_0099a9a0_shell*)this)->CombatState_ClearCoverLocation(0);
@@ -103,7 +105,7 @@ void FUN_009a0370_shell::SetFieldE4(int aiValue)
 namespace fnv_009a03a0 {
 struct FUN_0099a9a0_shell
 {
-    void ReleaseStageHolder(int);
+    void CombatState_ClearSecondaryCoverLocation(int);
 };
 
 struct FUN_009a03a0_shell
@@ -113,9 +115,11 @@ struct FUN_009a03a0_shell
 
 // Calls ReleaseStageHolder with 0, then stores the int argument at offset 0xe8 of this object.
 // @fnv 0x009a03a0
+// pdb: CombatState::SetSecondaryCoverLocation | CombatState.obj | debug, object-file gap fill, medium
+// pdb params: apCombatCoverLocation
 void FUN_009a03a0_shell::SetFieldE8(int aiValue)
 {
-    ((FUN_0099a9a0_shell*)this)->ReleaseStageHolder(0);
+    ((FUN_0099a9a0_shell*)this)->CombatState_ClearSecondaryCoverLocation(0);
     *(int*)((char*)this + 0xe8) = aiValue;
 }
 }  // namespace fnv_009a03a0
@@ -128,6 +132,7 @@ struct CombatFlagHolder
 
 // @fnv 0x009a1240
 // src: XBOX_PDB 0x009a1240
+// pdb: TESCombatStyle::GetPersonalSurvivalFlee | CombatState.obj | debug, upstream name already matches, high
 bool CombatFlagHolder::TESCombatStyle_GetPersonalSurvivalFlee()
 {
     return HasCombatFlag(4);
@@ -154,6 +159,8 @@ struct AX
 
 // @fnv 0x009a3750
 // src: XBOX_PDB 0x009a3750
+// pdb: BSSimpleArray<TESAmmo *,1024>::BSSimpleArray<TESAmmo *,1024> | CombatState.obj | debug, call graph, medium
+// pdb params: aiReserveSize, aiInitialSize
 AX* AX::BSSimpleArray_TESAmmo_1024_BSSimpleArray_TESAmmo_1024(unsigned int a, unsigned int b)
 {
     *(int*)this = (int)&DAT_0108b4c8;
@@ -171,10 +178,12 @@ struct FUN_006cf9d0
 
 // @fnv 0x009a37e0
 // src: XBOX_PDB 0x009a37e0
-FUN_006cf9d0* FUN_006cf9d0::BSSimpleArray_WeaponData_1024_BSSimpleArray_WeaponData_1024(unsigned int a, unsigned int b)
+// pdb: BSSimpleArray<WeaponData,1024>::BSSimpleArray<WeaponData,1024> | CombatState.obj | debug, call graph, high
+// pdb params: aiReserveSize, aiInitialSize
+FUN_006cf9d0* FUN_006cf9d0::BSSimpleArray_WeaponData_1024_BSSimpleArray_WeaponData_1024(unsigned int aiReserveSize, unsigned int aiInitialSize)
 {
     *(void**)this = &DAT_0108e0a4;
-    BSSimpleArray_WeaponData_1024_InitialSetup(a, b);
+    BSSimpleArray_WeaponData_1024_InitialSetup(aiReserveSize, aiInitialSize);
     return this;
 }
 
@@ -184,12 +193,13 @@ extern int DAT_0108e0a4;
 struct GlobalObject_00869f00
 {
     void Clear(bool);
-    void SetVtableAndProcessState_009a3810();
+    void BSSimpleArray_WeaponData_1024_dtor();
 };
 
 // @fnv 0x009a3810
-// src: GUESS 0x009a3810 (confidence: low)
-void GlobalObject_00869f00::SetVtableAndProcessState_009a3810()
+// src: XBOX_DEBUG_PDB 0x009a3810
+// pdb: BSSimpleArray<WeaponData,1024>::~BSSimpleArray<WeaponData,1024> | CombatState.obj | debug, call graph, high
+void GlobalObject_00869f00::BSSimpleArray_WeaponData_1024_dtor()
 {
     *reinterpret_cast<int**>(this) = &DAT_0108e0a4;
     Clear(true);
@@ -221,6 +231,7 @@ struct FUN_009a3e90
 };
 // Calls FUN_009a4290 with 0x25, then sets vfn_00 to point at DAT_0108e1e8.
 // @fnv 0x009a3e90
+// pdb: CombatTargetMap::CombatTargetMap | CombatTargetMap.obj | debug, call graph, medium
 FUN_009a3e90::FUN_009a3e90()
 {
     NiTMap_Actor_CombatTargetData_NiTMap(0x25);
@@ -235,6 +246,8 @@ struct FUN_009a4290_class
 };
 // @fnv 0x009a4290
 // src: EXE 0x009a4290
+// pdb: NiTMap<Actor *,CombatTargetData *>::NiTMap<Actor *,CombatTargetData *> | CombatTargetMap.obj | debug, object-file run extension, low
+// pdb params: uiHashSize
 int* __thiscall FUN_009a4290_class::NiTMap_Actor_CombatTargetData_NiTMap(int a)
 {
     InitArray(a);
@@ -254,6 +267,8 @@ void AX::BSSimpleArray_float_1024_InitialSetup(unsigned int a, unsigned int b)
 {}
 // @fnv 0x009a42f0
 // src: GUESS 0x009a42f0 (confidence: low)
+// pdb: BSSimpleArray<Actor *,1024>::BSSimpleArray<Actor *,1024> | CombatTargetMap.obj | debug, object-file run extension, low
+// pdb params: aiReserveSize, aiInitialSize
 AX* AX::SetVtableAndProcessState_009a42f0(unsigned int a, unsigned int b)
 {
     *(int*)this = (int)&DAT_01084fec;
@@ -285,6 +300,8 @@ struct FUN_009a5d20_class
 // Calls Construct with a, sets p to point at DAT_0108e308, and returns this as an int pointer.
 // @fnv 0x009a5d20
 // src: EXE 0x009a5d20
+// pdb: NiTMap<unsigned int,CombatThreat *>::NiTMap<unsigned int,CombatThreat *> | CombatThreatMap.obj | debug, object-file gap fill, medium
+// pdb params: uiHashSize
 int* FUN_009a5d20_class::NiTMap_unsigned_int_CombatThreat_NiTMap(int a)
 {
     Construct(a);
@@ -300,6 +317,7 @@ struct FUN_009aa470_Class
 
 // @fnv 0x009aa470
 // src: COMMUNITY 0x009aa470
+// pdb: CombatWorldStateArray::CombatWorldStateArray | CombatWorldState.obj | retail, call graph, high
 void* FUN_009aa470_Class::CombatWorldStateArray_CombatWorldStateArray()
 {
     CombatWorldStateArray_ClearValues();
@@ -308,6 +326,8 @@ void* FUN_009aa470_Class::CombatWorldStateArray_CombatWorldStateArray()
 
 // @fnv 0x009aa490
 // src: COMMUNITY 0x009aa490
+// pdb: CombatWorldStateArray::CombatWorldStateArray | CombatWorldState.obj | debug, object-file gap fill, medium
+// pdb params: apWorldStateArray
 CombatWorldStateArray* CombatWorldStateArray::CombatWorldStateArray_0(CombatWorldStateArray* pArg)
 {
     CopyFrom(pArg);
@@ -322,6 +342,8 @@ struct FUN_009b2c90_class
 
 // @fnv 0x009b2c90
 // src: COMMUNITY 0x009b2c90
+// pdb: hkpTypedBroadPhaseHandle::getOwner | Explosion.obj | debug, upstream name already matches, high
+// pdb locals: assertBuf, ostr
 int __thiscall FUN_009b2c90_class::hkpTypedBroadPhaseHandle_getOwner()
 {
     return reinterpret_cast<int>(this) + static_cast<signed char>(m_data[5]);
@@ -348,6 +370,7 @@ bool BGSProjectile::GetFlag(unsigned int flag) const
 
 // @fnv 0x009b88e0
 // src: COMMUNITY 0x009b88e0
+// pdb: BGSProjectile::GetHasRotation | MissileProjectile.obj | debug, upstream name already matches, high
 bool BGSProjectile::GetHasRotation()
 {
     return GetFlag(0x800);
@@ -369,6 +392,8 @@ struct FUN_009bd560_Class
     void SetObject(void* p);
 };
 // @fnv 0x009bd560
+// pdb: Projectile::SetPickCache | Projectile.obj | debug, call graph, low
+// pdb params: apCache
 void FUN_009bd560_Class::SetObject(void* p)
 {
     ((GO*)((char*)this + 0x11c))->operator=(p);
@@ -440,12 +465,13 @@ struct FUN_009a4480_Class
     void* vfn_04;
     void* p;
     void __thiscall RemoveAll();
-    void __thiscall ReleaseStorage_009a4480();
+    void __thiscall NiTMapBase_DFALL_NiTMapItem_Actor_CombatTargetData_Actor_CombatTargetData_dtor();
 };
 // Sets the vtable pointer, calls RemoveAll, then frees the p member with NiFreeAlias.
 // @fnv 0x009a4480
-// src: GUESS 0x009a4480 (confidence: medium)
-void __thiscall FUN_009a4480_Class::ReleaseStorage_009a4480()
+// src: XBOX_DEBUG_PDB 0x009a4480
+// pdb: NiTMapBase<DFALL<NiTMapItem<Actor *,CombatTargetData *> >,Actor *,CombatTargetData *>::~NiTMapBase<DFALL<NiTMapItem<Actor *,CombatTargetData *> >,Actor *,CombatTargetData *> | CombatTargetMap.obj | debug, call graph (shared callers), high
+void __thiscall FUN_009a4480_Class::NiTMapBase_DFALL_NiTMapItem_Actor_CombatTargetData_Actor_CombatTargetData_dtor()
 {
     vfn_00 = &DAT_0108e278;
     RemoveAll();
@@ -458,8 +484,9 @@ void __cdecl NiFreeAlias(void* p);
 
 // Sets the vtable pointer, clears the pointer map, and frees p_08.
 // @fnv 0x009a5e50
-// src: GUESS 0x009a5e50 (confidence: low)
-void __thiscall CombatThreatRecord_blk_009a0000_od::SetVtableAndProcessState_009a5e50()
+// src: XBOX_DEBUG_PDB 0x009a5e50
+// pdb: NiTMapBase<DFALL<NiTMapItem<unsigned int,CombatThreat *> >,unsigned int,CombatThreat *>::~NiTMapBase<DFALL<NiTMapItem<unsigned int,CombatThreat *> >,unsigned int,CombatThreat *> | CombatThreatMap.obj | debug, call graph (shared callers), high
+void __thiscall CombatThreatRecord_blk_009a0000_od::NiTMapBase_DFALL_NiTMapItem_unsigned_int_CombatThreat_unsigned_int_CombatThreat_dtor()
 {
     *reinterpret_cast<void**>(this) = &DAT_0108e328;
     reinterpret_cast<NiTPointerMap<int, int>*>(this)->RemoveAll();
@@ -477,6 +504,7 @@ struct FUN_009a3850_Class : public GlobalObject_00869f00
 };
 // Calls FUN_009a3410 on this, deletes this when flags has bit 0 set, and returns this.
 // @fnv 0x009a3850
+// pdb: BSSimpleArray<TESObjectWEAP *,1024>::`scalar deleting destructor' | CombatState.obj | retail, vtable slot, high
 void* __thiscall FUN_009a3850_Class::FUN_009a3850(unsigned int flags)
 {
     CombatState_UpdateState_009a3410(this);
@@ -492,6 +520,7 @@ struct FUN_009a3460_shell
     void* __thiscall FUN_009a3880(unsigned int flags);
 };
 // @fnv 0x009a3880
+// pdb: BSSimpleArray<UnreachableCoverLocation,1024>::`scalar deleting destructor' | CombatState.obj | retail, vtable slot, high
 void* FUN_009a3460_shell::FUN_009a3880(unsigned int flags)
 {
     ResetVirtualTableAndClear_009a3460();
@@ -510,6 +539,7 @@ struct FUN_009a38b0_class
     void* __thiscall FUN_009a38b0(unsigned int flags);
 };
 // @fnv 0x009a38b0
+// pdb: BSSimpleArray<UnreachableLocation,1024>::`scalar deleting destructor' | CombatState.obj | retail, vtable slot, high
 void* __thiscall FUN_009a38b0_class::FUN_009a38b0(unsigned int flags)
 {
     ((FUN_009a35f0_class*)this)->UpdateState_009a35f0();
@@ -521,14 +551,15 @@ void* __thiscall FUN_009a38b0_class::FUN_009a38b0(unsigned int flags)
 void __cdecl Deallocate(void*);
 struct FUN_009a38e0_Class
 {
-    void __thiscall SetVtableAndProcessState_009a3810();
+    void __thiscall BSSimpleArray_WeaponData_1024_dtor();
     void* __thiscall FUN_009a38e0(unsigned int flags);
 };
 // Calls FUN_009a3810, then frees this with Deallocate when flags has bit 0 set, and returns this.
 // @fnv 0x009a38e0
+// pdb: BSSimpleArray<WeaponData,1024>::`scalar deleting destructor' | CombatState.obj | retail, vtable slot, high
 void* __thiscall FUN_009a38e0_Class::FUN_009a38e0(unsigned int flags)
 {
-    SetVtableAndProcessState_009a3810();
+    BSSimpleArray_WeaponData_1024_dtor();
     if (flags & 1)
         Deallocate(this);
     return this;
@@ -542,6 +573,7 @@ struct FUN_009a42c0_Class
 };
 // Calls FUN_009a4420, frees this with Deallocate when flags has bit 0 set, and returns this.
 // @fnv 0x009a42c0
+// pdb: NiTMap<Actor *,CombatTargetData *>::`scalar deleting destructor' | CombatTargetMap.obj | retail, vtable slot, high
 void* FUN_009a42c0_Class::FUN_009a42c0(unsigned int flags)
 {
     FUN_009a4420();
@@ -557,6 +589,9 @@ struct FUN_009a4290_class2
     void* __thiscall InitArray(int a);
 };
 // @fnv 0x009a43b0
+// pdb: BSSimpleArray<unsigned int,1024>::_Allocate | ExtraDataObjects.obj | debug, object-file run extension, low
+// pdb params: aiSizeInItem
+// pdb locals: pnewBuffer
 void* FUN_009a4290_class2::InitArray(int a)
 {
     *(int**)this = &DAT_0108e278;
@@ -575,9 +610,10 @@ struct FUN_009a44b0_Class : public FUN_009a4480_Class
 
 // Calls the base cleanup and, when bit 0 of flags is set, deletes this object; returns this.
 // @fnv 0x009a44b0
+// pdb: NiTMapBase<DFALL<NiTMapItem<Actor *,CombatTargetData *> >,Actor *,CombatTargetData *>::`scalar deleting destructor' | CombatTargetMap.obj | retail, vtable slot, high
 void* __thiscall FUN_009a44b0_Class::FUN_009a44b0(unsigned int flags)
 {
-    ReleaseStorage_009a4480();
+    NiTMapBase_DFALL_NiTMapItem_Actor_CombatTargetData_Actor_CombatTargetData_dtor();
     if (flags & 1)
         operator delete(this);
     return this;
@@ -585,16 +621,18 @@ void* __thiscall FUN_009a44b0_Class::FUN_009a44b0(unsigned int flags)
 
 struct FUN_009a4e90_shell
 {
-    void SaveState_009a4e90(BGSSaveFormBuffer* buffer);
+    void CombatThreat_SaveGame(BGSSaveFormBuffer* apSaveGameBuffer);
 };
 // @fnv 0x009a4e90
-// src: GUESS 0x009a4e90 (confidence: medium)
-void FUN_009a4e90_shell::SaveState_009a4e90(BGSSaveFormBuffer* buffer)
+// src: XBOX_DEBUG_PDB 0x009a4e90
+// pdb: CombatThreat::SaveGame | CombatThreatMap.obj | debug, call graph, high
+// pdb params: apSaveGameBuffer
+void FUN_009a4e90_shell::CombatThreat_SaveGame(BGSSaveFormBuffer* apSaveGameBuffer)
 {
-    buffer->SaveData((char*)this + 4, 4, 0);
-    ((CombatTargetTimestamp*)((char*)this + 8))->SaveTimeStamp(buffer);
-    ((CombatTargetTimestamp*)((char*)this + 12))->SaveTimeStamp(buffer);
-    buffer->SaveData((char*)this + 16, 4, 0);
+    apSaveGameBuffer->SaveData((char*)this + 4, 4, 0);
+    ((CombatTargetTimestamp*)((char*)this + 8))->SaveTimeStamp(apSaveGameBuffer);
+    ((CombatTargetTimestamp*)((char*)this + 12))->SaveTimeStamp(apSaveGameBuffer);
+    apSaveGameBuffer->SaveData((char*)this + 16, 4, 0);
 }
 
 extern "C" void __cdecl Deallocate(void*);
@@ -608,6 +646,8 @@ struct FUN_009a51b0_class : public FUN_009a45e0_class
 };
 // Calls FUN_009a45e0, then frees this with Deallocate when flags has bit 0 set, and returns this.
 // @fnv 0x009a51b0
+// pdb: CombatThreat::~CombatThreat | CombatThreatMap.obj | retail, call graph (shared callers), low
+// pdb note: debug build links it to CombatThreat::`scalar deleting destructor'
 void* __thiscall FUN_009a51b0_class::FUN_009a51b0(unsigned int flags)
 {
     FUN_009a45e0();
@@ -629,6 +669,9 @@ struct FUN_009a5d80_class
 };
 // Sets the vtable, stores size, allocates size*4 zeroed bytes into p_08 and returns this.
 // @fnv 0x009a5d80
+// pdb: NiTMapBase<DFALL<NiTMapItem<unsigned int,CombatThreat *> >,unsigned int,CombatThreat *>::NiTMapBase<DFALL<NiTMapItem<unsigned int,CombatThreat *> >,unsigned int,CombatThreat *> | CombatThreatMap.obj | debug, object-file run extension, low
+// pdb params: uiHashSize
+// pdb locals: uiSize
 FUN_009a5d80_class* FUN_009a5d80_class::Construct(unsigned int size)
 {
     vfn_00 = &DAT_0108e328;
@@ -646,9 +689,12 @@ struct ActH2
 };
 // @fnv 0x009a96c0
 // src: XBOX_PDB 0x009a96c0
-bool CombatUtilities_IsActorUsingRanged(ActH2* a)
+// pdb: CombatUtilities::IsActorUsingRanged | CombatUtilities.obj | retail, upstream name already matches, high
+// pdb params: apActor
+// pdb locals: pweapon
+bool CombatUtilities_IsActorUsingRanged(ActH2* apActor)
 {
-    TESObjectWEAP* p = static_cast<TESObjectWEAP*>(a->GetActiveWeapon());
+    TESObjectWEAP* p = static_cast<TESObjectWEAP*>(apActor->GetActiveWeapon());
     if (p && p->IsRangedWeapon())
         return true;
     return false;
@@ -664,6 +710,8 @@ struct FUN_009aa280_Class
 // Returns true if a equals m4, or either value is -1; otherwise returns false.
 // @fnv 0x009aa280
 // src: COMMUNITY 0x009aa280
+// pdb: CombatWorldState::Matches | CombatWorldState.obj | debug, object-file run extension, low
+// pdb params: aeState, aiValue
 bool __thiscall FUN_009aa280_Class::CombatWorldStateEntry_HasValue(int aiValue)
 {
     if (aiValue == m4 || aiValue == -1 || m4 == -1)
@@ -681,6 +729,9 @@ struct FUN_009aa3b0_Class
 };
 // Walks the linked list from this, calling FUN_009aa250 on each node's first pointer, and returns true if any returns true.
 // @fnv 0x009aa3b0
+// pdb: CombatWorldStateList::HasMatchingWorldState | CombatWorldState.obj | debug, object-file gap fill, medium
+// pdb params: aeState, aiValue
+// pdb locals: plist, pstate
 bool FUN_009aa3b0_Class::HasMatchingEntry(unsigned int auiFirst, unsigned int auiSecond)
 {
     CombatWorldStateListNode* p = (CombatWorldStateListNode*)this;
@@ -706,22 +757,25 @@ extern unsigned char DAT_011a55b4[256];
 
 struct FUN_009aae10_Class
 {
-    void CombatWorldStateArray_ApplyWorldState(int a, unsigned int b);
+    void CombatWorldStateArray_ApplyWorldState(int aeWorldState, unsigned int aiDesiredValue);
 };
 
 // If the per-index byte in DAT_011a55b4 is set, ORs bit b into the flags from FUN_005bd5c0 and passes them to FUN_009aad00; otherwise passes b.
 // @fnv 0x009aae10
 // src: COMMUNITY 0x009aae10
-void FUN_009aae10_Class::CombatWorldStateArray_ApplyWorldState(int aiIndex, unsigned int auiBit)
+// pdb: CombatWorldStateArray::ApplyWorldState | CombatWorldState.obj | debug, upstream name already matches, high
+// pdb params: aeWorldState, aiDesiredValue
+// pdb locals: icurrentValue
+void FUN_009aae10_Class::CombatWorldStateArray_ApplyWorldState(int aeWorldState, unsigned int aiDesiredValue)
 {
-    if (DAT_011a55b4[aiIndex * 8])
+    if (DAT_011a55b4[aeWorldState * 8])
     {
-        int flags = ((DummyFontManager*)this)->FUN_005bd5c0(aiIndex);
-        ((FUN_009aad00Class*)this)->CombatWorldStateArray_SetValue(aiIndex, (1 << auiBit) | flags);
+        int flags = ((DummyFontManager*)this)->FUN_005bd5c0(aeWorldState);
+        ((FUN_009aad00Class*)this)->CombatWorldStateArray_SetValue(aeWorldState, (1 << aiDesiredValue) | flags);
     }
     else
     {
-        ((FUN_009aad00Class*)this)->CombatWorldStateArray_SetValue(aiIndex, auiBit);
+        ((FUN_009aad00Class*)this)->CombatWorldStateArray_SetValue(aeWorldState, aiDesiredValue);
     }
 }
 
@@ -740,15 +794,17 @@ struct FUN_009ae4d0_shell
 void __cdecl bhkMatrix3_NI2HKNS(void*);
 struct FUN_009ae4a0_class
 {
-    void* __thiscall bhkTransform_NI2HK(void* arg);
+    void* __thiscall bhkTransform_NI2HK(void* arNiTran);
 };
 // Calls FUN_009ae4d0 on this with arg, then SetFromScaledVector3 on the object at this+0x30 with arg+0x24, and returns this.
 // @fnv 0x009ae4a0
 // src: COMMUNITY 0x009ae4a0
-void* __thiscall FUN_009ae4a0_class::bhkTransform_NI2HK(void* arg)
+// pdb: bhkTransform::NI2HK | Explosion.obj | debug, upstream name already matches, high
+// pdb params: arNiTran
+void* __thiscall FUN_009ae4a0_class::bhkTransform_NI2HK(void* arNiTran)
 {
-    ((FUN_009ae4d0_shell*)this)->bhkMatrix3_NI2HKNS(arg);
-    ((FUN_004b4e50_shell*)((char*)this + 0x30))->SetFromScaledVector3((char*)arg + 0x24);
+    ((FUN_009ae4d0_shell*)this)->bhkMatrix3_NI2HKNS(arNiTran);
+    ((FUN_004b4e50_shell*)((char*)this + 0x30))->SetFromScaledVector3((char*)arNiTran + 0x24);
     return this;
 }
 
@@ -759,17 +815,20 @@ struct PhysicsMutationNotification
 };
 struct FUN_009b0c50_Class
 {
-    void bhkRigidBody_ApplyLinearImpulse(int a);
+    void bhkRigidBody_ApplyLinearImpulse(int arImpulse);
 };
 // @fnv 0x009b0c50
 // src: COMMUNITY 0x009b0c50
-void FUN_009b0c50_Class::bhkRigidBody_ApplyLinearImpulse(int a)
+// pdb: bhkRigidBody::ApplyLinearImpulse | Explosion.obj | retail, upstream name already matches, high
+// pdb params: arImpulse
+// pdb locals: hkv
+void FUN_009b0c50_Class::bhkRigidBody_ApplyLinearImpulse(int arImpulse)
 {
     hkpRigidBody* p = reinterpret_cast<hkpRigidBody*>(reinterpret_cast<bhkWorldObject*>(this)->Bipedanim_GetReferenceFlagsOrZero());
     if (p)
     {
         reinterpret_cast<PhysicsMutationNotification*>(this)->GetLocalData();
-        p->SetCollisionShape(reinterpret_cast<void*>(a));
+        p->SetCollisionShape(reinterpret_cast<void*>(arImpulse));
         reinterpret_cast<PhysicsMutationNotification*>(this)->GetLocalData();
     }
 }
@@ -782,21 +841,24 @@ struct PhysicsMutationNotification
 };
 struct FUN_009b0d30_shell
 {
-    void hkpRigidBody_applyAngularImpulse(int a);
+    void hkpRigidBody_applyAngularImpulse(int imp);
 };
 struct FUN_009b0cf0_class
 {
-    void __thiscall bhkRigidBody_ApplyAngularImpulse(int a);
+    void __thiscall bhkRigidBody_ApplyAngularImpulse(int arImpulse);
 };
 // @fnv 0x009b0cf0
 // src: COMMUNITY 0x009b0cf0
-void __thiscall FUN_009b0cf0_class::bhkRigidBody_ApplyAngularImpulse(int a)
+// pdb: bhkRigidBody::ApplyAngularImpulse | Explosion.obj | retail, upstream name already matches, high
+// pdb params: arImpulse
+// pdb locals: hkv
+void __thiscall FUN_009b0cf0_class::bhkRigidBody_ApplyAngularImpulse(int arImpulse)
 {
     void* p = ((bhkWorldObject*)this)->Bipedanim_GetReferenceFlagsOrZero();
     if (p)
     {
         ((PhysicsMutationNotification*)this)->GetLocalData();
-        ((FUN_009b0d30_shell*)p)->hkpRigidBody_applyAngularImpulse(a);
+        ((FUN_009b0d30_shell*)p)->hkpRigidBody_applyAngularImpulse(arImpulse);
         ((PhysicsMutationNotification*)this)->GetLocalData();
     }
 }
@@ -813,6 +875,7 @@ struct FUN_009b12d0_Class
 };
 // @fnv 0x009b12d0
 // src: COMMUNITY 0x009b12d0
+// pdb: Explosion::DetachLight | Explosion.obj | debug, object-file gap fill, medium
 void FUN_009b12d0_Class::Explosion_FreeLight()
 {
     if (*(Flt*)((char*)this + 0xc4))
@@ -834,6 +897,7 @@ struct FUN_009b3130_class
     void* __thiscall DestroyIfFlagged(unsigned int flags);
 };
 // @fnv 0x009b3130
+// pdb: FlameProjectile::~FlameProjectile | FlameProjectile.obj | debug, object-file run extension, low
 void* __thiscall FUN_009b3130_class::DestroyIfFlagged(unsigned int flags)
 {
     ((FUN_009b3f80_shell*)this)->FUN_009b3f80();
@@ -849,6 +913,8 @@ void __cdecl InitHitData(int a1, int a2, int a3, int a4, unsigned char a5);
 // Calls InitFromObjects with a6 when a6 is nonzero, otherwise calls InitHitData with a5, forwarding a1-a4.
 // @fnv 0x009b5120
 // src: COMMUNITY 0x009b5120
+// pdb: HitData::InitializeHitData | HitData.obj | debug, object-file gap fill, medium
+// pdb params: apData, apAggressor, apTarget, apWeaponItem, abPowerAttack, apProjectile
 void __cdecl HitData_InitializeHitData_3(int aiArg1, int aiArg2, int aiArg3, int aiArg4, unsigned char a5, int a6, int a7)
 {
     if (a6)
@@ -863,6 +929,7 @@ struct FUN_009b7970_shell
     void* __thiscall FUN_009b79f0(unsigned int flags);
 };
 // @fnv 0x009b79f0
+// pdb: BSSimpleArray<BGSBodyPart *,1024>::`scalar deleting destructor' | HitData.obj | retail, vtable slot, high
 void* __thiscall FUN_009b7970_shell::FUN_009b79f0(unsigned int flags)
 {
     InitializeAndClear();
@@ -884,6 +951,9 @@ struct FUN_009bb7f0_shell
     void UpdateLightFromChallenge();
 };
 // @fnv 0x009bb7f0
+// pdb: MuzzleFlash::UpdateLight | MuzzleFlash.obj | retail, object-file run extension, low
+// pdb note: debug build links it to MuzzleFlash::AttachLight
+// pdb locals: bdidLock
 void FUN_009bb7f0_shell::UpdateLightFromChallenge()
 {
     if (reinterpret_cast<Flt*>(reinterpret_cast<char*>(this) + 0xc)->operator unsigned int() &&
@@ -895,7 +965,7 @@ void FUN_009bb7f0_shell::UpdateLightFromChallenge()
                 reinterpret_cast<TESObjectLIGH*>(
                     reinterpret_cast<TESChallenge*>(*reinterpret_cast<void**>(reinterpret_cast<char*>(this) + 0x14))
                         ->GetFormOne())
-                    ->CreateLight(
+                    ->GenDynamic(
                         0,
                         reinterpret_cast<NiAVObject*>(
                             reinterpret_cast<Flt*>(reinterpret_cast<char*>(this) + 0xc)->operator unsigned int()),
@@ -1117,6 +1187,7 @@ struct FUN_009bec90_class
 };
 // @fnv 0x009bec90
 // src: XBOX_PDB 0x009bec90
+// pdb: Projectile::UpdateInstant | Projectile.obj | debug, upstream name already matches, high
 void __thiscall FUN_009bec90_class::Projectile_UpdateInstant()
 {
     if (((S9b46c0*)this)->Projectile_IsFlagSet(1))
@@ -1166,6 +1237,8 @@ struct FUN_009a3d00_class
 };
 // @fnv 0x009a3d00
 // src: XBOX_PDB 0x009a3d00
+// pdb: BSSimpleArray<NavMeshSearchNode,1024>::_InitialSetup | NavMeshSearchMaxCost.obj | debug, call graph, medium
+// pdb params: aiReserveSize, aiInitialSize
 void FUN_009a3d00_class::BSSimpleArray_WeaponData_1024_InitialSetup(unsigned int a, unsigned int b)
 {
     m4 = 0;
@@ -1191,6 +1264,8 @@ struct FUN_009b3160 : Projectile
 };
 // Initialises a Projectile: installs two vtables, sets form type 0x40, and zeroes the floats at offsets 0x150 and 0x154.
 // @fnv 0x009b3160
+// pdb: FlameProjectile::FlameProjectile | FlameProjectile.obj | debug, call graph, medium
+// pdb params: abAdd
 FUN_009b3160::FUN_009b3160(bool b) : Projectile(b)
 {
     SetFormType(0x40);
@@ -1222,6 +1297,8 @@ struct BooleanFloatQuery
     void ApplyDamageEffects();
 };
 // @fnv 0x009b5650
+// pdb: HitData::InitializeHitData | HitData.obj | debug, object-file gap fill, medium
+// pdb params: apData, apAggressor, apTarget, apWeaponItem, apProjectile
 void InitFromObjects(BooleanFloatQuery* hd, void* target, void* weapon, void* source, void* extra)
 {
     if (!hd)
@@ -1260,6 +1337,8 @@ struct FUN_009bb8a0_Class
     void __thiscall UpdateLightVisibility();
 };
 // @fnv 0x009bb8a0
+// pdb: MuzzleFlash::UpdateLight | MuzzleFlash.obj | debug, object-file run extension, low
+// pdb locals: bdidLock
 void __thiscall FUN_009bb8a0_Class::UpdateLightVisibility()
 {
     char b;
@@ -1312,19 +1391,22 @@ struct FUN_009ae540_Class
 };
 struct FUN_009ae4d0_Class : FUN_009ae540_Class
 {
-    FUN_009ae540_Class* __thiscall bhkMatrix3_NI2HKNS(void* a);
+    FUN_009ae540_Class* __thiscall bhkMatrix3_NI2HKNS(void* arSrc);
 };
 // @fnv 0x009ae4d0
 // src: COMMUNITY 0x009ae4d0
-FUN_009ae540_Class* __thiscall FUN_009ae4d0_Class::bhkMatrix3_NI2HKNS(void* a)
+// pdb: bhkMatrix3::NI2HKNS | Explosion.obj | debug, upstream name already matches, high
+// pdb params: arSrc
+// pdb locals: nic
+FUN_009ae540_Class* __thiscall FUN_009ae4d0_Class::bhkMatrix3_NI2HKNS(void* arSrc)
 {
     Point3Value l;
     ((NiPoint3*)&l)->FUN_006815c0();
-    ((M9c10*)a)->NiMatrix3_GetCol(0, l);
+    ((M9c10*)arSrc)->NiMatrix3_GetCol(0, l);
     this->FUN_009ae540(l);
-    ((M9c10*)a)->NiMatrix3_GetCol(1, l);
+    ((M9c10*)arSrc)->NiMatrix3_GetCol(1, l);
     ((FUN_009ae540_Class*)((char*)this + 0x10))->FUN_009ae540(l);
-    ((M9c10*)a)->NiMatrix3_GetCol(2, l);
+    ((M9c10*)arSrc)->NiMatrix3_GetCol(2, l);
     ((FUN_009ae540_Class*)((char*)this + 0x20))->FUN_009ae540(l);
     return this;
 }
@@ -1457,6 +1539,7 @@ struct FUN_009b1260_Class
 };
 
 // @fnv 0x009b1260
+// pdb: Explosion::AttachLight | Explosion.obj | debug, object-file gap fill, medium
 void FUN_009b1260_Class::UpdateCastSound()
 {
     if (vf_1d0() && ((const EffectSetting*)((XActor*)this)->GetActorBase())->GetCastSound())
@@ -1464,7 +1547,7 @@ void FUN_009b1260_Class::UpdateCastSound()
         ((GO*)((char*)this + 0xc4))
             ->
             operator=(((TESObjectLIGH*)((const EffectSetting*)((XActor*)this)->GetActorBase())->GetCastSound())
-                          ->CreateLight((XActor*)this, vf_1d0(), false));
+                          ->GenDynamic((XActor*)this, vf_1d0(), false));
     }
 }
 
@@ -1478,12 +1561,14 @@ struct FUN_009b5a30_Class
     float f14;
     float f18;
     int i1c;
-    void __thiscall HitData_ReduceDamage(int a);
+    void __thiscall HitData_ReduceDamage(int abIgnoreBlocking);
     void __thiscall ApplyDamageEffects();
 };
 
 // @fnv 0x009b5720
 // src: XBOX_PDB 0x009b5720
+// pdb: HitData::InitializeHitData | HitData.obj | debug, object-file gap fill, medium
+// pdb params: apData, apAggressor, apTarget, afDamage
 void __cdecl HitData_InitializeHitData(FUN_009b5a30_Class* a, int b, int c, float afValue)
 {
     if (!a)
@@ -1509,6 +1594,7 @@ struct ShadowNode
 };
 // @fnv 0x009bb850
 // src: COMMUNITY 0x009bb850
+// pdb: MuzzleFlash::DetachLight | MuzzleFlash.obj | debug, upstream name already matches, high
 void ShadowNode::MuzzleFlash_DetachLight()
 {
     if (m10)
@@ -1611,6 +1697,8 @@ struct FUN_009a4ef0_Class
 
 // @fnv 0x009a4ef0
 // src: COMMUNITY 0x009a4ef0
+// pdb: CombatThreat::LoadGame | CombatThreatMap.obj | debug, object-file run extension, low
+// pdb params: apLoadGameBuffer
 void FUN_009a4ef0_Class::Arr0014_Data_Load(BGSLoadFormBuffer* buffer)
 {
     buffer->ReadTypedData((char*)this + 4, 4);
@@ -1643,6 +1731,10 @@ struct FUN_009a5170_Class
 
 // Returns whether pt.GetX() is less than value.
 // @fnv 0x009a5170
+// pdb: CombatThreat::GetBaseThreatScore | CombatThreatMap.obj | retail, object-file run extension, low
+// pdb note: debug build links it to CombatThreat::IsExpired
+// pdb params: apActor, afActorHealth
+// pdb locals: fcurrentHealth
 bool FUN_009a5170_Class::IsXLessThan(float value)
 {
     return pt.GetX() < value;
@@ -1655,19 +1747,23 @@ struct FUN_00865f20_shell
 
 struct FUN_00865ff0_shell
 {
-    void __thiscall SaveVariableSizedValue_00865ff0(int count, unsigned int size);
+    void __thiscall SaveVariableSizedValue_00865ff0(int aiVariableValue, unsigned int aiPosition);
 };
 
 struct FUN_00865db0_shell
 {
-    void __thiscall FUN_00865db0(unsigned int key, unsigned int flags);
+    void __thiscall FUN_00865db0(unsigned int aiFormID, unsigned int aiUnusuedMetaDataArg);
 };
 
 // @fnv 0x009a59e0
-void CombatThreatMap::SaveThreats(BGSSaveFormBuffer* buffer)
+// src: XBOX_RETAIL_PDB 0x009a59e0
+// pdb: CombatThreatMap::SaveGame | CombatThreatMap.obj | retail, call graph, high
+// pdb params: apSaveGameBuffer
+// pdb locals: isaveGameBufferPos, isaveGameCount, it, pthreat, irefID
+void CombatThreatMap::SaveGame(BGSSaveFormBuffer* apSaveGameBuffer)
 {
     unsigned int position = 0;
-    unsigned int size = reinterpret_cast<FUN_00865f20_shell*>(buffer)->StartVariableSizedValue();
+    unsigned int size = reinterpret_cast<FUN_00865f20_shell*>(apSaveGameBuffer)->StartVariableSizedValue();
     void* count = reinterpret_cast<NiTPointerMap<unsigned int, CombatThreat*>*>(this)->GetFirstPos();
 
     while (count)
@@ -1678,13 +1774,13 @@ void CombatThreatMap::SaveThreats(BGSSaveFormBuffer* buffer)
 
         if (key)
         {
-            reinterpret_cast<FUN_00865db0_shell*>(buffer)->FUN_00865db0(uiThreatKey, 0);
-            reinterpret_cast<FUN_009a4e90_shell*>(key)->SaveState_009a4e90(buffer);
+            reinterpret_cast<FUN_00865db0_shell*>(apSaveGameBuffer)->FUN_00865db0(uiThreatKey, 0);
+            reinterpret_cast<FUN_009a4e90_shell*>(key)->CombatThreat_SaveGame(apSaveGameBuffer);
             ++position;
         }
     }
 
-    reinterpret_cast<FUN_00865ff0_shell*>(buffer)->SaveVariableSizedValue_00865ff0(position, size);
+    reinterpret_cast<FUN_00865ff0_shell*>(apSaveGameBuffer)->SaveVariableSizedValue_00865ff0(position, size);
 }
 
 struct FUN_009a5df0
@@ -1697,6 +1793,7 @@ struct FUN_009a5d50_class : FUN_009a5df0
 };
 // Runs the base destructor, frees this when flags has bit 0 set, and returns this.
 // @fnv 0x009a5d50
+// pdb: NiTMap<unsigned int,CombatThreat *>::`scalar deleting destructor' | CombatThreatMap.obj | retail, vtable slot, high
 void* FUN_009a5d50_class::FUN_009a5d50(unsigned int flags)
 {
     FUN_009a5df0::~FUN_009a5df0();
@@ -1709,9 +1806,10 @@ void __cdecl Deallocate(void*);
 
 // Calls FUN_009a5e50, then if the low bit of flags is set calls Deallocate on this, and returns this.
 // @fnv 0x009a5e80
+// pdb: NiTMapBase<DFALL<NiTMapItem<unsigned int,CombatThreat *> >,unsigned int,CombatThreat *>::`scalar deleting destructor' | CombatThreatMap.obj | retail, vtable slot, high
 void* __fastcall DeleteCombatThreatRecord(CombatThreatRecord_blk_009a0000_od* record, void*, unsigned int flags)
 {
-    record->SetVtableAndProcessState_009a5e50();
+    record->NiTMapBase_DFALL_NiTMapItem_unsigned_int_CombatThreat_unsigned_int_CombatThreat_dtor();
     if (flags & 1)
         Deallocate(record);
     return record;
@@ -1728,6 +1826,7 @@ struct FUN_009a6080_Class
     void* bhkWorld_GetGravity();
 };
 // @fnv 0x009a6050
+// pdb: CombatUtilities::Init | CombatUtilities.obj | debug, call graph, medium
 void NegateCharacterControllerValue()
 {
     DAT_011f1c00 =
@@ -1773,6 +1872,7 @@ FUN_009ab970_Class::Point3Value& FUN_009ab970_Class::CopyVectorAtOffsetD30(Point
     return akDest;
 }
 
+// pdb: class KFModel, size 0x14 (here 0x1), 5 members
 struct KFModel
 {
     void* GetControllerSequence();
@@ -1787,6 +1887,8 @@ struct FUN_009acd00_Class
 // Gets a pointer from the object's vtable slot 0x1d0, then resolves a model via g_TES and calls its vtable slot 0xdc with that pointer and 1.
 // @fnv 0x009acd00
 // src: XBOX_PDB 0x009acd00
+// pdb: Explosion::AttachDistant | Explosion.obj | retail, upstream name already matches, high
+// pdb locals: pav, pparent
 void FUN_009acd00_Class::Explosion_AttachDistant()
 {
     void* p = ((void*(__thiscall*)(void*))(*(void***)this)[0x1d0 / 4])(this);
@@ -1813,6 +1915,7 @@ struct FUN_009b0f40
 };
 // Initializes the object: clears m0 and sets the m4, m5 and m6 flags to false.
 // @fnv 0x009b0f40
+// pdb: Explosion::ExplosionTarget::ExplosionTarget | Explosion.obj | debug, object-file gap fill, medium
 FUN_009b0f40::FUN_009b0f40() : m8()
 {
     m0 = 0;
@@ -1828,12 +1931,13 @@ struct FUN_0057c530Class
 
 struct FUN_009b2db0_Class
 {
-    void ForwardCall_009b2db0();
+    void hkInplaceArray_hkpBroadPhaseHandlePair_128_hkContainerHeapAllocator_dtor();
 };
 
 // @fnv 0x009b2db0
-// src: GUESS 0x009b2db0 (confidence: low)
-void FUN_009b2db0_Class::ForwardCall_009b2db0()
+// src: XBOX_DEBUG_PDB 0x009b2db0
+// pdb: hkInplaceArray<hkpBroadPhaseHandlePair,128,hkContainerHeapAllocator>::~hkInplaceArray<hkpBroadPhaseHandlePair,128,hkContainerHeapAllocator> | Explosion.obj | debug, call graph, high
+void FUN_009b2db0_Class::hkInplaceArray_hkpBroadPhaseHandlePair_128_hkContainerHeapAllocator_dtor()
 {
     ((FUN_0057c530Class*)this)->FUN_0057c530();
 }
@@ -1849,6 +1953,7 @@ struct FUN_009b2dd0_Class
 // Calls p->FUN_00622570 with whether the object's field at offset 12 differs from the field at offset 0, then returns p.
 // @fnv 0x009b2dd0
 // src: GUESS 0x009b2dd0 (confidence: low)
+// pdb: hkArray<hkpRootCdPoint,hkContainerHeapAllocator>::hkArray<hkpRootCdPoint,hkContainerHeapAllocator> | Explosion.obj | debug, object-file run extension, low
 CalleeObj* FUN_009b2dd0_Class::EvaluateValue_009b2dd0(CalleeObj* apCallee)
 {
     apCallee->UpdateState_00622570(reinterpret_cast<int*>(this)[3] != reinterpret_cast<int*>(this)[0]);
@@ -1935,6 +2040,8 @@ struct FUN_009b31f0 : public FUN_009bbef0
 
 // Initializes the base, sets the vtable and p_18 pointers, sets form type 0x40, and zeroes f_150 and f_154.
 // @fnv 0x009b31f0
+// pdb: FlameProjectile::FlameProjectile | FlameProjectile.obj | debug, object-file gap fill, medium
+// pdb params: apProjectileBase, apShooter, apFromWeapon, aOrigin, afZAngle, afXAngle
 FUN_009b31f0::FUN_009b31f0(void* a, void* b, void* c, Point3Value position, float d, float e)
     : FUN_009bbef0(a, b, c, position, d, e)
 {
@@ -1962,12 +2069,13 @@ struct FUN_008256d0_shell
 
 struct FUN_009b8a20_class
 {
-    void __thiscall AdvanceStateAtOffset150_009b8a20();
+    void __thiscall MissileProjectile_DetermineImpactResult();
 };
 
 // @fnv 0x009b8a20
-// src: GUESS 0x009b8a20 (confidence: low)
-void FUN_009b8a20_class::AdvanceStateAtOffset150_009b8a20()
+// src: XBOX_DEBUG_PDB 0x009b8a20
+// pdb: MissileProjectile::DetermineImpactResult | MissileProjectile.obj | debug, call graph, high
+void FUN_009b8a20_class::MissileProjectile_DetermineImpactResult()
 {
     if (*reinterpret_cast<int*>(reinterpret_cast<char*>(this) + 0x150) == 3)
     {
@@ -2016,21 +2124,23 @@ struct FUN_009a03d0_cls
 {
     unsigned int unk00[0xe4 / 4];
     FUN_009a03d0_inner* m_e4;
-    void Helper1(unsigned int);
+    void CombatState_AddUnreachableCoverLocation(unsigned int);
     void Helper2(FUN_009a03d0_inner*);
-    void CombatState_ClearCoverLocation(unsigned char flag);
+    void CombatState_ClearCoverLocation(unsigned char abInvalidateCover);
 };
 
 // If m_e4 is set, optionally calls Helper1 with its m_68, calls Helper2 when Check() passes, calls Make(1), then clears m_e4.
 // @fnv 0x009a03d0
 // src: XBOX_PDB 0x009a03d0
-void __thiscall FUN_009a03d0_cls::CombatState_ClearCoverLocation(unsigned char flag)
+// pdb: CombatState::ClearCoverLocation | CombatState.obj | retail, upstream name already matches, high
+// pdb params: abInvalidateCover
+void __thiscall FUN_009a03d0_cls::CombatState_ClearCoverLocation(unsigned char abInvalidateCover)
 {
     if (m_e4 != 0)
     {
-        if (flag)
+        if (abInvalidateCover)
         {
-            Helper1(m_e4->m_68);
+            CombatState_AddUnreachableCoverLocation(m_e4->m_68);
         }
         if (m_e4->Check())
         {
@@ -2179,6 +2289,8 @@ class FUN_009a1380_cls
 // Returns 1 if m_08 is less than a value derived from m_c9 (reduced by m_cc when above DAT_01012060), or 0 if FUN_004030b0(m_1c4) is zero.
 // @fnv 0x009a1380
 // src: COMMUNITY 0x009a1380
+// pdb: CombatState::CheckShouldFlee | CombatState.obj | retail, upstream name already matches, high
+// pdb locals: fconfidenceLevel
 unsigned char FUN_009a1380_cls::CombatState_CheckShouldFlee()
 {
     float f;
@@ -2408,6 +2520,9 @@ struct CombatEntryOwner
 };
 
 // @fnv 0x009a41e0
+// pdb: CombatTargetMap::RemoveTarget | CombatTargetMap.obj | debug, object-file run extension, low
+// pdb params: apTarget
+// pdb locals: ptargetData
 void CombatEntryOwner::RemoveEntry(int key)
 {
     CombatEntry* entry = 0;
@@ -2500,6 +2615,7 @@ struct FUN_009a45e0
 };
 // Destructor that, if the held owner and its manager exist, removes the owner from that manager.
 // @fnv 0x009a45e0
+// pdb: CombatThreat::~CombatThreat | CombatThreatMap.obj | debug, object-file run extension, low
 FUN_009a45e0::~FUN_009a45e0()
 {
     if (owner && owner->NiAVObject_GetParent())
@@ -2535,27 +2651,29 @@ struct FUN_009a44e0_FormEntry
     CTPoint unk20;
     DefaultCombatTargetTimestamp unk2c;
     FUN_009a44e0_FormEntry(int a1, float a2, float a3, float a4, float a5);
-    void CombatThreat_Initialize(int a1, float a2, float a3, float a4, float a5, bool a6);
+    void CombatThreat_Initialize(int apThreat, float afRadius, float afStartTime, float afEndTime, float afDamage, bool abUpdatingThreat);
     void FUN_004534f0(unsigned int);
 };
 
 // @fnv 0x009a4690
 // src: XBOX_PDB 0x009a4690
-void FUN_009a44e0_FormEntry::CombatThreat_Initialize(int a1, float a2, float afFirstOffset, float afSecondOffset, float a5,
-                                      bool abSkipFirst)
+// pdb: CombatThreat::Initialize | CombatThreatMap.obj | debug, upstream name already matches, high
+// pdb params: apThreat, afRadius, afStartTime, afEndTime, afDamage, abUpdatingThreat
+void FUN_009a44e0_FormEntry::CombatThreat_Initialize(int apThreat, float afRadius, float afStartTime, float afEndTime, float afDamage,
+                                      bool abUpdatingThreat)
 {
     unsigned int t2;
     unsigned int t7;
-    unk00 = a1;
-    unk04 = a2;
-    if (!abSkipFirst)
+    unk00 = apThreat;
+    unk04 = afRadius;
+    if (!abUpdatingThreat)
     {
-        reinterpret_cast<CombatTargetTimestamp*>(&t7)->CombatTargetTimestamp::CombatTargetTimestamp(CombatTimer_GetTimer() + afFirstOffset);
+        reinterpret_cast<CombatTargetTimestamp*>(&t7)->CombatTargetTimestamp::CombatTargetTimestamp(CombatTimer_GetTimer() + afStartTime);
         *reinterpret_cast<unsigned int*>(&unk08) = t7;
     }
-    reinterpret_cast<CombatTargetTimestamp*>(&t2)->CombatTargetTimestamp::CombatTargetTimestamp(CombatTimer_GetTimer() + afSecondOffset);
+    reinterpret_cast<CombatTargetTimestamp*>(&t2)->CombatTargetTimestamp::CombatTargetTimestamp(CombatTimer_GetTimer() + afEndTime);
     *reinterpret_cast<unsigned int*>(&unk0c) = t2;
-    unk10 = a5;
+    unk10 = afDamage;
 }
 
 extern double DAT_01011590;
@@ -2626,6 +2744,9 @@ struct S_009a49b0_Class
 
 // Divides unk10 times DAT_01011590 by the vtable result of arg (or value when arg is null) and returns the quotient.
 // @fnv 0x009a49b0
+// pdb: CombatThreat::GetBaseThreatScore | CombatThreatMap.obj | debug, object-file gap fill, medium
+// pdb params: apActor, afActorHealth
+// pdb locals: fcurrentHealth
 float S_009a49b0_Class::ComputeScaledRatio(S_009a49b0_Arg* arg, float value)
 {
     float divisor = arg ? arg->unk_a4.vfn_08(0x10) : value;
@@ -2793,12 +2914,15 @@ struct Target9a
 // Computes a point from FUN_009a4a10 and the source position, then returns a Result9a built from the radius, ComputeScaledRatio and the setting floats.
 // @fnv 0x009a4c70
 // src: COMMUNITY 0x009a4c70
-Result9a Target9a::CombatThreat_GetAvoidNode(Context9a* context)
+// pdb: CombatThreat::GetAvoidNode | CombatThreatMap.obj | retail, upstream name already matches, high
+// pdb params: apActor
+// pdb locals: fextrudeRadius, fthreatScore, threatLocation, linearVelocity, fvelocityMagnitude, threatLoc2, fnegativeExtrudeTime
+Result9a Target9a::CombatThreat_GetAvoidNode(Context9a* apActor)
 {
     Point9a h;
     CombatThreat_GetThreatLinearVelocity(h);
     float s = radius * *DAT_011cf48c.Float();
-    float i = ComputeScaledRatio(context, 0.0f);
+    float i = ComputeScaledRatio(apActor, 0.0f);
     float p = h.FUN_00457910();
     Point9a a = source->Position() + h * p * 0.5f;
     if (p < s)
@@ -2879,6 +3003,7 @@ class FUN_009a4fb0 : public ThisBase_b4986
 
 // Constructs the object, initializing the base with 0x25 and default-constructing the m_10 member.
 // @fnv 0x009a4fb0
+// pdb: CombatThreatMap::CombatThreatMap | CombatThreatMap.obj | debug, call graph, medium
 FUN_009a4fb0::FUN_009a4fb0() : ThisBase_b4986(0x25), m_10()
 {}
 
@@ -2894,7 +3019,7 @@ struct S_9a54a0_Actor
     float FUN_006a78f0();
     float FUN_00477900();
 };
-float __cdecl ComputeExplosionDamageFalloff(float a, float b, float c);
+float __cdecl CombatFormulas_CalcExplosionDamageDistance(float a, float b, float c);
 struct S_9a54a0_Class
 {
     void AddOrUpdateItem(int a, float b, float c, float d, float e);
@@ -2902,13 +3027,16 @@ struct S_9a54a0_Class
 };
 // @fnv 0x009a54a0
 // src: COMMUNITY 0x009a54a0
+// pdb: CombatThreatMap::AddThreat | CombatThreatMap.obj | debug, object-file gap fill, medium; the overload AddThreat(TESObjectREFR*, BGSExplosion*, float); 0x009a52f0 is AddThreat(Projectile*)
+// pdb params: apRef, apExplosion, afTime
+// pdb locals: fdamage, fradius
 void S_9a54a0_Class::CombatThreatMap_AddThreat(int a1, S_9a54a0_Actor* pActor, float a3)
 {
     float cur = pActor->FUN_006a78f0();
     if (cur >= *DAT_011cf3f0.Setting_Float_00403e20())
     {
         float f = pActor->FUN_00477900();
-        f = ComputeExplosionDamageFalloff(f, cur, *DAT_011cf3f0.Setting_Float_00403e20());
+        f = CombatFormulas_CalcExplosionDamageDistance(f, cur, *DAT_011cf3f0.Setting_Float_00403e20());
         AddOrUpdateItem(a1, f, 0.0f, a3, cur);
     }
 }
@@ -2949,6 +3077,7 @@ struct FUN_009a5df0_cls : DtorBaseP
     virtual ~FUN_009a5df0_cls();
 };
 // @fnv 0x009a5df0
+// pdb: NiTMap<unsigned int,CombatThreat *>::~NiTMap<unsigned int,CombatThreat *> | CombatThreatMap.obj | debug, call graph, medium
 FUN_009a5df0_cls::~FUN_009a5df0_cls()
 {
     ((DtorBaseE*)this)->Release();
@@ -2972,6 +3101,8 @@ struct FUN_009a7bc0 : FUN_0062a220
 };
 // Sets the vtable, initialises the object at offset 0x70 with 0, then calls SetFilter with first and second.
 // @fnv 0x009a7bc0
+// pdb: SpecificItemCollector::SpecificItemCollector | CombatUtilities.obj | debug, object-file run extension, low
+// pdb params: aePick, arFilter
 FUN_009a7bc0::FUN_009a7bc0(unsigned int first, unsigned int second)
 {
     vtable = &DAT_0104e1dc;
@@ -2998,25 +3129,28 @@ struct SceneOwner
     float GetGravity_00966980();
 };
 
-void ComputeLaunchAngle(float a, float b, float c, float d, unsigned char e);
+void ComputeLaunchAngle(float afDeltaXY, float afDeltaZ, float afSpeed, float afGravity, unsigned char abLargeRoot);
 
 extern float DAT_011f1c00;
 
 // Zeroes the vector's z, measures its length, defaults p18 to a1's value, scales a1's owner value by DAT_011f1c00, and passes all to ComputeLaunchAngle.
 // @fnv 0x009a7d50
 // src: XBOX_PDB 0x009a7d50
-void CombatUtilities_FindAngleOfProjectile(SceneRef* pSceneRef, Vec3Arg vecArg, float fParam, unsigned char p1c)
+// pdb: CombatUtilities::FindAngleOfProjectile | CombatUtilities.obj | retail, object-file run extension, high
+// pdb params: afDeltaXY, afDeltaZ, afSpeed, afGravity, abLargeRoot
+// pdb locals: frootInterior, fspeedSquared, froot2, froot, froot1, fchosenRoot, fangle
+void CombatUtilities_FindAngleOfProjectile(SceneRef* apProjectile, Vec3Arg akToTarget, float afSpeed, unsigned char abHighArc)
 {
     float len;
-    float fSavedZ = vecArg.z;
-    vecArg.z = 0.0f;
-    len = vecArg.FUN_00457990();
-    if (fParam == 0.0)
+    float fSavedZ = akToTarget.z;
+    akToTarget.z = 0.0f;
+    len = akToTarget.FUN_00457990();
+    if (afSpeed == 0.0)
     {
-        fParam = pSceneRef->Projectile_GetSpeed();
+        afSpeed = apProjectile->Projectile_GetSpeed();
     }
-    float scaled = reinterpret_cast<SceneOwner*>(pSceneRef->FUN_004181e0())->GetGravity_00966980() * DAT_011f1c00;
-    ComputeLaunchAngle(len, fSavedZ, fParam, scaled, p1c);
+    float scaled = reinterpret_cast<SceneOwner*>(apProjectile->FUN_004181e0())->GetGravity_00966980() * DAT_011f1c00;
+    ComputeLaunchAngle(len, fSavedZ, afSpeed, scaled, abHighArc);
 }
 
 struct Triple12
@@ -3029,7 +3163,7 @@ struct Triple12
 struct ObjCallees
 {
     void* Lookup();
-    void Apply(void* pOut);
+    void Apply(void* arVel);
 };
 
 typedef unsigned char(__thiscall* VCheckFn)(void*);
@@ -3040,7 +3174,11 @@ extern unsigned int DAT_011f4274;
 
 // Builds a Triple12 from three globals, optionally lets a1's lookup result apply changes to it, and stores it in pOut.
 // @fnv 0x009a8660
-Triple12* GetTriple12(Triple12* pResult, void* pObject)
+// src: XBOX_RETAIL_PDB 0x009a8660
+// pdb: CombatUtilities::GetTargetVelocity | CombatUtilities.obj | retail, call graph, high
+// pdb params: apTarget
+// pdb locals: velocity, ptargetActor, pcon
+Triple12* CombatUtilities_GetTargetVelocity(Triple12* pResult, void* pObject)
 {
     Triple12 result;
     result.m_00 = DAT_011f426c;
@@ -3106,6 +3244,9 @@ struct WorldStateNode
 };
 // Walks the node chain, and for the first state whose FUN_00559450 equals type, stores its FUN_00726070 result in output and returns true; otherwise false.
 // @fnv 0x009aa410
+// pdb: CombatWorldStateList::GetWorldStateActionValue | CombatWorldState.obj | debug, object-file gap fill, medium
+// pdb params: aeState, ariActionValue
+// pdb locals: plist, pstate
 bool WorldStateNode::FindStateByType(int type, unsigned int* puiOutput)
 {
     WorldStateNode* current = this;
@@ -3124,19 +3265,21 @@ bool WorldStateNode::FindStateByType(int type, unsigned int* puiOutput)
 
 struct FUN_009aadc0_cls
 {
-    unsigned char CombatWorldStateArray_IsTrue(int a, unsigned int b);
+    unsigned char CombatWorldStateArray_IsTrue(int aeWorldState, unsigned int aiDesiredValue);
 };
 
 // Checks DAT_011a55b4 for entry a: if set, tests bit b of FUN_005bd5c0(a); otherwise compares FUN_005bd5c0(a) to b.
 // @fnv 0x009aadc0
 // src: COMMUNITY 0x009aadc0
-unsigned char FUN_009aadc0_cls::CombatWorldStateArray_IsTrue(int aiIndex, unsigned int auiBit)
+// pdb: CombatWorldStateArray::IsTrue | CombatWorldState.obj | debug, upstream name already matches, high
+// pdb params: aeWorldState, aiDesiredValue
+unsigned char FUN_009aadc0_cls::CombatWorldStateArray_IsTrue(int aeWorldState, unsigned int aiDesiredValue)
 {
-    if (DAT_011a55b4[aiIndex * 8] != 0)
+    if (DAT_011a55b4[aeWorldState * 8] != 0)
     {
-        return (reinterpret_cast<DummyFontManager*>(this)->FUN_005bd5c0(aiIndex) & (1u << auiBit)) != 0;
+        return (reinterpret_cast<DummyFontManager*>(this)->FUN_005bd5c0(aeWorldState) & (1u << aiDesiredValue)) != 0;
     }
-    return (reinterpret_cast<DummyFontManager*>(this)->FUN_005bd5c0(aiIndex) == (int)auiBit) ? 1 : 0;
+    return (reinterpret_cast<DummyFontManager*>(this)->FUN_005bd5c0(aeWorldState) == (int)aiDesiredValue) ? 1 : 0;
 }
 
 
@@ -3255,6 +3398,10 @@ class FUN_009ab090 : public Base9AB
 
 // Constructs the object via Base9AB, sets its form type to 0x69, and resets m_spSolution to null.
 // @fnv 0x009ab090
+// pdb: ContinuousBeamProjectile::ScaleBeam3D | ContinuousBeamProjectile.obj | retail, object-file run extension, low
+// pdb note: debug build links it to ContinuousBeamProjectile::ContinuousBeamProjectile
+// pdb params: ap3D, afDesiredLength, afCurrentLength
+// pdb locals: fscale, location, pgeom, fcurrentLength, pnode, n, pobj
 FUN_009ab090::FUN_009ab090(int iA, int iB, int iC, NiPoint3 kPos, float fA, float fB)
     : Base9AB(iA, iB, iC, kPos, fA, fB)
 {
@@ -3324,12 +3471,13 @@ class FUN_009ac9a0_cls
     virtual void vf047();
     virtual void vf048();
     virtual void vf049(int a);
-    void Explosion_MarkForDeletion();
+    void Explosion_Kill();
 };
 
 // @fnv 0x009ac9a0
-// src: COMMUNITY 0x009ac9a0
-void FUN_009ac9a0_cls::Explosion_MarkForDeletion()
+// src: XBOX_DEBUG_PDB 0x009ac9a0 (was COMMUNITY)
+// pdb: Explosion::Kill | Explosion.obj | debug, call graph, high
+void FUN_009ac9a0_cls::Explosion_Kill()
 {
     vf049(1);
 }
@@ -3339,6 +3487,7 @@ TESForm* __cdecl TESForm_GetFormByNumericID(unsigned int);
 // Returns the cached TESImageSpaceModifier, looking it up by form ID 0x166 via FUN_004839c0 if not yet set.
 // @fnv 0x009ad630
 // src: XBOX_PDB 0x009ad630
+// pdb: TESImageSpaceModifier::GetExplosionInFace | Explosion.obj | retail, upstream name already matches, high
 TESImageSpaceModifier* __cdecl TESImageSpaceModifier_GetExplosionInFace()
 {
     if (DAT_011c9708 == 0)
@@ -3352,7 +3501,7 @@ extern SettingT<GameSettingCollection> originalRuntimeFloatSetting505;
 extern SettingT<GameSettingCollection> originalRuntimeFloatSetting506;
 extern double _gModifierZero;
 
-float __cdecl CombatFormulas_CalcExplosionDamage(void* base);
+float __cdecl CombatFormulas_CalcExplosionDamage(void* pExplosion);
 
 struct FUN_009b0f80_ValueOwner
 {
@@ -3495,6 +3644,8 @@ struct FUN_009b0f80_Actor
 
 // Returns value100 if non-negative; otherwise recomputes it from the actor base and scales it by two runtime float settings when an item and skill are present.
 // @fnv 0x009b0f80
+// pdb: Explosion::GetDamage | Explosion.obj | debug, object-file gap fill, medium
+// pdb locals: pownerActor, fskill, fdamageMult
 float FUN_009b0f80_Actor::GetCachedValue()
 {
     if (value100 >= _gModifierZero)
@@ -3526,24 +3677,26 @@ struct ActorBaseX
 struct BlastSoundAccess
 {
     void Explosion_StopSounds();
-    BSSoundHandle PlaySoundByFormID(unsigned int formID, int a, unsigned int flags, int b);
+    BSSoundHandle PlaySoundByFormID(unsigned int aiSoundFormID, int abLoop, unsigned int aiSoundType, int abAllowCopy);
 };
 
 // Calls FUN_009b11c0, then assigns sound handles from the actor base's bolt sound and FUN_009185e0 sound form IDs via PlaySoundByFormID.
 // @fnv 0x009b1090
 // src: XBOX_PDB 0x009b1090
+// pdb: Explosion::StartSounds | Explosion.obj | retail, upstream name already matches, high
+// pdb locals: isoundFileID
 void Explosion::StartSounds()
 {
     ((BlastSoundAccess*)this)->Explosion_StopSounds();
     if (((ActorBaseX*)FUN_004181e0())->GetBoltSound())
     {
         unsigned int boltSoundFormID = ((ActorBaseX*)FUN_004181e0())->GetBoltSound()->GetFormID();
-        kSoundHandles[0] = ((BlastSoundAccess*)this)->PlaySoundByFormID(boltSoundFormID, 0, 0x40000182, 1);
+        Sound1[0] = ((BlastSoundAccess*)this)->PlaySoundByFormID(boltSoundFormID, 0, 0x40000182, 1);
     }
     if (((ActorBaseX*)FUN_004181e0())->FUN_009185e0())
     {
         unsigned int secondSoundFormID = ((ActorBaseX*)FUN_004181e0())->FUN_009185e0()->GetFormID();
-        kSoundHandles[1] = ((BlastSoundAccess*)this)->PlaySoundByFormID(secondSoundFormID, 0, 0x40000182, 1);
+        Sound1[1] = ((BlastSoundAccess*)this)->PlaySoundByFormID(secondSoundFormID, 0, 0x40000182, 1);
     }
 }
 
@@ -3585,6 +3738,8 @@ struct S_009b13a0_Cls
 };
 // @fnv 0x009b13a0
 // src: COMMUNITY 0x009b13a0
+// pdb: Explosion::UpdateRadiation | Explosion.obj | retail, upstream name already matches, high
+// pdb locals: frads, fradiationDissipationTime
 void S_009b13a0_Cls::Explosion_UpdateRadiation()
 {
     float a = FUN_004181e0()->NiAVObject_GetWorldScale();
@@ -3627,6 +3782,7 @@ class FUN_009b2d30 : public B2D30Base
 };
 
 // @fnv 0x009b2d30
+// pdb: hkLocalArray<hkpRootCdPoint>::~hkLocalArray<hkpRootCdPoint> | Explosion.obj | debug, object-file run extension, low
 FUN_009b2d30::~FUN_009b2d30()
 {
     if (!GetState().FUN_005609f0())
@@ -3864,7 +4020,7 @@ struct BlastSourceAccess
 struct CombatThing
 {
     void SetFlagX(unsigned int flag, bool on);
-    void Update1(int a);
+    void Update1(int abIgnoreBlocking);
     void Update2();
     void Update3();
     int unk00;
@@ -3885,34 +4041,38 @@ struct CombatThing
 
 // Initializes a CombatThing with two ints, an actor and a float, sets flag 0x2000, derives unk30/unk34 from the actor's weapon, then runs Update1/2/3.
 // @fnv 0x009b5770
-void InitCombatThing(CombatThing* thing, int iValueA, int iValueB, Explosion* actor, float fValue)
+// src: XBOX_RETAIL_PDB 0x009b5770
+// pdb: HitData::InitializeExplosionData | HitData.obj | retail, object-file run extension, high
+// pdb params: apData, apAggressor, apTarget, apSourceRef, afDamage
+// pdb locals: pexplosion, pshooter, pcurrentWeaponItem
+void HitData_InitializeExplosionData(CombatThing* apData, int apAggressor, int apTarget, Explosion* apSourceRef, float afDamage)
 {
-    if (thing == 0)
+    if (apData == 0)
         return;
-    thing->unk00 = iValueA;
-    thing->unk04 = iValueB;
-    thing->SetFlagX(0x2000, true);
-    if (actor && actor->IsExplosion())
+    apData->unk00 = apAggressor;
+    apData->unk04 = apTarget;
+    apData->SetFlagX(0x2000, true);
+    if (apSourceRef && apSourceRef->IsExplosion())
     {
-        Explosion* pActor = actor;
-        thing->unk30 = ((BlastSourceAccess*)pActor)->GetWeapRef();
-        thing->unk34 = 1.0f;
+        Explosion* pActor = apSourceRef;
+        apData->unk30 = ((BlastSourceAccess*)pActor)->GetWeapRef();
+        apData->unk34 = 1.0f;
         if (((BlastSourceAccess*)pActor)->GetItem() && ((BlastSourceAccess*)pActor)->GetItem()->IsOk())
         {
             ItemStub* item = ((BlastSourceAccess*)pActor)->GetItem();
-            if ((unsigned int)item->GetWeap() == thing->unk30)
+            if ((unsigned int)item->GetWeap() == apData->unk30)
             {
                 FactorStub* pFactor = item->GetProc() ? (FactorStub*)item->GetProc()->GetThing() : 0;
-                thing->unk34 = pFactor ? pFactor->GetFactor(true) : 1.0f;
+                apData->unk34 = pFactor ? pFactor->GetFactor(true) : 1.0f;
             }
         }
     }
-    thing->unk08 = actor;
-    thing->unk14 = fValue;
-    thing->unk18 = thing->unk14;
-    thing->Update1(1);
-    thing->Update2();
-    thing->Update3();
+    apData->unk08 = apSourceRef;
+    apData->unk14 = afDamage;
+    apData->unk18 = apData->unk14;
+    apData->Update1(1);
+    apData->Update2();
+    apData->Update3();
 }
 
 struct FUN_009b79d0_stand_in
@@ -3923,6 +4083,8 @@ struct FUN_009b79d0_stand_in
 
 // @fnv 0x009b79d0
 // src: XBOX_PDB 0x009b79d0
+// pdb: BSWeightedRandom<BGSBodyPart *>::IsResultInSet | HitData.obj | debug, object-file run extension, low
+// pdb params: aResult
 void FUN_009b79d0_stand_in::BSWeightedRandom_BGSBodyPart_IsResultInSet(int value)
 {
     BSSimpleArray_BGSBodyPart_1024_IsInArray(&value);
@@ -3944,7 +4106,7 @@ struct PPoint3
 };
 struct PTransformHolder
 {
-    void GetTranslate(unsigned int idx, PPoint3& out);
+    void GetTranslate(unsigned int uiCol, PPoint3& col);
 };
 struct PNode
 {
@@ -4002,7 +4164,7 @@ struct PDataHandler
     bool CheckForm(unsigned int id);
 };
 extern PDataHandler* g_dataHandler;
-void __cdecl SetNodeFlags(PNode* node, int a, int b, int c);
+void __cdecl SetNodeFlags(PNode* apObject, int abEnable, int abRecurse, int abForce);
 void __cdecl PlaceNode(PNode* node, PPoint3* pt, int c);
 struct PRef
 {
@@ -4131,6 +4293,8 @@ struct PRef
 
 // If flag 8 is clear, flag 4 set and the form valid, updates the 3D node, scales its translation and places it, then sets flag 4.
 // @fnv 0x009beb00
+// pdb: Projectile::AddInitialVelocity | Projectile.obj | debug, object-file run extension, low
+// pdb locals: p3d, velocity, UpdateData
 void PRef::UpdateNodePlacement()
 {
     if (!IsFlagSet(8) && IsFlagSet(4) && g_dataHandler->CheckForm(GetFormID()))
@@ -4156,18 +4320,20 @@ class GameObject
   public:
     void** vtable;
     bool __thiscall Projectile_IsFlagSet(unsigned int flags);
-    void __thiscall Projectile_ProcessMovement(float value);
+    void __thiscall Projectile_ProcessMovement(float afDelta);
 };
 
 typedef void(__thiscall* VirtualCall)(GameObject*, float);
 
 // @fnv 0x009bec10
 // src: XBOX_PDB 0x009bec10
-void __thiscall GameObject::Projectile_ProcessMovement(float value)
+// pdb: Projectile::ProcessMovement | Projectile.obj | debug, upstream name already matches, high
+// pdb params: afDelta
+void __thiscall GameObject::Projectile_ProcessMovement(float afDelta)
 {
     if (!Projectile_IsFlagSet(0x80))
     {
-        ((VirtualCall)(vtable[190]))(this, value);
+        ((VirtualCall)(vtable[190]))(this, afDelta);
     }
 }
 
@@ -4445,16 +4611,18 @@ struct FUN_00444d00_Class : public FUN_009bec50_v18
 struct FUN_009bec50_Class : public FUN_00444d00_Class
 {
     virtual int vfn_2f8(float value);
-    bool __thiscall Projectile_PostProcess(float value);
+    bool __thiscall Projectile_PostProcess(float afDelta);
 };
 
 // @fnv 0x009bec50
 // src: COMMUNITY 0x009bec50
-bool __thiscall FUN_009bec50_Class::Projectile_PostProcess(float value)
+// pdb: Projectile::PostProcess | Projectile.obj | retail, upstream name already matches, high
+// pdb params: afDelta
+bool __thiscall FUN_009bec50_Class::Projectile_PostProcess(float afDelta)
 {
     if (this->Projectile_IsFlagSet(0x80))
     {
-        this->vfn_2f8(value);
+        this->vfn_2f8(afDelta);
     }
     return false;
 }
@@ -4506,6 +4674,7 @@ class FUN_009a4420_cls : public CleanupBase
 };
 
 // @fnv 0x009a4420
+// pdb: NiTMap<Actor *,CombatTargetData *>::~NiTMap<Actor *,CombatTargetData *> | CombatTargetMap.obj | debug, call graph, high
 FUN_009a4420_cls::~FUN_009a4420_cls()
 {
     BaseCleanup();
@@ -4663,6 +4832,9 @@ struct Target_009a4710
     float ComputeFalloff(const Pt_009a4710& point, Ctx_009a4710* ctx, float time, float extra, float value);
 };
 // @fnv 0x009a4710
+// pdb: CombatThreat::ComputeThreatScore | CombatThreatMap.obj | debug, object-file gap fill, medium
+// pdb params: arLocation, apActor, afCompareTime, afAdditionalRadius, afActorHealth
+// pdb locals: fthreatScore, fmodifiedRadius, fextrudeRadius, fsquaredDistanceFromThreat, threatLocation, linearVelocity, fvelocityMagnitude, threatVector, basePoint, deltaVector, testVector, fnegativeExtrudeTime, fdot, fheightSquared, fheight
 float Target_009a4710::ComputeFalloff(const Pt_009a4710& point, Ctx_009a4710* ctx, float time, float extra, float value)
 {
     float result2 = 0.0f;
@@ -4712,7 +4884,7 @@ extern const double DAT_01026998;
 
 struct FUN_0066ca00_holder
 {
-    void bhkCharacterProxy_GetLinearVelocity(Point3Value* apVelocity);
+    void bhkCharacterProxy_GetLinearVelocity(Point3Value* arVel);
 };
 
 struct FUN_009a4a10_actor
@@ -4861,14 +5033,14 @@ struct FUN_009a4a10_actor
 
 struct FUN_00560d50_body
 {
-    void bhkRigidBody_GetLinearVelocity(const Point3Value& arVelocity);
+    void bhkRigidBody_GetLinearVelocity(const Point3Value& arPos);
 };
 
 struct FUN_006fa820_coll
 {
     void* bhkNiCollisionObject_GetWorldObject();
 };
-FUN_006fa820_coll* __cdecl FindFirstCollisionObject(void* apNode);
+FUN_006fa820_coll* __cdecl FindFirstCollisionObject(void* ap3D);
 
 struct FUN_00653270_rtti;
 extern FUN_00653270_rtti DAT_012681c0;
@@ -4888,6 +5060,8 @@ struct FUN_009a4a10_shell
 // Returns the cached velocity, refreshing it from the actor's controller or collision body when the timestamp is stale.
 // @fnv 0x009a4a10
 // src: COMMUNITY 0x009a4a10
+// pdb: CombatThreat::GetThreatLinearVelocity | CombatThreatMap.obj | retail, upstream name already matches, high
+// pdb locals: pthreat3D, pprojectile, pcharacterController, pcollisionObject, pworldObject
 Point3Value FUN_009a4a10_shell::CombatThreat_GetThreatLinearVelocity()
 {
     if (kStamp.GetElapsedTime() < DAT_01026998)
@@ -4986,19 +5160,23 @@ class EntryMap9A5
     unsigned int m_uiCount;
     Lock9A5 m_kLock;
 
-    void RemoveEntryForRef(Ref9A5* pkRef);
+    void CombatThreatMap_RemoveThreat(Ref9A5* apForm);
 };
 
 // Locks the map, deletes the entry stored under the reference's form ID and removes that key, then unlocks.
 // @fnv 0x009a51e0
-void EntryMap9A5::RemoveEntryForRef(Ref9A5* pkRef)
+// src: XBOX_RETAIL_PDB 0x009a51e0
+// pdb: CombatThreatMap::RemoveThreat | CombatThreatMap.obj | retail, call graph (shared callers), high
+// pdb params: apForm
+// pdb locals: pthreat
+void EntryMap9A5::CombatThreatMap_RemoveThreat(Ref9A5* apForm)
 {
     m_kLock.Lock();
     Entry9A5* pkEntry = 0;
-    if (GetAt(pkRef->GetFormID(), pkEntry))
+    if (GetAt(apForm->GetFormID(), pkEntry))
     {
         delete pkEntry;
-        RemoveAt(pkRef->GetFormID());
+        RemoveAt(apForm->GetFormID());
     }
     m_kLock.Unlock();
 }
@@ -5026,6 +5204,9 @@ struct Form_009a5530
 extern Setting g_011f1ba0;
 
 // @fnv 0x009a5530
+// pdb: CombatThreatMap::AddThreat | CombatThreatMap.obj | debug, object-file gap fill, medium
+// pdb params: apThreat, afRadius, afStartTime, afEndTime, afDamage
+// pdb locals: pthreat
 void S_9a54a0_Class::AddOrUpdateItem(int pForm, float b, float c, float d, float e)
 {
     ((Map_009a5530*)this)->m_lock.Lock();
@@ -5087,6 +5268,9 @@ struct AvoidanceMap
 };
 // Collects avoidance entries scored above a threshold into a new PathingAvoidNodeArray, falling back to the best-scoring entry if none qualify.
 // @fnv 0x009a57a0
+// pdb: CombatThreatMap::CreateAvoidNodeArray | CombatThreatMap.obj | debug, call graph (shared callers), medium
+// pdb params: arLocation, apActor, afTime
+// pdb locals: pcombatStyle, fhighestThreatScore, pavoidNodeArray, fcompareTime, pbestThreat, it, ithreatID, pthreat, fthreatScore
 PathingAvoidNodeArray* AvoidanceMap::BuildAvoidanceNodes(void* argument, AvoidanceContext* context, float time)
 {
     {
@@ -5159,6 +5343,10 @@ struct FUN_009a5b90
     FUN_009a5b90();
 };
 // @fnv 0x009a5b90
+// pdb: CombatThreatMap::InitLoadGame | CombatThreatMap.obj | retail, object-file run extension, low
+// pdb note: debug build links it to CombatThreat::CombatThreat
+// pdb params: apLoadGameBuffer
+// pdb locals: it, pthreat, irefID
 FUN_009a5b90::FUN_009a5b90() : unk00(0), unk04(0.0f), unk08(0.0f), unk0c(0.0f), unk10(0.0f), unk14(0), unk20()
 {
 
@@ -5218,32 +5406,37 @@ class A6080Speaker
     virtual void Unk90();
     virtual A6080Response* GetActiveResponse();
 
-    void ToggleLock();
+    void bhkWorld_MarkForRead();
     A6080Path* bhkWorld_GetGravity();
 };
 
 // Toggles the speaker lock, gets the voice file path from the response (or the default path if none), then toggles the lock again and returns it.
 // @fnv 0x009a6080
 // src: XBOX_PDB 0x009a6080
+// pdb: bhkWorld::GetGravity | CombatUtilities.obj | retail, upstream name already matches, high
+// pdb locals: pw, temp
 A6080Path* A6080Speaker::bhkWorld_GetGravity()
 {
     A6080Response* pkResponse = GetActiveResponse();
-    ToggleLock();
+    bhkWorld_MarkForRead();
     A6080Path* pkFound = pkResponse ? pkResponse->GetVoiceFilePath() : A6080GetDefaultPath();
     A6080Path* pkPath = pkFound;
-    ToggleLock();
+    bhkWorld_MarkForRead();
     return pkPath;
 }
 
 extern Vector3Value g_defaultVec3;
 
-void GetTriple12(Vector3Value* out, const void* p);
-void GetTargetLocationWithOffset(Vector3Value* out, const void* p, int a);
-void CombatUtilities_GetProjectedPointForTarget(Vector3Value* out, Vector3Value a, Vector3Value b, Vector3Value c, float first, float second, int flags);
-void GetPitchYaw(Vector3Value* out, Vector3Value a, Vector3Value b);
+void CombatUtilities_GetTargetVelocity(Vector3Value* out, const void* p);
+void CombatUtilities_GetTargetFiringLocation(Vector3Value* out, const void* p, int a);
+void CombatUtilities_GetProjectedPointForTarget(Vector3Value* aStartLocation, Vector3Value aTargetLocation, Vector3Value aTargetVelocity, Vector3Value afProjectileSpeed, float afProjectileGravity, float abHighArc, int flags);
+void GetPitchYaw(Vector3Value* aStartLocation, Vector3Value aProjectedPoint, Vector3Value b);
 
 // @fnv 0x009a87f0
 // src: XBOX_PDB 0x009a87f0
+// pdb: CombatUtilities::GetAngleToProjectedTarget | CombatUtilities.obj | debug, call graph, high
+// pdb params: aStartLocation, apTarget, afSpeed, afGravity, aeTargetSegmentInView
+// pdb locals: velocity, projLocation, targetLocation
 Vector3Value* CombatUtilities_GetAngleToProjectedTarget(Vector3Value* out, Vector3Value vecInput, const void* pData, float f1, float f2, int a5)
 {
     if (pData == 0)
@@ -5254,8 +5447,8 @@ Vector3Value* CombatUtilities_GetAngleToProjectedTarget(Vector3Value* out, Vecto
     Vector3Value A;
     Vector3Value B;
     Vector3Value C;
-    GetTriple12(&A, pData);
-    GetTargetLocationWithOffset(&B, pData, a5);
+    CombatUtilities_GetTargetVelocity(&A, pData);
+    CombatUtilities_GetTargetFiringLocation(&B, pData, a5);
     CombatUtilities_GetProjectedPointForTarget(&C, vecInput, B, A, f1, f2, 0);
     GetPitchYaw(out, vecInput, C);
     return out;
@@ -5265,7 +5458,7 @@ struct TargetVector
 {
     float x, y, z;
     TargetVector ApplyScaled(float scale) const;
-    TargetVector FUN_004b3800(const TargetVector& other) const;
+    TargetVector FUN_004b3800(const TargetVector& pt) const;
     TargetVector FUN_00439e90(const TargetVector& other) const;
     TargetVector SubtractIntoVector(const TargetVector& other) const;
 };
@@ -5615,7 +5808,7 @@ struct FUN_0066e010 : TargetExtra
 };
 struct TargetQueue
 {
-    void QueueCheckTask();
+    void TaskQueueInterface_QueueMobileObjectInitialize();
 };
 TargetQueue* __stdcall FUN_004537b0(TargetRef*);
 bool __cdecl AILinearTaskThreadManager_ShouldQueue3DTask();
@@ -5625,32 +5818,35 @@ void* __cdecl operator new(unsigned int);
 
 // Creates a new projectile reference from a form, source and parent, scales it, attaches extra data, links it to the parent and updates or queues it.
 // @fnv 0x009ac9c0
-TargetRef* __cdecl CreateProjectileRef(void* form, TargetRef* source, TargetRef* parent, int flags, Point3Value position,
-                                       TargetMatrix rotation)
+// pdb: Explosion::SpawnExplosion | Explosion.obj | retail, call graph (shared callers), high
+// pdb params: apExplosionBase, apOwnerRef, apExplodedRef, apCell, aOrigin, aRotation
+// pdb locals: pexplosion, fRadiusAdjustment, tempAutoEvent, prealOwner, pprojectileOwner, pWeap, pProj, pcause
+TargetRef* __cdecl CreateProjectileRef(void* apExplosionBase, TargetRef* apOwnerRef, TargetRef* apExplodedRef, int apCell, Point3Value aOrigin,
+                                       TargetMatrix aRotation)
 {
     TargetRef* result = 0;
     float scale = 1.0f;
-    if (form)
+    if (apExplosionBase)
     {
-        TargetRef* owner = source;
-        if (source && source->IsProjectile())
+        TargetRef* owner = apOwnerRef;
+        if (apOwnerRef && apOwnerRef->IsProjectile())
         {
-            TargetRef* projectile = source;
+            TargetRef* projectile = apOwnerRef;
             owner = projectile->Projectile_GetShooter();
             if (owner == DAT_011dea3c)
             {
-                TargetRef* actor = source;
+                TargetRef* actor = apOwnerRef;
                 unsigned int actorFlags = actor ? actor->Sky_GetMode() : 0;
                 FUN_005e58f0(0x48, DAT_011dea3c, actorFlags, &scale);
             }
         }
-        else if (source && source == DAT_011dea3c)
+        else if (apOwnerRef && apOwnerRef == DAT_011dea3c)
         {
             TargetRef* weaponFlags = DAT_011dea3c->FUN_008d8520() ? DAT_011dea3c->FUN_008d8520()->GetLoadedForm() : 0;
             unsigned int weapon = weaponFlags ? weaponFlags->FUN_0044ddc0() : 0;
             FUN_005e58f0(0x48, DAT_011dea3c, weapon, &scale);
         }
-        result = new FUN_009ac200(form, owner, flags, position, rotation);
+        result = new FUN_009ac200(apExplosionBase, owner, apCell, aOrigin, aRotation);
         result->Explosion_SetOuterRadius(result->Explosion_GetRadius() * scale);
     }
     if (result)
@@ -5668,10 +5864,10 @@ TargetRef* __cdecl CreateProjectileRef(void* form, TargetRef* source, TargetRef*
             }
             result->SetExtra(extra);
         }
-        result->BSFadeNode_SetUserData(parent);
-        if (parent && parent->TESObjectREFR_CanBeMoved())
+        result->BSFadeNode_SetUserData(apExplodedRef);
+        if (apExplodedRef && apExplodedRef->TESObjectREFR_CanBeMoved())
         {
-            parent->Mark(4);
+            apExplodedRef->Mark(4);
         }
         if (!AILinearTaskThreadManager_ShouldQueue3DTask())
         {
@@ -5679,7 +5875,7 @@ TargetRef* __cdecl CreateProjectileRef(void* form, TargetRef* source, TargetRef*
         }
         else
         {
-            FUN_004537b0(result)->QueueCheckTask();
+            FUN_004537b0(result)->TaskQueueInterface_QueueMobileObjectInitialize();
         }
     }
     return result;
@@ -5970,6 +6166,8 @@ struct MatchContext
     void UpdateMatchingActors();
 };
 // @fnv 0x009afcc0
+// pdb: Explosion::FindTargets | Explosion.obj | debug, object-file run extension, low
+// pdb locals: pplayerTargetEntry, i, pav, pref, pbody, ptargetEntry, bdynamic, pactor
 void MatchContext::UpdateMatchingActors()
 {
     void* playerResult = Evaluate(_g_thePlayer, 0, true);
@@ -6027,7 +6225,7 @@ void* Owner9AF::GetFirstListItem()
 
 struct BaseFlags9af
 {
-    bool HasFlag(unsigned int flag);
+    bool HasFlag(unsigned int aeFlag);
 };
 struct List9af
 {
@@ -6125,8 +6323,8 @@ struct Form9af
     virtual bool IsShader();
 };
 void* hkpGetRigidBody(const void* p);
-Body9af* bhkEntity_Getbhk(const void* p);
-Ref9af* FUN_004b5a20(const void* p);
+Body9af* bhkEntity_Getbhk(const void* apEnt);
+Ref9af* FUN_004b5a20(const void* apBody);
 Form9af* TESObjectREFR_FindReferenceFor3D(unsigned int id);
 
 
@@ -6135,20 +6333,22 @@ class BlastCollisionBodyVisitor : public Explosion
 {
 public:
     BaseFlags9af* GetActorBase();
-    void AddBody(Body9af* body);
+    void AddBody(Body9af* apRigidBody);
     void Explosion_ApplyForces();
 };
 
 // @fnv 0x009afef0
 // src: COMMUNITY 0x009afef0
+// pdb: Explosion::ApplyForces | Explosion.obj | retail, upstream name already matches, high
+// pdb locals: bonlyAffectExploded, i, elayer, prb, phk, pcol, pav, pref, pactor
 void BlastCollisionBodyVisitor::Explosion_ApplyForces()
 {
-    if (m_pExplosionPhantom)
+    if (spPhantom)
     {
         bool bFlag = GetActorBase()->HasFlag(0x20);
-        for (int i = 0; i < ((Owner9af*)(bhkSimpleShapePhantom*)m_pExplosionPhantom)->GetList()->GetSize(); i++)
+        for (int i = 0; i < ((Owner9af*)(bhkSimpleShapePhantom*)spPhantom)->GetList()->GetSize(); i++)
         {
-            void* pObj2 = hkpGetRigidBody(((Owner9af*)(bhkSimpleShapePhantom*)m_pExplosionPhantom)->GetList()->GetAt(i));
+            void* pObj2 = hkpGetRigidBody(((Owner9af*)(bhkSimpleShapePhantom*)spPhantom)->GetList()->GetAt(i));
             Body9af* pBody6 = bhkEntity_Getbhk(pObj2);
             int iLayerB = pBody6 ? pBody6->GetFilter().GetLayer() : 0;
             if (bFlag || iLayerB == 0x1d)
@@ -6156,7 +6356,7 @@ void BlastCollisionBodyVisitor::Explosion_ApplyForces()
                 Ref9af* pRef = FUN_004b5a20(pObj2);
                 unsigned int uiIDA = pRef ? pRef->GetFlags() : 0;
                 Form9af* pForm5 = TESObjectREFR_FindReferenceFor3D(uiIDA);
-                if (bFlag && pForm5 != (Form9af*)ReferenceSoundCauseData)
+                if (bFlag && pForm5 != (Form9af*)pExplodedRef)
                     continue;
                 if (pForm5)
                 {
@@ -6169,7 +6369,7 @@ void BlastCollisionBodyVisitor::Explosion_ApplyForces()
                 AddBody(pBody6);
         }
     }
-    m_bFlagD7 = 1;
+    bForcesApplied = 1;
 }
 
 // 0x00452dc0 constructs NiPoint2; 0x00532fd0 scales the same two-float points.
@@ -6456,7 +6656,7 @@ extern Setting DAT_011d0030, DAT_011d0490, DAT_011cfea0, DAT_011d0edc, DAT_011d0
 float ComputeSquaredRatioComplement(float, float);
 void FUN_005299a0(void*, float, int);
 void Script_SetActionFlag(void*, int, int);
-void InitCombatThing(Hit082*, Obj082*, Obj082*, Obj082*, float);
+void HitData_InitializeExplosionData(Hit082*, Obj082*, Obj082*, Obj082*, float);
 NiPoint2 FUN_00532fd0(float, NiPoint2*);
 Obj082* Interface_GetHUDEffects();
 bool ActorValueOwner_ShouldDamageKnockdownTarget(void*, int);
@@ -6510,7 +6710,7 @@ void Obj082::ProcessHits()
                     {
                         Hit082 hit;
                         hit.FUN_009b4d90();
-                        InitCombatThing(&hit, impactSource && impactSource->IsActor() ? impactSource : 0, amount, this,
+                        HitData_InitializeExplosionData(&hit, impactSource && impactSource->IsActor() ? impactSource : 0, amount, this,
                                         actor);
                         amount->Actor_HitMe(&hit, 0);
                         if (amount == DAT_011dea3c && distance > *DAT_011d0030.Setting_Float_00403e20())
@@ -6559,7 +6759,7 @@ void Obj082::ProcessHits()
 class B9B1320Light
 {
   public:
-    void SetFade(float fFadeAmount);
+    void SetFade(float fDimmer);
 };
 
 class B9B1320LightPtr
@@ -6634,6 +6834,8 @@ class B9B1320Request
 
 // Computes a fade from the goal and max Z deltas, clamps it to 0..1, and applies it to the light if one is set.
 // @fnv 0x009b1320
+// pdb: Explosion::UpdateLight | Explosion.obj | debug, object-file gap fill, medium
+// pdb locals: ffade
 void B9B1320Request::UpdateLightFade()
 {
     if (m_kLight.Get())
@@ -6671,6 +6873,8 @@ FUN_006299a0::~FUN_006299a0()
 {}
 
 // @fnv 0x009b2cb0
+// pdb: hkLocalArray<hkpRootCdPoint>::hkLocalArray<hkpRootCdPoint> | Explosion.obj | debug, object-file run extension, low
+// pdb params: capacity
 FUN_009b2cb0::FUN_009b2cb0(unsigned int a)
 {
     unk00.value = CallItemMethod(a, 0);
@@ -6693,7 +6897,7 @@ struct RefHit
 {
     WeaponHit* Base();
     float Condition(int);
-    float Damage(void*, float, int);
+    float ItemChange_GetModifiedAttackDamage(void*, float, int);
 };
 struct ValuesHit
 {
@@ -7077,6 +7281,9 @@ void UnarmedDamage(ValuesHit*, bool, float*, float*);
 float SpecialDamage(ActorHit*);
 // Fills the hit record from actor, target and weapon, computes damage and kind, then finalizes and completes it.
 // @fnv 0x009b5170
+// pdb: HitData::InitializeHitData | HitData.obj | debug, object-file gap fill, medium
+// pdb params: apData, apAggressor, apTarget, apWeaponItem, abPowerAttack
+// pdb locals: eanimGroup, bapplyDamage, eattackGroup, fdamageMultiplier, afCharisma, fNerveBonus
 void __cdecl InitHitData(BooleanFloatQuery* data, ActorHit* actor, ActorHit* target, RefHit* pWeaponRef,
                          unsigned char apply)
 {
@@ -7099,7 +7306,7 @@ void __cdecl InitHitData(BooleanFloatQuery* data, ActorHit* actor, ActorHit* tar
             data->kind = data->weapon->WeaponKind();
             if (!actor->Creature() && !actor->Sneaking())
                 mult = apply ? HitMultiplier(actor->values.Value(data->kind), kind) : 1.0f;
-            data->damage = pWeaponRef->Damage(actor ? &actor->values : 0, mult, 0);
+            data->damage = pWeaponRef->ItemChange_GetModifiedAttackDamage(actor ? &actor->values : 0, mult, 0);
             if (data->extra && data->extra->count > 1 && data->Flag(4096))
                 data->damage *= data->extra->count / data->weapon->AmmoPerShot();
             if (data->extra && data->weapon->IsSpecial() && data->weapon->Automatic())
@@ -7157,8 +7364,8 @@ Pt9b __cdecl operator*(float f, const Pt9b& pt);
 // Actor queries 0x008b3d70/0x008b3ef0 are absent from Actor.h; this interface has no Actor layout.
 struct SurfaceImpactQuery
 {
-    int Actor_GetClosestBone(Pt9b a, Pt9b b);
-    int Actor_GetDamageLocation(int a);
+    int Actor_GetClosestBone(Pt9b aStartingLocation, Pt9b aImpactLocation);
+    int Actor_GetDamageLocation(int apNode);
 };
 
 struct Struct9b58d0
@@ -7182,31 +7389,34 @@ struct Thing9b58d0 : public FUN_009b5a30_Class
 
 // @fnv 0x009b58d0
 // src: XBOX_PDB 0x009b58d0
-void __cdecl HitData_InitializeImpactData(Thing9b58d0* pThing, int iUnused, Actor* pActor, float a4, Struct9b58d0* a5)
+// pdb: HitData::InitializeImpactData | HitData.obj | retail, upstream name already matches, high
+// pdb params: apData, apSourceRef, apTarget, afDamage, apImpactData
+// pdb locals: khitLocation, pclosestBone
+void __cdecl HitData_InitializeImpactData(Thing9b58d0* apData, int apSourceRef, Actor* apTarget, float afDamage, Struct9b58d0* apImpactData)
 {
-    if (!pThing)
+    if (!apData)
         return;
 
-    pThing->vfn_00 = 0;
-    pThing->vfn_04 = pActor;
-    pThing->f14 = a4;
-    pThing->f18 = a4;
+    apData->vfn_00 = 0;
+    apData->vfn_04 = apTarget;
+    apData->f14 = afDamage;
+    apData->f18 = afDamage;
 
-    Pt9b pt = *reinterpret_cast<Pt9b*>(static_cast<const Actor*>(pActor)->GetPos());
-    pt += 0.25f * (a5->pt1 - *reinterpret_cast<Pt9b*>(static_cast<const Actor*>(pActor)->GetPos()));
-    pt.z = a5->pt1.z;
+    Pt9b pt = *reinterpret_cast<Pt9b*>(static_cast<const Actor*>(apTarget)->GetPos());
+    pt += 0.25f * (apImpactData->pt1 - *reinterpret_cast<Pt9b*>(static_cast<const Actor*>(apTarget)->GetPos()));
+    pt.z = apImpactData->pt1.z;
 
-    pThing->pt38 = pt;
-    pThing->pt44 = a5->pt2;
+    apData->pt38 = pt;
+    apData->pt44 = apImpactData->pt2;
 
-    if (pActor)
+    if (apTarget)
     {
-        int iResult = ((SurfaceImpactQuery*)pActor)->Actor_GetClosestBone(a5->pt1 - a5->pt2, a5->pt1);
-        pThing->vfn_10 = (void*)((SurfaceImpactQuery*)pActor)->Actor_GetDamageLocation(iResult);
+        int iResult = ((SurfaceImpactQuery*)apTarget)->Actor_GetClosestBone(apImpactData->pt1 - apImpactData->pt2, apImpactData->pt1);
+        apData->vfn_10 = (void*)((SurfaceImpactQuery*)apTarget)->Actor_GetDamageLocation(iResult);
     }
 
-    pThing->HitData_ReduceDamage(1);
-    pThing->ApplyDamageEffects();
+    apData->HitData_ReduceDamage(1);
+    apData->ApplyDamageEffects();
 }
 
 struct DecompTagByte
@@ -7238,6 +7448,8 @@ struct CombatRange
 };
 // Returns true when value lies between the lower and upper bounds obtained from m_lower and m_upper.
 // @fnv 0x009a4960
+// pdb: CombatThreat::IsActive | CombatThreatMap.obj | debug, object-file gap fill, medium
+// pdb params: afCompareTime
 bool CombatRange::Contains(float value)
 {
     return m_lower.AStarSearch_EvaluateValue_006a7f50() <= value && value <= m_upper.AStarSearch_EvaluateValue_006a7f50();
@@ -7358,16 +7570,18 @@ struct ExtendedTargetRef : TargetRef
 extern S_9a54a0_Setting DAT_011d1188;
 struct SceneObject : MatchContext
 {
-    void Explosion_PushActor(TargetRef* object, float timestamp);
+    void Explosion_PushActor(TargetRef* apTargetActor, float afExplosionPower);
 };
 // If object and its FUN_008d8520() result are non-null and timestamp exceeds the setting value, applies Position() at time 0.0f to the extended target ref.
 // @fnv 0x009b0d70
 // src: COMMUNITY 0x009b0d70
-void SceneObject::Explosion_PushActor(TargetRef* object, float timestamp)
+// pdb: Explosion::PushActor | Explosion.obj | retail, upstream name already matches, high
+// pdb params: apTargetActor, afExplosionPower
+void SceneObject::Explosion_PushActor(TargetRef* apTargetActor, float afExplosionPower)
 {
-    if (object && object->FUN_008d8520() && timestamp > *DAT_011d1188.Setting_Float_00403e20())
+    if (apTargetActor && apTargetActor->FUN_008d8520() && afExplosionPower > *DAT_011d1188.Setting_Float_00403e20())
     {
-        static_cast<ExtendedTargetRef*>(object->FUN_008d8520())->ApplyPosition(object, Position(), 0.0f);
+        static_cast<ExtendedTargetRef*>(apTargetActor->FUN_008d8520())->ApplyPosition(apTargetActor, Position(), 0.0f);
     }
 }
 
@@ -7760,6 +7974,8 @@ Base_9bd5c0* __cdecl BGSProjectile_InitLiveGrenade(Tgt_9bd5c0* a1, Tgt_9bd5c0* a
 }
 
 // @fnv 0x009a44e0
+// pdb: CombatThreat::CombatThreat | CombatThreatMap.obj | debug, object-file run extension, low
+// pdb params: apThreat, afRadius, afStartTime, afEndTime, afDamage
 FUN_009a44e0_FormEntry::FUN_009a44e0_FormEntry(int a1, float a2, float a3, float a4, float a5) : unk14(0)
 {
     CombatThreat_Initialize(a1, a2, a3, a4, a5, false);
@@ -7772,6 +7988,8 @@ FUN_009a44e0_FormEntry::FUN_009a44e0_FormEntry(int a1, float a2, float a3, float
 
 // Constructs a ContinuousBeamProjectile, sets its form type to 0x69, and initializes m_spUnk150 to null.
 // @fnv 0x009aaff0
+// pdb: ContinuousBeamProjectile::ContinuousBeamProjectile | ContinuousBeamProjectile.obj | debug, call graph, medium
+// pdb params: abAdd
 ContinuousBeamProjectile::ContinuousBeamProjectile(bool bTempRef)
     : Projectile(bTempRef), m_spUnk150((AnimIdle*)0)
 {
@@ -8174,7 +8392,7 @@ double BSMIN(float, float);
 double BSMAX_00404010(float, float);
 float ComputeAmmoEffectValue(int, int, float);
 float CombatFormulas_CalcDamageToArmor(float, float);
-bool IsTargetInCone(HitActor*, HitActor*, int);
+bool CombatUtilities_IsTargetWithinStrikeAngle(HitActor*, HitActor*, int);
 float CombatFormulas_CalcBlock(int);
 HitWeapon* TESForm_GetFormByNumericID(int);
 void FUN_005e58f0(int, HitActor*, HitWeapon*, HitActor*, float*);
@@ -8196,7 +8414,10 @@ struct HitDamage
 };
 // @fnv 0x009b5a30
 // src: XBOX_PDB 0x009b5a30
-void HitDamage::HitData_ReduceDamage(bool skipBlock)
+// pdb: HitData::ReduceDamage | HitData.obj | retail, upstream name already matches, high
+// pdb params: abIgnoreBlocking
+// pdb locals: bArmorPierced, fmax, farmorRating, fOldDDT, fIncreaseDT, fMinWeaponDamage, fDDT, fDecreaseDT, fNerveDRbonus, afCharisma, bblockUsingHands, btargetBlocking, bblockUsingWeapon, pTargetWeap, iSkill, fRatioDDTtoDamage, fDam, fArmorDamageFromDT, fresistance, fpercentHealthDamaged
+void HitDamage::HitData_ReduceDamage(bool abIgnoreBlocking)
 {
     if (!target || !target->IsActor())
         return;
@@ -8238,11 +8459,11 @@ void HitDamage::HitData_ReduceDamage(bool skipBlock)
     if (weapon)
         threshold = ComputeAmmoEffectValue(2, weapon->TESObjectWEAP_GetCurrentAmmo(attacker) ? weapon->TESObjectWEAP_GetCurrentAmmo(attacker)->TESAmmo_GetAmmoEffectList() : 0,
                                  threshold);
-    if (!skipBlock)
+    if (!abIgnoreBlocking)
     {
         bool canBlock2 = target->Creature() ? false : target->GetBlocked();
         bool unarmed = !target->FUN_008d8520()->Weapon() && canBlock2;
-        if (canBlock2 && IsTargetInCone(target, projectile ? projectile : attacker, 0))
+        if (canBlock2 && CombatUtilities_IsTargetWithinStrikeAngle(target, projectile ? projectile : attacker, 0))
         {
             HitWeapon* blockWeapon2 =
                 target->FUN_008d8520()->Weapon() ? target->FUN_008d8520()->Weapon()->FUN_0044ddc0() : 0;
@@ -8352,6 +8573,7 @@ struct CombatWorldStateArrayValues : FUN_009aa470_Class
 // Zeroes the 0x50 byte object and the specifiedVariables array of the CombatWorldStateArrayValues view.
 // @fnv 0x009aa4b0
 // src: COMMUNITY 0x009aa4b0
+// pdb: CombatWorldStateArray::ClearValues | CombatWorldState.obj | debug, upstream name already matches, high
 void FUN_009aa470_Class::CombatWorldStateArray_ClearValues()
 {
     memset(this, 0, 0x50);

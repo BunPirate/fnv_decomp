@@ -16,6 +16,8 @@ struct BufferPair
 
 // If aiCount is positive, frees both pointers of apPair through the allocator, each with aiCount * 16 bytes.
 // @fnv 0x00d9d840
+// pdb: hkKdTreeBuildingUtils::deallocateBuffers | hkKdTreeBuildingUtils.obj | retail, object-file run extension, low
+// pdb params: buffersOut, numPrimitives
 void __cdecl FreeBufferPair(BufferPair* apPair, int aiCount)
 {
     if (aiCount <= 0)
@@ -88,7 +90,11 @@ int __cdecl Mix(MixDesc* desc, int** p2, int count, int* p4, int** p5);
 
 // Initializes a MixDesc and SoundObject, calls Mix with count, and stores its return value in out.
 // @fnv 0x00d9d880
-void __cdecl MixChannels(void* p1, int* p2, int count, void* p4, int channels, int* p6, int* apResult)
+// src: XBOX_RETAIL_PDB 0x00d9d880
+// pdb: hkKdTreeBuildingUtils::buildTree | hkKdTreeBuildingUtils.obj | retail, call graph, high
+// pdb params: buffers, treeOut, projEntOut, treeSize, numPrims, _numAvailableEmptyNodes, maxDepth
+// pdb locals: tree, sparseWriter, numNodes, bounds, input, numAvailableEmptyNodes
+void __cdecl hkKdTreeBuildingUtils_buildTree(void* buffers, int* treeOut, int projEntOut, void* treeSize, int numPrims, int* _numAvailableEmptyNodes, int* maxDepth)
 {
     int* p2Copy;
     int one;
@@ -104,26 +110,26 @@ void __cdecl MixChannels(void* p1, int* p2, int count, void* p4, int channels, i
     mix.w00 = mix.w02 = mix.w04 = 0;
     mix.w08 = mix.w0a = mix.w0c = 0xffff;
 
-    p2Copy = p2;
+    p2Copy = treeOut;
 
     desc.v04 = 0;
     desc.v0c = 0;
-    desc.p00 = p1;
+    desc.p00 = buffers;
 
     one = 1;
 
-    desc.v10 = channels;
+    desc.v10 = numPrims;
 
     // The channel settings travel to the mixer as a vector as well.
     *(__m128*)&desc.mix20 = *(__m128*)&mix;
 
-    desc.p08 = p4;
+    desc.p08 = treeSize;
 
     // Bring the sound object up, let the mixer know about it and run it.
     soundObj.Start();
     desc.p30 = &soundObj;
-    p6Copy = p6;
-    *apResult = Mix(&desc, &p2Copy, count, &one, &p6Copy);
+    p6Copy = _numAvailableEmptyNodes;
+    *maxDepth = Mix(&desc, &p2Copy, projEntOut, &one, &p6Copy);
 
     // And shut it down again.
     soundObj.Stop();
@@ -153,6 +159,9 @@ struct S_00d9dab0_Coll
 
 // Fills out[start..end) with AABBs from coll, storing the iterator key split into m_key and m_key1 in each entry.
 // @fnv 0x00d9dab0
+// pdb: hkKdTreeBuildingUtils::projectPrimitives | hkKdTreeBuildingUtils.obj | retail, call graph, medium
+// pdb params: mediator, startIdx, endIdx, entriesOut
+// pdb locals: bounds, primId
 void FillAabbArray(S_00d9dab0_Coll* coll, int start, int end, S_00d9dab0_Aabb16* out)
 {
     S_00d9dab0_Aabb16* p = out + start;
@@ -198,13 +207,15 @@ struct S9d950_Box
 // Relocates pair entries in apA->m_pairs when aiB >= 8, then stores the max of apC's four fields into apA->unk0c.
 // @fnv 0x00d9d950
 // src: HAVOK_LIB 0x00d9d950
-void __cdecl hkKdTreeBuildingUtils_completeDistributedBuild(S9d950_Owner* apA, int aiB, const S9d950_Box* apC, const int* apD)
+// pdb: hkKdTreeBuildingUtils::completeDistributedBuild | hkKdTreeBuildingUtils.obj | debug, upstream name already matches, high
+// pdb params: treeInOut, numPrimitives, depths, subJobSizes
+void __cdecl hkKdTreeBuildingUtils_completeDistributedBuild(S9d950_Owner* treeInOut, int numPrimitives, const S9d950_Box* depths, const int* subJobSizes)
 {
 
-    if (aiB >= 8)
+    if (numPrimitives >= 8)
     {
 
-        S9d950_Rel* p = apA->m_pairs;
+        S9d950_Rel* p = treeInOut->m_pairs;
 
         int iSrc = 8;
 
@@ -224,17 +235,17 @@ void __cdecl hkKdTreeBuildingUtils_completeDistributedBuild(S9d950_Owner* apA, i
                 int d = left - (p + i);
                 dstPair.m_off = (d * 8) | (dstPair.m_off & 0x80000003);
             }
-            iSrc += apD[i - 4];
+            iSrc += subJobSizes[i - 4];
         }
     }
 
-    if (apC != 0)
+    if (depths != 0)
     {
 
-        int y = apC->c > apC->d ? apC->c : apC->d;
+        int y = depths->c > depths->d ? depths->c : depths->d;
 
-        int x = apC->a > apC->b ? apC->a : apC->b;
+        int x = depths->a > depths->b ? depths->a : depths->b;
 
-        apA->unk0c = x > y ? x : y;
+        treeInOut->unk0c = x > y ? x : y;
     }
 }

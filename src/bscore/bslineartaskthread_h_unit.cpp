@@ -2,6 +2,7 @@
 #include "../../include/CountingSemaphore.h"
 
 // @fnv 0x008c7720
+// pdb: BSLinearTaskThread::ThreadProc | AILinearTaskThreadManager.obj | retail, upstream name already matches, high
 unsigned int BSLinearTaskThread::ThreadProc()
 {
     vfn_08();

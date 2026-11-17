@@ -13,10 +13,11 @@
 void* __cdecl operator new(unsigned int);
 void __cdecl operator delete(void*);
 
+// pdb: class ContainerItemExtra, size 0xc, 5 members
 class ContainerItemExtra
 {
   public:
-    char data[12];
+    char pOwnerForm[12]; // src: XBOX_RETAIL_PDB +0x0 (old: data)
     ContainerItemExtra();
     bool Load(TESFile*);
 };
@@ -26,7 +27,7 @@ class LeveledObject
     unsigned short level, pad;
     TESForm* form;
     unsigned short count, pad2;
-    void SwapEndian();
+    void LEVELED_OBJECT_FILE_Endian();
 };
 struct LeveledEntry
 {

@@ -4,6 +4,7 @@
 // ImageSpaceEffect (PC 1.4.0.525). No object is instantiated here.
 // Retained locally: include/ has no ImageSpaceEffect definition yet.
 class NiDX9Renderer;
+// pdb: class ImageSpaceEffect, size 0x58 (here 0x4), 7 members
 class ImageSpaceEffect
 {
   public:

@@ -259,7 +259,7 @@ __declspec(align(16)) struct QueryBuffer
 };
 int hkpMeshWeldingUtility_calcBitcodeForTriangleEdge(Iface* self, void* a, void* b, int idx, int zero, int* out);
 bool* CheckSubQueries(bool* result, void* key, Iface* self);
-void* hkArrayUtil__reserve(void* alloc, void* arr, int numElems, int elemSize);
+void* hkArrayUtil__reserve(void* mem, void* array, int numElem, int sizeElem);
 void hkMemUtil_memMove(void* dst, const void* src, int numBytes);
 inline void* operator new(unsigned int, void* p)
 {
@@ -463,7 +463,7 @@ struct S_00ddecf0_Heap
 };
 extern const double DAT_010290b8;
 __declspec(nothrow) S_00ddecf0_Router* hkMemoryRouter_getInstance();
-void __cdecl ResizeAudioStream(void* heap, void* arr, int elemSize) throw();
+void __cdecl ResizeAudioStream(void* mem, void* array, int sizeElem) throw();
 struct KeyLess
 {
 };
@@ -587,7 +587,7 @@ struct S00dde760_ScratchVector
 };
 extern "C" Matrix44 DAT_01268370;
 extern "C" void __cdecl hkpMeshWeldingUtility_computeWeldingInfoMultiShape(const Matrix44*, int, int, S00dde760_ScratchVector*, int);
-void __cdecl hkpMeshWeldingUtility_computeWeldingInfo(int a, int b, int c, int d);
+void __cdecl hkpMeshWeldingUtility_computeWeldingInfo(int collection, int bvTree, int weldingType, int weldOpenEdges);
 
 extern "C" ::LocalM128(_mm_setr_ps)(float, float, float, float);
 extern "C" ::LocalM128(_mm_add_ps)(::LocalM128, ::LocalM128);
@@ -705,9 +705,9 @@ struct S00dde4c0_Str
     int unk04;
     int unk08;
     int unk0c;
-    void FUN_00cb1600(void* buf, int n);
+    void FUN_00cb1600(void* buf, int bufSize);
     S00dde4c0_Str& ProcessAndReturnValue_00cc01c0(const char* s);
-    S00dde4c0_Str& EvaluateValue_00cc02d0(int v);
+    S00dde4c0_Str& EvaluateValue_00cc02d0(int u);
     void FUN_00cc00e0();
 };
 struct S00dde4c0_Err
@@ -719,14 +719,17 @@ struct S00dde4c0_Err
 };
 
 int __cdecl Hkpmeshweldingutility_MergeTriangleVectors(const Vec4* tri, const void* shape, int idx, S00dde4c0_Out* out, int* winding);
-unsigned int __cdecl hkpMeshWeldingUtility_modifyCombinedEdgesBitcode(unsigned int f, unsigned int idx, unsigned int v);
+unsigned int __cdecl hkpMeshWeldingUtility_modifyCombinedEdgesBitcode(unsigned int combinedBitcode, unsigned int edgeIndex, unsigned int bitcode);
 
 // @fnv 0x00dde4c0
 // src: XBOX_PDB 0x00dde4c0
-int __cdecl hkpMeshWeldingUtility_calcBitcodeForTriangleEdge(S00dde4c0_Mesh* mesh, S00dde4c0_Tri* tri, int skip, int idx, int checkWinding,
-                         unsigned short* flags)
+// pdb: hkpMeshWeldingUtility::calcBitcodeForTriangleEdge | hkpMeshWeldingUtility.obj | retail, upstream name already matches, high
+// pdb params: bvTreeShape, triangleShape, triangleShapeKey, edgeIndex, testConsistency, combinedBitcodesOut
+// pdb locals: collectedKeysAdjacentToEdge, aabb, vertices, buffer, orderedEdgeVerticesOnTriangle1, assertBuf, ostr
+int __cdecl hkpMeshWeldingUtility_calcBitcodeForTriangleEdge(S00dde4c0_Mesh* bvTreeShape, S00dde4c0_Tri* triangleShape, int triangleShapeKey, int edgeIndex, int testConsistency,
+                         unsigned short* combinedBitcodesOut)
 {
-    const Vec4* verts = tri->v;
+    const Vec4* verts = triangleShape->v;
     S00dde4c0_Array hits;
     {
         S00dde4c0_Aabb aabb;
@@ -735,7 +738,7 @@ int __cdecl hkpMeshWeldingUtility_calcBitcodeForTriangleEdge(S00dde4c0_Mesh* mes
             Vec4 center;
             Vec4 lo;
         } work;
-        work.center = verts[idx % 3];
+        work.center = verts[edgeIndex % 3];
         float eps = DAT_010141cc;
         setAll3(work.lo, -eps);
         ::LocalM128 low = vectorQuad(work.lo);
@@ -743,30 +746,30 @@ int __cdecl hkpMeshWeldingUtility_calcBitcodeForTriangleEdge(S00dde4c0_Mesh* mes
         setAll3(hi, eps);
         vectorQuad(aabb.mn) = (_mm_add_ps)(low, vectorQuad(work.center));
         vectorQuad(aabb.mx) = (_mm_add_ps)(vectorQuad(hi), vectorQuad(work.center));
-        mesh->query(&aabb, &hits);
+        bvTreeShape->query(&aabb, &hits);
     }
     bool first = true;
     for (int i = hits.m_iElementCount - 1; i >= 0; i--)
     {
         int other = hits.m_data[i];
-        if (other == skip)
+        if (other == triangleShapeKey)
             continue;
         S00dde4c0_Buf buffer;
-        S00dde4c0_Shape* shape = mesh->getSource()->getShape(other, &buffer);
+        S00dde4c0_Shape* shape = bvTreeShape->getSource()->getShape(other, &buffer);
         if (shape->type != 3)
             continue;
         int winding[2];
         S00dde4c0_Out out;
-        if (Hkpmeshweldingutility_MergeTriangleVectors(verts, &shape->data, idx, &out, winding) != 4)
+        if (Hkpmeshweldingutility_MergeTriangleVectors(verts, &shape->data, edgeIndex, &out, winding) != 4)
             continue;
-        if (checkWinding && winding[0] != (winding[1] + 1) % 3)
+        if (testConsistency && winding[0] != (winding[1] + 1) % 3)
         {
             if (first)
             {
                 S00dde4c0_Str sb;
                 sb.FUN_00cb1600(&buffer, 0x200);
                 sb.ProcessAndReturnValue_00cc01c0(str_010d7fc8)
-                    .EvaluateValue_00cc02d0(skip)
+                    .EvaluateValue_00cc02d0(triangleShapeKey)
                     .ProcessAndReturnValue_00cc01c0(str_010d8004)
                     .EvaluateValue_00cc02d0(other)
                     .ProcessAndReturnValue_00cc01c0(str_010d8014);
@@ -775,7 +778,7 @@ int __cdecl hkpMeshWeldingUtility_calcBitcodeForTriangleEdge(S00dde4c0_Mesh* mes
             }
             first = false;
         }
-        *flags = (unsigned short)hkpMeshWeldingUtility_modifyCombinedEdgesBitcode(*flags, idx, ::GetIndexForValue((int)&out));
+        *combinedBitcodesOut = (unsigned short)hkpMeshWeldingUtility_modifyCombinedEdgesBitcode(*combinedBitcodesOut, edgeIndex, ::GetIndexForValue((int)&out));
     }
     int result = !first;
     hits.finish();

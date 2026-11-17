@@ -96,7 +96,7 @@ class BodyPB
 {
   public:
     BodyPB* GetMotion();
-    void ApplyImpulse(float fTimeSinceScaleStart, const hkVector4& kImpulse);
+    void ApplyImpulse(float deltaTime, const hkVector4& force);
 };
 
 class HavokWorldPB
@@ -127,7 +127,7 @@ extern TrackerPB g_kTrackerPB;
 class TimerObjPB
 {
   public:
-    void Start(int iValue);
+    void Start(int abLoopPlayback);
 };
 
 class SpherePB
@@ -356,15 +356,15 @@ extern RefPB* g_pkPlayerPB;
 extern RefPB* g_pkPlayerTeammatePB;
 
 CollisionPB* __cdecl bhkNiCollisionObject_GetbhkNiCollisionObject(NodePB* pkNode);
-BodyPB* __cdecl bhkEntity_Getbhk(void* pvEntity);
-void __cdecl FUN_00b6bb30(NodePB* pkNode, float fAlpha);
+BodyPB* __cdecl bhkEntity_Getbhk(void* apEnt);
+void __cdecl RecursiveSetPropertyFadeAlpha(NodePB* apNode, float afAlpha);
 float __cdecl FUN_00408840(float fValue);
 SpherePB* __cdecl CreateOctahedron(float fRadius, const NiColorAPB& kColor, int iFlags);
 
 class ProjPB : public RefPB
 {
   public:
-    void Projectile_Update(float fUnused);
+    void Projectile_Update(float afDelta);
     char m_acPad2[0xd8 - 0xa8];
     float m_fXValue;
     float m_fPadDC;
@@ -380,7 +380,10 @@ class ProjPB : public RefPB
 
 // @fnv 0x009becc0
 // src: XBOX_PDB 0x009becc0
-void ProjPB::Projectile_Update(float fUnused)
+// pdb: Projectile::Update | Projectile.obj | retail, upstream name already matches, high
+// pdb params: afDelta
+// pdb locals: fdelta, ffadeRate, pactor, pcol, pRigid, p3d, hkRigid, pw, extraGravitas, pshooter, Dist, pdebug, color
+void ProjPB::Projectile_Update(float afDelta)
 {
     float fTimeSinceScaleStart = g_kTimerPB.GetMovementDelta();
     if (g_kVATSPB.GetMode() == 4 && !HasFlag(4))
@@ -397,7 +400,7 @@ void ProjPB::Projectile_Update(float fUnused)
         if (m_fAlpha <= 0.0)
             m_fAlpha = 0.0f;
         if (Get3D())
-            FUN_00b6bb30(Get3D(), m_fAlpha);
+            RecursiveSetPropertyFadeAlpha(Get3D(), m_fAlpha);
     }
     if (GetShooter() && GetShooter()->IsActor() && HasFlag(4))
     {
@@ -462,7 +465,7 @@ struct S9c_Room
 };
 struct S9c_Base
 {
-    bool HasFlag8();
+    bool BGSProjectile_GetHasMuzzleFlash();
     S9c_Room* TESCombatStyle_GetAdvancedData();
 };
 struct S9c_Geom;
@@ -944,10 +947,12 @@ struct S9c_Actor
 };
 // @fnv 0x009c0090
 // src: XBOX_PDB 0x009c0090
+// pdb: Projectile::TestProjectileInTriggerZone | Projectile.obj | retail, upstream name already matches, high
+// pdb locals: btriggerFound, max, phkworld, aabb, pworld, min, pbroadphase, hits, i, tp, collB, pphantom, pav, ppair, pref, pbp
 bool S9c_Actor::Projectile_TestProjectileInTriggerZone()
 {
     bool found = false;
-    if (FUN_004181e0()->HasFlag8() && FUN_004181e0()->TESCombatStyle_GetAdvancedData()->FUN_0048cee0())
+    if (FUN_004181e0()->BGSProjectile_GetHasMuzzleFlash() && FUN_004181e0()->TESCombatStyle_GetAdvancedData()->FUN_0048cee0())
     {
         S9c_Target* target = FUN_008d6f30() ? FUN_008d6f30()->TESObjectCELL_GetbhkWorld() : 0;
         if (!target)
@@ -1004,10 +1009,10 @@ class NiMatrix3P9
 {
   public:
     NiMatrix3P9();
-    void SetZRotation(float fAngleDifference);
-    void SetXRotation(float fAngleDifference);
+    void SetZRotation(float fAngle);
+    void SetXRotation(float fAngle);
     NiMatrix3P9 operator*(const NiMatrix3P9& kOther) const;
-    void GetCol(unsigned int uiCol, NiPoint3P9& kCol) const;
+    void GetCol(unsigned int uiCol, NiPoint3P9& col) const;
     float m_afEntries[3][3];
 };
 
@@ -1045,7 +1050,7 @@ class PickQueryP9
     void SetFilter(void* pvFilter);
     void SetFlags(PickFlagsP9 kFlags);
     void SetOrigin(const NiPoint3P9& akStart);
-    void SetDirection(const NiPoint3P9& kWorldPosition);
+    void SetDirection(const NiPoint3P9& arLength);
     void SetResults(HitResultsP9* pkResults);
     bool HasHit();
     __m128 m_akData[11];
@@ -1208,8 +1213,8 @@ class WorldP9
     virtual void w030();
     virtual void w031();
     virtual bool Pick(PickQueryP9& kQuery);
-    void GetNavMeshData(NiPoint3P9& kTargetCenter);
-    BroadphaseP9* GetBroadphase();
+    void GetNavMeshData(NiPoint3P9& arOrigin);
+    BroadphaseP9* bhkWorld_GetahkpWorld();
 };
 
 class CellP9
@@ -1332,8 +1337,8 @@ void __cdecl Warning_005b5e40(const char* pcFormat, ...);
 bool __cdecl FUN_00888960();
 void __cdecl bhkWorld_SetPickCountOverride(bool bValue);
 void* __cdecl bhkCollisionFilter_GetNewSystemGroup();
-void* __cdecl MakeLine(const NiPoint3P9& kStart, const NiColorAP9& kStartColor, const NiPoint3P9& kEnd,
-                           const NiColorAP9& kEndColor, int iFlags);
+void* __cdecl MakeLine(const NiPoint3P9& aStart, const NiColorAP9& aStartColor, const NiPoint3P9& aEnd,
+                           const NiColorAP9& aEndColor, int abWithNoLightingProp);
 
 class PlayerP9
 {
@@ -1528,16 +1533,18 @@ class RefP9
     float GetGravity();
     float GetRange();
     BaseFormP9* GetBaseForm();
-    bool CheckHits(PickQueryP9& kQuery, float& fDistance);
+    bool Projectile_PickAutoWater(PickQueryP9& apPickData, float& afWaterHitRatio);
     void OnHit();
     bool Projectile_RunTargetPick();
     char m_acPad[0x11c - 4];
     CollSrcP9 m_kCollSrc;
 };
-int __cdecl Projectile_ProcessTargetPick(PickQueryP9& kQuery, RefP9* pkRef, BaseFormP9* pkBase, int iA, int iB, float fDistance);
+int __cdecl Projectile_ProcessTargetPick(PickQueryP9& apPickData, RefP9* apProjectile, BaseFormP9* apProjectileBase, int apHitFraction, int bUseCharacterController, float afWaterHitRatio);
 
 // @fnv 0x009c03f0
 // src: XBOX_PDB 0x009c03f0
+// pdb: Projectile::RunTargetPick | Projectile.obj | retail, upstream name already matches, high
+// pdb locals: collector, pw, bprevPickOverride, bhit, origin, rot2, klength, rot, fwaterHitRatio, direction, filter, pd, kbroadphaseUpperExtent, kbroadphaseDiagonal, foriginRatio, koriginFromBroadphaseCenter, paw, kbroadphaseCenter, kbroadphaseLowerExtent, ktoFromBroadphaseCenter, kto, fhighestRatio, pdebug, color
 bool RefP9::Projectile_RunTargetPick()
 {
     if (!GetParentCell() || !GetParentCell()->GetWorld())
@@ -1572,7 +1579,7 @@ bool RefP9::Projectile_RunTargetPick()
     NiPoint3P9 kRay = kWorldPosition * (GetRange() - GetGravity());
     NiPoint3P9 kTargetCenter;
     pkWorld->GetNavMeshData(kTargetCenter);
-    BroadphaseP9* pkBroadphase = pkWorld->GetBroadphase();
+    BroadphaseP9* pkBroadphase = pkWorld->bhkWorld_GetahkpWorld();
     NiPoint3P9 kMaxPoint;
     FUN_00458620(kMaxPoint, pkBroadphase->m_kMax);
     NiPoint3P9 kMinBoundsCur;
@@ -1620,7 +1627,7 @@ bool RefP9::Projectile_RunTargetPick()
     bool bHitDetected = g_pkPlayerP9->GetParentCell()->GetWorld()->Pick(kQuery);
     bhkWorld_SetPickCountOverride(bOld);
     float fDistance = 3.402823466e+38F;
-    bHitDetected = bHitDetected | CheckHits(kQuery, fDistance);
+    bHitDetected = bHitDetected | Projectile_PickAutoWater(kQuery, fDistance);
     if (bHitDetected)
         bHitDetected = Projectile_ProcessTargetPick(kQuery, this, GetBaseForm(), 0, 1, fDistance) != 0;
     if (g_kShowRaysP9.GetBool())
@@ -1641,7 +1648,7 @@ class FUN_005dbf20
     __m128 m_vValue;
 };
 
-hkVector4& NI2HK(hkVector4& kOut, const NiPoint3& kIn);
+hkVector4& NI2HK(hkVector4& arhkTran, const NiPoint3& arNiTran);
 
 class ImpulseBody
 {
@@ -1703,7 +1710,7 @@ class ImpulseRigidBody
 };
 
 void* hkpGetRigidBody(const void* pvObject);
-void* bhkEntity_Getbhk(const void* pvObject);
+void* bhkEntity_Getbhk(const void* apEnt);
 
 class ImpulseActorBase
 {
@@ -1711,22 +1718,25 @@ class ImpulseActorBase
     float Explosion_GetRadius();
 };
 
-float TESHavokUtilities_ScaleGameplayImpulseForce(float fBase, ImpulseRigidBody* pkBody, int iMode);
+float TESHavokUtilities_ScaleGameplayImpulseForce(float afBaseForce, ImpulseRigidBody* apPushedBody, int abUseMinMass);
 
 class ImpulseSource
 {
   public:
     ImpulseActorBase* FUN_004181e0();
-    void Projectile_ApplyImpactForce(NiPoint3 kPoint, NiPoint3 kDirection, void* pvTarget);
+    void Projectile_ApplyImpactForce(NiPoint3 aContactPoint, NiPoint3 aDirection, void* apTargetCollidable);
 };
 
 // @fnv 0x009c2e80
 // src: XBOX_PDB 0x009c2e80
-void ImpulseSource::Projectile_ApplyImpactForce(NiPoint3 kPoint, NiPoint3 kDirection, void* pvTarget)
+// pdb: Projectile::ApplyImpactForce | Projectile.obj | retail, upstream name already matches, high
+// pdb params: aContactPoint, aDirection, apTargetCollidable
+// pdb locals: pw, prb, fforce, impulse, location
+void ImpulseSource::Projectile_ApplyImpactForce(NiPoint3 aContactPoint, NiPoint3 aDirection, void* apTargetCollidable)
 {
-    if (!pvTarget)
+    if (!apTargetCollidable)
         return;
-    ImpulseRigidBody* pkBody = (ImpulseRigidBody*)bhkEntity_Getbhk(hkpGetRigidBody(pvTarget));
+    ImpulseRigidBody* pkBody = (ImpulseRigidBody*)bhkEntity_Getbhk(hkpGetRigidBody(apTargetCollidable));
     ImpulseLock* pkLock = pkBody ? pkBody->GetLock() : 0;
     if (pkLock)
     {
@@ -1737,9 +1747,9 @@ void ImpulseSource::Projectile_ApplyImpactForce(NiPoint3 kPoint, NiPoint3 kDirec
             if (fForce != 0.0)
             {
                 hkVector4 kImpulse;
-                NI2HK(kImpulse, kDirection);
+                NI2HK(kImpulse, aDirection);
                 hkVector4 kPosition;
-                NI2HK(kPosition, kPoint);
+                NI2HK(kPosition, aContactPoint);
                 if (kImpulse.FUN_00630b40().EvaluateValue_004586d0() > 0.0)
                     kImpulse.normalize3_0062aea0();
                 FUN_005dbf20 kScale(fForce);
@@ -1757,8 +1767,8 @@ class hkTransform9C
   public:
     hkTransform9C();
     hkTransform9C(const hkTransform9C& kOther);
-    void Set(const void* pvRotation, const void* pvTranslation);
-    void SetMul(const hkTransform9C& kA, const hkTransform9C& kB);
+    void Set(const void* q, const void* t);
+    void SetMul(const hkTransform9C& aTb, const hkTransform9C& bTc);
     __m128 m_akCols[4];
 };
 
@@ -1799,7 +1809,7 @@ class Flags9C
 class Motion9C
 {
   public:
-    ResultFlag9C CalcAabb(const hkAabb9C& kAabb, hkAabbOut9C& kOut);
+    ResultFlag9C hkpShape_castRay(const hkAabb9C& kAabb, hkAabbOut9C& kOut);
     void* GetEntry(hkAabbOut9C& kOut);
 };
 
@@ -1937,7 +1947,7 @@ class NiNode9C
 {
   public:
     unsigned int GetArrayCount();
-    NiAVObject9C* GetAt(unsigned int uiIndex);
+    NiAVObject9C* GetAt(unsigned int i);
 };
 
 CollisionObject9C* __cdecl FUN_0043b610(NiAVObject9C* pkObject);
@@ -1946,18 +1956,21 @@ void __cdecl FUN_0056df80(hkTransform9C& kOut, const void* pvTransform);
 
 // @fnv 0x009c5ba0
 // src: COMMUNITY 0x009c5ba0
-bool __cdecl Projectile_PickSceneGraph(World9C* pkWorld, NiAVObject9C* pkObject, bool bCheckMotion, bool bUpdate)
+// pdb: Projectile::PickSceneGraph | Projectile.obj | retail, upstream name already matches, high
+// pdb params: apPickData, apObject, abIgnoreHead, abSort
+// pdb locals: bhit, pcol, pnode, prb, pshape, rci, rco, hkt, pblend, hkpWorld, hklocal, prbt, i, pchild
+bool __cdecl Projectile_PickSceneGraph(World9C* apPickData, NiAVObject9C* apObject, bool abIgnoreHead, bool abSort)
 {
     bool bStateChanged = false;
-    if (pkObject)
+    if (apObject)
     {
-        CollisionObject9C* pkCollision = FUN_0043b610(pkObject);
+        CollisionObject9C* pkCollision = FUN_0043b610(apObject);
         if (pkCollision)
         {
             WorldObject9C* pkWorldObject = pkCollision->GetWorldObject();
             RigidBody9C* pkBody = pkWorldObject ? pkWorldObject->GetRigidBody() : 0;
             if (pkBody && pkWorldObject->GetFlags().IsActive() &&
-                (!bCheckMotion || pkWorldObject->GetFlags().GetMotionType() != 1))
+                (!abIgnoreHead || pkWorldObject->GetFlags().GetMotionType() != 1))
             {
                 hkTransform9C kXform;
                 if (NiObject_IsKindOf(&g_kBlendCollisionRTTI9C, pkCollision))
@@ -1965,7 +1978,7 @@ bool __cdecl Projectile_PickSceneGraph(World9C* pkWorld, NiAVObject9C* pkObject,
                     BlendCollisionObject9C* pkBlend = (BlendCollisionObject9C*)pkCollision;
                     if (!pkWorldObject->IsFixed() || pkBlend->GetBlend() == 1.0)
                     {
-                        FUN_0056df80(kXform, pkObject->GetWorldTransform());
+                        FUN_0056df80(kXform, apObject->GetWorldTransform());
                         if (NiObject_IsKindOf(&g_kPhantomRTTI9C, pkWorldObject))
                         {
                             Phantom9C* pkPhantom = (Phantom9C*)pkWorldObject;
@@ -1986,28 +1999,28 @@ bool __cdecl Projectile_PickSceneGraph(World9C* pkWorld, NiAVObject9C* pkObject,
                 }
                 hkAabb9C kAabb;
                 hkAabbOut9C kOut;
-                kAabb.m_kMin.SetTransformedPosition((const hkTransform&)kXform, *(const hkVector4*)pkWorld->GetMin());
-                kAabb.m_kMax.SetTransformedPosition((const hkTransform&)kXform, *(const hkVector4*)pkWorld->GetMax());
-                pkBody->GetMotion()->CalcAabb(kAabb, kOut);
+                kAabb.m_kMin.SetTransformedPosition((const hkTransform&)kXform, *(const hkVector4*)apPickData->GetMin());
+                kAabb.m_kMax.SetTransformedPosition((const hkTransform&)kXform, *(const hkVector4*)apPickData->GetMax());
+                pkBody->GetMotion()->hkpShape_castRay(kAabb, kOut);
                 if (kOut.GetResult().IsSet())
                 {
-                    Listener9C* pkListener = pkWorld->GetListener();
+                    Listener9C* pkListener = apPickData->GetListener();
                     pkListener->Add(pkWorldObject->GetMotion()->GetEntry(kOut));
                     bStateChanged = true;
                 }
             }
         }
-        NiNode9C* pkNode = pkObject->IsSceneNode();
+        NiNode9C* pkNode = apObject->IsSceneNode();
         if (pkNode)
         {
             for (unsigned int i = 0; i < pkNode->GetArrayCount(); i++)
             {
                 NiAVObject9C* pkChild = pkNode->GetAt(i);
-                bStateChanged = bStateChanged | Projectile_PickSceneGraph(pkWorld, pkChild, bCheckMotion, false);
+                bStateChanged = bStateChanged | Projectile_PickSceneGraph(apPickData, pkChild, abIgnoreHead, false);
             }
         }
     }
-    if (bUpdate)
-        pkWorld->GetListener()->Update();
+    if (abSort)
+        apPickData->GetListener()->Update();
     return bStateChanged;
 }

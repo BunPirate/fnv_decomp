@@ -23,7 +23,10 @@
 
 // Resolves the response's topic, sound and idle form IDs against the owner's file, clearing invalid ones and warning on failure, then applies the emotion value.
 // @fnv 0x00617580
-void TESResponse::InitItem(TESForm* owner)
+// pdb: TESResponse::InitItem | TESResponse.obj | retail, string-set bridge, high
+// pdb params: apOwner
+// pdb locals: formID, pfileform, formstring, infotext, pinfo, ptopic, pquest, itempint
+void TESResponse::InitItem(TESForm* apOwner)
 {
     if (Data.m_pTopic)
     {
@@ -33,7 +36,7 @@ void TESResponse::InitItem(TESForm* owner)
             TESForm* form;
         } resolved;
         resolved.formID = reinterpret_cast<unsigned int>(Data.m_pTopic);
-        TESForm::RemapFormIDForFile(resolved.formID, owner->GetFile(-1));
+        TESForm::RemapFormIDForFile(resolved.formID, apOwner->GetFile(-1));
         resolved.form = TESForm::GetFormByID(resolved.formID);
         if (resolved.form && static_cast<const TESForm*>(resolved.form)->GetFormType() == 69)
             Data.m_pTopic = static_cast<TESTopic*>(resolved.form);
@@ -41,14 +44,14 @@ void TESResponse::InitItem(TESForm* owner)
             Data.m_pTopic = 0;
         if (!Data.m_pTopic)
         {
-            TESTopicInfo* info = dynamic_cast<TESTopicInfo*>(owner);
+            TESTopicInfo* info = dynamic_cast<TESTopicInfo*>(apOwner);
             TESTopic* topic = TESTopic::GetTopicFromInfo(info);
             TESQuest* quest = 0;
             if (topic)
                 quest = topic->GetParentQuest(info);
             {
                 BSStringT<char> text;
-                info->FormatDebugInfo(text, true);
+                info->GetInfoDisplayText(text, true);
                 char description[260];
                 sprintf(description, "TopicInfo %08X \"%s\" in Quest %s (%08x) Topic %s (%08x)", info->GetFormID(),
                         text.String(), quest ? quest->GetEditorName() : "", quest ? quest->GetFormID() : 0,
@@ -66,7 +69,7 @@ void TESResponse::InitItem(TESForm* owner)
             TESForm* form;
         } resolved;
         resolved.formID = reinterpret_cast<unsigned int>(Data.m_pResponseSound);
-        TESForm::RemapFormIDForFile(resolved.formID, owner->GetFile(-1));
+        TESForm::RemapFormIDForFile(resolved.formID, apOwner->GetFile(-1));
         resolved.form = TESForm::GetFormByID(resolved.formID);
         if (resolved.form && static_cast<const TESForm*>(resolved.form)->GetFormType() == 13)
             Data.m_pResponseSound = static_cast<TESSound*>(resolved.form);
@@ -74,14 +77,14 @@ void TESResponse::InitItem(TESForm* owner)
             Data.m_pResponseSound = 0;
         if (!Data.m_pResponseSound)
         {
-            TESTopicInfo* info = dynamic_cast<TESTopicInfo*>(owner);
+            TESTopicInfo* info = dynamic_cast<TESTopicInfo*>(apOwner);
             TESTopic* topic = TESTopic::GetTopicFromInfo(info);
             TESQuest* quest = 0;
             if (topic)
                 quest = topic->GetParentQuest(info);
             {
                 BSStringT<char> text;
-                info->FormatDebugInfo(text, true);
+                info->GetInfoDisplayText(text, true);
                 char description[260];
                 sprintf(description, "TopicInfo %08X \"%s\" in Quest %s (%08x) Topic %s (%08x)", info->GetFormID(),
                         text.String(), quest ? quest->GetEditorName() : "", quest ? quest->GetFormID() : 0,
@@ -91,30 +94,30 @@ void TESResponse::InitItem(TESForm* owner)
             }
         }
     }
-    if (m_pFirstIdleForm)
+    if (pSpeakerIdle)
     {
         struct FormResolution
         {
             unsigned int formID;
             TESForm* form;
         } resolved;
-        resolved.formID = reinterpret_cast<unsigned int>(m_pFirstIdleForm);
-        TESForm::RemapFormIDForFile(resolved.formID, owner->GetFile(-1));
+        resolved.formID = reinterpret_cast<unsigned int>(pSpeakerIdle);
+        TESForm::RemapFormIDForFile(resolved.formID, apOwner->GetFile(-1));
         resolved.form = TESForm::GetFormByID(resolved.formID);
         if (resolved.form && static_cast<const TESForm*>(resolved.form)->GetFormType() == 72)
-            m_pFirstIdleForm = static_cast<TESIdleForm*>(resolved.form);
+            pSpeakerIdle = static_cast<TESIdleForm*>(resolved.form);
         else
-            m_pFirstIdleForm = 0;
-        if (!m_pFirstIdleForm)
+            pSpeakerIdle = 0;
+        if (!pSpeakerIdle)
         {
-            TESTopicInfo* info = dynamic_cast<TESTopicInfo*>(owner);
+            TESTopicInfo* info = dynamic_cast<TESTopicInfo*>(apOwner);
             TESTopic* topic = TESTopic::GetTopicFromInfo(info);
             TESQuest* quest = 0;
             if (topic)
                 quest = topic->GetParentQuest(info);
             {
                 BSStringT<char> text;
-                info->FormatDebugInfo(text, true);
+                info->GetInfoDisplayText(text, true);
                 char description[260];
                 sprintf(description, "TopicInfo %08X \"%s\" in Quest %s (%08x) Topic %s (%08x)", info->GetFormID(),
                         text.String(), quest ? quest->GetEditorName() : "", quest ? quest->GetFormID() : 0,
@@ -124,30 +127,30 @@ void TESResponse::InitItem(TESForm* owner)
             }
         }
     }
-    if (m_pSecondIdleForm)
+    if (pListenerIdle)
     {
         struct FormResolution
         {
             unsigned int formID;
             TESForm* form;
         } resolved;
-        resolved.formID = reinterpret_cast<unsigned int>(m_pSecondIdleForm);
-        TESForm::RemapFormIDForFile(resolved.formID, owner->GetFile(-1));
+        resolved.formID = reinterpret_cast<unsigned int>(pListenerIdle);
+        TESForm::RemapFormIDForFile(resolved.formID, apOwner->GetFile(-1));
         resolved.form = TESForm::GetFormByID(resolved.formID);
         if (resolved.form && static_cast<const TESForm*>(resolved.form)->GetFormType() == 72)
-            m_pSecondIdleForm = static_cast<TESIdleForm*>(resolved.form);
+            pListenerIdle = static_cast<TESIdleForm*>(resolved.form);
         else
-            m_pSecondIdleForm = 0;
-        if (!m_pSecondIdleForm)
+            pListenerIdle = 0;
+        if (!pListenerIdle)
         {
-            TESTopicInfo* info = dynamic_cast<TESTopicInfo*>(owner);
+            TESTopicInfo* info = dynamic_cast<TESTopicInfo*>(apOwner);
             TESTopic* topic = TESTopic::GetTopicFromInfo(info);
             TESQuest* quest = 0;
             if (topic)
                 quest = topic->GetParentQuest(info);
             {
                 BSStringT<char> text;
-                info->FormatDebugInfo(text, true);
+                info->GetInfoDisplayText(text, true);
                 // The original listener failure path does not initialize this buffer.
                 char description[260];
                 Warning("MASTERFILE: Could not find listener idle (%08X) in TESResponse init for %s.", resolved.formID,
@@ -161,38 +164,47 @@ void TESResponse::InitItem(TESForm* owner)
 
 // Builds a filename from quest, topic and info when the response ID is nonzero, otherwise sets it to "New Response".
 // @fnv 0x00617400
-void TESResponse::BuildResponseFileName(TESQuest* quest, TESTopic* topic, TESTopicInfo* info, BSStringT<char>& filename)
+// src: XBOX_RETAIL_PDB 0x00617400
+// pdb: TESResponse::GetAudioFilename | TESResponse.obj | retail, string-set bridge, high
+// pdb params: apOwnerQuest, apOwnerTopic, apOwnerInfo, aFilename
+// pdb locals: temp, pcombined, aiInfoID
+void TESResponse::GetAudioFilename(TESQuest* apOwnerQuest, TESTopic* apOwnerTopic, TESTopicInfo* apOwnerInfo, BSStringT<char>& aFilename)
 {
-    if (!quest || !topic || !info)
+    if (!apOwnerQuest || !apOwnerTopic || !apOwnerInfo)
         return;
     unsigned int responseID = GetResponseID();
     if (responseID > 0)
     {
         char combined[260];
-        BuildQuestTopicName(quest, topic, combined, sizeof(combined));
-        unsigned int formID = info->GetFormID() & 0x00FFFFFF;
-        filename.PrintfString("%s_%08X_%u", combined, formID, responseID);
+        GetAudioQuestTopicCombined(apOwnerQuest, apOwnerTopic, combined, sizeof(combined));
+        unsigned int formID = apOwnerInfo->GetFormID() & 0x00FFFFFF;
+        aFilename.PrintfString("%s_%08X_%u", combined, formID, responseID);
     }
     else
-        filename.Set("New Response", 0);
+        aFilename.Set("New Response", 0);
 }
 
 // @fnv 0x00616ce0
+// pdb: TESResponse::TESResponse | TESResponse.obj | retail, upstream name already matches, high
 TESResponse::TESResponse()
 {
-    m_kResponseText.Set(0, 0);
-    m_pFirstIdleForm = 0;
-    m_pSecondIdleForm = 0;
+    cResponseText.Set(0, 0);
+    pSpeakerIdle = 0;
+    pListenerIdle = 0;
     pNext = 0;
 }
 
 // @fnv 0x006172c0
-void TESResponse::BuildQuestTopicName(TESQuest* quest, TESTopic* topic, char* output, unsigned int capacity)
+// src: XBOX_RETAIL_PDB 0x006172c0
+// pdb: TESResponse::GetAudioQuestTopicCombined | TESResponse.obj | retail, string-set bridge, high
+// pdb params: apQuest, apTopic, apOutBuffer, aiBufferSize
+// pdb locals: itlen, pquestname, ptopicname, iqlen, imaxqlen, imaxtlen
+void TESResponse::GetAudioQuestTopicCombined(TESQuest* apQuest, TESTopic* apTopic, char* apOutBuffer, unsigned int aiBufferSize)
 {
-    if (!output || !capacity)
+    if (!apOutBuffer || !aiBufferSize)
         return;
-    *output = 0;
-    if (!quest || !topic)
+    *apOutBuffer = 0;
+    if (!apQuest || !apTopic)
         return;
     // Separate scopes preserve the original buffer lifetimes and stack ordering.
     unsigned int questLength;
@@ -201,8 +213,8 @@ void TESResponse::BuildQuestTopicName(TESQuest* quest, TESTopic* topic, char* ou
         {
             char questName[260];
             {
-                __insecure_strcpy(questName, quest->GetEditorName());
-                __insecure_strcpy(topicName, topic->GetName());
+                __insecure_strcpy(questName, apQuest->GetEditorName());
+                __insecure_strcpy(topicName, apTopic->GetName());
                 questLength = strlen(questName);
                 unsigned int topicLength = strlen(topicName);
                 if (questLength + topicLength > 25)
@@ -220,7 +232,7 @@ void TESResponse::BuildQuestTopicName(TESQuest* quest, TESTopic* topic, char* ou
                         limits.topic += limits.quest - questLength;
                     topicName[limits.topic] = 0;
                 }
-                sprintf_s(output, capacity, "%s_%s", questName, topicName);
+                sprintf_s(apOutBuffer, aiBufferSize, "%s_%s", questName, topicName);
             }
         }
     }
@@ -228,7 +240,10 @@ void TESResponse::BuildQuestTopicName(TESQuest* quest, TESTopic* topic, char* ou
 
 // Deletes every TESResponse in the linked list starting at pHead, then sets pHead to null.
 // @fnv 0x0061cad0
-void TESResponseList::ClearResponses()
+// src: XBOX_DEBUG_PDB 0x0061cad0
+// pdb: ResponseListWrapper::ClearResponseList | TESTopicInfo.obj | debug, call graph (shared callers), high
+// pdb locals: pres, pnext
+void TESResponseList::ResponseListWrapper_ClearResponseList()
 {
     TESResponse* response = pHead;
     while (response)
@@ -242,20 +257,23 @@ void TESResponseList::ClearResponses()
 
 // Reads the response data chunk from the TESFile if the chunk ID matches, converting endianness when required.
 // @fnv 0x00617530
-void TESResponse::Load(TESFile* file)
+// pdb: TESResponse::Load | TESResponse.obj | retail, upstream name already matches, high
+// pdb params: apFile
+void TESResponse::Load(TESFile* apFile)
 {
-    if (file && file->GetChunkID() == 0x54445254)
+    if (apFile && apFile->GetChunkID() == 0x54445254)
     {
-        file->GetChunkData(&Data, sizeof(Data));
-        if (file->IsEndianConversionRequired())
+        apFile->GetChunkData(&Data, sizeof(Data));
+        if (apFile->IsEndianConversionRequired())
             Data.Endian();
     }
 }
 
 // @fnv 0x00616de0
+// pdb: TESResponse::GetResponseText | TESResponse.obj | debug, call graph, high
 const char* TESResponse::GetDialogueText()
 {
-    return m_kResponseText.String() ? m_kResponseText.String() : "";
+    return cResponseText.String() ? cResponseText.String() : "";
 }
 
 // @fnv 0x00616d70
@@ -270,6 +288,7 @@ DialogueResponseData::DialogueResponseData()
 }
 
 // @fnv 0x00616dc0
+// pdb: TESResponse::~TESResponse | TESResponse.obj | debug, upstream name already matches, high
 TESResponse::~TESResponse()
 {}
 
@@ -283,10 +302,13 @@ void* __cdecl __memcpy(void*, const void*, unsigned int);
 
 // Copies the response data, text, and speaker/listener idle forms.
 // @fnv 0x006174d0
-void TESResponse::CopyResponse(TESResponse* apCopy)
+// src: XBOX_DEBUG_PDB 0x006174d0
+// pdb: TESResponse::Copy | TESResponse.obj | debug, call graph, high
+// pdb params: apCopy
+void TESResponse::Copy(TESResponse* apCopy)
 {
     __memcpy(this, apCopy->GetData(), 24);
-    m_kResponseText.Set(apCopy->GetDialogueText(), 0);
+    cResponseText.Set(apCopy->GetDialogueText(), 0);
     SetSpeakerIdle(apCopy->GetSpeakerIdle());
     SetListenerIdle(apCopy->GetListenerIdle());
 }

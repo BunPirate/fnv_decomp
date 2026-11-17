@@ -18,13 +18,13 @@ class AudioMgr_BSAudio
 {
 public:
     static AudioMgr_BSAudio* Get();
-    AudioPlaybackHandle Make(int id, SndForm* form);
+    AudioPlaybackHandle Make(int apFilename, SndForm* aiTypeFlags);
     AudioPlaybackHandle Make2(int id);
-    bool PlayAt(void* node, float f, int flags);
-    AudioPlaybackHandle GetHandle(const char* name, int flags, int a);
-    AudioPlaybackHandle GetSoundByEditorID(const char* editorID, int flags, int a);
+    bool PlayAt(void* apObj, float afFadeSeconds, int aiFlags);
+    AudioPlaybackHandle GetHandle(const char* apSoundName, int aiTypeFlags, int a);
+    AudioPlaybackHandle GetSoundByEditorID(const char* apSoundName, int aiTypeFlags, int a);
     AudioPlaybackHandle GetSoundByEditorID(const char* editorID, int flags);
-    Snd Make(void* a, SndSrc* b);
+    Snd Make(void* apFilename, SndSrc* aiTypeFlags);
 };
 #include "../../../../include/BSAudio.h"
 #include "../../../../include/NiAVObject.h"
@@ -47,7 +47,7 @@ public:
 class RouletteAudio : public BSAudio
 {
 public:
-    BSSoundHandle GetSoundHandleByEditorID(const char* editorID, unsigned int flags);
+    BSSoundHandle GetSoundHandleByEditorID(const char* apSoundName, unsigned int aiTypeFlags);
 };
 
 
@@ -78,6 +78,7 @@ extern "C" void __cdecl _Deallocate(void*);
 }
 
 // @fnv 0x007b8f70
+// pdb: RouletteMenu::`scalar deleting destructor' | RouletteMenu.obj | retail, vtable slot, high
 void* __thiscall RouletteMenu::Destroy(unsigned int flags)
 {
     this->FUN_007b9020();
@@ -107,6 +108,8 @@ void* __cdecl InterfaceManager_GetSingleton(void);
 
 // @fnv 0x007bed00
 // src: XBOX_PDB 0x007bed00
+// pdb: RouletteMenu::DoEnter | RouletteMenu.obj | debug, vtable slot, medium
+// pdb params: aiID, apTarget
 void RouletteMenu::DoEnter_007bed00(int aiID, Tile* apTarget)
 {
     using fnv_007bed00::Proc_S;
@@ -120,6 +123,8 @@ extern unsigned int __cdecl GetRandomNumberInRange(int, int);
 // Stores two random values at offsets 0x4008 and 0x4004, then sets two byte flags based on whether the value at 0x3ff4 minus 5 is zero, positive or negative.
 // @fnv 0x007bf670
 // src: XBOX_PDB 0x007bf670
+// pdb: RouletteMenu::SpinWheel | RouletteMenu.obj | retail, upstream name already matches, high
+// pdb locals: luckeffect
 void RouletteMenu::SpinWheel()
 {
     *(unsigned int*)((char*)this + 0x4008) = GetRandomNumberInRange(0, 3);
@@ -155,6 +160,7 @@ struct FUN_007b8fa0
 };
 // Initializes the object's SL member and B006815c0 member by running their default constructors.
 // @fnv 0x007b8fa0
+// pdb: RouletteMenu::BetTileInfo::BetTileInfo | RouletteMenu.obj | debug, object-file run extension, low
 FUN_007b8fa0::FUN_007b8fa0()
 {}
 
@@ -187,6 +193,8 @@ char RouletteMenu::HasAllTiles()
 extern double DAT_01076340;
 // Returns true if the TESEyes list value for the given index is less than DAT_01076340, otherwise false.
 // @fnv 0x007bf530
+// pdb: RouletteMenu::IsBetChipHidden | RouletteMenu.obj | debug, object-file gap fill, medium
+// pdb params: aiIndex
 bool RouletteMenu::IsEyesListBelowThreshold(int aiIndex)
 {
     if (*reinterpret_cast<float*>(reinterpret_cast<char*>(reinterpret_cast<TESDataHandler**>(&m_pRouletteWheel)[aiIndex]->GetTESEyesList()) + 8) < DAT_01076340)
@@ -204,7 +212,9 @@ extern RouletteMenu* DAT_011da878;
 
 // If DAT_011da878 is set, sets tile 0xFA9 on the next tile set and writes 5 at offset 0x28 of DAT_011da878.
 // @fnv 0x007b9480
-void SetRouletteMenuTile()
+// src: XBOX_RETAIL_PDB 0x007b9480
+// pdb: RouletteMenu::Close | RouletteMenu.obj | retail, call graph (shared callers), high
+void RouletteMenu_Close()
 {
     if (DAT_011da878)
     {
@@ -227,6 +237,8 @@ Proc_S* __cdecl _FUN_004b7210();
 }
 
 // @fnv 0x007bed30
+// pdb: RouletteMenu::DoLeave | RouletteMenu.obj | debug, vtable slot, medium
+// pdb params: aiID, apTarget
 void RouletteMenu::SetTileValue(int, Tile*)
 {
     using fnv_007bed30::g_011e0218_arg1;
@@ -246,7 +258,11 @@ extern double DAT_01076360;
 extern char DAT_011a9448;
 
 // @fnv 0x007bf570
-void RouletteMenu::RotateRouletteWheelToResult(int aiResult)
+// src: XBOX_RETAIL_PDB 0x007bf570
+// pdb: RouletteMenu::ShiftWheelTexture | RouletteMenu.obj | retail, string-set bridge, high
+// pdb params: aiResult
+// pdb locals: facerotation, radianrotation, degreesperface, rotation, pavobj, index
+void RouletteMenu::ShiftWheelTexture(int aiResult)
 {
     double facerotation;
     double radianrotation;
@@ -291,6 +307,8 @@ extern GO g_011da8a0;
 
 // @fnv 0x007bf840
 // src: XBOX_PDB 0x007bf840
+// pdb: RouletteMenu::SetBetChip | RouletteMenu.obj | retail, upstream name already matches, high
+// pdb locals: loc, update1, level
 void RouletteMenu::SetBetChip()
 {
     // Raw storage preserves the original uninitialized local without a constructor call.
@@ -348,14 +366,17 @@ struct BSSimpleListTESRaceSize
 void __cdecl FUN_004d5c60(int);
 // When unk0028 is 4, handles roulette input id 3-8: adjusts unk3fe8 bet, updates tile values and calls ApplyValueToChain with alpha values.
 // @fnv 0x007bc870
-void RouletteMenu::HandleRouletteInput(int aiInputId, Tile* tile)
+// pdb: RouletteMenu::DoClick | RouletteMenu.obj | retail, string-set bridge, high
+// pdb params: aiID, apTarget
+// pdb locals: i, iTempBet
+void RouletteMenu::HandleRouletteInput(int aiID, Tile* apTarget)
 {
     if (unk0028 == 4)
     {
-        switch (aiInputId)
+        switch (aiID)
         {
         case 8:
-            SetRouletteMenuTile();
+            RouletteMenu_Close();
             break;
         case 3: {
             int selected = GetBetIndex();
@@ -368,51 +389,51 @@ void RouletteMenu::HandleRouletteInput(int aiInputId, Tile* tile)
                     unk3fe8 = unk4000 - unk3fec;
                     ((Tile*)DAT_011da878->m_pMaxBetTile)->SetTraitFloat(DAT_011da86c, 1.0f);
                     ((Tile*)DAT_011da878->m_pMaxBetTile)->Set(DAT_011da86c, unk3fe8);
-                    ((RouletteMenu*)DAT_011da878)->ApplyValueToChain(3, 128.0f);
-                    ((RouletteMenu*)DAT_011da878)->ApplyValueToChain(6, 128.0f);
-                    ((RouletteMenu*)DAT_011da878)->ApplyValueToChain(7, 128.0f);
+                    ((RouletteMenu*)DAT_011da878)->SetTileTextAlpha(3, 128.0f);
+                    ((RouletteMenu*)DAT_011da878)->SetTileTextAlpha(6, 128.0f);
+                    ((RouletteMenu*)DAT_011da878)->SetTileTextAlpha(7, 128.0f);
                 }
-                ((RouletteMenu*)DAT_011da878)->ApplyValueToChain(4, 255.0f);
-                ((RouletteMenu*)DAT_011da878)->ApplyValueToChain(5, 255.0f);
+                ((RouletteMenu*)DAT_011da878)->SetTileTextAlpha(4, 255.0f);
+                ((RouletteMenu*)DAT_011da878)->SetTileTextAlpha(5, 255.0f);
                 if (unk3fe8 == 0)
                 {
-                    ((RouletteMenu*)DAT_011da878)->ApplyValueToChain(3, 128.0f);
-                    ((RouletteMenu*)DAT_011da878)->ApplyValueToChain(7, 128.0f);
+                    ((RouletteMenu*)DAT_011da878)->SetTileTextAlpha(3, 128.0f);
+                    ((RouletteMenu*)DAT_011da878)->SetTileTextAlpha(7, 128.0f);
                 }
                 if (unk3fe4 == 10)
                 {
                     unk3fe8 = 0;
                     ((Tile*)DAT_011da878->m_pMaxBetTile)->SetTraitFloat(DAT_011da86c, 1.0f);
                     ((Tile*)DAT_011da878->m_pMaxBetTile)->Set(DAT_011da86c, unk3fe8);
-                    ((RouletteMenu*)DAT_011da878)->ApplyValueToChain(3, 128.0f);
-                    ((RouletteMenu*)DAT_011da878)->ApplyValueToChain(6, 128.0f);
-                    ((RouletteMenu*)DAT_011da878)->ApplyValueToChain(7, 128.0f);
+                    ((RouletteMenu*)DAT_011da878)->SetTileTextAlpha(3, 128.0f);
+                    ((RouletteMenu*)DAT_011da878)->SetTileTextAlpha(6, 128.0f);
+                    ((RouletteMenu*)DAT_011da878)->SetTileTextAlpha(7, 128.0f);
                 }
             }
             break;
         }
         case 4: {
             int selected2 = GetBetIndex();
-            if (selected2 < 159 && RemoveEntryById(selected2))
+            if (selected2 < 159 && RemoveBet(selected2))
             {
                 static_cast<RouletteAudio*>(BSAudio::GetSingleton())->GetSoundHandleByEditorID("GAMERouletteDecreaseBet", 0x121).Play(false);
                 ((Tile*)DAT_011da878->m_pBetTile)->SetTraitFloat(DAT_011da86c, 1.0f);
                 ((Tile*)DAT_011da878->m_pBetTile)->Set(DAT_011da86c, unk3fec);
-                ((RouletteMenu*)DAT_011da878)->ApplyValueToChain(6, 255.0f);
-                ((RouletteMenu*)DAT_011da878)->ApplyValueToChain(3, 255.0f);
+                ((RouletteMenu*)DAT_011da878)->SetTileTextAlpha(6, 255.0f);
+                ((RouletteMenu*)DAT_011da878)->SetTileTextAlpha(3, 255.0f);
                 if (unk3e78->GetSize() == 0)
                 {
-                    ((RouletteMenu*)DAT_011da878)->ApplyValueToChain(5, 128.0f);
-                    ((RouletteMenu*)DAT_011da878)->ApplyValueToChain(4, 128.0f);
+                    ((RouletteMenu*)DAT_011da878)->SetTileTextAlpha(5, 128.0f);
+                    ((RouletteMenu*)DAT_011da878)->SetTileTextAlpha(4, 128.0f);
                 }
                 if (unk3fe4 == 9)
                 {
-                    ((RouletteMenu*)DAT_011da878)->ApplyValueToChain(5, 255.0f);
-                    ((RouletteMenu*)DAT_011da878)->ApplyValueToChain(4, 255.0f);
-                    ((RouletteMenu*)DAT_011da878)->ApplyValueToChain(3, 255.0f);
-                    ((RouletteMenu*)DAT_011da878)->ApplyValueToChain(6, 255.0f);
-                    ((RouletteMenu*)DAT_011da878)->ApplyValueToChain(7, 255.0f);
-                    ((RouletteMenu*)DAT_011da878)->ApplyValueToChain(8, 255.0f);
+                    ((RouletteMenu*)DAT_011da878)->SetTileTextAlpha(5, 255.0f);
+                    ((RouletteMenu*)DAT_011da878)->SetTileTextAlpha(4, 255.0f);
+                    ((RouletteMenu*)DAT_011da878)->SetTileTextAlpha(3, 255.0f);
+                    ((RouletteMenu*)DAT_011da878)->SetTileTextAlpha(6, 255.0f);
+                    ((RouletteMenu*)DAT_011da878)->SetTileTextAlpha(7, 255.0f);
+                    ((RouletteMenu*)DAT_011da878)->SetTileTextAlpha(8, 255.0f);
                 }
             }
             break;
@@ -421,12 +442,12 @@ void RouletteMenu::HandleRouletteInput(int aiInputId, Tile* tile)
             if (unk3e78 && !unk3e78->IsEmpty())
             {
                 SpinWheel();
-                ((RouletteMenu*)DAT_011da878)->ApplyValueToChain(5, 128.0f);
-                ((RouletteMenu*)DAT_011da878)->ApplyValueToChain(4, 128.0f);
-                ((RouletteMenu*)DAT_011da878)->ApplyValueToChain(3, 128.0f);
-                ((RouletteMenu*)DAT_011da878)->ApplyValueToChain(6, 128.0f);
-                ((RouletteMenu*)DAT_011da878)->ApplyValueToChain(7, 128.0f);
-                ((RouletteMenu*)DAT_011da878)->ApplyValueToChain(8, 128.0f);
+                ((RouletteMenu*)DAT_011da878)->SetTileTextAlpha(5, 128.0f);
+                ((RouletteMenu*)DAT_011da878)->SetTileTextAlpha(4, 128.0f);
+                ((RouletteMenu*)DAT_011da878)->SetTileTextAlpha(3, 128.0f);
+                ((RouletteMenu*)DAT_011da878)->SetTileTextAlpha(6, 128.0f);
+                ((RouletteMenu*)DAT_011da878)->SetTileTextAlpha(7, 128.0f);
+                ((RouletteMenu*)DAT_011da878)->SetTileTextAlpha(8, 128.0f);
                 unk0028 = 1;
                 FUN_004d5c60(40);
             }
@@ -443,16 +464,16 @@ void RouletteMenu::HandleRouletteInput(int aiInputId, Tile* tile)
                 unk3fe8 += 25;
             else
                 unk3fe8 += 100;
-            ((RouletteMenu*)DAT_011da878)->ApplyValueToChain(7, 255.0f);
+            ((RouletteMenu*)DAT_011da878)->SetTileTextAlpha(7, 255.0f);
             if (unk3fe8 + unk3fec >= unk3ff0)
             {
                 unk3fe8 = unk3ff0 - unk3fec;
-                ((RouletteMenu*)DAT_011da878)->ApplyValueToChain(6, 128.0f);
+                ((RouletteMenu*)DAT_011da878)->SetTileTextAlpha(6, 128.0f);
             }
             if (unk3fec + unk3fe8 >= unk4000)
             {
                 unk3fe8 = unk4000 - unk3fec;
-                ((RouletteMenu*)DAT_011da878)->ApplyValueToChain(6, 128.0f);
+                ((RouletteMenu*)DAT_011da878)->SetTileTextAlpha(6, 128.0f);
             }
             if (unk3fe4 != 10)
                 SetBetChip();
@@ -474,16 +495,16 @@ void RouletteMenu::HandleRouletteInput(int aiInputId, Tile* tile)
                 unk3fe8 = unk3fe8 % 25 ? (unk3fe8 / 25) * 25 : unk3fe8 - 25;
             else
                 unk3fe8 = unk3fe8 % 100 ? (unk3fe8 / 100) * 100 : unk3fe8 - 100;
-            ((RouletteMenu*)DAT_011da878)->ApplyValueToChain(6, 255.0f);
+            ((RouletteMenu*)DAT_011da878)->SetTileTextAlpha(6, 255.0f);
             if (unk3fe8 <= unk3ffc && unk3ffc + unk3fec < unk4000)
             {
                 unk3fe8 = unk3ffc;
-                ((RouletteMenu*)DAT_011da878)->ApplyValueToChain(7, 128.0f);
+                ((RouletteMenu*)DAT_011da878)->SetTileTextAlpha(7, 128.0f);
             }
             if (unk3fe8 <= 0)
             {
                 unk3fe8 = 0;
-                ((RouletteMenu*)DAT_011da878)->ApplyValueToChain(7, 128.0f);
+                ((RouletteMenu*)DAT_011da878)->SetTileTextAlpha(7, 128.0f);
             }
             if (unk3fe4 != 10)
                 SetBetChip();
@@ -513,13 +534,17 @@ struct FUN_007b52d0_shell
 
 // Walks the object chain at DAT_011da878 slot aiId, calling FUN_00a012d0 on each node produced by AddEight with afValue.
 // @fnv 0x007bf710
-void RouletteMenu::ApplyValueToChain(int aiId, float afValue)
+// src: XBOX_RETAIL_PDB 0x007bf710
+// pdb: RouletteMenu::SetTileTextAlpha | RouletteMenu.obj | retail, call graph, high
+// pdb params: TI, alpha
+// pdb locals: iter, pTileList
+void RouletteMenu::SetTileTextAlpha(int TI, float alpha)
 {
-    void* pObj = ((NiObjPtr*)(*(char**)((char*)DAT_011da878 + 0x2c + aiId * 4) + 4))->Modelloader_GetReferencedThis();
-    char* pCur = *(char**)((char*)DAT_011da878 + 0x2c + aiId * 4) + 4;
+    void* pObj = ((NiObjPtr*)(*(char**)((char*)DAT_011da878 + 0x2c + TI * 4) + 4))->Modelloader_GetReferencedThis();
+    char* pCur = *(char**)((char*)DAT_011da878 + 0x2c + TI * 4) + 4;
     while (pObj != 0 && pCur != 0 && *((FUN_0073ac90_shell*)pCur)->NiTPointerListBase_NiTPointerAllocator_unsigned_int_Tile_GetHead() != 0)
     {
-        (reinterpret_cast<Tile*>(*((FUN_006317a0_shell*)pCur)->AddEight(pObj, 0xfa9, afValue, 1))->*
+        (reinterpret_cast<Tile*>(*((FUN_006317a0_shell*)pCur)->AddEight(pObj, 0xfa9, alpha, 1))->*
             reinterpret_cast<void (Tile::*)()>(static_cast<void (Tile::*)(int, float, bool)>(&Tile::Tile_Set)))();
         pObj = ((FUN_007b52d0_shell*)pCur)->DereferenceIfNotNull(pObj);
     }
@@ -544,6 +569,8 @@ struct S_007bf7a0_Inner
 extern NiObjPtr DAT_011da8a0;
 // @fnv 0x007bf7a0
 // src: XBOX_PDB 0x007bf7a0
+// pdb: RouletteMenu::ResetBetChips | RouletteMenu.obj | retail, upstream name already matches, high
+// pdb locals: update1, i
 void RouletteMenu::ResetBetChips()
 {
     for (int i = 0; i < 10; i++)
@@ -587,7 +614,10 @@ int __cdecl BSsprintf(char* buffer, int size, const char* format, ...);
 static const char kNameFormat[] = "%s %s";
 
 // @fnv 0x007bf9e0
-void RouletteMenu::UpdateBetTileText()
+// src: XBOX_RETAIL_PDB 0x007bf9e0
+// pdb: RouletteMenu::UpdateEarningsString | RouletteMenu.obj | retail, call graph (shared callers), high
+// pdb locals: tstring, ilen, i
+void RouletteMenu::UpdateEarningsString()
 {
     char acText[0x104];
     int iLabelLength;
@@ -837,6 +867,8 @@ struct FUN_007b9020 : Base
 
 // Releases menu cache entries, detaches the renderer, clears scene pointers and deletes the animation object.
 // @fnv 0x007b9020
+// pdb: RouletteMenu::~RouletteMenu | RouletteMenu.obj | retail, string-set bridge, high
+// pdb locals: shadowname, tempstr, j, i
 FUN_007b9020::~FUN_007b9020()
 {
     DAT_011dea3c->SetLastAntiCheatTime();
@@ -901,6 +933,7 @@ struct PathOwner
 {
     ModelPath* TESCasino_GetModel(int);
 };
+// pdb: class ModelLoader, size 0x30 (here 0x1), 12 members
 struct ModelLoader
 {
     Scene* LoadFile(const char*, int, bool, bool, bool, bool);
@@ -1001,7 +1034,10 @@ Scene* __cdecl FUN_00450b80(int);
 void __cdecl NiTimeController_StartAnimations(Scene*);
 namespace RouletteStrings { int __cdecl strcpy_s(char*, unsigned int, const char*); }
 // @fnv 0x007b94c0
-void RouletteMenu::InitRouletteScene()
+// src: XBOX_RETAIL_PDB 0x007b94c0
+// pdb: RouletteMenu::Prepare3DElements | RouletteMenu.obj | retail, string-set bridge, high
+// pdb locals: shadowname, pTableNode, pTableAnimController, fradius, tempstr, UpdateData1, j, i
+void RouletteMenu::Prepare3DElements()
 {
     reinterpret_cast<Scene*&>(m_pRouletteWheel) = g_modelLoader->LoadFile(((PathOwner*)DAT_011da880)->TESCasino_GetModel(9)->Path(), 0, true, false, false, false);
     reinterpret_cast<Scene*&>(m_pTableNode) =
@@ -1065,7 +1101,7 @@ void RouletteMenu::InitRouletteScene()
     FUN_00450b80(1)->Attach((*(SceneHolder*)&g_011da8a0).Modelloader_GetReferencedThis(), true);
     float radius = (*(SceneHolder*)&g_011da8a0).Modelloader_GetReferencedThis()->NiAVObject_GetWorldBound()->FUN_0084d030() * 4.0;
     FUN_00450b80(1)->FUN_00b5ca70((*(SceneHolder*)&g_011da8a0).Modelloader_GetReferencedThis(), radius);
-    InitRouletteWheel();
+    PrepareBetTiles();
 }
 
 namespace fnv_007bbcf0 {
@@ -1193,6 +1229,7 @@ struct PlayerForRoulette
     int FUN_00575610(void*);
 };
 extern PlayerForRoulette* DAT_011dea3c;
+// pdb: structure CasinoData, size 0xc (here 0x2c), 3 members
 struct CasinoData
 {
     int unk00;
@@ -1327,6 +1364,9 @@ Tile* __cdecl Tile_GetTileByName(Tile*, const char*);
 
 // @fnv 0x007bbe20
 // src: COMMUNITY 0x007bbe20
+// pdb: RouletteMenu::Create | RouletteMenu.obj | retail, upstream name already matches, high
+// pdb params: apCasino, aiMinBet, aiMaxBet, aiMinWinnings, abDebugMode
+// pdb locals: cl, pin, ptile, pold_menu_tile, cd, strMessage, strtemp
 Tile* __cdecl RouletteMenu_Create(RoulettePlayerStandIn* casino, int bet, int arg3, int exchange)
 {
     MenuVirtual* oldMenu = Tile_GetMenuByClass(0x43a);
@@ -1430,7 +1470,7 @@ Tile* __cdecl RouletteMenu_Create(RoulettePlayerStandIn* casino, int bet, int ar
         ((Tile*)(*reinterpret_cast<Tile**>(reinterpret_cast<char*>(DAT_011da878) + 0x34)))->Tile_Set_00a01350(DAT_011da870, name, true);
         Tile_GetTileByName((Tile*)(*reinterpret_cast<Tile**>(reinterpret_cast<char*>(DAT_011da878) + 0x34)), DAT_010761e4)->FUN_00700320(0xfa3, 0);
         Tile_GetTileByName((Tile*)(*reinterpret_cast<Tile**>(reinterpret_cast<char*>(DAT_011da878) + 0x34)), DAT_010761e4)->Tile_SetChangeFlag(8);
-        DAT_011da878->UpdateBetTileText();
+        DAT_011da878->UpdateEarningsString();
         ((Tile*)(*reinterpret_cast<Tile**>(reinterpret_cast<char*>(DAT_011da878) + 0x38)))->Tile_Set_00a01350(0xfc4, g_011d41e0.String(), true);
         ((Tile*)(*reinterpret_cast<Tile**>(reinterpret_cast<char*>(DAT_011da878) + 0x3c)))->Tile_Set_00a01350(0xfc4, g_011d2c1c.String(), true);
         ((Tile*)(*reinterpret_cast<Tile**>(reinterpret_cast<char*>(DAT_011da878) + 0x40)))->Tile_Set_00a01350(0xfc4, g_011d2820.String(), true);
@@ -1439,10 +1479,10 @@ Tile* __cdecl RouletteMenu_Create(RoulettePlayerStandIn* casino, int bet, int ar
         ((Tile*)(*reinterpret_cast<Tile**>(reinterpret_cast<char*>(DAT_011da878) + 0x4c)))->Tile_Set_00a01350(0xfc4, g_011d33fc.String(), true);
         ((Tile*)((RouletteMenu*)DAT_011da878)->m_pInfoTile)->Tile_Set_00a01350(0xfc4, " ", true);
         ((Tile*)((RouletteMenu*)DAT_011da878)->m_pInfoTile)->FUN_00700320(0xfa3, 1);
-        DAT_011da878->ApplyValueToChain(5, DAT_0101e704);
-        DAT_011da878->ApplyValueToChain(4, DAT_0101e704);
-        DAT_011da878->ApplyValueToChain(7, DAT_0101e704);
-        DAT_011da878->InitRouletteScene();
+        DAT_011da878->SetTileTextAlpha(5, DAT_0101e704);
+        DAT_011da878->SetTileTextAlpha(4, DAT_0101e704);
+        DAT_011da878->SetTileTextAlpha(7, DAT_0101e704);
+        DAT_011da878->Prepare3DElements();
         DAT_011da878->FUN_00a1dc20(0);
         return ui;
     }
@@ -1478,15 +1518,19 @@ struct RouletteScene
 };
 // Searches the entry list for the entry with the given id, subtracts its amount, removes its object, updates the scene, and deletes the entry.
 // @fnv 0x007bf150
-bool RouletteMenu::RemoveEntryById(int id)
+// src: XBOX_RETAIL_PDB 0x007bf150
+// pdb: RouletteMenu::RemoveBet | RouletteMenu.obj | retail, object-file run extension, high
+// pdb params: aiIndex
+// pdb locals: blist, comp, delBet
+bool RouletteMenu::RemoveBet(int aiIndex)
 {
-    if (id >= 159 || id < 0)
+    if (aiIndex >= 159 || aiIndex < 0)
         return false;
     RouletteEntryNode* node = reinterpret_cast<RouletteEntryNode*>(unk3e78);
     while (node && *node->FUN_006815c0())
     {
         int entryId = (*node->FUN_006815c0())->id;
-        if (entryId == id)
+        if (entryId == aiIndex)
         {
             unk3fec -= (*node->FUN_006815c0())->amount;
             reinterpret_cast<RouletteMenu*>(this)->ResetSlotTransform((*node->FUN_006815c0())->objectIndex);
@@ -1531,6 +1575,8 @@ extern const float runtimeFloatSettingDefault898;
 }
 
 // @fnv 0x007bf480
+// pdb: RouletteMenu::HideBetChip | RouletteMenu.obj | debug, object-file gap fill, medium
+// pdb params: aiIndex
 void RouletteMenu::ResetSlotTransform(int iSlot)
 {
     using fnv_007bf480::runtimeFloatSettingDefault898;
@@ -1591,6 +1637,7 @@ struct FUN_007e6780 : Menu
 };
 // Initializes eight global string handles by calling FUN_00a00940 with string constants and -1.
 // @fnv 0x007e6780
+// pdb: TraitMenu::TraitMenu | TraitMenu.obj | retail, string-set bridge, high
 FUN_007e6780::FUN_007e6780()
 {
     DAT_011daf6c = Tile_AddUserTrait(DAT_01071ba0, -1);
@@ -1614,6 +1661,8 @@ struct Slot
 
 // @fnv 0x007bf390
 // src: XBOX_PDB 0x007bf390
+// pdb: RouletteMenu::RouletteMenu | RouletteMenu.obj | retail, object-file run extension, low
+// pdb note: debug build links it to RouletteMenu::GetBetIndex
 int RouletteMenu::GetBetIndex()
 {
     using bf::Slot;
@@ -1725,7 +1774,10 @@ struct Entry
 };
 // Builds the 159 roulette wheel entries (names, numbers, flags, positions) and computes the wheel geometry offsets.
 // @fnv 0x007b9c40
-void RouletteMenu::InitRouletteWheel()
+// src: XBOX_RETAIL_PDB 0x007b9c40
+// pdb: RouletteMenu::PrepareBetTiles | RouletteMenu.obj | retail, unique string literal, high
+// pdb locals: nChar2, numlist, pavobj, strtmp, nChar1, tChar, dist3d, i, v1, v2, v4, v3, czro, x, y
+void RouletteMenu::PrepareBetTiles()
 {
     float localRemap_65;
     float localRemap_64;
@@ -2167,7 +2219,7 @@ struct NiObj
     virtual NiObj* GetObjectByName(const FixedStr& arName);
     void FUN_00450f90(bool abHidden);
     bool GetAppCulled_00456610();
-    NiObj* FUN_0043b4a0(int aiIndex);
+    NiObj* FUN_0043b4a0(int i);
     NiPoint3* GetTranslate_0043c490();
     void NiAVObject_SetTranslate_004bc1f0(float x, float y, float z);
     void NiAVObject_Update(const ColorFlags& arFlags);
@@ -2336,7 +2388,7 @@ struct CasinoLimits
 
 struct NotifyObj
 {
-    void FUN_0060c9c0(int a1);
+    void FUN_0060c9c0(int abEnabled);
 };
 
 struct CasinoX
@@ -2383,6 +2435,8 @@ static bool s_bValidBet;
 
 // @fnv 0x007bd2a0
 // src: XBOX_PDB 0x007bd2a0
+// pdb: RouletteMenu::DoIdle | RouletteMenu.obj | retail, unique string literal, high
+// pdb locals: ielaspedMillis, iyAxis, fyAxisRatio, bisMenuOnTop, iDebugAxis, fxAxisRatio, ixAxis, cimaxAxisValue, i, pstring, tempcont, pScript, UpdateData1, loc, iWinningLevel, totalWon, winmsg, iMax, iCurrentWinnings, betInfo, betindex, won, valueList, movementDamper ...
 void RouletteMenu::DoIdle_007bd2a0()
 {
     using fnv_007bd2a0::InterfaceMgr;
@@ -2561,7 +2615,7 @@ void RouletteMenu::DoIdle_007bd2a0()
             m_pInfoTile->FUN_00700320(0xfa3, 0);
             reinterpret_cast<AnimCtrl*>(m_pAnimCtrl)->FUN_0047aab0(reinterpret_cast<AnimSeq*>(m_apSpinSeq[m_iRouletteResult]), 0, 0, 1.0f, 0.0f, 0);
             m_bSpinning = true;
-            RotateRouletteWheelToResult(m_iResult);
+            ShiftWheelTexture(m_iResult);
         }
         if (1)
         {
@@ -2586,26 +2640,26 @@ void RouletteMenu::DoIdle_007bd2a0()
     case 3: {
         m_iFadeIndex = 4;
         int iWinnings = 0;
-        ((RouletteMenu*)DAT_011da878)->ApplyValueToChain(5, 255.0f);
-        ((RouletteMenu*)DAT_011da878)->ApplyValueToChain(3, 255.0f);
-        ((RouletteMenu*)DAT_011da878)->ApplyValueToChain(4, 128.0f);
+        ((RouletteMenu*)DAT_011da878)->SetTileTextAlpha(5, 255.0f);
+        ((RouletteMenu*)DAT_011da878)->SetTileTextAlpha(3, 255.0f);
+        ((RouletteMenu*)DAT_011da878)->SetTileTextAlpha(4, 128.0f);
         if (m_iBet < m_iMinBet)
         {
-            ((RouletteMenu*)DAT_011da878)->ApplyValueToChain(7, 128.0f);
+            ((RouletteMenu*)DAT_011da878)->SetTileTextAlpha(7, 128.0f);
         }
         else
         {
-            ((RouletteMenu*)DAT_011da878)->ApplyValueToChain(7, 255.0f);
+            ((RouletteMenu*)DAT_011da878)->SetTileTextAlpha(7, 255.0f);
         }
         if (m_iBet > m_iMaxBet || m_iBet == m_iChips)
         {
-            ((RouletteMenu*)DAT_011da878)->ApplyValueToChain(7, 128.0f);
+            ((RouletteMenu*)DAT_011da878)->SetTileTextAlpha(7, 128.0f);
         }
         else
         {
-            ((RouletteMenu*)DAT_011da878)->ApplyValueToChain(7, 255.0f);
+            ((RouletteMenu*)DAT_011da878)->SetTileTextAlpha(7, 255.0f);
         }
-        ((RouletteMenu*)DAT_011da878)->ApplyValueToChain(8, 255.0f);
+        ((RouletteMenu*)DAT_011da878)->SetTileTextAlpha(8, 255.0f);
         while (m_pBets && *m_pBets->FUN_006815c0())
         {
             bool bWon = false;
@@ -2730,7 +2784,7 @@ void RouletteMenu::DoIdle_007bd2a0()
         reinterpret_cast<Tile*>(m_pChipsTile)->SetTraitFloat(DAT_011da86c, 1.0f);
         m_pChipsTile->FUN_00700320(DAT_011da86c, m_iChips);
         DAT_011da87c->iEarnings += iWinnings;
-        UpdateBetTileText();
+        UpdateEarningsString();
         char szResult[0x104];
         if (iWinnings > 0)
         {
@@ -2794,9 +2848,9 @@ void RouletteMenu::DoIdle_007bd2a0()
         }
         if (m_bLimitUp)
         {
-            SetRouletteMenuTile();
+            RouletteMenu_Close();
         }
-        ((RouletteMenu*)DAT_011da878)->ApplyValueToChain(6, 255.0f);
+        ((RouletteMenu*)DAT_011da878)->SetTileTextAlpha(6, 255.0f);
         break;
     }
     case 4:
@@ -2874,7 +2928,7 @@ void RouletteMenu::DoIdle_007bd2a0()
             m_iBet = m_iChips - m_iTotalBet;
             reinterpret_cast<Tile*>(((RouletteMenu*)DAT_011da878)->m_pMaxBetTile)->SetTraitFloat(DAT_011da870, 1.0f);
             ((RouletteMenu*)DAT_011da878)->m_pMaxBetTile->FUN_00700320(DAT_011da870, m_iBet);
-            ((RouletteMenu*)DAT_011da878)->ApplyValueToChain(6, 128.0f);
+            ((RouletteMenu*)DAT_011da878)->SetTileTextAlpha(6, 128.0f);
         }
         if (m_iChips < m_iMinBet)
         {
@@ -2883,7 +2937,7 @@ void RouletteMenu::DoIdle_007bd2a0()
             DispatchMessageToSink(szBroke, 0, "Interface\\Icons\\Message Icons\\glow_message_vaultboy_surprised.dds", 0,
                                   2.0f, 0);
             reinterpret_cast<RouletteAudio*>(BSAudio_QInstance())->GetSoundHandleByEditorID("UIPopUpMessageGeneral", 0x121).Play(false);
-            SetRouletteMenuTile();
+            RouletteMenu_Close();
         }
     }
 }

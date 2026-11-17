@@ -3,13 +3,14 @@
 #include "IMemoryHeap.h"
 #include "RecursiveSpinLock.h"
 
+// pdb: class ZeroOverheadHeap, size 0x20 (here 0x40), bases: IMemoryHeap, 6 members
 class ZeroOverheadHeap : public IMemoryHeap
 {
 public:
     virtual ~ZeroOverheadHeap();
     virtual const char* GetName();
-    virtual void* Allocate(unsigned int size, unsigned int alignment);
-    virtual void Deallocate(void* pointer, unsigned int alignment);
+    virtual void* Allocate(unsigned int aiSize, unsigned int alignment);
+    virtual void Deallocate(void* apMem, unsigned int alignment);
     virtual bool ContainsBlockImpl(const void* pointer);
     virtual void CheckHeapIntegrity();
     virtual void GetHeapStats(MemoryHeapStats* stats, bool full);

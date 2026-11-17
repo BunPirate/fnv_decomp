@@ -63,6 +63,7 @@ class Point3Offset;
 class TeleportableReference;
 struct TwoIntegerValues;
 
+// pdb: class ExtraDataList, size 0x20, bases: BaseExtraList, 0 members
 class ExtraDataList : public BaseExtraList
 {
 public:
@@ -70,10 +71,10 @@ public:
 
     ExtraDataList();
     InventoryChanges* GetContainerChangeData();
-    void SetContainerChanges(InventoryChanges* changes);
+    void SetContainerChanges(InventoryChanges* apChanges);
     bool HasExtraDataType0x2F();
-    bool HasOnlyAllowedExtraData(int type);
-    bool CheckExtraByType(int type);
+    bool IsExtraDefaultforContainer(int type);
+    bool GetWeaponModSlotActive(int slot);
     void RemoveExtraDataType0x15();
     LockExtraData* GetLock();
     TESForm* GetOwnerForm();
@@ -82,18 +83,18 @@ public:
     short GetCount();
     void CopyFrom(ExtraDataList* source);
     void SetCount(int count);
-    void SetExtraHealth(float health);
+    void SetExtraHealth(float afHealth);
     ScriptLocals* GetScriptLocalData();
     RegionPoint* GetStartingPositionData();
     TESObjectREFR* GetReplacementReference();
-    void AddGuardingActor(Actor* actor);
+    void AddGuard(Actor* actor);
     void AddOrCreateExtraItem(void* crime, float stamp);
     void InitLoadGame(BGSLoadFormBuffer* buffer, TESForm* form);
     // 0x0041cd70 / 0x0041cda0 / 0x0041cc90: the package of the ExtraTresPassPackage extra (type 0x1a, +0xc)
     TrespassPackage* GetTrespassPackage();
     void ClearTrespassPackage();
     void SetTrespassPackage(TrespassPackage* package);
-    ExtraRefractionProperty* GetAlphaExtra();
+    ExtraRefractionProperty* GetRefractionPropertyExtra();
     TESPackage* GetPackageOverride();
     Actor* GetTalkingActor();
     void SetPackageOverride(TESPackage*, int, Actor*, bool, bool, bool);
@@ -109,11 +110,11 @@ public:
     void SetSavedHavokData(char* data);
     unsigned char GetWeaponModIndex();
     void SetLeveledItemIndex(int index);
-    void GetLeveledItemData(float& multiplier, int& count);
+    void GetLevCreaMultiplier(float& multiplier, int& count);
     void CallExtraDataListMethod35(TESObjectCELL* cell);
-    void CallExtraDataListMethod36(TESObjectREFR* reference);
+    void SetRagDollData(TESObjectREFR* reference);
     float GetRadius();
-    NavMeshPortalData* GetExtraNavMeshPortal();
+    NavMeshPortalData* GetNavMeshPortal();
     TESObjectREFR* GetTargetObjectReference();
     TextureReceiver* GetStartingAngle(void* data);
     void Set3DObject(NiAVObject* object);
@@ -125,8 +126,8 @@ public:
     void BaseExtraList_RemoveAll(bool flag);
     InventoryChanges* ExtraDataList_IsEnableStateInverse();
     bool ExtraDataList_HasOnlyOwnershipNonDefault();
-    void* ExtraDataList_SetEnableStateInverse(unsigned char type);
-    void TESObjectCELL_SetCollisionGeometryDisplay(bool flag);
+    void* ExtraDataList_SetEnableStateInverse(unsigned char abVal);
+    void TESObjectCELL_SetCollisionGeometryDisplay(bool abTF);
     bool TESObjectCELL_ToggleCollisionGeometry();
 
     ExtraContainerChanges* FUN_00418520();
@@ -146,11 +147,11 @@ public:
     ScriptLocals* ExtraDataList_GetScriptLocals();
     void ExtraDataList_GetCreatureAwakeSound(BSSoundHandle* handle);
     void ExtraDataList_SetCreatureAwakeSound(BSSoundHandle* handle);
-    void ExtraDataList_SetReflectsRef(TESForm* form, bool flag);
-    void ExtraDataList_SetRefractsRef(TESForm* form, bool flag);
+    void ExtraDataList_SetReflectsRef(TESForm* apRef, bool bValue);
+    void ExtraDataList_SetRefractsRef(TESForm* apRef, bool bValue);
     TESModel* ExtraDataList_GetModelSwap();
     float FUN_00422450();
-    void FUN_0041f840();
+    void SetWaterLightRef();
     bool ExtraDataList_GetWorn(bool flag);
     void ExtraDataList_SetCanNotWear(bool flag);
 
@@ -162,23 +163,23 @@ public:
     // 0x00419700
     void SetOwnership(TESForm* apOwner);
     // 0x004197d0
-    void SetGlobalForm(TESGlobal* apGlobal);
+    void SetGlobal(TESGlobal* apGlobal);
     // 0x004198a0
     void SetRank(int aiRank);
     // 0x00419ad0
     void SetCount(short asCount);
     // 0x0042eb60
-    void SetAmmoExtra(TESForm* apAmmo, int aiCount);
+    void SetAmmoExtra(TESForm* apAmmoType, int aiCount);
     // 0x0041aa20
-    void SetEquippedState(bool abWorn, bool abLeft);
+    void SetEquippedState(bool abWorn, bool abwearleft);
     // 0x0042dde0
     void SetHotKey(unsigned char acKey);
     // 0x0041ac30
-    void SetSeedIndex(unsigned char acSeed);
+    void SetSeedIndex(unsigned char aiSeed);
     // 0x0041d280
     void SetLeveledItem(int aiLevelItem);
     // 0x0041d330
-    void SetLevelItemExtraFlag(unsigned char acFlag);
+    void SetLevelItemExtraFlag(unsigned char bflag);
     // 0x00419970
     void SetHealth(float afHealth);
     // 0x0041b580
@@ -206,13 +207,13 @@ public:
     // 0x00419380
     void SetAudioMarkerPtr(MediaLocation* apData);
     // 0x004194b0
-    void SetAudioBuoyMarkerPtr(TwoIntegerValues* apData);
+    void SetAudioBuoyMarkerPtr(TwoIntegerValues* apAudioBuoyData);
     // 0x0041ad00
     void RelocateTo(TESWorldSpace* apWorld, TESObjectCELL* apCell, NiPoint3* apPos, float afAngle);
     // 0x0041d5b0
-    void SetRagDollDataFromCopy(RagDollData* apData);
+    void SetRagDollDataFromCopy(RagDollData* apRagData);
     // 0x0041d950
-    void SetWeaponModFlags(int* apData);
+    void SetWeaponModFlags(int* aNormal);
     // 0x00422480
     void SetCombatOpponent(Actor* apFollower);
     // 0x00419dc0
@@ -224,11 +225,11 @@ public:
     // 0x0041e160
     void SetWaterType(TESWaterForm* apWater);
     // 0x0041bd10
-    void SetMusicType(BGSMusicType* apMusic);
+    void SetMusicType(BGSMusicType* apType);
     // 0x0041c090
     void SetAcousticSpace(BGSAcousticSpace* apSpace);
     // 0x0041c490
-    void SetCanopyShadowMaskData(int aiMask, NiCanopyTexture* apTexture, CanopyShadowMaskData** appData);
+    void SetCanopyShadowMaskData(int aeState, NiCanopyTexture* apTex, CanopyShadowMaskData** apOutRect);
     // 0x0041c190
     void SetClimate(TESClimate* apClimate);
     // 0x0041c290
@@ -238,14 +239,14 @@ public:
     // 0x0041c7f0
     void SetActivateRef(TESObjectREFR* apRef);
     // 0x0041c930
-    void SetPackageOverride(TESPackage* apPackage, int aiFlags, int aiTime, unsigned char acA, unsigned char acB,
-                            unsigned char acC);
+    void SetPackageOverride(TESPackage* apPack, int aiIndex, int apRef, unsigned char abcomplete, unsigned char abactivated,
+                            unsigned char abDoneOnce);
     // 0x0041cc90
     void SetActivePackage(TESPackage* apPackage);
     // 0x0041d700
-    void SetPackageDoneState(TESPackage* apPackage, unsigned char acDone);
+    void SetPackageDoneState(TESPackage* apPack, unsigned char acDay);
     // 0x00418550
-    void SetEnableStateChildren(TESObjectREFR* apRef);
+    void SetOriginalReferenceExtra(TESObjectREFR* apRef);
     // 0x0041da40
     void SetEnableStateParentRef(TESObjectREFR* apParent);
     // 0x0041dc70
@@ -269,7 +270,7 @@ public:
     // 0x00421540
     void SetLevCreaModifier(int aiModifier);
     // 0x00422750
-    void SetRefractionAmount(bool abSet, float afRefraction);
+    void SetRefractionAmount(bool abflag, float afRefractionPower);
     // 0x0041ab70
     void SetCannotWear(bool abCanNotWear);
     // 0x00422220
@@ -281,37 +282,37 @@ public:
     // 0x0042e800
     ExtraFactionChanges* GetFactionChangesExtra();
     // 0x0042e2c0
-    void SetPortalRefData(BSExtraData* apPortal);
+    void SetNavMeshPortal(BSExtraData* apPortal);
     // 0x0041fa60
     void AddPrimitive(BGSPrimitive* apPrimitive);
     // 0x00422050
-    void SetMultiBound(BSMultiBoundNode* apMultiBound);
+    void SetMultiBound(BSMultiBoundNode* apBound);
     // 0x00420f00
     void SetRoomNode(BSRoomNode* apRoom);
     // 0x0041fc10
-    void SetPatrolRefData(PatrolRefData* apData);
+    void SetPatrolRefData(PatrolRefData* apPatrolRefData);
     // 0x00422150
-    void SetOcclusionShape(BSOcclusionShapeNode* apShape);
+    void SetOcclusionPlane(BSOcclusionShapeNode* apShape);
     // 0x0041fec0
     void SetRoomRefData(PatrolReferenceData* apData);
     // 0x00420a60
     void SetRoomLinkedRoomRef(int aiIndex, TESObjectREFR* apRoom);
     // 0x00420c10
-    void AddRoomLinkedRoomRef(TESObjectREFR* apRoom);
+    void AddRoomLinkedRoomRef(TESObjectREFR* apRef);
     // 0x00420870
     void SetRoomIsMaster(bool abMaster);
     // 0x00420fd0
-    void SetCollisionData(CollisionData* apData);
+    void SetCollisionData(CollisionData* apCollisionData);
     // 0x0042ef20
     void SetExtraSayTopicInfoOnceADayExtra(TESTopicInfo* apInfo);
     // 0x00420e00
     void SetPortalNode(BSPortalNode* apPortal);
     // 0x0042f200
-    void SetIgnoredBySandbox(bool abIgnored);
+    void SetIgnoredBySandbox(bool abVal);
     // 0x0042f420
-    ExtraFollowerSwimBreadcrumbs* GetFollowerSwimBreadcrumbsExtra();
+    ExtraFollowerSwimBreadcrumbs* GetOrCreateExtraFollowerSwimBreadcrumbs();
     // 0x0042e380
     void RemoveExtraByType(unsigned char acSlot);
     // 0x004103d0
-    void AddExtraCopy(BSExtraData* apExtra);
+    void AddExtraCopy(BSExtraData* apCopy);
 };

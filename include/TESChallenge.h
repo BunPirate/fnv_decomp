@@ -29,20 +29,20 @@ public:
     virtual void InitializeComponent();
     virtual bool LoadForm(TESFile* file);
     virtual void SaveForm(void);
-    virtual void SaveGame(BGSSaveFormBuffer* arg);
-    virtual void LoadGame(BGSLoadFormBuffer* buffer);
+    virtual void SaveGame(BGSSaveFormBuffer* apSaveGameBuffer);
+    virtual void LoadGame(BGSLoadFormBuffer* apLoadGameBuffer);
     virtual void InitItem();
     virtual void CopyFrom(const TESForm* form);
     virtual bool Compare(TESForm* form);
 
     void ResetFormData();
-    bool Load(TESFile* file);
+    bool Load(TESFile* apFile);
     void Initialize();
     void CopyFromChallenge(TESForm* form);
     unsigned short __thiscall TESCaravanCard_GetSaveSize(unsigned int aiFlags);
     void __thiscall TESCaravanCard_SaveGame(unsigned int aiFlags);
     void __thiscall TESCaravanCard_LoadGame(unsigned int aiFlags, unsigned int aiCurrentFlags);
-    void SaveGame_005f5780(BGSSaveFormBuffer* buffer);
+    void SaveGame_005f5780(BGSSaveFormBuffer* apSaveGameBuffer);
     void SetFormOne(TESForm* form);
     void SetFormTwo(TESForm* form);
     TESForm* GetFormOne();
@@ -59,8 +59,8 @@ public:
     int GetCompleted();
     int GetRemovedRecurring();
     void ClearProgress();
-    void MarkCompleted(bool completed);
-    void SetCompletedRecurring(bool completed);
+    void MarkCompleted(bool abVal);
+    void SetCompletedRecurring(bool abVal);
     void IncrementProgress(int amount);
     int GetProgressValue();
     void SetShowZero(bool show);

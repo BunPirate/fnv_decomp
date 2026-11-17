@@ -11,6 +11,8 @@ extern float DAT_01011d78;
 
 // @fnv 0x00ce0110
 // src: GUESS 0x00ce0110 (confidence: low)
+// pdb: hkaLookAtIkSolver::cartesianFromSpherical | hkaLookAtIkSolver.obj | retail, object-file run extension, low
+// pdb params: sphericalInCartesianOut
 void __cdecl HkalookatiksolverGsEhscNogsNoehsc_UpdateState_00ce0110(float* v)
 {
     volatile float x = v[0];

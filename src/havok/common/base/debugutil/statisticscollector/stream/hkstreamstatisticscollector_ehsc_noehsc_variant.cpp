@@ -33,7 +33,7 @@ inline hkMemoryRouter* audio()
 {
     return (hkMemoryRouter*)hkMemoryRouter_getInstance();
 }
-extern "C" void __cdecl hkArrayUtil__reserve(hkMemoryAllocator* alloc, void* arr, int capacity, int elemSize);
+extern "C" void __cdecl hkArrayUtil__reserve(hkMemoryAllocator* mem, void* array, int numElem, int sizeElem);
 extern "C" void __cdecl hkString_memCpy(void* dst, const void* src, int n);
 union Swap16
 {
@@ -59,9 +59,9 @@ struct Obj
 {
     int pad[5];
     hkArray<char> m14;
-    void SetData(const void* src, int n, hkBool swap);
+    void hkStreamStatisticsCollector_setDataByCopying(const void* buffer, int length, hkBool endianSwap);
 };
-void __cdecl ResizeAudioStream(void* heap, void* arr, int elemSize);
+void __cdecl ResizeAudioStream(void* mem, void* array, int sizeElem);
 static int* _newCommand(hkArray<char>* a, int n);
 int* __cdecl fnv_caller(hkArray<char>* a, int n);
 inline void* operator new(size_t, void* p)
@@ -116,12 +116,12 @@ struct MonitorStrings
 extern "C" int __cdecl hkString_strCmp(const char* a, const char* b);
 // src: HAVOK_LIB 0x00ddf070
 static __declspec(noinline) MonitorNode* _newNode(const char* name, MonitorStrings* strings, MonitorNode* parent,
-                                                      int first, int second)
+                                                      int allocSize, int stringTable)
 {
     if (!name)
         name = "?";
-    if (!second)
-        second = first;
+    if (!stringTable)
+        stringTable = allocSize;
     MonitorNode* node = 0;
     for (int i = 0; parent && i < parent->children.size; ++i)
     {
@@ -151,12 +151,12 @@ static __declspec(noinline) MonitorNode* _newNode(const char* name, MonitorStrin
         node = storage ? new (storage) MonitorNode(parent, name, 1) : 0;
     }
     ++node->count0;
-    node->value0 += (float)first;
+    node->value0 += (float)allocSize;
     ++node->count1;
-    node->value1 += (float)second;
+    node->value1 += (float)stringTable;
     return node;
 }
-void __cdecl AggregateChildValues(MonitorNode* node, MonitorStrings* strings);
+void __cdecl _sumNodes(MonitorNode* n, MonitorStrings* stringTable);
 // hkArray.h identifies hkMemoryRouter as the shared hkMemoryRouter definition:
 // FUN_00c85750 is the TLS accessor, and its heap allocator is at +0x10.
 template <class T, class Allocator> __forceinline hkArray<T, Allocator>::~hkArray()
@@ -176,9 +176,9 @@ class ObjDDF9
   public:
     ~ObjDDF9() throw()
     {
-        ClearItems();
+        hkMonitorStreamAnalyzer_Node_dtor();
     }
-    void ClearItems() throw();
+    void hkMonitorStreamAnalyzer_Node_dtor() throw();
     static void operator delete(void* p, unsigned int nbytes)
     {
         hkMemoryRouter::getInstance().heap().blockFree(p, nbytes);
@@ -186,8 +186,8 @@ class ObjDDF9
     int unk00, unk04, unk08, unk0C, unk10, unk14, unk18, unk1C, unk20, unk24, unk28, unk2C;
     int unk30, unk34, unk38, unk3C, unk40, unk44, unk48, unk4C, unk50, unk54;
 };
-void __stdcall hkStreamStatisticsCollector_makeTree(hkArray<ObjDDF9*>& kArray, int iParam) throw();
-void __stdcall ClearAllItems(int iUnused0, int iUnused1);
+void __stdcall hkStreamStatisticsCollector_makeTree(hkArray<ObjDDF9*>& m_nodesOut, int stringTable) throw();
+void __stdcall hkStreamStatisticsCollector_writeStatistics(int outstream, int reportLevel);
 extern int DAT_010d8040;
 struct SubBase
 {
@@ -232,14 +232,14 @@ struct FUN_00ddf170_cls
     SpawnedHandle m_14;
     SpawnedHandle m_20;
 
-    FUN_00ddf170_cls* hkStreamStatisticsCollector_hkStreamStatisticsCollector(int a1, int a2);
+    FUN_00ddf170_cls* hkStreamStatisticsCollector_hkStreamStatisticsCollector(int vtblReg, int memSize);
 };
 int hkString_strLen(const char* s);
 struct StrPacker
 {
     int unk00, unk04, unk08, unk0c, unk10;
     hkArray<char> m14;
-    void hkStreamStatisticsCollector_pushDir(const char* str);
+    void hkStreamStatisticsCollector_pushDir(const char* dirName);
 };
 struct FUN_00ddeff0
 {
@@ -279,7 +279,7 @@ struct FUN_00ddf640_Cls : Obj
 
 struct MonitorTreeNode
 {
-    void ClearItems();
+    void hkMonitorStreamAnalyzer_Node_dtor();
 };
 
 extern char DAT_01063cbc;
@@ -309,34 +309,37 @@ template <class T> __forceinline void hkArrayBase<T>::_pushBack(hkMemoryAllocato
 
 struct MonitorTreeBuilder : Obj
 {
-    void hkStreamStatisticsCollector_makeTree(hkArray<MonitorNode*>* roots, MonitorStrings* strings);
+    void hkStreamStatisticsCollector_makeTree(hkArray<MonitorNode*>* m_nodesOut, MonitorStrings* stringTable);
 };
 
 // @fnv 0x00ddf740
 // src: HAVOK_LIB 0x00ddf740
-void MonitorTreeBuilder::hkStreamStatisticsCollector_makeTree(hkArray<MonitorNode*>* roots, MonitorStrings* strings)
+// pdb: hkStreamStatisticsCollector::makeTree | hkStreamStatisticsCollector.obj | retail, upstream name already matches, high
+// pdb params: m_nodesOut, stringTable
+// pdb locals: node, currentStack, assertBuf, ostr, n
+void MonitorTreeBuilder::hkStreamStatisticsCollector_makeTree(hkArray<MonitorNode*>* m_nodesOut, MonitorStrings* stringTable)
 {
     hkArray<MonitorNode*> stack;
     MonitorNode* top;
-    if (roots->m_iElementCount > 0)
+    if (m_nodesOut->m_iElementCount > 0)
     {
-        top = roots->m_data[0];
-        while (roots->m_iElementCount > 1)
+        top = m_nodesOut->m_data[0];
+        while (m_nodesOut->m_iElementCount > 1)
         {
-            MonitorNode* p = roots->back();
+            MonitorNode* p = m_nodesOut->back();
             if (p)
             {
-                ((MonitorTreeNode*)p)->ClearItems();
+                ((MonitorTreeNode*)p)->hkMonitorStreamAnalyzer_Node_dtor();
                 audio()->m_heap->blockFree(p, sizeof(MonitorNode));
             }
-            roots->popBack();
+            m_nodesOut->popBack();
         }
     }
     else
     {
         void* storage = audio()->m_heap->blockAlloc(sizeof(MonitorNode));
         top = storage ? new (storage) MonitorNode(0, &DAT_01063cbc, 1) : 0;
-        roots->pushBack(top);
+        m_nodesOut->pushBack(top);
     }
     stack.pushBack(top);
 
@@ -352,17 +355,17 @@ void MonitorTreeBuilder::hkStreamStatisticsCollector_makeTree(hkArray<MonitorNod
             break;
         case 'P': {
             MonitorNode* parent = stack.back();
-            MonitorNode* child = _newNode(name, strings, parent, rec->a, rec->b);
+            MonitorNode* child = _newNode(name, stringTable, parent, rec->a, rec->b);
             stack.pushBack(child);
             break;
         }
         case 'C':
-            _newNode(name, strings, stack.back(), rec->a, rec->b);
+            _newNode(name, stringTable, stack.back(), rec->a, rec->b);
             break;
         default:
             return;
         }
         off += step;
     }
-    AggregateChildValues(top, strings);
+    _sumNodes(top, stringTable);
 }

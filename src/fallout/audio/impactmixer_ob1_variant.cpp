@@ -42,7 +42,7 @@ struct DummyFlags
 };
 struct FUN_00838750_shell
 {
-    bool bhkCharacterController_GetOnStairs();
+    bool bhkCharacterController_QOnStairs();
 };
 struct FUN_00541570_shell
 {
@@ -59,7 +59,7 @@ struct FUN_0063a3c0_cls
     int unk04;
 
     void BaseRelease();
-    FUN_0063a3c0_cls* FUN_0063a3c0(unsigned int auiFlags);
+    FUN_0063a3c0_cls* SkySound_ScalarDtor(unsigned int auiFlags);
     static void operator delete(void* apMemory) throw();
 };
 struct BGSSoundDescriptor;
@@ -89,15 +89,15 @@ struct NavQueryResult
 };
 struct CellNavInfo
 {
-    void TESObjectLAND_GetCoordData(NavQueryResult* pkResult, NiPoint3* pkPos, int iFlag);
-    MaterialRecord* TESObjectLAND_GetMainTexture_0053a630(unsigned char ucA, unsigned short usB);
+    void TESObjectLAND_GetCoordData(NavQueryResult* cdata, NiPoint3* coord, int forcetovertex);
+    MaterialRecord* TESObjectLAND_GetMainTexture_0053a630(unsigned char acBlock, unsigned short asVertIndex);
 };
 struct FootstepCell
 {
     bool FUN_00425fd0();
     bool FUN_004518e0();
     CellNavInfo* TESObjectCELL_GetLand();
-    bool TESObjectCELL_GetLandHeight(NiPoint3* pkPos, float* pfHeight);
+    bool TESObjectCELL_GetLandHeight(NiPoint3* arPos, float* arHeight);
 };
 struct TESStandIn
 {
@@ -108,12 +108,12 @@ extern TESStandIn* g_TES_011dea10;
 struct DataHandlerStandIn
 {
     FootstepCell* FUN_00461bc0(float fX, float fY, TESWorldSpace* pkWorld);
-    BGSImpactData* FUN_004616c0(const char* pEditorID);
+    BGSImpactData* GetSound(const char* soundID);
 };
 extern DataHandlerStandIn* g_dataHandler_011c3f2c;
 int __cdecl GetTypeValue(int iMaterial);
-float __cdecl FUN_00476b70(float fMin, float fScaledValue);
-bool __cdecl FUN_0082eca0(BGSImpactData* pkImpact, NiPoint3 kPos, float fScale);
+float __cdecl FUN_00476b70(float afMin, float afMax);
+bool __cdecl SoundDistanceTest(BGSImpactData* apSound, NiPoint3 aLoc, float aMod);
 extern float g_fFootstepRand_0101e2bc;
 static const char s_szBabyLand[] = "FSTBabyLand";
 __declspec(selectany) extern const char g_szFootstepEnd[] = "";
@@ -124,7 +124,7 @@ struct SetObj
 };
 struct StrObj
 {
-    int FUN_004616c0(const char* s);
+    int GetSound(const char* soundID);
 };
 extern SetObj DAT_011dd9c8;
 extern SetObj DAT_011dd9b0;
@@ -215,7 +215,7 @@ static const char kStr_PHYChainlink[] = "PHYChainlink";
 static const char kStr_PHYTile[] = "PHYTile";
 static const char kStr_PHYCarpet[] = "PHYCarpet";
 static const char kStr_PHYTumbleweed[] = "PHYTumbleweed";
-int __cdecl ImpactMixer_GetSoundForType(int type, float fA, float fB);
+int __cdecl ImpactMixer_GetSoundForType(int aiType, float afMass, float afVelocity);
 struct Point3;
 class TESSound;
 struct S_0083a930_EntryData
@@ -316,7 +316,7 @@ extern S_0083a930_Setting DAT_011dd900;
 extern Actor* DAT_011dea3c;
 extern const float DAT_010231a8;
 bool FUN_0082eca0(TESSound* sound, Point3 pos, float volume);
-void PlayWeaponImpactSound(TESObjectREFR* ref, int type);
+void ImpactMixer_PlayEquipSound(TESObjectREFR* apRef, int aiType);
 struct FootstepQuery
 {
     int unk00;
@@ -639,7 +639,7 @@ struct SkinOps
     int unk408;
     int unk40c;
     MaterialOps material;
-    bool bhkCharacterController_GetOnStairs();
+    bool bhkCharacterController_QOnStairs();
 };
 extern S_0083a930_Setting DAT_011dd988;
 extern SoundOps* DAT_011dd860;
@@ -654,7 +654,7 @@ extern FootstepEntry DAT_011dd650[];
 void PlayFootstepSound(Actor* ref, int foot);
 float BSMIN(float a, float b);
 float BSMAX_00404010(float a, float b);
-void PlayBlockSound(int aUnused, TESObjectWEAP* a1, float x0, float y0, float z0, float x1, float y1, float z1);
+void ImpactMixer_PlayWeaponBlock(int aUnused, TESObjectWEAP* a1, float x0, float y0, float z0, float x1, float y1, float z1);
 
 inline void* operator new(unsigned int, void* location)
 {
@@ -692,11 +692,11 @@ inline NiPoint3 NiPoint3::operator-(const NiPoint3& other) const
     const NiPoint3* self = this;
     return NiPoint3(self->x - other.x, self->y - other.y, self->z - other.z);
 }
-inline NiPoint3 NiPoint3::Cross(const NiPoint3& axis) const
+inline NiPoint3 NiPoint3::Cross(const NiPoint3& pt) const
 {
     const NiPoint3* self = this;
-    return NiPoint3(self->y * axis.z - self->z * axis.y, self->z * axis.x - self->x * axis.z,
-                    self->x * axis.y - self->y * axis.x);
+    return NiPoint3(self->y * pt.z - self->z * pt.y, self->z * pt.x - self->x * pt.z,
+                    self->x * pt.y - self->y * pt.x);
 }
 
 struct FilterData
@@ -848,45 +848,48 @@ struct CollisionGenerator : CollisionShape
         return Object_DispatchCommandFour(size);
     }
     static void operator delete(void*);
-    CollisionGenerator(unsigned int count, NiPoint3* vertices, int unused, FilterData* _filters, int a, int b, int c,
-                       int d, void* data);
+    CollisionGenerator(unsigned int usVertices, NiPoint3* pkVertex, int pkNormal, FilterData* pkColor, int pkTexture, int usNumTextureSets, int eNBTMethod,
+                       int usTriangles, void* pusTriList);
 };
 // @fnv 0x00c55d50
 // src: COMMUNITY 0x00c55d50
-CollisionShape* __cdecl BSTestObjects_CreateBox(NiPoint3* start, NiPoint3* end, float forwardExtent, float backwardExtent,
-                                     float upExtent, float downExtent, FilterData* nearFilter, FilterData* farFilter)
+// pdb: BSTestObjects::CreateBox | BSTestObjects.obj | retail, object-file run extension, high
+// pdb params: arExtents, apColor
+// pdb locals: shape, vertices, indices, colors, i
+CollisionShape* __cdecl BSTestObjects_CreateBox(NiPoint3* arLeftCorner, NiPoint3* arRightCorner, float afForwardDepth, float afBackwardDepth,
+                                     float afUpwardHeight, float afDownwardHeight, FilterData* apLeftColor, FilterData* apRightColor)
 {
     NiPoint3* verticesX;
     verticesX = new NiPoint3[8];
-    NiPoint3 directionX = *start - *end;
+    NiPoint3 directionX = *arLeftCorner - *arRightCorner;
     NiPoint3 verticalAxisB(0.0f, 0.0f, 1.0f);
     NiPoint3 crossVal2 = directionX.Cross(verticalAxisB);
     crossVal2.z = 0.0f;
     crossVal2.Unitize();
-    NiPoint3 forwardVectorB = crossVal2 * forwardExtent;
-    NiPoint3 reverseVector2 = crossVal2 * (-backwardExtent);
-    NiPoint3 offset(0.0f, 0.0f, upExtent);
-    NiPoint3 below2(0.0f, 0.0f, -downExtent);
-    verticesX[0] = offset + (reverseVector2 + *end);
-    verticesX[1] = offset + (forwardVectorB + *end);
-    verticesX[2] = below2 + (reverseVector2 + *end);
-    verticesX[3] = below2 + (forwardVectorB + *end);
-    verticesX[4] = offset + (reverseVector2 + *start);
-    verticesX[5] = offset + (forwardVectorB + *start);
-    verticesX[6] = below2 + (reverseVector2 + *start);
-    verticesX[7] = (forwardVectorB + *start).FUN_00439e90(below2);
+    NiPoint3 forwardVectorB = crossVal2 * afForwardDepth;
+    NiPoint3 reverseVector2 = crossVal2 * (-afBackwardDepth);
+    NiPoint3 offset(0.0f, 0.0f, afUpwardHeight);
+    NiPoint3 below2(0.0f, 0.0f, -afDownwardHeight);
+    verticesX[0] = offset + (reverseVector2 + *arRightCorner);
+    verticesX[1] = offset + (forwardVectorB + *arRightCorner);
+    verticesX[2] = below2 + (reverseVector2 + *arRightCorner);
+    verticesX[3] = below2 + (forwardVectorB + *arRightCorner);
+    verticesX[4] = offset + (reverseVector2 + *arLeftCorner);
+    verticesX[5] = offset + (forwardVectorB + *arLeftCorner);
+    verticesX[6] = below2 + (reverseVector2 + *arLeftCorner);
+    verticesX[7] = (forwardVectorB + *arLeftCorner).FUN_00439e90(below2);
     FilterData* _filters = 0;
-    if (nearFilter || farFilter)
+    if (apLeftColor || apRightColor)
     {
         _filters = reinterpret_cast<FilterData*>(new FilterArray);
-        if (nearFilter && !farFilter)
-            farFilter = nearFilter;
-        else if (farFilter && !nearFilter)
-            nearFilter = farFilter;
+        if (apLeftColor && !apRightColor)
+            apRightColor = apLeftColor;
+        else if (apRightColor && !apLeftColor)
+            apLeftColor = apRightColor;
         for (unsigned int indexC = 0; indexC < 4; ++indexC)
-            _filters[indexC] = *farFilter;
+            _filters[indexC] = *apRightColor;
         for (unsigned int index7 = 4; index7 < 8; ++index7)
-            _filters[index7] = *nearFilter;
+            _filters[index7] = *apLeftColor;
     }
     unsigned short* pData6 = new unsigned short[36];
     FUN_00ec44d0(pData6, &DAT_010c2c38, 0x48);

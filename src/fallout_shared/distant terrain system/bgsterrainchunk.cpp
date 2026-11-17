@@ -67,12 +67,14 @@ struct Flt
 
 struct FUN_006fb6e0_shell
 {
-    void SetAllAppCulled();
+    void BGSTerrainChunk_Hide();
 };
 
 // For each of the three pointers at offsets 4, 8 and 12, if non-null, calls SetAppCulled(true) on it.
 // @fnv 0x006fb6e0
-void FUN_006fb6e0_shell::SetAllAppCulled()
+// src: XBOX_DEBUG_PDB 0x006fb6e0
+// pdb: BGSTerrainChunk::Hide | BGSTerrainChunk.obj | debug, call graph (shared callers), high
+void FUN_006fb6e0_shell::BGSTerrainChunk_Hide()
 {
     if (reinterpret_cast<Flt*>(reinterpret_cast<char*>(this) + 4)->operator unsigned int())
         reinterpret_cast<NiAVObject*>(
@@ -110,6 +112,8 @@ extern int _sprintf_s(char*, unsigned int, const char*, ...);
 // Formats the chunk's X, Y and level into apDescription using _sprintf_s and returns true.
 // @fnv 0x006fc400
 // src: XBOX_PDB 0x006fc400
+// pdb: BGSTerrainChunkLoadTask::GetDescription | BGSTerrainChunk.obj | retail, string-set bridge, high
+// pdb params: apDescription, aiBufferSize
 bool BGSTerrainChunkLoadTask::GetDescription_006fc400(char* apDescription, unsigned int aiBufferSize)
 {
     _sprintf_s(apDescription, aiBufferSize, "Terrain LOD Task for chunk ( %i, %i ) at level ( %i )", this->iX, this->iY,
@@ -121,6 +125,7 @@ extern "C" void __cdecl UpdateListItems();
 
 // @fnv 0x006fd1a0
 // src: COMMUNITY 0x006fd1a0
+// pdb: BGSTerrainManager::ShowMinimumDetail | BGSTerrainManager.obj | debug, upstream name already matches, high
 void __cdecl BGSTerrainManager_ShowMinimumDetail()
 {
     UpdateListItems();
@@ -207,10 +212,14 @@ struct FakeWorld006faad0
     virtual const char* GetStr();
 };
 // @fnv 0x006faad0
-void BuildLodMeshPath(char* pcBuffer, FakeWorld006faad0* a2, int iLevel, short sX, short sY)
+// src: XBOX_RETAIL_PDB 0x006faad0
+// pdb: BGSTerrainChunkLoadTask::BGSTerrainChunkLoadTask | BGSTerrainChunk.obj | retail, string-set bridge, high
+// pdb params: apChunk, apWorld, aiX, aiY, aiLevel
+// pdb locals: pmeshFileName
+void BGSTerrainChunkLoadTask_ctor(char* apChunk, FakeWorld006faad0* apWorld, int aiX, short aiY, short aiLevel)
 {
-    _sprintf_s(pcBuffer, 0x104, "Data\\Meshes\\Landscape\\LOD\\%s\\%s.Level%i.X%i.Y%i.NIF", a2->GetStr(), a2->GetStr(),
-               iLevel, sX, sY);
+    _sprintf_s(apChunk, 0x104, "Data\\Meshes\\Landscape\\LOD\\%s\\%s.Level%i.X%i.Y%i.NIF", apWorld->GetStr(), apWorld->GetStr(),
+               aiX, aiY, aiLevel);
 }
 
 int __cdecl _sprintf(char*, const char*, ...);
@@ -296,10 +305,13 @@ struct FakeFab
 };
 // Formats a landscape LOD normal-map .dds path from a2's string, level a3 and coordinates a4/a5 into buffer a1.
 // @fnv 0x006fab70
-void __cdecl BuildLodNormalTexturePath(char* pBuffer, FakeFab* pNameSource, int iLevel, short iX, short iY)
+// src: XBOX_DEBUG_PDB 0x006fab70
+// pdb: BGSTerrainChunk::BuildChunkNormalTextureFileName | BGSTerrainChunk.obj | debug, unique string literal, high
+// pdb params: apOutput, apWorld, aiLevel, asCellX, asCellY
+void __cdecl BGSTerrainChunk_BuildChunkNormalTextureFileName(char* apOutput, FakeFab* apWorld, int aiLevel, short asCellX, short asCellY)
 {
-    _sprintf(pBuffer, "Data\\Textures\\Landscape\\LOD\\%s\\Normals\\%s.n.Level%i.X%i.Y%i.dds", pNameSource->GetStr(),
-             pNameSource->GetStr(), iLevel, iX, iY);
+    _sprintf(apOutput, "Data\\Textures\\Landscape\\LOD\\%s\\Normals\\%s.n.Level%i.X%i.Y%i.dds", apWorld->GetStr(),
+             apWorld->GetStr(), aiLevel, asCellX, asCellY);
 }
 
 struct FUN_006fb760_shell
@@ -309,6 +321,7 @@ struct FUN_006fb760_shell
 // For each of the three object pointers at offsets 4, 8 and 12, if non-null, calls SetAppCulled(false) on it.
 // @fnv 0x006fb760
 // src: COMMUNITY 0x006fb760
+// pdb: BGSTerrainChunk::Show | BGSTerrainChunk.obj | debug, upstream name already matches, high
 void FUN_006fb760_shell::BGSTerrainChunk_Show()
 {
     if (reinterpret_cast<Flt*>(reinterpret_cast<char*>(this) + 4)->operator unsigned int())
@@ -327,11 +340,13 @@ void FUN_006fb760_shell::BGSTerrainChunk_Show()
 
 struct FUN_006fbcd0_shell
 {
-    void QueuedFile_Cancel(int a, int b);
+    void QueuedFile_Cancel(int aePreviousState, int apTaskOwner);
     void SetFlagAndCall(int a, int b);
 };
 // Sets the bool at offset 0x58 to true, then forwards both arguments to FUN_00c3cb70.
 // @fnv 0x006fbcd0
+// pdb: BGSTerrainChunkLoadTask::Cancel | BGSTerrainChunk.obj | debug, vtable slot, medium
+// pdb params: aePreviousState, apTaskOwner
 void FUN_006fbcd0_shell::SetFlagAndCall(int aiArg1, int aiArg2)
 {
     *(bool*)((char*)this + 0x58) = true;
@@ -456,10 +471,13 @@ struct FakeObj
 int __cdecl _sprintf(char*, const char*, ...);
 // Formats a landscape LOD diffuse texture path from the object's string, level, and X/Y coordinates into buf.
 // @fnv 0x006fab20
-void __cdecl BuildLODDiffuseTexturePath(char* pBuffer, FakeObj* obj, int level, short x, short y)
+// src: XBOX_DEBUG_PDB 0x006fab20
+// pdb: BGSTerrainChunk::BuildChunkDiffuseTextureFileName | BGSTerrainChunk.obj | debug, unique string literal, high
+// pdb params: apOutput, apWorld, aiLevel, asCellX, asCellY
+void __cdecl BGSTerrainChunk_BuildChunkDiffuseTextureFileName(char* apOutput, FakeObj* apWorld, int aiLevel, short asCellX, short asCellY)
 {
-    _sprintf(pBuffer, "Data\\Textures\\Landscape\\LOD\\%s\\Diffuse\\%s.n.Level%i.X%i.Y%i.dds", obj->GetStr(),
-             obj->GetStr(), level, x, y);
+    _sprintf(apOutput, "Data\\Textures\\Landscape\\LOD\\%s\\Diffuse\\%s.n.Level%i.X%i.Y%i.dds", apWorld->GetStr(),
+             apWorld->GetStr(), aiLevel, asCellX, asCellY);
 }
 
 struct FUN_006fea10_Class
@@ -478,6 +496,8 @@ extern SoundListView g_011d8624;
 
 // Walks the sound list view, and for each entry calls SetAllAppCulled if its checks pass, otherwise FUN_006fb760.
 // @fnv 0x006fb640
+// pdb: BGSTerrainChunk::ShowNormalDetail | BGSTerrainChunk.obj | debug, object-file gap fill, medium
+// pdb locals: pkList, item
 void UpdateSoundListItems()
 {
     SoundListView* current = &g_011d8624;
@@ -489,7 +509,7 @@ void UpdateSoundListItems()
             if (((FUN_006fb150_shell*)static_cast<const GO*>(go)->operator unsigned int())->GetByteAtOffset5C() &&
                 ((FUN_006fa840_shell*)static_cast<const GO*>(go)->operator unsigned int())->GetByteAt5D() && static_cast<FUN_006fea10_Class*>(go->m_pObject)->BGSTerrainNode_CheckMeshSolidUnderMe(false))
             {
-                ((FUN_006fb6e0_shell*)go)->SetAllAppCulled();
+                ((FUN_006fb6e0_shell*)go)->BGSTerrainChunk_Hide();
             }
             else
             {
@@ -500,6 +520,7 @@ void UpdateSoundListItems()
     }
 }
 
+// pdb: class ModelLoader, size 0x30 (here 0x1), 12 members
 struct ModelLoader
 {
     void QueueModelFilePath(const char*, int, QueuedFile*);
@@ -514,16 +535,18 @@ struct TerrainChunkTaskOperations : BGSTerrainChunkLoadTask
 
 extern ModelLoader* g_modelLoader;
 
-void __cdecl BuildLODDiffuseTexturePath(char*, FakeObj*, int, short, short);
+void __cdecl BGSTerrainChunk_BuildChunkDiffuseTextureFileName(char*, FakeObj*, int, short, short);
 
 // Builds diffuse and normal texture file names from the chunk's level and coordinates, queues both with g_modelLoader, sets a flag at offset 0x30 and calls f10.
 // @fnv 0x006fbbd0
+// pdb: BGSTerrainChunkLoadTask::QueueMe | BGSTerrainChunk.obj | retail, vtable slot, high
+// pdb locals: pdiffuseTextureFileName, pnormalTextureFileName
 void TerrainChunkTaskOperations::LoadTerrainChunkTextures()
 {
     char pdiffuseTextureFileName[260];
     char pnormalTextureFileName[260];
 
-    BuildLODDiffuseTexturePath(
+    BGSTerrainChunk_BuildChunkDiffuseTextureFileName(
         pdiffuseTextureFileName,
         reinterpret_cast<FakeObj*>(world), iLevel,
         static_cast<unsigned short>(iX), static_cast<unsigned short>(iY));
@@ -532,7 +555,7 @@ void TerrainChunkTaskOperations::LoadTerrainChunkTextures()
                                       reinterpret_cast<IOTask*>(this)->IOTask_GetIOTaskPriority(),
                                       reinterpret_cast<QueuedFile*>(this));
 
-    BuildLodNormalTexturePath(
+    BGSTerrainChunk_BuildChunkNormalTextureFileName(
         pnormalTextureFileName,
         reinterpret_cast<FakeFab*>(world), iLevel,
         static_cast<unsigned short>(iX), static_cast<unsigned short>(iY));
@@ -553,6 +576,7 @@ struct TerrainChunkNodeReference
 };
 
 // @fnv 0x006fbb10
+// pdb: BGSTerrainChunkLoadTask::~BGSTerrainChunkLoadTask | BGSTerrainChunk.obj | retail, upstream name already matches, high
 BGSTerrainChunkLoadTask::~BGSTerrainChunkLoadTask()
 {
     reinterpret_cast<TerrainChunkNodeReference*>(&unk48)->Reset(0);
@@ -718,10 +742,12 @@ struct Target006fac
     void UpdateWaterReferences(int);
     void BGSTerrainChunk_InitializeShaderProperty();
     void AddSelfToList();
-    void SetAllAppCulled();
+    void BGSTerrainChunk_Hide();
 };
 // @fnv 0x006facb0
 // src: COMMUNITY 0x006facb0
+// pdb: BGSTerrainChunk::Attach | BGSTerrainChunk.obj | retail, upstream name already matches, high
+// pdb locals: foobar, bar, pwaterMB, he, pbound, c, pMB
 void Target006fac::BGSTerrainChunk_Attach()
 {
     if (enabled && !done)
@@ -768,7 +794,7 @@ void Target006fac::BGSTerrainChunk_Attach()
         AddSelfToList();
         done = 1;
         if (root->GetByteAtOffset5C() && root->GetByteAt5D())
-            SetAllAppCulled();
+            BGSTerrainChunk_Hide();
     }
 }
 
@@ -780,7 +806,7 @@ struct B5D0Item
 {
     B5D0Status* Modelloader_GetReferencedThis();
     void BGSTerrainChunk_Show();
-    void SetAllAppCulled();
+    void BGSTerrainChunk_Hide();
 };
 struct B5D0List
 {
@@ -790,6 +816,8 @@ struct B5D0List
 };
 // Walks the list from g_011d8624, and for each item calls FUN_006fb760 if its status check passes, otherwise SetAllAppCulled.
 // @fnv 0x006fb5d0
+// pdb: BGSTerrainChunk::ShowMinimumDetail | BGSTerrainChunk.obj | debug, object-file gap fill, medium
+// pdb locals: pkList, item
 void __cdecl UpdateListItems()
 {
     B5D0List* node = reinterpret_cast<B5D0List*>(&g_011d8624);
@@ -802,7 +830,7 @@ void __cdecl UpdateListItems()
         }
         else
         {
-            item->SetAllAppCulled();
+            item->BGSTerrainChunk_Hide();
         }
         node = node->FUN_00726070();
     }
@@ -913,6 +941,8 @@ class TerrainChunk
 // If not yet flagged and m_spGeom is set, configures its property, geometry data and renderer state, stores the property in m_spProperty and sets m_bFlag.
 // @fnv 0x006fb7e0
 // src: COMMUNITY 0x006fb7e0
+// pdb: BGSTerrainChunk::Prepare | BGSTerrainChunk.obj | debug, object-file run extension, low
+// pdb locals: pshadeProp
 void TerrainChunk::BGSTerrainChunk_InitializeShaderProperty()
 {
     if (!m_bFlag)
@@ -949,6 +979,8 @@ struct FinalObject
     void BGSTerrainChunk_OnLoadFinished();
 };
 // @fnv 0x006fc020
+// pdb: BGSTerrainChunkLoadTask::Finish | BGSTerrainChunk.obj | retail, string-set bridge, high
+// pdb locals: pname
 void TerrainChunkTaskOperations::UpdateTerrainLODNames()
 {
     if (reinterpret_cast<NodeRef*>(&unk48)->Get())
@@ -1071,6 +1103,8 @@ class SelfX
 };
 // If g_bFlag or bForce is set, recreate m20 and m1c water references via g_pkMgr, update m18 and m14, and reset record selection on mc and m8.
 // @fnv 0x006fb170
+// pdb: BGSTerrainChunk::AddWaterToSystem | BGSTerrainChunk.obj | retail, object-file run extension, low
+// pdb params: abForce
 void SelfX::UpdateWaterReferences(bool bForce)
 {
     if (g_bFlag || bForce)
@@ -1123,7 +1157,7 @@ struct Cls6fabc0
 {
     ObjB* m_iWordAt00;
     Sub4 m_iWordAt04;
-    int BGSTerrainChunk_GetTexture(int arg);
+    int BGSTerrainChunk_GetTexture(int aTexType);
 };
 
 extern int NiShadeProperty_GetType();
@@ -1132,7 +1166,10 @@ int __cdecl Warning_005b5e40(void*, int, int, int);
 
 // @fnv 0x006fabc0
 // src: XBOX_PDB 0x006fabc0
-int Cls6fabc0::BGSTerrainChunk_GetTexture(int abFloat)
+// pdb: BGSTerrainChunk::GetTexture | BGSTerrainChunk.obj | retail, upstream name already matches, high
+// pdb params: aTexType
+// pdb locals: ptex, psp, pplp
+int Cls6fabc0::BGSTerrainChunk_GetTexture(int aTexType)
 {
     int result = 0;
     if (m_iWordAt04.Modelloader_GetReferencedThis())
@@ -1141,7 +1178,7 @@ int Cls6fabc0::BGSTerrainChunk_GetTexture(int abFloat)
         ObjC* p = (q == 0 ? 0 : (q->FUN_00441110() >= 8 && q->FUN_00441110() <= 0xc)) ? q : 0;
         if (p)
         {
-            if (abFloat == 0)
+            if (aTexType == 0)
             {
                 result = p->GetElement(0);
             }
@@ -1268,7 +1305,7 @@ struct D6Detacher
     D6Object* pObjectA;
     D6Object* pObjectB;
     D6Owner* Modelloader_GetReferencedThis();
-    void BGSTerrainChunk_RemoveWaterFromSystem(bool force);
+    void BGSTerrainChunk_RemoveWaterFromSystem(bool abForce);
 };
 }
 using namespace detach6fb;
@@ -1278,9 +1315,11 @@ extern D6Manager* DAT_011dea10;
 // Detaches and deletes pObjectA and pObjectB from the owner node, reattaching their children, when the global flag or force is set.
 // @fnv 0x006fb3d0
 // src: COMMUNITY 0x006fb3d0
-void D6Detacher::BGSTerrainChunk_RemoveWaterFromSystem(bool force)
+// pdb: BGSTerrainChunk::RemoveWaterFromSystem | BGSTerrainChunk.obj | retail, upstream name already matches, high
+// pdb params: abForce
+void D6Detacher::BGSTerrainChunk_RemoveWaterFromSystem(bool abForce)
 {
-    if (DAT_0119f154 || force)
+    if (DAT_0119f154 || abForce)
     {
         if (kChildA.Modelloader_GetReferencedThis() && pObjectA)
         {

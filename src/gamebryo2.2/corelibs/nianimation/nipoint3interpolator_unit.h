@@ -9,8 +9,8 @@
 class PositionKeyInterpolator
 {
   public:
-    static NiPoint3 InterpolatePosition(float time, PositionKeyInterpolator* keys, NiAnimationKey::KeyType type,
-                                        unsigned int numKeys, unsigned int& lastIdx, unsigned char keySize);
+    static NiPoint3 InterpolatePosition(float fTime, PositionKeyInterpolator* pkKeys, NiAnimationKey::KeyType eType,
+                                        unsigned int uiNumKeys, unsigned int& uiLastIdx, unsigned char ucSize);
 };
 
 

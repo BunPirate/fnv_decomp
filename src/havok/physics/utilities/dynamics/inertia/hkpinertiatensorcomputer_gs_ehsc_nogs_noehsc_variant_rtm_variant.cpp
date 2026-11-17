@@ -42,7 +42,7 @@ struct State
     int count;
     int context;
 };
-void hkpInertiaTensorComputer_computeConvexHullMassProperties(void* state, float zero, void* receiver);
+void hkpInertiaTensorComputer_computeConvexHullMassProperties(void* vertices, float radius, void* result);
 int __cdecl ApplyLimitToReceiver(int owner, int context, int count, float limit, Receiver* receiver, float value);
 struct FUN_00cebe80_Struct
 {
@@ -166,8 +166,8 @@ struct S_00cee1c0_Arr
     unsigned int* m_pTrailingData;
 };
 S_00cee1c0_Router* hkMemoryRouter_getInstance();
-float __cdecl hkInertiaTensorComputer_optimizeInertiasOfConstraintTreeInt(S_00cee1c0_Arr* arr, int unk, float value);
-void __cdecl ProcessArrayWithValue(unsigned int* source, int count, int unk, float value);
+float __cdecl hkInertiaTensorComputer_optimizeInertiasOfConstraintTreeInt(S_00cee1c0_Arr* constraints, int unk, float inertiaFactorHint);
+void __cdecl hkpInertiaTensorComputer_optimizeInertiasOfConstraintTree(unsigned int* constraints, int numConstraints, int rootBody, float inertiaFactorHint);
 namespace fnv_anon_00cec3d0 {}
 using namespace fnv_anon_00cec3d0;
 namespace fnv_anon_00cec3d0 {
@@ -204,7 +204,7 @@ struct S00cec3d0_Face : S00cec3d0_Base
     float m_fVertex2X;
     float m_fVertex2Y;
     float m_fVertex2Z;
-    void InternalInertiaTensorComputer_compFaceIntegrals(const float* verts, const float* n);
+    void InternalInertiaTensorComputer_compFaceIntegrals(const float* v, const float* n);
 };
 static inline float S00cec3d0_Sqr(float x)
 {
@@ -533,7 +533,7 @@ struct Integrals159
     float second[3];
     float products[3];
     void InternalInertiaTensorComputer_compProjectionIntegrals(const hkVector4* triangle);
-    void InternalInertiaTensorComputer_compFaceIntegrals(const hkVector4* triangle, const hkVector4* normal);
+    void InternalInertiaTensorComputer_compFaceIntegrals(const hkVector4* v, const hkVector4* n);
     void ProcessEntries_00ced390(Mesh159* mesh, const hkVector4* offset);
 };
 // src: HAVOK_LIB 0x00cec000
@@ -582,12 +582,12 @@ __declspec(noinline) void Integrals159::InternalInertiaTensorComputer_compProjec
     m_fComponent5 /= -60.0f;
 }
 // src: HAVOK_LIB 0x00cec3d0
-__declspec(noinline) void Integrals159::InternalInertiaTensorComputer_compFaceIntegrals(const hkVector4* triangle, const hkVector4* normal)
+__declspec(noinline) void Integrals159::InternalInertiaTensorComputer_compFaceIntegrals(const hkVector4* v, const hkVector4* n)
 {
-    InternalInertiaTensorComputer_compProjectionIntegrals(triangle);
-    float w = -normal->x * triangle[0].x - normal->y * triangle[0].y - normal->z * triangle[0].z;
-    float na = (*normal)(axisA), nb = (*normal)(axisB);
-    float k1 = 1.0f / (*normal)(axisC), k2 = k1 * k1, k3 = k2 * k1, k4 = k3 * k1;
+    InternalInertiaTensorComputer_compProjectionIntegrals(v);
+    float w = -n->x * v[0].x - n->y * v[0].y - n->z * v[0].z;
+    float na = (*n)(axisA), nb = (*n)(axisB);
+    float k1 = 1.0f / (*n)(axisC), k2 = k1 * k1, k3 = k2 * k1, k4 = k3 * k1;
     face[0] = k1 * Pa;
     face[1] = k1 * Pb;
     face[2] = -k2 * (na * Pa + nb * Pb + w * P1);

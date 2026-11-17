@@ -166,6 +166,8 @@ struct QueryOut_dcf880
 };
 
 // @fnv 0x00dcf880
+// pdb: hk1dLinearBilateralConstraintUserTauBuildJacobian | hkp1dBilateralConstraintBuildJacobian.obj | retail, object-file gap fill, high
+// pdb params: info, in, out
 void __cdecl ComputeAngularJacobian(const Info_dcf880& info, const QueryIn_dcf880& aQueryIn, QueryOut_dcf880& aQueryOut)
 {
     const Accum_dcf880* bodyA = aQueryIn.m_pBodyA;
@@ -306,16 +308,18 @@ static __forceinline LocalM128 S_Rot(LocalM128 v, const S_00dcf100_Body* b)
 
 // @fnv 0x00dcf100
 // src: XBOX_PDB 0x00dcf100
-void __cdecl hk1dLinearFrictionBuildJacobian(S_00dcf100_In* pInput, S_00dcf100_Cfg* pConfig, S_00dcf100_Out** ppOut)
+// pdb: hk1dLinearFrictionBuildJacobian | hkp1dBilateralConstraintBuildJacobian.obj | retail, upstream name already matches, high
+// pdb params: info, in, out
+void __cdecl hk1dLinearFrictionBuildJacobian(S_00dcf100_In* info, S_00dcf100_Cfg* pConfig, S_00dcf100_Out** ppOut)
 {
     S_00dcf100_Out* out = *ppOut;
     S_00dcf100_Body* b0 = pConfig->b30;
     S_00dcf100_Body* b1 = pConfig->b34;
     float mass = pConfig->f24;
-    *(LocalM128*)&out->q0 = S_Ld(pInput->v1);
-    LocalM128 r0 = _mm_sub_ps(S_Ld(pInput->v0), S_Ld(b0->pos));
-    LocalM128 r1 = _mm_sub_ps(S_Ld(pInput->v0), S_Ld(b1->pos));
-    LocalM128 A1 = S_Ld(pInput->v1);
+    *(LocalM128*)&out->q0 = S_Ld(info->v1);
+    LocalM128 r0 = _mm_sub_ps(S_Ld(info->v0), S_Ld(b0->pos));
+    LocalM128 r1 = _mm_sub_ps(S_Ld(info->v0), S_Ld(b1->pos));
+    LocalM128 A1 = S_Ld(info->v1);
     LocalM128 c0 = S_Cross(r0, A1);
     LocalM128 c1 = S_Cross(A1, r1);
     *(LocalM128*)&out->t0 = S_Rot(c0, b0);
@@ -334,10 +338,10 @@ void __cdecl hk1dLinearFrictionBuildJacobian(S_00dcf100_In* pInput, S_00dcf100_C
     float d = (float)(fHSum + 1.1920928955078125e-07);
     out->t1.w = d;
     out->t0.w = mass / d;
-    out->q0.w = pInput->p24->f04 * pConfig->f20;
+    out->q0.w = info->p24->f04 * pConfig->f20;
     S_00dcf100_Out* cur = *ppOut;
     *ppOut = cur + 1;
-    cur->f30 = pInput->f20 * pConfig->f04;
+    cur->f30 = info->f20 * pConfig->f04;
     *(float*)cur = (float)(*(float*)cur + 1.1920928955078125e-07);
     *(unsigned char*)cur = 9;
 }
@@ -350,21 +354,23 @@ void __cdecl hkLoadVelocityAccumulators()
 extern double DAT_010c9300;
 // Fills out with info's direction as the linear term and two angular terms from the body pivot offsets, then sets w terms from inverse inertia, rhs and scale.
 // @fnv 0x00dcf460
-// src: GUESS 0x00dcf460 (confidence: medium)
-static __declspec(noinline) void Object_BuildLinearAngularJacobianRow(Jac_dcf880* apJacobian, const Info_dcf880* info,
-                                              const QueryIn_dcf880* apQuery, float scale)
+// src: XBOX_RETAIL_PDB 0x00dcf460
+// pdb: hk1dLinearBilateralConstraintBuildJacobianWithCustomRhs_noSchema_inline | hkp1dBilateralConstraintBuildJacobian.obj | retail, object-file gap fill, high
+// pdb params: info, in, jac, customRhs
+static __declspec(noinline) void hk1dLinearBilateralConstraintBuildJacobianWithCustomRhs_noSchema_inline(Jac_dcf880* apJacobian, const Info_dcf880* in,
+                                              const QueryIn_dcf880* jac, float customRhs)
 {
-    const Accum_dcf880* bodyA = apQuery->m_pBodyA;
-    const Accum_dcf880* bodyB = apQuery->m_pBodyB;
-    float rhs = *(const float*)&apQuery->unk24;
+    const Accum_dcf880* bodyA = jac->m_pBodyA;
+    const Accum_dcf880* bodyB = jac->m_pBodyB;
+    float rhs = *(const float*)&jac->unk24;
 
-    apJacobian->m_kLinearJacobian = info->m_dir;
+    apJacobian->m_kLinearJacobian = in->m_dir;
     hkVector4 rA;
-    rA.setSub4(info->m_kPivotA, bodyA->m_kCenterPosition);
+    rA.setSub4(in->m_kPivotA, bodyA->m_kCenterPosition);
     hkVector4 rB;
-    rB.setSub4(info->m_kPivotA, bodyB->m_kCenterPosition);
+    rB.setSub4(in->m_kPivotA, bodyB->m_kCenterPosition);
 
-    LocalM128 dir = info->m_dir.m_vComponents;
+    LocalM128 dir = in->m_dir.m_vComponents;
     LocalM128 dirC9 = _mm_shuffle_ps(dir, dir, 0xc9);
     LocalM128 dirD2 = _mm_shuffle_ps(dir, dir, 0xd2);
     hkVector4 vA;
@@ -396,7 +402,7 @@ static __declspec(noinline) void Object_BuildLinearAngularJacobianRow(Jac_dcf880
     float sum = HorizontalAdd4Scalar(combined) + DAT_010c9300;
     apJacobian->m_angular1.m_vComponents.m128_f32[3] = sum;
     apJacobian->m_angular0.m_vComponents.m128_f32[3] = rhs / sum;
-    apJacobian->m_kLinearJacobian.m_vComponents.m128_f32[3] = apQuery->m_factor * scale;
+    apJacobian->m_kLinearJacobian.m_vComponents.m128_f32[3] = jac->m_factor * customRhs;
 }
 Jac_dcf880* volatile g_out_dcf460;
 const Info_dcf880* volatile g_info_dcf460;
@@ -407,8 +413,8 @@ void CallTarget_dcf460()
     Jac_dcf880* o = g_out_dcf460;
     const Info_dcf880* i = g_info_dcf460;
     const QueryIn_dcf880* n = g_in_dcf460;
-    Object_BuildLinearAngularJacobianRow(o, i, n, g_scale_dcf460);
-    Object_BuildLinearAngularJacobianRow(o, i, n, g_scale_dcf460);
+    hk1dLinearBilateralConstraintBuildJacobianWithCustomRhs_noSchema_inline(o, i, n, g_scale_dcf460);
+    hk1dLinearBilateralConstraintBuildJacobianWithCustomRhs_noSchema_inline(o, i, n, g_scale_dcf460);
 }
 
 struct Input_dcf5b0
@@ -428,18 +434,20 @@ extern double DAT_010c9300;
 
 // Builds a Jacobian from a pivot, direction and two body frames, writes it to the output slot, and advances the output pointer.
 // @fnv 0x00dcf5b0
-// src: GUESS 0x00dcf5b0 (confidence: medium)
-void __cdecl Hkp1dbilateralconstraintbuildjacobian_BuildJacobianAndAdvance(Input_dcf5b0* apInput, S_00dcf100_Cfg* apCfg, Jacobian_dcf5b0** ppJacobian, float k)
+// src: XBOX_RETAIL_PDB 0x00dcf5b0
+// pdb: hk1dLinearBilateralConstraintBuildJacobianWithCustomRhs | hkp1dBilateralConstraintBuildJacobian.obj | retail, object-file gap fill, high
+// pdb params: info, in, out, customRhs
+void __cdecl hk1dLinearBilateralConstraintBuildJacobianWithCustomRhs(Input_dcf5b0* info, S_00dcf100_Cfg* apCfg, Jacobian_dcf5b0** ppJacobian, float customRhs)
 {
     S_00dcf100_Body* ecx = apCfg->b30;
     float fa = apCfg->f24;
     S_00dcf100_Body* edx = apCfg->b34;
     Jacobian_dcf5b0* out = *ppJacobian;
-    out->linear.quad = apInput->direction;
-    LocalM128 p0 = apInput->pivot;
+    out->linear.quad = info->direction;
+    LocalM128 p0 = info->pivot;
     LocalM128 a = _mm_sub_ps(p0, S_Ld(ecx->pos));
-    LocalM128 b = _mm_sub_ps(apInput->pivot, S_Ld(edx->pos));
-    LocalM128 x = apInput->direction;
+    LocalM128 b = _mm_sub_ps(info->pivot, S_Ld(edx->pos));
+    LocalM128 x = info->direction;
     LocalM128 s3 = _mm_shuffle_ps(x, x, 0xc9);
     LocalM128 s4 = _mm_shuffle_ps(x, x, 0xd2);
     LocalM128 ac9 = _mm_shuffle_ps(a, a, 0xc9);
@@ -481,7 +489,7 @@ void __cdecl Hkp1dbilateralconstraintbuildjacobian_BuildJacobianAndAdvance(Input
     float tt = (float)((double)sum + c);
     out->angularB.w = tt;
     out->angularA.w = fa / tt;
-    out->linear.w = apCfg->f20 * k;
+    out->linear.w = apCfg->f20 * customRhs;
     out = *ppJacobian + 1;
     out[-1].linear.x = (float)(c + out[-1].linear.x);
     *(unsigned char*)&out[-1].linear = 5;
@@ -492,9 +500,11 @@ extern double DAT_010c9300;
 
 // @fnv 0x00dcfa30
 // src: XBOX_PDB 0x00dcfa30
-void __cdecl hk1dLinearLimitBuildJacobian(Info_dcf880* a1, S_00dcf100_Cfg* apCfg, Jac_dcf880** ppJacobian)
+// pdb: hk1dLinearLimitBuildJacobian | hkp1dBilateralConstraintBuildJacobian.obj | retail, upstream name already matches, high
+// pdb params: info, in, out
+void __cdecl hk1dLinearLimitBuildJacobian(Info_dcf880* info, S_00dcf100_Cfg* apCfg, Jac_dcf880** ppJacobian)
 {
-    LocalM128 x = a1->m_dir.m_vComponents;
+    LocalM128 x = info->m_dir.m_vComponents;
     Jac_dcf880* out = *ppJacobian;
     float fa = apCfg->f24;
     S_00dcf100_Body* A = apCfg->b30;
@@ -502,10 +512,10 @@ void __cdecl hk1dLinearLimitBuildJacobian(Info_dcf880* a1, S_00dcf100_Cfg* apCfg
     float fCfg20 = apCfg->f20;
     out->m_kLinearJacobian.m_vComponents = x;
 
-    LocalM128 a = _mm_sub_ps(a1->m_kPivotA.m_vComponents, S_Ld(A->pos));
-    LocalM128 b = _mm_sub_ps(a1->m_kPivotB.m_vComponents, S_Ld(B->pos));
+    LocalM128 a = _mm_sub_ps(info->m_kPivotA.m_vComponents, S_Ld(A->pos));
+    LocalM128 b = _mm_sub_ps(info->m_kPivotB.m_vComponents, S_Ld(B->pos));
 
-    LocalM128 x2 = a1->m_dir.m_vComponents;
+    LocalM128 x2 = info->m_dir.m_vComponents;
     LocalM128 s3 = _mm_shuffle_ps(x2, x2, 0xc9);
     LocalM128 s4 = _mm_shuffle_ps(x2, x2, 0xd2);
     LocalM128 c1 = _mm_sub_ps(_mm_mul_ps(_mm_shuffle_ps(a, a, 0xc9), s4), _mm_mul_ps(_mm_shuffle_ps(a, a, 0xd2), s3));
@@ -545,7 +555,7 @@ void __cdecl hk1dLinearLimitBuildJacobian(Info_dcf880* a1, S_00dcf100_Cfg* apCfg
     out->m_angular0.m_vComponents.m128_f32[3] = fa / tt;
 
     LocalM128 d =
-        _mm_mul_ps(_mm_sub_ps(a1->m_kPivotB.m_vComponents, a1->m_kPivotA.m_vComponents), a1->m_dir.m_vComponents);
+        _mm_mul_ps(_mm_sub_ps(info->m_kPivotB.m_vComponents, info->m_kPivotA.m_vComponents), info->m_dir.m_vComponents);
     LocalM128 p = _mm_add_ss(_mm_shuffle_ps(d, d, 0x55), d);
     LocalM128 q = _mm_add_ss(_mm_shuffle_ps(d, d, 0xaa), p);
     float dot;
@@ -553,8 +563,8 @@ void __cdecl hk1dLinearLimitBuildJacobian(Info_dcf880* a1, S_00dcf100_Cfg* apCfg
     out->m_kLinearJacobian.m_vComponents.m128_f32[3] = dot * fCfg20;
 
     float nfb = -apCfg->f20;
-    float t30 = a1->m_30;
-    float t34 = a1->m_34;
+    float t30 = info->m_30;
+    float t34 = info->m_34;
     Jac_dcf880* o = *ppJacobian;
     *ppJacobian = o + 1;
     o->m_30 = t30 * nfb;
@@ -592,13 +602,16 @@ struct JOut
 // For each of s->count vertices, writes its A- and B-rotated vectors to the output array, with 1/(inertia-weighted squared sum + epsilon) in a.w.
 // @fnv 0x00dcefb0
 // src: GUESS 0x00dcefb0 (confidence: medium)
-void __cdecl Hkp1dbilateralconstraintbuildjacobian_BuildRotatedVertexJacobianPairs(Src* apSrc, Cfg* cfg, JOut** appOut)
+// pdb: hk1dAngularFrictionBuildJacobian | hkp1dBilateralConstraintBuildJacobian.obj | retail, object-file gap fill, high
+// pdb params: info, in, out
+// pdb locals: i
+void __cdecl Hkp1dbilateralconstraintbuildjacobian_BuildRotatedVertexJacobianPairs(Src* info, Cfg* cfg, JOut** appOut)
 {
-    float* pFloats = apSrc->fl;
+    float* pFloats = info->fl;
     JOut* out = *appOut;
-    LocalM128* pv = apSrc->verts;
+    LocalM128* pv = info->verts;
     float sum;
-    int i = apSrc->count - 1;
+    int i = info->count - 1;
     if (i >= 0)
     {
         double c = DAT_010c9300;
@@ -625,7 +638,7 @@ void __cdecl Hkp1dbilateralconstraintbuildjacobian_BuildRotatedVertexJacobianPai
             float tt = (float)((double)sum + c);
             out->a.w = 1.0f / tt;
             out->b.w = cfg->unk08 * *pf;
-            out->c20 = apSrc->unk08 * cfg->unk04;
+            out->c20 = info->unk08 * cfg->unk04;
             out->a.x = (float)((double)out->a.x + c);
             *(unsigned char*)&out->a = 0xe;
             ++out;
@@ -654,9 +667,11 @@ extern double DAT_010c9300;
 // Fills the Jacobian at *a3 with the direction as the linear term and two angular terms from pivot offsets of the two bodies in a2, then advances *a3.
 // @fnv 0x00dcf280
 // src: XBOX_PDB 0x00dcf280
-void __cdecl hk1dLinearBilateralConstraintBuildJacobian(Input_dcf280* apInput, S_00dcf100_Cfg* apCfg, Jacobian_dcf280** ppJacobian)
+// pdb: hk1dLinearBilateralConstraintBuildJacobian | hkp1dBilateralConstraintBuildJacobian.obj | retail, upstream name already matches, high
+// pdb params: info, in, out
+void __cdecl hk1dLinearBilateralConstraintBuildJacobian(Input_dcf280* info, S_00dcf100_Cfg* apCfg, Jacobian_dcf280** ppJacobian)
 {
-    LocalM128 x0 = apInput->direction;
+    LocalM128 x0 = info->direction;
     S_00dcf100_Body* ecx = apCfg->b30;
     float fa = apCfg->f24;
     S_00dcf100_Body* edx = apCfg->b34;
@@ -664,10 +679,10 @@ void __cdecl hk1dLinearBilateralConstraintBuildJacobian(Input_dcf280* apInput, S
     Jacobian_dcf280* out = *ppJacobian;
     out->linear.quad = x0;
 
-    LocalM128 p0 = apInput->pivot;
+    LocalM128 p0 = info->pivot;
     LocalM128 a = _mm_sub_ps(p0, S_Ld(ecx->pos));
-    LocalM128 b = _mm_sub_ps(apInput->pivot, S_Ld(edx->pos));
-    LocalM128 x = apInput->direction;
+    LocalM128 b = _mm_sub_ps(info->pivot, S_Ld(edx->pos));
+    LocalM128 x = info->direction;
 
     LocalM128 c1 = _mm_sub_ps(_mm_mul_ps(_mm_shuffle_ps(a, a, 0xc9), _mm_shuffle_ps(x, x, 0xd2)),
                            _mm_mul_ps(_mm_shuffle_ps(a, a, 0xd2), _mm_shuffle_ps(x, x, 0xc9)));
@@ -716,8 +731,8 @@ void __cdecl hk1dLinearBilateralConstraintBuildJacobian(Input_dcf280* apInput, S
     out->angularB.w = sum;
     out->angularA.w = fa / sum;
 
-    LocalM128 z = _mm_sub_ps(apInput->pivot, apInput->pivot);
-    LocalM128 w = _mm_mul_ps(z, apInput->direction);
+    LocalM128 z = _mm_sub_ps(info->pivot, info->pivot);
+    LocalM128 w = _mm_mul_ps(z, info->direction);
     LocalM128 w1 = _mm_shuffle_ps(w, w, 0x55);
     w1 = _mm_add_ss(w1, w);
     LocalM128 w2 = _mm_shuffle_ps(w, w, 0xaa);
@@ -728,8 +743,8 @@ void __cdecl hk1dLinearBilateralConstraintBuildJacobian(Input_dcf280* apInput, S
         out->linear.w = d * fa2;
     }
 
-    LocalM128 y = _mm_sub_ps(apInput->pivotB, apInput->pivot);
-    y = _mm_mul_ps(y, apInput->direction);
+    LocalM128 y = _mm_sub_ps(info->pivotB, info->pivot);
+    y = _mm_mul_ps(y, info->direction);
     LocalM128 y1 = _mm_shuffle_ps(y, y, 0x55);
     y1 = _mm_add_ss(y1, y);
     LocalM128 y2 = _mm_shuffle_ps(y, y, 0xaa);
@@ -830,7 +845,9 @@ struct S_00dcf720_Jacobian
 // Builds a Jacobian from info's axis and pivot for two bodies, storing diag in angular[1].w and the fourth query value divided by diag in angular[0].w.
 // @fnv 0x00dcf720
 // src: XBOX_PDB 0x00dcf720
-void hk1dLinearBilateralConstraintBuildJacobianWithCustomRhs_noSchema(const S_00dcf720_Info& info, const S_00dcf720_QueryIn& in, S_00dcf720_Jacobian* jac, float rhsFactor)
+// pdb: hk1dLinearBilateralConstraintBuildJacobianWithCustomRhs_noSchema | hkp1dBilateralConstraintBuildJacobian.obj | retail, upstream name already matches, high
+// pdb params: info, in, jac, customRhs
+void hk1dLinearBilateralConstraintBuildJacobianWithCustomRhs_noSchema(const S_00dcf720_Info& info, const S_00dcf720_QueryIn& in, S_00dcf720_Jacobian* jac, float customRhs)
 {
     const S_00dcf720_Accumulator& bodyA = *in.m_pBodyA;
     const S_00dcf720_Accumulator& bodyB = *in.m_pBodyB;
@@ -849,7 +866,7 @@ void hk1dLinearBilateralConstraintBuildJacobianWithCustomRhs_noSchema(const S_00
     diag = diag + 1.1920928955078125e-7;
     jac->m_kAngularVelocity[1].w = diag;
     jac->m_kAngularVelocity[0].w = virtMassFactor / diag;
-    jac->m_kLinearJacobian.w = in.unk20 * rhsFactor;
+    jac->m_kLinearJacobian.w = in.unk20 * customRhs;
 }
 
 // Adapted from an earlier contributor's 2026-10-21 WIP; retain prior credit.
@@ -978,6 +995,8 @@ struct S_00dcee80_QueryOut
 // Fills a Jacobian's two angular terms from info's axis end points and the bodies' inverse inertia matrices, sets their w terms, and advances out.m_jacobians.
 // @fnv 0x00dcee80
 // src: XBOX_PDB 0x00dcee80
+// pdb: hk1dAngularBilateralConstraintBuildJacobian | hkp1dBilateralConstraintBuildJacobian.obj | retail, upstream name already matches, high
+// pdb params: info, in, out
 void hk1dAngularBilateralConstraintBuildJacobian(const S_00dcee80_Info& info, const S_00dcee80_QueryIn& in, S_00dcee80_QueryOut& out)
 {
 

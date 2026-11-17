@@ -3,6 +3,7 @@
 #include "hkReferencedObject.h"
 #include "hkaSkeletonMapperData.h"
 
+// pdb: class hkaSkeletonMapper, size 0x80, bases: hkReferencedObject, 1 members
 class hkaSkeletonMapper : public hkReferencedObject
 {
 public:
@@ -16,5 +17,5 @@ public:
     void __cdecl mapPose(const hkQsTransform* poseAModelSpace, const hkQsTransform* originalPoseBLocalSpace, hkQsTransform* poseBModelSpace, int source) const;
 
     char pad8[0x8];
-    hkaSkeletonMapperData m_kMappingData;
+    hkaSkeletonMapperData m_mapping; // src: XBOX_RETAIL_PDB +0x10 (old: m_kMappingData)
 };

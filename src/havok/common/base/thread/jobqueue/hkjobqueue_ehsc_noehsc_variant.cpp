@@ -237,7 +237,7 @@ struct ItemPool
     int m_unk0c;
     int m_uiItemCount;
 
-    void Insert(const Item& item);
+    void Insert(const Item& element);
     void Insert2(const Item& item);
 };
 struct PoolSet
@@ -247,13 +247,13 @@ struct PoolSet
 };
 struct Mgr
 {
-    int GetIndex(const Item& item);
+    int GetIndex(const Item& element);
     void Notify(int idx, PoolSet* set);
-    void InsertItemAndNotify(PoolSet* set, const Item& item, int flag);
+    void hkJobQueue_addJobQueueLocked(PoolSet* data, const Item& job, int priority);
 };
 struct Obj
 {
-    int Forward3(int a, int b, int c);
+    int Forward3(int oldJob, int jobOut, int waitStatus);
     int ForwardWithZero(int a, int b);
 };
 struct S_00d056a0_Elem
@@ -325,8 +325,8 @@ struct FUN_00d04450_cls
 {
     int unk00;
 
-    void* hkJobQueue_lockQueue(void* out);
-    void hkJobQueue_unlockQueue(void* p);
+    void* hkJobQueue_lockQueue(void* dynamicDataStorage);
+    void hkJobQueue_unlockQueue(void* dynamicDataStorage);
     void SetValue(int a1);
 };
 // ---------------------------------------------------------------------------
@@ -428,7 +428,7 @@ class FUN_00d04890_cls
     unsigned int unk44;
     int m_48;
 
-    int LookupSpawnedEntry(const unsigned char* p);
+    int LookupSpawnedEntry(const unsigned char* element);
 };
 void __cdecl hkSemaphoreBusyWait_release(int value, int flag);
 struct FUN_00d048e0_cls
@@ -588,9 +588,9 @@ struct D049D0World
     int unk14;
     D049D0Simulation* m_pSimulation;
 
-    void* lock(D049D0LockInfo* info);
+    void* lock(D049D0LockInfo* dynamicDataStorage);
     void disable(void* lockHandle);
-    void unlock(void* lockHandle);
+    void unlock(void* dynamicDataStorage);
 
     void SetSimulationEnabled(int enabled);
 };
@@ -633,7 +633,7 @@ struct __declspec(align(16)) D04B90Object
 };
 struct D04B90World
 {
-    void addCopy(D04B90Object* copy, void* userData);
+    void addCopy(D04B90Object* job, void* priority);
     void AddObjectCopy(const D04B90Object* object, void* userData);
 };
 void __cdecl GetProcessorCount(unsigned int* out);
@@ -711,10 +711,10 @@ extern void __cdecl hookB_00d969e0(void*, void*);
 extern void __cdecl hookC_00d967a0(void*, void*);
 extern void __cdecl hookD_00d968e0(void*, void*);
 // Two more registration helpers, both cdecl with one pointer argument.
-void __cdecl hkpCollisionQueryJobQueueUtils_registerWithJobQueue(TargetObj* p);
-void __cdecl hkpRayCastQueryJobQueueUtils_registerWithJobQueue(TargetObj* p);
+void __cdecl hkpCollisionQueryJobQueueUtils_registerWithJobQueue(TargetObj* queue);
+void __cdecl hkpRayCastQueryJobQueueUtils_registerWithJobQueue(TargetObj* queue);
 void __cdecl InitHookTable(TargetObj* apTarget);
-void __cdecl ResizeAudioStream(void* alloc, void* array, int sizeElem);
+void __cdecl ResizeAudioStream(void* mem, void* array, int sizeElem);
 struct D04A20Operation
 {
     void* m_object;
@@ -1011,9 +1011,9 @@ static __forceinline short& Ref212(Registry* r, unsigned char sub)
 }
 struct LunaOwner : Owner
 {
-    int LookupSpawnedEntry(Item* item);
-    int hkJobQueue_findJobInternal(int index, Registry* registry, int param_4, int param_3);
-    int ProcessCallback(int param_2, int param_3, int param_4);
+    int LookupSpawnedEntry(Item* element);
+    int hkJobQueue_findJobInternal(int queueIndexOfNewJob, Registry* data, int waitStatus, int jobOut);
+    int ProcessCallback(int oldJob, int jobOut, int waitStatus);
 };
 struct LunaTrace
 {
@@ -1046,9 +1046,9 @@ struct ArrayOfJobs
 };
 struct FUN_00d04bd0_cls : Owner
 {
-    int LookupSpawnedEntry(void* p);
+    int LookupSpawnedEntry(void* element);
     void RemoveItemReference(int index, Registry* set);
-    void AddJobBatch(ArrayOfJobs* jobs, int priority);
+    void hkJobQueue_addJobBatch(ArrayOfJobs* jobs, int priority);
 };
 extern "C" __declspec(dllimport) void* __stdcall TlsGetValue(unsigned long index);
 extern unsigned long hkMonitorStreamTls;
@@ -1141,9 +1141,9 @@ struct S_00d05020_DynamicData
 struct S_00d05020_JobQueue
 {
     S_00d05020_DynamicData* hkJobQueue_lockQueue(char* dynamicDataStorage);
-    int LookupSpawnedEntry(const S_00d05020_Job& job);
+    int LookupSpawnedEntry(const S_00d05020_Job& element);
     int hkJobQueue_findJobInternal(int queueIndexOfNewJob, S_00d05020_DynamicData* data, int waitStatus, S_00d05020_Job& jobOut);
-    int hkJobQueue_finishAddAndGetNextJob(int originalJobType, int priority, S_00d05020_Job& jobInOut, int waitStatus);
+    int hkJobQueue_finishAddAndGetNextJob(int oldJobType, int priority, S_00d05020_Job& jobInOut, int waitStatus);
 };
 
 // hkBase.lib debug info; byte-exact with the game under the Havok release flags.
@@ -1282,6 +1282,8 @@ class JobDispatcher
 
 // @fnv 0x00d04590
 // src: HAVOK_LIB 0x00d04590
+// pdb: hkJobQueue::updateJobQueryRules | hkJobQueue.obj | retail, upstream name already matches, high
+// pdb locals: assertBuf, ostr
 void JobDispatcher::hkJobQueue_updateJobQueryRules()
 {
     int numSharedCaches = kThreadState.m_kNestedIntegerLists.GetLogicalSize() == 0

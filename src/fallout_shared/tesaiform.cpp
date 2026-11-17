@@ -56,39 +56,49 @@ bool IsSkill(Index);
 }
 
 // @fnv 0x0047ede0
+// pdb: TESAIForm::ClearDataComponent | TESAIForm.obj | debug, vtable slot, medium
 void TESAIForm::FreeDataComponent()
 {
-    packages.ClearPackageList();
+    packages.FreePackageList();
 }
 
 // @fnv 0x0047f190
-void TESAIForm::BaseFormRecord(BaseFormComponent* component)
+// pdb: TESAIForm::CopyComponent | TESAIForm.obj | retail, vtable slot, high
+// pdb params: apCopyFC
+// pdb locals: pCopy
+void TESAIForm::BaseFormRecord(BaseFormComponent* apCopyFC)
 {
-    TESAIForm* source = dynamic_cast<TESAIForm*>(component);
+    TESAIForm* source = dynamic_cast<TESAIForm*>(apCopyFC);
     if (!source)
         return;
-    CopyAISettings(source);
+    CopyAIData(source);
     CopyAIPackageList(source);
 }
 
 // Returns the actor's current package by looking up the package list on the actor base's AI form, or null if actor or base is missing.
 // @fnv 0x0047f520
-TESPackage* TESAIForm::GetCurrentPackage(Actor* actor)
+// pdb: TESAIForm::GetCurrentPackage | TESAIForm.obj | debug, upstream name already matches, high
+// pdb params: apActor
+// pdb locals: ppack, pactorbase, paiform
+TESPackage* TESAIForm::GetCurrentPackage(Actor* apActor)
 {
     TESPackage* result = 0;
     TESAIForm* ai;
-    if (actor)
+    if (apActor)
     {
-        TESActorBase* base = actor->GetActorBase();
+        TESActorBase* base = apActor->GetActorBase();
         ai = base ? reinterpret_cast<TESAIForm*>(reinterpret_cast<char*>(base) + 0x90) : 0;
         if (ai)
             result = reinterpret_cast<PackageList*>(reinterpret_cast<BGSCameraPath*>(ai)->GetConditions())
-                         ->GetPackageForActor(actor);
+                         ->FindCurrentPackage(apActor);
     }
     return result;
 }
 
 // @fnv 0x0047f590
+// pdb: TESAIForm::GetMissedPackages | TESAIForm.obj | debug, call graph, medium
+// pdb params: apActor, apPacks, afStartdate, afhour
+// pdb locals: pactorbase, paiform
 void TESAIForm::FindAvailablePackages(Actor* actor, BSSimpleList<TESPackage*>* missed, float start, float hour)
 {
     TESAIForm* ai;
@@ -104,6 +114,7 @@ void TESAIForm::FindAvailablePackages(Actor* actor, BSSimpleList<TESPackage*>* m
 
 // Resets all AI form fields to defaults and, on first call, caches five game-setting floats into globals.
 // @fnv 0x0047ed10
+// pdb: TESAIForm::InitializeDataComponent | TESAIForm.obj | debug, vtable slot, medium
 void TESAIForm::InitializeComponent()
 {
     aggression = 0;
@@ -130,26 +141,31 @@ void TESAIForm::InitializeComponent()
 
 // Copies aggression, assistance, confidence, energy, responsibility, service flags, aggro radius and training data from source into this form.
 // @fnv 0x0047f1e0
-void TESAIForm::CopyAISettings(TESAIForm* source)
+// src: XBOX_RETAIL_PDB 0x0047f1e0
+// pdb: TESAIForm::CopyAIData | TESAIForm.obj | retail, call graph (shared callers), high
+// pdb params: apAIForm
+void TESAIForm::CopyAIData(TESAIForm* apAIForm)
 {
-    SetAggression(reinterpret_cast<PatrolActorPackageData*>(source)->IsPatrolling(), true);
-    SetAssistance(source->GetAssistance());
-    SetConfidence(source->_GetByte05(), true);
-    SetEnergy(reinterpret_cast<BSAudio*>(source)->TESRegionData_GetPriority(), true);
-    SetResponsibility(source->GetResponsibility(), true);
-    SetAIMood(source->MenuTopic_GetTopicIsChoice());
-    SetHasAggroRadius(reinterpret_cast<ActiveEffect*>(source)->FUN_00705cf0());
-    SetAggroRadius(reinterpret_cast<TimeGlobal*>(source)->GetTimeStamp());
-    SetServiceFlags(reinterpret_cast<TESForm*>(source)->GetFormID(), true);
-    SetTrainingSkill(source->GetTrainingSkill());
-    SetTrainingSkillLevel(reinterpret_cast<ActiveEffect*>(source)->GetByteAtOffset17());
+    SetAggression(reinterpret_cast<PatrolActorPackageData*>(apAIForm)->IsPatrolling(), true);
+    SetAssistance(apAIForm->GetAssistance());
+    SetConfidence(apAIForm->_GetByte05(), true);
+    SetEnergy(reinterpret_cast<BSAudio*>(apAIForm)->TESRegionData_GetPriority(), true);
+    SetResponsibility(apAIForm->GetResponsibility(), true);
+    SetAIMood(apAIForm->MenuTopic_GetTopicIsChoice());
+    SetHasAggroRadius(reinterpret_cast<ActiveEffect*>(apAIForm)->FUN_00705cf0());
+    SetAggroRadius(reinterpret_cast<TimeGlobal*>(apAIForm)->GetTimeStamp());
+    SetServiceFlags(reinterpret_cast<TESForm*>(apAIForm)->GetFormID(), true);
+    SetTrainingSkill(apAIForm->GetTrainingSkill());
+    SetTrainingSkillLevel(reinterpret_cast<ActiveEffect*>(apAIForm)->GetByteAtOffset17());
 }
 
 // @fnv 0x0047ee00
-void TESAIForm::SetAggression(unsigned char value, bool flag)
+// pdb: TESAIForm::SetAggression | TESAIForm.obj | debug, upstream name already matches, high
+// pdb params: acAggression, abAddChange
+void TESAIForm::SetAggression(unsigned char acAggression, bool abAddChange)
 {
-    aggression = value;
-    if (flag)
+    aggression = acAggression;
+    if (abAddChange)
     {
         DispatchToOuter(8);
     }
@@ -163,22 +179,28 @@ unsigned char TESAIForm::GetAssistance()
 
 // Stores value into assistance and calls DispatchToOuter with 8.
 // @fnv 0x0047ee50
-void TESAIForm::SetAssistance(unsigned char aucAssistance)
+// pdb: TESAIForm::SetAssistance | TESAIForm.obj | debug, upstream name already matches, high
+// pdb params: acAssistance
+void TESAIForm::SetAssistance(unsigned char acAssistance)
 {
-    assistance = aucAssistance;
+    assistance = acAssistance;
     DispatchToOuter(8);
 }
 
 // Stores value into radius and calls DispatchToOuter with 8.
 // @fnv 0x0047ee70
-void TESAIForm::SetHasAggroRadius(bool value)
+// pdb: TESAIForm::SetHasAggroRadius | TESAIForm.obj | debug, upstream name already matches, high
+// pdb params: abAggro
+void TESAIForm::SetHasAggroRadius(bool abAggro)
 {
-    radius = value;
+    radius = abAggro;
     DispatchToOuter(8);
 }
 
 // Stores value into distance and calls DispatchToOuter with 8.
 // @fnv 0x0047ee90
+// pdb: TESAIForm::SetAggroRadius | TESAIForm.obj | debug, upstream name already matches, high
+// pdb params: auiRadius
 void TESAIForm::SetAggroRadius(unsigned int auiRadius)
 {
     distance = auiRadius;
@@ -186,20 +208,24 @@ void TESAIForm::SetAggroRadius(unsigned int auiRadius)
 }
 
 // @fnv 0x0047eed0
-void TESAIForm::SetConfidence(unsigned char value, bool flag)
+// pdb: TESAIForm::SetConfidence | TESAIForm.obj | debug, upstream name already matches, high
+// pdb params: acConfidence, abAddChange
+void TESAIForm::SetConfidence(unsigned char acConfidence, bool abAddChange)
 {
-    confidence = value;
-    if (flag)
+    confidence = acConfidence;
+    if (abAddChange)
     {
         DispatchToOuter(8);
     }
 }
 
 // @fnv 0x0047ef00
-void TESAIForm::SetEnergy(unsigned char value, bool flag)
+// pdb: TESAIForm::SetEnergy | TESAIForm.obj | debug, upstream name already matches, high
+// pdb params: acEnergy, abAddChange
+void TESAIForm::SetEnergy(unsigned char acEnergy, bool abAddChange)
 {
-    energy = value;
-    if (flag)
+    energy = acEnergy;
+    if (abAddChange)
     {
         DispatchToOuter(8);
     }
@@ -212,36 +238,44 @@ unsigned char TESAIForm::GetResponsibility()
 }
 
 // @fnv 0x0047ef50
-void TESAIForm::SetResponsibility(unsigned char value, bool flag)
+// pdb: TESAIForm::SetResponsibility | TESAIForm.obj | debug, upstream name already matches, high
+// pdb params: acResponsibility, abAddChange
+void TESAIForm::SetResponsibility(unsigned char acResponsibility, bool abAddChange)
 {
-    responsibility = value;
-    if (flag)
+    responsibility = acResponsibility;
+    if (abAddChange)
     {
         DispatchToOuter(8);
     }
 }
 
 // @fnv 0x0047ef80
-void TESAIForm::SetAIMood(unsigned char value)
+// pdb: TESAIForm::SetMood | TESAIForm.obj | debug, upstream name already matches, high
+// pdb params: acMood
+void TESAIForm::SetAIMood(unsigned char acMood)
 {
-    if (value < 8)
+    if (acMood < 8)
     {
-        mood = value;
+        mood = acMood;
         DispatchToOuter(8);
     }
 }
 
 // @fnv 0x0047efb0
-void TESAIForm::SetServiceFlags(unsigned int value, bool flag)
+// pdb: TESAIForm::SetServiceFlags | TESAIForm.obj | debug, call graph (shared callers), high
+// pdb params: aiServeFlags, abAddChange
+void TESAIForm::SetServiceFlags(unsigned int aiServeFlags, bool abAddChange)
 {
-    services = value;
-    if (flag)
+    services = aiServeFlags;
+    if (abAddChange)
     {
         DispatchToOuter(8);
     }
 }
 
 // @fnv 0x0047f000
+// pdb: TESAIForm::GetTrainingSkill | TESAIForm.obj | debug, upstream name already matches, high
+// pdb locals: eskill
 int TESAIForm::GetTrainingSkill()
 {
     int result;
@@ -261,13 +295,17 @@ void TESAIForm::SetTrainingSkill(int value)
 
 // Stores the given value into level and calls DispatchToOuter with 8.
 // @fnv 0x0047f090
-void TESAIForm::SetTrainingSkillLevel(unsigned char aucLevel)
+// pdb: TESAIForm::SetTrainingSkillLevel | TESAIForm.obj | debug, upstream name already matches, high
+// pdb params: aiVal
+void TESAIForm::SetTrainingSkillLevel(unsigned char aiVal)
 {
-    level = aucLevel;
+    level = aiVal;
     DispatchToOuter(8);
 }
 
 // @fnv 0x0047f0b0
+// pdb: TESAIForm::SetAIData | TESAIForm.obj | debug, object-file gap fill, medium
+// pdb params: pAIData
 void TESAIForm::CopyAIDataFromAIDATA(PackedRecordData* source)
 {
     if (source)
@@ -293,16 +331,18 @@ void TESAIForm::CopyAIDataFromAIDATA(PackedRecordData* source)
 struct FUN_0047ee00_class
 {
     void DispatchToOuter(int);
-    void TESAIForm_SetAggression(unsigned char value, bool flag);
+    void TESAIForm_SetAggression(unsigned char acAggression, bool abAddChange);
 };
 
 // Stores value at offset 4 of this object and, when flag is set, calls DispatchToOuter with 8.
 // @fnv 0x0047ee00
 // src: COMMUNITY 0x0047ee00
-void FUN_0047ee00_class::TESAIForm_SetAggression(unsigned char value, bool flag)
+// pdb: TESAIForm::SetAggression | TESAIForm.obj | debug, upstream name already matches, high
+// pdb params: acAggression, abAddChange
+void FUN_0047ee00_class::TESAIForm_SetAggression(unsigned char acAggression, bool abAddChange)
 {
-    *(unsigned char*)((char*)this + 4) = value;
-    if (flag)
+    *(unsigned char*)((char*)this + 4) = acAggression;
+    if (abAddChange)
         DispatchToOuter(8);
 }
 
@@ -314,6 +354,8 @@ struct FUN_0047eed0_shell : public TESAIForm
 // Sets confidence to acConfidence and, when abAddChange is true, calls DispatchToOuter with 8.
 // @fnv 0x0047eed0
 // src: COMMUNITY 0x0047eed0
+// pdb: TESAIForm::SetConfidence | TESAIForm.obj | debug, upstream name already matches, high
+// pdb params: acConfidence, abAddChange
 void FUN_0047eed0_shell::TESAIForm_SetConfidence(unsigned char acConfidence, bool abAddChange)
 {
     confidence = acConfidence;
@@ -329,6 +371,8 @@ struct FUN_0047ef00_shell : public TESAIForm
 // Sets the energy field to acEnergy and, when abAddChange is set, calls DispatchToOuter with 8.
 // @fnv 0x0047ef00
 // src: COMMUNITY 0x0047ef00
+// pdb: TESAIForm::SetEnergy | TESAIForm.obj | debug, upstream name already matches, high
+// pdb params: acEnergy, abAddChange
 void FUN_0047ef00_shell::TESAIForm_SetEnergy(unsigned char acEnergy, bool abAddChange)
 {
     energy = acEnergy;
@@ -344,6 +388,8 @@ struct FUN_0047ef50_shell : public TESAIForm
 // Sets the responsibility field to acResponsibility and, when abAddChange is true, calls DispatchToOuter with 8.
 // @fnv 0x0047ef50
 // src: COMMUNITY 0x0047ef50
+// pdb: TESAIForm::SetResponsibility | TESAIForm.obj | debug, upstream name already matches, high
+// pdb params: acResponsibility, abAddChange
 void FUN_0047ef50_shell::TESAIForm_SetResponsibility(unsigned char acResponsibility, bool abAddChange)
 {
     responsibility = acResponsibility;
@@ -359,6 +405,8 @@ struct FUN_0047ef80_shell : public TESAIForm
 // If acMood is below 8, stores it in mood and calls DispatchToOuter with 8.
 // @fnv 0x0047ef80
 // src: XBOX_PDB 0x0047ef80
+// pdb: TESAIForm::SetMood | TESAIForm.obj | debug, upstream name already matches, high
+// pdb params: acMood
 void FUN_0047ef80_shell::TESAIForm_SetMood(unsigned char acMood)
 {
     if (acMood < 8)
@@ -375,6 +423,8 @@ struct FUN_0047efb0_shell : public TESAIForm
 
 // Stores aiServeFlags into services and, when abAddChange is set, calls DispatchToOuter(8).
 // @fnv 0x0047efb0
+// pdb: TESAIForm::SetServiceFlags | TESAIForm.obj | debug, call graph (shared callers), high
+// pdb params: aiServeFlags, abAddChange
 void FUN_0047efb0_shell::SetServices(unsigned int aiServeFlags, bool abAddChange)
 {
     services = aiServeFlags;
@@ -417,6 +467,8 @@ extern Setting g_011c5348;
 // If the Setting byte is zero, calls InitItem on the conditions object obtained from this, passing apOwner.
 // @fnv 0x0047f4c0
 // src: XBOX_PDB 0x0047f4c0
+// pdb: TESAIForm::InitItem | TESAIForm.obj | debug, upstream name already matches, high
+// pdb params: apOwner
 void FUN_0047f4c0_shell::TESAIForm_InitItem(TESForm* apOwner)
 {
     if (!*g_011c5348.FUN_00408d60())
@@ -434,6 +486,8 @@ struct FUN_0047f500_shell : public TESAIForm
 // Adds the given package to the package list obtained from the form's conditions.
 // @fnv 0x0047f500
 // src: XBOX_PDB 0x0047f500
+// pdb: TESAIForm::AddPackage | TESAIForm.obj | debug, upstream name already matches, high
+// pdb params: apPack
 void FUN_0047f500_shell::TESAIForm_AddPackage(TESPackage* apPack)
 {
     ((PackageList*)((BGSCameraPath*)this)->GetConditions())->AddPackage(apPack);
@@ -473,6 +527,7 @@ struct FUN_0047ec40 : public BFC_s
     virtual void v();
 };
 // @fnv 0x0047ec40
+// pdb: TESAIForm::TESAIForm | TESAIForm.obj | debug, call graph, high
 FUN_0047ec40::FUN_0047ec40()
 {
     InitializeComponent();
@@ -499,6 +554,7 @@ struct FUN_0047ecb0 : public BFC_s
 };
 // Destructor that calls FreeDataComponent to release the object's data component.
 // @fnv 0x0047ecb0
+// pdb: TESAIForm::~TESAIForm | TESAIForm.obj | debug, call graph, medium
 FUN_0047ecb0::~FUN_0047ecb0()
 {
     FreeDataComponent();
@@ -547,6 +603,8 @@ struct FUN_0047efe0_shell
 };
 
 // @fnv 0x0047efe0
+// pdb: TESAIForm::SetOffersService | TESAIForm.obj | debug, object-file gap fill, medium
+// pdb params: aiServeFlags, abOffersService
 bool FUN_0047efe0_shell::HasFlags(int aiFlags)
 {
     if (m_flags & aiFlags)
@@ -564,14 +622,16 @@ bool FUN_0047efe0_shell::HasFlags(int aiFlags)
 
 struct FUN_0047f8c0_shell
 {
-    void __thiscall TESAIForm_LoadGame(unsigned int arg1, unsigned int arg2);
+    void __thiscall TESAIForm_LoadGame(unsigned int aiFlags, unsigned int aiCurrentFlags);
 };
 
 // @fnv 0x0047f8c0
 // src: XBOX_PDB 0x0047f8c0
-void __thiscall FUN_0047f8c0_shell::TESAIForm_LoadGame(unsigned int uiFlags, unsigned int arg2)
+// pdb: TESAIForm::LoadGame | TESAIForm.obj | retail, vtable slot, high
+// pdb params: aiFlags, aiCurrentFlags
+void __thiscall FUN_0047f8c0_shell::TESAIForm_LoadGame(unsigned int aiFlags, unsigned int aiCurrentFlags)
 {
-    if (uiFlags & 8)
+    if (aiFlags & 8)
     {
         g_TESSaveLoadGame->ReadTypedData((void*)((char*)this + 4), 1);
         g_TESSaveLoadGame->ReadTypedData((void*)((char*)this + 5), 1);
@@ -609,6 +669,9 @@ struct MyInner
 };
 // Computes the enclosing FakeOuter from this (offset 0x90) and, if non-null, calls its v18 with arg.
 // @fnv 0x0047f790
+// pdb: TESAIForm::AddFormChange | TESAIForm.obj | debug, call graph (shared callers), medium
+// pdb params: aiChangeFlags
+// pdb locals: pactbase, pform
 void MyInner::DispatchToOuter(int arg)
 {
     FakeOuter* b = this ? (FakeOuter*)((char*)this - 0x90) : (FakeOuter*)0;
@@ -622,15 +685,17 @@ extern TESSaveLoadGame* g_TESSaveLoadGame;
 
 struct FUN_0047f840_shell
 {
-    void TESAIForm_SaveGame(unsigned int aFlags);
+    void TESAIForm_SaveGame(unsigned int aiFlags);
 };
 
 // When the flags include 8, passes five consecutive bytes starting at this+4 to TESSaveLoadGame's save routine.
 // @fnv 0x0047f840
 // src: XBOX_PDB 0x0047f840
-void FUN_0047f840_shell::TESAIForm_SaveGame(unsigned int aFlags)
+// pdb: TESAIForm::SaveGame | TESAIForm.obj | retail, vtable slot, high
+// pdb params: aiFlags
+void FUN_0047f840_shell::TESAIForm_SaveGame(unsigned int aiFlags)
 {
-    if (aFlags & 8)
+    if (aiFlags & 8)
     {
         g_TESSaveLoadGame->TESSaveLoadGame_SaveGameDataOLD((char*)this + 4, 1);
         g_TESSaveLoadGame->TESSaveLoadGame_SaveGameDataOLD((char*)this + 5, 1);
@@ -649,6 +714,9 @@ struct FUN_0047f300_shell
 // Compares this object with apCompareFC via a TESAIForm cast and many field getters, returning true if any differ or the cast fails.
 // @fnv 0x0047f300
 // src: XBOX_PDB 0x0047f300
+// pdb: TESAIForm::CompareComponent | TESAIForm.obj | retail, upstream name already matches, high
+// pdb params: apCompareFC
+// pdb locals: pCompare
 bool FUN_0047f300_shell::TESAIForm_CompareComponent(BaseFormComponent* apCompareFC)
 {
     TESAIForm* pCompare = dynamic_cast<TESAIForm*>(apCompareFC);
@@ -705,7 +773,7 @@ struct AIFormFlags
     int m_pAuxiliaryObject;
     int m_flags;
     bool HasFlags(int arg);
-    bool TESAIForm_SellBuysItem(TESForm* apForm);
+    bool TESAIForm_SellBuysItem(TESForm* apObject);
 };
 
 struct FormTypeStub
@@ -716,10 +784,13 @@ struct FormTypeStub
 // Maps the form's type (and equip type for type 0x2f) to a flag bit and returns the result of HasFlags for that bit.
 // @fnv 0x0047f600
 // src: COMMUNITY 0x0047f600
-bool AIFormFlags::TESAIForm_SellBuysItem(TESForm* apForm)
+// pdb: TESAIForm::SellBuysItem | TESAIForm.obj | retail, upstream name already matches, high
+// pdb params: apObject
+// pdb locals: abflag, aeItemType, palcitem
+bool AIFormFlags::TESAIForm_SellBuysItem(TESForm* apObject)
 {
     bool bResult2 = false;
-    int iType8 = ((FormTypeStub*)apForm)->GetFormType();
+    int iType8 = ((FormTypeStub*)apObject)->GetFormType();
     switch (iType8)
     {
     case 0x28:
@@ -732,7 +803,7 @@ bool AIFormFlags::TESAIForm_SellBuysItem(TESForm* apForm)
         bResult2 = HasFlags(2);
         break;
     case 0x2f: {
-        TESForm* pForm = apForm;
+        TESForm* pForm = apObject;
         switch (BGSEquipType::GetEquipType(pForm))
         {
         case 10:

@@ -5,6 +5,8 @@
 #include "imagespaceshaderhdr_support.h"
 
 // @fnv 0x00b90720
+// pdb: ImageSpaceShaderHDRBrightPassFilter::ReloadShaders | ImageSpaceManager.obj | retail, string-set bridge, high
+// pdb locals: vshader, pcvtarget, pcptarget, pshader, pcname, _pshader
 void ImageSpaceShaderHDRVariantFive::SetupShader()
 {
     ImageSpaceShaderHDRMacro vertexShader;
@@ -42,6 +44,8 @@ void ImageSpaceShaderHDRVariantFive::SetupShader()
 }
 
 // @fnv 0x00b908a0
+// pdb: ImageSpaceShaderHDRDownSample16::ReloadShaders | ImageSpaceManager.obj | retail, string-set bridge, high
+// pdb locals: vshader, pcvtarget, pcptarget, pshader, pcname, _pshader
 void ImageSpaceShaderHDRVariantSix::SetupShader()
 {
     ImageSpaceShaderHDRMacro vertexShader;
@@ -79,6 +83,8 @@ void ImageSpaceShaderHDRVariantSix::SetupShader()
 }
 
 // @fnv 0x00b90590
+// pdb: ImageSpaceShaderHDRBlur::ReloadShaders | ImageSpaceManager.obj | retail, string-set bridge, high
+// pdb locals: vshader, pcvtarget, pcptarget, pshader, pcname, _pshader
 void ImageSpaceShaderHDRVariantFour::SetupShader()
 {
     ImageSpaceShaderHDRMacro vertexShader;
@@ -116,6 +122,8 @@ void ImageSpaceShaderHDRVariantFour::SetupShader()
 }
 
 // @fnv 0x00b90a30
+// pdb: ImageSpaceShaderHDRDownSample9::ReloadShaders | ImageSpaceManager.obj | retail, string-set bridge, high
+// pdb locals: vshader, pcvtarget, pcptarget, pshader, pcname, _pshader
 void HDRBaseImageSpaceShaderVariant4::SetupShader()
 {
     ImageSpaceShaderHDRMacro vertexShader;
@@ -153,6 +161,8 @@ void HDRBaseImageSpaceShaderVariant4::SetupShader()
 }
 
 // @fnv 0x00b90bc0
+// pdb: ImageSpaceShaderHDRDownSample4::ReloadShaders | ImageSpaceManager.obj | retail, string-set bridge, high
+// pdb locals: vshader, pcvtarget, pcptarget, pshader, pcname, _pshader
 void HDRBaseImageSpaceShaderVariant1::SetupShader()
 {
     ImageSpaceShaderHDRMacro vertexShader;
@@ -190,6 +200,8 @@ void HDRBaseImageSpaceShaderVariant1::SetupShader()
 }
 
 // @fnv 0x00b90d50
+// pdb: ImageSpaceShaderHDRLightAdapt::ReloadShaders | ImageSpaceManager.obj | retail, string-set bridge, high
+// pdb locals: vshader, pcvtarget, pcptarget, pshader, pcname, _pshader
 void HDRBaseImageSpaceShaderVariant5::SetupShader()
 {
     ImageSpaceShaderHDRMacro vertexShader;
@@ -227,6 +239,8 @@ void HDRBaseImageSpaceShaderVariant5::SetupShader()
 }
 
 // @fnv 0x00b90ee0
+// pdb: ImageSpaceShaderHDRLumClamp::ReloadShaders | ImageSpaceManager.obj | retail, string-set bridge, high
+// pdb locals: vshader, pcvtarget, pcptarget, pshader, pcname, _pshader
 void HDRBaseImageSpaceShaderVariant6::SetupShader()
 {
     ImageSpaceShaderHDRMacro vertexShader;
@@ -264,6 +278,8 @@ void HDRBaseImageSpaceShaderVariant6::SetupShader()
 }
 
 // @fnv 0x00b91070
+// pdb: ImageSpaceShaderHDRDownSample4LightAdapt::ReloadShaders | ImageSpaceManager.obj | retail, string-set bridge, high
+// pdb locals: vshader, pcvtarget, pcptarget, pshader, pcname, _pshader
 void HDRBaseImageSpaceShaderVariant2::SetupShader()
 {
     ImageSpaceShaderHDRMacro vertexShader;
@@ -305,6 +321,8 @@ void HDRBaseImageSpaceShaderVariant2::SetupShader()
 }
 
 // @fnv 0x00b91210
+// pdb: ImageSpaceShaderHDRDownSample4LumClamp::ReloadShaders | ImageSpaceManager.obj | retail, string-set bridge, high
+// pdb locals: vshader, pcvtarget, pcptarget, pshader, pcname, _pshader
 void HDRBaseImageSpaceShaderVariant3::SetupShader()
 {
     ImageSpaceShaderHDRMacro vertexShader;
@@ -346,6 +364,8 @@ void HDRBaseImageSpaceShaderVariant3::SetupShader()
 }
 
 // @fnv 0x00b913b0
+// pdb: ImageSpaceShaderHDRDownSample16LightAdapt::ReloadShaders | ImageSpaceManager.obj | retail, string-set bridge, high
+// pdb locals: vshader, pcvtarget, pcptarget, pshader, pcname, _pshader
 void ImageSpaceShaderHDRVariantSeven::SetupShader()
 {
     ImageSpaceShaderHDRMacro vertexShader;
@@ -387,6 +407,8 @@ void ImageSpaceShaderHDRVariantSeven::SetupShader()
 }
 
 // @fnv 0x00b91550
+// pdb: ImageSpaceShaderHDRDownSample16LumClamp::ReloadShaders | ImageSpaceManager.obj | retail, string-set bridge, high
+// pdb locals: vshader, pcvtarget, pcptarget, pshader, pcname, _pshader
 void ImageSpaceShaderHDRVariantEight::SetupShader()
 {
     ImageSpaceShaderHDRMacro vertexShader;
@@ -428,6 +450,8 @@ void ImageSpaceShaderHDRVariantEight::SetupShader()
 }
 
 // @fnv 0x00b90060
+// pdb: ImageSpaceShaderHDRBlendInShader::ReloadShaders | ImageSpaceManager.obj | retail, string-set bridge, high
+// pdb locals: vshader, pcvtarget, pcptarget, pshader, pcname, _pshader
 void ImageSpaceShaderHDRVariantOne::SetupShader()
 {
     ImageSpaceShaderHDRMacro vertexShader;
@@ -471,6 +495,8 @@ void ImageSpaceShaderHDRVariantOne::SetupShader()
 }
 
 // @fnv 0x00b90200
+// pdb: ImageSpaceShaderHDRBlendInShaderCinematic::ReloadShaders | ImageSpaceManager.obj | retail, string-set bridge, high
+// pdb locals: vshader, pcvtarget, pcptarget, pshader, pcname, _pshader
 void ImageSpaceShaderHDRVariantTwo::SetupShader()
 {
     ImageSpaceShaderHDRMacro vertexShader;
@@ -518,6 +544,8 @@ void ImageSpaceShaderHDRVariantTwo::SetupShader()
 }
 
 // @fnv 0x00b903a0
+// pdb: ImageSpaceShaderHDRBlendInShaderCinematicAlphamask::ReloadShaders | ImageSpaceManager.obj | retail, string-set bridge, high
+// pdb locals: vshader, pcvtarget, pcptarget, pshader, pcname, _pshader
 void ImageSpaceShaderHDRVariantThree::SetupShader()
 {
     ImageSpaceShaderHDRMacro vertexShader;
@@ -567,78 +595,104 @@ void ImageSpaceShaderHDRVariantThree::SetupShader()
 }
 
 // @fnv 0x00b90190
+// pdb: ImageSpaceShaderHDRBlendInShader::`scalar deleting destructor' | ImageSpaceManager.obj | retail, object-file run extension, low
+// pdb note: debug build links it to ImageSpaceShaderHDRBlendInShaderCinematic::ImageSpaceShaderHDRBlendInShaderCinematic
 ImageSpaceShaderHDRVariantTwo::ImageSpaceShaderHDRVariantTwo()
 {
     textures.SetSize(4);
 }
 
 // @fnv 0x00b90330
+// pdb: ImageSpaceShaderHDRBlendInShaderCinematic::`scalar deleting destructor' | ImageSpaceManager.obj | retail, object-file run extension, low
+// pdb note: debug build links it to ImageSpaceShaderHDRBlendInShaderCinematicAlphamask::ImageSpaceShaderHDRBlendInShaderCinematicAlphamask
 ImageSpaceShaderHDRVariantThree::ImageSpaceShaderHDRVariantThree()
 {
     textures.SetSize(4);
 }
 
 // @fnv 0x00b90520
+// pdb: ImageSpaceShaderHDRBlendInShaderCinematicAlphamask::`scalar deleting destructor' | ImageSpaceManager.obj | retail, object-file run extension, low
+// pdb note: debug build links it to ImageSpaceShaderHDRBlur::ImageSpaceShaderHDRBlur
 ImageSpaceShaderHDRVariantFour::ImageSpaceShaderHDRVariantFour()
 {
     textures.SetSize(2);
 }
 
 // @fnv 0x00b906b0
+// pdb: ImageSpaceShaderHDRBlur::`scalar deleting destructor' | ImageSpaceManager.obj | retail, object-file run extension, low
+// pdb note: debug build links it to ImageSpaceShaderHDRBrightPassFilter::ImageSpaceShaderHDRBrightPassFilter
 ImageSpaceShaderHDRVariantFive::ImageSpaceShaderHDRVariantFive()
 {
     textures.SetSize(2);
 }
 
 // @fnv 0x00b90830
+// pdb: ImageSpaceShaderHDRBrightPassFilter::`scalar deleting destructor' | ImageSpaceManager.obj | retail, object-file run extension, low
+// pdb note: debug build links it to ImageSpaceShaderHDRDownSample16::ImageSpaceShaderHDRDownSample16
 ImageSpaceShaderHDRVariantSix::ImageSpaceShaderHDRVariantSix()
 {
     textures.SetSize(2);
 }
 
 // @fnv 0x00b909c0
+// pdb: ImageSpaceShaderHDRDownSample16::`scalar deleting destructor' | ImageSpaceManager.obj | retail, object-file run extension, low
+// pdb note: debug build links it to ImageSpaceShaderHDRDownSample9::ImageSpaceShaderHDRDownSample9
 HDRBaseImageSpaceShaderVariant4::HDRBaseImageSpaceShaderVariant4()
 {
     textures.SetSize(2);
 }
 
 // @fnv 0x00b90b50
+// pdb: ImageSpaceShaderHDRDownSample9::`scalar deleting destructor' | ImageSpaceManager.obj | retail, object-file run extension, low
+// pdb note: debug build links it to ImageSpaceShaderHDRDownSample4::ImageSpaceShaderHDRDownSample4
 HDRBaseImageSpaceShaderVariant1::HDRBaseImageSpaceShaderVariant1()
 {
     textures.SetSize(2);
 }
 
 // @fnv 0x00b91000
+// pdb: ImageSpaceShaderHDRLumClamp::`scalar deleting destructor' | ImageSpaceManager.obj | retail, object-file run extension, low
+// pdb note: debug build links it to ImageSpaceShaderHDRDownSample4LightAdapt::ImageSpaceShaderHDRDownSample4LightAdapt
 HDRBaseImageSpaceShaderVariant2::HDRBaseImageSpaceShaderVariant2()
 {
     textures.SetSize(3);
 }
 
 // @fnv 0x00b911a0
+// pdb: ImageSpaceShaderHDRDownSample4LightAdapt::`scalar deleting destructor' | ImageSpaceManager.obj | retail, object-file run extension, low
+// pdb note: debug build links it to ImageSpaceShaderHDRDownSample4LumClamp::ImageSpaceShaderHDRDownSample4LumClamp
 HDRBaseImageSpaceShaderVariant3::HDRBaseImageSpaceShaderVariant3()
 {
     textures.SetSize(2);
 }
 
 // @fnv 0x00b91340
+// pdb: ImageSpaceShaderHDRDownSample4LumClamp::`scalar deleting destructor' | ImageSpaceManager.obj | retail, object-file run extension, low
+// pdb note: debug build links it to ImageSpaceShaderHDRDownSample16LightAdapt::ImageSpaceShaderHDRDownSample16LightAdapt
 ImageSpaceShaderHDRVariantSeven::ImageSpaceShaderHDRVariantSeven()
 {
     textures.SetSize(3);
 }
 
 // @fnv 0x00b914e0
+// pdb: ImageSpaceShaderHDRDownSample16LightAdapt::`scalar deleting destructor' | ImageSpaceManager.obj | retail, object-file run extension, low
+// pdb note: debug build links it to ImageSpaceShaderHDRDownSample16LumClamp::ImageSpaceShaderHDRDownSample16LumClamp
 ImageSpaceShaderHDRVariantEight::ImageSpaceShaderHDRVariantEight()
 {
     textures.SetSize(2);
 }
 
 // @fnv 0x00b90ce0
+// pdb: ImageSpaceShaderHDRDownSample4::`scalar deleting destructor' | ImageSpaceManager.obj | retail, object-file run extension, low
+// pdb note: debug build links it to ImageSpaceShaderHDRLightAdapt::ImageSpaceShaderHDRLightAdapt
 HDRBaseImageSpaceShaderVariant5::HDRBaseImageSpaceShaderVariant5()
 {
     textures.SetSize(3);
 }
 
 // @fnv 0x00b90e70
+// pdb: ImageSpaceShaderHDRLightAdapt::`scalar deleting destructor' | ImageSpaceManager.obj | retail, object-file run extension, low
+// pdb note: debug build links it to ImageSpaceShaderHDRLumClamp::ImageSpaceShaderHDRLumClamp
 HDRBaseImageSpaceShaderVariant6::HDRBaseImageSpaceShaderVariant6()
 {
     textures.SetSize(2);

@@ -5,6 +5,7 @@
 class ArgB;
 class SourceMesh;
 
+// pdb: class bhkShape, size 0x14, bases: bhkSerializable, 1 members
 class bhkShape : public bhkSerializable
 {
 public:
@@ -23,5 +24,5 @@ public:
     int bhkShape_QMaterial();
 
     int m_0c;
-    int m_10;
+    int eMaterial; // src: XBOX_RETAIL_PDB +0x10 (old: m_10)
 };

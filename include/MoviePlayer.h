@@ -3,6 +3,7 @@
 class Direct3DDeviceInterface;
 class MovieJob;
 
+// pdb: class MoviePlayer, size 0x54 (here 0x10), 18 members
 class MoviePlayer
 {
 public:

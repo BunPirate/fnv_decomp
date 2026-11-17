@@ -13,7 +13,7 @@ struct FUN_006212c0_shell
     void* InitializeFields_006212c0(void* source);
 };
 void* __cdecl hkMemoryRouter_getInstance();
-void __cdecl ResizeAudioStream(void* manager, void* array, int itemSize);
+void __cdecl ResizeAudioStream(void* mem, void* array, int sizeElem);
 struct FUN_00caba90_Class
 {
     int unk00;
@@ -21,10 +21,12 @@ struct FUN_00caba90_Class
     int unk08;
     int unk0c;
     FUN_00caba90_array array;
-    void* AppendItem(void* source);
+    void* AppendItem(void* event);
 };
 // @fnv 0x00caba90
-void* FUN_00caba90_Class::AppendItem(void* source)
+// pdb: hkpAllCdPointCollector::addRootCdPoint | hkpAllCdPointCollector.obj | retail, vtable slot, high
+// pdb params: event
+void* FUN_00caba90_Class::AppendItem(void* event)
 {
     FUN_00caba90_array* items = &array;
     void* manager = hkMemoryRouter_getInstance();
@@ -36,7 +38,7 @@ void* FUN_00caba90_Class::AppendItem(void* source)
     unsigned int index = items->count;
     char* item = (char*)items->data + index * 0x70;
     items->count = index + 1;
-    return ((FUN_006212c0_shell*)item)->InitializeFields_006212c0(source);
+    return ((FUN_006212c0_shell*)item)->InitializeFields_006212c0(event);
 }
 
 struct ByteTag
@@ -66,6 +68,7 @@ struct SortableArray
 
 // @fnv 0x00cabad0
 // src: XBOX_PDB 0x00cabad0
+// pdb: hkpAllCdPointCollector::sortHits | hkpAllCdPointCollector.obj | retail, upstream name already matches, high
 void SortableArray::hkpAllCdPointCollector_sortHits()
 {
     ByteTag kTag;
@@ -117,7 +120,7 @@ struct S_00cab970_Entry
     unsigned int keysB[8];
 };
 struct S_00cab970_Arr;
-void __cdecl ResizeAudioStream(S_00cab970_Heap* heap, S_00cab970_Arr* arr, int elemSize);
+void __cdecl ResizeAudioStream(S_00cab970_Heap* mem, S_00cab970_Arr* array, int sizeElem);
 struct S_00cab970_Arr
 {
     S_00cab970_Entry* m_data;
@@ -168,16 +171,18 @@ struct S_00cab970_Cls
     int unk08;
     int unk0c;
     S_00cab970_Arr arr;
-    void hkpAllCdPointCollector_addCdPoint(const S_00cab970_Src* src);
+    void hkpAllCdPointCollector_addCdPoint(const S_00cab970_Src* event);
 };
 // Allocates an entry in arr, copies the two vectors from src, and records the root, key, and key path for each body via S_00cab970_Path.
 // @fnv 0x00cab970
 // src: XBOX_PDB 0x00cab970
-void S_00cab970_Cls::hkpAllCdPointCollector_addCdPoint(const S_00cab970_Src* src)
+// pdb: hkpAllCdPointCollector::addCdPoint | hkpAllCdPointCollector.obj | retail, upstream name already matches, high
+// pdb params: event
+void S_00cab970_Cls::hkpAllCdPointCollector_addCdPoint(const S_00cab970_Src* event)
 {
     S_00cab970_Entry& entry = arr.AllocatePair();
-    entry.a.q = src->a.q;
-    entry.b.q = src->b.q;
-    S_00cab970_Path(src->bodyA, entry.rootA, entry.keyA, entry.keysA);
-    S_00cab970_Path(src->bodyB, entry.rootB, entry.keyB, entry.keysB);
+    entry.a.q = event->a.q;
+    entry.b.q = event->b.q;
+    S_00cab970_Path(event->bodyA, entry.rootA, entry.keyA, entry.keysA);
+    S_00cab970_Path(event->bodyB, entry.rootB, entry.keyB, entry.keysB);
 }

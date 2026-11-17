@@ -63,6 +63,10 @@ struct ElemPtrArray
 
 // @fnv 0x00e80420
 // src: COMMUNITY 0x00e80420
+// pdb: NiTPool<NiD3DPass,NiTNewInterface<NiD3DPass> >::CreateNewObjects | NiD3DPass.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiD3DPass::ShutdownPools
+// pdb params: uiSize
+// pdb locals: pkNewContainer, i
 void ElemPtrArray::NiTPool_NiD3DPass_CreateNewObjects(unsigned int count)
 {
     void* mem = g_heap_11f6238.Allocate(sizeof(Block));

@@ -5,6 +5,7 @@
 
 class ImageSpaceModifierInstanceForm;
 
+// pdb: class ImageSpaceModifierInstance, size 0x1c, bases: NiObject, 5 members
 class ImageSpaceModifierInstance : public NiObject
 {
   public:
@@ -21,10 +22,10 @@ class ImageSpaceModifierInstance : public NiObject
     bool IsFlagSet();
     void __thiscall PlayerCharacter_StopVatsImageSpace();
 
-    bool m_bHasBeenApplied;
+    bool bIsWeather; // src: XBOX_RETAIL_PDB +0x8 (old: m_bHasBeenApplied)
     unsigned char layoutPadding9[3];
-    float fWaterLevelItem;
-    NiPointer<NiAVObject> m_spTargetObject;
-    float m_fStartTime;
+    float fStrength; // src: XBOX_RETAIL_PDB +0xc (old: fWaterLevelItem)
+    NiPointer<NiAVObject> spTarget; // src: XBOX_RETAIL_PDB +0x10 (old: m_spTargetObject)
+    float fStartTime; // src: XBOX_RETAIL_PDB +0x14 (old: m_fStartTime)
     unsigned int iFlags;
 };

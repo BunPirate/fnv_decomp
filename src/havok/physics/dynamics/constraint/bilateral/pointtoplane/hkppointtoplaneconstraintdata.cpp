@@ -54,6 +54,9 @@ struct FUN_00d84b70
 };
 // Returns true if the rotations at offset 0x20 and 0x60 (atom transforms) are both orthonormal within 0.001.
 // @fnv 0x00d84b70
+// pdb: NiBSplineBasisData::CreateClone | NiBSplineBasisData.obj | debug, object-file run extension, low
+// pdb params: kCloning
+// pdb locals: pkObject
 ValidationResult FUN_00d84b70::CheckValid()
 {
     const hkRotation* pFirstRotation = (const hkRotation*)((char*)this + 0x20);
@@ -340,6 +343,8 @@ struct Cls_d849a0
 
 // Stores a1 and a2 into m_50 and m_90, initializes m_20, m_30, m_40 to the identity basis, and builds the m_60 rotation from a3 and m_a2.
 // @fnv 0x00d849a0
+// pdb: NiBSplineBasisData::SetBasis | NiBSplineBasisData.obj | debug, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
+// pdb params: pkBasisDegree3
 void Cls_d849a0::SetBasis(const Vec_d849a0& a1, const Vec_d849a0& a2, const Vec_d849a0& a3)
 {
     m_50.q = a1.q;

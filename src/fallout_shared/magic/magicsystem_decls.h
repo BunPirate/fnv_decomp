@@ -20,12 +20,13 @@
 
 namespace MagicSystem
 {
-    void InitializeMagicSystem();
+    void GenerateDefaultObjects();
 }
+// pdb: class EffectSettingCollection, size 0x8 (here 0x1), bases: BSSimpleList<EffectSetting *>, 0 members
 class EffectSettingCollection
 {
   public:
-    static void InitializeEffectSettings();
+    static void CreateDefaultEffects();
 };
 
 // The three data-handler list accessors have no consistent named identity

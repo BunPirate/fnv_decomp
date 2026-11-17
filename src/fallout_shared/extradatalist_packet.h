@@ -16,6 +16,7 @@ class TESImageSpaceModifier;
 #include "RecursiveSpinLock.h"
 #include "NiMemObject.h"
 // No canonical headers yet for these.
+// pdb: class TaskQueueInterface, size 0x10 (here 0x1), 4 members
 class TaskQueueInterface
 {
   public:

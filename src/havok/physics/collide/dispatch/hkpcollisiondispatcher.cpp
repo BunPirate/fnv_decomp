@@ -41,12 +41,14 @@ struct Owner
     void* unk1e34;
     void* unk1e38;
     void* unk1e3c;
-    void FreeBuffers();
+    void hkpCollisionDispatcher_disableDebugging();
 };
 
 // If unk1e30 is set, frees the four buffers at unk1e30..unk1e3c and clears them to null.
 // @fnv 0x00cfbb40
-void Owner::FreeBuffers()
+// src: XBOX_RETAIL_PDB 0x00cfbb40
+// pdb: hkpCollisionDispatcher::disableDebugging | hkpCollisionDispatcher.obj | retail, object-file gap fill, high
+void Owner::hkpCollisionDispatcher_disableDebugging()
 {
     if (unk1e30)
     {
@@ -77,6 +79,9 @@ struct S_00cfb1f0_Obj
 };
 
 // @fnv 0x00cfb1f0
+// pdb: hkpCollisionDispatcher::registerContactMgrFactory | hkpCollisionDispatcher.obj | retail, object-file run extension, low
+// pdb params: fac, responseA, responseB
+// pdb locals: assertBuf, ostr
 void S_00cfb1f0_Obj::SetSlotPair(S_00cfb1f0_Ref* pRef, int iIndexA, int iIndexB)
 {
     pRef->FUN_00c90510();
@@ -105,6 +110,9 @@ struct CFB240Dispatcher
 
 // For each of 8 slots, releases the old factory in row i and column responseA, then stores fac in both positions.
 // @fnv 0x00cfb240
+// pdb: hkpCollisionDispatcher::registerContactMgrFactoryWithAll | hkpCollisionDispatcher.obj | retail, object-file run extension, low
+// pdb params: fac, responseA
+// pdb locals: assertBuf, ostr
 void CFB240Dispatcher::SetContactMgrFactory(CFB240ContactMgrFactory* apFactory, int aiResponseIndex)
 {
     for (int i = 0; i < 8; i++)
@@ -120,7 +128,7 @@ void CFB240Dispatcher::SetContactMgrFactory(CFB240ContactMgrFactory* apFactory, 
 }
 
 const char* GetHavokShapeTypeName(int type);
-int Vsnprintf(char* buf, int size, const char* fmt, ...);
+int hkString_snprintf(char* buf, int size, const char* fmt, ...);
 
 struct IntegerPair
 {
@@ -136,9 +144,12 @@ struct CollisionAgentEntry
 };
 
 // @fnv 0x00cfb2a0
-void hkpCollisionDispatcher::RegisterAgentType(signed char (*table)[32], signed char agentType, int typeA, int typeB,
-                                               signed char origTypeA, signed char origTypeB,
-                                               CollisionAgentEntry (*entries)[32], int depth)
+// pdb: hkpCollisionDispatcher::internalRegisterCollisionAgent | hkpCollisionDispatcher.obj | retail, string-set bridge, high
+// pdb params: agentTypesTable, agentType, typeA, typeB, origA, origB, debugTable, depth
+// pdb locals: assertBuf, ostr, beginB, endA, endB, a, buffer
+void hkpCollisionDispatcher::RegisterAgentType(signed char (*agentTypesTable)[32], signed char agentType, int typeA, int typeB,
+                                               signed char origA, signed char origB,
+                                               CollisionAgentEntry (*debugTable)[32], int depth)
 {
     m_bEnableDeprecatedFeature = true;
 
@@ -147,11 +158,11 @@ void hkpCollisionDispatcher::RegisterAgentType(signed char (*table)[32], signed 
         ::IntegerPair& si = m_pShapeInheritance[i];
         if (si.m_iSecond == typeA)
         {
-            RegisterAgentType(table, agentType, si.m_iFirst, typeB, origTypeA, origTypeB, entries, depth + 1);
+            RegisterAgentType(agentTypesTable, agentType, si.m_iFirst, typeB, origA, origB, debugTable, depth + 1);
         }
         if (si.m_iSecond == typeB)
         {
-            RegisterAgentType(table, agentType, typeA, si.m_iFirst, origTypeA, origTypeB, entries, depth + 1);
+            RegisterAgentType(agentTypesTable, agentType, typeA, si.m_iFirst, origA, origB, debugTable, depth + 1);
         }
     }
 
@@ -177,10 +188,10 @@ void hkpCollisionDispatcher::RegisterAgentType(signed char (*table)[32], signed 
     {
         for (int b = beginTypeB; b < endTypeB; b++)
         {
-            table[a][b] = agentType;
-            if (entries)
+            agentTypesTable[a][b] = agentType;
+            if (debugTable)
             {
-                CollisionAgentEntry& e = entries[a][b];
+                CollisionAgentEntry& e = debugTable[a][b];
                 if (m_debugWarnings && priority > e.m_priority)
                 {
                     const char* entryNameA = GetHavokShapeTypeName(e.m_iAgentTypeA);
@@ -188,14 +199,14 @@ void hkpCollisionDispatcher::RegisterAgentType(signed char (*table)[32], signed 
                     const char* typeNameA = GetHavokShapeTypeName(typeA);
                     const char* typeNameB = GetHavokShapeTypeName(typeB);
                     unsigned int buf[256];
-                    Vsnprintf(
+                    hkString_snprintf(
                         (char*)buf, 1000,
                         "Agent handling types <%s-%s> would override more specialized agent <%s-%s>\nMaybe the order of registering your collision agent is wrong, make sure you register your alternate type agents first",
                         typeNameA, typeNameB, entryNameA, entryNameB);
                 }
-                e.m_iAgentTypeA = origTypeA;
+                e.m_iAgentTypeA = origA;
                 e.m_priority = (signed char)priority;
-                e.m_iAgentTypeB = origTypeB;
+                e.m_iAgentTypeB = origB;
             }
         }
     }
@@ -203,7 +214,7 @@ void hkpCollisionDispatcher::RegisterAgentType(signed char (*table)[32], signed 
 
 struct FUN_00cfb510_cls
 {
-    void MergeBitsRecursive(unsigned int a1, unsigned int a2, int depth);
+    void MergeBitsRecursive(unsigned int primaryType, unsigned int alternateType, int depth);
 };
 
 struct FUN_00cfb510_entry
@@ -213,16 +224,19 @@ struct FUN_00cfb510_entry
 };
 
 // @fnv 0x00cfb510
-void FUN_00cfb510_cls::MergeBitsRecursive(unsigned int uiDstIndex, unsigned int uiSrcIndex, int depth)
+// pdb: hkpCollisionDispatcher::updateHasAlternateType | hkpCollisionDispatcher.obj | retail, object-file gap fill, high
+// pdb params: primaryType, alternateType, depth
+// pdb locals: assertBuf, ostr
+void FUN_00cfb510_cls::MergeBitsRecursive(unsigned int primaryType, unsigned int alternateType, int depth)
 {
     unsigned int* bits = (unsigned int*)((char*)this + 0x110);
-    bits[uiDstIndex] |= bits[uiSrcIndex];
+    bits[primaryType] |= bits[alternateType];
 
     for (int i = 0; i < *(int*)((char*)this + 0x1e28); ++i)
     {
         FUN_00cfb510_entry* pEntries = *(FUN_00cfb510_entry**)((char*)this + 0x1e24);
         FUN_00cfb510_entry* e = &pEntries[i];
-        if (e->unk04 == uiDstIndex)
+        if (e->unk04 == primaryType)
         {
             this->MergeBitsRecursive(e->unk00, e->unk04, depth + 1);
         }
@@ -242,32 +256,35 @@ struct FUN_00cfbbe0_rec
 class FUN_00cfbbe0_cls
 {
   public:
-    void __thiscall RegisterAgentType(void* p, int flag, int a2, int a3, int a4, int a5, int h, int g);
-    void __thiscall AppendRecordAndRegisterAgents(FUN_00cfbbe0_rec* a1, int a2, int a3);
+    void __thiscall RegisterAgentType(void* agentTypesTable, int flag, int a2, int a3, int origA, int origB, int debugTable, int g);
+    void __thiscall AppendRecordAndRegisterAgents(FUN_00cfbbe0_rec* f, int typeA, int typeB);
 };
 
 // Copies a record into the array at offset 0x9a0 at the current index, calls RegisterAgentType on several sub-objects, and increments the index.
 // @fnv 0x00cfbbe0
 // src: GUESS 0x00cfbbe0 (confidence: medium)
-void FUN_00cfbbe0_cls::AppendRecordAndRegisterAgents(FUN_00cfbbe0_rec* pRecord, int a2, int a3)
+// pdb: hkpCollisionDispatcher::registerCollisionAgent | hkpCollisionDispatcher.obj | retail, call graph, high
+// pdb params: f, typeA, typeB
+// pdb locals: assertBuf, ostr
+void FUN_00cfbbe0_cls::AppendRecordAndRegisterAgents(FUN_00cfbbe0_rec* f, int typeA, int typeB)
 {
     char* base = (char*)this;
     Owner* o = (Owner*)this;
     int idx = *(int*)(base + 0x190);
     FUN_00cfbbe0_rec* arr = (FUN_00cfbbe0_rec*)(base + 0x9a0);
-    arr[idx].unk00 = pRecord->unk00;
+    arr[idx].unk00 = f->unk00;
     FUN_00cfbbe0_rec* slot = &arr[idx];
-    slot->unk04 = pRecord->unk04;
-    slot->unk08 = pRecord->unk08;
-    slot->unk0c = pRecord->unk0c;
-    slot->unk10 = pRecord->unk10;
+    slot->unk04 = f->unk04;
+    slot->unk08 = f->unk08;
+    slot->unk0c = f->unk0c;
+    slot->unk10 = f->unk10;
 
-    RegisterAgentType(base + 0xeb0, 1, a2, a3, a2, a3, (int)o->unk1e38, 0);
-    RegisterAgentType(base + 0x1a0, *(int*)(base + 0x190), a2, a3, a2, a3, (int)o->unk1e30, 0);
-    if (((unsigned char*)pRecord)[0x11] != 0)
+    RegisterAgentType(base + 0xeb0, 1, typeA, typeB, typeA, typeB, (int)o->unk1e38, 0);
+    RegisterAgentType(base + 0x1a0, *(int*)(base + 0x190), typeA, typeB, typeA, typeB, (int)o->unk1e30, 0);
+    if (((unsigned char*)f)[0x11] != 0)
     {
-        RegisterAgentType(base + 0x12b0, 1, a2, a3, a2, a3, (int)o->unk1e3c, 0);
-        RegisterAgentType(base + 0x5a0, *(int*)(base + 0x190), a2, a3, a2, a3, (int)o->unk1e34, 0);
+        RegisterAgentType(base + 0x12b0, 1, typeA, typeB, typeA, typeB, (int)o->unk1e3c, 0);
+        RegisterAgentType(base + 0x5a0, *(int*)(base + 0x190), typeA, typeB, typeA, typeB, (int)o->unk1e34, 0);
     }
     (*(int*)(base + 0x190))++;
 }
@@ -302,29 +319,33 @@ struct SpawnEntry
 
 struct FUN_00cfbcc0_cls
 {
-    void AddSpawnEntry(SpawnRequest* req, int a, int b);
-    void RegisterAgentType(char* p, int idx, int a, int b, int c, int d, int e, int f);
+    void hkpCollisionDispatcher_registerCollisionAgent2(SpawnRequest* f, int typeA, int typeB);
+    void RegisterAgentType(char* agentTypesTable, int idx, int a, int b, int origA, int origB, int debugTable, int f);
 };
 
 // @fnv 0x00cfbcc0
-void FUN_00cfbcc0_cls::AddSpawnEntry(SpawnRequest* pRequest, int a, int b)
+// src: XBOX_RETAIL_PDB 0x00cfbcc0
+// pdb: hkpCollisionDispatcher::registerCollisionAgent2 | hkpCollisionDispatcher.obj | retail, object-file gap fill, high
+// pdb params: f, typeA, typeB
+// pdb locals: assertBuf, ostr
+void FUN_00cfbcc0_cls::hkpCollisionDispatcher_registerCollisionAgent2(SpawnRequest* f, int typeA, int typeB)
 {
     char* self = (char*)this;
     int idx = *(int*)(self + 0x190);
-    *(int*)(self + 0x9a0 + idx * 20) = pRequest->unk00;
+    *(int*)(self + 0x9a0 + idx * 20) = f->unk00;
     SpawnEntry* entry = (SpawnEntry*)(self + 0x9a0 + idx * 20);
-    entry->unk04 = pRequest->unk04;
-    entry->unk08 = pRequest->unk08;
-    entry->unk0c = pRequest->unk0c;
-    entry->unk10 = pRequest->unk10;
+    entry->unk04 = f->unk04;
+    entry->unk08 = f->unk08;
+    entry->unk0c = f->unk0c;
+    entry->unk10 = f->unk10;
 
     int tail = *(int*)(self + 0x1e30);
-    RegisterAgentType(self + 0x1a0, *(int*)(self + 0x190), a, b, a, b, tail, 0);
+    RegisterAgentType(self + 0x1a0, *(int*)(self + 0x190), typeA, typeB, typeA, typeB, tail, 0);
 
-    if (pRequest->unk10b1 != 0)
+    if (f->unk10b1 != 0)
     {
         int tail2 = *(int*)(self + 0x1e34);
-        RegisterAgentType(self + 0x5a0, *(int*)(self + 0x190), a, b, a, b, tail2, 0);
+        RegisterAgentType(self + 0x5a0, *(int*)(self + 0x190), typeA, typeB, typeA, typeB, tail2, 0);
     }
 
     ++*(int*)(self + 0x190);
@@ -366,33 +387,37 @@ struct Ent
 
 struct FUN_00cfbd60_cls
 {
-    void RegisterAgentType(void* p, int i, int a, int b, int c, int d, int e, int f);
-    int AddEntry(SrcRec* a1, int a2, int a3);
+    void RegisterAgentType(void* agentTypesTable, int i, int a, int b, int origA, int origB, int debugTable, int f);
+    int hkpCollisionDispatcher_registerAgent3(SrcRec* f, int typeA, int typeB);
 };
 
 // @fnv 0x00cfbd60
-int FUN_00cfbd60_cls::AddEntry(SrcRec* pSrc, int a2, int a3)
+// src: XBOX_RETAIL_PDB 0x00cfbd60
+// pdb: hkpCollisionDispatcher::registerAgent3 | hkpCollisionDispatcher.obj | retail, call graph (shared callers), high
+// pdb params: f, typeA, typeB
+// pdb locals: f3, assertBuf, ostr
+int FUN_00cfbd60_cls::hkpCollisionDispatcher_registerAgent3(SrcRec* f, int typeA, int typeB)
 {
     __declspec(align(16)) Ent e;
     *((unsigned char*)this + 0x1e21) = 1;
-    e.src = *pSrc;
+    e.src = *f;
     e.u40 = 0;
-    if (a2 != a3 && pSrc->b31 == 0)
+    if (typeA != typeB && f->b31 == 0)
     {
         e.u40 = 2;
         ((Ent*)((char*)this + 0x16b0))[(*(int*)((char*)this + 0xea0))] = e;
-        RegisterAgentType(((char*)this + 0xeb0), (*(int*)((char*)this + 0xea0)), a3, a2, a3, a2,
+        RegisterAgentType(((char*)this + 0xeb0), (*(int*)((char*)this + 0xea0)), typeB, typeA, typeB, typeA,
                           (*(int*)((char*)this + 0x1e38)), 0);
         if (e.src.b30 != 0)
         {
-            RegisterAgentType(((char*)this + 0x12b0), (*(int*)((char*)this + 0xea0)), a3, a2, a3, a2,
+            RegisterAgentType(((char*)this + 0x12b0), (*(int*)((char*)this + 0xea0)), typeB, typeA, typeB, typeA,
                               (*(int*)((char*)this + 0x1e3c)), 0);
         }
         (*(int*)((char*)this + 0xea0))++;
         e.u40 = 1;
     }
     int idx;
-    if (pSrc->b32 == 0)
+    if (f->b32 == 0)
     {
         idx = (*(int*)((char*)this + 0xea0));
         (*(int*)((char*)this + 0xea0)) = idx + 1;
@@ -402,15 +427,15 @@ int FUN_00cfbd60_cls::AddEntry(SrcRec* pSrc, int a2, int a3)
     {
         idx = (*(int*)((char*)this + 0xea0)) - 1;
     }
-    RegisterAgentType(((char*)this + 0xeb0), idx, a2, a3, a2, a3, (*(int*)((char*)this + 0x1e38)), 0);
+    RegisterAgentType(((char*)this + 0xeb0), idx, typeA, typeB, typeA, typeB, (*(int*)((char*)this + 0x1e38)), 0);
     if (e.src.b30 != 0)
     {
-        RegisterAgentType(((char*)this + 0x12b0), idx, a2, a3, a2, a3, (*(int*)((char*)this + 0x1e3c)), 0);
+        RegisterAgentType(((char*)this + 0x12b0), idx, typeA, typeB, typeA, typeB, (*(int*)((char*)this + 0x1e3c)), 0);
     }
     return idx;
 }
 
-int __cdecl hkStatisticsCollector_getAllocatedSize(const void* p, int numBytes);
+int __cdecl hkStatisticsCollector_getAllocatedSize(const void* p, int size);
 
 struct CFBED0ShapeInheritance
 {
@@ -2322,6 +2347,8 @@ struct CFBED0Dispatcher
 
 // Adds the shapeInheritanceArray and all 8x8 contactMgrFactory child objects to the statistics collector.
 // @fnv 0x00cfbed0
+// pdb: hkpCollisionDispatcher::calcContentStatistics | hkpCollisionDispatcher.obj | retail, string-set bridge, high
+// pdb params: collector, cls
 void CFBED0Dispatcher::CollectStatistics(CFBED0StatisticsCollector* collector, const void* cls) const
 {
     collector->addArray("shapeInheritanceArray", m_pShapeInheritance);
@@ -2349,7 +2376,7 @@ struct CFBF60MemoryRouter
 };
 
 extern "C" CFBF60MemoryRouter& __cdecl CFBF60GetMemoryRouter();
-void __cdecl ResizeAudioStream(void* alloc, void* array, int sizeElem);
+void __cdecl ResizeAudioStream(void* mem, void* array, int sizeElem);
 
 struct CFBF60ShapeInheritance
 {
@@ -2382,6 +2409,9 @@ static __forceinline CFBF60ShapeInheritance& CFBF60InheritanceArray_AllocatePair
 // Removes all entries matching primaryType/alternateType from the inheritance array, then updates inheritance and appends a new entry for the pair.
 // @fnv 0x00cfbf60
 // src: HAVOK_LIB 0x00cfbf60
+// pdb: hkpCollisionDispatcher::registerAlternateShapeType | hkpCollisionDispatcher.obj | retail, upstream name already matches, high
+// pdb params: primaryType, alternateType
+// pdb locals: assertBuf, ostr
 void hkpCollisionDispatcher::registerAlternateShapeType(int primaryType, int alternateType)
 {
     for (int i = 0; i < reinterpret_cast<hkArrayBase<CFBF60ShapeInheritance>*>(&m_pShapeInheritance)->m_iElementCount; i++)
@@ -2423,14 +2453,16 @@ struct CleanupBuffer
 };
 struct Cleanup
 {
-    void Destroy();
+    void hkpCollisionDispatcher_dtor();
 };
 // Resets the vtable, releases the 8x8 grid references, frees the buffer through the allocator, and sets the final vtable.
 // @fnv 0x00cfc140
-void Cleanup::Destroy()
+// src: XBOX_RETAIL_PDB 0x00cfc140
+// pdb: hkpCollisionDispatcher::~hkpCollisionDispatcher | hkpCollisionDispatcher.obj | retail, object-file gap fill, high
+void Cleanup::hkpCollisionDispatcher_dtor()
 {
     *reinterpret_cast<int**>(this) = &DAT_010cc7c0;
-    reinterpret_cast<Owner*>(this)->FreeBuffers();
+    reinterpret_cast<Owner*>(this)->hkpCollisionDispatcher_disableDebugging();
     hkReferencedObject*(*grid)[8] = reinterpret_cast<hkReferencedObject*(*)[8]>(reinterpret_cast<char*>(this) + 0xc);
     for (int r = 0; r < 8; ++r)
         for (int c = 0; c < 8; ++c)
@@ -2469,17 +2501,19 @@ struct FUN_00cfc030_cls
     unsigned short unk06;
     unsigned int unk08;
     void Reset_cfb080();
-    FUN_00cfc030_cls* hkpCollisionDispatcher_hkpCollisionDispatcher(unsigned int a1, unsigned int v);
+    FUN_00cfc030_cls* hkpCollisionDispatcher_hkpCollisionDispatcher(unsigned int defaultCollisionAgent, unsigned int defaultContactMgrFactory);
 };
 
 // Initializes the object by zeroing arrays, setting up a reference-counted pointer array from v, and initializing a bit rotation sequence.
 // @fnv 0x00cfc030
 // src: HAVOK_LIB 0x00cfc030
-FUN_00cfc030_cls* FUN_00cfc030_cls::hkpCollisionDispatcher_hkpCollisionDispatcher(unsigned int a1, unsigned int v)
+// pdb: hkpCollisionDispatcher::hkpCollisionDispatcher | hkpCollisionDispatcher.obj | retail, upstream name already matches, high
+// pdb params: defaultCollisionAgent, defaultContactMgrFactory
+FUN_00cfc030_cls* FUN_00cfc030_cls::hkpCollisionDispatcher_hkpCollisionDispatcher(unsigned int defaultCollisionAgent, unsigned int defaultContactMgrFactory)
 {
     *(volatile unsigned short*)&unk06 = 1;
 
-    unk08 = a1;
+    unk08 = defaultCollisionAgent;
     unsigned int one = 1;
     int n = one + 0x3e;
     unk00 = (void*)&DAT_010cc7c0;
@@ -2520,13 +2554,13 @@ FUN_00cfc030_cls* FUN_00cfc030_cls::hkpCollisionDispatcher_hkpCollisionDispatche
     At<unsigned char>(this, 0x1e22) = 0;
 
     unsigned int* dst = (unsigned int*)((char*)this + 0xc);
-    a1 = 8;
+    defaultCollisionAgent = 8;
     do
     {
         int j = 8;
         do
         {
-            unsigned int cur = *(volatile unsigned int*)&v;
+            unsigned int cur = *(volatile unsigned int*)&defaultContactMgrFactory;
             *dst = cur;
             if (cur != 0)
             {
@@ -2534,7 +2568,7 @@ FUN_00cfc030_cls* FUN_00cfc030_cls::hkpCollisionDispatcher_hkpCollisionDispatche
             }
             ++dst;
         } while (--j != 0);
-    } while (--a1 != 0);
+    } while (--defaultCollisionAgent != 0);
 
     unsigned int bit = 1;
     unsigned int* bits = (unsigned int*)((char*)this + 0x110);
@@ -3497,11 +3531,12 @@ struct S00cfb080_State
     void hkpCollisionDispatcher_resetCreationFunctions();
 };
 
-void __cdecl hkAgent3Bridge_registerAgent3(S00cfb080_State* pkState);
+void __cdecl hkAgent3Bridge_registerAgent3(S00cfb080_State* dispatcher);
 
 // Initializes the state by zeroing map arrays, setting color buffers to 100, assigning allocation and notification callbacks, and calling FUN_00d923b0.
 // @fnv 0x00cfb080
 // src: HAVOK_LIB 0x00cfb080
+// pdb: hkpCollisionDispatcher::resetCreationFunctions | hkpCollisionDispatcher.obj | retail, upstream name already matches, high
 void S00cfb080_State::hkpCollisionDispatcher_resetCreationFunctions()
 {
     m_iDirtyA = 1;
@@ -3807,32 +3842,35 @@ struct Big
     Block blk[7];
     int unk1E20, unk1E24, unk1E28, unk1E2C, unk1E30, unk1E34, unk1E38, unk1E3C;
     float f1e40, f1e44;
-    void hkpCollisionDispatcher_initCollisionQualityInfo(Src* src);
+    void hkpCollisionDispatcher_initCollisionQualityInfo(Src* input);
 };
 
 // Fills the 7 Block entries in blk from src with conditional overrides based on src flags, and fills the 100-byte table with fixed values.
 // @fnv 0x00cfb570
 // src: HAVOK_LIB 0x00cfb570
-void Big::hkpCollisionDispatcher_initCollisionQualityInfo(Src* src)
+// pdb: hkpCollisionDispatcher::initCollisionQualityInfo | hkpCollisionDispatcher.obj | retail, upstream name already matches, high
+// pdb params: input
+// pdb locals: assertBuf, ostr
+void Big::hkpCollisionDispatcher_initCollisionQualityInfo(Src* input)
 {
     Block* b0 = &blk[0];
-    f1e44 = src->f08;
-    f1e40 = src->f0c;
-    float t = (float)(src->f00 * 0.5 * src->f08 * src->f08);
-    b0->b3e = src->b2b;
-    b0->f00 = src->f04;
-    b0->f04 = src->f04;
-    b0->f0c = src->f04;
-    if (src->b29)
+    f1e44 = input->f08;
+    f1e40 = input->f0c;
+    float t = (float)(input->f00 * 0.5 * input->f08 * input->f08);
+    b0->b3e = input->b2b;
+    b0->f00 = input->f04;
+    b0->f04 = input->f04;
+    b0->f0c = input->f04;
+    if (input->b29)
         b0->f0c = (float)(-2.0 * t);
-    b0->f08 = src->f04;
+    b0->f08 = input->f04;
     double c1a6b0 = -1.0;
-    if (src->b2a)
+    if (input->b2a)
         b0->f08 = (float)(t * c1a6b0);
     b0->f34 = 3.40282e+38f;
     b0->i10 = 0;
     b0->b14 = 0;
-    b0->s3c = src->s20;
+    b0->s3c = input->s20;
     b0->f18 = -5e19f;
     b0->f1c = -5e19f;
     b0->f28 = -1e19f;
@@ -3852,77 +3890,77 @@ void Big::hkpCollisionDispatcher_initCollisionQualityInfo(Src* src)
     *b3 = *b0;
     Block* b4 = &blk[4];
     *b4 = *b0;
-    b6->f0c = src->f04;
-    b6->f04 = src->f04;
-    b6->f08 = src->f04;
-    if (src->b28)
+    b6->f0c = input->f04;
+    b6->f04 = input->f04;
+    b6->f08 = input->f04;
+    if (input->b28)
     {
         b1->f18 = -0.5f;
-        b1->f1c = (float)(-0.5 / (src->f10 - 1.0));
+        b1->f1c = (float)(-0.5 / (input->f10 - 1.0));
         b1->f28 = -0.25f;
-        float u = (float)(-0.3499999940395355 / (src->f10 - 1.0));
+        float u = (float)(-0.3499999940395355 / (input->f10 - 1.0));
         b1->f2c = u;
         b1->f30 = (float)(u * -0.30000001192092896);
         b1->f34 = (float)(b1->f1c * c1a6b0);
-        b1->f20 = (float)(5.0 / src->f0c);
-        b1->f24 = (float)(0.004999999888241291 / src->f0c);
-        b1->f38 = (float)(b1->f1c * -2.0 / src->f0c);
-        b1->s3c = src->s22;
+        b1->f20 = (float)(5.0 / input->f0c);
+        b1->f24 = (float)(0.004999999888241291 / input->f0c);
+        b1->f38 = (float)(b1->f1c * -2.0 / input->f0c);
+        b1->s3c = input->s22;
         b1->i10 = 1;
         b1->b14 = 1;
     }
-    if (src->b28)
+    if (input->b28)
     {
         b2->f18 = -0.5f;
-        b2->f1c = (float)(-0.5 / (src->f14 - 1.0));
+        b2->f1c = (float)(-0.5 / (input->f14 - 1.0));
         b2->f28 = -0.25f;
-        float u2 = (float)(-0.3499999940395355 / (src->f14 - 1.0));
+        float u2 = (float)(-0.3499999940395355 / (input->f14 - 1.0));
         b2->f2c = u2;
         b2->f30 = (float)(u2 * -0.30000001192092896);
         b2->f34 = (float)(b2->f1c * c1a6b0);
-        b2->f20 = (float)(5.0 / src->f0c);
-        b2->f24 = (float)(0.004999999888241291 / src->f0c);
-        b2->f38 = (float)(b2->f1c * -2.0 / src->f0c);
-        b2->s3c = src->s22;
+        b2->f20 = (float)(5.0 / input->f0c);
+        b2->f24 = (float)(0.004999999888241291 / input->f0c);
+        b2->f38 = (float)(b2->f1c * -2.0 / input->f0c);
+        b2->s3c = input->s22;
         b2->i10 = 1;
     }
-    if (src->b28)
+    if (input->b28)
     {
         b3->f18 = -0.5f;
-        b3->f1c = (float)(-0.5 / (src->f18 - 1.0));
+        b3->f1c = (float)(-0.5 / (input->f18 - 1.0));
         b3->f28 = -0.25f;
-        float u3 = (float)(-0.3499999940395355 / (src->f18 - 1.0));
+        float u3 = (float)(-0.3499999940395355 / (input->f18 - 1.0));
         b3->f2c = u3;
         b3->f30 = (float)(u3 * -0.30000001192092896);
         double p = b3->f1c * c1a6b0;
         b3->f34 = (float)p;
-        b3->f20 = (float)(5.0 / src->f0c);
-        b3->f24 = (float)(0.004999999888241291 / src->f0c);
-        b3->f38 = (float)(p / src->f0c);
-        b3->s3c = src->s24;
+        b3->f20 = (float)(5.0 / input->f0c);
+        b3->f24 = (float)(0.004999999888241291 / input->f0c);
+        b3->f38 = (float)(p / input->f0c);
+        b3->s3c = input->s24;
         b3->i10 = 1;
     }
-    b4->f00 = src->f04;
-    if (src->b28)
+    b4->f00 = input->f04;
+    if (input->b28)
     {
         b4->f18 = -0.4f;
-        b4->f1c = (float)(-0.5999999940395355 / (src->f1c - 1.0));
+        b4->f1c = (float)(-0.5999999940395355 / (input->f1c - 1.0));
         b4->f28 = -0.2f;
-        float u = (float)(-0.41999998867511756 / (src->f1c - 1.0));
+        float u = (float)(-0.41999998867511756 / (input->f1c - 1.0));
         b4->f2c = u;
         b4->f30 = (float)(u * -0.30000001192092896);
         double p = b4->f1c * c1a6b0;
         b4->f34 = (float)p;
-        b4->f20 = (float)(5.0 / src->f0c);
-        b4->f24 = (float)(0.004999999888241291 / src->f0c);
-        b4->f38 = (float)(p / src->f0c);
-        b4->s3c = src->s26;
+        b4->f20 = (float)(5.0 / input->f0c);
+        b4->f24 = (float)(0.004999999888241291 / input->f0c);
+        b4->f38 = (float)(p / input->f0c);
+        b4->s3c = input->s26;
         b4->i10 = 1;
     }
     Block* b5 = &blk[5];
     *b5 = *b4;
-    b5->f0c = src->f04;
-    b5->f08 = src->f04;
+    b5->f0c = input->f04;
+    b5->f08 = input->f04;
     fnv_zlib_memset(table, 1, 100);
     table[0] = 0;
     table[1] = 0;
@@ -4047,6 +4085,7 @@ struct FUN_00cfc550 : S_00cfc550_RefObj
 };
 
 // @fnv 0x00cfc550
+// pdb: hkpCollisionDispatcher::`scalar deleting destructor' | hkpCollisionDispatcher.obj | retail, vtable slot, high
 FUN_00cfc550::FUN_00cfc550()
 {}
 
@@ -4075,30 +4114,32 @@ struct Cls_cfcba0
     int unk2c;
     unsigned short unk30;
     unsigned short unk32;
-    Cls_cfcba0* hkpManifoldPointAddedEvent_hkpManifoldPointAddedEvent(unsigned short a0, Src_cfcba0* a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8,
-                             float a9);
+    Cls_cfcba0* hkpManifoldPointAddedEvent_hkpManifoldPointAddedEvent(unsigned short contactPointId, Src_cfcba0* contactMgr, int collisionInput, int collisionOutput, int a4, int b, int cp, int gskCache, int a8,
+                             float projectedVelocity);
 };
 // Sets fields from parameters, stores a1 in unk24, sets unk32 from a1->unk12 when a1->unk08 is zero, and returns this.
 // @fnv 0x00cfcba0
 // src: HAVOK_LIB 0x00cfcba0
-Cls_cfcba0* Cls_cfcba0::hkpManifoldPointAddedEvent_hkpManifoldPointAddedEvent(unsigned short a0, Src_cfcba0* a1, int a2, int a3, int a4, int a5, int a6, int a7,
-                                     int a8, float a9)
+// pdb: hkpManifoldPointAddedEvent::hkpManifoldPointAddedEvent | hkpReportContactMgr.obj | debug, upstream name already matches, high
+// pdb params: contactPointId, contactMgr, collisionInput, collisionOutput, a, b, cp, gskCache, cpp, projectedVelocity
+Cls_cfcba0* Cls_cfcba0::hkpManifoldPointAddedEvent_hkpManifoldPointAddedEvent(unsigned short contactPointId, Src_cfcba0* contactMgr, int collisionInput, int collisionOutput, int a4, int b, int cp, int gskCache,
+                                     int a8, float projectedVelocity)
 {
     unk00 = a4;
-    unk04 = a5;
+    unk04 = b;
     unk08 = 1;
     float& ref1c = unk1c;
-    ref1c = a9;
-    unk10 = a6;
-    unk14 = a7;
+    ref1c = projectedVelocity;
+    unk10 = cp;
+    unk14 = gskCache;
     unk18 = a8;
-    unk28 = a2;
-    unk24 = a1;
-    unk2c = a3;
+    unk28 = collisionInput;
+    unk24 = contactMgr;
+    unk2c = collisionOutput;
     unk20 = 0;
-    unk30 = a0;
-    if (a1->unk08 == 0)
-        unk32 = a1->unk12;
+    unk30 = contactPointId;
+    if (contactMgr->unk08 == 0)
+        unk32 = contactMgr->unk12;
     else
         unk32 = 0;
     return this;

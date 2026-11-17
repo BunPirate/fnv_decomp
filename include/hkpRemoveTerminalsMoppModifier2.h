@@ -7,6 +7,7 @@ class hkBitField;
 typedef unsigned long hkUlong;
 
 // Havok 7.1: RTTI vftables 0x010ec1a4 (+0) and 0x010ec1b8 (+8); constructor 0x00e487a0; 0x20 bytes.
+// pdb: class hkpRemoveTerminalsMoppModifier2, size 0x20, bases: hkpRemoveTerminalsMoppModifier, 1 members
 class hkpRemoveTerminalsMoppModifier2 : public hkpRemoveTerminalsMoppModifier
 {
 public:

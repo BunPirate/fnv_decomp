@@ -6,40 +6,43 @@
 
 // Checks the form type is 0x24, clears Data, loads the record header and iterates chunks (EDID, OBND, MODL/MODT, DATA) until none remain, returning true.
 // @fnv 0x00509f80
-bool TESGrass::LoadForm(TESFile* file)
+// pdb: TESGrass::Load | TESGrass.obj | retail, vtable slot, high
+// pdb params: apFile
+// pdb locals: chunkid, formid, pMessage
+bool TESGrass::LoadForm(TESFile* apFile)
 {
-    unsigned char formType = file->GetTESForm();
+    unsigned char formType = apFile->GetTESForm();
     if (formType != 0x24)
         return false;
     memset(&Data, 0, sizeof(Data));
-    LoadRecordHeader(file);
+    LoadRecordHeader(apFile);
     SetInitializationState(false);
     int chunk;
-    while ((chunk = file->GetChunkID()) != 0)
+    while ((chunk = apFile->GetChunkID()) != 0)
     {
         switch (chunk)
         {
         case 0x44494445:  // EDID
         {
-            char* editorID = static_cast<char*>(_alloca(file->GetChunkSize()));
-            file->GetChunkData(editorID, 0x200);
+            char* editorID = static_cast<char*>(_alloca(apFile->GetChunkSize()));
+            apFile->GetChunkData(editorID, 0x200);
             SetEditorID_AtRuntime(editorID);
             break;
         }
         case 0x444e424f:  // OBND
-            readOBNDSubRecord(file);
+            readOBNDSubRecord(apFile);
             break;
         case 0x4c444f4d:  // MODL
         case 0x54444f4d:  // MODT
-            TESModel::LoadModelData(this, file);
+            TESModel::LoadModelData(this, apFile);
             break;
         case 0x41544144:  // DATA
-            reinterpret_cast<BGSImpactData*>(this)->ReadTypedData(file, &Data, sizeof(Data));
+            reinterpret_cast<BGSImpactData*>(this)->ReadTypedData(apFile, &Data, sizeof(Data));
             break;
         }
-        if (chunk == 0x41544144 && file->IsEndianConversionRequired())
-            Data.ResetGrassData();
-        if (!file->NextChunk())
+        if (chunk == 0x41544144 && apFile->IsEndianConversionRequired())
+            Data.TESGrass_GRASS_DATA_Endian();
+        if (!apFile->NextChunk())
             break;
     }
     return true;
@@ -74,6 +77,7 @@ float TESGrass::GetLowestAllowedSlope()
 }
 
 // @fnv 0x00509f50
+// pdb: TESGrass::InitItem | TESGrass.obj | debug, upstream name already matches, high
 void TESGrass::InitItem()
 {
     if (GetInitialized())
@@ -163,6 +167,7 @@ struct FUN_00509c90_shell
 
 // Calls FUN_00509cc0, then deletes this if flags has bit 1 set, and returns this.
 // @fnv 0x00509c90
+// pdb: TESGrass::`scalar deleting destructor' | TESGrass.obj | retail, vtable slot, high
 void* FUN_00509c90_shell::DestroyIfFlagged(unsigned int flags)
 {
     FUN_00509cc0();
@@ -274,19 +279,21 @@ float FUN_009d1b50_shell::GetField54Float()
 
 struct FUN_00508140_shell
 {
-    void __thiscall TESEffectShader_AnimateEdgeEffectAlpha(float a, float b, float c, unsigned char d);
+    void __thiscall TESEffectShader_AnimateEdgeEffectAlpha(float afCurrentAlpha, float afTimeDelta, float afTime, unsigned char abFade);
 };
 struct FUN_005082b0_shell
 {
-    void __thiscall UpdateEnvelope(float a, float b, float c, unsigned char d, float e, float f, float g, float h,
-                                   float i);
+    void __thiscall TESEffectShader_AnimateValue(float afCurrentValue, float afTimeDelta, float afTime, unsigned char abFade, float afFadeIn, float afFadeOut, float afFullTime, float afFullValue,
+                                   float afPersistentValue);
 };
 // @fnv 0x00508140
 // src: COMMUNITY 0x00508140
-void __thiscall FUN_00508140_shell::TESEffectShader_AnimateEdgeEffectAlpha(float a, float b, float c, unsigned char d)
+// pdb: TESEffectShader::AnimateEdgeEffectAlpha | TESEffectShader.obj | debug, upstream name already matches, high
+// pdb params: afCurrentAlpha, afTimeDelta, afTime, abFade
+void __thiscall FUN_00508140_shell::TESEffectShader_AnimateEdgeEffectAlpha(float afCurrentAlpha, float afTimeDelta, float afTime, unsigned char abFade)
 {
-    reinterpret_cast<FUN_005082b0_shell*>(this)->UpdateEnvelope(
-        a, b, c, d, reinterpret_cast<FUN_009d1b50_shell*>(this)->GetField54Float(),
+    reinterpret_cast<FUN_005082b0_shell*>(this)->TESEffectShader_AnimateValue(
+        afCurrentAlpha, afTimeDelta, afTime, abFade, reinterpret_cast<FUN_009d1b50_shell*>(this)->GetField54Float(),
         reinterpret_cast<TESGrass*>(this)->TESGrass::GetLowestAllowedSlope(),
         reinterpret_cast<FUN_005081b0_shell*>(this)->GetFloatAtOffset58(),
         reinterpret_cast<PathingRequest*>(this)->GetSmoothingRandomness(),
@@ -331,15 +338,16 @@ struct FUN_0050a1d0_shell
 };
 // @fnv 0x0050a1d0
 // src: XBOX_PDB 0x0050a1d0
+// pdb: TESGrass::Save | TESGrass.obj | retail, upstream name already matches, high
 void FUN_0050a1d0_shell::TESGrass_Save()
 {
     ((FUN_004855a0*)this)->M();
     ((FUN_004891d0_shell*)((char*)this + 0x30))->WriteToBuffer(0x4c444f4d, 0x54444f4d);
     if (TESForm_QEndianSwapOnSave())
-        ((TESGrass__GRASS_DATA*)((char*)this + 0x48))->ResetGrassData();
+        ((TESGrass__GRASS_DATA*)((char*)this + 0x48))->TESGrass_GRASS_DATA_Endian();
     ((FUN_00485e00_shell*)this)->TESForm___SaveData((int)((char*)this + 0x48), 0x20);
     if (TESForm_QEndianSwapOnSave())
-        ((TESGrass__GRASS_DATA*)((char*)this + 0x48))->ResetGrassData();
+        ((TESGrass__GRASS_DATA*)((char*)this + 0x48))->TESGrass_GRASS_DATA_Endian();
     ((FUN_00485680*)this)->M();
 }
 
@@ -357,6 +365,9 @@ struct FUN_0050a240_shell
     void CopyGrassData(TESForm* apCopy);
 };
 // @fnv 0x0050a240
+// pdb: TESGrass::Copy | TESGrass.obj | retail, vtable slot, high
+// pdb params: apCopy
+// pdb locals: pcopy
 void FUN_0050a240_shell::CopyGrassData(TESForm* apCopy)
 {
     TESGrass* pcopy;
@@ -380,6 +391,7 @@ struct FUN_0050a550_shell
 // Returns the string pointer stored in _34, or an empty string when _34 is zero.
 // @fnv 0x0050a550
 // src: COMMUNITY 0x0050a550
+// pdb: TESGrass::GetModel | TESGrass.obj | debug, object-file run extension, low
 const char* FUN_0050a550_shell::TESGrass_GetModelPath()
 {
     return _34 ? (const char*)(unsigned int)_34 : "";
@@ -559,7 +571,9 @@ void __cdecl BSEndian_00407a90(void* destination, unsigned char reset);
 void __cdecl BSEndian_00401080(void* destination, unsigned char reset);
 // Resets the grass data members by calling FUN_00407a90 on one field and FUN_00401080 on five others with zero-initialized ResetState values.
 // @fnv 0x0050a120
-void TESGrass__GRASS_DATA::ResetGrassData()
+// src: XBOX_DEBUG_PDB 0x0050a120
+// pdb: TESGrass::GRASS_DATA::Endian | TESGrass.obj | debug, call graph (shared callers), high
+void TESGrass__GRASS_DATA::TESGrass_GRASS_DATA_Endian()
 {
     ResetState b0 = {};
     BSEndian_00407a90(&m_usUnitsFromSurface, b0.value);
@@ -703,12 +717,13 @@ class B50F600Ref
     virtual void VFunc170();
     virtual B50F600Node* Get3D(int iIndex);
 
-    bool TESBoundObject_ReplaceModel_0050f600(int iUnused);
+    bool TESBoundObject_ReplaceModel_0050f600(int pfilename);
 };
 
 // @fnv 0x0050f600
 // src: XBOX_PDB 0x0050f600
-bool B50F600Ref::TESBoundObject_ReplaceModel_0050f600(int iUnused)
+// pdb: TESBoundObject::ReplaceModel | TESObject.obj | retail, vtable slot, high
+bool B50F600Ref::TESBoundObject_ReplaceModel_0050f600(int pfilename)
 {
     g_pkB50F600ModelLoader->ModelLoader_ReleaseFile(TESModel_GetModel_004895b0(this));
     B50F600Node* pkNode2 = Get3D(0);
@@ -782,6 +797,9 @@ struct Argument
 // Returns true if the form is not TESGrass, base comparison reports a difference, or any compared accessor differs.
 // @fnv 0x0050a2a0
 // src: XBOX_PDB 0x0050a2a0
+// pdb: TESGrass::Compare | TESGrass.obj | retail, upstream name already matches, high
+// pdb params: apCompare
+// pdb locals: pcomp
 bool __fastcall TESGrass_Compare(::TESGrass* apGrass, GrassCompare50A2A0Detail::Argument apCompare)
 {
     ::TESGrass* pCompareGrass = dynamic_cast< ::TESGrass*>(apCompare.form);

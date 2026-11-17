@@ -273,6 +273,8 @@ struct Cell : Reference
 
 // @fnv 0x00542d40
 // src: XBOX_PDB 0x00542d40
+// pdb: TESObjectCELL::InitItem | TESObjectCELL.obj | retail, string-set bridge, high
+// pdb locals: plist, brestoreAllowChanges, plastlist, iwarnings, iprevwarnings, pworld, itempint, plt, pref, i, spNavMesh, brestore
 void Cell::TESObjectCELL_InitItem()
 {
 

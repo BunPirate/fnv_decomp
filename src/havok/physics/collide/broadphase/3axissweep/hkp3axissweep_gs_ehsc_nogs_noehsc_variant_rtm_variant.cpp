@@ -20,7 +20,7 @@ unsigned short MaxUnsignedShort(unsigned short a, unsigned short b);
 BSAudio* __cdecl hkMemoryRouter_getInstance();
 void __cdecl ResizeAudioStream(void*, void*, int);
 struct UnkRet { int x; int y; };
-void __fastcall AppendPairToBuffer(UnkRet* a, UnkRet* b, void* c);
+void __fastcall hkp3AxisSweep_beginOverlap(UnkRet* a, UnkRet* b, void* newPairsOut);
 void __fastcall ToggleBit(int a, void* b);
 struct Entry {
     unsigned short key;
@@ -30,7 +30,7 @@ Entry* __stdcall LowerBoundEntry(Entry* first, Entry* last, unsigned short key);
 struct FUN_00d11960_cls {
     int* m_pEntryData;
     int m_iArrayLength;
-    void hkp3AxisSweep_hkpBpAxis_remove(int aiFirst, int aiSecond);
+    void hkp3AxisSweep_hkpBpAxis_remove(int minPosition, int maxPosition);
 };
 struct D1A0E0Allocator;
 struct D1A0E0MemoryRouter {
@@ -195,7 +195,7 @@ struct SweepEntry { // 16-byte entry, matches shl eax,4 stride
 };
 // Tail-call target observed forwarding (this, handle, entry) with edx = handle kept live:
 // __fastcall helper taking (self in ecx, handle in edx, entry on stack).
-void __fastcall getAabbFromNode(void* self, UnkHandle* handle, SweepEntry* entry);
+void __fastcall getAabbFromNode(void* self, UnkHandle* aabb, SweepEntry* entry);
 // Stand-in owner class for the __thiscall thunk; fnvcheck matches the name FUN_00d119c0.
 struct FUN_00d119c0_owner {
     int unk00;
@@ -264,11 +264,11 @@ struct FUN_00d11c10_cls {
     int unk08;
     int m_0C;
 };
-void __fastcall AppendPairEntry(FUN_00d11c10_cls* self, FUN_00d11c10_cls* other, PairArray* arr);
+void __fastcall hkp3AxisSweep_endOverlap(FUN_00d11c10_cls* self, FUN_00d11c10_cls* b, PairArray* deletedPairsOut);
 unsigned short MaxUnsignedShort(unsigned short a, unsigned short b);
 BSAudio* __cdecl hkMemoryRouter_getInstance();
 void __cdecl ResizeAudioStream(void*, void*, int);
-void __fastcall AppendPairToBuffer(UnkRet* a, UnkRet* b, void* c);
+void __fastcall hkp3AxisSweep_beginOverlap(UnkRet* a, UnkRet* b, void* newPairsOut);
 struct FnvNode {
     unsigned int m_00;
     unsigned int m_04;
@@ -291,7 +291,7 @@ struct FnvHolderTail {
     int unk0c;
     void* m_pAllocator;
 };
-void __fastcall hkp3AxisSweep_beginOverlapCheckMarker(void* base, FnvNode* p, unsigned short a1, FnvNode* q, FnvArr* a3);
+void __fastcall hkp3AxisSweep_beginOverlapCheckMarker(void* markers, FnvNode* p, unsigned short nodeIndexA, FnvNode* b, FnvArr* newPairsOut);
 struct FUN_00d11da0_cls;
 struct FUN_00d11da0_holder {
     int unk00;
@@ -304,14 +304,14 @@ struct FUN_00d11da0_entry {
     unsigned short key;
     unsigned short value;
 };
-void __cdecl hkArrayUtil__reserve(void* allocator, FUN_00d11da0_cls* self, unsigned int newCap, int elemSize);
+void __cdecl hkArrayUtil__reserve(void* mem, FUN_00d11da0_cls* array, unsigned int numElem, int sizeElem);
 struct FUN_00d11da0_cls {
     FUN_00d11da0_entry* m_data;
     int m_uiItemCount;
     unsigned int m_capFlags;
 
-    void InsertPair(unsigned int a1, unsigned int a2, unsigned short a3,
-                      unsigned short a4, unsigned short* outIndex2, unsigned short* outIndex);
+    void hkp3AxisSweep_hkpBpAxis_insert(unsigned int nodes, unsigned int nodeIndex, unsigned short minPosition,
+                      unsigned short maxPosition, unsigned short* minInsertPositionOut, unsigned short* maxInsertPositionOut);
 };
 struct S_00d138a0_Heap : BSAudio {
     int unk0c;
@@ -333,7 +333,7 @@ struct S_00d138a0_Node {
     unsigned short unk0a;
     int unk0c;
 };
-void __cdecl CollectNodePairs(int unused, S_00d138a0_Node* node, int count, S_00d138a0_Array* out);
+void __cdecl hkp3AxisSweep_collide1Axis(int unused, S_00d138a0_Node* node, int count, S_00d138a0_Array* out);
 struct AllocIface {
     virtual void* unk00();
     virtual void* Alloc(unsigned int size);
@@ -342,9 +342,9 @@ struct SpawnedObject {
     int unk00;
     unsigned short m_wSize;
 
-    SpawnedObject* Init(int a, int b, int c);
+    SpawnedObject* Init(int worldMin, int worldMax, int numMarkers);
 };
-SpawnedObject* hk3AxisSweep16CreateBroadPhase(int a, int b, int c);
+SpawnedObject* hk3AxisSweep16CreateBroadPhase(int worldMin, int worldMax, int numMarkers);
 int __cdecl getMinComponent(const float* v, float* out);
 extern int DAT_011b37a4[];
 struct hkp3AxisSweep;
@@ -369,7 +369,7 @@ extern int DAT_011b37a4[];
 class FUN_00d11120_cls {
 public:
     Endpoint* m_endpoints;
-    void MergeEndpoints(char* cells, int n, int m,
+    void hkp3AxisSweep_hkpBpAxis_mergeBatch(char* nodes, int indexOfNewEps, int newNum,
                       unsigned int axis, Endpoint* scratch);
 };
 // Adapted from an unverified prior attempt by another contributor; original author/model unknown.
@@ -444,9 +444,9 @@ struct S_d11790_Sweep {
     int unkbc;
     int unkc0;
     S_d11790_Edge* axis2;
-    void FixNodeEdges(unsigned h);
+    void _fixDeterministicOrderAfterNodeIdWasDecreased(unsigned nodeIndex);
 };
-extern "C" int __cdecl hkStatisticsCollector_getAllocatedSize(const void* ptr, int size);
+extern "C" int __cdecl hkStatisticsCollector_getAllocatedSize(const void* p, int size);
 struct FourIntegerBlock {
     int unk00;
     int unk04;
@@ -653,7 +653,7 @@ struct C_00d13620 {
     int unkD4;
     void* m_unkD8;
 
-    void BuildBroadPhasePairs(S_00d138a0_Node* nodesA, int numNodesA, S_00d138a0_Node* nodesB, int numNodesB, int mode, BroadPhasePairArray& pairs);
+    void collide1Axis(S_00d138a0_Node* pa, int numA, S_00d138a0_Node* pb, int numB, int markerHandlingForNodesB, BroadPhasePairArray& pairsOut);
 };
 #include "fnv_asm_helpers.h"   // project x87 helpers (fnv_SinCos, fnv_FloatToInt), kept last so earlier code is unchanged
 // Broad-phase endpoint sweep with two inline active-node sets.
@@ -803,7 +803,7 @@ struct __declspec(align(16)) ReferenceBounds {
     unsigned short max0, max1;
     unsigned int maxSentinels;
 };
-void __stdcall hkp3AxisSweep_updateNodesAfterDelete(BpBoundNode* nodes, int n, const BpBoundWords* bnd);
+void __stdcall hkp3AxisSweep_updateNodesAfterDelete(BpBoundNode* nodes, int numNodes, const BpBoundWords* oldNode);
 int fnv_FloatToInt(float fValue);
 extern __m128 DAT_011b6d70;
 extern __m128 DAT_01267e30;
@@ -843,7 +843,7 @@ struct SweepCls {
     SweepVec4 m_kVectorAt40;
     SweepVec4 m_kVectorAt50;
     SweepVec4 m_vScale;
-    int hkp3AxisSweep_addObject(void* a1, const SweepAabb& aabb, int a3);
+    int hkp3AxisSweep_addObject(void* object, const SweepAabb& aabbIn, int newPairs);
 };
 // Axis0 candidate-bitset sweep. First argument is updated node count,
 // independently confirmed at the real caller; it is not allocation words.
@@ -923,7 +923,7 @@ struct S_00d112c0 {
     int m_iMarkerCount;
     int m_markerShift;
     S_00d112c0_Marker* m_pOverlappingMarkerInfo;
-    void hkp3AxisSweep_setBitsBasedOnXInterval(int numNodes, int key, const S_00d112c0_Node* aabb, hkUint16 skip, hkUint32* bits);
+    void hkp3AxisSweep_setBitsBasedOnXInterval(int numNodes, int x_value, const S_00d112c0_Node* queryNode, hkUint16 queryNodeIndex, hkUint32* bitField);
 };
 inline void flip(hkUint32* bits, int i) {
     int idx = i >> 5;
@@ -939,10 +939,10 @@ struct ObjPrefix { unsigned short f0; unsigned short f1; };
 struct Obj8 : ObjPrefix { unsigned short f2; unsigned short f3; unsigned short f4; unsigned short f5; int tail; __forceinline unsigned short& slot0(){return f0;} __forceinline unsigned short& slot1(){return f1;} __forceinline unsigned short& slot2(){return f2;} __forceinline unsigned short& slot3(){return f3;} __forceinline unsigned short& slot4(){return f4;} __forceinline unsigned short& slot5(){return f5;} };
 union End8 { struct { unsigned short key; unsigned short id; }; unsigned int packed; };
 struct Mgr8;
-void __fastcall hkp3AxisSweep_beginOverlapCheckMarker(Mgr8* mgr, Obj8* cur, int id, Obj8* other, unsigned int p);
-void __fastcall RemoveOrAppendTagEntry(Mgr8* mgr, Obj8* cur, int id, Obj8* other, unsigned int p);
-void __fastcall AppendPairToBuffer(Obj8* cur, Obj8* other, unsigned int p);
-void __fastcall AppendPairEntry(Obj8* cur, Obj8* other, unsigned int p);
+void __fastcall hkp3AxisSweep_beginOverlapCheckMarker(Mgr8* markers, Obj8* cur, int nodeIndexA, Obj8* b, unsigned int newPairsOut);
+void __fastcall hkp3AxisSweep_endOverlapCheckMarker(Mgr8* markers, Obj8* cur, int nodeIndexA, Obj8* b, unsigned int deletedPairsOut);
+void __fastcall hkp3AxisSweep_beginOverlap(Obj8* cur, Obj8* b, unsigned int newPairsOut);
+void __fastcall hkp3AxisSweep_endOverlap(Obj8* cur, Obj8* b, unsigned int deletedPairsOut);
 struct __declspec(align(16)) QuantMin40 { unsigned short x,y,z,w; };
 struct Vec33 {
     __m128 data;
@@ -1084,7 +1084,7 @@ Obj8* ep=&current;
                             int a; unsigned int end; (void)a; end = (*(int*)&ep->f2) - (*(int*)&other->f0); a = (*(int*)&other->f2) - (*(int*)&ep->f0);
                             other->slot4()++;
                             if (((a | end) & 0x80008000) == 0)
-                                RemoveOrAppendTagEntry(mgr, ep, r, other, a4);
+                                hkp3AxisSweep_endOverlapCheckMarker(mgr, ep, r, other, a4);
                         } else {
                             other->slot5()++;
                         }
@@ -1127,7 +1127,7 @@ Obj8* ep=&current;
                             unsigned int overlaps = a | end;
                             other->slot5()--;
                             if ((overlaps & 0x80008000) == 0)
-                                RemoveOrAppendTagEntry(mgr, ep, r, other, a4);
+                                hkp3AxisSweep_endOverlapCheckMarker(mgr, ep, r, other, a4);
                         } else {
                             other->slot4()--;
                         }
@@ -1171,7 +1171,7 @@ Obj8* ep=&current;
                             unsigned short a = (unsigned short)((unsigned short)((*(int*)&ep->f2) >> 16) - other->f1) | (unsigned short)(other->f3 - ep->f1) | (unsigned short)(ep->f5 - other->f4) | (unsigned short)(other->f5 - ep->f4);
                             other->slot2() = (unsigned short)obj;
                             if ((a & 0x8000) == 0)
-                                AppendPairToBuffer(ep, other, a3);
+                                hkp3AxisSweep_beginOverlap(ep, other, a3);
                         } else {
                             other->slot0() = (unsigned short)obj;
                         }
@@ -1213,7 +1213,7 @@ Obj8* ep=&current;
                             unsigned short a = (unsigned short)((unsigned short)((*(int*)&ep->f2) >> 16) - other->f1) | (unsigned short)(other->f3 - ep->f1) | (unsigned short)(ep->f5 - other->f4) | (unsigned short)(other->f5 - ep->f4);
                             other->slot0()--;
                             if ((a & 0x8000) == 0)
-                                AppendPairToBuffer(ep, other, a3);
+                                hkp3AxisSweep_beginOverlap(ep, other, a3);
                         } else {
                             other->slot2()--;
                         }
@@ -1245,7 +1245,7 @@ Obj8* ep=&current;
                             unsigned short a = (unsigned short)(ep->f3 - other->f1) | (unsigned short)(other->f3 - ep->f1) | (unsigned short)(ep->f5 - other->f4) | (unsigned short)(other->f5 - ep->f4);
                             other->slot0()++;
                             if ((a & 0x8000) == 0)
-                                AppendPairEntry(ep, other, a4);
+                                hkp3AxisSweep_endOverlap(ep, other, a4);
                         } else {
                             other->slot2()++;
                         }
@@ -1286,7 +1286,7 @@ Obj8* ep=&current;
                             unsigned short a = (unsigned short)(ep->f3 - other->f1) | (unsigned short)(other->f3 - ep->f1) | (unsigned short)(ep->f5 - other->f4) | (unsigned short)(other->f5 - ep->f4);
                             other->slot2()--;
                             if ((a & 0x8000) == 0)
-                                AppendPairEntry(ep, other, a4);
+                                hkp3AxisSweep_endOverlap(ep, other, a4);
                         } else {
                             other->slot0()--;
                         }
@@ -1312,7 +1312,7 @@ Obj8* ep=&current;
 
     }
 
-    void hkp3AxisSweep_updateAabbs(int** a0, unsigned int a1, int a2, unsigned int volatile a3, unsigned int volatile a4);
+    void hkp3AxisSweep_updateAabbs(int** objects, unsigned int aabbs, int numObjects, unsigned int volatile addedPairsOut, unsigned int volatile removedPairsOut);
 };
 #include <xmmintrin.h>
 static unsigned int* Object_ProcessEntries_00d11000(unsigned int* dst, int n);
@@ -1359,9 +1359,9 @@ struct SweepShift
     Vec4 m_highRounded;
     Vec4 m_highScale;
 
-    void hkp3AxisSweep_shiftBroadPhase(const Vec4& distance, Vec4& appliedOut, SweepShiftPairs& pairs);
+    void hkp3AxisSweep_shiftBroadPhase(const Vec4& shiftDistance, Vec4& effectiveShiftDistanceOut, SweepShiftPairs& newCollisionPairs);
 };
-void __cdecl ResizeAudioStream(void* allocator,void* array,int elementSize);
+void __cdecl ResizeAudioStream(void* mem,void* array,int sizeElem);
 struct S4ef0Allocator {
  virtual void slot0(); virtual void slot1(); virtual void slot2();
  virtual void* AllocateBufferWithSize(int& reqNumBytesInOut);
@@ -1757,7 +1757,7 @@ struct BatchMarker { unsigned short node,value; unsigned short* data; int size,c
 struct SortArr15 {
     Endpoint* data; int size; int cap;
     __declspec(noinline) void* LowerBoundEntry(void* begin, void* end, int thresh);
-    int InsertEndpoints(void* base, int idx, void* ptr, int savedN);
+    int hkp3AxisSweep_hkpBpAxis_insertTail(void* base, int idx, void* newNodes, int numNewEndPoints);
     int MergeSortedEndpoints(void* base, int out, void* ptr, int savedN);
     int MergeEndpointRangesBackward(void* base, int out, void* ptr, int savedN);
     int ProcessEntries_00d19ef0(void* base, int out, void* ptr, int savedN);
@@ -1791,17 +1791,17 @@ struct Sweep15 : public BroadPhaseBase {
     BatchMarker* m_pOverlappingMarkerInfo;
 
     __forceinline void collectSweepCandidates(const BatchAabb& spl,hkArrayBase<SweepBatchNode*>& local);
-    void hkp3AxisSweep_addObjectBatch(In1* p1, In2* p2, int p3);
-    int BuildBroadPhasePairs(void* a, int b, void* c, int d, int e, int f);
+    void hkp3AxisSweep_addObjectBatch(In1* addObjectList, In2* addAabbList, int newPairs);
+    int collide1Axis(void* pa, int numA, void* pb, int numB, int markerHandlingForNodesB, int pairsOut);
 };
-void __cdecl hkArrayUtil__reserve(void* a, void* b, int c, int d);
+void __cdecl hkArrayUtil__reserve(void* mem, void* array, int numElem, int sizeElem);
 struct EndpointOrder { };
 void __cdecl hkAlgorithm_quickSortRecursive_class_hkp3AxisSweep_hkpBpEndPoint_class_hkAlgorithm_less_class_hkp3AxisSweep_hkpBpEndPoint(void* a, int b, int c, EndpointOrder d);
 __forceinline void sortSweepEndpoints(void* p,int count,EndpointOrder order) {
  if(count>1) hkAlgorithm_quickSortRecursive_class_hkp3AxisSweep_hkpBpEndPoint_class_hkAlgorithm_less_class_hkp3AxisSweep_hkpBpEndPoint(p,0,count-1,order);
 }
-void __cdecl hkRadixSort_sort16(void* a, int b, void* c);
-void __cdecl CollectNodePairs(void* a, void* b, int c, int d);
+void __cdecl hkRadixSort_sort16(void* a, int numObjects, void* buffer);
+void __cdecl hkp3AxisSweep_collide1Axis(void* a, void* b, int c, int d);
 __forceinline void Sweep15::collectSweepCandidates(const BatchAabb& spl,hkArrayBase<SweepBatchNode*>& local)
 {
         int capA4=arrA0.size;
@@ -1942,6 +1942,9 @@ struct Sweep3Axis {
 
 // @fnv 0x00d11020
 // src: XBOX_PDB 0x00d11020
+// pdb: hkp3AxisSweep::set32BitOffsetAndScale | hkp3AxisSweep.obj | retail, upstream name already matches, high
+// pdb params: offsetLow, offsetHigh, scale
+// pdb locals: span, assertBuf, ostr
 void Sweep3Axis::hkp3AxisSweep_set32BitOffsetAndScale(const OffsetScaleVector& offsetLow, const OffsetScaleVector& offsetHigh, const OffsetScaleVector& scale)
 {
     m_kVectorAt70 = offsetLow;

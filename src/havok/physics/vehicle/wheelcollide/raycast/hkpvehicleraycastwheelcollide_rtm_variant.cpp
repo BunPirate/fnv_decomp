@@ -129,38 +129,41 @@ __forceinline void PointVelocity(const MotionData& motion, const hkVector4& poin
 }
 // @fnv 0x00e42190
 // src: HAVOK_SRC 0x00e42190
-void __stdcall hkpVehicleRayCastWheelCollide_getCollisionOutputFromCastResult(hkpVehicleInstance* a, unsigned char idx, hkpWorldRayCastOutput* src, hkpVehicleWheelCollide::WheelCollideResult* dst)
+// pdb: hkpVehicleRayCastWheelCollide::getCollisionOutputFromCastResult | hkpVehicleRayCastWheelCollide.obj | retail, upstream name already matches, high
+// pdb params: vehicle, wheelInfoNum, rayCastOutput, cdInfo
+// pdb locals: hitDistance, assertBuf, ostr, groundVelocityAtContactPoint, chassis_velocity_at_contactPoint
+void __stdcall hkpVehicleRayCastWheelCollide_getCollisionOutputFromCastResult(hkpVehicleInstance* vehicle, unsigned char wheelInfoNum, hkpWorldRayCastOutput* rayCastOutput, hkpVehicleWheelCollide::WheelCollideResult* cdInfo)
 {
-    hkpVehicleSuspensionSuspensionWheelParameters* table = a->m_pSuspension->m_kWheelParams.m_data;
-    float slotA = table[idx].m_fRestLength;
-    hkpVehicleInstance::WheelInfo* E2 = reinterpret_cast<hkpVehicleInstance::WheelInfo*>(a->m_kWheelInfoArray.m_data) + idx;
+    hkpVehicleSuspensionSuspensionWheelParameters* table = vehicle->m_suspension->m_wheelParams.m_data;
+    float slotA = table[wheelInfoNum].m_fRestLength;
+    hkpVehicleInstance::WheelInfo* E2 = reinterpret_cast<hkpVehicleInstance::WheelInfo*>(vehicle->m_wheelsInfo.m_data) + wheelInfoNum;
 
-    LocalM128 srcV = _mm_load_ps((float*)&src->m_vHitNormal.m_vComponents);
-    LocalM128 oldV = _mm_load_ps((float*)&dst->m_vContactPoint.m_vSeparatingNormal.m_vComponents);
+    LocalM128 srcV = _mm_load_ps((float*)&rayCastOutput->m_vHitNormal.m_vComponents);
+    LocalM128 oldV = _mm_load_ps((float*)&cdInfo->m_vContactPoint.m_separatingNormal.m_vComponents);
     LocalM128 t = _mm_unpackhi_ps(srcV, oldV);
     LocalM128 r = _mm_shuffle_ps(srcV, t, 0xC4);
-    _mm_store_ps((float*)&dst->m_vContactPoint.m_vSeparatingNormal.m_vComponents, r);
+    _mm_store_ps((float*)&cdInfo->m_vContactPoint.m_separatingNormal.m_vComponents, r);
     for (int key = 0; key < 8; ++key)
-        (&dst->m_contactShapeKey0)[key] = src->m_uiShapeKeys[key];
-    Node50* np = const_cast<Node50*>(static_cast<const Node50*>(src->m_pRootCollidable));
+        (&cdInfo->m_contactShapeKey0)[key] = rayCastOutput->m_uiShapeKeys[key];
+    Node50* np = const_cast<Node50*>(static_cast<const Node50*>(rayCastOutput->m_rootCollidable));
     IntegerTriple* link = (np->c18 == 1) ? (IntegerTriple*)((char*)np + np->c10) : 0;
-    dst->m_pUserData = reinterpret_cast<hkpRigidBody*>(link);
-    float g = a->m_data->m_kWheelParams.m_data[idx].m_fSphereRadius;
+    cdInfo->m_pUserData = reinterpret_cast<hkpRigidBody*>(link);
+    float g = vehicle->m_data->m_wheelParams.m_data[wheelInfoNum].m_radius;
     float slotB = g;
-    slotB = (g + slotA) * src->m_fHitFraction;
+    slotB = (g + slotA) * rayCastOutput->m_fHitFraction;
     float length = slotB - g;
-    dst->m_fContactFriction = length;
+    cdInfo->m_fContactFriction = length;
     LocalM128 bc0 = _mm_load_ss(&slotB);
     LocalM128 bc = _mm_shuffle_ps(bc0, bc0, 0);
-    LocalM128 e80 = E2->m_vHardPointWs.m_vComponents;
+    LocalM128 e80 = E2->m_suspensionDirectionWs.m_vComponents;
     LocalM128 p = _mm_mul_ps(bc, e80);
-    LocalM128 e50 = E2->m_vContactPointVelocity.m_vComponents;
+    LocalM128 e50 = E2->m_hardPointWs.m_vComponents;
     p = _mm_add_ps(p, e50);
-    _mm_store_ps((float*)&dst->m_vContactPoint.m_vContactPosition.m_vComponents, p);
-    dst->m_vContactPoint.m_vSeparatingNormal.w = length;
-    LocalM128 v1n = _mm_load_ps((float*)&dst->m_vContactPoint.m_vSeparatingNormal.m_vComponents);
-    dst->m_fSuspensionLength = reinterpret_cast<IntegerTriple*>(dst->m_pUserData)->friction;
-    LocalM128 e80b = E2->m_vHardPointWs.m_vComponents;
+    _mm_store_ps((float*)&cdInfo->m_vContactPoint.m_position.m_vComponents, p);
+    cdInfo->m_vContactPoint.m_separatingNormal.w = length;
+    LocalM128 v1n = _mm_load_ps((float*)&cdInfo->m_vContactPoint.m_separatingNormal.m_vComponents);
+    cdInfo->m_fSuspensionLength = reinterpret_cast<IntegerTriple*>(cdInfo->m_pUserData)->friction;
+    LocalM128 e80b = E2->m_suspensionDirectionWs.m_vComponents;
     LocalM128 prod = _mm_mul_ps(v1n, e80b);
     LocalM128 h1 = _mm_shuffle_ps(prod, prod, 0x55);
     h1 = _mm_add_ss(h1, prod);
@@ -168,11 +171,11 @@ void __stdcall hkpVehicleRayCastWheelCollide_getCollisionOutputFromCastResult(hk
     h2 = _mm_add_ss(h2, h1);
     float sum;
     _mm_store_ss(&sum, h2);
-    if (sum < -a->m_data->m_fChassisUnitInertiaPitch)
+    if (sum < -vehicle->m_data->m_normalClippingAngleCos)
     {
-        IntegerTriple* W = reinterpret_cast<IntegerTriple*>(a->m_pEntity);
+        IntegerTriple* W = reinterpret_cast<IntegerTriple*>(vehicle->m_entity);
         hkVector4 d0;
-        d0.m_vComponents = dst->m_vContactPoint.m_vContactPosition.m_vComponents;
+        d0.m_vComponents = cdInfo->m_vContactPoint.m_position.m_vComponents;
         hkVector4 yVec;
         PointVelocity(W->motion, d0, yVec);
         hkVector4 xVec;
@@ -187,12 +190,12 @@ void __stdcall hkpVehicleRayCastWheelCollide_getCollisionOutputFromCastResult(hk
         s2 = _mm_add_ss(s2, s1);
         float sum2;
         _mm_store_ss(&sum2, s2);
-        dst->m_fValueAtOffset4C = sum2 * inv;
-        dst->m_fValueAtOffset50 = inv;
+        cdInfo->m_fValueAtOffset4C = sum2 * inv;
+        cdInfo->m_fValueAtOffset50 = inv;
     }
     else
     {
-        dst->m_fValueAtOffset4C = 0.0f;
-        dst->m_fValueAtOffset50 = 1.0f / a->m_data->m_fChassisUnitInertiaPitch;
+        cdInfo->m_fValueAtOffset4C = 0.0f;
+        cdInfo->m_fValueAtOffset50 = 1.0f / vehicle->m_data->m_normalClippingAngleCos;
     }
 }

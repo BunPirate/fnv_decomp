@@ -30,20 +30,23 @@ struct FUN_0067ba40_Result
 
 // @fnv 0x0067ba40
 // src: XBOX_PDB 0x0067ba40
-void __thiscall TESEatPackageData::Copy_0067ba40(int flags)
+// pdb: TESEatPackageData::Copy | PackageDataEat.obj | retail, vtable slot, high
+// pdb params: apCopy
+// pdb locals: pcopy
+void __thiscall TESEatPackageData::Copy_0067ba40(int apCopy)
 {
-    FUN_0067ba40_Result* result = (FUN_0067ba40_Result*)FUN_00ec43fb(flags, 0, &DAT_0119bdec, &DAT_0119be3c, 0);
+    FUN_0067ba40_Result* result = (FUN_0067ba40_Result*)FUN_00ec43fb(apCopy, 0, &DAT_0119bdec, &DAT_0119be3c, 0);
     if (result)
     {
-        if (m_pPackageTarget)
+        if (pSearchLocation)
         {
-            delete (FUN_0067f030*)m_pPackageTarget;
-            m_pPackageTarget = 0;
+            delete (FUN_0067f030*)pSearchLocation;
+            pSearchLocation = 0;
         }
         if (result->location)
         {
-            m_pPackageTarget = (LocationDescriptor*)new FUN_0067f030;
-            ((FUN_0067f030*)m_pPackageTarget)->FUN_0067f4d0(result->location, 0);
+            pSearchLocation = (LocationDescriptor*)new FUN_0067f030;
+            ((FUN_0067f030*)pSearchLocation)->FUN_0067f4d0(result->location, 0);
         }
     }
 }

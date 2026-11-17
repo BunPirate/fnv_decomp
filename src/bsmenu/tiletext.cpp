@@ -36,6 +36,8 @@ int TileText::GetType()
 }
 
 // @fnv 0x00a21a10
+// pdb: TileText::Init | TileText.obj | retail, upstream name already matches, high
+// pdb params: apParent, apName, apReplacedTile
 void TileText::Init(Tile* apParent, const char* apName, Tile* apReplacedTile)
 {
     Tile::Init(apParent, apName, apReplacedTile);
@@ -51,6 +53,9 @@ void TileText::Init(Tile* apParent, const char* apName, Tile* apReplacedTile)
 
 int __cdecl FUN_00ec6da0(const char*, const char*);
 // @fnv 0x00a225b0
+// pdb: TileText::PostParse | TileText.obj | debug, vtable slot, medium
+// pdb params: aiTrait, afValue, axString
+// pdb locals: strValue
 Tile* TileText::SetTraitValue(int aiTrait, float afValue, const char* axString)
 {
     if (aiTrait == 0xfc4)
@@ -617,7 +622,7 @@ inline bool TextNode::SetExtraDataName(TileExtra* extra)
 
 float __cdecl FUN_00706e00();
 
-TextNode* __cdecl FUN_00706d30();
+TextNode* __cdecl Interface_GetInterfaceRoot();
 
 void __cdecl Interface_SetNeedToUpdate(int);
 
@@ -636,6 +641,8 @@ inline float ParseFloatValue(const int& value)
 
 // Creates a TextNode using tile text and settings, adds it to a node, and attaches a TileExtra.
 // @fnv 0x00a21af0
+// pdb: TileText::MakeNode | TileText.obj | retail, object-file run extension, high
+// pdb locals: apParent, pfont, ifont, pfontManager, iwidth, ijust, fy, xColor, iold_baseline, ilines, ilinegap, ipage_num, bishtml, falpha, fbrightness, fx, iheight, strValue, xtext, xTextData, piconShape, ptextShape
 NiNode* TileText::CalculateNode()
 {
 
@@ -706,7 +713,7 @@ NiNode* TileText::CalculateNode()
     if (allowedX || DAT_011f33f8->bUseNewFonts)
     {
 
-        reinterpret_cast<NodePtr&>(m_pRenderedNodeEntry) = (TextNode*)new NewTextNode(0);
+        reinterpret_cast<NodePtr&>(spModel) = (TextNode*)new NewTextNode(0);
 
         TextParams params;
 
@@ -723,7 +730,7 @@ NiNode* TileText::CalculateNode()
         params.maxLines = maximumTmp;
         params.multibyte = allowedX;
 
-        if (!FontManager::Get()->CreateTextRun(current, &params, reinterpret_cast<NodePtr&>(m_pRenderedNodeEntry)))
+        if (!FontManager::Get()->CreateText(current, &params, reinterpret_cast<NodePtr&>(spModel)))
             return 0;
 
         maximumX = params.width;
@@ -739,7 +746,7 @@ NiNode* TileText::CalculateNode()
         TextNode* first = 0;
         TextNode* second = 0;
 
-        reinterpret_cast<NodePtr&>(m_pRenderedNodeEntry) = (TextNode*)new NewTextNode(0);
+        reinterpret_cast<NodePtr&>(spModel) = (TextNode*)new NewTextNode(0);
 
         fontA->Font_CreateText(current, &maximumX, &countVal, 0, maximumTmp, kIndex, 10, &colorX, &first, &second);
 
@@ -747,14 +754,14 @@ NiNode* TileText::CalculateNode()
 
         first->SetPosition(NiPoint3(x, (float)(FUN_00a011b0(0xfad) * -0.00800000037997961), kPos));
 
-        ((TextNode*)reinterpret_cast<NodePtr&>(m_pRenderedNodeEntry))->AddObject(first, true);
+        ((TextNode*)reinterpret_cast<NodePtr&>(spModel))->AddObject(first, true);
 
         if (second)
         {
 
             second->SetPosition(NiPoint3(x, (float)(FUN_00a011b0(0xfad) * -0.00800000037997961), kPos));
 
-            ((TextNode*)reinterpret_cast<NodePtr&>(m_pRenderedNodeEntry))->AddObject(second, true);
+            ((TextNode*)reinterpret_cast<NodePtr&>(spModel))->AddObject(second, true);
         }
     }
 
@@ -770,17 +777,17 @@ NiNode* TileText::CalculateNode()
         Tile_SetChangeFlag(0x100);
 
     if (!kFirst)
-        kFirst = FUN_00706d30();
+        kFirst = Interface_GetInterfaceRoot();
 
-    kFirst->AddObject(reinterpret_cast<NodePtr&>(m_pRenderedNodeEntry), true);
+    kFirst->AddObject(reinterpret_cast<NodePtr&>(spModel), true);
 
-    reinterpret_cast<NodePtr&>(m_pRenderedNodeEntry)->SetCulled(!IsTraitNonZero(0xfa3));
+    reinterpret_cast<NodePtr&>(spModel)->SetCulled(!IsTraitNonZero(0xfa3));
 
-    reinterpret_cast<NodePtr&>(m_pRenderedNodeEntry)->UpdateProperties();
+    reinterpret_cast<NodePtr&>(spModel)->UpdateProperties();
 
     Interface_SetNeedToUpdate(1);
 
-    reinterpret_cast<NodePtr&>(m_pRenderedNodeEntry)->SetExtraDataName(new TileExtra((Tile*)this, reinterpret_cast<NodePtr&>(m_pRenderedNodeEntry)));
+    reinterpret_cast<NodePtr&>(spModel)->SetExtraDataName(new TileExtra((Tile*)this, reinterpret_cast<NodePtr&>(spModel)));
 
-    return (NiNode*)(TextNode*)reinterpret_cast<NodePtr&>(m_pRenderedNodeEntry);
+    return (NiNode*)(TextNode*)reinterpret_cast<NodePtr&>(spModel);
 }

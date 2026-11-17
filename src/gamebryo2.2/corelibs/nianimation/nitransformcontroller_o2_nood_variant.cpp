@@ -35,6 +35,8 @@ class ObjectA36810 : public FUN_00a38e00
 
 // @fnv 0x00a36810
 // src: EXE 0x00a36810
+// pdb: NiTransformController::CreateObject | NiTransformController.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 NiObject* __cdecl NiTransformController_CreateObject()
 {
     return new ObjectA36810;
@@ -43,13 +45,15 @@ NiObject* __cdecl NiTransformController_CreateObject()
 // FUN_00a360b0 - forwards its single argument to a helper and reports the
 // helper's byte sized result as a bool.
 
-extern "C" unsigned char __stdcall Helper00a39030(void* pObject);
+extern "C" unsigned char __stdcall Helper00a39030(void* pkObject);
 
 // @fnv 0x00a360b0
 // src: XBOX_PDB 0x00a360b0
-bool __stdcall NiTransformController_IsEqual(void* pObject)
+// pdb: NiTransformController::IsEqual | NiTransformController.obj | retail, upstream name already matches, high
+// pdb params: pkObject
+bool __stdcall NiTransformController_IsEqual(void* pkObject)
 {
-    return Helper00a39030(pObject);
+    return Helper00a39030(pkObject);
 }
 
 class NiTransformData;
@@ -120,6 +124,9 @@ struct FUN_00a361c0_cls : public NiSingleInterpController
 
 // @fnv 0x00a361c0
 // src: XBOX_PDB 0x00a361c0
+// pdb: NiTransformController::LinkObject | NiTransformController.obj | retail, upstream name already matches, high
+// pdb params: kStream
+// pdb locals: pkKeyframeData
 void FUN_00a361c0_cls::NiTransformController_LinkObject(NiStream& kStream)
 {
     NiSingleInterpController::LinkObject(kStream);
@@ -129,8 +136,8 @@ void FUN_00a361c0_cls::NiTransformController_LinkObject(NiStream& kStream)
     {
         NiTransformData* pkData = (NiTransformData*)kStream.GetLoadedObject();
         void* pMem = NiMemObject::operator new(0x48);
-        m_spControllerInterpolator = pMem ? ((NiTransformInterpolatorMem*)pMem)->FUN_00a3fa30(pkData) : 0;
-        ((NiInterpolatorVirtuals*)m_spControllerInterpolator.m_pObject)->Collapse();
+        m_spInterpolator = pMem ? ((NiTransformInterpolatorMem*)pMem)->FUN_00a3fa30(pkData) : 0;
+        ((NiInterpolatorVirtuals*)m_spInterpolator.m_pObject)->Collapse();
     }
 }
 
@@ -141,6 +148,9 @@ struct FUN_00a367c0_helper
 
 // @fnv 0x00a367c0
 // src: XBOX_PDB 0x00a367c0
+// pdb: NiTransformController::CreateClone | NiTransformController.obj | retail, upstream name already matches, high
+// pdb params: kCloning
+// pdb locals: pkObject
 ObjectA36810* __fastcall NiTransformController_CreateClone(ObjectA36810* pThis, void*, CloningProcess& cloning)
 {
     ObjectA36810* pNewInstance = new ObjectA36810;

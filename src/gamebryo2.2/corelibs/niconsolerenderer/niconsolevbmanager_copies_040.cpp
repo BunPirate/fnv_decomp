@@ -16,5 +16,5 @@
 // @fnv 0x00639b40
 const char* NiD3DHLSLVertexShader::GetEntryPoint()
 {
-    return m_pcShaderEntryPoint;
+    return m_pcEntryPoint;
 }

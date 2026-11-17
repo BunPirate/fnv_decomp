@@ -76,31 +76,31 @@ struct TimerCommand_ctsim : hkMonitorStream::TimerCommand { void setTime(); };
 inline hkpCollisionDispatcher*hkpWorld::getCollisionDispatcher()const
 {
 ;
-return static_cast<hkpCollisionDispatcher*>(m_pDispatcher);
+return static_cast<hkpCollisionDispatcher*>(m_collisionDispatcher);
 }
 __forceinline void hkpWorld::lockCriticalOperations()
 {
 ;
-m_iCriticalOperationsLockCount++;
+m_criticalOperationsLockCount++;
 ;
 }
 __forceinline void hkpWorld::unlockCriticalOperations()
 {
 ;
-m_iCriticalOperationsLockCount--;
+m_criticalOperationsLockCount--;
 ;
 }
 __forceinline void hkpWorld::attemptToExecutePendingOperations(bool executeBodyOperations)
 {
-if(!m_iCriticalOperationsLockCount&&!m_bBlockExecutingPendingOperations)
+if(!m_criticalOperationsLockCount&&!m_blockExecutingPendingOperations)
 {
-if(m_iPendingOperationCount)
+if(m_pendingOperationsCount)
 {
 ExecutePendingOperations();
 }
-if(m_iPendingOperationQueueCount==1&&executeBodyOperations)
+if(m_pendingOperationQueueCount==1&&executeBodyOperations)
 {
-if(m_iQueuedOperationCount)
+if(m_pendingBodyOperationsCount)
 {
 ExecutePendingOperationQueues();
 }
@@ -123,7 +123,7 @@ inline QuantizedFloat8::QuantizedFloat8() {}
 inline hkContactPointMaterial::hkContactPointMaterial() {}
 template <typename TYPE>
 inline void hkMemoryAllocator::_bufFree(void* p, int numElem) { bufFree(p, numElem * sizeof(TYPE)); }
-inline void* hkpCollidable::getOwner() const { return const_cast<char*>(reinterpret_cast<const char*>(this) + m_iOwnerOffset); }
+inline void* hkpCollidable::getOwner() const { return const_cast<char*>(reinterpret_cast<const char*>(this) + m_ownerOffset); }
 // src/havok/physics/dynamics/world/simulation/continuous/hkpcontinuoussimulation_ehsc_noehsc_variant.cpp - flag-variant unit created 2026-10-31 by flag_proofs.py: contributor code for these functions matched byte for
 // byte only under /MT /O2 /GS /EHs-c- /Gy (unit src/havok/physics/dynamics/world/simulation/continuous/hkpcontinuoussimulation.cpp lists /MT /O2 /GS /EHsc /Gy). Declarations copied from that unit's skeleton; move the functions
 // to their real unit once identified.
@@ -208,7 +208,7 @@ struct S_00d0c6d0_ByteArray {
     unsigned char* m_data;
     int m_iElementCount;
 };
-void hkLs_toiActivateConstraintsLinkingActivatedEntities(S_00d0c6d0_EntryArray* aEntries, int* aIndex, S_00d0c6d0_ByteArray* table);
+void hkLs_toiActivateConstraintsLinkingActivatedEntities(S_00d0c6d0_EntryArray* constraintStatus, int* firstNonActiveConstraintStatus, S_00d0c6d0_ByteArray* entityState);
 struct Base { void hkpSimulation_resetCollisionInformationForEntities(int*, int, int, unsigned int); };
 struct Object : Base {
     void hkpContinuousSimulation_removeToiEventsOfEntities(int*, int);
@@ -240,13 +240,13 @@ struct FUN_00d0d0d0_cls {
         void Object_DoNothing();
     } sub3c;
     void SetVtableAndProcessState_00cf86d0();
-    void Destroy();
+    void hkpContinuousSimulation_dtor();
 };
-void __cdecl InitAndDispatch();
+void __cdecl hkpContinuousSimulation_processAgentCollideContinuous();
 struct S_00d0f2e0
 {
-    void* hkpSimulation_processAgentsOfEntities(void* a, void* b, void* c, void (__cdecl *pfnCallback)(), int iFlags);
-    void* hkpContinuousSimulation_collideEntitiesNarrowPhaseContinuous(void* a, void* b, void* c);
+    void* hkpSimulation_processAgentsOfEntities(void* entities, void* numEntities, void* processInput, void (__cdecl *processingFunction)(), int findExtraContacts);
+    void* hkpContinuousSimulation_collideEntitiesNarrowPhaseContinuous(void* entities, void* numEntities, void* input);
 };
 struct World {
  hkStepInfo& time(){return *reinterpret_cast<hkStepInfo*>(reinterpret_cast<char*>(this)+80);}
@@ -359,7 +359,7 @@ struct FUN_00d0bd30_p {
     int unk04;
     float m_08;
 };
-int __cdecl hkLs_areVelocitiesOk(float scale, FUN_00d0bd30_p* pParams, float* pafValues, int aiCount, char** ppTable);
+int __cdecl hkLs_areVelocitiesOk(float psiTimeLeft, FUN_00d0bd30_p* constraintStatus, float* velocities, int numVelocities, char** processInput);
 // ---------------------------------------------------------------------------
 // Stand-in types for the simulation object that owns the scope table.
 //
@@ -478,7 +478,7 @@ struct EntityB {
     hkVector4 m_unk1b0;
     hkVector4 m_unk1c0;
 };
-void UpdateIslandMotionStates(Island* island, ByteArray* flags, SolverInfo* info);
+void hkLs_restoreTransformOnBodiesWithUpdatedTransform(Island* island, ByteArray* entityState, SolverInfo* solverResources);
 struct ReportSink {
     virtual void v0();
     virtual void v1();
@@ -516,11 +516,11 @@ struct FUN_00d0c8d0_cls {
     FilePool m_3C;
     unsigned int m_48;
 
-    void hkReferencedObject_calcContentStatistics(ReportSink* sink, void* data);
-    void ReportMemoryUsage(ReportSink* a1, int a2);
+    void hkReferencedObject_calcContentStatistics(ReportSink* collector, void* cls);
+    void ReportMemoryUsage(ReportSink* collector, int cls);
 };
-unsigned int hkStatisticsCollector_getAllocatedSize(void* base, unsigned int bytes);
-extern char DAT_01269514;
+unsigned int hkStatisticsCollector_getAllocatedSize(void* p, unsigned int size);
+extern char hkpSimulationClass; // src: XBOX_RETAIL_PDB 0x01269514 (old: DAT_01269514/g_01269514)
 struct InfoBlock {
     unsigned int unk00;
     unsigned short unk04;
@@ -583,10 +583,10 @@ struct HolderBase {
     unsigned int unk0c;
     void* m_10;
 };
-void __cdecl ResizeAudioStream(void* alloc, NiPoint3* vec, unsigned int elemSize);
+void __cdecl ResizeAudioStream(void* mem, NiPoint3* array, unsigned int sizeElem);
 int __cdecl hkVector4_ProcessEntries_00d9f6f0(int a, int b, int c, int d, void* e);
-int __cdecl hkLs_areVelocitiesOk(float f, Entry* entry, void* out, int a, int b);
-unsigned char* __cdecl CollectMatchingEntries(unsigned char* pResult, SrcA* pSrc, NiPoint3* pVec, int a4, NiPoint3* dst);
+int __cdecl hkLs_areVelocitiesOk(float psiTimeLeft, Entry* constraintStatus, void* velocities, int numVelocities, int processInput);
+unsigned char* __cdecl hkLs_toiCheckFinalValidityOfCriticalConstraints(unsigned char* pResult, SrcA* pSrc, NiPoint3* pVec, int a4, NiPoint3* dst);
 struct S_00d0d150_Vector4 {
     LocalM128 m_vComponents;
     void operator=(const S_00d0d150_Vector4& v) { m_vComponents = v.m_vComponents; }
@@ -728,7 +728,7 @@ struct S_00d0d150 {
     int unk2c;
     hkArrayBase<S_00d0d150_ToiEvent> m_kToiEventQueue;
 
-    void QueueToiEvent(const S_00d0d150_CollisionOutput& result, const S_00d0d150_AgentNnEntry& entry) throw();
+    void hkpContinuousSimulation_addToiEvent(const S_00d0d150_CollisionOutput& processOutput, const S_00d0d150_AgentNnEntry& entry) throw();
 };
 extern float DAT_0104da48;
 extern double DAT_0104e138;
@@ -1018,14 +1018,14 @@ struct ThingS {
 struct FUN_00d0daa0_cls {
     int unk00;
 
-    void QueueToiEvent(ThingS* apS, ThingX* apX);
-    void InitAndDispatch(ThingX* apX, ThingP* apP, ThingS* apS);
+    void hkpContinuousSimulation_addToiEvent(ThingS* processOutput, ThingX* apX);
+    void hkpContinuousSimulation_processAgentCollideContinuous(ThingX* entry, ThingP* processInput, ThingS* processOutput);
 };
 void __cdecl hkAgentNnMachine_ProcessAgent(ThingX* apX, ThingP* apP, ThingS* apS, int aiValue);
 // Stand-in for the object at ms+0x20; its member is the thiscall helper.
 struct SlotObj_b2089
 {
-    void hkVector4_setRotatedDir(void* dst, void* src);
+    void hkVector4_setRotatedDir(void* quat, void* direction);
 };
 struct World_b2089
 {
@@ -1156,9 +1156,9 @@ struct CollisionQueue {
         ++size;
     }
 };
-void __cdecl hkpCollision_ProcessBodyResponse(hkVector4*, float, CollisionParameters*, CollisionMotion*, CollisionMotion*, CollisionManager*, CollisionOutput*);
+void __cdecl hkpSimpleCollisionResponse_solveSingleContact(hkVector4*, float, CollisionParameters*, CollisionMotion*, CollisionMotion*, CollisionManager*, CollisionOutput*);
 void __cdecl hkpWorldCallbackUtil_fireContactImpulseLimitBreached(void*, CollisionStateData*, int);
-void __cdecl ProcessCollisionEvent(void* context, CollisionEvent* event, float deltaTime, CollisionQueue* queue);
+void __cdecl hkLs_doSimpleCollisionResponse(void* context, CollisionEvent* event, float rotateNormal, CollisionQueue* toBeActivated);
 // expanded integer AABB into thread-stack local arrays, add them to the 3-axis sweep, then remove duplicate pairs.
 extern "C" unsigned __int64 __rdtsc(void);
 extern "C" void _ReadWriteBarrier(void);
@@ -1244,7 +1244,7 @@ static inline void UncompressExpandedAabbD0(const BoundingVolumeDataD0& in, Aabb
     out.m_kMaximumCorner[1] = x1;
     out.m_kMaximumCorner[2] = x2;
 }
-void __cdecl hkpEntityAabbUtil_entityBatchRecalcAabb(CollisionInputD0* input, CollidableD0** collidables, int numCollidables);
+void __cdecl hkpEntityAabbUtil_entityBatchRecalcAabb(CollisionInputD0* collisionInput, CollidableD0** entityBatch, int numEntities);
 void __cdecl hkpTypedBroadPhaseDispatcher_removeDuplicates(PairArrayD0& newPairs, PairArrayD0& delPairs);
 static inline void TimerBeginListD0(const char* name, const char* firstSub)
 {
@@ -1302,7 +1302,7 @@ struct RouterL {
     HeapL& heap() { return *m_pStreamAllocator; }
 };
 RouterL* GetRouterL() throw();
-void ReserveMoreL(HeapL& alloc, void* arr, int elemSize) throw();
+void ReserveMoreL(HeapL& mem, void* array, int sizeElem) throw();
 template <typename T> inline void ConstructWithCopyL(T* p, int n, const T& t) { for (int i = 0; i < n; i++) p[i] = t; }
 template <class T> struct ArrL {
     T* m_data;
@@ -1388,7 +1388,7 @@ inline void VisitL(OwnerL* owner, unsigned char** ppFlags, float fValue)
         }
     }
 }
-void CollectUnsaturatedObjects(SrcL* pSource, int level, float fValue, unsigned char** ppFlags, ArrL<ObjL*>* out);
+void hkLs_collectAgentEntriesToProcess(SrcL* entity, int minPriorityToProcess, float time, unsigned char** entityState, ArrL<ObjL*>* entriesOut);
 void __stdcall nullsub_66(int, int, int);
 void __stdcall nullsub_67(int a);
 struct MotionBody {
@@ -1651,7 +1651,7 @@ struct Sub1E0 {
     int unk104;
     int unk108;
     float m_10c; float m_110; int m_114;
-    void setTimes(float scale, const hkStepInfo& step) { m_10c = scale * step.m_fTimeStep; m_110 = (float)m_114 * step.m_fInverseDeltaTime; }
+    void setTimes(float scale, const hkStepInfo& step) { m_10c = scale * step.m_deltaTime; m_110 = (float)m_114 * step.m_invDeltaTime; }
 };
 
 void __cdecl hkpWorldCallbackUtil_fireIslandPostCollideCallback(hkpWorld*, BodyL*, hkStepInfo*);
@@ -1671,12 +1671,12 @@ template<int Mode> static inline void TickWrite(const char* name, volatile unsig
 }
 static inline void ReleaseCtx(hkpWorld* c)
 {
-    --c->m_iCriticalOperationsLockCount;
-    if (c->m_iCriticalOperationsLockCount != 0) return;
-    if (c->m_bBlockExecutingPendingOperations != 0) return;
-    if (c->m_iPendingOperationCount) c->FUN_00c91120();
-    if (c->m_iPendingOperationQueueCount != 1) return;
-    if (c->m_iQueuedOperationCount) c->UpdateFields_00c91140();
+    --c->m_criticalOperationsLockCount;
+    if (c->m_criticalOperationsLockCount != 0) return;
+    if (c->m_blockExecutingPendingOperations != 0) return;
+    if (c->m_pendingOperationsCount) c->FUN_00c91120();
+    if (c->m_pendingOperationQueueCount != 1) return;
+    if (c->m_pendingBodyOperationsCount) c->UpdateFields_00c91140();
 }
 struct ThisFull {
     int m_00; int m_04; int m_08;
@@ -1822,7 +1822,7 @@ public:
     int unk2C;
     D0C290Entry* m_30;
     int m_34;
-    void hkpContinuousSimulation_removeToiEventsOfEntities(int* ids, int n);
+    void hkpContinuousSimulation_removeToiEventsOfEntities(int* entities, int numEntities);
 };
 struct D0C290Pair { unsigned int lo, hi; };
 template <int N>
@@ -1875,7 +1875,7 @@ struct __declspec(align(16)) S00d0c9c0_Ctx {
     int unk3088;
     int unk308c;
 };
-void __stdcall hkpContinuousSimulation_processAgentNnEntries(ThingX** apEntries, int aiCount, ThingP* apP, int aiValue, bool abAlt);
+void __stdcall hkpContinuousSimulation_processAgentNnEntries(ThingX** entries, int numEntries, ThingP* collisionInput, int island, bool forceManifoldQualityType);
 typedef unsigned long DWORD;
 extern "C" unsigned __int64 __rdtsc(void);
 extern "C" void _ReadWriteBarrier(void);
@@ -2097,8 +2097,8 @@ struct S_00d0e210_StepInfo {
     int unk74;
     int unk78;
 };
-void __cdecl UpdateRotationInterpolation(float time, S_00d0e210_Motion* motion) throw();
-void __cdecl hkpWorldAgentUtil_invalidateTim(S_00d0e210_Entity* entity, int arg) throw();
+void __cdecl hkSweptTransformUtil_freezeMotionState(float time, S_00d0e210_Motion* motionState) throw();
+void __cdecl hkpWorldAgentUtil_invalidateTim(S_00d0e210_Entity* entity, int collisionInput) throw();
 struct S_00d0e210_Sim {
     virtual void v00();
     virtual void v04();
@@ -2129,7 +2129,7 @@ struct S_00d0e210_Sim {
     int unk2C;
     S_00d0e210_ToiArray m_kToiEventQueue;
     int unk3C;
-    void hkpContinuousSimulation_handleSimpleToi(S_00d0e210_StepInfo* info, S_00d0e210_ToiEvent& event, int unused, float dt) throw();
+    void hkpContinuousSimulation_handleSimpleToi(S_00d0e210_StepInfo* info, S_00d0e210_ToiEvent& event, int physicsDeltaTime, float rotateNormal) throw();
 };
 
 
@@ -2381,16 +2381,16 @@ struct S_00d0d150_Entity {
     unsigned int m_uiUniqueId;
 };
 static __forceinline float& getSubStepTime(hkpWorld* ctx) {
-    return ctx->m_fToiCollisionResponseRotateNormal;
+    return ctx->m_toiCollisionResponseRotateNormal;
 }
 static __forceinline hkStepInfo& getContextTimeStep(hkpWorld* ctx) {
     return *reinterpret_cast<hkStepInfo*>(reinterpret_cast<char*>(ctx) + 0x1d0);
 }
 static __forceinline void unlockContext(hkpWorld* ctx) {
-    if (--ctx->m_iCriticalOperationsLockCount == 0 && !ctx->m_bBlockExecutingPendingOperations) {
-        if (ctx->m_iPendingOperationCount)
+    if (--ctx->m_criticalOperationsLockCount == 0 && !ctx->m_blockExecutingPendingOperations) {
+        if (ctx->m_pendingOperationsCount)
             ctx->FUN_00c91120();
-        if (ctx->m_iPendingOperationQueueCount == 1 && ctx->m_iQueuedOperationCount)
+        if (ctx->m_pendingOperationQueueCount == 1 && ctx->m_pendingBodyOperationsCount)
             ctx->UpdateFields_00c91140();
     }
 }
@@ -2630,8 +2630,8 @@ struct S00d0d8b0_Out {
     bool hasToi() const { return m_fTimeOfImpact.m_uiCommandId != 3.40282e+38f; }
 };
 struct S00d0d8b0_Obj {
-    void QueueToiEvent(S00d0d8b0_Out* out, ThingX* x);
-    void hkpContinuousSimulation_collideIslandNarrowPhaseContinuous(S00d0d8b0_Coll* coll, ThingP* p);
+    void hkpContinuousSimulation_addToiEvent(S00d0d8b0_Out* processOutput, ThingX* x);
+    void hkpContinuousSimulation_collideIslandNarrowPhaseContinuous(S00d0d8b0_Coll* isle, ThingP* input);
 };
 static __forceinline void WriteClock(const char* name) {
     hkMonitorStream* s = (hkMonitorStream*)TlsGetValue(DAT_0126835c);
@@ -2896,15 +2896,15 @@ __declspec(nothrow) BoolFlag hkpConstraintSolverSetup_internalIsMemoryOkForNewAc
 __declspec(nothrow) BoolFlag CheckTotalsWithinLimits(Resources&,Constraint**,int) throw();
 __declspec(nothrow) void hkpConstraintSolverSetup_subSolve(Resources&,int) throw();
 __declspec(nothrow) void hkpConstraintSolverSetup_internalAddJacobianSchemas(Resources&,Constraint**,int,List<SchemaRecord>&) throw();
-__declspec(nothrow) void Object_ProcessEntries_00d0cb00(Resources&,ProcessInput&,List<SchemaRecord>&,int&,Constraint::ConstraintPriority,StateTable&,const List<DynamicNode*>&,List<DynamicNode*>&) throw();
+__declspec(nothrow) void hkLs_toiCheckValidityOfConstraints(Resources&,ProcessInput&,List<SchemaRecord>&,int&,Constraint::ConstraintPriority,StateTable&,const List<DynamicNode*>&,List<DynamicNode*>&) throw();
 __declspec(nothrow) void hkLs_toiActivateEntitiesAndCheckConstraints(ProcessInput&,Constraint::ConstraintPriority,float,const List<DynamicNode*>&,StateTable&,List<DynamicNode*>&,List<Constraint*>&) throw();
 __declspec(nothrow) void hkLs_backstepAndFreezeEntireIsland(float,SolverIsland*,StateTable&,List<DynamicNode*>&) throw();
 __declspec(nothrow) void hkpWorldAgentUtil_invalidateTim(DynamicNode*,const CollisionInput&) throw();
 __declspec(nothrow) void hkVector4_setRotatedDir_ProcessEntries_00d0bf30(Resources&,const List<DynamicNode*>&) throw();
-__declspec(nothrow) BoolFlag CollectMatchingEntries(Resources&,const List<SchemaRecord>&,ProcessInput&,List<Violation>*) throw();
-__declspec(nothrow) void Object_UpdateFields_00d8aac0(const ResourceInfo&,Schema*,Accumulator*,SolverElement*) throw();
+__declspec(nothrow) BoolFlag hkLs_toiCheckFinalValidityOfCriticalConstraints(Resources&,const List<SchemaRecord>&,ProcessInput&,List<Violation>*) throw();
+__declspec(nothrow) void hkSolveStepJacobians(const ResourceInfo&,Schema*,Accumulator*,SolverElement*) throw();
 __declspec(nothrow) void hkpConstraintSolverSetup_oneStepIntegrate(const ResourceInfo&,const hkStepInfo&,const Accumulator*,DynamicNode* const*,int) throw();
-__declspec(nothrow) void UpdateIslandMotionStates(SolverIsland*,StateTable&,Resources&) throw();
+__declspec(nothrow) void hkLs_restoreTransformOnBodiesWithUpdatedTransform(SolverIsland*,StateTable&,Resources&) throw();
 __declspec(nothrow) void PartitionMotionPairs(List<SchemaRecord>&,int&,int) throw();
 __declspec(nothrow) void hkLs_toiActivateConstraintsLinkingActivatedEntities(List<SchemaRecord>&,int&,StateTable&) throw();
 struct SweepView {hkVector4 center0,center1,rotation0,rotation1,localCenter;};
@@ -2913,15 +2913,15 @@ struct SweepView {hkVector4 center0,center1,rotation0,rotation1,localCenter;};
 __declspec(nothrow) void hkSweptTransformUtil_lerp2(const SweepView&,float,hkTransform&) throw();
 __forceinline void updateEntity(DynamicNode* node,float time) {
     hkMotionState* m=node->getMotion()->GetMotionState();
-    hkSweptTransformUtil_lerp2(*reinterpret_cast<SweepView*>(&m->m_kSweptTransform.m_vCenterOfMass0),time,m->m_kMotionTransform);
+    hkSweptTransformUtil_lerp2(*reinterpret_cast<SweepView*>(&m->m_kSweptTransform.m_centerOfMass0),time,m->m_transform);
 }
 __forceinline void restoreState(hkMotionState* m) {
-    reinterpret_cast<hkRotation*>(m)->set(m->m_kSweptTransform.m_qRotation1);
-    LocalM128 center=m->m_kSweptTransform.m_vCenterOfMassLocal.m_vComponents;
-    LocalM128 y=_mm_mul_ps(_mm_shuffle_ps(center,center,0x55),m->m_kMotionTransform.m_row1);
-    LocalM128 x=_mm_mul_ps(_mm_shuffle_ps(center,center,0),m->m_kMotionTransform.m_row0);
-    LocalM128 z=_mm_mul_ps(_mm_shuffle_ps(center,center,0xaa),m->m_kMotionTransform.m_row2);
-    m->m_kMotionTransform.m_row3=_mm_sub_ps(m->m_kSweptTransform.m_vCenterOfMass1.m_vComponents,_mm_add_ps(_mm_add_ps(y,x),z));
+    reinterpret_cast<hkRotation*>(m)->set(m->m_kSweptTransform.m_rotation1);
+    LocalM128 center=m->m_kSweptTransform.m_centerOfMassLocal.m_vComponents;
+    LocalM128 y=_mm_mul_ps(_mm_shuffle_ps(center,center,0x55),m->m_transform.m_row1);
+    LocalM128 x=_mm_mul_ps(_mm_shuffle_ps(center,center,0),m->m_transform.m_row0);
+    LocalM128 z=_mm_mul_ps(_mm_shuffle_ps(center,center,0xaa),m->m_transform.m_row2);
+    m->m_transform.m_row3=_mm_sub_ps(m->m_kSweptTransform.m_vCenterOfMass1.m_vComponents,_mm_add_ps(_mm_add_ps(y,x),z));
 }
 __declspec(noinline) __declspec(nothrow) void PartitionMotionPairs(List<SchemaRecord>& a,int& cursor,int n) throw() {
     for(int i=a.GetLogicalSize()-n;i<a.GetLogicalSize();++i) {
@@ -2933,11 +2933,11 @@ __declspec(noinline) __declspec(nothrow) void PartitionMotionPairs(List<SchemaRe
     }
 }
 // src: HAVOK_LIB 0x00d0c6d0
-__declspec(noinline) __declspec(nothrow) void hkLs_toiActivateConstraintsLinkingActivatedEntities(List<SchemaRecord>& a,int& cursor,StateTable& state) throw() {
-    for(int i=cursor;i<a.GetLogicalSize();++i) {
-        Constraint* c=a[i].m_pHavokConstraint;
-        if(state[c->getEntityA()->m_usStorageIndex]==16 && state[c->getEntityB()->m_usStorageIndex]==16) {
-            SchemaRecord tmp=a[cursor++];a[cursor-1]=a[i];a[i]=tmp;
+__declspec(noinline) __declspec(nothrow) void hkLs_toiActivateConstraintsLinkingActivatedEntities(List<SchemaRecord>& constraintStatus,int& firstNonActiveConstraintStatus,StateTable& entityState) throw() {
+    for(int i=firstNonActiveConstraintStatus;i<constraintStatus.GetLogicalSize();++i) {
+        Constraint* c=constraintStatus[i].m_pHavokConstraint;
+        if(entityState[c->getEntityA()->m_usStorageIndex]==16 && entityState[c->getEntityB()->m_usStorageIndex]==16) {
+            SchemaRecord tmp=constraintStatus[firstNonActiveConstraintStatus++];constraintStatus[firstNonActiveConstraintStatus-1]=constraintStatus[i];constraintStatus[i]=tmp;
         }
     }
 }
@@ -2969,7 +2969,7 @@ struct SolveRecord { SolveConstraint* constraint; void* schema; float depth; };
 struct SolveViolation { SolveConstraint* constraint; const SolvePoint* point; const void* properties; };
 extern "C" __declspec(nothrow) int __cdecl hkVector4_ProcessEntries_00d9f6f0(void*,void*,void*,int,float*) throw();
 extern "C" __declspec(nothrow) int __cdecl hkLs_areVelocitiesOk(float,SolveRecord*,float*,int,void*) throw();
-__declspec(noinline) __declspec(nothrow) BoolFlag CollectMatchingEntries(Resources& originalResources,const List<SchemaRecord>& originalRecords,ProcessInput& scene,List<Violation>* originalViolations)
+__declspec(noinline) __declspec(nothrow) BoolFlag hkLs_toiCheckFinalValidityOfCriticalConstraints(Resources& originalResources,const List<SchemaRecord>& originalRecords,ProcessInput& scene,List<Violation>* originalViolations) // src: XBOX_RETAIL_PDB 0x00d0ceb0
 {
     void* world=&originalResources;
     void* matrices=const_cast<List<SchemaRecord>*>(&originalRecords);
@@ -2983,7 +2983,7 @@ __declspec(noinline) __declspec(nothrow) BoolFlag CollectMatchingEntries(Resourc
         SolveRecord& record=records->begin()[i];
         if(record.constraint->priority!=5) continue;
         int n=hkVector4_ProcessEntries_00d9f6f0(resources->solver,record.schema,resources->accumulators,256,velocities);
-        int violated=hkLs_areVelocitiesOk(resources->step->m_fTimeStep,&record,velocities,n,&scene);
+        int violated=hkLs_areVelocitiesOk(resources->step->m_deltaTime,&record,velocities,n,&scene);
         if(violated<0) continue;
         if(!rejected) return BoolFlag(false);
         satisfied=false;
@@ -3003,7 +3003,7 @@ __declspec(noinline) __declspec(nothrow) BoolFlag CollectMatchingEntries(Resourc
     }
     return BoolFlag(satisfied);
 }
-int hkLs_localizedSolveToi(const Limits& limits,Resources& resources,PairEvent& event,ResourceManager& callbacks,Scene* world,List<DynamicNode*>& active,StateTable& states,float timeStep) throw();
+int hkLs_localizedSolveToi(const Limits& toiResources,Resources& solverResources,PairEvent& event,ResourceManager& toiResourceMgr,Scene* world,List<DynamicNode*>& activeEntities,StateTable& entityState,float rotateNormal) throw();
 
 template<class T> class SolField {
     T value;
@@ -3069,7 +3069,7 @@ template<class T> struct SolArray : SolArrayBase<T> {
 };
 typedef SolArray<S00d0db40_Entry> S00d0db40_EntryArray;
 struct S00d0db40_AgentSrc {
-    void CopyAndSortGeometryList(S00d0db40_EntryArray& out) const;
+    void hkpLinkedCollidable_getCollisionEntriesSorted(S00d0db40_EntryArray& entries) const;
 };
 struct S00d0db40_Entity {
     int unk00, unk04, unk08, unk0c;
@@ -3163,14 +3163,17 @@ struct S00d0db40_Dyn {
     virtual void placeholder();
     int unk04, unk08;
     hkpWorld* m_pOwningWorld;
-    void QueueToiEvent(const S00d0db40_Output&, const S_00d0d150_AgentNnEntry&);
+    void hkpContinuousSimulation_addToiEvent(const S00d0db40_Output&, const S_00d0d150_AgentNnEntry&);
 
-    void hkpContinuousSimulation_collideEntitiesOfOneIslandNarrowPhaseContinuous_toiOnly(S00d0db40_Entity** entities, int numEntities, const S00d0db40_Input& input, S00d0db40_Pending& pending);
+    void hkpContinuousSimulation_collideEntitiesOfOneIslandNarrowPhaseContinuous_toiOnly(S00d0db40_Entity** entities, int numEntities, const S00d0db40_Input& input, S00d0db40_Pending& entitiesNeedingPsiCollisionDetection);
 };
 extern "C" void __cdecl hkAgentNnMachine_ProcessAgent(S_00d0d150_AgentNnEntry*, const S00d0db40_Input&, S00d0db40_Output&, hkpContactMgr*);
 // @fnv 0x00d0db40
 // src: HAVOK_LIB 0x00d0db40
-void S00d0db40_Dyn::hkpContinuousSimulation_collideEntitiesOfOneIslandNarrowPhaseContinuous_toiOnly(S00d0db40_Entity** entities, int numEntities, const S00d0db40_Input& input, S00d0db40_Pending& pending)
+// pdb: hkpContinuousSimulation::collideEntitiesOfOneIslandNarrowPhaseContinuous_toiOnly | hkpContinuousSimulation.obj | retail, upstream name already matches, high
+// pdb params: entities, numEntities, input, entitiesNeedingPsiCollisionDetection
+// pdb locals: totalNumEntities, processOutput, island, isProcessed, i, collisionEntriesTmp, assertBuf, ostr
+void S00d0db40_Dyn::hkpContinuousSimulation_collideEntitiesOfOneIslandNarrowPhaseContinuous_toiOnly(S00d0db40_Entity** entities, int numEntities, const S00d0db40_Input& input, S00d0db40_Pending& entitiesNeedingPsiCollisionDetection)
 {
     S00d0db40_Island* island = entities[0]->getIsland();
     int numBytes = island->m_iActorEntryCount;
@@ -3192,17 +3195,17 @@ void S00d0db40_Dyn::hkpContinuousSimulation_collideEntitiesOfOneIslandNarrowPhas
         S00d0db40_AgentSrc* linked = entity->linked();
         visited[entity->m_uiUniqueId] = true;
         S00d0db40_EntryArray temporary;
-        linked->CopyAndSortGeometryList(temporary);
+        linked->hkpLinkedCollidable_getCollisionEntriesSorted(temporary);
         const S00d0db40_EntryArray& entries = temporary;
         for (int j = 0; j < entries.GetLogicalSize(); ++j) {
             const S00d0db40_Entry& pair = entries[j];
             S00d0db40_Entity* other = (S00d0db40_Entity*)pair.m_kCollidable->getOwner();
             if (other->getIsland() == island && visited[other->m_uiUniqueId]) continue;
             S_00d0d150_AgentNnEntry* agent = pair.m_pCollisionAgent;
-            if (m_pOwningWorld->getCollisionDispatcher()->getCollisionQualityInfo(agent->m_cAgentType)->m_iQualityInfoValue10 && !m_pOwningWorld->getCollisionDispatcher()->getCollisionQualityInfo(agent->m_cAgentType)->m_bUseContinuousPhysics) {
+            if (m_pOwningWorld->getCollisionDispatcher()->getCollisionQualityInfo(agent->m_cAgentType)->m_useContinuousPhysics && !m_pOwningWorld->getCollisionDispatcher()->getCollisionQualityInfo(agent->m_cAgentType)->m_useSimpleToiHandling) {
                 output.reset();
                 input.m_quality = input.m_pCollisionDispatcher->getCollisionQualityInfo(agent->m_cAgentType);
-                input.m_toiEnabled = input.m_quality->m_iQualityInfoValue10;
+                input.m_toiEnabled = input.m_quality->m_useContinuousPhysics;
                 hkAgentNnMachine_ProcessAgent(agent, input, output, (hkpContactMgr*)agent->m_pContactManager);
                 if (DAT_01269200 == 1) goto done;
                 if (!output.isEmpty()) {
@@ -3212,13 +3215,13 @@ void S00d0db40_Dyn::hkpContinuousSimulation_collideEntitiesOfOneIslandNarrowPhas
                     hkpContactMgr* mgr = static_cast<hkpContactMgr*>(agent->m_pContactManager);
                     (*reinterpret_cast<ProcessContact**>(mgr))[6](mgr, a, b, input, output);
                 }
-                if (output.hasToi()) QueueToiEvent(output, *agent);
+                if (output.hasToi()) hkpContinuousSimulation_addToiEvent(output, *agent);
             } else {
                 unsigned int lookupId = entity->uid();
-                if (!pending.get(lookupId, 0)) {
+                if (!entitiesNeedingPsiCollisionDetection.get(lookupId, 0)) {
                     entity->FUN_00c90510();
                     unsigned int id = entity->uid();
-                    pending.insert(id, entity);
+                    entitiesNeedingPsiCollisionDetection.insert(id, entity);
                 }
             }
         }
@@ -3592,15 +3595,15 @@ class hkLocalFrame;
 class hkpBreakableBody;
 inline hkpSimulationIsland*hkpEntity::GetSimulationIsland()const
 {
-return m_pSimulationIsland;
+return m_simulationIsland;
 }
 inline hkBoolH hkpEntity::isFixed()const
 {
-return m_pMotionState.getType()==hkpMotion::MOTION_FIXED;
+return m_motion.getType()==hkpMotion::MOTION_FIXED;
 }
 inline hkUint32 hkpEntity::GetUid()const
 {
-return m_uiUniqueId;
+return m_uid;
 }
 
 __forceinline hkMonitorStream& hkMonitorStream::getInstance()
@@ -3713,7 +3716,7 @@ class ConvexFeaturePairCache
 public:
 __forceinline void*__cdecl operator new(hk_size_t nbytes){;void*obj=hkMemoryRouter::getInstance().heap().blockAlloc(static_cast<int>(nbytes));;return obj;}
 public:
-void init(const hkpConvexShape*shapeA,const hkpConvexShape*shapeB,const hkTransform&btoa);};
+void init(const hkpConvexShape*shapeA,const hkpConvexShape*shapeB,const hkTransform&aTb);};
 __declspec(align(16))class HeapContactFeatureCache:public ConvexFeaturePairCache
 {
 public:
@@ -3814,7 +3817,7 @@ return static_cast<hkpRigidBody*>(hkGetWorldObject(collidable));
 }
 inline hkpMotion*hkpRigidBody::getRigidMotion()const
 {
-return const_cast<hkpMaxSizeMotion*>(&m_pMotionState);
+return const_cast<hkpMaxSizeMotion*>(&m_motion);
 }
 __forceinline void hkpContactMgr::processContact(const hkpCollidable&a,const hkpCollidable&b,const GskAgentInput&input,CollisionContactResults&collisionData)
 {
@@ -3829,6 +3832,7 @@ NarrowPhaseAgentEntry*m_entry;
 hkpSimulationIsland*m_pCurrentSimulationIsland;
 };
 }
+// pdb: class hkpContinuousSimulation, size 0x50 (here 0x2c), bases: hkpSimulation, 4 members
 class hkpContinuousSimulation:public hkpSimulation
 {
 public:
@@ -3836,10 +3840,13 @@ void collideEntitiesNeedingPsiCollisionDetectionNarrowPhase_toiOnly(const GskAge
 };
 // @fnv 0x00d0de70
 // src: HAVOK_LIB 0x00d0de70
+// pdb: hkpContinuousSimulation::collideEntitiesNeedingPsiCollisionDetectionNarrowPhase_toiOnly | hkpContinuousSimulation.obj | retail, upstream name already matches, high
+// pdb params: input, entitiesNeedingPsiCollisionDetection
+// pdb locals: entriesToCollideMap, entriesToCollide, assertBuf, ostr, processOutput
 void hkpContinuousSimulation::collideEntitiesNeedingPsiCollisionDetectionNarrowPhase_toiOnly(const GskAgentInput&input,PointerKeyIntegerMap<hkUint32,hkpEntity*>&entitiesNeedingPsiCollisionDetection)
 {
 {hkMonitorStream&mStream=hkMonitorStream::getInstance();if(mStream.getEnd()<mStream.getCapacityMinus16()){hkMonitorStream::TimerCommand*h=reinterpret_cast<hkMonitorStream::TimerCommand*>(mStream.getEnd());h->m_commandAndMonitor="T" "t" "Recollide PSI";h->setTime();mStream.setEnd((char*)(h+1));}};
-m_pOwningWorld->lockCriticalOperations();
+m_world->lockCriticalOperations();
 PointerKeyIntegerMap<NarrowPhaseAgentEntry*,int>entriesToCollideMap;
 hkArray<SimulationIslandEntryRecord>entriesToCollide;
 {
@@ -3848,7 +3855,7 @@ while(entitiesNeedingPsiCollisionDetection.isValid(it))
 {
 const hkpEntity*entity=entitiesNeedingPsiCollisionDetection.getValue(it);
 MonitorStreamOperationState::checkMt(0xad000002,entity->GetUid());
-MonitorStreamOperationState::checkMt(0xad000003,entity->m_usStorageIndex);
+MonitorStreamOperationState::checkMt(0xad000003,entity->m_storageIndex);
 ;
 const hkArray<hkpLinkedCollidable::CollisionKeyEntry>&collisionEntries=entity->m_kCollidable.getCollisionEntriesDeterministicUnchecked();
 const int numCollisionEntries=collisionEntries.m_iElementCount;
@@ -3857,9 +3864,9 @@ for(int e=0;e<numCollisionEntries;e++)
 NarrowPhaseAgentEntry*entry=collisionEntries.m_data[e].m_pAgentEntry;
 if(entriesToCollideMap.FindValueForKey(entry,0)==0)
 {
-const hkpCollisionQualityInfo*collisionQualityInfo=m_pOwningWorld->getCollisionDispatcher()->getCollisionQualityInfo(entry->m_cAgentType);
-int isContinuous=collisionQualityInfo->m_iQualityInfoValue10;
-hkBool isSimplified=collisionQualityInfo->m_bUseContinuousPhysics;
+const hkpCollisionQualityInfo*collisionQualityInfo=m_world->getCollisionDispatcher()->getCollisionQualityInfo(entry->m_cAgentType);
+int isContinuous=collisionQualityInfo->m_useContinuousPhysics;
+hkBool isSimplified=collisionQualityInfo->m_useSimpleToiHandling;
 bool motionIsFrozen=static_cast<const hkpRigidBody*>(entity)->getRigidMotion()->GetMotionState()->getSweptTransform().getInvDeltaTime()==0.0f;
 if(!isContinuous ||(isSimplified&&motionIsFrozen))
 {
@@ -3892,7 +3899,7 @@ hkpSimulationIsland*island=entriesToCollide[i].m_pCurrentSimulationIsland;
 WorldOperationEntry processOutput(island);
 processOutput.reset();
 const_cast<GskAgentInput&>(input).m_pCollisionQualityInfo=input.m_pCollisionDispatcher->getCollisionQualityInfo(entry->m_cAgentType);
-const_cast<GskAgentInput&>(input).m_bCreatePredictiveAgents=input.m_pCollisionQualityInfo->m_iQualityInfoValue10;
+const_cast<GskAgentInput&>(input).m_bCreatePredictiveAgents=input.m_pCollisionQualityInfo->m_useContinuousPhysics;
 ProcessGskAgentInput(entry,input,processOutput,entry->m_pContactManager);
 if(hkMemoryStateIsOutOfMemory(0x1a))
 {
@@ -3906,6 +3913,6 @@ entry->m_pContactManager->processContact(*collA,*collB,input,processOutput);
 }
 ;
 }
-m_pOwningWorld->unlockAndAttemptToExecutePendingOperations();
+m_world->unlockAndAttemptToExecutePendingOperations();
 {hkMonitorStream&mStream=hkMonitorStream::getInstance();if(mStream.getEnd()<mStream.getCapacityMinus16()){hkMonitorStream::TimerCommand*h=reinterpret_cast<hkMonitorStream::TimerCommand*>(mStream.getEnd());h->m_commandAndMonitor="E" "t" "";h->setTime();mStream.setEnd((char*)(h+1));}};
 }

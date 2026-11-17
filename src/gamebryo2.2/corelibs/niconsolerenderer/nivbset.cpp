@@ -11,11 +11,14 @@ void __stdcall InsertSortedNode(NiVBBlock*);
 
 // @fnv 0x00e94490
 // src: COMMUNITY 0x00e94490
-void NiVBSet::FreeChip(unsigned int uiArrayIndex, unsigned int uiChipIndex)
+// pdb: NiVBSet::FreeChip | NiVBSet.obj | retail, upstream name already matches, high
+// pdb params: uiBlockIndex, uiChipIndex
+// pdb locals: uiPreFreeSpace, pkVBBlock
+void NiVBSet::FreeChip(unsigned int uiBlockIndex, unsigned int uiChipIndex)
 {
     unsigned int uiPreFreeSpace;
     NiVBBlock* pkVBBlock;
-    pkVBBlock = m_kBlockArray.m_pData[uiArrayIndex];
+    pkVBBlock = m_kBlockArray.m_pData[uiBlockIndex];
     if (!pkVBBlock)
         return;
     uiPreFreeSpace = pkVBBlock->m_uiValue24;
@@ -25,7 +28,7 @@ void NiVBSet::FreeChip(unsigned int uiArrayIndex, unsigned int uiChipIndex)
     RemoveNode(pkVBBlock);
     if (pkVBBlock->m_uiValue28 == pkVBBlock->m_uiSize)
     {
-        m_kBlockArray.FUN_00a93c50(uiArrayIndex);
+        m_kBlockArray.FUN_00a93c50(uiBlockIndex);
         NiVBSet_FreeBlock(pkVBBlock);
     }
     else
@@ -57,6 +60,7 @@ struct FUN_00e94220_cls
 
 // Inserts a block into the doubly linked list ordered by m_24, updating head, next and back pointers.
 // @fnv 0x00e94220
+// pdb: NiTMapBase<NiTPointerAllocator<unsigned int>,unsigned int,NiVBSet *>::~NiTMapBase<NiTPointerAllocator<unsigned int>,unsigned int,NiVBSet *> | NiStaticGeometryGroup.obj | debug, object-file run extension, low
 void FUN_00e94220_cls::InsertSortedNode(NiVBBlock* node)
 {
     if (m_pFirstNode != 0)
@@ -71,20 +75,20 @@ void FUN_00e94220_cls::InsertSortedNode(NiVBBlock* node)
                 goto found;
             }
             prev = cur;
-            cur = reinterpret_cast<NiVBBlock*>(cur->m_3c);
+            cur = reinterpret_cast<NiVBBlock*>(cur->m_pkNextBlock);
         } while (cur != 0);
-        prev->m_3c = reinterpret_cast<unsigned int>(node);
-        node->m_40 = reinterpret_cast<unsigned int>(prev);
-        node->m_3c = 0;
+        prev->m_pkNextBlock = reinterpret_cast<unsigned int>(node);
+        node->m_pkPrevBlock = reinterpret_cast<unsigned int>(prev);
+        node->m_pkNextBlock = 0;
         return;
     found:
         if (prev != 0)
         {
-            prev->m_3c = reinterpret_cast<unsigned int>(node);
+            prev->m_pkNextBlock = reinterpret_cast<unsigned int>(node);
         }
-        cur->m_40 = reinterpret_cast<unsigned int>(node);
-        node->m_3c = reinterpret_cast<unsigned int>(cur);
-        node->m_40 = reinterpret_cast<unsigned int>(prev);
+        cur->m_pkPrevBlock = reinterpret_cast<unsigned int>(node);
+        node->m_pkNextBlock = reinterpret_cast<unsigned int>(cur);
+        node->m_pkPrevBlock = reinterpret_cast<unsigned int>(prev);
         if (cur != m_pFirstNode)
         {
             return;
@@ -94,8 +98,8 @@ void FUN_00e94220_cls::InsertSortedNode(NiVBBlock* node)
     else
     {
         m_pFirstNode = node;
-        node->m_3c = 0;
-        m_pFirstNode->m_40 = 0;
+        node->m_pkNextBlock = 0;
+        m_pFirstNode->m_pkPrevBlock = 0;
     }
 }
 
@@ -104,12 +108,12 @@ extern int DAT_010f0f8c;
 void* __cdecl Object_DispatchCommandFour(unsigned int);
 __forceinline NiVBBlock* InitializeVBBlock(NiVBBlock* block)
 {
-    block->m_chips.unk34 = 0;
-    block->m_chips.unk3A = 1;
-    block->m_chips.m_36 = 0;
-    block->m_chips.m_38 = 0;
-    block->m_chips.m_30 = 0;
-    block->m_chips.unk00 = &DAT_010f0f8c;
+    block->m_apkChips.unk34 = 0;
+    block->m_apkChips.unk3A = 1;
+    block->m_apkChips.m_36 = 0;
+    block->m_apkChips.m_38 = 0;
+    block->m_apkChips.m_30 = 0;
+    block->m_apkChips.unk00 = &DAT_010f0f8c;
     block->ClearAllData();
     return block;
 }
@@ -122,16 +126,16 @@ void __cdecl AllocateVBBlocks()
     {
         NiVBBlock* pRawBlock = static_cast<NiVBBlock*>(Object_DispatchCommandFour(sizeof(NiVBBlock)));
         NiVBBlock* p = pRawBlock ? InitializeVBBlock(pRawBlock) : 0;
-        NiVBBlock* previous = reinterpret_cast<NiVBBlock*>(p->m_3c);
-        NiVBBlock* next = reinterpret_cast<NiVBBlock*>(p->m_40);
+        NiVBBlock* previous = reinterpret_cast<NiVBBlock*>(p->m_pkNextBlock);
+        NiVBBlock* next = reinterpret_cast<NiVBBlock*>(p->m_pkPrevBlock);
         if (previous)
-            previous->m_40 = reinterpret_cast<unsigned int>(next);
+            previous->m_pkPrevBlock = reinterpret_cast<unsigned int>(next);
         if (next)
-            next->m_3c = reinterpret_cast<unsigned int>(previous);
+            next->m_pkNextBlock = reinterpret_cast<unsigned int>(previous);
         if (DAT_0126fa30)
-            DAT_0126fa30->m_40 = reinterpret_cast<unsigned int>(p);
-        p->m_3c = reinterpret_cast<unsigned int>(DAT_0126fa30);
-        p->m_40 = 0;
+            DAT_0126fa30->m_pkPrevBlock = reinterpret_cast<unsigned int>(p);
+        p->m_pkNextBlock = reinterpret_cast<unsigned int>(DAT_0126fa30);
+        p->m_pkPrevBlock = 0;
         DAT_0126fa30 = p;
     }
 }
@@ -143,16 +147,19 @@ struct VBSet
     NiVBBlock* RemoveFirstNodeAtLeast(unsigned int uiSize);
     NiVBBlock* NiVBSet_CreateBlock(unsigned int uiSize);
     void InsertSortedNode(NiVBBlock* pkBlock);
-    void* NiVBSet_AllocateChip(unsigned int uiSize, bool bForceNew);
+    void* NiVBSet_AllocateChip(unsigned int uiSize, bool bForceNewBlock);
 };
 
 // @fnv 0x00e94650
 // src: COMMUNITY 0x00e94650
-void* VBSet::NiVBSet_AllocateChip(unsigned int uiSize, bool bForceNew)
+// pdb: NiVBSet::AllocateChip | NiVBSet.obj | retail, upstream name already matches, high
+// pdb params: uiSize, bForceNewBlock
+// pdb locals: pkVBChip, pkVBBlock
+void* VBSet::NiVBSet_AllocateChip(unsigned int uiSize, bool bForceNewBlock)
 {
     void* pvChip = 0;
     NiVBBlock* pkBlock = 0;
-    if (!bForceNew)
+    if (!bForceNewBlock)
         pkBlock = RemoveFirstNodeAtLeast(uiSize);
     if (!pkBlock)
         pkBlock = NiVBSet_CreateBlock(uiSize);
@@ -186,11 +193,13 @@ struct VBLayout
 };
 extern VBLayout* g_pkFreeList;
 // @fnv 0x00e98500
+// pdb: NiVBBlock::DeleteChips | NiVBBlock.obj | retail, object-file run extension, low
+// pdb locals: pkVBChip, pkNext
 unsigned int __fastcall FreeVBBlock(NiVBBlock* object, void*, unsigned int index)
 {
     NiVBBlock* pLayout = object;
     unsigned int result = 0;
-    VBLayout* block = reinterpret_cast<VBLayout**>(pLayout->m_chips.m_30)[index];
+    VBLayout* block = reinterpret_cast<VBLayout**>(pLayout->m_apkChips.m_30)[index];
     if (block)
     {
         result = block->m_uiValueBeforeCount;
@@ -199,7 +208,7 @@ unsigned int __fastcall FreeVBBlock(NiVBBlock* object, void*, unsigned int index
             pLayout->m_uiValue20 = 0;
             if (index > 0)
             {
-                VBLayout** ppCursor = reinterpret_cast<VBLayout**>(pLayout->m_chips.m_30);
+                VBLayout** ppCursor = reinterpret_cast<VBLayout**>(pLayout->m_apkChips.m_30);
                 unsigned int remain = index;
                 do
                 {
@@ -217,7 +226,7 @@ unsigned int __fastcall FreeVBBlock(NiVBBlock* object, void*, unsigned int index
         pLayout->m_uiValue24 = pLayout->m_uiSize - pLayout->m_uiValue20;
         pLayout->m_uiValue28 += result;
         VBLayout* removed = 0;
-        reinterpret_cast<VBArray*>(&pLayout->m_chips)->FUN_00ba3aa0(index, &removed);
+        reinterpret_cast<VBArray*>(&pLayout->m_apkChips)->FUN_00ba3aa0(index, &removed);
         block->m_pkPrev = 0;
         block->m_pkNext = g_pkFreeList;
         if (g_pkFreeList)
@@ -249,6 +258,9 @@ struct HashTableBase
 };
 // Looks up key in the bucket chain, updates the value if found, otherwise allocates, initializes and prepends a new node and increments elementCount.
 // @fnv 0x00b57ea0
+// pdb: NiTMapBase<NiTPointerAllocator<unsigned int>,NiNode *,unsigned int>::SetAt | NiBSBoneLODController.obj | debug, call graph, medium
+// pdb params: key, val
+// pdb locals: pkItem, uiIndex, uiDepth
 void HashTableBase::InsertOrUpdate(unsigned int key, unsigned int value)
 {
     unsigned int bucketIndex = BucketIndex(key);
@@ -300,17 +312,20 @@ __forceinline NiVBBlock* PopBlock()
     if (!DAT_0126fa30)
         AllocateVBBlocks();
     NiVBBlock* block = DAT_0126fa30;
-    DAT_0126fa30 = reinterpret_cast<NiVBBlock*>(DAT_0126fa30->m_3c);
+    DAT_0126fa30 = reinterpret_cast<NiVBBlock*>(DAT_0126fa30->m_pkNextBlock);
     if (DAT_0126fa30)
-        DAT_0126fa30->m_40 = 0;
-    block->m_3c = 0;
-    block->m_40 = 0;
+        DAT_0126fa30->m_pkPrevBlock = 0;
+    block->m_pkNextBlock = 0;
+    block->m_pkPrevBlock = 0;
     return block;
 }
 
 // Allocates a NiVBBlock of at least uiSize bytes via the device, fills its fields, and inserts it into the VBArr.
 // @fnv 0x00e94580
 // src: COMMUNITY 0x00e94580
+// pdb: NiVBSet::CreateBlock | NiVBSet.obj | retail, upstream name already matches, high
+// pdb params: uiSize
+// pdb locals: pkVB, d3dRet, pkVBBlock, uiVBSize, uiIndex
 NiVBBlock* VBSetX::NiVBSet_CreateBlock(unsigned int uiSize)
 {
     unsigned int uiAllocSize = uiSize;
@@ -325,17 +340,17 @@ NiVBBlock* VBSetX::NiVBSet_CreateBlock(unsigned int uiSize)
 
     NiVBBlock* p = PopBlock();
     p->m_00 = reinterpret_cast<unsigned int>(this);
-    p->m_08 = uiSize;
+    p->m_pkVB = uiSize;
     p->m_uiSize = uiAllocSize;
     p->m_24 = uiAllocSize;
     p->m_28 = uiAllocSize;
-    p->m_10 = m_u04;
-    p->m_14 = m_u08;
+    p->m_uiFVF = m_u04;
+    p->m_uiFlags = m_u08;
     p->m_1c = m_u18;
     NiVBBlock* pBlock = p;
     NiVBBlock* __restrict usageBlock = p;
-    usageBlock->m_18 = m_u14;
-    p->m_04 = m_kArr.NiTArray_void_cdecl_NiStream_NiObject_NiTMallocInterface_void_cdecl_NiStream_NiObject_AddFirstEmpty(&pBlock);
+    usageBlock->m_uiUsage = m_u14;
+    p->m_uiIndex = m_kArr.NiTArray_void_cdecl_NiStream_NiObject_NiTMallocInterface_void_cdecl_NiStream_NiObject_AddFirstEmpty(&pBlock);
     return p;
 }
 
@@ -382,39 +397,41 @@ struct VBSetCleanup
     unsigned int usage;
     unsigned int pool;
     CleanupBlockArray blocks;
-    void DestroyFields_00e943c0();
+    void NiVBSet_dtor();
 };
 
 // Releases each block's VB interface, links non-null blocks into a list, releases the buffer, and destroys the array.
 // @fnv 0x00e943c0
-// src: GUESS 0x00e943c0 (confidence: medium)
-void VBSetCleanup::DestroyFields_00e943c0()
+// src: XBOX_RETAIL_PDB 0x00e943c0
+// pdb: NiVBSet::~NiVBSet | NiVBSet.obj | retail, object-file gap fill, high
+// pdb locals: i, pkBlock
+void VBSetCleanup::NiVBSet_dtor()
 {
     for (unsigned int i = 0; i < blocks.m_usSize; ++i)
     {
         NiVBBlock* block = blocks.RemoveAt(i);
         if (block)
         {
-            if (block->m_08)
+            if (block->m_pkVB)
             {
-                reinterpret_cast<VBReleaseInterface*>(block->m_08)->Release();
-                block->m_08 = 0;
+                reinterpret_cast<VBReleaseInterface*>(block->m_pkVB)->Release();
+                block->m_pkVB = 0;
             }
             block->ClearAllData();
-            NiVBBlock* previous = reinterpret_cast<NiVBBlock*>(block->m_3c);
-            NiVBBlock* next = reinterpret_cast<NiVBBlock*>(block->m_40);
+            NiVBBlock* previous = reinterpret_cast<NiVBBlock*>(block->m_pkNextBlock);
+            NiVBBlock* next = reinterpret_cast<NiVBBlock*>(block->m_pkPrevBlock);
             if (previous)
-                previous->m_40 = reinterpret_cast<unsigned int>(next);
+                previous->m_pkPrevBlock = reinterpret_cast<unsigned int>(next);
             if (next)
-                next->m_3c = reinterpret_cast<unsigned int>(previous);
+                next->m_pkNextBlock = reinterpret_cast<unsigned int>(previous);
             NiVBBlock* head = DAT_0126fa30;
             if (head)
             {
-                head->m_40 = reinterpret_cast<unsigned int>(block);
+                head->m_pkPrevBlock = reinterpret_cast<unsigned int>(block);
                 head = DAT_0126fa30;
             }
-            block->m_3c = reinterpret_cast<unsigned int>(head);
-            block->m_40 = 0;
+            block->m_pkNextBlock = reinterpret_cast<unsigned int>(head);
+            block->m_pkPrevBlock = 0;
             DAT_0126fa30 = block;
         }
     }

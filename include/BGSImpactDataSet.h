@@ -8,6 +8,7 @@ class ImpactSwap;
 class QueuedFile;
 class TESFile;
 
+// pdb: class BGSImpactDataSet, size 0x4c, bases: TESForm, BGSPreloadable, 1 members
 struct BGSImpactDataSet : public TESForm, public BGSPreloadable
 {
 public:
@@ -15,17 +16,17 @@ public:
     virtual ~BGSImpactDataSet();
 
     void ResetFormData();
-    bool Load(TESFile* file);
+    bool Load(TESFile* apFile);
     virtual void InitItem();
-    static void CacheImpactDataSet();
-    static void RefreshImpactData(ImpactSwap* swap);
-    virtual void QueueResourceLoad(IO_TASK_PRIORITY priority, QueuedFile* file);
-    BGSImpactData* GetImpactDataForMaterial(int material);
+    static void CreateDefaultImpactDataSet();
+    static void RefreshImpactData(ImpactSwap* apSwap);
+    virtual void QueueResourceLoad(IO_TASK_PRIORITY aePriority, QueuedFile* apParent);
+    BGSImpactData* GetImpactDataForMaterial(int aeType);
     void Save();
     void Copy(TESForm* form);
     virtual bool Compare(TESForm* form);
 
     static BGSImpactDataSet* ms_pImpactDataSet;
 
-    BGSImpactData* m_apImpactData[12];
+    BGSImpactData* ppImpactData[12]; // src: XBOX_RETAIL_PDB +0x1c (old: m_apImpactData)
 };

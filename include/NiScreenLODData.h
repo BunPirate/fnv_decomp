@@ -7,10 +7,11 @@ class NiLODNode;
 class ScreenData;
 class ScreenObject;
 
+// pdb: class NiScreenLODData, size 0x30, bases: NiLODData, 4 members
 class NiScreenLODData : public NiLODData
 {
   public:
-    ScreenData* data;
+    ScreenData* m_kBound; // src: XBOX_RETAIL_PDB +0x8 (old: data)
     void* unused;
     ScreenObject* root;
     ScreenObject** objects;
@@ -33,11 +34,11 @@ class NiScreenLODData : public NiLODData
 
     NiBound& GetBound()
     {
-        return *reinterpret_cast<NiBound*>(&data);
+        return *reinterpret_cast<NiBound*>(&m_kBound);
     }
     const NiBound& GetBound() const
     {
-        return *reinterpret_cast<const NiBound*>(&data);
+        return *reinterpret_cast<const NiBound*>(&m_kBound);
     }
     void SetBound(const NiBound& bound)
     {

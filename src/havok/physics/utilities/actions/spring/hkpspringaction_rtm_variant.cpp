@@ -127,14 +127,14 @@ struct FUN_00cf4d80
     float m_fDamping;
     bool m_bModifierActive;
     bool m_bEnableState;
-    FUN_00cf4d80(void* a, void* b, unsigned long c);
+    FUN_00cf4d80(void* entityA, void* entityB, unsigned long userData);
 };
 extern int DAT_010d08f4;
 extern float DAT_01013974;
 extern float DAT_0101e2bc;
 struct FUN_00d4d340 : FUN_00cf4d80
 {
-    FUN_00d4d340(void* a, void* b, unsigned long c);
+    FUN_00d4d340(void* entityA, void* entityB, unsigned long userData);
 };
 extern "C" LocalM128 _mm_mul_ps(LocalM128 a, LocalM128 b);
 extern "C" LocalM128 _mm_sub_ps(LocalM128 a, LocalM128 b);
@@ -145,7 +145,7 @@ extern "C" void _mm_store_ss(float* p, LocalM128 a);
 class hkpStiffSpringWrapperD4D3 : public hkBaseObject
 {
   public:
-    void UpdatePivotsAndRestLength(const hkVector4& kPivotAW, const hkVector4& kPivotBW);
+    void hkpSpringAction_setPositionsInWorldSpace(const hkVector4& pivotA, const hkVector4& pivotB);
 
     unsigned int unk04, unk08, unk0C, unk10, unk14;
     hkpEntity* m_pEntityA;
@@ -201,7 +201,7 @@ struct SpringMotion
 inline void hkpEntity::ApplyForceAtPoint(float dt, const hkVector4& force, const SpringVector& point)
 {
     activate_00c9c1d0();
-    reinterpret_cast<SpringMotion*>(&m_pMotionState)->apply(dt, &force, &point);
+    reinterpret_cast<SpringMotion*>(&m_motion)->apply(dt, &force, &point);
 }
 struct SpringStep
 {
@@ -209,7 +209,7 @@ struct SpringStep
 };
 struct SpringAction : hkpSpringAction
 {
-    void __thiscall hkpSpringAction_applyAction(const SpringStep& step);
+    void __thiscall hkpSpringAction_applyAction(const SpringStep& stepInfo);
 };
 static LocalM128 dot3(LocalM128 a, LocalM128 b)
 {
@@ -256,29 +256,32 @@ static LocalM128 broadcast(float v)
 }
 // @fnv 0x00d4d530
 // src: HAVOK_SRC 0x00d4d530
-void SpringAction::hkpSpringAction_applyAction(const SpringStep& step)
+// pdb: hkpSpringAction::applyAction | hkpSpringAction.obj | retail, upstream name already matches, high
+// pdb params: stepInfo
+// pdb locals: posA, posB, assertBuf, ostr, velA, force, velB
+void SpringAction::hkpSpringAction_applyAction(const SpringStep& stepInfo)
 {
-    hkpEntity* a = m_pEntityA;
-    hkpEntity* b = m_pEntityB;
+    hkpEntity* a = m_entityA;
+    hkpEntity* b = m_entityB;
     SpringVector pointA, pointB, direction, velocityA, velocityB;
-    pointA.setTransformedPos_00c7f640(&a->m_pMotionState.m_kMotionState.m_kMotionTransform, &m_kPositionA);
-    pointB.setTransformedPos_00c7f640(&b->m_pMotionState.m_kMotionState.m_kMotionTransform, &m_kPositionB);
+    pointA.setTransformedPos_00c7f640(&a->m_motion.m_kMotionState.m_transform, &m_positionAinA);
+    pointB.setTransformedPos_00c7f640(&b->m_motion.m_kMotionState.m_transform, &m_positionBinB);
     float tolerance = DAT_01017d00;
     LocalM128 displacement = _mm_sub_ps(pointB.get(), pointA.get());
     float length = SpringLength3(displacement);
     if (tolerance > length)
         return;
     direction.set(_mm_mul_ps(broadcast(1.0f / length), displacement));
-    if (!m_bSpringEnabled && length < m_fRestLength)
+    if (!m_onCompression && length < m_restLength)
         return;
-    if (!m_bElastic && length > m_fRestLength)
+    if (!m_onExtension && length > m_restLength)
         return;
     a->hkpRigidBody_getPointVelocity(&pointA, &velocityA);
     b->hkpRigidBody_getPointVelocity(&pointB, &velocityB);
-    float force = (length - m_fRestLength) * m_fSpringStrength +
-                  m_fMotorDamping * SpringDot3(_mm_sub_ps(velocityB.get(), velocityA.get()), direction.get());
-    _mm_store_ps(&m_kLastForce.x, _mm_mul_ps(SpringSplatRef(-force), direction.get()));
-    b->ApplyForceAtPoint(step.deltaTime, m_kLastForce, pointB);
-    _mm_store_ps(&m_kLastForce.x, _mm_mul_ps(SpringSplatRef(force), direction.get()));
-    a->ApplyForceAtPoint(step.deltaTime, m_kLastForce, pointA);
+    float force = (length - m_restLength) * m_strength +
+                  m_damping * SpringDot3(_mm_sub_ps(velocityB.get(), velocityA.get()), direction.get());
+    _mm_store_ps(&m_lastForce.x, _mm_mul_ps(SpringSplatRef(-force), direction.get()));
+    b->ApplyForceAtPoint(stepInfo.deltaTime, m_lastForce, pointB);
+    _mm_store_ps(&m_lastForce.x, _mm_mul_ps(SpringSplatRef(force), direction.get()));
+    a->ApplyForceAtPoint(stepInfo.deltaTime, m_lastForce, pointA);
 }

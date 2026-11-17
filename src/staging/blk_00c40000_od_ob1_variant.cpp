@@ -215,17 +215,17 @@ public:
     void Unitize_004a0c10();
     float FUN_004a7290();
     float FUN_004a7290() const;
-    LocalVec3 FUN_004b3800(const LocalVec3& other) const;
+    LocalVec3 FUN_004b3800(const LocalVec3& pt) const;
     LocalVec3 ProcessAndReturnValue_0053d280(float divisor);
     float NiPoint3_XYLength();
     float NiPoint3_XYLength() const;
     void ComputeValue_0063c8a0(const LocalVec3* other);
     void ComputeValue_0063c8a0(void* other);
     void FUN_006815c0();
-    float CVec3_Distance(LocalVec3* other);
-    float CVec3_Distance(const LocalVec3& other) const;
-    LocalVec3 TransformPointByMatrix4(const Mat& matrix);
-    LocalVec3 TransformPointByMatrix4(const Matrix4* matrix);
+    float CVec3_Distance(LocalVec3* cVec);
+    float CVec3_Distance(const LocalVec3& cVec) const;
+    LocalVec3 TransformPointByMatrix4(const Mat& cTransform);
+    LocalVec3 TransformPointByMatrix4(const Matrix4* cTransform);
     void Normalize_00b12790();
     LocalVec3 Diff_00b13040(void* other);
     LocalVec3 Diff_00b13040(const LocalVec3& other) const;
@@ -308,7 +308,7 @@ struct FUN_00c430a0_class
 };
 struct FUN_00c430b0_class
 {
-    void __thiscall NiIntegerExtraData_CopyMembers(int a1, int a2);
+    void __thiscall NiIntegerExtraData_CopyMembers(int pDest, int kCloning);
     void __thiscall ForwardCall_00c430b0(int a1, int a2);
 };
 
@@ -320,7 +320,7 @@ struct FUN_00c430d0 : public NiIntegerExtraData
 struct FUN_00c43140_StandIn
 {
     void FUN_00a9a4e0(int a);
-    void BSXFlags_SaveBinary(int a);
+    void BSXFlags_SaveBinary(int arStream);
 };
 
 bool NiStringExtraData::IsEqual(NiObject* other) const
@@ -337,7 +337,7 @@ struct FUN_00c43650_Class
 
 struct FUN_00c43900_class
 {
-    void __thiscall BSValueNode_LinkObject(void* apParam);
+    void __thiscall BSValueNode_LinkObject(void* arStream);
 };
 extern "C" void* g_01202de8;
 struct FUN_00c43cf0_Class
@@ -376,8 +376,8 @@ struct FUN_00c44e20
 };
 struct FUN_00c452a0_Class
 {
-    void __thiscall ReadChildListFromStream(int a);
-    void __thiscall BSRangeNode_LinkObject(int a);
+    void __thiscall ReadChildListFromStream(int kStream);
+    void __thiscall BSRangeNode_LinkObject(int arStream);
 };
 
 struct FUN_00a5e5b0_helper
@@ -415,7 +415,7 @@ extern P03MM g_memoryManager;
 struct FUN_00c4aae0_class
 {
     void __thiscall CopyStateTo(int a, int b);
-    void __thiscall BSRangeNode_CopyMembers(int a, int b);
+    void __thiscall BSRangeNode_CopyMembers(int pDest, int arCloneData);
 };
 struct FUN_00c4ab40_class
 {
@@ -424,24 +424,24 @@ struct FUN_00c4ab40_class
 };
 struct FUN_00c452a0_class
 {
-    void BSRangeNode_LinkObject(int a);
+    void BSRangeNode_LinkObject(int arStream);
 };
 // src: XBOX_PDB 0x00c452a0
-void FUN_00c452a0_class::BSRangeNode_LinkObject(int a)
+void FUN_00c452a0_class::BSRangeNode_LinkObject(int arStream)
 {}
 struct FUN_00c4ab60_class
 {
-    void BSBlastNode_LinkObject(int a);
+    void BSBlastNode_LinkObject(int arStream);
 };
 struct FUN_00c4abb0_class
 {
     void BSRangeNode_SaveBinary(int);
-    void BSBlastNode_SaveBinary(int a);
+    void BSBlastNode_SaveBinary(int arStream);
 };
 struct FUN_00c4abd0_class
 {
     char BSRangeNode_IsEqual(int);
-    char BSBlastNode_IsEqual(int a1);
+    char BSBlastNode_IsEqual(int apObject);
 };
 extern "C" void* g_01202e7c;
 struct FUN_00c4ac90_Class
@@ -451,12 +451,12 @@ struct FUN_00c4ac90_Class
 struct FUN_00c4ad40_class
 {
     void __thiscall CopyStateTo(int, int);
-    void __thiscall BSDebrisNode_CopyMembers(int a, int b);
+    void __thiscall BSDebrisNode_CopyMembers(int pDest, int arCloneData);
 };
 extern "C" void __cdecl BSRangeNode_LoadBinary(int);
 struct FUN_00c4ada0_Class
 {
-    void __thiscall BSDebrisNode_LoadBinary(int a);
+    void __thiscall BSDebrisNode_LoadBinary(int arStream);
 };
 struct FUN_00c4ade0_class
 {
@@ -466,12 +466,12 @@ struct FUN_00c4ade0_class
 struct FUN_00c4ae10_Class
 {
     void BSRangeNode_SaveBinary(int);
-    void BSDebrisNode_SaveBinary(int a);
+    void BSDebrisNode_SaveBinary(int arStream);
 };
 struct FUN_00c4ae30_class
 {
-    unsigned char BSRangeNode_IsEqual(unsigned int a);
-    unsigned char BSDebrisNode_IsEqual(unsigned int a);
+    unsigned char BSRangeNode_IsEqual(unsigned int apObject);
+    unsigned char BSDebrisNode_IsEqual(unsigned int apObject);
 };
 extern int g_01202e84;
 struct FUN_00c4aef0_Class
@@ -481,28 +481,28 @@ struct FUN_00c4aef0_Class
 struct FUN_00c4afa0_class
 {
     void __thiscall CopyStateTo(int a, int b);
-    void __thiscall BSDamageStage_CopyMembers(int a, int b);
+    void __thiscall BSDamageStage_CopyMembers(int pDest, int arCloneData);
 };
 struct FUN_00c4b000_class
 {
     void __thiscall BSRangeNode_LoadBinary(int);
-    void __thiscall BSDamageStage_LoadBinary(int a);
+    void __thiscall BSDamageStage_LoadBinary(int arStream);
 };
 struct FUN_00c4b020_Class
 {
     void __thiscall BSRangeNode_LinkObject(int);
-    void __thiscall BSDamageStage_LinkObject(int a);
+    void __thiscall BSDamageStage_LinkObject(int arStream);
 };
 struct FUN_00c452f0_cls
 {
-    void __thiscall BSRangeNode_SaveBinary(int a1);
+    void __thiscall BSRangeNode_SaveBinary(int arStream);
 };
 // src: XBOX_PDB 0x00c452f0
-void __thiscall FUN_00c452f0_cls::BSRangeNode_SaveBinary(int a1)
+void __thiscall FUN_00c452f0_cls::BSRangeNode_SaveBinary(int arStream)
 {}
 struct FUN_00c4b070_cls
 {
-    void __thiscall BSDamageStage_SaveBinary(int a1);
+    void __thiscall BSDamageStage_SaveBinary(int arStream);
 };
 struct GlobalObject_00a7b610;
 extern GlobalObject_00a7b610 g_01202e8c;
@@ -518,7 +518,7 @@ struct FUN_00c51550 : NiNode
 struct FUN_00c51570_Class
 {
     void* __thiscall NiNode_GetViewerStrings(void* arg);
-    void* __thiscall BSParticleSystemManager_GetViewerStrings(void* arg);
+    void* __thiscall BSParticleSystemManager_GetViewerStrings(void* pkStrings);
 };
 struct BaseT
 {
@@ -640,7 +640,7 @@ NiPSysPositionModifier::NiPSysPositionModifier() throw()
 struct FUN_00c5ffb0_Class
 {
     void __thiscall FUN_00c31670(int param);
-    void __thiscall BSPSysStripUpdateModifier_RegisterStreamables(int param);
+    void __thiscall BSPSysStripUpdateModifier_RegisterStreamables(int kStream);
 };
 extern int DAT_010c30b8;
 void NiFreeAlias(void*);
@@ -667,11 +667,11 @@ struct FUN_00c43620_Class
 struct FUN_00c43850_Class
 {
     void __thiscall ForwardToBase(void* dst, unsigned int size);
-    void __thiscall BSNiNode_CopyMembers(void* dst, unsigned int size);
+    void __thiscall BSNiNode_CopyMembers(void* pDest, unsigned int arCloneData);
 };
 extern "C" char* __cdecl _strchr(const char*, int);
 extern "C" int __cdecl _strcpy_s(char*, unsigned int, const char*);
-void __cdecl CopyMainNameFromPath(int param_1, char* param_2);
+void __cdecl CopyMainNameFromPath(int arSetting, char* apMainKey);
 void __cdecl EnsureArenaAllocated(void*);
 struct FUN_00c448f0_Class
 {
@@ -706,7 +706,7 @@ extern int DAT_011af758;
 void NiObjectGarbage_Init(int value);
 int NiObjectGarbage_GetCount();
 extern unsigned short DAT_01202e2e;
-void __cdecl NiObjectGarbage_SetIncreaseSize(unsigned short value);
+void __cdecl NiObjectGarbage_SetIncreaseSize(unsigned short auIncreaseBy);
 
 struct CloningProcess;
 
@@ -715,7 +715,7 @@ struct SObj;
 void __cdecl CallAnimCallback(SStream*, SObj*);
 struct FUN_00c46830_class
 {
-    void __thiscall FUN_00c31950(NiStream* stream);
+    void __thiscall FUN_00c31950(NiStream* kStream);
     void __thiscall Load(NiStream* stream);
 };
 void* __cdecl FUN_00ec7230(char* dst, const char* src, unsigned int size);
@@ -729,7 +729,7 @@ extern "C" void* __cdecl NiViewerStrings_NiGetViewerString_Title(void*);
 struct FUN_00c4ab00_Class
 {
     void __thiscall BSRangeNode_GetViewerStrings(int);
-    void __thiscall BSBlastNode_GetViewerStrings(int a);
+    void __thiscall BSBlastNode_GetViewerStrings(int apStrings);
 };
 struct FUN_00c4f2d0_class
 {
@@ -737,7 +737,7 @@ struct FUN_00c4f2d0_class
 };
 struct FUN_00c5dcd0_Class
 {
-    void __thiscall BSMasterParticleSystem_AddEmitterObj(void* a);
+    void __thiscall BSMasterParticleSystem_AddEmitterObj(void* apEmitterObj);
 };
 struct FUN_00c50f30_Class
 {
@@ -780,7 +780,7 @@ struct NiExtraDataSaveHelper
 };
 struct FUN_00c54ec0_class
 {
-    void __thiscall BSBound_SaveBinary(NiStream& stream);
+    void __thiscall BSBound_SaveBinary(NiStream& arStream);
 };
 struct FUN_00a7b300_shell
 {
@@ -816,12 +816,12 @@ struct FUN_00c5cce0_Class
 {
     char pad[0x5c];
     int m_0x5c;
-    void __thiscall BSPSysMultiTargetEmitterCtlr_SaveBinary(NiStream& stream);
+    void __thiscall BSPSysMultiTargetEmitterCtlr_SaveBinary(NiStream& kStream);
 };
 struct FUN_00c1be60_StandIn
 {
     unsigned char __thiscall NiPSysEmitterCtlr_IsEqual(void*);
-    char BSPSysMultiTargetEmitterCtlr_IsEqual(void* other);
+    char BSPSysMultiTargetEmitterCtlr_IsEqual(void* pkObject);
 };
 struct FUN_00c5ced0 : FUN_00a744a0
 {
@@ -861,7 +861,7 @@ struct FUN_00c5dea0_Class
 };
 struct FUN_00c5e560_class : public NiNode
 {
-    void __thiscall NiNode_CopyMembers(NiNode* a, void* b);
+    void __thiscall NiNode_CopyMembers(NiNode* pkDest, void* kCloning);
 };
 struct FUN_00c5db90_Class
 {
@@ -905,7 +905,7 @@ struct BaseForCall
 
 struct FUN_00c439b0_class : BaseForCall
 {
-    char BSValueNode_IsEqual(NiObject* apParam);
+    char BSValueNode_IsEqual(NiObject* apObject);
 };
 struct RefCountedObject
 {
@@ -947,7 +947,7 @@ struct FUN_00c48a10_t
     Arr_00c48a10 m_kArray;
     int _24;
     int m_iArrayLength;
-    void ShiftElements(int iDelta, bool bClear);
+    void ShiftElements(int aiShift, bool abFillNoop);
 };
 struct FUN_00c4a9c0_class
 {
@@ -1075,7 +1075,7 @@ struct FUN_00c465a0_class
 };
 struct FUN_00c46670_class
 {
-    void* __thiscall BSWindModifier_CreateClone(CloningProcess& process);
+    void* __thiscall BSWindModifier_CreateClone(CloningProcess& arCloneData);
 };
 struct FUN_00c465a0
 {
@@ -1171,14 +1171,14 @@ struct FUN_00c5d610_StandIn
 };
 struct FUN_00c5d610_Class
 {
-    unsigned int __thiscall AddRegSettingsStrings(NiTPrimitiveArray<unsigned int>& arr);
+    unsigned int __thiscall AddRegSettingsStrings(NiTPrimitiveArray<unsigned int>& apStringsA);
 };
 int __cdecl Setting_DataType_00c33090(int);
 
 int __cdecl GetStateResult(int* apParams);
 struct FUN_00c5e620_Class
 {
-    void __thiscall BSMasterParticleSystem_LoadBinary(NiStream* stream);
+    void __thiscall BSMasterParticleSystem_LoadBinary(NiStream* kStream);
 };
 
 struct NiStream_ReadMultipleLinkIDs_Helper
@@ -1216,7 +1216,7 @@ struct FUN_00c43070_shell
 
 
 extern void* _g_01202de0;
-void* GetExtraDataChecked(NiAVObject* obj);
+void* GetExtraDataChecked(NiAVObject* apObject);
 extern int DAT_010c195c;
 struct FUN_00c43660 : FUN_00c5f570_Class
 {
@@ -1231,7 +1231,7 @@ void __cdecl NiStreamLoadBinary_char_00a643b0(NiStream& stream, unsigned int& va
 
 struct FUN_00c43920_class
 {
-    char BSValueNode_RegisterStreamables(NiStream* stream);
+    char BSValueNode_RegisterStreamables(NiStream* arStream);
 };
 struct MyBase
 {
@@ -1240,7 +1240,7 @@ struct MyBase
 void __cdecl Runtime_UpdateState_00a29550(NiStream& stream, unsigned char* p);
 struct FUN_00c43950_Class : MyBase
 {
-    void __thiscall BSValueNode_SaveBinary(NiStream& stream);
+    void __thiscall BSValueNode_SaveBinary(NiStream& arStream);
 };
 struct FUN_00c43cb0_class
 {
@@ -1271,8 +1271,8 @@ struct A51BF0Base
     static void* __cdecl operator new(unsigned int size);
     A51BF0Base();
 
-    void __thiscall BSMultiBoundNode_CopyMembers(A51BF0Base* copy, int a);
-    A51BF0Base* __thiscall BSMultiBoundNode_CreateClone(int a);
+    void __thiscall BSMultiBoundNode_CopyMembers(A51BF0Base* copy, int arCloneData);
+    A51BF0Base* __thiscall BSMultiBoundNode_CreateClone(int arCloneData);
 };
 
 struct NiStreamHelper
@@ -1284,7 +1284,7 @@ struct FUN_00c46cd0_Class
     char pad[0xac];
     GO m_go;
 
-    void __thiscall LoadFromStream(void* stream);
+    void __thiscall LoadFromStream(void* arStream);
 };
 struct FUN_00c46af0
 {
@@ -1327,22 +1327,22 @@ struct FUN_00c4a960_Class
 struct FUN_00c4ab80_class
 {
     unsigned char BSRangeNode_RegisterStreamables(int);
-    char BSBlastNode_RegisterStreamables(int a);
+    char BSBlastNode_RegisterStreamables(int arStream);
 };
 unsigned int __cdecl _FUN_00a7d330(int a);
 struct FUN_00c4ad60_class : public FUN_00c4ab00_Class
 {
-    void __thiscall AddFirstEmptyFromGlobal(int a);
+    void __thiscall AddFirstEmptyFromGlobal(int apStrings);
 };
 #include "../../include/NiTPrimitiveArray.h"
 unsigned int __cdecl _FUN_00a7d330(void*);
 struct FUN_00c4afc0_class
 {
-    void __thiscall AddValueToArray(NiTPrimitiveArray<unsigned int>* array);
+    void __thiscall AddValueToArray(NiTPrimitiveArray<unsigned int>* apStrings);
 };
 struct FUN_00c4b090_class
 {
-    char BSDamageStage_IsEqual(int a1);
+    char BSDamageStage_IsEqual(int apObject);
 };
 
 void* _NiMalloc(unsigned int size);
@@ -1384,11 +1384,11 @@ struct FUN_00c5de70_stub
 };
 struct FUN_00c5e6f0_class
 {
-    void BSMasterParticleSystem_PostLinkObject(int a);
+    void BSMasterParticleSystem_PostLinkObject(int kStream);
 };
 struct FUN_00c5e720_Class
 {
-    unsigned char BSMasterParticleSystem_RegisterStreamables(NiStream* stream);
+    unsigned char BSMasterParticleSystem_RegisterStreamables(NiStream* kStream);
 };
 struct FUN_00c5ede0_Class
 {
@@ -1408,7 +1408,7 @@ struct FUN_00c25d40_Class
 };
 struct FUN_00c5fd70_Class
 {
-    void __thiscall BSPSysStripUpdateModifier_Initialize(void* a, unsigned short b);
+    void __thiscall BSPSysStripUpdateModifier_Initialize(void* apData, unsigned short ausNewParticle);
 };
 
 struct FUN_00c5ffd0 : NiPSysModifier
@@ -1439,7 +1439,7 @@ struct FUN_00c41050_Class
 struct FUN_00c42b60_class;
 struct SpawnHeap_cls
 {
-    void __thiscall MemoryManager_Deallocate(void* pObject);
+    void __thiscall MemoryManager_Deallocate(void* apMem);
 };
 extern "C" char DAT_011f6238;
 typedef void(__stdcall* S_00c422d0_IAT_Fn)(void*);
@@ -1494,7 +1494,7 @@ struct S_00c437c0_Obj
 };
 struct S_00c437c0 : FUN_00c43850_Class
 {
-    S_00c437c0_Obj* CreateObject(unsigned int stream);
+    S_00c437c0_Obj* CreateObject(unsigned int arCloneData);
 };
 void* __cdecl Object_DispatchCommandFour(unsigned int size);
 struct SpawnedObject_b9504 : FUN_00c43660
@@ -1568,7 +1568,7 @@ struct FUN_00c43e00_Obj
 extern "C" char* __cdecl FNV_StrChr(const char* s, int c);
 extern "C" unsigned int __cdecl FNV_StrLen(const char* s);
 extern "C" void __cdecl FNV_CopyPath(char* dest, unsigned int destSize, const char* src, unsigned int count);
-void __cdecl CopyStringBeforeColon(FUN_00c43e00_Obj* pObj, char* pDest);
+void __cdecl CopyStringBeforeColon(FUN_00c43e00_Obj* arSetting, char* apSubKey);
 struct S_00c44d90_Item;
 struct S_00c44d90_Cls
 {
@@ -1588,7 +1588,7 @@ class BSNodeC45 : public NiNode
     bool m_bFlagAE;
     bool m_bFlagAF;
     void SetFlag(bool m_bHeaderParsed);
-    void BSRangeNode_LoadBinary(NiStream& kStream);
+    void BSRangeNode_LoadBinary(NiStream& arStream);
 };
 struct S_00c45380_Base
 {
@@ -1643,7 +1643,7 @@ struct S_00c45380_Obj : S_00c45380_Base
     unsigned char unkAD;
     unsigned char unkAE;
     unsigned char unkAF;
-    char BSRangeNode_IsEqual(S_00c45380_Obj* other);
+    char BSRangeNode_IsEqual(S_00c45380_Obj* apObject);
 };
 extern "C" __declspec(dllimport) int __stdcall fnv_Import_TryEnterCriticalSection(void* cs);
 extern "C" __declspec(dllimport) void __stdcall fnv_Import_LeaveCriticalSection(void* cs);
@@ -1721,7 +1721,7 @@ class FUN_00c46860_cls
     float m_18;
 
     bool unkCheck(FUN_00c46860_cls* other);
-    bool BSWindModifier_IsEqual(FUN_00c46860_cls* other);
+    bool BSWindModifier_IsEqual(FUN_00c46860_cls* apObject);
 };
 extern double DAT_01017a40;
 struct FNVPad18
@@ -1748,11 +1748,11 @@ struct FNVVec3B
     float x;
     float y;
     float z;
-    void Init(float s);
+    void Init(float fAngle);
 };
 extern FNVVec3B DAT_01202e68;
 FNVVec3B* __cdecl CombineVec3B(FNVVec3B* dst, FNVVec3B* a, FNVVec3B* b);
-void __cdecl BSWindModifier_SetWind(float a1, float a2);
+void __cdecl BSWindModifier_SetWind(float afSpeed, float afAngle);
 class C46D60Stream
 {
   public:
@@ -1823,11 +1823,11 @@ class C46D60Node : public C46D60Base
     int unkA8;
     void* m_pkChild;
 
-    void BSMultiBoundNode_SaveBinary(C46D60Stream& kStream);
+    void BSMultiBoundNode_SaveBinary(C46D60Stream& arStream);
 };
 struct FUN_00c46da0_class : BaseForCall
 {
-    bool __thiscall BSMultiBoundNode_IsEqual(NiObject* other);
+    bool __thiscall BSMultiBoundNode_IsEqual(NiObject* apObject);
 };
 void* __cdecl Object_DispatchCommandFour(unsigned int size);
 struct NewObject_b9649
@@ -2116,7 +2116,7 @@ struct FNV_Holder
 };
 struct FNV_Plane
 {
-    void BSOcclusionPlane_UpdateFrustumPlanes(FNV_Vec3 pt, FNV_Local* pObj);
+    void BSOcclusionPlane_UpdateFrustumPlanes(FNV_Vec3 akViewPoint, FNV_Local* akPlanes);
 };
 struct FNV_Owner
 {
@@ -2299,7 +2299,7 @@ struct ArrRec64
     Rec64* m_pData;
     int unk08;
     unsigned int m_uiSize;
-    void SetSizeRec(unsigned int n, bool b);
+    void SetSizeRec(unsigned int aiNewSize, bool abFreeMemory);
 };
 struct ArrElem0C
 {
@@ -2307,7 +2307,7 @@ struct ArrElem0C
     Elem0C* m_pData;
     int unk08;
     unsigned int m_uiSize;
-    void Resize(unsigned int n, bool b);
+    void Resize(unsigned int aiNewSize, bool abFreeMemory);
 };
 struct Obj_c477f0
 {
@@ -2324,7 +2324,7 @@ struct Obj_c477f0
 class FUN_00c47980_sub
 {
   public:
-    void SetFromFrustum(void* a, void* b);
+    void SetFromFrustum(void* kFrust, void* kXform);
 };
 class FUN_00c47980_arg
 {
@@ -2576,7 +2576,7 @@ struct FUN_00c4a6e0_cls
 };
 struct CallerObj_b3918
 {
-    int ClassifySphereAgainstPlane(void* p);
+    int ClassifySphereAgainstPlane(void* kPlane);
 };
 struct EntrySet_b3918
 {
@@ -2627,12 +2627,12 @@ struct FUN_00c4b150_cls
     int unk28;
     int unk2C;
     int m_30;
-    void FUN_00a5dd70(int a1, int a2);
+    void FUN_00a5dd70(int UpdateData, int uFlags);
     void CallIfNotFlagged(int a1, int a2);
 };
 struct S_c4b190_Base
 {
-    void FUN_00a5ded0(int a, int b);
+    void FUN_00a5ded0(int UpdateData, int uFlags);
 };
 struct S_c4b190 : S_c4b190_Base
 {
@@ -2656,7 +2656,7 @@ struct S_00c4b1d0_Cls
     int unk2c;
     unsigned int flags;
     void NiNode_UpdateRigidDownwardPass(int a, int b);
-    void BSDamageStage_UpdateRigidDownwardPass(int a, int b);
+    void BSDamageStage_UpdateRigidDownwardPass(int UpdateData, int uFlags);
 };
 class FUN_00c4b470_owner
 {
@@ -2709,7 +2709,7 @@ class FUN_00c4b470_owner
     FUN_00c4b470_owner* NiObjectNET_GetController(void* p);
 };
 extern char DAT_011f36ac;
-int __cdecl BSUtilities_GetObjectByName_00c4b470(FUN_00c4b470_owner* a1, void** a2, unsigned char a3);
+int __cdecl BSUtilities_GetObjectByName_00c4b470(FUN_00c4b470_owner* apScene, void** apName, unsigned char bTestScenegraph);
 extern double DAT_01012060;
 struct FUN_00c4cdc0_child
 {
@@ -2867,7 +2867,7 @@ struct DispatchObject
 struct DispatchOwner
 {
     DispatchObject* object;
-    bool __thiscall BSOcclusionQuery_GetResultNoWait(int code, unsigned char enabled);
+    bool __thiscall BSOcclusionQuery_GetResultNoWait(int pResult, unsigned char bFlush);
 };
 struct FUN_00c509a0_Class
 {
@@ -2887,7 +2887,7 @@ struct FUN_00c50dd0_Holder
 struct FUN_00c50dd0_cls
 {
     int unk00;
-    void BSParticleSystemManager_DetachChildAt_00c50dd0(int* p1, FUN_00c50dd0_Holder* p2);
+    void BSParticleSystemManager_DetachChildAt_00c50dd0(int* i, FUN_00c50dd0_Holder* aspAVObject);
 };
 struct S_00c50ea0_T
 {
@@ -2895,7 +2895,7 @@ struct S_00c50ea0_T
 };
 struct S_00c50ea0
 {
-    void BSParticleSystemManager_SetAt_00c50ea0(int a1, int a2, S_00c50ea0_T* a3);
+    void BSParticleSystemManager_SetAt_00c50ea0(int i, int pkChild, S_00c50ea0_T* aspAVObject);
 };
 // Layout up to the item array (+0xa0) and the 16-bit item count (+0xa8).
 struct FUN_00c50ec0_cls
@@ -2944,7 +2944,7 @@ struct FUN_00c50ec0_cls
     unsigned int unkA4;
     unsigned short m_usElementCount;
 
-    int FindItemIndex(int key);
+    int FindItemIndex(int apChild);
 };
 
 extern const NiRTTI DAT_012024e0;
@@ -3103,7 +3103,7 @@ extern int FNV_vtbl_NiTArrayBase;
 struct FNV_Item;
 struct FNV_MemoryManager
 {
-    void Deallocate(void* p);
+    void Deallocate(void* apMem);
 };
 extern FNV_MemoryManager FNV_g_memoryManager;
 struct FNV_SubObject
@@ -3137,8 +3137,8 @@ struct FUN_00c54e30_cls
     int unk08;
     SpawnedSubObject m_0c;
     SpawnedSubObject m_18;
-    void BindOwner(int a1);
-    void BindAndAttachSubObjects(int a1);
+    void BindOwner(int kStream);
+    void BindAndAttachSubObjects(int arStream);
 };
 struct C00c541e0
 {
@@ -3151,7 +3151,7 @@ struct C00c54f00 : C00c541e0
 {
     NiPoint3 m_vec0C;
     NiPoint3 m_vec18;
-    bool BSBound_IsEqual(int other);
+    bool BSBound_IsEqual(int apObject);
 };
 struct C55CD0Point3
 {
@@ -3159,8 +3159,8 @@ struct C55CD0Point3
     float y;
     float z;
 };
-void C55CD0DrawBox(const C55CD0Point3& kMinBoundsCur, const C55CD0Point3& kMaxPoint, float fA, float fB, float fC, float fD,
-                   unsigned int uiColor, unsigned int uiOutline);
+void C55CD0DrawBox(const C55CD0Point3& arLeftCorner, const C55CD0Point3& arRightCorner, float afForwardDepth, float afBackwardDepth, float afUpwardHeight, float afDownwardHeight,
+                   unsigned int apLeftColor, unsigned int apRightColor);
 void Runtime_UpdateState_00c55cd0(const C55CD0Point3& kTargetCenter, float fSize, unsigned int uiColor);
 struct S_00c5ae70_Result
 {
@@ -3190,7 +3190,7 @@ struct S_00c5ae70_Class
     int unk04;
     S_00c5ae70_Inner1 m_inner1;
 
-    void __thiscall BSPortalGraph_AddOccluder(int param);
+    void __thiscall BSPortalGraph_AddOccluder(int apOccluder);
 };
 struct FUN_00c3a250_Obj
 {
@@ -3202,7 +3202,7 @@ struct FUN_00c5aec0_Class
 {
     int unk00;
     int unk04;
-    void __thiscall BSPortalGraph_RemoveOccluder(int a1);
+    void __thiscall BSPortalGraph_RemoveOccluder(int apOccluder);
 };
 struct FUN_00c5b190_Sub
 {
@@ -3216,7 +3216,7 @@ struct FUN_00c5b190_cls
     int unk0c;
     int unk10;
     FUN_00c5b190_Sub m_14;
-    void BSPortalGraph_RemovePortal(int a1);
+    void BSPortalGraph_RemovePortal(int apPortal);
 };
 // Constructor: member routine that installs the class vtable pointer into
 // the object, clears the flag member at +0x5c and then hands the object to
@@ -3266,8 +3266,8 @@ struct FUN_00c5cb50_pad
 };
 struct FUN_00c5cb50_cls
 {
-    void FUN_00c1bdc0(int a1);
-    void BSPSysMultiTargetEmitterCtlr_ProcessClone(int a1);
+    void FUN_00c1bdc0(int kCloning);
+    void BSPSysMultiTargetEmitterCtlr_ProcessClone(int kCloning);
 };
 class BC5CBB0Object
 {
@@ -3754,8 +3754,8 @@ struct S_00c5e3d0
     float unkdc;
     void BSMasterParticleSystem_ClearUnreferencedEmitters();
     bool BSMasterParticleSystem_ChildHasActiveParticles();
-    void FUN_00a5ded0(float* p, int b);
-    void BSMasterParticleSystem_UpdateSelectedDownwardPass(float* p, int b);
+    void FUN_00a5ded0(float* UpdateData, int uFlags);
+    void BSMasterParticleSystem_UpdateSelectedDownwardPass(float* UpdateData, int uFlags);
 };
 struct S_00c5e3d0_pad
 {
@@ -3825,7 +3825,7 @@ struct FUN_00c5e450_cls
     void BSMasterParticleSystem_ClearUnreferencedEmitters();
     unsigned char BSMasterParticleSystem_ChildHasActiveParticles();
     void NiNode_UpdateRigidDownwardPass(float* f, int b);
-    void BSMasterParticleSystem_UpdateRigidDownwardPass(float* f, int b);
+    void BSMasterParticleSystem_UpdateRigidDownwardPass(float* UpdateData, int uFlags);
 };
 class C5E7A0Object;
 class C5E7A0Stream
@@ -3846,7 +3846,7 @@ class C5E7A0Stream
     virtual void SaveLinkID(C5E7A0Object* pkObject);
 };
 void C5E7A0SaveShort(C5E7A0Stream& kStream, unsigned short* pusValue);
-void C5E7A0SaveUInt(C5E7A0Stream& kStream, unsigned int* puiValue);
+void C5E7A0SaveUInt(C5E7A0Stream& kStream, unsigned int* value);
 class C5E7A0Node
 {
   public:
@@ -4008,7 +4008,7 @@ struct ListOwner_c5e830 : BaseForCall
     unsigned short unkD4;
     unsigned short m_usChildCount;
 
-    bool BSMasterParticleSystem_IsEqual(NiObject* pObject);
+    bool BSMasterParticleSystem_IsEqual(NiObject* pkObject);
 };
 struct FUN_007530a0
 {
@@ -4040,7 +4040,7 @@ void __cdecl NiStreamLoadBinary_float(int a, int* out);
 class FUN_00c5ef50_cls
 {
   public:
-    void __thiscall BSTextureData_LoadBinary(int a1);
+    void __thiscall BSTextureData_LoadBinary(int kStream);
 };
 class FUN_00c5f100_cls
 {
@@ -4125,7 +4125,7 @@ struct CloneNode : NiMemObject
 };
 struct CloneOwnerObj : FUN_00c5fb60_Class
 {
-    CloneNode* __thiscall BSNiNode_CreateClone(void* context);
+    CloneNode* __thiscall BSNiNode_CreateClone(void* arCloneData);
 };
 struct FUN_00c5fb80_str
 {
@@ -4181,9 +4181,9 @@ struct ParticlePositionModifier
     unsigned int unk14;
     unsigned int unk18;
     void FUN_00c318b0(MyStream* stream);
-    void BSPSysStripUpdateModifier_LoadBinary(MyStream* stream);
+    void BSPSysStripUpdateModifier_LoadBinary(MyStream* kStream);
 };
-char* __cdecl NiGetViewerString(const char* name, bool value);
+char* __cdecl NiGetViewerString(const char* pcPrefix, bool bValue);
 
 struct KwHi
 {
@@ -4243,7 +4243,7 @@ struct ThisC43220
     int f08;
     unsigned int m_flags;
     void FUN_00a99d70(NiTPrimitiveArray<unsigned int>* arr);
-    void AppendKeywordFlags(NiTPrimitiveArray<unsigned int>* arr);
+    void AppendKeywordFlags(NiTPrimitiveArray<unsigned int>* apStrings);
 };
 class BC45120CloningProcess;
 class BC45120Object
@@ -4256,7 +4256,7 @@ class BC45120Object
     virtual ~BC45120Object();
 
     void CopyMemberData(BC45120Object* pkDest, BC45120CloningProcess& kCloning);
-    BC45120Object* Clone(BC45120CloningProcess& kCloning);
+    BC45120Object* Clone(BC45120CloningProcess& arCloneData);
 
     int unk04;
     int unk08;
@@ -4523,7 +4523,7 @@ class FDA0Controller
     int unk14;
     float m_fThreshold;
 
-    void UpdateKeyTimes(float fTime, FDA0Data* pkArg);
+    void UpdateKeyTimes(float afTime, FDA0Data* apData);
 };
 extern "C" __declspec(dllimport) long __stdcall InterlockedCompareExchange(long volatile* dest, long exchange,
                                                                            long comparand);
@@ -4758,14 +4758,17 @@ struct FUN_00c5fd30 : BSFaceGenMorphData
 };
 struct Owner30
 {
-    void BSPSysStripUpdateModifier_CopyMembers(FUN_00c5fd30* mod, int arg);
-    FUN_00c5fd30* CreateMorphData(int arg);
+    void BSPSysStripUpdateModifier_CopyMembers(FUN_00c5fd30* pkDest, int kCloning);
+    FUN_00c5fd30* CreateMorphData(int kCloning);
 };
 // @fnv 0x00c5fe30
-FUN_00c5fd30* Owner30::CreateMorphData(int arg)
+// pdb: BSPSysStripUpdateModifier::CreateClone | BSPSysStripUpdateModifier.obj | retail, vtable slot, high
+// pdb params: kCloning
+// pdb locals: pkObject
+FUN_00c5fd30* Owner30::CreateMorphData(int kCloning)
 {
     FUN_00c5fd30* mod = new FUN_00c5fd30;
-    BSPSysStripUpdateModifier_CopyMembers(mod, arg);
+    BSPSysStripUpdateModifier_CopyMembers(mod, kCloning);
     return mod;
 }
 }
@@ -4789,6 +4792,8 @@ static inline void FreeShapeArray(void* memory)
 }
 // @fnv 0x00c409e0
 // src: GUESS 0x00c409e0 (confidence: low)
+// pdb: LockFreePriorityQueue<NiPointer<IOTask> >::~LockFreePriorityQueue<NiPointer<IOTask> > | IOManager.obj | retail, call graph, medium
+// pdb locals: i
 void ShapeList::SetVirtualTable_00c409e0()
 {
     vtable = &DAT_010c16dc;
@@ -4808,7 +4813,7 @@ struct FNV_Base_c40aa0
 
 struct FNV_MM_c40aa0
 {
-    void __thiscall Deallocate(void* p);
+    void __thiscall Deallocate(void* apMem);
 };
 
 extern "C" char DAT_011f6238;
@@ -4824,6 +4829,9 @@ struct FUN_00c40aa0 : FNV_Base_c40aa0
 };
 
 // @fnv 0x00c40aa0
+// pdb: LockFreeQueue<NiPointer<QueuedReference> >::RemoveAll | ModelLoader.obj | retail, call graph, medium
+// pdb params: abCalledByDestructor
+// pdb locals: tempMemContext, imaxThreads, ptemp
 FUN_00c40aa0::~FUN_00c40aa0()
 {
     LockFreeQueue_NiPointer_IOTask_RemoveAll_00c41330(1);
@@ -4871,14 +4879,16 @@ struct FUN_00c42dd0
     int unk24;
     int unk28;
     unsigned long unk2c;
-    FUN_00c42dd0(int, const char* name);
+    FUN_00c42dd0(int, const char* apThreadName);
 };
 // @fnv 0x00c42dd0
-FUN_00c42dd0::FUN_00c42dd0(int, const char* name)
+// pdb: BSTaskThread::BSTaskThread | BSTaskManager_Xenon.obj | retail, call graph (shared callers), high
+// pdb params: aiProcessor, apThreadName
+FUN_00c42dd0::FUN_00c42dd0(int, const char* apThreadName)
 {
     thread = CreateThread(0, 0, (LPTHREAD_START_ROUTINE)BSTaskThread_ThreadProc, this, 4, &threadId);
-    if (name)
-        FUN_00aa2740(threadId, name);
+    if (apThreadName)
+        FUN_00aa2740(threadId, apThreadName);
     unk24 = 0;
     unk28 = 0;
     unk2c = threadId;
@@ -4937,6 +4947,8 @@ inline unsigned int CleanupDeadline354()
 }
 // @fnv 0x00c458f0
 // src: COMMUNITY 0x00c458f0
+// pdb: NiObjectGarbage::Update | NiObjectGarbage.obj | retail, upstream name already matches, high
+// pdb locals: inextTime, itime, inumObjects, tempAutoEvent
 void NiObjectGarbage_Update()
 {
     _DAT_01202e40.BSSpinLock_Lock(0);
@@ -5026,15 +5038,17 @@ struct C46Class : FUN_00a5e5b0_helper
     {
         return m_pChildObject;
     }
-    bool BSMultiBoundNode_RegisterStreamables(NiStream* s);
+    bool BSMultiBoundNode_RegisterStreamables(NiStream* arStream);
 };
 // @fnv 0x00c46d10
 // src: XBOX_PDB 0x00c46d10
-bool C46Class::BSMultiBoundNode_RegisterStreamables(NiStream* s)
+// pdb: BSMultiBoundNode::RegisterStreamables | BSMultiBoundNode.obj | retail, upstream name already matches, high
+// pdb params: arStream
+bool C46Class::BSMultiBoundNode_RegisterStreamables(NiStream* arStream)
 {
-    if (!RegisterChildStreamables(s))
+    if (!RegisterChildStreamables(arStream))
         return false;
-    GetChild()->v54(s);
+    GetChild()->v54(arStream);
     return true;
 }
 
@@ -5074,9 +5088,12 @@ __forceinline bool ContainsActor(Node_00c474a0* p)
 
 // @fnv 0x00c474a0
 // src: XBOX_PDB 0x00c474a0
-Node_00c474a0* __cdecl BSMultiBoundNode_FindMultiboundNode(Node_00c474a0* a1)
+// pdb: BSMultiBoundNode::FindMultiboundNode | BSMultiBoundNode.obj | debug, upstream name already matches, high
+// pdb params: apObject
+// pdb locals: pavobj
+Node_00c474a0* __cdecl BSMultiBoundNode_FindMultiboundNode(Node_00c474a0* apObject)
 {
-    Node_00c474a0* cur = a1;
+    Node_00c474a0* cur = apObject;
 
     while (cur != 0 && !ContainsActor(cur))
         cur = cur->next;
@@ -5120,6 +5137,8 @@ struct ChainOwner
 };
 // @fnv 0x00c475c0
 // src: XBOX_PDB 0x00c475c0
+// pdb: BSMultiBoundNode::CreateObject | BSMultiBoundNode.obj | retail, object-file run extension, low
+// pdb note: debug build links it to BSMultiBoundNode::CheckBound
 int ChainOwner::BSMultiBoundNode_CheckBound_00c475c0(int a)
 {
     int r = GetInner()->v37(a);
@@ -5168,6 +5187,7 @@ struct FUN_00c47770
     ~FUN_00c47770();
 };
 // @fnv 0x00c47770
+// pdb: BSCompoundFrustum::~BSCompoundFrustum | BSCompoundFrustum.obj | retail, call graph, high
 FUN_00c47770::~FUN_00c47770()
 {
     m_kList1.Clear(true);
@@ -5202,12 +5222,14 @@ struct TokStack_c48ca0
     {
         return 0;
     }
-    void ShiftElements(int iDelta, bool bClear);
+    void ShiftElements(int aiShift, bool abFillNoop);
     void ProcessEntries_00c48ca0();
 };
 
 // @fnv 0x00c48ca0
 // src: GUESS 0x00c48ca0 (confidence: low)
+// pdb: BSCompoundFrustum::MakeIntoIntersection | BSCompoundFrustum.obj | debug, object-file gap fill, medium
+// pdb locals: bnewintersection, opindex, igroupcount
 void TokStack_c48ca0::ProcessEntries_00c48ca0()
 {
     bool bPush = true;
@@ -5288,13 +5310,15 @@ struct C4F320Obj
     {
         return m_pc4;
     }
-    void BSCullingProcess_AddShared(int a);
+    void BSCullingProcess_AddShared(int apObject);
 };
 // @fnv 0x00c4f320
 // src: COMMUNITY 0x00c4f320
-void C4F320Obj::BSCullingProcess_AddShared(int a)
+// pdb: BSCullingProcess::AddShared | BSCullingProcess.obj | debug, upstream name already matches, high
+// pdb params: apObject
+void C4F320Obj::BSCullingProcess_AddShared(int apObject)
 {
-    GetChild()->V9c(a);
+    GetChild()->V9c(apObject);
 }
 
 __forceinline void* NiFixedString::operator new(size_t size)
@@ -5386,15 +5410,18 @@ struct Mgr_00c50b80
     virtual void v55();
     virtual void v56();
     virtual void v57(NiRefObject* a1, NiPointer<NiRefObject>& out);
-    void BSParticleSystemManager_DetachChild(NiRefObject* a1);
+    void BSParticleSystemManager_DetachChild(NiRefObject* pkChild);
 };
 
 // @fnv 0x00c50b80
 // src: XBOX_PDB 0x00c50b80
-void Mgr_00c50b80::BSParticleSystemManager_DetachChild(NiRefObject* a1)
+// pdb: BSParticleSystemManager::DetachChild | BSParticleSystemManager.obj | retail, object-file run extension, high
+// pdb params: pkChild
+// pdb locals: spobject
+void Mgr_00c50b80::BSParticleSystemManager_DetachChild(NiRefObject* pkChild)
 {
     NiPointer<NiRefObject> tmp(0);
-    v57(a1, tmp);
+    v57(pkChild, tmp);
 }
 
 
@@ -5485,6 +5512,9 @@ class DispatchHelper
 
 // @fnv 0x00c50df0
 // src: XBOX_PDB 0x00c50df0
+// pdb: BSParticleSystemManager::SetAt | BSParticleSystemManager.obj | debug, vtable slot, medium
+// pdb params: i, pkChild
+// pdb locals: spobject
 void DispatchHelper::BSParticleSystemManager_SetAt(int a, int b)
 {
     DispatchRefPtr ref;
@@ -5582,6 +5612,9 @@ struct Owner
 };
 // @fnv 0x00c51700
 // src: XBOX_PDB 0x00c51700
+// pdb: BSParticleSystemManager::RemoveMasterParticleSystem | BSParticleSystemManager.obj | debug, call graph, medium
+// pdb params: apMasterParticleSystem
+// pdb locals: spAVObject
 void Owner::BSParticleSystemManager_RemoveMasterParticleSystem_00c51700(int arg)
 {
     ScopedRef ptr;
@@ -5591,7 +5624,7 @@ void Owner::BSParticleSystemManager_RemoveMasterParticleSystem_00c51700(int arg)
 extern "C" char DAT_011f6238;
 struct HeapAB
 {
-    void MemoryManager_Deallocate(void* pObject);
+    void MemoryManager_Deallocate(void* apMem);
 };
 void __cdecl _NiFree_00aa10f0(void* p);
 inline void FreeAB(void* p)
@@ -5628,6 +5661,8 @@ struct OwnerAB
 };
 // @fnv 0x00c52880
 // src: XBOX_PDB 0x00c52880
+// pdb: NiBSBoneLODController::CleanUp | NiBSBoneLODController.obj | retail, upstream name already matches, high
+// pdb locals: ui, pkSet
 void OwnerAB::NiBSBoneLODController_CleanUp()
 {
     for (unsigned int i = 0; i < m_kArray.GetSize(); i++)
@@ -5647,6 +5682,8 @@ extern int EmptyFS_c55;
 extern NiFixedString* g_pkString_c55;
 // @fnv 0x00c552a0
 // src: GUESS 0x00c552a0 (confidence: low)
+// pdb: BSBound::BSBound | BSBound.obj | retail, object-file run extension, low
+// pdb note: debug build links it to BSBound::KillSDM
 void Object_UpdateFields_00c552a0()
 {
     delete g_pkString_c55;
@@ -5685,37 +5722,40 @@ inline void* __cdecl operator new[](unsigned int size)
     return g_memoryManager.Allocate(size);
 }
 // @fnv 0x00c55360
+// pdb: BSTestObjects::CreateSquare | BSTestObjects.obj | debug, upstream name already matches, high
+// pdb params: afRadius, apCenter, apColor
+// pdb locals: normals, textures, origin, vertices, indices, colors, square
 #pragma intrinsic(memcpy)
 // src: COMMUNITY 0x00c55360
-NiTriShape* __cdecl BSTestObjects_CreateSquare(float extent, NiPoint3* center, ColorA* color)
+NiTriShape* __cdecl BSTestObjects_CreateSquare(float afRadius, NiPoint3* apCenter, ColorA* apColor)
 {
-    NiPoint3* srcPtr4 = center ? center : &DAT_011f426c;
+    NiPoint3* srcPtr4 = apCenter ? apCenter : &DAT_011f426c;
     float centerVal2[3];
     memcpy(&centerVal2, srcPtr4, sizeof(centerVal2));
     Vec3A* verts = new Vec3A[4];
     Vec3A* normals = new Vec3A[4];
-    ColorA* colors = color ? new ColorA[4] : 0;
+    ColorA* colors = apColor ? new ColorA[4] : 0;
     Vec2A* tex = new Vec2A[4];
     unsigned short* indices = new unsigned short[6];
-    verts[0] = Vec3A(centerVal2[0] - extent, centerVal2[1] + extent, 0.0f);
+    verts[0] = Vec3A(centerVal2[0] - afRadius, centerVal2[1] + afRadius, 0.0f);
     normals[0] = *(const Vec3A*)&DAT_011a9484;
-    if (color)
-        colors[0] = *color;
+    if (apColor)
+        colors[0] = *apColor;
     tex[0] = Vec2A(0.0f, 0.0f);
-    verts[1] = Vec3A(centerVal2[0] + extent, centerVal2[1] + extent, 0.0f);
+    verts[1] = Vec3A(centerVal2[0] + afRadius, centerVal2[1] + afRadius, 0.0f);
     normals[1] = *(const Vec3A*)&DAT_011a9484;
-    if (color)
-        colors[1] = *color;
+    if (apColor)
+        colors[1] = *apColor;
     tex[1] = Vec2A(1.0f, 0.0f);
-    verts[2] = Vec3A(centerVal2[0] - extent, centerVal2[1] - extent, 0.0f);
+    verts[2] = Vec3A(centerVal2[0] - afRadius, centerVal2[1] - afRadius, 0.0f);
     normals[2] = *(const Vec3A*)&DAT_011a9484;
-    if (color)
-        colors[2] = *color;
+    if (apColor)
+        colors[2] = *apColor;
     tex[2] = Vec2A(0.0f, 1.0f);
-    verts[3] = Vec3A(centerVal2[0] + extent, centerVal2[1] - extent, 0.0f);
+    verts[3] = Vec3A(centerVal2[0] + afRadius, centerVal2[1] - afRadius, 0.0f);
     normals[3] = *(const Vec3A*)&DAT_011a9484;
-    if (color)
-        colors[3] = *color;
+    if (apColor)
+        colors[3] = *apColor;
     tex[3] = Vec2A(1.0f, 1.0f);
     indices[0] = 0;
     indices[1] = 1;
@@ -5853,12 +5893,15 @@ struct Owner5b
 
     unsigned short m_usSize;
 
-    void BSPortalGraph_DetachQAlwaysRenderChild(RefObj5b* pkObj);
+    void BSPortalGraph_DetachQAlwaysRenderChild(RefObj5b* pkChild);
 };
 
 // @fnv 0x00c5b740
 // src: COMMUNITY 0x00c5b740
-void Owner5b::BSPortalGraph_DetachQAlwaysRenderChild(RefObj5b* pkObj)
+// pdb: BSPortalGraph::DetachQAlwaysRenderChild | BSPortalGraph.obj | retail, upstream name already matches, high
+// pdb params: pkChild
+// pdb locals: i, spChild
+void Owner5b::BSPortalGraph_DetachQAlwaysRenderChild(RefObj5b* pkChild)
 
 {
 
@@ -5867,7 +5910,7 @@ void Owner5b::BSPortalGraph_DetachQAlwaysRenderChild(RefObj5b* pkObj)
 
         SPtr5b pSceneObject = m_kArray.GetAt(i);
 
-        if (pSceneObject && pSceneObject == pkObj)
+        if (pSceneObject && pSceneObject == pkChild)
         {
 
             m_kArray.RemoveAtAndFill(i);
@@ -6139,7 +6182,7 @@ struct Stream660
 
 struct Base660
 {
-    void ReadChildListFromStream(Stream660* pkStream);
+    void ReadChildListFromStream(Stream660* kStream);
 };
 
 struct Obj660 : Base660
@@ -6153,23 +6196,26 @@ struct Obj660 : Base660
     int unkC0, unkC4, unkC8;
     NiTPrimitiveArray<void*> m_kLinks;
 
-    void BSMasterParticleSystem_LinkObject(Stream660* pkStream);
+    void BSMasterParticleSystem_LinkObject(Stream660* kStream);
 };
 
 // @fnv 0x00c5e660
 // src: XBOX_PDB 0x00c5e660
-void Obj660::BSMasterParticleSystem_LinkObject(Stream660* pkStream)
+// pdb: BSMasterParticleSystem::LinkObject | BSMasterParticleSystem.obj | retail, upstream name already matches, high
+// pdb params: kStream
+// pdb locals: uisize, ui, pchildParticles
+void Obj660::BSMasterParticleSystem_LinkObject(Stream660* kStream)
 {
-    Base660::ReadChildListFromStream(pkStream);
-    if (pkStream->m_uiFormatVersion > 0xf)
+    Base660::ReadChildListFromStream(kStream);
+    if (kStream->m_uiFormatVersion > 0xf)
     {
-        unsigned int ItemUpdateArray = pkStream->FUN_00a63460();
+        unsigned int ItemUpdateArray = kStream->FUN_00a63460();
         if (ItemUpdateArray)
         {
             m_kLinks.SetSize(ItemUpdateArray);
             for (unsigned int i = 0; i < ItemUpdateArray; i++)
             {
-                void* pkLink = pkStream->FUN_00a63430();
+                void* pkLink = kStream->FUN_00a63430();
                 m_kLinks.SetAt(i, pkLink);
             }
         }
@@ -6247,6 +6293,9 @@ class Map40
 };
 // @fnv 0x00c40e70
 // src: COMMUNITY 0x00c40e70
+// pdb: LockFreeMap<__int64,NiPointer<BSTask<__int64> > >::GetNext | IOManager.obj | debug, object-file run extension, low
+// pdb params: arIterator, arKey, arData, abSwitchBuckets
+// pdb locals: bresult
 bool Map40::LockFreeMap_int64_NiPointer_BSTask_int64_GetNext(Iter40* it, __int64* out, int arg, bool b)
 {
     lock.BSSpinLock_Lock(0);
@@ -6297,7 +6346,7 @@ extern "C" __declspec(dllimport) long __stdcall InterlockedIncrement(volatile lo
 struct MM
 {
     void* Allocate(unsigned int size);
-    void Deallocate(void* p);
+    void Deallocate(void* apMem);
 };
 extern MM _g_memoryManager;
 
@@ -7009,44 +7058,46 @@ struct FUN_00c4a070
         UpdateCachedRef(uiNewSize, uiNewSize);
         m_uiCapacity = uiNewSize;
     }
-    void SetSize(unsigned int uiNewSize, bool bFree);
+    void SetSize(unsigned int aiNewSize, bool abFreeMemory);
 };
 // @fnv 0x00c4a070
-void FUN_00c4a070::SetSize(unsigned int uiNewSize, bool bFree)
+// pdb: BSSimpleArray<NiFrustumPlanes,1024>::SetSize | BSCompoundFrustum.obj | retail, call graph (shared callers), high
+// pdb params: aiNewSize, abFreeMemory
+void FUN_00c4a070::SetSize(unsigned int aiNewSize, bool abFreeMemory)
 {
-    if (uiNewSize == 0)
+    if (aiNewSize == 0)
     {
-        ReleaseBuffer(bFree);
+        ReleaseBuffer(abFreeMemory);
         return;
     }
-    if (uiNewSize > m_uiCapacity)
+    if (aiNewSize > m_uiCapacity)
     {
         if (m_uiCapacity == 0)
         {
-            m_pBuffer = Allocate(uiNewSize);
-            m_uiCapacity = uiNewSize;
+            m_pBuffer = Allocate(aiNewSize);
+            m_uiCapacity = aiNewSize;
         }
         else
         {
-            UpdateCachedRef(uiNewSize, m_uiSize);
-            m_uiCapacity = uiNewSize;
+            UpdateCachedRef(aiNewSize, m_uiSize);
+            m_uiCapacity = aiNewSize;
         }
-        BSSimpleArray_NiFrustumPlanes_1024_ConstructItems(m_pBuffer + m_uiSize, uiNewSize - m_uiSize);
-        m_uiSize = uiNewSize;
+        BSSimpleArray_NiFrustumPlanes_1024_ConstructItems(m_pBuffer + m_uiSize, aiNewSize - m_uiSize);
+        m_uiSize = aiNewSize;
     }
-    else if (uiNewSize < m_uiSize)
+    else if (aiNewSize < m_uiSize)
     {
-        DestructItems(m_pBuffer + uiNewSize, m_uiSize - uiNewSize);
-        m_uiSize = uiNewSize;
-        if (bFree && uiNewSize <= m_uiCapacity >> 2)
+        DestructItems(m_pBuffer + aiNewSize, m_uiSize - aiNewSize);
+        m_uiSize = aiNewSize;
+        if (abFreeMemory && aiNewSize <= m_uiCapacity >> 2)
         {
-            Shrink(uiNewSize);
+            Shrink(aiNewSize);
         }
     }
     else
     {
-        BSSimpleArray_NiFrustumPlanes_1024_ConstructItems(m_pBuffer + m_uiSize, uiNewSize - m_uiSize);
-        m_uiSize = uiNewSize;
+        BSSimpleArray_NiFrustumPlanes_1024_ConstructItems(m_pBuffer + m_uiSize, aiNewSize - m_uiSize);
+        m_uiSize = aiNewSize;
     }
 }
 
@@ -7084,45 +7135,47 @@ struct FUN_00c4a1e0
         for (unsigned int i = 0; i < uiElementCount; i++)
             pkItems[i].~ElemY();
     }
-    void SetSize(unsigned int uiNewSize, bool bFree);
+    void SetSize(unsigned int aiNewSize, bool abFreeMemory);
 };
 // @fnv 0x00c4a1e0
-void FUN_00c4a1e0::SetSize(unsigned int uiNewSize, bool bFree)
+// pdb: BSSimpleArray<BSCompoundFrustum::FunctionOp,1024>::SetSize | BSCompoundFrustum.obj | debug, call graph (shared callers), high
+// pdb params: aiNewSize, abFreeMemory
+void FUN_00c4a1e0::SetSize(unsigned int aiNewSize, bool abFreeMemory)
 {
-    if (uiNewSize == 0)
+    if (aiNewSize == 0)
     {
-        ReleaseBuffer(bFree);
+        ReleaseBuffer(abFreeMemory);
         return;
     }
-    if (uiNewSize > m_uiCapacity)
+    if (aiNewSize > m_uiCapacity)
     {
         if (m_uiCapacity == 0)
         {
-            m_pBuffer = Allocate(uiNewSize);
-            m_uiCapacity = uiNewSize;
+            m_pBuffer = Allocate(aiNewSize);
+            m_uiCapacity = aiNewSize;
         }
         else
         {
-            BSSimpleArray_BSCompoundFrustum_FunctionOp_1024_ReallocateBuffer(uiNewSize, m_uiSize);
-            m_uiCapacity = uiNewSize;
+            BSSimpleArray_BSCompoundFrustum_FunctionOp_1024_ReallocateBuffer(aiNewSize, m_uiSize);
+            m_uiCapacity = aiNewSize;
         }
-        ConstructItems(m_pBuffer + m_uiSize, uiNewSize - m_uiSize);
-        m_uiSize = uiNewSize;
+        ConstructItems(m_pBuffer + m_uiSize, aiNewSize - m_uiSize);
+        m_uiSize = aiNewSize;
     }
-    else if (uiNewSize < m_uiSize)
+    else if (aiNewSize < m_uiSize)
     {
-        DestructItems(m_pBuffer + uiNewSize, m_uiSize - uiNewSize);
-        m_uiSize = uiNewSize;
-        if (bFree && uiNewSize <= m_uiCapacity >> 2)
+        DestructItems(m_pBuffer + aiNewSize, m_uiSize - aiNewSize);
+        m_uiSize = aiNewSize;
+        if (abFreeMemory && aiNewSize <= m_uiCapacity >> 2)
         {
-            BSSimpleArray_BSCompoundFrustum_FunctionOp_1024_ReallocateBuffer(uiNewSize, uiNewSize);
-            m_uiCapacity = uiNewSize;
+            BSSimpleArray_BSCompoundFrustum_FunctionOp_1024_ReallocateBuffer(aiNewSize, aiNewSize);
+            m_uiCapacity = aiNewSize;
         }
     }
     else
     {
-        ConstructItems2(m_pBuffer + m_uiSize, uiNewSize - m_uiSize);
-        m_uiSize = uiNewSize;
+        ConstructItems2(m_pBuffer + m_uiSize, aiNewSize - m_uiSize);
+        m_uiSize = aiNewSize;
     }
 }
 
@@ -7142,6 +7195,7 @@ struct DerQ : FUN_00c450d0
 };
 // @fnv 0x00c4ac00
 // src: EXE 0x00c4ac00
+// pdb: BSBlastNode::CreateObject | BSBlastNode.obj | retail, upstream name already matches, high
 DerQ* BSBlastNode_CreateObject()
 {
     return new DerQ;
@@ -7204,15 +7258,18 @@ struct S_00c4aca0_Obj : S_00c4aca0_Base
 };
 struct S_00c4aca0_Self
 {
-    void __thiscall BSDebrisNode_CopyMembers(S_00c4aca0_Obj* obj, int arg);
-    S_00c4aca0_Obj* __thiscall BSDebrisNode_CreateClone(int arg);
+    void __thiscall BSDebrisNode_CopyMembers(S_00c4aca0_Obj* pDest, int arCloneData);
+    S_00c4aca0_Obj* __thiscall BSDebrisNode_CreateClone(int arCloneData);
 };
 // @fnv 0x00c4aca0
 // src: XBOX_PDB 0x00c4aca0
-S_00c4aca0_Obj* __thiscall S_00c4aca0_Self::BSDebrisNode_CreateClone(int arg)
+// pdb: BSDebrisNode::CreateClone | BSDebrisNode.obj | retail, upstream name already matches, high
+// pdb params: arCloneData
+// pdb locals: pobj
+S_00c4aca0_Obj* __thiscall S_00c4aca0_Self::BSDebrisNode_CreateClone(int arCloneData)
 {
     S_00c4aca0_Obj* p = new S_00c4aca0_Obj;
-    this->BSDebrisNode_CopyMembers(p, arg);
+    this->BSDebrisNode_CopyMembers(p, arCloneData);
     return p;
 }
 
@@ -7230,17 +7287,17 @@ struct ArrW
     unsigned int m_uiSize;
     unsigned int m_uiCapacity;
 // src: XBOX_PDB 0x006dc6e0
-    void BSSimpleArray_BSCompoundFrustum_FunctionOp_1024_MoveItems(ItemW* pkDst, ItemW* pkSrc, unsigned int uiElementCount)
+    void BSSimpleArray_BSCompoundFrustum_FunctionOp_1024_MoveItems(ItemW* apDestAddr, ItemW* apSrcAddr, unsigned int aiCount)
     {
-        if (pkDst < pkSrc)
+        if (apDestAddr < apSrcAddr)
         {
-            for (unsigned int i = 0; i < uiElementCount; i++)
-                memcpy(&pkDst[i], &pkSrc[i], sizeof(ItemW));
+            for (unsigned int i = 0; i < aiCount; i++)
+                memcpy(&apDestAddr[i], &apSrcAddr[i], sizeof(ItemW));
         }
         else
         {
-            for (unsigned int i = uiElementCount; i > 0; i--)
-                memcpy(&pkDst[i - 1], &pkSrc[i - 1], sizeof(ItemW));
+            for (unsigned int i = aiCount; i > 0; i--)
+                memcpy(&apDestAddr[i - 1], &apSrcAddr[i - 1], sizeof(ItemW));
         }
     }
     void DestructItems(ItemW* pkItems, unsigned int uiElementCount)
@@ -7263,6 +7320,9 @@ struct ArrW
 };
 // @fnv 0x00c4e760
 // src: GUESS 0x00c4e760 (confidence: low)
+// pdb: BSSimpleArray<NiPoint3,1024>::Remove | BSPolygon.obj | debug, object-file run extension, low
+// pdb params: aiIndex, abShrink
+// pdb locals: inewSize, pnewBuffer
 void ArrW::AllocateStorage_00c4e760(unsigned int uiIndex, bool bShrink)
 {
     if (bShrink && ShouldShrink())
@@ -7378,7 +7438,10 @@ class BoneRootSet
 
 // @fnv 0x00c52c30
 // src: XBOX_PDB 0x00c52c30
-void __cdecl NiBSBoneLODController_FindBoneRootNodes(BoneRootNode* pkNode, BoneRootSet* pkSet)
+// pdb: NiBSBoneLODController::FindBoneRootNodes | NiBSBoneLODController.obj | debug, upstream name already matches, high
+// pdb params: pkNode, kBoneRootNodes
+// pdb locals: ui, pkStringExtra, pkExtra, pcString, pkChild
+void __cdecl NiBSBoneLODController_FindBoneRootNodes(BoneRootNode* pkNode, BoneRootSet* kBoneRootNodes)
 {
     unsigned int i;
     BoneRootExtraData* pkExtra;
@@ -7395,7 +7458,7 @@ void __cdecl NiBSBoneLODController_FindBoneRootNodes(BoneRootNode* pkNode, BoneR
             const char* pcValue = pkString->GetValue();
             if (pcValue && FUN_00ec7750(pcValue, "BSBoneLOD#BoneRoot#"))
             {
-                pkSet->AppendLinkID(pkNode);
+                kBoneRootNodes->AppendLinkID(pkNode);
                 return;
             }
         }
@@ -7404,7 +7467,7 @@ void __cdecl NiBSBoneLODController_FindBoneRootNodes(BoneRootNode* pkNode, BoneR
     {
         BoneRootChild* pkChild = pkNode->GetChild(i);
         if (pkChild && pkChild->IsSceneNode())
-            NiBSBoneLODController_FindBoneRootNodes((BoneRootNode*)pkChild, pkSet);
+            NiBSBoneLODController_FindBoneRootNodes((BoneRootNode*)pkChild, kBoneRootNodes);
     }
 }
 
@@ -7430,6 +7493,8 @@ struct C55010Obj : NiExtraData
 
 // @fnv 0x00c55010
 // src: EXE 0x00c55010
+// pdb: BSBound::CreateObject | BSBound.obj | retail, upstream name already matches, high
+// pdb locals: pb
 C55010Obj* BSBound_CreateObject()
 {
     C55010Obj* p = new C55010Obj(*DAT_012031e4);
@@ -7484,6 +7549,9 @@ struct ArrX
 };
 // @fnv 0x00c5f390
 // src: XBOX_PDB 0x00c5f390
+// pdb: BSSimpleArray<TESObjectWEAP *,1024>::SetSize | CombatState.obj | retail, call graph, low
+// pdb note: debug build links it to BSSimpleArray<NiAVObject *,1024>::SetSize
+// pdb params: aiNewSize, abFreeMemory
 void ArrX::BSSimpleArray_enum_hkpConstraintData_ConstraintType_1024_SetSize(unsigned int n, bool b)
 {
     DeadA();
@@ -7529,7 +7597,7 @@ extern "C" __declspec(dllimport) long __stdcall InterlockedIncrement(long volati
 struct MemMgr
 {
     void* Allocate(unsigned int size);
-    void Deallocate(void* p);
+    void Deallocate(void* apMem);
 };
 extern MemMgr g_memMgr;
 
@@ -7897,6 +7965,9 @@ struct NodeMap
 
 // @fnv 0x00c40b70
 // src: COMMUNITY 0x00c40b70
+// pdb: LockFreeMap<__int64,NiPointer<BSTask<__int64> > >::RemoveAll | IOManager.obj | debug, object-file run extension, low
+// pdb params: abCalledByDestructor
+// pdb locals: tempMemContext, imaxThreads, i, pnode, pnext
 void NodeMap::LockFreeMap_int64_NiPointer_BSTask_int64_RemoveAll(bool keepPool)
 {
     HeapCtxGuard heapContext(6);
@@ -8280,12 +8351,12 @@ inline void SetMemCtx(int c)
 }  // namespace fnv_00c42180
 inline AutoMemContext::AutoMemContext(int c)
 {
-    m_eMemoryContext = (MEM_CONTEXT)fnv_00c42180::GetMemCtx();
+    iOldMemContext = (MEM_CONTEXT)fnv_00c42180::GetMemCtx();
     fnv_00c42180::DAT_0126fd98.iCtx = c;
 }
 inline AutoMemContext::~AutoMemContext()
 {
-    fnv_00c42180::SetMemCtx((int)m_eMemoryContext);
+    fnv_00c42180::SetMemCtx((int)iOldMemContext);
 }
 namespace fnv_00c42180 {
 struct BucketQ
@@ -8678,7 +8749,7 @@ extern "C" char DAT_011f6238;
 struct S_00c42960_Heap
 {
     void* __thiscall Game_DoHeapAlloc(unsigned int size);
-    void __thiscall MemoryManager_Deallocate(void* p);
+    void __thiscall MemoryManager_Deallocate(void* apMem);
 };
 
 struct ReleaseObject
@@ -8859,12 +8930,14 @@ struct IntData_c42ff0 : IntMid_c42ff0
 
 struct FUN_00c42ff0 : IntData_c42ff0
 {
-    FUN_00c42ff0(int v);
+    FUN_00c42ff0(int aiValue);
     void BSXFlags_Init();
 };
 
 // @fnv 0x00c42ff0
-FUN_00c42ff0::FUN_00c42ff0(int v) : IntData_c42ff0(v)
+// pdb: BSXFlags::BSXFlags | BSXFlags.obj | debug, call graph, high
+// pdb params: aiValue
+FUN_00c42ff0::FUN_00c42ff0(int aiValue) : IntData_c42ff0(aiValue)
 {
     m_vtbl = (int)&DAT_010c1854;
     BSXFlags_Init();
@@ -8939,7 +9012,7 @@ class FUN_00c43ab0_cls
     unsigned int m_b0;
 
     void* NiNode_GetViewerStrings(void* arg);
-    void BSValueNode_GetViewerStrings(ObjArg* a1);
+    void BSValueNode_GetViewerStrings(ObjArg* apStrings);
 };
 
 struct ValKeep
@@ -8955,7 +9028,9 @@ struct ValKeep
 
 // @fnv 0x00c43ab0
 // src: XBOX_PDB 0x00c43ab0
-void FUN_00c43ab0_cls::BSValueNode_GetViewerStrings(ObjArg* a1)
+// pdb: BSValueNode::GetViewerStrings | BSValueNode.obj | retail, upstream name already matches, high
+// pdb params: apStrings
+void FUN_00c43ab0_cls::BSValueNode_GetViewerStrings(ObjArg* apStrings)
 {
     void* text;
     void* vtext;
@@ -8963,17 +9038,17 @@ void FUN_00c43ab0_cls::BSValueNode_GetViewerStrings(ObjArg* a1)
     void* rtti;
     ValKeep stored;
 
-    this->NiNode_GetViewerStrings(a1);
+    this->NiNode_GetViewerStrings(apStrings);
     rtti = DAT_01202de8;
     text = NiViewerStrings_NiGetViewerString_Title(rtti);
-    a1->FUN_0096a610(&text);
+    apStrings->FUN_0096a610(&text);
     stored.val = this->m_b0;
     vtext = NiGetViewerString_00a7d4d0("Value", (void*)stored.val);
-    a1->FUN_0096a610(&vtext);
+    apStrings->FUN_0096a610(&vtext);
     if (TestBit(this->m_ac, 1u, 0u))
     {
         line = NiGetViewerString_00a7d5e0("Billboard", TestBit(this->m_ac, 1u, 0u) ? "true" : "false");
-        a1->FUN_0096a610(&line);
+        apStrings->FUN_0096a610(&line);
     }
 }
 
@@ -9037,15 +9112,17 @@ struct S00c43b90_t
     {
         return (unkAC & mask) != 0;
     }
-    void UpdateWorldData(NiUpdateData& data);
-    void BSValueNode_UpdateWorldData(NiUpdateData& data);
+    void UpdateWorldData(NiUpdateData& UpdateData);
+    void BSValueNode_UpdateWorldData(NiUpdateData& UpdateData);
 };
 
 // @fnv 0x00c43b90
 // src: XBOX_PDB 0x00c43b90
-void S00c43b90_t::BSValueNode_UpdateWorldData(NiUpdateData& data)
+// pdb: BSValueNode::UpdateWorldData | BSValueNode.obj | retail, upstream name already matches, high
+// pdb params: UpdateData
+void S00c43b90_t::BSValueNode_UpdateWorldData(NiUpdateData& UpdateData)
 {
-    UpdateWorldData(data);
+    UpdateWorldData(UpdateData);
 
     if (GetBit(1))
     {
@@ -9127,12 +9204,15 @@ struct IniCollection
     virtual void Close();
     char filename[260];
     void* file;
-    bool INISettingCollection_ReadSetting(IniSetting* setting);
+    bool INISettingCollection_ReadSetting(IniSetting* arSetting);
 };
 
 // @fnv 0x00c44280
 // src: XBOX_PDB 0x00c44280
-bool IniCollection::INISettingCollection_ReadSetting(IniSetting* setting)
+// pdb: INISettingCollection::ReadSetting | XINISetting_Xenon.obj | retail, string-set bridge, high
+// pdb params: arSetting
+// pdb locals: bres, ilen, bopen, pbuffer, psubKey, etype, pmainKey, sDefault, puniBuffer, plangBuffer, r, g, b, a, idefault, iv
+bool IniCollection::INISettingCollection_ReadSetting(IniSetting* arSetting)
 {
     bool success3 = false;
     bool opened3;
@@ -9145,16 +9225,16 @@ bool IniCollection::INISettingCollection_ReadSetting(IniSetting* setting)
         char value2[256];
         char stringValue2[1024];
         char language[1024];
-        if (setting->GetName())
+        if (arSetting->GetName())
         {
             opened3 = file == 0;
             if (opened3)
                 Open(true);
             if (file)
             {
-                type6 = Setting_DataType_00c33090(setting->name);
-                CopyMainNameFromPath((int)setting, key17);
-                CopyStringBeforeColon((FUN_00c43e00_Obj*)setting, section2);
+                type6 = Setting_DataType_00c33090(arSetting->name);
+                CopyMainNameFromPath((int)arSetting, key17);
+                CopyStringBeforeColon((FUN_00c43e00_Obj*)arSetting, section2);
                 switch (type6)
                 {
                 case 6:
@@ -9165,25 +9245,25 @@ bool IniCollection::INISettingCollection_ReadSetting(IniSetting* setting)
                         FUN_00ec6370(key17, language);
                     }
                     {
-                        count = GetPrivateProfileStringA(key17, section2, setting ? setting->value.str : 0,
+                        count = GetPrivateProfileStringA(key17, section2, arSetting ? arSetting->value.str : 0,
                                                          stringValue2, 256, filename);
-                        setting->SetStringAndPromoteKeyOwnership(stringValue2);
+                        arSetting->SetStringAndPromoteKeyOwnership(stringValue2);
                     }
                     break;
                 case 1: {
-                    setting->value.c =
-                        (char)GetPrivateProfileIntA(key17, section2, setting->GetInteger(), filename);
+                    arSetting->value.c =
+                        (char)GetPrivateProfileIntA(key17, section2, arSetting->GetInteger(), filename);
                 }
                 break;
                 case 3: {
-                    setting->SetInteger(GetPrivateProfileIntA(key17, section2, setting->GetInteger(), filename));
+                    arSetting->SetInteger(GetPrivateProfileIntA(key17, section2, arSetting->GetInteger(), filename));
                 }
                 break;
                 case 5: {
-                    BSsprintf(defaultValue3, 256, "%f", setting->GetReal());
+                    BSsprintf(defaultValue3, 256, "%f", arSetting->GetReal());
                     count = GetPrivateProfileStringA(key17, section2, defaultValue3, value2, 256, filename);
                     if (count)
-                        success3 = FUN_00eca4a6(value2, "%f", &setting->value.f) == 1;
+                        success3 = FUN_00eca4a6(value2, "%f", &arSetting->value.f) == 1;
                 }
                 break;
                 case 7: {
@@ -9192,7 +9272,7 @@ bool IniCollection::INISettingCollection_ReadSetting(IniSetting* setting)
                     {
                         unsigned int red, green2, blue3;
                         success3 = FUN_00eca4a6(value2, "%u,%u,%u", &red, &green2, &blue3) == 3;
-                        setting->value.u = MakeIniColor(red, green2, blue3, 255);
+                        arSetting->value.u = MakeIniColor(red, green2, blue3, 255);
                     }
                 }
                 break;
@@ -9202,18 +9282,18 @@ bool IniCollection::INISettingCollection_ReadSetting(IniSetting* setting)
                     {
                         unsigned int red, green2, blue3, alpha;
                         success3 = FUN_00eca4a6(value2, "%u,%u,%u,%u", &red, &green2, &blue3, &alpha) == 4;
-                        setting->value.u = MakeIniColor(red, green2, blue3, alpha);
+                        arSetting->value.u = MakeIniColor(red, green2, blue3, alpha);
                     }
                 }
                 break;
                 case 0: {
-                    int defaultBoolean = setting->GetBoolean() ? 1 : 0;
+                    int defaultBoolean = arSetting->GetBoolean() ? 1 : 0;
                     int number6 = GetPrivateProfileIntA(key17, section2, defaultBoolean, filename);
-                    setting->value.b = number6 != 0;
+                    arSetting->value.b = number6 != 0;
                 }
                 break;
                 default: {
-                    setting->SetInteger(GetPrivateProfileIntA(key17, section2, setting->GetInteger(), filename));
+                    arSetting->SetInteger(GetPrivateProfileIntA(key17, section2, arSetting->GetInteger(), filename));
                 }
                 break;
                 }
@@ -9380,11 +9460,13 @@ template <> inline unsigned int NiTArray<NiPointer<NiRefObject>, NiTNewInterface
 
 // @fnv 0x00c45830
 // src: XBOX_PDB 0x00c45830
-void __cdecl NiObjectGarbage_Add(NiRefObject* object)
+// pdb: NiObjectGarbage::Add | NiObjectGarbage.obj | retail, upstream name already matches, high
+// pdb params: apObject
+void __cdecl NiObjectGarbage_Add(NiRefObject* apObject)
 {
     DAT_01202e40.BSSpinLock_Lock(0);
     {
-        NiPointer<NiRefObject> local(object);
+        NiPointer<NiRefObject> local(apObject);
         DAT_01202e20.Add(local);
     }
     DAT_01202e44 = DAT_01202e44 - 1;
@@ -9486,6 +9568,8 @@ struct S00c46080_Tmp : public FUN_00c46270_Class
 
 
 // @fnv 0x00c46080
+// pdb: NiTArray<NiPointer<BSTempEffect>,NiTNewInterface<NiPointer<BSTempEffect> > >::RemoveAll | GarbageCollector.obj | retail, call graph, medium
+// pdb locals: i
 template <> void __thiscall NiTArray<FUN_00c46270_Class, NiTNewInterface<FUN_00c46270_Class> >::RemoveAll()
 {
     for (unsigned short i = 0; i < m_usSize; ++i)
@@ -9612,6 +9696,10 @@ struct FUN_00c46af0 : BSNiNode
 }
 
 // @fnv 0x00c46af0
+// pdb: BSMultiBoundNode::VisibleAgainstActiveOccluders | BSMultiBoundNode.obj | retail, object-file run extension, low
+// pdb note: debug build links it to BSMultiBoundNode::~BSMultiBoundNode
+// pdb params: akViewPoint, akCuller, apOccluder
+// pdb locals: pbsculler, kPlanes
 mb::FUN_00c46af0::~FUN_00c46af0()
 {
     multiBound = 0;
@@ -9685,6 +9773,9 @@ class FUN_00c47570_cls
 };
 // @fnv 0x00c47570
 // src: XBOX_PDB 0x00c47570
+// pdb: BSMultiBoundNode::CheckBound | BSMultiBoundNode.obj | debug, vtable slot, medium
+// pdb params: aTargetBound
+// pdb locals: kresult
 int FUN_00c47570_cls::BSMultiBoundNode_CheckBound(int a1)
 {
     FNV_Mid_cls* p2 = m_ac;
@@ -9816,23 +9907,26 @@ struct GeometryCommands
     int recordCount, commandCount, unknown2c;
     FNV_Local workingRecord;
     GeometryPoint origin;
-    void BSCompoundFrustum_AddOcclusionPlane(CommandPolygon* polygon);
+    void BSCompoundFrustum_AddOcclusionPlane(CommandPolygon* apPlane);
 };
 // @fnv 0x00c47d20
 // src: COMMUNITY 0x00c47d20
-void GeometryCommands::BSCompoundFrustum_AddOcclusionPlane(CommandPolygon* polygon)
+// pdb: BSCompoundFrustum::AddOcclusionPlane | BSCompoundFrustum.obj | retail, upstream name already matches, high
+// pdb params: apPlane
+// pdb locals: iside, klink, bsameside, potherplane, koccplane, ktempplanes, kPoints, pchildplane, idisable, ichild
+void GeometryCommands::BSCompoundFrustum_AddOcclusionPlane(CommandPolygon* apPlane)
 {
-    int type = polygon->BSOcclusionPlane_GetJoinedPlaneType();
+    int type = apPlane->BSOcclusionPlane_GetJoinedPlaneType();
     CommandPolygon* neighborTriangleA =
-        type == 1 ? polygon->NeighborAt(polygon->SideIndex()) : polygon->NeighborAt(polygon->EndIndex());
+        type == 1 ? apPlane->NeighborAt(apPlane->SideIndex()) : apPlane->NeighborAt(apPlane->EndIndex());
     bool kA1_1 = false;
     int side = 0;
     if (neighborTriangleA)
     {
         GeometryPoint verticesCheck2[4];
         FUN_0045c620 record2_2;
-        polygon->BSOcclusionPlane_UpdateFrustumPlanes(origin, &record2_2);
-        polygon->BSOcclusionPlane_GetVertices(verticesCheck2);
+        apPlane->BSOcclusionPlane_UpdateFrustumPlanes(origin, &record2_2);
+        apPlane->BSOcclusionPlane_GetVertices(verticesCheck2);
         FUN_00a699d0 plane4(&verticesCheck2[0], &verticesCheck2[1], &verticesCheck2[2]);
         side = plane4.ClassifyPoint(&origin);
         neighborTriangleA->BSOcclusionPlane_UpdateFrustumPlanes(origin, &record2_2);
@@ -9852,7 +9946,7 @@ void GeometryCommands::BSCompoundFrustum_AddOcclusionPlane(CommandPolygon* polyg
         ++commandCount;
         commands[commandCount].a = recordCount;
         ++commandCount;
-        polygon->BSOcclusionPlane_UpdateFrustumPlanes(origin, &records[recordCount]);
+        apPlane->BSOcclusionPlane_UpdateFrustumPlanes(origin, &records[recordCount]);
         ++recordCount;
         return;
     }
@@ -9869,7 +9963,7 @@ void GeometryCommands::BSCompoundFrustum_AddOcclusionPlane(CommandPolygon* polyg
         ++commandCount;
         commands[commandCount].a = recordCount;
         ++commandCount;
-        polygon->BSOcclusionPlane_UpdateFrustumPlanes(origin, &records[recordCount]);
+        apPlane->BSOcclusionPlane_UpdateFrustumPlanes(origin, &records[recordCount]);
         ++recordCount;
         return;
         break;
@@ -9893,9 +9987,9 @@ void GeometryCommands::BSCompoundFrustum_AddOcclusionPlane(CommandPolygon* polyg
         commands[commandCount++].a = recordCount + 3;
         commands[commandCount++].a = 6;
         commands[commandCount++].a = 6;
-        polygon->BSOcclusionPlane_UpdateFrustumPlanes(origin, &records[recordCount]);
-        polygon->BSOcclusionPlane_UpdateFrustumPlanes(origin, &records[recordCount + 2]);
-        int index1 = polygon->neighbors[1] ? 1 : 3;
+        apPlane->BSOcclusionPlane_UpdateFrustumPlanes(origin, &records[recordCount]);
+        apPlane->BSOcclusionPlane_UpdateFrustumPlanes(origin, &records[recordCount + 2]);
+        int index1 = apPlane->neighbors[1] ? 1 : 3;
         int kA114_2 = 0;
         side = 1;
         if (index1 == 1)
@@ -9903,7 +9997,7 @@ void GeometryCommands::BSCompoundFrustum_AddOcclusionPlane(CommandPolygon* polyg
         else
             kA114_2 = side == 1 ? 3 : 5;
         records[recordCount + 2].ClearPlane(kA114_2);
-        CommandPolygon* adjacent3 = polygon->neighbors[index1];
+        CommandPolygon* adjacent3 = apPlane->neighbors[index1];
         adjacent3->BSOcclusionPlane_UpdateFrustumPlanes(origin, &records[recordCount + 1]);
         adjacent3->BSOcclusionPlane_UpdateFrustumPlanes(origin, &records[recordCount + 3]);
         if (index1 == 1)
@@ -9958,12 +10052,15 @@ struct FUN_00c48800_cls
     int m_24;
     int m_28;
 
-    void BSCompoundFrustum_AddCompoundFrustum(FUN_00c48800_cls* arg);
+    void BSCompoundFrustum_AddCompoundFrustum(FUN_00c48800_cls* apFrustum);
 };
 
 // @fnv 0x00c48800
 // src: COMMUNITY 0x00c48800
-void FUN_00c48800_cls::BSCompoundFrustum_AddCompoundFrustum(FUN_00c48800_cls* arg)
+// pdb: BSCompoundFrustum::AddCompoundFrustum | BSCompoundFrustum.obj | retail, upstream name already matches, high
+// pdb params: apFrustum
+// pdb locals: i
+void FUN_00c48800_cls::BSCompoundFrustum_AddCompoundFrustum(FUN_00c48800_cls* apFrustum)
 {
     int cf;
     int q;
@@ -9976,29 +10073,29 @@ void FUN_00c48800_cls::BSCompoundFrustum_AddCompoundFrustum(FUN_00c48800_cls* ar
     NavEntryItem_blk_00c40000_od_ob1_variant* j;
 
     ba = this->m_20;
-    if (arg->m_28 + this->m_28 + 1 >= ba)
+    if (apFrustum->m_28 + this->m_28 + 1 >= ba)
     {
-        this->m_14.FUN_00c4a1e0((k = this->m_20) + (arg->m_28 + 1 > 10 ? arg->m_28 + 1 : 10), true);
+        this->m_14.FUN_00c4a1e0((k = this->m_20) + (apFrustum->m_28 + 1 > 10 ? apFrustum->m_28 + 1 : 10), true);
     }
     l = this->m_10;
-    if (arg->m_24 + this->m_24 + 1 >= l)
+    if (apFrustum->m_24 + this->m_24 + 1 >= l)
     {
-        this->m_04.FUN_00c4a070((c = this->m_10) + (arg->m_24 + 1 > 4 ? arg->m_24 + 1 : 4), true);
+        this->m_04.FUN_00c4a070((c = this->m_10) + (apFrustum->m_24 + 1 > 4 ? apFrustum->m_24 + 1 : 4), true);
     }
     this->m_00 = 0;
-    for (cf = 0; cf < arg->m_28; ++cf)
+    for (cf = 0; cf < apFrustum->m_28; ++cf)
     {
-        e = &arg->m_18[cf];
+        e = &apFrustum->m_18[cf];
         this->m_18[this->m_28 + cf].field0 = e->field0;
     }
-    for (q = 0; q < arg->m_24; ++q)
+    for (q = 0; q < apFrustum->m_24; ++q)
     {
-        j = &arg->m_08[q];
+        j = &apFrustum->m_08[q];
         this->m_08[this->m_24 + q] = *j;
     }
     if (this->m_24 != 0)
     {
-        for (b = this->m_28; b < this->m_28 + arg->m_28; ++b)
+        for (b = this->m_28; b < this->m_28 + apFrustum->m_28; ++b)
         {
             switch (this->m_18[b].field0)
             {
@@ -10010,8 +10107,8 @@ void FUN_00c48800_cls::BSCompoundFrustum_AddCompoundFrustum(FUN_00c48800_cls* ar
             }
         }
     }
-    this->m_28 += arg->m_28;
-    this->m_24 += arg->m_24;
+    this->m_28 += apFrustum->m_28;
+    this->m_24 += apFrustum->m_24;
 }
 
 struct Q48Tok
@@ -10034,7 +10131,7 @@ struct Q48Arr
     {
         return m_alloc;
     }
-    void FUN_00c4a1e0(int n, bool b);
+    void FUN_00c4a1e0(int aiNewSize, bool abFreeMemory);
 };
 struct Q48Obj
 {
@@ -10042,11 +10139,13 @@ struct Q48Obj
     Q48Arr m_toks;
     int m_24;
     int m_uiItemCount;
-    void ShiftElements(bool a, bool b);
+    void ShiftElements(bool aiShift, bool abFillNoop);
     void BSCompoundFrustum_MakeIntoUnion();
 };
 // @fnv 0x00c48b90
 // src: COMMUNITY 0x00c48b90
+// pdb: BSCompoundFrustum::MakeIntoUnion | BSCompoundFrustum.obj | retail, upstream name already matches, high
+// pdb locals: bnewunion, opindex, igroupcount
 void Q48Obj::BSCompoundFrustum_MakeIntoUnion()
 {
     bool ok = true;
@@ -10199,7 +10298,7 @@ class TreeEvaluator
         return false;
     }
 // src: COMMUNITY 0x00c4a790
-    bool BSCompoundFrustum_TestNotContained(TreeVector* pkVector, TreeEntry* pkEntry)
+    bool BSCompoundFrustum_TestNotContained(TreeVector* apBound, TreeEntry* pkEntry)
     {
         if (!pkEntry->activePlanes)
             return false;
@@ -10210,7 +10309,7 @@ class TreeEvaluator
             {
                 if (pkEntry->activePlanes & (1 << planeIndex))
                 {
-                    int side = pkVector->ClassifySphereAgainstPlane(&pkEntry->planes[planeIndex]);
+                    int side = apBound->ClassifySphereAgainstPlane(&pkEntry->planes[planeIndex]);
                     if (side != 1)
                         break;
                     else if (side == 1)
@@ -10222,17 +10321,20 @@ class TreeEvaluator
         }
         return true;
     }
-    bool BSCompoundFrustum_Process(TreeQuery* pkQuery);
+    bool BSCompoundFrustum_Process(TreeQuery* apObject);
 };
 
 // @fnv 0x00c491a0
 // src: COMMUNITY 0x00c491a0
-bool TreeEvaluator::BSCompoundFrustum_Process(TreeQuery* pkQuery)
+// pdb: BSCompoundFrustum::Process | BSCompoundFrustum.obj | retail, upstream name already matches, high
+// pdb params: apObject
+// pdb locals: pplanes, kbound, bvis, iop, bpass
+bool TreeEvaluator::BSCompoundFrustum_Process(TreeQuery* apObject)
 {
-    if (!pkQuery->HasVector())
+    if (!apObject->HasVector())
         return false;
     TreeEntry* pkEntry = 0;
-    TreeVector kVector = pkQuery->GetAudioPosition();
+    TreeVector kVector = apObject->GetAudioPosition();
     bool bResultTmp = true;
     if (!m_bSkipRoot)
         bResultTmp = ProcessEntries(static_cast<const TreeVector*>(&kVector), &m_kRootEntry);
@@ -10295,15 +10397,18 @@ struct ObjC4aa40 : FUN_00c450d0
 
 struct OwnerC4aa40 : FUN_00c4aae0_class
 {
-    ObjC4aa40* BSBlastNode_CreateClone(int a1);
+    ObjC4aa40* BSBlastNode_CreateClone(int arCloneData);
 };
 
 // @fnv 0x00c4aa40
 // src: XBOX_PDB 0x00c4aa40
-ObjC4aa40* OwnerC4aa40::BSBlastNode_CreateClone(int a1)
+// pdb: BSBlastNode::CreateClone | BSBlastNode.obj | retail, upstream name already matches, high
+// pdb params: arCloneData
+// pdb locals: pobj
+ObjC4aa40* OwnerC4aa40::BSBlastNode_CreateClone(int arCloneData)
 {
     ObjC4aa40* p = new ObjC4aa40();
-    this->BSRangeNode_CopyMembers((int)p, a1);
+    this->BSRangeNode_CopyMembers((int)p, arCloneData);
     return p;
 }
 
@@ -10311,6 +10416,7 @@ extern unsigned int DAT_010c1fc4;
 
 // @fnv 0x00c4ae60
 // src: EXE 0x00c4ae60
+// pdb: BSDebrisNode::CreateObject | BSDebrisNode.obj | retail, upstream name already matches, high
 BSDebrisNode* __cdecl BSDebrisNode_CreateObject()
 {
     return new BSDebrisNode;
@@ -10353,16 +10459,19 @@ struct S00c4af00_Obj : FUN_00c450d0
 
 struct S00c4af00_Cls
 {
-    void __thiscall BSDamageStage_CopyMembers(S00c4af00_Obj* obj, unsigned int arg);
-    S00c4af00_Obj* BSDamageStage_CreateClone(unsigned int arg);
+    void __thiscall BSDamageStage_CopyMembers(S00c4af00_Obj* pDest, unsigned int arCloneData);
+    S00c4af00_Obj* BSDamageStage_CreateClone(unsigned int arCloneData);
 };
 
 // @fnv 0x00c4af00
 // src: XBOX_PDB 0x00c4af00
-S00c4af00_Obj* S00c4af00_Cls::BSDamageStage_CreateClone(unsigned int arg)
+// pdb: BSDamageStage::CreateClone | BSDamageStage1.obj | retail, upstream name already matches, high
+// pdb params: arCloneData
+// pdb locals: pobj
+S00c4af00_Obj* S00c4af00_Cls::BSDamageStage_CreateClone(unsigned int arCloneData)
 {
     S00c4af00_Obj* obj = new S00c4af00_Obj();
-    this->BSDamageStage_CopyMembers(obj, arg);
+    this->BSDamageStage_CopyMembers(obj, arCloneData);
     return obj;
 }
 
@@ -10399,6 +10508,7 @@ struct C4B0C0_Obj : FUN_00c450d0
 };
 // @fnv 0x00c4b0c0
 // src: EXE 0x00c4b0c0
+// pdb: BSDamageStage::CreateObject | BSDamageStage1.obj | retail, upstream name already matches, high
 C4B0C0_Obj* BSDamageStage_CreateObject()
 {
     return new C4B0C0_Obj;
@@ -10493,7 +10603,7 @@ inline bool KindOfShell(const NiRTTI& query, const NiRTTI* p)
     {
         if (p == &query)
             return true;
-        p = p->m_pBaseRTTI;
+        p = p->m_pkBaseRTTI;
     }
     return false;
 }
@@ -10506,18 +10616,21 @@ inline FUN_00546780_shell* ChildAtShell(FUN_00546780_shell* node, unsigned int i
 
 // @fnv 0x00c4b220
 // src: COMMUNITY 0x00c4b220
-void __cdecl BSUtilities_SetAlwaysDraw(FUN_00546780_shell* obj)
+// pdb: BSUtilities::SetAlwaysDraw | BSUtilities.obj | debug, upstream name already matches, high
+// pdb params: apObject
+// pdb locals: pnode, I
+void __cdecl BSUtilities_SetAlwaysDraw(FUN_00546780_shell* apObject)
 {
-    if (obj != 0)
+    if (apObject != 0)
     {
-        obj->NiAVObject_SetAlwaysDraw(true);
-        obj->SetFlag(true, 0x2000);
+        apObject->NiAVObject_SetAlwaysDraw(true);
+        apObject->SetFlag(true, 0x2000);
     }
     FUN_00546780_shell* node;
-    if (!obj)
+    if (!apObject)
         node = 0;
     else
-        node = KindOfShell(DAT_011f4428, obj->GetRTTI()) ? obj : 0;
+        node = KindOfShell(DAT_011f4428, apObject->GetRTTI()) ? apObject : 0;
     if (node)
     {
         for (unsigned int i = 0; i < node->count; ++i)
@@ -10552,9 +10665,9 @@ class BasisVector : public NiPoint3
             z = 0.0f;
         }
     }
-    inline BasisVector Cross(const BasisVector& other) const
+    inline BasisVector Cross(const BasisVector& pt) const
     {
-        return BasisVector(y * other.z - z * other.y, z * other.x - x * other.z, x * other.y - y * other.x);
+        return BasisVector(y * pt.z - z * pt.y, z * pt.x - x * pt.z, x * pt.y - y * pt.x);
     }
     __forceinline BasisVector()
     {}
@@ -10574,10 +10687,13 @@ __forceinline void NiMatrix3::SetCol(unsigned int col, const NiPoint3& v)
 }
 // @fnv 0x00c4b8a0
 // src: XBOX_PDB 0x00c4b8a0
-NiMatrix3 __cdecl BSUtilities_GetRotationZToVectorTranspose(NiPoint3 direction)
+// pdb: BSUtilities::GetRotationZToVectorTranspose | BSUtilities.obj | retail, upstream name already matches, high
+// pdb params: apVector
+// pdb locals: absT, R, S, krot, T
+NiMatrix3 __cdecl BSUtilities_GetRotationZToVectorTranspose(NiPoint3 apVector)
 {
     BasisVector normal_2;
-    memcpy(&normal_2, &direction, sizeof(normal_2));
+    memcpy(&normal_2, &apVector, sizeof(normal_2));
     normal_2.Unitize_004a0c10();
     float ax = fabs(normal_2.x);
     float ayVal = fabs(normal_2.y);
@@ -10643,6 +10759,7 @@ struct FUN_00c4ca80
     FUN_00c4ca80();
 };
 // @fnv 0x00c4ca80
+// pdb: BSPolygon2D::BSPolygon2D | BSPolygon.obj | debug, object-file run extension, low
 #pragma intrinsic(memcpy)
 FUN_00c4ca80::FUN_00c4ca80()
 {
@@ -10704,6 +10821,8 @@ struct FUN_00c4cba0
     void __thiscall BSPolygon2D_Initialize();
 };
 // @fnv 0x00c4cba0
+// pdb: BSPolygon2D::BSPolygon2D | BSPolygon.obj | debug, object-file run extension, low
+// pdb params: apVertexSimpleArray
 #pragma intrinsic(memcpy)
 FUN_00c4cba0::FUN_00c4cba0(OwnerQ* p)
 {
@@ -10751,6 +10870,7 @@ struct FUN_00c4ccd0
     ~FUN_00c4ccd0();
 };
 // @fnv 0x00c4ccd0
+// pdb: BSPolygon2D::~BSPolygon2D | BSPolygon.obj | debug, object-file run extension, low
 FUN_00c4ccd0::~FUN_00c4ccd0()
 {
     if (m28 == 0)
@@ -10799,6 +10919,8 @@ struct Mesh370
 };
 // @fnv 0x00c4ce00
 // src: GUESS 0x00c4ce00 (confidence: low)
+// pdb: BSPolygon2D::CenterAroundOrigin | BSPolygon.obj | debug, object-file gap fill, medium
+// pdb locals: total, offset, i
 void Mesh370::ProcessEntries_00c4ce00()
 {
     NiPoint3 sum = _DAT_011f426c;
@@ -11038,7 +11160,7 @@ struct Triangulator086
     bool IsKeyValid(unsigned int, unsigned int, unsigned int);
     int GetPointSide(Vertex086, Vertex086, Vertex086);
     unsigned int BSPolygon2D_CreateTriData();
-    void* CreateInstance(unsigned int);
+    void* BSPolygon2D_CreateTriShape(unsigned int);
     void BSPolygon2D_Triangulate();
 };
 __forceinline void WrapIndex(int& index, const int& size)
@@ -11055,6 +11177,8 @@ __forceinline void WrapIndex(int& index, const int& size)
 }
 // @fnv 0x00c4cf80
 // src: COMMUNITY 0x00c4cf80
+// pdb: BSPolygon2D::Triangulate | BSPolygon.obj | retail, upstream name already matches, high
+// pdb locals: indexlist, i, vert, first, a, j, k, z, iindex, angle, data
 void Triangulator086::BSPolygon2D_Triangulate()
 {
     FUN_00438690 remainingVal;
@@ -11139,7 +11263,7 @@ void Triangulator086::BSPolygon2D_Triangulate()
     if (count > 0)
     {
         total3 = BSPolygon2D_CreateTriData();
-        mesh = (NiNode*)CreateInstance(total3);
+        mesh = (NiNode*)BSPolygon2D_CreateTriShape(total3);
         ReserveNiNodeAllocationStack();
         node = new NiNode(0);
         node->AttachChildInAvailableSlot(static_cast<NiAVObject*>(static_cast<NiNode*>(mesh)), true);
@@ -11169,6 +11293,9 @@ struct Owner299
 };
 // @fnv 0x00c4da80
 // src: GUESS 0x00c4da80 (confidence: low)
+// pdb: BSPolygon2D::AreaofTriangle | BSPolygon.obj | debug, object-file gap fill, medium
+// pdb params: aiIndex1, aiIndex2, aiIndex3
+// pdb locals: vect1, vect2
 float Owner299::ProcessAndReturnValue_00c4da80(int first, int second, int third)
 {
 
@@ -11228,6 +11355,8 @@ struct S00c4db20_Self
 
 // @fnv 0x00c4db20
 // src: COMMUNITY 0x00c4db20
+// pdb: BSPolygon2D::StoreConcaveVertices | BSPolygon.obj | retail, upstream name already matches, high
+// pdb locals: bfoundcolinear, b, c, a, iangle
 void S00c4db20_Self::BSPolygon2D_StoreConcaveVertices()
 {
     if (m_pArr == 0)
@@ -11380,6 +11509,8 @@ struct C4E1E0
 
 // @fnv 0x00c4e1e0
 // src: COMMUNITY 0x00c4e1e0
+// pdb: BSPolygon2D::CreateTriData | BSPolygon.obj | retail, upstream name already matches, high
+// pdb locals: data, fscale, i
 TESObjectDoorController* C4E1E0::BSPolygon2D_CreateTriData()
 {
     m0c = new NP3[m24];
@@ -11456,6 +11587,9 @@ struct Q4E9
 };
 // @fnv 0x00c4e9b0
 // src: COMMUNITY 0x00c4e9b0
+// pdb: BSSimpleArray<unsigned short,1024>::Remove | BSPolygon.obj | debug, object-file run extension, low
+// pdb params: aiIndex, abShrink
+// pdb locals: inewSize, pnewBuffer
 void Q4E9::BSSimpleArray_unsigned_int_1024_Remove(unsigned idx, bool resize)
 {
     if (resize && ShouldShrink())
@@ -11657,6 +11791,7 @@ class QueryOwner
 
 // @fnv 0x00c4f360
 // src: COMMUNITY 0x00c4f360
+// pdb: BSCullingProcess::ClearSharedMap | BSCullingProcess.obj | debug, upstream name already matches, high
 void QueryOwner::BSCullingProcess_ClearSharedMap()
 {
     GetTarget()->Unk_28();
@@ -11664,17 +11799,18 @@ void QueryOwner::BSCullingProcess_ClearSharedMap()
 
 struct FUN_00c504e0_pool
 {
-    void MemoryManager_Deallocate(void* p);
+    void MemoryManager_Deallocate(void* apMem);
 };
 struct FUN_00c504e0_mgr
 {
-    void ReleaseItem(void* p);
+    void BSTaskletManager_DestroyTaskGroup(void* aGroup);
 };
 FUN_00c504e0_mgr* __cdecl FUN_00b00a00(void);
 
 struct FUN_00c504e0_task
 {
 // @fnv 0x00c504e0
+// pdb: BSParticleSystemManager::~BSParticleSystemManager | BSParticleSystemManager.obj | debug, call graph, medium
     ~FUN_00c504e0_task()
     {}
     static void operator delete(void* p)
@@ -11744,7 +11880,7 @@ FUN_00c504e0::~FUN_00c504e0()
     ((FUN_00c504e0_pool*)&DAT_011f6238)->MemoryManager_Deallocate(old);
     m_ac = 0;
     m_b0 = 0;
-    FUN_00b00a00()->ReleaseItem(m_b4);
+    FUN_00b00a00()->BSTaskletManager_DestroyTaskGroup(m_b4);
     delete m_b4;
 }
 
@@ -11879,18 +12015,21 @@ inline C50Object* C50ChildAt(C50Object* node, unsigned int index)
 }
 // @fnv 0x00c50f90
 // src: XBOX_PDB 0x00c50f90
-bool __cdecl BSParticleSystemManager_CheckEmitterRecurse(C50Object* object, void* material)
+// pdb: BSParticleSystemManager::CheckEmitterRecurse | BSParticleSystemManager.obj | retail, string-set bridge, high
+// pdb params: apObject, apMasterSystem
+// pdb locals: pcurTimeCtlr, pparticles, pemitterCtlr, pemitter, pnode, ucount, uindex, pchild
+bool __cdecl BSParticleSystemManager_CheckEmitterRecurse(C50Object* apObject, void* apMasterSystem)
 {
-    if (!object)
+    if (!apObject)
         return false;
-    if (object->slot_30())
+    if (apObject->slot_30())
     {
-        if (C50Exact(object, &DAT_012024e0))
+        if (C50Exact(apObject, &DAT_012024e0))
         {
-            C50Object* system = object;
+            C50Object* system = apObject;
             if (!system->GetParentWorldSpace())
             {
-                FNV_Warning(DAT_010c2678, object->GetName());
+                FNV_Warning(DAT_010c2678, apObject->GetName());
                 return false;
             }
             C50Object* modifier = system->GetModifiers();
@@ -11900,11 +12039,11 @@ bool __cdecl BSParticleSystemManager_CheckEmitterRecurse(C50Object* object, void
                 {
                     C50Object* emitter = modifier;
                     C50Object* target7 = emitter->field_3c;
-                    if (material)
+                    if (apMasterSystem)
                     {
-                        if (emitter->GetRoot() != material)
+                        if (emitter->GetRoot() != apMasterSystem)
                         {
-                            FNV_Warning(DAT_010c2628, object->GetName());
+                            FNV_Warning(DAT_010c2628, apObject->GetName());
                             return false;
                         }
                     }
@@ -11918,19 +12057,19 @@ bool __cdecl BSParticleSystemManager_CheckEmitterRecurse(C50Object* object, void
                 }
             }
         }
-        FNV_Warning(DAT_010c25d8, object->GetName());
+        FNV_Warning(DAT_010c25d8, apObject->GetName());
         return false;
     }
     else
     {
-        C50Object* node = object ? object->slot_0c() : 0;
+        C50Object* node = apObject ? apObject->slot_0c() : 0;
         if (node)
         {
             unsigned int count = node->field_a6;
             for (unsigned int index = 0; index < count; ++index)
             {
                 C50Object* child = C50ChildAt(node, index);
-                if (child && !BSParticleSystemManager_CheckEmitterRecurse(child, material))
+                if (child && !BSParticleSystemManager_CheckEmitterRecurse(child, apMasterSystem))
                     return false;
             }
         }
@@ -12135,7 +12274,7 @@ class CamPointer
 class FUN_00c517b0 : public NiNode
 {
   public:
-    FUN_00c517b0(const char* pcName, bool bFlag, FUN_00a712f0* pkCamera);
+    FUN_00c517b0(const char* apSceneGraphName, bool abMenuSceneGraph, FUN_00a712f0* apCamera);
     virtual ~FUN_00c517b0();
     void NiAVObject_SetAlwaysDraw(bool value);
     float BSSceneGraph_GetFarDistance();
@@ -12182,30 +12321,33 @@ public:
 };
 
 // @fnv 0x00c517b0
-FUN_00c517b0::FUN_00c517b0(const char* pcName, bool bFlag, FUN_00a712f0* pkCamera) : NiNode(0)
+// pdb: BSSceneGraph::BSSceneGraph | BSSceneGraph.obj | retail, string-set bridge, high
+// pdb params: apSceneGraphName, abMenuSceneGraph, apCamera
+// pdb locals: message, pcameraRoot, rot, port
+FUN_00c517b0::FUN_00c517b0(const char* apSceneGraphName, bool abMenuSceneGraph, FUN_00a712f0* apCamera) : NiNode(0)
 {
-    m_bFlag = bFlag;
+    m_bFlag = abMenuSceneGraph;
     m_pkVisible = new FUN_004a0eb0(0);
     unkB0 = 0;
 
     char acName[512];
-    _sprintf_s(acName, 512, "%sRoot Node", pcName);
+    _sprintf_s(acName, 512, "%sRoot Node", apSceneGraphName);
     SetName(NiFixedString((const char*)acName));
     fnvDead4();
 
     NiNode* pkCameraNode = new NiNode(0);
-    _sprintf_s(acName, 512, "%sRoot CameraNode", pcName);
+    _sprintf_s(acName, 512, "%sRoot CameraNode", apSceneGraphName);
     pkCameraNode->SetName((const NiFixedString&)ScopedValue<NiFixedString, InitializeCameraName, ReleaseCameraName>((const char*)acName));
     AttachChildInAvailableSlot(pkCameraNode, true);
 
-    if (pkCamera)
+    if (apCamera)
     {
-        m_spCamera = pkCamera;
+        m_spCamera = apCamera;
     }
     else
     {
         m_spCamera = new FUN_00a712f0;
-        _sprintf_s(acName, 512, "%sRoot Camera", pcName);
+        _sprintf_s(acName, 512, "%sRoot Camera", apSceneGraphName);
         m_spCamera->SetName((const NiFixedString&)ScopedValue<NiFixedString, InitializeCameraName, ReleaseCameraName>((const char*)acName));
         NiRect<float> kPort;
         InitializeViewPort(kPort, 0.0f, 1.0f, 1.0f, 0.0f);
@@ -12333,6 +12475,7 @@ struct FUN_00c51df0 : BaseForC51df0
     virtual ~FUN_00c51df0();
 };
 // @fnv 0x00c51df0
+// pdb: BSSceneGraph::~BSSceneGraph | BSSceneGraph.obj | debug, call graph, medium
 FUN_00c51df0::~FUN_00c51df0()
 {
     m_spNode = 0;
@@ -12505,6 +12648,8 @@ struct Owner
 
 // @fnv 0x00c51f20
 // src: COMMUNITY 0x00c51f20
+// pdb: BSSceneGraph::SetCameraScene | BSSceneGraph.obj | retail, upstream name already matches, high
+// pdb locals: UpdateData
 void Owner::BSSceneGraph_SetCameraScene()
 {
     if (GetKey() != GetChild(0))
@@ -12595,6 +12740,8 @@ class FUN_00c52450_cls
 
 // @fnv 0x00c52450
 // src: XBOX_PDB 0x00c52450
+// pdb: BSSceneGraph::~BSSceneGraph | BSSceneGraph.obj | retail, object-file run extension, low
+// pdb note: debug build links it to BSSceneGraph::GetFarDistance
 float FUN_00c52450_cls::BSSceneGraph_GetFarDistance()
 {
     float result5;
@@ -12817,22 +12964,25 @@ struct DistanceController189
         Camera189* result = camera;
         return result;
     }
-    void BSSceneGraph_SetViewDistanceBasedOnFrameRate(float deltaTime);
+    void BSSceneGraph_SetViewDistanceBasedOnFrameRate(float afTime);
 };
 // @fnv 0x00c52590
 // src: XBOX_PDB 0x00c52590
-void DistanceController189::BSSceneGraph_SetViewDistanceBasedOnFrameRate(float deltaTime)
+// pdb: BSSceneGraph::SetViewDistanceBasedOnFrameRate | BSSceneGraph.obj | retail, upstream name already matches, high
+// pdb params: afTime
+// pdb locals: fpercent, fmaxDist, fcalcDist, fdelta, fminDist, frustum, pcamera
+void DistanceController189::BSSceneGraph_SetViewDistanceBasedOnFrameRate(float afTime)
 {
     if (GetBool(&g_01203188))
     {
         static float previous = GetFarPlane();
-        float blend_ = deltaTime;
+        float blend_ = afTime;
         if (1.0 / GetInt(&g_01203194) < blend_ || 1.0 / GetInt(&g_012031a0) > blend_)
         {
             float current4 = GetFarPlane();
             float minimum2 = (float)GetInt(&g_012031ac);
             float target7 = minimum2;
-            blend_ = (1.0 / deltaTime - GetInt(&g_01203194)) * 1.0 / GetInt(&g_012031a0);
+            blend_ = (1.0 / afTime - GetInt(&g_01203194)) * 1.0 / GetInt(&g_012031a0);
             if (blend_ > 1.0)
                 target7 = current4;
             else if (blend_ > 0.0)
@@ -12842,7 +12992,7 @@ void DistanceController189::BSSceneGraph_SetViewDistanceBasedOnFrameRate(float d
             {
                 Camera189* viewCamera = GetCamera();
                 Frustum189 view = viewCamera->frustum;
-                previous += difference * deltaTime;
+                previous += difference * afTime;
                 view.farPlane = previous;
                 viewCamera->FUN_00a6faf0(&view);
             }
@@ -12882,15 +13032,18 @@ struct Q52Obj
     Q52Arr** m_arrs;
     char pad44[2];
     unsigned short m_arrCount;
-    bool NiBSBoneLODController_SetBoneLOD(unsigned idx);
+    bool NiBSBoneLODController_SetBoneLOD(unsigned iLOD);
 };
 // @fnv 0x00c52960
 // src: XBOX_PDB 0x00c52960
-bool Q52Obj::NiBSBoneLODController_SetBoneLOD(unsigned idx)
+// pdb: NiBSBoneLODController::SetBoneLOD | NiBSBoneLODController.obj | retail, upstream name already matches, high
+// pdb params: iLOD
+// pdb locals: uj, bUpdate, ui, pkSet
+bool Q52Obj::NiBSBoneLODController_SetBoneLOD(unsigned iLOD)
 {
-    if (m_num > 0 && m_cur != idx)
+    if (m_num > 0 && m_cur != iLOD)
     {
-        if (idx == -1 || ((int)idx > -1 && idx < m_num))
+        if (iLOD == -1 || ((int)iLOD > -1 && iLOD < m_num))
         {
             unsigned i;
             bool sel = false;
@@ -12900,7 +13053,7 @@ bool Q52Obj::NiBSBoneLODController_SetBoneLOD(unsigned idx)
                 Q52Arr* arr = m_arrs[i];
                 if (arr)
                 {
-                    if (i == idx)
+                    if (i == iLOD)
                         sel = true;
                     for (j = 0; j < arr->Count(); j++)
                     {
@@ -12911,7 +13064,7 @@ bool Q52Obj::NiBSBoneLODController_SetBoneLOD(unsigned idx)
                     }
                 }
             }
-            m_cur = idx;
+            m_cur = iLOD;
             return true;
         }
     }
@@ -12959,20 +13112,23 @@ struct Q5Obj
         return Object_DispatchCommandFour(amount);
     }
     Q5Obj();
-    bool InitializeData_00c52d80(Q5Item* it);
-    bool NiBSBoneLODController_SetBoneLOD(unsigned idx);
+    bool InitializeData_00c52d80(Q5Item* pkBoneRoot);
+    bool NiBSBoneLODController_SetBoneLOD(unsigned iLOD);
 };
 struct Q5Item
 {
-    void NiObjectNET_RemoveController(Q5Obj* o);
+    void NiObjectNET_RemoveController(Q5Obj* pkControl);
 };
-void __cdecl NiBSBoneLODController_FindBoneRootNodes(void* p, Q5Hold* h);
+void __cdecl NiBSBoneLODController_FindBoneRootNodes(void* p, Q5Hold* kBoneRootNodes);
 // @fnv 0x00c52a80
 // src: COMMUNITY 0x00c52a80
-bool __cdecl NiBSBoneLODController_ProcessScene(void* param)
+// pdb: NiBSBoneLODController::ProcessScene | NiBSBoneLODController.obj | debug, upstream name already matches, high
+// pdb params: pkSceneRoot
+// pdb locals: kBoneRootNodes, ui, pkCtlr, pkBoneRoot, bSuccess
+bool __cdecl NiBSBoneLODController_ProcessScene(void* pkSceneRoot)
 {
     Q5Hold items9;
-    NiBSBoneLODController_FindBoneRootNodes(param, &items9);
+    NiBSBoneLODController_FindBoneRootNodes(pkSceneRoot, &items9);
     if (items9.Count() == 0)
         return false;
     for (unsigned i6 = 0; i6 < items9.Count(); i6++)
@@ -13252,6 +13408,7 @@ struct FUN_00c5ac00 : NiRefObject
     virtual ~FUN_00c5ac00();
 };
 // @fnv 0x00c5ac00
+// pdb: BSPortalGraph::~BSPortalGraph | BSPortalGraph.obj | debug, call graph, medium
 FUN_00c5ac00::~FUN_00c5ac00()
 {
     sub14.FUN_00b71300();
@@ -13302,17 +13459,19 @@ struct FUN_00c5aef0_cls
 {
     char pad[0x20];
     PtrListQ<NiPointer<NiRefObject> > m_kNode;
-    void __thiscall BSPortalGraph_AddRoom(NiRefObject* pObj);
+    void __thiscall BSPortalGraph_AddRoom(NiRefObject* apRoom);
 };
 // @fnv 0x00c5aef0
 // src: XBOX_PDB 0x00c5aef0
-void __thiscall FUN_00c5aef0_cls::BSPortalGraph_AddRoom(NiRefObject* pObj)
+// pdb: BSPortalGraph::AddRoom | BSPortalGraph.obj | retail, upstream name already matches, high
+// pdb params: apRoom
+void __thiscall FUN_00c5aef0_cls::BSPortalGraph_AddRoom(NiRefObject* apRoom)
 {
-    if (pObj)
+    if (apRoom)
     {
-        if (!m_kNode.FindPos(pObj))
+        if (!m_kNode.FindPos(apRoom))
         {
-            m_kNode.FUN_00a5a310(pObj), DeadQ4();
+            m_kNode.FUN_00a5a310(apRoom), DeadQ4();
         }
     }
 }
@@ -13348,16 +13507,18 @@ struct OwnerB06
     int unk1c;
     RefSetB06 m_kSet;
 
-    void BSPortalGraph_RemoveRoom(NiRefObject* pkObject);
+    void BSPortalGraph_RemoveRoom(NiRefObject* apRoom);
 };
 
 // @fnv 0x00c5b060
 // src: COMMUNITY 0x00c5b060
-void OwnerB06::BSPortalGraph_RemoveRoom(NiRefObject* pkObject)
+// pdb: BSPortalGraph::RemoveRoom | BSPortalGraph.obj | retail, upstream name already matches, high
+// pdb params: apRoom
+void OwnerB06::BSPortalGraph_RemoveRoom(NiRefObject* apRoom)
 {
-    if (pkObject)
+    if (apRoom)
     {
-        NiPointer<NiRefObject> spRetainedObject(pkObject);
+        NiPointer<NiRefObject> spRetainedObject(apRoom);
         m_kSet.ProcessAndReturnValue_00c5bda0(spRetainedObject);
     }
 }
@@ -13477,6 +13638,8 @@ struct TempEffectList
 
 // @fnv 0x00c5b4d0
 // src: GUESS 0x00c5b4d0 (confidence: low)
+// pdb: BSPortalGraph::RemoveAllAlwaysRenderChildren | BSPortalGraph.obj | debug, object-file gap fill, medium
+// pdb locals: i, spChild
 void __thiscall TempEffectList::UpdateReferenceState_00c5b4d0()
 {
     unsigned int i = 0;
@@ -13558,7 +13721,7 @@ struct LocalObjectArrayForB5F0
     }
     void Grow(unsigned int uiGrowBy);
 // src: XBOX_PDB 0x00a5eb20
-    unsigned int NiTArray_NiPointer_NiAVObject_NiTNewInterface_NiPointer_NiAVObject_AddFirstEmpty(const RefPtr& kElement)
+    unsigned int NiTArray_NiPointer_NiAVObject_NiTNewInterface_NiPointer_NiAVObject_AddFirstEmpty(const RefPtr& element)
     {
         int pad0, pad1, pad2, pad3, pad4, pad5, pad6, pad7, pad8, pad9, pad10, pad11, pad12;
         pad0 = m_usSize;
@@ -13574,7 +13737,7 @@ struct LocalObjectArrayForB5F0
         pad10 = m_usSize;
         pad11 = m_usSize;
         pad12 = m_usSize;
-        if (kElement.m_pObject == 0)
+        if (element.m_pObject == 0)
             return (unsigned int)(pad0 + pad1 + pad2 + pad3 + pad4 + pad5 + pad6 + pad7 + pad8 + pad9 + pad10 + pad11 +
                                    pad12);
         unsigned int uiIndex = 0;
@@ -13591,7 +13754,7 @@ struct LocalObjectArrayForB5F0
             uiIndex = m_usSize;
             m_usSize++;
         }
-        m_pBase[uiIndex] = kElement;
+        m_pBase[uiIndex] = element;
         return uiIndex + (pad0 + pad1 + pad2 + pad3 + pad4 + pad5 + pad6 + pad7 + pad8 + pad9 + pad10 + pad11 + pad12);
     }
 };
@@ -13614,25 +13777,28 @@ struct Owner_c5b5f0
     int unk34;
     int unk38;
     LocalObjectArrayForB5F0 m_kArray;
-    void BSPortalGraph_AttachQAlwaysRenderChild(NiRefObject* pkObj);
+    void BSPortalGraph_AttachQAlwaysRenderChild(NiRefObject* pkChild);
 };
 
 // @fnv 0x00c5b5f0
 // src: COMMUNITY 0x00c5b5f0
-void Owner_c5b5f0::BSPortalGraph_AttachQAlwaysRenderChild(NiRefObject* pkObj)
+// pdb: BSPortalGraph::AttachQAlwaysRenderChild | BSPortalGraph.obj | retail, upstream name already matches, high
+// pdb params: pkChild
+// pdb locals: bfound, i, spChild
+void Owner_c5b5f0::BSPortalGraph_AttachQAlwaysRenderChild(NiRefObject* pkChild)
 {
-    if (pkObj == 0)
+    if (pkChild == 0)
         return;
     bool bFound = false;
     for (unsigned int i = 0; i < m_kArray.m_usSize; i++)
     {
         RefPtr spEntry = m_kArray[i];
-        if (spEntry && spEntry == pkObj)
+        if (spEntry && spEntry == pkChild)
             bFound = true;
     }
     if (!bFound)
     {
-        RefPtr spNew = pkObj;
+        RefPtr spNew = pkChild;
         m_kArray.NiTArray_NiPointer_NiAVObject_NiTNewInterface_NiPointer_NiAVObject_AddFirstEmpty(spNew);
     }
 }
@@ -13754,16 +13920,18 @@ struct OwnerC5
     int unk40, unk44, unk48, unk4C, unk50, unk54, unk58, unk5C;
     int unk60, unk64;
     S2f850 unk68;
-    void __thiscall BSPortalGraph_AddUnboundNode(NiRefObject* arg);
+    void __thiscall BSPortalGraph_AddUnboundNode(NiRefObject* apNode);
 };
 
 // @fnv 0x00c5b9a0
 // src: COMMUNITY 0x00c5b9a0
-void __thiscall OwnerC5::BSPortalGraph_AddUnboundNode(NiRefObject* arg)
+// pdb: BSPortalGraph::AddUnboundNode | BSPortalGraph.obj | retail, upstream name already matches, high
+// pdb params: apNode
+void __thiscall OwnerC5::BSPortalGraph_AddUnboundNode(NiRefObject* apNode)
 {
-    if (arg)
+    if (apNode)
     {
-        NavMeshPtr local(reinterpret_cast<NavObject*>(arg));
+        NavMeshPtr local(reinterpret_cast<NavObject*>(apNode));
         unk68.BSSimpleArray_NiPointer_NiAVObject_1024_Add(local);
     }
 }
@@ -13900,15 +14068,18 @@ struct S_00c5ba50_Class
     unsigned int unk64;
     FUN_00c5bef0_class unk68;
 
-    void __thiscall BSPortalGraph_RemoveUnboundNode(unsigned int value);
+    void __thiscall BSPortalGraph_RemoveUnboundNode(unsigned int apNode);
 };
 
 // @fnv 0x00c5ba50
 // src: COMMUNITY 0x00c5ba50
-void __thiscall S_00c5ba50_Class::BSPortalGraph_RemoveUnboundNode(unsigned int value)
+// pdb: BSPortalGraph::RemoveUnboundNode | BSPortalGraph.obj | retail, upstream name already matches, high
+// pdb params: apNode
+// pdb locals: ifindindex
+void __thiscall S_00c5ba50_Class::BSPortalGraph_RemoveUnboundNode(unsigned int apNode)
 {
     unsigned int result2;
-    result2 = FindIndex(&unk68, value);
+    result2 = FindIndex(&unk68, apNode);
     if (result2 != 0xffffffffu)
         unk68.RemoveRange(result2, 1);
 }
@@ -14146,7 +14317,7 @@ struct SeqBase
         a0 = a1 = a2 = a3 = a4 = a5 = a6 = a7 = a8 = a9 = a10 = 0;
         return 0;
     }
-    void BSPSysMultiTargetEmitterCtlr_EmitParticles(float a, float b, float c, float d, float e, float f);
+    void BSPSysMultiTargetEmitterCtlr_EmitParticles(float fTime, float fCurTime, float fLastTime, float fEmitStart, float fEmitStop, float fBirthRate);
 };
 
 struct NW
@@ -14158,12 +14329,15 @@ struct NW
 
 struct FUN_00c5c470_cls : SeqBase
 {
-    void BSPSysMultiTargetEmitterCtlr_Update(float* pTime);
+    void BSPSysMultiTargetEmitterCtlr_Update(float* UpdateData);
 };
 
 // @fnv 0x00c5c470
 // src: XBOX_PDB 0x00c5c470
-void FUN_00c5c470_cls::BSPSysMultiTargetEmitterCtlr_Update(float* pTime)
+// pdb: BSPSysMultiTargetEmitterCtlr::Update | BSPSysMultiTargetEmitterCtlr.obj | retail, upstream name already matches, high
+// pdb params: UpdateData
+// pdb locals: blooped, pkFloatInterp, fDeltaTime, fBirthRate, fPSysLastTime, fScaledDeltaTime, fSpan
+void FUN_00c5c470_cls::BSPSysMultiTargetEmitterCtlr_Update(float* UpdateData)
 {
     float fx2;
     NW nw;
@@ -14179,12 +14353,12 @@ void FUN_00c5c470_cls::BSPSysMultiTargetEmitterCtlr_Update(float* pTime)
     nw.n = m_5c->m_b8;
     if (nw.n == 0)
     {
-        m_20 = *pTime;
+        m_20 = *UpdateData;
         return;
     }
     else
     {
-        if (m_20 > *pTime)
+        if (m_20 > *UpdateData)
             m_48 = -DAT_010c2d4c;
         if (m_2c == 0 || m_3c == 0)
         {
@@ -14192,21 +14366,21 @@ void FUN_00c5c470_cls::BSPSysMultiTargetEmitterCtlr_Update(float* pTime)
         }
         else
         {
-            if (!GetActive() || (m_20 == *pTime && !GetForceUpdate()))
+            if (!GetActive() || (m_20 == *UpdateData && !GetForceUpdate()))
             {
                 return;
             }
             else
             {
                 if (m_1c == -DAT_010c2d4c)
-                    m_1c = *pTime;
+                    m_1c = *UpdateData;
                 if (m_20 == -DAT_010c2d4c)
                     dt6 = 0.0f;
                 else
-                    dt6 = *pTime - m_20;
+                    dt6 = *UpdateData - m_20;
                 m_24 = dt6 * m_0c + m_24;
                 m_28 = m_24 + m_10;
-                m_20 = *pTime;
+                m_20 = *UpdateData;
                 lim = m_18;
                 if (lim != DAT_01012060)
                 {
@@ -14478,11 +14652,14 @@ struct Controller
     S240 times;
     Emitter* emitter;
     unsigned short maxCount;
-    void BSPSysMultiTargetEmitterCtlr_EmitParticles(float now, float start, float end, float emitStart, float emitEnd, float rate);
+    void BSPSysMultiTargetEmitterCtlr_EmitParticles(float fTime, float fCurTime, float fLastTime, float fEmitStart, float fEmitStop, float fBirthRate);
 };
 // @fnv 0x00c5c790
 // src: XBOX_PDB 0x00c5c790
-void Controller::BSPSysMultiTargetEmitterCtlr_EmitParticles(float now, float start, float end, float emitStart, float emitEnd, float rate)
+// pdb: BSPSysMultiTargetEmitterCtlr::EmitParticles | BSPSysMultiTargetEmitterCtlr.obj | retail, upstream name already matches, high
+// pdb params: fTime, fCurTime, fLastTime, fEmitStart, fEmitStop, fBirthRate
+// pdb locals: fCurDelta, fLastDelta, usLastNumParticles, usNewParticlesPerEmitter, usCurNumParticles, fParticleAge, pemitter, usnumNewParticles, usparticlesPerEmitter, usactiveEmitterObjCount, foldScale, usmaxNewParticles, poldEmitterObj, us, pemitterObj
+void Controller::BSPSysMultiTargetEmitterCtlr_EmitParticles(float fTime, float fCurTime, float fLastTime, float fEmitStart, float fEmitStop, float fBirthRate)
 {
     float age;
     Emitted* particle5;
@@ -14501,20 +14678,20 @@ void Controller::BSPSysMultiTargetEmitterCtlr_EmitParticles(float now, float sta
     float duration20;
     float elapsed_2;
 
-    if (emitter && rate > 0.0 && emitStart < emitEnd && start > emitStart && end < emitEnd)
+    if (emitter && fBirthRate > 0.0 && fEmitStart < fEmitStop && fCurTime > fEmitStart && fLastTime < fEmitStop)
     {
 
-        if (start <= emitEnd)
-            duration20 = start - emitStart;
+        if (fCurTime <= fEmitStop)
+            duration20 = fCurTime - fEmitStart;
         else
-            duration20 = emitEnd - emitStart;
+            duration20 = fEmitStop - fEmitStart;
         elapsed_2 = 0.0f;
-        if (end >= emitStart)
-            elapsed_2 = end - emitStart;
+        if (fLastTime >= fEmitStart)
+            elapsed_2 = fLastTime - fEmitStart;
         if (emitter->GetCount())
         {
-            total_13 = (unsigned short)(rate * duration20);
-            previousB = (unsigned short)(rate * elapsed_2);
+            total_13 = (unsigned short)(fBirthRate * duration20);
+            previousB = (unsigned short)(fBirthRate * elapsed_2);
             addedB = total_13 - previousB;
             if (addedB > 0)
             {
@@ -14529,7 +14706,7 @@ void Controller::BSPSysMultiTargetEmitterCtlr_EmitParticles(float now, float sta
                     remainingVal = count2;
                     steps2 = 1;
                 }
-                interval = 1.0f / rate;
+                interval = 1.0f / fBirthRate;
                 times.count = 0;
                 for (idx2 = 0; idx2 < steps2; idx2++)
                 {
@@ -14547,7 +14724,7 @@ void Controller::BSPSysMultiTargetEmitterCtlr_EmitParticles(float now, float sta
                     {
                         ps1->SetCurrent(particle5);
                         ps1->SetTime(particle5->GetTime());
-                        ps1->Emit(now, steps2, times.GetData());
+                        ps1->Emit(fTime, steps2, times.GetData());
                         remainingVal--;
                     }
                 }
@@ -14626,6 +14803,9 @@ struct ScissorProperty_Stub : ScissorBase_Stub
 
 // @fnv 0x00c5d110
 // src: XBOX_PDB 0x00c5d110
+// pdb: BSScissorTriShape::RenderImmediate | BSScissorTriShape.obj | retail, upstream name already matches, high
+// pdb params: pkRenderer
+// pdb locals: prenderer, prevScissorEnable, bscissor
 void ScissorProperty_Stub::BSScissorTriShape_RenderImmediate(NiDX9Renderer* pkRenderer)
 {
     NiDX9Renderer* pkDX9Renderer = pkRenderer;
@@ -14698,6 +14878,7 @@ struct FUN_00c5da70 : NodeBaseQ
     FUN_00c5da70();
 };
 // @fnv 0x00c5da70
+// pdb: BSMasterParticleSystem::BSMasterParticleSystem | BSMasterParticleSystem.obj | retail, call graph, high
 FUN_00c5da70::FUN_00c5da70() : NodeBaseQ(0)
 {
     m_c4 = -1;
@@ -14750,15 +14931,18 @@ struct FUN_00c5dcd0_cls
 {
     char pad[0xac];
     PtrListQ<NiPointer<NiRefObject> > m_kNode;
-    void __thiscall BSMasterParticleSystem_AddEmitterObj(NiRefObject* pObj);
+    void __thiscall BSMasterParticleSystem_AddEmitterObj(NiRefObject* apEmitterObj);
 };
 // @fnv 0x00c5dcd0
 // src: COMMUNITY 0x00c5dcd0
-void __thiscall FUN_00c5dcd0_cls::BSMasterParticleSystem_AddEmitterObj(NiRefObject* pObj)
+// pdb: BSMasterParticleSystem::AddEmitterObj | BSMasterParticleSystem.obj | retail, upstream name already matches, high
+// pdb params: apEmitterObj
+// pdb locals: DupeCheckItr
+void __thiscall FUN_00c5dcd0_cls::BSMasterParticleSystem_AddEmitterObj(NiRefObject* apEmitterObj)
 {
-    void* pos = m_kNode.FindPos(pObj);
+    void* pos = m_kNode.FindPos(apEmitterObj);
     if (!pos)
-        m_kNode.FUN_00a5a310(pObj), DeadQ4();
+        m_kNode.FUN_00a5a310(apEmitterObj), DeadQ4();
 }
 }  // namespace fnv_00c5dcd0
 
@@ -14840,6 +15024,8 @@ __forceinline EB90Sub* eb90_pick(EB90Sub* b)
 
 // @fnv 0x00c5eb90
 // src: XBOX_PDB 0x00c5eb90
+// pdb: BSMasterParticleSystem::ChildHasActiveParticles | BSMasterParticleSystem.obj | retail, upstream name already matches, high
+// pdb locals: uicount, uindex, pparticles
 bool EB90Obj::BSMasterParticleSystem_ChildHasActiveParticles()
 {
     unsigned int count = m_usElementCount;
@@ -14892,6 +15078,7 @@ inline NiSmallValue c5ecf0_base_arg()
 }
 
 // @fnv 0x00c5ecf0
+// pdb: BSTextureData::BSTextureData | BSTextureData.obj | debug, call graph, medium
 FUN_00c5ecf0::FUN_00c5ecf0() : NiBaseStandIn(c5ecf0_base_arg()), m_0c()
 {}
 
@@ -14936,19 +15123,22 @@ class F010Cls
     {
         return m_10[i];
     }
-    bool BSTextureData_RegisterStreamables(void* a);
+    bool BSTextureData_RegisterStreamables(void* kStream);
 };
 // @fnv 0x00c5f010
 // src: XBOX_PDB 0x00c5f010
-bool F010Cls::BSTextureData_RegisterStreamables(void* a)
+// pdb: BSTextureData::RegisterStreamables | BSTextureData.obj | retail, upstream name already matches, high
+// pdb params: kStream
+// pdb locals: i
+bool F010Cls::BSTextureData_RegisterStreamables(void* kStream)
 {
-    if (!FUN_00a7b290(a))
+    if (!FUN_00a7b290(kStream))
         return false;
 
     for (unsigned int i = 0; i < Count(); ++i)
     {
 
-        Get(i)->v54(a);
+        Get(i)->v54(kStream);
     }
     return true;
 }
@@ -15074,31 +15264,34 @@ struct C5F190Holder
         (void)w3;
     }
 
-    void BSTextureData_GetViewerStrings(NiTPrimitiveArray<unsigned int>* out);
+    void BSTextureData_GetViewerStrings(NiTPrimitiveArray<unsigned int>* pStrings);
 };
 
-extern "C" char* __cdecl NiGetViewerString_00a7d5e0(const char* name, const char* value);
+extern "C" char* __cdecl NiGetViewerString_00a7d5e0(const char* pcPrefix, const char* pcValue);
 
 // @fnv 0x00c5f190
 // src: XBOX_PDB 0x00c5f190
-void C5F190Holder::BSTextureData_GetViewerStrings(NiTPrimitiveArray<unsigned int>* out)
+// pdb: BSTextureData::GetViewerStrings | BSTextureData.obj | retail, string-set bridge, high
+// pdb params: pStrings
+// pdb locals: i
+void C5F190Holder::BSTextureData_GetViewerStrings(NiTPrimitiveArray<unsigned int>* pStrings)
 {
     C5F190Line line;
     unsigned int res;
     unsigned int elem;
     unsigned int cur;
     unsigned int it;
-    FUN_00a7b580(out);
+    FUN_00a7b580(pStrings);
     line.pc = (void*)((C5F190Global&)g_01204378).m_pcName;
     res = (unsigned int)NiViewerStrings_NiGetViewerString_Title(line.pc);
-    out->AddFirstEmpty(res);
+    pStrings->AddFirstEmpty(res);
     for (it = 0; it < (cur = m_uiCount); it++)
     {
         C5F190Elem** ptr = m_ppItems + it;
         const char** row = &(*ptr)->m_pcObjectName;
         const char* pName = *row;
         elem = (unsigned int)NiGetViewerString_00a7d5e0("ObjectName", pName);
-        out->AddFirstEmpty(elem);
+        pStrings->AddFirstEmpty(elem);
     }
 }
 }  // namespace fnv_00c5f190
@@ -15109,6 +15302,7 @@ extern NiFixedString* DAT_01204374;
 
 // @fnv 0x00c5f240
 // src: COMMUNITY 0x00c5f240
+// pdb: BSTextureData::InitSDM | BSTextureData.obj | retail, upstream name already matches, high
 void BSTextureData_InitSDM()
 {
     DAT_01204374 = new NiFixedString(str_010c3194);
@@ -15160,27 +15354,30 @@ struct FUN_00c5f5a0_cls
         v46(), v47(), v48(), v49(), v50(), v51(), v52(), v53(), v54(), v55(), v56(), v57(), v58(), v59(), v60(), v61(),
         v62(), v63();
     virtual void Apply(void* pNode, void* pVal);
-    void __thiscall BSNiNode_ReparentSkinInstances(NodeQ* pNode, void* pVal);
+    void __thiscall BSNiNode_ReparentSkinInstances(NodeQ* apRoot, void* apNewParent);
 };
 // @fnv 0x00c5f5a0
 // src: XBOX_PDB 0x00c5f5a0
-void __thiscall FUN_00c5f5a0_cls::BSNiNode_ReparentSkinInstances(NodeQ* pParent, void* pVal)
+// pdb: BSNiNode::ReparentSkinInstances | BSNiNode.obj | retail, upstream name already matches, high
+// pdb params: apRoot, apNewParent
+// pdb locals: I, pav, pnode, pgeom
+void __thiscall FUN_00c5f5a0_cls::BSNiNode_ReparentSkinInstances(NodeQ* apRoot, void* apNewParent)
 {
-    if (pParent && pVal)
+    if (apRoot && apNewParent)
     {
-        for (unsigned int i = 0; i < pParent->m_kChildList.m_usSize; i++)
+        for (unsigned int i = 0; i < apRoot->m_kChildList.m_usSize; i++)
         {
-            AVQ* pChild = pParent->m_kChildList.GetAt(i);
+            AVQ* pChild = apRoot->m_kChildList.GetAt(i);
             if (pChild)
             {
                 void* pNode = pChild->AsNode();
                 if (pNode)
-                    Apply(pNode, pVal);
+                    Apply(pNode, apNewParent);
                 else
                 {
                     GeomQ* pGeom = pChild->AsGeom();
                     if (pGeom && pGeom->GetSub())
-                        pGeom->GetSub()->m_10 = pVal;
+                        pGeom->GetSub()->m_10 = apNewParent;
                 }
             }
         }
@@ -15212,6 +15409,8 @@ class S00c5fc70_Object
 
 // @fnv 0x00c5fc70
 // src: EXE 0x00c5fc70
+// pdb: BSPSysStripUpdateModifier::BSPSysStripUpdateModifier | BSPSysStripUpdateModifier.obj | debug, object-file run extension, low
+// pdb params: apName, afUpdateDeltaTime
 S00c5fc70_Object* S00c5fc70_Object::BSPSysStripUpdateModifier_BSPSysStripUpdateModifier(const char* pSource, float f)
 {
     FUN_00c316a0(NiFixedString(pSource), 0x9c4);
@@ -15232,6 +15431,7 @@ class OcclusionQuery
 };
 
 // @fnv 0x00c4ecf0
+// pdb: BSOcclusionQuery::BSOcclusionQuery | BSOcclusionQuery.obj | debug, call graph, medium
 OcclusionQuery::OcclusionQuery()
 {
     m_pkQuery = 0;
@@ -15410,6 +15610,7 @@ struct Node_c42f70 : Mid_c42f70
 };
 
 // @fnv 0x00c42f70
+// pdb: BSXFlags::BSXFlags | BSXFlags.obj | debug, call graph, medium
 Node_c42f70::Node_c42f70()
 {
     BSXFlags_Init();
@@ -15501,14 +15702,17 @@ struct CloneOwner
         m_b0 = v;
     }
     void __thiscall ForwardToBase(CloneOwner* a, unsigned int b);
-    void __thiscall BSMultiBoundNode_CopyMembers(CloneOwner* a1, unsigned int a2);
+    void __thiscall BSMultiBoundNode_CopyMembers(CloneOwner* a1, unsigned int arCloneData);
 };
 // @fnv 0x00c46c30
 // src: XBOX_PDB 0x00c46c30
-void CloneOwner::BSMultiBoundNode_CopyMembers(CloneOwner* pDest, unsigned int kCloning)
+// pdb: BSMultiBoundNode::CopyMembers | BSMultiBoundNode.obj | debug, upstream name already matches, high
+// pdb params: pDest, arCloneData
+// pdb locals: pMultiBound
+void CloneOwner::BSMultiBoundNode_CopyMembers(CloneOwner* pDest, unsigned int arCloneData)
 {
-    ForwardToBase(pDest, kCloning);
-    CloneObj* pNewInstance = m_ac->MakeClone(kCloning);
+    ForwardToBase(pDest, arCloneData);
+    CloneObj* pNewInstance = m_ac->MakeClone(arCloneData);
     pDest->m_ac = pNewInstance;
     pDest->SetB0(m_b0);
 }
@@ -15538,14 +15742,14 @@ inline BSThread::BSThread() : m_pThreadHandle(0), m_pCurrentThreadHandle(0), m_u
     int criticalSectionScratch;  // Stack slot reserved by the original critical-section initializer.
     fnv_00c44980::InitializeCriticalSection(&CriticalSection);
 }
-inline void BSThread::FUN_00aa6430(int stackSize, const char* name, bool suspended)
+inline void BSThread::FUN_00aa6430(int aeStackSize, const char* apName, bool bSuspend)
 {
     using namespace fnv_00c44980;
     if (m_pThreadHandle)
         return;
     m_pCurrentThreadHandle = fnv_00c44980::GetCurrentThread();
     m_uiCurrentThreadId = fnv_00c44980::GetCurrentThreadId();
-    m_pThreadHandle = fnv_00c44980::CreateThread(0, stackSize, fnv_00c44980::RunThreadProc, this, suspended ? 4 : 0, reinterpret_cast<unsigned long*>(&m_uiCreatedThreadId));
+    m_pThreadHandle = fnv_00c44980::CreateThread(0, aeStackSize, fnv_00c44980::RunThreadProc, this, bSuspend ? 4 : 0, reinterpret_cast<unsigned long*>(&m_uiCreatedThreadId));
     EnterCriticalSection(&CriticalSection);
     FUN_00aa6560(-1);
     m_bThreadStarted = true;
@@ -15579,6 +15783,8 @@ struct FUN_00c44980
     FUN_00c44980();
 };
 // @fnv 0x00c44980
+// pdb: BSParallelTaskManager::BSParallelTaskManager | BSParallelTaskManager.obj | retail, string-set bridge, high
+// pdb locals: i, pthreadname
 FUN_00c44980::FUN_00c44980()
 {
     threads = 0;
@@ -15655,12 +15861,14 @@ inline void operator delete[](void* p)
 struct OwnerC44
 {
     ObjC44** unk00;
-    void ReleaseStorage_00c44b70();
+    void BSParallelTaskManager_dtor();
 };
 
 // @fnv 0x00c44b70
-// src: GUESS 0x00c44b70 (confidence: low)
-void OwnerC44::ReleaseStorage_00c44b70()
+// src: XBOX_RETAIL_PDB 0x00c44b70
+// pdb: BSParallelTaskManager::~BSParallelTaskManager | BSParallelTaskManager.obj | retail, object-file run extension, high
+// pdb locals: i
+void OwnerC44::BSParallelTaskManager_dtor()
 {
     for (unsigned int i = 0; i < 1; ++i)
     {
@@ -15737,15 +15945,18 @@ inline void freePointers(ResizePointer* data)
 }  // namespace fnv_00c45b20
 
 // @fnv 0x00c45b20
-template <> void NiTArray<fnv_00c45b20::ResizePointer, NiTNewInterface<fnv_00c45b20::ResizePointer> >::SetSize(unsigned int newSize)
+// pdb: NiTArray<NiPointer<NiRefObject>,NiTNewInterface<NiPointer<NiRefObject> > >::SetSize | NiObjectGarbage.obj | debug, call graph (shared callers), high
+// pdb params: uiMaxSize
+// pdb locals: pSaveBase, i
+template <> void NiTArray<fnv_00c45b20::ResizePointer, NiTNewInterface<fnv_00c45b20::ResizePointer> >::SetSize(unsigned int uiMaxSize)
 {
     using namespace fnv_00c45b20;
-    if (newSize == m_usMaxSize)
+    if (uiMaxSize == m_usMaxSize)
         return;
     unsigned short index3;
-    if (newSize < m_usSize)
+    if (uiMaxSize < m_usSize)
     {
-        for (index3 = (unsigned short)newSize; index3 < m_usSize; index3++)
+        for (index3 = (unsigned short)uiMaxSize; index3 < m_usSize; index3++)
         {
             if (m_pBase[index3] != ResizePointer())
             {
@@ -15753,11 +15964,11 @@ template <> void NiTArray<fnv_00c45b20::ResizePointer, NiTNewInterface<fnv_00c45
                 m_usESize--;
             }
         }
-        m_usSize = (unsigned short)newSize;
+        m_usSize = (unsigned short)uiMaxSize;
     }
     ResizePointer* oldData = m_pBase;
-    m_usMaxSize = (unsigned short)newSize;
-    if (newSize > 0)
+    m_usMaxSize = (unsigned short)uiMaxSize;
+    if (uiMaxSize > 0)
     {
         m_pBase = allocatePointers(m_usMaxSize);
         for (index3 = 0; index3 < m_usSize; index3++)
@@ -15863,6 +16074,7 @@ struct FUN_00c46970 : SpawnedBase
 };
 
 // @fnv 0x00c46970
+// pdb: BSMultiBoundNode::BSMultiBoundNode | BSMultiBoundNode.obj | retail, call graph, high
 FUN_00c46970::FUN_00c46970() : SpawnedBase(), m_vtbl(&DAT_010c1d14)
 {
     m_ac.FUN_0066b0d0(0);
@@ -15971,6 +16183,8 @@ struct FUN_00c46a40 : FUN_00c5f680
 };
 
 // @fnv 0x00c46a40
+// pdb: BSMultiBoundNode::~BSMultiBoundNode | BSMultiBoundNode.obj | retail, object-file run extension, low
+// pdb note: debug build links it to BSMultiBoundNode::BSMultiBoundNode
 FUN_00c46a40::FUN_00c46a40(int a) : FUN_00c5f680(a, 1), vfptr(&DAT_010c1d14)
 {
     node = 0;
@@ -16119,20 +16333,23 @@ struct C50c30
     int unkA8;
     int* unkAC;
     void NiNode_DetachChild_00a5e780(int a, SmartPtr<NodeC4>* out);
-    void BSParticleSystemManager_DetachChild_00c50c30(int a, SpOwner* b);
+    void BSParticleSystemManager_DetachChild_00c50c30(int pkChild, SpOwner* aspAVObject);
 };
 // @fnv 0x00c50c30
 // src: XBOX_PDB 0x00c50c30
-void C50c30::BSParticleSystemManager_DetachChild_00c50c30(int a, SpOwner* b)
+// pdb: BSParticleSystemManager::DetachChild | BSParticleSystemManager.obj | retail, vtable slot, high
+// pdb params: pkChild
+// pdb locals: spobject
+void C50c30::BSParticleSystemManager_DetachChild_00c50c30(int pkChild, SpOwner* aspAVObject)
 {
     SmartPtr<NodeC4> m_pController;
-    NiNode_DetachChild_00a5e780(a, &m_pController);
+    NiNode_DetachChild_00a5e780(pkChild, &m_pController);
     if (m_pController != 0)
     {
         NodeC4* pNode = m_pController;
         unkAC[pNode->GetIndex()] = -1;
     }
-    b->FUN_006e5cc0(&m_pController);
+    aspAVObject->FUN_006e5cc0(&m_pController);
 }
 }  // namespace fnv_00c50c30
 
@@ -16294,12 +16511,15 @@ inline void NiBSBoneLODController::SubObj::FUN_00a90180(unsigned int n)
 }
 // @fnv 0x00c52d80
 // src: COMMUNITY 0x00c52d80
-bool NiBSBoneLODController::InitializeData_00c52d80(Node_cls* arg)
+// pdb: NiBSBoneLODController::InitializeData | NiBSBoneLODController.obj | debug, call graph, high
+// pdb params: pkBoneRoot
+// pdb locals: kBoneToLOD, uiCurrentLOD, kUsedLODs, ui, uiMaxLOD, kIter, bTemp, uiLOD, pkSet, pkBone
+bool NiBSBoneLODController::InitializeData_00c52d80(Node_cls* pkBoneRoot)
 {
     NiBSBoneLODController_CleanUp();
     fnv_00c52d80::ArrA a9(0x25);
     fnv_00c52d80::ArrB b2(0x25);
-    NiBSBoneLODController_CollectMarkedBones(arg, reinterpret_cast<ArrA*>(&a9), reinterpret_cast<ArrB*>(&b2));
+    NiBSBoneLODController_CollectMarkedBones(pkBoneRoot, reinterpret_cast<ArrA*>(&a9), reinterpret_cast<ArrB*>(&b2));
     unsigned int maxVal = 0;
     unsigned int cur5 = b2.First();
     unsigned int i5;
@@ -16311,11 +16531,11 @@ bool NiBSBoneLODController::InitializeData_00c52d80(Node_cls* arg)
         if (kOut1 > maxVal)
             maxVal = kOut1;
     }
-    f38 = maxVal + 1;
-    sub.FUN_00a90180(f38);
-    for (i5 = 0; i5 < f38; ++i5)
+    m_uiNumLODs = maxVal + 1;
+    m_kBoneArray.FUN_00a90180(m_uiNumLODs);
+    for (i5 = 0; i5 < m_uiNumLODs; ++i5)
     {
-        sub.FUN_00ba3aa0(i5, 0);
+        m_kBoneArray.FUN_00ba3aa0(i5, 0);
     }
     cur5 = a9.First();
     while (cur5)
@@ -16323,16 +16543,16 @@ bool NiBSBoneLODController::InitializeData_00c52d80(Node_cls* arg)
         unsigned int idxOutVal;
         unsigned int valOut8;
         a9.AdvanceToNextEntry(&cur5, &idxOutVal, &valOut8);
-        LinkSet* entry = sub.data[valOut8];
+        LinkSet* entry = m_kBoneArray.data[valOut8];
         if (!entry)
         {
             entry = new LinkSet(0);
-            sub.FUN_00ba3aa0(valOut8, entry);
+            m_kBoneArray.FUN_00ba3aa0(valOut8, entry);
         }
         entry->AppendLinkID(&idxOutVal);
     }
     unsigned int out5 = 0;
-    UpdateMaxValue(arg, reinterpret_cast<ArrA*>(&a9), &out5);
+    UpdateMaxValue(pkBoneRoot, reinterpret_cast<ArrA*>(&a9), &out5);
     NiBSBoneLODController_SetBoneLOD((void*)-1);
     return true;
 }
@@ -16421,7 +16641,7 @@ struct ElementCount
 
 struct FUN_00c53030_Shell
 {
-    void NiBSBoneLODController_CollectMarkedBones(TreeNode* group, CollectionSink* collector, ValueSink* values);
+    void NiBSBoneLODController_CollectMarkedBones(TreeNode* pkBone, CollectionSink* kBoneToLOD, ValueSink* kUsedLODs);
 };
 
 // /Ob1 inline. return stores the caller bool and jumps once to the ternary.
@@ -16435,14 +16655,17 @@ __forceinline void IsBoneLODExtra(TreeNode* node, const NiRTTI*& inner, bool& pr
             prior = true;
             return;
         }
-        inner = inner->m_pBaseRTTI;
+        inner = inner->m_pkBaseRTTI;
     }
     prior = false;
 }
 
 // @fnv 0x00c53030
 // src: COMMUNITY 0x00c53030
-void FUN_00c53030_Shell::NiBSBoneLODController_CollectMarkedBones(TreeNode* group, CollectionSink* collector, ValueSink* values)
+// pdb: NiBSBoneLODController::CollectMarkedBones | NiBSBoneLODController.obj | debug, upstream name already matches, high
+// pdb params: pkBone, kBoneToLOD, kUsedLODs
+// pdb locals: ui, pkStringExtra, pkExtra, pcString, pcLOD, iPtrLen, nextToken, pcPtr, uiLOD, pkChild
+void FUN_00c53030_Shell::NiBSBoneLODController_CollectMarkedBones(TreeNode* pkBone, CollectionSink* kBoneToLOD, ValueSink* kUsedLODs)
 {
     TreeNode* component;
     unsigned int b;
@@ -16468,9 +16691,9 @@ void FUN_00c53030_Shell::NiBSBoneLODController_CollectMarkedBones(TreeNode* grou
                     TreeNode** state5;
                     TreeNode* length4;
 
-                    for (b = 0; lod.value = group->elementCount, b < lod.value; b++)
+                    for (b = 0; lod.value = pkBone->elementCount, b < lod.value; b++)
                     {
-                        component = group->elements[(unsigned short)b];
+                        component = pkBone->elements[(unsigned short)b];
                         if (0 == component)
                         {
                             descriptorFromObject = 0;
@@ -16500,8 +16723,8 @@ void FUN_00c53030_Shell::NiBSBoneLODController_CollectMarkedBones(TreeNode* grou
                                         if (token)
                                         {
                                             s = atoi(token);
-                                            collector->InsertOrUpdate(group, s);
-                                            values->NiTMapBase_NiTPointerAllocator_unsigned_int_TESObjectREFR_bool_SetAt(s, true);
+                                            kBoneToLOD->InsertOrUpdate(pkBone, s);
+                                            kUsedLODs->NiTMapBase_NiTPointerAllocator_unsigned_int_TESObjectREFR_bool_SetAt(s, true);
                                         }
                                     }
                                 }
@@ -16512,14 +16735,14 @@ void FUN_00c53030_Shell::NiBSBoneLODController_CollectMarkedBones(TreeNode* grou
                         }
                     }
 
-                    for (b = 0; b < group->childCount; b++)
+                    for (b = 0; b < pkBone->childCount; b++)
                     {
-                        state5 = &group->children[b];
+                        state5 = &pkBone->children[b];
                         length4 = *state5;
                         count = length4;
                         if (count && count->IsActive())
                         {
-                            NiBSBoneLODController_CollectMarkedBones(count, collector, values);
+                            NiBSBoneLODController_CollectMarkedBones(count, kBoneToLOD, kUsedLODs);
                         }
                     }
                 }
@@ -16534,7 +16757,7 @@ extern int DAT_012031e4;
 
 struct AvCaller
 {
-    NiExtraData* FUN_00a5bdd0(const NiFixedString& name);
+    NiExtraData* FUN_00a5bdd0(const NiFixedString& kKey);
 };
 
 // Inlined under /Ob1. GetRTTI stays outside so the virtual call keeps the
@@ -16548,20 +16771,23 @@ inline void WalkRTTI(const NiRTTI*& kind, const NiRTTI* target, bool& node)
             node = true;
             return;
         }
-        kind = kind->m_pBaseRTTI;
+        kind = kind->m_pkBaseRTTI;
     }
     node = false;
 }
 
 // @fnv 0x00c55170
 // src: COMMUNITY 0x00c55170
-NiExtraData* __cdecl BSBound_Find(AvCaller* a)
+// pdb: BSBound::Find | BSBound.obj | retail, upstream name already matches, high
+// pdb params: apObject
+// pdb locals: pb, pe
+NiExtraData* __cdecl BSBound_Find(AvCaller* apObject)
 {
     NiExtraData* result = 0;
-    if (a)
+    if (apObject)
     {
         NiFixedString* name = (NiFixedString*)DAT_012031e4;
-        NiExtraData* extra = a->FUN_00a5bdd0(*name);
+        NiExtraData* extra = apObject->FUN_00a5bdd0(*name);
         if (!extra)
         {
             result = 0;
@@ -16727,30 +16953,33 @@ struct ObjC57 : TESObjectDoorController
     int f_b8;
     int f_bc;
     int f_c0;
-    ObjC57(int a1, LocalVec3* a2, LocalVec3* a3, Vec4* a4, int a5, int a6, int a7, int a8, int a9, unsigned short* a10,
-           unsigned short* a11);
+    ObjC57(int usVertices, LocalVec3* pkVertex, LocalVec3* pkNormal, Vec4* pkColor, int pkTexture, int usNumTextureSets, int eNBTMethod, int usTriangles, int usStrips, unsigned short* pusStripLengths,
+           unsigned short* pusStripLists);
 };
 // @fnv 0x00c57d70
+// pdb: BSTestObjects::CreateTorus | BSTestObjects.obj | debug, unique string literal, high
+// pdb params: afInnerRadius, afOuterRadius, aiSlices, aiStacks, apColor
+// pdb locals: arraySize, normals, sideDelta, theta, currentStrip, sinTheta, vertices, cosTheta, torus, stripLengths, stripLists, numVertices, colors, ringDelta, numVerticesPerStrip, i, cosTheta1, phi, theta1, sinTheta1, j, cosPhi, dist, sinPhi
 #pragma intrinsic(memcpy)
-// src: COMMUNITY 0x00c57d70
-ObjC57* __cdecl TES_DrawTorus(float p0, float p1, unsigned short w, unsigned short h, Vec4* src)
+// src: XBOX_DEBUG_PDB 0x00c57d70 (was COMMUNITY)
+ObjC57* __cdecl BSTestObjects_CreateTorus(float afInnerRadius, float afOuterRadius, unsigned short aiSlices, unsigned short aiStacks, Vec4* apColor)
 {
     float angleStep8;
-    angleStep8 = (float)(DAT_010c2c34 * DAT_01011590 / (float)w);
+    angleStep8 = (float)(DAT_010c2c34 * DAT_01011590 / (float)aiSlices);
     float step9;
-    step9 = (float)(DAT_010c2c34 * DAT_01011590 / (float)h);
+    step9 = (float)(DAT_010c2c34 * DAT_01011590 / (float)aiStacks);
     unsigned short n24;
-    n24 = (unsigned short)(2 * h + 2);
+    n24 = (unsigned short)(2 * aiStacks + 2);
     unsigned int capacity19;
-    capacity19 = w * n24;
+    capacity19 = aiSlices * n24;
     LocalVec3* ver654;
     ver654 = new LocalVec3[capacity19];
     LocalVec3* norm_2;
     norm_2 = new LocalVec3[capacity19];
     Vec4* q0;
-    q0 = src ? new Vec4[capacity19] : 0;
+    q0 = apColor ? new Vec4[capacity19] : 0;
     unsigned short* idxA6;
-    idxA6 = new unsigned short[w];
+    idxA6 = new unsigned short[aiSlices];
     unsigned short* indices5;
     indices5 = new unsigned short[capacity19];
     unsigned short indexA6;
@@ -16763,7 +16992,7 @@ ObjC57* __cdecl TES_DrawTorus(float p0, float p1, unsigned short w, unsigned sho
     cosPrev4 = 1.0f;
     float sineA;
     sineA = 0.0f;
-    for (int i = w - 1; i >= 0; --i)
+    for (int i = aiSlices - 1; i >= 0; --i)
     {
         float angA4;
         angA4 = angle3 + angleStep8;
@@ -16773,7 +17002,7 @@ ObjC57* __cdecl TES_DrawTorus(float p0, float p1, unsigned short w, unsigned sho
         sine2 = (float)sin(angA4);
         float angB3;
         angB3 = 0.0f;
-        for (int j = h; j >= 0; --j)
+        for (int j = aiStacks; j >= 0; --j)
         {
             angB3 += step9;
             float cosBA;
@@ -16781,17 +17010,17 @@ ObjC57* __cdecl TES_DrawTorus(float p0, float p1, unsigned short w, unsigned sho
             float r16;
             r16 = (float)sin(angB3);
             float radius9;
-            radius9 = p0 * cosBA + p1;
-            memcpy(&ver654[indexA6], &(const LocalVec3&) (LocalVec3(c3 * radius9, -sine2 * radius9, p0 * r16)), sizeof(LocalVec3));
+            radius9 = afInnerRadius * cosBA + afOuterRadius;
+            memcpy(&ver654[indexA6], &(const LocalVec3&) (LocalVec3(c3 * radius9, -sine2 * radius9, afInnerRadius * r16)), sizeof(LocalVec3));
             memcpy(&norm_2[indexA6], &(const LocalVec3&) (LocalVec3(c3 * cosBA, -sine2 * cosBA, r16)), sizeof(LocalVec3));
-            if (src)
-                q0[indexA6] = *src;
+            if (apColor)
+                q0[indexA6] = *apColor;
             indices5[indexA6] = indexA6;
             ++indexA6;
-            memcpy(&ver654[indexA6], &(const LocalVec3&) (LocalVec3(cosPrev4 * radius9, -sineA * radius9, p0 * r16)), sizeof(LocalVec3));
+            memcpy(&ver654[indexA6], &(const LocalVec3&) (LocalVec3(cosPrev4 * radius9, -sineA * radius9, afInnerRadius * r16)), sizeof(LocalVec3));
             memcpy(&norm_2[indexA6], &(const LocalVec3&) (LocalVec3(cosPrev4 * cosBA, -sineA * cosBA, r16)), sizeof(LocalVec3));
-            if (src)
-                q0[indexA6] = *src;
+            if (apColor)
+                q0[indexA6] = *apColor;
             indices5[indexA6] = indexA6;
             ++indexA6;
         }
@@ -16802,7 +17031,7 @@ ObjC57* __cdecl TES_DrawTorus(float p0, float p1, unsigned short w, unsigned sho
         sineA = sine2;
     }
     ObjC57* obj15;
-    obj15 = new ObjC57(indexA6, ver654, norm_2, q0, 0, 0, 0, 2 * w * h, w, idxA6, indices5);
+    obj15 = new ObjC57(indexA6, ver654, norm_2, q0, 0, 0, 0, 2 * aiSlices * aiStacks, aiSlices, idxA6, indices5);
     obj15->SetName(NiFixedString((const char*)DAT_010c2c98));
     obj15->vfn_00e8();
     return obj15;
@@ -16989,35 +17218,38 @@ __forceinline float meshCos(float a)
 }
 // @fnv 0x00c584a0
 // src: XBOX_PDB 0x00c584a0
-CylinderMesh* __cdecl BSTestObjects_CreateCylinder(float bottom, float top, float height, unsigned short slices, unsigned short stacks,
-                                   MeshColor* color)
+// pdb: BSTestObjects::CreateCylinder | BSTestObjects.obj | retail, string-set bridge, high
+// pdb params: afBaseRadius, afTopRadius, afHeight, aiSlices, aiStacks, apColor
+// pdb locals: arraySize, normals, textures, da, dt, t, r, nz, dr, nsign, vertices, z, stripLengths, ds, stripLists, numVertices, colors, dz, numVerticesPerStrip, cylinder, j, s, i, x ...
+CylinderMesh* __cdecl BSTestObjects_CreateCylinder(float afBaseRadius, float afTopRadius, float afHeight, unsigned short aiSlices, unsigned short aiStacks,
+                                   MeshColor* apColor)
 {
-    unsigned short stripSizeX = 2 * slices + 2;
-    unsigned int count7 = stacks * stripSizeX;
+    unsigned short stripSizeX = 2 * aiSlices + 2;
+    unsigned int count7 = aiStacks * stripSizeX;
     MeshPoint* point15 = new MeshPoint[count7];
     MeshPoint* normal6 = new MeshPoint[count7];
-    MeshColor* pkColors8 = color ? new MeshColor[count7] : 0;
+    MeshColor* pkColors8 = apColor ? new MeshColor[count7] : 0;
     MeshUV* finalTexcoords6 = new MeshUV[count7];
-    unsigned short* lengthsVal = new unsigned short[stacks];
+    unsigned short* lengthsVal = new unsigned short[aiStacks];
     unsigned short* indices_19 = new unsigned short[count7];
     unsigned short index4 = 0;
-    float angleStep6 = 2.0f * DAT_010c2c34 / slices;
-    float radiusStep2 = (top - bottom) / stacks;
-    float heightStep = height / stacks;
-    float uStep9 = 1.0f / slices;
-    float kVStep = 1.0f / stacks;
+    float angleStep6 = 2.0f * DAT_010c2c34 / aiSlices;
+    float radiusStep2 = (afTopRadius - afBaseRadius) / aiStacks;
+    float heightStep = afHeight / aiStacks;
+    float uStep9 = 1.0f / aiSlices;
+    float kVStep = 1.0f / aiStacks;
     float v2 = 1.0f;
     float zl = 0.0f;
-    float rRadius = bottom;
-    float _normal = (bottom - top) / height;  // Z component of the unnormalized surface normal.
+    float rRadius = afBaseRadius;
+    float _normal = (afBaseRadius - afTopRadius) / afHeight;  // Z component of the unnormalized surface normal.
     float aNormalScale = 1.0f;
-    for (unsigned int row = 0; row < stacks; row++)
+    for (unsigned int row = 0; row < aiStacks; row++)
     {
         float u = 0.0f;
-        for (unsigned int col = 0; col <= slices; col++)
+        for (unsigned int col = 0; col <= aiSlices; col++)
         {
             float sine, cosine;
-            if (col == slices)
+            if (col == aiSlices)
             {
                 sine = 0.0f;
                 cosine = 1.0f;
@@ -17029,16 +17261,16 @@ CylinderMesh* __cdecl BSTestObjects_CreateCylinder(float bottom, float top, floa
             }
             point15[index4] = MeshPoint(sine * rRadius, cosine * rRadius, zl);
             normal6[index4] = MeshPoint(sine * aNormalScale, cosine * aNormalScale, _normal * aNormalScale);
-            if (color)
-                pkColors8[index4] = *color;
+            if (apColor)
+                pkColors8[index4] = *apColor;
             finalTexcoords6[index4] = MeshUV(u, v2);
             indices_19[index4] = index4;
             index4++;
             point15[index4] =
                 MeshPoint(sine * (rRadius + radiusStep2), cosine * (rRadius + radiusStep2), zl + heightStep);
             normal6[index4] = MeshPoint(sine * aNormalScale, cosine * aNormalScale, _normal * aNormalScale);
-            if (color)
-                pkColors8[index4] = *color;
+            if (apColor)
+                pkColors8[index4] = *apColor;
             finalTexcoords6[index4] = MeshUV(u, v2 - kVStep);
             indices_19[index4] = index4;
             index4++;
@@ -17050,7 +17282,7 @@ CylinderMesh* __cdecl BSTestObjects_CreateCylinder(float bottom, float top, floa
         lengthsVal[row] = stripSizeX;
     }
     CylinderMesh* mesh2 = new CylinderMesh(index4, point15, normal6, pkColors8, finalTexcoords6, 1, 0,
-                                           2 * stacks * slices, stacks, lengthsVal, indices_19);
+                                           2 * aiStacks * aiSlices, aiStacks, lengthsVal, indices_19);
     mesh2->SetMeshName(NiFixedString("BSTestObjects Cylinder"));
     mesh2->Update();
     return mesh2;
@@ -17135,7 +17367,7 @@ struct SpawnedObject_b10495 : NiMemObject
     int unkB8;
     int unkBC;
     int unkC0;
-    SpawnedObject_b10495(unsigned short count, Vec3Item* a, Vec4* b, int c, int d, int e, unsigned char* flags);
+    SpawnedObject_b10495(unsigned short usVertices, Vec3Item* a, Vec4* b, int c, int d, int e, unsigned char* pkFlags);
 };
 
 __forceinline float CircleTrigA(float a)
@@ -17153,22 +17385,25 @@ __forceinline void* operator new[](unsigned int size)
 
 // @fnv 0x00c58f00
 // src: COMMUNITY 0x00c58f00
-void* __cdecl BSTestObjects_CreateCircle(float radius, unsigned short count, Vec4* color)
+// pdb: BSTestObjects::CreateCircle | BSTestObjects.obj | retail, upstream name already matches, high
+// pdb params: afRadius, asSegments, apColor
+// pdb locals: pflags, pvertices, pcolors, fmult, plines, i
+void* __cdecl BSTestObjects_CreateCircle(float afRadius, unsigned short asSegments, Vec4* apColor)
 {
-    Vec3Item* aVal = new Vec3Item[count];
-    unsigned char* flagsB = new unsigned char[count];
-    Vec4* b5 = color ? new Vec4[count] : 0;
-    float step3 = 6.2831854820251465 / (int)count;
-    for (unsigned int i = 0; i < count; ++i)
+    Vec3Item* aVal = new Vec3Item[asSegments];
+    unsigned char* flagsB = new unsigned char[asSegments];
+    Vec4* b5 = apColor ? new Vec4[asSegments] : 0;
+    float step3 = 6.2831854820251465 / (int)asSegments;
+    for (unsigned int i = 0; i < asSegments; ++i)
     {
         if (b5 != 0)
         {
-            b5[i] = *color;
+            b5[i] = *apColor;
         }
         flagsB[i] = 1;
-        aVal[i] = Vec3Item(CircleTrigB(step3 * i) * radius, CircleTrigA(step3 * i) * radius, 0.0f);
+        aVal[i] = Vec3Item(CircleTrigB(step3 * i) * afRadius, CircleTrigA(step3 * i) * afRadius, 0.0f);
     }
-    SpawnedObject_b10495* result5 = new SpawnedObject_b10495(count, aVal, b5, 0, 1, 0, flagsB);
+    SpawnedObject_b10495* result5 = new SpawnedObject_b10495(asSegments, aVal, b5, 0, 1, 0, flagsB);
     return result5;
 }
 }  // namespace fnv_00c58f00
@@ -17250,9 +17485,9 @@ inline LocalVec3 LocalVec3::FUN_00439e90(const LocalVec3& v) const
 {
     return LocalVec3(x + v.x, y + v.y, z + v.z);
 }
-inline LocalVec3 LocalVec3::FUN_004b3800(const LocalVec3& v) const
+inline LocalVec3 LocalVec3::FUN_004b3800(const LocalVec3& pt) const
 {
-    return LocalVec3(y * v.z - z * v.y, z * v.x - x * v.z, x * v.y - y * v.x);
+    return LocalVec3(y * pt.z - z * pt.y, z * pt.x - x * pt.z, x * pt.y - y * pt.x);
 }
 namespace fnv_00c5a0f0 {
 NiAVObject* BSTestObjects_CreateBox(const LocalVec3&, const LocalVec3&, float, float, float, float, const Color4*, const Color4*);
@@ -17261,44 +17496,47 @@ void* FUN_00ec44d0(void*, const void*, unsigned int);
 extern const unsigned short DAT_010c2d10[];
 extern double DAT_01034208, DAT_0101db80, DAT_01012060;
 // @fnv 0x00c5a0f0
+// pdb: BSTestObjects::Create3DArrow | BSTestObjects.obj | retail, upstream name already matches, high
+// pdb params: arStart, arFinish, afSize, afHeight, apStartColor, apEndColor
+// pdb locals: fheadLength, flength, vertices, parrow, phead, indices, verticalVector, colors, arrowVector, heightVector, fshaftLength, perpVector, shaftEnd, pshaft, i
 #pragma intrinsic(memcpy)
 // src: COMMUNITY 0x00c5a0f0
-NiNode* BSTestObjects_Create3DArrow(const LocalVec3& start, const LocalVec3& end, float width, float height, const Color4* shaftColor,
-                       const Color4* tipColor)
+NiNode* BSTestObjects_Create3DArrow(const LocalVec3& arStart, const LocalVec3& arFinish, float afSize, float afHeight, const Color4* apStartColor,
+                       const Color4* apEndColor)
 {
     NiNode* rootNode4 = new NiNode(0);
-    LocalVec3 direction6 = end.SubtractIntoVector(start);
+    LocalVec3 direction6 = arFinish.SubtractIntoVector(arStart);
     float lengthX = direction6.FUN_00457910();
     float length = 0.0f;
-    float tipLength3 = width * DAT_01034208;
+    float tipLength3 = afSize * DAT_01034208;
     if (lengthX > tipLength3)
         length = lengthX - tipLength3;
     else
         tipLength3 = lengthX;
-    LocalVec3 nearEnd4 = start.FUN_00439e90(direction6 * length);
+    LocalVec3 nearEnd4 = arStart.FUN_00439e90(direction6 * length);
     if (length > DAT_01012060)
     {
-        NiAVObject* shaft2 = BSTestObjects_CreateBox(start, nearEnd4, width, width, height, 0.0f, shaftColor, tipColor);
+        NiAVObject* shaft2 = BSTestObjects_CreateBox(arStart, nearEnd4, afSize, afSize, afHeight, 0.0f, apStartColor, apEndColor);
         rootNode4->AttachChildInAvailableSlot(shaft2, true);
     }
     LocalVec3* verticesX3 = new LocalVec3[6];
     LocalVec3 up4(0.0f, 0.0f, 1.0f);
     LocalVec3 sideC7 = direction6.FUN_004b3800(up4);
-    sideC7 *= width * DAT_0101db80;
-    LocalVec3 elevation5(0.0f, 0.0f, height);
-    memcpy(&verticesX3[0], &(const LocalVec3&) (elevation5 + end), sizeof(LocalVec3));
+    sideC7 *= afSize * DAT_0101db80;
+    LocalVec3 elevation5(0.0f, 0.0f, afHeight);
+    memcpy(&verticesX3[0], &(const LocalVec3&) (elevation5 + arFinish), sizeof(LocalVec3));
     memcpy(&verticesX3[1], &(const LocalVec3&) (elevation5 + (sideC7 + nearEnd4)), sizeof(LocalVec3));
-    reinterpret_cast<CopyBytes<sizeof(LocalVec3)>&>(verticesX3[2]) = reinterpret_cast<const CopyBytes<sizeof(LocalVec3)>&>(end);
+    reinterpret_cast<CopyBytes<sizeof(LocalVec3)>&>(verticesX3[2]) = reinterpret_cast<const CopyBytes<sizeof(LocalVec3)>&>(arFinish);
     memcpy(&verticesX3[3], &(const LocalVec3&) (sideC7 + nearEnd4), sizeof(LocalVec3));
     memcpy(&verticesX3[4], &(const LocalVec3&) (elevation5 + (nearEnd4 - sideC7)), sizeof(LocalVec3));
     memcpy(&verticesX3[5], &(const LocalVec3&) (nearEnd4 - sideC7), sizeof(LocalVec3));
-    if (shaftColor && !tipColor)
-        tipColor = shaftColor;
-    Color4* colors = tipColor ? new Color4[6] : 0;
+    if (apStartColor && !apEndColor)
+        apEndColor = apStartColor;
+    Color4* colors = apEndColor ? new Color4[6] : 0;
     if (colors)
     {
         for (unsigned int i2 = 0; i2 < 6; ++i2)
-            colors[i2] = *tipColor;
+            colors[i2] = *apEndColor;
     }
     unsigned short* indices_10 = (unsigned short*)_NiMalloc_00aa1070(48);
     FUN_00ec44d0(indices_10, DAT_010c2d10, 48);
@@ -17330,9 +17568,9 @@ struct PerpPoint
         float inverse = 1.0f / length;
         return PerpPoint(x * inverse, y * inverse, z * inverse);
     }
-    PerpPoint CrossProduct(const PerpPoint& v) const
+    PerpPoint CrossProduct(const PerpPoint& pt) const
     {
-        PerpPoint cross(y * v.z - z * v.y, z * v.x - x * v.z, x * v.y - y * v.x);
+        PerpPoint cross(y * pt.z - z * pt.y, z * pt.x - x * pt.z, x * pt.y - y * pt.x);
         float length = cross.Length();
         if (length > 0.0)
             return cross / length;
@@ -17346,6 +17584,7 @@ extern PerpPoint DAT_011a946c;
 extern PerpPoint DAT_011a9478;
 // @fnv 0x00c5a800
 // src: COMMUNITY 0x00c5a800
+// pdb: NiPoint3::Perpendicular | BSTestObjects.obj | debug, upstream name already matches, high
 PerpPoint PerpPoint::NiPoint3_Perpendicular() const
 {
     if (fabs(x) < fabs(y))
@@ -17376,6 +17615,7 @@ extern NiFixedString* DAT_01204374;
 
 // @fnv 0x00c5f2e0
 // src: GUESS 0x00c5f2e0 (confidence: low)
+// pdb: BSTextureData::KillSDM | BSTextureData.obj | debug, object-file gap fill, medium
 void __cdecl Object_UpdateFields_00c5f2e0()
 {
     delete DAT_01204374;
@@ -17819,6 +18059,8 @@ struct WorkerThread
 };
 // @fnv 0x00c410b0
 // src: XBOX_PDB 0x00c410b0
+// pdb: BSTaskManagerThread<__int64>::ThreadUpdate | IOManager.obj | retail, vtable slot, high
+// pdb locals: btaskRun, iterator, key, sptask
 void WorkerThread::BSTaskManagerThread_int64_ThreadUpdate()
 {
     while (queue->stopping != 1)
@@ -17862,6 +18104,7 @@ extern "C++" void* __cdecl FUN_00a5b690(const char* text);
 
 // @fnv 0x00c43500
 // src: COMMUNITY 0x00c43500
+// pdb: BSXFlags::InitSDM | BSXFlags.obj | retail, upstream name already matches, high
 void __cdecl BSXFlags_InitSDM()
 {
     DAT_01202ddc = (NiFixedString*)new NiFixedString("BSX");
@@ -17871,6 +18114,8 @@ namespace fnv_00c435a0 {
 
 // @fnv 0x00c435a0
 // src: GUESS 0x00c435a0 (confidence: low)
+// pdb: BSXFlags::BSXFlags | BSXFlags.obj | retail, object-file run extension, low
+// pdb note: debug build links it to BSXFlags::KillSDM
 void __cdecl Object_UpdateFields_00c435a0()
 {
     delete (NiFixedString*)DAT_01202ddc;
@@ -18013,6 +18258,8 @@ struct C52520Camera
 };
 // @fnv 0x00c52520
 // src: XBOX_PDB 0x00c52520
+// pdb: BSSceneGraph::UpdateCameraFOV | BSSceneGraph.obj | debug, upstream name already matches, high
+// pdb locals: port
 void C52520Camera::BSSceneGraph_UpdateCameraFOV()
 {
     CameraViewportC52 port(0.0f, 1.0f, 1.0f, 0.0f);
@@ -18157,6 +18404,9 @@ struct InitializeBoxCorners
 };
 // @fnv 0x00c55920
 // src: COMMUNITY 0x00c55920
+// pdb: BSTestObjects::CreateBox | BSTestObjects.obj | debug, object-file gap fill, medium
+// pdb params: arExtents, apColor
+// pdb locals: shape, vertices, indices, colors, i
 NiTriShape* __cdecl BSTestObjects_CreateBox_0(const NiPoint3& size, const BoxColor* color)
 {
     static InitializeBoxCorners initializedCorners;
@@ -18218,7 +18468,7 @@ class FUN_00a746e0 : public NiAVObject
         return Object_DispatchCommandFour(size);
     }
     static void operator delete(void* p);
-    FUN_00a746e0(int n, NiPoint3* pts, ColorA* cols, int a, int b, int c, unsigned char* flags);
+    FUN_00a746e0(int usVertices, NiPoint3* pts, ColorA* cols, int a, int b, int c, unsigned char* pkFlags);
     int unk9c;
     int unka0;
     int unka4;
@@ -18234,27 +18484,30 @@ class FUN_00a746e0 : public NiAVObject
 extern ColorA DAT_012032f8;
 
 // @fnv 0x00c59660
+// pdb: BSTestObjects::CreateArrow | BSTestObjects.obj | debug, upstream name already matches, high
+// pdb params: afLength, apColor
+// pdb locals: flag, fsize, lines, vertex, color
 #pragma intrinsic(memcpy)
 // src: XBOX_PDB 0x00c59660
-FUN_00a746e0* __cdecl BSTestObjects_CreateArrow(float length, ColorA* color)
+FUN_00a746e0* __cdecl BSTestObjects_CreateArrow(float afLength, ColorA* apColor)
 {
-    float dBA = length / 6.0;
+    float dBA = afLength / 6.0;
     S00c59660_Pt3* pts = ::new (*(S_00c42960_Heap*)&DAT_011f6238) S00c59660_Pt3[5];
     memcpy(&pts[0], &(const S00c59660_Pt3&)S00c59660_Pt3(0.0f, 0.0f, 0.0f), sizeof(pts[0]));
-    memcpy(&pts[1], &(const S00c59660_Pt3&)S00c59660_Pt3(0.0f, 0.0f, length), sizeof(pts[1]));
-    memcpy(&pts[2], &(const S00c59660_Pt3&)S00c59660_Pt3(dBA, 0.0f, length - dBA), sizeof(pts[2]));
-    memcpy(&pts[3], &(const S00c59660_Pt3&)S00c59660_Pt3(0.0f, 0.0f, length), sizeof(pts[3]));
-    memcpy(&pts[4], &(const S00c59660_Pt3&)S00c59660_Pt3(-dBA, 0.0f, length - dBA), sizeof(pts[4]));
-    if (!color)
+    memcpy(&pts[1], &(const S00c59660_Pt3&)S00c59660_Pt3(0.0f, 0.0f, afLength), sizeof(pts[1]));
+    memcpy(&pts[2], &(const S00c59660_Pt3&)S00c59660_Pt3(dBA, 0.0f, afLength - dBA), sizeof(pts[2]));
+    memcpy(&pts[3], &(const S00c59660_Pt3&)S00c59660_Pt3(0.0f, 0.0f, afLength), sizeof(pts[3]));
+    memcpy(&pts[4], &(const S00c59660_Pt3&)S00c59660_Pt3(-dBA, 0.0f, afLength - dBA), sizeof(pts[4]));
+    if (!apColor)
     {
-        color = &DAT_012032f8;
+        apColor = &DAT_012032f8;
     }
     ColorA* cols = new (*(S_00c42960_Heap*)&DAT_011f6238) ColorA[6];
-    cols[0] = *color;
-    cols[1] = *color;
-    cols[2] = *color;
-    cols[3] = *color;
-    cols[4] = *color;
+    cols[0] = *apColor;
+    cols[1] = *apColor;
+    cols[2] = *apColor;
+    cols[3] = *apColor;
+    cols[4] = *apColor;
     unsigned char* flags2 = new (*(S_00c42960_Heap*)&DAT_011f6238) unsigned char[6];
     flags2[0] = 1;
     flags2[1] = 1;
@@ -18550,24 +18803,24 @@ struct C5Base
     void SetName(const C5Fixed& kName);
     void AttachProperty(void* pkProperty);
     void AddExtraData(void* pkExtra);
-    void AttachChildInAvailableSlot(void* pkChild, bool bFlag);
-    void FUN_00a5bba0(unsigned short usValue);
+    void AttachChildInAvailableSlot(void* pkChild, bool bFirstAvail);
+    void SetExtraDataSize(unsigned short usSize);
     void UpdateWorldBoundFromChildren();
-    void BSNiNode_ReparentSkinInstances(void* pkA, void* pkB);
-    void AttachTarget(void* pkArg)
+    void BSNiNode_ReparentSkinInstances(void* apRoot, void* apNewParent);
+    void AttachTarget(void* pkCollisionObject)
     {
-        collision = static_cast<C5Collision*>(pkArg);
+        collision = static_cast<C5Collision*>(pkCollisionObject);
         if (collision && collision->GetOwner() != this)
             collision->SetOwner(this);
     }
     bool NiObject_IsKindOf_006532c0(const void* pkRTTI);
-    void ForwardToSubobject(int iValue)
+    void ForwardToSubobject(int pkProperty)
     {
-        NiPointer<C5RefObj> property(reinterpret_cast<C5RefObj*>(iValue));
+        NiPointer<C5RefObj> property(reinterpret_cast<C5RefObj*>(pkProperty));
         C5List& propertyList = properties;
         propertyList.Remove(property);
     }
-    bool RemoveExtraDataAt(unsigned short usValue);
+    bool RemoveExtraDataAt(unsigned short usExtraDataIndex);
 };
 typedef C5Base C5Src;
 
@@ -18604,6 +18857,9 @@ struct FUN_00c5f680 : C5Base
 };
 
 // @fnv 0x00c5f680
+// pdb: BSNiNode::BSNiNode | BSNiNode.obj | debug, object-file gap fill, medium
+// pdb params: apNode, abKeepChildren
+// pdb locals: pparent, bcopy, pcon, pnext, I, pobj, pproperty, pextra, spDetachedChild
 FUN_00c5f680::FUN_00c5f680(C5Src* pkSource, bool bCopy) : C5Base(0)
 {
     bool ok5 = true;
@@ -18654,7 +18910,7 @@ FUN_00c5f680::FUN_00c5f680(C5Src* pkSource, bool bCopy) : C5Base(0)
         scale = (float)fabs(pkSource->GetScale());
 
         FUN_00fdf05c(&DAT_011f4380);
-        FUN_00a5bba0(pkSource->GetExtraCount());
+        SetExtraDataSize(pkSource->GetExtraCount());
         while (pkSource->GetExtraCount() != 0)
         {
             void* pkExtra = pkSource->GetExtra(0);
@@ -18908,11 +19164,14 @@ struct ProcessOwner_j61
     unsigned short capacity, count;
     int unka8, unkac, unkb0;
     EventRef_j61* event;
-    void BSParticleSystemManager_UpdateParallel(void* context);
+    void BSParticleSystemManager_UpdateParallel(void* updateData);
 };
 // @fnv 0x00c50610
 // src: COMMUNITY 0x00c50610
-void ProcessOwner_j61::BSParticleSystemManager_UpdateParallel(void* context)
+// pdb: BSParticleSystemManager::UpdateParallel | BSParticleSystemManager.obj | retail, upstream name already matches, high
+// pdb params: updateData
+// pdb locals: pkChild, isize, taskletData, buseTasklets, inumTasklets, i, tasklet
+void ProcessOwner_j61::BSParticleSystemManager_UpdateParallel(void* updateData)
 {
     unsigned int total8 = count;
     WorkItem_j61* jobs3 = 0;
@@ -18933,13 +19192,13 @@ void ProcessOwner_j61::BSParticleSystemManager_UpdateParallel(void* context)
             if (parallelA)
             {
                 TaskRef_j61 task;
-                jobs3[index].Setup(child4, context);
+                jobs3[index].Setup(child4, updateData);
                 task.value = &jobs3[index];
                 event->Queue(&task, 0);
                 ++queued;
             }
             else
-                child4->Process(context, 0);
+                child4->Process(updateData, 0);
         }
     }
     if (parallelA)
@@ -19048,9 +19307,9 @@ struct Mesh : NiMemObject
     int unkb8;
     int unkbc;
     int unkc0;
-    Mesh(unsigned short vertexCount, LocalVec3* vertices, LocalVec3* normals, Color4* colors, Vec2* uv, bool hasNormals,
-         bool flag, unsigned short triangleCount, unsigned short stripCount, unsigned short* stripLengths,
-         unsigned short* indices);
+    Mesh(unsigned short usVertices, LocalVec3* pkVertex, LocalVec3* pkNormal, Color4* pkColor, Vec2* pkTexture, bool usNumTextureSets,
+         bool eNBTMethod, unsigned short usTriangles, unsigned short usStrips, unsigned short* pusStripLengths,
+         unsigned short* pusStripLists);
     virtual void v00();
     virtual void v04();
     virtual void v08();
@@ -19117,9 +19376,12 @@ struct Mesh : NiMemObject
 
 
 // @fnv 0x00c56680
+// pdb: BSTestObjects::CreateSphere | BSTestObjects.obj | retail, string-set bridge, high
+// pdb params: afRadius, aiSlices, aiStacks, apColor
+// pdb locals: sphere, normals, arraySize, drho, dt, textures, t, nsign, caps, vertices, pole, rho, strips, ds, stripLengths, numVertices, stripLists, indices, dtheta, colors, numIndices, s, numStrips, numVerticesPerStrip ...
 #pragma intrinsic(memcpy)
 // src: XBOX_PDB 0x00c56680
-NiNode* __cdecl BSTestObjects_CreateSphere(float radius, unsigned short slices, unsigned short stacks, const Color4* color)
+NiNode* __cdecl BSTestObjects_CreateSphere(float afRadius, unsigned short aiSlices, unsigned short aiStacks, const Color4* apColor)
 {
     NiNode* rootUpdate6;
     LocalVec3* capNormals7;
@@ -19149,30 +19411,30 @@ NiNode* __cdecl BSTestObjects_CreateSphere(float radius, unsigned short slices, 
     rootUpdate6->SetName(NiFixedString((const char*)DAT_010c2c80));
 
     radius5 = 1.0f;
-    angle36 = DAT_010c2c34 / static_cast<float>(stacks);
-    angle28 = DAT_010c2c34 * DAT_01011590 / static_cast<float>(slices);
-    uStep = 1.0f / static_cast<float>(slices);
-    vStep3 = 1.0f / static_cast<float>(stacks);
+    angle36 = DAT_010c2c34 / static_cast<float>(aiStacks);
+    angle28 = DAT_010c2c34 * DAT_01011590 / static_cast<float>(aiSlices);
+    uStep = 1.0f / static_cast<float>(aiSlices);
+    vStep3 = 1.0f / static_cast<float>(aiStacks);
 
-    capVertices2 = new LocalVec3[2 * slices + 2];
-    capNormals7 = new LocalVec3[2 * slices + 2];
-    color9 = color ? new Color4[2 * slices + 2] : 0;
-    capUVs2 = new Vec2[2 * slices + 2];
-    capIndicesA = new unsigned short[slices * 6];
+    capVertices2 = new LocalVec3[2 * aiSlices + 2];
+    capNormals7 = new LocalVec3[2 * aiSlices + 2];
+    color9 = apColor ? new Color4[2 * aiSlices + 2] : 0;
+    capUVs2 = new Vec2[2 * aiSlices + 2];
+    capIndicesA = new unsigned short[aiSlices * 6];
 
     vertexCount5 = 0;
     indexB = 0;
     poleIndex8 = vertexCount5;
 
-    memcpy(&capVertices2[vertexCount5], &(const LocalVec3&) (LocalVec3(0.0f, 0.0f, radius5 * radius)), sizeof(LocalVec3));
+    memcpy(&capVertices2[vertexCount5], &(const LocalVec3&) (LocalVec3(0.0f, 0.0f, radius5 * afRadius)), sizeof(LocalVec3));
     memcpy(&capNormals7[vertexCount5], &(const LocalVec3&) (LocalVec3(0.0f, 0.0f, 1.0f)), sizeof(LocalVec3));
-    if (color)
-        color9[vertexCount5] = *color;
+    if (apColor)
+        color9[vertexCount5] = *apColor;
     capUVs2[vertexCount5] = Vec2(0.5f, 0.0f);
     ++vertexCount5;
     capUX = 0.0f;
     uvX = vStep3;
-    for (unsigned int slice9 = 0; slice9 < slices; ++slice9)
+    for (unsigned int slice9 = 0; slice9 < aiSlices; ++slice9)
     {
         float angle44;
         float z6;
@@ -19182,10 +19444,10 @@ NiNode* __cdecl BSTestObjects_CreateSphere(float radius, unsigned short slices, 
         x15 = -static_cast<float>(SphereCos(angle44)) * static_cast<float>(SphereCosValue(angle36));
         y23 = static_cast<float>(SphereSin(angle44)) * static_cast<float>(SphereCosValue(angle36));
         z6 = radius5 * static_cast<float>(SphereSinValue(angle36));
-        memcpy(&capVertices2[vertexCount5], &(const LocalVec3&) (LocalVec3(x15 * radius, y23 * radius, z6 * radius)), sizeof(LocalVec3));
+        memcpy(&capVertices2[vertexCount5], &(const LocalVec3&) (LocalVec3(x15 * afRadius, y23 * afRadius, z6 * afRadius)), sizeof(LocalVec3));
         memcpy(&capNormals7[vertexCount5], &(const LocalVec3&) (LocalVec3(x15 * radius5, y23 * radius5, z6 * radius5)), sizeof(LocalVec3));
-        if (color)
-            color9[vertexCount5] = *color;
+        if (apColor)
+            color9[vertexCount5] = *apColor;
         capUVs2[vertexCount5] = Vec2(capUX, uvX);
         ++vertexCount5;
         capUX += uStep;
@@ -19202,33 +19464,33 @@ NiNode* __cdecl BSTestObjects_CreateSphere(float radius, unsigned short slices, 
 
     poleIndex8 = vertexCount5;
 
-    memcpy(&capVertices2[vertexCount5], &(const LocalVec3&) (LocalVec3(0.0f, 0.0f, -radius * radius5)), sizeof(LocalVec3));
+    memcpy(&capVertices2[vertexCount5], &(const LocalVec3&) (LocalVec3(0.0f, 0.0f, -afRadius * radius5)), sizeof(LocalVec3));
     memcpy(&capNormals7[vertexCount5], &(const LocalVec3&) (LocalVec3(0.0f, 0.0f, -1.0f)), sizeof(LocalVec3));
-    if (color)
-        color9[vertexCount5] = *color;
+    if (apColor)
+        color9[vertexCount5] = *apColor;
     capUVs2[vertexCount5] = Vec2(0.5f, 1.0f);
     ++vertexCount5;
     southernLatitude7 = DAT_010c2c34 - angle36;
     capUX = 1.0f;
     uvX = 1.0f - vStep3;
-    for (unsigned int indexA4 = slices; indexA4 > 0; --indexA4)
+    for (unsigned int indexA4 = aiSlices; indexA4 > 0; --indexA4)
     {
         float angle57;
         float z7;
         float x26;
         float fY5;
-        angle57 = indexA4 == slices ? 0.0f : static_cast<float>(indexA4) * angle28;
+        angle57 = indexA4 == aiSlices ? 0.0f : static_cast<float>(indexA4) * angle28;
         x26 = -static_cast<float>(SphereCos(angle57)) * static_cast<float>(SphereCosValue(southernLatitude7));
         fY5 = static_cast<float>(SphereSin(angle57)) * static_cast<float>(SphereCosValue(southernLatitude7));
         z7 = radius5 * static_cast<float>(SphereSinValue(southernLatitude7));
-        memcpy(&capVertices2[vertexCount5], &(const LocalVec3&) (LocalVec3(x26 * radius, fY5 * radius, z7 * radius)), sizeof(LocalVec3));
+        memcpy(&capVertices2[vertexCount5], &(const LocalVec3&) (LocalVec3(x26 * afRadius, fY5 * afRadius, z7 * afRadius)), sizeof(LocalVec3));
         memcpy(&capNormals7[vertexCount5], &(const LocalVec3&) (LocalVec3(x26 * radius5, fY5 * radius5, z7 * radius5)), sizeof(LocalVec3));
-        if (color)
-            color9[vertexCount5] = *color;
+        if (apColor)
+            color9[vertexCount5] = *apColor;
         capUVs2[vertexCount5] = Vec2(capUX, uvX);
         ++vertexCount5;
         capUX -= uStep;
-        if (indexA4 != slices)
+        if (indexA4 != aiSlices)
         {
             capIndicesA[indexB++] = poleIndex8;
             capIndicesA[indexB++] = static_cast<unsigned short>(vertexCount5 - 2);
@@ -19245,12 +19507,12 @@ NiNode* __cdecl BSTestObjects_CreateSphere(float radius, unsigned short slices, 
     rootUpdate6->AttachChildInAvailableSlot(reinterpret_cast<NiAVObject*>(capShape2), true);
 
     uvX = 0.0f;
-    intermediateBands5 = static_cast<unsigned short>(stacks - 2);
-    strip = static_cast<unsigned short>(2 * slices + 2);
+    intermediateBands5 = static_cast<unsigned short>(aiStacks - 2);
+    strip = static_cast<unsigned short>(2 * aiSlices + 2);
     capacity0 = static_cast<unsigned int>(intermediateBands5) * strip;
     capVertices2 = new LocalVec3[capacity0];
     capNormals7 = new LocalVec3[capacity0];
-    color9 = color ? new Color4[capacity0] : 0;
+    color9 = apColor ? new Color4[capacity0] : 0;
     capUVs2 = new Vec2[capacity0];
     strips2 = new unsigned short[intermediateBands5];
     sideD3 = new unsigned short[capacity0];
@@ -19259,20 +19521,20 @@ NiNode* __cdecl BSTestObjects_CreateSphere(float radius, unsigned short slices, 
     {
         southernLatitude7 = (band + 1) * angle36;
         capUX = 0.0f;
-        for (unsigned int vertexCount9 = 0; vertexCount9 <= slices; ++vertexCount9)
+        for (unsigned int vertexCount9 = 0; vertexCount9 <= aiSlices; ++vertexCount9)
         {
             float angle72;
             float zq;
             float x29;
             float fYA;
-            angle72 = vertexCount9 == slices ? 0.0f : static_cast<float>(vertexCount9) * angle28;
+            angle72 = vertexCount9 == aiSlices ? 0.0f : static_cast<float>(vertexCount9) * angle28;
             x29 = -static_cast<float>(SphereCos(angle72)) * static_cast<float>(SphereCosValue(southernLatitude7));
             fYA = static_cast<float>(SphereSin(angle72)) * static_cast<float>(SphereCosValue(southernLatitude7));
             zq = radius5 * static_cast<float>(SphereSinValue(southernLatitude7));
-            memcpy(&capVertices2[vertexCount5], &(const LocalVec3&) (LocalVec3(x29 * radius, fYA * radius, zq * radius)), sizeof(LocalVec3));
+            memcpy(&capVertices2[vertexCount5], &(const LocalVec3&) (LocalVec3(x29 * afRadius, fYA * afRadius, zq * afRadius)), sizeof(LocalVec3));
             memcpy(&capNormals7[vertexCount5], &(const LocalVec3&) (LocalVec3(x29 * radius5, fYA * radius5, zq * radius5)), sizeof(LocalVec3));
-            if (color)
-                color9[vertexCount5] = *color;
+            if (apColor)
+                color9[vertexCount5] = *apColor;
             capUVs2[vertexCount5] = Vec2(capUX, uvX);
             sideD3[vertexCount5] = vertexCount5;
             ++vertexCount5;
@@ -19281,10 +19543,10 @@ NiNode* __cdecl BSTestObjects_CreateSphere(float radius, unsigned short slices, 
             fYA = static_cast<float>(SphereSin(angle72)) *
                   static_cast<float>(SphereCosValue(southernLatitude7 + angle36));
             zq = radius5 * static_cast<float>(SphereSinValue(southernLatitude7 + angle36));
-            memcpy(&capVertices2[vertexCount5], &(const LocalVec3&) (LocalVec3(x29 * radius, fYA * radius, zq * radius)), sizeof(LocalVec3));
+            memcpy(&capVertices2[vertexCount5], &(const LocalVec3&) (LocalVec3(x29 * afRadius, fYA * afRadius, zq * afRadius)), sizeof(LocalVec3));
             memcpy(&capNormals7[vertexCount5], &(const LocalVec3&) (LocalVec3(x29 * radius5, fYA * radius5, zq * radius5)), sizeof(LocalVec3));
-            if (color)
-                color9[vertexCount5] = *color;
+            if (apColor)
+                color9[vertexCount5] = *apColor;
             capUVs2[vertexCount5] = Vec2(capUX, uvX + vStep3);
             sideD3[vertexCount5] = vertexCount5;
             ++vertexCount5;
@@ -19295,7 +19557,7 @@ NiNode* __cdecl BSTestObjects_CreateSphere(float radius, unsigned short slices, 
     }
 
     sideShape8 = new Mesh(vertexCount5, capVertices2, capNormals7, color9, capUVs2, true, false,
-                          intermediateBands5 * (slices * 2), intermediateBands5, strips2, sideD3);
+                          intermediateBands5 * (aiSlices * 2), intermediateBands5, strips2, sideD3);
     sideShape8->Update();
     rootUpdate6->AttachChildInAvailableSlot(reinterpret_cast<NiAVObject*>(sideShape8), true);
     return rootUpdate6;

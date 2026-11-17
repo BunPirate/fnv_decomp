@@ -5,6 +5,7 @@
 class TESAmmo;
 
 // Type 0x6e, vftable 0x01015998, allocation 0x14 (0x0042eb60).
+// pdb: class ExtraAmmo, size 0x14, bases: BSExtraData, 2 members
 class ExtraAmmo : public BSExtraData
 {
 public:

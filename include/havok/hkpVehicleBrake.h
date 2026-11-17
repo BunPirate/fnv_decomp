@@ -5,6 +5,7 @@
 #include "hkBase.h"
 #include "hkReferencedObject.h"
 #pragma pack(push, 1)
+// pdb: class hkpVehicleBrake, size 0x8, bases: hkReferencedObject, 0 members
 class hkpVehicleBrake : public hkReferencedObject
 {
   public:

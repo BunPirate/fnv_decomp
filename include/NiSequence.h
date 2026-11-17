@@ -3,14 +3,15 @@
 #include "NiObject.h"
 #include "StrArr.h"
 
+// pdb: class NiSequence, size 0x34, bases: NiObject, 5 members
 class NiSequence : public NiObject
 {
 public:
-    NiSequence* Initialize(const char* pcName, unsigned int uiArraySize, unsigned int uiArrayGrowBy);
+    NiSequence* NiSequence_ctor(const char* pcName, unsigned int uiInitSize, unsigned int uiGrowBy);
     virtual void LoadBinary(NiStream& kStream);
 
     char* m_pcName;
     StrArr m_kStringArray;
-    char pad[0x14];
+    char m_kCtrl[0x14]; // src: XBOX_RETAIL_PDB +0x1c (old: pad)
     unsigned int m_uiSequenceValue;
 };

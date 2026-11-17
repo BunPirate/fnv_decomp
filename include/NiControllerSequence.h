@@ -37,6 +37,7 @@ enum NiControllerSequence__AnimState
     NiControllerSequence__AnimState_MORPHSOURCE = 6
 };
 
+// pdb: class NiControllerSequence, size 0x74, bases: NiObject, 28 members
 class NiControllerSequence : public NiObject
 {
   public:
@@ -75,14 +76,14 @@ class NiControllerSequence : public NiObject
     virtual bhkRigidBody* IsBhkRigidBody() const;
     virtual bhkLimitedHingeConstraint* IsBhkLimitedHingeConstraint() const;
     virtual NiObject* MakeClone(CloningProcess& arCloning);
-    virtual void LoadBinary(NiStream& arStream);
-    virtual void LinkObject(NiStream& arStream);
-    virtual bool RegisterStreamables(NiStream& arStream);
+    virtual void LoadBinary(NiStream& kStream);
+    virtual void LinkObject(NiStream& kStream);
+    virtual bool RegisterStreamables(NiStream& kStream);
     virtual void SaveBinary(NiStream& arStream);
     virtual bool IsEqual(NiObject* apObject) const;
     virtual void GetViewerStrings(NiViewerStringsArray* apStrings);
     virtual void AddViewerStrings(NiViewerStringsArray* apStrings);
-    virtual void ProcessClone(CloningProcess& arCloning);
+    virtual void ProcessClone(CloningProcess& kCloning);
     virtual void PostLinkObject(NiStream& arStream);
     virtual bool StreamCanSkip();
     virtual const NiRTTI* GetStreamableRTTI();
@@ -97,9 +98,9 @@ class NiControllerSequence : public NiObject
     void SetEntryByte(int iIndex, bool bValue);
 
     bool CanSyncWithSequence(NiControllerSequence* sequence);
-    void SetSequenceTime(float time, bool forceUpdate);
-    void Update(float time, bool updateInterpolators);
-    bool Activate(char priority, bool startOver, float weight, float easeInTime,
+    void SetSequenceTime(float afPhase, bool abUpdateControllers);
+    void Update(float fTime, bool bUpdateInterpolators);
+    bool Activate(char cPriority, bool startOver, float weight, float easeInTime,
                   NiControllerSequence* timeSyncSequence, bool transition);
     int GetState();
     NiFixedString& GetName();
@@ -119,45 +120,45 @@ class NiControllerSequence : public NiObject
     void* FUN_00a35820(unsigned int);
 
     bool IsNotInChain(void* sequence);
-    bool MatchesTextKeys(NiControllerSequence* sequence);
-    bool SetTimeSyncSequence(NiControllerSequence* sequence);
-    bool StartSequence(char priority, bool startOver, float weight, float easeInTime,
+    bool MatchesTextKeys(NiControllerSequence* pkTimeSyncSeq);
+    bool SetTimeSyncSequence(NiControllerSequence* pkTimeSyncSeq);
+    bool StartSequence(char cPriority, bool startOver, float weight, float easeInTime,
                        NiControllerSequence* timeSyncSequence, bool transition);
     unsigned char SetEaseOut(float easeOutTime, bool transition);
     bool CrossFadeTo(NiControllerSequence* destination, float duration, int priority,
                      float sourceWeight, float destinationWeight);
-    float GetMorphedTime(NiControllerSequence* sequence, float frameTime);
-    void SetAnimationCycleType(char priority);
+    float FindCorrespondingMorphFrame(NiControllerSequence* pkSourceSequence, float fSourceSequenceTime);
+    void SetAnimationCycleType(char cPriority);
     bool SetState(int state);
-    void SetPriorityStub(char priority);
+    void SetPriorityStub(char cPriority);
     void GetEntryText(unsigned int index, char* output);
-    void ReleaseItems();
+    void ClearTargets();
     void AssignInterpolatorRef(int index, NiRefObject** output);
     void AssignInterpolatorRef(unsigned int index, NiRefObject*& output);
-    int AssignSlot(NiRefObject* interpolator, unsigned int value, unsigned char priority);
+    int AddInterpolator(NiRefObject* pkInterpolator, unsigned int kIDTag, unsigned char ucPriority);
     void ClearInterpolatorRefs(NiControllerSequence* source, int argument);
-    bool Attach(bool update, NiAVObject* root, bool flag);
-    bool AssignControllers(void* objectName, NiInterpController* controller);
+    bool Attach(bool pkRoot, NiAVObject* pkObjectPalette, bool aiTransformControllerCount);
+    bool AssignControllers(void* pcObjectName, NiInterpController* pkController);
     void SaveToStream(NiStream& stream);
     void LinkSequenceSource(NiStream* stream);
 
     void NiControllerSequence_DetachInterpolators();
-    void AttachInterpolators(char priority);
-    float ComputeScaledTime_00a30970(float time, bool update);
-    bool CanSyncTo(void* sequence);
-    bool RegisterStreamables_00a30ea0(NiStream& stream);
-    unsigned char IsEqual_00a30fb0(NiControllerSequence* sequence);
+    void AttachInterpolators(char cPriority);
+    float ComputeScaledTime_00a30970(float fTime, bool bStoreLastTime);
+    bool CanSyncTo(void* pkTargetSequence);
+    bool RegisterStreamables_00a30ea0(NiStream& kStream);
+    unsigned char IsEqual_00a30fb0(NiControllerSequence* pkObject);
     void* FUN_00a316a0();
-    bool ResolveTransformInterpolators(NiAVObject* target, NiAVObject* root, int argument);
-    void NiControllerSequence_SetInterpsWeightAndTime(float weight, float ease, float time);
+    bool ResolveTransformInterpolators(NiAVObject* pkRoot, NiAVObject* pkObjectPalette, int aiTransformControllerCount);
+    void NiControllerSequence_SetInterpsWeightAndTime(float fWeight, float fEaseSpinner, float fTime);
     bool NiControllerSequence_ReallocateArrays();
-    void SetPhase(float time, bool setControllerTimes);
-    bool StoreTargets(bool update);
-    void PopulatePoseSequence(NiControllerSequence* destination, int argument1, int argument2, bool remove);
-    void NiControllerSequence_CopyMembers(NiControllerSequence* source, int argument);
-    void Update_00a34ba0(float time, bool update);
-    bool StartBlend(NiControllerSequence* target, float time, float timeout, int priority,
-                      float sequenceWeight, float targetWeight, NiControllerSequence* partner);
+    void SetPhase(float afPhase, bool abUpdateControllers);
+    bool StoreTargets(bool pkRoot);
+    void PopulatePoseSequence(NiControllerSequence* pkPoseSequence, int uiArraySize, int pkSequenceToSynchronize, bool abRemInterps);
+    void NiControllerSequence_CopyMembers(NiControllerSequence* pkDest, int kCloning);
+    void Update_00a34ba0(float fTime, bool bUpdateInterpolators);
+    bool StartBlend(NiControllerSequence* pkDestSequence, float fDuration, float fDestFrame, int priority,
+                      float fSourceWeight, float fDestWeight, NiControllerSequence* pkTimeSyncSeq);
     void ProcessState_00a35640();
 
     NiFixedString m_kName;

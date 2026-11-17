@@ -41,7 +41,7 @@ class hkpMotorActionMA : public hkpMotorAction
     {
         hkReferencedObject* b =
             static_cast<hkReferencedObject*>(hkMemoryRouter_getInstance().heap().AllocateMemoryBlock(static_cast<int>(nbytes)));
-        b->m_usMemSizeAndFlags = static_cast<unsigned short>(nbytes);
+        b->m_memSizeAndFlags = static_cast<unsigned short>(nbytes);
         return b;
     }
     void operator delete(void*, unsigned int);
@@ -53,6 +53,9 @@ class hkpMotorActionMA : public hkpMotorAction
 
 // @fnv 0x00d4d7f0
 // src: HAVOK_LIB 0x00d4d7f0
+// pdb: hkpMotorAction::clone | hkpMotorAction.obj | retail, upstream name already matches, high
+// pdb params: newEntities, newPhantoms
+// pdb locals: assertBuf, ostr
 hkpAction* hkpMotorActionMA::hkpMotorAction_clone(const hkArrayBase<hkpEntity*>& newEntities,
                                           const hkArrayBase<hkpPhantom*>& newPhantoms) const
 {
@@ -62,9 +65,9 @@ hkpAction* hkpMotorActionMA::hkpMotorAction_clone(const hkArrayBase<hkpEntity*>&
     if (newPhantoms.GetLogicalSize() != 0)
         return 0;
 
-    hkpMotorActionMA* ma = new hkpMotorActionMA((hkpRigidBody*)newEntities[0], m_kAxisEndPoints, m_fSpinRate, m_fGain);
-    ma->m_bSlotEnabled = m_bSlotEnabled;
-    ma->m_ulUserData = m_ulUserData;
+    hkpMotorActionMA* ma = new hkpMotorActionMA((hkpRigidBody*)newEntities[0], m_axis, m_spinRate, m_gain);
+    ma->m_active = m_active;
+    ma->m_userData = m_userData;
 
     return ma;
 }

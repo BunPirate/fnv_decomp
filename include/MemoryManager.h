@@ -8,6 +8,7 @@ class MemoryManagerHelperType;
 class MemoryManagerSupportType;
 class ScrapHeapBuffer;
 
+// pdb: class MemoryManager, size 0x134 (here 0x138), 11 members
 class MemoryManager
 {
   public:
@@ -83,20 +84,20 @@ class MemoryManager
     void* Function3();
     void* Function4(int memoryType, int size);
     void* __thiscall Allocate(unsigned int size);
-    void* __thiscall Allocate(unsigned int size, const char* file, const int line, const char* function);
+    void* __thiscall Allocate(unsigned int aSize, const char* apFile, const int aiLine, const char* apFunction);
     void* __thiscall Allocate(unsigned int size, char* file, int line, char* function);
-    void* AllocatePhysical(unsigned int size, unsigned long alignment);
+    void* AllocatePhysical(unsigned int aSize, unsigned long aiAttributes);
     void* TryAndAllocate(unsigned int size);
     void* Reallocate(void* pointer, unsigned int size);
     void* Reallocate(void* pointer, unsigned int size, char* file, int line, char* function);
-    void Deallocate(void* pointer);
-    void DeallocatePhysical(void* pointer, unsigned long size, unsigned long alignment);
-    void _DeallocateAlias(void* pointer);
-    void DeallocateAlias(void* pointer);
+    void Deallocate(void* apMem);
+    void DeallocatePhysical(void* apMem, unsigned long aiAttributes, unsigned long aiSize);
+    void _DeallocateAlias(void* apMem);
+    void DeallocateAlias(void* apMem);
     void Free(void* pointer);
     void FreePointer(void* pointer, int flags);
     void freeBlock(void* pointer, int size);
-    void* DoSystemAllocation(unsigned int size, bool aligned);
+    void* DoSystemAllocation(unsigned int aSize, bool abLog);
     void DoSystemDeallocation(void* pointer, bool aligned);
     MemoryManagerHelperType* GetContextTracker();
     MemoryManagerComponent* GetUsageTracker();
@@ -104,8 +105,8 @@ class MemoryManager
     void Memset(void* destination, int value, unsigned int size);
     void Memcpy(void* destination, void* source, unsigned int size);
     void CheckMemoryIntegrity(bool checkAll);
-    unsigned int Size(const void* pointer);
-    unsigned int Size(void* pointer);
+    unsigned int Size(const void* apPtr);
+    unsigned int Size(void* apPtr);
     unsigned int GetNumHeaps();
     unsigned int GetNumPhysicalHeaps();
     bool GetHeapStats(unsigned int index, bool full, MemoryHeapStats* stats);
@@ -122,20 +123,20 @@ class MemoryManager
     void CheckMemoryIntegrity_00aa43a0(int unused);
     void FUN_00483710();
     IMemoryHeap* GetHeapByIndex(unsigned int index);
-    IMemoryHeap* GetHeapForPointer(const void* pointer);
-    IMemoryHeap* GetHeapForPointer(void* pointer);
-    IMemoryHeap* GetHeapForPhysicalPointer(const void* pointer);
-    IMemoryHeap* GetHeapForPhysicalPointer(void* pointer);
+    IMemoryHeap* GetHeapForPointer(const void* apMem);
+    IMemoryHeap* GetHeapForPointer(void* apMem);
+    IMemoryHeap* GetHeapForPhysicalPointer(const void* apMem);
+    IMemoryHeap* GetHeapForPhysicalPointer(void* apMem);
     IMemoryHeap* GetMemHeap(MemoryManagerSupportType* context);
     void Initialize();
     void InitializeStandard();
-    void InitializeHeaps();
+    void SpecifyMemoryLayout();
     void RegisterMemoryManager();
     void InitializeHeapTracking();
     void ShutdownHeapTracking();
     void SetupDuplicatedPools();
     void ClearDuplicatedPools();
-    unsigned int HandleAllocationFailure(IMemoryHeap* heap, int errorCode, bool* handled);
+    unsigned int ProcessMemoryProblem(IMemoryHeap* apHeap, int aiMemoryPass, bool* apbAllowSystemAllocs);
     void DumpMemoryManagerInfo();
     int OutputModuleInfoToFile(IMemoryManagerFile* file);
     int OutputPoolInfoToFile(IMemoryManagerFile* file);

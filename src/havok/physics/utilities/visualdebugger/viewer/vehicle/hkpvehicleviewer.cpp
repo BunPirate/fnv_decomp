@@ -24,7 +24,7 @@
 
 
 
-void __cdecl hkArrayUtil__reserve(hkMemoryAllocator* alloc, void* array, int numElements, int sizeElem);
+void __cdecl hkArrayUtil__reserve(hkMemoryAllocator* mem, void* array, int numElem, int sizeElem);
 void __cdecl D625A0MemMove(void* dst, const void* src, unsigned int nbytes);
 
 
@@ -71,6 +71,7 @@ struct FUN_00d634e0_cls
 
 // Iterates m_pHolder's items and passes each to the sink's Process callback when m_pHolder is non-null.
 // @fnv 0x00d634e0
+// pdb: hkpVehicleViewer::init | hkpVehicleViewer.obj | retail, vtable slot, high
 void FUN_00d634e0_cls::ProcessItems()
 {
     if (m_pHolder != 0)
@@ -86,7 +87,7 @@ struct OurPart
 
     int m_i04;
 
-    void RegisterAndNotify(hkpWorld* apRegistry);
+    void RegisterAndNotify(hkpWorld* w);
 };
 
 struct NotifyTarget
@@ -114,14 +115,16 @@ __forceinline void RegisterNotifyTarget(hkpWorld* world, NotifyTarget* target)
 }
 
 // @fnv 0x00d63520
-void OurPart::RegisterAndNotify(hkpWorld* apRegistry)
+// pdb: hkpVehicleViewer::worldAddedCallback | hkpVehicleViewer.obj | retail, vtable slot, high
+// pdb params: w
+void OurPart::RegisterAndNotify(hkpWorld* w)
 {
-    RegisterNotifyTarget(apRegistry, (Container*)((char*)this - 0x20));
-    apRegistry->hkpWorld_addWorldPostSimulationListener(static_cast<SecondTarget*>((Container*)((char*)this - 0x20)));
+    RegisterNotifyTarget(w, (Container*)((char*)this - 0x20));
+    w->hkpWorld_addWorldPostSimulationListener(static_cast<SecondTarget*>((Container*)((char*)this - 0x20)));
 
-    hkpPhysicsSystem* pItemList = apRegistry->getWorldAsOneSystem();
-    for (int i = 0; i < pItemList->m_ppActions.m_iElementCount; i++)
-        ((NotifyTarget*)((char*)this + 8))->Notify(pItemList->m_ppActions.m_data[i]);
+    hkpPhysicsSystem* pItemList = w->getWorldAsOneSystem();
+    for (int i = 0; i < pItemList->m_actions.m_iElementCount; i++)
+        ((NotifyTarget*)((char*)this + 8))->Notify(pItemList->m_actions.m_data[i]);
 
     pItemList->removeReference();
 }
@@ -129,12 +132,13 @@ void OurPart::RegisterAndNotify(hkpWorld* apRegistry)
 extern void* DAT_01268fcc;
 extern hkProcessFactory* DAT_01269cd0;
 extern const char DAT_010d17c4;
-extern void AllocAndInitObject();
+extern void hkpVehicleViewer_create();
 // @fnv 0x00d63da0
-// src: GUESS 0x00d63da0 (confidence: low)
-void __cdecl Object_UpdateFields_00d63da0()
+// src: XBOX_RETAIL_PDB 0x00d63da0
+// pdb: hkpVehicleViewer::registerViewer | hkpVehicleViewer.obj | retail, string-set bridge, high
+void __cdecl hkpVehicleViewer_registerViewer()
 {
-    DAT_01268fcc = DAT_01269cd0->RegisterProcess(&DAT_010d17c4, (void*)AllocAndInitObject);
+    DAT_01268fcc = DAT_01269cd0->RegisterProcess(&DAT_010d17c4, (void*)hkpVehicleViewer_create);
 }
 
 extern int g_D63DC0Value;
@@ -166,17 +170,19 @@ struct FUN_00d63480_cls
     int unk18;
     int unk1c;
 
-    void PassMembersToTarget(hkpWorld* apTarget);
+    void PassMembersToTarget(hkpWorld* w);
 };
 
 // Passes pointers to this object's members at offsets 8 and 0xc to the target's two callbacks, or null if the owner pointer is null.
 // @fnv 0x00d63480
-void FUN_00d63480_cls::PassMembersToTarget(hkpWorld* apTarget)
+// pdb: hkpVehicleViewer::worldRemovedCallback | hkpVehicleViewer.obj | retail, vtable slot, high
+// pdb params: w
+void FUN_00d63480_cls::PassMembersToTarget(hkpWorld* w)
 {
     char* pOwner = (char*)this - 0x20;
     typedef void (__thiscall* RemoveListenerFn)(hkpWorld*, void*);
-    reinterpret_cast<RemoveListenerFn>(hkpWorld_removeActionListener)(apTarget, pOwner ? (void*)((char*)this + 8) : (void*)0);
-    reinterpret_cast<RemoveListenerFn>(FUN_00c918e0)(apTarget, pOwner ? (void*)((char*)this + 0xc) : (void*)0);
+    reinterpret_cast<RemoveListenerFn>(hkpWorld_removeActionListener)(w, pOwner ? (void*)((char*)this + 8) : (void*)0);
+    reinterpret_cast<RemoveListenerFn>(FUN_00c918e0)(w, pOwner ? (void*)((char*)this + 0xc) : (void*)0);
 }
 
 // FUN_00d63c50 - the constructor of the Havok vehicle viewer
@@ -198,7 +204,7 @@ struct ViewerArg
 // end at 0x28 so the vehicle viewer's listener and array offsets stay correct.
 struct WorldViewerBase
 {
-    WorldViewerBase(ViewerArg* arg);
+    WorldViewerBase(ViewerArg* contexts);
     int* m_vtbl00;  // +0x00
     int unk04;      // +0x04
     int* m_vtbl08;  // +0x08
@@ -213,7 +219,7 @@ struct WorldViewerBase
 
 struct FUN_00d63c50 : public WorldViewerBase
 {
-    FUN_00d63c50(ViewerArg* arg);
+    FUN_00d63c50(ViewerArg* contexts);
     int* volatile m_vtbl28;  // +0x28
     int* volatile m_vtbl2c;  // +0x2c
     volatile int m_30;       // +0x30
@@ -231,7 +237,9 @@ extern int DAT_010d1814;
 extern int DAT_010d1804;
 
 // @fnv 0x00d63c50
-FUN_00d63c50::FUN_00d63c50(ViewerArg* arg) : WorldViewerBase(arg)
+// pdb: hkpVehicleViewer::hkpVehicleViewer | hkpVehicleViewer.obj | retail, object-file gap fill, high
+// pdb params: contexts
+FUN_00d63c50::FUN_00d63c50(ViewerArg* contexts) : WorldViewerBase(contexts)
 {
     m_vtbl28 = &DAT_010cb1d4;
     m_vtbl2c = &DAT_010ccf7c;
@@ -249,7 +257,7 @@ void* __cdecl hkMemoryRouter_getInstance() throw();
 struct S_B20
 {
     virtual void b20v0();
-    void PassMembersToTarget(void* child);
+    void PassMembersToTarget(void* w);
 };
 struct FUN_00ddcc60 : hkReferencedObject, hkProcess, S_B20
 {
@@ -287,6 +295,7 @@ struct FUN_00d63cb0 : FUN_00ddcc60, hkpActionListener, hkpWorldPostSimulationLis
 };
 // Destroys the object: calls PassMembersToTarget on each of m24->m_ppWorlds up to m24->m_numWorlds, then clears m30.
 // @fnv 0x00d63cb0
+// pdb: hkpVehicleViewer::~hkpVehicleViewer | hkpVehicleViewer.obj | retail, object-file gap fill, high
 FUN_00d63cb0::~FUN_00d63cb0() throw()
 {
     if (m24)
@@ -305,12 +314,15 @@ struct FUN_00d63d60_obj
     unsigned short m_wSize;
     unsigned short m_u06;
 
-    void* FUN_00d63c50(int a1);
+    void* FUN_00d63c50(int contexts);
 };
 
 // Allocates a 0x3c-byte object via the global allocator, sets its size, calls FUN_00d63c50(a1), and returns the result offset by 8 or null.
 // @fnv 0x00d63d60
-void* AllocAndInitObject(int a1)
+// src: XBOX_RETAIL_PDB 0x00d63d60
+// pdb: hkpVehicleViewer::create | hkpVehicleViewer.obj | retail, object-file gap fill, high
+// pdb params: contexts
+void* hkpVehicleViewer_create(int contexts)
 {
     hkMemoryRouter* pAllocHolder = reinterpret_cast<hkMemoryRouter*>(hkMemoryRouter_getInstance());
     hkMemoryAllocator* pAllocator = pAllocHolder->m_heap;
@@ -318,7 +330,7 @@ void* AllocAndInitObject(int a1)
     FUN_00d63d60_obj* obj = reinterpret_cast<FUN_00d63d60_obj*>(
         reinterpret_cast<AllocFn>((*reinterpret_cast<void***>(pAllocator))[1])(pAllocator, 0x3c));
     obj->m_wSize = 0x3c;
-    void* pResult = obj->FUN_00d63c50(a1);
+    void* pResult = obj->FUN_00d63c50(contexts);
     if (pResult != 0)
     {
         return (char*)pResult + 8;
@@ -343,6 +355,7 @@ struct FUN_00d63e10_cls
 };
 
 // @fnv 0x00d63e10
+// pdb: hkpVehicleViewer::`scalar deleting destructor' | hkpVehicleViewer.obj | retail, vtable slot, high
 FUN_00d63e10_cls* FUN_00d63e10_cls::Destroy(unsigned char acFlags)
 {
     FUN_00d63cb0();
@@ -360,7 +373,7 @@ namespace hkD635 {
 extern "C" hkMemoryRouter& __cdecl hkMemoryRouter_getInstance() throw();
 }
 
-void __cdecl ResizeAudioStream(void* pvAlloc, void* apvArray, int iSizeElem) throw();
+void __cdecl ResizeAudioStream(void* mem, void* array, int sizeElem) throw();
 
 // No shared hkClassNameRegistry header exists yet; keep its interface opaque.
 class hkClassNameRegistry;
@@ -417,7 +430,7 @@ __forceinline void AddBack(hkArray<T>& array, const T& t)
 class VehicleViewerD635
 {
   public:
-    void AddVehicle(hkReferencedObject* pkObj);
+    void AddVehicle(hkReferencedObject* action);
 
     int unk00, unk04;
     hkArray<hkReferencedObject*> m_ppVehicles;
@@ -425,11 +438,13 @@ class VehicleViewerD635
 
 // Looks up a class by name and pkObj's class by vtable; if both exist and FUN_00d46d80 is true, calls FUN_00c90510 on pkObj and appends it to m_ppVehicles.
 // @fnv 0x00d635e0
-void VehicleViewerD635::AddVehicle(hkReferencedObject* pkObj)
+// pdb: hkpVehicleViewer::actionAddedCallback | hkpVehicleViewer.obj | retail, vtable slot, high
+// pdb params: action
+void VehicleViewerD635::AddVehicle(hkReferencedObject* action)
 {
     hkBuiltinTypeRegistry* pkReg = hkD635::DAT_01268b08;
     const hkClass* pkVehicleClass = GetClassByName(GetClassNameRegistry(pkReg), &d_010d17d0);
-    const hkClass* pkObjClass = GetVtableClassRegistry(pkReg)->GetClassFromVirtualInstance(pkObj);
+    const hkClass* pkObjClass = GetVtableClassRegistry(pkReg)->GetClassFromVirtualInstance(action);
     // The shared hkClass lacks this declaration. A member-function pointer
     // preserves its thiscall convention and hidden hkBool return argument.
     typedef hkBool (hkClass::*IsSuperClassFn)(const hkClass&) const throw();
@@ -441,8 +456,8 @@ void VehicleViewerD635::AddVehicle(hkReferencedObject* pkObj)
     isSuperClass.address = hkClass_isSuperClass;
     if (pkVehicleClass && pkObjClass && (pkVehicleClass->*isSuperClass.method)(*pkObjClass))
     {
-        pkObj->addReference();
-        AddBack(m_ppVehicles, pkObj);
+        action->addReference();
+        AddBack(m_ppVehicles, action);
     }
 }
 
@@ -574,19 +589,21 @@ class D63590List
     int unk04;
     hkArray<unsigned int> m_items;
 
-    void hkpVehicleViewer_actionRemovedCallback(unsigned int value);
+    void hkpVehicleViewer_actionRemovedCallback(unsigned int action);
 };
 
 // Finds value in m_items, removes it at that index, and releases its reference.
 // @fnv 0x00d63590
 // src: HAVOK_LIB 0x00d63590
-void D63590List::hkpVehicleViewer_actionRemovedCallback(unsigned int value)
+// pdb: hkpVehicleViewer::actionRemovedCallback | hkpVehicleViewer.obj | debug, upstream name already matches, high
+// pdb params: action
+void D63590List::hkpVehicleViewer_actionRemovedCallback(unsigned int action)
 {
-    int index = indexOf(m_items, value);
+    int index = indexOf(m_items, action);
     if (index != -1)
     {
         removeAt(m_items, index);
-        ((hkReferencedObject*)value)->removeReference();
+        ((hkReferencedObject*)action)->removeReference();
     }
 }
 

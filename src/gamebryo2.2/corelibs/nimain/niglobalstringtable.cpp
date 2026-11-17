@@ -15,6 +15,9 @@ void NiPixelData::AddString()
 #pragma optimize("y", on)
 // Looks up or allocates a reference-counted copy of s in the global string table under a critical section and returns the string pointer.
 // @fnv 0x00a5b690
+// pdb: NiGlobalStringTable::AddString | NiGlobalStringTable.obj | retail, upstream name already matches, high
+// pdb params: pcString
+// pdb locals: pcMem, kHandle, stStrLen, kMem, tempMemContext, pvMem, stAllocLen
 char* NiGlobalStringTable::AddString(const char* s)
 {
     if (!s)
@@ -53,6 +56,9 @@ char* NiGlobalStringTable::AddString(const char* s)
 #pragma function(strlen, strcpy)
 // Checks a non-empty name, resolves its path, opens the Bink file with preload/force flags, warns on failure, and returns whether it opened.
 // @fnv 0x00ec0ac0
+// pdb: Movie::OpenBink | MoviePlayer_Xenon.obj | debug, call graph, medium
+// pdb params: apFileName, abSkipWarning, abPreloadBink, abForcePreload
+// pdb locals: tempAutoPause, ibinkOpenFlags, bpaused, bresult, bsuspendedMainThread, ppath, stats
 bool NiPlaybackFile::FindString(const char* name, bool silent, bool preload, bool force)
 {
 

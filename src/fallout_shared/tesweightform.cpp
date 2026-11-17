@@ -7,27 +7,30 @@
 #include "../../include/TESWeightForm.h"
 
 // @fnv 0x0048ebc0
-float TESWeightForm::GetWeightForForm(TESForm* form, bool useFormWeight)
+// pdb: TESWeightForm::GetFormWeight | TESWeightForm.obj | debug, call graph (shared callers), high
+// pdb params: apForm, abIsHardcore
+// pdb locals: pweight, fWeightOverride, pform
+float TESWeightForm::GetWeightForForm(TESForm* apForm, bool abIsHardcore)
 {
     TESWeightForm* weightForm = 0;
     float weight = 0.0f;
 
-    if (form)
+    if (apForm)
     {
-        switch (((TESBoundObject*)form)->GetFormType())
+        switch (((TESBoundObject*)apForm)->GetFormType())
         {
         case 0x1d: {
-            TESForm* form1d = form;
+            TESForm* form1d = apForm;
             weightForm = (TESWeightForm*)(form1d ? (char*)form1d + 0x84 : 0);
             break;
         }
         case 0x2f: {
-            TESForm* form2f = form;
+            TESForm* form2f = apForm;
             weightForm = (TESWeightForm*)(form2f ? (char*)form2f + 0x94 : 0);
             break;
         }
         case 0x28: {
-            TESForm* form28 = form;
+            TESForm* form28 = apForm;
             weightForm = (TESWeightForm*)(form28 ? (char*)form28 + 0x8c : 0);
             break;
         }
@@ -35,38 +38,38 @@ float TESWeightForm::GetWeightForForm(TESForm* form, bool useFormWeight)
         case 0x2e:
         case 0x32:
         case 0x67: {
-            TESForm* form1f = form;
+            TESForm* form1f = apForm;
             weightForm = (TESWeightForm*)(form1f ? (char*)form1f + 0x7c : 0);
             break;
         }
         case 0x1b: {
-            TESForm* form1b = form;
+            TESForm* form1b = apForm;
             weightForm = (TESWeightForm*)(form1b ? (char*)form1b + 0x74 : 0);
             break;
         }
         case 0x1a: {
-            TESForm* form1a = form;
+            TESForm* form1a = apForm;
             weightForm = (TESWeightForm*)(form1a ? (char*)form1a + 0x60 : 0);
             break;
         }
         case 0x19: {
-            TESForm* form19 = form;
+            TESForm* form19 = apForm;
             weightForm = (TESWeightForm*)(form19 ? (char*)form19 + 0x8c : 0);
             break;
         }
         case 0x18: {
-            TESForm* form18 = form;
+            TESForm* form18 = apForm;
             weightForm = (TESWeightForm*)(form18 ? (char*)form18 + 0x60 : 0);
             break;
         }
         case 0x1e: {
-            TESForm* form1e = form;
+            TESForm* form1e = apForm;
             weightForm = (TESWeightForm*)(form1e ? (char*)form1e + 0x84 : 0);
             break;
         }
         case 0x29: {
-            TESForm* form29 = form;
-            if (useFormWeight)
+            TESForm* form29 = apForm;
+            if (abIsHardcore)
                 weight = form29->GetFieldB8Float();
             break;
         }
@@ -81,6 +84,7 @@ float TESWeightForm::GetWeightForForm(TESForm* form, bool useFormWeight)
         return -1.0f;
 }
 
+// pdb: class Modifier, size 0x8 (here 0x1), 2 members
 struct Modifier
 {
     void SetValue(float);
@@ -92,8 +96,9 @@ void __fastcall FUN_008c6060(void* pThis);
 
 // Runs the BaseFormComponent constructor, installs the vtable pointer from DAT_0101a4c4, calls FUN_008c6060, and returns pThis.
 // @fnv 0x0048eac0
-// src: GUESS 0x0048eac0 (confidence: low)
-void* __fastcall Object_InitializeFields_0048eac0(void* pThis)
+// src: XBOX_DEBUG_PDB 0x0048eac0
+// pdb: TESWeightForm::TESWeightForm | TESWeightForm.obj | debug, call graph, high
+void* __fastcall TESWeightForm_ctor(void* pThis)
 {
     ((BaseFormComponent*)pThis)->BaseFormComponent::BaseFormComponent();
     *(int**)pThis = &DAT_0101a4c4;
@@ -107,6 +112,7 @@ void __fastcall DestroyBaseFormComponent(void* component);
 
 // @fnv 0x0048eaf0
 // src: GUESS 0x0048eaf0 (confidence: low)
+// pdb: TESWeightForm::~TESWeightForm | TESWeightForm.obj | debug, call graph, medium
 void __fastcall TESWeightForm_UpdateState_0048eaf0(void* pThis)
 {
     *reinterpret_cast<int*>(pThis) = reinterpret_cast<int>(&DAT_0101a4c4);
@@ -124,20 +130,25 @@ struct S00517380
 // If a1 is non-zero and a2 is the player, calls FUN_00709470 with (1, a1, 0, 0, 1, 0) then FUN_0047a560(a1, a2, 0).
 // @fnv 0x00517380
 // src: COMMUNITY 0x00517380
-void S00517380::TESObjectCONT_HandleOpenFinish(int a1, PC7d* a2)
+// pdb: TESObjectCONT::HandleOpenFinish | TESObjectCONT.obj | retail, upstream name already matches, high
+// pdb params: apItemActivated, apActionRef
+void S00517380::TESObjectCONT_HandleOpenFinish(int apItemActivated, PC7d* apActionRef)
 {
-    if (a1 != 0 && a2 == g_thePlayer)
+    if (apItemActivated != 0 && apActionRef == g_thePlayer)
     {
-        Interface_QueueMenuCreate(1, a1, 0, 0, 1, 0);
-        BGSOpenCloseForm_HandleActivate(a1, a2, 0);
+        Interface_QueueMenuCreate(1, apItemActivated, 0, 0, 1, 0);
+        BGSOpenCloseForm_HandleActivate(apItemActivated, apActionRef, 0);
     }
 }
 
 // Casts the component to TESWeightForm and, if valid, sets the value to its weight via GetWeightForForm.
 // @fnv 0x0048eb10
-void Modifier::SetWeight(BaseFormComponent* component)
+// pdb: TESWeightForm::CopyComponent | TESWeightForm.obj | retail, vtable slot, high
+// pdb params: apCopyFC
+// pdb locals: pCopy
+void Modifier::SetWeight(BaseFormComponent* apCopyFC)
 {
-    TESWeightForm* weightForm = dynamic_cast<TESWeightForm*>(component);
+    TESWeightForm* weightForm = dynamic_cast<TESWeightForm*>(apCopyFC);
     if (!weightForm)
         return;
     SetValue(weightForm->GetWeightForForm());
@@ -145,14 +156,17 @@ void Modifier::SetWeight(BaseFormComponent* component)
 
 struct WeightComparison : TESWeightForm
 {
-    bool TESWeightForm_CompareComponent(BaseFormComponent* component);
+    bool TESWeightForm_CompareComponent(BaseFormComponent* apCompareFC);
 };
 // Returns true if the other form is not a TESWeightForm or its weight differs from this form's weight.
 // @fnv 0x0048eb60
 // src: XBOX_PDB 0x0048eb60
-bool WeightComparison::TESWeightForm_CompareComponent(BaseFormComponent* component)
+// pdb: TESWeightForm::CompareComponent | TESWeightForm.obj | retail, upstream name already matches, high
+// pdb params: apCompareFC
+// pdb locals: pCompare
+bool WeightComparison::TESWeightForm_CompareComponent(BaseFormComponent* apCompareFC)
 {
-    TESWeightForm* other = dynamic_cast<TESWeightForm*>(component);
+    TESWeightForm* other = dynamic_cast<TESWeightForm*>(apCompareFC);
     if (!other)
         return true;
     if (GetWeightForForm() != other->GetWeightForForm())

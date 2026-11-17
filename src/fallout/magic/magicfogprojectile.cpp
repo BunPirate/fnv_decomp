@@ -24,6 +24,7 @@
 void _Deallocate(void*);
 // Calls FUN_008196e0, deallocates this when flags has bit 0 set, and returns this.
 // @fnv 0x00819330
+// pdb: MagicFogProjectile::`scalar deleting destructor' | MagicFogProjectile.obj | retail, vtable slot, high
 void* MagicFogProjectile::DestroyIfFlagged(unsigned int flags)
 {
     FUN_008196e0();
@@ -40,6 +41,7 @@ struct FUN_0081a920_shell
 // Returns true when the int at offset 0xb4 is not 1 and the object is not deleted.
 // @fnv 0x0081a920
 // src: GUESS 0x0081a920 (confidence: low)
+// pdb: MagicFogProjectile::IsActive | MagicFogProjectile.obj | debug, object-file gap fill, medium
 bool FUN_0081a920_shell::ProcessAndTransformResult_0081a920()
 {
     return *(int*)((char*)this + 0xb4) != 1 && !reinterpret_cast<const TESForm*>(this)->IsDeleted();
@@ -48,10 +50,13 @@ bool FUN_0081a920_shell::ProcessAndTransformResult_0081a920()
 extern TESSaveLoadGame* g_TESSaveLoadGame;
 // @fnv 0x0081ad00
 // src: XBOX_PDB 0x0081ad00
-unsigned short MagicFogProjectile::GetSaveSize_0081ad00(unsigned int flags)
+// pdb: MagicFogProjectile::GetSaveSize | MagicFogProjectile.obj | retail, vtable slot, high
+// pdb params: aiFlags
+// pdb locals: isize, plist
+unsigned short MagicFogProjectile::GetSaveSize_0081ad00(unsigned int aiFlags)
 {
     unsigned short isize = 0;
-    isize += GetSaveRecordSize(flags);
+    isize += GetSaveRecordSize(aiFlags);
     isize += 4;
     isize += 4;
     isize += 4;
@@ -83,7 +88,10 @@ bool MagicFogProjectile::IsAboveZero()
 }
 
 // @fnv 0x00819830
-void MagicFogProjectile::DeleteAllNodes()
+// src: XBOX_RETAIL_PDB 0x00819830
+// pdb: MagicFogProjectile::ClearTargetList | MagicFogProjectile.obj | retail, call graph, high
+// pdb locals: ptmp
+void MagicFogProjectile::ClearTargetList()
 {
     VirtualInterface* pNode;
     // Use the offset directly: this unit is built with /Od, so property getters add calls.
@@ -155,10 +163,13 @@ struct FUN_0081eb50_shell
 };
 // If a equals m94, resets m94 to 0, calls v49(1), and returns true; otherwise returns false.
 // @fnv 0x0081eb50
-bool FUN_0081eb50_shell::ClearIfMatches(int aiValue)
+// pdb: MagicProjectile::CheckDeletedCaster | MagicProjectile.obj | retail, vtable slot, high
+// pdb params: apCaster
+// pdb locals: bmatch
+bool FUN_0081eb50_shell::ClearIfMatches(int apCaster)
 {
     bool r = false;
-    if (aiValue == m94)
+    if (apCaster == m94)
     {
         m94 = 0;
         r = true;
@@ -168,7 +179,7 @@ bool FUN_0081eb50_shell::ClearIfMatches(int aiValue)
 }
 
 extern Setting DAT_011d1890, DAT_011d1bd4, DAT_011d19f0;
-extern NiRTTI DAT_012024e0, DAT_01202550, DAT_01202540;
+extern NiRTTI DAT_012024e0, NiPSysSpawnModifier_ms_RTTI, DAT_01202540; // src: XBOX_RETAIL_PDB 0x01202550 (old: DAT_01202550/g_01202550)
 bool NiObject_IsKindOf(const NiRTTI*, NiObject*);
 void* NiObject_DynamicCast(const NiRTTI*, NiObject*);
 struct Emitter
@@ -238,11 +249,15 @@ struct Effect
     int unkA4;
     int unkA8;
     float sizeScale, speedScale;
-    void ScaleEffect(NiObject*);
+    void MagicFogProjectile_AdjustParticles(NiObject*);
 };
 // Scales the effect's size and speed settings and applies the scaled values to each particle's emitter and controller, recursing into child nodes.
 // @fnv 0x00819890
-void Effect::ScaleEffect(NiObject* object)
+// src: XBOX_DEBUG_PDB 0x00819890
+// pdb: MagicFogProjectile::AdjustParticles | MagicFogProjectile.obj | debug, call graph, high
+// pdb params: apav
+// pdb locals: fareaLife, fareaSpeed, fareaSize, ppsys, i, pmod, pspawn, pemit, pnode, I, pchild
+void Effect::MagicFogProjectile_AdjustParticles(NiObject* apav)
 {
     float fSpeedFactor;
     {
@@ -251,9 +266,9 @@ void Effect::ScaleEffect(NiObject* object)
             float fSizeFactor = sizeScale * *DAT_011d1890.Setting_Float_00403e20();
             fSpeedFactor = speedScale * *DAT_011d1bd4.Setting_Float_00403e20();
             fSpeedFactor2 = speedScale * *DAT_011d19f0.Setting_Float_00403e20();
-            if (NiObject_IsKindOf(&DAT_012024e0, object))
+            if (NiObject_IsKindOf(&DAT_012024e0, apav))
             {
-                Particle* particle = (Particle*)object;
+                Particle* particle = (Particle*)apav;
                 for (unsigned i = 0; i < particle->NiParticleSystem_GetModifierCount(); ++i)
                 {
                     Controller* controller;
@@ -261,7 +276,7 @@ void Effect::ScaleEffect(NiObject* object)
                         Emitter* emitter;
                         {
                             NiObject* entry = particle->GetByIndex(i);
-                            emitter = (Emitter*)NiObject_DynamicCast(&DAT_01202550, entry);
+                            emitter = (Emitter*)NiObject_DynamicCast(&NiPSysSpawnModifier_ms_RTTI, entry);
                             if (emitter)
                                 emitter->NiPSysSpawnModifier_SetLifeSpan(emitter->NiPSysSpawnModifier_GetLifeSpan() * fSizeFactor);
                             controller = (Controller*)NiObject_DynamicCast(&DAT_01202540, entry);
@@ -275,13 +290,13 @@ void Effect::ScaleEffect(NiObject* object)
                     }
                 }
             }
-            else if (object && object->IsSceneNode())
+            else if (apav && apav->IsSceneNode())
             {
-                NiNode* node = (NiNode*)object;
+                NiNode* node = (NiNode*)apav;
                 for (unsigned i = 0; i < node->FUN_0043b480(); ++i)
                 {
                     NiObject* child = node->FUN_0043b4a0(i);
-                    ScaleEffect(child);
+                    MagicFogProjectile_AdjustParticles(child);
                 }
             }
         }
@@ -305,11 +320,14 @@ extern SaveManager* DAT_011de45c;
 void* __cdecl FUN_00401460(void*, const void*, unsigned);
 // Resets the projectile, reads several 4-byte fields and a form ID from the stream, then reads a list of form/flag records when the save version is at least 0x71.
 // @fnv 0x0081afa0
-void Projectile::LoadFromStream(int a, int b)
+// pdb: MagicFogProjectile::LoadGame | MagicFogProjectile.obj | retail, vtable slot, high
+// pdb params: aiFlags, aiCurrentFlags
+// pdb locals: ffadeTimer, icount, i, ceffectItemIndex, itargetID, pnewEntry
+void Projectile::LoadFromStream(int aiFlags, int aiCurrentFlags)
 {
-    DeleteAllNodes();
+    ClearTargetList();
     AnimateNiNode();
-    LoadGame_0081e980(a, b);
+    LoadGame_0081e980(aiFlags, aiCurrentFlags);
     TESForm_LoadGameDataOLD((char*)this + 0xA8, 4);
     TESForm_LoadGameDataOLD(&kImpacts, 4);
     TESForm_LoadGameDataOLD((char*)this + 0xAC, 4);
@@ -343,7 +361,7 @@ void Projectile::LoadFromStream(int a, int b)
     }
 }
 
-void __cdecl BSUtilities_ProcessSelectiveUpdate(NiNode* pkNode);
+void __cdecl BSUtilities_ProcessSelectiveUpdate(NiNode* apObject);
 NiControllerManager* __cdecl NiObject_DynamicCast(void* pkRTTI, void* pkController);
 extern char g_kNiControllerManagerRTTI_011f36ac[];
 extern const float g_fInfinity_0107ad40;
@@ -488,12 +506,15 @@ struct FogProjectileInit
     float m_fScale;
 
     const NiPoint3& FUN_00430830();
-    void ScaleEffect(NiAVObject* pkObject);
-    void InitProjectileEffect();
+    void MagicFogProjectile_AdjustParticles(NiAVObject* apav);
+    void MagicFogProjectile_Init3D();
 };
 
 // @fnv 0x00819a90
-void FogProjectileInit::InitProjectileEffect()
+// src: XBOX_RETAIL_PDB 0x00819a90
+// pdb: MagicFogProjectile::Init3D | MagicFogProjectile.obj | retail, string-set bridge, high
+// pdb locals: pn, pmanager, angle, pareaParticles, rot, pseq, UpdateData
+void FogProjectileInit::MagicFogProjectile_Init3D()
 {
     NiNode* pkNode = Get3D();
     if (pkNode)
@@ -507,7 +528,7 @@ void FogProjectileInit::InitProjectileEffect()
         BSUtilities_ProcessSelectiveUpdate(pkNode);
         NiAVObject* pkArea_2 = static_cast<const NiNode*>(pkNode)->GetObjectByName(NiFixedString(s_szAreaEffect));
         if (pkArea_2)
-            ScaleEffect(pkArea_2);
+            MagicFogProjectile_AdjustParticles(pkArea_2);
         NiControllerManager* pkManagerTmp = NiObject_DynamicCast(g_kNiControllerManagerRTTI_011f36ac, static_cast<const NiObjectNET*>(pkNode)->GetControllers());
         if (pkManagerTmp)
         {
@@ -555,7 +576,7 @@ class FUN_0081ade0_cls
     void ForwardToSaveLoadGame(void*, unsigned int);
     int FUN_00810fd0();
     int FUN_00810fd0(int);
-    void SaveToStream(int a1);
+    void SaveToStream(int aiFlags);
 
     int unk00, unk04, unk08, unk0C, unk10, unk14, unk18, unk1C;
     int unk20, unk24, unk28, unk2C, unk30, unk34, unk38, unk3C;
@@ -575,11 +596,14 @@ class FUN_0081ade0_cls
 };
 
 // @fnv 0x0081ade0
-void FUN_0081ade0_cls::SaveToStream(int a1)
+// pdb: MagicFogProjectile::SaveGame | MagicFogProjectile.obj | retail, vtable slot, high
+// pdb params: aiFlags
+// pdb locals: ffadeTimer, icount, plist, pcount, ceffectItemIndex, itargetID
+void FUN_0081ade0_cls::SaveToStream(int aiFlags)
 {
     float f;
     unsigned short* out;
-    SaveGame_0081e8c0(a1);
+    SaveGame_0081e8c0(aiFlags);
     TESForm_SaveGameDataOLD(&m_a8, 4);
     TESForm_SaveGameDataOLD(&m88, 4);
     TESForm_SaveGameDataOLD(&m_ac, 4);
@@ -644,7 +668,7 @@ struct FogLight
 
 struct FogProcess
 {
-    void FUN_00548230(void* pkProjectile, int iUnk);
+    void FUN_00548230(void* apRef, int abOnTop);
 };
 
 struct FogRefNode
@@ -656,7 +680,7 @@ struct FogRefNode
 
 struct FogIndexList
 {
-    int FUN_00406ee0(unsigned char m_ucClipIdentifier);
+    int GetEffectItemByIndex(unsigned char m_ucClipIdentifier);
 };
 struct FogFile
 {
@@ -802,20 +826,23 @@ struct FogProjectileLoad
     FogLight* m_pkLight;
 
     void ResolveMagicReferences(int a1, int a2);
-    void InitProjectileEffect();
+    void MagicFogProjectile_Init3D();
     FogProcess* FUN_008d6f30();
     FogBaseForm* GetAVEffect();
-    BSSoundHandle PlaySoundByFormID(unsigned int auiFormId, int a2, int a3, int a4);
+    BSSoundHandle PlaySoundByFormID(unsigned int aiSoundFormID, int abLoop, int aiSoundType, int abAllowCopy);
     FogFile* FUN_00810fd0();
-    void LoadProjectile(int a1, int a2);
+    void LoadProjectile(int aiFlags, int aiOldFlags);
 };
 
 // Runs the projectile load steps, rebuilds the sound handle and light, and remaps reference forms and indices when the save version is at least 0x71.
 // @fnv 0x0081b180
-void FogProjectileLoad::LoadProjectile(int a1, int a2)
+// pdb: MagicFogProjectile::InitLoadGame | MagicFogProjectile.obj | retail, vtable slot, high
+// pdb params: aiFlags, aiOldFlags
+// pdb locals: ffadeTimer, isoundFileID, plist, ceffectItemIndex, itargetID
+void FogProjectileLoad::LoadProjectile(int aiFlags, int aiOldFlags)
 {
-    ResolveMagicReferences(a1, a2);
-    InitProjectileEffect();
+    ResolveMagicReferences(aiFlags, aiOldFlags);
+    MagicFogProjectile_Init3D();
     FUN_008d6f30()->FUN_00548230(this, 0);
     if (unkb4 != 1 && GetAVEffect()->BGSProjectile_GetExplosion())
     {
@@ -846,7 +873,7 @@ void FogProjectileLoad::LoadProjectile(int a1, int a2)
             if (uiFormID_2)
                 pkNode->m_pkForm = dynamic_cast<TESObjectREFR*>(TESForm_GetFormByNumericID(uiFormID_2));
             if (FUN_00810fd0())
-                pkNode->m_iValue = FUN_00810fd0()->kList.FUN_00406ee0(ucIndexZ);
+                pkNode->m_iValue = FUN_00810fd0()->kList.GetEffectItemByIndex(ucIndexZ);
             pkNode = pkNode->m_pkNext;
         }
     }
@@ -880,16 +907,18 @@ struct FUN_008196e0 : public FUN_0081de70, public MagicFogIface8196
     MagicFogProjectile::LightState* m_pkCc;
     virtual ~FUN_008196e0();
     void* FUN_009185e0();
-    void DeleteAllNodes();
+    void ClearTargetList();
 };
 
 // @fnv 0x008196e0
+// pdb: MagicFogProjectile::~MagicFogProjectile | MagicFogProjectile.obj | debug, object-file gap fill, medium
+// pdb locals: pcaster
 FUN_008196e0::~FUN_008196e0()
 {
     unsigned int uiValue = FUN_009185e0() ? (unsigned int)((MagicCaster*)FUN_009185e0())->GetCasterReference() : 0;
     if (uiValue != DAT_011dea3c)
         _11DC778_Subtract(*DAT_011d15f8.Setting_Float_00403e20());
-    DeleteAllNodes();
+    ClearTargetList();
     if (m_kSound.IsValid())
     {
         m_kSound.Stop();
@@ -922,7 +951,7 @@ struct FogRace
 {
     FogColorHolder* bhkNiCollisionObject_GetWorldObject();
 };
-FogRace* __cdecl FindFirstCollisionObject(void* pkNode);
+FogRace* __cdecl FindFirstCollisionObject(void* ap3D);
 int __cdecl bhkCollisionFilter_GetNewSystemGroup();
 void __cdecl MagicProjectile_AddTrackedProjectile(float fValue);
 
@@ -931,7 +960,7 @@ extern Actor* g_thePlayer_011dea3c;
 struct FogShader
 {
     FogColor bhkCharacterController_GetCollisionFilter();
-    void bhkCharacterController_SetCollisionFilter(FogColor kColor);
+    void bhkCharacterController_SetCollisionFilter(FogColor aiFilter);
 };
 
 extern Setting g_s_011d15f8;
@@ -1061,14 +1090,17 @@ struct FogProjectileImpl
     void UpdateFlags(int a1, int a2);
     FogShader* FUN_009306d0();
     MagicCaster* FUN_009185e0();
-    void MagicFogProjectile_FinishInitLoadGameTES(int a1, int a2);
+    void MagicFogProjectile_FinishInitLoadGameTES(int aiFlags, int aiOldFlags);
 };
 
 // @fnv 0x0081b430
 // src: COMMUNITY 0x0081b430
-void FogProjectileImpl::MagicFogProjectile_FinishInitLoadGameTES(int a1, int a2)
+// pdb: MagicFogProjectile::FinishInitLoadGame | MagicFogProjectile.obj | retail, vtable slot, high
+// pdb params: aiFlags, aiOldFlags
+// pdb locals: pcaster, pcon, igroup, filter, pref, pactor, pcol, prb
+void FogProjectileImpl::MagicFogProjectile_FinishInitLoadGameTES(int aiFlags, int aiOldFlags)
 {
-    UpdateFlags(a1, a2);
+    UpdateFlags(aiFlags, aiOldFlags);
     FogShader* pkShaderZ = FUN_009306d0();
     if (pkShaderZ)
     {

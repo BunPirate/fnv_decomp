@@ -4,6 +4,7 @@
 
 class TESForm;
 
+// pdb: class TESQualityForm, size 0x8, bases: BaseFormComponent, 1 members
 class TESQualityForm : public BaseFormComponent
 {
 public:
@@ -18,6 +19,6 @@ public:
     unsigned char GetFormQuality();
     void SetFormQuality(unsigned char quality);
 
-    unsigned char m_ucFormQuality;
+    unsigned char cQuality; // src: XBOX_RETAIL_PDB +0x4 (old: m_ucFormQuality)
     char _pad_5[3];
 };

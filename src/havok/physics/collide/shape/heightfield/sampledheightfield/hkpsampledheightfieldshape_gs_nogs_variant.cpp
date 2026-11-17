@@ -83,18 +83,21 @@ struct FUN_00d26310_cls {
     int unk00;
     int unk04;
     Child_d26310* m_pChildObject;
-    void ComputeValues_00d26310(Context_d26310* pkContext, const Input_d26310* pkInput);
+    void ComputeValues_00d26310(Context_d26310* cdBody, const Input_d26310* hitIn);
 };
 // @fnv 0x00d26310
 // src: GUESS 0x00d26310 (confidence: low)
-void FUN_00d26310_cls::ComputeValues_00d26310(Context_d26310* pkContext, const Input_d26310* pkInput)
+// pdb: `anonymous namespace'::RotateNormalHitCollector::addRayHit | hkpSampledHeightFieldShape.obj | retail, vtable slot, high
+// pdb params: cdBody, hitIn
+// pdb locals: hitOut
+void FUN_00d26310_cls::ComputeValues_00d26310(Context_d26310* cdBody, const Input_d26310* hitIn)
 {
-    Input_d26310 kLocal(*pkInput);
-    const LocalM128& kWorldPosition = pkInput->m_kLightVector;
-    const hkRotation& r = *pkContext->m_pRotation;
+    Input_d26310 kLocal(*hitIn);
+    const LocalM128& kWorldPosition = hitIn->m_kLightVector;
+    const hkRotation& r = *cdBody->m_pRotation;
     LocalM128 kRes = _mm_mul_ps(_mm_shuffle_ps(kWorldPosition, kWorldPosition, 0x55), r.m_kColumn1.m_vComponents);
     kRes = _mm_add_ps(kRes, _mm_mul_ps(_mm_shuffle_ps(kWorldPosition, kWorldPosition, 0), r.m_kColumn0.m_vComponents));
     kRes = _mm_add_ps(kRes, _mm_mul_ps(_mm_shuffle_ps(kWorldPosition, kWorldPosition, 0xaa), r.m_kColumn2.m_vComponents));
     kLocal.m_kLightVector = kRes;
-    m_pChildObject->query(pkContext, &kLocal);
+    m_pChildObject->query(cdBody, &kLocal);
 }

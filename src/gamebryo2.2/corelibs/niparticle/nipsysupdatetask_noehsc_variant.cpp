@@ -8,7 +8,7 @@
 #include "../../../../include/NiPSysUpdateTask.h"
 #include "../../../../include/NiRefObject.h"
 
-extern "C" void* g_01202580;
+extern "C" void* NiPSysUpdateTask_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01202580 (old: g_01202580)
 void* __cdecl NiPSysUpdateTask_GetRTTI();
 extern int DAT_010be45c;
 extern int DAT_01069674;
@@ -31,7 +31,7 @@ NiPSysUpdateTask* PopNiPSysUpdateTask();
 typedef unsigned int C25AC0size_t;
 struct C25AC0MemoryManager
 {
-    void Deallocate(void* pvMem);
+    void Deallocate(void* apMem);
 };
 extern C25AC0MemoryManager g_C25AC0MemoryManager;
 inline void __cdecl operator delete(void* pvMem)

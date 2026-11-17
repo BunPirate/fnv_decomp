@@ -20,7 +20,7 @@ struct FUN_00b2ae60_shell
 };
 struct RandomNumberGenerator
 {
-    void SeedRandomGenerator(long);
+    void Reseed(long);
     float GenerateRandomFloat(float, float);
 };
 extern float DAT_0108cb00;
@@ -35,7 +35,7 @@ struct ElementIterator
 extern unsigned int DAT_010173f0;
 struct FUN_00b04d40_Obj
 {
-    float CVec3_Distance(int a);
+    float CVec3_Distance(int cVec);
 };
 extern FUN_00b04d40_Obj DAT_011f8e9c;
 extern double DAT_01012060;
@@ -356,55 +356,58 @@ struct CTreeFileAccessImpl : ElementIterator
 
 // @fnv 0x00b2b550
 // src: XBOX_PDB 0x00b2b550
-bool CTreeEngine::Parse_00b2b550(CTreeFileAccessImpl* file)
+// pdb: CTreeEngine::Parse | TreeEngine.obj | retail, string-set bridge, high
+// pdb params: cFile
+// pdb locals: nToken, bSuccess, strHeader
+bool CTreeEngine::Parse_00b2b550(CTreeFileAccessImpl* cFile)
 {
     bool bSuccess = false;
 
-    int strBuf9 = file->GetNextElement();
+    int strBuf9 = cFile->GetNextElement();
     if (strBuf9 != 0x3e8)
     {
         throw SptError("missing begin_file token", false);
     }
 
-    SptString str3 = ((CTreeFileAccessImpl*)file)->CTreeFileAccess_ParseString();
+    SptString str3 = ((CTreeFileAccessImpl*)cFile)->CTreeFileAccess_ParseString();
     if (str3 != SptString(DAT_011ad36c))
     {
         throw SptError("not a valid SpeedTree SPT file", false);
     }
 
-    strBuf9 = file->GetNextElement();
+    strBuf9 = cFile->GetNextElement();
     do
     {
         switch (strBuf9)
         {
         case 0x3ea:
-            ParseTreeInfo(file);
+            ParseTreeInfo(cFile);
             break;
         case 0x3ec:
-            m_sub94.SIdvLeafInfo_Parse(file);
+            m_sub94.SIdvLeafInfo_Parse(cFile);
             break;
         case 0x3f3:
-            m_sub10c.SIdvWindInfo_Parse(file);
+            m_sub10c.SIdvWindInfo_Parse(cFile);
             break;
         default:
             throw SptError("malformed SpeedTree SPT file", false);
         }
-        strBuf9 = file->GetNextElement();
+        strBuf9 = cFile->GetNextElement();
     } while (strBuf9 != 0x3e9);
 
-    if (!((CTreeFileAccessImpl*)file)->EndOfFile() && ((CTreeFileAccessImpl*)file)->GetElementAtOffset() == 0x1b58)
+    if (!((CTreeFileAccessImpl*)cFile)->EndOfFile() && ((CTreeFileAccessImpl*)cFile)->GetElementAtOffset() == 0x1b58)
     {
-        static_cast<ElementIterator*>(file)->GetNextElement();
-        ParseLeafCluster(file);
+        static_cast<ElementIterator*>(cFile)->GetNextElement();
+        ParseLeafCluster(cFile);
     }
 
-    m_pcFileName = m_pcFileName;
+    m_sTreeInfo = m_sTreeInfo;
 
     m_suba4.CTreeEngine_SetLeafTextures(&m_suba4);
 
-    if (m_actualSize > -1.0f)
+    if (m_fOverrideTreeSize > -1.0f)
     {
-        SetSize_00b2bd20(m_actualSize, m_actualVariance);
+        SetSize_00b2bd20(m_fOverrideTreeSize, m_fOverrideTreeVariance);
     }
 
     bSuccess = true;
@@ -1328,28 +1331,28 @@ void __fastcall ClearTreeGeometry(CTreeEngine* tree)
 {
     if (TreeGeometryInitialized(tree))
     {
-        delete (*(GvPart**)&tree->unk58);
-        (*(GvPart**)&tree->unk58) = 0;
-        for (int i = 0; i < tree->unkd8; ++i)
+        delete (*(GvPart**)&tree->m_pBranch);
+        (*(GvPart**)&tree->m_pBranch) = 0;
+        for (int i = 0; i < tree->m_bParsedLeafLods; ++i)
         {
-            if ((*(GvVector<GvNode*>**)&tree->unkec))
+            if ((*(GvVector<GvNode*>**)&tree->m_fLargeBranchPercent))
             {
-                for (unsigned int j = 0; j < (*(GvVector<GvNode*>**)&tree->unkec)[i].size(); ++j)
+                for (unsigned int j = 0; j < (*(GvVector<GvNode*>**)&tree->m_fLargeBranchPercent)[i].size(); ++j)
                 {
-                    delete (*(GvVector<GvNode*>**)&tree->unkec)[i][j];
-                    (*(GvVector<GvNode*>**)&tree->unkec)[i][j] = 0;
+                    delete (*(GvVector<GvNode*>**)&tree->m_fLargeBranchPercent)[i][j];
+                    (*(GvVector<GvNode*>**)&tree->m_fLargeBranchPercent)[i][j] = 0;
                 }
-                (*(GvVector<GvNode*>**)&tree->unkec)[i].clear();
+                (*(GvVector<GvNode*>**)&tree->m_fLargeBranchPercent)[i].clear();
             }
         }
-        delete[] (*(GvVector<GvNode*>**)&tree->unkec);
-        (*(GvVector<GvNode*>**)&tree->unkec) = 0;
-        for (unsigned int k = 0; k < (*(GvVector<GvLink*>*)&tree->unk60).size(); ++k)
+        delete[] (*(GvVector<GvNode*>**)&tree->m_fLargeBranchPercent);
+        (*(GvVector<GvNode*>**)&tree->m_fLargeBranchPercent) = 0;
+        for (unsigned int k = 0; k < (*(GvVector<GvLink*>*)&tree->m_vBranchInfo).size(); ++k)
         {
-            delete (*(GvVector<GvLink*>*)&tree->unk60)[k];
-            (*(GvVector<GvLink*>*)&tree->unk60)[k] = 0;
+            delete (*(GvVector<GvLink*>*)&tree->m_vBranchInfo)[k];
+            (*(GvVector<GvLink*>*)&tree->m_vBranchInfo)[k] = 0;
         }
-        (*(GvVector<GvLink*>*)&tree->unk60).clear();
+        (*(GvVector<GvLink*>*)&tree->m_vBranchInfo).clear();
         (*(bool*)((char*)tree + 0x21)) = false;
     }
 }
@@ -1370,11 +1373,14 @@ inline void SetTreeVector(NiPoint3* point, float fX, float fY, float fZ)
 
 // @fnv 0x00b2bc70
 // src: COMMUNITY 0x00b2bc70
-void CTreeEngine::SetWind(float fScale)
+// pdb: CTreeEngine::SetWind | TreeEngine.obj | debug, upstream name already matches, high
+// pdb params: fStrength
+// pdb locals: fLeafFrequency, fLeafThrow
+void CTreeEngine::SetWind(float fStrength)
 {
-    *(float*)((char*)this + 0x124) = fScale;
-    float fY = DAT_010a5664 * fScale * TreeVectorComponent((NiPoint3*)&m_sub10c, 1);
-    float fX = DAT_010a5668 * fScale * TreeVectorComponent((NiPoint3*)&m_sub10c, 0);
+    *(float*)((char*)this + 0x124) = fStrength;
+    float fY = DAT_010a5664 * fStrength * TreeVectorComponent((NiPoint3*)&m_sub10c, 1);
+    float fX = DAT_010a5668 * fStrength * TreeVectorComponent((NiPoint3*)&m_sub10c, 0);
     SetTreeVector((NiPoint3*)((char*)this + 0x118), -fX, fX, fY);
 }
 
@@ -1531,60 +1537,63 @@ inline void S2bde0_Reset()
 
 // @fnv 0x00b2bde0
 // src: XBOX_PDB 0x00b2bde0
-void CTreeEngine::ParseTreeInfo(ElementIterator* p)
+// pdb: CTreeEngine::ParseTreeInfo | TreeEngine.obj | retail, string-set bridge, high
+// pdb params: cFile
+// pdb locals: nToken, nSeed
+void CTreeEngine::ParseTreeInfo(ElementIterator* cFile)
 {
     int iCount;
-    int iToken = ((ElementIterator*)p)->GetNextElement();
+    int iToken = ((ElementIterator*)cFile)->GetNextElement();
     do
     {
         switch (iToken)
         {
         case 0x7d0: {
             Gap1();
-            S2bde0_Str kTmp(((S2bde0_Parser*)p)->CTreeFileAccess_ParseString());
-            (*(S2bde0_Name*)&m_pcFileName) = kTmp;
+            S2bde0_Str kTmp(((S2bde0_Parser*)cFile)->CTreeFileAccess_ParseString());
+            (*(S2bde0_Name*)&m_sTreeInfo) = kTmp;
         }
             {
-                (*(S2bde0_Name*)&m_pcFileName) = (*(S2bde0_Name*)&m_pcFileName).ProcessEntries_00b09f90();
+                (*(S2bde0_Name*)&m_sTreeInfo) = (*(S2bde0_Name*)&m_sTreeInfo).ProcessEntries_00b09f90();
                 break;
             }
         case 0x7d5: {
-            iCount = ((ElementIterator*)p)->GetNextElement();
-            InitSeed(iCount);
+            iCount = ((ElementIterator*)cFile)->GetNextElement();
+            SetSeed(iCount);
             break;
         }
         case 0x7d3:
-            (*(float*)&unk44) = ((S2bde0_Parser*)p)->CTreeFileAccess_ParseFloat();
+            (*(float*)&unk44) = ((S2bde0_Parser*)cFile)->CTreeFileAccess_ParseFloat();
             break;
         case 0x7d1:
-            (*(float*)&unk40) = ((S2bde0_Parser*)p)->CTreeFileAccess_ParseFloat();
+            (*(float*)&unk40) = ((S2bde0_Parser*)cFile)->CTreeFileAccess_ParseFloat();
             break;
         case 0x7d4:
-            ((ElementIterator*)p)->GetNextElement();
+            ((ElementIterator*)cFile)->GetNextElement();
             break;
         case 0x7d2:
-            ((S2bde0_Parser*)p)->ProcessAndTransformResult_00b06180();
+            ((S2bde0_Parser*)cFile)->ProcessAndTransformResult_00b06180();
             break;
         case 0x7d6:
-            (*(float*)&unk4c) = ((S2bde0_Parser*)p)->CTreeFileAccess_ParseFloat();
+            (*(float*)&unk4c) = ((S2bde0_Parser*)cFile)->CTreeFileAccess_ParseFloat();
             break;
         case 0x7d7:
-            (*(float*)&unk50) = ((S2bde0_Parser*)p)->CTreeFileAccess_ParseFloat();
+            (*(float*)&unk50) = ((S2bde0_Parser*)cFile)->CTreeFileAccess_ParseFloat();
             break;
         case 0x3f6:
-            ProcessEntries_00b2c790(p);
+            ParseBranchInfo(cFile);
             break;
         default:
             throw FUN_00b09480("malformed general tree information", false);
         }
-        iToken = ((ElementIterator*)p)->GetNextElement();
+        iToken = ((ElementIterator*)cFile)->GetNextElement();
     } while (iToken != 0x3eb);
     DeadEnd();
 }
 
 namespace fnv_00b2c130 {
 void __cdecl FUN_00ec7c56();
-void __cdecl CIdvBranch_SortBranchVector(void* p);
+void __cdecl CIdvBranch_SortBranchVector(void* vAllBranches);
 void __cdecl FormHeapFreeAndLog_00401030(void* p);
 
 struct Elem
@@ -1682,21 +1691,21 @@ struct FUN_00b3f100
         FUN_00aa7830();
     }
     void FUN_00aa7830();
-    float FUN_00b3f130(float a, float b);
+    float FUN_00b3f130(float a, float fMax);
 };
 
 struct Obj58
 {
-    void CIdvBranch_BuildBranchVector(FUN_00b17db0* vec);
+    void CIdvBranch_BuildBranchVector(FUN_00b17db0* vAllBranches);
 };
 
 struct Obj5c
 {
     int m_00[34];
     FUN_00b17db0 m_88;
-    void CIndexedGeometry_DeleteLodStrip(int a);
-    void CIndexedGeometry_ResetStripCounter(unsigned short a);
-    void CIndexedGeometry_AddStrip(int a, int b, int c);
+    void CIndexedGeometry_DeleteLodStrip(int usLodLevel);
+    void CIndexedGeometry_ResetStripCounter(unsigned short nLodLevel);
+    void CIndexedGeometry_AddStrip(int nLodLevel, int pStrip, int nStripLength);
 };
 
 inline float W(Elem* const& e)
@@ -1727,22 +1736,24 @@ inline unsigned int Count(CTreeEngine* tree)
 }
 inline float Lerp(CTreeEngine* tree, float t, float a)
 {
-    return a + (tree->unkF4 - a) * t;
+    return a + (tree->m_sWindInfo - a) * t;
 }
 } // namespace fnv_00b2c130
 
 // @fnv 0x00b2c130
 // src: COMMUNITY 0x00b2c130
+// pdb: CTreeEngine::BuildBranchLods | TreeEngine.obj | retail, upstream name already matches, high
+// pdb locals: vAllBranches, fSavePercent, fTotalVolume, cRandom, nNumBranchLodLevels, fLargestVolume, vSavedBranches, i, fVolume, fFuzziness, fOneMinusFuzziness, uiLod, fPercent, nBranchCount, fTargetVolume, fLodVolume, j, k
 void CTreeEngine::BuildBranchLods()
 {
     using namespace fnv_00b2c130;
     int v_j;
     Dead2();
     FUN_00b17db0 k;
-    if (((Obj58*)unk58))
+    if (((Obj58*)m_pBranch))
     {
-        if ((unsigned short)(((Obj5c*)unk5c)->m_88.size() / 3) > 0)
-            ((Obj58*)unk58)->CIdvBranch_BuildBranchVector(&k);
+        if ((unsigned short)(((Obj5c*)m_pBranchGeometry)->m_88.size() / 3) > 0)
+            ((Obj58*)m_pBranch)->CIdvBranch_BuildBranchVector(&k);
     }
     float v_sum = 0.0f;
     float v_maxA = 0.0f;
@@ -1797,7 +1808,7 @@ void CTreeEngine::BuildBranchLods()
         for (v_p = 0; v_p < v_k; v_p++)
         {
             if (!v_p)
-                ((Obj5c*)unk5c)->CIndexedGeometry_DeleteLodStrip(0);
+                ((Obj5c*)m_pBranchGeometry)->CIndexedGeometry_DeleteLodStrip(0);
             float v_acc = (int)v_k < 2 ? 1.0f : Lerp(this, (float)((double)v_p / (double)(int)(v_k - 1)), unkF8);
             float v_target = v_acc * v_sum;
             int lhs = 0;
@@ -1808,16 +1819,16 @@ void CTreeEngine::BuildBranchLods()
                 w = w + W(k[e]);
                 lhs = 1 + lhs;
             }
-            ((Obj5c*)unk5c)->CIndexedGeometry_ResetStripCounter((unsigned short)v_p);
+            ((Obj5c*)m_pBranchGeometry)->CIndexedGeometry_ResetStripCounter((unsigned short)v_p);
             if (v_p == 0 && lhs == 0)
             {
-                ((Obj5c*)unk5c)->CIndexedGeometry_AddStrip(0, 0, 0);
+                ((Obj5c*)m_pBranchGeometry)->CIndexedGeometry_AddStrip(0, 0, 0);
             }
             else
             {
                 int v_s;
                 for (v_s = 0; v_s < lhs; v_s++)
-                    k[v_s]->BuildStripIndices(v_p, ((Obj5c*)unk5c));
+                    k[v_s]->BuildStripIndices(v_p, ((Obj5c*)m_pBranchGeometry));
             }
         }
     }
@@ -1896,6 +1907,7 @@ class FUN_00b2cb50 : public VectorValB2CB50
 };
 
 // @fnv 0x00b2cb50
+// pdb: CLeafLodEngine::~CLeafLodEngine | TreeEngine.obj | debug, object-file gap fill, medium
 FUN_00b2cb50::~FUN_00b2cb50()
 {
     Tidy();
@@ -1941,7 +1953,7 @@ struct Parser
     ByteVec kData;
     int GetNextElement();
 };
-int __cdecl CBillboardLeaf_Parse(Parser* p);
+int __cdecl CBillboardLeaf_Parse(Parser* cFile);
 struct LodQ
 {
     int ai[6];
@@ -1959,35 +1971,38 @@ inline void DeadTop()
 
 // @fnv 0x00b2cbc0
 // src: XBOX_PDB 0x00b2cbc0
-void CTreeEngine::ParseLeafCluster(ElementIterator* p)
+// pdb: CTreeEngine::ParseLeafCluster | TreeEngine.obj | retail, string-set bridge, high
+// pdb params: cFile
+// pdb locals: nLeafLod, nToken, nNumLeafLodLevels
+void CTreeEngine::ParseLeafCluster(ElementIterator* cFile)
 {
     using namespace fnv_00b2cbc0;
     using fnv_00b2cbc0::FUN_00b09480;
     DeadTop();
     int iCount = 0;
-    int iLevel = p->GetNextElement();
-    unkd8 = iLevel;
-    delete[] (*(LodQ**)&unkec);
-    (*(LodQ**)&unkec) = new LodQ[unkd8];
-    int iTok = p->GetNextElement();
+    int iLevel = cFile->GetNextElement();
+    m_bParsedLeafLods = iLevel;
+    delete[] (*(LodQ**)&m_fLargeBranchPercent);
+    (*(LodQ**)&m_fLargeBranchPercent) = new LodQ[m_bParsedLeafLods];
+    int iTok = cFile->GetNextElement();
     while (iTok != 0x1b59)
     {
-        if (iCount >= unkd8)
+        if (iCount >= m_bParsedLeafLods)
             throw FUN_00b09480("too many leaf lod levels", false);
         if (iTok != 0x1b5a)
             throw FUN_00b09480("malformed leaf lod data", false);
-        iTok = p->GetNextElement();
+        iTok = cFile->GetNextElement();
         while (iTok != 0x1b5b)
         {
             if (iTok != 0x1b5c)
                 throw FUN_00b09480("malformed leaf lod data", false);
-            (*(LodQ**)&unkec)[iCount].UpdateState_00b15390(CBillboardLeaf_Parse((Parser*)p));
-            iTok = p->GetNextElement();
+            (*(LodQ**)&m_fLargeBranchPercent)[iCount].UpdateState_00b15390(CBillboardLeaf_Parse((Parser*)cFile));
+            iTok = cFile->GetNextElement();
         }
         iCount++;
-        iTok = p->GetNextElement();
+        iTok = cFile->GetNextElement();
     }
-    (*(bool*)&unkf0) = true;
+    (*(bool*)&m_nBranchesWeightLevel) = true;
 }
 
 namespace fnv_00b2d090 {
@@ -2029,24 +2044,28 @@ inline IdvFileError::IdvFileError(const std::string& strMessage, bool bUseErrno)
 
 // @fnv 0x00b2d090
 // src: XBOX_PDB 0x00b2d090
-void CTreeEngine::ParseTextureControls(TreeFileAccess* pFile)
+// pdb: CTreeEngine::ParseTextureControls | TreeEngine.obj | retail, string-set bridge, high
+// pdb params: cFile
+// pdb locals: i
+void CTreeEngine::ParseTextureControls(TreeFileAccess* cFile)
 {
     using namespace fnv_00b2d090;
-    for (unsigned int i = 0; i < (*(std::vector<TextureControlB2D090*>*)&unk60).size(); ++i)
+    for (unsigned int i = 0; i < (*(std::vector<TextureControlB2D090*>*)&m_vBranchInfo).size(); ++i)
     {
-        if (pFile->ParseToken() != 15002)
+        if (cFile->ParseToken() != 15002)
             throw IdvFileError("malformed texture controls", false);
-        (*(std::vector<TextureControlB2D090*>*)&unk60)[i]->m_bFlag = pFile->ParseBool();
-        if (pFile->ParseToken() != 15003)
+        (*(std::vector<TextureControlB2D090*>*)&m_vBranchInfo)[i]->m_bFlag = cFile->ParseBool();
+        if (cFile->ParseToken() != 15003)
             throw IdvFileError("malformed texture controls", false);
-        (*(std::vector<TextureControlB2D090*>*)&unk60)[i]->m_fValue = pFile->ParseReal();
+        (*(std::vector<TextureControlB2D090*>*)&m_vBranchInfo)[i]->m_fValue = cFile->ParseReal();
     }
-    if (pFile->ParseToken() != 15001)
+    if (cFile->ParseToken() != 15001)
         throw IdvFileError("malformed texture controls", false);
 }
 
 // The same SpeedTree file reader as TreeFileAccess, seen through CTreeEngine.h's Reader declaration. Its own
 // members, not ElementIterator's: the base-class call form shifts the /Ob1 inline budget of 0x00b2d2e0.
+// pdb: structure Reader, size 0x3c (here 0x1), 6 members
 struct Reader
 {
     int ParseToken();
@@ -2081,46 +2100,49 @@ struct Flare
 
 // @fnv 0x00b2d2e0
 // src: XBOX_PDB 0x00b2d2e0
-void CTreeEngine::ParseFlareInfo(Reader* reader)
+// pdb: CTreeEngine::ParseFlareInfo | TreeEngine.obj | retail, string-set bridge, high
+// pdb params: cFile
+// pdb locals: i
+void CTreeEngine::ParseFlareInfo(Reader* cFile)
 {
     using namespace fnv_00b2d2e0;
-    for (unsigned int index = 0; index < (*(std::vector<Flare*>*)&unk60).size(); ++index)
+    for (unsigned int index = 0; index < (*(std::vector<Flare*>*)&m_vBranchInfo).size(); ++index)
     {
-        if (reader->ParseToken() != 0x3e82)
+        if (cFile->ParseToken() != 0x3e82)
             throw IdvFileError("malformed flare info", false);
-        (*(std::vector<Flare*>*)&unk60)[index]->value24 = reader->ParseReal();
-        if (reader->ParseToken() != 0x3e83)
+        (*(std::vector<Flare*>*)&m_vBranchInfo)[index]->value24 = cFile->ParseReal();
+        if (cFile->ParseToken() != 0x3e83)
             throw IdvFileError("malformed flare info", false);
-        (*(std::vector<Flare*>*)&unk60)[index]->value28 = reader->ParseToken();
-        if (reader->ParseToken() != 0x3e84)
+        (*(std::vector<Flare*>*)&m_vBranchInfo)[index]->value28 = cFile->ParseToken();
+        if (cFile->ParseToken() != 0x3e84)
             throw IdvFileError("malformed flare info", false);
-        (*(std::vector<Flare*>*)&unk60)[index]->value2c = reader->ParseReal();
-        if (reader->ParseToken() != 0x3e85)
+        (*(std::vector<Flare*>*)&m_vBranchInfo)[index]->value2c = cFile->ParseReal();
+        if (cFile->ParseToken() != 0x3e85)
             throw IdvFileError("malformed flare info", false);
-        (*(std::vector<Flare*>*)&unk60)[index]->value30 = reader->ParseReal();
-        if (reader->ParseToken() != 0x3e86)
+        (*(std::vector<Flare*>*)&m_vBranchInfo)[index]->value30 = cFile->ParseReal();
+        if (cFile->ParseToken() != 0x3e86)
             throw IdvFileError("malformed flare info", false);
-        (*(std::vector<Flare*>*)&unk60)[index]->value34 = reader->ParseReal();
-        if (reader->ParseToken() != 0x3e87)
+        (*(std::vector<Flare*>*)&m_vBranchInfo)[index]->value34 = cFile->ParseReal();
+        if (cFile->ParseToken() != 0x3e87)
             throw IdvFileError("malformed flare info", false);
-        (*(std::vector<Flare*>*)&unk60)[index]->value38 = reader->ParseReal();
-        if (reader->ParseToken() != 0x3e88)
+        (*(std::vector<Flare*>*)&m_vBranchInfo)[index]->value38 = cFile->ParseReal();
+        if (cFile->ParseToken() != 0x3e88)
             throw IdvFileError("malformed flare info", false);
-        (*(std::vector<Flare*>*)&unk60)[index]->value3c = reader->ParseReal();
-        if (reader->ParseToken() != 0x3e89)
+        (*(std::vector<Flare*>*)&m_vBranchInfo)[index]->value3c = cFile->ParseReal();
+        if (cFile->ParseToken() != 0x3e89)
             throw IdvFileError("malformed flare info", false);
-        (*(std::vector<Flare*>*)&unk60)[index]->value40 = reader->ParseReal();
-        if (reader->ParseToken() != 0x3e8a)
+        (*(std::vector<Flare*>*)&m_vBranchInfo)[index]->value40 = cFile->ParseReal();
+        if (cFile->ParseToken() != 0x3e8a)
             throw IdvFileError("malformed flare info", false);
-        (*(std::vector<Flare*>*)&unk60)[index]->value44 = reader->ParseReal();
-        if (reader->ParseToken() != 0x3e8b)
+        (*(std::vector<Flare*>*)&m_vBranchInfo)[index]->value44 = cFile->ParseReal();
+        if (cFile->ParseToken() != 0x3e8b)
             throw IdvFileError("malformed flare info", false);
-        (*(std::vector<Flare*>*)&unk60)[index]->value48 = reader->ParseReal();
-        if (reader->ParseToken() != 0x3e8c)
+        (*(std::vector<Flare*>*)&m_vBranchInfo)[index]->value48 = cFile->ParseReal();
+        if (cFile->ParseToken() != 0x3e8c)
             throw IdvFileError("malformed flare info", false);
-        (*(std::vector<Flare*>*)&unk60)[index]->value4c = reader->ParseReal();
+        (*(std::vector<Flare*>*)&m_vBranchInfo)[index]->value4c = cFile->ParseReal();
     }
-    if (reader->ParseToken() != 0x3e81)
+    if (cFile->ParseToken() != 0x3e81)
         throw IdvFileError("malformed flare info", false);
 }
 
@@ -2307,32 +2329,34 @@ struct Elem54Vector : VecVal
     {
         return unchecked_uninitialized_copy(_First, _Last, _Ptr, this->_Alval);
     }
-    Elem54Vector& CTreeEngine_SetLeafTextures(const Elem54Vector& _Right);
+    Elem54Vector& CTreeEngine_SetLeafTextures(const Elem54Vector& vTextures);
 };
 // @fnv 0x00b2db10
 // src: COMMUNITY 0x00b2db10
-Elem54Vector& Elem54Vector::CTreeEngine_SetLeafTextures(const Elem54Vector& _Right)
+// pdb: CTreeEngine::SetLeafTextures | TreeEngine.obj | debug, upstream name already matches, high
+// pdb params: vTextures
+Elem54Vector& Elem54Vector::CTreeEngine_SetLeafTextures(const Elem54Vector& vTextures)
 {
-    if (this != &_Right)
+    if (this != &vTextures)
     {
         S00b2db10_padA();
-        if (_Right.size() == 0)
+        if (vTextures.size() == 0)
             ClearAllElements();
-        else if (_Right.size() <= size())
+        else if (vTextures.size() <= size())
         {
-            Elem* z = copy_new(_Right._Myfirst, _Right._Mylast, _Myfirst);
+            Elem* z = copy_new(vTextures._Myfirst, vTextures._Mylast, _Myfirst);
             B2EDestroyRange_Thunk(z, _Mylast);
-            _Mylast = _Myfirst + _Right.size();
+            _Mylast = _Myfirst + vTextures.size();
             S00b2db10_padB();
         }
-        else if (_Right.size() <= capacity())
+        else if (vTextures.size() <= capacity())
         {
             Elem* z;
-            z = _Right._Myfirst + size();
-            Runtime_EvaluateValue_00b2e3f0(_Right._Myfirst, z, _Myfirst);
+            z = vTextures._Myfirst + size();
+            Runtime_EvaluateValue_00b2e3f0(vTextures._Myfirst, z, _Myfirst);
             S00b2db10_padC();
             S00b2db10_padC2();
-            _Mylast = _Ucopy(z, _Right._Mylast, _Mylast);
+            _Mylast = _Ucopy(z, vTextures._Mylast, _Mylast);
             S00b2db10_padD();
         }
         else
@@ -2342,10 +2366,10 @@ Elem54Vector& Elem54Vector::CTreeEngine_SetLeafTextures(const Elem54Vector& _Rig
                 B2EDestroyRange_Thunk(_Myfirst, _Mylast);
                 this->_Alval.deallocate(_Myfirst, _Myend - _Myfirst);
             }
-            if (InitBuffer(_Right.size()))
+            if (InitBuffer(vTextures.size()))
             {
                 S00b2db10_padE();
-                _Mylast = _Ucopy(_Right._Myfirst, _Right._Mylast, _Myfirst);
+                _Mylast = _Ucopy(vTextures._Myfirst, vTextures._Mylast, _Myfirst);
             }
         }
     }
@@ -2396,41 +2420,44 @@ inline void DeadTop()
 
 // @fnv 0x00b2ceb0
 // src: XBOX_PDB 0x00b2ceb0
-void __thiscall CTreeEngine::ParseLodInfo(ElementIterator* a)
+// pdb: CTreeEngine::ParseLodInfo | TreeEngine.obj | retail, string-set bridge, high
+// pdb params: cFile
+// pdb locals: nToken
+void __thiscall CTreeEngine::ParseLodInfo(ElementIterator* cFile)
 {
     DeadTop();
-    int token = a->GetNextElement();
+    int token = cFile->GetNextElement();
     do
     {
         switch (token)
         {
         case 0x232f:
-            this->unk78 = a->GetNextElement();
+            this->unk78 = cFile->GetNextElement();
             break;
         case 0x2330:
-            this->unkF4 = static_cast<S2bde0_Parser*>(static_cast<void*>(a))->CTreeFileAccess_ParseFloat();
+            this->m_sWindInfo = static_cast<S2bde0_Parser*>(static_cast<void*>(cFile))->CTreeFileAccess_ParseFloat();
             break;
         case 0x2332:
-            this->unkFC = static_cast<S2bde0_Parser*>(static_cast<void*>(a))->CTreeFileAccess_ParseFloat();
+            this->unkFC = static_cast<S2bde0_Parser*>(static_cast<void*>(cFile))->CTreeFileAccess_ParseFloat();
             if (this->unkFC == 0.0f)
                 this->unkFC = DAT_0101e2bc;
             break;
         case 0x2333:
-            this->unkd8 = a->GetNextElement();
+            this->m_bParsedLeafLods = cFile->GetNextElement();
             break;
         case 0x2334:
-            this->unkF8 = static_cast<S2bde0_Parser*>(static_cast<void*>(a))->CTreeFileAccess_ParseFloat();
+            this->unkF8 = static_cast<S2bde0_Parser*>(static_cast<void*>(cFile))->CTreeFileAccess_ParseFloat();
             break;
         case 0x2335:
-            this->unk100 = static_cast<S2bde0_Parser*>(static_cast<void*>(a))->CTreeFileAccess_ParseFloat();
+            this->unk100 = static_cast<S2bde0_Parser*>(static_cast<void*>(cFile))->CTreeFileAccess_ParseFloat();
             break;
         case 0x2336:
-            this->unk104 = static_cast<S2bde0_Parser*>(static_cast<void*>(a))->CTreeFileAccess_ParseFloat();
+            this->unk104 = static_cast<S2bde0_Parser*>(static_cast<void*>(cFile))->CTreeFileAccess_ParseFloat();
             break;
         default:
             throw LodErrorDetail::FUN_00b09480("malformed engine lod data", false);
         }
-    } while ((token = a->GetNextElement()) != 0x232e);
+    } while ((token = cFile->GetNextElement()) != 0x232e);
 }
 
 extern const char str_010a54cc[];
@@ -2471,11 +2498,14 @@ __forceinline void TreeClear()
     local[0x38 / sizeof(int)] = 0;
 }
 
-int __cdecl Object_ProcessEntries_00b3f8e0(ElementIterator* value);
+int __cdecl SIdvBranchInfo_Parse(ElementIterator* cFile);
 
 // @fnv 0x00b2c790
-// src: GUESS 0x00b2c790 (confidence: low)
-void CTreeEngine::ProcessEntries_00b2c790(ElementIterator* parser)
+// src: XBOX_RETAIL_PDB 0x00b2c790
+// pdb: CTreeEngine::ParseBranchInfo | TreeEngine.obj | retail, string-set bridge, high
+// pdb params: cFile
+// pdb locals: nToken, nSize, i, pInfo
+void CTreeEngine::ParseBranchInfo(ElementIterator* cFile)
 {
     S00b2c790_Error error2;
     int count_2;
@@ -2486,14 +2516,14 @@ void CTreeEngine::ProcessEntries_00b2c790(ElementIterator* parser)
     TreeClear();
     TreeSub(this)->std_vector_clear();
 
-    count_2 = reinterpret_cast<ElementIterator*>(parser)->GetNextElement();
+    count_2 = reinterpret_cast<ElementIterator*>(cFile)->GetNextElement();
     for (index4 = 0; index4 < count_2; ++index4)
     {
-        item5 = Object_ProcessEntries_00b3f8e0(reinterpret_cast<ElementIterator*>(parser));
+        item5 = SIdvBranchInfo_Parse(reinterpret_cast<ElementIterator*>(cFile));
         TreeSub(this)->UpdateState_00b15390(&item5);
     }
 
-    branchCount = reinterpret_cast<ElementIterator*>(parser)->GetNextElement();
+    branchCount = reinterpret_cast<ElementIterator*>(cFile)->GetNextElement();
     if (branchCount != 0x3f7)
     {
         S2bde0_Str text4(str_010a54cc);

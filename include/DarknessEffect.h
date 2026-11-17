@@ -2,6 +2,7 @@
 
 #include "ValueModifierEffect.h"
 
+// pdb: class DarknessEffect, size 0x4c, bases: ValueModifierEffect, 0 members
 class DarknessEffect : public ValueModifierEffect
 {
 public:

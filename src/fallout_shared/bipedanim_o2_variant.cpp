@@ -15,35 +15,41 @@
 
 extern int EmptyFS;
 // @fnv 0x00a5bc40
-bool NiAVObject::AddExtraData(const NiFixedString& kName, NiExtraData* pkTex)
+// src: XBOX_RETAIL_PDB 0x00a5bc40
+// pdb: NiObjectNET::AddExtraData | NiObjectNET.obj | retail, call graph (shared callers), high
+// pdb params: kKey, pkExtra
+bool NiAVObject::NiObjectNET_AddExtraData(const NiFixedString& kKey, NiExtraData* pkExtra)
 {
-    if ((int)kName.m_kHandle == EmptyFS)
+    if ((int)kKey.m_kHandle == EmptyFS)
         return false;
-    if (!pkTex)
+    if (!pkExtra)
         return false;
-    if (((NiShader*)pkTex)->GetFilename().m_kHandle == (const char*)EmptyFS)
+    if (((NiShader*)pkExtra)->GetFilename().m_kHandle == (const char*)EmptyFS)
     {
-        ((NiAVObject*)pkTex)->SetName(kName);
+        ((NiAVObject*)pkExtra)->SetName(kKey);
     }
     else
     {
-        if (kName.m_kHandle != ((NiShader*)pkTex)->GetFilename().m_kHandle)
+        if (kKey.m_kHandle != ((NiShader*)pkExtra)->GetFilename().m_kHandle)
             return false;
     }
-    return AddExtraData((void*)pkTex);
+    return NiObjectNET_InsertExtraData((void*)pkExtra);
 }
 
 // @fnv 0x00b553d0
 // src: COMMUNITY 0x00b553d0
-void __cdecl BSShaderManager_SetEmittanceRecurse(NiGeometry* pObject, NiPoint3* pValue)
+// pdb: BSShaderManager::SetEmittanceRecurse | BSShaderManager.obj | retail, upstream name already matches, high
+// pdb params: apObject, aColor
+// pdb locals: pmatproperty, pgeometry, pshaderproperty, pnode, ucount, uindex, pchild
+void __cdecl BSShaderManager_SetEmittanceRecurse(NiGeometry* apObject, NiPoint3* aColor)
 {
-    if (pObject == 0)
+    if (apObject == 0)
         return;
 
-    if (static_cast<const NiObject*>(pObject)->IsGeometry() != 0)
+    if (static_cast<const NiObject*>(apObject)->IsGeometry() != 0)
     {
-        NiProperty* pFirst = pObject->GetProperty(2);
-        NiProperty* pSecond = pObject->GetProperty(3);
+        NiProperty* pFirst = apObject->GetProperty(2);
+        NiProperty* pSecond = apObject->GetProperty(3);
 
         if (pFirst != 0 && pSecond != 0)
         {
@@ -53,13 +59,13 @@ void __cdecl BSShaderManager_SetEmittanceRecurse(NiGeometry* pObject, NiPoint3* 
             if ((pShader->ulFlags[0] & 0x20000000u) <= 0)
                 return;
 
-            *(NiPoint3*)&pMaterial->unk28 = *pValue;
-            ++pMaterial->unk44;
+            *(NiPoint3*)&pMaterial->m_emit = *aColor;
+            ++pMaterial->m_uiRevID;
         }
         return;
     }
 
-    NiNode* pNode = pObject->IsSceneNode();
+    NiNode* pNode = apObject->IsSceneNode();
     if (pNode == 0)
         return;
 
@@ -68,18 +74,18 @@ void __cdecl BSShaderManager_SetEmittanceRecurse(NiGeometry* pObject, NiPoint3* 
     {
         NiAVObject* pChild = pNode->m_kChildren.m_pBase[i].m_pObject;
         if (pChild != 0)
-            BSShaderManager_SetEmittanceRecurse((NiGeometry*)pChild, pValue);
+            BSShaderManager_SetEmittanceRecurse((NiGeometry*)pChild, aColor);
     }
 }
 
-NiAVObject* BSUtilities_GetObjectByName_00c4b310(NiAVObject* root, const char* name, int flag);
-NiAVObject* BSUtilities_GetObjectByName_00c4b470(NiAVObject* root, NiFixedString* name, int flag);
+NiAVObject* BSUtilities_GetObjectByName_00c4b310(NiAVObject* apScene, const char* apName, int bTestScenegraph);
+NiAVObject* BSUtilities_GetObjectByName_00c4b470(NiAVObject* apScene, NiFixedString* apName, int bTestScenegraph);
 struct AttachInfo
 {
     void* m_data;
 };
 
-void WeaponObject_Constrain(void* a1, AttachInfo a2, NiAVObject* obj, NiAVObject* parent, bool a4);
+void WeaponObject_Constrain(void* abEnable, AttachInfo aOwnerFilter, NiAVObject* apFrom, NiAVObject* apTo, bool abDefaultKeyframed);
 
 inline NiNode* NiAVObject::GetParent() const
 {
@@ -105,17 +111,20 @@ static __forceinline NiAVObject* FindAttachParent(NiAVObject* obj, NiAVObject* r
 
 // @fnv 0x00c89050
 // src: XBOX_PDB 0x00c89050
-void __stdcall WeaponObject_UpdateConstraints(void* a1, AttachInfo a2, NiAVObject* root, bool a4)
+// pdb: WeaponObject::UpdateConstraints | WeaponObject.obj | retail, string-set bridge, high
+// pdb params: abEnable, aOwnerFilter, apRoot3d, abDefaultKeyframed
+// pdb locals: pweaponBone, pbackpack, pweaponAttach, pbackpackAttach
+void __stdcall WeaponObject_UpdateConstraints(void* abEnable, AttachInfo aOwnerFilter, NiAVObject* apRoot3d, bool abDefaultKeyframed)
 {
-    NiAVObject* obj = BSUtilities_GetObjectByName_00c4b310(root, "Weapon", 0);
-    NiAVObject* parent = FindAttachParent(obj, root);
+    NiAVObject* obj = BSUtilities_GetObjectByName_00c4b310(apRoot3d, "Weapon", 0);
+    NiAVObject* parent = FindAttachParent(obj, apRoot3d);
     if (obj && parent)
-        WeaponObject_Constrain(a1, a2, obj, parent, a4);
+        WeaponObject_Constrain(abEnable, aOwnerFilter, obj, parent, abDefaultKeyframed);
 
     static NiFixedString kBackpack("Backpack");
-    obj = BSUtilities_GetObjectByName_00c4b470(root, &kBackpack, 0);
-    parent = FindAttachParent(obj, root);
+    obj = BSUtilities_GetObjectByName_00c4b470(apRoot3d, &kBackpack, 0);
+    parent = FindAttachParent(obj, apRoot3d);
     if (obj && parent)
-        WeaponObject_Constrain(a1, a2, obj, parent, a4);
+        WeaponObject_Constrain(abEnable, aOwnerFilter, obj, parent, abDefaultKeyframed);
 }
 

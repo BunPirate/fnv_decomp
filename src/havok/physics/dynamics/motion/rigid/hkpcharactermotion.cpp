@@ -112,6 +112,9 @@ template <class T> inline T MaxScalar(T x, T y)
 }
 
 // @fnv 0x00d1ed40
+// pdb: hkpCharacterMotion::setInertiaLocal | hkpCharacterMotion.obj | debug, vtable slot, medium
+// pdb params: inertia
+// pdb locals: assertBuf, ostr
 void hkpCharacterMotion::SetInertiaLocal(const hkMatrix3& inertia)
 {
     float a = MaxScalar(MaxScalar(inertia.m_kColumn0.x, inertia.m_kColumn1.y), inertia.m_kColumn2.z);
@@ -120,9 +123,9 @@ void hkpCharacterMotion::SetInertiaLocal(const hkMatrix3& inertia)
         fInvMaxDiag = 1.0f / a;
     else
         fInvMaxDiag = 0.0f;
-    m_kInertiaAndMassInv.x = fInvMaxDiag;
-    m_kInertiaAndMassInv.y = fInvMaxDiag;
-    m_kInertiaAndMassInv.z = fInvMaxDiag;
+    m_inertiaAndMassInv.x = fInvMaxDiag;
+    m_inertiaAndMassInv.y = fInvMaxDiag;
+    m_inertiaAndMassInv.z = fInvMaxDiag;
 }
 
 // @fnv 0x00d1edd0
@@ -133,22 +136,22 @@ void hkpCharacterMotion::SetInertiaInvLocal(const hkMatrix3& inertia)
     float c = a < b ? a : b;
     float fThird = inertia.m_kColumn2.z;
     float fMinAll = c < fThird ? c : fThird;
-    m_kInertiaAndMassInv.x = fMinAll;
-    m_kInertiaAndMassInv.y = fMinAll;
-    m_kInertiaAndMassInv.z = fMinAll;
+    m_inertiaAndMassInv.x = fMinAll;
+    m_inertiaAndMassInv.y = fMinAll;
+    m_inertiaAndMassInv.z = fMinAll;
 }
 
 // @fnv 0x00d1ee40
 void hkpCharacterMotion::GetInertiaInvLocal(hkMatrix3& inertia) const
 {
-    float fInv = m_kInertiaAndMassInv(0);
+    float fInv = m_inertiaAndMassInv(0);
     SetCharacterInertiaDiagonal(inertia, fInv);
 }
 
 // @fnv 0x00d1ee80
 void hkpCharacterMotion::GetLocalInverseInertia(hkMatrix3& inertia) const
 {
-    float fInv = m_kInertiaAndMassInv(0);
+    float fInv = m_inertiaAndMassInv(0);
     SetCharacterInertiaDiagonal(inertia, fInv);
 }
 
@@ -156,14 +159,14 @@ void hkpCharacterMotion::GetLocalInverseInertia(hkMatrix3& inertia) const
 void hkpCharacterMotion::ApplyAngularImpulseToBodies(const hkVector4& impulse)
 {
     hkVector4 delta;
-    delta.setMul4(m_kInertiaAndMassInv, impulse);
+    delta.setMul4(m_inertiaAndMassInv, impulse);
     m_kAngularVelocity.add4(delta);
 }
 
 // @fnv 0x00d1ecc0
 void hkpCharacterMotion::GetInertiaLocal(hkMatrix3& inertia) const
 {
-    const float value = 1.0f / m_kInertiaAndMassInv.x;
+    const float value = 1.0f / m_inertiaAndMassInv.x;
     const LocalM128 zero = _mm_setzero_ps();
     inertia.m_kColumn0.m_vComponents = zero;
     inertia.m_kColumn1.m_vComponents = zero;
@@ -176,7 +179,7 @@ void hkpCharacterMotion::GetInertiaLocal(hkMatrix3& inertia) const
 // @fnv 0x00d1ed00
 void hkpCharacterMotion::GetInverseScaleMatrix(hkMatrix3& inertia) const
 {
-    float inv = 1.0f / m_kInertiaAndMassInv.x;
+    float inv = 1.0f / m_inertiaAndMassInv.x;
     LocalM128 z = _mm_setzero_ps();
     inertia.m_kColumn0.m_vComponents = z;
     inertia.m_kColumn1.m_vComponents = z;
@@ -189,13 +192,13 @@ void hkpCharacterMotion::GetInverseScaleMatrix(hkMatrix3& inertia) const
 // @fnv 0x00d1eec0
 void hkpCharacterMotion::ApplyImpulseAtPoint(const hkVector4& imp, const hkVector4& p)
 {
-    m_kTranslationalVelocity.addMul4(m_kInertiaAndMassInv.getSimdAt3(), imp);
+    m_kTranslationalVelocity.addMul4(m_inertiaAndMassInv.getSimdAt3(), imp);
     hkVector4 relMassCenter;
     relMassCenter.setSub4(p, m_kMotionState.m_kSweptTransform.m_vCenterOfMass1);
     hkVector4 crossWs;
     crossWs.setCross(relMassCenter, imp);
     hkVector4 deltaVelWs;
-    deltaVelWs.setMul4(crossWs, m_kInertiaAndMassInv);
+    deltaVelWs.setMul4(crossWs, m_inertiaAndMassInv);
     m_kAngularVelocity.add4(deltaVelWs);
 }
 
@@ -205,7 +208,7 @@ void hkpCharacterMotion::vf5c(float afTimestep, const hkVector4& force)
     LocalM128 timestep = _mm_load_ps1(&afTimestep);
     hkVector4 impulse;
     impulse.quad = _mm_mul_ps(timestep, force.quad);
-    hkSimdReal w = m_kInertiaAndMassInv.getSimdAt3();
+    hkSimdReal w = m_inertiaAndMassInv.getSimdAt3();
     hkVector4 weighted = impulse;
     weighted.mul4(w);
     m_kTranslationalVelocity.quad = _mm_add_ps(weighted.quad, m_kTranslationalVelocity.quad);

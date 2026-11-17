@@ -146,12 +146,15 @@ int hkLineSegmentUtil_closestPointLineSeg(const S_00cd7850_Vec& pos, const S_00c
 
 // @fnv 0x00cd7850
 // src: XBOX_PDB 0x00cd7850
+// pdb: hkpCollideTriangleUtil::closestPointTriangle | hkpCollideTriangleUtil.obj | retail, upstream name already matches, high
+// pdb params: position, tri, cache, result, featureOutput
+// pdb locals: proj, cpls, assertBuf, ostr, cplsB, cplsA, inv
 int hkpCollideTriangleUtil_closestPointTriangle(const S_00cd7850_Vec& position, const S_00cd7850_Vec* tri, const S_00cd7850_Cache& cache,
-                 S_00cd7850_Result& result, S_00cd7850_Features* featuresOut)
+                 S_00cd7850_Result& result, S_00cd7850_Features* featureOutput)
 {
-    if (featuresOut)
+    if (featureOutput)
     {
-        featuresOut->m_uiMaterialIndex = 0;
+        featureOutput->m_uiMaterialIndex = 0;
     }
 
     S_00cd7850_Vec relPos;
@@ -187,12 +190,12 @@ int hkpCollideTriangleUtil_closestPointTriangle(const S_00cd7850_Vec& position, 
         {
             result.distance = -dist;
         }
-        if (featuresOut)
+        if (featureOutput)
         {
-            featuresOut->m_uiMaterialIndex = 3;
-            featuresOut->m_auiVertexIds[0] = 0;
-            featuresOut->m_auiVertexIds[1] = 1;
-            featuresOut->m_auiVertexIds[2] = 2;
+            featureOutput->m_uiMaterialIndex = 3;
+            featureOutput->m_auiVertexIds[0] = 0;
+            featureOutput->m_auiVertexIds[1] = 1;
+            featureOutput->m_auiVertexIds[2] = 2;
         }
         return 0;
     }
@@ -202,23 +205,23 @@ int hkpCollideTriangleUtil_closestPointTriangle(const S_00cd7850_Vec& position, 
     {
         index += 8;
         int code = hkLineSegmentUtil_closestPointLineSeg(position, tri[DAT_010cb440[index + 2]], tri[DAT_010cb440[index]], &uvw);
-        if (featuresOut)
+        if (featureOutput)
         {
             if (code == 4)
             {
-                featuresOut->m_auiVertexIds[0] = DAT_010cb440[index];
-                featuresOut->m_uiMaterialIndex = 1;
+                featureOutput->m_auiVertexIds[0] = DAT_010cb440[index];
+                featureOutput->m_uiMaterialIndex = 1;
             }
             else if (code == 8)
             {
-                featuresOut->m_auiVertexIds[0] = DAT_010cb440[index + 2];
-                featuresOut->m_uiMaterialIndex = 1;
+                featureOutput->m_auiVertexIds[0] = DAT_010cb440[index + 2];
+                featureOutput->m_uiMaterialIndex = 1;
             }
             else
             {
-                featuresOut->m_auiVertexIds[0] = DAT_010cb440[index];
-                featuresOut->m_auiVertexIds[1] = DAT_010cb440[index + 2];
-                featuresOut->m_uiMaterialIndex = 2;
+                featureOutput->m_auiVertexIds[0] = DAT_010cb440[index];
+                featureOutput->m_auiVertexIds[1] = DAT_010cb440[index + 2];
+                featureOutput->m_uiMaterialIndex = 2;
             }
         }
         result.m_kNearestPoint.setSub4(position, uvw);
@@ -238,23 +241,23 @@ int hkpCollideTriangleUtil_closestPointTriangle(const S_00cd7850_Vec& position, 
     if (len0 < len1)
     {
         float invLen = 1.0f / float(sqrt(len0));
-        if (featuresOut)
+        if (featureOutput)
         {
             if (code0 == 4)
             {
-                featuresOut->m_uiMaterialIndex = 1;
-                featuresOut->m_auiVertexIds[0] = (unsigned short)index;
+                featureOutput->m_uiMaterialIndex = 1;
+                featureOutput->m_auiVertexIds[0] = (unsigned short)index;
             }
             else if (code0 == 8)
             {
-                featuresOut->m_uiMaterialIndex = 1;
-                featuresOut->m_auiVertexIds[0] = DAT_010cb440[index + 2];
+                featureOutput->m_uiMaterialIndex = 1;
+                featureOutput->m_auiVertexIds[0] = DAT_010cb440[index + 2];
             }
             else
             {
-                featuresOut->m_uiMaterialIndex = 2;
-                featuresOut->m_auiVertexIds[0] = (unsigned short)index;
-                featuresOut->m_auiVertexIds[1] = DAT_010cb440[index + 2];
+                featureOutput->m_uiMaterialIndex = 2;
+                featureOutput->m_auiVertexIds[0] = (unsigned short)index;
+                featureOutput->m_auiVertexIds[1] = DAT_010cb440[index + 2];
             }
         }
         result.distance = len0 * invLen;
@@ -265,23 +268,23 @@ int hkpCollideTriangleUtil_closestPointTriangle(const S_00cd7850_Vec& position, 
     else
     {
         float invLen = 1.0f / float(sqrt(len1));
-        if (featuresOut)
+        if (featureOutput)
         {
             if (code1 == 4)
             {
-                featuresOut->m_uiMaterialIndex = 1;
-                featuresOut->m_auiVertexIds[0] = (unsigned short)index;
+                featureOutput->m_uiMaterialIndex = 1;
+                featureOutput->m_auiVertexIds[0] = (unsigned short)index;
             }
             else if (code1 == 8)
             {
-                featuresOut->m_uiMaterialIndex = 1;
-                featuresOut->m_auiVertexIds[0] = DAT_010cb440[index];
+                featureOutput->m_uiMaterialIndex = 1;
+                featureOutput->m_auiVertexIds[0] = DAT_010cb440[index];
             }
             else
             {
-                featuresOut->m_uiMaterialIndex = 2;
-                featuresOut->m_auiVertexIds[0] = (unsigned short)index;
-                featuresOut->m_auiVertexIds[1] = DAT_010cb440[index];
+                featureOutput->m_uiMaterialIndex = 2;
+                featureOutput->m_auiVertexIds[0] = (unsigned short)index;
+                featureOutput->m_auiVertexIds[1] = DAT_010cb440[index];
             }
         }
         result.distance = len1 * invLen;

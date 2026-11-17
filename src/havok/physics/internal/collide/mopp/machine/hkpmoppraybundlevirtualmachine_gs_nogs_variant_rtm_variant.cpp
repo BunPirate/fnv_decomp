@@ -482,9 +482,9 @@ struct RayBundleTraversalMachine {
     unsigned int chunkMask;
 
 __forceinline void UpdateNext(const QueryState* state,RayQuerySet* next);
-    void __thiscall hkpMoppRayBundleVirtualMachine_queryRayOnTree(const QueryState* state, const unsigned char* code,
+    void __thiscall hkpMoppRayBundleVirtualMachine_queryRayOnTree(const QueryState* query, const unsigned char* PC,
 
-                                RayQuerySet* rays, unsigned int chunk);
+                                RayQuerySet* fQuery, unsigned int chunkId);
 
 };
 
@@ -531,9 +531,12 @@ __m128 beyond=_mm_sub_ps(DAT_010c7170.getQuad(),hitFractions.getQuad());
 
 // @fnv 0x00dd3210
 // src: XBOX_PDB 0x00dd3210
-void RayBundleTraversalMachine::hkpMoppRayBundleVirtualMachine_queryRayOnTree(const QueryState* state, const unsigned char* code,
+// pdb: hkpMoppRayBundleVirtualMachine::queryRayOnTree | hkpMoppRayBundleVirtualMachine.obj | retail, string-set bridge, high
+// pdb params: query, PC, fQuery, chunkId
+// pdb locals: scaledQuery, commandVec, leftBundle, rightBundle, shifts, assertBuf, ostr
+void RayBundleTraversalMachine::hkpMoppRayBundleVirtualMachine_queryRayOnTree(const QueryState* query, const unsigned char* PC,
 
-                               RayQuerySet* rays, unsigned int chunk) {
+                               RayQuerySet* fQuery, unsigned int chunkId) {
 
     if (DAT_01269cbe == 0) {
 
@@ -547,21 +550,21 @@ void RayBundleTraversalMachine::hkpMoppRayBundleVirtualMachine_queryRayOnTree(co
 
     for (;;) {
 
-        int command=code[0];
+        int command=PC[0];
 
-        const int splitNode=code[2];
+        const int splitNode=PC[2];
 
         FourFloats bytes;
 
         float decoded0=(float)(int)command; bytes.getQuad().m128_f32[0]=decoded0;
 
-        float decoded1=(float)(int)code[1]; bytes.getQuad().m128_f32[1]=decoded1;
+        float decoded1=(float)(int)PC[1]; bytes.getQuad().m128_f32[1]=decoded1;
 
-        const unsigned int byte1=code[1];
+        const unsigned int byte1=PC[1];
 
         float decoded2=(float)(int)splitNode; bytes.getQuad().m128_f32[2]=decoded2;
 
-        const unsigned int byte3=code[3];
+        const unsigned int byte3=PC[3];
 
         float decoded3=(float)(int)byte3; bytes.getQuad().m128_f32[3]=decoded3;
 
@@ -584,9 +587,9 @@ case 0x13: {
 boundHigh=_mm_shuffle_ps(packed,packed,0x55);
 boundLow=_mm_shuffle_ps(packed,packed,0xaa);
 
-            projectStart=_mm_add_ps(rays->ends[0].axis[2].getQuad(),rays->ends[0].axis[1].getQuad());
+            projectStart=_mm_add_ps(fQuery->ends[0].axis[2].getQuad(),fQuery->ends[0].axis[1].getQuad());
 
-            projectEnd=_mm_add_ps(rays->ends[1].axis[2].getQuad(),rays->ends[1].axis[1].getQuad());
+            projectEnd=_mm_add_ps(fQuery->ends[1].axis[2].getQuad(),fQuery->ends[1].axis[1].getQuad());
 
             goto afterDiagonal;
 
@@ -597,9 +600,9 @@ case 0x14: {
 boundHigh=_mm_shuffle_ps(packed,packed,0x55);
 boundLow=_mm_shuffle_ps(packed,packed,0xaa);
 
-            projectStart=_mm_sub_ps(rays->ends[0].axis[1].getQuad(),rays->ends[0].axis[2].getQuad());
+            projectStart=_mm_sub_ps(fQuery->ends[0].axis[1].getQuad(),fQuery->ends[0].axis[2].getQuad());
 
-            projectEnd=_mm_sub_ps(rays->ends[1].axis[1].getQuad(),rays->ends[1].axis[2].getQuad());
+            projectEnd=_mm_sub_ps(fQuery->ends[1].axis[1].getQuad(),fQuery->ends[1].axis[2].getQuad());
 
             goto afterDiagonal;
 
@@ -610,9 +613,9 @@ case 0x15: {
 boundHigh=_mm_shuffle_ps(packed,packed,0x55);
 boundLow=_mm_shuffle_ps(packed,packed,0xaa);
 
-            projectStart=_mm_add_ps(rays->ends[0].axis[2].getQuad(),rays->ends[0].axis[0].getQuad());
+            projectStart=_mm_add_ps(fQuery->ends[0].axis[2].getQuad(),fQuery->ends[0].axis[0].getQuad());
 
-            projectEnd=_mm_add_ps(rays->ends[1].axis[2].getQuad(),rays->ends[1].axis[0].getQuad());
+            projectEnd=_mm_add_ps(fQuery->ends[1].axis[2].getQuad(),fQuery->ends[1].axis[0].getQuad());
 
             goto afterDiagonal;
 
@@ -623,9 +626,9 @@ case 0x16: {
 boundHigh=_mm_shuffle_ps(packed,packed,0x55);
 boundLow=_mm_shuffle_ps(packed,packed,0xaa);
 
-            projectStart=_mm_sub_ps(rays->ends[0].axis[0].getQuad(),rays->ends[0].axis[2].getQuad());
+            projectStart=_mm_sub_ps(fQuery->ends[0].axis[0].getQuad(),fQuery->ends[0].axis[2].getQuad());
 
-            projectEnd=_mm_sub_ps(rays->ends[1].axis[0].getQuad(),rays->ends[1].axis[2].getQuad());
+            projectEnd=_mm_sub_ps(fQuery->ends[1].axis[0].getQuad(),fQuery->ends[1].axis[2].getQuad());
 
             goto afterDiagonal;
 
@@ -636,9 +639,9 @@ case 0x17: {
 boundHigh=_mm_shuffle_ps(packed,packed,0x55);
 boundLow=_mm_shuffle_ps(packed,packed,0xaa);
 
-            projectStart=_mm_add_ps(rays->ends[0].axis[1].getQuad(),rays->ends[0].axis[0].getQuad());
+            projectStart=_mm_add_ps(fQuery->ends[0].axis[1].getQuad(),fQuery->ends[0].axis[0].getQuad());
 
-            projectEnd=_mm_add_ps(rays->ends[1].axis[1].getQuad(),rays->ends[1].axis[0].getQuad());
+            projectEnd=_mm_add_ps(fQuery->ends[1].axis[1].getQuad(),fQuery->ends[1].axis[0].getQuad());
 
             goto afterDiagonal;
 
@@ -649,9 +652,9 @@ case 0x18: {
 boundHigh=_mm_shuffle_ps(packed,packed,0x55);
 boundLow=_mm_shuffle_ps(packed,packed,0xaa);
 
-            projectStart=_mm_sub_ps(rays->ends[0].axis[0].getQuad(),rays->ends[0].axis[1].getQuad());
+            projectStart=_mm_sub_ps(fQuery->ends[0].axis[0].getQuad(),fQuery->ends[0].axis[1].getQuad());
 
-            projectEnd=_mm_sub_ps(rays->ends[1].axis[0].getQuad(),rays->ends[1].axis[1].getQuad());
+            projectEnd=_mm_sub_ps(fQuery->ends[1].axis[0].getQuad(),fQuery->ends[1].axis[1].getQuad());
 
             goto afterDiagonal;
 
@@ -662,9 +665,9 @@ case 0x19: {
 boundHigh=_mm_shuffle_ps(packed,packed,0x55);
 boundLow=_mm_shuffle_ps(packed,packed,0xaa);
 
-            projectStart=_mm_add_ps(_mm_add_ps(rays->ends[0].axis[1].getQuad(),rays->ends[0].axis[0].getQuad()),rays->ends[0].axis[2].getQuad());
+            projectStart=_mm_add_ps(_mm_add_ps(fQuery->ends[0].axis[1].getQuad(),fQuery->ends[0].axis[0].getQuad()),fQuery->ends[0].axis[2].getQuad());
 
-            projectEnd=_mm_add_ps(_mm_add_ps(rays->ends[1].axis[1].getQuad(),rays->ends[1].axis[0].getQuad()),rays->ends[1].axis[2].getQuad());
+            projectEnd=_mm_add_ps(_mm_add_ps(fQuery->ends[1].axis[1].getQuad(),fQuery->ends[1].axis[0].getQuad()),fQuery->ends[1].axis[2].getQuad());
 
             goto afterDiagonal;
 
@@ -675,9 +678,9 @@ case 0x1a: {
 boundHigh=_mm_shuffle_ps(packed,packed,0x55);
 boundLow=_mm_shuffle_ps(packed,packed,0xaa);
 
-            projectStart=_mm_sub_ps(_mm_add_ps(rays->ends[0].axis[1].getQuad(),rays->ends[0].axis[0].getQuad()),rays->ends[0].axis[2].getQuad());
+            projectStart=_mm_sub_ps(_mm_add_ps(fQuery->ends[0].axis[1].getQuad(),fQuery->ends[0].axis[0].getQuad()),fQuery->ends[0].axis[2].getQuad());
 
-            projectEnd=_mm_sub_ps(_mm_add_ps(rays->ends[1].axis[1].getQuad(),rays->ends[1].axis[0].getQuad()),rays->ends[1].axis[2].getQuad());
+            projectEnd=_mm_sub_ps(_mm_add_ps(fQuery->ends[1].axis[1].getQuad(),fQuery->ends[1].axis[0].getQuad()),fQuery->ends[1].axis[2].getQuad());
 
             goto afterDiagonal;
 
@@ -688,9 +691,9 @@ case 0x1b: {
 boundHigh=_mm_shuffle_ps(packed,packed,0x55);
 boundLow=_mm_shuffle_ps(packed,packed,0xaa);
 
-            projectStart=_mm_add_ps(_mm_sub_ps(rays->ends[0].axis[0].getQuad(),rays->ends[0].axis[1].getQuad()),rays->ends[0].axis[2].getQuad());
+            projectStart=_mm_add_ps(_mm_sub_ps(fQuery->ends[0].axis[0].getQuad(),fQuery->ends[0].axis[1].getQuad()),fQuery->ends[0].axis[2].getQuad());
 
-            projectEnd=_mm_add_ps(_mm_sub_ps(rays->ends[1].axis[0].getQuad(),rays->ends[1].axis[1].getQuad()),rays->ends[1].axis[2].getQuad());
+            projectEnd=_mm_add_ps(_mm_sub_ps(fQuery->ends[1].axis[0].getQuad(),fQuery->ends[1].axis[1].getQuad()),fQuery->ends[1].axis[2].getQuad());
 
             goto afterDiagonal;
 
@@ -701,9 +704,9 @@ case 0x1c: {
 boundHigh=_mm_shuffle_ps(packed,packed,0x55);
 boundLow=_mm_shuffle_ps(packed,packed,0xaa);
 
-            projectStart=_mm_sub_ps(_mm_sub_ps(rays->ends[0].axis[0].getQuad(),rays->ends[0].axis[1].getQuad()),rays->ends[0].axis[2].getQuad());
+            projectStart=_mm_sub_ps(_mm_sub_ps(fQuery->ends[0].axis[0].getQuad(),fQuery->ends[0].axis[1].getQuad()),fQuery->ends[0].axis[2].getQuad());
 
-            projectEnd=_mm_sub_ps(_mm_sub_ps(rays->ends[1].axis[0].getQuad(),rays->ends[1].axis[1].getQuad()),rays->ends[1].axis[2].getQuad());
+            projectEnd=_mm_sub_ps(_mm_sub_ps(fQuery->ends[1].axis[0].getQuad(),fQuery->ends[1].axis[1].getQuad()),fQuery->ends[1].axis[2].getQuad());
 
             goto afterDiagonal;
 
@@ -712,9 +715,9 @@ boundLow=_mm_shuffle_ps(packed,packed,0xaa);
 
             axis=command-0x20;
 
-            projectStart=rays->ends[0].axis[axis].getQuad();
+            projectStart=fQuery->ends[0].axis[axis].getQuad();
 
-            projectEnd=rays->ends[1].axis[axis].getQuad();
+            projectEnd=fQuery->ends[1].axis[axis].getQuad();
 
             boundHigh=_mm_shuffle_ps(bytes.getQuad(),bytes.getQuad(),0x55);
 
@@ -722,7 +725,7 @@ boundLow=_mm_shuffle_ps(packed,packed,0xaa);
 
             boundHigh=_mm_add_ps(boundHigh.getQuad(),DAT_010c7170.getQuad());
 
-            code+=3;leftJump=0;rightJump=code[-1];
+            PC+=3;leftJump=0;rightJump=PC[-1];
 
             goto byte2;
 
@@ -730,17 +733,17 @@ boundLow=_mm_shuffle_ps(packed,packed,0xaa);
  axis=command-0x23;
 boundHigh=_mm_shuffle_ps(bytes.getQuad(),bytes.getQuad(),0x55);
 boundLow=_mm_shuffle_ps(bytes.getQuad(),bytes.getQuad(),0xaa);
-projectStart=rays->ends[0].axis[axis].getQuad();
-projectEnd=rays->ends[1].axis[axis].getQuad();
-leftJump=(byte3<<8)+code[4];code+=7;rightJump=(code[-2]<<8)+code[-1];
+projectStart=fQuery->ends[0].axis[axis].getQuad();
+projectEnd=fQuery->ends[1].axis[axis].getQuad();
+leftJump=(byte3<<8)+PC[4];PC+=7;rightJump=(PC[-2]<<8)+PC[-1];
  goto byte2;
         case 0x10:case 0x11:case 0x12:
 
             axis=command-0x10;
 
-            projectStart=rays->ends[0].axis[axis].getQuad();
+            projectStart=fQuery->ends[0].axis[axis].getQuad();
 
-            projectEnd=rays->ends[1].axis[axis].getQuad();
+            projectEnd=fQuery->ends[1].axis[axis].getQuad();
 
             boundLow=bytes.getQuad();
 
@@ -751,49 +754,49 @@ boundHigh=_mm_shuffle_ps(boundLow.getQuad(),boundLow.getQuad(),0x55);
 boundLow=_mm_shuffle_ps(boundLow.getQuad(),boundLow.getQuad(),0xaa);
 
 afterDiagonal:
-        code+=4;leftJump=0;rightJump=code[-1];
+        PC+=4;leftJump=0;rightJump=PC[-1];
 
 byte2: {
  CompareValue belowMask,aboveMask;
  {
   CompareValue a=projectEnd.compareLessThan4(boundLow);
   CompareValue b=projectStart.compareLessThan4(boundLow);
-  belowMask.setAnd(a,b);belowMask.setAnd(MaskOf(rays->active),belowMask);
+  belowMask.setAnd(a,b);belowMask.setAnd(MaskOf(fQuery->active),belowMask);
  }
  {
   CompareValue a=projectStart.compareGreaterThan4(boundHigh);
   CompareValue b=projectEnd.compareGreaterThan4(boundHigh);
-  aboveMask.setAnd(a,b);aboveMask.setAnd(MaskOf(rays->active),aboveMask);
+  aboveMask.setAnd(a,b);aboveMask.setAnd(MaskOf(fQuery->active),aboveMask);
  }
 {CompareValue inactiveMask,temp;
- inactiveMask.setNot(MaskOf(rays->active));temp.setOr(belowMask,inactiveMask);
- if(temp.allAreSet()) {code+=leftJump;continue;}}
+ inactiveMask.setNot(MaskOf(fQuery->active));temp.setOr(belowMask,inactiveMask);
+ if(temp.allAreSet()) {PC+=leftJump;continue;}}
  {CompareValue inactiveMask,temp;
- inactiveMask.setNot(MaskOf(rays->active));temp.setOr(aboveMask,inactiveMask);
- if(temp.allAreSet()) {code+=rightJump;continue;}}
+ inactiveMask.setNot(MaskOf(fQuery->active));temp.setOr(aboveMask,inactiveMask);
+ if(temp.allAreSet()) {PC+=rightJump;continue;}}
  FourFloats startDistance,endDistance,lowStartDistance,lowEndDistance;
  startDistance=PlaneDiff(projectStart.read(),boundHigh.read());
 endDistance=PlaneDiff(projectEnd.read(),boundHigh.read());
 lowStartDistance=PlaneDiff(projectStart.read(),boundLow.read());
 lowEndDistance=PlaneDiff(projectEnd.read(),boundLow.read());
  RayQuerySet left,right;
- left.ends[0].axis[0]=rays->ends[0].axis[0];
-left.ends[0].axis[1]=rays->ends[0].axis[1];
+ left.ends[0].axis[0]=fQuery->ends[0].axis[0];
+left.ends[0].axis[1]=fQuery->ends[0].axis[1];
 
-left.ends[0].axis[2]=rays->ends[0].axis[2];
-left.ends[1].axis[0]=rays->ends[1].axis[0];
-left.ends[1].axis[1]=rays->ends[1].axis[1];
-left.ends[1].axis[2]=rays->ends[1].axis[2];
-right.ends[0].axis[0]=rays->ends[0].axis[0];
-__m128 savedZ=rays->ends[0].axis[2].getQuad();
+left.ends[0].axis[2]=fQuery->ends[0].axis[2];
+left.ends[1].axis[0]=fQuery->ends[1].axis[0];
+left.ends[1].axis[1]=fQuery->ends[1].axis[1];
+left.ends[1].axis[2]=fQuery->ends[1].axis[2];
+right.ends[0].axis[0]=fQuery->ends[0].axis[0];
+__m128 savedZ=fQuery->ends[0].axis[2].getQuad();
 right.ends[0].axis[2]=savedZ;
-right.ends[0].axis[1]=rays->ends[0].axis[1];
+right.ends[0].axis[1]=fQuery->ends[0].axis[1];
 
-right.ends[1].axis[0]=rays->ends[1].axis[0];
-right.ends[1].axis[1]=rays->ends[1].axis[1];
-right.ends[1].axis[2]=rays->ends[1].axis[2];
- {CompareValue dont;dont.setNot(aboveMask);dont.setAnd(MaskOf(rays->active),dont);StoreMask(left.active,dont);}
- {CompareValue dont;dont.setNot(belowMask);dont.setAnd(MaskOf(rays->active),dont);StoreMask(right.active,dont);}
+right.ends[1].axis[0]=fQuery->ends[1].axis[0];
+right.ends[1].axis[1]=fQuery->ends[1].axis[1];
+right.ends[1].axis[2]=fQuery->ends[1].axis[2];
+ {CompareValue dont;dont.setNot(aboveMask);dont.setAnd(MaskOf(fQuery->active),dont);StoreMask(left.active,dont);}
+ {CompareValue dont;dont.setNot(belowMask);dont.setAnd(MaskOf(fQuery->active),dont);StoreMask(right.active,dont);}
 
 
  CompareValue crossingLeft=Crossing(startDistance,endDistance);
@@ -815,11 +818,11 @@ right.ends[1].axis[2]=rays->ends[1].axis[2];
 RayQuerySet* next;
 int offset;
 int nextJump;
- int rightFirst=!hkpProcessFlyingColors(&rays->active,&startDistance,&endDistance);
+ int rightFirst=!hkpProcessFlyingColors(&fQuery->active,&startDistance,&endDistance);
 OrderChild(rightFirst!=0,first,next,offset,nextJump,&left,&right,leftJump,rightJump);
- hkpMoppRayBundleVirtualMachine_queryRayOnTree(state,code+offset,first,chunk);
+ hkpMoppRayBundleVirtualMachine_queryRayOnTree(query,PC+offset,first,chunkId);
 
-UpdateNext(state,next);
+UpdateNext(query,next);
             if(3 > axis) {
 startDistance.setSub4(projectStart,boundHigh);endDistance.setSub4(projectEnd,boundHigh);
 
@@ -834,9 +837,9 @@ CompareValue direction=startDistance.compareLessThan4(endDistance);
 
             if(!_mm_movemask_ps(next->active.getQuad())) return;
 
-            code+=nextJump;
+            PC+=nextJump;
 
-            rays->CopyRotationsAndExtraVector(next);
+            fQuery->CopyRotationsAndExtraVector(next);
 
             continue;
 
@@ -844,23 +847,23 @@ CompareValue direction=startDistance.compareLessThan4(endDistance);
 
         case 0x29:case 0x2a:case 0x2b: {
 
-axis=command-0x29;CodeView lowView={code+1},highView={code+4};
-boundLow.setMul4(float(ReadWide(lowView)),byteScale);boundHigh.setMul4(float((((code[4]<<8)+code[5])<<8)+code[6]),byteScale);boundLow.mul4(state->scale);boundHigh.mul4(state->scale);
+axis=command-0x29;CodeView lowView={PC+1},highView={PC+4};
+boundLow.setMul4(float(ReadWide(lowView)),byteScale);boundHigh.setMul4(float((((PC[4]<<8)+PC[5])<<8)+PC[6]),byteScale);boundLow.mul4(query->scale);boundHigh.mul4(query->scale);
                 __m128 firstJump;
 
-                if (axis == 0) firstJump = _mm_shuffle_ps(state->offset.getQuad(), state->offset.getQuad(), 0);
+                if (axis == 0) firstJump = _mm_shuffle_ps(query->offset.getQuad(), query->offset.getQuad(), 0);
 
-                else if (axis == 1) firstJump = _mm_shuffle_ps(state->offset.getQuad(), state->offset.getQuad(), 0x55);
+                else if (axis == 1) firstJump = _mm_shuffle_ps(query->offset.getQuad(), query->offset.getQuad(), 0x55);
 
-                else if (axis == 2) firstJump = _mm_shuffle_ps(state->offset.getQuad(), state->offset.getQuad(), 0xaa);
+                else if (axis == 2) firstJump = _mm_shuffle_ps(query->offset.getQuad(), query->offset.getQuad(), 0xaa);
 
-                else if (axis == 3) firstJump = _mm_shuffle_ps(state->offset.getQuad(), state->offset.getQuad(), 0xff);
+                else if (axis == 3) firstJump = _mm_shuffle_ps(query->offset.getQuad(), query->offset.getQuad(), 0xff);
 
                 boundLow=_mm_sub_ps(boundLow.getQuad(),firstJump);
 
                 boundHigh=_mm_sub_ps(boundHigh.getQuad(),firstJump);
 
-                code+=7;
+                PC+=7;
 
             goto ordinarySplit;
 
@@ -874,14 +877,14 @@ boundLow.setMul4(float(ReadWide(lowView)),byteScale);boundHigh.setMul4(float((((
 
             boundHigh=_mm_shuffle_ps(bytes.getQuad(),bytes.getQuad(),0xaa);
 
-            code+=3;
+            PC+=3;
 
             goto ordinarySplit;
 
 ordinarySplit: { // Clip the current rays to an axis-aligned interval.
 
-            projectStart=rays->ends[0].axis[axis];
-            projectEnd=rays->ends[1].axis[axis];
+            projectStart=fQuery->ends[0].axis[axis];
+            projectEnd=fQuery->ends[1].axis[axis];
 
             VectorValue decreasing=_mm_cmple_ps(projectEnd.getQuad(),projectStart.getQuad());
 
@@ -893,13 +896,13 @@ ordinarySplit: { // Clip the current rays to an axis-aligned interval.
 
             VectorValue reject=_mm_or_ps(_mm_andnot_ps(increasing,rejectDown),_mm_and_ps(value,increasing));
 
-            rays->active=_mm_and_ps(_mm_andnot_ps(reject,DAT_010ce1c0.getQuad()),rays->active.getQuad());
+            fQuery->active=_mm_and_ps(_mm_andnot_ps(reject,DAT_010ce1c0.getQuad()),fQuery->active.getQuad());
 
-            if(!_mm_movemask_ps(rays->active.getQuad())) return;
+            if(!_mm_movemask_ps(fQuery->active.getQuad())) return;
 
-            VectorTriple oldStart=rays->ends[0];
+            VectorTriple oldStart=fQuery->ends[0];
 
-            VectorTriple oldEnd=rays->ends[1];
+            VectorTriple oldEnd=fQuery->ends[1];
 
             FourFloats endDistance,startDistance,toWeight,fromWeight;
 
@@ -916,21 +919,21 @@ endDistance=PlaneDiff(projectEnd.getQuad(),boundHigh.getQuad());
 
             VectorValue upperPoint0=_mm_add_ps(_mm_mul_ps(toWeight.getQuad(),oldEnd.axis[0].getQuad()),_mm_mul_ps(fromWeight.getQuad(),oldStart.axis[0].getQuad()));
 
-            _mm_store_ps(rays->ends[0].axis[0].getQuad().m128_f32,SelectVector(fraction,upperPoint0,rays->ends[0].axis[0].getQuad()));
+            _mm_store_ps(fQuery->ends[0].axis[0].getQuad().m128_f32,SelectVector(fraction,upperPoint0,fQuery->ends[0].axis[0].getQuad()));
 
-            _mm_store_ps(rays->ends[1].axis[0].getQuad().m128_f32,SelectVector(b,upperPoint0,rays->ends[1].axis[0].getQuad()));
+            _mm_store_ps(fQuery->ends[1].axis[0].getQuad().m128_f32,SelectVector(b,upperPoint0,fQuery->ends[1].axis[0].getQuad()));
 
             VectorValue crossing=_mm_add_ps(_mm_mul_ps(toWeight.getQuad(),_mm_load_ps(oldEnd.axis[1].getQuad().m128_f32)),_mm_mul_ps(fromWeight.getQuad(),oldStart.axis[1].getQuad()));
 
-            _mm_store_ps(rays->ends[0].axis[1].getQuad().m128_f32,SelectVector(fraction,crossing,rays->ends[0].axis[1].getQuad()));
+            _mm_store_ps(fQuery->ends[0].axis[1].getQuad().m128_f32,SelectVector(fraction,crossing,fQuery->ends[0].axis[1].getQuad()));
 
-            _mm_store_ps(rays->ends[1].axis[1].getQuad().m128_f32,SelectVector(b,crossing,rays->ends[1].axis[1].getQuad()));
+            _mm_store_ps(fQuery->ends[1].axis[1].getQuad().m128_f32,SelectVector(b,crossing,fQuery->ends[1].axis[1].getQuad()));
 
             VectorValue upperPoint2=_mm_add_ps(_mm_mul_ps(toWeight.getQuad(),oldEnd.axis[2].getQuad()),_mm_mul_ps(fromWeight.getQuad(),oldStart.axis[2].getQuad()));
 
-            _mm_store_ps(rays->ends[0].axis[2].getQuad().m128_f32,SelectVector(fraction,upperPoint2,rays->ends[0].axis[2].getQuad()));
+            _mm_store_ps(fQuery->ends[0].axis[2].getQuad().m128_f32,SelectVector(fraction,upperPoint2,fQuery->ends[0].axis[2].getQuad()));
 
-            _mm_store_ps(rays->ends[1].axis[2].getQuad().m128_f32,SelectVector(b,upperPoint2,rays->ends[1].axis[2].getQuad()));
+            _mm_store_ps(fQuery->ends[1].axis[2].getQuad().m128_f32,SelectVector(b,upperPoint2,fQuery->ends[1].axis[2].getQuad()));
 
             FourFloats lowerEndDistance,lowerStartDistance,lowerToWeight,lowerFromWeight;
 
@@ -947,41 +950,41 @@ lowerEndDistance=PlaneDiff(projectEnd.getQuad(),boundLow.getQuad());
 
             VectorValue lowerPoint0=_mm_add_ps(_mm_mul_ps(lowerToWeight.getQuad(),oldEnd.axis[0].getQuad()),_mm_mul_ps(lowerFromWeight.getQuad(),oldStart.axis[0].getQuad()));
 
-            _mm_store_ps(rays->ends[0].axis[0].getQuad().m128_f32,SelectVector(fraction,lowerPoint0,rays->ends[0].axis[0].getQuad()));
+            _mm_store_ps(fQuery->ends[0].axis[0].getQuad().m128_f32,SelectVector(fraction,lowerPoint0,fQuery->ends[0].axis[0].getQuad()));
 
-            _mm_store_ps(rays->ends[1].axis[0].getQuad().m128_f32,SelectVector(b,lowerPoint0,rays->ends[1].axis[0].getQuad()));
+            _mm_store_ps(fQuery->ends[1].axis[0].getQuad().m128_f32,SelectVector(b,lowerPoint0,fQuery->ends[1].axis[0].getQuad()));
 
             VectorValue j=_mm_add_ps(_mm_mul_ps(lowerToWeight.getQuad(),_mm_load_ps(oldEnd.axis[1].getQuad().m128_f32)),_mm_mul_ps(lowerFromWeight.getQuad(),oldStart.axis[1].getQuad()));
 
-            _mm_store_ps(rays->ends[0].axis[1].getQuad().m128_f32,SelectVector(fraction,j,rays->ends[0].axis[1].getQuad()));
+            _mm_store_ps(fQuery->ends[0].axis[1].getQuad().m128_f32,SelectVector(fraction,j,fQuery->ends[0].axis[1].getQuad()));
 
-            _mm_store_ps(rays->ends[1].axis[1].getQuad().m128_f32,SelectVector(b,j,rays->ends[1].axis[1].getQuad()));
+            _mm_store_ps(fQuery->ends[1].axis[1].getQuad().m128_f32,SelectVector(b,j,fQuery->ends[1].axis[1].getQuad()));
 
             VectorValue lowerPoint2=_mm_add_ps(_mm_mul_ps(lowerToWeight.getQuad(),oldEnd.axis[2].getQuad()),_mm_mul_ps(lowerFromWeight.getQuad(),oldStart.axis[2].getQuad()));
 
-            _mm_store_ps(rays->ends[0].axis[2].getQuad().m128_f32,SelectVector(fraction,lowerPoint2,rays->ends[0].axis[2].getQuad()));
+            _mm_store_ps(fQuery->ends[0].axis[2].getQuad().m128_f32,SelectVector(fraction,lowerPoint2,fQuery->ends[0].axis[2].getQuad()));
 
-            _mm_store_ps(rays->ends[1].axis[2].getQuad().m128_f32,SelectVector(b,lowerPoint2,rays->ends[1].axis[2].getQuad()));
+            _mm_store_ps(fQuery->ends[1].axis[2].getQuad().m128_f32,SelectVector(b,lowerPoint2,fQuery->ends[1].axis[2].getQuad()));
 
             continue;
 
         }
 
-        case 5: code+=byte1+2; continue;
+        case 5: PC+=byte1+2; continue;
 
-        case 6: code+=((byte1<<8)+splitNode)+3; continue;
+        case 6: PC+=((byte1<<8)+splitNode)+3; continue;
 
-        case 7: code+=(((byte1<<8)+splitNode)<<8)+byte3+4; continue;
+        case 7: PC+=(((byte1<<8)+splitNode)<<8)+byte3+4; continue;
 
         case 12:
 
-            chunk=(byte1<<8)|splitNode;
+            chunkId=(byte1<<8)|splitNode;
 
-            code=tree->code+(chunk<<9);
+            PC=tree->code+(chunkId<<9);
 
             continue;
 
-        case 13: code+=5;continue;
+        case 13: PC+=5;continue;
 
 case 1:case 2:case 3:case 4:{
 float txByte=decoded1,tyByte=decoded2,tzByte=decoded3;
@@ -989,51 +992,51 @@ FourFloats translation;translation=_mm_setr_ps(txByte,tyByte,tzByte,DAT_01011d78
  PackedQuad factors[4]={{2.f,2.f,2.f,2.f},{4.f,4.f,4.f,4.f},{8.f,8.f,8.f,8.f},{16.f,16.f,16.f,16.f}};
  FourFloats factor;factor.getQuad()=factors[command-1];
  FourFloats broadcast;
- broadcast.setBroadcast(translation,0);rays->ends[0].axis[0].sub4(broadcast);rays->ends[0].axis[0].setMul4(factor,rays->ends[0].axis[0]);
-broadcast.setBroadcast(translation,1);rays->ends[0].axis[1].sub4(broadcast);rays->ends[0].axis[1].setMul4(factor,rays->ends[0].axis[1]);
-broadcast.setBroadcast(translation,2);rays->ends[0].axis[2].sub4(broadcast);rays->ends[0].axis[2].setMul4(factor,rays->ends[0].axis[2]);
-broadcast.setBroadcast(translation,0);rays->ends[1].axis[0].sub4(broadcast);rays->ends[1].axis[0].scaleAndGet(factor);
-broadcast.setBroadcast(translation,1);rays->ends[1].axis[1].sub4(broadcast);rays->ends[1].axis[1].setMul4(factor,rays->ends[1].axis[1]);
-broadcast.setBroadcast(translation,2);rays->ends[1].axis[2].sub4(broadcast);rays->ends[1].axis[2].setMul4(factor,rays->ends[1].axis[2]);
-propertyCopy.offset.setAdd4(state->offset,translation);propertyCopy.offset.mul4(factor);
- propertyCopy.shift=state->shift+command;propertyCopy.scale.setMul4(factor,state->scale);
- for(int i=0;i<1;++i)propertyCopy.properties[i]=state->properties[i];propertyCopy.primitiveBase=state->primitiveBase;
- state=&propertyCopy;code+=4;continue;}
+ broadcast.setBroadcast(translation,0);fQuery->ends[0].axis[0].sub4(broadcast);fQuery->ends[0].axis[0].setMul4(factor,fQuery->ends[0].axis[0]);
+broadcast.setBroadcast(translation,1);fQuery->ends[0].axis[1].sub4(broadcast);fQuery->ends[0].axis[1].setMul4(factor,fQuery->ends[0].axis[1]);
+broadcast.setBroadcast(translation,2);fQuery->ends[0].axis[2].sub4(broadcast);fQuery->ends[0].axis[2].setMul4(factor,fQuery->ends[0].axis[2]);
+broadcast.setBroadcast(translation,0);fQuery->ends[1].axis[0].sub4(broadcast);fQuery->ends[1].axis[0].scaleAndGet(factor);
+broadcast.setBroadcast(translation,1);fQuery->ends[1].axis[1].sub4(broadcast);fQuery->ends[1].axis[1].setMul4(factor,fQuery->ends[1].axis[1]);
+broadcast.setBroadcast(translation,2);fQuery->ends[1].axis[2].sub4(broadcast);fQuery->ends[1].axis[2].setMul4(factor,fQuery->ends[1].axis[2]);
+propertyCopy.offset.setAdd4(query->offset,translation);propertyCopy.offset.mul4(factor);
+ propertyCopy.shift=query->shift+command;propertyCopy.scale.setMul4(factor,query->scale);
+ for(int i=0;i<1;++i)propertyCopy.properties[i]=query->properties[i];propertyCopy.primitiveBase=query->primitiveBase;
+ query=&propertyCopy;PC+=4;continue;}
         case 9:
 
-            if (state!=&propertyCopy) {propertyCopy.InitializeFields_00dd4a50(state);state=&propertyCopy;}
+            if (query!=&propertyCopy) {propertyCopy.InitializeFields_00dd4a50(query);query=&propertyCopy;}
 
             propertyCopy.primitiveBase+=byte1;
 
-            code+=2;continue;
+            PC+=2;continue;
 
         case 10: {
 
             int rejectUp=(byte1<<8)+splitNode;
 
-            if (state!=&propertyCopy) {propertyCopy.InitializeFields_00dd4a50(state);state=&propertyCopy;}
+            if (query!=&propertyCopy) {propertyCopy.InitializeFields_00dd4a50(query);query=&propertyCopy;}
 
             propertyCopy.primitiveBase+=rejectUp;
 
-            code+=3;continue;
+            PC+=3;continue;
 
         }
 
         case 11: {
 
-            int rejectUp=((((byte1<<8)+splitNode)<<8)+byte3)*256+code[4];
+            int rejectUp=((((byte1<<8)+splitNode)<<8)+byte3)*256+PC[4];
 
-            if (state!=&propertyCopy) {propertyCopy.InitializeFields_00dd4a50(state);state=&propertyCopy;}
+            if (query!=&propertyCopy) {propertyCopy.InitializeFields_00dd4a50(query);query=&propertyCopy;}
 
             propertyCopy.primitiveBase=rejectUp;
 
-            code+=5;continue;
+            PC+=5;continue;
 
         }
 
         case 0x60:case 0x61:case 0x62:case 0x63:
 
-            code+=2;
+            PC+=2;
 
             propertyCopy.properties[command-0x60]=byte1;
 
@@ -1042,21 +1045,21 @@ propertyCopy.offset.setAdd4(state->offset,translation);propertyCopy.offset.mul4(
         case 0x64:case 0x65:case 0x66:case 0x67:
 
             propertyCopy.properties[command-0x64]=(byte1<<8)+splitNode;
-            code+=3;
+            PC+=3;
 
             goto localState;
 
         case 0x68:case 0x69:case 0x6a:case 0x6b:
 
-            propertyCopy.properties[command-0x68]=((((byte1<<8)+splitNode)<<8)+byte3)*256+code[4];
+            propertyCopy.properties[command-0x68]=((((byte1<<8)+splitNode)<<8)+byte3)*256+PC[4];
 
-            code+=5;
+            PC+=5;
 
 localState: { // Preserve the changed property while copying shared state.
 
             unsigned int property=propertyCopy.properties[0];
 
-            if(state!=&propertyCopy) {propertyCopy.InitializeFields_00dd4a50(state);state=&propertyCopy;}
+            if(query!=&propertyCopy) {propertyCopy.InitializeFields_00dd4a50(query);query=&propertyCopy;}
 
             propertyCopy.properties[0]=property;
 
@@ -1086,13 +1089,13 @@ int r=DAT_01268360->Report(3,0x1298fedd,(const char*)messageStorage,
 
         }
 
-        case 0x50: primitive=code[1];goto leafNode;
+        case 0x50: primitive=PC[1];goto leafNode;
 
-        case 0x51: primitive=(code[1]<<8)+code[2];goto leafNode;
+        case 0x51: primitive=(PC[1]<<8)+PC[2];goto leafNode;
 
-        case 0x52: primitive=(((code[1]<<8)+code[2])<<8)+code[3];goto leafNode;
+        case 0x52: primitive=(((PC[1]<<8)+PC[2])<<8)+PC[3];goto leafNode;
 
-        case 0x53: primitive=(((((code[1]<<8)+code[2])<<8)+code[3])<<8)+code[4];goto leafNode;        case 0x30:
+        case 0x53: primitive=(((((PC[1]<<8)+PC[2])<<8)+PC[3])<<8)+PC[4];goto leafNode;        case 0x30:
 
         case 0x31:
 
@@ -1162,7 +1165,7 @@ int r=DAT_01268360->Report(3,0x1298fedd,(const char*)messageStorage,
 
 leafNode: {
 
-        unsigned int key=(chunkMask&(chunk<<8))|(state->primitiveBase+primitive);
+        unsigned int key=(chunkMask&(chunkId<<8))|(query->primitiveBase+primitive);
 
         ShapeBuffer shapeStorageBuf; void* shapeStorage = shapeStorageBuf.storage;
 
@@ -1188,7 +1191,7 @@ leafNode: {
 
         output[3].PushDepth();
 
-        FourFloats hits=child->CastBundle(context,output,&rays->active);
+        FourFloats hits=child->CastBundle(context,output,&fQuery->active);
 
 
 

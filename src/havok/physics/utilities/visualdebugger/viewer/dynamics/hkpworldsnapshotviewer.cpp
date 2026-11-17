@@ -46,7 +46,7 @@ typedef void(__cdecl* SnapshotFn)();
 
 struct ProfileRegistry
 {
-    int hkProcessFactory_registerProcess(const char* apName, SnapshotFn apfnHandler);
+    int hkProcessFactory_registerProcess(const char* viewerName, SnapshotFn creationFunction);
 };
 
 extern ProfileRegistry* DAT_01269cd0;
@@ -54,14 +54,16 @@ extern int DAT_01268fc4;
 extern int DAT_01268fc0;
 
 void __cdecl hkpWorldSnapshotViewer_createNative();
-void __cdecl AllocateRecordWithData();
+void __cdecl hkpWorldSnapshotViewer_createPC();
 
 // Registers the two world-snapshot commands with the profile registry, storing their returned handles in DAT_01268fc4 and DAT_01268fc0.
 // @fnv 0x00d63000
-void __cdecl RegisterSnapshotCommands()
+// src: XBOX_RETAIL_PDB 0x00d63000
+// pdb: hkpWorldSnapshotViewer::registerViewer | hkpWorldSnapshotViewer.obj | retail, string-set bridge, high
+void __cdecl hkpWorldSnapshotViewer_registerViewer()
 {
     DAT_01268fc4 = DAT_01269cd0->hkProcessFactory_registerProcess("* Grab World Snapshot Native", hkpWorldSnapshotViewer_createNative);
-    DAT_01268fc0 = DAT_01269cd0->hkProcessFactory_registerProcess("* Grab World Snapshot PC", AllocateRecordWithData);
+    DAT_01268fc0 = DAT_01269cd0->hkProcessFactory_registerProcess("* Grab World Snapshot PC", hkpWorldSnapshotViewer_createPC);
 }
 
 struct FUN_00c7be20_cls;
@@ -82,7 +84,7 @@ struct FUN_00c7be20_arr
 };
 
 hkMemoryRouter* __cdecl hkMemoryRouter_getInstance() throw();
-void __cdecl hkArrayUtil__reserve(void* allocator, FUN_00c7be20_arr* self, unsigned int newCap, int elemSize);
+void __cdecl hkArrayUtil__reserve(void* mem, FUN_00c7be20_arr* array, unsigned int numElem, int sizeElem);
 
 struct FUN_00c7be20_cls
 {
@@ -111,6 +113,8 @@ struct FUN_00c7be20_cls
 
 // Grows the output array to hold m_48's element count, sets its size, then copies the elements from m_48->m_08 into it.
 // @fnv 0x00c7be20
+// pdb: bhkRagdollController::GetRBForBones | bhkRagdollController.obj | retail, object-file run extension, low
+// pdb params: arBoneRBA
 void FUN_00c7be20_cls::CopySourceArray(FUN_00c7be20_arr* out)
 {
     FUN_00c7be20_src* pSource = m_48;
@@ -168,6 +172,7 @@ struct FUN_00d62fa0_class
 };
 
 // @fnv 0x00d62fa0
+// pdb: hkpWorldSnapshotViewer::init | hkpWorldSnapshotViewer.obj | retail, vtable slot, high
 void __thiscall FUN_00d62fa0_class::ProcessContainerItems()
 {
     if (m_container)
@@ -194,6 +199,7 @@ struct FUN_00d63250_cls
 
 // Calls FUN_00d62fe0, then if acFlags bit 0 is set frees this via the allocator from FUN_00c85750 using m_uSize, and returns this.
 // @fnv 0x00d63250
+// pdb: hkpWorldSnapshotViewer::`scalar deleting destructor' | hkpWorldSnapshotViewer.obj | retail, vtable slot, high
 FUN_00d63250_cls* FUN_00d63250_cls::Destroy(unsigned char acFlags)
 {
     UpdateFields_00d62fe0();
@@ -213,7 +219,7 @@ extern int DAT_010d1764;
 
 struct SubObject
 {
-    void Init(int a, int b);
+    void Init(int vtblReg, int memSize);
 };
 
 struct FUN_00d63280_cls
@@ -230,19 +236,21 @@ struct FUN_00d63280_cls
     int unk24;
     SubObject m_sub28;
 
-    void Setup(int b);
-    FUN_00d63280_cls* hkpWorldMemoryViewer_hkpWorldMemoryViewer(int a, int b);
+    void Setup(int contexts);
+    FUN_00d63280_cls* hkpWorldMemoryViewer_hkpWorldMemoryViewer(int vtlbReg, int contexts);
 };
 
 // @fnv 0x00d63280
 // src: HAVOK_LIB 0x00d63280
-FUN_00d63280_cls* FUN_00d63280_cls::hkpWorldMemoryViewer_hkpWorldMemoryViewer(int a, int b)
+// pdb: hkpWorldMemoryViewer::hkpWorldMemoryViewer | hkpWorldMemoryViewer.obj | retail, upstream name already matches, high
+// pdb params: vtlbReg, contexts
+FUN_00d63280_cls* FUN_00d63280_cls::hkpWorldMemoryViewer_hkpWorldMemoryViewer(int vtlbReg, int contexts)
 {
-    Setup(b);
+    Setup(contexts);
     m_vtbl0 = (void*)&DAT_010d1794;
     m_vtbl8 = (void*)&DAT_010d1774;
     m_vtbl20 = (void*)&DAT_010d1764;
-    m_sub28.Init(a, 0x7a120);
+    m_sub28.Init(vtlbReg, 0x7a120);
     return this;
 }
 

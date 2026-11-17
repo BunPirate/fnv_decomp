@@ -125,6 +125,9 @@ inline CoordConstIter::CoordConstIter(float* ptr, const ContainerBase* pVec)
 }
 // @fnv 0x00aaef90
 // src: GUESS 0x00aaef90 (confidence: low)
+// pdb: FR2MatrixVTC<float>::operator-= | FanControls.obj | debug, object-file run extension, low
+// pdb params: m
+// pdb locals: dptr, md
 CoordVec& CoordVec::ProcessEntries_00aaef90(const CoordVec& rhs)
 {
     (m_rows == rhs.m_rows && m_cols == rhs.m_cols)
@@ -202,6 +205,9 @@ struct MatrixOps
 };
 // @fnv 0x00aaf110
 // src: GUESS 0x00aaf110 (confidence: low)
+// pdb: FR2MatrixVTC<float>::subMatrix | FanControls.obj | debug, object-file run extension, low
+// pdb params: firstRow, firstCol, numRowsSub, numColsSub
+// pdb locals: retval, i
 MatrixOps MatrixOps::ProcessEntries_00aaf110(unsigned int startColumn, unsigned int startRow, unsigned int columnCount,
                                   unsigned int rowCount)
 {

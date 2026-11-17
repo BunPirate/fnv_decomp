@@ -6,6 +6,7 @@
 
 // Calls FUN_00983130, then deletes this if flags has bit 0 set, and returns this.
 // @fnv 0x00983100
+// pdb: CombatCoverMap::`scalar deleting destructor' | CombatCoverMap.obj | retail, vtable slot, high
 void* CombatCoverMap::FUN_00983100(unsigned int flags)
 {
     FUN_00983130();
@@ -33,6 +34,7 @@ struct FUN_00983250_shell
     void* __thiscall DestroyIfFlagged(unsigned int flags);
 };
 // @fnv 0x00983250
+// pdb: ReservedCoverLocation::`scalar deleting destructor' | CombatCoverMap.obj | debug, object-file gap fill, medium
 void* __thiscall FUN_00983250_shell::DestroyIfFlagged(unsigned int flags)
 {
     FUN_00982d10();
@@ -45,6 +47,7 @@ struct StageHolder
 {
     bool __thiscall GetDone();
 };
+// pdb: class Calendar, size 0x1c (here 0x1), 7 members
 struct Calendar
 {
     unsigned int __thiscall GetDaysPassed();
@@ -64,11 +67,13 @@ struct FUN_009a0510_shell
 // If a1 is non-null and not done, calls FUN_00983280 with m_1c4 and a1 on the object returned by GetDaysPassed.
 // @fnv 0x009a0510
 // src: XBOX_PDB 0x009a0510
-void __thiscall FUN_009a0510_shell::CombatState_ReserveCoverLocation(StageHolder* pStage)
+// pdb: CombatState::ReserveCoverLocation | CombatState.obj | debug, call graph (shared callers), high
+// pdb params: apCoverLocation
+void __thiscall FUN_009a0510_shell::CombatState_ReserveCoverLocation(StageHolder* apCoverLocation)
 {
-    if (pStage && !pStage->GetDone())
+    if (apCoverLocation && !apCoverLocation->GetDone())
         ((FUN_00983280_holder*)((Calendar*)BGSSaveLoadGlobalDataWorldspacePtr)->GetDaysPassed())
-            ->CombatCoverMap_ReserveCoverLocation(m_1c4, pStage);
+            ->CombatCoverMap_ReserveCoverLocation(m_1c4, apCoverLocation);
 }
 
 class TESWorldSpace;
@@ -93,11 +98,13 @@ struct FUN_009a0560_shell
 // Returns true if the stage holder is null or done, otherwise delegates to GetOrCreateCoverItem with the days passed and the holder.
 // @fnv 0x009a0560
 // src: XBOX_PDB 0x009a0560
-bool __thiscall FUN_009a0560_shell::CombatState_TryReserveCoverLocation(StageHolder* pStageHolder)
+// pdb: CombatState::TryReserveCoverLocation | CombatState.obj | debug, upstream name already matches, high
+// pdb params: apCoverLocation
+bool __thiscall FUN_009a0560_shell::CombatState_TryReserveCoverLocation(StageHolder* apCoverLocation)
 {
-    if (pStageHolder && !pStageHolder->GetDone())
+    if (apCoverLocation && !apCoverLocation->GetDone())
         return ((FUN_00983420_shell*)((Calendar*)BGSSaveLoadGlobalDataWorldspacePtr)->GetDaysPassed())
-            ->GetOrCreateCoverItem(*(int*)((char*)this + 0x1C4), pStageHolder);
+            ->GetOrCreateCoverItem(*(int*)((char*)this + 0x1C4), apCoverLocation);
     return true;
 }
 }  // namespace fnv_009a0560
@@ -125,11 +132,13 @@ struct FUN_009a05b0_shell
 // If a1 is non-null and done, passes fld1c4 and a1 to FUN_00983520 via the worldspace save-load global's days-passed object.
 // @fnv 0x009a05b0
 // src: XBOX_PDB 0x009a05b0
-void __thiscall FUN_009a05b0_shell::CombatState_UnreserveCoverLocation(StageHolder* pStage)
+// pdb: CombatState::UnreserveCoverLocation | CombatState.obj | debug, call graph (shared callers), high
+// pdb params: apCoverLocation
+void __thiscall FUN_009a05b0_shell::CombatState_UnreserveCoverLocation(StageHolder* apCoverLocation)
 {
-    if (pStage && pStage->GetDone())
+    if (apCoverLocation && apCoverLocation->GetDone())
     {
-        BGSSaveLoadGlobalDataWorldspacePtr->GetDaysPassed()->CombatCoverMap_UnreserveCoverLocation(fld1c4, pStage);
+        BGSSaveLoadGlobalDataWorldspacePtr->GetDaysPassed()->CombatCoverMap_UnreserveCoverLocation(fld1c4, apCoverLocation);
     }
 }
 }  // namespace fnv_009a05b0
@@ -165,18 +174,21 @@ struct HolderStatus
 };
 // @fnv 0x00983280
 // src: XBOX_PDB 0x00983280
-void FUN_00983280_holder::CombatCoverMap_ReserveCoverLocation(int value, StageHolder* pStageHolder)
+// pdb: CombatCoverMap::ReserveCoverLocation | CombatCoverMap.obj | retail, upstream name already matches, high
+// pdb params: apCombatController, apCombatCoverLocation
+// pdb locals: preservedLocation
+void FUN_00983280_holder::CombatCoverMap_ReserveCoverLocation(int apCombatController, StageHolder* apCombatCoverLocation)
 {
     ((MapMember*)((char*)this + 0x14))->AcquireLock();
     void* pCreatedShell = 0;
-    if (!((HolderLookup*)this)->FUN_00853130(*(unsigned int*)((char*)pStageHolder + 0x68), &pCreatedShell))
+    if (!((HolderLookup*)this)->FUN_00853130(*(unsigned int*)((char*)apCombatCoverLocation + 0x68), &pCreatedShell))
     {
         pCreatedShell = new CreatedShell();
-        ((CreatedShell*)pCreatedShell)->SetByteAtOffset(((HolderStatus*)pStageHolder)->GetDone());
-        ((HolderLookup*)this)->FUN_00844700(*(unsigned int*)((char*)pStageHolder + 0x68), pCreatedShell);
+        ((CreatedShell*)pCreatedShell)->SetByteAtOffset(((HolderStatus*)apCombatCoverLocation)->GetDone());
+        ((HolderLookup*)this)->FUN_00844700(*(unsigned int*)((char*)apCombatCoverLocation + 0x68), pCreatedShell);
     }
-    ((CreatedShell*)pCreatedShell)->AddItem(value, pStageHolder);
-    ((HolderStatus*)pStageHolder)->PackageSchedule_SetStartDayOfWeek(1);
+    ((CreatedShell*)pCreatedShell)->AddItem(apCombatController, apCombatCoverLocation);
+    ((HolderStatus*)apCombatCoverLocation)->PackageSchedule_SetStartDayOfWeek(1);
     ((MapMember*)((char*)this + 0x14))->BSReadWriteLock_UnlockWrite();
 }
 
@@ -215,6 +227,7 @@ struct FUN_00983380 : FUN_009836d0_class
 };
 
 // @fnv 0x00983380
+// pdb: ReservedCoverLocation::ReservedCoverLocation | CombatCoverMap.obj | debug, object-file run extension, low
 FUN_00983380::FUN_00983380() : unk10(0), unk14(0), unk15(0), unk16(0), unk18(0)
 {}
 
@@ -253,6 +266,9 @@ struct FUN_00983420_class
 
 // Locks, looks up or creates a CoverItem for arg2->unk68, runs RegisterEvent on it, stores the result via arg2->FUN_0067fdb0, and returns it.
 // @fnv 0x00983420
+// pdb: CombatCoverMap::TryReserveCoverLocation | CombatCoverMap.obj | debug, object-file run extension, low
+// pdb params: apCombatController, apCombatCoverLocation
+// pdb locals: preservedLocation, bresult
 bool FUN_00983420_class::GetOrCreateCoverItem(void* arg1, Arg2* arg2)
 {
     lock.Enter();
@@ -271,7 +287,7 @@ bool FUN_00983420_class::GetOrCreateCoverItem(void* arg1, Arg2* arg2)
 
 struct Chain
 {
-    int GetFlaggedValue(bool flag);
+    int GetFlaggedValue(bool bModValue);
 };
 struct Pair3Pool
 {
@@ -404,6 +420,8 @@ extern const double DAT_01012060;
 // Gets two values from m68's members and returns their ratio, or 1.0 when either member is null or the divisor equals DAT_01012060.
 // @fnv 0x008a88f0
 // src: XBOX_PDB 0x008a88f0
+// pdb: Actor::GetCurrentAmmoClipPercent | Actor.obj | retail, upstream name already matches, high
+// pdb locals: pammoItem, pweaponItem, fshotsPerClip, fcurrentShots, pweapon
 float FUN_008a88f0_cls::Actor_GetCurrentAmmoClipPercent()
 {
     Pair3Pool* ywqVal = (Pair3Pool*)m68->GetA();
@@ -531,6 +549,8 @@ struct FUN_00983130 : CoverMapBase
 
 // Deletes every value in the hash table, clears it, then detaches the owner's target if one is set.
 // @fnv 0x00983130
+// pdb: CombatCoverMap::~CombatCoverMap | CombatCoverMap.obj | debug, object-file gap fill, medium
+// pdb locals: it, ikey, preservedLocation
 FUN_00983130::~FUN_00983130()
 {
     void* pos = GetFirstPos();
@@ -550,12 +570,12 @@ FUN_00983130::~FUN_00983130()
 
 struct CoverItemCalls
 {
-    bool ReservedCoverLocation_CanReserveCoverLocation(unsigned int value);
+    bool ReservedCoverLocation_CanReserveCoverLocation(unsigned int apCombatController);
 };
 
 struct CoverTargetCalls
 {
-    bool CoverReservationInfo_FindCoverReservation(unsigned int a, unsigned int b, float c, CoverItem* item, unsigned char d, unsigned char e);
+    bool CoverReservationInfo_FindCoverReservation(unsigned int apCoverLocation, unsigned int apCombatController, float afActorRadius, CoverItem* apReservedCoverLocation, unsigned char abHideCover, unsigned char abLeftEdge);
 };
 
 struct CoverLockCalls
@@ -579,6 +599,10 @@ struct FUN_009835d0_cls
 };
 
 // @fnv 0x009835d0
+// pdb: ReservedCoverLocation::ReserveCoverLocation | CombatCoverMap.obj | retail, object-file run extension, low
+// pdb note: debug build links it to CombatCoverMap::CanReserveCoverLocation
+// pdb params: apCombatController, apCombatCoverLocation
+// pdb locals: icoverSegmentMask, i, coverReservation
 bool FUN_009835d0_cls::TryUseCoverItem(unsigned int key, unsigned int p2, unsigned int p3, float fValue, void* target,
                                        unsigned char d, unsigned char e)
 {
@@ -604,37 +628,40 @@ bool FUN_009835d0_cls::TryUseCoverItem(unsigned int key, unsigned int p2, unsign
 
 struct CoverReservationUnreserveCalls
 {
-    bool ReservedCoverLocation_UnreserveCoverLocation(void* owner, Arg2* location);
+    bool ReservedCoverLocation_UnreserveCoverLocation(void* apCombatController, Arg2* apCombatCoverLocation);
 };
 
 struct CoverMapUnreserveReceiver : FUN_00983420_class
 {
     void RemoveKey(void* value);
-    void CombatCoverMap_UnreserveCoverLocation(void* arg1, Arg2* arg2);
+    void CombatCoverMap_UnreserveCoverLocation(void* apCombatController, Arg2* apCombatCoverLocation);
 };
 
 // Looks up the item at arg2->unk68, calls its callback, and on success calls DestroyIfFlagged and removes the keyed entry.
 // @fnv 0x00983520
 // src: XBOX_PDB 0x00983520
-void CoverMapUnreserveReceiver::CombatCoverMap_UnreserveCoverLocation(void* apOwner, Arg2* apLocation)
+// pdb: CombatCoverMap::UnreserveCoverLocation | CombatCoverMap.obj | retail, upstream name already matches, high
+// pdb params: apCombatController, apCombatCoverLocation
+// pdb locals: preservedLocation
+void CoverMapUnreserveReceiver::CombatCoverMap_UnreserveCoverLocation(void* apCombatController, Arg2* apCombatCoverLocation)
 {
-    if (apLocation->unk68 == 0)
+    if (apCombatCoverLocation->unk68 == 0)
     {
     }
     else
     {
         this->lock.Enter();
         CoverItem* item = 0;
-        if (this->FUN_00853130(apLocation->unk68, &item))
+        if (this->FUN_00853130(apCombatCoverLocation->unk68, &item))
         {
-            if (((CoverReservationUnreserveCalls*)item)->ReservedCoverLocation_UnreserveCoverLocation(apOwner, apLocation))
+            if (((CoverReservationUnreserveCalls*)item)->ReservedCoverLocation_UnreserveCoverLocation(apCombatController, apCombatCoverLocation))
             {
                 CoverItem* b = item;
                 CoverItem* a = b;
                 a != 0 ? ((FUN_00983250_shell*)a)->DestroyIfFlagged(1) : 0;
-                this->RemoveKey(apLocation->unk68);
+                this->RemoveKey(apCombatCoverLocation->unk68);
             }
-            apLocation->PackageSchedule_SetStartDayOfWeek(false);
+            apCombatCoverLocation->PackageSchedule_SetStartDayOfWeek(false);
         }
         this->lock.Leave();
     }

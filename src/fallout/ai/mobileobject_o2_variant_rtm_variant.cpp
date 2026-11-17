@@ -37,7 +37,7 @@ inline bool NiPoint3::operator==(const NiPoint3& other) const
 #include "../../../include/BSSoundHandle.h"
 extern TESDataHandler* g_dataHandler;
 #include "mobileobject_private/mobileobject_packet.h"
-bhkCharacterController* CopyCharacterControllerVector(bhkCharacterController* output, const NiPoint3& point);
+bhkCharacterController* CopyCharacterControllerVector(bhkCharacterController* arhkV, const NiPoint3& arNiP);
 struct UnkCallee
 {
     virtual void F0();
@@ -826,7 +826,7 @@ struct MovementController {
     void bhkCharacterController_ClearPush();
     void bhkCharacterController_ChangeSize(float);
     float Evaluate(float,float);
-    unsigned char bhkCharacterController_GetIsSwimming();
+    unsigned char bhkCharacterController_QIsSwimming();
     unsigned char bhkCharacterController_GetUseZ();
     void bhkCharacterController_ApplyPitchAndRoll(Rotation*);
     S00c73170_Vec* bhkCharacterProxy_GethkLinearVelocity();
@@ -842,6 +842,9 @@ struct MovementController {
 };
 // @fnv 0x00c73170
 // src: XBOX_PDB 0x00c73170
+// pdb: bhkCharacterController::Move | bhkCharacterController.obj | retail, vtable slot, high
+// pdb params: arData
+// pdb locals: pw, bfriction, bisProjectile, eres, ftotalTime, bquickSimulate, tempAutoEvent, bforceOneStep, pos, mStream, h, fspeedSqr, rot, fwd, hkrot, disp, pproxy, tmpForward, brunIntegrate, isteps, down, bp, br, fstep ...
 extern "C" int __fastcall bhkCharacterController_Move(MovementController* self, void*, MovementInput* in) {
     int result=0;
     struct SpeedTrace { float value; } speedTrace;
@@ -906,7 +909,7 @@ extern "C" int __fastcall bhkCharacterController_Move(MovementController* self, 
     {
         NiPoint3 tempStore=*displacement;
         NiPoint3& temp=tempStore;
-        if(!self->bhkCharacterController_GetIsSwimming() && !self->fl.Bit(11)) temp.z=0;
+        if(!self->bhkCharacterController_QIsSwimming() && !self->fl.Bit(11)) temp.z=0;
         temp.y=temp.y;
         float& reciprocal=speedTrace.value;
         reciprocal=self->inverse4ec;

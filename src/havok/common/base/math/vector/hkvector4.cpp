@@ -56,7 +56,7 @@ struct SubVecHolder;
 struct FUN_00c7f700_cls
 {
     __m128 m_result;
-    void hkVector4_setRotatedDir(void* first, void* second);
+    void hkVector4_setRotatedDir(void* quat, void* direction);
 };
 
 struct VecSource
@@ -75,7 +75,10 @@ extern void __fastcall bhkCharacterProxy_MarkRead(bhkCharacterController* contro
 
 // Subtracts res.m_result from the selected vector and stores the difference in out.
 // @fnv 0x00c6e300
-void bhkCharacterController::SubtractVectors(Vec4* apResult)
+// pdb: bhkCharacterController::GetPosition | bhkCharacterController.obj | retail, object-file run extension, high
+// pdb params: arPos
+// pdb locals: hkp
+void bhkCharacterController::SubtractVectors(Vec4* arPos)
 {
     HolderNode* holder = *(HolderNode**)((char*)this + 0x594);
     char* base = holder ? holder->m_p08 : 0;
@@ -84,7 +87,7 @@ void bhkCharacterController::SubtractVectors(Vec4* apResult)
     res.hkVector4_setRotatedDir(base + 0xb0, (char*)this + 0x570);
 
     __m128* vec = &DAT_01267e30;
-    VecSource* src = reinterpret_cast<VecSource*>(m_pHavokObject);
+    VecSource* src = reinterpret_cast<VecSource*>(phkObject);
     if (src != 0)
     {
         bhkCharacterProxy_MarkRead(this);
@@ -94,14 +97,14 @@ void bhkCharacterController::SubtractVectors(Vec4* apResult)
 
     __m128 a = *vec;
     __m128 b = res.m_result;
-    *reinterpret_cast<__m128*>(apResult) = _mm_sub_ps(a, b);
+    *reinterpret_cast<__m128*>(arPos) = _mm_sub_ps(a, b);
 }
 
 struct __declspec(align(16)) CastVector
 {
     float x, y, z, w;
     void hkVector4_setTransformedInversePos(void* transform, const CastVector* value);
-    void hkVector4_setRotatedDir(void* transform, const CastVector* value);
+    void hkVector4_setRotatedDir(void* quat, const CastVector* direction);
 };
 
 typedef __m128 VecArr;
@@ -208,6 +211,8 @@ extern double DAT_0102f070;
 // Casts rays between transformed points, adjusts both z coordinates by advance, and returns true when a cast fraction is below 1.
 // @fnv 0x00c6fa20
 // src: COMMUNITY 0x00c6fa20
+// pdb: bhkCharacterController::CheckInsideOfObject | bhkCharacterController.obj | retail, upstream name already matches, high
+// pdb locals: fhghtAdj, posOffset, worldEnd, pp, rcols, worldStart, icols, pcollidable, elayer, etype, ps, iflt, theInput, bhit, theOutput, I
 bool bhkCharacterController::CheckInsideOfObject()
 {
     Node* node = *(Node**)((char*)this + 0x594);
@@ -376,22 +381,25 @@ struct FUN_00c7f700_cls
 {
     __m128 m_result;
 
-    void hkVector4_setRotatedDir(MatrixRows3x4* matrix, __m128* vec);
+    void hkVector4_setRotatedDir(MatrixRows3x4* quat, __m128* direction);
 };
 
 // Multiplies a 3D vector by the first three rows of a 3x4 matrix and stores the result in m_result.
 // @fnv 0x00c7f700
 // src: XBOX_PDB 0x00c7f700
-void FUN_00c7f700_cls::hkVector4_setRotatedDir(MatrixRows3x4* matrix, __m128* apVector)
+// pdb: hkVector4::setRotatedDir | TESWaterListener.obj | debug, upstream name already matches, high
+// pdb params: quat, direction
+// pdb locals: q2minus1, imagCrossDir, qreal, ret, minusHalf, imagDotDir
+void FUN_00c7f700_cls::hkVector4_setRotatedDir(MatrixRows3x4* quat, __m128* direction)
 {
-    __m128 v = *apVector;
+    __m128 v = *direction;
     __m128 vx = _mm_shuffle_ps(v, v, 0x00);
     __m128 vy = _mm_shuffle_ps(v, v, 0x55);
     __m128 vz = _mm_shuffle_ps(v, v, 0xaa);
 
-    __m128 r = _mm_mul_ps(vy, matrix->row1);
-    r = _mm_add_ps(r, _mm_mul_ps(vx, matrix->row0));
-    r = _mm_add_ps(r, _mm_mul_ps(vz, matrix->row2));
+    __m128 r = _mm_mul_ps(vy, quat->row1);
+    r = _mm_add_ps(r, _mm_mul_ps(vx, quat->row0));
+    r = _mm_add_ps(r, _mm_mul_ps(vz, quat->row2));
     m_result = r;
 }
 }  // namespace fnv_00c7f700
@@ -495,7 +503,7 @@ struct BoundingVolumeNode
             BoundingVolumeNode* f34;
         };
     };
-    int bhkShape_GetSubshapeMaterial(int key);
+    int bhkShape_GetSubshapeMaterial(int aiKey);
 };
 struct VarObj
 {
@@ -703,11 +711,11 @@ __declspec(noinline) void* __cdecl GetValidatedPointer(void* obj)
     return result;
 }
 void __cdecl ComputeInverseLengths(const QueryVector* triangle, Plane* plane);
-void __cdecl hkCollideCapsuleUtilCapsVsTri(const QueryVector* ray, float tolerance, const QueryVector* triangle, float radius,
-                          const Plane* plane, float zero, int flags, Contacts* contacts, void* extra);
-char __cdecl bhkCharacterController_IsShapeConsideredPenetrating(BoundingVolumeNode* obj, int one, char v, int id);
+void __cdecl hkCollideCapsuleUtilCapsVsTri(const QueryVector* capsAPoints, float capsARadius, const QueryVector* triVertices, float triBRadius,
+                          const Plane* cache, float collisionTolerance, int searchManifold, Contacts* points, void* featuresOut);
+char __cdecl bhkCharacterController_IsShapeConsideredPenetrating(BoundingVolumeNode* apShape, int abPenetrating, char abStairsMaterialOnly, int auiShapeKey);
 typedef char(__cdecl* PredFn)(int v);
-extern PredFn DAT_01267bc8;
+extern PredFn bhkCharacterController_pfGetMaterialStairCallback; // src: XBOX_RETAIL_PDB 0x01267bc8 (old: DAT_01267bc8)
 extern "C" void _ReadWriteBarrier();
 extern float DAT_01011d78;
 static __forceinline float scalar(__m128 x)
@@ -762,6 +770,9 @@ struct CastWorkspace
 };
 // Checks filters and geometry, may run a ray cast or contact query, and returns the resulting flag.
 // @fnv 0x00c6eb00
+// pdb: bhkCharacterController::IsStep | bhkCharacterController.obj | retail, upstream name already matches, high
+// pdb params: arPoint
+// pdb locals: bcontactPointTooHigh, bstep, prb, uiclosestFBIdx, pp, psc, rayTo, fstepHeightAdjust, fhitz, contactPos, contactNorm, pcurShape, pc, rayFrom, fheight, frad, bstairMaterialOnly, diffs, ui, vert, ps, points, endPoints, dist1 ...
 // The shared controller has no declaration for this routine yet. The unused
 // EDX argument preserves its original thiscall stack argument layout.
 // src: COMMUNITY 0x00c6eb00
@@ -804,8 +815,8 @@ char __fastcall bhkCharacterController_IsStep(bhkCharacterController* controller
             BoundingVolumeNode* child = found->child;
             int v = key != -1 ? child->bhkShape_GetSubshapeMaterial(key) : child->f10 & 31;
             char c = 0;
-            if (DAT_01267bc8)
-                c = DAT_01267bc8(v);
+            if (bhkCharacterController_pfGetMaterialStairCallback)
+                c = bhkCharacterController_pfGetMaterialStairCallback(v);
             allowed = c == 0;
         }
         flag = allowed == 0;

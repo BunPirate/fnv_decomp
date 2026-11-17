@@ -4,7 +4,7 @@
 class StateNode
 {
   public:
-    void ResetCameraState();
+    void BGSCameraShot_FreeCamera();
 };
 void ImageSpaceModifierInstance_Stop(ImageSpaceModifierInstanceDOF*);
 #include "../../../../include/SettingT_GameSettingCollection_.h"
@@ -12,11 +12,12 @@ void ImageSpaceModifierInstance_Stop(ImageSpaceModifierInstanceDOF*);
 #include "../../../../include/ShadowSceneNode.h"
 extern SettingT_GameSettingCollection_ DAT_011ce424, DAT_011ce564, DAT_011ce6d8, DAT_011cf1f8;
 ImageSpaceModifierInstanceDOF* ImageSpaceModifierInstanceRB_Trigger(float, float, float, float, float, NiPoint2*, float);
+// pdb: class VATS, size 0x48 (here 0x1), 17 members
 class VATS
 {
   public:
     class LightTarget* VATS_GetVATSLight();
-    void SetLight(NiPointLight*, bool);
+    void SetVATSLight(NiPointLight*, bool);
     void SetCurrentTarget(class TESObjectREFR*);
 };
 class LightTarget

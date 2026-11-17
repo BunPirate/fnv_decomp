@@ -4,6 +4,7 @@
 
 struct BGSAcousticSpace;
 
+// pdb: class ExtraCellAcousticSpace, size 0x10, bases: BSExtraData, 1 members
 class ExtraCellAcousticSpace : public BSExtraData
 {
 public:
@@ -11,5 +12,5 @@ public:
     bool Compare(BSExtraData* apCompare) override;
     bool FUN_0040f000(BSExtraData* apCompare);
 
-    BGSAcousticSpace* m_pPathingCell;
+    BGSAcousticSpace* pSpace; // src: XBOX_RETAIL_PDB +0xc (old: m_pPathingCell)
 };

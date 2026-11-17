@@ -12,20 +12,21 @@ inline NiColor::NiColor() : r(0), g(0), b(0)
 
 inline NiFogProperty::NiFogProperty()
 {
-    m_uiObjectFlags = 0;
-    m_fFogDepth = 1.0f;
-    m_kFogTint = DAT_011f4998;
+    m_uFlags = 0;
+    m_fDepth = 1.0f;
+    m_kColor = DAT_011f4998;
 }
 
 // @fnv 0x00bb8180
+// pdb: BSFogProperty::BSFogProperty | BSFogProperty.obj | retail, call graph (shared callers), high
 FogPropertyWithBase::FogPropertyWithBase()
 {
-    m_fFogStartDistance = (1.0 - m_fFogDepth * DAT_010b9e30) * DAT_0103a480;
+    m_fFogStartDistance = (1.0 - m_fDepth * DAT_010b9e30) * DAT_0103a480;
     m_fFogEndDistance = 163840.0f;
-    m_kFogPlane.x = 0.0f;
+    m_kFogPlane.m_kNormal = 0.0f;
     m_kFogPlane.y = 0.0f;
     m_kFogPlane.z = 0.0f;
-    m_kFogPlane.c = 0.0f;
+    m_kFogPlane.m_fConstant = 0.0f;
     m_fAlpha = 1.0f;
 }
 
@@ -53,6 +54,8 @@ inline void NiRefObject::DecRefCount()
 // The original destructor body is kept here because the shared declaration
 // does not provide its inlined base-class teardown.
 // @fnv 0x00a5c240
+// pdb: NiObjectNET::~NiObjectNET | NiObjectNET.obj | retail, call graph (shared callers), low
+// pdb note: debug build links it to BSFogProperty::~BSFogProperty
 void __fastcall DestroyProperty(NiProperty* property)
 {
     *(void**)property = (void*)&DAT_0109b244;
@@ -71,13 +74,13 @@ void __fastcall DestroyProperty(NiProperty* property)
     property->NiRefObject::~NiRefObject();
 }
 
-extern int g_012007e0;
+extern int BSFogProperty_ms_RTTI; // src: XBOX_RETAIL_PDB 0x012007e0 (old: gSetting/g_012007e0)
 
 // @fnv 0x00bb8170
 // src: XBOX_PDB 0x00bb8170
 int* __cdecl BSFogProperty_GetRTTI()
 {
-    return &g_012007e0;
+    return &BSFogProperty_ms_RTTI;
 }
 
 extern char const* const g_012007e0_arg1;
@@ -105,6 +108,8 @@ extern MemoryManager g_memoryManager;
 // The original vftable's RTTI identifies this array specialization.
 class NiMetricsOutputModule;
 // @fnv 0x00a9bbc0
+// pdb: NiPointer<NiMetricsOutputModule>::NiPointer<NiMetricsOutputModule> | NiMetricsLayer.obj | debug, object-file run extension, low
+// pdb params: pObject
 void* __fastcall DestroyObjectArray(
     NiTArray<NiPointer<NiMetricsOutputModule>, NiTNewInterface<NiPointer<NiMetricsOutputModule> > >* array,
     void*, unsigned int auiFlags)

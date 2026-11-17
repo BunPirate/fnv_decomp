@@ -106,6 +106,9 @@ bool __cdecl BGSEntryPointFunction_CheckFunctionArguments(int, int, void*, int, 
 
 // @fnv 0x005e5f50
 // src: XBOX_PDB 0x005e5f50
+// pdb: BGSEntryPointFunction::AddLeveledListToTargetFunction | BGSEntryPointFunction.obj | retail, upstream name already matches, high
+// pdb params: apPerkOwner, aeFunctionType, acArgumentCount, apFunctionArgument, apData
+// pdb locals: plist, pinventory, ptarget, tempcont, pfunctionData, pboundObject, pdata, pScript, pExtra, n
 void __cdecl BGSEntryPointFunction_AddLeveledListToTargetFunction(void* apPerkOwner, int aeFunctionType, unsigned char acArgumentCount,
                           void** apFunctionArgument, void* apData)
 {
@@ -114,7 +117,7 @@ void __cdecl BGSEntryPointFunction_AddLeveledListToTargetFunction(void* apPerkOw
     DataLeveledList5e5f50* pfunctionData = (DataLeveledList5e5f50*)apData;
     Actor* ptarget = (Actor*)*apFunctionArgument;
     TESContainer tempcont;
-    pfunctionData->FUN_00726070()->list.PopulateContainerFromReference(apPerkOwner, &tempcont);
+    pfunctionData->FUN_00726070()->list.CalculateCurrentFormListForRef(apPerkOwner, &tempcont);
     InventoryChanges* pinventory = InventoryChanges::CreateForReference(ptarget);
     ListShell* pCurrentElementNext = tempcont.FUN_00717e50();
     if (pinventory)

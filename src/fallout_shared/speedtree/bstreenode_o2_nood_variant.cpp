@@ -95,10 +95,13 @@ struct MyObj
 
 // @fnv 0x00c8c410
 // src: XBOX_PDB 0x00c8c410
-void __thiscall MyObj::bhkTransformShape_CopyCinfo(void* pArg)
+// pdb: bhkTransformShape::CopyCinfo | bhkTransformShape.obj | retail, upstream name already matches, high
+// pdb params: arInfo
+// pdb locals: hkt
+void __thiscall MyObj::bhkTransformShape_CopyCinfo(void* arInfo)
 {
-    this->bhkShape_CopyCinfo(pArg);
-    Param* p = (Param*)pArg;
+    this->bhkShape_CopyCinfo(arInfo);
+    Param* p = (Param*)arInfo;
     p->m4 = (this && this->m8) ? this->m8->m14 : 0;
     const __m128* src = (this && this->m8) ? (const __m128*)((char*)this->m8 + 0x30) : g_01268370;
     __m128 tmp[4];
@@ -197,20 +200,23 @@ struct TargetHolder
     Top* m8;
     unsigned int unk0C;
     unsigned int m10;
-    void bhkTransformShape_Init(Src* apSrc);
+    void bhkTransformShape_Init(Src* arInfo);
 };
 
 // @fnv 0x00c8c5b0
 // src: XBOX_PDB 0x00c8c5b0
-void TargetHolder::bhkTransformShape_Init(Src* apSrc)
+// pdb: bhkTransformShape::Init | bhkTransformShape.obj | retail, upstream name already matches, high
+// pdb params: arInfo
+// pdb locals: po, tempMemContext, cinfo, hkt, ps
+void TargetHolder::bhkTransformShape_Init(Src* arInfo)
 {
     Guard g0;
     // Keep the original alignment and /GS buffer treatment of the temporary.
     __declspec(align(16)) char storage[sizeof(Transform)];
-    FUN_00cf5990* n = new FUN_00cf5990(apSrc->m4, InitializeTransform(reinterpret_cast<Transform*>(storage), apSrc));
+    FUN_00cf5990* n = new FUN_00cf5990(arInfo->m4, InitializeTransform(reinterpret_cast<Transform*>(storage), arInfo));
     ((void(__thiscall*)(void*, FUN_00cf5990*))this->vt[35])(this, n);
     n->FUN_00c905b0();
-    ((void(__thiscall*)(void*, Src*))this->vt[47])(this, apSrc);
+    ((void(__thiscall*)(void*, Src*))this->vt[47])(this, arInfo);
     if (this->m8)
     {
         if (this->m8->p)
@@ -561,7 +567,10 @@ struct TlsRestore
 };
 // @fnv 0x00cab1b0
 // src: XBOX_PDB 0x00cab1b0
-void Obj::bhkCapsuleShape_BuildDisplayGeometry(void* a1, void* a2)
+// pdb: bhkCapsuleShape::BuildDisplayGeometry | bhkCapsuleShape.obj | retail, upstream name already matches, high
+// pdb params: apNode, arDefColor
+// pdb locals: hka, pcap, tempMemContext, ci, pgeom, hkb
+void Obj::bhkCapsuleShape_BuildDisplayGeometry(void* apNode, void* arDefColor)
 {
     TlsRestore guard;
     Output out;
@@ -584,7 +593,7 @@ void Obj::bhkCapsuleShape_BuildDisplayGeometry(void* a1, void* a2)
     sub->v4();
     void* inner = sub->unk08;
     if (inner)
-        Call(a1, inner, a2, "bhkCapsuleShape");
+        Call(apNode, inner, arDefColor, "bhkCapsuleShape");
 }
 
 struct SpawnedSource
@@ -655,17 +664,20 @@ struct SpawnedSourceOwner
     virtual void Apply(SpawnedSource* apSource);
 
     void bhkCapsuleShape_Init(__m128* apA, __m128* apB, float afT);
-    void bhkCapsuleShape_Init_00cab820(SpawnedSource* apSource);
+    void bhkCapsuleShape_Init_00cab820(SpawnedSource* arInfo);
 };
 
 // @fnv 0x00cab820
 // src: XBOX_PDB 0x00cab820
-void SpawnedSourceOwner::bhkCapsuleShape_Init_00cab820(SpawnedSource* apSource)
+// pdb: bhkCapsuleShape::Init | bhkCapsuleShape.obj | retail, vtable slot, high
+// pdb params: arInfo
+// pdb locals: hka, cinfo, hkb
+void SpawnedSourceOwner::bhkCapsuleShape_Init_00cab820(SpawnedSource* arInfo)
 {
-    __m128 vA = _mm_setr_ps(apSource->m_f20, apSource->m_f24, apSource->m_f28, apSource->m_f2C);
-    __m128 vB = _mm_setr_ps(apSource->m_f10, apSource->m_f14, apSource->m_f18, apSource->m_f1C);
-    bhkCapsuleShape_Init(&vB, &vA, apSource->m_f04);
-    Apply(apSource);
+    __m128 vA = _mm_setr_ps(arInfo->m_f20, arInfo->m_f24, arInfo->m_f28, arInfo->m_f2C);
+    __m128 vB = _mm_setr_ps(arInfo->m_f10, arInfo->m_f14, arInfo->m_f18, arInfo->m_f1C);
+    bhkCapsuleShape_Init(&vB, &vA, arInfo->m_f04);
+    Apply(arInfo);
 }
 
 inline void hkVector4::operator=(const hkVector4& vector)
@@ -700,7 +712,7 @@ struct HeapContextScope
 
 struct hkMemAllocator;
 hkMemoryRouter* hkMemoryRouter_getInstance();
-void __cdecl hkArrayUtil__reserve(hkMemAllocator& alloc, void* array, int numElem, int sizeElem);
+void __cdecl hkArrayUtil__reserve(hkMemAllocator& mem, void* array, int numElem, int sizeElem);
 
 struct VecArrayLocalForm
 { // local form of hkArray: 0x00cb7c60 needs the original inline/out-of-line helper split; shared replacement changes bytes.
@@ -764,7 +776,7 @@ struct VertsSource
     int unk00;
     int unk04;
     VertsData* unk08;
-    void bhkShape_CopyCinfo(VertsOut* out);
+    void bhkShape_CopyCinfo(VertsOut* arInfo);
     int getNumVerts() const
     {
         return (this && unk08) ? unk08->unk10 : 0;
@@ -773,21 +785,24 @@ struct VertsSource
     {
         return (this && unk08) ? &unk08->unk20 : 0;
     }
-    void bhkMultiSphereShape_CopyCinfo(VertsOut* out);
+    void bhkMultiSphereShape_CopyCinfo(VertsOut* arInfo);
 };
 
 // @fnv 0x00cb7c60
 // src: XBOX_PDB 0x00cb7c60
-void VertsSource::bhkMultiSphereShape_CopyCinfo(VertsOut* out)
+// pdb: bhkMultiSphereShape::CopyCinfo | bhkMultiSphereShape.obj | retail, upstream name already matches, high
+// pdb params: arInfo
+// pdb locals: tempMemContext, ispheres, pspheres, I
+void VertsSource::bhkMultiSphereShape_CopyCinfo(VertsOut* arInfo)
 {
     HeapContextScope scope;
-    bhkShape_CopyCinfo(out);
+    bhkShape_CopyCinfo(arInfo);
     int n = getNumVerts();
-    out->unk04.clear();
-    out->unk04.SetSizeAndGrow(n);
+    arInfo->unk04.clear();
+    arInfo->unk04.SetSizeAndGrow(n);
     const hkVector4* src = getVerts();
     for (int i = 0; i < n; i++)
-        out->unk04.m_data[i] = src[i];
+        arInfo->unk04.m_data[i] = src[i];
 }
 }  // namespace fnv_00cb7c60
 
@@ -796,7 +811,7 @@ extern int DAT_012680f8;
 extern int DAT_01268274;
 extern int DAT_01268250;
 }
-inline bhkShape::bhkShape() : m_0c(0), m_10(0)
+inline bhkShape::bhkShape() : m_0c(0), eMaterial(0)
 {
     ++fnv_00cab710::DAT_012680f8;
 }
@@ -820,21 +835,23 @@ extern int DAT_01268250;
 class bhkCapsuleShapeCtor : public bhkConvexShape
 {
   public:
-    bhkCapsuleShapeCtor(const NiPoint3& kPoint1, const NiPoint3& kPoint2, float fRadius);
+    bhkCapsuleShapeCtor(const NiPoint3& arVA, const NiPoint3& arVB, float afRad);
     void bhkCapsuleShape_Init(const hkVector4& kA, const hkVector4& kB, float fRadius);
 };
 
 // @fnv 0x00cab710
-bhkCapsuleShapeCtor::bhkCapsuleShapeCtor(const NiPoint3& kPoint1, const NiPoint3& kPoint2, float fRadius)
+// pdb: bhkCapsuleShape::bhkCapsuleShape | bhkCapsuleShape.obj | retail, call graph, high
+// pdb params: arInfo
+bhkCapsuleShapeCtor::bhkCapsuleShapeCtor(const NiPoint3& arVA, const NiPoint3& arVB, float afRad)
 {
     // Preserve the original vector temporaries' alignment and /GS buffers.
     __declspec(align(16)) char storageA[sizeof(hkVector4)];
     hkVector4& kA = *reinterpret_cast<hkVector4*>(storageA);
-    kA.set(kPoint1.x * DAT_01268328, kPoint1.y * DAT_01268328, kPoint1.z * DAT_01268328, 0.0f);
+    kA.set(arVA.x * DAT_01268328, arVA.y * DAT_01268328, arVA.z * DAT_01268328, 0.0f);
     __declspec(align(16)) char storageB[sizeof(hkVector4)];
     hkVector4& kB = *reinterpret_cast<hkVector4*>(storageB);
-    kB.set(kPoint2.x * DAT_01268328, kPoint2.y * DAT_01268328, kPoint2.z * DAT_01268328, 0.0f);
-    bhkCapsuleShape_Init(kA, kB, fRadius * DAT_01268328);
+    kB.set(arVB.x * DAT_01268328, arVB.y * DAT_01268328, arVB.z * DAT_01268328, 0.0f);
+    bhkCapsuleShape_Init(kA, kB, afRad * DAT_01268328);
 }
 }  // namespace fnv_00cab710
 
@@ -1035,14 +1052,14 @@ struct TlsGuard_t
         thread->m_2b4 = m_saved;
     }
 };
-extern unsigned int DAT_012683e0;
+extern unsigned int bhkMultiSphereShape_ms_RTTI; // src: XBOX_RETAIL_PDB 0x012683e0 (old: DAT_012683e0/g_012683e0)
 extern float DAT_011b1cd4;
 extern char str_010c8900[];
 extern char str_010c88f8[];
 extern char str_010c88ec[];
 
 char* __cdecl NiViewerStrings_NiGetViewerString_Title(unsigned int v);
-char* __cdecl NiGetViewerString_00a7d4d0(const char* fmt, int v);
+char* __cdecl NiGetViewerString_00a7d4d0(const char* pcPrefix, int iValue);
 void __cdecl BSsprintf(char* buf, unsigned int size, const char* fmt, unsigned int idx);
 
 struct NiStrArr
@@ -1091,9 +1108,9 @@ struct RecordCollection
     unsigned int unk04;
     StrNode* m_08;
 
-    void bhkSphereRepShape_GetViewerStrings(NiStrArr* a);
+    void bhkSphereRepShape_GetViewerStrings(NiStrArr* apStrings);
 
-    void bhkMultiSphereShape_GetViewerStrings(NiStrArr* a1);
+    void bhkMultiSphereShape_GetViewerStrings(NiStrArr* apStrings);
 };
 
 inline float getX(__m128 v)
@@ -1131,14 +1148,17 @@ char* __cdecl NiGetViewerString_00a7d550(const char* buf, float f);
 
 // @fnv 0x00cb7d80
 // src: XBOX_PDB 0x00cb7d80
-void RecordCollection::bhkMultiSphereShape_GetViewerStrings(NiStrArr* a1)
+// pdb: bhkMultiSphereShape::GetViewerStrings | bhkMultiSphereShape.obj | retail, string-set bridge, high
+// pdb params: apStrings
+// pdb locals: tempMemContext, pspheres, inumSpheres, str, spherePos, frad, I
+void RecordCollection::bhkMultiSphereShape_GetViewerStrings(NiStrArr* apStrings)
 {
     TlsGuard_t guard(0x10);
-    bhkSphereRepShape_GetViewerStrings(a1);
+    bhkSphereRepShape_GetViewerStrings(apStrings);
     int n;
     {
-        char* text = NiViewerStrings_NiGetViewerString_Title(DAT_012683e0);
-        a1->append(text);
+        char* text = NiViewerStrings_NiGetViewerString_Title(bhkMultiSphereShape_ms_RTTI);
+        apStrings->append(text);
 
         if (this != 0 && m_08 != 0)
         {
@@ -1150,7 +1170,7 @@ void RecordCollection::bhkMultiSphereShape_GetViewerStrings(NiStrArr* a1)
         }
         text = NiGetViewerString_00a7d4d0(str_010c8900, n);
 
-        a1->append(text);
+        apStrings->append(text);
     }
 
     if (this != 0)
@@ -1170,11 +1190,11 @@ void RecordCollection::bhkMultiSphereShape_GetViewerStrings(NiStrArr* a1)
                     BSsprintf(buf, 0x20, str_010c88f8, i);
                     {
                         char* t2 = pt.GetViewerString_00a59af0(buf);
-                        a1->append(t2);
+                        apStrings->append(t2);
                     }
                     BSsprintf(buf, 0x20, str_010c88ec, i);
                     scalar.text = NiGetViewerString_00a7d550(buf, scalar.value);
-                    a1->append(scalar.text);
+                    apStrings->append(scalar.text);
                     ++rec;
                 }
         }

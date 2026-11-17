@@ -12,20 +12,20 @@ class PerkEntryConditionSet
 {
 public:
     // a list of conditions: the constructor 0x006808b0 constructs it (EH-framed list constructor call)
-    BSSimpleList<TESConditionItem*> m_kConditionItems;
+    BSSimpleList<TESConditionItem*> listConditions; // src: XBOX_RETAIL_PDB +0x0 (old: m_kConditionItems)
 
     PerkEntryConditionSet();
     ~PerkEntryConditionSet();
 
-    bool ContainsTrait(TESObjectREFR* subject, TESObjectREFR* target);
-    bool ContainsTrait(TESObjectREFR* subject, TESObjectREFR* target, bool& result, bool arg3);
-    void InitItem(TESForm* form);
-    bool Compare(PerkEntryConditionSet* other);
+    bool ContainsTrait(TESObjectREFR* apActionRef, TESObjectREFR* apTargetRef);
+    bool IsTrue(TESObjectREFR* apActionRef, TESObjectREFR* apTargetRef, bool& abDispositionFailure, bool abEssentialPropertiesOnly);
+    void InitItem(TESForm* apOwner);
+    bool Compare(PerkEntryConditionSet* apCompare);
     void InitializeConditionItems();
-    void Load(TESFile* file);
+    void Load(TESFile* apFile);
     BGSPerkEntry*& GetItem();
-    void ProcessItems();
-    void CopyConditions(PerkEntryConditionSet* source, PerkEntryConditionSet* other);
+    void Save();
+    void Copy(PerkEntryConditionSet* apCopy, PerkEntryConditionSet* apOwner);
     TESConditionItem* GetItemByIndex(int index);
     void Destroy();
     void* DeleteConditions(unsigned int flags);

@@ -18,6 +18,7 @@ extern CompileWarningSetting DAT_011c4024, DAT_011c4048;
 extern bool DAT_011c54b9;
 extern unsigned int DAT_011c3f24, DAT_011c3f28;
 extern TESObjectCELL* DAT_011c3f30;
+// pdb: class TaskQueueInterface, size 0x10 (here 0x1), 4 members
 class TaskQueueInterface
 {
   public:
@@ -26,6 +27,7 @@ class TaskQueueInterface
 extern "C" int sprintf_s(char*, unsigned int, const char*, ...);
 char* strrchr_0040ab30(char*, int);
 class Archive;
+// pdb: class ArchiveManager, size 0x1, 0 members
 class ArchiveManager
 {
   public:
@@ -47,6 +49,7 @@ extern IdleAnimationManager* DAT_011cb6a0;
 void EffectSettingCollection_InitItems();
 void ValidateFactionReactions();
 
+// pdb: class Calendar, size 0x1c (here 0x1), 7 members
 class Calendar
 {
   public:

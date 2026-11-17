@@ -19,18 +19,21 @@ struct FUN_00dd95b0_Outer
     int unk00;
     int unk04;
     FUN_00cb18f0_t output;
-    void hkCommandRouter_unregisterProcess(FUN_00dd95b0_Source* source);
+    void hkCommandRouter_unregisterProcess(FUN_00dd95b0_Source* handler);
 };
 // Gets a byte buffer and count from source and feeds each byte to output.FUN_00cb1fb0.
 // @fnv 0x00dd95b0
 // src: HAVOK_LIB 0x00dd95b0
-void FUN_00dd95b0_Outer::hkCommandRouter_unregisterProcess(FUN_00dd95b0_Source* source)
+// pdb: hkCommandRouter::unregisterProcess | hkCommandRouter.obj | retail, upstream name already matches, high
+// pdb params: handler
+// pdb locals: numCommands, commands
+void FUN_00dd95b0_Outer::hkCommandRouter_unregisterProcess(FUN_00dd95b0_Source* handler)
 {
     int count;
     const char* bytes;
     bytes = 0;
     count = 0;
-    source->GetBytes(&bytes, &count);
+    handler->GetBytes(&bytes, &count);
     for (int i = 0; i < count; ++i)
         output.hkMapBase_unsigned_long_unsigned_long_hkMapOperations_unsigned_long_remove((unsigned char)bytes[i]);
 }
@@ -59,20 +62,24 @@ struct MessageProcessor
     void* unk00;
     void* unk04;
     MessageSink sink;
-    void __thiscall ProcessInputData(InputProvider* source);
+    void __thiscall hkCommandRouter_registerProcess(InputProvider* handler);
 };
 // Reads a byte buffer from source and, for each byte, fetches a MessageContext and passes its active pointer with the byte to sink.FUN_00cb1870.
 // @fnv 0x00dd9600
-void MessageProcessor::ProcessInputData(InputProvider* source)
+// src: XBOX_RETAIL_PDB 0x00dd9600
+// pdb: hkCommandRouter::registerProcess | hkCommandRouter.obj | retail, call graph, high
+// pdb params: handler
+// pdb locals: numCommands, commands
+void MessageProcessor::hkCommandRouter_registerProcess(InputProvider* handler)
 {
     unsigned char* bytes = 0;
     int length = 0;
-    source->GetData(&bytes, &length);
+    handler->GetData(&bytes, &length);
     for (int i = 0; i < length; ++i)
     {
         unsigned char value = bytes[i];
         MessageContext* context = hkMemoryRouter_getInstance();
-        sink.hkMapBase_unsigned_long_unsigned_long_hkMapOperations_unsigned_long_insert(context->active, value, source);
+        sink.hkMapBase_unsigned_long_unsigned_long_hkMapOperations_unsigned_long_insert(context->active, value, handler);
     }
 }
 
@@ -125,7 +132,7 @@ struct S_00dd9660_Router
     }
 };
 
-int __cdecl hkArrayUtil__reserve(S_00dd9660_Heap& alloc, void* arr, int reqCapacity, int elemSize) throw();
+int __cdecl hkArrayUtil__reserve(S_00dd9660_Heap& mem, void* array, int numElem, int sizeElem) throw();
 
 struct S_00dd9660_CharArrayLocalForm
 { // local form of hkArray: 0x00dd9660 needs the original inline/out-of-line helper split; shared replacement changes bytes.
@@ -214,7 +221,7 @@ struct S_00dd9660_IArchive
     S_00dd9660_StreamReader* m_pStreamReader;
     char m_bStreamResult;
 
-    void hkIArchive_readArrayGeneric(void* buf, int elemSize, int nelem);
+    void hkIArchive_readArrayGeneric(void* array, int elemsize, int arraySize);
     void readQuadVector4(S_00dd9660_Vector4& v);
     S_00dd9660_Bool GetStreamResult();
 
@@ -251,11 +258,15 @@ struct S_00dd9660_Handler
     int unk04;
     S_00dd9660_CommandMap m_kCommandMap;
 
-    S_00dd9660_Bool ReadCommands(S_00dd9660_IArchive* stream);
+    S_00dd9660_Bool hkCommandRouter_consumeCommands(S_00dd9660_IArchive* stream);
 };
 
 // @fnv 0x00dd9660
-S_00dd9660_Bool S_00dd9660_Handler::ReadCommands(S_00dd9660_IArchive* stream)
+// src: XBOX_RETAIL_PDB 0x00dd9660
+// pdb: hkCommandRouter::consumeCommands | hkCommandRouter.obj | retail, string-set bridge, high
+// pdb params: stream
+// pdb locals: assertBuf, ostr, str, t
+S_00dd9660_Bool S_00dd9660_Handler::hkCommandRouter_consumeCommands(S_00dd9660_IArchive* stream)
 {
     hkUint8 command;
     do

@@ -13,9 +13,12 @@
 
 // @fnv 0x0048e7f0
 // src: XBOX_PDB 0x0048e7f0
-void TESValueForm::CopyComponent(BaseFormComponent* component)
+// pdb: TESValueForm::CopyComponent | TESValueForm.obj | retail, upstream name already matches, high
+// pdb params: apCopyFC
+// pdb locals: pCopy
+void TESValueForm::CopyComponent(BaseFormComponent* apCopyFC)
 {
-    TESValueForm* form = dynamic_cast<TESValueForm*>(component);
+    TESValueForm* form = dynamic_cast<TESValueForm*>(apCopyFC);
     if (!form)
         return;
     SetFormValue(form->GetValueFromForm());
@@ -38,6 +41,8 @@ extern TESSaveLoadGame* g_TESSaveLoadGame;
 
 // @fnv 0x0048e9e0
 // src: XBOX_PDB 0x0048e9e0
+// pdb: TESValueForm::SaveGame | TESValueForm.obj | debug, vtable slot, medium
+// pdb params: aiFlags
 void TESValueForm::SaveGame_0048e9e0(unsigned int flags)
 {
     if (flags & 2)
@@ -52,6 +57,8 @@ extern TESSaveLoadGame* g_TESSaveLoadGame;
 
 // @fnv 0x0048ea10
 // src: XBOX_PDB 0x0048ea10
+// pdb: TESValueForm::LoadGame | TESValueForm.obj | debug, vtable slot, medium
+// pdb params: aiFlags, aiCurrentFlags
 void TESValueForm::LoadGame_0048ea10(unsigned int a, unsigned int b)
 {
     if (a & 2)
@@ -61,6 +68,8 @@ void TESValueForm::LoadGame_0048ea10(unsigned int a, unsigned int b)
 
 // @fnv 0x0048ea40
 // src: COMMUNITY 0x0048ea40
+// pdb: TESValueForm::SaveGame | TESValueForm.obj | debug, call graph, medium
+// pdb params: apSaveGameBuffer
 void TESValueForm::SaveGameBGS_0048ea40(BGSSaveFormBuffer* aBuffer)
 {
     if (reinterpret_cast<BGSLoadFormBuffer*>(aBuffer)->GetChangeFlags(2).operator bool())
@@ -69,6 +78,8 @@ void TESValueForm::SaveGameBGS_0048ea40(BGSSaveFormBuffer* aBuffer)
 
 
 // @fnv 0x0048ea80
+// pdb: TESValueForm::LoadGame | TESValueForm.obj | debug, call graph, medium
+// pdb params: apLoadGameBuffer
 void TESValueForm::LoadGame(BGSLoadFormBuffer* buffer)
 {
     if (buffer->GetChangeFlags(2u).operator bool())
@@ -234,7 +245,10 @@ struct Holder
 };
 // @fnv 0x00970a20
 // src: XBOX_PDB 0x00970a20
-Item* Holder::ProcessLists_GetActorRefInHigh(void* key, int unused)
+// pdb: ProcessLists::GetActorRefInHigh | ProcessLists.obj | retail, call graph (shared callers), high
+// pdb params: apNpc, abDetection
+// pdb locals: pmob, pretactor, i, pactor, pnpc
+Item* Holder::ProcessLists_GetActorRefInHigh(void* apNpc, int abDetection)
 {
     Item* current = 0;
     Item* result = 0;
@@ -251,9 +265,9 @@ Item* Holder::ProcessLists_GetActorRefInHigh(void* key, int unused)
                 void* target = 0;
                 if (actor->v134())
                     target = actor->BGSSaveFormBuffer_GetForm();
-                if (target && key == target)
+                if (target && apNpc == target)
                     current = actor;
-                else if (actor->BSFile_GetDevice()->ExtraDataList_GetLevCreaOriginalBase() == key)
+                else if (actor->BSFile_GetDevice()->ExtraDataList_GetLevCreaOriginalBase() == apNpc)
                     current = actor;
             }
         }
@@ -262,9 +276,12 @@ Item* Holder::ProcessLists_GetActorRefInHigh(void* key, int unused)
 }
 
 // @fnv 0x0048e840
-bool TESValueForm::IsEqualToBase(BaseFormComponent* other)
+// pdb: TESValueForm::CompareComponent | TESValueForm.obj | retail, vtable slot, high
+// pdb params: apCompareFC
+// pdb locals: pCompare
+bool TESValueForm::IsEqualToBase(BaseFormComponent* apCompareFC)
 {
-    TESValueForm* form = dynamic_cast<TESValueForm*>(other);
+    TESValueForm* form = dynamic_cast<TESValueForm*>(apCompareFC);
     if (!form)
         return true;
     if (GetValueFromForm() != form->GetValueFromForm())

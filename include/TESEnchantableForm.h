@@ -17,6 +17,7 @@ enum MagicSystem__CastingType
 };
 #endif
 
+// pdb: class TESEnchantableForm, size 0x10, bases: BaseFormComponent, 3 members
 class TESEnchantableForm : public BaseFormComponent
 {
 public:
@@ -30,13 +31,13 @@ public:
 
     void InitializeComponent();
     void ClearComponent();
-    void BaseFormRecord(BaseFormComponent* component);
-    bool IsEqualToBase(BaseFormComponent* component);
+    void BaseFormRecord(BaseFormComponent* apCopyFC);
+    bool IsEqualToBase(BaseFormComponent* apCompareFC);
     void SetCastingType(MagicSystem__CastingType type);
     void SetCastingType(int type);
     void Save();
-    void InitItem(TESForm* form);
-    static EnchantmentItem* FindFormEnchantment(TESForm* form);
+    void InitItem(TESForm* apOwner);
+    static EnchantmentItem* FindFormEnchantment(TESForm* apForm);
     EnchantmentItem* FindFormEnchantment();
     EnchantmentItem* GetEnchantment();
     void SetFormEnchanting(EnchantmentItem* enchantment);
@@ -46,8 +47,8 @@ public:
     void FUN_00483170(unsigned short amount);
     EnchantmentItem* FUN_00726070();
 
-    EnchantmentItem* m_pEnchantment;
-    unsigned short m_usEnchantmentAmount;
+    EnchantmentItem* pFormEnchanting; // src: XBOX_RETAIL_PDB +0x4 (old: m_pEnchantment)
+    unsigned short iAmountofEnchantment; // src: XBOX_RETAIL_PDB +0x8 (old: m_usEnchantmentAmount)
     unsigned char layoutPaddingA[2];
-    MagicSystem__CastingType m_eCastingType;
+    MagicSystem__CastingType eCastingType; // src: XBOX_RETAIL_PDB +0xc (old: m_eCastingType)
 };

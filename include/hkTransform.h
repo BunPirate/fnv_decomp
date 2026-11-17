@@ -60,7 +60,7 @@ public:
     __forceinline void setPositionMember(const hkVector4& value) { m_vTranslation = reinterpret_cast<const __m128&>(value); }
     __declspec(property(get = getPositionMember, put = setPositionMember)) hkVector4 position;
     hkTransform();
-    hkTransform(const hkQuaternion& rotation, const hkVector4& translation); // exe: 0x0062aae0
+    hkTransform(const hkQuaternion& q, const hkVector4& t); // exe: 0x0062aae0
     hkTransform(const hkTransform& transform);
     void operator=(const hkTransform& transform);
 
@@ -74,15 +74,15 @@ public:
     void setTranslation(const hkVector4& translation);
     void SetBodyOrientation(const hkRotation& rotation);
     void SetBodyOrientation(const hkQuaternion& rotation);
-    void SetConjugate(const hkTransform& transform);
-    void SetProduct(const hkTransform& a, const hkTransform& b);
+    void SetConjugate(const hkTransform& t);
+    void SetProduct(const hkTransform& aTb, const hkTransform& bTc);
     void SetMulInverse(const hkTransform& a, const hkTransform& b);
     hkBool IsEqualWithinTolerance(const hkTransform& other, float epsilon) const;
-    void hkTransform_setMul(const hkTransform& a, const hkTransform& b);
+    void hkTransform_setMul(const hkTransform& aTb, const hkTransform& bTc);
     void hkTransform_setMulInverseMul(const hkTransform& a, const hkTransform& b);
     void hkTransform_setMulInverseMul(const void* a, const void* b);
     void ProcessTransformedMatrixCopy_00cb23e0(const hkTransform& transform);
-    void bhkRigidBodyCinfo_SetPosition(const hkVector4& vector);
+    void bhkRigidBodyCinfo_SetPosition(const hkVector4& arPos);
 
     static void* __cdecl operator new(size_t nbytes);
     static const hkTransform& __cdecl GetIdentityTransform();

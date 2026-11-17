@@ -11,13 +11,13 @@ struct CharBuffer
 };
 struct FUN_00cb1600_class
 {
-    void FUN_00cb1600(char* storage, unsigned int size);
+    void FUN_00cb1600(char* buf, unsigned int bufSize);
 };
 struct FUN_00cc01c0_class
 {
     FUN_00cc01c0_class* ProcessAndReturnValue_00cc01c0(const char* text);
     FUN_00cc01c0_class* FUN_00cc0120(const void* value);
-    FUN_00cc01c0_class* WriteInt(int value);
+    FUN_00cc01c0_class* WriteInt(int i);
 };
 struct FUN_00cc00e0_class
 {
@@ -33,19 +33,23 @@ struct ErrorReporter
 extern ErrorReporter* DAT_01268360;
 // Builds a reference-count error message from object and context, reports it via DAT_01268360, and breaks if reporting returns nonzero.
 // @fnv 0x00cb1660
-void __cdecl ReportReferenceCountError(const void* object, const char* context)
+// src: XBOX_RETAIL_PDB 0x00cb1660
+// pdb: hkReferenceCountError | hkError.obj | retail, string-set bridge, high
+// pdb params: o, why
+// pdb locals: assertBuf, ostr
+void __cdecl hkReferenceCountError(const void* o, const char* why)
 {
     CharBuffer message;
     unsigned int storage[128];
     ((FUN_00cb1600_class*)&message)->FUN_00cb1600((char*)storage, 0x200);
-    int referenceCount = *(const short*)((const char*)object + 6);
+    int referenceCount = *(const short*)((const char*)o + 6);
     ((FUN_00cc01c0_class*)&message)
         ->ProcessAndReturnValue_00cc01c0("Reference count error on object ")
-        ->FUN_00cc0120(object)
+        ->FUN_00cc0120(o)
         ->ProcessAndReturnValue_00cc01c0(" with ref count of ")
         ->WriteInt(referenceCount)
         ->ProcessAndReturnValue_00cc01c0(" in ")
-        ->ProcessAndReturnValue_00cc01c0(context)
+        ->ProcessAndReturnValue_00cc01c0(why)
         ->ProcessAndReturnValue_00cc01c0(".\n")
         ->ProcessAndReturnValue_00cc01c0(" * Are you calling delete instead of removeReference?\n")
         ->ProcessAndReturnValue_00cc01c0(" * Have you called removeReference too many times?\n")
@@ -100,7 +104,7 @@ class CB1600MemoryStreamWriter : public CB1600ReferencedObject
 class CB1600StreamBase
 {
   public:
-    CB1600StreamBase(void* writer);
+    CB1600StreamBase(void* mem);
     virtual void unk00();
 
     int unk04;
@@ -116,11 +120,13 @@ class FUN_00cb1600 : public CB1600StreamBase
 
 // Constructs a CB1600MemoryStreamWriter in place at the end of the buffer and stores it as the stream's writer, then removes its reference.
 // @fnv 0x00cb1600
-FUN_00cb1600::FUN_00cb1600(void* apBuffer, int aiBufferSize) : CB1600StreamBase(0)
+// pdb: hkErrStream::hkErrStream | hkError.obj | retail, call graph, high
+// pdb params: buf, bufSize
+FUN_00cb1600::FUN_00cb1600(void* buf, int bufSize) : CB1600StreamBase(0)
 {
     CB1600MemoryStreamWriter* writer =
-        new (static_cast<char*>(apBuffer) + aiBufferSize - sizeof(CB1600MemoryStreamWriter))
-            CB1600MemoryStreamWriter(apBuffer, aiBufferSize - sizeof(CB1600MemoryStreamWriter), true);
+        new (static_cast<char*>(buf) + bufSize - sizeof(CB1600MemoryStreamWriter))
+            CB1600MemoryStreamWriter(buf, bufSize - sizeof(CB1600MemoryStreamWriter), true);
     m_pStreamWriter = writer;
     writer->removeReference();
 }
@@ -170,7 +176,7 @@ struct DiagBuffer
     unsigned int m_04;
     unsigned int m_08;
     unsigned int m_buf[128];
-    void FUN_00cb1600(unsigned int* buf, unsigned int size) throw();
+    void FUN_00cb1600(unsigned int* buf, unsigned int bufSize) throw();
     void ProcessAndReturnValue_00cc01c0(const char* s) throw();
     void FUN_00cc00e0() throw();
 };
@@ -187,6 +193,9 @@ extern const char str_010c85ac[];
 
 // @fnv 0x00cb1750
 // src: HAVOK_LIB 0x00cb1750
+// pdb: hkErrorMessage | hkError.obj | retail, string-set bridge, high
+// pdb params: c
+// pdb locals: assertBuf, ostr
 void _hkErrorMessage(const char* apMsg)
 {
     DiagBuffer buf;

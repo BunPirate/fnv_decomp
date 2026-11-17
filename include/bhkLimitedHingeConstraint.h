@@ -4,6 +4,7 @@
 
 class bhkLimitedHingeOutput;
 
+// pdb: class bhkLimitedHingeConstraint, size 0x10, bases: bhkConstraint, 0 members
 class bhkLimitedHingeConstraint : public bhkConstraint
 {
 public:

@@ -651,7 +651,7 @@ struct FUN_00b3fdd0_class
     int unk54;
     int unk58;
     FUN_00b37880_class* unk5c;
-    void __thiscall UpdateState_00b3fdd0(FUN_00b37880_class* value);
+    void __thiscall SIdvBranchInfo_SetFlexibilityScale(FUN_00b37880_class* pSpline);
 };
 extern int DAT_010173e8;
 struct FUN_00b3c3b0_Sub
@@ -710,14 +710,16 @@ struct PointOwner
     int unk80, unk84, unk88, unk8c, unk90, unk94, unk98, unk9c;
     VecStandIn<float> m_kPoints;
 
-    float* CIndexedGeometry_GetOrigVertexCoord(int index);
+    float* CIndexedGeometry_GetOrigVertexCoord(int nVertexIndex);
 };
 
 // @fnv 0x00b31020
 // src: COMMUNITY 0x00b31020
-float* PointOwner::CIndexedGeometry_GetOrigVertexCoord(int index)
+// pdb: CIndexedGeometry::GetOrigVertexCoord | IndexedGeometry.obj | debug, upstream name already matches, high
+// pdb params: nVertexIndex
+float* PointOwner::CIndexedGeometry_GetOrigVertexCoord(int nVertexIndex)
 {
-    return &m_kPoints[0] + index * 3;
+    return &m_kPoints[0] + nVertexIndex * 3;
 }
 
 struct SubObj_b3f
@@ -731,16 +733,18 @@ struct ClsB3FCF0
     int unk20, unk24, unk28, unk2C, unk30, unk34, unk38, unk3C;
     int unk40, unk44, unk48, unk4C, unk50;
     SubObj_b3f* unk54;
-    void ReleaseStorage_00b3fcf0(SubObj_b3f* value);
+    void SIdvBranchInfo_SetGravity(SubObj_b3f* pSpline);
 };
 // @fnv 0x00b3fcf0
-// src: GUESS 0x00b3fcf0 (confidence: low)
-void ClsB3FCF0::ReleaseStorage_00b3fcf0(SubObj_b3f* value)
+// src: XBOX_DEBUG_PDB 0x00b3fcf0
+// pdb: SIdvBranchInfo::SetGravity | BranchInfo.obj | debug, call graph, high
+// pdb params: pSpline
+void ClsB3FCF0::SIdvBranchInfo_SetGravity(SubObj_b3f* pSpline)
 {
-    if (unk54 != value)
+    if (unk54 != pSpline)
     {
         delete unk54;
-        unk54 = value;
+        unk54 = pSpline;
     }
 }
 
@@ -920,23 +924,26 @@ struct B30Owner
 {
     char pad00[0x58];
     B30Vec<B30Vec<void*> > m_kLists;
-    unsigned short CIndexedGeometry_GetNumStrips(unsigned short usType);
-    void CIndexedGeometry_DeleteLodStrip(unsigned short usType);
+    unsigned short CIndexedGeometry_GetNumStrips(unsigned short sLodLevel);
+    void CIndexedGeometry_DeleteLodStrip(unsigned short usLodLevel);
 };
 // @fnv 0x00b30c80
 // src: COMMUNITY 0x00b30c80
-void B30Owner::CIndexedGeometry_DeleteLodStrip(unsigned short usType)
+// pdb: CIndexedGeometry::DeleteLodStrip | IndexedGeometry.obj | retail, upstream name already matches, high
+// pdb params: usLodLevel
+// pdb locals: i
+void B30Owner::CIndexedGeometry_DeleteLodStrip(unsigned short usLodLevel)
 {
     int p;
     void* a;
     int iA;
     int iB;
     int a1;
-    for (p = 0; p < CIndexedGeometry_GetNumStrips(usType); p++)
+    for (p = 0; p < CIndexedGeometry_GetNumStrips(usLodLevel); p++)
     {
-        a = m_kLists[usType][p];
+        a = m_kLists[usLodLevel][p];
         FormHeapFreeAndLog_00401030(a);
-        m_kLists[usType][p] = 0;
+        m_kLists[usLodLevel][p] = 0;
     }
 }
 
@@ -1585,6 +1592,8 @@ template <class T> struct ShortVec : ContainerBase
 
 // @fnv 0x00b337f0
 // src: GUESS 0x00b337f0 (confidence: low)
+// pdb: std::vector<unsigned short,std::allocator<unsigned short> >::resize | IndexedGeometry.obj | retail, call graph, medium
+// pdb params: _Newsize
     void ProcessState_00b337f0(unsigned int newSize, T val)
     {
         if (size() < newSize)
@@ -1687,17 +1696,19 @@ class FUN_00b37880
 struct FUN_00b3ff20_Class : public FUN_00b3ff20_Base
 {
     FUN_00b37880* unk68;
-    void UpdateFields_00b3ff20(FUN_00b37880* arg);
+    void SIdvBranchInfo_SetRadiusScale(FUN_00b37880* pSpline);
 };
 
 // @fnv 0x00b3ff20
-// src: GUESS 0x00b3ff20 (confidence: low)
-void FUN_00b3ff20_Class::UpdateFields_00b3ff20(FUN_00b37880* arg)
+// src: XBOX_DEBUG_PDB 0x00b3ff20
+// pdb: SIdvBranchInfo::SetRadiusScale | BranchInfo.obj | debug, call graph, high
+// pdb params: pSpline
+void FUN_00b3ff20_Class::SIdvBranchInfo_SetRadiusScale(FUN_00b37880* pSpline)
 {
-    if (this->unk68 != arg)
+    if (this->unk68 != pSpline)
     {
         delete this->unk68;
-        this->unk68 = arg;
+        this->unk68 = pSpline;
     }
 }
 
@@ -1807,43 +1818,46 @@ struct GroupBuilder
     int unk18, unk1c, unk20, unk24;
     unsigned short groupCount;
     BufferGroup* groups;
-    void CLeafGeometry_InitLods(unsigned short count, PointVector* input);
+    void CLeafGeometry_InitLods(unsigned short usNumLeafLods, PointVector* pvLeafLods);
 };
 // @fnv 0x00b29380
 // src: COMMUNITY 0x00b29380
-void GroupBuilder::CLeafGeometry_InitLods(unsigned short count, PointVector* input)
+// pdb: CLeafGeometry::InitLods | LeafGeometry.obj | retail, upstream name already matches, high
+// pdb params: usNumLeafLods, pvLeafLods
+// pdb locals: usLod, pLod, j, i, nStartingMatrix, ucGroup, nMatrixSpan
+void GroupBuilder::CLeafGeometry_InitLods(unsigned short usNumLeafLods, PointVector* pvLeafLods)
 {
-    if (input && matrices && range && auxiliary)
+    if (pvLeafLods && matrices && range && auxiliary)
     {
-        groupCount = count;
-        groups = new BufferGroup[count];
-        for (unsigned short i = 0; i < count; i++)
+        groupCount = usNumLeafLods;
+        groups = new BufferGroup[usNumLeafLods];
+        for (unsigned short i = 0; i < usNumLeafLods; i++)
         {
             BufferGroup* group = &groups[i];
-            group->count = (unsigned short)input[i].size();
+            group->count = (unsigned short)pvLeafLods[i].size();
             group->transforms = new float*[group->count];
             for (int j = 0; j < group->count; j++)
             {
 
-                group->transforms[j] = matrices[i] + width * 16 * input[i][j]->getKind() + 16 * input[i][j]->index;
+                group->transforms[j] = matrices[i] + width * 16 * pvLeafLods[i][j]->getKind() + 16 * pvLeafLods[i][j]->index;
             }
             if (dynamic)
             {
                 group->originalPositions = new float[group->count * 3];
                 for (int k = 0; k < group->count; k++)
                 {
-                    CopyGroupVector((CVec3*)&group->originalPositions[k * 3], input[i][k]->position);
+                    CopyGroupVector((CVec3*)&group->originalPositions[k * 3], pvLeafLods[i][k]->position);
                 }
                 group->weights = new float[group->count];
                 for (int l = 0; l < group->count; l++)
                 {
 
-                    group->weights[l] = 1.0f - input[i][l]->getWeight();
+                    group->weights[l] = 1.0f - pvLeafLods[i][l]->getWeight();
                 }
                 group->selectors = new unsigned char[group->count];
                 for (int m = 0; m < group->count; m++)
                 {
-                    unsigned char selector = input[i][m]->selector;
+                    unsigned char selector = pvLeafLods[i][m]->selector;
                     unsigned int remapBase = 0;
                     unsigned int remapCount = 1;
                     range->getRange(remapBase, remapCount);
@@ -1854,36 +1868,36 @@ void GroupBuilder::CLeafGeometry_InitLods(unsigned short count, PointVector* inp
             group->positions = new float[group->count * 3];
             for (unsigned int n = 0; n < group->count; n++)
             {
-                CopyGroupVector((CVec3*)&group->positions[n * 3], input[i][n]->position);
+                CopyGroupVector((CVec3*)&group->positions[n * 3], pvLeafLods[i][n]->position);
             }
             group->kinds = new unsigned char[group->count];
             for (unsigned int o = 0; o < group->count; o++)
             {
-                group->kinds[o] = input[i][o]->getKind();
+                group->kinds[o] = pvLeafLods[i][o]->getKind();
             }
             group->indices = new unsigned char[group->count];
             for (unsigned int p = 0; p < group->count; p++)
             {
 
-                group->indices[p] = width * input[i][p]->getKind() + input[i][p]->index;
+                group->indices[p] = width * pvLeafLods[i][p]->getKind() + pvLeafLods[i][p]->index;
             }
             group->auxiliary = new void*[group->count];
             for (unsigned int q = 0; q < group->count; q++)
             {
-                group->auxiliary[q] = auxiliary + 8 * input[i][q]->kind;
+                group->auxiliary[q] = auxiliary + 8 * pvLeafLods[i][q]->kind;
             }
             group->values = new unsigned int[group->count];
             for (unsigned int r = 0; r < group->count; r++)
             {
 
-                group->values[r] = input[i][r]->getValue();
+                group->values[r] = pvLeafLods[i][r]->getValue();
             }
             if (!compact)
             {
                 group->normals = new float[group->count * 3];
                 for (unsigned int s = 0; s < group->count; s++)
                 {
-                    CopyGroupVector((CVec3*)&group->normals[s * 3], input[i][s]->normal);
+                    CopyGroupVector((CVec3*)&group->normals[s * 3], pvLeafLods[i][s]->normal);
                 }
             }
             if (!compact)
@@ -1892,8 +1906,8 @@ void GroupBuilder::CLeafGeometry_InitLods(unsigned short count, PointVector* inp
                 group->bitangents = new float[group->count * 3];
                 for (unsigned int t = 0; t < group->count; t++)
                 {
-                    CopyGroupVector((CVec3*)&group->tangents[t * 3], input[i][t]->tangent);
-                    CopyGroupVector((CVec3*)&group->bitangents[t * 3], input[i][t]->bitangent);
+                    CopyGroupVector((CVec3*)&group->tangents[t * 3], pvLeafLods[i][t]->tangent);
+                    CopyGroupVector((CVec3*)&group->bitangents[t * 3], pvLeafLods[i][t]->bitangent);
                 }
             }
         }
@@ -1940,6 +1954,7 @@ class FnvVecIter
 
 // @fnv 0x00b2ab50
 // src: GUESS 0x00b2ab50 (confidence: low)
+// pdb: std::vector<CBillboardLeaf *,std::allocator<CBillboardLeaf *> >::begin | LightingEngine.obj | debug, object-file run extension, low
 unsigned int FnvVecIter::EvaluateValue_00b2ab50()
 {
     if (!(IsContainerSet()))
@@ -2883,16 +2898,18 @@ struct PtOwner
     int unk80;
     int unk84;
     PtVector kPoints;
-    float* CIndexedGeometry_GetVertexCoord(int index);
+    float* CIndexedGeometry_GetVertexCoord(int nVertexIndex);
 };
 }
 using namespace ptb30;
 
 // @fnv 0x00b30f80
 // src: COMMUNITY 0x00b30f80
-float* PtOwner::CIndexedGeometry_GetVertexCoord(int index)
+// pdb: CIndexedGeometry::GetVertexCoord | IndexedGeometry.obj | debug, upstream name already matches, high
+// pdb params: nVertexIndex
+float* PtOwner::CIndexedGeometry_GetVertexCoord(int nVertexIndex)
 {
-    return &kPoints[0] + index * 3;
+    return &kPoints[0] + nVertexIndex * 3;
 }
 }  // namespace fnv_00b30f80
 
@@ -3401,6 +3418,7 @@ using namespace vecb319;
 
 // @fnv 0x00b319e0
 // src: COMMUNITY 0x00b319e0
+// pdb: std::vector<std::vector<unsigned short,std::allocator<unsigned short> >,std::allocator<std::vector<unsigned short,std::allocator<unsigned short> > > >::clear | IndexedGeometry.obj | debug, call graph, medium
 void VcVector::m_vStripLengths_clear()
 {
     erase(begin(), end());
@@ -3524,6 +3542,9 @@ inline PbCIterator::PbCIterator(T* p, const PbContainer* c)
 }
 // @fnv 0x00b32210
 // src: GUESS 0x00b32210 (confidence: low)
+// pdb: std::vector<unsigned long,std::allocator<unsigned long> >::push_back | IndexedGeometry.obj | debug, object-file run extension, low
+// pdb params: _Val
+// pdb locals: _Idx
 void PbContainer::UpdateState_00b32210(const T& v)
 {
     if (size() < capacity())
@@ -3627,6 +3648,8 @@ inline PbCIterator::PbCIterator(T* p, const PbContainer* c)
 }
 // @fnv 0x00b32410
 // src: GUESS 0x00b32410 (confidence: low)
+// pdb: std::vector<unsigned short *,std::allocator<unsigned short *> >::resize | IndexedGeometry.obj | debug, object-file run extension, low
+// pdb params: _Newsize
 void PbContainer::UpdateState_00b32410(const T& v)
 {
     if (size() < capacity())
@@ -3984,6 +4007,8 @@ class FUN_00b32540_Vector : public vectorS<int>
 
 // @fnv 0x00b32540
 // src: GUESS 0x00b32540 (confidence: low)
+// pdb: std::vector<unsigned short *,std::allocator<unsigned short *> >::operator[] | IndexedGeometry.obj | debug, object-file run extension, low
+// pdb params: _Pos
 void FUN_00b32540_Vector::ProcessState_00b32540()
 {
     erase(begin(), end());
@@ -4536,6 +4561,8 @@ inline CItQ_aceeb0::CItQ_aceeb0(ElQ_aceeb0* _Ptr, const VecQ_aceeb0* _Pvector) :
 }
 // @fnv 0x00b339d0
 // src: GUESS 0x00b339d0 (confidence: low)
+// pdb: std::_Copy<std::vector<unsigned short,std::allocator<unsigned short> > *,std::vector<unsigned short,std::allocator<unsigned short> > *> | IndexedGeometry.obj | retail, object-file run extension, low
+// pdb params: _First, _Last, _Dest
 ItQ_aceeb0 VecQ_aceeb0::UpdateState_00b339d0(CItQ_aceeb0 _Where, const ElQ_aceeb0& _Val)
 {
     unsigned int _Off = size() == 0 ? 0 : _Where - begin();
@@ -8618,6 +8645,8 @@ struct BoundsB3
 };
 // @fnv 0x00b3c9a0
 // src: GUESS 0x00b3c9a0 (confidence: low)
+// pdb: operator<< | Region.obj | debug, object-file run extension, low
+// pdb params: cStream, cRegion
 BoundsB3 BoundsB3::ProcessEntries_00b3c9a0(const BoundsB3& other)
 {
     BoundsB3 result(*this);
@@ -8742,6 +8771,8 @@ class OwnerB3CE30
 
 // @fnv 0x00b3ce30
 // src: GUESS 0x00b3ce30 (confidence: low)
+// pdb: SIdvLeafInfo::~SIdvLeafInfo | LeafInfo.obj | debug, object-file run extension, low
+// pdb locals: i
 void OwnerB3CE30::ReleaseStorage_00b3ce30()
 {
     delete m_pkData54;
@@ -10465,19 +10496,21 @@ struct SxOwner
     int unk48;
     int unk4c;
     SxObj* pObj;
-    void UpdateFields_00b3fc80(SxObj* obj);
+    void SIdvBranchInfo_SetDisturbance(SxObj* pSpline);
 };
 }
 using namespace setb3f;
 
 // @fnv 0x00b3fc80
-// src: GUESS 0x00b3fc80 (confidence: low)
-void SxOwner::UpdateFields_00b3fc80(SxObj* obj)
+// src: XBOX_DEBUG_PDB 0x00b3fc80
+// pdb: SIdvBranchInfo::SetDisturbance | BranchInfo.obj | debug, call graph, high
+// pdb params: pSpline
+void SxOwner::SIdvBranchInfo_SetDisturbance(SxObj* pSpline)
 {
-    if (pObj != obj)
+    if (pObj != pSpline)
     {
         delete pObj;
-        pObj = obj;
+        pObj = pSpline;
     }
 }
 
@@ -10513,19 +10546,21 @@ struct SxOwner
     int unk50;
     int unk54;
     SxObj* pObj;
-    void UpdateFields_00b3fd60(SxObj* obj);
+    void SIdvBranchInfo_SetFlexibility(SxObj* pSpline);
 };
 }
 using namespace set00b3fd60;
 
 // @fnv 0x00b3fd60
-// src: GUESS 0x00b3fd60 (confidence: low)
-void SxOwner::UpdateFields_00b3fd60(SxObj* obj)
+// src: XBOX_DEBUG_PDB 0x00b3fd60
+// pdb: SIdvBranchInfo::SetFlexibility | BranchInfo.obj | debug, call graph, high
+// pdb params: pSpline
+void SxOwner::SIdvBranchInfo_SetFlexibility(SxObj* pSpline)
 {
-    if (pObj != obj)
+    if (pObj != pSpline)
     {
         delete pObj;
-        pObj = obj;
+        pObj = pSpline;
     }
 }
 }  // namespace fnv_00b3fd60
@@ -10564,19 +10599,21 @@ struct SxOwner
     int unk58;
     int unk5c;
     SxObj* pObj;
-    void UpdateFields_00b3fe40(SxObj* obj);
+    void SIdvBranchInfo_SetLength(SxObj* pSpline);
 };
 }
 using namespace set00b3fe40;
 
 // @fnv 0x00b3fe40
-// src: GUESS 0x00b3fe40 (confidence: low)
-void SxOwner::UpdateFields_00b3fe40(SxObj* obj)
+// src: XBOX_DEBUG_PDB 0x00b3fe40
+// pdb: SIdvBranchInfo::SetLength | BranchInfo.obj | debug, call graph, high
+// pdb params: pSpline
+void SxOwner::SIdvBranchInfo_SetLength(SxObj* pSpline)
 {
-    if (pObj != obj)
+    if (pObj != pSpline)
     {
         delete pObj;
-        pObj = obj;
+        pObj = pSpline;
     }
 }
 }  // namespace fnv_00b3fe40
@@ -10616,19 +10653,21 @@ struct SxOwner
     int unk5c;
     int unk60;
     SxObj* pObj;
-    void ReleaseStorage_00b3feb0(SxObj* obj);
+    void SIdvBranchInfo_SetRadius(SxObj* pSpline);
 };
 }
 using namespace set00b3feb0;
 
 // @fnv 0x00b3feb0
-// src: GUESS 0x00b3feb0 (confidence: low)
-void SxOwner::ReleaseStorage_00b3feb0(SxObj* obj)
+// src: XBOX_DEBUG_PDB 0x00b3feb0
+// pdb: SIdvBranchInfo::SetRadius | BranchInfo.obj | debug, call graph, high
+// pdb params: pSpline
+void SxOwner::SIdvBranchInfo_SetRadius(SxObj* pSpline)
 {
-    if (pObj != obj)
+    if (pObj != pSpline)
     {
         delete pObj;
-        pObj = obj;
+        pObj = pSpline;
     }
 }
 }  // namespace fnv_00b3feb0
@@ -13564,6 +13603,9 @@ struct FUN_00b326e0 : GvAuxBase<GvAlloc<unsigned short> >
     FUN_00b326e0(GvAlloc<unsigned short> _Al);
 };
 // @fnv 0x00b326e0
+// pdb: std::vector<unsigned short *,std::allocator<unsigned short *> >::push_back | IndexedGeometry.obj | debug, object-file run extension, low
+// pdb params: _Val
+// pdb locals: _Idx
 FUN_00b326e0::FUN_00b326e0(GvAlloc<unsigned short> _Al) : GvAuxBase<GvAlloc<unsigned short> >(_Al), _Alval(_Al)
 {}
 }  // namespace fnv_00b326e0
@@ -14579,6 +14621,8 @@ struct FUN_00b311b0 : FUN_00b326e0
     explicit FUN_00b311b0(unsigned int n);
 };
 // @fnv 0x00b311b0
+// pdb: std::_Move<std::vector<unsigned short,std::allocator<unsigned short> > *,std::vector<unsigned short,std::allocator<unsigned short> > *> | IndexedGeometry.obj | retail, object-file run extension, low
+// pdb params: _First, _Last, _Dest
 FUN_00b311b0::FUN_00b311b0(unsigned int n) : FUN_00b326e0(AllocQ())
 {
     PadF();
@@ -15342,6 +15386,9 @@ inline const MapValue& LookupConstIter::EvaluateValue_00b3b090() const
 }
 // @fnv 0x00b39210
 // src: GUESS 0x00b39210 (confidence: low)
+// pdb: std::map<std::basic_string<char,std::char_traits<char>,std::allocator<char> >,CIdvBezierSpline *,std::less<std::basic_string<char,std::char_traits<char>,std::allocator<char> > >,std::allocator<std::pair<std::basic_string<char,std::char_traits<char>,std::allocator<char> > const ,CIdvBezierSpline *> > >::operator[] | IdvSpline.obj | debug, call graph, medium
+// pdb params: _Keyval
+// pdb locals: _Where
 int& LookupMap::UpdateState_00b39210(const MapKey& sought)
 {
     LookupIter where = lower(sought);
@@ -17876,8 +17923,8 @@ struct Target18
     int unk114;
     FloatVector18 values;
     ByteVector18 types;
-    void __thiscall CIndexedGeometry_AddVertexTexCoord0(float* values, int flags);
-    void __thiscall CIndexedGeometry_ChangeTexCoord(unsigned char type, Params18* params);
+    void __thiscall CIndexedGeometry_AddVertexTexCoord0(float* pTexCoord, int sIndex);
+    void __thiscall CIndexedGeometry_ChangeTexCoord(unsigned char chChangedMapIndex, Params18* pNewTexCoords);
 };
 static __forceinline float Lerp18(const float& t, float a, float b)
 {
@@ -17885,13 +17932,16 @@ static __forceinline float Lerp18(const float& t, float a, float b)
 }
 // @fnv 0x00b31070
 // src: COMMUNITY 0x00b31070
-void Target18::CIndexedGeometry_ChangeTexCoord(unsigned char type, Params18* params)
+// pdb: CIndexedGeometry::ChangeTexCoord | IndexedGeometry.obj | retail, upstream name already matches, high
+// pdb params: chChangedMapIndex, pNewTexCoords
+// pdb locals: afTexCoords
+void Target18::CIndexedGeometry_ChangeTexCoord(unsigned char chChangedMapIndex, Params18* pNewTexCoords)
 {
     float result[2];
-    if (type == types.at(index))
+    if (chChangedMapIndex == types.at(index))
     {
-        result[0] = Lerp18(values.at(2 * index), params->z, params->x);
-        result[1] = Lerp18(values.at(2 * index + 1), params->w, params->y);
+        result[0] = Lerp18(values.at(2 * index), pNewTexCoords->z, pNewTexCoords->x);
+        result[1] = Lerp18(values.at(2 * index + 1), pNewTexCoords->w, pNewTexCoords->y);
         if (CSpeedTreeRT_GetTextureFlip())
             result[1] = -result[1];
         CIndexedGeometry_AddVertexTexCoord0(result, -1);

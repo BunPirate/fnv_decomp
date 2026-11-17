@@ -111,12 +111,14 @@ namespace fnv_00654720 {
 #include "../../../include/TESEyes.h"
 
 // @fnv 0x006521e0
+// pdb: BSFaceGenManager::GetFaceGenCoord | BSFaceGenManager.obj | debug, call graph, medium
 FaceGenCoordinates* BSFaceGenManager::GetFaceGenCoordinates()
 {
     return &GetFaceGenManager()->coords;
 }
 
 // @fnv 0x00651b30
+// pdb: BSFaceGenManager::GetInstance | BSFaceGenManager.obj | debug, call graph, medium
 BSFaceGenManager* BSFaceGenManager::GetFaceGenManager()
 {
     if (!DAT_011d59e8)
@@ -140,6 +142,8 @@ BSFaceGenModelMap* BSFaceGenManager::GetModelMap()
 
 // If values and count are non-zero, zeroes count floats in the values array.
 // @fnv 0x00653e20
+// pdb: BSFaceGenManager::SetToZero | BSFaceGenManager.obj | debug, object-file gap fill, medium
+// pdb params: apQuantities, aiNumQuantities
 void BSFaceGenManager::NormalizeFaceGenValues(float* values, unsigned int count)
 {
     if (!values || !count)
@@ -149,6 +153,7 @@ void BSFaceGenManager::NormalizeFaceGenValues(float* values, unsigned int count)
 
 // Returns SEX based on the base flag when the form type is ENUM_FORM_ID_NPC__ID, otherwise SEX_SEX_NONE.
 // @fnv 0x005f0cc0
+// pdb: TESActorBase::GetSex | TESActorBase.obj | debug, upstream name already matches, high
 SEX TESActorBase::GetSex() const
 {
     if (GetFormType() == ENUM_FORM_ID_NPC__ID)
@@ -158,29 +163,37 @@ SEX TESActorBase::GetSex() const
 
 // Resizes the three coordinate arrays in coords to 50, 30 and 50 entries respectively, returning early if coords is null.
 // @fnv 0x006521f0
-void BSFaceGenManager::InitializeFaceGenCoordinates(FaceGenCoordinates* coords)
+// pdb: BSFaceGenManager::InitFaceGenCoord | BSFaceGenManager.obj | retail, call graph (shared callers), high
+// pdb params: apCoord
+void BSFaceGenManager::InitializeFaceGenCoordinates(FaceGenCoordinates* apCoord)
 {
-    if (!coords)
+    if (!apCoord)
         return;
-    reinterpret_cast<FaceGenMatrix<float>*>(coords)[0].resize(50, true);
-    reinterpret_cast<FaceGenMatrix<float>*>(coords)[1].resize(30, true);
-    reinterpret_cast<FaceGenMatrix<float>*>(coords)[2].resize(50, true);
+    reinterpret_cast<FaceGenMatrix<float>*>(apCoord)[0].resize(50, true);
+    reinterpret_cast<FaceGenMatrix<float>*>(apCoord)[1].resize(30, true);
+    reinterpret_cast<FaceGenMatrix<float>*>(apCoord)[2].resize(50, true);
 }
 
 // Copies DAT_0104aad0 into dest, then appends DAT_0119b734[part] for part 0 or 1 (else index 0), and returns dest.
 // @fnv 0x00657820
-char* BSFaceGenManager::BuildFaceGenPartPath(char* dest, int part)
+// src: XBOX_DEBUG_PDB 0x00657820
+// pdb: BSFaceGenManager::GetHairName | BSFaceGenManager.obj | debug, call graph, high
+// pdb params: apHairName, aeHairPart
+char* BSFaceGenManager::GetHairName(char* apHairName, int aeHairPart)
 {
-    __insecure_strcpy(dest, DAT_0104aad0);
-    if (part > -1 && part < 2)
-        FUN_00ec6380(dest, DAT_0119b734[part]);
+    __insecure_strcpy(apHairName, DAT_0104aad0);
+    if (aeHairPart > -1 && aeHairPart < 2)
+        FUN_00ec6380(apHairName, DAT_0119b734[aeHairPart]);
     else
-        FUN_00ec6380(dest, DAT_0119b734[0]);
-    return dest;
+        FUN_00ec6380(apHairName, DAT_0119b734[0]);
+    return apHairName;
 }
 
 // If values and count are non-zero, either zeroes count floats or sets each to DAT_01016970.
 // @fnv 0x00653dc0
+// pdb: BSFaceGenManager::ResetQuantityArray | BSFaceGenManager.obj | debug, call graph, medium
+// pdb params: apQuantities, aiNumQuantities, abForceZero
+// pdb locals: i
 void BSFaceGenManager::ApplyFaceGenValues(float* values, unsigned int count, bool zero)
 {
     if (!values || !count)
@@ -194,6 +207,7 @@ void BSFaceGenManager::ApplyFaceGenValues(float* values, unsigned int count, boo
 
 // Destructor for FaceGenPaletteEntry; performs no work.
 // @fnv 0x0043ebb0
+// pdb: QueuedHead::~QueuedHead | ModelLoader.obj | debug, call graph, high
 FaceGenPaletteEntry::~FaceGenPaletteEntry()
 {}
 
@@ -209,6 +223,7 @@ template <class _Elem, class _Traits, class _Ax> class basic_string
 
 // @fnv 0x0044a560
 // src: COMMUNITY 0x0044a560
+// pdb: std::basic_string<char,std::char_traits<char>,std::allocator<char> >::c_str | BSFaceGenManager.obj | debug, call graph, medium
 char* __fastcall std_string_debug_c_str(std::basic_string<char, std::char_traits<char>, std::allocator<char> >* pThis)
 {
     return pThis->_Myptr();
@@ -241,6 +256,8 @@ struct Dummy658aa0
 
 // @fnv 0x0064fd80
 // src: EXE 0x0064fd80
+// pdb: BSFaceGenModelMap::BSFaceGenModelMap | BSFaceGenManager.obj | retail, upstream name already matches, high
+// pdb locals: cnt
 void* __fastcall BSFaceGenModelMap_BSFaceGenModelMap(void* pThis)
 {
     *(int**)pThis = &DAT_01065678;
@@ -264,6 +281,7 @@ struct FUN_00650170_thiscall
 
 // Calls FUN_00659b50 on this, then deletes this via NiMemObject::operator delete when flags has bit 1 set, and returns this.
 // @fnv 0x00650170
+// pdb: BSFaceGenModelMap::Entry::`scalar deleting destructor' | BSFaceGenManager.obj | retail, vtable slot, high
 void* FUN_00650170_thiscall::DestroyIfFlagged(unsigned int flags)
 {
     FUN_00659b50(this);
@@ -285,6 +303,7 @@ struct FUN_006501a0_shell : EBase
     ~FUN_006501a0_shell();
 };
 // @fnv 0x006501a0
+// pdb: BSFaceGenModelMap::Entry::~Entry | BSFaceGenManager.obj | debug, call graph, medium
 FUN_006501a0_shell::~FUN_006501a0_shell()
 {}
 
@@ -292,6 +311,7 @@ FUN_006501a0_shell::~FUN_006501a0_shell()
 // Returns the string held by the BSStringT pointer stored at pThis+0xC, or null if that pointer is null.
 // @fnv 0x00650600
 // src: COMMUNITY 0x00650600
+// pdb: BSFaceGenModel::GetEGTFilename | BSFaceGenManager.obj | debug, call graph, high
 const char* __fastcall BSFaceGenModel_GetString(char* pThis)
 {
     return *reinterpret_cast<BSStringT<char>**>(pThis + 0xC)
@@ -304,13 +324,16 @@ struct FUN_006508e0_shell
     char pad[0x18];
     int arr[4];
     void BSFaceGenModelMap_VerifyData(int);
-    void SetArrayValue(int i, int v);
+    void BSFaceGenModelMap_SetMaxDataSize(int aDataType, int auiSize);
 };
 // Stores v into arr[i] and then calls FUN_00650ba0(0).
 // @fnv 0x006508e0
-void FUN_006508e0_shell::SetArrayValue(int aiIndex, int aiValue)
+// src: XBOX_DEBUG_PDB 0x006508e0
+// pdb: BSFaceGenModelMap::SetMaxDataSize | BSFaceGenManager.obj | debug, call graph, high
+// pdb params: aDataType, auiSize
+void FUN_006508e0_shell::BSFaceGenModelMap_SetMaxDataSize(int aDataType, int auiSize)
 {
-    arr[aiIndex] = aiValue;
+    arr[aDataType] = auiSize;
     BSFaceGenModelMap_VerifyData(0);
 }
 
@@ -335,6 +358,7 @@ struct FUN_00651520
     FUN_00651520();
 };
 // @fnv 0x00651520
+// pdb: FanRaceDistS::FanRaceDistS | BSFaceGenManager.obj | debug, object-file run extension, low
 FUN_00651520::FUN_00651520()
 {}
 
@@ -350,13 +374,13 @@ void* __fastcall BSFaceGenManager_InitializeFaceGenMatrix(FaceGenMatrix<float>* 
 
 void __stdcall FUN_ehvec_ctor(void*, unsigned int, int, void*, void*);
 void FUN_ctor();
-void FUN_dtor();
+void FR2MatrixVTC_float_dtor();
 
 // @fnv 0x00651670
 // src: GUESS 0x00651670 (confidence: low)
 void* __fastcall BSFaceGenManager_EvaluateValue_00651670(void* p)
 {
-    FUN_ehvec_ctor(p, 0x20, 2, &FUN_ctor, &FUN_dtor);
+    FUN_ehvec_ctor(p, 0x20, 2, &FUN_ctor, &FR2MatrixVTC_float_dtor);
     return p;
 }
 
@@ -397,6 +421,7 @@ struct FUN_006516e0
     FUN_006516e0();
 };
 // @fnv 0x006516e0
+// pdb: FanFgFileDataS::FanFgFileDataS | BSFaceGenManager.obj | debug, call graph, medium
 FUN_006516e0::FUN_006516e0()
 {}
 }  // namespace fnv_006516e0
@@ -406,6 +431,7 @@ void __cdecl FUN_006579d0();
 void __stdcall compiler_eh_vector_destructor_iterator(void*, unsigned int, int, void(__cdecl*)(), void(__cdecl*)());
 
 // @fnv 0x006517e0
+// pdb: FanLinCtlGrpS::FanLinCtlGrpS | BSFaceGenManager.obj | debug, call graph, medium
 void* __fastcall DestroyVectorElements(void* pThis)
 {
     compiler_eh_vector_destructor_iterator(pThis, 0x18, 4, FUN_00657960, FUN_006579d0);
@@ -422,7 +448,7 @@ struct Sol
     static void operator delete(void*, unsigned int);
     Sol();
     unsigned int BSFaceGenModel_GetString();
-    void FUN_0065a760(void* a);
+    void LoadModelTexture(void* apEGTFilename);
     bool BSFaceGenModel_LoadModel(char*, char*, char*, char*, int, bool);
 };
 struct SolPtr
@@ -448,6 +474,8 @@ void __fastcall BSFaceGenModelMap_RemoveAllUnusedModels(void*);
 // If DAT_011d59e8 and the pointer at offset 0x1194 are non-null, calls FUN_006503b0 on that pointer.
 // @fnv 0x00651e30
 // src: XBOX_PDB 0x00651e30
+// pdb: BSFaceGenManager::ClearModelCache | BSFaceGenManager.obj | debug, upstream name already matches, high
+// pdb locals: tempAutoEvent
 void BSFaceGenManager_ClearModelCache()
 {
     if (!DAT_011d59e8)
@@ -466,6 +494,8 @@ void __fastcall ClearModelTextures(void*);
 // If DAT_011d59e8 is set and its field at offset 0x1194 is non-null, calls ClearModelTextures on that field.
 // @fnv 0x00651f40
 // src: XBOX_PDB 0x00651f40
+// pdb: BSFaceGenManager::ClearEGTCache | BSFaceGenManager.obj | debug, upstream name already matches, high
+// pdb locals: tempAutoEvent
 void BSFaceGenManager_ClearEGTCache()
 {
     if (DAT_011d59e8 != 0 && DAT_011d59e8->m_pModelCache != 0)
@@ -480,6 +510,7 @@ extern GlobalObject_0044fae0 g_011d5a9c;
 extern int DAT_011d59dc;
 // @fnv 0x00652140
 // src: XBOX_PDB 0x00652140
+// pdb: BSFaceGenManager::LockFaceGenAccess | BSFaceGenManager.obj | retail, upstream name already matches, high
 void BSFaceGenManager_LockFaceGenAccess()
 {
     g_011d5a9c.BSCriticalSection_Lock(0);
@@ -498,6 +529,8 @@ extern int DAT_011d59dc;
 // Calls FUN_0044b130 on g_011d5a9c; if it returns true, increments DAT_011d59dc, and returns that result.
 // @fnv 0x00652160
 // src: COMMUNITY 0x00652160
+// pdb: BSFaceGenManager::TryLockFaceGenAccess | BSFaceGenManager.obj | retail, upstream name already matches, high
+// pdb locals: bresult
 bool BSFaceGenManager_TryLockFaceGenAccess()
 {
     bool bresult = g_011d5a9c.BSCriticalSection_TryLock();
@@ -517,6 +550,7 @@ extern int DAT_011d59dc;
 
 // @fnv 0x00652190
 // src: COMMUNITY 0x00652190
+// pdb: BSFaceGenManager::UnlockFaceGenAccess | BSFaceGenManager.obj | retail, upstream name already matches, high
 void __cdecl BSFaceGenManager_UnlockFaceGenAccess(void)
 {
     g_011d5a9c.Leave();
@@ -531,6 +565,8 @@ struct Sub_00aabdb0
 
 // @fnv 0x00652440
 // src: COMMUNITY 0x00652440
+// pdb: BSFaceGenManager::GetFaceCoordAttribute | BSFaceGenManager.obj | retail, upstream name already matches, high
+// pdb params: apCoord, aeFanAttribute, aeFanType
 float __cdecl BSFaceGenManager_GetFaceCoordAttribute(int apCoord, int aeFanAttribute, int aeFanType)
 {
     return reinterpret_cast<Sub_00aabdb0*>(&BSFaceGenManager::GetFaceGenManager()->m_kModels)
@@ -540,6 +576,9 @@ float __cdecl BSFaceGenManager_GetFaceCoordAttribute(int apCoord, int aeFanAttri
 namespace fnv_006529a0 {
 // @fnv 0x006529a0
 // src: COMMUNITY 0x006529a0
+// pdb: BSFaceGenManager::CopyFaceGenCoord | BSFaceGenManager.obj | retail, upstream name already matches, high
+// pdb params: apCopyFromCoord, apCopyToCoord, abGeometryOnly, abTextureOnly
+// pdb locals: etype, esymm
 void __cdecl BSFaceGenManager_CopyFaceGenCoord(FaceGenMatrix<float> (*apCopyFromCoord)[2], FaceGenMatrix<float> (*apCopyToCoord)[2],
                           bool abGeometryOnly, bool abTextureOnly)
 {
@@ -578,6 +617,9 @@ void* __cdecl DynamicCastByRTTI(void*, NiNode*);
 
 // @fnv 0x00653230
 // src: COMMUNITY 0x00653230
+// pdb: BSFaceGenManager::GetFaceGenMorphDataHead | BSFaceGenManager.obj | debug, call graph, high
+// pdb params: apGeom
+// pdb locals: pmorph
 void* __cdecl BSFaceGenUtils_GetFaceGenMorphDataHead(void* apGeom)
 {
     NiNode* pGeometryNode = GetNodeFromGeometry(apGeom);
@@ -596,6 +638,10 @@ extern int g_011d5ba8;
 
 // @fnv 0x00653300
 // src: COMMUNITY 0x00653300
+// pdb: BSFaceGenManager::GetFaceGenMorphData | BSFaceGenManager.obj | retail, call graph, low
+// pdb note: debug build links it to BSFaceGenManager::GetFaceGenMorphDataHair
+// pdb params: apGeom
+// pdb locals: pextra
 void* __cdecl BSFaceGenUtils_GetFaceGenMorphDataHair(void* apGeom)
 {
     NiNode* pGeometryNode = GetNodeFromGeometry(apGeom);
@@ -611,6 +657,8 @@ const NiFixedString& __cdecl BSFaceGenBaseMorphExtraData_GetTag();
 
 // Returns the extra data named by FUN_00653460 from apGeom, or null if apGeom is null.
 // @fnv 0x00653430
+// pdb: BSFaceGenManager::GetFaceGenBaseMorphExtraData | BSFaceGenManager.obj | debug, call graph, medium
+// pdb params: apGeom
 NiExtraData* __cdecl GetExtraDataIfPresent(NiAVObject* apGeom)
 {
     return apGeom ? apGeom->GetExtraData(BSFaceGenBaseMorphExtraData_GetTag()) : 0;
@@ -626,6 +674,9 @@ Morph653* __cdecl BSFaceGenUtils_GetFaceGenMorphDataHair(NiGeometry*);
 void __cdecl BSFaceGenUtils_RefreshMeshFromBaseMorphExtraData(NiGeometry*, GeometryVertexBuffer*);
 // @fnv 0x00653470
 // src: COMMUNITY 0x00653470
+// pdb: BSFaceGenManager::ApplyHairMorph | BSFaceGenManager.obj | retail, upstream name already matches, high
+// pdb params: apGeom, afModifierValue
+// pdb locals: pmorphHair, iter
 void BSFaceGenManager_ApplyHairMorph(NiGeometry* apGeom, float afModifierValue)
 {
     if (!apGeom || afModifierValue < _gModifierZero)
@@ -699,13 +750,15 @@ struct GO633 : NP
 struct S654
 {
     NP NiTPointerListBase_NiPropertyPtr_Remove(GO633&);
-    void ForwardToSubobject(int v);
+    void ForwardToSubobject(int pkProperty);
 };
 // Constructs a GO633 from v and passes it to FUN_0057c5d0 on the S654 subobject at offset 0x24.
 // @fnv 0x00654640
-void S654::ForwardToSubobject(int aiValue)
+// pdb: NiAVObject::DetachProperty | BSFaceGenManager.obj | retail, call graph, high
+// pdb params: pkProperty
+void S654::ForwardToSubobject(int pkProperty)
 {
-    GO633 a(aiValue);
+    GO633 a(pkProperty);
     ((S654*)((char*)this + 0x24))->NiTPointerListBase_NiPropertyPtr_Remove(a);
 }
 
@@ -758,6 +811,9 @@ struct NiSkinInstance;
 
 NiRenderer* __cdecl NiXenonRenderer_GetRenderer();
 // @fnv 0x00657010
+// pdb: BSFaceGenManager::PrecacheFaceGeometry | BSFaceGenManager.obj | debug, object-file run extension, low
+// pdb params: apObj, aiShaderIndex, aiCompressFlags
+// pdb locals: pgeom, pshader
 void SetGeometryCompressFlags(NiAVObject* apObj, unsigned int aiShaderIndex, unsigned int aiCompressFlags)
 {
     if (apObj)
@@ -802,6 +858,7 @@ struct _vec_60
 
 // @fnv 0x00657a30
 // src: COMMUNITY 0x00657a30
+// pdb: std::vector<FanLinCtlS,std::allocator<FanLinCtlS> >::~vector<FanLinCtlS,std::allocator<FanLinCtlS> > | BSFaceGenManager.obj | debug, object-file run extension, low
 unsigned int __fastcall std_vector_FanLinCtlS_std_allocator_FanLinCtlS_size(const _vec_60* apVec)
 {
     return apVec->last - apVec->first;
@@ -822,6 +879,8 @@ struct FUN_00657a50_shell
 // Returns a pointer to the element at index i after bounds-checking it against the count from FUN_00657a30.
 // @fnv 0x00657a50
 // src: GUESS 0x00657a50 (confidence: high)
+// pdb: std::vector<FanLinCtlS,std::allocator<FanLinCtlS> >::operator[] | BSFaceGenManager.obj | debug, call graph, medium
+// pdb params: _Pos
 OpaqueDataBlock* FUN_00657a50_shell::GetElementPointerChecked(unsigned int uiIndex)
 {
     if (!(uiIndex < std_vector_FanLinCtlS_std_allocator_FanLinCtlS_size()))
@@ -860,6 +919,9 @@ struct FloatVec
 };
 
 // @fnv 0x006578e0
+// pdb: std::vector<float,std::allocator<float> >::push_back | BSFaceGenManager.obj | retail, call graph (shared callers), medium
+// pdb params: _Val
+// pdb locals: _Idx
 void FloatVec::PushBack(const float& afValue)
 {
     if (std_vector_float_std_allocator_float_size() < FaceGenData_GetUnk014MinusMinDivBy4())
@@ -1101,7 +1163,11 @@ struct ModelCalls
 
 // Applies facegen texture coordinates and shader properties to an NPC model node, then updates its child nodes and geometry.
 // @fnv 0x00655fa0
-void ApplyFaceGenTextures(NiAVObject* apNode, FaceGenData* arNpcData)
+// src: XBOX_DEBUG_PDB 0x00655fa0
+// pdb: BSFaceGenManager::PrepareHeadForShaders | BSFaceGenManager.obj | debug, call graph, high
+// pdb params: apNode, arNpcData
+// pdb locals: filename, leftEye, pshaderprop, sptexSpecular, UpdateData, pmodelFG, headAccessory, sptexBaseMod, fileDDS, sptexNormal, cage, tempMemContext, hair, sptexDetailMod, ishaderindex, bspecular, tmp, pobj, fileNormal, fileSpecular, pshaderpropLighting, pgeom, rightEye, fileEGM ...
+void BSFaceGenManager_PrepareHeadForShaders(NiAVObject* apNode, FaceGenData* arNpcData)
 {
     AutoMemContext tempMemContext(
         0x37, true, "D:\\_Fallout3\\Platforms\\Common\\Code\\Fallout Shared\\FaceGen\\BSFaceGenManager.cpp", 0xc2a);
@@ -1176,16 +1242,16 @@ void ApplyFaceGenTextures(NiAVObject* apNode, FaceGenData* arNpcData)
             if (((GlobalObject_004aff00*)((char*)arNpcData + 0xc4))->GetSize() == 0 ||
                 *(Flt*)((BSSimpleArray<unsigned int,1024>*)((char*)arNpcData + 0xc4))->GetAtPointer(ipart) == 0)
                 ((BSFaceGenModel*)pmodelFG)
-                    ->ApplyTextureCoordinate(reinterpret_cast<::FaceGenCoordinates*>(arNpcData), reinterpret_cast<::GO&>(sptexBaseMod), General_uiEGTClampSize_Get());
+                    ->ApplyCoordinateTexturingToMesh(reinterpret_cast<::FaceGenCoordinates*>(arNpcData), reinterpret_cast<::GO&>(sptexBaseMod), General_uiEGTClampSize_Get());
             g_TES->CreateTextureImage(static_cast<const char*>(fileDetail), sptexDetailMod, true, true);
-            TESTexture::NormalizeTextureFilePath(fileNormal, static_cast<const char*>(fileDetail));
+            TESTexture::GetAsNormalFile(fileNormal, static_cast<const char*>(fileDetail));
         }
         else
         {
             if (((GlobalObject_004aff00*)((char*)arNpcData + 0xc4))->GetSize() == 0 ||
                 *(Flt*)((BSSimpleArray<unsigned int,1024>*)((char*)arNpcData + 0xc4))->GetAtPointer(ipart) == 0)
                 ((BSFaceGenModel*)pmodelFG)
-                    ->ApplyTextureCoordinate(reinterpret_cast<::FaceGenCoordinates*>(arNpcData), reinterpret_cast<::GO&>(sptexBaseMod), General_uiEGTClampSize_Get());
+                    ->ApplyCoordinateTexturingToMesh(reinterpret_cast<::FaceGenCoordinates*>(arNpcData), reinterpret_cast<::GO&>(sptexBaseMod), General_uiEGTClampSize_Get());
             BSStringT<char> tempstr;
             ((ModelCalls*)*((BSSimpleArray<unsigned int,1024>*)((char*)arNpcData + 0xa4))->GetAtPointer(ipart))->GetNormalName(&tempstr);
             if (reinterpret_cast<unsigned int>(static_cast<const char*>(tempstr)))
@@ -1315,12 +1381,13 @@ struct Flt
 };
 
 
+// pdb: class ModelLoader, size 0x30 (here 0x1), 12 members
 struct ModelLoader
 {
     void QueueModelFilePath(const char*, int, QueuedFile*);
     void ProcessModelRequest(TESModel*, int, QueuedFile*, int, bool, bool, bool);
-    void LoadMesh(TESModel*, int, QueuedFile*, unsigned int);
-    void LoadTaskFromPath(TESModel*, int, QueuedFile*, unsigned int);
+    void QueueEGMFile(TESModel*, int, QueuedFile*, unsigned int);
+    void QueueTRIFile(TESModel*, int, QueuedFile*, unsigned int);
 };
 extern ModelLoader* g_modelLoader;
 struct FUN_004ac110_shell
@@ -1329,7 +1396,7 @@ struct FUN_004ac110_shell
 };
 struct FUN_006141f0_shell
 {
-    void BuildAppearance(TESActorBase*, void*, SEX, bool);
+    void TESRace_GetFaceGenData(TESActorBase*, void*, SEX, bool);
 };
 struct FUN_00604310_shell
 {
@@ -1347,7 +1414,7 @@ BGSHeadPart** __fastcall _ref_006815c0(HPList*);
 HPList* __fastcall _ref_00726070(HPList*);
 float __cdecl BSFaceGenManager_GetFaceCoordAttribute(void*, int, int);
 float __cdecl floorf(float);
-void __cdecl AppendNormalMapSuffix(const char*, char*);
+void __cdecl TESTexture_GetAsNormalFile(const char*, char*);
 int __cdecl BSFaceGenManager_GetAsNearestDetailDDSFile(void*, int, char, const char*);
 
 namespace lc1 {
@@ -1378,13 +1445,16 @@ struct FaceGenData
 
 // Builds face-gen data for an actor and queues eye, hair, head-part and part textures/models with the model loader at the given priority.
 // @fnv 0x00657150
+// pdb: BSFaceGenManager::QueueHeadParts | BSFaceGenManager.obj | debug, call graph, medium
+// pdb params: apNPC, aePriority, apParent
+// pdb locals: npcData, ipart, cage, pheadPartList, tempMemContext, pheadModTexture, ptexture, ptextureName, pspecularFileName, ishaderindex, fileDetail, pnormalFileName, pskinFileName, pmodel, pheadPart
 void __cdecl QueueFaceGenAssets(TESActorBase* apNPC, int aePriority, QueuedFile* apParent)
 {
     lc1::AutoMemContext tempMemContext(
         0x37, true, "D:\\_Fallout3\\Platforms\\Common\\Code\\Fallout Shared\\FaceGen\\BSFaceGenManager.cpp", 0xe38);
     lc1::FaceGenData faceGenData;
     ((FUN_006141f0_shell*)((FUN_004ac110_shell*)apNPC)->TESNPC_GetRace())
-        ->BuildAppearance(apNPC, &faceGenData, apNPC->GetSex(), true);
+        ->TESRace_GetFaceGenData(apNPC, &faceGenData, apNPC->GetSex(), true);
     if (!&faceGenData)
         return;
     char cage = (char)floorf(BSFaceGenManager_GetFaceCoordAttribute(&faceGenData, 0, 0));
@@ -1407,7 +1477,7 @@ void __cdecl QueueFaceGenAssets(TESActorBase* apNPC, int aePriority, QueuedFile*
         CopyStringChecked(pTexturePath, 260, "Textures\\");
         AppendStringChecked(pTexturePath, 260, ((FNStub*)((char*)faceGenData.m_pHair + 0x3c))->GetFullName());
         g_modelLoader->QueueModelFilePath(pTexturePath, aePriority, apParent);
-        g_modelLoader->LoadMesh(faceGenData.m_pHair ? (TESModel*)((char*)faceGenData.m_pHair + 0x24) : 0, aePriority,
+        g_modelLoader->QueueEGMFile(faceGenData.m_pHair ? (TESModel*)((char*)faceGenData.m_pHair + 0x24) : 0, aePriority,
                                 apParent, 9);
     }
     char pheadModTexture[260];
@@ -1436,12 +1506,12 @@ void __cdecl QueueFaceGenAssets(TESActorBase* apNPC, int aePriority, QueuedFile*
             g_modelLoader->QueueModelFilePath(ptextureName, aePriority, apParent);
         }
         char pnormalFileName[260];
-        AppendNormalMapSuffix(ptextureName, pnormalFileName);
+        TESTexture_GetAsNormalFile(ptextureName, pnormalFileName);
         g_modelLoader->QueueModelFilePath(pnormalFileName, aePriority, apParent);
         if (faceGenData.bFaceGenTexturing && ishaderindex == 14)
         {
             char pskinFileName[260];
-            TESTexture::ConvertTexturePath(ptextureName, pskinFileName);
+            TESTexture::GetAsSkinFile(ptextureName, pskinFileName);
             g_modelLoader->QueueModelFilePath(pskinFileName, aePriority, apParent);
         }
     }
@@ -1451,8 +1521,8 @@ void __cdecl QueueFaceGenAssets(TESActorBase* apNPC, int aePriority, QueuedFile*
         if (pmodel && ((FUN_0048cee0_shell*)pmodel)->FUN_0048cee0())
         {
             g_modelLoader->ProcessModelRequest(pmodel, aePriority, apParent, 0, false, false, true);
-            g_modelLoader->LoadMesh(pmodel, aePriority, apParent, ipart);
-            g_modelLoader->LoadTaskFromPath(pmodel, aePriority, apParent, ipart);
+            g_modelLoader->QueueEGMFile(pmodel, aePriority, apParent, ipart);
+            g_modelLoader->QueueTRIFile(pmodel, aePriority, apParent, ipart);
         }
     }
     HPList* pheadPartList = &faceGenData.Accessories;
@@ -1463,8 +1533,8 @@ void __cdecl QueueFaceGenAssets(TESActorBase* apNPC, int aePriority, QueuedFile*
         {
             g_modelLoader->ProcessModelRequest(pheadPart ? (TESModel*)((char*)pheadPart + 0x24) : 0, aePriority,
                                                apParent, 0, false, false, true);
-            g_modelLoader->LoadMesh(pheadPart ? (TESModel*)((char*)pheadPart + 0x24) : 0, aePriority, apParent, ipart);
-            g_modelLoader->LoadTaskFromPath(pheadPart ? (TESModel*)((char*)pheadPart + 0x24) : 0, aePriority, apParent,
+            g_modelLoader->QueueEGMFile(pheadPart ? (TESModel*)((char*)pheadPart + 0x24) : 0, aePriority, apParent, ipart);
+            g_modelLoader->QueueTRIFile(pheadPart ? (TESModel*)((char*)pheadPart + 0x24) : 0, aePriority, apParent,
                                             ipart);
         }
         pheadPartList = _ref_00726070(pheadPartList);
@@ -1507,6 +1577,9 @@ struct FGModelCache
 
 // @fnv 0x00650200
 // src: COMMUNITY 0x00650200
+// pdb: BSFaceGenModelMap::GetAt | BSFaceGenManager.obj | debug, object-file gap fill, medium
+// pdb params: apcKey, aspModel
+// pdb locals: spentry, bres
 bool FGModelCache::BSFaceGenModelMap_GetAt(void* key, Helper62d0* out)
 {
     BSFaceGenManager_LockFaceGenAccess();
@@ -1557,12 +1630,16 @@ struct FGMapOwner
 {
     char pad[4];
     FaceGenModelMapPositions map;
-    unsigned int GetModelValueSum(int which);
+    unsigned int BSFaceGenModelMap_GetTotalDataSize(int aDataType);
 };
 
 // Iterates the map's positions, accumulating either GetEGMSize or FUN_0065c490 results from each entry's model based on which, and returns the sum.
 // @fnv 0x00650930
-unsigned int FGMapOwner::GetModelValueSum(int aiMode)
+// src: XBOX_DEBUG_PDB 0x00650930
+// pdb: BSFaceGenModelMap::GetTotalDataSize | BSFaceGenManager.obj | debug, call graph, high
+// pdb params: aDataType
+// pdb locals: spentry, size, pkey, iter
+unsigned int FGMapOwner::BSFaceGenModelMap_GetTotalDataSize(int aDataType)
 {
     void* pos2;
     unsigned int id6 = 0;
@@ -1573,7 +1650,7 @@ unsigned int FGMapOwner::GetModelValueSum(int aiMode)
     while (pos2)
     {
         reinterpret_cast<Map62d0*>(&map)->NiTMap_Ptr_GetNext(pos2, id6, ptr);
-        switch (aiMode)
+        switch (aDataType)
         {
         case 0:
             result3 += static_cast<ModelHelper*>(reinterpret_cast<FGEntry*>(static_cast<::FGEntry*>(ptr))->model)->GetEGMSize();
@@ -1625,8 +1702,8 @@ class FaceGenAlphaProperty
     FaceGenAlphaProperty();
     void IncRefCount();
     void DecRefCount();
-    void SetFlag512(bool bValue);
-    void SetFlags(unsigned short usFlags);
+    void SetFlag512(bool bAlpha);
+    void NiAlphaProperty_SetTestMode(unsigned short eTestFunc);
     void NiAlphaProperty_SetTestRef(unsigned char ucRef);
     char data[0x1c];
 };
@@ -1641,8 +1718,8 @@ struct TextureFormatPreferences
     int eMipMapped;
 };
 
-bool __cdecl fanReadCtlFile(const NarrowString& kFile, FaceGenSam* pSam, unsigned int* pTileTexture, unsigned int* pInfo,
-                          FaceGenCtls* pCtls, FaceGenModels* pModels);
+bool __cdecl fanReadCtlFile(const NarrowString& fname, FaceGenSam* basisKeyGeo, unsigned int* basisKeyTex, unsigned int* basisSize,
+                          FaceGenCtls* linCtl, FaceGenModels* genCtl);
 NiTexture* __cdecl NiSourceTexture_Create(NiPixelData* pkPixelData, const char* pcName, const TextureFormatPreferences& kPrefs);
 int Warning(const char* pcFormat, ...);
 extern TextureFormatPreferences DAT_011a9598;
@@ -1653,6 +1730,8 @@ extern bool DAT_011d59e0;
 
 // Constructs the manager: loads the CTL file, sizes coordinate arrays, creates the alpha property and default base/detail textures, and sets DAT_011d59e0.
 // @fnv 0x00650ea0
+// pdb: BSFaceGenManager::BSFaceGenManager | BSFaceGenManager.obj | retail, upstream name already matches, high
+// pdb locals: pdetailpixeldata, pdecalpixels, tempMemContext, pbasepixeldata, pbasepixels, pctl, i, j
 BSFaceGenManager::BSFaceGenManager()
     : m_spAlpha(0), m_spBaseTexture(0), m_spDetailTexture(0)
 {
@@ -1697,7 +1776,7 @@ BSFaceGenManager::BSFaceGenManager()
 
     m_spAlpha = new FaceGenAlphaProperty;
     m_spAlpha->SetFlag512(true);
-    m_spAlpha->SetFlags(4);
+    m_spAlpha->NiAlphaProperty_SetTestMode(4);
     m_spAlpha->NiAlphaProperty_SetTestRef(100);
 
     pbasepixeldata = new NiPixelData(32, 32, &gNiPoint3StartupSrc, 1, 1);
@@ -1726,6 +1805,8 @@ BSFaceGenManager::BSFaceGenManager()
 // Creates a BSFaceGenManager singleton into DAT_011d59e8 if it is not already set, under an AutoMemContext.
 // @fnv 0x006519f0
 // src: XBOX_PDB 0x006519f0
+// pdb: BSFaceGenManager::InitializeSystem | BSFaceGenManager.obj | retail, upstream name already matches, high
+// pdb locals: tempMemContext
 void BSFaceGenManager_InitializeSystem()
 {
     AutoMemContext context(static_cast<MEM_CONTEXT>(0x37), true,
@@ -1769,6 +1850,7 @@ struct FUN_00651450
 
 // Initializes the object by setting the initialized flag to false; the member arrays are default-constructed.
 // @fnv 0x00651450
+// pdb: FanGenCtlsGrpC::FanGenCtlsGrpC | BSFaceGenManager.obj | debug, call graph, high
 FUN_00651450::FUN_00651450() : initialized(false)
 {}
 }  // namespace fnv_00651450
@@ -1804,6 +1886,8 @@ void BSFaceGenManager_UnlockFaceGenAccess();
 
 // Calls FUN_00652140, iterates positions from map, clears texture data on each model found, then calls FUN_00652190.
 // @fnv 0x00651e70
+// pdb: BSFaceGenModelMap::ClearEGTData | BSFaceGenManager.obj | debug, object-file gap fill, medium
+// pdb locals: iterator, spentry, pkey, pm
 void FGManagerView::ClearModelTextures()
 {
     BSFaceGenManager_LockFaceGenAccess();
@@ -1836,7 +1920,10 @@ struct FaceGenImpl
 // Checks that the FaceGen manager and its impl exist, then forwards param_1 to impl->FUN_00650480 and returns its result.
 // @fnv 0x00651f70
 // src: COMMUNITY 0x00651f70
-bool BSFaceGenManager_LoadEGMData(int aiArg)
+// pdb: BSFaceGenManager::LoadEGMData | BSFaceGenManager.obj | retail, upstream name already matches, high
+// pdb params: apModel
+// pdb locals: tempMemContext
+bool BSFaceGenManager_LoadEGMData(int apModel)
 {
     lc1::AutoMemContext ctx(
         0x38, true, "D:\\_Fallout3\\Platforms\\Common\\Code\\Fallout Shared\\FaceGen\\BSFaceGenManager.cpp", 0x44c);
@@ -1844,7 +1931,7 @@ bool BSFaceGenManager_LoadEGMData(int aiArg)
         return false;
     if (!reinterpret_cast<FaceGenImpl*>(DAT_011d59e8->m_pModelCache))
         return false;
-    return reinterpret_cast<FaceGenImpl*>(DAT_011d59e8->m_pModelCache)->BSFaceGenModelMap_LoadEGMData(aiArg);
+    return reinterpret_cast<FaceGenImpl*>(DAT_011d59e8->m_pModelCache)->BSFaceGenModelMap_LoadEGMData(apModel);
 }
 }  // namespace fnv_00651f70
 
@@ -1860,7 +1947,10 @@ struct FaceGenImpl
 // Checks that the FaceGen manager and its implementation exist, then forwards param_1 to the implementation's TouchCachedModel and returns its result.
 // @fnv 0x00652040
 // src: COMMUNITY 0x00652040
-bool BSFaceGenManager_LoadEGTData(int aiArg)
+// pdb: BSFaceGenManager::LoadEGTData | BSFaceGenManager.obj | retail, upstream name already matches, high
+// pdb params: apModel
+// pdb locals: tempMemContext
+bool BSFaceGenManager_LoadEGTData(int apModel)
 {
     lc1::AutoMemContext ctx(
         0x39, true, "D:\\_Fallout3\\Platforms\\Common\\Code\\Fallout Shared\\FaceGen\\BSFaceGenManager.cpp", 0x45a);
@@ -1868,7 +1958,7 @@ bool BSFaceGenManager_LoadEGTData(int aiArg)
         return false;
     if (!reinterpret_cast<FaceGenImpl*>(DAT_011d59e8->m_pModelCache))
         return false;
-    return reinterpret_cast<FaceGenImpl*>(DAT_011d59e8->m_pModelCache)->TouchCachedModel(aiArg);
+    return reinterpret_cast<FaceGenImpl*>(DAT_011d59e8->m_pModelCache)->TouchCachedModel(apModel);
 }
 }  // namespace fnv_00652040
 
@@ -1883,6 +1973,9 @@ int _sprintf_s(char*, unsigned int, const char*, ...);
 extern const char* DAT_0119b734[2];
 
 // @fnv 0x00653520
+// pdb: BSFaceGenManager::GetAsEGMFile | BSFaceGenManager.obj | retail, string-set bridge, high
+// pdb params: aOutFilename, apModel, aeHairPart
+// pdb locals: porigFilename, pfinalFilename, pextension
 const char* BuildEgmFilename(BSStringT<char>* aOutFilename, const char* apModel, int aeHairPart)
 {
     char porigFilename[260];
@@ -1915,6 +2008,9 @@ extern int sprintf_s(char*, unsigned int, const char*, ...);
 extern char* __cdecl strrchr_0040ab30(char*, int);
 
 // @fnv 0x006537d0
+// pdb: BSFaceGenManager::GetAsEGTFile | BSFaceGenManager.obj | retail, string-set bridge, high
+// pdb params: aOutFilename, apModel
+// pdb locals: porigFilename, pfinalFilename, pextension
 const char* __cdecl GetModelEgtFilename(BSStringT<char>* aOutFilename, const char* apModel)
 {
     char porigFilename[260];
@@ -1943,6 +2039,7 @@ struct NPX
 // Returns the value stored at offset 0x1198 of DAT_011d59e8, or 0 when DAT_011d59e8 is null.
 // @fnv 0x00655270
 // src: XBOX_PDB 0x00655270
+// pdb: BSFaceGenManager::GetHairTeethAlphaProperty | BSFaceGenManager.obj | retail, upstream name already matches, high
 unsigned int __cdecl BSFaceGenManager_GetHairTeethAlphaProperty()
 {
     return (unsigned int)(DAT_011d59e8 ? *reinterpret_cast<NPX*>(&DAT_011d59e8->m_spAlpha) : NPX(0));
@@ -2016,15 +2113,19 @@ struct ArchiveManager
 
 
 const char* __cdecl BuildEgmFilename(BSStringT<char>* apOut, const char* apModel, int aePart);
-const char* __cdecl BuildTriPathAndSet(BSStringT<char>* apOut, const char* apModel, int aePart);
-BSFaceGenModel* __cdecl GetOrCreateFaceGenModel(const char* apEGM, const char* apModel, const char* apTRI, int a4,
-                                                int a5, int aePart, int a7);
+const char* __cdecl BuildTriPathAndSet(BSStringT<char>* aOutFilename, const char* apModel, int aeHairPart);
+BSFaceGenModel* __cdecl GetOrCreateFaceGenModel(const char* apEGMFilename, const char* apNIFFilename, const char* apTRIFilename, int apEGTFilename,
+                                                int abAllowCreate, int aeHairPart, int abIsAccessory);
 void __cdecl BSFaceGenManager_ApplyHairMorph(NiTriBasedGeom* apShape, float afLength);
 NiObject* __cdecl BSFaceGenManager_GetHairTeethAlphaProperty();
 
 
 // @fnv 0x00655320
-void BuildHairFaceGenNodes(BSFaceGenNiNode** apOutNodeBiped, BSFaceGenNiNode** apOutNodeSkinned, FaceGenData* aNpcData,
+// src: XBOX_DEBUG_PDB 0x00655320
+// pdb: BSFaceGenManager::AttachHairToHead | BSFaceGenManager.obj | debug, call graph, high
+// pdb params: apOutNodeBiped, apOutNodeSkinned, aNpcData, abForceNoSkinning
+// pdb locals: filename, sptexBase, spshape, fileFIM, tempMemContext, matrot, fileEGT, fileTRI, fileEGM, ehairPart, pegm, pmodelFG, ptri, tempHairName, pshaderprop, pprop
+void BSFaceGenManager_AttachHairToHead(BSFaceGenNiNode** apOutNodeBiped, BSFaceGenNiNode** apOutNodeSkinned, FaceGenData* aNpcData,
                            bool abForceNoSkinning)
 {
     lc1::AutoMemContext tempMemContext(
@@ -2074,7 +2175,7 @@ void BuildHairFaceGenNodes(BSFaceGenNiNode** apOutNodeBiped, BSFaceGenNiNode** a
                     ((NiTriBasedGeom*)spshape)->FUN_00450f90(true);
                 char tempHairName[32];
                 ((NiObjectNET*)(NiTriBasedGeom*)spshape)
-                    ->SetName(NiFixedString(static_cast<const char*>(BSFaceGenManager::BuildFaceGenPartPath(tempHairName, ehairPart))));
+                    ->SetName(NiFixedString(static_cast<const char*>(BSFaceGenManager::GetHairName(tempHairName, ehairPart))));
                 BSFaceGenManager_ApplyHairMorph(spshape, *(float*)((char*)aNpcData + 0x88));
                 filename.PrintfString("Textures\\%s",
                                  ((FNStub*)((char*)*(TESHair**)((char*)aNpcData + 0x80) + 0x3c))->GetFullName());
@@ -2177,6 +2278,9 @@ const char* __cdecl BuildTriPathAndSet(BSStringT<char>&, const char*, int);
 
 // Builds the left and right eye geometry from the NPC's eye models, applies the eye texture, and attaches each shape to the biped or skinned node.
 // @fnv 0x006558b0
+// pdb: BSFaceGenManager::AttachEyesToHead | BSFaceGenManager.obj | debug, object-file gap fill, medium
+// pdb params: apOutNodeBiped, apOutNodeSkinned, aNpcData, abForceNoSkinning
+// pdb locals: filename, sptexBase, spshape, pmodelFG, fileFIM, tempMemContext, matrot, fileEGT, fileTRI, fileEGM, pshaderprop, pprop
 void __cdecl CreateEyeGeometry(BSFaceGenNiNode** apOutNodeBiped, BSFaceGenNiNode** apOutNodeSkinned,
                                FaceGenData* aNpcData, bool abForceNoSkinning)
 {
@@ -2330,6 +2434,9 @@ int __fastcall FUN_0049ec60(NiAVObject*);
 
 // @fnv 0x00653340
 // src: COMMUNITY 0x00653340
+// pdb: BSFaceGenManager::RefreshMeshFromBaseMorphExtraData | BSFaceGenManager.obj | retail, call graph, medium
+// pdb params: apGeom, arIterator
+// pdb locals: pmorphBase, iter, pdest, istride, psrc, uivertexCount, i, vvertexData
 void BSFaceGenUtils_RefreshMeshFromBaseMorphExtraData(NiAVObject* apGeom, NiPoint3* apPoint)
 {
     NiExtraData* base = fnv_00653340::GetExtraDataIfPresent(apGeom);
@@ -2397,6 +2504,9 @@ unsigned int __cdecl gm_GetTickCount();
 
 // @fnv 0x0064ffd0
 // src: COMMUNITY 0x0064ffd0
+// pdb: BSFaceGenModelMap::SetAt | BSFaceGenManager.obj | retail, upstream name already matches, high
+// pdb params: apcKey, apModel
+// pdb locals: spentry
 void FGModelCache::BSFaceGenModelMap_SetAt(const char* apcKey, void* apModel)
 {
     BSFaceGenManager_LockFaceGenAccess();
@@ -2442,6 +2552,9 @@ struct BSFaceGenModelMap_t
 // Looks up apKey in the model map, retries with a .egm extension if missing, and returns true when an entry is found.
 // @fnv 0x00650780
 // src: COMMUNITY 0x00650780
+// pdb: BSFaceGenModelMap::KillModelTextureData | BSFaceGenManager.obj | retail, string-set bridge, high
+// pdb params: apKey
+// pdb locals: spentry, bres, pext, ptemp
 bool BSFaceGenModelMap_t::BSFaceGenModelMap_KillModelTextureData(const char* apKey)
 {
     if (!apKey || !*apKey)
@@ -2489,12 +2602,15 @@ unsigned int __fastcall BSFaceGenModel_GetEGTDataSize(unsigned int);
 struct BSFaceGenModelMap_t : Dummy_00650910
 {
     void BSFaceGenModelMap_VerifyData(void* aspNewEntry);
-    unsigned int GetModelValueSum(unsigned int);
+    unsigned int BSFaceGenModelMap_GetTotalDataSize(unsigned int);
     void BSFaceGenModelMap_FreeLRUData(unsigned int, void*);
 };
 
 // @fnv 0x00650ba0
 // src: COMMUNITY 0x00650ba0
+// pdb: BSFaceGenModelMap::VerifyData | BSFaceGenManager.obj | retail, upstream name already matches, high
+// pdb params: aspNewEntry
+// pdb locals: size, cnt, totalSizePrev, totalSize
 void BSFaceGenModelMap_t::BSFaceGenModelMap_VerifyData(void* aspNewEntry)
 {
     unsigned int size;
@@ -2523,12 +2639,12 @@ void BSFaceGenModelMap_t::BSFaceGenModelMap_VerifyData(void* aspNewEntry)
                 size = 0;
             }
         }
-        totalSize = totalSizePrev = GetModelValueSum(cnt);
+        totalSize = totalSizePrev = BSFaceGenModelMap_GetTotalDataSize(cnt);
         while (totalSize + size > GetArrayElement(cnt))
         {
             totalSizePrev = totalSize;
             BSFaceGenModelMap_FreeLRUData(cnt, aspNewEntry);
-            totalSize = GetModelValueSum(cnt);
+            totalSize = BSFaceGenModelMap_GetTotalDataSize(cnt);
             if (totalSize == totalSizePrev)
                 break;
         }
@@ -2576,6 +2692,8 @@ struct FUN_00651830
 };
 
 // @fnv 0x00651830
+// pdb: FanLinCtlGrpS::~FanLinCtlGrpS | BSFaceGenManager.obj | retail, object-file run extension, low
+// pdb note: debug build links it to FanGenCtlsGrpC::~FanGenCtlsGrpC
 FUN_00651830::~FUN_00651830()
 {}
 }  // namespace fnv_00651830
@@ -2584,6 +2702,9 @@ namespace fnv_00652900 {
 
 // @fnv 0x00652900
 // src: COMMUNITY 0x00652900
+// pdb: BSFaceGenManager::RandomizeFaceGenetic | BSFaceGenManager.obj | retail, object-file run extension, low
+// pdb note: debug build links it to BSFaceGenManager::CompareFaceGenCoord
+// pdb params: afVariation, apBaseFaceCoord, apOutCoord
 bool BSFaceGenManager_CompareFaceGenCoord(const FaceGenMatrix<float> (*apCoord1)[2], FaceGenMatrix<float> (*apCoord2)[2])
 {
     int etype;
@@ -2624,6 +2745,9 @@ char* __cdecl strrchr_0040ab30(char*, int);
 int _sprintf_s(char*, unsigned int, const char*, ...);
 
 // @fnv 0x00653620
+// pdb: BSFaceGenManager::GetAsNIFFile | BSFaceGenManager.obj | retail, object-file gap fill, high
+// pdb params: aOutFilename, apModel
+// pdb locals: porigFilename, pfinalFilename, pextension
 unsigned int GetModelNifFilename(BSStringT<char>& aOutFilename, const char* apModel)
 {
     char porigFilename[260];
@@ -2663,6 +2787,9 @@ struct ArchiveManager
 
 // @fnv 0x00653880
 // src: XBOX_PDB 0x00653880
+// pdb: BSFaceGenManager::GetAsNearestDetailDDSFile | BSFaceGenManager.obj | retail, upstream name already matches, high
+// pdb params: aOutFilename, aeSex, acAge, apModel
+// pdb locals: porigFilename, iage, cgender, pextension
 unsigned int BSFaceGenManager_GetAsNearestDetailDDSFile(BSStringT<char>& aOutFilename, int aeSex, unsigned char acAge, const char* apModel)
 {
     char porigFilename[260];
@@ -2711,6 +2838,10 @@ char* __cdecl strrchr_0040ab30(char*, int);
 int _sprintf_s(char*, unsigned int, const char*, ...);
 
 // @fnv 0x00653c40
+// pdb: FR2MatrixVTC<float>::operator+= | BSFaceGenManager.obj | retail, object-file run extension, low
+// pdb note: debug build links it to BSFaceGenManager::GetAsNIFFileHighLOD
+// pdb params: m
+// pdb locals: dptr, md
 unsigned int BuildModelFilename(BSStringT<char>& aOutFilename, const char* apModel)
 {
     char porigFilename[260];
@@ -2732,9 +2863,11 @@ unsigned int BuildModelFilename(BSStringT<char>& aOutFilename, const char* apMod
 void __cdecl _FNV_Warning(const char* apFormat, ...);
 
 // @fnv 0x00aafb90
-void __cdecl ReportAssertionViolation(const char* apSource, int aiLine)
+// pdb: fr2Assert | assert.obj | debug, unique string literal, high
+// pdb params: fname, line
+void __cdecl ReportAssertionViolation(const char* fname, int line)
 {
-    _FNV_Warning("DEFAULT: FR2 ASSERT violation in %s line %i. Code may crash.", apSource, aiLine);
+    _FNV_Warning("DEFAULT: FR2 ASSERT violation in %s line %i. Code may crash.", fname, line);
 }
 
 namespace fnv_006536d0 {
@@ -2752,31 +2885,34 @@ char* __cdecl strrchr_0040ab30(char*, int);
 
 // Strips the extension from path, builds a .tri path (with a suffix for index 0 or 1), stores it in str and returns its value.
 // @fnv 0x006536d0
-unsigned int __cdecl BuildTriPathAndSet(BSStringT<char>* str, const char* path, int index)
+// pdb: BSFaceGenManager::GetAsTRIFile | BSFaceGenManager.obj | retail, string-set bridge, high
+// pdb params: aOutFilename, apModel, aeHairPart
+// pdb locals: porigFilename, pfinalFilename, pextension
+unsigned int __cdecl BuildTriPathAndSet(BSStringT<char>* aOutFilename, const char* apModel, int aeHairPart)
 {
     char szBase[260];
     char szFull[260];
     char* pExt2 = 0;
 
-    if (!path)
+    if (!apModel)
         return 0;
-    TaskQueueInterface::CopyStringToBuffer(szBase, 260, path);
+    TaskQueueInterface::CopyStringToBuffer(szBase, 260, apModel);
     pExt2 = strrchr_0040ab30(szBase, 46);
     if (!pExt2)
         return 0;
     *pExt2 = 0;
-    switch (index)
+    switch (aeHairPart)
     {
     case 0:
     case 1:
-        _sprintf_s(szFull, 260, "%s%s.tri", szBase, DAT_0119b734[index]);
+        _sprintf_s(szFull, 260, "%s%s.tri", szBase, DAT_0119b734[aeHairPart]);
         break;
     default:
         _sprintf_s(szFull, 260, "%s.tri", szBase);
         break;
     }
-    str->Set(szFull, 0);
-    return (unsigned int)static_cast<const char*>(*str);
+    aOutFilename->Set(szFull, 0);
+    return (unsigned int)static_cast<const char*>(*aOutFilename);
 }
 }  // namespace fnv_006536d0
 
@@ -2789,10 +2925,12 @@ extern unsigned int __fastcall std_vector_FanLinCtlS_std_allocator_FanLinCtlS_si
 
 // Indexes into the face gen manager's array at offset 0xb8 by a*0x30+b*0x18, calls FUN_00657a30 on that entry and returns the result minus one.
 // @fnv 0x006521b0
-// src: GUESS 0x006521b0 (confidence: medium)
-unsigned int __cdecl BSFaceGenManager_GetFaceGenManagerVectorSize(int a, int b)
+// src: XBOX_DEBUG_PDB 0x006521b0
+// pdb: BSFaceGenManager::GetMaxControlID | BSFaceGenManager.obj | debug, call graph, high
+// pdb params: aeFanType, aeFanSymm
+unsigned int __cdecl BSFaceGenManager_GetMaxControlID(int aeFanType, int aeFanSymm)
 {
-    return std_vector_FanLinCtlS_std_allocator_FanLinCtlS_size(reinterpret_cast<const _vec_60*>(&BSFaceGenManager::GetFaceGenManager()->m_kCtls.ctl[a][b])) -
+    return std_vector_FanLinCtlS_std_allocator_FanLinCtlS_size(reinterpret_cast<const _vec_60*>(&BSFaceGenManager::GetFaceGenManager()->m_kCtls.ctl[aeFanType][aeFanSymm])) -
            1;
 }
 }  // namespace fnv_006521b0
@@ -2801,16 +2939,18 @@ unsigned int __cdecl BSFaceGenManager_GetFaceGenManagerVectorSize(int a, int b)
 struct FUN_007b3810Class
 {
     Tile* m_tile;
-    void RaceSexMenu_MenuOption_SetDisplay(const char* a1);
+    void RaceSexMenu_MenuOption_SetDisplay(const char* apDisplay);
 };
 
 // If m_tile and a1 are non-null, calls m_tile->Set with id 0x1009, the string a1 and true.
 // @fnv 0x007b3810
 // src: COMMUNITY 0x007b3810
-void FUN_007b3810Class::RaceSexMenu_MenuOption_SetDisplay(const char* a1)
+// pdb: RaceSexMenu::MenuOption::SetDisplay | RaceSexMenu.obj | debug, upstream name already matches, high
+// pdb params: apDisplay
+void FUN_007b3810Class::RaceSexMenu_MenuOption_SetDisplay(const char* apDisplay)
 {
-    if (m_tile && a1)
-        m_tile->Set(0x1009, a1, true);
+    if (m_tile && apDisplay)
+        m_tile->Set(0x1009, apDisplay, true);
 }
 
 namespace fnv_00651650 {
@@ -2830,10 +2970,12 @@ struct FUN_00aac170_This
 };
 // @fnv 0x006524e0
 // src: COMMUNITY 0x006524e0
-void __cdecl BSFaceGenManager_SetFaceCoordAttributes(int aiArg4, int aiArg2, int aiArg3)
+// pdb: BSFaceGenManager::SetFaceCoordAttributes | BSFaceGenManager.obj | debug, upstream name already matches, high
+// pdb params: apCoord, aeFanType, afValues
+void __cdecl BSFaceGenManager_SetFaceCoordAttributes(int apCoord, int aeFanType, int afValues)
 {
     reinterpret_cast<FUN_00aac170_This*>(&BSFaceGenManager::GetFaceGenManager()->m_kModels)
-        ->FanGenCtlsGrpC_setAttributes(0, aiArg2, aiArg3, aiArg4);
+        ->FanGenCtlsGrpC_setAttributes(0, aeFanType, afValues, apCoord);
 }
 
 struct FUN_0065e000_class
@@ -2882,6 +3024,9 @@ void __cdecl BSFaceGenManager_SetFaceCoordAttributes(int, int, int);
 // Reads both fan attribute values for a coordinate and fan type, overrides the selected attribute with afValue, then applies the pair.
 // @fnv 0x00652470
 // src: COMMUNITY 0x00652470
+// pdb: BSFaceGenManager::SetFaceCoordAttribute | BSFaceGenManager.obj | retail, upstream name already matches, high
+// pdb params: apCoord, aeFanAttribute, aeFanType, afValue
+// pdb locals: values, i
 void BSFaceGenManager_SetFaceCoordAttribute(int apCoord, int aeFanAttribute, int aeFanType, float afValue)
 {
     int i;
@@ -2902,6 +3047,7 @@ extern GO DAT_011f9510;
 
 // @fnv 0x00656db0
 // src: COMMUNITY 0x00656db0
+// pdb: BSShaderManager::GetDefaultNormalMap | BSFaceGenManager.obj | debug, call graph, medium
 unsigned int BSShader_GetDefNormalMap()
 {
     return DAT_011f9510.operator unsigned int();
@@ -2915,6 +3061,7 @@ struct Target
     Target* FUN_0064fde0(unsigned int flags);
 };
 // @fnv 0x0064fde0
+// pdb: BSFaceGenModelMap::`scalar deleting destructor' | BSFaceGenManager.obj | retail, vtable slot, high
 Target* Target::FUN_0064fde0(unsigned int flags)
 {
     FUN_0064fe10();
@@ -2978,6 +3125,9 @@ struct FaceGenModelCacheX
 
 // Looks up the entry for the key's primary or secondary name, refreshes its tick, moves it to the front, touches its model and marks the cache changed.
 // @fnv 0x00650630
+// pdb: BSFaceGenModelMap::LoadEGTData | BSFaceGenManager.obj | debug, call graph, medium
+// pdb params: apModel
+// pdb locals: spentry, bres
 bool FaceGenModelCacheX::TouchCachedModel(FGModelKey* apKey)
 {
     ModelPtr<FaceGenCacheEntry> spEntry(0);
@@ -3056,6 +3206,8 @@ struct FaceGenModelCache650
 };
 
 // @fnv 0x00650a30
+// pdb: BSFaceGenModelMap::UnloadAllEGMAndEGTData | BSFaceGenManager.obj | debug, call graph, medium
+// pdb locals: bskippedfree, spentry, tempAutoEvent, pkey, iter
 void FaceGenModelCache650::PurgeUnusedModels(bool abForce)
 {
     unsigned int uiKey4 = 0;
@@ -3124,13 +3276,16 @@ struct FGCache650
 {
     int unk00;
     FGMap650 kMap;
-    void BSFaceGenModelMap_FreeLRUData(int aeType, FGEntry650* apExclude);
+    void BSFaceGenModelMap_FreeLRUData(int aDataType, FGEntry650* aspNewEntry);
 };
 
 // Scans the map for an entry whose model reports unused for the given type, picks the one with the oldest uiLastUsed, releases it, and returns nothing.
 // @fnv 0x00650cb0
 // src: COMMUNITY 0x00650cb0
-void FGCache650::BSFaceGenModelMap_FreeLRUData(int aeType, FGEntry650* apExclude)
+// pdb: BSFaceGenModelMap::FreeLRUData | BSFaceGenManager.obj | retail, upstream name already matches, high
+// pdb params: aDataType, aspNewEntry
+// pdb locals: spentry, dataSize, pLRUkey, curTime, pkey, iter, spLRU
+void FGCache650::BSFaceGenModelMap_FreeLRUData(int aDataType, FGEntry650* aspNewEntry)
 {
     void* pKey = 0;
     void* pBestKey9 = 0;
@@ -3143,9 +3298,9 @@ void FGCache650::BSFaceGenModelMap_FreeLRUData(int aeType, FGEntry650* apExclude
     while (pPosVal)
     {
         kMap.GetNext(pPosVal, pKey, _spEntry);
-        if (_spEntry == apExclude)
+        if (_spEntry == aspNewEntry)
             continue;
-        switch (aeType)
+        switch (aDataType)
         {
         case 0:
             uiUnused8 = ((FGModel650*)((FGEntry650*)_spEntry)->m_pRenderedNodeEntry)->IsUnusedA();
@@ -3172,7 +3327,7 @@ void FGCache650::BSFaceGenModelMap_FreeLRUData(int aeType, FGEntry650* apExclude
     }
     if ((FGEntry650*)spBest2)
     {
-        switch (aeType)
+        switch (aDataType)
         {
         case 0:
             ((FGModel650*)((FGEntry650*)spBest2)->m_pRenderedNodeEntry)->ReleaseA();
@@ -3219,12 +3374,14 @@ struct FUN_00651810_cls
 };
 
 // @fnv 0x00651810
+// pdb: FanLinCtlGrpS::~FanLinCtlGrpS | BSFaceGenManager.obj | debug, call graph, medium
 FUN_00651810_cls::~FUN_00651810_cls()
 {}
 
 // If DAT_011d59e8 is set, deletes it and then clears DAT_011d59e8.
 // @fnv 0x00651ab0
 // src: COMMUNITY 0x00651ab0
+// pdb: BSFaceGenManager::DestroySystem | BSFaceGenManager.obj | retail, upstream name already matches, high
 void __cdecl BSFaceGenManager_DestroySystem()
 {
     if (DAT_011d59e8 != 0)
@@ -3303,7 +3460,7 @@ struct FG652_Applier
 {
     void ApplyMorphs(FaceGenMatrix<float>*, void*, int);
 };
-void* __cdecl GetGeomExtraData(void*);
+void* __cdecl BSFaceGenManager_GetFaceGenModelExtraData(void*);
 struct FG652_List
 {
     struct FG652_Name* FUN_00726070();
@@ -3386,7 +3543,7 @@ struct FG652_NPC
     void* FUN_005f0cc0();
     void* FUN_00601800(int);
 };
-float __cdecl GetMorphCoordinateValue(FaceGenMatrix<float>*, int, int, int);
+float __cdecl BSFaceGenManager_GetFaceCoordValue(FaceGenMatrix<float>*, int, int, int);
 void __cdecl BSFaceGenManager_SetFaceCoordValue(FaceGenMatrix<float>*, int, int, int, float);
 void __cdecl BSFaceGenManager_OffsetFaceGenCoord(void*, void*, void*, void*);
 extern int DAT_011d59f0;
@@ -3516,6 +3673,9 @@ struct FG652_Actor
 
 // @fnv 0x00652510
 // src: COMMUNITY 0x00652510
+// pdb: BSFaceGenManager::CycleFaceGenCoordValue | BSFaceGenManager.obj | retail, upstream name already matches, high
+// pdb params: apActor
+// pdb locals: newcoord, pnpc, val, oldcoord, proot, pfacenode, pobj, diffcoord, a, isizeArray, ichild, pfaceobj, pfgmodel, ptri, pmodelExtraData
 void BSFaceGenManager_CycleFaceGenCoordValue(FG652_Actor* apActor)
 {
     FG652_NPC* pNPC4 = apActor->BGSSaveFormBuffer_GetForm();
@@ -3526,7 +3686,7 @@ void BSFaceGenManager_CycleFaceGenCoordValue(FG652_Actor* apActor)
     FaceGenMatrix<float> kC3[4];
     pNPC4->FUN_00603ad0(kA);
     pNPC4->FUN_00603ad0(kB9);
-    float fAge8 = GetMorphCoordinateValue(kA, 0, 0, DAT_011d59f0);
+    float fAge8 = BSFaceGenManager_GetFaceCoordValue(kA, 0, 0, DAT_011d59f0);
     if (DAT_011d59e1)
     {
         fAge8 += (double)0.1f;
@@ -3551,7 +3711,7 @@ void BSFaceGenManager_CycleFaceGenCoordValue(FG652_Actor* apActor)
             void* aPGeom = pChild4 ? pChild4->GetGeom() : 0;
             if (!aPGeom)
                 continue;
-            FG652_ED* pED4 = (FG652_ED*)GetGeomExtraData(aPGeom);
+            FG652_ED* pED4 = (FG652_ED*)BSFaceGenManager_GetFaceGenModelExtraData(aPGeom);
             FG652_Applier* pApp3 = pED4 ? pED4->GetApplier() : 0;
             if (!pApp3)
                 continue;
@@ -3575,6 +3735,9 @@ struct MatrixProxy
 };
 // @fnv 0x00652e00
 // src: COMMUNITY 0x00652e00
+// pdb: BSFaceGenManager::OffsetFaceGenCoord | BSFaceGenManager.obj | retail, upstream name already matches, high
+// pdb params: apCopyCoordOld, apCopyCoordNew, apCopyToCoord, abNoTextureOffset
+// pdb locals: etype, esymm, icols, irows, isize, i, f1, f2
 void BSFaceGenManager_OffsetFaceGenCoord(MatrixProxy (*a)[2], MatrixProxy (*b)[2], MatrixProxy (*out)[2], bool copy)
 {
     if (!a || !b || !out)
@@ -3619,15 +3782,18 @@ struct FaceModelExtraDataDispatch
 {
     void** vtable;
 };
-extern "C" FaceModelExtraDataDispatch* __cdecl GetGeomExtraData(void*);
+extern "C" FaceModelExtraDataDispatch* __cdecl BSFaceGenManager_GetFaceGenModelExtraData(void*);
 extern "C" NiNode* __cdecl GetHandleObject(void*);
 typedef FaceModelExtraDataDispatch*(__thiscall* FUN_00653120_vfunc_type)(FaceModelExtraDataDispatch*);
 typedef NiNode*(__thiscall* FUN_00653180_type)(void*);
 // Resolves apGeom to an object, calls its vtable slot at 0x94, and returns the resulting node or null.
 // @fnv 0x00653120
+// pdb: BSFaceGenManager::GetFaceGenMorphData | BSFaceGenManager.obj | debug, object-file gap fill, medium
+// pdb params: apGeom
+// pdb locals: pextra
 NiNode* __cdecl GetNodeFromGeometry(void* apGeom)
 {
-    FaceModelExtraDataDispatch* pNode = GetGeomExtraData(apGeom);
+    FaceModelExtraDataDispatch* pNode = BSFaceGenManager_GetFaceGenModelExtraData(apGeom);
     NiNode* pObject;
     if (pNode != 0 && ((FUN_00653120_vfunc_type)pNode->vtable[0x94 / 4])(pNode) != 0)
     {
@@ -3682,12 +3848,13 @@ class FUN_006579d0 : public B6579D0Base
 };
 
 // @fnv 0x006579d0
+// pdb: std::vector<FanLinCtlS,std::allocator<FanLinCtlS> >::vector<FanLinCtlS,std::allocator<FanLinCtlS> > | BSFaceGenManager.obj | debug, object-file run extension, low
 FUN_006579d0::~FUN_006579d0()
 {
     Clear();
 }
 
-void __cdecl ReportAssertionViolation(const char* apSource, int aiLine);
+void __cdecl ReportAssertionViolation(const char* fname, int line);
 
 struct MatIter
 {
@@ -3730,6 +3897,9 @@ struct FgMatrixVT
 // Asserts matching dimensions, then returns a new matrix whose elements are the element-wise sum of this matrix and other.
 // @fnv 0x00658500
 // src: GUESS 0x00658500 (confidence: medium)
+// pdb: FR2MatrixVTC<float>::operator+ | BSFaceGenManager.obj | debug, object-file run extension, low
+// pdb params: m
+// pdb locals: d1, newMat, d2, nd
 FgMatrixVT FgMatrixVT::AddMatrixElements(const FgMatrixVT& other) const
 {
     (m_uiRowCount == other.m_uiRowCount && m_uiColumnCount == other.m_uiColumnCount)
@@ -3824,6 +3994,8 @@ struct FUN_0065c490_cls
 // Sums a base 0x34 plus per-range counts times 0x58 and per-item values times 3 across two ranges, returning the total.
 // @fnv 0x0065c490
 // src: COMMUNITY 0x0065c490
+// pdb: BSFaceGenModel::GetEGTDataSize | BSFaceGenModel.obj | debug, upstream name already matches, high
+// pdb locals: cnt2, size, cnt
 unsigned int FUN_0065c490_cls::BSFaceGenModel_GetEGTDataSize()
 {
     unsigned int i;
@@ -3854,7 +4026,7 @@ struct FUN_006516a0_class
 // src: GUESS 0x006516a0 (confidence: low)
 void FUN_006516a0_class::ForwardCall_006516a0()
 {
-    FUN_0065ee50_Helper(this, 0x20, 2, FUN_dtor);
+    FUN_0065ee50_Helper(this, 0x20, 2, FR2MatrixVTC_float_dtor);
 }
 
 struct FaceGenVectorMember
@@ -3886,6 +4058,7 @@ struct FUN_00651760
 
 // Destructor for a structure holding four FaceGenMatrix<float> entries, a FaceGenVectorMember and a FaceGenFinalMember.
 // @fnv 0x00651760
+// pdb: FanFgFileDataS::~FanFgFileDataS | BSFaceGenManager.obj | debug, call graph, medium
 FUN_00651760::~FUN_00651760()
 {}
 
@@ -3906,7 +4079,7 @@ struct FanCtl652
     int unk30;
     int unk34;
     int unk38;
-    FaceGenMatrix<float> GetMatrix() const;
+    FaceGenMatrix<float> FR2MatrixVTC_float_transpose() const;
 };
 struct FanVec652
 {
@@ -3921,16 +4094,19 @@ struct FanVec652
 };
 // @fnv 0x00652320
 // src: COMMUNITY 0x00652320
-void __cdecl BSFaceGenManager_SetFaceCoordValue(FaceGenMatrix<float>* apMat, int aeAttr, int aeType, int aiIndex, float afValue)
+// pdb: BSFaceGenManager::SetFaceCoordValue | BSFaceGenManager.obj | retail, upstream name already matches, high
+// pdb params: apCoord, aeFanType, aeFanSymm, aiCtrlID, afValue
+// pdb locals: fcurrpos, fdelta
+void __cdecl BSFaceGenManager_SetFaceCoordValue(FaceGenMatrix<float>* apCoord, int aeFanType, int aeFanSymm, int aiCtrlID, float afValue)
 {
-    if (apMat && (unsigned int)aiIndex <
-                     reinterpret_cast<FanVec652(*)[2]>(BSFaceGenManager::GetFaceGenManager()->m_kCtls.ctl)[aeAttr][aeType].size())
+    if (apCoord && (unsigned int)aiCtrlID <
+                     reinterpret_cast<FanVec652(*)[2]>(BSFaceGenManager::GetFaceGenManager()->m_kCtls.ctl)[aeFanType][aeFanSymm].size())
     {
-        float fOrig = GetMorphCoordinateValue(apMat, aeAttr, aeType, aiIndex);
+        float fOrig = BSFaceGenManager_GetFaceCoordValue(apCoord, aeFanType, aeFanSymm, aiCtrlID);
         float fChange = afValue - fOrig;
-        ((FaceGenMatrix<float>(*)[2])apMat)[aeAttr][aeType].Assign(
-            reinterpret_cast<FanVec652(*)[2]>(BSFaceGenManager::GetFaceGenManager()->m_kCtls.ctl)[aeAttr][aeType]
-                .at(aiIndex)->GetMatrix().Scaled(fChange));
+        ((FaceGenMatrix<float>(*)[2])apCoord)[aeFanType][aeFanSymm].Assign(
+            reinterpret_cast<FanVec652(*)[2]>(BSFaceGenManager::GetFaceGenManager()->m_kCtls.ctl)[aeFanType][aeFanSymm]
+                .at(aiCtrlID)->FR2MatrixVTC_float_transpose().Scaled(fChange));
     }
 }
 
@@ -3945,7 +4121,10 @@ char* __cdecl strchr(char* apStr, int aiChar);
 
 // @fnv 0x00653a10
 // src: COMMUNITY 0x00653a10
-const char* __cdecl BSFaceGenManager_GetAsNIFFileLowLOD(BSStringT<char>* aStr, const char* apModel)
+// pdb: BSFaceGenManager::GetAsNIFFileLowLOD | BSFaceGenManager.obj | retail, string-set bridge, high
+// pdb params: aOutFilename, apModel
+// pdb locals: porigFilename, pexists, pfinalFilename, pcheckFilename, pextension
+const char* __cdecl BSFaceGenManager_GetAsNIFFileLowLOD(BSStringT<char>* aOutFilename, const char* apModel)
 {
     BSStringT<char> iter;
     char* dot = 0;
@@ -3962,7 +4141,7 @@ const char* __cdecl BSFaceGenManager_GetAsNIFFileLowLOD(BSStringT<char>* aStr, c
     us = strchr(buf5, '_');
     if (us != 0)
     {
-        aStr->Set(buf5, 0);
+        aOutFilename->Set(buf5, 0);
         return apModel;
     }
     dot = strrchr_0040ab30(buf5, '.');
@@ -3970,15 +4149,15 @@ const char* __cdecl BSFaceGenManager_GetAsNIFFileLowLOD(BSStringT<char>* aStr, c
         return apModel;
     *dot = 0;
     sprintf_s(buf2, 0x104, "%s_50.NIF", buf5);
-    aStr->Set(buf2, 0);
-    iter.PrintfString("Meshes\\%s", (const char*)*aStr);
+    aOutFilename->Set(buf2, 0);
+    iter.PrintfString("Meshes\\%s", (const char*)*aOutFilename);
     _ref_006815c0(&hashA);
     _ref_006815c0((HPList*)&hashB);
     HashPathComponents(static_cast<const char*>(iter), &hashA, (HPList*)&hashB);
     r6 = FindFileEntryInArchives(0, &hashA, (HPList*)&hashB, static_cast<const char*>(iter));
     if (r6 == 0)
         return 0;
-    return *aStr;
+    return *aOutFilename;
 }
 
 namespace fnv_00654720 {
@@ -4270,11 +4449,14 @@ unsigned int NiMaterialProperty_GetType();
 NiFixedString* NiFixedString_GetDAT_011c6210_006041c0();
 FG547Property* NiObject_DynamicCast(const char*, FG547Property*);
 bool FUN_00605d20();
-void MatchGeometryVertices(FG547Node*, FG547Node*, float, int, int);
-void BuildHairFaceGenNodes(FG547Node**, FG547Node**, FG547Data*, bool);
+void FixNormals(FG547Node*, FG547Node*, float, int, int);
+void BSFaceGenManager_AttachHairToHead(FG547Node**, FG547Node**, FG547Data*, bool);
 void CreateEyeGeometry(FG547Node**, FG547Node**, FG547Data*, bool);
 
 // @fnv 0x00654720
+// pdb: BSFaceGenManager::CreateFaceGenHead | BSFaceGenManager.obj | debug, object-file gap fill, medium
+// pdb params: apOutNodeBiped, apOutNodeSkinned, arNpcData, abForceNoSkinning
+// pdb locals: plist, sptexBase, spshape, filename, pmodelFG, fileFIM, tempMemContext, pshapeEars, matrot, pshapeHead, fileEGT, fileTRI, fileLowLOD, fileEGM, ipart, pegtFileName, pshprop, pshadeprop, pppprop, pshaderprop, pprop, pmatprop
 bool __cdecl BuildCharacterParts(FG547Node** root, FG547Node** alternate, FG547Data* data, bool firstPerson)
 {
     AutoMemContext textureObject((MEM_CONTEXT)0x37, true, DAT_01065720, 0xa48);
@@ -4413,9 +4595,9 @@ bool __cdecl BuildCharacterParts(FG547Node** root, FG547Node** alternate, FG547D
         ((FG547PointerOps*)&accessory)->FUN_0066b0d0(0);
     }
     if (FUN_00605d20() && cached && fallbackPath)
-        MatchGeometryVertices(cached, fallbackPath, 0.10000000149f, 0, 0);
+        FixNormals(cached, fallbackPath, 0.10000000149f, 0, 0);
     if (data->unk80)
-        BuildHairFaceGenNodes(root, alternate, data, firstPerson);
+        BSFaceGenManager_AttachHairToHead(root, alternate, data, firstPerson);
     if (data->leftEye && data->rightEye)
         CreateEyeGeometry(root, alternate, data, firstPerson);
     FG547List* node = &data->accessories;
@@ -4552,14 +4734,17 @@ struct MxIter
     float& operator*() const;
 };
 
-void __cdecl ReportAssertionViolation(const char* msg, int line);
+void __cdecl ReportAssertionViolation(const char* fname, int line);
 
 
 // @fnv 0x006586c0
+// pdb: FR2MatrixVTC<float>::operator+= | BSFaceGenManager.obj | debug, call graph, high
+// pdb params: m
+// pdb locals: dptr, md
 template <>
-FaceGenMatrix<float>* FaceGenMatrix<float>::AddMatrix(FaceGenMatrix<float>* other)
+FaceGenMatrix<float>* FaceGenMatrix<float>::AddMatrix(FaceGenMatrix<float>* m)
 {
-    if (m_uiRowCount == other->m_uiRowCount && m_uiColumnCount == other->m_uiColumnCount)
+    if (m_uiRowCount == m->m_uiRowCount && m_uiColumnCount == m->m_uiColumnCount)
     {
     }
     else
@@ -4567,8 +4752,8 @@ FaceGenMatrix<float>* FaceGenMatrix<float>::AddMatrix(FaceGenMatrix<float>* othe
         ReportAssertionViolation("d:\\_fallout3\\platforms\\common\\code\\sdk\\facegen\\matrixVT.hpp", 0x24f);
     }
     MxIter a = begin();
-    MxConstIter b5 = other->EvaluateValue_0065fd10();
-    for (; a != end() && b5 != other->ProcessAndReturnValue_0065fd40(); a++, b5.ProcessAndReturnValue_00659100(0))
+    MxConstIter b5 = m->EvaluateValue_0065fd10();
+    for (; a != end() && b5 != m->ProcessAndReturnValue_0065fd40(); a++, b5.ProcessAndReturnValue_00659100(0))
     {
         *a += double(b5.ProcessEntries_0064dda0());
     }
@@ -4622,19 +4807,22 @@ float sqrt_004019b0(float);
 // For each of the 2x2 FaceGenMatrix<float> slots, combines a1 and a2 into a3 (or copies one source), optionally scaling the result when a5 is exceeded.
 // @fnv 0x00652af0
 // src: XBOX_PDB 0x00652af0
-void BSFaceGenManager_MergeFaceGenCoord(FaceGenMatrix<float> a1[2][2], FaceGenMatrix<float> a2[2][2], FaceGenMatrix<float> a3[2][2], bool a4, float a5)
+// pdb: BSFaceGenManager::MergeFaceGenCoord | BSFaceGenManager.obj | retail, upstream name already matches, high
+// pdb params: apCopyFromCoord1, apCopyFromCoord2, apCopyToCoord, abNoTextureMerge, afClampVal
+// pdb locals: etype, esymm, icols, irows, scale, isize, i, f1, f2
+void BSFaceGenManager_MergeFaceGenCoord(FaceGenMatrix<float> apCopyFromCoord1[2][2], FaceGenMatrix<float> apCopyFromCoord2[2][2], FaceGenMatrix<float> apCopyToCoord[2][2], bool abNoTextureMerge, float afClampVal)
 {
-    if (!a3 || (!a1 && !a2))
+    if (!apCopyToCoord || (!apCopyFromCoord1 && !apCopyFromCoord2))
         return;
 
-    if (!a1)
+    if (!apCopyFromCoord1)
     {
-        BSFaceGenManager_CopyFaceGenCoord(a2, a3, 0, 0);
+        BSFaceGenManager_CopyFaceGenCoord(apCopyFromCoord2, apCopyToCoord, 0, 0);
         return;
     }
-    else if (!a2)
+    else if (!apCopyFromCoord2)
     {
-        BSFaceGenManager_CopyFaceGenCoord(a1, a3, 0, 0);
+        BSFaceGenManager_CopyFaceGenCoord(apCopyFromCoord1, apCopyToCoord, 0, 0);
         return;
     }
 
@@ -4642,46 +4830,46 @@ void BSFaceGenManager_MergeFaceGenCoord(FaceGenMatrix<float> a1[2][2], FaceGenMa
     {
         for (int j = 0; j < 2; ++j)
         {
-            unsigned int var_c = a1[i][j].NiAVObject_GetParent();
-            unsigned int var_10 = a1[i][j].FUN_00441110();
+            unsigned int var_c = apCopyFromCoord1[i][j].NiAVObject_GetParent();
+            unsigned int var_10 = apCopyFromCoord1[i][j].FUN_00441110();
             if (var_c != 0 && var_10 != 0)
             {
-                a3[i][j].SetDimensions(var_c, var_10);
-                if (i == 1 && a4)
+                apCopyToCoord[i][j].SetDimensions(var_c, var_10);
+                if (i == 1 && abNoTextureMerge)
                 {
-                    a3[i][j].FUN_006581e0(&a1[i][j]);
-                    if (a5 > 0.0)
+                    apCopyToCoord[i][j].FUN_006581e0(&apCopyFromCoord1[i][j]);
+                    if (afClampVal > 0.0)
                     {
-                        float var_14 = sqrt_004019b0(a3[i][j].FUN_006588a0() / (float)var_c);
-                        if (var_14 > a5)
+                        float var_14 = sqrt_004019b0(apCopyToCoord[i][j].FUN_006588a0() / (float)var_c);
+                        if (var_14 > afClampVal)
                         {
-                            a3[i][j].ScaleAll(a5 / var_14);
+                            apCopyToCoord[i][j].ScaleAll(afClampVal / var_14);
                         }
                     }
                 }
                 else
                 {
                     unsigned int var_18 = var_c * var_10;
-                    a3[i][j].std_vector_float_std_allocator_float_clear();
+                    apCopyToCoord[i][j].std_vector_float_std_allocator_float_clear();
                     for (unsigned int k = 0; k < var_18; ++k)
                     {
-                        float sum = *a1[i][j].GetElementPointerChecked(k);
-                        float var_28 = *a2[i][j].GetElementPointerChecked(k);
-                        a3[i][j].PushBack(sum + var_28);
+                        float sum = *apCopyFromCoord1[i][j].GetElementPointerChecked(k);
+                        float var_28 = *apCopyFromCoord2[i][j].GetElementPointerChecked(k);
+                        apCopyToCoord[i][j].PushBack(sum + var_28);
                     }
-                    if (a5 > 0.0)
+                    if (afClampVal > 0.0)
                     {
-                        float f2 = sqrt_004019b0(a3[i][j].FUN_006588a0() / (float)var_c);
-                        if (f2 > a5)
+                        float f2 = sqrt_004019b0(apCopyToCoord[i][j].FUN_006588a0() / (float)var_c);
+                        if (f2 > afClampVal)
                         {
-                            a3[i][j].ScaleAll(a5 / f2);
+                            apCopyToCoord[i][j].ScaleAll(afClampVal / f2);
                         }
                     }
                 }
             }
             else
             {
-                a3[i][j].SetDimensions(0, 0);
+                apCopyToCoord[i][j].SetDimensions(0, 0);
             }
         }
     }
@@ -4691,7 +4879,7 @@ void BSFaceGenManager_MergeFaceGenCoord(FaceGenMatrix<float> a1[2][2], FaceGenMa
 
 struct FaceGenMorph
 {
-    FaceGenMatrix<float> FUN_00658360(char* pcCoords);
+    FaceGenMatrix<float> FUN_00658360(char* m);
 };
 
 struct FaceGenMorphArray
@@ -4708,18 +4896,22 @@ struct FaceGenMorphArray
 
 // Returns the first coordinate value of a morph at uiIndex for the given pcCoords, or 0.0f if out of range or pcCoords is null.
 // @fnv 0x00652230
-float GetMorphCoordinateValue(char* pcCoords, unsigned int uiRenderPassIndex, unsigned int uiSub, unsigned int uiIndex)
+// src: XBOX_RETAIL_PDB 0x00652230
+// pdb: BSFaceGenManager::GetFaceCoordValue | BSFaceGenManager.obj | retail, call graph, high
+// pdb params: apCoord, aeFanType, aeFanSymm, aiCtrlID
+// pdb locals: fcurrpos
+float BSFaceGenManager_GetFaceCoordValue(char* apCoord, unsigned int aeFanType, unsigned int aeFanSymm, unsigned int aiCtrlID)
 {
     float fValue = 0.0f;
-    if (pcCoords)
+    if (apCoord)
     {
-        if (uiIndex < reinterpret_cast<FaceGenMorphArray(*)[2]>(BSFaceGenManager::GetFaceGenManager()->m_kCtls.ctl)
-                          [uiRenderPassIndex][uiSub].std_vector_FanLinCtlS_std_allocator_FanLinCtlS_size())
+        if (aiCtrlID < reinterpret_cast<FaceGenMorphArray(*)[2]>(BSFaceGenManager::GetFaceGenManager()->m_kCtls.ctl)
+                          [aeFanType][aeFanSymm].std_vector_FanLinCtlS_std_allocator_FanLinCtlS_size())
         {
             fValue = reinterpret_cast<FaceGenMorphArray(*)[2]>(BSFaceGenManager::GetFaceGenManager()->m_kCtls.ctl)
-                         [uiRenderPassIndex][uiSub]
-                         .GetElementPointerChecked(uiIndex)
-                         .FUN_00658360(pcCoords + uiRenderPassIndex * 0x40 + uiSub * 0x20)
+                         [aeFanType][aeFanSymm]
+                         .GetElementPointerChecked(aiCtrlID)
+                         .FUN_00658360(apCoord + aeFanType * 0x40 + aeFanSymm * 0x20)
                          .ForwardCall_0060b370(0)
                          .NiTSet_NiControllerSequence_NiTMallocInterface_NiControllerSequence_GetAt(0);
         }
@@ -4734,46 +4926,49 @@ extern GO45CFE0 g_011d5afc;
 
 // Looks up a Sol face-gen model in the BSFaceGenManager cache by a1 or a4, creating and caching a new one via FUN_00659c70 when a5 is true and no entry exists.
 // @fnv 0x00651b50
-Sol* GetOrCreateFaceGenModel(char* a1, char* a2, char* a3, char* a4, bool abCreateIfMissing, int a6, bool a7)
+// pdb: BSFaceGenManager::GetFaceGenModel | BSFaceGenManager.obj | debug, call graph, high
+// pdb params: apEGMFilename, apNIFFilename, apTRIFilename, apEGTFilename, abAllowCreate, aeHairPart, abIsAccessory
+// pdb locals: tempMemContext, spnewModel
+Sol* GetOrCreateFaceGenModel(char* apEGMFilename, char* apNIFFilename, char* apTRIFilename, char* apEGTFilename, bool abAllowCreate, int aeHairPart, bool abIsAccessory)
 {
     AutoMemContext mem(0x37, true,
                        "D:\\_Fallout3\\Platforms\\Common\\Code\\Fallout Shared\\FaceGen\\BSFaceGenManager.cpp", 0x3e5);
     SolPtr ref(0);
 
-    if (a1 == 0 && a4 == 0)
+    if (apEGMFilename == 0 && apEGTFilename == 0)
         return 0;
 
     if (BSFaceGenManager::GetFaceGenManager()->m_pModelCache == 0)
     {
         BSFaceGenManager::GetFaceGenManager()->m_pModelCache = new BSFaceGenModelMap;
-        BSFaceGenManager::GetFaceGenManager()->m_pModelCache->SetArrayValue(0, g_011d59f4.FUN_004503f0());
-        BSFaceGenManager::GetFaceGenManager()->m_pModelCache->SetArrayValue(1, g_011d5afc.FUN_004503f0());
+        BSFaceGenManager::GetFaceGenManager()->m_pModelCache->SetMaxDataSize(0, g_011d59f4.FUN_004503f0());
+        BSFaceGenManager::GetFaceGenManager()->m_pModelCache->SetMaxDataSize(1, g_011d5afc.FUN_004503f0());
     }
 
-    if (a1)
+    if (apEGMFilename)
     {
-        if (reinterpret_cast<FGModelCache*>(BSFaceGenManager::GetFaceGenManager()->m_pModelCache)->BSFaceGenModelMap_GetAt(a1, reinterpret_cast<Helper62d0*>(&ref)))
+        if (reinterpret_cast<FGModelCache*>(BSFaceGenManager::GetFaceGenManager()->m_pModelCache)->BSFaceGenModelMap_GetAt(apEGMFilename, reinterpret_cast<Helper62d0*>(&ref)))
         {
-            if (a4)
+            if (apEGTFilename)
             {
                 if (!ref.Get()->BSFaceGenModel_GetString())
-                    ref.Get()->FUN_0065a760(a4);
+                    ref.Get()->LoadModelTexture(apEGTFilename);
             }
             return ref.Get();
         }
     }
-    else if (a4)
+    else if (apEGTFilename)
     {
-        if (reinterpret_cast<FGModelCache*>(BSFaceGenManager::GetFaceGenManager()->m_pModelCache)->BSFaceGenModelMap_GetAt(a4, reinterpret_cast<Helper62d0*>(&ref)))
+        if (reinterpret_cast<FGModelCache*>(BSFaceGenManager::GetFaceGenManager()->m_pModelCache)->BSFaceGenModelMap_GetAt(apEGTFilename, reinterpret_cast<Helper62d0*>(&ref)))
             return ref.Get();
     }
 
-    if (abCreateIfMissing)
+    if (abAllowCreate)
     {
         ref = new Sol;
-        if (ref.Get()->BSFaceGenModel_LoadModel(a1, a2, a3, a4, a6, a7))
+        if (ref.Get()->BSFaceGenModel_LoadModel(apEGMFilename, apNIFFilename, apTRIFilename, apEGTFilename, aeHairPart, abIsAccessory))
         {
-            reinterpret_cast<fnv_0064ffd0::FGModelCache*>(BSFaceGenManager::GetFaceGenManager()->m_pModelCache)->BSFaceGenModelMap_SetAt(a1 ? a1 : a4, ref.Get());
+            reinterpret_cast<fnv_0064ffd0::FGModelCache*>(BSFaceGenManager::GetFaceGenManager()->m_pModelCache)->BSFaceGenModelMap_SetAt(apEGMFilename ? apEGMFilename : apEGTFilename, ref.Get());
         }
         else
         {
@@ -4828,6 +5023,7 @@ struct Cache
 
 // Destroys the object, purging unused models from the cache before deleting it and nulling the pointer.
 // @fnv 0x006518e0
+// pdb: BSFaceGenManager::~BSFaceGenManager | BSFaceGenManager.obj | retail, upstream name already matches, high
 BSFaceGenManager::~BSFaceGenManager()
 {
     BSFaceGenManager_ClearModelCache();

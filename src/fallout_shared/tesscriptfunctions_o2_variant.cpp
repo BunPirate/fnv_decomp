@@ -11,6 +11,7 @@
 #include "../../include/TESQuest.h"
 #include "../../include/OBJECT_ACTION.h"
 class BGSMusicType;
+// pdb: class FalloutAudioMedia, size 0x1, 0 members
 class FalloutAudioMedia
 {
   public:
@@ -45,41 +46,42 @@ inline NiTPrimitiveArray<T>::NiTPrimitiveArray(unsigned int uiMaxSize, unsigned 
 template <> __declspec(nothrow) void NiTArray<NiTexturingProperty::Map*, NiTMallocInterface<NiTexturingProperty::Map*> >::SetAt(
     unsigned int uiIndex, NiTexturingProperty::Map* const& element);
 // @fnv 0x00a6aa40
-NiTexturingProperty::NiTexturingProperty() : m_uiObjectFlags(0), m_kStringArray(9, 1), m_pShaderMaps(0)
+// pdb: NiTexturingProperty::NiTexturingProperty | NiTexturingProperty.obj | retail, call graph, low
+NiTexturingProperty::NiTexturingProperty() : m_uFlags(0), m_kMaps(9, 1), m_pkShaderMaps(0)
 {
     Map* pkMap;
     pkMap = 0;
-    m_kStringArray.SetAt(0, pkMap);
+    m_kMaps.SetAt(0, pkMap);
     pkMap = 0;
-    m_kStringArray.SetAt(1, pkMap);
+    m_kMaps.SetAt(1, pkMap);
     pkMap = 0;
-    m_kStringArray.SetAt(2, pkMap);
+    m_kMaps.SetAt(2, pkMap);
     pkMap = 0;
-    m_kStringArray.SetAt(3, pkMap);
+    m_kMaps.SetAt(3, pkMap);
     pkMap = 0;
-    m_kStringArray.SetAt(4, pkMap);
+    m_kMaps.SetAt(4, pkMap);
     pkMap = 0;
-    m_kStringArray.SetAt(5, pkMap);
+    m_kMaps.SetAt(5, pkMap);
     pkMap = 0;
-    m_kStringArray.SetAt(6, pkMap);
+    m_kMaps.SetAt(6, pkMap);
     pkMap = 0;
-    m_kStringArray.SetAt(7, pkMap);
+    m_kMaps.SetAt(7, pkMap);
     pkMap = 0;
-    m_kStringArray.SetAt(8, pkMap);
-    m_uiObjectFlags &= 0xf00f;
+    m_kMaps.SetAt(8, pkMap);
+    m_uFlags &= 0xf00f;
     bool bMulti = false;
-    unsigned int uiSize = m_kStringArray.m_usSize;
+    unsigned int uiSize = m_kMaps.m_usSize;
     for (unsigned int i = 1; i < uiSize; i++)
     {
-        if (m_kStringArray.m_pBase[i])
+        if (m_kMaps.m_pBase[i])
         {
             bMulti = true;
             break;
         }
     }
     if (bMulti)
-        m_uiObjectFlags |= 1;
+        m_uFlags |= 1;
     else
-        m_uiObjectFlags &= ~1;
-    m_uiObjectFlags = (m_uiObjectFlags & ~0xA) | 4;
+        m_uFlags &= ~1;
+    m_uFlags = (m_uFlags & ~0xA) | 4;
 }

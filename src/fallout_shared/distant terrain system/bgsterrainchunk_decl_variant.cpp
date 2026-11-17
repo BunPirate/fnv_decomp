@@ -32,7 +32,7 @@ struct Flt
 };
 struct FUN_006fb6e0_shell
 {
-    void SetAllAppCulled();
+    void BGSTerrainChunk_Hide();
 };
 struct FUN_006fb940_shell
 {
@@ -121,7 +121,7 @@ struct FakeWorld006faad0
     virtual const char* f75();
     virtual const char* GetStr();
 };
-void BuildLodMeshPath(char* a1, FakeWorld006faad0* a2, int a3, short a4, short a5);
+void BGSTerrainChunkLoadTask_ctor(char* apChunk, FakeWorld006faad0* apWorld, int aiX, short aiY, short aiLevel);
 int __cdecl _sprintf(char*, const char*, ...);
 struct FakeFab
 {
@@ -203,7 +203,7 @@ struct FakeFab
     virtual void f75();
     virtual const char* GetStr();
 };
-void __cdecl BuildLodNormalTexturePath(char* a1, FakeFab* a2, int a3, short a4, short a5);
+void __cdecl BGSTerrainChunk_BuildChunkNormalTextureFileName(char* apOutput, FakeFab* apWorld, int aiLevel, short asCellX, short asCellY);
 struct FUN_006fb760_shell
 {
     void BGSTerrainChunk_Show();
@@ -296,7 +296,7 @@ struct FakeObj
     virtual const char* GetStr();
 };
 int __cdecl _sprintf(char*, const char*, ...);
-void __cdecl BuildLODDiffuseTexturePath(char* buf, FakeObj* obj, int level, short x, short y);
+void __cdecl BGSTerrainChunk_BuildChunkDiffuseTextureFileName(char* apOutput, FakeObj* apWorld, int aiLevel, short asCellX, short asCellY);
 struct GO;
 struct FUN_006fea10_Class
 {
@@ -310,6 +310,7 @@ struct SoundListView
 };
 extern SoundListView g_011d8624;
 void UpdateSoundListItems();
+// pdb: class ModelLoader, size 0x30 (here 0x1), 12 members
 struct ModelLoader
 {
     void QueueModelFilePath(const char*, int, QueuedFile*);
@@ -319,7 +320,7 @@ struct FUN_0043cc60_shell
     int IOTask_GetIOTaskPriority();
 };
 extern ModelLoader* g_modelLoader;
-void __cdecl BuildLODDiffuseTexturePath(char*, FakeObj*, int, short, short);
+void __cdecl BGSTerrainChunk_BuildChunkDiffuseTextureFileName(char*, FakeObj*, int, short, short);
 extern "C" char DAT_011d85ec;
 // NiPoint3: FUN_00439680 at 0x00439680 takes const NiPoint3& in Bound and bgsautowater.
 struct FUN_0043d410
@@ -479,7 +480,7 @@ struct Target006fac
     void UpdateWaterReferences(int);
     void BGSTerrainChunk_InitializeShaderProperty();
     void AddSelfToList();
-    void SetAllAppCulled();
+    void BGSTerrainChunk_Hide();
 };
 struct B5D0Status
 {
@@ -489,7 +490,7 @@ struct B5D0Item
 {
     B5D0Status* Modelloader_GetReferencedThis();
     void BGSTerrainChunk_Show();
-    void SetAllAppCulled();
+    void BGSTerrainChunk_Hide();
 };
 struct B5D0List
 {
@@ -610,14 +611,16 @@ struct FinalObject
     void BGSTerrainChunk_OnLoadFinished();
 };
 
-void BuildLodMeshPath(char*, TESWorldSpace*, int, short, short);
+void BGSTerrainChunkLoadTask_ctor(char*, TESWorldSpace*, int, short, short);
 // @fnv 0x006fb980
+// pdb: BGSTerrainChunk::ShowNormalDetail | BGSTerrainChunk.obj | retail, object-file run extension, low
+// pdb locals: pkList, item
 BGSTerrainChunkLoadTask::BGSTerrainChunkLoadTask(void* block, TESWorldSpace* space, int x, int y, int level)
     : QueuedFileEntry(3), unk30(false), iX(x), iY(y), iLevel(level), owner(block), world(space), unk48(0), unk4c(0),
       unk50(0), unk54(0), unk58(false)
 {
     char fileName[260];
-    BuildLodMeshPath(fileName, world, level, (short)x, (short)y);
+    BGSTerrainChunkLoadTask_ctor(fileName, world, level, (short)x, (short)y);
     SetFileName_00c3cee0(fileName + 5);
     LookupFileEntryByArchive(0);
 }

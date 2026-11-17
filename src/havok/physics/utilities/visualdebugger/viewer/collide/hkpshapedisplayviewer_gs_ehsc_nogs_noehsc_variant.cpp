@@ -133,14 +133,14 @@ struct FUN_00d657d0_class
 {
     FUN_00d657d0_class* hkpShapeDisplayViewer_hkpShapeDisplayViewer(int);
 };
-void* __cdecl hkpShapeDisplayViewer_create(void* context);
+void* __cdecl hkpShapeDisplayViewer_create(void* contexts);
 struct GlobalObjectO2_00d472a0
 {
 };
 extern hkProcessFactory* hkProcessFactory_registerProcess;
 extern GlobalObjectO2_00d472a0 g_01268f2c;
 extern void* __cdecl hkpShapeDisplayViewer_create(void*);
-void RegisterShapesProcess();
+void hkpShapeDisplayViewer_registerViewer();
 struct Target
 {
     void hkpShapeDisplayViewer_addWorld();
@@ -204,9 +204,9 @@ struct FUN_00d66080_cls
     SpawnedBuf m_buf48;
     SpawnedBuf m_buf54;
 
-    void hkpShapeDisplayViewer_removeWorld(int aiIndex);
+    void hkpShapeDisplayViewer_removeWorld(int i);
     void FUN_00ddcc60();
-    void Destroy();
+    void hkpShapeDisplayViewer_dtor();
 };
 struct OwnerObject
 {
@@ -307,15 +307,15 @@ struct SpawnOwner
     char** m_34;
     int m_38;
 
-    void hkpWorld_addEntityListener(void* p);
-    void hkpWorld_addWorldPostSimulationListener(void* p);
+    void hkpWorld_addEntityListener(void* worldListener);
+    void hkpWorld_addWorldPostSimulationListener(void* worldListener);
 };
 struct SpawnSublist
 {
     void** m_data;
     int m_uiItemCount;
 };
-void __cdecl ResizeAudioStream(void* allocator, void* list, unsigned int elemSize);
+void __cdecl ResizeAudioStream(void* mem, void* array, unsigned int sizeElem);
 struct PendingNode
 {
     SpawnOwner* m_pSharedOwner;
@@ -357,7 +357,7 @@ struct FUN_00d64650_cls
     int m_2c;
     SpawnList m_30;
 
-    void hkpSweptTransformDisplayViewer_addWorld(SpawnOwner* a1);
+    void hkpSweptTransformDisplayViewer_addWorld(SpawnOwner* world);
 };
 extern int DAT_01268fe0;
 struct D65610Obj
@@ -380,7 +380,7 @@ struct D65610Sec
 };
 struct D65610Self : D65610Prim, D65610Sec
 {
-    void hkpShapeDisplayViewer_inactiveEntityMovedCallback(D66180Entity* e);
+    void hkpShapeDisplayViewer_inactiveEntityMovedCallback(D66180Entity* entity);
 };
 static inline bool HasProperty(const S_00c6d840* props, int key)
 {
@@ -391,7 +391,7 @@ static inline bool HasProperty(const S_00c6d840* props, int key)
     }
     return false;
 }
-static int _getProxyShape(S_00c6d840* props, bool checkOverride, bool* usedDefault);
+static int _getProxyShape(S_00c6d840* entity, bool forLocal, bool* ignoreWholeObject);
 int PropertyQueryCaller(S_00c6d840* props, bool checkOverride, bool* usedDefault);
 struct ShapeList
 {
@@ -457,8 +457,8 @@ struct FUN_00d657d0_cls
     int m_6c;
     int m_70;
 
-    void FUN_00ddccb0(ShapeList* a1);
-    FUN_00d657d0_cls* hkpShapeDisplayViewer_hkpShapeDisplayViewer(ShapeList* a1);
+    void FUN_00ddccb0(ShapeList* contexts);
+    FUN_00d657d0_cls* hkpShapeDisplayViewer_hkpShapeDisplayViewer(ShapeList* contexts);
 };
 inline hkMemoryAllocator& getMemory_d65f()
 {
@@ -471,7 +471,7 @@ struct Watch2_d65f
 };
 struct Agent_d65f
 {
-    void hkpWorld_removeEntityListener(Listener_d65f* listener);
+    void hkpWorld_removeEntityListener(Listener_d65f* worldListener);
     void ClearValue(Watch2_d65f* watch);
 };
 struct Node_d65f
@@ -499,8 +499,8 @@ struct Watch_d65f
 struct Phantom_d65f : Base_d65f, Listener_d65f, Watch2_d65f
 {
     hkArray<Node_d65f*> m_kNodeCollection;
-    void hkpShapeDisplayViewer_removeAllGeometries(int index);
-    void hkpShapeDisplayViewer_removeWorld(int index);
+    void hkpShapeDisplayViewer_removeAllGeometries(int worldIndex);
+    void hkpShapeDisplayViewer_removeWorld(int i);
 };
 extern "C" void _ReadWriteBarrier(void);
 extern "C" unsigned __int64 __rdtsc(void);
@@ -545,7 +545,7 @@ struct TtShapeDisplayInner
     bool m_flag34;
 
     TtShapeDisplayOuter* GetOuter();
-    void hkpShapeDisplayViewer_postSimulationCallback(int arg);
+    void hkpShapeDisplayViewer_postSimulationCallback(int world);
 };
 struct TtShapeDisplayOuter : TtShapeDisplayBase, TtShapeDisplayInner
 {
@@ -975,7 +975,7 @@ struct S65_Str
     int s00;
     int s04;
     int s08;
-    void FUN_00cb1600(char* buf, int size);
+    void FUN_00cb1600(char* buf, int bufSize);
     void ProcessAndReturnValue_00cc01c0(const char* s);
     void FUN_00cc00e0();
 };
@@ -1018,7 +1018,7 @@ struct S65_Work
     int w0c;
     int w10;
     void hkpShapeDisplayBuilder_hkpShapeDisplayBuilder(S65_Val* p);
-    void UpdateState_00de0f90(void* v, S65_Vec* vec);
+    void hkpShapeDisplayBuilder_buildDisplayGeometries(void* v, S65_Vec* displayGeometries);
 };
 union S65_V4
 {
@@ -1073,28 +1073,28 @@ extern const char str_010d196c[];
 extern const char str_010d1b18[];
 
 // src: HAVOK_LIB 0x00d652c0
-static __declspec(noinline) void* _getProxyShape(S65_Param* p, bool flag, unsigned char* out)
+static __declspec(noinline) void* _getProxyShape(S65_Param* entity, bool forLocal, unsigned char* ignoreWholeObject)
 {
-    void* base = p->pointerProperty(0x1135);
-    void* alt = p->pointerProperty(0x1235);
-    void* over = p->pointerProperty(0x1234);
-    *out = 0;
-    if (flag && p->has(0x1234))
+    void* base = entity->pointerProperty(0x1135);
+    void* alt = entity->pointerProperty(0x1235);
+    void* over = entity->pointerProperty(0x1234);
+    *ignoreWholeObject = 0;
+    if (forLocal && entity->has(0x1234))
     {
         if (!over)
-            *out = 1;
+            *ignoreWholeObject = 1;
         return (void*)over;
     }
-    if (p->has(0x1235))
+    if (entity->has(0x1235))
     {
         if (!alt)
-            *out = 1;
+            *ignoreWholeObject = 1;
         return (void*)alt;
     }
-    if (p->has(0x1135))
+    if (entity->has(0x1135))
     {
         if (!base)
-            *out = 1;
+            *ignoreWholeObject = 1;
         return (void*)base;
     }
     return 0;
@@ -1138,7 +1138,7 @@ struct S65_Self : S65_Prim, S65_Sec
     int t40;
     int f44;
     int f48;
-    void hkpShapeDisplayViewer_entityAddedCallback(S65_Param* param);
+    void hkpShapeDisplayViewer_entityAddedCallback(S65_Param* entity);
 };
 
 inline void* operator new(unsigned int, void* p)
@@ -1148,20 +1148,23 @@ inline void* operator new(unsigned int, void* p)
 
 // @fnv 0x00d65ad0
 // src: XBOX_PDB 0x00d65ad0
-void S65_Self::hkpShapeDisplayViewer_entityAddedCallback(S65_Param* param)
+// pdb: hkpShapeDisplayViewer::entityAddedCallback | hkpShapeDisplayViewer.obj | retail, upstream name already matches, high
+// pdb params: entity
+// pdb locals: ignoreObject, displayGeometries, id, shapeBuilder, env, reportBuf, ostr
+void S65_Self::hkpShapeDisplayViewer_entityAddedCallback(S65_Param* entity)
 {
     unsigned char done;
     bool flag = (f10 == 0 && f14 == 0) ? true : false;
-    void* ret = _getProxyShape(param, flag, &done);
+    void* ret = _getProxyShape(entity, flag, &done);
     if (done)
         return;
-    int idx = FindItemIndex(param->unk08);
+    int idx = FindItemIndex(entity->unk08);
     if (idx < 0)
         return;
     S65_Item* item = m_items[idx];
     void* key = ret;
     if (!key)
-        key = (void*)param->unk10;
+        key = (void*)entity->unk10;
     if (!key)
         return;
     bool isNew = false;
@@ -1182,15 +1185,15 @@ void S65_Self::hkpShapeDisplayViewer_entityAddedCallback(S65_Param* param)
     bool keep = true;
     if (!existing && !isNew && b3b && b3c)
     {
-        void* a = param->pointerProperty(0x1136);
-        void* alt = param->pointerProperty(0x1131);
+        void* a = entity->pointerProperty(0x1136);
+        void* alt = entity->pointerProperty(0x1131);
         if (!a && !alt)
         {
             S65_Val val;
             val.hkpShapeDisplayBuilder_hkpShapeDisplayBuilderEnvironment_hkpShapeDisplayBuilderEnvironment();
             S65_Work work;
             work.hkpShapeDisplayBuilder_hkpShapeDisplayBuilder(&val);
-            work.UpdateState_00de0f90(key, &vec);
+            work.hkpShapeDisplayBuilder_buildDisplayGeometries(key, &vec);
             for (int i = vec.count - 1; i >= 0; i--)
             {
                 S65_Elem* e = vec.data[i];
@@ -1207,18 +1210,18 @@ void S65_Self::hkpShapeDisplayViewer_entityAddedCallback(S65_Param* param)
                         vec.data[i] = vec.data[vec.count];
                 }
             }
-            void* v = param->pointerProperty(0x1135);
+            void* v = entity->pointerProperty(0x1135);
             if (v && (void*)v == ret)
             {
                 ((S65_Ref*)v)->FUN_00c905b0();
-                param->hkpWorldObject_removeProperty(0x1135);
+                entity->hkpWorldObject_removeProperty(0x1135);
             }
         }
         else
         {
             keep = a == 0;
             if (alt)
-                param->hkpWorldObject_removeProperty(0x1131);
+                entity->hkpWorldObject_removeProperty(0x1131);
             S65_NewObj* mem = (S65_NewObj*)s65Heap().blockAlloc(0x60);
             mem->s04 = (short)0x60;
             S65_NewObj* obj = mem->FUN_00de1d20(a ? a : alt);
@@ -1233,7 +1236,7 @@ void S65_Self::hkpShapeDisplayViewer_entityAddedCallback(S65_Param* param)
             ++vec.count;
         }
     }
-    void* nv = GetProperty1134((D66180Entity*)param);
+    void* nv = GetProperty1134((D66180Entity*)entity);
     S65_IntArr* arr = &item->arr;
     hkMemoryRouter* heap = (hkMemoryRouter*)hkMemoryRouter_getInstance();
     if (arr->count == (arr->cap & 0x3fffffff))
@@ -1246,17 +1249,17 @@ void S65_Self::hkpShapeDisplayViewer_entityAddedCallback(S65_Param* param)
     {
         if (vec.count > 0 || isNew || !b3c)
         {
-            host->v04(&vec, &param->transform, nv, DAT_01268fe0, key);
+            host->v04(&vec, &entity->transform, nv, DAT_01268fe0, key);
             if (b39)
             {
                 sub14.insert(key, (int)nv);
                 sub20.insert(key, 1);
             }
-            int val = param->integerProperty(0x1130);
+            int val = entity->integerProperty(0x1130);
             if (b3d)
             {
                 if (b3e || !val)
-                    val = (param->motionType == 5) ? f44 : f48;
+                    val = (entity->motionType == 5) ? f44 : f48;
             }
             if (val)
                 host->v0c(val, nv, DAT_01268fe0);
@@ -1266,7 +1269,7 @@ void S65_Self::hkpShapeDisplayViewer_entityAddedCallback(S65_Param* param)
     {
         int n = sub20.LookupHashEntry(key, 1) + 1;
         sub20.insert(key, n);
-        host->v08(existing, &param->transform, nv, DAT_01268fe0, key);
+        host->v08(existing, &entity->transform, nv, DAT_01268fe0, key);
     }
     for (int i = 0; i < vec.count; i++)
     {

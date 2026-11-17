@@ -19,6 +19,8 @@ struct FUN_00dee620
 };
 
 // @fnv 0x00dee620
+// pdb: hkGeometryProcessing::IFunction<hkVector4,float>::`scalar deleting destructor' | hkGeometryProcessing.obj | retail, vtable slot, high
+// pdb params: this
 __thiscall FUN_00dee620::FUN_00dee620(int aiFlags)
 {
     m_pVTable = &DAT_010d9fc4;
@@ -61,6 +63,7 @@ struct FUN_00dee6c0_cls
 
 // Sets the vtable pointer and, when acFlags has bit 0 set, frees this 0x40-byte object through the allocator from FUN_00c85750.
 // @fnv 0x00dee6c0
+// pdb: hkGeometryProcessingInternals::NearestFeaturePolicy::`scalar deleting destructor' | hkGeometryProcessing.obj | retail, vtable slot, high
 FUN_00dee6c0_cls* FUN_00dee6c0_cls::FUN_00dee6c0(unsigned char acFlags)
 {
     m_vptr = (int)&DAT_010cd664;
@@ -163,9 +166,9 @@ __forceinline void hkVector4::setAddMul4(const hkVector4& a, const hkVector4& b,
                    _mm_mul_ps(_mm_shuffle_ps(asGeometryQuad(r.m_vValue), asGeometryQuad(r.m_vValue), 0),
                               geometryQuad(b)));
 }
-__forceinline hkSimdReal hkVector4::dot3(const hkVector4& a) const
+__forceinline hkSimdReal hkVector4::dot3(const hkVector4& x) const
 {
-    const GeometryQuad x2 = _mm_mul_ps(geometryQuad(*this), geometryQuad(a));
+    const GeometryQuad x2 = _mm_mul_ps(geometryQuad(*this), geometryQuad(x));
     const GeometryQuad xySum = _mm_add_ss(_mm_shuffle_ps(x2, x2, 0x55), x2);
     const GeometryQuad z = _mm_shuffle_ps(x2, x2, 0xaa);
     return asSharedQuad(_mm_add_ss(z, xySum));
@@ -307,6 +310,9 @@ static __forceinline float& supportingComponent(hkVector4& value, int i)
 // Finds the vertex with the maximum dot product against direction, stores it in supportingVertexOut, and packs vertexId into the w component.
 // @fnv 0x00dea810
 // src: GUESS 0x00dea810 (confidence: medium)
+// pdb: hkGeometryProcessing::normalToOctahedron | hkGeometryProcessing.obj | retail, object-file run extension, low
+// pdb note: debug build links it to hkGeometryProcessing::octahedronToNormal
+// pdb params: normal, uv
 void __cdecl hkVector4_FindSupportingVertex(const FourPointsArray& rotatedVertices, const hkVector4& direction,
                           hkVector4& supportingVertexOut)
 {
@@ -379,6 +385,8 @@ struct FUN_00dee640_cls
 
 // Computes the squared distance from m_vec10 to the midpoint of the pair and updates m_fDist20 and m_pTag30 when it is smaller.
 // @fnv 0x00dee640
+// pdb: hkArrayBase<hkGeometryProcessing::TransposedVectors>::operator[] | hkGeometryProcessing.obj | debug, object-file run extension, low
+// pdb params: i
 float FUN_00dee640_cls::UpdateNearestDistance(void* pair)
 {
     const GeometryQuad* ab = (const GeometryQuad*)pair;
@@ -486,7 +494,7 @@ struct Sub08_cls
     unsigned int unk0C;
     unsigned int unk10;
     unsigned int unk14;
-    Vertex* PushFront(PendingBlock* out);
+    Vertex* hkgpAbstractMeshDefinitions_List_hkgpMeshBase_Vertex_hkgpAbstractMeshDefinitions_List_hkgpMeshBase_Vertex_hkgpMeshBase_BaseVertex_hkGeometryProcessing_PoolAllocator_hkgpMeshBase_Vertex_32_hkContainerHeapAllocator_Item_hkGeometryProcessing_PoolAllocator_hkgpMeshBase_Vertex_32_hkContainerHeapAllocator_allocate(PendingBlock* value);
 };
 
 struct Sub20_cls
@@ -500,36 +508,40 @@ struct FUN_00e19200_cls
     unsigned int unk04;
     Sub08_cls m_08;
     Sub20_cls m_20;
-    void SplitTriangleWithNewVertex(Triangle* a, const __m128* b, int c);
+    void hkgpMesh_splitTriangle(Triangle* triangle, const __m128* position, int updatePlanes);
 };
 
 // Creates a new vertex from b, assigns it to three triangles, and rewires their edge links to split t0.
 // @fnv 0x00e19200
-// src: GUESS 0x00e19200 (confidence: medium)
-void FUN_00e19200_cls::SplitTriangleWithNewVertex(Triangle* apTriangle, const __m128* b, int aiUnused)
+// src: XBOX_RETAIL_PDB 0x00e19200
+// pdb: hkgpMesh::splitTriangle | hkgpMesh.obj | retail, object-file gap fill, high
+// pdb params: triangle, position, updatePlanes
+void FUN_00e19200_cls::hkgpMesh_splitTriangle(Triangle* triangle, const __m128* position, int updatePlanes)
 {
     PendingBlock stBlock;
     stBlock.m_40 = -1;
     stBlock.m_44 = -1;
-    Vertex* v = m_08.PushFront(&stBlock);
+    Vertex* v = m_08.hkgpAbstractMeshDefinitions_List_hkgpMeshBase_Vertex_hkgpAbstractMeshDefinitions_List_hkgpMeshBase_Vertex_hkgpMeshBase_BaseVertex_hkGeometryProcessing_PoolAllocator_hkgpMeshBase_Vertex_32_hkContainerHeapAllocator_Item_hkGeometryProcessing_PoolAllocator_hkgpMeshBase_Vertex_32_hkContainerHeapAllocator_allocate(&stBlock);
     v->m_vHitNormal = DAT_01267e30;
-    v->m_vContactPosition = asGeometryQuad(*b);
-    Triangle* pTriangle1 = m_20.UpdateFields_00e241a0(apTriangle);
-    Triangle* pTriangle2 = m_20.UpdateFields_00e241a0(apTriangle);
-    apTriangle->m_kVertices[0] = v;
+    v->m_vContactPosition = asGeometryQuad(*position);
+    Triangle* pTriangle1 = m_20.UpdateFields_00e241a0(triangle);
+    Triangle* pTriangle2 = m_20.UpdateFields_00e241a0(triangle);
+    triangle->m_kVertices[0] = v;
     pTriangle1->m_kVertices[1] = v;
     pTriangle2->m_kVertices[2] = v;
-    Edge(pTriangle1, 2).bindSafe(Edge(apTriangle, 2).link());
-    Edge(pTriangle2, 0).bindSafe(Edge(apTriangle, 0).link());
-    Edge(apTriangle, 0).bind(Edge(pTriangle2, 1));
+    Edge(pTriangle1, 2).bindSafe(Edge(triangle, 2).link());
+    Edge(pTriangle2, 0).bindSafe(Edge(triangle, 0).link());
+    Edge(triangle, 0).bind(Edge(pTriangle2, 1));
     Edge(pTriangle1, 0).bind(Edge(pTriangle2, 2));
-    Edge(pTriangle1, 1).bind(Edge(apTriangle, 2));
+    Edge(pTriangle1, 1).bind(Edge(triangle, 2));
 }
 
 namespace fnv_00dea6b0 {
 // Checks if point p lies inside triangle abc by verifying the dot product of each edge cross product with the triangle normal is at least tol.
 // @fnv 0x00dea6b0
 // src: XBOX_PDB 0x00dea6b0
+// pdb: hkGeometryProcessing::octahedronToNormal | hkGeometryProcessing.obj | retail, object-file run extension, low
+// pdb params: uv, normal
 bool __cdecl hkGeometryProcessing_checkPointInsideTriangle(const hkVector4& p, const hkVector4& a, const hkVector4& b,
                           const hkVector4& c, float afTolerance)
 {
@@ -644,6 +656,9 @@ extern float DAT_0104da48;
 // Computes the closest distance between two line segments defined by start and end points, writing clamped parameters to the output pointers.
 // @fnv 0x00dea450
 // src: GUESS 0x00dea450 (confidence: medium)
+// pdb: hkGeometryProcessing::intersectPlanes | hkGeometryProcessing.obj | retail, object-file run extension, low
+// pdb params: p0, p1, p2, intersection
+// pdb locals: A
 float __cdecl hkVector4_GetClosestSegmentParameters(const hkVector4& firstStart, const hkVector4& firstEnd, const hkVector4& secondStart,
                            const hkVector4& secondEnd, float* firstParameter, float* secondParameter)
 {
@@ -866,28 +881,31 @@ float __cdecl hkGeometryProcessing_squaredDistanceFromPointToLine(const GeomVect
 // Computes the squared distance from a point to a triangle, returning the closest normal and optional barycentric weights.
 // @fnv 0x00de9f10
 // src: XBOX_PDB 0x00de9f10
-float __cdecl hkGeometryProcessing_squaredDistanceFromPointToTriangle(const GeomVector& point, const GeomVector& a, const GeomVector& b, const GeomVector& c,
-                           GeomVector& normal, GeomVector* weights)
+// pdb: hkGeometryProcessing::squaredDistanceFromPointToTriangle | hkGeometryProcessing.obj | retail, upstream name already matches, high
+// pdb params: p, p0, p1, p2, normalOut, baryOut
+// pdb locals: normals, bary, distances
+float __cdecl hkGeometryProcessing_squaredDistanceFromPointToTriangle(const GeomVector& p, const GeomVector& p0, const GeomVector& p1, const GeomVector& p2,
+                           GeomVector& normalOut, GeomVector* baryOut)
 {
-    GeomVector plane = makePlane(a, b, c, true);
-    float distance = plane.dot(point) + plane.selected(3);
+    GeomVector plane = makePlane(p0, p1, p2, true);
+    float distance = plane.dot(p) + plane.selected(3);
     GeomVector projected;
-    projected.addScaled(point, plane, -distance);
-    if (offsetCross(projected, a, b).dot(plane) > 0 && offsetCross(projected, b, c).dot(plane) > 0 &&
-        offsetCross(projected, c, a).dot(plane) > 0)
+    projected.addScaled(p, plane, -distance);
+    if (offsetCross(projected, p0, p1).dot(plane) > 0 && offsetCross(projected, p1, p2).dot(plane) > 0 &&
+        offsetCross(projected, p2, p0).dot(plane) > 0)
     {
-        normal = plane;
-        if (weights)
+        normalOut = plane;
+        if (baryOut)
         {
-            weights->set(doubleArea(projected, b, c), doubleArea(projected, c, a), doubleArea(projected, a, b), 0);
-            ScalarValue sum = weights->sum();
+            baryOut->set(doubleArea(projected, p1, p2), doubleArea(projected, p2, p0), doubleArea(projected, p0, p1), 0);
+            ScalarValue sum = baryOut->sum();
             if (sum > DAT_0104da4c)
-                weights->scale(ScalarValue(DAT_01012068) / sum);
+                baryOut->scale(ScalarValue(DAT_01012068) / sum);
             else
-                weights->set(DAT_0106c2e0, DAT_0106c2e0, DAT_0106c2e0, 0);
+                baryOut->set(DAT_0106c2e0, DAT_0106c2e0, DAT_0106c2e0, 0);
         }
         if (distance < 0)
-            normal.scale(DAT_01012054);
+            normalOut.scale(DAT_01012054);
         return distance * distance;
     }
     else
@@ -895,24 +913,24 @@ float __cdecl hkGeometryProcessing_squaredDistanceFromPointToTriangle(const Geom
         GeomVector normals[3];
         float fractions[3];
         float distances[3];
-        distances[0] = hkGeometryProcessing_squaredDistanceFromPointToLine(point, a, b, normals[0], &fractions[0]);
-        distances[1] = hkGeometryProcessing_squaredDistanceFromPointToLine(point, b, c, normals[1], &fractions[1]);
-        distances[2] = hkGeometryProcessing_squaredDistanceFromPointToLine(point, c, a, normals[2], &fractions[2]);
+        distances[0] = hkGeometryProcessing_squaredDistanceFromPointToLine(p, p0, p1, normals[0], &fractions[0]);
+        distances[1] = hkGeometryProcessing_squaredDistanceFromPointToLine(p, p1, p2, normals[1], &fractions[1]);
+        distances[2] = hkGeometryProcessing_squaredDistanceFromPointToLine(p, p2, p0, normals[2], &fractions[2]);
         int edge =
             distances[0] < distances[1] ? (distances[0] < distances[2] ? 0 : 2) : (distances[1] < distances[2] ? 1 : 2);
-        normal = normals[edge];
-        if (weights)
+        normalOut = normals[edge];
+        if (baryOut)
         {
             switch (edge)
             {
             case 0:
-                weights->set(1 - fractions[0], fractions[0], 0, 0);
+                baryOut->set(1 - fractions[0], fractions[0], 0, 0);
                 break;
             case 1:
-                weights->set(0, 1 - fractions[1], fractions[1], 0);
+                baryOut->set(0, 1 - fractions[1], fractions[1], 0);
                 break;
             case 2:
-                weights->set(fractions[2], 0, 1 - fractions[2], 0);
+                baryOut->set(fractions[2], 0, 1 - fractions[2], 0);
                 break;
             }
         }
@@ -955,6 +973,9 @@ inline float S00dea980_f(GeometryQuad v)
 
 // @fnv 0x00dea980
 // src: GUESS 0x00dea980 (confidence: low)
+// pdb: hkGeometryProcessing::nearestDistanceBetweenLines | hkGeometryProcessing.obj | retail, object-file run extension, low
+// pdb note: debug build links it to hkGeometryProcessing::normalToOctahedron
+// pdb params: a0, a1, b0, b1, u, v
 float hkVector4_ProcessAndReturnValue_00dea980(const hkVector4* apFirst, const hkVector4* apSecond, const hkVector4* apThird)
 {
     GeometryQuad vFirst = geometryQuad(*apFirst);

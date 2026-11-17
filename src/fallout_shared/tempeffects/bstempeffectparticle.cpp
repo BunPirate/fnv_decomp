@@ -20,6 +20,7 @@
 // Functions are listed by their @fnv annotations; compile flags inferred from the PC code.
 
 // @fnv 0x0068a850
+// pdb: BSTempEffectParticle::StopSounds | BSTempEffectParticle.obj | retail, upstream name already matches, high
 void BSTempEffectParticle::StopSounds()
 {
     if (m_5c.IsValid())
@@ -59,6 +60,7 @@ const NiRTTI* __thiscall BSTempEffectParticle::GetRTTI() const
 // Returns true when pFilename is non-null and m_flt converts to a non-zero unsigned int, otherwise false.
 // @fnv 0x00689af0
 // src: COMMUNITY 0x00689af0
+// pdb: BSTempEffectParticle::CheckShouldSave | BSTempEffectParticle.obj | debug, upstream name already matches, high
 bool BSTempEffectParticle::CheckShouldSave()
 {
     if (!(pFilename && (unsigned int)m_flt))
@@ -70,6 +72,8 @@ void __cdecl TESObjectREFR_RemoveMasterParticleAddonNodes(NiNode*);
 // Gets the node from m_flt via f3 and, if non-null, passes it to FUN_00578170.
 // @fnv 0x006896c0
 // src: COMMUNITY 0x006896c0
+// pdb: BSTempEffectParticle::Detach | BSTempEffectParticle.obj | retail, object-file run extension, high
+// pdb locals: pnode
 void BSTempEffectParticle::Detach_006896c0()
 {
     NiNode* pnode = m_flt ? ((NiNode*)(unsigned int)m_flt)->IsSceneNode() : 0;
@@ -79,12 +83,15 @@ void BSTempEffectParticle::Detach_006896c0()
 
 // @fnv 0x0068a8d0
 // src: COMMUNITY 0x0068a8d0
+// pdb: BSTempEffectParticle::SetDecalImpactData | BSTempEffectParticle.obj | debug, object-file run extension, low
+// pdb params: apObject
 void __thiscall BSTempEffectParticle::PlayImpactDataSounds(void* pValue)
 {
     m_58 = pValue;
-    InitLoopSounds();
+    StartSounds();
 }
 
+// pdb: class Model, size 0x10 (here 0x1), 4 members
 struct Model
 {
     NiNode* GetObject3D();
@@ -96,14 +103,17 @@ NiControllerManager* _UseSaveGameBlocks(const NiRTTI*, NiNode*);
 
 // @fnv 0x00689920
 // src: XBOX_PDB 0x00689920
-void BSTempEffectParticle::PlaySequence(const char* name)
+// pdb: BSTempEffectParticle::PlaySequence | BSTempEffectParticle.obj | retail, upstream name already matches, high
+// pdb params: apcSequenceName
+// pdb locals: pmanager, psequence, flifetime
+void BSTempEffectParticle::PlaySequence(const char* apcSequenceName)
 {
     NiControllerManager* controllerManager =
         _UseSaveGameBlocks(&DAT_011f36ac, reinterpret_cast<Model*>(m_flt.operator unsigned int())->GetObject3D());
 
     if (controllerManager)
     {
-        NiControllerSequence* controllerSequence = controllerManager->FindSequenceByName(NiFixedString(name));
+        NiControllerSequence* controllerSequence = controllerManager->FindSequenceByName(NiFixedString(apcSequenceName));
 
         if (controllerSequence)
         {
@@ -202,6 +212,7 @@ struct Fn
     Yv* NiAVObject_GetParent();
 };
 // @fnv 0x00689720
+// pdb: BSTempEffectParticle::~BSTempEffectParticle | BSTempEffectParticle.obj | retail, upstream name already matches, high
 BSTempEffectParticle::~BSTempEffectParticle()
 {
     StopSounds();
@@ -235,21 +246,24 @@ struct TraversalItem
     virtual TraversalItem* v3();
     TrailEntry* NiObjectNET_GetControllers();
     int NiNode_GetChildCount();
-    TraversalItem* FUN_0043b4a0(int index);
+    TraversalItem* FUN_0043b4a0(int i);
 };
 
 // @fnv 0x00689840
-float BSTempEffectParticle::ComputeTraversalValue(TraversalItem* entry)
+// pdb: BSTempEffectParticle::GetControllerLifetime | BSTempEffectParticle.obj | retail, object-file gap fill, high
+// pdb params: apAVObject
+// pdb locals: apnode, freturn, ptimecontroller, ichild, i, pchild
+float BSTempEffectParticle::ComputeTraversalValue(TraversalItem* apAVObject)
 {
     float accumulator = DAT_01012054;
-    TrailEntry* pTrail = entry->NiObjectNET_GetControllers();
+    TrailEntry* pTrail = apAVObject->NiObjectNET_GetControllers();
     while (pTrail != 0)
     {
         accumulator = BSMAX_00404010(accumulator, static_cast<float>(pTrail->FUN_004a7bd0() - pTrail->FUN_0047c860()));
         pTrail = pTrail->NiTimeController_GetNext();
     }
 
-    TraversalItem* children = entry->v3();
+    TraversalItem* children = apAVObject->v3();
     if (children != 0)
     {
         int iChildCount = children->NiNode_GetChildCount();
@@ -296,6 +310,8 @@ extern "C" LoggingObject* __cdecl TESForm_GetFormByNumericID(void*);
 extern "C" void __cdecl ProgramFlow(char const*, ...);
 typedef void*(__thiscall* LogMethod)(LoggingObject*);
 // @fnv 0x00689b20
+// pdb: BSTempEffectParticle::GetSaveSize | BSTempEffectParticle.obj | retail, upstream name already matches, high
+// pdb locals: isize, itempStartSize, pmanager, pheader, pform
 unsigned short BSTempEffectParticle::GetSaveSize()
 {
     unsigned short previous = 0;
@@ -365,21 +381,24 @@ struct Manager
 extern Manager DAT_011e0e80;
 // @fnv 0x006890b0
 // src: XBOX_PDB 0x006890b0
-BSTempEffectParticle* __cdecl BSTempEffectParticle_Spawn(World* world, float duration, int kind, NiPoint3 rotation, NiPoint3 position, float scale,
-                                       int flags, int extra)
+// pdb: BSTempEffectParticle::Spawn | BSTempEffectParticle.obj | debug, call graph (shared callers), high
+// pdb params: apCell, afLifetime, apParticleFilename, aVector, aPosition, afScale, aiFlags, apFollowObject
+// pdb locals: tempAutoEvent, presult, frand, pparentnode, krandrot, particleRot
+BSTempEffectParticle* __cdecl BSTempEffectParticle_Spawn(World* apCell, float afLifetime, int apParticleFilename, NiPoint3 aVector, NiPoint3 aPosition, float afScale,
+                                       int aiFlags, int apFollowObject)
 {
     BSTempEffectParticle* pEffect = 0;
-    if (world)
+    if (apCell)
     {
-        pEffect = new BSTempEffectParticle(reinterpret_cast<TESObjectCELL*>(world), duration,
-                                           reinterpret_cast<const char*>(kind), reinterpret_cast<void*>(extra));
+        pEffect = new BSTempEffectParticle(reinterpret_cast<TESObjectCELL*>(apCell), afLifetime,
+                                           reinterpret_cast<const char*>(apParticleFilename), reinterpret_cast<void*>(apFollowObject));
         float node = RandomFloatTwoPi();
         ParticleRotationMatrix matrix2;
         matrix2.FUN_004a0c90(node);
         Matrix a;
-        BSUtilities_GetRotationZToVectorTranspose(rotation).FUN_0043f8d0(a, matrix2);
-        void* transform = world->FUN_00456fc0(4);
-        pEffect->AttachModel(transform, a, position, scale, flags);
+        BSUtilities_GetRotationZToVectorTranspose(aVector).FUN_0043f8d0(a, matrix2);
+        void* transform = apCell->FUN_00456fc0(4);
+        pEffect->AttachModel(transform, a, aPosition, afScale, aiFlags);
         DAT_011e0e80.ProcessLists_AddTempEffect(pEffect);
     }
     return pEffect;
@@ -409,22 +428,25 @@ struct FUN_00456fc0_cls
 };
 struct GlobalObject_0096d020
 {
-    void ProcessLists_AddTempEffect(void* a);
+    void ProcessLists_AddTempEffect(void* apTempEffect);
 };
 extern GlobalObject_0096d020 g_011e0e80;
 
 // @fnv 0x00689210
 // src: XBOX_PDB 0x00689210
-void* __cdecl BSTempEffectParticle_Spawn_00689210(void* a, float fValue, unsigned int uiFlags, Block9 d, Block3 e, float fParam,
-                           unsigned int uiParam, unsigned int uiExtra)
+// pdb: BSTempEffectParticle::Spawn | BSTempEffectParticle.obj | debug, call graph (shared callers), high
+// pdb params: apCell, afLifetime, apParticleFilename, aRotation, aPosition, afScale, aiFlags, apFollowObject
+// pdb locals: presult, pparentnode
+void* __cdecl BSTempEffectParticle_Spawn_00689210(void* apCell, float afLifetime, unsigned int apParticleFilename, Block9 aRotation, Block3 aPosition, float afScale,
+                           unsigned int aiFlags, unsigned int apFollowObject)
 {
     BSTempEffectParticle* pNewObject = 0;
-    if (a != 0)
+    if (apCell != 0)
     {
-        pNewObject = new BSTempEffectParticle(reinterpret_cast<TESObjectCELL*>(a), fValue,
-                                              reinterpret_cast<const char*>(uiFlags), reinterpret_cast<void*>(uiExtra));
-        void* pArgument = ((FUN_00456fc0_cls*)a)->FUN_00456fc0(4);
-        pNewObject->AttachModel(pArgument, d, e, fParam, uiParam);
+        pNewObject = new BSTempEffectParticle(reinterpret_cast<TESObjectCELL*>(apCell), afLifetime,
+                                              reinterpret_cast<const char*>(apParticleFilename), reinterpret_cast<void*>(apFollowObject));
+        void* pArgument = ((FUN_00456fc0_cls*)apCell)->FUN_00456fc0(4);
+        pNewObject->AttachModel(pArgument, aRotation, aPosition, afScale, aiFlags);
         g_011e0e80.ProcessLists_AddTempEffect(pNewObject);
     }
     return pNewObject;
@@ -530,13 +552,16 @@ extern WorldMgr* g_TES;
 struct Queue
 {
     static Queue* GetInstance();
-    void Attach(Obj*, Parent*, bool, bool);
+    void TaskQueueInterface_QueueNodeAttach(Obj*, Parent*, bool, bool);
 };
 bool AILinearTaskThreadManager_ShouldQueue3DTask();
 void TESObjectREFR_AddMasterParticleAddonNodes(Obj*);
 void Post(Obj*);
 // Loads the model file, resolves or clones it, applies position/rotation/scale, attaches it to dest or the queue, then computes the relative transform to parent.
 // @fnv 0x00689310
+// pdb: BSTempEffectParticle::Init | BSTempEffectParticle.obj | debug, call graph, medium
+// pdb params: apSceneParent, aRotation, aPosition, afScale, aiFlags
+// pdb locals: iresult, pnode, spmodel, cloneProcess, fcontrollerLifetime, followTransform, particleTransform, followTransInvert
 void BSTempEffectParticle::AttachModel(Parent* apParent, NiMatrix3 rotation, NiPoint3 position, float afScale, unsigned int flags)
 {
     Ptr loaded6(((Loader*)DAT_011c3b3c)->LoadFile(pFilename, 0, true, false, false, true));
@@ -575,7 +600,7 @@ void BSTempEffectParticle::AttachModel(Parent* apParent, NiMatrix3 rotation, NiP
     ((Obj*)reinterpret_cast<Ptr&>(m_flt))->SetRotation(&rotation);
     ((Obj*)reinterpret_cast<Ptr&>(m_flt))->SetScale(afScale);
     if (AILinearTaskThreadManager_ShouldQueue3DTask())
-        Queue::GetInstance()->Attach(reinterpret_cast<Ptr&>(m_flt), apParent, true, true);
+        Queue::GetInstance()->TaskQueueInterface_QueueNodeAttach(reinterpret_cast<Ptr&>(m_flt), apParent, true, true);
     else
     {
         apParent->Attach(reinterpret_cast<Ptr&>(m_flt), true);
@@ -899,6 +924,8 @@ extern void* __cdecl memset(void*, int, unsigned int);
 
 // Reads a particle temp effect from the save buffer, rebuilds its scene node and transform, and reports block header or buffer size errors.
 // @fnv 0x00689f80
+// pdb: BSTempEffectParticle::LoadGame | BSTempEffectParticle.obj | retail, object-file run extension, high
+// pdb locals: bvalid, istartBufferPosition, iblockSize, pfileName, loc, cfileNameLength, quat, icontrollerDataSize, fscale, rot, iblockHeader, pheader, pform, pnode, UpdateData, pparentnode, spmodel, pmanager, icurrentBufferPosition
 bool BSTempEffectParticle::LoadFromSave()
 {
     bool aA4 = true;
@@ -1050,9 +1077,12 @@ bool BSTempEffectParticle::LoadFromSave()
 
 // Calls FUN_006828a0, clears parent when its refcount is 1, and applies the parent's transform multiplied by localTransform to object.
 // @fnv 0x00689a10
-bool BSTempEffectParticle::UpdateTransform(float time)
+// pdb: BSTempEffectParticle::Update | BSTempEffectParticle.obj | retail, object-file run extension, high
+// pdb params: afTimeDelta
+// pdb locals: bresult, newTransform
+bool BSTempEffectParticle::UpdateTransform(float afTimeDelta)
 {
-    bool result = BSTempEffect::Update(time);
+    bool result = BSTempEffect::Update(afTimeDelta);
     if (reinterpret_cast<NiPointer<NiAVObject>&>(m_20) && reinterpret_cast<NiPointer<NiAVObject>&>(m_20)->GetRefCount() == 1)
         reinterpret_cast<NiPointer<NiAVObject>&>(m_20) = 0;
     if (reinterpret_cast<NiPointer<NiAVObject>&>(m_flt) && reinterpret_cast<NiPointer<NiAVObject>&>(m_20))
@@ -1067,14 +1097,15 @@ bool BSTempEffectParticle::UpdateTransform(float time)
 
 // Constructs a temporary effect that stores a node pointer, a filename, and an identity motion transform.
 // @fnv 0x00688fc0
-BSTempEffectParticle::BSTempEffectParticle(TESObjectCELL* cell, float radius, const char* filename, void* node)
-    : BSTempEffect(cell, radius), m_flt(0), m_20(0), m_kMotionTransform(), m_5c(),
+// pdb: BSTempEffectParticle::BSTempEffectParticle | BSTempEffectParticle.obj | retail, upstream name already matches, high
+BSTempEffectParticle::BSTempEffectParticle(TESObjectCELL* apCell, float afLifetime, const char* apParticleFilename, void* apFollowObject)
+    : BSTempEffect(apCell, afLifetime), m_flt(0), m_20(0), m_kMotionTransform(), m_5c(),
       m_68()
 {
     m_flt = 0;
-    m_20 = node;
+    m_20 = apFollowObject;
     m_kMotionTransform.ResetToIdentity();
-    pFilename = filename;
+    pFilename = apParticleFilename;
     m_58 = 0;
 }
 
@@ -1176,7 +1207,7 @@ struct SGSaveLoadGame
 {
     char* FUN_00825c00();
     bool TESSaveLoadGame_UseSaveGameBlocks();
-    void TESSaveLoadGame_SaveGameDataOLD(void* apData, unsigned int auiSize);
+    void TESSaveLoadGame_SaveGameDataOLD(void* apData, unsigned int aiSize);
     SGChangeRecord* FUN_004fd3e0();
 };
 extern SGSaveLoadGame* DAT_011de45c;
@@ -1203,7 +1234,7 @@ struct SGQuaternion
     float y;
     float z;
     SGQuaternion();
-    void FUN_00a6df40(const SGMatrix3& arRotate);
+    void FUN_00a6df40(const SGMatrix3& rot);
 };
 
 struct SGObject
@@ -1238,6 +1269,8 @@ static const char s_szParticleFile[] =
 
 // Writes particle effect state (filename, transform, controller sequence) to the save stream and logs the block size.
 // @fnv 0x00689cb0
+// pdb: BSTempEffectParticle::SaveGame | BSTempEffectParticle.obj | retail, upstream name already matches, high
+// pdb locals: itempStartPosition, pmanager, iblockSize, loc, cfileNameLength, quat, icontrollerDataSize, fscale, pblockSize, iblockHeader, icurrentBufferPosition, pheader, pform, istartBufferPosition
 }  // namespace fnv_00689cb0
 
 void BSTempEffectParticle::SaveGame()

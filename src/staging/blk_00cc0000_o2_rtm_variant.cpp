@@ -139,7 +139,7 @@ struct FUN_00a7b290_shell
 };
 struct FUN_00cc1990_class : FUN_00a7b290_shell
 {
-    bool bhkExtraData_RegisterStreamables(NiStream* apStream);
+    bool bhkExtraData_RegisterStreamables(NiStream* arStream);
 };
 extern "C" void NiFreeAlias(void*);
 extern int DAT_010c9490;
@@ -221,7 +221,7 @@ struct FUN_00cdea00_cls
 };
 struct FUN_00cdf250_class
 {
-    void __thiscall hkMatrix3_setMul(int* a, int b);
+    void __thiscall hkMatrix3_setMul(int* aTb, int bTc);
     void __thiscall hkpRagdollConstraintData_setTargetRelativeOrientationOfBodies(int a);
 };
 void __cdecl NiFreeAlias(void* p);
@@ -250,7 +250,7 @@ struct FUN_00cc3d30_class
     void* m_pUnk0;
     void* m_pUnk1;
     void* m_pData;
-    void __thiscall FreeDataIfRequested(bool flag);
+    void __thiscall FreeDataIfRequested(bool abCreated);
 };
 extern int DAT_0126860c;
 struct FUN_00cc66b0 : bhkConstraint
@@ -266,21 +266,21 @@ struct FUN_00ccb180_class
     int* m_p;
     FUN_00ccb180_class* __thiscall FUN_00ccb180(int flag);
 };
-void __cdecl IncRefCountAllEntries();
-void __cdecl ReleaseAllNodes();
+void __cdecl bhkConvexListShape_AddbhkShapeRef();
+void __cdecl bhkConvexListShape_RembhkShapeRef();
 struct H_00c8c810
 {
     void __thiscall bhkShape_Link(bool);
 };
 struct FUN_00ccfe20_class
 {
-    void __thiscall bhkConvexListShape_Link(bool a);
+    void __thiscall bhkConvexListShape_Link(bool abAttach);
 };
 void __fastcall hkpRagdollConstraintData_setMaxFrictionTorque(void* self, int, float v);
 void __stdcall SetContactNormal(int a, int b);
-void __stdcall hkpRagdollConstraintData_setTwistMotor(int param_1);
+void __stdcall hkpRagdollConstraintData_setTwistMotor(int motor);
 void __stdcall SetContactNormal(int a, int b);
-void __stdcall hkpRagdollConstraintData_setConeMotor(int param_1);
+void __stdcall hkpRagdollConstraintData_setConeMotor(int motor);
 struct FUN_00cdf290_cls
 {
     void __thiscall SetFlagAndClearFloats(int a, char b);
@@ -320,7 +320,7 @@ struct FUN_00ccf100_class : H_00c8c810
     void* m_pVtable;
     unsigned int m_uiRefCount;
     void* m_pData;
-    void bhkConvexTransformShape_Link(bool flag);
+    void bhkConvexTransformShape_Link(bool abAttach);
 };
 extern int DAT_0102016c;
 extern int DAT_010c5ef4;
@@ -392,7 +392,7 @@ struct FUN_00cc5f10_Class
     FUN_00cc5f10_Class* __thiscall FUN_00cc5f10(unsigned int flag);
 };
 typedef NiPoint3 NiPoint3_local;
-NiPoint3_local& __cdecl HK2NINS(NiPoint3_local& result, hkVector4 const& value);
+NiPoint3_local& __cdecl HK2NINS(NiPoint3_local& arNiP, hkVector4 const& arhkV);
 char* __cdecl NiGetViewerString_00a7d550(char const* name, float value);
 extern double const DAT_0102f248;
 struct FUN_00cc7090_Constraint
@@ -422,8 +422,8 @@ struct FUN_00cc7090_class
     void* m_pVtable;
     FUN_00cc7090_Constraint* m_pConstraint;
 
-    void __thiscall hkConstraintCinfo_GetViewerStrings(StrArr* strArr);
-    void __thiscall AppendConstraintParams(StrArr* strArr);
+    void __thiscall hkConstraintCinfo_GetViewerStrings(StrArr* apStrings);
+    void __thiscall AppendConstraintParams(StrArr* apStrings);
 };
 extern int DAT_010c9d60;
 struct FUN_00cc7590
@@ -469,7 +469,7 @@ struct FUN_00cca9a0_class : FUN_00cca8d0_shell
 };
 struct FUN_00cca9c0_class
 {
-    void hkTriangleShapeCinfo_Scale(float scale);
+    void hkTriangleShapeCinfo_Scale(float afScale);
 };
 bool __fastcall bhkExtendedMeshShapeData_IsEqual(char* p, int, char* q);
 struct FUN_00ccd170_cls
@@ -496,8 +496,8 @@ struct NiStreamVirtual
 };
 struct FUN_00ccf570_class
 {
-    void __thiscall bhkConvexShape_LoadBinary(NiStream* stream);
-    void __thiscall bhkConvexSweepShape_LoadBinary(NiStream* stream);
+    void __thiscall bhkConvexShape_LoadBinary(NiStream* arStream);
+    void __thiscall bhkConvexSweepShape_LoadBinary(NiStream* arStream);
 };
 extern "C" void __cdecl _delete(void* p, int flags);
 struct FUN_00ccf5b0_shell
@@ -545,7 +545,7 @@ struct FUN_00cda090_class
 
     bool* __thiscall FUN_00cda090(bool* result);
 };
-void __stdcall hkpRagdollConstraintData_setPlaneMotor(int a);
+void __stdcall hkpRagdollConstraintData_setPlaneMotor(int motor);
 void __fastcall hkpRagdollConstraintData_getTarget(char* self, int, char* apMatrix);
 class CC1AD0BinaryStream
 {
@@ -1455,8 +1455,8 @@ struct FUN_00cc2480_cls
 {
     int unk00;
     int unk04;
-    void bhkWorldObject_CopyMembers(SpawnedObject_t* obj, unsigned int arg);
-    SpawnedObject_t* bhkCachingShapePhantom_CreateClone(unsigned int arg);
+    void bhkWorldObject_CopyMembers(SpawnedObject_t* apDest, unsigned int arCloneData);
+    SpawnedObject_t* bhkCachingShapePhantom_CreateClone(unsigned int arCloneData);
 };
 struct ThreadTlsBlock
 {
@@ -1668,10 +1668,10 @@ class FUN_00cc2a00_cls
     FUN_00cc2a00_obj* m_08;
     FUN_00cc2a00_obj* m_0c;
 
-    void Attach(FUN_00cc2a00_obj* obj);
-    FUN_00cc2a00_obj* bhkShapePhantom_CreateCInfo(bool* out);
+    void Attach(FUN_00cc2a00_obj* arInfo);
+    FUN_00cc2a00_obj* bhkShapePhantom_CreateCInfo(bool* arCreated);
 };
-extern int DAT_012685b0;
+extern int bhkSpringAction_ms_RTTI; // src: XBOX_RETAIL_PDB 0x012685b0 (old: DAT_012685b0/g_012685b0/g_pcCC31C0ClassName)
 void* __cdecl bhkSpringAction_GetRTTI();
 struct Col4
 {
@@ -1889,8 +1889,8 @@ struct S_00cc2d20_class
         return 0;
     }
 
-    void __thiscall ClonePhysicsData(void* arg1, void* arg2);
-    void __thiscall bhkDashpotAction_CopyMembers(void* arg1, S_00cc2d20_argument* arg2);
+    void __thiscall ClonePhysicsData(void* pDest, void* arCloneData);
+    void __thiscall bhkDashpotAction_CopyMembers(void* apDest, S_00cc2d20_argument* arCloneData);
 };
 extern float DAT_01013974;
 extern float DAT_0101e2bc;
@@ -1961,7 +1961,7 @@ struct CC2F90Owner
     CC2F90Child* m_pkChild;
 
     void CopyParentFieldsToChild(CC2F90Child* pkChild);
-    CC2F90Child* bhkSpringAction_CreateCinfo(bool* pbCreated);
+    CC2F90Child* bhkSpringAction_CreateCinfo(bool* arCreated);
 };
 extern int DAT_012685b8;
 struct FUN_00cc3270_base
@@ -2014,7 +2014,7 @@ struct CC3320Info
 class CC3320Base
 {
   public:
-    void GetInfo(CC3320Info* pkInfo);
+    void GetInfo(CC3320Info* arInfo);
 };
 class CC3320Constraint : public CC3320Base
 {
@@ -2036,7 +2036,7 @@ class CC3320Constraint : public CC3320Base
         return (pkConstraint && pkConstraint->m_pUserData) ? pkConstraint->m_pUserData->m_fMinimum : 0.0f;
     }
 
-    void bhkMotorAction_CopyCinfo(CC3320Info* pkInfo);
+    void bhkMotorAction_CopyCinfo(CC3320Info* arInfo);
 };
 struct FUN_00cc3440_obj
 {
@@ -2212,14 +2212,14 @@ struct FUN_00cc3440_cls
     virtual void v2B();
     virtual void v2C();
     virtual unsigned int* vGet(FUN_00cc3440_obj** pp);
-    void bhkUnaryAction_LoadBinary(FUN_00cc3440_obj* a);
-    void SwapEndianFields(FUN_00cc3440_obj* a1);
+    void bhkUnaryAction_LoadBinary(FUN_00cc3440_obj* arStream);
+    void SwapEndianFields(FUN_00cc3440_obj* arStream);
 };
 extern "C" unsigned long __cdecl _byteswap_ulong(unsigned long);
 struct PacketReader
 {
-    void __thiscall bhkUnaryAction_SaveBinary(void* context);
-    void __thiscall ReadPacketWithByteSwap(void* context);
+    void __thiscall bhkUnaryAction_SaveBinary(void* arStream);
+    void __thiscall ReadPacketWithByteSwap(void* arStream);
 };
 typedef unsigned int*(__thiscall* GetPacketBlock)(PacketReader*, unsigned char*);
 extern int DAT_012685c4;
@@ -2236,7 +2236,7 @@ class FUN_00cc39b0 : public FUN_00cc39b0_base
     virtual ~FUN_00cc39b0();
     void unk08();
 };
-extern int DAT_012685c8;
+extern int bhkDashpotAction_ms_RTTI; // src: XBOX_RETAIL_PDB 0x012685c8 (old: DAT_012685c8/g_012685c8)
 void* __cdecl bhkDashpotAction_GetRTTI();
 extern int DAT_010c970c;
 extern int DAT_012685c4;
@@ -2431,8 +2431,8 @@ struct FUN_00cc3bd0_cls
     virtual void v2B();
     virtual void v2C();
     virtual volatile unsigned int* vGet(unsigned char* out);
-    void bhkBinaryAction_LoadBinary(FUN_00cc3bd0_arg* a);
-    void bhkDashpotAction_LoadBinary(FUN_00cc3bd0_arg* a1);
+    void bhkBinaryAction_LoadBinary(FUN_00cc3bd0_arg* arStream);
+    void bhkDashpotAction_LoadBinary(FUN_00cc3bd0_arg* arStream);
 };
 struct FUN_00cc3c50_arg
 {
@@ -2607,8 +2607,8 @@ struct FUN_00cc3c50_cls
     virtual void v2B();
     virtual void v2C();
     virtual volatile unsigned int* vGet(unsigned char* out);
-    void DispatchChainNodes(FUN_00cc3c50_arg* a);
-    void bhkDashpotAction_SaveBinary(FUN_00cc3c50_arg* a1);
+    void DispatchChainNodes(FUN_00cc3c50_arg* arStream);
+    void bhkDashpotAction_SaveBinary(FUN_00cc3c50_arg* arStream);
 };
 extern int DAT_012685d4;
 int* __cdecl bhkAngularDashpotAction_GetRTTI();
@@ -2648,8 +2648,8 @@ struct FUN_00cc4220_class
     void* unk04;
     FUN_00cc4220_source* m_p;
 
-    void __thiscall WriteScriptTargetInfo(void* p);
-    void __thiscall bhkAngularDashpotAction_CopyCinfo(void* p);
+    void __thiscall bhkBinaryAction_CopyCinfo(void* arInfo);
+    void __thiscall bhkAngularDashpotAction_CopyCinfo(void* arInfo);
 };
 extern "C" float DAT_012683b0[4];
 inline void CC4400Swap(unsigned long& ulValue)
@@ -3151,14 +3151,14 @@ struct FUN_00cc4e90_sub
     int unk20;
     int unk24;
 };
-void __cdecl bhkConstraintManager_SaveBinary(int a1, int v);
+void __cdecl bhkConstraintManager_SaveBinary(int arStream, int apData);
 class FUN_00cc4e90_cls
 {
   public:
     int unk00;
     FUN_00cc4e90_sub* m_04;
-    void __thiscall hkConstraintCinfo_SaveBinary(int a1);
-    void LoadSubData(int a1);
+    void __thiscall hkConstraintCinfo_SaveBinary(int arStream);
+    void LoadSubData(int arStream);
 };
 extern int DAT_012685e8;
 struct SpawnedBase
@@ -3169,7 +3169,7 @@ struct FUN_00cc5090 : SpawnedBase
 {
     virtual ~FUN_00cc5090();
 };
-extern int g_unk012685ec;
+extern int bhkWheelConstraint_ms_RTTI; // src: XBOX_RETAIL_PDB 0x012685ec (old: g_012685ec/g_unk012685ec)
 void* __cdecl bhkWheelConstraint_GetRTTI(void);
 struct BinaryStream
 {
@@ -3194,8 +3194,8 @@ struct FUN_00cc5730_class
 {
     void* m_ppVirtualMethodTable;
     unsigned char* m_objectData;
-    void __thiscall hkConstraintCinfo_SaveBinary(StreamContext* context);
-    void __thiscall hkWheelConstraintCinfo_SaveBinary(StreamContext* context);
+    void __thiscall hkConstraintCinfo_SaveBinary(StreamContext* arStream);
+    void __thiscall hkWheelConstraintCinfo_SaveBinary(StreamContext* arStream);
 };
 extern int DAT_012685f4;
 class FUN_00cc58c0_base
@@ -3790,8 +3790,8 @@ class FUN_00cc75b0_cls
     unsigned int unk04;
     FUN_00cc75b0_B* m_08;
     FUN_00cc75b0_C* m_0c;
-    void Call(int a1);
-    void bhkPrismaticConstraint_Init(int a1);
+    void Call(int arInfo);
+    void bhkPrismaticConstraint_Init(int arInfo);
 };
 extern "C" unsigned long __cdecl _byteswap_ulong(unsigned long);
 struct NiBinaryStreamSI
@@ -3882,7 +3882,7 @@ struct ConstraintDataSI
 };
 struct FUN_00cc7a40_class : bhkConstraintBaseSI_blk_00cc0000_o2_rtm_variant
 {
-    void hkPrismaticConstraintCinfo_LoadBinary(NiStream& kStream);
+    void hkPrismaticConstraintCinfo_LoadBinary(NiStream& arStream);
 };
 extern int DAT_01268624;
 class FUN_00cc7d00_base
@@ -3948,7 +3948,7 @@ struct S_00cc7dc0_Init
 struct FUN_00cc7dc0 : S_00cc7dc0_B
 {
     FUN_00cc7dc0(S_00cc7dc0_Arg* a);
-    void SpawnAndAttach(S_00cc7dc0_Arg* a);
+    void SpawnAndAttach(S_00cc7dc0_Arg* arInfo);
     virtual ~FUN_00cc7dc0();
 };
 extern int DAT_01268630;
@@ -3956,7 +3956,7 @@ struct FUN_00cc8480 : bhkConstraint
 {
     ~FUN_00cc8480();
 };
-extern int g_unk01268634;
+extern int bhkHingeLimitsConstraint_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01268634 (old: g_01268634/g_unk01268634)
 void* __cdecl bhkHingeLimitsConstraint_GetRTTI();
 extern __declspec(thread) int g_iCC8770AllocTag;
 struct BCC8770AllocTagScope
@@ -4015,7 +4015,7 @@ class BCC8770DerivedShape : public BCC8770Shape
 class BCC8770Source
 {
   public:
-    void CopyMemberData(BCC8770DerivedShape* pkDest, BCC8770CloningProcess& kCloning);
+    void CopyMemberData(BCC8770DerivedShape* pDest, BCC8770CloningProcess& arCloneData);
     BCC8770DerivedShape* CloneDerivedShape(BCC8770CloningProcess& kCloning);
 };
 extern __declspec(thread) int g_tlsMemContext;
@@ -4049,7 +4049,7 @@ struct ConstraintSerializer
 {
     void* m_vtbl;
     ConstraintSerializationData* data;
-    void SerializeBase(StrArr* strings);
+    void SerializeBase(StrArr* apStrings);
     void SerializeConstraintData(StrArr* strings);
 };
 extern const char DAT_010c8388[];
@@ -4079,9 +4079,9 @@ struct FUN_00cc8ce0 : S_cc8ce0_Base
 extern int DAT_01268640;
 int* __cdecl bhkBallSocketConstraintChain_GetRTTI();
 int __cdecl Object_ComputeValue_00cc8d60();
-extern int DAT_01268f84;
+extern int bhkConstraintChain_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01268f84 (old: DAT_01268f84/g_01268f84)
 int* bhkConstraintChain_GetRTTI();
-void __cdecl bhkStream_SaveBinary(NiStream& stream, void* pValue);
+void __cdecl bhkStream_SaveBinary(NiStream& arStream, void* arArray);
 struct HavokData_cc8
 {
     char pad[0x24];
@@ -4097,8 +4097,8 @@ struct FUN_00cc8f60_cls
     char pad08[0x18];
     int m_20;
 
-    void hkConstraintChainCinfo_SaveBinary(NiStream& stream);
-    void hkBallSocketChainCinfo_SaveBinary(NiStream& stream);
+    void hkConstraintChainCinfo_SaveBinary(NiStream& arStream);
+    void hkBallSocketChainCinfo_SaveBinary(NiStream& arStream);
 };
 extern __declspec(thread) int g_iCC90D0MemContext;
 class CC90D0MemContext
@@ -4168,9 +4168,9 @@ class CC90D0Level3 : public CC90D0Level2
 class CC90D0World
 {
   public:
-    void AddObject(CC90D0Level3* pkObject, void* pvInfo);
+    void bhkConstraintChain_CopyMembers(CC90D0Level3* pkObject, void* pvInfo);
 
-    CC90D0Level3* CreateAndAddObject(void* pvInfo);
+    CC90D0Level3* CreateAndAddObject(void* arCloneData);
 };
 extern int DAT_01268648;
 struct FUN_00cc9640 : bhkConstraint
@@ -4263,7 +4263,7 @@ class CC9940Wrapper : public CC9940RefObject
     }
     virtual ~CC9940Wrapper();
 
-    void CopyMemberData(CC9940Wrapper* pkDest, int iCloning);
+    void CopyMemberData(CC9940Wrapper* pDest, int arCloneData);
     CC9940Wrapper* bhkBallAndSocketConstraint_Clone(int iCloning);
 };
 class BCC9B80BinaryStream
@@ -4593,7 +4593,7 @@ struct S_00cc9df0_Cls
     int unk00;
     int unk04;
     S_00cc9df0_Data* m_iFourthElementInteger;
-    void bhkBvTreeShape_CopyCinfo(S_00cc9df0_Out* out);
+    void bhkBvTreeShape_CopyCinfo(S_00cc9df0_Out* arInfo);
     void SetRatioFromValues(S_00cc9df0_Out* out);
 };
 inline S_00cc9df0_Data* GetD(S_00cc9df0_Cls* c)
@@ -4670,8 +4670,8 @@ class CC9F10Object
     virtual void Unk_2C();
     virtual CC9F10HavokData* GetHavokData(bool* pbOwned);
 
-    void ApplyBaseScale(int iFlags, CC9F10Scale* pkScale);
-    void bhkMoppBvTreeShape_CopyMembers(int iFlags, CC9F10Scale* pkScale);
+    void ApplyBaseScale(int apDest, CC9F10Scale* arCloneData);
+    void bhkMoppBvTreeShape_CopyMembers(int apDest, CC9F10Scale* arCloneData);
 };
 struct Owner_Target
 {
@@ -4773,10 +4773,10 @@ class FUN_00cca0e0_cls
     virtual void v44()
     {}
     virtual Owner_Target* v45(unsigned int* p);
-    void bhkBvTreeShape_LoadBinary(unsigned int a);
-    void bhkMoppBvTreeShape_LoadBinary(unsigned int param);
+    void bhkBvTreeShape_LoadBinary(unsigned int arStream);
+    void bhkMoppBvTreeShape_LoadBinary(unsigned int arStream);
 };
-void __cdecl ReadBlobObject(unsigned int a, unsigned int* b);
+void __cdecl ReadBlobObject(unsigned int arStream, unsigned int* arMoppCode);
 extern __declspec(thread) int g_iCCA1B0MemContext;
 class CCA1B0MemContext
 {
@@ -4897,7 +4897,7 @@ class CCA1B0World
     virtual void vfn0C0();
     virtual void AddObject(CCA1B0Level3* pkObject, void* pvInfo);
 
-    CCA1B0Level3* bhkMoppBvTreeShape_CreateClone(void* pvInfo);
+    CCA1B0Level3* bhkMoppBvTreeShape_CreateClone(void* arCloneData);
 };
 extern int DAT_01268664;
 int __cdecl bhkTriangleShape_GetRTTI();
@@ -5158,8 +5158,8 @@ struct FUN_00ccab60_cls
     virtual void v44()
     {}
     virtual FUN_00ccab60_rec* GetRec(FUN_00ccab60_arg*& a);
-    void bhkConvexShape_LoadBinary(FUN_00ccab60_arg* a);
-    void ProcessRecord(FUN_00ccab60_arg* a1);
+    void bhkConvexShape_LoadBinary(FUN_00ccab60_arg* arStream);
+    void ProcessRecord(FUN_00ccab60_arg* arStream);
 };
 struct FUN_00ccabf0_Param
 {
@@ -5356,8 +5356,8 @@ struct FUN_00ccabf0_class
 
     virtual FUN_00ccabf0_Data* __thiscall FUN_00ccabf0_45(unsigned char* value);
 
-    void __thiscall bhkConvexShape_SaveBinary(FUN_00ccabf0_Param* param);
-    void __thiscall bhkTriangleShape_SaveBinary(FUN_00ccabf0_Param* param);
+    void __thiscall bhkConvexShape_SaveBinary(FUN_00ccabf0_Param* arStream);
+    void __thiscall bhkTriangleShape_SaveBinary(FUN_00ccabf0_Param* arStream);
 };
 extern __declspec(thread) int g_iCCB080AllocTag;
 struct BCCB080AllocTagScope
@@ -5383,7 +5383,7 @@ class FUN_00ccb080_cls
     void bhkConvexShape_GetViewerStrings(BCCB080StringArray* pkArray);
     void AddNameToArray(BCCB080StringArray* pkArray);
 };
-extern int DAT_01268670;
+extern int bhkPlaneShape_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01268670 (old: DAT_01268670/g_01268670)
 void* __cdecl bhkPlaneShape_GetRTTI();
 int __cdecl _sub_CCB140_GetCinfoSize();
 extern int g_unk01268f90;
@@ -5499,8 +5499,8 @@ class FUN_00ccb2b0_cls
     virtual void v43();
     virtual void v44();
     virtual FUN_00ccb2b0_Obj* GetScale(unsigned char* flag);
-    void bhkShape_CopyMembers(int a1, FUN_00ccb2b0_Param* p2);
-    void bhkPlaneShape_CopyMembers(int a1, FUN_00ccb2b0_Param* p2);
+    void bhkShape_CopyMembers(int apDest, FUN_00ccb2b0_Param* arCloneData);
+    void bhkPlaneShape_CopyMembers(int apDest, FUN_00ccb2b0_Param* arCloneData);
 };
 inline void CCB350Swap(unsigned long& ulValue)
 {
@@ -5741,7 +5741,7 @@ struct FUN_00ccb3e0_Class
     virtual void vf19();
     virtual void vf20();
     virtual void vf21();
-    virtual void bhkPlaneShape_SaveBinary(unsigned char* arg);
+    virtual void bhkPlaneShape_SaveBinary(unsigned char* arStream);
     virtual void vf23();
     virtual void vf24();
     virtual void vf25();
@@ -5765,7 +5765,7 @@ struct FUN_00ccb3e0_Class
     virtual void vf43();
     virtual void vf44();
     virtual FUN_00ccb3e0_Data* bhkPlaneShape_CreateCinfo(unsigned char* value);
-    void __thiscall bhkShape_SaveBinary(unsigned char* arg);
+    void __thiscall bhkShape_SaveBinary(unsigned char* arStream);
 };
 typedef unsigned int CCB730size_t;
 struct CCB730MemoryManager
@@ -5832,10 +5832,10 @@ struct CCB730Owner
     void* m_pParentNode;
     CCB730Child* m_pkChild;
 
-    void bhkPlaneShape_CopyCinfo(CCB730Child* pkChild);
-    CCB730Child* bhkPlaneShape_CreateCinfo(bool* pbCreated);
+    void bhkPlaneShape_CopyCinfo(CCB730Child* arInfo);
+    CCB730Child* bhkPlaneShape_CreateCinfo(bool* arCreated);
 };
-extern int DAT_01268684;
+extern int bhkExtendedMeshShapeData_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01268684 (old: DAT_01268684/g_01268684)
 void* __cdecl bhkExtendedMeshShapeData_GetRTTI();
 void* __cdecl Object_DispatchCommandFour(unsigned int size);
 struct FunObjBase_b9645
@@ -5909,7 +5909,7 @@ struct HC1Base
     int unk10;
     TargetObj* m_pEntryObject;
     bool __thiscall BSPackedAdditionalGeometryData_RegisterStreamables(NiStream* stream);
-    void __thiscall bhkExtendedMeshShape_RegisterStreamables(NiStream* stream);
+    void __thiscall bhkExtendedMeshShape_RegisterStreamables(NiStream* arStream);
 };
 struct FUN_00ccba50_cls
 {
@@ -5919,7 +5919,7 @@ struct FUN_00ccba50_cls
     int unk0C;
     int unk10;
     int m_14;
-    char bhkShape_IsEqual(FUN_00ccba50_cls* p);
+    char bhkShape_IsEqual(FUN_00ccba50_cls* apObject);
     char Equals(FUN_00ccba50_cls* p);
 };
 // GetValueForArg: thiscall, 37 bytes, 1 stack argument.
@@ -5932,7 +5932,7 @@ struct FUN_00d55530_result
 };
 struct FUN_00d55530_cls
 {
-    FUN_00d55530_result* __thiscall hkpExtendedMeshShape_getMeshMaterial(int arg);
+    FUN_00d55530_result* __thiscall hkpExtendedMeshShape_getMeshMaterial(int key);
 };
 struct FUN_00ccba70_cls
 {
@@ -5986,7 +5986,7 @@ struct FUN_00ccbaa0
     NiPtrCC<RefObjCC> m_sp;
     FUN_00ccbaa0(RefObjCC* p);
 };
-extern int DAT_0126867c;
+extern int bhkExtendedMeshShape_ms_RTTI; // src: XBOX_RETAIL_PDB 0x0126867c (old: DAT_0126867c/g_0126867c/g_pcCCCFD0Name)
 int __cdecl bhkExtendedMeshShape_GetRTTI();
 int __cdecl bhkPackedNiTriStripsShape_GetCinfoSize();
 extern "C" __declspec(dllimport) long __stdcall InterlockedDecrement(volatile long*);
@@ -6512,7 +6512,7 @@ class CCCF00RigidBody
     void bhkExtendedMeshShape_SaveBinary(CCCF00Stream& kStream);
 };
 // FUN_00ccd0f0 : a one-line function - getter
-extern int g_target_00ccd0f0;
+extern int bhkCylinderShape_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01268694 (old: DAT_01268694/g_01268694/g_target_00ccd0f0)
 void* Runtime_GetTarget00ccd0f0Address();
 extern void* __cdecl Object_DispatchCommandFour(unsigned int size);
 struct FUN_00ccd100
@@ -6765,8 +6765,8 @@ struct S_00ccd330_Foo
     {}
     virtual S_00ccd330_Data* FUN_v45(void** value);
     S_00ccd330_Data* m_pData;
-    void __thiscall bhkConvexShape_LoadBinary(S_00ccd330_Arg* a1);
-    void bhkCapsuleShape_LoadBinary(S_00ccd330_Arg* a1);
+    void __thiscall bhkConvexShape_LoadBinary(S_00ccd330_Arg* arStream);
+    void bhkCapsuleShape_LoadBinary(S_00ccd330_Arg* arStream);
 };
 struct FUN_00ccd3a0_arg
 {
@@ -6941,8 +6941,8 @@ struct FUN_00ccd3a0_cls
     virtual void v2B();
     virtual void v2C();
     virtual volatile unsigned int* vGet(unsigned char* out);
-    void bhkConvexShape_SaveBinary(FUN_00ccd3a0_arg* a);
-    void bhkCapsuleShape_SaveBinary(FUN_00ccd3a0_arg* a1);
+    void bhkConvexShape_SaveBinary(FUN_00ccd3a0_arg* arStream);
+    void bhkCapsuleShape_SaveBinary(FUN_00ccd3a0_arg* arStream);
 };
 extern int g_012686a0;
 int* __cdecl bhkConvexVerticesShape_GetRTTI();
@@ -7075,7 +7075,7 @@ class FUN_00ccdd70_cls
     virtual void v43();
     virtual void v44();
     virtual CdResultObj* GetResult(unsigned char* flag);
-    void bhkShape_CopyMembers(int a1, FUN_00ccdd70_arg* a2);
+    void bhkShape_CopyMembers(int apDest, FUN_00ccdd70_arg* arCloneData);
     void ApplyResultValue(int a1, FUN_00ccdd70_arg* a2);
 };
 struct CCDDE0Stream
@@ -7219,7 +7219,7 @@ struct CCDDE0Data
 };
 struct CCDDE0Shape;
 extern float DAT_010c72bc;
-void CCDDE0SwapVector(CCDDE0Data* pkData, CCDDE0Shape* pkShape, CCDDE0Vector3* pkVector);
+void CCDDE0SwapVector(CCDDE0Data* apCInfo, CCDDE0Shape* aiSize, CCDDE0Vector3* apArray);
 void CCDDE0ConvertVector(CCDDE0Stream* pkStream, CCDDE0Vector3* pkVector);
 class CCDDE0Base
 {
@@ -7382,7 +7382,7 @@ class BCCECC0Wrapper
     virtual BCCECC0Data* GetData(bool* pbCreated);
 
     void bhkShape_LinkObject(BCCECC0Node* pkNode);
-    void SetUserDataFromNode(BCCECC0Node* pkNode);
+    void SetUserDataFromNode(BCCECC0Node* arStream);
 };
 struct FUN_00cced20_C
 {
@@ -7432,7 +7432,7 @@ struct FUN_00cced20_cls
     FUN_00cced20_A* m_08;
 
     void BSPackedAdditionalGeometryData_RegisterStreamables(int a);
-    void ForwardToNestedVtable(int a1);
+    void ForwardToNestedVtable(int arStream);
 };
 extern __declspec(thread) int gThreadAllocState;
 struct ManagedReference
@@ -7707,7 +7707,7 @@ struct Holder403
     }
     void AppendTransformStrings(StrArr*);
 };
-extern int DAT_012686b8;
+extern int bhkConvexSweepShape_ms_RTTI; // src: XBOX_RETAIL_PDB 0x012686b8 (old: DAT_012686b8/g_012686b8)
 void* __cdecl bhkConvexSweepShape_GetRTTI();
 // FUN_00ccf560 - a virtual forwarder.
 //
@@ -7720,7 +7720,7 @@ void* __cdecl bhkConvexSweepShape_GetRTTI();
 //
 // The 47 dummy virtuals only place the forwarded virtual at vtable offset 0xbc:
 // the first virtual of a class sits at vptr+0, so offset 0xbc is the 48th slot.
-extern int DAT_012686c4;
+extern int bhkConvexListShape_ms_RTTI; // src: XBOX_RETAIL_PDB 0x012686c4 (old: DAT_012686c4/g_012686c4)
 void* __cdecl bhkConvexListShape_GetRTTI();
 // FUN_00ccf810: thiscall, 21 bytes, 2 stack args.
 // test ecx,ecx / je end / mov ecx,[ecx+8] / test ecx,ecx / je end
@@ -7750,7 +7750,7 @@ struct FUN_00ccf810_cls
     int unk00;
     int unk04;
     Target* volatile m_08;
-    void bhkConvexListShape_GetSupportingVertex(int a, int b);
+    void bhkConvexListShape_GetSupportingVertex(int arDir, int arSupportingVertexOut);
 };
 struct Link
 {
@@ -7776,8 +7776,8 @@ struct LinkCollection
 struct Owner
 {
     void** m_ppVirtualMethodTable;
-    void __thiscall bhkShape_CopyMembers(void* item, void* key);
-    void __thiscall bhkConvexListShape_CopyMembers(void* item, void* key);
+    void __thiscall bhkShape_CopyMembers(void* apDest, void* arCloneData);
+    void __thiscall bhkConvexListShape_CopyMembers(void* apDest, void* arCloneData);
 };
 typedef LinkCollection*(__thiscall* AcquireLinks)(Owner*, unsigned char*);
 typedef bool(__thiscall* CheckRef)(RefObject*, void*);
@@ -7844,7 +7844,7 @@ struct FNVNotificationOwner
     unsigned int m_unknown00;
     unsigned int m_unknown04;
     FNVNotificationCollection* m_pShapeCollection;
-    void NotifyAllReceivers(int context);
+    void NotifyAllReceivers(int arStream);
     void BSPackedAdditionalGeometryData_RegisterStreamables(int context);
 };
 class CCFA00RefObject
@@ -7899,7 +7899,7 @@ class CCFA00Holder
     int unk04;
     CCFA00Data* m_pUserData;
 
-    void IncRefCountAllEntries();
+    void bhkConvexListShape_AddbhkShapeRef();
 };
 struct ObjC;
 struct SubObj14
@@ -7997,7 +7997,7 @@ class FUN_00ccfad0_cls
     unsigned int unk00;
     unsigned int unk04;
     ObjA* m_08;
-    void bhkConvexListShape_BuildDisplayGeometry(int a1, int a2);
+    void bhkConvexListShape_BuildDisplayGeometry(int apNode, int arDefColor);
 };
 struct ItemFlags
 {
@@ -8046,7 +8046,7 @@ struct ItemCollection
     ItemContainer* container;
     unsigned int unk0c;
     unsigned int defaultFlags;
-    unsigned int __thiscall GetItemFlags(unsigned int index);
+    unsigned int __thiscall GetItemFlags(unsigned int aiKey);
 };
 struct FNVArray
 {
@@ -8055,7 +8055,7 @@ struct FNVArray
     unsigned int m_capacityFlags;
     void __thiscall hkArrayBase__spliceInto(void* allocator, int index, int removeCount, const int* source, int insertCount);
 };
-extern void __cdecl hkArrayUtil__reserve(void* allocator, void* array, int newCapacity, int elementSize);
+extern void __cdecl hkArrayUtil__reserve(void* mem, void* array, int numElem, int sizeElem);
 extern void __cdecl hkMemUtil_memMove(void* dest, const void* src, unsigned int byteCount);
 void __stdcall nullsub_36(int a, int b, int c, int d);
 int __cdecl Object_ReturnSix();
@@ -8096,7 +8096,7 @@ struct FUN_00cd4260_cls
 
     FUN_00cd4260_cls* SetVirtualTable_00cd4260();
 };
-extern int DAT_012686e8;
+extern int bhkCharControllerShape_ms_RTTI; // src: XBOX_RETAIL_PDB 0x012686e8 (old: DAT_012686e8/g_012686e8)
 int* __cdecl bhkCharControllerShape_GetRTTI();
 extern float DAT_0101df44;
 class FUN_00cd8a10_cls
@@ -8268,7 +8268,7 @@ struct hkMemoryAllocator;
 hkMemoryRouter& __cdecl GetMemoryRouter();
 struct HavokArrayUtilities
 {
-    static void __cdecl GrowArrayCapacity(hkMemoryAllocator& alloc, void* array, int capacity, int elemSize);
+    static void __cdecl GrowArrayCapacity(hkMemoryAllocator& mem, void* array, int numElem, int sizeElem);
 };
 struct Elem30
 {
@@ -8850,7 +8850,7 @@ class C
     virtual void* v2B();
     virtual void* v2C();
     virtual S_res* v45(S_arg** out);
-    void bhkBinaryAction_LoadBinary(S_arg* arg);
+    void bhkBinaryAction_LoadBinary(S_arg* arStream);
     void ProcessAndByteSwapResult(S_arg* arg);
 };
 inline void CC2E50Swap(unsigned long& ulValue)
@@ -9887,8 +9887,8 @@ struct CC63E0_Obj
 {
     void* m_ppVirtualMethodTable;
     CC63E0_Data* m_data;
-    void SaveBase(CC63E0_Context* ctx);
-    void hkRagdollLimitsConstraintCinfo_SaveBinary(CC63E0_Context* ctx);
+    void SaveBase(CC63E0_Context* arStream);
+    void hkRagdollLimitsConstraintCinfo_SaveBinary(CC63E0_Context* arStream);
 };
 struct __declspec(novtable) ReferenceRoot78
 {
@@ -9979,8 +9979,8 @@ class CC69D0ListShape : public CC69D0Shape
 class CC69D0Owner
 {
   public:
-    void AddShape(CC69D0Shape* pkShape, int iIndex);
-    CC69D0Shape* CreateListShape(int iIndex);
+    void AddShape(CC69D0Shape* pDest, int arCloneData);
+    CC69D0Shape* CreateListShape(int arCloneData);
 };
 extern int DAT_010c8ce4;
 struct Child_00cc6ab0
@@ -10015,8 +10015,8 @@ struct Owner_00cc6ab0
     void* m_08;
     Child_00cc6ab0* m_0c;
 
-    void Attach(void* pChild);
-    Child_00cc6ab0* bhkRagdollConstraint_CreateCinfo(bool* out);
+    void Attach(void* arInfo);
+    Child_00cc6ab0* bhkRagdollConstraint_CreateCinfo(bool* arCreated);
 };
 struct CC77E0Allocator
 {
@@ -10116,9 +10116,9 @@ struct FUN_00cc7bc0_shell
 {
     void* m_pVtable;
     SaveData* m_pData;
-    void hkConstraintCinfo_SaveBinary(NiStream& kStream);
-    void SaveShape(void* pLinked, NiStream& kStream);
-    void hkPrismaticConstraintCinfo_SaveBinary(NiStream& kStream);
+    void hkConstraintCinfo_SaveBinary(NiStream& arStream);
+    void hkConstraintCinfo_SaveMotor(void* apMotor, NiStream& arStream);
+    void hkPrismaticConstraintCinfo_SaveBinary(NiStream& arStream);
 };
 extern __declspec(thread) int g_iCC7F30AllocTag;
 struct BCC7F30AllocTagScope
@@ -10206,7 +10206,7 @@ class BCC7F30Shape : public BCC7F30ReferencedObject
 class BCC7F30Wrapper
 {
   public:
-    void Init(BCC7F30Shape* pkShape, int iArg);
+    void Init(BCC7F30Shape* apData, int arCloneData);
     void InitWithShape(BCC7F30Shape* pkShape, int iArg);
 };
 class BCC8950BinaryStream
@@ -10692,12 +10692,12 @@ struct CcaOwner
     virtual void vf43();
     virtual void vf44();
     virtual CcaRes* vf45(int& out);
-    void bhkBvTreeShape_SaveBinary(CcaArg* a);
+    void bhkBvTreeShape_SaveBinary(CcaArg* arStream);
 };
-void __cdecl NiStream_WriteObjectBuffer(CcaArg* a, void* p);
+void __cdecl NiStream_WriteObjectBuffer(CcaArg* arStream, void* apMoppCode);
 struct FUN_00cca130_cls : CcaOwner
 {
-    void ProcessArg(CcaArg* a1);
+    void ProcessArg(CcaArg* arStream);
 };
 extern __declspec(thread) unsigned int DAT_0126fd98;
 struct FUN_00cca450_param_item
@@ -10796,7 +10796,7 @@ struct CCADB0Owner
     CCADB0Child* m_pkChild;
 
     void CCADB0Attach(CCADB0Child* pkChild);
-    CCADB0Child* bhkTriangleShape_CreateCinfo(bool* pbCreated);
+    CCADB0Child* bhkTriangleShape_CreateCinfo(bool* arCreated);
 };
 extern int DAT_012686d0;
 extern int DAT_01268678;
@@ -10877,7 +10877,7 @@ struct BccOwner
     virtual void v47();
     virtual void v48();
     virtual void v49(BccObj* node, int a1);
-    BccObj* CreateBccObj(int a1);
+    BccObj* CreateBccObj(int arCloneData);
 };
 // SaveBinary of an element array: the count, then each element saves itself.
 class CCC920BinaryStream
@@ -11173,7 +11173,7 @@ class CCDE60World
     virtual void vfn0C0();
     virtual void AddObject(CCDE60Object* pkObject, void* pvInfo);
 
-    CCDE60Object* bhkConvexVerticesShape_CreateClone(void* pvInfo);
+    CCDE60Object* bhkConvexVerticesShape_CreateClone(void* arCloneData);
 };
 class AllocatorCCD
 {
@@ -11329,7 +11329,7 @@ class BodyCCD
     virtual void vfn0B8();
     virtual void SetInfo(const InfoCCD* pkInfo);
 
-    void SetShapeFromInfo(const InfoCCD* pkInfo);
+    void SetShapeFromInfo(const InfoCCD* arInfo);
 };
 struct CE340Allocator
 {
@@ -11400,7 +11400,7 @@ struct CE340Data
 };
 typedef FUN_00ccd3a0_arg CE340Stream;
 void __cdecl bhkStream_SwapHKArray(CE340Data* data, void* ctx, CE340Array<Vec4>* arr);
-void __cdecl bhkStream_SaveBinary(CE340Stream* stream, void* value);
+void __cdecl bhkStream_SaveBinary(CE340Stream* arStream, void* arArray);
 struct CE340Obj
 {
     virtual void v00();
@@ -11449,7 +11449,7 @@ struct CE340Obj
     virtual void v2B();
     virtual void v2C();
     virtual CE340Data* GetData(bool* flag);
-    void SaveBase(CE340Stream* stream);
+    void SaveBase(CE340Stream* arStream);
     void SaveWithArrays(CE340Stream* stream);
 };
 // Release the cached Havok data when requested.
@@ -11471,7 +11471,7 @@ struct CCE860AllocTagScope
 class CCE860MemoryManager
 {
   public:
-    void Deallocate(void* pvMem);
+    void Deallocate(void* apMem);
 };
 extern CCE860MemoryManager g_kCCE860MemoryManager;
 inline void __cdecl operator delete(void* pvMem)
@@ -11571,7 +11571,7 @@ struct BodyCCE
 class BaseCCE
 {
   public:
-    bool Process(ArgCCE* pkArg);
+    bool Process(ArgCCE* arCloneData);
 
     void* m_ppVirtualMethodTable;
     int unk04;
@@ -11586,7 +11586,7 @@ inline TargetCCE* GetTargetCCE(BaseCCE* pkObject)
 class DerivedCCE : public BaseCCE
 {
   public:
-    bool ProcessWithTarget(ArgCCE* pkArg);
+    bool ProcessWithTarget(ArgCCE* arCloneData);
 };
 extern __declspec(thread) unsigned int currentAllocationContext;
 struct ThreadContextGuard
@@ -11607,7 +11607,7 @@ struct StandinClass
     void* unk04;
     void* unk08;
     void* m_pData;
-    void* __thiscall bhkConvexSweepShape_CreateCinfo(bool* result);
+    void* __thiscall bhkConvexSweepShape_CreateCinfo(bool* arCreated);
 };
 struct MemoryManagerAllocHelper
 {
@@ -11717,12 +11717,12 @@ struct BCCFA50HavokList
 class BCCFA50Wrapper
 {
   public:
-    bool BaseProcess(BCCFA50Arg* pkArg);
+    bool BaseProcess(BCCFA50Arg* arCloneData);
     __forceinline BCCFA50HavokList* GetList()
     {
         return this ? m_pkList : 0;
     }
-    bool ProcessChildren(BCCFA50Arg* pkArg);
+    bool ProcessChildren(BCCFA50Arg* arCloneData);
 
     int unk00;
     int unk04;
@@ -11784,8 +11784,8 @@ class CCFFD0Owner
     void* m_pkWorld;
     CCFFD0Settings* m_pkSettings;
 
-    void Register(CCFFD0Settings* pkSettings);
-    CCFFD0Settings* GetOrCreateSettings(bool* pbCreated);
+    void Register(CCFFD0Settings* arInfo);
+    CCFFD0Settings* GetOrCreateSettings(bool* arCreated);
 };
 template <class T> inline void SaveBinaryValue(NiBinaryStream* stream, const T& value)
 {
@@ -11820,7 +11820,7 @@ struct SavedData
     int m_iUnk0C;
     hkArray<LinkedObjStub*> m_ppData;
 };
-void bhkStream_SwapHKArray(SavedData* data, void* source, hkArray<LinkedObjStub*>* out);
+void bhkStream_SwapHKArray(SavedData* apCInfo, void* aiSize, hkArray<LinkedObjStub*>* apArray);
 inline int bhkSaveOwner_blk_00cc0000_o2_rtm_variant::GetCount()
 {
     CountedOwner* owner = m_pSharedOwner;
@@ -11895,8 +11895,8 @@ struct C200125Object : C200125Base
 };
 struct C200125Owner
 {
-    void bhkUnaryAction_CopyMembers(C200125Object* object, unsigned int argument);
-    C200125Object* bhkMotorAction_CreateClone(unsigned int argument);
+    void bhkUnaryAction_CopyMembers(C200125Object* pDest, unsigned int arCloneData);
+    C200125Object* bhkMotorAction_CreateClone(unsigned int arCloneData);
 };
 struct CC4560Obj
 {
@@ -11908,8 +11908,8 @@ struct CC4560Owner
     void* unk04;
     void* m_p;
     void* m_q;
-    void __thiscall bhkAngularDashpotAction_CopyCinfo(void* p);
-    void* __thiscall bhkAngularDashpotAction_CreateCinfo(bool* pbCreated);
+    void __thiscall bhkAngularDashpotAction_CopyCinfo(void* arInfo);
+    void* __thiscall bhkAngularDashpotAction_CreateCinfo(bool* arCreated);
 };
 struct SaveStream;
 typedef unsigned int(__cdecl* SaveStreamWriteFn)(SaveStream*, const void*, unsigned int, unsigned int*, unsigned int);
@@ -12088,7 +12088,7 @@ class FUN_00cc8a10_cls
   public:
     void* unk00;
     unsigned char* m_pSub;
-    void hkConstraintCinfo_SaveBinary(SaveCtx* ctx);
+    void hkConstraintCinfo_SaveBinary(SaveCtx* arStream);
     void WriteSubData(int a1);
 };
 static inline void CC8A10Write(SaveCtx* c, void* p, unsigned int n)
@@ -12123,11 +12123,11 @@ struct bhkParentX
         v14(), v15(), v16(), v17(), v18(), v19(), v20(), v21(), v22(), v23(), v24(), v25(), v26(), v27(), v28(), v29(),
         v30(), v31(), v32(), v33(), v34(), v35(), v36(), v37(), v38(), v39(), v40(), v41(), v42(), v43(), v44();
     virtual CinfoX* GetCinfo(int* piSize);
-    void bhkConvexShape_LoadBinary(NiStream& kStream);
+    void bhkConvexShape_LoadBinary(NiStream& arStream);
 };
 struct bhkDerivedX : bhkParentX
 {
-    void bhkConvexTransformShape_LoadBinary(NiStream& kStream);
+    void bhkConvexTransformShape_LoadBinary(NiStream& arStream);
 };
 extern "C" unsigned long __cdecl _byteswap_ulong(unsigned long);
 namespace cce {
@@ -12139,7 +12139,7 @@ struct Block
     unsigned long m_iThirdValue;
     unsigned long m_iFourthElementInteger;
 };
-void __cdecl bhkStream_Endian(Block* b);
+void __cdecl bhkStream_Endian(Block* arTrans);
 inline void Swap32(unsigned long& v)
 {
     v = _byteswap_ulong(v);
@@ -12236,8 +12236,8 @@ struct Obj
     virtual Hdr* GetHeader(int* pSize);
     int unkCur;
     Meta* m_pMeta;
-    void bhkConvexShape_SaveBinary(Writer* w);
-    void bhkConvexTransformShape_SaveBinary(Writer* w);
+    void bhkConvexShape_SaveBinary(Writer* arStream);
+    void bhkConvexTransformShape_SaveBinary(Writer* arStream);
 };
 static inline void* GetName(Obj* o)
 {
@@ -12245,15 +12245,18 @@ static inline void* GetName(Obj* o)
 }
 // @fnv 0x00ccec00
 // src: XBOX_PDB 0x00ccec00
-void Obj::bhkConvexTransformShape_SaveBinary(Writer* w)
+// pdb: bhkConvexTransformShape::SaveBinary | bhkConvexTransformShape.obj | retail, upstream name already matches, high
+// pdb params: arStream
+// pdb locals: cinfo, ps
+void Obj::bhkConvexTransformShape_SaveBinary(Writer* arStream)
 {
-    w->SetName(GetName(this));
+    arStream->SetName(GetName(this));
     int iSize;
     Hdr* h = GetHeader(&iSize);
-    if (w->m_ucMode != 1)
+    if (arStream->m_ucMode != 1)
         SwapBlock(&h->m_kBlock);
-    bhkConvexShape_SaveBinary(w);
-    if (w->m_ucMode != 1)
+    bhkConvexShape_SaveBinary(arStream);
+    if (arStream->m_ucMode != 1)
         SwapBlock(&h->m_kBlock);
 }
 }
@@ -12320,7 +12323,7 @@ struct FUN_00cd3410
     FUN_00cd3410_ArrayFields m_a2;                    // 0x3b0
     FUN_00cd3410_ArrayFields m_a3;                    // 0x3bc
 
-    FUN_00cd3410(unsigned int param);
+    FUN_00cd3410(unsigned int apStartCollector);
 };
 inline void* operator new(unsigned int, void* p)
 {
@@ -12433,18 +12436,18 @@ class hkObjCC01
 
     void* DispatchToTarget(void* pv);
 };
-extern "C" int __cdecl Vsnprintf(char* dst, int maxlen, const char* fmt, ...);
+extern "C" int __cdecl hkString_snprintf(char* dst, int maxlen, const char* fmt, ...);
 extern "C" int __cdecl hkString_strLen(const char* s);
 // src: HAVOK_LIB 0x00cc0080
-static __declspec(noinline) void writeString(hkStreamWriter* writer, const char* str)
+static __declspec(noinline) void writeString(hkStreamWriter* sb, const char* s)
 {
-    if (str)
+    if (s)
     {
-        writer->write(str, hkString_strLen(str));
+        sb->write(s, hkString_strLen(s));
     }
     else
     {
-        writer->write("(null)", 6);
+        sb->write("(null)", 6);
     }
 }
 struct FUN_00cc0370_Class : hkOstream
@@ -12499,7 +12502,7 @@ struct FUN_00cc0550_class
     unsigned short m_usField06;
     FUN_00cc0550_Allocated* m_pField08;
 
-    FUN_00cc0550_class* __thiscall InitializeWithValue(int value);
+    FUN_00cc0550_class* __thiscall InitializeWithValue(int mem);
 };
 struct FUN_00d46d40_s
 {
@@ -12527,7 +12530,7 @@ struct hkObjCC08
     void hkResource_getContents_class_hkRootLevelContainer();
 };
 struct CpuOpaque;
-extern CpuOpaque DAT_01268590;
+extern CpuOpaque bhkPoseArray_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01268590 (old: DAT_01268590/g_01268590)
 CpuOpaque* __cdecl bhkPoseArray_GetRTTI();
 struct FUN_00a5d2f0_shell
 {
@@ -12539,7 +12542,7 @@ struct FUN_00cc1310_class : FUN_00a5d2f0_shell
     unsigned int m_uiUnk4;
     unsigned int m_uiCount;
     void* m_pData;
-    bool bhkPoseArray_RegisterStreamables(void* apStream);
+    bool bhkPoseArray_RegisterStreamables(void* arStream);
 };
 struct Stream
 {
@@ -12694,8 +12697,8 @@ struct S_54d0_Owner
     void* m_pUnk08;
     S_54d0_Child* m_pData;
 
-    void Attach(unsigned int uiNode);
-    S_54d0_Child* __thiscall bhkWheelConstraint_CreateCinfo(bool* pbCreated);
+    void Attach(unsigned int arInfo);
+    S_54d0_Child* __thiscall bhkWheelConstraint_CreateCinfo(bool* arCreated);
 };
 struct CC7970_Allocator
 {
@@ -12733,8 +12736,8 @@ struct CC7970_Owner
 {
     unsigned int m_unk00, m_unk04, m_flag08;
     CC7970_RefData* m_pData;
-    void __thiscall CopyFromSource(CC7970_RefObject* object);
-    CC7970_RefData* __thiscall GetOrCreateRefData(bool* created);
+    void __thiscall CopyFromSource(CC7970_RefObject* arInfo);
+    CC7970_RefData* __thiscall GetOrCreateRefData(bool* arCreated);
 };
 void hkGenericConstraintCinfo_LoadBinary();
 void hkFixedConstraintCinfo_LoadBinary();
@@ -12807,9 +12810,9 @@ struct FUN_00cce5e0_class
 struct Cls00ccf5a0
 {
     void bhkShape_LinkObject(int a);
-    void bhkConvexSweepShape_LinkObject(int a);
+    void bhkConvexSweepShape_LinkObject(int arStream);
 };
-void __cdecl hkArrayUtil__reserve(void* alloc, void* arr, int cap, int elemSize);
+void __cdecl hkArrayUtil__reserve(void* mem, void* array, int numElem, int sizeElem);
 struct FE50Router
 {
     int m0, m4, m8, mc;
@@ -12894,7 +12897,7 @@ struct FE50Wrap
             return m8->m44[i];
         return 0;
     }
-    void FillOutput(FE50Out* out);
+    void FillOutput(FE50Out* arInfo);
 };
 struct AGBinStream
 {
@@ -12923,7 +12926,7 @@ struct AGStream : NiStream
 struct AGOwner : bhkSaveOwner_blk_00cc0000_o2_rtm_variant
 {
     void bhkConvexShape_LoadBinary(AGStream* stream);
-    void LoadSavedData(AGStream* stream);
+    void LoadSavedData(AGStream* arStream);
 };
 struct FnvCpu_FUN_00cd0cf0_CpuObject
 {
@@ -13137,8 +13140,8 @@ struct FUN_00cdb3c0_class
     void* __thiscall GetUnk38_00cdb3c0();
 };
 extern "C" void* __cdecl fnv_zlib_memset(void* dest, int val, unsigned int count) throw();
-void __cdecl ResizeAudioStream(void* allocator, void* array, int elementSize) throw();
-void __cdecl hkArrayUtil__reserve(void* allocator, void* array, int newCapacity, int elementSize) throw();
+void __cdecl ResizeAudioStream(void* mem, void* array, int sizeElem) throw();
+void __cdecl hkArrayUtil__reserve(void* mem, void* array, int numElem, int sizeElem) throw();
 template <typename T> inline void ConstructWithCopy(T* p, int n, const T& t)
 {
     for (int i = 0; i < n; i++)
@@ -13310,21 +13313,21 @@ struct CC0280Stream
 };
 int hkString_strLen(int);
 // src: HAVOK_LIB 0x00cc0080
-static void __declspec(noinline) writeString(CC0280Stream* s, const char* str)
+static void __declspec(noinline) writeString(CC0280Stream* sb, const char* s)
 {
-    if (str == 0)
+    if (s == 0)
     {
-        s->Write("(null)", 6);
+        sb->Write("(null)", 6);
         return;
     }
-    s->Write(str, hkString_strLen((int)str));
+    sb->Write(s, hkString_strLen((int)s));
 }
 struct CC0280Writer : hkOstream
 {
     CC0280Writer* WriteBool(bool b);
 };
 int __cdecl hkString_strLen(int);
-int __cdecl Vsnprintf(char*, unsigned int, const char*, ...);
+int __cdecl hkString_snprintf(char*, unsigned int, const char*, ...);
 struct WriterObj
 {
     virtual void v00();
@@ -13334,12 +13337,12 @@ struct WriterObj
     virtual void Write(const char* s, int len);
 };
 // src: HAVOK_LIB 0x00cc0080
-static __declspec(noinline) void writeString(WriterObj* obj, const char* str)
+static __declspec(noinline) void writeString(WriterObj* sb, const char* s)
 {
-    if (!str)
-        obj->Write("(null)", 6);
+    if (!s)
+        sb->Write("(null)", 6);
     else
-        obj->Write(str, hkString_strLen((int)str));
+        sb->Write(s, hkString_strLen((int)s));
 }
 struct FUN_00cc01e0_class
 {
@@ -13381,11 +13384,11 @@ struct S00cc0850_Slot
     void* __thiscall FindByName(void* key);
     void* __thiscall ProcessEntries_00d48150(const char* name, int flags);
 };
-void* __cdecl hkSerializeUtil_load(int owner, int a, int b);
+void* __cdecl hkSerializeUtil_load(int streamIn, int errorOut, int classReg);
 extern int DAT_01268b9c;
 extern const char str_010c93d0[];
 extern const char str_010c93c0[];
-int __cdecl hkpHavokSnapshot_load(int owner, int* result);
+int __cdecl hkpHavokSnapshot_load(int reader, int* allocatedData);
 extern "C" void __stdcall FUN_00ec5fce(void*, unsigned int, unsigned int, const void*);
 extern "C" void FUN_004381b0();
 struct FUN_00a5d3d0
@@ -13453,7 +13456,7 @@ struct S_00cc5b90_PendingAllocation
 struct S_00cc5b90_Owner
 {
     void __thiscall bhkConstraint_CopyMembers(S_00cc5b90_Node*, int);
-    S_00cc5b90_Node* __thiscall AllocateNode(int arg);
+    S_00cc5b90_Node* __thiscall AllocateNode(int arCloneData);
 };
 struct SaveBody
 {
@@ -13512,7 +13515,7 @@ struct SaveObject
     int unk00;
     SaveBody* body;
     void hkConstraintCinfo_SaveBinary(SaveCtx*);
-    void SaveShape(unsigned int, SaveCtx*);
+    void hkConstraintCinfo_SaveMotor(unsigned int, SaveCtx*);
     void hkRagdollConstraintCinfo_SaveBinary(SaveCtx*);
 };
 extern int DAT_0108febc;
@@ -13582,7 +13585,7 @@ struct S00cc9af0_Obj
     int unk04;
     int unk08;
     void* m_pData;
-    void bhkBallAndSocketConstraint_KillCinfo(bool b);
+    void bhkBallAndSocketConstraint_KillCinfo(bool abCreated);
 };
 extern const float g_fCCE1C0DefaultScale;
 struct CCE1C0MemoryManager
@@ -13634,7 +13637,7 @@ struct CCE1C0Owner
     void* m_pParentNode;
     CCE1C0Child* m_pkChild;
 
-    void bhkConvexVerticesShape_CopyCinfo(CCE1C0Child* pkChild);
+    void bhkConvexVerticesShape_CopyCinfo(CCE1C0Child* arInfo);
     CCE1C0Child* GetOrCreateChild(bool* pbCreated);
 };
 extern __declspec(thread) unsigned int t_uiMemContextC01;
@@ -13729,7 +13732,7 @@ struct FloatArgStream
     unsigned short m_iFlags;
     unsigned short m_iUnk;
     void* m_pSharedOwner;
-    FloatArgStream* WriteFloat(float value);
+    FloatArgStream* WriteFloat(float f);
 };
 extern const char str_010c9328[];
 struct S00cc03c0_Obj
@@ -13739,12 +13742,13 @@ struct S00cc03c0_Obj
     hkStreamWriter* unk08;
     S00cc03c0_Obj* __thiscall WriteToStream(unsigned __int64 v);
 };
+// pdb: structure T, size 0x8 (here 0x22), 1 members
 struct T
 {
     char pad[0x20];
     unsigned short m_20;
 };
-static T* getAnyNonFixedIsland(T* a, T* b);
+static T* getAnyNonFixedIsland(T* islandA, T* islandB);
 extern T* volatile g_a;
 extern T* volatile g_b;
 extern T* volatile g_sink;
@@ -14267,7 +14271,7 @@ struct CC3D60Owner
     virtual void vf50();
     virtual void vf51();
     virtual void vf52(CC3D60Object* object, unsigned int argument);
-    CC3D60Object* CreateObject(unsigned int argument);
+    CC3D60Object* CreateObject(unsigned int arCloneData);
 };
 #include <xmmintrin.h>
 extern __declspec(thread) unsigned int memoryCategory;
@@ -14385,7 +14389,7 @@ class ShapeOwnerCC3
     virtual void vb4();
     virtual void vb8();
     virtual void Update(ShapeInfoCC3* pkInfo);
-    void CreateShapeFromInfo(ShapeInfoCC3* pkInfo);
+    void CreateShapeFromInfo(ShapeInfoCC3* arInfo);
 };
 extern int DAT_010c97e4;
 extern int DAT_012685d0;
@@ -14472,8 +14476,8 @@ struct SaveObject460
     virtual void v2B();
     virtual void v2C();
     virtual SaveValues460* GetData(bool* flag);
-    void DispatchChainNodes(FUN_00cc3c50_arg* stream);
-    void bhkAngularDashpotAction_SaveBinary(FUN_00cc3c50_arg* stream);
+    void DispatchChainNodes(FUN_00cc3c50_arg* arStream);
+    void bhkAngularDashpotAction_SaveBinary(FUN_00cc3c50_arg* arStream);
 };
 inline void SwapValues460(SaveValues460* data)
 {
@@ -14484,40 +14488,43 @@ inline void SwapValues460(SaveValues460* data)
     data->value20 = _byteswap_ulong(data->value20);
     data->value24 = _byteswap_ulong(data->value24);
 }
-void* __cdecl CreateF4A30Result(void* a, int b);
+void* __cdecl bhkConstraintManager_Clone(void* apData, int arCloneData);
 struct ObjHook : S_00cc4b90_Obj
 {
-    void ahkpBreakableConstraintData_SetChild(void* child);
+    void ahkpBreakableConstraintData_SetChild(void* apData);
 };
 namespace c4a80 {
 struct Cls
 {
     int unk0;
     S_00cc4b90_Obj* m_p;
-    int hkBreakableConstraintCinfo_CloneData(S_00cc4b90_Obj* shape, int a2);
-    int ReleaseObject(S_00cc4b90_Obj* shape, int a2);
+    int hkBreakableConstraintCinfo_CloneData(S_00cc4b90_Obj* apData, int arCloneData);
+    int ReleaseObject(S_00cc4b90_Obj* apData, int a2);
 };
 // @fnv 0x00cc4a80
 // src: XBOX_PDB 0x00cc4a80
-int Cls::hkBreakableConstraintCinfo_CloneData(S_00cc4b90_Obj* shape, int a2)
+// pdb: hkBreakableConstraintCinfo::CloneData | bhkBreakableConstraint.obj | retail, upstream name already matches, high
+// pdb params: apData, arCloneData
+// pdb locals: pnd, tempMemContext, pd, pcd, pclone
+int Cls::hkBreakableConstraintCinfo_CloneData(S_00cc4b90_Obj* apData, int arCloneData)
 {
     S_00cc4b90_Ctx ctx(0x10);
     S_00cc4b90_Obj* src = m_p;
-    if (shape == 0)
-        shape = new S_00cc4b90_Obj();
+    if (apData == 0)
+        apData = new S_00cc4b90_Obj();
     if (src->unk18 != 0)
     {
-        void* child = CreateF4A30Result((void*)src->unk18, a2);
+        void* child = bhkConstraintManager_Clone((void*)src->unk18, arCloneData);
         if (child != 0)
         {
-            ((ObjHook*)shape)->ahkpBreakableConstraintData_SetChild(child);
+            ((ObjHook*)apData)->ahkpBreakableConstraintData_SetChild(child);
             ((FUN_00cca450_hook*)child)->FUN_00c905b0();
         }
     }
-    shape->f20 = src->f20;
+    apData->f20 = src->f20;
     unsigned char b = *(volatile unsigned char*)&src->b24;
-    shape->b24 = b;
-    return ReleaseObject(shape, a2);
+    apData->b24 = b;
+    return ReleaseObject(apData, arCloneData);
 }
 }
 extern __declspec(thread) unsigned int t_uiMemContext4D40;
@@ -14566,7 +14573,7 @@ class Owner4D40
 {
   public:
     BreakableConstraintInfoFields* GetOrCreateInterface(bool* pbCreated);
-    void SetObject(Object4D40* pkObject);
+    void SetObject(Object4D40* arInfo);
 
     int unk00;
     int unk04;
@@ -14675,7 +14682,7 @@ struct DataViewer
     {
         return GetData() ? GetData()->GetConstraint() : 0;
     }
-    void hkBreakableConstraintCinfo_GetViewerStrings(ViewerStrings* strings);
+    void hkBreakableConstraintCinfo_GetViewerStrings(ViewerStrings* apStrings);
 };
 struct FUN_00d4f2a0
 {
@@ -14766,7 +14773,7 @@ struct CC8850_Owner
 {
     unsigned int m_unk00, m_unk04, m_flag08;
     CC7970_RefData* m_pData;
-    void __thiscall CopyFromSource(CC7970_RefObject* object);
+    void __thiscall CopyFromSource(CC7970_RefObject* arInfo);
     CC7970_RefData* __thiscall GetOrCreateReference(bool* created);
 };
 struct A9410Alloc
@@ -14798,7 +14805,7 @@ struct O9410
     unsigned int m_uiCount;
     unsigned int m_uiValue1;
 
-    void SetChildObject(int flag);
+    void SetChildObject(int apData);
     void UpdateState_00cc9410();
 };
 G9410::~G9410()
@@ -14874,7 +14881,7 @@ struct CacheOwner
     unsigned int unk04;
     void* m_pSharedOwner;
     CacheValueFields* m_pIntegerData;
-    void __thiscall bhkBallSocketConstraintChain_CopyCinfo(void* value);
+    void __thiscall bhkBallSocketConstraintChain_CopyCinfo(void* arInfo);
     void* __thiscall GetOrCreateCacheValue(bool* created);
 };
 extern int DAT_010c8cc8;
@@ -14898,7 +14905,7 @@ struct CC9A20_Owner
 {
     unsigned int m_unk00, m_unk04, m_flag08;
     CC7970_RefData* m_pData;
-    void __thiscall CopyFromSource(CC7970_RefObject* object);
+    void __thiscall CopyFromSource(CC7970_RefObject* arInfo);
     CC7970_RefData* __thiscall EnsureReference(bool* created);
 };
 extern int DAT_010ca744;
@@ -15076,8 +15083,8 @@ class S00ccd2c0_cls
     virtual void v43();
     virtual void v44();
     virtual S00ccd2c0_Obj* v45(bool* flag);
-    int bhkShape_CopyMembers(void* a1, S00ccd2c0_Arg2* a2);
-    int bhkCylinderShape_CopyMembers(void* a1, S00ccd2c0_Arg2* a2);
+    int bhkShape_CopyMembers(void* apDest, S00ccd2c0_Arg2* arCloneData);
+    int bhkCylinderShape_CopyMembers(void* apDest, S00ccd2c0_Arg2* arCloneData);
 };
 static volatile float S00ccd2c0_sink;
 // src: GUESS 0x00ccd170 (confidence: low)
@@ -15137,7 +15144,7 @@ struct CCD460Owner
     virtual void vf47();
     virtual void vf48();
     virtual void vf49(FUN_00ccd100* object, unsigned int argument);
-    FUN_00ccd100* bhkCylinderShape_CreateClone(unsigned int argument);
+    FUN_00ccd100* bhkCylinderShape_CreateClone(unsigned int arCloneData);
 };
 struct EE60Vec
 {
@@ -15233,12 +15240,12 @@ class CcEE60Self
     int m_08;
     CcEE60Data* m_data;
 
-    void bhkConvexTransformShape_CopyCinfo(CcEE60Data* d);
-    CcEE60Data* bhkConvexTransformShape_CreateCinfo(bool* created);
+    void bhkConvexTransformShape_CopyCinfo(CcEE60Data* arInfo);
+    CcEE60Data* bhkConvexTransformShape_CreateCinfo(bool* arCreated);
 };
 struct CD05E0_Alloc
 {
-    void __thiscall MemoryManager_Deallocate(void* p);
+    void __thiscall MemoryManager_Deallocate(void* apMem);
 };
 struct CD05E0_Heap
 {
@@ -15264,7 +15271,7 @@ struct CD05E0_Owner
     int unk04;
     int unk08;
     CD05E0_Obj* m_pEntryObject;
-    void bhkConvexListShape_KillCinfo(bool release);
+    void bhkConvexListShape_KillCinfo(bool abCreated);
 };
 struct WorkingState
 {
@@ -15694,7 +15701,7 @@ struct __declspec(align(16)) hkMatrix3_Scaled
 };
 struct FUN_00cd7d20_Class
 {
-    void __thiscall hkCharControllerShape_getAabb(float* param1, float param2, float* param3);
+    void __thiscall hkCharControllerShape_getAabb(float* arLocalToWorld, float afTolerance, float* arOut);
 };
 void* __cdecl Object_DispatchCommandFour(unsigned int size);
 void __cdecl FUN_00aa1460(void* p);
@@ -16269,7 +16276,7 @@ struct NameSetC136
     int unk04;
     unsigned int m_numNames;
     const char** m_ppNames;
-    bool ContainsAllNames(const ClassInfoC136* pkInfo);
+    bool bhkPoseArray_BoneMatch(const ClassInfoC136* apSkel);
 };
 struct __declspec(align(16)) Q1420V4
 {
@@ -16460,7 +16467,7 @@ struct FUN_00cdfe00_Object
     virtual void vf3C();
     virtual int* vf40();
 };
-void __cdecl hkpWorldConstraintUtil_removeAndDeleteModifier(int* a, FUN_00cdfe00_Object* b, int c);
+void __cdecl hkpWorldConstraintUtil_removeAndDeleteModifier(int* a, FUN_00cdfe00_Object* constraintOwner, int type);
 typedef void*(__stdcall* TlsGetValueFunc)(int);
 void hkpResponseModifier_clearSurfaceVelocity(FUN_00cdfe00_Object* param1, FUN_00cdfe00_Object* param2);
 struct LocalBinaryStream
@@ -16757,7 +16764,7 @@ struct CopyOwner
     int unk04;
     CopyShape* shape;
     void bhkConvexShape_CopyCinfo(CopyOutput*);
-    void bhkConvexVerticesShape_CopyCinfo(CopyOutput* out);
+    void bhkConvexVerticesShape_CopyCinfo(CopyOutput* arInfo);
 };
 extern float DAT_0104da48;
 struct ContactSource
@@ -17413,8 +17420,8 @@ struct BestOut
     int f4c;
     Entry* entry;
 };
-bool __cdecl bhkCollisionFilter_IsCollisionEnabled(Key4 a, Key4 b);
-void __stdcall hkVector4_setRotatedDir(void* a, BestOut* b);
+bool __cdecl bhkCollisionFilter_IsCollisionEnabled(Key4 aInfoA, Key4 aInfoB);
+void __stdcall hkVector4_setRotatedDir(void* quat, BestOut* direction);
 struct Rotation3
 {
     __m128 a, b, c;
@@ -17471,7 +17478,7 @@ class PickSelf
     int f150, f154, f158, f15c;
     EntryPair* pairs;
     int count;
-    void hkpCachingShapePhantomRay_castRay(RayArg* arg1, BestOut* arg2);
+    void hkpCachingShapePhantomRay_castRay(RayArg* arInput, BestOut* arOutput);
 };
 extern "C" int DAT_012685ac;
 void __cdecl bhkSerializable_Kill();
@@ -17871,7 +17878,7 @@ struct Collector
     PointArray<int> states;
     PointArray<Collision> pending;
     void ProcessEntries_00cd3080();
-    void bhkCharacterPointCollector_addCdPoint(Input* input);
+    void bhkCharacterPointCollector_addCdPoint(Input* event);
 };
 extern float DAT_01267e30;
 extern float DAT_01267e34;
@@ -17974,7 +17981,7 @@ struct ConstraintRecord
 };
 void* __cdecl FindModifierConstraintAtom(void*, int);
 void __cdecl hkpWorldConstraintUtil_addModifier(void*, ConstraintInput*, ConstraintRecord*);
-void __cdecl hkpResponseModifier_disableConstraint(void* owner, ConstraintInput* input);
+void __cdecl hkpResponseModifier_disableConstraint(void* instance, ConstraintInput* constraintOwner);
 struct S00ccaaf0_arg
 {
     int m_i00;
@@ -18032,7 +18039,7 @@ class S00ccaaf0_cls
     virtual void v2b();
     virtual void v2c();
     virtual FUN_00cca9c0_class* vb4(unsigned char* out);
-    void bhkTriangleShape_CopyMembers(void* a1, S00ccaaf0_arg* a2);
+    void bhkTriangleShape_CopyMembers(void* apDest, S00ccaaf0_arg* arCloneData);
 };
 struct CC2B60Src
 {
@@ -18077,7 +18084,7 @@ struct CC2F90Owner_SV
     CC2B60Src* m_pParentNode;
     void* m_pkChild;
 
-    void __thiscall WriteScriptTargetInfo(void* p);
+    void __thiscall bhkBinaryAction_CopyCinfo(void* arInfo);
     void CopyParentFieldsToChild(CC2B60Dst* pkChild);
 };
 struct MalleableConstraintStrength
@@ -18110,8 +18117,8 @@ struct FNVEffectRec
     float m_fValue24;
 };
 void* __cdecl FindModifierConstraintAtom(void* p, int type);
-void __cdecl hkpResponseModifier_setImpulseScalingForContact(FUN_00cdfe00_Object* a1, int a2, int a3, ConstraintInput* a4, float a5, float a6);
-void __cdecl hkpResponseModifier_setLowSurfaceViscosity(FUN_00cdfe00_Object* pNode, ConstraintInput* pObj);
+void __cdecl hkpResponseModifier_setImpulseScalingForContact(FUN_00cdfe00_Object* manager, int bodyA, int bodyB, ConstraintInput* constraintOwner, float usedImpulseFraction, float maxAcceleration);
+void __cdecl hkpResponseModifier_setLowSurfaceViscosity(FUN_00cdfe00_Object* manager, ConstraintInput* constraintOwner);
 #include <xmmintrin.h>
 namespace CE6Memory {
 hkMemoryRouter* hkMemoryRouter_getInstance();
@@ -18257,7 +18264,7 @@ struct CE6Owner
     virtual void Output(void* first, CE6Hull* hull, void* second, const char* name);
     int unk04;
     CE6Shape* unk08;
-    void bhkConvexVerticesShape_BuildDisplayGeometry(void* first, void* second);
+    void bhkConvexVerticesShape_BuildDisplayGeometry(void* apNode, void* arDefColor);
 };
 struct EdaTls_t
 {
@@ -18505,7 +18512,7 @@ class FUN_00cceda0_cls
     virtual void vC0();
     virtual void v0C4(void* p, unsigned int a);
 
-    void* bhkConvexTransformShape_CreateClone(unsigned int arg);
+    void* bhkConvexTransformShape_CreateClone(unsigned int arCloneData);
 };
 
 struct Vector59
@@ -18564,30 +18571,33 @@ struct Owner59
 {
     int unk00;
     FUN_00d4f0f0* src;
-    void ReleaseObject(FUN_00d4f0f0* node, Params59* params);
-    void hkStiffSpringConstraintCinfo_CloneData(FUN_00d4f0f0* node, Params59* params);
+    void ReleaseObject(FUN_00d4f0f0* apData, Params59* params);
+    void hkStiffSpringConstraintCinfo_CloneData(FUN_00d4f0f0* apData, Params59* arCloneData);
 };
 
 // @fnv 0x00cc59c0
 // src: XBOX_PDB 0x00cc59c0
-void Owner59::hkStiffSpringConstraintCinfo_CloneData(FUN_00d4f0f0* node, Params59* params)
+// pdb: hkStiffSpringConstraintCinfo::CloneData | bhkStiffSpringConstraint.obj | retail, upstream name already matches, high
+// pdb params: apData, arCloneData
+// pdb locals: pnd, fscale, tempMemContext, pd
+void Owner59::hkStiffSpringConstraintCinfo_CloneData(FUN_00d4f0f0* apData, Params59* arCloneData)
 {
     S_00cc4b90_Ctx ctx(0x10);
     FUN_00d4f0f0* s = src;
-    if (!node)
+    if (!apData)
     {
-        node = new FUN_00d4f0f0();
+        apData = new FUN_00d4f0f0();
     }
-    node->v0.m_vComponents = s->v0.m_vComponents;
-    node->v1.m_vComponents = s->v1.m_vComponents;
-    node->scale = s->scale;
-    float f = params->factor;
+    apData->v0.m_vComponents = s->v0.m_vComponents;
+    apData->v1.m_vComponents = s->v1.m_vComponents;
+    apData->scale = s->scale;
+    float f = arCloneData->factor;
     if (f != 1.0f)
     {
-        node->v0.mul4f(f);
-        node->v1.mul4f(f);
+        apData->v0.mul4f(f);
+        apData->v1.mul4f(f);
     }
-    ReleaseObject(node, params);
+    ReleaseObject(apData, arCloneData);
 }
 
 extern __declspec(thread) S_00cc4b90_Tls Cc9Tls;
@@ -18685,20 +18695,23 @@ struct Cc9Owner
 {
     unsigned int unk00;
     Cc9Src* src;
-    void ReleaseObject(FUN_00d53d90* dest, Cc9Arg* arg);
-    void hkBallSocketChainCinfo_CloneData(FUN_00d53d90* dest, Cc9Arg* arg);
+    void ReleaseObject(FUN_00d53d90* apData, Cc9Arg* arg);
+    void hkBallSocketChainCinfo_CloneData(FUN_00d53d90* apData, Cc9Arg* arCloneData);
 };
 
 // @fnv 0x00cc9270
 // src: XBOX_PDB 0x00cc9270
-void Cc9Owner::hkBallSocketChainCinfo_CloneData(FUN_00d53d90* dest, Cc9Arg* arg)
+// pdb: hkBallSocketChainCinfo::CloneData | bhkBallSocketConstraintChain.obj | retail, upstream name already matches, high
+// pdb params: apData, arCloneData
+// pdb locals: pnd, fscale, tempMemContext, pd, i
+void Cc9Owner::hkBallSocketChainCinfo_CloneData(FUN_00d53d90* apData, Cc9Arg* arCloneData)
 {
     Cc9Context scope(16);
     Cc9Src* src = this->src;
     Cc9View* d;
-    if (dest)
+    if (apData)
     {
-        d = reinterpret_cast<Cc9View*>(dest);
+        d = reinterpret_cast<Cc9View*>(apData);
     }
     else
     {
@@ -18715,7 +18728,7 @@ void Cc9Owner::hkBallSocketChainCinfo_CloneData(FUN_00d53d90* dest, Cc9Arg* arg)
         dst[i].a = s[i].a;
         dst[i].b = s[i].b;
     }
-    float scale = arg->scale;
+    float scale = arCloneData->scale;
     if (scale != 1.0f)
     {
         for (int j = 0; j < d->arr.size; j++)
@@ -18726,7 +18739,7 @@ void Cc9Owner::hkBallSocketChainCinfo_CloneData(FUN_00d53d90* dest, Cc9Arg* arg)
             p[j].b.multiply(ScaleLane(scale));
         }
     }
-    this->ReleaseObject(reinterpret_cast<FUN_00d53d90*>(d), arg);
+    this->ReleaseObject(reinterpret_cast<FUN_00d53d90*>(d), arCloneData);
 }
 
 struct Cdc90Layout
@@ -18742,6 +18755,8 @@ struct Cdc90Layout
 
 // @fnv 0x00ccdc90
 // src: XBOX_PDB 0x00ccdc90
+// pdb: bhkConvexVerticesShape::`scalar deleting destructor' | bhkConvexVerticesShape.obj | retail, object-file run extension, low
+// pdb note: debug build links it to hkConvexVerticesShapeCinfo::Scale
 void CdResultObj::hkConvexVerticesShapeCinfo_Scale(float value)
 {
     Cdc90Layout* self = reinterpret_cast<Cdc90Layout*>(this);
@@ -19773,16 +19788,16 @@ struct FUN_00c6cba0_class
 
     GroundVector goal;
 
-    void bhkCharacterController_GetPosition(SessionPoint* result);
+    void bhkCharacterController_GetPosition(SessionPoint* arPos);
 
-    void SubtractVectors(GroundVector* result);
+    void SubtractVectors(GroundVector* arPos);
 
     void bhkCharacterController_UpdateState();
 
     void bhkCharacterController_ApplyVelocityMod();
 };
 
-void __cdecl hkpCharacterMovementUtil_calculateMovement(MotionInput* input, GroundVector* velocity);
+void __cdecl hkpCharacterMovementUtil_calculateMovement(MotionInput* input, GroundVector* velocityOut);
 
 extern float DAT_012686e4;
 
@@ -19795,61 +19810,64 @@ struct MotionController
 
     bool stopVertical;
 
-    void bhkCharacterStateOnGround_Update(FUN_00c6cba0_class* character);
+    void bhkCharacterStateOnGround_Update(FUN_00c6cba0_class* arInput);
 };
 
 // @fnv 0x00cd4800
 // src: XBOX_PDB 0x00cd4800
-void MotionController::bhkCharacterStateOnGround_Update(FUN_00c6cba0_class* character)
+// pdb: bhkCharacterStateOnGround::Update | bhkCharacterStateOnGround.obj | retail, upstream name already matches, high
+// pdb params: arInput
+// pdb locals: muInput, position, diff, fdist, supStartLoc, curLoc, pw, gravity
+void MotionController::bhkCharacterStateOnGround_Update(FUN_00c6cba0_class* arInput)
 {
-    if (!character->flags.active() && !character->following)
+    if (!arInput->flags.active() && !arInput->following)
     {
         if (stopVertical)
-            character->velocity(2) = 0.0f;
+            arInput->velocity(2) = 0.0f;
         SessionPoint position;
-        character->bhkCharacterController_GetPosition(&position);
-        character->height = position.z;
-        character->motionState = 2;
-        character->bhkCharacterController_UpdateState();
-        character->stateManager->GetIndexedValue_00cbc510(character->stateId)->enter(character);
+        arInput->bhkCharacterController_GetPosition(&position);
+        arInput->height = position.z;
+        arInput->motionState = 2;
+        arInput->bhkCharacterController_UpdateState();
+        arInput->stateManager->GetIndexedValue_00cbc510(arInput->stateId)->enter(arInput);
         return;
     }
-    if (character->following)
+    if (arInput->following)
     {
-        GroundVector goal = character->goal;
+        GroundVector goal = arInput->goal;
         GroundVector position;
-        character->SubtractVectors(&position);
+        arInput->SubtractVectors(&position);
         GroundVector delta;
         delta.setSub4(position, goal);
         float distance = delta.length3();
-        if (distance > float(DAT_012686e4 * 64.0) || character->motionState != 11)
-            character->following = false;
+        if (distance > float(DAT_012686e4 * 64.0) || arInput->motionState != 11)
+            arInput->following = false;
     }
     MotionInput input;
     input.step = 1.0f;
-    input.surface = character->surface;
-    input.forward = character->forward;
-    input.up = character->up;
-    input.velocity = character->velocity;
-    if (character->flags.airborne())
-        input.movement.set(character->movement.getSimdAt(1), character->movement.getSimdAt(0),
-                           character->movement.getSimdAt(2), 0.0f);
+    input.surface = arInput->surface;
+    input.forward = arInput->forward;
+    input.up = arInput->up;
+    input.velocity = arInput->velocity;
+    if (arInput->flags.airborne())
+        input.movement.set(arInput->movement.getSimdAt(1), arInput->movement.getSimdAt(0),
+                           arInput->movement.getSimdAt(2), 0.0f);
     else
-        input.movement.set(character->movement.getSimdAt(1), character->movement.getSimdAt(0), 0.0f, 0.0f);
+        input.movement.set(arInput->movement.getSimdAt(1), arInput->movement.getSimdAt(0), 0.0f, 0.0f);
     input.maxSpeed = 500.0f;
-    input.constraint = character->constraint;
-    hkpCharacterMovementUtil_calculateMovement(&input, &character->velocity);
-    if (!character->flags.airborne())
+    input.constraint = arInput->constraint;
+    hkpCharacterMovementUtil_calculateMovement(&input, &arInput->velocity);
+    if (!arInput->flags.airborne())
     {
-        character->velocity(2) = input.velocity(2);
-        MotionBasis* basis = character->vtable->getBasis(character);
+        arInput->velocity(2) = input.velocity(2);
+        MotionBasis* basis = arInput->vtable->getBasis(arInput);
         GroundVector gravity = basis->forward;
-        gravity.mul4(GroundScalar(float(character->acceleration * 0.5 * character->scale)));
-        character->velocity.addMul4(GroundScalar(character->getTimeStep()), gravity);
+        gravity.mul4(GroundScalar(float(arInput->acceleration * 0.5 * arInput->scale)));
+        arInput->velocity.addMul4(GroundScalar(arInput->getTimeStep()), gravity);
     }
-    character->bhkCharacterController_ApplyVelocityMod();
-    if (character->motionState != 11 && (character->motionState != 1 || character->flags.special()))
-        character->bhkCharacterController_UpdateState();
+    arInput->bhkCharacterController_ApplyVelocityMod();
+    if (arInput->motionState != 11 && (arInput->motionState != 1 || arInput->flags.special()))
+        arInput->bhkCharacterController_UpdateState();
 }
 
 namespace N {
@@ -20165,8 +20183,11 @@ struct FootPlacementSolver
 };
 // @fnv 0x00cd8a50
 // src: XBOX_PDB 0x00cd8a50
-bool FootPlacementSolver::hkaFootPlacementIkSolver_castFoot(const FootCastInput& context, const FootVector& start, const FootVector& end,
-                                       FootVector& position, FootVector& normal) const
+// pdb: hkaFootPlacementIkSolver::castFoot | hkaFootPlacementIkSolver.obj | retail, upstream name already matches, high
+// pdb params: input, footWS, footEndWS, projectedFootWSOut, groundNormalWSOut
+// pdb locals: firstRayFraction, secondRayNormalWS, rayUpDistance, firstRayNormalWS, footToWS, footFromWS, footEndFromWS, footEndToWS, footEndRayFraction
+bool FootPlacementSolver::hkaFootPlacementIkSolver_castFoot(const FootCastInput& input, const FootVector& footWS, const FootVector& footEndWS,
+                                       FootVector& projectedFootWSOut, FootVector& groundNormalWSOut) const
 {
     const float r = rayUpDistance;
     const float h = rayDownDistance;
@@ -20176,20 +20197,20 @@ bool FootPlacementSolver::hkaFootPlacementIkSolver_castFoot(const FootCastInput&
     FootVector startNormal;
     {
         FootVector low, high;
-        low.addScaled(start, up, -h);
-        high.addScaled(start, up, r);
-        startHit = query(context, high, low, startFraction, startNormal);
+        low.addScaled(footWS, up, -h);
+        high.addScaled(footWS, up, r);
+        startHit = query(input, high, low, startFraction, startNormal);
     }
     HitBool endHit = false;
     float endFraction = DAT_0104da48;
     FootVector endNormal;
-    if (!end.close3(start))
+    if (!footEndWS.close3(footWS))
     {
         FootVector low, high;
-        low.addScaled(end, up, -h);
-        high.addScaled(end, up, r);
+        low.addScaled(footEndWS, up, -h);
+        high.addScaled(footEndWS, up, r);
         float queryFraction;
-        endHit = query(context, high, low, queryFraction, endNormal);
+        endHit = query(input, high, low, queryFraction, endNormal);
         if (endHit)
         {
             const float projection = endNormal.dot(up);
@@ -20202,7 +20223,7 @@ bool FootPlacementSolver::hkaFootPlacementIkSolver_castFoot(const FootCastInput&
                 hit.addScaled(high, ray, queryFraction);
                 const float planeDistance = -hit.dot(endNormal);
                 FootVector from;
-                from.addScaled(start, up, r);
+                from.addScaled(footWS, up, r);
                 const float denominator = -length * projection;
                 const float numerator = -(float(endNormal.dot(from)) + planeDistance);
                 const float fraction = numerator / denominator;
@@ -20216,15 +20237,15 @@ bool FootPlacementSolver::hkaFootPlacementIkSolver_castFoot(const FootCastInput&
     if (!startHit || startFraction > endFraction)
     {
         chosenFraction = endFraction;
-        normal = endNormal;
+        groundNormalWSOut = endNormal;
     }
     else
     {
         chosenFraction = startFraction;
-        normal = startNormal;
+        groundNormalWSOut = startNormal;
     }
     const float displacement = chosenFraction * length - r;
-    position.addScaled(start, up, -displacement);
+    projectedFootWSOut.addScaled(footWS, up, -displacement);
     return true;
 }
 }  // namespace fnv_00cd8a50
@@ -20303,6 +20324,8 @@ struct ObjArg
 };
 // @fnv 0x00cdf960
 // src: COMMUNITY 0x00cdf960
+// pdb: hkpResponseModifier::setInvMassScalingForContact | hkpResponseModifier.obj | retail, object-file run extension, low
+// pdb params: manager, body, constraintOwner, factor
 void hkpResponseModifier_setInvMassScalingForContact(Obj40* a, int b, ObjArg c, const Vec4* d)
 {
     ObjectData* p = a->v40();
@@ -20812,19 +20835,22 @@ struct Snapshot
 };
 // @fnv 0x00cd44e0
 // src: XBOX_PDB 0x00cd44e0
-__declspec(noinline) void __stdcall bhkCharacterStateSwimming_Update(MotionState* object)
+// pdb: bhkCharacterStateSwimming::Update | bhkCharacterStateSwimming.obj | retail, upstream name already matches, high
+// pdb params: arInput
+// pdb locals: fswimFloatPos, gravity, muInput
+__declspec(noinline) void __stdcall bhkCharacterStateSwimming_Update(MotionState* arInput)
 {
     Snapshot state;
     state.weight = 1.0f;
-    state.position = object->field4d0;
-    __m128 rotation = object->field4c0;
+    state.position = arInput->field4d0;
+    __m128 rotation = arInput->field4c0;
     state.rotation = rotation;
-    state.velocity = object->field4f0;
+    state.velocity = arInput->field4f0;
     {
-        const __m128* p = &object->field510;
-        const __m128* q = reinterpret_cast<const __m128*>(&object->field500);
+        const __m128* p = &arInput->field510;
+        const __m128* q = reinterpret_cast<const __m128*>(&arInput->field500);
         float scratch;
-        _mm_store_ss(&scratch, _mm_shuffle_ps(object->field510, object->field510, 0xaa));
+        _mm_store_ss(&scratch, _mm_shuffle_ps(arInput->field510, arInput->field510, 0xaa));
         float z = scratch;
         _mm_store_ss(&scratch, *p);
         float x = scratch;
@@ -20833,73 +20859,73 @@ __declspec(noinline) void __stdcall bhkCharacterStateSwimming_Update(MotionState
         state.factors = _mm_setr_ps(y, x, z, 0.0f);
     }
     state.scale = 100.0f;
-    state.extra = object->field4a0;
-    unsigned int f = *(unsigned int*)&object->field414;
+    state.extra = arInput->field4a0;
+    unsigned int f = *(unsigned int*)&arInput->field414;
     bool initialSupported = flag(f, 8) && flag(f, 8);
     if (initialSupported)
-        state.previous = object->field450;
+        state.previous = arInput->field450;
     else
         state.previous = rotation;
-    __m128* __restrict velocity = &object->field4f0;
+    __m128* __restrict velocity = &arInput->field4f0;
     hkpCharacterMovementUtil_calculateMovement(&state, velocity);
     __m128* parent = (__m128*)&DAT_01267e30;
-    MotionState* parentObject = object->field008;
+    MotionState* parentObject = arInput->field008;
     if (parentObject)
     {
-        object->bhkCharacterProxy_MarkRead();
+        arInput->bhkCharacterProxy_MarkRead();
         parent = parentObject->hkpCharacterProxy_getPosition();
-        object->bhkCharacterProxy_MarkRead();
+        arInput->bhkCharacterProxy_MarkRead();
     }
-    float height = altScalar(_mm_shuffle_ps(*parent, *parent, 0xaa)) - object->field578;
-    if (object->field560 >= 0.5f)
-        height += 0.5 * object->field564 * object->field560;
-    object->GetBasis();
-    __m128 direction = object->GetBasis()->y;
-    object->GetBasis();
+    float height = altScalar(_mm_shuffle_ps(*parent, *parent, 0xaa)) - arInput->field578;
+    if (arInput->field560 >= 0.5f)
+        height += 0.5 * arInput->field564 * arInput->field560;
+    arInput->GetBasis();
+    __m128 direction = arInput->GetBasis()->y;
+    arInput->GetBasis();
     {
-        unsigned int* pf = (unsigned int*)&object->field414;
+        unsigned int* pf = (unsigned int*)&arInput->field414;
         *pf |= 0x400;
     }
-    if (height > object->field53c)
+    if (height > arInput->field53c)
     {
-        if (object->field520 == 1)
+        if (arInput->field520 == 1)
         {
-            object->bhkCharacterController_UpdateState();
+            arInput->bhkCharacterController_UpdateState();
             goto done;
         }
         if (altScalar(_mm_shuffle_ps(*velocity, *velocity, 0xaa)) > 0.0f)
         {
-            object->field4f0.m128_f32[2] = 0.0f;
+            arInput->field4f0.m128_f32[2] = 0.0f;
         }
         else
         {
             _ReadWriteBarrier();
         }
     }
-    else if (object->field560 < 0.5f)
+    else if (arInput->field560 < 0.5f)
     {
-        if (object->field520 == 1 && flag(object->field414, 10))
+        if (arInput->field520 == 1 && flag(arInput->field414, 10))
         {
-            object->bhkCharacterController_UpdateState();
+            arInput->bhkCharacterController_UpdateState();
             goto done;
         }
-        if (!(height < object->field53c - float(DAT_012686e0 * 10.0)))
+        if (!(height < arInput->field53c - float(DAT_012686e0 * 10.0)))
             goto done;
-        applyVelocityN(*velocity, object, direction, object->getScale());
+        applyVelocityN(*velocity, arInput, direction, arInput->getScale());
         goto done;
     }
     else
     {
-        if (object->field54c == 1.0f)
+        if (arInput->field54c == 1.0f)
             goto done;
-        unsigned int flags = object->field414;
+        unsigned int flags = arInput->field414;
         if (flag(flags, 8) || flag(flags, 9))
             goto done;
     }
-    applyVelocityP(*velocity, object, direction, object->getScale());
+    applyVelocityP(*velocity, arInput, direction, arInput->getScale());
 done:
-    object->bhkCharacterController_ApplyVelocityMod();
-    if (object->field520 == 0)
-        object->bhkCharacterController_UpdateState();
+    arInput->bhkCharacterController_ApplyVelocityMod();
+    if (arInput->field520 == 0)
+        arInput->bhkCharacterController_UpdateState();
 }
 }  // namespace fnv_00cd44e0

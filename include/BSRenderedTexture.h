@@ -5,15 +5,16 @@
 class NiRenderTargetGroup;
 class NiRenderedTexture;
 
+// pdb: class BSRenderedTexture, size 0x40, bases: NiObject, 6 members
 class BSRenderedTexture
 {
   public:
     unsigned char base[8];
-    NiRenderTargetGroup* m_apRenderTargetGroups[6];
-    char unk20[4];
-    char m_acDataAtOffset36[4];
-    char m_acDataAtOffset40[4];
-    int m_iDataAtOffset44;
+    NiRenderTargetGroup* spGroup[6]; // src: XBOX_RETAIL_PDB +0x8 (old: m_apRenderTargetGroups)
+    char spPreRestoreGroup[4]; // src: XBOX_RETAIL_PDB +0x20 (old: unk20)
+    char spRestoreGroup[4]; // src: XBOX_RETAIL_PDB +0x24 (old: m_acDataAtOffset36)
+    char spPostRestoreGroup[4]; // src: XBOX_RETAIL_PDB +0x28 (old: m_acDataAtOffset40)
+    int iAliasedType; // src: XBOX_RETAIL_PDB +0x2c (old: m_iDataAtOffset44)
     NiRenderedTexture* spTexture[4];
 
     NiRenderTargetGroup* GetGroup();

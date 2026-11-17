@@ -353,25 +353,25 @@ void __cdecl hkVector4_ComputeValues_00e61fb0(const hkVector4* pkTriangle, const
 
     LocalM128 nc9 = _mm_shuffle_ps(n.m_vComponents, n.m_vComponents, 0xc9);
     LocalM128 nd2 = _mm_shuffle_ps(n.m_vComponents, n.m_vComponents, 0xd2);
-    kMatrixOut.m_kColumn0.m_vComponents =
+    kMatrixOut.m_col0.m_vComponents =
         _mm_sub_ps(_mm_mul_ps(_mm_shuffle_ps(a.m_vComponents, a.m_vComponents, 0xc9), nd2),
                    _mm_mul_ps(_mm_shuffle_ps(a.m_vComponents, a.m_vComponents, 0xd2), nc9));
-    kMatrixOut.m_kColumn1.m_vComponents =
+    kMatrixOut.m_col1.m_vComponents =
         _mm_sub_ps(_mm_mul_ps(_mm_shuffle_ps(b.m_vComponents, b.m_vComponents, 0xc9), nd2),
                    _mm_mul_ps(_mm_shuffle_ps(b.m_vComponents, b.m_vComponents, 0xd2), nc9));
-    kMatrixOut.m_kColumn2.m_vComponents =
+    kMatrixOut.m_col2.m_vComponents =
         _mm_sub_ps(_mm_mul_ps(_mm_shuffle_ps(c.m_vComponents, c.m_vComponents, 0xc9), nd2),
                    _mm_mul_ps(_mm_shuffle_ps(c.m_vComponents, c.m_vComponents, 0xd2), nc9));
 
-    swapE6F(kMatrixOut.m_kColumn1(0), kMatrixOut.m_kColumn0(1));
-    swapE6F(kMatrixOut.m_kColumn2(0), kMatrixOut.m_kColumn0(2));
-    swapE6F(kMatrixOut.m_kColumn2(1), kMatrixOut.m_kColumn1(2));
+    swapE6F(kMatrixOut.m_col1(0), kMatrixOut.m_col0(1));
+    swapE6F(kMatrixOut.m_col2(0), kMatrixOut.m_col0(2));
+    swapE6F(kMatrixOut.m_col2(1), kMatrixOut.m_col1(2));
 
-    kMatrixOut.m_kColumn0(3) = kNormalOut(0);
-    kMatrixOut.m_kColumn1(3) = kNormalOut(1);
-    kMatrixOut.m_kColumn2(3) = kNormalOut(2);
-    kMatrixOut.m_kColumn3.setZero4();
-    kMatrixOut.m_kColumn3(0) = -afInputValues[0] * afInputValues[4];
+    kMatrixOut.m_col0(3) = kNormalOut(0);
+    kMatrixOut.m_col1(3) = kNormalOut(1);
+    kMatrixOut.m_col2(3) = kNormalOut(2);
+    kMatrixOut.m_col3.setZero4();
+    kMatrixOut.m_col3(0) = -afInputValues[0] * afInputValues[4];
 }
 }  // namespace fnv_00e61fb0
 
@@ -485,7 +485,7 @@ struct MoppMemoryRouter
     void* heap;
 };
 void* __cdecl hkMemoryRouter_getInstance();
-void __cdecl ResizeAudioStream(void* heap, MoppResults* array, int elementSize);
+void __cdecl ResizeAudioStream(void* mem, MoppResults* array, int sizeElem);
 struct MoppErrorSink
 {
     virtual void unknown0();
@@ -499,14 +499,14 @@ struct MoppFormatter
     void* vtable;
     unsigned short memorySize, referenceCount;
     void* writer;
-    void FUN_00cb1600(char* buffer, int length);
+    void FUN_00cb1600(char* buf, int bufSize);
     void ProcessAndReturnValue_00cc01c0(const char* text);
     void FUN_00cc00e0();
 };
 struct MoppFindAllVM
 {
     MoppResults* results;
-    void hkpMoppFindAllVirtualMachine_queryOnTreeRight(const MoppQueryState* current, const unsigned char* program);
+    void hkpMoppFindAllVirtualMachine_queryOnTreeRight(const MoppQueryState* query, const unsigned char* PC);
 };
 static __forceinline void decodeWord(const unsigned char* __restrict p, unsigned int* __restrict out,
                                      unsigned int index)
@@ -530,13 +530,16 @@ static unsigned int readBig32(const unsigned char* p)
 }
 // @fnv 0x00e66290
 // src: HAVOK_LIB 0x00e66290
-void MoppFindAllVM::hkpMoppFindAllVirtualMachine_queryOnTreeRight(const MoppQueryState* current, const unsigned char* program)
+// pdb: hkpMoppFindAllVirtualMachine::queryOnTreeRight | hkpMoppFindAllVirtualMachine.obj | retail, upstream name already matches, high
+// pdb params: query, PC
+// pdb locals: scaledQuery, assertBuf, ostr
+void MoppFindAllVM::hkpMoppFindAllVirtualMachine_queryOnTreeRight(const MoppQueryState* query, const unsigned char* PC)
 {
     MoppQueryState local;
     unsigned int primitive;
     for (;;)
     {
-        unsigned int op = *program;
+        unsigned int op = *PC;
         switch (op)
         {
         case 0x10:
@@ -552,82 +555,82 @@ void MoppFindAllVM::hkpMoppFindAllVirtualMachine_queryOnTreeRight(const MoppQuer
         case 0x1a:
         case 0x1b:
         case 0x1c:
-            program += program[3] + 4;
+            PC += PC[3] + 4;
             break;
         case 0x20:
         case 0x21:
         case 0x22:
-            program += program[2] + 3;
+            PC += PC[2] + 3;
             break;
         case 0x23:
         case 0x24:
         case 0x25:
-            program += readBig16(program + 5) + 7;
+            PC += readBig16(PC + 5) + 7;
             break;
         case 0x29:
         case 0x2a:
         case 0x2b:
-            program += 7;
+            PC += 7;
             break;
         case 5:
-            program += program[1] + 2;
+            PC += PC[1] + 2;
             break;
         case 6:
-            program += readBig16(program + 1) + 3;
+            PC += readBig16(PC + 1) + 3;
             break;
         case 7:
-            program += readBig24(program + 1) + 4;
+            PC += readBig24(PC + 1) + 4;
             break;
         case 0x1:
         case 0x2:
         case 0x3:
         case 0x4:
-            program += 4;
+            PC += 4;
             break;
         case 9: {
-            unsigned int offset = program[1];
-            if (current != &local)
+            unsigned int offset = PC[1];
+            if (query != &local)
             {
-                local = *current;
-                current = &local;
+                local = *query;
+                query = &local;
             }
             local.primitiveOffset += offset;
-            program += 2;
+            PC += 2;
             break;
         }
         case 10: {
-            unsigned int offset = readBig16(program + 1);
-            if (current != &local)
+            unsigned int offset = readBig16(PC + 1);
+            if (query != &local)
             {
-                local = *current;
-                current = &local;
+                local = *query;
+                query = &local;
             }
             local.primitiveOffset += offset;
-            program += 3;
+            PC += 3;
             break;
         }
         case 11: {
-            unsigned int offset = readBig32(program + 1);
-            if (current != &local)
+            unsigned int offset = readBig32(PC + 1);
+            if (query != &local)
             {
-                local = *current;
-                current = &local;
+                local = *query;
+                query = &local;
             }
             local.primitiveOffset = offset;
-            program += 5;
+            PC += 5;
             break;
         }
         case 0x26:
         case 0x27:
         case 0x28:
-            program += 3;
+            PC += 3;
             break;
         case 0x60:
         case 0x61:
         case 0x62:
         case 0x63: {
-            unsigned int property = program[1];
-            program += 2;
+            unsigned int property = PC[1];
+            PC += 2;
             local.properties[op - 96] = property;
             goto propertiesUpdated;
         }
@@ -635,21 +638,21 @@ void MoppFindAllVM::hkpMoppFindAllVirtualMachine_queryOnTreeRight(const MoppQuer
         case 0x65:
         case 0x66:
         case 0x67:
-            decodeWord(program + 1, local.properties, op - 100);
-            program += 3;
+            decodeWord(PC + 1, local.properties, op - 100);
+            PC += 3;
             goto propertiesUpdated;
         case 0x68:
         case 0x69:
         case 0x6a:
         case 0x6b:
-            local.properties[op - 104] = readBig32(program + 1);
-            program += 5;
+            local.properties[op - 104] = readBig32(PC + 1);
+            PC += 5;
         propertiesUpdated: {
             unsigned int value = local.properties[0];
-            if (current != &local)
+            if (query != &local)
             {
-                local = *current;
-                current = &local;
+                local = *query;
+                query = &local;
             }
             local.properties[0] = value;
             break;
@@ -670,23 +673,23 @@ void MoppFindAllVM::hkpMoppFindAllVirtualMachine_queryOnTreeRight(const MoppQuer
             break;
         }
         case 0x50:
-            primitive = program[1];
+            primitive = PC[1];
             goto terminal;
         case 0x51:
-            primitive = readBig16(program + 1);
+            primitive = readBig16(PC + 1);
             goto terminal;
         case 0x52:
-            primitive = readBig24(program + 1);
+            primitive = readBig24(PC + 1);
             goto terminal;
         case 0x53: {
             struct
             {
                 unsigned hi, b3, b4;
             } t;
-            t.b3 = program[3];
-            t.hi = readBig16(program + 1) << 16;
+            t.b3 = PC[3];
+            t.hi = readBig16(PC + 1) << 16;
             t.b3 <<= 8;
-            t.b4 = program[4] + t.hi;
+            t.b4 = PC[4] + t.hi;
             primitive = t.b4 + t.b3;
         }
             goto terminal;
@@ -724,7 +727,7 @@ void MoppFindAllVM::hkpMoppFindAllVirtualMachine_queryOnTreeRight(const MoppQuer
         case 0x4f:
             primitive = op - 0x30;
         terminal:
-            primitive += current->primitiveOffset;
+            primitive += query->primitiveOffset;
             MoppResults* array = results;
             MoppMemoryRouter* router = (MoppMemoryRouter*)hkMemoryRouter_getInstance();
             if (array->count == (array->capacity & 0x3fffffff))
@@ -880,6 +883,9 @@ __forceinline HullResult Hull::buildFan(int count, HullLink* links, const HullVe
 
 // @fnv 0x00e67740
 // src: GUESS 0x00e67740 (confidence: low)
+// pdb: hkWingedEdge::patchInBoundaryToPointOfViewExpansion | hkWingedEdge.obj | retail, object-file run extension, low
+// pdb params: chainLength, edgeChain, pointOfView
+// pdb locals: newTriangles
 int Hull::ProcessAndTransformResult_00e67740(int count, HullLink* links, const HullVertex* endpoint)
 {
     return buildFan(count, links, endpoint).value;

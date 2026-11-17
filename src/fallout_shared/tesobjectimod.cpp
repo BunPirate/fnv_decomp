@@ -39,10 +39,11 @@ class TESModelRecordWriter : public TESModel
 class PickupPutdownSoundRecordWriter : public BGSPickupPutdownSounds
 {
   public:
-    void LogFormIDs();
+    void BGSPickupPutdownSounds_Save();
 };
 
 // @fnv 0x00519fc0
+// pdb: TESObjectIMOD::InitItem | TESObjectIMOD.obj | retail, upstream name already matches, high
 void TESObjectIMOD::InitItem()
 {
     if (IsFormInitialized())
@@ -56,32 +57,35 @@ void TESObjectIMOD::InitItem()
 
 // Loads a TESObjectIMOD record: reads the header, then dispatches each chunk to its loader until no chunks remain, returning true.
 // @fnv 0x0051a030
-bool TESObjectIMOD::Load(TESFile* file)
+// pdb: TESObjectIMOD::Load | TESObjectIMOD.obj | retail, upstream name already matches, high
+// pdb params: apFile
+// pdb locals: chunkid, pMessage, isize, pdata, tempint, itempint
+bool TESObjectIMOD::Load(TESFile* apFile)
 {
-    LoadRecordHeader(file);
+    LoadRecordHeader(apFile);
     SetInitializationState(false);
     int chunkID;
-    while ((chunkID = (int)file->GetChunkID()) != 0)
+    while ((chunkID = (int)apFile->GetChunkID()) != 0)
     {
         switch (chunkID)
         {
         case 0x44494445: {  // EDID
-            char* editorID = (char*)_alloca(file->GetChunkSize());
-            file->GetChunkData(editorID, 0x200);
+            char* editorID = (char*)_alloca(apFile->GetChunkSize());
+            apFile->GetChunkData(editorID, 0x200);
             SetEditorID_AtRuntime(editorID);
             break;
         }
         case 0x444e424f:  // OBND
-            readOBNDSubRecord(file);
+            readOBNDSubRecord(apFile);
             break;
         case 0x4c4c5546:  // FULL
-            TESFullName::LoadFullNameChunk(this, file);
+            TESFullName::LoadFullNameChunk(this, apFile);
             break;
         case 0x4c444f4d:  // MODL
         case 0x44444f4d:  // MODD
         case 0x54444f4d:  // MODT
         case 0x44534f4d:  // MOSD
-            TESModel::LoadModelData(this, file);
+            TESModel::LoadModelData(this, apFile);
             break;
         case 0x53444f4d: {  // MODS
             struct TextureSwapChunk
@@ -89,55 +93,56 @@ bool TESObjectIMOD::Load(TESFile* file)
                 unsigned int size;
                 void* data;
             } swaps;
-            swaps.size = file->GetChunkSize();
+            swaps.size = apFile->GetChunkSize();
             swaps.data = _alloca(swaps.size);
-            file->GetChunkData(swaps.data, swaps.size);
-            ParseTextureSwapData(swaps.data, swaps.size, file->GetFormVersion());
+            apFile->GetChunkData(swaps.data, swaps.size);
+            UnpackTextureSwapChunkData(swaps.data, swaps.size, apFile->GetFormVersion());
             break;
         }
         case 0x4e4f4349:  // ICON
-            TESTexture::ReadTextureData(this, file);
+            TESTexture::ReadTextureData(this, apFile);
             break;
         case 0x4f43494d:  // MICO
-            BGSMessageIcon::LoadMessageIconChunk(this, file);
+            BGSMessageIcon::LoadMessageIconChunk(this, apFile);
             break;
         case 0x49524353: {  // SCRI
             unsigned int scriptID = 0;
-            file->GetChunkData(&scriptID);
+            apFile->GetChunkData(&scriptID);
             SetScript(reinterpret_cast<Script*>(scriptID));
             TESScriptableForm::InitItem(this);
             break;
         }
         case 0x43534544:  // DESC
-            TESDescription::ReadDescriptionFromFile(this, file);
+            TESDescription::ReadDescriptionFromFile(this, apFile);
             break;
         case 0x54534544:  // DEST
         case 0x44545344:  // DSTD
-            BGSDestructibleObjectForm::LoadDestructibleData(this, file);
+            BGSDestructibleObjectForm::LoadDestructibleData(this, apFile);
             break;
         case 0x4d414e59: {  // YNAM
             unsigned int soundID = 0;
-            file->GetChunkData(&soundID);
+            apFile->GetChunkData(&soundID);
             SetPickupSound(reinterpret_cast<TESSound*>(soundID));
             break;
         }
         case 0x4d414e5a: {  // ZNAM
             unsigned int soundID = 0;
-            file->GetChunkData(&soundID);
+            apFile->GetChunkData(&soundID);
             SetPutdownSound(reinterpret_cast<TESSound*>(soundID));
             break;
         }
         case 0x41544144:  // DATA
-            ReadTypedData(file, 0, 0);
+            ReadTypedData(apFile, 0, 0);
             break;
         }
-        if (!file->NextChunk())
+        if (!apFile->NextChunk())
             break;
     }
     return true;
 }
 
 // @fnv 0x00519cc0
+// pdb: TESObjectIMOD::TESObjectIMOD | TESObjectIMOD.obj | retail, upstream name already matches, high
 TESObjectIMOD::TESObjectIMOD()
 {
     SetFormType(ENUM_FORM_ID_IMOD_ID);
@@ -145,22 +150,27 @@ TESObjectIMOD::TESObjectIMOD()
 }
 
 // @fnv 0x0051a5d0
-void TESObjectIMOD::LoadGameLegacy(unsigned int arg1, unsigned int arg2)
+// pdb: TESObjectIMOD::LoadGame | TESObjectIMOD.obj | retail, vtable slot, high
+// pdb params: aiFlags, aiCurrentFlags
+void TESObjectIMOD::LoadGameLegacy(unsigned int aiFlags, unsigned int aiCurrentFlags)
 {
-    TESForm::LoadGameLegacy(arg1, arg2);
-    TESValueForm::LoadGame_0048ea10(arg1, arg2);
+    TESForm::LoadGameLegacy(aiFlags, aiCurrentFlags);
+    TESValueForm::LoadGame_0048ea10(aiFlags, aiCurrentFlags);
 }
 
 // @fnv 0x0051a630
-void TESObjectIMOD::LoadGame(BGSLoadFormBuffer* buffer)
+// pdb: TESObjectIMOD::LoadGame | TESObjectIMOD.obj | retail, vtable slot, high
+// pdb params: aiFlags, aiCurrentFlags
+void TESObjectIMOD::LoadGame(BGSLoadFormBuffer* apLoadGameBuffer)
 {
-    TESForm::LoadGame(buffer);
-    TESValueForm::LoadGame(buffer);
+    TESForm::LoadGame(apLoadGameBuffer);
+    TESValueForm::LoadGame(apLoadGameBuffer);
 }
 
 extern "C" void __cdecl _Deallocate(void*);
 
 // @fnv 0x00519e40
+// pdb: TESObjectIMOD::`scalar deleting destructor' | TESObjectIMOD.obj | retail, vtable slot, high
 void* TESObjectIMOD::Destroy(unsigned int flags)
 {
     TESObjectIMOD::~TESObjectIMOD();
@@ -170,6 +180,9 @@ void* TESObjectIMOD::Destroy(unsigned int flags)
 }
 
 // @fnv 0x0051a550
+// pdb: TESObjectIMOD::GetSaveSize | TESObjectIMOD.obj | retail, vtable slot, high
+// pdb params: aiFlags
+// pdb locals: isize
 unsigned short TESObjectIMOD::GetSaveSizeLegacy(unsigned int aiFlags)
 {
     unsigned short isize = 0;
@@ -179,6 +192,8 @@ unsigned short TESObjectIMOD::GetSaveSizeLegacy(unsigned int aiFlags)
 }
 
 // @fnv 0x0051a5a0
+// pdb: TESObjectIMOD::SaveGame | TESObjectIMOD.obj | retail, vtable slot, high
+// pdb params: aiFlags
 void TESObjectIMOD::SaveGameLegacy(unsigned int aiFlags)
 {
     TESForm::SaveGameLegacy(aiFlags);
@@ -186,13 +201,16 @@ void TESObjectIMOD::SaveGameLegacy(unsigned int aiFlags)
 }
 
 // @fnv 0x0051a600
-void TESObjectIMOD::SaveGame(BGSSaveFormBuffer* buffer)
+// pdb: TESObjectIMOD::SaveGame | TESObjectIMOD.obj | retail, vtable slot, high
+// pdb params: aiFlags
+void TESObjectIMOD::SaveGame(BGSSaveFormBuffer* apSaveGameBuffer)
 {
-    TESForm::SaveGame(buffer);
-    TESValueForm::SaveGameBGS_0048ea40(buffer);
+    TESForm::SaveGame(apSaveGameBuffer);
+    TESValueForm::SaveGameBGS_0048ea40(apSaveGameBuffer);
 }
 
 // @fnv 0x0051a420
+// pdb: TESObjectIMOD::Save | TESObjectIMOD.obj | retail, vtable slot, high
 void TESObjectIMOD::SaveRecord()
 {
     TESForm::BeginFormRecord();
@@ -203,12 +221,15 @@ void TESObjectIMOD::SaveRecord()
     TESScriptableForm::Save();
     TESDescription::Save();
     BGSDestructibleObjectForm::Save();
-    reinterpret_cast<PickupPutdownSoundRecordWriter*>(reinterpret_cast<char*>(this) + 0xa4)->LogFormIDs();
+    reinterpret_cast<PickupPutdownSoundRecordWriter*>(reinterpret_cast<char*>(this) + 0xa4)->BGSPickupPutdownSounds_Save();
     reinterpret_cast<TESFormSerialization*>(this)->SaveHeader();
     TESForm::FinishFormRecord();
 }
 
 // @fnv 0x0051a4c0
+// pdb: TESObjectIMOD::Copy | TESObjectIMOD.obj | retail, vtable slot, high
+// pdb params: apCopy
+// pdb locals: pmisc
 void TESObjectIMOD::CopyFrom(const TESForm* apCopy)
 {
     const TESObjectIMOD* pmisc = dynamic_cast<const TESObjectIMOD*>(apCopy);
@@ -218,6 +239,9 @@ void TESObjectIMOD::CopyFrom(const TESForm* apCopy)
 }
 
 // @fnv 0x0051a500
+// pdb: TESObjectIMOD::Compare | TESObjectIMOD.obj | retail, upstream name already matches, high
+// pdb params: apCompare
+// pdb locals: pcomp
 bool TESObjectIMOD::Compare(TESForm* apCompare)
 {
     TESObjectIMOD* pcomp;
@@ -230,6 +254,7 @@ bool TESObjectIMOD::Compare(TESForm* apCompare)
 }
 
 // @fnv 0x00519e70
+// pdb: TESObjectIMOD::~TESObjectIMOD | TESObjectIMOD.obj | retail, upstream name already matches, high
 TESObjectIMOD::~TESObjectIMOD()
 {
     Shutdown();
@@ -250,6 +275,7 @@ struct FUN_0051a840 : TESBoundObject,
     void FUN_00483710();
 };
 // @fnv 0x0051a840
+// pdb: TESObjectMISC::~TESObjectMISC | TESObjectMISC.obj | retail, call graph (shared callers), high
 FUN_0051a840::~FUN_0051a840()
 {
     FUN_00483710();

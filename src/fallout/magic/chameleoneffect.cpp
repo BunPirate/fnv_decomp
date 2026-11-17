@@ -11,13 +11,17 @@
 
 // Constructs the ValueModifierEffect base and installs the ChameleonEffect vtable.
 // @fnv 0x0080acf0
-ChameleonEffect::ChameleonEffect(void* a, void* b, void* c) : ValueModifierEffect(a, b, c)
+// pdb: ChameleonEffect::ChameleonEffect | ChameleonEffect.obj | debug, upstream name already matches, high
+// pdb params: apCaster, apSpell, apEffect
+ChameleonEffect::ChameleonEffect(void* apCaster, void* apSpell, void* apEffect) : ValueModifierEffect(apCaster, apSpell, apEffect)
 {
 }
 
 bool __cdecl BSShaderManager_IsRefractionEnabled();
 // @fnv 0x0080b1b0
 // src: XBOX_PDB 0x0080b1b0
+// pdb: ChameleonEffect::Revert | ChameleonEffect.obj | retail, vtable slot, high
+// pdb params: apActor
 void ChameleonEffect::Revert_0080b1b0(Actor* apActor)
 {
     reinterpret_cast<TESForm*>(this)->TESForm::Revert((unsigned int)apActor);
@@ -29,10 +33,12 @@ void ChameleonEffect::Revert_0080b1b0(Actor* apActor)
 
 // @fnv 0x0080b310
 // src: XBOX_PDB 0x0080b310
-void ChameleonEffect::Revert_0080b310(BGSLoadFormBuffer* apActor)
+// pdb: ChameleonEffect::Revert | ChameleonEffect.obj | retail, vtable slot, high
+// pdb params: apActor
+void ChameleonEffect::Revert_0080b310(BGSLoadFormBuffer* apLoadGameBuffer)
 {
-    Actor* actor = apActor->GetActor();
-    reinterpret_cast<TESForm*>(this)->TESForm::Revert((unsigned int)apActor);
+    Actor* actor = apLoadGameBuffer->GetActor();
+    reinterpret_cast<TESForm*>(this)->TESForm::Revert((unsigned int)apLoadGameBuffer);
     if (BSShaderManager_IsRefractionEnabled())
         actor->Unk_E1(1, 0.0f);
     else
@@ -57,37 +63,43 @@ float __cdecl LinearInterpolate(float a, float b, float c, float d, float e);
 
 // @fnv 0x0080b0c0
 // src: XBOX_PDB 0x0080b0c0
-void ChameleonEffect::FinishInitLoadGame_0080b0c0(Actor* a1)
+// pdb: ChameleonEffect::FinishInitLoadGame | ChameleonEffect.obj | retail, vtable slot, high
+// pdb params: apActor
+// pdb locals: fRefractionPower, fChameleon
+void ChameleonEffect::FinishInitLoadGame_0080b0c0(Actor* apActor)
 {
-    ValueModifierEffect::FinishLoadGameTES(a1);
+    ValueModifierEffect::FinishLoadGameTES(apActor);
     if (BSShaderManager_IsRefractionEnabled())
     {
-        a1->SetAlpha(1.0f);
+        apActor->SetAlpha(1.0f);
         float h;
         float s;
-        h = BSMIN(1.0f, BSMAX_00404010(0.0f, (float)(a1->GetCurrentActorValue(static_cast<ActorValue::Index>(m_eActorValue)) / DAT_01017a40)));
+        h = BSMIN(1.0f, BSMAX_00404010(0.0f, (float)(apActor->GetCurrentActorValue(static_cast<ActorValue::Index>(eWhichActorValue)) / DAT_01017a40)));
         s = LinearInterpolate(GetOriginalRuntimeFloatSetting9(), MagicSystem_GetChameleonMaxRefraction(), 0.0f, 1.0f, 1.0f - h);
-        a1->Unk_E1(1, s);
+        apActor->Unk_E1(1, s);
     }
     else
     {
-        a1->FUN_008c4640();
+        apActor->FUN_008c4640();
     }
 }
 
 // @fnv 0x0080b200
 // src: XBOX_PDB 0x0080b200
-void ChameleonEffect::FinishLoadGame(BGSLoadFormBuffer* target)
+// pdb: ChameleonEffect::FinishLoadGame | ChameleonEffect.obj | retail, upstream name already matches, high
+// pdb params: apLoadGameBuffer
+// pdb locals: pactor, fRefractionPower, fChameleon
+void ChameleonEffect::FinishLoadGame(BGSLoadFormBuffer* apLoadGameBuffer)
 {
-    Actor* actor = target->GetActor();
-    ActiveEffect::ApplyLoadBuffer(target);
+    Actor* actor = apLoadGameBuffer->GetActor();
+    ActiveEffect::ApplyLoadBuffer(apLoadGameBuffer);
     if (bActive)
     {
         if (BSShaderManager_IsRefractionEnabled())
         {
             actor->SetAlpha(1.0f);
             float clamped =
-                BSMIN(1.0f, BSMAX_00404010(0.0f, (float)(actor->GetCurrentActorValue(static_cast<ActorValue::Index>(m_eActorValue)) / 100.0)));
+                BSMIN(1.0f, BSMAX_00404010(0.0f, (float)(actor->GetCurrentActorValue(static_cast<ActorValue::Index>(eWhichActorValue)) / 100.0)));
             float alpha4 = LinearInterpolate(GetOriginalRuntimeFloatSetting9(), MagicSystem_GetChameleonMaxRefraction(), 0.0f, 1.0f,
                                              (float)(1.0 - clamped));
             actor->Unk_E1(1, alpha4);
@@ -103,6 +115,8 @@ extern double DAT_01012060;
 
 // @fnv 0x0080aef0
 // src: XBOX_PDB 0x0080aef0
+// pdb: ChameleonEffect::Finish | ChameleonEffect.obj | retail, vtable slot, high
+// pdb locals: ptargetActor, fchameleonValue, fRefractionPower
 void ChameleonEffect::Finish_0080aef0()
 {
     Actor* actor;
@@ -115,7 +129,7 @@ void ChameleonEffect::Finish_0080aef0()
     {
         if (BSShaderManager_IsRefractionEnabled())
         {
-            ratio3 = BSMIN(1.0f, BSMAX_00404010(0.0f, actor->GetCurrentActorValue(static_cast<ActorValue::Index>(m_eActorValue)) / DAT_01017a40));
+            ratio3 = BSMIN(1.0f, BSMAX_00404010(0.0f, actor->GetCurrentActorValue(static_cast<ActorValue::Index>(eWhichActorValue)) / DAT_01017a40));
             if (ratio3 > DAT_01012060)
             {
                 interp2 = LinearInterpolate(GetOriginalRuntimeFloatSetting9(), MagicSystem_GetChameleonMaxRefraction(), 0.0f, 1.0f,
@@ -136,6 +150,8 @@ void ChameleonEffect::Finish_0080aef0()
 }
 
 // @fnv 0x0080add0
+// pdb: ChameleonEffect::Start | ChameleonEffect.obj | retail, vtable slot, high
+// pdb locals: ptargetActor, fRefractionPower, fChameleon
 void ChameleonEffect::UpdateChameleonEffect()
 {
     Actor* q = ActiveEffect::FUN_0059bb30() ? ActiveEffect::FUN_0059bb30()->FUN_00822b40() : 0;
@@ -145,7 +161,7 @@ void ChameleonEffect::UpdateChameleonEffect()
         if (BSShaderManager_IsRefractionEnabled())
         {
             q->SetAlpha(1.0f);
-            float r2 = BSMIN(1.0f, BSMAX_00404010(0.0f, q->GetCurrentActorValue(static_cast<ActorValue::Index>(m_eActorValue)) / DAT_01017a40));
+            float r2 = BSMIN(1.0f, BSMAX_00404010(0.0f, q->GetCurrentActorValue(static_cast<ActorValue::Index>(eWhichActorValue)) / DAT_01017a40));
             float r3 = LinearInterpolate(GetOriginalRuntimeFloatSetting9(), MagicSystem_GetChameleonMaxRefraction(), 0.0f, 1.0f, 1.0f - r2);
             q->Unk_E1(1, r3);
         }
@@ -158,6 +174,8 @@ void ChameleonEffect::UpdateChameleonEffect()
 
 // Allocates a ChameleonEffect, copies its state, and returns the new object.
 // @fnv 0x0080ad20
+// pdb: ChameleonEffect::Copy | ChameleonEffect.obj | retail, vtable slot, high
+// pdb locals: presult
 ChameleonEffect* ChameleonEffect::Clone()
 {
     ChameleonEffect* pkCopy = new ChameleonEffect(m_pEffectInstance, pSpell, pEffect);

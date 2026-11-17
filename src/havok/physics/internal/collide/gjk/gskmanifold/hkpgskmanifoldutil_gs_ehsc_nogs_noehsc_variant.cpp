@@ -65,9 +65,9 @@ __forceinline void hkVector4::setInterpolate4(const hkVector4& v0, const hkVecto
     __m128 s = _mm_sub_ps(*(const __m128*)&cw, t);
     m_vComponents = _mm_add_ps(_mm_mul_ps(s, v0.m_vComponents), _mm_mul_ps(t, v1.m_vComponents));
 }
-__forceinline hkSimdReal hkVector4::dot3(const hkVector4& a) const
+__forceinline hkSimdReal hkVector4::dot3(const hkVector4& x) const
 {
-    __m128 x2 = _mm_mul_ps(m_vComponents, a.m_vComponents);
+    __m128 x2 = _mm_mul_ps(m_vComponents, x.m_vComponents);
     __m128 xySum = _mm_add_ss(_mm_shuffle_ps(x2, x2, _MM_SHUFFLE(1, 1, 1, 1)), x2);
     return _mm_add_ss(_mm_shuffle_ps(x2, x2, _MM_SHUFFLE(2, 2, 2, 2)), xySum);
 }
@@ -125,7 +125,7 @@ struct S_00dad640_Target
     virtual void unk10();
     virtual void Release(unsigned short id, void* arg);
 };
-void ReleaseAllEntries(S_00dad640_Set* set, S_00dad640_Target* target, void* arg);
+void hkGskManifold_cleanup(S_00dad640_Set* manifold, S_00dad640_Target* mgr, void* constraintOwner);
 struct S_00dad4d0_Key
 {
     unsigned short ids[4];
@@ -194,6 +194,9 @@ struct S_00daee00
 
 // @fnv 0x00daee00
 // src: COMMUNITY 0x00daee00
+// pdb: hkGskManifold_findRedundant5thPoint | hkpGskManifoldUtil.obj | retail, upstream name already matches, high
+// pdb params: resultPointArray
+// pdb locals: used, distSqrdFromNewPoint
 int S_00daee00::hkGskManifold_findRedundant5thPoint()
 {
     // The fallback phase reuses the completed geometric reduction scratch.
@@ -376,6 +379,10 @@ static __forceinline __m128 Dot3_3vs3(const __m128& a0, const __m128& b0, const 
 
 // @fnv 0x00dad720
 // src: GUESS 0x00dad720 (confidence: low)
+// pdb: hkGskManifold_convertPointEdge | hkpGskManifoldUtil.obj | retail, object-file run extension, low
+// pdb note: debug build links it to hkGskManifold_convertFacePoint
+// pdb params: work, feature, out
+// pdb locals: dots
 static __declspec(noinline) int Object_ProcessAndReturnValue_00dad720(S_00dad720_Rec* rec, S_00dad720_Vec* vecs, S_00dad720_Out* out)
 {
     const __m128& pa = *(__m128*)((char*)vecs + rec->m_kPointA);
@@ -495,6 +502,10 @@ struct TriangleClosestPointInfo
 
 // @fnv 0x00dad860
 // src: GUESS 0x00dad860 (confidence: low)
+// pdb: hkGskManifold_convertEdgePoint | hkpGskManifoldUtil.obj | retail, object-file run extension, low
+// pdb note: debug build links it to hkGskManifold_convertEdgeEdge
+// pdb params: work, feature, out
+// pdb locals: dots
 static __declspec(noinline) int Object_ProcessAndReturnValue_00dad860(const MeshVertexBasisData& work, const AlignedPairData& point,
                                              TriangleClosestPointInfo& out)
 {
@@ -555,6 +566,9 @@ struct S_00dae220_Set
 
 // @fnv 0x00dae220
 // src: COMMUNITY 0x00dae220
+// pdb: hkGskManifold_garbageCollect | hkpGskManifoldUtil.obj | retail, upstream name already matches, high
+// pdb params: manifold
+// pdb locals: oldToNewMap, verts
 void __fastcall hkGskManifold_garbageCollect(int unused, S_00dae220_Set* set)
 {
     __declspec(align(16)) unsigned char used[16];
@@ -667,93 +681,96 @@ static void __fastcall hkGskManifold_garbageCollect(int, ContactManifold* set);
 
 // @fnv 0x00daf1e0
 // src: COMMUNITY 0x00daf1e0
-int hkGskManifold_addPoint(ContactManifold* set, void* a, void* b, void* c, ContactContext* context, S_00dad4d0_Key* key,
-                 ContactRecord* point, ContactCache* cache, ContactManager* manager, int defer)
+// pdb: hkGskManifold_addPoint | hkpGskManifoldUtil.obj | retail, upstream name already matches, high
+// pdb params: manifold, bodyA, bodyB, input, output, newPoint, newCdPointInResultArray, resultPointArray, mgr, mgrHandling
+// pdb locals: assertBuf, ostr
+int hkGskManifold_addPoint(ContactManifold* manifold, void* bodyA, void* bodyB, void* input, ContactContext* output, S_00dad4d0_Key* newPoint,
+                 ContactRecord* newCdPointInResultArray, ContactCache* resultPointArray, ContactManager* mgr, int mgrHandling)
 {
     int replaced = 4;
     unsigned short id;
-    if (set->count == 4)
+    if (manifold->count == 4)
     {
-        int index = cache->hkGskManifold_findRedundant5thPoint();
+        int index = resultPointArray->hkGskManifold_findRedundant5thPoint();
         if (index == 4)
             return 5;
-        manager->remove(set->entries[index].id, context->userData);
-        S_00dad640_Entry* added = &set->entries[index];
+        mgr->remove(manifold->entries[index].id, output->userData);
+        S_00dad640_Entry* added = &manifold->entries[index];
         if (index)
-            *added = set->entries[0];
+            *added = manifold->entries[0];
         else
-            *added = set->entries[1];
-        hkGskManifold_garbageCollect(index, set);
-        id = manager->add(a, b, c, context, key, point);
+            *added = manifold->entries[1];
+        hkGskManifold_garbageCollect(index, manifold);
+        id = mgr->add(bodyA, bodyB, input, output, newPoint, newCdPointInResultArray);
         if (id == 0xffff)
         {
-            set->entries[0] = set->entries[3];
-            unsigned res = set->count;
+            manifold->entries[0] = manifold->entries[3];
+            unsigned res = manifold->count;
             unsigned newCount = res - 1;
-            set->count = static_cast<unsigned char>(newCount);
+            manifold->count = static_cast<unsigned char>(newCount);
             volatile unsigned* destination =
-                reinterpret_cast<unsigned*>(reinterpret_cast<char*>(set) + 4 + newCount * 8);
-            const unsigned* source = reinterpret_cast<const unsigned*>(reinterpret_cast<char*>(set) + 4 + res * 8);
-            for (int words = (set->unk0 + set->unk1 - 1) >> 1; words >= 0; --words)
+                reinterpret_cast<unsigned*>(reinterpret_cast<char*>(manifold) + 4 + newCount * 8);
+            const unsigned* source = reinterpret_cast<const unsigned*>(reinterpret_cast<char*>(manifold) + 4 + res * 8);
+            for (int words = (manifold->unk0 + manifold->unk1 - 1) >> 1; words >= 0; --words)
                 *destination++ = *source++;
-            CopyContact(cache->points[index], cache->points[3]);
+            CopyContact(resultPointArray->points[index], resultPointArray->points[3]);
             return 6;
         }
-        ContactRecord* fresh = *(ContactRecord* volatile*)&point;
+        ContactRecord* fresh = *(ContactRecord* volatile*)&newCdPointInResultArray;
         fresh->id = id;
-        CopyContact(cache->points[index], *fresh);
+        CopyContact(resultPointArray->points[index], *fresh);
         replaced = index;
     }
     else
     {
-        if (defer && key->numB != 3)
+        if (mgrHandling && newPoint->numB != 3)
         {
             id = 0xffff;
         }
         else
         {
-            id = manager->add(a, b, c, context, key, point);
+            id = mgr->add(bodyA, bodyB, input, output, newPoint, newCdPointInResultArray);
             if (id == 0xffff)
                 return 5;
         }
-        point->id = id;
-        unsigned res = set->count;
+        newCdPointInResultArray->id = id;
+        unsigned res = manifold->count;
         unsigned newCount = res + 1;
-        int lastWord = (set->unk1 + set->unk0 - 1) >> 1;
-        unsigned* destination = reinterpret_cast<unsigned*>(reinterpret_cast<char*>(set) + 4 + newCount * 8) + lastWord;
-        unsigned* source = reinterpret_cast<unsigned*>(reinterpret_cast<char*>(set) + 4 + res * 8) + lastWord;
+        int lastWord = (manifold->unk1 + manifold->unk0 - 1) >> 1;
+        unsigned* destination = reinterpret_cast<unsigned*>(reinterpret_cast<char*>(manifold) + 4 + newCount * 8) + lastWord;
+        unsigned* source = reinterpret_cast<unsigned*>(reinterpret_cast<char*>(manifold) + 4 + res * 8) + lastWord;
         for (; 0 <= lastWord; --lastWord)
             *destination-- = *source--;
-        set->entries[res] = set->entries[0];
-        set->count = static_cast<unsigned char>(newCount);
+        manifold->entries[res] = manifold->entries[0];
+        manifold->count = static_cast<unsigned char>(newCount);
     }
 
-    S_00dad4d0_Entry& entry = ContactEntry(set, 0);
-    entry.numA = key->numA;
-    entry.numB = key->numB;
+    S_00dad4d0_Entry& entry = ContactEntry(manifold, 0);
+    entry.numA = newPoint->numA;
+    entry.numB = newPoint->numB;
     *reinterpret_cast<unsigned*>(entry.offs) = 0;
     *reinterpret_cast<unsigned short*>(&entry.unk2) = id;
-    unsigned short* vertices = VertexIds(set);
+    unsigned short* vertices = VertexIds(manifold);
     unsigned selected = 0;
-    for (int i = 0; i < key->numA; ++i)
+    for (int i = 0; i < newPoint->numA; ++i)
     {
         unsigned index = 0;
-        unsigned short vertex = key->ids[i];
-        while (index < set->unk0)
+        unsigned short vertex = newPoint->ids[i];
+        while (index < manifold->unk0)
         {
             if (vertices[index] == vertex)
                 goto foundA;
             ++index;
         }
         {
-            unsigned end = set->unk0 + set->unk1;
+            unsigned end = manifold->unk0 + manifold->unk1;
             while (end > index)
             {
                 vertices[end] = vertices[end - 1];
                 --end;
             }
             vertices[index] = vertex;
-            ++set->unk0;
+            ++manifold->unk0;
             _ReadWriteBarrier();
             selected += 0x10;
         }
@@ -763,8 +780,8 @@ int hkGskManifold_addPoint(ContactManifold* set, void* a, void* b, void* c, Cont
     {
         if (selected)
         {
-            S_00dad4d0_Entry* previous = &ContactEntry(set, 1);
-            for (unsigned contact = 1; contact < set->count; ++contact, ++previous)
+            S_00dad4d0_Entry* previous = &ContactEntry(manifold, 1);
+            for (unsigned contact = 1; contact < manifold->count; ++contact, ++previous)
             {
                 for (unsigned j = previous->numA; j < previous->numB + previous->numA; ++j)
                     previous->offs[j] += static_cast<unsigned char>(selected);
@@ -772,14 +789,14 @@ int hkGskManifold_addPoint(ContactManifold* set, void* a, void* b, void* c, Cont
         }
     }
     int i = 0;
-    if (i < key->numB)
+    if (i < newPoint->numB)
     {
         do
         {
-            unsigned short vertex = key->ids[key->numA + i];
-            long index = set->unk0;
+            unsigned short vertex = newPoint->ids[newPoint->numA + i];
+            long index = manifold->unk0;
             int end;
-            end = set->unk0 + set->unk1;
+            end = manifold->unk0 + manifold->unk1;
             while (index < end)
             {
                 if (vertices[index] == vertex)
@@ -787,11 +804,11 @@ int hkGskManifold_addPoint(ContactManifold* set, void* a, void* b, void* c, Cont
                 ++index;
             }
             vertices[index] = vertex;
-            set->unk1++;
+            manifold->unk1++;
         foundB:
-            entry.offs[key->numA + i] = static_cast<unsigned char>(index << 4);
+            entry.offs[newPoint->numA + i] = static_cast<unsigned char>(index << 4);
             ++i;
-        } while (i < key->numB);
+        } while (i < newPoint->numB);
     }
     return replaced;
 }

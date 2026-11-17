@@ -77,6 +77,7 @@ inline void* BSSearchPath::operator new(unsigned int uiSize)
 
 // @fnv 0x00b013f0
 // src: COMMUNITY 0x00b013f0
+// pdb: BSSearchPath::GetBSSearchPath | BSSearchPath.obj | retail, upstream name already matches, high
 void* BSSearchPath_GetBSSearchPath()
 {
     return new BSSearchPath;

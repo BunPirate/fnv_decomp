@@ -108,7 +108,7 @@ struct LoadCover : CombatCoverPointData_combatstate_rtm_variant
 struct LoadLocation : CombatAvoidanceSphere
 {
     LoadLocation();
-    void FUN_009a2c60(CombatLoadBuffer*);
+    void CombatLocation_LoadGame(CombatLoadBuffer*);
 };
 
 struct LoadInfo
@@ -128,17 +128,17 @@ struct LoadBoundPair
 struct LoadArea
 {
     int unk00, unk04, unk08, unk0c, unk10, unk14, unk18, unk1c, unk20, unk24, unk28, unk2c, unk30, unk34, unk38;
-    void CombatCoverSearch_LoadGameBGS(CombatLoadBuffer*);
+    void CombatCoverSearchInfo_LoadGame(CombatLoadBuffer*);
 };
 
 struct LoadA
 {
-    void LoadValueAndTimestamp(CombatLoadBuffer*);
+    void UnreachableCoverLocation_LoadGame(CombatLoadBuffer*);
 };
 
 struct LoadB
 {
-    void LoadWorldLocationAndTimestamp(CombatLoadBuffer*);
+    void UnreachableLocation_LoadGame(CombatLoadBuffer*);
 };
 
 struct LoadWeaponArray
@@ -353,12 +353,15 @@ struct CombatLoadState
 
     void CombatState_ReserveCoverLocation(CombatCoverPointData_combatstate_rtm_variant*);
 
-    void CombatState_LoadGameBGS(CombatLoadBuffer*);
+    void CombatState_LoadGame(CombatLoadBuffer*);
 };
 
 // @fnv 0x009a2040
-// src: COMMUNITY 0x009a2040
-void CombatLoadState::CombatState_LoadGameBGS(CombatLoadBuffer* buffer)
+// src: XBOX_DEBUG_PDB 0x009a2040 (was COMMUNITY)
+// pdb: CombatState::LoadGame | CombatState.obj | debug, call graph, high
+// pdb params: apLoadGameBuffer
+// pdb locals: ccombatItems, csavedData, i, isaveGameCount, pembeddedWeapon, unreachableCoverLocation, unreachableLocation
+void CombatLoadState::CombatState_LoadGame(CombatLoadBuffer* apLoadGameBuffer)
 
 {
 
@@ -366,19 +369,19 @@ void CombatLoadState::CombatState_LoadGameBGS(CombatLoadBuffer* buffer)
 
     unsigned char pairPresence;
 
-    buffer->LoadData(&flags, 1);
+    apLoadGameBuffer->LoadData(&flags, 1);
 
-    buffer->LoadData(&state, 4);
+    apLoadGameBuffer->LoadData(&state, 4);
 
     if (state == -1)
         state = 0;
 
     for (unsigned int i = 0; i < 6; i++)
-        weapons[i] = dynamic_cast<TESObjectWEAP*>(TESForm_GetFormByNumericID(buffer->FUN_008648a0()));
+        weapons[i] = dynamic_cast<TESObjectWEAP*>(TESForm_GetFormByNumericID(apLoadGameBuffer->FUN_008648a0()));
 
     {
 
-        unsigned int weaponCount = buffer->FUN_00864a60();
+        unsigned int weaponCount = apLoadGameBuffer->FUN_00864a60();
 
         otherWeapons.FUN_006f2290(weaponCount, true);
 
@@ -387,100 +390,100 @@ void CombatLoadState::CombatState_LoadGameBGS(CombatLoadBuffer* buffer)
 
             TESObjectWEAP** item = otherWeapons.BSSimpleArray_NiAVObject_1024_GetAt(i);
 
-            *item = dynamic_cast<TESObjectWEAP*>(TESForm_GetFormByNumericID(buffer->FUN_008648a0()));
+            *item = dynamic_cast<TESObjectWEAP*>(TESForm_GetFormByNumericID(apLoadGameBuffer->FUN_008648a0()));
         }
 
-        currentWeapon = dynamic_cast<TESObjectWEAP*>(TESForm_GetFormByNumericID(buffer->FUN_008648a0()));
+        currentWeapon = dynamic_cast<TESObjectWEAP*>(TESForm_GetFormByNumericID(apLoadGameBuffer->FUN_008648a0()));
 
-        buffer->LoadData(&value38, 4);
+        apLoadGameBuffer->LoadData(&value38, 4);
 
         for (unsigned int i = 0; i < 7; i++)
-            buffer->LoadData(&values3c[i], 4);
+            apLoadGameBuffer->LoadData(&values3c[i], 4);
 
-        buffer->LoadData(&unk058, 4);
+        apLoadGameBuffer->LoadData(&unk058, 4);
 
-        buffer->LoadData(&unk05c, 4);
+        apLoadGameBuffer->LoadData(&unk05c, 4);
 
-        buffer->LoadData(&unk064, 4);
+        apLoadGameBuffer->LoadData(&unk064, 4);
 
-        buffer->LoadData(&unk068, 4);
+        apLoadGameBuffer->LoadData(&unk068, 4);
 
-        buffer->LoadData(&unk06c, 4);
+        apLoadGameBuffer->LoadData(&unk06c, 4);
 
-        buffer->LoadData(&flag70, 1);
+        apLoadGameBuffer->LoadData(&flag70, 1);
 
-        buffer->LoadData(&flag71, 1);
+        apLoadGameBuffer->LoadData(&flag71, 1);
 
-        buffer->LoadData(&flag72, 1);
+        apLoadGameBuffer->LoadData(&flag72, 1);
 
-        buffer->LoadData(&flag73, 1);
+        apLoadGameBuffer->LoadData(&flag73, 1);
 
-        buffer->LoadData(&flag74, 1);
+        apLoadGameBuffer->LoadData(&flag74, 1);
 
-        buffer->LoadData(&flag75, 1);
+        apLoadGameBuffer->LoadData(&flag75, 1);
 
-        buffer->LoadData(&flag76, 1);
+        apLoadGameBuffer->LoadData(&flag76, 1);
 
-        buffer->LoadData(&flag77, 1);
+        apLoadGameBuffer->LoadData(&flag77, 1);
 
-        explosion = dynamic_cast<BGSExplosion*>(TESForm_GetFormByNumericID(buffer->FUN_008648a0()));
+        explosion = dynamic_cast<BGSExplosion*>(TESForm_GetFormByNumericID(apLoadGameBuffer->FUN_008648a0()));
 
-        buffer->LoadData(&unk07c, 4);
+        apLoadGameBuffer->LoadData(&unk07c, 4);
 
-        buffer->LoadData(&unk080, 4);
+        apLoadGameBuffer->LoadData(&unk080, 4);
 
-        buffer->LoadData(&position, 12);
+        apLoadGameBuffer->LoadData(&position, 12);
 
-        buffer->LoadData(&unk090, 4);
+        apLoadGameBuffer->LoadData(&unk090, 4);
 
-        buffer->LoadData(&flagc8, 1);
+        apLoadGameBuffer->LoadData(&flagc8, 1);
 
-        buffer->LoadData(&flagc9, 1);
+        apLoadGameBuffer->LoadData(&flagc9, 1);
 
-        buffer->LoadData(&unk0cc, 4);
+        apLoadGameBuffer->LoadData(&unk0cc, 4);
 
-        buffer->LoadData(&unk0d0, 4);
+        apLoadGameBuffer->LoadData(&unk0d0, 4);
 
-        buffer->LoadData(&unk0d4, 4);
+        apLoadGameBuffer->LoadData(&unk0d4, 4);
 
-        buffer->LoadData(&unk08, 4);
+        apLoadGameBuffer->LoadData(&unk08, 4);
 
-        buffer->LoadData(&flagd8, 1);
+        apLoadGameBuffer->LoadData(&flagd8, 1);
 
-        buffer->FUN_008648e0(&unk0dc);
+        apLoadGameBuffer->FUN_008648e0(&unk0dc);
 
-        stamp094.FUN_009a5ff0(buffer);
+        stamp094.FUN_009a5ff0(apLoadGameBuffer);
 
-        stamp098.FUN_009a5ff0(buffer);
+        stamp098.FUN_009a5ff0(apLoadGameBuffer);
 
-        stamp09c.FUN_009a5ff0(buffer);
+        stamp09c.FUN_009a5ff0(apLoadGameBuffer);
 
-        stamp0a0.FUN_009a5ff0(buffer);
+        stamp0a0.FUN_009a5ff0(apLoadGameBuffer);
 
-        stamp0a4.FUN_009a5ff0(buffer);
+        stamp0a4.FUN_009a5ff0(apLoadGameBuffer);
 
-        stamp0a8.FUN_009a5f20(buffer);
+        stamp0a8.FUN_009a5f20(apLoadGameBuffer);
 
-        stamp0b0.FUN_009a5f20(buffer);
+        stamp0b0.FUN_009a5f20(apLoadGameBuffer);
 
-        stamp0c0.FUN_009a5ff0(buffer);
+        stamp0c0.FUN_009a5ff0(apLoadGameBuffer);
 
-        if (buffer->Version() >= 20)
+        if (apLoadGameBuffer->Version() >= 20)
         {
-            stamp0b8.FUN_009a5f20(buffer);
-            stamp0e0.FUN_009a5ff0(buffer);
+            stamp0b8.FUN_009a5f20(apLoadGameBuffer);
+            stamp0e0.FUN_009a5ff0(apLoadGameBuffer);
         }
 
         presence = 0;
 
-        buffer->LoadData(&presence, 1);
+        apLoadGameBuffer->LoadData(&presence, 1);
 
         if (presence & 1)
         {
 
             cover = new LoadCover;
 
-            cover->LoadGame(reinterpret_cast<BGSLoadFormBuffer*>(buffer));
+            cover->LoadGame(reinterpret_cast<BGSLoadFormBuffer*>(apLoadGameBuffer));
 
             if (cover->IsReserved())
             {
@@ -494,7 +497,7 @@ void CombatLoadState::CombatState_LoadGameBGS(CombatLoadBuffer* buffer)
 
             alternateCover = new LoadCover;
 
-            alternateCover->LoadGame(reinterpret_cast<BGSLoadFormBuffer*>(buffer));
+            alternateCover->LoadGame(reinterpret_cast<BGSLoadFormBuffer*>(apLoadGameBuffer));
 
             if (alternateCover->IsReserved())
             {
@@ -506,24 +509,24 @@ void CombatLoadState::CombatState_LoadGameBGS(CombatLoadBuffer* buffer)
         if (presence & 16)
         {
             location = new LoadLocation;
-            location->FUN_009a2c60(buffer);
+            location->CombatLocation_LoadGame(apLoadGameBuffer);
         }
 
         if (presence & 32)
         {
             info = new LoadInfo;
-            info->CombatState_LocationTarget_LoadGame(buffer);
+            info->CombatState_LocationTarget_LoadGame(apLoadGameBuffer);
         }
 
         if (presence & 2)
-            area1.CombatCoverSearch_LoadGameBGS(buffer);
+            area1.CombatCoverSearchInfo_LoadGame(apLoadGameBuffer);
 
         if (presence & 8)
-            area2.CombatCoverSearch_LoadGameBGS(buffer);
+            area2.CombatCoverSearchInfo_LoadGame(apLoadGameBuffer);
 
         {
 
-            unsigned int countA = buffer->FUN_00864a60();
+            unsigned int countA = apLoadGameBuffer->FUN_00864a60();
 
             itemsA.FUN_009a3480(countA, true);
 
@@ -532,12 +535,12 @@ void CombatLoadState::CombatState_LoadGameBGS(CombatLoadBuffer* buffer)
 
                 LoadA* item = itemsA.BSSimpleArray_GroupMemberData_1024_GetAt(i);
 
-                item->LoadValueAndTimestamp(buffer);
+                item->UnreachableCoverLocation_LoadGame(apLoadGameBuffer);
             }
 
             {
 
-                unsigned int countB = buffer->FUN_00864a60();
+                unsigned int countB = apLoadGameBuffer->FUN_00864a60();
 
                 itemsB.FUN_009a3610(countB, true);
 
@@ -546,16 +549,16 @@ void CombatLoadState::CombatState_LoadGameBGS(CombatLoadBuffer* buffer)
 
                     LoadB* item = itemsB.BSSimpleArray_CombatMember_1024_GetAt(i);
 
-                    item->LoadWorldLocationAndTimestamp(buffer);
+                    item->UnreachableLocation_LoadGame(apLoadGameBuffer);
                 }
 
-                stamp184.FUN_009a5ff0(buffer);
+                stamp184.FUN_009a5ff0(apLoadGameBuffer);
 
-                buffer->LoadData(&flag188, 1);
+                apLoadGameBuffer->LoadData(&flag188, 1);
 
                 pairPresence = 0;
 
-                buffer->LoadData(&pairPresence, 1);
+                apLoadGameBuffer->LoadData(&pairPresence, 1);
 
                 for (unsigned int i = 0; i < 5; i++)
                 {
@@ -565,50 +568,50 @@ void CombatLoadState::CombatState_LoadGameBGS(CombatLoadBuffer* buffer)
 
                         pairs[i] = new LoadBoundPair;
 
-                        buffer->FUN_008648e0(pairs[i]);
+                        apLoadGameBuffer->FUN_008648e0(pairs[i]);
 
-                        pairs[i]->object = dynamic_cast<TESBoundObject*>(TESForm_GetFormByNumericID(buffer->FUN_008648a0()));
+                        pairs[i]->object = dynamic_cast<TESBoundObject*>(TESForm_GetFormByNumericID(apLoadGameBuffer->FUN_008648a0()));
                     }
                 }
 
                 for (unsigned int i = 0; i < 2; i++)
                 {
 
-                    objects[i] = dynamic_cast<TESBoundObject*>(TESForm_GetFormByNumericID(buffer->FUN_008648a0()));
+                    objects[i] = dynamic_cast<TESBoundObject*>(TESForm_GetFormByNumericID(apLoadGameBuffer->FUN_008648a0()));
 
-                    objectStamps[i].FUN_009a5f20(buffer);
+                    objectStamps[i].FUN_009a5f20(apLoadGameBuffer);
                 }
 
-                buffer->LoadData(&unk1bc, 4);
+                apLoadGameBuffer->LoadData(&unk1bc, 4);
 
-                buffer->FUN_008648e0(&unk1c0);
+                apLoadGameBuffer->FUN_008648e0(&unk1c0);
 
-                buffer->LoadData(&flag1c8, 1);
+                apLoadGameBuffer->LoadData(&flag1c8, 1);
 
-                if (buffer->Version() >= 15)
-                    buffer->LoadData(&unk228, 4);
+                if (apLoadGameBuffer->Version() >= 15)
+                    apLoadGameBuffer->LoadData(&unk228, 4);
 
-                stamp1cc.FUN_009a5f20(buffer);
+                stamp1cc.FUN_009a5f20(apLoadGameBuffer);
 
-                stamp1d4.FUN_009a5f20(buffer);
+                stamp1d4.FUN_009a5f20(apLoadGameBuffer);
 
-                stamp1dc.FUN_009a5f20(buffer);
+                stamp1dc.FUN_009a5f20(apLoadGameBuffer);
 
-                stamp1e4.FUN_009a5f20(buffer);
+                stamp1e4.FUN_009a5f20(apLoadGameBuffer);
 
-                stamp1ec.FUN_009a5f20(buffer);
+                stamp1ec.FUN_009a5f20(apLoadGameBuffer);
 
-                stamp1f4.FUN_009a5f20(buffer);
+                stamp1f4.FUN_009a5f20(apLoadGameBuffer);
 
-                stamp1fc.FUN_009a5f20(buffer);
+                stamp1fc.FUN_009a5f20(apLoadGameBuffer);
 
-                stamp20c.FUN_009a5f20(buffer);
+                stamp20c.FUN_009a5f20(apLoadGameBuffer);
 
-                stamp204.FUN_009a5f20(buffer);
+                stamp204.FUN_009a5f20(apLoadGameBuffer);
 
-                stamp214.FUN_009a5f20(buffer);
+                stamp214.FUN_009a5f20(apLoadGameBuffer);
 
-                stamp21c.FUN_009a5f20(buffer);
+                stamp21c.FUN_009a5f20(apLoadGameBuffer);
             }
         }
     }

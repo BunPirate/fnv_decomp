@@ -42,27 +42,30 @@ class FormGroupOwner
     virtual void v34();
     virtual void v38();
     virtual bool IsParentForm(TESForm* pkForm);
-    bool IsFormTypeBelowThreshold(GROUP_HEADER* pkGroup);
-    bool TESWorldSpace_SavesBefore_00584d40(GROUP_HEADER* pkGroup);
+    bool IsFormTypeBelowThreshold(GROUP_HEADER* apGroupFORM);
+    bool TESWorldSpace_SavesBefore_00584d40(GROUP_HEADER* apGroupFORM);
 };
 // @fnv 0x00584d40
 // src: XBOX_PDB 0x00584d40
-bool FormGroupOwner::TESWorldSpace_SavesBefore_00584d40(GROUP_HEADER* pkGroup)
+// pdb: TESWorldSpace::SavesBefore | TESWorldSpace.obj | retail, vtable slot, high
+// pdb params: apForm
+// pdb locals: bretval, pcell, pcellworld, pcellchild
+bool FormGroupOwner::TESWorldSpace_SavesBefore_00584d40(GROUP_HEADER* apGroupFORM)
 {
     bool bResult = false;
-    if (pkGroup && pkGroup->uiType == kGroupFormType)
+    if (apGroupFORM && apGroupFORM->uiType == kGroupFormType)
     {
-        switch (pkGroup->iGroupType)
+        switch (apGroupFORM->iGroupType)
         {
         case 0:
-            bResult = IsFormTypeBelowThreshold(pkGroup);
+            bResult = IsFormTypeBelowThreshold(apGroupFORM);
             break;
         case 2:
         case 3:
             bResult = false;
             break;
         case 6: {
-            TESObjectCELL* pkCell = dynamic_cast<TESObjectCELL*>(TESForm_GetFormByNumericID(pkGroup->uiLabel));
+            TESObjectCELL* pkCell = dynamic_cast<TESObjectCELL*>(TESForm_GetFormByNumericID(apGroupFORM->uiLabel));
             if (pkCell)
                 bResult = IsParentForm((TESForm*)pkCell);
         }
@@ -71,7 +74,7 @@ bool FormGroupOwner::TESWorldSpace_SavesBefore_00584d40(GROUP_HEADER* pkGroup)
         case 5:
             break;
         case 1: {
-            TESWorldSpace* pkWorld = dynamic_cast<TESWorldSpace*>(TESForm_GetFormByNumericID(pkGroup->uiLabel));
+            TESWorldSpace* pkWorld = dynamic_cast<TESWorldSpace*>(TESForm_GetFormByNumericID(apGroupFORM->uiLabel));
             if (pkWorld)
                 bResult = IsParentForm((TESForm*)pkWorld);
         }
@@ -89,10 +92,13 @@ TESForm* __cdecl TESForm_GetFormByNumericID(unsigned int);
 extern "C" void ActorCombatGroup_UpdateElements();
 // @fnv 0x00993600
 // src: COMMUNITY 0x00993600
-void CombatManager::InitLoadGame_00993600(void* stream)
+// pdb: CombatManager::InitLoadGame | CombatManager.obj | retail, call graph, high
+// pdb params: apLoadGameBuffer
+// pdb locals: ptempMap, it, itargetingBitfield, pactor, i, pgroup
+void CombatManager::InitLoadGame_00993600(void* apLoadGameBuffer)
 {
-    NiTMap<Actor*, unsigned __int64>* oldMapX = m_pActorCombatGroupMap;
-    m_pActorCombatGroupMap = new NiTMap<Actor*, unsigned __int64>(0x25);
+    NiTMap<Actor*, unsigned __int64>* oldMapX = pLocalActorTargetingMap;
+    pLocalActorTargetingMap = new NiTMap<Actor*, unsigned __int64>(0x25);
     void* position = oldMapX->GetFirstPos();
     Actor* actor_;
     unsigned __int64 valueTmp;
@@ -104,17 +110,17 @@ void CombatManager::InitLoadGame_00993600(void* stream)
         // Persisted pointer-map keys hold a 32-bit form identifier until fixup.
         actor_ = actor_ ? dynamic_cast<Actor*>(TESForm_GetFormByNumericID((unsigned int)actor_)) : 0;
         if (actor_)
-            m_pActorCombatGroupMap->SetAt(actor_, valueTmp);
+            pLocalActorTargetingMap->SetAt(actor_, valueTmp);
     }
     oldMapX->RemoveAll();
     delete oldMapX;
-    for (index = 0; index < m_kCombatGroups.GetSize(); ++index)
+    for (index = 0; index < CombatGroups.GetSize(); ++index)
     {
-        child2 = m_kCombatGroups.GetAt(index);
+        child2 = CombatGroups.GetAt(index);
         if (child2)
-            reinterpret_cast<void (__thiscall*)(ActorCombatGroup*, void*)>(&ActorCombatGroup_UpdateElements)(child2, stream);
+            reinterpret_cast<void (__thiscall*)(ActorCombatGroup*, void*)>(&ActorCombatGroup_UpdateElements)(child2, apLoadGameBuffer);
     }
-    m_pThreatMap->ApplyLoadBuffer(static_cast<BGSLoadGameBuffer*>(stream));
+    pThreatMap->ApplyLoadBuffer(static_cast<BGSLoadGameBuffer*>(apLoadGameBuffer));
 }
 
 
@@ -132,7 +138,7 @@ class WorldSpaceOwner5845;
 class WorldSpaceLOD5845
 {
   public:
-    WorldSpaceLOD5845(WorldSpaceOwner5845* pkWorld);
+    WorldSpaceLOD5845(WorldSpaceOwner5845* apWorld);
     static void* operator new(unsigned int uiSize);
     static void operator delete(void* pvMem);
     unsigned int unk00;
@@ -155,7 +161,7 @@ class WorldSpaceLOD5845
 class WorldSpaceRegion5845
 {
   public:
-    void Attach(WorldSpaceOwner5845* pkWorld);
+    void ImpactSwap_InitItem(WorldSpaceOwner5845* apOwner);
 };
 
 class WorldSpaceOwner5845
@@ -240,7 +246,7 @@ class WorldSpaceOwner5845
     virtual const char* GetEditorID() const;
 
     bool IsTemporary5845();
-    TESFile* GetFile(int iIndex);
+    TESFile* GetFile(int aiIndex);
     int HasEditorID();
     unsigned int GetFormID();
     void SetClimate(TESClimate* p);
@@ -310,6 +316,8 @@ class WorldSpaceOwner5845
 
 // @fnv 0x005845e0
 // src: XBOX_PDB 0x005845e0
+// pdb: TESWorldSpace::InitItem | TESWorldSpace.obj | retail, upstream name already matches, high
+// pdb locals: pcell, it, tempint, pclim, pimagespace, pzone, pwater, pmusic, pworld, ignore, pCell
 void WorldSpaceOwner5845::TESWorldSpace_InitItem()
 {
     if (!IsTemporary5845())
@@ -428,7 +436,7 @@ void WorldSpaceOwner5845::TESWorldSpace_InitItem()
             SetParentWorld(pkParentWorldVal);
         }
         if (m_pkRegion)
-            m_pkRegion->Attach(this);
+            m_pkRegion->ImpactSwap_InitItem(this);
         FinishInit(1);
     }
     TESObjectCELL* pkPersistent4;
@@ -472,17 +480,20 @@ struct WorldX
     virtual void v00(), v04(), v08(), v0c(), v10(), v14(), v18(), v1c(), v20(), v24(), v28(), v2c(), v30(), v34(),
         v38();
     virtual bool IsChildOf(WorldX* pkWorld);
-    bool TESWorldSpace_SavesBefore(FormX* pkForm);
+    bool TESWorldSpace_SavesBefore(FormX* apForm);
 };
 // @fnv 0x00584be0
 // src: XBOX_PDB 0x00584be0
-bool WorldX::TESWorldSpace_SavesBefore(FormX* pkForm)
+// pdb: TESWorldSpace::SavesBefore | TESWorldSpace.obj | retail, vtable slot, high
+// pdb params: apForm
+// pdb locals: bretval, pcell, pcellworld, pcellchild
+bool WorldX::TESWorldSpace_SavesBefore(FormX* apForm)
 {
     bool bResult = false;
-    switch (pkForm->FUN_00401170())
+    switch (apForm->FUN_00401170())
     {
     case 0x39: {
-        CellX* pkCell = (CellX*)FUN_00ec43fb(pkForm, 0, &DAT_01183028, &DAT_01183fb4, 0);
+        CellX* pkCell = (CellX*)FUN_00ec43fb(apForm, 0, &DAT_01183028, &DAT_01183fb4, 0);
         WorldX* pkWorld = pkCell ? pkCell->FUN_0054ddd0() : 0;
         if (pkWorld == this)
             bResult = true;
@@ -491,7 +502,7 @@ bool WorldX::TESWorldSpace_SavesBefore(FormX* pkForm)
         break;
     }
     case 0x41:
-        if (GetHavokWorldObjectCountInSceneGraph_0084e3a0() < pkForm->GetHavokWorldObjectCountInSceneGraph_0084e3a0())
+        if (GetHavokWorldObjectCountInSceneGraph_0084e3a0() < apForm->GetHavokWorldObjectCountInSceneGraph_0084e3a0())
             bResult = true;
         break;
     case 0x3a:
@@ -504,12 +515,12 @@ bool WorldX::TESWorldSpace_SavesBefore(FormX* pkForm)
     case 0x42:
     case 0x43:
     case 0x69: {
-        ChildX* pkChild = (ChildX*)FUN_00ec43fb(pkForm, 0, &DAT_01183028, &DAT_0118ac2c, 0);
+        ChildX* pkChild = (ChildX*)FUN_00ec43fb(apForm, 0, &DAT_01183028, &DAT_0118ac2c, 0);
         bResult = IsChildOf(pkChild->GetParentWorld());
         break;
     }
     default:
-        bResult = IsLessThan(pkForm);
+        bResult = IsLessThan(apForm);
         break;
     }
     return bResult;

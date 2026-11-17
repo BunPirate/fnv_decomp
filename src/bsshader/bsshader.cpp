@@ -48,6 +48,8 @@ template <> inline NiPointer<NiD3DPass>& NiPointer<NiD3DPass>::operator=(NiD3DPa
 
 // Initializes the object by zeroing the first element of an array and setting a flag to false.
 // @fnv 0x00be2200
+// pdb: BSShader::BSShader | BSShader.obj | retail, upstream name already matches, high
+// pdb locals: ui
 BSShader::BSShader()
 {
     spPass[0] = 0;
@@ -65,10 +67,12 @@ extern "C" int strcat_s(char*, unsigned int, const char*);
 extern "C" int sprintf_s(char*, unsigned int, const char*, ...);
 struct _iobuf;
 #include "../../include/_D3DXMACRO.h"
+// pdb: structure _FILETIME, size 0x8, 2 members
 struct _FILETIME
 {
     unsigned int dwLowDateTime, dwHighDateTime;
 };
+// pdb: class FileFinder, size 0x10 (here 0x1), 1 members
 class FileFinder
 {
   public:
@@ -132,6 +136,9 @@ extern void __splitpath_s(const char*, char*, unsigned, char*, unsigned, char*, 
 extern void FUN_00ec825b(char*, unsigned, const char*, const char*, const char*, const char*);
 
 // @fnv 0x00be0c00
+// pdb: BSShader::MakePath | BSShader.obj | retail, call graph, medium
+// pdb params: apFile, apResult
+// pdb locals: pdrive, pfile, pshaderdir, pdir, pext, ppath
 void __cdecl BSShader::GetShaderPath(const char* path, char* result)
 {
     char drive[0x10];
@@ -152,6 +159,9 @@ extern char DAT_011f9308[260];
 
 // Builds a cache path from the default or configured directory, an optional "HDR." prefix, and the cache name, writing it into apCachePath.
 // @fnv 0x00be0dc0
+// pdb: GenerateCachePath | BSShader.obj | retail, string-set bridge, high
+// pdb params: apCachePath, apFileName, apCacheName, apExtension
+// pdb locals: ppath
 void __cdecl BuildCachePath(char* apCachePath, const char* apFileName, const char* apCacheName)
 {
     if (apCachePath && apFileName && apCacheName)
@@ -168,6 +178,8 @@ void __cdecl BuildCachePath(char* apCachePath, const char* apFileName, const cha
 
 // @fnv 0x00be0e30
 // src: GUESS 0x00be0e30 (confidence: high)
+// pdb: ShaderIncludes::Close | BSShader.obj | retail, object-file run extension, low
+// pdb params: pData
 int __stdcall BSShader_FreeBlockAndReturnZero(void* apUnused, void* apBlock)
 {
     g_memoryManager.Deallocate(apBlock);
@@ -181,6 +193,9 @@ void __cdecl BSRenderState_SetZFunc(unsigned int, unsigned int);
 
 // @fnv 0x00be0e50
 // src: COMMUNITY 0x00be0e50
+// pdb: BSShader::SetupGeometryNonFirstPass | BSShader.obj | retail, upstream name already matches, high
+// pdb params: apState
+// pdb locals: uiCurrentPass
 void __stdcall BSShader_SetupGeometryNonFirstPass(int)
 {
     if (DAT_011f91e4 < 0x252 || DAT_011f91e4 > 0x256)
@@ -197,6 +212,7 @@ void __cdecl BSRenderState_SetZFunc(unsigned int, unsigned int);
 
 // @fnv 0x00be0e90
 // src: COMMUNITY 0x00be0e90
+// pdb: BSShader::RestoreGeometryNonFirstPass | BSShader.obj | retail, upstream name already matches, high
 void __cdecl BSShader_RestoreGeometryNonFirstPass()
 {
     BSRenderStateManager_bsshader::SetDepthBufferEnabled(false, BSRENDERSTATE_LOCK_BSRS_NOLOCK);
@@ -218,6 +234,9 @@ void __cdecl BSRenderState_SetRenderState(int, int, int);
 // Walks the linked list at DAT_0126f74c+0x30+0x10 and calls FUN_00b97d90 on each node's a and b fields with 0.
 // @fnv 0x00be0eb0
 // src: COMMUNITY 0x00be0eb0
+// pdb: BSShader::SetupPassRenderStates | BSShader.obj | retail, upstream name already matches, high
+// pdb params: auiCurrentPass
+// pdb locals: pstates
 void __stdcall BSShader_SetupPassRenderStates(int)
 {
     int ecx_val = *(int*)(DAT_0126f74c + 0x30);
@@ -242,6 +261,9 @@ void __cdecl BSRenderState_RestoreState(int, int);
 // Walks the linked list at DAT_0126f74c+0x30's +0x10 and calls FUN_00b98610 with each node's m_val and 0.
 // @fnv 0x00be0ee0
 // src: COMMUNITY 0x00be0ee0
+// pdb: BSShader::RestorePassRenderStates | BSShader.obj | retail, upstream name already matches, high
+// pdb params: auiCurrentPass
+// pdb locals: pstates
 void __stdcall BSShader_RestorePassRenderStates(int)
 {
     int p1 = *(int*)(DAT_0126f74c + 0x30);
@@ -264,6 +286,9 @@ void __cdecl ResolveRelativePath(const char*, const char*, char*);
 
 // Builds a full path from pFileName, opens the file, allocates a buffer of its size, reads it into ppData, and returns the byte count in pBytes.
 // @fnv 0x00be1eb0
+// pdb: ShaderIncludes::Open | BSShader.obj | retail, object-file run extension, low
+// pdb params: IncludeType, pFileName, pParentData, ppData, pBytes, pFullPath, cbFullPath
+// pdb locals: isize, pfile, ppath
 long __stdcall ReadFileIntoMemory(void* pThis, int aiUnused, const char* pFileName, int aiUnused2, const void** appData,
                                   unsigned int* apuiBytes)
 {
@@ -399,9 +424,12 @@ int __cdecl BSRenderState_SetAlphaTestFuncRef(unsigned int, unsigned int, int);
 // Reads a byte array from param, extracts a 3-bit value from offset 0x18 and a byte at 0x1a, and passes them to FUN_00b97f20.
 // @fnv 0x00be20b0
 // src: COMMUNITY 0x00be20b0
-int __stdcall BSShader_SetupGeometryAlphaTesting(unsigned char** apData)
+// pdb: BSShader::SetupGeometryAlphaTesting | BSShader.obj | debug, upstream name already matches, high
+// pdb params: apState
+// pdb locals: palpha
+int __stdcall BSShader_SetupGeometryAlphaTesting(unsigned char** apState)
 {
-    unsigned char* p = *apData;
+    unsigned char* p = *apState;
     return BSRenderState_SetAlphaTestFuncRef((*(unsigned short*)(p + 0x18) >> 10) & 7, p[0x1a], 0);
 }
 
@@ -410,6 +438,8 @@ extern int DAT_0126f74c;
 // Iterates the pass list at DAT_0126f74c and calls ApplyRenderStateChanges(false) on each non-null pass that is flagged and has a nonzero field at offset 8.
 // @fnv 0x00be2170
 // src: COMMUNITY 0x00be2170
+// pdb: BSShader::ApplyTextureStages | BSShader.obj | retail, upstream name already matches, high
+// pdb locals: uiNumStages, pcurrentpass, ui, pkStage
 void __cdecl BSShader_ApplyTextureStages()
 {
     int p = DAT_0126f74c;
@@ -429,6 +459,8 @@ extern int DAT_0126f74c;
 
 // @fnv 0x00be21b0
 // src: COMMUNITY 0x00be21b0
+// pdb: BSShader::ApplyTextureStagesFlags | BSShader.obj | retail, upstream name already matches, high
+// pdb locals: uiNumStages, pcurrentpass, uiEnabledStages, ui, pkStage
 void __cdecl BSShader_ApplyTextureStagesFlags()
 {
     int p = DAT_0126f74c;
@@ -473,25 +505,27 @@ struct BeamStage
 };
 
 // @fnv 0x00be0cf0
-void __cdecl ConfigureBeamStage(BeamStage* stage, unsigned int uiValue, unsigned int arg3, unsigned int arg4,
-                                bool bFlag)
+// pdb: BSShader::SetupDefaultStage | BSShader.obj | retail, call graph, high
+// pdb params: apStage, aiStageNum, aiAddressValue, aiMipFilter, abAniso
+void __cdecl ConfigureBeamStage(BeamStage* apStage, unsigned int aiStageNum, unsigned int aiAddressValue, unsigned int aiMipFilter,
+                                bool abAniso)
 {
-    stage->m_arg2 = uiValue;
-    stage->m_pTextureState->SetStageValue(11, uiValue, false);
-    stage->m_pTextureState->SetStageValue(1, 1, false);
-    stage->m_pTextureState->SetStageValue(2, 2, false);
-    stage->m_pTextureState->SetStageValue(4, 1, false);
-    stage->m_pTextureState->SetStageValue(5, 2, false);
-    stage->m_byte5e = 0;
-    stage->m_pTextureState->SetStageValue(24, 0, false);
-    if (arg3 == 3)
-        stage->ApplyPairToState(0);
+    apStage->m_arg2 = aiStageNum;
+    apStage->m_pTextureState->SetStageValue(11, aiStageNum, false);
+    apStage->m_pTextureState->SetStageValue(1, 1, false);
+    apStage->m_pTextureState->SetStageValue(2, 2, false);
+    apStage->m_pTextureState->SetStageValue(4, 1, false);
+    apStage->m_pTextureState->SetStageValue(5, 2, false);
+    apStage->m_byte5e = 0;
+    apStage->m_pTextureState->SetStageValue(24, 0, false);
+    if (aiAddressValue == 3)
+        apStage->ApplyPairToState(0);
     else
-        stage->ApplyPairToState(3);
-    stage->m_pTextureState->NiD3DTextureStageGroup_SetSamplerState(5, arg4, 0, false);
-    stage->m_pTextureState->NiD3DTextureStageGroup_SetSamplerState(6, arg4, 0, false);
-    stage->m_pTextureState->NiD3DTextureStageGroup_SetSamplerState(7, arg4, 0, false);
-    stage->NiD3DTextureStage_SetFilterMode(bFlag ? 6 : 2);
+        apStage->ApplyPairToState(3);
+    apStage->m_pTextureState->NiD3DTextureStageGroup_SetSamplerState(5, aiMipFilter, 0, false);
+    apStage->m_pTextureState->NiD3DTextureStageGroup_SetSamplerState(6, aiMipFilter, 0, false);
+    apStage->m_pTextureState->NiD3DTextureStageGroup_SetSamplerState(7, aiMipFilter, 0, false);
+    apStage->NiD3DTextureStage_SetFilterMode(abAniso ? 6 : 2);
 }
 
 struct M64Inner
@@ -510,14 +544,17 @@ struct M64Outer
 // For each item in o->items, if the item's fc is not 1, sets its f8 to 0.
 // @fnv 0x00be0fb0
 // src: COMMUNITY 0x00be0fb0
-void __stdcall BSShader_ClearPass(M64Outer* pOuter)
+// pdb: BSShader::ClearPass | BSShader.obj | debug, upstream name already matches, high
+// pdb params: apPass
+// pdb locals: istage, j, sstage
+void __stdcall BSShader_ClearPass(M64Outer* apPass)
 {
-    if (pOuter)
+    if (apPass)
     {
-        int iCount = pOuter->count;
+        int iCount = apPass->count;
         for (int i = 0; i < iCount; i++)
         {
-            M64Inner* pEntry = pOuter->items[i];
+            M64Inner* pEntry = apPass->items[i];
             if (pEntry->fc != 1)
                 pEntry->f8 = 0;
         }
@@ -544,6 +581,9 @@ struct StructA
 // Derives two booleans from param_1's prop10/prop0 flags and DAT_011f91e4, then calls FUN_00b984d0 and FUN_00b97ed0 with them.
 // @fnv 0x00be20e0
 // src: COMMUNITY 0x00be20e0
+// pdb: BSShader::SetupGeometryRenderStates | BSShader.obj | debug, object-file gap fill, medium
+// pdb params: apState, abFirstPass
+// pdb locals: balphaTest, btwoSidedLighting, uicurrentpass, drawMode
 void __stdcall NiD3DShader_SetupGeometryRenderStates(StructA* pStruct, bool bCheckProp0)
 {
     unsigned int v = DAT_011f91e4;
@@ -602,6 +642,9 @@ extern StagePool* DAT_0126f6cc;
 
 // Gets a StageReturn from DAT_0126f6cc, marks it, and refcount-swaps it into output, releasing the previous one.
 // @fnv 0x00e7edf0
+// pdb: NiD3DTextureStage::CreateNewStage | NiD3DTextureStage.obj | retail, call graph, medium
+// pdb params: aspD3DTextureStage
+// pdb locals: spReturn
 void AssignStageFromPool(StageReturn*& output)
 {
     StageReturn* stage = DAT_0126f6cc->Get();
@@ -645,6 +688,7 @@ struct bhkBlendCollisionObject;
 struct bhkLimitedHingeConstraint;
 struct bhkNiCollisionObject;
 struct bhkRigidBody;
+// pdb: structure IUnknown, size 0x4, 0 members
 struct IUnknown
 {
     virtual int QueryInterface(void*, void**);
@@ -652,6 +696,7 @@ struct IUnknown
     virtual unsigned long Release();
 };
 typedef char _sizecheck_IUnknown[sizeof(IUnknown) == 4 ? 1 : -1];
+// pdb: structure ID3DXBuffer, size 0x4, bases: IUnknown, 0 members
 struct ID3DXBuffer : public IUnknown
 {
     virtual void* GetBufferPointer();
@@ -661,6 +706,7 @@ struct ID3DXBuffer : public IUnknown
     virtual unsigned long Release();
 };
 typedef char _sizecheck_ID3DXBuffer[sizeof(ID3DXBuffer) == 4 ? 1 : -1];
+// pdb: structure ID3DXConstantTable, size 0x4, bases: ID3DXBuffer, 0 members
 struct ID3DXConstantTable : public ID3DXBuffer
 {
     virtual int GetDesc(_D3DXCONSTANTTABLE_DESC*);
@@ -719,6 +765,7 @@ struct ShaderCodeBuffer_be1750
     virtual unsigned long __stdcall GetBufferSize();
 };
 // ShaderIncludes has an 8-byte include-callback ABI (filename at +4); no shared header exists yet.
+// pdb: class ShaderIncludes, size 0x8, bases: ID3DXInclude, 1 members
 struct ShaderIncludes
 {
     const void* vtbl;
@@ -840,6 +887,9 @@ template <unsigned int _Size> inline int ShaderStrCat_be1750(char (&_Dest)[_Size
 }
 
 // @fnv 0x00be1750
+// pdb: BSShader::CompilePixelShaderHLSL | BSShader.obj | retail, unique string literal, high
+// pdb params: apFilename, apMacro, apTarget, apCacheName
+// pdb locals: iCachedFileSize, bsrcFile, bfreeBuffer, pCode, pconstTable, busecache, pprePackagedShader, pError, pshader, pcachepath, pd3dShader, bcacheFile, pshaderbuffer, ksrcFile, kcacheFile, ppath, perror, phdrmacro, pxenonmacro, pmacro, ptarget, pfile, includes, Flags ...
 NiD3DPixelShader* BSShader::CompilePixelShader(const char* apFilename, const _D3DXMACRO* apMacro,
                                              const char* apTarget, const char* apCacheName)
 {
@@ -1134,8 +1184,8 @@ struct BBDF6C0RenderPass
 class BBDF6C0PassArray
 {
   public:
-    void Add(BBDF6C0Geometry* pkGeometry, unsigned short usPassType, bool bEnabled, unsigned char ucLights,
-             BBDF6C0Light* pkLight0, BBDF6C0Light* pkLight1, BBDF6C0Light* pkLight2, BBDF6C0Light* pkLight3);
+    void Add(BBDF6C0Geometry* apGeometry, unsigned short ausPassEnum, bool abFirstPass, unsigned char ausNumLights,
+             BBDF6C0Light* apSceneLight, BBDF6C0Light* apSceneLight1, BBDF6C0Light* apSceneLight2, BBDF6C0Light* apSceneLight3);
 
     int unk00;
     BBDF6C0RenderPass** m_ppkPasses;
@@ -1178,28 +1228,32 @@ class BBDF6C0Shader
         return (m_uiFlags2 & (1 << (uiBit - 32))) > 0;
     }
 
-    void AddPasses(BBDF6C0Geometry* pkGeometry, bool bSkipDefault);
+    void BSShaderPPLightingProperty_AddSilhouettePass_2x(BBDF6C0Geometry* apGeom, bool abSkinned);
 };
 
 // Adds a render pass chosen by shader flags (or the geometry's default pass) and sets the first pass's lighting type from the flags.
 // @fnv 0x00bdf6c0
-void BBDF6C0Shader::AddPasses(BBDF6C0Geometry* pkGeometry, bool bSkipDefault)
+// src: XBOX_RETAIL_PDB 0x00bdf6c0
+// pdb: BSShaderPPLightingProperty::AddSilhouettePass_2x | BSShaderPPLightingProperty_Passes_2x.obj | retail, object-file gap fill, high
+// pdb params: apGeom, abSkinned
+// pdb locals: ppass, palpha, kaccumhint
+void BBDF6C0Shader::BSShaderPPLightingProperty_AddSilhouettePass_2x(BBDF6C0Geometry* apGeom, bool abSkinned)
 {
     if (GetFlag(14))
     {
-        m_pkPasses->Add(pkGeometry, 0x22f, true, 0, 0, 0, 0, 0);
+        m_pkPasses->Add(apGeom, 0x22f, true, 0, 0, 0, 0, 0);
     }
     else if (GetFlag(33))
     {
-        m_pkPasses->Add(pkGeometry, 0x61, true, 0, 0, 0, 0, 0);
+        m_pkPasses->Add(apGeom, 0x61, true, 0, 0, 0, 0, 0);
     }
-    else if (!bSkipDefault)
+    else if (!abSkinned)
     {
-        BBDF6C0GeometryData* pkData = pkGeometry->m_pUserData;
+        BBDF6C0GeometryData* pkData = apGeom->m_pUserData;
         if (pkData && (bool)((pkData->m_usFlags >> 9) & 1))
-            m_pkPasses->Add(pkGeometry, 0x63, true, 0, 0, 0, 0, 0);
+            m_pkPasses->Add(apGeom, 0x63, true, 0, 0, 0, 0, 0);
         else
-            m_pkPasses->Add(pkGeometry, 0x62, true, 0, 0, 0, 0, 0);
+            m_pkPasses->Add(apGeom, 0x62, true, 0, 0, 0, 0, 0);
     }
 
     if (m_pkPasses->m_iArrayLength)
@@ -1255,7 +1309,7 @@ class StageReturnPtrC06
 };
 
 void __cdecl AssignStageFromPool(StageReturnPtrC06& spStage);
-void __cdecl ConfigureBeamStage(StageReturnC06* pkStage, unsigned int uiIndex, int iA, int iB, int iC);
+void __cdecl ConfigureBeamStage(StageReturnC06* apStage, unsigned int aiStageNum, int aiAddressValue, int aiMipFilter, int abAniso);
 
 class PassC06
 {
@@ -1276,6 +1330,9 @@ class PassC06
 };
 
 // @fnv 0x00c06e10
+// pdb: CreateDefaultStages | Lighting30Shader_Preset.obj | debug, call graph, medium
+// pdb params: apPass, acStagesEnabled
+// pdb locals: spstage, i
 void __cdecl SetStageMask(PassC06* pkPass, char cMask)
 {
     StageReturnPtrC06 spStage;
@@ -1330,7 +1387,7 @@ void FUN_00b71b90_class::NiDX9FragmentShader_RecreateRendererData()
 }
 
 void __cdecl FUN_00b97fa0(int, int);
-void __cdecl AddToTwoCounters(int, int, int);
+void __cdecl BSRenderState_SetAlphaBlendFunc(int, int, int);
 // Reads alpha and data from input, checks flags and alpha values, then calls FUN_00b97fa0 and AddToTwoCounters with blend or default counters.
 // @fnv 0x00be1ff0
 // src: COMMUNITY 0x00be1ff0
@@ -1349,10 +1406,10 @@ void __stdcall NiD3DShader_SetupGeometryAlphaBlending(NiPropertyState* input)
     volatile bool test = false;
     if (alpha)
     {
-        unsigned char uiFlagBit = (unsigned char)(alpha->m_usAlphaArg >> 9);
+        unsigned char uiFlagBit = (unsigned char)(alpha->m_uFlags >> 9);
         if (uiFlagBit & 1)
             test = true;
-        if (alpha->m_usAlphaArg & 1)
+        if (alpha->m_uFlags & 1)
         {
             enabled = true;
             blend = enabled;
@@ -1366,11 +1423,11 @@ void __stdcall NiD3DShader_SetupGeometryAlphaBlending(NiPropertyState* input)
     FUN_00b97fa0(1, 0);
     if (blend)
     {
-        unsigned int flags = alpha->m_usAlphaArg;
-        AddToTwoCounters((flags >> 1) & 15, (flags >> 5) & 15, 0);
+        unsigned int flags = alpha->m_uFlags;
+        BSRenderState_SetAlphaBlendFunc((flags >> 1) & 15, (flags >> 5) & 15, 0);
     }
     else
-        AddToTwoCounters(6, 7, 0);
+        BSRenderState_SetAlphaBlendFunc(6, 7, 0);
 }
 
 struct Zero4
@@ -1403,6 +1460,8 @@ extern ShaderManager* DAT_011f9508;
 
 // Releases the referenced pass when its count reaches zero, then calls a method on the shader manager.
 // @fnv 0x00be0f10
+// pdb: BSShader::~BSShader | BSShader.obj | retail, upstream name already matches, high
+// pdb locals: ui
 BSShader::~BSShader()
 {
     NiD3DPass* p = spPass[0].m_pObject;
@@ -1727,13 +1786,16 @@ class FileView
 
 // Compiles a vertex shader source file with macros and profile, caches the bytecode to disk, and creates a shader object on the device.
 // @fnv 0x00be0fe0
-NiD3DVertexShader* BSShader::CompileVertexShader(const char* source, const _D3DXMACRO* apMacros,
-                                              const char* profile, const char* shaderName)
+// pdb: BSShader::CompileVertexShaderHLSL | BSShader.obj | retail, unique string literal, high
+// pdb params: apFilename, apMacro, apTarget, apCacheName
+// pdb locals: iCachedFileSize, bsrcFile, bfreeBuffer, pCode, pconstTable, busecache, pprePackagedShader, pError, pshader, pcachepath, pd3dShader, bcacheFile, pshaderbuffer, ksrcFile, kcacheFile, ppath, perror, phdrmacro, pxenonmacro, pmacro, pfile, includes, Flags, hres ...
+NiD3DVertexShader* BSShader::CompileVertexShader(const char* apFilename, const _D3DXMACRO* apMacro,
+                                              const char* apTarget, const char* apCacheName)
 {
     using namespace fnv_00be0fe0;
     using fnv_00be0fe0::BuildCachePath;
     using fnv_00be0fe0::HasFileInArchives;
-    _D3DXMACRO* macros = (_D3DXMACRO*)apMacros;
+    _D3DXMACRO* macros = (_D3DXMACRO*)apMacro;
     ShaderBufferRecord* pCacheEntry = 0;
     ShaderCodeBuffer_be1750* pCompiledShader = 0;
     ShaderCodeBuffer_be1750* pCompileErrors = 0;
@@ -1747,11 +1809,11 @@ NiD3DVertexShader* BSShader::CompileVertexShader(const char* source, const _D3DX
     char errorMessage[260];
     char commandLine[1300];
     char diagnostic[1300];
-    BuildCachePath(cachePath, source, shaderName, (const char*)DAT_010bc868);
+    BuildCachePath(cachePath, apFilename, apCacheName, (const char*)DAT_010bc868);
     bool useCache = true;
     bool cacheExists = false;
     if (DAT_011f9498)
-        pCacheEntry = DAT_011f9498->Get(shaderName);
+        pCacheEntry = DAT_011f9498->Get(apCacheName);
     if (DAT_011ae638 && !pCacheEntry)
     {
         _ReadWriteBarrier();
@@ -1760,18 +1822,18 @@ NiD3DVertexShader* BSShader::CompileVertexShader(const char* source, const _D3DX
         memset(&ftSourceTime, 0, sizeof(ftSourceTime));
         memset(&ftCacheTime, 0, sizeof(ftCacheTime));
         cacheExists = FileFinder::GetFileTime(cachePath, ftCacheTime, 32);
-        bool sourceExists = FileFinder::GetFileTime(source, ftSourceTime, 32);
+        bool sourceExists = FileFinder::GetFileTime(apFilename, ftSourceTime, 32);
         if (!cacheExists && DAT_011f94a7)
         {
             if (IsEmptyDirectory(DAT_011f9200))
             {
                 strcpy_s(DAT_011f9200, 260, (const char*)DAT_010bc860);
-                BuildCachePath(cachePath, source, shaderName, (const char*)DAT_010bc868);
+                BuildCachePath(cachePath, apFilename, apCacheName, (const char*)DAT_010bc868);
             }
             cacheExists = FileFinder::GetFileTime(cachePath, ftCacheTime, 32);
         }
         if (!sourceExists)
-            BSsprintf(message, 260, (const char*)DAT_010bc82c, source);
+            BSsprintf(message, 260, (const char*)DAT_010bc82c, apFilename);
         if (!cacheExists)
             useCache = false;
     }
@@ -1799,12 +1861,12 @@ NiD3DVertexShader* BSShader::CompileVertexShader(const char* source, const _D3DX
             pMacro->Definition = (const char*)DAT_01011584;
             addedMacro = pMacro;
         }
-        BSFile* pSourceFile = (BSFile*)FileFinder::GetFile(source, NiFile::READ_ONLY, 0x4000, 32);
+        BSFile* pSourceFile = (BSFile*)FileFinder::GetFile(apFilename, NiFile::READ_ONLY, 0x4000, 32);
         if (!pSourceFile || !ShaderFileIsGood(pSourceFile))
         {
             if (pSourceFile)
                 delete pSourceFile;
-            BSsprintf(message, 260, (const char*)DAT_010bc7b8, source);
+            BSsprintf(message, 260, (const char*)DAT_010bc7b8, apFilename);
             goto failure;
         }
         unsigned int sourceSize = pSourceFile->GetSize();
@@ -1816,7 +1878,7 @@ NiD3DVertexShader* BSShader::CompileVertexShader(const char* source, const _D3DX
             const char* source;
         } include;
         include.methods = DAT_010bc610;
-        include.source = source;
+        include.source = apFilename;
         defines[0] = 0;
         commandLine[0] = 0;
         for (int i = 0; i < 8; i++)
@@ -1840,10 +1902,10 @@ NiD3DVertexShader* BSShader::CompileVertexShader(const char* source, const _D3DX
                 Cat(defines, 1300, (const char*)DAT_01012630);
             }
         }
-        BSsprintf(diagnostic, 1300, (const char*)DAT_010bc808, source, profile, defines);
+        BSsprintf(diagnostic, 1300, (const char*)DAT_010bc808, apFilename, apTarget, defines);
         long lCompileStatus =
             D3DXCompileShader(sourceData, sourceSize, macros, (ID3DXInclude*)&include, (const char*)DAT_01094d90,
-                              profile, 0, (ID3DXBuffer**)&pCompiledShader, (ID3DXBuffer**)&pCompileErrors, &constants);
+                              apTarget, 0, (ID3DXBuffer**)&pCompiledShader, (ID3DXBuffer**)&pCompileErrors, &constants);
         delete pSourceFile;
         g_memoryManager.Deallocate(sourceData);
         if (pCompileErrors && !pCompiledShader)
@@ -1859,7 +1921,7 @@ NiD3DVertexShader* BSShader::CompileVertexShader(const char* source, const _D3DX
                 }
                 Cat(defines, 1300, (const char*)DAT_01012630);
             }
-            BSsprintf(diagnostic, 1300, (const char*)DAT_010bc7fc, source, defines,
+            BSsprintf(diagnostic, 1300, (const char*)DAT_010bc7fc, apFilename, defines,
                          pCompileErrors->GetBufferPointer());
             pCompileErrors->Release();
             pCompileErrors = 0;
@@ -1929,7 +1991,7 @@ NiD3DVertexShader* BSShader::CompileVertexShader(const char* source, const _D3DX
     if (bytecode)
     {
         if (DAT_011f9494)
-            DAT_011f9494->Add(shaderName, bytecode, bytecodeSize);
+            DAT_011f9494->Add(apCacheName, bytecode, bytecodeSize);
         else
         {
             VertexDevice* device = ((VertexRendererView*)g_pkRenderer)->GetDevice();

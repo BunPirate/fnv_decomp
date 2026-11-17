@@ -8,6 +8,7 @@ class MediaSet;
 class TESFile;
 class TESForm;
 
+// pdb: class TESRegionDataSound, size 0x20, bases: TESRegionData, 1 members
 class TESRegionDataSound : public TESRegionData
 {
 public:

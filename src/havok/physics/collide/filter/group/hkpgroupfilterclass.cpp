@@ -26,6 +26,7 @@ struct CpuObject
 };
 // @fnv 0x00e00c40
 // src: COMMUNITY 0x00e00c40
+// pdb: hkpGroupFilter::`scalar deleting destructor' | hkpGroupFilterClass.obj | retail, vtable slot, high
 CpuObject* CpuObject::hkpGroupFilter_Destroy(unsigned int flags)
 {
     InitGroupFilterPointers();

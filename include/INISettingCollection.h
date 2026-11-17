@@ -5,6 +5,7 @@
 
 template <class T> class NiTPrimitiveArray;
 
+// pdb: class INISettingCollection, size 0x114, bases: SettingCollectionList<Setting>, 0 members
 class INISettingCollection : public SettingCollectionList<Setting>
 {
 public:

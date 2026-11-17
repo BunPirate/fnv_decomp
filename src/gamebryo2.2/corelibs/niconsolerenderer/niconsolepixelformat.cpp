@@ -6,44 +6,47 @@
 
 // Maps a NiPixelFormat to a D3DFORMAT: returns the renderer hint if set, otherwise selects a format from the pixel format, bit depth and channel masks.
 // @fnv 0x00e7bd20
-D3DFORMAT __cdecl NiD3DTextureData::ConvertPixelFormatToD3DFormat(const NiPixelFormat& kPixelFormat)
+// pdb: NiXenonPixelFormat::DetermineD3DFormat | NiXenonPixelFormat.obj | retail, call graph (shared callers), high
+// pdb params: kDesc
+// pdb locals: bLittleEndian, eD3DFmt, eFormat, ucBPP, uiRedMask, eRep, ucBPC, eComponent, bSigned, uiFormat
+D3DFORMAT __cdecl NiD3DTextureData::ConvertPixelFormatToD3DFormat(const NiPixelFormat& kDesc)
 {
-    unsigned int uiRendererHint = kPixelFormat.m_uiRendererHint;
-    unsigned char ucBitsPerPixel = kPixelFormat.m_ucBitsPerPixel;
+    unsigned int uiRendererHint = kDesc.m_uiRendererHint;
+    unsigned char ucBitsPerPixel = kDesc.m_ucBitsPerPixel;
     if (uiRendererHint != 0xffffffff)
         return static_cast<D3DFORMAT>(uiRendererHint);
 
     D3DFORMAT eD3DFormat = D3DFMT_UNKNOWN;
-    switch (kPixelFormat.m_eFormat)
+    switch (kDesc.m_eFormat)
     {
     case FORMAT_RGB:
         switch (ucBitsPerPixel)
         {
         case 8:
-            if (kPixelFormat.GetMask(COMP_RED) == 0xe0)
+            if (kDesc.GetMask(COMP_RED) == 0xe0)
                 eD3DFormat = D3DFMT_R3G3B2;
-            else if (kPixelFormat.GetMask(COMP_RED) == 0)
+            else if (kDesc.GetMask(COMP_RED) == 0)
                 eD3DFormat = D3DFMT_L8;
             break;
         case 16:
-            if (kPixelFormat.GetMask(COMP_RED) == 0xf800)
+            if (kDesc.GetMask(COMP_RED) == 0xf800)
                 eD3DFormat = D3DFMT_R5G6B5;
-            else if (kPixelFormat.GetMask(COMP_RED) == 0x7c00)
+            else if (kDesc.GetMask(COMP_RED) == 0x7c00)
                 eD3DFormat = D3DFMT_X1R5G5B5;
-            else if (kPixelFormat.GetMask(COMP_RED) == 0x0f00)
+            else if (kDesc.GetMask(COMP_RED) == 0x0f00)
                 eD3DFormat = D3DFMT_X4R4G4B4;
-            else if (kPixelFormat.GetMask(COMP_RED) == 0)
+            else if (kDesc.GetMask(COMP_RED) == 0)
                 eD3DFormat = D3DFMT_L16;
             break;
         case 24:
             eD3DFormat = D3DFMT_R8G8B8;
             break;
         case 32:
-            if (kPixelFormat.GetMask(COMP_RED) == 0x00ff0000)
+            if (kDesc.GetMask(COMP_RED) == 0x00ff0000)
                 eD3DFormat = D3DFMT_X8R8G8B8;
-            else if (kPixelFormat.GetMask(COMP_RED) == 0x000000ff)
+            else if (kDesc.GetMask(COMP_RED) == 0x000000ff)
                 eD3DFormat = D3DFMT_X8B8G8R8;
-            else if (kPixelFormat.GetMask(COMP_RED) == 0xffff0000)
+            else if (kDesc.GetMask(COMP_RED) == 0xffff0000)
                 eD3DFormat = D3DFMT_G16R16;
             break;
         default:
@@ -55,32 +58,32 @@ D3DFORMAT __cdecl NiD3DTextureData::ConvertPixelFormatToD3DFormat(const NiPixelF
         switch (ucBitsPerPixel)
         {
         case 8:
-            if (kPixelFormat.GetMask(COMP_LUMA) == 0)
+            if (kDesc.GetMask(COMP_LUMA) == 0)
                 eD3DFormat = D3DFMT_A8;
-            else if (kPixelFormat.GetMask(COMP_LUMA) == 0x0f)
+            else if (kDesc.GetMask(COMP_LUMA) == 0x0f)
                 eD3DFormat = D3DFMT_A4L4;
             break;
         case 16:
-            if (kPixelFormat.GetMask(COMP_RED) == 0x7c00)
+            if (kDesc.GetMask(COMP_RED) == 0x7c00)
                 eD3DFormat = D3DFMT_A1R5G5B5;
-            else if (kPixelFormat.GetMask(COMP_RED) == 0x0f00)
+            else if (kDesc.GetMask(COMP_RED) == 0x0f00)
                 eD3DFormat = D3DFMT_A4R4G4B4;
-            else if (kPixelFormat.GetMask(COMP_RED) == 0xe0)
+            else if (kDesc.GetMask(COMP_RED) == 0xe0)
                 eD3DFormat = D3DFMT_A8R3G3B2;
-            else if (kPixelFormat.GetMask(COMP_RED) == 0)
+            else if (kDesc.GetMask(COMP_RED) == 0)
                 eD3DFormat = D3DFMT_A8L8;
             break;
         case 24:
             eD3DFormat = D3DFMT_UNKNOWN;
             break;
         case 32:
-            if (kPixelFormat.GetMask(COMP_RED) == 0x00ff0000)
+            if (kDesc.GetMask(COMP_RED) == 0x00ff0000)
                 eD3DFormat = D3DFMT_A8R8G8B8;
-            else if (kPixelFormat.GetMask(COMP_RED) == 0x000003ff)
+            else if (kDesc.GetMask(COMP_RED) == 0x000003ff)
                 eD3DFormat = D3DFMT_A2B10G10R10;
-            else if (kPixelFormat.GetMask(COMP_RED) == 0x000000ff)
+            else if (kDesc.GetMask(COMP_RED) == 0x000000ff)
                 eD3DFormat = D3DFMT_A8B8G8R8;
-            else if (kPixelFormat.GetMask(COMP_RED) == 0x3ff00000)
+            else if (kDesc.GetMask(COMP_RED) == 0x3ff00000)
                 eD3DFormat = D3DFMT_A2R10G10B10;
             break;
         case 64:
@@ -127,7 +130,7 @@ D3DFORMAT __cdecl NiD3DTextureData::ConvertPixelFormatToD3DFormat(const NiPixelF
         switch (ucBitsPerPixel)
         {
         case 8:
-            eD3DFormat = kPixelFormat.GetMask(COMP_ALPHA) == 0 ? D3DFMT_L8 : D3DFMT_A8;
+            eD3DFormat = kDesc.GetMask(COMP_ALPHA) == 0 ? D3DFMT_L8 : D3DFMT_A8;
             break;
         case 16:
             eD3DFormat = D3DFMT_R16F;
@@ -172,9 +175,9 @@ D3DFORMAT __cdecl NiD3DTextureData::ConvertPixelFormatToD3DFormat(const NiPixelF
         switch (ucBitsPerPixel)
         {
         case 16:
-            return kPixelFormat.GetPixelBitData(COMP_STENCIL) == 1 ? D3DFMT_D15S1 : D3DFMT_D16;
+            return kDesc.GetPixelBitData(COMP_STENCIL) == 1 ? D3DFMT_D15S1 : D3DFMT_D16;
         case 32: {
-            unsigned char ucStencilBits = kPixelFormat.GetPixelBitData(COMP_STENCIL);
+            unsigned char ucStencilBits = kDesc.GetPixelBitData(COMP_STENCIL);
             switch (ucStencilBits)
             {
             case 4:
@@ -182,7 +185,7 @@ D3DFORMAT __cdecl NiD3DTextureData::ConvertPixelFormatToD3DFormat(const NiPixelF
             case 8:
                 return D3DFMT_D24S8;
             default:
-                return kPixelFormat.GetPixelBitData(COMP_DEPTH) == 24 ? D3DFMT_D24X8 : D3DFMT_D32;
+                return kDesc.GetPixelBitData(COMP_DEPTH) == 24 ? D3DFMT_D24X8 : D3DFMT_D32;
             }
         }
         }

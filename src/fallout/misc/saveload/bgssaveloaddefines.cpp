@@ -26,7 +26,7 @@ class SaveGameSizeState
 class SaveLoadFile
 {
   public:
-    unsigned int Read(void* buffer, unsigned int size);
+    unsigned int Read(void* apBuffer, unsigned int aiBytes);
 };
 
 // @fnv 0x008453a0
@@ -52,24 +52,28 @@ void SaveGameSizeState::RecordRequestedSize(unsigned int requested, unsigned int
 }
 
 // @fnv 0x00845e50
-unsigned int ReadSizedUnsignedInt(SaveLoadFile* file, unsigned int& value, SIZE_TYPE sizeType)
+// src: XBOX_RETAIL_PDB 0x00845e50
+// pdb: LoadGameSizeFromFile | BGSSaveLoadDefines.obj | retail, call graph (shared callers), high
+// pdb params: apFile, ariSize, aeSizeType
+// pdb locals: csize, ssize
+unsigned int LoadGameSizeFromFile(SaveLoadFile* apFile, unsigned int& ariSize, SIZE_TYPE aeSizeType)
 {
-    switch (sizeType)
+    switch (aeSizeType)
     {
     case SIZE_TYPE_SIZE_CHAR: {
         unsigned char ucByte = 0;
-        file->Read(&ucByte, 1);
-        value = ucByte;
+        apFile->Read(&ucByte, 1);
+        ariSize = ucByte;
         return 1;
     }
     case SIZE_TYPE_SIZE_SHORT: {
         unsigned short usShort = 0;
-        file->Read(&usShort, 2);
-        value = usShort;
+        apFile->Read(&usShort, 2);
+        ariSize = usShort;
         return 2;
     }
     case SIZE_TYPE_SIZE_INT:
-        file->Read(&value, 4);
+        apFile->Read(&ariSize, 4);
         return 4;
     default:
         return 0;
@@ -98,6 +102,8 @@ unsigned int GetEncodedIntegerSize(unsigned int value)
 
 // Checks the form type: stores the form as world if type 0x41, as cell if type 0x39, and returns whether either matched.
 // @fnv 0x00846190
+// pdb: GetLocationCellOrWorld | BGSSaveLoadDefines.obj | debug, call graph, medium
+// pdb params: apLocation, arpCell, arpWorld
 bool GetCellAndWorldspaceForForm(TESForm* form, TESObjectCELL*& cell, TESWorldSpace*& world)
 {
     if (!form)
@@ -126,6 +132,9 @@ class TESWorldSpace;
 
 // Encodes value into buffer using 1, 2 or 4 bytes depending on its magnitude, logs an error if too large, then appends '|'.
 // @fnv 0x00845fc0
+// pdb: SaveVariableSizedValueToBuffer | BGSSaveLoadDefines.obj | debug, object-file run extension, low
+// pdb params: apBuffer, aiVariableValue
+// pdb locals: isize, cvalue, svalue, ivalue
 void WriteEncodedInteger(char* buffer, unsigned int value)
 {
     unsigned int size = 0;
@@ -155,42 +164,46 @@ void WriteEncodedInteger(char* buffer, unsigned int value)
 }
 
 // @fnv 0x00846080
-unsigned int ReadEncodedInteger(char* buffer, unsigned int& value)
+// src: XBOX_RETAIL_PDB 0x00846080
+// pdb: LoadVariableSizedValueFromBuffer | BGSSaveLoadDefines.obj | retail, call graph, high
+// pdb params: apBuffer, ariVariableValue
+// pdb locals: cvalue, esizeType, isize, svalue, ivalue
+unsigned int LoadVariableSizedValueFromBuffer(char* apBuffer, unsigned int& ariVariableValue)
 {
     unsigned int size;
     unsigned char encodedType;
     unsigned int type;
     type = 0;
-    encodedType = buffer[0];
+    encodedType = apBuffer[0];
     size = encodedType & 3;
     switch (size)
     {
     case 0: {
         char encoded = 0;
         type = 1;
-        memcpy(&encoded, buffer, type);
+        memcpy(&encoded, apBuffer, type);
         encoded = (unsigned char)encoded >> 2;
-        value = (unsigned char)encoded;
+        ariVariableValue = (unsigned char)encoded;
         break;
     }
     case 1: {
         unsigned short encoded = 0;
         type = 2;
-        memcpy(&encoded, buffer, type);
+        memcpy(&encoded, apBuffer, type);
         encoded = (unsigned short)(encoded >> 2);
-        value = encoded;
+        ariVariableValue = encoded;
         break;
     }
     case 2: {
         unsigned int encoded = 0;
         type = 4;
-        memcpy(&encoded, buffer, type);
+        memcpy(&encoded, apBuffer, type);
         encoded >>= 2;
-        value = encoded;
+        ariVariableValue = encoded;
         break;
     }
     }
-    if (buffer[type] != '|')
+    if (apBuffer[type] != '|')
     {
         LogWarning("SAVELOAD: Invalid spacer hit while loading data from the buffer");
     }
@@ -203,6 +216,7 @@ MemoryManager* __cdecl MemoryManager_Instance(void);
 
 // @fnv 0x00401030
 // src: COMMUNITY 0x00401030
+// pdb: TESFile::FreeDecompressedBuffer | TESFile.obj | retail, call graph, medium
 void __cdecl FormHeapFreeAndLog_00401030(void* ptr)
 {
     MemoryManager_Instance()->Deallocate(ptr);
@@ -227,6 +241,10 @@ void* __cdecl _memcpy(void* dst, const void* src, unsigned int size);
 
 // Copies value into dst as 1, 2 or 4 bytes depending on sizeType (0, 1 or 2).
 // @fnv 0x00845de0
+// pdb: SaveGameSizeToFile | BGSSaveLoadDefines.obj | retail, object-file run extension, low
+// pdb note: debug build links it to SaveGameSizeToBuffer
+// pdb params: apFile, aiSize, aeSizeType
+// pdb locals: csize, ssize
 void __cdecl WriteTypedValue(void* apDest, unsigned int value, unsigned int sizeType)
 {
     switch (sizeType)
@@ -249,18 +267,20 @@ void __cdecl WriteTypedValue(void* apDest, unsigned int value, unsigned int size
 
 struct FUN_00846330_shell
 {
-    void WriteToFile(int a, int b);
+    void BGSSaveLoadFile_Write(int a, int b);
 };
 
 // @fnv 0x00845d00
 void ForwardToShell(FUN_00846330_shell* apShell, int aiArg1, int aiArg2)
 {
-    apShell->WriteToFile(aiArg1, aiArg2);
+    apShell->BGSSaveLoadFile_Write(aiArg1, aiArg2);
 }
 
 extern BGSSaveLoadGame* g_BGSSaveLoadGame;
 // @fnv 0x00845cc0
 // src: XBOX_PDB 0x00845cc0
+// pdb: SaveGameWarning | BGSSaveLoadDefines.obj | retail, upstream name already matches, high
+// pdb params: apMessage, varArgs
 void __cdecl SaveGameWarning(const char* apMessage, ...)
 {
     char* varArgs;
@@ -285,6 +305,9 @@ void* __cdecl __memcpy(void* dest, const void* src, unsigned int size);
 
 // Copies 1, 2 or 4 bytes from source into value according to sizeType and returns the number of bytes copied, or 0 for other size types.
 // @fnv 0x00845ee0
+// pdb: LoadGameSizeFromBuffer | BGSSaveLoadDefines.obj | debug, call graph, medium
+// pdb params: apBuffer, ariSize, aeSizeType
+// pdb locals: csize, ssize
 unsigned int ReadValueBySizeType(const void* source, unsigned int* value, unsigned int sizeType)
 {
     switch (sizeType)
@@ -312,26 +335,29 @@ unsigned int ReadValueBySizeType(const void* source, unsigned int* value, unsign
 namespace fnv_00845d80 {
 struct FUN_00846330_shell
 {
-    void WriteToFile(int, int);
+    void BGSSaveLoadFile_Write(int, int);
 };
 
 // @fnv 0x00845d80
+// pdb: LoadGameDataFromFileFunction | BGSSaveLoadDefines.obj | retail, object-file run extension, low
+// pdb note: debug build links it to SaveGameSizeToFile
+// pdb params: apFile, apData, aiSize
 void WriteValueByType(FUN_00846330_shell* self, unsigned short ausValue, int type)
 {
     switch (type)
     {
     case 0: {
         char b = ausValue;
-        self->WriteToFile((int)&b, 1);
+        self->BGSSaveLoadFile_Write((int)&b, 1);
         break;
     }
     case 1: {
         short s = ausValue;
-        self->WriteToFile((int)&s, 2);
+        self->BGSSaveLoadFile_Write((int)&s, 2);
         break;
     }
     case 2:
-        self->WriteToFile((int)&ausValue, 4);
+        self->BGSSaveLoadFile_Write((int)&ausValue, 4);
         break;
     }
 }

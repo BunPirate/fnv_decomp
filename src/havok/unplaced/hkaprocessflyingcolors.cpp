@@ -63,21 +63,21 @@ static __forceinline float expandWord(float low, float high, u16 b)
 
 int FindKeyInterval(int, int, u8, const u8*);
 // src: HAVOK_LIB 0x00e32f10
-__declspec(noinline) int hkaSplineCompressedAnimation_readKnots(const u8*& cur, int* total, int* order, int tick, float scaleTime, float* times)
+__declspec(noinline) int hkaSplineCompressedAnimation_readKnots(const u8*& dataInOut, int* _n, int* _p, int quantizedTime, float frameDuration, float* U)
 {
-    int count = *reinterpret_cast<const u16*>(cur);
-    cur += 2;
-    int degree = *cur++;
-    const u8* knots = cur;
-    int span = FindKeyInterval(count, degree, (u8)tick, knots);
+    int count = *reinterpret_cast<const u16*>(dataInOut);
+    dataInOut += 2;
+    int degree = *dataInOut++;
+    const u8* knots = dataInOut;
+    int span = FindKeyInterval(count, degree, (u8)quantizedTime, knots);
     for (int i = 0; i < 2 * degree; ++i)
-        times[i] = (float)knots[span - degree + i + 1] * scaleTime;
-    cur = knots + count + degree + 2;
-    *total = count;
-    *order = degree;
+        U[i] = (float)knots[span - degree + i + 1] * frameDuration;
+    dataInOut = knots + count + degree + 2;
+    *_n = count;
+    *_p = degree;
     return span;
 }
-int hkaSplineCompressedAnimation_readKnots(const u8*& cur, int* p28, int* p24, int a1, float f1, float* buf);
+int hkaSplineCompressedAnimation_readKnots(const u8*& dataInOut, int* _n, int* _p, int quantizedTime, float frameDuration, float* U);
 void BlendVector4(u8 flags, float* v, Point4* outp, int aux);
 
 static __forceinline void fillPoint(u8 bits, const Point4& fixedValues, const Point4& defaultValues, Point4& result)
@@ -97,8 +97,11 @@ static __forceinline void fillPoint(u8 bits, const Point4& fixedValues, const Po
 
 // @fnv 0x00e33a30
 // src: HAVOK_LIB 0x00e33a30
-void __cdecl hkaSplineCompressedAnimation_readNURBSCurve(const u8*& cur, int aiTick, float afScaleTime, float f2, u32 flags, int idx, Point4* outp,
-                          int aux)
+// pdb: hkaSplineCompressedAnimation::readNURBSCurve | hkaSplineCompressedAnimation.obj | retail, upstream name already matches, high
+// pdb params: dataInOut, quantizedTime, frameDuration, u, mask, scalarQuantizationType, I, out
+// pdb locals: U, maxp, minp, stat, n, P, p, assertBuf, ostr
+void __cdecl hkaSplineCompressedAnimation_readNURBSCurve(const u8*& dataInOut, int quantizedTime, float frameDuration, float u, u32 mask, int scalarQuantizationType, Point4* I,
+                          int out)
 {
     int stride;
     LocalInt scale;
@@ -113,10 +116,10 @@ void __cdecl hkaSplineCompressedAnimation_readNURBSCurve(const u8*& cur, int aiT
     int iCount = 0;
     int iSpan;
 
-    u8 fb = (u8)flags;
+    u8 fb = (u8)mask;
     if ((u8)(fb & 0xf0) != 0)
     {
-        iSpan = hkaSplineCompressedAnimation_readKnots(cur, &iCount, &iDegree, aiTick, afScaleTime, buf);
+        iSpan = hkaSplineCompressedAnimation_readKnots(dataInOut, &iCount, &iDegree, quantizedTime, frameDuration, buf);
     }
     else
     {
@@ -124,29 +127,29 @@ void __cdecl hkaSplineCompressedAnimation_readNURBSCurve(const u8*& cur, int aiT
         iCount = 0;
         iSpan = 0;
     }
-    cur = (const u8*)(((u32)cur + 3) & ~3u);
+    dataInOut = (const u8*)(((u32)dataInOut + 3) & ~3u);
 
     for (int lane = 0; lane < 3; ++lane)
     {
         if (fb & (1 << lane))
-            val.at(lane) = readScalar(cur);
+            val.at(lane) = readScalar(dataInOut);
         else if (fb & (0x10 << lane))
         {
-            lo.at(lane) = readScalar(cur);
-            hi.at(lane) = readScalar(cur);
+            lo.at(lane) = readScalar(dataInOut);
+            hi.at(lane) = readScalar(dataInOut);
         }
     }
 
     if ((u8)(fb & 0xf0) == 0)
     {
-        BlendVector4(fb, &val.x, outp, aux);
+        BlendVector4(fb, &val.x, I, out);
         return;
     }
 
-    stride = DAT_010eb4d4[idx];
-    cur = (const u8*)(((u32)cur + 1) & ~1u);
+    stride = DAT_010eb4d4[scalarQuantizationType];
+    dataInOut = (const u8*)(((u32)dataInOut + 1) & ~1u);
     scale = DAT_010eb73c[((u32)fb >> 4) & 7];
-    const u8* pSample = (const u8*)(cur + (iSpan - iDegree) * stride * scale);
+    const u8* pSample = (const u8*)(dataInOut + (iSpan - iDegree) * stride * scale);
 
     if (iDegree >= 0)
     {
@@ -157,15 +160,15 @@ void __cdecl hkaSplineCompressedAnimation_readNURBSCurve(const u8*& cur, int aiT
             {
                 if (fb & (0x10 << lane))
                 {
-                    if (idx == 0)
+                    if (scalarQuantizationType == 0)
                         ob[j].at(lane) = expandByte(lo.at(lane), hi.at(lane), readByte(pSample));
                     else
                         ob[j].at(lane) = expandWord(lo.at(lane), hi.at(lane), readWord(pSample));
                 }
             }
-            fillPoint(fb, val, *outp, ob[j]);
+            fillPoint(fb, val, *I, ob[j]);
         }
     }
-    DAT_011be4d0[iDegree](f2, iDegree, buf, &ob[0].x, aux);
-    cur += (iCount + 1) * stride * scale;
+    DAT_011be4d0[iDegree](u, iDegree, buf, &ob[0].x, out);
+    dataInOut += (iCount + 1) * stride * scale;
 }

@@ -5,6 +5,7 @@
 
 class hkBool;
 
+// pdb: class hkError, size 0x8, bases: hkReferencedObject, hkSingleton<hkError>, 0 members
 class hkError : public hkReferencedObject, public hkSingleton<hkError>
 {
 public:

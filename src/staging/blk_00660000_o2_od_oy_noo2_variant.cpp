@@ -18,6 +18,8 @@ struct ScalarValue
 };
 // @fnv 0x0066c930
 // src: XBOX_PDB 0x0066c930
+// pdb: hkMultiSphereShapeCinfo::~hkMultiSphereShapeCinfo | BSTreeNode.obj | retail, object-file run extension, low
+// pdb note: debug build links it to hkVector4::fastNormalize3
 void Vec4::hkVector4_fastNormalize3()
 {
     __m128 d = Dot(*this).Get();

@@ -4,13 +4,13 @@
 
 #include "../../../../include/NiDepthStencilBuffer.h"
 
-extern const NiRTTI DAT_011f603c;
+extern const NiRTTI NiDepthStencilBuffer_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f603c (old: DAT_011f603c/g_011f603c)
 
 // @fnv 0x00a9fe50
 // src: COMMUNITY 0x00a9fe50
 const NiRTTI* __cdecl NiDepthStencilBuffer_GetRTTI()
 {
-    return &DAT_011f603c;
+    return &NiDepthStencilBuffer_ms_RTTI;
 }
 
 extern int vftable_NiDepthStencilBuffer;

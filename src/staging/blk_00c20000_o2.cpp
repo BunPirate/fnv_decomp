@@ -17,6 +17,8 @@ extern int DAT_010be35c;
 
 // @fnv 0x00c25820
 // src: EXE 0x00c25820
+// pdb: BSStripParticleSystem::CreateObject | BSStripParticleSystem.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 BSFadeNode* __cdecl BSStripParticleSystem_CreateObject()
 {
     BSFadeNode* node = static_cast<BSFadeNode*>(BSFadeNode::operator new(0x110));
@@ -35,6 +37,8 @@ extern "C" void* DAT_010bea54;
 // Allocates a NiPSysPositionModifier, runs its constructor, sets its vtable, and returns it (or null on allocation failure).
 // @fnv 0x00c28b20
 // src: EXE 0x00c28b20
+// pdb: NiPSysPositionModifier::CreateObject | NiPSysPositionModifier.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 NiPSysPositionModifier* NiPSysPositionModifier_CreateObject()
 {
     NiPSysPositionModifier* p = (NiPSysPositionModifier*)BSFadeNode::operator new(0x18);
@@ -49,11 +53,13 @@ NiPSysPositionModifier* NiPSysPositionModifier_CreateObject()
 }  // namespace fnv_00c28b20
 
 namespace fnv_00c29d00 {
-void* __fastcall NiPSysModifierBoolCtlr_NiPSysModifierBoolCtlr(void* self);
+void* __fastcall NiPSysModifierBoolCtlr_NiPSysModifierBoolCtlr(void* pcModifierName);
 extern int DAT_010bebbc;
 
 // @fnv 0x00c29d00
 // src: EXE 0x00c29d00
+// pdb: NiPSysModifierActiveCtlr::CreateObject | NiPSysModifierActiveCtlr.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 void* __cdecl NiPSysModifierActiveCtlr_CreateObject()
 {
     void* p = BSFadeNode::operator new(0x40);
@@ -72,6 +78,8 @@ extern int DAT_010beebc;
 
 // @fnv 0x00c2a050
 // src: EXE 0x00c2a050
+// pdb: NiPSysInitialRotAngleVarCtlr::CreateObject | NiPSysInitialRotAngleVarCtlr.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 BSFadeNode* __cdecl NiPSysInitialRotAngleVarCtlr_CreateObject()
 {
     void* p = BSFadeNode::operator new(0x40);
@@ -91,6 +99,8 @@ extern int DAT_010bf1ac;
 
 // @fnv 0x00c2a870
 // src: EXE 0x00c2a870
+// pdb: NiPSysGravityStrengthCtlr::CreateObject | NiPSysGravityStrengthCtlr.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 void* __cdecl NiPSysGravityStrengthCtlr_CreateObject()
 {
     void* p = BSFadeNode::operator new(0x40);
@@ -110,6 +120,8 @@ extern int DAT_010bf454;
 // Allocates a 0x40-byte BSFadeNode, constructs it, sets its vtable to DAT_010bf454, and returns the pointer or 0 on allocation failure.
 // @fnv 0x00c2b110
 // src: EXE 0x00c2b110
+// pdb: NiPSysFieldMagnitudeCtlr::CreateObject | NiPSysFieldMagnitudeCtlr.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 void* __cdecl NiPSysFieldMagnitudeCtlr_CreateObject()
 {
     void* p = BSFadeNode::operator new(0x40);
@@ -129,6 +141,8 @@ extern int DAT_010bf554;
 // Allocates a 0x40-byte BSFadeNode, calls Init on it, sets its vtbl to DAT_010bf554 and returns it, or returns 0 on allocation failure.
 // @fnv 0x00c2b200
 // src: EXE 0x00c2b200
+// pdb: NiPSysFieldAttenuationCtlr::CreateObject | NiPSysFieldAttenuationCtlr.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 void* NiPSysFieldAttenuationCtlr_CreateObject()
 {
     BSFadeNode* node = static_cast<BSFadeNode*>(BSFadeNode::operator new(0x40));
@@ -149,6 +163,8 @@ extern "C" void* DAT_010bf954;
 // Allocates a 0x40-byte BSFadeNode, calls Init on it, sets its vtable to DAT_010bf954 and returns it, or returns null if allocation fails.
 // @fnv 0x00c2b620
 // src: EXE 0x00c2b620
+// pdb: NiPSysEmitterLifeSpanCtlr::CreateObject | NiPSysEmitterLifeSpanCtlr.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 void* __cdecl NiPSysEmitterLifeSpanCtlr_CreateObject()
 {
     void* p = BSFadeNode::operator new(0x40);
@@ -166,6 +182,8 @@ void* __cdecl NiPSysEmitterLifeSpanCtlr_CreateObject()
 namespace fnv_00c2b720 {
 // @fnv 0x00c2b720
 // src: EXE 0x00c2b720
+// pdb: NiPSysEmitterInitialRadiusCtlr::CreateObject | NiPSysEmitterInitialRadiusCtlr.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 void* __cdecl NiPSysEmitterInitialRadiusCtlr_CreateObject()
 {
     BSFadeNode* node = (BSFadeNode*)BSFadeNode::operator new(0x40);
@@ -185,6 +203,8 @@ extern const void* DAT_010bfb54;
 
 // @fnv 0x00c2b870
 // src: EXE 0x00c2b870
+// pdb: NiPSysEmitterDeclinationVarCtlr::CreateObject | NiPSysEmitterDeclinationVarCtlr.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 BSFadeNode* __cdecl NiPSysEmitterDeclinationVarCtlr_CreateObject()
 {
     BSFadeNode* p = (BSFadeNode*)BSFadeNode::operator new(0x40);
@@ -203,6 +223,8 @@ extern void* DAT_010c05e4;
 
 // @fnv 0x00c30600
 // src: EXE 0x00c30600
+// pdb: NiPSysAirFieldInheritVelocityCtlr::CreateObject | NiPSysAirFieldInheritVelocityCtlr.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 void* __cdecl NiPSysAirFieldInheritVelocityCtlr_CreateObject()
 {
     void* p = BSFadeNode::operator new(0x40);
@@ -221,6 +243,8 @@ extern int DAT_010be6b4;
 
 // @fnv 0x00c270f0
 // src: EXE 0x00c270f0
+// pdb: NiPSysUpdateCtlr::CreateObject | NiPSysUpdateCtlr.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 BSFadeNode* __cdecl NiPSysUpdateCtlr_CreateObject()
 {
     BSFadeNode* node = static_cast<BSFadeNode*>(BSFadeNode::operator new(0x34));
@@ -241,6 +265,8 @@ void __fastcall FUN_00a6d220(void*);
 
 // @fnv 0x00c283b0
 // src: EXE 0x00c283b0
+// pdb: NiPSysResetOnLoopCtlr::CreateObject | NiPSysResetOnLoopCtlr.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 BSFadeNode* __cdecl NiPSysResetOnLoopCtlr_CreateObject()
 {
     BSFadeNode* p = (BSFadeNode*)BSFadeNode::operator new(0x38);
@@ -257,6 +283,8 @@ BSFadeNode* __cdecl NiPSysResetOnLoopCtlr_CreateObject()
 extern int DAT_010bfd54;
 // @fnv 0x00c2ba60
 // src: EXE 0x00c2ba60
+// pdb: NiPSysEmitterCtlrData::CreateObject | NiPSysEmitterCtlrData.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 BSFadeNode* __cdecl NiPSysEmitterCtlrData_CreateObject()
 {
     BSFadeNode* p = (BSFadeNode*)BSFadeNode::operator new(0x28);
@@ -309,6 +337,8 @@ struct FUN_00c31ff0
 // Allocates a 0x40-byte FUN_00c31ff0, calls Init, sets its vtbl and initializes m_30, m_34, m_38 and m_3c; returns null on allocation failure.
 // @fnv 0x00c2c7b0
 // src: EXE 0x00c2c7b0
+// pdb: NiPSysDragFieldModifier::CreateObject | NiPSysDragFieldModifier.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 FUN_00c31ff0* __cdecl NiPSysDragFieldModifier_CreateObject()
 {
     FUN_00c31ff0* p = (FUN_00c31ff0*)BSFadeNode::operator new(0x40);
@@ -338,19 +368,21 @@ struct NiPSysParticle
     unsigned char m_ucSpawnGeneration;
     float m_fMass;
     float m_pfTreeSize;
-    void NiPSysFieldModifier_CopyMembers(NiPSysParticle* dst, CloningProcess* proc);
+    void NiPSysFieldModifier_CopyMembers(NiPSysParticle* pkDest, CloningProcess* kCloning);
 };
 // @fnv 0x00c32020
 // src: XBOX_PDB 0x00c32020
-void NiPSysParticle::NiPSysFieldModifier_CopyMembers(NiPSysParticle* dst, CloningProcess* proc)
+// pdb: NiPSysFieldModifier::CopyMembers | NiPSysFieldModifier.obj | retail, upstream name already matches, high
+// pdb params: pkDest, kCloning
+void NiPSysParticle::NiPSysFieldModifier_CopyMembers(NiPSysParticle* pkDest, CloningProcess* kCloning)
 {
-    ((NiPSysModifier*)this)->CopyMemberData((NiPSysModifier*)dst, *proc);
-    dst->m_pSys = m_pSys;
-    dst->m_fXValue = m_fXValue;
-    dst->m_fLife = m_fLife;
-    dst->m_ucSpawnGeneration = m_ucSpawnGeneration;
-    dst->m_fMass = m_fMass;
-    dst->m_pfTreeSize = m_pfTreeSize;
+    ((NiPSysModifier*)this)->CopyMembers((NiPSysModifier*)pkDest, *kCloning);
+    pkDest->m_pSys = m_pSys;
+    pkDest->m_fXValue = m_fXValue;
+    pkDest->m_fLife = m_fLife;
+    pkDest->m_ucSpawnGeneration = m_ucSpawnGeneration;
+    pkDest->m_fMass = m_fMass;
+    pkDest->m_pfTreeSize = m_pfTreeSize;
 }
 
 extern int DAT_010c01ec;
@@ -361,6 +393,8 @@ extern int DAT_011a9474;
 // Allocates a 0x38-byte NiPSysPositionModifier, runs its constructor, sets the vtable and initializes fields from globals and zero, returning the object or null.
 // @fnv 0x00c2e4c0
 // src: EXE 0x00c2e4c0
+// pdb: NiPSysBombModifier::CreateObject | NiPSysBombModifier.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 NiPSysPositionModifier* NiPSysBombModifier_CreateObject()
 {
     NiPSysPositionModifier* p = static_cast<NiPSysPositionModifier*>(BSFadeNode::operator new(0x38));
@@ -391,6 +425,8 @@ extern int DAT_010be604;
 // Allocates a 0x3c-byte object, runs its constructor, sets its vtable and initializes three fields at offsets 0x30-0x38, returning the object or null.
 // @fnv 0x00c26790
 // src: EXE 0x00c26790
+// pdb: NiPSysVortexFieldModifier::CreateObject | NiPSysVortexFieldModifier.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 FUN_00c31ff0* __cdecl NiPSysVortexFieldModifier_CreateObject()
 {
     FUN_00c31ff0* p = (FUN_00c31ff0*)BSFadeNode::operator new(0x3c);
@@ -408,9 +444,12 @@ FUN_00c31ff0* __cdecl NiPSysVortexFieldModifier_CreateObject()
 
 
 // @fnv 0x00c21f60
-void NiPSysBoxEmitter::CopyTo(NiPSysModifier* pkDest, CloningProcess& kProcess)
+// src: XBOX_RETAIL_PDB 0x00c21f60
+// pdb: NiPSysEmitter::CopyMembers | NiPSysEmitter.obj | retail, call graph, high
+// pdb params: pkDest, kCloning
+void NiPSysBoxEmitter::NiPSysEmitter_CopyMembers(NiPSysModifier* pkDest, CloningProcess& kCloning)
 {
-    CopyMemberData(pkDest, kProcess);
+    CopyMembers(pkDest, kCloning);
     float* pSrc = (float*)((char*)this + 0x18);
     float* pDst = (float*)((char*)pkDest + 0x18);
     pDst[0] = pSrc[0];
@@ -436,6 +475,8 @@ struct FUN_00c22ad0_object : BSFadeNode
 
 // @fnv 0x00c22ad0
 // src: EXE 0x00c22ad0
+// pdb: NiPSysGravityModifier::CreateObject | NiPSysGravityModifier.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 BSFadeNode* NiPSysGravityModifier_CreateObject()
 {
     FUN_00c22ad0_object* object = static_cast<FUN_00c22ad0_object*>(BSFadeNode::operator new(0x40));
@@ -504,6 +545,8 @@ extern int DAT_010be774;
 // Allocates a 0x3c-byte object, calls Init, sets fields at offsets 0x30/0x34/0x38 and the vtable pointer, then returns it (or null).
 // @fnv 0x00c27350
 // src: EXE 0x00c27350
+// pdb: NiPSysTurbulenceFieldModifier::CreateObject | NiPSysTurbulenceFieldModifier.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 FUN_00c31ff0* __cdecl NiPSysTurbulenceFieldModifier_CreateObject()
 {
     FUN_00c31ff0* p = (FUN_00c31ff0*)BSFadeNode::operator new(0x3c);
@@ -523,6 +566,8 @@ extern int DAT_010be99c;
 // Allocates a 0x34-byte object, calls Init, sets a float at offset 0x30 to 0.0f and installs the vtable at DAT_010be99c, returning the object or null.
 // @fnv 0x00c28570
 // src: EXE 0x00c28570
+// pdb: NiPSysRadialFieldModifier::CreateObject | NiPSysRadialFieldModifier.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 FUN_00c31ff0* __cdecl NiPSysRadialFieldModifier_CreateObject()
 {
     FUN_00c31ff0* p = (FUN_00c31ff0*)BSFadeNode::operator new(0x34);
@@ -556,6 +601,8 @@ extern int DAT_010bf354;
 // Allocates a 0x40-byte object, constructs it, sets its vtable to DAT_010bf354, and returns it (or null on allocation failure).
 // @fnv 0x00c2b010
 // src: EXE 0x00c2b010
+// pdb: NiPSysFieldMaxDistanceCtlr::CreateObject | NiPSysFieldMaxDistanceCtlr.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 BSFadeNode* __cdecl NiPSysFieldMaxDistanceCtlr_CreateObject()
 {
     BSFadeNode* p = static_cast<BSFadeNode*>(BSFadeNode::operator new(0x40));
@@ -573,6 +620,8 @@ extern int DAT_010c0304;
 // Allocates a 0x20-byte NiPSysPositionModifier, constructs it, sets its vtable and clears fields at offsets 0x18 and 0x1c, returning the new object or null.
 // @fnv 0x00c2ef20
 // src: EXE 0x00c2ef20
+// pdb: NiPSysAgeDeathModifier::CreateObject | NiPSysAgeDeathModifier.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 NiPSysPositionModifier* NiPSysAgeDeathModifier_CreateObject()
 {
     NiPSysPositionModifier* p = (NiPSysPositionModifier*)BSFadeNode::operator new(0x20);
@@ -592,6 +641,8 @@ extern int DAT_010c06e4;
 
 // @fnv 0x00c30790
 // src: EXE 0x00c30790
+// pdb: NiPSysAirFieldAirFrictionCtlr::CreateObject | NiPSysAirFieldAirFrictionCtlr.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 void* NiPSysAirFieldAirFrictionCtlr_CreateObject(void)
 {
     BSFadeNode* p = (BSFadeNode*)BSFadeNode::operator new(0x40);
@@ -627,6 +678,9 @@ struct FUN_00c22a80_cls : NiPSysPositionModifier
 
 // Calls InitBase, sets the vtable pointer and initialises the object's fields to zero, one and the DAT_011a946c/9470/9474 values, then returns this.
 // @fnv 0x00c22a80
+// pdb: NiPSysGravityModifier::NiPSysGravityModifier | NiPSysGravityModifier.obj | retail, call graph, medium
+// pdb note: debug build links it to NiPSysEmitter::`scalar deleting destructor'
+// pdb params: pcName, pkGravityObj, kGravityAxis, fDecay, fStrength, eType, fTurbulence, fScale
 FUN_00c22a80_cls* FUN_00c22a80_cls::InitDefaults()
 {
     this->NiPSysPositionModifier::NiPSysPositionModifier();
@@ -669,6 +723,8 @@ struct FUN_00c23b20_cls
 // Allocates a 0x34-byte object, runs its base constructor, sets default float and ushort fields and the vtable, and returns it (or null on allocation failure).
 // @fnv 0x00c23b20
 // src: EXE 0x00c23b20
+// pdb: NiPSysSpawnModifier::CreateObject | NiPSysSpawnModifier.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 void* __cdecl NiPSysSpawnModifier_CreateObject()
 {
     FUN_00c23b20_cls* p = (FUN_00c23b20_cls*)Object_DispatchCommandFour(0x34);
@@ -715,25 +771,27 @@ class C29E50Base
     int unk3C;
 };
 
-class C29E50Object : public C29E50Base
+// pdb: class NiPSysInitialRotSpeedVarCtlr, size 0x40, bases: NiPSysModifierFloatCtlr, 0 members
+class NiPSysInitialRotSpeedVarCtlr : public C29E50Base // src: EXE 0x010becbc (vtable; old: C29E50Object)
 {
   public:
-    C29E50Object() throw()
+    NiPSysInitialRotSpeedVarCtlr() throw()
     {}
-    virtual ~C29E50Object();
+    virtual ~NiPSysInitialRotSpeedVarCtlr();
 };
 
 // Allocates and constructs a new C29E50Object and returns it.
 // @fnv 0x00c29e50
-C29E50Object* __cdecl CreateC29E50Object()
+NiPSysInitialRotSpeedVarCtlr* __cdecl CreateC29E50Object()
 {
-    return new C29E50Object;
+    return new NiPSysInitialRotSpeedVarCtlr;
 }
 
 extern int DAT_010bedbc;
 
 // Allocates a ParticleFactoryObject, calls Initialize, sets its vtable to DAT_010bedbc, and returns it (or null on allocation failure).
 // @fnv 0x00c29f50
+// pdb: NiPSysInitialRotSpeedVarCtlr::`scalar deleting destructor' | NiPSysInitialRotSpeedVarCtlr.obj | debug, object-file run extension, low
 BSFadeNode* CreateParticleFactoryObject()
 {
     BSFadeNode* object =
@@ -772,6 +830,8 @@ extern void* __cdecl Object_DispatchCommandFour(unsigned int size);
 
 // @fnv 0x00c2a2b0
 // src: EXE 0x00c2a2b0
+// pdb: NiPSysGrowFadeModifier::CreateObject | NiPSysGrowFadeModifier.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 void* __cdecl NiPSysGrowFadeModifier_CreateObject()
 {
     void* pObject = Object_DispatchCommandFour(0x2c);
@@ -794,6 +854,7 @@ extern int DAT_010bf654;
 
 // Allocates a ParticleEmitterAllocation, calls Initialize, sets its vtable to DAT_010bf654, and returns it (or null on allocation failure).
 // @fnv 0x00c2b330
+// pdb: NiPSysFieldAttenuationCtlr::`scalar deleting destructor' | NiPSysFieldAttenuationCtlr.obj | debug, object-file run extension, low
 BSFadeNode* CreateParticleEmitterAllocation()
 {
     BSFadeNode* emitter =
@@ -906,6 +967,7 @@ FUN_00c31440_cls* FUN_00c31440_cls::AssignString(char** src)
 extern int DAT_010bf754;
 // Allocates and constructs a PSysFactoryObject, returning the new instance.
 // @fnv 0x00c2b420
+// pdb: NiPSysEmitterSpeedCtlr::`scalar deleting destructor' | NiPSysEmitterSpeedCtlr.obj | debug, object-file run extension, low
 BSFadeNode* __cdecl CreatePSysFactoryObject()
 {
     BSFadeNode* object = static_cast<BSFadeNode*>(BSFadeNode::operator new(0x40));
@@ -923,6 +985,8 @@ extern int DAT_010bfc54;
 // Allocates a 0x40-byte object, constructs a FUN_00c32d80 base in place, sets its vtable to DAT_010bfc54 and returns it, or returns 0 on allocation failure.
 // @fnv 0x00c2b970
 // src: EXE 0x00c2b970
+// pdb: NiPSysEmitterDeclinationCtlr::CreateObject | NiPSysEmitterDeclinationCtlr.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 BSFadeNode* NiPSysEmitterDeclinationCtlr_CreateObject()
 {
     BSFadeNode* obj = (BSFadeNode*)Object_DispatchCommandFour(0x40);
@@ -938,6 +1002,7 @@ BSFadeNode* NiPSysEmitterDeclinationCtlr_CreateObject()
 extern int DAT_010bf854;
 // Allocates and constructs a new PSysFactoryObjectB52 and returns it.
 // @fnv 0x00c2b520
+// pdb: NiPSysEmitterPlanarAngleVarCtlr::`scalar deleting destructor' | NiPSysEmitterPlanarAngleVarCtlr.obj | debug, object-file run extension, low
 BSFadeNode* __cdecl CreatePSysFactoryObjectB52()
 {
     BSFadeNode* object = static_cast<BSFadeNode*>(BSFadeNode::operator new(0x40));
@@ -954,6 +1019,8 @@ extern bool __cdecl IsEquivalentTo(int param1, int param2);
 
 // @fnv 0x00c32df0
 // src: XBOX_PDB 0x00c32df0
+// pdb: NiPSysModifierBoolCtlr::IsEqual | NiPSysModifierBoolCtlr.obj | debug, upstream name already matches, high
+// pdb params: pkObject
 bool __cdecl NiPSysModifierBoolCtlr_IsEqual(int param1, int param2)
 {
     return IsEquivalentTo(param1, param2);
@@ -961,14 +1028,16 @@ bool __cdecl NiPSysModifierBoolCtlr_IsEqual(int param1, int param2)
 
 struct NiPSysBoxEmitterWrapper : NiPSysBoxEmitter
 {
-    void NiPSysVolumeEmitter_CopyMembers(NiPSysModifier* destination, CloningProcess& process);
+    void NiPSysVolumeEmitter_CopyMembers(NiPSysModifier* pkDest, CloningProcess& kCloning);
 };
 
 // @fnv 0x00c31b10
 // src: XBOX_PDB 0x00c31b10
-void NiPSysBoxEmitterWrapper::NiPSysVolumeEmitter_CopyMembers(NiPSysModifier* destination, CloningProcess& process)
+// pdb: NiPSysVolumeEmitter::CopyMembers | NiPSysVolumeEmitter.obj | debug, upstream name already matches, high
+// pdb params: pkDest, kCloning
+void NiPSysBoxEmitterWrapper::NiPSysVolumeEmitter_CopyMembers(NiPSysModifier* pkDest, CloningProcess& kCloning)
 {
-    CopyTo(destination, process);
+    NiPSysEmitter_CopyMembers(pkDest, kCloning);
 }
 
 struct TrailVector

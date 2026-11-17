@@ -9,6 +9,7 @@ class TESSound;
 class TimedFloatKey;
 class AlphaColor;
 
+// pdb: class TESImageSpaceModifier, size 0x730, bases: TESForm, 31 members
 class TESImageSpaceModifier : public TESForm
 {
 public:
@@ -22,7 +23,7 @@ public:
     virtual bool Compare(TESForm* form);
 
     void __vslot_10();
-    bool Load(TESFile* file);
+    bool Load(TESFile* apFile);
     void Save();
     void Copy(TESForm* form);
     void ResetFormData();
@@ -32,7 +33,7 @@ public:
     void SetDuration(float duration);
     static void SetEnable(bool enable);
     static bool GetEnable();
-    void Apply(float startTime, float strength, NiAVObject* target);
+    void Apply(float afStartTime, float afStrength, NiAVObject* apTarget);
     void EvaluateInterpolators(float startTime, float strength);
     bool IsExpired(float startTime);
     static void BlendModifiers(float blendWeight, TESImageSpaceModifier* lastModifier,
@@ -61,31 +62,31 @@ public:
     TESSound* pIntroSound;
     ImageSpaceModifierEffectData Data;
     NiFloatInterpolator m_akFloatInterpolators[21][2];
-    NiFloatInterpolator m_kFloatInterpolatorOne;
-    NiFloatInterpolator m_kFloatInterpolatorTwo;
-    NiColorInterpolator m_kColorInterpolatorOne;
-    NiColorInterpolator m_kColorInterpolatorTwo;
-    NiFloatInterpolator m_kFloatInterpolatorNine;
-    NiFloatInterpolator m_kFloatInterpolatorTen;
-    NiFloatInterpolator m_kFloatInterpolatorEleven;
-    NiFloatInterpolator m_kFloatInterpolatorThree;
-    NiFloatInterpolator m_kFloatInterpolatorFour;
-    NiFloatInterpolator m_kFloatInterpolatorFive;
-    NiFloatInterpolator m_kFloatInterpolatorSix;
-    NiFloatInterpolator m_kFloatInterpolatorSeven;
-    NiFloatInterpolator m_kFloatInterpolatorEight;
+    NiFloatInterpolator BlurInterpolator; // src: XBOX_RETAIL_PDB +0x504 (old: m_kFloatInterpolatorOne)
+    NiFloatInterpolator DoubleInterpolator; // src: XBOX_RETAIL_PDB +0x51c (old: m_kFloatInterpolatorTwo)
+    NiColorInterpolator TintColorInterpolator; // src: XBOX_RETAIL_PDB +0x534 (old: m_kColorInterpolatorOne)
+    NiColorInterpolator FadeColorInterpolator; // src: XBOX_RETAIL_PDB +0x558 (old: m_kColorInterpolatorTwo)
+    NiFloatInterpolator RadialBlurStrengthInterpolator; // src: XBOX_RETAIL_PDB +0x57c (old: m_kFloatInterpolatorNine)
+    NiFloatInterpolator RadialBlurRampupInterpolator; // src: XBOX_RETAIL_PDB +0x594 (old: m_kFloatInterpolatorTen)
+    NiFloatInterpolator RadialBlurStartInterpolator; // src: XBOX_RETAIL_PDB +0x5ac (old: m_kFloatInterpolatorEleven)
+    NiFloatInterpolator RadialBlurRampDownInterpolator; // src: XBOX_RETAIL_PDB +0x5c4 (old: m_kFloatInterpolatorThree)
+    NiFloatInterpolator RadialBlurDownStartInterpolator; // src: XBOX_RETAIL_PDB +0x5dc (old: m_kFloatInterpolatorFour)
+    NiFloatInterpolator DepthOfFieldStrengthInterpolator; // src: XBOX_RETAIL_PDB +0x5f4 (old: m_kFloatInterpolatorFive)
+    NiFloatInterpolator DepthOfFieldDistanceInterpolator; // src: XBOX_RETAIL_PDB +0x60c (old: m_kFloatInterpolatorSix)
+    NiFloatInterpolator DepthOfFieldRangeInterpolator; // src: XBOX_RETAIL_PDB +0x624 (old: m_kFloatInterpolatorSeven)
+    NiFloatInterpolator MotionBlurStrengthInterpolator; // src: XBOX_RETAIL_PDB +0x63c (old: m_kFloatInterpolatorEight)
     TimedFloatKey* pEffectEntryTable[21][2];
-    TimedFloatKey* pSecondEffectEntries;
-    TimedFloatKey* pThirdEffectEntries;
-    AlphaColor* pFirstEffectRecordArray;
-    AlphaColor* pSecondEffectRecordArray;
-    TimedFloatKey* pTenthEffectEntries;
-    TimedFloatKey* pEleventhEffectEntries;
-    TimedFloatKey* pTwelfthEffectEntries;
-    TimedFloatKey* pFourthEffectEntries;
-    TimedFloatKey* pFifthEffectEntries;
-    TimedFloatKey* pSeventhEffectEntries;
-    TimedFloatKey* pEighthEffectEntries;
-    TimedFloatKey* pNinthEffectEntries;
-    TimedFloatKey* pSixthEffectEntries;
+    TimedFloatKey* pBlurFloatKey; // src: XBOX_RETAIL_PDB +0x6fc (old: pSecondEffectEntries)
+    TimedFloatKey* pDoubleFloatKey; // src: XBOX_RETAIL_PDB +0x700 (old: pThirdEffectEntries)
+    AlphaColor* pTintColorKey; // src: XBOX_RETAIL_PDB +0x704 (old: pFirstEffectRecordArray)
+    AlphaColor* pFadeColorKey; // src: XBOX_RETAIL_PDB +0x708 (old: pSecondEffectRecordArray)
+    TimedFloatKey* pRadialBlurStrengthFloatKey; // src: XBOX_RETAIL_PDB +0x70c (old: pTenthEffectEntries)
+    TimedFloatKey* pRadialBlurRampupFloatKey; // src: XBOX_RETAIL_PDB +0x710 (old: pEleventhEffectEntries)
+    TimedFloatKey* pRadialBlurStartFloatKey; // src: XBOX_RETAIL_PDB +0x714 (old: pTwelfthEffectEntries)
+    TimedFloatKey* pRadialBlurRampDownFloatKey; // src: XBOX_RETAIL_PDB +0x718 (old: pFourthEffectEntries)
+    TimedFloatKey* pRadialBlurDownStartFloatKey; // src: XBOX_RETAIL_PDB +0x71c (old: pFifthEffectEntries)
+    TimedFloatKey* pDepthOfFieldStrengthFloatKey; // src: XBOX_RETAIL_PDB +0x720 (old: pSeventhEffectEntries)
+    TimedFloatKey* pDepthOfFieldDistanceFloatKey; // src: XBOX_RETAIL_PDB +0x724 (old: pEighthEffectEntries)
+    TimedFloatKey* pDepthOfFieldRangeFloatKey; // src: XBOX_RETAIL_PDB +0x728 (old: pNinthEffectEntries)
+    TimedFloatKey* pMotionBlurStrengthFloatKey; // src: XBOX_RETAIL_PDB +0x72c (old: pSixthEffectEntries)
 };

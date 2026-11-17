@@ -6,6 +6,7 @@
 #include "../../../include/BSFile.h"
 #include "../../../include/BGSTerrainManager.h"
 
+// pdb: class FileFinder, size 0x10 (here 0x1), 1 members
 class FileFinder
 {
   public:

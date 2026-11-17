@@ -46,6 +46,9 @@ void __thiscall DebugText::AddScaledValue(int aiIndex, int aiMultiplier)
 
 // @fnv 0x00a0e470
 // src: XBOX_PDB 0x00a0e470
+// pdb: DebugText::PrintX | DebugText.obj | debug, vtable slot, medium
+// pdb params: aiX, apFormatString, args
+// pdb locals: iret
 int __cdecl DebugText_PrintX(DebugText* apDebugText, int aiX, const char* apFormatString, ...)
 {
     int iret;
@@ -59,6 +62,9 @@ int __cdecl DebugText_PrintX(DebugText* apDebugText, int aiX, const char* apForm
 
 // Calls the virtual method f4 on p with a, b, c, d, a pointer to e, and 0, returning its result.
 // @fnv 0x00a0e4b0
+// pdb: DebugText::PrintX | DebugText.obj | debug, vtable slot, medium
+// pdb params: aiX, aeLocation, aeJustify, apFormatString, args
+// pdb locals: iret
 int __cdecl InvokeVirtualWithArgs(DebugText* apObject, int aiArg1, int aiArg2, int aiArg3, int aiArg4, int aiArg5)
 {
     char* args;
@@ -70,6 +76,9 @@ int __cdecl InvokeVirtualWithArgs(DebugText* apObject, int aiArg1, int aiArg2, i
 
 // @fnv 0x00a0e580
 // src: XBOX_PDB 0x00a0e580
+// pdb: DebugText::PrintLine | DebugText.obj | debug, upstream name already matches, high
+// pdb params: aeLocation, aeJustify, apFormatString, args
+// pdb locals: iret
 int __cdecl DebugText_PrintLine(DebugText* pThis, int aeLocation, int aeJustify, const char* apFormatString, ...)
 {
     char* args;
@@ -82,6 +91,9 @@ int __cdecl DebugText_PrintLine(DebugText* pThis, int aeLocation, int aeJustify,
 // Forwards a format string and its varargs to the object's virtual f4 with x, 0, 1 and a color, returning its result.
 // @fnv 0x00a0e690
 // src: XBOX_PDB 0x00a0e690
+// pdb: DebugText::PrintXC | DebugText.obj | debug, vtable slot, medium
+// pdb params: aiX, aColor, apFormatString, args
+// pdb locals: iret
 int DebugText_PrintXC(DebugText* aObj, int aiX, const NiColorA& arColor, const char* apFormatString, ...)
 {
     char* args;
@@ -93,6 +105,9 @@ int DebugText_PrintXC(DebugText* aObj, int aiX, const NiColorA& arColor, const c
 
 // Forwards p1, p3, p4, p5, the varargs pointer and p2 to the virtual VFunc and returns its result.
 // @fnv 0x00a0e6d0
+// pdb: DebugText::PrintXC | DebugText.obj | debug, vtable slot, medium
+// pdb params: aiX, aColor, aeLocation, aeJustify, apFormatString, args
+// pdb locals: iret
 int __cdecl InvokeVFuncWithVarArgs(DebugText* pObject, int aiArg1, void* apArg2, int aiArg3, int aiArg4, const char* p5, ...)
 {
     int iret;
@@ -109,6 +124,9 @@ typedef char* va_list;
 // Forwards a format string and its va_list to the virtual vf18 debug-text method and returns its result.
 // @fnv 0x00a0e710
 // src: XBOX_PDB 0x00a0e710
+// pdb: DebugText::PrintLineC | DebugText.obj | debug, upstream name already matches, high
+// pdb params: aColor, aeLocation, aeJustify, apFormatString, args
+// pdb locals: iret
 int DebugText_PrintLineC(DebugText* pThis, const NiColorA* apTextColor, DEBUGTEXT_LOCATION aeLocation, DEBUGTEXT_JUSTIFY aeJustify, const char* apFormatString, ...)
 {
     va_list args;
@@ -125,6 +143,7 @@ extern void (__stdcall *DAT_00fdf05c)(int*);
 
 // @fnv 0x00a11820
 // src: COMMUNITY 0x00a11820
+// pdb: DebugText::Lock | DebugText.obj | debug, upstream name already matches, high
 void __cdecl DebugText_Lock()
 {
     if (Interface_IsDebugTextVisible())
@@ -143,17 +162,20 @@ struct P03MM {
 };
 extern P03MM g_memoryManager;
 struct FUN_00a11c00_Owner {
-    void NiTList_AddTail(FUN_00a11c00_Record* item);
+    void NiTList_AddTail(FUN_00a11c00_Record* element);
     void NewItem(FUN_00a11c00_Record* item);
 };
 // Allocates a 12-byte record, stores item->key in its extra field, and passes it to 0x00a11db0.
 // @fnv 0x00a11c00
 // src: COMMUNITY 0x00a11c00
-void FUN_00a11c00_Owner::NiTList_AddTail(FUN_00a11c00_Record* item)
+// pdb: NiTPointerListBase<DFALL<NiTListItem<DebugText::DebugTextData *> >,DebugText::DebugTextData *>::AddTail | DebugText.obj | debug, call graph, high
+// pdb params: element
+// pdb locals: pkNode
+void FUN_00a11c00_Owner::NiTList_AddTail(FUN_00a11c00_Record* element)
 {
     FUN_00a11c00_Record* created = (FUN_00a11c00_Record*)g_memoryManager.Allocate(0xc);
     FUN_00a11c00_Record* temp = created;
-    temp->extra = (void*)item->key;
+    temp->extra = (void*)element->key;
     NewItem(temp);
 }
 
@@ -161,6 +183,10 @@ template <>
 unsigned int __thiscall BSSimpleArray<void*>::BSSimpleArray_AddUninitialized_0();
 
 // @fnv 0x00a11d20
+// pdb: CThreadBase::SetWakeEvent | graphmgr.obj | retail, object-file run extension, low
+// pdb note: debug build links it to BSSimpleArray<BSHash *,1024>::Add
+// pdb params: hNewWakeEvent
+// pdb locals: _ScopeTrace
 template <>
 // src: COMMUNITY 0x00a11d20
 unsigned int __thiscall BSSimpleArray<void*>::BSSimpleArray_Add(void* &aValue)
@@ -181,7 +207,7 @@ struct PendingObj {
 };
 
 struct PendingOwner {
-    void MemoryManager_Deallocate(PendingObj* p);
+    void MemoryManager_Deallocate(PendingObj* apMem);
 };
 
 extern PendingOwner g_011f6238;
@@ -189,6 +215,7 @@ extern PendingObj* g_011f33a8;
 
 // If g_011f33a8 is set, calls FUN_00a0dcc0 on it, passes it to g_011f6238.FUN_00aa4060, then clears g_011f33a8.
 // @fnv 0x00a0dae0
+// pdb: DebugText::Free | DebugText.obj | debug, object-file gap fill, medium
 void __cdecl ClearPendingObject() {
     if (g_011f33a8 != 0) {
         PendingObj* b = g_011f33a8;
@@ -213,6 +240,8 @@ extern Record** DAT_011f33f8;
 bool Interface_GetFullHelp();
 // Computes height from a record's unk38, fills positions[3] from a margin setting, and sets left/right/center from the right margin setting.
 // @fnv 0x00a0e2a0
+// pdb: DebugText::Reset | DebugText.obj | debug, vtable slot, medium
+// pdb locals: i
 void DebugText::UpdateLayoutPositions() {
  int* c = &DAT_011f33c8 ? reinterpret_cast<int*>(&DAT_011f33c8.uValue) : (DAT_01202800=0,&DAT_01202800);
  Record** e = DAT_011f33f8;
@@ -237,6 +266,9 @@ extern "C" int __cdecl FUN_00ecddf1(char* buf, unsigned int n, const char* fmt, 
 
 // Formats pcFormat with pArgs into a 200-byte buffer, then prints it at iX and the selected line's Y.
 // @fnv 0x00a0e4f0
+// pdb: DebugText::VAPrintX | DebugText.obj | debug, vtable slot, medium
+// pdb params: aiX, aeLocation, aeJustify, apFormatString, aArgs, apColor
+// pdb locals: string, iret
 int DebugText::PrintFormattedLine(int iX, int iLine, int iFlags, const char* pcFormat, char* pArgs, const NiColorA* pkColor)
 {
     char acBuffer2[200];
@@ -249,6 +281,9 @@ int FUN_00ecddf1(char* pcBuffer, unsigned int uiSize, const char* pcFormat, char
 
 // Formats pcFormat with pArgs into a 200-byte buffer, prints it at slot iSlot's X/Y, advances that slot's Y by the line height, and returns the print result.
 // @fnv 0x00a0e5c0
+// pdb: DebugText::VAPrintLine | DebugText.obj | debug, vtable slot, medium
+// pdb params: aeLocation, aeJustify, apFormatString, aArgs, apColor
+// pdb locals: string, iret
 int DebugText::PrintFormattedAtSlot(int iSlot, int m_iPayloadInteger, const char* pcFormat, char* pArgs, const NiColorA* pkColor) {
     int iResult;
     char acText[200];
@@ -265,7 +300,7 @@ struct ListNode_b5742 {
 };
 
 struct FUN_00aa4060_shell {
-    void __thiscall MemoryManager_Deallocate(void* p);
+    void __thiscall MemoryManager_Deallocate(void* apMem);
 };
 extern FUN_00aa4060_shell DAT_011f6238;
 
@@ -285,6 +320,9 @@ struct FUN_00a11e10_cls {
 };
 
 // @fnv 0x00a11e10
+// pdb: LEAPCORE::CGraphManager::RemoveNode | graphmgr.obj | retail, upstream name already matches, high
+// pdb params: pNode
+// pdb locals: _ScopeTrace
 unsigned int FUN_00a11e10_cls::RemoveNode(ListNode_b5742** pNode) {
     unsigned int unk00[6];
     ListNode_b5742* node3 = *pNode;
@@ -316,6 +354,9 @@ unsigned int FUN_00a11e10_cls::RemoveNode(ListNode_b5742** pNode) {
 
 // Ensures capacity by allocating or growing the buffer when full, then increments the count and returns the previous index.
 // @fnv 0x00a11ee0
+// pdb: LEAPCORE::CGraphManager::Create | graphmgr.obj | retail, object-file run extension, low
+// pdb params: uCpuIdentifier, pControllingOutput, pThreadIdentifier
+// pdb locals: _ScopeTrace, hr
 template <>
 // src: COMMUNITY 0x00a11ee0
 unsigned int BSSimpleArray<void*>::BSSimpleArray_AddUninitialized_0() {
@@ -362,6 +403,9 @@ struct DebugTextEntry {
 
 // Searches the item list, then the 200-entry table, for a matching fX/fY/iFlags and returns its iResult, or 0 if none match.
 // @fnv 0x00a10630
+// pdb: DebugText::GetDebugText | DebugText.obj | debug, object-file gap fill, medium
+// pdb params: afX, afY, aiJustify
+// pdb locals: iprintItemCt, a
 int DebugText::FindDebugTextResult(float fX, float fY, int iFlags) {
     unsigned int i;
     int j2;
@@ -402,6 +446,9 @@ struct SearchEntry {
 struct SearchPointer { SearchEntry* value; };
 // @fnv 0x00a103e0
 // src: COMMUNITY 0x00a103e0
+// pdb: DebugText::GetDebugText | DebugText.obj | debug, object-file gap fill, medium
+// pdb params: apBuf, afX, afY, aiJustify
+// pdb locals: bfoundText, iprintItemCt, a
 bool DebugText::GetDebugText_0(char* destination, float x, float y, int flags)
 {
     bool found = false;
@@ -460,6 +507,7 @@ bool DebugText::GetDebugText_0(char* destination, float x, float y, int flags)
 // Releases the global critical section when the game is running in a mode that
 // still owns it.
 // @fnv 0x00a11840
+// pdb: DebugText::Unlock | DebugText.obj | debug, call graph, medium
 void __cdecl ReleaseLock()
 {
     if (Interface_IsDebugTextVisible() != 0) {

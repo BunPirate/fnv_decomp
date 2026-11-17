@@ -52,6 +52,7 @@ class ValuemodifiereffectInterfaceView
 };
 extern "C" int __cdecl sprintf(char*, const char*, ...);
 
+// pdb: class TaskQueueInterface, size 0x10 (here 0x1), 4 members
 class TaskQueueInterface
 {
   public:
@@ -65,24 +66,32 @@ void* __cdecl operator new(unsigned int);
 
 
 // @fnv 0x0082bbe0
-void ValueModifierEffect::CopyData(ActiveEffect* other)
+// pdb: ValueModifierEffect::CopyData | ValueModifierEffect.obj | retail, upstream name already matches, high
+// pdb params: apDestination
+// pdb locals: pvme
+void ValueModifierEffect::CopyData(ActiveEffect* apDestination)
 {
-    ActiveEffect::CopyData(other);
-    ValueModifierEffect* modifier = dynamic_cast<ValueModifierEffect*>(other);
+    ActiveEffect::CopyData(apDestination);
+    ValueModifierEffect* modifier = dynamic_cast<ValueModifierEffect*>(apDestination);
     if (modifier)
-        modifier->m_eActorValue = m_eActorValue;
+        modifier->eWhichActorValue = eWhichActorValue;
 }
 
 // Returns true if the target resolves to an actor that has no health, otherwise false.
 // @fnv 0x0082bcb0
-bool ValueModifierEffect::IsEffectValid(MagicTarget* target)
+// pdb: ValueModifierEffect::CheckTarget | ValueModifierEffect.obj | retail, vtable slot, high
+// pdb params: apTarget
+// pdb locals: pActor
+bool ValueModifierEffect::IsEffectValid(MagicTarget* apTarget)
 {
-    Actor* actor = target ? target->GetOwnerActor() : 0;
+    Actor* actor = apTarget ? apTarget->GetOwnerActor() : 0;
     return actor && !actor->HasHealth(false);
 }
 
 // Allocates a new ValueModifierEffect from the current effect's data, copies state into it via CopyFrom, and returns the copy.
 // @fnv 0x0082bb30
+// pdb: ValueModifierEffect::Copy | ValueModifierEffect.obj | retail, upstream name already matches, high
+// pdb locals: presult
 ActiveEffect* ValueModifierEffect::Copy()
 {
     ActiveEffect* copy = new ValueModifierEffect(m_pEffectInstance, pSpell, pEffect);
@@ -91,12 +100,14 @@ ActiveEffect* ValueModifierEffect::Copy()
 }
 
 // @fnv 0x0082bd20
+// pdb: ValueModifierEffect::Finalize | ValueModifierEffect.obj | retail, upstream name already matches, high
+// pdb locals: pActor, pcasterActor
 void ValueModifierEffect::Finalize()
 {
     Actor* actor = ((ActorMover*)this)->GetCurrentMoveModeType()
                        ? ((MagicTarget*)((ActorMover*)this)->GetCurrentMoveModeType())->GetOwnerActor()
                        : 0;
-    if (pEffect->GetEffectSetting()->IsDetrimentalToActorValue(GetActorValue()))
+    if (pEffect->GetEffectSetting()->ShouldNegateMagnitude(GetActorValue()))
     {
         m_fElapsedTime = -m_fElapsedTime;
         if (actor && GetActorValue() == 16 &&
@@ -112,14 +123,17 @@ void ValueModifierEffect::Finalize()
 }
 
 // @fnv 0x0082ce70
-float ValueModifierEffect::GetModifiedMagnitude(float magnitude)
+// pdb: ValueModifierEffect::CheckAdjustNoNegativeMagnitude | ValueModifierEffect.obj | retail, call graph (shared callers), high
+// pdb params: afMagnitude
+// pdb locals: fresult, fnew, ptarget
+float ValueModifierEffect::GetModifiedMagnitude(float afMagnitude)
 {
-    float adjusted = magnitude;
+    float adjusted = afMagnitude;
     if (HasConditions())
         return adjusted;
     if ((ActorValue_IsAttribute(GetActorValue()) || ActorValue::IsDerivedAttribute(GetActorValue()) ||
          ActorValue::IsSkill(GetActorValue())) &&
-        magnitude <= 0.0)
+        afMagnitude <= 0.0)
     {
         Actor* actor = ((ActorMover*)this)->GetCurrentMoveModeType()
                            ? ((MagicTarget*)((ActorMover*)this)->GetCurrentMoveModeType())->GetOwnerActor()
@@ -132,7 +146,10 @@ float ValueModifierEffect::GetModifiedMagnitude(float magnitude)
 }
 
 // @fnv 0x0082c660
-void ValueModifierEffect::Update(float delta)
+// pdb: ValueModifierEffect::Update | ValueModifierEffect.obj | retail, upstream name already matches, high
+// pdb params: afSecondsElapsed
+// pdb locals: pActor, pspell, pcasterActor
+void ValueModifierEffect::Update(float afSecondsElapsed)
 {
     if (!pEffect->GetEffectSetting()->IsFlagSet(2))
     {
@@ -141,8 +158,8 @@ void ValueModifierEffect::Update(float delta)
                            : 0;
         if (IsFlagged() || fDuration > 0.0 || m_eSpellType == 4 || m_eSpellType == 1)
         {
-            ApplyActorValueModifier(actor, m_fElapsedTime * delta, ActorValue::ActorValue__Index_VALUE_NONE);
-            if (m_eActorValue == 16 && actor == (Actor*)g_thePlayer)
+            ApplyActorValueModifier(actor, m_fElapsedTime * afSecondsElapsed, ActorValue::ActorValue__Index_VALUE_NONE);
+            if (eWhichActorValue == 16 && actor == (Actor*)g_thePlayer)
             {
                 MagicItem* object = (MagicItem*)((InventoryStackRecord*)this)->GetObject();
                 if (object && ((MagicItemComponent*)((char*)object + 0xc))->HasFoodEffect())
@@ -150,7 +167,7 @@ void ValueModifierEffect::Update(float delta)
                 else if (object->GetSpellType() == 7)
                     Warning("Using a stimpak?\n");
             }
-            if (m_eActorValue == 7 && m_fElapsedTime < 0.0 &&
+            if (eWhichActorValue == 7 && m_fElapsedTime < 0.0 &&
                 actor->GetCurrentActorValue((ActorValue::Index)16) <= 1.0)
             {
                 Actor* caster = ((HighProcess*)this)->GetProcessLevel()
@@ -163,7 +180,10 @@ void ValueModifierEffect::Update(float delta)
 }
 
 // @fnv 0x0082be10
-void ValueModifierEffect::RefreshPlayerActorValue()
+// src: XBOX_RETAIL_PDB 0x0082be10
+// pdb: ValueModifierEffect::ShowAttributeReductionMessage | ValueModifierEffect.obj | retail, string-set bridge, high
+// pdb locals: string, brecover
+void ValueModifierEffect::ShowAttributeReductionMessage()
 {
     if ((MagicTarget*)((ActorMover*)this)->GetCurrentMoveModeType() ==
             (g_thePlayer ? (MagicTarget*)((char*)g_thePlayer + (sizeof(MobileObject) + sizeof(MagicCaster))) : 0) &&
@@ -186,20 +206,23 @@ void ValueModifierEffect::RefreshPlayerActorValue()
 }
 
 // @fnv 0x0082ca50
-void ValueModifierEffect::ApplyActorValueModifier(Actor* actor, float magnitude, ActorValue::Index requested)
+// pdb: ValueModifierEffect::ModifyActorValue | ValueModifierEffect.obj | retail, vtable slot, high
+// pdb params: apActor, afModifier, aeOverrideActorValue
+// pdb locals: babilityCheck, eactorValue, pcasterActor
+void ValueModifierEffect::ApplyActorValueModifier(Actor* apActor, float afModifier, ActorValue::Index aeOverrideActorValue)
 {
-    if (!actor)
+    if (!apActor)
         return;
-    ActorValue::Index value = requested == ActorValue::ActorValue__Index_VALUE_NONE ? (ActorValue::Index)m_eActorValue : requested;
+    ActorValue::Index value = aeOverrideActorValue == ActorValue::ActorValue__Index_VALUE_NONE ? (ActorValue::Index)eWhichActorValue : aeOverrideActorValue;
     if (value == ActorValue::ActorValue__Index_VALUE_NONE)
     {
-        if (magnitude != 0.0)
+        if (afModifier != 0.0)
             Warning("ValueModifierEffect tried to modify an actor value without specifying which actor value to modify\n");
         return;
     }
     bool ability = m_eSpellType == 4 && !HasConditions();
-    if (actor->IsPlayerRef() && ability && pEffect->GetEffectSetting()->IsFlagSet(2))
-        actor->ForceActorValue(value, magnitude, 0);
+    if (apActor->IsPlayerRef() && ability && pEffect->GetEffectSetting()->IsFlagSet(2))
+        apActor->ForceActorValue(value, afModifier, 0);
     else
     {
         Actor* caster = ((HighProcess*)this)->GetProcessLevel()
@@ -209,15 +232,15 @@ void ValueModifierEffect::ApplyActorValueModifier(Actor* actor, float magnitude,
             !((ActiveEffect*)this)->GetHavokWorldObjectCountInSceneGraph_0084e3a0()->IsHostile())
             caster = 0;
         if (pEffect->GetEffectSetting()->IsFlagSet(2))
-            actor->ModActorValue(value, magnitude, caster);
+            apActor->ModActorValue(value, afModifier, caster);
         else
         {
-            if (caster && magnitude < 0.0 && value == 16 && caster->IsPlayerRef() && actor != caster &&
-                actor->GetProcess() && !actor->IsEssentialActor())
-                actor->GetProcess()->ApplyDamageToActor(g_thePlayer, -magnitude);
-            actor->DamageActorValue(value, magnitude, caster);
-            if (magnitude < 0.0 && value == 16)
-                TaskQueueInterface_QueueScriptFunctionCall(TaskQueueInterface::GetSingleton(), 0x116c, actor, -magnitude);
+            if (caster && afModifier < 0.0 && value == 16 && caster->IsPlayerRef() && apActor != caster &&
+                apActor->GetProcess() && !apActor->IsEssentialActor())
+                apActor->GetProcess()->ApplyDamageToActor(g_thePlayer, -afModifier);
+            apActor->DamageActorValue(value, afModifier, caster);
+            if (afModifier < 0.0 && value == 16)
+                TaskQueueInterface_QueueScriptFunctionCall(TaskQueueInterface::GetSingleton(), 0x116c, apActor, -afModifier);
         }
     }
 }
@@ -225,14 +248,18 @@ void ValueModifierEffect::ApplyActorValueModifier(Actor* actor, float magnitude,
 // Allocates and constructs a ValueModifierEffect from the three given arguments and returns it.
 // @fnv 0x0082bc30
 // src: XBOX_PDB 0x0082bc30
-ValueModifierEffect* __cdecl ValueModifierEffect_Instantiate(void* p1, void* p2, void* p3)
+// pdb: ValueModifierEffect::Instantiate | ValueModifierEffect.obj | retail, upstream name already matches, high
+// pdb params: apCaster, apSpell, apEffect
+ValueModifierEffect* __cdecl ValueModifierEffect_Instantiate(void* apCaster, void* apSpell, void* apEffect)
 {
-    return new ValueModifierEffect(p1, p2, p3);
+    return new ValueModifierEffect(apCaster, apSpell, apEffect);
 }
 
 // Constructs a ValueModifierEffect by forwarding the three arguments to the base class constructor.
 // @fnv 0x0080a900
-LimbConditionEffect::LimbConditionEffect(void* apArg1, void* apArg2, void* apArg3) : ValueModifierEffect(apArg1, apArg2, apArg3)
+// pdb: LimbConditionEffect::LimbConditionEffect | LimbConditionEffect.obj | debug, upstream name already matches, high
+// pdb params: apCaster, apSpell, apEffect
+LimbConditionEffect::LimbConditionEffect(void* apCaster, void* apSpell, void* apEffect) : ValueModifierEffect(apCaster, apSpell, apEffect)
 {}
 
 struct FUN_0082ccb0_Cls : ActiveEffect
@@ -242,6 +269,7 @@ struct FUN_0082ccb0_Cls : ActiveEffect
 };
 // @fnv 0x0082ccb0
 // src: XBOX_PDB 0x0082ccb0
+// pdb: ValueModifierEffect::IsCausingDamage | ValueModifierEffect.obj | debug, upstream name already matches, high
 bool FUN_0082ccb0_Cls::ValueModifierEffect_IsCausingDamage()
 {
     return *(int*)((char*)this + 0x48) == 16 && GetEffectSetting()->IsFlagSet(4) && !GetEffectSetting()->IsFlagSet(2);
@@ -264,12 +292,15 @@ struct FUN_0082ba60 : public FUN_0080bc70_base
 
 // Initializes the base with caster, spell and effect, stores a value derived from the effect setting or effect, and sets a float to 1.0 when flag 0x100 is set.
 // @fnv 0x0082ba60
+// pdb: ValueModifierEffect::ValueModifierEffect | ValueModifierEffect.obj | retail, call graph (shared callers), high
+// pdb params: apCaster, apSpell, apEffect
+// pdb locals: psetting
 FUN_0082ba60::FUN_0082ba60(MagicCaster* apCaster, MagicItem* apSpell, EffectItem* apEffect)
     : FUN_0080bc70_base(apCaster, apSpell, apEffect)
 {
     *(void**)this = &DAT_0107c68c;
     EffectSetting* psetting = apEffect->GetEffectSetting();
-    if (psetting->HasAssociatedActorValue())
+    if (psetting->IsAssociatedActorValueFixed())
         *(int*)((char*)this + 0x48) = psetting->GetAssociatedActorValue();
     else
         *(int*)((char*)this + 0x48) = apEffect->GetAffectedActorValue();
@@ -306,6 +337,9 @@ struct LoadedValueEffect : ValueModifierEffect
 // Restarts the effect on the actor, then for save versions 0x5f-0x61 re-applies the magnitude to the player target via SetActorValueF and ModActorValue.
 // @fnv 0x0082cd10
 // src: XBOX_PDB 0x0082cd10
+// pdb: ValueModifierEffect::FinishInitLoadGame | ValueModifierEffect.obj | retail, upstream name already matches, high
+// pdb params: apActor
+// pdb locals: ptarget, pcaster
 void LoadedValueEffect::ValueModifierEffect_FinishInitLoadGame(Actor* apActor)
 {
     Restart(apActor);
@@ -355,6 +389,8 @@ struct LocalEffect
 };
 // @fnv 0x0082c490
 // src: XBOX_PDB 0x0082c490
+// pdb: ValueModifierEffect::Continue | ValueModifierEffect.obj | retail, upstream name already matches, high
+// pdb locals: pActor, ppotion, bpotion, pspell, fPlayerHealthDiff
 void LocalEffect::ValueModifierEffect_Continue()
 {
     Actor* target = FUN_0059bb30() ? FUN_0059bb30()->FUN_00822b40() : 0;
@@ -425,6 +461,8 @@ struct Cls
 };
 
 // @fnv 0x0082c810
+// pdb: ValueModifierEffect::Finish | ValueModifierEffect.obj | retail, vtable slot, high
+// pdb locals: pActor, fadjust, fhealthLeftover
 void Cls::ApplyEffect()
 {
     Actor* pActor =
@@ -975,6 +1013,8 @@ extern double _gModifierZero;
 // Updates a modifier, may add misc stats or call Kill, and may update radiation rate and player effects.
 // @fnv 0x0082c000
 // src: XBOX_PDB 0x0082c000
+// pdb: ValueModifierEffect::Start | ValueModifierEffect.obj | retail, upstream name already matches, high
+// pdb locals: pActor, ppotion, bpotion, pspell, fPlayerHealthDiff, pcasterActor
 void FUN_0082c000_shell::ValueModifierEffect_Start()
 {
     Actor* pActor = ((ActorMover*)this)->GetCurrentMoveModeType()
@@ -1043,5 +1083,5 @@ void FUN_0082c000_shell::ValueModifierEffect_Start()
         if (pActor == (Actor*)g_thePlayer)
             g_thePlayer->UpdateRadiationEffects();
     }
-    ((ValueModifierEffect*)this)->RefreshPlayerActorValue();
+    ((ValueModifierEffect*)this)->ShowAttributeReductionMessage();
 }

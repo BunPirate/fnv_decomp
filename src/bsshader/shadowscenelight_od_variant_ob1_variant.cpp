@@ -16,7 +16,7 @@ class FUN_00c49fe0
   public:
     FUN_00c49fe0();
     ~FUN_00c49fe0();
-    void FUN_00c4a070(int a, int b);
+    void FUN_00c4a070(int aiNewSize, int abFreeMemory);
     void* m_p0;
     int m_iWordAt04;
     int m_8;
@@ -27,7 +27,7 @@ class FUN_00c4a1b0
   public:
     FUN_00c4a1b0();
     ~FUN_00c4a1b0();
-    void FUN_00c4a1e0(int a, int b);
+    void FUN_00c4a1e0(int aiNewSize, int abFreeMemory);
     void* m_p0;
     int m_iWordAt04;
     int m_8;
@@ -48,6 +48,7 @@ class FUN_00c47660
     bool m_bA0;
 };
 // @fnv 0x00c47660
+// pdb: BSCompoundFrustum::BSCompoundFrustum | BSCompoundFrustum.obj | retail, call graph, high
 FUN_00c47660::FUN_00c47660()
 {
     NiPoint3 kA;

@@ -22,6 +22,8 @@ extern int DAT_010a112c;
 
 // @fnv 0x00a9af90
 // src: EXE 0x00a9af90
+// pdb: NiBooleanExtraData::CreateObject | NiBooleanExtraData.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 void* __cdecl NiBooleanExtraData_CreateObject()
 {
     void* p = BSFadeNode::operator new(0x10);
@@ -44,6 +46,7 @@ extern void __cdecl __Dummy_00b6fef0(void*, unsigned int);
 
 
 // @fnv 0x00a9afc0
+// pdb: NiBooleanExtraData::`scalar deleting destructor' | NiBooleanExtraData.obj | retail, object-file gap fill, high
 void* __fastcall FUN_00a9afc0(NiBooleanExtraData* self, void*, unsigned int flags)
 {
     *reinterpret_cast<void**>(self) = &DAT_010a112c;
@@ -54,6 +57,8 @@ void* __fastcall FUN_00a9afc0(NiBooleanExtraData* self, void*, unsigned int flag
 }
 
 // @fnv 0x00a9af10
+// pdb: NiBinaryExtraData::RegisterStreamables | NiBinaryExtraData.obj | debug, object-file run extension, low
+// pdb params: kStream
 bool NiBooleanExtraData::IsEqualTo(NiObject* pObject)
 {
     NiBooleanExtraData* pExtra = static_cast<NiBooleanExtraData*>(pObject);
@@ -64,6 +69,9 @@ bool NiBooleanExtraData::IsEqualTo(NiObject* pObject)
 
 // @fnv 0x00a9af40
 // src: XBOX_PDB 0x00a9af40
+// pdb: NiBooleanExtraData::CreateClone | NiBooleanExtraData.obj | retail, upstream name already matches, high
+// pdb params: kCloning
+// pdb locals: pkObject
 NiBooleanExtraData* __fastcall NiBooleanExtraData_CreateClone(NiBooleanExtraData* self, void*, CloningProcess* pkCloning)
 {
     NiBooleanExtraData* pkClone = static_cast<NiBooleanExtraData*>(BSFadeNode::operator new(0x10));
@@ -99,6 +107,9 @@ extern void LoadExtraData();
 
 // Calls the base NiExtraDataBase read, then reads one byte from the stream and stores whether it is nonzero in m_bValue.
 // @fnv 0x00a9aff0
+// pdb: NiBooleanExtraData::LoadBinary | NiBooleanExtraData.obj | retail, object-file gap fill, high
+// pdb params: kStream
+// pdb locals: bValue
 void __fastcall ReadFromStream(NiBooleanExtraData* self, void*, NiStream* istr)
 {
     reinterpret_cast<void (__thiscall*)(NiExtraData*, NiStream*)>(&LoadExtraData)(self, istr);
@@ -113,6 +124,9 @@ extern void SaveExtraData();
 
 // @fnv 0x00a9b040
 // src: XBOX_PDB 0x00a9b040
+// pdb: NiBooleanExtraData::SaveBinary | NiBooleanExtraData.obj | retail, upstream name already matches, high
+// pdb params: kStream
+// pdb locals: bValue
 void __fastcall NiBooleanExtraData_SaveBinary(NiBooleanExtraData* self, void*, NiStream* s)
 {
     reinterpret_cast<void (__thiscall*)(NiExtraData*, NiStream*)>(&SaveExtraData)(self, s);
@@ -140,12 +154,14 @@ struct ObjArray
 extern void* DAT_011f5f5c;
 extern const char str_010a11c0[];
 void* __cdecl LookupRtti(void* rtti);
-void* __cdecl LookupName(const char* name, unsigned char flag);
+void* __cdecl LookupName(const char* pcPrefix, unsigned char bValue);
 
 extern void TouchExtraData();
 
 // Calls Touch, then appends the RTTI pointer for DAT_011f5f5c and the result of LookupName(str_010a11c0, m_0C) to the array, growing it when full.
 // @fnv 0x00a9b090
+// pdb: NiBooleanExtraData::GetViewerStrings | NiBooleanExtraData.obj | retail, string-set bridge, high
+// pdb params: pStrings
 void __fastcall AppendRttiAndName(NiBooleanExtraData* self, void*, ObjArray* pArray)
 {
     reinterpret_cast<void (__thiscall*)(NiExtraData*, ObjArray*)>(&TouchExtraData)(self, pArray);

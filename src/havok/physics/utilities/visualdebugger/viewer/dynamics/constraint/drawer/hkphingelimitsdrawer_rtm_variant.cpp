@@ -67,6 +67,7 @@ struct Holder
 
 extern const double DAT_0106d4c8;
 
+// pdb: structure T, size 0x8 (here 0xd0), 1 members
 struct T
 {
     float f00;
@@ -79,13 +80,13 @@ struct T
     HingeDrawRotation m60;
     HingeDrawRotation m90;
     Holder mc;
-    void hkpConstraintDrawer_updateCommonParameters(Src* a, Mat4* b, Mat4* c);
+    void hkpConstraintDrawer_updateCommonParameters(Src* a, Mat4* refLocalToWorld, Mat4* attLocalToWorld);
     void hkpConstraintDrawer_drawPivots(int a, int b);
-    void hkpConstraintDrawer_drawBodyFrames(int a, int b);
+    void hkpConstraintDrawer_drawBodyFrames(int id, int tag);
     void ProcessEntries_00de6d80(Src* a1, Visitor* a2, int a3, int a4);
 };
 
-int __cdecl PackColorBigEndian(float a, float b, float c, float d);
+int __cdecl PackColorBigEndian(float red, float green, float blue, float alpha);
 
 typedef void(__thiscall* DrawFn)(Visitor*, void*, void*, int, int, int);
 

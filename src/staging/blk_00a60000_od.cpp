@@ -20,6 +20,8 @@ void __cdecl NiProcessorSpecificCode_SetPointTransformFunction(int);
 
 // @fnv 0x00a74da0
 // src: COMMUNITY 0x00a74da0
+// pdb: NiFrustumPlanes::Set | NiFrustumPlanes.obj | debug, object-file run extension, low
+// pdb params: kCam
 void __cdecl NiProcessorSpecificCode_OptimizeMainEngineForProcessor()
 {
     if (DAT_011f4a54 == 0)

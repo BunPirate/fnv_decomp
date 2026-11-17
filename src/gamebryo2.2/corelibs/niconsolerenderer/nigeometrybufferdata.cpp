@@ -36,6 +36,8 @@ struct UnknownVtable08
 // Keep destruction in a free function: a C++ destructor adds exception cleanup
 // for the RendererData base that is absent from this original function.
 // @fnv 0x00e8f0f0
+// pdb: D3DDevice::BeginIndexedVertices | NiXenonRenderer.obj | debug, object-file run extension, low
+// pdb params: PrimitiveType, BaseVertexIndex, NumVertices, IndexCount, IndexDataFormat, VertexStreamZeroStride, ppIndexData, ppVertexData
 void __fastcall DestroyGeometryBufferData(NiGeometryBufferData* apData)
 {
     *reinterpret_cast<void**>(apData) = &NiGeometryBufferData_vtable;
@@ -72,6 +74,7 @@ namespace fnv_00e8f170 {
 extern MemoryManager g_memoryManager;
 // Calls the object's destructor, then frees the object via g_memoryManager when _flags has bit 0 set, and returns _this.
 // @fnv 0x00e8f170
+// pdb: D3DDevice::EndIndexedVertices | NiXenonRenderer.obj | debug, object-file run extension, low
 void* __fastcall FUN_00e8f170(void* _this, int, unsigned int auiFlags)
 {
     DestroyGeometryBufferData((NiGeometryBufferData*)_this);
@@ -107,6 +110,8 @@ void __fastcall SetGeometryGroupIndex(NiGeometryBufferData* apData, int, int aiI
 // Releases the old declaration, stores apDeclaration and AddRefs it when different,
 // then resets the group index.
 // @fnv 0x00e8f040
+// pdb: D3DDevice::SetVertexDeclaration | NiXenonRenderer.obj | debug, upstream name already matches, high
+// pdb params: pDecl
 void __fastcall SetVertexDeclaration(NiGeometryBufferData* apData, int, COMUnknownInterface* apDeclaration)
 {
     if (apDeclaration != apData->m_pkVertexDeclaration)
@@ -157,27 +162,30 @@ class NiSlotSetE8E
     unsigned int* m_puiFlags;
     void** m_ppvSlots;
 
-    void NiGeometryBufferData_SetStreamCount(unsigned int uiNewSize);
+    void NiGeometryBufferData_SetStreamCount(unsigned int uiStreamCount);
 };
 
 // Resizes the slot and flag arrays to uiNewSize, copying existing entries, zeroing new ones, notifying the listener of removed slots, and freeing the old arrays.
 // @fnv 0x00e8ef10
 // src: COMMUNITY 0x00e8ef10
-void NiSlotSetE8E::NiGeometryBufferData_SetStreamCount(unsigned int uiNewSize)
+// pdb: NiGeometryBufferData::SetStreamCount | NiGeometryBufferData.obj | retail, upstream name already matches, high
+// pdb params: uiStreamCount
+// pdb locals: puiVertexStride, ppkVBChip, uiByteSize, i
+void NiSlotSetE8E::NiGeometryBufferData_SetStreamCount(unsigned int uiStreamCount)
 {
-    if (uiNewSize == m_uiSize)
+    if (uiStreamCount == m_uiSize)
         return;
 
-    void** ppvNewSlots = (void**)NiMallocE8E(uiNewSize * sizeof(void*));
-    unsigned int* puiNewFlags = (unsigned int*)NiMallocE8E(uiNewSize * sizeof(unsigned int));
+    void** ppvNewSlots = (void**)NiMallocE8E(uiStreamCount * sizeof(void*));
+    unsigned int* puiNewFlags = (unsigned int*)NiMallocE8E(uiStreamCount * sizeof(unsigned int));
 
-    if (uiNewSize < m_uiSize)
+    if (uiStreamCount < m_uiSize)
     {
-        MemMoveE8E(ppvNewSlots, m_ppvSlots, uiNewSize * sizeof(void*));
-        MemMoveE8E(puiNewFlags, m_puiFlags, uiNewSize * sizeof(unsigned int));
+        MemMoveE8E(ppvNewSlots, m_ppvSlots, uiStreamCount * sizeof(void*));
+        MemMoveE8E(puiNewFlags, m_puiFlags, uiStreamCount * sizeof(unsigned int));
         if (m_pkListener)
         {
-            for (unsigned int i = uiNewSize; i < m_uiSize; i++)
+            for (unsigned int i = uiStreamCount; i < m_uiSize; i++)
                 m_pkListener->SlotRemoved(this, i);
         }
     }
@@ -185,19 +193,21 @@ void NiSlotSetE8E::NiGeometryBufferData_SetStreamCount(unsigned int uiNewSize)
     {
         MemMoveE8E(ppvNewSlots, m_ppvSlots, m_uiSize * sizeof(void*));
         MemMoveE8E(puiNewFlags, m_puiFlags, m_uiSize * sizeof(unsigned int));
-        MemSetE8E(ppvNewSlots + m_uiSize, 0, (uiNewSize - m_uiSize) * sizeof(void*));
-        MemSetE8E(puiNewFlags + m_uiSize, 0, (uiNewSize - m_uiSize) * sizeof(unsigned int));
+        MemSetE8E(ppvNewSlots + m_uiSize, 0, (uiStreamCount - m_uiSize) * sizeof(void*));
+        MemSetE8E(puiNewFlags + m_uiSize, 0, (uiStreamCount - m_uiSize) * sizeof(unsigned int));
     }
 
     g_kMemManagerE8E.Deallocate(m_ppvSlots);
     NiFreeE8E(m_puiFlags);
     m_ppvSlots = ppvNewSlots;
     m_puiFlags = puiNewFlags;
-    m_uiSize = uiNewSize;
+    m_uiSize = uiStreamCount;
 }
 
 // Returns whether a geometry buffer data kind is enabled by checking bit fields in m_uiValue1.
 // @fnv 0x00e8f080
+// pdb: D3DDevice::Resolve | NiXenonRenderer.obj | debug, object-file run extension, low
+// pdb params: Flags, pSourceRect, pDestTexture, pDestPoint, DestLevel, DestSliceOrFace, pClearColor, ClearZ, ClearStencil, pParameters
 bool NiGeometryBufferData::IsKindEnabled(int kind)
 {
     bool r;

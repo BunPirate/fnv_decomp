@@ -10,5 +10,5 @@ public:
 
     virtual bool Compare(BSExtraData* extra);
 
-    BGSEncounterZone* m_pEncounterZone;
+    BGSEncounterZone* pZone; // src: XBOX_RETAIL_PDB +0xc (old: m_pEncounterZone)
 };

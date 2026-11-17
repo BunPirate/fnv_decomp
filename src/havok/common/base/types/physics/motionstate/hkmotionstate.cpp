@@ -86,6 +86,8 @@ class FUN_00c9ea40_cls : public FUN_00c9ea90
 
 // Calls the base constructor, initializes a temporary from b, passes it with b + 0x30 to FUN_00cf2410, and points m_motionPtr at m_swept.
 // @fnv 0x00c9ea40
+// pdb: hkpShapePhantom::hkpShapePhantom | hkpShapePhantom.obj | retail, call graph (shared callers), medium
+// pdb params: flag
 FUN_00c9ea40_cls::FUN_00c9ea40_cls(int a, int b) : FUN_00c9ea90(a)
 {
     FUN_00827200_class tmp;

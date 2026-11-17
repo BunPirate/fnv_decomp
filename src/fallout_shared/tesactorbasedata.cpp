@@ -22,12 +22,14 @@
 #include "../../include/TESChildCell.h"
 
 // @fnv 0x0047c700
+// pdb: TESActorBaseData::TESActorBaseData | TESActorBaseData.obj | debug, upstream name already matches, high
 TESActorBaseData::TESActorBaseData()
 {
     InitializeComponent();
 }
 
 // @fnv 0x0047c880
+// pdb: TESActorBaseData::~TESActorBaseData | TESActorBaseData.obj | retail, upstream name already matches, high
 TESActorBaseData::~TESActorBaseData()
 {
     ClearComponent();
@@ -38,6 +40,7 @@ extern SettingT_GameSettingCollection_ g_011c5074;
 extern SettingT_GameSettingCollection_ g_011c50d8;
 
 // @fnv 0x0047c8e0
+// pdb: TESActorBaseData::InitializeDataComponent | TESActorBaseData.obj | debug, vtable slot, medium
 void TESActorBaseData::InitializeComponent()
 {
     actorData.m_uiActorFlags = 0;
@@ -49,11 +52,11 @@ void TESActorBaseData::InitializeComponent()
     actorData.m_usField0E = 100;
     actorData.m_fField10 = g_011c5074.Float()->f;
     actorData.m_usField14 = (unsigned short)*g_011c50d8.Setting_Int();
-    m_kFactionList = 0;
-    m_pBaseTemplateForm = 0;
-    m_ppTemplateForms = 0;
+    pVoiceType = 0;
+    pDeathItem = 0;
+    pTemplateForm = 0;
     actorData.m_usField16 = 0;
-    m_pDeathItem = 0;
+    iChangeFlags = 0;
 }
 
 class NiColor;
@@ -65,7 +68,10 @@ void __fastcall _ref_0063f7b0(void*);
 
 // Deletes every faction entry in the actor base list.
 // @fnv 0x0047c9d0
-void TESActorBaseData::RemoveAllFactions()
+// src: XBOX_RETAIL_PDB 0x0047c9d0
+// pdb: TESActorBaseData::ClearFactionList | TESActorBaseData.obj | retail, call graph (shared callers), high
+// pdb locals: pList
+void TESActorBaseData::ClearFactionList()
 {
     void* pList = GetFactionList();
     while (pList && !_ref_008256d0(pList))
@@ -77,12 +83,15 @@ void TESActorBaseData::RemoveAllFactions()
 }
 
 // @fnv 0x0047cca0
+// pdb: TESActorBaseData::QCopiedTemplate | TESActorBaseData.obj | debug, upstream name already matches, high
 bool TESActorBaseData::QCopiedTemplate()
 {
     return GetTemplateUseFlag(0xf);
 }
 
 // @fnv 0x0047ccc0
+// pdb: TESActorBaseData::SetCopiedTemplate | TESActorBaseData.obj | debug, upstream name already matches, high
+// pdb params: abVal
 void TESActorBaseData::SetCopiedTemplate(bool abVal)
 {
     SetTemplateUseFlag(0xf, abVal);
@@ -123,6 +132,8 @@ void TESActorBaseData::SetTemplateUseFlags(unsigned short asVal)
 }
 
 // @fnv 0x0047cdb0
+// pdb: TESActorBaseData::GetUsesLeveledTemplate | TESActorBaseData.obj | debug, upstream name already matches, high
+// pdb locals: bretval
 bool TESActorBaseData::GetUsesLeveledTemplate()
 {
     bool bretval = IsTemplateLeveled();
@@ -133,12 +144,14 @@ int __fastcall _FNV_GetFormType(void*);
 
 // Returns true if the pointer at offset 0x24 is non-null and its form type is 0x2c or 0x2d.
 // @fnv 0x0047cdd0
+// pdb: TESActorBaseData::IsTemplateLeveled | TESActorBaseData.obj | debug, upstream name already matches, high
+// pdb locals: bretval
 bool TESActorBaseData::IsTemplateLeveled()
 {
     bool bretval = false;
-    if (m_ppTemplateForms)
+    if (pTemplateForm)
     {
-        switch (_FNV_GetFormType(m_ppTemplateForms))
+        switch (_FNV_GetFormType(pTemplateForm))
         {
         case 0x2c:
         case 0x2d:
@@ -158,11 +171,14 @@ struct DummyActorBase : TESBoundAnimObject, TESActorBaseData
 
 // @fnv 0x0047d130
 // src: COMMUNITY 0x0047d130
+// pdb: TESActorBaseData::CreateTemplateActorBase | TESActorBaseData.obj | retail, upstream name already matches, high
+// pdb params: apOriginalBase, apTemplateBase
+// pdb locals: breset, pnewbase, tempAutoEvent
 TESActorBase* __cdecl TESActorBaseData_CreateTemplateActorBase(TESActorBase* apOriginalBase, TESActorBase* apTemplateBase)
 {
     DummyActorBase* pnewbase;
     bool breset = g_BGSSaveLoadGame->SetThreadAllowChanges(false);
-    pnewbase = (DummyActorBase*)TESDataHandler::CreateFormForType(_FNV_GetFormType(apOriginalBase));
+    pnewbase = (DummyActorBase*)TESDataHandler::CreateFormOfType(_FNV_GetFormType(apOriginalBase));
     pnewbase->CopyFrom(reinterpret_cast<TESForm*>(apOriginalBase));
     pnewbase->CopyFromTemplateForm(apTemplateBase);
     g_BGSSaveLoadGame->SetThreadAllowChanges(breset);
@@ -170,6 +186,9 @@ TESActorBase* __cdecl TESActorBaseData_CreateTemplateActorBase(TESActorBase* apO
 }
 
 // @fnv 0x0047d1a0
+// pdb: TESActorBaseData::GetLeveledTemplateInHierarchy | TESActorBaseData.obj | retail, call graph (shared callers), medium
+// pdb params: apBase, aiOutCompositeTemplateUseFlags
+// pdb locals: ptemplate, pretval, ptempbase
 TESForm* __cdecl FindFirstNonActorBaseTemplate(TESForm* apBase, unsigned short* aiOutCompositeTemplateUseFlags)
 {
     TESForm* pNonActorBase = 0;
@@ -219,6 +238,9 @@ bool __fastcall HasFactionFlag8(TESFaction*);
 }  // namespace fnv_0047d680
 
 // @fnv 0x0047d680
+// pdb: TESActorBaseData::GetFactionRank | TESActorBaseData.obj | debug, upstream name already matches, high
+// pdb params: apFaction, abPC
+// pdb locals: pList, prank
 int TESActorBaseData::GetFactionRank(TESFaction* apFaction, bool abPC)
 {
     using namespace fnv_0047d680;
@@ -243,6 +265,8 @@ int TESActorBaseData::GetFactionRank(TESFaction* apFaction, bool abPC)
 
 // Stores aiNewFlags into the field at offset 4 of this and calls AddFormChange with 2.
 // @fnv 0x0047dd30
+// pdb: TESActorBaseData::SetFlags | TESActorBaseData.obj | debug, upstream name already matches, high
+// pdb params: aiNewFlags
 void TESActorBaseData::SetFlags(int aiNewFlags)
 {
     actorData.m_uiActorFlags = aiNewFlags;
@@ -251,33 +275,41 @@ void TESActorBaseData::SetFlags(int aiNewFlags)
 
 // Updates the minimum calculated level and records the change.
 // @fnv 0x0047de40
-void TESActorBaseData::SetCalcLevelMin(unsigned short ausValue)
+// pdb: TESActorBaseData::SetCalcLevelMin | TESActorBaseData.obj | debug, upstream name already matches, high
+// pdb params: asVal
+void TESActorBaseData::SetCalcLevelMin(unsigned short asVal)
 {
-    actorData.m_usField0A = ausValue;
+    actorData.m_usField0A = asVal;
     AddFormChange(2);
 }
 
 // Stores the given value in v and calls AddFormChange with 2.
 // @fnv 0x0047de70
-void TESActorBaseData::SetCalcLevelMax(unsigned short ausValue)
+// pdb: TESActorBaseData::SetCalcLevelMax | TESActorBaseData.obj | debug, upstream name already matches, high
+// pdb params: asVal
+void TESActorBaseData::SetCalcLevelMax(unsigned short asVal)
 {
-    actorData.m_usField0C = ausValue;
+    actorData.m_usField0C = asVal;
     AddFormChange(2);
 }
 
 // Stores the given value in v and calls AddFormChange with 2.
 // @fnv 0x0047dfe0
-void TESActorBaseData::SetLevel(unsigned short ausValue)
+// pdb: TESActorBaseData::SetLevel | TESActorBaseData.obj | debug, upstream name already matches, high
+// pdb params: asValue
+void TESActorBaseData::SetLevel(unsigned short asValue)
 {
-    actorData.sLevel = ausValue;
+    actorData.sLevel = asValue;
     AddFormChange(2);
 }
 
 // Stores the given value in v and calls AddFormChange with 2.
 // @fnv 0x0047e010
-void TESActorBaseData::SetFatigue(unsigned short ausValue)
+// pdb: TESActorBaseData::SetFatigue | TESActorBaseData.obj | debug, upstream name already matches, high
+// pdb params: ausFatigue
+void TESActorBaseData::SetFatigue(unsigned short ausFatigue)
 {
-    actorData.m_usField04 = ausValue;
+    actorData.m_usField04 = ausFatigue;
     AddFormChange(2);
 }
 
@@ -286,20 +318,23 @@ extern const char DAT_01011584[];
 unsigned int __cdecl TESActorBaseData_GetAlignmentForKarma(float);
 // @fnv 0x0047e0e0
 // src: XBOX_PDB 0x0047e0e0
-const char* TESActorBaseData_GetKarmicTitle(Actor* actor)
+// pdb: TESActorBaseData::GetKarmicTitle | TESActorBaseData.obj | retail, upstream name already matches, high
+// pdb params: apActor
+// pdb locals: pretval, ialign, ilevel
+const char* TESActorBaseData_GetKarmicTitle(Actor* apActor)
 {
     const char* result = 0;
-    if (actor)
+    if (apActor)
     {
         unsigned int kind;
         int level;
-        level = actor->GetLevel();
+        level = apActor->GetLevel();
         level = level - 1;
         if (level > 0x31)
             level = 0x31;
         if (level < 0)
             level = 0;
-        kind = TESActorBaseData_GetAlignmentForKarma((float)actor->GetActorValue(static_cast<ActorValue::Index>(0x17)));
+        kind = TESActorBaseData_GetAlignmentForKarma((float)apActor->GetActorValue(static_cast<ActorValue::Index>(0x17)));
         if (kind > 2)
         {
             if (kind == 3)
@@ -323,6 +358,10 @@ extern SettingT_GameSettingCollection_ originalRuntimeFloatSetting24;
 
 // Clamps karma to the runtime settings and records the change.
 // @fnv 0x0047e1c0
+// pdb: TESActorBaseData::SaveGame | TESActorBaseData.obj | retail, object-file run extension, low
+// pdb note: debug build links it to TESActorBaseData::SetKarma
+// pdb params: aiFlags
+// pdb locals: itempStartPosition, iblockSize, pblockSize, iblockHeader, icount, pcount, pranks, prank, crank, ifactionID, icurrentBufferPosition, pheader, pform, istartBufferPosition
 void TESActorBaseData::SetKarmaValue(float afValue)
 {
     using namespace fnv_0047e1c0;
@@ -336,14 +375,18 @@ void TESActorBaseData::SetKarmaValue(float afValue)
 
 // Updates barter gold and records the change.
 // @fnv 0x0047e240
-void TESActorBaseData::SetBarterGold(unsigned short asValue)
+// pdb: TESActorBaseData::SetBarterGold | TESActorBaseData.obj | debug, upstream name already matches, high
+// pdb params: ausNewgold
+void TESActorBaseData::SetBarterGold(unsigned short ausNewgold)
 {
-    actorData.m_usField06 = asValue;
+    actorData.m_usField06 = ausNewgold;
     AddFormChange(2);
 }
 
 // Stores asSpeedMult at offset 0x12 of this object and calls AddFormChange with this and 2.
 // @fnv 0x0047e270
+// pdb: TESActorBaseData::SetSpeedMult | TESActorBaseData.obj | debug, upstream name already matches, high
+// pdb params: asSpeedMult
 void TESActorBaseData::SetSpeedMult(unsigned short asSpeedMult)
 {
     actorData.m_usField0E = asSpeedMult;
@@ -351,6 +394,9 @@ void TESActorBaseData::SetSpeedMult(unsigned short asSpeedMult)
 }
 
 // @fnv 0x0047e2a0
+// pdb: TESActorBaseData::AddFormChange | TESActorBaseData.obj | debug, upstream name already matches, high
+// pdb params: aiChangeFlags
+// pdb locals: pactbase, pform
 void TESActorBaseData::AddFormChange(int aiChangeFlags)
 {
     ::TESActorBase* pactbase = this ? reinterpret_cast<::TESActorBase*>(reinterpret_cast<char*>(this) - 0x30) : 0;
@@ -364,14 +410,16 @@ void TESActorBaseData::AddFormChange(int aiChangeFlags)
 // @fnv 0x0047e340
 void TESActorBaseData::AddFormChangeFlags(int aiChangeFlags)
 {
-    m_pDeathItem |= aiChangeFlags;
+    iChangeFlags |= aiChangeFlags;
 }
 
 // Calls the flag-bit helper on this object with flag 0x200, clearing it when param1 is false and passing param2 as the value.
 // @fnv 0x005f7b50
-void TESActorBaseData::UpdateRunsInLow(bool param1, bool abValue)
+// pdb: TESActorBaseData::SetRunsInLow | TESCreature.obj | debug, call graph (shared callers), high
+// pdb params: abVal, abAddChange
+void TESActorBaseData::UpdateRunsInLow(bool abVal, bool abAddChange)
 {
-    UpdateFlagBit(0x200, param1 == 0, abValue);
+    UpdateFlagBit(0x200, abVal == 0, abAddChange);
 }
 
 class NiColor;
@@ -396,10 +444,13 @@ void* __fastcall _ref_00726070(void*);
 
 // Clears the faction list, then copies the source faction ranks into new entries.
 // @fnv 0x0047ca20
+// pdb: TESActorBaseData::CopyFactionList | TESActorBaseData.obj | retail, upstream name already matches, high
+// pdb params: apCopy
+// pdb locals: pList, pCopyList, prank, tempList, pFacRank
 void TESActorBaseData::CopyFactionList(TESActorBaseData* apCopy)
 {
     using namespace fnv_0047ca20;
-    RemoveAllFactions();
+    ClearFactionList();
     SoundListView* pList = (SoundListView*)GetFactionList();
     SoundListView* pCopyList = (SoundListView*)apCopy->GetFactionList();
     while (pCopyList)
@@ -428,6 +479,9 @@ extern SettingT_GameSettingCollection_ originalRuntimeFloatSetting23;
 // Maps a karma value to a level code (0-4) by comparing it against four runtime float thresholds.
 // @fnv 0x0047e040
 // src: XBOX_PDB 0x0047e040
+// pdb: TESActorBaseData::GetAlignmentForKarma | TESActorBaseData.obj | debug, upstream name already matches, high
+// pdb params: afKarma
+// pdb locals: eretval
 int TESActorBaseData_GetAlignmentForKarma(float afKarma)
 {
     int iLevel = 1;
@@ -453,6 +507,7 @@ int TESActorBaseData_GetAlignmentForKarma(float afKarma)
 }  // namespace fnv_0047e040
 
 // @fnv 0x0047c850
+// pdb: TESActorBaseData::GetCanBeAllRaces | TESActorBaseData.obj | debug, upstream name already matches, high
 bool TESActorBaseData::GetCanBeAllRaces() const
 {
     return false;
@@ -468,25 +523,28 @@ bool __fastcall TESFaction_GetSpecialCombat(const TESFaction* faction)
 // @fnv 0x0047e360
 void __thiscall TESActorBaseData::ClearChangeFlags(int mask)
 {
-    m_pDeathItem &= ~mask;
+    iChangeFlags &= ~mask;
 }
 
 // @fnv 0x0047c790
+// pdb: TESActorBaseData::GetAllowPCDialogue | TESActorBaseData.obj | debug, vtable slot, medium
 bool TESActorBaseData::GetNoVATSranged() const
 {
     return ((const TESActorBaseData*)this)->GetFlag(0x200000);
 }
 
 // @fnv 0x0047c7b0
+// pdb: TESActorBaseData::GetAllowPickPocket | TESActorBaseData.obj | debug, vtable slot, medium
 bool TESActorBaseData::GetAllowPickpocket() const
 {
     return GetFlag(0x10000000);
 }
 
 // @fnv 0x0047c9b0
+// pdb: TESActorBaseData::ClearDataComponent | TESActorBaseData.obj | debug, vtable slot, medium
 void TESActorBaseData::ClearComponent()
 {
-    RemoveAllFactions();
+    ClearFactionList();
 }
 
 // @fnv 0x0047d720
@@ -510,26 +568,28 @@ void __cdecl TESForm_AddChunk_00485910(int, int);
 void __cdecl AppendChunk(int, void*, int);
 bool __cdecl TESForm_QEndianSwapOnSave();
 // @fnv 0x0047cac0
+// pdb: TESActorBaseData::Save | TESActorBaseData.obj | retail, upstream name already matches, high
+// pdb locals: itempint
 void TESActorBaseData::Save()
 {
     if (TESForm_QEndianSwapOnSave())
-        actorData.SwapEndianness();
+        actorData.ACTOR_BASE_DATA_Endian();
     AppendChunk(0x53424341, (char*)this + 4, 0x18);
     if (TESForm_QEndianSwapOnSave())
-        actorData.SwapEndianness();
-    if (m_pBaseTemplateForm)
+        actorData.ACTOR_BASE_DATA_Endian();
+    if (pDeathItem)
     {
-        unsigned int itempint = (unsigned int)((SoundH*)m_pBaseTemplateForm)->Deallocate();
+        unsigned int itempint = (unsigned int)((SoundH*)pDeathItem)->Deallocate();
         TESForm_AddChunk_00485910(0x4d414e49, itempint);
     }
-    if (m_kFactionList)
+    if (pVoiceType)
     {
-        unsigned int itempint = (unsigned int)((SoundH*)m_kFactionList)->Deallocate();
+        unsigned int itempint = (unsigned int)((SoundH*)pVoiceType)->Deallocate();
         TESForm_AddChunk_00485910(0x4b435456, itempint);
     }
-    if (m_ppTemplateForms)
+    if (pTemplateForm)
     {
-        unsigned int itempint = (unsigned int)((SoundH*)m_ppTemplateForms)->Deallocate();
+        unsigned int itempint = (unsigned int)((SoundH*)pTemplateForm)->Deallocate();
         TESForm_AddChunk_00485910(0x544c5054, itempint);
     }
 }
@@ -582,6 +642,9 @@ TESForm* __cdecl _ref_004839c0(unsigned int);
 
 // Computes the save size of the actor base data from flags and race list, optionally logging the size and form details.
 // @fnv 0x0047e380
+// pdb: TESActorBaseData::GetSaveSize | TESActorBaseData.obj | retail, upstream name already matches, high
+// pdb params: aiFlags
+// pdb locals: isize, itempStartSize, pheader, pform
 unsigned short TESActorBaseData::GetSaveSize(unsigned int aiFlags)
 {
     using namespace fnv_0047e380;
@@ -629,6 +692,7 @@ unsigned short TESActorBaseData::GetSaveSize(unsigned int aiFlags)
 }
 
 // @fnv 0x0047c770
+// pdb: TESActorBaseData::GetNoVATSMelee | TESActorBaseData.obj | debug, vtable slot, medium
 bool TESActorBaseData::GetNoVATSmelee() const
 {
     return GetFlag(0x100000);
@@ -643,7 +707,9 @@ void SwapShort(short* p, EndianTag t);
 
 // Byte-swaps every integer and short field of the header structure to convert its endianness.
 // @fnv 0x0047cb90
-void ActorBaseAttributes::SwapEndianness()
+// src: XBOX_DEBUG_PDB 0x0047cb90
+// pdb: ACTOR_BASE_DATA::Endian | TESActorBaseData.obj | debug, call graph (shared callers), high
+void ActorBaseAttributes::ACTOR_BASE_DATA_Endian()
 {
     SwapInt(reinterpret_cast<int*>(&m_uiActorFlags), EndianTag());
     SwapShort(reinterpret_cast<short*>(&m_usField04), EndianTag());
@@ -672,6 +738,8 @@ class FormNode
 
 // Checks the actor base faction list and its linked factions.
 // @fnv 0x0047d740
+// pdb: TESActorBaseData::IsInEvilFactionsOnly | TESActorBaseData.obj | debug, call graph (shared callers), medium
+// pdb locals: bflag, pList, prank
 bool TESActorBaseData::CanBeDetected()
 {
     bool bValid = true;
@@ -716,12 +784,15 @@ extern const char DAT_01186cb4[];
 int __cdecl FUN_00ec43fb(TESActorBaseData* self, int a, const char* b, const char* c, int d);
 
 // @fnv 0x0047dd50
-void TESActorBaseData::UpdateFlagBit(int aMask, bool aSet, bool aForce)
+// pdb: TESActorBaseData::SetFlagBit | TESActorBaseData.obj | retail, call graph (shared callers), high
+// pdb params: aiFlag, abVal, abAddChange
+// pdb locals: bcurrentValue, pform
+void TESActorBaseData::UpdateFlagBit(int aiFlag, bool abVal, bool abAddChange)
 {
-    unsigned char cur = (actorData.m_uiActorFlags & aMask) != 0;
-    if (cur != aSet)
+    unsigned char cur = (actorData.m_uiActorFlags & aiFlag) != 0;
+    if (cur != abVal)
     {
-        if (aMask == 1)
+        if (aiFlag == 1)
         {
             int r = FUN_00ec43fb(this, 0, DAT_01186cb4, DAT_01183028, 0);
             if (r != 0)
@@ -736,22 +807,25 @@ void TESActorBaseData::UpdateFlagBit(int aMask, bool aSet, bool aForce)
                 }
             }
         }
-        else if (aForce)
+        else if (abAddChange)
         {
             AddFormChange(2);
         }
     }
-    (aSet ? (actorData.m_uiActorFlags |= aMask) : (actorData.m_uiActorFlags = (~aMask) & actorData.m_uiActorFlags));
+    (abVal ? (actorData.m_uiActorFlags |= aiFlag) : (actorData.m_uiActorFlags = (~aiFlag) & actorData.m_uiActorFlags));
 }
 
 // Casts this interface pointer to the derived form and, if non-null, calls Apply on it with pArg.
 // @fnv 0x0047e2f0
-void TESActorBaseData::RemoveFormChange(int pArg)
+// pdb: TESActorBaseData::RemoveFormChange | TESActorBaseData.obj | debug, upstream name already matches, high
+// pdb params: aiChangeFlags
+// pdb locals: pactbase, pform
+void TESActorBaseData::RemoveFormChange(int aiChangeFlags)
 {
     TESBoundAnimObject* pkDerived = this ? reinterpret_cast<TESBoundAnimObject*>(reinterpret_cast<char*>(this) - 0x30) : 0;
     TESForm* pkForm3 = pkDerived;
     if (pkForm3)
-        pkForm3->MarkAsUnmodified(static_cast<unsigned int>(pArg));
+        pkForm3->MarkAsUnmodified(static_cast<unsigned int>(aiChangeFlags));
 }
 
 // Returns the attack-damage virtual result, or 0 if the component cast fails.
@@ -786,9 +860,12 @@ struct FUN_0047d410_node
 
 // Compares this actor base data against another component field by field, returning true on the first mismatch and false when all compared values match.
 // @fnv 0x0047d410
-bool TESActorBaseData::CompareWithBase(BaseFormComponent* component)
+// pdb: TESActorBaseData::CompareComponent | TESActorBaseData.obj | retail, vtable slot, high
+// pdb params: apCompareFC
+// pdb locals: pCompare, pList, pFacRank
+bool TESActorBaseData::CompareWithBase(BaseFormComponent* apCompareFC)
 {
-    TESActorBaseData* other = (TESActorBaseData*)dynamic_cast<TESActorBaseData*>(component);
+    TESActorBaseData* other = (TESActorBaseData*)dynamic_cast<TESActorBaseData*>(apCompareFC);
     if (other == 0)
     {
         return true;
@@ -899,7 +976,7 @@ namespace fnv_0047ce10 {
 struct LeveledShell
 {
     char x;
-    void AddLeveledItemsToContainer(class RefShell*, class TESContainer*);
+    void CalculateCurrentFormListForRef(class RefShell*, class TESContainer*);
 };
 struct NPCShell : TESBoundAnimObject, LeveledShell
 {
@@ -967,10 +1044,14 @@ InvShell* FUN_004bf220(RefShell*);
 }  // namespace fnv_0047ce10
 
 // @fnv 0x0047ce10
-void TESActorBaseData::SetTemplateReference(::TESObjectREFR* ref)
+// src: XBOX_RETAIL_PDB 0x0047ce10
+// pdb: TESActorBaseData::CalcTemplateForRef | TESActorBaseData.obj | retail, call graph (shared callers), high
+// pdb params: apRef
+// pdb locals: plevlist, plevc, pinventory, poriginalBase, pnewbase, ptemplate, tempcont, pobj, pact
+void TESActorBaseData::CalcTemplateForRef(::TESObjectREFR* apRef)
 {
     using namespace fnv_0047ce10;
-    if (!ref || !GetUsesLeveledTemplate() || ((RefShell*)ref)->TESObjectREFR_HasLeveledCreatureCalced())
+    if (!apRef || !GetUsesLeveledTemplate() || ((RefShell*)apRef)->TESObjectREFR_HasLeveledCreatureCalced())
         return;
     LeveledShell* level = 0;
     if (QTemplateForm()->FUN_00401170() == 45)
@@ -986,39 +1067,39 @@ void TESActorBaseData::SetTemplateReference(::TESObjectREFR* ref)
     if (level)
     {
         TESContainer container;
-        level->AddLeveledItemsToContainer((RefShell*)ref, &container);
+        level->CalculateCurrentFormListForRef((RefShell*)apRef, &container);
         void* base6 = (*reinterpret_cast<fnv_0047ce10::ListShell*>(container.FUN_00717e50())->FUN_006815c0())->value;
         if (!*(GlobalShell**)&fnv_0047ce10::DAT_011ddf38 || !(*(GlobalShell**)&fnv_0047ce10::DAT_011ddf38)->BGSSaveLoadGame_GetReconstructingForms())
         {
-            if (((RefShell*)ref)->isActor())
+            if (((RefShell*)apRef)->isActor())
             {
-                RefShell* actor4 = (RefShell*)ref;
+                RefShell* actor4 = (RefShell*)apRef;
                 if (actor4->FUN_008d8520())
                     actor4->update();
             }
-            ((RefShell*)ref)->reset(0, 1);
+            ((RefShell*)apRef)->reset(0, 1);
         }
         if (GetPathManager()->Modelloader_GetReferencedThis())
-            GetPathManager()->PathManager_CancelCurrentPathsAndPause_0(((RefShell*)ref)->BSFile_GetDevice()->FUN_00418520());
-        ((RefShell*)ref)->BSFile_GetDevice()->FUN_0041aeb0();
-        ((RefShell*)ref)->BSFile_GetDevice()->ExtraDataList_RemoveScript();
-        if (((RefShell*)ref)->isOther())
+            GetPathManager()->PathManager_CancelCurrentPathsAndPause_0(((RefShell*)apRef)->BSFile_GetDevice()->FUN_00418520());
+        ((RefShell*)apRef)->BSFile_GetDevice()->FUN_0041aeb0();
+        ((RefShell*)apRef)->BSFile_GetDevice()->ExtraDataList_RemoveScript();
+        if (((RefShell*)apRef)->isOther())
         {
-            RefShell* other3 = (RefShell*)ref;
+            RefShell* other3 = (RefShell*)apRef;
             other3->SetWalkRunFlagDirty();
         }
-        void* oldbase2 = ((RefShell*)ref)->BGSSaveFormBuffer_GetForm();
+        void* oldbase2 = ((RefShell*)apRef)->BGSSaveFormBuffer_GetForm();
         void* newbase = fnv_0047ce10::TESActorBaseData_CreateTemplateActorBase(oldbase2, base6);
-        ((RefShell*)ref)->TESObjectREFR_SetLeveledCreature(oldbase2, base6);
-        ((RefShell*)ref)->TESObjectREFR_SetObjectReference(newbase);
-        ((RefShell*)ref)->TESObjectREFR_InitScript();
-        InvShell* inventory = FUN_004bf220((RefShell*)ref);
+        ((RefShell*)apRef)->TESObjectREFR_SetLeveledCreature(oldbase2, base6);
+        ((RefShell*)apRef)->TESObjectREFR_SetObjectReference(newbase);
+        ((RefShell*)apRef)->TESObjectREFR_InitScript();
+        InvShell* inventory = FUN_004bf220((RefShell*)apRef);
         inventory->InventoryChanges_InitLeveledItems();
         inventory->InventoryChanges_InitFromContainerExtra();
         inventory->InventoryChanges_InitScripts();
         if (inventory->InventoryChanges_IsEmpty())
         {
-            ((RefShell*)ref)->BSFile_GetDevice()->FUN_0041aeb0();
+            ((RefShell*)apRef)->BSFile_GetDevice()->FUN_0041aeb0();
             inventory = 0;
         }
     }
@@ -1042,8 +1123,8 @@ class SaveGameBuffer
   public:
     unsigned char* GetWritePos();
     bool IsSaving();
-    void WriteBytes(const void* p, unsigned int n);
-    void WriteDword(const void* p, unsigned int n);
+    void WriteBytes(const void* apData, unsigned int aiSize);
+    void WriteDword(const void* apFormID, unsigned int aiSize);
     SaveRefRecord* GetSavedRef();
 };
 
@@ -1055,7 +1136,10 @@ int __cdecl ProgramFlow(const char* fmt, ...);
 TESForm* __cdecl TESForm_GetFormByNumericID(unsigned int formId);
 
 // @fnv 0x0047e4a0
-void TESActorBaseData::SaveGame(unsigned int flags)
+// pdb: TESActorBaseData::SaveGame | TESActorBaseData.obj | retail, object-file run extension, high
+// pdb params: aiFlags
+// pdb locals: itempStartPosition, iblockSize, pblockSize, iblockHeader, icount, pcount, pranks, prank, crank, ifactionID, icurrentBufferPosition, pheader, pform, istartBufferPosition
+void TESActorBaseData::SaveGame(unsigned int aiFlags)
 {
     unsigned char* startPosP;
     unsigned char* blockPosY;
@@ -1087,7 +1171,7 @@ void TESActorBaseData::SaveGame(unsigned int flags)
         blockPosY = DAT_011de45c->GetWritePos();
         DAT_011de45c->WriteBytes(&kBlockSize, 2);
     }
-    if (flags & 2)
+    if (aiFlags & 2)
     {
         DAT_011de45c->WriteBytes(&actorData, 0x18);
     }
@@ -1160,29 +1244,32 @@ class FactionNode
 
 // Sets the rank of a faction in the linked list, removing the entry when rank is -1 and adding a new entry when the faction is not found.
 // @fnv 0x0047d800
-void TESActorBaseData::SetFactionRank(TESFaction* faction, char rank)
+// pdb: TESActorBaseData::SetFactionRank | TESActorBaseData.obj | retail, upstream name already matches, high
+// pdb params: apFaction, acRank
+// pdb locals: pFacRank, pList, prank
+void TESActorBaseData::SetFactionRank(TESFaction* apFaction, char acRank)
 {
-    if (faction == 0)
+    if (apFaction == 0)
         return;
 
     FactionNode* pNode = (FactionNode*)GetFactionList();
     while (pNode != 0)
     {
         FACTION_RANK_Data* rankData = pNode->GetItem();
-        if (rankData != 0 && rankData->m_pFaction == faction)
+        if (rankData != 0 && rankData->m_pFaction == apFaction)
         {
-            if (rank == -1)
+            if (acRank == -1)
                 pNode->RemoveHead();
             else
-                rankData->m_rank = rank;
+                rankData->m_rank = acRank;
             return;
         }
         pNode = pNode->GetNext();
     }
 
     FACTION_RANK_Data* rankData = new FACTION_RANK_Data;
-    rankData->m_pFaction = faction;
-    rankData->m_rank = rank;
+    rankData->m_pFaction = apFaction;
+    rankData->m_rank = acRank;
     ((FactionNode*)GetFactionList())->AddHead(rankData);
 }
 
@@ -1219,7 +1306,10 @@ void __cdecl FNV_Warning(const char*, ...);
 
 // Reads actor base data and faction rank entries from the save stream, then verifies the block size against the expected read size.
 // @fnv 0x0047e6f0
-void TESActorBaseData::LoadGame(unsigned int changeFlags, unsigned int pBuffer)
+// pdb: TESActorBaseData::LoadGame | TESActorBaseData.obj | retail, string-set bridge, high
+// pdb params: aiFlags, aiCurrentFlags
+// pdb locals: istartBufferPosition, iblockSize, iblockHeader, pheader, pform, icount, i, pfaction, crank, ifactionID, prank, icurrentBufferPosition
+void TESActorBaseData::LoadGame(unsigned int aiFlags, unsigned int aiCurrentFlags)
 {
     using namespace fnv_0047e6f0;
     TESForm* formVal;
@@ -1265,12 +1355,12 @@ void TESActorBaseData::LoadGame(unsigned int changeFlags, unsigned int pBuffer)
         g_TESSaveLoadGame->TESSaveLoadGame_LoadGameDataOLD(&readSize, 2);
     }
 
-    if (changeFlags & 2)
+    if (aiFlags & 2)
     {
         g_TESSaveLoadGame->TESSaveLoadGame_LoadGameDataOLD(&this->actorData, sizeof(this->actorData));
     }
 
-    this->RemoveAllFactions();
+    this->ClearFactionList();
 
     g_TESSaveLoadGame->TESSaveLoadGame_LoadGameDataOLD(&totalItems, 2);
     for (idx = 0; idx < totalItems; ++idx)
@@ -1367,7 +1457,10 @@ extern SettingT_GameSettingCollection_ DAT_011c4f64;
 
 // Updates faction and template pointers using the file from param->GetFile(-1), then adjusts actorData.m_fField10 for recognized values.
 // @fnv 0x0047d8b0
-void TESActorBaseData::InitItem(TESForm* param)
+// pdb: TESActorBaseData::InitItem | TESActorBaseData.obj | retail, string-set bridge, high
+// pdb params: apOwner
+// pdb locals: pList, tempID, pownerFile, pFacRank, i
+void TESActorBaseData::InitItem(TESForm* apOwner)
 
 {
 
@@ -1385,7 +1478,7 @@ void TESActorBaseData::InitItem(TESForm* param)
 
     node2 = ((FormNode*)GetFactionList());
 
-    file4 = param ? param->GetFile(-1) : 0;
+    file4 = apOwner ? apOwner->GetFile(-1) : 0;
 
     while (node2 != 0)
     {
@@ -1424,51 +1517,51 @@ void TESActorBaseData::InitItem(TESForm* param)
         }
     }
 
-    form4 = (TESForm*)m_kFactionList;
+    form4 = (TESForm*)pVoiceType;
 
     if (form4 != 0)
     {
 
         ResolveFormID((unsigned int*)&form4, file4);
 
-        m_kFactionList = (::BGSVoiceType*)dynamic_cast<BGSVoiceType*>((TESForm*)TESForm_GetFormByNumericID((unsigned int)form4));
+        pVoiceType = (::BGSVoiceType*)dynamic_cast<BGSVoiceType*>((TESForm*)TESForm_GetFormByNumericID((unsigned int)form4));
     }
 
-    form4 = (TESForm*)m_pBaseTemplateForm;
+    form4 = (TESForm*)pDeathItem;
 
     if (form4 != 0)
     {
 
         ResolveFormID((unsigned int*)&form4, file4);
 
-        m_pBaseTemplateForm = (::TESLevItem*)dynamic_cast<TESLevItem*>((TESForm*)TESForm_GetFormByNumericID((unsigned int)form4));
+        pDeathItem = (::TESLevItem*)dynamic_cast<TESLevItem*>((TESForm*)TESForm_GetFormByNumericID((unsigned int)form4));
 
-        if (m_pBaseTemplateForm == 0)
+        if (pDeathItem == 0)
         {
 
             FNV_Warning("MASTERFILE: Unable to find death item (%08X) on ActorBase (%08X) '%s'.", (unsigned int)form4,
-                        param->GetFormID(), param->GetName());
+                        apOwner->GetFormID(), apOwner->GetName());
         }
     }
 
-    form4 = m_ppTemplateForms;
+    form4 = pTemplateForm;
 
     if (form4 != 0)
     {
 
         ResolveFormID((unsigned int*)&form4, file4);
 
-        m_ppTemplateForms = (TESForm*)TESForm_GetFormByNumericID((unsigned int)form4);
+        pTemplateForm = (TESForm*)TESForm_GetFormByNumericID((unsigned int)form4);
 
-        if (m_ppTemplateForms == 0)
+        if (pTemplateForm == 0)
         {
 
             FNV_Warning("MASTERFILE: Unable to find template form (%08X) on ActorBase (%08X) '%s'.",
-                        (unsigned int)form4, param->GetFormID(), param->GetName());
+                        (unsigned int)form4, apOwner->GetFormID(), apOwner->GetName());
         }
     }
 
-    if (!(m_ppTemplateForms != 0 && GetTemplateUseFlag(0)))
+    if (!(pTemplateForm != 0 && GetTemplateUseFlag(0)))
     {
 
         if (DAT_01186f78 == -1)
@@ -1537,12 +1630,14 @@ void TESActorBaseData::InitItem(TESForm* param)
 }
 
 // @fnv 0x0047c7d0
+// pdb: TESActorBaseData::GetIsGhost | TESActorBaseData.obj | debug, upstream name already matches, high
 bool TESActorBaseData::GetIsGhost() const
 {
     return GetFlag(0x20000000);
 }
 
 // @fnv 0x0047c7f0
+// pdb: TESActorBaseData::GetInvulnerable | TESActorBaseData.obj | debug, vtable slot, medium
 bool TESActorBaseData::GetIsInvulnerable() const
 {
     return GetFlag(0x80000000);
@@ -1555,6 +1650,7 @@ bool TESActorBaseData::GetNoKnockdowns() const
 }
 
 // @fnv 0x0047c830
+// pdb: TESActorBaseData::GetAutoCalcServiceFlags | TESActorBaseData.obj | debug, vtable slot, medium
 bool TESActorBaseData::GetNoHeadTracking() const
 {
     return GetFlag(0x800000);

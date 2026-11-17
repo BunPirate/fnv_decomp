@@ -4,7 +4,10 @@
 #include "../../../include/Setting.h"
 
 // @fnv 0x0040ca50
-void MagicSystem::InitializeMagicSystem()
+// src: XBOX_RETAIL_PDB 0x0040ca50
+// pdb: MagicSystem::GenerateDefaultObjects | MagicSystem.obj | retail, unique string literal, high
+// pdb locals: tempMemContext
+void MagicSystem::GenerateDefaultObjects()
 {
     AutoMemContext context(MEM_CONTEXT_MEM_CONTEXT_TES_DEFAULT_OBJECTS, true,
                            "D:\\_Fallout3\\Platforms\\Common\\Code\\Fallout Shared\\Magic\\MagicSystem.cpp", 0x12e);
@@ -241,12 +244,13 @@ void MagicSystem::InitializeMagicSystem()
         }
     }
 
-    EffectSettingCollection::InitializeEffectSettings();
+    EffectSettingCollection::CreateDefaultEffects();
 }
 
 extern Setting originalRuntimeFloatSetting9;
 
 // @fnv 0x0040df70
+// pdb: MagicSystem::GetChameleonMinRefraction | MagicSystem.obj | debug, call graph, medium
 float GetOriginalRuntimeFloatSetting9()
 {
     return *originalRuntimeFloatSetting9.Float();

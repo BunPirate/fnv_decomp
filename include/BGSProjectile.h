@@ -35,7 +35,7 @@ public:
     virtual void InitItem();
 
     void ResetFormData();
-    bool Load(TESFile* file);
+    bool Load(TESFile* apFile);
     bool GetHasExplosion();
     bool GetFlag(unsigned int flag) const;
     bool GetHasExplosionDetonates() const;

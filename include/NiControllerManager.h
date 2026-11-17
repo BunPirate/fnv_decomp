@@ -14,6 +14,7 @@ template <class T> class NiTMallocInterface;
 
 
 
+// pdb: class NiControllerManager, size 0x7c, bases: NiTimeController, 7 members
 class NiControllerManager : public NiTimeController
 {
 public:
@@ -21,11 +22,11 @@ public:
     NiControllerManager(NiNode* target, bool useCumulativeAnimation);
     virtual ~NiControllerManager();
     using NiTimeController::Update;
-    virtual void Update(NiUpdateData& data);
+    virtual void Update(NiUpdateData& UpdateData);
     virtual void vf45();
 
-    void CloneControllerManager(NiControllerManager* destination, CloningProcess* cloning);
-    NiControllerSequence* GetTempBlendSequence(NiControllerSequence* source, unsigned int option);
+    void CopyMembers(NiControllerManager* destination, CloningProcess* cloning);
+    NiControllerSequence* CreateTempBlendSequence(NiControllerSequence* pkSequence, unsigned int pkSequenceToSynchronize);
     void SetBit(bool value, unsigned short mask);
     NiControllerSequence* FindSequenceByName(const NiFixedString& name);
     static NiFixedString* FindSequenceByName();
@@ -36,7 +37,7 @@ public:
         NiControllerSequence* timeSyncSequence = 0);
     void ActivateControllerSequence(NiControllerSequence* sequence, int priority,
         bool startOver, float weight, float easeInTime, int timeSyncSequence);
-    void DeactivateAllSequences(float easeOutTime);
+    void DeactivateAllSequences(float fEaseOutTime);
     unsigned int GetSequenceCount();
     NiControllerSequence* GetSequenceAt(unsigned int index);
     NiAVObjectPalette* GetStringAtOffset();
@@ -50,16 +51,16 @@ public:
     void FUN_0047aab0(NiControllerSequence* sequence, int priority, int startOver,
         float weight, float easeInTime, int timeSyncSequence);
     void FUN_0047b220(NiControllerSequence* sequence, float easeOutTime);
-    void FUN_0048fef0(float time);
+    void FUN_0048fef0(float fEaseOutTime);
     unsigned int GetSequenceCount_00495d00();
     NiControllerSequence* GetSequenceAt_00495d20(unsigned int index);
     bool NiTimeController_GetActive();
 
-    NiTObjectArray<NiPointer<NiControllerSequence> > m_kSequences;
+    NiTObjectArray<NiPointer<NiControllerSequence> > m_kSequenceArray; // src: XBOX_RETAIL_PDB +0x34 (old: m_kSequences)
     NiTPrimitiveSet<NiControllerSequence*> m_kPlayingSequences;
-    NiTStringPointerMap<NiControllerSequence*> m_kObjectMap;
-    BSAnimNoteListener* m_pAudioListener;
-    bool m_bUseCumulativeAnimation;
+    NiTStringPointerMap<NiControllerSequence*> m_kStringMap; // src: XBOX_RETAIL_PDB +0x50 (old: m_kObjectMap)
+    BSAnimNoteListener* pListener; // src: XBOX_RETAIL_PDB +0x64 (old: m_pAudioListener)
+    bool m_bCumulative; // src: XBOX_RETAIL_PDB +0x68 (old: m_bUseCumulativeAnimation)
     NiTObjectSet<NiPointer<NiControllerSequence> > m_kSequenceSet;
     NiPointer<NiAVObjectPalette> m_spControllerManager;
 };

@@ -22,8 +22,8 @@ struct C69FC0Packet
     unsigned int unk14;
     unsigned int unk18;
 };
-C69FC0State* __cdecl GetExtraDataChecked(int object);
-void __cdecl bhkWorld_DoObjectRec(int object, C69FC0Packet* packet, unsigned int dispatcher);
+C69FC0State* __cdecl GetExtraDataChecked(int apObject);
+void __cdecl bhkWorld_DoObjectRec(int apObject, C69FC0Packet* arData, unsigned int apFunc);
 extern unsigned int DAT_011afebc;
 
 static inline unsigned int C69FC0IsEnabled(int object)
@@ -34,21 +34,24 @@ static inline unsigned int C69FC0IsEnabled(int object)
 
 // @fnv 0x00c69fc0
 // src: COMMUNITY 0x00c69fc0
-bool __cdecl _bhkWorld_AdjustForceAddCount(int object, unsigned char bSelect, unsigned char mode, unsigned char overrideCheck)
+// pdb: bhkWorld::AdjustForceAddCount | bhkWorld.obj | retail, object-file gap fill, high
+// pdb params: apObject, abIncrement, abRecurse, abForce
+// pdb locals: bres, recData
+bool __cdecl _bhkWorld_AdjustForceAddCount(int apObject, unsigned char abIncrement, unsigned char abRecurse, unsigned char abForce)
 {
     bool bResult = false;
-    if (object)
+    if (apObject)
     {
-        if (overrideCheck || C69FC0IsEnabled(object))
+        if (abForce || C69FC0IsEnabled(apObject))
         {
             bResult = true;
             C69FC0Packet kPacket;
             kPacket.status = 0;
-            kPacket.mode = mode;
+            kPacket.mode = abRecurse;
             kPacket.opcode = 0xd;
-            kPacket.selection = bSelect != 0;
+            kPacket.selection = abIncrement != 0;
             if (DAT_011afebc)
-                bhkWorld_DoObjectRec(object, &kPacket, DAT_011afebc);
+                bhkWorld_DoObjectRec(apObject, &kPacket, DAT_011afebc);
         }
     }
     return bResult;

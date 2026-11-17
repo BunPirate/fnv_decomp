@@ -4,6 +4,7 @@
 #include "hkReferencedObject.h"
 #include "hkSingleton.h"
 
+// pdb: class hkReferencedObjectLock, size 0x34 (here 0x30), bases: hkReferencedObject, hkSingleton<hkReferencedObjectLock>, 4 members
 class hkReferencedObjectLock : public hkReferencedObject, public hkSingleton<hkReferencedObjectLock>
 {
 public:

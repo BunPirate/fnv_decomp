@@ -9,6 +9,7 @@
 class BGSNote;
 class TerminalMenuItem;
 
+// pdb: class BGSTerminal, size 0xa8, bases: TESObjectACTI, TESDescription, 3 members
 class BGSTerminal : public TESObjectACTI, public TESDescription
 {
 public:
@@ -20,13 +21,13 @@ public:
     virtual bool LoadForm(TESFile* modInfo);
     virtual void SaveForm(void);
     virtual void InitItem(void);
-    virtual void CopyFrom(const TESForm* form);
-    virtual bool Compare(TESForm* form);
+    virtual void CopyFrom(const TESForm* apCopy);
+    virtual bool Compare(TESForm* apCompare);
 
     void ResetFormData();
-    bool Load(TESFile* file);
+    bool Load(TESFile* apFile);
     void BGSTerminal_SetPassword(BGSNote* note);
-    void AddMenuItem(TerminalMenuItem* item);
+    void AddMenuItem(TerminalMenuItem* apItem);
     BSSimpleList<TerminalMenuItem*>* FUN_00461150();
 
     BSSimpleList<TerminalMenuItem*> m_kMenuItems;

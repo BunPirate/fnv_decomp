@@ -13,7 +13,7 @@ void* __cdecl C4E7770Malloc(unsigned int uiSize);
 
 struct C4E7770AutoMemHelper
 {
-    C4E7770AutoMemHelper(int iType, bool bFlag, const char* pcFile, int iLine);
+    C4E7770AutoMemHelper(int memContext, bool overridable, const char* pcFile, int aiLine);
     ~C4E7770AutoMemHelper();
 
     int m_uiLogicalSize;
@@ -107,14 +107,17 @@ class C4E7770TriShapeData
 class C4E7770QuadFactory
 {
   public:
-    C4E7770TriShapeData* TESWaterSystem_CreateQuadData_0(float m_fGlyphWidthInPixels, float m_fGlyphExtent, int iUnused, unsigned int uiTiles,
-                                      bool bGenerateNormals, bool bColors);
+    C4E7770TriShapeData* TESWaterSystem_CreateQuadData_0(float afMeshSizeWidth, float afMeshSizeHeight, int textureSize, unsigned int tile,
+                                      bool bNormals, bool bColors);
 };
 
 // @fnv 0x004e7770
 // src: COMMUNITY 0x004e7770
-C4E7770TriShapeData* C4E7770QuadFactory::TESWaterSystem_CreateQuadData_0(float m_fGlyphWidthInPixels, float m_fGlyphExtent, int iUnused, unsigned int uiTiles,
-                                                      bool bGenerateNormals, bool bColors)
+// pdb: TESWaterSystem::CreateQuadData | TESWater.obj | debug, unique string literal, high
+// pdb params: afMeshSizeWidth, afMeshSizeHeight, textureSize, tile, bNormals, bColors
+// pdb locals: normals, textures, data, vertices, tempMemContext, maxtexcoord, indices, pcolors
+C4E7770TriShapeData* C4E7770QuadFactory::TESWaterSystem_CreateQuadData_0(float afMeshSizeWidth, float afMeshSizeHeight, int textureSize, unsigned int tile,
+                                                      bool bNormals, bool bColors)
 {
     C4E7770Point3* pkNormalsDir;
     C4E7770Point2* pkTexCoordsUV;
@@ -128,10 +131,10 @@ C4E7770TriShapeData* C4E7770QuadFactory::TESWaterSystem_CreateQuadData_0(float m
     pkVerticesQuad = new C4E7770Point3[4];
     if (!pkVerticesQuad)
         return 0;
-    pkVerticesQuad[0] = C4E7770Point3(m_fGlyphWidthInPixels / 2.0, m_fGlyphExtent / 2.0, 0.0f);
-    pkVerticesQuad[1] = C4E7770Point3(-m_fGlyphWidthInPixels / 2.0, m_fGlyphExtent / 2.0, 0.0f);
-    pkVerticesQuad[2] = C4E7770Point3(-m_fGlyphWidthInPixels / 2.0, -m_fGlyphExtent / 2.0, 0.0f);
-    pkVerticesQuad[3] = C4E7770Point3(m_fGlyphWidthInPixels / 2.0, -m_fGlyphExtent / 2.0, 0.0f);
+    pkVerticesQuad[0] = C4E7770Point3(afMeshSizeWidth / 2.0, afMeshSizeHeight / 2.0, 0.0f);
+    pkVerticesQuad[1] = C4E7770Point3(-afMeshSizeWidth / 2.0, afMeshSizeHeight / 2.0, 0.0f);
+    pkVerticesQuad[2] = C4E7770Point3(-afMeshSizeWidth / 2.0, -afMeshSizeHeight / 2.0, 0.0f);
+    pkVerticesQuad[3] = C4E7770Point3(afMeshSizeWidth / 2.0, -afMeshSizeHeight / 2.0, 0.0f);
 
     static C4E7770Point3 s_kNormal(0.0f, 0.0f, 1.0f);
 
@@ -157,7 +160,7 @@ C4E7770TriShapeData* C4E7770QuadFactory::TESWaterSystem_CreateQuadData_0(float m
     pusTriangles[5] = 3;
 
     pkNormalsDir = 0;
-    if (bGenerateNormals)
+    if (bNormals)
     {
         pkNormalsDir = new C4E7770Point3[4];
         if (pkNormalsDir)
@@ -188,8 +191,8 @@ C4E7770TriShapeData* C4E7770QuadFactory::TESWaterSystem_CreateQuadData_0(float m
     }
 
     fTilesTile = 1.0f;
-    if (uiTiles != 1)
-        fTilesTile = (float)uiTiles;
+    if (tile != 1)
+        fTilesTile = (float)tile;
     pkTexCoordsUV[0] = C4E7770Point2(fTilesTile, 0.0f);
     pkTexCoordsUV[1] = C4E7770Point2(0.0f, 0.0f);
     pkTexCoordsUV[2] = C4E7770Point2(0.0f, fTilesTile);

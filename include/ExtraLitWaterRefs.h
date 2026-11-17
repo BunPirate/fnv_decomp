@@ -6,6 +6,7 @@
 class BSExtraDataEx;
 class TESForm;
 
+// pdb: class ExtraLitWaterRefs, size 0x14, bases: BSExtraData, 1 members
 class ExtraLitWaterRefs : public BSExtraData
 {
 public:

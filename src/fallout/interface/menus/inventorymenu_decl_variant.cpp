@@ -116,7 +116,7 @@ struct ProxyMgr
 {
     ProxyPipboy* __thiscall GetPipboyManager();
 };
-void InventoryMenu_SetKnobPosition(bool a1);
+void InventoryMenu_SetKnobPosition(bool abPlaySounds);
 unsigned char InventoryMenu_GetCurrentInventoryPage();
 unsigned int __fastcall FUN_0044ddc0(void*);
 unsigned char __cdecl IsNotFormType2E(void* a1);
@@ -400,7 +400,7 @@ extern PlayerCharacterShell* _g_thePlayer;
 extern int _NiPoint3_ZERO;
 extern int _DAT_011f4270;
 extern int _DAT_011f4274;
-void __cdecl DropInventoryItem(int aiAmountChosen);
+void __cdecl InventoryMenu_DropCurrentItem(int aiAmountChosen);
 
 
 
@@ -422,7 +422,7 @@ class FUN_0077ffd0_lbx
 };
 void* __cdecl Tile_TextToTrait(const char* s);
 int __cdecl FUN_00ec62c0();
-void __cdecl UpdateCurrentValue();
+void __cdecl InventoryMenu_SavePageState();
 struct InputInterface
 {
     virtual int Reserved0();
@@ -500,14 +500,17 @@ int BSstrcmp(const char*, const char*);
 void FUN_00406d30(char*, unsigned int, const char*);
 unsigned int BSstrlen(const char*);
 void* FUN_00479430(Form*);
-const char* GetMenuIconName(void*);
+const char* GetEquipTypeIconFilename(void*);
 void FUN_00406d50(char*, unsigned int, const char*);
 } // namespace InventorySelection
 
 // @fnv 0x00780ff0
-void InventoryMenu::UpdateItemDisplay(int action, Tile* changed)
+// pdb: InventoryMenu::DoEnter | InventoryMenu.obj | retail, string-set bridge, high
+// pdb params: aiID, apTarget
+// pdb locals: inewHighlightIndex, uiMinNameLength, pweap, strSmallIconName, fMaintainValue, strtemp
+void InventoryMenu::UpdateItemDisplay(int aiID, Tile* apTarget)
 {
-    if (action == 29)
+    if (aiID == 29)
     {
         InventorySelection::DAT_011d9ea8 = reinterpret_cast<InventorySelection::List&>(m_kItemList).FUN_007a1910();
         if (InventorySelection::DAT_011d9ea8)
@@ -565,7 +568,7 @@ void InventoryMenu::UpdateItemDisplay(int action, Tile* changed)
             char path[260];
             InventorySelection::FUN_00406d30(path, 260, InventorySelection::DAT_0106eb24);
             unsigned int prefixLengthSlot0 = InventorySelection::BSstrlen(path);
-            InventorySelection::FUN_00406d50(path, 260, InventorySelection::GetMenuIconName(InventorySelection::FUN_00479430(InventorySelection::DAT_011d9ea8->FUN_0044ddc0())));
+            InventorySelection::FUN_00406d50(path, 260, InventorySelection::GetEquipTypeIconFilename(InventorySelection::FUN_00479430(InventorySelection::DAT_011d9ea8->FUN_0044ddc0())));
             if (InventorySelection::BSstrlen(path) > prefixLengthSlot0)
             {
                 (*reinterpret_cast<InventorySelection::TileHolder*>(m_pTiles[5])->tile.NiTPointerListBase_NiTPointerAllocator_unsigned_int_Tile_GetHead())->Tile_Set_00a01350(0xfcc, path, 1);
@@ -578,9 +581,9 @@ void InventoryMenu::UpdateItemDisplay(int action, Tile* changed)
             UpdateButtons();
         }
     }
-    else if (action == 30)
+    else if (aiID == 30)
     {
-        ClearActionPointSource();
+        ClearCurrentItem();
         m_pTiles[11]->Tile_Set_00a01350(0xfcc, InventorySelection::DAT_01073aac, 1);
         if (!reinterpret_cast<InventorySelection::Entry&>(m_kMenuData).FUN_00701740())
             m_pTiles[11]->FUN_00700320(0xfa3, true);
@@ -623,19 +626,19 @@ struct EntryListNode
 };
 struct Changes
 {
-    void FilterInventoryChanges(Form*, EntryListNode*);
+    void InventoryChanges_GetRepairItemGroup(Form*, EntryListNode*);
 };
 Changes* __cdecl FUN_004bf220(void*);
 extern void* player;
 float __cdecl FUN_00476b20(float);
 struct InventoryCheck
 {
-    bool InventoryMenu_IsItemRepairable(Entry* entry);
+    bool InventoryMenu_IsItemRepairable(Entry* apItem);
 };
 struct ItemLabelSource : InventoryStackRecord
 {
     int FUN_00726070();
-    unsigned char FUN_004bd820();
+    unsigned char ItemChange_GetModSlots();
     const char* GetTargetFullName();
     bool ItemChange_GetWorn(bool);
 };
@@ -652,7 +655,7 @@ struct ItemLabelChildren
     Tile** AddEight(void*);
 };
 int __cdecl _sprintf_s(char*, unsigned int, const char*, ...);
-void __cdecl UpdateItemLabel(Tile* tile, ItemLabelSource* item);
+void __cdecl InventoryMenu_InitFunc(Tile* apTile, ItemLabelSource* apItem);
 // 0x00780d60  unit_65921382d98c.cpp  /MT /Od /Oy- /GS /EHsc /Gy
 // thiscall, no stack args (ret): menu refresh/close path.
 extern "C" void* DAT_011d9ea8;
@@ -689,7 +692,7 @@ struct Sh0088c790
 {
     void QueueUnEquipObject(void* a, int b, void* c, bool d, bool e, bool f);
 };
-unsigned __cdecl FUN_0058db10(int arg);
+unsigned __cdecl FUN_0058db10(int aeObject);
 unsigned __cdecl TESForm_GetFormByNumericID(int arg);
 
 extern "C" Setting DAT_011d2af0;
@@ -721,14 +724,17 @@ void UpdatePipboyMapVisibility(int, int);
 
 // @fnv 0x00782190
 // src: XBOX_PDB 0x00782190
-bool InventoryMenu::DoGamepad(int input, int unused)
+// pdb: InventoryMenu::DoGamepad | InventoryMenu.obj | retail, upstream name already matches, high
+// pdb params: aiButton, afValue
+// pdb locals: bhandled, inewTab, bhotkeyOpen
+bool InventoryMenu::DoGamepad(int aiButton, int afValue)
 {
     if (!Interface_IsTopMenuID(1002) || !Interface_GetPipboy()->IsUnk28Set())
         return false;
     bool consumed = false;
     if (Interface_Has360Controller() && m_kMenuData.GetVisible())
     {
-        switch (input)
+        switch (aiButton)
         {
         case 1:
         case 2:
@@ -741,7 +747,7 @@ bool InventoryMenu::DoGamepad(int input, int unused)
     }
     if (!consumed && Interface_IsTopMenuID(1002))
     {
-        switch (input)
+        switch (aiButton)
         {
         case 13:
             InterfaceManager_PlayMenuSound(36);
@@ -770,7 +776,7 @@ bool InventoryMenu::DoGamepad(int input, int unused)
             int tab = m_iCurrentTab;
             bool visible = m_kMenuData.GetVisible();
             HandleMouseoverTileAlt(29, 0);
-            tab += input == 4 ? -1 : 1;
+            tab += aiButton == 4 ? -1 : 1;
             tab = tab > 4 ? 0 : tab;
             tab = tab < 0 ? 4 : tab;
             HandleSelection(tab + 24, 0);

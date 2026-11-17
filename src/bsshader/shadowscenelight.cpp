@@ -67,7 +67,7 @@ class NiTriBasedGeom;
 // The shared manager has no declaration for its shadow texture pool getter.
 struct ShadowTextureManager : BSTextureManager
 {
-    BSRenderedTexture* ActivatePending();
+    BSRenderedTexture* BSTextureManager_BorrowFrustumShadowTexture();
 };
 
 extern volatile long DAT_011f4400;
@@ -157,43 +157,50 @@ inline unsigned char BSShaderLightingProperty::IsLightingProperty()
 
 // If object has a node with a world bound and radius, dispatches it to one of two handlers; otherwise forwards tri-based geometry to AddGeometry.
 // @fnv 0x00ba0110
-void ShadowSceneLight::AddObject(NiAVObject* object)
+// pdb: ShadowSceneLight::AddObject | ShadowSceneLight.obj | retail, upstream name already matches, high
+// pdb params: apAVObject
+// pdb locals: tempAutoEvent, pnode, pgeom
+void ShadowSceneLight::AddObject(NiAVObject* apAVObject)
 {
-    if (object)
+    if (apAVObject)
     {
-        NiNode* node = object->IsSceneNode();
-        if (node && !(*reinterpret_cast<unsigned char*>(&object->m_uFlags) & 1) &&
+        NiNode* node = apAVObject->IsSceneNode();
+        if (node && !(*reinterpret_cast<unsigned char*>(&apAVObject->m_uFlags) & 1) &&
             reinterpret_cast<NiAVObject*>(node)->m_kWorldBound &&
             reinterpret_cast<NiBound*>(reinterpret_cast<NiAVObject*>(node)->m_kWorldBound)
                 ->m_fBoundRadius)
         {
-            if (bCastShadow && object == spShadowScene.m_pObject &&
-                ((unsigned char)~(object->m_uFlags >> 23) & 1))
+            if (bCastShadow && apAVObject == spShadowScene.m_pObject &&
+                ((unsigned char)~(apAVObject->m_uFlags >> 23) & 1))
                 goto AddDisplayGeometry;
             if (bCastShadow)
             {
-                ProcessShadowObject(reinterpret_cast<NiAVObject*>(node));
+                ParseObjectAddFrustum(reinterpret_cast<NiAVObject*>(node));
                 return;
             }
             else
             {
-                AddShadowObject(reinterpret_cast<NiAVObject*>(node));
+                ParseObjectAddRadius(reinterpret_cast<NiAVObject*>(node));
                 return;
             }
         }
     AddDisplayGeometry:
-        if (object->IsTriBasedGeometry())
-            AddGeometry(reinterpret_cast<NiTriBasedGeom*>(object));
+        if (apAVObject->IsTriBasedGeometry())
+            AddGeometry(reinterpret_cast<NiTriBasedGeom*>(apAVObject));
     }
 }
 
 // @fnv 0x00b9f6a0
-void ShadowSceneLight::AddShadowObject(NiAVObject* object)
+// src: XBOX_RETAIL_PDB 0x00b9f6a0
+// pdb: ShadowSceneLight::ParseObjectAddRadius | ShadowSceneLight.obj | retail, call graph, high
+// pdb params: apObject
+// pdb locals: uiSaveActive, pnode, i, child, ptrigeom
+void ShadowSceneLight::ParseObjectAddRadius(NiAVObject* apObject)
 {
-    unsigned int active = kShadowCameraPlanes.m_uiActivePlaneMask;
-    if (!((unsigned char)(object->m_uFlags >> 11) & 1))
+    unsigned int active = kShadowCameraPlanes.m_uiActivePlanes;
+    if (!((unsigned char)(apObject->m_uFlags >> 11) & 1))
     {
-        NiPoint3* bound = reinterpret_cast<NiPoint3*>(object->m_kWorldBound);
+        NiPoint3* bound = reinterpret_cast<NiPoint3*>(apObject->m_kWorldBound);
         NiLight* light = spLight.m_pObject;
         if (!bound)
             bound = reinterpret_cast<NiPoint3*>(&DAT_011f4288);
@@ -201,7 +208,7 @@ void ShadowSceneLight::AddShadowObject(NiAVObject* object)
             goto done;
     }
     {
-        NiNode* node = object->IsSceneNode();
+        NiNode* node = apObject->IsSceneNode();
         if (node)
         {
             NiNode* children = node;
@@ -214,31 +221,35 @@ void ShadowSceneLight::AddShadowObject(NiAVObject* object)
                      (child->m_kWorldBound &&
                       reinterpret_cast<NiBound*>(child->m_kWorldBound)->m_fBoundRadius)) &&
                     !((unsigned char)flags & 1))
-                    AddShadowObject(child);
+                    ParseObjectAddRadius(child);
             }
         }
-        else if (object->IsTriBasedGeometry())
-            AddGeometry(object->IsTriBasedGeometry());
+        else if (apObject->IsTriBasedGeometry())
+            AddGeometry(apObject->IsTriBasedGeometry());
     }
 done:
-    kShadowCameraPlanes.m_uiActivePlaneMask = active;
+    kShadowCameraPlanes.m_uiActivePlanes = active;
 }
 // @fnv 0x00b9f5b0
-void ShadowSceneLight::ProcessShadowObject(NiAVObject* object)
+// src: XBOX_RETAIL_PDB 0x00b9f5b0
+// pdb: ShadowSceneLight::ParseObjectAddFrustum | ShadowSceneLight.obj | retail, call graph, high
+// pdb params: apObject
+// pdb locals: uiSaveActive, pnode, i, child
+void ShadowSceneLight::ParseObjectAddFrustum(NiAVObject* apObject)
 {
-    unsigned int active = kShadowCameraPlanes.m_uiActivePlaneMask;
-    if (object == spShadowScene.m_pObject || !((unsigned char)~(object->m_uFlags >> 23) & 1))
+    unsigned int active = kShadowCameraPlanes.m_uiActivePlanes;
+    if (apObject == spShadowScene.m_pObject || !((unsigned char)~(apObject->m_uFlags >> 23) & 1))
         goto done;
-    if (active && !((unsigned char)(object->m_uFlags >> 11) & 1))
+    if (active && !((unsigned char)(apObject->m_uFlags >> 11) & 1))
     {
-        NiPoint3* bound = reinterpret_cast<NiPoint3*>(object->m_kWorldBound);
+        NiPoint3* bound = reinterpret_cast<NiPoint3*>(apObject->m_kWorldBound);
         if (!bound)
             bound = reinterpret_cast<NiPoint3*>(&DAT_011f4288);
         if (!TestSphereFrustum(bound))
             goto done;
     }
     {
-        NiNode* node = object->IsSceneNode();
+        NiNode* node = apObject->IsSceneNode();
         if (node)
         {
             NiNode* children = node;
@@ -251,14 +262,14 @@ void ShadowSceneLight::ProcessShadowObject(NiAVObject* object)
                      (child->m_kWorldBound &&
                       reinterpret_cast<NiBound*>(child->m_kWorldBound)->m_fBoundRadius)) &&
                     !((unsigned char)flags & 1))
-                    ProcessShadowObject(child);
+                    ParseObjectAddFrustum(child);
             }
         }
-        else if (object->IsTriBasedGeometry())
-            AddGeometry(reinterpret_cast<NiTriBasedGeom*>(object));
+        else if (apObject->IsTriBasedGeometry())
+            AddGeometry(reinterpret_cast<NiTriBasedGeom*>(apObject));
     }
 done:
-    kShadowCameraPlanes.m_uiActivePlaneMask = active;
+    kShadowCameraPlanes.m_uiActivePlanes = active;
 }
 
 extern "C" void* __cdecl fnv_zlib_memset(void*, int, unsigned int);
@@ -270,6 +281,7 @@ __forceinline void ShadowMatrixIdentity(D3DXMATRIX& m)
     m._11 = m._22 = m._33 = m._44 = 1.0f;
 }
 // @fnv 0x00b9fda0
+// pdb: ShadowSceneLight::ShadowSceneLight | ShadowSceneLight.obj | retail, upstream name already matches, high
 ShadowSceneLight::ShadowSceneLight()
 {
     fLuminance = 0.0f;
@@ -357,6 +369,7 @@ BSSimpleArray<void*>* __fastcall DestroyShadowArray(BSSimpleArray<void*>* p, int
 extern "C" void __cdecl __Dummy_00b6fef0(void*, unsigned int);
 
 // @fnv 0x00ba00e0
+// pdb: ShadowSceneLight::`scalar deleting destructor' | ShadowSceneLight.obj | retail, object-file gap fill, high
 ShadowSceneLight* __fastcall FUN_00ba00e0(ShadowSceneLight* this_ptr, int /*edx*/, int param2)
 {
     this_ptr->~ShadowSceneLight();
@@ -421,10 +434,12 @@ extern char* _EmptyFS;
 
 struct ShadowSceneFence : ShadowSceneLight
 {
-    void InitializeFence();
+    void ShadowSceneLight_InsertUnusedFence();
 };
 // @fnv 0x00b9fba0
-void ShadowSceneFence::InitializeFence()
+// src: XBOX_RETAIL_PDB 0x00b9fba0
+// pdb: ShadowSceneLight::InsertUnusedFence | ShadowSceneLight.obj | retail, string-set bridge, high
+void ShadowSceneFence::ShadowSceneLight_InsertUnusedFence()
 {
     NiPointer<NiTriBasedGeom>& fence = kGeomListFenceObject;
     if (fence.m_pObject == 0)
@@ -541,6 +556,7 @@ NiRefObject::~NiRefObject()
 }
 
 // @fnv 0x00b9f0c0
+// pdb: ShadowSceneLight::~ShadowSceneLight | ShadowSceneLight.obj | retail, upstream name already matches, high
 ShadowSceneLight::~ShadowSceneLight()
 {
     ClearShadowObjects();
@@ -635,9 +651,9 @@ struct LightView : NiCamera
     ShadowSceneLight* unk134;
     void* unk138;
     BSShaderAccumulator* unk13C;
-    void RenderFaces();
+    void BSCubeMapCamera_ClickCubeMap();
     void BSCubeMapCamera_SetupTransformation(int);
-    void CullScene(ShadowSceneLight*);
+    void BSCubeMapCamera_RenderGeomForLight(ShadowSceneLight*);
 };
 void BSRenderedTexture_StartOffscreen(unsigned int, void*);
 void BSShaderUtil_AccumulateScene(LightView*, void*, BSCullingProcess*);
@@ -645,7 +661,10 @@ void FUN_00b6c0d0(LightView*, BSShaderAccumulator*, int);
 void BSShaderLightingProperty_SetLight(unsigned int, ShadowSceneLight*, float);
 void FUN_00b6b790();
 // @fnv 0x00bd77c0
-void LightView::RenderFaces()
+// src: XBOX_RETAIL_PDB 0x00bd77c0
+// pdb: BSCubeMapCamera::ClickCubeMap | BSCubeMapCamera.obj | retail, call graph, high
+// pdb locals: uslightCull, koldcol, i, iflag, pcm, UpdateData, tmp
+void LightView::BSCubeMapCamera_ClickCubeMap()
 {
     NiColorA old = DAT_011a9bd0;
     unsigned short uiFaceMask = 0;
@@ -662,7 +681,7 @@ void LightView::RenderFaces()
         NiRenderedTexture* texture = (unk130 ? reinterpret_cast<NiPointer<NiRenderedTexture>&>(unk130->spTexture[0])
                                       : NiPointer<NiRenderedTexture>());
         NiRenderedCubeMap* pTextureView = static_cast<NiRenderedCubeMap*>(texture);
-        pTextureView->unk48 = face;
+        pTextureView->m_eFace = face;
         pTextureView->m_spRenderTargetBuffer = reinterpret_cast<NiPointer<Ni2DBuffer>&>(pTextureView->m_ppCubeMapFaces[face]);
         BSRenderedTexture_StartOffscreen(7, unk130->GetGroup());
         int uiFaceBit = 0;
@@ -727,7 +746,7 @@ void LightView::RenderFaces()
             {
                 BSShaderLightingProperty_SetLight(0, unk134, 1.0f);
                 unk130 = (BSRenderedTexture*)unk134->spDynamicShadowMap;
-                CullScene(unk134);
+                BSCubeMapCamera_RenderGeomForLight(unk134);
             }
         }
         FUN_00b6b790();
@@ -789,11 +808,14 @@ class MultiBoundLists
     unsigned int unk8c;
     ShadowRefList pending;
     ShadowRefList active;
-    BSRenderedTexture* ActivatePending();
+    BSRenderedTexture* BSTextureManager_BorrowFrustumShadowTexture();
 };
 // If pending is nonempty, pops its last item, appends it to active, and returns the popped value.
 // @fnv 0x00b6d3f0
-BSRenderedTexture* MultiBoundLists::ActivatePending()
+// src: XBOX_RETAIL_PDB 0x00b6d3f0
+// pdb: BSTextureManager::BorrowFrustumShadowTexture | BSTextureManager.obj | retail, call graph, high
+// pdb locals: spfoundTexture
+BSRenderedTexture* MultiBoundLists::BSTextureManager_BorrowFrustumShadowTexture()
 {
     NiPointer<BSRenderedTexture> result;
     if (pending.m_kItemCount.m_uiCount > 0)
@@ -817,6 +839,8 @@ template <class TAlloc, class T> inline T& NiTPointerListBase<TAlloc, T>::GetNex
 
 // Detaches lighting properties, then clears the geometry and root lists.
 // @fnv 0x00b9ef30
+// pdb: ShadowSceneLight::RemoveAllTriShapes | ShadowSceneLight.obj | retail, call graph, medium
+// pdb locals: itobjectIter, ptrigeom, pprop, pshprop
 void ShadowSceneLight::ClearShadowObjects()
 {
     void* pkPos = lGeomList.GetHeadPos();
@@ -964,12 +988,15 @@ class ShadowSceneCameraUpdate : public ShadowSceneLight
     {
         return spShadowCamera.m_pObject;
     }
-    void AssignRefObject(BSRenderedTexture*);
+    void ShadowSceneLight_SetDynamicShadowMap(BSRenderedTexture*);
     void UpdateShadow(void*, unsigned char*);
 };
 
 // Updates the shadow camera frustum and viewport when conditions hold; otherwise releases an existing shadow texture.
 // @fnv 0x00b9dfc0
+// pdb: ShadowSceneLight::MTSetupFrustumDepthMap | ShadowSceneLight.obj | debug, call graph, medium
+// pdb params: arCuller, aiIndex
+// pdb locals: bupdate, pbstex, kD3DView, pbound, kport, kd3dtransform, kD3DProj, dist, kworldright, kTargetCenter, kextents, ktransform, kworldvect, kworldup, kfrustum, frad, kobjtolight, ffar, ptLookAt, fnear, UpdateData1, UpdateData2, pnodename
 void ShadowSceneCameraUpdate::UpdateShadow(void* unused, unsigned char* renderFlags)
 {
     bool updateShadow = true;
@@ -978,10 +1005,10 @@ void ShadowSceneCameraUpdate::UpdateShadow(void* unused, unsigned char* renderFl
 
     if (!spDynamicShadowMap.m_pObject)
     {
-        BSRenderedTexture* texture = DAT_011f91a8->ActivatePending();
+        BSRenderedTexture* texture = DAT_011f91a8->BSTextureManager_BorrowFrustumShadowTexture();
         if (!texture)
             reinterpret_cast<NiAVObject*>(spLight.m_pObject)->m_uFlags |= 1;
-        AssignRefObject(texture);
+        ShadowSceneLight_SetDynamicShadowMap(texture);
     }
 
     if (updateShadow && usFrustumCull != 255 && fShadowLODDimmer > DAT_01082cb0 &&
@@ -1138,6 +1165,9 @@ extern NiRTTI g_011fed88_arg1;
 
 // For qualifying shader properties, searches the geometry list; a match may move before pIter, otherwise the geometry is processed and passed to a list helper.
 // @fnv 0x00b9f480
+// pdb: ShadowSceneLight::AddTriGeom | ShadowSceneLight.obj | retail, call graph, medium
+// pdb params: apTriGeom
+// pdb locals: tempAutoEvent, itype, pshader, pprop, iobjectIter, iprevIter, pshprop, ptrigeom
 // Inline linkage exposes the local static bindings; calls retain the game's out-of-line body.
 __declspec(noinline) inline void ShadowSceneLight::AddGeometry(NiTriBasedGeom* apGeom)
 {
@@ -1219,7 +1249,7 @@ extern float DAT_010162c0;
 extern float DAT_012003c4;
 struct PassDebug
 {
-    void AddTexture(void*);
+    void DebugShader_SetTextureToRender(void*);
 };
 PassDebug* __cdecl BSShaderManager_GetShader(int);
 struct ShadowPass : ShadowSceneLight
@@ -1229,9 +1259,12 @@ struct ShadowPass : ShadowSceneLight
 // Renders the shadow pass by setting up the shadow matrices from the light and camera, then applies the image space effect to the light rendered texture.
 // @fnv 0x00b9f780
 // src: COMMUNITY 0x00b9f780
-void ShadowPass::ShadowSceneLight_MTRenderFrustumDepthMap(BSCullingProcess* context, int pass)
+// pdb: ShadowSceneLight::MTRenderFrustumDepthMap | ShadowSceneLight.obj | retail, upstream name already matches, high
+// pdb params: arCuller, aiIndex
+// pdb locals: pdxrenderer, kD3DView, kD3DProj, kworldright, prenderer, kworldvect, ktransform, kbackground, kworldup, kparam, pblur, kblurtexture
+void ShadowPass::ShadowSceneLight_MTRenderFrustumDepthMap(BSCullingProcess* arCuller, int aiIndex)
 {
-    g_01200088.MTRenderingSystem_WaitOnThreadStage(1, pass + 17);
+    g_01200088.MTRenderingSystem_WaitOnThreadStage(1, aiIndex + 17);
     NiColorA previous = DAT_011a9bd0;
     DAT_011f4748->GetBackgroundColor(reinterpret_cast<NiVector4*>(&previous));
     {
@@ -1240,7 +1273,7 @@ void ShadowPass::ShadowSceneLight_MTRenderFrustumDepthMap(BSCullingProcess* cont
     }
     BSRenderedTexture_StartOffscreen(7, static_cast<void*>(spDynamicShadowMap.m_pObject->GetGroup()));
     DAT_011f4748->SetBackgroundColor(reinterpret_cast<NiVector4*>(&previous));
-    context->m_acRendererDataA = reinterpret_cast<BSShaderAccumulator*>(spShadowAccumulator.m_pObject);
+    arCuller->m_acRendererDataA = reinterpret_cast<BSShaderAccumulator*>(spShadowAccumulator.m_pObject);
     BSShaderAccumulator* renderAccum = reinterpret_cast<BSShaderAccumulator*>(spShadowAccumulator.m_pObject);
     NiCamera* renderCamera = spShadowCamera.m_pObject;
     FUN_00b6c0d0(renderCamera, renderAccum, 0);
@@ -1252,10 +1285,10 @@ void ShadowPass::ShadowSceneLight_MTRenderFrustumDepthMap(BSCullingProcess* cont
             accum->spShadowLight.m_pObject = 0;
         }
     }
-    if (context->m_acRendererDataA.m_pObject)
+    if (arCuller->m_acRendererDataA.m_pObject)
     {
-        context->m_acRendererDataA.m_pObject->NiRefObject::DecRefCount();
-        context->m_acRendererDataA.m_pObject = 0;
+        arCuller->m_acRendererDataA.m_pObject->NiRefObject::DecRefCount();
+        arCuller->m_acRendererDataA.m_pObject = 0;
     }
     NiCamera* camera = spShadowCamera.m_pObject;
     NiPoint3 up;
@@ -1286,7 +1319,7 @@ void ShadowPass::ShadowSceneLight_MTRenderFrustumDepthMap(BSCullingProcess* cont
     FUN_00b6b790();
     if (!DAT_011f91b0)
     {
-        BSRenderedTexture* texture = DAT_011f91a8->ActivatePending();
+        BSRenderedTexture* texture = DAT_011f91a8->BSTextureManager_BorrowFrustumShadowTexture();
         ImageSpaceTexture input;
         input.ImageSpaceTexture_SetTexture(texture);
         ShadowEffectParamLocal_00b9f780 param;
@@ -1303,16 +1336,16 @@ void ShadowPass::ShadowSceneLight_MTRenderFrustumDepthMap(BSCullingProcess* cont
         void* texture =
             (spDynamicShadowMap.m_pObject->*reinterpret_cast<RenderedTextureAt>(&BSRenderedTexture::BSRenderedTexture_GetTexture))(0);
         PassDebug* debug = BSShaderManager_GetShader(9);
-        debug->AddTexture(texture);
+        debug->DebugShader_SetTextureToRender(texture);
     }
     bClipSpacePlanesReady = false;
 }
 }  // namespace fnv_00b9f780
 
 inline const NiCamera* NiCullingProcess::GetCamera() const { return m_pkCamera; }
-inline float NiPlane::Distance(const NiPoint3& point) const
+inline float NiPlane::Distance(const NiPoint3& kPoint) const
 {
-    return x * point.x + point.y * y + point.z * z - c;
+    return m_kNormal * kPoint.x + kPoint.y * y + kPoint.z * z - m_fConstant;
 }
 
 extern "C" double __cdecl sqrt(double);
@@ -1356,32 +1389,35 @@ struct ShadowSceneCulling : ShadowSceneLight
 // Culls the shadow light against the camera frustum, computes distance-based fade factors, and marks lighting shaders dirty when state changes.
 // @fnv 0x00b9e970
 // src: COMMUNITY 0x00b9e970
-void ShadowSceneCulling::ShadowSceneLight_TestFrustumCull(NiCullingProcess* camera)
+// pdb: ShadowSceneLight::TestFrustumCull | ShadowSceneLight.obj | retail, upstream name already matches, high
+// pdb params: arCuller
+// pdb locals: newcull, fnewLODdim, fnewShadowLODdim, bpointlightinfrustum, kbound, pkFrustPlanes, i, iSide, pplane, keyepos, fdist, ft, pmat, iobjectIter, ptrigeom, pshprop, pprop
+void ShadowSceneCulling::ShadowSceneLight_TestFrustumCull(NiCullingProcess* arCuller)
 {
     NiLight* light = spLight.m_pObject;
     unsigned uiCullMask = 0;
     NiSphere bound;
     *reinterpret_cast<NiPoint3*>(&bound) = light->m_kWorld.m_Translate;
-    bound.r = light->m_kSpec.r;
+    bound.m_fRadius = light->m_kSpec.r;
     bool castShadow = bCastShadow;
 
     bool contained = true;
     if (castShadow && spShadowCamera.m_pObject)
     {
-        uiCullMask = ShadowSceneLight_FrustumFrustumIntersection(camera->GetCamera(), spShadowCamera.m_pObject) ? 0 : 255;
+        uiCullMask = ShadowSceneLight_FrustumFrustumIntersection(arCuller->GetCamera(), spShadowCamera.m_pObject) ? 0 : 255;
     }
     else
     {
-        NiFrustumPlanes planes = reinterpret_cast<const NiFrustumPlanes&>(camera->m_kPlanes);
+        NiFrustumPlanes planes = reinterpret_cast<const NiFrustumPlanes&>(arCuller->m_kPlanes);
         for (unsigned planeIndex = 0; planeIndex < 6; ++planeIndex)
         {
-            if (planes.m_uiActivePlaneMask & (1 << planeIndex))
+            if (planes.m_uiActivePlanes & (1 << planeIndex))
             {
-                NiPlane plane = planes.m_akPlanes[planeIndex];
-                float distance = float(plane.x * bound.x + bound.y * plane.y +
+                NiPlane plane = planes.m_akCullingPlanes[planeIndex];
+                float distance = float(plane.m_kNormal * bound.m_kCenter + bound.y * plane.y +
                                        bound.z * plane.z) -
-                                 plane.c;
-                if (distance <= -bound.r)
+                                 plane.m_fConstant;
+                if (distance <= -bound.m_fRadius)
                 {
                     uiCullMask = 255;
                     goto cullDone;
@@ -1394,7 +1430,7 @@ void ShadowSceneCulling::ShadowSceneLight_TestFrustumCull(NiCullingProcess* came
         if (!contained && castShadow && CanCube_b9e() && bCubeShadowMap)
         {
             for (unsigned short face = 0; face < 6; ++face)
-                if (!ShadowSceneLight_CubeFaceFrustumFrustumIntersection(bound, camera, face))
+                if (!ShadowSceneLight_CubeFaceFrustumFrustumIntersection(bound, arCuller, face))
                     uiCullMask |= 1 << face;
         }
     }
@@ -1404,13 +1440,13 @@ cullDone:
     float blend;
     if ((unsigned short)uiCullMask != 255)
     {
-        const NiCamera* cameraObject = camera->m_pkCamera;
+        const NiCamera* cameraObject = arCuller->m_pkCamera;
         NiPoint3 cameraPosition = cameraObject->m_kWorld.m_Translate;
         NiPoint3 delta;
-        delta.x = bound.x - cameraPosition.x;
+        delta.x = bound.m_kCenter - cameraPosition.x;
         delta.y = bound.y - cameraPosition.y;
         delta.z = bound.z - cameraPosition.z;
-        float distance = ShadowUpdateSqrt(delta.x * delta.x + delta.y * delta.y + delta.z * delta.z) - bound.r;
+        float distance = ShadowUpdateSqrt(delta.x * delta.x + delta.y * delta.y + delta.z * delta.z) - bound.m_fRadius;
         if (sb9e::BSShaderManager_GetAccumulator()->object)
             distance *= sb9e::BSShaderManager_GetAccumulator()->object->m_fLODAdjust;
         if (distance < sb9e::DAT_011f9444 || sb9e::DAT_011f9448 == 0.0f)
@@ -1444,7 +1480,7 @@ cullDone:
         {
             NiMaterialProperty* pAlphaProperty = reinterpret_cast<NiMaterialProperty*>(static_cast<NiGeometry*>(spShadowScene.m_pObject)->FUN_00a59d30(2));
             if (pAlphaProperty)
-                shadow *= reinterpret_cast<float&>(pAlphaProperty->unk3c);
+                shadow *= reinterpret_cast<float&>(pAlphaProperty->m_fAlpha);
         }
         fShadowLODDimmerElapsed += sb9e::DAT_011f9410;
         float ratio = fShadowLODDimmerElapsed / sb9e::DAT_011ad834;

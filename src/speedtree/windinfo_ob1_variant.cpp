@@ -133,12 +133,15 @@ struct S00b408b0_Obj
     S00b408b0_Vec pos;
     S00b408b0_Vec rot;
     float scale;
-    void SIdvWindInfo_Parse(S00b408b0_Reader* r);
+    void SIdvWindInfo_Parse(S00b408b0_Reader* cFile);
 };
 
 // @fnv 0x00b408b0
 // src: COMMUNITY 0x00b408b0
-void S00b408b0_Obj::SIdvWindInfo_Parse(S00b408b0_Reader* r)
+// pdb: SIdvWindInfo::Parse | WindInfo.obj | retail, string-set bridge, high
+// pdb params: cFile
+// pdb locals: nToken
+void S00b408b0_Obj::SIdvWindInfo_Parse(S00b408b0_Reader* cFile)
 {
     S00b408b0_Vec spare;
     S00b408b0_Vec a;
@@ -147,31 +150,31 @@ void S00b408b0_Obj::SIdvWindInfo_Parse(S00b408b0_Reader* r)
     S00b408b0_Vec c;
     S00b408b0_Vec e;
     S00b408b0_Prep();
-    int tok = r->GetNextElement();
+    int tok = cFile->GetNextElement();
     do
     {
         switch (tok)
         {
         case 5000:
-            r->GetVector3(&a);
+            cFile->GetVector3(&a);
             break;
         case 5001:
-            r->GetVector3(&b);
+            cFile->GetVector3(&b);
             break;
         case 5002:
-            rot = *r->GetVector3(&c);
+            rot = *cFile->GetVector3(&c);
             break;
         case 5003:
-            r->GetVector3(&d);
+            cFile->GetVector3(&d);
             break;
         case 5004:
-            pos = *r->GetVector3(&e);
+            pos = *cFile->GetVector3(&e);
             break;
         case 5005:
-            scale = r->CTreeFileAccess_ParseFloat();
+            scale = cFile->CTreeFileAccess_ParseFloat();
             break;
         case 5006:
-            r->ProcessAndTransformResult_00b06180();
+            cFile->ProcessAndTransformResult_00b06180();
             break;
         default: {
             S00b408b0_Str msg("malformed general wind information");
@@ -180,6 +183,6 @@ void S00b408b0_Obj::SIdvWindInfo_Parse(S00b408b0_Reader* r)
             break;
         }
         }
-        tok = r->GetNextElement();
+        tok = cFile->GetNextElement();
     } while (tok != 1012);
 }

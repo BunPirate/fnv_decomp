@@ -46,7 +46,7 @@ class Shape80F
   public:
     static void* operator new(unsigned int uiSize);
     static void operator delete(void* pvMem);
-    Shape80F(float fScale, int iType);
+    Shape80F(float afRadius, int abBS);
     int unk00;
     int unk04;
     int unk08;
@@ -116,16 +116,16 @@ class World80F
 class ControllerInfo80F
 {
   public:
-    ControllerInfo80F(int iType);
+    ControllerInfo80F(int abDefaultStates);
     ~ControllerInfo80F();
     void SetScale(float fScale);
     void SetNode(Node80F* pkNode);
-    void SetPosition(const NiPoint3* pkPos);
+    void SetPosition(const NiPoint3* arPos);
     void SetWorld(World80F* pkWorld);
     void SetHeight(float m_fGlyphExtent);
     void SetShape(Shape80F* pkShape);
     void SetFlags(int iFlags);
-    void SetFilter(int iIndex, unsigned int uiFilterInfo);
+    void SetFilter(int aeLayer, unsigned int aiGroup);
     void SetLayer(int iLayer);
     __m128 m_q00;
     __m128 m_q10;
@@ -203,15 +203,15 @@ class Controller80F
     static void operator delete(void* pvMem);
     Controller80F(ControllerInfo80F& kInfo, BallProjectilePhysicsView* pkActor);
     void SetGravity(float afGravity);
-    void SetEnabled(bool bEnabled);
-    void SetMode(int iMode);
-    void SetActor(BallProjectilePhysicsView* pkActor);
+    void SetEnabled(bool abTF);
+    void SetMode(int abTF);
+    void SetActor(BallProjectilePhysicsView* apObject);
     void SetFallDistance(float fDistance);
     World80F* GetWorld();
-    void SetWorld(World80F* pkWorld);
+    void SetWorld(World80F* apWorld);
     Node80F* GetNode();
-    void SetNode(Node80F* pkNode);
-    void SetPosition(NiPoint3& kPos);
+    void SetNode(Node80F* apObject);
+    void SetPosition(NiPoint3& arPos);
     Filter80F GetFilter();
     unsigned int unk04;
     unsigned int unk08;
@@ -1119,16 +1119,18 @@ class Game80F
 extern Game80F* g_pkGame80F;
 extern const float g_fMaxFallDistance80F;
 
-CollisionObject80F* __cdecl FindFirstCollisionObject(Node80F* pkNode);
+CollisionObject80F* __cdecl FindFirstCollisionObject(Node80F* ap3D);
 unsigned int __cdecl bhkCollisionFilter_GetNewSystemGroup();
 bool __cdecl Main_GetSceneIsComplex();
 void __cdecl CopyBlock48(Node80F* pkNode, int iFlag);
-void __cdecl bhkWorld_SetMotion(Node80F* pkNode, int iA, int iB, int iC, int iD);
-void __cdecl bhkWorld_RemoveObjects(Node80F* pkNode, int iA, int iB);
-void __cdecl bhkWorld_UpdatePosition(Node80F* pkNode, int iA, int iB);
+void __cdecl bhkWorld_SetMotion(Node80F* apObject, int aeType, int abRecurse, int abForce, int abAllowActivate);
+void __cdecl bhkWorld_RemoveObjects(Node80F* apObject, int abRecurse, int abForce);
+void __cdecl bhkWorld_UpdatePosition(Node80F* apObject, int abRecurse, int abForce);
 
 // @fnv 0x0080feb0
 // src: XBOX_PDB 0x0080feb0
+// pdb: MagicBallProjectile::InitHavok | MagicBallProjectile.obj | retail, upstream name already matches, high
+// pdb locals: pcell, pw, pcon, info, pcasterObject, pcol, prb, pos, poldW, poldAV, pav, badd, icolFilter, igroup
 void BallProjectilePhysicsView::MagicBallProjectile_InitHavok()
 {
     if (!m_pkProcess || m_pkProcess->IsDead())
@@ -1259,7 +1261,7 @@ class Shape80F
   public:
     static void* operator new(unsigned int uiSize);
     static void operator delete(void* pvMem);
-    Shape80F(float fScale, int iType);
+    Shape80F(float afRadius, int abBS);
     int unk00;
     int unk04;
     int unk08;
@@ -1329,16 +1331,16 @@ class World80F
 class ControllerInfo80F
 {
   public:
-    ControllerInfo80F(int iType);
+    ControllerInfo80F(int abDefaultStates);
     ~ControllerInfo80F();
     void SetScale(float fScale);
     void SetNode(Node80F* pkNode);
-    void SetPosition(const NiPoint3* pkPos);
+    void SetPosition(const NiPoint3* arPos);
     void SetWorld(World80F* pkWorld);
     void SetHeight(float m_fGlyphExtent);
     void SetShape(Shape80F* pkShape);
     void SetFlags(int iFlags);
-    void SetFilter(int iIndex, unsigned int uiFilterInfo);
+    void SetFilter(int aeLayer, unsigned int aiGroup);
     void SetLayer(int iLayer);
     __m128 m_q00;
     __m128 m_q10;
@@ -1416,15 +1418,15 @@ class Controller80F
     static void operator delete(void* pvMem);
     Controller80F(ControllerInfo80F& kInfo, BoltProjectilePhysicsView* pkActor);
     void SetGravity(float afGravity);
-    void SetEnabled(bool bEnabled);
-    void SetMode(int iMode);
-    void SetActor(BoltProjectilePhysicsView* pkActor);
+    void SetEnabled(bool abTF);
+    void SetMode(int abTF);
+    void SetActor(BoltProjectilePhysicsView* apObject);
     void SetFallDistance(float fDistance);
     World80F* GetWorld();
-    void SetWorld(World80F* pkWorld);
+    void SetWorld(World80F* apWorld);
     Node80F* GetNode();
-    void SetNode(Node80F* pkNode);
-    void SetPosition(NiPoint3& kPos);
+    void SetNode(Node80F* apObject);
+    void SetPosition(NiPoint3& arPos);
     Filter80F GetFilter();
     unsigned int unk04;
     unsigned int unk08;
@@ -2332,16 +2334,18 @@ class Game80F
 extern Game80F* g_pkGame80F;
 extern const float g_fMaxFallDistance80F;
 
-CollisionObject80F* __cdecl FindFirstCollisionObject(Node80F* pkNode);
+CollisionObject80F* __cdecl FindFirstCollisionObject(Node80F* ap3D);
 unsigned int __cdecl bhkCollisionFilter_GetNewSystemGroup();
 bool __cdecl Main_GetSceneIsComplex();
 void __cdecl CopyBlock48(Node80F* pkNode, int iFlag);
-void __cdecl bhkWorld_SetMotion(Node80F* pkNode, int iA, int iB, int iC, int iD);
-void __cdecl bhkWorld_RemoveObjects(Node80F* pkNode, int iA, int iB);
-void __cdecl bhkWorld_UpdatePosition(Node80F* pkNode, int iA, int iB);
+void __cdecl bhkWorld_SetMotion(Node80F* apObject, int aeType, int abRecurse, int abForce, int abAllowActivate);
+void __cdecl bhkWorld_RemoveObjects(Node80F* apObject, int abRecurse, int abForce);
+void __cdecl bhkWorld_UpdatePosition(Node80F* apObject, int abRecurse, int abForce);
 
 // @fnv 0x00813f30
 // src: XBOX_PDB 0x00813f30
+// pdb: MagicBoltProjectile::InitHavok | MagicBoltProjectile.obj | retail, upstream name already matches, high
+// pdb locals: pcell, pw, pcon, info, pcasterObject, pcol, prb, pos, poldW, poldAV, pav, badd, icolFilter, igroup
 void BoltProjectilePhysicsView::MagicBoltProjectile_InitHavok()
 {
     if (!m_pkProcess || m_pkProcess->IsDead())
@@ -3323,6 +3327,8 @@ extern void __cdecl bhkWorld_UpdatePosition(void*, int, int);
 
 // @fnv 0x00819ca0
 // src: XBOX_PDB 0x00819ca0
+// pdb: MagicFogProjectile::InitHavok | MagicFogProjectile.obj | retail, upstream name already matches, high
+// pdb locals: pcell, pw, pcon, info, pcasterObject, pcol, prb, pos, poldW, poldAV, pav, badd, icolFilter, igroup
 void Actor::MagicFogProjectile_InitHavok()
 {
     using namespace fnv_00819ca0;
@@ -3330,7 +3336,7 @@ void Actor::MagicFogProjectile_InitHavok()
     using fnv_00819ca0::Handle;
     using fnv_00819ca0::bhkCollisionFilter_GetNewSystemGroup;
     using fnv_00819ca0::Main_GetSceneIsComplex;
-    if (!m_pBaseProcess || reinterpret_cast<Scene*>(m_pBaseProcess)->FUN_0045cd60())
+    if (!pCurrentProcess || reinterpret_cast<Scene*>(pCurrentProcess)->FUN_0045cd60())
         return;
     Visual* active = reinterpret_cast<Visual*>(FUN_009306d0());
     Scene* parent = reinterpret_cast<Scene*>(FUN_008d6f30());
@@ -3385,7 +3391,7 @@ void Actor::MagicFogProjectile_InitHavok()
         active->bhkCharacterController_SetFallTime(1.0f);
         active->bhkCharacterController_SetQuickSimulate(Main_GetSceneIsComplex());
         active->bhkCharacterController_SetProjectile(1);
-        reinterpret_cast<Scene*>(m_pBaseProcess)->add(active);
+        reinterpret_cast<Scene*>(pCurrentProcess)->add(active);
         active->bhkCharacterController_SetMOBObject(this);
     }
     if (active)

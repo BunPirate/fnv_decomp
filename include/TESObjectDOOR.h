@@ -57,7 +57,7 @@ public:
     void ClearRandomTeleportList();
     BSSimpleList<TESForm*>* TESDataHandler_GetFactions();
     NiNode* Create3DModel(TESObjectREFR*);
-    bool HasEntry(TESForm* destination);
+    bool RandomlyTeleportsTo(TESForm* apSpace);
 
     static NiFixedString* GetOpenSequenceName();
     static bool ProcessDoorActivation(TESObjectREFR*, Actor*, bool, bool);

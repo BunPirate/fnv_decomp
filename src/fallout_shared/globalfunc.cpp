@@ -106,7 +106,7 @@ void __cdecl operator delete(void*);
 class BipedNodeNames
 {
   public:
-    static void InitializeMultiBounds();
+    static void FixedStrings_InitSDM();
 };
 extern NiFixedString* DAT_011c61a4;
 extern NiFixedString* DAT_011c61a8;
@@ -222,7 +222,9 @@ extern SettingT<INISettingCollection> DAT_011d5a30;
 extern bool DAT_012677a3;
 
 // @fnv 0x004b7920
-void BipedNodeNames::InitializeMultiBounds()
+// src: XBOX_RETAIL_PDB 0x004b7920
+// pdb: FixedStrings::InitSDM | GlobalFunc.obj | retail, unique string literal, high
+void BipedNodeNames::FixedStrings_InitSDM()
 {
     DAT_011c61a4 = new NiFixedString("Bip01");
     DAT_011c61a8 = new NiFixedString("Bip");
@@ -281,6 +283,9 @@ void BipedNodeNames::InitializeMultiBounds()
 }
 
 // @fnv 0x004b7240
+// pdb: SwapPlatformLanguageTexturePath | GlobalFunc.obj | retail, call graph, high
+// pdb params: apInPath, apOutPath, aiOutPathSize
+// pdb locals: elang, ioutlen, eplatform, bretval, psearch, i, cslash, pfind, ilen
 bool ConvertLocalizedString(const char* input, char* output, unsigned int capacity)
 {
     if (!input || !output || !capacity)
@@ -369,12 +374,15 @@ bool ConvertLocalizedString(const char* input, char* output, unsigned int capaci
 }
 
 // @fnv 0x004b7660
-bool UpdateObjectVisibility(NiAVObject* object)
+// pdb: SwapPlatformLanguageTextures | GlobalFunc.obj | retail, call graph, high
+// pdb params: ap3D
+// pdb locals: bretval, pnode, pbssprop, pprop, itexcount, itex, itype, ptex, pouttexfile, psrctex, texname, bswapped, sptex, icount, i
+bool UpdateObjectVisibility(NiAVObject* ap3D)
 {
     bool changed = false;
-    if (object)
+    if (ap3D)
     {
-        NiProperty* property = object->GetProperty(3);
+        NiProperty* property = ap3D->GetProperty(3);
         NiProperty* textures = (property == 0 ? 0
                                               : (reinterpret_cast<NiTimeController*>(property)->FUN_00441110() >= 8 &&
                                                  reinterpret_cast<NiTimeController*>(property)->FUN_00441110() <= 12))
@@ -422,7 +430,7 @@ bool UpdateObjectVisibility(NiAVObject* object)
                 }
             }
         }
-        NiNode* node = object->IsSceneNode();
+        NiNode* node = ap3D->IsSceneNode();
         if (node)
         {
             unsigned int count = node->GetNumChildren();
@@ -435,7 +443,11 @@ bool UpdateObjectVisibility(NiAVObject* object)
 }
 
 // @fnv 0x004b5d10
-bool RemoveInvalidChildNodes(NiNode* apNode)
+// src: XBOX_RETAIL_PDB 0x004b5d10
+// pdb: RemoveEditorMarkers | GlobalFunc.obj | retail, string-set bridge, high
+// pdb params: apNode
+// pdb locals: bretVal, pextraData, pbsx, pmanager, pcontroller, i, ptemp, n, pobj, pnode
+bool RemoveEditorMarkers(NiNode* apNode)
 {
     bool removed = false;
     if (!apNode)
@@ -446,7 +458,7 @@ bool RemoveInvalidChildNodes(NiNode* apNode)
         if (pExtraData)
         {
             NiExtraData* flags = pExtraData;
-            if (flags->BSXFlags_IsEditorMarker())
+            if (flags->BSXFlags_QEditorMarker())
             {
                 DAT_011c6328 = apNode;
                 NiTimeController* controller = apNode->GetController(&DAT_011f36ac);
@@ -496,7 +508,7 @@ bool RemoveInvalidChildNodes(NiNode* apNode)
             NiNode* node = child->IsSceneNode();
             if (node)
             {
-                removed = RemoveInvalidChildNodes(node);
+                removed = RemoveEditorMarkers(node);
                 if (removed)
                 {
                     if (DAT_011c6328 == apNode)
@@ -518,13 +530,17 @@ bool RemoveInvalidChildNodes(NiNode* apNode)
 }
 
 // @fnv 0x004b5b20
-bool HandleUnparentedObjectNode(NiNode* object)
+// src: XBOX_RETAIL_PDB 0x004b5b20
+// pdb: RemoveScabard | GlobalFunc.obj | retail, unique string literal, high
+// pdb params: apNode
+// pdb locals: n, pobj, pname
+bool RemoveScabard(NiNode* apNode)
 {
-    if (!object)
+    if (!apNode)
         return false;
-    for (unsigned int i = 0; i < object->GetNumChildren(); ++i)
+    for (unsigned int i = 0; i < apNode->GetNumChildren(); ++i)
     {
-        NiAVObject* child = object->GetAt(i);
+        NiAVObject* child = apNode->GetAt(i);
         if (child)
         {
             const char* name = reinterpret_cast<const char*>(
@@ -534,11 +550,11 @@ bool HandleUnparentedObjectNode(NiNode* object)
             {
                 if (!BSstricmp(name, "Scb"))
                 {
-                    object->RemoveNthObject(i);
+                    apNode->RemoveNthObject(i);
                     return true;
                 }
                 else if (!_strnicmp(name, "FadeNode ", 9))
-                    return HandleUnparentedObjectNode(child->IsSceneNode());
+                    return RemoveScabard(child->IsSceneNode());
             }
         }
     }
@@ -546,39 +562,47 @@ bool HandleUnparentedObjectNode(NiNode* object)
 }
 
 // @fnv 0x004b6dc0
-void SetObjectFormID(NiAVObject* object, unsigned int referenceID)
+// src: XBOX_RETAIL_PDB 0x004b6dc0
+// pdb: SetReferenceIDOnScenegraph | GlobalFunc.obj | retail, call graph (shared callers), high
+// pdb params: apObject, auiID
+// pdb locals: pProperty, pShaderProp, pnode, n
+void SetReferenceIDOnScenegraph(NiAVObject* apObject, unsigned int auiID)
 {
-    if (!object)
+    if (!apObject)
         return;
-    if (object->IsGeometry())
+    if (apObject->IsGeometry())
     {
-        NiProperty* property = object->GetProperty(3);
+        NiProperty* property = apObject->GetProperty(3);
         NiProperty* lighting = BSSM_ShaderPropertyIsLighting(property) ? property : 0;
         if (lighting)
-            reinterpret_cast<EffectSetting*>(lighting)->SetLight(reinterpret_cast<TESObjectLIGH*>(referenceID));
+            reinterpret_cast<EffectSetting*>(lighting)->SetLight(reinterpret_cast<TESObjectLIGH*>(auiID));
     }
     else
     {
-        NiNode* node = object->IsSceneNode();
+        NiNode* node = apObject->IsSceneNode();
         if (node)
             for (unsigned int i = 0; i < node->GetNumChildren(); ++i)
-                SetObjectFormID(node->GetAt(i), referenceID);
+                SetReferenceIDOnScenegraph(node->GetAt(i), auiID);
     }
 }
 
 // @fnv 0x004b5c80
-bool IsObjectNetValid(NiObjectNET* object)
+// src: XBOX_RETAIL_PDB 0x004b5c80
+// pdb: HasParticleSystem | GlobalFunc.obj | retail, object-file gap fill, high
+// pdb params: apObj
+// pdb locals: pnode, n, pobj
+bool HasParticleSystem(NiObjectNET* apObj)
 {
-    if (!object)
+    if (!apObj)
         return false;
-    if (NiObject_IsKindOf(&DAT_012024e0, reinterpret_cast<NiAVObject*>(object)))
+    if (NiObject_IsKindOf(&DAT_012024e0, reinterpret_cast<NiAVObject*>(apObj)))
         return true;
-    NiNode* node = object->IsSceneNode();
+    NiNode* node = apObj->IsSceneNode();
     if (node)
         for (unsigned int i = 0; i < node->GetNumChildren(); ++i)
         {
             NiAVObject* child = node->GetAt(i);
-            if (IsObjectNetValid(child))
+            if (HasParticleSystem(child))
                 return true;
         }
     return false;
@@ -586,6 +610,9 @@ bool IsObjectNetValid(NiObjectNET* object)
 
 // Computes an angle from vector.x and vector.y using logf of their ratio, adding pi when y is negative and using pi/2 or 3pi/2 when y is zero.
 // @fnv 0x004b1550
+// pdb: GetUnclampedZAngleFromVector | GlobalFunc.obj | debug, call graph, medium
+// pdb params: aDirection
+// pdb locals: fretangle, ftan
 float GetAngleFromVector(const NiPoint3& vector)
 {
     float angle = 0.0f;
@@ -608,25 +635,30 @@ float GetAngleFromVector(const NiPoint3& vector)
 
 // Traverses the NiAVObject tree with filter flags set from the skip arguments and returns the accumulated collision object count.
 // @fnv 0x004b66d0
-int CountCollisionObjects(NiAVObject* object, bool skipPhantoms, bool skipBlendObjects, bool skipUnknown)
+// src: XBOX_DEBUG_PDB 0x004b66d0
+// pdb: GetCollisionObjectCountInSceneGraph | GlobalFunc.obj | debug, call graph, high
+// pdb params: apRoot, abIgnoreWeaponBone, abIgnoreFadeNodes, abIgnoreArrows
+// pdb locals: recData
+int GetCollisionObjectCountInSceneGraph(NiAVObject* apRoot, bool abIgnoreWeaponBone, bool abIgnoreFadeNodes, bool abIgnoreArrows)
 {
     CollisionObjectCountContext context;
     context.uiTraversalFlags = 0x12;
     context.bRecurse = true;
     context.iCount = 0;
     context.uiFilterFlags = 0;
-    if (skipPhantoms)
+    if (abIgnoreWeaponBone)
         context.uiFilterFlags |= 1;
-    if (skipBlendObjects)
+    if (abIgnoreFadeNodes)
         context.uiFilterFlags |= 2;
-    if (skipUnknown)
+    if (abIgnoreArrows)
         context.uiFilterFlags |= 4;
-    bhkWorld_DoObjectRec(object, &context, GetCollisionObjectByIndex);
+    bhkWorld_DoObjectRec(apRoot, &context, GetCollisionObjectByIndex);
     return context.iCount;
 }
 
 // Returns true when m_spWorldBound is set and its FUN_0084d030 result is non-zero.
 // @fnv 0x004b2960
+// pdb: NiAVObject::IsVisualObject | ModelLoader.obj | debug, upstream name already matches, high
 int NiAVObject::IsVisualObject()
 {
     return m_kWorldBound && reinterpret_cast<NiBound*>(m_kWorldBound)->FUN_0084d030() != 0.0;
@@ -634,11 +666,15 @@ int NiAVObject::IsVisualObject()
 
 // If a look-at target exists, copies the stored look-at point into point and returns true; otherwise returns false.
 // @fnv 0x009de270
+// pdb: GetZAngleFromVector | GlobalFunc.obj | retail, call graph (shared callers), low
+// pdb note: debug build links it to ActorMover::GetLookAtPoint
+// pdb params: aDirection
+// pdb locals: fretangle, ftan
 bool ActorMover::GetLookAtTargetPosition(NiPoint3& point)
 {
     if (HasLookAtTarget())
     {
-        point = m_kLookAtTargetPosition;
+        point = LookAtPoint;
         return true;
     }
     return false;
@@ -651,6 +687,7 @@ bool PathingGraphNode::IsTransitionNode()
 }
 
 // @fnv 0x004b7220
+// pdb: BSSystemUtility::QSystemInfoUtility | GlobalFunc.obj | debug, object-file run extension, low
 LANGUAGE GetConfiguredLanguage()
 {
     LANGUAGE language = static_cast<LANGUAGE>(BSSysInfoSystemUtility::GetRandomGenerator());
@@ -660,10 +697,11 @@ LANGUAGE GetConfiguredLanguage()
 // @fnv 0x00430830
 RecipeCraftingInfo* TESRecipe::GetData()
 {
-    return reinterpret_cast<RecipeCraftingInfo*>(&kData);
+    return reinterpret_cast<RecipeCraftingInfo*>(&data);
 }
 
 // @fnv 0x00605d20
+// pdb: BSFaceGenManager::GetFixNormals | TESNPC.obj | debug, call graph (shared callers), medium
 bool IsSettingEnabled()
 {
     return *reinterpret_cast<const bool*>(DAT_011d5a30.Bool());
@@ -679,6 +717,8 @@ double __cdecl FUN_00ec9010(double);
 
 // @fnv 0x004b1460
 // src: XBOX_PDB 0x004b1460
+// pdb: atanf | GlobalFunc.obj | debug, upstream name already matches, high
+// pdb params: _X
 float atanf(float _X)
 {
     return static_cast<float>(FUN_00ec9010(_X));
@@ -688,27 +728,32 @@ double __cdecl FUN_00ec9130(double, double);
 
 // @fnv 0x004b1520
 // src: XBOX_PDB 0x004b1520
+// pdb: fmodf | GlobalFunc.obj | debug, upstream name already matches, high
+// pdb params: _X, _Y
 float __cdecl fmodf(float _X, float _Y)
 {
     return (float)FUN_00ec9130((double)_X, (double)_Y);
 }
 
 extern const NiPoint3 NiPoint3_ZERO;
-bool __cdecl PickObjectsInRadius(NiPick*, int, int, float, int);
+bool __cdecl PickDistanceRecursive(NiPick*, int, int, float, int);
 
 // @fnv 0x004b2780
 // src: XBOX_PDB 0x004b2780
-bool __cdecl PickDistance(NiPick* pPicker, int p2, int p3, float p4, int p5, bool p6)
+// pdb: PickDistance | GlobalFunc.obj | retail, upstream name already matches, high
+// pdb params: apPick, aOrigin, aDir, afDistance, apTarget, abClearResults
+// pdb locals: bhit
+bool __cdecl PickDistance(NiPick* apPick, int aOrigin, int aDir, float afDistance, int apTarget, bool abClearResults)
 {
     bool bResult = false;
-    if (pPicker != 0 && p5 != 0 && p4 != 0.0)
+    if (apPick != 0 && apTarget != 0 && afDistance != 0.0)
     {
-        if (p6)
+        if (abClearResults)
         {
-            pPicker->SetTarget_00705fc0(static_cast<void*>(0));
-            pPicker->PerformPick(NiPoint3_ZERO, NiPoint3_ZERO, false);
+            apPick->SetTarget_00705fc0(static_cast<void*>(0));
+            apPick->PerformPick(NiPoint3_ZERO, NiPoint3_ZERO, false);
         }
-        bResult = PickObjectsInRadius(pPicker, p2, p3, p4, p5);
+        bResult = PickDistanceRecursive(apPick, aOrigin, aDir, afDistance, apTarget);
     }
     return bResult;
 }
@@ -723,6 +768,9 @@ float LinearInterpolate(float x1, float x2, float y1, float y2, float value)
 // M * v: each output coordinate is one matrix row dotted with v (x, y, z terms in that order)
 #define M3_ROW_DOT_V(i) m_pEntry[i][0] * kV.x + m_pEntry[i][1] * kV.y + m_pEntry[i][2] * kV.z
 // @fnv 0x004b4500
+// pdb: NiMatrix3::operator* | GlobalFunc.obj | debug, call graph, medium
+// pdb params: pt
+// pdb locals: pnty, src, pnt, rot2, pntz, rot1, rot0, pntx
 NiPoint3 NiMatrix3::operator*(const NiPoint3& kV) const
 {
     return NiPoint3(M3_ROW_DOT_V(0), M3_ROW_DOT_V(1), M3_ROW_DOT_V(2));
@@ -760,6 +808,8 @@ struct FUN_004b4e50_shell : public FourDimensionalVector
 extern float runtimeInitializationFloat2127;
 
 // @fnv 0x004b4e50
+// pdb: bhkVector4::operator= | GlobalFunc.obj | debug, object-file run extension, low
+// pdb params: arSrc
 FourDimensionalVector* FUN_004b4e50_shell::SetFromScaledVector3(void* arSrc)
 {
     fX = runtimeInitializationFloat2127 * ((const float*)arSrc)[0];
@@ -773,6 +823,7 @@ int __fastcall hkpMotion_getTransform(void* pThis);
 
 // @fnv 0x004b4f00
 // src: XBOX_PDB 0x004b4f00
+// pdb: hkpRigidBody::getTransform | GlobalFunc.obj | debug, upstream name already matches, high
 int __fastcall hkpRigidBody_getTransform(TESDataHandler* apDataHandler)
 {
     return hkpMotion_getTransform(apDataHandler->GetBGSRagdollList());
@@ -852,6 +903,8 @@ float __fastcall hkpRigidBody_getMass(hkpRigidBody*);
 
 // @fnv 0x004b5400
 // src: XBOX_PDB 0x004b5400
+// pdb: bhkRigidBody::GetMass | GlobalFunc.obj | debug, upstream name already matches, high
+// pdb locals: pb
 float __fastcall bhkRigidBody_GetMass(void* pThis)
 {
     hkpRigidBody* pb = Bipedanim_GetReferenceFlagsOrZero(pThis);
@@ -862,6 +915,8 @@ bool __cdecl LengthCheck_004b5470(const NiPoint3& aPt, float afCompLength);
 
 // @fnv 0x004b5440
 // src: XBOX_PDB 0x004b5440
+// pdb: LengthCheck | GlobalFunc.obj | debug, call graph (shared callers), high
+// pdb params: aPt1, aPt2, afCompLength
 bool __cdecl LengthCheck(const NiPoint3& aPt1, const NiPoint3& aPt2, float afCompLength)
 {
     return LengthCheck_004b5470(aPt1 - aPt2, afCompLength);
@@ -871,6 +926,8 @@ float __cdecl asinf_004b5530(float);
 
 // @fnv 0x004b5510
 // src: XBOX_PDB 0x004b5510
+// pdb: asin | GlobalFunc.obj | debug, call graph (shared callers), high
+// pdb params: _X
 float __cdecl asin_004b5510(float _X)
 {
     return asinf_004b5530(_X);
@@ -880,15 +937,19 @@ double __cdecl FUN_00ec9610(double);
 
 // @fnv 0x004b5530
 // src: XBOX_PDB 0x004b5530
-float asinf_004b5530(float value)
+// pdb: asinf | GlobalFunc.obj | debug, call graph, high
+// pdb params: _X
+float asinf_004b5530(float _X)
 {
-    return static_cast<float>(FUN_00ec9610(value));
+    return static_cast<float>(FUN_00ec9610(_X));
 }
 
 float __cdecl atan2f(float, float);
 
 // @fnv 0x004b5570
 // src: COMMUNITY 0x004b5570
+// pdb: atan2 | GlobalFunc.obj | debug, call graph (shared callers), high
+// pdb params: _Y, _X
 float __cdecl atan2_004b5570(float _Y, float _X)
 {
     return atan2f(_Y, _X);
@@ -900,6 +961,8 @@ void* __cdecl hkGetWorldObject_004b59c0(const void* collidable);
 // Returns the result of FUN_004b59c0 when FUN_004b5980 reports 2 for collidable, otherwise returns 0.
 // @fnv 0x004b5950
 // src: XBOX_PDB 0x004b5950
+// pdb: hkpGetPhantom | GlobalFunc.obj | debug, upstream name already matches, high
+// pdb params: collidable
 void* __cdecl hkpGetPhantom(const void* collidable)
 {
     if (hkpCollidable_getType(collidable) == 2)
@@ -922,6 +985,8 @@ void* __cdecl hkGetWorldObject_004b59c0(const void* collidable);
 // Returns the result of FUN_004b59c0 when FUN_004b5980 reports 1 for collidable, otherwise returns 0.
 // @fnv 0x004b59f0
 // src: XBOX_PDB 0x004b59f0
+// pdb: hkpGetRigidBody | GlobalFunc.obj | debug, upstream name already matches, high
+// pdb params: collidable
 void* __cdecl hkpGetRigidBody(const void* collidable)
 {
     if (hkpCollidable_getType(collidable) == 1)
@@ -943,17 +1008,21 @@ void* __cdecl bhkUtilFunctions_IsbhkPCollisionObject(NiAVObject* apPhantom)
 }
 
 // @fnv 0x004b5fa0
-// src: COMMUNITY 0x004b5fa0
-bool __fastcall BSXFlags_IsEditorMarker(const BSXFlags* pThis)
+// src: XBOX_DEBUG_PDB 0x004b5fa0 (was COMMUNITY)
+// pdb: BSXFlags::QEditorMarker | GlobalFunc.obj | debug, call graph, high
+bool __fastcall BSXFlags_QEditorMarker(const BSXFlags* pThis)
 {
     return pThis->GetFlags(0x20) != 0;
 }
 
 // Computes the plane distance to this sphere and returns 2 if fully behind, 1 if fully in front, or 0 if straddling.
 // @fnv 0x004b6100
-int NiBound::WhichSide(void* plane)
+// pdb: NiBound::WhichSide | GlobalFunc.obj | debug, upstream name already matches, high
+// pdb params: kPlane
+// pdb locals: fDistance
+int NiBound::WhichSide(void* kPlane)
 {
-    float fDistance = static_cast<NiPlane*>(plane)->Distance(*reinterpret_cast<const NiPoint3*>(this));
+    float fDistance = static_cast<NiPlane*>(kPlane)->Distance(*reinterpret_cast<const NiPoint3*>(this));
     if (fDistance <= -m_fRadius)
         return 2;
     else if (fDistance >= m_fRadius)
@@ -963,9 +1032,11 @@ int NiBound::WhichSide(void* plane)
 }
 
 // @fnv 0x004b6160
-float NiPlane::Distance(const NiPoint3& aPoint) const
+// pdb: NiPlane::Distance | GlobalFunc.obj | debug, upstream name already matches, high
+// pdb params: kPoint
+float NiPlane::Distance(const NiPoint3& kPoint) const
 {
-    return reinterpret_cast<const NiPoint3*>(this)->Dot(aPoint) - c;
+    return reinterpret_cast<const NiPoint3*>(this)->Dot(kPoint) - m_fConstant;
 }
 
 // Returns the dot product of this NiPoint3 with the NiPoint3 pointed to by pt.
@@ -978,27 +1049,29 @@ float NiPoint3::Dot(void* apPoint)
 
 int __cdecl BSstrcmp(const char*, const char*);
 extern NiRTTI DAT_011f9140;
-extern NiRTTI g_0126817c;
+extern NiRTTI WeaponObject_ms_RTTI; // src: XBOX_RETAIL_PDB 0x0126817c (old: DAT_0126817c/g_0126817c/g_C7B140FilterRTTI)
 
 // Skips incrementing the counter at data+0xc when the object matches the RTTI checks or is an Arrow; otherwise increments it.
 // @fnv 0x004b6740
 // src: COMMUNITY 0x004b6740
-void __cdecl GetCollisionObjectByIndex(NiAVObject* apObject, char* data)
+// pdb: GetCollisionObjectByIndex | GlobalFunc.obj | debug, upstream name already matches, high
+// pdb params: apCollision, arData
+void __cdecl GetCollisionObjectByIndex(NiAVObject* apCollision, char* arData)
 {
-    if ((*(unsigned int*)(data + 0x18) & 1) && NiObject_IsKindOf(&g_0126817c, apObject))
+    if ((*(unsigned int*)(arData + 0x18) & 1) && NiObject_IsKindOf(&WeaponObject_ms_RTTI, apCollision))
         return;
-    if ((*(unsigned int*)(data + 0x18) & 2) &&
-        NiObject_IsKindOf(&DAT_011f9140, (NiAVObject*)((TESObjectREFR*)apObject)->GetFlags()))
+    if ((*(unsigned int*)(arData + 0x18) & 2) &&
+        NiObject_IsKindOf(&DAT_011f9140, (NiAVObject*)((TESObjectREFR*)apCollision)->GetFlags()))
         return;
-    if ((*(unsigned int*)(data + 0x18) & 2) && ((TESObjectREFR*)apObject)->GetFlags() &&
-        ((BSFadeNode*)((TESTopicInfoData*)((TESObjectREFR*)apObject)->GetFlags())->GetLinkToList())
+    if ((*(unsigned int*)(arData + 0x18) & 2) && ((TESObjectREFR*)apCollision)->GetFlags() &&
+        ((BSFadeNode*)((TESTopicInfoData*)((TESObjectREFR*)apCollision)->GetFlags())->GetLinkToList())
             ->FUN_0043b1b0() &&
         !BSstrcmp(
-            (const char*)((BSFadeNode*)((TESTopicInfoData*)((TESObjectREFR*)apObject)->GetFlags())->GetLinkToList())
+            (const char*)((BSFadeNode*)((TESTopicInfoData*)((TESObjectREFR*)apCollision)->GetFlags())->GetLinkToList())
                 ->FUN_0043b1b0(),
             "Arrow"))
         return;
-    *(int*)(data + 0xc) += 1;
+    *(int*)(arData + 0xc) += 1;
 }
 
 extern "C" const char* __fastcall GetBSStringData(const BSStringT<char>*);
@@ -1040,6 +1113,7 @@ void NiBound::SetRadius(float afRadius)
     m_fRadius = afRadius;
 }
 
+// pdb: structure tagRECT, size 0x10, 4 members
 struct tagRECT
 {
     long left;
@@ -1050,6 +1124,9 @@ struct tagRECT
 
 // @fnv 0x004b1e80
 // src: COMMUNITY 0x004b1e80
+// pdb: LineVsRect | GlobalFunc.obj | retail, object-file run extension, high
+// pdb params: aTestRect, aStartPt, aEndPt, aOutputIntersectPt
+// pdb locals: bIntersect, intersect1, intersect2, intercept, intersectsFound, slope, YatBorder, XatBorder, intersect1vect, linevect
 bool TES_LineVsRect(const tagRECT* aTestRect, const NiPoint3* aStartPt, const NiPoint3* aEndPt,
                   NiPoint3* aOutputIntersectPt)
 {
@@ -1202,6 +1279,7 @@ bool TES_LineVsRect(const tagRECT* aTestRect, const NiPoint3* aStartPt, const Ni
 
 // Calls Initialize, installs the vtable pointer at offset 0 and zeroes the int at offset 0xc.
 // @fnv 0x004b5120
+// pdb: bhkSerializable::bhkSerializable | GlobalFunc.obj | debug, upstream name already matches, high
 bhkSerializable::bhkSerializable()
 {
     *reinterpret_cast<int*>(reinterpret_cast<char*>(this) + 0xc) = 0;
@@ -1220,6 +1298,7 @@ struct FUN_00c87970_shell
 void __cdecl __Dummy_00b6fef0(void* obj, unsigned int size);
 
 // @fnv 0x004b51a0
+// pdb: bhkAction::`scalar deleting destructor' | GlobalFunc.obj | retail, vtable slot, high
 void* FUN_004b51a0_shell::FUN_004b51a0(unsigned int flags)
 {
     ((FUN_00c87970_shell*)this)->FUN_00c87970();
@@ -1241,7 +1320,7 @@ const char* const* __thiscall FUN_004b51d0_shell::GetRTTI()
     return &g_0126812c_arg1;
 }
 
-extern const NiRTTI g_0126812c;
+extern const NiRTTI bhkMouseSpringAction_ms_RTTI; // src: XBOX_RETAIL_PDB 0x0126812c (old: DAT_0126812c/g_0126812c)
 
 struct FUN_004b5210_shell
 {
@@ -1251,7 +1330,7 @@ struct FUN_004b5210_shell
 // @fnv 0x004b5210
 const NiRTTI* FUN_004b5210_shell::GetRTTI() const
 {
-    return &g_0126812c;
+    return &bhkMouseSpringAction_ms_RTTI;
 }
 
 // @fnv 0x004b59a0
@@ -1295,11 +1374,14 @@ int __fastcall GetReferenceFlags(void*);
 // Gets the collision object's world object and, if it exists and GetReferenceFlags returns nonzero, increments the fourth int of arg.
 // @fnv 0x004b6b20
 // src: COMMUNITY 0x004b6b20
-void __cdecl GetHavokWorldObjectCount(bhkCollisionObject* apCollisionObject, void* apData)
+// pdb: GetHavokWorldObjectCount | GlobalFunc.obj | debug, upstream name already matches, high
+// pdb params: apCollision, arData
+// pdb locals: pworldObject
+void __cdecl GetHavokWorldObjectCount(bhkCollisionObject* apCollision, void* arData)
 {
-    bhkWorldObject* result = apCollisionObject->bhkNiCollisionObject_GetWorldObject();
+    bhkWorldObject* result = apCollision->bhkNiCollisionObject_GetWorldObject();
     if (result && GetReferenceFlags(result))
-        ((int*)apData)[3]++;
+        ((int*)arData)[3]++;
 }
 
 namespace fnv_004b6bc0 {
@@ -1308,19 +1390,22 @@ int __fastcall GetReferenceFlags(bhkWorldObject*);
 
 // @fnv 0x004b6bc0
 // src: COMMUNITY 0x004b6bc0
-void GetHavokWorldObjectIndex(bhkCollisionObject* apCollisionObject, void* dest)
+// pdb: GetHavokWorldObjectIndex | GlobalFunc.obj | debug, upstream name already matches, high
+// pdb params: apCollision, arData
+// pdb locals: pworldObject, phkObject
+void GetHavokWorldObjectIndex(bhkCollisionObject* apCollision, void* arData)
 {
-    bhkWorldObject* w = apCollisionObject->bhkNiCollisionObject_GetWorldObject();
+    bhkWorldObject* w = apCollision->bhkNiCollisionObject_GetWorldObject();
     if (w)
     {
         int r = GetReferenceFlags(w);
         if (r)
         {
-            if (r == ((int*)dest)[4])
+            if (r == ((int*)arData)[4])
             {
-                ((int*)dest)[5] = ((int*)dest)[3];
+                ((int*)arData)[5] = ((int*)arData)[3];
             }
-            ((int*)dest)[3] = ((int*)dest)[3] + 1;
+            ((int*)arData)[3] = ((int*)arData)[3] + 1;
         }
     }
 }
@@ -1332,22 +1417,25 @@ int __fastcall GetReferenceFlags(int* obj);
 
 // @fnv 0x004b6c70
 // src: COMMUNITY 0x004b6c70
-void __cdecl GetHavokWorldObjectByIndex(bhkCollisionObject* apCollisionObject, int* arg2)
+// pdb: GetHavokWorldObjectByIndex | GlobalFunc.obj | debug, upstream name already matches, high
+// pdb params: apCollision, arData
+// pdb locals: pworldObject, phkObject
+void __cdecl GetHavokWorldObjectByIndex(bhkCollisionObject* apCollision, int* arData)
 {
-    int* obj = reinterpret_cast<int*>(apCollisionObject->bhkNiCollisionObject_GetWorldObject());
+    int* obj = reinterpret_cast<int*>(apCollision->bhkNiCollisionObject_GetWorldObject());
     if (obj)
     {
         int result = GetReferenceFlags(obj);
         if (result)
         {
-            if (arg2[3] == arg2[5])
+            if (arData[3] == arData[5])
             {
-                arg2[4] = result;
+                arData[4] = result;
             }
-            arg2[3] = arg2[3] + 1;
+            arData[3] = arData[3] + 1;
         }
     }
-    arg2[3] = arg2[3] + 1;
+    arData[3] = arData[3] + 1;
 }
 }  // namespace fnv_004b6c70
 
@@ -1357,6 +1445,7 @@ extern UIRoot* DAT_011d8a80;
 
 // @fnv 0x004b7210
 // src: COMMUNITY 0x004b7210
+// pdb: Tile::GetMaximumDepth | Tile.obj | debug, call graph, medium
 UIRoot* InterfaceManager_GetSingleton()
 {
     return DAT_011d8a80;
@@ -1374,6 +1463,7 @@ struct FUN_004b50f0 : bhkSerializable
 
 // Sets m_p to the address of DAT_0102016c and increments DAT_01268154.
 // @fnv 0x004b50f0
+// pdb: bhkAction::bhkAction | GlobalFunc.obj | debug, object-file gap fill, medium
 FUN_004b50f0::FUN_004b50f0()
 {
     ++DAT_01268154;
@@ -1398,6 +1488,7 @@ extern void _delete(void* ptr, unsigned int size);
 
 // Calls Destroy on this, then frees this with _delete when flags has bit 0 set, and returns this.
 // @fnv 0x004b5160
+// pdb: bhkSerializable::`scalar deleting destructor' | GlobalFunc.obj | retail, vtable slot, high
 void* bhkSerializable::FUN_004b5160(unsigned int flags)
 {
     this->Destroy();
@@ -1429,6 +1520,7 @@ struct UnaryActionDeletingDestructor : bhkUnaryAction
 };
 
 // @fnv 0x004b51e0
+// pdb: bhkUnaryAction::`scalar deleting destructor' | GlobalFunc.obj | retail, vtable slot, high
 void* __thiscall UnaryActionDeletingDestructor::FUN_004b51e0(unsigned int flags)
 {
     this->FUN_00c86720();
@@ -1441,6 +1533,7 @@ int __fastcall GetCharAtOffset4(int);
 
 // @fnv 0x004b5980
 // src: XBOX_PDB 0x004b5980
+// pdb: hkpCollidable::getType | GlobalFunc.obj | debug, upstream name already matches, high
 int __fastcall hkpCollidable_getType(int param_1)
 {
     return GetCharAtOffset4(param_1 + 0x14);
@@ -1450,6 +1543,8 @@ void const* __fastcall hkpCollidable_getOwner(char const*);
 
 // @fnv 0x004b59c0
 // src: XBOX_PDB 0x004b59c0
+// pdb: hkGetWorldObject | GlobalFunc.obj | debug, call graph, medium
+// pdb params: collidable
 void const* __cdecl hkGetWorldObject_004b59c0(char const* arg)
 {
     return hkpCollidable_getOwner(arg);
@@ -1481,6 +1576,7 @@ struct FUN_004b4ee0_shell
 };
 // @fnv 0x004b4ec0
 // src: XBOX_PDB 0x004b4ec0
+// pdb: hkpRigidBody::getPosition | GlobalFunc.obj | debug, upstream name already matches, high
 void __fastcall hkpRigidBody_getPosition(TESDataHandler* dataHandler)
 {
     ((FUN_004b4ee0_shell*)dataHandler->GetBGSRagdollList())->hkpMotion_getPosition();
@@ -1494,6 +1590,7 @@ struct FUN_004b4f20_shell
 };
 // @fnv 0x004b4f20
 // src: XBOX_PDB 0x004b4f20
+// pdb: hkpMotion::getTransform | GlobalFunc.obj | debug, upstream name already matches, high
 void __thiscall FUN_004b4f20_shell::hkpMotion_getTransform()
 {
     ((void(__thiscall*)(void*))_ref_006815c0)((char*)this + 0x10);
@@ -1523,6 +1620,7 @@ struct FUN_004b4f40 : Base537
 };
 // Calls base and member initializers, then sets f30 to 0.5, f34 to 0.3, f38 to DAT_0101b2d0 and f3c to g_011cc6cc_arg1.
 // @fnv 0x004b4f40
+// pdb: hkMouseSpringActionCinfo::hkMouseSpringActionCinfo | GlobalFunc.obj | debug, call graph (shared callers), high
 FUN_004b4f40::FUN_004b4f40()
 {
     hkUnaryActionCinfo_hkUnaryActionCinfo();
@@ -1543,6 +1641,7 @@ void* __fastcall bhkVector4_setZero4(void*);
 
 // @fnv 0x004b4fa0
 // src: XBOX_PDB 0x004b4fa0
+// pdb: bhkVector4::bhkVector4 | GlobalFunc.obj | debug, upstream name already matches, high
 void* __fastcall FUN_004b4fa0_shell::bhkVector4_bhkVector4()
 {
     bhkVector4_setZero4(this);
@@ -1557,6 +1656,7 @@ struct S_004b4fc0
 // Calls FUN_004b4ff0 with four zero float arguments.
 // @fnv 0x004b4fc0
 // src: XBOX_PDB 0x004b4fc0
+// pdb: bhkVector4::setZero4 | GlobalFunc.obj | debug, upstream name already matches, high
 void S_004b4fc0::bhkVector4_setZero4()
 {
     bhkVector4_set(0.0f, 0.0f, 0.0f, 0.0f);
@@ -1571,6 +1671,7 @@ struct Fake004b50c0
 };
 // @fnv 0x004b50c0
 // src: GUESS 0x004b50c0 (confidence: low)
+// pdb: bhkUnaryAction::bhkUnaryAction | GlobalFunc.obj | debug, object-file gap fill, medium
 Fake004b50c0* Fake004b50c0::InitializeFields_004b50c0()
 {
     FUN_004b50f0();
@@ -1582,6 +1683,7 @@ Fake004b50c0* Fake004b50c0::InitializeFields_004b50c0()
 void __cdecl _delete(void*, unsigned int);
 // Calls FUN_00c86cb0, frees this with _delete when flags has bit 0 set, and returns this.
 // @fnv 0x004b5230
+// pdb: bhkMouseSpringAction::`scalar deleting destructor' | GlobalFunc.obj | retail, vtable slot, high
 void* __thiscall bhkMouseSpringAction::FUN_004b5230(unsigned int flags)
 {
     this->FUN_00c86cb0();
@@ -1594,15 +1696,18 @@ namespace fnv_004b5260 {
 
 // @fnv 0x004b5260
 // src: XBOX_PDB 0x004b5260
-NiAVObject* FindFirstCollisionObject(NiAVObject* object)
+// pdb: FindFirstCollisionObject | GlobalFunc.obj | retail, upstream name already matches, high
+// pdb params: ap3D
+// pdb locals: pretcol, pnode, icount, i
+NiAVObject* FindFirstCollisionObject(NiAVObject* ap3D)
 {
     NiAVObject* result = 0;
-    if (object)
+    if (ap3D)
     {
-        result = reinterpret_cast<NiAVObject*>(bhkCollisionObject::GetFromNiAVObject(object));
+        result = reinterpret_cast<NiAVObject*>(bhkCollisionObject::GetFromNiAVObject(ap3D));
         if (!result)
         {
-            NiNode* node = object->IsSceneNode();
+            NiNode* node = ap3D->IsSceneNode();
             if (node)
             {
                 unsigned int count = node->GetNumChildren();
@@ -1621,6 +1726,9 @@ NiAVObject* FindFirstCollisionObject(NiAVObject* object)
 
 // @fnv 0x004b5470
 // src: XBOX_PDB 0x004b5470
+// pdb: LengthCheck | GlobalFunc.obj | debug, call graph, medium
+// pdb params: aVector, afCompLength
+// pdb locals: fsqrlen, fsqrcomp
 int LengthCheck_004b5470(TESCombatStyle* apCombatStyle, float afValue)
 {
     float f1;
@@ -1641,13 +1749,15 @@ extern float runtimeInitializationFloat825;
 float __cdecl asin_004b5510(float);
 // @fnv 0x004b54c0
 // src: XBOX_PDB 0x004b54c0
-float __cdecl NiASin_004b54c0(float afValue)
+// pdb: NiASin | GlobalFunc.obj | debug, call graph, high
+// pdb params: fValue
+float __cdecl NiASin_004b54c0(float fValue)
 {
-    if (afValue > -1.0)
+    if (fValue > -1.0)
     {
-        if (afValue < 1.0)
+        if (fValue < 1.0)
         {
-            return asin_004b5510(afValue);
+            return asin_004b5510(fValue);
         }
         else
         {
@@ -1660,17 +1770,20 @@ float __cdecl NiASin_004b54c0(float afValue)
     }
 }
 
-extern NiRTTI g_011f3728;
+extern NiRTTI NiGeomMorpherController_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f3728 (old: DAT_011f3728/g_011f3728)
 // Returns true if object or any descendant NiNode child has a controller matching g_011f3728; recurses through children.
 // @fnv 0x004b5bf0
 // src: XBOX_PDB 0x004b5bf0
-bool HasMorpherController(NiAVObject* object)
+// pdb: HasMorpherController | GlobalFunc.obj | retail, upstream name already matches, high
+// pdb params: apObj
+// pdb locals: pnode, n, pobj
+bool HasMorpherController(NiAVObject* apObj)
 {
-    if (!object)
+    if (!apObj)
         return false;
-    if (object->GetController(&g_011f3728))
+    if (apObj->GetController(&NiGeomMorpherController_ms_RTTI))
         return true;
-    NiNode* node = object->IsSceneNode();
+    NiNode* node = apObj->IsSceneNode();
     if (node)
     {
         for (unsigned int i = 0; i < node->GetNumChildren(); ++i)
@@ -1688,6 +1801,8 @@ bool __cdecl IsBoundVisible(NiBound*, NiCamera*);
 // Returns false if apObject is null, otherwise tests the object's bound against apCamera via IsBoundVisible.
 // @fnv 0x004b5fc0
 // src: XBOX_PDB 0x004b5fc0
+// pdb: NodeInFrustum | GlobalFunc.obj | debug, upstream name already matches, high
+// pdb params: apObject, apCamera
 bool __cdecl NodeInFrustum(NiAVObject* apObject, NiCamera* apCamera)
 {
     if (apObject)
@@ -1714,6 +1829,9 @@ struct IntegerAndByteRecord
 void __cdecl GetHavokWorldObjectCount(NiCollisionObject*, CollisionObjectCountContext*);
 // @fnv 0x004b6ae0
 // src: COMMUNITY 0x004b6ae0
+// pdb: GetHavokWorldObjectCountInSceneGraph | GlobalFunc.obj | retail, upstream name already matches, high
+// pdb params: apRoot
+// pdb locals: recData
 int GetHavokWorldObjectCountInSceneGraph(NiAVObject* apRoot)
 {
     CollisionObjectCount::IntegerAndByteRecord recData;
@@ -1743,6 +1861,9 @@ struct IntegerAndByteRecord
 }
 void __cdecl GetHavokWorldObjectByIndex(NiCollisionObject*, CollisionObjectCountContext*);
 // @fnv 0x004b6c20
+// pdb: GetHavokWorldObjectByIndexInSceneGraph | GlobalFunc.obj | debug, object-file gap fill, medium
+// pdb params: apRoot, aiIndex
+// pdb locals: recData
 hkpWorldObject* FindCollisionObjectByIndex(NiAVObject* apRoot, int aiIndex)
 {
     CollisionObjectCount::IntegerAndByteRecord recData;
@@ -1764,6 +1885,8 @@ struct S004e88d0
 };
 // Adds the two floats of p into this object's m0 and m4 and returns *this.
 // @fnv 0x004e88d0
+// pdb: FLerp | GlobalFunc.obj | debug, call graph (shared callers), medium
+// pdb params: x1, x2, y1, y2, value
 S004e88d0& S004e88d0::Add(S004e88d0* apOther)
 {
     m0 += apOther->m0;
@@ -1809,6 +1932,9 @@ struct Owner0066d650
     Owner0066d650* Reset();
 };
 // @fnv 0x0066d650
+// pdb: bhkCapsuleShape::bhkCapsuleShape | BSTreeNode.obj | retail, object-file run extension, low
+// pdb note: debug build links it to hkCapsuleShapeCinfo::hkCapsuleShapeCinfo
+// pdb params: arInfo
 Owner0066d650* Owner0066d650::Reset()
 {
     f0.hkConvexShapeCinfo_hkConvexShapeCinfo();
@@ -1823,34 +1949,38 @@ bool __fastcall GetByteAtOffset17(const char*);
 NiPoint3* __fastcall _ref_006815c0(NiBound*);
 
 // @fnv 0x004b2800
-bool PickObjectsInRadius(NiPick* pick, const NiPoint3& origin, const NiPoint3& dir, float radius, NiAVObject* object)
+// src: XBOX_RETAIL_PDB 0x004b2800
+// pdb: PickDistanceRecursive | GlobalFunc.obj | retail, call graph, high
+// pdb params: apPick, aOrigin, aDir, afDistance, apTarget
+// pdb locals: bhitsomething, targetbound, ptdiff, ptargetnode, ichildcount, i, pchild
+bool PickDistanceRecursive(NiPick* apPick, const NiPoint3& aOrigin, const NiPoint3& aDir, float afDistance, NiAVObject* apTarget)
 {
     bool result = false;
-    if (pick && object && (!GetByteAtOffset17((const char*)pick) || !object->GetAppCulled_00456610()))
+    if (apPick && apTarget && (!GetByteAtOffset17((const char*)apPick) || !apTarget->GetAppCulled_00456610()))
     {
-        if (!object->IsVisualObject())
+        if (!apTarget->IsVisualObject())
             return false;
         // Preserve the original trivial bound copy without calling its shared copy constructor.
         unsigned int boundStorage[sizeof(NiBound) / sizeof(unsigned int)];
-        memcpy(boundStorage, &object->NiAVObject_GetWorldBound(), sizeof(NiBound));
-        NiPoint3 kDiff = *_ref_006815c0(reinterpret_cast<NiBound*>(boundStorage)) - origin;
-        if (kDiff.Length() < reinterpret_cast<NiBound*>(boundStorage)->FUN_0084d030() + radius)
+        memcpy(boundStorage, &apTarget->NiAVObject_GetWorldBound(), sizeof(NiBound));
+        NiPoint3 kDiff = *_ref_006815c0(reinterpret_cast<NiBound*>(boundStorage)) - aOrigin;
+        if (kDiff.Length() < reinterpret_cast<NiBound*>(boundStorage)->FUN_0084d030() + afDistance)
         {
-            NiNode* node = object->IsSceneNode();
+            NiNode* node = apTarget->IsSceneNode();
             if (node)
             {
                 int count = node->GetNumChildren();
                 for (int i = 0; i < count; i++)
                 {
                     NiAVObject* child = node->GetAt(i);
-                    if (PickObjectsInRadius(pick, origin, dir, radius, child))
+                    if (PickDistanceRecursive(apPick, aOrigin, aDir, afDistance, child))
                         result = true;
                 }
             }
             else
             {
-                pick->SetTarget_00705fc0(static_cast<void*>(object));
-                if (pick->PerformPick(origin, dir, true))
+                apPick->SetTarget_00705fc0(static_cast<void*>(apTarget));
+                if (apPick->PerformPick(aOrigin, aDir, true))
                     result = true;
             }
         }
@@ -1876,7 +2006,11 @@ int __cdecl NiShadeProperty_GetType();
 BSShaderPPLightingProperty* __cdecl FindAcceptedForm(NiNode*);
 // Scans the node's children in reverse for a BSShaderPPLightingProperty, returning it if found, otherwise falling back to FindAcceptedForm.
 // @fnv 0x004b5710
-BSShaderPPLightingProperty* __cdecl FindPPLightingProperty(NiNode* apNode)
+// src: XBOX_RETAIL_PDB 0x004b5710
+// pdb: FindPerPixelLighting | GlobalFunc.obj | retail, object-file run extension, high
+// pdb params: apNode
+// pdb locals: n, pobj, pnode, pchild, pproperty, plightingProperty
+BSShaderPPLightingProperty* __cdecl FindPerPixelLighting(NiNode* apNode)
 {
     if (!apNode->GetNumChildren())
         return 0;
@@ -1920,6 +2054,9 @@ extern double DAT_0101ff58;
 
 // @fnv 0x004b15e0
 // src: XBOX_PDB 0x004b15e0
+// pdb: Realloc_String | GlobalFunc.obj | debug, object-file run extension, low
+// pdb params: string, new_string
+// pdb locals: iStringLen
 float __cdecl GetAngleDelta(float startAngle, float targetAngle, float* pfOutDir)
 {
     float angleDelta = targetAngle - startAngle;
@@ -1971,14 +2108,17 @@ bool IsBoundVisible(NiBound*, NiCamera*);
 
 // @fnv 0x004b61d0
 // src: XBOX_PDB 0x004b61d0
-bool PointInFrustum(NiPoint3 location, NiCamera* camera, float radius)
+// pdb: PointInFrustum | GlobalFunc.obj | retail, upstream name already matches, high
+// pdb params: aTestLocation, apCamera, afDistance
+// pdb locals: bound
+bool PointInFrustum(NiPoint3 aTestLocation, NiCamera* apCamera, float afDistance)
 {
-    if (!camera)
+    if (!apCamera)
         return false;
     NiBound sphere;
-    sphere.SetGridPosition(&location);
-    sphere.SetRadius(radius);
-    return IsBoundVisible(&sphere, camera);
+    sphere.SetGridPosition(&aTestLocation);
+    sphere.SetRadius(afDistance);
+    return IsBoundVisible(&sphere, apCamera);
 }
 
 extern const char* const g_0120043c_arg1;
@@ -1991,12 +2131,15 @@ struct PropHelper
 void UnTintScenegraph(NiAVObject*);
 // @fnv 0x004b6630
 // src: XBOX_PDB 0x004b6630
-void UnTintScenegraph(NiAVObject* object)
+// pdb: UnTintScenegraph | GlobalFunc.obj | retail, upstream name already matches, high
+// pdb params: apRoot
+// pdb locals: pnode, pspplprop, i
+void UnTintScenegraph(NiAVObject* apRoot)
 {
-    PropHelper* result = (PropHelper*)_UseSaveGameBlocks(&g_0120043c_arg1, object->GetProperty(3));
+    PropHelper* result = (PropHelper*)_UseSaveGameBlocks(&g_0120043c_arg1, apRoot->GetProperty(3));
     if (result)
         result->AssignRefObj(0);
-    NiNode* node = object->IsSceneNode();
+    NiNode* node = apRoot->IsSceneNode();
     if (node)
     {
         unsigned int i = 0;
@@ -2010,6 +2153,7 @@ void UnTintScenegraph(NiAVObject* object)
 
 // @fnv 0x004b4ea0
 // src: XBOX_PDB 0x004b4ea0
+// pdb: hkpRigidBody::getMass | GlobalFunc.obj | debug, upstream name already matches, high
 float TESDataHandler::hkpRigidBody_getMass()
 {
     return reinterpret_cast<hkpMotion*>(GetBGSRagdollList())->GetMassValue();
@@ -2024,6 +2168,7 @@ struct FUN_004b5020_shell
 
 // @fnv 0x004b5020
 // src: XBOX_PDB 0x004b5020
+// pdb: hkActionCinfo::hkActionCinfo | GlobalFunc.obj | debug, upstream name already matches, high
 FUN_004b5020_shell* FUN_004b5020_shell::hkActionCinfo_hkActionCinfo()
 {
     _ref_006815c0();
@@ -2035,7 +2180,7 @@ namespace fnv_004b68a0 {
 int __cdecl BSstrcmp(char const*, char const*);
 
 extern void const* const DAT_011f9140;
-extern NiRTTI g_0126817c;
+extern NiRTTI WeaponObject_ms_RTTI; // src: XBOX_RETAIL_PDB 0x0126817c (old: DAT_0126817c/g_0126817c/g_C7B140FilterRTTI)
 
 // Exe 0x004b68a0: local storage view; GetFlags binds the folded DWORD-at-+8 accessor 0x0044ddc0.
 struct GlobalfuncOffset08View
@@ -2057,31 +2202,33 @@ struct FUN_004b68a0_data
 // Checks RTTI and fade-node conditions on object, resets field_14 when object matches field_10, then increments field_0c.
 // @fnv 0x004b68a0
 // src: COMMUNITY 0x004b68a0
-void GetCollisionObjectIndex(GlobalfuncOffset08View* object, FUN_004b68a0_data* data)
+// pdb: GetCollisionObjectIndex | GlobalFunc.obj | debug, upstream name already matches, high
+// pdb params: apCollision, arData
+void GetCollisionObjectIndex(GlobalfuncOffset08View* apCollision, FUN_004b68a0_data* arData)
 {
-    if ((data->field_18 & 1) && NiObject_IsKindOf(&g_0126817c, reinterpret_cast<NiAVObject*>(object)))
+    if ((arData->field_18 & 1) && NiObject_IsKindOf(&WeaponObject_ms_RTTI, reinterpret_cast<NiAVObject*>(apCollision)))
         return;
 
-    if ((data->field_18 & 2) &&
-        NiObject_IsKindOf(reinterpret_cast<const NiRTTI*>(&DAT_011f9140), reinterpret_cast<NiAVObject*>(object->GetFlags())))
+    if ((arData->field_18 & 2) &&
+        NiObject_IsKindOf(reinterpret_cast<const NiRTTI*>(&DAT_011f9140), reinterpret_cast<NiAVObject*>(apCollision->GetFlags())))
         return;
 
-    if ((data->field_18 & 2) && object->GetFlags() &&
-        reinterpret_cast<BSFadeNode*>(reinterpret_cast<TESTopicInfoData*>(object->GetFlags())->GetLinkToList())
+    if ((arData->field_18 & 2) && apCollision->GetFlags() &&
+        reinterpret_cast<BSFadeNode*>(reinterpret_cast<TESTopicInfoData*>(apCollision->GetFlags())->GetLinkToList())
             ->FUN_0043b1b0())
     {
         if (!BSstrcmp(reinterpret_cast<char const*>(
                               reinterpret_cast<BSFadeNode*>(
-                                  reinterpret_cast<TESTopicInfoData*>(object->GetFlags())->GetLinkToList())
+                                  reinterpret_cast<TESTopicInfoData*>(apCollision->GetFlags())->GetLinkToList())
                                   ->FUN_0043b1b0()),
                           "Arrow"))
             return;
     }
 
-    if (object == data->field_10)
-        data->field_14 = data->field_0c;
+    if (apCollision == arData->field_10)
+        arData->field_14 = arData->field_0c;
 
-    data->field_0c++;
+    arData->field_0c++;
 }
 }  // namespace fnv_004b68a0
 
@@ -2103,17 +2250,20 @@ struct FUN_004b6a00_data
 };
 
 extern NiRTTI DAT_011f9140;
-extern NiRTTI g_0126817c;
+extern NiRTTI WeaponObject_ms_RTTI; // src: XBOX_RETAIL_PDB 0x0126817c (old: DAT_0126817c/g_0126817c/g_C7B140FilterRTTI)
 
 int __cdecl BSstrcmp(char const*, char const*);
 
 // Checks object against data flags and RTTI, stores it in field_10 when field_0c equals field_14, then increments field_0c.
 // @fnv 0x004b6a00
+// pdb: GetCollisionObjectCountInSceneGraph | GlobalFunc.obj | retail, object-file run extension, low
+// pdb params: apRoot, abIgnoreWeaponBone, abIgnoreFadeNodes, abIgnoreArrows
+// pdb locals: recData
 void __cdecl ProcessObjectMatch(NiAVObject* object, FUN_004b6a00_data* data)
 {
     if (data->field_18 & 1)
     {
-        if (NiObject_IsKindOf(&g_0126817c, object))
+        if (NiObject_IsKindOf(&WeaponObject_ms_RTTI, object))
             return;
     }
 
@@ -2151,35 +2301,41 @@ void __cdecl ProcessObjectMatch(NiAVObject* object, FUN_004b6a00_data* data)
 
 namespace fnv_004b6e90 {
 
-void AttachLightingPropertyRecursive(NiAVObject* object);
+void AddNoLightingPropertyRecurse(NiAVObject* apObject);
 
 // Recursively attaches a new BSShaderNoLightingProperty to geometry objects lacking property 3, descending through NiNode children.
 // @fnv 0x004b6e90
-void AttachLightingPropertyRecursive(NiAVObject* object)
+// src: XBOX_RETAIL_PDB 0x004b6e90
+// pdb: AddNoLightingPropertyRecurse | GlobalFunc.obj | retail, object-file run extension, high
+// pdb params: apObject
+// pdb locals: pnode, pshaderProperty, i, pchild
+void AddNoLightingPropertyRecurse(NiAVObject* apObject)
 {
-    if (object->IsGeometry() && !object->GetProperty(3))
+    if (apObject->IsGeometry() && !apObject->GetProperty(3))
     {
         BSShaderNoLightingProperty* lightingProperty = new BSShaderNoLightingProperty();
-        object->AttachProperty(lightingProperty);
+        apObject->AttachProperty(lightingProperty);
     }
 
-    NiNode* node = object->IsSceneNode();
+    NiNode* node = apObject->IsSceneNode();
     if (node)
     {
         for (unsigned int index = 0; index < node->GetNumChildren(); ++index)
         {
             NiAVObject* child = node->GetAt(index);
             if (child)
-                AttachLightingPropertyRecursive(child);
+                AddNoLightingPropertyRecurse(child);
         }
     }
 }
 }  // namespace fnv_004b6e90
 
 // @fnv 0x004b5b00
-NiBlendTransformInterpolator* NiMultiTargetTransformController::GetBlendInterpolator(unsigned short index)
+// pdb: NiMultiTargetTransformController::GetBlendInterpolator | GlobalFunc.obj | debug, upstream name already matches, high
+// pdb params: usIndex
+NiBlendTransformInterpolator* NiMultiTargetTransformController::GetBlendInterpolator(unsigned short usIndex)
 {
-    return m_pkBlendInterpolators + index;
+    return m_pkBlendInterpolators + usIndex;
 }
 
 extern NiRTTI DAT_011f36ac;
@@ -2200,26 +2356,30 @@ extern "C" int _strnicmp(const char*, const char*, unsigned int);
 
 // Looks up the named sequence on obj's controller manager and returns the value of the first entry whose name starts with prefix, else 0.
 // @fnv 0x004b6220
-float GetAnimValueByPrefix(NiObjectNET* obj, const char* name, const char* prefix)
+// src: XBOX_RETAIL_PDB 0x004b6220
+// pdb: FindTimeForNoteKey | GlobalFunc.obj | retail, call graph (shared callers), high
+// pdb params: pObject, pcSequenceName, pcKeyName
+// pdb locals: pmanager, psequence, isearchKeyLength, inumKeys, ptext, pkeys, i, pkeyText
+float FindTimeForNoteKey(NiObjectNET* pObject, const char* pcSequenceName, const char* pcKeyName)
 {
-    if (!obj)
+    if (!pObject)
         return 0.0f;
-    NiControllerManager* mgr = (NiControllerManager*)NiDynamicCast(&DAT_011f36ac, obj->GetControllers());
+    NiControllerManager* mgr = (NiControllerManager*)NiDynamicCast(&DAT_011f36ac, pObject->GetControllers());
     if (mgr)
     {
-        NiControllerSequence* seq3 = mgr->NiControllerManager_GetSequenceByName(NiFixedString(name));
+        NiControllerSequence* seq3 = mgr->NiControllerManager_GetSequenceByName(NiFixedString(pcSequenceName));
         if (seq3)
         {
             NiTextKeyExtraData* data8 = seq3->GetName_00700300();
             unsigned int aCount;
             TimedTextEntry* entries3 = data8->GetKeys_00495f30(&aCount);
-            unsigned int len = BSStringLength(prefix);
+            unsigned int len = BSStringLength(pcKeyName);
             if (len > 0)
             {
                 for (unsigned int i4 = 0; i4 < aCount; i4++)
                 {
                     const char* s4 = *entries3[i4].GetName();
-                    if (s4 && !_strnicmp(s4, prefix, len))
+                    if (s4 && !_strnicmp(s4, pcKeyName, len))
                         return entries3[i4].GetValue();
                 }
             }
@@ -2245,6 +2405,9 @@ int __cdecl bhkWorld_DoObjectRec(void*, S_004b6810_Filter*, PFN_004b68a0);
 
 // Builds a filter struct from the flags and a2, runs FUN_00c68900 over a1, and returns the filter's m_14 result or -1.
 // @fnv 0x004b6810
+// pdb: GetCollisionObjectIndexInSceneGraph | GlobalFunc.obj | debug, object-file run extension, low
+// pdb params: apRoot, apCollision, abIgnoreWeaponBone, abIgnoreFadeNodes, abIgnoreArrows
+// pdb locals: recData
 int __cdecl FilterByFlags(void* a1, int iValue, bool abSkipPhantoms, bool abSkipBlend, bool abSkipUnknown)
 {
     S_004b6810_Filter kFilter;
@@ -2280,6 +2443,9 @@ struct FUN_004b6980_Context
 // Builds a traversal context from the three flags, runs FUN_00c68900 over object with ProcessObjectMatch, and returns the accumulated count.
 // @fnv 0x004b6980
 // src: XBOX_PDB 0x004b6980
+// pdb: GetCollisionObjectCount | GlobalFunc.obj | retail, object-file run extension, low
+// pdb note: debug build links it to GetCollisionObjectByIndexInSceneGraph
+// pdb params: apCollision, arData
 int __cdecl GetCollisionObjectByIndexInSceneGraph(NiAVObject* object, void* auxiliaryData, bool flag1, bool flag2, bool flag3)
 {
     FUN_004b6980_Context context;
@@ -2309,20 +2475,23 @@ int __cdecl GetCollisionObjectByIndexInSceneGraph(NiAVObject* object, void* auxi
     return context.iCount;
 }
 
-void GetHavokWorldObjectIndex(NiCollisionObject* pkObject, CollisionObjectCountContext* pkContext);
+void GetHavokWorldObjectIndex(NiCollisionObject* apCollision, CollisionObjectCountContext* arData);
 
 // Traverses pkRoot with a context that counts collision objects and returns the auxiliary result, or -1 when it is unset.
 // @fnv 0x004b6b60
 // src: COMMUNITY 0x004b6b60
-int GetHavokWorldObjectIndexInSceneGraph(NiAVObject* pkRoot, void* pvUserData)
+// pdb: GetHavokWorldObjectIndexInSceneGraph | GlobalFunc.obj | retail, upstream name already matches, high
+// pdb params: apRoot, apWorldObject
+// pdb locals: recData
+int GetHavokWorldObjectIndexInSceneGraph(NiAVObject* apRoot, void* apWorldObject)
 {
     CollisionObjectCountContext kContext;
     kContext.uiTraversalFlags = 0x12;
     kContext.bRecurse = true;
     kContext.iCount = 0;
-    kContext.pUserData = pvUserData;
+    kContext.pUserData = apWorldObject;
     kContext.pAuxiliaryData = reinterpret_cast<void*>(-1);
-    bhkWorld_DoObjectRec(pkRoot, &kContext, GetHavokWorldObjectIndex);
+    bhkWorld_DoObjectRec(apRoot, &kContext, GetHavokWorldObjectIndex);
     return reinterpret_cast<int>(kContext.pAuxiliaryData) != -1 ? reinterpret_cast<int>(kContext.pAuxiliaryData) : -1;
 }
 
@@ -2353,7 +2522,10 @@ int BSSM_ShaderPropertyIsLighting(void*);
 
 // @fnv 0x004b6ce0
 // src: COMMUNITY 0x004b6ce0
-void RecursivelyRemoveAllDecals(FUN_004b6ce0_cls* p)
+// pdb: RecursivelyRemoveAllDecals | GlobalFunc.obj | retail, upstream name already matches, high
+// pdb params: apRoot
+// pdb locals: pgeom, pprop, pbssprop, bisGeometryDecal, pnode, i
+void RecursivelyRemoveAllDecals(FUN_004b6ce0_cls* apRoot)
 {
     FUN_004b6ce0_cls* RunFourthVirtual;
     FUN_004b6ce0_cls* x8;
@@ -2362,11 +2534,11 @@ void RecursivelyRemoveAllDecals(FUN_004b6ce0_cls* p)
     FUN_004b6ce0_cls* c;
     unsigned int i2;
 
-    if (p == 0)
+    if (apRoot == 0)
         return;
-    if (p->vfn_1c() != 0)
+    if (apRoot->vfn_1c() != 0)
     {
-        x8 = p;
+        x8 = apRoot;
         RunFourthVirtual = x8->FUN_00a59d30(3);
         if (RunFourthVirtual != 0)
         {
@@ -2384,7 +2556,7 @@ void RecursivelyRemoveAllDecals(FUN_004b6ce0_cls* p)
     }
     else
     {
-        c = p->vfn_c();
+        c = apRoot->vfn_c();
         if (c != 0)
         {
             for (i2 = 0; i2 < c->GetNumChildren(); i2++)
@@ -2397,7 +2569,11 @@ void __cdecl FUN_00b57e30(NiAVObject*, int, int);
 
 // Adds a BSShaderNoLightingProperty with shader flag 0x30 to a geometry lacking property 3, or recurses into a visual node's children.
 // @fnv 0x004b6f90
-void __cdecl EnsureLightingProperty(NiAVObject* apObject)
+// src: XBOX_RETAIL_PDB 0x004b6f90
+// pdb: PrepareObjectWithNoLightingRecurse | GlobalFunc.obj | retail, call graph (shared callers), high
+// pdb params: apObject
+// pdb locals: pshaderProperty, pnode, i, pchild
+void __cdecl PrepareObjectWithNoLightingRecurse(NiAVObject* apObject)
 {
     if (apObject->IsGeometry() && !apObject->GetProperty(3))
     {
@@ -2416,7 +2592,7 @@ void __cdecl EnsureLightingProperty(NiAVObject* apObject)
             {
                 NiAVObject* pChild = pNode->GetAt(i);
                 if (pChild)
-                    EnsureLightingProperty(pChild);
+                    PrepareObjectWithNoLightingRecurse(pChild);
             }
         }
     }
@@ -2425,6 +2601,7 @@ void __cdecl EnsureLightingProperty(NiAVObject* apObject)
 // Deletes each of the global objects pointed to by DAT_011c61a4 through DAT_011c6278.
 // @fnv 0x004b8cf0
 // src: COMMUNITY 0x004b8cf0
+// pdb: FixedStrings::KillSDM | GlobalFunc.obj | debug, object-file gap fill, medium
 void __cdecl FreeNiNodeBlocks()
 {
     delete DAT_011c61a4;
@@ -2706,12 +2883,15 @@ extern const char* DAT_01189034;
 // Returns the type name string for a form type code, looking it up in typeNames, then a switch table, then FNV_FormTypeNames, warning on invalid codes.
 // @fnv 0x004b1b60
 // src: XBOX_PDB 0x004b1b60
-const char* __cdecl FormIDToString(unsigned char type)
+// pdb: FormIDToString | GlobalFunc.obj | retail, string-set bridge, high
+// pdb params: acFormID
+// pdb locals: oType
+const char* __cdecl FormIDToString(unsigned char acFormID)
 {
-    int index = LookupType(type);
+    int index = LookupType(acFormID);
     if (index >= 0)
         return typeNames[index];
-    switch (type)
+    switch (acFormID)
     {
     case 12:
         return DAT_01188f98;
@@ -2794,17 +2974,20 @@ const char* __cdecl FormIDToString(unsigned char type)
     case 117:
         return DAT_01189034;
     default:
-        if (type >= 121)
+        if (acFormID >= 121)
         {
-            Warn("FORMS: Invalid FormID sent to FormIDToString().\r\n", FNV_FormTypeNames[type].name);
-            type = 0;
+            Warn("FORMS: Invalid FormID sent to FormIDToString().\r\n", FNV_FormTypeNames[acFormID].name);
+            acFormID = 0;
         }
-        return FNV_FormTypeNames[type].name;
+        return FNV_FormTypeNames[acFormID].name;
     }
 }
 
 // Builds a 4-vertex square NiLines from four corner points at +/-extent, fills all vertex colors with color, and optionally attaches a BSShaderNoLightingProperty.
 // @fnv 0x004b3b90
+// pdb: MakeRectangle | GlobalFunc.obj | debug, object-file gap fill, medium
+// pdb params: afDrawSize, aColor, abWithNoLightingProp
+// pdb locals: plineverts, plineclrs, plineconn, plines, i, pshprop
 NiLines* __cdecl CreateSquareLines(float extent, const NiColorA& color, bool addLighting)
 {
     NiPoint3* pVertices = new NiPoint3[4];
@@ -2856,36 +3039,40 @@ NiPoint3 FUN_004a3760(float, const NiPoint3&);
 extern NiGeometry* DAT_011c6320;
 void __cdecl operator delete(void*);
 // @fnv 0x004b3e60
-bool __cdecl MatchGeometryVertices(NiGeometry* source, NiGeometry* target, float threshold, float unused, bool adjust)
+// src: XBOX_DEBUG_PDB 0x004b3e60
+// pdb: FixNormals | GlobalFunc.obj | debug, call graph, high
+// pdb params: apSource, apDest, afTolerance, abDisplayMatches, abExtrudeMatches
+// pdb locals: pvertSourceTest, fmindistTotal, ivertsDest, matrixNormalModify, inverseTransDest, pnormDest, ivertsSource, pvertSource, tempDiff, fdist, breturn, iminVert, pnormSource, fmindist, matches, pvertDest, pvertDestTest, i, j, addstruct, checkstruct, imatches, usestruct, iter ...
+bool __cdecl FixNormals(NiGeometry* apSource, NiGeometry* apDest, float afTolerance, float abDisplayMatches, bool abExtrudeMatches)
 {
     PairMap map30(37);
     NiMatrix3 rotation4;
     NiTransform aTransform;
     AuxPoint point12;
     bool bChangedB = false;
-    if (!source || !target || source == target)
+    if (!apSource || !apDest || apSource == apDest)
         return false;
-    NiPoint3* sourceVertices7 = reinterpret_cast<NiPoint3*>(source->GetVertices());
-    NiPoint3* sourceNormals2 = reinterpret_cast<NiPoint3*>(source->GetNormals());
-    unsigned int uiCountX = source->GetVertexCount();
+    NiPoint3* sourceVertices7 = reinterpret_cast<NiPoint3*>(apSource->GetVertices());
+    NiPoint3* sourceNormals2 = reinterpret_cast<NiPoint3*>(apSource->GetNormals());
+    unsigned int uiCountX = apSource->GetVertexCount();
     if (!sourceVertices7 || !sourceNormals2 || !uiCountX)
         return false;
-    NiPoint3* targetVertices5 = reinterpret_cast<NiPoint3*>(target->GetVertices());
-    NiPoint3* targetNormals2 = reinterpret_cast<NiPoint3*>(target->GetNormals());
-    unsigned int uiCountVal = target->GetVertexCount();
+    NiPoint3* targetVertices5 = reinterpret_cast<NiPoint3*>(apDest->GetVertices());
+    NiPoint3* targetNormals2 = reinterpret_cast<NiPoint3*>(apDest->GetNormals());
+    unsigned int uiCountVal = apDest->GetVertexCount();
     if (!targetVertices5 || !targetNormals2 || !uiCountVal)
         return false;
-    NiPoint3* sourcePositions = CreateElementArray(source);
+    NiPoint3* sourcePositions = CreateElementArray(apSource);
     if (!sourcePositions)
         return false;
-    NiPoint3* targetVertices = CreateElementArray(target);
+    NiPoint3* targetVertices = CreateElementArray(apDest);
     if (!targetVertices)
     {
         delete sourcePositions;
         return false;
     }
-    target->NiAVObject_GetWorldRotate().FUN_004b4880(aTransform);
-    rotation4 = target->NiAVObject_GetWorldRotate().m_Rotate.Inverse() * source->NiAVObject_GetWorldRotate().m_Rotate;
+    apDest->NiAVObject_GetWorldRotate().FUN_004b4880(aTransform);
+    rotation4 = apDest->NiAVObject_GetWorldRotate().m_Rotate.Inverse() * apSource->NiAVObject_GetWorldRotate().m_Rotate;
     unsigned int best4;
     float bestDist3;
     float bestDistance10;
@@ -2893,7 +3080,7 @@ bool __cdecl MatchGeometryVertices(NiGeometry* source, NiGeometry* target, float
     for (unsigned int outer = 0; outer < uiCountVal; outer++)
     {
         best4 = uiCountX;
-        bestDist3 = threshold >= 0.0 ? threshold : 3.402823466e+38F;
+        bestDist3 = afTolerance >= 0.0 ? afTolerance : 3.402823466e+38F;
         for (unsigned int inner = 0; inner < uiCountX; inner++)
         {
             bestDistance10 = (targetVertices[outer] - sourcePositions[inner]).Length();
@@ -2942,9 +3129,9 @@ bool __cdecl MatchGeometryVertices(NiGeometry* source, NiGeometry* target, float
                 targetNormals2[existing.second] = targetNormals2[existing.first];
                 iCount++;
             }
-            if (adjust)
+            if (abExtrudeMatches)
             {
-                if (DAT_011c6320 != source)
+                if (DAT_011c6320 != apSource)
                     sourceVertices7[aHKey] += FUN_004a3760(10.0F, sourceNormals2[aHKey]);
                 targetVertices5[existing.first] += FUN_004a3760(10.0F, targetNormals2[existing.first]);
                 if (existing.second < uiCountVal)
@@ -2955,15 +3142,15 @@ bool __cdecl MatchGeometryVertices(NiGeometry* source, NiGeometry* target, float
     }
     if (bChangedB)
     {
-        if (adjust)
-            source->NiGeometry_GetModelData()->SetDirtyFlags(3);
-        target->NiGeometry_GetModelData()->SetDirtyFlags(3);
+        if (abExtrudeMatches)
+            apSource->NiGeometry_GetModelData()->SetDirtyFlags(3);
+        apDest->NiGeometry_GetModelData()->SetDirtyFlags(3);
     }
     if (sourcePositions)
         delete sourcePositions;
     if (targetVertices)
         delete targetVertices;
-    DAT_011c6320 = source;
+    DAT_011c6320 = apSource;
     return bChangedB;
 }
 
@@ -2985,6 +3172,7 @@ struct FUN_004b4ee0_cls
 
 // @fnv 0x004b4ee0
 // src: XBOX_PDB 0x004b4ee0
+// pdb: hkpMotion::getPosition | GlobalFunc.obj | debug, upstream name already matches, high
 void FUN_004b4ee0_cls::hkpMotion_getPosition()
 {
     ((FUN_004b4ee0_sub*)unk10.FUN_006815c0())->FUN_00436aa0();
@@ -2995,6 +3183,10 @@ bhkCollisionObject* __cdecl FUN_0043b610(void* obj);
 // Recursively picks, among an object's list children and its ref target, the one with the greatest FUN_004b5400 value; returns 0 for a null object.
 // @fnv 0x004b52f0
 // src: COMMUNITY 0x004b52f0
+// pdb: FindHeaviestRigidBody | GlobalFunc.obj | retail, object-file run extension, low
+// pdb note: debug build links it to bhkRigidBody::FindHeaviestRigidBody
+// pdb params: ap3D
+// pdb locals: pbody, pcol, pnode, pchildBody, icount, i, ptemp
 void* __cdecl bhkRigidBody_FindHeaviestRigidBody(void* object)
 {
     void* bestX;
@@ -3051,24 +3243,27 @@ static NiCamera* s_pkLastCamera;
 static unsigned int s_uiLastFrame;
 
 // @fnv 0x004b5ff0
-bool __cdecl IsBoundVisible(NiBound* pkBound, NiCamera* pkCamera)
+// pdb: BoundInFrustum | GlobalFunc.obj | debug, call graph (shared callers), high
+// pdb params: aBound, apCamera
+// pdb locals: uiplane, plane
+bool __cdecl IsBoundVisible(NiBound* aBound, NiCamera* apCamera)
 {
-    if (!pkCamera)
+    if (!apCamera)
         return false;
 
     static NiFrustumPlanes g_kFrustumPlanes;
 
-    if (s_pkLastCamera != pkCamera || s_uiLastFrame != g_timeGlobal.GetFrameCount())
+    if (s_pkLastCamera != apCamera || s_uiLastFrame != g_timeGlobal.GetFrameCount())
     {
-        g_kFrustumPlanes.Set(pkCamera);
+        g_kFrustumPlanes.Set(apCamera);
         s_uiLastFrame = g_timeGlobal.GetFrameCount();
-        s_pkLastCamera = pkCamera;
+        s_pkLastCamera = apCamera;
     }
 
     for (unsigned int i = 0; i < 6; i++)
     {
         NiPlane m_kFogPlane = *static_cast<NiPlane*>(g_kFrustumPlanes.GetPlane(i));
-        if (pkBound->WhichSide(static_cast<void*>(&m_kFogPlane)) == 2)
+        if (aBound->WhichSide(static_cast<void*>(&m_kFogPlane)) == 2)
             return false;
     }
     return true;
@@ -3098,32 +3293,35 @@ Property6360* NiObject_DynamicCast(const NiRTTI*, NiProperty*);
 extern const NiRTTI DAT_011fa010;
 // @fnv 0x004b6360
 // src: XBOX_PDB 0x004b6360
-void TintScenegraph(NiAVObject* object, const NiPoint3* color, FUN_00b668b0* property)
+// pdb: TintScenegraph | GlobalFunc.obj | retail, upstream name already matches, high
+// pdb params: apRoot, aColor, apTextureEffectData
+// pdb locals: spdata, pnode, pspplprop, i
+void TintScenegraph(NiAVObject* apRoot, const NiPoint3* aColor, FUN_00b668b0* apTextureEffectData)
 {
-    NiPointer<FUN_00b668b0> shared(property);
-    if (!property)
+    NiPointer<FUN_00b668b0> shared(apTextureEffectData);
+    if (!apTextureEffectData)
     {
         shared = new FUN_00b668b0;
-        property = shared;
-        ((FUN_00b668b0*)shared)->color2 = NiColorA(color->x, color->y, color->z, 0.5f);
-        ((FUN_00b668b0*)shared)->color3 = NiColorA(color->x, color->y, color->z, 0.5f);
-        ((FUN_00b668b0*)shared)->color0 = NiColorA(color->x, color->y, color->z, 0.5f);
-        ((FUN_00b668b0*)shared)->color1 = NiColorA(color->x, color->y, color->z, 0.5f);
+        apTextureEffectData = shared;
+        ((FUN_00b668b0*)shared)->color2 = NiColorA(aColor->x, aColor->y, aColor->z, 0.5f);
+        ((FUN_00b668b0*)shared)->color3 = NiColorA(aColor->x, aColor->y, aColor->z, 0.5f);
+        ((FUN_00b668b0*)shared)->color0 = NiColorA(aColor->x, aColor->y, aColor->z, 0.5f);
+        ((FUN_00b668b0*)shared)->color1 = NiColorA(aColor->x, aColor->y, aColor->z, 0.5f);
         ((FUN_00b668b0*)shared)->mode0 = 9;
         ((FUN_00b668b0*)shared)->mode1 = 10;
         ((FUN_00b668b0*)shared)->mode2 = 1;
         ((FUN_00b668b0*)shared)->mode3 = 4;
     }
-    Property6360* material = NiObject_DynamicCast(&DAT_011fa010, object->GetProperty(3));
+    Property6360* material = NiObject_DynamicCast(&DAT_011fa010, apRoot->GetProperty(3));
     if (material)
         material->AssignRefObj(shared);
-    NiNode* node = object->IsSceneNode();
+    NiNode* node = apRoot->IsSceneNode();
     if (node)
     {
         for (unsigned int i = 0; i < node->GetNumChildren(); ++i)
         {
             if (node->GetAt(i))
-                TintScenegraph(node->GetAt(i), color, property);
+                TintScenegraph(node->GetAt(i), aColor, apTextureEffectData);
         }
     }
 }
@@ -3133,7 +3331,7 @@ class FUN_004b50c0
   public:
     FUN_004b50c0();
     virtual ~FUN_004b50c0();
-    void bhkMouseSpringAction_Init(unsigned int value);
+    void bhkMouseSpringAction_Init(unsigned int arInfo);
 };
 
 class FUN_004b5040 : public FUN_004b50c0
@@ -3147,6 +3345,8 @@ extern int DAT_01268124;
 
 // Calls FUN_00c87260 with value and increments the global counter DAT_01268124.
 // @fnv 0x004b5040
+// pdb: bhkMouseSpringAction::bhkMouseSpringAction | GlobalFunc.obj | debug, object-file gap fill, medium
+// pdb params: arInfo
 FUN_004b5040::FUN_004b5040(unsigned int value)
 {
     bhkMouseSpringAction_Init(value);

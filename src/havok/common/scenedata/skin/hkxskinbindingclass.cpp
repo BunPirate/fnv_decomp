@@ -25,6 +25,7 @@ struct CpuObject
 };
 // Calls FUN_00e01b30, then if bit 0 of flags is set, invokes the allocator's virtual method on this with size, and returns this.
 // @fnv 0x00e01be0
+// pdb: hkxSkinBinding::`scalar deleting destructor' | hkxSkinBindingClass.obj | retail, vtable slot, high
 CpuObject* CpuObject::FUN_00e01be0(unsigned int flags)
 {
     FUN_00e01b30();

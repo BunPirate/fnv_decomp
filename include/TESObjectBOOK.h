@@ -37,27 +37,27 @@ public:
     virtual void InitializeComponent();
     virtual bool LoadForm(TESFile* file);
     virtual void SaveForm();
-    virtual void SaveGame(BGSSaveFormBuffer* buffer);
+    virtual void SaveGame(BGSSaveFormBuffer* apSaveGameBuffer);
     virtual void SaveGameLegacy(unsigned int changedFlags);
-    virtual void LoadGame(BGSLoadFormBuffer* buffer);
+    virtual void LoadGame(BGSLoadFormBuffer* apLoadGameBuffer);
     virtual void LoadGameLegacy(unsigned int changedFlags, unsigned int currentFlags);
     virtual void InitItem();
     virtual void CopyFrom(const TESForm* form);
-    virtual bool Compare(TESForm* form);
+    virtual bool Compare(TESForm* apCompare);
 
     TESObjectBOOK& operator=(const TESObjectBOOK& other);
 
     void ResetFormData();
-    bool Load(TESFile* file);
+    bool Load(TESFile* apFile);
     void Destroy();
-    void CopyBookData(TESForm* source);
+    void CopyBookData(TESForm* apCopy);
     BookData* Sky_GetSunLightSpecularColor();
-    bool Compare_00514f50(TESForm* other);
+    bool Compare_00514f50(TESForm* apCompare);
     unsigned short GetSaveSize_00515220(unsigned int flags);
     void SaveGame_00515290(unsigned int flags);
     void LoadGame_005152e0(unsigned int flags, unsigned int currentFlags);
-    void SaveGame_00515340(BGSSaveFormBuffer* buffer);
-    void LoadGame_005153a0(BGSLoadFormBuffer* buffer);
+    void SaveGame_00515340(BGSSaveFormBuffer* apSaveGameBuffer);
+    void LoadGame_005153a0(BGSLoadFormBuffer* apLoadGameBuffer);
     bool TESObjectBOOK_GetScroll();
 
     BookData Data;

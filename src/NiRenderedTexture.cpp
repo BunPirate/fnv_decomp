@@ -9,22 +9,24 @@
 #include "NiRenderedTexture.h"
 
 // @fnv 0x00a7fc00
-NiRenderedTexture* NiRenderedTexture::Create(const NiFixedString& name, unsigned int width, unsigned int height,
-                                             NiRenderer* renderer, NiTexture::TextureFormatPreferences& preferences,
-                                             Ni2DBuffer::MultiSamplePreference msaa, NiRenderedTexture* reuseTexture,
-                                             unsigned int aliasOffset)
+// pdb: NiRenderedTexture::Create | NiRenderedTexture.obj | retail, upstream name already matches, high
+// pdb params: kName, uiWidth, uiHeight, pkRenderer, eMSAAPref, apAliasTex, uiAliasOffset
+NiRenderedTexture* NiRenderedTexture::Create(const NiFixedString& kName, unsigned int uiWidth, unsigned int uiHeight,
+                                             NiRenderer* apkRenderer, NiTexture::TextureFormatPreferences& kPrefs,
+                                             Ni2DBuffer::MultiSamplePreference eMSAAPref, NiRenderedTexture* apAliasTex,
+                                             unsigned int uiAliasOffset)
 {
-    if (!renderer)
+    if (!apkRenderer)
         return 0;
-    NiDX9Renderer* dxRenderer = static_cast<NiDX9Renderer*>(renderer);
+    NiDX9Renderer* dxRenderer = static_cast<NiDX9Renderer*>(apkRenderer);
     bool dimensionsPowerOfTwo = false;
-    if (width)
+    if (uiWidth)
     {
-        dimensionsPowerOfTwo = (width & (width - 1)) == 0;
+        dimensionsPowerOfTwo = (uiWidth & (uiWidth - 1)) == 0;
         if (dimensionsPowerOfTwo)
         {
-            if (height)
-                dimensionsPowerOfTwo = (height & (height - 1)) == 0;
+            if (uiHeight)
+                dimensionsPowerOfTwo = (uiHeight & (uiHeight - 1)) == 0;
             else
                 dimensionsPowerOfTwo = false;
         }
@@ -35,10 +37,10 @@ NiRenderedTexture* NiRenderedTexture::Create(const NiFixedString& name, unsigned
             return 0;
     }
     NiRenderedTexture* texture = new NiRenderedTexture;
-    texture->m_kFormatPrefs = preferences;
-    texture->m_pReuseTexture = reuseTexture;
-    texture->m_uiAliasOffset = aliasOffset;
-    Ni2DBuffer* buffer = Ni2DBuffer::Create(width, height);
+    texture->m_kFormatPrefs = kPrefs;
+    texture->pAliasTexture = apAliasTex;
+    texture->uiAliasOffset = uiAliasOffset;
+    Ni2DBuffer* buffer = Ni2DBuffer::Create(uiWidth, uiHeight);
     Ni2DBuffer* oldBuffer = texture->m_spRenderTargetBuffer.m_pObject;
     if (oldBuffer != buffer)
     {
@@ -48,16 +50,16 @@ NiRenderedTexture* NiRenderedTexture::Create(const NiFixedString& name, unsigned
         if (buffer)
             InterlockedIncrement(reinterpret_cast<volatile long*>(&buffer->m_uiRefCount));
     }
-    texture->m_bUseDepthBuffer = ms_bUseDepthBuffer;
+    texture->bForceD3DFormat = ms_bUseDepthBuffer;
     texture->m_ePixelFormat = ms_eDepthStencilFormat;
-    texture->m_bUseMipMaps = ms_bUseMipMaps;
-    if (!dxRenderer->CreateRenderedTexture(texture, msaa))
+    texture->bRenderedTexture = ms_bUseMipMaps;
+    if (!dxRenderer->CreateRenderedTexture(texture, eMSAAPref))
     {
         delete texture;
         return 0;
     }
-    texture->m_eMultiSamplePreference = msaa;
-    texture->m_pReuseTexture = 0;
+    texture->eMSAA = eMSAAPref;
+    texture->pAliasTexture = 0;
     return texture;
 }
 
@@ -74,6 +76,8 @@ extern int DAT_0109b944;
 // extern "C" long __cdecl InterlockedDecrement(long*);
 
 // @fnv 0x00a7fd30
+// pdb: NiRenderedTexture::`scalar deleting destructor' | NiRenderedTexture.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiGeometry::~NiGeometry
 void* __fastcall DestroyRenderedTexture(NiRenderedTexture* self, int, unsigned char flags)
 {
     void* p30 = *(void**)((char*)self + 0x30);
@@ -121,7 +125,7 @@ unsigned int NiTexture::GetRenderedWidth()
 {
     Ni2DBuffer* buffer = static_cast<NiRenderedTexture*>(this)->m_spRenderTargetBuffer.m_pObject;
     if (buffer)
-        return buffer->m_uiImageWidth;
+        return buffer->m_uiWidth;
     return 0;
 }
 
@@ -130,7 +134,7 @@ unsigned int NiTexture::GetRenderedHeight()
 {
     Ni2DBuffer* buffer = static_cast<NiRenderedTexture*>(this)->m_spRenderTargetBuffer.m_pObject;
     if (buffer)
-        return buffer->m_uiImageHeight;
+        return buffer->m_uiHeight;
     return 0;
 }
 

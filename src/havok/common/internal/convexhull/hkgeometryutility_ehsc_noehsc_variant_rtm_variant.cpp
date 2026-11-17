@@ -29,7 +29,7 @@ struct FUN_00d5a5e0_ctxA
 
     void InitA();
     int FindB(void* a1, void* b);
-    void SetB(int zero, int a2);
+    void SetB(int inputs, int geometry);
     void FinishA();
 };
 struct FUN_00d5a5e0_ctxB
@@ -54,7 +54,7 @@ struct FUN_00d5a630_ctxA
 
     void InitA();
     int FindB(void* a1, void* b);
-    void SetB(int zero, int a2);
+    void SetB(int inputs, int geometry);
     void SetF(float f, int zero);
     void SetC(int a3);
     void FinishA();
@@ -134,7 +134,7 @@ struct D5C110Geometry
 };
 void __cdecl ProcessArg(const void* shape, D5C110VertexArray& vertices);
 void __cdecl InitAndSetB(const D5C110StridedVertices& vertices, D5C110Geometry& out);
-void __cdecl BuildGeometryFromShape(const void* shape, D5C110Geometry& aGeometry);
+void __cdecl hkGeometryUtility_createGeometryFromPlaneEquations(const void* planeEquationsIn, D5C110Geometry& geometryOut);
 struct D5C110VertexArray;
 void __cdecl ProcessArg(const void* shape, D5C110VertexArray& vertices);
 void __cdecl hkGeometryUtility_createVerticesFromPlaneEquations(const void* shape, D5C110VertexArray& vertices);
@@ -355,12 +355,15 @@ static __forceinline float MeanCovarea(LocalM128 e0, LocalM128 e1)
 }
 // @fnv 0x00d5c1a0
 // src: XBOX_PDB 0x00d5c1a0
-extern "C" __declspec(noinline) void __cdecl getMeanAndCovariance(const void* vertices, int count, MeanCovObbStride stride,
-                                                          MeanCovObbRot* covariance, Vec4* center,
+// pdb: getMeanAndCovariance | hkGeometryUtility.obj | retail, upstream name already matches, high
+// pdb params: vertexArray, numVertices, striding, cov, mu, perturb
+// pdb locals: mbuffer, Ak, r, q, mh, p, randvec, prng
+extern "C" __declspec(noinline) void __cdecl getMeanAndCovariance(const void* vertexArray, int numVertices, MeanCovObbStride striding,
+                                                          MeanCovObbRot* cov, Vec4* mu,
                                                           MeanCovObbFlag perturb)
 {
     int j, k;
-    int n = count / 3;
+    int n = numVertices / 3;
     float totalArea = 0;
     LocalM128 zero;
     zero = _mm_setzero_ps();
@@ -368,28 +371,28 @@ extern "C" __declspec(noinline) void __cdecl getMeanAndCovariance(const void* ve
     weighted = _mm_setzero_ps();
     MeanCovObbArr centroids;
     Vec4* all = centroids.expandBy(n);
-    covariance->c0.getQuad() = zero;
-    covariance->c1.getQuad() = zero;
-    covariance->c2.getQuad() = zero;
-    const char* p = (const char*)vertices;
+    cov->c0.getQuad() = zero;
+    cov->c1.getQuad() = zero;
+    cov->c2.getQuad() = zero;
+    const char* p = (const char*)vertexArray;
     for (int t = 0; t < n; t++)
     {
         Vec4* centroid = &all[t];
         LocalM128 a, b, c;
         MeanCovLoad(a, (const float*)p);
-        p += stride.v;
+        p += striding.v;
         MeanCovLoad(b, (const float*)p);
-        p += stride.v;
+        p += striding.v;
         MeanCovLoad(c, (const float*)p);
-        p += stride.v;
+        p += striding.v;
         LocalM128 av = a;
         LocalM128 bv = b;
         float triangleArea;
         if (perturb.c)
         {
             MeanCovObbRandom random;
-            random.seed0 = count;
-            random.seed1 = count;
+            random.seed0 = numVertices;
+            random.seed1 = numVertices;
             LocalM128 delta;
             random.NextFloat4((Vec4&)delta);
             LocalM128 moved;
@@ -420,7 +423,7 @@ extern "C" __declspec(noinline) void __cdecl getMeanAndCovariance(const void* ve
             {
                 for (int k = 0; k < 3; k++)
                 {
-                    covariance->at(j, k) +=
+                    cov->at(j, k) +=
                         (9.0 * all[t](j) * all[t](k) + MeanCovAt(a, j) * MeanCovAt(a, k) + MeanCovGet(b, k) * MeanCovAt(b, j) + MeanCovGet(c, k) * MeanCovAt(c, j)) * triangleArea;
                 }
             }
@@ -438,20 +441,20 @@ extern "C" __declspec(noinline) void __cdecl getMeanAndCovariance(const void* ve
             {
                 for (int k = 0; k < 3; k++)
                 {
-                    covariance->at(j, k) += MeanCovGet(b, k) * MeanCovAt(b, j) + MeanCovAt(a, j) * MeanCovAt(a, k) + MeanCovAt(c, k) * MeanCovAt(c, j);
+                    cov->at(j, k) += MeanCovGet(b, k) * MeanCovAt(b, j) + MeanCovAt(a, j) * MeanCovAt(a, k) + MeanCovAt(c, k) * MeanCovAt(c, j);
                 }
             }
         }
     }
     if (totalArea <= 0)
     {
-        center->getQuad() = zero;
-        covariance->c0.getQuad() = zero;
-        covariance->c1.getQuad() = zero;
-        covariance->c2.getQuad() = zero;
-        covariance->c0(0) = 1;
-        covariance->c1(1) = 1;
-        covariance->c2(2) = 1;
+        mu->getQuad() = zero;
+        cov->c0.getQuad() = zero;
+        cov->c1.getQuad() = zero;
+        cov->c2.getQuad() = zero;
+        cov->c0(0) = 1;
+        cov->c1(1) = 1;
+        cov->c2(2) = 1;
     }
     else
     {
@@ -461,9 +464,9 @@ extern "C" __declspec(noinline) void __cdecl getMeanAndCovariance(const void* ve
         {
             for (k = 0; k < 3; k++)
             {
-                covariance->at(j, k) = covariance->at(j, k) / 12.0 - (MeanCovAt(weighted, j) * MeanCovAt(weighted, k)) * totalArea;
+                cov->at(j, k) = cov->at(j, k) / 12.0 - (MeanCovAt(weighted, j) * MeanCovAt(weighted, k)) * totalArea;
             }
         }
-        center->getQuad() = weighted;
+        mu->getQuad() = weighted;
     }
 }

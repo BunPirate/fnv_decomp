@@ -6,11 +6,12 @@
 #include "hkBase.h"
 #include "hkpLimitedForceConstraintMotor.h"
 #pragma pack(push, 1)
+// pdb: class hkpSpringDamperConstraintMotor, size 0x1c, bases: hkpLimitedForceConstraintMotor, 2 members
 class hkpSpringDamperConstraintMotor : public hkpLimitedForceConstraintMotor
 {
   public:
-    hkReal m_fSpringConstant;  // +0x14
-    hkReal m_fSpringDamping;   // +0x18
+    hkReal m_springConstant;  // +0x14 // src: XBOX_RETAIL_PDB +0x14 (old: m_fSpringConstant)
+    hkReal m_springDamping;   // +0x18 // src: XBOX_RETAIL_PDB +0x18 (old: m_fSpringDamping)
 };
 #pragma pack(pop)
 typedef char fnv_hk_size_hkpSpringDamperConstraintMotor[(sizeof(hkpSpringDamperConstraintMotor) == 0x1C) ? 1 : -1];

@@ -119,8 +119,11 @@ struct State
     int count;
     int context;
 };
-void hkpInertiaTensorComputer_computeConvexHullMassProperties(void* state, float zero, void* receiver);
+void hkpInertiaTensorComputer_computeConvexHullMassProperties(void* vertices, float radius, void* result);
 // @fnv 0x00ced020
+// pdb: hkpInertiaTensorComputer::computeVertexHullVolumeMassProperties | hkpInertiaTensorComputer.obj | retail, object-file run extension, low
+// pdb params: vertexIn, striding, numVertices, mass, result
+// pdb locals: sv, assertBuf, ostr
 int __cdecl ApplyLimitToReceiver(int owner, int context, int count, float limit, Receiver* receiver, float value)
 {
     State state;
@@ -365,10 +368,14 @@ struct S_00cee1c0_Arr
 };
 
 S_00cee1c0_Router* hkMemoryRouter_getInstance();
-float __cdecl hkInertiaTensorComputer_optimizeInertiasOfConstraintTreeInt(S_00cee1c0_Arr* arr, int unk, float value);
+float __cdecl hkInertiaTensorComputer_optimizeInertiasOfConstraintTreeInt(S_00cee1c0_Arr* constraints, int unk, float inertiaFactorHint);
 
 // @fnv 0x00cee1c0
-void __cdecl ProcessArrayWithValue(unsigned int* source, int count, int unk, float value)
+// src: XBOX_RETAIL_PDB 0x00cee1c0
+// pdb: hkpInertiaTensorComputer::optimizeInertiasOfConstraintTree | hkpInertiaTensorComputer.obj | retail, object-file gap fill, high
+// pdb params: constraints, numConstraints, rootBody, inertiaFactorHint
+// pdb locals: constr
+void __cdecl hkpInertiaTensorComputer_optimizeInertiasOfConstraintTree(unsigned int* constraints, int numConstraints, int rootBody, float inertiaFactorHint)
 {
     S_00cee1c0_Arr arr;
     arr.m_data = 0;
@@ -377,22 +384,22 @@ void __cdecl ProcessArrayWithValue(unsigned int* source, int count, int unk, flo
 
     S_00cee1c0_Router* r = hkMemoryRouter_getInstance();
     unsigned int* mem = (unsigned int*)r->cursor;
-    r->cursor = (unsigned int)mem + ((count * 4 + 0x7f) & 0xffffff80);
-    arr.m_cap = count | 0x80000000;
+    r->cursor = (unsigned int)mem + ((numConstraints * 4 + 0x7f) & 0xffffff80);
+    arr.m_cap = numConstraints | 0x80000000;
     arr.m_data = mem;
     arr.m_pTrailingData = mem;
 
     int i = 0;
-    if (count > 0)
+    if (numConstraints > 0)
     {
         do
         {
-            arr.m_data[arr.m_iElementCount++] = source[i];
+            arr.m_data[arr.m_iElementCount++] = constraints[i];
             i++;
-        } while (i < count);
+        } while (i < numConstraints);
     }
 
-    hkInertiaTensorComputer_optimizeInertiasOfConstraintTreeInt(&arr, unk, value);
+    hkInertiaTensorComputer_optimizeInertiasOfConstraintTreeInt(&arr, rootBody, inertiaFactorHint);
     unsigned int* local = arr.m_pTrailingData;
     if (local == arr.m_data)
     {
@@ -445,7 +452,7 @@ struct S00cec3d0_Face : S00cec3d0_Base
     float m_fVertex2Y;
     float m_fVertex2Z;
 
-    void InternalInertiaTensorComputer_compFaceIntegrals(const float* verts, const float* n);
+    void InternalInertiaTensorComputer_compFaceIntegrals(const float* v, const float* n);
 };
 
 static inline float S00cec3d0_Sqr(float x)
@@ -467,41 +474,43 @@ void S00cec3d0_Base::InternalInertiaTensorComputer_compProjectionIntegrals(const
 // Calls FUN_00cec000, then fills Fa, Fb, Fc and the m_fVertex fields from verts, normal n and the base fields using polynomials in 1/n[C].
 // @fnv 0x00cec3d0
 // src: HAVOK_LIB 0x00cec3d0
-void S00cec3d0_Face::InternalInertiaTensorComputer_compFaceIntegrals(const float* verts, const float* apNormal)
+// pdb: InternalInertiaTensorComputer::compFaceIntegrals | hkpInertiaTensorComputer.obj | retail, upstream name already matches, high
+// pdb params: v, n
+void S00cec3d0_Face::InternalInertiaTensorComputer_compFaceIntegrals(const float* v, const float* n)
 {
-    InternalInertiaTensorComputer_compProjectionIntegrals(verts);
-    float w = -apNormal[0] * verts[0] - verts[1] * apNormal[1] - verts[2] * apNormal[2];
-    float k1 = 1.0f / apNormal[C];
+    InternalInertiaTensorComputer_compProjectionIntegrals(v);
+    float w = -n[0] * v[0] - v[1] * n[1] - v[2] * n[2];
+    float k1 = 1.0f / n[C];
     float k2 = k1 * k1;
     float k3 = k2 * k1;
     float k4 = k3 * k1;
 
     Fa = k1 * Pa;
     Fb = k1 * Pb;
-    Fc = -k2 * (apNormal[A] * Pa + apNormal[B] * Pb + w * P1);
+    Fc = -k2 * (n[A] * Pa + n[B] * Pb + w * P1);
 
     m_fVertex0X = k1 * m_fComponent0;
     m_fVertex0Y = k1 * m_fComponent2;
     m_fVertex0Z =
-        k3 * (S00cec3d0_Sqr(apNormal[A]) * m_fComponent0 + 2.0 * apNormal[A] * apNormal[B] * m_fComponent1 +
-              S00cec3d0_Sqr(apNormal[B]) * m_fComponent2 + w * (2.0 * (apNormal[A] * Pa + apNormal[B] * Pb) + w * P1));
+        k3 * (S00cec3d0_Sqr(n[A]) * m_fComponent0 + 2.0 * n[A] * n[B] * m_fComponent1 +
+              S00cec3d0_Sqr(n[B]) * m_fComponent2 + w * (2.0 * (n[A] * Pa + n[B] * Pb) + w * P1));
 
     m_fVertex1X = k1 * m_fComponent3;
     m_fVertex1Y = k1 * m_fComponent6;
     m_fVertex1Z =
         -k4 *
-        (S00cec3d0_Cube(apNormal[A]) * m_fComponent3 + 3.0 * S00cec3d0_Sqr(apNormal[A]) * apNormal[B] * m_fComponent4 +
-         3.0 * apNormal[A] * S00cec3d0_Sqr(apNormal[B]) * m_fComponent5 + S00cec3d0_Cube(apNormal[B]) * m_fComponent6 +
+        (S00cec3d0_Cube(n[A]) * m_fComponent3 + 3.0 * S00cec3d0_Sqr(n[A]) * n[B] * m_fComponent4 +
+         3.0 * n[A] * S00cec3d0_Sqr(n[B]) * m_fComponent5 + S00cec3d0_Cube(n[B]) * m_fComponent6 +
          3.0 * w *
-             (S00cec3d0_Sqr(apNormal[A]) * m_fComponent0 + 2.0 * apNormal[A] * apNormal[B] * m_fComponent1 +
-              S00cec3d0_Sqr(apNormal[B]) * m_fComponent2) +
-         w * w * (3.0 * (apNormal[A] * Pa + apNormal[B] * Pb) + w * P1));
+             (S00cec3d0_Sqr(n[A]) * m_fComponent0 + 2.0 * n[A] * n[B] * m_fComponent1 +
+              S00cec3d0_Sqr(n[B]) * m_fComponent2) +
+         w * w * (3.0 * (n[A] * Pa + n[B] * Pb) + w * P1));
 
     m_fVertex2X = k1 * m_fComponent4;
-    m_fVertex2Y = -k2 * (apNormal[A] * m_fComponent5 + apNormal[B] * m_fComponent6 + w * m_fComponent2);
-    m_fVertex2Z = k3 * (S00cec3d0_Sqr(apNormal[A]) * m_fComponent3 + 2.0 * apNormal[A] * apNormal[B] * m_fComponent4 +
-                        S00cec3d0_Sqr(apNormal[B]) * m_fComponent5 +
-                        w * (2.0 * (apNormal[A] * m_fComponent0 + apNormal[B] * m_fComponent1) + w * Pa));
+    m_fVertex2Y = -k2 * (n[A] * m_fComponent5 + n[B] * m_fComponent6 + w * m_fComponent2);
+    m_fVertex2Z = k3 * (S00cec3d0_Sqr(n[A]) * m_fComponent3 + 2.0 * n[A] * n[B] * m_fComponent4 +
+                        S00cec3d0_Sqr(n[B]) * m_fComponent5 +
+                        w * (2.0 * (n[A] * m_fComponent0 + n[B] * m_fComponent1) + w * Pa));
 }
 
 struct Matrix
@@ -567,6 +576,10 @@ struct MotionLike
 // Copies source field04 to destination field90, and source field10, field20, field30, field40 to destination field80, field50, field60, field70.
 // @fnv 0x00cebdb0
 // src: GUESS 0x00cebdb0 (confidence: medium)
+// pdb: hkpInertiaTensorComputer::setAndScaleToMass | hkpInertiaTensorComputer.obj | retail, object-file run extension, low
+// pdb note: debug build links it to scaleMassProperties
+// pdb params: props, mass, bodyInfo
+// pdb locals: f, assertBuf, ostr
 void Hkpinertiatensorcomputer_CopySelectedSourceFields(const MotionLike* source, MotionLike* destination)
 {
     destination->field90 = source->field04;
@@ -590,6 +603,9 @@ struct Owner
 // Multiplies m04 by value, then calls Multiply on m20 with a hkVector4 broadcast from value.
 // @fnv 0x00cebfd0
 // src: XBOX_PDB 0x00cebfd0
+// pdb: hkMatrix3::mul | hkMatrix3.obj | retail, upstream name already matches, high
+// pdb params: a
+// pdb locals: temp
 static __declspec(noinline) void hkMatrix3_mul(Owner* self, float afScale)
 {
     self->m04 *= afScale;
@@ -635,11 +651,11 @@ struct S00ceccf0_Out
 extern const double DAT_010cbf40;
 
 // src: XBOX_PDB 0x00ceba60
-static __declspec(noinline) void __cdecl hkpInertiaTensorComputer_computeSphereVolumeMassProperties(float a, float b, S00ceccf0_Out* out)
+static __declspec(noinline) void __cdecl hkpInertiaTensorComputer_computeSphereVolumeMassProperties(float radius, float mass, S00ceccf0_Out* result)
 {
-    out->m_10.m_vComponents = _mm_setzero_ps();
-    out->m_00 = a * b;
-    out->m_04 = a + b;
+    result->m_10.m_vComponents = _mm_setzero_ps();
+    result->m_00 = radius * mass;
+    result->m_04 = radius + mass;
 }
 
 void(__cdecl* g_S00ceccf0_fp)(float, float, S00ceccf0_Out*) = &hkpInertiaTensorComputer_computeSphereVolumeMassProperties;
@@ -654,6 +670,9 @@ static __declspec(noinline) void hkMatrix3_mul(S00ceccf0_Out* out, float value)
 // Returns 1 for invalid span, start or t; otherwise combines two FUN_00ceba60 results (for start and start-t) into out, scales by span/(a-b), and returns 0.
 // @fnv 0x00ceccf0
 // src: GUESS 0x00ceccf0 (confidence: low)
+// pdb: hkpInertiaTensorComputer::computeSphereSurfaceMassProperties | hkpInertiaTensorComputer.obj | retail, object-file run extension, low
+// pdb params: radius, mass, surfaceThickness, result
+// pdb locals: resultSmall, resultBig, assertBuf, ostr
 int __cdecl hkpInertiaTensorComputer_computeSphereVolumeMassProperties_UpdateState_00ceccf0(float start, float span, float t, S00ceccf0_Out* out)
 {
     if (span <= 0.0f)
@@ -760,7 +779,7 @@ struct LocalArr
     Edge* storage[16];
 };
 
-void __cdecl ResizeAudioStream(void* heap, void* array, int elemSize);
+void __cdecl ResizeAudioStream(void* mem, void* array, int sizeElem);
 
 __forceinline void releaseArr(LocalArr* a)
 {
@@ -784,16 +803,19 @@ __forceinline float fTargetUpperBound(float a, float b)
 // Recurses over arr's edges linked to the node, then for a non-static node limits its inertia diagonal entries and returns a clamped value; static nodes return 0.
 // @fnv 0x00cedec0
 // src: HAVOK_LIB 0x00cedec0
-float __cdecl hkInertiaTensorComputer_optimizeInertiasOfConstraintTreeInt(S_00cee1c0_Arr* arr, int aiNode, float value)
+// pdb: hkInertiaTensorComputer_optimizeInertiasOfConstraintTreeInt | hkpInertiaTensorComputer.obj | retail, upstream name already matches, high
+// pdb params: constraints, body, inertiaFactorHint
+// pdb locals: children, inertia, ci
+float __cdecl hkInertiaTensorComputer_optimizeInertiasOfConstraintTreeInt(S_00cee1c0_Arr* constraints, int aiNode, float inertiaFactorHint)
 {
     LocalArr local;
     local.m_data = &local.storage[0];
     local.m_iElementCount = 0;
     local.m_cap = (int)0x80000010u;
 
-    for (int i = arr->m_iElementCount - 1; i >= 0; --i)
+    for (int i = constraints->m_iElementCount - 1; i >= 0; --i)
     {
-        unsigned int* data = arr->m_data;
+        unsigned int* data = constraints->m_data;
         Edge* e = (Edge*)data[i];
         int other;
         if (e->n14 == aiNode)
@@ -805,7 +827,7 @@ float __cdecl hkInertiaTensorComputer_optimizeInertiasOfConstraintTreeInt(S_00ce
         if (other == 0)
             continue;
 
-        int n = --arr->m_iElementCount;
+        int n = --constraints->m_iElementCount;
         if (n != i)
             data[i] = data[n];
 
@@ -821,7 +843,7 @@ float __cdecl hkInertiaTensorComputer_optimizeInertiasOfConstraintTreeInt(S_00ce
     {
         Edge* e = local.m_data[i];
         int other = (e->n14 == aiNode) ? e->n18 : e->n14;
-        float r = hkInertiaTensorComputer_optimizeInertiasOfConstraintTreeInt(arr, other, value);
+        float r = hkInertiaTensorComputer_optimizeInertiasOfConstraintTreeInt(constraints, other, inertiaFactorHint);
         sum += r;
         if (best < r)
             best = r;
@@ -849,7 +871,7 @@ float __cdecl hkInertiaTensorComputer_optimizeInertiasOfConstraintTreeInt(S_00ce
         return maxDiag;
     }
 
-    float fClamped = fTargetUpperBound(sum, maxDiag * value);
+    float fClamped = fTargetUpperBound(sum, maxDiag * inertiaFactorHint);
     fClamped = fMinimumInputValue(fClamped, best);
 
     if (!(fClamped < fIxx))
@@ -861,7 +883,7 @@ float __cdecl hkInertiaTensorComputer_optimizeInertiasOfConstraintTreeInt(S_00ce
 
     body->hkpRigidBody_setInertiaLocal(&m);
 
-    float result = fMinimumInputValue(fTargetUpperBound(maxDiag * value, maxDiag + sum), fClamped);
+    float result = fMinimumInputValue(fTargetUpperBound(maxDiag * inertiaFactorHint, maxDiag + sum), fClamped);
     releaseArr(&local);
     return result;
 }
@@ -894,11 +916,11 @@ struct Track
     void hkgpConvexHull_build_00d77200(void* state, Probe* probe);
     int GetInnerField1A8();
     void ForwardCall_00d762f0();
-    float GetMass();
+    float hkgpConvexHull_getSurfaceArea();
     double hkgpConvexHull_getVolume();
     LocalM128* hkgpConvexHull_getCenterOfMass();
     LocalM128* hkgpConvexHull_getWorldInertia();
-    void hkgpConvexHull_expandByPlanarMargin(float scale);
+    void hkgpConvexHull_expandByPlanarMargin(float margin);
     void ReleaseStorage_00d76940();
 };
 struct RowMatrix
@@ -932,14 +954,17 @@ extern "C" void _ReadWriteBarrier();
 // Steps a Track until it reaches stage 3 past a threshold, stores its translation, matrix and time in receiver, and returns 0, or 1 if the stage is -1.
 // @fnv 0x00cebbb0
 // src: XBOX_PDB 0x00cebbb0
-int __cdecl hkpInertiaTensorComputer_computeConvexHullMassProperties(void* state, float value, Receiver2* receiver)
+// pdb: hkpInertiaTensorComputer::computeConvexHullMassProperties | hkpInertiaTensorComputer.obj | retail, upstream name already matches, high
+// pdb params: vertices, radius, result
+// pdb locals: config, hull
+int __cdecl hkpInertiaTensorComputer_computeConvexHullMassProperties(void* vertices, float radius, Receiver2* result)
 {
     Track track;
     Probe probe;
     track.FUN_00d76ca0();
     ((Status*)&probe)->hkgpConvexHull_BuildConfig_BuildConfig();
     probe.flag = 1;
-    track.hkgpConvexHull_build_00d77200(state, &probe);
+    track.hkgpConvexHull_build_00d77200(vertices, &probe);
     if (track.GetInnerField1A8() != -1)
     {
         float step = (float)(DAT_011b153c / DAT_01020998);
@@ -947,31 +972,31 @@ int __cdecl hkpInertiaTensorComputer_computeConvexHullMassProperties(void* state
         if (track.GetInnerField1A8() == 3)
         {
             track.ForwardCall_00d762f0();
-            if (value > 0.0f)
+            if (radius > 0.0f)
             {
-                float pulse = track.GetMass() * value;
+                float pulse = track.hkgpConvexHull_getSurfaceArea() * radius;
                 double p = pulse;
                 _ReadWriteBarrier();
-                current = p + value * DAT_010cbf50 * value * value / 3.0;
+                current = p + radius * DAT_010cbf50 * radius * radius / 3.0;
             }
         }
         while (track.GetInnerField1A8() != 3 || track.hkgpConvexHull_getVolume() < DAT_010cbf48)
         {
-            track.hkgpConvexHull_build_00d77200(state, &probe);
+            track.hkgpConvexHull_build_00d77200(vertices, &probe);
             track.hkgpConvexHull_expandByPlanarMargin(step);
             if (track.GetInnerField1A8() == 3)
                 track.ForwardCall_00d762f0();
             step += step;
         }
-        receiver->translation = *track.hkgpConvexHull_getCenterOfMass();
+        result->translation = *track.hkgpConvexHull_getCenterOfMass();
         LocalM128* rows = track.hkgpConvexHull_getWorldInertia();
-        RowMatrix* m = &receiver->matrix;
+        RowMatrix* m = &result->matrix;
         m->row0 = rows[0];
         m->row1 = rows[1];
         m->row2 = rows[2];
         float total = (float)(current + track.hkgpConvexHull_getVolume());
-        receiver->time = total;
-        receiver->enabled = 1.0f;
+        result->time = total;
+        result->enabled = 1.0f;
         if (total > 0.0f && current > 0.0f)
         {
             float fRatio = (float)(current / total + 1.0);
@@ -1054,9 +1079,9 @@ struct CEFBAreas
     unsigned m_iCapacity;
 };
 
-void __cdecl hkArrayUtil__reserve(S_00cee1c0_Heap* heap, CEFBAreas* arr, int count, int elemSize);
-int __cdecl hkVector4_UpdateState_00cee290(const hkVector4* v0, const hkVector4* v1, const hkVector4* v2, float triMass,
-                         float thickness, CE50Body* out);
+void __cdecl hkArrayUtil__reserve(S_00cee1c0_Heap* mem, CEFBAreas* array, int numElem, int sizeElem);
+int __cdecl hkpInertiaTensorComputer_computeTriangleSurfaceMassProperties(const hkVector4* v0, const hkVector4* v1, const hkVector4* v2, float triMass,
+                         float surfaceThickness, CE50Body* result);
 extern "C" void _ReadWriteBarrier(void);
 
 __declspec(noinline) void __cdecl AddInertiaTensor(float* c, float m, float* I)
@@ -1072,14 +1097,14 @@ __declspec(noinline) void __cdecl AddInertiaTensor(float* c, float m, float* I)
     I[8] = I[2] = zx;
 }
 void __cdecl hkpInertiaTensorComputer_computeBoxVolumeMassProperties_ComputeGeometryMassProperties(const CEFBGeom* geometry, float mass, CE50Body* out);
-// src: GUESS 0x00cee290 (confidence: low)
-__declspec(noinline) int __cdecl hkVector4_UpdateState_00cee290(const hkVector4* a, const hkVector4* b, const hkVector4* c, float mass,
-                                              float thickness, CE50Body* out)
+// src: XBOX_RETAIL_PDB 0x00cee290
+__declspec(noinline) int __cdecl hkpInertiaTensorComputer_computeTriangleSurfaceMassProperties(const hkVector4* v0, const hkVector4* v1, const hkVector4* v2, float mass,
+                                              float surfaceThickness, CE50Body* result)
 {
-    if (mass <= 0.0f || thickness < 0.0f)
+    if (mass <= 0.0f || surfaceThickness < 0.0f)
         return 1;
-    LocalM128 ab = _mm_sub_ps(a->m_vComponents, b->m_vComponents);
-    LocalM128 cb = _mm_sub_ps(c->m_vComponents, b->m_vComponents);
+    LocalM128 ab = _mm_sub_ps(v0->m_vComponents, v1->m_vComponents);
+    LocalM128 cb = _mm_sub_ps(v2->m_vComponents, v1->m_vComponents);
     LocalM128 cross = _mm_sub_ps(_mm_mul_ps(_mm_shuffle_ps(ab, ab, 0xd2), _mm_shuffle_ps(cb, cb, 0xc9)),
                               _mm_mul_ps(_mm_shuffle_ps(ab, ab, 0xc9), _mm_shuffle_ps(cb, cb, 0xd2)));
     LocalM128 sq = _mm_mul_ps(cross, cross);
@@ -1090,22 +1115,22 @@ __declspec(noinline) int __cdecl hkVector4_UpdateState_00cee290(const hkVector4*
     float thirdF = 1.0f / 3.0f;
     LocalM128 thirdV = _mm_load_ss(&thirdF);
     LocalM128 third = _mm_shuffle_ps(thirdV, thirdV, 0);
-    center.m_vComponents = _mm_mul_ps(_mm_add_ps(_mm_add_ps(a->m_vComponents, b->m_vComponents), c->m_vComponents), third);
+    center.m_vComponents = _mm_mul_ps(_mm_add_ps(_mm_add_ps(v0->m_vComponents, v1->m_vComponents), v2->m_vComponents), third);
     CE50Matrix inertia;
-    if (thickness < 1e-5f)
+    if (surfaceThickness < 1e-5f)
     {
-        float xx = (float)((a->x * a->x + b->x * b->x + c->x * c->x + 9.0 * center.x * center.x) * mass / 12.0);
-        float yy = (float)((a->y * a->y + b->y * b->y + c->y * c->y + 9.0 * center.y * center.y) * mass / 12.0);
-        float zz = (float)((a->z * a->z + b->z * b->z + c->z * c->z + 9.0 * center.z * center.z) * mass / 12.0);
+        float xx = (float)((v0->x * v0->x + v1->x * v1->x + v2->x * v2->x + 9.0 * center.x * center.x) * mass / 12.0);
+        float yy = (float)((v0->y * v0->y + v1->y * v1->y + v2->y * v2->y + 9.0 * center.y * center.y) * mass / 12.0);
+        float zz = (float)((v0->z * v0->z + v1->z * v1->z + v2->z * v2->z + 9.0 * center.z * center.z) * mass / 12.0);
         inertia.row0.x = yy + zz;
         inertia.row1.y = xx + zz;
         inertia.row2.z = xx + yy;
         inertia.row0.y = inertia.row1.x =
-            -(float)((a->x * a->y + b->x * b->y + c->x * c->y + 9.0 * center.x * center.y) * mass / 12.0);
+            -(float)((v0->x * v0->y + v1->x * v1->y + v2->x * v2->y + 9.0 * center.x * center.y) * mass / 12.0);
         inertia.row0.z = inertia.row2.x =
-            -(float)((a->x * a->z + b->x * b->z + c->x * c->z + 9.0 * center.x * center.z) * mass / 12.0);
+            -(float)((v0->x * v0->z + v1->x * v1->z + v2->x * v2->z + 9.0 * center.x * center.z) * mass / 12.0);
         inertia.row1.z = inertia.row2.y =
-            -(float)((a->y * a->z + b->y * b->z + c->y * c->z + 9.0 * center.y * center.z) * mass / 12.0);
+            -(float)((v0->y * v0->z + v1->y * v1->z + v2->y * v2->z + 9.0 * center.y * center.z) * mass / 12.0);
         hkpInertiaTensorComputer_shiftInertiaToCom(&center, mass, &inertia.row0.x);
     }
     else if (length <= 0.0f)
@@ -1119,28 +1144,28 @@ __declspec(noinline) int __cdecl hkVector4_UpdateState_00cee290(const hkVector4*
     }
     else
     {
-        float halfThickness = thickness * 0.5f;
+        float halfThickness = surfaceThickness * 0.5f;
         LocalM128 inv = _mm_load_ss(&length);
         inv = _mm_div_ss(_mm_load_ss(&halfThickness), inv);
         LocalM128 delta = _mm_mul_ps(cross, _mm_shuffle_ps(inv, inv, 0));
         hkVector4 points[6];
-        points[0].m_vComponents = _mm_add_ps(a->m_vComponents, delta);
-        points[1].m_vComponents = _mm_sub_ps(a->m_vComponents, delta);
-        points[2].m_vComponents = _mm_add_ps(b->m_vComponents, delta);
-        points[3].m_vComponents = _mm_sub_ps(b->m_vComponents, delta);
-        points[4].m_vComponents = _mm_add_ps(c->m_vComponents, delta);
-        points[5].m_vComponents = _mm_sub_ps(c->m_vComponents, delta);
+        points[0].m_vComponents = _mm_add_ps(v0->m_vComponents, delta);
+        points[1].m_vComponents = _mm_sub_ps(v0->m_vComponents, delta);
+        points[2].m_vComponents = _mm_add_ps(v1->m_vComponents, delta);
+        points[3].m_vComponents = _mm_sub_ps(v1->m_vComponents, delta);
+        points[4].m_vComponents = _mm_add_ps(v2->m_vComponents, delta);
+        points[5].m_vComponents = _mm_sub_ps(v2->m_vComponents, delta);
         CEFBTri faces[8] = {{0, 2, 4, -1}, {1, 5, 3, -1}, {0, 3, 2, -1}, {0, 1, 3, -1},
                             {1, 0, 4, -1}, {1, 4, 5, -1}, {2, 5, 4, -1}, {2, 3, 5, -1}};
         CEFBGeom prism = {points, 6, 0x80000006u, faces, 8, 0x80000008u};
-        hkpInertiaTensorComputer_computeBoxVolumeMassProperties_ComputeGeometryMassProperties(&prism, mass, out);
-        center = out->center;
-        inertia = out->inertia;
+        hkpInertiaTensorComputer_computeBoxVolumeMassProperties_ComputeGeometryMassProperties(&prism, mass, result);
+        center = result->center;
+        inertia = result->inertia;
     }
-    out->mass = mass;
-    out->volume = length * 0.5f * thickness;
-    out->center = center;
-    out->inertia = inertia;
+    result->mass = mass;
+    result->volume = length * 0.5f * surfaceThickness;
+    result->center = center;
+    result->inertia = inertia;
     return 0;
 }
 
@@ -1150,8 +1175,11 @@ struct BoolFlag
 };
 // Computes the rigid body properties (mass, center of mass, and inertia tensor) for a CEFBGeom by summing contributions from each triangle.
 // @fnv 0x00cefb90
-// src: GUESS 0x00cefb90 (confidence: medium)
-int __cdecl hkVector4_ComputeTriangleSurfaceMassProperties(const CEFBGeom* geom, float surfaceThickness, BoolFlag distributeUniformly, float mass,
+// src: XBOX_RETAIL_PDB 0x00cefb90
+// pdb: hkpInertiaTensorComputer::computeGeometrySurfaceMassProperties | hkpInertiaTensorComputer.obj | retail, object-file gap fill, high
+// pdb params: geom, surfaceThickness, distributeUniformly, mass, result
+// pdb locals: triArea, assertBuf, ostr, shift, v0, triMassProperties, v2, triMass, v1, it
+int __cdecl hkpInertiaTensorComputer_computeGeometrySurfaceMassProperties(const CEFBGeom* geom, float surfaceThickness, BoolFlag distributeUniformly, float mass,
                          CE50Body* result)
 {
     if (mass <= 0.0f)
@@ -1242,7 +1270,7 @@ int __cdecl hkVector4_ComputeTriangleSurfaceMassProperties(const CEFBGeom* geom,
         triBody.inertia.row0.m_vComponents = zero;
         triBody.inertia.row1.m_vComponents = zero;
         triBody.inertia.row2.m_vComponents = zero;
-        hkVector4_UpdateState_00cee290(&v0, &v1, &v2, triMass, surfaceThickness, &triBody);
+        hkpInertiaTensorComputer_computeTriangleSurfaceMassProperties(&v0, &v1, &v2, triMass, surfaceThickness, &triBody);
 
         CE50Matrix shiftedInertia;
         shiftedInertia.row0.m_vComponents = triBody.inertia.row0.m_vComponents;
@@ -1365,43 +1393,46 @@ void __cdecl AddInertiaTensor(hkVector4* d, float m, S_00ced090_Mat* mat);
 // Sums mass and mass-weighted center and accumulates an inertia tensor over the elements into out; returns 1 if the total mass is not positive.
 // @fnv 0x00ced090
 // src: XBOX_PDB 0x00ced090
-int __cdecl hkpInertiaTensorComputer_combineMassProperties(S_00ced090_State* apState, S_00ced090_Out* out)
+// pdb: hkpInertiaTensorComputer::combineMassProperties | hkpInertiaTensorComputer.obj | retail, upstream name already matches, high
+// pdb params: elements, result
+// pdb locals: groupCenterOfMass, centerOfMassInCommon, assertBuf, ostr, shift, inertiaTensorInCommonSpace
+int __cdecl hkpInertiaTensorComputer_combineMassProperties(S_00ced090_State* elements, S_00ced090_Out* result)
 {
     float mass = 0.0f;
     float sum0 = 0.0f;
     LocalM128 vAccum = _mm_setzero_ps();
-    for (int i = 0; i < apState->count; i++)
+    for (int i = 0; i < elements->count; i++)
     {
         hkVector4 v;
-        v.setTransformedPos_00c7f640(*reinterpret_cast<const Transform*>(&apState->first[i].unk50), *reinterpret_cast<const hkVector4*>(&apState->first[i].unk10));
-        LocalM128 t = _mm_load_ss(&apState->first[i].unk04);
-        mass = mass + apState->first[i].unk04;
-        sum0 += apState->first[i].unk00;
+        v.setTransformedPos_00c7f640(*reinterpret_cast<const Transform*>(&elements->first[i].unk50), *reinterpret_cast<const hkVector4*>(&elements->first[i].unk10));
+        LocalM128 t = _mm_load_ss(&elements->first[i].unk04);
+        mass = mass + elements->first[i].unk04;
+        sum0 += elements->first[i].unk00;
         vAccum = _mm_add_ps(_mm_mul_ps(_mm_shuffle_ps(t, t, 0), v.m_vComponents), vAccum);
     }
     if (mass <= 0.0f)
         return 1;
     float inv = 1.0f / mass;
-    S_00ced090_Inertia* pInertia = (S_00ced090_Inertia*)&out->unk20;
-    out->unk04 = mass;
+    S_00ced090_Inertia* pInertia = (S_00ced090_Inertia*)&result->unk20;
+    result->unk04 = mass;
     vAccum = _mm_mul_ps(_mm_set_ps1(inv), vAccum);
-    *(LocalM128*)&out->unk10 = vAccum;
-    out->unk00 = sum0;
+    *(LocalM128*)&result->unk10 = vAccum;
+    result->unk00 = sum0;
     S_00ced090_Inertia* I = pInertia;
     *(LocalM128*)&I->r0 = _mm_setzero_ps();
     *(LocalM128*)&I->r1 = _mm_setzero_ps();
     *(LocalM128*)&I->r2 = _mm_setzero_ps();
-    for (int i = 0; i < apState->count; i++)
+    for (int i = 0; i < elements->count; i++)
     {
         S_00ced090_Mat m;
-        *(LocalM128*)&m.r0 = *(LocalM128*)&apState->first[i].unk20;
-        *(LocalM128*)&m.r1 = *(LocalM128*)&apState->first[i].unk30;
-        *(LocalM128*)&m.r2 = *(LocalM128*)&apState->first[i].unk40;
-        m.FUN_00cd5880(&apState->first[i].unk50);
+        *(LocalM128*)&m.r0 = *(LocalM128*)&elements->first[i].unk20;
+        *(LocalM128*)&m.r1 = *(LocalM128*)&elements->first[i].unk30;
+        *(LocalM128*)&m.r2 = *(LocalM128*)&elements->first[i].unk40;
+        m.FUN_00cd5880(&elements->first[i].unk50);
         hkVector4 v;
-        v.setTransformedPos_00c7f640(*reinterpret_cast<const Transform*>(&apState->first[i].unk50), *reinterpret_cast<const hkVector4*>(&apState->first[i].unk10));
+        v.setTransformedPos_00c7f640(*reinterpret_cast<const Transform*>(&elements->first[i].unk50), *reinterpret_cast<const hkVector4*>(&elements->first[i].unk10));
         v.m_vComponents = _mm_sub_ps(v.m_vComponents, vAccum);
-        AddInertiaTensor(&v, apState->first[i].unk04, &m);
+        AddInertiaTensor(&v, elements->first[i].unk04, &m);
         I->FUN_00cd5140(&m);
     }
     return 0;
@@ -1605,7 +1636,7 @@ inline S_00cee1c0_Heap& S00cf0f40_heap(S_00cee1c0_Router* r)
 {
     return *r->heap;
 }
-void __cdecl hkArrayUtil__reserve(S_00cee1c0_Heap* heap, void* arr, int cap, int elemSize);
+void __cdecl hkArrayUtil__reserve(S_00cee1c0_Heap* mem, void* array, int numElem, int sizeElem);
 
 struct S00cf0f40_Arr
 {
@@ -1654,20 +1685,23 @@ inline void S00cf0f40_Swap4(void* p)
 
 // @fnv 0x00cf0f40
 // src: XBOX_PDB 0x00cf0f40
-unsigned int __cdecl bhkStream_LoadBinary(S00cf0f40_Owner* owner, S00cf0f40_Arr* arr)
+// pdb: bhkStream::LoadBinary | bhkStream.obj | retail, call graph, high
+// pdb params: arStream, arArray
+// pdb locals: isize, ielements, tempMemContext, I
+unsigned int __cdecl bhkStream_LoadBinary(S00cf0f40_Owner* arStream, S00cf0f40_Arr* arArray)
 {
     S00cf0f40_Guard guard;
     unsigned int n = 0;
-    S00cf0f40_Load(*owner->m_stream, &n, 1);
-    arr->ClearAndRelease();
-    arr->SetSizeAndGrow(n);
+    S00cf0f40_Load(*arStream->m_stream, &n, 1);
+    arArray->ClearAndRelease();
+    arArray->SetSizeAndGrow(n);
     unsigned int bytes = n * sizeof(hkVector4);
     for (unsigned int i = 0; i < n; ++i)
     {
-        owner->m_stream->BinaryRead(&arr->m_data[i], sizeof(hkVector4), 0, 0);
-        if (owner->m_1e5 != 1)
+        arStream->m_stream->BinaryRead(&arArray->m_data[i], sizeof(hkVector4), 0, 0);
+        if (arStream->m_1e5 != 1)
         {
-            hkVector4* v = &arr->m_data[i];
+            hkVector4* v = &arArray->m_data[i];
             S00cf0f40_Swap4(&v->x);
             S00cf0f40_Swap4(&v->y);
             S00cf0f40_Swap4(&v->z);
@@ -1727,17 +1761,20 @@ struct Target
 // Returns 1 if a or b is not positive; otherwise sets three diagonal entries to a*b*a*DAT_010290c0, m_f00 to a^3*DAT_010cbf40 and m_f04 to b, and returns 0.
 // @fnv 0x00ceba60
 // src: XBOX_PDB 0x00ceba60
-int __cdecl hkpInertiaTensorComputer_computeSphereVolumeMassProperties(float a, float b, Target* t)
+// pdb: hkpInertiaTensorComputer::computeSphereVolumeMassProperties | hkpInertiaTensorComputer.obj | debug, upstream name already matches, high
+// pdb params: radius, mass, result
+// pdb locals: assertBuf, ostr
+int __cdecl hkpInertiaTensorComputer_computeSphereVolumeMassProperties(float radius, float mass, Target* result)
 {
-    if (b <= 0.0f)
+    if (mass <= 0.0f)
         return 1;
-    if (a <= 0.0f)
+    if (radius <= 0.0f)
         return 1;
-    Target* o = t;
+    Target* o = result;
     o->m_v20 = _mm_setzero_ps();
     o->m_v30 = _mm_setzero_ps();
     o->m_v40 = _mm_setzero_ps();
-    float x = (float)(a * b * a * DAT_010290c0);
+    float x = (float)(radius * mass * radius * DAT_010290c0);
     *(volatile float*)&o->m_f20 = 1.0f;
     *(volatile float*)&o->m_f34 = 1.0f;
     *(volatile float*)&o->m_f48 = 1.0f;
@@ -1746,9 +1783,9 @@ int __cdecl hkpInertiaTensorComputer_computeSphereVolumeMassProperties(float a, 
     *(volatile float*)&o->m_f20 = x;
     o->m_f34 = x;
     o->m_f48 = x;
-    float y = (float)(a * ((a * DAT_010cbf40) * a));
+    float y = (float)(radius * ((radius * DAT_010cbf40) * radius));
     o->m_f00 = y;
-    o->m_f04 = b;
+    o->m_f04 = mass;
     return 0;
 }
 
@@ -1776,6 +1813,8 @@ struct VertexComponentData
 // Accumulates polynomial integrals over three segments of verts and stores the scaled results in P1, Pa, Pb and m_fComponent0 through m_fComponent6.
 // @fnv 0x00cec000
 // src: HAVOK_LIB 0x00cec000
+// pdb: InternalInertiaTensorComputer::compProjectionIntegrals | hkpInertiaTensorComputer.obj | retail, upstream name already matches, high
+// pdb params: v
 void VertexComponentData::InternalInertiaTensorComputer_compProjectionIntegrals(const float* verts)
 {
     float a0, a1, da;
@@ -1943,7 +1982,7 @@ void __cdecl hkpInertiaTensorComputer_computeBoxVolumeMassProperties(hkVector4*,
 void __cdecl hkpInertiaTensorComputer_computeCapsuleVolumeMassProperties(hkVector4*, hkVector4*, float, float, MassBody*);
 void __cdecl hkpInertiaTensorComputer_computeCylinderVolumeMassProperties(hkVector4*, hkVector4*, float, float, MassBody*);
 float __cdecl NiMax(float, float);
-void __cdecl hkVector4_UpdateState_00cee290(hkVector4*, hkVector4*, hkVector4*, float, float, MassBody*);
+void __cdecl hkpInertiaTensorComputer_computeTriangleSurfaceMassProperties(hkVector4*, hkVector4*, hkVector4*, float, float, MassBody*);
 void __cdecl hkpInertiaTensorComputer_combineMassProperties(void*, MassBody*);
 struct RawBody
 {
@@ -2014,7 +2053,10 @@ union ResultStorage
 // Recursively computes the mass, volume, center of mass, and inertia of an HkShape into output, handling primitives, composites, and containers.
 // @fnv 0x00ceff00
 // src: XBOX_PDB 0x00ceff00
-void __cdecl computeRecursiveShapeVolumeMassProperties(HkShape* apShape, const Transform& transform, float limit, MassBody& output)
+// pdb: computeRecursiveShapeVolumeMassProperties | hkpInertiaTensorComputer.obj | retail, upstream name already matches, high
+// pdb params: shape, transform, minTriangleThickness, massPropertiesOut
+// pdb locals: newMassProperties, assertBuf, ostr, halfExtents, convexRadius, vertices, s, reportBuf, v0, v2, v1, t, tst, sp, buffer, vertex0, vertex1, allElements
+void __cdecl computeRecursiveShapeVolumeMassProperties(HkShape* shape, const Transform& transform, float minTriangleThickness, MassBody& massPropertiesOut)
 {
     Working workspace;
     ResultStorage storage;
@@ -2025,17 +2067,17 @@ void __cdecl computeRecursiveShapeVolumeMassProperties(HkShape* apShape, const T
     Transform& combined = workspace.combined;
     Transform& local = reinterpret_cast<Transform&>(workspace.temp.local);
     LocalM128 zero = _mm_setzero_ps();
-    int shapeType = apShape->GetType();
+    int shapeType = shape->GetType();
     switch (shapeType)
     {
     case 1:
-        hkpInertiaTensorComputer_computeSphereVolumeMassProperties(apShape->radius, 1.0f, (S00ceccf0_Out*)&body);
+        hkpInertiaTensorComputer_computeSphereVolumeMassProperties(shape->radius, 1.0f, (S00ceccf0_Out*)&body);
         break;
     case 4: {
-        float r = apShape->radius;
+        float r = shape->radius;
         hkVector4& radii = vectorA;
         LocalM128 radius = _mm_set_ps1(r);
-        LocalM128 halfExtents = (const LocalM128&)apShape->v20;
+        LocalM128 halfExtents = (const LocalM128&)shape->v20;
         radius = _mm_add_ps(radius, halfExtents);
         _mm_store_ps(&radii.x, radius);
         hkpInertiaTensorComputer_computeBoxVolumeMassProperties(&radii, 1.0f, &body);
@@ -2046,12 +2088,12 @@ void __cdecl computeRecursiveShapeVolumeMassProperties(HkShape* apShape, const T
         h.data = 0;
         h.count = 0;
         h.capacity = 0x80000000;
-        apShape->FUN_00d59200(&h);
+        shape->FUN_00d59200(&h);
         View view;
         view.data = h.data;
         view.count = h.count;
         view.stride = 16;
-        hkpInertiaTensorComputer_computeConvexHullMassProperties(&view, apShape->radius, &body);
+        hkpInertiaTensorComputer_computeConvexHullMassProperties(&view, shape->radius, &body);
         Router* vertexRouter = (Router*)hkMemoryRouter_getInstance();
         h.release(vertexRouter->heap);
         break;
@@ -2060,36 +2102,36 @@ void __cdecl computeRecursiveShapeVolumeMassProperties(HkShape* apShape, const T
         hkVector4& a = *reinterpret_cast<hkVector4*>(workspace.temp.local);
         hkVector4& b = vectorB;
         hkVector4& c = vectorA;
-        _mm_store_ps(&a.x, _mm_load_ps(&apShape->v20.x));
-        _mm_store_ps(&b.x, _mm_load_ps(&apShape->v30.x));
-        _mm_store_ps(&c.x, _mm_load_ps(&apShape->v40.x));
-        hkVector4_UpdateState_00cee290(&a, &b, &c, 1.0f, NiMax(apShape->radius, limit), &body);
+        _mm_store_ps(&a.x, _mm_load_ps(&shape->v20.x));
+        _mm_store_ps(&b.x, _mm_load_ps(&shape->v30.x));
+        _mm_store_ps(&c.x, _mm_load_ps(&shape->v40.x));
+        hkpInertiaTensorComputer_computeTriangleSurfaceMassProperties(&a, &b, &c, 1.0f, NiMax(shape->radius, minTriangleThickness), &body);
         break;
     }
     case 27:
-        computeRecursiveShapeVolumeMassProperties(apShape->child18, transform, limit, output);
+        computeRecursiveShapeVolumeMassProperties(shape->child18, transform, minTriangleThickness, massPropertiesOut);
         return;
     case 11: {
-        InitializeTranslatedTransform(&local, apShape->v20);
+        InitializeTranslatedTransform(&local, shape->v20);
         combined.hkTransform_setMul(&transform, &local);
-        computeRecursiveShapeVolumeMassProperties(apShape->child18, combined, limit, output);
+        computeRecursiveShapeVolumeMassProperties(shape->child18, combined, minTriangleThickness, massPropertiesOut);
         return;
     }
     case 12: {
-        combined.hkTransform_setMul(&transform, (const Transform*)&apShape->v20);
-        computeRecursiveShapeVolumeMassProperties(apShape->child18, combined, limit, output);
+        combined.hkTransform_setMul(&transform, (const Transform*)&shape->v20);
+        computeRecursiveShapeVolumeMassProperties(shape->child18, combined, minTriangleThickness, massPropertiesOut);
         return;
     }
     case 15: {
-        combined.hkTransform_setMul(&transform, (const Transform*)&apShape->v30);
-        computeRecursiveShapeVolumeMassProperties(apShape->child14, combined, limit, output);
+        combined.hkTransform_setMul(&transform, (const Transform*)&shape->v30);
+        computeRecursiveShapeVolumeMassProperties(shape->child14, combined, minTriangleThickness, massPropertiesOut);
         return;
     }
     case 21: {
         int i = 0;
-        if (apShape->count > 0)
+        if (shape->count > 0)
         {
-            hkVector4* walk = (hkVector4*)&apShape->v20;
+            hkVector4* walk = (hkVector4*)&shape->v20;
             do
             {
                 _mm_store_ps(&combined.m_f00, _mm_load_ps(&transform.m_f00));
@@ -2099,10 +2141,10 @@ void __cdecl computeRecursiveShapeVolumeMassProperties(HkShape* apShape, const T
                 reinterpret_cast<hkVector4&>(combined.r[3]).setTransformedPos_00c7f640(combined, *walk);
                 ScaledShape& scaled = reinterpret_cast<ScaledShape&>(workspace.temp.scaled);
                 scaled.FUN_00cd8160(walk->w);
-                computeRecursiveShapeVolumeMassProperties((HkShape*)&scaled, combined, limit, output);
+                computeRecursiveShapeVolumeMassProperties((HkShape*)&scaled, combined, minTriangleThickness, massPropertiesOut);
                 ++i;
                 ++walk;
-            } while (i < apShape->count);
+            } while (i < shape->count);
         }
         return;
     }
@@ -2114,14 +2156,14 @@ void __cdecl computeRecursiveShapeVolumeMassProperties(HkShape* apShape, const T
     case 22:
     case 23: {
         HkShape* container;
-        if (apShape->GetType() == 8 || apShape->GetType() == 10)
+        if (shape->GetType() == 8 || shape->GetType() == 10)
         {
-            TreeShape* tree = (TreeShape*)apShape;
+            TreeShape* tree = (TreeShape*)shape;
             container = tree->Container();
         }
         else
         {
-            container = apShape->Container();
+            container = shape->Container();
         }
         int id = container->First();
         if (id == -1)
@@ -2131,7 +2173,7 @@ void __cdecl computeRecursiveShapeVolumeMassProperties(HkShape* apShape, const T
         {
             HkShape* found = container->Find(id, &q);
             if (found)
-                computeRecursiveShapeVolumeMassProperties(found, transform, limit, output);
+                computeRecursiveShapeVolumeMassProperties(found, transform, minTriangleThickness, massPropertiesOut);
             id = container->Next(id);
             if (id == -1)
                 break;
@@ -2139,11 +2181,11 @@ void __cdecl computeRecursiveShapeVolumeMassProperties(HkShape* apShape, const T
         return;
     }
     case 5:
-        hkpInertiaTensorComputer_computeCapsuleVolumeMassProperties((hkVector4*)&apShape->v20, (hkVector4*)&apShape->v30, apShape->radius, 1.0f, &body);
+        hkpInertiaTensorComputer_computeCapsuleVolumeMassProperties((hkVector4*)&shape->v20, (hkVector4*)&shape->v30, shape->radius, 1.0f, &body);
         break;
     case 2: {
-        LocalM128 v5 = _mm_load_ps(&apShape->v30.x), v3 = _mm_load_ps(&apShape->v20.x);
-        float t = apShape->radius;
+        LocalM128 v5 = _mm_load_ps(&shape->v30.x), v3 = _mm_load_ps(&shape->v20.x);
+        float t = shape->radius;
         LocalM128 v1 = _mm_sub_ps(v5, v3);
         LocalM128 v0 = _mm_mul_ps(v1, v1);
         LocalM128 v2 = _mm_shuffle_ps(v0, v0, 0x55);
@@ -2163,7 +2205,7 @@ void __cdecl computeRecursiveShapeVolumeMassProperties(HkShape* apShape, const T
         LocalM128 ts2 = _mm_load_ss(&t);
         _mm_store_ps(&start.x, _mm_sub_ps(v3, _mm_mul_ps(_mm_shuffle_ps(ts, ts2, 0), n)));
         _mm_store_ps(&end.x, _mm_add_ps(_mm_mul_ps(_mm_shuffle_ps(ts2, ts, 0), n), v5));
-        float radius = apShape->FUN_00d571a0() + t;
+        float radius = shape->FUN_00d571a0() + t;
         hkpInertiaTensorComputer_computeCylinderVolumeMassProperties(&start, &end, radius, 1.0f, &body);
         break;
     }
@@ -2186,7 +2228,7 @@ void __cdecl computeRecursiveShapeVolumeMassProperties(HkShape* apShape, const T
         if (slot)
             slot->Initialize();
         Element* e0 = arr.data + arr.count++;
-        e0->FUN_00cf0820(&output);
+        e0->FUN_00cf0820(&massPropertiesOut);
         _mm_store_ps(&e0->transform.m_f00, zero);
         _mm_store_ps(&e0->transform.m_f10, zero);
         _mm_store_ps(&e0->transform.m_f20, zero);
@@ -2206,7 +2248,7 @@ void __cdecl computeRecursiveShapeVolumeMassProperties(HkShape* apShape, const T
         e1->transform.r[1] = transform.r[1];
         e1->transform.r[2] = transform.r[2];
         e1->transform.r[3] = transform.r[3];
-        hkpInertiaTensorComputer_combineMassProperties(&arr, &output);
+        hkpInertiaTensorComputer_combineMassProperties(&arr, &massPropertiesOut);
         Router* cleanupRouter = (Router*)hkMemoryRouter_getInstance();
         arr.release(cleanupRouter->heap);
     }
@@ -2305,6 +2347,9 @@ struct MassProperties
 // Fills result with the inertia tensor, zero center of mass, volume and mass for a box of given halfExtents and mass, returning 1 if mass is not positive.
 // @fnv 0x00cebaf0
 // src: XBOX_PDB 0x00cebaf0
+// pdb: hkpInertiaTensorComputer::computeBoxVolumeMassProperties | hkpInertiaTensorComputer.obj | debug, upstream name already matches, high
+// pdb params: halfExtents, mass, result
+// pdb locals: assertBuf, ostr
 int __cdecl hkpInertiaTensorComputer_computeBoxVolumeMassProperties(const V4& halfExtents, float mass, MassProperties& result)
 {
     if (mass <= 0.0f)
@@ -2360,6 +2405,8 @@ struct DestBlock
 // Copies four LocalM128 blocks from source into destination at offset 0x50, stores value in f40, and calls Multiply with value divided by src->f04.
 // @fnv 0x00cebdf0
 // src: GUESS 0x00cebdf0 (confidence: medium)
+// pdb: scaleMassProperties | hkpInertiaTensorComputer.obj | retail, object-file run extension, low
+// pdb params: scale, massProperties
 void __cdecl Hkpinertiatensorcomputer_CopyAndScalePropertyBlock(float* source, float value, Object* destination)
 {
     SourceBlock* src = (SourceBlock*)source;
@@ -2396,7 +2443,7 @@ static __forceinline float Abs(float x)
 struct EigenMatrix
 {
     LocalM128 row0, row1, row2;
-    void hkMatrix3_setMul(const EigenMatrix& a, const EigenMatrix& b);
+    void hkMatrix3_setMul(const EigenMatrix& aTb, const EigenMatrix& bTc);
 };
 
 struct EigenVector
@@ -2557,7 +2604,7 @@ void __cdecl Object_ApplyJacobiRotations(EigenMatrix* src, EigenMatrix* dst)
     B->Orthonormalize();
 }
 
-void hkArrayUtil__reserve(S_00cee1c0_Heap* a, void* arr, int n, int sz);
+void hkArrayUtil__reserve(S_00cee1c0_Heap* mem, void* array, int numElem, int sizeElem);
 struct OutObj
 {
     float unk00;

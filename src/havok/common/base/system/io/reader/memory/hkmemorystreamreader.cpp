@@ -33,6 +33,7 @@ int __thiscall FUN_00e059e0::GetCurrentOffset()
     return 1;
 }
 
+// pdb: class hkMemoryStreamReader, size 0x1c (here 0x18), bases: hkStreamReader, 5 members
 struct hkMemoryStreamReader
 {
     int m_00;
@@ -192,6 +193,9 @@ struct FUN_00e05a80Class
 extern "C" void __cdecl hkString_memCpy(void* destination, const void* source, int count);
 
 // @fnv 0x00e05a80
+// pdb: ArchiveFile::ReadFromBuffer | Archive_Xenon.obj | retail, upstream name already matches, high; only the method name matches, on a class other than the PDB class, so its parameter names are not applied
+// pdb params (unverified): apReadBuffer, aiByteCount
+// pdb locals (unverified): uiAvailBufferBytes, uiRead, ioffset, iarchivePos, ialignedArchivePos, iamountRead, isizeToRead
 int __thiscall FUN_00e05a80Class::ReadFromBuffer(void* destination, int count)
 {
     unsigned char state;
@@ -215,11 +219,13 @@ struct FUN_00e05af0_Obj : hkMemoryStreamReader
     virtual void vf08();
     virtual unsigned char* IsNotAtEnd(unsigned char* value);
     virtual void vf10();
-    virtual int ReadBytes(int value);
+    virtual int ReadBytes(int nbytes);
 };
 
 // @fnv 0x00e05af0
-int __thiscall FUN_00e05af0_Obj::ReadBytes(int aiByteCount)
+// pdb: hkMemoryStreamReader::skip | hkMemoryStreamReader.obj | retail, vtable slot, high
+// pdb params: nbytes
+int __thiscall FUN_00e05af0_Obj::ReadBytes(int nbytes)
 {
     int local;
     unsigned char* result = IsNotAtEnd(((unsigned char*)&local) + 3);
@@ -228,12 +234,12 @@ int __thiscall FUN_00e05af0_Obj::ReadBytes(int aiByteCount)
     {
         int count = m_0c - m_08;
 
-        if (aiByteCount < count)
-            count = aiByteCount;
+        if (nbytes < count)
+            count = nbytes;
 
         m_08 += count;
 
-        if (count == 0 && aiByteCount != 0)
+        if (count == 0 && nbytes != 0)
             m_08 = m_0c + 1;
 
         return count;
@@ -257,26 +263,28 @@ class FUN_00e05b40 : public hkReferencedObject
     int unk14;
     int m_external;
 
-    FUN_00e05b40(void* data, int size, int external) throw();
+    FUN_00e05b40(void* mem, int memSize, int mt) throw();
     virtual ~FUN_00e05b40() throw();
 };
 
 // Stores size and external flag; if not external, allocates size bytes from the router heap and copies data into it, otherwise keeps the data pointer.
 // @fnv 0x00e05b40
-FUN_00e05b40::FUN_00e05b40(void* data, int size, int external) throw()
+// pdb: hkMemoryStreamReader::hkMemoryStreamReader | hkMemoryStreamReader.obj | retail, object-file gap fill, high
+// pdb params: mem, memSize, mt
+FUN_00e05b40::FUN_00e05b40(void* mem, int memSize, int mt) throw()
 {
     unk0C = 0;
-    m_iElementCount = size;
+    m_iElementCount = memSize;
     unk14 = -1;
-    m_external = external;
-    if (!external)
+    m_external = mt;
+    if (!mt)
     {
-        m_data = AllocateWithHeader(hkRouterE05B::hkMemoryRouter_getInstance().heap(), size);
-        hkString_memCpy(m_data, data, size);
+        m_data = AllocateWithHeader(hkRouterE05B::hkMemoryRouter_getInstance().heap(), memSize);
+        hkString_memCpy(m_data, mem, memSize);
     }
     else
     {
-        m_data = data;
+        m_data = mem;
     }
 }
 
@@ -310,6 +318,7 @@ class MemoryStreamStorage : public hkReferencedObject
 };
 
 // @fnv 0x00e05bb0
+// pdb: hkMemoryStreamReader::~hkMemoryStreamReader | hkMemoryStreamReader.obj | retail, object-file gap fill, high
 void MemoryStreamStorage::FUN_00e05bb0()
 {
     this->MemoryStreamStorage::~MemoryStreamStorage();

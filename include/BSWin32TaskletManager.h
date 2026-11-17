@@ -18,8 +18,8 @@ public:
     virtual bool CloseTaskletGroup(void* apGroup);                          // 0x1C 0x00b02310
     virtual void DeleteTaskletGroup(void* apGroup);                         // 0x20 0x00b02360
 
-    bool __thiscall GetTaskletValue(void* result);
-    void ReleaseItem(void* item);
+    bool __thiscall GetTaskletValue(void* aResult);
+    void BSTaskletManager_DestroyTaskGroup(void* aGroup);
 
     unsigned char m_Data[64];
 };

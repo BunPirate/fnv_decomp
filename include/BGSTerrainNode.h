@@ -19,6 +19,7 @@ enum BGSTerrainNode__PARENT_POSITION
     BGSTerrainNode__PARENT_POSITION_PP_LOWER_RIGHT = 4
 };
 
+// pdb: class BGSTerrainNode, size 0x60, 22 members
 class BGSTerrainNode
 {
 public:
@@ -48,8 +49,8 @@ public:
     bool m_bNodeInitialized;
     unsigned char layoutPadding5E[2];
 
-    BGSTerrainNode(BGSTerrainManager* pManagerArg, BGSTerrainNode* pParentArg,
-                   short sX, short sY, unsigned int uiSize, bool bPersistentArg);
+    BGSTerrainNode(BGSTerrainManager* apManager, BGSTerrainNode* apParent,
+                   short asBaseCellX, short asBaseCellY, unsigned int aiLevel, bool abPersistentNode);
     void __thiscall ProcessBlock();
     void Unload();
     void UpdateTerrainNode(void* context, bool update);

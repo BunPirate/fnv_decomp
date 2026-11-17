@@ -95,6 +95,7 @@ struct E01D40Object : E01D40Base
 // Releases m_name, clears the reference array through the global allocator's heap, then calls E01D40Base::release.
 // @fnv 0x00e01d40
 // src: GUESS 0x00e01d40 (confidence: low)
+// pdb: hkxNodeSelectionSet::~hkxNodeSelectionSet | hkxNodeSelectionSetClass.obj | retail, object-file run extension, low
 void E01D40Object::ProcessState_00e01d40()
 {
     m_name.release();
@@ -128,6 +129,7 @@ struct CpuObject
 };
 // Calls FUN_00e01d40, and if enabled dispatches this object with unk04 through the audio system's interface, then returns this.
 // @fnv 0x00e01dd0
+// pdb: hkxNodeSelectionSet::`scalar deleting destructor' | hkxNodeSelectionSetClass.obj | retail, vtable slot, high
 CpuObject* CpuObject::FUN_00e01dd0(bool enabled)
 {
     ProcessState_00e01d40();

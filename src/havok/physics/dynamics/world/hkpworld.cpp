@@ -98,7 +98,7 @@ typedef unsigned char hkUint8;
 inline void* hkReferencedObject::operator new(std::size_t nbytes)
 {
     hkReferencedObject* p = static_cast<hkReferencedObject*>(hkMemoryRouter::getInstance().heap().blockAlloc(nbytes));
-    p->m_usMemSizeAndFlags = static_cast<unsigned short>(nbytes);
+    p->m_memSizeAndFlags = static_cast<unsigned short>(nbytes);
     return p;
 }
 inline void hkReferencedObject::operator delete(void* p, unsigned int nbytes)
@@ -107,9 +107,9 @@ inline void hkReferencedObject::operator delete(void* p, unsigned int nbytes)
 }
 inline void hkReferencedObject::operator delete(void* p)
 {
-    hkMemoryRouter::getInstance().heap().blockFree(p, static_cast<hkReferencedObject*>(p)->m_usMemSizeAndFlags);
+    hkMemoryRouter::getInstance().heap().blockFree(p, static_cast<hkReferencedObject*>(p)->m_memSizeAndFlags);
 }
-inline hkMultiThreadCheck::hkMultiThreadCheck() : m_uiThreadId(0xfffffff1), m_usMarkedForWrite(0x8000) {}
+inline hkMultiThreadCheck::hkMultiThreadCheck() : m_threadId(0xfffffff1), m_markCount(0x8000) {}
 
 template <typename T>
 __forceinline void hkMemoryAllocator::_bufFree(void* p, int numElem)
@@ -193,14 +193,16 @@ void __thiscall FUN_00c91120::ExecutePendingOperations()
 }
 
 struct FUN_00c91180_Class {
-    void EnterTlsGuard();
+    void hkReferencedObject_lockAll();
     void IncrementCounter();
 };
 
 // @fnv 0x00c91180
+// pdb: hkpWorld::lock | hkpWorld.obj | retail, call graph, low
+// pdb note: debug build links it to IOTask::IncrementCounter
 void FUN_00c91180_Class::IncrementCounter()
 {
-    EnterTlsGuard();
+    hkReferencedObject_lockAll();
     ++(*(int*)((char*)this + 0xbc));
 }
 
@@ -229,9 +231,11 @@ struct FUN_00c91280_Class {
 // Calls ResetThreadCheck on this+0xa8 and on the object at this+0x58+8 when a is zero, otherwise calls FUN_00cf6d20 on both.
 // @fnv 0x00c91280
 // src: HAVOK_LIB 0x00c91280
-void __thiscall FUN_00c91280_Class::hkpWorld_setMultithreadedAccessChecking(int a)
+// pdb: hkpWorld::setMultithreadedAccessChecking | hkpWorld.obj | retail, upstream name already matches, high
+// pdb params: accessCheckState
+void __thiscall FUN_00c91280_Class::hkpWorld_setMultithreadedAccessChecking(int accessCheckState)
 {
-    if (!a) {
+    if (!accessCheckState) {
         ((FUN_00cf6d30_Class*)((char*)this + 0xa8))->ResetThreadCheck();
         ((FUN_00cf6d30_Class*)(*(char**)((char*)this + 0x58) + 8))->ResetThreadCheck();
     } else {
@@ -282,8 +286,8 @@ struct ConstraintStreamStorage {
 struct FUN_00caa840_shell {
     void* m_iWordAt00;
     ConstraintStreamStorage* m_data;
-    void hkConstraintCinfo_SaveBinary(NiStream* ctx);
-    void SaveShape(int n, NiStream* ctx);
+    void hkConstraintCinfo_SaveBinary(NiStream* arStream);
+    void hkConstraintCinfo_SaveMotor(int apMotor, NiStream* arStream);
     void WriteToStream(void* streamContext);
 };
 
@@ -298,7 +302,7 @@ void FUN_00caa840_shell::WriteToStream(void* streamContext)
     SerializeValue(*ctx, d->m_c4);
     SerializeValue(*ctx, d->m_c8);
     SerializeValue(*ctx, d->m_bc);
-    SaveShape(d->m_b0, ctx);
+    hkConstraintCinfo_SaveMotor(d->m_b0, ctx);
     if (d->m_b0)
         SerializeValue(*ctx, d->m_a2);
 }
@@ -306,10 +310,12 @@ void FUN_00caa840_shell::WriteToStream(void* streamContext)
 // Calls the virtual at offset 0x18 with "hkpContactMgrFactory", then the virtual at offset 0x1c on self.
 // @fnv 0x00c90e40
 // src: XBOX_PDB 0x00c90e40
-void __stdcall hkpContactMgrFactory_calcContentStatistics(void* self, int arg)
+// pdb: hkpContactMgrFactory::calcContentStatistics | hkpWorld.obj | retail, string-set bridge, high
+// pdb params: collector, cls
+void __stdcall hkpContactMgrFactory_calcContentStatistics(void* collector, int cls)
 {
-    (*(void (__thiscall**)(void*, const char*))(*(unsigned int*)self + 0x18))(self, "hkpContactMgrFactory");
-    (*(void (__thiscall**)(void*))(*(unsigned int*)self + 0x1c))(self);
+    (*(void (__thiscall**)(void*, const char*))(*(unsigned int*)collector + 0x18))(collector, "hkpContactMgrFactory");
+    (*(void (__thiscall**)(void*))(*(unsigned int*)collector + 0x1c))(collector);
 }
 
 struct FUN_00cf86e0_class {
@@ -470,15 +476,18 @@ void FUN_00c911f0_Class::UpdateState_00c911f0(void* p)
 namespace fnv_00c91f40 {
 struct RefObj { void RetainReference(); void removeReference(); };
 struct FUN_00c91f40_Class {
-    void SetRefObj(RefObj* obj);
+    void hkpWorld_setMemoryWatchDog(RefObj* watchDog);
 };
 // @fnv 0x00c91f40
-void FUN_00c91f40_Class::SetRefObj(RefObj* apRefObj)
+// src: XBOX_RETAIL_PDB 0x00c91f40
+// pdb: hkpWorld::setMemoryWatchDog | hkpWorld.obj | retail, object-file gap fill, high
+// pdb params: watchDog
+void FUN_00c91f40_Class::hkpWorld_setMemoryWatchDog(RefObj* watchDog)
 {
-    if (apRefObj) apRefObj->RetainReference();
+    if (watchDog) watchDog->RetainReference();
     RefObj* old = *(RefObj**)((char*)this + 0x50);
     if (old) old->removeReference();
-    *(RefObj**)((char*)this + 0x50) = apRefObj;
+    *(RefObj**)((char*)this + 0x50) = watchDog;
 }
 }  // namespace fnv_00c91f40
 
@@ -508,9 +517,11 @@ struct FUN_00c928c0_Context
 // Iterates both owner arrays in context and calls physicsSystem->FUN_00d06590 on every action in each owner's action list.
 // @fnv 0x00c928c0
 // src: HAVOK_LIB 0x00c928c0
+// pdb: enumerateAllActionsInWorld | hkpWorld.obj | retail, upstream name already matches, high
+// pdb params: world, sys
 void enumerateAllActionsInWorld(
     FUN_00c928c0_Context* context,
-    hkpPhysicsSystem* physicsSystem)
+    hkpPhysicsSystem* sys)
 {
     FUN_00c928c0_ActionOwner** owner = context->m_owners1;
     FUN_00c928c0_ActionOwner** end = owner + context->m_ownerCount1;
@@ -522,7 +533,7 @@ void enumerateAllActionsInWorld(
 
         while (action < actions->m_uiItemCount)
         {
-            physicsSystem->hkpPhysicsSystem_addAction(actions->m_ppActions[action]);
+            sys->hkpPhysicsSystem_addAction(actions->m_ppActions[action]);
             ++action;
         }
 
@@ -540,7 +551,7 @@ void enumerateAllActionsInWorld(
 
         while (action < actions->m_uiItemCount)
         {
-            physicsSystem->hkpPhysicsSystem_addAction(actions->m_ppActions[action]);
+            sys->hkpPhysicsSystem_addAction(actions->m_ppActions[action]);
             ++action;
         }
 
@@ -559,6 +570,8 @@ struct FUN_00c92b50_Class {
 
 // Accumulates per-object memory sizes into out->m_totalSize and tracks the largest object in out->m_maxSize/m_maxObject.
 // @fnv 0x00c92b50
+// pdb: hkpWorld::getMemUsageForIntegration | hkpWorld.obj | retail, object-file run extension, low
+// pdb params: infoOut
 void FUN_00c92b50_Class::ComputeMemoryUsage(hkpWorld_MemUsageOut_hkpworld* out)
 {
     out->m_maxSize = 0;
@@ -593,18 +606,22 @@ struct FUN_00c97510 {
     void __thiscall ProcessPointer(void*);
 };
 struct FUN_00c97f50_Class {
-    void DispatchOrQueue(void* p);
+    void hkpWorld_removeAction(void* action);
 };
 // @fnv 0x00c97f50
-void FUN_00c97f50_Class::DispatchOrQueue(void* p)
+// src: XBOX_RETAIL_PDB 0x00c97f50
+// pdb: hkpWorld::removeAction | hkpWorld.obj | retail, call graph, high
+// pdb params: action
+// pdb locals: op, assertBuf, ostr
+void FUN_00c97f50_Class::hkpWorld_removeAction(void* action)
 {
     if (*(unsigned int*)((char*)this + 0x94)) {
         CA8B80Command cmd;
         cmd.m_bType = 0xb;
-        cmd.m_p = p;
+        cmd.m_p = action;
         ((CA8B80Queue*)this)->Push(&cmd);
     } else {
-        ((FUN_00c97510*)this)->ProcessPointer(p);
+        ((FUN_00c97510*)this)->ProcessPointer(action);
     }
 }
 
@@ -615,6 +632,8 @@ struct FUN_00c98350_Class {
 };
 void __cdecl _Deallocate(void*);
 // @fnv 0x00c98350
+// pdb: hkpSimpleWorldRayCaster::`scalar deleting destructor' | hkpWorld.obj | retail, vtable slot, high
+// pdb params: this
 void* __thiscall FUN_00c98350_Class::InitAndMaybeFree(int flags)
 {
     m_p = &DAT_010c3bb8;
@@ -632,6 +651,8 @@ struct FUN_00c983e0_Class {
 
 // Locks the critical section, calls the second virtual method of each object in the array with the five arguments, then unlocks.
 // @fnv 0x00c983e0
+// pdb: hkDebugDisplay::addGeometry | hkDebugDisplay.obj | retail, object-file run extension, low
+// pdb params: geometries, transform, id, tag, shapeIdHint
 void FUN_00c983e0_Class::ForEachCall(int aiArg1, int aiArg2, int aiArg3, int aiArg4, int aiArg5)
 {
     EnterCriticalSection(*(void**)((char*)this + 0x14));
@@ -654,32 +675,37 @@ struct FUN_00c984a0_Class {
     int unk0C;
     unsigned int unk10;
     unsigned int unk14;
-    void hkDebugDisplay_setGeometryColor(int a1, int a2, int a3);
+    void hkDebugDisplay_setGeometryColor(int color, int id, int tag);
 };
 
 // Locks the critical section, calls virtual method slot 3 on each of unk0C objects in the unk08 array with a1, a2, a3, then unlocks.
 // @fnv 0x00c984a0
 // src: HAVOK_LIB 0x00c984a0
-void FUN_00c984a0_Class::hkDebugDisplay_setGeometryColor(int aiArg1, int aiArg2, int aiArg3)
+// pdb: hkDebugDisplay::setGeometryColor | hkDebugDisplay.obj | retail, upstream name already matches, high
+// pdb params: color, id, tag
+void FUN_00c984a0_Class::hkDebugDisplay_setGeometryColor(int color, int id, int tag)
 {
     EnterCriticalSection((void*)unk14);
     for (int i = 0; i < unk0C; ++i) {
         void* obj = *(void**)((char*)unk08 + i * 4);
         void** vtbl = *(void***)obj;
-        ((void (__thiscall*)(void*, int, int, int))vtbl[3])(obj, aiArg1, aiArg2, aiArg3);
+        ((void (__thiscall*)(void*, int, int, int))vtbl[3])(obj, color, id, tag);
     }
     LeaveCriticalSection((void*)unk14);
 }
 
 struct FUN_00c98540_Class {
-    void CallAllWithArgs(int a, int b, int c);
+    void hkDebugDisplay_removeGeometry(int id, int tag, int shapeIdHint);
 };
 
 extern "C" __declspec(dllimport) void __stdcall EnterCriticalSection(void*);
 extern "C" __declspec(dllimport) void __stdcall LeaveCriticalSection(void*);
 
 // @fnv 0x00c98540
-void FUN_00c98540_Class::CallAllWithArgs(int aiArg1, int aiArg2, int aiArg3)
+// src: XBOX_RETAIL_PDB 0x00c98540
+// pdb: hkDebugDisplay::removeGeometry | hkDebugDisplay.obj | retail, object-file gap fill, high
+// pdb params: id, tag, shapeIdHint
+void FUN_00c98540_Class::hkDebugDisplay_removeGeometry(int id, int tag, int shapeIdHint)
 {
     void* pLock = *(void**)((char*)this + 0x14);
     EnterCriticalSection(pLock);
@@ -689,7 +715,7 @@ void FUN_00c98540_Class::CallAllWithArgs(int aiArg1, int aiArg2, int aiArg3)
             void* obj = *(void**)(*(int*)((char*)this + 8) + i * 4);
             void** vtbl = *(void***)obj;
             void (__thiscall* fn)(void*, int, int, int) = (void (__thiscall*)(void*, int, int, int))vtbl[5];
-            fn(obj, aiArg1, aiArg2, aiArg3);
+            fn(obj, id, tag, shapeIdHint);
             ++i;
         } while (i < *(int*)((char*)this + 0xc));
     }
@@ -707,11 +733,14 @@ struct FUN_00c98600_Class {
     int m_uiItemCount;        // +0x0C
     unsigned int unk10;
     void* m_cs;         // +0x14
-    void CallVirtualOnAll(int a, int b, int c, int d, int e, int f, int g, int h);
+    void hkDebugDisplay_updateBehavior(int wordVarIdx, int wordStack, int quadVarIdx, int quadStack, int activeNodes, int activeStateIds, int activeTransitions, int transforms);
 };
 
 // @fnv 0x00c98600
-void FUN_00c98600_Class::CallVirtualOnAll(int aiArg0, int aiArg1, int aiArg2, int aiArg3, int aiArg4, int aiArg5, int aiArg6, int aiArg7)
+// src: XBOX_RETAIL_PDB 0x00c98600
+// pdb: hkDebugDisplay::updateBehavior | hkDebugDisplay.obj | retail, object-file gap fill, high
+// pdb params: wordVarIdx, wordStack, quadVarIdx, quadStack, activeNodes, activeStateIds, activeTransitions, transforms
+void FUN_00c98600_Class::hkDebugDisplay_updateBehavior(int wordVarIdx, int wordStack, int quadVarIdx, int quadStack, int activeNodes, int activeStateIds, int activeTransitions, int transforms)
 {
     EnterCriticalSection(m_cs);
     for (int i = 0; i < m_uiItemCount; ++i) {
@@ -720,13 +749,13 @@ void FUN_00c98600_Class::CallVirtualOnAll(int aiArg0, int aiArg1, int aiArg2, in
         void** vtbl = *(void***)obj;
         typedef void (__thiscall* Fn)(void*, int, int, int, int, int, int, int, int);
         Fn fn = (Fn)vtbl[7];
-        fn(obj, aiArg0, aiArg1, aiArg2, aiArg3, aiArg4, aiArg5, aiArg6, aiArg7);
+        fn(obj, wordVarIdx, wordStack, quadVarIdx, quadStack, activeNodes, activeStateIds, activeTransitions, transforms);
     }
     LeaveCriticalSection(m_cs);
 }
 
 struct FUN_00c990b0_Class {
-    void hkDebugDisplay_displayText(int a, int b, int c, int d);
+    void hkDebugDisplay_displayText(int text, int color, int id, int tag);
 };
 
 extern "C" __declspec(dllimport) void __stdcall EnterCriticalSection(void*);
@@ -735,7 +764,9 @@ extern "C" __declspec(dllimport) void __stdcall LeaveCriticalSection(void*);
 // Locks the critical section, calls virtual method at vtable offset 0x2c on each element of the array, then unlocks.
 // @fnv 0x00c990b0
 // src: HAVOK_LIB 0x00c990b0
-void FUN_00c990b0_Class::hkDebugDisplay_displayText(int aiArg1, int aiArg2, int aiArg3, int aiArg4)
+// pdb: hkDebugDisplay::displayText | hkDebugDisplay.obj | retail, upstream name already matches, high
+// pdb params: text, color, id, tag
+void FUN_00c990b0_Class::hkDebugDisplay_displayText(int text, int color, int id, int tag)
 {
     EnterCriticalSection(*(void**)((char*)this + 0x14));
     int i = 0;
@@ -744,7 +775,7 @@ void FUN_00c990b0_Class::hkDebugDisplay_displayText(int aiArg1, int aiArg2, int 
             void* obj = *(void**)(*(int*)((char*)this + 8) + i * 4);
             void** ppVtable = *(void***)obj;
             void (__thiscall* fn)(void*, int, int, int, int) = (void (__thiscall*)(void*, int, int, int, int))ppVtable[0x2c / 4];
-            fn(obj, aiArg1, aiArg2, aiArg3, aiArg4);
+            fn(obj, text, color, id, tag);
             ++i;
         } while (i < *(int*)((char*)this + 0xc));
     }
@@ -761,6 +792,7 @@ struct FUN_00c995f0_Class {
 // Calls FUN_00fdf05c and FUN_00fdf100 on the pointer at offset 0x14 and clears the int at offset 0xc.
 // @fnv 0x00c995f0
 // src: HAVOK_LIB 0x00c995f0
+// pdb: hkDebugDisplay::clear | hkDebugDisplay.obj | retail, upstream name already matches, high
 void FUN_00c995f0_Class::hkDebugDisplay_clear()
 {
     void* p = *(void**)((char*)this + 0x14);
@@ -1074,7 +1106,7 @@ struct WorldWithPending : hkpWorld {
 // src: XBOX_PDB 0x00c91160
 void __thiscall WorldWithPending::hkpWorld_queueOperation()
 {
-    ((PendingOperations*)m_pPendingOperations)->FUN_00cf7690();
+    ((PendingOperations*)m_pendingOperations)->FUN_00cf7690();
 }
 
 struct Target
@@ -1205,7 +1237,7 @@ inline C67Owner* getEntityOwner(C67Collidable* coll)
 }
 
 struct C67Sink {
-    void RemoveEntities(C67Entry** entries, unsigned int count);
+    void hkpWorld_removeEntityBatch(C67Entry** entries, unsigned int count);
 };
 
 class FUN_00c67aa0_Class {
@@ -1230,6 +1262,8 @@ public:
 };
 
 // @fnv 0x00c67aa0
+// pdb: bhkWorld::RemoveBatchedEntitiesPartial | bhkWorld.obj | retail, call graph, high
+// pdb locals: tempMemContext, pw, inum, istart, i, pbody, pcol
 void FUN_00c67aa0_Class::FlushEntries()
 {
     ScopedMemContext ctx(0x10);
@@ -1243,7 +1277,7 @@ void FUN_00c67aa0_Class::FlushEntries()
         unsigned int start = count - num;
         C67Sink* sink = getSink();
         if (sink) {
-            sink->RemoveEntities(&m_entries[start], num);
+            sink->hkpWorld_removeEntityBatch(&m_entries[start], num);
             for (unsigned int i = start; i < m_iNumberOfEntries; i++) {
                 C67Owner* owner = getEntityOwner(&m_entries[i]->m_kCollidable);
                 if (owner) {
@@ -1265,8 +1299,8 @@ struct WorldExt : public hkpWorld {
     void hkpWorld_advanceTime() throw();
     bool hkpWorld_isSimulationAtMarker() throw();
     float hkpWorld_getCurrentPsiTime() throw();
-    void hkpWorld_stepDeltaTime(float f) throw();
-    void hkpWorld_stepMultithreaded(int a, int b, float f) throw();
+    void hkpWorld_stepDeltaTime(float physicsDeltaTime) throw();
+    void hkpWorld_stepMultithreaded(int jobQueue, int threadPool, float physicsDeltaTime) throw();
     void FUN_00c91120() throw();
     void UpdateFields_00c91140() throw();
 };
@@ -1305,43 +1339,45 @@ inline WorldExt* bhkWorld::GetHkpWorld() throw()
 
 // Operations not yet declared by the shared world header.
 struct BhkWorldOperations : bhkWorld {
-    void bhkWorld_AddEntities(void* p, unsigned int count) throw();
+    void bhkWorld_AddEntities(void* apEntityA, unsigned int auiNumEntities) throw();
     void bhkWorld_AddBatchedActions() throw();
-    void bhkWorld_UpdateActions(float f) throw();
+    void bhkWorld_UpdateActions(float afDelta) throw();
     void bhkWorld_ScaleSolverInfo() throw();
-    void bhkWorld_UpdateListeners(float f) throw();
+    void bhkWorld_UpdateListeners(float afDelta) throw();
     void bhkWorld_UpdateDebugger() throw();
 };
 
 // @fnv 0x00c6ae70
+// pdb: bhkWorld::Update | bhkWorld.obj | retail, object-file run extension, low
+// pdb locals: bPartialAdding, bres, fprevTime, phkWorld, fnewTime, uinumPhysicsSteps, bmultithreadedSimC, fnextStepTime, ffraction
 bool bhkWorld::StepSimulation() {
     DAT_012677c4 = 0.0f;
     DAT_012677a0 = 1;
     DAT_012677c8 = 0;
     bool result = false;
 
-    if (this->m_uiValueAt30 > 0) {
+    if (this->iEntityBatchCount > 0) {
         if (!DAT_012677a2) {
-            if (this->m_uiValueAt30 >= 0xbb8) {
-                this->m_uiValueAt30 = 0xbb8;
+            if (this->iEntityBatchCount >= 0xbb8) {
+                this->iEntityBatchCount = 0xbb8;
             }
-            unsigned int val = this->m_uiValueAt30;
+            unsigned int val = this->iEntityBatchCount;
             unsigned int count = DAT_011afe80;
             if (val < count) {
                 count = val;
             }
             unsigned int remaining = val - count;
-            ((BhkWorldOperations*)this)->bhkWorld_AddEntities(&((void**)this->m_pObjectAt2C)[remaining], count);
-            this->m_uiValueAt30 = remaining;
+            ((BhkWorldOperations*)this)->bhkWorld_AddEntities(&((void**)this->pEntityBatch)[remaining], count);
+            this->iEntityBatchCount = remaining;
             DAT_012677a2 = 1;
         }
-        this->ProcessConstraints();
+        this->AddBatchedConstraints();
         ((BhkWorldOperations*)this)->bhkWorld_AddBatchedActions();
     }
 
     if (this->bEnabled != 0 && DAT_011afe68 > 0.0f) {
         WorldExt* world = this->GetHkpWorld();
-        bool isMultithreaded = (world->m_iMaxEntriesPerNarrowphaseToiTask == 3);
+        bool isMultithreaded = (world->m_simulationType == 3);
         if (isMultithreaded) {
             DAT_012677d0->EnsureObjectsCreated(DAT_01267b2c);
         }
@@ -1350,11 +1386,11 @@ bool bhkWorld::StepSimulation() {
         ((BhkWorldOperations*)this)->bhkWorld_ScaleSolverInfo();
 
         this->GetHkpWorld();
-        if (world->m_iCriticalOperationsLockCount == 0 && world->m_bBlockExecutingPendingOperations == 0) {
-            if (world->m_iPendingOperationCount != 0) {
+        if (world->m_criticalOperationsLockCount == 0 && world->m_blockExecutingPendingOperations == 0) {
+            if (world->m_pendingOperationsCount != 0) {
                 world->FUN_00c91120();
             }
-            if (world->m_iPendingOperationQueueCount == 1 && world->m_iQueuedOperationCount != 0) {
+            if (world->m_pendingOperationQueueCount == 1 && world->m_pendingBodyOperationsCount != 0) {
                 world->UpdateFields_00c91140();
             }
         }
@@ -1377,7 +1413,7 @@ bool bhkWorld::StepSimulation() {
         result = true;
     }
 
-    if (this->m_uiValueAt50 > 0) {
+    if (this->iEntityRemoveBatchCount > 0) {
         this->FlushEntries();
     }
 
@@ -1411,8 +1447,8 @@ struct FUN_00c91230_World : hkpWorld {
 // @fnv 0x00c91230
 // src: GUESS 0x00c91230 (confidence: low)
 void __thiscall FUN_00c91230_World::ProcessState_00c91230(void* param) {
-    if (m_pModifyConstraintCriticalSection != 0) {
-        DAT_00fdf100(m_pModifyConstraintCriticalSection);
+    if (m_modifyConstraintCriticalSection != 0) {
+        DAT_00fdf100(m_modifyConstraintCriticalSection);
     }
 }
 
@@ -1421,9 +1457,11 @@ struct FUN_00c912c0_Class : hkpWorld {
 };
 // @fnv 0x00c912c0
 // src: HAVOK_LIB 0x00c912c0
+// pdb: hkpWorld::getMultithreadedAccessChecking | hkpWorld.obj | debug, upstream name already matches, high
+// pdb locals: assertBuf, ostr
 unsigned int FUN_00c912c0_Class::hkpWorld_getMultithreadedAccessChecking()
 {
-    volatile unsigned short* markCount = &m_kMultiThreadCheck.m_usMarkedForWrite;
+    volatile unsigned short* markCount = &m_multiThreadCheck.m_markCount;
     unsigned char highBit = static_cast<unsigned char>(*markCount >> 15);
     return highBit & 1;
 }
@@ -1466,7 +1504,7 @@ struct OpPacket {
     const void* right;
 };
 struct EventSink {
-    void hkpTypedBroadPhaseDispatcher_addPairs(const Pair* p, int action, FilterCore* core);
+    void hkpTypedBroadPhaseDispatcher_addPairs(const Pair* newPairs, int numNewPairs, FilterCore* core);
 };
 int __cdecl FindEntryValue(const void*, const void*);
 struct FUN_00c913b0_Class {
@@ -1509,24 +1547,28 @@ struct FUN_00c913b0_Class {
     void* unknown_90;
     void* m_pDataAtOffset94;
     void hkpWorld_queueOperation(const OpPacket* packet);
-    void ProcessPair(const void* left, const void* right);
+    void hkpWorld_reenableCollisionBetweenEntityPair(const void* entityA, const void* entityB);
 };
 // @fnv 0x00c913b0
-void FUN_00c913b0_Class::ProcessPair(const void* left, const void* right)
+// src: XBOX_RETAIL_PDB 0x00c913b0
+// pdb: hkpWorld::reenableCollisionBetweenEntityPair | hkpWorld.obj | retail, object-file run extension, high
+// pdb params: entityA, entityB
+// pdb locals: newPair, assertBuf, ostr, op
+void FUN_00c913b0_Class::hkpWorld_reenableCollisionBetweenEntityPair(const void* entityA, const void* entityB)
 {
     OpPacket command;
     int pairStorage[2];
     Pair& pair = *reinterpret_cast<Pair*>(pairStorage);
     if (m_pDataAtOffset94) {
         command.opcode = 0x13;
-        command.left = left;
-        command.right = right;
+        command.left = entityA;
+        command.right = entityB;
         hkpWorld_queueOperation(&command);
         return;
     }
 
-    const char* a = static_cast<const char*>(left);
-    const char* b = static_cast<const char*>(right);
+    const char* a = static_cast<const char*>(entityA);
+    const char* b = static_cast<const char*>(entityB);
     const void* primaryB = b + 0x24;
     const void* primaryA = a + 0x24;
     if (m_comparator->accepts(primaryA, primaryB)) {
@@ -1564,24 +1606,28 @@ struct WorldQ
     char pad_c[0x94 - 0xc];
     int m_iCriticalOperationsLockCount;               // +0x94
 
-    void __thiscall DispatchOp(int a0, int a1, int a2);
+    void __thiscall hkpWorld_reintegrateAndRecollideEntities(int entityBatch, int numEntities, int mode);
 };
 
 // @fnv 0x00c91470
-void WorldQ::DispatchOp(int aiArg0, int aiArg1, int aiArg2)
+// src: XBOX_RETAIL_PDB 0x00c91470
+// pdb: hkpWorld::reintegrateAndRecollideEntities | hkpWorld.obj | retail, object-file run extension, high
+// pdb params: entityBatch, numEntities, mode
+// pdb locals: op
+void WorldQ::hkpWorld_reintegrateAndRecollideEntities(int entityBatch, int numEntities, int mode)
 {
     if (m_iCriticalOperationsLockCount)
     {
         QueuedOp_hkpworld op;
         op.m_ucOperationType = 0x17;
-        op.m_p = aiArg0;
-        op.m_kPointA = (short)aiArg1;
-        op.m_kPointB = (unsigned char)aiArg2;
+        op.m_p = entityBatch;
+        op.m_kPointA = (short)numEntities;
+        op.m_kPointB = (unsigned char)mode;
         ((Sh00c91160*)this)->hkpWorld_queueOperation(&op);
         return;
     }
     Sim* sim = m_pSimulation;
-    sim->m_vtbl->invoke(sim, aiArg0, aiArg1, this, aiArg2);
+    sim->m_vtbl->invoke(sim, entityBatch, numEntities, this, mode);
 }
 
 class hkpWorldC914;
@@ -1828,46 +1874,49 @@ public:
     void UpdateFields_00c91140() throw();
     void hkpWorld_queueOperation(const hkWorldOperationBaseC914& kOperation) throw();
 
-    hkpEntity* hkpWorld_addEntity(hkpEntity* pkEntity, int iInitialActivationState) throw();
+    hkpEntity* hkpWorld_addEntity(hkpEntity* entity, int initialActivationState) throw();
 };
 
-void __cdecl hkpWorldOperationUtil_addEntitySI(hkpWorldC914* pkWorld, hkpEntity* pkEntity, int iInitialActivationState) throw();
-void __cdecl hkpWorldOperationUtil_addEntityBP(hkpWorldC914* pkWorld, hkpEntity* pkEntity) throw();
-void __cdecl NotifyEntityAdded(hkpWorldC914* pkWorld, hkpEntity* pkEntity) throw();
-void __cdecl hkpEntityCallbackUtil_fireEntityAdded(hkpEntity* pkEntity) throw();
+void __cdecl hkpWorldOperationUtil_addEntitySI(hkpWorldC914* pkWorld, hkpEntity* entity, int initialActivationState) throw();
+void __cdecl hkpWorldOperationUtil_addEntityBP(hkpWorldC914* pkWorld, hkpEntity* entity) throw();
+void __cdecl hkpWorldCallbackUtil_fireEntityAdded(hkpWorldC914* pkWorld, hkpEntity* pkEntity) throw();
+void __cdecl hkpEntityCallbackUtil_fireEntityAdded(hkpEntity* entity) throw();
 
 // @fnv 0x00c914d0
 // src: HAVOK_LIB 0x00c914d0
-hkpEntity* hkpWorldC914::hkpWorld_addEntity(hkpEntity* pkEntity, int iInitialActivationState) throw()
+// pdb: hkpWorld::addEntity | hkpWorld.obj | retail, upstream name already matches, high
+// pdb params: entity, initialActivationState
+// pdb locals: assertBuf, ostr, op
+hkpEntity* hkpWorldC914::hkpWorld_addEntity(hkpEntity* entity, int initialActivationState) throw()
 {
     if (areCriticalOperationsLocked()) {
         hkWorldOperationAddEntityC914 kOp;
-        kOp.m_pEntity = pkEntity;
-        kOp.m_iActivationState = iInitialActivationState;
+        kOp.m_pEntity = entity;
+        kOp.m_iActivationState = initialActivationState;
         hkpWorld_queueOperation(kOp);
         return 0;
     }
 
-    ((EntityWorldAccess*)pkEntity)->UpdateBoundingVolume(this, pkEntity->m_kCollidable.m_pCollisionShape);
-    if (pkEntity->m_kCollidable.m_pMotionState == 0)
-        pkEntity->m_kCollidable.m_pMotionState = (*(const void* (__thiscall**)(hkpEntity*))(*(char**)pkEntity + 0x10))(pkEntity);
+    ((EntityWorldAccess*)entity)->UpdateBoundingVolume(this, entity->m_kCollidable.m_pCollisionShape);
+    if (entity->m_kCollidable.m_pMotionState == 0)
+        entity->m_kCollidable.m_pMotionState = (*(const void* (__thiscall**)(hkpEntity*))(*(char**)entity + 0x10))(entity);
 
-    hkSweptTransformUtil_setTimeInformation(0.0f, 0.0f, (int*)&pkEntity->m_pMotionState.m_kMotionState.m_kMotionTransform);
-    pkEntity->m_pMotionState.m_ausDeactivationNumInactiveFrames[0] = 0;
-    pkEntity->m_pMotionState.m_ausDeactivationNumInactiveFrames[1] = 0;
+    hkSweptTransformUtil_setTimeInformation(0.0f, 0.0f, (int*)&entity->m_motion.m_kMotionState.m_transform);
+    entity->m_motion.m_deactivationNumInactiveFrames[0] = 0;
+    entity->m_motion.m_deactivationNumInactiveFrames[1] = 0;
     m_bBlockExecutingPendingOperationQueues = false;
-    pkEntity->m_uiUniqueId = ++m_uiLastEntityUid;
-    pkEntity->addReference();
-    hkpWorldOperationUtil_addEntitySI(this, pkEntity, iInitialActivationState);
-    ((hkpCollidableQualityC914*)&pkEntity->m_pMotionState)->SetFlagBits(m_305, m_306, m_307);
+    entity->m_uid = ++m_uiLastEntityUid;
+    entity->addReference();
+    hkpWorldOperationUtil_addEntitySI(this, entity, initialActivationState);
+    ((hkpCollidableQualityC914*)&entity->m_motion)->SetFlagBits(m_305, m_306, m_307);
 
     lockCriticalOperations();
     m_bBlockExecutingPendingOperationQueues = true;
-    hkpWorldOperationUtil_addEntityBP(this, pkEntity);
-    NotifyEntityAdded(this, pkEntity);
-    hkpEntityCallbackUtil_fireEntityAdded(pkEntity);
+    hkpWorldOperationUtil_addEntityBP(this, entity);
+    hkpWorldCallbackUtil_fireEntityAdded(this, entity);
+    hkpEntityCallbackUtil_fireEntityAdded(entity);
     unlockAndAttemptToExecutePendingOperations();
-    return pkEntity;
+    return entity;
 }
 
 struct PointerArray {
@@ -2095,13 +2144,16 @@ struct EntryListNode {
     }
 };
 struct FUN_00c919d0_Class {
-    void hkpWorld_removeIslandPostIntegrateListener(int value);
+    void hkpWorld_removeIslandPostIntegrateListener(int islandListener);
 };
 // @fnv 0x00c919d0
 // src: HAVOK_LIB 0x00c919d0
-void FUN_00c919d0_Class::hkpWorld_removeIslandPostIntegrateListener(int value) {
+// pdb: hkpWorld::removeIslandPostIntegrateListener | hkpWorld.obj | debug, upstream name already matches, high
+// pdb params: islandListener
+// pdb locals: assertBuf, ostr
+void FUN_00c919d0_Class::hkpWorld_removeIslandPostIntegrateListener(int islandListener) {
     EntryListNode& list=*(EntryListNode*)((char*)this+0x188);
-    list.entries[list.findIndex(value)]=0;
+    list.entries[list.findIndex(islandListener)]=0;
 }
 
 struct CD22Registry {
@@ -2118,6 +2170,7 @@ struct CD22Registry {
 
 // @fnv 0x00c91ba0
 // src: HAVOK_LIB 0x00c91ba0
+// pdb: hkpWorld::collide | hkpWorld.obj | retail, upstream name already matches, high
 int CD22Registry::hkpWorld_collide()
 {
     IncrementCounter();
@@ -2163,17 +2216,19 @@ public:
 
 // @fnv 0x00c927f0
 // src: HAVOK_LIB 0x00c927f0
-void __cdecl enumerateAllConstraintsInIsland(hkWorldC927* world, hkSetC927* set)
+// pdb: enumerateAllConstraintsInIsland | hkpWorld.obj | retail, upstream name already matches, high
+// pdb params: island, sys
+void __cdecl enumerateAllConstraintsInIsland(hkWorldC927* island, hkSetC927* sys)
 {
-    for (int i = 0; i < world->m_iActorEntryCount; i++) {
-        hkRecordListC927* list = &world->m_kActorEntries[i]->m_records;
+    for (int i = 0; i < island->m_iActorEntryCount; i++) {
+        hkRecordListC927* list = &island->m_kActorEntries[i]->m_records;
         for (int j = 0; j < list->m_iElementCount; j++) {
             hkRecordC927& rec = list->m_data[j];
             const hkShapeC927* shape = rec.m_pCollisionShape;
             while (shape->m_type >= 0x17)
                 shape = shape->m_pChildAtom;
             if (shape->m_type != 0x16)
-                set->hkpPhysicsSystem_addConstraint(rec.m_object);
+                sys->hkpPhysicsSystem_addConstraint(rec.m_object);
         }
     }
 }
@@ -2231,7 +2286,7 @@ struct WorldSave {
     hkArray<void*> m_kIslandPostIntegrateListeners; hkArray<void*> m_kIslandPostCollideListeners;
     hkArray<void*> m_kContactListeners; hkArray<void*> m_kContactImpulseLimitBreachedListeners;
     void* m_pViolatedConstraintArray; void* m_pBroadPhaseBorder;
-    void hkpWorld_calcContentStatistics(struct ObjectWriter* writer, void* unused);
+    void hkpWorld_calcContentStatistics(struct ObjectWriter* collector, void* cls);
 };
 struct ObjectWriter {
     virtual void slot00();
@@ -2246,9 +2301,9 @@ struct ObjectWriter {
     void* m_reference08;
     int m_unknown0c;
     unsigned char m_writeAll10;
-    void DispatchWithMode(char* name, void* value, unsigned int length, int flags);
+    void hkStatisticsCollector_addNormalChunk(char* name, void* p, unsigned int size, int allocated);
 };
-void* __cdecl hkStatisticsCollector_getAllocatedSize(void* array, unsigned int bytes);
+void* __cdecl hkStatisticsCollector_getAllocatedSize(void* p, unsigned int size);
 extern char str_010c6700;
 extern char str_0109c938;
 extern char str_010c66f0;
@@ -2297,73 +2352,75 @@ static __forceinline void SaveArray(ObjectWriter* writer,hkArray<void*>& array,c
     }
 }
 static __forceinline void SaveBlob(ObjectWriter* writer,char* name,void* address,unsigned int length) {
-    writer->DispatchWithMode(name,address,length,0);
+    writer->hkStatisticsCollector_addNormalChunk(name,address,length,0);
 }
 
 // Serializes the WorldSave to the writer: writes arrays, blobs and nested blocks for its members, then clears the writer reference.
 // @fnv 0x00c92db0
 // src: XBOX_PDB 0x00c92db0
-void WorldSave::hkpWorld_calcContentStatistics(ObjectWriter* writer,void* unused) {
-    writer->m_reference08 = m_pCollisionInput;
-    SaveArray(writer, m_kActiveSimulationIslands, &str_010c6700, 4);
-    for (int i = m_kActiveSimulationIslands.m_iElementCount - 1; i >= 0; --i) writer->WriteValue(&str_0109c938, m_kActiveSimulationIslands.m_data[i], 0);
-    SaveArray(writer, m_kInactiveSimulationIslands, &str_010c66f0, 4);
-    for (int i = m_kInactiveSimulationIslands.m_iElementCount - 1; i >= 0; --i) writer->WriteValue(&str_010c66e4, m_kInactiveSimulationIslands.m_data[i], 0);
-    writer->WriteValue(&str_010c6084, reinterpret_cast<void*>(m_pFixedIsland), 0);
-    SaveArray(writer, m_kPhantoms, &str_010c66d8, 4);
-    for (int i = 0; i < m_kPhantoms.m_iElementCount; ++i) writer->WriteValue(&str_010c41a4, m_kPhantoms.m_data[i], 0);
-    if (m_pModifyConstraintCriticalSection) {    SaveBlob(writer,&str_010c66b8, reinterpret_cast<void*>(m_pModifyConstraintCriticalSection), 0x18);}
-    SaveBlob(writer,&str_010c6698, reinterpret_cast<void*>(m_pIslandDirtyListCriticalSection), 0x18);
-    if (m_pPropertyMasterLock) {    SaveBlob(writer,&str_010c6684, reinterpret_cast<void*>(m_pPropertyMasterLock), 0x18);}
-    SaveBlob(writer,&str_010c6664, reinterpret_cast<void*>(m_pMultithreadedSimulationJobData), 0x120);
+// pdb: hkpWorld::calcContentStatistics | hkpWorld.obj | retail, string-set bridge, high
+// pdb params: collector, cls
+void WorldSave::hkpWorld_calcContentStatistics(ObjectWriter* collector,void* cls) {
+    collector->m_reference08 = m_pCollisionInput;
+    SaveArray(collector, m_kActiveSimulationIslands, &str_010c6700, 4);
+    for (int i = m_kActiveSimulationIslands.m_iElementCount - 1; i >= 0; --i) collector->WriteValue(&str_0109c938, m_kActiveSimulationIslands.m_data[i], 0);
+    SaveArray(collector, m_kInactiveSimulationIslands, &str_010c66f0, 4);
+    for (int i = m_kInactiveSimulationIslands.m_iElementCount - 1; i >= 0; --i) collector->WriteValue(&str_010c66e4, m_kInactiveSimulationIslands.m_data[i], 0);
+    collector->WriteValue(&str_010c6084, reinterpret_cast<void*>(m_pFixedIsland), 0);
+    SaveArray(collector, m_kPhantoms, &str_010c66d8, 4);
+    for (int i = 0; i < m_kPhantoms.m_iElementCount; ++i) collector->WriteValue(&str_010c41a4, m_kPhantoms.m_data[i], 0);
+    if (m_pModifyConstraintCriticalSection) {    SaveBlob(collector,&str_010c66b8, reinterpret_cast<void*>(m_pModifyConstraintCriticalSection), 0x18);}
+    SaveBlob(collector,&str_010c6698, reinterpret_cast<void*>(m_pIslandDirtyListCriticalSection), 0x18);
+    if (m_pPropertyMasterLock) {    SaveBlob(collector,&str_010c6684, reinterpret_cast<void*>(m_pPropertyMasterLock), 0x18);}
+    SaveBlob(collector,&str_010c6664, reinterpret_cast<void*>(m_pMultithreadedSimulationJobData), 0x120);
     if (m_pPendingOperationQueues) {
        HandlerRegistration* position = m_pPendingOperationQueues;
        do {
-    SaveBlob(writer,&str_010c664c, reinterpret_cast<void*>(m_pPendingOperationQueues), 0x10);
+    SaveBlob(collector,&str_010c664c, reinterpret_cast<void*>(m_pPendingOperationQueues), 0x10);
           if (m_pPendingOperationQueues->data) {
               hkArray<void*>* batch = static_cast<hkArray<void*>*>(m_pPendingOperationQueues->data);
-    SaveArray(writer, (*batch), &str_010c6630, 20);
+    SaveArray(collector, (*batch), &str_010c6630, 20);
           }
           position = position->next;
        } while (position);
     }
-    writer->OpenBlock(&str_010c6624);
-    writer->WriteValue(&str_010c6618, reinterpret_cast<void*>(m_pSimulation), 0);
-    SaveArray(writer, m_kDirtySimulationIslands, &str_010c660c, 4);
-    writer->WriteValue(&str_010c6600, reinterpret_cast<void*>(m_pMaintenanceManager), 0);
-    SaveBlob(writer,&str_010c65f8, reinterpret_cast<void*>(m_pPendingOperations), 0x28);
-    writer->OpenBlock(&str_010c65f8);
-    SaveArray(writer, m_pPendingOperations->m_10, &str_010c65e8, 20);
-    SaveArray(writer, m_pPendingOperations->m_1c, &str_010c65d8, 16);
-    writer->CloseBlock();
-    writer->WriteValue(&str_010c65c4, reinterpret_cast<void*>(m_pBroadPhaseBorder), 0);
-    writer->OpenBlock(&str_010c65bc);
-    writer->WriteValue(&str_010c65b0, reinterpret_cast<void*>(m_pJobSemaphore), 0);
-    SaveBlob(writer,&str_010c65a4, reinterpret_cast<void*>(m_pBroadPhaseDispatcher), 0x10c);
-    SaveBlob(writer,&str_010c65a4, reinterpret_cast<void*>(m_pEntityEntityBroadPhaseListener), 0x10);
-    SaveBlob(writer,&str_010c65a4, reinterpret_cast<void*>(m_pPhantomBroadPhaseListener), 0xc);
-    SaveBlob(writer,&str_010c65a4, reinterpret_cast<void*>(m_pBroadPhaseBorderListener), 0xc);
-    SaveBlob(writer,&str_010c6598, reinterpret_cast<void*>(m_pCollisionInput), 0x80);
+    collector->OpenBlock(&str_010c6624);
+    collector->WriteValue(&str_010c6618, reinterpret_cast<void*>(m_pSimulation), 0);
+    SaveArray(collector, m_kDirtySimulationIslands, &str_010c660c, 4);
+    collector->WriteValue(&str_010c6600, reinterpret_cast<void*>(m_pMaintenanceManager), 0);
+    SaveBlob(collector,&str_010c65f8, reinterpret_cast<void*>(m_pPendingOperations), 0x28);
+    collector->OpenBlock(&str_010c65f8);
+    SaveArray(collector, m_pPendingOperations->m_10, &str_010c65e8, 20);
+    SaveArray(collector, m_pPendingOperations->m_1c, &str_010c65d8, 16);
+    collector->CloseBlock();
+    collector->WriteValue(&str_010c65c4, reinterpret_cast<void*>(m_pBroadPhaseBorder), 0);
+    collector->OpenBlock(&str_010c65bc);
+    collector->WriteValue(&str_010c65b0, reinterpret_cast<void*>(m_pJobSemaphore), 0);
+    SaveBlob(collector,&str_010c65a4, reinterpret_cast<void*>(m_pBroadPhaseDispatcher), 0x10c);
+    SaveBlob(collector,&str_010c65a4, reinterpret_cast<void*>(m_pEntityEntityBroadPhaseListener), 0x10);
+    SaveBlob(collector,&str_010c65a4, reinterpret_cast<void*>(m_pPhantomBroadPhaseListener), 0xc);
+    SaveBlob(collector,&str_010c65a4, reinterpret_cast<void*>(m_pBroadPhaseBorderListener), 0xc);
+    SaveBlob(collector,&str_010c6598, reinterpret_cast<void*>(m_pCollisionInput), 0x80);
     if (m_pCollisionInput) {
-      SaveBlob(writer,&str_010c6580,*reinterpret_cast<void**>(reinterpret_cast<unsigned char*>(m_pCollisionInput)+0x70),0x10);
+      SaveBlob(collector,&str_010c6580,*reinterpret_cast<void**>(reinterpret_cast<unsigned char*>(m_pCollisionInput)+0x70),0x10);
     }
-    writer->WriteValue(&str_010c6578, reinterpret_cast<void*>(m_pCollisionFilter), 0);
-    writer->WriteValue(&str_010c6564, reinterpret_cast<void*>(m_pConvexListCollisionFilter), 0);
-    writer->WriteValue(&str_010c6558, reinterpret_cast<void*>(m_pDispatcher), 0);
-    writer->CloseBlock(); writer->CloseBlock();
-    writer->OpenBlock(&str_010c654c);
-    SaveArray(writer, m_kEntityListenerArray, &str_010c6540, 4);
-    SaveArray(writer, m_kPhantomListeners, &str_010c6534, 4);
-    SaveArray(writer, m_kConstraintListeners, &str_010c6524, 4);
-    SaveArray(writer, m_kWorldDeletionListeners, &str_010c6514, 4);
-    SaveArray(writer, m_kIslandActivationListeners, &str_010c6504, 4);
-    SaveArray(writer, m_kWorldPostSimulationListeners, &str_010c64f4, 4);
-    SaveArray(writer, m_kWorldPostIntegrateListeners, &str_010c64e4, 4);
-    SaveArray(writer, m_kWorldPostCollideListeners, &str_010c64d4, 4);
-    SaveArray(writer, m_kIslandPostIntegrateListeners, &str_010c64e4, 4);
-    SaveArray(writer, m_kContactListeners, &str_010c64c8, 4);
-    writer->CloseBlock();
-    writer->m_reference08 = 0;
+    collector->WriteValue(&str_010c6578, reinterpret_cast<void*>(m_pCollisionFilter), 0);
+    collector->WriteValue(&str_010c6564, reinterpret_cast<void*>(m_pConvexListCollisionFilter), 0);
+    collector->WriteValue(&str_010c6558, reinterpret_cast<void*>(m_pDispatcher), 0);
+    collector->CloseBlock(); collector->CloseBlock();
+    collector->OpenBlock(&str_010c654c);
+    SaveArray(collector, m_kEntityListenerArray, &str_010c6540, 4);
+    SaveArray(collector, m_kPhantomListeners, &str_010c6534, 4);
+    SaveArray(collector, m_kConstraintListeners, &str_010c6524, 4);
+    SaveArray(collector, m_kWorldDeletionListeners, &str_010c6514, 4);
+    SaveArray(collector, m_kIslandActivationListeners, &str_010c6504, 4);
+    SaveArray(collector, m_kWorldPostSimulationListeners, &str_010c64f4, 4);
+    SaveArray(collector, m_kWorldPostIntegrateListeners, &str_010c64e4, 4);
+    SaveArray(collector, m_kWorldPostCollideListeners, &str_010c64d4, 4);
+    SaveArray(collector, m_kIslandPostIntegrateListeners, &str_010c64e4, 4);
+    SaveArray(collector, m_kContactListeners, &str_010c64c8, 4);
+    collector->CloseBlock();
+    collector->m_reference08 = 0;
 }
 
 struct WorldWatchDogHolder : hkpWorld {
@@ -2373,7 +2430,7 @@ struct WorldWatchDogHolder : hkpWorld {
 // @fnv 0x00c93570
 // src: XBOX_PDB 0x00c93570
 void* WorldWatchDogHolder::hkpWorld_getMemoryWatchDog() {
-    return m_pMemoryWatchDog;
+    return m_memoryWatchDog;
 }
 
 inline void* __cdecl operator new(unsigned int, void* p) { return p; }
@@ -2389,9 +2446,9 @@ struct ThreadMemHolder {
 };
 
 void* hkMemoryRouter_getInstance();
-void ResizeAudioStream(void* alloc, void* array, int elemSize);
-void QueryEntityIntoBuffer(hkpWorld* world, hkpPhantom* phantom);
-void NotifyPhantomAdded(hkpWorld* world, hkpPhantom* phantom);
+void ResizeAudioStream(void* mem, void* array, int sizeElem);
+void hkpWorldOperationUtil_addPhantomBP(hkpWorld* world, hkpPhantom* phantom);
+void hkpWorldCallbackUtil_firePhantomAdded(hkpWorld* world, hkpPhantom* Phantom);
 
 struct PendingOperation {
     unsigned char m_type;
@@ -2412,9 +2469,12 @@ struct FUN_00c936a0_World : hkpWorld {
 
 // @fnv 0x00c936a0
 // src: HAVOK_LIB 0x00c936a0
+// pdb: hkpWorld::addPhantom | hkpWorld.obj | retail, upstream name already matches, high
+// pdb params: phantom
+// pdb locals: assertBuf, ostr, op
 hkpPhantom* FUN_00c936a0_World::hkpWorld_addPhantom(hkpPhantom* phantom)
 {
-    if (m_iCriticalOperationsLockCount + m_iCriticalOperationsLockCountForPhantoms) {
+    if (m_criticalOperationsLockCount + m_criticalOperationsLockCountForPhantoms) {
         PendingOperation op;
         op.m_type = 0xD;
         op.m_pPhantom = phantom;
@@ -2422,16 +2482,16 @@ hkpPhantom* FUN_00c936a0_World::hkpWorld_addPhantom(hkpPhantom* phantom)
         return 0;
     }
 
-    m_iCriticalOperationsLockCount++;
+    m_criticalOperationsLockCount++;
 
     if (!phantom->m_kCollidable.m_pMotionState) {
         phantom->m_kCollidable.m_pMotionState = (*(const void* (__thiscall**)(hkpPhantom*))(*(char**)phantom + 0x10))(phantom);
     }
 
-    phantom->m_pOwningWorld = this;
+    phantom->m_world = this;
     ((RefObj*)phantom)->FUN_00c90510();
 
-    hkArray<hkpPhantom*>& phantoms = m_kPhantoms;
+    hkArray<hkpPhantom*>& phantoms = m_phantoms;
     ThreadMemHolder* mem = (ThreadMemHolder*)hkMemoryRouter_getInstance();
     if (phantoms.m_iElementCount == (phantoms.m_iCapacityState & 0x3FFFFFFF)) {
         ResizeAudioStream(mem->m_alloc, &phantoms, 4);
@@ -2442,15 +2502,15 @@ hkpPhantom* FUN_00c936a0_World::hkpWorld_addPhantom(hkpPhantom* phantom)
     new (p) hkpPhantom*(phantom);
     phantoms.m_iElementCount++;
 
-    QueryEntityIntoBuffer(this, phantom);
-    NotifyPhantomAdded(this, phantom);
+    hkpWorldOperationUtil_addPhantomBP(this, phantom);
+    hkpWorldCallbackUtil_firePhantomAdded(this, phantom);
     phantom->firePhantomAdded();
 
-    if (--m_iCriticalOperationsLockCount == 0 && !m_bBlockExecutingPendingOperations) {
-        if (m_iPendingOperationCount) {
+    if (--m_criticalOperationsLockCount == 0 && !m_blockExecutingPendingOperations) {
+        if (m_pendingOperationsCount) {
             FUN_00c91120();
         }
-        if (m_iPendingOperationQueueCount == 1 && m_iQueuedOperationCount) {
+        if (m_pendingOperationQueueCount == 1 && m_pendingBodyOperationsCount) {
             UpdateFields_00c91140();
         }
     }
@@ -2546,15 +2606,18 @@ public:
     int unk13C;
     hkArray<void*> m_kEntityListenerArray;
 
-    void hkpWorld_addConstraintListener(hkpEntityListenerXc937e0* pkListener);
+    void hkpWorld_addConstraintListener(hkpEntityListenerXc937e0* worldListener);
 };
 
 // Appends pkListener to the world's entity listener array, growing it if needed.
 // @fnv 0x00c937e0
 // src: HAVOK_LIB 0x00c937e0
-void hkpWorldXc937e0::hkpWorld_addConstraintListener(hkpEntityListenerXc937e0* pkListener)
+// pdb: hkpWorld::addConstraintListener | hkpWorld.obj | retail, upstream name already matches, high
+// pdb params: worldListener
+// pdb locals: assertBuf, ostr
+void hkpWorldXc937e0::hkpWorld_addConstraintListener(hkpEntityListenerXc937e0* worldListener)
 {
-    m_kEntityListenerArray.pushBack(pkListener);
+    m_kEntityListenerArray.pushBack(worldListener);
 }
 }  // namespace fnv_00c937e0
 
@@ -2639,14 +2702,17 @@ public:
     int unk124;
     hkArray<void*> m_kEntityListenerArray;
 
-    void hkpWorld_addEntityListener(hkpEntityListenerC938* pkListener);
+    void hkpWorld_addEntityListener(hkpEntityListenerC938* worldListener);
 };
 
 // @fnv 0x00c93820
 // src: HAVOK_LIB 0x00c93820
-void hkpWorldC938::hkpWorld_addEntityListener(hkpEntityListenerC938* pkListener)
+// pdb: hkpWorld::addEntityListener | hkpWorld.obj | retail, upstream name already matches, high
+// pdb params: worldListener
+// pdb locals: assertBuf, ostr
+void hkpWorldC938::hkpWorld_addEntityListener(hkpEntityListenerC938* worldListener)
 {
-    m_kEntityListenerArray.pushBack(pkListener);
+    m_kEntityListenerArray.pushBack(worldListener);
 }
 }  // namespace fnv_00c93820
 
@@ -2735,14 +2801,17 @@ public:
     int unk130;
     hkArray<void*> m_kEntityListenerArray;
 
-    void hkpWorld_addPhantomListener(hkpEntityListenerXc93860* pkListener);
+    void hkpWorld_addPhantomListener(hkpEntityListenerXc93860* worldListener);
 };
 
 // @fnv 0x00c93860
 // src: HAVOK_LIB 0x00c93860
-void hkpWorldXc93860::hkpWorld_addPhantomListener(hkpEntityListenerXc93860* pkListener)
+// pdb: hkpWorld::addPhantomListener | hkpWorld.obj | retail, upstream name already matches, high
+// pdb params: worldListener
+// pdb locals: assertBuf, ostr
+void hkpWorldXc93860::hkpWorld_addPhantomListener(hkpEntityListenerXc93860* worldListener)
 {
-    m_kEntityListenerArray.pushBack(pkListener);
+    m_kEntityListenerArray.pushBack(worldListener);
 }
 }  // namespace fnv_00c93860
 
@@ -2840,15 +2909,18 @@ public:
     int unk154;
     hkArray<void*> m_kEntityListenerArray;
 
-    void hkpWorld_addIslandActivationListener(hkpEntityListenerXc938a0* pkListener);
+    void hkpWorld_addIslandActivationListener(hkpEntityListenerXc938a0* worldListener);
 };
 
 // Appends pkListener to the world's entity listener array, growing it if needed.
 // @fnv 0x00c938a0
 // src: HAVOK_LIB 0x00c938a0
-void hkpWorldXc938a0::hkpWorld_addIslandActivationListener(hkpEntityListenerXc938a0* pkListener)
+// pdb: hkpWorld::addIslandActivationListener | hkpWorld.obj | retail, upstream name already matches, high
+// pdb params: worldListener
+// pdb locals: assertBuf, ostr
+void hkpWorldXc938a0::hkpWorld_addIslandActivationListener(hkpEntityListenerXc938a0* worldListener)
 {
-    m_kEntityListenerArray.pushBack(pkListener);
+    m_kEntityListenerArray.pushBack(worldListener);
 }
 }  // namespace fnv_00c938a0
 
@@ -2940,14 +3012,18 @@ public:
     hkArray<void*> m_kWorldPostIntegrateListeners;
     hkArray<void*> m_kWorldPostCollideListeners;
 
-    void AddPostCollideListener(hkpWorldPostCollideListenerC938* pkListener);
+    void hkpWorld_addWorldPostCollideListener(hkpWorldPostCollideListenerC938* worldListener);
 };
 
 // Appends pkListener to the world's post-collide listener array.
 // @fnv 0x00c938e0
-void hkpWorldC938::AddPostCollideListener(hkpWorldPostCollideListenerC938* pkListener)
+// src: XBOX_RETAIL_PDB 0x00c938e0
+// pdb: hkpWorld::addWorldPostCollideListener | hkpWorld.obj | retail, object-file gap fill, high
+// pdb params: worldListener
+// pdb locals: assertBuf, ostr
+void hkpWorldC938::hkpWorld_addWorldPostCollideListener(hkpWorldPostCollideListenerC938* worldListener)
 {
-    m_kWorldPostCollideListeners.pushBack(pkListener);
+    m_kWorldPostCollideListeners.pushBack(worldListener);
 }
 }  // namespace fnv_00c938e0
 
@@ -3048,15 +3124,18 @@ public:
     int unk160;
     hkArray<void*> m_kEntityListenerArray;
 
-    void hkpWorld_addWorldPostSimulationListener(hkpEntityListenerXc93920* pkListener);
+    void hkpWorld_addWorldPostSimulationListener(hkpEntityListenerXc93920* worldListener);
 };
 
 // Appends pkListener to the world's entity listener array, growing it if needed.
 // @fnv 0x00c93920
 // src: HAVOK_LIB 0x00c93920
-void hkpWorldXc93920::hkpWorld_addWorldPostSimulationListener(hkpEntityListenerXc93920* pkListener)
+// pdb: hkpWorld::addWorldPostSimulationListener | hkpWorld.obj | retail, upstream name already matches, high
+// pdb params: worldListener
+// pdb locals: assertBuf, ostr
+void hkpWorldXc93920::hkpWorld_addWorldPostSimulationListener(hkpEntityListenerXc93920* worldListener)
 {
-    m_kEntityListenerArray.pushBack(pkListener);
+    m_kEntityListenerArray.pushBack(worldListener);
 }
 }  // namespace fnv_00c93920
 
@@ -3147,15 +3226,18 @@ public:
     hkArray<void*> m_kWorldPostSimulationListeners;
     hkArray<void*> m_kWorldPostIntegrateListeners;
 
-    void hkpWorld_addWorldPostIntegrateListener(hkpWorldPostIntegrateListenerC939* pkListener);
+    void hkpWorld_addWorldPostIntegrateListener(hkpWorldPostIntegrateListenerC939* worldListener);
 };
 
 // Appends pkListener to the world's post-integrate listener array.
 // @fnv 0x00c93960
 // src: HAVOK_LIB 0x00c93960
-void hkpWorldC939::hkpWorld_addWorldPostIntegrateListener(hkpWorldPostIntegrateListenerC939* pkListener)
+// pdb: hkpWorld::addWorldPostIntegrateListener | hkpWorld.obj | retail, upstream name already matches, high
+// pdb params: worldListener
+// pdb locals: assertBuf, ostr
+void hkpWorldC939::hkpWorld_addWorldPostIntegrateListener(hkpWorldPostIntegrateListenerC939* worldListener)
 {
-    m_kWorldPostIntegrateListeners.pushBack(pkListener);
+    m_kWorldPostIntegrateListeners.pushBack(worldListener);
 }
 }  // namespace fnv_00c93960
 
@@ -3248,15 +3330,18 @@ public:
     hkArray<void*> m_kWorldPostCollideListeners;
     hkArray<void*> m_kIslandPostIntegrateListeners;
 
-    void hkpWorld_addIslandPostIntegrateListener(hkpIslandPostIntegrateListenerC939* pkListener);
+    void hkpWorld_addIslandPostIntegrateListener(hkpIslandPostIntegrateListenerC939* islandListener);
 };
 
 // Appends pkListener to the world's post-integrate listener array.
 // @fnv 0x00c939e0
 // src: HAVOK_LIB 0x00c939e0
-void hkpWorldC939::hkpWorld_addIslandPostIntegrateListener(hkpIslandPostIntegrateListenerC939* pkListener)
+// pdb: hkpWorld::addIslandPostIntegrateListener | hkpWorld.obj | retail, upstream name already matches, high
+// pdb params: islandListener
+// pdb locals: assertBuf, ostr
+void hkpWorldC939::hkpWorld_addIslandPostIntegrateListener(hkpIslandPostIntegrateListenerC939* islandListener)
 {
-    m_kIslandPostIntegrateListeners.pushBack(pkListener);
+    m_kIslandPostIntegrateListeners.pushBack(islandListener);
 }
 }  // namespace fnv_00c939e0
 
@@ -3372,15 +3457,18 @@ public:
     int unk19C;
     hkArray<void*> m_kEntityListenerArray;
 
-    void hkpWorld_addContactListener(hkpEntityListenerXc93a20* pkListener);
+    void hkpWorld_addContactListener(hkpEntityListenerXc93a20* collisionListener);
 };
 
 // Appends pkListener to the world's entity listener array, growing it if it is full.
 // @fnv 0x00c93a20
 // src: HAVOK_LIB 0x00c93a20
-void hkpWorldXc93a20::hkpWorld_addContactListener(hkpEntityListenerXc93a20* pkListener)
+// pdb: hkpWorld::addContactListener | hkpWorld.obj | retail, upstream name already matches, high
+// pdb params: collisionListener
+// pdb locals: assertBuf, ostr
+void hkpWorldXc93a20::hkpWorld_addContactListener(hkpEntityListenerXc93a20* collisionListener)
 {
-    m_kEntityListenerArray.pushBack(pkListener);
+    m_kEntityListenerArray.pushBack(collisionListener);
 }
 }  // namespace fnv_00c93a20
 
@@ -3401,25 +3489,27 @@ struct FUN_00c93ae0_Cb {
 };
 
 struct FUN_00c93ae0_Pair {
-    void hkpWorld_finishMtStep(void* a, void* b);
+    void hkpWorld_finishMtStep(void* jobQueue, void* threadPool);
 };
 
 struct FUN_00c93ae0_class {
-    void hkpWorld_stepMultithreaded(void* p1, void* p2, float f);
+    void hkpWorld_stepMultithreaded(void* jobQueue, void* threadPool, float physicsDeltaTime);
 };
 
 // Calls FUN_00c92d70 on this with p1 and f; if it returns 0, invokes slot0c(p1, 11), FUN_00d051b0 on p1, slot10, then FUN_00c91c00(p1, p2).
 // @fnv 0x00c93ae0
 // src: HAVOK_LIB 0x00c93ae0
-void FUN_00c93ae0_class::hkpWorld_stepMultithreaded(void* p1, void* p2, float fValue) {
-    if (reinterpret_cast<FUN_00c93ae0_Cb*>(this)->hkpWorld_initMtStep(p1, fValue)) {
+// pdb: hkpWorld::stepMultithreaded | hkpWorld.obj | retail, upstream name already matches, high
+// pdb params: jobQueue, threadPool, physicsDeltaTime
+void FUN_00c93ae0_class::hkpWorld_stepMultithreaded(void* jobQueue, void* threadPool, float physicsDeltaTime) {
+    if (reinterpret_cast<FUN_00c93ae0_Cb*>(this)->hkpWorld_initMtStep(jobQueue, physicsDeltaTime)) {
         return;
     }
-    FUN_00c93ae0_Vt* o = reinterpret_cast<FUN_00c93ae0_Vt*>(p2);
-    o->slot0c(p1, 11);
-    reinterpret_cast<FUN_00c93ae0_Dtm*>(p1)->hkJobQueue_processAllJobs();
+    FUN_00c93ae0_Vt* o = reinterpret_cast<FUN_00c93ae0_Vt*>(threadPool);
+    o->slot0c(jobQueue, 11);
+    reinterpret_cast<FUN_00c93ae0_Dtm*>(jobQueue)->hkJobQueue_processAllJobs();
     o->slot10();
-    reinterpret_cast<FUN_00c93ae0_Pair*>(this)->hkpWorld_finishMtStep(p1, p2);
+    reinterpret_cast<FUN_00c93ae0_Pair*>(this)->hkpWorld_finishMtStep(jobQueue, threadPool);
 }
 
 
@@ -3502,7 +3592,7 @@ public:
 
     bool isFixed() const { return m_usStorageIndex == 0xffff; }
     void RemoveEntry(hkpActionC976* pkAction) throw();
-    void AddItem(hkpActionC976* pkAction) throw();
+    void AddItem(hkpActionC976* act) throw();
 };
 
 
@@ -3521,27 +3611,30 @@ public:
 };
 
 // @fnv 0x00c976a0
-void __stdcall RemoveActionFromEntity(hkpActionC976* pkAction, hkpEntity* pkEntity) throw()
+// pdb: hkpWorld::detachActionFromEntity | hkpWorld.obj | retail, call graph, high
+// pdb params: action, entity
+// pdb locals: assertBuf, ostr, entities
+void __stdcall RemoveActionFromEntity(hkpActionC976* action, hkpEntity* entity) throw()
 {
-    pkEntity->m_ppActions.removeAt(pkEntity->m_ppActions.indexOf((hkpAction*)pkAction));
-    hkpSimulationIslandC976* pkIsland = (hkpSimulationIslandC976*)pkEntity->m_pSimulationIsland;
+    entity->m_actions.removeAt(entity->m_actions.indexOf((hkpAction*)action));
+    hkpSimulationIslandC976* pkIsland = (hkpSimulationIslandC976*)entity->m_simulationIsland;
     pkIsland->m_bSplitCheckRequested = true;
     pkIsland->m_isSparse = false;
 
     hkInplaceArray<hkpEntity*, 4> kEntities;
-    pkAction->GetEntities(kEntities);
+    action->GetEntities(kEntities);
 
     hkpSimulationIslandC976* pkNewIsland = 0;
     for (int i = 0; i < kEntities.GetLogicalSize(); i++) {
-        if (kEntities[i] != pkEntity) {
-            pkNewIsland = (hkpSimulationIslandC976*)kEntities[i]->m_pSimulationIsland;
+        if (kEntities[i] != entity) {
+            pkNewIsland = (hkpSimulationIslandC976*)kEntities[i]->m_simulationIsland;
             if (!pkNewIsland->isFixed())
                 break;
         }
     }
-    if (pkNewIsland != pkAction->GetSimulationIsland()) {
-        pkAction->GetSimulationIsland()->RemoveEntry(pkAction);
-        pkNewIsland->AddItem(pkAction);
+    if (pkNewIsland != action->GetSimulationIsland()) {
+        action->GetSimulationIsland()->RemoveEntry(action);
+        pkNewIsland->AddItem(action);
     }
 }
 }  // namespace fnv_00c976a0
@@ -3563,7 +3656,7 @@ struct ActiveFlag {
 };
 inline ActiveFlag PhysicsSystemIsActive(const hkpPhysicsSystem* system)
 {
-    return *(const ActiveFlag*)&system->m_bSlotEnabled;
+    return *(const ActiveFlag*)&system->m_active;
 }
 template <class T> inline int findNull(const hkArray<T>& values) {
     for (int i = 0; i < values.m_iElementCount; ++i) {
@@ -3579,40 +3672,43 @@ struct SystemWorld : hkpWorld {
     void hkpWorld_addPhantom(void*);
     void hkpWorld_addAction(void*);
     void hkpWorld_addConstraint(SystemObject*);
-    void hkpWorld_addPhysicsSystem(hkpPhysicsSystem* system);
+    void hkpWorld_addPhysicsSystem(hkpPhysicsSystem* sys);
 };
 // Updates the physics system's entities, phantoms, actions and constraints, using bulk calls when no null entries are present and per-entry calls otherwise.
 // @fnv 0x00c97f80
 // src: HAVOK_LIB 0x00c97f80
-void SystemWorld::hkpWorld_addPhysicsSystem(hkpPhysicsSystem* system) {
-    if (system->m_ppRigidBodies.m_iElementCount > 0) {
-        if (findNull(system->m_ppRigidBodies) == -1) {
-            hkpWorld_addEntityBatch((void**)system->m_ppRigidBodies.m_data, system->m_ppRigidBodies.m_iElementCount, PhysicsSystemIsActive(system) ? 1 : 0);
+// pdb: hkpWorld::addPhysicsSystem | hkpWorld.obj | retail, upstream name already matches, high
+// pdb params: sys
+// pdb locals: assertBuf, ostr
+void SystemWorld::hkpWorld_addPhysicsSystem(hkpPhysicsSystem* sys) {
+    if (sys->m_rigidBodies.m_iElementCount > 0) {
+        if (findNull(sys->m_rigidBodies) == -1) {
+            hkpWorld_addEntityBatch((void**)sys->m_rigidBodies.m_data, sys->m_rigidBodies.m_iElementCount, PhysicsSystemIsActive(sys) ? 1 : 0);
         } else {
-            for (int i = 0; i < system->m_ppRigidBodies.m_iElementCount; ++i) {
-                if (system->m_ppRigidBodies.m_data[i])
-                    hkpWorld_addEntity(system->m_ppRigidBodies.m_data[i], PhysicsSystemIsActive(system) ? 1 : 0);
+            for (int i = 0; i < sys->m_rigidBodies.m_iElementCount; ++i) {
+                if (sys->m_rigidBodies.m_data[i])
+                    hkpWorld_addEntity(sys->m_rigidBodies.m_data[i], PhysicsSystemIsActive(sys) ? 1 : 0);
             }
         }
     }
-    if (system->m_kPhantoms.m_iElementCount > 0) {
-        if (findNull(system->m_kPhantoms) == -1) {
-            hkpWorld_addPhantomBatch((void**)system->m_kPhantoms.m_data, system->m_kPhantoms.m_iElementCount);
+    if (sys->m_phantoms.m_iElementCount > 0) {
+        if (findNull(sys->m_phantoms) == -1) {
+            hkpWorld_addPhantomBatch((void**)sys->m_phantoms.m_data, sys->m_phantoms.m_iElementCount);
         } else {
-            for (int i = 0; i < system->m_kPhantoms.m_iElementCount; ++i) {
-                if (system->m_kPhantoms.m_data[i])
-                    hkpWorld_addPhantom(system->m_kPhantoms.m_data[i]);
+            for (int i = 0; i < sys->m_phantoms.m_iElementCount; ++i) {
+                if (sys->m_phantoms.m_data[i])
+                    hkpWorld_addPhantom(sys->m_phantoms.m_data[i]);
             }
         }
     }
-    for (int i = 0; i < system->m_ppActions.m_iElementCount; ++i) {
-        if (system->m_ppActions.m_data[i])
-            hkpWorld_addAction(system->m_ppActions.m_data[i]);
+    for (int i = 0; i < sys->m_actions.m_iElementCount; ++i) {
+        if (sys->m_actions.m_data[i])
+            hkpWorld_addAction(sys->m_actions.m_data[i]);
     }
-    for (int i = 0; i < system->m_ppConstraints.m_iElementCount; ++i) {
-        if (system->m_ppConstraints.m_data[i] &&
-            (((SystemObject*)system->m_ppConstraints.m_data[i])->owner || ((SystemObject*)system->m_ppConstraints.m_data[i])->attachment))
-            hkpWorld_addConstraint((SystemObject*)system->m_ppConstraints.m_data[i]);
+    for (int i = 0; i < sys->m_constraints.m_iElementCount; ++i) {
+        if (sys->m_constraints.m_data[i] &&
+            (((SystemObject*)sys->m_constraints.m_data[i])->owner || ((SystemObject*)sys->m_constraints.m_data[i])->attachment))
+            hkpWorld_addConstraint((SystemObject*)sys->m_constraints.m_data[i]);
     }
 }
 
@@ -3640,42 +3736,45 @@ struct hkBoolRetC980 {
 
 class hkpWorldC980 {
 public:
-    hkBoolRetC980 hkpWorld_removeConstraint(hkpConstraintInstanceC980* pkConstraint) throw();
-    void DispatchOrQueue(hkpActionC980* pkAction) throw();
-    void RemoveEntities(hkpEntity* const* ppkEntityBatch, int iNumEntities) throw();
+    hkBoolRetC980 hkpWorld_removeConstraint(hkpConstraintInstanceC980* constraint) throw();
+    void hkpWorld_removeAction(hkpActionC980* action) throw();
+    void hkpWorld_removeEntityBatch(hkpEntity* const* ppkEntityBatch, int iNumEntities) throw();
     hkBoolRetC980 ProcessTarget(hkpEntity* pkEntity) throw();
     void hkpWorld_removePhantomBatch(hkpPhantom* const* ppkPhantomBatch, int iNumPhantoms) throw();
-    void hkpWorld_removePhantom(hkpPhantom* pkPhantom) throw();
+    void hkpWorld_removePhantom(hkpPhantom* phantom) throw();
 
-    void hkpWorld_removePhysicsSystem(const hkpPhysicsSystem* pkSys) throw();
+    void hkpWorld_removePhysicsSystem(const hkpPhysicsSystem* sys) throw();
 };
 
 // @fnv 0x00c980d0
 // src: HAVOK_LIB 0x00c980d0
-void hkpWorldC980::hkpWorld_removePhysicsSystem(const hkpPhysicsSystem* pkSys) throw()
+// pdb: hkpWorld::removePhysicsSystem | hkpWorld.obj | retail, upstream name already matches, high
+// pdb params: sys
+// pdb locals: assertBuf, ostr
+void hkpWorldC980::hkpWorld_removePhysicsSystem(const hkpPhysicsSystem* sys) throw()
 {
-    for (int c = 0; c < pkSys->m_ppConstraints.m_iElementCount; ++c) {
-        if (pkSys->m_ppConstraints.m_data[c])
-            hkpWorld_removeConstraint((hkpConstraintInstanceC980*)pkSys->m_ppConstraints.m_data[c]);
+    for (int c = 0; c < sys->m_constraints.m_iElementCount; ++c) {
+        if (sys->m_constraints.m_data[c])
+            hkpWorld_removeConstraint((hkpConstraintInstanceC980*)sys->m_constraints.m_data[c]);
     }
-    for (int a = 0; a < pkSys->m_ppActions.m_iElementCount; ++a) {
-        if (pkSys->m_ppActions.m_data[a])
-            DispatchOrQueue((hkpActionC980*)pkSys->m_ppActions.m_data[a]);
+    for (int a = 0; a < sys->m_actions.m_iElementCount; ++a) {
+        if (sys->m_actions.m_data[a])
+            hkpWorld_removeAction((hkpActionC980*)sys->m_actions.m_data[a]);
     }
-    if (ArrayIndexOfC980(pkSys->m_ppRigidBodies, (hkpRigidBody*)0) == -1) {
-        RemoveEntities((hkpEntity* const*)pkSys->m_ppRigidBodies.m_data, pkSys->m_ppRigidBodies.m_iElementCount);
+    if (ArrayIndexOfC980(sys->m_rigidBodies, (hkpRigidBody*)0) == -1) {
+        hkpWorld_removeEntityBatch((hkpEntity* const*)sys->m_rigidBodies.m_data, sys->m_rigidBodies.m_iElementCount);
     } else {
-        for (int r = 0; r < pkSys->m_ppRigidBodies.m_iElementCount; ++r) {
-            if (pkSys->m_ppRigidBodies.m_data[r])
-                ProcessTarget((hkpEntity*)pkSys->m_ppRigidBodies.m_data[r]);
+        for (int r = 0; r < sys->m_rigidBodies.m_iElementCount; ++r) {
+            if (sys->m_rigidBodies.m_data[r])
+                ProcessTarget((hkpEntity*)sys->m_rigidBodies.m_data[r]);
         }
     }
-    if (ArrayIndexOfC980(pkSys->m_kPhantoms, (hkpPhantom*)0) == -1) {
-        hkpWorld_removePhantomBatch(pkSys->m_kPhantoms.m_data, pkSys->m_kPhantoms.m_iElementCount);
+    if (ArrayIndexOfC980(sys->m_phantoms, (hkpPhantom*)0) == -1) {
+        hkpWorld_removePhantomBatch(sys->m_phantoms.m_data, sys->m_phantoms.m_iElementCount);
     } else {
-        for (int p = 0; p < pkSys->m_kPhantoms.m_iElementCount; ++p) {
-            if (pkSys->m_kPhantoms.m_data[p])
-                hkpWorld_removePhantom(pkSys->m_kPhantoms.m_data[p]);
+        for (int p = 0; p < sys->m_phantoms.m_iElementCount; ++p) {
+            if (sys->m_phantoms.m_data[p])
+                hkpWorld_removePhantom(sys->m_phantoms.m_data[p]);
         }
     }
 }
@@ -3701,6 +3800,7 @@ public:
 
 // Destroys the object, then frees it via hkPrimaryC982::operator delete when uiFlags has bit 0 set, and returns this.
 // @fnv 0x00c98260
+// pdb: hkpNullContactMgrFactory::`scalar deleting destructor' | hkpWorld.obj | retail, vtable slot, high
 hkListenerPairC982* hkListenerPairC982::DestroyAndMaybeFree(unsigned int uiFlags) throw()
 {
     this->hkListenerPairC982::~hkListenerPairC982();
@@ -3734,6 +3834,7 @@ public:
 // Runs the destructor, then frees the object through operator delete when bit 0 of uiFlags is set, and returns this.
 // @fnv 0x00c982e0
 // src: COMMUNITY 0x00c982e0
+// pdb: hkpNullCollisionFilter::`scalar deleting destructor' | hkpWorld.obj | retail, vtable slot, high
 FUN_00cfa860* FUN_00cfa860::hkpNullCollisionFilter_Destroy(unsigned int uiFlags) throw()
 {
     this->FUN_00cfa860::~FUN_00cfa860();
@@ -3767,6 +3868,8 @@ public:
 
 // Destroys the object and, when bit 0 of uiFlags is set, frees its memory via operator delete; returns this.
 // @fnv 0x00c98370
+// pdb: hkpEntityEntityBroadPhaseListener::`scalar deleting destructor' | hkpEntityEntityBroadPhaseListener.obj | retail, vtable slot, high
+// pdb params: this
 hkListenerPairC983* hkListenerPairC983::FUN_00c98370(unsigned int uiFlags) throw()
 {
     this->hkListenerPairC983::~hkListenerPairC983();
@@ -3797,6 +3900,7 @@ struct FnvCpu_FUN_00c983b0_CpuObject {
     FnvCpu_FUN_00c983b0_CpuObject* FUN_00c983b0(unsigned int flags);
 };
 // @fnv 0x00c983b0
+// pdb: hkpWorld::`scalar deleting destructor' | hkpWorld.obj | retail, vtable slot, high
 FnvCpu_FUN_00c983b0_CpuObject* FnvCpu_FUN_00c983b0_CpuObject::FUN_00c983b0(unsigned int flags)
 {
     FUN_00c93e50();
@@ -3831,6 +3935,8 @@ public:
 
 // Locks the critical section, calls onEvent on every registered listener with the five arguments, then unlocks it.
 // @fnv 0x00c98440
+// pdb: hkDebugDisplay::addGeometryInstance | hkDebugDisplay.obj | retail, object-file run extension, low
+// pdb params: instanceId, transform, id, tag, shapeIdHint
 void hkDispatcherC984::DispatchEvent(int aiArg0, int aiArg1, int aiArg2, int aiArg3, int aiArg4)
 {
     EnterCriticalSection(m_kCriticalSection);
@@ -3859,17 +3965,19 @@ struct hkObjC984 {
     int unk10;
     void* m_kCriticalSection;
 
-    void hkDebugDisplay_updateGeometry(void* a, void* b, void* c);
+    void hkDebugDisplay_updateGeometry(void* transform, void* id, void* tag);
 };
 
 // Enters the critical section, calls v10 on each listener with the three arguments, then leaves the critical section.
 // @fnv 0x00c984f0
 // src: HAVOK_LIB 0x00c984f0
-void hkObjC984::hkDebugDisplay_updateGeometry(void* a, void* b, void* c)
+// pdb: hkDebugDisplay::updateGeometry | hkDebugDisplay.obj | retail, upstream name already matches, high
+// pdb params: transform, id, tag
+void hkObjC984::hkDebugDisplay_updateGeometry(void* transform, void* id, void* tag)
 {
     EnterCriticalSection(m_kCriticalSection);
     for (int i = 0; i < m_numListeners; i++)
-        m_kListeners[i]->v10(a, b, c);
+        m_kListeners[i]->v10(transform, id, tag);
     LeaveCriticalSection(m_kCriticalSection);
 }
 }  // namespace fnv_00c984f0
@@ -3903,16 +4011,18 @@ public:
     int unk10;
     hkCriticalSection* m_lock;
 
-    void hkDebugDisplay_updateCamera(void* a, void* b, void* c, float x, float y, float z, void* d);
+    void hkDebugDisplay_updateCamera(void* from, void* to, void* up, float nearPlane, float farPlane, float fov, void* name);
 };
 
 // @fnv 0x00c98590
 // src: HAVOK_LIB 0x00c98590
-void hkDispatcherC985::hkDebugDisplay_updateCamera(void* apArg1, void* apArg2, void* apArg3, float x, float y, float z, void* apArg4)
+// pdb: hkDebugDisplay::updateCamera | hkDebugDisplay.obj | retail, upstream name already matches, high
+// pdb params: from, to, up, nearPlane, farPlane, fov, name
+void hkDispatcherC985::hkDebugDisplay_updateCamera(void* from, void* to, void* up, float nearPlane, float farPlane, float fov, void* name)
 {
     m_lock->enter();
     for (int i = 0; i < m_numListeners; i++)
-        m_kListeners[i]->notify(apArg1, apArg2, apArg3, x, y, z, apArg4);
+        m_kListeners[i]->notify(from, to, up, nearPlane, farPlane, fov, name);
     m_lock->leave();
 }
 
@@ -3938,16 +4048,18 @@ public:
     int unk10;
     void* m_pWorldLock;
 
-    void hkDebugDisplay_displayPoint(int a, int b, int c, int d);
+    void hkDebugDisplay_displayPoint(int position, int color, int id, int tag);
 };
 
 // @fnv 0x00c98670
 // src: HAVOK_LIB 0x00c98670
-void hkpListenerListC986::hkDebugDisplay_displayPoint(int aiArg0, int aiArg1, int aiArg2, int aiArg3)
+// pdb: hkDebugDisplay::displayPoint | hkDebugDisplay.obj | retail, upstream name already matches, high
+// pdb params: position, color, id, tag
+void hkpListenerListC986::hkDebugDisplay_displayPoint(int position, int color, int id, int tag)
 {
     EnterCriticalSection(m_pWorldLock);
     for (int i = 0; i < m_iElementCount; i++)
-        m_data[i]->notify(aiArg0, aiArg1, aiArg2, aiArg3);
+        m_data[i]->notify(position, color, id, tag);
     LeaveCriticalSection(m_pWorldLock);
 }
 
@@ -3974,16 +4086,18 @@ public:
     int unk10;
     void* m_pWorldLock;
 
-    void hkDebugDisplay_displayLine(int a, int b, int c, int d, int e);
+    void hkDebugDisplay_displayLine(int start, int end, int color, int id, int tag);
 };
 
 // @fnv 0x00c986c0
 // src: HAVOK_LIB 0x00c986c0
-void hkpListenerListC98B::hkDebugDisplay_displayLine(int aiArg0, int aiArg1, int aiArg2, int aiArg3, int aiArg4)
+// pdb: hkDebugDisplay::displayLine | hkDebugDisplay.obj | retail, upstream name already matches, high
+// pdb params: start, end, color, id, tag
+void hkpListenerListC98B::hkDebugDisplay_displayLine(int start, int end, int color, int id, int tag)
 {
     EnterCriticalSection(m_pWorldLock);
     for (int i = 0; i < m_iElementCount; i++)
-        m_data[i]->notify(aiArg0, aiArg1, aiArg2, aiArg3, aiArg4);
+        m_data[i]->notify(start, end, color, id, tag);
     LeaveCriticalSection(m_pWorldLock);
 }
 
@@ -4014,16 +4128,18 @@ struct C00c98720 {
     char pad10[0x4];
     void* pCS14;
 
-    void hkDebugDisplay_displayTriangle(int a, int b, int c, int d, int e, int f);
+    void hkDebugDisplay_displayTriangle(int a, int b, int c, int color, int id, int tag);
 };
 
 // Locks the critical section, calls s28 with the six arguments on each listener in arr08, then unlocks it.
 // @fnv 0x00c98720
 // src: HAVOK_LIB 0x00c98720
-void C00c98720::hkDebugDisplay_displayTriangle(int aiArg0, int aiArg1, int aiArg2, int aiArg3, int aiArg4, int aiArg5) {
+// pdb: hkDebugDisplay::displayTriangle | hkDebugDisplay.obj | retail, upstream name already matches, high
+// pdb params: a, b, c, color, id, tag
+void C00c98720::hkDebugDisplay_displayTriangle(int aiArg0, int b, int aiArg2, int color, int id, int tag) {
     EnterCriticalSection(pCS14);
     for (int i = 0; i < count0c; ++i) {
-        arr08[i]->s28(aiArg0, aiArg1, aiArg2, aiArg3, aiArg4, aiArg5);
+        arr08[i]->s28(aiArg0, b, aiArg2, color, id, tag);
     }
     LeaveCriticalSection(pCS14);
 }
@@ -4034,7 +4150,7 @@ extern "C" LocalM128 __cdecl _mm_add_ps(LocalM128 a, LocalM128 b);
 extern "C" LocalM128 __cdecl _mm_sub_ps(LocalM128 a, LocalM128 b);
 
 struct FUN_00c986c0_Obj {
-    void hkDebugDisplay_displayLine(LocalM128* a, LocalM128* b, int c, int d, int e);
+    void hkDebugDisplay_displayLine(LocalM128* start, LocalM128* end, int color, int id, int tag);
 };
 
 struct FUN_00c98b60_Class {
@@ -4085,15 +4201,17 @@ struct ListenerManager {
     int unk10;
     void* m_cs;
 
-    void hkDebugDisplay_display3dText(void* a1, void* a2, void* a3, void* a4, void* a5);
+    void hkDebugDisplay_display3dText(void* text, void* pos, void* color, void* id, void* tag);
 };
 
 // @fnv 0x00c99100
 // src: HAVOK_LIB 0x00c99100
-void ListenerManager::hkDebugDisplay_display3dText(void* apArg1, void* apArg2, void* apArg3, void* apArg4, void* apArg5) {
+// pdb: hkDebugDisplay::display3dText | hkDebugDisplay.obj | retail, upstream name already matches, high
+// pdb params: text, pos, color, id, tag
+void ListenerManager::hkDebugDisplay_display3dText(void* text, void* pos, void* color, void* id, void* tag) {
     EnterCriticalSection(m_cs);
     for (int i = 0; i < m_uiItemCount; ++i) {
-        m_kListeners[i]->v0c(apArg1, apArg2, apArg3, apArg4, apArg5);
+        m_kListeners[i]->v0c(text, pos, color, id, tag);
     }
     LeaveCriticalSection(m_cs);
 }
@@ -4125,13 +4243,16 @@ struct FUN_00c99160_Owner {
     int listenerCount;
     int unk10;
     void* mutex;
-    void DispatchToListeners(int a, int b, int c, int d, int e);
+    void hkDebugDisplay_displayGeometry(int geometries, int transform, int color, int id, int tag);
 };
 // @fnv 0x00c99160
-void FUN_00c99160_Owner::DispatchToListeners(int aiArg0, int aiArg1, int aiArg2, int aiArg3, int aiArg4) {
+// src: XBOX_RETAIL_PDB 0x00c99160
+// pdb: hkDebugDisplay::displayGeometry | hkDebugDisplay.obj | retail, object-file gap fill, high
+// pdb params: geometries, transform, color, id, tag
+void FUN_00c99160_Owner::hkDebugDisplay_displayGeometry(int geometries, int transform, int color, int id, int tag) {
     FUN_00fdf05c(mutex);
     for(int i = 0; i < listenerCount; ++i) {
-        listeners[i]->fn3c(aiArg0, aiArg1, aiArg2, aiArg3, aiArg4);
+        listeners[i]->fn3c(geometries, transform, color, id, tag);
     }
     FUN_00fdf100(mutex);
 }
@@ -4162,14 +4283,17 @@ struct FUN_00c991c0_Class {
     void* m_10;
     void* m_14;
 
-    void __thiscall DispatchToSlots(int, int, int, int);
+    void __thiscall hkDebugDisplay_displayGeometry(int, int, int, int);
 };
 
 extern void (__stdcall *DAT_00fdf05c)(void*);
 extern void (__stdcall *DAT_00fdf100)(void*);
 
 // @fnv 0x00c991c0
-void __thiscall FUN_00c991c0_Class::DispatchToSlots(int aiArg1, int aiArg2, int aiArg3, int aiArg4) {
+// src: XBOX_RETAIL_PDB 0x00c991c0
+// pdb: hkDebugDisplay::displayGeometry | hkDebugDisplay.obj | retail, object-file gap fill, high
+// pdb params: geometries, transform, color, id, tag
+void __thiscall FUN_00c991c0_Class::hkDebugDisplay_displayGeometry(int geometries, int color, int id, int tag) {
     FUN_00c991c0_Class* self = this;
 
     DAT_00fdf05c(self->m_14);
@@ -4177,7 +4301,7 @@ void __thiscall FUN_00c991c0_Class::DispatchToSlots(int aiArg1, int aiArg2, int 
     int index = 0;
     while (index < self->m_iThirdValue) {
         FUN_00c991c0_Interface* object = self->m_8[index];
-        object->slot38(aiArg1, aiArg2, aiArg3, aiArg4);
+        object->slot38(geometries, color, id, tag);
         ++index;
     }
 
@@ -4217,7 +4341,7 @@ struct FNV_AllocatorContext {
 };
 FNV_AllocatorContext* __cdecl hkMemoryRouter_getInstance();
 struct FNV_Subobject {
-    void* ProcessAndReturnValue_00cf6da0(unsigned int value);
+    void* hkCriticalSection_ctor(unsigned int value);
 };
 extern void* DAT_010c69cc;
 struct FUN_00c99eb0 {
@@ -4232,6 +4356,7 @@ struct FUN_00c99eb0 {
 };
 // Initialises the object's fields, allocates 0x18 bytes from the allocator and stores the result of FUN_00cf6da0(1000) in m_14.
 // @fnv 0x00c99eb0
+// pdb: hkDebugDisplay::hkDebugDisplay | hkDebugDisplay.obj | retail, object-file gap fill, high
 FUN_00c99eb0::FUN_00c99eb0() {
     m_flag06 = 1;
     m_ppVirtualMethodTable = &DAT_010c69cc;
@@ -4241,7 +4366,7 @@ FUN_00c99eb0::FUN_00c99eb0() {
     FNV_AllocatorContext* context = hkMemoryRouter_getInstance();
     void* memory = context->allocator->allocate(0x18);
     void* pSubobject = memory
-        ? static_cast<FNV_Subobject*>(memory)->ProcessAndReturnValue_00cf6da0(1000)
+        ? static_cast<FNV_Subobject*>(memory)->hkCriticalSection_ctor(1000)
         : 0;
     m_14 = pSubobject;
 }
@@ -4303,35 +4428,38 @@ struct FUN_00ca8420_Class {
     void* unk04;
     FUN_00ca8420_Target* unk08;
 
-    void __thiscall hkpRigidBody_setMotionType(int param2, int param3, int param4);
+    void __thiscall hkpRigidBody_setMotionType(int newState, int preferredActivationState, int collisionFilterUpdateMode);
 };
 
 void __cdecl hkpWorldOperationUtil_setRigidBodyMotionType(void* param1, int param2, int param3, int param4);
-void __cdecl NotifyEntitySetMotionType(void* param1, void* param2);
-void __cdecl InvokeMotionTypeCallbacks(void* param1);
+void __cdecl hkpWorldCallbackUtil_fireEntitySetMotionType(void* param1, void* param2);
+void __cdecl hkpEntityCallbackUtil_fireEntitySetMotionType(void* entity);
 
 // @fnv 0x00ca8420
 // src: HAVOK_LIB 0x00ca8420
-void __thiscall FUN_00ca8420_Class::hkpRigidBody_setMotionType(int aiArg1, int aiArg2, int aiArg3)
+// pdb: hkpRigidBody::setMotionType | hkpRigidBody.obj | retail, upstream name already matches, high
+// pdb params: newState, preferredActivationState, collisionFilterUpdateMode
+// pdb locals: op
+void __thiscall FUN_00ca8420_Class::hkpRigidBody_setMotionType(int newState, int preferredActivationState, int collisionFilterUpdateMode)
 {
     if (unk08 != 0 && unk08->unk94 != 0) {
         FUN_00ca8420_Local local;
-        local.unk08 = (unsigned char)aiArg1;
-        local.unk09 = (unsigned char)aiArg2;
+        local.unk08 = (unsigned char)newState;
+        local.unk09 = (unsigned char)preferredActivationState;
         local.unk00 = 4;
         local.unk04 = (unsigned int)this;
-        local.unk0A = (unsigned char)aiArg3;
+        local.unk0A = (unsigned char)collisionFilterUpdateMode;
         unk08->hkpWorld_queueOperation(&local);
         return;
     }
 
-    hkpWorldOperationUtil_setRigidBodyMotionType(this, aiArg1, aiArg2, aiArg3);
+    hkpWorldOperationUtil_setRigidBodyMotionType(this, newState, preferredActivationState, collisionFilterUpdateMode);
 
     if (unk08 != 0) {
-        NotifyEntitySetMotionType(unk08, this);
+        hkpWorldCallbackUtil_fireEntitySetMotionType(unk08, this);
     }
 
-    InvokeMotionTypeCallbacks(this);
+    hkpEntityCallbackUtil_fireEntitySetMotionType(this);
 }
 
 struct hkVector3CA8A {
@@ -4389,24 +4517,27 @@ public:
 // Keep the velocity entry point on the shared entity layout.
 class EntityVelocityAccess : public hkpEntity {
 public:
-    void hkpRigidBody_applyLinearImpulseAsCriticalOperation(const hkVector3CA8A& velocity);
+    void hkpRigidBody_applyLinearImpulseAsCriticalOperation(const hkVector3CA8A& imp);
 };
 
 // @fnv 0x00ca8a80
 // src: HAVOK_LIB 0x00ca8a80
-void EntityVelocityAccess::hkpRigidBody_applyLinearImpulseAsCriticalOperation(const hkVector3CA8A& akVelocity)
+// pdb: hkpRigidBody::applyLinearImpulseAsCriticalOperation | hkpRigidBody.obj | retail, upstream name already matches, high
+// pdb params: imp
+// pdb locals: op
+void EntityVelocityAccess::hkpRigidBody_applyLinearImpulseAsCriticalOperation(const hkVector3CA8A& imp)
 {
-    if (m_pOwningWorld && ((hkpWorldCA8A*)m_pOwningWorld)->areCriticalOperationsLocked()) {
+    if (m_world && ((hkpWorldCA8A*)m_world)->areCriticalOperationsLocked()) {
         hkSetVelocityOpCA8A kOp;
         kOp.m_pEntity = this;
-        kOp.m_fVelocity[0] = akVelocity.x;
-        kOp.m_fVelocity[1] = akVelocity.y;
-        kOp.m_fVelocity[2] = akVelocity.z;
-        ((hkpWorldCA8A*)m_pOwningWorld)->hkpWorld_queueOperation(kOp);
+        kOp.m_fVelocity[0] = imp.x;
+        kOp.m_fVelocity[1] = imp.y;
+        kOp.m_fVelocity[2] = imp.z;
+        ((hkpWorldCA8A*)m_world)->hkpWorld_queueOperation(kOp);
         return;
     }
     activate_00c9c1d0();
-    ((hkpMotionCA8A*)&m_pMotionState)->SetTranslationalVelocity(akVelocity);
+    ((hkpMotionCA8A*)&m_motion)->SetTranslationalVelocity(imp);
 }
 
 struct FUN_00ca94c0_Ctx {
@@ -4455,15 +4586,18 @@ struct FUN_00ca94c0_Class {
     int unk88;
     FUN_00ca94c0_Elem** m_pElements;
     int m_uiItemCount;
-    int hkpPhantom_fireCollidableAdded(unsigned int arg);
+    int hkpPhantom_fireCollidableAdded(unsigned int collidable);
 };
 // Iterates the element array backwards, calling Visit on each non-null element with a context holding self and arg, and returns the accumulated result.
 // @fnv 0x00ca94c0
 // src: HAVOK_LIB 0x00ca94c0
-int FUN_00ca94c0_Class::hkpPhantom_fireCollidableAdded(unsigned int arg) {
+// pdb: hkpPhantom::fireCollidableAdded | bhkAvoidBox.obj | retail, upstream name already matches, high
+// pdb params: collidable
+// pdb locals: event, i
+int FUN_00ca94c0_Class::hkpPhantom_fireCollidableAdded(unsigned int collidable) {
     FUN_00ca94c0_Ctx ctx;
     ctx.self = this;
-    ctx.arg = arg;
+    ctx.arg = collidable;
     ctx.result = 0;
     int i = m_uiItemCount - 1;
     if (i >= 0) {
@@ -4496,10 +4630,13 @@ struct Guard9 {
 struct Node9 { void* vtable; int value; int references; int previous; int next; };
 struct Class9 {
     void* unk00; void* unk04; int callbackFlag; int* data;
-    void __thiscall CopyFromSource(Node9* node);
+    void __thiscall CopyFromSource(Node9* arInfo);
     int* __thiscall GetOrCreateData(unsigned char* wasEmpty);
 };
 // @fnv 0x00caa5d0
+// pdb: bhkLimitedHingeConstraint::CreateCinfo | bhkLimitedHingeConstraint.obj | retail, object-file run extension, low
+// pdb params: arCreated
+// pdb locals: tempMemContext
 int* Class9::GetOrCreateData(unsigned char* wasEmpty) {
     Guard9 guard;
     *wasEmpty = (data == 0);
@@ -4575,8 +4712,8 @@ struct FUN_00d53200_class {
     void* m_unk00;
     MotorConstraintStreamStorage* m_data;
 
-    void hkConstraintCinfo_LoadBinary(NiStream& stream);
-    hkReferencedObject* hkConstraintCinfo_LoadMotor(NiStream& stream);
+    void hkConstraintCinfo_LoadBinary(NiStream& arStream);
+    hkReferencedObject* hkConstraintCinfo_LoadMotor(NiStream& arStream);
 
     void ReadFromStream(void* streamContext);
 };
@@ -4857,28 +4994,31 @@ struct Owner {
  void AppendConstraintToStrings(Strings*);
 };
 // @fnv 0x00caa960
-void Owner::AppendConstraintToStrings(Strings* strings) {
+// pdb: hkLimitedHingeConstraintCinfo::GetViewerStrings | bhkLimitedHingeConstraint.obj | debug, unique string literal, high
+// pdb params: apStrings
+// pdb locals: tempMemContext, pd, pnt
+void Owner::AppendConstraintToStrings(Strings* apStrings) {
  MemoryScope scope;
- hkConstraintCinfo_GetViewerStrings(strings);
+ hkConstraintCinfo_GetViewerStrings(apStrings);
  Constraint* constraint=unk04;
  if(constraint) {
   NiPoint3 temp;
   HK2NINS(temp,constraint->unk50);
-  strings->Append(temp.GetViewerString_00a59af0("PivotInA"));
+  apStrings->Append(temp.GetViewerString_00a59af0("PivotInA"));
   HK2NINS(temp,constraint->unk90);
-  strings->Append(temp.GetViewerString_00a59af0("PivotInB"));
+  apStrings->Append(temp.GetViewerString_00a59af0("PivotInB"));
   HK2NINS(temp,constraint->unk60);
-  strings->Append(temp.GetViewerString_00a59af0("AxleInB"));
+  apStrings->Append(temp.GetViewerString_00a59af0("AxleInB"));
   HK2NINS(temp,constraint->unk30);
-  strings->Append(temp.GetViewerString_00a59af0("Perp2AxleInA1"));
+  apStrings->Append(temp.GetViewerString_00a59af0("Perp2AxleInA1"));
   HK2NINS(temp,constraint->unk40);
-  strings->Append(temp.GetViewerString_00a59af0("Perp2AxleInA2"));
-  strings->Append(NiGetViewerString_00a7d550("MinAngle",float(constraint->unkC4*57.2957763671875)));
-  strings->Append(NiGetViewerString_00a7d550("MaxAngle",float(constraint->unkC8*57.2957763671875)));
-  strings->Append(NiGetViewerString_00a7d550("MaxFrictionTrq",constraint->unkBC));
-  strings->Append(NiGetViewerString_00a7d5e0("Motor",constraint->unkA2 ? "Active" : "Inactive"));
+  apStrings->Append(temp.GetViewerString_00a59af0("Perp2AxleInA2"));
+  apStrings->Append(NiGetViewerString_00a7d550("MinAngle",float(constraint->unkC4*57.2957763671875)));
+  apStrings->Append(NiGetViewerString_00a7d550("MaxAngle",float(constraint->unkC8*57.2957763671875)));
+  apStrings->Append(NiGetViewerString_00a7d550("MaxFrictionTrq",constraint->unkBC));
+  apStrings->Append(NiGetViewerString_00a7d5e0("Motor",constraint->unkA2 ? "Active" : "Inactive"));
   float motorAngle=constraint->unkAC;
-  strings->Append(NiGetViewerString_00a7d550("MotorAngle",float(motorAngle*57.2957763671875)));
+  apStrings->Append(NiGetViewerString_00a7d550("MotorAngle",float(motorAngle*57.2957763671875)));
  }
 }
 
@@ -4944,7 +5084,7 @@ struct Elem676 { char m_pad0000[0xc]; Sub676* m_iThirdValue; void removeReferenc
 
 struct Q676 {
     void hkpWorld_addPhantomBatch(Elem676** arr, int count);
-    void hkpWorld_removePhantom(Elem676* e);
+    void hkpWorld_removePhantom(Elem676* phantom);
 };
 
 struct GC676 { void* m_p; int m_unused; };
@@ -5033,7 +5173,7 @@ struct This676 {
     char m_pad0004[0x30];
     Elem676** m_aiIndexedValues;              // +0x34
     unsigned int m_uiItemCount;         // +0x38
-    void ClearIndexedValues();
+    void bhkWorld_AddBatchedPhantoms();
 };
 
 // Scoped override of the thread-local context field (0x10 during the operation).
@@ -5049,7 +5189,10 @@ extern unsigned char DAT_01267b70;
 
 // Caps the count at 200, then for each array element updates it via the v37 queue, calls g36, removes its reference, and finally zeroes the array and count.
 // @fnv 0x00c676e0
-void This676::ClearIndexedValues()
+// src: XBOX_RETAIL_PDB 0x00c676e0
+// pdb: bhkWorld::AddBatchedPhantoms | bhkWorld.obj | retail, object-file gap fill, high
+// pdb locals: tempMemContext, pw, i, pphantom, pcol, UpdateData
+void This676::bhkWorld_AddBatchedPhantoms()
 {
     Guard676 guard;
     if (m_uiItemCount > 0u)
@@ -5281,13 +5424,16 @@ struct FUN_00c91620_Class {
     unsigned char* ProcessTarget(unsigned char* result, FUN_00c91620_Target* target);
 };
 
-void __cdecl hkpWorldOperationUtil_removeEntityBP(FUN_00c91620_Class* self, FUN_00c91620_Target* target);
+void __cdecl hkpWorldOperationUtil_removeEntityBP(FUN_00c91620_Class* self, FUN_00c91620_Target* entity);
 void __cdecl hkpWorldCallbackUtil_fireEntityRemoved(FUN_00c91620_Class* self, FUN_00c91620_Target* target);
-void __cdecl hkpEntityCallbackUtil_fireEntityRemoved(FUN_00c91620_Target* target);
-void __cdecl hkpWorldOperationUtil_removeEntitySI(FUN_00c91620_Class* self, FUN_00c91620_Target* target);
+void __cdecl hkpEntityCallbackUtil_fireEntityRemoved(FUN_00c91620_Target* entity);
+void __cdecl hkpWorldOperationUtil_removeEntitySI(FUN_00c91620_Class* self, FUN_00c91620_Target* entity);
 
 // If m_94 is nonzero, calls FUN_00c91160 with type 2 and writes 0 to *result; otherwise runs the helper calls on target and writes 1 to *result.
 // @fnv 0x00c91620
+// pdb: hkpWorld::removeEntity | hkpWorld.obj | retail, call graph, high
+// pdb params: entity
+// pdb locals: op, assertBuf, ostr
 unsigned char* FUN_00c91620_Class::ProcessTarget(
     unsigned char* result, FUN_00c91620_Target* target)
 {
@@ -5335,15 +5481,18 @@ public:
     int unk000[71];
     hkArray<void*> m_entries;
 
-    void hkpWorld_removeActionListener(void* entry);
+    void hkpWorld_removeActionListener(void* worldListener);
 };
 
 // Sets the array slot containing the given entry to null by looking up its index in m_entries.
 // @fnv 0x00c91700
 // src: HAVOK_LIB 0x00c91700
-void hkWorldXc91700::hkpWorld_removeActionListener(void* entry)
+// pdb: hkpWorld::removeActionListener | hkpWorld.obj | debug, upstream name already matches, high
+// pdb params: worldListener
+// pdb locals: assertBuf, ostr
+void hkWorldXc91700::hkpWorld_removeActionListener(void* worldListener)
 {
-    m_entries.m_data[m_entries.indexOf(entry)] = 0;
+    m_entries.m_data[m_entries.indexOf(worldListener)] = 0;
 }
 
 
@@ -5352,15 +5501,18 @@ public:
     int unk000[80];
     hkArray<void*> m_entries;
 
-    void hkpWorld_removeConstraintListener(void* entry);
+    void hkpWorld_removeConstraintListener(void* worldListener);
 };
 
 // Sets the entry at the index found by indexOf to 0, clearing it from the m_entries array.
 // @fnv 0x00c91750
 // src: HAVOK_LIB 0x00c91750
-void hkWorldC9175::hkpWorld_removeConstraintListener(void* entry)
+// pdb: hkpWorld::removeConstraintListener | hkpWorld.obj | debug, upstream name already matches, high
+// pdb params: worldListener
+// pdb locals: assertBuf, ostr
+void hkWorldC9175::hkpWorld_removeConstraintListener(void* worldListener)
 {
-    m_entries.m_data[m_entries.indexOf(entry)] = 0;
+    m_entries.m_data[m_entries.indexOf(worldListener)] = 0;
 }
 
 
@@ -5369,15 +5521,18 @@ public:
     int unk000[74];
     hkArray<void*> m_entries;
 
-    void hkpWorld_removeEntityListener(void* entry);
+    void hkpWorld_removeEntityListener(void* worldListener);
 };
 
 // Sets the m_entries slot at indexOf(entry) to null.
 // @fnv 0x00c917a0
 // src: HAVOK_LIB 0x00c917a0
-void hkWorldC917::hkpWorld_removeEntityListener(void* entry)
+// pdb: hkpWorld::removeEntityListener | hkpWorld.obj | debug, upstream name already matches, high
+// pdb params: worldListener
+// pdb locals: assertBuf, ostr
+void hkWorldC917::hkpWorld_removeEntityListener(void* worldListener)
 {
-    m_entries.m_data[m_entries.indexOf(entry)] = 0;
+    m_entries.m_data[m_entries.indexOf(worldListener)] = 0;
 }
 
 
@@ -5386,15 +5541,18 @@ public:
     int unk000[77];
     hkArray<void*> m_entries;
 
-    void hkpWorld_removePhantomListener(void* entry);
+    void hkpWorld_removePhantomListener(void* worldListener);
 };
 
 // Sets the array slot containing the given entry to null.
 // @fnv 0x00c917f0
 // src: HAVOK_LIB 0x00c917f0
-void hkWorldC91F::hkpWorld_removePhantomListener(void* entry)
+// pdb: hkpWorld::removePhantomListener | hkpWorld.obj | debug, upstream name already matches, high
+// pdb params: worldListener
+// pdb locals: assertBuf, ostr
+void hkWorldC91F::hkpWorld_removePhantomListener(void* worldListener)
 {
-    m_entries.m_data[m_entries.indexOf(entry)] = 0;
+    m_entries.m_data[m_entries.indexOf(worldListener)] = 0;
 }
 
 
@@ -5403,15 +5561,18 @@ public:
     int unk000[95];
     hkArray<void*> m_entries;
 
-    void hkpWorld_removeWorldPostCollideListener(void* entry);
+    void hkpWorld_removeWorldPostCollideListener(void* worldListener);
 };
 
 // Sets the array slot at indexOf(entry) to 0, clearing the entry from m_entries.
 // @fnv 0x00c91890
 // src: HAVOK_LIB 0x00c91890
-void hkWorldC918::hkpWorld_removeWorldPostCollideListener(void* entry)
+// pdb: hkpWorld::removeWorldPostCollideListener | hkpWorld.obj | debug, upstream name already matches, high
+// pdb params: worldListener
+// pdb locals: assertBuf, ostr
+void hkWorldC918::hkpWorld_removeWorldPostCollideListener(void* worldListener)
 {
-    m_entries.m_data[m_entries.indexOf(entry)] = 0;
+    m_entries.m_data[m_entries.indexOf(worldListener)] = 0;
 }
 
 
@@ -5420,15 +5581,18 @@ public:
     int unk000[92];
     hkArray<void*> m_entries;
 
-    void hkpWorld_removeWorldPostIntegrateListener(void* entry);
+    void hkpWorld_removeWorldPostIntegrateListener(void* worldListener);
 };
 
 // Sets the entry at the index found by indexOf to 0, clearing the slot in the m_entries array.
 // @fnv 0x00c91930
 // src: HAVOK_LIB 0x00c91930
-void hkWorldXc91930::hkpWorld_removeWorldPostIntegrateListener(void* entry)
+// pdb: hkpWorld::removeWorldPostIntegrateListener | hkpWorld.obj | debug, upstream name already matches, high
+// pdb params: worldListener
+// pdb locals: assertBuf, ostr
+void hkWorldXc91930::hkpWorld_removeWorldPostIntegrateListener(void* worldListener)
 {
-    m_entries.m_data[m_entries.indexOf(entry)] = 0;
+    m_entries.m_data[m_entries.indexOf(worldListener)] = 0;
 }
 
 
@@ -5437,15 +5601,18 @@ public:
     int unk000[101];
     hkArray<void*> m_entries;
 
-    void hkpWorld_removeIslandPostCollideListener(void* entry);
+    void hkpWorld_removeIslandPostCollideListener(void* islandListener);
 };
 
 // Sets the entry at the index found by indexOf to 0, clearing it from the m_entries array.
 // @fnv 0x00c91980
 // src: HAVOK_LIB 0x00c91980
-void hkWorldXc91980::hkpWorld_removeIslandPostCollideListener(void* entry)
+// pdb: hkpWorld::removeIslandPostCollideListener | hkpWorld.obj | debug, upstream name already matches, high
+// pdb params: islandListener
+// pdb locals: assertBuf, ostr
+void hkWorldXc91980::hkpWorld_removeIslandPostCollideListener(void* islandListener)
 {
-    m_entries.m_data[m_entries.indexOf(entry)] = 0;
+    m_entries.m_data[m_entries.indexOf(islandListener)] = 0;
 }
 
 
@@ -5454,15 +5621,18 @@ public:
     int unk000[104];
     hkArray<void*> m_entries;
 
-    void hkpWorld_removeContactListener(void* entry);
+    void hkpWorld_removeContactListener(void* collisionListener);
 };
 
 // Sets the entry at the index found by indexOf to 0, clearing the slot in m_entries.
 // @fnv 0x00c91a20
 // src: HAVOK_LIB 0x00c91a20
-void hkWorldXc91a20::hkpWorld_removeContactListener(void* entry)
+// pdb: hkpWorld::removeContactListener | hkpWorld.obj | debug, upstream name already matches, high
+// pdb params: collisionListener
+// pdb locals: assertBuf, ostr
+void hkWorldXc91a20::hkpWorld_removeContactListener(void* collisionListener)
 {
-    m_entries.m_data[m_entries.indexOf(entry)] = 0;
+    m_entries.m_data[m_entries.indexOf(collisionListener)] = 0;
 }
 
 
@@ -5471,15 +5641,18 @@ public:
     int unk000[83];
     hkArray<void*> m_entries;
 
-    void hkpWorld_removeWorldDeletionListener(void* entry);
+    void hkpWorld_removeWorldDeletionListener(void* worldListener);
 };
 
 // Sets the m_entries slot at indexOf(entry) to null.
 // @fnv 0x00c91a70
 // src: HAVOK_LIB 0x00c91a70
-void hkWorldXc91a70::hkpWorld_removeWorldDeletionListener(void* entry)
+// pdb: hkpWorld::removeWorldDeletionListener | hkpWorld.obj | debug, upstream name already matches, high
+// pdb params: worldListener
+// pdb locals: assertBuf, ostr
+void hkWorldXc91a70::hkpWorld_removeWorldDeletionListener(void* worldListener)
 {
-    m_entries.m_data[m_entries.indexOf(entry)] = 0;
+    m_entries.m_data[m_entries.indexOf(worldListener)] = 0;
 }
 
 
@@ -5488,15 +5661,18 @@ public:
     int unk000[107];
     hkArray<void*> m_entries;
 
-    void hkpWorld_removeContactImpulseLimitBreachedListener(void* entry);
+    void hkpWorld_removeContactImpulseLimitBreachedListener(void* listener);
 };
 
 // Sets the entry at the index found by indexOf to null.
 // @fnv 0x00c91ac0
 // src: HAVOK_LIB 0x00c91ac0
-void hkWorldXc91ac0::hkpWorld_removeContactImpulseLimitBreachedListener(void* entry)
+// pdb: hkpWorld::removeContactImpulseLimitBreachedListener | hkpWorld.obj | debug, upstream name already matches, high
+// pdb params: listener
+// pdb locals: assertBuf, ostr
+void hkWorldXc91ac0::hkpWorld_removeContactImpulseLimitBreachedListener(void* listener)
 {
-    m_entries.m_data[m_entries.indexOf(entry)] = 0;
+    m_entries.m_data[m_entries.indexOf(listener)] = 0;
 }
 
 struct Allocator {
@@ -5623,19 +5799,23 @@ struct KdTreeManager {
 };
 
 struct hkpWorldHelper : hkpWorld {
-    void ExecuteRayCastJobs(RayCastCommand* commandArray, int numCommands, JobQueue* jobQueue, ThreadPool* threadPool, void* semaphore, int numCommandsPerJob);
+    void hkpWorld_castRayMt(RayCastCommand* commandArray, int numCommands, JobQueue* jobQueue, ThreadPool* jobThreadPool, void* semaphore, int numCommandsPerJob);
 };
 
 // Splits the commands into jobs of numCommandsPerJob queued on jobQueue, runs the thread pool, then calls FUN_00d04380 on semaphore.
 // @fnv 0x00c92110
-void hkpWorldHelper::ExecuteRayCastJobs(RayCastCommand* commandArray, int numCommands, JobQueue* jobQueue, ThreadPool* threadPool, void* semaphore, int numCommandsPerJob) {
+// src: XBOX_RETAIL_PDB 0x00c92110
+// pdb: hkpWorld::castRayMt | hkpWorld.obj | retail, object-file gap fill, high
+// pdb params: commandArray, numCommands, jobQueue, jobThreadPool, semaphore, numCommandsPerJob
+// pdb locals: worldRayCastJobBase, assertBuf, ostr, worldRaycastJob
+void hkpWorldHelper::hkpWorld_castRayMt(RayCastCommand* commandArray, int numCommands, JobQueue* jobQueue, ThreadPool* jobThreadPool, void* semaphore, int numCommandsPerJob) {
     ThreadStorage* ts = (ThreadStorage*)hkMemoryRouter_getInstance();
     JobDoneHeader* jobHeader = (JobDoneHeader*)ts->m_pThreadAllocator->Allocate(sizeof(JobDoneHeader));
 
-    Job job(m_pCollisionInput, jobHeader, commandArray, numCommands, m_pJobSemaphore, semaphore);
+    Job job(m_collisionInput, jobHeader, commandArray, numCommands, m_broadPhase, semaphore);
 
-    if (m_pKdTreeManager && ((KdTreeManager*)m_pKdTreeManager)->isTreeActive()) {
-        KdTreeManager* kd = (KdTreeManager*)m_pKdTreeManager;
+    if (m_kdTreeManager && ((KdTreeManager*)m_kdTreeManager)->isTreeActive()) {
+        KdTreeManager* kd = (KdTreeManager*)m_kdTreeManager;
         job.m_kdTreeUnk0C = kd->m_treeData0C;
         job.m_kdTreeUnk10 = kd->m_treeData10;
         job.m_pJobSemaphore = 0;
@@ -5649,8 +5829,8 @@ void hkpWorldHelper::ExecuteRayCastJobs(RayCastCommand* commandArray, int numCom
         jobQueue->AddObjectCopy(subJob, 1);
     }
 
-    threadPool->processWork(jobQueue, 0xb);
-    threadPool->RunWorkerThread();
+    jobThreadPool->processWork(jobQueue, 0xb);
+    jobThreadPool->RunWorkerThread();
 
     hkSemaphore_acquire(semaphore);
 
@@ -5782,21 +5962,25 @@ struct KdTreeManager {
 };
 
 struct hkpWorldHelper : hkpWorld {
-    void SubmitClosestPointsJobs(ClosestPointsCommand* commandArray, int numCommands, JobQueue* jobQueue, ThreadPool* threadPool, void* semaphore, int numCommandsPerJob);
+    void hkpWorld_getClosestPointsMt(ClosestPointsCommand* commandArray, int numCommands, JobQueue* jobQueue, ThreadPool* jobThreadPool, void* semaphore, int numCommandsPerJob);
 };
 
 // Splits commandArray into ClosestPointsJob batches, queues them on jobQueue, runs threadPool, calls FUN_00d04380(semaphore), and frees the job header.
 // @fnv 0x00c92290
-void hkpWorldHelper::SubmitClosestPointsJobs(ClosestPointsCommand* commandArray, int numCommands, JobQueue* jobQueue, ThreadPool* threadPool, void* semaphore, int numCommandsPerJob) {
+// src: XBOX_RETAIL_PDB 0x00c92290
+// pdb: hkpWorld::getClosestPointsMt | hkpWorld.obj | retail, object-file gap fill, high
+// pdb params: commandArray, numCommands, jobQueue, jobThreadPool, semaphore, numCommandsPerJob
+// pdb locals: baseJob, assertBuf, ostr, job
+void hkpWorldHelper::hkpWorld_getClosestPointsMt(ClosestPointsCommand* commandArray, int numCommands, JobQueue* jobQueue, ThreadPool* jobThreadPool, void* semaphore, int numCommandsPerJob) {
     ThreadStorage* ts = (ThreadStorage*)hkMemoryRouter_getInstance();
     JobDoneHeader* jobHeader = (JobDoneHeader*)ts->m_pThreadAllocator->Allocate(sizeof(JobDoneHeader));
 
-    CollisionInput* input = (CollisionInput*)m_pCollisionInput;
-    ClosestPointsJob job(input, jobHeader, commandArray, numCommands, m_pJobSemaphore, input->m_fScalar, semaphore);
+    CollisionInput* input = (CollisionInput*)m_collisionInput;
+    ClosestPointsJob job(input, jobHeader, commandArray, numCommands, m_broadPhase, input->m_fScalar, semaphore);
     job.nullsub_9();
 
-    if (m_pKdTreeManager && ((KdTreeManager*)m_pKdTreeManager)->isTreeActive()) {
-        KdTreeManager* kd = (KdTreeManager*)m_pKdTreeManager;
+    if (m_kdTreeManager && ((KdTreeManager*)m_kdTreeManager)->isTreeActive()) {
+        KdTreeManager* kd = (KdTreeManager*)m_kdTreeManager;
         job.m_kdTreeUnk0C = kd->m_treeData0C;
         job.m_kdTreeUnk10 = kd->m_treeData10;
         job.m_pJobSemaphore = 0;
@@ -5810,8 +5994,8 @@ void hkpWorldHelper::SubmitClosestPointsJobs(ClosestPointsCommand* commandArray,
         jobQueue->AddObjectCopy(subJob, 1);
     }
 
-    threadPool->processWork(jobQueue, 0xb);
-    threadPool->RunWorkerThread();
+    jobThreadPool->processWork(jobQueue, 0xb);
+    jobThreadPool->RunWorkerThread();
 
     hkSemaphore_acquire(semaphore);
 
@@ -5907,7 +6091,10 @@ struct WorldQuery : hkpWorld { void hkpWorld_linearCast(void*,void*,void*,void*)
 // Records a timer, then performs a collision cast via the KD-tree manager if enabled, otherwise via a linear caster, and records a second timer.
 // @fnv 0x00c92430
 // src: COMMUNITY 0x00c92430
-void WorldQuery::hkpWorld_linearCast(void* a,void* b,void* c,void* d) {
+// pdb: hkpWorld::linearCast | hkpWorld.obj | retail, string-set bridge, high
+// pdb params: collA, input, castCollector, startPointCollector
+// pdb locals: linearCaster, assertBuf, ostr
+void WorldQuery::hkpWorld_linearCast(void* collA,void* b,void* castCollector,void* startPointCollector) {
     TimerBuffer* timer = (TimerBuffer*)TlsGetValue(DAT_0126835c);
     TimerEntry* entry = timer->current;
     if (entry < timer->end) {
@@ -5917,16 +6104,16 @@ void WorldQuery::hkpWorld_linearCast(void* a,void* b,void* c,void* d) {
         entry->ticks = ticks;
         timer->current = entry + 1;
     }
-    if (m_pKdTreeManager && ((QueryTree*)m_pKdTreeManager)->enabled()) {
-        void* filter = m_pCollisionFilter ? (char*)m_pCollisionFilter+8 : 0;
-        CollisionInput* input = (CollisionInput*)m_pCollisionInput;
-        ((QueryTree*)m_pKdTreeManager)->cast(a,b,filter,input,input->unk70,c,d);
+    if (m_kdTreeManager && ((QueryTree*)m_kdTreeManager)->enabled()) {
+        void* filter = m_collisionFilter ? (char*)m_collisionFilter+8 : 0;
+        CollisionInput* input = (CollisionInput*)m_collisionInput;
+        ((QueryTree*)m_kdTreeManager)->cast(collA,b,filter,input,input->unk70,castCollector,startPointCollector);
     } else {
         LinearCaster caster;
         caster.unk80 = DAT_0104da4c;
         caster.unk00 = &DAT_010c6488;
         caster.unk24 = 0;
-        caster.ComputeValues_00cfaed0(m_pJobSemaphore,a,b,m_pCollisionFilter ? (char*)m_pCollisionFilter+8 : 0,m_pCollisionInput,((CollisionInput*)m_pCollisionInput)->unk70,0,c,d);
+        caster.ComputeValues_00cfaed0(m_broadPhase,collA,b,m_collisionFilter ? (char*)m_collisionFilter+8 : 0,m_collisionInput,((CollisionInput*)m_collisionInput)->unk70,0,castCollector,startPointCollector);
     }
     timer = (TimerBuffer*)TlsGetValue(DAT_0126835c);
     entry = timer->current;
@@ -6053,19 +6240,23 @@ struct KdTreeManager {
 };
 
 struct hkpWorldHelper : hkpWorld {
-    void ExecuteLinearCastCommands(LinearCastCommand* commandArray, int numCommands, JobQueue* jobQueue, ThreadPool* threadPool, void* semaphore, int numCommandsPerJob);
+    void hkpWorld_linearCastMt(LinearCastCommand* commandArray, int numCommands, JobQueue* jobQueue, ThreadPool* jobThreadPool, void* semaphore, int numCommandsPerJob);
 };
 
 // Splits the commands into jobs of numCommandsPerJob queued on jobQueue, runs the thread pool, then calls FUN_00d04380 on semaphore.
 // @fnv 0x00c92540
-void hkpWorldHelper::ExecuteLinearCastCommands(LinearCastCommand* commandArray, int numCommands, JobQueue* jobQueue, ThreadPool* threadPool, void* semaphore, int numCommandsPerJob) {
+// src: XBOX_RETAIL_PDB 0x00c92540
+// pdb: hkpWorld::linearCastMt | hkpWorld.obj | retail, object-file gap fill, high
+// pdb params: commandArray, numCommands, jobQueue, jobThreadPool, semaphore, numCommandsPerJob
+// pdb locals: worldLinearCastJobBase, worldLinearCastJob
+void hkpWorldHelper::hkpWorld_linearCastMt(LinearCastCommand* commandArray, int numCommands, JobQueue* jobQueue, ThreadPool* jobThreadPool, void* semaphore, int numCommandsPerJob) {
     ThreadStorage* ts = (ThreadStorage*)hkMemoryRouter_getInstance();
     JobDoneHeader* jobHeader = (JobDoneHeader*)ts->m_pThreadAllocator->Allocate(sizeof(JobDoneHeader));
 
-    Job job(m_pCollisionInput, jobHeader, commandArray, numCommands, m_pJobSemaphore, semaphore);
+    Job job(m_collisionInput, jobHeader, commandArray, numCommands, m_broadPhase, semaphore);
 
-    if (m_pKdTreeManager && ((KdTreeManager*)m_pKdTreeManager)->isTreeActive()) {
-        KdTreeManager* kd = (KdTreeManager*)m_pKdTreeManager;
+    if (m_kdTreeManager && ((KdTreeManager*)m_kdTreeManager)->isTreeActive()) {
+        KdTreeManager* kd = (KdTreeManager*)m_kdTreeManager;
         job.m_pJobSemaphore = 0;
         job.m_kdTreeUnk0C = kd->m_treeData0C;
         job.m_kdTreeUnk10 = kd->m_treeData10;
@@ -6080,8 +6271,8 @@ void hkpWorldHelper::ExecuteLinearCastCommands(LinearCastCommand* commandArray, 
         jobQueue->AddObjectCopy(subJob, 1);
     }
 
-    threadPool->processWork(jobQueue, 0xb);
-    threadPool->RunWorkerThread();
+    jobThreadPool->processWork(jobQueue, 0xb);
+    jobThreadPool->RunWorkerThread();
 
     hkSemaphore_acquire(semaphore);
 
@@ -6090,15 +6281,18 @@ void hkpWorldHelper::ExecuteLinearCastCommands(LinearCastCommand* commandArray, 
 }
 }  // namespace fnv_00c92540
 
-extern "C" void __cdecl enumerateAllConstraintsInIsland(void* object, void* value);
+extern "C" void __cdecl enumerateAllConstraintsInIsland(void* island, void* sys);
 
 struct zzVal_c92860 { void* v; };
 
 // Calls FUN_00c927f0 on each owner in m_owners1 and m_owners2 with the given value.
 // @fnv 0x00c92860
-static __declspec(noinline) void InvokeOnAllOwners(FUN_00c928c0_Context* ctx, zzVal_c92860 value)
+// src: XBOX_RETAIL_PDB 0x00c92860
+// pdb: enumerateAllConstraintsInWorld | hkpWorld.obj | retail, object-file gap fill, high
+// pdb params: world, sys
+static __declspec(noinline) void enumerateAllConstraintsInWorld(FUN_00c928c0_Context* ctx, zzVal_c92860 sys)
 {
-    void* v = value.v;
+    void* v = sys.v;
     FUN_00c928c0_ActionOwner** p = ctx->m_owners1;
     while (p != ctx->m_owners1 + ctx->m_ownerCount1)
     {
@@ -6121,17 +6315,17 @@ void zz_call_c92860(void)
 {
     zzVal_c92860 s;
     s.v = zz_val_c92860;
-    InvokeOnAllOwners(zz_ctx_c92860, s);
+    enumerateAllConstraintsInWorld(zz_ctx_c92860, s);
 }
 
-void __cdecl hkSmallArrayUtil__reserveMore(void* apvArray, int iSizeElem);
+void __cdecl hkSmallArrayUtil__reserveMore(void* array, int sizeElem);
 
 class EntityC92B;
 
 class IslandC92B {
 public:
     void RemoveEntry(EntityC92B* pkEntity);
-    void AddItem(EntityC92B* pkEntity);
+    void AddItem(EntityC92B* act);
     int unk00, unk04, unk08, unk0C, unk10, unk14, unk18, unk1C;
     unsigned short m_usStorageIndex;
     unsigned short unk22;
@@ -6172,33 +6366,36 @@ public:
 
 class ListenerC92B {
 public:
-    void hkpWorld_attachActionToEntity(EntityC92B* pkEntity, WorldC92B* pkWorld);
+    void hkpWorld_attachActionToEntity(EntityC92B* action, WorldC92B* entity);
 };
 
-void __cdecl hkpWorldOperationUtil_mergeIslands(ListenerC92B* pkThis, WorldC92B* pkWorld, int* pkCurrentObject);
+void __cdecl hkpWorldOperationUtil_mergeIslands(ListenerC92B* pkThis, WorldC92B* entityA, int* entityB);
 
 // Appends pkEntity to m_kActorEntries; moves it to the fixed island if its island's storage index is 0xffff, else calls FUN_00cb5570 if islands differ.
 // @fnv 0x00c92bd0
 // src: HAVOK_LIB 0x00c92bd0
-void ListenerC92B::hkpWorld_attachActionToEntity(EntityC92B* pkEntity, WorldC92B* pkWorld)
+// pdb: hkpWorld::attachActionToEntity | hkpWorld.obj | retail, upstream name already matches, high
+// pdb params: action, entity
+// pdb locals: assertBuf, ostr
+void ListenerC92B::hkpWorld_attachActionToEntity(EntityC92B* action, WorldC92B* entity)
 {
-    pkWorld->m_kActorEntries.AddBack(pkEntity);
-    IslandC92B* pkIsland = pkEntity->m_pSimulationIsland;
-    if (pkIsland->m_usStorageIndex == 0xffff && pkWorld->m_iMaxEntriesPerNarrowphaseToiTask != 5) {
-        pkIsland->RemoveEntry(pkEntity);
-        pkWorld->m_pFixedIsland->AddItem(pkEntity);
+    entity->m_kActorEntries.AddBack(action);
+    IslandC92B* pkIsland = action->m_pSimulationIsland;
+    if (pkIsland->m_usStorageIndex == 0xffff && entity->m_iMaxEntriesPerNarrowphaseToiTask != 5) {
+        pkIsland->RemoveEntry(action);
+        entity->m_pFixedIsland->AddItem(action);
         return;
     }
-    if (pkWorld->m_pFixedIsland != pkIsland && pkWorld->m_iMaxEntriesPerNarrowphaseToiTask != 5)
-        hkpWorldOperationUtil_mergeIslands(this, pkWorld, pkIsland->m_pEntities[0]);
+    if (entity->m_pFixedIsland != pkIsland && entity->m_iMaxEntriesPerNarrowphaseToiTask != 5)
+        hkpWorldOperationUtil_mergeIslands(this, entity, pkIsland->m_pEntities[0]);
 }
 
 
 
 
 class WorldC92C;
-void __cdecl hkpWorldCallbackUtil_firePhantomRemoved(WorldC92C* pkWorld, hkpPhantom* pkAction);
-void __cdecl hkpWorldOperationUtil_removePhantomBP(WorldC92C* pkWorld, hkpPhantom* pkAction);
+void __cdecl hkpWorldCallbackUtil_firePhantomRemoved(WorldC92C* pkWorld, hkpPhantom* Phantom);
+void __cdecl hkpWorldOperationUtil_removePhantomBP(WorldC92C* pkWorld, hkpPhantom* phantom);
 
 struct RemoveActionOpC92C {
     unsigned char m_type;
@@ -6240,37 +6437,40 @@ public:
     void FUN_00c91120();
     void UpdateFields_00c91140();
     void hkpWorld_queueOperation(const RemoveActionOpC92C& kOp);
-    void hkpWorld_removePhantom(hkpPhantom* pkAction);
+    void hkpWorld_removePhantom(hkpPhantom* phantom);
 };
 
 // Removes pkAction from the world's action list, either by queueing a deferred removal or by executing it immediately under a critical lock.
 // @fnv 0x00c92c70
 // src: HAVOK_LIB 0x00c92c70
-void WorldC92C::hkpWorld_removePhantom(hkpPhantom* pkAction)
+// pdb: hkpWorld::removePhantom | hkpWorld.obj | retail, upstream name already matches, high
+// pdb params: phantom
+// pdb locals: assertBuf, ostr, op
+void WorldC92C::hkpWorld_removePhantom(hkpPhantom* phantom)
 {
     if (areCriticalOperationsLocked()) {
         RemoveActionOpC92C kOp;
         kOp.m_type = 0xe;
-        kOp.m_pAction = pkAction;
+        kOp.m_pAction = phantom;
         hkpWorld_queueOperation(kOp);
         return;
     }
     lockCriticalOperations();
-    hkpWorldCallbackUtil_firePhantomRemoved(this, pkAction);
-    pkAction->firePhantomRemoved();
-    hkpWorldOperationUtil_removePhantomBP(this, pkAction);
-    m_ppActions.removeAt(m_ppActions.indexOf(pkAction));
-    pkAction->m_pOwningWorld = 0;
-    if (pkAction->m_usMemSizeAndFlags == 0)
-        pkAction->FreeListenerArrays();
-    pkAction->removeReference();
+    hkpWorldCallbackUtil_firePhantomRemoved(this, phantom);
+    phantom->firePhantomRemoved();
+    hkpWorldOperationUtil_removePhantomBP(this, phantom);
+    m_ppActions.removeAt(m_ppActions.indexOf(phantom));
+    phantom->m_world = 0;
+    if (phantom->m_memSizeAndFlags == 0)
+        phantom->FreeListenerArrays();
+    phantom->removeReference();
     unlockCriticalOperations();
 }
 
 
 
 
-void __cdecl ResizeAudioStream(void* m_pPoolBase, void* pArray, int iSizeElem);
+void __cdecl ResizeAudioStream(void* mem, void* array, int sizeElem);
 
 
 template <int SIZE>
@@ -6289,14 +6489,17 @@ public:
     int unk00[71];
     hkArray<void*> m_kNode;
 
-    void hkpWorld_addActionListener(void* item);
+    void hkpWorld_addActionListener(void* worldListener);
 };
 
 // @fnv 0x00c937a0
 // src: HAVOK_LIB 0x00c937a0
-void hkOwnerXc937a0::hkpWorld_addActionListener(void* item)
+// pdb: hkpWorld::addActionListener | hkpWorld.obj | retail, upstream name already matches, high
+// pdb params: worldListener
+// pdb locals: assertBuf, ostr
+void hkOwnerXc937a0::hkpWorld_addActionListener(void* worldListener)
 {
-    m_kNode.pushBack(item);
+    m_kNode.pushBack(worldListener);
 }
 
 
@@ -6779,6 +6982,8 @@ void __cdecl hkpWorldCallbackUtil_fireWorldDeleted(FUN_00c93e50* pkWorld) throw(
 
 // Releases owned resources, removes references to simulation components, and calls FUN_00c93580 and FUN_00d00e80 during cleanup.
 // @fnv 0x00c93e50
+// pdb: hkpWorld::~hkpWorld | hkpWorld.obj | retail, object-file run extension, low
+// pdb locals: assertBuf, ostr
 FUN_00c93e50::~FUN_00c93e50() throw()
 {
     delete m_pMultithreadedSimulationJobData;
@@ -6841,7 +7046,7 @@ FUN_00c93e50::~FUN_00c93e50() throw()
 }
 
 struct hkSmallArrayUtilC97 {
-    static void __cdecl GrowArray(void* apvArray, int iSizeElem) throw();
+    static void __cdecl GrowArray(void* array, int sizeElem) throw();
 };
 template <typename T> struct hkSmallArrayC97 {
     int getCapacity() const { return m_iCapacityState & 0x3fff; }
@@ -6862,7 +7067,7 @@ class hkpWorldC97;
 class hkpSimulationIslandC97 {
 public:
     bool isFixed() const { return m_usStorageIndex == 0xffff; }
-    void RegisterAction(hkpActionC97* pkAction) throw();
+    void RegisterAction(hkpActionC97* act) throw();
     unsigned int unk00;
     unsigned int unk04;
     unsigned int unk08;
@@ -6902,10 +7107,10 @@ struct hkWorldOperationC97 {
 };
 
 struct hkpWorldOperationUtilC97 {
-    static void __cdecl ReenableCollisionBetweenEntityPair(hkpWorldC97* pkWorld, hkpEntity* pkEntityA, hkpEntity* pkEntityB) throw();
+    static void __cdecl ReenableCollisionBetweenEntityPair(hkpWorldC97* pkWorld, hkpEntity* entityA, hkpEntity* entityB) throw();
 };
 struct hkpWorldCallbackUtilC97 {
-    static void __cdecl FireActionAdded(hkpWorldC97* pkWorld, hkpActionC97* pkAction) throw();
+    static void __cdecl hkpWorldCallbackUtil_fireActionAdded(hkpWorldC97* pkWorld, hkpActionC97* pkAction) throw();
 };
 
 class hkpWorldC97 {
@@ -6930,7 +7135,7 @@ public:
     void AddWorldOperation(const hkWorldOperationC97::TypeTag& kOperation) throw();
     void ExecutePendingOperations() throw();
     void ExecutePendingOperationQueues() throw();
-    hkpActionC97* hkpWorld_addAction(hkpActionC97* pkAction) throw();
+    hkpActionC97* hkpWorld_addAction(hkpActionC97* action) throw();
 
     unsigned int unk00;
     unsigned int unk04;
@@ -6979,44 +7184,47 @@ public:
 
 // @fnv 0x00c97370
 // src: HAVOK_LIB 0x00c97370
-hkpActionC97* hkpWorldC97::hkpWorld_addAction(hkpActionC97* pkAction) throw()
+// pdb: hkpWorld::addAction | hkpWorld.obj | retail, upstream name already matches, high
+// pdb params: action
+// pdb locals: entities, op, assertBuf, ostr
+hkpActionC97* hkpWorldC97::hkpWorld_addAction(hkpActionC97* action) throw()
 {
     if (areCriticalOperationsLocked()) {
         hkWorldOperationC97::AddActionCommand kOp;
-        kOp.m_pAction = pkAction;
+        kOp.m_pAction = action;
         AddWorldOperation(kOp);
         return 0;
     }
 
-    pkAction->RetainReference();
+    action->RetainReference();
     lockCriticalOperations();
 
     hkInplaceArray<hkpEntity*, 4> kEntities;
-    pkAction->GetEntities(kEntities);
-    pkAction->setWorld(this);
+    action->GetEntities(kEntities);
+    action->setWorld(this);
 
     hkpEntity* pkFirstMovableEntity = 0;
     for (int i = 0; i < kEntities.GetLogicalSize(); i++) {
-        ((hkSmallArrayC97<hkpAction*>*)&kEntities[i]->m_ppActions)->AddBack((hkpAction*)pkAction);
+        ((hkSmallArrayC97<hkpAction*>*)&kEntities[i]->m_actions)->AddBack((hkpAction*)action);
 
-        hkpSimulationIslandC97* pkIsland = (hkpSimulationIslandC97*)kEntities[i]->m_pSimulationIsland;
+        hkpSimulationIslandC97* pkIsland = (hkpSimulationIslandC97*)kEntities[i]->m_simulationIsland;
         if (!pkIsland->isFixed()) {
             if (pkFirstMovableEntity == 0) {
                 pkFirstMovableEntity = kEntities[i];
-                pkIsland->RegisterAction(pkAction);
-            } else if (pkFirstMovableEntity->m_pSimulationIsland != (hkpSimulationIsland*)pkIsland) {
+                pkIsland->RegisterAction(action);
+            } else if (pkFirstMovableEntity->m_simulationIsland != (hkpSimulationIsland*)pkIsland) {
                 hkpWorldOperationUtilC97::ReenableCollisionBetweenEntityPair(this, pkFirstMovableEntity, kEntities[i]);
             }
         }
     }
 
     if (pkFirstMovableEntity == 0) {
-        ((hkpSimulationIslandC97*)kEntities[0]->m_pSimulationIsland)->RegisterAction(pkAction);
+        ((hkpSimulationIslandC97*)kEntities[0]->m_simulationIsland)->RegisterAction(action);
     }
 
     unlockAndAttemptToExecutePendingOperations();
-    hkpWorldCallbackUtilC97::FireActionAdded(this, pkAction);
-    return pkAction;
+    hkpWorldCallbackUtilC97::hkpWorldCallbackUtil_fireActionAdded(this, action);
+    return action;
 }
 
 
@@ -7045,16 +7253,19 @@ public:
 
 class FUN_00c97e30_C {
 public:
-    void hkpWorld_addConstraint(FUN_00cf3ea0* p);
-    FUN_00cf3ea0* Create(void* a1, void* a2, InfoC97E* a3);
+    void hkpWorld_addConstraint(FUN_00cf3ea0* constraint);
+    FUN_00cf3ea0* hkpWorld_createAndAddConstraintInstance(void* bodyA, void* bodyB, InfoC97E* constraintData);
 };
 
 // Allocates a FUN_00cf3ea0 built from the arguments, copies a3->m_08 into its m_2c, passes it to FUN_00c97d30, and returns it.
 // @fnv 0x00c97e30
-FUN_00cf3ea0* FUN_00c97e30_C::Create(void* a1, void* a2, InfoC97E* apInfo)
+// src: XBOX_RETAIL_PDB 0x00c97e30
+// pdb: hkpWorld::createAndAddConstraintInstance | hkpWorld.obj | retail, object-file gap fill, high
+// pdb params: bodyA, bodyB, constraintData
+FUN_00cf3ea0* FUN_00c97e30_C::hkpWorld_createAndAddConstraintInstance(void* bodyA, void* bodyB, InfoC97E* constraintData)
 {
-    FUN_00cf3ea0* p = new FUN_00cf3ea0(a1, a2, apInfo, true);
-    p->m_2c = apInfo->m_08;
+    FUN_00cf3ea0* p = new FUN_00cf3ea0(bodyA, bodyB, constraintData, true);
+    p->m_2c = constraintData->m_08;
     hkpWorld_addConstraint(p);
     return p;
 }
@@ -7095,39 +7306,42 @@ struct C97E80CleanupShell {
     void __thiscall FUN_00c91120();
     void __thiscall UpdateFields_00c91140();
 };
-void __cdecl hkpWorldOperationUtil_removeConstraintImmediately(hkpWorld* world, C97E80Action* action, int flags);
+void __cdecl hkpWorldOperationUtil_removeConstraintImmediately(hkpWorld* world, C97E80Action* constraint, int flags);
 struct C97E80Return { bool m_iResultCode; };
 struct C97E80World : hkpWorld {
-    C97E80Return __thiscall hkpWorld_removeConstraint(C97E80Action* action);
+    C97E80Return __thiscall hkpWorld_removeConstraint(C97E80Action* constraint);
 };
 // If m_iCriticalOperationsLockCount is nonzero, queues a type-9 pending operation and returns false; otherwise runs helper calls on action and returns true.
 // @fnv 0x00c97e80
 // src: HAVOK_LIB 0x00c97e80
-C97E80Return __thiscall C97E80World::hkpWorld_removeConstraint(C97E80Action* action) {
-    if (m_iCriticalOperationsLockCount) {
+// pdb: hkpWorld::removeConstraint | hkpWorld.obj | retail, upstream name already matches, high
+// pdb params: constraint
+// pdb locals: op, assertBuf, ostr
+C97E80Return __thiscall C97E80World::hkpWorld_removeConstraint(C97E80Action* constraint) {
+    if (m_criticalOperationsLockCount) {
         C97E80PendingOperation operation;
         operation.m_type = 9;
-        operation.m_pAction = action;
+        operation.m_pAction = constraint;
         ((C97E80PendingShell*)this)->hkpWorld_queueOperation(&operation);
         C97E80Return r = {false};
         return r;
     }
 
-    m_iCriticalOperationsLockCount = 1;
-    if (action->getReferenceCount() == 1 &&
-        ((C97E80Owner*)action->m_owner44)->m_pOwningWorld == this) {
-        ((C97E80RemoveShell*)this)->RemoveActionFromWorld(action->m_owner44);
+    m_criticalOperationsLockCount = 1;
+    if (constraint->getReferenceCount() == 1 &&
+        ((C97E80Owner*)constraint->m_owner44)->m_pOwningWorld == this) {
+        ((C97E80RemoveShell*)this)->RemoveActionFromWorld(constraint->m_owner44);
     }
-    ((RefObj*)action)->FUN_00c90510();
-    hkpWorldOperationUtil_removeConstraintImmediately(this, action, 1);
-    ((C97E80ActionChangeShell*)action)->RemoveReferenceFromSlots(this);
-    ((C97E80ReleaseShell*)action)->FUN_00c905b0();
-    --m_iCriticalOperationsLockCount;
-    if (m_iCriticalOperationsLockCount == 0 && !m_bBlockExecutingPendingOperations) {
-        if (m_iPendingOperationCount) {
+    ((RefObj*)constraint)->FUN_00c90510();
+    hkpWorldOperationUtil_removeConstraintImmediately(this, constraint, 1);
+    ((C97E80ActionChangeShell*)constraint)->RemoveReferenceFromSlots(this);
+    ((C97E80ReleaseShell*)constraint)->FUN_00c905b0();
+    --m_criticalOperationsLockCount;
+    if (m_criticalOperationsLockCount == 0 && !m_blockExecutingPendingOperations) {
+        if (m_pendingOperationsCount) {
             ((C97E80CleanupShell*)this)->FUN_00c91120();
         }
-        if (m_iPendingOperationQueueCount == 1 && m_iQueuedOperationCount) {
+        if (m_pendingOperationQueueCount == 1 && m_pendingBodyOperationsCount) {
             ((C97E80CleanupShell*)this)->UpdateFields_00c91140();
         }
     }
@@ -7158,6 +7372,9 @@ struct FUN_00c987e0_Cls {
 // Builds a pose via FUN_00ce52e0(a1) and passes its address with a2 through a6 to FUN_00c98780 on this.
 // @fnv 0x00c987e0
 // src: GUESS 0x00c987e0 (confidence: low)
+// pdb: hkDebugDisplay::displayLineModelSpace | hkDebugDisplay.obj | retail, object-file run extension, low
+// pdb params: worldFromModel, start, end, color, id, tag
+// pdb locals: startWorld, endWorld
 void FUN_00c987e0_Cls::UpdateFields_00c987e0(int a1,int a2,int a3,int a4,int a5,int a6)
 {
     struct __declspec(align(16)) { LocalM128 x, y, z; } poseStorage;
@@ -7217,15 +7434,18 @@ public:
     hkArray<void*> m_kListeners;
     void* m_pWorldLock;
 
-    void RemoveListener(void* listener);
+    void hkDebugDisplay_removeDebugDisplayHandler(void* debugDisplay);
 };
 
 // Removes the given listener from m_kListeners under m_pWorldLock.
 // @fnv 0x00c99590
-void hkListenerListC995::RemoveListener(void* listener)
+// src: XBOX_RETAIL_PDB 0x00c99590
+// pdb: hkDebugDisplay::removeDebugDisplayHandler | hkDebugDisplay.obj | retail, object-file gap fill, high
+// pdb params: debugDisplay
+void hkListenerListC995::hkDebugDisplay_removeDebugDisplayHandler(void* debugDisplay)
 {
     EnterCriticalSection(m_pWorldLock);
-    int i = m_kListeners.indexOf(listener);
+    int i = m_kListeners.indexOf(debugDisplay);
     if (i >= 0) {
         m_kListeners.removeAt(i);
     }
@@ -7238,7 +7458,7 @@ extern void (__stdcall* DAT_00fdf100)(int* pLock);
 
 
 
-void __cdecl ResizeAudioStream(void* m_pPoolBase, void* pArray, int iSizeElem);
+void __cdecl ResizeAudioStream(void* mem, void* array, int sizeElem);
 
 
 class hkOwnerXc99ce0 {
@@ -7251,6 +7471,9 @@ public:
 };
 
 // @fnv 0x00c99ce0
+// pdb: hkDebugDisplay::addDebugDisplayHandler | hkDebugDisplay.obj | retail, object-file run extension, low
+// pdb note: debug build links it to hkDebugDisplay::displayFrame
+// pdb params: debugDisplay
 void hkOwnerXc99ce0::Add(void* item)
 {
     DAT_00fdf05c(m_lock);
@@ -7268,6 +7491,8 @@ public:
 
 // @fnv 0x00ce52e0
 // src: GUESS 0x00ce52e0 (confidence: medium)
+// pdb: hkQsTransform::setFromTransform | hkQsTransform.obj | retail, call graph, low
+// pdb params: transform
 void Ce52e0Helper::SetFromInput_Thunk(int a)
 {
     SetFromInput(&a, a);
@@ -7312,12 +7537,16 @@ public:
     int unk1B0, unk1B4, unk1B8, unk1BC;
     hkSharedD0AD* m_pSharedObject;
 
-    void hkpWorld_removeConstraintListener(hkListenerAD0AD* pkListener);
-    void hkpWorld_removeWorldDeletionListener(hkListenerBD0AD* pkListener);
+    void hkpWorld_removeConstraintListener(hkListenerAD0AD* worldListener);
+    void hkpWorld_removeWorldDeletionListener(hkListenerBD0AD* worldListener);
 };
 
 // Decrements the shared object's m_useCount and at zero calls FUN_00d9e280 on its member, FUN_00c91750 and FUN_00c91a70 on the world, then FUN_00c905b0.
 // @fnv 0x00d0adf0
+// pdb: hkpCollisionCallbackUtil::removeCollisionCallbackUtil | hkpCollisionCallbackUtil.obj | retail, object-file run extension, low
+// pdb note: debug build links it to hkArray<int,hkContainerTempAllocator>::clearAndDeallocate
+// pdb params: world
+// pdb locals: assertBuf, ostr
 void __cdecl ReleaseSharedObject(hkpWorldD0AD* pkWorld)
 {
     hkSharedD0AD* pkShared = pkWorld->m_pSharedObject;
@@ -7338,6 +7567,7 @@ public:
 };
 // Sets the top two bits of first from a and of second from b, inverting a if (code & 3) < (state & 3) and b if code < state.
 // @fnv 0x00c90ed0
+// pdb: hkpBroadPhaseListener::`scalar deleting destructor' | hkpWorld.obj | debug, object-file run extension, low
 void FlagState::SetFlagBits(unsigned int a, unsigned int b, int code) {
     int previous = state;
     unsigned int x = ((unsigned int)(code & 3) < (unsigned int)(previous & 3) ? ~a : a);
@@ -7388,6 +7618,9 @@ struct OverlapContext {
 };
 // Adds or removes other from phantom and, when other is type 2, mirrors the change on other's owner based on the filter result.
 // @fnv 0x00c90f40
+// pdb: hkWorld_updateFilterOnSinglePhantom | hkpWorld.obj | retail, call graph (shared callers), low
+// pdb params: phantom, collidable, filter
+// pdb locals: oldOverlapping, otherOldOverlapping
 static __declspec(noinline) void SyncOverlap(OverlapPhantom* phantom, OverlapCollidable* other, OverlapContext* context)
 {
     OverlapResult old = phantom->overlaps(other);
@@ -7470,10 +7703,13 @@ struct CFB240Dispatcher {
 
 // Creates two factories from world and a third, registers them with the dispatcher at slots 1, 2 and 3, then releases the local references.
 // @fnv 0x00c912e0
-static void RegisterContactMgrFactories(CFB240Dispatcher* dispatcher, void* world)
+// src: XBOX_RETAIL_PDB 0x00c912e0
+// pdb: hkWorld_setupContactMgrFactories | hkpWorld.obj | retail, object-file run extension, high
+// pdb params: world, dis
+static void hkWorld_setupContactMgrFactories(CFB240Dispatcher* dispatcher, void* dis)
 {
-    FUN_00cfd450* first = new FUN_00cfd450(world);
-    FUN_00cfca20* second = new FUN_00cfca20(world);
+    FUN_00cfd450* first = new FUN_00cfd450(dis);
+    FUN_00cfca20* second = new FUN_00cfca20(dis);
     FactoryThreeC912* third = new FactoryThreeC912;
     dispatcher->SetContactMgrFactory(first, 1);
     dispatcher->SetContactMgrFactory(second, 2);
@@ -7485,12 +7721,12 @@ static void RegisterContactMgrFactories(CFB240Dispatcher* dispatcher, void* worl
 
 void c912e0_caller(CFB240Dispatcher* d, void* w)
 {
-    RegisterContactMgrFactories(d, w);
+    hkWorld_setupContactMgrFactories(d, w);
 }
 
 struct Shape64 {};
 struct Container64 {
-    void __thiscall AddShape(Shape64* shape);
+    void __thiscall AddShape(Shape64* rb);
 };
 struct Shape64List {
     Shape64** data;
@@ -7510,7 +7746,10 @@ struct Context64 {
 };
 // Adds every shape of every element in context to container, then stores whether elementCount is greater than zero in result.
 // @fnv 0x00c92760
-unsigned char* __cdecl CollectShapes(unsigned char* pbHasElements, Context64* context, Container64* volatile container)
+// src: XBOX_RETAIL_PDB 0x00c92760
+// pdb: enumerateAllActiveEntitiesInWorld | hkpWorld.obj | retail, object-file gap fill, high
+// pdb params: world, sys
+unsigned char* __cdecl enumerateAllActiveEntitiesInWorld(unsigned char* pbHasElements, Context64* context, Container64* volatile container)
 {
     Element64** element = context->elements;
     if (element != context->elements + context->elementCount)
@@ -7552,20 +7791,22 @@ struct PhantomSink {
 // Iterates the world's phantoms and sends each to out->FUN_00d064f0, skipping the six border phantoms when a BorderSet is present.
 // @fnv 0x00c92950
 // src: HAVOK_LIB 0x00c92950
-static __declspec(noinline) void enumerateAllPhantomsInWorld(PhantomWorld* world, PhantomSink* apSink)
+// pdb: enumerateAllPhantomsInWorld | hkpWorld.obj | retail, upstream name already matches, high
+// pdb params: world, sys
+static __declspec(noinline) void enumerateAllPhantomsInWorld(PhantomWorld* world, PhantomSink* sys)
 {
     BorderSet* border = world->GetValue();
     if (border) {
-        for (int i = 0; i < world->m_kPhantoms.m_iElementCount; ++i) {
-            hkpPhantom* p = world->m_kPhantoms.m_data[i];
+        for (int i = 0; i < world->m_phantoms.m_iElementCount; ++i) {
+            hkpPhantom* p = world->m_phantoms.m_data[i];
             if (p != border->p18 && p != border->p1c &&
                 p != border->p20 && p != border->p24 &&
                 p != border->p28 && p != border->p2c)
-                apSink->hkpPhysicsSystem_addPhantom(p);
+                sys->hkpPhysicsSystem_addPhantom(p);
         }
     } else {
-        for (int i = 0; i < world->m_kPhantoms.m_iElementCount; ++i)
-            apSink->hkpPhysicsSystem_addPhantom(world->m_kPhantoms.m_data[i]);
+        for (int i = 0; i < world->m_phantoms.m_iElementCount; ++i)
+            sys->hkpPhysicsSystem_addPhantom(world->m_phantoms.m_data[i]);
     }
 }
 PhantomWorld* volatile g_world;
@@ -7609,7 +7850,7 @@ struct CollisionObject {
     unsigned short shapeSize;
     BroadphaseHandle handle;
     unsigned int boundingVolume;
-    void UpdateCollisionIndices();
+    void hkpLinkedCollidable_sortEntries();
     hkArray<struct CollisionAgentEntry>* hkpLinkedCollidable_getCollisionEntriesDeterministicUnchecked_00d081e0();
 };
 struct EntityState {
@@ -8192,24 +8433,27 @@ return pairs.data[pairs.size++];
 // Updates collision filter state for entity, syncing phantom overlaps and agent pairs, then dispatches new collision pairs.
 // @fnv 0x00c946e0
 // src: HAVOK_LIB 0x00c946e0
-void CallRet::hkpWorld_updateCollisionFilterOnEntity(hkpEntity* entity, int updateCollection, int updateShape) {
-    if (m_iCriticalOperationsLockCount) {
+// pdb: hkpWorld::updateCollisionFilterOnEntity | hkpWorld.obj | retail, string-set bridge, high
+// pdb params: entity, updateMode, updateShapeCollectionFilter
+// pdb locals: op, assertBuf, ostr, updatedPairs, presentPairs
+void CallRet::hkpWorld_updateCollisionFilterOnEntity(hkpEntity* entity, int updateMode, int updateShapeCollectionFilter) {
+    if (m_criticalOperationsLockCount) {
         FilterCommand command;
         command.type = 0x12;
         command.entity = entity;
-        command.updateCollection = (unsigned char)updateCollection;
-        command.updateShape = (unsigned char)updateShape;
+        command.updateCollection = (unsigned char)updateMode;
+        command.updateShape = (unsigned char)updateShapeCollectionFilter;
         hkpWorld_queueOperation(&command);
         return;
     }
     timer("LtUpdateFilterOnEntity", "Stinit");
-    ++m_iCriticalOperationsLockCount;
-    if ((*(unsigned char*)&entity->m_pMotionState.m_type) == 5) ((CollisionObject*)&entity->m_kCollidable)->UpdateCollisionIndices();
+    ++m_criticalOperationsLockCount;
+    if ((*(unsigned char*)&entity->m_motion.m_type) == 5) ((CollisionObject*)&entity->m_kCollidable)->hkpLinkedCollidable_sortEntries();
     PairArray pairs;
     pairs.init();
-    if (updateCollection == 0) {
+    if (updateMode == 0) {
         timer("Stbroadphase");
-        ((Broadphase*)m_pJobSemaphore)->query(&((CollisionObject*)&entity->m_kCollidable)->handle, &pairs);
+        ((Broadphase*)m_broadPhase)->query(&((CollisionObject*)&entity->m_kCollidable)->handle, &pairs);
         timer("Stphantom");
         for (int i = 0; i < pairs.size; ++i) {
             BroadphaseHandle* handle = pairs.data[i].second;
@@ -8218,8 +8462,8 @@ void CallRet::hkpWorld_updateCollisionFilterOnEntity(hkpEntity* entity, int upda
                 PhantomInterface* phantom = (PhantomInterface*)((char*)object + object->ownerOffset);
                 if (phantom) {
                     CollisionObject* collidable = (CollisionObject*)&entity->m_kCollidable;
-                    SyncOverlap(phantom, collidable, (CollisionFilter*)m_pCollisionFilter);
-                    if (updateShape != 0) phantom->refresh();
+                    SyncOverlap(phantom, collidable, (CollisionFilter*)m_collisionFilter);
+                    if (updateShapeCollectionFilter != 0) phantom->refresh();
                     --pairs.size;
                     if (pairs.size != i) {
 copyAlignedWords<sizeof(OverlapPair)>(&pairs.data[i], &pairs.data[pairs.size]);
@@ -8245,16 +8489,16 @@ copyAlignedWords<sizeof(OverlapPair)>(&pairs.data[i], &pairs.data[pairs.size]);
     hkArray<CollisionAgentEntry>* agents = collidable->hkpLinkedCollidable_getCollisionEntriesDeterministicUnchecked_00d081e0();
     for (int i = 0; i < agents->m_iElementCount; ++i) {
         CollisionAgentEntry& entry = agents->m_data[i];
-CollisionObject* other; if(!((CollisionFilter*)m_pCollisionFilter)->filter.enabled(collidable, entry.other).value) goto ResetAgent; other=entry.other; if(!((CollisionDispatcher*)m_pDispatcher)->qualityEnabled[quality][other->handle.quality]) goto ResetAgent; if(updateShape==1) { EntityState* state; if((*(unsigned char*)&entity->m_pMotionState.m_type)==5) state=((EntityState*)((hkpEntity*)((char*)other + other->ownerOffset))->m_pSimulationIsland); else state=((EntityState*)entity->m_pSimulationIsland); _hkAgentNnMachine_UpdateShapeCollectionFilter(entry.agent,m_pCollisionInput,state); } goto nextAgent; ResetAgent: hkpWorldAgentUtil_removeAgentAndItsToiEvents(entry.agent); --i; ((EntityState*)entity->m_pSimulationIsland)->flags = (((EntityState*)entity->m_pSimulationIsland)->flags & ~2) | 1; nextAgent:;
+CollisionObject* other; if(!((CollisionFilter*)m_collisionFilter)->filter.enabled(collidable, entry.other).value) goto ResetAgent; other=entry.other; if(!((CollisionDispatcher*)m_collisionDispatcher)->qualityEnabled[quality][other->handle.quality]) goto ResetAgent; if(updateShapeCollectionFilter==1) { EntityState* state; if((*(unsigned char*)&entity->m_motion.m_type)==5) state=((EntityState*)((hkpEntity*)((char*)other + other->ownerOffset))->m_simulationIsland); else state=((EntityState*)entity->m_simulationIsland); _hkAgentNnMachine_UpdateShapeCollectionFilter(entry.agent,m_collisionInput,state); } goto nextAgent; ResetAgent: hkpWorldAgentUtil_removeAgentAndItsToiEvents(entry.agent); --i; ((EntityState*)entity->m_simulationIsland)->flags = (((EntityState*)entity->m_simulationIsland)->flags & ~2) | 1; nextAgent:;
     }
     if (pairs.size > 0) {
         timer("StaddAgts");
-        CollisionFilter* filter = (CollisionFilter*)m_pCollisionFilter;
-        ((BroadphaseDispatcher*)m_pBroadPhaseDispatcher)->hkpTypedBroadPhaseDispatcher_addPairs(pairs.data, pairs.size, filter ? &filter->filter : 0);
+        CollisionFilter* filter = (CollisionFilter*)m_collisionFilter;
+        ((BroadphaseDispatcher*)m_broadPhaseDispatcher)->hkpTypedBroadPhaseDispatcher_addPairs(pairs.data, pairs.size, filter ? &filter->filter : 0);
     }
-    if (--m_iCriticalOperationsLockCount == 0 && !m_bBlockExecutingPendingOperations) {
-        if (m_iPendingOperationCount) FUN_00c91120();
-        if (m_iPendingOperationQueueCount == 1 && m_iQueuedOperationCount) UpdateFields_00c91140();
+    if (--m_criticalOperationsLockCount == 0 && !m_blockExecutingPendingOperations) {
+        if (m_pendingOperationsCount) FUN_00c91120();
+        if (m_pendingOperationQueueCount == 1 && m_pendingBodyOperationsCount) UpdateFields_00c91140();
     }
     releasePairs(pairs);
     timer("lt");
@@ -8285,6 +8529,9 @@ struct RotationOwner {
 };
 // Transforms position via FUN_00c7f7a0, rotates direction by the transform's quaternion, then calls FUN_00c98820 with both plus a, b and c.
 // @fnv 0x00c99610
+// pdb: hkDebugDisplay::displayFrame | hkDebugDisplay.obj | retail, object-file run extension, low
+// pdb params: worldFromLocal, size, id, tag
+// pdb locals: ZERO, X, Y, dirY, dirZ, Z, vec, dirX
 void RotationOwner::ApplyRotation(const RotationInput* transform, const LocalM128* position,
     const LocalM128* direction, int a, int b, int c)
 {
@@ -8389,7 +8636,7 @@ struct Owner_s {
     RigidBodyList_s m_rigidBodyList;
 };
 struct System_s : hkpPhysicsSystem {
-    void __thiscall addBody(RigidBody_s* body);
+    void __thiscall addBody(RigidBody_s* rb);
 };
 struct Context_s {
     int unk00;
@@ -8414,7 +8661,10 @@ struct BoolResult {
 };
 // Adds rigid bodies of m_owner0 and of each owner in m_owners2 to a3; returns true if m_ownerCount2 > 0 or m_owner0 has bodies.
 // @fnv 0x00c926a0
-static __declspec(noinline) BoolResult AddBodiesToSystem(Context_s* a2, ...) {
+// src: XBOX_RETAIL_PDB 0x00c926a0
+// pdb: enumerateAllInactiveEntitiesInWorld | hkpWorld.obj | retail, object-file gap fill, high
+// pdb params: world, sys
+static __declspec(noinline) BoolResult enumerateAllInactiveEntitiesInWorld(Context_s* a2, ...) {
     va_list args;
     va_start(args, a2);
     System_s* a3 = va_arg(args, System_s*);
@@ -8441,7 +8691,7 @@ static __declspec(noinline) BoolResult AddBodiesToSystem(Context_s* a2, ...) {
 Context_s* volatile retry_context;
 System_s* volatile retry_system;
 volatile char retry_result;
-void retryCaller() { retry_result = AddBodiesToSystem(retry_context, retry_system).value; }
+void retryCaller() { retry_result = enumerateAllInactiveEntitiesInWorld(retry_context, retry_system).value; }
 
 // FUN_00c98240 : MSVC this-adjusting thunk  (sub ecx, 0x08 ; jmp <impl>)
 struct A1_00c98240 {
@@ -8721,73 +8971,75 @@ struct Src_00c91c50 {
     int i_338;
     char pad33c[0x04];
     unsigned char b_340;
-    void hkpWorld_getCinfo(Dst_00c91c50* pOut);
+    void hkpWorld_getCinfo(Dst_00c91c50* info);
 };
 
 // Copies fields from this into pOut, calling FUN_00c90510 on p50 and FUN_00c905b0 on pOut->p6c before transferring the reference.
 // @fnv 0x00c91c50
 // src: XBOX_PDB 0x00c91c50
-void Src_00c91c50::hkpWorld_getCinfo(Dst_00c91c50* pOut)
+// pdb: hkpWorld::getCinfo | hkpWorld.obj | retail, upstream name already matches, high
+// pdb params: info
+void Src_00c91c50::hkpWorld_getCinfo(Dst_00c91c50* info)
 {
     unsigned char unkZero;
 
-    pOut->v10 = this->v10;
-    pOut->i_20 = this->i_338;
-    pOut->v30 = this->v_310;
-    pOut->v40 = this->v_320;
-    pOut->f_54 = *(float*)((char*)this->p78 + 8);
-    pOut->p58 = this->p7c;
-    pOut->p5c = this->p84;
-    pOut->b_28 = (unsigned char)(this->p_1bc ? *(int*)((char*)this->p_1bc + 0x30) : 3);
-        pOut->b_29 = *(this->p_1bc ? (unsigned char*)((char*)this->p_1bc + 0x34) : &(unkZero = 0));
-    pOut->b_50 = (this->i5c != 0);
-    pOut->b_53 = this->b60;
-    pOut->f_60 = *(float*)((char*)this->p80 + 0x1e40);
-    pOut->f_68 = *(float*)((char*)this->p80 + 0x1e44);
-    pOut->f_90 = this->f_cc;
-    pOut->f_90 = this->f_d0;
-    pOut->b_98 = this->b_d4;
+    info->v10 = this->v10;
+    info->i_20 = this->i_338;
+    info->v30 = this->v_310;
+    info->v40 = this->v_320;
+    info->f_54 = *(float*)((char*)this->p78 + 8);
+    info->p58 = this->p7c;
+    info->p5c = this->p84;
+    info->b_28 = (unsigned char)(this->p_1bc ? *(int*)((char*)this->p_1bc + 0x30) : 3);
+        info->b_29 = *(this->p_1bc ? (unsigned char*)((char*)this->p_1bc + 0x34) : &(unkZero = 0));
+    info->b_50 = (this->i5c != 0);
+    info->b_53 = this->b60;
+    info->f_60 = *(float*)((char*)this->p80 + 0x1e40);
+    info->f_68 = *(float*)((char*)this->p80 + 0x1e44);
+    info->f_90 = this->f_cc;
+    info->f_90 = this->f_d0;
+    info->b_98 = this->b_d4;
     if (this->p50.m_p)
         this->p50.m_p->addReference();
-    if (pOut->p6c.m_p)
-        pOut->p6c.m_p->removeReference();
-    pOut->p6c.m_p = this->p50.m_p;
-    pOut->i_70 = this->i_330;
-    pOut->i_64 = this->i_334;
-    pOut->b_74 = this->b_340;
-    pOut->b_75 = this->p78->b6d;
-    pOut->f_24 = this->f_240;
-    pOut->f_78 = this->f_1e4;
-    pOut->f_7c = this->f_1e8;
-    pOut->i_80 = this->i_2f4;
-    pOut->i_84 = this->i_2f8;
-    pOut->f_88 = (float)sqrt(this->f_308);
-    pOut->b_8c = this->b_304;
-    pOut->b_a4 = this->b_305;
-    pOut->b_a5 = this->b_306;
-    pOut->b_a6 = this->b_307;
-    pOut->f_9c = this->p78->p70->f00;
-    pOut->i_a0 = this->p78->p70->i04;
-    pOut->b_99 = this->p78->b6c;
-    pOut->b_a7 = this->b_d6;
-    pOut->f_ac = this->f_dc;
-    pOut->i_b0 = this->i_e0;
-    pOut->b_b4 = this->b_e4;
-    pOut->i_b8 = this->i_e8;
-    pOut->i_bc = this->i_ec;
-    pOut->f_a8 = this->f_d8;
-    pOut->f_c0 = this->f_f4;
-    pOut->f_c4 = this->f_f8;
-    pOut->f_c8 = this->f_fc;
-    pOut->f_cc = this->f_100;
-    pOut->b_d0 = this->b_d5;
-    pOut->b_d1 = this->b_f0;
-    pOut->f_dc = this->p08->f24;
-    pOut->b_d2 = this->b_c8;
-    pOut->b_d8 = this->b_b0;
-    pOut->b_d9 = this->b_b1;
-    pOut->i_d4 = this->i_b4;
-    pOut->b_e0 = (this->i_1c0 != 0);
+    if (info->p6c.m_p)
+        info->p6c.m_p->removeReference();
+    info->p6c.m_p = this->p50.m_p;
+    info->i_70 = this->i_330;
+    info->i_64 = this->i_334;
+    info->b_74 = this->b_340;
+    info->b_75 = this->p78->b6d;
+    info->f_24 = this->f_240;
+    info->f_78 = this->f_1e4;
+    info->f_7c = this->f_1e8;
+    info->i_80 = this->i_2f4;
+    info->i_84 = this->i_2f8;
+    info->f_88 = (float)sqrt(this->f_308);
+    info->b_8c = this->b_304;
+    info->b_a4 = this->b_305;
+    info->b_a5 = this->b_306;
+    info->b_a6 = this->b_307;
+    info->f_9c = this->p78->p70->f00;
+    info->i_a0 = this->p78->p70->i04;
+    info->b_99 = this->p78->b6c;
+    info->b_a7 = this->b_d6;
+    info->f_ac = this->f_dc;
+    info->i_b0 = this->i_e0;
+    info->b_b4 = this->b_e4;
+    info->i_b8 = this->i_e8;
+    info->i_bc = this->i_ec;
+    info->f_a8 = this->f_d8;
+    info->f_c0 = this->f_f4;
+    info->f_c4 = this->f_f8;
+    info->f_c8 = this->f_fc;
+    info->f_cc = this->f_100;
+    info->b_d0 = this->b_d5;
+    info->b_d1 = this->b_f0;
+    info->f_dc = this->p08->f24;
+    info->b_d2 = this->b_c8;
+    info->b_d8 = this->b_b0;
+    info->b_d9 = this->b_b1;
+    info->i_d4 = this->i_b4;
+    info->b_e0 = (this->i_1c0 != 0);
 }
 
 struct MatchAllocator {
@@ -8910,13 +9162,13 @@ struct MatchWorld {
     void** phantoms;
     int phantomCount;
     MatchPhantoms* GetValue();
-    void __thiscall AddPhysicsSystem(hkArray<FUN_00d065e0*>* systems);
+    void __thiscall hkpWorld_getWorldAsSystems(hkArray<FUN_00d065e0*>* systemsInOut);
 };
 struct FUN_00d065e0Value { FUN_00d065e0* p; };
-MatchStatus __cdecl AddBodiesToSystem(MatchWorld*, FUN_00d065e0*);
-MatchStatus __cdecl CollectShapes(MatchWorld*, FUN_00d065e0*);
+MatchStatus __cdecl enumerateAllInactiveEntitiesInWorld(MatchWorld*, FUN_00d065e0*);
+MatchStatus __cdecl enumerateAllActiveEntitiesInWorld(MatchWorld*, FUN_00d065e0*);
 // src: HAVOK_LIB 0x00c92950
-static __declspec(noinline) void enumerateAllPhantomsInWorld(MatchWorld* world, FUN_00d065e0* system)
+static __declspec(noinline) void enumerateAllPhantomsInWorld(MatchWorld* world, FUN_00d065e0* sys)
 {
     MatchPhantoms* excluded = world->GetValue();
     if (excluded) {
@@ -8924,31 +9176,35 @@ static __declspec(noinline) void enumerateAllPhantomsInWorld(MatchWorld* world, 
             void* p = world->phantoms[i];
             if (p != excluded->p18 && p != excluded->p1C && p != excluded->p20 &&
                 p != excluded->p24 && p != excluded->p28 && p != excluded->p2C)
-                system->hkpPhysicsSystem_addPhantom(p);
+                sys->hkpPhysicsSystem_addPhantom(p);
         }
     } else {
         for (int i=0; i<world->phantomCount; ++i)
-            system->hkpPhysicsSystem_addPhantom(world->phantoms[i]);
+            sys->hkpPhysicsSystem_addPhantom(world->phantoms[i]);
     }
 }
 // Creates one or two FUN_00d065e0 objects, adds them to the systems array, then calls CollectShapes, FUN_00c92950, InvokeOnAllOwners and FUN_00c928c0 on the last.
 // @fnv 0x00c93b30
-void MatchWorld::AddPhysicsSystem(hkArray<FUN_00d065e0*>* systems)
+// src: XBOX_RETAIL_PDB 0x00c93b30
+// pdb: hkpWorld::getWorldAsSystems | hkpWorld.obj | retail, object-file gap fill, high
+// pdb params: systemsInOut
+// pdb locals: inactive, active
+void MatchWorld::hkpWorld_getWorldAsSystems(hkArray<FUN_00d065e0*>* systemsInOut)
 {
     FUN_00d065e0* first = new FUN_00d065e0;
     FUN_00d065e0* system;
-    if (AddBodiesToSystem(this, first)) {
+    if (enumerateAllInactiveEntitiesInWorld(this, first)) {
         first->active = 0;
-        systems->pushBack(first);
+        systemsInOut->pushBack(first);
         system = new FUN_00d065e0;
     } else {
         system = first ? first : new FUN_00d065e0;
     }
-    systems->pushBack(system);
-    CollectShapes(this, system);
+    systemsInOut->pushBack(system);
+    enumerateAllActiveEntitiesInWorld(this, system);
     enumerateAllPhantomsInWorld(this, system);
     zzVal_c92860 a = { system };
-    InvokeOnAllOwners((FUN_00c928c0_Context*)this, a);
+    enumerateAllConstraintsInWorld((FUN_00c928c0_Context*)this, a);
     enumerateAllActionsInWorld((FUN_00c928c0_Context*)this, (hkpPhysicsSystem*)system);
 }
 
@@ -9083,22 +9339,26 @@ static __declspec(noinline) void SyncOverlap(PhantomC944* phantom,CollidableC944
 }
 
 struct PhantomArgC944 { PhantomC944* p; PhantomArgC944(PhantomC944* q) : p(q) {} };
-struct WorldC944 : hkpWorld { void UpdatePhantom(PhantomC944*, int); void hkpWorld_queueOperation(PendingOp*); void FUN_00c91120(); void UpdateFields_00c91140(); };
+struct WorldC944 : hkpWorld { void hkpWorld_updateCollisionFilterOnPhantom(PhantomC944*, int); void hkpWorld_queueOperation(PendingOp*); void FUN_00c91120(); void UpdateFields_00c91140(); };
 
 // Queries broad phase for overlaps with a phantom, applies collision filters, and optionally processes contact points.
 // @fnv 0x00c944a0
-void WorldC944::UpdatePhantom(PhantomC944* apPhantom, int abProcessContacts)
+// src: XBOX_RETAIL_PDB 0x00c944a0
+// pdb: hkpWorld::updateCollisionFilterOnPhantom | hkpWorld.obj | retail, string-set bridge, high
+// pdb params: phantom, updateShapeCollectionFilter
+// pdb locals: pairsOut, op, assertBuf, ostr
+void WorldC944::hkpWorld_updateCollisionFilterOnPhantom(PhantomC944* phantom, int updateShapeCollectionFilter)
 {
-    if (m_iCriticalOperationsLockCount != 0)
+    if (m_criticalOperationsLockCount != 0)
     {
         PendingOp op;
         op.m_type = 0x14;
-        op.m_p = (PhantomC944*)apPhantom;
-        op.m_flag = (unsigned char)abProcessContacts;
+        op.m_p = (PhantomC944*)phantom;
+        op.m_flag = (unsigned char)updateShapeCollectionFilter;
         hkpWorld_queueOperation(&op);
         return;
     }
-    m_iCriticalOperationsLockCount = 1;
+    m_criticalOperationsLockCount = 1;
 
     TimerBufferC944* t1 = (TimerBufferC944*)TlsGetValue(DAT_0126835c);
     TimerEntryC9442* e1 = (TimerEntryC9442*)t1->current;
@@ -9112,10 +9372,10 @@ void WorldC944::UpdatePhantom(PhantomC944* apPhantom, int abProcessContacts)
         t1->current = e1 + 1;
     }
 
-    int queryCount = m_iBroadPhaseQuerySize;
-    PhantomC944* ent = *(PhantomC944* volatile*)&apPhantom;
+    int queryCount = m_broadPhaseQuerySize;
+    PhantomC944* ent = *(PhantomC944* volatile*)&phantom;
     TempArray arr(queryCount);
-    ((BroadPhaseC944*)m_pJobSemaphore)->updateOverlaps(&ent->m_kCollidable.m_kBroadPhaseHandle, &arr);
+    ((BroadPhaseC944*)m_broadPhase)->updateOverlaps(&ent->m_kCollidable.m_kBroadPhaseHandle, &arr);
 
     TimerBufferC944* t2 = (TimerBufferC944*)TlsGetValue(DAT_0126835c);
     TimerEntryC944* e2 = (TimerEntryC944*)t2->current;
@@ -9137,13 +9397,13 @@ void WorldC944::UpdatePhantom(PhantomC944* apPhantom, int abProcessContacts)
             if (p != &ent->m_kCollidable.m_kBroadPhaseHandle)
             {
                 CollidableC944* q = p->getOwner();
-                SyncOverlap(ent,q,static_cast<hkpCollisionFilter*>(m_pCollisionFilter));
+                SyncOverlap(ent,q,static_cast<hkpCollisionFilter*>(m_collisionFilter));
             }
             i++;
         } while ((int)i < arr.m_iElementCount);
     }
 
-    if (abProcessContacts != 0)
+    if (updateShapeCollectionFilter != 0)
     {
         TimerBufferC944* t3 = (TimerBufferC944*)TlsGetValue(DAT_0126835c);
         TimerEntryC944* e3 = (TimerEntryC944*)t3->current;
@@ -9158,13 +9418,13 @@ void WorldC944::UpdatePhantom(PhantomC944* apPhantom, int abProcessContacts)
         ent->ProcessContactPoints();
     }
 
-    if (--m_iCriticalOperationsLockCount == 0)
+    if (--m_criticalOperationsLockCount == 0)
     {
-        if (m_bBlockExecutingPendingOperations == 0)
+        if (m_blockExecutingPendingOperations == 0)
         {
-            if (m_iPendingOperationCount != 0)
+            if (m_pendingOperationsCount != 0)
                 FUN_00c91120();
-            if (m_iPendingOperationQueueCount == 1 && m_iQueuedOperationCount != 0)
+            if (m_pendingOperationQueueCount == 1 && m_pendingBodyOperationsCount != 0)
                 UpdateFields_00c91140();
         }
     }
@@ -9189,7 +9449,7 @@ extern "C" void _ReadWriteBarrier(void);
 
 
 inline void* getMemoryRouter() throw() { return &hkMemoryRouter::getInstance(); }
-extern "C" void __cdecl hkArrayUtil__reserve(void* inst, void* arr, int num, int elemSize) throw();
+extern "C" void __cdecl hkArrayUtil__reserve(void* mem, void* array, int numElem, int sizeElem) throw();
 extern "C" void __cdecl hkpWorldCallbackUtil_fireEntityRemoved(hkpWorld* world, void* entity) throw();
 extern "C" void __cdecl hkpEntityCallbackUtil_fireEntityRemoved(void* entity) throw();
 extern "C" void __cdecl hkpWorldOperationUtil_removeEntitySI(hkpWorld* world, void* entity) throw();
@@ -9199,7 +9459,7 @@ struct MyPendingQueue {
 };
 
 struct FUN_00cf70f0_Class {
-    void __thiscall DispatchPairs(void* data, int size) throw();
+    void __thiscall DispatchPairs(void* deletedPairs, int numDeletedPairs) throw();
 };
 
 struct FUN_00d01a80_Class {
@@ -9382,18 +9642,22 @@ union PendingOrHandles {
 };
 union TimerOrEnd { volatile unsigned int stamp; void* const* end; };
 struct HostWorld_00c951b0 : hkpWorld {
-    void RemoveEntities(void* const* entityBatch, int numEntities) throw();
+    void hkpWorld_removeEntityBatch(void* const* entityBatch, int numEntities) throw();
 };
 
 // Removes a batch of entities from the simulation, dispatches broad-phase collision pairs, and invokes per-entity removal callbacks.
 // @fnv 0x00c951b0
-void HostWorld_00c951b0::RemoveEntities(void* const* entityBatch, int numEntities) throw()
+// src: XBOX_RETAIL_PDB 0x00c951b0
+// pdb: hkpWorld::removeEntityBatch | hkpWorld.obj | retail, string-set bridge, high
+// pdb params: entityBatch, numEntities
+// pdb locals: op, collList, assertBuf, ostr, pairsOut
+void HostWorld_00c951b0::hkpWorld_removeEntityBatch(void* const* entityBatch, int numEntities) throw()
 {
     PendingOrHandles pendingOrHandles;
     if (numEntities < 1)
         return;
 
-    if (m_iCriticalOperationsLockCount != 0)
+    if (m_criticalOperationsLockCount != 0)
     {
         {
         WorldOp_00c951b0& op = pendingOrHandles.operation;
@@ -9405,13 +9669,13 @@ void HostWorld_00c951b0::RemoveEntities(void* const* entityBatch, int numEntitie
         return;
     }
 
-    m_iCriticalOperationsLockCount = 1;
+    m_criticalOperationsLockCount = 1;
     void* const* it;
     TimerOrEnd timerOrEnd;
 
     timerBeginList((hkMonitorStream*)TlsGetValue(DAT_0126835c), "LtRemEntities", "StInit+CallBck", timerOrEnd.stamp);
 
-    ((hkpSimulation_00c951b0*)m_pSimulation)->removeEntities(entityBatch, numEntities, this, 1);
+    ((hkpSimulation_00c951b0*)m_simulation)->removeEntities(entityBatch, numEntities, this, 1);
 
     {
         MyArray<void*> array(reinterpret_cast<hkArray<void*>&>(pendingOrHandles.handles));
@@ -9432,13 +9696,13 @@ void HostWorld_00c951b0::RemoveEntities(void* const* entityBatch, int numEntitie
         {
             timerSplitList((hkMonitorStream*)TlsGetValue(DAT_0126835c), "StBroadPhase");
 
-            MyLocalArray pairs(m_iBroadPhaseQuerySize);
+            MyLocalArray pairs(m_broadPhaseQuerySize);
 
-            ((hkpBroadPhase_00c951b0*)m_pJobSemaphore)->DispatchCollisionPairs(&array.base, &pairs);
+            ((hkpBroadPhase_00c951b0*)m_broadPhase)->DispatchCollisionPairs(&array.base, &pairs);
 
             timerSplitList((hkMonitorStream*)TlsGetValue(DAT_0126835c), "StDelAgents");
 
-            ((FUN_00cf70f0_Class*)m_pBroadPhaseDispatcher)->DispatchPairs(pairs.m_data, pairs.m_iElementCount);
+            ((FUN_00cf70f0_Class*)m_broadPhaseDispatcher)->DispatchPairs(pairs.m_data, pairs.m_iElementCount);
         }
     }
 
@@ -9450,12 +9714,12 @@ void HostWorld_00c951b0::RemoveEntities(void* const* entityBatch, int numEntitie
         hkpEntityCallbackUtil_fireEntityRemoved(*it);
         hkpWorldOperationUtil_removeEntitySI(this, *it);
 
-        if (((hkpEntity*)*it)->m_kCollidable.m_kBoundingVolumeData.m_pChildShapeAabbs != 0)
+        if (((hkpEntity*)*it)->m_kCollidable.m_boundingVolumeData.m_pChildShapeAabbs != 0)
         {
-            ((EntityMember*)&((hkpEntity*)*it)->m_kCollidable.m_kBoundingVolumeData)->FreeStorage();
+            ((EntityMember*)&((hkpEntity*)*it)->m_kCollidable.m_boundingVolumeData)->FreeStorage();
         }
 
-        if (((hkpEntity*)*it)->m_usMemSizeAndFlags == 0)
+        if (((hkpEntity*)*it)->m_memSizeAndFlags == 0)
         {
             ((hkpEntity*)*it)->vf05();
         }
@@ -9465,16 +9729,16 @@ void HostWorld_00c951b0::RemoveEntities(void* const* entityBatch, int numEntitie
 
     timerEndList((hkMonitorStream*)TlsGetValue(DAT_0126835c), "lt");
 
-    --m_iCriticalOperationsLockCount;
-    if (m_iCriticalOperationsLockCount == 0)
+    --m_criticalOperationsLockCount;
+    if (m_criticalOperationsLockCount == 0)
     {
-        if (!m_bBlockExecutingPendingOperations)
+        if (!m_blockExecutingPendingOperations)
         {
-            if (m_iPendingOperationCount != 0)
+            if (m_pendingOperationsCount != 0)
             {
                 ((MyExecPending*)this)->FUN_00c91120();
             }
-            if (m_iPendingOperationQueueCount == 1 && m_iQueuedOperationCount != 0)
+            if (m_pendingOperationQueueCount == 1 && m_pendingBodyOperationsCount != 0)
             {
                 ((MyExecBodyPending*)this)->UpdateFields_00c91140();
             }
@@ -9559,23 +9823,26 @@ struct Mgr {
   unsigned int m_10c;
   void hkpWorld_queueOperation(Op* o);
   void FUN_00c91120();
-  void hkpWorld_addAction(Info* i);
-  void* hkpWorld_addConstraint(Item* it);
+  void hkpWorld_addAction(Info* action);
+  void* hkpWorld_addConstraint(Item* constraint);
 };
 extern void* __cdecl hkpWorldOperationUtil_addConstraintImmediately(Mgr*, Item*, unsigned int);
 // If m_94 is nonzero, queues an op of type 8 for it and returns 0; otherwise sets it up, calls FUN_00cb3ca0 and returns its result.
 // @fnv 0x00c97d30
 // src: HAVOK_LIB 0x00c97d30
-void* Mgr::hkpWorld_addConstraint(Item* it)
+// pdb: hkpWorld::addConstraint | hkpWorld.obj | retail, upstream name already matches, high
+// pdb params: constraint
+// pdb locals: assertBuf, ostr, op, info
+void* Mgr::hkpWorld_addConstraint(Item* constraint)
 {
   unsigned int v94 = m_94;
   if (v94) {
-    Op o; o.type = 8; o.p = (int)it;
+    Op o; o.type = 8; o.p = (int)constraint;
     hkpWorld_queueOperation(&o);
     return 0;
   }
-  if (it->m_0c->T20() == 12) {
-    Ctl3* c = it->m_0c;
+  if (constraint->m_0c->T20() == 12) {
+    Ctl3* c = constraint->m_0c;
     if (c->m_1c == 0) {
       Pt pt;
       c->m_18->T24(Req(1), &pt);
@@ -9584,13 +9851,13 @@ void* Mgr::hkpWorld_addConstraint(Item* it)
     }
   }
   m_9c = 1;
-  it->hkpConstraintInstance_pointNullsToFixedRigidBody();
-  it->m_34 = ++m_10c;
-  void* res = hkpWorldOperationUtil_addConstraintImmediately(this, it, 1);
-  if (it->T18() == 1) {
-    if (it->m_44->cnt == 0)
-      hkpWorld_addAction(it->m_44);
-    it->m_0c->T40();
+  constraint->hkpConstraintInstance_pointNullsToFixedRigidBody();
+  constraint->m_34 = ++m_10c;
+  void* res = hkpWorldOperationUtil_addConstraintImmediately(this, constraint, 1);
+  if (constraint->T18() == 1) {
+    if (constraint->m_44->cnt == 0)
+      hkpWorld_addAction(constraint->m_44);
+    constraint->m_0c->T40();
   }
   m_9c = 0;
   if (!m_94 && m_8c) FUN_00c91120();
@@ -9600,11 +9867,13 @@ void* Mgr::hkpWorld_addConstraint(Item* it)
 // Calls AddBodiesToSystem, stores the result of CollectShapes into system->active, and returns that value.
 // @fnv 0x00c927c0
 // src: HAVOK_LIB 0x00c927c0
-static __declspec(noinline) unsigned char enumerateAllEntitiesInWorld(MatchWorld* world, FUN_00d065e0* system)
+// pdb: enumerateAllEntitiesInWorld | hkpWorld.obj | retail, upstream name already matches, high
+// pdb params: world, sys
+static __declspec(noinline) unsigned char enumerateAllEntitiesInWorld(MatchWorld* world, FUN_00d065e0* sys)
 {
-    AddBodiesToSystem(world, system);
-    unsigned char active = CollectShapes(world, system).value;
-    system->active = active;
+    enumerateAllInactiveEntitiesInWorld(world, sys);
+    unsigned char active = enumerateAllActiveEntitiesInWorld(world, sys).value;
+    sys->active = active;
     return active;
 }
 
@@ -9928,6 +10197,9 @@ struct World {
 
 // @fnv 0x00c96df0
 // src: EXE 0x00c96df0
+// pdb: hkpWorld::getPenetrations | hkpWorld.obj | retail, string-set bridge, high
+// pdb params: collA, input, collector
+// pdb locals: aabb, hits, i
 void World::hkpWorld_getPenetrations(Collidable* collA, const QueryCollisionInput* input, Collector* collector) throw() {
 
     hkMonitorStream& ms1 = hkMonitorStream::getInstance();
@@ -10024,11 +10296,11 @@ void __cdecl _hkAgentNnMachine_UpdateShapeCollectionFilter(S96_Constraint*,void*
 void __cdecl hkpWorldAgentUtil_removeAgentAndItsToiEvents(S96_Constraint*);
 struct S96_RemovalList {S96_Constraint** data; int size; int capacity; S96_Constraint* local[32]; void clear(){size=0;} int GetLogicalSize() const {return size;} S96_Constraint*& back(){return data[size-1];} void popBack(){--size;}};
 struct S96_WorldShell : hkpWorld {
- void hkpWorld_queueOperation(const S96_Operation&); void hkpWorld_updateCollisionFilterOnEntity(void*,int,int); void UpdatePhantom(void*,int); void FUN_00c91120(); void UpdateFields_00c91140();
+ void hkpWorld_queueOperation(const S96_Operation&); void hkpWorld_updateCollisionFilterOnEntity(void*,int,int); void hkpWorld_updateCollisionFilterOnPhantom(void*,int); void FUN_00c91120(); void UpdateFields_00c91140();
  __forceinline void S96_attempt() {
-  if(!m_iCriticalOperationsLockCount && !(*(char*)&m_bBlockExecutingPendingOperations)) {
-   if(m_iPendingOperationCount) FUN_00c91120();
-   if(m_iPendingOperationQueueCount==1 && m_iQueuedOperationCount) UpdateFields_00c91140();
+  if(!m_criticalOperationsLockCount && !(*(char*)&m_blockExecutingPendingOperations)) {
+   if(m_pendingOperationsCount) FUN_00c91120();
+   if(m_pendingOperationQueueCount==1 && m_pendingBodyOperationsCount) UpdateFields_00c91140();
   }
  }
  static __forceinline void S96_TimerBegin(const char* name) {
@@ -10060,35 +10332,38 @@ struct S96_WorldShell : hkpWorld {
   }
  }
  __forceinline bool S96_enabled(S96_Constraint* c) {
-  return ((S96_Filter*)m_pCollisionFilter)->unk08.Check(c->unk10,c->unk14).value && ((char*)m_pDispatcher)[0x1bb0+c->unk10->unk1A*10+c->unk14->unk1A];
+  return ((S96_Filter*)m_collisionFilter)->unk08.Check(c->unk10,c->unk14).value && ((char*)m_collisionDispatcher)[0x1bb0+c->unk10->unk1A*10+c->unk14->unk1A];
  }
- void hkpWorld_updateCollisionFilterOnWorld(int mode,int update);
+ void hkpWorld_updateCollisionFilterOnWorld(int updateMode,int updateShapeCollectionFilter);
 };
 // @fnv 0x00c96ff0
 // src: HAVOK_LIB 0x00c96ff0
-void S96_WorldShell::hkpWorld_updateCollisionFilterOnWorld(int mode,int update) {
- if(m_iCriticalOperationsLockCount) {
+// pdb: hkpWorld::updateCollisionFilterOnWorld | hkpWorld.obj | retail, string-set bridge, high
+// pdb params: updateMode, updateShapeCollectionFilter
+// pdb locals: op, arrays, agentsToRemove, i, agentEntry
+void S96_WorldShell::hkpWorld_updateCollisionFilterOnWorld(int updateMode,int updateShapeCollectionFilter) {
+ if(m_criticalOperationsLockCount) {
   S96_Operation op;
   op.unk00=21;
-  op.unk01=(unsigned char)mode;
-  op.unk02=(unsigned char)update;
+  op.unk01=(unsigned char)updateMode;
+  op.unk02=(unsigned char)updateShapeCollectionFilter;
   hkpWorld_queueOperation(op);
   return;
  }
- (*(char*)&m_bBlockExecutingPendingOperations)=true;
+ (*(char*)&m_blockExecutingPendingOperations)=true;
  S96_TimerBegin(str_010c6908);
- if(mode==0) {
-  for(int i=0;i<m_kActiveSimulationIslands.m_iElementCount;++i) {
-   S96_EntityArray& entities=((S96_Island*)m_kActiveSimulationIslands.m_data[i])->unk48;
-   for(int j=0;j<entities.size;++j) hkpWorld_updateCollisionFilterOnEntity(entities.data[j],0,update);
+ if(updateMode==0) {
+  for(int i=0;i<m_activeSimulationIslands.m_iElementCount;++i) {
+   S96_EntityArray& entities=((S96_Island*)m_activeSimulationIslands.m_data[i])->unk48;
+   for(int j=0;j<entities.size;++j) hkpWorld_updateCollisionFilterOnEntity(entities.data[j],0,updateShapeCollectionFilter);
   }
-  for(int i=0;i<m_kInactiveSimulationIslands.m_iElementCount;++i) {
-   S96_EntityArray& entities=((S96_Island*)m_kInactiveSimulationIslands.m_data[i])->unk48;
-   for(int j=0;j<entities.size;++j) hkpWorld_updateCollisionFilterOnEntity(entities.data[j],0,update);
+  for(int i=0;i<m_inactiveSimulationIslands.m_iElementCount;++i) {
+   S96_EntityArray& entities=((S96_Island*)m_inactiveSimulationIslands.m_data[i])->unk48;
+   for(int j=0;j<entities.size;++j) hkpWorld_updateCollisionFilterOnEntity(entities.data[j],0,updateShapeCollectionFilter);
   }
   } else {
-  ++m_iCriticalOperationsLockCount;
-  S96_IslandArray* arrays[2]={(S96_IslandArray*)&m_kActiveSimulationIslands,(S96_IslandArray*)&m_kInactiveSimulationIslands};
+  ++m_criticalOperationsLockCount;
+  S96_IslandArray* arrays[2]={(S96_IslandArray*)&m_activeSimulationIslands,(S96_IslandArray*)&m_inactiveSimulationIslands};
   for(int a=0;a<2;++a) {
    S96_RemovalList removed;
    removed.data=removed.local;
@@ -10107,7 +10382,7 @@ void S96_WorldShell::hkpWorld_updateCollisionFilterOnWorld(int mode,int update) 
        if(removed.size==(removed.capacity&0x3fffffff)) ResizeAudioStream(holder->unk10,&removed,4);
        removed.data[removed.size++]=current;
        island->unk25=(island->unk25&~2)|1;
-      } else if(update==1) _hkAgentNnMachine_UpdateShapeCollectionFilter(current,(void*)m_pCollisionInput,island);
+      } else if(updateShapeCollectionFilter==1) _hkAgentNnMachine_UpdateShapeCollectionFilter(current,(void*)m_collisionInput,island);
      }
     }
     while(removed.GetLogicalSize()) {
@@ -10121,12 +10396,12 @@ void S96_WorldShell::hkpWorld_updateCollisionFilterOnWorld(int mode,int update) 
    removed.size=0;
    if((removed.capacity&0x80000000)==0) alloc->Free(removed.data,(removed.capacity&0x3fffffff)*4);
   }
-  --m_iCriticalOperationsLockCount;
+  --m_criticalOperationsLockCount;
  }
- if(mode==0) {
-  for(int i=0;i<m_kPhantoms.m_iElementCount;++i) UpdatePhantom(m_kPhantoms.m_data[i],update);
+ if(updateMode==0) {
+  for(int i=0;i<m_phantoms.m_iElementCount;++i) hkpWorld_updateCollisionFilterOnPhantom(m_phantoms.m_data[i],updateShapeCollectionFilter);
  }
- (*(char*)&m_bBlockExecutingPendingOperations)=false;
+ (*(char*)&m_blockExecutingPendingOperations)=false;
  S96_attempt();
  S96_TimerEnd();
 }
@@ -10280,7 +10555,7 @@ void __cdecl Object_CollectAABBTreeHits(const void* tree, const S97_Aabb* aabb, 
 __declspec(noinline) void __cdecl CallWithDefaults(const void* tree, const S97_Aabb& aabb, hkArrayBase<void*>& hits) {
     if (tree) Object_CollectAABBTreeHits(tree, &aabb, 0, &hits, 0, 0);
 }
-void __cdecl hkKdTreeAabbQueryUtils_queryAabbIterative(const void* tree, const S97_Aabb& aabb, S97_Array<unsigned long, S97_TempAllocator>& hits);
+void __cdecl hkKdTreeAabbQueryUtils_queryAabbIterative(const void* tree, const S97_Aabb& aabbIn, S97_Array<unsigned long, S97_TempAllocator>& hits);
 
 struct S97_World {
     int unk00; int unk04; int unk08; int unk0C; int unk10; int unk14; int unk18; int unk1C;
@@ -10298,6 +10573,9 @@ struct S97_World {
 
 // @fnv 0x00c97850
 // src: EXE 0x00c97850
+// pdb: hkpWorld::getClosestPoints | hkpWorld.obj | retail, string-set bridge, high
+// pdb params: collA, input, collector
+// pdb locals: aabb, hitArray, hits, assertBuf, ostr
 void S97_World::hkpWorld_getClosestPoints(const S97_Collidable* collA, const S97_CollisionInput& input, void* collector) const
 {
     S97_Aabb aabb;
@@ -10404,17 +10682,20 @@ struct RayCaster {
     RayCaster() : m_pCollisionShape(0),m_uiCollisionShapeKey(0) {}
     void CastRay(void*,const void*,void*,int,void*);
 };
-struct RayWorld : hkpWorld { void hkpWorld_castRay(const void* input,void* output); };
+struct RayWorld : hkpWorld { void hkpWorld_castRay(const void* input,void* collector); };
 // Records ray timer markers, then dispatches the ray cast to the RayManager if enabled or to a local RayCaster otherwise.
 // @fnv 0x00c91f70
 // src: HAVOK_LIB 0x00c91f70
-void RayWorld::hkpWorld_castRay(const void* input,void* output) {
+// pdb: hkpWorld::castRay | hkpWorld.obj | retail, string-set bridge, high
+// pdb params: input, collector
+// pdb locals: rayCaster, assertBuf, ostr
+void RayWorld::hkpWorld_castRay(const void* input,void* collector) {
     RecordRayTimer(g_rayBegin);
-    if(m_pKdTreeManager && ((RayManager*)m_pKdTreeManager)->IsEnabled()) {
-        ((RayManager*)m_pKdTreeManager)->CastRay(input,m_pCollisionFilter,output);
+    if(m_kdTreeManager && ((RayManager*)m_kdTreeManager)->IsEnabled()) {
+        ((RayManager*)m_kdTreeManager)->CastRay(input,m_collisionFilter,collector);
     } else {
         __declspec(align(16)) RayCaster caster;
-        caster.CastRay(m_pJobSemaphore,input,m_pCollisionFilter,0,output);
+        caster.CastRay(m_broadPhase,input,m_collisionFilter,0,collector);
     }
     RecordRayTimer(g_rayEnd);
 }
@@ -10466,7 +10747,7 @@ struct __declspec(align(16)) S00c92040_Arg {
     int f38;
     int f3C;
 
-    void RecordAndDispatch(void* p58, int a, int p7c, int zero, int b);
+    void hkpSimpleWorldRayCaster_castRay(void* broadphase, int input, int filter, int cache, int output);
 };
 
 struct S00c92040_Obj {
@@ -10503,12 +10784,15 @@ struct S00c92040_Obj {
     void* unk78;
     int p7C;
 
-    void hkpWorld_castRay_00c92040(int a, int b);
+    void hkpWorld_castRay_00c92040(int input, int output);
 };
 
 // @fnv 0x00c92040
 // src: HAVOK_LIB 0x00c92040
-void S00c92040_Obj::hkpWorld_castRay_00c92040(int a, int b)
+// pdb: hkpWorld::castRay | hkpWorld.obj | retail, string-set bridge, high
+// pdb params: input, collector
+// pdb locals: rayCaster, assertBuf, ostr
+void S00c92040_Obj::hkpWorld_castRay_00c92040(int input, int output)
 {
     extern void* DAT_00fdf044;
     extern unsigned long DAT_0126835c;
@@ -10532,13 +10816,13 @@ void S00c92040_Obj::hkpWorld_castRay_00c92040(int a, int b)
     }
 
     if (p5C != 0 && p5C->v4()) {
-        p5C->v7(a, p7C, b);
+        p5C->v7(input, p7C, output);
     } else {
         S00c92040_Arg arg;
         arg.p00 = DAT_010c647c;
         arg.f30 = 0;
         arg.f34 = 0;
-        arg.RecordAndDispatch(p58, a, p7C, 0, b);
+        arg.hkpSimpleWorldRayCaster_castRay(p58, input, p7C, 0, output);
     }
 
     pool = alloc(DAT_0126835c);
@@ -10654,32 +10938,35 @@ struct FnvMsg {
 
 struct FnvWorld : WorldWithPending {
     void __thiscall hkpWorld_queueOperation(FnvMsg* msg);
-    void __thiscall hkpWorld_activateRegion(int flags);
+    void __thiscall hkpWorld_activateRegion(int aabb);
 };
 
 // When locked, queues a message via FUN_00c91160; otherwise queries bodies from the broad phase and calls FUN_00c9c1d0 on each whose adjusted byte 0x18 is 1.
 // @fnv 0x00c93c30
 // src: HAVOK_LIB 0x00c93c30
-void __thiscall FnvWorld::hkpWorld_activateRegion(int flags) {
-    if (m_iCriticalOperationsLockCount != 0) {
+// pdb: hkpWorld::activateRegion | hkpWorld.obj | retail, upstream name already matches, high
+// pdb params: aabb
+// pdb locals: pairs, op, assertBuf, ostr
+void __thiscall FnvWorld::hkpWorld_activateRegion(int aabb) {
+    if (m_criticalOperationsLockCount != 0) {
         FnvMsg msg;
         msg.unk00 = 0x20;
 
         FnvAudioManager* audio = hkMemoryRouter_getInstance();
         void* buffer = audio->unk10->vf04(0x20);
         msg.unk04 = buffer;
-        hkString_memCpy(buffer, (void*)flags, 0x20);
+        hkString_memCpy(buffer, (void*)aabb, 0x20);
         this->hkpWorld_queueOperation(&msg);
         return;
     }
 
-    FnvBroadPhase* broadPhase = (FnvBroadPhase*)m_pJobSemaphore;
+    FnvBroadPhase* broadPhase = (FnvBroadPhase*)m_broadPhase;
     FnvBodyArray bodies;
     bodies.m_data = 0;
     bodies.m_uiItemCount = 0;
     bodies.m_pRayCursor = 0x80000000;
 
-    broadPhase->vf44(flags, &bodies);
+    broadPhase->vf44(aabb, &bodies);
 
     int index = 0;
     while (index < bodies.m_uiItemCount) {
@@ -10804,7 +11091,7 @@ typedef TTB<false>TTIC; template<typename T>TB::CompileTimeFalseType operator==(
 ; template<typename T>struct TIPT<T*>:public TTIP{ } ;
 template<typename T,unsigned int N>struct TIPT<T[N]>:public TIPT<T>{ } ; class TAU{
 public:template<typename T>static __forceinline void construct(T*t,int n,TTIP)throw(); template<typename T>static __forceinline void construct(T*t,int n,TTIC)throw(); template<typename T>static __forceinline void constructWithCopy(T*t,int n,const T&tcopy,TTIP)throw(); template<typename T>static __forceinline void constructWithCopy(T*t,int n,const T&tcopy,TTIC)throw();
-template<typename T>static __forceinline void destruct(T*t,int n,TTIP)throw(); template<typename T>static __forceinline void destruct(T*t,int n,TTIC)throw(); static void __cdecl hkArrayUtil__reserve(TMA&a,void*,int reqElem,int sizeElem)throw(); static void __cdecl ResizeAudioStream(TMA&a,void*array,int sizeElem)throw();
+template<typename T>static __forceinline void destruct(T*t,int n,TTIP)throw(); template<typename T>static __forceinline void destruct(T*t,int n,TTIC)throw(); static void __cdecl hkArrayUtil__reserve(TMA&mem,void*,int numElem,int sizeElem)throw(); static void __cdecl ResizeAudioStream(TMA&mem,void*array,int sizeElem)throw();
 } ; template<typename T>__forceinline void TAU::construct(T*t,int n,TTIP)throw(){ }
 template<typename T>__forceinline void TAU::construct(T*t,int n,TTIC)throw(){ for(int i=0;i<n;++i){ ::new(reinterpret_cast<TPNA*>(t+i))T; }
 } template<typename T>__forceinline void TAU::constructWithCopy(T*t,int n,const T&tcopy,TTIP)throw(){ for(int i=0;i<n;++i){ t[i]=tcopy;
@@ -11040,16 +11327,16 @@ class TLF; class TBB; class TdBB; extern const TC1 TEC;
 class EntityBatchAccess : public ::hkpEntity {
 public:
     void UpdateBoundingVolume(const TW* world, const TS1* shape) throw();
-    __forceinline TM5* getMotion() throw() { return (TM5*)&m_pMotionState; }
+    __forceinline TM5* getMotion() throw() { return (TM5*)&m_motion; }
     __forceinline TB isFixed() const throw() {
-        return ((const TM5*)&m_pMotionState)->vt6 == TM5::MOTION_FIXED;
+        return ((const TM5*)&m_motion)->vt6 == TM5::MOTION_FIXED;
     }
     __forceinline TMS1* GetMotionState() throw() {
         return (*(TMS1* (__thiscall**)(EntityBatchAccess*))(*(char**)this + 0x10))(this);
     }
     __forceinline const TC2* getCollidable() const throw() { return (const TC2*)&m_kCollidable; }
     __forceinline TC2* getCollidableRw() throw() { return (TC2*)&m_kCollidable; }
-    __forceinline void setWorld(TW* world) throw() { m_pOwningWorld = world; }
+    __forceinline void setWorld(TW* world) throw() { m_world = world; }
 };
 class TSI1{ public:public:__declspec(align(16))TPS<TT>vsT2; TPS<TT>veT;
 TPS<TR>vdT; TPS<TR>viDT; } ;
@@ -11206,7 +11493,7 @@ inline TB FUN_00d07830::isFixed()const throw(){ return vsI5==0xffff; } class THC
 class TLF; class TRBC; extern const TC1 TRBC1; class TRB:public EntityBatchAccess{
 public:virtual~TRB()throw(); inline const TT1&getTransform()const throw(); virtual void vs611()const throw(); public:inline TM5*getRigidMotion()const throw();
 public:protected:virtual TMS1*GetMotionState()throw(); public:} ; inline TM5*TRB::getRigidMotion()const throw(){
-return (TM5*)&m_pMotionState; } inline const TT1&TRB::getTransform()const throw(){ return getRigidMotion()->getTransform();
+return (TM5*)&m_motion; } inline const TT1&TRB::getTransform()const throw(){ return getRigidMotion()->getTransform();
 } class TCI2; class EntityBatchAccess; struct TANT;
 class TCS; class TWOU; class TRB; class TBO1;
 class TA; class TRB; class TWO; class TCI2;
@@ -11261,7 +11548,7 @@ struct TCI; struct TPCO; class EntityBatchAccess; class TDCM;
 enum TCPA{ KCPA=0,KCPR=1} ; struct TTPAE;
 struct TMPAE; struct TSCCA; struct TCPAE; struct TTPAE;
 struct TMPAE; struct TCPCE; struct TCPRE; struct TCPE1;
-class TCL1; class TWCU{ public:static void __cdecl NotifyEntityAdded(TW*world,EntityBatchAccess*entity)throw(); }
+class TCL1; class TWCU{ public:static void __cdecl hkpWorldCallbackUtil_fireEntityAdded(TW*world,EntityBatchAccess*entity)throw(); }
 ; class EntityBatchAccess; class TECU{ public:static void __cdecl hkpEntityCallbackUtil_fireEntityAdded(EntityBatchAccess*entity)throw();
 protected:public:protected:} ; class TCD; class EnumIntegerValue;
 class TCLF; struct TCAC; class TSCQD; struct TCI{
@@ -11299,29 +11586,32 @@ return vlM!=this->vd1; } __forceinline~TLA1()throw(){ if(!wasReallocated()){
 TA2<T>::clear(); } TDS<T>(vlM); }
 T*vlM; } ; namespace TSTU{
 // @fnv 0x00c94bd0
+// pdb: hkpWorld::addEntityBatch | hkpWorld.obj | retail, string-set bridge, high
+// pdb params: entityBatch, numEntities, initialActivationState
+// pdb locals: aabbList, pairsOut, usedGabriola, gabriolaIsland, collList, op, assertBuf, ostr
 void __cdecl hkSweptTransformUtil_setTimeInformation(TT startTime,TR invDeltaTime,TMS1&motionState)throw(); extern const TQR g_vSimdVectorConstant; }
 // src: HAVOK_LIB 0x00c94bd0
- void TW::hkpWorld_addEntityBatch(EntityBatchAccess*const*entities,int count,TEA activation)throw(){
-if(count==0)return; if(areCriticalOperationsLocked()){ TWO1::EntityBatchAddPayload op; op.ve1=const_cast<EntityBatchAccess**>(entities);
-op.vnE=(TU16)count; op.va2=activation; hkpWorld_queueOperation(op); return;
+ void TW::hkpWorld_addEntityBatch(EntityBatchAccess*const*entityBatch,int numEntities,TEA initialActivationState)throw(){
+if(numEntities==0)return; if(areCriticalOperationsLocked()){ TWO1::EntityBatchAddPayload op; op.ve1=const_cast<EntityBatchAccess**>(entityBatch);
+op.vnE=(TU16)numEntities; op.va2=initialActivationState; hkpWorld_queueOperation(op); return;
 } { hkMonitorStream&mStream=hkMonitorStream_tld::getInstance(); if(mStream.memoryAvailable()){
 hkMonitorStream::TimerBeginListCommand*h=reinterpret_cast<hkMonitorStream::TimerBeginListCommand*>(mStream.getEnd()); h->m_commandAndMonitor="L""t""AddEntities"; h->m_nameOfFirstSplit="S""t""init"; h->setTime();
 mStream.setEnd((char*)(h+1)); } } ;
-lockCriticalOperations(); TA2<TBPH*,TCTA>handles; handles.reserveExactly(count); TA2<TA,TCTA>bounds;
-bounds.reserveExactly(count); bool used=false; FUN_00d07830*island; if(vwSI){
-island=new FUN_00d07830(this); island->vsCR=true; if(activation==KEADA){ island->vsI5=(TOI)getActiveSimulationIslands().GetLogicalSize();
+lockCriticalOperations(); TA2<TBPH*,TCTA>handles; handles.reserveExactly(numEntities); TA2<TA,TCTA>bounds;
+bounds.reserveExactly(numEntities); bool used=false; FUN_00d07830*island; if(vwSI){
+island=new FUN_00d07830(this); island->vsCR=true; if(initialActivationState==KEADA){ island->vsI5=(TOI)getActiveSimulationIslands().GetLogicalSize();
 island->viIAIA=true; island->vaM=true; } else{
 island->vsI5=(TOI)viSI.GetLogicalSize(); island->viIAIA=false; island->vaM=false; }
-} else{ island=getActiveSimulationIslands()[0]; island->ve1.reserve(island->ve1.GetLogicalSize()+count);
-} { TR radius=(TR)(0.5*vcI->getTolerance()); for(int i=0;i<count;++i){
-EntityBatchAccess*entity=entities[i]; entity->m_uiUniqueId=++vlEU; entity->addReference(); if(!entity->getCollidable()->GetMotionState())entity->getCollidableRw()->setMotionState(entity->GetMotionState());
+} else{ island=getActiveSimulationIslands()[0]; island->ve1.reserve(island->ve1.GetLogicalSize()+numEntities);
+} { TR radius=(TR)(0.5*vcI->getTolerance()); for(int i=0;i<numEntities;++i){
+EntityBatchAccess*entity=entityBatch[i]; entity->m_uid=++vlEU; entity->addReference(); if(!entity->getCollidable()->GetMotionState())entity->getCollidableRw()->setMotionState(entity->GetMotionState());
 TMS1*ms=static_cast<TRB*>(entity)->getRigidMotion()->GetMotionState(); TSTU::hkSweptTransformUtil_setTimeInformation(0,0,*ms); entity->getMotion()->vdNIF[0]=0; entity->getMotion()->vdNIF[1]=0;
 entity->setWorld(this); const TU8*flags=vdSI1.vsI2.vdNIFSF; entity->getMotion()->SynchronizeDeactivationCountersWithWorld(flags[0],flags[1],vdSI1.vsI2.vdIC); if(entity->isFixed())vfI->hkpSimulationIsland_internalAddEntity(entity);
 else{ used=true; island->hkpSimulationIsland_internalAddEntity(entity); }
 TC2*c=entity->getCollidableRw(); const TS1*shape=c->getShape(); c->vbVD.invalidate(); if(shape){
 TA*aabb=bounds.expandByUnchecked(1); c->getShape()->getAabb(c->getTransform(),radius,*aabb); handles.pushBackUnchecked(c->getBroadPhaseHandle()); entity->UpdateBoundingVolume(this,shape);
 } } } if(vwSI){
-if(used){ island->vsCFC=(TU)island->ve1[0]->m_uiUniqueId; TA2<FUN_00d07830*>&islands=activation==KEADA?const_cast<TA2<FUN_00d07830*>&>(getActiveSimulationIslands()):viSI; islands.AddBack(island);
+if(used){ island->vsCFC=(TU)island->ve1[0]->m_uid; TA2<FUN_00d07830*>&islands=initialActivationState==KEADA?const_cast<TA2<FUN_00d07830*>&>(getActiveSimulationIslands()):viSI; islands.AddBack(island);
 } else delete island; } TLA1<TBPHP>pairs(vbPQS);
 { hkMonitorStream&mStream=hkMonitorStream_tld::getInstance(); if(mStream.memoryAvailable()){ hkMonitorStream::TimerCommand*h=reinterpret_cast<hkMonitorStream::TimerCommand*>(mStream.getEnd());
 h->m_commandAndMonitor="S""t""Broadphase"; h->setTime(); mStream.setEnd((char*)(h+1)); }
@@ -11331,7 +11621,7 @@ h->setTime(); mStream.setEnd((char*)(h+1)); } }
 ; vbPD->hkpTypedBroadPhaseDispatcher_addPairs(reinterpret_cast<TTBPHP*>(pairs.begin()),pairs.GetLogicalSize(),getCollisionFilter()); { hkMonitorStream&mStream=hkMonitorStream_tld::getInstance();
 if(mStream.memoryAvailable()){ hkMonitorStream::TimerCommand*h=reinterpret_cast<hkMonitorStream::TimerCommand*>(mStream.getEnd()); h->m_commandAndMonitor="S""t""AddedCb"; h->setTime();
 mStream.setEnd((char*)(h+1)); } } ;
-for(int j=0;j<count;++j){ EntityBatchAccess*entity=entities[j]; TWCU::NotifyEntityAdded(this,entity); TECU::hkpEntityCallbackUtil_fireEntityAdded(entity);
+for(int j=0;j<numEntities;++j){ EntityBatchAccess*entity=entityBatch[j]; TWCU::hkpWorldCallbackUtil_fireEntityAdded(this,entity); TECU::hkpEntityCallbackUtil_fireEntityAdded(entity);
 } unlockAndAttemptToExecutePendingOperations(); { hkMonitorStream&mStream=hkMonitorStream_tld::getInstance();
 if(mStream.memoryAvailable()){ hkMonitorStream::TimerCommand*h=reinterpret_cast<hkMonitorStream::TimerCommand*>(mStream.getEnd()); h->m_commandAndMonitor="l""t"""; h->setTime();
 mStream.setEnd((char*)(h+1)); } } ;
@@ -11379,7 +11669,7 @@ struct Sbp_CollisionInput {
     Sbp_Vec m_kAabbMin;
     Sbp_Vec m_kAabbMaximum;
 };
-struct Sbp_Dispatcher { void hkpTypedBroadPhaseDispatcher_addPairs(Sbp_Pair* pairs, int count, void* filter); };
+struct Sbp_Dispatcher { void hkpTypedBroadPhaseDispatcher_addPairs(Sbp_Pair* newPairs, int numNewPairs, void* filter); };
 
 struct Sbp_AabbPhantom : hkpPhantom {
     char padAabb[0xb0 - sizeof(hkpPhantom)];
@@ -11441,7 +11731,7 @@ static __forceinline void Sbp_initArray(Sbp_Island**& data, int& size, int& cap,
 }
 
 struct Sbp_World : hkpWorld {
-    void hkpWorld_shiftBroadPhase(const LocalM128& rawShift, LocalM128& rawEffective, int update);
+    void hkpWorld_shiftBroadPhase(const LocalM128& shiftDistance, LocalM128& effectiveShiftDistanceOut, int updateAabbs);
     void FUN_00c91120();
     void UpdateFields_00c91140();
 };
@@ -11468,32 +11758,32 @@ static __forceinline void doShift(Sbp_World* self,const LocalM128& rawShift, Loc
     pairs.data = 0;
     pairs.size = 0;
     pairs.capacity = 0x80000000;
-    ((Sbp_BroadPhase*)self->m_pJobSemaphore)->ShiftBroadPhase(shift, effective, pairs);
-    Sbp_CollisionInput* input = (Sbp_CollisionInput*)self->m_pCollisionInput;
-    ((Sbp_BroadPhase*)self->m_pJobSemaphore)->GetOffsetLowHigh32Bit(input->m_kAabbMin, input->m_kAabbMaximum);
-    Sbp_Vec* ext = (Sbp_Vec*)self->m_kBroadPhaseAabb;
+    ((Sbp_BroadPhase*)self->m_broadPhase)->ShiftBroadPhase(shift, effective, pairs);
+    Sbp_CollisionInput* input = (Sbp_CollisionInput*)self->m_collisionInput;
+    ((Sbp_BroadPhase*)self->m_broadPhase)->GetOffsetLowHigh32Bit(input->m_kAabbMin, input->m_kAabbMaximum);
+    Sbp_Vec* ext = (Sbp_Vec*)self->m_broadPhaseExtents;
     ext[0].add4(effective);
     ext[1].add4(effective);
-    ++self->m_iCriticalOperationsLockCount;
-    ((Sbp_Dispatcher*)self->m_pBroadPhaseDispatcher)->hkpTypedBroadPhaseDispatcher_addPairs(pairs.data, pairs.size,
-        self->m_pCollisionFilter ? (char*)self->m_pCollisionFilter + 8 : 0);
-    Sbp_Border* border = (Sbp_Border*)self->m_pBroadPhaseBorder;
+    ++self->m_criticalOperationsLockCount;
+    ((Sbp_Dispatcher*)self->m_broadPhaseDispatcher)->hkpTypedBroadPhaseDispatcher_addPairs(pairs.data, pairs.size,
+        self->m_collisionFilter ? (char*)self->m_collisionFilter + 8 : 0);
+    Sbp_Border* border = (Sbp_Border*)self->m_broadPhaseBorder;
     if (border) border->shiftPhantoms(effective.q);
     if (update == 0) {
         Sbp_Array<hkpEntity*> entities;
         entities.data = 0;
         entities.size = 0;
         entities.capacity = 0x80000000;
-        int numInactive = self->m_kInactiveSimulationIslands.m_iElementCount;
-        void* fixedIsland = self->m_pFixedIsland;
+        int numInactive = self->m_inactiveSimulationIslands.m_iElementCount;
+        void* fixedIsland = self->m_fixedIsland;
         Sbp_Island** islandData;
         int numIslands; int islandCap;
-        Sbp_initArray(islandData, numIslands, islandCap, numInactive + self->m_kActiveSimulationIslands.m_iElementCount + 1);
+        Sbp_initArray(islandData, numIslands, islandCap, numInactive + self->m_activeSimulationIslands.m_iElementCount + 1);
         int numFixed = fixedIsland != 0;
         void** src = fixedIsland ? &fixedIsland : 0;
         Sbp_copy(islandData, (Sbp_Island**)src, numFixed);
-        Sbp_copy(islandData + numFixed, (Sbp_Island**)self->m_kActiveSimulationIslands.m_data, self->m_kActiveSimulationIslands.m_iElementCount);
-        Sbp_copy(islandData + (self->m_kActiveSimulationIslands.m_iElementCount + numFixed), (Sbp_Island**)self->m_kInactiveSimulationIslands.m_data, self->m_kInactiveSimulationIslands.m_iElementCount);
+        Sbp_copy(islandData + numFixed, (Sbp_Island**)self->m_activeSimulationIslands.m_data, self->m_activeSimulationIslands.m_iElementCount);
+        Sbp_copy(islandData + (self->m_activeSimulationIslands.m_iElementCount + numFixed), (Sbp_Island**)self->m_inactiveSimulationIslands.m_data, self->m_inactiveSimulationIslands.m_iElementCount);
         for (int i = 0; i < numIslands; i++) {
             Sbp_Island* island = islandData[i];
             for (int j = 0; j < island->m_kActorEntries.size; j++) {
@@ -11505,15 +11795,15 @@ static __forceinline void doShift(Sbp_World* self,const LocalM128& rawShift, Loc
                 }
             }
         }
-        hkpEntityAabbUtil_entityBatchRecalcAabb(self->m_pCollisionInput, entities.data, entities.size);
+        hkpEntityAabbUtil_entityBatchRecalcAabb(self->m_collisionInput, entities.data, entities.size);
         {
             Sbp_freeArray(Sbp_router()->unk10, islandData, islandCap);
         }
         entities.destroy();
     }
-    if (--self->m_iCriticalOperationsLockCount == 0 && !self->m_bBlockExecutingPendingOperations) {
-        if (self->m_iPendingOperationCount) self->FUN_00c91120();
-        if (self->m_iPendingOperationQueueCount == 1 && self->m_iQueuedOperationCount) self->UpdateFields_00c91140();
+    if (--self->m_criticalOperationsLockCount == 0 && !self->m_blockExecutingPendingOperations) {
+        if (self->m_pendingOperationsCount) self->FUN_00c91120();
+        if (self->m_pendingOperationQueueCount == 1 && self->m_pendingBodyOperationsCount) self->UpdateFields_00c91140();
     }
     {
         Sbp_Timer* timer = (Sbp_Timer*)TlsGetValue(DAT_0126835c);
@@ -11534,7 +11824,10 @@ static __forceinline void doShift(Sbp_World* self,const LocalM128& rawShift, Loc
 
 // @fnv 0x00c96a20
 // src: XBOX_PDB 0x00c96a20
-void Sbp_World::hkpWorld_shiftBroadPhase(const LocalM128& rawShift, LocalM128& rawEffective, int update) { doShift(this,rawShift,rawEffective,update); }
+// pdb: hkpWorld::shiftBroadPhase | hkpWorld.obj | retail, string-set bridge, high
+// pdb params: shiftDistance, effectiveShiftDistanceOut, updateAabbs
+// pdb locals: newPairs, assertBuf, ostr, fixed, bodies
+void Sbp_World::hkpWorld_shiftBroadPhase(const LocalM128& shiftDistance, LocalM128& effectiveShiftDistanceOut, int updateAabbs) { doShift(this,shiftDistance,effectiveShiftDistanceOut,updateAabbs); }
 
 namespace fnv_00c977c0 {
 
@@ -11570,7 +11863,7 @@ public:
     static void* operator new(unsigned int nbytes)
     {
         hkReferencedObject* b = static_cast<hkReferencedObject*>(hkMemoryRouter_getInstance().heap().blockAlloc(nbytes));
-        b->m_usMemSizeAndFlags = (unsigned short)nbytes;
+        b->m_memSizeAndFlags = (unsigned short)nbytes;
         return b;
     }
 };
@@ -11596,14 +11889,17 @@ public:
     hkpCollisionInputC977* m_pCollisionInput;
     FUN_00cbfba0* m_pCollisionFilter;
 
-    void hkpWorld_updateCollisionFilterOnWorld(int updateMode, int ProcessContactPoints);
-    void hkpWorld_setCollisionFilter(FUN_00cbfba0* filter, hkBool runUpdate, int updateMode, int ProcessContactPoints);
+    void hkpWorld_updateCollisionFilterOnWorld(int updateMode, int updateShapeCollectionFilter);
+    void hkpWorld_setCollisionFilter(FUN_00cbfba0* filter, hkBool runUpdateCollisionFilterOnWorld, int updateMode, int updateShapeCollectionFilter);
 };
 
 // Uses filter, or a new hkpNullCollisionFilterC977 if null, as m_pCollisionFilter and in m_pCollisionInput, optionally calling FUN_00c96ff0 when runUpdate.
 // @fnv 0x00c977c0
 // src: HAVOK_LIB 0x00c977c0
-void hkpWorldC977::hkpWorld_setCollisionFilter(FUN_00cbfba0* filter, hkBool runUpdate, int updateMode, int ProcessContactPoints)
+// pdb: hkpWorld::setCollisionFilter | hkpWorld.obj | retail, upstream name already matches, high
+// pdb params: filter, runUpdateCollisionFilterOnWorld, updateMode, updateShapeCollectionFilter
+// pdb locals: assertBuf, ostr
+void hkpWorldC977::hkpWorld_setCollisionFilter(FUN_00cbfba0* filter, hkBool runUpdateCollisionFilterOnWorld, int updateMode, int updateShapeCollectionFilter)
 {
     if (filter == 0)
         filter = new hkpNullCollisionFilterC977();
@@ -11612,8 +11908,8 @@ void hkpWorldC977::hkpWorld_setCollisionFilter(FUN_00cbfba0* filter, hkBool runU
     ((hkReferencedObject*)m_pCollisionFilter)->removeReference();
     m_pCollisionFilter = filter;
     m_pCollisionInput->m_iFilter = m_pCollisionFilter;
-    if (runUpdate)
-        hkpWorld_updateCollisionFilterOnWorld(updateMode, ProcessContactPoints);
+    if (runUpdateCollisionFilterOnWorld)
+        hkpWorld_updateCollisionFilterOnWorld(updateMode, updateShapeCollectionFilter);
 }
 }  // namespace fnv_00c977c0
 
@@ -11814,6 +12110,9 @@ class hkDisplayGeometry;
 // Renders bone hierarchy lines and local axis frames for a skeleton pose by transforming model-space positions and rotations into world space.
 // @fnv 0x00c998b0
 // src: XBOX_PDB 0x00c998b0
+// pdb: hkDebugDisplay::displayModelSpacePose | hkDebugDisplay.obj | retail, upstream name already matches, high
+// pdb params: numTransforms, parentIndices, modelSpacePose, worldFromModel, id, tag, color, boneAxisSize, showRootTranslation
+// pdb locals: p1, p2
 void hkDebugDisplay::displayModelSpacePose(int numTransforms,const hkInt16_S*parentIndices,const hkQsTransform_S*modelSpacePose,const hkQsTransform_S&worldFromModel,int id,int tag,int color,hkReal_S boneAxisSize,hkBool_S showRootTranslation)
 {
 const hkQsTransform* pose = reinterpret_cast<const hkQsTransform*>(modelSpacePose);
@@ -11889,9 +12188,9 @@ __forceinline void hkVector4::setBroadcast3(const hkVector4& v)
 {
     m_vComponents = _mm_shuffle_ps(v.m_vComponents, v.m_vComponents, 0xff);
 }
-__forceinline hkSimdReal hkVector4::dot3(const hkVector4& v) const
+__forceinline hkSimdReal hkVector4::dot3(const hkVector4& x) const
 {
-    const LocalM128 x2 = _mm_mul_ps(m_vComponents, v.m_vComponents);
+    const LocalM128 x2 = _mm_mul_ps(m_vComponents, x.m_vComponents);
     const LocalM128 sum = _mm_add_ss(_mm_shuffle_ps(x2, x2, 0x55), x2);
     return _mm_add_ss(_mm_shuffle_ps(x2, x2, 0xaa), sum);
 }
@@ -11934,20 +12233,22 @@ __forceinline void transformLocalPoseToModelPoseDAD(int numTransforms, const sho
 class PoseUserDAD {
 public:
     void displayModelSpacePose(int numBones, const short* parents, hkQsTransform* poseModel, int a4, int a5, int a6, int a7, float a8, int a9);
-    void hkDebugDisplay_displayLocalSpacePose(int numBones, const short* parents, const hkQsTransform* poseLocal, int a4, int a5, int a6, int a7, float a8, int a9);
+    void hkDebugDisplay_displayLocalSpacePose(int numTransforms, const short* parentIndices, const hkQsTransform* localSpacePose, int worldFromModel, int id, int tag, int color, float boneAxisSize, int showRootTranslation);
 };
 
 // Converts local bone poses to model space on the stack and forwards them to FUN_00c998b0.
 // @fnv 0x00c99d40
 // src: XBOX_PDB 0x00c99d40
-void PoseUserDAD::hkDebugDisplay_displayLocalSpacePose(int numBones, const short* parents, const hkQsTransform* poseLocal, int a4, int a5, int a6, int a7, float a8, int a9)
+// pdb: hkDebugDisplay::displayLocalSpacePose | hkDebugDisplay.obj | retail, upstream name already matches, high
+// pdb params: numTransforms, parentIndices, localSpacePose, worldFromModel, id, tag, color, boneAxisSize, showRootTranslation
+void PoseUserDAD::hkDebugDisplay_displayLocalSpacePose(int numTransforms, const short* parentIndices, const hkQsTransform* localSpacePose, int worldFromModel, int id, int tag, int color, float boneAxisSize, int showRootTranslation)
 {
     hkMemoryRouter* stack = &hkMemoryRouter::getInstance();
     hkQsTransform* poseModel = (hkQsTransform*)stack->m_stack.m_next.m_storage;
-    stack->m_stack.m_next.m_storage = static_cast<char*>(stack->m_stack.m_next.m_storage) + ((numBones * sizeof(hkQsTransform) + 0x7f) & ~0x7f);
+    stack->m_stack.m_next.m_storage = static_cast<char*>(stack->m_stack.m_next.m_storage) + ((numTransforms * sizeof(hkQsTransform) + 0x7f) & ~0x7f);
 
-    transformLocalPoseToModelPoseDAD(numBones, parents, DAT_01268700, poseLocal, poseModel);
-    displayModelSpacePose(numBones, parents, poseModel, a4, a5, a6, a7, a8, a9);
+    transformLocalPoseToModelPoseDAD(numTransforms, parentIndices, DAT_01268700, localSpacePose, poseModel);
+    displayModelSpacePose(numTransforms, parentIndices, poseModel, worldFromModel, id, tag, color, boneAxisSize, showRootTranslation);
 
     hkMemoryRouter::getInstance().m_stack.m_next.m_storage = (char*)poseModel;
 }
@@ -11957,7 +12258,7 @@ __forceinline hkMemoryAllocator& heap(hkMemoryRouter& router) { return *(hkMemor
 inline void* hkpLimitedHingeConstraintData::operator new(unsigned int size)
 {
     void* p = HingeAllocation::heap(HingeAllocation::hkMemoryRouter_getInstance()).blockAlloc(size);
-    static_cast<hkReferencedObject*>(p)->m_usMemSizeAndFlags = (unsigned short)size;
+    static_cast<hkReferencedObject*>(p)->m_memSizeAndFlags = (unsigned short)size;
     return p;
 }
 inline void hkpLimitedHingeConstraintData::operator delete(void* p)
@@ -12157,6 +12458,8 @@ public: unsigned int unk00;hkpLimitedHingeConstraintData* data;
 // Ensures the hkpLimitedHingeConstraintData is allocated and returns its size.
 // @fnv 0x00caa3f0
 // src: XBOX_PDB 0x00caa3f0
+// pdb: hkLimitedHingeConstraintCinfo::CreateData | bhkLimitedHingeConstraint.obj | retail, upstream name already matches, high
+// pdb locals: tempMemContext
 unsigned int LimitedHingeWrapper::hkLimitedHingeConstraintCinfo_CreateData()
 {
  AutoMemoryContext context(0x10);
@@ -12447,18 +12750,21 @@ public:
     unsigned int unk04;
     caa4a0_TblHost* unk08;
     caa4a0_TblFirst* unk0c;
-    void bhkConstraint_CopyMembers(bhkRefObject* obj, unsigned int param);
-    bhkRefObject* bhkLimitedHingeConstraint_CreateClone(unsigned int param);
+    void bhkConstraint_CopyMembers(bhkRefObject* pDest, unsigned int arCloneData);
+    bhkRefObject* bhkLimitedHingeConstraint_CreateClone(unsigned int arCloneData);
 };
 
 // Allocates a bhkRefObject, calls FUN_00c89730, and if a table entry is set, invokes slot04 on the object from slotb4.
 // @fnv 0x00caa4a0
 // src: XBOX_PDB 0x00caa4a0
-bhkRefObject* caa4a0_Target::bhkLimitedHingeConstraint_CreateClone(unsigned int param) {
+// pdb: bhkLimitedHingeConstraint::CreateClone | bhkLimitedHingeConstraint.obj | retail, upstream name already matches, high
+// pdb params: arCloneData
+// pdb locals: tempMemContext, pobj, cinfo
+bhkRefObject* caa4a0_Target::bhkLimitedHingeConstraint_CreateClone(unsigned int arCloneData) {
     TlsGuard_caa4a0 guard;
     bhkSerializable_CloneCritLock();
     bhkRefObject* obj = CreateRefObject();
-    this->bhkConstraint_CopyMembers(obj, param);
+    this->bhkConstraint_CopyMembers(obj, arCloneData);
     unsigned int* tbl = 0;
     if (this != 0 && this->unk08 != 0)
         tbl = this->unk08->m_0c;
@@ -12468,7 +12774,7 @@ bhkRefObject* caa4a0_Target::bhkLimitedHingeConstraint_CreateClone(unsigned int 
         bool b;
         unsigned int* p = this->slotb4(&b);
         caa4a0_RefObj* ref = (caa4a0_RefObj*)(p != 0 ? p - 1 : 0);
-        ref->slot04(0, param);
+        ref->slot04(0, arCloneData);
     }
     bhkSerializable_CloneCritUnlock();
     return obj;
@@ -12486,34 +12792,40 @@ static inline void** AddBack(hkArray<void*>* arr, void* listener) {
 }
 
 struct FUN_00c939a0_Class : hkpWorld {
-    void** hkpWorld_addIslandPostCollideListener(void* listener);
+    void** hkpWorld_addIslandPostCollideListener(void* islandListener);
 };
 
 // Adds the given listener to the island post-collide listener array and returns a pointer to the new slot.
 // @fnv 0x00c939a0
 // src: HAVOK_LIB 0x00c939a0
-void** FUN_00c939a0_Class::hkpWorld_addIslandPostCollideListener(void* listener) {
-    return AddBack(&m_kIslandPostCollideListeners, listener);
+// pdb: hkpWorld::addIslandPostCollideListener | hkpWorld.obj | retail, upstream name already matches, high
+// pdb params: islandListener
+// pdb locals: assertBuf, ostr
+void** FUN_00c939a0_Class::hkpWorld_addIslandPostCollideListener(void* islandListener) {
+    return AddBack(&m_islandPostCollideListeners, islandListener);
 }
 
 
 void ResizeAudioStream(void*, void*, int);
 
 struct hkpWorld_Listener : hkpWorld {
-    void*& hkpWorld_addWorldDeletionListener(void* listener);
+    void*& hkpWorld_addWorldDeletionListener(void* worldListener);
 };
 
 // Appends a listener pointer to m_kWorldDeletionListeners, growing the array via FUN_00c90940 when full, and returns the stored pointer.
 // @fnv 0x00c93a60
 // src: HAVOK_LIB 0x00c93a60
-void*& hkpWorld_Listener::hkpWorld_addWorldDeletionListener(void* listener) {
-    hkArray<void*>* arr = &m_kWorldDeletionListeners;
+// pdb: hkpWorld::addWorldDeletionListener | hkpWorld.obj | retail, upstream name already matches, high
+// pdb params: worldListener
+// pdb locals: assertBuf, ostr
+void*& hkpWorld_Listener::hkpWorld_addWorldDeletionListener(void* worldListener) {
+    hkArray<void*>* arr = &m_worldDeletionListeners;
     hkThreadMemory* mem = (hkThreadMemory*)hkMemoryRouter_getInstance();
     if (arr->m_iElementCount == (arr->m_iCapacityState & 0x3fffffff)) {
         ResizeAudioStream(*(void**)((char*)mem + 0x10), arr, 4);
     }
     void** slot = &arr->m_data[arr->m_iElementCount];
-    *slot = listener;
+    *slot = worldListener;
     arr->m_iElementCount++;
     return *slot;
 }
@@ -12591,26 +12903,29 @@ struct HostClass : NiObject {
         }
         return *result;
     }
-    bool __thiscall bhkCharacterController_SetShape(ArgClass* a1, int a2);
+    bool __thiscall bhkCharacterController_SetShape(ArgClass* apShape, int a2);
 };
 
 // If the action's current entity differs from a1->unk08, calls world->FUN_00c92c70, a virtual with a1->unk08, then FUN_00c936a0; returns true if so.
 // @fnv 0x00c6d3f0
 // src: XBOX_PDB 0x00c6d3f0
-bool __thiscall HostClass::bhkCharacterController_SetShape(ArgClass* a1, int aiUnused) {
+// pdb: bhkCharacterController::SetShape | bhkCharacterController.obj | retail, upstream name already matches, high
+// pdb params: apShape, __formal
+// pdb locals: pworldForMark, pnewShape, pcurShape, pp, pw, curPos
+bool __thiscall HostClass::bhkCharacterController_SetShape(ArgClass* apShape, int aiUnused) {
     FUN_00cac910_shell* obj = this->unk08;
     if (obj) {
         ActionObj* action = (ActionObj*)obj->hkpCharacterProxy_getShapePhantom();
         if (action) {
             void* curEnt = action->m_pEntity;
-            void* ent = a1 ? a1->unk08 : 0;
+            void* ent = apShape ? apShape->unk08 : 0;
             if (curEnt != ent) {
                 FUN_00c92c70_Class* world = action->m_pOwningWorld;
                 SavedPosition position(getPosition());
                 if (world) {
                     world->hkpWorld_removePhantom(action);
                 }
-                action->AssignEntity(a1 ? a1->unk08 : 0);
+                action->AssignEntity(apShape ? apShape->unk08 : 0);
                 if (world) {
                     ((FUN_00c936a0_Class*)world)->hkpWorld_addPhantom(action);
                 }
@@ -12649,8 +12964,11 @@ struct FUN_00c93aa0_Class : hkpWorld {
 // Adds a listener to m_kContactImpulseLimitBreachedListeners via hkArrayPushBack and returns a pointer to the new element.
 // @fnv 0x00c93aa0
 // src: HAVOK_LIB 0x00c93aa0
+// pdb: hkpWorld::addContactImpulseLimitBreachedListener | hkpWorld.obj | retail, upstream name already matches, high
+// pdb params: listener
+// pdb locals: assertBuf, ostr
 void* FUN_00c93aa0_Class::hkpWorld_addContactImpulseLimitBreachedListener(void* listener) {
-    hkArray<void*>* arr = &m_kContactImpulseLimitBreachedListeners;
+    hkArray<void*>* arr = &m_contactImpulseLimitBreachedListeners;
     return hkArrayPushBack(*arr, (hkThreadMemoryQ*)hkMemoryRouter_getInstance(), listener);
 }
 
@@ -12671,7 +12989,7 @@ struct PhantomBatchRouter {
 };
 
 
-void __cdecl hkpWorldCallbackUtil_firePhantomRemoved(hkpWorld* world, hkpPhantom* phantom) throw();
+void __cdecl hkpWorldCallbackUtil_firePhantomRemoved(hkpWorld* world, hkpPhantom* Phantom) throw();
 
 
 struct BroadPhaseCastCollector {
@@ -12757,7 +13075,7 @@ struct BroadPhaseVt {
 };
 
 struct BroadPhaseDispatcher {
-    void DispatchPairs(BroadPhaseCastCollector* data, int numPairs) throw();
+    void DispatchPairs(BroadPhaseCastCollector* deletedPairs, int numDeletedPairs) throw();
 };
 
 struct World_RemovePhantomBatch : hkpWorld {
@@ -12770,8 +13088,11 @@ struct World_RemovePhantomBatch : hkpWorld {
 // Removes a batch of phantoms from the world, updating broad-phase and phantom lists, and defers if a critical lock is held.
 // @fnv 0x00c95800
 // src: HAVOK_LIB 0x00c95800
+// pdb: hkpWorld::removePhantomBatch | hkpWorld.obj | retail, upstream name already matches, high
+// pdb params: phantomBatch, numPhantoms
+// pdb locals: collList, op, assertBuf, ostr, removedPairs
 void World_RemovePhantomBatch::hkpWorld_removePhantomBatch(hkpPhantom** phantomBatch, int numPhantoms) {
-    if (m_iCriticalOperationsLockCount + m_iCriticalOperationsLockCountForPhantoms) {
+    if (m_criticalOperationsLockCount + m_criticalOperationsLockCountForPhantoms) {
         RemovePhantomBatchOp op;
         op.m_type = 0x10;
         op.m_kPhantoms = phantomBatch;
@@ -12780,12 +13101,12 @@ void World_RemovePhantomBatch::hkpWorld_removePhantomBatch(hkpPhantom** phantomB
         return;
     }
 
-    ++m_iCriticalOperationsLockCount;
+    ++m_criticalOperationsLockCount;
 
     PhantomBatchLocalArray<hkpBroadPhaseHandle*> handles(numPhantoms);
     for (int ph = 0; ph < numPhantoms; ++ph) {
         hkpPhantom* phantom = phantomBatch[ph];
-        hkpBroadPhaseHandle* const& handle = (hkpBroadPhaseHandle*)&phantom->m_kCollidable.m_kBroadPhaseHandle;
+        hkpBroadPhaseHandle* const& handle = (hkpBroadPhaseHandle*)&phantom->m_kCollidable.m_broadPhaseHandle;
         handles.m_data[handles.m_iElementCount] = handle;
         handles.m_iElementCount++;
         hkpWorldCallbackUtil_firePhantomRemoved(this, phantom);
@@ -12793,29 +13114,29 @@ void World_RemovePhantomBatch::hkpWorld_removePhantomBatch(hkpPhantom** phantomB
     }
 
     if (handles.m_iElementCount) {
-        PhantomBatchLocalArray<BroadPhaseCastCollector> pairs(m_iBroadPhaseQuerySize);
-        ((BroadPhaseVt*)m_pJobSemaphore)->RemoveObjectBatch(static_cast<hkArray<hkpBroadPhaseHandle*>&>(static_cast<hkArrayBase<hkpBroadPhaseHandle*>&>(handles)), static_cast<hkArray<BroadPhaseCastCollector>&>(static_cast<hkArrayBase<BroadPhaseCastCollector>&>(pairs)));
-        ((BroadPhaseDispatcher*)m_pBroadPhaseDispatcher)->DispatchPairs(pairs.m_data, pairs.m_iElementCount);
+        PhantomBatchLocalArray<BroadPhaseCastCollector> pairs(m_broadPhaseQuerySize);
+        ((BroadPhaseVt*)m_broadPhase)->RemoveObjectBatch(static_cast<hkArray<hkpBroadPhaseHandle*>&>(static_cast<hkArrayBase<hkpBroadPhaseHandle*>&>(handles)), static_cast<hkArray<BroadPhaseCastCollector>&>(static_cast<hkArrayBase<BroadPhaseCastCollector>&>(pairs)));
+        ((BroadPhaseDispatcher*)m_broadPhaseDispatcher)->DispatchPairs(pairs.m_data, pairs.m_iElementCount);
         PhantomBatchLocalArray_release(pairs);
     }
 
     for (int i = 0; i < numPhantoms; ++i) {
         hkpPhantom* phantom = phantomBatch[i];
-        phantom->m_pOwningWorld = 0;
-        int idx = PhantomBatchIndexOf(m_kPhantoms, phantom);
-        PhantomBatchRemoveAt(m_kPhantoms, idx);
-        if (phantom->m_usMemSizeAndFlags == 0) {
+        phantom->m_world = 0;
+        int idx = PhantomBatchIndexOf(m_phantoms, phantom);
+        PhantomBatchRemoveAt(m_phantoms, idx);
+        if (phantom->m_memSizeAndFlags == 0) {
             phantom->FreeListenerArrays();
         }
         ((FUN_00d1df70*)phantom)->removeReference();
     }
 
-    if (--m_iCriticalOperationsLockCount == 0) {
-        if (m_bBlockExecutingPendingOperations == 0) {
-            if (m_iPendingOperationCount != 0) {
+    if (--m_criticalOperationsLockCount == 0) {
+        if (m_blockExecutingPendingOperations == 0) {
+            if (m_pendingOperationsCount != 0) {
                 FUN_00c91120();
             }
-            if (m_iPendingOperationQueueCount == 1 && m_iQueuedOperationCount != 0) {
+            if (m_pendingOperationQueueCount == 1 && m_pendingBodyOperationsCount != 0) {
                 UpdateFields_00c91140();
             }
         }
@@ -12829,13 +13150,16 @@ struct __declspec(align(16)) Vec_00c98780 {
 };
 
 struct Cls_00c98780 {
-    void hkDebugDisplay_displayLine(Vec_00c98780& a, Vec_00c98780& b, int x, int y, int z);
+    void hkDebugDisplay_displayLine(Vec_00c98780& start, Vec_00c98780& end, int color, int id, int tag);
     void __thiscall hkDebugDisplay_displayLineModelSpace(const hkTransform& tr, const hkVector4& a, const hkVector4& b, int x, int y, int z);
 };
 
 // Builds two vectors from a and b with tr via FUN_00c7f7a0, then passes them with x, y and z to FUN_00c986c0.
 // @fnv 0x00c98780
 // src: HAVOK_LIB 0x00c98780
+// pdb: hkDebugDisplay::displayLineModelSpace | hkDebugDisplay.obj | retail, object-file run extension, low
+// pdb params: worldFromModel, start, end, color, id, tag
+// pdb locals: startWorld, endWorld
 void Cls_00c98780::hkDebugDisplay_displayLineModelSpace(const hkTransform& tr, const hkVector4& a, const hkVector4& b, int x, int y, int z)
 {
     Vec_00c98780 pa;
@@ -12866,7 +13190,7 @@ struct Line_00c98c80 {
 };
 
 struct Disp_00c98c80 {
-    void hkDebugDisplay_displayLine(const Vec_00c98c80* a, const Vec_00c98c80* b, int p2, int p3, int p4);
+    void hkDebugDisplay_displayLine(const Vec_00c98c80* start, const Vec_00c98c80* end, int color, int id, int tag);
     void DrawAABBEdges(const Aabb_00c98c80* box, int p2, int p3, int p4);
 };
 
@@ -12924,6 +13248,9 @@ struct Pose_00c996e0 {
 // Converts an hkQsTransform into a local Xf_00c996e0 and forwards it to ApplyRotation with the remaining parameters.
 // @fnv 0x00c996e0
 // src: GUESS 0x00c996e0 (confidence: low)
+// pdb: hkDebugDisplay::displayFrame | hkDebugDisplay.obj | retail, object-file run extension, low
+// pdb params: worldFromLocal, size, id, tag
+// pdb locals: ZERO, X, Y, dirY, dirZ, Z, vec, dirX
 void Pose_00c996e0::ProcessState_00c996e0(const hkQsTransform& a, int b, int c, int d, int e, int g)
 {
     Xf_00c996e0 t;
@@ -12945,13 +13272,13 @@ inline void SetMemContextCAA(unsigned int m_uiGeometryShaderFlags)
 
 inline AutoMemContext::AutoMemContext(int context)
 {
-    m_eMemoryContext = static_cast<MEM_CONTEXT>(GetMemContextCAA());
+    iOldMemContext = static_cast<MEM_CONTEXT>(GetMemContextCAA());
     SetMemContextCAA(context);
 }
 
 inline AutoMemContext::~AutoMemContext()
 {
-    SetMemContextCAA(m_eMemoryContext);
+    SetMemContextCAA(iOldMemContext);
 }
 
 
@@ -13030,8 +13357,8 @@ void __cdecl hkHingeConstraintCinfo_ApplyScale(float scale, ShapeCAA* shape);
 
 class ShapeClonerCAA {
 public:
-    ShapeCAA* ReleaseObject(ShapeCAA* shape, ShapeCinfoCAA* cinfo);
-    ShapeCAA* hkLimitedHingeConstraintCinfo_CloneData(ShapeCAA* dst, ShapeCinfoCAA* cinfo);
+    ShapeCAA* ReleaseObject(ShapeCAA* apData, ShapeCinfoCAA* cinfo);
+    ShapeCAA* hkLimitedHingeConstraintCinfo_CloneData(ShapeCAA* apData, ShapeCinfoCAA* arCloneData);
 
     int unk00;
     ShapeCAA* m_pCollisionShape;
@@ -13040,39 +13367,42 @@ public:
 // Copies fields from m_pCollisionShape into dst (new if null), applies cinfo->m_vScale if not 1.0, copies the child atom, and returns FUN_00c8a1b0(dst, cinfo).
 // @fnv 0x00caa250
 // src: XBOX_PDB 0x00caa250
-ShapeCAA* ShapeClonerCAA::hkLimitedHingeConstraintCinfo_CloneData(ShapeCAA* apDstShape, ShapeCinfoCAA* cinfo)
+// pdb: hkLimitedHingeConstraintCinfo::CloneData | bhkLimitedHingeConstraint.obj | retail, upstream name already matches, high
+// pdb params: apData, arCloneData
+// pdb locals: pnd, fscale, tempMemContext, pmotor, pd, pnewMotor
+ShapeCAA* ShapeClonerCAA::hkLimitedHingeConstraintCinfo_CloneData(ShapeCAA* apData, ShapeCinfoCAA* arCloneData)
 {
     AutoMemContext kContext(0x10);
     ShapeCAA* src = m_pCollisionShape;
-    if (!apDstShape)
+    if (!apData)
     {
-        apDstShape = new ShapeCAA;
+        apData = new ShapeCAA;
     }
-    apDstShape->m_v20 = src->m_v20;
-    apDstShape->m_v30 = src->m_v30;
-    apDstShape->m_v40 = src->m_v40;
-    apDstShape->m_v50 = src->m_v50;
-    apDstShape->m_v60 = src->m_v60;
-    apDstShape->m_v70 = src->m_v70;
-    apDstShape->m_v80 = src->m_v80;
-    apDstShape->m_v90 = src->m_v90;
-    apDstShape->m_fBC = src->m_fBC;
-    apDstShape->m_fC4 = src->m_fC4;
-    apDstShape->m_fC8 = src->m_fC8;
-    float scale = cinfo->m_vScale;
+    apData->m_v20 = src->m_v20;
+    apData->m_v30 = src->m_v30;
+    apData->m_v40 = src->m_v40;
+    apData->m_v50 = src->m_v50;
+    apData->m_v60 = src->m_v60;
+    apData->m_v70 = src->m_v70;
+    apData->m_v80 = src->m_v80;
+    apData->m_v90 = src->m_v90;
+    apData->m_fBC = src->m_fBC;
+    apData->m_fC4 = src->m_fC4;
+    apData->m_fC8 = src->m_fC8;
+    float scale = arCloneData->m_vScale;
     if (scale != 1.0f)
     {
-        hkHingeConstraintCinfo_ApplyScale(scale, apDstShape);
+        hkHingeConstraintCinfo_ApplyScale(scale, apData);
     }
     ShapeChildCAA* pChildAtom = src->m_pChildAtom;
     if (pChildAtom)
     {
         hkReferencedObject* obj = pChildAtom->v0C();
-        apDstShape->SetReferencedObject(obj);
+        apData->SetReferencedObject(obj);
         obj->removeReference();
-        apDstShape->m_flagA2 = src->m_flagA2;
+        apData->m_flagA2 = src->m_flagA2;
     }
-    return ReleaseObject(apDstShape, cinfo);
+    return ReleaseObject(apData, arCloneData);
 }
 
 class hkAabb;
@@ -13154,7 +13484,7 @@ struct BroadPhase {
 };
 
 struct BroadPhaseDispatcher {
-    void __thiscall hkpTypedBroadPhaseDispatcher_addPairs(BroadPhaseCastCollector* pairs, int numPairs, void* filter) throw();
+    void __thiscall hkpTypedBroadPhaseDispatcher_addPairs(BroadPhaseCastCollector* newPairs, int numNewPairs, void* filter) throw();
 };
 
 struct PendingOp {
@@ -13178,8 +13508,11 @@ struct WorldHelper : public hkpWorld {
 // Adds a batch of phantoms to the world (queued as a pending op if locked), updates broad phase pairs, and passes them to FUN_00cf7080.
 // @fnv 0x00c954e0
 // src: HAVOK_LIB 0x00c954e0
+// pdb: hkpWorld::addPhantomBatch | hkpWorld.obj | retail, upstream name already matches, high
+// pdb params: phantomBatch, numPhantoms
+// pdb locals: aabbList, collList, newPairs, op, phantom, assertBuf, ostr
 void WorldHelper::hkpWorld_addPhantomBatch(hkpPhantom* const* phantomBatch, int numPhantoms) throw() {
-    if ((m_iCriticalOperationsLockCount + m_iCriticalOperationsLockCountForPhantoms) != 0) {
+    if ((m_criticalOperationsLockCount + m_criticalOperationsLockCountForPhantoms) != 0) {
         PendingOp op;
         op.m_type = 0x0f;
         op.m_kPhantoms = phantomBatch;
@@ -13188,7 +13521,7 @@ void WorldHelper::hkpWorld_addPhantomBatch(hkpPhantom* const* phantomBatch, int 
         return;
     }
 
-    m_iCriticalOperationsLockCount++;
+    m_criticalOperationsLockCount++;
 
     StackAllocatedArray<void*> handles(numPhantoms);
     StackAllocatedArray<::hkAabb> aabbs(numPhantoms);
@@ -13196,35 +13529,35 @@ void WorldHelper::hkpWorld_addPhantomBatch(hkpPhantom* const* phantomBatch, int 
     handles.setSizeUnchecked(numPhantoms);
 
     for (int i = 0; i < numPhantoms; i++) {
-        hkArray<hkpPhantom*>* const phantoms = (hkArray<hkpPhantom*>*)&m_kPhantoms;
+        hkArray<hkpPhantom*>* const phantoms = (hkArray<hkpPhantom*>*)&m_phantoms;
         hkpPhantom* phantom = phantomBatch[i];
         if (!phantom->m_kCollidable.m_pMotionState) {
             phantom->m_kCollidable.m_pMotionState = (*(const void* (__thiscall**)(hkpPhantom*))(*(char**)phantom + 0x10))(phantom);
         }
-        phantom->m_pOwningWorld = this;
-        handles.m_data[i] = &phantom->m_kCollidable.m_kBroadPhaseHandle;
+        phantom->m_world = this;
+        handles.m_data[i] = &phantom->m_kCollidable.m_broadPhaseHandle;
         (*(void (__thiscall**)(hkpPhantom*, ::hkAabb*))(*(char**)phantom + 0x18))(phantom, &aabbs.m_data[i]);
         static_cast<PhantomAabbAccess*>(phantom)->hkpPhantom_setBoundingVolumeData((hkAabb*)&aabbs.m_data[i]);
         phantom->addReference();
 
         phantoms->pushBack(phantom);
 
-        NotifyPhantomAdded(this, phantom);
+        hkpWorldCallbackUtil_firePhantomAdded(this, phantom);
         phantom->firePhantomAdded();
     }
 
-    StackAllocatedArray<BroadPhaseCastCollector> pairs(m_iBroadPhaseQuerySize);
-    ((BroadPhase*)m_pJobSemaphore)->UpdatePairs(static_cast<hkArray<void*>&>(static_cast<hkArrayBase<void*>&>(handles)), static_cast<hkArray<::hkAabb>&>(static_cast<hkArrayBase<::hkAabb>&>(aabbs)), static_cast<hkArray<BroadPhaseCastCollector>&>(static_cast<hkArrayBase<BroadPhaseCastCollector>&>(pairs)));
+    StackAllocatedArray<BroadPhaseCastCollector> pairs(m_broadPhaseQuerySize);
+    ((BroadPhase*)m_broadPhase)->UpdatePairs(static_cast<hkArray<void*>&>(static_cast<hkArrayBase<void*>&>(handles)), static_cast<hkArray<::hkAabb>&>(static_cast<hkArrayBase<::hkAabb>&>(aabbs)), static_cast<hkArray<BroadPhaseCastCollector>&>(static_cast<hkArrayBase<BroadPhaseCastCollector>&>(pairs)));
 
-    void* filter = m_pCollisionFilter ? (char*)m_pCollisionFilter + 8 : 0;
-    ((BroadPhaseDispatcher*)m_pBroadPhaseDispatcher)->hkpTypedBroadPhaseDispatcher_addPairs(pairs.m_data, pairs.m_iElementCount, filter);
+    void* filter = m_collisionFilter ? (char*)m_collisionFilter + 8 : 0;
+    ((BroadPhaseDispatcher*)m_broadPhaseDispatcher)->hkpTypedBroadPhaseDispatcher_addPairs(pairs.m_data, pairs.m_iElementCount, filter);
 
-    m_iCriticalOperationsLockCount--;
-    if (m_iCriticalOperationsLockCount == 0 && !m_bBlockExecutingPendingOperations) {
-        if (m_iPendingOperationCount != 0) {
+    m_criticalOperationsLockCount--;
+    if (m_criticalOperationsLockCount == 0 && !m_blockExecutingPendingOperations) {
+        if (m_pendingOperationsCount != 0) {
             FUN_00c91120();
         }
-        if (m_iPendingOperationQueueCount == 1 && m_iQueuedOperationCount != 0) {
+        if (m_pendingOperationQueueCount == 1 && m_pendingBodyOperationsCount != 0) {
             UpdateFields_00c91140();
         }
     }
@@ -13284,7 +13617,7 @@ struct InplaceArray4 : ::hkArrayBase<T> {
 };
 
 
-void __cdecl NotifyActionRemoved(::hkpWorld* world, hkpAction* action);
+void __cdecl hkpWorldCallbackUtil_fireActionRemoved(::hkpWorld* world, hkpAction* action);
 
 struct hkpWorldDecomp : ::hkpWorld {
     void RemoveActionFromWorld(hkpAction* action);
@@ -13294,11 +13627,14 @@ struct hkpWorldDecomp : ::hkpWorld {
 // Removes an hkpAction from its owning world, detaches it from its entities and island, then flushes pending operations if the critical lock count reaches zero.
 // @fnv 0x00c97510
 // src: GUESS 0x00c97510 (confidence: medium)
+// pdb: hkpWorld::removeActionImmediately | hkpWorld.obj | retail, call graph (shared callers), high
+// pdb params: action
+// pdb locals: assertBuf, ostr, entities
 void hkpWorldDecomp::RemoveActionFromWorld(hkpAction* action)
 {
     action->FUN_00c90510();
-    this->m_iCriticalOperationsLockCount++;
-    NotifyActionRemoved(this, action);
+    this->m_criticalOperationsLockCount++;
+    hkpWorldCallbackUtil_fireActionRemoved(this, action);
 
     {
         InplaceArray4<hkpEntity*> entities;
@@ -13307,34 +13643,34 @@ void hkpWorldDecomp::RemoveActionFromWorld(hkpAction* action)
         for (int i = 0; i < entities.m_iElementCount; ++i)
         {
             hkpEntity* entity = entities.m_data[i];
-            int idx = entity->m_ppActions.indexOf(action);
-            entity->m_ppActions.removeAt(idx);
+            int idx = entity->m_actions.indexOf(action);
+            entity->m_actions.removeAt(idx);
         }
 
-        hkpSimulationIsland* island = action->m_pCurrentSimulationIsland;
+        hkpSimulationIsland* island = action->m_island;
         island->RemoveEntry(action);
 
-        action->m_pOwningWorld = 0;
+        action->m_world = 0;
         action->FUN_00c905b0();
 
         ::hkpWorld* w = *(::hkpWorld**)((char*)island + 0x18);
         if (*(unsigned short*)((char*)island + 0x22) == 0xffff)
         {
-            *(unsigned short*)((char*)island + 0x22) = (unsigned short)w->m_kDirtySimulationIslands.m_iElementCount;
-            PushBackC97510(w->m_kDirtySimulationIslands, (void*)island);
+            *(unsigned short*)((char*)island + 0x22) = (unsigned short)w->m_dirtySimulationIslands.m_iElementCount;
+            PushBackC97510(w->m_dirtySimulationIslands, (void*)island);
         }
 
         entities.ClearAndRelease();
     }
 
-    this->m_iCriticalOperationsLockCount--;
-    if (this->m_iCriticalOperationsLockCount == 0 && !this->m_bBlockExecutingPendingOperations)
+    this->m_criticalOperationsLockCount--;
+    if (this->m_criticalOperationsLockCount == 0 && !this->m_blockExecutingPendingOperations)
     {
-        if (this->m_iPendingOperationCount != 0)
+        if (this->m_pendingOperationsCount != 0)
         {
             ((PendingCalls_00c97510*)this)->FUN_00c91120();
         }
-        if (this->m_iPendingOperationQueueCount == 1 && this->m_iQueuedOperationCount != 0)
+        if (this->m_pendingOperationQueueCount == 1 && this->m_pendingBodyOperationsCount != 0)
         {
             ((PendingCalls_00c97510*)this)->UpdateFields_00c91140();
         }
@@ -13409,15 +13745,17 @@ struct FUN_00c91b70_Class {
     void* m_iWordAt00;
     void* m_iWordAt04;
     void* m_8;
-    void* hkpWorld_integrate(float f);
+    void* hkpWorld_integrate(float physicsDeltaTime);
 };
 // Between FUN_00c91180 and FUN_00c91190, calls vtable entry 4 of the object at m_8 with f and returns its result.
 // @fnv 0x00c91b70
 // src: HAVOK_LIB 0x00c91b70
-void* FUN_00c91b70_Class::hkpWorld_integrate(float afValue)
+// pdb: hkpWorld::integrate | hkpWorld.obj | retail, upstream name already matches, high
+// pdb params: physicsDeltaTime
+void* FUN_00c91b70_Class::hkpWorld_integrate(float physicsDeltaTime)
 {
     ((FUN_00c91180_Helper*)this)->IncrementCounter();
-    void* p = ((void* (__thiscall*)(void*, float))(*((void***)m_8))[4])(m_8, afValue);
+    void* p = ((void* (__thiscall*)(void*, float))(*((void***)m_8))[4])(m_8, physicsDeltaTime);
     ((FUN_00c91180_Helper*)this)->hkpWorld_unlock();
     return p;
 }
@@ -13446,10 +13784,11 @@ struct WorldAdvanceEntry : hkpWorld {
 // Calls FUN_00c91180, then a virtual method on m_pSimulation, then FUN_00c91190, and returns the virtual method's result.
 // @fnv 0x00c91bd0
 // src: HAVOK_LIB 0x00c91bd0
+// pdb: hkpWorld::advanceTime | hkpWorld.obj | retail, upstream name already matches, high
 int WorldAdvanceEntry::hkpWorld_advanceTime()
 {
     reinterpret_cast<AdvanceTimeDetail::WorldLock*>(this)->IncrementCounter();
-    int result = reinterpret_cast<AdvanceTimeDetail::Simulation*>(m_pSimulation)->AdvanceSimulationTime();
+    int result = reinterpret_cast<AdvanceTimeDetail::Simulation*>(m_simulation)->AdvanceSimulationTime();
     reinterpret_cast<AdvanceTimeDetail::WorldLock*>(this)->hkpWorld_unlock();
     return result;
 }

@@ -14,14 +14,15 @@ class ParticleShaderProperty;
 class ShaderHitTarget;
 class BGSSaveFormBuffer;
 
+// pdb: class MagicShaderHitEffect, size 0x6c, bases: MagicHitEffect, 11 members
 class MagicShaderHitEffect : public MagicHitEffect
 {
   public:
     MagicShaderHitEffect(TESObjectREFR* apTarget, ActiveEffect* apEffect);
-    MagicShaderHitEffect(TESObjectREFR* apTarget, TESEffectShader* apShader, float afDuration);
+    MagicShaderHitEffect(TESObjectREFR* apTarget, TESEffectShader* apEffectData, float afTime);
     ~MagicShaderHitEffect();
 
-    bool Update(float afTime);
+    bool Update(float afTimeDelta);
     int GetType();
     bool IsSaveable();
     void SaveGame();
@@ -56,7 +57,7 @@ class MagicShaderHitEffect : public MagicHitEffect
     void InitHitEffect(ActiveEffect*, TESObjectREFR*, void*);
     ShaderHitTarget* GetHitTarget();
     float GetTimeLeft();
-    void Finish();
+    void ResetAlphaTimer();
 
     bool m_bUseActorParticleEffects;
     unsigned char unk29[3];

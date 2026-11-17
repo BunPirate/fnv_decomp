@@ -6,13 +6,14 @@ class FNVVec3;
 class NiStream;
 class NiMatrix3;
 
+// pdb: class NiPlane, size 0x10, 2 members
 class NiPlane
 {
 public:
-    float x;
+    float m_kNormal; // src: XBOX_RETAIL_PDB +0x0 (old: x)
     float y;
     float z;
-    float c;
+    float m_fConstant; // src: XBOX_RETAIL_PDB +0xc (old: c)
 
     NiPlane();
     NiPlane(const NiPoint3& normal, float constant);
@@ -29,9 +30,9 @@ public:
     void Apply(const NiMatrix3& matrix, const NiPoint3& translation);
     int Side(const FNVVec3& point) const;
     float Distance(const FNVVec3& point) const;
-    float Distance(const NiPoint3& point) const;
+    float Distance(const NiPoint3& kPoint) const;
     const NiPoint3& GetPlaneNormal() const;
     float GetPlaneConstant() const;
     float FUN_0084d030() const;
-    void LoadBinary(NiStream& stream);
+    void LoadBinary(NiStream& kStream);
 };

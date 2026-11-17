@@ -6,6 +6,7 @@ class QueuedFile;
 
 enum IO_TASK_PRIORITY;
 
+// pdb: class BGSPreloadable, size 0x4, bases: BaseFormComponent, 0 members
 class BGSPreloadable : public BaseFormComponent
 {
 public:

@@ -11,20 +11,21 @@ struct LocationDescriptor
     LocationDescriptor();
     char pad[12];
     void __thiscall PackageLocation_Save(int);
-    void ResolveObject(BGSLoadFormBuffer*);
+    void PackageLocation_InitLoadGame(BGSLoadFormBuffer*);
     void PackageLocation_LoadGame_0067fbe0(BGSLoadFormBuffer*);
     void* FUN_00670b30(int aFlags);
-    unsigned char __thiscall IsDifferentFrom(int a1);
+    unsigned char __thiscall PackageLocation_Compare(int apCompare);
 };
 
 // @fnv 0x0067bbb0
 // src: XBOX_PDB 0x0067bbb0
+// pdb: TESEatPackageData::Save | PackageDataEat.obj | retail, vtable slot, high
 void __thiscall TESEatPackageData::Save_0067bbb0()
 {
     _FUN_004856d0(0x44454b50);
-    if (this->m_pPackageTarget != 0)
+    if (this->pSearchLocation != 0)
     {
-        m_pPackageTarget->PackageLocation_Save(0x32444c50);
+        pSearchLocation->PackageLocation_Save(0x32444c50);
     }
 }
 
@@ -32,28 +33,32 @@ void __thiscall TESEatPackageData::Save_0067bbb0()
 // src: GUESS 0x0067bfa0 (confidence: low)
 void TESEatPackageData::ProcessState_0067bfa0(BGSLoadFormBuffer* apLoadGameBuffer)
 {
-    if (m_pPackageTarget != 0)
+    if (pSearchLocation != 0)
     {
-        m_pPackageTarget->ResolveObject(apLoadGameBuffer);
+        pSearchLocation->PackageLocation_InitLoadGame(apLoadGameBuffer);
     }
 }
 
 // @fnv 0x0067b050
+// pdb: TESUseItemPackageData::LoadGame | PackageDataUseItem.obj | retail, vtable slot, high
+// pdb params: apLoadGameBuffer
+// pdb locals: bhasLocation
 void __thiscall TESEatPackageData::Load(BGSLoadFormBuffer* apLoadGameBuffer)
 {
     bool bhasLocation = false;
     apLoadGameBuffer->ReadTypedData((void*)&bhasLocation, 1u);
     if (bhasLocation)
     {
-        m_pPackageTarget = new LocationDescriptor;
-        m_pPackageTarget->PackageLocation_LoadGame_0067fbe0(apLoadGameBuffer);
+        pSearchLocation = new LocationDescriptor;
+        pSearchLocation->PackageLocation_LoadGame_0067fbe0(apLoadGameBuffer);
     }
 }
 
 // @fnv 0x0067b9b0
+// pdb: TESEatPackageData::~TESEatPackageData | PackageDataEat.obj | debug, upstream name already matches, high
 TESEatPackageData::~TESEatPackageData()
 {
-    LocationDescriptor* a = m_pPackageTarget;
+    LocationDescriptor* a = pSearchLocation;
     LocationDescriptor* p = a;
     (p != 0) ? p->FUN_00670b30(1) : 0;
 }
@@ -71,18 +76,21 @@ struct FUN_0067bb40_Result
 
 // @fnv 0x0067bb40
 // src: XBOX_PDB 0x0067bb40
-unsigned char __thiscall TESEatPackageData::Compare_0067bb40(int arg)
+// pdb: TESEatPackageData::Compare | PackageDataEat.obj | retail, vtable slot, high
+// pdb params: apCompare
+// pdb locals: pcomp
+unsigned char __thiscall TESEatPackageData::Compare_0067bb40(int apCompare)
 {
-    FUN_0067bb40_Result* result = (FUN_0067bb40_Result*)FUN_00ec43fb(arg, 0, &DAT_0119bdec, &DAT_0119be3c, 0);
+    FUN_0067bb40_Result* result = (FUN_0067bb40_Result*)FUN_00ec43fb(apCompare, 0, &DAT_0119bdec, &DAT_0119be3c, 0);
 
     if (result == 0)
     {
         return 1;
     }
 
-    if (m_pPackageTarget != 0)
+    if (pSearchLocation != 0)
     {
-        if (m_pPackageTarget->IsDifferentFrom(result->unk04) != 0)
+        if (pSearchLocation->PackageLocation_Compare(result->unk04) != 0)
         {
             return 1;
         }

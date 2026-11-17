@@ -22,13 +22,13 @@ void FUN_005c1ae0_class::CombatController_ForceStopCombat()
     *reinterpret_cast<char*>(this + 0x125) = 1;
 }
 
-extern "C" void* __cdecl GetObjectScale(void* a, void* b, void* c, void* d);
+extern "C" void* __cdecl Script_GetScaleConditionFunction(void* a, void* b, void* c, void* d);
 
 // @fnv 0x005c1b60
 void* __cdecl CallWithZeroedArgs(void* apArg1, void* apArg2, void* apArg3, void* apArg4, void* apArg5, void* apArg6,
                                  void* apArg7)
 {
-    return GetObjectScale(apArg3, 0, 0, apArg7);
+    return Script_GetScaleConditionFunction(apArg3, 0, 0, apArg7);
 }
 
 extern int g_TES;
@@ -45,6 +45,9 @@ unsigned char Cmd_ToggleWaterRadius_Execute()
 }
 
 // @fnv 0x005d8af0
+// pdb: Script::ResetAllTerminals | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb note: debug build links it to `Script::ResetDialogueFlags'::`2'::MobDialogueFlagResetter::MobDialogueFlagResetter
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
 Reset3DMobIterator::Reset3DMobIterator()
 {
 }
@@ -52,14 +55,18 @@ Reset3DMobIterator::Reset3DMobIterator()
 extern "C" float __cdecl _logf(float);
 
 // @fnv 0x005dc330
-float __cdecl LogFloat(float value)
+// pdb: atan | TESScriptFunctions.obj | debug, call graph (shared callers), high
+// pdb params: _X
+float __cdecl LogFloat(float _X)
 {
-    return _logf(value);
+    return _logf(_X);
 }
 
 float _logf_005dc460(float);
 // @fnv 0x005dc440
 // src: COMMUNITY 0x005dc440
+// pdb: log | TESScriptFunctions.obj | debug, object-file gap fill, medium
+// pdb params: _X
 float log_005dc440(float value)
 {
     return _logf_005dc460(value);
@@ -69,6 +76,8 @@ extern "C" double __cdecl FUN_00eca920(double);
 
 // @fnv 0x005dc460
 // src: COMMUNITY 0x005dc460
+// pdb: logf | TESScriptFunctions.obj | debug, object-file gap fill, medium
+// pdb params: _X
 float _logf_005dc460(float value)
 {
     return static_cast<float>(FUN_00eca920(value));
@@ -98,6 +107,7 @@ void FUN_005dd540_Class::SetByteAtOffsetE3(unsigned char value)
 
 // @fnv 0x005de080
 // src: XBOX_PDB 0x005de080
+// pdb: BGSProjectile::GetHasExplosionDetonates | TESScriptFunctions.obj | debug, call graph, high
 bool BGSProjectile::GetHasExplosionDetonates_005de080()
 {
     return GetFlag(0x400);
@@ -382,17 +392,20 @@ struct Mid
 };
 struct Me
 {
-    void MobDialogueFlagResetter_Operate(Src* p);
+    void MobDialogueFlagResetter_Operate(Src* apMob);
 };
 // @fnv 0x005d8a90
 // src: COMMUNITY 0x005d8a90
-void Me::MobDialogueFlagResetter_Operate(Src* pSource)
+// pdb: `Script::ResetDialogueFlags'::`2'::MobDialogueFlagResetter::Operate | TESScriptFunctions.obj | retail, upstream name already matches, high
+// pdb params: apMob
+// pdb locals: pproc, pactor
+void Me::MobDialogueFlagResetter_Operate(Src* apMob)
 {
-    if (pSource->Test())
+    if (apMob->Test())
     {
-        Mid* pMid = (Mid*)pSource;
+        Mid* pMid = (Mid*)apMob;
         if (Tgt* pTgt = pMid->Get())
             pTgt->Act(0);
     }
-    pSource->Pick(0x73)->Fin();
+    apMob->Pick(0x73)->Fin();
 }

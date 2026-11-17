@@ -24,9 +24,9 @@ typedef NiTPrimitiveArray<const char*> NiViewerStringsArray;
 class bhkViewerObject_tesobjectrefr_o2_nood_variant
 {
 public:
-    void bhkPhantom_GetViewerStrings(NiViewerStringsArray* pkStrings);
-    void bhkShapePhantom_GetTransform(hkTransform& kTransform);
-    void bhkShapePhantom_GetViewerStrings(NiViewerStringsArray* pkStrings);
+    void bhkPhantom_GetViewerStrings(NiViewerStringsArray* apStrings);
+    void bhkShapePhantom_GetTransform(hkTransform& arTrans);
+    void bhkShapePhantom_GetViewerStrings(NiViewerStringsArray* apStrings);
 };
 #include "../../include/hkVector4.h"
 #include "../../include/NiUpdateData.h"
@@ -47,7 +47,7 @@ void FalloutRadio_NewCellEntered();
 void TESWaterSystem_SetPlayerForceUnderwater(unsigned char value);
 float BSAudio_GetMinDialogDist();
 float BSAudio_GetMaxDialogDist();
-void CheckWithinMultiBoundTask_CancelAttachment(unsigned int index);
+void CheckWithinMultiBoundTask_CancelAttachment(unsigned int apMoribundRef);
 
 extern "C" __declspec(thread) int tls_state;
 
@@ -93,12 +93,15 @@ void FUN_00458620(NiPoint3* pkOut, const hkVector4* pkIn);
 
 // @fnv 0x00c9ed30
 // src: XBOX_PDB 0x00c9ed30
-void bhkViewerObject_tesobjectrefr_o2_nood_variant::bhkShapePhantom_GetViewerStrings(NiViewerStringsArray* pkStrings)
+// pdb: bhkShapePhantom::GetViewerStrings | bhkShapePhantom.obj | retail, upstream name already matches, high
+// pdb params: apStrings
+// pdb locals: trn, tempMemContext
+void bhkViewerObject_tesobjectrefr_o2_nood_variant::bhkShapePhantom_GetViewerStrings(NiViewerStringsArray* apStrings)
 {
     MemContextGuard kGuard(16);
 
-    bhkPhantom_GetViewerStrings(pkStrings);
-    AddViewerString(pkStrings, NiViewerStrings_NiGetViewerString_Title(g_01268224.GetName()));
+    bhkPhantom_GetViewerStrings(apStrings);
+    AddViewerString(apStrings, NiViewerStrings_NiGetViewerString_Title(g_01268224.GetName()));
 
     hkTransform kTransform;
     bhkShapePhantom_GetTransform(kTransform);
@@ -107,8 +110,8 @@ void bhkViewerObject_tesobjectrefr_o2_nood_variant::bhkShapePhantom_GetViewerStr
     HK2NI_00624b10(&kNiTransform.m_Rotate, reinterpret_cast<const hkRotation*>(&kTransform.m_row0));
     FUN_00458620(&kNiTransform.m_Translate, reinterpret_cast<const hkVector4*>(&kTransform.m_row3));
 
-    AddViewerString(pkStrings, kNiTransform.m_Rotate.GetViewerString("Rot"));
-    AddViewerString(pkStrings, kNiTransform.m_Translate.GetViewerString_00a59af0("Trans"));
+    AddViewerString(apStrings, kNiTransform.m_Rotate.GetViewerString("Rot"));
+    AddViewerString(apStrings, kNiTransform.m_Translate.GetViewerString_00a59af0("Trans"));
 }
 
 namespace fnv_00cb3650 {
@@ -209,23 +212,26 @@ struct Owner
     __m128 rotation;
     __m128 vec30;
     void bhkRigidBody_CreateDisplayGeometry(NiNode*);
-    void bhkRigidBodyT_CreateDisplayGeometry(ArgObj* arg);
+    void bhkRigidBodyT_CreateDisplayGeometry(ArgObj* apNode);
 };
 
 // @fnv 0x00cb3650
 // src: XBOX_PDB 0x00cb3650
-void Owner::bhkRigidBodyT_CreateDisplayGeometry(ArgObj* arg)
+// pdb: bhkRigidBodyT::CreateDisplayGeometry | bhkRigidBodyT.obj | retail, string-set bridge, high
+// pdb params: apNode
+// pdb locals: tempMemContext, pnode, nit, hkt, UpdateData
+void Owner::bhkRigidBodyT_CreateDisplayGeometry(ArgObj* apNode)
 {
     TlsScope scope(0x10);
     NiNode* body = 0;
-    if (arg)
+    if (apNode)
     {
-        if (arg->f8 == 0)
-            body = (NiNode*)arg;
+        if (apNode->f8 == 0)
+            body = (NiNode*)apNode;
         else
         {
             body = new NiNode(0);
-            arg->Vdc(body, 1);
+            apNode->Vdc(body, 1);
             InitArgs ia;
             ia.time = 0.0f;
             ia.flag0 = 0;
@@ -269,19 +275,22 @@ struct Arg_00c9f830
 
 struct Obj_00c9f830
 {
-    void FillOutputFromState(Arg_00c9f830* value);
-    void bhkAabbPhantom_GetAabb(__m128* value);
-    void bhkAabbPhantom_CopyCinfo(Arg_00c9f830* value);
+    void bhkWorldObject_CopyCinfo(Arg_00c9f830* arInfo);
+    void bhkAabbPhantom_GetAabb(__m128* arB);
+    void bhkAabbPhantom_CopyCinfo(Arg_00c9f830* arInfo);
 };
 
 // @fnv 0x00c9f830
 // src: XBOX_PDB 0x00c9f830
-void Obj_00c9f830::bhkAabbPhantom_CopyCinfo(Arg_00c9f830* arg)
+// pdb: bhkAabbPhantom::CopyCinfo | bhkAabbPhantom.obj | retail, upstream name already matches, high
+// pdb params: arInfo
+// pdb locals: bound
+void Obj_00c9f830::bhkAabbPhantom_CopyCinfo(Arg_00c9f830* arInfo)
 {
     register Obj_00c9f830* pThis = this;
-    register Arg_00c9f830* pArg = arg;
+    register Arg_00c9f830* pArg = arInfo;
 
-    pThis->FillOutputFromState(pArg);
+    pThis->bhkWorldObject_CopyCinfo(pArg);
 
     __m128 tmp[2];
     pThis->bhkAabbPhantom_GetAabb(tmp);
@@ -293,7 +302,7 @@ void Obj_00c9f830::bhkAabbPhantom_CopyCinfo(Arg_00c9f830* arg)
 extern __m128 DAT_01267e30;
 extern __m128 DAT_010c71b0;
 
-void __stdcall FUN_00cb31a0_sub_a(__m128* p);
+void __stdcall FUN_00cb31a0_sub_a(__m128* arPos);
 
 struct FUN_00cb31a0_cls
 {
@@ -302,22 +311,25 @@ struct FUN_00cb31a0_cls
     __m128 m_30;
     __m128 m_40;
 
-    void Sub_b(__m128* p);
+    void Sub_b(__m128* arRot);
     void Sub_c(FUN_00cb31a0_cls* p);
-    void bhkRigidBodyT_PostInit(FUN_00cb31a0_cls* src);
+    void bhkRigidBodyT_PostInit(FUN_00cb31a0_cls* arInfo);
 };
 
 // @fnv 0x00cb31a0
 // src: XBOX_PDB 0x00cb31a0
-void FUN_00cb31a0_cls::bhkRigidBodyT_PostInit(FUN_00cb31a0_cls* src)
+// pdb: bhkRigidBodyT::PostInit | bhkRigidBodyT.obj | retail, upstream name already matches, high
+// pdb params: arInfo
+// pdb locals: cinfo, tempCinfo
+void FUN_00cb31a0_cls::bhkRigidBodyT_PostInit(FUN_00cb31a0_cls* arInfo)
 {
-    m_30 = src->m_30;
-    m_20 = src->m_40;
-    src->m_30 = DAT_01267e30;
-    src->m_40 = DAT_010c71b0;
-    FUN_00cb31a0_sub_a(&src->m_30);
-    Sub_b(&src->m_40);
-    Sub_c(src);
+    m_30 = arInfo->m_30;
+    m_20 = arInfo->m_40;
+    arInfo->m_30 = DAT_01267e30;
+    arInfo->m_40 = DAT_010c71b0;
+    FUN_00cb31a0_sub_a(&arInfo->m_30);
+    Sub_b(&arInfo->m_40);
+    Sub_c(arInfo);
 }
 
 struct Sub
@@ -330,23 +342,26 @@ struct Cls
 {
     char pad[0x20];
     Sub m_20;
-    void FUN_00c8d130(__m128* out);
-    Arg* bhkRigidBodyT_GetRotation(Arg* arg);
+    void FUN_00c8d130(__m128* arRot);
+    Arg* bhkRigidBodyT_GetRotation(Arg* arRot);
 };
 
 struct Arg
 {
-    void setMulInverse(__m128* out, Sub* sub);
+    void setMulInverse(__m128* q0, Sub* q1);
 };
 
 // @fnv 0x00cb3200
 // src: XBOX_PDB 0x00cb3200
-Arg* Cls::bhkRigidBodyT_GetRotation(Arg* arg)
+// pdb: bhkRigidBodyT::GetRotation | bhkRigidBodyT.obj | retail, upstream name already matches, high
+// pdb params: arRot
+// pdb locals: hkr
+Arg* Cls::bhkRigidBodyT_GetRotation(Arg* arRot)
 {
     __m128 buf;
     FUN_00c8d130(&buf);
-    arg->setMulInverse(&buf, &m_20);
-    return arg;
+    arRot->setMulInverse(&buf, &m_20);
+    return arRot;
 }
 
 struct S00cb3250_Query
@@ -358,8 +373,8 @@ struct S00cb3250_Query
 class S00cb3250_Object
 {
   public:
-    void FUN_00c8d1a0(S00cb3250_Query* pQuery);
-    void bhkRigidBodyT_SetRotation(int iArg);
+    void FUN_00c8d1a0(S00cb3250_Query* arRot);
+    void bhkRigidBodyT_SetRotation(int arRot);
     unsigned int unk00;
     unsigned int unk04;
     unsigned int unk08;
@@ -373,9 +388,12 @@ class S00cb3250_Object
 
 // @fnv 0x00cb3250
 // src: XBOX_PDB 0x00cb3250
-void S00cb3250_Object::bhkRigidBodyT_SetRotation(int iArg)
+// pdb: bhkRigidBodyT::SetRotation | bhkRigidBodyT.obj | retail, upstream name already matches, high
+// pdb params: arRot
+// pdb locals: hkq
+void S00cb3250_Object::bhkRigidBodyT_SetRotation(int arRot)
 {
-    S00cb3250_Query kQuery(iArg, &m_kOwner);
+    S00cb3250_Query kQuery(arRot, &m_kOwner);
     FUN_00c8d1a0(&kQuery);
 }
 
@@ -440,13 +458,16 @@ struct ShapeFrame
 };
 // @fnv 0x00cb3310
 // src: XBOX_PDB 0x00cb3310
-hkTransform* ShapeFrame::bhkRigidBodyT_GetTransform(hkTransform* result)
+// pdb: bhkRigidBodyT::GetTransform | bhkRigidBodyT.obj | retail, upstream name already matches, high
+// pdb params: arTrans
+// pdb locals: hkrot
+hkTransform* ShapeFrame::bhkRigidBodyT_GetTransform(hkTransform* arTrans)
 {
     __m128 rotation;
-    GetTranslation(&result->m_row3);
+    GetTranslation(&arTrans->m_row3);
     GetRotation(&rotation);
-    reinterpret_cast<hkRotation*>(&result->m_row0)->hkRotation_set(*reinterpret_cast<const hkQuaternion*>(&rotation));
-    return result;
+    reinterpret_cast<hkRotation*>(&arTrans->m_row0)->hkRotation_set(*reinterpret_cast<const hkQuaternion*>(&rotation));
+    return arTrans;
 }
 
 extern "C" __m128 _mm_setr_ps(float, float, float, float);
@@ -780,7 +801,7 @@ struct F9_Obj
     int unk164;
     int unk168;
     int unk16C;
-    F9_Obj(int a, const hkTransform* m, int b);
+    F9_Obj(int shape, const hkTransform* transform, int collisionFilterInfo);
     void FUN_00c905b0();
     static void* operator new(unsigned int n)
     {
@@ -843,24 +864,27 @@ struct F9_Owner
     virtual void v45();
     virtual void v46();
     virtual void post(F9_Arg* a);
-    void bhkSimpleShapePhantom_Init(F9_Arg* arg);
+    void bhkSimpleShapePhantom_Init(F9_Arg* arInfo);
 };
 
 // @fnv 0x00c9f050
 // src: XBOX_PDB 0x00c9f050
-void F9_Owner::bhkSimpleShapePhantom_Init(F9_Arg* arg)
+// pdb: bhkSimpleShapePhantom::Init | bhkSimpleShapePhantom.obj | retail, upstream name already matches, high
+// pdb params: arInfo
+// pdb locals: po, tempMemContext, cinfo, hkt
+void F9_Owner::bhkSimpleShapePhantom_Init(F9_Arg* arInfo)
 {
     F9_Scope scope;
     ViewerTransform mat;
-    mat.m_row0 = _mm_setr_ps(arg->m[0], arg->m[1], arg->m[2], arg->m[3]);
-    mat.m_row1 = _mm_setr_ps(arg->m[4], arg->m[5], arg->m[6], arg->m[7]);
-    mat.m_row2 = _mm_setr_ps(arg->m[8], arg->m[9], arg->m[10], arg->m[11]);
-    mat.m_row3 = _mm_setr_ps(arg->m[12], arg->m[13], arg->m[14], arg->m[15]);
+    mat.m_row0 = _mm_setr_ps(arInfo->m[0], arInfo->m[1], arInfo->m[2], arInfo->m[3]);
+    mat.m_row1 = _mm_setr_ps(arInfo->m[4], arInfo->m[5], arInfo->m[6], arInfo->m[7]);
+    mat.m_row2 = _mm_setr_ps(arInfo->m[8], arInfo->m[9], arInfo->m[10], arInfo->m[11]);
+    mat.m_row3 = _mm_setr_ps(arInfo->m[12], arInfo->m[13], arInfo->m[14], arInfo->m[15]);
     mat.hkRotation_renormalize();
-    F9_Obj* o = new F9_Obj(arg->unk04, &mat, arg->unk00);
+    F9_Obj* o = new F9_Obj(arInfo->unk04, &mat, arInfo->unk00);
     add(o);
     o->FUN_00c905b0();
-    post(arg);
+    post(arInfo);
 }
 
 struct PositionSource
@@ -884,14 +908,17 @@ struct PositionOwner
     int unk00;
     int unk04;
     PositionSource* m_pkSource;
-    void bhkBoxShape_BuildDisplayGeometry(NiNode* pkParent, int iUnused);
+    void bhkBoxShape_BuildDisplayGeometry(NiNode* apNode, int iUnused);
 };
 
 // Preserve the original stack protection with the shared SIMD union layout.
 #pragma strict_gs_check(on)
 // @fnv 0x00ca02b0
 // src: XBOX_PDB 0x00ca02b0
-void PositionOwner::bhkBoxShape_BuildDisplayGeometry(NiNode* pkParent, int iUnused)
+// pdb: bhkBoxShape::BuildDisplayGeometry | bhkBoxShape.obj | retail, upstream name already matches, high
+// pdb params: apNode, __formal
+// pdb locals: he, pav, tempMemContext, bsHE
+void PositionOwner::bhkBoxShape_BuildDisplayGeometry(NiNode* apNode, int iUnused)
 {
     MemContextGuard kGuard(16);
     hkVector4 kPosition;
@@ -906,7 +933,7 @@ void PositionOwner::bhkBoxShape_BuildDisplayGeometry(NiNode* pkParent, int iUnus
     {
         static NiFixedString kName(str_010c40a0);
         pkMarker->SetName(kName);
-        pkParent->AttachChildInAvailableSlot(pkMarker, true);
+        apNode->AttachChildInAvailableSlot(pkMarker, true);
     }
 }
 
@@ -1304,18 +1331,21 @@ class MotionObject
     Obj570 m_570;
     Obj594* m_594;
     void bhkCharacterController_UnMarkWrite();
-    void bhkCharacterController_SetPosition(__m128* v);
+    void bhkCharacterController_SetPosition(__m128* arPos);
 };
 
 // @fnv 0x00c6e390
 // src: XBOX_PDB 0x00c6e390
-void MotionObject::bhkCharacterController_SetPosition(__m128* v)
+// pdb: bhkCharacterController::SetPosition | bhkCharacterController.obj | retail, object-file run extension, high
+// pdb params: arPos
+// pdb locals: hkp
+void MotionObject::bhkCharacterController_SetPosition(__m128* arPos)
 {
     __m128 t;
     char* base = (m_594 != 0) ? (char*)m_594->m_08 : (char*)0;
     reinterpret_cast<hkVector4*>(&t)->hkVector4_setRotatedDir(
         reinterpret_cast<const hkRotation*>(base + 0xb0), reinterpret_cast<const hkVector4*>(&m_570));
-    __m128 s = _mm_add_ps(*v, t);
+    __m128 s = _mm_add_ps(*arPos, t);
     Obj08* object = m_08;
     if (object != 0)
     {
@@ -1568,16 +1598,19 @@ struct C9FA20_Owner
     int unk04;
     int m_08;
     C9FA20_Data* m_pData;
-    void bhkAabbPhantom_CopyCinfo(C9FA20_Data* data);
-    C9FA20_Data* bhkAabbPhantom_CreateCinfo(bool* created);
+    void bhkAabbPhantom_CopyCinfo(C9FA20_Data* arInfo);
+    C9FA20_Data* bhkAabbPhantom_CreateCinfo(bool* arCreated);
 };
 // @fnv 0x00c9fa20
 // src: XBOX_PDB 0x00c9fa20
-C9FA20_Data* C9FA20_Owner::bhkAabbPhantom_CreateCinfo(bool* created)
+// pdb: bhkAabbPhantom::CreateCinfo | bhkAabbPhantom.obj | retail, upstream name already matches, high
+// pdb params: arCreated
+// pdb locals: tempMemContext
+C9FA20_Data* C9FA20_Owner::bhkAabbPhantom_CreateCinfo(bool* arCreated)
 {
     C9FA20_TlsGuard guard;
-    *created = m_pData == 0;
-    if (*created)
+    *arCreated = m_pData == 0;
+    if (*arCreated)
     {
         m_pData = new C9FA20_Data;
         if (m_08)
@@ -1666,8 +1699,8 @@ class BhkWrapperBaseDAD
 class BhkWrapperDAD : public BhkWrapperBaseDAD
 {
   public:
-    void bhkRigidBody_SaveBinary(int a);
-    void bhkRigidBodyT_SaveBinary(int a);
+    void bhkRigidBody_SaveBinary(int arStream);
+    void bhkRigidBodyT_SaveBinary(int arStream);
 
     hkVector4 m_v20;
     hkVector4 m_v30;
@@ -1675,13 +1708,16 @@ class BhkWrapperDAD : public BhkWrapperBaseDAD
 
 // @fnv 0x00cb3150
 // src: XBOX_PDB 0x00cb3150
-void BhkWrapperDAD::bhkRigidBodyT_SaveBinary(int a)
+// pdb: bhkRigidBodyT::SaveBinary | bhkRigidBodyT.obj | retail, upstream name already matches, high
+// pdb params: arStream
+// pdb locals: bcreated, cinfo
+void BhkWrapperDAD::bhkRigidBodyT_SaveBinary(int arStream)
 {
     int iToken;
     PhantomDataDAD* pkData = GetData(&iToken);
     pkData->m_v30 = m_v30;
     pkData->m_v40 = m_v20;
-    bhkRigidBody_SaveBinary(a);
+    bhkRigidBody_SaveBinary(arStream);
     ReleaseData(iToken);
 }
 
@@ -1774,7 +1810,7 @@ class Position : public PositionBase
 {
   public:
     hkVector4& GetVec(hkVector4& out);
-    hkVector4& bhkRigidBodyT_GetCenterOfMassInWorld(hkVector4& out);
+    hkVector4& bhkRigidBodyT_GetCenterOfMassInWorld(hkVector4& arCOM);
     hkVector4 localTranslation;
 };
 
@@ -1782,16 +1818,19 @@ class Position : public PositionBase
 #pragma strict_gs_check(on)
 // @fnv 0x00cb32a0
 // src: XBOX_PDB 0x00cb32a0
-hkVector4& Position::bhkRigidBodyT_GetCenterOfMassInWorld(hkVector4& out)
+// pdb: bhkRigidBodyT::GetCenterOfMassInWorld | bhkRigidBodyT.obj | retail, upstream name already matches, high
+// pdb params: arCOM
+// pdb locals: pb, rhkt, hkp
+hkVector4& Position::bhkRigidBodyT_GetCenterOfMassInWorld(hkVector4& arCOM)
 {
-    GetVec(out);
+    GetVec(arCOM);
     if (this && worldObject)
     {
         hkVector4 offset;
         offset._setRotatedInverseDir(worldObject->rotation, localTranslation);
-        out.setSub4(out, offset);
+        arCOM.setSub4(arCOM, offset);
     }
-    return out;
+    return arCOM;
 }
 }
 
@@ -1928,15 +1967,18 @@ class RigidBodyCenterOffsetView : public RigidBodyTransformViewBase
   public:
     hkVector4 m_vCenterOfMassLocal;
 
-    void getPosition(hkVector4& kPositionOut) const;
-    hkVector4& bhkRigidBodyT_GetPosition(hkVector4& kOut) const;
+    void getPosition(hkVector4& arPos) const;
+    hkVector4& bhkRigidBodyT_GetPosition(hkVector4& arPos) const;
 };
 
 // Preserve the original stack protection with the shared SIMD union layout.
 #pragma strict_gs_check(on)
 // @fnv 0x00cb3370
 // src: XBOX_PDB 0x00cb3370
-hkVector4& RigidBodyCenterOffsetView::bhkRigidBodyT_GetPosition(hkVector4& kOut) const
+// pdb: bhkRigidBodyT::GetPosition | bhkRigidBodyT.obj | retail, upstream name already matches, high
+// pdb params: arPos
+// pdb locals: pb, hkp, hkq
+hkVector4& RigidBodyCenterOffsetView::bhkRigidBodyT_GetPosition(hkVector4& arPos) const
 {
     if (this && m_pHavokObject)
     {
@@ -1944,12 +1986,12 @@ hkVector4& RigidBodyCenterOffsetView::bhkRigidBodyT_GetPosition(hkVector4& kOut)
         getRotation(kRotationBasis);
         hkVector4 kIntersectionOffset;
         RotateDirection(kIntersectionOffset, kRotationBasis, m_vCenterOfMassLocal);
-        getPosition(kOut);
-        kOut.m_vComponents = position_cb3::_mm_sub_ps(kOut.m_vComponents, kIntersectionOffset.m_vComponents);
-        return kOut;
+        getPosition(arPos);
+        arPos.m_vComponents = position_cb3::_mm_sub_ps(arPos.m_vComponents, kIntersectionOffset.m_vComponents);
+        return arPos;
     }
-    kOut = g_vZeroCB3;
-    return kOut;
+    arPos = g_vZeroCB3;
+    return arPos;
 }
 }
 

@@ -39,6 +39,7 @@ bool __cdecl IsFlagSet(_Type::Type, unsigned int);
 }
 
 // @fnv 0x004064b0
+// pdb: EffectSetting::IsAssociatedFormUsed | EffectItemList.obj | debug, call graph, high
 bool __fastcall IsArchetypeFlagSet(EffectSetting* pThis)
 {
     return MagicEffectSystem::IsFlagSet((MagicEffectSystem::_Type::Type)pThis->GetArchetype(), 0x7c);
@@ -56,10 +57,12 @@ typedef char _sizecheck_EffectItem[sizeof(EffectItem) == 36 ? 1 : -1];
 
 // @fnv 0x004065e0
 // src: XBOX_PDB 0x004065e0
+// pdb: EffectItemList::GetAssociatedSkill | EffectItemList.obj | retail, upstream name already matches, high
+// pdb locals: eresult, peffect
 int __fastcall EffectItemList_GetAssociatedSkill(EffectItemList* pthis)
 {
     int eresult = -1;
-    EffectItem* peffect = pthis->FindCostliestEffectItem(3, 0);
+    EffectItem* peffect = pthis->GetCostliestEffect(3, 0);
     if (peffect)
     {
         eresult = peffect->GetEffectID();
@@ -71,9 +74,11 @@ double __cdecl FUN_00ec6940(double);
 
 // @fnv 0x00406ce0
 // src: XBOX_PDB 0x00406ce0
-float __cdecl floorf(float afValue)
+// pdb: floorf | EffectItemList.obj | debug, upstream name already matches, high
+// pdb params: _X
+float __cdecl floorf(float _X)
 {
-    return static_cast<float>(FUN_00ec6940(afValue));
+    return static_cast<float>(FUN_00ec6940(_X));
 }
 
 int __cdecl _vsprintf_s(char*, int, const char*, char*);
@@ -81,6 +86,8 @@ int __cdecl _vsprintf_s(char*, int, const char*, char*);
 // Calls _vsprintf_s to format the variadic arguments following apFormat into apString1 using aiSize as the buffer size.
 // @fnv 0x00406d00
 // src: XBOX_PDB 0x00406d00
+// pdb: BSsprintf | EffectItemList.obj | retail, upstream name already matches, high
+// pdb params: apString1, aiSize, apFormat, vList
 int __cdecl BSsprintf(char* apString1, int aiSize, const char* apFormat, ...)
 {
     char* vList = (char*)(&apFormat + 1);
@@ -98,7 +105,11 @@ bool __cdecl ActorValue_IsFlagSet(int aiIndex, int aiFlag)
 
 void _FNV_Warning(const char*);
 // @fnv 0x00406ee0
-EffectItem* EffectItemList::GetEffectItemAtIndex(unsigned char aiIndex)
+// src: XBOX_DEBUG_PDB 0x00406ee0
+// pdb: EffectItemList::GetEffectItemByIndex | EffectItemList.obj | debug, unique string literal, high
+// pdb params: aiIndex
+// pdb locals: plist, iindex
+EffectItem* EffectItemList::GetEffectItemByIndex(unsigned char aiIndex)
 {
     unsigned char uiCurrentIndex = 0;
     BSSimpleList<EffectItem*>* pCurrentElementNext = this ? reinterpret_cast<BSSimpleList<EffectItem*>*>(&m_item) : 0;
@@ -118,6 +129,8 @@ int __cdecl FUN_00ec6cc4(char*, const char*, char*);
 
 // @fnv 0x00407000
 // src: XBOX_PDB 0x00407000
+// pdb: BSvsprintf | EffectItemList.obj | debug, upstream name already matches, high
+// pdb params: apString1, apFormat, aList
 int __cdecl BSvsprintf(char* apString1, const char* apFormat, char* aList)
 {
     return FUN_00ec6cc4(apString1, apFormat, aList);
@@ -126,6 +139,7 @@ int __cdecl BSvsprintf(char* apString1, const char* apFormat, char* aList)
 extern int DAT_01070020;
 
 // @fnv 0x0071f540
+// pdb: StatsMenu::NamedEffectsList::NamedEffectsList | MenuManager.obj | debug, call graph (shared callers), medium
 void* __fastcall ConstructWithVTable(void* apObject)
 {
     reinterpret_cast<RecursiveSpinLock*>(reinterpret_cast<char*>(apObject) + 4)->RecursiveSpinLock::RecursiveSpinLock();
@@ -149,6 +163,7 @@ struct FUN_00402c90
 };
 // Sets the two vtable pointers of the object to DAT_01011d0c and DAT_01011cf4.
 // @fnv 0x00402c90
+// pdb: MagicItem::MagicItem | AlchemyItem.obj | debug, call graph, medium
 FUN_00402c90::FUN_00402c90()
 {
     *reinterpret_cast<void**>(&fullName) = &DAT_01011d0c;
@@ -156,7 +171,10 @@ FUN_00402c90::FUN_00402c90()
 }
 
 // @fnv 0x00405f30
-bool EffectItemList::HasNonDetrimentalEffect()
+// src: XBOX_DEBUG_PDB 0x00405f30
+// pdb: EffectItemList::HasTargetEffect | EffectItemList.obj | debug, call graph, high
+// pdb locals: plist, bfound, pitem
+bool EffectItemList::HasTargetEffect()
 {
     EffectItemList* pCurrentElementNext = this;
     if (pCurrentElementNext->IsEmpty())
@@ -165,7 +183,7 @@ bool EffectItemList::HasNonDetrimentalEffect()
     while (pCurrentElementNext && !bfound)
     {
         EffectItem* pitem = pCurrentElementNext->GetItem();
-        if (pitem && reinterpret_cast<EffectItemFoldedGetter*>(pitem)->_ref_0084e3a0() == 2 && !pitem->IsDetrimental())
+        if (pitem && reinterpret_cast<EffectItemFoldedGetter*>(pitem)->_ref_0084e3a0() == 2 && !pitem->IsDisabled())
             bfound = true;
         pCurrentElementNext = (EffectItemList*)pCurrentElementNext->GetNext();
     }
@@ -174,6 +192,8 @@ bool EffectItemList::HasNonDetrimentalEffect()
 
 // @fnv 0x00405da0
 // src: XBOX_PDB 0x00405da0
+// pdb: EffectItemList::CanBePoison | EffectItemList.obj | retail, upstream name already matches, high
+// pdb locals: plist, pitem
 bool EffectItemList::CanBePoison()
 {
     EffectItemList* pCurrentElementNext = this;
@@ -182,7 +202,7 @@ bool EffectItemList::CanBePoison()
     while (pCurrentElementNext)
     {
         EffectItem* pitem = pCurrentElementNext->GetItem();
-        if (pitem && !pitem->IsDetrimental() && !pitem->IsHostile())
+        if (pitem && !pitem->IsDisabled() && !pitem->IsHostile())
             return false;
         pCurrentElementNext = static_cast<EffectItemList*>(pCurrentElementNext->GetNext());
     }
@@ -196,6 +216,8 @@ struct EffectItemDeleter
 
 // @fnv 0x00406340
 // src: COMMUNITY 0x00406340
+// pdb: EffectItemList::RemoveAllEffects | EffectItemList.obj | retail, upstream name already matches, high
+// pdb locals: plist, pitem
 void EffectItemList::RemoveAllEffects()
 {
     EffectItemList* pCurrentElementNext = this;
@@ -239,6 +261,7 @@ struct FUN_00403ca0
 };
 
 // @fnv 0x00403ca0
+// pdb: EffectItem::EffectItem | EffectItem.obj | debug, object-file run extension, low
 FUN_00403ca0::FUN_00403ca0(EffectItem* pEffectItem)
 {
     Initialize_00403be0(pEffectItem->GetEffectSetting());
@@ -248,6 +271,8 @@ FUN_00403ca0::FUN_00403ca0(EffectItem* pEffectItem)
 }  // namespace fnv_00403ca0
 
 // @fnv 0x004062a0
+// pdb: EffectItemList::IsDisabled | EffectItemList.obj | debug, object-file gap fill, medium
+// pdb locals: plist, bresult, pitem
 bool EffectItemList::HasDetrimentalEffect()
 {
     bool bDetrimental = false;
@@ -257,7 +282,7 @@ bool EffectItemList::HasDetrimentalEffect()
     while (pCurrentElementNext && !bDetrimental)
     {
         EffectItem* pitem = pCurrentElementNext->GetItem();
-        if (pitem && pitem->IsDetrimental())
+        if (pitem && pitem->IsDisabled())
             bDetrimental = true;
         pCurrentElementNext = static_cast<EffectItemList*>(pCurrentElementNext->GetNext());
     }
@@ -265,7 +290,11 @@ bool EffectItemList::HasDetrimentalEffect()
 }
 
 // @fnv 0x004064d0
-EffectItem* EffectItemList::FindCostliestEffectItem(int aeRange, bool abAreaOnly)
+// src: XBOX_RETAIL_PDB 0x004064d0
+// pdb: EffectItemList::GetCostliestEffect | EffectItemList.obj | retail, call graph, high
+// pdb params: aeRange, abAreaOnly
+// pdb locals: plist, pcostliestItem, imaxCost, pitem, ithisCost
+EffectItem* EffectItemList::GetCostliestEffect(int aeRange, bool abAreaOnly)
 {
     EffectItemList* pCurrentElementNext;
     EffectItem* pBestItem;
@@ -281,7 +310,7 @@ EffectItem* EffectItemList::FindCostliestEffectItem(int aeRange, bool abAreaOnly
         int iItemCost;
         pitem = pCurrentElementNext->GetItem();
         iItemCost = (int)pitem->GetCost(0);
-        if (!pitem->IsDetrimental() && iItemCost > imaxCost)
+        if (!pitem->IsDisabled() && iItemCost > imaxCost)
         {
             if (abAreaOnly ? pitem->GetArea() > 0 : 1)
             {
@@ -306,6 +335,7 @@ struct Fake406e40
 };
 // Calls FUN_00406de0, then frees this via _Deallocate when flags has bit 1 set, and returns this.
 // @fnv 0x00406e40
+// pdb: StatsMenu::StatusDataList::`scalar deleting destructor' | EffectItemList.obj | retail, vtable slot, high
 void* Fake406e40::FUN_00406e40(unsigned int flags)
 {
     FUN_00406de0();
@@ -325,18 +355,23 @@ struct Obj93
 {
     char _p[0xA4];
     Mid93 m;
-    void __thiscall GetTwoValues(float*, float*);
+    void __thiscall PlayerCharacter_GetInventoryEncumbrance(float*, float*);
 };
 // Stores FUN_008a0c20(this) into *p2 and the result of m.f2(46) into *p1.
 // @fnv 0x0093abe0
-void __thiscall Obj93::GetTwoValues(float* pfValue, float* pfResult)
+// src: XBOX_DEBUG_PDB 0x0093abe0
+// pdb: PlayerCharacter::GetInventoryEncumbrance | PlayerCharacter.obj | debug, call graph, high
+// pdb params: afCurrentEncumbrance, afMaxEncumbrance
+void __thiscall Obj93::PlayerCharacter_GetInventoryEncumbrance(float* afCurrentEncumbrance, float* afMaxEncumbrance)
 {
-    *pfResult = Actor_GetMaxCarryWeight(this);
-    *pfValue = (float)m.f2(46);
+    *afMaxEncumbrance = Actor_GetMaxCarryWeight(this);
+    *afCurrentEncumbrance = (float)m.f2(46);
 }
 
 // @fnv 0x00405fe0
 // src: XBOX_PDB 0x00405fe0
+// pdb: EffectItemList::HasTouchEffect | EffectItemList.obj | debug, upstream name already matches, high
+// pdb locals: plist, bfound, pitem
 bool EffectItemList::HasTouchEffect()
 {
     EffectItemList* pCurrentElementNext = this;
@@ -347,7 +382,7 @@ bool EffectItemList::HasTouchEffect()
     while (pCurrentElementNext && !bfound)
     {
         EffectItem* pitem = pCurrentElementNext->GetItem();
-        if (pitem && reinterpret_cast<EffectItemFoldedGetter*>(pitem)->_ref_0084e3a0() == 1 && !pitem->IsDetrimental())
+        if (pitem && reinterpret_cast<EffectItemFoldedGetter*>(pitem)->_ref_0084e3a0() == 1 && !pitem->IsDisabled())
             bfound = true;
 
         pCurrentElementNext = (EffectItemList*)pCurrentElementNext->GetNext();
@@ -357,6 +392,8 @@ bool EffectItemList::HasTouchEffect()
 
 // @fnv 0x00406090
 // src: XBOX_PDB 0x00406090
+// pdb: EffectItemList::HasSelfEffect | EffectItemList.obj | debug, upstream name already matches, high
+// pdb locals: plist, bfound, pitem
 bool EffectItemList::HasSelfEffect()
 {
     EffectItemList* pCurrentElementNext;
@@ -375,7 +412,7 @@ bool EffectItemList::HasSelfEffect()
 
         pitem = pCurrentElementNext->GetItem();
 
-        if (pitem && !reinterpret_cast<EffectItemFoldedGetter*>(pitem)->_ref_0084e3a0() && !pitem->IsDetrimental())
+        if (pitem && !reinterpret_cast<EffectItemFoldedGetter*>(pitem)->_ref_0084e3a0() && !pitem->IsDisabled())
             bfound = true;
 
         pCurrentElementNext = (EffectItemList*)pCurrentElementNext->GetNext();
@@ -393,22 +430,26 @@ struct EffectItemListNodeOperations : BSSimpleList<EffectItem*>
 
 struct EffectItemListOperations : EffectItemList
 {
-    bool Compare(EffectItemList* other);
-    void CopyItemsFromList(EffectItemList* list);
-    unsigned char FindEffectItemIndex(int formID);
+    bool EffectItemList_Compare(EffectItemList* apCompare);
+    void EffectItemList_Copy(EffectItemList* apCopy);
+    unsigned char FindEffectItemIndex(int apEffect);
 };
 
 // Returns true if the two effect lists differ.
 // @fnv 0x00405a00
-bool EffectItemListOperations::Compare(EffectItemList* apOther)
+// src: XBOX_RETAIL_PDB 0x00405a00
+// pdb: EffectItemList::Compare | EffectItemList.obj | retail, call graph, high
+// pdb params: apCompare
+// pdb locals: pthisList, potherList, potherItem, pthisItem
+bool EffectItemListOperations::EffectItemList_Compare(EffectItemList* apCompare)
 {
-    if (reinterpret_cast<EffectItemListNodeOperations*>(&apOther->m_item)->GetSize() !=
+    if (reinterpret_cast<EffectItemListNodeOperations*>(&apCompare->m_item)->GetSize() !=
         reinterpret_cast<EffectItemListNodeOperations*>(&m_item)->GetSize())
         return true;
     if (!IsEmpty())
     {
         EffectItemList* pNodeA = this;
-        EffectItemList* pNodeB = apOther;
+        EffectItemList* pNodeB = apCompare;
         while (pNodeA)
         {
             EffectItem* pItemB = pNodeA->GetItem();
@@ -448,10 +489,14 @@ class B5B10ItemCopy
 
 // Clears the owner, then walks the linked EffectItemList and adds a B5B10ItemCopy for each non-null EffectItem.
 // @fnv 0x00405b10
-void EffectItemListOperations::CopyItemsFromList(EffectItemList* pkList)
+// src: XBOX_RETAIL_PDB 0x00405b10
+// pdb: EffectItemList::Copy | EffectItemList.obj | retail, call graph, high
+// pdb params: apCopy
+// pdb locals: potherList, pitem, pcopy
+void EffectItemListOperations::EffectItemList_Copy(EffectItemList* apCopy)
 {
     RemoveAllEffects();
-    EffectItemList* pkNode = pkList;
+    EffectItemList* pkNode = apCopy;
     while (pkNode)
     {
         EffectItem* pkItem = pkNode->GetItem();
@@ -465,6 +510,9 @@ void EffectItemListOperations::CopyItemsFromList(EffectItemList* pkList)
 }
 
 // @fnv 0x00406140
+// pdb: EffectItemList::HasScript | EffectItemList.obj | retail, object-file run extension, low
+// pdb params: apScript
+// pdb locals: plist, bfound, pitem
 bool EffectItemList::HasNonDetrimentalEffectWithFlag(unsigned int auiFlag)
 {
     EffectItemList* pNode2 = this;
@@ -474,7 +522,7 @@ bool EffectItemList::HasNonDetrimentalEffectWithFlag(unsigned int auiFlag)
     while (pNode2 && !bResultTmp)
     {
         EffectItem* pItem = pNode2->GetItem();
-        if (pItem && pItem->GetEffectSetting()->IsFlagSet(auiFlag) && !pItem->IsDetrimental())
+        if (pItem && pItem->GetEffectSetting()->IsFlagSet(auiFlag) && !pItem->IsDisabled())
         {
             bResultTmp = true;
         }
@@ -487,7 +535,10 @@ EffectSetting* GetUsageMonitorEntry406();
 
 // Returns the first effect item using the script effect setting, or null.
 // @fnv 0x00406200
-EffectItem* EffectItemList::GetScriptEffect()
+// src: XBOX_RETAIL_PDB 0x00406200
+// pdb: EffectItemList::GetUsageMonitorEffect | EffectItemList.obj | retail, call graph, high
+// pdb locals: plist, presult, pitem
+EffectItem* EffectItemList::GetUsageMonitorEffect()
 {
     EffectItem* pkResult = 0;
     EffectItemList* pkNode = this;
@@ -505,7 +556,10 @@ EffectItem* EffectItemList::GetScriptEffect()
 extern double DAT_01012060;
 float __cdecl FloatFloor(float);
 // @fnv 0x004063e0
-float EffectItemList::GetTotalCost(Actor* actor)
+// pdb: EffectItemList::GetCost | EffectItemList.obj | retail, vtable slot, high
+// pdb params: apActor
+// pdb locals: plist, fcost, pitem
+float EffectItemList::GetTotalCost(Actor* apActor)
 {
     float total;
     EffectItemList* p5 = this;
@@ -515,21 +569,24 @@ float EffectItemList::GetTotalCost(Actor* actor)
     while (p5)
     {
         EffectItem* item = p5->GetItem();
-        if (!item->IsDetrimental())
-            total += item->GetCost(actor);
+        if (!item->IsDisabled())
+            total += item->GetCost(apActor);
         p5 = static_cast<EffectItemList*>(p5->GetNext());
     }
     return total < DAT_01012060 ? 0.0f : FloatFloor(total);
 }
 
 // @fnv 0x00406e70
-unsigned char EffectItemListOperations::FindEffectItemIndex(int aiFormID)
+// pdb: EffectItemList::GetEffectItemIndex | EffectItemList.obj | debug, unique string literal, high
+// pdb params: apEffect
+// pdb locals: plist, iindex
+unsigned char EffectItemListOperations::FindEffectItemIndex(int apEffect)
 {
     unsigned char idx3 = 0;
     BSSimpleList<EffectItem*>* cur = this ? reinterpret_cast<BSSimpleList<EffectItem*>*>(&m_item) : 0;
     while (cur != 0)
     {
-        if (aiFormID == (int)cur->GetItem())
+        if (apEffect == (int)cur->GetItem())
         {
             return idx3;
         }
@@ -604,13 +661,16 @@ struct FaceGenCache
 {
     int unk00;
     FaceGenMap kMap;
-    void BSFaceGenModelMap_OutputModelMapContents(FaceGenLog* apLog);
+    void BSFaceGenModelMap_OutputModelMapContents(FaceGenLog* apFile);
 };
 
 // Iterates the cache map and logs each entry's ref count, key, texture size and data size, warning and optionally adding the line to apLog.
 // @fnv 0x0064fe80
 // src: XBOX_PDB 0x0064fe80
-void FaceGenCache::BSFaceGenModelMap_OutputModelMapContents(FaceGenLog* apLog)
+// pdb: BSFaceGenModelMap::OutputModelMapContents | BSFaceGenManager.obj | retail, string-set bridge, high
+// pdb params: apFile
+// pdb locals: spentry, pfilename, itr, textline
+void FaceGenCache::BSFaceGenModelMap_OutputModelMapContents(FaceGenLog* apFile)
 {
     void* pPos3 = kMap.GetFirstPos();
     const char* pKey2;
@@ -626,8 +686,8 @@ void FaceGenCache::BSFaceGenModelMap_OutputModelMapContents(FaceGenLog* apLog)
                          ((FaceGenModel*)((FaceGenEntry*)spEntry3)->m_pRenderedNodeEntry)->GetTextureSize() >> 10,
                          ((FaceGenModel*)((FaceGenEntry*)spEntry3)->m_pRenderedNodeEntry)->GetDataSize() >> 10);
             FNV_Warning(kLine);
-            if (apLog)
-                apLog->AddLine(&kLine, true);
+            if (apFile)
+                apFile->AddLine(&kLine, true);
         }
     }
 }
@@ -642,7 +702,7 @@ struct Text
 };
 struct Condition
 {
-    bool _ref_00680c60(void*, int, bool*, int);
+    bool IsTrue(void*, int, bool*, int);
 };
 struct EI
 {
@@ -651,7 +711,7 @@ struct EI
     int duration;
     int range;
     int actorValue;
-    bool _ref_00404730();
+    bool IsUsageMonitorEffect();
     Condition* _ref_00409140();
     Setting* _ref_00825c00();
     Text EffectName();
@@ -693,11 +753,15 @@ struct Description : ListBase
 {
     virtual bool First();
     virtual bool Second();
-    void BuildDescription(char*, unsigned int);
+    void EffectItemList_BuildMenuString(char*, unsigned int);
 };
 static const char kDurationFormat[] = "%s %+i(%.1f%c)";
 // @fnv 0x00406620
-void Description::BuildDescription(char* acBuffer, unsigned int size)
+// src: XBOX_RETAIL_PDB 0x00406620
+// pdb: EffectItemList::BuildMenuString | EffectItemList.obj | retail, string-set bridge, high
+// pdb params: astrResult, auiResultLen
+// pdb locals: bdum, bmedicine, bNeedNewLine, bfood, list, strtemp, pnode, pnode2, iactorValue, imagnitude, cdurationID, fduration, effect, fHasRadPerk
+void Description::EffectItemList_BuildMenuString(char* astrResult, unsigned int auiResultLen)
 {
     char bufferA[128];
     {
@@ -706,26 +770,26 @@ void Description::BuildDescription(char* acBuffer, unsigned int size)
         bool i = First();
         bool hA = Second();
         bool aA = false;
-        *acBuffer = 0;
+        *astrResult = 0;
         bufferA[0] = 0;
         for (Node* nodeB = this ? &head : 0; nodeB && *nodeB->_ref_006815c0(); nodeB = nodeB->_ref_00726070())
         {
-            if ((*nodeB->_ref_006815c0())->_ref_00404730())
+            if ((*nodeB->_ref_006815c0())->IsUsageMonitorEffect())
                 continue;
             if (!(*nodeB->_ref_006815c0())->_ref_00409140() ||
-                (*nodeB->_ref_006815c0())->_ref_00409140()->_ref_00680c60(_g_thePlayer, 0, &s, 0))
+                (*nodeB->_ref_006815c0())->_ref_00409140()->IsTrue(_g_thePlayer, 0, &s, 0))
             {
                 if ((*nodeB->_ref_006815c0())->_ref_00825c00()->IsFlagSet_00403e60(0x2000))
                 {
                     CopyText(bufferA, 128, (*nodeB->_ref_006815c0())->EffectName());
                     if (aA)
                     {
-                        strcat_s(acBuffer, size, "\n");
-                        strcat_s(acBuffer, size, bufferA);
+                        strcat_s(astrResult, auiResultLen, "\n");
+                        strcat_s(astrResult, auiResultLen, bufferA);
                     }
                     else
                     {
-                        strcat_s(acBuffer, size, bufferA);
+                        strcat_s(astrResult, auiResultLen, bufferA);
                         aA = true;
                     }
                 }
@@ -778,8 +842,8 @@ void Description::BuildDescription(char* acBuffer, unsigned int size)
                 }
                 if (kAMagnitude >= 0 && kAMagnitude < 1)
                     kAMagnitude = 1;
-                if (*acBuffer)
-                    strcat_s(acBuffer, 128, ", ");
+                if (*astrResult)
+                    strcat_s(astrResult, 128, ", ");
                 if ((*current5->_ref_006815c0())->duration)
                 {
                     if (pDuration2 != floor(pDuration2))
@@ -791,7 +855,7 @@ void Description::BuildDescription(char* acBuffer, unsigned int size)
                 }
                 else
                     sprintf_s(bufferA, 128, "%s %+i", ValueEffectName(iValueVal), kAMagnitude);
-                strcat_s(acBuffer, size, bufferA);
+                strcat_s(astrResult, auiResultLen, bufferA);
             }
         }
     }

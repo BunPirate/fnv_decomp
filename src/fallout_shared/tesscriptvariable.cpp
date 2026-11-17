@@ -90,6 +90,7 @@ struct FUN_00414220_shell
 
 // @fnv 0x00414220
 // src: XBOX_PDB 0x00414220
+// pdb: SCRIPT_HEADER::Endian | TESScriptShared.obj | debug, upstream name already matches, high
 void FUN_00414220_shell::SCRIPT_HEADER_Endian()
 {
     BSEndian((unsigned char*)this, EndianSizeTag<0>());

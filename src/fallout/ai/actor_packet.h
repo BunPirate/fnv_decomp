@@ -728,6 +728,7 @@ class ActorProcessView
     virtual void SetTime(int);
     virtual unsigned int GetTime();
 };
+// pdb: class Animation, size 0x13c (here 0x1), 33 members
 class Animation
 {
   public:
@@ -742,6 +743,7 @@ class Animation
 // NiPointer<NiNode>::operator-> is called out of line in these units.
 template <> NiNode* NiPointer<NiNode>::operator->() const;
 class ParentSpaceNode;
+// pdb: class VATS, size 0x48 (here 0x1), 17 members
 class VATS
 {
   public:

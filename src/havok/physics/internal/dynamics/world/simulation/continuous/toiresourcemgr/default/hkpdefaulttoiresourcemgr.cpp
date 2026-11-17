@@ -14,28 +14,32 @@ extern char g_0126955c_arg0;
 // Calls two virtual functions on self: one with a pointer to g_0126955c_arg0, then one with no arguments.
 // @fnv 0x00d9fb50
 // src: XBOX_PDB 0x00d9fb50
-void __stdcall hkpDefaultToiResourceMgr_calcContentStatistics(void* self, int aiUnused)
+// pdb: hkpDefaultToiResourceMgr::calcContentStatistics | hkpDefaultToiResourceMgr.obj | retail, string-set bridge, high
+// pdb params: collector, cls
+void __stdcall hkpDefaultToiResourceMgr_calcContentStatistics(void* collector, int cls)
 {
-    (*(void(__thiscall**)(void*, char*))(*(char**)self + 0x18))(self, &g_0126955c_arg0);
-    (*(void(__thiscall**)(void*))(*(char**)self + 0x1c))(self);
+    (*(void(__thiscall**)(void*, char*))(*(char**)collector + 0x18))(collector, &g_0126955c_arg0);
+    (*(void(__thiscall**)(void*))(*(char**)collector + 0x1c))(collector);
 }
 
 struct hkpToiEvent;
 
 // Local until include/hkpToiResources.h exists; the resource buffer is at +0x18.
+// pdb: structure hkpToiResources, size 0x20, 8 members
 struct hkpToiResources
 {
-    int m_iFirstValue;
-    int m_iSecondInteger;
-    int m_iThirdValue;
-    int m_iFourthValue;
-    int m_iFifthInteger;
-    int m_numRequiredStepsForSolver;
-    char* m_pCharacterBuffer;
-    int m_iCharacterBufferSize;
+    int m_minPriorityToProcess; // src: XBOX_RETAIL_PDB +0x0 (old: m_iFirstValue)
+    int m_maxNumEntities; // src: XBOX_RETAIL_PDB +0x4 (old: m_iSecondInteger)
+    int m_maxNumActiveEntities; // src: XBOX_RETAIL_PDB +0x8 (old: m_iThirdValue)
+    int m_maxNumConstraints; // src: XBOX_RETAIL_PDB +0xc (old: m_iFourthValue)
+    int m_numToiSolverIterations; // src: XBOX_RETAIL_PDB +0x10 (old: m_iFifthInteger)
+    int m_numForcedToiFinalSolverIterations; // src: XBOX_RETAIL_PDB +0x14 (old: m_numRequiredStepsForSolver)
+    char* m_scratchpad; // src: XBOX_RETAIL_PDB +0x18 (old: m_pCharacterBuffer)
+    int m_scratchpadSize; // src: XBOX_RETAIL_PDB +0x1c (old: m_iCharacterBufferSize)
 };
 
 // Local until include/hkpDefaultToiResourceMgr.h exists; reflected size is 0x10.
+// pdb: class hkpDefaultToiResourceMgr, size 0x10, bases: hkpToiResourceMgr, 2 members
 class hkpDefaultToiResourceMgr
 {
   public:
@@ -43,8 +47,8 @@ class hkpDefaultToiResourceMgr
     virtual ~hkpDefaultToiResourceMgr();
     unsigned short m_usMemSizeAndFlags;
     short m_sReferenceCount;
-    int m_iNumToiResources;
-    int m_iMaxNumToiResources;
+    int m_scratchPadCapacity; // src: XBOX_RETAIL_PDB +0x8 (old: m_iNumToiResources)
+    int m_defaultScratchpadSize; // src: XBOX_RETAIL_PDB +0xc (old: m_iMaxNumToiResources)
 
     void* AllocateMemory(int, int, hkpToiResources*);
     void* FUN_00d9fc70(unsigned char flag);
@@ -61,17 +65,19 @@ hkpDefaultToiResourceMgr::hkpDefaultToiResourceMgr()
 {
     m_sReferenceCount = 1;
     *(void**)this = (void*)&DAT_010d4310;
-    m_iMaxNumToiResources = 0x20000;
+    m_defaultScratchpadSize = 0x20000;
 }
 
 hkMemoryRouter* __cdecl _D1A0E0GetMemoryRouter();
 
 // Returns the resource buffer through the solver allocator, using the allocated byte count.
 // @fnv 0x00d9fc30
-void* hkpDefaultToiResourceMgr::AllocateMemory(int, int, hkpToiResources* pInfo)
+// pdb: hkpDefaultToiResourceMgr::endToiAndFreeResources | hkpDefaultToiResourceMgr.obj | retail, vtable slot, high
+// pdb params: event, otherEvents, resources
+void* hkpDefaultToiResourceMgr::AllocateMemory(int, int, hkpToiResources* resources)
 {
-    int size = m_iNumToiResources;
-    char* buffer = pInfo->m_pCharacterBuffer;
+    int size = m_scratchPadCapacity;
+    char* buffer = resources->m_scratchpad;
     hkMemoryRouter* pRouter = _D1A0E0GetMemoryRouter();
     // The solver allocator occupies the router slot at 0x18.
     MemoryManager* manager = *(MemoryManager**)((char*)pRouter + 0x18);
@@ -83,6 +89,7 @@ typedef void(__thiscall* FUN_00d9fc70_Callback)(MemoryManager*, void*, unsigned 
 
 // Destroys the manager, optionally releases its storage, and returns this.
 // @fnv 0x00d9fc70
+// pdb: hkpDefaultToiResourceMgr::`scalar deleting destructor' | hkpDefaultToiResourceMgr.obj | debug, vtable slot, medium
 void* hkpDefaultToiResourceMgr::FUN_00d9fc70(unsigned char flag)
 {
     this->hkpDefaultToiResourceMgr::~hkpDefaultToiResourceMgr();
@@ -102,6 +109,8 @@ void* hkpDefaultToiResourceMgr::FUN_00d9fc70(unsigned char flag)
 
 // @fnv 0x00d9fb70
 // src: GUESS 0x00d9fb70 (confidence: high)
+// pdb: hkpDefaultToiResourceMgr::resourcesDepleted | hkpDefaultToiResourceMgr.obj | debug, vtable slot, medium
+// pdb locals: assertBuf, ostr
 int __cdecl hkpDefaultToiResourceMgr_ReturnOne()
 {
     return 1;
@@ -111,13 +120,13 @@ int __cdecl hkpDefaultToiResourceMgr_ReturnOne()
 // Returns the address of the global registration object that lives at
 // DAT_0126955c.  The startup code fills that object (13 dwords) through a
 // constructor call, and this getter hands out its address.
-extern int DAT_0126955c;
+extern int hkpDefaultToiResourceMgrClass; // src: XBOX_RETAIL_PDB 0x0126955c (old: DAT_0126955c/g_0126955c)
 
 // @fnv 0x00d9fc60
 // src: GUESS 0x00d9fc60 (confidence: low)
 int* __cdecl Object_GetGlobalObjectAddress_00d9fc60()
 {
-    return &DAT_0126955c;
+    return &hkpDefaultToiResourceMgrClass;
 }
 
 // @fnv 0x00d9fb80
@@ -143,20 +152,23 @@ template <class T> inline T* hkMemoryAllocator::_bufAlloc(int& n)
 }
 
 // @fnv 0x00d9fbb0
+// pdb: hkpDefaultToiResourceMgr::beginToiAndSetupResources | hkpDefaultToiResourceMgr.obj | retail, vtable slot, high
+// pdb params: event, otherEvents, resourcesOut
+// pdb locals: assertBuf, ostr
 hkResult hkpDefaultToiResourceMgr::AllocateToiResources(const hkpToiEvent& event,
                                                        const hkArray<hkpToiEvent>& otherEvents,
                                                        hkpToiResources& resourcesOut)
 {
     if (Object_UpdateFields_00d9fb40(event))
     {
-        m_iNumToiResources = resourcesOut.m_iCharacterBufferSize = m_iMaxNumToiResources;
-        resourcesOut.m_pCharacterBuffer = solverAllocator(hkMemoryRouter_getInstance())._bufAlloc<char>(m_iNumToiResources);
-        resourcesOut.m_iThirdValue = 1000;
-        resourcesOut.m_iFourthValue = 1000;
-        resourcesOut.m_iSecondInteger = 1000;
-        resourcesOut.m_iFifthInteger = 3;
-        resourcesOut.m_numRequiredStepsForSolver = 4;
-        resourcesOut.m_iFirstValue = 3;
+        m_scratchPadCapacity = resourcesOut.m_scratchpadSize = m_defaultScratchpadSize;
+        resourcesOut.m_scratchpad = solverAllocator(hkMemoryRouter_getInstance())._bufAlloc<char>(m_scratchPadCapacity);
+        resourcesOut.m_maxNumActiveEntities = 1000;
+        resourcesOut.m_maxNumConstraints = 1000;
+        resourcesOut.m_maxNumEntities = 1000;
+        resourcesOut.m_numToiSolverIterations = 3;
+        resourcesOut.m_numForcedToiFinalSolverIterations = 4;
+        resourcesOut.m_minPriorityToProcess = 3;
         return HK_SUCCESS;
     }
     return HK_FAILURE;

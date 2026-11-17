@@ -19,6 +19,7 @@ struct ConstraintRuntimeInfo;
 template <typename T> class ResizableArray;
 template <typename T> class hkSmallArray;
 
+// pdb: class hkpEntity, size 0x220, bases: hkpWorldObject, 21 members
 class hkpEntity : public hkpWorldObject
 {
 public:
@@ -72,12 +73,12 @@ public:
     hkUint32 GetUid() const;
     const ResizableArray<ConstraintRuntimeInfo>& getConstraintMastersImpl() const;
     hkpSimulationIsland* GetSimulationIsland() const;
-    void __thiscall hkpRigidBody_getPointVelocity(const SpringVector* point, SpringVector* velocity);
+    void __thiscall hkpRigidBody_getPointVelocity(const SpringVector* p, SpringVector* vecOut);
     unsigned char* __thiscall isActive_00c9bff0(unsigned char* out);
     void __thiscall activate_00c9c1d0();
     void removeEntityListener_00c9c670(void* arg1);
     void ApplyForceAtPoint(float dt, const hkVector4& force, const SpringVector& point);
-    void __thiscall AddContactListener(void* listener);
+    void __thiscall addContactListener(void* cl);
     void __thiscall RemoveContactListener(void* listener);
     void __thiscall AddEntityListener(void* listener);
     void __thiscall RemoveEntityListener(void* listener);
@@ -93,27 +94,27 @@ public:
     void activate();
     void deactivate();
 
-    hkpMaterial m_iMaterialIndex;
-    void* m_pEntityUserData;
-    hkReal m_fBulletSpread;
-    hkpBreakableBody* m_pShape;
-    hkUint32 m_uiFilterInfo;
-    hkUint16 m_usStorageIndex;
-    hkUint16 m_usNextProcessCallbackDelay;
-    hkpEntitySmallArraySerializeOverrideType m_eSmallArraySerializeOverrideType;
-    hkArray<hkpConstraintInstance*> m_kSlaveConstraints;
-    hkArray<hkUint8> m_pByteBuffer;
-    hkpSimulationIsland* m_pSimulationIsland;
-    hkInt8 m_iAutoRemoveLevel;
-    hkUint8 m_ucNumShapeKeysInContactPointProperties;
-    hkUint8 m_ucResponseModifierFlags;
+    hkpMaterial m_material; // src: XBOX_RETAIL_PDB +0x8c (old: m_iMaterialIndex)
+    void* m_limitContactImpulseUtil; // src: XBOX_RETAIL_PDB +0x98 (old: m_pEntityUserData)
+    hkReal m_damageMultiplier; // src: XBOX_RETAIL_PDB +0x9c (old: m_fBulletSpread)
+    hkpBreakableBody* m_breakableBody; // src: XBOX_RETAIL_PDB +0xa0 (old: m_pShape)
+    hkUint32 m_solverData; // src: XBOX_RETAIL_PDB +0xa4 (old: m_uiFilterInfo)
+    hkUint16 m_storageIndex; // src: XBOX_RETAIL_PDB +0xa8 (old: m_usStorageIndex)
+    hkUint16 m_contactPointCallbackDelay; // src: XBOX_RETAIL_PDB +0xaa (old: m_usNextProcessCallbackDelay)
+    hkpEntitySmallArraySerializeOverrideType m_constraintsMaster; // src: XBOX_RETAIL_PDB +0xac (old: m_eSmallArraySerializeOverrideType)
+    hkArray<hkpConstraintInstance*> m_constraintsSlave; // src: XBOX_RETAIL_PDB +0xb4 (old: m_kSlaveConstraints)
+    hkArray<hkUint8> m_constraintRuntime; // src: XBOX_RETAIL_PDB +0xc0 (old: m_pByteBuffer)
+    hkpSimulationIsland* m_simulationIsland; // src: XBOX_RETAIL_PDB +0xcc (old: m_pSimulationIsland)
+    hkInt8 m_autoRemoveLevel; // src: XBOX_RETAIL_PDB +0xd0 (old: m_iAutoRemoveLevel)
+    hkUint8 m_numShapeKeysInContactPointProperties; // src: XBOX_RETAIL_PDB +0xd1 (old: m_ucNumShapeKeysInContactPointProperties)
+    hkUint8 m_responseModifierFlags; // src: XBOX_RETAIL_PDB +0xd2 (old: m_ucResponseModifierFlags)
     char padD3[1];
-    hkUint32 m_uiUniqueId;
-    hkpEntitySpuCollisionCallback m_kSpuCollisionCallback;
-    hkpMaxSizeMotion m_pMotionState;
-    hkpEntitySmallArraySerializeOverrideType m_kContactListeners;
-    ActionArray m_ppActions;
-    hkLocalFrame* m_pLocalFrame;
-    mutable hkpEntityExtendedListeners* m_pExtendedListeners;
+    hkUint32 m_uid; // src: XBOX_RETAIL_PDB +0xd4 (old: m_uiUniqueId)
+    hkpEntitySpuCollisionCallback m_spuCollisionCallback; // src: XBOX_RETAIL_PDB +0xd8 (old: m_kSpuCollisionCallback)
+    hkpMaxSizeMotion m_motion; // src: XBOX_RETAIL_PDB +0xe0 (old: m_pMotionState)
+    hkpEntitySmallArraySerializeOverrideType m_contactListeners; // src: XBOX_RETAIL_PDB +0x200 (old: m_kContactListeners)
+    ActionArray m_actions; // src: XBOX_RETAIL_PDB +0x208 (old: m_ppActions)
+    hkLocalFrame* m_localFrame; // src: XBOX_RETAIL_PDB +0x210 (old: m_pLocalFrame)
+    mutable hkpEntityExtendedListeners* m_extendedListeners; // src: XBOX_RETAIL_PDB +0x214 (old: m_pExtendedListeners)
     char pad218[8];
 };

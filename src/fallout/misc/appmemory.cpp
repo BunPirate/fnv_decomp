@@ -14,6 +14,7 @@ extern OSGlobals* g_osGlobals;
 
 extern TES* g_TES;
 extern unsigned int DAT_011de70c;
+// pdb: class ScrapHeapManager, size 0x210 (here 0x1), 4 members
 struct ScrapHeapManager
 {
     static ScrapHeapManager& Instance();
@@ -116,15 +117,19 @@ struct StateMachine
     int unknown12c;
     int unknown130;
     int state;
-    int RunStep(void*, unsigned int, bool*);
+    int MemoryManager_ProcessMemoryProblem(void*, unsigned int, bool*);
 };
 // Runs one step of the state machine by index, setting *finished and returning the next step index.
 // @fnv 0x00866a90
-int StateMachine::RunStep(void* context, unsigned int step, bool* finished)
+// src: XBOX_RETAIL_PDB 0x00866a90
+// pdb: MemoryManager::ProcessMemoryProblem | AppMemory.obj | retail, object-file run extension, high
+// pdb params: apHeap, aiMemoryPass, apbAllowSystemAllocs
+// pdb locals: bmainthread, dignore, file, bfullwalk, iignore
+int StateMachine::MemoryManager_ProcessMemoryProblem(void* apHeap, unsigned int aiMemoryPass, bool* apbAllowSystemAllocs)
 {
-    *finished = true;
+    *apbAllowSystemAllocs = true;
     bool mainThread = gm_GetCurrentThreadId() == g_osGlobals->TESMain_GetThread();
-    switch (step)
+    switch (aiMemoryPass)
     {
     case 0:
         DAT_011de70c = 0;
@@ -147,7 +152,7 @@ int StateMachine::RunStep(void* context, unsigned int step, bool* finished)
         {
             SetTlsFlag(0);
             if (g_TES->TES_ClearOldestBufferedCell())
-                step = step - 1;
+                aiMemoryPass = aiMemoryPass - 1;
             else
                 g_TES->TES_ClearAllCells(1, 0);
             g_TES->FUN_00452490(0);
@@ -170,9 +175,9 @@ int StateMachine::RunStep(void* context, unsigned int step, bool* finished)
             MemoryPool_FreeUnusedPagesForAllPools_00aa7030();
         break;
     case 7:
-        if (!*finished && mainThread)
+        if (!*apbAllowSystemAllocs && mainThread)
         {
-            *finished = true;
+            *apbAllowSystemAllocs = true;
             break;
         }
     case 8:
@@ -193,15 +198,15 @@ int StateMachine::RunStep(void* context, unsigned int step, bool* finished)
                 }
                 BSSleep(1);
                 DAT_011de70c = DAT_011de70c + 1;
-                step = step - 1;
+                aiMemoryPass = aiMemoryPass - 1;
                 break;
             }
-            else if (!*finished)
-                *finished = true;
+            else if (!*apbAllowSystemAllocs)
+                *apbAllowSystemAllocs = true;
         }
         break;
     }
-    return step + 1;
+    return aiMemoryPass + 1;
 }
 
 
@@ -209,6 +214,7 @@ int StateMachine::RunStep(void* context, unsigned int step, bool* finished)
 // Calls CreateMemoryPool repeatedly with fixed numeric values and matching "Pool N" names.
 // @fnv 0x00866770
 // src: COMMUNITY 0x00866770
+// pdb: MemoryManager::SpecifyPools | AppMemory.obj | retail, upstream name already matches, high
 void MemoryManager::SpecifyPools()
 {
     CreateMemoryPool(8, 0x600000, "Pool 8");

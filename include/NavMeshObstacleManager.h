@@ -17,6 +17,7 @@ class bhkRigidBody;
 // RTTI: NiTMap<bhkRigidBody *,NiPointer<ObstacleData> >, vftable 0x0106c600.
 typedef NiTMap<bhkRigidBody*, NiPointer<ObstacleData> > RigidBodyObstacleMap;
 
+// pdb: class NavMeshObstacleManager, size 0x128 (here 0x180), 28 members
 class NavMeshObstacleManager
 {
 public:
@@ -50,5 +51,5 @@ public:
     void NavMeshObstacleManager_AddObstacleForReference(TESObjectREFR*);
     void NavMeshObstacleManager_RemoveObstacleForReference(TESObjectREFR*); // 0x006c0c80 (thiscall; called from TESObjectCELL code)
     void NavMeshObstacleManager_QueueUpdateAllObstacle();
-    void NavMeshObstacleManager_OnDoorRemove(TESObjectREFR* object);
+    void NavMeshObstacleManager_OnDoorRemove(TESObjectREFR* apDoorRef);
 };

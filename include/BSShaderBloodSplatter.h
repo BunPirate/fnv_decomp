@@ -9,21 +9,22 @@ class NiD3DVertexShader;
 class NiD3DPixelShader;
 class NiPropertyState;
 
+// pdb: class BSShaderBloodSplatter, size 0x84, bases: BSShader, 3 members
 class BSShaderBloodSplatter
 {
 public:
     unsigned char unk00[0x6C];
-    NiPointer<NiD3DPass> spRenderPass[2];
-    NiPointer<NiD3DVertexShader> m_spTreeVertexShader[2];
-    NiPointer<NiD3DPixelShader> m_spPixelShaderVariants[2];
+    NiPointer<NiD3DPass> spPass[2]; // src: XBOX_RETAIL_PDB +0x6c (old: spRenderPass)
+    NiPointer<NiD3DVertexShader> spVertexShader[2]; // src: XBOX_RETAIL_PDB +0x74 (old: m_spTreeVertexShader)
+    NiPointer<NiD3DPixelShader> spPixelShader[2]; // src: XBOX_RETAIL_PDB +0x7c (old: m_spPixelShaderVariants)
 
     BSShaderBloodSplatter();
     ~BSShaderBloodSplatter();
     static void* __cdecl operator new(unsigned int size);
 
     BSShader* CreateShader();
-    void InitializeShaderData();
-    bool ConfigureShaderPass();
+    void LoadShaders();
+    bool LoadStagesAndPasses();
     void BSShaderBloodSplatterProperty_SetClampD3D(unsigned int);
     void BSShaderBloodSplatter_InitPass(unsigned int);
     void NiD3DPass_SetPixelShader(NiRefObject*);

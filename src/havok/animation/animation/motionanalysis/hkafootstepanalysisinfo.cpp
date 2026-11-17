@@ -141,7 +141,7 @@ struct E40FA0Array
 
 struct FUN_00e40fa0 : E40FA0ReferencedObject
 {
-    E40FA0Array m_ppData;
+    E40FA0Array m_previewInfo; // src: XBOX_RETAIL_PDB +0x8 (old: m_ppData)
 
     FUN_00e40fa0();
     virtual ~FUN_00e40fa0();
@@ -180,6 +180,7 @@ struct Owner
     void ClearItems();
 };
 // @fnv 0x00e40fd0
+// pdb: hkaFootstepAnalysisInfoContainer::~hkaFootstepAnalysisInfoContainer | hkaFootstepAnalysisInfo.obj | retail, object-file run extension, low
 void Owner::ClearItems()
 {
     vtable = &DAT_010e56d4;
@@ -293,7 +294,7 @@ inline S_00e40800_Allocator& heap(hkMemoryRouter* holder) throw()
 hkMemoryRouter* hkMemoryRouter_getInstance() throw();
 int hkString_strLen(const char* s) throw();
 char* hkString_strCpy(char* dst, const char* src) throw();
-void hkArrayUtil__reserve(S_00e40800_Allocator& alloc, void* array, int numElem, int sizeElem) throw();
+void hkArrayUtil__reserve(S_00e40800_Allocator& mem, void* array, int numElem, int sizeElem) throw();
 
 template <typename T> struct S_00e40800_ArrayLocalForm
 { // local form of hkArray: 0x00e40800 needs the original inline/out-of-line helper split; shared replacement changes bytes.
@@ -442,6 +443,7 @@ struct CpuObject
 };
 // Calls FUN_00e40cb0, then if flags & 1 invokes the global CpuAllocator on this object with its size, and returns this.
 // @fnv 0x00e41050
+// pdb: hkaFootstepAnalysisInfo::`scalar deleting destructor' | hkaFootstepAnalysisInfo.obj | retail, vtable slot, high
 CpuObject* CpuObject::FUN_00e41050(unsigned int flags)
 {
     FUN_00e40cb0();
@@ -481,6 +483,7 @@ struct FUN_00e41e20_cls
 // If the capacity flag is clear, calls FreeArray on m_pData; then clears the data and size fields and assigns the final vtable value.
 // @fnv 0x00e41e20
 // src: GUESS 0x00e41e20 (confidence: medium)
+// pdb: hkpVehicleRayCastWheelCollide::~hkpVehicleRayCastWheelCollide | hkpVehicleRayCastWheelCollide.obj | retail, object-file run extension, low
 void FUN_00e41e20_cls::ReleaseOwnedArray()
 {
     m_vptr00 = (int)&DAT_010e58c8;

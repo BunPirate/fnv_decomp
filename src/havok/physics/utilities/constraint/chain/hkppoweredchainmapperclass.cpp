@@ -24,6 +24,7 @@ struct CpuObject
     CpuObject* FUN_00dfc540(unsigned int flags);
 };
 // @fnv 0x00dfc540
+// pdb: hkpPoweredChainMapper::`scalar deleting destructor' | hkpPoweredChainMapperClass.obj | retail, vtable slot, high
 CpuObject* CpuObject::FUN_00dfc540(unsigned int flags)
 {
     FUN_00e3ad80();

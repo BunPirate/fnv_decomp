@@ -6,7 +6,9 @@
 
 
 // @fnv 0x00848d50
-void BGSLoadGameBuffer::ResetReadPosition()
+// src: XBOX_RETAIL_PDB 0x00848d50
+// pdb: BGSLoadGameBuffer::DeleteBuffer | BGSSaveLoadGame.obj | retail, call graph, high
+void BGSLoadGameBuffer::DeleteBuffer()
 {
     void* buffer = pBuffer;
     Deallocate(buffer);

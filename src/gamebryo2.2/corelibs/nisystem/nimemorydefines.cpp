@@ -19,6 +19,8 @@ void FreeAlignedBlock(void* apBlock)
 
 namespace fnv_00aa1190 {
 // @fnv 0x00aa1190
+// pdb: _NiExternalAlignedFree | NiMemoryDefines.obj | debug, call graph, medium
+// pdb params: pvMem
 void FreeAllocatorBlock(void* apBlock)
 {
     if (apBlock)
@@ -46,6 +48,8 @@ void* _NiMalloc_00aa1070(unsigned int uiSize)
 // Allocates a block of at least uiSize bytes with uiAlignment through the global allocator.
 // @fnv 0x00aa1130
 // src: COMMUNITY 0x00aa1130
+// pdb: _NiExternalAlignedMalloc | NiMemoryDefines.obj | retail, call graph, medium
+// pdb params: stSizeInBytes, stAlignment
 void* __cdecl NiExternalAlignedMalloc(unsigned int uiSize, unsigned int uiAlignment)
 {
     unsigned int size = uiSize != 0 ? uiSize : 1;
@@ -59,6 +63,8 @@ void* __cdecl NiExternalAlignedMalloc(unsigned int uiSize, unsigned int uiAlignm
 
 // @fnv 0x00aa1250
 // src: COMMUNITY 0x00aa1250
+// pdb: _NiExternalAlignedRealloc | NiMemoryDefines.obj | retail, object-file run extension, low
+// pdb params: pvMem, stSizeInBytes, stAlignment
 void* NiExternalAlignedRealloc(void* apMemory, unsigned int size, unsigned int alignment)
 {
     unsigned int uiOldSize;
@@ -151,6 +157,8 @@ static inline void* InlMalloc(unsigned int stSizeInBytes)
 
 // Frees a nonnull pvMem when size is zero, allocates when pvMem is null, otherwise reallocates it to the requested size.
 // @fnv 0x00aa11b0
+// pdb: _NiExternalRealloc | NiMemoryDefines.obj | retail, call graph, high
+// pdb params: pvMem, stSizeInBytes
 void* __cdecl InlRealloc(void* pvMem, unsigned int stSizeInBytes)
 {
     if (stSizeInBytes == 0 && pvMem != 0)
@@ -198,6 +206,7 @@ struct FixedChunk
 };
 
 // 0x00aa35a0 is NiFixedAllocator::Allocate; retain its local layout until include/NiFixedAllocator.h exists.
+// pdb: class NiFixedAllocator, size 0x100 (here 0x98), 9 members
 struct NiFixedAllocator
 {
     unsigned int blockSize;
@@ -239,6 +248,8 @@ struct NiFixedAllocator
 
 // Locks cs, picks or creates a FixedChunk with free blocks, allocates one block from it, and returns the block pointer.
 // @fnv 0x00aa35a0
+// pdb: NiFixedAllocator::Allocate | NiSmallObjectAllocator.obj | retail, upstream name already matches, high
+// pdb locals: pvMem, i, newChunk
 void* NiFixedAllocator::Allocate()
 {
     EnterCriticalSection(&cs);

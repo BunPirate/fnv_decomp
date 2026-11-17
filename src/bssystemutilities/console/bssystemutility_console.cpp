@@ -6,6 +6,7 @@ int BSSystemUtility::s_iUpdateEnabled;
 BSSystemUtility* BSSystemUtility::ms_pSystemUtility;
 
 // @fnv 0x0078d020
+// pdb: LoadingMenu::ResumeBackgroundThread | LoadingMenu.obj | debug, call graph, high
 void BSSystemUtility::GetRandomGenerator()
 {
     if (s_iUpdateEnabled != 0 && ms_pSystemUtility != 0)

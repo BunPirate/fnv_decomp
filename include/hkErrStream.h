@@ -3,6 +3,7 @@
 #include <cstddef>
 #include "hkOstream.h"
 
+// pdb: class hkErrStream, size 0xc, bases: hkOstream, 0 members
 class hkErrStream : public hkOstream
 {
 public:

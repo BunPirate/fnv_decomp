@@ -16,35 +16,38 @@
 // @fnv 0x0047bd40
 void BGSTouchSpellForm::InitializeComponent()
 {
-    m_pMagicItem = 0;
-    m_usTouchSpellType = 0xFF;
+    pFormTouchSpell = 0;
+    iTouchSpellAnimation = 0xFF;
 }
 
 // Resolves the stored form ID to a MagicItemForm, warns if missing, and clears it when the enchantment's trigger/effect is invalid for the owner.
 // @fnv 0x0047beb0
-void BGSTouchSpellForm::InitItem(TESForm* owner)
+// pdb: BGSTouchSpellForm::InitItem | BGSTouchSpellForm.obj | retail, upstream name already matches, high
+// pdb params: apOwner
+// pdb locals: penchantment, uitempint
+void BGSTouchSpellForm::InitItem(TESForm* apOwner)
 {
-    if (m_pMagicItem)
+    if (pFormTouchSpell)
     {
 
-        unsigned int checkedForm = (unsigned int)m_pMagicItem;
-        if (owner)
-            TESForm::RemapFormIDForFile(checkedForm, owner->GetFile(-1));
+        unsigned int checkedForm = (unsigned int)pFormTouchSpell;
+        if (apOwner)
+            TESForm::RemapFormIDForFile(checkedForm, apOwner->GetFile(-1));
 
-        m_pMagicItem = dynamic_cast<MagicItemForm*>(GetFormByID(checkedForm));
-        if (!m_pMagicItem)
+        pFormTouchSpell = dynamic_cast<MagicItemForm*>(GetFormByID(checkedForm));
+        if (!pFormTouchSpell)
         {
-            if (owner)
+            if (apOwner)
             {
-                if (((BGSCameraPath*)owner)->HasNameForWarning())
+                if (((BGSCameraPath*)apOwner)->HasNameForWarning())
                 {
                     Warning("MASTERFILE: Unable to find Actor Effect (%08X) on owner object \"%s\".", checkedForm,
-                            ((TESObjectWithEditorID*)owner)->GetEditorID());
+                            ((TESObjectWithEditorID*)apOwner)->GetEditorID());
                 }
                 else
                 {
                     Warning("MASTERFILE: Unable to find Actor Effect (%08X) on owner object (%08X).", checkedForm,
-                            owner->GetFormID());
+                            apOwner->GetFormID());
                 }
             }
             else
@@ -54,15 +57,15 @@ void BGSTouchSpellForm::InitItem(TESForm* owner)
         }
 
         EnchantmentItem* formID =
-            m_pMagicItem ? (m_pMagicItem->GetSpellType() == 6 ? (EnchantmentItem*)m_pMagicItem : 0) : 0;
+            pFormTouchSpell ? (pFormTouchSpell->GetSpellType() == 6 ? (EnchantmentItem*)pFormTouchSpell : 0) : 0;
 
-        if (formID && owner && !formID->FUN_004094f0(owner))
+        if (formID && apOwner && !formID->FUN_004094f0(apOwner))
         {
             Warning(
                 "MASTERFILE: Enchanting (%08X) '%s' has invalid effect trigger type or effect for object (%08X) '%s'.",
-                m_pMagicItem->GetFormID(), ((TESObjectWithEditorID*)m_pMagicItem)->GetEditorID(), owner->GetFormID(),
-                ((TESObjectWithEditorID*)owner)->GetEditorID());
-            m_pMagicItem = 0;
+                pFormTouchSpell->GetFormID(), ((TESObjectWithEditorID*)pFormTouchSpell)->GetEditorID(), apOwner->GetFormID(),
+                ((TESObjectWithEditorID*)apOwner)->GetEditorID());
+            pFormTouchSpell = 0;
         }
     }
 }
@@ -71,6 +74,7 @@ extern int DAT_0101aef0;
 
 // @fnv 0x0047bd10
 // src: EXE 0x0047bd10
+// pdb: BGSTouchSpellForm::BGSTouchSpellForm | BGSTouchSpellForm.obj | debug, upstream name already matches, high
 BGSTouchSpellForm* __fastcall BGSTouchSpellForm_BGSTouchSpellForm(BGSTouchSpellForm* pThis)
 {
     pThis->BaseFormComponent::BaseFormComponent();
@@ -80,6 +84,9 @@ BGSTouchSpellForm* __fastcall BGSTouchSpellForm_BGSTouchSpellForm(BGSTouchSpellF
 }
 
 // @fnv 0x0047bdd0
+// pdb: BGSTouchSpellForm::CopyComponent | BGSTouchSpellForm.obj | retail, vtable slot, high
+// pdb params: apCopyFC
+// pdb locals: pCopy
 void BGSTouchSpellForm::BaseFormRecord(BaseFormComponent* apCopyFC)
 {
     BGSTouchSpellForm* pCopy = dynamic_cast<BGSTouchSpellForm*>(apCopyFC);
@@ -90,6 +97,9 @@ void BGSTouchSpellForm::BaseFormRecord(BaseFormComponent* apCopyFC)
 }
 
 // @fnv 0x0047be30
+// pdb: BGSTouchSpellForm::CompareComponent | BGSTouchSpellForm.obj | retail, vtable slot, high
+// pdb params: apCompareFC
+// pdb locals: pCompare
 bool BGSTouchSpellForm::IsEqualToBase(BaseFormComponent* apCompareFC)
 {
     BGSTouchSpellForm* pCompare = dynamic_cast<BGSTouchSpellForm*>(apCompareFC);

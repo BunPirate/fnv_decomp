@@ -211,14 +211,14 @@ struct Ref
     bool FUN_00440da0();
     ExtraList* BSFile_GetDevice();
     void TESObjectREFR_CleanUpTraps();
-    void TESForm_SetDisabled(int a);
+    void TESForm_SetDisabled(int abDisabled);
     Proc* FUN_008d8520();
-    void ApplyActorSpells();
+    void Actor_DispelPermanentMagic();
     Ref* FUN_008d6f30();
     bool TESObjectREFR_HasScript();
     bool GetTargeted();
     void PlayerCharacter_RemoveActorFromPlayercombatList(Ref* a);
-    void PlayerCharacter_RemovePerceivedActor(Ref* a);
+    void PlayerCharacter_RemovePerceivedActor(Ref* apActor);
     void PlayerCharacter_CheckForQuestTargetUpdate(Ref* a);
     int FUN_00931850();
     bool MobileObject_IsTalkingActivator();
@@ -231,11 +231,11 @@ struct Ref
     void TESForm_SetDisableFade(int a);
     void TESObjectREFR_Enable();
     void TESObjectREFR_MarkAsDeleted();
-    void TESObjectREFR_AttachSound(bool a);
+    void TESObjectREFR_AttachSound(bool abAttach);
     Ref* BGSSaveFormBuffer_GetForm();
     void TESObjectREFR_Disable();
     void DoDeathStuff();
-    void TESObjectCELL_AddScriptedRef(Ref* a);
+    void TESObjectCELL_AddScriptedRef(Ref* apRef);
     bool TESForm_GetHasSpokenFlag();
 };
 struct ExtraList
@@ -243,7 +243,7 @@ struct ExtraList
     Ref* ExtraDataList_GetAshPileRef();
     bool ExtraDataList_ShouldPopInWhenEnabledByParent();
     void* ExtraDataList_GetDroppedItemList();
-    void ExtraDataList_SetItemDropper(Ref* a);
+    void ExtraDataList_SetItemDropper(Ref* apDropper);
 };
 struct Iter
 {
@@ -568,7 +568,7 @@ struct ObjX
 {
     void TESObjectREFR_SetMarkerUsed(int a);
     ObjX* FUN_00586170();
-    void FUN_006fcfa0();
+    void HideTree();
 };
 struct Tes
 {
@@ -577,8 +577,8 @@ struct Tes
 struct GlobalObj
 {
     void RemoveActor(Ref* a);
-    void ProcessLists_RemoveReference(Ref* a, int b);
-    void ProcessLists_NullOutTargetRef(Ref* a, int b);
+    void ProcessLists_RemoveReference(Ref* apActor, int aWhichList);
+    void ProcessLists_NullOutTargetRef(Ref* apRef, int abDeleted);
 };
 extern Ref* DAT_011dea3c;
 extern Ref* DAT_011ca27c;
@@ -611,7 +611,7 @@ extern PathingdebuggeometryListNodeView DAT_011db150;
 extern int DAT_011f21cc;
 extern int DAT_011db0d4;
 void Callee_007ebd50();
-void __cdecl VATSMenu_RemoveTarget(int a1);
+void __cdecl VATSMenu_RemoveTarget(int apRef);
 
 struct PointJack
 {
@@ -694,15 +694,18 @@ struct JackGeometry
 };
 // @fnv 0x00c59200
 // src: XBOX_PDB 0x00c59200
-JackGeometry* __cdecl BSTestObjects_CreateCoordinateJack(float scale)
+// pdb: BSTestObjects::CreateCoordinateJack | BSTestObjects.obj | retail, string-set bridge, high
+// pdb params: afScale
+// pdb locals: flag, lines, vertex, color
+JackGeometry* __cdecl BSTestObjects_CreateCoordinateJack(float afScale)
 {
     PointJack* positions = new PointJack[6];
     positions[0] = PointJack(0, 0, 0);
-    positions[1] = PointJack(scale, 0, 0);
+    positions[1] = PointJack(afScale, 0, 0);
     positions[2] = PointJack(0, 0, 0);
-    positions[3] = PointJack(0, scale, 0);
+    positions[3] = PointJack(0, afScale, 0);
     positions[4] = PointJack(0, 0, 0);
-    positions[5] = PointJack(0, 0, scale);
+    positions[5] = PointJack(0, 0, afScale);
     ColorJack* colors = new ColorJack[6];
     colors[0] = DAT_012032f8;
     colors[1] = DAT_012032f8;

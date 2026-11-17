@@ -62,18 +62,20 @@ __forceinline hkSimdReal hkVector4::length3() const
 
 struct FUN_00df6550
 {
-    void AddObjectReference(hkReferencedObject* p);
+    void AddObjectReference(hkReferencedObject* group);
 };
 
 // @fnv 0x00df6550
-void FUN_00df6550::AddObjectReference(hkReferencedObject* apObject)
+// pdb: hkSimpleLocalFrame::setGroup | hkLocalFrame.obj | retail, vtable slot, high
+// pdb params: group
+void FUN_00df6550::AddObjectReference(hkReferencedObject* group)
 {
-    if (apObject)
-        apObject->addReference();
+    if (group)
+        group->addReference();
     hkReferencedObject* pOldObject = *(hkReferencedObject**)((char*)this + 0x60);
     if (pOldObject)
         pOldObject->removeReference();
-    *(hkReferencedObject**)((char*)this + 0x60) = apObject;
+    *(hkReferencedObject**)((char*)this + 0x60) = group;
 }
 
 struct FUN_00df6690_StandIn
@@ -81,14 +83,16 @@ struct FUN_00df6690_StandIn
     char pad[0x50];
     int** m_table;
 
-    int* hkSimpleLocalFrame_getChildFrame(int index);
+    int* hkSimpleLocalFrame_getChildFrame(int i);
 };
 
 // @fnv 0x00df6690
 // src: HAVOK_LIB 0x00df6690
-int* FUN_00df6690_StandIn::hkSimpleLocalFrame_getChildFrame(int index)
+// pdb: hkSimpleLocalFrame::getChildFrame | hkLocalFrame.obj | debug, upstream name already matches, high
+// pdb params: i
+int* FUN_00df6690_StandIn::hkSimpleLocalFrame_getChildFrame(int i)
 {
-    return m_table[index];
+    return m_table[i];
 }
 
 struct FnvCpu_FUN_00df6680_CpuObject
@@ -140,6 +144,10 @@ class FUN_00df66a0_Node
 };
 // Computes the node's world transform: if it has a parent, combines the parent's transform with the local transform, otherwise writes the local transform to dest.
 // @fnv 0x00df66a0
+// pdb: hkLocalFrame::getTransformToRoot | hkLocalFrame.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiAVObject::GetWorldTransform
+// pdb params: transform
+// pdb locals: rootFromParent, parentFromMe
 void FUN_00df66a0_Node::GetWorldTransform(hkTransform* dest)
 {
     if (v8())
@@ -182,7 +190,7 @@ class hkpDF65Child
 class hkpDF65Node : public hkReferencedObject
 {
   public:
-    void hkSimpleLocalFrame_getNearbyFrames(const hkVector4& kPos, float fRadius, hkpDF65Collector* pkCollector);
+    void hkSimpleLocalFrame_getNearbyFrames(const hkVector4& target, float maxDistance, hkpDF65Collector* collector);
 
     unsigned int unk08, unk0C;
     hkTransform m_kMotionTransform;
@@ -191,22 +199,25 @@ class hkpDF65Node : public hkReferencedObject
 
 // @fnv 0x00df65d0
 // src: HAVOK_SRC 0x00df65d0
-void hkpDF65Node::hkSimpleLocalFrame_getNearbyFrames(const hkVector4& kPos, float afRadius, hkpDF65Collector* pkCollector)
+// pdb: hkSimpleLocalFrame::getNearbyFrames | hkLocalFrame.obj | retail, upstream name already matches, high
+// pdb params: target, maxDistance, collector
+// pdb locals: localTarget
+void hkpDF65Node::hkSimpleLocalFrame_getNearbyFrames(const hkVector4& target, float maxDistance, hkpDF65Collector* collector)
 {
     hkVector4 kDiff;
-    kDiff.setSub4(kPos, m_kMotionTransform.position);
+    kDiff.setSub4(target, m_kMotionTransform.position);
     const float fDistance = kDiff.length3();
-    if (fDistance <= afRadius)
+    if (fDistance <= maxDistance)
     {
-        pkCollector->AddHit(this, fDistance);
+        collector->AddHit(this, fDistance);
     }
     if (m_children.GetLogicalSize() > 0)
     {
         hkVector4 kLocalPos;
-        kLocalPos.hkVector4_setTransformedInversePos(m_kMotionTransform, kPos);
+        kLocalPos.hkVector4_setTransformedInversePos(m_kMotionTransform, target);
         for (int i = 0; i < m_children.GetLogicalSize(); i++)
         {
-            m_children[i]->query(kLocalPos, afRadius, pkCollector);
+            m_children[i]->query(kLocalPos, maxDistance, collector);
         }
     }
 }
@@ -237,20 +248,23 @@ struct df6710_self
     virtual void unk06();
     virtual void unk07();
     virtual df6710_frame* unk08();
-    void hkLocalFrame_getPositionInRoot(hkVector4* m);
+    void hkLocalFrame_getPositionInRoot(hkVector4* position);
 };
 
 // Calls unk05 with m, then walks the unk08 chain and passes each unk03 output and m to FUN_00c7f640.
 // @fnv 0x00df6710
 // src: HAVOK_LIB 0x00df6710
-void df6710_self::hkLocalFrame_getPositionInRoot(hkVector4* apMatrix)
+// pdb: hkLocalFrame::getPositionInRoot | hkLocalFrame.obj | retail, upstream name already matches, high
+// pdb params: position
+// pdb locals: parentTransform
+void df6710_self::hkLocalFrame_getPositionInRoot(hkVector4* position)
 {
     hkTransform buf;
-    unk05(apMatrix);
+    unk05(position);
     for (df6710_frame* p = unk08(); p; p = p->unk08())
     {
         p->unk03(&buf);
-        apMatrix->setTransformedPos_00c7f640(buf, *apMatrix);
+        position->setTransformedPos_00c7f640(buf, *position);
     }
 }
 
@@ -265,6 +279,9 @@ struct LocalFrameStandIn
 };
 // Calls getTransform to fill a local hkTransform and copies its translation column into the result hkVector4.
 // @fnv 0x00df6770
+// pdb: hkLocalFrame::getLocalPosition | hkLocalFrame.obj | retail, object-file run extension, low
+// pdb params: position
+// pdb locals: t
 void LocalFrameStandIn::GetTranslation(hkVector4* apTranslation)
 {
     hkTransform localTransform;
@@ -316,7 +333,8 @@ struct FUN_00cb0c00_class
     }
 };
 
-class FUN_00df67d0 : public hkReferencedObject
+// pdb: class hkSimpleLocalFrame, size 0x70 (here 0x68), bases: hkLocalFrame, 5 members
+class hkSimpleLocalFrame : public hkReferencedObject // src: EXE 0x010d461c (vtable; old: FUN_00df67d0)
 {
   public:
     int unk08;
@@ -327,12 +345,12 @@ class FUN_00df67d0 : public hkReferencedObject
     hkReferencedObject* m_kGroupData;
     FUN_00cb0c00_class m_name;
 
-    virtual ~FUN_00df67d0();
+    virtual ~hkSimpleLocalFrame();
 };
 
 // Calls FUN_00c905b0 on each entry in m_children and on m_kGroupData when it is nonnull.
 // @fnv 0x00df67d0
-FUN_00df67d0::~FUN_00df67d0()
+hkSimpleLocalFrame::~hkSimpleLocalFrame()
 {
     int n = m_children.m_iElementCount;
     for (int i = 0; i < n; i++)

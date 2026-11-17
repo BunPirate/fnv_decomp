@@ -5,13 +5,13 @@
 #include "../../../../include/NiD3DShaderProgramFactory.h"
 #include "../../../../include/NiTStringPointerMap.h"
 struct Program;
-extern Program* DAT_0126fa10;
+extern Program* NiD3DShaderProgramFactory_ms_pkFactory; // src: XBOX_RETAIL_PDB 0x0126fa10 (old: DAT_0126fa10)
 Program* NiD3DShaderProgramFactory_GetInstance();
 struct Program
 {
     virtual void Destroy(int);
 };
-extern Program* DAT_0126fa10;
+extern Program* NiD3DShaderProgramFactory_ms_pkFactory; // src: XBOX_RETAIL_PDB 0x0126fa10 (old: DAT_0126fa10)
 void DestroyProgram();
 struct Nd
 {
@@ -57,6 +57,9 @@ struct FUN_0045cee0_shell
 };
 // @fnv 0x0045cee0
 // src: XBOX_PDB 0x0045cee0
+// pdb: NiTPointerAllocator<unsigned int>::Deallocate | TES.obj | retail, call graph (shared callers), medium
+// pdb params: pkDel
+// pdb locals: pDel
 void __thiscall FUN_0045cee0_shell::NiTPointerAllocator_unsigned_int_Deallocate(void* pkItem)
 {
     g_011c5f80.Lock(0);

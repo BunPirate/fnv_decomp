@@ -17,6 +17,8 @@ extern MemoryManager g_memoryManager;
 
 // Calls FUN_00aa24f0, then deallocates this via g_memoryManager._DeallocateAlias when flags has bit 1 set, and returns this.
 // @fnv 0x00b01480
+// pdb: BSSearchPath::`scalar deleting destructor' | BSSearchPath.obj | retail, object-file run extension, low
+// pdb note: debug build links it to BSSearchPath::BSSearchPath
 void* BSSearchPath::FUN_00b01480(unsigned int flags)
 {
     this->SetVptr00();
@@ -176,13 +178,15 @@ S_00b01d20_FileCache* S_00b01d20_FileCache::DestroyFileCache(unsigned int uiFlag
 int __cdecl FUN_00ec65a6(char* dst, unsigned int size, const char* src);
 
 // @fnv 0x00b01390
+// pdb: BSFileCache::RunConsistencyCheck | BSFileCache.obj | debug, object-file run extension, low
+// pdb params: apCachedFile
 bool BSSearchPath::ResolveSearchPath(char* out, unsigned int unused)
 {
-    switch (m_uiSearchPathValue)
+    switch (m_uiNextPath)
     {
     case 0:
-        FUN_00ec65a6(out, 0x104, m_acFilePathBuffer);
-        m_uiSearchPathValue = m_uiSearchPathValue + 1;
+        FUN_00ec65a6(out, 0x104, m_acFilePath);
+        m_uiNextPath = m_uiNextPath + 1;
         return true;
     }
     return false;

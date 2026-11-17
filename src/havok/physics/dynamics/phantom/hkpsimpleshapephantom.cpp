@@ -47,7 +47,7 @@ typedef short hkInt16;
 
 inline unsigned int hkpCollidable::GetFilterInfoForKey() const
 {
-    return m_kBroadPhaseHandle.m_uiCollisionFilterData;
+    return m_broadPhaseHandle.m_collisionFilterInfo;
 }
 
 inline const hkpShape* hkpCollidable::getShape() const
@@ -73,6 +73,7 @@ struct FUN_00d1f9c0_StandIn
 
 // Calls FUN_00d1f780, then if flags has bit 1 set frees this through the memory router's free with this->size, and returns this.
 // @fnv 0x00d1f9c0
+// pdb: hkpSimpleShapePhantom::`scalar deleting destructor' | hkpSimpleShapePhantom.obj | retail, vtable slot, high
 void* FUN_00d1f9c0_StandIn::FUN_00d1f9c0(unsigned int flags)
 {
     this->FUN_00d1f780();
@@ -110,36 +111,38 @@ struct DetailLess
 };
 // Sorts the range [lo, hi] of a ShapeDetail pointer array in place by key using a quicksort partition loop and recursion.
 // @fnv 0x00cf2ed0
-void __cdecl QuickSortShapeDetails(ShapeDetail** apItems, int lo, int hi, DetailLess aComparator)
+// pdb: hkAlgorithm::quickSortRecursive<hkpSimpleShapePhantom::CollisionDetail,hkpSimpleShapePhantom::OrderByUid> | hkpSimpleShapePhantom.obj | retail, call graph (shared callers), high
+// pdb params: pArr, d, h, cmpLess
+void __cdecl QuickSortShapeDetails(ShapeDetail** pArr, int d, int hi, DetailLess cmpLess)
 {
     for (;;)
     {
-        int i = lo;
+        int i = d;
         int iRight = hi;
-        AlignedShapePtr pivot = apItems[(lo + hi) >> 1];
+        AlignedShapePtr pivot = pArr[(d + hi) >> 1];
         do
         {
-            while (aComparator(apItems[i], pivot))
+            while (cmpLess(pArr[i], pivot))
                 ++i;
-            while (aComparator(pivot, apItems[iRight]))
+            while (cmpLess(pivot, pArr[iRight]))
                 --iRight;
             if (iRight >= i)
             {
                 if (iRight != i)
                 {
-                    ShapeDetail* pTemp = apItems[iRight];
-                    apItems[iRight] = apItems[i];
-                    apItems[i] = pTemp;
+                    ShapeDetail* pTemp = pArr[iRight];
+                    pArr[iRight] = pArr[i];
+                    pArr[i] = pTemp;
                 }
                 --iRight;
                 ++i;
             }
         } while (i <= iRight);
-        if (lo < iRight)
-            QuickSortShapeDetails(apItems, lo, iRight, aComparator);
+        if (d < iRight)
+            QuickSortShapeDetails(pArr, d, iRight, cmpLess);
         if (i >= hi)
             break;
-        lo = i;
+        d = i;
     }
 }
 
@@ -241,6 +244,8 @@ class hkObjXd1f230
 
 // Returns true if the pointer pv is found in the m_items array, otherwise false.
 // @fnv 0x00d1f230
+// pdb: hkpSimpleShapePhantom::isOverlappingCollidableAdded | hkpSimpleShapePhantom.obj | debug, vtable slot, medium
+// pdb params: collidable
 hkBool hkObjXd1f230::Contains(void* apItem) const
 {
     for (int i = 0; i < m_items.m_iElementCount; i++)
@@ -255,27 +260,29 @@ class PhantomOverlapRemoval : public hkpSimpleShapePhantom
 {
   public:
     // Shared hkpSimpleShapePhantom lacks the 0x00ca9520 overlap notification helper.
-    void NotifyAll(hkpCollidable* collidable, hkBool wasAdded) throw();
-    void hkpSimpleShapePhantom_removeOverlappingCollidable(hkpCollidable* pkCollidable) throw();
+    void hkpPhantom_fireCollidableRemoved(hkpCollidable* collidable, hkBool collidableWasAdded) throw();
+    void hkpSimpleShapePhantom_removeOverlappingCollidable(hkpCollidable* collidable) throw();
 };
 
 // @fnv 0x00d1f5a0
 // src: HAVOK_LIB 0x00d1f5a0
-void PhantomOverlapRemoval::hkpSimpleShapePhantom_removeOverlappingCollidable(hkpCollidable* pkCollidable) throw()
+// pdb: hkpSimpleShapePhantom::removeOverlappingCollidable | hkpSimpleShapePhantom.obj | retail, upstream name already matches, high
+// pdb params: collidable
+void PhantomOverlapRemoval::hkpSimpleShapePhantom_removeOverlappingCollidable(hkpCollidable* collidable) throw()
 {
-    if (pkCollidable->getShape() != 0)
+    if (collidable->getShape() != 0)
     {
-        for (int i = m_kCollisionDetails.GetLogicalSize() - 1; i >= 0; i--)
+        for (int i = m_collisionDetails.GetLogicalSize() - 1; i >= 0; i--)
         {
-            if (m_kCollisionDetails[i].m_kCollidable == pkCollidable)
+            if (m_collisionDetails[i].m_kCollidable == collidable)
             {
-                NotifyAll(pkCollidable, true);
-                m_kCollisionDetails.removeAt(i);
-                m_bOrderDirty = true;
+                hkpPhantom_fireCollidableRemoved(collidable, true);
+                m_collisionDetails.removeAt(i);
+                m_orderDirty = true;
                 return;
             }
         }
-        NotifyAll(pkCollidable, false);
+        hkpPhantom_fireCollidableRemoved(collidable, false);
     }
 }
 
@@ -283,11 +290,11 @@ class hkClassD1F6;
 
 extern const hkClassD1F6 DAT_0126902c;
 
-int __cdecl hkStatisticsCollector_getAllocatedSize(const void* pvChunk, int iNumBytes) throw();
+int __cdecl hkStatisticsCollector_getAllocatedSize(const void* p, int size) throw();
 
 template <class T> inline void AddArrayStatistics(hkStatisticsCollector* collector, const char* name, const hkArray<T>& array)
 {
-    if ((array.m_iCapacityState & 0x80000000) == 0 || collector->m_reportInplaceAllocations)
+    if ((array.m_iCapacityState & 0x80000000) == 0 || collector->m_includeUnmanagedArrayMemory)
     {
         const T* data = array.m_data;
         int allocated = hkStatisticsCollector_getAllocatedSize(data, array.getCapacity() * sizeof(T));
@@ -301,35 +308,39 @@ class hkObjD1F6 : public hkpSimpleShapePhantom
     // 0x00d07cf0 is the phantom listener statistics helper, absent from the shared declaration.
     void WritePhantomLists(hkStatisticsCollector* collector, const hkClassD1F6* cls) const throw();
 
-    void CollectStatistics(hkStatisticsCollector* pkCollector, const hkClassD1F6* pkClass) const throw();
+    void CollectStatistics(hkStatisticsCollector* collector, const hkClassD1F6* cls) const throw();
 };
 
 // Collects the base phantom listener statistics, then reports the collision-detail array as "OverlapPtr".
 // @fnv 0x00d1f620
-void hkObjD1F6::CollectStatistics(hkStatisticsCollector* pkCollector, const hkClassD1F6* pkClass) const throw()
+// pdb: hkpSimpleShapePhantom::calcContentStatistics | hkpSimpleShapePhantom.obj | retail, string-set bridge, high
+// pdb params: collector, cls
+void hkObjD1F6::CollectStatistics(hkStatisticsCollector* collector, const hkClassD1F6* cls) const throw()
 {
-    WritePhantomLists(pkCollector, &DAT_0126902c);
-    AddArrayStatistics(pkCollector, "OverlapPtr", m_kCollisionDetails);
+    WritePhantomLists(collector, &DAT_0126902c);
+    AddArrayStatistics(collector, "OverlapPtr", m_collisionDetails);
 }
 
-extern "C" int __stdcall hkpPhantom_fireCollidableAdded(void* object);
+extern "C" int __stdcall hkpPhantom_fireCollidableAdded(void* collidable);
 extern "C" hkMemoryRouter* __cdecl hkMemoryRouter_getInstance();
-void __cdecl ResizeAudioStream(void* allocator, void* array, int elementSize);
+void __cdecl ResizeAudioStream(void* mem, void* array, int sizeElem);
 
 struct FUN_00d1f690_Member : hkpSimpleShapePhantom
 {
-    void AddCollisionDetail(void* object);
+    void AddCollisionDetail(void* collidable);
 };
 
 // If the object's first pointer is non-null and FUN_00ca94c0 returns 0, appends the object to the collision detail array, growing it when full, and sets a flag.
 // @fnv 0x00d1f690
-void FUN_00d1f690_Member::AddCollisionDetail(void* object)
+// pdb: hkpSimpleShapePhantom::addOverlappingCollidable | hkpSimpleShapePhantom.obj | retail, vtable slot, high
+// pdb params: collidable
+void FUN_00d1f690_Member::AddCollisionDetail(void* collidable)
 {
-    if (*reinterpret_cast<void**>(object) != 0)
+    if (*reinterpret_cast<void**>(collidable) != 0)
     {
-        if (hkpPhantom_fireCollidableAdded(object) == 0)
+        if (hkpPhantom_fireCollidableAdded(collidable) == 0)
         {
-            hkArray<hkpSimpleShapePhantomCollisionDetail>* details = &m_kCollisionDetails;
+            hkArray<hkpSimpleShapePhantomCollisionDetail>* details = &m_collisionDetails;
             hkMemoryRouter* router = hkMemoryRouter_getInstance();
             if (details->m_iElementCount == (details->m_iCapacityState & 0x3fffffff))
             {
@@ -337,8 +348,8 @@ void FUN_00d1f690_Member::AddCollisionDetail(void* object)
             }
             void** slot = reinterpret_cast<void**>(details->m_data) + details->m_iElementCount;
             ++details->m_iElementCount;
-            *slot = object;
-            m_bOrderDirty = 1;
+            *slot = collidable;
+            m_orderDirty = 1;
         }
     }
 }
@@ -348,7 +359,7 @@ struct hkLessD1F6
 {
 };
 
-void __cdecl QuickSortShapeDetails(void** pArr, int iStart, int iEnd, hkLessD1F6 kCmp);
+void __cdecl QuickSortShapeDetails(void** pArr, int d, int iEnd, hkLessD1F6 cmpLess);
 
 inline void quickSortD1F6(void** pArr, int iSize, hkLessD1F6 kCmp)
 {
@@ -455,6 +466,7 @@ struct hkObjD1F6
 
 // If m_16c is set, sorts the m_160 array of m_164 elements with quickSortD1F6 and clears m_16c.
 // @fnv 0x00d1f6f0
+// pdb: hkpSimpleShapePhantom::ensureDeterministicOrder | hkpSimpleShapePhantom.obj | retail, vtable slot, high
 void hkObjD1F6::SortAndClearFlag()
 {
     if (m_16c)
@@ -503,34 +515,35 @@ class FUN_00d1f730 : public hkpSimpleShapePhantom
     static __forceinline void* operator new(unsigned int uiSize) throw()
     {
         hkpWorldObject* p = (hkpWorldObject*)heapD1F7(hkMemoryRouter_getInstance()).blockAlloc(uiSize);
-        p->m_usMemSizeAndFlags = (hkUint16)uiSize;
+        p->m_memSizeAndFlags = (hkUint16)uiSize;
         return p;
     }
     static void operator delete(void* p) throw();
 
     const hkTransform& getTransform() const
     {
-        return m_kMotionState.m_kMotionTransform;
+        return m_motionState.m_transform;
     }
     const hkpCollidable* getCollidable() const { return &m_kCollidable; }
     // 0x00ca92a0 copies world-object properties; the shared header has no declaration yet.
     void CopyEntriesFrom(const hkpWorldObject* other) throw();
 
-    FUN_00d1f730(const hkpShape* pkShape, const hkTransform& kTransform,
-                 hkUint32 uiCollisionFilterInfo) throw();
+    FUN_00d1f730(const hkpShape* shape, const hkTransform& transform,
+                 hkUint32 collisionFilterInfo) throw();
     hkpWorldObject* ClonePhantom() const throw();
 };
 
 typedef char fnv_check_d1f7e0[(sizeof(FUN_00d1f730) == 0x170) ? 1 : -1];
 
 // @fnv 0x00d1f7e0
+// pdb: hkpSimpleShapePhantom::clone | hkpSimpleShapePhantom.obj | retail, vtable slot, high
 hkpWorldObject* FUN_00d1f730::ClonePhantom() const throw()
 {
     const hkpCollidable* pkCollidable = getCollidable();
     FUN_00d1f730* pkPhantom =
         new FUN_00d1f730(pkCollidable->getShape(), getTransform(), pkCollidable->GetFilterInfoForKey());
-    pkPhantom->m_kPhantomOverlapListeners = m_kPhantomOverlapListeners;
-    pkPhantom->m_kPhantomListeners = m_kPhantomListeners;
+    pkPhantom->m_overlapListeners = m_overlapListeners;
+    pkPhantom->m_phantomListeners = m_phantomListeners;
     pkPhantom->CopyEntriesFrom(this);
     return pkPhantom;
 }
@@ -662,20 +675,23 @@ class PhantomD1F
     void DispatchOverlaps(void* collector, const hkpCollisionInput* input);
 };
 // @fnv 0x00d1f4a0
-void PhantomD1F::DispatchOverlaps(void* collector, const hkpCollisionInput* apCollisionInput)
+// pdb: hkpSimpleShapePhantom::getClosestPoints | hkpSimpleShapePhantom.obj | retail, vtable slot, high
+// pdb params: collector, input
+// pdb locals: assertBuf, ostr
+void PhantomD1F::DispatchOverlaps(void* collector, const hkpCollisionInput* input)
 {
-    if (!apCollisionInput)
-        apCollisionInput = m_pOwningWorld->m_pCollisionInput;
-    hkpCollisionDispatcher* dispatcher = apCollisionInput->m_pCollisionDispatcher;
+    if (!input)
+        input = m_pOwningWorld->m_pCollisionInput;
+    hkpCollisionDispatcher* dispatcher = input->m_dispatcher;
     for (int i = m_overlaps.GetLogicalSize() - 1; i >= 0; i--)
     {
         hkpCdBody*& pOtherBody = m_overlaps[i];
         hkpCollisionDispatcher::GetClosestPointsFunc pAgentFunc =
             dispatcher
-                ->m_agent2Funcs[dispatcher->m_agent2TypeMap[m_kCollisionBody.m_pCollisionShape->getType()]
-                                                       [pOtherBody->m_pCollisionShape->getType()]]
+                ->m_agent2Funcs[dispatcher->m_agent2TypeMap[m_kCollisionBody.m_shape->getType()]
+                                                       [pOtherBody->m_shape->getType()]]
                 .m_pGetPenetrationsFunc;
-        pAgentFunc(m_kCollisionBody, *pOtherBody, reinterpret_cast<const CollisionAgentContext&>(*apCollisionInput),
+        pAgentFunc(m_kCollisionBody, *pOtherBody, reinterpret_cast<const CollisionAgentContext&>(*input),
                    *static_cast<hkpCdPointCollector*>(collector));
     }
 }
@@ -726,14 +742,17 @@ struct FUN_00d1f520_Phantom : public hkpSimpleShapePhantom
 };
 // Iterates collision details and calls the dispatcher's agent2 penetration query function, breaking early when the collector reports a hit distance.
 // @fnv 0x00d1f520
+// pdb: hkpSimpleShapePhantom::getPenetrations | hkpSimpleShapePhantom.obj | retail, vtable slot, high
+// pdb params: collector, input
+// pdb locals: assertBuf, ostr, i
 void FUN_00d1f520_Phantom::QueryPenetrations(FUN_00d1f520_Collector& collector, const hkpCollisionInput* input)
 {
     if (!input)
-        input = static_cast<FUN_00d1f520_World*>(m_pOwningWorld)->m_pCollisionInput;
-    hkpCollisionDispatcher* d = input->m_pCollisionDispatcher;
-    for (int i = m_kCollisionDetails.m_iElementCount - 1; i >= 0; i--)
+        input = static_cast<FUN_00d1f520_World*>(m_world)->m_pCollisionInput;
+    hkpCollisionDispatcher* d = input->m_dispatcher;
+    for (int i = m_collisionDetails.m_iElementCount - 1; i >= 0; i--)
     {
-        hkpSimpleShapePhantomCollisionDetail* pDetail = m_kCollisionDetails.m_data + i;
+        hkpSimpleShapePhantomCollisionDetail* pDetail = m_collisionDetails.m_data + i;
         int ta = m_kCollidable.m_pCollisionShape->getType();
         d->m_agent2Funcs[d->m_agent2TypeMap[ta][pDetail->m_kCollidable->m_pCollisionShape->getType()]]
             .m_pQueryPenetrationsFunc(reinterpret_cast<const hkpCdBody&>(m_kCollidable),
@@ -749,26 +768,31 @@ void FUN_00d1f520_Phantom::QueryPenetrations(FUN_00d1f520_Collector& collector, 
 struct FUN_00d1f450_Obj
 {
     void hkpSimpleShapePhantom_setPositionAndLinearCast(int* a, int b, int c, int d);
-    void hkpSimpleShapePhantom_setTransformAndLinearCast(int* source, int a, int b, int c);
+    void hkpSimpleShapePhantom_setTransformAndLinearCast(int* transform, int input, int castCollector, int startCollector);
 };
 
 // Copies 12 floats from source to this at float index 0x2C using SSE, then calls FUN_00d1f270 with source plus 0x30 bytes and a, b, c.
 // @fnv 0x00d1f450
 // src: HAVOK_SRC 0x00d1f450
-void FUN_00d1f450_Obj::hkpSimpleShapePhantom_setTransformAndLinearCast(int* source, int a, int b, int c)
+// pdb: hkpSimpleShapePhantom::setTransformAndLinearCast | hkpSimpleShapePhantom.obj | debug, upstream name already matches, high
+// pdb params: transform, input, castCollector, startCollector
+// pdb locals: assertBuf, ostr
+void FUN_00d1f450_Obj::hkpSimpleShapePhantom_setTransformAndLinearCast(int* transform, int input, int castCollector, int startCollector)
 {
     float* destination = reinterpret_cast<float*>(this) + 0x2C;
-    float* vectors = reinterpret_cast<float*>(source);
+    float* vectors = reinterpret_cast<float*>(transform);
 
     _mm_store_ps(destination + 0, _mm_load_ps(vectors + 0));
     _mm_store_ps(destination + 4, _mm_load_ps(vectors + 4));
     _mm_store_ps(destination + 8, _mm_load_ps(vectors + 8));
 
-    this->hkpSimpleShapePhantom_setPositionAndLinearCast(reinterpret_cast<int*>(reinterpret_cast<char*>(source) + 0x30), a, b, c);
+    this->hkpSimpleShapePhantom_setPositionAndLinearCast(reinterpret_cast<int*>(reinterpret_cast<char*>(transform) + 0x30), input, castCollector, startCollector);
 }
 
 namespace fnv_00d1f960 {
 // @fnv 0x00d1f960
+// pdb: hkpSimpleShapePhantom::deallocateInternalArrays | hkpSimpleShapePhantom.obj | retail, upstream name already matches, high
+// pdb locals: assertBuf, ostr
 hkMemoryRouter* hkMemoryRouter_getInstance();
 struct C : hkpSimpleShapePhantom
 {
@@ -778,17 +802,17 @@ struct C : hkpSimpleShapePhantom
 // src: HAVOK_LIB 0x00d1f960
 void C::hkpSimpleShapePhantom_deallocateInternalArrays()
 {
-    if (m_kCollisionDetails.m_iElementCount == 0)
+    if (m_collisionDetails.m_iElementCount == 0)
     {
         hkMemoryAllocator& allocator = reinterpret_cast<hkMemoryAllocator&>(hkMemoryRouter_getInstance()->heap());
-        int flags = m_kCollisionDetails.m_iCapacityState;
-        m_kCollisionDetails.m_iElementCount = 0;
+        int flags = m_collisionDetails.m_iCapacityState;
+        m_collisionDetails.m_iElementCount = 0;
         if ((flags & 0x80000000) == 0)
         {
-            allocator.bufFree(m_kCollisionDetails.m_data, (flags & 0x3fffffff) * 4);
+            allocator.bufFree(m_collisionDetails.m_data, (flags & 0x3fffffff) * 4);
         }
-        m_kCollisionDetails.m_data = 0;
-        m_kCollisionDetails.m_iCapacityState = 0x80000000;
+        m_collisionDetails.m_data = 0;
+        m_collisionDetails.m_iCapacityState = 0x80000000;
     }
     hkpShapePhantom_deallocateInternalArrays();
 }

@@ -8,6 +8,7 @@
 
 class NiRenderer;
 
+// pdb: class NiRenderedTexture, size 0x48, bases: NiTexture, 7 members
 class NiRenderedTexture : public NiTexture
 {
   public:
@@ -25,11 +26,11 @@ class NiRenderedTexture : public NiTexture
                                      NiRenderedTexture*, unsigned int);
 
     NiPointer<Ni2DBuffer> m_spRenderTargetBuffer;
-    unsigned int m_uiAliasOffset;
-    NiRenderedTexture* m_pReuseTexture;
-    Ni2DBuffer::MultiSamplePreference m_eMultiSamplePreference;
-    bool m_bUseMipMaps;
-    bool m_bUseDepthBuffer;
+    unsigned int uiAliasOffset; // src: XBOX_RETAIL_PDB +0x34 (old: m_uiAliasOffset)
+    NiRenderedTexture* pAliasTexture; // src: XBOX_RETAIL_PDB +0x38 (old: m_pReuseTexture)
+    Ni2DBuffer::MultiSamplePreference eMSAA; // src: XBOX_RETAIL_PDB +0x3c (old: m_eMultiSamplePreference)
+    bool bRenderedTexture; // src: XBOX_RETAIL_PDB +0x40 (old: m_bUseMipMaps)
+    bool bForceD3DFormat; // src: XBOX_RETAIL_PDB +0x41 (old: m_bUseDepthBuffer)
     _D3DFORMAT m_ePixelFormat;
 
     static bool ms_bUseMipMaps;

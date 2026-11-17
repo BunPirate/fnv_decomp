@@ -1,13 +1,16 @@
 // @fnv 0x0052cff0
-void NiColorInterpolator::SetAnimationKeys(ColorAnimationKey* keys, unsigned int count, NiAnimationKey::KeyType type)
+// src: XBOX_RETAIL_PDB 0x0052cff0
+// pdb: NiColorInterpolator::ReplaceKeys | TESImageSpaceModifier.obj | retail, call graph, high
+// pdb params: pkKeys, uiNumKeys, eType
+void NiColorInterpolator::ReplaceKeys(ColorAnimationKey* pkKeys, unsigned int uiNumKeys, NiAnimationKey::KeyType eType)
 {
-    if (count > 0)
+    if (uiNumKeys > 0)
     {
         if (!m_spColorData.operator->())
             m_spColorData = new NiColorData;
-        m_spColorData->SetColorKeys(keys, count, type);
-        m_uiLastKeyIndex = 0;
+        m_spColorData->ReplaceAnim(pkKeys, uiNumKeys, eType);
+        m_uiLastIdx = 0;
     }
     else if (m_spColorData.operator->())
-        m_spColorData->SetColorKeys(0, 0, NiAnimationKey::NOINTERP);
+        m_spColorData->ReplaceAnim(0, 0, NiAnimationKey::NOINTERP);
 }

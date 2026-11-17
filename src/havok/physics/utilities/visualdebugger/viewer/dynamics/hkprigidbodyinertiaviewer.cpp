@@ -14,19 +14,21 @@ __forceinline hkMemoryAllocator& routerHeap(hkMemoryRouter& router)
     return *reinterpret_cast<hkMemoryAllocator*>(router.m_heap);
 }
 
-void __cdecl Object_ConstructObject_00d67880();
+void __cdecl hkpRigidBodyInertiaViewer_create();
 
-extern int DAT_01268ffc;
+extern int hkpRigidBodyInertiaViewer_m_tag; // src: XBOX_RETAIL_PDB 0x01268ffc (old: DAT_01268ffc)
 extern int DAT_01269cd0;
 
 struct FUN_00dd9380_StandIn {
-    int __thiscall hkProcessFactory_registerProcess(const char* name, void* factory);
+    int __thiscall hkProcessFactory_registerProcess(const char* viewerName, void* creationFunction);
 };
 
 // @fnv 0x00d678c0
-void __cdecl RegisterInertiaTensors()
+// src: XBOX_RETAIL_PDB 0x00d678c0
+// pdb: hkpRigidBodyInertiaViewer::registerViewer | hkpRigidBodyInertiaViewer.obj | retail, string-set bridge, high
+void __cdecl hkpRigidBodyInertiaViewer_registerViewer()
 {
-    DAT_01268ffc = ((FUN_00dd9380_StandIn*)DAT_01269cd0)->hkProcessFactory_registerProcess("Inertia Tensors", &Object_ConstructObject_00d67880);
+    hkpRigidBodyInertiaViewer_m_tag = ((FUN_00dd9380_StandIn*)DAT_01269cd0)->hkProcessFactory_registerProcess("Inertia Tensors", &hkpRigidBodyInertiaViewer_create);
 }
 
 struct SubObject {
@@ -44,8 +46,8 @@ struct Arg {
     SubObject** m_34;
     int m_38;
 
-    void hkpWorld_addEntityListener(void* p);
-    void hkpWorld_addWorldPostSimulationListener(void* p);
+    void hkpWorld_addEntityListener(void* worldListener);
+    void hkpWorld_addWorldPostSimulationListener(void* worldListener);
 };
 
 struct Field28 {
@@ -62,6 +64,8 @@ struct FUN_00d67020_class {
 };
 
 // @fnv 0x00d67020
+// pdb: hkpRigidBodyInertiaViewer::addWorld | hkpRigidBodyInertiaViewer.obj | retail, object-file run extension, low
+// pdb params: world
 void FUN_00d67020_class::VisitSubObjects(Arg* arg) {
     arg->hkpWorld_addEntityListener(this ? &field28 : 0);
     arg->hkpWorld_addWorldPostSimulationListener(this ? &field2c : 0);
@@ -105,6 +109,7 @@ struct Owner {
 };
 // Iterates the collection's items and passes each to VisitSubObjects on the Handler at this-8, if the collection exists.
 // @fnv 0x00d67110
+// pdb: hkpRigidBodyInertiaViewer::init | hkpRigidBodyInertiaViewer.obj | retail, vtable slot, high
 void __thiscall Owner::ProcessCollectionItems() {
     if (collection != 0) {
         int n = collection->count;
@@ -153,6 +158,8 @@ struct S_00d67170 {
 
 // Finds item in the unk8 array and removes it at its index if present.
 // @fnv 0x00d67170
+// pdb: hkpRigidBodyInertiaViewer::entityRemovedCallback | hkpRigidBodyInertiaViewer.obj | debug, vtable slot, medium
+// pdb params: entity
 void S_00d67170::RemoveItem(void* item)
 {
     int index = unk8.indexOf(item);
@@ -160,12 +167,12 @@ void S_00d67170::RemoveItem(void* item)
         unk8.removeAt(index);
 }
 
-extern int DAT_01268ffc;
+extern int hkpRigidBodyInertiaViewer_m_tag; // src: XBOX_RETAIL_PDB 0x01268ffc (old: DAT_01268ffc)
 // @fnv 0x00d678e0
 // src: GUESS 0x00d678e0 (confidence: low)
 int __cdecl Object_GetDAT_01268ffc_00d678e0()
 {
-    return DAT_01268ffc;
+    return hkpRigidBodyInertiaViewer_m_tag;
 }
 
 struct FUN_00d66f30_inner {
@@ -218,7 +225,7 @@ struct FUN_00d66f30_params {
     int unk48;
     int unk4c;
 
-    void hkpWorld_removeEntityListener(void* apTarget);
+    void hkpWorld_removeEntityListener(void* worldListener);
     void ClearValue(void* apTarget);
 };
 
@@ -241,6 +248,8 @@ struct FUN_00d66f30_cls {
 
 // @fnv 0x00d66f30
 // src: GUESS 0x00d66f30 (confidence: low)
+// pdb: hkpRigidBodyInertiaViewer::removeWorld | hkpRigidBodyInertiaViewer.obj | retail, object-file run extension, low
+// pdb params: world
 void FUN_00d66f30_cls::ProcessEntries_00d66f30(FUN_00d66f30_params* apParams)
 {
     apParams->hkpWorld_removeEntityListener(this != 0 ? &m_kInner : 0);
@@ -354,22 +363,25 @@ public:
 
 class D671F0Base : public D671F0BaseA, public D671F0BaseB, public D671F0BaseC {
 public:
-    D671F0Base(void* info);
+    D671F0Base(void* contexts);
 
     D671F0World* m_pOwningWorld;
 };
 
-class FUN_00d671f0 : public D671F0Base, public D671F0ListenerA, public D671F0ListenerB {
+// pdb: class hkpRigidBodyInertiaViewer, size 0x48, bases: hkpWorldViewerBase, hkpEntityListener, hkpWorldPostSimulationListener, 2 members
+class hkpRigidBodyInertiaViewer : public D671F0Base, public D671F0ListenerA, public D671F0ListenerB { // src: EXE 0x010d1d24 (vtable; old: FUN_00d671f0)
 public:
-    FUN_00d671f0(void* info);
+    hkpRigidBodyInertiaViewer(void* contexts);
 
-    hkArray<void*> m_arrayA;
-    hkArray<void*> m_arrayB;
+    hkArray<void*> m_entitiesCreated; // src: XBOX_RETAIL_PDB +0x30 (old: m_arrayA)
+    hkArray<void*> m_displayBoxes; // src: XBOX_RETAIL_PDB +0x3c (old: m_arrayB)
 };
 
 // Constructor that forwards info to the D671F0Base base constructor and initializes the two listener arrays.
 // @fnv 0x00d671f0
-FUN_00d671f0::FUN_00d671f0(void* info) : D671F0Base(info)
+// pdb: hkpRigidBodyInertiaViewer::hkpRigidBodyInertiaViewer | hkpRigidBodyInertiaViewer.obj | retail, object-file gap fill, high
+// pdb params: contexts
+hkpRigidBodyInertiaViewer::hkpRigidBodyInertiaViewer(void* contexts) : D671F0Base(contexts)
 {
 }
 
@@ -396,7 +408,7 @@ public:
 
 class D67880Object : public D67880ReferencedObject, public D67880Interface {
 public:
-    __declspec(nothrow) D67880Object(const void* info);
+    __declspec(nothrow) D67880Object(const void* contexts);
 
     int unk0C;
     int unk10;
@@ -417,13 +429,15 @@ public:
 
 // Allocates a D67880Object from info and returns it as a D67880Interface pointer.
 // @fnv 0x00d67880
-// src: GUESS 0x00d67880 (confidence: medium)
-D67880Interface* __cdecl Object_ConstructObject_00d67880(const void* info)
+// src: XBOX_RETAIL_PDB 0x00d67880
+// pdb: hkpRigidBodyInertiaViewer::create | hkpRigidBodyInertiaViewer.obj | retail, object-file gap fill, high
+// pdb params: contexts
+D67880Interface* __cdecl hkpRigidBodyInertiaViewer_create(const void* contexts)
 {
-    return new D67880Object(info);
+    return new D67880Object(contexts);
 }
 
-void __cdecl ResizeAudioStream(void* allocator, void* array, int elementSize);
+void __cdecl ResizeAudioStream(void* mem, void* array, int sizeElem);
 template <typename T> inline void D671B0ConstructWithCopy(T* p, int n, const T& t) { for (int i = 0; i < n; i++) p[i] = t; }
 
 template <typename T>
@@ -438,13 +452,16 @@ struct D671B0Owner {
     int unk00;
     int unk04;
     hkArray<void*> m_ppData;
-    void AddItem(void* item);
+    void AddItem(void* entity);
 };
 // Appends item to the owner's array via the array's push method.
 // @fnv 0x00d671b0
-void D671B0Owner::AddItem(void* item)
+// pdb: hkpRigidBodyInertiaViewer::entityAddedCallback | hkpRigidBodyInertiaViewer.obj | retail, vtable slot, high
+// pdb params: entity
+// pdb locals: rigidBody
+void D671B0Owner::AddItem(void* entity)
 {
-    m_ppData.pushBack(item);
+    m_ppData.pushBack(entity);
 }
 
 extern int DAT_010d1d80;
@@ -560,13 +577,14 @@ struct Viewer_d672 {
     hkArray<DisplayGeometry_d672> m_geometries;
     void ProcessEntries_00d66f30(Entity_d672* entity);
     void FUN_00ddcc60();
-    void ProcessEntries_00d67250();
+    void hkpRigidBodyInertiaViewer_dtor();
 };
 
 // Resets vtable pointers, calls FUN_00d66f30 on each actor entry of the owning world, clears the geometry and id arrays, then calls FUN_00ddcc60.
 // @fnv 0x00d67250
-// src: GUESS 0x00d67250 (confidence: low)
-void Viewer_d672::ProcessEntries_00d67250()
+// src: XBOX_RETAIL_PDB 0x00d67250
+// pdb: hkpRigidBodyInertiaViewer::~hkpRigidBodyInertiaViewer | hkpRigidBodyInertiaViewer.obj | retail, object-file gap fill, high
+void Viewer_d672::hkpRigidBodyInertiaViewer_dtor()
 {
     m_vtbl00 = &DAT_010d1d80;
     m_vtbl08 = &DAT_010d1d60;
@@ -700,6 +718,7 @@ struct FUN_00d67930 {
 
 // Default constructor with an empty body for a type with a virtual destructor, m_usMemSizeAndFlags and m_sReferenceCount.
 // @fnv 0x00d67930
+// pdb: hkpRigidBodyInertiaViewer::`scalar deleting destructor' | hkpRigidBodyInertiaViewer.obj | retail, vtable slot, high
 FUN_00d67930::FUN_00d67930() {}
 }  // namespace fnv_00d67930
 
@@ -744,7 +763,7 @@ struct __declspec(align(16)) Vec {
     __forceinline Vec(float a, float b, float c, float d) { set(_mm_setr_ps(a,b,c,d)); }
     __forceinline Vec(const Vec& other) { set(other.get()); }
     __forceinline Vec& operator=(const Vec& other) { set(other.get()); return *this; }
-    void hkVector4_setRotatedDir(const Transform* transform, const Vec* value);
+    void hkVector4_setRotatedDir(const Transform* quat, const Vec* direction);
 };
 __forceinline Transform::Transform(const Transform& other) {
     __m128 a = _mm_load_ps(&other.m_f00), b = _mm_load_ps(&other.m_f10);
@@ -867,7 +886,7 @@ struct Shape {
     void FUN_00de1fc0();
     void InitializeFields_00de2010(const Vec* dimensions, const Transform* transform);
 };
-void __cdecl hkArrayUtil__reserve(void* allocator, void* array, int capacity, int elementSize);
+void __cdecl hkArrayUtil__reserve(void* mem, void* array, int numElem, int sizeElem);
 template <typename T>
 __forceinline void hkArrayBase<T>::GrowArrayCapacity(hkMemoryAllocator& allocator, int n)
 {
@@ -895,6 +914,7 @@ __forceinline void hkArrayBase<Shape>::_setSize(hkMemoryAllocator& allocator, in
     createShapes(m_data+m_iElementCount, n-m_iElementCount);
     m_iElementCount=n;
 }
+// pdb: class Renderer, size 0x1 (here 0x4), 0 members
 struct Renderer {
     virtual void v00();
     virtual void v04();
@@ -918,7 +938,7 @@ struct ViewerPart {
     int bodyCount;
     int bodyCapacity;
     hkArray<Shape> shapes;
-    void ProcessEntries_00d67340(float unused);
+    void ProcessEntries_00d67340(float world);
 };
 struct ViewerPrefix {
     virtual void v00();
@@ -928,7 +948,10 @@ struct ViewerPrefix {
 struct Viewer : ViewerPrefix, ViewerPart {};
 // @fnv 0x00d67340
 // src: GUESS 0x00d67340 (confidence: low)
-void ViewerPart::ProcessEntries_00d67340(float unused) {
+// pdb: hkpRigidBodyInertiaViewer::postSimulationCallback | hkpRigidBodyInertiaViewer.obj | retail, unique string literal, high
+// pdb params: world
+// pdb locals: geometries, m, t, halfExtents, centre, offset
+void ViewerPart::ProcessEntries_00d67340(float world) {
     recordEvent("TthkpRigidBodyInertiaViewer");
     recordEvent("TtgetProps");
     shapes.setSize(bodyCount);
@@ -969,7 +992,7 @@ void ViewerPart::ProcessEntries_00d67340(float unused) {
     pointers.m_iElementCount = count;
     for (int j = shapes.m_iElementCount - 1; j >= 0; --j)
         pointers.m_data[j] = &shapes.m_data[j];
-    static_cast<Viewer*>(this)->renderer->display(&pointers, 0xffff00ff, 0, DAT_01268ffc);
+    static_cast<Viewer*>(this)->renderer->display(&pointers, 0xffff00ff, 0, hkpRigidBodyInertiaViewer_m_tag);
     recordEvent(DAT_010c41f8);
     recordEvent(DAT_010c41f8);
     hkMemoryAllocator& allocator = routerHeap(hkMemoryRouter::getInstance());

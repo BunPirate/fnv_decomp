@@ -15,6 +15,7 @@ struct FUN_00a5c200 : ::NiObjectWords
     FUN_00a5c200();
 };
 // @fnv 0x00a5c200
+// pdb: NiObjectNET::NiObjectNET | NiObjectNET.obj | retail, call graph, medium
 FUN_00a5c200::FUN_00a5c200()
 {
     words[0] = (unsigned int)::DAT_0109b244;
@@ -47,6 +48,9 @@ class NiMemManager
 }
 
 // @fnv 0x00aa1420
+// pdb: NiBlendTransformInterpolator::NiBlendTransformInterpolator | NiBlendTransformInterpolator.obj | retail, call graph, low
+// pdb note: debug build links it to NiMemObject::operator new[]
+// pdb params: bManagerControlled, fWeightThreshold, ucArraySize
 void* NiMemObject::operator new[](size_t stSizeInBytes)
 {
     // The exe keeps the size (zero becomes 1) in a local and reuses the parameter's slot for the alignment (4); the
@@ -61,6 +65,8 @@ void* NiMemObject::operator new[](size_t stSizeInBytes)
 }
 
 // @fnv 0x00aa1460
+// pdb: NiMemObject::operator delete | NiMemObject.obj | debug, call graph, medium
+// pdb params: pvMem, stElementSize
 void NiMemObject::operator delete(void* pvMem, size_t stElementSize)
 {
     if (pvMem)

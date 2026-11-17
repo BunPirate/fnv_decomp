@@ -2,6 +2,7 @@
 
 #include "TESTexture.h"
 
+// pdb: class TESTexture1024, size 0xc, bases: TESTexture, 0 members
 class TESTexture1024 : public TESTexture
 {
 public:
@@ -10,5 +11,5 @@ public:
 
     unsigned int GetModelLength() const;
     const char* GetTextureResourceName();
-    void SetTexture(const char* texturePath);
+    void SetTexture(const char* apFullName);
 };

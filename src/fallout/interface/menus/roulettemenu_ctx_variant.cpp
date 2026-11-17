@@ -44,7 +44,7 @@ struct Proc_S
 };
 Proc_S* __cdecl _FUN_004b7210();
 extern RouletteMenu* DAT_011da878;
-void SetRouletteMenuTile();
+void RouletteMenu_Close();
 struct SceneObjectLookup
 {
     static NiAVObject* __cdecl GetObjectByName(NiAVObject*, const char*);
@@ -343,6 +343,8 @@ struct FUN_007b9020 : Base
     virtual ~FUN_007b9020();
 };
 // @fnv 0x007b9020
+// pdb: RouletteMenu::~RouletteMenu | RouletteMenu.obj | retail, string-set bridge, high
+// pdb locals: shadowname, tempstr, j, i
 FUN_007b9020::~FUN_007b9020()
 {
     DAT_011dea3c->SetLastAntiCheatTime();
@@ -411,6 +413,7 @@ struct PathOwner
 {
     ModelPath* TESCasino_GetModel(int);
 };
+// pdb: class ModelLoader, size 0x30 (here 0x1), 12 members
 struct ModelLoader
 {
     NiNode* LoadFile(const char*, int, bool, bool, bool, bool);
@@ -512,6 +515,7 @@ struct PlayerForRoulette
     int FUN_00575610(void*);
 };
 extern PlayerForRoulette* DAT_011dea3c;
+// pdb: structure CasinoData, size 0xc (here 0x2c), 3 members
 struct CasinoData
 {
     int unk00;
@@ -698,6 +702,8 @@ struct Slot
 }
 // @fnv 0x007bf390
 // src: XBOX_PDB 0x007bf390
+// pdb: RouletteMenu::RouletteMenu | RouletteMenu.obj | retail, object-file run extension, low
+// pdb note: debug build links it to RouletteMenu::GetBetIndex
 int RouletteMenu::GetBetIndex()
 {
     int i;
@@ -760,26 +766,29 @@ void* __cdecl fnv_zlib_memset(void*, int, int);
 extern float DAT_0101e704;
 // @fnv 0x007bed70
 // src: XBOX_PDB 0x007bed70
-bool RouletteMenu::SetBet(int number)
+// pdb: RouletteMenu::SetBet | RouletteMenu.obj | retail, string-set bridge, high
+// pdb params: aiIndex
+// pdb locals: fLoc, bl, newBet, update1, loc
+bool RouletteMenu::SetBet(int aiIndex)
 {
-    if (unk3fe4 >= 10 || number >= 159 || number < 0 || !unk3fe8)
+    if (unk3fe4 >= 10 || aiIndex >= 159 || aiIndex < 0 || !unk3fe8)
         return false;
     BetList* k = reinterpret_cast<BetList*>(unk3e78);
     while (k && *k->FUN_006815c0())
     {
-        if ((*k->FUN_006815c0())->number == number)
+        if ((*k->FUN_006815c0())->number == aiIndex)
             return false;
         k = k->FUN_00726070();
     }
     NiUpdateData b(0.0f, false, false);
     // Raw storage avoids the shared NiPoint3 constructors in this unoptimized context.
     float l[3];
-    *reinterpret_cast<NiPoint3*>(l) = reinterpret_cast<BetGeometry*>(&unk006c)[number].position;
+    *reinterpret_cast<NiPoint3*>(l) = reinterpret_cast<BetGeometry*>(&unk006c)[aiIndex].position;
     unsigned int e = sizeof(RouletteBetEntry);
     void* j = operator new(e);
     RouletteBetEntry* ba = j ? (fnv_zlib_memset(j, 0, e), static_cast<RouletteBetEntry*>(j)) : 0;
     ba->amount = unk3fe8;
-    ba->number = number;
+    ba->number = aiIndex;
     ba->strip = unk3fe0;
     if (!unk3e78 || reinterpret_cast<BetList*>(unk3e78)->FUN_008256d0())
         reinterpret_cast<BetList*>(unk3e78)->FUN_00726c60(ba);
@@ -815,7 +824,7 @@ bool RouletteMenu::SetBet(int number)
         unk3fe8 = unk3ff0 - unk3fec;
         reinterpret_cast<Tile*>(DAT_011da878->m_pMaxBetTile)->SetTraitFloat(DAT_011da86c, 1.0f);
         reinterpret_cast<Tile*>(DAT_011da878->m_pMaxBetTile)->FUN_00700320(DAT_011da86c, unk3fe8);
-        DAT_011da878->ApplyValueToChain(6, DAT_0101e704);
+        DAT_011da878->SetTileTextAlpha(6, DAT_0101e704);
     }
     return true;
 }

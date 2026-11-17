@@ -118,6 +118,8 @@ struct InputManager
 // Calls FUN_00a25410 for each index from 0 to 27.
 // @fnv 0x00a253d0
 // src: XBOX_PDB 0x00a253d0
+// pdb: Controls::ClearUserActions | XControls.obj | retail, upstream name already matches, high
+// pdb locals: n
 void InputManager::Controls_ClearUserActions()
 {
     for (int i = 0; i < 28; ++i)
@@ -155,6 +157,9 @@ struct FUN_00a257c0_Class
 };
 // @fnv 0x00a257c0
 // src: COMMUNITY 0x00a257c0
+// pdb: Controls::Poll | XControls.obj | retail, upstream name already matches, high
+// pdb params: fTime, bDoSwapsOnDisconnect, bClearOnSwap
+// pdb locals: uiTime
 void FUN_00a257c0_Class::Controls_Poll(float afValue)
 {
     if (DAT_011f35c8 && *(unsigned char*)((char*)this + 0x1b88))
@@ -228,6 +233,8 @@ struct FUN_00a232d0_Class
 };
 // Reads the 32-bit flags word at this+0x18b4 indexed by a and returns the bit selected by b (1-6), or 0 for other b.
 // @fnv 0x00a232d0
+// pdb: Controls::SetCurrentController | XControls.obj | debug, object-file run extension, low
+// pdb params: aiIndex
 unsigned int FUN_00a232d0_Class::GetFlag(int aiIndex, int aiBit)
 {
     switch (aiBit)
@@ -807,6 +814,9 @@ struct InputManagerClose
     void __thiscall ShutdownInput();
 };
 // @fnv 0x00a22bf0
+// pdb: Controls::RemapTo | XControls.obj | retail, object-file run extension, low
+// pdb params: eAction, eNewButton
+// pdb locals: eOldAction, iy, ix, eOldButton
 void InputManagerClose::ShutdownInput()
 {
     if (flags & 1)
@@ -4776,6 +4786,10 @@ struct FUN_00a259b0
 
 // Zeroes the object's buffers and key array, then sets default flag and index fields to their initial values.
 // @fnv 0x00a259b0
+// pdb: XGamerProfile::ReadSettings | XGamerProfile.obj | retail, object-file run extension, low
+// pdb note: debug build links it to XGamerProfile::XGamerProfile
+// pdb params: apData, awSize
+// pdb locals: ffloat, bbool, pdifficultySetting, pdata, uint, pkillcamSetting, iint, psetting
 FUN_00a259b0::FUN_00a259b0()
 {
     int i;
@@ -7017,16 +7031,18 @@ struct Controller
     EventQueue* queue;
     int unk1b84;
     unsigned char enabled;
-    void Controls_Rumble(float left, float right, int a, int b, int value, unsigned char state, bool force);
+    void Controls_Rumble(float leftMotor, float rightMotor, int timeInMillis, int iWavelength, int aRumblePattern, unsigned char abAlternate, bool bOverride);
 };
 // If enabled and (when forced or the queue is empty) allocates a RumbleEvent, fills it from the arguments, adds it to the queue twice, and sends the motor speeds.
 // @fnv 0x00a255b0
 // src: XBOX_PDB 0x00a255b0
-void Controller::Controls_Rumble(float left, float right, int a, int b, int value, unsigned char state, bool force)
+// pdb: Controls::Rumble | XControls.obj | debug, upstream name already matches, high
+// pdb params: leftMotor, rightMotor, timeInMillis, iWavelength, aRumblePattern, abAlternate, bOverride
+void Controller::Controls_Rumble(float leftMotor, float rightMotor, int timeInMillis, int iWavelength, int aRumblePattern, unsigned char abAlternate, bool bOverride)
 {
     if (!enabled)
         return;
-    if (!force)
+    if (!bOverride)
     {
         EventQueue* InvokeFifthVirtualFunction = queue;
         if (InvokeFifthVirtualFunction->countA + InvokeFifthVirtualFunction->countB)
@@ -7035,19 +7051,19 @@ void Controller::Controls_Rumble(float left, float right, int a, int b, int valu
     unsigned int size = 36;
     void* memory = _g_memoryManager.Allocate(size);
     RumbleEvent* event3 = memory ? (fnv_zlib_memset(memory, 0, size), (RumbleEvent*)memory) : 0;
-    event3->a = a;
-    event3->b = b;
-    event3->value = value;
-    event3->state = state;
+    event3->a = timeInMillis;
+    event3->b = iWavelength;
+    event3->value = aRumblePattern;
+    event3->state = abAlternate;
     event3->next = 0;
     event3->prev = 0;
-    event3->time = (unsigned int)(right * 65535.0);
+    event3->time = (unsigned int)(rightMotor * 65535.0);
     queue->Add(1, event3);
-    event3->time = (unsigned int)(left * 65535.0);
+    event3->time = (unsigned int)(leftMotor * 65535.0);
     queue->Add(0, event3);
     unsigned short motors5[2];
-    motors5[0] = (unsigned short)left > 1 ? 65535 : (unsigned short)(left * 65535.0);
-    motors5[1] = (unsigned short)right > 1 ? 65535 : (unsigned short)(right * 65535.0);
+    motors5[0] = (unsigned short)leftMotor > 1 ? 65535 : (unsigned short)(leftMotor * 65535.0);
+    motors5[1] = (unsigned short)rightMotor > 1 ? 65535 : (unsigned short)(rightMotor * 65535.0);
     XInputManager_KillRumbles(0, motors5);
 }
 
@@ -7056,12 +7072,15 @@ int __cdecl FUN_00ec68e4(const char* name, unsigned int a1);
 class FUN_00a261a0_cls
 {
   public:
-    int XGamerProfile_GetContentBit(unsigned int a1);
+    int XGamerProfile_GetContentBit(unsigned int cCode);
 };
 
 // @fnv 0x00a261a0
 // src: XBOX_PDB 0x00a261a0
-int FUN_00a261a0_cls::XGamerProfile_GetContentBit(unsigned int a1)
+// pdb: XGamerProfile::GetContentBit | XGamerProfile.obj | retail, string-set bridge, high
+// pdb params: cCode
+// pdb locals: codes, i
+int FUN_00a261a0_cls::XGamerProfile_GetContentBit(unsigned int cCode)
 {
     const char* names[4];
     names[0] = "Classic";
@@ -7073,7 +7092,7 @@ int FUN_00a261a0_cls::XGamerProfile_GetContentBit(unsigned int a1)
     for (; i < 4; i++)
     {
         const char* name = names[i];
-        if (FUN_00ec68e4(name, a1) == 0)
+        if (FUN_00ec68e4(name, cCode) == 0)
         {
             break;
         }
@@ -7218,12 +7237,15 @@ extern SettingCollectionList<Setting>* DAT_011f35a0;
 class RedeemedContentA26
 {
   public:
-    bool XGamerProfile_IsCodeRedeemed(unsigned int a1);
+    bool XGamerProfile_IsCodeRedeemed(unsigned int cCode);
 };
 // Looks up the uiRedeemedContent:GamePlay setting and returns whether its value has a bit in the mask from FUN_00a261a0(a1); false if not found.
 // @fnv 0x00a26020
 // src: XBOX_PDB 0x00a26020
-bool RedeemedContentA26::XGamerProfile_IsCodeRedeemed(unsigned int a1)
+// pdb: XGamerProfile::IsCodeRedeemed | XGamerProfile.obj | retail, upstream name already matches, high
+// pdb params: cCode
+// pdb locals: pContent
+bool RedeemedContentA26::XGamerProfile_IsCodeRedeemed(unsigned int cCode)
 {
     int unk20;
     int uiMask2;
@@ -7241,7 +7263,7 @@ bool RedeemedContentA26::XGamerProfile_IsCodeRedeemed(unsigned int a1)
     pSetting3 = r;
     {
         unsigned int unk08;
-        return pSetting3 ? (unk08 = ((FUN_00a261a0_cls*)this)->XGamerProfile_GetContentBit(a1), (*reinterpret_cast<unsigned int*>(&pSetting3->uValue) & unk08) != 0)
+        return pSetting3 ? (unk08 = ((FUN_00a261a0_cls*)this)->XGamerProfile_GetContentBit(cCode), (*reinterpret_cast<unsigned int*>(&pSetting3->uValue) & unk08) != 0)
                          : false;
     }
 }
@@ -7527,14 +7549,17 @@ class RedeemSettingOwner
 class FUN_00a26090_cls
 {
   public:
-    int XGamerProfile_RedeemCode(int a1);
-    int XGamerProfile_GetContentBit(int a1);
+    int XGamerProfile_RedeemCode(int cCode);
+    int XGamerProfile_GetContentBit(int cCode);
 };
 
 // Looks up the uiRedeemedContent:GamePlay setting, ORs the result of FUN_00a261a0 into its second word, and returns whether that result was non-zero.
 // @fnv 0x00a26090
 // src: COMMUNITY 0x00a26090
-int FUN_00a26090_cls::XGamerProfile_RedeemCode(int a1)
+// pdb: XGamerProfile::RedeemCode | XGamerProfile.obj | retail, upstream name already matches, high
+// pdb params: cCode
+// pdb locals: bit, pContent
+int FUN_00a26090_cls::XGamerProfile_RedeemCode(int cCode)
 {
     unsigned int unk0;
     unsigned int unk1;
@@ -7547,7 +7572,7 @@ int FUN_00a26090_cls::XGamerProfile_RedeemCode(int a1)
     unsigned int tau = 0;
     reinterpret_cast<RedeemSettingOwner*>(nu)->Lookup("uiRedeemedContent:GamePlay", &tau);
     unsigned int* mu = reinterpret_cast<unsigned int*>(tau);
-    int changed = this->XGamerProfile_GetContentBit(a1);
+    int changed = this->XGamerProfile_GetContentBit(cCode);
     {
         unsigned int* omi = mu != 0 ? mu + 1 : (DAT_01202800 = 0, (unsigned int*)&DAT_01202800);
         **(unsigned int* volatile*)&omi |= changed;
@@ -7568,14 +7593,17 @@ extern int DAT_01202800;
 struct FUN_00a26120_cls
 {
     unsigned int m_00;
-    unsigned int XGamerProfile_GetContentBit(unsigned int a);
-    void XGamerProfile_RevokeCode(unsigned int mask);
+    unsigned int XGamerProfile_GetContentBit(unsigned int cCode);
+    void XGamerProfile_RevokeCode(unsigned int cCode);
 };
 
 // Looks up uiRedeemedContent:GamePlay and clears, in its second word, the bits returned by FUN_00a261a0(mask).
 // @fnv 0x00a26120
 // src: COMMUNITY 0x00a26120
-void FUN_00a26120_cls::XGamerProfile_RevokeCode(unsigned int mask)
+// pdb: XGamerProfile::RevokeCode | XGamerProfile.obj | retail, upstream name already matches, high
+// pdb params: cCode
+// pdb locals: pContent
+void FUN_00a26120_cls::XGamerProfile_RevokeCode(unsigned int cCode)
 {
     unsigned int* p;
     unsigned int u1;
@@ -7599,7 +7627,7 @@ void FUN_00a26120_cls::XGamerProfile_RevokeCode(unsigned int mask)
     {
         unsigned int* volatile t =
             (p != 0) ? (unsigned int*)((char*)p + 4) : (DAT_01202800 = 0, (unsigned int*)&DAT_01202800);
-        *t &= ~this->XGamerProfile_GetContentBit(mask);
+        *t &= ~this->XGamerProfile_GetContentBit(cCode);
     }
 }
 }  // namespace fnv_00a26120
@@ -7682,6 +7710,8 @@ struct S_00a22e10_Cls
 // Writes 28 control values from FUN_00a24f10 to the ini file at DAT_01202fa0 plus DAT_011a2ff8 under the Controls section.
 // @fnv 0x00a22e10
 // src: XBOX_PDB 0x00a22e10
+// pdb: Controls::SaveControls | XControls.obj | retail, upstream name already matches, high
+// pdb locals: data
 void S_00a22e10_Cls::Controls_SaveControls()
 {
     int i;
@@ -7705,6 +7735,10 @@ extern unsigned short DAT_011f35b6;
 
 // @fnv 0x00a25410
 // src: XBOX_PDB 0x00a25410
+// pdb: Controls::GetIconForButton | XControls.obj | retail, object-file run extension, low
+// pdb note: debug build links it to Controls::ClearUserAction
+// pdb params: eButton, sIconOut, abGlow
+// pdb locals: pctmp
 void InputManager::Controls_ClearUserAction(int offset)
 {
     for (int i = 0; i < 4; ++i)

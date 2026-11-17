@@ -30,6 +30,7 @@ class PointerCallback
 };
 extern TESDataHandler* g_dataHandler;
 // @fnv 0x008c6ff0
+// pdb: AILinearTaskThread::OnStartup | AILinearTaskThread.obj | retail, string-set bridge, high
 void AILinearTaskThread::StartTaskThread()
 {
     hkMemorySystem::GetMonitorStream()->InitializeThreadRouter(&ThreadMemory, "AILinearTaskThread", Flag(1));
@@ -39,7 +40,7 @@ void AILinearTaskThread::StartTaskThread()
     ((RouterAllocatorView_008c6ff0*)&ThreadMemory)->FUN_00984f60(((OSGlobals*)&ThreadMemory)->GetUptimeMilliseconds());
     m_pTaskMemory = ((hkMemoryAllocator*)((OSGlobals*)&ThreadMemory)->GetUptimeMilliseconds())->blockAlloc(0x32000);
     ((hkMemorySystem*)&((BSSimpleList<BGSPerkEntry*>*)&ThreadMemory)->GetItem())->GetMonitorStream(m_pTaskMemory, 0x32000);
-    g_dataHandler->BuildCompiledFileList();
+    g_dataHandler->CreateThreadSafeFiles();
 }
 
 void __cdecl operator delete(void*);
@@ -50,6 +51,7 @@ struct FUN_008c7830
 };
 // Calls FUN_008c7860, frees this with operator delete when aiFlags has bit 0 set, and returns this.
 // @fnv 0x008c7830
+// pdb: AILinearTaskThread::`scalar deleting destructor' | AILinearTaskThreadManager.obj | debug, vtable slot, medium
 FUN_008c7830* FUN_008c7830::FUN_008c7830_(unsigned int aiFlags)
 {
     FUN_008c7860();
@@ -92,6 +94,7 @@ struct Thr
     void InitMemory();
 };
 // @fnv 0x008c7110
+// pdb: AILinearTaskThread::OnShutdown | AILinearTaskThread.obj | retail, vtable slot, high
 void Thr::InitMemory()
 {
     memoryRouter.heap().blockFree(memory, 0x32000);

@@ -11,6 +11,7 @@ struct FUN_004f5df0_shell
     void* __thiscall Destroy(unsigned int flags);
 };
 // @fnv 0x004f5df0
+// pdb: TESRegionGrassObjectList::`scalar deleting destructor' | TESRegionGrassObjectList.obj | retail, vtable slot, high
 void* __thiscall FUN_004f5df0_shell::Destroy(unsigned int flags)
 {
     FUN_004f5e20();
@@ -27,27 +28,31 @@ struct FUN_004f5e20
 {
     virtual ~FUN_004f5e20();
     ListX f4;
-    void ClearList();
+    void TESRegionGrassObjectList_Clear();
 };
 // @fnv 0x004f5e20
+// pdb: TESRegionGrassObjectList::~TESRegionGrassObjectList | TESRegionGrassObjectList.obj | debug, object-file gap fill, medium
 FUN_004f5e20::~FUN_004f5e20()
 {
-    ClearList();
+    TESRegionGrassObjectList_Clear();
 }
 
 struct LH
 {
     bool IsInList(Actor*&);
     void EraseActor(Actor*);
-    bool AddIfAbsent(Actor* item);
+    bool TESRegionGrassObjectList_Add(Actor* apObject);
 };
 
 // @fnv 0x004f5e80
-bool LH::AddIfAbsent(Actor* apActor)
+// src: XBOX_RETAIL_PDB 0x004f5e80
+// pdb: TESRegionGrassObjectList::Add | TESRegionGrassObjectList.obj | retail, call graph (shared callers), high
+// pdb params: apObject
+bool LH::TESRegionGrassObjectList_Add(Actor* apObject)
 {
-    if (!apActor || ((LH*)((char*)this + 4))->IsInList(apActor))
+    if (!apObject || ((LH*)((char*)this + 4))->IsInList(apObject))
         return false;
-    EraseActor(apActor);
+    EraseActor(apObject);
     return true;
 }
 
@@ -63,6 +68,8 @@ struct FUN_004f5ec0_shell
 };
 // Appends apObject to the list at offset 4 and increments the count at offset 0x10.
 // @fnv 0x004f5ec0
+// pdb: TESRegionGrassObjectList::AddTailSimple | TESRegionGrassObjectList.obj | retail, call graph, high
+// pdb params: apObject
 void FUN_004f5ec0_shell::AddGrassObject(TESRegionGrassObject* apObject)
 {
     reinterpret_cast<SoundListView*>(reinterpret_cast<char*>(this) + 4)
@@ -74,7 +81,7 @@ struct FUN_004f16c0_src;
 
 struct FUN_004f16c0_node
 {
-    void* Make(int flags);
+    void* Make(int apCopyInto);
 };
 
 struct FUN_004f16c0_src
@@ -119,7 +126,10 @@ struct ListHeadStub
 };
 
 // @fnv 0x004f5ef0
-void FUN_004f5e20::ClearList()
+// src: XBOX_RETAIL_PDB 0x004f5ef0
+// pdb: TESRegionGrassObjectList::Clear | TESRegionGrassObjectList.obj | retail, object-file run extension, high
+// pdb locals: premove
+void FUN_004f5e20::TESRegionGrassObjectList_Clear()
 {
     ListItemBase* cur;
     ListItemBase* item;
@@ -162,13 +172,16 @@ struct IntOpsX
 
 struct FUN_004f5f80_cls
 {
-    FUN_004f5f80_obj* __thiscall TESRegionGrassObjectList_Find(int a1, int a2);
+    FUN_004f5f80_obj* __thiscall TESRegionGrassObjectList_Find(int aiFind, int aiParentFind);
 };
 
 // Walks the list from this+4 and returns the first object whose unk04 equals a1 and whose unk0c matches a2 (or is null when a2 < 0).
 // @fnv 0x004f5f80
 // src: COMMUNITY 0x004f5f80
-FUN_004f5f80_obj* FUN_004f5f80_cls::TESRegionGrassObjectList_Find(int a1, int a2)
+// pdb: TESRegionGrassObjectList::Find | TESRegionGrassObjectList.obj | retail, upstream name already matches, high
+// pdb params: aiFind, aiParentFind
+// pdb locals: pcurrent, pobj, ptest
+FUN_004f5f80_obj* FUN_004f5f80_cls::TESRegionGrassObjectList_Find(int aiFind, int aiParentFind)
 {
     ListNodeX* it9 = (char*)this != 0 ? (ListNodeX*)((char*)this + 4) : 0;
     FUN_004f5f80_obj* result = 0;
@@ -176,9 +189,9 @@ FUN_004f5f80_obj* FUN_004f5f80_cls::TESRegionGrassObjectList_Find(int a1, int a2
     while (it9 != 0 && *it9->FUN_006815c0() != 0)
     {
         obj = (FUN_004f5f80_obj*)*it9->FUN_006815c0();
-        if (((IntOpsX*)(int)obj->unk04())->GetHavokWorldObjectCountInSceneGraph_0084e3a0() == a1 &&
-            ((a2 >= 0 && obj->unk0c() != 0 && ((IntOpsX*)(int)obj->unk0c())->GetHavokWorldObjectCountInSceneGraph_0084e3a0() == a2) ||
-             (a2 < 0 && obj->unk0c() == 0)))
+        if (((IntOpsX*)(int)obj->unk04())->GetHavokWorldObjectCountInSceneGraph_0084e3a0() == aiFind &&
+            ((aiParentFind >= 0 && obj->unk0c() != 0 && ((IntOpsX*)(int)obj->unk0c())->GetHavokWorldObjectCountInSceneGraph_0084e3a0() == aiParentFind) ||
+             (aiParentFind < 0 && obj->unk0c() == 0)))
         {
             result = obj;
             break;
@@ -222,14 +235,17 @@ struct Controller
     int unk08;
     unsigned char unk0c;
 
-    TargetList* CopyTargetList(TargetList* param_1);
+    TargetList* CopyTargetList(TargetList* apCopyInto);
 };
 
 // @fnv 0x004f6060
-TargetList* Controller::CopyTargetList(TargetList* apTargetList)
+// pdb: TESRegionGrassObjectList::Copy | TESRegionGrassObjectList.obj | retail, object-file run extension, high
+// pdb params: apCopyInto
+// pdb locals: pcopy, pcurrent, pobjCopy
+TargetList* Controller::CopyTargetList(TargetList* apCopyInto)
 {
     ListNodeX* iter = this ? &list : 0;
-    TargetList* result = apTargetList ? apTargetList : new TargetList(unk0c);
+    TargetList* result = apCopyInto ? apCopyInto : new TargetList(unk0c);
     Actor* actor2 = 0;
 
     while (iter != 0 && *iter->FUN_006815c0() != 0)
@@ -237,14 +253,14 @@ TargetList* Controller::CopyTargetList(TargetList* apTargetList)
         if (result->unk0c != 0)
         {
             actor2 = ((VItem*)*iter->FUN_006815c0())->v5(0);
-            if (!((LH*)result)->AddIfAbsent(actor2))
+            if (!((LH*)result)->TESRegionGrassObjectList_Add(actor2))
             {
                 delete (VDel*)actor2;
             }
         }
         else
         {
-            ((LH*)result)->AddIfAbsent((Actor*)*iter->FUN_006815c0());
+            ((LH*)result)->TESRegionGrassObjectList_Add((Actor*)*iter->FUN_006815c0());
         }
         iter = iter->FUN_00726070();
     }

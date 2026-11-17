@@ -4,6 +4,7 @@
 
 class WorldHolder;
 
+// pdb: class bhkAabbPhantom, size 0x18 (here 0x1c), bases: bhkPhantom, 0 members
 class bhkAabbPhantom : public bhkPhantom
 {
 public:

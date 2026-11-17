@@ -2,6 +2,7 @@
 
 #include "NiObject.h"
 
+// pdb: class NiTask, size 0xc, bases: NiObject, 1 members
 class NiTask : public NiObject
 {
 public:

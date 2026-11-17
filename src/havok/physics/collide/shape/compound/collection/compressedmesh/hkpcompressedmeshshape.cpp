@@ -83,17 +83,19 @@ using ::hkInt32;
 using ::hkReal;
 
 // @fnv 0x00e3cad0
+// pdb: hkpCompressedMeshShape::getFirstKey | hkpCompressedMeshShape.obj | debug, vtable slot, medium
+// pdb locals: assertBuf, ostr
 unsigned int hkpCompressedMeshShape::GetShapeIndexMask()
 {
     // The game's entry receives the mesh's secondary hkpShapeContainer address.
     const hkpCompressedMeshShape& mesh = *reinterpret_cast<const hkpCompressedMeshShape*>(
         reinterpret_cast<const char*>(this) - sizeof(hkpShape));
-    if (mesh.m_kBigTriangles.m_iElementCount)
+    if (mesh.m_bigTriangles.m_iElementCount)
         return 0;
-    if (mesh.m_kChunks.m_iElementCount)
-        return 1 << mesh.m_iBitsPerWIndex;
-    if (mesh.m_kConvexPieces.m_iElementCount)
-        return ((1 << (32 - mesh.m_iBitsPerWIndex)) - 1) << mesh.m_iBitsPerWIndex;
+    if (mesh.m_chunks.m_iElementCount)
+        return 1 << mesh.m_bitsPerWIndex;
+    if (mesh.m_convexPieces.m_iElementCount)
+        return ((1 << (32 - mesh.m_bitsPerWIndex)) - 1) << mesh.m_bitsPerWIndex;
     return -1;
 }
 
@@ -106,6 +108,7 @@ struct CompressedMeshDeleteCall : ::hkpCompressedMeshShape
 hkMemoryRouter* __cdecl _D1A0E0GetMemoryRouter();
 
 // @fnv 0x00e3deb0
+// pdb: hkpCompressedMeshShape::`scalar deleting destructor' | hkpCompressedMeshShape.obj | retail, vtable slot, high
 void* __thiscall CompressedMeshDeleteCall::FUN_00e3deb0(unsigned int uiFlags)
 {
     CompressedMeshDeleteCall* pShape = this;
@@ -115,7 +118,7 @@ void* __thiscall CompressedMeshDeleteCall::FUN_00e3deb0(unsigned int uiFlags)
     if (uiFlags & 1)
     {
         hkMemoryRouter* pRouter = _D1A0E0GetMemoryRouter();
-        pRouter->m_heap->blockFree(pShape, pShape->m_usMemSizeAndFlags);
+        pRouter->m_heap->blockFree(pShape, pShape->m_memSizeAndFlags);
     }
 
     return pShape;
@@ -132,7 +135,7 @@ __declspec(noinline) unsigned int __stdcall hkpCompressedMeshShape_ReturnConstan
 // @fnv 0x00e3d0d0
 void hkpCompressedMeshShape::SetWeldingType(unsigned char weldingType)
 {
-    m_eWeldingType = weldingType;
+    m_weldingType = weldingType;
 }
 
 extern int DAT_01269198;
@@ -207,6 +210,8 @@ struct FUN_00d59710
 };
 
 // @fnv 0x00d59710
+// pdb: hkpConvexVerticesShape::hkpConvexVerticesShape | hkpConvexVerticesShape.obj | debug, object-file run extension, low
+// pdb params: radius
 FUN_00d59710::FUN_00d59710(float fScale)
 {
     unsigned short us = 1;
@@ -243,29 +248,31 @@ struct FUN_00e3ca10_Class
     unsigned short* unk28;
     int unk2c;
 
-    int hkpCompressedMeshShape_Chunk_getNextIndex(int aiIndex, int* apOut);
+    int hkpCompressedMeshShape_Chunk_getNextIndex(int index, int* winding);
 };
 
 // Locates aiIndex+1 among cumulative section sizes in unk28, adjusts it, sets *apOut to a parity bit in the strip part, and returns -1 once past unk20.
 // @fnv 0x00e3ca10
 // src: HAVOK_LIB 0x00e3ca10
-int FUN_00e3ca10_Class::hkpCompressedMeshShape_Chunk_getNextIndex(int aiIndex, int* apOut)
+// pdb: hkpCompressedMeshShape::Chunk::getNextIndex | hkpCompressedMeshShape.obj | retail, upstream name already matches, high
+// pdb params: index, winding
+int FUN_00e3ca10_Class::hkpCompressedMeshShape_Chunk_getNextIndex(int index, int* winding)
 {
-    *apOut = 0;
-    if (aiIndex < 0)
+    *winding = 0;
+    if (index < 0)
     {
         return unk20 ? 0 : -1;
     }
 
     int iCount = unk2c;
-    ++aiIndex;
+    ++index;
     int i = 0;
     int iAccumulated = 0;
     int iPrevious = 0;
     if (iCount != 0)
     {
         iAccumulated = unk28[0];
-        if (aiIndex >= iAccumulated)
+        if (index >= iAccumulated)
         {
             do
             {
@@ -276,35 +283,35 @@ int FUN_00e3ca10_Class::hkpCompressedMeshShape_Chunk_getNextIndex(int aiIndex, i
                 }
                 iPrevious = iAccumulated;
                 iAccumulated += unk28[i];
-            } while (aiIndex >= iAccumulated);
+            } while (index >= iAccumulated);
         }
     }
 
     if (i >= iCount)
     {
-        int iDelta = aiIndex - iAccumulated;
+        int iDelta = index - iAccumulated;
         int iStride = 3;
         while (iDelta % iStride != 0)
         {
             ++iDelta;
-            ++aiIndex;
+            ++index;
         }
     }
-    else if (aiIndex >= iAccumulated - 2)
+    else if (index >= iAccumulated - 2)
     {
-        aiIndex = iAccumulated;
+        index = iAccumulated;
     }
     else
     {
-        *apOut = (aiIndex - iPrevious) & 1;
+        *winding = (index - iPrevious) & 1;
     }
 
-    if (aiIndex >= unk20)
+    if (index >= unk20)
     {
         return -1;
     }
 
-    return aiIndex;
+    return index;
 }
 
 struct StripsShapeE3CEB0
@@ -326,6 +333,7 @@ struct StripsShapeE3CEB0
 
 // Sums strip lengths to get total strip indices, computes triangles per strip, and adds remaining indices divided by three to return total triangle count.
 // @fnv 0x00e3ceb0
+// pdb: hkpCompressedMeshShape::Chunk::getNumTriangles | hkpCompressedMeshShape.obj | retail, object-file run extension, low
 int StripsShapeE3CEB0::GetNumTriangles()
 {
     int iTotalStripIndices = 0;
@@ -341,23 +349,25 @@ int StripsShapeE3CEB0::GetNumTriangles()
 
 // Writes attributeValue to the attribute table or sub-attribute data based on instanceMask and m_iBitsPerWIndex.
 // @fnv 0x00e3d060
+// pdb: hkpCompressedMeshShape::setWeldingInfo | hkpCompressedMeshShape.obj | debug, vtable slot, medium
+// pdb params: key, weldingInfo
 void __thiscall hkpCompressedMeshShape::SetAttribute(unsigned long instanceMask, unsigned short attributeValue)
 {
-    unsigned int shiftResult = instanceMask >> m_iBitsPerWIndex;
+    unsigned int shiftResult = instanceMask >> m_bitsPerWIndex;
 
     if (!shiftResult)
     {
-        unsigned int shapeOffset = m_iNumBitsForIndex & instanceMask;
-        *(unsigned short*)((char*)m_kBigTriangles.m_data + shapeOffset * 16 + 12) = attributeValue;
+        unsigned int shapeOffset = m_wIndexMask & instanceMask;
+        *(unsigned short*)((char*)m_bigTriangles.m_data + shapeOffset * 16 + 12) = attributeValue;
     }
     else
     {
-        unsigned int indexOffset = m_iNumBitsForWIndex & instanceMask;
+        unsigned int indexOffset = m_indexMask & instanceMask;
         unsigned int index = shiftResult - 1;
-        unsigned short entry = *(unsigned short*)((char*)m_kChunks.m_data + index * 80 + 0x44);
+        unsigned short entry = *(unsigned short*)((char*)m_chunks.m_data + index * 80 + 0x44);
         if (entry != 0xFFFF)
             index = entry;
-        unsigned int attributeEntryOffset = *(unsigned int*)((char*)m_kChunks.m_data + index * 80 + 0x34);
+        unsigned int attributeEntryOffset = *(unsigned int*)((char*)m_chunks.m_data + index * 80 + 0x34);
         *(unsigned short*)((char*)attributeEntryOffset + indexOffset * 2) = attributeValue;
     }
 }
@@ -374,7 +384,7 @@ __forceinline hkpShapeCollection::hkpShapeCollection(FinishingFlag flag) : ::hkp
     if (flag.m_bFinishing)
     {
         *reinterpret_cast<int*>(&m_type) = 7;
-        m_eCollectionType = 3;
+        m_collectionType = 3;
     }
 }
 
@@ -383,19 +393,22 @@ extern int DAT_010eba5c;
 extern int DAT_010eba3c;
 
 // @fnv 0x00e3dbd0
+// pdb: hkpTriangleShape::getVertex | hkpCompressedMeshShape.obj | debug, object-file run extension, low
+// pdb params: i
+// pdb locals: assertBuf, ostr
 hkpCompressedMeshShape::hkpCompressedMeshShape(FinishingFlag flag) throw()
-    : hkpShapeCollection(flag), m_kMaterials(flag), m_kMaterialIndices16(flag),
-      m_kMaterialIndices8(flag), m_kTransforms(flag), m_kBigVertices(flag),
-      m_kBigTriangles(flag), m_kChunks(flag), m_kConvexPieces(flag), m_kNamedMaterials(flag)
+    : hkpShapeCollection(flag), m_materials(flag), m_materials16(flag),
+      m_materials8(flag), m_transforms(flag), m_bigVertices(flag),
+      m_bigTriangles(flag), m_chunks(flag), m_convexPieces(flag), m_namedMaterials(flag)
 {
     *reinterpret_cast<void**>(this) = &DAT_010eba5c;
     *reinterpret_cast<void**>(static_cast<hkpShapeContainer*>(this)) = &DAT_010eba3c;
     if (flag.m_bFinishing)
     {
         *reinterpret_cast<int*>(&m_type) = 0x10;
-        m_eCollectionType = 6;
-        if (m_kNamedMaterials.m_iElementCount)
-            m_pUserData = m_kNamedMaterials.m_data;
+        m_collectionType = 6;
+        if (m_namedMaterials.m_iElementCount)
+            m_meshMaterials = m_namedMaterials.m_data;
     }
 }
 
@@ -471,6 +484,7 @@ struct hkpCompressedMeshShapeConvexPiece
     int m_i38;
     int m_i3C;
 };
+// pdb: class hkpNamedMeshMaterial, size 0x8, bases: hkpMeshMaterial, 1 members
 struct hkpNamedMeshMaterial
 {
     unsigned int m_uiFilterInfo;
@@ -480,6 +494,7 @@ struct hkpNamedMeshMaterial
 __forceinline hkpShapeContainer::~hkpShapeContainer() {}
 
 // @fnv 0x00e3dc50
+// pdb: hkpCompressedMeshShape::~hkpCompressedMeshShape | hkpCompressedMeshShape.obj | retail, upstream name already matches, high
 hkpCompressedMeshShape::~hkpCompressedMeshShape() throw()
 {}
 
@@ -528,6 +543,9 @@ class hkpConvexVerticesShapeq
 // Transforms each vertex of the convex shape by localToWorld, accumulates the min/max corners into out, then expands the AABB by m_fSphereRadius plus tolerance.
 // @fnv 0x00e3c270
 // src: XBOX_PDB 0x00e3c270
+// pdb: hkpSimpleMeshShape::getAabbImpl | hkpSimpleMeshShape.obj | retail, vtable slot, high
+// pdb params: localToWorld, tolerance, out
+// pdb locals: tol4, vWorld
 void hkpConvexVerticesShapeq::hkpSimpleMeshShape_getAabb(const ::hkTransform& localToWorld, float tolerance, hkAabbq& out) const
 {
     out.m_kMinimumCorner.set(3.40282e+38f, 3.40282e+38f, 3.40282e+38f, 0.0f);
@@ -566,6 +584,8 @@ struct hkAabbq
 // Finds the max x, y, z of the uint16 vertex triples, sets the max corner to max * scale + offset and min corner to offset, then multiplies both by scale4.
 // @fnv 0x00e3cc20
 // src: GUESS 0x00e3cc20 (confidence: medium)
+// pdb: calculateAabb | hkpCompressedMeshShape.obj | retail, object-file run extension, low
+// pdb params: vertices, offset, error, out, scaling
 void __cdecl hkArray_ComputeScaledVertexBounds(const ::hkArray<hkUint16>& vertices, const hkVector4q& offset, float scale, hkAabbq& aabbOut,
                           const hkVector4q& scale4)
 {
@@ -606,7 +626,7 @@ class hkpCompressedMeshShapeChunk
     unsigned materialInfo;
     unsigned short reference, unk46;
     unsigned unk48, unk4c;
-    unsigned hkpCompressedMeshShape_Chunk_getNextIndex(unsigned triangle, unsigned* welding);
+    unsigned hkpCompressedMeshShape_Chunk_getNextIndex(unsigned index, unsigned* winding);
 };
 }
 struct CompressedMeshKeyValidation : ::hkpCompressedMeshShape
@@ -616,13 +636,16 @@ struct CompressedMeshKeyValidation : ::hkpCompressedMeshShape
 // Validates a packed triangle key against the compressed mesh chunks, returning 0 on success or an error code 1-4 on mismatch.
 // @fnv 0x00e3cfe0
 // src: HAVOK_LIB 0x00e3cfe0
+// pdb: hkpCompressedMeshShape::isValidShapeKey | hkpCompressedMeshShape.obj | retail, upstream name already matches, high
+// pdb params: key
+// pdb locals: w
 unsigned CompressedMeshKeyValidation::hkpCompressedMeshShape_isValidShapeKey(unsigned key)
 {
-    int index = (int)(key >> m_iBitsPerWIndex);
-    unsigned triangle = key & m_iNumBitsForIndex;
+    int index = (int)(key >> m_bitsPerWIndex);
+    unsigned triangle = key & m_wIndexMask;
     int other = (int)triangle;
-    triangle &= m_iNumBitsForWIndex;
-    other >>= m_iBitsPerIndex;
+    triangle &= m_indexMask;
+    other >>= m_bitsPerIndex;
     if (index == 0)
     {
         if (other != 0)
@@ -631,9 +654,9 @@ unsigned CompressedMeshKeyValidation::hkpCompressedMeshShape_isValidShapeKey(uns
     else
     {
         --index;
-        if (index >= m_kChunks.m_iElementCount)
+        if (index >= m_chunks.m_iElementCount)
             return 2;
-        unsigned uiNextTriangle = reinterpret_cast<reflected_havok::hkpCompressedMeshShapeChunk*>(m_kChunks.m_data)[index].hkpCompressedMeshShape_Chunk_getNextIndex(triangle - 1, &key);
+        unsigned uiNextTriangle = reinterpret_cast<reflected_havok::hkpCompressedMeshShapeChunk*>(m_chunks.m_data)[index].hkpCompressedMeshShape_Chunk_getNextIndex(triangle - 1, &key);
         if (uiNextTriangle != triangle)
             return 3;
         if (key != (unsigned)other)
@@ -674,16 +697,20 @@ union QuadVector
 // Calls FUN_00e3cd20 with aabb on the chunk (or the chunk it references), then transforms aabb's corners by that chunk's transform scaled by m_vScale, if any.
 // @fnv 0x00e3d250
 // src: GUESS 0x00e3d250 (confidence: low)
+// pdb: hkpCompressedMeshShape::getChunkAabb | hkpCompressedMeshShape.obj | retail, object-file run extension, low
+// pdb note: debug build links it to hkpCompressedMeshShape::Chunk::getTriangle
+// pdb params: chunk, bounds
+// pdb locals: transform
 void CompressedMeshChunkBounds::ComputeValues_00e3d250(const ChunkQ* chunk, AabbQ* aabb)
 {
     if (chunk->m_kSmartReference == 0xffff)
-        ((ChunkQ*)chunk)->ForwardCall_00e3cd20(m_eScriptError, aabb, &(*reinterpret_cast<const ::hkVector4*>(&padD4[0xC])));
+        ((ChunkQ*)chunk)->ForwardCall_00e3cd20(m_error, aabb, &(*reinterpret_cast<const ::hkVector4*>(&padD4[0xC])));
     else
-        reinterpret_cast<ChunkQ*>(m_kChunks.m_data)[chunk->m_kSmartReference].ForwardCall_00e3cd20(m_eScriptError, aabb, &(*reinterpret_cast<const ::hkVector4*>(&padD4[0xC])));
+        reinterpret_cast<ChunkQ*>(m_chunks.m_data)[chunk->m_kSmartReference].ForwardCall_00e3cd20(m_error, aabb, &(*reinterpret_cast<const ::hkVector4*>(&padD4[0xC])));
 
     if (chunk->m_iSectionVertexCount != 0xffff)
     {
-        const ::hkTransform& t = reinterpret_cast<const ::hkTransform&>(m_kTransforms.m_data[chunk->m_iSectionVertexCount]);
+        const ::hkTransform& t = reinterpret_cast<const ::hkTransform&>(m_transforms.m_data[chunk->m_iSectionVertexCount]);
         QuadVector c0, c1, c2, tr;
         CopyReflectionQuad(&c0.v, &t.m_rotation.m_kColumn0);
         CopyReflectionQuad(&c1.v, &t.m_rotation.m_kColumn1);
@@ -741,12 +768,15 @@ __forceinline void getHalfExtents(const ::hkAabb& b, ::hkVector4& he)
 
 // Computes the world-space AABB of the compressed mesh by transforming its bounds center and half extents with the given tolerance.
 // @fnv 0x00e3d380
+// pdb: hkpCompressedMeshShape::getAabbImpl | hkpCompressedMeshShape.obj | retail, vtable slot, high
+// pdb params: localToWorld, tolerance, out
+// pdb locals: halfExtents, center
 void hkpCompressedMeshShape::CalculateAabb(const ::hkTransform& localToWorld, float tolerance, ::hkAabb& out) const
 {
     ::hkVector4 center;
-    fnv_00e3d380::getCenter(reinterpret_cast<const ::hkAabb&>(m_kBounds), center);
+    fnv_00e3d380::getCenter(reinterpret_cast<const ::hkAabb&>(m_bounds), center);
     ::hkVector4 halfExtents;
-    fnv_00e3d380::getHalfExtents(reinterpret_cast<const ::hkAabb&>(m_kBounds), halfExtents);
+    fnv_00e3d380::getHalfExtents(reinterpret_cast<const ::hkAabb&>(m_bounds), halfExtents);
     fnv_00e3d380::hkAabbUtil_calcAabb_00d26230(reinterpret_cast<const ::hkTransform&>(localToWorld), halfExtents, center, tolerance, reinterpret_cast<::hkAabb&>(out));
 }
 
@@ -780,14 +810,14 @@ class CompressedChunkTriangleIterator
     unsigned short unk46;
     unsigned int unk48, unk4c;
 
-    int hkpCompressedMeshShape_Chunk_getNextIndex(int iIndex, int& iWinding) throw();
+    int hkpCompressedMeshShape_Chunk_getNextIndex(int index, int& winding) throw();
 };
 
 // The shared header does not redeclare the container's key iterator.
 class CompressedMeshKeyIterator : public hkpCompressedMeshShape
 {
   public:
-    unsigned int GetNextShapeKey(unsigned int uiOldKey) const;
+    unsigned int GetNextShapeKey(unsigned int oldKey) const;
 };
 
 // src: HAVOK_LIB 0x00e3ca10
@@ -823,18 +853,21 @@ __declspec(noinline) int CompressedChunkTriangleIterator::hkpCompressedMeshShape
 
 // Computes the next key in the compressed mesh shape key space by traversing big triangles, chunks, and convex pieces.
 // @fnv 0x00e3cb10
-unsigned int CompressedMeshKeyIterator::GetNextShapeKey(unsigned int uiOldKey) const
+// pdb: hkpCompressedMeshShape::getNextKey | hkpCompressedMeshShape.obj | retail, vtable slot, high
+// pdb params: oldKey
+// pdb locals: winding
+unsigned int CompressedMeshKeyIterator::GetNextShapeKey(unsigned int oldKey) const
 {
-    int i = (int)uiOldKey;
-    const ::hkArray<CompressedChunkTriangleIterator>& chunks = reinterpret_cast<const ::hkArray<CompressedChunkTriangleIterator>&>(m_kChunks);
-    const int iBitsPerWIndex = m_iBitsPerWIndex;
+    int i = (int)oldKey;
+    const ::hkArray<CompressedChunkTriangleIterator>& chunks = reinterpret_cast<const ::hkArray<CompressedChunkTriangleIterator>&>(m_chunks);
+    const int iBitsPerWIndex = m_bitsPerWIndex;
     unsigned int uiChunkId = (unsigned int)i >> iBitsPerWIndex;
-    int iIndex = i & m_iNumBitsForWIndex;
+    int iIndex = i & m_indexMask;
     if (uiChunkId == 0)
     {
         // the big triangles come first
         iIndex++;
-        if (iIndex < m_kBigTriangles.m_iElementCount)
+        if (iIndex < m_bigTriangles.m_iElementCount)
             return (unsigned int)iIndex;
         uiChunkId = 1;
         iIndex = -1;
@@ -856,9 +889,9 @@ unsigned int CompressedMeshKeyIterator::GetNextShapeKey(unsigned int uiOldKey) c
                     iIndex = chunks.m_data[pkChunk->m_kSmartReference].hkpCompressedMeshShape_Chunk_getNextIndex(iIndex, iWinding);
                 else
                     iIndex = pkChunk->hkpCompressedMeshShape_Chunk_getNextIndex(iIndex, iWinding);
-                if (iIndex != -1 && iIndex <= m_iNumBitsForWIndex)
-                    return ((iWinding & 1) << m_iBitsPerIndex) | ((i + 1) << iBitsPerWIndex) |
-                           (iIndex & m_iNumBitsForIndex);
+                if (iIndex != -1 && iIndex <= m_indexMask)
+                    return ((iWinding & 1) << m_bitsPerIndex) | ((i + 1) << iBitsPerWIndex) |
+                           (iIndex & m_wIndexMask);
                 iIndex = -1;
                 i++;
             } while (i < iNumChunks);
@@ -866,7 +899,7 @@ unsigned int CompressedMeshKeyIterator::GetNextShapeKey(unsigned int uiOldKey) c
     }
     // the convex pieces come last
     iIndex++;
-    if (iIndex < m_kConvexPieces.m_iElementCount)
+    if (iIndex < m_convexPieces.m_iElementCount)
         return (uiMaxChunk << iBitsPerWIndex) | (unsigned int)iIndex;
     return 0xffffffff;
 }
@@ -895,6 +928,8 @@ class CompressedChunk
 // Calls getVertex for i0, i1 and i2 to write v0, v1 and v2, each uint16 triple scaled by error and offset by m_offset.
 // @fnv 0x00e3cd50
 // src: GUESS 0x00e3cd50 (confidence: low)
+// pdb: hkpCompressedMeshShape::Chunk::getTriangle | hkpCompressedMeshShape.obj | retail, object-file run extension, low
+// pdb params: a, b, c, error, v1, v2, v3
 void CompressedChunk::ProcessState_00e3cd50(unsigned int i0, unsigned int i1, unsigned int i2, hkReal error, hkVector4q& v0,
                                    hkVector4q& v1, hkVector4q& v2) const
 {
@@ -1018,6 +1053,9 @@ struct CompressedMeshChildQuery : ::hkpShapeContainer
 // Decodes key into a big triangle, chunk triangle or convex piece, applies its transform and scale, and returns a Triangle or ConvexShape built in buffer.
 // @fnv 0x00e3d3f0
 // src: GUESS 0x00e3d3f0 (confidence: low)
+// pdb: hkpCompressedMeshShape::getChildShape | hkpCompressedMeshShape.obj | retail, vtable slot, high
+// pdb params: key, buffer
+// pdb locals: thisObj, transform, aabb, assertBuf, ostr, v, vertex, v2, v1, v3
 Triangle* CompressedMeshChildQuery::AllocateStorage_00e3d3f0(unsigned int key, BufferRef buffer)
 {
     hkpCompressedMeshShape& mesh = *reinterpret_cast<hkpCompressedMeshShape*>(reinterpret_cast<char*>(this) - sizeof(hkpShape));
@@ -1028,21 +1066,21 @@ Triangle* CompressedMeshChildQuery::AllocateStorage_00e3d3f0(unsigned int key, B
     int iBlockCount;
     (void)iBlockCount;
     BufferRef bufv = buffer;
-    unsigned int chunkIndex = key >> mesh.m_iBitsPerWIndex;
-    index = key & mesh.m_iNumBitsForIndex;
-    int winding = index >> mesh.m_iBitsPerIndex;
+    unsigned int chunkIndex = key >> mesh.m_bitsPerWIndex;
+    index = key & mesh.m_wIndexMask;
+    int winding = index >> mesh.m_bitsPerIndex;
     Transform transform;
-    if (chunkIndex == (1 << (32 - mesh.m_iBitsPerWIndex)) - 1)
+    if (chunkIndex == (1 << (32 - mesh.m_bitsPerWIndex)) - 1)
     {
         _mm_store_ps(&transform.m_f00, _mm_load_ps(&DAT_01268370.x));
         _mm_store_ps(&transform.m_f10, _mm_load_ps(&DAT_01268380.x));
         _mm_store_ps(&transform.m_f20, _mm_load_ps(&DAT_01268390.x));
         _mm_store_ps(&transform.m_f30, _mm_load_ps(&DAT_012683a0.x));
-        ConvexShape* shape = bufv ? bufv->FUN_00d59710(mesh.m_fSphereRadius) : 0;
-        ConvexPiece* pieces = reinterpret_cast<ConvexPiece*>(mesh.m_kConvexPieces.m_data);
+        ConvexShape* shape = bufv ? bufv->FUN_00d59710(mesh.m_radius) : 0;
+        ConvexPiece* pieces = reinterpret_cast<ConvexPiece*>(mesh.m_convexPieces.m_data);
         if (pieces[index].transform != 0xffff)
         {
-            ::hkTransform& t = reinterpret_cast<::hkTransform&>(mesh.m_kTransforms.m_data[pieces[index].transform]);
+            ::hkTransform& t = reinterpret_cast<::hkTransform&>(mesh.m_transforms.m_data[pieces[index].transform]);
             _mm_store_ps(&transform.m_f00, _mm_load_ps(&t.m_rotation.m_kColumn0.x));
             _mm_store_ps(&transform.m_f10, _mm_load_ps(&t.m_rotation.m_kColumn1.x));
             _mm_store_ps(&transform.m_f20, _mm_load_ps(&t.m_rotation.m_kColumn2.x));
@@ -1059,7 +1097,7 @@ Triangle* CompressedMeshChildQuery::AllocateStorage_00e3d3f0(unsigned int key, B
         LocalM128& maximum = *(LocalM128*)&bounds.m_kMaximumCorner.x;
         minimum = _mm_set_ps1(DAT_0104da48);
         maximum = _mm_set_ps1(DAT_0104e148);
-        LocalM128 tolerance = _mm_load_ss(&mesh.m_eScriptError);
+        LocalM128 tolerance = _mm_load_ss(&mesh.m_error);
         int vertex = 0;
         VertexBlock* output = DAT_0126ec10 + 1;
         int iv;
@@ -1121,16 +1159,16 @@ Triangle* CompressedMeshChildQuery::AllocateStorage_00e3d3f0(unsigned int key, B
     Triangle* triangle = new (bufv.p) Triangle(DAT_011b153c);
     {
         Triangle* __restrict tt = triangle;
-        tt->radius = mesh.m_fSphereRadius;
+        tt->radius = mesh.m_radius;
     }
-    triangle->weldingType = mesh.m_eWeldingType;
+    triangle->weldingType = mesh.m_weldingType;
     if (chunkIndex == 0)
     {
         Triangle* __restrict tr = triangle;
-        tr->welding = reinterpret_cast<BigTriangle*>(mesh.m_kBigTriangles.m_data)[index].welding;
-        BigTriangle& big = reinterpret_cast<BigTriangle*>(mesh.m_kBigTriangles.m_data)[index];
+        tr->welding = reinterpret_cast<BigTriangle*>(mesh.m_bigTriangles.m_data)[index].welding;
+        BigTriangle& big = reinterpret_cast<BigTriangle*>(mesh.m_bigTriangles.m_data)[index];
         unsigned int iVertexA = big.a;
-        const ::hkVector4* pBigVertices = reinterpret_cast<::hkVector4*>(mesh.m_kBigVertices.m_data);
+        const ::hkVector4* pBigVertices = reinterpret_cast<::hkVector4*>(mesh.m_bigVertices.m_data);
         _mm_store_ps(&tr->vertices[0].x, _mm_load_ps(&pBigVertices[iVertexA].x));
         _mm_store_ps(&tr->vertices[1].x, _mm_load_ps(&pBigVertices[big.b].x));
         _mm_store_ps(&tr->vertices[2].x, _mm_load_ps(&pBigVertices[big.c].x));
@@ -1141,7 +1179,7 @@ Triangle* CompressedMeshChildQuery::AllocateStorage_00e3d3f0(unsigned int key, B
         _mm_store_ps(&triangle->vertices[2].x, MulQ(triangle->vertices[2].m_vComponents, scalev.m_vComponents));
         return triangle;
     }
-    index &= mesh.m_iNumBitsForWIndex;
+    index &= mesh.m_indexMask;
     --chunkIndex;
     _mm_store_ps(&transform.m_f00, _mm_setzero_ps());
     transform.m_f00 = 1.0f;
@@ -1150,23 +1188,23 @@ Triangle* CompressedMeshChildQuery::AllocateStorage_00e3d3f0(unsigned int key, B
     _mm_store_ps(&transform.m_f20, _mm_setzero_ps());
     transform.m_f28 = 1.0f;
     _mm_store_ps(&transform.m_f30, _mm_setzero_ps());
-    if (reinterpret_cast<Chunk*>(mesh.m_kChunks.m_data)[chunkIndex].transform != 0xffff)
+    if (reinterpret_cast<Chunk*>(mesh.m_chunks.m_data)[chunkIndex].transform != 0xffff)
     {
-        ::hkTransform& t = reinterpret_cast<::hkTransform&>(mesh.m_kTransforms.m_data[reinterpret_cast<Chunk*>(mesh.m_kChunks.m_data)[chunkIndex].transform]);
+        ::hkTransform& t = reinterpret_cast<::hkTransform&>(mesh.m_transforms.m_data[reinterpret_cast<Chunk*>(mesh.m_chunks.m_data)[chunkIndex].transform]);
         _mm_store_ps(&transform.m_f00, _mm_load_ps(&t.m_rotation.m_kColumn0.x));
         _mm_store_ps(&transform.m_f10, _mm_load_ps(&t.m_rotation.m_kColumn1.x));
         _mm_store_ps(&transform.m_f20, _mm_load_ps(&t.m_rotation.m_kColumn2.x));
         _mm_store_ps(&transform.m_f30, _mm_load_ps(reinterpret_cast<const float*>(&t.m_vTranslation)));
     }
-    if (reinterpret_cast<Chunk*>(mesh.m_kChunks.m_data)[chunkIndex].reference != 0xffff)
-        chunkIndex = reinterpret_cast<Chunk*>(mesh.m_kChunks.m_data)[chunkIndex].reference;
-    Chunk* chunk = &reinterpret_cast<Chunk*>(mesh.m_kChunks.m_data)[chunkIndex];
+    if (reinterpret_cast<Chunk*>(mesh.m_chunks.m_data)[chunkIndex].reference != 0xffff)
+        chunkIndex = reinterpret_cast<Chunk*>(mesh.m_chunks.m_data)[chunkIndex].reference;
+    Chunk* chunk = &reinterpret_cast<Chunk*>(mesh.m_chunks.m_data)[chunkIndex];
     Triangle* __restrict tw = triangle;
     tw->welding = chunk->welding.m_data[index];
     {
         hkVector4 a, b, c;
         const hkUint16* indices = chunk->indices.m_data;
-        chunk->ProcessState_00e3cd50(indices[index] * 3, indices[index + 1] * 3, indices[index + 2] * 3, mesh.m_eScriptError, a, b, c);
+        chunk->ProcessState_00e3cd50(indices[index] * 3, indices[index + 1] * 3, indices[index + 2] * 3, mesh.m_error, a, b, c);
         a.setTransformedPos_00c7f640(transform, a);
         b.setTransformedPos_00c7f640(transform, b);
         c.setTransformedPos_00c7f640(transform, c);
@@ -1183,7 +1221,7 @@ Triangle* CompressedMeshChildQuery::AllocateStorage_00e3d3f0(unsigned int key, B
     }
 }
 
-void __cdecl hkArrayUtil__reserve(::hkMemoryAllocator& alloc, void* array, int numElem, int sizeElem);
+void __cdecl hkArrayUtil__reserve(::hkMemoryAllocator& mem, void* array, int numElem, int sizeElem);
 
 // hkArray::setSize through this unit's heap allocator view (hkArrayUtil::_reserve is FUN_00c908c0).
 template <class T> static __forceinline void SetSizeAndGrow(::hkArrayBase<T>& a, int n)
@@ -1201,13 +1239,16 @@ template <class T> static __forceinline void SetSizeAndGrow(::hkArrayBase<T>& a,
 
 struct ConvexVertexDecoder : CompressedChunk
 {
-    void ProcessEntries_00e3d9d0(hkReal quantization, const ::hkTransform& transform, ::hkArray<hkVector4q>& vertices) const;
+    void hkpCompressedMeshShape_ConvexPiece_getVertices(hkReal quantization, const ::hkTransform& transform, ::hkArray<hkVector4q>& vertices) const;
 };
 
 // Expands the compressed vertex data into hkVector4q entries, applying quantization, offset, and transform to fill the output array.
 // @fnv 0x00e3d9d0
-// src: GUESS 0x00e3d9d0 (confidence: low)
-void ConvexVertexDecoder::ProcessEntries_00e3d9d0(hkReal quantization, const ::hkTransform& transform,
+// src: XBOX_RETAIL_PDB 0x00e3d9d0
+// pdb: hkpCompressedMeshShape::ConvexPiece::getVertices | hkpCompressedMeshShape.obj | retail, object-file gap fill, high
+// pdb params: quantization, transform, vertices
+// pdb locals: v
+void ConvexVertexDecoder::hkpCompressedMeshShape_ConvexPiece_getVertices(hkReal quantization, const ::hkTransform& transform,
                                        ::hkArray<hkVector4q>& vertices) const
 {
     SetSizeAndGrow(vertices, m_iStridedVertexCount / 3);
@@ -1227,55 +1268,57 @@ extern float DAT_01012068;
 
 // Initializes the mesh with its radius, default key layout, arrays, and scale.
 // @fnv 0x00e3dae0
-hkpCompressedMeshShape::hkpCompressedMeshShape(float value)
+// pdb: hkpCompressedMeshShape::hkpCompressedMeshShape | hkpCompressedMeshShape.obj | retail, upstream name already matches, high
+// pdb params: radius
+hkpCompressedMeshShape::hkpCompressedMeshShape(float radius)
     : hkpShapeCollection(0x10u, (unsigned char)6),
-      m_kMaterials(FinishingFlag()), m_kMaterialIndices16(FinishingFlag()),
-      m_kMaterialIndices8(FinishingFlag()), m_kTransforms(FinishingFlag()),
-      m_kBigVertices(FinishingFlag()), m_kBigTriangles(FinishingFlag()),
-      m_kChunks(FinishingFlag()), m_kConvexPieces(FinishingFlag()), m_kNamedMaterials(FinishingFlag())
+      m_materials(FinishingFlag()), m_materials16(FinishingFlag()),
+      m_materials8(FinishingFlag()), m_transforms(FinishingFlag()),
+      m_bigVertices(FinishingFlag()), m_bigTriangles(FinishingFlag()),
+      m_chunks(FinishingFlag()), m_convexPieces(FinishingFlag()), m_namedMaterials(FinishingFlag())
 {
-    m_fSphereRadius = value;
+    m_radius = radius;
     *reinterpret_cast<void**>(this) = &DAT_010eba5c;
     *reinterpret_cast<void**>(static_cast<hkpShapeContainer*>(this)) = &DAT_010eba3c;
-    m_iBitsPerIndex = 0x11;
-    m_iBitsPerWIndex = 0x12;
-    m_iNumBitsForIndex = 0x3FFFF;
-    m_iNumBitsForWIndex = 0x1FFFF;
+    m_bitsPerIndex = 0x11;
+    m_bitsPerWIndex = 0x12;
+    m_wIndexMask = 0x3FFFF;
+    m_indexMask = 0x1FFFF;
     LocalM128 constantVector = _mm_set_ps1(DAT_01012068);
 
-    static_cast<unsigned int* volatile&>(m_kMaterials.m_data) = 0;
-    static_cast<volatile int&>(m_kMaterials.m_iElementCount) = 0;
-    static_cast<volatile int&>(m_kMaterials.m_iCapacityState) = 0x80000000;
-    static_cast<unsigned short* volatile&>(m_kMaterialIndices16.m_data) = 0;
-    static_cast<volatile int&>(m_kMaterialIndices16.m_iElementCount) = 0;
-    static_cast<volatile int&>(m_kMaterialIndices16.m_iCapacityState) = 0x80000000;
-    static_cast<unsigned char* volatile&>(m_kMaterialIndices8.m_data) = 0;
-    static_cast<volatile int&>(m_kMaterialIndices8.m_iElementCount) = 0;
-    static_cast<volatile int&>(m_kMaterialIndices8.m_iCapacityState) = 0x80000000;
-    static_cast<hkTransform* volatile&>(m_kTransforms.m_data) = 0;
-    static_cast<volatile int&>(m_kTransforms.m_iElementCount) = 0;
-    static_cast<volatile int&>(m_kTransforms.m_iCapacityState) = 0x80000000;
-    static_cast<hkVector4* volatile&>(m_kBigVertices.m_data) = 0;
-    static_cast<volatile int&>(m_kBigVertices.m_iElementCount) = 0;
-    static_cast<volatile int&>(m_kBigVertices.m_iCapacityState) = 0x80000000;
-    static_cast<hkpCompressedMeshShapeBigTriangle* volatile&>(m_kBigTriangles.m_data) = 0;
-    static_cast<volatile int&>(m_kBigTriangles.m_iElementCount) = 0;
-    static_cast<volatile int&>(m_kBigTriangles.m_iCapacityState) = 0x80000000;
-    static_cast<hkpCompressedMeshShapeChunk* volatile&>(m_kChunks.m_data) = 0;
-    static_cast<volatile int&>(m_kChunks.m_iElementCount) = 0;
-    static_cast<volatile int&>(m_kChunks.m_iCapacityState) = 0x80000000;
-    static_cast<hkpCompressedMeshShapeConvexPiece* volatile&>(m_kConvexPieces.m_data) = 0;
-    static_cast<volatile int&>(m_kConvexPieces.m_iElementCount) = 0;
-    static_cast<volatile int&>(m_kConvexPieces.m_iCapacityState) = 0x80000000;
+    static_cast<unsigned int* volatile&>(m_materials.m_data) = 0;
+    static_cast<volatile int&>(m_materials.m_iElementCount) = 0;
+    static_cast<volatile int&>(m_materials.m_iCapacityState) = 0x80000000;
+    static_cast<unsigned short* volatile&>(m_materials16.m_data) = 0;
+    static_cast<volatile int&>(m_materials16.m_iElementCount) = 0;
+    static_cast<volatile int&>(m_materials16.m_iCapacityState) = 0x80000000;
+    static_cast<unsigned char* volatile&>(m_materials8.m_data) = 0;
+    static_cast<volatile int&>(m_materials8.m_iElementCount) = 0;
+    static_cast<volatile int&>(m_materials8.m_iCapacityState) = 0x80000000;
+    static_cast<hkTransform* volatile&>(m_transforms.m_data) = 0;
+    static_cast<volatile int&>(m_transforms.m_iElementCount) = 0;
+    static_cast<volatile int&>(m_transforms.m_iCapacityState) = 0x80000000;
+    static_cast<hkVector4* volatile&>(m_bigVertices.m_data) = 0;
+    static_cast<volatile int&>(m_bigVertices.m_iElementCount) = 0;
+    static_cast<volatile int&>(m_bigVertices.m_iCapacityState) = 0x80000000;
+    static_cast<hkpCompressedMeshShapeBigTriangle* volatile&>(m_bigTriangles.m_data) = 0;
+    static_cast<volatile int&>(m_bigTriangles.m_iElementCount) = 0;
+    static_cast<volatile int&>(m_bigTriangles.m_iCapacityState) = 0x80000000;
+    static_cast<hkpCompressedMeshShapeChunk* volatile&>(m_chunks.m_data) = 0;
+    static_cast<volatile int&>(m_chunks.m_iElementCount) = 0;
+    static_cast<volatile int&>(m_chunks.m_iCapacityState) = 0x80000000;
+    static_cast<hkpCompressedMeshShapeConvexPiece* volatile&>(m_convexPieces.m_data) = 0;
+    static_cast<volatile int&>(m_convexPieces.m_iElementCount) = 0;
+    static_cast<volatile int&>(m_convexPieces.m_iCapacityState) = 0x80000000;
 
-    static_cast<void* volatile&>(m_pUserData) = 0;
-    static_cast<volatile unsigned short&>(m_iIndexStriding) = 0;
-    static_cast<volatile unsigned short&>(m_iNumTriangles) = 0;
-    static_cast<hkpNamedMeshMaterial* volatile&>(m_kNamedMaterials.m_data) = 0;
-    static_cast<volatile int&>(m_kNamedMaterials.m_iElementCount) = 0;
-    static_cast<volatile int&>(m_kNamedMaterials.m_iCapacityState) = 0x80000000;
+    static_cast<void* volatile&>(m_meshMaterials) = 0;
+    static_cast<volatile unsigned short&>(m_materialStriding) = 0;
+    static_cast<volatile unsigned short&>(m_numMaterials) = 0;
+    static_cast<hkpNamedMeshMaterial* volatile&>(m_namedMaterials.m_data) = 0;
+    static_cast<volatile int&>(m_namedMaterials.m_iElementCount) = 0;
+    static_cast<volatile int&>(m_namedMaterials.m_iCapacityState) = 0x80000000;
 
-    static_cast<volatile unsigned char&>(m_eWeldingType) = 6;
+    static_cast<volatile unsigned char&>(m_weldingType) = 6;
     *reinterpret_cast<LocalM128*>(&padD4[0xC]) = constantVector;
 }
 
@@ -1296,46 +1339,48 @@ struct CompressedMeshMaterialQuery : ::hkpCompressedMeshShape
 // Resolves a material index from a compressed mesh key and returns a pointer into the material data buffer.
 // @fnv 0x00e3d0e0
 // src: HAVOK_LIB 0x00e3d0e0
+// pdb: hkpCompressedMeshShape::getMaterial | hkpCompressedMeshShape.obj | debug, upstream name already matches, high
+// pdb params: key
 void* CompressedMeshMaterialQuery::hkpCompressedMeshShape_getMaterial(unsigned key)
 {
-    char* materials = (char*)m_pUserData;
+    char* materials = (char*)m_meshMaterials;
     if (!materials)
         return 0;
-    unsigned chunkIndex = key >> m_iBitsPerWIndex;
-    unsigned triangle = key & m_iNumBitsForWIndex;
+    unsigned chunkIndex = key >> m_bitsPerWIndex;
+    unsigned triangle = key & m_indexMask;
     if (chunkIndex == 0)
     {
-        triangle = reinterpret_cast<reflected_havok::hkpCompressedMeshShapeBigTriangle*>(m_kBigTriangles.m_data)[triangle].material;
+        triangle = reinterpret_cast<reflected_havok::hkpCompressedMeshShapeBigTriangle*>(m_bigTriangles.m_data)[triangle].material;
     }
     else
     {
-        if (chunkIndex == ((1u << (32 - m_iBitsPerWIndex)) - 1))
+        if (chunkIndex == ((1u << (32 - m_bitsPerWIndex)) - 1))
             return 0;
-        unsigned short reference = reinterpret_cast<reflected_havok::hkpCompressedMeshShapeChunk*>(m_kChunks.m_data)[chunkIndex - 1].reference;
+        unsigned short reference = reinterpret_cast<reflected_havok::hkpCompressedMeshShapeChunk*>(m_chunks.m_data)[chunkIndex - 1].reference;
         if (reference != 0xffff)
             chunkIndex = reference;
         else
             --chunkIndex;
-        unsigned int material = reinterpret_cast<reflected_havok::hkpCompressedMeshShapeChunk*>(m_kChunks.m_data)[chunkIndex].materialInfo;
-        switch ((unsigned int)m_ucMaterialType)
+        unsigned int material = reinterpret_cast<reflected_havok::hkpCompressedMeshShapeChunk*>(m_chunks.m_data)[chunkIndex].materialInfo;
+        switch ((unsigned int)m_materialType)
         {
         case MATERIAL_SINGLE_VALUE_PER_CHUNK:
             triangle = material;
             break;
         case MATERIAL_FOUR_BYTES_PER_TRIANGLE:
-            triangle = m_kMaterials.m_data[material + triangle];
+            triangle = m_materials.m_data[material + triangle];
             break;
         case MATERIAL_TWO_BYTES_PER_TRIANGLE:
-            triangle = m_kMaterialIndices16.m_data[material + triangle];
+            triangle = m_materials16.m_data[material + triangle];
             break;
         case MATERIAL_ONE_BYTE_PER_TRIANGLE:
-            triangle = m_kMaterialIndices8.m_data[material + triangle];
+            triangle = m_materials8.m_data[material + triangle];
             break;
         default:
             return 0;
         }
     }
-    return materials + m_iIndexStriding * triangle;
+    return materials + m_materialStriding * triangle;
 }
 
 struct ChunkAabbCalls
@@ -1350,15 +1395,18 @@ struct CompressedMeshContentBounds : ::hkpCompressedMeshShape
 // Computes the bounding box by expanding an initial AABB with the AABB of each chunk in m_kChunks.
 // @fnv 0x00e3cf40
 // src: GUESS 0x00e3cf40 (confidence: medium)
+// pdb: hkpCompressedMeshShape::recalcAabb | hkpCompressedMeshShape.obj | retail, object-file run extension, low
+// pdb params: out
+// pdb locals: bounds
 void CompressedMeshContentBounds::GetChunkBounds(hkAabbq* out)
 {
     (out->m_kMinimumCorner.*static_cast<void (hkVector4q::*)(float)>(&hkVector4q::SetAllComponents))(DAT_0104da48);
     (out->m_kMaximumCorner.*static_cast<void (hkVector4q::*)(float)>(&hkVector4q::SetAllComponents))(DAT_0104e148);
-    for (int i = 0; i < m_kChunks.m_iElementCount; i++)
+    for (int i = 0; i < m_chunks.m_iElementCount; i++)
     {
         hkAabbq aabb;
-        ((ChunkAabbCalls&)m_kChunks.m_data[i])
-            .ForwardCall_00e3cd20(m_eScriptError, (::hkVector4*)&aabb, (::hkVector4*)&padD4[0xC]);
+        ((ChunkAabbCalls&)m_chunks.m_data[i])
+            .ForwardCall_00e3cd20(m_error, (::hkVector4*)&aabb, (::hkVector4*)&padD4[0xC]);
         out->m_kMinimumCorner.setMin4(out->m_kMinimumCorner, aabb.m_kMinimumCorner);
         out->m_kMaximumCorner.setMax4(out->m_kMaximumCorner, aabb.m_kMaximumCorner);
     }

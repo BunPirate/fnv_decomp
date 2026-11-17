@@ -28,6 +28,7 @@ inline void NiBinaryStream::Write(const void* value)
 }
 
 // @fnv 0x00a86bf0
+// pdb: NiTransform::MakeIdentity | NiTransform.obj | debug, call graph, medium
 void NiTransform::ResetToIdentity()
 {
     m_Rotate.MakeIdentity();
@@ -36,6 +37,8 @@ void NiTransform::ResetToIdentity()
 }
 
 // @fnv 0x00a86c80
+// pdb: NiTransform::LoadBinary | NiTransform.obj | retail, upstream name already matches, high
+// pdb params: stream
 void NiTransform::LoadBinary(NiStream& stream)
 {
     m_Rotate.LoadBinary(stream);
@@ -46,6 +49,8 @@ void NiTransform::LoadBinary(NiStream& stream)
 // The shared class does not declare this comparison. The unused EDX argument
 // preserves the original member-call ABI while using NiTransform directly.
 // @fnv 0x00a86c30
+// pdb: NiTransform::operator!= | NiTransform.obj | retail, call graph, high
+// pdb params: xform
 unsigned int __fastcall TransformNotEqual(const NiTransform* transform, void*, const NiTransform& other)
 {
     if (transform->m_Rotate == other.m_Rotate)
@@ -61,6 +66,8 @@ unsigned int __fastcall TransformNotEqual(const NiTransform* transform, void*, c
 
 // Writes the orientation, translation, and scale of the transform to the given NiStream.
 // @fnv 0x00a86cd0
+// pdb: NiTransform::SaveBinary | NiTransform.obj | retail, upstream name already matches, high
+// pdb params: stream
 void NiTransform::SaveBinary(NiStream* stream)
 {
     m_Rotate.SaveBinary(*stream);

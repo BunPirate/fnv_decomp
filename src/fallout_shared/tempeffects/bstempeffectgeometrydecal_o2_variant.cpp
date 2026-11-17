@@ -31,6 +31,7 @@ struct FUN_00a81f90_class
 };
 // @fnv 0x00a81f90
 // src: EXE 0x00a81f90
+// pdb: NiSkinPartition::NiSkinPartition | NiSkinPartition.obj | retail, upstream name already matches, high
 void* __thiscall FUN_00a81f90_class::NiSkinPartition_NiSkinPartition()
 {
     _Call_a5d3a0();
@@ -148,6 +149,7 @@ struct FUN_00a85580 : S_00a85580_Object
     ~FUN_00a85580() throw();
 };
 // @fnv 0x00a85580
+// pdb: NiSkinInstance::~NiSkinInstance | NiSkinInstance_Xenon.obj | debug, call graph, medium
 FUN_00a85580::~FUN_00a85580() throw()
 {
     _NiFree_00aa10f0(unk14);

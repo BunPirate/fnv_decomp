@@ -4,6 +4,7 @@
 #include "ImageSpaceModifierInstanceDOF.h"
 #include "NiPoint2.h"
 
+// pdb: class ImageSpaceModifierInstanceDRB, size 0x44, bases: ImageSpaceModifierInstanceTemp, 8 members
 class ImageSpaceModifierInstanceDRB : public ImageSpaceModifierInstanceTemp
 {
   public:

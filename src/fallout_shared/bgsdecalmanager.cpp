@@ -30,7 +30,10 @@
 #include "../../include/BSCullingProcess.h"
 
 // @fnv 0x004a0030
-void BGSDecalManager::RenderDecals()
+// src: XBOX_RETAIL_PDB 0x004a0030
+// pdb: BGSDecalManager::UpdateSimpleDecals | BGSDecalManager.obj | retail, unique string literal, high
+// pdb locals: prev, iter, pdecal, color
+void BGSDecalManager::UpdateSimpleDecals()
 {
     if (reinterpret_cast<BSSimpleArray<ParentSpaceNode, 1024>*>(&m_kSimpleDecalList)->GetSize() > 0)
     {
@@ -52,17 +55,17 @@ void BGSDecalManager::RenderDecals()
                         ->GetNext(reinterpret_cast<void*&>(iterator.position)))));
             if (decal != 0)
             {
-                if (decal->m_bNeedsManagerUpdate)
+                if (decal->bOcclusionQuery)
                 {
                     RemoveDecal(decal);
-                    decal->m_bNeedsManagerUpdate = false;
+                    decal->bOcclusionQuery = false;
                 }
 
-                if (decal->m_pRenderQuery != 0)
+                if (decal->pOcclusionQuery != 0)
                 {
                     if (decal->ReleaseTextureObject())
                     {
-                        if (decal->m_uiTextureReferenceCount > 0)
+                        if (decal->iCurrentOcclusionResult > 0)
                         {
                             if (*DAT_011c5904.FUN_00408d60())
                                 Warning(DAT_0101e1c8, reinterpret_cast<FirstPointerStringView_0043b1b0*>(decal->BSTempEffectSimpleDecal_GetDecalParent()->GetLinkToList())->FUN_0043b1b0());
@@ -72,7 +75,7 @@ void BGSDecalManager::RenderDecals()
                         {
                             if (*DAT_011c5904.FUN_00408d60())
                                 Warning(DAT_0101e19c, reinterpret_cast<FirstPointerStringView_0043b1b0*>(decal->BSTempEffectSimpleDecal_GetDecalParent()->GetLinkToList())->FUN_0043b1b0());
-                            decal->bWasPlaying = true;
+                            decal->bFinished = true;
                         }
                     }
                 }
@@ -81,10 +84,10 @@ void BGSDecalManager::RenderDecals()
                     reinterpret_cast<DecalVtableCall*>(decal)->vfn_8c();
                 }
 
-                if (decal->m_bTextureDirty && !decal->bWasPlaying)
-                    decal->CreateDecalTexture();
+                if (decal->bFinalize && !decal->bFinished)
+                    decal->FinalizeGeometry();
 
-                if (decal->bWasPlaying)
+                if (decal->bFinished)
                 {
                     if (decal->GetByteAt2D())
                     {
@@ -95,12 +98,12 @@ void BGSDecalManager::RenderDecals()
                         if (DAT_011c57f4 & 1)
                         {
                             NiColorA color(0.0f, 1.0f, 0.0f, 1.0f);
-                            decal->SetDecalTint(reinterpret_cast<NiColorA&>(color), true);
+                            decal->CreateDebugBox(reinterpret_cast<NiColorA&>(color), true);
                         }
                         if (DAT_011c57f4 & 2)
                         {
                             NiColorA color(0.0f, 1.0f, 0.0f, 0.25f);
-                            decal->SetDecalTint(reinterpret_cast<NiColorA&>(color), false);
+                            decal->CreateDebugBox(reinterpret_cast<NiColorA&>(color), false);
                         }
                     }
                     else if (DAT_011c57f4 & 0x10)
@@ -108,12 +111,12 @@ void BGSDecalManager::RenderDecals()
                         if (DAT_011c57f4 & 1)
                         {
                             NiColorA color(1.0f, 0.0f, 0.0f, 1.0f);
-                            decal->SetDecalTint(reinterpret_cast<NiColorA&>(color), true);
+                            decal->CreateDebugBox(reinterpret_cast<NiColorA&>(color), true);
                         }
                         if (DAT_011c57f4 & 2)
                         {
                             NiColorA color(1.0f, 0.0f, 0.0f, 0.25f);
-                            decal->SetDecalTint(reinterpret_cast<NiColorA&>(color), false);
+                            decal->CreateDebugBox(reinterpret_cast<NiColorA&>(color), false);
                         }
                     }
                     reinterpret_cast<DecalNiTPointerListBase<DecalNiTPointerAllocator<unsigned int>, DecalNiPointer<NiProperty> >*>(
@@ -135,6 +138,8 @@ int __fastcall TESDataHandler_GetWorldSpaceList(int apBase)
 
 struct NiStream;
 // @fnv 0x004769c0
+// pdb: NiMatrix3::SetCol | BGSDecalManager.obj | debug, call graph, medium
+// pdb params: uiCol, col
 void NiMatrix3::SetCol(unsigned int uiCol, const float* col)
 {
     ((float(*)[3])&m_pEntry[0][0])[0][uiCol] = col[0];
@@ -142,6 +147,7 @@ void NiMatrix3::SetCol(unsigned int uiCol, const float* col)
     ((float(*)[3])&m_pEntry[0][0])[2][uiCol] = col[2];
 }
 
+// pdb: class Date, size 0x4 (here 0x1), 2 members
 class Date
 {
   public:
@@ -149,14 +155,15 @@ class Date
 };
 
 void __fastcall NiCriticalSection_Lock(void*);
-int __fastcall CallNestedAtOffset80(void*);
+int __fastcall NiRenderer_LockCount(void*);
 
 // @fnv 0x004a0370
 // src: XBOX_PDB 0x004a0370
+// pdb: NiXenonRenderer::LockRenderer | BGSDecalManager.obj | debug, upstream name already matches, high
 void __fastcall NiXenonRenderer_LockRenderer(char* pThis)
 {
     NiCriticalSection_Lock(pThis + 0x80);
-    if (CallNestedAtOffset80(pThis) == 1)
+    if (NiRenderer_LockCount(pThis) == 1)
     {
         ((Date*)pThis)->Date::~Date();
     }
@@ -169,14 +176,15 @@ struct Date
 };
 struct DD : Date
 {
-    int CallNestedAtOffset80();
+    int NiRenderer_LockCount();
     void NiXenonRenderer_UnlockRenderer();
 };
 // @fnv 0x004a03c0
 // src: XBOX_PDB 0x004a03c0
+// pdb: NiXenonRenderer::UnlockRenderer | BGSDecalManager.obj | debug, upstream name already matches, high
 void DD::NiXenonRenderer_UnlockRenderer()
 {
-    if (CallNestedAtOffset80() == 1)
+    if (NiRenderer_LockCount() == 1)
         Date::~Date();
     ((RecursiveLock*)((char*)this + 0x80))->Leave();
 }
@@ -185,6 +193,7 @@ void DD::NiXenonRenderer_UnlockRenderer()
 // Writes the negated x, y and z components into out and returns out.
 // @fnv 0x004a0bd0
 // src: GUESS 0x004a0bd0 (confidence: high)
+// pdb: NiPoint3::operator- | BGSDecalManager.obj | debug, object-file run extension, low
 NiPoint3* NiPoint3::GetNegatedVector(NiPoint3* out)
 {
     out->Set(-x, -y, -z);
@@ -209,14 +218,16 @@ struct FUN_004a0fd0_shell
 {
     char pad[0xc4];
     DecalNiPointer<NiNode> m_pController;
-    void BSCullingProcess_SetAccumulator(NiNode* apNode);
+    void BSCullingProcess_SetAccumulator(NiNode* apAccumulator);
 };
 
 // @fnv 0x004a0fd0
 // src: COMMUNITY 0x004a0fd0
-void FUN_004a0fd0_shell::BSCullingProcess_SetAccumulator(NiNode* apNode)
+// pdb: BSCullingProcess::SetAccumulator | BGSDecalManager.obj | debug, upstream name already matches, high
+// pdb params: apAccumulator
+void FUN_004a0fd0_shell::BSCullingProcess_SetAccumulator(NiNode* apAccumulator)
 {
-    m_pController = apNode;
+    m_pController = apAccumulator;
 }
 
 struct BSA_
@@ -254,6 +265,8 @@ static bool (Fake_FUN_004a2020::*pfn_FUN_004a2020)(unsigned int) const = &Fake_F
 
 // Tests whether the bit for aiFlag is set in the ulFlags bit array, indexing by aiFlag>>5 and masking with 1<<(aiFlag%32).
 // @fnv 0x004a2020
+// pdb: BSShaderProperty::CheckSilhouetteRenderPassArray | BSShaderProperty.obj | retail, call graph, medium
+// pdb params: aiNumPasses
 bool Fake_FUN_004a2020::GetFlag(unsigned int aiFlag) const
 {
     unsigned int uiindex = aiFlag >> 5;
@@ -266,6 +279,9 @@ bool Fake_FUN_004a2020::GetFlag(unsigned int aiFlag) const
 // Returns 0 for a null pointer, otherwise returns whether GetMinLevel() is between 1 and 12.
 // @fnv 0x004a2c20
 // src: XBOX_PDB 0x004a2c20
+// pdb: BSSM_ShaderPropertyIsLighting | BGSDecalManager.obj | debug, upstream name already matches, high
+// pdb params: apShaderProp
+// pdb locals: itp
 int __cdecl BSSM_ShaderPropertyIsLighting(BGSTerrainManager* apShaderProp)
 {
     if (!apShaderProp)
@@ -286,15 +302,18 @@ struct NiPoint3_local
 // Reads components 0, 1 and 2 of arhkV into arNiP.x, arNiP.y and arNiP.z and returns arNiP.
 // @fnv 0x004a3970
 // src: XBOX_PDB 0x004a3970
-NiPoint3_local& __cdecl HK2NINS(NiPoint3_local& arNiPoint, const hkVector4& arHkVector)
+// pdb: HK2NINS | BGSDecalManager.obj | debug, upstream name already matches, high
+// pdb params: arNiP, arhkV
+NiPoint3_local& __cdecl HK2NINS(NiPoint3_local& arNiP, const hkVector4& arhkV)
 {
     __declspec(align(16)) char t0[16], t1[16], t2[16];
-    arNiPoint.x = arHkVector.hkVector4_getSimdAt(*reinterpret_cast<hkSimdReal*>(t0), 0).getReal();
-    arNiPoint.y = arHkVector.hkVector4_getSimdAt(*reinterpret_cast<hkSimdReal*>(t1), 1).getReal();
-    arNiPoint.z = arHkVector.hkVector4_getSimdAt(*reinterpret_cast<hkSimdReal*>(t2), 2).getReal();
-    return arNiPoint;
+    arNiP.x = arhkV.hkVector4_getSimdAt(*reinterpret_cast<hkSimdReal*>(t0), 0).getReal();
+    arNiP.y = arhkV.hkVector4_getSimdAt(*reinterpret_cast<hkSimdReal*>(t1), 1).getReal();
+    arNiP.z = arhkV.hkVector4_getSimdAt(*reinterpret_cast<hkSimdReal*>(t2), 2).getReal();
+    return arNiP;
 }
 
+// pdb: class CFilter, size 0x4, 1 members
 struct CFilter
 {
     bool QLinkedGroup();
@@ -373,9 +392,11 @@ unsigned int FUN_004a3a20_shell::CFilter_GetGroup()
 // Returns the flags of apRef, or 0 when apRef is null.
 // @fnv 0x004a3a40
 // src: XBOX_PDB 0x004a3a40
-unsigned int __cdecl bhkShape_Getbhk(TESObjectREFR* apRef)
+// pdb: bhkShape::Getbhk | BGSDecalManager.obj | debug, upstream name already matches, high
+// pdb params: apShape
+unsigned int __cdecl bhkShape_Getbhk(TESObjectREFR* apShape)
 {
-    return apRef ? apRef->GetFlags() : 0;
+    return apShape ? apShape->GetFlags() : 0;
 }
 
 void __fastcall hkpAllRayHitCollector_reset(void*);
@@ -402,6 +423,7 @@ struct FUN_004a3a70 : Base_004a3b30
 
 // Initializes the base subobject, constructs member m with 0, then calls FUN_004a3b70 on this.
 // @fnv 0x004a3a70
+// pdb: hkpAllRayHitCollector::hkpAllRayHitCollector | BGSDecalManager.obj | debug, call graph, high
 FUN_004a3a70::FUN_004a3a70() : m(0)
 {
     hkpAllRayHitCollector_reset(this);
@@ -516,6 +538,9 @@ hkVector4& __cdecl NI2HK(hkVector4&, NiPoint3 const&);
 // Converts the NiPoint3 at arFrom into a hkVector4 and passes it to FUN_0056d340 on this object.
 // @fnv 0x004a3da0
 // src: XBOX_PDB 0x004a3da0
+// pdb: bhkPickData::SetFrom | BGSDecalManager.obj | debug, call graph, high
+// pdb params: arFrom
+// pdb locals: hkv
 void FUN_004a3da0_shell::bhkPickData_SetFrom(void* arFrom)
 {
     // Raw storage preserves the original initialization call and stack protection.
@@ -532,16 +557,18 @@ struct T_
 };
 struct PD_
 {
-    void ForwardToSubObject(void*);
+    void bhkPickData_SetLength(void*);
     void bhkPickData_SetTo_004a3f40(void*);
 };
 // Calls ForwardToSubObject with the result of FUN_00458b20, then forwards p to FUN_004a3f10 on the object at this+0x10.
 // @fnv 0x004a3f40
 // src: XBOX_PDB 0x004a3f40
-void PD_::bhkPickData_SetTo_004a3f40(void* p)
+// pdb: bhkPickData::SetTo | BGSDecalManager.obj | debug, call graph, high
+// pdb params: arTo
+void PD_::bhkPickData_SetTo_004a3f40(void* arTo)
 {
-    ForwardToSubObject(hkVector4_getZero());
-    ((T_*)((char*)this + 0x10))->SetValue(p);
+    bhkPickData_SetLength(hkVector4_getZero());
+    ((T_*)((char*)this + 0x10))->SetValue(arTo);
 }
 
 struct Flt
@@ -551,6 +578,8 @@ struct Flt
 };
 // @fnv 0x004a3f70
 // src: XBOX_PDB 0x004a3f70
+// pdb: bhkPickData::SetFilter | BGSDecalManager.obj | debug, upstream name already matches, high
+// pdb params: aiFilter
 void __fastcall bhkPickData_SetFilter(char* self, Flt f)
 {
     *(unsigned int*)(self + 0x24) = (unsigned int)f;
@@ -715,6 +744,8 @@ bool FUN_004a4020_shell::MenuConsole_IsVisible()
 }
 
 // @fnv 0x004b4660
+// pdb: NiMatrix3::SetCol | BGSDecalManager.obj | debug, call graph, medium
+// pdb params: uiCol, f0, f1, f2
 void NiMatrix3::SetCol(unsigned int uiIndex, float afValue0, float afValue1, float afValue2)
 {
     *(float*)((char*)this + uiIndex * 4) = afValue0;
@@ -729,6 +760,8 @@ struct S3e60
 };
 // @fnv 0x0056d340
 // src: XBOX_PDB 0x0056d340
+// pdb: bhkPickData::SetFrom | BGSDecalManager.obj | debug, call graph, medium
+// pdb params: arFrom
 bool S3e60::bhkPickData_SetFrom_0056d340(unsigned int auiFlag)
 {
     return GetFlag(auiFlag);
@@ -873,6 +906,8 @@ class FUN_004a0eb0 : public FUN_00a69400
     virtual ~FUN_004a0eb0();
 };
 // @fnv 0x004a0eb0
+// pdb: BSCullingProcess::BSCullingProcess | BGSDecalManager.obj | debug, call graph, medium
+// pdb params: apVisibleSet
 FUN_004a0eb0::FUN_004a0eb0(NiVisibleArray* apVisibleSet) : FUN_00a69400(apVisibleSet), i90(0), ibc(0), ic0(0), go(0)
 {}
 
@@ -892,6 +927,7 @@ class FUN_004a3bc0 : public FUN_004a3ae0
     virtual ~FUN_004a3bc0();
 };
 // @fnv 0x004a3bc0
+// pdb: hkpAllRayHitCollector::~hkpAllRayHitCollector | BGSDecalManager.obj | debug, call graph, high
 FUN_004a3bc0::~FUN_004a3bc0()
 {}
 
@@ -932,6 +968,7 @@ GlobalObject_0044f440 g_011c7588;
 
 // @fnv 0x004a1a00
 // src: XBOX_PDB 0x004a1a00
+// pdb: Renderer::GetSkinnedDecalLODStart | BGSDecalManager.obj | debug, upstream name already matches, high
 void __cdecl Renderer_GetSkinnedDecalLODStart()
 {
     g_011c7588.FUN_00450410();
@@ -942,6 +979,7 @@ void __fastcall FUN_004a47b0(int __this);
 
 // @fnv 0x004a1a30
 // src: GUESS 0x004a1a30 (confidence: low)
+// pdb: NiTPointerList<BSFaceGenKeyframe *>::~NiTPointerList<BSFaceGenKeyframe *> | BSFaceGenAnimationData.obj | debug, call graph, medium
 void __fastcall Bgsdecalmanager_ForwardCall_004a1a30(int __this)
 {
     FUN_004a47b0(__this);
@@ -965,11 +1003,13 @@ void FUN_00acbb70_shell::Return_0()
 
 struct FUN_004a03a0_shell
 {
-    void CallNestedAtOffset80();
+    void NiRenderer_LockCount();
 };
 
 // @fnv 0x004a03a0
-void FUN_004a03a0_shell::CallNestedAtOffset80()
+// src: XBOX_DEBUG_PDB 0x004a03a0
+// pdb: NiRenderer::LockCount | BGSDecalManager.obj | debug, call graph (shared callers), high
+void FUN_004a03a0_shell::NiRenderer_LockCount()
 {
     ((FUN_00acbb70_shell*)((char*)this + 0x80))->Return_0();
 }
@@ -1027,6 +1067,7 @@ struct FUN_004a3b30_shell
 };
 
 // @fnv 0x004a3b30
+// pdb: hkpRayHitCollector::hkpRayHitCollector | BGSDecalManager.obj | debug, call graph, medium
 void* __thiscall FUN_004a3b30_shell::InitializeVftable()
 {
     m_vftable = &DAT_0101e594;
@@ -1039,6 +1080,7 @@ void __fastcall hkpRayHitCollector_reset(void* p);
 
 // @fnv 0x004a3b70
 // src: XBOX_PDB 0x004a3b70
+// pdb: hkpAllRayHitCollector::reset | BGSDecalManager.obj | debug, upstream name already matches, high
 void __fastcall hkpAllRayHitCollector_reset(void* p)
 {
     hkArrayBase_hkpRootCdBodyPair_clear((char*)p + 0x10);
@@ -1049,13 +1091,16 @@ namespace fnv_004a3f90 {
 struct T_
 {
     void SetValue(void*);
-    void ForwardToSubObject(void*);
+    void bhkPickData_SetLength(void*);
 };
 
 // @fnv 0x004a3f90
-void __thiscall T_::ForwardToSubObject(void* apParam)
+// src: XBOX_DEBUG_PDB 0x004a3f90
+// pdb: bhkPickData::SetLength | BGSDecalManager.obj | debug, call graph, high
+// pdb params: arLength
+void __thiscall T_::bhkPickData_SetLength(void* arLength)
 {
-    ((T_*)((char*)this + 0x90))->SetValue(apParam);
+    ((T_*)((char*)this + 0x90))->SetValue(arLength);
 }
 }  // namespace fnv_004a3f90
 
@@ -1063,24 +1108,26 @@ namespace bsrandom_singleton {
 struct MersenneTwister
 {
     static MersenneTwister* __cdecl GetRandomGenerator(void);
-    void __thiscall AddGeometryDecal(void* a, int b, char c);
+    void __thiscall BGSDecalManager_AddDecal(void* arDecalData, int aeDecalType, char abForceAdd);
 };
 }
 
 struct FUN_004a3fe0_shell
 {
-    void __thiscall TESObjectCELL_AddDecal(void* a, int b, char c);
+    void __thiscall TESObjectCELL_AddDecal(void* arDecalData, int aeDecalType, char abForceAdd);
 };
 
 // @fnv 0x004a3fe0
 // src: XBOX_PDB 0x004a3fe0
-void __thiscall FUN_004a3fe0_shell::TESObjectCELL_AddDecal(void* pObject, int b, char c)
+// pdb: TESObjectCELL::AddDecal | BGSDecalManager.obj | retail, upstream name already matches, high
+// pdb params: arDecalData, aeDecalType, abForceAdd
+void __thiscall FUN_004a3fe0_shell::TESObjectCELL_AddDecal(void* arDecalData, int aeDecalType, char abForceAdd)
 {
-    if (*(int*)((char*)pObject + 0x48) == 0)
+    if (*(int*)((char*)arDecalData + 0x48) == 0)
     {
-        *(int*)((char*)pObject + 0x48) = (int)this;
+        *(int*)((char*)arDecalData + 0x48) = (int)this;
     }
-    bsrandom_singleton::MersenneTwister::GetRandomGenerator()->AddGeometryDecal(pObject, b, c);
+    bsrandom_singleton::MersenneTwister::GetRandomGenerator()->BGSDecalManager_AddDecal(arDecalData, aeDecalType, abForceAdd);
 }
 
 void __cdecl FUN_00ec6f20(int, int, int, int);
@@ -1101,15 +1148,16 @@ void FUN_0049f560_Holder::CallWithTwelve(int a1)
 void __cdecl BGSDecalManager_ClearDecalsThisFrame();
 struct S004a03f0
 {
-    void CleanupDecalEmitters();
+    void BGSDecalManager_UpdateDecalEmitters();
 };
 // @fnv 0x0049fff0
 // src: COMMUNITY 0x0049fff0
+// pdb: BGSDecalManager::UpdateDecals | BGSDecalManager.obj | retail, upstream name already matches, high
 void __fastcall BGSDecalManager_UpdateDecals(BGSDecalManager* p)
 {
     BGSDecalManager_ClearDecalsThisFrame();
-    p->RenderDecals();
-    ((S004a03f0*)p)->CleanupDecalEmitters();
+    p->UpdateSimpleDecals();
+    ((S004a03f0*)p)->BGSDecalManager_UpdateDecalEmitters();
 }
 
 void _Deallocate(void*);
@@ -1120,6 +1168,7 @@ struct StandIn
 };
 // Calls FUN_004a2cf0, then if bit 0 of flags is set calls _Deallocate on this, and returns this.
 // @fnv 0x004a0490
+// pdb: BGSDecalEmitter::`scalar deleting destructor' | BGSDecalManager.obj | debug, object-file gap fill, medium
 void* StandIn::FUN_004a0490(unsigned int flags)
 {
     FUN_004a2cf0();
@@ -1131,6 +1180,7 @@ void* StandIn::FUN_004a0490(unsigned int flags)
 void _Deallocate(void*);
 // Calls FUN_004a0f60, then deallocates this when flags has bit 0 set, and returns this.
 // @fnv 0x004a0ff0
+// pdb: BSCullingProcess::`scalar deleting destructor' | BGSDecalManager.obj | retail, vtable slot, high
 void* BSCullingProcess::FUN_004a0ff0(unsigned int flags)
 {
     FUN_004a0f60();
@@ -1146,9 +1196,11 @@ struct Unk
 };
 // @fnv 0x004a1a10
 // src: XBOX_PDB 0x004a1a10
-void __thiscall Unk::DecalCaster_SetCollision(int aiArg, unsigned char b)
+// pdb: DecalCaster::SetCollision | BGSDecalManager.obj | debug, upstream name already matches, high
+// pdb params: aeLayer, abEnable
+void __thiscall Unk::DecalCaster_SetCollision(int aeLayer, unsigned char abEnable)
 {
-    SetSelectionMask(0x27, aiArg, b);
+    SetSelectionMask(0x27, aeLayer, abEnable);
 }
 
 namespace fnv_004a3b00 {
@@ -1160,6 +1212,7 @@ struct FUN_004a3ae0
 };
 // Runs the destructor and, when bit 0 of flags is set, deallocates this object; returns this.
 // @fnv 0x004a3b00
+// pdb: hkpRayHitCollector::`scalar deleting destructor' | BGSDecalManager.obj | debug, vtable slot, medium
 void* FUN_004a3ae0::DestroyAndFree(unsigned int flags)
 {
     this->FUN_004a3ae0::~FUN_004a3ae0();
@@ -1181,6 +1234,7 @@ struct XHolder : FUN_004a3bc0
 };
 // Runs the base destructor, then frees this object via _Deallocate when bit 0 of flags is set, and returns this.
 // @fnv 0x004a3b90
+// pdb: hkpAllRayHitCollector::`scalar deleting destructor' | BGSDecalManager.obj | retail, vtable slot, high
 void* XHolder::DestroyAndMaybeDeallocate(unsigned int flags)
 {
     this->FUN_004a3bc0::~FUN_004a3bc0();
@@ -1214,6 +1268,7 @@ struct FUN_004a19d0_shell
 
 // @fnv 0x004a19d0
 // src: XBOX_PDB 0x004a19d0
+// pdb: NiAVObject::GetNoDecals | BGSDecalManager.obj | debug, upstream name already matches, high
 void FUN_004a19d0_shell::NiAVObject_GetNoDecals()
 {
     reinterpret_cast<FUN_00456630_helper*>(this)->NiAVObject_GetBit(0x400);
@@ -1233,6 +1288,8 @@ struct bsrandom_singleton
 };
 // @fnv 0x004a1a50
 // src: COMMUNITY 0x004a1a50
+// pdb: BGSDecalManager::AddDecalEmitter | BGSDecalManager.obj | debug, call graph, low
+// pdb params: apEmitter
 void __cdecl BGSDecalManager_AddEmitter(void* apEmitter)
 {
     if (apEmitter)
@@ -1255,6 +1312,7 @@ struct FUN_004a0330_shell
 
 // @fnv 0x004a0330
 // src: XBOX_PDB 0x004a0330
+// pdb: BSTempEffectSimpleDecal::GetDecalParent | BGSDecalManager.obj | debug, upstream name already matches, high
 unsigned int FUN_004a0330_shell::BSTempEffectSimpleDecal_GetDecalParent()
 {
     return static_cast<unsigned int>(f);
@@ -1263,6 +1321,7 @@ unsigned int FUN_004a0330_shell::BSTempEffectSimpleDecal_GetDecalParent()
 
 // Calls GetModelData and invokes the triangle data normal operation.
 // @fnv 0x004a1ff0
+// pdb: NiTriBasedGeom::GetActiveTriangleCount | BGSDecalManager.obj | debug, call graph, medium
 void NiGeometry::CalculateNormals()
 {
     static_cast<NiTriBasedGeomData*>(GetModelData())->vf42();
@@ -1278,6 +1337,8 @@ struct FUN_004a2c00_shell
 };
 
 // @fnv 0x004a2c00
+// pdb: BSTempEffectGeometryDecal::SetDecalParent | BGSDecalManager.obj | debug, object-file gap fill, medium
+// pdb params: apNode
 void FUN_004a2c00_shell::AssignGo(void* arg)
 {
     m_go = arg;
@@ -1305,6 +1366,7 @@ struct FUN_004a3c20
 
 // Constructor: initializes subobjects at offsets 0x00, 0x30 and 0x90, then zeroes fields at 0xa0, 0xa4, 0xa8 and 0xac.
 // @fnv 0x004a3c20
+// pdb: bhkPickData::bhkPickData | BGSDecalManager.obj | debug, call graph, high
 FUN_004a3c20::FUN_004a3c20()
 {
     ((FUN_004a3cc0_Class*)((char*)this + 0x00))->hkpWorldRayCastInput_hkpWorldRayCastInput();
@@ -1352,12 +1414,15 @@ struct DecalCleanupOwner
     unsigned int clearQueryTexture;
     PendingDecalList pendingSimpleDecals;
     BGSDecalEmitterList decalEmitters;
-    void CleanupDecalEmitters();
+    void BGSDecalManager_UpdateDecalEmitters();
 };
 
 // Walks the decal emitter list, calls FUN_004a2d50 on each emitter, and deletes those for which FUN_004f1540 returns true.
 // @fnv 0x004a03f0
-void DecalCleanupOwner::CleanupDecalEmitters()
+// src: XBOX_RETAIL_PDB 0x004a03f0
+// pdb: BGSDecalManager::UpdateDecalEmitters | BGSDecalManager.obj | retail, call graph, high
+// pdb locals: prev, iter, pemitter
+void DecalCleanupOwner::BGSDecalManager_UpdateDecalEmitters()
 {
     DecalEmitterNode* cursor = decalEmitters.Modelloader_GetReferencedThis();
     while (cursor != 0)
@@ -1447,6 +1512,7 @@ class FUN_004a0f60_cls : public FUN_004a0f60_base
 
 // Destructor of the class; destroys the embedded m_c4 sub-object and the base.
 // @fnv 0x004a0f60
+// pdb: BSCullingProcess::~BSCullingProcess | BGSDecalManager.obj | retail, call graph, high
 FUN_004a0f60_cls::~FUN_004a0f60_cls()
 {}
 
@@ -1634,17 +1700,20 @@ struct Camera
     void UpdateCamera(Input*);
 };
 // @fnv 0x004a04c0
-void Camera::UpdateCamera(Input* input)
+// pdb: BGSDecalManager::IssueDecalOcclusionQuery | BGSDecalManager.obj | debug, unique string literal, high
+// pdb params: apDecal
+// pdb locals: pos, UpdateData, normal, tangent, start, end, fwidth, binormal, adjustedrot, frustum, rot, fdepth, culler, kzrot, plines, fheight, vec
+void Camera::UpdateCamera(Input* apDecal)
 {
-    NiPoint3 directionSlot1Slot0 = input->BSTempEffectSimpleDecal_GetDirection();
+    NiPoint3 directionSlot1Slot0 = apDecal->BSTempEffectSimpleDecal_GetDirection();
     directionSlot1Slot0.Unitize_004a0c10();
     directionSlot1Slot0.ScaleComponents(DAT_0101b268);
-    NiPoint3 originSlot13 = input->BSTempEffectSimpleDecal_GetOrigin().FUN_00439e90(directionSlot1Slot0);
+    NiPoint3 originSlot13 = apDecal->BSTempEffectSimpleDecal_GetOrigin().FUN_00439e90(directionSlot1Slot0);
     Matrix rotationSlot17Slot12;
     BSUtilities_GetRotationZToVector(&rotationSlot17Slot12, directionSlot1Slot0.GetNegatedVector());
     Matrix scaleSlot22Slot0Slot10;
     scaleSlot22Slot0Slot10.FUN_006815c0();
-    scaleSlot22Slot0Slot10.FUN_004a0c90(input->Animation_GetGlobalTimeMultiplier());
+    scaleSlot22Slot0Slot10.FUN_004a0c90(apDecal->Animation_GetGlobalTimeMultiplier());
     rotationSlot17Slot12 = scaleSlot22Slot0Slot10.FUN_0043f8d0(rotationSlot17Slot12);
     NiPoint3 column0Slot30Slot0;
     NiPoint3 column1Slot41Slot18;
@@ -1658,9 +1727,9 @@ void Camera::UpdateCamera(Input* input)
     basisSlot28Slot36.FUN_004769c0(2, column1Slot41Slot18);
     NiPoint3 startSlot14Slot30;
     NiPoint3 endSlot11;
-    float widthSlot15Slot25 = (input->FUN_00507b20() / DAT_01011590) * (1.0f / input->BSTempEffectSimpleDecal_GetDecalParent()->NiAVObject_GetWorldScale());
-    float heightSlot21 = (input->GetField11C() / DAT_01011590) * (1.0f / input->BSTempEffectSimpleDecal_GetDecalParent()->NiAVObject_GetWorldScale());
-    float farPlaneSlot12Slot43 = input->GetFloatAt120() + DAT_0101e2c0;
+    float widthSlot15Slot25 = (apDecal->FUN_00507b20() / DAT_01011590) * (1.0f / apDecal->BSTempEffectSimpleDecal_GetDecalParent()->NiAVObject_GetWorldScale());
+    float heightSlot21 = (apDecal->GetField11C() / DAT_01011590) * (1.0f / apDecal->BSTempEffectSimpleDecal_GetDecalParent()->NiAVObject_GetWorldScale());
+    float farPlaneSlot12Slot43 = apDecal->GetFloatAt120() + DAT_0101e2c0;
     Frustum frustumSlot18Slot39(0);
     frustumSlot18Slot39.ortho = true;
     frustumSlot18Slot39.nearValue = DAT_0101e2bc;
@@ -1686,7 +1755,7 @@ void Camera::UpdateCamera(Input* input)
     if (*DAT_011c5904.FUN_00408d60())
     {
         NiPoint3 look = scene.Modelloader_GetReferencedThis()->FUN_0045bba0();
-        Warning_005b5e40(&DAT_0101e298, input->BSTempEffectSimpleDecal_GetDecalParent()->FUN_00413f40()->FUN_0043b1b0());
+        Warning_005b5e40(&DAT_0101e298, apDecal->BSTempEffectSimpleDecal_GetDecalParent()->FUN_00413f40()->FUN_0043b1b0());
         Warning_005b5e40(&DAT_0101e274, originSlot13.x, originSlot13.y, originSlot13.z);
         Warning_005b5e40(&DAT_0101e24c, look.x, look.y, look.z);
         Warning_005b5e40(&DAT_0101e1f8, farPlaneSlot12Slot43, -widthSlot15Slot25, widthSlot15Slot25, heightSlot21,
@@ -1694,21 +1763,21 @@ void Camera::UpdateCamera(Input* input)
     }
     if (!render.Modelloader_GetReferencedThis())
         render.FUN_0066b0d0(BSShaderManager_GetTextureManager(BSShaderManager_GetRenderer(0x33), 0, 0, 0)->BSTextureManager_BorrowRenderedTexture());
-    if (input->alternate)
+    if (apDecal->alternate)
         BSRenderedTexture_StartOffscreen(7, render.Modelloader_GetReferencedThis()->FUN_00b6b260());
     else
         BSRenderedTexture_StartOffscreen(0, render.Modelloader_GetReferencedThis()->FUN_00b6b260());
-    input->query = new Query;
-    input->query->BSOcclusionQuery_Begin();
+    apDecal->query = new Query;
+    apDecal->query->BSOcclusionQuery_Begin();
     NiXenonRenderer_GetRenderer(scene.Modelloader_GetReferencedThis()->TESDataHandler_GetImpactDataSetList())->NiRenderer_SetScreenSpaceCameraData();
     Cull cullSlot18Slot33(0);
     cullSlot18Slot33.BSCullingProcess_SetAccumulator(node.Modelloader_GetReferencedThis());
     node.Modelloader_GetReferencedThis()->BSShaderAccumulator_SetShadowSceneNode(FUN_00450b80(0));
     node.Modelloader_GetReferencedThis()->FUN_004a1040(15);
-    BSShaderUtil_AccumulateScene(scene.Modelloader_GetReferencedThis(), input->BSTempEffectSimpleDecal_GetDecalParent(), &cullSlot18Slot33);
+    BSShaderUtil_AccumulateScene(scene.Modelloader_GetReferencedThis(), apDecal->BSTempEffectSimpleDecal_GetDecalParent(), &cullSlot18Slot33);
     FUN_00b6c0d0(scene.Modelloader_GetReferencedThis(), node.Modelloader_GetReferencedThis(), 0);
     cullSlot18Slot33.BSCullingProcess_SetAccumulator(0);
-    input->query->BSOcclusionQuery_End();
+    apDecal->query->BSOcclusionQuery_End();
     FUN_00b6b790();
 }
 }
@@ -1721,10 +1790,13 @@ class Refr_C
 
 // Returns false when the reference's acoustic space form type is 35, 42, 43 or 51; otherwise returns true.
 // @fnv 0x004a1060
-bool __cdecl IsAcousticSpaceFormTypeAllowed(Refr_C* apRef, int aiArg)
+// src: XBOX_DEBUG_PDB 0x004a1060
+// pdb: BGSDecalManager::IsValidDecalImpact | BGSDecalManager.obj | debug, call graph, high
+// pdb params: apCollidee, aeDecalType
+bool __cdecl BGSDecalManager_IsValidDecalImpact(Refr_C* apCollidee, int aeDecalType)
 {
-    int iUnused = aiArg;
-    switch (apRef->GetAcousticSpace()->GetFormType())
+    int iUnused = aeDecalType;
+    switch (apCollidee->GetAcousticSpace()->GetFormType())
     {
     case 35:
     case 42:
@@ -2064,9 +2136,9 @@ struct DecalHitList
 
 struct DecalEmitter
 {
-    void DecalCaster_SetCollision(int aiFlag, int aiValue);
-    void DecalCaster_Add(void* apNode);
-    int DecalCaster_Pick(DecalRequest* apRequest, const DecalPoint& arPos, float afRange);
+    void DecalCaster_SetCollision(int aeLayer, int abEnable);
+    void DecalCaster_Add(void* apWorld);
+    int DecalCaster_Pick(DecalRequest* arFrom, const DecalPoint& arTo, float afRadius);
     DecalNode* GetCollisionFlags(int aiIndex);
     void SetTileSetValues(int aiIndex, DecalPoint* apPos, DecalPoint* apNormal);
 };
@@ -2074,7 +2146,7 @@ struct DecalEmitter
 struct DecalMemContext
 {
     int iOldContext;
-    DecalMemContext(int aiContext, bool abPush, const char* apFile, int aiLine);
+    DecalMemContext(int memContext, bool overridable, const char* apFile, int aiLine);
     ~DecalMemContext();
 };
 
@@ -2105,7 +2177,7 @@ void __cdecl ProgramFlow(const char* apText, int aiFlags);
 float __cdecl BSMAX_00404010(float a, float b);
 DecalEmitter* __cdecl FUN_00622a70(float afSize, int aiFlags);
 void* __cdecl TESObjectREFR_FindReferenceFor3D(DecalNode* apNode);
-bool __cdecl IsAcousticSpaceFormTypeAllowed(void* apGeometry, int aiFlags);
+bool __cdecl BGSDecalManager_IsValidDecalImpact(void* apCollidee, int aeDecalType);
 
 static const char s_szSourceFile[] = "D:\\_Fallout3\\Platforms\\Common\\Code\\Fallout Shared\\BGSDecalManager.cpp";
 static const char s_szSimpleDecal[] = "DECAL: Simple Decal Instantiated";
@@ -2117,14 +2189,18 @@ struct DecalManager
     int iPad00;
     bool m_bDecalsEnabled;
 
-    void BGSDecalManager_AddGeometryDecalRecurse(DecalRequest* apRequest);
-    void BGSDecalManager_AddProjectedDecalRecurse(DecalRequest* apRequest);
-    void AddGeometryDecal(DecalRequest* apRequest, int aiType, bool abForce);
+    void BGSDecalManager_AddGeometryDecalRecurse(DecalRequest* arDecalData);
+    void BGSDecalManager_AddProjectedDecalRecurse(DecalRequest* arDecalData);
+    void BGSDecalManager_AddDecal(DecalRequest* arDecalData, int aeDecalType, bool abForceAdd);
 };
 
 // Handles decal requests by type, checking distance and force flags in some cases and processing collision hits in another.
 // @fnv 0x004a10d0
-void DecalManager::AddGeometryDecal(DecalRequest* apRequest, int aiType, bool abForce)
+// src: XBOX_RETAIL_PDB 0x004a10d0
+// pdb: BGSDecalManager::AddDecal | BGSDecalManager.obj | retail, call graph (shared callers), high
+// pdb params: arDecalData, aeDecalType, abForceAdd
+// pdb locals: tempMemContext, End, keyepos, fdist, TicksPerSecond, finaltricount, Start, fTicksPerMicrosecond, Ticks, pcmsg, kbound, pavobject, pnode, icount, listavobj, dir, i, pavobj, havokpos, havoknormal, pref
+void DecalManager::BGSDecalManager_AddDecal(DecalRequest* arDecalData, int aeDecalType, bool abForceAdd)
 {
     __int64 llEnd;
     DecalPoint kCameraIn;
@@ -2135,13 +2211,13 @@ void DecalManager::AddGeometryDecal(DecalRequest* apRequest, int aiType, bool ab
     double dFrequency;
     DecalMemContext kMemContextRef(7, true, s_szSourceFile, 0x1b8);
     m_bDecalsEnabled = true;
-    switch (aiType)
+    switch (aeDecalType)
     {
     case 1:
-        if (*DAT_011c5834.FUN_00408d60() && apRequest->pTarget && !apRequest->pTarget->NiAVObject_GetNoDecals())
+        if (*DAT_011c5834.FUN_00408d60() && arDecalData->pTarget && !arDecalData->pTarget->NiAVObject_GetNoDecals())
         {
             kCameraIn = *DAT_011dea3c->GetPos();
-            fDistance = apRequest->kPos.SubtractIntoVector(kCameraIn).FUN_00457990();
+            fDistance = arDecalData->kPos.SubtractIntoVector(kCameraIn).FUN_00457990();
             dFrequency = 1000.0;
             iUnused = 0;
             kStartNext.LowPart = 0;
@@ -2153,11 +2229,11 @@ void DecalManager::AddGeometryDecal(DecalRequest* apRequest, int aiType, bool ab
                 dFrequency = llFrequencyCount * 1e-06;
                 QueryPerformanceCounter(reinterpret_cast<LARGE_INTEGER*>(&kStartNext.QuadPart));
             }
-            if (Display_fDecalLOD0_Get() >= fDistance || apRequest->bForce || abForce)
+            if (Display_fDecalLOD0_Get() >= fDistance || arDecalData->bForce || abForceAdd)
             {
                 if (*DAT_011c5904.FUN_00408d60())
                     Warning_005b5e40(s_szSimpleDecal);
-                BGSDecalManager_AddGeometryDecalRecurse(apRequest);
+                BGSDecalManager_AddGeometryDecalRecurse(arDecalData);
             }
             if (*DAT_011c5884.FUN_00408d60())
             {
@@ -2169,57 +2245,57 @@ void DecalManager::AddGeometryDecal(DecalRequest* apRequest, int aiType, bool ab
         }
         break;
     case 4:
-        if (*DAT_011c5834.FUN_00408d60() && apRequest->pTarget && !apRequest->pTarget->NiAVObject_GetNoDecals())
+        if (*DAT_011c5834.FUN_00408d60() && arDecalData->pTarget && !arDecalData->pTarget->NiAVObject_GetNoDecals())
         {
-            apRequest->bRefresh = 1;
-            BGSDecalManager_AddGeometryDecalRecurse(apRequest);
+            arDecalData->bRefresh = 1;
+            BGSDecalManager_AddGeometryDecalRecurse(arDecalData);
         }
         break;
     case 2:
-        if (*DAT_011c58bc.FUN_00408d60() && apRequest->pTarget && !apRequest->pTarget->NiAVObject_GetNoDecals())
+        if (*DAT_011c58bc.FUN_00408d60() && arDecalData->pTarget && !arDecalData->pTarget->NiAVObject_GetNoDecals())
         {
             DecalPoint kEyeOut = *DAT_011dea3c->GetPos();
-            DecalBound kBound = *apRequest->pTarget->NiAVObject_GetWorldBound();
+            DecalBound kBound = *arDecalData->pTarget->NiAVObject_GetWorldBound();
             float fBoundDistance = kBound.FUN_006815c0()->SubtractIntoVector(kEyeOut).FUN_00457990() - kBound.FUN_0084d030();
-            if ((Renderer_GetSkinnedDecalLODStart() >= fBoundDistance && DAT_011c57f0 < *DAT_011c58e4.Setting_Int()) || abForce)
-                BGSDecalManager_AddProjectedDecalRecurse(apRequest);
+            if ((Renderer_GetSkinnedDecalLODStart() >= fBoundDistance && DAT_011c57f0 < *DAT_011c58e4.Setting_Int()) || abForceAdd)
+                BGSDecalManager_AddProjectedDecalRecurse(arDecalData);
             else if (DAT_011c57f0 >= *DAT_011c58e4.Setting_Int() && *DAT_011c5904.FUN_00408d60())
                 Warning_005b5e40(s_szSkinLimit, *DAT_011c58e4.Setting_Int());
         }
-        else if (*DAT_011c58bc.FUN_00408d60() && apRequest->pHolder)
+        else if (*DAT_011c58bc.FUN_00408d60() && arDecalData->pHolder)
         {
             DecalPoint kViewerNew = *DAT_011dea3c->GetPos();
-            DecalBound kHolderBoundCur = *apRequest->pHolder->Get3D()->NiAVObject_GetWorldBound();
+            DecalBound kHolderBoundCur = *arDecalData->pHolder->Get3D()->NiAVObject_GetWorldBound();
             float fHolderDistance = kHolderBoundCur.FUN_006815c0()->SubtractIntoVector(kViewerNew).FUN_00457990() -
                                     kHolderBoundCur.FUN_0084d030();
-            DecalNode* pObject = apRequest->pHolder->Get3D();
+            DecalNode* pObject = arDecalData->pHolder->Get3D();
             DecalNode* pNode = pObject ? pObject->GetNode() : 0;
             if (pNode && !pObject->NiAVObject_GetNoDecals())
             {
-                apRequest->pTarget = pNode;
-                if ((Renderer_GetSkinnedDecalLODStart() >= fHolderDistance && DAT_011c57f0 < *DAT_011c58e4.Setting_Int()) || abForce)
-                    BGSDecalManager_AddProjectedDecalRecurse(apRequest);
+                arDecalData->pTarget = pNode;
+                if ((Renderer_GetSkinnedDecalLODStart() >= fHolderDistance && DAT_011c57f0 < *DAT_011c58e4.Setting_Int()) || abForceAdd)
+                    BGSDecalManager_AddProjectedDecalRecurse(arDecalData);
                 else if (DAT_011c57f0 >= *DAT_011c58e4.Setting_Int() && *DAT_011c5904.FUN_00408d60())
                     Warning_005b5e40(s_szSkinLimit, *DAT_011c58e4.Setting_Int());
             }
         }
         else if (*DAT_011c5834.FUN_00408d60())
         {
-            apRequest->kWorldPosition.Unitize_004a0c10();
+            arDecalData->kWorldPosition.Unitize_004a0c10();
             if (!DAT_011c57e0)
-                DAT_011c57e0 = FUN_00622a70(BSMAX_00404010(apRequest->m_fGlyphExtent, apRequest->m_fGlyphWidthInPixels), 1);
+                DAT_011c57e0 = FUN_00622a70(BSMAX_00404010(arDecalData->m_fGlyphExtent, arDecalData->m_fGlyphWidthInPixels), 1);
             DAT_011c57e0->DecalCaster_SetCollision(8, 0);
             DAT_011c57e0->DecalCaster_SetCollision(0x1d, 0);
-            DAT_011c57e0->DecalCaster_Add(apRequest->pParent->TESObjectCELL_GetbhkWorld());
+            DAT_011c57e0->DecalCaster_Add(arDecalData->pParent->TESObjectCELL_GetbhkWorld());
             int iCount = DAT_011c57e0->DecalCaster_Pick(
-                apRequest, apRequest->kPos.FUN_00439e90(apRequest->kWorldPosition.ApplyScaled(80.0f)), 32.0f);
+                arDecalData, arDecalData->kPos.FUN_00439e90(arDecalData->kWorldPosition.ApplyScaled(80.0f)), 32.0f);
             if (iCount == 0)
             {
                 DecalPoint kNewDir =
-                    apRequest->kWorldPosition.FUN_00439e90(DAT_011a9484.GetNegatedVector().ApplyScaled(2.0f));
+                    arDecalData->kWorldPosition.FUN_00439e90(DAT_011a9484.GetNegatedVector().ApplyScaled(2.0f));
                 kNewDir.Unitize_004a0c10();
-                apRequest->kWorldPosition = kNewDir;
-                iCount = DAT_011c57e0->DecalCaster_Pick(apRequest, apRequest->kPos.FUN_00439e90(kNewDir.ApplyScaled(80.0f)),
+                arDecalData->kWorldPosition = kNewDir;
+                iCount = DAT_011c57e0->DecalCaster_Pick(arDecalData, arDecalData->kPos.FUN_00439e90(kNewDir.ApplyScaled(80.0f)),
                                                     32.0f);
             }
             DecalHitList kHits;
@@ -2236,14 +2312,14 @@ void DecalManager::AddGeometryDecal(DecalRequest* apRequest, int aiType, bool ab
                     kHitNormal.Unitize_004a0c10();
                     void* m_pShaderGeometry = TESObjectREFR_FindReferenceFor3D(pHitTmp);
                     if (pHitTmp->NiAVObject_GetNoDecals() || !m_pShaderGeometry ||
-                        !IsAcousticSpaceFormTypeAllowed(m_pShaderGeometry, 1))
+                        !BGSDecalManager_IsValidDecalImpact(m_pShaderGeometry, 1))
                         continue;
                     if (!kHits.FUN_0049c680(&pHitTmp, 0))
                     {
-                        apRequest->kPos = kHitPos;
-                        apRequest->kWorldPosition = kHitNormal;
-                        apRequest->pTarget = pHitTmp;
-                        BGSDecalManager_AddGeometryDecalRecurse(apRequest);
+                        arDecalData->kPos = kHitPos;
+                        arDecalData->kWorldPosition = kHitNormal;
+                        arDecalData->pTarget = pHitTmp;
+                        BGSDecalManager_AddGeometryDecalRecurse(arDecalData);
                         kHits.NiTPointerListBase_NiTPointerAllocator_unsigned_int_unsigned_int_AddHead(&pHitTmp);
                     }
                 }
@@ -2311,7 +2387,7 @@ struct XNode
     bool GetAppCulled_00456610();
     XNet* FUN_0050d100();
     unsigned int FUN_0043b480();
-    XNode* GetAt(unsigned int idx);
+    XNode* GetAt(unsigned int i);
     unsigned short FUN_004a1ff0();
     XList* GetTESPackageList();
     char pad4[0xac - 4];
@@ -2320,7 +2396,7 @@ struct XNode
 struct XTopicInfo
 {
     unsigned int FUN_0043b480();
-    XNode* GetAt(unsigned int idx);
+    XNode* GetAt(unsigned int i);
 };
 struct XMenuTopic
 {
@@ -2363,7 +2439,7 @@ struct XLoc
 };
 struct XDoor
 {
-    XDoor(XObj* p, float f, XRef* r);
+    XDoor(XObj* apParent, float afLifetime, XRef* arDecalData);
     static void* operator new(unsigned int sz);
     static void operator delete(void*, unsigned int);
     char pad0[0x1a];
@@ -2381,7 +2457,7 @@ struct XMgr
     unsigned char m4;
     char pad5[3];
     XNL m8;
-    bool BGSDecalManager_AddGeometryDecalRecurse(XRef* ref);
+    bool BGSDecalManager_AddGeometryDecalRecurse(XRef* arDecalData);
 };
 
 bool NiObject_IsKindOf(const void* rtti, XNode* obj);
@@ -2394,7 +2470,10 @@ NiPoint3Sq MultiplyComponents(const NiPoint3& a, const NiPoint3& b);
 // Checks conditions on ref and related nodes, may construct an XDoor, and calls FUN_0057c590 when ref->m48 is non-null.
 // @fnv 0x004a1a70
 // src: XBOX_PDB 0x004a1a70
-bool XMgr::BGSDecalManager_AddGeometryDecalRecurse(XRef* ref)
+// pdb: BGSDecalManager::AddGeometryDecalRecurse | BGSDecalManager.obj | retail, upstream name already matches, high
+// pdb params: arDecalData
+// pdb locals: pname, pnode, pdecalnode, pdecal, ptristrips, pgeom, bfoundnode, pshade, i, pchild, plist, deltaSquared, decalsize, sumRadiiSquared, decalpos, radius, pdata, ptempeffect, child
+bool XMgr::BGSDecalManager_AddGeometryDecalRecurse(XRef* arDecalData)
 {
     const char* pName4;
     XNode* p9;
@@ -2416,23 +2495,23 @@ bool XMgr::BGSDecalManager_AddGeometryDecalRecurse(XRef* ref)
             Warning_005b5e40(DAT_0101e490);
         return false;
     }
-    if (ref->m28)
+    if (arDecalData->m28)
     {
-        pName4 = (const char*)ref->m28->GetTESPackageList()->FUN_0043b1b0();
+        pName4 = (const char*)arDecalData->m28->GetTESPackageList()->FUN_0043b1b0();
         if (pName4 != 0 && (FUN_00ec8a19(pName4, DAT_0101e484, 10) == 0 || FUN_00ec8a19(pName4, DAT_0101e47c, 5) == 0 ||
                             FUN_00ec8a19(pName4, DAT_0101e474, 7) == 0 || FUN_00ec8a19(pName4, DAT_0101e468, 9) == 0 ||
                             FUN_00ec8a19(pName4, DAT_0101e460, 5) == 0 || FUN_00ec8a19(pName4, DAT_0101e450, 15) == 0))
             return true;
-        if (NiObject_IsKindOf(&DAT_011f4a20, ref->m28) && !ref->m28->GetAppCulled_00456610())
+        if (NiObject_IsKindOf(&DAT_011f4a20, arDecalData->m28) && !arDecalData->m28->GetAppCulled_00456610())
         {
-            p9 = ref->m28;
+            p9 = arDecalData->m28;
             if (p9 != 0)
             {
                 objVal = p9->FUN_0050d100()->GetObject3D();
                 if (objVal != 0 && objVal->GetFlag(0x1a))
                     return true;
             }
-            info2 = ((XMenuTopic*)ref->m28)->GetTopicInfo();
+            info2 = ((XMenuTopic*)arDecalData->m28)->GetTopicInfo();
             hit2 = 0;
             foundVal = false;
             if (info2 != 0)
@@ -2455,7 +2534,7 @@ bool XMgr::BGSDecalManager_AddGeometryDecalRecurse(XRef* ref)
             {
                 return false;
             }
-            if (foundVal && ref->m5c > DAT_01012060)
+            if (foundVal && arDecalData->m5c > DAT_01012060)
             {
                 list = hit2->m_ac;
                 while (list != 0 && !list->IsEmpty())
@@ -2466,36 +2545,36 @@ bool XMgr::BGSDecalManager_AddGeometryDecalRecurse(XRef* ref)
                     float pt9[3];
                     b_->BSTempEffectSimpleDecal_GetOrigin(*reinterpret_cast<NiPoint3*>(pt9));
                     float f9 = b_->FUN_00507b20();
-                    NiPoint3 v7 = ref->PtOp(*reinterpret_cast<NiPoint3*>(pt9));
+                    NiPoint3 v7 = arDecalData->PtOp(*reinterpret_cast<NiPoint3*>(pt9));
                     v7 = MultiplyComponents(v7, v7);
                     float qA;
-                    if (ref->m38 > ref->m3c)
-                        qA = ref->m38;
+                    if (arDecalData->m38 > arDecalData->m3c)
+                        qA = arDecalData->m38;
                     else
-                        qA = ref->m3c;
+                        qA = arDecalData->m3c;
                     double d = qA + f9;
                     d = d * d;
-                    if (v7.x + v7.y + v7.z <= d / ref->m5c)
+                    if (v7.x + v7.y + v7.z <= d / arDecalData->m5c)
                         return false;
                 }
             }
             DAT_011c57e4++;
             if (((XSetting*)&DAT_011c5904x)->Bool()[0])
                 Warning_005b5e40(DAT_0101e420, DAT_011c57e4);
-            door3 = new XDoor((XObj*)hit2, ((XGA*)&DAT_011c5874)->FUN_00450410(), ref);
-            p4 = ref->m28;
-            if (p4->FUN_004a1ff0() > 0x3e8 && ((XSetting*)&DAT_011c58a8)->Bool()[0] && ref->m72)
+            door3 = new XDoor((XObj*)hit2, ((XGA*)&DAT_011c5874)->FUN_00450410(), arDecalData);
+            p4 = arDecalData->m28;
+            if (p4->FUN_004a1ff0() > 0x3e8 && ((XSetting*)&DAT_011c58a8)->Bool()[0] && arDecalData->m72)
             {
                 door3->m1a = 1;
                 door3->m1b = m4;
                 m4 = 0;
             }
-            if (ref->m48)
+            if (arDecalData->m48)
                 m8.DecalManager_AppendList08(door3);
         }
-        else if (ref->m28->v3())
+        else if (arDecalData->m28->v3())
         {
-            XNode* n2 = ref->m28;
+            XNode* n2 = arDecalData->m28;
             unsigned int _i2;
             XNode* child8;
             if (n2 != 0 && n2->GetAppCulled_00456610())
@@ -2506,8 +2585,8 @@ bool XMgr::BGSDecalManager_AddGeometryDecalRecurse(XRef* ref)
                 child8 = n2->GetAt(_i2);
                 if (child8 != 0)
                 {
-                    ref->m28 = child8;
-                    BGSDecalManager_AddGeometryDecalRecurse(ref);
+                    arDecalData->m28 = child8;
+                    BGSDecalManager_AddGeometryDecalRecurse(arDecalData);
                 }
                 _i2++;
             }
@@ -2906,7 +2985,10 @@ struct DWork
 // Checks limits and object conditions, may create decal effects, and returns a status.
 // @fnv 0x004a2070
 // src: XBOX_PDB 0x004a2070
-bool DWork::BGSDecalManager_AddProjectedDecalRecurse(DArg* arg)
+// pdb: BGSDecalManager::AddProjectedDecalRecurse | BGSDecalManager.obj | retail, upstream name already matches, high
+// pdb params: arDecalData
+// pdb locals: spdecaltexture, ptexture, sptexture, pname, pgeom, pshader, pprop, pdecal, proot, pdecalnode, bdelayed, ptemp, i, pchild, UpdateData, pclonegeom, j, pnodechild, pgchild, pcloneprop, pcloneshader, pclonebssprop, pclonedecal, pnode ...
+bool DWork::BGSDecalManager_AddProjectedDecalRecurse(DArg* arDecalData)
 {
     if (*DAT_011c5874.Setting_Float_00403e20() <= 0.0)
         return false;
@@ -2917,31 +2999,31 @@ bool DWork::BGSDecalManager_AddProjectedDecalRecurse(DArg* arg)
         return true;
     }
     DPtr original(0);
-    if (arg->parent)
+    if (arDecalData->parent)
     {
         DPtr p(0);
-        arg->parent->interface30.Get(0, p);
+        arDecalData->parent->interface30.Get(0, p);
         DObj* parent = p.Modelloader_GetReferencedThis();
         if (NiObject_IsKindOf(&DAT_011f444c, parent))
             original.FUN_0066b0d0(parent);
     }
     if (!original.Modelloader_GetReferencedThis())
         return false;
-    if (arg->object)
+    if (arDecalData->object)
     {
-        const char* name = arg->object->FUN_00413f40()->FUN_0043b1b0();
+        const char* name = arDecalData->object->FUN_00413f40()->FUN_0043b1b0();
         if (name)
         {
             if (!strncmp(name, "Decal", 5) || !strncmp(name, "FaceGen", 7) || !strncmp(name, "Bip01", 5) ||
                 !strncmp(name, "BSFaceGen", 9) || !strncmp(name, "Hair", 4))
                 return true;
         }
-        if (arg->object->GetAppCulled_00456610())
+        if (arDecalData->object->GetAppCulled_00456610())
             return true;
-        if (arg->object->IsGeometry())
+        if (arDecalData->object->IsGeometry())
         {
-            DObj* geometry = arg->object;
-            if (arg->tries <= 0)
+            DObj* geometry = arDecalData->object;
+            if (arDecalData->tries <= 0)
             {
                 DProp* data = geometry->FUN_00a59d30(3);
                 void* prop = geometry->CombatController_GetTarget();
@@ -2950,7 +3032,7 @@ bool DWork::BGSDecalManager_AddProjectedDecalRecurse(DArg* arg)
                     DPtr effect(0);
                     if (geometry->NiGeometry_GetSkinInstance())
                     {
-                        DArray* array = arg->object->NiAVObject_GetParent();
+                        DArray* array = arDecalData->object->NiAVObject_GetParent();
                         DNode* selected = 0;
                         for (unsigned i = 0; i < array->FUN_0043b480(); ++i)
                         {
@@ -2971,23 +3053,23 @@ bool DWork::BGSDecalManager_AddProjectedDecalRecurse(DArg* arg)
                         ++DAT_011c57e8;
                         if (*DAT_011c5904.FUN_00408d60())
                             Warning_005b5e40("DECAL: Skinned decal count this frame: #%d", DAT_011c57e8);
-                        DPtr decal(new DEffect(arg->flags, DAT_011c5874.FUN_00450410(), arg, geometry, arg->origin,
-                                               arg->normal, arg->scale, arg->rotation, arg->unk6c));
+                        DPtr decal(new DEffect(arDecalData->flags, DAT_011c5874.FUN_00450410(), arDecalData, geometry, arDecalData->origin,
+                                               arDecalData->normal, arDecalData->scale, arDecalData->rotation, arDecalData->unk6c));
                         bool accepted = false;
                         decal.Modelloader_GetReferencedThis()->Virtual8c();
                         if (decal.Modelloader_GetReferencedThis()->FUN_0059e300() > 0)
                         {
-                            if (!arg->skin)
+                            if (!arDecalData->skin)
                             {
-                                arg->skin = new DSkin(0);
-                                arg->skin->AssignFixedString(FixedStrings_QSkinnedDecalNode());
-                                selected->Virtualdc((DObj*)arg->skin, true);
+                                arDecalData->skin = new DSkin(0);
+                                arDecalData->skin->AssignFixedString(FixedStrings_QSkinnedDecalNode());
+                                selected->Virtualdc((DObj*)arDecalData->skin, true);
                                 ++DAT_011c57f0;
                                 if (*DAT_011c5904.FUN_00408d60())
                                     Warning_005b5e40("DECAL: Placing Skin Decal #%d", DAT_011c57f0);
                             }
-                            arg->skin->Virtualdc(decal.Modelloader_GetReferencedThis()->Virtual98(true));
-                            decal.Modelloader_GetReferencedThis()->AssignGo((DObj*)arg->skin);
+                            arDecalData->skin->Virtualdc(decal.Modelloader_GetReferencedThis()->Virtual98(true));
+                            decal.Modelloader_GetReferencedThis()->AssignGo((DObj*)arDecalData->skin);
                             selected->effects->BSSimpleList_NiPointer_bhkAction_AddHead(decal.Modelloader_GetReferencedThis());
                             DUpdate update(0.0f, false, false);
                             selected->NiAVObject_Update(update);
@@ -2997,13 +3079,13 @@ bool DWork::BGSDecalManager_AddProjectedDecalRecurse(DArg* arg)
                         else
                             return true;
                     }
-                    if (arg->children)
+                    if (arDecalData->children)
                     {
                         DObj* a = 0;
                         unsigned found = 0;
-                        while (found < arg->children->FUN_0043b480() && !a)
+                        while (found < arDecalData->children->FUN_0043b480() && !a)
                         {
-                            DObj* child = arg->children->FUN_0043b4a0(found);
+                            DObj* child = arDecalData->children->FUN_0043b4a0(found);
                             if (child)
                             {
                                 if (child->IsGeometry())
@@ -3036,8 +3118,8 @@ bool DWork::BGSDecalManager_AddProjectedDecalRecurse(DArg* arg)
                                     if (geometry->NiGeometry_GetSkinInstance())
                                     {
                                         DEffect* pRawEffect =
-                                            new DEffect(arg->flags, DAT_011c5874.FUN_00450410(), arg, a, arg->origin,
-                                                        arg->normal.GetNegatedVector(), 1.0f, arg->rotation, arg->unk6c);
+                                            new DEffect(arDecalData->flags, DAT_011c5874.FUN_00450410(), arDecalData, a, arDecalData->origin,
+                                                        arDecalData->normal.GetNegatedVector(), 1.0f, arDecalData->rotation, arDecalData->unk6c);
                                         additional.FUN_0066b0d0(pRawEffect);
                                         pRawEffect->Virtual8c();
                                     }
@@ -3048,33 +3130,33 @@ bool DWork::BGSDecalManager_AddProjectedDecalRecurse(DArg* arg)
                         }
                     }
                 }
-                if (arg->tries >= 0)
+                if (arDecalData->tries >= 0)
                     return false;
                 else
                     return true;
             }
             else
             {
-                --arg->tries;
+                --arDecalData->tries;
                 return true;
             }
         }
-        else if (arg->object->IsSceneNode())
+        else if (arDecalData->object->IsSceneNode())
         {
-            DArray* pArray = (DArray*)arg->object;
+            DArray* pArray = (DArray*)arDecalData->object;
             unsigned uiIndex = 0;
             while (uiIndex < pArray->FUN_0043b480())
             {
                 DObj* child = pArray->FUN_0043b4a0(uiIndex);
                 if (child)
                 {
-                    arg->object = child;
-                    bool result = BGSDecalManager_AddProjectedDecalRecurse(arg);
-                    if (!result && arg->object)
+                    arDecalData->object = child;
+                    bool result = BGSDecalManager_AddProjectedDecalRecurse(arDecalData);
+                    if (!result && arDecalData->object)
                     {
-                        if (arg->skin)
+                        if (arDecalData->skin)
                         {
-                            DArray* array = arg->object->NiAVObject_GetParent();
+                            DArray* array = arDecalData->object->NiAVObject_GetParent();
                             DNode* selected = 0;
                             for (unsigned d = 0; d < array->FUN_0043b480(); ++d)
                             {
@@ -3086,7 +3168,7 @@ bool DWork::BGSDecalManager_AddProjectedDecalRecurse(DArg* arg)
                                 }
                             }
                             if (selected)
-                                selected->Virtualdc((DObj*)arg->skin, true);
+                                selected->Virtualdc((DObj*)arDecalData->skin, true);
                         }
                         return false;
                     }

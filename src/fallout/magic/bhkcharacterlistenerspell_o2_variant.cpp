@@ -6,7 +6,7 @@
 // Functions are listed by their @fnv annotations; compile flags inferred from the PC code.
 #include "../../../include/NiRTTI.h"
 #include "../../../include/bhkCharacterProxy.h"
-extern const NiRTTI g_01268344;
+extern const NiRTTI bhkCharacterProxy_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01268344 (old: g_01268344)
 struct FUN_00806f10_shell
 {
     unsigned int bhkCharacterController_GetCinfoSize();
@@ -381,6 +381,7 @@ struct FUN_00c6d4a0_class
 };
 // @fnv 0x00c6d4a0
 // src: COMMUNITY 0x00c6d4a0
+// pdb: bhkCharacterController::UpdateCollisionBox | bhkCharacterController.obj | debug, upstream name already matches, high
 void FUN_00c6d4a0_class::bhkCharacterController_UpdateCollisionBox()
 {
     if (unk598)

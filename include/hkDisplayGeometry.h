@@ -3,6 +3,7 @@
 #include "hkReferencedObject.h"
 #include "hkTransform.h"
 
+// pdb: class hkDisplayGeometry, size 0x60 (here 0x50), bases: hkReferencedObject, 3 members
 class hkDisplayGeometry : public hkReferencedObject
 {
 public:

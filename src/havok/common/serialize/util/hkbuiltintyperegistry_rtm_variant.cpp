@@ -37,7 +37,7 @@ struct RuntimeTypeInfoRegistry
 };
 struct NameRegistryTable
 {
-    void hkVtableClassRegistry_registerList(void** entries, void* info);
+    void hkVtableClassRegistry_registerList(void** infos, void* classes);
 };
 extern int DAT_01268b0c;
 extern void* DAT_010d5430[];

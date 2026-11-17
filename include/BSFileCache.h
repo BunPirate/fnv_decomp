@@ -18,6 +18,7 @@ enum FILE_CACHE_STATE
     FILE_CACHING_FINISHED = 4
 };
 
+// pdb: class BSFileCache, size 0x64, 27 members
 class BSFileCache
 {
 public:
@@ -44,31 +45,31 @@ public:
     static const char* sEssentialFileCacheList;
     static const char* sUnessentialFileCacheList;
 
-    FileCache* m_pActiveFileCache;
-    unsigned int m_uiCacheEntryCount;
-    unsigned int m_uiCachedBytes;
-    unsigned int m_uiCacheLimit;
-    unsigned int m_uiCacheByteCount;
-    unsigned int m_uiCacheCapacity;
-    unsigned int m_uiCacheRequestCount;
-    unsigned int m_uiCacheFlags;
-    unsigned int m_uiCacheIndex;
-    int m_iCacheEntryIndex;
-    unsigned int m_uiReferenceCount;
-    int m_iCacheCount;
-    int m_iFileSize;
-    int m_iFilePosition;
-    int m_iCachePosition;
-    DVD_LAYER m_eDVDLayer;
-    bool m_bCacheEnabled;
-    bool m_bCacheReadPending;
-    bool m_bCacheWritePending;
-    bool m_bCacheInitialized;
-    unsigned int m_uiCacheOffset;
-    unsigned int m_uiCacheBufferCount;
-    BSSimpleArray<FileCache*, 1024>* m_pFileCacheArray;
-    void (__cdecl* m_pfnCacheProgress)(const char*);
-    void (__cdecl* m_pfnCacheStatus)(bool);
-    volatile FILE_CACHE_STATE m_eCacheState;
-    void* m_pCacheSyncObject;
+    FileCache* pCurrentlyCachingFile; // src: XBOX_RETAIL_PDB +0x4 (old: m_pActiveFileCache)
+    unsigned int iCurrentWritten; // src: XBOX_RETAIL_PDB +0x8 (old: m_uiCacheEntryCount)
+    unsigned int iCurrentFileSize; // src: XBOX_RETAIL_PDB +0xc (old: m_uiCachedBytes)
+    unsigned int iTotalWritten; // src: XBOX_RETAIL_PDB +0x10 (old: m_uiCacheLimit)
+    unsigned int iTotalDiskSpaceAvailable; // src: XBOX_RETAIL_PDB +0x14 (old: m_uiCacheByteCount)
+    unsigned int iFreeDiskSpaceAvailable; // src: XBOX_RETAIL_PDB +0x18 (old: m_uiCacheCapacity)
+    unsigned int iTotalAlreadyCached; // src: XBOX_RETAIL_PDB +0x1c (old: m_uiCacheRequestCount)
+    unsigned int iTotalSizeToCache; // src: XBOX_RETAIL_PDB +0x20 (old: m_uiCacheFlags)
+    unsigned int iNumCachedFiles; // src: XBOX_RETAIL_PDB +0x24 (old: m_uiCacheIndex)
+    int iCurrentThreadPriority; // src: XBOX_RETAIL_PDB +0x28 (old: m_iCacheEntryIndex)
+    unsigned int iThreadTime; // src: XBOX_RETAIL_PDB +0x2c (old: m_uiReferenceCount)
+    int iCurrentPriority; // src: XBOX_RETAIL_PDB +0x30 (old: m_iCacheCount)
+    int iPrecachePriority; // src: XBOX_RETAIL_PDB +0x34 (old: m_iFileSize)
+    int iEssentialPriority; // src: XBOX_RETAIL_PDB +0x38 (old: m_iFilePosition)
+    int iUnessentialPriority; // src: XBOX_RETAIL_PDB +0x3c (old: m_iCachePosition)
+    DVD_LAYER eCurrentLayer; // src: XBOX_RETAIL_PDB +0x40 (old: m_eDVDLayer)
+    bool bArraySorted; // src: XBOX_RETAIL_PDB +0x44 (old: m_bCacheEnabled)
+    bool bCacheDriveAvailable; // src: XBOX_RETAIL_PDB +0x45 (old: m_bCacheReadPending)
+    bool bRunningFromDVD; // src: XBOX_RETAIL_PDB +0x46 (old: m_bCacheWritePending)
+    bool bInPauseLoop; // src: XBOX_RETAIL_PDB +0x47 (old: m_bCacheInitialized)
+    unsigned int iFileCacheLoadScreenTime; // src: XBOX_RETAIL_PDB +0x48 (old: m_uiCacheOffset)
+    unsigned int iFileCacheLoadScreenEssentialTime; // src: XBOX_RETAIL_PDB +0x4c (old: m_uiCacheBufferCount)
+    BSSimpleArray<FileCache*, 1024>* pCachedFiles; // src: XBOX_RETAIL_PDB +0x50 (old: m_pFileCacheArray)
+    void (__cdecl* pFileCacheCompletionCallback)(const char*); // src: XBOX_RETAIL_PDB +0x54 (old: m_pfnCacheProgress)
+    void (__cdecl* pForceFileCacheCallback)(bool); // src: XBOX_RETAIL_PDB +0x58 (old: m_pfnCacheStatus)
+    volatile FILE_CACHE_STATE eFileCacheState; // src: XBOX_RETAIL_PDB +0x5c (old: m_eCacheState)
+    void* hFileCachingThreadHandle; // src: XBOX_RETAIL_PDB +0x60 (old: m_pCacheSyncObject)
 };

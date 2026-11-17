@@ -86,10 +86,10 @@ int NiShaderFactory_ReportError(int, int, const char*, long);
 
 inline NiD3DVertexShader::NiD3DVertexShader(void* pkRenderer) : NiD3DShaderProgram(pkRenderer, 0)
 {
-    m_bIsInitialized = false;
-    m_uiShaderUsage = 0;
-    m_pD3DPixelShader = 0;
-    m_pD3DVertexShader = 0;
+    m_bSoftwareVP = false;
+    m_uiUsage = 0;
+    m_hShader = 0;
+    m_hDecl = 0;
 }
 
 struct VertexShaderCreatorAsm
@@ -114,6 +114,9 @@ struct VertexShaderCreatorAsm
 
 // @fnv 0x00e97980
 // src: XBOX_PDB 0x00e97980
+// pdb: NiD3DShaderProgramCreatorAsm::CreateVertexShaderFromFile | NiD3DShaderProgramCreatorAsm.obj | retail, upstream name already matches, high
+// pdb params: pcFileName, pcShaderName, __formal, __formal, hDecl, uiUsage, bSoftwareVP, bRecoverable
+// pdb locals: uiConstantSize, hShader, pkVertexShader, pvCode, uiCodeSize, pvConstantData
 NiD3DVertexShader* VertexShaderCreatorAsm::NiD3DShaderProgramCreatorAsm_CreateVertexShaderFromFile(const char* pcFileName, const char* pcShaderName,
                                                         const char* pcEntryPoint, int iArg, void* hDecl,
                                                         unsigned int uiUsage, bool bSoftwareVP, int bRecoverable)
@@ -152,7 +155,7 @@ NiD3DVertexShader* VertexShaderCreatorAsm::NiD3DShaderProgramCreatorAsm_CreateVe
 }
 
 inline NiD3DPixelShader::NiD3DPixelShader(NiD3DRenderer* pkRenderer)
-    : NiD3DShaderProgram(pkRenderer, 2), m_pD3DPixelShader(0)
+    : NiD3DShaderProgram(pkRenderer, 2), m_hShader(0)
 {}
 
 namespace fnv_00e97c60 {
@@ -175,15 +178,18 @@ struct ShaderCreatorAsmStub
 
     GeometryRelatedType* CreateHandle(void* pvCode);
     NiD3DPixelShader* NiD3DShaderProgramCreatorAsm_CreatePixelShaderFromFile(const char* pcFileName, const char* pcShaderName, const char* pcEntryPoint,
-                                       const char* pcShaderTarget, int iFlags);
+                                       const char* pcShaderTarget, int bRecoverable);
 };
 
 // Creates a NiD3DPixelShader, loads its shader code, creates the handle, sets name/file/code/creator/handle, and returns it or 0 on failure.
 // @fnv 0x00e97c60
 // src: XBOX_PDB 0x00e97c60
+// pdb: NiD3DShaderProgramCreatorAsm::CreatePixelShaderFromFile | NiD3DShaderProgramCreatorAsm.obj | retail, upstream name already matches, high
+// pdb params: pcFileName, pcShaderName, __formal, __formal, bRecoverable
+// pdb locals: uiConstantSize, hShader, pkPixelShader, pvCode, uiCodeSize, pvConstantData
 NiD3DPixelShader* ShaderCreatorAsmStub::NiD3DShaderProgramCreatorAsm_CreatePixelShaderFromFile(const char* pcFileName, const char* pcShaderName,
                                                          const char* pcEntryPoint, const char* pcShaderTarget,
-                                                         int iFlags)
+                                                         int bRecoverable)
 {
     NiD3DPixelShader* pkShader = new NiD3DPixelShader(static_cast<NiD3DRenderer*>(DAT_0126fa2c));
     if (!pkShader)
@@ -193,7 +199,7 @@ NiD3DPixelShader* ShaderCreatorAsmStub::NiD3DShaderProgramCreatorAsm_CreatePixel
     void* pvCode = 0;
     void* pvB = 0;
     void* pvA = 0;
-    if (!LoadShaderCode(pcFileName, pvCode, uiCodeSize, pvA, pvB, iFlags))
+    if (!LoadShaderCode(pcFileName, pvCode, uiCodeSize, pvA, pvB, bRecoverable))
     {
         delete pkShader;
         return 0;
@@ -202,7 +208,7 @@ NiD3DPixelShader* ShaderCreatorAsmStub::NiD3DShaderProgramCreatorAsm_CreatePixel
     GeometryRelatedType* hShader = CreateHandle(pvCode);
     if (!hShader)
     {
-        NiShaderFactory_ReportError(1, iFlags, "Failed CreatePixelShader call on %s\n", (long)pcShaderName);
+        NiShaderFactory_ReportError(1, bRecoverable, "Failed CreatePixelShader call on %s\n", (long)pcShaderName);
         delete pkShader;
         return 0;
     }
@@ -235,7 +241,10 @@ struct Creator
 };
 // @fnv 0x00e97d80
 // src: XBOX_PDB 0x00e97d80
-NiD3DPixelShader* Creator::NiD3DShaderProgramCreatorAsm_CreatePixelShaderFromBuffer(void* a, void* b, void* apShaderName, int d, int e, int f)
+// pdb: NiD3DShaderProgramCreatorAsm::CreatePixelShaderFromBuffer | NiD3DShaderProgramCreatorAsm.obj | retail, upstream name already matches, high
+// pdb params: pvBuffer, uiBufferSize, pcShaderName, __formal, __formal, bRecoverable
+// pdb locals: uiConstantSize, hShader, pkPixelShader, pvCode, uiCodeSize, pvConstantData
+NiD3DPixelShader* Creator::NiD3DShaderProgramCreatorAsm_CreatePixelShaderFromBuffer(void* pvBuffer, void* uiBufferSize, void* pcShaderName, int d, int e, int bRecoverable)
 {
     NiD3DPixelShader* shader = new NiD3DPixelShader(static_cast<NiD3DRenderer*>(DAT_0126fa2c));
     if (!shader)
@@ -245,7 +254,7 @@ NiD3DPixelShader* Creator::NiD3DShaderProgramCreatorAsm_CreatePixelShaderFromBuf
     first = 0;
     void* third = 0;
     void* fourth = 0;
-    if (!compile(a, b, &first, &second, &fourth, &third, f))
+    if (!compile(pvBuffer, uiBufferSize, &first, &second, &fourth, &third, bRecoverable))
     {
         delete shader;
         return 0;
@@ -253,11 +262,11 @@ NiD3DPixelShader* Creator::NiD3DShaderProgramCreatorAsm_CreatePixelShaderFromBuf
     void* pShaderHandle = reinterpret_cast<NiD3DShaderProgramCreatorAsm*>(this)->CreateHandle(first);
     if (!pShaderHandle)
     {
-        NiShaderFactory_ReportError(1, f, "Failed CreatePixelShader call on %s\n", (long)apShaderName);
+        NiShaderFactory_ReportError(1, bRecoverable, "Failed CreatePixelShader call on %s\n", (long)pcShaderName);
         delete shader;
         return 0;
     }
-    shader->SetName(static_cast<char*>(apShaderName));
+    shader->SetName(static_cast<char*>(pcShaderName));
     shader->SetShaderProfile(0);
     shader->SetProgramCode(reinterpret_cast<unsigned int>(second), first);
     shader->SetCreator(reinterpret_cast<NiD3DShaderProgramCreator*>(this));
@@ -285,7 +294,7 @@ struct VertexShaderCreatorHLSL
 
     void* CreateVertexShaderChecked(void* pvCode, void** phDecl, unsigned int uiUsage, void* pvConstants,
                                     void* pvConstantsExtra, bool bSoftwareVP);
-    NiD3DVertexShader* NiD3DShaderProgramCreatorAsm_CreateVertexShaderFromBuffer(const char* pcFileName, const char* pcEntryPoint, const char* pcShaderName,
+    NiD3DVertexShader* NiD3DShaderProgramCreatorAsm_CreateVertexShaderFromBuffer(const char* pvBuffer, const char* uiBufferSize, const char* pcShaderName,
                                     const char* pcShaderTarget, const char* pcDefines, void* hDecl,
                                     unsigned int uiUsage, bool bSoftwareVP, int bRecoverable);
 };
@@ -293,7 +302,10 @@ struct VertexShaderCreatorHLSL
 // Creates a NiD3DVertexShader, loads its shader code, builds the shader handle, and sets its name, code, creator, usage and declaration.
 // @fnv 0x00e97af0
 // src: XBOX_PDB 0x00e97af0
-NiD3DVertexShader* VertexShaderCreatorHLSL::NiD3DShaderProgramCreatorAsm_CreateVertexShaderFromBuffer(const char* pcFileName, const char* pcEntryPoint,
+// pdb: NiD3DShaderProgramCreatorAsm::CreateVertexShaderFromBuffer | NiD3DShaderProgramCreatorAsm.obj | retail, upstream name already matches, high
+// pdb params: pvBuffer, uiBufferSize, pcShaderName, __formal, __formal, hDecl, uiUsage, bSoftwareVP, bRecoverable
+// pdb locals: uiConstantSize, hShader, pkVertexShader, pvCode, uiCodeSize, pvConstantData
+NiD3DVertexShader* VertexShaderCreatorHLSL::NiD3DShaderProgramCreatorAsm_CreateVertexShaderFromBuffer(const char* pvBuffer, const char* uiBufferSize,
                                                          const char* pcShaderName, const char* pcShaderTarget,
                                                          const char* pcDefines, void* hDecl, unsigned int uiUsage,
                                                          bool bSoftwareVP, int bRecoverable)
@@ -306,7 +318,7 @@ NiD3DVertexShader* VertexShaderCreatorHLSL::NiD3DShaderProgramCreatorAsm_CreateV
     void* pvCode = 0;
     void* pvConstantsExtra = 0;
     void* pvConstants = 0;
-    if (!LoadShaderCode(pcFileName, pcEntryPoint, pvCode, uiCodeSize, pvConstants, pvConstantsExtra, bRecoverable))
+    if (!LoadShaderCode(pvBuffer, uiBufferSize, pvCode, uiCodeSize, pvConstants, pvConstantsExtra, bRecoverable))
     {
         delete pkVertexShader;
         return 0;

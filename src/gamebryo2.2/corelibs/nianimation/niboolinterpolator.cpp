@@ -28,7 +28,7 @@ NiAnimationKey* NiBoolInterpolator::GetChannelKeys(unsigned short usChannel) con
     NiBoolData* p = m_spBoolData.m_pObject;
     if (!p)
         return 0;
-    return reinterpret_cast<NiAnimationKey*>(p->m_pKeyArray);
+    return reinterpret_cast<NiAnimationKey*>(p->m_pkKeys);
 }
 
 // These base overrides are not declared by the shared NiKeyBasedInterpolator yet.
@@ -90,15 +90,20 @@ inline NiPointer<NiBoolData>& NiPointer<NiBoolData>::operator=(NiBoolData* p)
 }
 
 // @fnv 0x00a531a0
-void NiBoolInterpolator::SetBoolValue(bool abValue)
+// src: XBOX_RETAIL_PDB 0x00a531a0
+// pdb: NiBoolInterpolator::SetPoseValue | NiBoolInterpolator.obj | retail, object-file gap fill, high
+// pdb params: bPoseValue
+void NiBoolInterpolator::SetPoseValue(bool bPoseValue)
 {
     m_spBoolData = 0;
-    m_bBoolValue = abValue;
+    m_bBoolValue = bPoseValue;
 }
 
 void __cdecl FUN_00a537a0(float m_fStartTime, float m_fMaximumDistance);
 
 // @fnv 0x00a531f0
+// pdb: NiBoolInterpolator::RegisterStreamables | NiBoolInterpolator.obj | retail, object-file gap fill, high
+// pdb params: kStream
 void NiBoolInterpolator::SetActiveTimeRange(float afArg1, float afArg2)
 {
     if (m_spBoolData.m_pObject)
@@ -298,6 +303,8 @@ __forceinline void S_00a53680_Save(NiBinaryStream* o, void* v, unsigned n, unsig
         o, v, n, &sz, 1);
 }
 // @fnv 0x00a53680
+// pdb: NiBoolInterpolator::SaveBinary | NiBoolInterpolator.obj | retail, upstream name already matches, high
+// pdb params: kStream
 void NiBoolInterpolator::SaveBinary(NiStream& stream)
 {
     reinterpret_cast<void (__thiscall*)(NiKeyBasedInterpolator*, NiStream*)>(&NiKeyBasedInterpolator_LinkObject)(this, &stream);
@@ -319,18 +326,20 @@ struct FUN_00a536d0_arr
 };
 
 void* NiViewerStrings_NiGetViewerString_Title(int value);
-void* NiGetViewerString_00a7d410(const char* fmt, unsigned int value);
-void* NiGetViewerString_00a7d5a0(const char* fmt, void* value);
+void* NiGetViewerString_00a7d410(const char* pcPrefix, unsigned int ucValue);
+void* NiGetViewerString_00a7d5a0(const char* pcPrefix, void* pvValue);
 extern int DAT_011f404c;
 
 // @fnv 0x00a536d0
-void NiBoolInterpolator::GetViewerStrings(NiViewerStringsArray* strings)
+// pdb: NiBoolInterpolator::GetViewerStrings | NiBoolInterpolator.obj | retail, string-set bridge, high
+// pdb params: pkStrings
+void NiBoolInterpolator::GetViewerStrings(NiViewerStringsArray* pkStrings)
 {
-    FUN_00a536d0_arr* pArr = reinterpret_cast<FUN_00a536d0_arr*>(strings);
+    FUN_00a536d0_arr* pArr = reinterpret_cast<FUN_00a536d0_arr*>(pkStrings);
     void* v;
     unsigned int idx;
 
-    reinterpret_cast<void (__thiscall*)(NiKeyBasedInterpolator*, NiViewerStringsArray*)>(&FUN_00a3cbf0)(this, strings);
+    reinterpret_cast<void (__thiscall*)(NiKeyBasedInterpolator*, NiViewerStringsArray*)>(&FUN_00a3cbf0)(this, pkStrings);
     v = NiViewerStrings_NiGetViewerString_Title(DAT_011f404c);
     idx = pArr->m_usElementCount;
     if (idx >= pArr->m_usCapacity)
@@ -358,10 +367,13 @@ void NiBoolInterpolator::GetViewerStrings(NiViewerStringsArray* strings)
 }
 
 // @fnv 0x00a53220
-bool NiBoolInterpolator::IsEqual(NiObject* object) const
+// pdb: NiBoolInterpolator::IsEqual | NiBoolInterpolator.obj | retail, upstream name already matches, high
+// pdb params: pkObject
+// pdb locals: pkDest
+bool NiBoolInterpolator::IsEqual(NiObject* pkObject) const
 {
-    NiBoolInterpolator* other = static_cast<NiBoolInterpolator*>(object);
-    if (!reinterpret_cast<bool (__thiscall*)(const NiKeyBasedInterpolator*, NiObject*)>(&bhkCharacterProxy_IsEqual)(this, object))
+    NiBoolInterpolator* other = static_cast<NiBoolInterpolator*>(pkObject);
+    if (!reinterpret_cast<bool (__thiscall*)(const NiKeyBasedInterpolator*, NiObject*)>(&bhkCharacterProxy_IsEqual)(this, pkObject))
         return false;
     if (m_bBoolValue != other->m_bBoolValue)
         return false;
@@ -378,20 +390,25 @@ bool NiBoolInterpolator::IsEqual(NiObject* object) const
 }
 
 // @fnv 0x00a532d0
+// pdb: NiBoolInterpolator::NiBoolInterpolator | NiBoolInterpolator.obj | retail, call graph, medium
+// pdb params: pkBoolData
 NiBoolInterpolator::NiBoolInterpolator(bool bFlag) throw() : m_bBoolValue(bFlag)
 {
-    m_uiLastKeyIndex = 0;
+    m_uiLastIdx = 0;
 }
 
 extern unsigned char DAT_0109a914;
-int __cdecl InterpolateBooleanKey(float fValue, BooleanKey* pkKeys, unsigned int uiArg2, unsigned int uiArg3,
-                                  void* pArg4, unsigned char ucArg5);
+int __cdecl NiBoolKey_GenInterp(float fValue, BooleanKey* pkKeys, unsigned int eType, unsigned int uiArg3,
+                                  void* pArg4, unsigned char ucSize);
 // @fnv 0x00a533c0
-bool NiBoolInterpolator::UpdateBool(float fValue, NiObjectNET* target, bool& out)
+// pdb: NiBoolInterpolator::Update | NiBoolInterpolator.obj | retail, object-file gap fill, high
+// pdb params: fTime, pkInterpTarget, bValue
+// pdb locals: uiNumKeys, pkKeys, ucSize, eType, bInterpValue
+bool NiBoolInterpolator::UpdateBool(float fTime, NiObjectNET* pkInterpTarget, bool& bValue)
 {
-    unsigned char* pucOut = reinterpret_cast<unsigned char*>(&out);
+    unsigned char* pucOut = reinterpret_cast<unsigned char*>(&bValue);
     unsigned char& boolValue = reinterpret_cast<unsigned char&>(m_bBoolValue);
-    if (m_fLastTime == fValue)
+    if (m_fLastTime == fTime)
     {
         if (boolValue == DAT_0109a914)
         {
@@ -405,13 +422,13 @@ bool NiBoolInterpolator::UpdateBool(float fValue, NiObjectNET* target, bool& out
     NiBoolData* pData = m_spBoolData.m_pObject;
     if (pData != 0)
     {
-        unsigned int uiOther = pData->m_eRequestType;
+        unsigned int uiOther = pData->m_eType;
         unsigned int ItemUpdateArray = pData->m_uiNumKeys;
-        unsigned char ucFlag = pData->m_ucKeyDataSize;
-        BooleanKey* pkKeys = pData->m_pKeyArray;
+        unsigned char ucFlag = pData->m_ucKeySize;
+        BooleanKey* pkKeys = pData->m_pkKeys;
         if (ItemUpdateArray > 0)
         {
-            boolValue = ((unsigned char)InterpolateBooleanKey(fValue, pkKeys, uiOther, ItemUpdateArray, &m_uiLastKeyIndex, ucFlag) != 0);
+            boolValue = ((unsigned char)NiBoolKey_GenInterp(fTime, pkKeys, uiOther, ItemUpdateArray, &m_uiLastIdx, ucFlag) != 0);
         }
     }
 
@@ -421,7 +438,7 @@ bool NiBoolInterpolator::UpdateBool(float fValue, NiObjectNET* target, bool& out
         return false;
     }
     *pucOut = (boolValue != 0);
-    m_fLastTime = fValue;
+    m_fLastTime = fTime;
     return true;
 }
 
@@ -429,6 +446,8 @@ void __cdecl NiCollisionObject_CopyMembers();
 
 // @fnv 0x00aa0ab0
 // src: XBOX_PDB 0x00aa0ab0
+// pdb: NiKeyBasedInterpolator::CopyMembers | NiKeyBasedInterpolator.obj | debug, upstream name already matches, high
+// pdb params: pkDest, kCloning
 void __cdecl NiKeyBasedInterpolator_CopyMembers()
 {
     NiCollisionObject_CopyMembers();
@@ -440,14 +459,17 @@ extern bool DAT_0109a914;
 
 inline NiBoolInterpolator::NiBoolInterpolator() throw() : m_bBoolValue(ni535::DAT_0109a914)
 {
-    m_uiLastKeyIndex = 0;
+    m_uiLastIdx = 0;
 }
 
 // @fnv 0x00a53590
-NiObject* NiBoolInterpolator::MakeClone(CloningProcess& cloning)
+// pdb: NiBoolInterpolator::CreateClone | NiBoolInterpolator.obj | retail, object-file gap fill, high
+// pdb params: kCloning
+// pdb locals: pkObject
+NiObject* NiBoolInterpolator::MakeClone(CloningProcess& kCloning)
 {
     NiBoolInterpolator* p = new NiBoolInterpolator;
-    CopyMemberData(p, cloning);
+    CopyMembers(p, kCloning);
     return p;
 }
 
@@ -461,6 +483,8 @@ template <class T> inline void NiBinaryStream::Read(T& value)
 }
 
 // @fnv 0x00a53600
+// pdb: NiBoolInterpolator::LoadBinary | NiBoolInterpolator.obj | retail, upstream name already matches, high
+// pdb params: kStream
 void NiBoolInterpolator::LoadBinary(NiStream& kStream)
 {
     NiKeyBasedInterpolator::LoadBinary(kStream);
@@ -482,6 +506,8 @@ struct BKey
 
 // Resolves the boolean data into m_bBoolValue, clearing m_spBoolData when keys are absent or all values are constant.
 // @fnv 0x00a530c0
+// pdb: NiBoolInterpolator::Collapse | NiBoolInterpolator.obj | retail, upstream name already matches, high
+// pdb locals: uiNumKeys, pkKeys, ucSize, eType, bValue, bCollapse, ui
 void NiBoolInterpolator::Collapse()
 {
     if (m_spBoolData)
@@ -489,10 +515,10 @@ void NiBoolInterpolator::Collapse()
         unsigned int uiNumKeys;
         int eRequestType;
         unsigned char ucKeyDataSize;
-        eRequestType = m_spBoolData->m_eRequestType;
-        ucKeyDataSize = m_spBoolData->m_ucKeyDataSize;
+        eRequestType = m_spBoolData->m_eType;
+        ucKeyDataSize = m_spBoolData->m_ucKeySize;
         uiNumKeys = m_spBoolData->m_uiNumKeys;
-        BKey* pkKeys = reinterpret_cast<BKey*>(m_spBoolData->m_pKeyArray);
+        BKey* pkKeys = reinterpret_cast<BKey*>(m_spBoolData->m_pkKeys);
         if (uiNumKeys == 0)
         {
             m_spBoolData = 0;

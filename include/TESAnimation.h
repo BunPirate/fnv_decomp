@@ -7,6 +7,7 @@ class TESFile;
 class TESForm;
 enum CHUNK_ID;
 
+// pdb: class TESAnimation, size 0xc, bases: BaseFormComponent, 1 members
 class TESAnimation : public BaseFormComponent
 {
 public:
@@ -17,17 +18,17 @@ public:
     virtual void Init();
     virtual void Free();
     virtual void CopyFromBase(BaseFormComponent* component);
-    virtual bool CompareWithBase(BaseFormComponent* component);
+    virtual bool CompareWithBase(BaseFormComponent* apCompareFC);
 
     void InitializeComponent();
     void ClearComponent();
     void BaseFormRecord(BaseFormComponent* component);
     bool IsEqualToBase(BaseFormComponent* component);
     bool IsKFFileInList(char* path);
-    bool IsKFFileInList(const char* path);
+    bool IsKFFileInList(const char* apFilename);
     void AddKFFile(char* path);
     void AddKFFile(const char* path);
-    bool HasSpecialAnimations();
+    bool HasKFFiles();
     void* GetKFFileList();
     void Save(int chunkID);
     void Save(CHUNK_ID chunkID);
@@ -36,5 +37,5 @@ public:
     void LoadComponent(TESForm* form, TESFile* file);
     void AddPathToList(const char* path);
 
-    BSSimpleList<const char*> m_kKFFileList;
+    BSSimpleList<const char*> kfFilenames; // src: XBOX_RETAIL_PDB +0x4 (old: m_kKFFileList)
 };

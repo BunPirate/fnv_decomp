@@ -8,6 +8,7 @@ class NiStream;
 class NiTransform;
 template <class T> class NiTPrimitiveArray;
 
+// pdb: class NiBound, size 0x10, 3 members
 class NiBound
 {
   public:
@@ -46,7 +47,7 @@ class NiBound
     void ComputeFromPoints(int count, void* points);
     void ComputeFromPoints(int count, const NiPoint3* points);
     void ComputeBoundingSphere(unsigned int vertexCount, const NiPoint3* vertices);
-    void NiBound_Merge(const NiBound* other);
+    void NiBound_Merge(const NiBound* pBound);
     void Update(void* data);
     void Update(void* data, void* transform);
     void Update(const NiBound& bound, const NiTransform& transform);
@@ -54,8 +55,8 @@ class NiBound
     void ComputeMinimalBound(void* bounds);
     void ComputeMinimalBound(NiTPrimitiveArray<const NiBound*>& bounds);
     void Merge(void* bound);
-    void Merge(const NiBound* bound);
-    int WhichSide(void* plane);
+    void Merge(const NiBound* pBound);
+    int WhichSide(void* kPlane);
     int WhichSide(const NiPlane& plane);
 
     static bool TestIntersect(float time, void* bound0, void* velocity0, void* bound1, void* velocity1);
@@ -69,10 +70,10 @@ class NiBound
                               float& intersectTime, NiPoint3& intersectPoint, bool calculateNormals,
                               NiPoint3& normal0, NiPoint3& normal1);
 
-    void LoadBinary(NiStream* stream);
-    void LoadBinary(NiStream& stream);
+    void LoadBinary(NiStream* kStream);
+    void LoadBinary(NiStream& kStream);
     void SaveBinary(NiStream* stream);
-    void SaveBinary(NiStream& stream);
+    void SaveBinary(NiStream& kStream);
     char* FormatToBuffer(char* buffer);
     char* FormatToBuffer(const char* prefix);
     char* GetViewerString_00a7fb20(const char* prefix);

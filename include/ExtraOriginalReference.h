@@ -4,6 +4,7 @@
 
 class TESObjectREFR;
 
+// pdb: class ExtraOriginalReference, size 0x10, bases: BSExtraData, 1 members
 class ExtraOriginalReference : public BSExtraData
 {
 public:

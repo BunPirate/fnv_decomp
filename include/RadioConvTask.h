@@ -7,6 +7,7 @@ class QueuedChildren;
 class QueuedParents;
 class RadioState;
 
+// pdb: class RadioConvTask, size 0x38, bases: QueuedFileEntry, 1 members
 class RadioConvTask
 {
 public:

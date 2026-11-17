@@ -5,6 +5,7 @@
 #include "TESModelTextureSwap.h"
 #include "BSSimpleList.h"
 
+// pdb: class BGSHeadPart, size 0x50, bases: TESForm, TESFullName, TESModelTextureSwap, 2 members
 class BGSHeadPart : public TESForm, public TESFullName, public TESModelTextureSwap
 {
 public:
@@ -22,18 +23,18 @@ public:
     void ResetFormData();
     bool Load(TESFile* file);
     void InitializeHeadPart();
-    void AddExtraPart(BGSHeadPart* part);
+    void AddExtraPart(BGSHeadPart* apPart);
     BSSimpleList<BGSHeadPart*>* GetExtraParts();
     void* GetExtraPartList();
     unsigned char IsPlayable_005e7a60();
     void ClearData_005e7460();
     bool Load_005e7530(TESFile* file);
-    void FUN_005e7790(BGSHeadPart* part);
+    void FUN_005e7790(BGSHeadPart* apPart);
     void InitItem_005e77b0();
     void Copy_005e78f0(TESForm* form);
     bool Compare_005e79a0(TESForm* form);
 
     unsigned char cFlags;
     unsigned char padding[3];
-    BSSimpleList<BGSHeadPart*> m_kExtraParts;
+    BSSimpleList<BGSHeadPart*> ExtraParts; // src: XBOX_RETAIL_PDB +0x48 (old: m_kExtraParts)
 };

@@ -138,11 +138,13 @@ void InitializeRuntimeFloatScale27()
     runtimeInitializationFloat610 = runtimeInitializationFloat15 * runtimeInitializationDouble4;
 }
 // @fnv 0x00f36160
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | MagicItem.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale28()
 {
     runtimeInitializationFloat611 = runtimeInitializationFloat16 * runtimeInitializationDouble1;
 }
 // @fnv 0x00f36180
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | MagicItem.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale29()
 {
     runtimeInitializationFloat612 = runtimeInitializationFloat16 * runtimeInitializationDouble2;
@@ -253,11 +255,13 @@ void InitializeRuntimeFloatScale50()
     runtimeInitializationFloat638 = runtimeInitializationFloat30 * runtimeInitializationDouble4;
 }
 // @fnv 0x00f379d0
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | ExtraDataObjects.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale51()
 {
     runtimeInitializationFloat639 = runtimeInitializationFloat31 * runtimeInitializationDouble1;
 }
 // @fnv 0x00f379f0
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | ExtraDataObjects.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale52()
 {
     runtimeInitializationFloat640 = runtimeInitializationFloat31 * runtimeInitializationDouble2;
@@ -303,16 +307,19 @@ void InitializeRuntimeFloatScale60()
     runtimeInitializationFloat651 = runtimeInitializationFloat36 * runtimeInitializationDouble2;
 }
 // @fnv 0x00f37f10
+// pdb: `dynamic initializer for 'NiAnimationSDMObject'' | ModelLoader.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale61()
 {
     runtimeInitializationFloat652 = runtimeInitializationFloat37 * runtimeInitializationDouble4;
 }
 // @fnv 0x00f37fd0
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | ModelLoader.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale62()
 {
     runtimeInitializationFloat653 = runtimeInitializationFloat38 * runtimeInitializationDouble1;
 }
 // @fnv 0x00f37ff0
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | ModelLoader.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale63()
 {
     runtimeInitializationFloat656 = runtimeInitializationFloat38 * runtimeInitializationDouble2;
@@ -323,21 +330,25 @@ void InitializeRuntimeFloatScale64()
     runtimeInitializationFloat658 = runtimeInitializationFloat39 * runtimeInitializationDouble4;
 }
 // @fnv 0x00f38260
+// pdb: `dynamic initializer for 'NiAnimationSDMObject'' | TES.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale65()
 {
     runtimeInitializationFloat655 = runtimeInitializationFloat40 * runtimeInitializationDouble5;
 }
 // @fnv 0x00f38280
+// pdb: `dynamic initializer for 'NiParticleSDMObject'' | TES.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale66()
 {
     runtimeInitializationFloat657 = runtimeInitializationFloat41 * runtimeInitializationDouble6;
 }
 // @fnv 0x00f38bb0
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | TES.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale67()
 {
     runtimeInitializationFloat659 = runtimeInitializationFloat42 * runtimeInitializationDouble1;
 }
 // @fnv 0x00f38bd0
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | TES.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale68()
 {
     runtimeInitializationFloat662 = runtimeInitializationFloat42 * runtimeInitializationDouble2;
@@ -348,11 +359,13 @@ void InitializeRuntimeFloatScale69()
     runtimeInitializationFloat664 = runtimeInitializationFloat43 * runtimeInitializationDouble4;
 }
 // @fnv 0x00f38e30
+// pdb: `dynamic initializer for 'NiStepRotKeyregisterloaderreturn'' | TESDataHandler.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale70()
 {
     runtimeInitializationFloat661 = runtimeInitializationFloat44 * runtimeInitializationDouble5;
 }
 // @fnv 0x00f38e50
+// pdb: `dynamic initializer for 'NiAnimationSDMObject'' | TESDataHandler.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale71()
 {
     runtimeInitializationFloat663 = runtimeInitializationFloat45 * runtimeInitializationDouble6;
@@ -498,16 +511,19 @@ void InitializeRuntimeFloatScale99()
     runtimeInitializationFloat691 = runtimeInitializationFloat61 * runtimeInitializationDouble6;
 }
 // @fnv 0x00f39c50
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | BGSOpenCloseForm.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale100()
 {
     runtimeInitializationFloat693 = runtimeInitializationFloat62 * runtimeInitializationDouble1;
 }
 // @fnv 0x00f39c70
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | BGSOpenCloseForm.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale101()
 {
     runtimeInitializationFloat694 = runtimeInitializationFloat62 * runtimeInitializationDouble2;
 }
 // @fnv 0x00f39c90
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | BGSOpenCloseForm.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale102()
 {
     runtimeInitializationFloat695 = runtimeInitializationFloat63 * runtimeInitializationDouble1;
@@ -523,11 +539,13 @@ void InitializeRuntimeFloatScale104()
     runtimeInitializationFloat698 = runtimeInitializationFloat64 * runtimeInitializationDouble4;
 }
 // @fnv 0x00f81500
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | BSFaceGenAnimationData.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale105()
 {
     runtimeInitializationFloat980 = runtimeInitializationFloat267 * runtimeInitializationDouble1;
 }
 // @fnv 0x00f81520
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | BSFaceGenAnimationData.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale106()
 {
     runtimeInitializationFloat982 = runtimeInitializationFloat267 * runtimeInitializationDouble2;
@@ -608,11 +626,13 @@ void InitializeRuntimeFloatScale121()
     runtimeInitializationFloat708 = runtimeInitializationFloat69 * runtimeInitializationDouble4;
 }
 // @fnv 0x00f81c30
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | BSFaceGenManager.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale122()
 {
     runtimeInitializationFloat990 = runtimeInitializationFloat272 * runtimeInitializationDouble1;
 }
 // @fnv 0x00f81c50
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | BSFaceGenManager.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale123()
 {
     runtimeInitializationFloat992 = runtimeInitializationFloat272 * runtimeInitializationDouble2;
@@ -623,11 +643,13 @@ void InitializeRuntimeFloatScale124()
     runtimeInitializationFloat993 = runtimeInitializationFloat273 * runtimeInitializationDouble4;
 }
 // @fnv 0x00f81d50
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | BSFaceGenModel.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale125()
 {
     runtimeInitializationFloat994 = runtimeInitializationFloat274 * runtimeInitializationDouble1;
 }
 // @fnv 0x00f81d70
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | BSFaceGenModel.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale126()
 {
     runtimeInitializationFloat995 = runtimeInitializationFloat274 * runtimeInitializationDouble2;
@@ -643,11 +665,13 @@ void InitializeRuntimeFloatScale128()
     runtimeInitializationFloat997 = runtimeInitializationFloat275 * runtimeInitializationDouble2;
 }
 // @fnv 0x00f81f10
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | BSFaceGenMorphData.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale129()
 {
     runtimeInitializationFloat998 = runtimeInitializationFloat276 * runtimeInitializationDouble1;
 }
 // @fnv 0x00f81f30
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | BSFaceGenMorphData.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale130()
 {
     runtimeInitializationFloat1000 = runtimeInitializationFloat276 * runtimeInitializationDouble2;
@@ -658,11 +682,13 @@ void InitializeRuntimeFloatScale131()
     runtimeInitializationFloat1001 = runtimeInitializationFloat277 * runtimeInitializationDouble4;
 }
 // @fnv 0x00f82190
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | BSFaceGenNiNode.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale132()
 {
     runtimeInitializationFloat1002 = runtimeInitializationFloat278 * runtimeInitializationDouble1;
 }
 // @fnv 0x00f821b0
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | BSFaceGenNiNode.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale133()
 {
     runtimeInitializationFloat1004 = runtimeInitializationFloat278 * runtimeInitializationDouble2;
@@ -673,11 +699,13 @@ void InitializeRuntimeFloatScale134()
     runtimeInitializationFloat1005 = runtimeInitializationFloat279 * runtimeInitializationDouble4;
 }
 // @fnv 0x00f3b550
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | TESActorBaseData.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale135()
 {
     runtimeInitializationFloat709 = runtimeInitializationFloat70 * runtimeInitializationDouble1;
 }
 // @fnv 0x00f3b570
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | TESActorBaseData.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale136()
 {
     runtimeInitializationFloat711 = runtimeInitializationFloat70 * runtimeInitializationDouble2;
@@ -688,11 +716,13 @@ void InitializeRuntimeFloatScale137()
     runtimeInitializationFloat712 = runtimeInitializationFloat71 * runtimeInitializationDouble4;
 }
 // @fnv 0x00f82800
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | BSTreeManager.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale138()
 {
     runtimeInitializationFloat1006 = runtimeInitializationFloat280 * runtimeInitializationDouble1;
 }
 // @fnv 0x00f82820
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | BSTreeManager.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale139()
 {
     runtimeInitializationFloat1010 = runtimeInitializationFloat280 * runtimeInitializationDouble2;
@@ -728,6 +758,7 @@ void InitializeRuntimeFloatScale145()
     runtimeInitializationFloat1015 = runtimeInitializationFloat283 * runtimeInitializationDouble2;
 }
 // @fnv 0x00f3b8d0
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | TESAIForm.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale146()
 {
     runtimeInitializationFloat713 = runtimeInitializationFloat72 * runtimeInitializationDouble1;
@@ -738,6 +769,7 @@ void InitializeRuntimeFloatScale147()
     runtimeInitializationFloat1016 = runtimeInitializationFloat284 * runtimeInitializationDouble4;
 }
 // @fnv 0x00f3b8f0
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | TESAIForm.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale148()
 {
     runtimeInitializationFloat714 = runtimeInitializationFloat72 * runtimeInitializationDouble2;
@@ -818,6 +850,7 @@ void InitializeRuntimeFloatScale163()
     runtimeInitializationFloat728 = runtimeInitializationFloat79 * runtimeInitializationDouble2;
 }
 // @fnv 0x00f834d0
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | ActionPoints.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale164()
 {
     runtimeInitializationFloat1021 = runtimeInitializationFloat287 * runtimeInitializationDouble1;
@@ -828,6 +861,7 @@ void InitializeRuntimeFloatScale165()
     runtimeInitializationFloat729 = runtimeInitializationFloat80 * runtimeInitializationDouble1;
 }
 // @fnv 0x00f834f0
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | ActionPoints.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale166()
 {
     runtimeInitializationFloat1023 = runtimeInitializationFloat287 * runtimeInitializationDouble2;
@@ -953,16 +987,19 @@ void InitializeRuntimeFloatScale190()
     runtimeInitializationFloat1028 = runtimeInitializationFloat290 * runtimeInitializationDouble4;
 }
 // @fnv 0x00f3c470
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | TESModel.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale191()
 {
     runtimeInitializationFloat753 = runtimeInitializationFloat92 * runtimeInitializationDouble1;
 }
 // @fnv 0x00f3c490
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | TESModel.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale192()
 {
     runtimeInitializationFloat754 = runtimeInitializationFloat92 * runtimeInitializationDouble2;
 }
 // @fnv 0x00f3c4b0
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | TESModel.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale193()
 {
     runtimeInitializationFloat755 = runtimeInitializationFloat93 * runtimeInitializationDouble1;
@@ -1183,26 +1220,31 @@ void InitializeRuntimeFloatScale236()
     runtimeInitializationFloat796 = runtimeInitializationFloat113 * runtimeInitializationDouble4;
 }
 // @fnv 0x00f847e0
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | Package.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale237()
 {
     runtimeInitializationFloat1037 = runtimeInitializationFloat295 * runtimeInitializationDouble1;
 }
 // @fnv 0x00f3d1b0
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | Animation.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale238()
 {
     runtimeInitializationFloat797 = runtimeInitializationFloat114 * runtimeInitializationDouble1;
 }
 // @fnv 0x00f84800
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | Package.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale239()
 {
     runtimeInitializationFloat1038 = runtimeInitializationFloat295 * runtimeInitializationDouble2;
 }
 // @fnv 0x00f3d1d0
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | Animation.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale240()
 {
     runtimeInitializationFloat800 = runtimeInitializationFloat114 * runtimeInitializationDouble2;
 }
 // @fnv 0x00f84820
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | Package.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale241()
 {
     runtimeInitializationFloat1039 = runtimeInitializationFloat296 * runtimeInitializationDouble1;
@@ -1343,6 +1385,7 @@ void InitializeRuntimeFloatScale268()
     runtimeInitializationFloat1063 = runtimeInitializationFloat308 * runtimeInitializationDouble1;
 }
 // @fnv 0x00f3d860
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | BGSDecalManager.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale269()
 {
     runtimeInitializationFloat807 = runtimeInitializationFloat120 * runtimeInitializationDouble1;
@@ -1353,6 +1396,7 @@ void InitializeRuntimeFloatScale270()
     runtimeInitializationFloat1065 = runtimeInitializationFloat308 * runtimeInitializationDouble2;
 }
 // @fnv 0x00f3d880
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | BGSDecalManager.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale271()
 {
     runtimeInitializationFloat808 = runtimeInitializationFloat120 * runtimeInitializationDouble2;
@@ -1433,11 +1477,13 @@ void InitializeRuntimeFloatScale286()
     runtimeInitializationFloat1080 = runtimeInitializationFloat316 * runtimeInitializationDouble4;
 }
 // @fnv 0x00f3e5f0
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | BGSSceneInfo.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale287()
 {
     runtimeInitializationFloat813 = runtimeInitializationFloat123 * runtimeInitializationDouble1;
 }
 // @fnv 0x00f3e610
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | BGSSceneInfo.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale288()
 {
     runtimeInitializationFloat815 = runtimeInitializationFloat123 * runtimeInitializationDouble2;
@@ -1503,6 +1549,7 @@ void InitializeRuntimeFloatScale300()
     runtimeInitializationFloat1092 = runtimeInitializationFloat322 * runtimeInitializationDouble4;
 }
 // @fnv 0x00f3e930
+// pdb: `dynamic initializer for 'NiAnimationSDMObject'' | BipedAnim.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale301()
 {
     runtimeInitializationFloat820 = runtimeInitializationFloat126 * runtimeInitializationDouble4;
@@ -1538,11 +1585,13 @@ void InitializeRuntimeFloatScale307()
     runtimeInitializationFloat827 = runtimeInitializationFloat129 * runtimeInitializationDouble2;
 }
 // @fnv 0x00f85d50
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | BSTempEffectDebris.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale308()
 {
     runtimeInitializationFloat1093 = runtimeInitializationFloat323 * runtimeInitializationDouble1;
 }
 // @fnv 0x00f85d70
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | BSTempEffectDebris.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale309()
 {
     runtimeInitializationFloat1095 = runtimeInitializationFloat323 * runtimeInitializationDouble2;
@@ -1558,21 +1607,25 @@ void InitializeRuntimeFloatScale311()
     runtimeInitializationFloat1096 = runtimeInitializationFloat324 * runtimeInitializationDouble4;
 }
 // @fnv 0x00f85fd0
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | BSTempEffectGeometryDecal.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale312()
 {
     runtimeInitializationFloat1097 = runtimeInitializationFloat325 * runtimeInitializationDouble1;
 }
 // @fnv 0x00f3ee90
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | GlobalFunc.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale313()
 {
     runtimeInitializationFloat829 = runtimeInitializationFloat131 * runtimeInitializationDouble1;
 }
 // @fnv 0x00f85ff0
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | BSTempEffectGeometryDecal.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale314()
 {
     runtimeInitializationFloat1099 = runtimeInitializationFloat325 * runtimeInitializationDouble2;
 }
 // @fnv 0x00f3eeb0
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | GlobalFunc.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale315()
 {
     runtimeInitializationFloat830 = runtimeInitializationFloat131 * runtimeInitializationDouble2;
@@ -1598,21 +1651,25 @@ void InitializeRuntimeFloatScale319()
     runtimeInitializationFloat834 = runtimeInitializationFloat133 * runtimeInitializationDouble4;
 }
 // @fnv 0x00f86250
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | BSTempEffectParticle.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale320()
 {
     runtimeInitializationFloat1101 = runtimeInitializationFloat327 * runtimeInitializationDouble1;
 }
 // @fnv 0x00f86270
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | BSTempEffectParticle.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale321()
 {
     runtimeInitializationFloat1103 = runtimeInitializationFloat327 * runtimeInitializationDouble2;
 }
 // @fnv 0x00f3f1c0
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | GridCell.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale322()
 {
     runtimeInitializationFloat835 = runtimeInitializationFloat134 * runtimeInitializationDouble1;
 }
 // @fnv 0x00f3f1e0
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | GridCell.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale323()
 {
     runtimeInitializationFloat837 = runtimeInitializationFloat134 * runtimeInitializationDouble2;
@@ -1628,11 +1685,13 @@ void InitializeRuntimeFloatScale325()
     runtimeInitializationFloat838 = runtimeInitializationFloat135 * runtimeInitializationDouble4;
 }
 // @fnv 0x00f864f0
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | BSTempEffectSimpleDecal.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale326()
 {
     runtimeInitializationFloat1105 = runtimeInitializationFloat329 * runtimeInitializationDouble1;
 }
 // @fnv 0x00f86510
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | BSTempEffectSimpleDecal.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale327()
 {
     runtimeInitializationFloat1108 = runtimeInitializationFloat329 * runtimeInitializationDouble2;
@@ -1648,11 +1707,13 @@ void InitializeRuntimeFloatScale329()
     runtimeInitializationFloat1109 = runtimeInitializationFloat331 * runtimeInitializationDouble6;
 }
 // @fnv 0x00f3f490
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | InventoryChanges.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale330()
 {
     runtimeInitializationFloat839 = runtimeInitializationFloat136 * runtimeInitializationDouble1;
 }
 // @fnv 0x00f3f4b0
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | InventoryChanges.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale331()
 {
     runtimeInitializationFloat840 = runtimeInitializationFloat136 * runtimeInitializationDouble2;
@@ -1673,11 +1734,13 @@ void InitializeRuntimeFloatScale334()
     runtimeInitializationFloat1114 = runtimeInitializationFloat333 * runtimeInitializationDouble2;
 }
 // @fnv 0x00f3f5c0
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | LipSynchAnim.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale335()
 {
     runtimeInitializationFloat841 = runtimeInitializationFloat137 * runtimeInitializationDouble1;
 }
 // @fnv 0x00f3f5e0
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | LipSynchAnim.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale336()
 {
     runtimeInitializationFloat842 = runtimeInitializationFloat137 * runtimeInitializationDouble2;
@@ -2413,51 +2476,61 @@ void InitializeRuntimeFloatScale482()
     runtimeInitializationFloat2140 = runtimeInitializationFloat144 * runtimeInitializationDouble4;
 }
 // @fnv 0x00f88e10
+// pdb: `dynamic initializer for 'NiPosKeyregisterloaderreturn'' | PathBuilder.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale483()
 {
     runtimeInitializationFloat2902 = runtimeInitializationFloat1620 * runtimeInitializationDouble1;
 }
 // @fnv 0x00f88e30
+// pdb: `dynamic initializer for 'NiBezPosKeyregisterloaderreturn'' | PathBuilder.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale484()
 {
     runtimeInitializationFloat2906 = runtimeInitializationFloat1620 * runtimeInitializationDouble2;
 }
 // @fnv 0x00f88e70
+// pdb: `dynamic initializer for 'NiBezRotKeyregisterloaderreturn'' | PathBuilder.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale485()
 {
     runtimeInitializationFloat2905 = runtimeInitializationFloat1621 * runtimeInitializationDouble5;
 }
 // @fnv 0x00f88e90
+// pdb: `dynamic initializer for 'NiBoolKeyregisterloaderreturn'' | PathBuilder.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale486()
 {
     runtimeInitializationFloat2907 = runtimeInitializationFloat1622 * runtimeInitializationDouble6;
 }
 // @fnv 0x00f88f50
+// pdb: `dynamic initializer for 'NiLinPosKeyregisterloaderreturn'' | PathBuilder.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale487()
 {
     runtimeInitializationFloat2908 = runtimeInitializationFloat393 * runtimeInitializationDouble4;
 }
 // @fnv 0x00f88f70
+// pdb: `dynamic initializer for 'NiLinRotKeyregisterloaderreturn'' | PathBuilder.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale488()
 {
     runtimeInitializationFloat2909 = runtimeInitializationFloat1623 * runtimeInitializationDouble1;
 }
 // @fnv 0x00f88f90
+// pdb: `dynamic initializer for 'NiTCBPosKeyregisterloaderreturn'' | PathBuilder.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale489()
 {
     runtimeInitializationFloat2913 = runtimeInitializationFloat1623 * runtimeInitializationDouble2;
 }
 // @fnv 0x00f88fd0
+// pdb: `dynamic initializer for 'NiTCBFloatKeyregisterloaderreturn'' | PathBuilder.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale490()
 {
     runtimeInitializationFloat2912 = runtimeInitializationFloat1624 * runtimeInitializationDouble5;
 }
 // @fnv 0x00f88ff0
+// pdb: `dynamic initializer for 'NiStepBoolKeyregisterloaderreturn'' | PathBuilder.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale491()
 {
     runtimeInitializationFloat2914 = runtimeInitializationFloat1625 * runtimeInitializationDouble6;
 }
 // @fnv 0x00f890b0
+// pdb: `dynamic initializer for 'NiAnimationSDMObject'' | PathBuilder.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale492()
 {
     runtimeInitializationFloat2915 = runtimeInitializationFloat394 * runtimeInitializationDouble4;
@@ -2488,16 +2561,19 @@ void InitializeRuntimeFloatScale497()
     runtimeInitializationFloat2922 = runtimeInitializationFloat395 * runtimeInitializationDouble4;
 }
 // @fnv 0x00f89540
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | Pathfind.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale498()
 {
     runtimeInitializationFloat2923 = runtimeInitializationFloat1629 * runtimeInitializationDouble1;
 }
 // @fnv 0x00f89560
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | Pathfind.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale499()
 {
     runtimeInitializationFloat2924 = runtimeInitializationFloat1629 * runtimeInitializationDouble2;
 }
 // @fnv 0x00f89580
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | Pathfind.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale500()
 {
     runtimeInitializationFloat2925 = runtimeInitializationFloat1630 * runtimeInitializationDouble1;
@@ -2533,11 +2609,13 @@ void InitializeRuntimeFloatScale506()
     runtimeInitializationFloat2936 = runtimeInitializationFloat1633 * runtimeInitializationDouble2;
 }
 // @fnv 0x00f42ae0
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | TESWater.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale507()
 {
     runtimeInitializationFloat2141 = runtimeInitializationFloat1384 * runtimeInitializationDouble1;
 }
 // @fnv 0x00f42b00
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | TESWater.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale508()
 {
     runtimeInitializationFloat2142 = runtimeInitializationFloat1384 * runtimeInitializationDouble2;
@@ -2593,11 +2671,13 @@ void InitializeRuntimeFloatScale518()
     runtimeInitializationFloat2944 = runtimeInitializationFloat1638 * runtimeInitializationDouble6;
 }
 // @fnv 0x00f42e40
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | BSAnimGroupSequence.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale519()
 {
     runtimeInitializationFloat2147 = runtimeInitializationFloat1386 * runtimeInitializationDouble1;
 }
 // @fnv 0x00f42e60
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | BSAnimGroupSequence.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale520()
 {
     runtimeInitializationFloat2149 = runtimeInitializationFloat1386 * runtimeInitializationDouble2;
@@ -3418,6 +3498,7 @@ void InitializeRuntimeFloatScale683()
     runtimeInitializationFloat3063 = runtimeInitializationFloat1685 * runtimeInitializationDouble1;
 }
 // @fnv 0x00f44f90
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | BGSTerminal.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale684()
 {
     runtimeInitializationFloat2237 = runtimeInitializationFloat1418 * runtimeInitializationDouble1;
@@ -3428,6 +3509,7 @@ void InitializeRuntimeFloatScale685()
     runtimeInitializationFloat3064 = runtimeInitializationFloat1685 * runtimeInitializationDouble2;
 }
 // @fnv 0x00f44fb0
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | BGSTerminal.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale686()
 {
     runtimeInitializationFloat2239 = runtimeInitializationFloat1418 * runtimeInitializationDouble2;
@@ -3583,11 +3665,13 @@ void InitializeRuntimeFloatScale716()
     runtimeInitializationFloat3082 = runtimeInitializationFloat420 * runtimeInitializationDouble4;
 }
 // @fnv 0x00f45a40
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | TESFlora.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale717()
 {
     runtimeInitializationFloat2261 = runtimeInitializationFloat1424 * runtimeInitializationDouble1;
 }
 // @fnv 0x00f45a60
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | TESFlora.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale718()
 {
     runtimeInitializationFloat2263 = runtimeInitializationFloat1424 * runtimeInitializationDouble2;
@@ -3598,11 +3682,13 @@ void InitializeRuntimeFloatScale719()
     runtimeInitializationFloat2264 = runtimeInitializationFloat166 * runtimeInitializationDouble4;
 }
 // @fnv 0x00f8d0b0
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | InterfaceManager.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale720()
 {
     runtimeInitializationFloat3083 = runtimeInitializationFloat1691 * runtimeInitializationDouble1;
 }
 // @fnv 0x00f8d0d0
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | InterfaceManager.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale721()
 {
     runtimeInitializationFloat3085 = runtimeInitializationFloat1691 * runtimeInitializationDouble2;
@@ -3723,11 +3809,13 @@ void InitializeRuntimeFloatScale744()
     runtimeInitializationFloat3114 = runtimeInitializationFloat427 * runtimeInitializationDouble4;
 }
 // @fnv 0x00f47aa0
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | TESFurniture.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale745()
 {
     runtimeInitializationFloat2265 = runtimeInitializationFloat1425 * runtimeInitializationDouble1;
 }
 // @fnv 0x00f47ac0
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | TESFurniture.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale746()
 {
     runtimeInitializationFloat2266 = runtimeInitializationFloat1425 * runtimeInitializationDouble2;
@@ -3773,6 +3861,7 @@ void InitializeRuntimeFloatScale754()
     runtimeInitializationFloat3118 = runtimeInitializationFloat428 * runtimeInitializationDouble4;
 }
 // @fnv 0x00f47e40
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | TESLevCharacter.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale755()
 {
     runtimeInitializationFloat2273 = runtimeInitializationFloat1428 * runtimeInitializationDouble1;
@@ -3783,6 +3872,7 @@ void InitializeRuntimeFloatScale756()
     runtimeInitializationFloat3119 = runtimeInitializationFloat1701 * runtimeInitializationDouble1;
 }
 // @fnv 0x00f47e60
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | TESLevCharacter.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale757()
 {
     runtimeInitializationFloat2275 = runtimeInitializationFloat1428 * runtimeInitializationDouble2;
@@ -3803,11 +3893,13 @@ void InitializeRuntimeFloatScale760()
     runtimeInitializationFloat3122 = runtimeInitializationFloat429 * runtimeInitializationDouble4;
 }
 // @fnv 0x00f480d0
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | TESLevCreature.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale761()
 {
     runtimeInitializationFloat2277 = runtimeInitializationFloat1429 * runtimeInitializationDouble1;
 }
 // @fnv 0x00f480f0
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | TESLevCreature.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale762()
 {
     runtimeInitializationFloat2279 = runtimeInitializationFloat1429 * runtimeInitializationDouble2;
@@ -3983,11 +4075,13 @@ void InitializeRuntimeFloatScale796()
     runtimeInitializationFloat2302 = runtimeInitializationFloat1436 * runtimeInitializationDouble2;
 }
 // @fnv 0x00f8f0d0
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | CreditsMenu.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale797()
 {
     runtimeInitializationFloat3143 = runtimeInitializationFloat1707 * runtimeInitializationDouble1;
 }
 // @fnv 0x00f8f0f0
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | CreditsMenu.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale798()
 {
     runtimeInitializationFloat3145 = runtimeInitializationFloat1707 * runtimeInitializationDouble2;
@@ -4028,16 +4122,19 @@ void InitializeRuntimeFloatScale805()
     runtimeInitializationFloat3150 = runtimeInitializationFloat436 * runtimeInitializationDouble4;
 }
 // @fnv 0x00f49330
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | TESObjectBOOK.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale806()
 {
     runtimeInitializationFloat2307 = runtimeInitializationFloat1438 * runtimeInitializationDouble1;
 }
 // @fnv 0x00f49350
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | TESObjectBOOK.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale807()
 {
     runtimeInitializationFloat2308 = runtimeInitializationFloat1438 * runtimeInitializationDouble2;
 }
 // @fnv 0x00f49370
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | TESObjectBOOK.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale808()
 {
     runtimeInitializationFloat2309 = runtimeInitializationFloat1439 * runtimeInitializationDouble1;
@@ -4083,11 +4180,13 @@ void InitializeRuntimeFloatScale816()
     runtimeInitializationFloat2316 = runtimeInitializationFloat176 * runtimeInitializationDouble4;
 }
 // @fnv 0x00f498c0
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | TESObjectDOOR.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale817()
 {
     runtimeInitializationFloat2317 = runtimeInitializationFloat1441 * runtimeInitializationDouble1;
 }
 // @fnv 0x00f498e0
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | TESObjectDOOR.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale818()
 {
     runtimeInitializationFloat2319 = runtimeInitializationFloat1441 * runtimeInitializationDouble2;
@@ -4188,11 +4287,13 @@ void InitializeRuntimeFloatScale837()
     runtimeInitializationFloat3162 = runtimeInitializationFloat439 * runtimeInitializationDouble4;
 }
 // @fnv 0x00f49fb0
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | TESObjectWEAP.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale838()
 {
     runtimeInitializationFloat2337 = runtimeInitializationFloat1446 * runtimeInitializationDouble1;
 }
 // @fnv 0x00f49fd0
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | TESObjectWEAP.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale839()
 {
     runtimeInitializationFloat2339 = runtimeInitializationFloat1446 * runtimeInitializationDouble2;
@@ -4218,11 +4319,13 @@ void InitializeRuntimeFloatScale843()
     runtimeInitializationFloat3166 = runtimeInitializationFloat440 * runtimeInitializationDouble4;
 }
 // @fnv 0x00f4a240
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | BGSEncounterZone.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale844()
 {
     runtimeInitializationFloat2341 = runtimeInitializationFloat1447 * runtimeInitializationDouble1;
 }
 // @fnv 0x00f4a260
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | BGSEncounterZone.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale845()
 {
     runtimeInitializationFloat2343 = runtimeInitializationFloat1447 * runtimeInitializationDouble2;
@@ -4238,6 +4341,7 @@ void InitializeRuntimeFloatScale847()
     runtimeInitializationFloat2345 = runtimeInitializationFloat1448 * runtimeInitializationDouble1;
 }
 // @fnv 0x00f90210
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | LevelUpMenu.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale848()
 {
     runtimeInitializationFloat3167 = runtimeInitializationFloat1713 * runtimeInitializationDouble1;
@@ -4248,6 +4352,7 @@ void InitializeRuntimeFloatScale849()
     runtimeInitializationFloat2349 = runtimeInitializationFloat1448 * runtimeInitializationDouble2;
 }
 // @fnv 0x00f90230
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | LevelUpMenu.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale850()
 {
     runtimeInitializationFloat3169 = runtimeInitializationFloat1713 * runtimeInitializationDouble2;
@@ -4303,16 +4408,19 @@ void InitializeRuntimeFloatScale860()
     runtimeInitializationFloat2359 = runtimeInitializationFloat186 * runtimeInitializationDouble4;
 }
 // @fnv 0x00f906f0
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | LoadingMenu.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale861()
 {
     runtimeInitializationFloat3171 = runtimeInitializationFloat1714 * runtimeInitializationDouble1;
 }
 // @fnv 0x00f90710
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | LoadingMenu.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale862()
 {
     runtimeInitializationFloat3173 = runtimeInitializationFloat1714 * runtimeInitializationDouble2;
 }
 // @fnv 0x00f4a830
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | ExteriorCellLoader.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale863()
 {
     runtimeInitializationFloat2360 = runtimeInitializationFloat1453 * runtimeInitializationDouble1;
@@ -4323,6 +4431,7 @@ void InitializeRuntimeFloatScale864()
     runtimeInitializationFloat3174 = runtimeInitializationFloat442 * runtimeInitializationDouble4;
 }
 // @fnv 0x00f4a850
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | ExteriorCellLoader.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale865()
 {
     runtimeInitializationFloat2362 = runtimeInitializationFloat1453 * runtimeInitializationDouble2;
@@ -4398,21 +4507,25 @@ void InitializeRuntimeFloatScale879()
     runtimeInitializationFloat3185 = runtimeInitializationFloat444 * runtimeInitializationDouble4;
 }
 // @fnv 0x00f90ef0
+// pdb: `dynamic initializer for 'NiStepRotKeyregisterloaderreturn'' | MapMenu.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale880()
 {
     runtimeInitializationFloat3182 = runtimeInitializationFloat1717 * runtimeInitializationDouble5;
 }
 // @fnv 0x00f90f10
+// pdb: `dynamic initializer for 'NiAnimationSDMObject'' | MapMenu.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale881()
 {
     runtimeInitializationFloat3184 = runtimeInitializationFloat1718 * runtimeInitializationDouble6;
 }
 // @fnv 0x00f90f60
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | MapMenu.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale882()
 {
     runtimeInitializationFloat3186 = runtimeInitializationFloat1719 * runtimeInitializationDouble1;
 }
 // @fnv 0x00f90f80
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | MapMenu.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale883()
 {
     runtimeInitializationFloat3188 = runtimeInitializationFloat1719 * runtimeInitializationDouble2;
@@ -4523,11 +4636,13 @@ void InitializeRuntimeFloatScale904()
     runtimeInitializationFloat3199 = runtimeInitializationFloat447 * runtimeInitializationDouble4;
 }
 // @fnv 0x00f4b6f0
+// pdb: `dynamic initializer for 'NiStepRotKeyregisterloaderreturn'' | TESObjectCELL.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale905()
 {
     runtimeInitializationFloat2387 = runtimeInitializationFloat1461 * runtimeInitializationDouble5;
 }
 // @fnv 0x00f4b710
+// pdb: `dynamic initializer for 'NiAnimationSDMObject'' | TESObjectCELL.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale906()
 {
     runtimeInitializationFloat2389 = runtimeInitializationFloat1462 * runtimeInitializationDouble6;
@@ -4548,11 +4663,13 @@ void InitializeRuntimeFloatScale909()
     runtimeInitializationFloat3203 = runtimeInitializationFloat448 * runtimeInitializationDouble4;
 }
 // @fnv 0x00f4b8f0
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | TESObjectCELL.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale910()
 {
     runtimeInitializationFloat2391 = runtimeInitializationFloat1463 * runtimeInitializationDouble1;
 }
 // @fnv 0x00f4b910
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | TESObjectCELL.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale911()
 {
     runtimeInitializationFloat2395 = runtimeInitializationFloat1463 * runtimeInitializationDouble2;
@@ -4633,11 +4750,13 @@ void InitializeRuntimeFloatScale926()
     runtimeInitializationFloat3215 = runtimeInitializationFloat451 * runtimeInitializationDouble4;
 }
 // @fnv 0x00f4c3b0
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | TESTerrainLODManager.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale927()
 {
     runtimeInitializationFloat2402 = runtimeInitializationFloat1467 * runtimeInitializationDouble1;
 }
 // @fnv 0x00f4c3d0
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | TESTerrainLODManager.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale928()
 {
     runtimeInitializationFloat2404 = runtimeInitializationFloat1467 * runtimeInitializationDouble2;
@@ -4663,11 +4782,13 @@ void InitializeRuntimeFloatScale932()
     runtimeInitializationFloat3219 = runtimeInitializationFloat452 * runtimeInitializationDouble4;
 }
 // @fnv 0x00f4c640
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | TESWaterForm.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale933()
 {
     runtimeInitializationFloat2406 = runtimeInitializationFloat1468 * runtimeInitializationDouble1;
 }
 // @fnv 0x00f4c660
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | TESWaterForm.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale934()
 {
     runtimeInitializationFloat2407 = runtimeInitializationFloat1468 * runtimeInitializationDouble2;
@@ -4793,16 +4914,19 @@ void InitializeRuntimeFloatScale958()
     runtimeInitializationFloat2429 = runtimeInitializationFloat199 * runtimeInitializationDouble4;
 }
 // @fnv 0x00f4d190
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | BGSCameraShot.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale959()
 {
     runtimeInitializationFloat2430 = runtimeInitializationFloat1476 * runtimeInitializationDouble1;
 }
 // @fnv 0x00f4d1b0
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | BGSCameraShot.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale960()
 {
     runtimeInitializationFloat2431 = runtimeInitializationFloat1476 * runtimeInitializationDouble2;
 }
 // @fnv 0x00f4d1d0
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | BGSCameraShot.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale961()
 {
     runtimeInitializationFloat2432 = runtimeInitializationFloat1477 * runtimeInitializationDouble1;
@@ -4968,11 +5092,13 @@ void InitializeRuntimeFloatScale993()
     runtimeInitializationFloat2461 = runtimeInitializationFloat202 * runtimeInitializationDouble4;
 }
 // @fnv 0x00f93490
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | SurgeryMenu.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale994()
 {
     runtimeInitializationFloat3236 = runtimeInitializationFloat1732 * runtimeInitializationDouble1;
 }
 // @fnv 0x00f934b0
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | SurgeryMenu.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale995()
 {
     runtimeInitializationFloat3237 = runtimeInitializationFloat1732 * runtimeInitializationDouble2;
@@ -5173,21 +5299,25 @@ void InitializeRuntimeFloatScale1034()
     runtimeInitializationFloat2492 = runtimeInitializationFloat207 * runtimeInitializationDouble4;
 }
 // @fnv 0x00f93fe0
+// pdb: `dynamic initializer for 'NiStepRotKeyregisterloaderreturn'' | VATSMenu.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1035()
 {
     runtimeInitializationFloat3255 = runtimeInitializationFloat1738 * runtimeInitializationDouble5;
 }
 // @fnv 0x00f94000
+// pdb: `dynamic initializer for 'NiAnimationSDMObject'' | VATSMenu.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1036()
 {
     runtimeInitializationFloat3257 = runtimeInitializationFloat1739 * runtimeInitializationDouble6;
 }
 // @fnv 0x00f94090
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | VATSMenu.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1037()
 {
     runtimeInitializationFloat3259 = runtimeInitializationFloat1740 * runtimeInitializationDouble1;
 }
 // @fnv 0x00f940b0
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | VATSMenu.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1038()
 {
     runtimeInitializationFloat3260 = runtimeInitializationFloat1740 * runtimeInitializationDouble2;
@@ -5223,11 +5353,13 @@ void InitializeRuntimeFloatScale1044()
     runtimeInitializationFloat3264 = runtimeInitializationFloat461 * runtimeInitializationDouble4;
 }
 // @fnv 0x00f4ead0
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | TESScript.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1045()
 {
     runtimeInitializationFloat2497 = runtimeInitializationFloat1501 * runtimeInitializationDouble1;
 }
 // @fnv 0x00f4eaf0
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | TESScript.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1046()
 {
     runtimeInitializationFloat2499 = runtimeInitializationFloat1501 * runtimeInitializationDouble2;
@@ -5238,11 +5370,13 @@ void InitializeRuntimeFloatScale1047()
     runtimeInitializationFloat2500 = runtimeInitializationFloat209 * runtimeInitializationDouble4;
 }
 // @fnv 0x00f947e0
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | FOPipboyManager.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1048()
 {
     runtimeInitializationFloat3265 = runtimeInitializationFloat1742 * runtimeInitializationDouble1;
 }
 // @fnv 0x00f94800
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | FOPipboyManager.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1049()
 {
     runtimeInitializationFloat3267 = runtimeInitializationFloat1742 * runtimeInitializationDouble2;
@@ -5293,11 +5427,13 @@ void InitializeRuntimeFloatScale1058()
     runtimeInitializationFloat2511 = runtimeInitializationFloat211 * runtimeInitializationDouble4;
 }
 // @fnv 0x00f94f50
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | FORenderedMenu.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1059()
 {
     runtimeInitializationFloat3269 = runtimeInitializationFloat1743 * runtimeInitializationDouble1;
 }
 // @fnv 0x00f94f70
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | FORenderedMenu.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1060()
 {
     runtimeInitializationFloat3271 = runtimeInitializationFloat1743 * runtimeInitializationDouble2;
@@ -5338,11 +5474,13 @@ void InitializeRuntimeFloatScale1067()
     runtimeInitializationFloat2519 = runtimeInitializationFloat213 * runtimeInitializationDouble4;
 }
 // @fnv 0x00f952a0
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | FORenderedMenuRaceSex.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1068()
 {
     runtimeInitializationFloat3273 = runtimeInitializationFloat1744 * runtimeInitializationDouble1;
 }
 // @fnv 0x00f952c0
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | FORenderedMenuRaceSex.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1069()
 {
     runtimeInitializationFloat3274 = runtimeInitializationFloat1744 * runtimeInitializationDouble2;
@@ -5358,11 +5496,13 @@ void InitializeRuntimeFloatScale1071()
     runtimeInitializationFloat3277 = runtimeInitializationFloat1745 * runtimeInitializationDouble2;
 }
 // @fnv 0x00f4f640
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | TESSound.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1072()
 {
     runtimeInitializationFloat2520 = runtimeInitializationFloat1508 * runtimeInitializationDouble1;
 }
 // @fnv 0x00f4f660
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | TESSound.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1073()
 {
     runtimeInitializationFloat2522 = runtimeInitializationFloat1508 * runtimeInitializationDouble2;
@@ -5393,16 +5533,19 @@ void InitializeRuntimeFloatScale1078()
     runtimeInitializationFloat2529 = runtimeInitializationFloat216 * runtimeInitializationDouble4;
 }
 // @fnv 0x00f957b0
+// pdb: `dynamic initializer for 'NiAnimationSDMObject'' | FOVATSEffectManager.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1079()
 {
     runtimeInitializationFloat3278 = runtimeInitializationFloat464 * runtimeInitializationDouble4;
 }
 // @fnv 0x00f95b90
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | FOVATSEffectManager.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1080()
 {
     runtimeInitializationFloat3279 = runtimeInitializationFloat1746 * runtimeInitializationDouble1;
 }
 // @fnv 0x00f95bb0
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | FOVATSEffectManager.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1081()
 {
     runtimeInitializationFloat3281 = runtimeInitializationFloat1746 * runtimeInitializationDouble2;
@@ -5658,11 +5801,13 @@ void InitializeRuntimeFloatScale1131()
     runtimeInitializationFloat2564 = runtimeInitializationFloat223 * runtimeInitializationDouble4;
 }
 // @fnv 0x00f96c40
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | bhkCharacterListenerSpell.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1132()
 {
     runtimeInitializationFloat3310 = runtimeInitializationFloat1755 * runtimeInitializationDouble1;
 }
 // @fnv 0x00f96c60
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | bhkCharacterListenerSpell.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1133()
 {
     runtimeInitializationFloat3312 = runtimeInitializationFloat1755 * runtimeInitializationDouble2;
@@ -5758,11 +5903,13 @@ void InitializeRuntimeFloatScale1151()
     runtimeInitializationFloat3321 = runtimeInitializationFloat474 * runtimeInitializationDouble4;
 }
 // @fnv 0x00f51e70
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | TESCreature.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1152()
 {
     runtimeInitializationFloat2579 = runtimeInitializationFloat1526 * runtimeInitializationDouble1;
 }
 // @fnv 0x00f51e90
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | TESCreature.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1153()
 {
     runtimeInitializationFloat2580 = runtimeInitializationFloat1526 * runtimeInitializationDouble2;
@@ -5873,6 +6020,7 @@ void InitializeRuntimeFloatScale1174()
     runtimeInitializationFloat3333 = runtimeInitializationFloat477 * runtimeInitializationDouble4;
 }
 // @fnv 0x00f52790
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | TESNPC.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1175()
 {
     runtimeInitializationFloat2595 = runtimeInitializationFloat1532 * runtimeInitializationDouble1;
@@ -5883,6 +6031,7 @@ void InitializeRuntimeFloatScale1176()
     runtimeInitializationFloat3334 = runtimeInitializationFloat1761 * runtimeInitializationDouble1;
 }
 // @fnv 0x00f527b0
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | TESNPC.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1177()
 {
     runtimeInitializationFloat2597 = runtimeInitializationFloat1532 * runtimeInitializationDouble2;
@@ -5903,6 +6052,7 @@ void InitializeRuntimeFloatScale1180()
     runtimeInitializationFloat3337 = runtimeInitializationFloat478 * runtimeInitializationDouble4;
 }
 // @fnv 0x00f52a20
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | TESQuest.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1181()
 {
     runtimeInitializationFloat2599 = runtimeInitializationFloat1533 * runtimeInitializationDouble1;
@@ -5913,6 +6063,7 @@ void InitializeRuntimeFloatScale1182()
     runtimeInitializationFloat3338 = runtimeInitializationFloat1762 * runtimeInitializationDouble1;
 }
 // @fnv 0x00f52a40
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | TESQuest.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1183()
 {
     runtimeInitializationFloat2601 = runtimeInitializationFloat1533 * runtimeInitializationDouble2;
@@ -5993,11 +6144,13 @@ void InitializeRuntimeFloatScale1198()
     runtimeInitializationFloat3349 = runtimeInitializationFloat481 * runtimeInitializationDouble4;
 }
 // @fnv 0x00f531d0
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | TESRace.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1199()
 {
     runtimeInitializationFloat2611 = runtimeInitializationFloat1536 * runtimeInitializationDouble1;
 }
 // @fnv 0x00f531f0
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | TESRace.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1200()
 {
     runtimeInitializationFloat2613 = runtimeInitializationFloat1536 * runtimeInitializationDouble2;
@@ -6063,6 +6216,7 @@ void InitializeRuntimeFloatScale1212()
     runtimeInitializationFloat3364 = runtimeInitializationFloat1768 * runtimeInitializationDouble2;
 }
 // @fnv 0x00f540f0
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | TESReputation.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1213()
 {
     runtimeInitializationFloat2615 = runtimeInitializationFloat1537 * runtimeInitializationDouble1;
@@ -6073,6 +6227,7 @@ void InitializeRuntimeFloatScale1214()
     runtimeInitializationFloat3365 = runtimeInitializationFloat485 * runtimeInitializationDouble4;
 }
 // @fnv 0x00f54110
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | TESReputation.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1215()
 {
     runtimeInitializationFloat2617 = runtimeInitializationFloat1537 * runtimeInitializationDouble2;
@@ -6098,11 +6253,13 @@ void InitializeRuntimeFloatScale1219()
     runtimeInitializationFloat3369 = runtimeInitializationFloat486 * runtimeInitializationDouble4;
 }
 // @fnv 0x00f54440
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | TESResponse.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1220()
 {
     runtimeInitializationFloat2619 = runtimeInitializationFloat1538 * runtimeInitializationDouble1;
 }
 // @fnv 0x00f54460
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | TESResponse.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1221()
 {
     runtimeInitializationFloat2621 = runtimeInitializationFloat1538 * runtimeInitializationDouble2;
@@ -6263,11 +6420,13 @@ void InitializeRuntimeFloatScale1252()
     runtimeInitializationFloat3389 = runtimeInitializationFloat491 * runtimeInitializationDouble4;
 }
 // @fnv 0x00f55230
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | CameraCaster.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1253()
 {
     runtimeInitializationFloat2643 = runtimeInitializationFloat1544 * runtimeInitializationDouble1;
 }
 // @fnv 0x00f55250
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | CameraCaster.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1254()
 {
     runtimeInitializationFloat2645 = runtimeInitializationFloat1544 * runtimeInitializationDouble2;
@@ -6323,11 +6482,13 @@ void InitializeRuntimeFloatScale1264()
     runtimeInitializationFloat3393 = runtimeInitializationFloat492 * runtimeInitializationDouble4;
 }
 // @fnv 0x00f556f0
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | FOCollisionListener.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1265()
 {
     runtimeInitializationFloat2655 = runtimeInitializationFloat1547 * runtimeInitializationDouble1;
 }
 // @fnv 0x00f55710
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | FOCollisionListener.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1266()
 {
     runtimeInitializationFloat2657 = runtimeInitializationFloat1547 * runtimeInitializationDouble2;
@@ -6508,11 +6669,13 @@ void InitializeRuntimeFloatScale1301()
     runtimeInitializationFloat2688 = runtimeInitializationFloat1556 * runtimeInitializationDouble2;
 }
 // @fnv 0x00f9aa70
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | MagicHitEffect.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1302()
 {
     runtimeInitializationFloat3410 = runtimeInitializationFloat1780 * runtimeInitializationDouble1;
 }
 // @fnv 0x00f9aa90
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | MagicHitEffect.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1303()
 {
     runtimeInitializationFloat3412 = runtimeInitializationFloat1780 * runtimeInitializationDouble2;
@@ -6558,11 +6721,13 @@ void InitializeRuntimeFloatScale1311()
     runtimeInitializationFloat2693 = runtimeInitializationFloat252 * runtimeInitializationDouble4;
 }
 // @fnv 0x00f9adf0
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | MagicModelHitEffect.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1312()
 {
     runtimeInitializationFloat3418 = runtimeInitializationFloat1782 * runtimeInitializationDouble1;
 }
 // @fnv 0x00f9ae10
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | MagicModelHitEffect.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1313()
 {
     runtimeInitializationFloat3420 = runtimeInitializationFloat1782 * runtimeInitializationDouble2;
@@ -6573,11 +6738,13 @@ void InitializeRuntimeFloatScale1314()
     runtimeInitializationFloat3421 = runtimeInitializationFloat499 * runtimeInitializationDouble4;
 }
 // @fnv 0x00f56830
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | TESWaterListener.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1315()
 {
     runtimeInitializationFloat2694 = runtimeInitializationFloat1558 * runtimeInitializationDouble1;
 }
 // @fnv 0x00f56850
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | TESWaterListener.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1316()
 {
     runtimeInitializationFloat2696 = runtimeInitializationFloat1558 * runtimeInitializationDouble2;
@@ -6603,21 +6770,25 @@ void InitializeRuntimeFloatScale1320()
     runtimeInitializationFloat3425 = runtimeInitializationFloat500 * runtimeInitializationDouble4;
 }
 // @fnv 0x00f56b50
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | ViewCaster.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1321()
 {
     runtimeInitializationFloat2698 = runtimeInitializationFloat1559 * runtimeInitializationDouble1;
 }
 // @fnv 0x00f56b70
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | ViewCaster.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1322()
 {
     runtimeInitializationFloat2700 = runtimeInitializationFloat1559 * runtimeInitializationDouble2;
 }
 // @fnv 0x00f9b2d0
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | MagicShaderHitEffect.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1323()
 {
     runtimeInitializationFloat3426 = runtimeInitializationFloat1784 * runtimeInitializationDouble1;
 }
 // @fnv 0x00f9b2f0
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | MagicShaderHitEffect.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1324()
 {
     runtimeInitializationFloat3428 = runtimeInitializationFloat1784 * runtimeInitializationDouble2;
@@ -6723,11 +6894,13 @@ void InitializeRuntimeFloatScale1344()
     runtimeInitializationFloat3446 = runtimeInitializationFloat1789 * runtimeInitializationDouble2;
 }
 // @fnv 0x00f57c60
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | Clouds.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1345()
 {
     runtimeInitializationFloat2709 = runtimeInitializationFloat1562 * runtimeInitializationDouble1;
 }
 // @fnv 0x00f57c80
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | Clouds.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1346()
 {
     runtimeInitializationFloat2711 = runtimeInitializationFloat1562 * runtimeInitializationDouble2;
@@ -6898,11 +7071,13 @@ void InitializeRuntimeFloatScale1379()
     runtimeInitializationFloat3469 = runtimeInitializationFloat510 * runtimeInitializationDouble4;
 }
 // @fnv 0x00f58de0
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | Stars.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1380()
 {
     runtimeInitializationFloat2731 = runtimeInitializationFloat1568 * runtimeInitializationDouble1;
 }
 // @fnv 0x00f58e00
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | Stars.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1381()
 {
     runtimeInitializationFloat2733 = runtimeInitializationFloat1568 * runtimeInitializationDouble2;
@@ -6938,11 +7113,13 @@ void InitializeRuntimeFloatScale1387()
     runtimeInitializationFloat3476 = runtimeInitializationFloat1797 * runtimeInitializationDouble2;
 }
 // @fnv 0x00f591c0
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | Sun.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1388()
 {
     runtimeInitializationFloat2735 = runtimeInitializationFloat1569 * runtimeInitializationDouble1;
 }
 // @fnv 0x00f591e0
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | Sun.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1389()
 {
     runtimeInitializationFloat2737 = runtimeInitializationFloat1569 * runtimeInitializationDouble2;
@@ -7013,16 +7190,19 @@ void InitializeRuntimeFloatScale1402()
     runtimeInitializationFloat3492 = runtimeInitializationFloat1801 * runtimeInitializationDouble2;
 }
 // @fnv 0x00f9db90
+// pdb: `dynamic initializer for 'NiAnimationSDMObject'' | FalloutAudio.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1403()
 {
     runtimeInitializationFloat3493 = runtimeInitializationFloat516 * runtimeInitializationDouble4;
 }
 // @fnv 0x00f9de50
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | FalloutAudio.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1404()
 {
     runtimeInitializationFloat3494 = runtimeInitializationFloat1802 * runtimeInitializationDouble1;
 }
 // @fnv 0x00f9de70
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | FalloutAudio.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1405()
 {
     runtimeInitializationFloat3496 = runtimeInitializationFloat1802 * runtimeInitializationDouble2;
@@ -7048,11 +7228,13 @@ void InitializeRuntimeFloatScale1409()
     runtimeInitializationFloat3501 = runtimeInitializationFloat518 * runtimeInitializationDouble4;
 }
 // @fnv 0x00f9e540
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | FalloutRadio.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1410()
 {
     runtimeInitializationFloat3502 = runtimeInitializationFloat1804 * runtimeInitializationDouble1;
 }
 // @fnv 0x00f9e560
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | FalloutRadio.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1411()
 {
     runtimeInitializationFloat3504 = runtimeInitializationFloat1804 * runtimeInitializationDouble2;
@@ -7143,11 +7325,13 @@ void InitializeRuntimeFloatScale1428()
     runtimeInitializationFloat3528 = runtimeInitializationFloat1810 * runtimeInitializationDouble2;
 }
 // @fnv 0x00f5d5e0
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | AiFormulas.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1429()
 {
     runtimeInitializationFloat2739 = runtimeInitializationFloat1570 * runtimeInitializationDouble1;
 }
 // @fnv 0x00f5d600
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | AiFormulas.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1430()
 {
     runtimeInitializationFloat2741 = runtimeInitializationFloat1570 * runtimeInitializationDouble2;
@@ -7168,6 +7352,7 @@ void InitializeRuntimeFloatScale1433()
     runtimeInitializationFloat3529 = runtimeInitializationFloat1812 * runtimeInitializationDouble6;
 }
 // @fnv 0x00f5d820
+// pdb: `dynamic initializer for 'NiAnimationSDMObject'' | CombatFormulas.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1434()
 {
     runtimeInitializationFloat2742 = runtimeInitializationFloat264 * runtimeInitializationDouble4;
@@ -7303,21 +7488,25 @@ void InitializeRuntimeFloatScale1460()
     runtimeInitializationFloat3565 = runtimeInitializationFloat530 * runtimeInitializationDouble4;
 }
 // @fnv 0x00fa04d0
+// pdb: `dynamic initializer for 'NiStepRotKeyregisterloaderreturn'' | BGSSaveLoadManager.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1461()
 {
     runtimeInitializationFloat3562 = runtimeInitializationFloat1823 * runtimeInitializationDouble5;
 }
 // @fnv 0x00fa04f0
+// pdb: `dynamic initializer for 'NiAnimationSDMObject'' | BGSSaveLoadManager.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1462()
 {
     runtimeInitializationFloat3564 = runtimeInitializationFloat1824 * runtimeInitializationDouble6;
 }
 // @fnv 0x00fa0690
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | BGSSaveLoadManager.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1463()
 {
     runtimeInitializationFloat3566 = runtimeInitializationFloat1825 * runtimeInitializationDouble1;
 }
 // @fnv 0x00fa06b0
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | BGSSaveLoadManager.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1464()
 {
     runtimeInitializationFloat3568 = runtimeInitializationFloat1825 * runtimeInitializationDouble2;
@@ -7358,11 +7547,13 @@ void InitializeRuntimeFloatScale1471()
     runtimeInitializationFloat3577 = runtimeInitializationFloat533 * runtimeInitializationDouble4;
 }
 // @fnv 0x00fa0ca0
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | TESSaveLoadGame.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1472()
 {
     runtimeInitializationFloat3578 = runtimeInitializationFloat1828 * runtimeInitializationDouble1;
 }
 // @fnv 0x00fa0cc0
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | TESSaveLoadGame.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1473()
 {
     runtimeInitializationFloat3580 = runtimeInitializationFloat1828 * runtimeInitializationDouble2;
@@ -7538,11 +7729,13 @@ void InitializeRuntimeFloatScale1507()
     runtimeInitializationFloat3615 = runtimeInitializationFloat1843 * runtimeInitializationDouble2;
 }
 // @fnv 0x00fa33c0
+// pdb: `dynamic initializer for 'std::num_put<char,std::ostreambuf_iterator<char,std::char_traits<char> > >::id'' | Main.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1508()
 {
     runtimeInitializationFloat3623 = runtimeInitializationFloat1844 * runtimeInitializationDouble1;
 }
 // @fnv 0x00fa33e0
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | Main.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1509()
 {
     runtimeInitializationFloat3625 = runtimeInitializationFloat1844 * runtimeInitializationDouble2;
@@ -7553,21 +7746,25 @@ void InitializeRuntimeFloatScale1510()
     runtimeInitializationFloat3626 = runtimeInitializationFloat541 * runtimeInitializationDouble4;
 }
 // @fnv 0x00fa3670
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | MemoryLevelManager.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1511()
 {
     runtimeInitializationFloat3627 = runtimeInitializationFloat1845 * runtimeInitializationDouble1;
 }
 // @fnv 0x00fa3690
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | MemoryLevelManager.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1512()
 {
     runtimeInitializationFloat3629 = runtimeInitializationFloat1845 * runtimeInitializationDouble2;
 }
 // @fnv 0x00f65010
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | CombatFormulas.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1513()
 {
     runtimeInitializationFloat2743 = runtimeInitializationFloat1571 * runtimeInitializationDouble1;
 }
 // @fnv 0x00f65030
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | CombatFormulas.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1514()
 {
     runtimeInitializationFloat2744 = runtimeInitializationFloat1571 * runtimeInitializationDouble2;
@@ -7578,11 +7775,13 @@ void InitializeRuntimeFloatScale1515()
     runtimeInitializationFloat3630 = runtimeInitializationFloat542 * runtimeInitializationDouble4;
 }
 // @fnv 0x00fa38f0
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | SceneGraph.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1516()
 {
     runtimeInitializationFloat3631 = runtimeInitializationFloat1846 * runtimeInitializationDouble1;
 }
 // @fnv 0x00fa3910
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | SceneGraph.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1517()
 {
     runtimeInitializationFloat3633 = runtimeInitializationFloat1846 * runtimeInitializationDouble2;
@@ -7623,21 +7822,25 @@ void InitializeRuntimeFloatScale1524()
     runtimeInitializationFloat3645 = runtimeInitializationFloat545 * runtimeInitializationDouble4;
 }
 // @fnv 0x00fa3f60
+// pdb: `dynamic initializer for 'NiStepRotKeyregisterloaderreturn'' | TaskQueueInterface.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1525()
 {
     runtimeInitializationFloat3642 = runtimeInitializationFloat1849 * runtimeInitializationDouble5;
 }
 // @fnv 0x00fa3f80
+// pdb: `dynamic initializer for 'NiAnimationSDMObject'' | TaskQueueInterface.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1526()
 {
     runtimeInitializationFloat3644 = runtimeInitializationFloat1850 * runtimeInitializationDouble6;
 }
 // @fnv 0x00fa4040
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | TaskQueueInterface.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1527()
 {
     runtimeInitializationFloat3646 = runtimeInitializationFloat1851 * runtimeInitializationDouble1;
 }
 // @fnv 0x00fa4060
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | TaskQueueInterface.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1528()
 {
     runtimeInitializationFloat3650 = runtimeInitializationFloat1851 * runtimeInitializationDouble2;
@@ -7648,11 +7851,13 @@ void InitializeRuntimeFloatScale1529()
     runtimeInitializationFloat3652 = runtimeInitializationFloat546 * runtimeInitializationDouble4;
 }
 // @fnv 0x00fa42c0
+// pdb: `dynamic initializer for 'NiStepRotKeyregisterloaderreturn'' | Actor.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1530()
 {
     runtimeInitializationFloat3649 = runtimeInitializationFloat1852 * runtimeInitializationDouble5;
 }
 // @fnv 0x00fa42e0
+// pdb: `dynamic initializer for 'NiAnimationSDMObject'' | Actor.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1531()
 {
     runtimeInitializationFloat3651 = runtimeInitializationFloat1853 * runtimeInitializationDouble6;
@@ -7748,21 +7953,25 @@ void InitializeRuntimeFloatScale1549()
     runtimeInitializationFloat3677 = runtimeInitializationFloat550 * runtimeInitializationDouble4;
 }
 // @fnv 0x00fa5310
+// pdb: `dynamic initializer for 'NiStepRotKeyregisterloaderreturn'' | AILinearTaskThreadManager.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1550()
 {
     runtimeInitializationFloat3674 = runtimeInitializationFloat1861 * runtimeInitializationDouble5;
 }
 // @fnv 0x00fa5330
+// pdb: `dynamic initializer for 'NiAnimationSDMObject'' | AILinearTaskThreadManager.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1551()
 {
     runtimeInitializationFloat3676 = runtimeInitializationFloat1862 * runtimeInitializationDouble6;
 }
 // @fnv 0x00fa53f0
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | AILinearTaskThreadManager.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1552()
 {
     runtimeInitializationFloat3678 = runtimeInitializationFloat1863 * runtimeInitializationDouble1;
 }
 // @fnv 0x00fa5410
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | AILinearTaskThreadManager.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1553()
 {
     runtimeInitializationFloat3680 = runtimeInitializationFloat1863 * runtimeInitializationDouble2;
@@ -7848,11 +8057,13 @@ void InitializeRuntimeFloatScale1569()
     runtimeInitializationFloat3701 = runtimeInitializationFloat556 * runtimeInitializationDouble4;
 }
 // @fnv 0x00fa6270
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | BSPlayerDistanceCheckController.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1570()
 {
     runtimeInitializationFloat3702 = runtimeInitializationFloat1869 * runtimeInitializationDouble1;
 }
 // @fnv 0x00fa6290
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | BSPlayerDistanceCheckController.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1571()
 {
     runtimeInitializationFloat3703 = runtimeInitializationFloat1869 * runtimeInitializationDouble2;
@@ -8023,56 +8234,67 @@ void InitializeRuntimeFloatScale1604()
     runtimeInitializationFloat3744 = runtimeInitializationFloat1881 * runtimeInitializationDouble2;
 }
 // @fnv 0x00fa7990
+// pdb: `dynamic initializer for 'NiStepFloatKeyregisterloaderreturn'' | LowProcess.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1605()
 {
     runtimeInitializationFloat3746 = runtimeInitializationFloat565 * runtimeInitializationDouble4;
 }
 // @fnv 0x00fa79d0
+// pdb: `dynamic initializer for 'NiStepRotKeyregisterloaderreturn'' | LowProcess.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1606()
 {
     runtimeInitializationFloat3743 = runtimeInitializationFloat1882 * runtimeInitializationDouble5;
 }
 // @fnv 0x00fa79f0
+// pdb: `dynamic initializer for 'NiAnimationSDMObject'' | LowProcess.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1607()
 {
     runtimeInitializationFloat3745 = runtimeInitializationFloat1883 * runtimeInitializationDouble6;
 }
 // @fnv 0x00fa7a70
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | LowProcess.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1608()
 {
     runtimeInitializationFloat3747 = runtimeInitializationFloat1884 * runtimeInitializationDouble1;
 }
 // @fnv 0x00fa7a90
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | LowProcess.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1609()
 {
     runtimeInitializationFloat3749 = runtimeInitializationFloat1884 * runtimeInitializationDouble2;
 }
 // @fnv 0x00fa7cb0
+// pdb: `dynamic initializer for 'NiAnimationSDMObject'' | MiddleHighProcess.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1610()
 {
     runtimeInitializationFloat3750 = runtimeInitializationFloat566 * runtimeInitializationDouble4;
 }
 // @fnv 0x00fa7dc0
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | MiddleHighProcess.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1611()
 {
     runtimeInitializationFloat3751 = runtimeInitializationFloat1885 * runtimeInitializationDouble1;
 }
 // @fnv 0x00fa7de0
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | MiddleHighProcess.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1612()
 {
     runtimeInitializationFloat3753 = runtimeInitializationFloat1885 * runtimeInitializationDouble2;
 }
 // @fnv 0x00fa8000
+// pdb: `dynamic initializer for 'NiAnimationSDMObject'' | MiddleLowProcess.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1613()
 {
     runtimeInitializationFloat3754 = runtimeInitializationFloat567 * runtimeInitializationDouble4;
 }
 // @fnv 0x00fa8040
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | MiddleLowProcess.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1614()
 {
     runtimeInitializationFloat3755 = runtimeInitializationFloat1886 * runtimeInitializationDouble1;
 }
 // @fnv 0x00fa8060
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | MiddleLowProcess.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1615()
 {
     runtimeInitializationFloat3759 = runtimeInitializationFloat1886 * runtimeInitializationDouble2;
@@ -8083,11 +8305,13 @@ void InitializeRuntimeFloatScale1616()
     runtimeInitializationFloat3761 = runtimeInitializationFloat568 * runtimeInitializationDouble4;
 }
 // @fnv 0x00fa82c0
+// pdb: `dynamic initializer for 'NiStepRotKeyregisterloaderreturn'' | MobileObject.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1617()
 {
     runtimeInitializationFloat3758 = runtimeInitializationFloat1887 * runtimeInitializationDouble5;
 }
 // @fnv 0x00fa82e0
+// pdb: `dynamic initializer for 'NiAnimationSDMObject'' | MobileObject.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1618()
 {
     runtimeInitializationFloat3760 = runtimeInitializationFloat1888 * runtimeInitializationDouble6;
@@ -8118,21 +8342,25 @@ void InitializeRuntimeFloatScale1623()
     runtimeInitializationFloat3770 = runtimeInitializationFloat569 * runtimeInitializationDouble4;
 }
 // @fnv 0x00fa86a0
+// pdb: `dynamic initializer for 'NiStepRotKeyregisterloaderreturn'' | PlayerCharacter.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1624()
 {
     runtimeInitializationFloat3767 = runtimeInitializationFloat1891 * runtimeInitializationDouble5;
 }
 // @fnv 0x00fa86c0
+// pdb: `dynamic initializer for 'NiAnimationSDMObject'' | PlayerCharacter.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1625()
 {
     runtimeInitializationFloat3769 = runtimeInitializationFloat1892 * runtimeInitializationDouble6;
 }
 // @fnv 0x00fa9280
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | PlayerCharacter.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1626()
 {
     runtimeInitializationFloat3771 = runtimeInitializationFloat1893 * runtimeInitializationDouble1;
 }
 // @fnv 0x00fa92a0
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | PlayerCharacter.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1627()
 {
     runtimeInitializationFloat3773 = runtimeInitializationFloat1893 * runtimeInitializationDouble2;
@@ -8158,21 +8386,25 @@ void InitializeRuntimeFloatScale1631()
     runtimeInitializationFloat3781 = runtimeInitializationFloat571 * runtimeInitializationDouble4;
 }
 // @fnv 0x00fa9760
+// pdb: `dynamic initializer for 'NiStepRotKeyregisterloaderreturn'' | ProcessLists.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1632()
 {
     runtimeInitializationFloat3778 = runtimeInitializationFloat1895 * runtimeInitializationDouble5;
 }
 // @fnv 0x00fa9780
+// pdb: `dynamic initializer for 'NiAnimationSDMObject'' | ProcessLists.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1633()
 {
     runtimeInitializationFloat3780 = runtimeInitializationFloat1896 * runtimeInitializationDouble6;
 }
 // @fnv 0x00fa98b0
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | ProcessLists.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1634()
 {
     runtimeInitializationFloat3782 = runtimeInitializationFloat1897 * runtimeInitializationDouble1;
 }
 // @fnv 0x00fa98d0
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | ProcessLists.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1635()
 {
     runtimeInitializationFloat3784 = runtimeInitializationFloat1897 * runtimeInitializationDouble2;
@@ -8253,21 +8485,25 @@ void InitializeRuntimeFloatScale1650()
     runtimeInitializationFloat3807 = runtimeInitializationFloat576 * runtimeInitializationDouble4;
 }
 // @fnv 0x00faa520
+// pdb: `dynamic initializer for 'NiStepRotKeyregisterloaderreturn'' | CombatController.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1651()
 {
     runtimeInitializationFloat3804 = runtimeInitializationFloat1904 * runtimeInitializationDouble5;
 }
 // @fnv 0x00faa540
+// pdb: `dynamic initializer for 'NiAnimationSDMObject'' | CombatController.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1652()
 {
     runtimeInitializationFloat3806 = runtimeInitializationFloat1905 * runtimeInitializationDouble6;
 }
 // @fnv 0x00faa640
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | CombatController.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1653()
 {
     runtimeInitializationFloat3808 = runtimeInitializationFloat1906 * runtimeInitializationDouble1;
 }
 // @fnv 0x00faa660
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | CombatController.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1654()
 {
     runtimeInitializationFloat3812 = runtimeInitializationFloat1906 * runtimeInitializationDouble2;
@@ -8303,21 +8539,25 @@ void InitializeRuntimeFloatScale1660()
     runtimeInitializationFloat3821 = runtimeInitializationFloat578 * runtimeInitializationDouble4;
 }
 // @fnv 0x00faac70
+// pdb: `dynamic initializer for 'NiStepRotKeyregisterloaderreturn'' | CombatDialogueManager.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1661()
 {
     runtimeInitializationFloat3818 = runtimeInitializationFloat1910 * runtimeInitializationDouble5;
 }
 // @fnv 0x00faac90
+// pdb: `dynamic initializer for 'NiAnimationSDMObject'' | CombatDialogueManager.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1662()
 {
     runtimeInitializationFloat3820 = runtimeInitializationFloat1911 * runtimeInitializationDouble6;
 }
 // @fnv 0x00faace0
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | CombatDialogueManager.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1663()
 {
     runtimeInitializationFloat3822 = runtimeInitializationFloat1912 * runtimeInitializationDouble1;
 }
 // @fnv 0x00faad00
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | CombatDialogueManager.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1664()
 {
     runtimeInitializationFloat3823 = runtimeInitializationFloat1912 * runtimeInitializationDouble2;
@@ -8348,11 +8588,13 @@ void InitializeRuntimeFloatScale1669()
     runtimeInitializationFloat3830 = runtimeInitializationFloat579 * runtimeInitializationDouble4;
 }
 // @fnv 0x00fab130
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | CombatGroup.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1670()
 {
     runtimeInitializationFloat3831 = runtimeInitializationFloat1916 * runtimeInitializationDouble1;
 }
 // @fnv 0x00fab150
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | CombatGroup.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1671()
 {
     runtimeInitializationFloat3835 = runtimeInitializationFloat1916 * runtimeInitializationDouble2;
@@ -8363,11 +8605,13 @@ void InitializeRuntimeFloatScale1672()
     runtimeInitializationFloat3837 = runtimeInitializationFloat580 * runtimeInitializationDouble4;
 }
 // @fnv 0x00fab3b0
+// pdb: `dynamic initializer for 'NiStepRotKeyregisterloaderreturn'' | CombatGroupStrategy.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1673()
 {
     runtimeInitializationFloat3834 = runtimeInitializationFloat1917 * runtimeInitializationDouble5;
 }
 // @fnv 0x00fab3d0
+// pdb: `dynamic initializer for 'NiAnimationSDMObject'' | CombatGroupStrategy.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1674()
 {
     runtimeInitializationFloat3836 = runtimeInitializationFloat1918 * runtimeInitializationDouble6;
@@ -8388,21 +8632,25 @@ void InitializeRuntimeFloatScale1677()
     runtimeInitializationFloat3845 = runtimeInitializationFloat1920 * runtimeInitializationDouble4;
 }
 // @fnv 0x00fab6a0
+// pdb: `dynamic initializer for 'NiStepRotKeyregisterloaderreturn'' | CombatManager.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1678()
 {
     runtimeInitializationFloat3842 = runtimeInitializationFloat1921 * runtimeInitializationDouble5;
 }
 // @fnv 0x00fab6c0
+// pdb: `dynamic initializer for 'NiAnimationSDMObject'' | CombatManager.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1679()
 {
     runtimeInitializationFloat3844 = runtimeInitializationFloat1922 * runtimeInitializationDouble6;
 }
 // @fnv 0x00fab710
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | CombatManager.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1680()
 {
     runtimeInitializationFloat3846 = runtimeInitializationFloat1923 * runtimeInitializationDouble1;
 }
 // @fnv 0x00fab730
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | CombatManager.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1681()
 {
     runtimeInitializationFloat3847 = runtimeInitializationFloat1923 * runtimeInitializationDouble2;
@@ -8453,11 +8701,13 @@ void InitializeRuntimeFloatScale1690()
     runtimeInitializationFloat3859 = runtimeInitializationFloat1929 * runtimeInitializationDouble4;
 }
 // @fnv 0x00fabd30
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | CombatState.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1691()
 {
     runtimeInitializationFloat3860 = runtimeInitializationFloat1930 * runtimeInitializationDouble1;
 }
 // @fnv 0x00fabd50
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | CombatState.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1692()
 {
     runtimeInitializationFloat3863 = runtimeInitializationFloat1930 * runtimeInitializationDouble2;
@@ -8648,16 +8898,19 @@ void InitializeRuntimeFloatScale1729()
     runtimeInitializationFloat3923 = runtimeInitializationFloat1955 * runtimeInitializationDouble2;
 }
 // @fnv 0x00fadbb0
+// pdb: `dynamic initializer for 'NiAnimationSDMObject'' | Projectile.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1730()
 {
     runtimeInitializationFloat3924 = runtimeInitializationFloat1956 * runtimeInitializationDouble4;
 }
 // @fnv 0x00fadc60
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | Projectile.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1731()
 {
     runtimeInitializationFloat3925 = runtimeInitializationFloat1957 * runtimeInitializationDouble1;
 }
 // @fnv 0x00fadc80
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | Projectile.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1732()
 {
     runtimeInitializationFloat3928 = runtimeInitializationFloat1957 * runtimeInitializationDouble2;
@@ -8683,21 +8936,25 @@ void InitializeRuntimeFloatScale1736()
     runtimeInitializationFloat3937 = runtimeInitializationFloat1960 * runtimeInitializationDouble4;
 }
 // @fnv 0x00fae140
+// pdb: `dynamic initializer for 'NiStepRotKeyregisterloaderreturn'' | VATS.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1737()
 {
     runtimeInitializationFloat3934 = runtimeInitializationFloat1961 * runtimeInitializationDouble5;
 }
 // @fnv 0x00fae160
+// pdb: `dynamic initializer for 'NiAnimationSDMObject'' | VATS.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1738()
 {
     runtimeInitializationFloat3936 = runtimeInitializationFloat1962 * runtimeInitializationDouble6;
 }
 // @fnv 0x00fae320
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | VATS.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1739()
 {
     runtimeInitializationFloat3938 = runtimeInitializationFloat1963 * runtimeInitializationDouble1;
 }
 // @fnv 0x00fae340
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | VATS.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1740()
 {
     runtimeInitializationFloat3941 = runtimeInitializationFloat1963 * runtimeInitializationDouble2;
@@ -9023,21 +9280,25 @@ void InitializeRuntimeFloatScale1804()
     runtimeInitializationFloat4047 = runtimeInitializationFloat2012 * runtimeInitializationDouble4;
 }
 // @fnv 0x00fb0cc0
+// pdb: `dynamic initializer for 'NiStepRotKeyregisterloaderreturn'' | DetailedActorPathHandler.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1805()
 {
     runtimeInitializationFloat4044 = runtimeInitializationFloat2013 * runtimeInitializationDouble5;
 }
 // @fnv 0x00fb0ce0
+// pdb: `dynamic initializer for 'NiAnimationSDMObject'' | DetailedActorPathHandler.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1806()
 {
     runtimeInitializationFloat4046 = runtimeInitializationFloat2014 * runtimeInitializationDouble6;
 }
 // @fnv 0x00fb10e0
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | DetailedActorPathHandler.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1807()
 {
     runtimeInitializationFloat4048 = runtimeInitializationFloat2015 * runtimeInitializationDouble1;
 }
 // @fnv 0x00fb1100
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | DetailedActorPathHandler.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1808()
 {
     runtimeInitializationFloat4051 = runtimeInitializationFloat2015 * runtimeInitializationDouble2;
@@ -9248,16 +9509,19 @@ void InitializeRuntimeFloatScale1849()
     runtimeInitializationFloat4118 = runtimeInitializationFloat2045 * runtimeInitializationDouble2;
 }
 // @fnv 0x00fb2ec0
+// pdb: `dynamic initializer for 'NiAnimationSDMObject'' | SpectatorPackage.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1850()
 {
     runtimeInitializationFloat4119 = runtimeInitializationFloat2046 * runtimeInitializationDouble4;
 }
 // @fnv 0x00fb2f10
+// pdb: `dynamic initializer for 'std::codecvt<char,char,int>::id'' | SpectatorPackage.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1851()
 {
     runtimeInitializationFloat4120 = runtimeInitializationFloat2047 * runtimeInitializationDouble1;
 }
 // @fnv 0x00fb2f30
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | SpectatorPackage.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatScale1852()
 {
     runtimeInitializationFloat4123 = runtimeInitializationFloat2047 * runtimeInitializationDouble2;

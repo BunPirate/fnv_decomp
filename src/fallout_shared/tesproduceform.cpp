@@ -11,6 +11,7 @@ void* __cdecl memset(void* p, int c, unsigned int n);
 
 // Sets the int at offset 4 to 0 and zeroes the 4 bytes at offset 8 of this object.
 // @fnv 0x0048b590
+// pdb: TESProduceForm::InitializeDataComponent | TESProduceForm.obj | debug, vtable slot, medium
 void TESProduceForm::Init()
 {
     *(reinterpret_cast<int*>(this) + 1) = 0;
@@ -21,48 +22,59 @@ extern "C" void* __cdecl __memcpy(void* dst, const void* src, unsigned int count
 
 // Copies 4 bytes from src into this object at offset 8 when src is non-null.
 // @fnv 0x0048b670
-void TESProduceForm::CopyFromSource(void* pSource)
+// src: XBOX_DEBUG_PDB 0x0048b670
+// pdb: TESProduceForm::SetAllProductionChances | TESProduceForm.obj | debug, call graph, high
+// pdb params: apiChances
+void TESProduceForm::SetAllProductionChances(void* apiChances)
 {
-    if (pSource)
-        __memcpy((char*)this + 8, pSource, 4);
+    if (apiChances)
+        __memcpy((char*)this + 8, apiChances, 4);
 }
 
 void __cdecl TESForm_AddChunkArray(unsigned int, void*, unsigned int);
 void __cdecl _FUN_00485910(unsigned int, unsigned int);
 // @fnv 0x0048b5c0
+// pdb: TESProduceForm::Save | TESProduceForm.obj | retail, upstream name already matches, high
+// pdb locals: itempint
 void TESProduceForm::Save()
 {
     unsigned int tmp;
-    if (pIngredient != 0)
+    if (pFormIngredient != 0)
     {
-        tmp = pIngredient->GetHavokWorldObjectCountInSceneGraph_0084e3a0();
+        tmp = pFormIngredient->GetHavokWorldObjectCountInSceneGraph_0084e3a0();
         _FUN_00485910(0x47494650, tmp);
     }
-    TESForm_AddChunkArray(0x43504650, cProdChance, 4);
+    TESForm_AddChunkArray(0x43504650, iProduceChance, 4);
 }
 
 // Casts apCopyFC to TESProduceForm, initializes this from its ingredient value, then copies the data at offset 8.
 // @fnv 0x0048b610
+// pdb: TESProduceForm::CopyComponent | TESProduceForm.obj | retail, vtable slot, high
+// pdb params: apCopyFC
+// pdb locals: pCopy
 void TESProduceForm::CopyFromBase(BaseFormComponent* apCopyFC)
 {
     TESProduceForm* pCopy = dynamic_cast<TESProduceForm*>(apCopyFC);
     if (!pCopy)
         return;
     ((TESRaceForm*)this)->Initialize(pCopy->GetIngredient());
-    CopyFromSource((void*)((char*)pCopy + 8));
+    SetAllProductionChances((void*)((char*)pCopy + 8));
 }
 
 extern "C" int __cdecl memcmp(const void* a, const void* b, unsigned int n);
 // Compares production chance bytes and the ingredient value against another component, returning true when they differ or the other is not a TESProduceForm.
 // @fnv 0x0048b6a0
-bool TESProduceForm::CompareWithBase(BaseFormComponent* apOther)
+// pdb: TESProduceForm::CompareComponent | TESProduceForm.obj | retail, vtable slot, high
+// pdb params: apCompareFC
+// pdb locals: pcompare
+bool TESProduceForm::CompareWithBase(BaseFormComponent* apCompareFC)
 {
-    TESProduceForm* pOther = dynamic_cast<TESProduceForm*>(apOther);
+    TESProduceForm* pOther = dynamic_cast<TESProduceForm*>(apCompareFC);
     if (!pOther)
         return true;
     if (GetIngredient() != pOther->GetIngredient())
         return true;
-    if (memcmp(cProdChance, pOther->cProdChance, 4))
+    if (memcmp(iProduceChance, pOther->iProduceChance, 4))
         return true;
     return false;
 }
@@ -77,24 +89,28 @@ extern const char DAT_0101d340[];
 
 // Resolves pIngredient's form ID through the file, re-looks it up as an IngredientItem, and warns if the lookup fails.
 // @fnv 0x0048b720
-void TESProduceForm::ResolveIngredient(TESForm* apArg)
+// src: XBOX_RETAIL_PDB 0x0048b720
+// pdb: TESProduceForm::InitItem | TESProduceForm.obj | retail, string-set bridge, high
+// pdb params: apOwner
+// pdb locals: itempint
+void TESProduceForm::InitItem(TESForm* apOwner)
 {
-    if (pIngredient != 0)
+    if (pFormIngredient != 0)
     {
-        unsigned int formID = (unsigned int)pIngredient;
-        ResolveFormID(&formID, apArg->GetFile(-1));
-        pIngredient = dynamic_cast<IngredientItem*>(TESForm_GetFormByNumericID(formID));
-        if (pIngredient == 0)
+        unsigned int formID = (unsigned int)pFormIngredient;
+        ResolveFormID(&formID, apOwner->GetFile(-1));
+        pFormIngredient = dynamic_cast<IngredientItem*>(TESForm_GetFormByNumericID(formID));
+        if (pFormIngredient == 0)
         {
-            if (apArg != 0)
+            if (apOwner != 0)
             {
-                if (apArg->GetFormEditorIDLength())
+                if (apOwner->GetFormEditorIDLength())
                 {
-                    FNV_Warning(DAT_0101d340, formID, apArg->GetName());
+                    FNV_Warning(DAT_0101d340, formID, apOwner->GetName());
                 }
                 else
                 {
-                    FNV_Warning(DAT_0101d2f8, formID, apArg->GetHavokWorldObjectCountInSceneGraph_0084e3a0());
+                    FNV_Warning(DAT_0101d2f8, formID, apOwner->GetHavokWorldObjectCountInSceneGraph_0084e3a0());
                 }
             }
             else

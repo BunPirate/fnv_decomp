@@ -13,6 +13,7 @@ class NiNode;
 // 0x160. Members from the ctor: empty-ctor objects (0x006815c0: NiPoint2/NiPoint3/NiMatrix3) at +0x74, +0x7c,
 // +0xf8, +0x104, +0x128, +0x150 sized by the gaps between them; SoundPlaybackHandles (0x0041a250) at +0x94/+0xa0;
 // NiPointer<NiNode>[6] at +0xc8 and two at +0xf0/+0xf4; the tile setter 0x0071ffe0 stores ids 1..18 into +0x2c.
+// pdb: class SurgeryMenu, size 0x190 (here 0x160), bases: Menu, 32 members
 class SurgeryMenu : public Menu
 {
 public:
@@ -25,7 +26,7 @@ public:
     SurgeryMenu();
     virtual ~SurgeryMenu();
 
-    static void __cdecl UpdatePerkEntries();
+    static void __cdecl ResetAllLimbs();
 
     int unk28;                       // +0x28, 0 in the ctor
     Tile* tiles[18];                 // +0x2c

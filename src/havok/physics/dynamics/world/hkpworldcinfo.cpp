@@ -152,6 +152,7 @@ struct FUN_00c90b80 : WorldFieldsC90
 
 // Initializes the physics world configuration with Havok default values for gravity, solver, collision, and deactivation parameters.
 // @fnv 0x00c90b80
+// pdb: hkpWorldCinfo::hkpWorldCinfo | hkpWorldCinfo.obj | retail, call graph, medium
 FUN_00c90b80::FUN_00c90b80()
 {
     setVecs(0.0f, -9.8f);

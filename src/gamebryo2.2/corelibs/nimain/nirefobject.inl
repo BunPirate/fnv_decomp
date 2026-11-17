@@ -3,6 +3,8 @@
 #include "nirefobject_types.h"
 
 // @fnv 0x004b0310
+// pdb: NiTArray<NiPointer<NiAVObject>,NiTNewInterface<NiPointer<NiAVObject> > >::SetAt | BipedAnim.obj | retail, call graph, medium
+// pdb params: uiIndex, element
 template<>
 void NiTArray<NiPointer<NiAVObject>,NiTNewInterface<NiPointer<NiAVObject> > >::SetAt(
     unsigned int index,const NiPointer<NiAVObject>& element)

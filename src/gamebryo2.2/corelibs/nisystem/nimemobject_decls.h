@@ -3,7 +3,7 @@ class Flag512Receiver
 {
   public:
     void NiAlphaProperty_SetBit(bool enabled, unsigned int mask);
-    void SetFlag512(bool enabled);
+    void SetFlag512(bool bAlpha);
 };
 #include "../../../../include/NiPoint2.h"
 class SNAEntry

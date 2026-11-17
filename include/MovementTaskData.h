@@ -4,6 +4,7 @@
 
 class HighProcess;
 
+// pdb: class MovementTaskData, size 0x3c, bases: MobileObjectTaskletData, 1 members
 class MovementTaskData : public MobileObjectTaskletData
 {
 public:
@@ -13,7 +14,7 @@ public:
     virtual void ProcessMobileObject(MobileObject* apObject);
     virtual void SetThreadNumber(unsigned int auiThreadNumber);
 
-    unsigned int uiRunCount;
+    unsigned int iUpdated; // src: XBOX_RETAIL_PDB +0x38 (old: uiRunCount)
 
     void UpdateMovementTask(HighProcess* apMob);
 };

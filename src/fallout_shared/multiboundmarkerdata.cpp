@@ -18,6 +18,7 @@ void __fastcall DestroyNiProperty(NiProperty* property);
 
 // Destructs the NiProperty and, when flags has bit 0 set, frees the 24-byte object; returns this.
 // @fnv 0x00439290
+// pdb: NiProperty::`scalar deleting destructor' | MultiBoundMarkerData.obj | debug, vtable slot, medium
 void* NiProperty::DestroyAndFree(unsigned int flags)
 {
     DestroyNiProperty(this);
@@ -27,13 +28,14 @@ void* NiProperty::DestroyAndFree(unsigned int flags)
 }
 
 // @fnv 0x004392c0
+// pdb: NiProperty::~NiProperty | MultiBoundMarkerData.obj | debug, call graph, medium
 void __fastcall DestroyNiProperty(NiProperty* property)
 {
     property->NiObjectNET::~NiObjectNET();
 }
 
 struct GlobalObjectO2_00a7b610;
-extern GlobalObjectO2_00a7b610 g_011f4408;
+extern GlobalObjectO2_00a7b610 NiAlphaProperty_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f4408 (old: g_011f4408)
 
 struct FUN_004392e0_shell
 {
@@ -43,13 +45,14 @@ struct FUN_004392e0_shell
 // @fnv 0x004392e0
 GlobalObjectO2_00a7b610* FUN_004392e0_shell::GetGlobalObject()
 {
-    return &g_011f4408;
+    return &NiAlphaProperty_ms_RTTI;
 }
 
 extern "C" void __cdecl ForwardCall_00439320();
 extern "C" void __cdecl __Dummy_00b6fef0(void*, unsigned int);
 
 // @fnv 0x004392f0
+// pdb: NiAlphaProperty::`scalar deleting destructor' | MultiBoundMarkerData.obj | debug, vtable slot, medium
 void* NiAlphaProperty::FUN_004392f0(unsigned int flags)
 {
     this->NiAlphaProperty::ForwardCall_00439320();
@@ -68,6 +71,8 @@ struct FUN_00439060_shell
 };
 // @fnv 0x00439060
 // src: XBOX_PDB 0x00439060
+// pdb: MultiBoundMarkerData::Compare | MultiBoundMarkerData.obj | debug, upstream name already matches, high
+// pdb params: apCompare
 bool FUN_00439060_shell::MultiBoundMarkerData_Compare(void* arg)
 {
     if (!arg)
@@ -222,6 +227,9 @@ struct CellRect
 bool __cdecl TES_LineVsRect(CellRect* pkRect, NiPoint3* pkStart, NiPoint3* pkEnd, NiPoint3* pkIntersect);
 
 // @fnv 0x00439940
+// pdb: MultiBoundMarkerData::MultiBoundIntersectsCell | MultiBoundMarkerData.obj | debug, object-file run extension, low
+// pdb params: apRef, aiCellX, aiCellY
+// pdb locals: pos, kY, ignore, ext, kZ, rot, boundverts, cellrect, kX, vertconn, i, startpt, j, endpt
 bool __cdecl BoundIntersectsCell(BoundRef* pRef, int m_iGridPositionX, int m_iGridCoordinateY)
 {
     if (pRef && pRef->TESObjectREFR_IsMultiBoundRef())

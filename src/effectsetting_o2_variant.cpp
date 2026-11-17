@@ -60,26 +60,30 @@ class BEB3890Base
     int unk34;
 };
 
-class FUN_00eb3890_cls : public BEB3890Base
+// pdb: class NiBoxCapsuleIntersector, size 0x50, bases: NiIntersector, 4 members
+class NiBoxCapsuleIntersector : public BEB3890Base // src: EXE 0x010f1af4 (vtable; old: FUN_00eb3890_cls)
 {
   public:
-    FUN_00eb3890_cls(BEB3890Body* pkBodyA, BEB3890Body* pkBodyB, float fA, float fB, float fC, int iD);
-    virtual ~FUN_00eb3890_cls();
+    NiBoxCapsuleIntersector(BEB3890Body* kBox, BEB3890Body* kCapsule, float fMaxTime, float fDerivativeTimeStep, float fPseudodistanceThreshold, int iMaxIterations);
+    virtual ~NiBoxCapsuleIntersector();
 
-    BEB3890Body* m_pkBodyA;
-    BEB3890Body* m_pkBodyB;
-    float m_fInvRadiusSq;
-    float m_fVectorY;
+    BEB3890Body* m_kBox; // src: XBOX_RETAIL_PDB +0x38 (old: m_pkBodyA)
+    BEB3890Body* m_kCapsule; // src: XBOX_RETAIL_PDB +0x3c (old: m_pkBodyB)
+    float m_fInvRadiusSqr; // src: XBOX_RETAIL_PDB +0x40 (old: m_fInvRadiusSq)
+    float m_afParameter; // src: XBOX_RETAIL_PDB +0x44 (old: m_fVectorY)
     float m_fVectorZ;
     float m_fScalarPart;
 };
 
 // @fnv 0x00eb3890
-FUN_00eb3890_cls::FUN_00eb3890_cls(BEB3890Body* pkBodyA, BEB3890Body* pkBodyB, float fA, float fB, float fC, int iD)
-    : BEB3890Base(fA, fB, fC, iD), m_pkBodyA(pkBodyA), m_pkBodyB(pkBodyB)
+// pdb: NiBoxCapsuleIntersector::NiBoxCapsuleIntersector | NiBoxCapsuleIntersector.obj | retail, call graph (shared callers), high
+// pdb params: kBox, kCapsule, fMaxTime, fDerivativeTimeStep, fPseudodistanceThreshold, iMaxIterations
+// pdb locals: i
+NiBoxCapsuleIntersector::NiBoxCapsuleIntersector(BEB3890Body* kBox, BEB3890Body* kCapsule, float fMaxTime, float fDerivativeTimeStep, float fPseudodistanceThreshold, int iMaxIterations)
+    : BEB3890Base(fMaxTime, fDerivativeTimeStep, fPseudodistanceThreshold, iMaxIterations), m_kBox(kBox), m_kCapsule(kCapsule)
 {
-    m_fInvRadiusSq = 1.0f / (pkBodyB->m_fBoundRadius * pkBodyB->m_fBoundRadius);
-    m_fVectorY = NI_INFINITY;
+    m_fInvRadiusSqr = 1.0f / (kCapsule->m_fBoundRadius * kCapsule->m_fBoundRadius);
+    m_afParameter = NI_INFINITY;
     m_fVectorZ = NI_INFINITY;
     m_fScalarPart = NI_INFINITY;
 }

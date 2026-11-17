@@ -3,6 +3,7 @@
 #include "MagicProjectile.h"
 #include "MagicCaster.h"
 
+// pdb: class MagicFogProjectile, size 0xd0 (here 0x150), bases: MagicProjectile, 8 members
 class MagicFogProjectile : public MagicProjectile
 {
 public:
@@ -62,9 +63,9 @@ public:
 
     virtual ~MagicFogProjectile();
 
-    void DeleteAllNodes();
+    void ClearTargetList();
     unsigned short GetSaveRecordSize(unsigned int);
-    unsigned short GetSaveSize_0081ad00(unsigned int flags);
+    unsigned short GetSaveSize_0081ad00(unsigned int aiFlags);
     bool IsAboveZero();
     void FUN_008196e0();
     MagicCaster* FUN_009185e0();

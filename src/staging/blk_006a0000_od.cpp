@@ -65,6 +65,7 @@ struct S006949d0
 };
 
 // @fnv 0x006a1420
+// pdb: BSSimpleArray<TeleportLink,1024>::GetFirst | PathBuilder.obj | debug, call graph, medium
 void* S006949d0::GetFirst()
 {
     return GetAt(0);
@@ -89,11 +90,12 @@ struct GlobalObject_00869f00
 {
     int* vft;
     void __thiscall Clear(bool);
-    void __thiscall ResetVirtualTableAndClear_006a14e0();
+    void __thiscall BSSimpleArray_NavMeshPOV_1024_dtor();
 };
 // @fnv 0x006a14e0
-// src: GUESS 0x006a14e0 (confidence: medium)
-void __thiscall GlobalObject_00869f00::ResetVirtualTableAndClear_006a14e0()
+// src: XBOX_DEBUG_PDB 0x006a14e0
+// pdb: BSSimpleArray<NavMeshPOV *,1024>::~BSSimpleArray<NavMeshPOV *,1024> | NavMeshPOVSearch.obj | debug, call graph (shared callers), high
+void __thiscall GlobalObject_00869f00::BSSimpleArray_NavMeshPOV_1024_dtor()
 {
     vft = &DAT_0106b3b0;
     Clear(true);
@@ -109,6 +111,7 @@ struct FUN_006a16d0_class
 // Sets the vtbl to DAT_0106b3d4, calls FUN_006a20a0(0, 0), and returns this.
 // @fnv 0x006a16d0
 // src: COMMUNITY 0x006a16d0
+// pdb: BSSimpleArray<BSSimpleArray<NavMeshPOV *,1024>,1024>::BSSimpleArray<BSSimpleArray<NavMeshPOV *,1024>,1024> | NavMeshPOVSearch.obj | debug, call graph, medium
 FUN_006a16d0_class* FUN_006a16d0_class::BSSimpleArray_BSSimpleArray_NavMeshPOV_1024_1024_BSSimpleArray_BSSimpleArray_NavMeshPOV_1024_1024()
 {
     vtbl = &DAT_0106b3d4;
@@ -121,11 +124,12 @@ struct FUN_006a1700_class
 {
     int* p;
     void FUN_0049faf0(int a);
-    void UpdateFields_006a1700();
+    void BSSimpleArray_BSSimpleArray_NavMeshPOV_1024_1024_dtor();
 };
 // @fnv 0x006a1700
-// src: GUESS 0x006a1700 (confidence: low)
-void FUN_006a1700_class::UpdateFields_006a1700()
+// src: XBOX_RETAIL_PDB 0x006a1700
+// pdb: BSSimpleArray<BSSimpleArray<NavMeshPOV *,1024>,1024>::~BSSimpleArray<BSSimpleArray<NavMeshPOV *,1024>,1024> | NavMeshPOVSearch.obj | retail, call graph (shared callers), high
+void FUN_006a1700_class::BSSimpleArray_BSSimpleArray_NavMeshPOV_1024_1024_dtor()
 {
     p = &DAT_0106b3d4;
     FUN_0049faf0(1);
@@ -141,6 +145,7 @@ struct Dummy_0061bf20
 
 // @fnv 0x006a1860
 // src: COMMUNITY 0x006a1860
+// pdb: BSSimpleArray<NavMeshPOVSearchNode,1024>::BSSimpleArray<NavMeshPOVSearchNode,1024> | NavMeshPOVSearch.obj | debug, call graph, medium
 void* Dummy_0061bf20::BSSimpleArray_NavMeshPOVSearchNode_1024_BSSimpleArray_NavMeshPOVSearchNode_1024()
 {
     *(int*)this = (int)&DAT_0106b3e8;
@@ -161,6 +166,7 @@ struct FUN_006a18b0_class
 // Sets the vtable pointer to DAT_0106b3fc, calls FUN_006a2130 with 0, 0, and returns this as an S_006b3610 pointer.
 // @fnv 0x006a18b0
 // src: COMMUNITY 0x006a18b0
+// pdb: BSSimpleArray<NavMeshPOVSearchLink,1024>::BSSimpleArray<NavMeshPOVSearchLink,1024> | NavMeshPOVSearch.obj | debug, call graph, medium
 S_006b3610* FUN_006a18b0_class::BSSimpleArray_NavMeshPOVSearchLink_1024_BSSimpleArray_NavMeshPOVSearchLink_1024()
 {
     vtable = &DAT_0106b3fc;
@@ -174,11 +180,12 @@ struct GlobalObject_00869f00
 {
     int* data;
     void Clear(bool);
-    void ResetVirtualTableAndClear_006a18e0();
+    void BSSimpleArray_NavMeshPOVSearchLink_1024_dtor();
 };
 // @fnv 0x006a18e0
-// src: GUESS 0x006a18e0 (confidence: medium)
-void GlobalObject_00869f00::ResetVirtualTableAndClear_006a18e0()
+// src: XBOX_DEBUG_PDB 0x006a18e0
+// pdb: BSSimpleArray<NavMeshPOVSearchLink,1024>::~BSSimpleArray<NavMeshPOVSearchLink,1024> | NavMeshPOVSearch.obj | debug, call graph (shared callers), high
+void GlobalObject_00869f00::BSSimpleArray_NavMeshPOVSearchLink_1024_dtor()
 {
     this->data = &DAT_0106b3fc;
     this->Clear(true);
@@ -213,6 +220,7 @@ struct FUN_006a19e0
 };
 
 // @fnv 0x006a19e0
+// pdb: BSSimpleArray<BSSimpleArray<FastNavMeshVertHandle,1024>,1024>::~BSSimpleArray<BSSimpleArray<FastNavMeshVertHandle,1024>,1024> | NavMeshPOVSearch.obj | debug, object-file run extension, low
 void FUN_006a19e0::Init()
 {
     m = (int)&DAT_0106b410;
@@ -231,6 +239,9 @@ struct FUN_006a1a00_class
 // Sets the vtable to DAT_0106b424, calls FUN_006a2470 with 0, 0, and returns this.
 // @fnv 0x006a1a00
 // src: COMMUNITY 0x006a1a00
+// pdb: BSSimpleArray<BSSimpleArray<FastNavMeshVertHandle,1024>,1024>::_Allocate | NavMeshPOVSearch.obj | debug, object-file run extension, low
+// pdb params: aiSizeInItem
+// pdb locals: pnewBuffer
 FUN_006a1a00_class* FUN_006a1a00_class::BSSimpleArray_RemoveIndex_1024_BSSimpleArray_RemoveIndex_1024()
 {
     vtable = &DAT_0106b424;
@@ -254,6 +265,8 @@ struct FUN_006a1a30_class
 
 // @fnv 0x006a1a30
 // src: GUESS 0x006a1a30 (confidence: low)
+// pdb: BSSimpleArray<BSSimpleArray<FastNavMeshVertHandle,1024>,1024>::_Deallocate | NavMeshPOVSearch.obj | debug, object-file run extension, low
+// pdb params: apBuffer
 void FUN_006a1a30_class::UpdateState_006a1a30()
 {
     m_p = (GlobalObject_00869f00*)&DAT_0106b424;
@@ -285,6 +298,7 @@ void* FUN_006a1b60_Class::GetField54()
 
 extern unsigned int DAT_010a2720;
 
+// pdb: structure ScrapHeapBuffer, size 0x8 (here 0x1), 2 members
 struct ScrapHeapBuffer
 {
     void* Allocate(unsigned int a, unsigned int b);
@@ -309,6 +323,8 @@ struct GlobalObject_00869f00
 
 // @fnv 0x006a2580
 // src: GUESS 0x006a2580 (confidence: medium)
+// pdb: BSSimpleArray<AStarNode<NavMeshPOVSearchNode,NavMeshPOVSearchLink> *,1024>::_Reallocate | NavMeshPOVSearch.obj | debug, object-file run extension, low
+// pdb params: apBuffer, aiNewSizeInItem
 void GlobalObject_00869f00::ResetVirtualTableAndClear_006a2580()
 {
     p = &DAT_0106b44c;
@@ -326,6 +342,9 @@ struct AX
 
 // @fnv 0x006a2850
 // src: COMMUNITY 0x006a2850
+// pdb: BSSimpleArray<FastNavMeshVertHandle,1024>::_Allocate | NavMeshPOVSearch.obj | debug, object-file run extension, low
+// pdb params: aiSizeInItem
+// pdb locals: pnewBuffer
 AX* AX::BSSimpleArray_AStarNode_NavMeshPOVSearchNode_NavMeshPOVSearchLink_1024_BSSimpleArray_AStarNode_NavMeshPOVSearchNode_NavMeshPOVSearchLink_1024()
 {
     *reinterpret_cast<int*>(this) = reinterpret_cast<int>(&DAT_0106b44c);
@@ -341,6 +360,8 @@ struct FUN_006dc440_class
 };
 // @fnv 0x006a2880
 // src: COMMUNITY 0x006a2880
+// pdb: BSSimpleArray<FastNavMeshVertHandle,1024>::_Deallocate | NavMeshPOVSearch.obj | debug, object-file run extension, low
+// pdb params: apBuffer
 FUN_006dc440_class* FUN_006dc440_class::BSSimpleArray_FastNavMeshVertHandle_1024_BSSimpleArray_FastNavMeshVertHandle_1024()
 {
     *(int*)this = (int)&DAT_0106b460;
@@ -372,6 +393,8 @@ struct FUN_006a6290_class
 // Calls FUN_006a6370 with the argument, sets vfn to DAT_0106b52c, and returns this.
 // @fnv 0x006a6290
 // src: EXE 0x006a6290
+// pdb: NiTMap<NavMesh *,NiPointer<NiNode> >::NiTMap<NavMesh *,NiPointer<NiNode> > | NavMeshRender.obj | debug, object-file run extension, low
+// pdb params: uiHashSize
 FUN_006a6290_class* FUN_006a6290_class::NiTMap_NavMesh_NiPointer_NiNode_NiTMap(int a)
 {
     NiTMapBase_DFALL_NiTMapItem_NavMesh_NiPointer_NiNode_NavMesh_NiPointer_NiNode_NiTMapBase_DFALL_NiTMapItem_NavMesh_NiPointer_NiNode_NavMesh_NiPointer_NiNode(a);
@@ -389,6 +412,8 @@ struct FUN_006a62c0_class
 // Calls ConstructIntArray with arg, sets m_p to the string "@cj", and returns this.
 // @fnv 0x006a62c0
 // src: EXE 0x006a62c0
+// pdb: NiTMap<TESObjectCELL *,NiPointer<NiNode> >::NiTMap<TESObjectCELL *,NiPointer<NiNode> > | NavMeshRender.obj | debug, object-file run extension, low
+// pdb params: uiHashSize
 FUN_006a62c0_class* FUN_006a62c0_class::NiTMap_TESObjectCELL_NiPointer_NiNode_NiTMap(int arg)
 {
     ConstructIntArray(arg);
@@ -399,17 +424,19 @@ FUN_006a62c0_class* FUN_006a62c0_class::NiTMap_TESObjectCELL_NiPointer_NiNode_Ni
 struct Dummy0042f800
 {
     void FUN_0042fcb0(int, int);
-    void* __thiscall BSSimpleArray_NiPoint3_1024_BSSimpleArray_NiPoint3_1024(int a);
+    void* __thiscall BSSimpleArray_NiPoint3_1024_BSSimpleArray_NiPoint3_1024(int aiInitialSize);
 };
 
 extern int DAT_010159d4;
 
 // @fnv 0x006a65e0
 // src: XBOX_PDB 0x006a65e0
-void* __thiscall Dummy0042f800::BSSimpleArray_NiPoint3_1024_BSSimpleArray_NiPoint3_1024(int a)
+// pdb: BSSimpleArray<NiPoint3,1024>::BSSimpleArray<NiPoint3,1024> | NavMeshRender.obj | retail, call graph (shared callers), high
+// pdb params: aiInitialSize
+void* __thiscall Dummy0042f800::BSSimpleArray_NiPoint3_1024_BSSimpleArray_NiPoint3_1024(int aiInitialSize)
 {
     *(int**)this = &DAT_010159d4;
-    FUN_0042fcb0(a, a);
+    FUN_0042fcb0(aiInitialSize, aiInitialSize);
     return this;
 }
 
@@ -418,11 +445,13 @@ struct GlobalObject_00869f00
 {
     const char* m_p;
     void Clear(bool);
-    void SetPhjAndClear();
+    void BSSimpleArray_NiColorA_1024_dtor();
 };
 
 // @fnv 0x006a6640
-void GlobalObject_00869f00::SetPhjAndClear()
+// src: XBOX_DEBUG_PDB 0x006a6640
+// pdb: BSSimpleArray<NiColorA,1024>::~BSSimpleArray<NiColorA,1024> | NavMeshRender.obj | debug, call graph (shared callers), high
+void GlobalObject_00869f00::BSSimpleArray_NiColorA_1024_dtor()
 {
     m_p = "Phj";
     Clear(true);
@@ -456,6 +485,7 @@ struct GlobalObject_00869f00
 
 // @fnv 0x006a67d0
 // src: GUESS 0x006a67d0 (confidence: low)
+// pdb: BSSimpleArray<unsigned char,1024>::~BSSimpleArray<unsigned char,1024> | NavMeshRender.obj | debug, call graph (shared callers), medium
 void GlobalObject_00869f00::SetVtableAndProcessState_006a67d0()
 {
     *reinterpret_cast<void**>(this) = &DAT_0106b5c0;
@@ -491,6 +521,7 @@ struct FUN_006a85b0_Class
 
 // @fnv 0x006a85b0
 // src: GUESS 0x006a85b0 (confidence: low)
+// pdb: BSSimpleArray<AStarNode<NavMeshSearchNode,NavMeshSearchLink> *,1024>::~BSSimpleArray<AStarNode<NavMeshSearchNode,NavMeshSearchLink> *,1024> | NavMeshSearch.obj | debug, call graph (shared callers), medium
 void FUN_006a85b0_Class::SetVtableAndProcessState_006a85b0()
 {
     *(int*)this = (int)&DAT_0106b688;
@@ -509,6 +540,7 @@ struct FUN_006a8a00 : AX
     AX* Init();
 };
 // @fnv 0x006a8a00
+// pdb: BSSimpleArray<AStarNode<NavMeshSearchNode,NavMeshSearchLink> *,1024>::BSSimpleArray<AStarNode<NavMeshSearchNode,NavMeshSearchLink> *,1024> | NavMeshSearch.obj | debug, object-file run extension, low
 AX* FUN_006a8a00::Init()
 {
     *reinterpret_cast<int*>(this) = reinterpret_cast<int>(&DAT_0106b688);
@@ -549,6 +581,7 @@ struct GlobalObject_00869f00
 };
 // @fnv 0x006b42a0
 // src: GUESS 0x006b42a0 (confidence: medium)
+// pdb: BSSimpleArray<AStarNode<PathSmootherPOVNode,PathSmootherPOVLink> *,1024>::~BSSimpleArray<AStarNode<PathSmootherPOVNode,PathSmootherPOVLink> *,1024> | PathSmootherPOV.obj | debug, call graph (shared callers), medium
 void GlobalObject_00869f00::ResetVirtualTableAndClear_006b42a0()
 {
     *reinterpret_cast<int*>(this) = (int)&DAT_0106ba94;
@@ -585,6 +618,7 @@ struct FUN_006b8310_class
 
 // Calls Deallocate on the given pointer to release its memory.
 // @fnv 0x006b8310
+// pdb: DFALL<NiTMapItem<unsigned int,NiTMap<unsigned int,BSSimpleArray<NavMeshInfo *,1024> *> *> >::Allocate | NavMeshInfoMap.obj | debug, object-file run extension, low
 void __thiscall FUN_006b8310_class::FreeMemory(void* apMemory)
 {
     void* a = apMemory;
@@ -603,6 +637,8 @@ struct FUN_006b9400_Class
 
 // @fnv 0x006b9400
 // src: COMMUNITY 0x006b9400
+// pdb: ScrapHeap::ScrapHeap | ScrapHeap.obj | retail, call graph, low
+// pdb note: debug build links it to AStarNodeHeap<CombatPlanNode *,CombatPlanLink *,512>::AStarNodeHeap<CombatPlanNode *,CombatPlanLink *,512>
 int FUN_006b9400_Class::AStarNodeHeap_AStarNodeHeap_0()
 {
     ((FUN_00aa5410_Helper*)this)->InitWithAlignedSize(0x4800);
@@ -636,6 +672,7 @@ struct FUN_006bec20_Class
 
 // @fnv 0x006bec20
 // src: COMMUNITY 0x006bec20
+// pdb: NavMeshObstacleCutter::UpdateCoverArray | NavMeshObstacleCutter.obj | debug, upstream name already matches, high
 void* FUN_006bec20_Class::NavMeshObstacleCutter_UpdateCoverArray()
 {
     return reinterpret_cast<FUN_006bec20_Class*>(m_p)->RebuildTriangleList();
@@ -648,6 +685,8 @@ struct FUN_006bf670_Class
 
 // @fnv 0x006bf670
 // src: GUESS 0x006bf670 (confidence: low)
+// pdb: BSSimpleArray<CombatSearchLocation,1024>::operator[] | CombatGroup.obj | debug, call graph (shared callers), medium
+// pdb params: aiIndex
 int* FUN_006bf670_Class::GetElementAddress_006bf670(int aiIndex)
 {
     return (int*)((char*)*(int*)((char*)this + 4) + aiIndex * 0x1c);
@@ -665,6 +704,8 @@ struct Dummy_0061bf20
 
 // Sets the object's vtbl to DAT_0106c2e8, calls FUN_006b3f40 with a and b, and returns this.
 // @fnv 0x006bf690
+// pdb: BSSimpleArray<BoundsTriangleInfo,1024>::BSSimpleArray<BoundsTriangleInfo,1024> | NavMeshObstacleCutter.obj | debug, call graph, medium
+// pdb params: aiReserveSize, aiInitialSize
 Dummy_0061bf20* __thiscall Dummy_0061bf20::InitWithVtbl(int aiArg1, int aiArg2)
 {
     vtbl = &DAT_0106c2e8;
@@ -678,13 +719,14 @@ extern int DAT_0106c2e8;
 struct GlobalObject_00869f00
 {
     void Clear(bool);
-    void ResetVirtualTableAndClear_006bf6c0();
+    void BSSimpleArray_BoundsTriangleInfo_1024_dtor();
 };
 void GlobalObject_00869f00::Clear(bool b)
 {}
 // @fnv 0x006bf6c0
-// src: GUESS 0x006bf6c0 (confidence: medium)
-void GlobalObject_00869f00::ResetVirtualTableAndClear_006bf6c0()
+// src: XBOX_DEBUG_PDB 0x006bf6c0
+// pdb: BSSimpleArray<BoundsTriangleInfo,1024>::~BSSimpleArray<BoundsTriangleInfo,1024> | NavMeshObstacleCutter.obj | debug, call graph (shared callers), high
+void GlobalObject_00869f00::BSSimpleArray_BoundsTriangleInfo_1024_dtor()
 {
     *(int*)this = (int)&DAT_0106c2e8;
     Clear(true);
@@ -697,12 +739,13 @@ extern int DAT_0106c2fc;
 struct GlobalObject_00869f00
 {
     void Clear(bool);
-    void SetVtableAndProcessState_006bf710();
+    void BSSimpleArray_PortalEdgeSwap_1024_dtor();
 };
 
 // @fnv 0x006bf710
-// src: GUESS 0x006bf710 (confidence: low)
-void GlobalObject_00869f00::SetVtableAndProcessState_006bf710()
+// src: XBOX_DEBUG_PDB 0x006bf710
+// pdb: BSSimpleArray<PortalEdgeSwap,1024>::~BSSimpleArray<PortalEdgeSwap,1024> | NavMeshObstacleCutter.obj | debug, call graph (shared callers), high
+void GlobalObject_00869f00::BSSimpleArray_PortalEdgeSwap_1024_dtor()
 {
     *reinterpret_cast<int*>(this) = reinterpret_cast<int>(&DAT_0106c2fc);
     Clear(true);
@@ -799,11 +842,12 @@ extern int DAT_0106c194;
 struct FUN_006b8030_class
 {
     void __thiscall RemoveAll();
-    void __thiscall SetVtableAndProcessState_006b8030();
+    void __thiscall NiTMapBase_NiTPointerAllocator_unsigned_int_unsigned_int_NavMeshInfo_dtor();
 };
 // @fnv 0x006b8030
-// src: GUESS 0x006b8030 (confidence: low)
-void __thiscall FUN_006b8030_class::SetVtableAndProcessState_006b8030()
+// src: XBOX_DEBUG_PDB 0x006b8030
+// pdb: NiTMapBase<NiTPointerAllocator<unsigned int>,unsigned int,NavMeshInfo *>::~NiTMapBase<NiTPointerAllocator<unsigned int>,unsigned int,NavMeshInfo *> | NavMeshInfoMap.obj | debug, call graph (shared callers), high
+void __thiscall FUN_006b8030_class::NiTMapBase_NiTPointerAllocator_unsigned_int_unsigned_int_NavMeshInfo_dtor()
 {
     *reinterpret_cast<int**>(this) = &DAT_0106c194;
     RemoveAll();
@@ -815,11 +859,13 @@ extern int DAT_0106c1b4;
 
 struct FUN_006b8130 : NiTPointerMap<int, int>
 {
-    void Method();
+    void NiTMapBase_DFALL_NiTMapItem_unsigned_int_NiTMap_unsigned_int_BSSimpleArray_NavMeshInfo_1024_unsigned_int_NiTMap_unsigned_int_BSSimpleArray_NavMeshInfo_1024_dtor();
 };
 
 // @fnv 0x006b8130
-void FUN_006b8130::Method()
+// src: XBOX_DEBUG_PDB 0x006b8130
+// pdb: NiTMapBase<DFALL<NiTMapItem<unsigned int,NiTMap<unsigned int,BSSimpleArray<NavMeshInfo *,1024> *> *> >,unsigned int,NiTMap<unsigned int,BSSimpleArray<NavMeshInfo *,1024> *> *>::~NiTMapBase<DFALL<NiTMapItem<unsigned int,NiTMap<unsigned int,BSSimpleArray<NavMeshInfo *,1024> *> *> >,unsigned int,NiTMap<unsigned int,BSSimpleArray<NavMeshInfo *,1024> *> *> | NavMeshInfoMap.obj | debug, call graph (shared callers), high
+void FUN_006b8130::NiTMapBase_DFALL_NiTMapItem_unsigned_int_NiTMap_unsigned_int_BSSimpleArray_NavMeshInfo_1024_unsigned_int_NiTMap_unsigned_int_BSSimpleArray_NavMeshInfo_1024_dtor()
 {
     *reinterpret_cast<int**>(this) = &DAT_0106c1b4;
     RemoveAll();
@@ -885,6 +931,8 @@ struct FUN_006a19b0
     FUN_006a19b0(int);
 };
 // @fnv 0x006a19b0
+// pdb: BSSimpleArray<BSSimpleArray<FastNavMeshVertHandle,1024>,1024>::BSSimpleArray<BSSimpleArray<FastNavMeshVertHandle,1024>,1024> | NavMeshPOVSearch.obj | debug, object-file run extension, low
+// pdb params: aiInitialSize
 FUN_006a19b0::FUN_006a19b0(int aiValue)
 {
     m_iWordAt00 = &DAT_0106b410;
@@ -900,6 +948,9 @@ struct FUN_006a1aa0_class
 };
 
 // @fnv 0x006a1aa0
+// pdb: BSSimpleArray<FastNavMeshVertHandle,1024>::Add | NavMeshPOVSearch.obj | debug, object-file run extension, low
+// pdb params: aValue
+// pdb locals: iindex
 int FUN_006a1aa0_class::FindMatchingEntry(int b, unsigned int uiStartIndex, unsigned char (*cb)(int, int))
 {
     for (unsigned int i = uiStartIndex; i < m_8; i++)
@@ -934,9 +985,10 @@ struct C_006a1ba0
 };
 // Calls FUN_006a14e0 on this, frees this when flags has bit 0 set, and returns this.
 // @fnv 0x006a1ba0
+// pdb: BSSimpleArray<NavMeshPOV *,1024>::`scalar deleting destructor' | NavMeshPOVSearch.obj | retail, vtable slot, high
 void* __thiscall C_006a1ba0::FUN_006a1ba0(unsigned int flags)
 {
-    ((GlobalObject_00869f00*)this)->ResetVirtualTableAndClear_006a14e0();
+    ((GlobalObject_00869f00*)this)->BSSimpleArray_NavMeshPOV_1024_dtor();
     if (flags & 1)
         _Deallocate(this);
     return this;
@@ -949,6 +1001,7 @@ struct FUN_006a1bd0_class
     void* FUN_006a1bd0(unsigned int flags);
 };
 // @fnv 0x006a1bd0
+// pdb: AStarSearch<NavMeshPOVSearchNode,NavMeshPOVSearchLink>::`scalar deleting destructor' | NavMeshPOVSearch.obj | retail, vtable slot, high
 void* FUN_006a1bd0_class::FUN_006a1bd0(unsigned int flags)
 {
     FUN_006a15b0();
@@ -964,9 +1017,10 @@ struct FUN_006a1c00_class
 };
 // Calls FUN_006a1700 on this, deallocates this when flags has bit 0 set, and returns this.
 // @fnv 0x006a1c00
+// pdb: BSSimpleArray<BSSimpleArray<NavMeshPOV *,1024>,1024>::`scalar deleting destructor' | NavMeshPOVSearch.obj | retail, vtable slot, high
 void* __thiscall FUN_006a1c00_class::FUN_006a1c00(unsigned int flags)
 {
-    ((FUN_006a1700_class*)this)->UpdateFields_006a1700();
+    ((FUN_006a1700_class*)this)->BSSimpleArray_BSSimpleArray_NavMeshPOV_1024_1024_dtor();
     if (flags & 1)
         _Deallocate(this);
     return this;
@@ -974,7 +1028,7 @@ void* __thiscall FUN_006a1c00_class::FUN_006a1c00(unsigned int flags)
 
 struct FUN_006a1890_class
 {
-    void __thiscall SetVtableAndProcessState_006a1890();
+    void __thiscall BSSimpleArray_NavMeshPOVSearchNode_1024_dtor();
 };
 extern "C" void __cdecl Deallocate(void*);
 struct FUN_006a1c30_class : FUN_006a1890_class
@@ -982,9 +1036,10 @@ struct FUN_006a1c30_class : FUN_006a1890_class
     void* __thiscall FUN_006a1c30(unsigned int flags);
 };
 // @fnv 0x006a1c30
+// pdb: BSSimpleArray<NavMeshPOVSearchNode,1024>::`scalar deleting destructor' | NavMeshPOVSearch.obj | retail, vtable slot, high
 void* __thiscall FUN_006a1c30_class::FUN_006a1c30(unsigned int flags)
 {
-    SetVtableAndProcessState_006a1890();
+    BSSimpleArray_NavMeshPOVSearchNode_1024_dtor();
     if (flags & 1)
         Deallocate(this);
     return this;
@@ -999,14 +1054,15 @@ struct FUN_006a18e0_Class
 
 struct FUN_006a1c60_Class
 {
-    void __thiscall ResetVirtualTableAndClear_006a18e0();
+    void __thiscall BSSimpleArray_NavMeshPOVSearchLink_1024_dtor();
     void* __thiscall FUN_006a1c60(unsigned int flags);
 };
 
 // @fnv 0x006a1c60
+// pdb: BSSimpleArray<NavMeshPOVSearchLink,1024>::`scalar deleting destructor' | NavMeshPOVSearch.obj | retail, vtable slot, high
 void* __thiscall FUN_006a1c60_Class::FUN_006a1c60(unsigned int flags)
 {
-    ResetVirtualTableAndClear_006a18e0();
+    BSSimpleArray_NavMeshPOVSearchLink_1024_dtor();
     if (flags & 1)
         Deallocate(this);
     return this;
@@ -1017,6 +1073,7 @@ struct FUN_006a19e0_Class : public FUN_006a19e0
     void* __thiscall FUN_006a1c90(unsigned int flags);
 };
 // @fnv 0x006a1c90
+// pdb: BSSimpleArray<BSSimpleArray<FastNavMeshVertHandle,1024>,1024>::`scalar deleting destructor' | NavMeshPOVSearch.obj | retail, vtable slot, high
 void* __thiscall FUN_006a19e0_Class::FUN_006a1c90(unsigned int flags)
 {
     Init();
@@ -1033,6 +1090,7 @@ struct FUN_006a1cc0_class
 };
 // Calls FUN_006a1a30, then deallocates this if bit 0 of a is set, and returns this.
 // @fnv 0x006a1cc0
+// pdb: BSSimpleArray<RemoveIndex,1024>::`scalar deleting destructor' | NavMeshPOVSearch.obj | retail, vtable slot, high
 void* __thiscall FUN_006a1cc0_class::FUN_006a1cc0(unsigned int uiFlags)
 {
     UpdateState_006a1a30();
@@ -1042,6 +1100,7 @@ void* __thiscall FUN_006a1cc0_class::FUN_006a1cc0(unsigned int uiFlags)
 }
 
 void __cdecl BSSleep(unsigned long);
+// pdb: class Modifier, size 0x8 (here 0x1), 2 members
 class Modifier
 {
   public:
@@ -1193,6 +1252,7 @@ struct FUN_006a2580
 void __cdecl _Deallocate(void*);
 // Runs the destructor and, when bit 0 of flags is set, deallocates this object; returns this.
 // @fnv 0x006a25a0
+// pdb: BSSimpleArray<AStarNode<NavMeshPOVSearchNode,NavMeshPOVSearchLink> *,1024>::`scalar deleting destructor' | NavMeshPOVSearch.obj | retail, vtable slot, high
 void* __thiscall FUN_006a2580::FUN_006a25a0(unsigned int flags)
 {
     this->FUN_006a2580::~FUN_006a2580();
@@ -1208,6 +1268,7 @@ struct FUN_006a25d0
 };
 // Destructs the object and, when bit 0 of flags is set, frees its memory with operator delete; returns this.
 // @fnv 0x006a2820
+// pdb: BSScrapArray<AStarNode<NavMeshPOVSearchNode,NavMeshPOVSearchLink> *,1024>::`scalar deleting destructor' | NavMeshPOVSearch.obj | retail, vtable slot, high
 void* FUN_006a25d0::FUN_006a2820(unsigned int flags)
 {
     this->FUN_006a25d0::~FUN_006a25d0();
@@ -1224,6 +1285,7 @@ struct FUN_006a28d0_class
 };
 // Calls FUN_006a2900, then frees this with Deallocate when flags has bit 0 set, and returns this.
 // @fnv 0x006a28d0
+// pdb: BSSimpleArray<FastNavMeshVertHandle,1024>::`scalar deleting destructor' | NavMeshPOVSearch.obj | retail, vtable slot, high
 void* __thiscall FUN_006a28d0_class::FUN_006a28d0(unsigned int flags)
 {
     SetVirtualTableAndProcessState_006a2900();
@@ -1240,6 +1302,9 @@ extern int DAT_011d6e2c;
 // Deletes the object held in DAT_011d6e2c if it is non-null, then sets DAT_011d6e2c to 0.
 // @fnv 0x006a29a0
 // src: COMMUNITY 0x006a29a0
+// pdb: BSSimpleArray<FastNavMeshVertHandle,1024>::_DestructItems | NavMeshPOVSearch.obj | debug, object-file run extension, low
+// pdb params: apFirstAddr, aiCount
+// pdb locals: i
 void NavMeshRender_Destroy()
 {
     if (DAT_011d6e2c)
@@ -1272,6 +1337,7 @@ struct FUN_006a6310_class
     void* __thiscall FUN_006a6310(unsigned int flags);
 };
 // @fnv 0x006a6310
+// pdb: NiTMap<NavMesh *,NiPointer<NiNode> >::`scalar deleting destructor' | NavMeshRender.obj | retail, vtable slot, high
 void* __thiscall FUN_006a6310_class::FUN_006a6310(unsigned int flags)
 {
     FUN_006a6450();
@@ -1290,6 +1356,7 @@ struct FUN_006a6340_class : FUN_006a6550_class
     void* __thiscall FUN_006a6340(int flags);
 };
 // @fnv 0x006a6340
+// pdb: NiTMap<TESObjectCELL *,NiPointer<NiNode> >::`scalar deleting destructor' | NavMeshRender.obj | retail, vtable slot, high
 void* __thiscall FUN_006a6340_class::FUN_006a6340(int flags)
 {
     FUN_006a6550();
@@ -1341,6 +1408,8 @@ struct FUN_006a6610
 };
 // Sets the stored string pointer to SG6202, then calls FUN_006a69b0 with the same argument twice.
 // @fnv 0x006a6610
+// pdb: BSSimpleArray<NiColorA,1024>::BSSimpleArray<NiColorA,1024> | NavMeshRender.obj | debug, object-file gap fill, medium
+// pdb params: aiInitialSize
 FUN_006a6610::FUN_006a6610(int a)
 {
     m_iWordAt00 = SG6202;
@@ -1351,14 +1420,15 @@ void Deallocate(void*);
 
 struct FUN_006a6850_class
 {
-    void __thiscall SetPhjAndClear();
+    void __thiscall BSSimpleArray_NiColorA_1024_dtor();
     void* __thiscall FUN_006a6850(unsigned int flags);
 };
 // Calls SetPhjAndClear, frees this when flags has bit 0 set, and returns this.
 // @fnv 0x006a6850
+// pdb: BSSimpleArray<NiColorA,1024>::`scalar deleting destructor' | NavMeshRender.obj | retail, vtable slot, high
 void* __thiscall FUN_006a6850_class::FUN_006a6850(unsigned int flags)
 {
-    SetPhjAndClear();
+    BSSimpleArray_NiColorA_1024_dtor();
     if (flags & 1)
         Deallocate(this);
     return this;
@@ -1375,6 +1445,7 @@ struct FUN_006a6880_class
 };
 // Calls FUN_006a67d0 on this, deallocates this when flags has bit 0 set, and returns this.
 // @fnv 0x006a6880
+// pdb: BSSimpleArray<unsigned char,1024>::`scalar deleting destructor' | NavMeshRender.obj | retail, vtable slot, high
 void* __thiscall FUN_006a6880_class::FUN_006a6880(unsigned int flags)
 {
     reinterpret_cast<FUN_006a67d0_class*>(this)->SetVtableAndProcessState_006a67d0();
@@ -1391,6 +1462,7 @@ struct FUN_006a7bc0_Class
 
 // Runs the destructor and, when bit 0 of flags is set, deallocates this, then returns this.
 // @fnv 0x006a7fb0
+// pdb: AStarSearch<NavMeshSearchNode,NavMeshSearchLink>::`scalar deleting destructor' | NavMeshSearch.obj | debug, vtable slot, medium
 FUN_006a7bc0_Class* FUN_006a7bc0_Class::FUN_006a7fb0(unsigned int flags)
 {
     FUN_006a7bc0_Class::~FUN_006a7bc0_Class();
@@ -1406,6 +1478,7 @@ struct FUN_006a85b0_class
     void* FUN_006a85d0(unsigned int flags);
 };
 // @fnv 0x006a85d0
+// pdb: BSSimpleArray<AStarNode<NavMeshSearchNode,NavMeshSearchLink> *,1024>::`scalar deleting destructor' | NavMeshSearch.obj | retail, vtable slot, high
 void* FUN_006a85b0_class::FUN_006a85d0(unsigned int flags)
 {
     SetVtableAndProcessState_006a85b0();
@@ -1424,6 +1497,7 @@ struct FUN_006a8600 : FUN_006a85b0
 };
 // Destructor that calls Clear(true) on the global object at this address.
 // @fnv 0x006a8600
+// pdb: BSScrapArray<AStarNode<NavMeshSearchNode,NavMeshSearchLink> *,1024>::~BSScrapArray<AStarNode<NavMeshSearchNode,NavMeshSearchLink> *,1024> | NavMeshSearch.obj | debug, call graph (shared callers), medium
 FUN_006a8600::~FUN_006a8600()
 {
     reinterpret_cast<GlobalObject_00869f00*>(this)->Clear(true);
@@ -1481,6 +1555,7 @@ struct FUN_006abea0_Class
 };
 // Calls FUN_006abc30 on this, deallocates this when flags has bit 0 set, and returns this.
 // @fnv 0x006abea0
+// pdb: BSSimpleArray<NavMeshSearchNode,1024>::`scalar deleting destructor' | NavMeshSearchMaxCost.obj | retail, vtable slot, high
 void* FUN_006abea0_Class::FUN_006abea0(unsigned int flags)
 {
     ((FUN_006abc30_Class*)this)->SetVtableAndProcessState_006abc30();
@@ -1499,6 +1574,7 @@ struct FUN_006abed0_class
     void* FUN_006abed0(unsigned int flags);
 };
 // @fnv 0x006abed0
+// pdb: BSSimpleArray<NavMeshSearchLink,1024>::`scalar deleting destructor' | NavMeshSearchMaxCost.obj | retail, vtable slot, high
 void* FUN_006abed0_class::FUN_006abed0(unsigned int flags)
 {
     ((FUN_006abdc0_shell*)this)->ResetVirtualTableAndClear_006abdc0();
@@ -1517,6 +1593,7 @@ struct FUN_006abf00_Class
 
 // Calls FUN_006abc50, then deallocates this when flags has bit 0 set, and returns this.
 // @fnv 0x006abf00
+// pdb: BSScrapArray<NavMeshSearchNode,1024>::`scalar deleting destructor' | NavMeshSearchMaxCost.obj | retail, vtable slot, high
 void* __thiscall FUN_006abf00_Class::FUN_006abf00(unsigned int flags)
 {
     FUN_006abc50();
@@ -1534,6 +1611,7 @@ struct FUN_006abf30_Class
 };
 
 // @fnv 0x006abf30
+// pdb: BSScrapArray<NavMeshSearchLink,1024>::`scalar deleting destructor' | NavMeshSearchMaxCost.obj | retail, vtable slot, high
 void* __thiscall FUN_006abf30_Class::FUN_006abf30(unsigned int flags)
 {
     FUN_006abde0();
@@ -1550,12 +1628,13 @@ extern int DAT_0106b8a0;
 struct FUN_006abf60_class
 {
     int* vtable;
-    FUN_006abf60_class* SetVirtualTableAndProcessState_006abf60();
+    FUN_006abf60_class* BSSimpleArray_NavMeshSearchNode_1024_ctor();
 };
 // Sets the vtable pointer to DAT_0106b8a0, calls FUN_009a3d00 with 0, 0, and returns this.
 // @fnv 0x006abf60
-// src: GUESS 0x006abf60 (confidence: low)
-FUN_006abf60_class* FUN_006abf60_class::SetVirtualTableAndProcessState_006abf60()
+// src: XBOX_DEBUG_PDB 0x006abf60
+// pdb: BSSimpleArray<NavMeshSearchNode,1024>::BSSimpleArray<NavMeshSearchNode,1024> | NavMeshSearchMaxCost.obj | debug, call graph (shared callers), high
+FUN_006abf60_class* FUN_006abf60_class::BSSimpleArray_NavMeshSearchNode_1024_ctor()
 {
     vtable = &DAT_0106b8a0;
     reinterpret_cast<FUN_006cf9d0*>(this)->BSSimpleArray_WeaponData_1024_InitialSetup(0, 0);
@@ -1570,6 +1649,7 @@ struct FUN_006abf90_Obj
 };
 // Sets the object's vtable to DAT_0106b8c8, calls FUN_006b3f40 with 0, 0, and returns this.
 // @fnv 0x006abf90
+// pdb: BSSimpleArray<NavMeshSearchLink,1024>::BSSimpleArray<NavMeshSearchLink,1024> | NavMeshSearchMaxCost.obj | debug, call graph (shared callers), medium
 FUN_006abf90_Obj* FUN_006abf90_Obj::InitVtable()
 {
     vtable = &DAT_0106b8c8;
@@ -1596,6 +1676,9 @@ struct S_006ac070
 // Calls FUN_006ac0b0(0) on each of the n elements starting at p.
 // @fnv 0x006ac070
 // src: XBOX_PDB 0x006ac070
+// pdb: BSSimpleArray<PathingLocation,1024>::_DestructItems | NavMeshSearchMultipleGoals.obj | debug, object-file run extension, low
+// pdb params: apFirstAddr, aiCount
+// pdb locals: i
 void S_006ac070::BSSimpleArray_PathingLocation_1024_DestructItems(Elem_006ac070* pElements, unsigned int n)
 {
     unsigned int i;
@@ -1613,6 +1696,7 @@ struct _Mem_2064
 };
 // Runs the destructor, then frees this object with Deallocate when flags has bit 0 set, and returns this.
 // @fnv 0x006ac0b0
+// pdb: NavMeshSearchSLPoint::NavMeshSearchSLPoint | NavMeshSearchSLPoint.obj | retail, object-file run extension, low
 void* _Mem_2064::FUN_006ac0b0(unsigned int flags)
 {
     _Mem_2064::~_Mem_2064();
@@ -1643,6 +1727,7 @@ struct S_FUN_006b05a0
 };
 // @fnv 0x006b05a0
 // src: XBOX_PDB 0x006b05a0
+// pdb: PathingSolution::GetLastNode | PathSmootherPOV.obj | debug, call graph (shared callers), medium
 void* __thiscall S_FUN_006b05a0::PathingSolution_GetLastNode()
 {
     if (_arr.NiTListBase_DFALL_NiTListItem_BSAnimGroupSequence_const_BSAnimGroupSequence_const_IsEmpty())
@@ -1661,6 +1746,7 @@ struct FUN_006b3800_Host
 // Sets the vtable to DAT_0106ba6c, calls FUN_006b3eb0 with 0 and 0, and returns this.
 // @fnv 0x006b3800
 // src: COMMUNITY 0x006b3800
+// pdb: BSSimpleArray<NavMesh *,1024>::BSSimpleArray<NavMesh *,1024> | PathSmootherPOV.obj | debug, object-file run extension, low
 FUN_006b3800_Host* FUN_006b3800_Host::BSSimpleArray_NavMesh_1024_BSSimpleArray_NavMesh_1024()
 {
     vtable = &DAT_0106ba6c;
@@ -1674,6 +1760,7 @@ struct NavMeshEdgeSegment;
 void __cdecl _Deallocate(void*);
 // Destructs the AStarSearch object and, when bit 0 of flags is set, deallocates its memory; returns this.
 // @fnv 0x006b3850
+// pdb: AStarSearch<PathSmootherPOVNode,PathSmootherPOVLink>::`scalar deleting destructor' | PathSmootherPOV.obj | retail, vtable slot, high
 template <class N, class L> void* __thiscall AStarSearch<N, L>::FUN_006b3850(unsigned int flags)
 {
     this->AStarSearch<N, L>::~AStarSearch();
@@ -1685,6 +1772,7 @@ template void* __thiscall AStarSearch<PathSmootherPOVAvoidanceNode, NavMeshEdgeS
 
 struct PathSmootherPOVPoint;
 // @fnv 0x006b3880
+// pdb: BSSimpleArray<PathSmootherPOV *,1024>::`scalar deleting destructor' | PathSmootherPOV.obj | retail, vtable slot, high
 template <> BSSimpleArray<PathSmootherPOVPoint>::~BSSimpleArray()
 {
     Clear(true);
@@ -1707,6 +1795,8 @@ struct FUN_006b3910_S
 // Copies the four members a, b, c and d from p into this object and returns this.
 // @fnv 0x006b3910
 // src: COMMUNITY 0x006b3910
+// pdb: PathSmootherPOVLink::operator= | PathSmootherPOV.obj | debug, object-file gap fill, medium
+// pdb params: __that
 FUN_006b3910_S* FUN_006b3910_S::PathSmootherPOVLink_Copy(const FUN_006b3910_S* apSource)
 {
     a = apSource->a;
@@ -1726,6 +1816,7 @@ struct Target_006b3a00
     void* __thiscall FUN_006b3a00(unsigned int);
 };
 // @fnv 0x006b3a00
+// pdb: BSSimpleArray<NavMesh *,1024>::`scalar deleting destructor' | PathSmootherPOV.obj | retail, vtable slot, high
 void* __thiscall Target_006b3a00::FUN_006b3a00(unsigned int flags)
 {
     ((GlobalObject_00869f00_helper*)this)->Dtor();
@@ -1765,6 +1856,7 @@ struct FUN_006b3de0_Class
 // Zeroes the 0x1fdc-byte block starting at this, sets the int at offset 0x1fdc to 0, and returns this.
 // @fnv 0x006b3de0
 // src: GUESS 0x006b3de0 (confidence: low)
+// pdb: AStarMap<AStarNode<CombatPlanNode *,CombatPlanLink *> >::AStarMap<AStarNode<CombatPlanNode *,CombatPlanLink *> > | CombatController.obj | debug, call graph, medium
 void* FUN_006b3de0_Class::ProcessAndReturnValue_006b3de0()
 {
     ((int*)this)[0x1fdc / 4] = 0;
@@ -1816,6 +1908,7 @@ struct FUN_006b42a0_class
 };
 // Calls FUN_006b42a0, then frees this with Deallocate when bit 0 of flags is set, and returns this.
 // @fnv 0x006b42c0
+// pdb: BSSimpleArray<AStarNode<PathSmootherPOVNode,PathSmootherPOVLink> *,1024>::`scalar deleting destructor' | PathSmootherPOV.obj | retail, vtable slot, high
 void* FUN_006b42a0_class::FUN_006b42c0(unsigned int flags)
 {
     ResetVirtualTableAndClear_006b42a0();
@@ -1833,6 +1926,7 @@ struct FUN_006b4640_Class
 };
 
 // @fnv 0x006b4640
+// pdb: BSScrapArray<AStarNode<PathSmootherPOVNode,PathSmootherPOVLink> *,1024>::`scalar deleting destructor' | PathSmootherPOV.obj | retail, vtable slot, high
 void* __thiscall FUN_006b4640_Class::FUN_006b4640(unsigned int flags)
 {
     FUN_006b42f0();
@@ -1873,6 +1967,8 @@ struct FUN_006b4880_Class
     int GetSerializedSize();
 };
 // @fnv 0x006b4880
+// pdb: NavMeshInfo::GetInfoChunkSize | NavMeshInfo.obj | debug, object-file gap fill, medium
+// pdb locals: isize
 int FUN_006b4880_Class::GetSerializedSize()
 {
     int i = 0;
@@ -1897,6 +1993,7 @@ struct FUN_006b7fd0_class
 
 // Calls FUN_006b7fd0, then frees this via Deallocate when flags has bit 1 set, and returns this.
 // @fnv 0x006b7e20
+// pdb: NiTPointerMap<unsigned int,NavMeshInfo *>::`scalar deleting destructor' | NavMeshInfoMap.obj | retail, vtable slot, high
 void* FUN_006b7fd0_class::FUN_006b7e20(unsigned int flags)
 {
     FUN_006b7fd0();
@@ -1915,6 +2012,7 @@ struct FUN_006b80d0_Class
 
 // Calls FUN_006b80d0, then deallocates this if bit 0 of flags is set, and returns this.
 // @fnv 0x006b7e50
+// pdb: NiTMap<unsigned int,NiTMap<unsigned int,BSSimpleArray<NavMeshInfo *,1024> *> *>::`scalar deleting destructor' | NavMeshInfoMap.obj | retail, vtable slot, high
 void* FUN_006b80d0_Class::FUN_006b7e50(unsigned int flags)
 {
     FUN_006b80d0();
@@ -1931,6 +2029,7 @@ struct FUN_006b81f0_class
 };
 // Calls FUN_006b81f0, frees this when flags has bit 0 set, and returns this.
 // @fnv 0x006b7e80
+// pdb: NiTMap<unsigned int,BSSimpleArray<NavMeshInfo *,1024> *>::`scalar deleting destructor' | NavMeshInfoMap.obj | retail, vtable slot, high
 void* __thiscall FUN_006b81f0_class::FUN_006b7e80(unsigned int flags)
 {
     FUN_006b81f0();
@@ -1947,6 +2046,8 @@ struct FUN_006b7eb0_t
 };
 // @fnv 0x006b7eb0
 // src: EXE 0x006b7eb0
+// pdb: BSSimpleArray<NavMeshInfo *,1024>::operator[] | NavMeshInfoMap.obj | debug, object-file run extension, low
+// pdb params: aiIndex
 void* FUN_006b7eb0_t::NiTMapBase_NiTPointerAllocator_unsigned_int_unsigned_int_NavMeshInfo_NiTMapBase(int aiCount)
 {
     *reinterpret_cast<void**>(this) = &DAT_0106c194;
@@ -2011,9 +2112,10 @@ struct FUN_006b8280_class : FUN_006b8030_class
 };
 
 // @fnv 0x006b8280
+// pdb: NiTMapBase<NiTPointerAllocator<unsigned int>,unsigned int,NavMeshInfo *>::`scalar deleting destructor' | NavMeshInfoMap.obj | retail, vtable slot, high
 void* __thiscall FUN_006b8280_class::FUN_006b8280(unsigned int flags)
 {
-    SetVtableAndProcessState_006b8030();
+    NiTMapBase_NiTPointerAllocator_unsigned_int_unsigned_int_NavMeshInfo_dtor();
     if (flags & 1)
         Deallocate(this);
     return this;
@@ -2026,9 +2128,10 @@ struct FUN_006b82b0_class
 };
 // Calls Method on this, deallocates this when flags has bit 0 set, and returns this.
 // @fnv 0x006b82b0
+// pdb: NiTMapBase<DFALL<NiTMapItem<unsigned int,NiTMap<unsigned int,BSSimpleArray<NavMeshInfo *,1024> *> *> >,unsigned int,NiTMap<unsigned int,BSSimpleArray<NavMeshInfo *,1024> *> *>::`scalar deleting destructor' | NavMeshInfoMap.obj | retail, vtable slot, high
 void* __thiscall FUN_006b82b0_class::FUN_006b82b0(unsigned int flags)
 {
-    ((FUN_006b8130*)this)->Method();
+    ((FUN_006b8130*)this)->NiTMapBase_DFALL_NiTMapItem_unsigned_int_NiTMap_unsigned_int_BSSimpleArray_NavMeshInfo_1024_unsigned_int_NiTMap_unsigned_int_BSSimpleArray_NavMeshInfo_1024_dtor();
     if (flags & 1)
         Deallocate(this);
     return this;
@@ -2042,6 +2145,7 @@ struct FUN_006b82e0_Class
 
 // Calls FUN_006b8250, then deallocates this when flags has bit 0 set, and returns this.
 // @fnv 0x006b82e0
+// pdb: NiTMapBase<DFALL<NiTMapItem<unsigned int,BSSimpleArray<NavMeshInfo *,1024> *> >,unsigned int,BSSimpleArray<NavMeshInfo *,1024> *>::`scalar deleting destructor' | NavMeshInfoMap.obj | retail, vtable slot, high
 void* __thiscall FUN_006b82e0_Class::FUN_006b82e0(unsigned int flags)
 {
     FUN_006b8250();
@@ -2057,6 +2161,7 @@ struct FUN_006b8e40
 };
 // Runs the destructor and, when bit 0 of flags is set, frees the object with operator delete; returns this.
 // @fnv 0x006b9150
+// pdb: AStarSearch<NavMeshInfo const *,TESObjectREFR *>::`scalar deleting destructor' | NavMeshInfoSearch.obj | retail, vtable slot, high
 void* FUN_006b8e40::FUN_006b9150(unsigned int flags)
 {
     this->FUN_006b8e40::~FUN_006b8e40();
@@ -2090,6 +2195,7 @@ struct FUN_006b9630_class
 };
 
 // @fnv 0x006b9630
+// pdb: BSSimpleArray<AStarNode<NavMeshInfo const *,TESObjectREFR *> *,1024>::`scalar deleting destructor' | NavMeshInfoSearch.obj | retail, vtable slot, high
 void* __thiscall FUN_006b9630_class::FUN_006b9630(unsigned int flags)
 {
     SetVtableAndProcessState_006b9610();
@@ -2108,6 +2214,9 @@ struct FUN_006b9660 : FUN_006b9610_base
     ~FUN_006b9660();
 };
 // @fnv 0x006b9660
+// pdb: BSScrapArray<AStarNode<NavMeshInfo const *,TESObjectREFR *> *,1024>::_Allocate | NavMeshInfoSearch.obj | debug, object-file run extension, low
+// pdb params: aiSizeInItem
+// pdb locals: pnewBuffer
 FUN_006b9660::~FUN_006b9660()
 {
     ((GlobalObject_00869f00*)this)->Clear(true);
@@ -2150,6 +2259,7 @@ struct FUN_006b9660_class
 };
 
 // @fnv 0x006b9730
+// pdb: BSScrapArray<AStarNode<NavMeshInfo const *,TESObjectREFR *> *,1024>::`scalar deleting destructor' | NavMeshInfoSearch.obj | retail, vtable slot, high
 void* FUN_006b9660_class::FUN_006b9730(unsigned int flags)
 {
     FUN_006b9660();
@@ -2200,21 +2310,23 @@ struct FUN_006bcfe0_Class
     unsigned short m_kPointA;
     unsigned short m_iThirdValue;
     unsigned short m_usTrailingValue;
-    void NavMeshObstacleEdge_AddTriangle(unsigned short a, unsigned short b);
+    void NavMeshObstacleEdge_AddTriangle(unsigned short ausTri, unsigned short ausEdge);
 };
 // @fnv 0x006bcfe0
 // src: COMMUNITY 0x006bcfe0
-void FUN_006bcfe0_Class::NavMeshObstacleEdge_AddTriangle(unsigned short ausFirst, unsigned short ausSecond)
+// pdb: NavMeshObstacleEdge::AddTriangle | NavMeshObstacleCutter.obj | debug, upstream name already matches, high
+// pdb params: ausTri, ausEdge
+void FUN_006bcfe0_Class::NavMeshObstacleEdge_AddTriangle(unsigned short ausTri, unsigned short ausEdge)
 {
     if (m_8 == 0xffff)
     {
-        m_8 = ausFirst;
-        m_iThirdValue = ausSecond;
+        m_8 = ausTri;
+        m_iThirdValue = ausEdge;
     }
     else if (m_kPointA == 0xffff)
     {
-        m_kPointA = ausFirst;
-        m_usTrailingValue = ausSecond;
+        m_kPointA = ausTri;
+        m_usTrailingValue = ausEdge;
     }
 }
 
@@ -2233,6 +2345,8 @@ struct FUN_006be0c0_Class
 // Returns true if w8 is 0xFFFF, or if wa is 0xFFFF and m_10 is not 1, 3 or 4; otherwise false.
 // @fnv 0x006be0c0
 // src: COMMUNITY 0x006be0c0
+// pdb: BSSimpleArray<NavMeshObstacleEdge *,1024>::operator[] | NavMeshObstacleCutter.obj | debug, call graph (shared callers), medium
+// pdb params: aiIndex
 bool FUN_006be0c0_Class::NavMeshObstacleEdge_CanBeUsed()
 {
     if (w8 == 0xFFFF)
@@ -2284,6 +2398,7 @@ struct S006beb80
 // If the buffer length is non-zero, calls AddTrianglesToGrid on the receiver with the union value and the last index (u.i + len - 1).
 // @fnv 0x006beb80
 // src: COMMUNITY 0x006beb80
+// pdb: NavMeshObstacleCutter::AddNewTrianglesToNavMeshGrid | NavMeshObstacleCutter.obj | debug, upstream name already matches, high
 void __thiscall S006beb80::NavMeshObstacleCutter_AddNewTrianglesToNavMeshGrid()
 {
     if (p->len != 0)
@@ -2309,11 +2424,13 @@ struct S_006bf1d0
 };
 // @fnv 0x006bf1d0
 // src: COMMUNITY 0x006bf1d0
-bool __thiscall S_006bf1d0::NavMeshObstacleCutter_IsVertInOverlappedArea(P_006bf1d0* p)
+// pdb: NavMeshObstacleCutter::IsVertInOverlappedArea | NavMeshObstacleCutter.obj | debug, upstream name already matches, high
+// pdb params: apVert
+bool __thiscall S_006bf1d0::NavMeshObstacleCutter_IsVertInOverlappedArea(P_006bf1d0* apVert)
 {
-    if (p->m3 || p->m4)
+    if (apVert->m3 || apVert->m4)
         return true;
-    return NavMeshObstacleCutter_IsPointInOverlappedArea(m0->GetVertex_0068f0a0(p->m0));
+    return NavMeshObstacleCutter_IsPointInOverlappedArea(m0->GetVertex_0068f0a0(apVert->m0));
 }
 
 namespace fnv_006bf2a0 {
@@ -2330,9 +2447,11 @@ struct S006bf2a0
 // Looks up the Point3Storage for the unsigned short at p via the NH object and passes it to FUN_006bf2d0.
 // @fnv 0x006bf2a0
 // src: COMMUNITY 0x006bf2a0
-void __thiscall S006bf2a0::NavMeshObstacleCutter_IsVertInObstacleArea(unsigned short* p)
+// pdb: NavMeshObstacleCutter::IsVertInObstacleArea | NavMeshObstacleCutter.obj | debug, upstream name already matches, high
+// pdb params: apVert
+void __thiscall S006bf2a0::NavMeshObstacleCutter_IsVertInObstacleArea(unsigned short* apVert)
 {
-    NavMeshObstacleCutter_IsPointInObstacleArea(m_iWordAt00->GetVertex_0068f0a0(*p));
+    NavMeshObstacleCutter_IsPointInObstacleArea(m_iWordAt00->GetVertex_0068f0a0(*apVert));
 }
 }  // namespace fnv_006bf2a0
 
@@ -2345,6 +2464,7 @@ struct S006bf6e0
 };
 // Sets the vtable to DAT_0106c2fc, calls FUN_006bfe70 with 0 and 0, and returns this.
 // @fnv 0x006bf6e0
+// pdb: BSSimpleArray<PortalEdgeSwap,1024>::BSSimpleArray<PortalEdgeSwap,1024> | NavMeshObstacleCutter.obj | debug, call graph, medium
 S006bf6e0* S006bf6e0::Construct()
 {
     vtable = &DAT_0106c2fc;
@@ -2370,16 +2490,17 @@ FUN_006bf890::~FUN_006bf890()
 extern "C" void __cdecl Deallocate(void*);
 struct FUN_006bf6c0_class
 {
-    void __thiscall ResetVirtualTableAndClear_006bf6c0();
+    void __thiscall BSSimpleArray_BoundsTriangleInfo_1024_dtor();
 };
 struct FUN_006bfbe0_class
 {
     void* __thiscall FUN_006bfbe0(int flags);
 };
 // @fnv 0x006bfbe0
+// pdb: BSSimpleArray<BoundsTriangleInfo,1024>::`scalar deleting destructor' | NavMeshObstacleCutter.obj | retail, vtable slot, high
 void* __thiscall FUN_006bfbe0_class::FUN_006bfbe0(int flags)
 {
-    ((FUN_006bf6c0_class*)this)->ResetVirtualTableAndClear_006bf6c0();
+    ((FUN_006bf6c0_class*)this)->BSSimpleArray_BoundsTriangleInfo_1024_dtor();
     if (flags & 1)
         Deallocate(this);
     return this;
@@ -2387,14 +2508,15 @@ void* __thiscall FUN_006bfbe0_class::FUN_006bfbe0(int flags)
 
 struct FUN_006bf710_Class
 {
-    void SetVtableAndProcessState_006bf710();
+    void BSSimpleArray_PortalEdgeSwap_1024_dtor();
     void* FUN_006bfc10(unsigned int flags);
 };
 
 // @fnv 0x006bfc10
+// pdb: BSSimpleArray<PortalEdgeSwap,1024>::`scalar deleting destructor' | NavMeshObstacleCutter.obj | retail, vtable slot, high
 void* FUN_006bf710_Class::FUN_006bfc10(unsigned int flags)
 {
-    SetVtableAndProcessState_006bf710();
+    BSSimpleArray_PortalEdgeSwap_1024_dtor();
     if (flags & 1)
         Deallocate(this);
     return this;
@@ -2417,6 +2539,8 @@ struct S006bfc40
 // Copies the three members of other into this object and returns a reference to this object.
 // @fnv 0x006bfc40
 // src: GUESS 0x006bfc40 (confidence: medium)
+// pdb: PortalEdgeSwap::operator= | NavMeshObstacleCutter.obj | debug, object-file gap fill, medium
+// pdb params: __that
 S006bfc40& __thiscall S006bfc40::CopyFields_006bfc40(S006bfc40 const& other)
 {
     m0 = other.m0;
@@ -2433,6 +2557,7 @@ struct FUN_006bf870_class
 };
 // Calls FUN_006bf870, then deallocates this when flags has bit 0 set, and returns this.
 // @fnv 0x006bfc80
+// pdb: BSSimpleArray<NavMeshObstacleVertex *,1024>::`scalar deleting destructor' | NavMeshObstacleCutter.obj | retail, vtable slot, high
 void* __thiscall FUN_006bf870_class::FUN_006bfc80(unsigned int flags)
 {
     SetVtableAndProcessState_006bf870();
@@ -2450,6 +2575,7 @@ struct FUN_006bfcb0_class
     void* __thiscall FUN_006bfcb0(unsigned int flags);
 };
 // @fnv 0x006bfcb0
+// pdb: BSScrapArray<NavMeshObstacleVertex *,1024>::`scalar deleting destructor' | NavMeshObstacleCutter.obj | retail, vtable slot, high
 void* __thiscall FUN_006bfcb0_class::FUN_006bfcb0(unsigned int flags)
 {
     ((FUN_006bf890_class*)this)->FUN_006bf890();
@@ -2466,6 +2592,7 @@ struct FUN_006bfce0_Class
 };
 // Calls FUN_006bfab0, then frees this with Deallocate when flags has bit 0 set, and returns this.
 // @fnv 0x006bfce0
+// pdb: BSSimpleArray<NavMeshObstacleEdge *,1024>::`scalar deleting destructor' | NavMeshObstacleCutter.obj | retail, vtable slot, high
 void* __thiscall FUN_006bfce0_Class::FUN_006bfce0(unsigned int flags)
 {
     SetVtableAndProcessState_006bfab0();
@@ -2484,6 +2611,7 @@ struct FUN_006bfd10_class
 
 // Calls FUN_006bfad0, then frees this object with Deallocate when flags has bit 0 set, and returns this.
 // @fnv 0x006bfd10
+// pdb: BSScrapArray<NavMeshObstacleEdge *,1024>::`scalar deleting destructor' | NavMeshObstacleCutter.obj | retail, vtable slot, high
 void* FUN_006bfd10_class::FUN_006bfd10(unsigned int flags)
 {
     FUN_006bfad0();
@@ -2520,6 +2648,8 @@ struct FUN_006a20a0
 };
 // @fnv 0x006a20a0
 // src: GUESS 0x006a20a0 (confidence: low)
+// pdb: BSSimpleArray<PathSmootherPOVDebugRayTest,1024>::AddUninitialized | NavMeshPOVSearch.obj | debug, object-file run extension, low
+// pdb locals: inewSize
 void FUN_006a20a0::UpdateFields_006a20a0(unsigned int requested, unsigned int savedSize)
 {
     m_iWordAt04 = 0;
@@ -2545,25 +2675,28 @@ void* __cdecl FUN_00ec7230(char* dst, const char* src, unsigned int size);
 
 struct FUN_006a2270_class
 {
-    void __thiscall BSSimpleArray_PathingNode_1024_CopyItems(char* dst, char* src, unsigned int count);
+    void __thiscall BSSimpleArray_PathingNode_1024_CopyItems(char* apDestAddr, char* apSrcAddr, unsigned int aiCount);
 };
 
 // Copies count elements of 0x3c bytes from src to dst, iterating forward or backward depending on the relative order of dst and src.
 // @fnv 0x006a2270
 // src: COMMUNITY 0x006a2270
-void __thiscall FUN_006a2270_class::BSSimpleArray_PathingNode_1024_CopyItems(char* dst, char* src, unsigned int count)
+// pdb: BSSimpleArray<PathingNode,1024>::_MoveItems | NavMeshPOVSearch.obj | debug, call graph, high
+// pdb params: apDestAddr, apSrcAddr, aiCount
+// pdb locals: i
+void __thiscall FUN_006a2270_class::BSSimpleArray_PathingNode_1024_CopyItems(char* apDestAddr, char* apSrcAddr, unsigned int aiCount)
 {
-    if (count <= 0)
+    if (aiCount <= 0)
         return;
-    if (dst < src)
+    if (apDestAddr < apSrcAddr)
     {
-        for (unsigned int i = 0; i < count; ++i)
-            FUN_00ec7230(dst + i * 0x3c, src + i * 0x3c, 0x3c);
+        for (unsigned int i = 0; i < aiCount; ++i)
+            FUN_00ec7230(apDestAddr + i * 0x3c, apSrcAddr + i * 0x3c, 0x3c);
     }
-    else if (dst > src)
+    else if (apDestAddr > apSrcAddr)
     {
-        for (int i = (int)count - 1; i >= 0; --i)
-            FUN_00ec7230(dst + i * 0x3c, src + i * 0x3c, 0x3c);
+        for (int i = (int)aiCount - 1; i >= 0; --i)
+            FUN_00ec7230(apDestAddr + i * 0x3c, apSrcAddr + i * 0x3c, 0x3c);
     }
 }
 
@@ -2573,6 +2706,7 @@ struct FUN_006a26d0_class
 };
 // @fnv 0x006a2310
 // src: GUESS 0x006a2310 (confidence: low)
+// pdb: BSSimpleArray<PathingNode,1024>::_DeallocateBuffer | NavMeshPOVSearch.obj | debug, object-file run extension, low
 void __thiscall FUN_006a19b0::UpdateState_006a2310(int a, int b)
 {
     ((int*)this)[1] = 0;
@@ -2661,6 +2795,7 @@ struct FUN_006a9200 : FUN_006a7b10
 };
 // Sets the vtable pointer, constructs two BaseS subobjects at offsets 0x2070 and 0x2084, and zeroes the int at 0x2058 and byte at 0x2080.
 // @fnv 0x006a9200
+// pdb: NavMeshSearchFlee::NavMeshSearchFlee | NavMeshSearchFlee.obj | debug, object-file run extension, low
 FUN_006a9200::FUN_006a9200()
 {
     *(int*)this = (int)&DAT_0106b78c;
@@ -2686,6 +2821,8 @@ struct FUN_006b3f40_Class
 };
 // @fnv 0x006b3f40
 // src: COMMUNITY 0x006b3f40
+// pdb: BSSimpleArray<NavMeshSearchLink,1024>::_InitialSetup | NavMeshSearchMaxCost.obj | debug, call graph (shared callers), medium
+// pdb params: aiReserveSize, aiInitialSize
 void FUN_006b3f40_Class::BSSimpleArray_NavMeshPOVSearchNode_1024_InitialSetup(unsigned int a, unsigned int b)
 {
     *(void**)((char*)this + 4) = 0;
@@ -2723,6 +2860,8 @@ struct FUN_006b4060_class
     int GetNextIndex();
 };
 // @fnv 0x006b4060
+// pdb: D3DXShader::RegisterHash | cassembler.obj | retail, call graph, medium
+// pdb params: pId
 int FUN_006b4060_class::GetNextIndex()
 {
     if (((S5460*)this)->BSSimpleArray_NavMeshInfo_1024_ShouldGrow())
@@ -2764,6 +2903,8 @@ struct FUN_006bc940_class
 };
 // @fnv 0x006bc940
 // src: COMMUNITY 0x006bc940
+// pdb: NavMeshObstacleCutter::GetTrianglesMaxObstacleCount | NavMeshObstacleCutter.obj | debug, upstream name already matches, high
+// pdb locals: imaxCount, i
 unsigned int FUN_006bc940_class::NavMeshObstacleCutter_GetTrianglesMaxObstacleCount()
 {
     unsigned int result = 0;
@@ -2821,6 +2962,9 @@ struct Holder3660
 };
 // @fnv 0x006a2130
 // src: COMMUNITY 0x006a2130
+// pdb: BSSimpleArray<PathSmootherPOVDebugRayTest,1024>::_ConstructItems | NavMeshPOVSearch.obj | debug, object-file run extension, low
+// pdb params: apFirstAddr, aiCount
+// pdb locals: i
 void Holder3660::BSSimpleArray_NavMeshPOVSearchLink_1024_InitialSetup(unsigned int requested, unsigned int savedSize)
 {
     m_iWordAt04 = 0;
@@ -2985,6 +3129,8 @@ extern int DAT_011d6e2c;
 // Allocates a new FUN_006a2a20 object and stores its pointer in DAT_011d6e2c.
 // @fnv 0x006a2920
 // src: COMMUNITY 0x006a2920
+// pdb: BSSimpleArray<FastNavMeshVertHandle,1024>::Clear | NavMeshPOVSearch.obj | debug, object-file run extension, low
+// pdb params: abFreeMemory
 void NavMeshRender_InitSingleton()
 {
     DAT_011d6e2c = (int)new FUN_006a2a20;
@@ -3032,15 +3178,18 @@ struct ScrapHeap2
 struct FUN_006abe40_Class
 {
     unsigned int GetFlags();
-    void* __thiscall ReallocateArray(void* src, int count);
+    void* __thiscall ReallocateArray(void* apBuffer, int aiNewSizeInItem);
 };
 // Allocates count*0xc bytes from the heap, copies GetFlags()*0xc bytes from src, frees src, and returns the new block.
 // @fnv 0x006abe40
-void* FUN_006abe40_Class::ReallocateArray(void* pSource, int count)
+// pdb: BSScrapArray<EffectTaskData,1024>::_Reallocate | ProcessLists.obj | retail, vtable slot, high
+// pdb params: apBuffer, aiNewSizeInItem
+// pdb locals: pnewBuffer
+void* FUN_006abe40_Class::ReallocateArray(void* apBuffer, int aiNewSizeInItem)
 {
-    void* dst = ((ScrapHeap2*)*(void**)((char*)this + 0x10))->Allocate(count * 0xc, DAT_010a2720);
-    memcpy(dst, pSource, GetFlags() * 0xc);
-    ((ScrapHeap2*)*(void**)((char*)this + 0x10))->Deallocate(pSource);
+    void* dst = ((ScrapHeap2*)*(void**)((char*)this + 0x10))->Allocate(aiNewSizeInItem * 0xc, DAT_010a2720);
+    memcpy(dst, apBuffer, GetFlags() * 0xc);
+    ((ScrapHeap2*)*(void**)((char*)this + 0x10))->Deallocate(apBuffer);
     return dst;
 }
 
@@ -3057,6 +3206,7 @@ struct FUN_006bebd0_class
 };
 // @fnv 0x006bebd0
 // src: COMMUNITY 0x006bebd0
+// pdb: NavMeshObstacleCutter::RemoveTrianglesFromNavMeshGrid | NavMeshObstacleCutter.obj | debug, upstream name already matches, high
 void FUN_006bebd0_class::NavMeshObstacleCutter_RemoveTrianglesFromNavMeshGrid()
 {
     if (*(int*)((char*)*(int*)((char*)this + 8) + 0x1c))
@@ -3089,6 +3239,9 @@ struct FUN_006bf340_Class
 
 // @fnv 0x006bf340
 // src: GUESS 0x006bf340 (confidence: low)
+// pdb: NavMeshObstacleCutter::CreateEdge | NavMeshObstacleCutter.obj | retail, object-file run extension, low
+// pdb params: apVert1, apVert2, aeEdgeType
+// pdb locals: pnewedge
 bool FUN_006bf340_Class::ComputeValue_006bf340(unsigned char** apBuffers)
 {
     if (!apBuffers[0][2] && apBuffers[0][6])
@@ -3113,6 +3266,9 @@ struct FUN_006bf480_Class
 
 // Initializes the object's fields from the four constructor arguments and zeroes the two trailing bytes.
 // @fnv 0x006bf480
+// pdb: BSSimpleArray<NavMeshEdgeHandle,1024>::Add | NavMeshObstacleCutter.obj | retail, object-file run extension, low
+// pdb params: aValue
+// pdb locals: iindex
 FUN_006bf480_Class::FUN_006bf480_Class(unsigned short a, unsigned char b, unsigned char c, unsigned char d)
 {
     m_iWordAt00 = a;
@@ -3139,6 +3295,9 @@ struct S006bf730
 };
 // @fnv 0x006bf730
 // src: GUESS 0x006bf730 (confidence: low)
+// pdb: BSSimpleArray<PortalEdgeSwap,1024>::Add | NavMeshObstacleCutter.obj | debug, object-file run extension, low
+// pdb params: aValue
+// pdb locals: iindex
 unsigned int S006bf730::UpdateState_006bf730(const S006bfc40& o)
 {
     unsigned int r = ((S006bfd40*)this)->BSSimpleArray_CombatSearchLocation_1024_AddUninitialized();
@@ -3181,15 +3340,19 @@ void FUN_006bfdd0_class::BSSimpleArray_PortalEdgeSwap_1024_InitialSetup(unsigned
     }
 }
 
-struct FUN_006bde50
+// pdb: class NavMeshObstacleCutter, size 0x48 (here 0x1), 7 members
+struct NavMeshObstacleCutter // src: XBOX_RETAIL_PDB 0x006bde50 (first retail link of 2 high-tier links to its methods; old: FUN_006bde50)
 {
     bool CanAddEdge(void*, void*);
     void* CreateObject(void*, void*, int);
-    void DoWork();
+    void CreateNewEdges();
 };
 // For each flagged actor, scans the array for eligible other actors, tests them with CanAddEdge and appends CreateObject results to the array at offset 0x30.
 // @fnv 0x006bde50
-void FUN_006bde50::DoWork()
+// src: XBOX_RETAIL_PDB 0x006bde50
+// pdb: NavMeshObstacleCutter::CreateNewEdges | NavMeshObstacleCutter.obj | retail, call graph, high
+// pdb locals: i, pobstacleVert, j, pboundsVert, pnewedge
+void NavMeshObstacleCutter::CreateNewEdges()
 {
     for (unsigned int i = 0; i < ((BlkOffset08View*)((char*)this + 0x1c))->GetFlags(); i++)
     {
@@ -3216,8 +3379,9 @@ template <> void BSSimpleArray<Actor*>::Clear(bool)
 {}
 
 // @fnv 0x006a1890
-// src: GUESS 0x006a1890 (confidence: low)
-void FUN_006a1890_class::SetVtableAndProcessState_006a1890()
+// src: XBOX_DEBUG_PDB 0x006a1890
+// pdb: BSSimpleArray<NavMeshPOVSearchNode,1024>::~BSSimpleArray<NavMeshPOVSearchNode,1024> | NavMeshPOVSearch.obj | debug, call graph (shared callers), high
+void FUN_006a1890_class::BSSimpleArray_NavMeshPOVSearchNode_1024_dtor()
 {
     *reinterpret_cast<int**>(this) = &DAT_0106b3e8;
     reinterpret_cast<BSSimpleArray<Actor*>*>(this)->Clear(true);
@@ -3282,6 +3446,7 @@ char* StandIn::fc(char*, unsigned int)
 
 // @fnv 0x006a2770
 // src: XBOX_PDB 0x006a2770
+// pdb: BSSimpleArray<RemoveIndex,1024>::_DeallocateBuffer | NavMeshPOVSearch.obj | debug, object-file run extension, low
 void StandIn::BSSimpleArray_NiPoint2_1024_ReallocateBuffer(unsigned int a, unsigned int b)
 {
     if (this->m_iWordAt04 != 0)
@@ -3327,6 +3492,7 @@ struct FUN_006a8a80 : public FUN_006a7b10
 };
 
 // @fnv 0x006a8a80
+// pdb: NavMeshSearchClosePoint::NavMeshSearchClosePoint | NavMeshSearchClosePoint.obj | debug, call graph, high
 FUN_006a8a80::FUN_006a8a80() : FUN_006a7b10()
 {
     *reinterpret_cast<int*>(this) = reinterpret_cast<int>(&DAT_0106b6fc);
@@ -3386,6 +3552,8 @@ struct FUN_006be660_class
 
 // @fnv 0x006be660
 // src: COMMUNITY 0x006be660
+// pdb: NavMeshObstacleCutter::AddNewPOVs | NavMeshObstacleCutter.obj | retail, upstream name already matches, high
+// pdb locals: i
 void FUN_006be660_class::NavMeshObstacleCutter_AddNewPOVs()
 {
     for (unsigned int i = 0; i < reinterpret_cast<BlkOffset08View*>(reinterpret_cast<char*>(this) + 0x1c)->GetFlags(); ++i)
@@ -3408,7 +3576,7 @@ void FUN_006be660_class::NavMeshObstacleCutter_AddNewPOVs()
 
 struct FUN_00693bd0_class
 {
-    void NavMeshTriangle_SetObjectCount(unsigned short value);
+    void NavMeshTriangle_SetObjectCount(unsigned short aiCount);
 };
 
 struct FUN_006be770_Info
@@ -3433,6 +3601,8 @@ struct FUN_006be770_class
 
 // @fnv 0x006be770
 // src: COMMUNITY 0x006be770
+// pdb: NavMeshObstacleCutter::SetObstacleCount | NavMeshObstacleCutter.obj | debug, upstream name already matches, high
+// pdb locals: i, ptri
 void FUN_006be770_class::NavMeshObstacleCutter_SetObstacleCount()
 {
     for (unsigned int i = m_08->m_18; i < (unsigned int)(m_08->m_18 + m_08->m_1c); ++i)
@@ -3456,16 +3626,19 @@ struct FUN_006bf2d0_class
     int m_iWordAt00;
     void* m_iWordAt04;
     void* m_8;
-    bool NavMeshObstacleCutter_IsPointInObstacleArea(Point3Storage* p);
+    bool NavMeshObstacleCutter_IsPointInObstacleArea(Point3Storage* aPoint);
 };
 
 // @fnv 0x006bf2d0
 // src: XBOX_PDB 0x006bf2d0
-bool FUN_006bf2d0_class::NavMeshObstacleCutter_IsPointInObstacleArea(Point3Storage* p)
+// pdb: NavMeshObstacleCutter::IsPointInObstacleArea | NavMeshObstacleCutter.obj | retail, upstream name already matches, high
+// pdb params: aPoint
+// pdb locals: i
+bool FUN_006bf2d0_class::NavMeshObstacleCutter_IsPointInObstacleArea(Point3Storage* aPoint)
 {
     for (unsigned int i = 0; i < ((BlkOffset08View*)((char*)m_8 + 0x20))->GetFlags(); i++)
     {
-        if (NavMeshObstacleManager_IsPointInBox(*p, *(void**)&m_iWordAt04, g_011c7278_arg1, 32.0f))
+        if (NavMeshObstacleManager_IsPointInBox(*aPoint, *(void**)&m_iWordAt04, g_011c7278_arg1, 32.0f))
             return true;
     }
     return false;
@@ -3499,6 +3672,9 @@ struct A06F0Key
 // Compares this key with another by the result of GetSignFlags on m_fKey, then by m_fTime (ascending for 0/3, descending otherwise).
 // @fnv 0x006a06f0
 // src: GUESS 0x006a06f0 (confidence: high)
+// pdb: AngleSinCos::operator<= | NavMeshPOVSearch.obj | debug, call graph, medium
+// pdb params: aAngle
+// pdb locals: iotherQuadrant, ithisQuadrant
 bool A06F0Key::CompareKeysBySignAndTime(A06F0Key* pkOther)
 {
     int iThis = GetSignFlags(&m_fKey);
@@ -3829,6 +4005,7 @@ struct FUN_006a1500_cls
 
 // Initializes m_2048, m_204c, m_2050 and m_2054 to zero; the member objects are constructed by their own constructors.
 // @fnv 0x006a1500
+// pdb: AStarSearch<NavMeshPOVSearchNode,NavMeshPOVSearchLink>::AStarSearch<NavMeshPOVSearchNode,NavMeshPOVSearchLink> | NavMeshPOVSearch.obj | debug, call graph, medium
 FUN_006a1500_cls::FUN_006a1500_cls()
 {
     m_2048 = 0;
@@ -3841,7 +4018,7 @@ struct FUN_006a1920_cls;
 
 struct S6a21c0_helper
 {
-    void Call(void* p, int n);
+    void Call(void* aiNewSize, int aiCopyCount);
 };
 
 struct FUN_006a1920_cls
@@ -3851,12 +4028,14 @@ struct FUN_006a1920_cls
     int m_iWordAt04;
     int m_8;
     void* m_iThirdValue;
-    int ProcessAndReturnValue_006a1920();
+    int BSSimpleArray_PathingNode_1024_AddUninitialized();
 };
 
 // @fnv 0x006a1920
-// src: GUESS 0x006a1920 (confidence: low)
-int FUN_006a1920_cls::ProcessAndReturnValue_006a1920()
+// src: XBOX_DEBUG_PDB 0x006a1920
+// pdb: BSSimpleArray<PathingNode,1024>::AddUninitialized | NavMeshPOVSearch.obj | debug, call graph, high
+// pdb locals: inewSize
+int FUN_006a1920_cls::BSSimpleArray_PathingNode_1024_AddUninitialized()
 {
     if (reinterpret_cast<S5460*>(this)->BSSimpleArray_NavMeshInfo_1024_ShouldGrow() != 0)
     {
@@ -3894,6 +4073,8 @@ struct FUN_006a1a50_cls
 
 // @fnv 0x006a1a50
 // src: GUESS 0x006a1a50 (confidence: low)
+// pdb: BSSimpleArray<BSSimpleArray<FastNavMeshVertHandle,1024>,1024>::_Reallocate | NavMeshPOVSearch.obj | debug, object-file run extension, low
+// pdb params: apBuffer, aiNewSizeInItem
 int FUN_006a1a50_cls::UpdateState_006a1a50(const FUN_006a1a50_pair* src)
 {
     unsigned int idx = BSSimpleArray_NiPoint2_1024_AddUninitialized();
@@ -3913,33 +4094,36 @@ struct FUN_006a21c0_class
     int m_8;
     int m_iThirdValue;
 
-    void __thiscall BSSimpleArray_PathingNode_1024_ReallocateBuffer(int value, int flag);
-    void __thiscall BSSimpleArray_PathingNode_1024_CopyItems(int value1, int value2, int value3);
+    void __thiscall BSSimpleArray_PathingNode_1024_ReallocateBuffer(int aiNewSize, int aiCopyCount);
+    void __thiscall BSSimpleArray_PathingNode_1024_CopyItems(int apDestAddr, int apSrcAddr, int aiCount);
     void __thiscall FUN_006a8500();
 };
 
 // @fnv 0x006a21c0
 // src: COMMUNITY 0x006a21c0
-void __thiscall FUN_006a21c0_class::BSSimpleArray_PathingNode_1024_ReallocateBuffer(int value, int flag)
+// pdb: BSSimpleArray<PathingNode,1024>::_ReallocateBuffer | NavMeshPOVSearch.obj | debug, call graph (shared callers), high
+// pdb params: aiNewSize, aiCopyCount
+// pdb locals: pnewBuffer
+void __thiscall FUN_006a21c0_class::BSSimpleArray_PathingNode_1024_ReallocateBuffer(int aiNewSize, int aiCopyCount)
 {
     if (m_iWordAt04 != 0)
     {
-        if (flag == m_iThirdValue)
+        if (aiCopyCount == m_iThirdValue)
         {
-            m_iWordAt04 = vc(m_iWordAt04, value);
+            m_iWordAt04 = vc(m_iWordAt04, aiNewSize);
         }
         else
         {
-            int newValue = v4(value);
-            BSSimpleArray_PathingNode_1024_CopyItems(newValue, m_iWordAt04, flag);
+            int newValue = v4(aiNewSize);
+            BSSimpleArray_PathingNode_1024_CopyItems(newValue, m_iWordAt04, aiCopyCount);
             FUN_006a8500();
             m_iWordAt04 = newValue;
         }
     }
     else
     {
-        m_iWordAt04 = v4(value);
-        m_iThirdValue = value;
+        m_iWordAt04 = v4(aiNewSize);
+        m_iThirdValue = aiNewSize;
     }
 }
 
@@ -3965,6 +4149,8 @@ void PendingItem::operator delete(void* p, void* where)
 
 // Constructs b PendingItem objects in place in the array at a.
 // @fnv 0x006a23a0
+// pdb: BSSimpleArray<BSSimpleArray<FastNavMeshVertHandle,1024>,1024>::Clear | NavMeshPOVSearch.obj | debug, object-file run extension, low
+// pdb params: abFreeMemory
 void FUN_006a2470_class::ConstructPendingItems(int apItems, int aiCount)
 {
     for (unsigned int i = 0; i < (unsigned int)aiCount; i++)
@@ -4019,6 +4205,9 @@ struct S_006a26d0_Item
 
 // Placement-constructs count S_006a26d0_Item objects at base + i * 16.
 // @fnv 0x006a26d0
+// pdb: BSSimpleArray<RemoveIndex,1024>::_ReallocateBuffer | NavMeshPOVSearch.obj | debug, object-file run extension, low
+// pdb params: aiNewSize, aiCopyCount
+// pdb locals: pnewBuffer
 void __thiscall FUN_006a26d0_class::ConstructItems(int base, int count)
 {
     for (unsigned int i = 0; i < (unsigned int)count; i++)
@@ -4038,6 +4227,7 @@ struct FUN_006a2900_shell
 
 // @fnv 0x006a2900
 // src: GUESS 0x006a2900 (confidence: low)
+// pdb: BSSimpleArray<FastNavMeshVertHandle,1024>::~BSSimpleArray<FastNavMeshVertHandle,1024> | NavMeshPOVSearch.obj | debug, object-file run extension, low
 void FUN_006a2900_shell::SetVirtualTableAndProcessState_006a2900()
 {
     vtable = &DAT_0106b460;
@@ -4133,6 +4323,8 @@ struct FUN_006a61b0_cls
 // Resolves and notifies each slot's node via v58, then clears both slot holders.
 // @fnv 0x006a61b0
 // src: COMMUNITY 0x006a61b0
+// pdb: NavMeshRender::Update | NavMeshRender.obj | retail, upstream name already matches, high
+// pdb locals: bupdate, pactor, UpdateData
 void FUN_006a61b0_cls::NavMeshRender_Update()
 {
     if (m_04.Get() && m_04.Get()->Resolve())
@@ -4171,15 +4363,17 @@ struct FNVDestination
 
 struct FNVHost
 {
-    void __thiscall SetDestinationValue(FNVDestination* destination, int value, FNVValue extra);
+    void __thiscall SetDestinationValue(FNVDestination* pkItem, int key, FNVValue val);
 };
 
 // Stores value into destination->unk04 and passes extra to destination->embedded.FUN_006e5cc0.
 // @fnv 0x006a63e0
-void FNVHost::SetDestinationValue(FNVDestination* destination, int value, FNVValue extraValue)
+// pdb: NiTMapBase<DFALL<NiTMapItem<bhkRigidBody *,NiPointer<ObstacleData> > >,bhkRigidBody *,NiPointer<ObstacleData> >::SetValue | NavMeshObstacleManager.obj | retail, vtable slot, high
+// pdb params: pkItem, key, val
+void FNVHost::SetDestinationValue(FNVDestination* pkItem, int key, FNVValue val)
 {
-    destination->unk04 = value;
-    destination->embedded.FUN_006e5cc0(&extraValue);
+    pkItem->unk04 = key;
+    pkItem->embedded.FUN_006e5cc0(&val);
 }
 
 class Base_b9345
@@ -4244,6 +4438,8 @@ struct FUN_006a8530_cls : FUN_006a8530_base
 
 // Stores the handle from FUN_00401020() in m_10, then calls FUN_006b3eb0(0, 0).
 // @fnv 0x006a8530
+// pdb: BSSimpleArray<CombatSearchDoor,1024>::_InitialSetup | CombatGroup.obj | debug, object-file run extension, low
+// pdb params: aiReserveSize, aiInitialSize
 FUN_006a8530_cls::FUN_006a8530_cls()
 {
     m_10 = MemoryManager_Instance()->GetHandle();
@@ -4317,6 +4513,7 @@ struct FUN_006aa620 : public FUN_006a7b10
 };
 
 // @fnv 0x006aa620
+// pdb: NavMeshSearchLOS::NavMeshSearchLOS | NavMeshSearchLOS.obj | debug, object-file run extension, low
 FUN_006aa620::FUN_006aa620()
 {
     *reinterpret_cast<int*>(this) = reinterpret_cast<int>(&DAT_0106b830);
@@ -4349,6 +4546,9 @@ struct FUN_006ad2f0_cls
 };
 
 // @fnv 0x006ad2f0
+// pdb: NavMeshTriangle::SetEdgeCover | NavMeshTriangle.obj | debug, object-file run extension, low
+// pdb params: aiTriangleFlags, aiEdge, aiData, abLeftSide, abRightSide
+// pdb locals: ioffset, imask, ival
 void FUN_006ad2f0_cls::SetPackedField(unsigned short uiFieldIndex, unsigned short uiValue, unsigned char uiExtra1,
                                       unsigned char uiExtra2)
 {
@@ -4379,11 +4579,14 @@ float FUN_004e4430(float x);
 
 // @fnv 0x006ad3b0
 // src: COMMUNITY 0x006ad3b0
-unsigned int NavMeshTriangle_GetCoverLevel(float value, bool roundDown, bool roundNear)
+// pdb: NavMeshTriangle::GetCoverLevel | NavMeshTriangle.obj | retail, upstream name already matches, high
+// pdb params: afHeight, abRoundDown, abRoundClosest
+// pdb locals: ilevel, fvalue, ffloor, fremainder
+unsigned int NavMeshTriangle_GetCoverLevel(float afHeight, bool abRoundDown, bool abRoundClosest)
 {
-    float scaled = value * runtimeInitializationFloat2848;
+    float scaled = afHeight * runtimeInitializationFloat2848;
     unsigned int result;
-    if (roundNear)
+    if (abRoundClosest)
     {
         float fFloor = floor(scaled);
         float fRemainder = scaled - fFloor;
@@ -4396,7 +4599,7 @@ unsigned int NavMeshTriangle_GetCoverLevel(float value, bool roundDown, bool rou
             result = (unsigned int)FUN_004e4430(scaled);
         }
     }
-    else if (roundDown)
+    else if (abRoundDown)
     {
         result = (unsigned int)floor(scaled);
     }
@@ -4419,6 +4622,7 @@ struct PathSmootherCleanup
 
 // Calls FUN_006b3710, then deallocates this if flags has bit 0 set, and returns this.
 // @fnv 0x006b3970
+// pdb: BSSimpleArray<PathSmootherPOVSearch::PathEdgeVert,1024>::`scalar deleting destructor' | PathSmootherPOV.obj | retail, vtable slot, high
 PathSmootherCleanup* PathSmootherCleanup::FUN_006b3970(unsigned int flags)
 {
     FUN_006b3710();
@@ -4482,6 +4686,9 @@ class FUN_006b3cb0_cls
 };
 
 // @fnv 0x006b3cb0
+// pdb: AStarSearch<PathSmootherPOVNode,PathSmootherPOVLink>::GetPathToNode | PathSmootherPOV.obj | debug, call graph, medium
+// pdb params: apFinalNode, apReturnArray, apReturnLinkArray
+// pdb locals: icount, iindex, pcurrent
 bool FUN_006b3cb0_cls::CopyNodeListToArrays(FUN_006b3cb0_node* head, FUN_006b3cb0_arg2* pItemArray,
                                             FUN_006b3cb0_arg3* pPointArray)
 {
@@ -4554,6 +4761,9 @@ class FUN_006b3e10_cls
 
 // Computes a bucket index for node, walks that bucket's list while keys are smaller, then links node into the list at that position.
 // @fnv 0x006b3e10
+// pdb: AStarQueue<PathSmootherPOVNode,PathSmootherPOVLink>::AddNode | PathSmootherPOV.obj | debug, call graph, medium
+// pdb params: apNode
+// pdb locals: ppcurrent, ibucket, bucket
 void FUN_006b3e10_cls::InsertSorted(SortNodeB5152* node)
 {
     unsigned int idx = GetScaledValue(node);
@@ -4761,6 +4971,9 @@ struct FUN_006b43f0_cls
 
 // Initializes the object: zeroes m_00 and m_04, calls m_14.FUN_006b1d80(), clears m_54 through m_64, and returns this.
 // @fnv 0x006b43f0
+// pdb: BSSimpleArray<NavMesh *,1024>::_DestructItems | PathSmootherPOV.obj | debug, object-file run extension, low
+// pdb params: apFirstAddr, aiCount
+// pdb locals: i
 FUN_006b43f0_cls* FUN_006b43f0_cls::Constructor()
 {
     m_00 = 0.0f;
@@ -4792,6 +5005,7 @@ struct B4590Buffer
 
 // @fnv 0x006b4590
 // src: GUESS 0x006b4590 (confidence: low)
+// pdb: BSSimpleArray<NavMesh *,1024>::_DeallocateBuffer | PathSmootherPOV.obj | debug, object-file run extension, low
 void B4590Buffer::AllocateStorage_006b4590(unsigned int uiNewSize, unsigned int uiOldSize)
 {
     if (m_pBase)
@@ -4869,6 +5083,7 @@ class FUN_006b4790_cls
 
 // Destructor: if m_54 is set, calls FUN_006d3100(0) on it; if m_58 is set, calls FUN_006b4850(1) on it.
 // @fnv 0x006b4790
+// pdb: NavMeshInfo::~NavMeshInfo | NavMeshInfo.obj | debug, object-file gap fill, medium
 FUN_006b4790_cls::~FUN_006b4790_cls()
 {
     if (m_54 != 0)
@@ -6984,6 +7199,7 @@ struct FUN_006b8d90
 
 // Initializes m_2048, m_204c, m_2050 and m_2054 to zero.
 // @fnv 0x006b8d90
+// pdb: AStarSearch<NavMeshInfo const *,TESObjectREFR *>::AStarSearch<NavMeshInfo const *,TESObjectREFR *> | NavMeshInfoSearch.obj | debug, object-file run extension, low
 FUN_006b8d90::FUN_006b8d90()
 {
     m_2048 = 0;
@@ -7008,6 +7224,9 @@ struct FUN_006b8ec0_cls
 
 // @fnv 0x006b8ec0
 // src: XBOX_PDB 0x006b8ec0
+// pdb: AStarSearch<NavMeshInfo const *,TESObjectREFR *>::AddStartNode | NavMeshInfoSearch.obj | debug, object-file run extension, low
+// pdb params: aiKey, aNodeData, afHeuristic
+// pdb locals: pastarNode
 FUN_006b8ec0_Node* FUN_006b8ec0_cls::AStarSearch_NavMeshInfo_const_TESObjectREFR_AddStartNode(int a1, int* piValue, float afValue)
 {
     FUN_006b8ec0_Node* node;
@@ -7047,6 +7266,9 @@ struct S_006b94a0_Table
     void __thiscall InsertNode(S_006b94a0_Node* node);
 };
 // @fnv 0x006b94a0
+// pdb: AStarQueue<NavMeshInfo const *,TESObjectREFR *>::AddNode | NavMeshInfoSearch.obj | debug, call graph, low
+// pdb params: apNode
+// pdb locals: ppcurrent, ibucket, bucket
 void __thiscall S_006b94a0_Table::InsertNode(S_006b94a0_Node* node)
 {
     int index4 = GetScaledValue(node);
@@ -7107,6 +7329,8 @@ struct FUN_006b9610_shell
 };
 // @fnv 0x006b9610
 // src: GUESS 0x006b9610 (confidence: low)
+// pdb: BSSimpleArray<AStarNode<NavMeshInfo const *,TESObjectREFR *> *,1024>::_Reallocate | NavMeshInfoSearch.obj | debug, object-file run extension, low
+// pdb params: apBuffer, aiNewSizeInItem
 void FUN_006b9610_shell::SetVtableAndProcessState_006b9610()
 {
     vtable = &DAT_0106c264;
@@ -7122,6 +7346,9 @@ struct FUN_006b9710_Class
 };
 
 // @fnv 0x006b9710
+// pdb: AStarQueue<ParentSpaceNode,TeleportLink>::GetBucketForNode | TeleportDoorSearch.obj | debug, call graph, medium
+// pdb params: apNode
+// pdb locals: fnodeFitness
 float __thiscall FUN_006b9710_Class::GetSum()
 {
     return this->unk00 + this->unk04;
@@ -7166,7 +7393,10 @@ void __cdecl sqrt_004019b0(float value);
 
 // @fnv 0x006b9940
 // src: COMMUNITY 0x006b9940
-void __cdecl NavMeshMath_DistanceFromLine(FUN_006b9940_cls* a1, FUN_006b9940_cls* a2, FUN_006b9940_cls* a3)
+// pdb: NavMeshMath::DistanceFromLine | NavMeshMath.obj | debug, upstream name already matches, high
+// pdb params: aPoint, aLineStart, aLineEnd
+// pdb locals: d, b, c2, c1, v, w, p
+void __cdecl NavMeshMath_DistanceFromLine(FUN_006b9940_cls* aPoint, FUN_006b9940_cls* aLineStart, FUN_006b9940_cls* aLineEnd)
 {
     FUN_006b9940_cls v0c2;
     FUN_006b9940_cls v18;
@@ -7177,13 +7407,13 @@ void __cdecl NavMeshMath_DistanceFromLine(FUN_006b9940_cls* a1, FUN_006b9940_cls
     FUN_006b9940_cls v3c4;
     FUN_006b9940_cls v48;
 
-    a3->SubtractIntoVector(&v2, a2);
-    a1->SubtractIntoVector(&v18, a2);
+    aLineEnd->SubtractIntoVector(&v2, aLineStart);
+    aPoint->SubtractIntoVector(&v18, aLineStart);
     dot4 = v18.DotProduct(&v2);
     dotVal = v2.DotProduct(&v2);
     scaleTmp = dot4 / dotVal;
-    a2->FUN_00439e90(&v0c2, FUN_004a3760(&v48, scaleTmp, &v2));
-    a1->SubtractIntoVector(&v3c4, &v0c2);
+    aLineStart->FUN_00439e90(&v0c2, FUN_004a3760(&v48, scaleTmp, &v2));
+    aPoint->SubtractIntoVector(&v3c4, &v0c2);
     sqrt_004019b0(v3c4.DotProduct(&v3c4));
 }
 
@@ -7196,6 +7426,9 @@ NiPoint2 operator*(float s, const NiPoint2& p);
 // Tests whether segments a-b and c-d cross and, if so, writes the intersection point to out and returns true.
 // @fnv 0x006b9e90
 // src: XBOX_PDB 0x006b9e90
+// pdb: NavMeshMath::Find2DIntersection | NavMeshMath.obj | debug, call graph (shared callers), medium
+// pdb params: aSegment1Start, aSegment1End, aSegment2Start, aSegment2End, apReturnIntersection
+// pdb locals: fa2, fa1, fa3, fa4, t
 bool NavMeshMath_Find2DIntersection_006b9e90(const NiPoint2& aStart1, const NiPoint2& aEnd1, const NiPoint2& aStart2, const NiPoint2& aEnd2,
                   NiPoint2& aOutPoint)
 {
@@ -7232,18 +7465,21 @@ extern const double DAT_01012060;
 // Tests whether segments a-b and c-d intersect using cross products and, if so, writes the intersection point to output and returns true.
 // @fnv 0x006ba240
 // src: XBOX_PDB 0x006ba240
-bool __cdecl NavMeshMath_Find2DIntersectionStable(const ThreeDimensionalVector* apSeg1Start, const ThreeDimensionalVector* apSeg1End,
-                          const ThreeDimensionalVector* apSeg2Start, const ThreeDimensionalVector* apSeg2End,
-                          ThreeDimensionalVector* apResult)
+// pdb: NavMeshMath::Find2DIntersectionStable | NavMeshMath.obj | retail, upstream name already matches, high
+// pdb params: aSegment1Start, aSegment1End, aSegment2Start, aSegment2End, apReturnIntersection
+// pdb locals: fa2, fa3, fa4, fa1, t
+bool __cdecl NavMeshMath_Find2DIntersectionStable(const ThreeDimensionalVector* aSegment1Start, const ThreeDimensionalVector* aSegment1End,
+                          const ThreeDimensionalVector* aSegment2Start, const ThreeDimensionalVector* aSegment2End,
+                          ThreeDimensionalVector* apReturnIntersection)
 {
-    float first = (apSeg1Start->x - apSeg2End->x) * (apSeg1End->y - apSeg2End->y) -
-                  (apSeg1Start->y - apSeg2End->y) * (apSeg1End->x - apSeg2End->x);
-    float second = (apSeg1Start->x - apSeg2Start->x) * (apSeg1End->y - apSeg2Start->y) -
-                   (apSeg1Start->y - apSeg2Start->y) * (apSeg1End->x - apSeg2Start->x);
-    float third = (apSeg2Start->x - apSeg1Start->x) * (apSeg2End->y - apSeg1Start->y) -
-                  (apSeg2Start->y - apSeg1Start->y) * (apSeg2End->x - apSeg1Start->x);
-    float fourth = (apSeg2Start->x - apSeg1End->x) * (apSeg2End->y - apSeg1End->y) -
-                   (apSeg2Start->y - apSeg1End->y) * (apSeg2End->x - apSeg1End->x);
+    float first = (aSegment1Start->x - aSegment2End->x) * (aSegment1End->y - aSegment2End->y) -
+                  (aSegment1Start->y - aSegment2End->y) * (aSegment1End->x - aSegment2End->x);
+    float second = (aSegment1Start->x - aSegment2Start->x) * (aSegment1End->y - aSegment2Start->y) -
+                   (aSegment1Start->y - aSegment2Start->y) * (aSegment1End->x - aSegment2Start->x);
+    float third = (aSegment2Start->x - aSegment1Start->x) * (aSegment2End->y - aSegment1Start->y) -
+                  (aSegment2Start->y - aSegment1Start->y) * (aSegment2End->x - aSegment1Start->x);
+    float fourth = (aSegment2Start->x - aSegment1End->x) * (aSegment2End->y - aSegment1End->y) -
+                   (aSegment2Start->y - aSegment1End->y) * (aSegment2End->x - aSegment1End->x);
     if (first * second <= DAT_01012060 && third * fourth <= DAT_01012060)
     {
         if (first == DAT_01012060)
@@ -7251,7 +7487,7 @@ bool __cdecl NavMeshMath_Find2DIntersectionStable(const ThreeDimensionalVector* 
         if (fourth == DAT_01012060)
             return false;
         float ratio = third / (third - fourth);
-        *apResult = *apSeg1Start + ratio * (*apSeg1End - *apSeg1Start);
+        *apReturnIntersection = *aSegment1Start + ratio * (*aSegment1End - *aSegment1Start);
         return true;
     }
     return false;
@@ -7269,6 +7505,9 @@ Point3Storage* __cdecl FUN_006ba7e0_lerp(Point3Storage* out, float t, Point3Stor
 
 // @fnv 0x006ba7e0
 // src: GUESS 0x006ba7e0 (confidence: low)
+// pdb: NavMeshMath::LineSegmentToLine2DIntersection | NavMeshMath.obj | debug, object-file gap fill, medium
+// pdb params: arSegment1, arSegment2, arLine1, arLine2, apReturnIntersection
+// pdb locals: fcross2, segmentLineVec, lineVec, segmentVec, fcross, fmult
 bool __cdecl Object_ProcessAndReturnValue_006ba7e0(unsigned int uiIndexA, FUN_006ba7e0_cls* a2, unsigned int uiIndexB, FUN_006ba7e0_cls* a4,
                           Point3Storage* out)
 {
@@ -7306,29 +7545,32 @@ NiPoint3 operator*(float s, const NiPoint3& p);
 
 // @fnv 0x006bab00
 // src: COMMUNITY 0x006bab00
-bool NavMeshMath_DoCircleAndSegmentIntersect(const NiPoint3& point, float radius, const NiPoint3& start, const NiPoint3& end)
+// pdb: NavMeshMath::DoCircleAndSegmentIntersect | NavMeshMath.obj | debug, upstream name already matches, high
+// pdb params: aCircleCenter, afCircleRadius, aSegmentStart, aSegmentEnd
+// pdb locals: c1, u, pointOnSegment, v, c2
+bool NavMeshMath_DoCircleAndSegmentIntersect(const NiPoint3& aCircleCenter, float afCircleRadius, const NiPoint3& aSegmentStart, const NiPoint3& aSegmentEnd)
 {
-    NiPoint3 dir3 = end - start;
-    NiPoint3 kRel = point - start;
+    NiPoint3 dir3 = aSegmentEnd - aSegmentStart;
+    NiPoint3 kRel = aCircleCenter - aSegmentStart;
     NiPoint3 closest;
     float proj = dir3.Dot(kRel);
     if (proj <= 0.0)
     {
-        closest = start;
+        closest = aSegmentStart;
     }
     else
     {
         float fLenSq = dir3.Dot(dir3);
         if (fLenSq <= proj)
         {
-            closest = end;
+            closest = aSegmentEnd;
         }
         else
         {
-            closest = start + (proj / fLenSq) * dir3;
+            closest = aSegmentStart + (proj / fLenSq) * dir3;
         }
     }
-    return (point - closest).SqrLength() < radius * radius;
+    return (aCircleCenter - closest).SqrLength() < afCircleRadius * afCircleRadius;
 }
 
 float __cdecl FUN_005c5420();
@@ -7344,11 +7586,14 @@ struct Pt_6bbad0
 
 // @fnv 0x006bbad0
 // src: XBOX_PDB 0x006bbad0
-Pt_6bbad0 __cdecl NavMeshMath_RandomPointOnTriangle(const Pt_6bbad0& aVertex0, const Pt_6bbad0& aVertex1, const Pt_6bbad0& aVertex2)
+// pdb: NavMeshMath::RandomPointOnTriangle | NavMeshMath.obj | retail, upstream name already matches, high
+// pdb params: aVert0, aVert1, aVert2
+// pdb locals: frandEdge2, edge1, edge2, frandEdge1
+Pt_6bbad0 __cdecl NavMeshMath_RandomPointOnTriangle(const Pt_6bbad0& aVert0, const Pt_6bbad0& aVert1, const Pt_6bbad0& aVert2)
 {
     float j;
-    Pt_6bbad0 e = aVertex1 - aVertex0;
-    Pt_6bbad0 h = aVertex2 - aVertex0;
+    Pt_6bbad0 e = aVert1 - aVert0;
+    Pt_6bbad0 h = aVert2 - aVert0;
     float p = FUN_005c5420();
     j = FUN_005c5420();
     while (p + j > 1.0)
@@ -7356,7 +7601,7 @@ Pt_6bbad0 __cdecl NavMeshMath_RandomPointOnTriangle(const Pt_6bbad0& aVertex0, c
         p = FUN_005c5420();
         j = FUN_005c5420();
     }
-    return aVertex0 + e * p + h * j;
+    return aVert0 + e * p + h * j;
 }
 
 class BaseList6BC
@@ -7439,6 +7684,7 @@ class FUN_006bc330 : public BaseList6BC
 };
 
 // @fnv 0x006bc330
+// pdb: ObstacleUndoData::~ObstacleUndoData | NavMeshObstacleCutter.obj | debug, call graph, medium
 FUN_006bc330::~FUN_006bc330()
 {}
 
@@ -7471,14 +7717,17 @@ struct Graph006bdf50
     int unk28;
     int unk2C;
     EdgeArrayA edges;
-    bool CanJoin(int a, int b);
+    bool CanJoin(int apVert1, int apVert2);
     EdgeA* MakeEdge(int a, int b, int c);
-    void JoinAdjacentEdges();
+    void NavMeshObstacleCutter_CreateRemainingEdges();
 };
 
 // Scans valid edge pairs that share an endpoint and, when CanJoin allows it, creates a new edge between the opposite endpoints and appends it to edges.
 // @fnv 0x006bdf50
-void Graph006bdf50::JoinAdjacentEdges()
+// src: XBOX_RETAIL_PDB 0x006bdf50
+// pdb: NavMeshObstacleCutter::CreateRemainingEdges | NavMeshObstacleCutter.obj | retail, call graph, high
+// pdb locals: i, pedge1, j, pnewEdgeVert1, pedge2, pnewEdgeVert2, pnewedge
+void Graph006bdf50::NavMeshObstacleCutter_CreateRemainingEdges()
 {
     unsigned int i;
     EdgeA* first4;
@@ -7588,6 +7837,8 @@ struct Host120
 };
 // Scans pairs of edges sharing a vertex, builds a triangle from a third edge joining their outer vertices, adds it to the mesh and updates the edges.
 // @fnv 0x006be120
+// pdb: NavMeshObstacleCutter::CreateNewTriangles | NavMeshObstacleCutter.obj | retail, call graph, medium
+// pdb locals: bTriangleCreated, i, ptriangleVerts, pedge1, j, bSkipEdge1, pedge2, k, pedge3, tri, edge1, edge2, normal, itriIndex
 bool Host120::BuildTrianglesFromEdgePairs()
 {
     bool changed = false;
@@ -7723,7 +7974,7 @@ struct ObstacleDataPtr
 
 bool __cdecl NavMeshMath_IsPointInsideTriangle(const PathPoint_blk_006a0000_od& kA, const PathPoint_blk_006a0000_od& kB, const PathPoint_blk_006a0000_od& kC, const PathPoint_blk_006a0000_od& kPoint, float& fDist,
                           float fRadius, float fAngleDifference);
-bool __cdecl NavMeshObstacleManager_IsPointInBox(const PathPoint_blk_006a0000_od& kPoint, const ObstacleDataPtr& kObstacle, float fRadius, float fAngleDifference);
+bool __cdecl NavMeshObstacleManager_IsPointInBox(const PathPoint_blk_006a0000_od& aPoint, const ObstacleDataPtr& aBox, float afMaxHeightAbove, float afMaxHeightBelow);
 
 struct PathTriangleCheck
 {
@@ -7736,16 +7987,19 @@ struct PathTriangleCheck
     int unk18;
     PathNodeArray kNodeArray;
 
-    bool NavMeshObstacleCutter_CheckTriangleAgainstObstacle(LocalPathNode* pA, LocalPathNode* pB, LocalPathNode* pC);
+    bool NavMeshObstacleCutter_CheckTriangleAgainstObstacle(LocalPathNode* apVert1, LocalPathNode* apVert2, LocalPathNode* apVert3);
 };
 
 // @fnv 0x006bec40
 // src: COMMUNITY 0x006bec40
-bool PathTriangleCheck::NavMeshObstacleCutter_CheckTriangleAgainstObstacle(LocalPathNode* pNodeA, LocalPathNode* pNodeB, LocalPathNode* pNodeC)
+// pdb: NavMeshObstacleCutter::CheckTriangleAgainstObstacle | NavMeshObstacleCutter.obj | retail, upstream name already matches, high
+// pdb params: apVert1, apVert2, apVert3
+// pdb locals: vert2Loc, dontCare, vert3Loc, vert1Loc, center, i, pvert, vertLoc
+bool PathTriangleCheck::NavMeshObstacleCutter_CheckTriangleAgainstObstacle(LocalPathNode* apVert1, LocalPathNode* apVert2, LocalPathNode* apVert3)
 {
-    PathPoint_blk_006a0000_od kA = pNodes->GetNodePos(pNodeA->usIndex);
-    PathPoint_blk_006a0000_od kB9 = pNodes->GetNodePos(pNodeB->usIndex);
-    PathPoint_blk_006a0000_od kC2 = pNodes->GetNodePos(pNodeC->usIndex);
+    PathPoint_blk_006a0000_od kA = pNodes->GetNodePos(apVert1->usIndex);
+    PathPoint_blk_006a0000_od kB9 = pNodes->GetNodePos(apVert2->usIndex);
+    PathPoint_blk_006a0000_od kC2 = pNodes->GetNodePos(apVert3->usIndex);
     PathPoint_blk_006a0000_od kCenter4 = (kA + kB9 + kC2) * 0.33333f;
     float fDist;
 
@@ -7753,7 +8007,7 @@ bool PathTriangleCheck::NavMeshObstacleCutter_CheckTriangleAgainstObstacle(Local
     {
         LocalPathNode* pNode4 = reinterpret_cast<LocalPathNode*>(kNodeArray.GetAt(i4));
         PathPoint_blk_006a0000_od kPoint7 = pNodes->GetNodePos(pNode4->usIndex);
-        if (pNode4 == pNodeA || pNode4 == pNodeB || pNode4 == pNodeC)
+        if (pNode4 == apVert1 || pNode4 == apVert2 || pNode4 == apVert3)
             continue;
         if (NavMeshMath_IsPointInsideTriangle(kA, kB9, kC2, kPoint7, fDist, 128.0f, 180.0f))
             return false;
@@ -7779,17 +8033,20 @@ class FUN_006bf3c0_cls
     unsigned int m_04;
     unsigned int m_08;
     ScrapHeapBuffer m_0c;
-    bool NavMeshObstacleCutter_IsVertInOverlappedArea(P_006bf1d0* p);
-    void* NavMeshObstacleCutter_CreateVertex(unsigned short a, unsigned char b, unsigned char c, unsigned char d);
+    bool NavMeshObstacleCutter_IsVertInOverlappedArea(P_006bf1d0* apVert);
+    void* NavMeshObstacleCutter_CreateVertex(unsigned short aiIndex, unsigned char abOnObstacle, unsigned char abOnBounds, unsigned char abOnOpenEdge);
 };
 
 // Allocates an 8-byte FUN_006bf480_Class with the four arguments, sets its m_5 from FUN_006bf1d0, and returns it.
 // @fnv 0x006bf3c0
 // src: COMMUNITY 0x006bf3c0
-void* FUN_006bf3c0_cls::NavMeshObstacleCutter_CreateVertex(unsigned short a, unsigned char b, unsigned char c, unsigned char d)
+// pdb: NavMeshObstacleCutter::CreateVertex | NavMeshObstacleCutter.obj | retail, upstream name already matches, high
+// pdb params: aiIndex, abOnObstacle, abOnBounds, abOnOpenEdge
+// pdb locals: pvert
+void* FUN_006bf3c0_cls::NavMeshObstacleCutter_CreateVertex(unsigned short aiIndex, unsigned char abOnObstacle, unsigned char abOnBounds, unsigned char abOnOpenEdge)
 {
     void* raw = m_0c.Allocate(8, DAT_010a2720);
-    new (raw) FUN_006bf480_Class(a, b, c, d);
+    new (raw) FUN_006bf480_Class(aiIndex, abOnObstacle, abOnBounds, abOnOpenEdge);
     ((FUN_006bf480_Class*)raw)->m_5 = NavMeshObstacleCutter_IsVertInOverlappedArea((P_006bf1d0*)raw);
     return raw;
 }
@@ -7830,6 +8087,9 @@ void operator delete(void*, void*);
 
 // Allocates 0x30 bytes from m_0c and placement-constructs a FUN_006bf4d0_obj with a1, a2, a3, returning the new object.
 // @fnv 0x006bf4d0
+// pdb: BSScrapArray<NavMeshObstacleVertex *,1024>::BSScrapArray<NavMeshObstacleVertex *,1024> | NavMeshObstacleCutter.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NavMeshObstacleCutter::CreateEdge
+// pdb params: aiReserveSize, aiInitialSize, apHeap
 void* FUN_006bf4d0_cls::CreateObject(void* apArg1, void* apArg2, int aiArg3)
 {
     void* pNew = m_0c.ScrapHeap_Allocate(0x30, DAT_010a2720);
@@ -7924,6 +8184,8 @@ struct FUN_006bfd40_cls
 
 // @fnv 0x006bfd40
 // src: COMMUNITY 0x006bfd40
+// pdb: BSSimpleArray<CombatSearchLocation,1024>::AddUninitialized | CombatGroup.obj | debug, call graph, medium
+// pdb locals: inewSize
 unsigned int FUN_006bfd40_cls::BSSimpleArray_CombatSearchLocation_1024_AddUninitialized()
 {
     if (Probe())
@@ -7971,6 +8233,9 @@ struct FUN_006bff60_Class
 
 // @fnv 0x006bff60
 // src: GUESS 0x006bff60 (confidence: low)
+// pdb: BSSimpleArray<CombatSearchLocation,1024>::_ReallocateBuffer | CombatGroup.obj | debug, call graph (shared callers), low
+// pdb params: aiNewSize, aiCopyCount
+// pdb locals: pnewBuffer
 void __thiscall FUN_006bff60_Class::UpdateFields_006bff60(int value, int count)
 {
     if (this->unk04 != 0)
@@ -8020,6 +8285,8 @@ struct FUN_006a1720_class
 
 // @fnv 0x006a1720
 // src: GUESS 0x006a1720 (confidence: medium)
+// pdb: BSSimpleArray<BSSimpleArray<NavMeshPOV *,1024>,1024>::SetSize | NavMeshPOVSearch.obj | retail, object-file run extension, low
+// pdb params: aiNewSize, abFreeMemory
 void FUN_006a1720_class::ResizeElementStorage(unsigned int requested, bool shrink)
 {
     if (requested == 0)
@@ -8073,6 +8340,9 @@ struct Proc006a20
 };
 // Placement-constructs count FUN_006a14b0 objects at 16-byte intervals starting from base.
 // @fnv 0x006a2000
+// pdb: BSSimpleArray<PathSmootherPOVDebugPOV,1024>::_ConstructItems | NavMeshPOVSearch.obj | debug, object-file run extension, low
+// pdb params: apFirstAddr, aiCount
+// pdb locals: i
 void Proc006a20::ConstructArray(int base, int count)
 {
     for (unsigned int index = 0; index < (unsigned int)count; ++index)
@@ -8151,14 +8421,16 @@ struct Host260
     int m_ac;
     Pointer260 m_b0;
     Pointer260 m_b4;
-    void NavMeshRender_SetTransparentOverLayMode(bool enabled);
+    void NavMeshRender_SetTransparentOverLayMode(bool abTransparent);
 };
 // Sets a value on each of several sub-objects depending on enabled, then calls FUN_00ba91a0 with 31 and the inverse of enabled.
 // @fnv 0x006a5ee0
 // src: COMMUNITY 0x006a5ee0
-void Host260::NavMeshRender_SetTransparentOverLayMode(bool enabled)
+// pdb: NavMeshRender::SetTransparentOverLayMode | NavMeshRender.obj | debug, upstream name already matches, high
+// pdb params: abTransparent
+void Host260::NavMeshRender_SetTransparentOverLayMode(bool abTransparent)
 {
-    if (enabled)
+    if (abTransparent)
     {
         m_94.Modelloader_GetReferencedThis()->NiMaterialProperty_SetAlpha(DAT_0106b4ec);
         m_b0.Modelloader_GetReferencedThis()->NiMaterialProperty_SetAlpha(DAT_0106b4ec);
@@ -8186,7 +8458,7 @@ void Host260::NavMeshRender_SetTransparentOverLayMode(bool enabled)
         m_74.Modelloader_GetReferencedThis()->NiMaterialProperty_SetAlpha(DAT_0106b4fc);
         m_78.Modelloader_GetReferencedThis()->NiMaterialProperty_SetAlpha(DAT_0106b508);
     }
-    BSShaderProperty_SetFlagRecurse(DAT_011d6e5c.Modelloader_GetReferencedThis(), 31, !enabled);
+    BSShaderProperty_SetFlagRecurse(DAT_011d6e5c.Modelloader_GetReferencedThis(), 31, !abTransparent);
 }
 
 struct WorkerElement
@@ -8323,6 +8595,8 @@ struct PathSearch : FUN_006a1cf0_shell
 };
 // @fnv 0x006b3a30
 // src: COMMUNITY 0x006b3a30
+// pdb: AStarSearch<PathSmootherPOVNode,PathSmootherPOVLink>::BuildNodePath | PathSmootherPOV.obj | debug, call graph, medium
+// pdb locals: iloopCount, ConnectedNodes, ptempLastSearchedNode, i, pconnectedNode
 PathSearchNode* PathSearch::AStarSearch_PathSmootherPOVNode_PathSmootherPOVLink_BuildNodePath()
 {
     SearchConnectionBuffer connections;
@@ -8387,6 +8661,9 @@ struct Array64
 };
 // @fnv 0x006b4450
 // src: GUESS 0x006b4450 (confidence: low)
+// pdb: BSSimpleArray<NavMesh *,1024>::_ReallocateBuffer | PathSmootherPOV.obj | debug, object-file run extension, low
+// pdb params: aiNewSize, aiCopyCount
+// pdb locals: pnewBuffer
 void Array64::AllocateStorage_006b4450(unsigned int count, bool shrink)
 {
     if (count == 0)
@@ -8459,6 +8736,8 @@ struct Search9180 : FUN_006b8d90
     SearchNode9180* FindPathStep();
 };
 // @fnv 0x006b9180
+// pdb: AStarSearch<NavMeshInfo const *,TESObjectREFR *>::BuildNodePath | NavMeshInfoSearch.obj | debug, object-file run extension, low
+// pdb locals: iloopCount, ConnectedNodes, ptempLastSearchedNode, i, pconnectedNode
 SearchNode9180* Search9180::FindPathStep()
 {
     ConnectionArray9180 connections;
@@ -8518,17 +8797,20 @@ extern double DAT_01012060;
 
 // @fnv 0x006ba100
 // src: COMMUNITY 0x006ba100
-bool __cdecl NavMeshMath_Find2DIntersection_2(const Point3Storage* apSeg1Start, const Point3Storage* apSeg1End, const Point3Storage* apSeg2Start,
-                          const Point3Storage* apSeg2End, Point3Storage* apIntersection)
+// pdb: NavMeshMath::Find2DIntersection | NavMeshMath.obj | debug, call graph (shared callers), high
+// pdb params: aSegment1Start, aSegment1End, aSegment2Start, aSegment2End, apReturnIntersection
+// pdb locals: fa2, fa1, fa3, fa4, t
+bool __cdecl NavMeshMath_Find2DIntersection_2(const Point3Storage* aSegment1Start, const Point3Storage* aSegment1End, const Point3Storage* aSegment2Start,
+                          const Point3Storage* aSegment2End, Point3Storage* apReturnIntersection)
 {
-    float fStack_8 = (apSeg1Start->x - apSeg2End->x) * (apSeg1End->y - apSeg2End->y) -
-                     (apSeg1Start->y - apSeg2End->y) * (apSeg1End->x - apSeg2End->x);
-    float fStack_c = (apSeg1Start->x - apSeg2Start->x) * (apSeg1End->y - apSeg2Start->y) -
-                     (apSeg1Start->y - apSeg2Start->y) * (apSeg1End->x - apSeg2Start->x);
+    float fStack_8 = (aSegment1Start->x - aSegment2End->x) * (aSegment1End->y - aSegment2End->y) -
+                     (aSegment1Start->y - aSegment2End->y) * (aSegment1End->x - aSegment2End->x);
+    float fStack_c = (aSegment1Start->x - aSegment2Start->x) * (aSegment1End->y - aSegment2Start->y) -
+                     (aSegment1Start->y - aSegment2Start->y) * (aSegment1End->x - aSegment2Start->x);
     if (fStack_8 * fStack_c <= DAT_01012060)
     {
-        float fStack_14 = (apSeg2Start->x - apSeg1Start->x) * (apSeg2End->y - apSeg1Start->y) -
-                          (apSeg2Start->y - apSeg1Start->y) * (apSeg2End->x - apSeg1Start->x);
+        float fStack_14 = (aSegment2Start->x - aSegment1Start->x) * (aSegment2End->y - aSegment1Start->y) -
+                          (aSegment2Start->y - aSegment1Start->y) * (aSegment2End->x - aSegment1Start->x);
         float fStack_10 = (fStack_14 + fStack_c) - fStack_8;
         if (fStack_14 * fStack_10 < DAT_01012060)
         {
@@ -8536,13 +8818,13 @@ bool __cdecl NavMeshMath_Find2DIntersection_2(const Point3Storage* apSeg1Start, 
             Vec3Ops temp4;
             Vec3Ops temp2c4;
             Vec3Ops temp38;
-            *apIntersection = *reinterpret_cast<const Point3Storage*>(
-                reinterpret_cast<const Vec3Ops&>(*apSeg1Start)
+            *apReturnIntersection = *reinterpret_cast<const Point3Storage*>(
+                reinterpret_cast<const Vec3Ops&>(*aSegment1Start)
                     .Add(&temp38, *reinterpret_cast<const Vec3Ops*>(FUN_004a3760(
                                       &temp2c4, fStack5,
                                       *reinterpret_cast<const Vec3Ops*>(
-                                          reinterpret_cast<const Vec3Ops&>(*apSeg1End)
-                                              .Sub(&temp4, reinterpret_cast<const Vec3Ops&>(*apSeg1Start)))))));
+                                          reinterpret_cast<const Vec3Ops&>(*aSegment1End)
+                                              .Sub(&temp4, reinterpret_cast<const Vec3Ops&>(*aSegment1Start)))))));
             return true;
         }
     }
@@ -8563,6 +8845,9 @@ struct TanPoint3
 float __cdecl TanSqrt(float afValue);
 
 // @fnv 0x006ba8c0
+// pdb: NavMeshMath::ComputeTangentPointsToCircleFromPoint | NavMeshMath.obj | debug, object-file gap fill, medium
+// pdb params: aCircleCenter, afCircleRadius, aPoint, aRetPoint1, aRetPoint2
+// pdb locals: sqr_length, radius_sqr, v, dist, ratio
 bool __cdecl ComputeCircleTangents(const TanPoint3& arCenter, float afRadius, const TanPoint3& arPoint,
                                    TanPoint3& arTangent1, TanPoint3& arTangent2)
 {
@@ -8588,29 +8873,32 @@ bool __cdecl ComputeCircleTangents(const TanPoint3& arCenter, float afRadius, co
 // Computes the closest point on segment start-end to point and returns whether its squared distance to point is less than radius squared.
 // @fnv 0x006ba9e0
 // src: COMMUNITY 0x006ba9e0
-bool NavMeshMath_SegmentCircleIntersection(const NiPoint3& start, const NiPoint3& end, const NiPoint3& point, float radius)
+// pdb: NavMeshMath::SegmentCircleIntersection | NavMeshMath.obj | debug, upstream name already matches, high
+// pdb params: aSegmentStart, aSegmentEnd, aCircleCenter, afCircleRadius
+// pdb locals: c1, u, pointOnSegment, v, c2
+bool NavMeshMath_SegmentCircleIntersection(const NiPoint3& aSegmentStart, const NiPoint3& aSegmentEnd, const NiPoint3& aCircleCenter, float afCircleRadius)
 {
-    NiPoint3 dir3 = end - start;
-    NiPoint3 kRel = point - start;
+    NiPoint3 dir3 = aSegmentEnd - aSegmentStart;
+    NiPoint3 kRel = aCircleCenter - aSegmentStart;
     NiPoint3 closest;
     float t2 = dir3.Dot(kRel);
     if (t2 <= DAT_01012060)
     {
-        closest = start;
+        closest = aSegmentStart;
     }
     else
     {
         float len2 = dir3.Dot(dir3);
         if (len2 <= t2)
         {
-            closest = end;
+            closest = aSegmentEnd;
         }
         else
         {
-            closest = start + (t2 / len2) * dir3;
+            closest = aSegmentStart + (t2 / len2) * dir3;
         }
     }
-    return (point - closest).SqrLength() < radius * radius;
+    return (aCircleCenter - closest).SqrLength() < afCircleRadius * afCircleRadius;
 }
 
 namespace CircleIntersection {
@@ -8645,6 +8933,9 @@ float FUN_00408840(float);
 float sqrt_004019b0(float);
 // Computes where a line intersects a circle, filling result with hit points, parameters and a type code, and returns whether a valid intersection was found.
 // @fnv 0x006bac20
+// pdb: NavMeshMath::CircleSegmentIntersection | NavMeshMath.obj | debug, object-file run extension, low
+// pdb params: aCircle, aSegment, aResults
+// pdb locals: bdox, relativeSegment, delta, result0, result1, fr2, fradius, fEpsilon, fdeltaCos, finvDeltaX, fm, fp, fb, fp2, fm2, fnom, resultParam, finvDenom, result1Param, result0Param, fsqrtDelta, finvDeltaY, fdeltaSin, bgood ...
 bool IntersectLineCircle(Circle* circle, const Line* pLine, Result* result)
 {
     float epsilonSlot18 = DAT_01017d00;
@@ -8849,39 +9140,42 @@ bool IntersectLineCircle(Circle* circle, const Line* pLine, Result* result)
 
 struct Obstacle_6bb8b0
 {
-    bool AngleSinCosArc_WithinRange(const NiPoint2& pt);
+    bool AngleSinCosArc_WithinRange(const NiPoint2& aAngle);
 };
 
 float __cdecl my_sqrt(float f);
 
 // @fnv 0x006bb8b0
 // src: COMMUNITY 0x006bb8b0
-bool __cdecl NavMeshMath_CheckArcAgainstCircle(const NiBound* pSphereA, Obstacle_6bb8b0* pObstacle, const NiBound* pSphereB)
+// pdb: NavMeshMath::CheckArcAgainstCircle | NavMeshMath.obj | retail, upstream name already matches, high
+// pdb params: aCircle1, aArc, aCircle2
+// pdb locals: fa2, delta, fd2, fr12, fh, fD, fdiff, fr22, finvD, finvR1, angle1, fa, angle2, fsum, fsqrLength
+bool __cdecl NavMeshMath_CheckArcAgainstCircle(const NiBound* aCircle1, Obstacle_6bb8b0* aArc, const NiBound* aCircle2)
 {
-    if (pSphereA->m_fRadius == 0.0)
+    if (aCircle1->m_fRadius == 0.0)
         return true;
-    if (pSphereB->m_fRadius == 0.0)
+    if (aCircle2->m_fRadius == 0.0)
         return true;
-    NiPoint3 c = pSphereB->m_kCenter.SubtractIntoVector(pSphereA->m_kCenter);
+    NiPoint3 c = aCircle2->m_kCenter.SubtractIntoVector(aCircle1->m_kCenter);
     float p = c.FUN_004a7290();
     float l = c.GetSquaredXYLength();
     if (l == 0.0)
         return false;
-    float h = pSphereA->m_fRadius + pSphereB->m_fRadius;
+    float h = aCircle1->m_fRadius + aCircle2->m_fRadius;
     if (h * h < l)
         return true;
     if (h * h < p)
         return true;
-    float q = pSphereA->m_fRadius - pSphereB->m_fRadius;
+    float q = aCircle1->m_fRadius - aCircle2->m_fRadius;
     if (l < q * q)
         return true;
     if (p < q * q)
         return true;
-    float k = pSphereA->m_fRadius * pSphereA->m_fRadius;
-    float cf = pSphereB->m_fRadius * pSphereB->m_fRadius;
+    float k = aCircle1->m_fRadius * aCircle1->m_fRadius;
+    float cf = aCircle2->m_fRadius * aCircle2->m_fRadius;
     float b = my_sqrt(l);
     float eb = 1.0f / b;
-    float f = 1.0f / pSphereA->m_fRadius;
+    float f = 1.0f / aCircle1->m_fRadius;
     float i = (k - cf + l) * 0.5 * eb;
     float e = i * i;
     float j;
@@ -8892,9 +9186,9 @@ bool __cdecl NavMeshMath_CheckArcAgainstCircle(const NiBound* pSphereA, Obstacle
     NiPoint2 a;
     a.x = (i * c.x - ba * c.y) * f * eb;
     a.y = (i * c.y + ba * c.x) * f * eb;
-    if (pObstacle->AngleSinCosArc_WithinRange(s))
+    if (aArc->AngleSinCosArc_WithinRange(s))
         return false;
-    if (pObstacle->AngleSinCosArc_WithinRange(a))
+    if (aArc->AngleSinCosArc_WithinRange(a))
         return false;
     return true;
 }
@@ -8945,7 +9239,7 @@ struct BuildValue
     void SetArrayValue(int coordinate, unsigned short value);
     void SetFlag_00691570(unsigned int flags);
     unsigned short GetBits13To15();
-    void NavMeshTriangle_SetObjectCount(unsigned int lastIndex);
+    void NavMeshTriangle_SetObjectCount(unsigned int aiCount);
 };
 
 
@@ -9063,7 +9357,7 @@ struct BuildIds
     void FUN_007cb2e0(const int* pIndex);
     unsigned int FUN_0044ddc0();
     bool NiTListBase_DFALL_NiTListItem_BSAnimGroupSequence_const_BSAnimGroupSequence_const_IsEmpty();
-    void BSSimpleArray_Sort(const void* comparator);
+    void BSSimpleArray_Sort(const void* apFunc);
     unsigned int* FUN_00877a30(int index, bool reverse);
 };
 
@@ -9094,6 +9388,9 @@ extern void Actor_AreReferencedValuesEqual();
 extern const int UNK_006bfb30;
 // Builds output from input: registers annotation bounds in the catalog, marks values, applies components, and processes the value collection.
 // @fnv 0x006bc3e0
+// pdb: NavMeshObstacleCutter::UndoNavMeshFromObstacleUndoData | NavMeshObstacleCutter.obj | debug, object-file run extension, low
+// pdb params: apNavMesh, apUndoData, aPortalSwaps
+// pdb locals: childSwapsToRemove, it, i, reverseSwap, index, ptri, e, sppreviousObstacle, ustriangle
 bool BuildProcess::Build(BuildOutput* pOutput, BuildInput* pInput, BuildCatalog* catalog)
 {
     output = pOutput;
@@ -9252,6 +9549,9 @@ struct AdjBuilder
 
 // Marks each source triangle's flag, then appends linked triangles not in the source index list to apOut with their edge data.
 // @fnv 0x006bca20
+// pdb: NavMeshObstacleCutter::GetModifiedTriangleList | NavMeshObstacleCutter.obj | debug, object-file gap fill, medium
+// pdb params: aBoundsTriangle
+// pdb locals: i, pthisTri, e, ptri, boundsTriangle, bInList, j, iboundsTriangleIndex, f
 void AdjBuilder::CollectLinkedTriangles(AdjEntryArray* apOut)
 {
     for (unsigned int i = 0; i < pSource->kIndices.GetSize(); i++)
@@ -9342,7 +9642,7 @@ struct TriX
 struct MeshX
 {
     bool FindAdjacentEdge(unsigned short, int, unsigned short*, unsigned short*, unsigned short*);
-    int FUN_006997b0(unsigned short, int);
+    int NavMesh_GetObstacleForTriangle(unsigned short, int);
 };
 bool __cdecl AreWideCharsEqual(const unsigned short&, const unsigned short&);
 struct NavMeshTriList : DA00694f80
@@ -9398,6 +9698,8 @@ struct HostB60
     void BuildNavMeshEdges();
 };
 // @fnv 0x006bcc60
+// pdb: NavMeshObstacleCutter::GenerateOutsideVertsAndEdges | NavMeshObstacleCutter.obj | debug, object-file gap fill, medium
+// pdb locals: i, ptri, e, eedgeType, bOnBoundsEdge, bOnOpenEdge, edgeObsVertices, poutsideEdge, edgeVerts, v, ivertIndex, pvert, potherMesh, iotherEdge, usotherTri
 void HostB60::BuildNavMeshEdges()
 {
     int i;
@@ -9466,7 +9768,7 @@ void HostB60::BuildNavMeshEdges()
                 }
                 if (cls == 3)
                 {
-                    ((MeshX*)mesh)->FUN_006997b0(p8->m_kNavMeshTriangleList.GetAt(i), (int)&ed->f1c);
+                    ((MeshX*)mesh)->NavMesh_GetObstacleForTriangle(p8->m_kNavMeshTriangleList.GetAt(i), (int)&ed->f1c);
                 }
                 if (cls == 4)
                 {
@@ -9544,7 +9846,7 @@ struct Edge
 };
 struct Mesh
 {
-    bool Project(Corner*, float, float, float*);
+    bool ComputeNavMeshZForLocation(Corner*, float, float, float*);
     unsigned short AddVertex(const Corner*);
     const Corner& GetVertex(unsigned short);
 };
@@ -9569,6 +9871,8 @@ struct Builder
 };
 // Builds a four-vertex quad from the shape's corner values, projects and adds the vertices, links them with edges, and marks edges longer than lengthThreshold.
 // @fnv 0x006bd040
+// pdb: NavMeshObstacleCutter::GenerateBoxVertsAndEdges | NavMeshObstacleCutter.obj | debug, object-file gap fill, medium
+// pdb locals: pboxedges, corners, fzheight, coverData, cornersLocalSpace, pobsverts, i, fnavmeshHeight, ivertIndex, vert, pobsedge
 void Builder::BuildQuad()
 {
     Corner tmp[4];
@@ -9589,7 +9893,7 @@ void Builder::BuildQuad()
             points[idx] = shape.Get()->rotation.Transform(&tmp[idx]) + shape.Get()->position;
             float index;
             index = points[idx].z;
-            if (mesh->Project(&points[idx], projectionDefault, b, &index))
+            if (mesh->ComputeNavMeshZForLocation(&points[idx], projectionDefault, b, &index))
                 points[idx].z = index;
         }
         for (unsigned next = 0; next < 4; next++)
@@ -9701,6 +10005,8 @@ struct Processor74
     void SplitCrossingEdges();
 };
 // @fnv 0x006bd540
+// pdb: NavMeshObstacleCutter::SplitEdges | NavMeshObstacleCutter.obj | debug, object-file gap fill, medium
+// pdb locals: i, obsVert2Loc, pObsVert1, pObsVert2, obsVert1Loc, pObstacleEdge, j, openVert1Loc, pOpenEdge, pOpenVert2, openVert2Loc, intersection, pOpenVert1, popenEdge1, pobsEdge1, pobsEdge2, popenEdge2, pintersectionVert, bcutOpenEdge, fminIntersectionLengthSqr, bcutObstacleEdge, ivertIndex, vert
 void Processor74::SplitCrossingEdges()
 {
     for (unsigned int i = 0; i < edges.FUN_0044ddc0(); ++i)
@@ -9918,6 +10224,8 @@ struct S6bdcb0Owner
 
 // @fnv 0x006bdcb0
 // src: COMMUNITY 0x006bdcb0
+// pdb: NavMeshObstacleCutter::RemoveInvalidEdges | NavMeshObstacleCutter.obj | retail, upstream name already matches, high
+// pdb locals: i
 void S6bdcb0Owner::NavMeshObstacleCutter_RemoveInvalidEdges()
 {
     for (unsigned int i = 0; i < kItems.GetSize(); i++)
@@ -9971,12 +10279,15 @@ struct NavMeshGen_6be830
     int unk04[11];
     EdgeSplitArray_6be830 arr30;
 
-    void ApplyEdgeSplits();
+    void NavMeshObstacleCutter_ConnectTriangles();
 };
 
 // For each edge split with valid triangle indices, sets the corresponding edges on both adjacent navmesh triangles.
 // @fnv 0x006be830
-void NavMeshGen_6be830::ApplyEdgeSplits()
+// src: XBOX_DEBUG_PDB 0x006be830
+// pdb: NavMeshObstacleCutter::ConnectTriangles | NavMeshObstacleCutter.obj | debug, call graph, high
+// pdb locals: i
+void NavMeshGen_6be830::NavMeshObstacleCutter_ConnectTriangles()
 {
     for (unsigned int i = 0; i < this->arr30.GetSize(); ++i)
     {
@@ -10055,10 +10366,14 @@ struct EdgeUpdater120
     RecordOwner120* owner;
     unsigned int m0c, m10, m14, m18, m1c, m20, m24, m28, m2c;
     EdgeSourceArray120 edges;
-    void UpdateEdgeRecords(RecordArray120*);
+    void NavMeshObstacleCutter_CreateSwappedEdgeList(RecordArray120*);
 };
 // @fnv 0x006be950
-void EdgeUpdater120::UpdateEdgeRecords(RecordArray120* arrays)
+// src: XBOX_DEBUG_PDB 0x006be950
+// pdb: NavMeshObstacleCutter::CreateSwappedEdgeList | NavMeshObstacleCutter.obj | debug, call graph, high
+// pdb params: aPortalSwaps
+// pdb locals: childSwapsToRemove, i, swapEdge, thisEdgeHandle, index
+void EdgeUpdater120::NavMeshObstacleCutter_CreateSwappedEdgeList(RecordArray120* aPortalSwaps)
 {
     IndexArray120 removed;
     for (unsigned int i = 0; i < edges.FUN_0044ddc0(); i++)
@@ -10074,7 +10389,7 @@ void EdgeUpdater120::UpdateEdgeRecords(RecordArray120* arrays)
             record.first = (*edges.FUN_00877a30(i))->second;
             record.active = true;
             owner->records.UpdateState_006bf730(&record);
-            unsigned int index = arrays->FindIndexIf(&record, 0, CallWithInt);
+            unsigned int index = aPortalSwaps->FindIndexIf(&record, 0, CallWithInt);
             if (index != -1)
             {
                 if (removed.FUN_00719b20(&index, 0, Actor_AreReferencedValuesEqual) == -1)
@@ -10082,18 +10397,18 @@ void EdgeUpdater120::UpdateEdgeRecords(RecordArray120* arrays)
             }
             else
             {
-                if (arrays[1].FindIndexIf(&record, 0, CallWithInt) == -1)
-                    arrays[1].AppendElement(&record);
+                if (aPortalSwaps[1].FindIndexIf(&record, 0, CallWithInt) == -1)
+                    aPortalSwaps[1].AppendElement(&record);
             }
-            if (arrays->FindIndexIf(reinterpret_cast<EdgeRecord120*>(&record.second), 0, CallWithInt) == -1)
-                arrays->AppendElement(reinterpret_cast<EdgeRecord120*>(&record.second));
+            if (aPortalSwaps->FindIndexIf(reinterpret_cast<EdgeRecord120*>(&record.second), 0, CallWithInt) == -1)
+                aPortalSwaps->AppendElement(reinterpret_cast<EdgeRecord120*>(&record.second));
         }
     }
     if (!removed.NiTListBase_DFALL_NiTListItem_BSAnimGroupSequence_const_BSAnimGroupSequence_const_IsEmpty())
     {
         removed.BSSimpleArray_Sort(Runtime_CompareUnsignedValues);
         for (int j = removed.FUN_0044ddc0() - 1; j >= 0; j--)
-            arrays->FUN_0061bf70(*removed.FUN_00877a30(j), 1);
+            aPortalSwaps->FUN_0061bf70(*removed.FUN_00877a30(j), 1);
     }
 }
 
@@ -10125,19 +10440,22 @@ struct EdgeHost
 bool __cdecl NavMeshMath_Find2DIntersection_006ba010(const NiPoint2&, const NiPoint2&, const NiPoint2&, const NiPoint2&);
 
 // @fnv 0x006beea0
-bool FUN_006bde50::CanAddEdge(void* pVertexA, void* pVertexB)
+// pdb: NavMeshObstacleCutter::CheckPotentialEdgeAgainstRunningEdgeList | NavMeshObstacleCutter.obj | retail, object-file run extension, high
+// pdb params: apVert1, apVert2
+// pdb locals: vert2Loc, vert2Loc2d, vert1Loc, vert1Loc2d, midPoint, i, edgeVert2Loc, edgeVert1Loc2d, edgeVert2Loc2d, edgeVert1Loc
+bool NavMeshObstacleCutter::CanAddEdge(void* apVert1, void* apVert2)
 {
-    if (((EdgeVertex*)pVertexA)->enabled && ((EdgeVertex*)pVertexB)->enabled)
+    if (((EdgeVertex*)apVert1)->enabled && ((EdgeVertex*)apVert2)->enabled)
         return false;
-    if (!((EdgeVertex*)pVertexA)->enabled && ((EdgeVertex*)pVertexA)->blocked)
+    if (!((EdgeVertex*)apVert1)->enabled && ((EdgeVertex*)apVert1)->blocked)
         return false;
-    if (!((EdgeVertex*)pVertexB)->enabled && ((EdgeVertex*)pVertexB)->blocked)
+    if (!((EdgeVertex*)apVert2)->enabled && ((EdgeVertex*)apVert2)->blocked)
         return false;
-    const PathPoint_blk_006a0000_od& a = (const PathPoint_blk_006a0000_od&)((EdgeHost*)this)->mesh->GetVertex_0068f0a0(((EdgeVertex*)pVertexA)->index);
-    const PathPoint_blk_006a0000_od& b = (const PathPoint_blk_006a0000_od&)((EdgeHost*)this)->mesh->GetVertex_0068f0a0(((EdgeVertex*)pVertexB)->index);
+    const PathPoint_blk_006a0000_od& a = (const PathPoint_blk_006a0000_od&)((EdgeHost*)this)->mesh->GetVertex_0068f0a0(((EdgeVertex*)apVert1)->index);
+    const PathPoint_blk_006a0000_od& b = (const PathPoint_blk_006a0000_od&)((EdgeHost*)this)->mesh->GetVertex_0068f0a0(((EdgeVertex*)apVert2)->index);
     NiPoint2 p(a.x, a.y);
     NiPoint2 q(b.x, b.y);
-    if (((EdgeVertex*)pVertexA)->enabled != ((EdgeVertex*)pVertexB)->enabled)
+    if (((EdgeVertex*)apVert1)->enabled != ((EdgeVertex*)apVert2)->enabled)
     {
         PathPoint_blk_006a0000_od midpoint = (a + b) * 0.5f;
         if (!((S_006bf1d0*)this)->NavMeshObstacleCutter_IsPointInOverlappedArea((const Point3Storage&)midpoint))
@@ -10145,18 +10463,18 @@ bool FUN_006bde50::CanAddEdge(void* pVertexA, void* pVertexB)
     }
     for (unsigned int i = ((EdgeHost*)this)->edges.FUN_0044ddc0() - 1; i != -1; --i)
     {
-        if (((*((EdgeHost*)this)->edges.FUN_00877a30(i))->a == pVertexA &&
-             (*((EdgeHost*)this)->edges.FUN_00877a30(i))->b == pVertexB) ||
-            ((*((EdgeHost*)this)->edges.FUN_00877a30(i))->a == pVertexB &&
-             (*((EdgeHost*)this)->edges.FUN_00877a30(i))->b == pVertexA))
+        if (((*((EdgeHost*)this)->edges.FUN_00877a30(i))->a == apVert1 &&
+             (*((EdgeHost*)this)->edges.FUN_00877a30(i))->b == apVert2) ||
+            ((*((EdgeHost*)this)->edges.FUN_00877a30(i))->a == apVert2 &&
+             (*((EdgeHost*)this)->edges.FUN_00877a30(i))->b == apVert1))
             return false;
-        if ((*((EdgeHost*)this)->edges.FUN_00877a30(i))->a == pVertexA)
+        if ((*((EdgeHost*)this)->edges.FUN_00877a30(i))->a == apVert1)
             continue;
-        if ((*((EdgeHost*)this)->edges.FUN_00877a30(i))->b == pVertexA)
+        if ((*((EdgeHost*)this)->edges.FUN_00877a30(i))->b == apVert1)
             continue;
-        if ((*((EdgeHost*)this)->edges.FUN_00877a30(i))->a == pVertexB)
+        if ((*((EdgeHost*)this)->edges.FUN_00877a30(i))->a == apVert2)
             continue;
-        if ((*((EdgeHost*)this)->edges.FUN_00877a30(i))->b == pVertexB)
+        if ((*((EdgeHost*)this)->edges.FUN_00877a30(i))->b == apVert2)
             continue;
         const Point3Storage& posEdgeA =
             ((EdgeHost*)this)->mesh->GetVertex_0068f0a0((*((EdgeHost*)this)->edges.FUN_00877a30(i))->a->index);
@@ -10201,7 +10519,7 @@ FUN_006bf570::FUN_006bf570(int aiFirst, int aiSecond, int aiThird) : ref(0)
     unk18 = 0;
     unk19 = 0;
     unk14 = 0xffff;
-    data.unk00 = 0;
+    data.m_vec = 0;
     data.unk04 = 0xffff;
     data.unk08 = -1;
     data.unk0c = 0xffff;
@@ -10243,7 +10561,11 @@ struct V006b9b10
 V006b9b10* __cdecl FUN_004a3760(V006b9b10* out, float scale, V006b9b10* value);
 
 // @fnv 0x006b9b10
-float __cdecl DistanceToSegment(V006b9b10* first, V006b9b10* origin, V006b9b10* second, unsigned char* inside)
+// src: XBOX_DEBUG_PDB 0x006b9b10
+// pdb: NavMeshMath::DistanceFromSegment | NavMeshMath.obj | debug, call graph (shared callers), high
+// pdb params: aPoint, aLineStart, aLineEnd, apRetInSegment
+// pdb locals: Pb, b, c2, c1, v, w
+float __cdecl NavMeshMath_DistanceFromSegment(V006b9b10* aPoint, V006b9b10* aLineStart, V006b9b10* aLineEnd, unsigned char* apRetInSegment)
 {
     V006b9b10 segmentTmp;
     V006b9b10 point;
@@ -10258,29 +10580,29 @@ float __cdecl DistanceToSegment(V006b9b10* first, V006b9b10* origin, V006b9b10* 
             V006b9b10 x7;
             V006b9b10 scaled5;
 
-            second->SubtractIntoVector(&segmentTmp, origin);
-            first->SubtractIntoVector(&point, origin);
+            aLineEnd->SubtractIntoVector(&segmentTmp, aLineStart);
+            aPoint->SubtractIntoVector(&point, aLineStart);
             kIter = point.DotProduct(&segmentTmp);
             if (kIter <= 0.0)
             {
-                if (inside)
-                    *inside = 0;
-                return first->SubtractIntoVector(&pA, origin)->FUN_00457990();
+                if (apRetInSegment)
+                    *apRetInSegment = 0;
+                return aPoint->SubtractIntoVector(&pA, aLineStart)->FUN_00457990();
             }
 
             lengthSquaredTmp = segmentTmp.DotProduct(&segmentTmp);
             if (lengthSquaredTmp <= kIter)
             {
-                if (inside)
-                    *inside = 0;
-                return first->SubtractIntoVector(&x7, second)->FUN_00457990();
+                if (apRetInSegment)
+                    *apRetInSegment = 0;
+                return aPoint->SubtractIntoVector(&x7, aLineEnd)->FUN_00457990();
             }
 
             firstDistance3 = kIter / lengthSquaredTmp;
-            origin->FUN_00439e90(&c2, FUN_004a3760(&pForm, (float)firstDistance3, &segmentTmp));
-            if (inside)
-                *inside = 1;
-            return first->SubtractIntoVector(&scaled5, &c2)->FUN_00457990();
+            aLineStart->FUN_00439e90(&c2, FUN_004a3760(&pForm, (float)firstDistance3, &segmentTmp));
+            if (apRetInSegment)
+                *apRetInSegment = 1;
+            return aPoint->SubtractIntoVector(&scaled5, &c2)->FUN_00457990();
         }
     }
 }
@@ -10299,22 +10621,25 @@ using ns6b::V3;
 
 // @fnv 0x006ba6e0
 // src: XBOX_PDB 0x006ba6e0
-bool __cdecl NavMeshMath_LineToLineSegment2DIntersection(const V3& aStart, const V3& aEnd, const V3& cStart, const V3& cEnd, V3* out)
+// pdb: NavMeshMath::LineToLineSegment2DIntersection | NavMeshMath.obj | debug, upstream name already matches, high
+// pdb params: arLine1, arLine2, arSegment1, arSegment2, apReturnIntersection
+// pdb locals: fcross2, segmentLineVec, lineVec, fcross3, segmentVec, fcross, fmult
+bool __cdecl NavMeshMath_LineToLineSegment2DIntersection(const V3& arLine1, const V3& arLine2, const V3& arSegment1, const V3& arSegment2, V3* apReturnIntersection)
 {
-    V3 es = aEnd.SubtractIntoVector(aStart);
-    V3 gt = cEnd.SubtractIntoVector(cStart);
+    V3 es = arLine2.SubtractIntoVector(arLine1);
+    V3 gt = arSegment2.SubtractIntoVector(arSegment1);
     float yx = es.x * gt.y - es.y * gt.x;
     if (yx == DAT_01012060)
         return false;
-    V3 o1 = cStart.SubtractIntoVector(aStart);
+    V3 o1 = arSegment1.SubtractIntoVector(arLine1);
     float k1 = o1.x * es.y - o1.y * es.x;
     float ox = k1 / yx;
     if (ox < DAT_01012060 || ox > 1.0)
         return false;
     float nB = o1.x * gt.y - o1.y * gt.x;
     ox = nB / yx;
-    if (out)
-        *out = aStart.FUN_00439e90(ns6b::FUN_004a3760(ox, es));
+    if (apReturnIntersection)
+        *apReturnIntersection = arLine1.FUN_00439e90(ns6b::FUN_004a3760(ox, es));
     return true;
 }
 
@@ -10629,6 +10954,7 @@ struct FUN_006a15b0
     bool unk2054;
 };
 // @fnv 0x006a15b0
+// pdb: AStarSearch<NavMeshPOVSearchNode,NavMeshPOVSearchLink>::~AStarSearch<NavMeshPOVSearchNode,NavMeshPOVSearchLink> | NavMeshPOVSearch.obj | debug, call graph (shared callers), high
 FUN_006a15b0::~FUN_006a15b0()
 {}
 }
@@ -10653,6 +10979,9 @@ class FUN_006a1630_class : public FUN_006a1cf0_shell
 
 // Sets bYield from a test value, picks a node from FUN_006a1cf0 or pBestNode, processes it via CopyNodeListToArrays, and returns whether the first node was used.
 // @fnv 0x006a1630
+// pdb: AStarSearch<NavMeshPOVSearchNode,NavMeshPOVSearchLink>::AddStartNode | NavMeshPOVSearch.obj | debug, object-file run extension, low
+// pdb params: aiKey, aNodeData, afHeuristic
+// pdb locals: pastarNode
 bool FUN_006a1630_class::ProcessSearchNode(FUN_006b3cb0_arg2* param_2, FUN_006b3cb0_arg3* param_3, bool useBestNode)
 {
     bYield = FUN_00b00a00()->TestValue(FUN_0040fc90());
@@ -10745,6 +11074,9 @@ NavSearchPoint::NavSearchPoint()
 {}
 
 // @fnv 0x006ac0e0
+// pdb: NavMeshSearchSLPoint::BuildPathToSafeStraightLine | NavMeshSearchSLPoint.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NavMeshSearchSLPoint::NavMeshSearchSLPoint
+// pdb params: apRequest, aStartNode, aGoalNode, apNodes, apLinks
 FUN_006ac0e0::FUN_006ac0e0()
 {}
 
@@ -11031,6 +11363,9 @@ struct FUN_006b8f40_cls
 };
 
 // @fnv 0x006b8f40
+// pdb: AStarSearch<NavMeshInfo const *,TESObjectREFR *>::Search | NavMeshInfoSearch.obj | debug, object-file run extension, low
+// pdb params: apReturnArray, apReturnLinkArray, abReturnBestPathIfFailed
+// pdb locals: pbestNode, psolutionNode, bretValue
 bool FUN_006b8f40_cls::ProcessWithFallback(int a1, int a2, bool abUseFallback)
 {
     bool ok;
@@ -11089,6 +11424,9 @@ struct FUN_006b1d80
 // Constructs a FUN_006b1d80 object in-place at each of the first count elements of items.
 // @fnv 0x006a2630
 // src: GUESS 0x006a2630 (confidence: medium)
+// pdb: BSSimpleArray<RemoveIndex,1024>::_DestructItems | NavMeshPOVSearch.obj | debug, object-file run extension, low
+// pdb params: apFirstAddr, aiCount
+// pdb locals: i
 void Array64::ConstructElementsInPlace(ResizeElement64* items, unsigned int count)
 {
     for (unsigned int i = 0; i < count; i++)
@@ -11104,9 +11442,9 @@ struct DbgObject
     static void* operator new(unsigned int auiSize);
     static void operator delete(void* apMem, unsigned int);
     void NiMaterialProperty_SetEmittance(void* apKey);
-    void NiMaterialProperty_SetAlpha(float afValue);
-    void NiAVObject_AttachProperty(DbgObject* apProperty);
-    void NiAVObject_RemoveProperty(int aiValue);
+    void NiMaterialProperty_SetAlpha(float c);
+    void NiAVObject_AttachProperty(DbgObject* pkProperty);
+    void NiAVObject_RemoveProperty(int iType);
     void NiAlphaProperty_SetAlphaBlending(int aiValue);
 };
 
@@ -11300,6 +11638,9 @@ class FUN_006b42f0 : public ArrayBase6B42F0
 
 // Destructor that calls Clear(true), passing bFreeMemory as true.
 // @fnv 0x006b42f0
+// pdb: BSSimpleArray<PathSmootherPOVLink,1024>::AddUninitialized | PathSmootherPOV.obj | retail, object-file run extension, low
+// pdb note: debug build links it to BSScrapArray<AStarNode<PathSmootherPOVNode,PathSmootherPOVLink> *,1024>::~BSScrapArray<AStarNode<PathSmootherPOVNode,PathSmootherPOVLink> *,1024>
+// pdb locals: inewSize
 FUN_006b42f0::~FUN_006b42f0()
 {
     Clear(true);
@@ -11321,18 +11662,21 @@ struct S006bede0_Obj
 {
     NavMesh* m0;
     bool NavMeshObstacleCutter_IsPointInOverlappedArea(S006bede0_Vec const&);
-    bool NavMeshObstacleCutter_CheckTriangleAgainstOverlapped(unsigned short const* a, unsigned short const* b, unsigned short const* c);
+    bool NavMeshObstacleCutter_CheckTriangleAgainstOverlapped(unsigned short const* apVert1, unsigned short const* apVert2, unsigned short const* apVert3);
 };
 
 // Fetches three vertices from m0 by index, computes t7 from them via FUN_00439e90 and ApplyScaled using DAT_0106c2e0, and returns FUN_006bf220(t7).
 // @fnv 0x006bede0
 // src: COMMUNITY 0x006bede0
-bool S006bede0_Obj::NavMeshObstacleCutter_CheckTriangleAgainstOverlapped(unsigned short const* apIndexA, unsigned short const* apIndexB,
-                                 unsigned short const* apIndexC)
+// pdb: NavMeshObstacleCutter::CheckTriangleAgainstOverlapped | NavMeshObstacleCutter.obj | retail, upstream name already matches, high
+// pdb params: apVert1, apVert2, apVert3
+// pdb locals: triCenter, vert2Loc, vert3Loc, vert1Loc
+bool S006bede0_Obj::NavMeshObstacleCutter_CheckTriangleAgainstOverlapped(unsigned short const* apVert1, unsigned short const* apVert2,
+                                 unsigned short const* apVert3)
 {
-    S006bede0_Vec pa4 = reinterpret_cast<const S006bede0_Vec&>(m0->GetVertex_0068f0a0(apIndexA[0]));
-    S006bede0_Vec pb4 = reinterpret_cast<const S006bede0_Vec&>(m0->GetVertex_0068f0a0(apIndexB[0]));
-    S006bede0_Vec pc2 = reinterpret_cast<const S006bede0_Vec&>(m0->GetVertex_0068f0a0(apIndexC[0]));
+    S006bede0_Vec pa4 = reinterpret_cast<const S006bede0_Vec&>(m0->GetVertex_0068f0a0(apVert1[0]));
+    S006bede0_Vec pb4 = reinterpret_cast<const S006bede0_Vec&>(m0->GetVertex_0068f0a0(apVert2[0]));
+    S006bede0_Vec pc2 = reinterpret_cast<const S006bede0_Vec&>(m0->GetVertex_0068f0a0(apVert3[0]));
     S006bede0_Vec t1;
     S006bede0_Vec t2;
     S006bede0_Vec t7;
@@ -11396,6 +11740,10 @@ struct FUN_006bc230 : LocalOwnerBase
 };
 // Constructs state(0), first(32,0), second(32,0) and table(37) with those arguments, default-constructs list1 and list2, and sets flags to 0.
 // @fnv 0x006bc230
+// pdb: BSSimpleArray<PortalEdgeSwap,1024>::Add | NavMeshObstacleCutter.obj | retail, object-file run extension, low
+// pdb note: debug build links it to ObstacleUndoData::ObstacleUndoData
+// pdb params: aValue
+// pdb locals: iindex
 FUN_006bc230::FUN_006bc230() : state(0), first(32, 0), second(32, 0), table(37)
 {
     flags = 0;
@@ -11410,6 +11758,7 @@ struct FUN_006a7fe0
 };
 // Destructor for a container holding an indexed array of NavMeshStaticAvoidNode pointers.
 // @fnv 0x006a7fe0
+// pdb: BSSimpleArray<NavMeshStaticAvoidNode *,1024>::`scalar deleting destructor' | NavMeshSearch.obj | retail, vtable slot, high
 FUN_006a7fe0::~FUN_006a7fe0()
 {}
 
@@ -11425,11 +11774,13 @@ struct FUN_006a89d0 : AStarConnectionArray<NavMeshTriangleReference, NavMeshTria
 };
 // Empty destructor body; the AStarConnectionArray base destructor runs afterward.
 // @fnv 0x006a89d0
+// pdb: BSScrapArray<AStarNode<NavMeshSearchNode,NavMeshSearchLink> *,1024>::`scalar deleting destructor' | NavMeshSearch.obj | retail, vtable slot, high
 FUN_006a89d0::~FUN_006a89d0()
 {}
 
 #include "../../include/PathSmootherPOVAvoidanceNode.h"
 // @fnv 0x006b38b0
+// pdb: BSSimpleArray<PathSmootherPOVNode,1024>::`scalar deleting destructor' | PathSmootherPOV.obj | retail, vtable slot, high
 template <> BSSimpleArray<PathSmootherPOVAvoidanceNode>::~BSSimpleArray()
 {
     Clear(true);
@@ -11437,6 +11788,7 @@ template <> BSSimpleArray<PathSmootherPOVAvoidanceNode>::~BSSimpleArray()
 
 struct NavMeshEdgeSegment;
 // @fnv 0x006b38e0
+// pdb: BSSimpleArray<PathSmootherPOVLink,1024>::`scalar deleting destructor' | PathSmootherPOV.obj | retail, vtable slot, high
 template <> BSSimpleArray<NavMeshEdgeSegment>::~BSSimpleArray()
 {
     Clear(true);
@@ -11455,6 +11807,7 @@ struct FUN_006b7fd0 : Base_b10083
 
 // Calls Cleanup on the base class before returning.
 // @fnv 0x006b7fd0
+// pdb: NiTPointerMap<unsigned int,NavMeshInfo *>::~NiTPointerMap<unsigned int,NavMeshInfo *> | NavMeshInfoMap.obj | debug, call graph, medium
 FUN_006b7fd0::~FUN_006b7fd0()
 {
     Cleanup();
@@ -11475,6 +11828,7 @@ class FUN_006b80d0_cls : public MapDtorWrap
 
 // Destructor body that calls RemoveAll through a FUN_006b8030_class cast.
 // @fnv 0x006b80d0
+// pdb: NiTMap<unsigned int,NiTMap<unsigned int,BSSimpleArray<NavMeshInfo *,1024> *> *>::~NiTMap<unsigned int,NiTMap<unsigned int,BSSimpleArray<NavMeshInfo *,1024> *> *> | NavMeshInfoMap.obj | debug, call graph, medium
 FUN_006b80d0_cls::~FUN_006b80d0_cls()
 {
     reinterpret_cast<FUN_006b8030_class*>(this)->RemoveAll();
@@ -11697,6 +12051,7 @@ class FUN_006b8e40
 
 // Empty destructor body; member m_kListB is destroyed implicitly.
 // @fnv 0x006b8e40
+// pdb: AStarSearch<NavMeshInfo const *,TESObjectREFR *>::~AStarSearch<NavMeshInfo const *,TESObjectREFR *> | NavMeshInfoSearch.obj | debug, call graph (shared callers), high
 FUN_006b8e40::~FUN_006b8e40()
 {}
 }
@@ -11754,7 +12109,7 @@ struct PtAll
     float x, y, z;
     Point3Storage& Subtract(const Point3Storage& o);
     float FUN_00457990();
-    Point3Storage FUN_0053d1a0(void* p);
+    Point3Storage FUN_0053d1a0(void* pt);
 };
 struct PtOp
 {
@@ -11801,24 +12156,27 @@ struct Host
     float m_20f4;
     float m_20f8;
     float m_20fc;
-    bool NavMeshSearchSLPoint_CheckPointOnGoalCircle(Point3Storage* a1, Point3Storage* a2, NavMesh* a3, Point3Storage* a4);
+    bool NavMeshSearchSLPoint_CheckPointOnGoalCircle(Point3Storage* aCheck, Point3Storage* aTarget, NavMesh* apMesh, Point3Storage* aOutValidPoint);
 };
 
 // Derives points from a1 and a2, requires several FUN_006d7350 checks between PathingLocations to pass, adjusts the point's height, and writes it to a4.
 // @fnv 0x006ac8b0
 // src: COMMUNITY 0x006ac8b0
-bool Host::NavMeshSearchSLPoint_CheckPointOnGoalCircle(Point3Storage* a1, Point3Storage* a2, NavMesh* apNavMesh, Point3Storage* apResult)
+// pdb: NavMeshSearchSLPoint::CheckPointOnGoalCircle | NavMeshSearchSLPoint.obj | retail, upstream name already matches, high
+// pdb params: aCheck, aTarget, apMesh, aOutValidPoint
+// pdb locals: endLocation, startLeft, validPoint, goalRight, startRight, fscale, rightVec, testEndPoint, ftestStartDistanceScale, goalLeft, targetToCheckVec, startLocation, fvectorLen, bval2, ifoundTri, bval, spmesh, fzdiff, validLocation, checkTarget, faSqr, frSqr, xyTranslate, ftranslateXY ...
+bool Host::NavMeshSearchSLPoint_CheckPointOnGoalCircle(Point3Storage* aCheck, Point3Storage* aTarget, NavMesh* apMesh, Point3Storage* aOutValidPoint)
 {
     Point3Storage y;
-    y = *a1;
-    ((PtAll&)y).Subtract(*a2);
+    y = *aCheck;
+    ((PtAll&)y).Subtract(*aTarget);
     float p;
     p = ((PtAll&)y).FUN_00457990();
     if (p < DAT_01032980)
     {
-        y = *a1;
+        y = *aCheck;
         y.x = y.x + DAT_01020758;
-        ((PtAll&)y).Subtract(*a2);
+        ((PtAll&)y).Subtract(*aTarget);
         p = ((PtAll&)y).FUN_00457990();
     }
     float factor;
@@ -11828,12 +12186,12 @@ bool Host::NavMeshSearchSLPoint_CheckPointOnGoalCircle(Point3Storage* a1, Point3
     Point3Storage hpt = ((PtMul&)y) * factor;
     this->m_20e4 = ((PtMul&)y) * n;
     Point3Storage s;
-    s = *a2;
-    ((FUN_0063c8a0_shell&)hpt).ComputeValue_0063c8a0(a2);
-    ((FUN_0063c8a0_shell&)this->m_20e4).ComputeValue_0063c8a0(a2);
+    s = *aTarget;
+    ((FUN_0063c8a0_shell&)hpt).ComputeValue_0063c8a0(aTarget);
+    ((FUN_0063c8a0_shell&)this->m_20e4).ComputeValue_0063c8a0(aTarget);
     this->m_20d8 = ((PtAll&)y).FUN_0053d1a0((void*)&DAT_011a9484);
     Point3Storage ptr = ((PtMul&)this->m_20d8) * this->m_20fc;
-    PathingLocation plA(reinterpret_cast<const NiPoint3&>(this->m_20e4), apNavMesh->GetNavMeshInfo_0068efb0());
+    PathingLocation plA(reinterpret_cast<const NiPoint3&>(this->m_20e4), apMesh->GetNavMeshInfo_0068efb0());
     PathingLocation o138(reinterpret_cast<const NiPoint3&>(s), this->m_20a4);
     if (!Pathing_CheckLineOfSight(plA, *(PathingLocation*)&o138, 0, 0))
         return false;
@@ -11859,7 +12217,7 @@ bool Host::NavMeshSearchSLPoint_CheckPointOnGoalCircle(Point3Storage* a1, Point3
         if (DAT_01012060 > sq2Info && (s.z - this->m_20e4.z) > DAT_01012060)
         {
             Point3Storage kTheIter;
-            kTheIter = *a2;
+            kTheIter = *aTarget;
             ((PtAll&)kTheIter).Subtract(hpt);
             float bok;
             bok = ((PtAll&)kTheIter).FUN_00457990();
@@ -11889,7 +12247,7 @@ bool Host::NavMeshSearchSLPoint_CheckPointOnGoalCircle(Point3Storage* a1, Point3
             hpt.y += ni2Tmp.y;
         }
         hpt.z += sq2Info;
-        *apResult = hpt;
+        *aOutValidPoint = hpt;
     }
     return true;
 }
@@ -11999,6 +12357,8 @@ struct FUN_006a3580
 };
 // Calls FUN_0066b0d0(0) on each of the 17 entries of slots50, slots94 and slots0c.
 // @fnv 0x006a3580
+// pdb: NavMeshRender::CreateRenderBaseNode | NavMeshRender.obj | debug, object-file run extension, low
+// pdb locals: UpdateData
 FUN_006a3580::~FUN_006a3580()
 {
     for (unsigned int i = 0; i < 17; i++)
@@ -12021,6 +12381,8 @@ struct FUN_006bfb90_shell
 
 // @fnv 0x006bfb90
 // src: GUESS 0x006bfb90 (confidence: medium)
+// pdb: BSSimpleArray<NavMeshEdgeHandle,1024>::DefaultEqualFunction<NavMeshEdgeHandle> | NavMeshObstacleCutter.obj | debug, object-file run extension, low
+// pdb params: aOne, aTwo
 bool __thiscall FUN_006bfb90_shell::AreValuesEqual_006bfb90(FUN_006bfb90_shell* other)
 {
     return m_iWordAt00 == other->m_iWordAt00 && m_iWordAt04 == other->m_iWordAt04 && m_8 == other->m_8;

@@ -41,13 +41,17 @@ extern "C" void __cdecl HasReferenceDestruction();
 extern "C" void __cdecl RestoreReferenceEnabledState();
 
 // @fnv 0x007038b0
-void BGSDestructibleObjectForm::UpdateTargetHealthBar(TESObjectREFR* reference)
+// pdb: Interface::SetEnemyActor | Interface.obj | debug, call graph, high
+// pdb params: apActor
+void BGSDestructibleObjectForm::UpdateTargetHealthBar(TESObjectREFR* apActor)
 {
-    HUDMainMenu::UpdateTargetActor(reinterpret_cast<Actor*>(reference));
+    HUDMainMenu::UpdateTargetActor(reinterpret_cast<Actor*>(apActor));
 }
 
 // Returns the model path from GetTESModel(), or null if the reference has no model.
 // @fnv 0x005715d0
+// pdb: TESObjectREFR::GetModel | TESObjectREFR.obj | retail, call graph, high
+// pdb locals: pmodel
 const char* TESObjectREFR::GetModelFilePath()
 {
     TESModel* model = GetTESModel();
@@ -58,6 +62,7 @@ const char* TESObjectREFR::GetModelFilePath()
 
 // Returns the bound size of the object reference, or 0.0 if there is no object reference.
 // @fnv 0x00571600
+// pdb: TESObjectREFR::GetModelBoundSize | TESObjectREFR.obj | debug, call graph, high
 float TESObjectREFR::GetBoundingRadius()
 {
     if (GetObjectReference())
@@ -67,7 +72,10 @@ float TESObjectREFR::GetBoundingRadius()
 
 // Iterates all references in the reconstruct map and applies time-scaled damage to each non-disabled, non-deleted form, either directly or via the task queue.
 // @fnv 0x004772f0
-void BGSDestructibleObjectForm::UpdateDestructionMap()
+// src: XBOX_RETAIL_PDB 0x004772f0
+// pdb: BGSDestructibleObjectForm::UpdateDestructibleObjects | BGSDestructibleObjectForm.obj | retail, call graph (shared callers), high
+// pdb locals: fsecondsPassed, it, pref, idamagePerSecond, fdamage, pactor
+void BGSDestructibleObjectForm::UpdateDestructibleObjects()
 {
     void* pIterPos;
     float fTime = g_timeGlobal.FUN_0084d030();
@@ -97,6 +105,8 @@ void BGSDestructibleObjectForm::UpdateDestructionMap()
 }
 
 // @fnv 0x00571630
+// pdb: TESObjectREFR::GetTESModel | TESObjectREFR.obj | retail, upstream name already matches, high
+// pdb locals: pmodel, pweap, pbipedModel, powner, esex
 TESModel* TESObjectREFR::GetTESModel()
 {
     TESModel* model = GetExtraData()->ExtraDataList_GetModelSwap();
@@ -131,31 +141,38 @@ TESModel* TESObjectREFR::GetTESModel()
 
 // Queues the model, explosion model and debris model of every stage in data for loading at the given priority.
 // @fnv 0x00477640
-void BGSDestructibleObjectForm::QueueResourceLoad(TESBoundObject* object, IO_TASK_PRIORITY priority, QueuedFile* file)
+// src: XBOX_RETAIL_PDB 0x00477640
+// pdb: BGSDestructibleObjectForm::QueueFiles | BGSDestructibleObjectForm.obj | retail, call graph (shared callers), high
+// pdb params: apObject, aePriority, apParent
+// pdb locals: i
+void BGSDestructibleObjectForm::QueueFiles(TESBoundObject* apObject, IO_TASK_PRIORITY aePriority, QueuedFile* apParent)
 {
     if (!reinterpret_cast<DestructibleData*>(pData))
         return;
     for (unsigned int i = 0; i < reinterpret_cast<DestructibleData*>(pData)->count; i++)
     {
         if (reinterpret_cast<DestructibleData*>(pData)->stages[i]->model)
-            g_modelLoader->ProcessModelRequest(reinterpret_cast<DestructibleData*>(pData)->stages[i]->model, priority, file,
-                                               TES::GetModelResourceType((TESObject*)object), true, false, false);
+            g_modelLoader->ProcessModelRequest(reinterpret_cast<DestructibleData*>(pData)->stages[i]->model, aePriority, apParent,
+                                               TES::GetModelResourceType((TESObject*)apObject), true, false, false);
         if (reinterpret_cast<DestructibleData*>(pData)->stages[i]->explosion)
-            reinterpret_cast<DestructibleData*>(pData)->stages[i]->explosion->QueueResourceLoad(priority, file);
+            reinterpret_cast<DestructibleData*>(pData)->stages[i]->explosion->QueueResourceLoad(aePriority, apParent);
         if (reinterpret_cast<DestructibleData*>(pData)->stages[i]->debris)
-            reinterpret_cast<DestructibleData*>(pData)->stages[i]->debris->QueueResourceLoad(priority, file);
+            reinterpret_cast<DestructibleData*>(pData)->stages[i]->debris->QueueResourceLoad(aePriority, apParent);
     }
 }
 
 // Returns an actor value by dispatching on the ActorValue::Index to the matching getter on the containing object.
 // @fnv 0x005f0fb0
-int ActorValueOwner::GetActorValue(ActorValue::Index value)
+// pdb: TESActorBase::GetActorValue | TESActorBase.obj | retail, vtable slot, high
+// pdb params: aiWhich
+// pdb locals: result
+int ActorValueOwner::GetActorValue(ActorValue::Index aiWhich)
 {
     int result = 0;
-    switch (value)
+    switch (aiWhich)
     {
     case 5:
-        result = ((TESAttributes*)((char*)this - 0x48))->GetAttributeValue5();
+        result = ((TESAttributes*)((char*)this - 0x48))->GetStrength();
         break;
     case 6:
         result = ((TESAttributes*)((char*)this - 0x48))->GetPerception();
@@ -210,7 +227,10 @@ int ActorValueOwner::GetActorValue(ActorValue::Index value)
 }
 
 // @fnv 0x00478be0
-void BGSDestructibleObjectForm::InitItem(TESForm* owner)
+// pdb: BGSDestructibleObjectForm::InitItem | BGSDestructibleObjectForm.obj | retail, string-set bridge, high
+// pdb params: apOwner
+// pdb locals: i, itempint, pactorBase
+void BGSDestructibleObjectForm::InitItem(TESForm* apOwner)
 {
     if (reinterpret_cast<DestructibleData*>(pData))
     {
@@ -219,18 +239,18 @@ void BGSDestructibleObjectForm::InitItem(TESForm* owner)
             if (reinterpret_cast<DestructibleData*>(pData)->stages[i]->explosion)
             {
                 unsigned int explosionID = (unsigned int)reinterpret_cast<DestructibleData*>(pData)->stages[i]->explosion;
-                TESForm::RemapFormIDForFile(explosionID, owner->GetFile(-1));
+                TESForm::RemapFormIDForFile(explosionID, apOwner->GetFile(-1));
                 reinterpret_cast<DestructibleData*>(pData)->stages[i]->explosion = dynamic_cast<BGSExplosion*>(TESForm::GetFormByID(explosionID));
                 if (!reinterpret_cast<DestructibleData*>(pData)->stages[i]->explosion)
                 {
-                    if (owner)
+                    if (apOwner)
                     {
-                        if (((BGSCameraPath*)owner)->HasNameForWarning())
+                        if (((BGSCameraPath*)apOwner)->HasNameForWarning())
                             Warning("MASTERFILE: Unable to find stage %i explosion (%08X) on owner object \"%s\".", i,
-                                    explosionID, owner->GetName());
+                                    explosionID, apOwner->GetName());
                         else
                             Warning("MASTERFILE: Unable to find stage %i explosion (%08X) on owner object (%08X).", i,
-                                    explosionID, owner->GetFormID());
+                                    explosionID, apOwner->GetFormID());
                     }
                     else
                         Warning("MASTERFILE: Unable to find stage %i explosion (%08X) on unknown owner.", i,
@@ -240,31 +260,31 @@ void BGSDestructibleObjectForm::InitItem(TESForm* owner)
             if (reinterpret_cast<DestructibleData*>(pData)->stages[i]->debris)
             {
                 unsigned int debrisID = (unsigned int)reinterpret_cast<DestructibleData*>(pData)->stages[i]->debris;
-                TESForm::RemapFormIDForFile(debrisID, owner->GetFile(-1));
+                TESForm::RemapFormIDForFile(debrisID, apOwner->GetFile(-1));
                 reinterpret_cast<DestructibleData*>(pData)->stages[i]->debris = dynamic_cast<BGSDebris*>(TESForm::GetFormByID(debrisID));
                 if (!reinterpret_cast<DestructibleData*>(pData)->stages[i]->debris)
                 {
-                    if (owner)
+                    if (apOwner)
                     {
-                        if (((BGSCameraPath*)owner)->HasNameForWarning())
+                        if (((BGSCameraPath*)apOwner)->HasNameForWarning())
                             Warning("MASTERFILE: Unable to find stage %i debris (%08X) on owner object \"%s\".", i,
-                                    debrisID, owner->GetName());
+                                    debrisID, apOwner->GetName());
                         else
                             Warning("MASTERFILE: Unable to find stage %i debris (%08X) on owner object (%08X).", i,
-                                    debrisID, owner->GetFormID());
+                                    debrisID, apOwner->GetFormID());
                     }
                     else
                         Warning("MASTERFILE: Unable to find stage %i debris (%08X) on unknown owner.", i, debrisID);
                 }
             }
             if (reinterpret_cast<DestructibleData*>(pData)->stages[i]->model)
-                ((TESModelTextureSwap*)reinterpret_cast<DestructibleData*>(pData)->stages[i]->model)->InitItem(owner);
+                ((TESModelTextureSwap*)reinterpret_cast<DestructibleData*>(pData)->stages[i]->model)->InitItem(apOwner);
         }
-        switch (static_cast<const TESForm*>(owner)->GetFormType())
+        switch (static_cast<const TESForm*>(apOwner)->GetFormType())
         {
         case 42:
         case 43: {
-            TESActorBase* actor = (TESActorBase*)owner;
+            TESActorBase* actor = (TESActorBase*)apOwner;
             reinterpret_cast<DestructibleData*>(pData)->health = actor->GetHealth_005f0b00();
             break;
         }
@@ -274,6 +294,7 @@ void BGSDestructibleObjectForm::InitItem(TESForm* owner)
 
 // @fnv 0x0045bb80
 // src: XBOX_PDB 0x0045bb80
+// pdb: NiAVObject::GetWorldTranslate | BGSDestructibleObjectForm.obj | debug, upstream name already matches, high
 int __fastcall NiAVObject_GetWorldTranslate(int param_1)
 {
     return param_1 + 0x8C;
@@ -291,8 +312,9 @@ void __fastcall FUN_008c6060(void* pThis);
 
 // Initialises the BaseFormComponent at pThis, sets its vtable to DAT_0101a4c4, calls FUN_008c6060, and returns pThis.
 // @fnv 0x00475350
-// src: GUESS 0x00475350 (confidence: medium)
-void* __fastcall BGSDestructibleObjectForm_InitializeFormComponent(void* pThis)
+// src: XBOX_DEBUG_PDB 0x00475350
+// pdb: BGSDestructibleObjectForm::BGSDestructibleObjectForm | BGSDestructibleObjectForm.obj | debug, call graph, high
+void* __fastcall BGSDestructibleObjectForm_ctor(void* pThis)
 {
     ((BaseFormComponent*)pThis)->BaseFormComponent::BaseFormComponent();
     *(int**)pThis = &DAT_0101a4c4;
@@ -301,6 +323,7 @@ void* __fastcall BGSDestructibleObjectForm_InitializeFormComponent(void* pThis)
 }
 
 // @fnv 0x00475380
+// pdb: BGSDestructibleObjectForm::~BGSDestructibleObjectForm | BGSDestructibleObjectForm.obj | retail, upstream name already matches, high
 BGSDestructibleObjectForm::~BGSDestructibleObjectForm()
 {
     BGSDestructibleObjectForm_RemoveData();
@@ -343,6 +366,8 @@ bool __fastcall IsFlag2Set(DestructionStageData*);
 
 // Returns true if any stage of the destructible object data has a model texture swap, explosion, debris, or passes IsFlag2Set.
 // @fnv 0x00475a00
+// pdb: BGSDestructibleObjectForm::HasValidStages | BGSDestructibleObjectForm.obj | debug, upstream name already matches, high
+// pdb locals: i, pstage
 bool BGSDestructibleObjectForm::HasValidStages()
 {
     if (!reinterpret_cast<DestructibleObjectData_local*>(pData))
@@ -370,6 +395,8 @@ struct FUN_00476980_S
 };
 // @fnv 0x00476980
 // src: COMMUNITY 0x00476980
+// pdb: NiMatrix3::NiMatrix3 | BGSDestructibleObjectForm.obj | debug, call graph, medium
+// pdb params: col0, col1, col2
 FUN_00476980_S* FUN_00476980_S::NiMatrix3_NiMatrix3(int aiValue0, int aiValue1, int aiValue2)
 {
     FUN_004769c0(0, aiValue0);
@@ -388,6 +415,7 @@ struct _dummy_476a80
 
 // @fnv 0x00476a80
 // src: XBOX_PDB 0x00476a80
+// pdb: NiTransform::NiTransform | BGSDestructibleObjectForm.obj | debug, upstream name already matches, high
 _dummy_476a80* _dummy_476a80::NiTransform_NiTransform()
 {
     _ref_006815c0(this);
@@ -407,6 +435,7 @@ void __cdecl BSFadeNode_SetFadingFlag();
 // Sets the fade node's two float fields to 1.0 and calls FUN_00476ae0 with true.
 // @fnv 0x00476ab0
 // src: XBOX_PDB 0x00476ab0
+// pdb: BSFadeNode::TurnFadeNodeOn | BGSDestructibleObjectForm.obj | debug, upstream name already matches, high
 void __fastcall BSFadeNode_TurnFadeNodeOn(BSFadeNode_Dummy* pThis)
 {
     pThis->f2 = 1.0f;
@@ -418,7 +447,7 @@ void __fastcall BSFadeNode_TurnFadeNodeOn(BSFadeNode_Dummy* pThis)
 struct MersenneTwister
 {
     void Init(unsigned int);
-    void Seed(unsigned int);
+    void BSRandom_Seed(unsigned int);
     void Kill();
     unsigned int GetRandomUInt(unsigned int, unsigned int);
     unsigned int GetRandomUInt();
@@ -445,6 +474,9 @@ struct FUN_00476b90_shell : public MersenneTwister
 
 // @fnv 0x00476b90
 // src: XBOX_PDB 0x00476b90
+// pdb: BSRandom::Float | BGSDestructibleObjectForm.obj | retail, upstream name already matches, high
+// pdb params: afMin, afMax
+// pdb locals: r
 float FUN_00476b90_shell::BSRandom_Float(float afMin, float afMax)
 {
     unsigned int r = GetRandomUInt();
@@ -476,6 +508,9 @@ extern "C" void* __cdecl BGSDestructibleObjectForm_GetDestructionForm(void*);
 // Looks up the destructible wrapper for apForm via FUN_00475400 and returns its FUN_00475a00 result, or false if no wrapper exists.
 // @fnv 0x004753d0
 // src: XBOX_PDB 0x004753d0
+// pdb: BGSDestructibleObjectForm::IsDestructible | BGSDestructibleObjectForm.obj | retail, upstream name already matches, high
+// pdb params: apForm
+// pdb locals: pdestructForm
 bool BGSDestructibleObjectForm_IsDestructible(void* apForm)
 {
     BGSDestructibleObjectForm* pWrapper = (BGSDestructibleObjectForm*)BGSDestructibleObjectForm_GetDestructionForm(apForm);
@@ -489,24 +524,29 @@ bool BGSDestructibleObjectForm_IsDestructible(void* apForm)
 
 // @fnv 0x00477410
 // src: COMMUNITY 0x00477410
-void BGSDestructibleObjectForm_RemoveDestructibleObject(unsigned int index)
+// pdb: BGSDestructibleObjectForm::RemoveDestructibleObject | BGSDestructibleObjectForm.obj | debug, upstream name already matches, high
+// pdb params: apRef
+void BGSDestructibleObjectForm_RemoveDestructibleObject(unsigned int apRef)
 {
-    g_011c4104.RemoveAt(reinterpret_cast<TESFile*>(index));
+    g_011c4104.RemoveAt(reinterpret_cast<TESFile*>(apRef));
 }
 
 namespace fnv_00477ce0 {
 
 // If a2 is zero, removes the entry for a1 from g_011c4104; otherwise sets a1 to a2 in that map.
 // @fnv 0x00477ce0
-void __cdecl SetOrRemoveMapEntry(unsigned int uiKey, unsigned int uiValue)
+// src: XBOX_DEBUG_PDB 0x00477ce0
+// pdb: BGSDestructibleObjectForm::SetSelfDamage | BGSDestructibleObjectForm.obj | debug, call graph, high
+// pdb params: apRef, aiSelfDamage
+void __cdecl BGSDestructibleObjectForm_SetSelfDamage(unsigned int apRef, unsigned int aiSelfDamage)
 {
-    if (uiValue == 0)
+    if (aiSelfDamage == 0)
     {
-        g_011c4104.RemoveAt(reinterpret_cast<TESFile*>(uiKey));
+        g_011c4104.RemoveAt(reinterpret_cast<TESFile*>(apRef));
     }
     else
     {
-        g_011c4104.SetAt(reinterpret_cast<TESFile*>(uiKey), reinterpret_cast<BGSReconstructFormsInFileMap*>(uiValue));
+        g_011c4104.SetAt(reinterpret_cast<TESFile*>(apRef), reinterpret_cast<BGSReconstructFormsInFileMap*>(aiSelfDamage));
     }
 }
 }  // namespace fnv_00477ce0
@@ -525,17 +565,21 @@ struct FUN_004759a0_Mid
 
 BGSDestructibleObjectForm* __cdecl BGSDestructibleObjectForm_GetDestructionForm(void*);
 // @fnv 0x004759a0
-int __cdecl GetElementValue(void* a, int aiIndex)
+// src: XBOX_DEBUG_PDB 0x004759a0
+// pdb: BGSDestructibleObjectForm::GetModelSwap | BGSDestructibleObjectForm.obj | debug, call graph, high
+// pdb params: apForm, aiModelSwapIndex
+// pdb locals: pdata, pdestruct
+int __cdecl BGSDestructibleObjectForm_GetModelSwap(void* apForm, int aiModelSwapIndex)
 {
-    BGSDestructibleObjectForm* pFirst = BGSDestructibleObjectForm_GetDestructionForm(a);
-    if (!pFirst || aiIndex == -1)
+    BGSDestructibleObjectForm* pFirst = BGSDestructibleObjectForm_GetDestructionForm(apForm);
+    if (!pFirst || aiModelSwapIndex == -1)
         return 0;
     {
         FUN_004759a0_Mid* q = reinterpret_cast<FUN_004759a0_Mid*>(pFirst->FUN_00726070());
         if (!q)
             return 0;
-        if (aiIndex < q->cnt)
-            return q->arr[aiIndex]->value;
+        if (aiModelSwapIndex < q->cnt)
+            return q->arr[aiModelSwapIndex]->value;
         return 0;
     }
 }
@@ -562,6 +606,7 @@ struct FUN_004778a0_Mid
 };
 
 // @fnv 0x004778a0
+// pdb: BGSDestructibleObjectForm::UnloadReplacementModels | BGSDestructibleObjectForm.obj | retail, upstream name already matches, high
 void BGSDestructibleObjectForm::UnloadReplacementModels()
 {
     if (!reinterpret_cast<FUN_004778a0_Mid*>(pData))
@@ -578,6 +623,7 @@ extern Setting originalRuntimeFloatSetting818;
 extern "C" void __cdecl ExplosionHasAnyFlags();
 // Returns the float at offset 0x7c, multiplied by originalRuntimeFloatSetting818.Float() when reinterpret_cast<bool (__thiscall*)(BGSExplosion*, int)>(&ExplosionHasAnyFlags)(explosion, 1) is false.
 // @fnv 0x00477900
+// pdb: BGSExplosion::GetRadiusBSUnits | BGSDestructibleObjectForm.obj | retail, call graph (shared callers), high
 float __fastcall GetExplosionRadius(BGSExplosion* explosion)
 {
     return (float)(reinterpret_cast<bool (__thiscall*)(BGSExplosion*, int)>(&ExplosionHasAnyFlags)(explosion, 1) ? (double)explosion->Data.fRadius
@@ -600,14 +646,17 @@ struct W_0043b4f0
 // If object has a collision object whose world object type is 19, sets it app-culled and returns true; otherwise recurses into child nodes.
 // @fnv 0x00477560
 // src: COMMUNITY 0x00477560
-bool __cdecl BGSDestructibleObjectForm_HideSmallDebris(NiAVObject* object)
+// pdb: BGSDestructibleObjectForm::HideSmallDebris | BGSDestructibleObjectForm.obj | retail, upstream name already matches, high
+// pdb params: ap3D
+// pdb locals: bhidSomething, pcol, bcull, prb, pnode, icount, i
+bool __cdecl BGSDestructibleObjectForm_HideSmallDebris(NiAVObject* ap3D)
 {
     bool result = false;
 
-    if (object)
+    if (ap3D)
     {
         bool bIsLodObject = false;
-        bhkCollisionObject* collisionObject = bhkCollisionObject::GetFromNiAVObject(object);
+        bhkCollisionObject* collisionObject = bhkCollisionObject::GetFromNiAVObject(ap3D);
 
         if (collisionObject)
         {
@@ -623,11 +672,11 @@ bool __cdecl BGSDestructibleObjectForm_HideSmallDebris(NiAVObject* object)
         if (bIsLodObject)
         {
             result = true;
-            object->SetAppCulled(true);
+            ap3D->SetAppCulled(true);
         }
         else
         {
-            NiNode* node = object->IsSceneNode();
+            NiNode* node = ap3D->IsSceneNode();
 
             if (node)
             {
@@ -646,11 +695,14 @@ bool __cdecl BGSDestructibleObjectForm_HideSmallDebris(NiAVObject* object)
 }
 
 // @fnv 0x00475ab0
-unsigned int BGSDestructibleObjectForm::GetMaxHealth(TESObjectREFR* pForm)
+// pdb: BGSDestructibleObjectForm::GetMaxHealth | BGSDestructibleObjectForm.obj | retail, upstream name already matches, high
+// pdb params: apRef
+// pdb locals: pactor
+unsigned int BGSDestructibleObjectForm::GetMaxHealth(TESObjectREFR* apRef)
 {
-    if (pForm->IsActor())
+    if (apRef->IsActor())
     {
-        Actor* ref = reinterpret_cast<Actor*>(pForm);
+        Actor* ref = reinterpret_cast<Actor*>(apRef);
         return (unsigned int)reinterpret_cast<ActorValueOwner*>((char*)ref + 0xa4)->GetBaseActorValueFloat(static_cast<ActorValue::Index>(0x10));
     }
     return reinterpret_cast<DestructibleData*>(pData)->health;
@@ -679,6 +731,8 @@ struct TargetLocation
 
 // Returns the target position from the named target if kName is set, otherwise from pRef's 3D bound or its GetPos.
 // @fnv 0x009c5f30
+// pdb: ProjectileTarget::GetWorldLocation | Projectile.obj | debug, object-file run extension, low
+// pdb locals: result
 NiPoint3 TargetLocation::GetTargetPosition()
 {
     NiPoint3 kPos = NiPoint3::ZERO;
@@ -1283,25 +1337,28 @@ struct Form33 : Fields_58, BGSDestructibleObjectForm
 // Returns the form cast to BGSDestructibleObjectForm for supported form types, or null if the form is null or unsupported.
 // @fnv 0x00475400
 // src: XBOX_PDB 0x00475400
-BGSDestructibleObjectForm* __cdecl BGSDestructibleObjectForm_GetDestructionForm(void* form)
+// pdb: BGSDestructibleObjectForm::GetDestructionForm | BGSDestructibleObjectForm.obj | debug, upstream name already matches, high
+// pdb params: apForm
+// pdb locals: pdestruct, pform
+BGSDestructibleObjectForm* __cdecl BGSDestructibleObjectForm_GetDestructionForm(void* apForm)
 {
     BGSDestructibleObjectForm* result = 0;
-    if (form)
+    if (apForm)
     {
-        switch (static_cast<const TESForm*>(form)->GetFormType())
+        switch (static_cast<const TESForm*>(apForm)->GetFormType())
         {
         case 0x1d: {
-            Form1d* object = static_cast<Form1d*>(form);
+            Form1d* object = static_cast<Form1d*>(apForm);
             result = object;
             break;
         }
         case 0x2f: {
-            Form2f* object = static_cast<Form2f*>(form);
+            Form2f* object = static_cast<Form2f*>(apForm);
             result = object;
             break;
         }
         case 0x28: {
-            TESObjectWEAP* object = static_cast<TESObjectWEAP*>(form);
+            TESObjectWEAP* object = static_cast<TESObjectWEAP*>(apForm);
             result = object;
             break;
         }
@@ -1309,92 +1366,92 @@ BGSDestructibleObjectForm* __cdecl BGSDestructibleObjectForm_GetDestructionForm(
         case 0x2e:
         case 0x32:
         case 0x67: {
-            Form1f* object = static_cast<Form1f*>(form);
+            Form1f* object = static_cast<Form1f*>(apForm);
             result = object;
             break;
         }
         case 0x1b: {
-            Form1b* object = static_cast<Form1b*>(form);
+            Form1b* object = static_cast<Form1b*>(apForm);
             result = object;
             break;
         }
         case 0x1a: {
-            Form1a* object = static_cast<Form1a*>(form);
+            Form1a* object = static_cast<Form1a*>(apForm);
             result = object;
             break;
         }
         case 0x19: {
-            Form19* object = static_cast<Form19*>(form);
+            Form19* object = static_cast<Form19*>(apForm);
             result = object;
             break;
         }
         case 0x18: {
-            Form18* object = static_cast<Form18*>(form);
+            Form18* object = static_cast<Form18*>(apForm);
             result = object;
             break;
         }
         case 0x1e: {
-            Form1e* object = static_cast<Form1e*>(form);
+            Form1e* object = static_cast<Form1e*>(apForm);
             result = object;
             break;
         }
         case 0x27: {
-            Form27* object = static_cast<Form27*>(form);
+            Form27* object = static_cast<Form27*>(apForm);
             result = object;
             break;
         }
         case 0x29: {
-            Form29* object = static_cast<Form29*>(form);
+            Form29* object = static_cast<Form29*>(apForm);
             result = object;
             break;
         }
         case 0x15: {
-            Form15* object = static_cast<Form15*>(form);
+            Form15* object = static_cast<Form15*>(apForm);
             result = object;
             break;
         }
         case 0x22: {
-            Form22* object = static_cast<Form22*>(static_cast<Input22*>(form));
+            Form22* object = static_cast<Form22*>(static_cast<Input22*>(apForm));
             result = object;
             break;
         }
         case 0x25: {
-            Form25* object = static_cast<Form25*>(form);
+            Form25* object = static_cast<Form25*>(apForm);
             result = object;
             break;
         }
         case 0x26: {
-            Form26* object = static_cast<Form26*>(static_cast<Input26*>(form));
+            Form26* object = static_cast<Form26*>(static_cast<Input26*>(apForm));
             result = object;
             break;
         }
         case 0x1c: {
-            Form1c* object = static_cast<Form1c*>(form);
+            Form1c* object = static_cast<Form1c*>(apForm);
             result = object;
             break;
         }
         case 0x16: {
-            Form16* object = static_cast<Form16*>(form);
+            Form16* object = static_cast<Form16*>(apForm);
             result = object;
             break;
         }
         case 0x17: {
-            Form17* object = static_cast<Form17*>(form);
+            Form17* object = static_cast<Form17*>(apForm);
             result = object;
             break;
         }
         case 0x33: {
-            Form33* object = static_cast<Form33*>(form);
+            Form33* object = static_cast<Form33*>(apForm);
             result = object;
             break;
         }
         case 0x2a: {
-            TESActorBase* object = static_cast<TESActorBase*>(form);
+            TESActorBase* object = static_cast<TESActorBase*>(apForm);
             result = object;
             break;
         }
         case 0x2b: {
-            TESActorBase* object = static_cast<TESActorBase*>(form);
+            TESActorBase* object = static_cast<TESActorBase*>(apForm);
             result = object;
             break;
         }
@@ -1405,9 +1462,13 @@ BGSDestructibleObjectForm* __cdecl BGSDestructibleObjectForm_GetDestructionForm(
 
 // Looks up a1's owner, scans its list for an entry whose value equals a2, and returns its index or -1 if not found.
 // @fnv 0x00475920
-int FindIndexByValue(void* a1, unsigned int aiValue)
+// src: XBOX_DEBUG_PDB 0x00475920
+// pdb: BGSDestructibleObjectForm::GetModelSwapIndex | BGSDestructibleObjectForm.obj | debug, call graph, high
+// pdb params: apForm, apModelSwap
+// pdb locals: pdata, pdestruct, i
+int BGSDestructibleObjectForm_GetModelSwapIndex(void* apForm, unsigned int apModelSwap)
 {
-    BGSDestructibleObjectForm* pOwner = BGSDestructibleObjectForm_GetDestructionForm(a1);
+    BGSDestructibleObjectForm* pOwner = BGSDestructibleObjectForm_GetDestructionForm(apForm);
     if (pOwner == 0)
     {
         return -1;
@@ -1419,7 +1480,7 @@ int FindIndexByValue(void* a1, unsigned int aiValue)
     }
     for (unsigned int i = 0; i < pList->cnt; i++)
     {
-        if (pList->arr[i]->value == (int)aiValue)
+        if (pList->arr[i]->value == (int)apModelSwap)
         {
             return i;
         }
@@ -1431,6 +1492,9 @@ float __cdecl FUN_00476b20(float);
 
 // @fnv 0x00477430
 // src: GUESS 0x00477430 (confidence: low)
+// pdb: BGSDestructibleObjectForm::CalcDestructionStage | BGSDestructibleObjectForm.obj | debug, call graph, medium
+// pdb params: apRef
+// pdb locals: iretval, pdestform, pdestdata, fhealth, chealthperc, i
 int __cdecl TESObjectREFR_ProcessEntries_00477430(TESObjectREFR* ref)
 {
     int iStage = -1;
@@ -1486,7 +1550,7 @@ struct WorldView
 };
 struct FinalView
 {
-    void RemoveEntryForRef();
+    void CombatThreatMap_RemoveThreat();
 };
 struct ManagerView
 {
@@ -1500,29 +1564,32 @@ void __cdecl BGSDestructibleObjectForm_UpdateDamageStageNodes(NiAVObject*, int);
 
 // @fnv 0x00477d10
 // src: XBOX_PDB 0x00477d10
-void __cdecl BGSDestructibleObjectForm_ClearDestruction(TESObjectREFR* reference)
+// pdb: BGSDestructibleObjectForm::ClearDestruction | BGSDestructibleObjectForm.obj | retail, upstream name already matches, high
+// pdb params: apRef
+// pdb locals: fcurrentHealth, pdestruct, ballowChanges, pfade, pav, pnode
+void __cdecl BGSDestructibleObjectForm_ClearDestruction(TESObjectREFR* apRef)
 {
-    if (!reinterpret_cast<bool (__thiscall*)(const TESObjectREFR*)>(&HasReferenceDestruction)(reference))
+    if (!reinterpret_cast<bool (__thiscall*)(const TESObjectREFR*)>(&HasReferenceDestruction)(apRef))
         return;
-    BGSDestructibleObjectForm* destructible = BGSDestructibleObjectForm_GetDestructionForm(reinterpret_cast<TESObjectREFR*>(reference)->GetObjectReference());
-    float health = reinterpret_cast<float (__thiscall*)(ExtraDataList*)>(&ReadExtraHealth)(reference->BSFile_GetDevice());
+    BGSDestructibleObjectForm* destructible = BGSDestructibleObjectForm_GetDestructionForm(reinterpret_cast<TESObjectREFR*>(apRef)->GetObjectReference());
+    float health = reinterpret_cast<float (__thiscall*)(ExtraDataList*)>(&ReadExtraHealth)(apRef->BSFile_GetDevice());
     if (health == -1.0)
         return;
-    reinterpret_cast<void (__thiscall*)(ExtraDataList*)>(&RemoveExtraHealth)(reference->BSFile_GetDevice());
-    if (IsDestroyed(reference))
-        reference->SetDestroyed(false);
-    if (reference->BSFile_GetDevice()->ExtraDataList_GetModelSwap())
+    reinterpret_cast<void (__thiscall*)(ExtraDataList*)>(&RemoveExtraHealth)(apRef->BSFile_GetDevice());
+    if (IsDestroyed(apRef))
+        apRef->SetDestroyed(false);
+    if (apRef->BSFile_GetDevice()->ExtraDataList_GetModelSwap())
     {
-        reinterpret_cast<void (__thiscall*)(ExtraDataList*)>(&RemoveExtraModel)(reference->BSFile_GetDevice());
-        if (reinterpret_cast<SceneObjectView*>(reference->GetNiNode()))
+        reinterpret_cast<void (__thiscall*)(ExtraDataList*)>(&RemoveExtraModel)(apRef->BSFile_GetDevice());
+        if (reinterpret_cast<SceneObjectView*>(apRef->GetNiNode()))
         {
             bool allowChanges = DAT_011ddf38->FUN_004623f0(false);
-            reference->Set3D(0, true);
+            apRef->Set3D(0, true);
             DAT_011ddf38->FUN_004623f0(allowChanges);
-            DAT_011dea10->TES_AttachModel(reference, reference->GetParentCell(), 0, 0);
-            if (reinterpret_cast<SceneObjectView*>(reference->GetNiNode()))
+            DAT_011dea10->TES_AttachModel(apRef, apRef->GetParentCell(), 0, 0);
+            if (reinterpret_cast<SceneObjectView*>(apRef->GetNiNode()))
             {
-                SceneObjectView* object = reinterpret_cast<SceneObjectView*>(reference->GetNiNode());
+                SceneObjectView* object = reinterpret_cast<SceneObjectView*>(apRef->GetNiNode());
                 FadeNodeView* fade = object ? object->AsNode() : 0;
                 BSFadeNode_Dummy* node = fade ? fade->AsFadeNode() : 0;
                 if (node)
@@ -1531,14 +1598,14 @@ void __cdecl BGSDestructibleObjectForm_ClearDestruction(TESObjectREFR* reference
             }
         }
     }
-    else if (reinterpret_cast<SceneObjectView*>(reference->GetNiNode()))
+    else if (reinterpret_cast<SceneObjectView*>(apRef->GetNiNode()))
     {
-        BGSDestructibleObjectForm_UpdateDamageStageNodes(reference->Get3DSimple(), 0);
+        BGSDestructibleObjectForm_UpdateDamageStageNodes(apRef->Get3DSimple(), 0);
     }
-    if (reinterpret_cast<TESForm*>(reference)->GetDisabled())
-        reinterpret_cast<void (__thiscall*)(TESObjectREFR*)>(&RestoreReferenceEnabledState)(reference);
-    g_011c4104.RemoveAt(reinterpret_cast<TESFile*>(reference));
-    DAT_011f1958->FUN_00825c00(reference)->RemoveEntryForRef();
+    if (reinterpret_cast<TESForm*>(apRef)->GetDisabled())
+        reinterpret_cast<void (__thiscall*)(TESObjectREFR*)>(&RestoreReferenceEnabledState)(apRef);
+    g_011c4104.RemoveAt(reinterpret_cast<TESFile*>(apRef));
+    DAT_011f1958->FUN_00825c00(apRef)->CombatThreatMap_RemoveThreat();
 }
 
 unsigned char __cdecl TESForm_QEndianSwapOnSave();
@@ -1592,6 +1659,8 @@ struct FUN_00478130_entry
 };
 
 // @fnv 0x00477f20
+// pdb: BGSDestructibleObjectForm::Save | BGSDestructibleObjectForm.obj | retail, upstream name already matches, high
+// pdb locals: saveData, i, stageSaveData
 void BGSDestructibleObjectForm::Save()
 {
     if (reinterpret_cast<FUN_00477f20_data*>(pData))
@@ -1662,12 +1731,16 @@ extern "C" BGSDestructibleObjectForm* __cdecl BGSDestructibleObjectForm_GetDestr
 float __cdecl FUN_00476b20(float);
 
 // @fnv 0x00477bc0
-unsigned int __cdecl GetDestructionStageSelfDamage(TESObjectREFR* refr, float damage)
+// src: XBOX_DEBUG_PDB 0x00477bc0
+// pdb: BGSDestructibleObjectForm::GetSelfDamage | BGSDestructibleObjectForm.obj | debug, call graph, high
+// pdb params: apRef, afHealth
+// pdb locals: ccurrentHealthPercentage, icurrentDamagePerSecond, pdata, imaxHealth, pdestruct, idamagePerSecond, i, pstage
+unsigned int __cdecl BGSDestructibleObjectForm_GetSelfDamage(TESObjectREFR* apRef, float afHealth)
 {
-    if (refr == 0 || damage == DAT_01012060)
+    if (apRef == 0 || afHealth == DAT_01012060)
         return 0;
 
-    BGSDestructibleObjectForm* aActorData = BGSDestructibleObjectForm_GetDestructionForm(refr->GetObjectReference());
+    BGSDestructibleObjectForm* aActorData = BGSDestructibleObjectForm_GetDestructionForm(apRef->GetObjectReference());
     if (aActorData == 0)
         return 0;
 
@@ -1675,8 +1748,8 @@ unsigned int __cdecl GetDestructionStageSelfDamage(TESObjectREFR* refr, float da
     if (data == 0)
         return 0;
 
-    unsigned int health = aActorData->GetMaxHealth(refr);
-    unsigned char aAPGeom = (unsigned char)FUN_00476b20((damage * DAT_01017a40) / (float)health);
+    unsigned int health = aActorData->GetMaxHealth(apRef);
+    unsigned char aAPGeom = (unsigned char)FUN_00476b20((afHealth * DAT_01017a40) / (float)health);
 
     unsigned int aActorMesh = 0;
     unsigned int aAOriginal = 0;
@@ -1713,7 +1786,9 @@ int __cdecl InitScriptRunLock(void*);
 void* __cdecl operator new(unsigned int);
 
 // @fnv 0x00477780
-void BGSDestructibleObjectForm::PreloadReplacementModels(::TESBoundObject* apBoundObject)
+// pdb: BGSDestructibleObjectForm::PreloadReplacementModels | BGSDestructibleObjectForm.obj | retail, upstream name already matches, high
+// pdb params: apObject
+void BGSDestructibleObjectForm::PreloadReplacementModels(::TESBoundObject* apObject)
 {
     if (!reinterpret_cast<DestructibleData*>(pData))
         return;
@@ -1724,7 +1799,7 @@ void BGSDestructibleObjectForm::PreloadReplacementModels(::TESBoundObject* apBou
             ->
             operator=(new FUN_00c3c590_QueuedFile(5));
 
-        QueueResourceLoad(apBoundObject, static_cast< ::IO_TASK_PRIORITY>(5),
+        QueueFiles(apObject, static_cast< ::IO_TASK_PRIORITY>(5),
                           reinterpret_cast< ::QueuedFile*>(
                               reinterpret_cast<QIdlePtrSV*>(reinterpret_cast<unsigned char*>(reinterpret_cast<DestructibleData*>(pData)) + 0x10)
                                   ->GO::operator unsigned int()));

@@ -7,6 +7,7 @@
 class TESFile;
 enum CHUNK_ID;
 
+// pdb: class TESModelList, size 0x14, bases: BaseFormComponent, 2 members
 class TESModelList : public BaseFormComponent
 {
 public:
@@ -17,21 +18,21 @@ public:
     virtual void Init();
     virtual void Free();
     virtual void CopyFromBase(BaseFormComponent* component);
-    virtual bool CompareWithBase(BaseFormComponent* component);
+    virtual bool CompareWithBase(BaseFormComponent* apCompareFC);
 
     void ClearComponent();
     bool HasModels();
     unsigned int BaseFormRecord(unsigned int type);
-    void BaseFormRecord(BaseFormComponent* component);
-    void CopyModelListToBuffer(void* destination, unsigned int flags);
-    void CopyModelListToBuffer(unsigned int modelChunkID, unsigned int dataChunkID);
+    void BaseFormRecord(BaseFormComponent* apCopyFC);
+    void CopyModelListToBuffer(void* aeModelListID, unsigned int aeTextureListID);
+    void CopyModelListToBuffer(unsigned int aeModelListID, unsigned int aeTextureListID);
     void CopyModelListToBuffer(CHUNK_ID modelChunkID, CHUNK_ID dataChunkID);
-    void LoadStringChunk(TESModelList* modelList, TESFile* file);
+    void LoadStringChunk(TESModelList* apModelList, TESFile* file);
     bool ContainsFile(const char* filename);
-    void AddModel_00489fa0(const char* filename);
+    void AddModel_00489fa0(const char* apFilename);
     void FUN_00489a60();
     BSSimpleList<const char*>* FUN_00717e50();
 
-    BSSimpleList<const char*> m_kModelPaths;
-    unsigned char m_kModelData[8];
+    BSSimpleList<const char*> nifFilenames; // src: XBOX_RETAIL_PDB +0x4 (old: m_kModelPaths)
+    unsigned char TextureListArray[8]; // src: XBOX_RETAIL_PDB +0xc (old: m_kModelData)
 };

@@ -18,6 +18,7 @@
 #include "../../include/TESObjectREFR.h"
 #include "../../include/TESSound.h"
 #include "../../include/MEDIATYPE.h"
+// pdb: class FalloutAudioMedia, size 0x1, 0 members
 class FalloutAudioMedia
 {
   public:

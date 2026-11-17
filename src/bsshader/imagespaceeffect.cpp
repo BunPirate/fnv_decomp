@@ -23,6 +23,7 @@ template <class T> struct ImageSpaceMutableArraySlot
 
 // Retained locally: include/ImageSpaceEffect.h is not available.
 // Both the parent pass list and its child texture list belong to this same 0x58-byte class.
+// pdb: class ImageSpaceEffect, size 0x58, 7 members
 struct ImageSpaceEffect
 {
     virtual ~ImageSpaceEffect();
@@ -52,12 +53,14 @@ struct ImageSpaceEffect
     void SetEntryRanges(unsigned int, int, int, int, int, int, int, int, int);
     void SetAccumulatorAt(unsigned int, NiAccumulator*, NiCamera const*);
     void ProcessItems(int, int, int, int);
-    void SetTextureArraySize(int count);
+    void SetTextureArraySize(int aiCount);
     void SetEffectParams(unsigned int uiIndex);
 };
 
 // Stores the effect, its parameter and output index into the three arrays at the given effect index.
 // @fnv 0x00ba3c70
+// pdb: ImageSpaceEffect::SetEffect | ImageSpaceEffect.obj | retail, call graph (shared callers), high
+// pdb params: aiEffectIndex, apEffect, apParam, aiOutput
 void ImageSpaceEffect::SetEffectAt(int aiEffectIndex, ImageSpaceEffect* apEffect, ImageSpaceEffectParam* apParam,
                                      int aiOutput)
 {
@@ -69,6 +72,10 @@ void ImageSpaceEffect::SetEffectAt(int aiEffectIndex, ImageSpaceEffect* apEffect
 extern MemoryManager g_memoryManager;
 // Allocates a 16-byte block, stores the four arguments in it, and sets it at index a1 in the array at offset 0x38.
 // @fnv 0x00ba3b50
+// pdb: ImageSpaceEffect::SetEffectInputs | ImageSpaceEffect.obj | retail, object-file run extension, low
+// pdb note: debug build links it to ImageSpaceManager::GetEffect
+// pdb params: aiEffectIndex, aiInput1, aiFilterMode1
+// pdb locals: piinputtex
 void ImageSpaceEffect::SetArrayEntry(int uiIndex, int a2, int a3, int a4, int a5)
 {
     int* p = (int*)g_memoryManager.Game_DoHeapAlloc(16);
@@ -82,15 +89,20 @@ void ImageSpaceEffect::SetArrayEntry(int uiIndex, int a2, int a3, int a4, int a5
 
 // Sets the child-effect, parameter, input and output array capacities to count.
 // @fnv 0x00ba3f90
-void ImageSpaceEffect::SetTextureArraySize(int count)
+// pdb: ImageSpaceEffect::SetEffectCount | ImageSpaceEffect.obj | retail, call graph, high
+// pdb params: aiCount
+void ImageSpaceEffect::SetTextureArraySize(int aiCount)
 {
-    reinterpret_cast<NiTPrimitiveArray<ImageSpaceTexture*>*>(&pEffectList)->SetSize(count);
-    reinterpret_cast<NiTPrimitiveArray<ImageSpaceTexture*>*>(&pEffectParamList)->SetSize(count);
-    reinterpret_cast<NiTPrimitiveArray<ImageSpaceTexture*>*>(&pEffectInputs)->SetSize(count);
-    reinterpret_cast<NiTPrimitiveArray<ImageSpaceTexture*>*>(&pEffectOutput)->SetSize(count);
+    reinterpret_cast<NiTPrimitiveArray<ImageSpaceTexture*>*>(&pEffectList)->SetSize(aiCount);
+    reinterpret_cast<NiTPrimitiveArray<ImageSpaceTexture*>*>(&pEffectParamList)->SetSize(aiCount);
+    reinterpret_cast<NiTPrimitiveArray<ImageSpaceTexture*>*>(&pEffectInputs)->SetSize(aiCount);
+    reinterpret_cast<NiTPrimitiveArray<ImageSpaceTexture*>*>(&pEffectOutput)->SetSize(aiCount);
 }
 
 // @fnv 0x00ba3ba0
+// pdb: ImageSpaceEffect::SetEffectInputs | ImageSpaceEffect.obj | retail, object-file run extension, low
+// pdb params: aiEffectIndex, aiInput1, aiFilterMode1
+// pdb locals: piinputtex
 void ImageSpaceEffect::SetThreeInputs(unsigned int auiIndex, int aiValue0, int aiValue1, int aiValue2, int aiValue3, int aiValue4,
                           int aiValue5)
 {
@@ -107,6 +119,8 @@ void ImageSpaceEffect::SetThreeInputs(unsigned int auiIndex, int aiValue0, int a
 }
 
 // @fnv 0x00ba3cb0
+// pdb: ImageSpaceEffect::SetTexture | ImageSpaceEffect.obj | retail, call graph, low
+// pdb params: aiIndex, apTex, aiFilterMode
 void ImageSpaceEffect::SetAccumulatorAt(unsigned int auiIndex, NiAccumulator* apAccum, NiCamera const* apCamera)
 {
     reinterpret_cast<NiTPrimitiveArray<int>*>(&pTextures)->SetAt(auiIndex, reinterpret_cast<int&>(apAccum));
@@ -133,6 +147,9 @@ struct TextureInputQuad
 
 // Allocates a TextureInputQuad, fills its four ranges from the start/end arguments, and stores it in pEffectInputs at uiIndex.
 // @fnv 0x00ba3c00
+// pdb: ImageSpaceEffect::SetEffectInputs | ImageSpaceEffect.obj | retail, object-file run extension, low
+// pdb params: aiEffectIndex, aiInput1, aiFilterMode1
+// pdb locals: piinputtex
 void ImageSpaceEffect::SetEntryRanges(unsigned int uiIndex, int iStart0, int iStart1, int iStart2, int iStart3, int iEnd0,
                                    int iEnd1, int iEnd2, int iEnd3)
 {
@@ -203,6 +220,9 @@ template <class T, class TAlloc> inline void NiTArray<T, TAlloc>::SetAt(unsigned
 // ImageSpaceTexture::SetFilterMode is absent from its shared header; the existing
 // NiAccumulator::SetSortingCamera binding uses the same folded +8 setter at 0x00d47a40.
 // @fnv 0x00ba3e30
+// pdb: ImageSpaceEffect::ApplyEffectTextures | ImageSpaceEffect.obj | retail, call graph (shared callers), low
+// pdb params: aiEffectIndex
+// pdb locals: itexturecount, ioutput, piinputs, peffect, i
 void ImageSpaceEffect::SetEffectParams(unsigned int uiEffectIndex)
 {
     ImageSpaceEffect* pkEffect = pEffectList.GetAt(uiEffectIndex);

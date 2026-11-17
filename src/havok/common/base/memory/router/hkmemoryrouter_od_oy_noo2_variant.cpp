@@ -99,6 +99,9 @@ Holder* __cdecl hkMemoryRouter_getInstance();
 
 // @fnv 0x0056d280
 // src: GUESS 0x0056d280 (confidence: medium)
+// pdb: hkpShape::operator new | TESObjectREFR.obj | debug, call graph, high
+// pdb params: nbytes
+// pdb locals: b
 ReturnType* __cdecl Object_AllocateStorage_0056d280(unsigned int nbytes)
 {
     ReturnType* result;

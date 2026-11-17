@@ -8,27 +8,30 @@
 #include "../../include/BaseFormComponent.h"
 
 // @fnv 0x00479430
-BGSEquipType::EQUIP_TYPE BGSEquipType::GetEquipType(TESForm* form)
+// pdb: BGSEquipType::GetEquipType | BGSEquipType.obj | debug, upstream name already matches, high
+// pdb params: apForm
+// pdb locals: erettype
+BGSEquipType::EQUIP_TYPE BGSEquipType::GetEquipType(TESForm* apForm)
 {
     EQUIP_TYPE result = ET_NONE;
-    if (form)
+    if (apForm)
     {
-        switch (static_cast<const TESForm*>(form)->GetFormType())
+        switch (static_cast<const TESForm*>(apForm)->GetFormType())
         {
         case 40:
-            result = (EQUIP_TYPE)((BGSEquipType*)((char*)form + 0xc4))->GetEquipType();
+            result = (EQUIP_TYPE)((BGSEquipType*)((char*)apForm + 0xc4))->GetEquipType();
             break;
         case 24:
-            result = (EQUIP_TYPE)((BGSEquipType*)((char*)form + 0x154))->GetEquipType();
+            result = (EQUIP_TYPE)((BGSEquipType*)((char*)apForm + 0x154))->GetEquipType();
             break;
         case 26:
-            result = (EQUIP_TYPE)((BGSEquipType*)((char*)form + 0x14c))->GetEquipType();
+            result = (EQUIP_TYPE)((BGSEquipType*)((char*)apForm + 0x14c))->GetEquipType();
             break;
         case 47:
-            result = (EQUIP_TYPE)((BGSEquipType*)((char*)form + 0x9c))->GetEquipType();
+            result = (EQUIP_TYPE)((BGSEquipType*)((char*)apForm + 0x9c))->GetEquipType();
             break;
         case 29:
-            result = (EQUIP_TYPE)((BGSEquipType*)((char*)form + 0x8c))->GetEquipType();
+            result = (EQUIP_TYPE)((BGSEquipType*)((char*)apForm + 0x8c))->GetEquipType();
             break;
         }
     }
@@ -36,6 +39,7 @@ BGSEquipType::EQUIP_TYPE BGSEquipType::GetEquipType(TESForm* form)
 }
 
 // @fnv 0x00479320
+// pdb: BGSEquipType::BGSEquipType | BGSEquipType.obj | debug, upstream name already matches, high
 BGSEquipType::BGSEquipType()
 {
     BGSEquipType::InitializeComponent();
@@ -57,7 +61,11 @@ BGSMenuIcon* BGSEquipType::GetEquipTypeIcon(int aiIndex)
 
 // Looks up the BGSMenuIcon for aeType and returns its full name, or a fallback string when none exists.
 // @fnv 0x00479540
-char* BGSEquipType::GetEquipTypeName(int aeType)
+// src: XBOX_DEBUG_PDB 0x00479540
+// pdb: BGSEquipType::GetEquipTypeIconFilename | BGSEquipType.obj | debug, call graph, high
+// pdb params: aeType
+// pdb locals: picon
+char* BGSEquipType::GetEquipTypeIconFilename(int aeType)
 {
     BGSMenuIcon* picon = GetEquipTypeIcon(aeType);
     if (picon)
@@ -82,6 +90,8 @@ struct FUN_00403660_shell
     float GetValue(int);
 };
 // @fnv 0x00403660
+// pdb: AlchemyItem::GetCost | AlchemyItem.obj | retail, vtable slot, high
+// pdb params: apActor
 float FUN_00403660_shell::GetValue(int)
 {
     if (((FUN_004029d0_shell*)((char*)this - 0x3c))->AlchemyItem_IsFlagSet(1))
@@ -116,19 +126,21 @@ struct S_0040a0a0_Primary
 struct S_0040a0a0_AVOwner
 {
     virtual float IngredientItem_GetCost(int avCode);
-    float GetTotalCost(int a);
+    float GetTotalCost(int apActor);
 };
 
 struct S_0040a0a0_Actor : S_0040a0a0_Primary, S_0040a0a0_AVOwner
 {
     bool IngredientItem_GetFlag(unsigned int flag);
     int CombatController_GetCombatState();
-    virtual float IngredientItem_GetCost(int avCode);
+    virtual float IngredientItem_GetCost(int apActor);
 };
 
 // @fnv 0x0040a0a0
 // src: COMMUNITY 0x0040a0a0
-float S_0040a0a0_Actor::IngredientItem_GetCost(int avCode)
+// pdb: IngredientItem::GetCost | IngredientItem.obj | retail, upstream name already matches, high
+// pdb params: apActor
+float S_0040a0a0_Actor::IngredientItem_GetCost(int apActor)
 {
     if (IngredientItem_GetFlag(1))
     {
@@ -144,9 +156,12 @@ extern const char DAT_01183040[];
 extern const char DAT_01183290[];
 extern "C" void* __cdecl FUN_00ec43fb(int, int, const char*, const char*, int);
 // @fnv 0x004793d0
-bool BGSEquipType::CompareWithBase(BaseFormComponent* argument)
+// pdb: BGSEquipType::CompareComponent | BGSEquipType.obj | retail, vtable slot, high
+// pdb params: apCompareFC
+// pdb locals: pcompare
+bool BGSEquipType::CompareWithBase(BaseFormComponent* apCompareFC)
 {
-    void* found = FUN_00ec43fb((int)argument, 0, DAT_01183040, DAT_01183290, 0);
+    void* found = FUN_00ec43fb((int)apCompareFC, 0, DAT_01183040, DAT_01183290, 0);
     if (found == 0)
         return true;
     if (GetEquipType() != ((BGSEquipType*)found)->GetEquipType())
@@ -155,9 +170,12 @@ bool BGSEquipType::CompareWithBase(BaseFormComponent* argument)
 }
 
 // @fnv 0x00479380
-void BGSEquipType::CopyFromBase(BaseFormComponent* a1)
+// pdb: BGSEquipType::CopyComponent | BGSEquipType.obj | retail, vtable slot, high
+// pdb params: apCopyFC
+// pdb locals: pcopy
+void BGSEquipType::CopyFromBase(BaseFormComponent* apCopyFC)
 {
-    BGSEquipType* obj = (BGSEquipType*)FUN_00ec43fb((int)a1, 0, DAT_01183040, DAT_01183290, 0);
+    BGSEquipType* obj = (BGSEquipType*)FUN_00ec43fb((int)apCopyFC, 0, DAT_01183040, DAT_01183290, 0);
     if (obj == 0)
     {
     }

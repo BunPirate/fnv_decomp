@@ -121,17 +121,17 @@ public:
     void Unitize_004a0c10();
     float FUN_004a7290();
     float FUN_004a7290() const;
-    LocalVec3 FUN_004b3800(const LocalVec3& other) const;
+    LocalVec3 FUN_004b3800(const LocalVec3& pt) const;
     LocalVec3 ProcessAndReturnValue_0053d280(float divisor);
     float NiPoint3_XYLength();
     float NiPoint3_XYLength() const;
     void ComputeValue_0063c8a0(const LocalVec3* other);
     void ComputeValue_0063c8a0(void* other);
     void FUN_006815c0();
-    float CVec3_Distance(LocalVec3* other);
-    float CVec3_Distance(const LocalVec3& other) const;
-    LocalVec3 TransformPointByMatrix4(const Mat& matrix);
-    LocalVec3 TransformPointByMatrix4(const Matrix4* matrix);
+    float CVec3_Distance(LocalVec3* cVec);
+    float CVec3_Distance(const LocalVec3& cVec) const;
+    LocalVec3 TransformPointByMatrix4(const Mat& cTransform);
+    LocalVec3 TransformPointByMatrix4(const Matrix4* cTransform);
     void Normalize_00b12790();
     LocalVec3 Diff_00b13040(void* other);
     LocalVec3 Diff_00b13040(const LocalVec3& other) const;
@@ -172,10 +172,12 @@ struct NiMatrix3_Vec3View : public NiMatrix3
 };
 
 // @fnv 0x00c267f0
-void NiPSysGravityFieldModifier::SaveBinary(NiStream& stream)
+// pdb: NiPSysGravityFieldModifier::SaveBinary | NiPSysGravityFieldModifier.obj | retail, upstream name already matches, high
+// pdb params: kStream
+void NiPSysGravityFieldModifier::SaveBinary(NiStream& kStream)
 {
-    NiPSysFieldModifier::SaveBinary(stream);
-    reinterpret_cast<NiColor*>(&originalDirection)->SaveBinary(stream);
+    NiPSysFieldModifier::SaveBinary(kStream);
+    reinterpret_cast<NiColor*>(&originalDirection)->SaveBinary(kStream);
 }
 
 extern "C"
@@ -262,11 +264,13 @@ NiPSysGravityFieldModifier* NiPSysGravityFieldModifier::Ctor()
 
 // Loads the base modifier and a NiPoint3 from the stream, copies the point to offset 0x3c and calls FUN_004a0c10 on it.
 // @fnv 0x00c2aa70
-void NiPSysGravityFieldModifier::LoadBinary(NiStream& aStream)
+// pdb: NiPSysGravityFieldModifier::LoadBinary | NiPSysGravityFieldModifier.obj | retail, upstream name already matches, high
+// pdb params: kStream
+void NiPSysGravityFieldModifier::LoadBinary(NiStream& kStream)
 {
-    NiPSysFieldModifier::LoadBinary(aStream);
+    NiPSysFieldModifier::LoadBinary(kStream);
     NiPoint3* a = &originalDirection;
-    a->LoadBinary(aStream);
+    a->LoadBinary(kStream);
     volatile unsigned int* src = reinterpret_cast<volatile unsigned int*>(&originalDirection);
     src[0] = src[0];
     src[1] = src[1];
@@ -295,12 +299,14 @@ void* __cdecl NiViewerStrings_NiGetViewerString_Title(void* value);
 void __fastcall GetFieldModifierViewerStrings(NiPSysFieldModifier*, void*, NiViewerStringsArray*);
 
 // @fnv 0x00c2af80
-void NiPSysGravityFieldModifier::GetViewerStrings(NiViewerStringsArray* stream)
+// pdb: NiPSysGravityFieldModifier::GetViewerStrings | NiPSysGravityFieldModifier.obj | retail, upstream name already matches, high
+// pdb params: pkStrings
+void NiPSysGravityFieldModifier::GetViewerStrings(NiViewerStringsArray* pkStrings)
 {
     typedef void (__thiscall *GetFieldStrings)(NiPSysFieldModifier*, NiViewerStringsArray*);
-    reinterpret_cast<GetFieldStrings>(&GetFieldModifierViewerStrings)(this, stream);
+    reinterpret_cast<GetFieldStrings>(&GetFieldModifierViewerStrings)(this, pkStrings);
 
-    FUN_00c2af80_Array* array = reinterpret_cast<FUN_00c2af80_Array*>(stream);
+    FUN_00c2af80_Array* array = reinterpret_cast<FUN_00c2af80_Array*>(pkStrings);
 
     void* item = NiViewerStrings_NiGetViewerString_Title(const_cast<void*>(g_01202708));
 
@@ -334,10 +340,13 @@ struct Point3ParameterData
     int unk18;
 };
 // @fnv 0x00c2aac0
+// pdb: NiPSysGravityFieldModifier::UpdateNoAttenuationNoDist | NiPSysGravityFieldModifier.obj | retail, object-file run extension, low
+// pdb params: fTime, pkData
+// pdb locals: kInvPSys, kDirection, kPSys, kGravityToPSys, kGravity, us, pkCurrentParticle, fDeltaT
 void NiPSysGravityFieldModifier::ApplyGravityToParticles(float fTime, NiPSysData* pkData)
 {
     NiTransform kField;
-    memcpy(&kField, &m_spFieldObject->m_kWorld, sizeof(kField));
+    memcpy(&kField, &m_pkFieldObj->m_kWorld, sizeof(kField));
     NiTransform kInv;
     {
         NiTransform kPSys;
@@ -349,7 +358,7 @@ void NiPSysGravityFieldModifier::ApplyGravityToParticles(float fTime, NiPSysData
         NiTransform kX = kInv * kField;
         LocalVec3 kDirection = (const NiMatrix3_Vec3View&)kX.m_Rotate * reinterpret_cast<const LocalVec3&>(m_kLightVector);
         kDirection.Unitize();
-        kDirection *= m_fInfluence;
+        kDirection *= m_fMagnitude;
         kAccel = kDirection;
     }
     for (unsigned short i = 0; i < pkData->m_usActive; i++)
@@ -378,18 +387,21 @@ inline NiPoint3 RotateFieldDirection(const NiMatrix3& matrix, const NiPoint3& di
 float BSMAX_00404010(float, float);
 // Applies a directional force to particles within the field, scaling by m_fInfluence, time delta, and optional distance m_fFieldAttenuation or m_bEnableMaxDistance radius.
 // @fnv 0x00c2acb0
+// pdb: NiPSysGravityFieldModifier::Update | NiPSysGravityFieldModifier.obj | retail, object-file run extension, low
+// pdb params: fTime, pkData
+// pdb locals: kInvPSys, kPosition, kDirection, kPSys, fHalfAttenuation, kGravityToPSys, kGravity, us, pkCurrentParticle, fDeltaT, kParticlePosition, fDistanceSqr, kDeltaV
 void NiPSysGravityFieldModifier::ApplyForceToParticles(float time, NiPSysData* pkData)
 {
     NiPSysData* data = pkData;
-    if (m_fInfluence == 0 || data->m_usActive == 0 || !m_spFieldObject)
+    if (m_fMagnitude == 0 || data->m_usActive == 0 || !m_pkFieldObj)
         return;
-    if (!m_bEnableMaxDistance && m_fFieldAttenuation == 0)
+    if (!m_bUseMaxDistance && m_fAttenuation == 0)
     {
         ApplyGravityToParticles(time, pkData);
         return;
     }
     NiTransform fieldWorld;
-    fieldWorld = m_spFieldObject->m_kWorld;
+    fieldWorld = m_pkFieldObj->m_kWorld;
     NiTransform inverse;
     {
         NiTransform world;
@@ -398,7 +410,7 @@ void NiPSysGravityFieldModifier::ApplyForceToParticles(float time, NiPSysData* p
     }
     {
         NiTransform world = inverse * fieldWorld;
-        float halfAttenuation = 0.5 * m_fFieldAttenuation;
+        float halfAttenuation = 0.5 * m_fAttenuation;
         NiPoint3 forceDirection;
         forceDirection = RotateFieldDirection(world.m_Rotate, normalizedDirection);
         for (unsigned short i = 0; i < data->m_usActive; i++)
@@ -410,16 +422,16 @@ void NiPSysGravityFieldModifier::ApplyForceToParticles(float time, NiPSysData* p
             NiPoint3 position = data->m_pkVertex[i];
             NiPoint3 offset = position - world.m_Translate;
             float distanceSquared = offset.SqrLength();
-            if (m_bEnableMaxDistance && !(m_fFieldStrength >= distanceSquared))
+            if (m_bUseMaxDistance && !(m_fMaxDistanceSqr >= distanceSquared))
                 continue;
             NiPoint3 change;
-            if (m_fFieldAttenuation == 0.0f || distanceSquared == 0.0f)
+            if (m_fAttenuation == 0.0f || distanceSquared == 0.0f)
             {
-                change = forceDirection * (m_fInfluence * delta);
+                change = forceDirection * (m_fMagnitude * delta);
             }
             else
             {
-                float scale = m_fInfluence * delta / BSMAX_00404010(1.0f, (float)pow(distanceSquared, halfAttenuation));
+                float scale = m_fMagnitude * delta / BSMAX_00404010(1.0f, (float)pow(distanceSquared, halfAttenuation));
                 const NiPoint3& dir = forceDirection;
                 const double& wide = scale;
                 change = NiPoint3(wide * dir.x, scale * dir.y, scale * dir.z);

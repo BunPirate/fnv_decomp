@@ -6,6 +6,7 @@
 
 class TextNode;
 
+// pdb: class TileText, size 0x4c, bases: Tile, 3 members
 class TileText : public Tile
 {
   public:
@@ -22,11 +23,11 @@ class TileText : public Tile
 
     void SetPosition(const NiPoint3& p)
     {
-        *reinterpret_cast<NiPoint3*>(&unk3c) = p;
+        *reinterpret_cast<NiPoint3*>(&xOffset) = p;
     }
 
-    unsigned int unk38;
-    int unk3c;
+    unsigned int fTextWidth; // src: XBOX_RETAIL_PDB +0x38 (old: unk38)
+    int xOffset; // src: XBOX_RETAIL_PDB +0x3c (old: unk3c)
     int unk40;
     int unk44;
     union

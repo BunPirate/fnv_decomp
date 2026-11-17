@@ -60,8 +60,8 @@ struct BlockPoolMemoryRouter
 };
 
 extern "C" BlockPoolMemoryRouter& __cdecl hkMemoryRouter_getInstance();
-void __cdecl hkArrayUtil__reserve(BlockPoolAllocator* alloc, void* array, int numElements, int sizeElem);
-void __cdecl ResizeAudioStream(void* alloc, void* array, int sizeElem);
+void __cdecl hkArrayUtil__reserve(BlockPoolAllocator* mem, void* array, int numElem, int sizeElem);
+void __cdecl ResizeAudioStream(void* mem, void* array, int sizeElem);
 
 struct BlockPoolBlock
 {
@@ -118,13 +118,16 @@ struct BlockPoolArrayLocalForm
 
 // Resets the block array, reserves room for 4 entries, allocates a 0x200-byte block and initialises its fields.
 // @fnv 0x00da4430
-void __cdecl InitBlockPool(BlockPoolArrayLocalForm* blocks)
+// src: XBOX_RETAIL_PDB 0x00da4430
+// pdb: hkAgent1nMachine_Create | hkpAgent1nMachine.obj | retail, call graph, high
+// pdb params: agentTrack
+void __cdecl hkAgent1nMachine_Create(BlockPoolArrayLocalForm* agentTrack)
 {
-    blocks->m_iElementCount = 0;
-    blocks->GrowArrayCapacity(hkMemoryRouter_getInstance().heap(), 4);
-    blocks->_expandOne(hkMemoryRouter_getInstance().heap());
+    agentTrack->m_iElementCount = 0;
+    agentTrack->GrowArrayCapacity(hkMemoryRouter_getInstance().heap(), 4);
+    agentTrack->_expandOne(hkMemoryRouter_getInstance().heap());
     BlockPoolBlock* block = new (hkMemoryRouter_getInstance().heap().AllocateMemoryBlock(0x200)) BlockPoolBlock();
-    blocks->m_data[0] = block;
+    agentTrack->m_data[0] = block;
     block->unk13 = 0x10;
     block->unk10 = 1;
     block->unk18 = -1;
@@ -1793,9 +1796,12 @@ struct S_00da40e0_Input
 
 const S_00da40e0_CdBody* __cdecl hkAgentMachine_processTransformedShapes(const S_00da40e0_CdBody* cdBody, S_00da40e0_CdBody* newCdBodies,
                                               S_00da40e0_MotionState* newMotionStates, int numSlots,
-                                              unsigned char& changeCounter);
+                                              unsigned char& cdBodyHasTransformFlag);
 
 // @fnv 0x00da40e0
+// pdb: hkAgentNmMachine_UpdateShapeCollectionFilterVisitor | hkpAgent1nMachine.obj | retail, object-file run extension, low
+// pdb params: vin, entry, agentData
+// pdb locals: shapeKeyPair, assertBuf, ostr, transformForTransformedShapeB, cdBodyForTransformedShapeA, shapeBufferA, transformForTransformedShapeA, childCdBodyB, shapeBufferB, childCdBodyA, cdBodyForTransformedShapeB, dummyCdBodyHasTransformFlag
 S_00da40e0_Entry* __cdecl ProcessCollisionEntry(const S_00da40e0_Input& aInput, S_00da40e0_Entry* entry,
                                                 S_00da40e0_AgentData* agentData)
 {
@@ -1875,6 +1881,9 @@ struct Filter1n : S_00da40e0_FilterHolder, ShapeCollectionFilter1n
 };
 
 // @fnv 0x00da3f90
+// pdb: hkAgent1nMachine_UpdateShapeCollectionFilterVisitor | hkpAgent1nMachine.obj | retail, object-file run extension, low
+// pdb params: vin, entry, agentData
+// pdb locals: shapeKeyPair, assertBuf, ostr, transformForTransformedShapeB, childCdBodyB, shapeBufferB, cdBodyForTransformedShapeB, dummyCdBodyHasTransformFlag
 S_00da40e0_Entry* __cdecl ProcessEntryPair(const S_00da40e0_Input& in, S_00da40e0_Entry* entry,
                                            S_00da40e0_AgentData* agentData)
 {
@@ -2172,10 +2181,13 @@ __forceinline BlockPoolHeap& fullHeap()
 // Iterates over all agent entries in the block pool, dispatches their destroy functions, then releases the blocks and resets the array.
 // @fnv 0x00da42b0
 // src: XBOX_PDB 0x00da42b0
-void hkAgent1nMachine_Destroy(BlockPoolArrayLocalForm* blocks, S_00da40e0_Dispatcher* dispatcher, S_00da40e0_ContactMgr* mgr,
-                  S_00da40e0_ConstraintOwner& owner)
+// pdb: hkAgent1nMachine_Destroy | hkpAgent1nMachine.obj | retail, upstream name already matches, high
+// pdb params: agentTrack, dispatcher, mgr, constraintOwner
+// pdb locals: assertBuf, ostr
+void hkAgent1nMachine_Destroy(BlockPoolArrayLocalForm* agentTrack, S_00da40e0_Dispatcher* dispatcher, S_00da40e0_ContactMgr* mgr,
+                  S_00da40e0_ConstraintOwner& constraintOwner)
 {
-    BlockPoolBlock** sectors = blocks->m_data;
+    BlockPoolBlock** sectors = agentTrack->m_data;
     BlockPoolBlock* sector = sectors[0];
     unsigned char* cursor = (unsigned char*)sector + 16;
     unsigned char* end = (unsigned char*)sector + 16 + sector->unk00;
@@ -2194,7 +2206,7 @@ void hkAgent1nMachine_Destroy(BlockPoolArrayLocalForm* blocks, S_00da40e0_Dispat
             S_00da40e0_AgentData* agentData = (S_00da40e0_AgentData*)(cursor + 16);
             cursor += entry->m_iElementCount;
             dispatcher->m_kAgent3FunctionTable[entry->m_ucNnTrackType].m_pAgent3DestroyFuncs(entry, agentData, mgr,
-                                                                                             owner, dispatcher);
+                                                                                             constraintOwner, dispatcher);
         }
         break;
         case 4:
@@ -2204,7 +2216,7 @@ void hkAgent1nMachine_Destroy(BlockPoolArrayLocalForm* blocks, S_00da40e0_Dispat
             S_00da40e0_AgentData* agentData = (S_00da40e0_AgentData*)(cursor + 32);
             cursor += entry->m_iElementCount;
             dispatcher->m_kAgent3FunctionTable[entry->m_ucNnTrackType].m_pAgent3DestroyFuncs(entry, agentData, mgr,
-                                                                                             owner, dispatcher);
+                                                                                             constraintOwner, dispatcher);
         }
         break;
         case 0:
@@ -2220,7 +2232,7 @@ void hkAgent1nMachine_Destroy(BlockPoolArrayLocalForm* blocks, S_00da40e0_Dispat
                 if (done)
                     fullHeap().ReleaseBlock(done, 512);
             }
-            sector = blocks->m_data[index];
+            sector = agentTrack->m_data[index];
             cursor = (unsigned char*)sector + 16;
             end = (unsigned char*)sector + 16 + sector->unk00;
         }
@@ -2231,12 +2243,12 @@ finished: {
         fullHeap().ReleaseBlock(done, 512);
 }
     BlockPoolHeap& heap = fullHeap();
-    int flags = blocks->m_iCapacityState;
-    blocks->m_iElementCount = 0;
+    int flags = agentTrack->m_iCapacityState;
+    agentTrack->m_iElementCount = 0;
     if ((flags & 0x80000000) == 0)
-        heap.ReturnMemory(blocks->m_data, (flags & 0x3fffffff) * 4);
-    blocks->m_iCapacityState = 0x80000000;
-    blocks->m_data = 0;
+        heap.ReturnMemory(agentTrack->m_data, (flags & 0x3fffffff) * 4);
+    agentTrack->m_iCapacityState = 0x80000000;
+    agentTrack->m_data = 0;
 }
 
 #include <string.h>
@@ -2281,9 +2293,12 @@ typedef unsigned char*(__cdecl* StreamTransform)(void*, unsigned char*, unsigned
 // Walks records in the BlockPoolArrayLocalForm blocks, copies them into new 512-byte blocks, applies the callback to some record types, and replaces the array contents.
 // @fnv 0x00da44d0
 // src: HAVOK_LIB 0x00da44d0
-void hkAgent1nMachine_VisitAllAgents(int apBlocks, int apHeader, void* apTransform)
+// pdb: hkAgent1nMachine_VisitAllAgents | hkpAgent1nMachine.obj | retail, upstream name already matches, high
+// pdb params: agentTrack, vin, visitor
+// pdb locals: extensionBuffer, currentSectorIndex, readEnd, currentSector, spareSector, readData, inExtensionBuffer, readSector, bytesUsedInCurrentSector, vmod, assertBuf, ostr
+void hkAgent1nMachine_VisitAllAgents(int agentTrack, int vin, void* visitor)
 {
-    BlockPoolArrayLocalForm* blocks = (BlockPoolArrayLocalForm*)apBlocks;
+    BlockPoolArrayLocalForm* blocks = (BlockPoolArrayLocalForm*)agentTrack;
     int outIndex = 0;
     BlockPoolBlock* input = blocks->m_data[0];
     BlockPoolBlock* previous = 0;
@@ -2302,7 +2317,7 @@ void hkAgent1nMachine_VisitAllAgents(int apBlocks, int apHeader, void* apTransfo
 process:
     streamCopy(out, cursor, cursor[3] >> 4);
     cursor += cursor[3];
-    memcpy(&header, (void*)apHeader, 32);
+    memcpy(&header, (void*)vin, 32);
     int offset = 16;
     switch (out[0] & 0xf7)
     {
@@ -2312,7 +2327,7 @@ process:
     case 2:
     case 3:
     case 6:
-        out = ((StreamTransform)apTransform)(&header, out, out + offset);
+        out = ((StreamTransform)visitor)(&header, out, out + offset);
         break;
     case 1:
         out += offset;
@@ -2420,6 +2435,10 @@ struct __declspec(align(16)) TOIBody
 // Computes dot products from the two bodies' position difference and directions, then returns 0, 1 or 2 from threshold comparisons.
 // @fnv 0x00da37d0
 // src: GUESS 0x00da37d0 (confidence: low)
+// pdb: hkAgent1nMachine_WarpTime | hkpAgent1nMachine.obj | retail, object-file run extension, low
+// pdb note: debug build links it to hkAgent1nMachine_FindAgent
+// pdb params: agentTrack, oldTime, newTime, input
+// pdb locals: assertBuf, ostr
 static __declspec(noinline) int Hkpagent1nmachine_ComputeValues_00da37d0(const TOIBody* b, const TOIBody* a, float p0, const float* p1, float p2)
 {
     LocalM128 d = _mm_sub_ps(a->m_pos, b->m_pos);

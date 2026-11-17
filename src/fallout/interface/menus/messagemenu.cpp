@@ -23,6 +23,8 @@ void __cdecl MessageMenu_DisableMessageMenu(bool);
 
 // @fnv 0x00703fe0
 // src: XBOX_PDB 0x00703fe0
+// pdb: Interface::DisableMessageMenu | Interface.obj | debug, upstream name already matches, high
+// pdb params: abDisable
 void __cdecl Interface_DisableMessageMenu(bool abDisable)
 {
     MessageMenu_DisableMessageMenu(abDisable);
@@ -45,6 +47,7 @@ extern bool DAT_011da4ee;
 extern int DAT_011da4f0;
 // Destructor that sets DAT_0119f348 to true, clears DAT_011da4f0, and if DAT_011da4ed is set, sets DAT_011da4ee to true.
 // @fnv 0x007a8b10
+// pdb: MessageMenu::~MessageMenu | MessageMenu.obj | debug, object-file gap fill, medium
 FUN_007a8b10::~FUN_007a8b10()
 {
     DAT_0119f348 = true;
@@ -70,6 +73,7 @@ void __cdecl SetDialogMenuActive(int);
 
 // @fnv 0x007a8df0
 // src: XBOX_PDB 0x007a8df0
+// pdb: MessageMenu::Close | MessageMenu.obj | retail, upstream name already matches, high
 void __cdecl MessageMenu_Close()
 {
     if (DAT_011da4f0)
@@ -100,6 +104,8 @@ extern BSSimpleArray<unsigned int, 1024> g_011da53c;
 
 // Returns the element at index DAT_011da4f4 from g_011da53c if that index is below the object's flags, otherwise 0.
 // @fnv 0x007a92a0
+// pdb: MessageMenu::GetQueueHead | MessageMenu.obj | debug, call graph, medium
+// pdb locals: preturn
 unsigned int __cdecl GetCurrentArrayElement()
 {
     unsigned int uiResult = 0;
@@ -123,7 +129,7 @@ struct FUN_007aa070_shell : public MessageMenu
 
 void* __cdecl InterfaceManager_GetSingleton(void);
 void* __cdecl GetCurrentArrayElement(void);
-void __cdecl CleanupGlobalObject(void);
+void __cdecl MessageMenu_ClearMessageQueueHead(void);
 extern bool DAT_011da4ed;
 extern bool DAT_011da4ee;
 
@@ -132,6 +138,8 @@ using ::ListBox;
 
 // Resolves a tile by ID when none is given, and for ID 7 stores the list-box result into a global and runs the selection callbacks.
 // @fnv 0x007aa070
+// pdb: MessageMenu::DoClick | MessageMenu.obj | retail, vtable slot, high
+// pdb params: aiID, apTarget
 void FUN_007aa070_shell::HandleTileSelection(int aiID, Tile* apTarget)
 {
     if (!apTarget && aiID >= 0 && aiID < 6)
@@ -154,7 +162,7 @@ void FUN_007aa070_shell::HandleTileSelection(int aiID, Tile* apTarget)
         }
         else
         {
-            CleanupGlobalObject();
+            MessageMenu_ClearMessageQueueHead();
         }
     }
 }
@@ -175,7 +183,10 @@ extern GlobalObject_007ab590 g_011da53c;
 extern int DAT_011da4f4;
 // Iterates the global object's elements, calls Destroy(true) on each non-null one, then clears the object and resets DAT_011da4f4 to 0.
 // @fnv 0x007aa480
-void ClearAllElements()
+// src: XBOX_RETAIL_PDB 0x007aa480
+// pdb: MessageMenu::ClearMessageQueue | MessageMenu.obj | retail, call graph, high
+// pdb locals: i
+void MessageMenu_ClearMessageQueue()
 {
     for (unsigned int i = 0; i < g_011da53c.GetFlags(); i++)
     {
@@ -196,7 +207,7 @@ struct Elem_007aa530
 };
 struct Obj_007aa530
 {
-    void PopulateFromMessageData();
+    void MessageMenu_LoadNextMessage();
 };
 struct GlobalObject_007ab590
 {
@@ -209,7 +220,10 @@ extern Obj_007aa530* DAT_011da4f0;
 int __cdecl GetCurrentArrayElement();
 void __cdecl MessageMenu_Close();
 // @fnv 0x007aa530
-void CleanupGlobalObject()
+// src: XBOX_RETAIL_PDB 0x007aa530
+// pdb: MessageMenu::ClearMessageQueueHead | MessageMenu.obj | retail, call graph, high
+// pdb locals: pEntry
+void MessageMenu_ClearMessageQueueHead()
 {
     unsigned int u;
     if (GetCurrentArrayElement())
@@ -224,7 +238,7 @@ void CleanupGlobalObject()
     if (!GetCurrentArrayElement())
         MessageMenu_Close();
     else if (DAT_011da4f0)
-        DAT_011da4f0->PopulateFromMessageData();
+        DAT_011da4f0->MessageMenu_LoadNextMessage();
 }
 }  // namespace fnv_007aa530
 
@@ -239,9 +253,11 @@ void __cdecl Interface_QueueMenuCreate(int, int, int, int, int, int);
 // Stores the flag in DAT_011da4ec and calls FUN_007a8df0 or FUN_007a8ba0/FUN_00709470 depending on DAT_011da4f0 and GetCurrentArrayElement.
 // @fnv 0x007aa6b0
 // src: XBOX_PDB 0x007aa6b0
-void MessageMenu_DisableMessageMenu(bool a)
+// pdb: MessageMenu::DisableMessageMenu | MessageMenu.obj | retail, upstream name already matches, high
+// pdb params: abDisable
+void MessageMenu_DisableMessageMenu(bool abDisable)
 {
-    DAT_011da4ec = a;
+    DAT_011da4ec = abDisable;
     if (DAT_011da4f0 && DAT_011da4ec)
         MessageMenu_Close();
     if (!DAT_011da4f0 && !DAT_011da4ec && GetCurrentArrayElement())
@@ -268,6 +284,8 @@ struct Str_007ab000
 };
 // Returns a copy of the string constructed from this, _Off, _Count and the result of FUN_007ab230().
 // @fnv 0x007ab000
+// pdb: std::basic_string<char,std::char_traits<char>,std::allocator<char> >::substr | MessageMenu.obj | debug, call graph, high
+// pdb params: _Off, _Count
 Str_007ab000 Str_007ab000::Substr(unsigned int _Off, unsigned int _Count) const
 {
     return Str_007ab000(*this, _Off, _Count, EvaluateValue_007ab230());
@@ -303,6 +321,7 @@ struct DelStandIn
 };
 // Runs the destructor on this object, then frees it with Deallocate when flags has bit 0 set, and returns this.
 // @fnv 0x007a8ae0
+// pdb: MessageMenu::`scalar deleting destructor' | MessageMenu.obj | retail, vtable slot, high
 void* DelStandIn::FUN_007a8ae0(unsigned int flags)
 {
     ((DtorStandIn*)this)->FUN_0083dec0();
@@ -325,6 +344,8 @@ struct DelStandIn
 };
 // Calls the destructor, frees this when flags has bit 0 set, and returns this.
 // @fnv 0x007aa500
+// pdb: MessageMenu::MessageMenuEntry::~MessageMenuEntry | MessageMenu.obj | retail, call graph (shared callers), low
+// pdb note: debug build links it to MessageMenu::MessageMenuEntry::`scalar deleting destructor'
 void* DelStandIn::Destroy(unsigned int flags)
 {
     ((DtorStandIn*)this)->FUN_0083dec0();
@@ -358,6 +379,7 @@ struct FUN_007a8850
     FUN_007a8850();
 };
 // @fnv 0x007a8850
+// pdb: MessageMenu::MessageMenuEntry::MessageMenuEntry | MessageMenu.obj | debug, call graph, high
 FUN_007a8850::FUN_007a8850()
 {
     iIcon = 0;
@@ -404,6 +426,8 @@ extern MessagemenuOffset08View g_011da53c;
 
 // @fnv 0x007aaf20
 // src: XBOX_PDB 0x007aaf20
+// pdb: MessageMenu::SetPauseMenuMode | MessageMenu.obj | retail, upstream name already matches, high
+// pdb params: abFlag
 void __cdecl MessageMenu_SetPauseMenuMode(bool abFlag)
 {
     if (abFlag)
@@ -435,6 +459,7 @@ struct FUN_006f2270
 };
 
 // @fnv 0x006f2270
+// pdb: BSSimpleArray<NavMeshInfo const *,1024>::GetLast | PathBuilder.obj | debug, call graph, medium
 unsigned int* FUN_006f2270::GetLast()
 {
     return ((Arr*)this)->GetAt(m2 - 1);
@@ -442,31 +467,35 @@ unsigned int* FUN_006f2270::GetLast()
 
 struct FUN_007aafe0_Class
 {
-    void FindSubstring_Thunk(void* ap1, void* ap2);
+    void std_basic_string_char_std_char_traits_char_std_allocator_char_find(void* _Ch, void* _Off);
     void FindSubstring(void* p, void* q, int n);
 };
 
 // @fnv 0x007aafe0
-// src: GUESS 0x007aafe0 (confidence: medium)
-void FUN_007aafe0_Class::FindSubstring_Thunk(void* pFirst, void* pSecond)
+// src: XBOX_DEBUG_PDB 0x007aafe0
+// pdb: std::basic_string<char,std::char_traits<char>,std::allocator<char> >::find | MessageMenu.obj | debug, call graph, high
+// pdb params: _Ch, _Off
+void FUN_007aafe0_Class::std_basic_string_char_std_char_traits_char_std_allocator_char_find(void* _Ch, void* _Off)
 {
-    FindSubstring(&pFirst, pSecond, 1);
+    FindSubstring(&_Ch, _Off, 1);
 }
 
 struct MessageMenuHandler
 {
     void ReplaceSubstring(void* first, void* second, void* third, unsigned int derivedValue);
-    void ProcessState_007aaf80(void* first, void* second, void* third);
+    void std_basic_string_char_std_char_traits_char_std_allocator_char_replace(void* _Off, void* _N0, void* _Ptr);
 };
 
 unsigned int __cdecl BSstrlen(void* value);
 
 // Calls FUN_007ab0a0 with the three arguments and the value returned by FUN_0044a670(third).
 // @fnv 0x007aaf80
-// src: GUESS 0x007aaf80 (confidence: low)
-void MessageMenuHandler::ProcessState_007aaf80(void* first, void* second, void* third)
+// src: XBOX_DEBUG_PDB 0x007aaf80
+// pdb: std::basic_string<char,std::char_traits<char>,std::allocator<char> >::replace | MessageMenu.obj | debug, call graph, high
+// pdb params: _Off, _N0, _Ptr
+void MessageMenuHandler::std_basic_string_char_std_char_traits_char_std_allocator_char_replace(void* _Off, void* _N0, void* _Ptr)
 {
-    ReplaceSubstring(first, second, third, BSstrlen(third));
+    ReplaceSubstring(_Off, _N0, _Ptr, BSstrlen(_Ptr));
 }
 
 void __cdecl FUN_00ec7c56(void);
@@ -486,6 +515,8 @@ struct FUN_007aafb0_Class
 // If arg exceeds unk14, calls FUN_00ec7c56; then returns the result of FUN_0044a970() plus arg.
 // @fnv 0x007aafb0
 // src: GUESS 0x007aafb0 (confidence: medium)
+// pdb: toupper | toupper.obj | debug, call graph, medium
+// pdb params: c
 int __thiscall FUN_007aafb0_Class::GetCharacterPointerChecked(unsigned int arg)
 {
     if (arg > unk14)
@@ -511,10 +542,10 @@ struct Text
     unsigned int length, capacity;
     Text(const char*);
     ~Text();
-    unsigned int FindSubstring_Thunk(char, unsigned int);
+    unsigned int std_basic_string_char_std_char_traits_char_std_allocator_char_find(char, unsigned int);
     Text Substr(unsigned int, unsigned int);
     const char* std_string_debug_c_str();
-    void ProcessState_007aaf80(unsigned int, unsigned int, const char*);
+    void std_basic_string_char_std_char_traits_char_std_allocator_char_replace(unsigned int, unsigned int, const char*);
 };
 struct Message
 {
@@ -559,47 +590,50 @@ void Interface_QueueMenuCreate(int, int, int, int, int, bool);
 void MessageMenu_Create();
 // Builds a Message from the given title, text, icon, sound and buttons, inserts it into the message queue, and triggers the display update.
 // @fnv 0x007a8e60
-bool QueueMessage(const char* title, const char* message, const char* icon, const char* sound, int buttonCount,
-                  bool hasButtons, int type, const char* firstButton, const char*** arguments, bool pause, int tileID,
-                  int callback, float time, float alpha, float flags)
+// pdb: MessageMenu::AddMessageToQueue | MessageMenu.obj | retail, call graph (shared callers), high
+// pdb params: axText, apcIconFilename, apcTitle, apcSound, afpResult, aiFirstButtonResult, aiWarningContext, axFirst, axList, abModal, aiXPosOverride, aiYPosOverride, afSecondsVisible, afBackgroundTextureOpacityOverride, afMenuWidthOverride
+// pdb locals: ititleLen, strbuttonName, pnewMessage, hotkeyIndex, strtemp, i
+bool QueueMessage(const char* axText, const char* apcIconFilename, const char* apcTitle, const char* apcSound, int afpResult,
+                  bool aiFirstButtonResult, int aiWarningContext, const char* axFirst, const char*** axList, bool abModal, int aiXPosOverride,
+                  int aiYPosOverride, float afSecondsVisible, float afBackgroundTextureOpacityOverride, float afMenuWidthOverride)
 {
     Message* info = new Message;
-    StrMem buttonSlot11(firstButton);
-    info->buttonCount = buttonCount;
-    info->hasButtons = hasButtons;
-    info->type = type;
-    reinterpret_cast<void (__thiscall*)(StrMem*, const char*)>(FUN_00438390)(&info->message, message);
+    StrMem buttonSlot11(axFirst);
+    info->buttonCount = afpResult;
+    info->hasButtons = aiFirstButtonResult;
+    info->type = aiWarningContext;
+    reinterpret_cast<void (__thiscall*)(StrMem*, const char*)>(FUN_00438390)(&info->message, apcIconFilename);
     reinterpret_cast<void (__thiscall*)(StrMem*, const char*)>(FUN_00438390)(&info->hotkeys, DAT_01011584);
-    reinterpret_cast<void (__thiscall*)(StrMem*, const char*)>(FUN_00438390)(&info->title, title);
-    reinterpret_cast<void (__thiscall*)(StrMem*, const char*)>(FUN_00438390)(&info->sound, sound);
-    info->pause = pause;
-    info->tileID = tileID;
-    info->callback = callback;
-    info->displayTime = time * DAT_01017b70;
-    if (alpha > DAT_01012060)
-        info->alpha = alpha * DAT_0101e568;
-    info->flags = (unsigned int)flags;
-    int iconLengthSlot11 = icon ? BSstrlen(icon) : 0;
+    reinterpret_cast<void (__thiscall*)(StrMem*, const char*)>(FUN_00438390)(&info->title, axText);
+    reinterpret_cast<void (__thiscall*)(StrMem*, const char*)>(FUN_00438390)(&info->sound, apcSound);
+    info->pause = abModal;
+    info->tileID = aiXPosOverride;
+    info->callback = aiYPosOverride;
+    info->displayTime = afSecondsVisible * DAT_01017b70;
+    if (afBackgroundTextureOpacityOverride > DAT_01012060)
+        info->alpha = afBackgroundTextureOpacityOverride * DAT_0101e568;
+    info->flags = (unsigned int)afMenuWidthOverride;
+    int iconLengthSlot11 = apcTitle ? BSstrlen(apcTitle) : 0;
     if (iconLengthSlot11 > 0)
     {
         info->icon = new char[iconLengthSlot11 + 1];
-        FUN_00406d30(info->icon, iconLengthSlot11 + 1, icon);
+        FUN_00406d30(info->icon, iconLengthSlot11 + 1, apcTitle);
     }
     else
         info->icon = 0;
     while (buttonSlot11.BSStringT_char_Length() > 0)
     {
         Text text(buttonSlot11.Modelloader_GetReferencedThis());
-        unsigned int hotkeySlot0 = text.FindSubstring_Thunk('&', 0);
+        unsigned int hotkeySlot0 = text.std_basic_string_char_std_char_traits_char_std_allocator_char_find('&', 0);
         if (hotkeySlot0 != DAT_010173f0)
         {
             info->hotkeys.FUN_00404820(text.Substr(hotkeySlot0 + 1, 1).std_string_debug_c_str());
-            text.ProcessState_007aaf80(hotkeySlot0, 1, DAT_01011584);
+            text.std_basic_string_char_std_char_traits_char_std_allocator_char_replace(hotkeySlot0, 1, DAT_01011584);
         }
         if (BSstrcmp(text.std_string_debug_c_str(), DAT_01020770))
             info->buttons.FUN_00404820(text.std_string_debug_c_str());
         info->buttons.FUN_00404820(DAT_01063d7c);
-        reinterpret_cast<void (__thiscall*)(StrMem*, const char*)>(FUN_00438390)(&buttonSlot11, (*arguments += 1)[-1]);
+        reinterpret_cast<void (__thiscall*)(StrMem*, const char*)>(FUN_00438390)(&buttonSlot11, (*axList += 1)[-1]);
     }
     if (DAT_011da53c.FUN_0044ddc0())
     {
@@ -619,7 +653,7 @@ bool QueueMessage(const char* title, const char* message, const char* icon, cons
     }
     else
         DAT_011da53c.FUN_007cb2e0(info);
-    if (!DAT_011da4f0 && !DAT_011da4ec && (!Interface_InDialog() || pause))
+    if (!DAT_011da4f0 && !DAT_011da4ec && (!Interface_InDialog() || abModal))
     {
         if (*DAT_011c3ea4.Setting_Int() > 1)
             Interface_QueueMenuCreate(7, 0, 0, 0, 1, !info->GetByteAtOffset56());
@@ -676,17 +710,20 @@ struct KeyMenu
     bool HandleKeyInput(int);
 };
 // @fnv 0x007aa110
-bool KeyMenu::HandleKeyInput(int key)
+// pdb: MessageMenu::DoKey | MessageMenu.obj | retail, vtable slot, high
+// pdb params: aiKey
+// pdb locals: bhandled, strtemp, hotkeyIndex
+bool KeyMenu::HandleKeyInput(int aiKey)
 {
     bool handled = false;
     if (GetCurrentArrayElement())
     {
-        if (key == 1 && ((KeyBinding*)GetCurrentArrayElement())->type != 23)
+        if (aiKey == 1 && ((KeyBinding*)GetCurrentArrayElement())->type != 23)
         {
             Select(7, buttons.At(buttons.GetRaceCount() - 1, false));
             handled = true;
         }
-        else if (key == 32)
+        else if (aiKey == 32)
         {
             Select(-1, buttons.CallVirtualZero());
             handled = true;
@@ -696,7 +733,7 @@ bool KeyMenu::HandleKeyInput(int key)
             KeyString text(((KeyBinding*)GetCurrentArrayElement())->text.Modelloader_GetReferencedThis());
             for (unsigned int index = 0; index < text.FUN_00825c00(); index++)
             {
-                if (toupper(text.GetCharacterPointerChecked(index)) == toupper(key))
+                if (toupper(text.GetCharacterPointerChecked(index)) == toupper(aiKey))
                 {
                     Select(7, buttons.At(index, false));
                     handled = true;
@@ -721,33 +758,35 @@ struct TimerCalls
     void FUN_00771520();
     unsigned int FUN_00825c00();
 };
-void __cdecl CleanupGlobalObject();
+void __cdecl MessageMenu_ClearMessageQueueHead();
 extern double DAT_01012060;
 // @fnv 0x007aa2a0
+// pdb: MessageMenu::DoIdle | MessageMenu.obj | retail, vtable slot, high
+// pdb locals: pcurrMessage
 void FUN_007aa2a0_shell::UpdateMenuAction()
 {
-    reinterpret_cast<TimerCalls*>(&m_kTimerCalls)->FUN_00771520();
-    static unsigned int lastCheckTime = reinterpret_cast<TimerCalls*>(&m_kTimerCalls)->FUN_00825c00();
-    if (reinterpret_cast<TimerCalls*>(&m_kTimerCalls)->FUN_00825c00() - lastCheckTime < 200)
+    reinterpret_cast<TimerCalls*>(&MMTimer)->FUN_00771520();
+    static unsigned int lastCheckTime = reinterpret_cast<TimerCalls*>(&MMTimer)->FUN_00825c00();
+    if (reinterpret_cast<TimerCalls*>(&MMTimer)->FUN_00825c00() - lastCheckTime < 200)
         return;
     {
-        lastCheckTime = reinterpret_cast<TimerCalls*>(&m_kTimerCalls)->FUN_00825c00();
+        lastCheckTime = reinterpret_cast<TimerCalls*>(&MMTimer)->FUN_00825c00();
         if (GetCurrentArrayElement())
         {
             if (static_cast<unsigned char>(GetByteAtOffset56(reinterpret_cast<char*>(GetCurrentArrayElement()))) == 0)
             {
-                if (m_pTiles[0]->IsTraitNonZero(0xfa3))
+                if (pTiles[0]->IsTraitNonZero(0xfa3))
                 {
                     if (FUN_0059bb30() == 4)
                     {
-                        if (m_uiMessageCount == 0)
+                        if (uiMessageStartTime == 0)
                         {
                             FUN_00a1db20();
                         }
                         else
                         {
-                            CleanupGlobalObject();
-                            m_uiMessageCount = 0;
+                            MessageMenu_ClearMessageQueueHead();
+                            uiMessageStartTime = 0;
                         }
                     }
                     else
@@ -755,18 +794,18 @@ void FUN_007aa2a0_shell::UpdateMenuAction()
                         if (FUN_0059bb30() == 1)
                         {
                             unsigned int message = GetCurrentArrayElement();
-                            if (!m_uiMessageCount)
-                                m_uiMessageCount = reinterpret_cast<TimerCalls*>(&m_kTimerCalls)->FUN_00825c00();
+                            if (!uiMessageStartTime)
+                                uiMessageStartTime = reinterpret_cast<TimerCalls*>(&MMTimer)->FUN_00825c00();
                             if (*reinterpret_cast<float*>(message + 0x44) > DAT_01012060)
                             {
                                 if (*reinterpret_cast<float*>(message + 0x44) <=
-                                    (unsigned int)(reinterpret_cast<TimerCalls*>(&m_kTimerCalls)->FUN_00825c00() -
-                                                   m_uiMessageCount))
+                                    (unsigned int)(reinterpret_cast<TimerCalls*>(&MMTimer)->FUN_00825c00() -
+                                                   uiMessageStartTime))
                                 {
                                     if (message == *reinterpret_cast<FUN_006f2270*>(&g_011da53c)->GetLast())
                                     {
                                         FUN_00726070()->FUN_00700320(0x1772, 1);
-                                        CleanupGlobalObject();
+                                        MessageMenu_ClearMessageQueueHead();
                                     }
                                     else
                                     {
@@ -788,10 +827,10 @@ struct ActionMenuText
     unsigned unk04, unk08, unk0C, unk10, size, capacity;
     ActionMenuText(const char*);
     ~ActionMenuText();
-    unsigned FindSubstring_Thunk(char, unsigned);
+    unsigned std_basic_string_char_std_char_traits_char_std_allocator_char_find(char, unsigned);
     ActionMenuText Substr(unsigned, unsigned);
     const char* std_string_debug_c_str();
-    void ProcessState_007aaf80(unsigned, unsigned, const char*);
+    void std_basic_string_char_std_char_traits_char_std_allocator_char_replace(unsigned, unsigned, const char*);
 };
 struct ActionMenuInfo
 {
@@ -866,7 +905,10 @@ int FUN_0047b250(TESObjectREFR*);
 bool FUN_00518f00(TESObjectREFR*, TESObjectREFR*, int, int);
 // Builds an ActionMenuInfo with title, hotkeys and buttons from the list's actions and the reference's action type, queues entries and the menu, and opens it.
 // @fnv 0x007aa720
-bool BuildActionMenu(ActionMenuList* list, TESObjectREFR* reference)
+// pdb: MessageMenu::AddMessageToQueue | MessageMenu.obj | retail, object-file run extension, high
+// pdb params: axText, apcIconFilename, apcTitle, apcSound, afpResult, aiFirstButtonResult, aiWarningContext, axFirst, axList, abModal, aiXPosOverride, aiYPosOverride, afSecondsVisible, afBackgroundTextureOpacityOverride, afMenuWidthOverride
+// pdb locals: ititleLen, strbuttonName, pnewMessage, hotkeyIndex, strtemp, i
+bool BuildActionMenu(ActionMenuList* apChoiceList, TESObjectREFR* apActivationTarget)
 {
     ActionMenuInfo* menu4 = new ActionMenuInfo;
     menu4->callback = BSSimpleArray_UpdateState_007aae70;
@@ -876,29 +918,29 @@ bool BuildActionMenu(ActionMenuList* list, TESObjectREFR* reference)
     reinterpret_cast<void (__thiscall*)(StrMem*, const char*)>(FUN_00438390)(&menu4->hotkeys, DAT_01011584);
     reinterpret_cast<void (__thiscall*)(StrMem*, const char*)>(FUN_00438390)(&menu4->title, DAT_011d2280.FUN_00403df0());
     char label58[260];
-    while (list && !list->FUN_008256d0())
+    while (apChoiceList && !apChoiceList->FUN_008256d0())
     {
-        FUN_00406d30(label58, 260, (*list->FUN_006815c0())->FUN_00726070());
-        if ((*list->FUN_006815c0())->GetKind() == 4)
+        FUN_00406d30(label58, 260, (*apChoiceList->FUN_006815c0())->FUN_00726070());
+        if ((*apChoiceList->FUN_006815c0())->GetKind() == 4)
         {
-            if (!(*list->FUN_006815c0())->FUN_00726070() || !(*list->FUN_006815c0())->FUN_00413f40())
+            if (!(*apChoiceList->FUN_006815c0())->FUN_00726070() || !(*apChoiceList->FUN_006815c0())->FUN_00413f40())
             {
-                list = list->FUN_00726070();
+                apChoiceList = apChoiceList->FUN_00726070();
                 continue;
             }
             ActionMenuEntry* entry29 = new ActionMenuEntry;
-            entry29->label = (*list->FUN_006815c0())->FUN_00726070();
-            entry29->action = (*list->FUN_006815c0())->FUN_00413f40();
-            entry29->reference = reference;
+            entry29->label = (*apChoiceList->FUN_006815c0())->FUN_00726070();
+            entry29->action = (*apChoiceList->FUN_006815c0())->FUN_00413f40();
+            entry29->reference = apActivationTarget;
             DAT_011da524.FUN_007cb2e0(entry29);
             if (BSstrlen(label58) > 0)
             {
                 ActionMenuText text6(label58);
-                unsigned hotkey5 = text6.FindSubstring_Thunk('&', 0);
+                unsigned hotkey5 = text6.std_basic_string_char_std_char_traits_char_std_allocator_char_find('&', 0);
                 if (hotkey5 != DAT_010173f0)
                 {
                     menu4->hotkeys.FUN_00404820(text6.Substr(hotkey5 + 1, 1).std_string_debug_c_str());
-                    text6.ProcessState_007aaf80(hotkey5, 1, DAT_01011584);
+                    text6.std_basic_string_char_std_char_traits_char_std_allocator_char_replace(hotkey5, 1, DAT_01011584);
                 }
                 if (BSstrcmp(text6.std_string_debug_c_str(), DAT_01020770))
                 {
@@ -907,13 +949,13 @@ bool BuildActionMenu(ActionMenuList* list, TESObjectREFR* reference)
                 }
             }
         }
-        list = list->FUN_00726070();
+        apChoiceList = apChoiceList->FUN_00726070();
     }
-    int action3 = reinterpret_cast<int (__thiscall*)(TESObjectREFR*)>(TESObjectREFR_GetTargetType)(reference);
-    unsigned type22 = reinterpret_cast<ActionMenuBase*>(reference->BGSSaveFormBuffer_GetForm())->FUN_00401170();
-    ActionMenuOwner* owner15 = reinterpret_cast<ActionMenuOwner* (__thiscall*)(TESObjectREFR*)>(TESObjectREFR_GetLock)(reference);
-    ActionMenuBase* base7 = reinterpret_cast<ActionMenuBase*>(reference->BGSSaveFormBuffer_GetForm());
-    if (action3 == 1 && reinterpret_cast<bool (__thiscall*)(TESObjectREFR*)>(TESObjectREFR_IsCrimeToActivate)(reference))
+    int action3 = reinterpret_cast<int (__thiscall*)(TESObjectREFR*)>(TESObjectREFR_GetTargetType)(apActivationTarget);
+    unsigned type22 = reinterpret_cast<ActionMenuBase*>(apActivationTarget->BGSSaveFormBuffer_GetForm())->FUN_00401170();
+    ActionMenuOwner* owner15 = reinterpret_cast<ActionMenuOwner* (__thiscall*)(TESObjectREFR*)>(TESObjectREFR_GetLock)(apActivationTarget);
+    ActionMenuBase* base7 = reinterpret_cast<ActionMenuBase*>(apActivationTarget->BGSSaveFormBuffer_GetForm());
+    if (action3 == 1 && reinterpret_cast<bool (__thiscall*)(TESObjectREFR*)>(TESObjectREFR_IsCrimeToActivate)(apActivationTarget))
     {
         FUN_00406d30(label58, 260, type22 == 42 ? DAT_011d3708.FUN_00403df0() : DAT_011d4f48.FUN_00403df0());
     }
@@ -923,9 +965,9 @@ bool BuildActionMenu(ActionMenuList* list, TESObjectREFR* reference)
     }
     else if (action3 == 8 && type22 == 28)
     {
-        bool isChair = FUN_0047b250(reference) == 1 || FUN_0047b250(reference) == 2;
-        if (owner15 && owner15->FUN_005021a0() && !reinterpret_cast<bool (__thiscall*)(TESObjectREFR*, TESObjectREFR*, bool)>(TESObjectREFR_IsAnOwner)(reference, DAT_011dea3c, true) &&
-            (!base7 || !FUN_00518f00(reference, DAT_011dea3c, 0, 1)))
+        bool isChair = FUN_0047b250(apActivationTarget) == 1 || FUN_0047b250(apActivationTarget) == 2;
+        if (owner15 && owner15->FUN_005021a0() && !reinterpret_cast<bool (__thiscall*)(TESObjectREFR*, TESObjectREFR*, bool)>(TESObjectREFR_IsAnOwner)(apActivationTarget, DAT_011dea3c, true) &&
+            (!base7 || !FUN_00518f00(apActivationTarget, DAT_011dea3c, 0, 1)))
         {
             FUN_00406d30(label58, 260, DAT_011d45a0.FUN_00403df0());
         }
@@ -945,11 +987,11 @@ bool BuildActionMenu(ActionMenuList* list, TESObjectREFR* reference)
     if (BSstrlen(label58) > 0)
     {
         ActionMenuText text6(label58);
-        unsigned hotkey5 = text6.FindSubstring_Thunk('&', 0);
+        unsigned hotkey5 = text6.std_basic_string_char_std_char_traits_char_std_allocator_char_find('&', 0);
         if (hotkey5 != DAT_010173f0)
         {
             menu4->hotkeys.FUN_00404820(text6.Substr(hotkey5 + 1, 1).std_string_debug_c_str());
-            text6.ProcessState_007aaf80(hotkey5, 1, DAT_01011584);
+            text6.std_basic_string_char_std_char_traits_char_std_allocator_char_replace(hotkey5, 1, DAT_01011584);
         }
         if (BSstrcmp(text6.std_string_debug_c_str(), DAT_01020770))
         {
@@ -960,7 +1002,7 @@ bool BuildActionMenu(ActionMenuList* list, TESObjectREFR* reference)
     ActionMenuEntry* entry29 = new ActionMenuEntry;
     entry29->label = label58;
     entry29->action = 0;
-    entry29->reference = reference;
+    entry29->reference = apActivationTarget;
     DAT_011da524.FUN_007cb2e0(entry29);
     DAT_011da53c.FUN_007cb2e0(menu4);
     if (!DAT_011da4f0 && !DAT_011da4ec)
@@ -990,12 +1032,12 @@ struct MsgSound
     unsigned int unk0, unk4, unk8;
     ~MsgSound();
     bool IsNotEqual(int aiFlags);
-    void FUN_00ad8830(int aiFlags);
+    void FUN_00ad8830(int abLoopPlayback);
 };
 
 struct MsgAudio
 {
-    MsgSound BSAudio_GetSoundHandleByEditorName(const char* apEditorID, int aiFlags);
+    MsgSound BSAudio_GetSoundHandleByEditorName(const char* apSoundName, int aiTypeFlags);
 };
 
 
@@ -1039,7 +1081,7 @@ struct MsgList
     virtual void l005();
     virtual void l006();
     virtual void Clear();
-    Tile* ListBox_int_AddItem(int aiIndex, const char* apText, int a3, int a4);
+    Tile* ListBox_int_AddItem(int aAssociatedData, const char* apcItemString, int apCompareFn, int apcTemplateName);
     void RebuildVisibleTiles();
 };
 
@@ -1068,7 +1110,7 @@ struct MsgMenu
     Tile* m_pTiles[6];
     MsgList kButtons;
     Tile* FUN_00726070();
-    void PopulateFromMessageData();
+    void MessageMenu_LoadNextMessage();
 };
 
 extern MsgMenu* DAT_011da4f0;
@@ -1100,7 +1142,10 @@ static const char s_szMinMenuWidth[] = "_MinMenuWidth";
 
 // Populates message menu tiles and buttons, computes layout dimensions, and sets menu position and alpha from the current message data.
 // @fnv 0x007a92e0
-void MsgMenu::PopulateFromMessageData()
+// src: XBOX_RETAIL_PDB 0x007a92e0
+// pdb: MessageMenu::LoadNextMessage | MessageMenu.obj | retail, string-set bridge, high
+// pdb locals: fWrapWidth, ftotalButtonHeight, ibuttonCt, flistWidth, textDims, fmenuWidth, fhorizSpacing, currStartIndex, imaxButtonWidth, pcurrMessage, fminHeaderWidth, ftextWidth, ptemp, strbuttons, strcurrToken, ptextChildTile, fMenuY, fMainWidth, fScreenWidth, fScreenHeight, fMainHeight, fMenuX, fConvertedXPosOverride, fConvertedYPosOverride
+void MsgMenu::MessageMenu_LoadNextMessage()
 {
     if (!GetCurrentArrayElement())
         return;
@@ -1274,7 +1319,7 @@ int __cdecl Interface_GetTopMenuID();
 unsigned int __cdecl GetCurrentArrayElement();
 unsigned char __cdecl Interface_InDialog();
 void __cdecl SetDialogMenuActive(int);
-void __cdecl FUN_00709c40(int);
+void __cdecl Interface_SetGunScopeVisible(int);
 float __cdecl FUN_00a01530();
 void __cdecl ProgramFlow(const char*);
 
@@ -1287,7 +1332,7 @@ struct Helper
     void* CombatController_GetCombatState(const char* s);
     void FUN_00a1dc70(Tile* tile, int zero);
     void FUN_0075a0d0(void* arg1, const char* arg2);
-    void PopulateFromMessageData();
+    void MessageMenu_LoadNextMessage();
     void FUN_00a1dc20(int);
     void* FUN_00726070();
 };
@@ -1301,6 +1346,8 @@ extern double DAT_0101e568;
 // Initializes the message menu interface from Data\Menus\message_menu.xml, configures its buttons and background, and returns success.
 // @fnv 0x007a8ba0
 // src: XBOX_PDB 0x007a8ba0
+// pdb: MessageMenu::Create | MessageMenu.obj | retail, upstream name already matches, high
+// pdb locals: boverMenu, pim, ptile, pold_menu_tile
 bool __cdecl MessageMenu_Create()
 {
     InterfaceManager* B = InterfaceManager_GetSingleton();
@@ -1332,7 +1379,7 @@ bool __cdecl MessageMenu_Create()
             ->FUN_0075a0d0(*(void**)((char*)DAT_011da4f0 + 0x38), "MM_ButtonTemplate");
         if (GetCurrentArrayElement() != 0)
         {
-            ((Helper*)DAT_011da4f0)->PopulateFromMessageData();
+            ((Helper*)DAT_011da4f0)->MessageMenu_LoadNextMessage();
         }
         if (flag)
         {
@@ -1344,7 +1391,7 @@ bool __cdecl MessageMenu_Create()
             SetDialogMenuActive(1);
         }
         ((Helper*)DAT_011da4f0)->FUN_00a1dc20(0);
-        FUN_00709c40(0);
+        Interface_SetGunScopeVisible(0);
         return true;
     }
     else

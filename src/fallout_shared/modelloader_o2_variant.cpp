@@ -14,6 +14,9 @@ struct PlaceHolder
 };
 // @fnv 0x00e81c60
 // src: COMMUNITY 0x00e81c60
+// pdb: D3DXMatrixTranspose | d3dxmath.obj | retail, call graph (shared callers), low
+// pdb note: debug build links it to NiShaderConstantMapEntry::SetVariableName
+// pdb params: pOut, pM
 void PlaceHolder::NiShaderConstantMapEntry_SetVariableName(char*& kHandle)
 {
     char* pkSrc = kHandle;

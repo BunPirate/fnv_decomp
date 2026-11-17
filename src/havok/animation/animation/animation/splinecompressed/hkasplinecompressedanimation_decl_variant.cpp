@@ -45,9 +45,11 @@ static void invalidKey()
 
 // @fnv 0x00e63c60
 // src: XBOX_PDB 0x00e63c60
-int __cdecl hkaProcessFlyingColors(bool* valid)
+// pdb: hkaProcessFlyingColors | hkaProcessFlyingColors.obj | retail, upstream name already matches, high
+// pdb params: flyingColors
+int __cdecl hkaProcessFlyingColors(bool* flyingColors)
 {
-    *valid = false;
+    *flyingColors = false;
     int status = 0;
     unsigned long second;
     second = 0xfffffffful;
@@ -113,6 +115,6 @@ int __cdecl hkaProcessFlyingColors(bool* valid)
             return 1;
         }
     }
-    *valid = true;
+    *flyingColors = true;
     return status;
 }

@@ -119,17 +119,17 @@ public:
     void Unitize_004a0c10();
     float FUN_004a7290();
     float FUN_004a7290() const;
-    LocalVec3 FUN_004b3800(const LocalVec3& other) const;
+    LocalVec3 FUN_004b3800(const LocalVec3& pt) const;
     LocalVec3 ProcessAndReturnValue_0053d280(float divisor);
     float NiPoint3_XYLength();
     float NiPoint3_XYLength() const;
     void ComputeValue_0063c8a0(const LocalVec3* other);
     void ComputeValue_0063c8a0(void* other);
     void FUN_006815c0();
-    float CVec3_Distance(LocalVec3* other);
-    float CVec3_Distance(const LocalVec3& other) const;
-    LocalVec3 TransformPointByMatrix4(const Mat& matrix);
-    LocalVec3 TransformPointByMatrix4(const Matrix4* matrix);
+    float CVec3_Distance(LocalVec3* cVec);
+    float CVec3_Distance(const LocalVec3& cVec) const;
+    LocalVec3 TransformPointByMatrix4(const Mat& cTransform);
+    LocalVec3 TransformPointByMatrix4(const Matrix4* cTransform);
     void Normalize_00b12790();
     LocalVec3 Diff_00b13040(void* other);
     LocalVec3 Diff_00b13040(const LocalVec3& other) const;
@@ -208,6 +208,8 @@ struct FUN_00d554a0_class
 };
 
 // @fnv 0x00d554a0
+// pdb: hkpExtendedMeshShape::getNumChildShapes | hkpExtendedMeshShape.obj | retail, vtable slot, high
+// pdb locals: assertBuf, ostr
 int __thiscall FUN_00d554a0_class::GetOrInitValue()
 {
     if (*reinterpret_cast<int*>(reinterpret_cast<char*>(this) + 0xd0) < 0)
@@ -235,7 +237,7 @@ inline hkMemoryRouter* audio()
     return (hkMemoryRouter*)hkMemoryRouter_getInstance();
 }
 
-__declspec(nothrow) void __cdecl hkArrayUtil__reserve(hkMemoryAllocator& alloc, void* arr, int numElem, int sizeElem);
+__declspec(nothrow) void __cdecl hkArrayUtil__reserve(hkMemoryAllocator& mem, void* array, int numElem, int sizeElem);
 
 // hkArray bodies this unit uses (the allocator is the memory router's heap; FUN_00c908c0 is hkArrayUtil::_reserve).
 __forceinline hkMemoryAllocator& hkContainerHeapAllocator::get(const void*)
@@ -313,11 +315,14 @@ struct FUN_00d56070_class
     int m_iCapacityFlags;
     char pad1[0xcc - 0xbc];
     hkArray<short> m_aiIndexedValues;
-    void SetShortAtKey(int key, short value);
+    void SetShortAtKey(int key, short weldingInfo);
 };
 
 // @fnv 0x00d56070
-void FUN_00d56070_class::SetShortAtKey(int key, short sValue)
+// pdb: hkpExtendedMeshShape::setWeldingInfo | hkpExtendedMeshShape.obj | retail, vtable slot, high
+// pdb params: key, weldingInfo
+// pdb locals: assertBuf, ostr
+void FUN_00d56070_class::SetShortAtKey(int key, short weldingInfo)
 {
     if (m_aiIndexedValues.m_iElementCount == 0)
     {
@@ -334,7 +339,7 @@ void FUN_00d56070_class::SetShortAtKey(int key, short sValue)
     {
         unsigned idx = (unsigned)(key & 0x7fffffff) >> (32 - m_bits);
         int sub = key & (0xffffffffu >> m_bits);
-        m_aiIndexedValues.m_data[m_pElements[idx].m_offset + sub] = sValue;
+        m_aiIndexedValues.m_data[m_pElements[idx].m_offset + sub] = weldingInfo;
     }
 }
 
@@ -432,12 +437,14 @@ struct S_00d56880
     int unkb8;
     int unkbc;
     hkArray<S_00d56880_Elem> m_aiIndexedValues;
-    S_00d56880_Elem* AppendElement();
+    S_00d56880_Elem* hkpExtendedMeshShape_expandOneShapesSubparts();
 };
 
 // Appends one default-constructed element to the array and returns a pointer to it.
 // @fnv 0x00d56880
-S_00d56880_Elem* S_00d56880::AppendElement()
+// src: XBOX_RETAIL_PDB 0x00d56880
+// pdb: hkpExtendedMeshShape::expandOneShapesSubparts | hkpExtendedMeshShape.obj | retail, object-file gap fill, high
+S_00d56880_Elem* S_00d56880::hkpExtendedMeshShape_expandOneShapesSubparts()
 {
     return m_aiIndexedValues.expandBy(1);
 }
@@ -519,21 +526,23 @@ struct SpawnedOwner
     int unkD8;
     int m_0xdc;
 
-    int hkpExtendedMeshShape_getMeshMaterial(int aiIndex);
+    int hkpExtendedMeshShape_getMeshMaterial(int key);
 };
 
 struct FUN_00d555d0_cls
 {
     int m_d0;
-    int GetSpawnedValue(int aiKey);
+    int GetSpawnedValue(int key);
 };
 
 // Looks up the entry for aiKey via FUN_00d55530 on the owning object and returns its first int, or the owner's m_0xdc when not found.
 // @fnv 0x00d555d0
-int FUN_00d555d0_cls::GetSpawnedValue(int aiKey)
+// pdb: hkpExtendedMeshShape::getCollisionFilterInfo | hkpExtendedMeshShape.obj | retail, vtable slot, high
+// pdb params: key
+int FUN_00d555d0_cls::GetSpawnedValue(int key)
 {
     SpawnedOwner* outer = (SpawnedOwner*)((char*)this - 0x10);
-    int* v = (int*)outer->hkpExtendedMeshShape_getMeshMaterial(aiKey);
+    int* v = (int*)outer->hkpExtendedMeshShape_getMeshMaterial(key);
     if (v != 0)
     {
         return *v;
@@ -625,12 +634,15 @@ struct FUN_00d55a90_cls
     Group* m_0c0;
     int m_0c4;
 
-    int __thiscall hkpExtendedMeshShape_calcSizeForSpu(int a1, int a2);
+    int __thiscall hkpExtendedMeshShape_calcSizeForSpu(int input, int spuBufferSizeLeft);
 };
 
 // @fnv 0x00d55a90
 // src: HAVOK_LIB 0x00d55a90
-int FUN_00d55a90_cls::hkpExtendedMeshShape_calcSizeForSpu(int a1, int a2)
+// pdb: hkpExtendedMeshShape::calcSizeForSpu | hkpExtendedMeshShape.obj | retail, upstream name already matches, high
+// pdb params: input, spuBufferSizeLeft
+// pdb locals: assertBuf, ostr
+int FUN_00d55a90_cls::hkpExtendedMeshShape_calcSizeForSpu(int input, int spuBufferSizeLeft)
 {
     int i = 0;
     if (m_0c4 > 0)
@@ -643,7 +655,7 @@ int FUN_00d55a90_cls::hkpExtendedMeshShape_calcSizeForSpu(int a1, int a2)
             for (int iChildIndex = 0; iChildIndex < pGroup->m_18; ++iChildIndex)
             {
                 Child* c = pGroup->m_14[iChildIndex];
-                int r = c->v18(a1, 0x100);
+                int r = c->v18(input, 0x100);
                 unsigned int uiFlags = pGroup->m_3c & 0xc0ffffffu;
                 int limit;
                 if (uiFlags == 0)
@@ -784,6 +796,9 @@ struct S_00d55bd0_MeshShape
 };
 
 // @fnv 0x00d55bd0
+// pdb: hkpExtendedMeshShape::getNextKey | hkpExtendedMeshShape.obj | retail, vtable slot, high
+// pdb params: initialKey
+// pdb locals: buffer
 unsigned int S_00d55bd0_MeshShape::FindNextNonDegenerateShapeKey(unsigned int initialKey) const
 {
     // hkpShapeBuffer (512 bytes, 16-aligned); non-char element type, see brief
@@ -1034,20 +1049,24 @@ struct FUN_00d56160_cls
     int unkAC;
     int m_b0;
 
-    int Vec4(FUN_00d56160_items* items, unsigned int value);
+    int hkpExtendedMeshShape__getNumChildShapesInTrianglesSubpart(FUN_00d56160_items* subpart, unsigned int subpartIndex);
 };
 
 // 16-byte aligned four-float vector structure with x, y, z and w components.
 // @fnv 0x00d56160
-int FUN_00d56160_cls::Vec4(FUN_00d56160_items* items, unsigned int value)
+// src: XBOX_RETAIL_PDB 0x00d56160
+// pdb: hkpExtendedMeshShape::_getNumChildShapesInTrianglesSubpart | hkpExtendedMeshShape.obj | retail, object-file gap fill, high
+// pdb params: subpart, subpartIndex
+// pdb locals: buffer, assertBuf, ostr
+int FUN_00d56160_cls::hkpExtendedMeshShape__getNumChildShapesInTrianglesSubpart(FUN_00d56160_items* subpart, unsigned int subpartIndex)
 {
     int count = 0;
 
-    for (int i = 0; i < items->m_uiItemCount; ++i)
+    for (int i = 0; i < subpart->m_uiItemCount; ++i)
     {
         FUN_00d56160_big tmp;
         unsigned char hit;
-        FUN_00d56160_out* r = m_sub.hkpExtendedMeshShape_getChildShape((value << (32 - m_b0)) | i, &tmp.m_out);
+        FUN_00d56160_out* r = m_sub.hkpExtendedMeshShape_getChildShape((subpartIndex << (32 - m_b0)) | i, &tmp.m_out);
         if (*IsDegenerateTriangle(&hit, &r->m_20, &r->m_30, &r->m_40, DAT_011b2e90) == 0)
         {
             ++count;
@@ -1071,6 +1090,7 @@ struct Container
 };
 // @fnv 0x00d56800
 // src: GUESS 0x00d56800 (confidence: low)
+// pdb: hkpExtendedMeshShape::ShapesSubpart::~ShapesSubpart | hkpExtendedMeshShape.obj | retail, object-file gap fill, high
 void Container::ProcessEntries_00d56800()
 {
     hkMemoryAllocator* allocator = audio()->m_heap;
@@ -1149,6 +1169,7 @@ struct Obj
 // Resets the object's two vtables and clears the mcc, mc0 and mb4 arrays, destroying mc0's elements and freeing their storage.
 // @fnv 0x00d56e00
 // src: GUESS 0x00d56e00 (confidence: medium)
+// pdb: hkpExtendedMeshShape::~hkpExtendedMeshShape | hkpExtendedMeshShape.obj | retail, object-file run extension, low
 void Obj::ReleaseMeshArrays()
 {
     m_vtbl = DAT_010d0ecc;
@@ -1243,6 +1264,8 @@ struct bhkShapeOwner
 };
 
 // @fnv 0x00d55b40
+// pdb: hkpExtendedMeshShape::getFirstKey | hkpExtendedMeshShape.obj | retail, vtable slot, high
+// pdb locals: buffer
 int bhkShapeOwner::GetShapeKey()
 {
     FUN_00d55b40_Shape* shape;
@@ -1330,6 +1353,7 @@ struct OwnerD562
 // Returns a new triangle subpart, using the inline element for the first entry.
 // @fnv 0x00d562f0
 // src: XBOX_PDB 0x00d562f0
+// pdb: hkpExtendedMeshShape::expandOneTriangleSubparts | hkpExtendedMeshShape.obj | retail, upstream name already matches, high
 ElemD562* OwnerD562::hkpExtendedMeshShape_expandOneTriangleSubparts()
 {
     if (m_kArray.m_iElementCount == 0)
@@ -1417,6 +1441,9 @@ static const float DAT_0104e148 = -3.40282e+38f;
 
 // Initializes an extended mesh shape with the given triangle radius and subpart index bits, setting default scaling, AABB, and welding type.
 // @fnv 0x00d569c0
+// pdb: hkpExtendedMeshShape::hkpExtendedMeshShape | hkpExtendedMeshShape.obj | retail, object-file run extension, low
+// pdb params: radius, numBitsForSubpartIndex
+// pdb locals: assertBuf, ostr
 FUN_00d569c0::FUN_00d569c0(float afTriangleRadius, int iNumBitsForSubpartIndex) throw() : FUN_00d21410(0xe, 1)
 {
     m_fTriangleRadius = afTriangleRadius;
@@ -1502,18 +1529,21 @@ struct ShapeHolderS
 // Computes the combined axis-aligned bounding box of all shapes in src by transforming each shape's AABB and merging the min/max corners.
 // @fnv 0x00d558b0
 // src: XBOX_PDB 0x00d558b0
-static __declspec(noinline) void calcAabbExtents_00d558b0(const ShapeHolderS* apShapeHolder, hkAabb* out)
+// pdb: calcAabbExtents | hkpExtendedMeshShape.obj | retail, object-file gap fill, high
+// pdb params: part, scaling, out
+// pdb locals: assertBuf, ostr
+static __declspec(noinline) void calcAabbExtents_00d558b0(const ShapeHolderS* part, hkAabb* out)
 {
     LocalM128 v = _mm_load_ss(&DAT_0104da48);
     out->m_kMinimumCorner.m_vComponents = _mm_shuffle_ps(v, v, 0);
     out->m_kMaximumCorner.m_vComponents = _mm_xor_ps(out->m_kMinimumCorner.m_vComponents, DAT_010c44d0);
     hkTransform t;
-    copyVectorLanes(&t.m_vTranslation, &apShapeHolder->m_vTranslation);
-    t.m_rotation.hkRotation_set(apShapeHolder->m_rotation);
-    for (int i = 0; i < apShapeHolder->m_numShapes; i++)
+    copyVectorLanes(&t.m_vTranslation, &part->m_vTranslation);
+    t.m_rotation.hkRotation_set(part->m_rotation);
+    for (int i = 0; i < part->m_numShapes; i++)
     {
         hkAabb a;
-        apShapeHolder->m_shapes[i]->CalculateAabb(t, 0.0f, a);
+        part->m_shapes[i]->CalculateAabb(t, 0.0f, a);
         LocalM128 omin = out->m_kMinimumCorner.m_vComponents;
         _ReadWriteBarrier();
         LocalM128 mn = _mm_min_ps(omin, a.m_kMinimumCorner.m_vComponents);
@@ -1582,10 +1612,13 @@ struct TrianglesSubpart
 // Computes the axis-aligned bounding box of all triangle vertices in a subpart, applying scale and a fixed transform, and stores the result in aabb.
 // @fnv 0x00d55680
 // src: XBOX_PDB 0x00d55680
-void __cdecl calcAabbExtents(const TrianglesSubpart& part, const hkVector4& scale, hkAabb& aabb)
+// pdb: calcAabbExtents | hkpExtendedMeshShape.obj | retail, object-file gap fill, high
+// pdb params: part, scaling, out
+// pdb locals: assertBuf, ostr
+void __cdecl calcAabbExtents(const TrianglesSubpart& part, const hkVector4& scaling, hkAabb& out)
 {
-    aabb.m_kMinimumCorner.SetAllComponents(3.40282e+38f);
-    aabb.m_kMaximumCorner.m_vComponents = _mm_xor_ps(aabb.m_kMinimumCorner.m_vComponents, DAT_010c44d0);
+    out.m_kMinimumCorner.SetAllComponents(3.40282e+38f);
+    out.m_kMaximumCorner.m_vComponents = _mm_xor_ps(out.m_kMinimumCorner.m_vComponents, DAT_010c44d0);
     for (int i = 0; i < part.m_iTriangleCount; i++)
     {
         const hkReal* v0;
@@ -1617,27 +1650,27 @@ void __cdecl calcAabbExtents(const TrianglesSubpart& part, const hkVector4& scal
         }
         {
             hkVector4 vertex;
-            vertex.set(v0[0] * scale(0), v0[1] * scale(1), v0[2] * scale(2));
+            vertex.set(v0[0] * scaling(0), v0[1] * scaling(1), v0[2] * scaling(2));
             hkVector4 transformed;
             transformed.setTransformedPos_00c7f640(DAT_01268370, vertex);
-            aabb.m_kMinimumCorner.setMin4(aabb.m_kMinimumCorner, transformed);
-            aabb.m_kMaximumCorner.setMax4(aabb.m_kMaximumCorner, transformed);
+            out.m_kMinimumCorner.setMin4(out.m_kMinimumCorner, transformed);
+            out.m_kMaximumCorner.setMax4(out.m_kMaximumCorner, transformed);
         }
         {
             hkVector4 vertex;
-            vertex.set(*(const volatile float*)&v1[0] * scale(0), v1[1] * scale(1), v1[2] * scale(2));
+            vertex.set(*(const volatile float*)&v1[0] * scaling(0), v1[1] * scaling(1), v1[2] * scaling(2));
             hkVector4 transformed;
             transformed.setTransformedPos_00c7f640(DAT_01268370, vertex);
-            aabb.m_kMinimumCorner.setMin4(aabb.m_kMinimumCorner, transformed);
-            aabb.m_kMaximumCorner.setMax4(aabb.m_kMaximumCorner, transformed);
+            out.m_kMinimumCorner.setMin4(out.m_kMinimumCorner, transformed);
+            out.m_kMaximumCorner.setMax4(out.m_kMaximumCorner, transformed);
         }
         {
             hkVector4 vertex;
-            vertex.set(v2[0] * scale(0), v2[1] * scale(1), v2[2] * scale(2));
+            vertex.set(v2[0] * scaling(0), v2[1] * scaling(1), v2[2] * scaling(2));
             hkVector4 transformed;
             transformed.setTransformedPos_00c7f640(DAT_01268370, vertex);
-            aabb.m_kMinimumCorner.setMin4(aabb.m_kMinimumCorner, transformed);
-            aabb.m_kMaximumCorner.setMax4(aabb.m_kMaximumCorner, transformed);
+            out.m_kMinimumCorner.setMin4(out.m_kMinimumCorner, transformed);
+            out.m_kMaximumCorner.setMax4(out.m_kMaximumCorner, transformed);
         }
     }
 }
@@ -1680,7 +1713,7 @@ struct HelperC9E340
 };
 struct HelperD5D7A0
 {
-    const hkpShape* hkpConvexTransformShape_hkpConvexTransformShape(const hkpShape* child, const void* transform, int unk);
+    const hkpShape* hkpConvexTransformShape_hkpConvexTransformShape(const hkpShape* child, const void* transform, int ref);
 };
 
 struct MeshSubpartTriangle
@@ -1826,6 +1859,9 @@ struct ExtendedMeshShape : S_00d55bd0_MeshShape
 // Resolves a subpart key to a TriangleShape or child shape, applying scale, welding info, and optional transform into the caller buffer.
 // @fnv 0x00d55ce0
 // src: XBOX_PDB 0x00d55ce0
+// pdb: hkpExtendedMeshShape::getChildShape | hkpExtendedMeshShape.obj | retail, upstream name already matches, high
+// pdb params: key, buffer
+// pdb locals: p1, p2, p0, localPartBuffer, assertBuf, ostr, partBuffer, transform
 const hkpShape* ExtendedMeshShape::hkpExtendedMeshShape_getChildShape(unsigned int key, void* buffer) const
 {
     __declspec(align(16)) unsigned int subpartStorage[45];
@@ -2001,17 +2037,20 @@ struct MeshOwner
     int m_uiItemCount;
     int unkC8, unkCC, unkD0, unkD4, unkD8, unkDC;
     int m_children;
-    S_00d56880_Elem* AppendElement();
+    S_00d56880_Elem* hkpExtendedMeshShape_expandOneShapesSubparts();
     int hkpExtendedMeshShape__getNumChildShapesInShapesSubpart(int);
     int AppendShapeAndExpandBounds(volatile int);
 };
 // Appends a shape element, expands the owner AABB to include it, and returns the new element index.
 // @fnv 0x00d56900
 // src: GUESS 0x00d56900 (confidence: medium)
-int MeshOwner::AppendShapeAndExpandBounds(volatile int key)
+// pdb: hkpExtendedMeshShape::addShapesSubpart | hkpExtendedMeshShape.obj | retail, vtable slot, high
+// pdb params: part
+// pdb locals: aabbPart
+int MeshOwner::AppendShapeAndExpandBounds(volatile int part)
 {
-    S_00d56880_Elem* elem = AppendElement();
-    ((MeshEntry*)elem)->CopySubpartFields(key);
+    S_00d56880_Elem* elem = hkpExtendedMeshShape_expandOneShapesSubparts();
+    ((MeshEntry*)elem)->CopySubpartFields(part);
     hkAabb bounds;
     LocalM128 lo = _mm_sub_ps(m_kCenterPosition, m_vHalfExtents);
     LocalM128 hi = _mm_add_ps(m_vHalfExtents, m_kCenterPosition);
@@ -2020,7 +2059,7 @@ int MeshOwner::AppendShapeAndExpandBounds(volatile int key)
     LocalM128 mx = _mm_max_ps(hi, bounds.m_kMaximumCorner.m_vComponents);
     _mm_store_ps((float*)&m_kCenterPosition, _mm_mul_ps(_mm_add_ps(mx, mn), DAT_010c71d0));
     m_vHalfExtents = _mm_mul_ps(_mm_sub_ps(mx, mn), DAT_010c71d0);
-    m_children += hkpExtendedMeshShape__getNumChildShapesInShapesSubpart(key);
+    m_children += hkpExtendedMeshShape__getNumChildShapesInShapesSubpart(part);
     return m_uiItemCount - 1;
 }
 
@@ -2033,7 +2072,7 @@ struct SubBuf
 };
 
 hkMemoryRouter* __cdecl hkMemoryRouter_getInstance();
-void __cdecl hkArrayUtil__reserve(void* a, void* b, int c, int d);
+void __cdecl hkArrayUtil__reserve(void* mem, void* array, int numElem, int sizeElem);
 
 struct FUN_00d56200_cls
 {
@@ -2090,16 +2129,19 @@ struct FUN_00d56200_cls
     int unkc8;
     SubBuf m_cc;
     unsigned char m_d8;
-    void hkpExtendedMeshShape_initWeldingInfo(int a1);
+    void hkpExtendedMeshShape_initWeldingInfo(int weldingType);
 };
 
 // Stores a1 in m_d8; if a1 is 6 frees and resets m_cc, else writes running totals into the 0x60-byte records of m_b4 and grows m_cc to the total.
 // @fnv 0x00d56200
 // src: HAVOK_LIB 0x00d56200
-void FUN_00d56200_cls::hkpExtendedMeshShape_initWeldingInfo(int a1)
+// pdb: hkpExtendedMeshShape::initWeldingInfo | hkpExtendedMeshShape.obj | retail, upstream name already matches, high
+// pdb params: weldingType
+// pdb locals: assertBuf, ostr
+void FUN_00d56200_cls::hkpExtendedMeshShape_initWeldingInfo(int weldingType)
 {
-    m_d8 = (unsigned char)a1;
-    if (a1 != 6)
+    m_d8 = (unsigned char)weldingType;
+    if (weldingType != 6)
     {
         int total = 0;
         int i = 0;
@@ -2262,18 +2304,21 @@ struct SpawnedOwnerQ
     unsigned int numGroups;
     int unkBC;
     ChanGroupNeg* negGroups;
-    int hkpExtendedMeshShape_getMeshMaterial(int aiIndex);
+    int hkpExtendedMeshShape_getMeshMaterial(int key);
 };
 // Splits aiIndex into a group number and offset, picks an entry from groups, negGroups (high bit set) or the inline entry, and returns its get(offset) or 0.
 // @fnv 0x00d55530
 // src: XBOX_PDB 0x00d55530
-int SpawnedOwnerQ::hkpExtendedMeshShape_getMeshMaterial(int aiIndex)
+// pdb: hkpExtendedMeshShape::getMeshMaterial | hkpExtendedMeshShape.obj | debug, upstream name already matches, high
+// pdb params: key
+// pdb locals: assertBuf, ostr
+int SpawnedOwnerQ::hkpExtendedMeshShape_getMeshMaterial(int key)
 {
-    unsigned int m_iGridX = ((unsigned int)aiIndex & 0x7fffffff) >> (32 - bits);
-    unsigned int iOffset = (0xffffffffu >> bits) & aiIndex;
+    unsigned int m_iGridX = ((unsigned int)key & 0x7fffffff) >> (32 - bits);
+    unsigned int iOffset = (0xffffffffu >> bits) & key;
     ChanEntry* pEntry;
     ChanEntry* pArr;
-    if (((unsigned int)aiIndex & 0x80000000u) == 0)
+    if (((unsigned int)key & 0x80000000u) == 0)
     {
         if (numGroups == 1)
         {
@@ -2299,25 +2344,28 @@ extern float DAT_01011d78;
 
 // Scales a LocalVec3 point, transforms it via a matrix, and expands the hkAabb min/max corners to include the result.
 // @fnv 0x00d55600
-// src: GUESS 0x00d55600 (confidence: medium)
-static __declspec(noinline) void __cdecl Object_ExpandAABBWithTransformedPoint(const LocalVec3* apPoint, const LocalVec3* scale, const void* transform,
-                                                      hkAabb* aabb)
+// src: XBOX_RETAIL_PDB 0x00d55600
+// pdb: addToAabb | hkpExtendedMeshShape.obj | retail, object-file gap fill, high
+// pdb params: aabb, localToWorld, v, scaling
+// pdb locals: vLocal, vWorld
+static __declspec(noinline) void __cdecl addToAabb(const LocalVec3* apPoint, const LocalVec3* localToWorld, const void* v,
+                                                      hkAabb* scaling)
 {
-    float x = apPoint->x * scale->x;
-    float y = apPoint->y * scale->y;
-    float z = apPoint->z * scale->z;
+    float x = apPoint->x * localToWorld->x;
+    float y = apPoint->y * localToWorld->y;
+    float z = apPoint->z * localToWorld->z;
     hkVector4 p;
     *(LocalM128*)&p = _mm_setr_ps(x, y, z, DAT_01011d78);
     hkVector4 out;
-    out.setTransformedPos_00c7f640(*static_cast<const hkTransform*>(transform), p);
+    out.setTransformedPos_00c7f640(*static_cast<const hkTransform*>(v), p);
     LocalM128 o = *(LocalM128*)&out;
-    *(LocalM128*)&aabb->m_kMinimumCorner = _mm_min_ps(*(LocalM128*)&aabb->m_kMinimumCorner, o);
-    *(LocalM128*)&aabb->m_kMaximumCorner = _mm_max_ps(*(LocalM128*)&aabb->m_kMaximumCorner, o);
+    *(LocalM128*)&scaling->m_kMinimumCorner = _mm_min_ps(*(LocalM128*)&scaling->m_kMinimumCorner, o);
+    *(LocalM128*)&scaling->m_kMaximumCorner = _mm_max_ps(*(LocalM128*)&scaling->m_kMaximumCorner, o);
 }
 
 void keep_alive_b11424(const LocalVec3* self, const LocalVec3* scale, const void* transform, hkAabb* aabb)
 {
-    Object_ExpandAABBWithTransformedPoint(self, scale, transform, aabb);
+    addToAabb(self, scale, transform, aabb);
 }
 
 extern "C" LocalM128 _mm_load_ps1(const float* p);
@@ -2332,7 +2380,7 @@ struct hkpD563Key
     unsigned int unk00, unk04, unk08, unk0c;
 };
 
-void __cdecl calcAabbExtents(hkpD563Tree* tree, const hkpD563Key* key, hkAabb* out);
+void __cdecl calcAabbExtents(hkpD563Tree* tree, const hkpD563Key* scaling, hkAabb* out);
 
 class hkpD563Shape
 {
@@ -2340,9 +2388,9 @@ class hkpD563Shape
   public:
     hkpD563Tree* hkpExtendedMeshShape_expandOneTriangleSubparts();
 
-    int Vec4(void* arg, int level);
+    int hkpExtendedMeshShape__getNumChildShapesInTrianglesSubpart(void* subpart, int subpartIndex);
 
-    void hkpExtendedMeshShape_addTrianglesSubpart(void* arg);
+    void hkpExtendedMeshShape_addTrianglesSubpart(void* part);
 
     unsigned int unk00, unk04, unk08, unk0c, unk10, unk14, unk18, unk1c;
 
@@ -2372,12 +2420,15 @@ class hkpD563Shape
 // Updates the shape's AABB by querying the tree, expanding by m_fScalar, and accumulating m_total from FUN_00d56160.
 // @fnv 0x00d563a0
 // src: XBOX_PDB 0x00d563a0
-void hkpD563Shape::hkpExtendedMeshShape_addTrianglesSubpart(void* arg)
+// pdb: hkpExtendedMeshShape::addTrianglesSubpart | hkpExtendedMeshShape.obj | retail, upstream name already matches, high
+// pdb params: part
+// pdb locals: assertBuf, ostr, aabbPart, tol4
+void hkpD563Shape::hkpExtendedMeshShape_addTrianglesSubpart(void* part)
 {
 
     hkpD563Tree* tree = hkpExtendedMeshShape_expandOneTriangleSubparts();
 
-    tree->UpdateState_00d4abf0(arg);
+    tree->UpdateState_00d4abf0(part);
 
     hkAabb existing;
 
@@ -2420,7 +2471,7 @@ void hkpD563Shape::hkpExtendedMeshShape_addTrianglesSubpart(void* arg)
 
     int lastLevel = m_numLevels - 1;
 
-    m_total += Vec4(arg, lastLevel);
+    m_total += hkpExtendedMeshShape__getNumChildShapesInTrianglesSubpart(part, lastLevel);
 }
 
 extern "C"
@@ -2505,7 +2556,7 @@ struct ShapesSubpartT
         m_pVertexBase = 0;
         m_ulUserData = 0;
     }
-    ShapesSubpartT* InitializeConvexSubpartTransform(hkConvexShapeS* const* childShapes, int numChildShapes,
+    ShapesSubpartT* hkpExtendedMeshShape_ShapesSubpart_ctor(hkConvexShapeS* const* childShapes, int numChildShapes,
                                  const hkTransform& transform);
 };
 
@@ -2520,8 +2571,10 @@ static __forceinline hkVector4CompS compareEquals3(const hkVector4& a, const Loc
 
 // Initializes a convex subpart with child shapes and a transform, storing translation flags in the w component of m_vTranslation.
 // @fnv 0x00d56660
-// src: GUESS 0x00d56660 (confidence: medium)
-ShapesSubpartT* ShapesSubpartT::InitializeConvexSubpartTransform(hkConvexShapeS* const* childShapes, int numChildShapes,
+// src: XBOX_RETAIL_PDB 0x00d56660
+// pdb: hkpExtendedMeshShape::ShapesSubpart::ShapesSubpart | hkpExtendedMeshShape.obj | retail, object-file gap fill, high
+// pdb params: flag
+ShapesSubpartT* ShapesSubpartT::hkpExtendedMeshShape_ShapesSubpart_ctor(hkConvexShapeS* const* childShapes, int numChildShapes,
                                              const hkTransform& transform)
 {
     initSubpart(1);
@@ -2649,6 +2702,9 @@ struct FUN_00d56ab0 : public FUN_00d21410
 
 // Constructs the object by copying fields from input, allocating and copying m_w, initializing m_aiIndexedValues from input.arr, and calling FUN_00d55950.
 // @fnv 0x00d56ab0
+// pdb: hkpExtendedMeshShape::hkpExtendedMeshShape | hkpExtendedMeshShape.obj | retail, object-file run extension, low
+// pdb params: radius, numBitsForSubpartIndex
+// pdb locals: assertBuf, ostr
 FUN_00d56ab0::FUN_00d56ab0(Src& input) throw() : FUN_00d21410(14, 1)
 {
     Src* s = &input;

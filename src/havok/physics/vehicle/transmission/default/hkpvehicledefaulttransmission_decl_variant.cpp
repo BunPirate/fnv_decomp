@@ -78,7 +78,7 @@ struct FUN_00e43c80_s
     float unk04, unk08, unk0c, unk10, unk14, unk18, unk1c, unk20, unk24;
     float* unk28;
     int unk2c;
-    void ComputeOutput(float timeValue, E43Arg* pInput, E43Result* pOutput);
+    void ComputeOutput(float deltaTime, E43Arg* vehicle, E43Result* transmissionOut);
 };
 struct FUN_00e43ea0_State
 {
@@ -201,15 +201,17 @@ struct Vehicle
 };
 // @fnv 0x00e43d40
 // src: HAVOK_LIB 0x00e43d40
-float hkpVehicleDefaultTransmission::calcTransmissionRPM(const Vehicle* vehicle, const void* input)
+// pdb: hkpVehicleDefaultTransmission::calcTransmissionRPM | hkpVehicleDefaultTransmission.obj | retail, upstream name already matches, high
+// pdb params: vehicle, transmissionOut
+float hkpVehicleDefaultTransmission::calcTransmissionRPM(const Vehicle* vehicle, const void* transmissionOut)
 {
     float rpm = 0.0f;
     for (int i = 0; i < vehicle->data->numWheels; ++i)
     {
         float wheelRpm = vehicle->wheels[i].spinVelocity * 60.0 * double(0.15915494f);
-        rpm += wheelRpm * m_kWheelTorqueRatios.m_data[i];
+        rpm += wheelRpm * m_wheelsTorqueRatio.m_data[i];
     }
-    float engineRpm = rpm * getTransmissionRatio(vehicle, input);
+    float engineRpm = rpm * getTransmissionRatio(vehicle, transmissionOut);
     float result;
     if (engineRpm < gModifierZero)
         result = 0.0f;

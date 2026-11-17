@@ -12,7 +12,7 @@ int Warning(const char* format, ...);
 struct LegacyFormRecordIO
 {
     void SaveRecordFlags(unsigned int flags);
-    void LoadRecordArguments(unsigned int flags, unsigned int currentFlags);
+    void LoadRecordArguments(unsigned int aiFlags, unsigned int aiCurrentFlags);
     void FinishRecord();
 };
 
@@ -24,6 +24,8 @@ void TESObjectMISC::ResetFormData()
 
 // Initializes the scriptable, destructible, model, and pickup sound sub-forms, resolves pLoopingSound by form ID, and marks the object initialized.
 // @fnv 0x0051a9a0
+// pdb: TESObjectMISC::InitItem | TESObjectMISC.obj | retail, string-set bridge, high
+// pdb locals: itempint
 void TESObjectMISC::InitItem()
 {
     if (GetInitialized())
@@ -47,6 +49,7 @@ void TESObjectMISC::InitItem()
 }
 
 // @fnv 0x0059ae60
+// pdb: TESCaravanMoney::TESCaravanMoney | TESCaravan.obj | retail, upstream name already matches, high
 TESCaravanMoney::TESCaravanMoney()
 {
     SetFormType(ENUM_FORM_ID_CMNY_ID);
@@ -54,82 +57,85 @@ TESCaravanMoney::TESCaravanMoney()
 }
 
 // @fnv 0x0051aaa0
-bool TESObjectMISC::Load(TESFile* file)
+// pdb: TESObjectMISC::Load | TESObjectMISC.obj | retail, upstream name already matches, high
+// pdb params: apFile
+// pdb locals: chunkid, pMessage, isize, pdata, tempint, itempint
+bool TESObjectMISC::Load(TESFile* apFile)
 {
-    LoadRecordHeader(file);
+    LoadRecordHeader(apFile);
     SetInitializationState(false);
-    while (int chunk = file->GetChunkID())
+    while (int chunk = apFile->GetChunkID())
     {
         switch (chunk)
         {
         case 0x44494445: {
-            char* editorID = (char*)_alloca(file->GetChunkSize());
-            file->GetChunkData(editorID, 512);
+            char* editorID = (char*)_alloca(apFile->GetChunkSize());
+            apFile->GetChunkData(editorID, 512);
             SetEditorID_AtRuntime(editorID);
             break;
         }
         case 0x444e424f:
-            readOBNDSubRecord(file);
+            readOBNDSubRecord(apFile);
             break;
         case 0x4c4c5546:
-            TESFullName::LoadFullNameChunk(this, file);
+            TESFullName::LoadFullNameChunk(this, apFile);
             break;
         case 0x4c444f4d:
         case 0x54444f4d:
         case 0x44444f4d:
         case 0x44534f4d:
-            TESModel::LoadModelData(this, file);
+            TESModel::LoadModelData(this, apFile);
             break;
         case 0x53444f4d: {
             char* swaps;
             {
-                unsigned int size = file->GetChunkSize();
+                unsigned int size = apFile->GetChunkSize();
                 swaps = (char*)_alloca(size);
-                file->GetChunkData(swaps, size);
-                TESModelTextureSwap::ParseTextureSwapData(swaps, size, file->GetFormVersion());
+                apFile->GetChunkData(swaps, size);
+                TESModelTextureSwap::UnpackTextureSwapChunkData(swaps, size, apFile->GetFormVersion());
             }
             break;
         }
         case 0x4e4f4349:
-            TESTexture::ReadTextureData(this, file);
+            TESTexture::ReadTextureData(this, apFile);
             break;
         case 0x4f43494d:
-            BGSMessageIcon::LoadMessageIconChunk(this, file);
+            BGSMessageIcon::LoadMessageIconChunk(this, apFile);
             break;
         case 0x49524353: {
             unsigned int scriptID = 0;
-            file->GetChunkData(&scriptID);
+            apFile->GetChunkData(&scriptID);
             ((CombatProcedure*)((char*)this + 0x68))->Initialize((CombatController*)scriptID);
             TESScriptableForm::InitItem(this);
             break;
         }
         case 0x54534544:
         case 0x44545344:
-            BGSDestructibleObjectForm::LoadDestructibleData(this, file);
+            BGSDestructibleObjectForm::LoadDestructibleData(this, apFile);
             break;
         case 0x4d414e59: {
             unsigned int pickupID = 0;
-            file->GetChunkData(&pickupID);
+            apFile->GetChunkData(&pickupID);
             ((CombatProcedure*)((char*)this + 0x9c))->Initialize((CombatController*)pickupID);
             break;
         }
         case 0x4d414e5a: {
             unsigned int putdownID = 0;
-            file->GetChunkData(&putdownID);
+            apFile->GetChunkData(&putdownID);
             ((TESRegionGrassObject*)((char*)this + 0x9c))->AssignLandTexture((TESLandTexture*)putdownID);
             break;
         }
         case 0x41544144:
-            ((BGSImpactData*)this)->ReadTypedData(file, 0, 0);
+            ((BGSImpactData*)this)->ReadTypedData(apFile, 0, 0);
             break;
         case 0x4d414e52: {
             unsigned int loopingID = 0;
-            file->GetChunkData(&loopingID);
+            apFile->GetChunkData(&loopingID);
             FUN_009db930(loopingID);
             break;
         }
         }
-        if (!file->NextChunk())
+        if (!apFile->NextChunk())
             break;
     }
     return true;
@@ -143,6 +149,8 @@ struct FUN_0051b070_shell
 // Calls FUN_00484c20 with aiFlags, then calls FUN_0048e9e0 with aiFlags on the object at this+0x74.
 // @fnv 0x0051b070
 // src: XBOX_PDB 0x0051b070
+// pdb: TESObjectMISC::SaveGame | TESObjectMISC.obj | retail, vtable slot, high
+// pdb params: aiFlags
 void FUN_0051b070_shell::TESObjectMISC_SaveGame(unsigned int aiFlags)
 {
     reinterpret_cast<LegacyFormRecordIO*>(this)->SaveRecordFlags(aiFlags);
@@ -158,6 +166,9 @@ struct FUN_0051b020_shell
 // Returns the sum of GetSaveSize(aiFlags) for this object and the sub-object at offset 0x74.
 // @fnv 0x0051b020
 // src: XBOX_PDB 0x0051b020
+// pdb: TESObjectMISC::GetSaveSize | TESObjectMISC.obj | retail, upstream name already matches, high
+// pdb params: aiFlags
+// pdb locals: isize
 unsigned short __thiscall FUN_0051b020_shell::TESObjectMISC_GetSaveSize(unsigned int aiFlags)
 {
     unsigned short isize = 0;
@@ -168,16 +179,18 @@ unsigned short __thiscall FUN_0051b020_shell::TESObjectMISC_GetSaveSize(unsigned
 
 struct FUN_0051b0a0_shell
 {
-    void LoadForm(unsigned int aiFlags, BGSLoadFormBuffer* apLoadGameBuffer);
+    void LoadForm(unsigned int aiFlags, BGSLoadFormBuffer* aiCurrentFlags);
 };
 
 // @fnv 0x0051b0a0
-void FUN_0051b0a0_shell::LoadForm(unsigned int aiFlags, BGSLoadFormBuffer* apLoadGameBuffer)
+// pdb: TESObjectMISC::LoadGame | TESObjectMISC.obj | retail, vtable slot, high
+// pdb params: aiFlags, aiCurrentFlags
+void FUN_0051b0a0_shell::LoadForm(unsigned int aiFlags, BGSLoadFormBuffer* aiCurrentFlags)
 {
     reinterpret_cast<LegacyFormRecordIO*>(this)->LoadRecordArguments(
-        aiFlags, reinterpret_cast<unsigned int>(apLoadGameBuffer));
+        aiFlags, reinterpret_cast<unsigned int>(aiCurrentFlags));
     reinterpret_cast<TESValueForm*>(reinterpret_cast<char*>(this) + 0x74)
-        ->LoadGame_0048ea10(aiFlags, reinterpret_cast<unsigned int>(apLoadGameBuffer));
+        ->LoadGame_0048ea10(aiFlags, reinterpret_cast<unsigned int>(aiCurrentFlags));
 }
 
 void _Deallocate(void*);
@@ -190,6 +203,7 @@ struct TargetHolder
     void* ReleaseIfFlagged(unsigned int);
 };
 // @fnv 0x0051a810
+// pdb: TESObjectMISC::`scalar deleting destructor' | TESObjectMISC.obj | retail, vtable slot, high
 void* TargetHolder::ReleaseIfFlagged(unsigned int flags)
 {
     ((CallHelper*)this)->FUN_0051a840();
@@ -220,7 +234,7 @@ struct FUN_0047a240_shell
 };
 struct FUN_0047b560_holder
 {
-    void LogFormIDs();
+    void BGSPickupPutdownSounds_Save();
 };
 struct FUN_0048e370_obj
 {
@@ -233,6 +247,8 @@ struct FUN_0051ae80_shell
 };
 // @fnv 0x0051ae80
 // src: XBOX_PDB 0x0051ae80
+// pdb: TESObjectMISC::Save | TESObjectMISC.obj | retail, upstream name already matches, high
+// pdb locals: itempint
 void FUN_0051ae80_shell::TESObjectMISC_Save()
 {
     ((TESForm*)this)->BeginFormRecord();
@@ -242,7 +258,7 @@ void FUN_0051ae80_shell::TESObjectMISC_Save()
     ((FUN_0047a240_shell*)((char*)this + 0x8c))->FUN_0047a240(0x4f43494d);
     ((S_0048cca0*)((char*)this + 0x68))->Save_0048cca0();
     ((S_00477f20*)((char*)this + 0x84))->FUN_00477f20();
-    ((FUN_0047b560_holder*)((char*)this + 0x9c))->LogFormIDs();
+    ((FUN_0047b560_holder*)((char*)this + 0x9c))->BGSPickupPutdownSounds_Save();
     ((LegacyFormRecordIO*)this)->FinishRecord();
     if (*(unsigned int*)((char*)this + 0xa8))
     {
@@ -262,6 +278,9 @@ struct FUN_0051af50_shell
 };
 // @fnv 0x0051af50
 // src: XBOX_PDB 0x0051af50
+// pdb: TESObjectMISC::Copy | TESObjectMISC.obj | retail, upstream name already matches, high
+// pdb params: apCopy
+// pdb locals: pmisc
 void __thiscall FUN_0051af50_shell::TESObjectMISC_Copy(TESForm* apCopy)
 {
     TESObjectMISC* pmisc = dynamic_cast<TESObjectMISC*>(apCopy);
@@ -277,10 +296,12 @@ struct FUN_0051b0d0_holder
 };
 // Saves this object to the buffer by calling the save routine at offset 0 and the one at offset 0x74.
 // @fnv 0x0051b0d0
-void FUN_0051b0d0_holder::SaveToBuffer(BGSSaveFormBuffer* buffer)
+// pdb: TESObjectMISC::SaveGame | TESObjectMISC.obj | retail, vtable slot, high
+// pdb params: aiFlags
+void FUN_0051b0d0_holder::SaveToBuffer(BGSSaveFormBuffer* apSaveGameBuffer)
 {
-    reinterpret_cast<TESForm*>(this)->TESForm::SaveGame(buffer);
-    reinterpret_cast<TESValueForm*>(reinterpret_cast<char*>(this) + 0x74)->SaveGameBGS_0048ea40(buffer);
+    reinterpret_cast<TESForm*>(this)->TESForm::SaveGame(apSaveGameBuffer);
+    reinterpret_cast<TESValueForm*>(reinterpret_cast<char*>(this) + 0x74)->SaveGameBGS_0048ea40(apSaveGameBuffer);
 }
 
 struct FUN_0051b100_owner
@@ -290,6 +311,8 @@ struct FUN_0051b100_owner
 // Loads the form from the buffer, then loads the value form at offset 0x74 from the same buffer.
 // @fnv 0x0051b100
 // src: XBOX_PDB 0x0051b100
+// pdb: TESObjectMISC::LoadGame | TESObjectMISC.obj | retail, vtable slot, high
+// pdb params: aiFlags, aiCurrentFlags
 void __thiscall FUN_0051b100_owner::TESObjectMISC_LoadGame(BGSLoadFormBuffer* apLoadGameBuffer)
 {
     reinterpret_cast<TESForm*>(this)->TESForm::LoadGame(apLoadGameBuffer);
@@ -302,6 +325,9 @@ struct FUN_0051afb0_shell : public FUN_008cdd90_shell
 };
 // @fnv 0x0051afb0
 // src: XBOX_PDB 0x0051afb0
+// pdb: TESObjectMISC::Compare | TESObjectMISC.obj | retail, upstream name already matches, high
+// pdb params: apCompare
+// pdb locals: pcomp
 bool FUN_0051afb0_shell::TESObjectMISC_Compare(TESForm* apCompare)
 {
     TESObjectMISC* pcomp = dynamic_cast<TESObjectMISC*>(apCompare);

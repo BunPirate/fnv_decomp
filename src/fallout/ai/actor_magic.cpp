@@ -52,7 +52,7 @@ public:
     static void SetRenderCamera(NiCamera* camera, BSShaderAccumulator* accumulator, bool unused);
     static void SetRenderCamera(AnimIdle* camera, AnimIdle* accumulator, bool unused);
     static void SetRenderCamera(void* camera, unsigned int accumulator, bool unused);
-    static void SetAlphaOnNode(NiNode* node, float alpha);
+    static void RecursiveSetPropertyFadeAlpha(NiNode* apNode, float afAlpha);
 };
 #include "../../../include/ExtraDataList.h"
 #include "../../../include/ExtraRefractionProperty.h"
@@ -564,7 +564,7 @@ extern Setting DAT_011e0888;
 struct ActorMagicSpellListMethods : public TESSpellList
 {
     BSSimpleList<SpellItem*>* GetSpells();
-    bool AddSpell(SpellItem* spell);
+    bool AddSpell(SpellItem* apSpellIn);
 };
 
 extern BIPED_OBJECT DAT_011a337c[5];
@@ -573,6 +573,7 @@ extern BIPED_OBJECT DAT_011a337c[5];
 
 #endif
 
+// pdb: class Calendar, size 0x1c (here 0x1), 7 members
 class Calendar
 {
   public:
@@ -587,19 +588,24 @@ extern float DAT_01017d00;
 
 // If the actor's high process exists and is at process level 0, forwards fAlpha to its SetMaxAlpha.
 // @fnv 0x008c4790
-void Actor::SetAlpha(float fAlpha)
+// pdb: Actor::SetAlpha | Actor_Magic.obj | debug, upstream name already matches, high
+// pdb params: afNewAlpha
+void Actor::SetAlpha(float afNewAlpha)
 {
-    if (m_pBaseProcess && ((HighProcess*)m_pBaseProcess)->GetProcessLevel() == 0)
-        ((HighProcess*)m_pBaseProcess)->SetMaxAlpha(fAlpha);
+    if (pCurrentProcess && ((HighProcess*)pCurrentProcess)->GetProcessLevel() == 0)
+        ((HighProcess*)pCurrentProcess)->SetMaxAlpha(afNewAlpha);
 }
 
 // @fnv 0x00961de0
+// pdb: PlayerCharacter::SetAlpha | PlayerCharacter.obj | debug, object-file gap fill, medium
+// pdb params: afNewAlpha
+// pdb locals: pnode
 void Actor::SetAlphaAndFade(float fAlpha)
 {
     Actor::SetAlpha(fAlpha);
     NiNode* pNode = ((PlayerCharacter*)this)->GetNode(true);
     if (pNode)
-        BSShaderRenderUtility_actor_magic::SetAlphaOnNode(pNode, fAlpha);
+        BSShaderRenderUtility_actor_magic::RecursiveSetPropertyFadeAlpha(pNode, fAlpha);
 }
 
 // Computes the actor's alpha from process fade/invisibility values, applies the player multiplier, and calls SetAlpha or Unk_E1.
@@ -608,7 +614,7 @@ void Actor::UpdateActorPresentation()
 {
     if (BSShaderManager_IsRefractionEnabled() && IsRefractive())
     {
-        Unk_E1(true, GetExtraData()->GetAlphaExtra()->fRefraction);
+        Unk_E1(true, GetExtraData()->GetRefractionPropertyExtra()->fRefractionPower);
     }
     else
     {
@@ -617,11 +623,11 @@ void Actor::UpdateActorPresentation()
         float invisible = invisAlpha ? 0.0f : 1.0f;
         float fade = 1.0f;
         float alpha = 1.0f;
-        if (m_pBaseProcess && ((HighProcess*)m_pBaseProcess)->GetProcessLevel() == 0)
+        if (pCurrentProcess && ((HighProcess*)pCurrentProcess)->GetProcessLevel() == 0)
         {
-            alpha = ((ActorMagicProcess*)m_pBaseProcess)->GetFadeAlpha();
-            fade = ((ActorMagicProcess*)m_pBaseProcess)->GetField3EC();
-            if (((ActorMagicProcess*)m_pBaseProcess)->GetCurrentFadeState() == 2)
+            alpha = ((ActorMagicProcess*)pCurrentProcess)->GetFadeAlpha();
+            fade = ((ActorMagicProcess*)pCurrentProcess)->GetField3EC();
+            if (((ActorMagicProcess*)pCurrentProcess)->GetCurrentFadeState() == 2)
                 invisible = 1.0f;
         }
         float base = processAlpha * invisible * fade * alpha;
@@ -636,15 +642,18 @@ void Actor::UpdateActorPresentation()
 }
 
 // @fnv 0x008a1800
-void Actor::SetActorLifeState(ACTOR_LIFE_STATE state)
+// pdb: Actor::SetLifeState | Actor.obj | retail, call graph, high
+// pdb params: aeLifeState
+// pdb locals: eoldstate, panimdata, awakeHandle, pchanges, phighProcess
+void Actor::SetActorLifeState(ACTOR_LIFE_STATE aeLifeState)
 {
-    if (*(bool*)DAT_011e0888.FUN_00408d60() && IsEssentialActor() && (state == 2 || state == 1))
-        state = (ACTOR_LIFE_STATE)6;
-    if (state == 6 && !CanEnterLifeState())
-        state = (ACTOR_LIFE_STATE)0;
-    if (m_eLifeState == 0 && (state == 1 || state == 2 || state == 6))
+    if (*(bool*)DAT_011e0888.FUN_00408d60() && IsEssentialActor() && (aeLifeState == 2 || aeLifeState == 1))
+        aeLifeState = (ACTOR_LIFE_STATE)6;
+    if (aeLifeState == 6 && !CanEnterLifeState())
+        aeLifeState = (ACTOR_LIFE_STATE)0;
+    if (eLifeState == 0 && (aeLifeState == 1 || aeLifeState == 2 || aeLifeState == 6))
         StopMoving();
-    if (state == 2)
+    if (aeLifeState == 2)
     {
         BSFaceGenAnimationData* inventory = GetActorFaceGenData();
         if (inventory)
@@ -659,22 +668,25 @@ void Actor::SetActorLifeState(ACTOR_LIFE_STATE state)
         GetExtraData()->ExtraDataList_SetCreatureAwakeSound(reinterpret_cast<BSSoundHandle*>(&face));
         BSAudio::GetSingleton()->BSAudio_StopMovingSounds((NiAVObject*)Get3DSimple(), 0.0f, false);
     }
-    if (state != 0 && m_pBaseProcess && ((HighProcess*)m_pBaseProcess)->GetProcessLevel() == 0)
+    if (aeLifeState != 0 && pCurrentProcess && ((HighProcess*)pCurrentProcess)->GetProcessLevel() == 0)
     {
-        ActorMagicProcess* process = (ActorMagicProcess*)m_pBaseProcess;
+        ActorMagicProcess* process = (ActorMagicProcess*)pCurrentProcess;
         if (process->GetCurrentFadeState() == 3 || process->GetCurrentFadeState() == 4)
             ((HighProcess*)process)->ProcessActorWithFlag(this, false);
     }
-    if (m_eLifeState != state)
+    if (eLifeState != aeLifeState)
         MarkAsModified(0x400);
-    ACTOR_LIFE_STATE old = m_eLifeState;
-    m_eLifeState = state;
-    if (old != m_eLifeState && ((old == 2 && m_eLifeState != 1) || m_eLifeState == 2))
+    ACTOR_LIFE_STATE old = eLifeState;
+    eLifeState = aeLifeState;
+    if (old != eLifeState && ((old == 2 && eLifeState != 1) || eLifeState == 2))
         OnLifeStateChanged();
 }
 
 // @fnv 0x008c2e50
-void Actor::AddDefaultSpells()
+// src: XBOX_RETAIL_PDB 0x008c2e50
+// pdb: Actor::PreloadPermanentMagic | Actor_Magic.obj | retail, call graph (shared callers), high
+// pdb locals: pinventory, peveryActorAbility, pspells, pspell, i, pitem, penchantment, penchantable
+void Actor::PreloadPermanentMagic()
 {
     BSSimpleList<SpellItem*>* defaultForm = reinterpret_cast<ActorMagicSpellListMethods*>(
         (char*)GetActorBase() + offsetof(TESActorBase, spellList) - offsetof(TESSpellList, spellList))->GetSpells();
@@ -714,6 +726,9 @@ void Actor::AddDefaultSpells()
 }
 
 // @fnv 0x008c3c40
+// pdb: Actor::UpdateMagic | Actor_Magic.obj | debug, call graph, high
+// pdb params: abSleeping
+// pdb locals: fdelta, tempMemContext, fClockTime, bdone, pseq
 void Actor::ConfigureActorState(bool first, bool second)
 {
     if (TESForm_IsStillLoading())
@@ -728,20 +743,20 @@ void Actor::ConfigureActorState(bool first, bool second)
         context = DAT_01017d00;
     else
     {
-        context = time - ActorConditionAndAnimationState;
-        if (ActorConditionAndAnimationState > time || ActorConditionAndAnimationState < DAT_01012060)
+        context = time - fLastUpdate;
+        if (fLastUpdate > time || fLastUpdate < DAT_01012060)
         {
-            ActorConditionAndAnimationState = time;
+            fLastUpdate = time;
             context = 0.0f;
             if (time > DAT_01012060 && time < DAT_010290d0)
             {
-                ActorConditionAndAnimationState = 0.0f;
+                fLastUpdate = 0.0f;
                 context = time;
             }
         }
     }
-    if (m_pBaseProcess)
-        ((ActorMagicProcess*)m_pBaseProcess)->vfn_700(this, context);
+    if (pCurrentProcess)
+        ((ActorMagicProcess*)pCurrentProcess)->vfn_700(this, context);
     if (GetSelectedMagicItem())
     {
         bool reset = true;
@@ -785,14 +800,14 @@ void Actor::ConfigureActorState(bool first, bool second)
     {
         if (IsPlayerRef())
             UpdateDeathState(context);
-        if (m_pBaseProcess && ((ActorMagicProcess*)m_pBaseProcess)->GetCachedFlag(0x20000000))
+        if (pCurrentProcess && ((ActorMagicProcess*)pCurrentProcess)->GetCachedFlag(0x20000000))
             RestoreHealth(context);
-        if ((m_pBaseProcess && ((ActorMagicProcess*)m_pBaseProcess)->GetCachedFlag(0x40000000)) ||
+        if ((pCurrentProcess && ((ActorMagicProcess*)pCurrentProcess)->GetCachedFlag(0x40000000)) ||
             GetFatigue() < DAT_01012060)
-            UpdateLifeState(context);
+            RestoreFatigue(context);
         Unk_F7(context);
     }
-    ActorConditionAndAnimationState = time;
+    fLastUpdate = time;
 }
 
 struct BaseProcessVtbl
@@ -1048,6 +1063,7 @@ struct BaseProcessVtbl
 
 // @fnv 0x008c4560
 // src: XBOX_PDB 0x008c4560
+// pdb: Actor::GetShouldCheckMagicNode | Actor_Magic.obj | debug, upstream name already matches, high
 bool Actor::GetShouldCheckMagicNode()
 {
     return GetProcess() ? reinterpret_cast<BaseProcessVtbl*>(GetProcess())->UpdateIdleAnimation() : false;
@@ -1056,15 +1072,17 @@ bool Actor::GetShouldCheckMagicNode()
 // @fnv 0x008c47d0
 void HighProcess::SetMaxAlpha(float afAlpha)
 {
-    m_fAnimationScale = afAlpha;
+    fMaxAlpha = afAlpha;
 }
 
 // @fnv 0x008c51c0
 // src: XBOX_PDB 0x008c51c0
+// pdb: Actor::IsRefractive | Actor_Magic.obj | retail, upstream name already matches, high
+// pdb locals: pextraDataList
 bool Actor::IsRefractive()
 {
     ExtraDataList* pextraDataList = GetExtraData();
-    if (pextraDataList && pextraDataList->GetAlphaExtra())
+    if (pextraDataList && pextraDataList->GetRefractionPropertyExtra())
         return true;
     return false;
 }
@@ -1076,6 +1094,7 @@ extern GlobalObject_0040e0b0 g_011c36d8;
 
 // @fnv 0x0040df50
 // src: XBOX_PDB 0x0040df50
+// pdb: MagicSystem::GetChameleonMaxRefraction | MagicSystem.obj | debug, upstream name already matches, high
 float MagicSystem_GetChameleonMaxRefraction()
 {
     return g_011c36d8.Float()->f;
@@ -1089,7 +1108,7 @@ bool MagicSystem_IsSpellTypePermanent(int aeType)
     return aeType == 1 || aeType == 4 || aeType == 10;
 }
 
-extern "C" void __cdecl CombatFormulas_CalcWeaponReach(float fAlpha);
+extern "C" void __cdecl CombatFormulas_CalcWeaponReach(float afReachMultiplier);
 extern SettingT_GameSettingCollection_ originalRuntimeFloatSetting588;
 
 struct FUN_0088b850_shell
@@ -1099,6 +1118,7 @@ struct FUN_0088b850_shell
 
 // Calls FUN_006463e0 with the float value of originalRuntimeFloatSetting588.
 // @fnv 0x0088b850
+// pdb: Actor::GetReach | Actor.obj | debug, object-file run extension, low
 void FUN_0088b850_shell::SetRefractionProperty()
 {
     CombatFormulas_CalcWeaponReach(originalRuntimeFloatSetting588.Float()->f);
@@ -1138,6 +1158,8 @@ struct FUN_0094c490_t
 // Forwards to the PlayerCharacter at this-0xA4, calling its method with arguments 2 and param_1 and returning the float result.
 // @fnv 0x0094c490
 // src: COMMUNITY 0x0094c490
+// pdb: PlayerCharacter::GetDamageModifier | PlayerCharacter.obj | debug, object-file run extension, low
+// pdb params: aiWhich
 float FUN_0094c490_t::PlayerCharacter_GetGameActorValueF(int param_1)
 {
     return ((PlayerCharacter*)((char*)this - 0xA4))->GetActorValueModifierAmount(PlayerCharacter::DAMAGE, (ActorValue::Index)param_1);
@@ -1152,6 +1174,8 @@ struct FUN_0094c4c0_t
 // Reads an actor value by index from the owning object via a stub call with mode 1.
 // @fnv 0x0094c4c0
 // src: COMMUNITY 0x0094c4c0
+// pdb: PlayerCharacter::GetPermanentModifier | PlayerCharacter.obj | debug, object-file run extension, low
+// pdb params: aiWhich
 float FUN_0094c4c0_t::PlayerCharacter_GetScriptActorValue(ActorValue::Index aeActorValue)
 {
     return ((PlayerCharacter*)((char*)this - 0xA4))->GetActorValueModifierAmount(PlayerCharacter::SCRIPTS, aeActorValue);
@@ -1178,15 +1202,18 @@ struct FUN_009b28a0_t
     void SetSound(void*);
     unsigned int QUserData();
     void BSFadeNode_SetUserData(void*);
-    void Explosion_CheckRefDeleted(unsigned int c);
+    void Explosion_CheckRefDeleted(unsigned int apDeletedRef);
 };
 // @fnv 0x009b28a0
 // src: XBOX_PDB 0x009b28a0
-void FUN_009b28a0_t::Explosion_CheckRefDeleted(unsigned int c)
+// pdb: Explosion::CheckRefDeleted | Explosion.obj | debug, upstream name already matches, high
+// pdb params: apDeletedRef
+// pdb locals: plist, pnext, ptarget
+void FUN_009b28a0_t::Explosion_CheckRefDeleted(unsigned int apDeletedRef)
 {
-    if (GetFieldC8() == c)
+    if (GetFieldC8() == apDeletedRef)
         SetSound(0);
-    if (QUserData() == c)
+    if (QUserData() == apDeletedRef)
         BSFadeNode_SetUserData(0);
     FUN_009b28a0_node* pNode = &list;
     while (pNode && !pNode->FUN_008256d0())
@@ -1194,7 +1221,7 @@ void FUN_009b28a0_t::Explosion_CheckRefDeleted(unsigned int c)
         FUN_009b28a0_efx* peffect;
         FUN_009b28a0_node* m_pActionSuccessor = pNode->FUN_00726070();
         peffect = *pNode->FUN_006815c0();
-        if (peffect && (unsigned int)peffect->m_pEffectInstance == c)
+        if (peffect && (unsigned int)peffect->m_pEffectInstance == apDeletedRef)
         {
             peffect->f6 = 1;
             peffect->m_pEffectInstance = 0;
@@ -1203,7 +1230,7 @@ void FUN_009b28a0_t::Explosion_CheckRefDeleted(unsigned int c)
     }
 }
 
-extern "C" void* __cdecl CreatePackageByType(unsigned int size);
+extern "C" void* __cdecl CreatePackageByType(unsigned int aPackageType);
 
 class MagicProcVt
 {
@@ -1417,6 +1444,8 @@ class FUN_008985d0_shell : public MagicProcVt
 
 // @fnv 0x008985d0
 // src: XBOX_PDB 0x008985d0
+// pdb: Actor::InitiateMovementBlockedPackage | Actor.obj | retail, upstream name already matches, high
+// pdb locals: ppack
 void FUN_008985d0_shell::Actor_InitiateMovementBlockedPackage()
 {
     Actor_EndMovement();
@@ -1456,14 +1485,14 @@ struct FUN_00815380_shell : public MagicCaster
 };
 struct ActorConsumeShell : public MobileObject, public FUN_00815380_shell
 {
-    void UseItemDirect(TESBoundObject* pObject, int a, int b);
-    void UseAlchemyItem(AlchemyItem* pAlchemy, int a, int b);
-    void Actor_CastAlchemy(MagicItem* pItem, bool bApply);
+    void UseItemDirect(TESBoundObject* apfood, int pextra, int abNow);
+    void UseAlchemyItem(AlchemyItem* apPotion, int pextra, int abNow);
+    void Actor_CastAlchemy(MagicItem* apPotionIngredient, bool abLast);
 };
 
 struct FUN_008c1de0_player
 {
-    bool AddMagicItem(FUN_008c1de0_comp* pComp);
+    bool AddEatDrinkItem(FUN_008c1de0_comp* pComp);
 };
 extern TESSaveLoadGame* g_TESSaveLoadGame;
 class GlobalObject_0040c150
@@ -1477,18 +1506,21 @@ extern bool QueueUIMessage(const char* apText, int aiType, const char* apIcon, c
                            bool abPriority);
 struct FUN_008c1de0_shell : public Actor
 {
-    void Actor_Eat(TESForm* pItem, ExtraDataList* pExtra, bool bSilent);
+    void Actor_Eat(TESForm* apfood, ExtraDataList* pextra, bool abNow);
 };
 
 // @fnv 0x008c1de0
 // src: XBOX_PDB 0x008c1de0
-void FUN_008c1de0_shell::Actor_Eat(TESForm* pItem, ExtraDataList* pExtra, bool bSilent)
+// pdb: Actor::Eat | Actor_Magic.obj | retail, upstream name already matches, high
+// pdb params: apfood, pextra, abNow
+// pdb locals: peatspell, pmagobj
+void FUN_008c1de0_shell::Actor_Eat(TESForm* apfood, ExtraDataList* pextra, bool abNow)
 {
-    if (!pItem)
+    if (!apfood)
     {
         return;
     }
-    if (pItem->IsQuestItem())
+    if (apfood->IsQuestItem())
     {
         if (this == (Actor*)g_thePlayer)
         {
@@ -1499,29 +1531,29 @@ void FUN_008c1de0_shell::Actor_Eat(TESForm* pItem, ExtraDataList* pExtra, bool b
     }
     if (!g_TESSaveLoadGame->GetLoading())
     {
-        Script_SetActionFlag(this, pExtra, 2);
-        Script_SetActionFlag(pItem, GetExtraData(), 2);
+        Script_SetActionFlag(this, pextra, 2);
+        Script_SetActionFlag(apfood, GetExtraData(), 2);
     }
     FUN_008c1de0_comp* pComp = 0;
-    if (pItem->Unk_3B())
+    if (apfood->Unk_3B())
     {
-        FUN_008c1de0_item* pItemForm = (FUN_008c1de0_item*)pItem;
+        FUN_008c1de0_item* pItemForm = (FUN_008c1de0_item*)apfood;
         pComp = pItemForm;
     }
-    if (this != (Actor*)g_thePlayer || bSilent)
+    if (this != (Actor*)g_thePlayer || abNow)
     {
         SetSelectedMagicItem((MagicItem*)pComp);
         reinterpret_cast<FUN_00815380_shell*>(reinterpret_cast<char*>(this) + 0x88)->TryCast(0);
         if (this != (Actor*)g_thePlayer)
         {
-            RemoveItem(pItem, pExtra, 1, 0, 0, 0, 0, 0, 1, 0);
+            RemoveItem(apfood, pextra, 1, 0, 0, 0, 0, 0, 1, 0);
         }
     }
     else
     {
-        if (((FUN_008c1de0_player*)g_thePlayer)->AddMagicItem(pComp))
+        if (((FUN_008c1de0_player*)g_thePlayer)->AddEatDrinkItem(pComp))
         {
-            RemoveItem(pItem, pExtra, 1, 0, 0, 0, 0, 0, 1, 0);
+            RemoveItem(apfood, pextra, 1, 0, 0, 0, 0, 0, 1, 0);
         }
     }
 }
@@ -1898,10 +1930,12 @@ class B8C4890Process
 
 // If m_pkProcess is set, forwards fValue to m_pkProcess->SetValue.
 // @fnv 0x008c4890
-void Actor::SetProcessValue(float fValue)
+// pdb: Actor::SetAlphaMult | Actor_Magic.obj | debug, call graph, high
+// pdb params: afAlpha
+void Actor::SetProcessValue(float afAlpha)
 {
-    if (m_pBaseProcess)
-        ((B8C4890Process*)m_pBaseProcess)->SetValue(fValue);
+    if (pCurrentProcess)
+        ((B8C4890Process*)pCurrentProcess)->SetValue(afAlpha);
 }
 
 struct TargetActorS
@@ -2285,12 +2319,15 @@ struct SummonOwner;
 struct SummonOwner
 {
     ProcessS* GetProcess();
-    bool DispelSummonEffects();
+    bool Actor_CheckSummonedActor();
 };
 
 // Walks the target actor's active effect list, unsummons and dispels summon effects owned by this owner, returning whether any were dispelled.
 // @fnv 0x008c51f0
-bool SummonOwner::DispelSummonEffects()
+// src: XBOX_RETAIL_PDB 0x008c51f0
+// pdb: Actor::CheckSummonedActor | Actor_Magic.obj | retail, call graph, high
+// pdb locals: plist, bsummoned, pcommander, peffect, psummonedActor, psummonEffect
+bool SummonOwner::Actor_CheckSummonedActor()
 {
     bool bDispelled5 = false;
     if (!GetProcess() || !GetProcess()->GetTargetActor())
@@ -2325,25 +2362,28 @@ struct Controller
 {
     void EquipPlayableObject(Item*, int);
     Ref* TESObjectREFR_GetInventoryItem_00576260(Item*, int);
-    void SetArg(Item*);
+    void PlayerCharacter_SetSelectedScroll(Item*);
     void PlayerCharacter_CastScroll(Item*, int);
 };
 // @fnv 0x0095e670
 // src: COMMUNITY 0x0095e670
-void Controller::PlayerCharacter_CastScroll(Item* item, int mode)
+// pdb: PlayerCharacter::CastScroll | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb params: apScroll, apTarget
+// pdb locals: pscrollItem
+void Controller::PlayerCharacter_CastScroll(Item* apScroll, int apTarget)
 {
-    EquipPlayableObject(item, mode);
-    Ref* ref = TESObjectREFR_GetInventoryItem_00576260(item, item->GetHavokWorldObjectCountInSceneGraph_0084e3a0());
+    EquipPlayableObject(apScroll, apTarget);
+    Ref* ref = TESObjectREFR_GetInventoryItem_00576260(apScroll, apScroll->GetHavokWorldObjectCountInSceneGraph_0084e3a0());
     if (ref)
     {
         Ref* selectedRef = ref;
         Ref* activeRef = selectedRef;
         activeRef ? activeRef->FUN_004459e0(1) : 0;
-        SetArg(item);
+        PlayerCharacter_SetSelectedScroll(apScroll);
     }
     else
     {
-        SetArg(0);
+        PlayerCharacter_SetSelectedScroll(0);
     }
 }
 
@@ -3589,6 +3629,9 @@ struct XHost17 : public XHostVtbl17
 
 // @fnv 0x00891e00
 // src: COMMUNITY 0x00891e00
+// pdb: Actor::PickUpObject | Actor.obj | debug, object-file gap fill, medium
+// pdb params: apobjREFR, aicount, abflag
+// pdb locals: eformType, pweapon, bdrawWeapon, bdeleteReference, pref, apactorlist, pTemp, apactor, pcompobj, pitem
 void XHost17::Actor_DoActivate(XRefr17* pRefr, int iCount, bool a2)
 
 {
@@ -4356,6 +4399,8 @@ struct FUN_008a75a0_shell : public Actor
 };
 
 // @fnv 0x008a75a0
+// pdb: Actor::InitiateGetUpPackage | Actor.obj | debug, call graph, medium
+// pdb locals: pPack, ploc, ppack
 void FUN_008a75a0_shell::EnsurePackage26()
 {
     TESPackage* pPkg = GetCurrentAIProcess()->v27c();
@@ -4363,9 +4408,9 @@ void FUN_008a75a0_shell::EnsurePackage26()
     {
         return;
     }
-    if (((BaseProcessExt*)m_pBaseProcess)->v4d0() == 127)
+    if (((BaseProcessExt*)pCurrentProcess)->v4d0() == 127)
     {
-        ((BaseProcessExt*)m_pBaseProcess)->v4c0(this, 0, 0, 127);
+        ((BaseProcessExt*)pCurrentProcess)->v4c0(this, 0, 0, 127);
         return;
     }
     TESPackage* pNewPkg3 = CreatePackageStandIn((PTYPE)26);
@@ -4448,7 +4493,7 @@ class Object8C1
 class EntryList8C1
 {
   public:
-    void Add(Entry8C1* pkEntry, int iCount, int iFlags);
+    void Add(Entry8C1* apSpell, int apDesiredTarget, int abLoadCast);
 };
 
 // Actor.h lacks CastScroll and gives slot 0x17c no equip signature; keep only the missing declarations locally.
@@ -4460,6 +4505,8 @@ typedef void (__thiscall* ScrollEquipFunction)(Actor*, Object8C1*, int, int, int
 
 // If pkObject is playable and has a first list entry, equips it, adds that entry to the MagicCaster spell list, and refreshes the player when this is g_thePlayer.
 // @fnv 0x008c1d20
+// pdb: Actor::CastScroll | Actor_Magic.obj | retail, object-file run extension, low
+// pdb params: apScroll, apTarget
 void ScrollCastingMethods::CastScroll(Object8C1* pkObject, int iCount)
 {
     if (pkObject && pkObject->IsPlayable() && pkObject->m_kUnsortedGeometryList.GetFirst())
@@ -4467,7 +4514,7 @@ void ScrollCastingMethods::CastScroll(Object8C1* pkObject, int iCount)
         reinterpret_cast<ScrollEquipFunction>((*reinterpret_cast<void***>(this))[0x5f])(this, pkObject, 0, 1, 0, 0, 0, 0, 0, 1, 0);
         reinterpret_cast<EntryList8C1*>(reinterpret_cast<char*>(this) + (offsetof(Actor, apTargetLight) - offsetof(MagicCaster, apTargetLight)))->Add(pkObject->m_kUnsortedGeometryList.GetFirst(), iCount, 0);
         if (this == static_cast<Actor*>(g_thePlayer))
-            g_thePlayer->SetArg(0);
+            g_thePlayer->SetSelectedScroll(0);
     }
 }
 
@@ -4626,26 +4673,29 @@ struct FUN_008c1f80_shell
     int unk80;
     int unk84;
     FUN_008c1f80_caster caster;
-    bool EquipItemWithCaster(FUN_008c1de0_item* pItem, int iCount, bool bForce);
+    bool EquipItemWithCaster(FUN_008c1de0_item* apPotion, int pextra, bool abNow);
 };
 // @fnv 0x008c1f80
-bool FUN_008c1f80_shell::EquipItemWithCaster(FUN_008c1de0_item* pItem, int iCount, bool bForce)
+// pdb: Actor::DrinkPotion | Actor_Magic.obj | retail, call graph (shared callers), high
+// pdb params: apPotion, pextra, abNow
+// pdb locals: bconsumed
+bool FUN_008c1f80_shell::EquipItemWithCaster(FUN_008c1de0_item* apPotion, int pextra, bool abNow)
 {
-    if (!pItem)
+    if (!apPotion)
         return false;
     bool bResult = true;
-    if ((void*)this != (void*)g_thePlayer || bForce)
+    if ((void*)this != (void*)g_thePlayer || abNow)
     {
-        caster.SetActiveItem(pItem);
+        caster.SetActiveItem(apPotion);
         ((FUN_00815380_shell*)&caster)->TryCast(0);
         if ((void*)this != (void*)g_thePlayer)
-            EquipItem(pItem, iCount, true, false, false, false, false, false, true, false);
+            EquipItem(apPotion, pextra, true, false, false, false, false, false, true, false);
     }
     else
     {
-        bResult = ((FUN_008c1de0_player*)g_thePlayer)->AddMagicItem(pItem);
+        bResult = ((FUN_008c1de0_player*)g_thePlayer)->AddEatDrinkItem(apPotion);
         if (bResult)
-            EquipItem(pItem, iCount, true, false, false, false, false, false, true, false);
+            EquipItem(apPotion, pextra, true, false, false, false, false, false, true, false);
     }
     return bResult;
 }
@@ -4894,11 +4944,14 @@ struct FUN_008c2b60_vtbl
 struct FUN_008c2b60_shell : public Actor
 {
     TESRace* FUN_008c2b60_race();
-    void ApplyActorSpells();
+    void Actor_DispelPermanentMagic();
 };
 
 // @fnv 0x008c2b60
-void FUN_008c2b60_shell::ApplyActorSpells()
+// src: XBOX_RETAIL_PDB 0x008c2b60
+// pdb: Actor::DispelPermanentMagic | Actor_Magic.obj | retail, call graph (shared callers), high
+// pdb locals: pinventory, peveryActorAbility, pspells, pspell, i, pitem, penchantment, penchantable
+void FUN_008c2b60_shell::Actor_DispelPermanentMagic()
 {
     FUN_008c2b60_node* pNode2 = FUN_00717e50((char*)GetActorBase() + offsetof(TESActorBase, spellList) - offsetof(TESSpellList, spellList));
     while (pNode2)
@@ -4942,25 +4995,28 @@ void FUN_008c2b60_shell::ApplyActorSpells()
 struct ActorAddSpell : public MobileObject, public MagicCaster, public MagicTarget
 {
     TESActorBase* GetActorBase();
-    bool AddSpellToActor(SpellItem* spell);
+    bool AddSpellToActor(SpellItem* apSpellIn);
 };
 
 // @fnv 0x008c32f0
-bool ActorAddSpell::AddSpellToActor(SpellItem* spell)
+// pdb: Actor::AddSpell | Actor_Magic.obj | retail, call graph, high
+// pdb params: apSpellIn
+// pdb locals: bresult
+bool ActorAddSpell::AddSpellToActor(SpellItem* apSpellIn)
 {
     bool bResult = reinterpret_cast<ActorMagicSpellListMethods*>(
-        (char*)GetActorBase() + offsetof(TESActorBase, spellList) - offsetof(TESSpellList, spellList))->AddSpell(spell);
+        (char*)GetActorBase() + offsetof(TESActorBase, spellList) - offsetof(TESSpellList, spellList))->AddSpell(apSpellIn);
     if (bResult)
     {
         GetActorBase()->MarkAsModified(0x10);
     }
-    if (TESSpellList::RemoveSpell((BSFileEntry*)spell->GetSpellType()))
+    if (TESSpellList::RemoveSpell((BSFileEntry*)apSpellIn->GetSpellType()))
     {
-        if (!HasSpell(spell, true))
+        if (!HasSpell(apSpellIn, true))
         {
             bResult = true;
-            CastSpellOnCaster(spell, false);
-            CastSpellAtTarget(spell, this, false);
+            CastSpellOnCaster(apSpellIn, false);
+            CastSpellAtTarget(apSpellIn, this, false);
         }
     }
     return bResult;
@@ -4970,11 +5026,14 @@ bool ActorAddSpell::AddSpellToActor(SpellItem* spell)
 // Declare only the missing operation, and use the shared Actor layout in its body.
 struct PermanentMagicMethods
 {
-    void UnloadPermanentMagic();
+    void Actor_UnloadPermanentMagic();
 };
 
 // @fnv 0x008c30a0
-void PermanentMagicMethods::UnloadPermanentMagic()
+// src: XBOX_RETAIL_PDB 0x008c30a0
+// pdb: Actor::UnloadPermanentMagic | Actor_Magic.obj | retail, call graph (shared callers), high
+// pdb locals: pinventory, peveryActorAbility, pspells, pspell, i, pitem, penchantment, penchantable
+void PermanentMagicMethods::Actor_UnloadPermanentMagic()
 {
     BSSimpleList<SpellItem*>* pkIter = reinterpret_cast<ActorMagicSpellListMethods*>(
         (char*)reinterpret_cast<Actor*>(this)->GetActorBase() + offsetof(TESActorBase, spellList) - offsetof(TESSpellList, spellList))->GetSpells();
@@ -5089,7 +5148,7 @@ struct Node8c37
     unsigned int NiNode_GetChildCount();
     void NiNode_RemoveAllChildren();
     unsigned int FUN_0043b480();
-    NiAVObject* FUN_0043b4a0(unsigned int uiIndex);
+    NiAVObject* FUN_0043b4a0(unsigned int i);
 };
 
 struct AnimSeq8c37
@@ -5107,11 +5166,15 @@ struct AnimData8c37
 // This declaration-only adapter has no Actor layout or virtual table.
 struct CastingArtMethods
 {
-    void Actor_SetShouldCheckMagicNode(int iState);
-    void AttachMagicEffect(void* pkAttachRoot);
+    void Actor_SetShouldCheckMagicNode(int abCheck);
+    void Actor_AttachCastingArt(void* apSpell);
 };
 
 // @fnv 0x008c3790
+// pdb: Actor::AttachCastingArt | Actor_Magic.obj | retail, object-file run extension, low
+// pdb note: debug build links it to Actor::CheckMagicNode
+// pdb params: apSpell
+// pdb locals: pnode, pavEffect, pdata3D, pmanager, po, pseq, plight
 void Actor::UpdateActorEffectState()
 {
     Node8c37* pkGroupNode = reinterpret_cast<Node8c37*>(GetMagicNode());
@@ -5142,7 +5205,7 @@ void Actor::UpdateActorEffectState()
     if (pkAttachRoot)
     {
         if (pkGroupNode->NiNode_GetChildCount() == 0 && bFound)
-            reinterpret_cast<CastingArtMethods*>(this)->AttachMagicEffect(pkAttachRoot);
+            reinterpret_cast<CastingArtMethods*>(this)->Actor_AttachCastingArt(pkAttachRoot);
         return;
     }
     if (pkGroupNode->NiNode_GetChildCount() > 0)
@@ -5168,7 +5231,7 @@ class NiRTTI;
 struct Manager8c39
 {
     NiControllerSequence* NiControllerManager_GetSequenceByName(NiFixedString* pkName);
-    void FUN_0048fef0(float fTime);
+    void FUN_0048fef0(float fEaseOutTime);
     void FUN_0047aab0(NiControllerSequence* pkSequence, int iPriority, int iStartOver, float fWeight, float fEaseIn,
                       int iTimeSync);
     void FUN_0047aa40(bool bCumulative);
@@ -5258,7 +5321,7 @@ struct Effect8c39
     LightData8c39* EffectSetting_GetLight();
 };
 
-NiAVObject* __cdecl MagicProjectile_Clone3D(Effect8c39* pkEffect);
+NiAVObject* __cdecl MagicProjectile_Clone3D(Effect8c39* apAVEffect);
 bool __cdecl Main_GetSceneIsComplex();
 
 struct FUN_0081bf80
@@ -5266,7 +5329,7 @@ struct FUN_0081bf80
     FUN_0081bf80(void* pkLightData, Node8c39* pkMagicNode);
     ~FUN_0081bf80();
     void MagicLight_Fade(bool bFade, float fDuration);
-    void UpdateLightFade(float fTime);
+    void MagicLight_Update(float afDelta);
     int m_kNextStreamField[7];
 };
 
@@ -5274,13 +5337,17 @@ struct FUN_0081bf80
 // AttachCastingArt uses Actor's shared MagicCaster base at +0x88; its method is declared by CastingArtMethods above.
 
 // @fnv 0x008c39b0
-void CastingArtMethods::AttachMagicEffect(void* pkSource)
+// src: XBOX_DEBUG_PDB 0x008c39b0
+// pdb: Actor::AttachCastingArt | Actor_Magic.obj | debug, call graph, high
+// pdb params: apSpell
+// pdb locals: pnode, pavEffect, pdata3D, pmanager, po, pseq, plight
+void CastingArtMethods::Actor_AttachCastingArt(void* apSpell)
 {
     NiAVObject* pkModel = 0;
     Effect8c39* pkEffect = 0;
-    if (pkSource)
+    if (apSpell)
     {
-        pkEffect = (Effect8c39*)reinterpret_cast<MagicItem*>(pkSource)->FUN_0040a300(0);
+        pkEffect = (Effect8c39*)reinterpret_cast<MagicItem*>(apSpell)->FUN_0040a300(0);
         if (pkEffect && pkEffect->m_kSound.FUN_0048cee0() > 0)
             pkModel = MagicProjectile_Clone3D(pkEffect);
     }
@@ -5310,7 +5377,7 @@ void CastingArtMethods::AttachMagicEffect(void* pkSource)
                 reinterpret_cast<FUN_0081bf80*>(reinterpret_cast<Actor*>(this)->apTargetLight)->MagicLight_Fade(true, pkSequence->GetEndKeyTime_00508100() * 0.75);
         }
         if (reinterpret_cast<Actor*>(this)->apTargetLight)
-            reinterpret_cast<FUN_0081bf80*>(reinterpret_cast<Actor*>(this)->apTargetLight)->UpdateLightFade(0.0f);
+            reinterpret_cast<FUN_0081bf80*>(reinterpret_cast<Actor*>(this)->apTargetLight)->MagicLight_Update(0.0f);
     }
 }
 
@@ -5453,19 +5520,21 @@ float __cdecl floorf(float);
 // Inherit the shared layout so both bodies retain the original secondary-base this convention.
 struct PlayerActorValueMethods : PlayerCharacter
 {
-    virtual int GetPermanentActorValue(ActorValue::Index aeActorValueIndex);
-    virtual float GetCurrentActorValue(ActorValue::Index aeActorValueIndex);
+    virtual int GetPermanentActorValue(ActorValue::Index aiWhich);
+    virtual float GetCurrentActorValue(ActorValue::Index aiWhich);
 };
 
 // @fnv 0x0093ad30
-int PlayerActorValueMethods::GetPermanentActorValue(ActorValue::Index aiActorValueIndex)
+// pdb: PlayerCharacter::GetPermanentActorValue | PlayerCharacter.obj | retail, object-file run extension, high
+// pdb params: aiWhich
+int PlayerActorValueMethods::GetPermanentActorValue(ActorValue::Index aiWhich)
 {
-    return (int)floorf(GetPermanentActorValueAdjustment((ActorValue::Index)aiActorValueIndex));
+    return (int)floorf(GetPermanentActorValueAdjustment((ActorValue::Index)aiWhich));
 }
 
 namespace fnv_0093ad60 {
 bool __cdecl ActorValue_IsSkill(int);
-float __cdecl GetSkillValue(void*, int, bool);
+float __cdecl AiFormulas_AVDeriveSkill(void*, int, bool);
 float __cdecl FUN_0066f190(int, float);
 
 }  // namespace fnv_0093ad60
@@ -5474,20 +5543,23 @@ float __cdecl FUN_0066f190(int, float);
 typedef float (__thiscall* SkillBonusFunction)(PlayerCharacter*, int, bool*);
 
 // @fnv 0x0093ad60
-float PlayerActorValueMethods::GetCurrentActorValue(ActorValue::Index aiActorValue)
+// pdb: PlayerCharacter::GetPermanentActorFloatValue | PlayerCharacter.obj | retail, vtable slot, high
+// pdb params: aiWhich
+// pdb locals: fresult, bdummy
+float PlayerActorValueMethods::GetCurrentActorValue(ActorValue::Index aiWhich)
 {
     bool bFlag;
     float fResult = 0.0f;
-    if (fnv_0093ad60::ActorValue_IsSkill(aiActorValue))
+    if (fnv_0093ad60::ActorValue_IsSkill(aiWhich))
     {
-        fResult = fnv_0093ad60::GetSkillValue(static_cast<ActorValueOwner*>(g_thePlayer), aiActorValue, true) +
-                  reinterpret_cast<SkillBonusFunction>((*reinterpret_cast<void***>(this))[0x123])(this, aiActorValue, &bFlag) + GetDamageActorValue((ActorValue::Index)aiActorValue);
+        fResult = fnv_0093ad60::AiFormulas_AVDeriveSkill(static_cast<ActorValueOwner*>(g_thePlayer), aiWhich, true) +
+                  reinterpret_cast<SkillBonusFunction>((*reinterpret_cast<void***>(this))[0x123])(this, aiWhich, &bFlag) + GetDamageActorValue((ActorValue::Index)aiWhich);
     }
     else
     {
-        fResult = GetBaseActorValueFloat((ActorValue::Index)aiActorValue) + GetDamageActorValue((ActorValue::Index)aiActorValue);
+        fResult = GetBaseActorValueFloat((ActorValue::Index)aiWhich) + GetDamageActorValue((ActorValue::Index)aiWhich);
     }
-    return fnv_0093ad60::FUN_0066f190(aiActorValue, fResult);
+    return fnv_0093ad60::FUN_0066f190(aiWhich, fResult);
 }
 
 namespace fnv_008c5350 {
@@ -6319,7 +6391,7 @@ struct SightWorld
     virtual void v08c();
     virtual void v090();
     virtual SightWorldInner* GetInner();
-    void DestroyDate();
+    void bhkWorld_MarkForRead();
 };
 struct SightActor
 {
@@ -6703,7 +6775,7 @@ struct SightActor
     bool Actor_IsInCombat();
     double TESObjectREFR_GetDistanceFromReference(SightActor*, int, int);
     SightVec* GetAddTopicList();
-    bool IsPointInConeFOV(SightVec*, float);
+    bool Actor_IsPointInViewCone(SightVec*, float);
     void* GetCullResult();
     SightBase* GetActorBase();
     bool IsSneaking();
@@ -6723,41 +6795,44 @@ struct SightCell
 // Checks visibility through the sight process or ray checks; ray checks can write a code to result.
 // @fnv 0x0088b880
 // src: XBOX_PDB 0x0088b880
-bool SightActor::Actor_LineOfSight(bool force, SightActor* other, bool mode, int* result, bool skipAngle)
+// pdb: Actor::LineOfSight | Actor.obj | retail, call graph, high
+// pdb params: abRunFormula, pTarget, abUseEyeLevel, aeInView, abfull360
+// pdb locals: bInSight, binCombat, pActorTarget, pcell, factorHeight, origPoint, phead, pbodyPartData, collector, pcombatController, pcache, fltr, icolFilter, pdestNode, esegments, pickRes, fzs, pmob, dz, ipickcount, destPoint, fTargetHeight, pw, aabbCacheSize ...
+bool SightActor::Actor_LineOfSight(bool abRunFormula, SightActor* pTarget, bool abUseEyeLevel, int* aeInView, bool abfull360)
 {
     bool visible = false;
     SightActor* actor = 0;
-    if (!other || !other->HasNode())
+    if (!pTarget || !pTarget->HasNode())
         return visible;
     bool state = Actor_IsInCombat();
-    if (other->IsDead(0) && !CanSeeDead() && !force)
+    if (pTarget->IsDead(0) && !CanSeeDead() && !abRunFormula)
         return visible;
-    if (other->IsActor())
-        actor = other;
-    if (TESObjectREFR_GetDistanceFromReference(other, 0, 0) <= 2.0)
+    if (pTarget->IsActor())
+        actor = pTarget;
+    if (TESObjectREFR_GetDistanceFromReference(pTarget, 0, 0) <= 2.0)
     {
-        skipAngle = true;
+        abfull360 = true;
         return true;
     }
-    if (!force)
+    if (!abRunFormula)
     {
         if (process)
-            visible = process->Test(this, actor, 0, skipAngle);
+            visible = process->Test(this, actor, 0, abfull360);
     }
-    else if (force || !actor)
+    else if (abRunFormula || !actor)
     {
-        if (result)
-            *result = 3;
-        if (other)
+        if (aeInView)
+            *aeInView = 3;
+        if (pTarget)
         {
-            if (skipAngle ||
-                IsPointInConeFOV(other->GetAddTopicList(),
+            if (abfull360 ||
+                Actor_IsPointInViewCone(pTarget->GetAddTopicList(),
                                  (float)(*originalRuntimeFloatSetting103.Setting_Float_00403e20() * 0.01745329238474369)))
             {
                 if (DAT_011df678)
                 {
-                    if (result)
-                        *result = 2;
+                    if (aeInView)
+                        *aeInView = 2;
                     return true;
                 }
                 SightCell* cell = (SightCell*)GetCullResult();
@@ -6776,9 +6851,9 @@ bool SightActor::Actor_LineOfSight(bool force, SightActor* other, bool mode, int
                     start = *GetAddTopicList();
                 float height = 0.0f;
                 if (IsSneaking())
-                    height = Actor_GetSneakHeight(mode);
+                    height = Actor_GetSneakHeight(abUseEyeLevel);
                 else
-                    height = mode ? Actor_GetEyeLevel() : GetActorHeight() * 0.75;
+                    height = abUseEyeLevel ? Actor_GetEyeLevel() : GetActorHeight() * 0.75;
                 if (!source)
                     start.z += height;
                 if (g_TES->FUN_004511e0(cell, 1))
@@ -6786,11 +6861,11 @@ bool SightActor::Actor_LineOfSight(bool force, SightActor* other, bool mode, int
                     SightRay ray;
                     ray.FUN_004a3c20();
                     SightActor* ref = 0;
-                    if (other && other->IsActorLike())
-                        ref = other;
+                    if (pTarget && pTarget->IsActorLike())
+                        ref = pTarget;
                     SightCollector collector(0x25, ref);
                     ray.bhkPickData_SetClosestCollector(&collector);
-                    SightVec end = *other->GetAddTopicList();
+                    SightVec end = *pTarget->GetAddTopicList();
                     ray.bhkPickData_SetFrom(&start);
                     SightFilterBits filter;
                     FUN_00931ed0(&filter);
@@ -6798,7 +6873,7 @@ bool SightActor::Actor_LineOfSight(bool force, SightActor* other, bool mode, int
                     rayFilter.CFilter_SetLayer(0x25);
                     rayFilter.CFilter_SetGroup(filter.CFilter_GetGroup());
                     ray.bhkPickData_SetFilter(rayFilter.bits);
-                    float extent = other->GetScale() * (other->Max().z - other->Min().z);
+                    float extent = pTarget->GetScale() * (pTarget->Max().z - pTarget->Min().z);
                     float fractions[3] = {0.75f, 0.5f, 0.25f};
                     int codes[3] = {2, 1, 0};
                     SightScene* nodes[3] = {0, 0, 0};
@@ -6844,7 +6919,7 @@ bool SightActor::Actor_LineOfSight(bool force, SightActor* other, bool mode, int
                     SightHkVec expansion2;
                     expansion2.FUN_005dbf20(runtimeInitializationFloat3647);
                     bounds.high.hkVector4_mul4(&expansion2);
-                    world->DestroyDate();
+                    world->bhkWorld_MarkForRead();
                     SightFilterWorld* filterWorld = world->GetInner()->FUN_006286d0();
                     int capacity = filterWorld->Count();
                     if (capacity > 0)
@@ -6857,7 +6932,7 @@ bool SightActor::Actor_LineOfSight(bool force, SightActor* other, bool mode, int
                             ray.BGSTerminal_SetPassword(buffer);
                         }
                     }
-                    world->DestroyDate();
+                    world->bhkWorld_MarkForRead();
                     for (int j = 0; j < count; ++j)
                     {
                         if (nodes[j])
@@ -6879,11 +6954,11 @@ bool SightActor::Actor_LineOfSight(bool force, SightActor* other, bool mode, int
                             collector.FUN_006d3b00(0.0f);
                         void* hit = g_TES->TES_Pick(&ray);
                         SightActor* hitRef = hit ? TESObjectREFR_FindReferenceFor3D(hit) : 0;
-                        if (!ray.bhkPickData_GetPickFailed() && (!hit || hitRef == other))
+                        if (!ray.bhkPickData_GetPickFailed() && (!hit || hitRef == pTarget))
                         {
                             visible = true;
-                            if (result)
-                                *result = codes[j];
+                            if (aeInView)
+                                *aeInView = codes[j];
                             break;
                         }
                     }
@@ -7087,7 +7162,7 @@ struct WaterActor : TESObjectREFR
     unsigned char unkd8;
     unsigned char waterFlags;
     CellAccess* FUN_008d6f30();
-    bool IsNotCulled();
+    bool Explosion_IsDistant();
     float Explosion_GetRadius();
     bool Explosion_TestExplosionUnderWater();
 };
@@ -7111,12 +7186,14 @@ int __fastcall FUN_00401170(void*);
 // Checks if the water actor is below the cell water level or below another water actor via a physics ray query, then sets waterFlags.
 // @fnv 0x009b2940
 // src: COMMUNITY 0x009b2940
+// pdb: Explosion::TestExplosionUnderWater | Explosion.obj | retail, upstream name already matches, high
+// pdb locals: pcell, binWater, fExplosionRadiusRatio, phkworld, pworld, pbroadphase, max, aabb, min, hits, i, tp, collB, pwaterRef, pav, ppair
 bool WaterActor::Explosion_TestExplosionUnderWater()
 {
     bool bBelow = false;
     float scale = DAT_011d0e34.Float()->f;
     CellAccess* cell = FUN_008d6f30();
-    if (!IsNotCulled() && cell)
+    if (!Explosion_IsDistant() && cell)
     {
         if (((const TESObjectREFR*)this)->GetPos()->z + Explosion_GetRadius() * scale < cell->TESObjectCELL_GetWaterHeight())
         {
@@ -7160,16 +7237,19 @@ bool WaterActor::Explosion_TestExplosionUnderWater()
 // For virtual type codes 7 or 8, uses the matching item path when bApply is true; otherwise sets spell state, casts, and removes the object.
 // @fnv 0x008c2090
 // src: COMMUNITY 0x008c2090
-void ActorConsumeShell::Actor_CastAlchemy(MagicItem* pItem, bool bApply)
+// pdb: Actor::CastAlchemy | Actor_Magic.obj | retail, upstream name already matches, high
+// pdb params: apPotionIngredient, abLast
+// pdb locals: pobject, ppotion
+void ActorConsumeShell::Actor_CastAlchemy(MagicItem* apPotionIngredient, bool abLast)
 {
-    if ((int)pItem->GetSpellType() == 7 || (int)pItem->GetSpellType() == 8)
+    if ((int)apPotionIngredient->GetSpellType() == 7 || (int)apPotionIngredient->GetSpellType() == 8)
     {
-        TESBoundObject* pObject = dynamic_cast<TESBoundObject*>(pItem);
-        if (bApply)
+        TESBoundObject* pObject = dynamic_cast<TESBoundObject*>(apPotionIngredient);
+        if (abLast)
         {
-            if ((int)pItem->GetSpellType() == 7)
+            if ((int)apPotionIngredient->GetSpellType() == 7)
             {
-                AlchemyItem* pAlchemy = dynamic_cast<AlchemyItem*>(pItem);
+                AlchemyItem* pAlchemy = dynamic_cast<AlchemyItem*>(apPotionIngredient);
                 UseAlchemyItem(pAlchemy, 0, 1);
             }
             else
@@ -7179,7 +7259,7 @@ void ActorConsumeShell::Actor_CastAlchemy(MagicItem* pItem, bool bApply)
         }
         else
         {
-            SetSelectedMagicItem(pItem);
+            SetSelectedMagicItem(apPotionIngredient);
             TryCast(0);
             RemoveItem(pObject, 0, 1, 0, 0, 0, 0, 0, 1, 0);
         }

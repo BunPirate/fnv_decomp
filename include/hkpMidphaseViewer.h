@@ -59,7 +59,7 @@ public:
     };
 
     hkpMidphaseViewer();
-    hkpMidphaseViewer(int a);
+    hkpMidphaseViewer(int contexts);
     virtual ~hkpMidphaseViewer() throw();
     virtual void postSimulationCallback(hkpWorld* world);
 
@@ -67,6 +67,6 @@ public:
     void FUN_00d6a750();
     void* FUN_00d6a8b0(int flags);
 
-    ElementArray m_elements;
+    ElementArray m_broadPhaseDisplayGeometries; // src: XBOX_RETAIL_PDB +0x2c (old: m_elements)
 };
 

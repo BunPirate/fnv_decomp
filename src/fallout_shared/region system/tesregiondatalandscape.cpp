@@ -14,21 +14,25 @@ void __cdecl operator delete(void*);
 #include "../../../include/TESRegionData.h"
 #include "../../../include/TESRegionDataLandscape.h"
 // @fnv 0x004f2a20
-bool TESRegionDataLandscape::ReadLandscapeData(TESFile* file)
+// pdb: TESRegionDataLandscape::LoadRegionDataLandscape | TESRegionDataLandscape.obj | retail, vtable slot, high
+// pdb params: apFile
+// pdb locals: chunk
+bool TESRegionDataLandscape::ReadLandscapeData(TESFile* apFile)
 {
-    if (!file)
+    if (!apFile)
         return false;
-    unsigned int chunk = file->GetChunkID();
+    unsigned int chunk = apFile->GetChunkID();
     switch (chunk)
     {
     case 0x4e4f4349:
-        TESTexture::ReadTextureData(m_pLandscapeTexture, file);
+        TESTexture::ReadTextureData(m_pLandscapeTexture, apFile);
         break;
     }
     return true;
 }
 
 // @fnv 0x004f2790
+// pdb: TESRegionDataLandscape::TESRegionDataLandscape | TESRegionDataLandscape.obj | retail, unique string literal, high
 TESRegionDataLandscape::TESRegionDataLandscape()
 {
     m_pLandscapeTexture = new TESTexture;
@@ -58,6 +62,8 @@ struct FUN_004f32b0_Arg
 // Calls SetMaskedBits with the argument's val, 0x3000 and 0xc.
 // @fnv 0x004f32b0
 // src: XBOX_PDB 0x004f32b0
+// pdb: NiTexturingProperty::Map::SetClampMode | TESRegionDataLandscape.obj | debug, upstream name already matches, high
+// pdb params: eClampMode
 void __fastcall NiTexturingProperty_Map_SetClampMode(FUN_004f32b0_This* this_ptr, FUN_004f32b0_Arg aValue)
 {
     this_ptr->SetMaskedBits(aValue.val, 0x3000, 0xc);
@@ -70,6 +76,7 @@ struct LandscapeDeleter : TESRegionDataLandscape
 
 // Destroys the landscape, deletes it when flags has bit 0 set, and returns this.
 // @fnv 0x004f2840
+// pdb: TESRegionDataLandscape::`scalar deleting destructor' | TESRegionDataLandscape.obj | retail, vtable slot, high
 void* LandscapeDeleter::DestroyLandscape(unsigned int flags)
 {
     TESRegionDataLandscape::~TESRegionDataLandscape();
@@ -85,6 +92,7 @@ struct TextureDeleter : TESTexture
 
 // Destroys the TESTexture base and, when flags has bit 0 set, frees the object, returning this.
 // @fnv 0x004f29c0
+// pdb: TESTexture::`scalar deleting destructor' | TESRegionDataLandscape.obj | debug, call graph, medium
 void* __thiscall TextureDeleter::DestroyTexture(unsigned int flags)
 {
     TESTexture::~TESTexture();
@@ -102,12 +110,13 @@ struct LandscapeOperations : TESRegionDataLandscape
     bool HasModel();
     void SetFullName(BSStringT<char>& aDest);
     void SaveLandscapeData();
-    bool SetTextureName(const Flt& aName);
+    bool SetTextureName(const Flt& aCanopyShadowTexture);
     LandscapeCopy* CloneLandscapeData();
 };
 
 // Returns true if the landscape texture has a non-empty path.
 // @fnv 0x004f2eb0
+// pdb: TESRegionDataLandscape::Validate | TESRegionDataLandscape.obj | debug, vtable slot, medium
 bool __thiscall LandscapeOperations::HasModel()
 {
     if (!this->m_pLandscapeTexture || !this->m_pLandscapeTexture->GetTextureNameLength())
@@ -116,6 +125,10 @@ bool __thiscall LandscapeOperations::HasModel()
 }
 
 // @fnv 0x004f2a70
+// pdb: NiTexturingProperty::SetBaseClampMode | TESRegionDataLandscape.obj | retail, object-file run extension, low
+// pdb note: debug build links it to TESRegionDataLandscape::GetCanopyShadowTexture
+// pdb params: eMode
+// pdb locals: pkBaseMap
 void LandscapeOperations::SetFullName(BSStringT<char>& aDest)
 {
     if (!m_pLandscapeTexture)
@@ -125,6 +138,7 @@ void LandscapeOperations::SetFullName(BSStringT<char>& aDest)
 }
 
 // @fnv 0x004f29f0
+// pdb: TESRegionDataLandscape::Save | TESRegionDataLandscape.obj | retail, vtable slot, high
 void __thiscall LandscapeOperations::SaveLandscapeData()
 {
     TESRegionData::Save();
@@ -137,14 +151,16 @@ struct Flt
 };
 int __cdecl CompareTexturePaths(const char*, const char*);
 // @fnv 0x004f2ab0
-bool __thiscall LandscapeOperations::SetTextureName(const Flt& aName)
+// pdb: TESRegionDataLandscape::SetCanopyShadowTexture | TESRegionDataLandscape.obj | retail, vtable slot, high
+// pdb params: aCanopyShadowTexture
+bool __thiscall LandscapeOperations::SetTextureName(const Flt& aCanopyShadowTexture)
 {
     if (m_pLandscapeTexture)
     {
         if (!m_pLandscapeTexture->GetTextureNameLength() ||
-            CompareTexturePaths(m_pLandscapeTexture->GetTextureResourceName(), (const char*)aName.operator unsigned int()) != 0)
+            CompareTexturePaths(m_pLandscapeTexture->GetTextureResourceName(), (const char*)aCanopyShadowTexture.operator unsigned int()) != 0)
         {
-            m_pLandscapeTexture->AssignTextureName((const char*)aName.operator unsigned int());
+            m_pLandscapeTexture->AssignTextureName((const char*)aCanopyShadowTexture.operator unsigned int());
             return true;
         }
     }
@@ -162,7 +178,10 @@ extern GO g_011c7f0c;
 float RandomFloat(float, float);
 // Creates a 64x64 random RGBA NiPixelData, wraps it in a texturing property named DefaultFullMaskTextureProp, caches it in g_011c7f0c and returns it.
 // @fnv 0x004f2ee0
-NiTexturingProperty* GetDefaultFullMaskTextureProperty()
+// src: XBOX_RETAIL_PDB 0x004f2ee0
+// pdb: TESRegionDataLandscape::GetDefaultFullMaskTextureProp | TESRegionDataLandscape.obj | retail, string-set bridge, high
+// pdb locals: ppixeldata, ppixels, iy, myPrefs, ix
+NiTexturingProperty* TESRegionDataLandscape_GetDefaultFullMaskTextureProp()
 {
     NiPixelData* ppixeldata;
     unsigned char* ppixels;
@@ -203,6 +222,8 @@ class LandscapeCopy : public TESRegionData
 
 // Allocates a copy of this landscape region and its texture.
 // @fnv 0x004f2b10
+// pdb: TESRegionDataLandscape::Copy | TESRegionDataLandscape.obj | retail, vtable slot, high
+// pdb locals: pdata
 LandscapeCopy* LandscapeOperations::CloneLandscapeData()
 {
     LandscapeCopy* pdata = new LandscapeCopy(*(const LandscapeCopy*)this);
@@ -210,6 +231,7 @@ LandscapeCopy* LandscapeOperations::CloneLandscapeData()
 }
 
 // @fnv 0x004f2930
+// pdb: TESRegionDataLandscape::~TESRegionDataLandscape | TESRegionDataLandscape.obj | debug, upstream name already matches, high
 TESRegionDataLandscape::~TESRegionDataLandscape()
 {
     TextureDeleter* copy;
@@ -248,16 +270,19 @@ struct ThisT
     void FUN_004f15a0(int v);
     bool FUN_004f15c0(unsigned char v);
     unsigned char TESRegionData_GetPriority();
-    void __thiscall UpdateFromSource(ThisT* a1, int a2);
+    void __thiscall UpdateFromSource(ThisT* apRegionData, int aiTotalBlending);
 };
 
 // @fnv 0x004f2b90
-void __thiscall ThisT::UpdateFromSource(ThisT* a1, int a2)
+// pdb: TESRegionDataLandscape::BlendInto | TESRegionDataLandscape.obj | retail, vtable slot, high
+// pdb params: apRegionData, aiTotalBlending
+// pdb locals: pdataIn, strtemp, fnewPriority
+void __thiscall ThisT::UpdateFromSource(ThisT* apRegionData, int aiTotalBlending)
 {
-    ThisT* a1p = a1;
+    ThisT* a1p = apRegionData;
     BSStringT<char> str3;
     float f;
-    if (!a1 || a1->Slot04() != 5 || !a2)
+    if (!apRegionData || apRegionData->Slot04() != 5 || !aiTotalBlending)
         return;
     if (m_05)
     {
@@ -317,6 +342,7 @@ void __thiscall ThisT::UpdateFromSource(ThisT* a1, int a2)
 
 // Copy-constructs a landscape region, allocating a new texture and copying the source texture's path into it.
 // @fnv 0x004f2870
+// pdb: TESRegionDataLandscape::TESRegionDataLandscape | TESRegionDataLandscape.obj | retail, object-file run extension, low
 LandscapeCopy::LandscapeCopy(const LandscapeCopy& kOther) : TESRegionData(kOther)
 {
     m_pkTexture = new TESTexture;

@@ -3,6 +3,7 @@
 #include "bhkEntityListener.h"
 #include "hkpPhantomListener.h"
 
+// pdb: class bhkTrapListener, size 0x18 (here 0x8), bases: bhkEntityListener, hkpPhantomListener, 0 members
 class bhkTrapListener : public bhkEntityListener, public hkpPhantomListener
 {
 public:

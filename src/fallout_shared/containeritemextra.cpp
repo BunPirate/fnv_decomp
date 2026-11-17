@@ -23,6 +23,7 @@ struct ContainerItemExtraFileData
 
 // members without the member functions matched in this unit.
 #pragma pack(push, 4)
+// pdb: class ContainerItemExtra, size 0xc, 5 members
 class ContainerItemExtra
 {
   public:
@@ -36,7 +37,7 @@ class ContainerItemExtra
     float m_fHealth;
 
     ContainerItemExtra();
-    bool Load(TESFile* file);
+    bool Load(TESFile* apFile);
     bool Compare(ContainerItemExtra* other);
     void Copy(ContainerItemExtra* other);
     bool IsDefault();
@@ -59,16 +60,19 @@ ContainerItemExtra::ContainerItemExtra()
 }
 
 // @fnv 0x0040e780
-bool ContainerItemExtra::Load(TESFile* file)
+// pdb: ContainerItemExtra::Load | ContainerItemExtra.obj | retail, upstream name already matches, high
+// pdb params: apFile
+// pdb locals: bsuccess, loaddata
+bool ContainerItemExtra::Load(TESFile* apFile)
 {
     bool loaded = false;
-    if (file)
+    if (apFile)
     {
-        if (file->GetChunkID() == kContainerItemExtraChunk)
+        if (apFile->GetChunkID() == kContainerItemExtraChunk)
         {
             ContainerItemExtraFileData fileData;
-            file->GetChunkData(&fileData, sizeof(fileData));
-            if (file->IsEndianConversionRequired())
+            apFile->GetChunkData(&fileData, sizeof(fileData));
+            if (apFile->IsEndianConversionRequired())
                 fileData.Endian();
             m_pForm = fileData.m_pForm;
             m_uiRankFlags = fileData.m_cRank;
@@ -120,12 +124,14 @@ bool ContainerItemExtra::IsDefault()
 // src: XBOX_PDB 0x0042e680
 void TESLeveledList::ExtraWeaponModFlags_SetWeaponModFlags(unsigned char chance)
 {
-    m_pChanceGlobal = chance;
+    cChanceNone = chance;
 }
 
 // Returns whether the absolute difference between aX and aY is less than afPrecision, or false if afPrecision is negative.
 // @fnv 0x0040eb10
 // src: XBOX_PDB 0x0040eb10
+// pdb: ContainerItemExtra::Save | ContainerItemExtra.obj | retail, object-file run extension, low
+// pdb locals: savedata, pglobal
 bool __cdecl FloatEQ(float aX, float aY, float afPrecision)
 {
     if (afPrecision < 0.0)
@@ -146,6 +152,8 @@ float __cdecl BSMIN(float, float);
 
 // @fnv 0x0040eb90
 // src: COMMUNITY 0x0040eb90
+// pdb: ContainerItemExtra::AdjustHealthPercent | ContainerItemExtra.obj | debug, upstream name already matches, high
+// pdb params: afHealthPerc
 void FUN_0040eb90_shell::ContainerItemExtra_AdjustHealthPercent(float afHealthPerc)
 {
     m_fHealth = BSMAX_00404010(0.0f, BSMIN(1.0f, afHealthPerc));
@@ -165,6 +173,7 @@ bool TESForm_QEndianSwapOnSave();
 void AppendChunk(int, void*, int);
 
 // @fnv 0x0040e6c0
+// pdb: CONTAINER_ITEM_EXTRA::Endian | ContainerItemExtra.obj | debug, object-file run extension, low
 void Holder0040e9f0::WriteToChunk()
 {
     if (reinterpret_cast<ContainerItemExtra*>(this)->IsDefault())

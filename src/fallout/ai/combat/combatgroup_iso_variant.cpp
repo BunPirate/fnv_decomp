@@ -98,12 +98,12 @@ struct FUN_00986c40_shell
 };
 struct FUN_0096a2b0_stub
 {
-    void BSSimpleArray_CombatTarget_1024_GetAt(int state);
+    void BSSimpleArray_CombatTarget_1024_GetAt(int aiIndex);
 };
 
 struct FUN_009871c0_shell
 {
-    void CombatGroup_GetCombatTarget(int state);
+    void CombatGroup_GetCombatTarget(int aiIndex);
 };
 extern double _gModifierZero;
 struct FUN_009871e0_shell
@@ -117,7 +117,7 @@ struct CombatgroupOffset08View
 };
 struct FUN_009877c0_shell : CombatgroupOffset08View
 {
-    unsigned int GetFlagsFromSubobject();
+    unsigned int CombatGroup_GetClusterCount();
 };
 struct GlobalObject_00869f00
 {
@@ -137,13 +137,13 @@ struct FUN_0098ebc0_obj
 };
 struct FUN_00988770_shell
 {
-    void __thiscall ForwardToMember(int a1);
+    void __thiscall ForwardToMember(int aiIndex);
 };
 struct FUN_00988790_shell
 {
     char pad[0x18];
     BSSimpleArray<NavMeshSearchNode*> m_aiIndexedValues;
-    void CombatGroup_GetCombatMember(unsigned int idx) const;
+    void CombatGroup_GetCombatMember(unsigned int aiIndex) const;
 };
 // src: XBOX_PDB 0x009865d0
 void* __thiscall ActorCombatGroup::CombatGroup_GetCombatTargetForActor(int)
@@ -153,22 +153,22 @@ void* __thiscall ActorCombatGroup::CombatGroup_GetCombatTargetForActor(int)
 struct FUN_0098a310_shell
 {
     int m_field;
-    int __thiscall GetFieldOrZero(int param);
+    int __thiscall CombatGroup_GetMemberGroupStrategyAssignment(int apMember);
 };
 struct FUN_009865f0_stub
 {
     int m_kPointA;
     int m_field;
-    FUN_009865f0_stub* __thiscall CombatGroup_GetCombatMemberForActor(int param);
+    FUN_009865f0_stub* __thiscall CombatGroup_GetCombatMemberForActor(int apActor);
 };
 struct FUN_009865f0_shell
 {
-    int __thiscall CombatGroup_GetCombatMemberForActor(int a1);
+    int __thiscall CombatGroup_GetCombatMemberForActor(int apActor);
 };
 
 struct FUN_0098a360_shell
 {
-    void __thiscall CombatGroup_SetMemberGroupStrategyAssignment(int a1, int a2);
+    void __thiscall CombatGroup_SetMemberGroupStrategyAssignment(int apMember, int aiGroupStrategyAssignment);
 };
 struct FUN_0098de60_shell
 {
@@ -199,11 +199,11 @@ struct FUN_00985a50_shell
     float f8;
     float fc;
     void* p10;
-    void CombatMember_LoadGame(BGSLoadFormBuffer* buffer, FUN_0098de60_shell* obj);
+    void CombatMember_LoadGame(BGSLoadFormBuffer* apLoadGameBuffer, FUN_0098de60_shell* apGroup);
 };
 struct FUN_00985ae0_shell
 {
-    void __thiscall CombatGroupCluster_SaveGame(BGSSaveFormBuffer* buffer, int a1);
+    void __thiscall CombatGroupCluster_SaveGame(BGSSaveFormBuffer* apSaveGameBuffer, int apGroup);
 };
 struct FUN_00985b10_shell
 {
@@ -239,7 +239,7 @@ struct FUN_009863b0
 };
 struct FUN_009865b0_shell : ActorCombatGroup
 {
-    bool CombatGroup_IsTarget(int param);
+    bool CombatGroup_IsTarget(int apActor);
 };
 struct FUN_00986950_shell
 {
@@ -252,11 +252,11 @@ struct FUN_00986950_shell
 };
 struct FUN_00986a80_shell : public FUN_009865f0_shell
 {
-    char __thiscall CombatGroup_IsMember(int param);
+    char __thiscall CombatGroup_IsMember(int apActor);
 };
 struct FUN_009874b0_shell : ActorCombatGroup
 {
-    void __thiscall CombatGroup_IncrementAttackerCount(int a1);
+    void __thiscall CombatGroup_IncrementAttackerCount(int apTarget);
 };
 struct S_009874f0
 {
@@ -283,8 +283,9 @@ CombatTargetTimestamp* __fastcall CombatTargetTimestamp_ClearTimeStamp(CombatTar
 struct MyClass
 {
     int GetResultForArg(int arg);
-    void UpdateTargetPerception(int a1, int a2, int* a3, CombatTargetTimestamp* a4, bool* a5, bool* a6);
+    void CombatGroup_GetTargetDetectionLevel(int apAttacker, int apTarget, int* a3, CombatTargetTimestamp* arfLastTargetDetectedTimeStamp, bool* arbTargetLineOfSight, bool* arbTarget360LineOfSight);
 };
+// pdb: class Calendar, size 0x1c (here 0x1), 7 members
 struct Calendar
 {
     unsigned int __thiscall GetDaysPassed();
@@ -297,7 +298,7 @@ struct FUN_009891d0_class
 {
     char _pad[0x28];
     int m28;
-    void __thiscall CombatGroup_NotifyMemberPlanFinished(TESAmmoInitCalls* p1, Calendar* p2);
+    void __thiscall CombatGroup_NotifyMemberPlanFinished(TESAmmoInitCalls* apCombatController, Calendar* apGoal);
 };
 struct Ref_997440
 {
@@ -305,8 +306,8 @@ struct Ref_997440
 };
 struct S989970
 {
-    void __thiscall FindClosestRef(int v);
-    void __thiscall CombatGroup_FindClosestMemberToActor(Ref_997440* p, float f);
+    void __thiscall CombatGroup_FindClosestMemberToLocation(int arWorldLoc);
+    void __thiscall CombatGroup_FindClosestMemberToActor(Ref_997440* apActor, float afMaxDistance);
 };
 struct B16
 {
@@ -323,7 +324,7 @@ struct FUN_0098a410_shell
 {
     unsigned int __thiscall GetCount();
     void* __thiscall GetIntAt(int);
-    void* FindByValue(unsigned int value);
+    void* CombatGroup_FindMemberWithStrategyAssignment(unsigned int aiAssigment);
 };
 extern int DAT_011f18b4[];
 int __cdecl CombatGroupStrategies_GetStrategy(int index);
@@ -350,16 +351,16 @@ struct FUN_00985bb0_Class
 struct FUN_00986560_shell
 {
     char pad[8];
-    void __thiscall CombatGroup_RemoveTarget(int a1);
+    void __thiscall CombatGroup_RemoveTarget(int apActor);
 };
 struct FUN_0098ef10_shell
 {
-    void* __thiscall BSSimpleArray_CombatTarget_1024_RemoveFast(int a1);
+    void* __thiscall BSSimpleArray_CombatTarget_1024_RemoveFast(int aiIndex);
     void __thiscall BSSimpleArray_CombatTarget_1024_RemoveFast(int a1, int a2);
 };
 struct FUN_009926e0_shell
 {
-    void __thiscall SwapAndDispatch(void* a, void* b);
+    void __thiscall CombatManager_NotifyCombatGroupRemovedTarget(void* apGroup, void* apTarget);
 };
 extern void* BGSSaveLoadGlobalDataWorldspacePtr;
 struct RefObj
@@ -671,15 +672,15 @@ struct FUN_0098a3c0_shell
 };
 struct FUN_0098c590_shell
 {
-    CombatSearchDoor* FindParentSpaceNode(int param);
+    CombatSearchDoor* CombatGroup_GetCombatSearchDoor(int apDoor);
 };
 struct FUN_0098c780_shell
 {
-    void ClearReservedFlag(int param);
+    void CombatGroup_UnreserveSearchDoor(int apDoor);
 };
 struct FUN_0098ed60_shell : GlobalObject_00869f00
 {
-    void __thiscall ResetVirtualTableAndClear_0098ed60();
+    void __thiscall BSSimpleArray_CombatTarget_1024_dtor();
 };
 struct S0098a4d0
 {
@@ -690,7 +691,7 @@ struct FUN_00990500_host
     S0098a4d0* p0;
     char pad[16];
     float f14;
-    float __thiscall GetCachedValue();
+    float __thiscall CombatGroupData_GetMemberHealthPercentage();
 };
 extern Setting originalRuntimeFloatSetting403;
 extern Setting originalRuntimeFloatSetting404;
@@ -720,7 +721,7 @@ struct FUN_0098de30_class
 };
 struct FUN_009859c0_shell
 {
-    void __thiscall CombatMember_SaveGame(BGSSaveFormBuffer* buffer, FUN_0098de30_class* obj);
+    void __thiscall CombatMember_SaveGame(BGSSaveFormBuffer* apSaveGameBuffer, FUN_0098de30_class* apGroup);
 };
 struct ActorV
 {
@@ -874,18 +875,18 @@ struct FUN_0098f040_shell
 };
 struct FUN_00986500_shell : ActorCombatGroup
 {
-    void CombatGroup_RemoveTarget(int i);
+    void CombatGroup_RemoveTarget(int apActor);
     void RemoveByTarget(int target);
 };
 struct FUN_0096a2b0_stub2
 {
-    CombatTarget* BSSimpleArray_CombatTarget_1024_GetAt(int i);
+    CombatTarget* BSSimpleArray_CombatTarget_1024_GetAt(int aiIndex);
 };
 struct FUN_00986610_shell
 {
     char pad[8];
     BSSimpleArray<CombatClusterMember> arr;
-    void* CombatGroup_GetCombatTargetForNumericID(unsigned int value);
+    void* CombatGroup_GetCombatTargetForNumericID(unsigned int aiTargetID);
 };
 struct XIdle;
 struct XArr
@@ -916,7 +917,7 @@ class CoordinateTriple
 struct FUN_00527ba0_Class
 {
     char pad[0x10];
-    void __thiscall BGSLoadGameBuffer_LoadBGSWorldLocation(void* pBuffer);
+    void __thiscall BGSWorldLocation_LoadGame(void* pBuffer);
 };
 struct CombatTimeStampLoadGame
 {
@@ -1389,9 +1390,9 @@ struct FUN_0097fa50_Class
 struct FUN_00986150_shell
 {
     void CombatGroup_Update();
-    void RecountActors();
+    void CombatGroup_UpdateCounts();
     void CombatGroup_UpdateTargets();
-    void UpdateChoiceSelection();
+    void CombatGroup_UpdateGroupStrategy();
     void CombatGroup_UpdateSearch();
     void CombatGroup_UpdateCombatStrength();
     void UpdateGroups();
@@ -1517,13 +1518,13 @@ struct FUN_00986740_shell
     void* unk04;
     BSSimpleArray<unsigned int> arr;
 
-    void __thiscall CombatGroup_CopyTargets(FUN_00986740_shell* other);
+    void __thiscall CombatGroup_CopyTargets(FUN_00986740_shell* apGroup);
 };
 struct FUN_00986760_sub
 {
     unsigned int __thiscall FUN_0044ddc0(int flag);
     unsigned int __thiscall FUN_0044ddc0();
-    void* __thiscall BSSimpleArray_CombatTarget_1024_GetAt(int i);
+    void* __thiscall BSSimpleArray_CombatTarget_1024_GetAt(int aiIndex);
 };
 struct FUN_00986760_arg
 {
@@ -1545,7 +1546,7 @@ struct Group_987820
     unsigned int GetCount();
     Actor* GetAt(int idx);
     void RemoveByTarget(Actor* apTarget);
-    void CombatGroup_ClearReferencePointers(Actor* apTarget);
+    void CombatGroup_ClearReferencePointers(Actor* apRef);
 };
 struct ResultQuad
 {
@@ -1637,7 +1638,7 @@ struct AvoidWork
 {
     unsigned PathingSolution_GetVirtualNodeCount();
     AvoidActor* CombatGroup_GetTarget(unsigned);
-    PathingAvoidNodeArray* BuildAvoidNodes(AvoidActor*, PathingAvoidNodeArray*);
+    PathingAvoidNodeArray* CombatGroup_CreateFleeAvoidNodeArray(AvoidActor*, PathingAvoidNodeArray*);
 };
 struct B9897F0Quad
 {
@@ -1656,7 +1657,7 @@ class B9897F0List
   public:
     unsigned int GetCount();
     Actor* GetAt(unsigned int uiIndex);
-    Actor* CombatGroup_FindMemberNearLocation(B9897F0Point* pkPoint, float fRadius, Actor* pkExclude);
+    Actor* CombatGroup_FindMemberNearLocation(B9897F0Point* arWorldLoc, float fRadius, Actor* apIgnoreMember);
 };
 // Builds a 16 byte result block from the actor, then hands it to the group
 // helper together with the radius and the actor.
@@ -1671,7 +1672,7 @@ struct LocalResult16
 // Group side: takes the result block, the radius and the actor.
 struct GroupRef00989880
 {
-    void* __thiscall CombatGroup_FindMemberNearLocation(int aResult, float aRadius, Actor* pActor);
+    void* __thiscall CombatGroup_FindMemberNearLocation(int arWorldLoc, float aRadius, Actor* apIgnoreMember);
 };
 extern NiPoint3 NiPoint3_ZERO;
 extern "C" void* _alloca(unsigned int size);
@@ -1833,7 +1834,7 @@ struct Blk_00989e20_cls
 struct FUN_00989e20_cls
 {
     void ExpandBounds(NiPoint3* arr, int n);
-    void CombatGroup_ComputeMemberBoundingSphere(NiPoint3* out);
+    void CombatGroup_ComputeMemberBoundingSphere(NiPoint3* arCenter);
 };
 struct BoundsVector
 {
@@ -1974,7 +1975,7 @@ struct BoundsGroup
 {
     unsigned int CombatGroup_GetMemberCount();
     BoundsActor* GetIntAt(unsigned int index);
-    void ExpandBounds(BoundsVector* points, bool append);
+    void CombatGroup_ComputeMemberBoundingBox(BoundsVector* apCorners, bool abAlreadyInitialized);
 };
 struct SearchNodeArrayOwner
 {
@@ -2335,8 +2336,8 @@ struct ActorObj
 struct ItemList
 {
     unsigned int GetCount();
-    ItemObj* GetAt(unsigned int i);
-    ItemObj* FindBestItem(ActorObj* actor, unsigned char thresh, ItemObj* target);
+    ItemObj* GetAt(unsigned int aiIndex);
+    ItemObj* CombatGroup_FindSearchLocation(ActorObj* apMember, unsigned char acMinScore, ItemObj* apCurrentSearchLocation);
 };
 struct CombatEntryObj
 {
@@ -2607,7 +2608,7 @@ struct CombatEntryObj
     virtual void vfn_420();
     virtual void vfn_424();
     virtual void* vfn_428();
-    bool Actor_GetCurrentPathfindingGoal(struct Probe16* p);
+    bool Actor_GetCurrentPathfindingGoal(struct Probe16* apRetLocation);
 };
 struct Probe16
 {
@@ -2616,7 +2617,7 @@ struct Probe16
 };
 struct RefTarget
 {
-    bool FUN_00981420();
+    bool CombatController_IsSearching();
 };
 struct CombatGroupTarget
 {
@@ -2693,7 +2694,7 @@ struct FUN_0098cb30_cls
     int unkBC;
     float m_c0;
     unsigned int CombatGroup_GetMemberCount();
-    FUN_0098cb30_obj* CombatGroup_GetCombatMember(unsigned int idx);
+    FUN_0098cb30_obj* CombatGroup_GetCombatMember(unsigned int aiIndex);
     float GetModifierSum(Actor* a1);
 };
 extern double _gModifierZero;
@@ -3115,7 +3116,7 @@ struct MergeMember
 struct MergeTargets : CombatgroupOffset08View
 {
     unsigned int unk00, unk04, unk08, unk0c;
-    MergeTarget* BSSimpleArray_CombatTarget_1024_GetAt(unsigned int index);
+    MergeTarget* BSSimpleArray_CombatTarget_1024_GetAt(unsigned int aiIndex);
 };
 struct MergeMembers : CombatgroupOffset08View
 {
@@ -3207,16 +3208,16 @@ struct ActorMergeData
     char state;
     MergeTargets* FUN_00413f40();
     MergeMembers* FUN_00500940();
-    bool CombatGroup_CanAddTarget(MergeActor* actor);
+    bool CombatGroup_CanAddTarget(MergeActor* apActor);
     bool CombatGroup_AddMember(MergeActor* actor);
-    bool CombatGroup_AddTarget(MergeActor* actor);
-    MergeMember* CombatGroup_GetCombatMemberForActor(MergeActor* actor);
-    MergeTarget* CombatGroup_GetCombatTargetForActor(MergeActor* actor);
-    char GetFlagsFromSubobject();
+    bool CombatGroup_AddTarget(MergeActor* apActor);
+    MergeMember* CombatGroup_GetCombatMemberForActor(MergeActor* apActor);
+    MergeTarget* CombatGroup_GetCombatTargetForActor(MergeActor* apActor);
+    char CombatGroup_GetClusterCount();
     int GetArrayItem(unsigned char index);
     void ClearGlobalObject();
     char GetByteAtOffset154();
-    bool MergeFrom(ActorMergeData* other);
+    bool CombatGroup_MergeGroup(ActorMergeData* apCombatGroup);
 };
 struct DebugPoint
 {
@@ -3755,7 +3756,7 @@ DebugNode* BSTestObjects_Create3DArrow(const DebugPoint&, const DebugPoint&, flo
 DebugNode* BSTestObjects_CreateCircle(float, int, const DebugColor*);
 DebugNode* BSTestObjects_CreateCappedCylinder(float, float, float, int, int, const DebugColor*);
 DebugNode* BSTestObjects_CreateSphere(float, int, int, const DebugColor*);
-void AttachLightingPropertyRecursive(DebugNode*);
+void AddNoLightingPropertyRecurse(DebugNode*);
 void FUN_00b57e30(DebugNode*, int, int);
 struct DebugGroup
 {
@@ -4310,12 +4311,16 @@ struct Group
     unsigned int CombatGroup_GetMemberCount();
     Actor* GetIntAt(unsigned int);
     bool CombatGroup_IsSearching();
-    void StoreRecord(Position*, float, int);
-    void UpdateTargetPerception(Actor*, Actor*, int*, Time*, bool*, bool*);
+    void CombatGroup_AddSearchLocation(Position*, float, int);
+    void CombatGroup_GetTargetDetectionLevel(Actor*, Actor*, int*, Time*, bool*, bool*);
 };
 // @fnv 0x009887b0
-void Group::UpdateTargetPerception(Actor* selected, Actor* subject, int* result, Time* timestamp, bool* visible,
-                                   bool* detected)
+// src: XBOX_RETAIL_PDB 0x009887b0
+// pdb: CombatGroup::GetTargetDetectionLevel | CombatGroup.obj | retail, call graph (shared callers), high
+// pdb params: apAttacker, apTarget, ariDetectionLevel, arfLastTargetDetectedTimeStamp, arbTargetLineOfSight, arbTarget360LineOfSight
+// pdb locals: pcombatTarget, icurrentDetectionLevel, pbestDetectingMember, lastDetectedLocation, targetLoc, flastDetectedTime, imemberCount, inewDetectionLevel, bfindLastDetectedLocation, idetectionEventLevel, i, pmember, pdetection, detectionState, memberLoc, pcombatController, idetectionLevel, pdetectionEvent, fscore, worldLoc
+void Group::CombatGroup_GetTargetDetectionLevel(Actor* apAttacker, Actor* apTarget, int* result, Time* arfLastTargetDetectedTimeStamp, bool* arbTargetLineOfSight,
+                                   bool* arbTarget360LineOfSight)
 {
     Time temp4Local2;
     Time temp3Local31;
@@ -4347,12 +4352,12 @@ void Group::UpdateTargetPerception(Actor* selected, Actor* subject, int* result,
     int previousLocal5;
     Target* targetLocal40;
 
-    *visible = false;
-    *detected = false;
+    *arbTargetLineOfSight = false;
+    *arbTarget360LineOfSight = false;
     *result = -100;
     temp0Local20.FUN_00435de0(-DAT_0108d540);
-    *timestamp = temp0Local20;
-    targetLocal40 = CombatGroup_GetCombatTargetForActor(subject);
+    *arfLastTargetDetectedTimeStamp = temp0Local20;
+    targetLocal40 = CombatGroup_GetCombatTargetForActor(apTarget);
     if (targetLocal40)
     {
         previousLocal5 = targetLocal40->score;
@@ -4372,12 +4377,12 @@ void Group::UpdateTargetPerception(Actor* selected, Actor* subject, int* result,
             for (indexLocal5 = 0; indexLocal5 < countLocal20; indexLocal5++)
             {
                 memberLocal19 = GetIntAt(indexLocal5);
-                senseLocal1 = reinterpret_cast<Process*>(memberLocal19->FUN_008d8520())->v504(subject, 0);
+                senseLocal1 = reinterpret_cast<Process*>(memberLocal19->FUN_008d8520())->v504(apTarget, 0);
                 fallbackLocal15.FUN_0066e590();
-                if (memberLocal19->FUN_00931850() && subject->FUN_00931850())
+                if (memberLocal19->FUN_00931850() && apTarget->FUN_00931850())
                 {
                     memberLocal19->TESObjectREFR_GetWorldLocation(reinterpret_cast<::Position*>(&originLocal30));
-                    subject->TESObjectREFR_GetWorldLocation(reinterpret_cast<::Position*>(&destinationLocal23));
+                    apTarget->TESObjectREFR_GetWorldLocation(reinterpret_cast<::Position*>(&destinationLocal23));
                     if (originLocal30.BGSWorldLocation_GetDistanceSquared(&destinationLocal23) < 67108864.0)
                     {
                         fallbackLocal15.score = 1;
@@ -4390,10 +4395,10 @@ void Group::UpdateTargetPerception(Actor* selected, Actor* subject, int* result,
                         targetLocal40->visibleCount++;
                     if (senseLocal1->detected)
                         targetLocal40->detectedCount++;
-                    if (memberLocal19 == selected)
+                    if (memberLocal19 == apAttacker)
                     {
-                        *visible = senseLocal1->visible;
-                        *detected = senseLocal1->detected;
+                        *arbTargetLineOfSight = senseLocal1->visible;
+                        *arbTarget360LineOfSight = senseLocal1->detected;
                     }
                     scoreLocal7 = senseLocal1->score;
                     if (senseLocal1->score20 != 0x7fffffff)
@@ -4405,8 +4410,8 @@ void Group::UpdateTargetPerception(Actor* selected, Actor* subject, int* result,
                             scoreLocal7 = (int)*DAT_011cd45c.Setting_Float_00403e20();
                     }
                     stateLocal7 = reinterpret_cast<CombatState*>(memberLocal19->GetCombatController());
-                    if (!stateLocal7 || stateLocal7->CombatController_GetTarget() != subject ||
-                        stateLocal7->CombatController_GetCombatState(memberLocal19, subject)->CombatState_CheckShouldUpdateDetection())
+                    if (!stateLocal7 || stateLocal7->CombatController_GetTarget() != apTarget ||
+                        stateLocal7->CombatController_GetCombatState(memberLocal19, apTarget)->CombatState_CheckShouldUpdateDetection())
                     {
                         if (senseLocal1 && scoreLocal7 > maximumLocal6)
                         {
@@ -4434,7 +4439,7 @@ void Group::UpdateTargetPerception(Actor* selected, Actor* subject, int* result,
             if (CombatGroup_IsSearching() && previousLocal5 <= 0 && maximumLocal6 > 0)
             {
                 if (targetLocal40->activeTime.AStarSearch_EvaluateValue_006a7f50() != -DAT_0108d540)
-                    DAT_011f1708->TryStartDialogue(bestLocal4, subject, 4, 9, 1, 0);
+                    DAT_011f1708->TryStartDialogue(bestLocal4, apTarget, 4, 9, 1, 0);
                 else
                 {
                     for (index2Local31 = 0; index2Local31 < countLocal20; index2Local31++)
@@ -4443,7 +4448,7 @@ void Group::UpdateTargetPerception(Actor* selected, Actor* subject, int* result,
                         if (member2Local23 != DAT_011dea3c)
                             Script_SetActionFlag(member2Local23->GetCombatTarget(), member2Local23->BSFile_GetDevice(), 0x8000);
                     }
-                    DAT_011f1708->TryStartDialogue(bestLocal4, subject, 4, 3, 1, 0);
+                    DAT_011f1708->TryStartDialogue(bestLocal4, apTarget, 4, 3, 1, 0);
                 }
             }
             targetLocal40->score = maximumLocal6;
@@ -4451,7 +4456,7 @@ void Group::UpdateTargetPerception(Actor* selected, Actor* subject, int* result,
                 temp1Local7.FUN_00435de0(CombatTimer_GetTimer());
                 targetLocal40->updateTime = temp1Local7;
             }
-            subject->TESObjectREFR_GetWorldLocation(reinterpret_cast<::Position*>(&currentLocal8));
+            apTarget->TESObjectREFR_GetWorldLocation(reinterpret_cast<::Position*>(&currentLocal8));
             if (maximumLocal6 > 0)
             {
                 temp2Local6.FUN_00435de0(CombatTimer_GetTimer());
@@ -4480,7 +4485,7 @@ void Group::UpdateTargetPerception(Actor* selected, Actor* subject, int* result,
             }
             if (highestLocal52 > *DAT_011cd45c.Setting_Float_00403e20() && CombatGroup_IsSearching())
             {
-                hitLocal9 = reinterpret_cast<Process*>(subject->FUN_008d8520())->vf8(subject);
+                hitLocal9 = reinterpret_cast<Process*>(apTarget->FUN_008d8520())->vf8(apTarget);
                 if (hitLocal9 && hitLocal9->time.FUN_00435e00() < 5.0 &&
                     hitLocal9->time.AStarSearch_EvaluateValue_006a7f50() > targetLocal40->hitTime.AStarSearch_EvaluateValue_006a7f50())
                 {
@@ -4490,23 +4495,23 @@ void Group::UpdateTargetPerception(Actor* selected, Actor* subject, int* result,
                     else
                         strengthLocal6 = (highestLocal52 - (int)*DAT_011cd45c.Setting_Float_00403e20()) / 2.0 + 40.0;
                     impactLocal48.BGSWorldLocation_BGSWorldLocation();
-                    impactLocal48.SetTripleAndValue(&hitLocal9->point, subject->TESObjectREFR_GetSpace());
-                    StoreRecord(&impactLocal48, strengthLocal6, 0);
+                    impactLocal48.SetTripleAndValue(&hitLocal9->point, apTarget->TESObjectREFR_GetSpace());
+                    CombatGroup_AddSearchLocation(&impactLocal48, strengthLocal6, 0);
                     targetLocal40->hitTime = hitLocal9->time;
                 }
             }
         }
         else
         {
-            reusedLocal18 = selected ? reinterpret_cast<Process*>(selected->FUN_008d8520())->v504(subject, 0) : 0;
+            reusedLocal18 = apAttacker ? reinterpret_cast<Process*>(apAttacker->FUN_008d8520())->v504(apTarget, 0) : 0;
             if (reusedLocal18)
             {
-                *visible = reusedLocal18->visible;
-                *detected = reusedLocal18->detected;
+                *arbTargetLineOfSight = reusedLocal18->visible;
+                *arbTarget360LineOfSight = reusedLocal18->detected;
             }
         }
         *result = targetLocal40->score;
-        *timestamp = targetLocal40->activeTime;
+        *arfLastTargetDetectedTimeStamp = targetLocal40->activeTime;
     }
 }
 }
@@ -4666,9 +4671,9 @@ struct AvoidMember9892
 struct FUN_009892a0_shell
 {
     unsigned int PathingSolution_GetVirtualNodeCount();
-    AvoidMember9892* CombatGroup_GetTarget(unsigned int uiIndex);
-    PathingAvoidNodeArray* CombatGroup_CreateMovementAvoidNodeArray(AvoidMember9892* pActor, const Pos9892* pTarget, float fRadius,
-                                        PathingAvoidNodeArray* pAvoidArray, AvoidMember9892* pIgnore);
+    AvoidMember9892* CombatGroup_GetTarget(unsigned int aiIndex);
+    PathingAvoidNodeArray* CombatGroup_CreateMovementAvoidNodeArray(AvoidMember9892* apActor, const Pos9892* arDestination, float afExtraRadius,
+                                        PathingAvoidNodeArray* apExistingAvoidNodeArray, AvoidMember9892* apIgnoreActor);
 };
 namespace CombatRegion {
 struct Group;
@@ -4887,6 +4892,8 @@ struct Group
 };
 // @fnv 0x0098a580
 // src: XBOX_PDB 0x0098a580
+// pdb: CombatGroup::UpdateSearch | CombatGroup.obj | retail, upstream name already matches, high
+// pdb locals: bdontSearch, itargetCount, i, pcombatTarget, ilostTargetCount, itargetedTargets, pmember, bsearchAreaChanged, idialogueMember, imemberCount, ptarget, pcell, pworld, closestPoint, searchPathingCenter, Headings, Locations, memberPathingLocation, fseenPercent
 void Group::CombatGroup_UpdateSearch()
 {
     if (capacity)
@@ -5116,7 +5123,7 @@ class CE80Group
 
     unsigned int GetCount();
     Actor* GetAt(int iIndex);
-    void RecountActors();
+    void CombatGroup_UpdateCounts();
 };
 struct LoadPair
 {
@@ -5148,7 +5155,7 @@ struct LoadExtra
     LoadRef ref;
     int id;
     int value;
-    void BGSLoadGameBuffer_LoadBGSWorldLocation(BGSLoadFormBuffer*);
+    void BGSWorldLocation_LoadGame(BGSLoadFormBuffer*);
 };
 struct ParentNode
 {
@@ -5222,7 +5229,7 @@ struct ArrParents
 struct LoadHandle
 {
     int x0, x4, x8, xc;
-    void BGSLoadGameBuffer_LoadBGSWorldLocation(BGSLoadFormBuffer*);
+    void BGSWorldLocation_LoadGame(BGSLoadFormBuffer*);
 };
 struct GroupLoad
 {
@@ -5272,7 +5279,7 @@ struct GroupLoad
     int unk14c;
     int unk150;
     char flag154;
-    void CombatGroup_LoadGame(BGSLoadFormBuffer* buffer);
+    void CombatGroup_LoadGame(BGSLoadFormBuffer* apLoadGameBuffer);
 };
 struct UpdateOwner;
 struct UpdateElement
@@ -5355,7 +5362,7 @@ struct UpdateOwner
         Actor* actor;
     } reference;
     bool CombatGroup_IsSearching();
-    void RecountActors();
+    void CombatGroup_UpdateCounts();
     void UpdateElements(unsigned int);
 };
 struct CFUN98fb40Elem
@@ -5393,7 +5400,7 @@ struct OtherState
     ScoreValue GetValue98();
     bool GetHasBufferedDetection_0097ee90();
     bool IsModifierZero();
-    bool HasItemWithinRadius(const PoseData*, float);
+    bool CombatState_IsLocationUnreachable(const PoseData*, float);
 };
 struct MovementPose
 {
@@ -5715,8 +5722,8 @@ struct ActorPicker
     void CombatGroup_RemoveMember(ActorSelect*);
     int PathingSolution_GetVirtualNodeCount();
     CandidateLink* CombatGroup_GetCombatTarget(unsigned int);
-    void UpdateTargetPerception(ActorSelect*, ActorSelect*, int*, ScoreValue*, bool*, bool*);
-    ActorSelect* SelectActor(ActorSelect*);
+    void CombatGroup_GetTargetDetectionLevel(ActorSelect*, ActorSelect*, int*, ScoreValue*, bool*, bool*);
+    ActorSelect* CombatGroup_GetBestTarget(ActorSelect*);
 };
 struct B989700Entry
 {
@@ -5726,14 +5733,14 @@ struct B989700Entry
 struct B989700List
 {
     unsigned int PathingSolution_GetVirtualNodeCount();
-    B989700Entry* CombatGroup_GetCombatTarget(unsigned int uiIndex);
-    Actor* FindRefInRadius(B9897F0Point* pkPoint, float fRadius, bool bCheck);
+    B989700Entry* CombatGroup_GetCombatTarget(unsigned int aiIndex);
+    Actor* FindRefInRadius(B9897F0Point* arWorldLoc, float fRadius, bool abDetectedOnly);
 };
 struct B9898B0Group
 {
     unsigned int CombatGroup_GetMemberCount();
     Actor* GetIntAt(unsigned int uiIndex);
-    Actor* FindClosestRef(B9897F0Point* pkPoint, Actor* pkExclude, float fRadius);
+    Actor* CombatGroup_FindClosestMemberToLocation(B9897F0Point* arWorldLoc, Actor* apIgnoreMember, float afMaxDistance);
 };
 struct AssessmentSub
 {
@@ -5814,9 +5821,9 @@ struct TargetAssessmentGroup
     float unkCC;
 
     unsigned int CombatGroup_GetMemberCount();
-    TargetAssessmentEntry* CombatGroup_GetCombatMember(unsigned int idx);
+    TargetAssessmentEntry* CombatGroup_GetCombatMember(unsigned int aiIndex);
     unsigned int PathingSolution_GetVirtualNodeCount();
-    AssessmentActor* CombatGroup_GetTarget(unsigned int idx);
+    AssessmentActor* CombatGroup_GetTarget(unsigned int aiIndex);
 
     void CombatGroup_UpdateCombatStrength();
 };
@@ -5858,7 +5865,7 @@ struct GrpQ
     bool CombatGroup_IsTarget(ActQ*);
     bool CombatGroup_CanAddTarget(ActQ*);
     bool CombatGroup_IsMember(ActQ*);
-    bool CombatGroup_AddTarget(ActQ* pActor);
+    bool CombatGroup_AddTarget(ActQ* apActor);
 };
 struct Owner_9862e0;
 struct Target_9862e0
@@ -5883,7 +5890,7 @@ struct CombatCtx
     int unk2c;
     int unk30;
     int unk34;
-    CombatCtx(Owner_9862e0* owner);
+    CombatCtx(Owner_9862e0* apCombatGroup);
     ~CombatCtx();
 };
 struct Owner_9862e0
@@ -5907,7 +5914,7 @@ struct Owner_9862e0
     int m40;
     TimeValue m44;
     void CombatGroup_ResetMembers();
-    void CombatGroup_ForceGroupStrategy(Target_9862e0* target);
+    void CombatGroup_ForceCombatGroupStrategy(Target_9862e0* apStrategy);
 };
 extern const float DAT_01012054;
 struct FUN_00906f60
@@ -6018,7 +6025,7 @@ struct AvoidNode9894 : AvoidanceVectorData
 struct FUN_00989490_shell
 {
     float GetBoundsSq(NiPoint3* apCenter);
-    PathingAvoidNodeArray* __thiscall CombatGroup_CreateFlankingAvoidNodeArray(int a1, int a2, int a3, PathingAvoidNodeArray* apArray);
+    PathingAvoidNodeArray* __thiscall CombatGroup_CreateFlankingAvoidNodeArray(int apActor, int arDestination, int afExtraRadius, PathingAvoidNodeArray* apExistingAvoidNodeArray);
 };
 
 struct FUN_0096a330_shell
@@ -6028,14 +6035,18 @@ struct FUN_0096a330_shell
 
 // @fnv 0x0096a2b0
 // src: XBOX_PDB 0x0096a2b0
-void FUN_0096a2b0_stub::BSSimpleArray_CombatTarget_1024_GetAt(int state)
+// pdb: BSSimpleArray<CombatTarget,1024>::GetAt | PlayerCharacter.obj | debug, call graph (shared callers), high
+// pdb params: aiIndex
+void FUN_0096a2b0_stub::BSSimpleArray_CombatTarget_1024_GetAt(int aiIndex)
 {
-    reinterpret_cast<FUN_0096a330_shell*>(this)->GetEntryAt(state);
+    reinterpret_cast<FUN_0096a330_shell*>(this)->GetEntryAt(aiIndex);
 }
 
 // @fnv 0x009865f0
 // src: XBOX_PDB 0x009865f0
-int FUN_009865f0_shell::CombatGroup_GetCombatMemberForActor(int a1)
+// pdb: CombatGroup::GetCombatMemberForActor | CombatGroup.obj | debug, upstream name already matches, high
+// pdb params: apActor
+int FUN_009865f0_shell::CombatGroup_GetCombatMemberForActor(int apActor)
 {
-    return (int)((C00986670*)this)->CombatGroup_GetCombatMemberForNumericID(reinterpret_cast<TESForm*>(a1)->GetHavokWorldObjectCountInSceneGraph_0084e3a0());
+    return (int)((C00986670*)this)->CombatGroup_GetCombatMemberForNumericID(reinterpret_cast<TESForm*>(apActor)->GetHavokWorldObjectCountInSceneGraph_0084e3a0());
 }

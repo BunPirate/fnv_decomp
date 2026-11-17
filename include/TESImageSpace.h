@@ -3,6 +3,7 @@
 #include "TESForm.h"
 #include "ImageSpaceModifierParameterData.h"
 
+// pdb: class TESImageSpace, size 0xb0, bases: TESForm, 1 members
 struct TESImageSpace : public TESForm
 {
 public:
@@ -22,7 +23,7 @@ public:
 
     void InitDefaults();
     void ResetFormData();
-    bool Load(TESFile* file);
+    bool Load(TESFile* apFile);
     void Save();
     void Copy(TESForm* form);
     void* DestroyAndDeallocate(unsigned int flags);

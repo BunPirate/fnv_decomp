@@ -25,11 +25,15 @@ struct SlotState
 
 // For each of three slots, recursively updates the slot's callback state and stores the result, then invokes the slot's callback with a5 and a6.
 // @fnv 0x00a3d930
-void __cdecl UpdateSlotStates(int aiSlotGroup, int a2, void** apSlotData, int* apiState, float afValueA, float afValueB)
+// src: XBOX_RETAIL_PDB 0x00a3d930
+// pdb: NiAnimationKey::GuaranteeKeyAtStartAndEnd | NiAnimationKey.obj | retail, object-file gap fill, high
+// pdb params: eContent, eType, pkKeys, uiNumKeys, fStartTime, fEndTime
+// pdb locals: fnInsert, pkERKey, i, eERType, pkERKeys, uiNumERKeys
+void __cdecl NiAnimationKey_GuaranteeKeyAtStartAndEnd(int eContent, int eType, void** pkKeys, int* uiNumKeys, float fStartTime, float fEndTime)
 {
-    if (a2 == 4)
+    if (eType == 4)
     {
-        SlotState* pSlot = (SlotState*)*apSlotData;
+        SlotState* pSlot = (SlotState*)*pkKeys;
         unsigned int i = 0;
         do
         {
@@ -37,12 +41,12 @@ void __cdecl UpdateSlotStates(int aiSlotGroup, int a2, void** apSlotData, int* a
             void* pSlotData = pSlot->m14[idx];
             int iSlotIndex = pSlot->m20[idx];
             void* volatile savedC = pSlot->m30[idx];
-            a2 = (int)pSlotData;
+            eType = (int)pSlotData;
             void* pResult = pSlotData;
             if (pSlotData != 0)
             {
-                UpdateSlotStates(0, iSlotIndex, (void**)(void*)&savedC, &a2, afValueA, afValueB);
-                pResult = (void*)a2;
+                NiAnimationKey_GuaranteeKeyAtStartAndEnd(0, iSlotIndex, (void**)(void*)&savedC, &eType, fStartTime, fEndTime);
+                pResult = (void*)eType;
             }
             pSlot->m30[idx] = savedC;
             pSlot->m14[idx] = pResult;
@@ -54,18 +58,18 @@ void __cdecl UpdateSlotStates(int aiSlotGroup, int a2, void** apSlotData, int* a
         return;
     }
 
-    aiSlotGroup = aiSlotGroup * 3;
-    SlotCallback pCallback = DAT_011f3810[a2 + aiSlotGroup * 2];
-    if (*apiState == 1)
+    eContent = eContent * 3;
+    SlotCallback pCallback = DAT_011f3810[eType + eContent * 2];
+    if (*uiNumKeys == 1)
     {
-        float* pfValue = (float*)*apSlotData;
-        if (*pfValue == afValueA)
+        float* pfValue = (float*)*pkKeys;
+        if (*pfValue == fStartTime)
         {
             return;
         }
     }
-    pCallback(afValueA, apSlotData, apiState);
-    pCallback(afValueB, apSlotData, apiState);
+    pCallback(fStartTime, pkKeys, uiNumKeys);
+    pCallback(fEndTime, pkKeys, uiNumKeys);
 }
 
 extern MemoryManager _g_memoryManager;
@@ -94,11 +98,14 @@ extern CopyCallback DAT_011f39c0[];
 
 // @fnv 0x00a3d630
 // src: XBOX_PDB 0x00a3d630
-void NiAnimationKey_CopySequence(int a1, int a2, void* apData, int aiCount, float afMin, float afMax, void** apOut, int* apiOutCount)
+// pdb: NiAnimationKey::CopySequence | NiAnimationKey.obj | retail, upstream name already matches, high
+// pdb params: eContent, eType, pkOrigKeys, uiOrigNumKeys, fStartTime, fEndTime, pkNewKeys, uiNewNumKeys
+// pdb locals: aeFloatTypes, pkNewEulerKey, pkEulerKey, auiNewNumFloatKeys, apkNewFloatKeys, i, uiNumFloatKeys, pkFloatKeys, uiKey, ucSize, pkKey, pfnCopy, pfnArrayFunc, pkDest
+void NiAnimationKey_CopySequence(int eContent, int eType, void* pkOrigKeys, int uiOrigNumKeys, float fStartTime, float fEndTime, void** pkNewKeys, int* uiNewNumKeys)
 {
-    if (a2 == 4)
+    if (eType == 4)
     {
-        SlotState* state = (SlotState*)apData;
+        SlotState* state = (SlotState*)pkOrigKeys;
         int local_m20[3];
         int local_counts[3];
         void* local_bufs[3];
@@ -108,7 +115,7 @@ void NiAnimationKey_CopySequence(int a1, int a2, void* apData, int aiCount, floa
             unsigned char idx = (unsigned char)uiIndex;
             unsigned int m20 = state->m20[idx];
             local_m20[uiIndex] = m20;
-            NiAnimationKey_CopySequence(0, m20, state->m30[idx], (int)state->m14[idx], afMin, afMax, &local_bufs[uiIndex],
+            NiAnimationKey_CopySequence(0, m20, state->m30[idx], (int)state->m14[idx], fStartTime, fEndTime, &local_bufs[uiIndex],
                          &local_counts[uiIndex]);
         }
 
@@ -140,51 +147,51 @@ void NiAnimationKey_CopySequence(int a1, int a2, void* apData, int aiCount, floa
             pNewState = 0;
         }
 
-        *apOut = pNewState;
-        *apiOutCount = 1;
-        ((DerivedSlotState*)*apOut)
+        *pkNewKeys = pNewState;
+        *uiNewNumKeys = 1;
+        ((DerivedSlotState*)*pkNewKeys)
             ->SetChannelValues(local_bufs[0], local_counts[0], local_m20[0], local_bufs[1], local_counts[1],
                                local_m20[1], local_bufs[2], local_counts[2], local_m20[2]);
         return;
     }
 
-    unsigned int idx = a1 * 6 + a2;
-    *apiOutCount = 0;
+    unsigned int idx = eContent * 6 + eType;
+    *uiNewNumKeys = 0;
     unsigned char stride = DAT_011f3758[idx];
     unsigned int i;
-    for (i = 0; i < (unsigned int)aiCount; ++i)
+    for (i = 0; i < (unsigned int)uiOrigNumKeys; ++i)
     {
-        float* pfValue = (float*)((char*)apData + i * stride);
-        if (!(*pfValue < afMin))
+        float* pfValue = (float*)((char*)pkOrigKeys + i * stride);
+        if (!(*pfValue < fStartTime))
         {
-            if (*pfValue > afMax)
+            if (*pfValue > fEndTime)
                 break;
-            (*apiOutCount)++;
+            (*uiNewNumKeys)++;
         }
     }
 
-    if (*apiOutCount != 0)
+    if (*uiNewNumKeys != 0)
     {
         AllocCallback alloc_func = DAT_011f3930[idx];
-        *apOut = alloc_func(*apiOutCount);
+        *pkNewKeys = alloc_func(*uiNewNumKeys);
         CopyCallback copy_func = DAT_011f39c0[idx];
-        for (i = 0, *apiOutCount = 0; i < (unsigned int)aiCount; ++i)
+        for (i = 0, *uiNewNumKeys = 0; i < (unsigned int)uiOrigNumKeys; ++i)
         {
-            char* src = (char*)apData + i * stride;
+            char* src = (char*)pkOrigKeys + i * stride;
             float* pfValue = (float*)src;
-            if (!(*pfValue < afMin))
+            if (!(*pfValue < fStartTime))
             {
-                if (*pfValue > afMax)
+                if (*pfValue > fEndTime)
                     break;
-                char* dst = (char*)(*apOut) + (*apiOutCount) * stride;
+                char* dst = (char*)(*pkNewKeys) + (*uiNewNumKeys) * stride;
                 copy_func(dst, src);
-                *(float*)dst = *pfValue - afMin;
-                (*apiOutCount)++;
+                *(float*)dst = *pfValue - fStartTime;
+                (*uiNewNumKeys)++;
             }
         }
     }
     else
     {
-        *apOut = 0;
+        *pkNewKeys = 0;
     }
 }

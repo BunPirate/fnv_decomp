@@ -41,19 +41,22 @@ struct S_00b81420_Node : S_00b81420_AVObject
 // If obj is geometry, sets property 3's m_iValue when its type is 0x17; otherwise recurses into each child of obj's node.
 // @fnv 0x00b81420
 // src: XBOX_PDB 0x00b81420
-void BSShaderBloodSplatterProperty_SetFadeSourceRecurse(S_00b81420_AVObject* obj, int value)
+// pdb: BSShaderBloodSplatterProperty::SetFadeSourceRecurse | BSShaderBloodSplatterProperty.obj | retail, upstream name already matches, high
+// pdb params: apObject, apfAlphaSource
+// pdb locals: pgeometry, pproperty, pprop, pnode, ucount, uindex, pchild
+void BSShaderBloodSplatterProperty_SetFadeSourceRecurse(S_00b81420_AVObject* apObject, int apfAlphaSource)
 {
-    if (!obj)
+    if (!apObject)
         return;
-    if (obj->IsGeometry())
+    if (apObject->IsGeometry())
     {
-        S_00b81420_Property* prop = obj->GetProperty(3);
+        S_00b81420_Property* prop = apObject->GetProperty(3);
         if (prop && prop->m_eRequestType == 0x17)
-            prop->m_iValue = value;
+            prop->m_iValue = apfAlphaSource;
     }
     else
     {
-        S_00b81420_Node* node = obj->IsSceneNode();
+        S_00b81420_Node* node = apObject->IsSceneNode();
         if (node)
         {
             unsigned int count = node->m_usSize;
@@ -61,7 +64,7 @@ void BSShaderBloodSplatterProperty_SetFadeSourceRecurse(S_00b81420_AVObject* obj
             {
                 S_00b81420_AVObject* child = node->m_ppObjects[i];
                 if (child)
-                    BSShaderBloodSplatterProperty_SetFadeSourceRecurse(child, value);
+                    BSShaderBloodSplatterProperty_SetFadeSourceRecurse(child, apfAlphaSource);
             }
         }
     }
@@ -81,8 +84,8 @@ struct SpawnedP
     unsigned int unk0c;
     unsigned int m_10;
 
-    void FUN_00ba9ee0(unsigned int a1, unsigned int a2, unsigned int a3, unsigned int a4, unsigned int a5,
-                      unsigned int a6, unsigned int a7, unsigned int a8);
+    void FUN_00ba9ee0(unsigned int apGeometry, unsigned int ausPassEnum, unsigned int abFirstPass, unsigned int ausNumLights, unsigned int apSceneLight,
+                      unsigned int apSceneLight1, unsigned int apSceneLight2, unsigned int apSceneLight3);
 };
 
 struct SpawnedRec
@@ -94,7 +97,7 @@ struct SpawnedRec
 extern SpawnedRec DAT_011fedd0[100];
 extern int DAT_011ff0f0;
 
-void __stdcall FUN_00ba95e0(int a1);
+void __stdcall FUN_00ba95e0(int aiNumPasses);
 
 class FUN_00b81330_cls
 {
@@ -106,16 +109,19 @@ class FUN_00b81330_cls
     unsigned int unk40, unk44, unk48, unk4c, unk50, unk54, unk58, unk5c, unk60;
     int m_64;
 
-    SpawnedP* BSShaderBloodSplatterProperty_GetRenderPasses(unsigned int a1, unsigned int a2, unsigned int a3, unsigned int a4, unsigned int a5,
-                           unsigned int a6);
+    SpawnedP* BSShaderBloodSplatterProperty_GetRenderPasses(unsigned int apGeom, unsigned int aiEnabledPasses, unsigned int asCount, unsigned int auiRenderMode, unsigned int apAccumulator,
+                           unsigned int abUpdateList);
 };
 
 // @fnv 0x00b81330
 // src: XBOX_PDB 0x00b81330
-SpawnedP* FUN_00b81330_cls::BSShaderBloodSplatterProperty_GetRenderPasses(unsigned int a1, unsigned int a2, unsigned int auiUnused3, unsigned int a4,
-                                         unsigned int auiUnused5, unsigned int auiUnused6)
+// pdb: BSShaderBloodSplatterProperty::GetRenderPasses | BSShaderBloodSplatterProperty.obj | retail, upstream name already matches, high
+// pdb params: apGeom, aiEnabledPasses, asCount, auiRenderMode, apAccumulator, abUpdateList
+// pdb locals: idebugPasses, ambPass
+SpawnedP* FUN_00b81330_cls::BSShaderBloodSplatterProperty_GetRenderPasses(unsigned int apGeom, unsigned int aiEnabledPasses, unsigned int asCount, unsigned int auiRenderMode,
+                                         unsigned int apAccumulator, unsigned int abUpdateList)
 {
-    unsigned int uiCacheKey = (a4 << 8) | a2;
+    unsigned int uiCacheKey = (auiRenderMode << 8) | aiEnabledPasses;
     if (this->m_38 != uiCacheKey)
     {
         FUN_00ba95e0(1);
@@ -124,13 +130,13 @@ SpawnedP* FUN_00b81330_cls::BSShaderBloodSplatterProperty_GetRenderPasses(unsign
         SpawnedP* p = this->m_3c;
 
         int flag = (this->m_64 != 0);
-        p->FUN_00ba9ee0(a1, flag + 0x2f0, 1, 0, 0, 0, 0, 0);
+        p->FUN_00ba9ee0(apGeom, flag + 0x2f0, 1, 0, 0, 0, 0, 0);
         this->m_38 = uiCacheKey;
     }
     int count = DAT_011ff0f0;
     if (count < 100)
     {
-        DAT_011fedd0[count].m_00 = a1;
+        DAT_011fedd0[count].m_00 = apGeom;
         DAT_011fedd0[count].m_04 = this->m_3c->m_04->m_00;
         DAT_011ff0f0 = count + 1;
     }
@@ -187,6 +193,9 @@ struct Self
 
 // Iterates over the two child pointers, checks each child's RTTI chain against g_rttiA and g_rttiB, and invokes cb on each non-null child with 0 and arg.
 // @fnv 0x00b813b0
+// pdb: BSShaderBloodSplatterProperty::GetTextureUse | BSShaderBloodSplatterProperty.obj | debug, object-file run extension, low
+// pdb params: apTextureUseCB, apParam
+// pdb locals: i, ulsize
 void __thiscall Self::ForEachChild(Callback apCallback, int arg)
 {
     for (int i = 0; i < 2; i++)
@@ -255,15 +264,19 @@ struct Item
 
 struct Owner
 {
-    void BSShaderBloodSplatterProperty_CopyMembers(Item* item, int arg);
-    Item* CreateItem(int arg);
+    void BSShaderBloodSplatterProperty_CopyMembers(Item* pDest, int arCloneData);
+    Item* BSShaderBloodSplatterProperty_CreateClone(int arCloneData);
 };
 
 // @fnv 0x00b814a0
-Item* Owner::CreateItem(int arg)
+// src: XBOX_RETAIL_PDB 0x00b814a0
+// pdb: BSShaderBloodSplatterProperty::CreateClone | BSShaderBloodSplatterProperty.obj | retail, object-file gap fill, high
+// pdb params: arCloneData
+// pdb locals: pprop
+Item* Owner::BSShaderBloodSplatterProperty_CreateClone(int arCloneData)
 {
     Item* item = new Item;
-    BSShaderBloodSplatterProperty_CopyMembers(item, arg);
+    BSShaderBloodSplatterProperty_CopyMembers(item, arCloneData);
     return item;
 }
 
@@ -327,24 +340,28 @@ struct StringOwner
     unsigned int unk5C;
     unsigned int children[2];
 
-    void WriteToSettingArray(StringArray* a1);
-    void BuildStringArray(unsigned int a1);
+    void WriteToSettingArray(StringArray* apStrings);
+    void BSShaderBloodSplatterProperty_GetViewerStrings(unsigned int apStrings);
 };
 
-extern unsigned int DAT_011ff0f4;
+extern unsigned int BSShaderBloodSplatterProperty_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011ff0f4 (old: DAT_011ff0f4/g_011ff0f4)
 unsigned int __cdecl NiViewerStrings_NiGetViewerString_Title(unsigned int v);
-unsigned int __cdecl BSUtilities_GetTextureName(unsigned int v);
-unsigned int __cdecl NiGetViewerString_00a7d5e0(const char* s, unsigned int v);
-unsigned int __cdecl NiGetViewerString_00a7d5a0(const char* s, unsigned int v);
+unsigned int __cdecl BSUtilities_GetTextureName(unsigned int apTexture);
+unsigned int __cdecl NiGetViewerString_00a7d5e0(const char* pcPrefix, unsigned int pcValue);
+unsigned int __cdecl NiGetViewerString_00a7d5a0(const char* pcPrefix, unsigned int pvValue);
 extern const char str_010ae79c[];
 
 // Appends a value and formatted child labels to a StringArray via append.
 // @fnv 0x00b81520
-void StringOwner::BuildStringArray(unsigned int apArray)
+// src: XBOX_RETAIL_PDB 0x00b81520
+// pdb: BSShaderBloodSplatterProperty::GetViewerStrings | BSShaderBloodSplatterProperty.obj | retail, string-set bridge, high
+// pdb params: apStrings
+// pdb locals: pname, i
+void StringOwner::BSShaderBloodSplatterProperty_GetViewerStrings(unsigned int apStrings)
 {
-    StringArray* pArray = (StringArray*)apArray;
+    StringArray* pArray = (StringArray*)apStrings;
     WriteToSettingArray(pArray);
-    pArray->append(apArray, NiViewerStrings_NiGetViewerString_Title(DAT_011ff0f4));
+    pArray->append(apStrings, NiViewerStrings_NiGetViewerString_Title(BSShaderBloodSplatterProperty_ms_RTTI));
     for (unsigned int index = 0; index < 2; ++index)
     {
         unsigned int label = children[index];
@@ -352,13 +369,13 @@ void StringOwner::BuildStringArray(unsigned int apArray)
         if (label)
         {
             unsigned int text = NiGetViewerString_00a7d5e0(str_010ae79c, label);
-            pArray->append(apArray, text);
+            pArray->append(apStrings, text);
         }
         else
         {
             unsigned int child = children[index];
             unsigned int text = NiGetViewerString_00a7d5a0(str_010ae79c, child);
-            pArray->append(apArray, text);
+            pArray->append(apStrings, text);
         }
     }
 }

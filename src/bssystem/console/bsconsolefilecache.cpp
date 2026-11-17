@@ -5,6 +5,10 @@
 
 // Initializes the object's fields to zero/default values and clears the three primitive arrays.
 // @fnv 0x005dd590
+// pdb: Script::AddItemFunction | TESScriptFunctions.obj | retail, object-file run extension, low
+// pdb note: debug build links it to FaceGenNpcData::FaceGenNpcData
+// pdb params: apParameters, apCompiledParams, apRefObject, apContainer, apScript, apScriptLocals, afReturnValue, auiOffset
+// pdb locals: iCount, iSilent, pform, pobject, plevitem, bWeap, tempcont, pformlist, icalclevel, plist, paddform, pWeap, pactor
 FaceGenData::FaceGenData()
 {
     m_pHair = 0;

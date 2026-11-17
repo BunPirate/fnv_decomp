@@ -150,7 +150,7 @@ extern "C" void* __cdecl memcpy(void*, const void*, unsigned int);
 class PlayerSoundAudioOperations : public BSAudio
 {
 public:
-    BSSoundHandle GetSoundHandleByEditorID(const char* editorID, unsigned int flags);
+    BSSoundHandle GetSoundHandleByEditorID(const char* apSoundName, unsigned int aiTypeFlags);
 };
 
 // These list operations are external game functions; the shared list supplies the storage.
@@ -188,14 +188,15 @@ class BSAnimGroupSequence;
 #include "../../../include/ANIM_GROUP_SECTION.h"
 #include "../../../include/CombatManager.h"
 // Animation.h is not supplied yet; retain these real Animation method declarations locally.
+// pdb: class Animation, size 0x13c (here 0x1), 33 members
 class Animation
 {
   public:
-    void BlendOut(int group, bool blendOut);
+    void BlendOut(int aeSection, bool abIronSightsToggle);
     void Animation_ClearGroup(int, int, float);
     BSAnimGroupSequence* Animation_GetCurrentSequence(ANIM_GROUP_SECTION section);
     BSAnimGroupSequence* GetSequenceForKey(BSAnimGroupSequence* sequence, unsigned short group);
-    bool IsGroupQueued(unsigned short group);
+    bool IsGroupQueued(unsigned short asTestGroup);
     BSAnimGroupSequence* PlayGroup(unsigned short group, ACTION_FLAGS flags, int loops, ANIM_GROUP_SECTION section);
 };
 
@@ -210,6 +211,9 @@ extern PlayerCharacterAnimGroupInfo DAT_011977dc[];
 FNV_STATIC_ASSERT(sizeof(PlayerCharacterAnimGroupInfo) == 0x24);
 FNV_STATIC_ASSERT(offsetof(PlayerCharacterAnimGroupInfo, section) == 4);
 // @fnv 0x009520f0
+// pdb: PlayerCharacter::StartAnimOn1stPerson | PlayerCharacter.obj | debug, object-file gap fill, medium
+// pdb params: asAnimGroup, aeFlags
+// pdb locals: bsynced, eanimGroup, panim1st, panim, pseq, ebestGroup
 void PlayerCharacter::SetActionGroupFlags(unsigned short group, ACTION_FLAGS flags)
 {
     if (group & 0x8000)
@@ -248,6 +252,8 @@ void PlayerCharacter::SetActionGroupFlags(unsigned short group, ACTION_FLAGS fla
 }
 
 // @fnv 0x0095ed80
+// pdb: PlayerCharacter::Setup3rdPersonCameraCaster | PlayerCharacter.obj | retail, object-file run extension, low
+// pdb note: debug build links it to PlayerCharacter::CheckTempModifiers
 void PlayerCharacter::ResetActorValueModifiers()
 {
     for (int i = 0; i < 77; ++i)
@@ -265,12 +271,14 @@ ActorCombatGroup* PlayerCharacter::GetCombatGroup()
 
 // Returns the total actor value by summing the base value and temporary, script, and damage modifiers when an actor base exists.
 // @fnv 0x0093ac20
-int PlayerCharacter::GetActorValue(ActorValue::Index actorValue)
+// pdb: PlayerCharacter::GetActorValue | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb params: aiWhich
+int PlayerCharacter::GetActorValue(ActorValue::Index aiWhich)
 {
     if (GetActorBase())
     {
-        return GetBaseActorValue(actorValue) + static_cast<int>(GetActorValueModifierAmount(TEMPORARY, actorValue)) +
-               static_cast<int>(GetActorValueModifierAmount(SCRIPTS, actorValue)) + static_cast<int>(GetActorValueModifierAmount(DAMAGE, actorValue));
+        return GetBaseActorValue(aiWhich) + static_cast<int>(GetActorValueModifierAmount(TEMPORARY, aiWhich)) +
+               static_cast<int>(GetActorValueModifierAmount(SCRIPTS, aiWhich)) + static_cast<int>(GetActorValueModifierAmount(DAMAGE, aiWhich));
     }
     return 0;
 }
@@ -1188,7 +1196,7 @@ extern void __cdecl bhkNiCollisionObject_SetTransChangeCallback(const void*);
 
 extern void __cdecl bhkNiCollisionObject_SetDebugDisplayCallback(const void*);
 
-extern void __cdecl InitQueuedCellManager();
+extern void __cdecl ExteriorCellLoader_Initialize();
 
 extern void __cdecl CreateSaveLoadGame();
 
@@ -1321,6 +1329,9 @@ struct FUN_0044fb20
 
 // Constructor: sets settings-driven globals, allocates several global objects and two zeroed count buffers, and stores the callback, owner and extra.
 // @fnv 0x0044fb20
+// pdb: TES::TES | TES.obj | debug, call graph, medium
+// pdb params: apPathname, apRoot, apLandRoot, apSky, apLODWaterRoot
+// pdb locals: tempMemContext, n
 FUN_0044fb20::FUN_0044fb20(int option, Callback* apCallback, void* owner, Optional* extra, void* userData)
 
     : member6c(), member8c(), member94(), member9c(), membera4(0), membera8(0), memberac(0), memberc0(0)
@@ -1391,7 +1402,7 @@ FUN_0044fb20::FUN_0044fb20(int option, Callback* apCallback, void* owner, Option
 
         FUN_00404eb0 laterLog(0x12, 1, "D:\\_Fallout3\\Platforms\\Common\\Code\\Fallout Shared\\TES.cpp", 0x1ae);
 
-        InitQueuedCellManager();
+        ExteriorCellLoader_Initialize();
 
         DAT_01202d98 = new AllocA0;
 
@@ -1518,7 +1529,10 @@ struct Shell451
 // Updates x/y from point or keeps previous values, stores oldX/oldY, and calls FUN_004512c0 and FUN_0062f460.
 // @fnv 0x004515a0
 // src: XBOX_PDB 0x004515a0
-void Shell451::TES_InitGridCells(NiPoint3* point, bool flag)
+// pdb: TES::InitGridCells | TES.obj | retail, upstream name already matches, high
+// pdb params: apPos, abFullreload
+// pdb locals: ioldgridx, ioldgridy, bsavegameLoading
+void Shell451::TES_InitGridCells(NiPoint3* apPos, bool abFullreload)
 {
     bool loading = false;
     loading = g_TESSaveLoadGame->FUN_0047c850();
@@ -1528,10 +1542,10 @@ void Shell451::TES_InitGridCells(NiPoint3* point, bool flag)
     int previousY = y;
     if (!FUN_004fd3e0())
         TES_SetWorldSpace(reinterpret_cast<int>(g_dataHandler->GetWorldSpaces()->GetItem()));
-    if (point)
+    if (apPos)
     {
-        x = TruncateFloatToInt(point->x) >> 12;
-        y = TruncateFloatToInt(point->y) >> 12;
+        x = TruncateFloatToInt(apPos->x) >> 12;
+        y = TruncateFloatToInt(apPos->y) >> 12;
     }
     else
     {
@@ -1540,7 +1554,7 @@ void Shell451::TES_InitGridCells(NiPoint3* point, bool flag)
     }
     oldX = x;
     oldY = y;
-    TES_ReloadGridCells(point, flag);
+    TES_ReloadGridCells(apPos, abFullreload);
     TESWaterListener_RefreshExteriorWaterHeights();
 }
 
@@ -1560,6 +1574,7 @@ extern StartMenu* DAT_011daac0;
 
 // Returns 1 if DAT_011daac0 is non-null and IsFlagSet(1) is true on it, otherwise 0.
 // @fnv 0x004a4040
+// pdb: StartMenu::PauseMenuIsActive | BGSDecalManager.obj | debug, call graph, medium
 char IsStartMenuFlag1Set()
 {
     int result;
@@ -1600,6 +1615,8 @@ struct FUN_00572230_shell : public TESObjectREFR
 // Gets a TESObjectREFR via FUN_0041de00 on this's extra data; if non-null, calls FUN_0041e0d0 on that ref's extra data with this, then FUN_00572270.
 // @fnv 0x00572230
 // src: COMMUNITY 0x00572230
+// pdb: TESObjectREFR::MarkAsPickedUp | TESObjectREFR.obj | retail, upstream name already matches, high
+// pdb locals: pdropper
 void FUN_00572230_shell::TESObjectREFR_MarkAsPickedUp()
 {
     TESObjectREFR* ref = ((FUN_0041de00_shell*)GetExtraData())->ExtraDataList_GetItemDropper();
@@ -1686,7 +1703,7 @@ struct NodeRef
 
 struct StubCallees
 {
-    void* FUN_0061eb60(void* a1);
+    void* FUN_0061eb60(void* aeScript);
     void* FUN_00500940();
     void* BSFile_GetDevice(int a, int b);
     int ExtraDataList_GetScriptLocals();
@@ -1700,27 +1717,30 @@ bool __cdecl FUN_005ac740(void);
 
 struct FUN_0061f170_cls
 {
-    void TESTopicInfo_RunResult(void* a1, ArgObj* a2);
+    void TESTopicInfo_RunResult(void* aeScript, ArgObj* apRef);
 };
 
 // Returns if a2 is null; else calls MarkAsRefusal and, if FUN_0061aef0() and a2->Unk_3F() are true, calls a2->LoadRecord(this).
 // @fnv 0x0061f170
 // src: XBOX_PDB 0x0061f170
-void FUN_0061f170_cls::TESTopicInfo_RunResult(void* a1, ArgObj* a2)
+// pdb: TESTopicInfo::RunResult | TESTopicInfo.obj | retail, upstream name already matches, high
+// pdb params: aeScript, apRef
+// pdb locals: apResultScript, pmob
+void FUN_0061f170_cls::TESTopicInfo_RunResult(void* aeScript, ArgObj* apRef)
 {
-    if (a2 == 0)
+    if (apRef == 0)
         return;
-    void* obj = ((StubCallees*)this)->FUN_0061eb60(a1);
+    void* obj = ((StubCallees*)this)->FUN_0061eb60(aeScript);
     if (FUN_005ac740() && obj != 0 && ((NodeRef*)((StubCallees*)obj)->FUN_00500940())->m_08 != 0)
     {
-        ((StubCallees*)obj)->FUN_005ac1e0(a2, ((StubCallees*)((StubCallees*)a2)->BSFile_GetDevice(0, 1))->ExtraDataList_GetScriptLocals());
+        ((StubCallees*)obj)->FUN_005ac1e0(apRef, ((StubCallees*)((StubCallees*)apRef)->BSFile_GetDevice(0, 1))->ExtraDataList_GetScriptLocals());
     }
     ((StubCallees*)this)->MarkAsRefusal();
     if (((StubCallees*)this)->TESTopicInfo_IsSayOnceADay())
     {
-        if (a2->Unk_3F())
+        if (apRef->Unk_3F())
         {
-            StubCallees* p = (StubCallees*)a2;
+            StubCallees* p = (StubCallees*)apRef;
             p->LoadRecord(this);
         }
     }
@@ -1779,7 +1799,7 @@ struct C68E30Holder : C68E30VirtualBase
 
 struct C68E30Owner
 {
-    void __thiscall bhkWorld_SetDebugObjectColor(C68E30Holder* holder, int value);
+    void __thiscall bhkWorld_SetDebugObjectColor(C68E30Holder* apObject, int aiColor);
 };
 
 int __cdecl PackBytesBigEndian(int value1, int value2, int value3, int value4);
@@ -1788,32 +1808,34 @@ struct FUN_00621370Owner : GO
 {
     GO member1;
 
-    void CameraCaster_Add(C68E30Owner* owner);
+    void CameraCaster_Add(C68E30Owner* apWorld);
 };
 
 // For each nonzero handle (base and member1), calls its FUN_00c68df0 with owner and, if owner is non-null, owner->FUN_00c68e30 with it and a packed value.
 // @fnv 0x00621370
 // src: XBOX_PDB 0x00621370
-void FUN_00621370Owner::CameraCaster_Add(C68E30Owner* owner)
+// pdb: CameraCaster::Add | CameraCaster.obj | retail, upstream name already matches, high
+// pdb params: apWorld
+void FUN_00621370Owner::CameraCaster_Add(C68E30Owner* apWorld)
 {
     if (static_cast<const GO&>(*this).operator unsigned int() != 0)
     {
-        reinterpret_cast<C68E30Holder*>(static_cast<const GO&>(*this).operator unsigned int())->FUN_00c68df0(owner);
+        reinterpret_cast<C68E30Holder*>(static_cast<const GO&>(*this).operator unsigned int())->FUN_00c68df0(apWorld);
 
-        if (owner != 0)
+        if (apWorld != 0)
         {
-            owner->bhkWorld_SetDebugObjectColor(reinterpret_cast<C68E30Holder*>(static_cast<const GO&>(*this).operator unsigned int()),
+            apWorld->bhkWorld_SetDebugObjectColor(reinterpret_cast<C68E30Holder*>(static_cast<const GO&>(*this).operator unsigned int()),
                                 PackBytesBigEndian(255, 46, 46, 25));
         }
     }
 
     if (static_cast<const GO&>(member1).operator unsigned int() != 0)
     {
-        reinterpret_cast<C68E30Holder*>(static_cast<const GO&>(member1).operator unsigned int())->FUN_00c68df0(owner);
+        reinterpret_cast<C68E30Holder*>(static_cast<const GO&>(member1).operator unsigned int())->FUN_00c68df0(apWorld);
 
-        if (owner != 0)
+        if (apWorld != 0)
         {
-            owner->bhkWorld_SetDebugObjectColor(reinterpret_cast<C68E30Holder*>(static_cast<const GO&>(member1).operator unsigned int()),
+            apWorld->bhkWorld_SetDebugObjectColor(reinterpret_cast<C68E30Holder*>(static_cast<const GO&>(member1).operator unsigned int()),
                                 PackBytesBigEndian(255, 46, 46, 25));
         }
     }
@@ -2285,19 +2307,22 @@ struct S9611e0_b
 
 struct FUN_008b3ef0_cls
 {
-    int Actor_GetDamageLocation(TESObjectREFR* a1);
+    int Actor_GetDamageLocation(TESObjectREFR* apNode);
 };
 
 // Walks from a1 via Call() until the NiNode; returns 14 if a node matches V64(...), else the i (0-14) where V1B4(i) matches it, else -1.
 // @fnv 0x008b3ef0
 // src: XBOX_PDB 0x008b3ef0
-int FUN_008b3ef0_cls::Actor_GetDamageLocation(TESObjectREFR* a1)
+// pdb: Actor::GetDamageLocation | Actor.obj | retail, upstream name already matches, high
+// pdb params: apNode
+// pdb locals: pweapon, proot, ptest, pparent, elimbIndex
+int FUN_008b3ef0_cls::Actor_GetDamageLocation(TESObjectREFR* apNode)
 {
-    if (a1 != 0 && reinterpret_cast<MobileObject*>(this)->m_pBaseProcess != 0)
+    if (apNode != 0 && reinterpret_cast<MobileObject*>(this)->pCurrentProcess != 0)
     {
         void* niNode = reinterpret_cast<MobileObject*>(this)->GetNiNode();
-        TESObjectREFR* cur = a1;
-        void* target = reinterpret_cast<FnvProcStandIn*>(reinterpret_cast<MobileObject*>(this)->m_pBaseProcess)
+        TESObjectREFR* cur = apNode;
+        void* target = reinterpret_cast<FnvProcStandIn*>(reinterpret_cast<MobileObject*>(this)->pCurrentProcess)
                            ->V64(reinterpret_cast<MobileObject*>(this)->GetValidBip01Names());
         while (cur != 0 && cur != niNode)
         {
@@ -2308,7 +2333,7 @@ int FUN_008b3ef0_cls::Actor_GetDamageLocation(TESObjectREFR* a1)
             }
             for (int i = 0; i < 15; i++)
             {
-                if (reinterpret_cast<FnvProcStandIn*>(reinterpret_cast<MobileObject*>(this)->m_pBaseProcess)->V1B4(i) ==
+                if (reinterpret_cast<FnvProcStandIn*>(reinterpret_cast<MobileObject*>(this)->pCurrentProcess)->V1B4(i) ==
                     cur)
                 {
                     return i;
@@ -2336,6 +2361,7 @@ struct FUN_008d3290_Class
 };
 // @fnv 0x008d3290
 // src: COMMUNITY 0x008d3290
+// pdb: Character::GetTurningSpeed | Character.obj | debug, upstream name already matches, high
 float __thiscall FUN_008d3290_Class::Character_GetTurningSpeed()
 {
     return *originalRuntimeFloatSetting217.Float();
@@ -2505,6 +2531,8 @@ struct FUN_0093a690_shell
 // Lazily fetches an object into this+0xd64 from the global data and calls its AddMember with this, then calls its FUN_00986410 with apActor.
 // @fnv 0x0093a690
 // src: XBOX_PDB 0x0093a690
+// pdb: PlayerCharacter::AddActorToPlayerCombatList | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb params: apActor
 void FUN_0093a690_shell::PlayerCharacter_AddActorToPlayerCombatList(Actor* apActor)
 {
     if (!*(FUN_00985d10**)((char*)this + 0xd64))
@@ -2950,10 +2978,13 @@ class FUN_0093a7c0_Owner
     void PlayerCharacter_SetActorBaseValue(void* param_1, int param_2);
 };
 
-extern "C" void __cdecl Interface_UpdateActorValue(void* param_1);
+extern "C" void __cdecl Interface_UpdateActorValue(void* aeWhich);
 
 // @fnv 0x0093a7c0
 // src: XBOX_PDB 0x0093a7c0
+// pdb: PlayerCharacter::SetActorBaseValue | PlayerCharacter.obj | debug, call graph, high
+// pdb params: aiWhich, aiValue
+// pdb locals: foverride, boverride
 void FUN_0093a7c0_Owner::PlayerCharacter_SetActorBaseValue(void* param_1, int aiValue)
 {
     bool flagTmp = false;
@@ -2976,7 +3007,7 @@ void FUN_0093a7c0_Owner::PlayerCharacter_SetActorBaseValue(void* param_1, int ai
 
 
 bool IsAVModifiable(int av);
-void NotifyAVChange(int av);
+void NotifyAVChange(int aeWhich);
 void HandleAVChanged(ActorValueOwner* owner, int av, float oldValue, float delta, int arg);
 
 // PlayerCharacter.h lacks this override; the shared Actor virtuals at 0x48C/0x490 have no typed signatures yet.
@@ -2990,6 +3021,9 @@ struct PlayerActorValueOperations : public PlayerCharacter
 // If GetModValue reports handled, sets the mod value to oldValue + delta, otherwise calls SetBaseAV(av, delta); then notifies and calls HandleAVChanged.
 // @fnv 0x0093aa10
 // src: COMMUNITY 0x0093aa10
+// pdb: PlayerCharacter::ModActorBaseValue | PlayerCharacter.obj | debug, object-file gap fill, medium
+// pdb params: aiWhich, afValue
+// pdb locals: foldValue, foverride, boverride
 void PlayerActorValueOperations::PlayerCharacter_ModActorBaseValueF(int av, float delta)
 {
     float oldValue = IsAVModifiable(av) ? GetCurrentActorValue(static_cast<ActorValue::Index>(av)) : 0.0f;
@@ -3257,6 +3291,8 @@ class B93AB80Actor
 // Returns early if FUN_009526b0 or the save-load FUN_0042ce10 is true; otherwise, when fAmount exceeds gModifierZero, calls ModActorValue with 0xc and -fAmount.
 // @fnv 0x0093ab80
 // src: COMMUNITY 0x0093ab80
+// pdb: PlayerCharacter::UseActionPoints | PlayerCharacter.obj | debug, object-file gap fill, medium
+// pdb params: afAmount
 void B93AB80Actor::PlayerCharacter_DamageActionPoints(float fAmount)
 {
     if (PlayerCharacter_IsGodMode() || g_BGSSaveLoadGame->BGSSaveLoadGame_GetSaveGameLoading())
@@ -3276,11 +3312,13 @@ class FUN_0093ae40_cls
 };
 
 // Free helper called with the target as its only argument.
-extern void __cdecl Interface_UpdateActorValue(int target);
+extern void __cdecl Interface_UpdateActorValue(int aeWhich);
 
 // Calls FUN_00880700(target, value), then FUN_00704e10(target), then FUN_008808f0(target, true).
 // @fnv 0x0093ae40
 // src: COMMUNITY 0x0093ae40
+// pdb: PlayerCharacter::SetActorValue | PlayerCharacter.obj | retail, object-file run extension, low
+// pdb params: aiWhich, aiValue
 void FUN_0093ae40_cls::PlayerCharacter_SetActorValueF(int target, float value)
 {
     Actor_SetActorValue(target, value);
@@ -3290,20 +3328,23 @@ void FUN_0093ae40_cls::PlayerCharacter_SetActorValueF(int target, float value)
 
 bool __cdecl ActorValue_IsFlagSet(int actorValue, unsigned int mask);
 bool __cdecl FUN_0066ee10(int actorValue);
-void __cdecl Interface_UpdateActorValue(int actorValue);
+void __cdecl Interface_UpdateActorValue(int aeWhich);
 void __cdecl FUN_0066ee50(ActorValueOwner* owner, int actorValue, float previousValue, float currentValue,
                           ActorValueOwner* source);
 class PlayerCharacterValueUpdates : public PlayerCharacter
 {
   public:
-    int Actor_DifficultyLevelCheckModHealthI(int actorValue, int amount, PlayerCharacter* source);
+    int Actor_DifficultyLevelCheckModHealthI(int aiWhich, int aiValue, PlayerCharacter* apAttacker);
     void Actor_CheckSkillLevelChange(int actorValue, int clearFlag);
-    void PlayerCharacter_AlterModifier(int updateType, int actorValue, float value, int operation);
+    void PlayerCharacter_AlterModifier(int eGroup, int aiWhich, float afValue, int aeClampStyle);
     void PlayerCharacter_TempModActorValueI(int actorValue, int amount, PlayerCharacter* source);
 };
 // Unless FUN_00406d70(actorValue, 0x100), adjusts amount, applies it via FUN_0094c4f0, notifies, calls virtual slot 0x12e on health loss, then FUN_0066ee50.
 // @fnv 0x0093ae80
 // src: COMMUNITY 0x0093ae80
+// pdb: PlayerCharacter::TempModActorValue | PlayerCharacter.obj | debug, object-file run extension, low
+// pdb params: aiWhich, aiValue, apAttacker
+// pdb locals: foldValue
 void PlayerCharacterValueUpdates::PlayerCharacter_TempModActorValueI(int actorValue, int amount, PlayerCharacter* source)
 {
     if (ActorValue_IsFlagSet(actorValue, 0x100))
@@ -3681,19 +3722,22 @@ struct MAVActorBase
 struct MAVActor : MAVActorBase, MAVOwner
 {
     float AdjustActorValueMod(int aeAV, float afValue, MAVActor* apAttacker);
-    void PlayerCharacter_AlterModifier(int aiUnk, int aeAV, float afValue, int aiModifier);
+    void PlayerCharacter_AlterModifier(int eGroup, int aiWhich, float afValue, int aeClampStyle);
     void Actor_CheckSkillLevelChange(int aeAV, bool abUnk);
     void PlayerCharacter_TempModActorValueF(int aeAV, float afValue, MAVActor* apAttacker);
 };
 
 bool __cdecl MAVGetFlag(int aeAV, unsigned int auiFlag);
 bool __cdecl MAVHasValue(int aeAV);
-void __cdecl MAVNotify(int aeAV);
+void __cdecl MAVNotify(int aeWhich);
 void __cdecl MAVHandleChange(MAVOwner* apOwner, int aeAV, float afOldValue, float afDelta, MAVOwner* apAttacker);
 
 // Unless MAVGetFlag(aeAV, 0x100), adjusts afValue, applies it via FUN_0094c4f0, notifies, calls OnHealthDamage for AV 0x10 if negative, then MAVHandleChange.
 // @fnv 0x0093afb0
 // src: COMMUNITY 0x0093afb0
+// pdb: PlayerCharacter::TempModActorValue | PlayerCharacter.obj | debug, object-file run extension, low
+// pdb params: aiWhich, afValue, apAttacker
+// pdb locals: foldValue
 void MAVActor::PlayerCharacter_TempModActorValueF(int aeAV, float afValue, MAVActor* apAttacker)
 {
     if (MAVGetFlag(aeAV, 0x100))
@@ -3713,7 +3757,7 @@ namespace ActorValue {
 bool GetFlag(int actorValue, unsigned int flag);
 }
 bool FUN_0066ee10_stub(ActorValue::Index actorValue);
-void FUN_00704e10_stub(ActorValue::Index actorValue);
+void FUN_00704e10_stub(ActorValue::Index aeWhich);
 void FUN_0066ee50_stub(ActorValueOwner* owner, ActorValue::Index actorValue, float oldValue, float delta,
                        ActorValueOwner* attacker);
 
@@ -4069,14 +4113,17 @@ class PlayerStub : public PlayerPrimaryStub, public ActorValueOwner
 {
   public:
     bool CheckModValue(ActorValue::Index actorValue, float amount);
-    int AdjustModValue(ActorValue::Index actorValue, int amount, Actor* attacker);
-    void ApplyModifier(int group, ActorValue::Index actorValue, float amount, int type);
+    int AdjustModValue(ActorValue::Index aiWhich, int aiValue, Actor* apAttacker);
+    void ApplyModifier(int eGroup, ActorValue::Index aiWhich, float afValue, int aeClampStyle);
     void OnValueChanged(ActorValue::Index actorValue, bool flag);
     void ApplyModValue(ActorValue::Index actorValue, int amount, Actor* attacker);
 };
 
 // Applies a modifier to an actor value, handling damage for health and notifying of the change.
 // @fnv 0x0093b0f0
+// pdb: PlayerCharacter::PermanentModActorValue | PlayerCharacter.obj | debug, object-file run extension, low
+// pdb params: aiWhich, aiValue, apAttacker
+// pdb locals: foldValue
 void PlayerStub::ApplyModValue(ActorValue::Index actorValue, int amount, Actor* attacker)
 {
     if (!CheckModValue(actorValue, (float)amount))
@@ -4414,6 +4461,9 @@ struct FUN_0093b240_shell : PlayerCharacter
 // If FUN_00952730 and the FUN_00406d70 0x100 test allow, adjusts amount, applies it, notifies, calls OnHealth for AV 16 if negative, then FUN_0066ee50.
 // @fnv 0x0093b240
 // src: COMMUNITY 0x0093b240
+// pdb: PlayerCharacter::PermanentModActorValue | PlayerCharacter.obj | debug, object-file run extension, low
+// pdb params: aiWhich, afValue, apAttacker
+// pdb locals: foldValue
 void FUN_0093b240_shell::PlayerCharacter_PermanentModActorValueF(int actorValue, float amount, Actor* source)
 {
     if (!PlayerCharacter_CheckGodMode(actorValue, amount))
@@ -4442,15 +4492,15 @@ bool GetFlag(int av, unsigned int flag);
 }
 
 bool FUN_0066ee10(ActorValue::Index av);
-void Interface_UpdateActorValue(ActorValue::Index av);
+void Interface_UpdateActorValue(ActorValue::Index aeWhich);
 void FUN_0066ee50(ActorValueOwner* self, ActorValue::Index av, float fUnk18, float delta, ActorValueOwner* attacker);
 
 // PlayerCharacter.h lacks these actor-value operations; inherit the shared storage.
 struct PlayerHealthValueOperations : public PlayerCharacter
 {
     bool PlayerCharacter_CheckGodMode(ActorValue::Index av, float delta);
-    int Actor_DifficultyLevelCheckModHealthI(ActorValue::Index av, int delta, Actor* attacker);
-    void PlayerCharacter_AlterModifier(int group, ActorValue::Index av, float delta, int flag);
+    int Actor_DifficultyLevelCheckModHealthI(ActorValue::Index aiWhich, int aiValue, Actor* apAttacker);
+    void PlayerCharacter_AlterModifier(int eGroup, ActorValue::Index aiWhich, float afValue, int aeClampStyle);
     void Actor_CheckSkillLevelChange(ActorValue::Index av, bool flag);
 
     void PlayerCharacter_DamageModActorValueI(ActorValue::Index av, int delta, Actor* attacker);
@@ -4461,6 +4511,9 @@ FNV_STATIC_ASSERT(offsetof(PlayerCharacter, unk77C) == 0x77c);
 // Applies delta to actor value av when FUN_00952730 allows it, and for health switches the heartbeat sound according to the health ratio thresholds.
 // @fnv 0x0093b3a0
 // src: COMMUNITY 0x0093b3a0
+// pdb: PlayerCharacter::DamageModActorValue | PlayerCharacter.obj | debug, object-file run extension, low
+// pdb params: aiWhich, aiValue, apAttacker
+// pdb locals: foldValue, eclampStyle, foldHealthRatio, fhealthRatio
 void PlayerHealthValueOperations::PlayerCharacter_DamageModActorValueI(ActorValue::Index av, int delta, Actor* attacker)
 {
     if (!PlayerCharacter_CheckGodMode(av, (float)delta))
@@ -5341,6 +5394,9 @@ struct PlayerLike
 // Applies a delta to a tracked value after CanModify and Adjust checks, triggering heartbeat audio and damage effects when the value is 16.
 // @fnv 0x0093b7a0
 // src: COMMUNITY 0x0093b7a0
+// pdb: PlayerCharacter::DamageModActorValue | PlayerCharacter.obj | debug, object-file run extension, low
+// pdb params: aiWhich, afValue, apAttacker
+// pdb locals: foldValue, eclampStyle, foldHealthRatio, fhealthRatio
 void PlayerLike::PlayerCharacter_DamageModActorValueF(int av, float delta, PlayerLike* source)
 {
     if (!CanModify(av, delta))
@@ -5398,20 +5454,23 @@ int __cdecl TruncateFloatToInt(float value);
 struct PlayerCellQuery : PlayerCharacter
 {
     PlacedObjectInfo* FUN_00891170();
-    TESObjectCELL* PlayerCharacter_GetWaterCell(float radius);
+    TESObjectCELL* PlayerCharacter_GetWaterCell(float afCheckRadius);
 };
 // Returns the parent cell or a neighboring grid cell chosen from position and radius (capped at 2048), or null unless FUN_004518e0 accepts it.
 
 // @fnv 0x0093bba0
 // src: XBOX_PDB 0x0093bba0
-TESObjectCELL* PlayerCellQuery::PlayerCharacter_GetWaterCell(float radius)
+// pdb: PlayerCharacter::GetWaterCell | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb params: afCheckRadius
+// pdb locals: blargecheck, pretcell, cellmin, cellmax, icellx, icelly, ixshift, playerloc, iyshift, pgridcell
+TESObjectCELL* PlayerCellQuery::PlayerCharacter_GetWaterCell(float afCheckRadius)
 {
     TESObjectCELL* cell;
     {
         bool largeRadius = false;
-        if (radius > 2048.0)
+        if (afCheckRadius > 2048.0)
         {
-            radius = 2048.0f;
+            afCheckRadius = 2048.0f;
             largeRadius = true;
         }
         cell = GetParentCell();
@@ -5431,18 +5490,18 @@ TESObjectCELL* PlayerCellQuery::PlayerCharacter_GetWaterCell(float radius)
                             NiPoint2 minimum(float(cellX << 12), float(cellY << 12));
                             NiPoint2 maximum(float((cellX << 12) + 4096.0), float((cellY << 12) + 4096.0));
                             offsetX = 0;
-                            if (minimum.x >= position[0] - radius)
+                            if (minimum.x >= position[0] - afCheckRadius)
                                 offsetX = -1;
-                            else if (maximum.x <= position[0] + radius)
+                            else if (maximum.x <= position[0] + afCheckRadius)
                                 offsetX = 1;
                             if (offsetX)
                                 cell = DAT_011dea10->FUN_00451900(cellX + offsetX, cellY);
                             if (!cell || !reinterpret_cast<TESObjectCELL*>(cell)->HasWater())
                             {
                                 int offsetY = 0;
-                                if (minimum.y >= position[1] - radius)
+                                if (minimum.y >= position[1] - afCheckRadius)
                                     offsetY = -1;
-                                else if (maximum.y <= position[1] + radius)
+                                else if (maximum.y <= position[1] + afCheckRadius)
                                     offsetY = 1;
                                 if (offsetY)
                                     cell = DAT_011dea10->FUN_00451900(cellX, cellY + offsetY);
@@ -5619,21 +5678,23 @@ class B93BE30ProcessManager
     B93BE30Request* m_pkPositionPlayerRequest;
 
     void PlayerCharacter_HandlePositionPlayerRequest();
-    void PlayerCharacter_RequestPositionPlayer(B93BE30Request* pkRequest);
+    void PlayerCharacter_RequestPositionPlayer(B93BE30Request* apTargetLoc);
 };
 
 // Replaces m_pkPositionPlayerRequest with pkRequest, deleting the old one, then calls FUN_0093bea0 if g_pkB93BE30TES->FUN_00451530() is true.
 // @fnv 0x0093be30
 // src: XBOX_PDB 0x0093be30
-void B93BE30ProcessManager::PlayerCharacter_RequestPositionPlayer(B93BE30Request* pkRequest)
+// pdb: PlayerCharacter::RequestPositionPlayer | PlayerCharacter.obj | retail, string-set bridge, high
+// pdb params: apTargetLoc
+void B93BE30ProcessManager::PlayerCharacter_RequestPositionPlayer(B93BE30Request* apTargetLoc)
 {
     if (m_pkPositionPlayerRequest)
     {
-        if (pkRequest)
+        if (apTargetLoc)
             B93BE30ConsolePrint("AI: PositionPlayer request bashing earlier PositionPlayer request.");
         delete m_pkPositionPlayerRequest;
     }
-    m_pkPositionPlayerRequest = pkRequest;
+    m_pkPositionPlayerRequest = apTargetLoc;
     if (g_pkB93BE30TES->TES_CellTestRunning())
         PlayerCharacter_HandlePositionPlayerRequest();
 }
@@ -5669,8 +5730,8 @@ struct ExtObj
     void TES_ClearCellLoaderTasks();
     void FUN_0066b0d0(int arg);
     void* TESObjectREFR_GetLinkedRef();
-    void PlayerCharacter_FastTravel(void* arg);
-    void PlayerCharacter_PositionPlayerExterior(PosVec a, PosVec b, unsigned int c, unsigned char d);
+    void PlayerCharacter_FastTravel(void* apRef);
+    void PlayerCharacter_PositionPlayerExterior(PosVec aPos, PosVec aAngle, unsigned int apWorld, unsigned char abResetWeather);
     void PlayerCharacter_PositionPlayer(PosVec a, PosVec b, unsigned int c, unsigned char d);
     void* FUN_009306d0();
     void bhkCharacterController_SetFallStartHeight(float f);
@@ -5680,7 +5741,7 @@ struct ExtObj
     int TESObjectREFR_GetFirstFreeMarkerIndex(int arg);
     bool TESObjectREFR_GetMarkerAtIndex(int a, int b);
     bool TESObjectREFR_IsFurniture();
-    void Actor_PutActorInChairBedQuick(void* a, int b, int c, unsigned char d);
+    void Actor_PutActorInChairBedQuick(void* apFurniture, int apmarker, int aiIndex, unsigned char abSleeping);
     bool BGSSaveLoadGame_GetSaveGameLoading();
     bool IsFlag2Set();
     void PlayerCharacter_SetHasScriptNotDisabledFastTravel(int arg);
@@ -6859,6 +6920,8 @@ struct VTblObj
 // Handles the pending m_pPositionRequest by moving the player or following its target, calling its callback, then frees it; returns true if a move happened.
 // @fnv 0x0093bea0
 // src: XBOX_PDB 0x0093bea0
+// pdb: PlayerCharacter::HandlePositionPlayerRequest | PlayerCharacter.obj | retail, string-set bridge, high
+// pdb locals: bretval, plink, pcon, pmarker, pFurniture, bsleep, index
 bool FUN_0093bea0_cls::PlayerCharacter_HandlePositionPlayerRequest()
 {
     PositionRequest* kOld;
@@ -7039,7 +7102,7 @@ struct MatchAudio
     void Main_RenderMenuBackground();
     void FUN_00483710();
     void FUN_00ad8780(int);
-    void FUN_00ad78b0(MatchPoint);
+    void PositionListener(MatchPoint);
     void OrientListener(MatchPoint, MatchPoint);
 };
 struct MatchMenu
@@ -7058,7 +7121,7 @@ struct MatchMovie
 };
 struct MatchProcess
 {
-    void RemoveDetectionEventsFromActors();
+    void ProcessLists_RemoveDetectionEventsOnActors();
     void ProcessLists_MoveFollowersOnToPlayer();
 };
 struct MatchCalendar
@@ -7128,7 +7191,7 @@ extern "C"
     void __cdecl Interface_CloseLoadingMenu();
     int __cdecl StartMenu_GetClassStatic();
     MatchTile* __cdecl Tile_GetMenuByClass(int);
-    void __cdecl FUN_00665860();
+    void __cdecl ClearCanopyShadow();
     void __cdecl BSTreeManager_GetCanopyShadow();
     unsigned char __cdecl BSTreeManager_GetUseCanopyShadows();
     SpellItem* __cdecl FUN_0093ccd0();
@@ -8249,12 +8312,15 @@ struct MatchPlayer
 // Moves the player to the given cell and position, updates selection and weather, and refreshes the camera and controller state.
 // @fnv 0x0093c200
 // src: XBOX_PDB 0x0093c200
+// pdb: PlayerCharacter::PositionPlayer | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb params: aPos, aAngle, apCell, abResetWeather
+// pdb locals: ptargetworld, looking, UpdateData, pnextzone, pcurrworld, rot, paccum, pcurrzone, bmovieSequencePlaying, bplayMusicAfterSequence, binterior, itime, startpos, n, fheight, delta, lastPos, currentPos, loc, hkv
 void MatchPlayer::PlayerCharacter_PositionPlayer(MatchPoint position, float rise, float fall, float heading, MatchCell* cell,
                                bool weather)
 {
     if (!DAT_011dea10->TES_CellTestRunning())
         DAT_011dea0c->Main_RenderMenuBackground();
-    DAT_011e0e80.RemoveDetectionEventsFromActors();
+    DAT_011e0e80.ProcessLists_RemoveDetectionEventsOnActors();
     if (StartMenu_MainMenuIsActive())
     {
         Interface_CloseLoadingMenu();
@@ -8290,7 +8356,7 @@ void MatchPlayer::PlayerCharacter_PositionPlayer(MatchPoint position, float rise
     {
         cellState = cell->TESObjectCELL_GetMusicType(0);
         DAT_011dea10->AttachScene(cell, &position);
-        FUN_00665860();
+        ClearCanopyShadow();
     }
     else
     {
@@ -8301,7 +8367,7 @@ void MatchPlayer::PlayerCharacter_PositionPlayer(MatchPoint position, float rise
                 BSTreeManager_GetCanopyShadow();
             else
             {
-                FUN_00665860();
+                ClearCanopyShadow();
                 DAT_011dea10->FUN_0044ddc0()->ClearCanopyShadowMaskTexture();
             }
             DAT_011dea10->TES_SetWorldSpace(cell->FUN_0054ddd0());
@@ -8346,7 +8412,7 @@ void MatchPlayer::PlayerCharacter_PositionPlayer(MatchPoint position, float rise
     MatchUpdate update(0.0f, false, false);
     BSSceneGraph_GetCameraRoot(Main_GetWorldSceneGraph())->NiAVObject_Update(update);
     DAT_011dea10->GetHavokWorldObjectCountInSceneGraph_0084e3a0()->UpdateProperties();
-    BSAudio_QInstance()->FUN_00ad78b0(position);
+    BSAudio_QInstance()->PositionListener(position);
     BSAudio_QInstance()->OrientListener(MatchPoint(NiSin_005c53d0(GetAngle(0)), NiCos(GetAngle(0)), 0.0f), DAT_011a9484);
     PlayerCharacter_CheckForQuestTargetUpdate(this);
     MatchCtx* ctx = BSShaderManager_GetAccumulator();
@@ -8459,17 +8525,20 @@ struct LLD_PlayerCharacter
 int _TruncateFloatToInt(float);
 
 extern LLD_DataHandler* g_dataHandler;
-extern TESQueuedCellManager* DAT_011c9618;
+extern ExteriorCellLoader* DAT_011c9618;
 extern LLD_PlayerCharacter* _g_thePlayer;
 
 // Looks up the cell at point's grid position via several lookups, then calls _g_thePlayer->FUN_0093c200 with both points, the cell and flag.
 // @fnv 0x0093cce0
 // src: XBOX_PDB 0x0093cce0
-void LLD_PlayerCharacter::PlayerCharacter_PositionPlayerExterior(LLD_Point3 point, LLD_Point3 point2, W_00585b30* worldSpace, bool flag)
+// pdb: PlayerCharacter::PositionPlayerExterior | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb params: aPos, aAngle, apWorld, abResetWeather
+// pdb locals: ptelcell, icellx, icelly
+void LLD_PlayerCharacter::PlayerCharacter_PositionPlayerExterior(LLD_Point3 aPos, LLD_Point3 aAngle, W_00585b30* apWorld, bool abResetWeather)
 {
     LLD_Cell* cell = 0;
 
-    if (worldSpace)
+    if (apWorld)
     {
         if (DAT_011c9618)
             DAT_011c9618->ExteriorCellLoader_CancelAllCellLoads();
@@ -8478,22 +8547,22 @@ void LLD_PlayerCharacter::PlayerCharacter_PositionPlayerExterior(LLD_Point3 poin
         {
             int x;
 
-            x = _TruncateFloatToInt(point.x) >> 12;
-            y = _TruncateFloatToInt(point.y) >> 12;
+            x = _TruncateFloatToInt(aPos.x) >> 12;
+            y = _TruncateFloatToInt(aPos.y) >> 12;
 
-            cell = reinterpret_cast<LLD_Cell*>(worldSpace->GetCellAtGridPosition(x, y));
-            PlayerCharacter_ClearCellsIfTargetNotLoaded(cell, worldSpace);
-
-            if (!cell)
-                cell = worldSpace->TESWorldSpace_LoadCell(x, y);
+            cell = reinterpret_cast<LLD_Cell*>(apWorld->GetCellAtGridPosition(x, y));
+            PlayerCharacter_ClearCellsIfTargetNotLoaded(cell, apWorld);
 
             if (!cell)
-                cell = g_dataHandler->FUN_00461330(0, x, y, worldSpace);
+                cell = apWorld->TESWorldSpace_LoadCell(x, y);
+
+            if (!cell)
+                cell = g_dataHandler->FUN_00461330(0, x, y, apWorld);
         }
     }
 
     if (cell)
-        _g_thePlayer->PlayerCharacter_PositionPlayer(point, point2, cell, flag);
+        _g_thePlayer->PlayerCharacter_PositionPlayer(aPos, aAngle, cell, abResetWeather);
 }
 }  // namespace fnv_0093cce0
 
@@ -9280,8 +9349,8 @@ struct TravelProcesses
     void Target(TravelRef*);
     void Clear();
     void FinalA();
-    void FinalB();
-    void FinalC();
+    void ProcessLists_ProcessHighActorsForFastTravel();
+    void ProcessLists_Update3DAfterResting();
 };
 extern TravelProcesses travelProcesses;
 struct TravelLock
@@ -9337,7 +9406,7 @@ struct TravelSaved
 void TravelStore(TravelSaved*, bool, bool, bool);
 void TravelRestore(TravelSaved*);
 void TravelToggle(bool);
-float TravelDistance(const TravelLocation&, const TravelLocation&, float, TravelActorData*, int);
+float ComputeTeleportDoorPathLength(const TravelLocation&, const TravelLocation&, float, TravelActorData*, int);
 int TravelFormat(char*, unsigned, const char*, ...);
 int TravelAppend(char*, unsigned, const char*);
 void TravelWarning(const char*);
@@ -9347,7 +9416,10 @@ void TravelRefresh();
 // Computes travel distance to target, advances game time by the travel duration, teleports the player, and updates world state.
 // @fnv 0x0093cdf0
 // src: XBOX_PDB 0x0093cdf0
-void TravelRef::PlayerCharacter_FastTravel(TravelRef* target)
+// pdb: PlayerCharacter::FastTravel | PlayerCharacter.obj | retail, string-set bridge, high
+// pdb params: apRef
+// pdb locals: ftotaldist, lastcoord, fCheckPerk, ptimescale, ftime, playerLockData, msg, BUFSIZE, cellName, itotalSleepTime
+void TravelRef::PlayerCharacter_FastTravel(TravelRef* apRef)
 {
     float modifier7 = 0.0f;
     TravelPerks(0x33, this, &modifier7);
@@ -9374,18 +9446,18 @@ void TravelRef::PlayerCharacter_FastTravel(TravelRef* target)
     point3.x = travelPlayer->Position()->x;
     point3.y = travelPlayer->Position()->y;
     point3.z = travelPlayer->Position()->z;
-    Compute(target, &distance3, point3);
+    Compute(apRef, &distance3, point3);
     TravelActorData actorData(travelPlayer);
-    distance3 = TravelDistance(TravelLocation(travelPlayer), TravelLocation(target), 0.0f, &actorData, 0);
+    distance3 = ComputeTeleportDoorPathLength(TravelLocation(travelPlayer), TravelLocation(apRef), 0.0f, &actorData, 0);
     if (distance3 == 3.4028234663852886e+38)
     {
         const int capacity = 1024;
         char message[1024];
         TravelFormat(message, 1024, "FastTravel: Could not compute path length to Cell ");
-        if (target->Cell())
+        if (apRef->Cell())
         {
             TravelString nameX;
-            target->Cell()->Describe(&nameX);
+            apRef->Cell()->Describe(&nameX);
             TravelAppend(message, 1024, nameX);
         }
         distance3 = 0.0f;
@@ -9397,7 +9469,7 @@ void TravelRef::PlayerCharacter_FastTravel(TravelRef* target)
     duration3 *= timescale7->Value();
     hours = (int)duration3;
     flag658 = false;
-    travelWorld->Load(true, target, 0);
+    travelWorld->Load(true, apRef, 0);
     if (hours)
     {
         int initialHours7 = hours;
@@ -9424,7 +9496,7 @@ void TravelRef::PlayerCharacter_FastTravel(TravelRef* target)
         travelProcesses.SetTime(travelProcesses.Time() + duration3);
         travelCalendar.Update(duration3);
     }
-    travelProcesses.Target(target);
+    travelProcesses.Target(apRef);
     if (TravelCheck())
         travelWorld->Toggle(0);
     if (GetTravelFace())
@@ -9432,7 +9504,7 @@ void TravelRef::PlayerCharacter_FastTravel(TravelRef* target)
     TravelRefresh();
     GetTravelSky()->Set(true);
     travelMoving = true;
-    travelPlayer->Teleport(*target->Position(), target->Angle(), TravelLookupWorld(target), true);
+    travelPlayer->Teleport(*apRef->Position(), apRef->Angle(), TravelLookupWorld(apRef), true);
     travelMoving = false;
     hours = 0;
     GetTravelSky()->Set(false);
@@ -9441,9 +9513,9 @@ void TravelRef::PlayerCharacter_FastTravel(TravelRef* target)
     travelProcesses.Clear();
     travelWorld->End();
     travelProcesses.FinalA();
-    travelProcesses.FinalB();
+    travelProcesses.ProcessLists_ProcessHighActorsForFastTravel();
     travelPlayer->flag20c = false;
-    travelProcesses.FinalC();
+    travelProcesses.ProcessLists_Update3DAfterResting();
     Finish();
     End();
     travelPlayer->flag204 = false;
@@ -9460,6 +9532,7 @@ struct GlobalObject_0045cf30
 GlobalObject_0045cf30 g_011c3c10;
 // @fnv 0x0093d4f0
 // src: XBOX_PDB 0x0093d4f0
+// pdb: TES::GetSelectivePurgeUnusedOnFastTravel | PlayerCharacter.obj | debug, upstream name already matches, high
 void TES_GetSelectivePurgeUnusedOnFastTravel()
 {
     g_011c3c10.GetBoolValue();
@@ -9571,7 +9644,7 @@ struct TransitionNode
 struct TransitionActor
 {
     TransitionNode* PlayerCharacter_Get3D_00950bb0(bool);
-    void PlayerCharacter_ClearCellsIfTargetNotLoaded(void* first, void* fallback);
+    void PlayerCharacter_ClearCellsIfTargetNotLoaded(void* apTarget, void* apWorldSpace);
 };
 extern bool DAT_011e0e34;
 struct TransitionQueue
@@ -9589,11 +9662,14 @@ void MemoryPool_FreeUnusedPagesForAllPools_00aa7030();
 // If first is null or FUN_004511e0 rejects it, loads first (or fallback), detaches this object's node, runs the queue steps and purges unused face models.
 // @fnv 0x0093d500
 // src: XBOX_PDB 0x0093d500
-void TransitionActor::PlayerCharacter_ClearCellsIfTargetNotLoaded(void* first, void* fallback)
+// pdb: PlayerCharacter::ClearCellsIfTargetNotLoaded | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb params: apTarget, apWorldSpace
+// pdb locals: plocation, freedata, pnode, p3D
+void TransitionActor::PlayerCharacter_ClearCellsIfTargetNotLoaded(void* apTarget, void* apWorldSpace)
 {
-    if (!first || !DAT_011dea10->FUN_004511e0(first, false))
+    if (!apTarget || !DAT_011dea10->FUN_004511e0(apTarget, false))
     {
-        void* destination = first ? first : fallback;
+        void* destination = apTarget ? apTarget : apWorldSpace;
         DAT_011dea10->TES_ShowLoadingMenu(true, destination, false);
         if (DAT_011dea3c->FUN_008d6f30())
             DAT_011dea3c->FUN_008d6f30()->TESObjectCELL_RemoveReference(DAT_011dea3c);
@@ -9936,7 +10012,7 @@ struct TravelObject
 };
 struct TravelProcesses
 {
-    bool Blocked(bool);
+    bool ProcessLists_AreHostilActorsNear(bool);
     TravelList* Find(TravelObject*, int, int);
 };
 struct TravelSetting
@@ -9959,12 +10035,14 @@ extern float DAT_010162c0;
 // Checks multiple conditions (processes, items, player state, cell/world) to determine if travel is allowed, queuing a UI message on failure.
 // @fnv 0x0093d660
 // src: COMMUNITY 0x0093d660
+// pdb: PlayerCharacter::CanFastTravel | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb locals: pstring, plist, preflist, bsearch, bretval, pnext, peffect, fCheckPerk, pworld
 bool TravelObject::PlayerCharacter_CanFastTravel()
 {
     bool allowed3 = false;
     bool unused4 = false;
     char message2[500];
-    if (DAT_011e0e80.Blocked(g_thePlayer->PlayerState()))
+    if (DAT_011e0e80.ProcessLists_AreHostilActorsNear(g_thePlayer->PlayerState()))
     {
         FormatTravel(message2, 500, g_011d3dd8.String());
         QueueUIMessage(message2, 0, "Interface\\Icons\\Message Icons\\glow_message_vaultboy_sad.dds", 0, DAT_010162c0,
@@ -10081,16 +10159,16 @@ struct CellS
     WorldSpaceS* GetParentWorldSpace();
     int GetPosX();
     int GetPosY();
-    void GetNavMeshData(CellPos* pos, NiPoint3* rot);
+    void GetNavMeshData(CellPos* aOutPos, NiPoint3* aOutRot);
 };
 struct WorldSpaceS
 {
-    CellS* GetCellAt(int x, int y);
+    CellS* GetCellAt(int aiX, int aiY);
 };
 struct DataHandlerS
 {
     CellS* GetInteriorCell(const char* name);
-    WorldSpaceS* GetWorldSpaceByName(const char* name, int* x, int* y);
+    WorldSpaceS* GetWorldSpaceByName(const char* apCellID, int* aiOutX, int* aiOutY);
 };
 struct QueuedCellManagerS
 {
@@ -10283,18 +10361,21 @@ struct RefVtableS
 
 struct PlayerCenterOnCell : PlayerCharacter
 {
-    void PlayerCharacter_ClearCellsIfTargetNotLoaded(CellS* cell, WorldSpaceS* world);
+    void PlayerCharacter_ClearCellsIfTargetNotLoaded(CellS* apTarget, WorldSpaceS* apWorldSpace);
     void PlayerCharacter_PositionPlayer(ValueStorage<sizeof(NiPoint3)> pos, ValueStorage<sizeof(NiPoint3)> rot, CellS* cell, bool arg);
-    void PlayerCharacter_CenterOnCell(const char* name, CellS* targetCell);
+    void PlayerCharacter_CenterOnCell(const char* name, CellS* apCellIn);
 };
 
 // Resolves a cell from targetCell or name, flushes DAT_011c9618, calls FUN_0093c200 with its nav-mesh data, and sets Z from land height for exterior cells.
 // @fnv 0x0093db60
 // src: XBOX_PDB 0x0093db60
-void PlayerCenterOnCell::PlayerCharacter_CenterOnCell(const char* apCellName, CellS* apCell)
+// pdb: PlayerCharacter::CenterOnCell | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb params: apCellID, apCellIn
+// pdb locals: pos, pworld, pCell, iy, ix, rot, z
+void PlayerCenterOnCell::PlayerCharacter_CenterOnCell(const char* apCellName, CellS* apCellIn)
 {
     ProgramFlow();
-    CellS* pCell = apCell;
+    CellS* pCell = apCellIn;
     CellPos _pos;
     WorldSpaceS* world = 0;
     if (!pCell)
@@ -10355,13 +10436,15 @@ class CharacterActionState : public Actor
 // Masks the current vtbl20 result with 0xCC00, ORs in 0x0400, and passes the combined flags to m_pActorMover->SetAnimationFlags.
 // @fnv 0x0093dd20
 // src: XBOX_PDB 0x0093dd20
+// pdb: PlayerCharacter::Sneak | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb locals: slastMoveMode, smoveMode
 void CharacterActionState::PlayerCharacter_Sneak()
 {
     unsigned short currentGroup = GetVtbl20Result();
     unsigned short flags = 0;
     flags = currentGroup & 0xCC00;
     flags |= 0x0400;
-    m_pActorMover->SetAnimationFlags(flags);
+    pActorMover->SetAnimationFlags(flags);
 }
 
 namespace fnv_0093dd80 {
@@ -10387,7 +10470,7 @@ struct Obj93dd80
 {
     static void* operator new(unsigned int size);
     static void operator delete(void*, unsigned int);
-    Obj93dd80(void* form, unsigned int value, float f);
+    Obj93dd80(void* form, unsigned int apEffectData, float afTime);
     virtual ~Obj93dd80();
     virtual void v01();
     virtual void v02();
@@ -10468,7 +10551,7 @@ struct Obj93dd80
 
 struct ProcLists93dd80
 {
-    void Add973fd0(Obj93dd80* obj);
+    void Add973fd0(Obj93dd80* apTempEffect);
 };
 extern ProcLists93dd80 g_procLists93dd80;
 
@@ -11331,6 +11414,8 @@ struct Owner93dd80
 // Iterates linked nodes, creates Obj93dd80 for enabled items, adds ready objects to g_procLists93dd80, deletes unready ones.
 // @fnv 0x0093dd80
 // src: COMMUNITY 0x0093dd80
+// pdb: PlayerCharacter::SpotterEffectNearbyEnemies | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb locals: plist, pact, pEffectData, peffect
 void Owner93dd80::PlayerCharacter_SpotterEffectNearbyEnemies()
 {
     Item93dd80* itemTmp;
@@ -11367,19 +11452,22 @@ struct FNV_93dee0_Node
 };
 struct FNV_93dee0_Host : PlayerCharacter
 {
-    unsigned char PlayerCharacter_IsTargetPerceivedAndHostile(unsigned int formID);
+    unsigned char PlayerCharacter_IsTargetPerceivedAndHostile(unsigned int target);
 };
 // Walks the linked list and returns the state of the entry whose formID matches, or 0 if none matches.
 // @fnv 0x0093dee0
 // src: XBOX_PDB 0x0093dee0
-unsigned char FNV_93dee0_Host::PlayerCharacter_IsTargetPerceivedAndHostile(unsigned int formID)
+// pdb: PlayerCharacter::IsTargetPerceivedAndHostile | PlayerCharacter.obj | debug, upstream name already matches, high
+// pdb params: target
+// pdb locals: plist, pact
+unsigned char FNV_93dee0_Host::PlayerCharacter_IsTargetPerceivedAndHostile(unsigned int target)
 {
     FNV_93dee0_Node* node = *reinterpret_cast<FNV_93dee0_Node**>(reinterpret_cast<char*>(this) + 0xD48);
     FNV_93dee0_Entry* entry = 0;
     while (node && *node->FUN_006815c0())
     {
         entry = *node->FUN_006815c0();
-        if (entry->formID == formID)
+        if (entry->formID == target)
             return entry->state;
         node = node->FUN_00726070();
     }
@@ -11490,7 +11578,7 @@ struct Effect
 };
 struct Collection
 {
-    bool FindNextRef(ReferenceFilter*, void**, int*, int);
+    bool BGSLoadedReferenceCollection_GetNextObject(ReferenceFilter*, void**, int*, int);
 };
 extern Collection* DAT_011c95c8;
 struct DataAccess
@@ -11515,6 +11603,8 @@ struct Owner
 // For each of four ReferenceFilters, creates an Effect per found ref and queues it via DAT_011e0e80.FUN_00973fd0 if Apply succeeds, else deletes it.
 // @fnv 0x0093df50
 // src: COMMUNITY 0x0093df50
+// pdb: PlayerCharacter::ShaderNearbyItems | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb locals: ammoIterator, pChange, fTime, pRef, pEffectData, weaponIterator, ingestIterator, peffect
 void Owner::PlayerCharacter_ShaderNearbyItems()
 {
     ReferenceFilter b(40, this);
@@ -11527,7 +11617,7 @@ void Owner::PlayerCharacter_ShaderNearbyItems()
     void* ba = DAT_011c3f2c->TESDataHandler_GetItemDetectedEffect();
     if (!ba)
         return;
-    while (DAT_011c95c8->FindNextRef(&b, &k, &e, 3))
+    while (DAT_011c95c8->BGSLoadedReferenceCollection_GetNextObject(&b, &k, &e, 3))
     {
         Effect* action0 = new Effect(k, ba, l);
         if (action0->Apply())
@@ -11535,7 +11625,7 @@ void Owner::PlayerCharacter_ShaderNearbyItems()
         else
             delete action0;
     }
-    while (DAT_011c95c8->FindNextRef(&j, &k, &e, 3))
+    while (DAT_011c95c8->BGSLoadedReferenceCollection_GetNextObject(&j, &k, &e, 3))
     {
         Effect* action1 = new Effect(k, ba, l);
         if (action1->Apply())
@@ -11543,7 +11633,7 @@ void Owner::PlayerCharacter_ShaderNearbyItems()
         else
             delete action1;
     }
-    while (DAT_011c95c8->FindNextRef(&q, &k, &e, 3))
+    while (DAT_011c95c8->BGSLoadedReferenceCollection_GetNextObject(&q, &k, &e, 3))
     {
         Effect* action2 = new Effect(k, ba, l);
         if (action2->Apply())
@@ -11551,7 +11641,7 @@ void Owner::PlayerCharacter_ShaderNearbyItems()
         else
             delete action2;
     }
-    while (DAT_011c95c8->FindNextRef(&c, &k, &e, 3))
+    while (DAT_011c95c8->BGSLoadedReferenceCollection_GetNextObject(&c, &k, &e, 3))
     {
         Effect* action3 = new Effect(k, ba, l);
         if (action3->Apply())
@@ -11569,6 +11659,7 @@ struct FUN_0093e4f0_Class
 
 // @fnv 0x0093e4f0
 // src: COMMUNITY 0x0093e4f0
+// pdb: FindObjectIterator::~FindObjectIterator | PlayerCharacter.obj | debug, object-file gap fill, medium
 unsigned int* __thiscall FUN_0093e4f0_Class::TESDataHandler_GetItemDetectedEffect()
 {
     return *(unsigned int**)((char*)this + 0x634);
@@ -11600,7 +11691,7 @@ class VATS
 {
   public:
     int GetFlags();
-    void ForceTargetKillShot(int a1, unsigned int a4);
+    void ForceTargetKillShot(int a1, unsigned int eDamageLimb);
 };
 
 extern VATS DAT_011f2250;
@@ -11612,19 +11703,22 @@ using ::SettingT;
 
 extern SettingT<GameSettingCollection> originalRuntimeFloatSetting1075;
 
-void __cdecl FUN_00709c40(bool);
+void __cdecl Interface_SetGunScopeVisible(bool);
 void __cdecl CopyGlobalFloat();
 
 // PlayerCharacter.h lacks this notification operation; inherit the shared storage and methods.
 struct PlayerQuestNotificationOperations : public PlayerCharacter
 {
-    void PlayerCharacter_SetSlowMoCamera(int a1, float a2, bool a3, unsigned int a4);
+    void PlayerCharacter_SetSlowMoCamera(int pTarget, float fTime, bool bKillShot, unsigned int eLimb);
 };
 
 // Plays UIPopUpQuestNew, then if a1 is set and VATS flags are 0, stores a2 in unk0E18 and, when unk07C0 is 2, calls DAT_011f2250.FUN_009ca2c0.
 // @fnv 0x0093e530
 // src: COMMUNITY 0x0093e530
-void PlayerQuestNotificationOperations::PlayerCharacter_SetSlowMoCamera(int a1, float afValue, bool a3, unsigned int a4)
+// pdb: PlayerCharacter::SetSlowMoCamera | PlayerCharacter.obj | retail, string-set bridge, high
+// pdb params: pTarget, fTime, bKillShot, eLimb
+// pdb locals: psoundHand
+void PlayerQuestNotificationOperations::PlayerCharacter_SetSlowMoCamera(int pTarget, float fTime, bool bKillShot, unsigned int eLimb)
 {
     if (layoutPadding7C0[0] == 0)
         return;
@@ -11636,19 +11730,19 @@ void PlayerQuestNotificationOperations::PlayerCharacter_SetSlowMoCamera(int a1, 
     soundHandle = static_cast<PlayerSoundAudioOperations*>(BSAudio::GetSingleton())->GetSoundHandleByEditorID("UIPopUpQuestNew", 0x121);
     soundHandle.Play(false);
 
-    if (!a1 || DAT_011f2250.GetFlags())
+    if (!pTarget || DAT_011f2250.GetFlags())
         return;
 
-    if (a3 && (*reinterpret_cast<float*>(unkE1C)) <= 0.0)
+    if (bKillShot && (*reinterpret_cast<float*>(unkE1C)) <= 0.0)
     {
         (*reinterpret_cast<float*>(unkE1C)) = originalRuntimeFloatSetting1075.Float()[0];
     }
-    else if (a3)
+    else if (bKillShot)
     {
         return;
     }
 
-    fVATSTimer = afValue;
+    fVATSTimer = fTime;
 
     if (layoutPadding7C0[0] == 2)
     {
@@ -11660,10 +11754,10 @@ void PlayerQuestNotificationOperations::PlayerCharacter_SetSlowMoCamera(int a1, 
         {
             DAT_011f21d1 = !_g_thePlayer->PlayerCharacter_Is3rdPerson();
         }
-        DAT_011f2250.ForceTargetKillShot(a1, a4);
+        DAT_011f2250.ForceTargetKillShot(pTarget, eLimb);
         if (this->Actor_GetIronSights())
         {
-            FUN_00709c40(false);
+            Interface_SetGunScopeVisible(false);
         }
     }
     else
@@ -11693,6 +11787,9 @@ struct FUN_009444d0_shell
 // Updates a timer, clears a pathing solution if empty, and sets combat state flags based on the player's combat group target count.
 // @fnv 0x009444d0
 // src: COMMUNITY 0x009444d0
+// pdb: PlayerCharacter::UpdatePlayerCombat | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb params: afDelta
+// pdb locals: iplayerCombatantCount, iplayerCombatantLostCount
 void FUN_009444d0_shell::PlayerCharacter_UpdatePlayerCombat(float afDelta)
 {
     unsigned int iplayerCombatantCount;
@@ -11709,7 +11806,7 @@ void FUN_009444d0_shell::PlayerCharacter_UpdatePlayerCombat(float afDelta)
         *(float*)((char*)this + 0xd6c) = 0.0f;
     iplayerCombatantLostCount = 0;
     iplayerCombatantCount = ((CombatManager*)BGSSaveLoadGlobalDataWorldspacePtr)
-                                ->GetCombatGroupTargetCount(_g_thePlayer, &iplayerCombatantLostCount);
+                                ->GetCombatantCount(_g_thePlayer, &iplayerCombatantLostCount);
     if (iplayerCombatantCount > 0)
     {
         *(bool*)((char*)this + 0xdf0) = true;
@@ -13047,7 +13144,7 @@ struct AimPlayer : AimObject
     unsigned int unk6e0;
     float aimingPitch;
     double TESObjectREFR_GetDistanceFromPoint(const AimVector*);
-    void ClampLookAngle(float);
+    void MobileObject_SetLooking(float);
     unsigned int GetVtbl20Result();
     void UpdateScopeZoom(float);
     float FUN_00931d70();
@@ -13116,7 +13213,10 @@ extern double DAT_0101ff40, DAT_0101ff48, DAT_0101ff58, DAT_0101ffa0, DAT_010297
 // Updates aim yaw and pitch based on the current aim mode, target position, input, and scope zoom, returning whether input was handled.
 // @fnv 0x009445b0
 // src: XBOX_PDB 0x009445b0
-bool AimPlayer::PlayerCharacter_UpdateHeadingAndLooking(float delta, bool force, unsigned short* flags, int unused)
+// pdb: PlayerCharacter::UpdateHeadingAndLooking | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb params: afDelta, abHorse, apMoveMode, abScanFinished
+// pdb locals: etargetLimb, ptarget, bretVal, ptarget3d, rot, targetPos, btargetSet, pbodyPartData, pactor, pbodyPart, fheading, blimbSelect, fheadingDelta, flookingDelta, flooking, bresetInterpolators, fcenteredCameraOffset, bUseMouseForCameraOffset, ilimbCount, pbodyPartArray, totalLoc, plimb, worldTranslate, eindex ...
+bool AimPlayer::PlayerCharacter_UpdateHeadingAndLooking(float afDelta, bool abHorse, unsigned short* apMoveMode, int abScanFinished)
 {
     bool handledScope4 = false;
     AimObject* targetScope2 = 0;
@@ -13163,10 +13263,10 @@ bool AimPlayer::PlayerCharacter_UpdateHeadingAndLooking(float delta, bool force,
                 positionScope4.z += TESObjectREFR_GetDistanceFromPoint(&positionScope4) * *DAT_011ce768.Setting_Float_00403e20();
             AimVector anglesScope2 = CombatUtilities_GetAngleToProjectedPoint(this, positionScope4);
             SetYaw(anglesScope2.z);
-            ClampLookAngle(anglesScope2.x);
+            MobileObject_SetLooking(anglesScope2.x);
         }
         DAT_011f2250.VATS_Update();
-        *flags = GetVtbl20Result() & 0xcc00;
+        *apMoveMode = GetVtbl20Result() & 0xcc00;
         handledScope4 = true;
     }
     break;
@@ -13175,7 +13275,7 @@ bool AimPlayer::PlayerCharacter_UpdateHeadingAndLooking(float delta, bool force,
     case 3: {
         targetScope2 = DAT_011f21cc;
         partScope2 = DAT_011a59f0;
-        UpdateScopeZoom(delta);
+        UpdateScopeZoom(afDelta);
         if (targetScope2)
         {
             AimNode* nodeScope11 = targetScope2->GetNode();
@@ -13366,7 +13466,7 @@ bool AimPlayer::PlayerCharacter_UpdateHeadingAndLooking(float delta, bool force,
             float yawScope54 = DAT_011e0774->NonLinearInterpolator_GetCurrent();
             float pitchScope55 = DAT_011e0760->NonLinearInterpolator_GetCurrent();
             SetYaw(yawScope54);
-            ClampLookAngle(pitchScope55);
+            MobileObject_SetLooking(pitchScope55);
             if (DAT_011e0774->NonLinearInterpolator_GetFinished() && DAT_011e0760->NonLinearInterpolator_GetFinished() && DAT_011a3b31)
                 VATSMenu_SetHeadingReached(true);
             else
@@ -13385,7 +13485,7 @@ bool AimPlayer::PlayerCharacter_UpdateHeadingAndLooking(float delta, bool force,
             int horizontalScope59 = 0;
             int verticalScope9 = 0;
             int wheelScope61Local16 = 0;
-            delta *= FUN_00950a60(!PlayerCharacter_Is3rdPerson())->Animation_GetGlobalTimeMultiplier();
+            afDelta *= FUN_00950a60(!PlayerCharacter_Is3rdPerson())->Animation_GetGlobalTimeMultiplier();
             InterfaceManager_GetSingleton();
             if (InterfaceManager_Has360Controller())
             {
@@ -13395,7 +13495,7 @@ bool AimPlayer::PlayerCharacter_UpdateHeadingAndLooking(float delta, bool force,
                     axisScope62 = inputScope7->GetAxisState(0, 10);
                     if (FUN_00ec7d40(axisScope62) < 8689)
                         axisScope62 = 0;
-                    wheelScope61Local16 = (int)(axisScope62 * DAT_0101ffa0 * delta);
+                    wheelScope61Local16 = (int)(axisScope62 * DAT_0101ffa0 * afDelta);
                     horizontalScope59 = inputScope7->GetAxisState(0, 9);
                     if (FUN_00ec7d40(horizontalScope59) < 8689)
                         horizontalScope59 = 0;
@@ -13453,8 +13553,8 @@ bool AimPlayer::PlayerCharacter_UpdateHeadingAndLooking(float delta, bool force,
                         powerXScope69Local22 = minimumScope6;
                     if (powerYScope70Local8 < minimumScope6)
                         powerYScope70Local8 = minimumScope6;
-                    horizontalScope59 = (int)(powerXScope69Local22 * fractionXScope7 * speedXScope74Local2 * delta);
-                    verticalScope9 = (int)(powerYScope70Local8 * fractionYScope68 * speedYScope75 * delta);
+                    horizontalScope59 = (int)(powerXScope69Local22 * fractionXScope7 * speedXScope74Local2 * afDelta);
+                    verticalScope9 = (int)(powerYScope70Local8 * fractionYScope68 * speedYScope75 * afDelta);
                     if (negativeXScope9)
                         horizontalScope59 *= -1;
                     if (positiveYScope64)
@@ -13516,21 +13616,21 @@ bool AimPlayer::PlayerCharacter_UpdateHeadingAndLooking(float delta, bool force,
             DAT_011e0764 = FUN_00931d70();
             if ((DAT_011e07b8 || DAT_011e07c1) && !process->GetAimConstraint())
             {
-                DAT_011e0b60 += horizontalScope59 * DAT_01023128 * *DAT_011cdd90.Setting_Float_00403e20() * delta;
+                DAT_011e0b60 += horizontalScope59 * DAT_01023128 * *DAT_011cdd90.Setting_Float_00403e20() * afDelta;
                 if (!InterfaceManager_Has360Controller())
-                    DAT_011e0b58 += verticalScope9 * DAT_01023128 * *DAT_011cd444.Setting_Float_00403e20() * delta;
+                    DAT_011e0b58 += verticalScope9 * DAT_01023128 * *DAT_011cd444.Setting_Float_00403e20() * afDelta;
             }
             else
             {
-                if (horizontalScope59 || force)
+                if (horizontalScope59 || abHorse)
                 {
                     float rotationScope80 = horizontalScope59 * *DAT_011e0a6c.Setting_Float_00403e20();
-                    if (flags)
+                    if (apMoveMode)
                     {
                         if (horizontalScope59 && rotationScope80 < 0.0)
-                            *flags |= 16;
+                            *apMoveMode |= 16;
                         else if (horizontalScope59)
-                            *flags |= 32;
+                            *apMoveMode |= 32;
                     }
                     if (!GameSettingCollection_File() && GetAnimAction_008a7570() != 10 && !PlayerCharacter_GetUnderAIControl())
                     {
@@ -13542,7 +13642,7 @@ bool AimPlayer::PlayerCharacter_UpdateHeadingAndLooking(float delta, bool force,
                                 aimingPitch = DAT_01016b78;
                             else if (aimingPitch > DAT_01030f38)
                                 aimingPitch = DAT_0101ff38;
-                            if (force)
+                            if (abHorse)
                                 DAT_011a3b40 = DAT_01016088;
                         }
                         else if (modeScope81 == 0)
@@ -13578,13 +13678,16 @@ struct FadeCurve
     float fDuration2;
     float fDuration;
 
-    bool NonLinearInterpolator_Setup(float afStart, float afEnd, float afDuration);
+    bool NonLinearInterpolator_Setup(float afStart, float afEnd, float afTime);
 };
 
 // Fills afValues with a symmetric 100-point curve, maps it from afStart to afEnd, and stores start, end and duration unless the GetTime64 check fails.
 // @fnv 0x00946020
 // src: XBOX_PDB 0x00946020
-bool FadeCurve::NonLinearInterpolator_Setup(float afStart, float afEnd, float afDuration)
+// pdb: NonLinearInterpolator::Setup | PlayerCharacter.obj | debug, upstream name already matches, high
+// pdb params: afStart, afEnd, afTime
+// pdb locals: fincrement, fincrementIncrementor, fcurrent, i, j
+bool FadeCurve::NonLinearInterpolator_Setup(float afStart, float afEnd, float afTime)
 {
     float fValue = 0.0f;
     float fStep2 = 0.02f;
@@ -13603,8 +13706,8 @@ bool FadeCurve::NonLinearInterpolator_Setup(float afStart, float afEnd, float af
         return false;
     fStart = afStart;
     m_fEndValue = afEnd;
-    fDuration = afDuration;
-    fDuration2 = afDuration;
+    fDuration = afTime;
+    fDuration2 = afTime;
     return true;
 }
 
@@ -13630,6 +13733,8 @@ class FUN_00946190_cls
 // Calls FUN_00406cc0 with a value derived from m_198 and m_19c, then returns m_18c or a linear interpolation of m_table entries picked by FUN_00ec62c0().
 // @fnv 0x00946190
 // src: XBOX_PDB 0x00946190
+// pdb: NonLinearInterpolator::GetCurrent | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb locals: iindex
 float FUN_00946190_cls::NonLinearInterpolator_GetCurrent()
 {
     FUN_00406cc0((float)((m_19c - BSMAX_00404010(m_198, 0.0f)) / m_19c * DAT_01075d30));
@@ -13784,7 +13889,7 @@ struct AnimationController
 };
 struct AnimationLink
 {
-    AnimationLink(int animationId, int packedData);
+    AnimationLink(int apObject, int aiNumber);
     AnimationLink* InitializeFields_004bc550(int animationId, int packedData);
     unsigned int id;
     int data;
@@ -13950,11 +14055,11 @@ struct ActorAnimation : TESObjectREFR
     virtual void UnknownActorF9();
     virtual void UnknownActorFA();
     virtual void ApplyAnimation(AnimationData*, int, unsigned char, int, bool);
-    void* TESObjectREFR_GetInventoryItem_00576260(int id, int flags);
+    void* TESObjectREFR_GetInventoryItem_00576260(int apObject, int aId);
     int FUN_004c8f30(int);
-    int SetIdleAt(int, int);
+    int PlayerCharacter_SetAmmoForHotKey(int, int);
     bool IsWeaponDrawn();
-    void __thiscall PlayerCharacter_AmmoSwapHelper(unsigned char allowTransition, unsigned char skipIfPlayable);
+    void __thiscall PlayerCharacter_AmmoSwapHelper(unsigned char abStartReloadAnimation, unsigned char bOnlyIfEmpty);
 };
 extern int DAT_011dea3c;
 extern void* __cdecl FUN_004bf220(ActorAnimation*);
@@ -13967,7 +14072,10 @@ extern int __cdecl FUN_0044ddc0(void*);
 // Searches the state's animation list for the next entry whose handle test is positive; if found, sets an AnimationLink for it and calls ApplyAnimation.
 // @fnv 0x009462c0
 // src: XBOX_PDB 0x009462c0
-void __thiscall ActorAnimation::PlayerCharacter_AmmoSwapHelper(unsigned char allowTransition, unsigned char skipIfPlayable)
+// pdb: PlayerCharacter::AmmoSwapHelper | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb params: abStartReloadAnimation, bOnlyIfEmpty
+// pdb locals: pweap, pweapItem, pAmmoList, bFoundCurrentAmmo, pCurrentAmmo, pTest, bFoundNextAmmo, pAmmoItem, icount, pinventory, parrows
+void __thiscall ActorAnimation::PlayerCharacter_AmmoSwapHelper(unsigned char abStartReloadAnimation, unsigned char bOnlyIfEmpty)
 {
     typedef AnimationData*(__thiscall * GetAnimation)(AnimationController*);
     if (!process || !process->GetState())
@@ -14013,7 +14121,7 @@ void __thiscall ActorAnimation::PlayerCharacter_AmmoSwapHelper(unsigned char all
                                                     }
                                                 }
                                                 h = (AnimationHandle*)TESObjectREFR_GetInventoryItem_00576260(j, 0);
-                                                if (skipIfPlayable && j && h && h->FUN_00726070() > 0)
+                                                if (bOnlyIfEmpty && j && h && h->FUN_00726070() > 0)
                                                 {
                                                     AnimationHandle* releaseEarly = h;
                                                     AnimationHandle* deleteEarly = releaseEarly;
@@ -14051,7 +14159,7 @@ void __thiscall ActorAnimation::PlayerCharacter_AmmoSwapHelper(unsigned char all
                                                 if (i)
                                                 {
                                                     if (a->FindFirstNonNegativeValue() >= 0)
-                                                        SetIdleAt(a->FindFirstNonNegativeValue(), f);
+                                                        PlayerCharacter_SetAmmoForHotKey(a->FindFirstNonNegativeValue(), f);
                                                     e = FUN_004bf220(this);
                                                     k = ((ActorAnimation*)e)->FUN_004c8f30(f);
                                                     d = new AnimationLink(f, k);
@@ -14062,9 +14170,9 @@ void __thiscall ActorAnimation::PlayerCharacter_AmmoSwapHelper(unsigned char all
                                                     process->SetLink(d);
                                                     process->Toggle(0)->FUN_006ecd40();
                                                     ApplyAnimation(process->GetState()->FUN_0044ddc0(),
-                                                                   (allowTransition && IsWeaponDrawn()) ? 2 : 0,
+                                                                   (abStartReloadAnimation && IsWeaponDrawn()) ? 2 : 0,
                                                                    ((AnimationHandle*)process->GetState())->HasEffect(),
-                                                                   2, !allowTransition);
+                                                                   2, !abStartReloadAnimation);
                                                 }
                                                 delete h;
                                             }
@@ -14103,7 +14211,7 @@ struct RefPosStub
 
 struct ItemStub
 {
-    bool Contains(PosStub* pos);
+    bool Contains(PosStub* apTest);
 };
 
 struct NodeStub
@@ -14516,13 +14624,15 @@ struct PCTravelStub : Character
     int unk7ac;
     FormArrStub* pForms;
     void PlayerCharacter_CheckBorderRegion();
-    void UpdateA(int arg);
+    void PlayerCharacter_ReturnToLastKnownGoodPosition(int abPositionPlayer);
     void UpdateB();
 };
 
 // If a global flag is set and not traveling, calls UpdateB when b79c is set, a form's list contains the position, or the world check fails, else UpdateA(0).
 // @fnv 0x00947b10
 // src: XBOX_PDB 0x00947b10
+// pdb: PlayerCharacter::CheckBorderRegion | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb locals: binBorderRegion, icount, testPoint, pactor, i, pregion, plist, pregionPointList, pworld
 void PCTravelStub::PlayerCharacter_CheckBorderRegion()
 {
     if (*g_011e08e0.Bool() && !g_TES->IsTraveling())
@@ -14562,7 +14672,7 @@ void PCTravelStub::PlayerCharacter_CheckBorderRegion()
                 bFound4 = true;
         }
         if (!bFound4)
-            UpdateA(0);
+            PlayerCharacter_ReturnToLastKnownGoodPosition(0);
         else
             UpdateB();
     }
@@ -14596,6 +14706,8 @@ struct FUN_00947c90_Layout
 // Stores the actor's current position as lastKnownGoodPosition and caches the parent cell's world space or the cell itself in pWorldSpaceOrCell.
 // @fnv 0x00947c90
 // src: COMMUNITY 0x00947c90
+// pdb: PlayerCharacter::SetLastKnownGoodPosition | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb locals: pactor
 void FUN_00947c90_shell::PlayerCharacter_SetLastKnownGoodPosition()
 {
     TopicH* pactor = this;
@@ -14620,7 +14732,7 @@ struct DxItem
 
 struct DxFoo
 {
-    DxFoo(DxItem* item);
+    DxFoo(DxItem* ref);
     int m_00;
     int m_04;
 };
@@ -14638,12 +14750,12 @@ struct DxNode
 
 struct DxObj
 {
-    DxNode* Enumerate(bool flag);
+    DxNode* TESWorldSpace_BuildAudioMarkerList(bool abLocalOnly);
 };
 
 struct DxObj2
 {
-    void Attach(DxNode* node);
+    void AddAudioMarkersToList(DxNode* apAudioList);
 };
 
 struct DxLst
@@ -14663,13 +14775,15 @@ class FUN_00947d80_cls
 // Wraps each item from the object's enumeration (or a new node attached to the sub-object) in DxFoo and inserts those with m_04 set into the list at 0x7d4.
 // @fnv 0x00947d80
 // src: COMMUNITY 0x00947d80
+// pdb: PlayerCharacter::ResetAudioMarkerList | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb locals: pworld, plist, paudiomarkerlist, pref, pdata, pcell
 void FUN_00947d80_cls::PlayerCharacter_ResetAudioMarkerList()
 {
     DxObj* obj = GetObj();
     Prep();
     if (obj != 0)
     {
-        DxNode* pEntry = obj->Enumerate(true);
+        DxNode* pEntry = obj->TESWorldSpace_BuildAudioMarkerList(true);
         DxNode* cur = pEntry;
         while (cur != 0)
         {
@@ -14697,7 +14811,7 @@ void FUN_00947d80_cls::PlayerCharacter_ResetAudioMarkerList()
         DxObj2* sub = GetSub();
         if (sub != 0)
         {
-            sub->Attach(bar);
+            sub->AddAudioMarkersToList(bar);
         }
         DxNode* cur4 = bar;
         while (cur4 != 0)
@@ -14731,17 +14845,19 @@ struct FUN_00948000_T
 {
     int* p;
     void* v;
-    FUN_00948000_T* AudioMarkerInfo_AudioMarkerInfo(int* a);
+    FUN_00948000_T* AudioMarkerInfo_AudioMarkerInfo(int* ref);
 };
 
 // Stores the int pointer a into p, resolves v via RefStub::FUN_00569080 when a is non-null, and returns this.
 // @fnv 0x00948000
 // src: COMMUNITY 0x00948000
-FUN_00948000_T* FUN_00948000_T::AudioMarkerInfo_AudioMarkerInfo(int* a)
+// pdb: AudioMarkerInfo::AudioMarkerInfo | PlayerCharacter.obj | debug, upstream name already matches, high
+// pdb params: ref
+FUN_00948000_T* FUN_00948000_T::AudioMarkerInfo_AudioMarkerInfo(int* ref)
 {
-    p = a;
-    if (a)
-        v = ((RefStub*)a)->TESObjectREFR_GetAudioMarkerData();
+    p = ref;
+    if (ref)
+        v = ((RefStub*)ref)->TESObjectREFR_GetAudioMarkerData();
     return this;
 }
 
@@ -14770,7 +14886,7 @@ struct List_009e03e0 : public PlayerList<TESObjectREFR*>
 
 struct FUN_005882a0_shell
 {
-    List_009e03e0* GetOrCreateElement(int);
+    List_009e03e0* TESWorldSpace_BuildMapMarkerList(int);
 };
 
 struct FUN_00569060_shell
@@ -14792,6 +14908,8 @@ struct MapMarkerReferenceEntry
 // If the cached world space at 0x7D0 differs, calls FUN_00948050 and adds entries to the 0x7C8 list for the new world's refs where FUN_00569060 is non-null.
 // @fnv 0x009480c0
 // src: COMMUNITY 0x009480c0
+// pdb: PlayerCharacter::ResetMapMarkerStructList | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb locals: pworld, plist, pmapmarkerlist, pref, pdata
 void FUN_009480c0_shell::PlayerCharacter_ResetMapMarkerStructList()
 {
     TESWorldSpace* pworld = reinterpret_cast<TESObjectREFR*>(this)->GetParentWorldSpace();
@@ -14802,7 +14920,7 @@ void FUN_009480c0_shell::PlayerCharacter_ResetMapMarkerStructList()
         if (pworld)
         {
             PlayerList<TESObjectREFR*>* pCurrentElementNext;
-            List_009e03e0* pmapmarkerlist = reinterpret_cast<FUN_005882a0_shell*>(pworld)->GetOrCreateElement(1);
+            List_009e03e0* pmapmarkerlist = reinterpret_cast<FUN_005882a0_shell*>(pworld)->TESWorldSpace_BuildMapMarkerList(1);
             pCurrentElementNext = pmapmarkerlist;
 
             while (pCurrentElementNext)
@@ -15168,6 +15286,8 @@ struct FUN_009481d0_Owner
 // When both hands exist, the process is ready and active, FUN_008a7570() is 5 and slot 4 is 1, calls FUN_008eeaa0(4) on both hands and FUN_00966a00 on each.
 // @fnv 0x009481d0
 // src: XBOX_PDB 0x009481d0
+// pdb: PlayerCharacter::ForceGrenadeHold | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb locals: panim1stPerson, panim, pseq
 void FUN_009481d0_Owner::PlayerCharacter_ForceGrenadeHold()
 {
     WeapHand* pHand1;
@@ -15194,8 +15314,8 @@ namespace fnv_00948310 {
 struct PlayerX;
 struct InputX
 {
-    void Rumble(int aiType);
-    int GetControl(int aiControl, int aiState);
+    void Rumble(int aeAction);
+    int GetControl(int eAction, int toggleFlags);
 };
 struct OSX
 {
@@ -15218,7 +15338,7 @@ struct AnimX
     bool IsIdlePlaying();
     bool IsIdle(int aiIdle);
     int GetStage(int aiSlot);
-    char GetKey(float* apTime);
+    char GetKey(float* pTime);
     unsigned short FindGroup(unsigned short ausGroup, int aiArg);
     void* PlayGroup(unsigned short ausGroup, int aiFlags, int aiArg1, int aiArg2);
     float GetTime(SeqX* apSeq);
@@ -15226,7 +15346,7 @@ struct AnimX
 };
 struct WeapSubX
 {
-    bool IsSilent();
+    bool BGSAmmoForm_IsRockItLauncher();
 };
 struct WeapX
 {
@@ -15234,8 +15354,8 @@ struct WeapX
     WeapSubX kSub;
     bool IsAutomatic();
     unsigned int GetGroup();
-    void* GetAmmo(struct PlayerX* apActor);
-    int GetClipSize(unsigned char acMod);
+    void* GetAmmo(struct PlayerX* apWeaponHolder);
+    int GetClipSize(unsigned char bModValue);
     int GetSneakGroup();
     int GetSkill();
     float GetRegen(unsigned char acMod);
@@ -15731,7 +15851,7 @@ struct DlgX
 };
 struct ThingX
 {
-    void Notify(struct PlayerX* apActor, int a, int b, int c, int d, int e);
+    void Notify(struct PlayerX* apActor, int apTarget, int aiDialogueType, int aiDialogueTopic, int abInterrupt, int apCombatController);
 };
 struct PlayerX
 {
@@ -16055,9 +16175,9 @@ struct PlayerX
     bool IsSneaking();
     bool IsMovingAtRunSpeed() const;
     float GetPerkValue();
-    bool PlayGroup(int aiGroup);
+    bool PlayGroup(int aeAttack);
     bool StopAim(bool abArg);
-    void ShowCrime(int aiType, float afTime, int aiArg);
+    void ShowCrime(int aeAction, float afTime, int apActObject);
     void ReleaseFire();
     void AddAmmo(void* apAmmo, int aiCount, int a, int b, int c, int d);
     bool PlayerCharacter_CheckUserInputAttacks();
@@ -16065,13 +16185,13 @@ struct PlayerX
 int __cdecl xGetGroupType(unsigned short ausGroup);
 bool __cdecl xIsGreeting(int aiType);
 bool __fastcall xIsMelee(WeapX* apWeapon);
-bool __cdecl xIsAttackGroup(unsigned short ausGroup);
-bool __cdecl xIsPowerGroup(unsigned short ausGroup);
-bool __cdecl xIsGroupDone(unsigned short ausGroup);
+bool __cdecl xIsAttackGroup(unsigned short asGroup);
+bool __cdecl xIsPowerGroup(unsigned short asGroup);
+bool __cdecl xIsGroupDone(unsigned short asGroup);
 unsigned short __cdecl xAnimGroup(int aeMove, int aeWeapon, int aeHand, bool abArg);
 InvX* __cdecl xGetOrAddInventoryChanges(PlayerX* apRef);
 void __cdecl xReload(int a, int b, int c, int d, int e, int f);
-bool __cdecl xRandomChance(float afChance);
+bool __cdecl xRandomChance(float afPercentTrue);
 void __cdecl xApplyPerkModifiers(int aeEntry, PlayerX* apActor, float* apValue);
 extern OSX* xpOS;
 extern DlgX xkDlg;
@@ -16090,6 +16210,8 @@ extern Setting xsCharge, xsAim, xsChance;
 // Handles player attack input, resolves the animation group to play, applies perk and sneak modifiers, and triggers firing or reload actions.
 // @fnv 0x00948310
 // src: XBOX_PDB 0x00948310
+// pdb: PlayerCharacter::CheckUserInputAttacks | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb locals: bvatsPlayback, pweapon, bokToStartSustained, fdelta, panim1stPerson, eattack, panim, pcontrols, buserInput, bpowerAttack, pvatsCommand, bstartAttack, pinventory, eanimWeapon, eanimMove, pammo, itotalcount, sanimGroup, pAmmo, pweaponItem, iMaxAmmo, smoveMode, iAmmoCount, equeuedLoop ...
 bool PlayerX::PlayerCharacter_CheckUserInputAttacks()
 {
     float qkAPu;
@@ -16364,7 +16486,7 @@ bool PlayerX::PlayerCharacter_CheckUserInputAttacks()
         {
             if (!pProcess->IsThrowing() && (!IsSneaking() || !xIsPowerGroup(qXMUYT->GetGroup(4))))
             {
-                if (qpydTG && (qpydTG->GetAmmo(xpPlayer) || qpydTG->kSub.IsSilent()))
+                if (qpydTG && (qpydTG->GetAmmo(xpPlayer) || qpydTG->kSub.BGSAmmoForm_IsRockItLauncher()))
                 {
                     qEXZLB = qXMUYT->GetSeq(4)->GetScale();
                     qqrLNms = qXMUYT->GetSeq(4)->GetEnd();
@@ -16543,7 +16665,7 @@ bool PlayerX::PlayerCharacter_CheckUserInputAttacks()
     {
         if (GetAnimAction() == -1 || qXMUYT->GetStage(4) == 3)
         {
-            if (qpydTG->kSub.IsSilent())
+            if (qpydTG->kSub.BGSAmmoForm_IsRockItLauncher())
                 xReload(1, 0, 0, 0, 4, 0);
             else if (pProcess->GetEquipped()->GetType()->GetRegen(pProcess->GetEquipped()->HasMod(6)) <= 0.0)
                 Equip(qpydTG, 2, pProcess->GetEquipped()->HasMod(2), 0);
@@ -16720,6 +16842,7 @@ struct FUN_0094a070_Class
 // Returns the result of subtracting f2c_0 from f30_0 and dividing by f28_0.
 // @fnv 0x0094a070
 // src: XBOX_PDB 0x0094a070
+// pdb: NiControllerSequence::GetLength | PlayerCharacter.obj | debug, upstream name already matches, high
 float FUN_0094a070_Class::NiControllerSequence_GetLength()
 {
     return (f30_0 - f2c_0) / f28_0;
@@ -16742,7 +16865,7 @@ struct InputCamera
 {
     int GetAxisState(int device, int axis);
     int Controls_GetMouseAxis(int axis);
-    int Controls_GetUserAction(int control, int mode);
+    int Controls_GetUserAction(int eAction, int toggleFlags);
 };
 struct OSGlobalsCamera
 {
@@ -16775,8 +16898,8 @@ struct CameraMatrix
 {
     float m00, m01, m02, m10, m11, m12, m20, m21, m22;
     void FUN_006815c0();
-    void FUN_004a0c90(float angle);
-    void FUN_00524ac0(float angle);
+    void FUN_004a0c90(float fAngle);
+    void FUN_00524ac0(float fAngle);
     CameraMatrix FUN_0043f8d0(const CameraMatrix& rhs);
     CameraVector FUN_004b4500(const CameraVector* vector);
 };
@@ -16806,8 +16929,8 @@ struct CameraNode
 CameraNode* Main_GetWorldSceneGraph();
 struct CameraTerrain
 {
-    void Update_006fca90(const CameraVector& position, int flags);
-    void FUN_006fcdb0(const CameraVector& position);
+    void Update_006fca90(const CameraVector& aViewPosition, int aWhatToUpdate);
+    void FUN_006fcdb0(const CameraVector& aViewPosition);
 };
 struct CameraWorld
 {
@@ -17323,12 +17446,14 @@ struct CameraPlayer
     float cameraPitch;
     CameraVector cameraPosition;
     CameraWorld* TESObjectREFR_GetWorldSpace();
-    void PlayerCharacter_HandleFlycamMovement();
+    void PlayerCharacter_UpdateUFOCamera();
 };
 // Reads input to adjust cameraYaw and cameraPitch, computes a new cameraPosition, and applies it to the camera node.
 // @fnv 0x0094a8c0
-// src: COMMUNITY 0x0094a8c0
-void CameraPlayer::PlayerCharacter_HandleFlycamMovement()
+// src: XBOX_RETAIL_PDB 0x0094a8c0 (was COMMUNITY)
+// pdb: PlayerCharacter::UpdateUFOCamera | PlayerCharacter.obj | retail, object-file run extension, high
+// pdb locals: ufopitchRot, translation, UpdateData, ufocameraRot, fdeltaTimeRatio, iyAxis, ufoheadingRot, fyAxisRatio, pWorldRoot, pcontrols, fxAxisRatio, cimaxAxisValue, ixAxis, icurrentTime
+void CameraPlayer::PlayerCharacter_UpdateUFOCamera()
 {
     InputCamera* s = g_osGlobals->Main_GetControls();
     float i = 0.0f;
@@ -18553,7 +18678,7 @@ struct Obj117
     void CameraCaster_Remove();
     Obj117* PlayerCharacter_Get3D_00950bb0(int);
     float TESObjectREFR_GetScale_00567400();
-    void SyncHolderValue();
+    void PlayerCharacter_Setup3rdPersonCameraCaster();
     void PlayerCharacter_UpdateChaseCamera(V117&, V117&, bool);
     Obj117* Actor_GetAnimation();
     float FUN_00453700();
@@ -18672,7 +18797,7 @@ struct Manager117
 };
 struct Sound117
 {
-    void FUN_00ad78b0(V117);
+    void PositionListener(V117);
     void OrientListener(V117, V117);
     void SetListenerUnderwater(bool);
 };
@@ -18695,7 +18820,7 @@ extern Setting DAT_011cd780;
 extern Setting DAT_011cdf50;
 extern Setting DAT_011cd174;
 extern Setting DAT_011cddfc;
-void SetScaledValue(float);
+void HUDMainMenu_Shake(float);
 Manager117* Main_GetWorldSceneGraph();
 void FUN_00b54000(float);
 V117 NiPoint3_TransformByMatrix3(const V117&, const M117&);
@@ -18708,6 +18833,9 @@ void TESTerrainLODManager_UpdateGrass(V117, V117, float);
 // Computes a position and rotation for the active mode, applies camera shake, updates cameraNode and manager nodes, and tracks last position, direction and grid.
 // @fnv 0x0094ae40
 // src: COMMUNITY 0x0094ae40
+// pdb: PlayerCharacter::UpdateCamera | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb params: abForce
+// pdb locals: rotMod, pcell, theta, cameraRow, pworldcam, fmovedistLOD, pWorldRoot, fov, currentPos, kcurDir, fmovedist, quatid, cameraRot, fviewdot, UpdateData, vatsCameraRot, phighProcess, fblendValue, xrot, posDelta, shoulderLookAt, fYDir, cameraTarget, shoulderOffset ...
 void Obj117::PlayerCharacter_UpdateCamera(bool force, bool skip)
 {
     DAT_011e076c = v2bc(0);
@@ -18809,7 +18937,7 @@ void Obj117::PlayerCharacter_UpdateCamera(bool force, bool skip)
         rotation52 = rotation52 * temp29;
         target22 = base6 + rotation52 * (V117(0, -DAT_011e0b5c, 0) + offset1);
         V117 look7 = base6 + rotation52 * desired14;
-        SyncHolderValue();
+        PlayerCharacter_Setup3rdPersonCameraCaster();
         base6 += rotation52 * offset1;
         V117 origin43(px, py, base6.z);
         PlayerCharacter_UpdateChaseCamera(target22, origin43, force);
@@ -18872,14 +19000,14 @@ void Obj117::PlayerCharacter_UpdateCamera(bool force, bool skip)
             shake2.DecomposeToEulerAngles(x11, y16, z4);
             shake2.FUN_00a59540(x11 * amount11, y16 * amount11, z4 * amount11);
             rotation52 = rotation52 * shake2;
-            SetScaledValue(amount11);
+            HUDMainMenu_Shake(amount11);
         }
         manager4->BSSceneGraph_GetCameraRoot()->NiAVObject_SetTranslate(position17);
         manager4->BSSceneGraph_GetCameraRoot()->SetRotate_0043fa80(rotation52);
         U117 upd216(0, 0, 0);
         manager4->BSSceneGraph_GetCameraRoot()->NiAVObject_Update(upd216);
     }
-    BSAudio_QInstance()->FUN_00ad78b0(position17);
+    BSAudio_QInstance()->PositionListener(position17);
     BSAudio_QInstance()->OrientListener(manager4->FUN_006629f0()->FUN_0045bba0(), manager4->FUN_006629f0()->GetPoint());
     Obj117* cell7 = FUN_008d6f30();
     if (cell7)
@@ -18922,44 +19050,47 @@ void Obj117::PlayerCharacter_UpdateCamera(bool force, bool skip)
 }
 }  // namespace fnv_0094ae40
 
-float AdjustModifierForOwner(ActorValueOwner* owner, ActorValue::Index actorValue, float value);
+float AdjustModifierForOwner(ActorValueOwner* apActor, ActorValue::Index aiWhich, float afDelta);
 float CombineModifierValue(float current, float delta, Actor* attacker);
 
 struct PlayerModifierAccess : public PlayerCharacter
 {
-    void PlayerCharacter_AlterModifier(ModifierGroup modifier, ActorValue::Index actorValue, float value, Actor* attacker);
+    void PlayerCharacter_AlterModifier(ModifierGroup eGroup, ActorValue::Index aiWhich, float afValue, Actor* aeClampStyle);
 };
 
 // Applies a modifier value to the specified actor value based on the modifier group, combining it with existing state.
 // @fnv 0x0094c4f0
 // src: COMMUNITY 0x0094c4f0
-void PlayerModifierAccess::PlayerCharacter_AlterModifier(ModifierGroup eModifierGroup, ActorValue::Index actorValue, float value,
-                                        Actor* attacker)
+// pdb: PlayerCharacter::AlterModifier | PlayerCharacter.obj | debug, upstream name already matches, high
+// pdb params: eGroup, aiWhich, afValue, aeClampStyle
+// pdb locals: fclamped
+void PlayerModifierAccess::PlayerCharacter_AlterModifier(ModifierGroup eGroup, ActorValue::Index aiWhich, float afValue,
+                                        Actor* aeClampStyle)
 {
-    switch (eModifierGroup)
+    switch (eGroup)
     {
     case DAMAGE: {
-        float adjusted = AdjustModifierForOwner(this, actorValue, value);
-        switch (actorValue)
+        float adjusted = AdjustModifierForOwner(this, aiWhich, afValue);
+        switch (aiWhich)
         {
         case 0x10:
-            ActorValueState = CombineModifierValue(ActorValueState, adjusted, attacker);
+            ActorValueState = CombineModifierValue(ActorValueState, adjusted, aeClampStyle);
             break;
         default:
-            if (actorValue != -1)
-                ActorValueData[actorValue] = CombineModifierValue(ActorValueData[actorValue], adjusted, attacker);
+            if (aiWhich != -1)
+                ActorValueData[aiWhich] = CombineModifierValue(ActorValueData[aiWhich], adjusted, aeClampStyle);
             break;
         }
         break;
     }
     case TEMPORARY:
-        if (actorValue != -1)
-            ActorValueModifierData[actorValue] =
-                CombineModifierValue(ActorValueModifierData[actorValue], value, attacker);
+        if (aiWhich != -1)
+            ActorValueModifierData[aiWhich] =
+                CombineModifierValue(ActorValueModifierData[aiWhich], afValue, aeClampStyle);
         break;
     case SCRIPTS:
-        if (actorValue != -1)
-            m_afScriptModifiers[actorValue] = CombineModifierValue(m_afScriptModifiers[actorValue], value, attacker);
+        if (aiWhich != -1)
+            m_afScriptModifiers[aiWhich] = CombineModifierValue(m_afScriptModifiers[aiWhich], afValue, aeClampStyle);
         break;
     }
 }
@@ -18972,6 +19103,8 @@ struct CharacterAnimationBridge
 
 // @fnv 0x0094c640
 // src: COMMUNITY 0x0094c640
+// pdb: PlayerCharacter::GetBaseValueOverride | PlayerCharacter.obj | debug, object-file run extension, low
+// pdb params: aiWhich, abExists
 void CharacterAnimationBridge::PlayerCharacter_InternalGetActorValue(unsigned int group, unsigned int flags)
 {
     CallMember(group, flags);
@@ -18988,6 +19121,8 @@ struct FUN_0094c660_stand
 // Forwards both arguments to FUN_00880690 on the same object.
 // @fnv 0x0094c660
 // src: COMMUNITY 0x0094c660
+// pdb: PlayerCharacter::SetBaseValueOverride | PlayerCharacter.obj | debug, object-file run extension, low
+// pdb params: aiWhich, afValue
 void FUN_0094c660_stand::PlayerCharacter_InternalSetActorValue(int aiValue, float afValue)
 {
     ((FUN_00880690_stand*)this)->Actor_InternalSetActorValue(aiValue, afValue);
@@ -18995,19 +19130,22 @@ void FUN_0094c660_stand::PlayerCharacter_InternalSetActorValue(int aiValue, floa
 
 struct FUN_0094c680_Class
 {
-    void OnSpellRemoved(SpellItem* spell);
-    bool RemoveSpell(SpellItem* spell);
-    bool PlayerCharacter_AddSpell(SpellItem* spell);
+    void OnSpellRemoved(SpellItem* apSpellIn);
+    bool RemoveSpell(SpellItem* apSpellIn);
+    bool PlayerCharacter_AddSpell(SpellItem* apSpellIn);
 };
 
 // Calls RemoveSpell and, if it succeeds, calls OnSpellRemoved; returns the RemoveSpell result.
 // @fnv 0x0094c680
 // src: COMMUNITY 0x0094c680
-bool FUN_0094c680_Class::PlayerCharacter_AddSpell(SpellItem* spell)
+// pdb: PlayerCharacter::AddSpell | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb params: apSpellIn
+// pdb locals: bresult
+bool FUN_0094c680_Class::PlayerCharacter_AddSpell(SpellItem* apSpellIn)
 {
-    bool result = RemoveSpell(spell);
+    bool result = RemoveSpell(apSpellIn);
     if (result)
-        OnSpellRemoved(spell);
+        OnSpellRemoved(apSpellIn);
     return result;
 }
 
@@ -19053,18 +19191,21 @@ class xEffItem : public xEffBase, public xEffList
 class xEffOwner
 {
   public:
-    void PlayerCharacter_SpellLearned(xEffItem* pItem);
+    void PlayerCharacter_SpellLearned(xEffItem* apSpellIn);
 };
 
 // @fnv 0x0094c6c0
 // src: XBOX_PDB 0x0094c6c0
-void xEffOwner::PlayerCharacter_SpellLearned(xEffItem* pItem)
+// pdb: PlayerCharacter::SpellLearned | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb params: apSpellIn
+// pdb locals: plist, pitem
+void xEffOwner::PlayerCharacter_SpellLearned(xEffItem* apSpellIn)
 {
-    if (!(pItem->m_kTypedEffect.GetType() == 0 || pItem->m_kTypedEffect.GetType() == 4 ||
-          pItem->m_kTypedEffect.GetType() == 2 || pItem->m_kTypedEffect.GetType() == 3))
+    if (!(apSpellIn->m_kTypedEffect.GetType() == 0 || apSpellIn->m_kTypedEffect.GetType() == 4 ||
+          apSpellIn->m_kTypedEffect.GetType() == 2 || apSpellIn->m_kTypedEffect.GetType() == 3))
         return;
     {
-        xEffItem* qfTOqo = pItem;
+        xEffItem* qfTOqo = apSpellIn;
         while (qfTOqo && !qfTOqo->IsEmpty())
         {
             xEff* qxQHW = *qfTOqo->Head();
@@ -19082,16 +19223,19 @@ struct FUN_0094c8c0_class
 struct FUN_0094c7a0_class : public PlayerCharacter
 {
     bool Actor_RemoveActorEffect(void* weapon);
-    bool PlayerCharacter_RemoveSpell(void* weapon);
+    bool PlayerCharacter_RemoveSpell(void* apSpellIn);
     void PlayerCharacter_SetSelectedSpell(int spell);
 };
 // Returns FUN_008c3400(weapon); if true and weapon+0x18 (or null) equals GetField6EC, it also calls FUN_0094c8e0(0).
 // @fnv 0x0094c7a0
 // src: COMMUNITY 0x0094c7a0
-bool FUN_0094c7a0_class::PlayerCharacter_RemoveSpell(void* weapon)
+// pdb: PlayerCharacter::RemoveSpell | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb params: apSpellIn
+// pdb locals: bresult
+bool FUN_0094c7a0_class::PlayerCharacter_RemoveSpell(void* apSpellIn)
 {
-    bool result = Actor_RemoveActorEffect(weapon);
-    if (result && (unsigned int)(weapon ? ((char*)weapon + 0x18) : 0) == ((FUN_0094c8c0_class*)this)->GetField6EC())
+    bool result = Actor_RemoveActorEffect(apSpellIn);
+    if (result && (unsigned int)(apSpellIn ? ((char*)apSpellIn + 0x18) : 0) == ((FUN_0094c8c0_class*)this)->GetField6EC())
         PlayerCharacter_SetSelectedSpell(0);
     return result;
 }
@@ -19105,6 +19249,8 @@ struct FUN_0094c8e0_shell
 };
 // @fnv 0x0094c8e0
 // src: COMMUNITY 0x0094c8e0
+// pdb: PlayerCharacter::SetSelectedSpell | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb params: apSelectedSpell
 void FUN_0094c8e0_shell::PlayerCharacter_SetSelectedSpell(MagicItem* apSelectedSpell)
 {
     if (*(MagicItem**)((char*)this + 0x6ec) != apSelectedSpell)
@@ -19124,7 +19270,7 @@ namespace fnv_0094df80 {
 
 struct MagicCaster_Accessor
 {
-    void FUN_00815b00();
+    void InterruptCast();
 };
 
 struct MagicTarget_Accessor
@@ -19424,10 +19570,12 @@ class PlayerCharacter_Cand : public PlayerCharacter
 // Advances game time, updates process lists and calendar, restores health, and decrements the sleep timer.
 // @fnv 0x0094df80
 // src: XBOX_PDB 0x0094df80
+// pdb: PlayerCharacter::PlayerSleep | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb locals: foneHour, ftime, fSleepRestored, fCurrentSLP
 void PlayerCharacter_Cand::PlayerCharacter_PlayerSleep()
 {
     BSAudio::GetSingleton()->FUN_00ad8780(4);
-    ((MagicCaster_Accessor*)((char*)this + 0x88))->FUN_00815b00();
+    ((MagicCaster_Accessor*)((char*)this + 0x88))->InterruptCast();
     float fCalTime2;
     float fPassed = DAT_01012640 / g_calendar.GetGameTimeScale();
     fCalTime2 = fPassed;
@@ -19464,7 +19612,7 @@ void PlayerCharacter_Cand::PlayerCharacter_PlayerSleep()
     }
 
     g_TES->GetLogDate()->Update(g_timeGlobal.FUN_0084d030());
-    DAT_011e0e80.UpdateCrimeLists();
+    DAT_011e0e80.UpdateTheCrimeList();
     this->FUN_008c3c40(true, 0);
 
     --((PlayerSleepWaitAccessor*)(reinterpret_cast<char*>(this) + 0x654))->sleepWaitHours;
@@ -20318,7 +20466,7 @@ struct SmartBiped
     Biped* value;
     Biped* Modelloader_GetReferencedThis();
 };
-void Interface_ReinitialisePipboyManager();
+void Interface_ResetPipboy();
 void MarkPlayerBones(Biped*);
 struct View
 {
@@ -20949,17 +21097,20 @@ struct View
     ProcessView* FUN_008d8520();
     void PlayerCharacter_Setup3rdPerson3D(Node*, bool);
     const char* FUN_005715d0();
-    void FUN_008c2e50();
+    void PreloadPermanentMagic();
     void Actor_InitLightingPropertyPtr(Node*);
     Controller* FUN_009306d0();
-    void PlayerCharacter_SetIsToddler(bool);
+    void PlayerCharacter_SetPCToddler(bool);
     SmartBiped* GetBiped(bool);
     Node* PlayerCharacter_GenerateNiNode(bool);
 };
 // Loads the first-person model and the FUN_0087e060 node, looks up Camera1st, Bip and Camera3rd nodes, creates biped and animation objects, and returns the node.
 // @fnv 0x0094e1d0
 // src: COMMUNITY 0x0094e1d0
-Node* View::PlayerCharacter_GenerateNiNode(bool arg)
+// pdb: PlayerCharacter::Load3D | PlayerCharacter.obj | retail, unique string literal, high
+// pdb params: abBackgroundLoading
+// pdb locals: plocomotionSexDirectory, ppcObj, pw, UpdateData, pkfFiles, pnpc, bsave3rdPerson, tempMemContext, rot, p1stPersonNode, pcon, pslash, pinv, binitdefault, pitem, i, pit, ppipitem, pextra, pobj
+Node* View::PlayerCharacter_GenerateNiNode(bool abBackgroundLoading)
 {
     MemScope localValue5(0x34, true, "D:\\_Fallout3\\Platforms\\Common\\Code\\Fallout\\AI\\PlayerCharacter.cpp",
                          0x2458);
@@ -21040,7 +21191,7 @@ Node* View::PlayerCharacter_GenerateNiNode(bool arg)
     animation = new AnimState;
     bool localValue30 = loadingModel;
     loadingModel = true;
-    Node* localValue3 = Actor_Load3D(arg);
+    Node* localValue3 = Actor_Load3D(abBackgroundLoading);
     loadingModel = localValue30;
     FUN_00950a60()->Animation_ClearGroup(0, 0, 0.0f);
     void* localValue0 = g_modelLoader->ModelLoader_BuildKFFileList(ConvertFromUni(g_011cdd78.FUN_00403df0(), false), 1, 0, 12);
@@ -21062,7 +21213,7 @@ Node* View::PlayerCharacter_GenerateNiNode(bool arg)
     PlayerCharacter_Setup3rdPerson3D(localValue3, true);
     if (!DAT_011e07d4)
         ProgramFlow("Missing 'Camera3rd' on '%s'.", FUN_005715d0());
-    FUN_008c2e50();
+    PreloadPermanentMagic();
     base68->slot470();
     Actor_InitLightingPropertyPtr(localValue11);
     Finish();
@@ -21070,11 +21221,11 @@ Node* View::PlayerCharacter_GenerateNiNode(bool arg)
     ControllerBody* localValue4 = localValue31 ? localValue31->bhkCharacterController_GetWorld() : 0;
     if (localValue4)
         localValue4->AttachAsset(localValue3, 1, 0, localValue31->bhkCharacterController_GetCollisionFilter().CFilter_GetGroup(), 0);
-    Interface_ReinitialisePipboyManager();
+    Interface_ResetPipboy();
     if (refresh)
     {
         refresh = false;
-        PlayerCharacter_SetIsToddler(true);
+        PlayerCharacter_SetPCToddler(true);
     }
     MarkPlayerBones(GetBiped(false)->Modelloader_GetReferencedThis());
     MarkPlayerBones(GetBiped(true)->Modelloader_GetReferencedThis());
@@ -21167,6 +21318,8 @@ struct FUN_0094eaf0_Class
 // If abCull3rdPerson3D is true, marks ap3rdPerson3D as app-culled and stores the result of ap3rdPerson3D->v9c(FUN_0094eb30()) into DAT_011e07d4.
 // @fnv 0x0094eaf0
 // src: XBOX_PDB 0x0094eaf0
+// pdb: PlayerCharacter::Setup3rdPerson3D | PlayerCharacter.obj | debug, upstream name already matches, high
+// pdb params: ap3rdPerson3D, abCull3rdPerson3D
 void FUN_0094eaf0_Class::PlayerCharacter_Setup3rdPerson3D(Vt9c* ap3rdPerson3D, bool abCull3rdPerson3D)
 {
     if (abCull3rdPerson3D)
@@ -21217,6 +21370,7 @@ struct InventoryMenuSetting
 };
 extern InventoryMenuSetting g_011cdd78;
 const char* __cdecl PrepareScriptMessage(const char*, bool);
+// pdb: class ModelLoader, size 0x30 (here 0x1), 12 members
 struct ModelLoader
 {
     void ModelLoader_ReleaseFile(const char*);
@@ -22092,6 +22246,8 @@ struct PlayerView
 // Calls FUN_005702e0 and, if object is null, deletes first and second and clears node, DAT_011e07d0-d8 and animationState; may warn instead.
 // @fnv 0x0094eb40
 // src: EXE 0x0094eb40
+// pdb: PlayerCharacter::~PlayerCharacter | PlayerCharacter.obj | retail, string-set bridge, high
+// pdb locals: pperkRankList, i, prankData
 void PlayerView::PlayerCharacter_Set3D(NiNode* apNode, bool force)
 {
     if (g_osGlobals && !((OSState*)g_osGlobals)->FUN_005dc960() && !((OSState*)g_osGlobals)->Main_GameReset() && !apNode)
@@ -22136,22 +22292,25 @@ struct DbgTarget
 
 struct DbgLog
 {
-    void FUN_00404820(char* text);
+    void FUN_00404820(char* apString);
 };
 
 // Formats a prefix, an id, the target's full name and a hex value into a buffer and passes it to the log when both pointers are non-null; returns false.
 // @fnv 0x0094ec90
 // src: GUESS 0x0094ec90 (confidence: medium)
-bool PlayerCharacter_LogTargetEntry(DbgTarget* apTarget, DbgLog* apLog)
+// pdb: BuildInvStringCallback | PlayerCharacter.obj | retail, unique string literal, high
+// pdb params: apItem, apString
+// pdb locals: pstring, ptemp
+bool PlayerCharacter_LogTargetEntry(DbgTarget* apItem, DbgLog* apString)
 {
     char buf[0x104];
-    DbgLog* log = apLog;
+    DbgLog* log = apString;
     if (log != 0)
     {
-        if (apTarget != 0)
+        if (apItem != 0)
         {
             const char* pszPrefix;
-            if (apTarget->ItemChange_GetWorn(0))
+            if (apItem->ItemChange_GetWorn(0))
             {
                 pszPrefix = "[E]";
             }
@@ -22159,8 +22318,8 @@ bool PlayerCharacter_LogTargetEntry(DbgTarget* apTarget, DbgLog* apLog)
             {
                 pszPrefix = DAT_01011584;
             }
-            _snprintf(buf, 0x104, "%s%i %s (%08X),", pszPrefix, apTarget->FUN_00726070(), apTarget->GetTargetFullName(),
-                      apTarget->FUN_0044ddc0()->GetHavokWorldObjectCountInSceneGraph_0084e3a0());
+            _snprintf(buf, 0x104, "%s%i %s (%08X),", pszPrefix, apItem->FUN_00726070(), apItem->GetTargetFullName(),
+                      apItem->FUN_0044ddc0()->GetHavokWorldObjectCountInSceneGraph_0084e3a0());
             log->FUN_00404820(buf);
         }
     }
@@ -22400,7 +22559,7 @@ struct xChallenge
 };
 struct xInvChanges
 {
-    void ForEach(void*, DynamicString*, int);
+    void IterateInventory(void*, DynamicString*, int);
     int Count(int, int);
     static xInvChanges* GetOrAdd(void*);
 };
@@ -22427,7 +22586,7 @@ struct xExtraDeath
     xForm* m_object;
 };
 xForm* __fastcall xGetOwner(xExtraList*);
-xForm* __fastcall xGetTarget(xExtraList*);
+xForm* __fastcall ExtraDataList_GetLevCreaTemplate(xExtraList*);
 struct xKiller : xNamed
 {
     const char* GetFullName();
@@ -22744,12 +22903,12 @@ struct FUN_0094ed40_cls
     xNode m_6b0;
     int m_pad_6b8[0x71];
     xNode m_87c;
-    void WriteProgressData(int);
+    void PlayerCharacter_ExportProgressData(int);
     void* GetObjectReference();
     const char* GetFullName();
     int GetSex();
     unsigned short GetLevel();
-    void GetPos2(float*, float*);
+    void PlayerCharacter_GetInventoryEncumbrance(float*, float*);
     int F577d50();
     xCell* GetParentCell();
     xExtraList* GetExtraList();
@@ -22757,7 +22916,11 @@ struct FUN_0094ed40_cls
 
 // Writes a tab-separated progress data line for the player to a save file, including stats, inventory, quests, cell, and death details when difficulty is 1.
 // @fnv 0x0094ed40
-void FUN_0094ed40_cls::WriteProgressData(int aiDifficulty)
+// src: XBOX_RETAIL_PDB 0x0094ed40
+// pdb: PlayerCharacter::ExportProgressData | PlayerCharacter.obj | retail, unique string literal, high
+// pdb params: aeEvent
+// pdb locals: pinv, pcell, fcurrenc, pperklist, fmaxenc, pfile, pstagelist, pfilename, tempstring, ihour, i, pNPC, pperkdata, temp, eval, pstage, pworld, pextra, pweap, pbase, ptemplate
+void FUN_0094ed40_cls::PlayerCharacter_ExportProgressData(int aeEvent)
 {
     char qSVM[0x104];
     void* qfTOqo;
@@ -22786,7 +22949,7 @@ void FUN_0094ed40_cls::WriteProgressData(int aiDifficulty)
     qrEZrs = xg_Calendar.GetDays();
     xFormat(&qpqRa, "%i\t", qrEZrs);
     qpTd->WriteStr(&qpqRa, true);
-    xFormat(&qpqRa, "%s\t", xg_DiffNames[aiDifficulty]);
+    xFormat(&qpqRa, "%s\t", xg_DiffNames[aeEvent]);
     qpTd->WriteStr(&qpqRa, true);
     xFormat(&qpqRa, "%s\t", GetFullName());
     qpTd->WriteStr(&qpqRa, true);
@@ -22840,13 +23003,13 @@ void FUN_0094ed40_cls::WriteProgressData(int aiDifficulty)
     if (qSuoDt)
     {
         qpqRa.Set("\"", 0);
-        qSuoDt->ForEach(xInvCallback, &qpqRa, 0);
+        qSuoDt->IterateInventory(xInvCallback, &qpqRa, 0);
         qpqRa += "\"\t";
     }
     else
         xFormat(&qpqRa, "\"\"\t");
     qpTd->WriteStr(&qpqRa, true);
-    GetPos2(&qbGYp, &qvyWyw);
+    PlayerCharacter_GetInventoryEncumbrance(&qbGYp, &qvyWyw);
     xFormat(&qpqRa, "%.2f\t%.2f\t", qbGYp, qvyWyw);
     qpTd->WriteStr(&qpqRa, true);
     if (qSuoDt)
@@ -22898,7 +23061,7 @@ void FUN_0094ed40_cls::WriteProgressData(int aiDifficulty)
     else
         xFormat(&qpqRa, "NONE\t");
     qpTd->WriteStr(&qpqRa, true);
-    if (aiDifficulty == 1)
+    if (aeEvent == 1)
     {
         xExtraDeath* qhQRuW = (xExtraDeath*)GetExtraList()->GetExtra(0x5f);
         if (qhQRuW)
@@ -22928,7 +23091,7 @@ void FUN_0094ed40_cls::WriteProgressData(int aiDifficulty)
             if (m_c0->IsLeveled())
             {
                 xForm* qrBzVM = xGetOwner(m_c0->GetExtraList());
-                xForm* qZNIZJV = xGetTarget(m_c0->GetExtraList());
+                xForm* qZNIZJV = ExtraDataList_GetLevCreaTemplate(m_c0->GetExtraList());
                 if (qrBzVM && qZNIZJV)
                     xFormat(&qpqRa, "O:%s(%08X) T:%s(%08X)\t", qrBzVM->GetName(), qrBzVM->GetFormID(),
                             qZNIZJV->GetName(), qZNIZJV->GetFormID());
@@ -22973,6 +23136,8 @@ struct FUN_0094fce0_s
 
 // Calls Update on the SkyObject member at offset 0x878, passing through the two integer arguments.
 // @fnv 0x0094fce0
+// pdb: PlayerCharacter::UseSkill | PlayerCharacter.obj | debug, object-file gap fill, medium
+// pdb params: aiSkill, aiAction
 void FUN_0094fce0_s::UpdateSkyObject(int a, int b)
 {
     ((SkyObject*)((char*)this + 0x878))->Update(a, b);
@@ -23037,21 +23202,24 @@ class KarmaActor : public MobileObject,
     virtual void Unk_E8();
     virtual void Unk_E9();
     virtual void AdjustActorValue(ActorValue::Index, int, bool);
-    void PlayerCharacter_RewardKarma(int change);
+    void PlayerCharacter_RewardKarma(int aiAmount);
 };
 // Clamps a karma change to the configured min/max, queues a UI message and plays the karma up or down sound, then applies the value via AdjustActorValue.
 // @fnv 0x0094fd30
 // src: XBOX_PDB 0x0094fd30
-void KarmaActor::PlayerCharacter_RewardKarma(int aiKarmaChange)
+// pdb: PlayerCharacter::RewardKarma | PlayerCharacter.obj | retail, string-set bridge, high
+// pdb params: aiAmount
+// pdb locals: ealign, ealignNow, icurrent, psoundHand
+void KarmaActor::PlayerCharacter_RewardKarma(int aiAmount)
 {
     int current = GetActorValue(static_cast<ActorValue::Index>(23));
     reinterpret_cast<Actor*>(this)->GetActorBase();
     unsigned int baseValue = TESActorBaseData_GetAlignmentForKarma(GetCurrentActorValue(static_cast<ActorValue::Index>(23)));
-    if (aiKarmaChange < 0)
+    if (aiAmount < 0)
     {
-        if (current + aiKarmaChange < *g_011cdd6c.Int())
-            aiKarmaChange = *g_011cdd6c.Int() - current;
-        if (aiKarmaChange < -*g_011d26ac.Int())
+        if (current + aiAmount < *g_011cdd6c.Int())
+            aiAmount = *g_011cdd6c.Int() - current;
+        if (aiAmount < -*g_011d26ac.Int())
             QueueUIMessage(g_011d4a14.FUN_00403df0(), 0, g_011d42c4.FUN_00403df0(), 0, 2.0f, false);
         else
             QueueUIMessage(g_011d3420.FUN_00403df0(), 0, g_011d2cd0.FUN_00403df0(), 0, 2.0f, false);
@@ -23061,9 +23229,9 @@ void KarmaActor::PlayerCharacter_RewardKarma(int aiKarmaChange)
     }
     else
     {
-        if (current + aiKarmaChange > *g_011cd644.Int())
-            aiKarmaChange = *g_011cd644.Int() - current;
-        if (aiKarmaChange < *g_011d26ac.Int())
+        if (current + aiAmount > *g_011cd644.Int())
+            aiAmount = *g_011cd644.Int() - current;
+        if (aiAmount < *g_011d26ac.Int())
             QueueUIMessage(g_011d1fb0.FUN_00403df0(), 0, g_011d3e38.FUN_00403df0(), 0, 2.0f, false);
         else
             QueueUIMessage(g_011d3c70.FUN_00403df0(), 0, g_011d3b14.FUN_00403df0(), 0, 2.0f, false);
@@ -23071,11 +23239,11 @@ void KarmaActor::PlayerCharacter_RewardKarma(int aiKarmaChange)
         sound = static_cast<PlayerSoundAudioOperations*>(BSAudio::GetSingleton())->GetSoundHandleByEditorID("UIKarmaUp", 0x121);
         sound.Play(false);
     }
-    if (aiKarmaChange > 0 && current >= *g_011cd644.Int())
+    if (aiAmount > 0 && current >= *g_011cd644.Int())
         return;
-    if (aiKarmaChange < 0 && current <= *g_011cdd6c.Int())
+    if (aiAmount < 0 && current <= *g_011cdd6c.Int())
         return;
-    AdjustActorValue(static_cast<ActorValue::Index>(23), aiKarmaChange, false);
+    AdjustActorValue(static_cast<ActorValue::Index>(23), aiAmount, false);
 }
 
 struct PlayerCharacterByteField075c
@@ -23605,6 +23773,7 @@ struct FUN_00950030_shell
 // If pProcess->IsProcessFlagSet(1) is false and FUN_00704ad0() is true, calls FUN_00483710, then always calls pProcess->Update3DModel(reinterpret_cast<Actor*>(this)).
 // @fnv 0x00950030
 // src: XBOX_PDB 0x00950030
+// pdb: PlayerCharacter::UpdatePlayer3d | PlayerCharacter.obj | retail, upstream name already matches, high
 void FUN_00950030_shell::PlayerCharacter_UpdatePlayer3d()
 {
     if (!pProcess->IsProcessFlagSet(1))
@@ -23645,17 +23814,20 @@ bool __fastcall GetAppCulled_00456610(void*);
 
 struct FUN_00950110_pc : public PlayerCharacter
 {
-    void PlayerCharacter_Show1stPerson(bool arg);
-    bool PlayerCharacter_SetFirstPerson(bool bFirstPerson);
+    void PlayerCharacter_Show1stPerson(bool abFirstPerson);
+    bool PlayerCharacter_SetFirstPerson(bool abFirst);
 };
 
 // Sets bThirdPerson to !bFirstPerson, may update DAT_011e0b5c from a float setting, calls FUN_00951a10 in some cases, and returns whether the mode changed.
 // @fnv 0x00950110
 // src: XBOX_PDB 0x00950110
-bool FUN_00950110_pc::PlayerCharacter_SetFirstPerson(bool bFirstPerson)
+// pdb: PlayerCharacter::SetFirstPerson | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb params: abFirst
+// pdb locals: bchanged
+bool FUN_00950110_pc::PlayerCharacter_SetFirstPerson(bool abFirst)
 {
-    bool bChanged = bThirdPerson == bFirstPerson;
-    bThirdPerson = !bFirstPerson;
+    bool bChanged = bThirdPerson == abFirst;
+    bThirdPerson = !abFirst;
     if (bThirdPerson)
     {
         if (HasHealth(false))
@@ -23697,6 +23869,8 @@ struct FUN_00950340_Class
 // Unless FUN_005721e0() is true, sets byte 0x64d, may raise DAT_011e0b5c to a setting, and if byte 0x64a is clear sets 0x64e and calls FUN_00950110(false).
 // @fnv 0x00950340
 // src: COMMUNITY 0x00950340
+// pdb: PlayerCharacter::ForceTemp3rdPerson | PlayerCharacter.obj | debug, upstream name already matches, high
+// pdb params: abForceCameraDistance
 bool FUN_00950340_Class::PlayerCharacter_ForceTemp3rdPerson(bool abForceCameraDistance)
 {
     if (PlayerCharacter_GetTempPerson())
@@ -24350,13 +24524,14 @@ struct FUN_009503d0_Obj
     unsigned char unk64d;
     unsigned char unk64e;
 
-    void PlayerCharacter_SetFirstPerson(int value);
+    void PlayerCharacter_SetFirstPerson(int abFirst);
     void PlayerCharacter_UpdateTemp3rdPerson();
 };
 
 // When unk64d is set, unk68->vf3e4() is -1, vf40c() is 0 and DAT_011e07b8/b9 are clear: clears unk64d, calls FUN_00950110(1) if unk64e is set, clears unk64e.
 // @fnv 0x009503d0
 // src: COMMUNITY 0x009503d0
+// pdb: PlayerCharacter::UpdateTemp3rdPerson | PlayerCharacter.obj | retail, upstream name already matches, high
 void FUN_009503d0_Obj::PlayerCharacter_UpdateTemp3rdPerson()
 {
     if (this->unk64d != 0)
@@ -24400,6 +24575,8 @@ struct FUN_00950460_shell : public PlayerCharacter
 // Sets byte 0x64F, may call SetAppCulled(true) on the GetNode(false) node, and when not returning early sets byte 0x650 and calls FUN_00950110(true).
 // @fnv 0x00950460
 // src: XBOX_PDB 0x00950460
+// pdb: PlayerCharacter::ForceTemp1stPerson | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb params: abIronSights1stPerson
 bool FUN_00950460_shell::PlayerCharacter_ForceTemp1stPerson(bool abIronSights1stPerson)
 {
     PlayerCharacter_StopVanityMode();
@@ -24526,12 +24703,13 @@ struct FUN_00950530_shell
 {
     unsigned char PlayerCharacter_IsPipboyActive();
     unsigned char Actor_GetIronSights();
-    void PlayerCharacter_SetFirstPerson(int mode);
+    void PlayerCharacter_SetFirstPerson(int abFirst);
     void PlayerCharacter_UpdateTemp1stPerson();
 };
 // If byte 0x64f is set and the checks pass, clears it, sets DAT_011a3b32, calls FUN_00950110(0) if byte 0x650 is set, then clears 0x650.
 // @fnv 0x00950530
 // src: COMMUNITY 0x00950530
+// pdb: PlayerCharacter::UpdateTemp1stPerson | PlayerCharacter.obj | retail, upstream name already matches, high
 void FUN_00950530_shell::PlayerCharacter_UpdateTemp1stPerson()
 {
     if (*reinterpret_cast<unsigned char*>((char*)this + 0x64f) && !PlayerCharacter_IsPipboyActive() &&
@@ -24971,17 +25149,19 @@ class B50610Player
     int unk658;
     float m_fFOV;
 
-    float PlayerCharacter_SetFOV(float fFOV);
+    float PlayerCharacter_SetFOV(float afFOV);
 };
 
 // Stores fFOV in m_fFOV, applies it to the camera and shader manager, and returns the stored value.
 // @fnv 0x00950610
 // src: COMMUNITY 0x00950610
-float B50610Player::PlayerCharacter_SetFOV(float fFOV)
+// pdb: PlayerCharacter::SetFOV | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb params: afFOV
+float B50610Player::PlayerCharacter_SetFOV(float afFOV)
 {
-    m_fFOV = fFOV;
+    m_fFOV = afFOV;
     Main_GetWorldSceneGraph()->SetCameraFOV(m_fFOV, 0, 0, 0);
-    BSShaderManager::SetFOV(fFOV);
+    BSShaderManager::SetFOV(afFOV);
     return m_fFOV;
 }
 }  // namespace fnv_00950610
@@ -25018,7 +25198,7 @@ extern Lock950 DAT_011f11a0;
 
 struct Queue950
 {
-    void ProcessLists_RemoveReference(void* pkActor, int iValue);
+    void ProcessLists_RemoveReference(void* apActor, int aWhichList);
 };
 extern Queue950 DAT_011e0e80;
 
@@ -25040,7 +25220,7 @@ struct Owner950
     Value950 bhkCharacterController_GetCollisionFilter();
 };
 
-void __cdecl Interface_UpdateActorValue(int iValue);
+void __cdecl Interface_UpdateActorValue(int aeWhich);
 
 struct FUN_00950660_shell
 {
@@ -25168,15 +25348,18 @@ struct FUN_00950660_shell
 
     int FUN_00931850();
     Owner950* FUN_009306d0();
-    void Actor_Resurrect(int a, int b, int c);
+    void Actor_Resurrect(int abResetInventory, int abAttach3D, int abGetupResurect);
     void TESObjectREFR_InitAnimation();
-    void PlayerCharacter_Resurrect(int a, int b, int c);
+    void PlayerCharacter_Resurrect(int abResetInventory, int abAttach3D, int abGetupResurect);
 };
 
 // Resets f4ac, swaps pkProcess with a copy, re-queues, and rebuilds pkObj21c from the owner's value index.
 // @fnv 0x00950660
 // src: COMMUNITY 0x00950660
-void FUN_00950660_shell::PlayerCharacter_Resurrect(int a, int b, int c)
+// pdb: PlayerCharacter::Resurrect | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb params: abResetInventory, abAttach3D, abGetupResurect
+// pdb locals: phighProcess, pcon, icolFilter, igroup
+void FUN_00950660_shell::PlayerCharacter_Resurrect(int abResetInventory, int abAttach3D, int abGetupResurect)
 {
     f4ac = 0.0f;
     Interface_UpdateActorValue(0x10);
@@ -25211,20 +25394,23 @@ bool PlayerCharacter_IsGodMode(void);
 class FUN_009508b0_cls
 {
   public:
-    bool Actor_DamageEquipment(int a, float f, bool b);
-    bool PlayerCharacter_DamageEquipment(int a, float f, bool b);
+    bool Actor_DamageEquipment(int apEquipment, float afDamage, bool abIgnoreArmorSkill);
+    bool PlayerCharacter_DamageEquipment(int apEquipment, float afDamage, bool abIgnoreArmorSkill);
 };
 
 // Returns false if FUN_009526b0 is true, otherwise returns the result of calling FUN_00891360 with the same arguments.
 // @fnv 0x009508b0
 // src: XBOX_PDB 0x009508b0
-bool FUN_009508b0_cls::PlayerCharacter_DamageEquipment(int a, float f, bool b)
+// pdb: PlayerCharacter::DamageEquipment | PlayerCharacter.obj | debug, upstream name already matches, high
+// pdb params: apEquipment, afDamage, abIgnoreArmorSkill
+// pdb locals: bbroken
+bool FUN_009508b0_cls::PlayerCharacter_DamageEquipment(int apEquipment, float afDamage, bool abIgnoreArmorSkill)
 {
     if (PlayerCharacter_IsGodMode())
     {
         return false;
     }
-    bool r = Actor_DamageEquipment(a, f, b);
+    bool r = Actor_DamageEquipment(apEquipment, afDamage, abIgnoreArmorSkill);
     return r;
 }
 
@@ -25248,7 +25434,7 @@ extern unsigned char DAT_011e07a8;
 class AnimationUpdate : public Animation
 {
   public:
-    void Animation_Update(Actor* apActor, float afTime, float afUnk);
+    void Animation_Update(Actor* ownerObject, float fSecondsPassed, float forceTime);
 };
 
 // Stand-in for BaseProcess's virtual table up to the slot this function calls (+0x740).
@@ -25263,6 +25449,8 @@ class PlayerCharacterUpdate : public PlayerCharacter
 // Increments DAT_011e07a8, computes fTime from g_timeGlobal and g_011f2250, updates animations and m_pBaseProcess, calls Unk_5E, then decrements DAT_011e07a8.
 // @fnv 0x00950930
 // src: XBOX_PDB 0x00950930
+// pdb: PlayerCharacter::UpdateAnimation | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb locals: fsecondsPassed, panim
 void PlayerCharacterUpdate::PlayerCharacter_UpdateAnimation()
 {
     ++DAT_011e07a8;
@@ -25272,8 +25460,8 @@ void PlayerCharacterUpdate::PlayerCharacter_UpdateAnimation()
         ((AnimationUpdate*)pAnim)->Animation_Update(this, fTime, -1.0f);
     if (*(Animation**)((char*)this + 0x690))
         (*(AnimationUpdate**)((char*)this + 0x690))->Animation_Update(this, fTime, -1.0f);
-    if (m_pBaseProcess)
-        ((BaseProcess*)m_pBaseProcess)->UpdateActorWithTime(this, fTime);
+    if (pCurrentProcess)
+        ((BaseProcess*)pCurrentProcess)->UpdateActorWithTime(this, fTime);
     Unk_5E();
     --DAT_011e07a8;
 }
@@ -25286,6 +25474,7 @@ struct FUN_00950a10_shell
 // Returns the animation at offset 0x6a0 if set, else the one at 0x690 when the flag at 0x64a is clear, otherwise calls FUN_008b70d0.
 // @fnv 0x00950a10
 // src: XBOX_PDB 0x00950a10
+// pdb: PlayerCharacter::GetAnimation | PlayerCharacter.obj | debug, object-file gap fill, medium
 Animation* FUN_00950a10_shell::PlayerCharacter_GetAnimation()
 {
     if (*(Animation**)((char*)this + 0x6a0))
@@ -25306,6 +25495,7 @@ struct FUN_00950a90_Class
 // Returns the Biped pointer at offset 0x68c if the flag at 0x64a is clear and the pointer is non-null, otherwise calls FUN_005d9f90.
 // @fnv 0x00950a90
 // src: COMMUNITY 0x00950a90
+// pdb: PlayerCharacter::GetBiped | PlayerCharacter.obj | debug, object-file gap fill, medium
 Biped* FUN_00950a90_Class::PlayerCharacter_GetBiped()
 {
     if (!reinterpret_cast<unsigned char*>(this)[0x64a] &&
@@ -25341,6 +25531,8 @@ struct FUN_00950bb0_shell : P09H
 // Returns the reference type, or the value at offset 0x694 when abFirstPerson is true.
 // @fnv 0x00950bb0
 // src: XBOX_PDB 0x00950bb0
+// pdb: PlayerCharacter::Get3D | PlayerCharacter.obj | debug, call graph, medium
+// pdb params: abFirstPerson
 unsigned int FUN_00950bb0_shell::PlayerCharacter_Get3D_00950bb0(bool abFirstPerson)
 {
     if (abFirstPerson)
@@ -25353,6 +25545,7 @@ bool __fastcall PlayerCharacter_IsActually3rdPerson(bool*);
 // If FUN_00524d10(self) is false, returns the value at offset 0x694; otherwise returns GetReferenceType().
 // @fnv 0x00950be0
 // src: COMMUNITY 0x00950be0
+// pdb: PlayerCharacter::GetCurrent3D | PlayerCharacter.obj | debug, call graph, high
 int __fastcall PlayerCharacter_GetCurrentNode(bool* self)
 {
     if (!PlayerCharacter_IsActually3rdPerson(self))
@@ -25520,7 +25713,7 @@ xFixedStr* x499b70();
 void xcb9650(void*);
 void x499160(xNode*);
 int x40df90();
-void xb6bb30(xNode*, float);
+void RecursiveSetPropertyFadeAlpha(xNode*, float);
 struct xShadowScene
 {
     void Fb5f150(xNode*, int);
@@ -26041,9 +26234,12 @@ struct FUN_00950c20_cls
 // Builds a cloned node with idle animations when the flag is true and none exists, or tears the animation down when false; returns the node.
 // @fnv 0x00950c20
 // src: COMMUNITY 0x00950c20
-xNode* FUN_00950c20_cls::PlayerCharacter_CloneInventory3D(bool FIRST)
+// pdb: PlayerCharacter::CloneInventory3D | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb params: abFlag
+// pdb locals: pmagicBone, cloneData, parrowBone, pkfFiles, pclonednode, pav, parrowObj, defaultAnim, rot, pspecialFace, boldForce, proot, pfacenode, searchName, pobj, spmanager, pmagicObj, pref, spanimdata, lightPtr, pslash, n, pfound, peffect
+xNode* FUN_00950c20_cls::PlayerCharacter_CloneInventory3D(bool abFlag)
 {
-    if (FIRST && !m_69c)
+    if (abFlag && !m_69c)
     {
         xLight* qxQHW;
         char* qfTOqo;
@@ -26082,7 +26278,7 @@ xNode* FUN_00950c20_cls::PlayerCharacter_CloneInventory3D(bool FIRST)
         x499160(m_69c);
         m_69c->RemoveProperty(x40df90());
         m_69c->Fa5a040();
-        xb6bb30(m_69c, 1.0f);
+        RecursiveSetPropertyFadeAlpha(m_69c, 1.0f);
         F951940(m_69c);
         m_69c->F440460(&xg_Zero);
         GetObjectReference()->F6062e0(this, m_69c);
@@ -26165,7 +26361,7 @@ xNode* FUN_00950c20_cls::PlayerCharacter_CloneInventory3D(bool FIRST)
         if (qYePyBl)
             qYePyBl->SetAppCulled(true);
     }
-    else if (!FIRST && m_69c)
+    else if (!abFlag && m_69c)
     {
         delete m_6a0;
         m_6a0 = 0;
@@ -26235,22 +26431,25 @@ struct FUN_00951940_Class
 // Calls ReplaceControllers for controllers failing FUN_0043b300, clears the collision object, then un-culls each child and recurses on its GetCollisionObject.
 // @fnv 0x00951940
 // src: COMMUNITY 0x00951940
-void FUN_00951940_Class::PlayerCharacter_RecursiveReadyInventoryNode(NiNode* node)
+// pdb: PlayerCharacter::RecursiveReadyInventoryNode | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb params: apNode
+// pdb locals: pcont, pnext, n, pobj, pnode
+void FUN_00951940_Class::PlayerCharacter_RecursiveReadyInventoryNode(NiNode* apNode)
 {
-    if (!node)
+    if (!apNode)
         return;
-    NiTimeController* controller = static_cast<NiAVObject*>(node)->GetControllers();
+    NiTimeController* controller = static_cast<NiAVObject*>(apNode)->GetControllers();
     while (controller)
     {
         NiTimeController* next = controller->GetNext();
         if (!NiObject_IsKindOf(&_g_011f36ec, controller))
-            node->ReplaceControllers(controller);
+            apNode->ReplaceControllers(controller);
         controller = next;
     }
-    node->AssignCollisionObject(0);
-    for (unsigned int index = 0; index < node->GetNumChildren(); ++index)
+    apNode->AssignCollisionObject(0);
+    for (unsigned int index = 0; index < apNode->GetNumChildren(); ++index)
     {
-        NiAVObject* object = node->GetAt(index);
+        NiAVObject* object = apNode->GetAt(index);
         if (object)
         {
             object->SetAppCulled(false);
@@ -26999,7 +27198,7 @@ struct ProcVtbl
     Fn580 fn580;
 };
 extern float DAT_011a3b38;
-void FUN_00709c40(int);
+void Interface_SetGunScopeVisible(int);
 void* FixedStrings_QMagicNode();
 
 struct NodeObj;
@@ -27595,26 +27794,29 @@ struct ThisCls
     void Actor_InitLightingPropertyPtr(void*);
     ProcObj* FUN_008d8520();
     bool GetShouldCheckMagicNode();
-    void PlayerCharacter_Show1stPerson(bool show);
+    void PlayerCharacter_Show1stPerson(bool abFirstPerson);
 };
 
 // Returns if either FUN_00950bb0 node is missing; else calls FUN_00450f90 with show and !show on the two nodes, updates them, and may copy child nodes.
 // @fnv 0x00951a10
 // src: XBOX_PDB 0x00951a10
-void ThisCls::PlayerCharacter_Show1stPerson(bool show)
+// pdb: PlayerCharacter::Show1stPerson | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb params: abFirstPerson
+// pdb locals: pnode, pobj, fVal, pweap, weaponSoundHandle, rot, p3dObj, panim, UpdateData, pnodeTo, panimFrom, pnodeFrom, panimTo, I, pchild
+void ThisCls::PlayerCharacter_Show1stPerson(bool abFirstPerson)
 {
     if (!PlayerCharacter_Get3D_00950bb0(true) || !PlayerCharacter_Get3D_00950bb0(false))
         return;
-    if (show && (vtbl->fn22c(this, 0) || tail.f64d))
+    if (abFirstPerson && (vtbl->fn22c(this, 0) || tail.f64d))
         return;
     if (PlayerCharacter_Get3D_00950bb0(false)->GetAppCulled_00456610() != PlayerCharacter_Get3D_00950bb0(true)->GetAppCulled_00456610())
     {
-        if (!show)
+        if (!abFirstPerson)
         {
             if (!PlayerCharacter_Get3D_00950bb0(false)->GetAppCulled_00456610())
                 return;
         }
-        if (show)
+        if (abFirstPerson)
         {
             if (!PlayerCharacter_Get3D_00950bb0(true)->GetAppCulled_00456610())
             {
@@ -27623,8 +27825,8 @@ void ThisCls::PlayerCharacter_Show1stPerson(bool show)
             }
         }
     }
-    PlayerCharacter_Get3D_00950bb0(false)->FUN_00450f90(show);
-    if (show && tail.f64f && Actor_GetIronSights())
+    PlayerCharacter_Get3D_00950bb0(false)->FUN_00450f90(abFirstPerson);
+    if (abFirstPerson && tail.f64f && Actor_GetIronSights())
     {
         if (m_68->v148())
         {
@@ -27634,15 +27836,15 @@ void ThisCls::PlayerCharacter_Show1stPerson(bool show)
                 XObj* chainResultTmp = ((XObj*)m_68->v148())->FUN_0044ddc0();
                 f = 0.0f;
                 if (!chainResultTmp->FUN_004ad030() || ((XObj*)m_68->v148())->FUN_004bd8d0(14, &f))
-                    FUN_00709c40(1);
+                    Interface_SetGunScopeVisible(1);
                 goto afterChain;
             }
         }
     }
-    PlayerCharacter_Get3D_00950bb0(true)->FUN_00450f90(!show);
+    PlayerCharacter_Get3D_00950bb0(true)->FUN_00450f90(!abFirstPerson);
 afterChain:
-    tail.f64b = !show;
-    if (show)
+    tail.f64b = !abFirstPerson;
+    if (abFirstPerson)
     {
         NodeObj* nodeOld = PlayerCharacter_Get3D_00950bb0(false);
         nodeOld->NiAVObject_SetTranslate(vtbl->fn1f4(this));
@@ -27683,8 +27885,8 @@ afterChain:
         AnimObj* animA = 0;
         AnimObj* animBNew = 0;
         NodeObj* t8c = 0;
-        animA = FUN_00950a60(!show);
-        animBNew = FUN_00950a60(show);
+        animA = FUN_00950a60(!abFirstPerson);
+        animBNew = FUN_00950a60(abFirstPerson);
         t8c = animA->GetControllerManager_00496940()->GetStringAtOffset()->v8c(FixedStrings_QMagicNode());
         NodeObj* childNextSrc = t8c ? (NodeObj*)t8c->vtbl->fn0c(t8c) : 0;
         t8c = animBNew->GetControllerManager_00496940()->GetStringAtOffset()->v8c(FixedStrings_QMagicNode());
@@ -27702,7 +27904,7 @@ afterChain:
     }
     NodeObj* tVal = (NodeObj*)vtbl->fn1d0(this);
     NodeObj* t2 = tVal;
-    if (show)
+    if (abFirstPerson)
     {
         tVal = t2->FUN_0043b4a0(0);
         t2 = tVal;
@@ -28358,6 +28560,8 @@ struct PlayerView
 // Smooths a blend value toward a target (1.0 in certain animation states), then uses it to scale a pitch correction applied to the rotation set on the view.
 // @fnv 0x00952290
 // src: COMMUNITY 0x00952290
+// pdb: PlayerCharacter::UpdateArmRotation | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb locals: fheading, rotMod, sgroup, p1, xrot, rot, fpercent, egroup, p2, eact, panim, dot, cameraRot, fchaseDelta, fchaseTime
 void PlayerView::PlayerCharacter_UpdateArmRotation()
 {
     float blend5 = *originalRuntimeFloatSetting212.Float();
@@ -28442,6 +28646,7 @@ extern unsigned char DAT_011e07ba;
 
 // @fnv 0x009526b0
 // src: XBOX_PDB 0x009526b0
+// pdb: PlayerCharacter::IsGodMode | PlayerCharacter.obj | debug, upstream name already matches, high
 char PlayerCharacter_IsGodMode()
 {
     if (*reinterpret_cast<unsigned char*>(g_011e0894.Bool()))
@@ -28466,6 +28671,7 @@ extern unsigned char DAT_011e07bb;
 
 // @fnv 0x009526f0
 // src: COMMUNITY 0x009526f0
+// pdb: PlayerCharacter::IsDemigodMode | PlayerCharacter.obj | debug, call graph, medium
 char GetDemigodeMode()
 {
     if (*reinterpret_cast<unsigned char*>(g_011e0894.Bool()))
@@ -28532,6 +28738,8 @@ class FUN_00952730_cls
 
 // @fnv 0x00952730
 // src: COMMUNITY 0x00952730
+// pdb: PlayerCharacter::CheckInvulnerable | PlayerCharacter.obj | debug, object-file gap fill, medium
+// pdb params: aiWhich, afValue
 bool FUN_00952730_cls::PlayerCharacter_CheckGodMode(int code, float value)
 {
     if (!m_94.Unk10())
@@ -28588,13 +28796,16 @@ struct FUN_009528c0_shell
     char pad000[0x6b0];
     PlayerList<TESChallenge*> m_kChallenges;
     ChallengeNode* GetOffsetPointer();
-    bool AddChallenge(TESChallenge* pkChallenge);
+    bool AddChallenge(TESChallenge* apNewItem);
 };
 // Adds pkChallenge to m_kChallenges unless it is null or already listed under a HasFlag8 check; may then call FUN_00706f30(9) and enable its quest.
 // @fnv 0x009528c0
-bool FUN_009528c0_shell::AddChallenge(TESChallenge* pkChallenge)
+// pdb: PlayerCharacter::AddQuestStageItem | PlayerCharacter.obj | retail, object-file run extension, high
+// pdb params: apNewItem
+// pdb locals: bQuestFound, pList, pItem
+bool FUN_009528c0_shell::AddChallenge(TESChallenge* apNewItem)
 {
-    if (!pkChallenge)
+    if (!apNewItem)
         return false;
     bool bFound = false;
     ChallengeNode* pkIter = GetOffsetPointer();
@@ -28602,19 +28813,19 @@ bool FUN_009528c0_shell::AddChallenge(TESChallenge* pkChallenge)
     {
         TESChallenge* pkItem = pkIter->FUN_006815c0();
         pkIter = pkIter->FUN_00726070();
-        if (pkItem == pkChallenge && !((ChallengeCheck*)pkItem->GetProgressValue())->HasFlag8())
+        if (pkItem == apNewItem && !((ChallengeCheck*)pkItem->GetProgressValue())->HasFlag8())
             return false;
-        if (pkItem->GetProgressValue() == pkChallenge->GetProgressValue())
+        if (pkItem->GetProgressValue() == apNewItem->GetProgressValue())
             bFound = true;
     }
-    m_kChallenges.AddHead(pkChallenge);
+    m_kChallenges.AddHead(apNewItem);
     if (!FUN_005ac740())
         return true;
-    if (pkChallenge->TESQuestStageItem_GetEndQuest())
+    if (apNewItem->TESQuestStageItem_GetEndQuest())
     {
         Interface_PlayMenuSound(9);
-        if (pkChallenge->GetProgressValue() == PlayerCharacter_GetActiveQuest(g_thePlayer) && pkChallenge->EffectSetting_GetLight())
-            pkChallenge->EffectSetting_GetLight()->SetEnabled(true);
+        if (apNewItem->GetProgressValue() == PlayerCharacter_GetActiveQuest(g_thePlayer) && apNewItem->EffectSetting_GetLight())
+            apNewItem->EffectSetting_GetLight()->SetEnabled(true);
     }
     return true;
 }
@@ -28624,18 +28835,19 @@ namespace fnv_00952ba0 {
 // PlayerCharacter.h lacks this quest-target operation; use the shared quest and objective storage.
 struct PlayerQuestTargetOperations : public PlayerCharacter
 {
-    PlayerList<RegionObjectEntry*>* PlayerCharacter_GetCurrentQuestTargets();
+    PlayerList<RegionObjectEntry*>* PlayerCharacter_GetCurrentTargetList();
 };
 
 // Returns the player's current quest target list, refreshing it from the active quest when the flag is set or the quest has no targets.
 // @fnv 0x00952ba0
-// src: COMMUNITY 0x00952ba0
-PlayerList<RegionObjectEntry*>* PlayerQuestTargetOperations::PlayerCharacter_GetCurrentQuestTargets()
+// src: XBOX_DEBUG_PDB 0x00952ba0 (was COMMUNITY)
+// pdb: PlayerCharacter::GetCurrentTargetList | PlayerCharacter.obj | debug, call graph, high
+PlayerList<RegionObjectEntry*>* PlayerQuestTargetOperations::PlayerCharacter_GetCurrentTargetList()
 {
     if (m_pCurrentQuest == 0)
         return 0;
 
-    if (reinterpret_cast<bool*>(&unk204)[2] || !m_pCurrentQuest->HasTargetsAndObjectives(&(*reinterpret_cast<PlayerList<RegionObjectEntry*>*>(layoutPadding6C4)), &(*static_cast<PlayerList<BGSQuestObjective*>*>(&m_kObjectiveList))))
+    if (reinterpret_cast<bool*>(&unk204)[2] || !m_pCurrentQuest->ValidateTargetList(&(*reinterpret_cast<PlayerList<RegionObjectEntry*>*>(layoutPadding6C4)), &(*static_cast<PlayerList<BGSQuestObjective*>*>(&m_kObjectiveList))))
     {
         m_pCurrentQuest->GetTargetsAndObjectives(&(*reinterpret_cast<PlayerList<RegionObjectEntry*>*>(layoutPadding6C4)), &(*static_cast<PlayerList<BGSQuestObjective*>*>(&m_kObjectiveList)));
         reinterpret_cast<bool*>(&unk204)[2] = false;
@@ -28664,12 +28876,15 @@ TESContainer* __fastcall TESObjectREFR_HasContainer(TESObjectREFR*);
 struct FUN_00952c30_shell : PlayerCharacter
 {
     void PlayerCharacter_CheckForQuestTargetUpdate(TESObjectREFR* apMovingRef);
-    PlayerList<TESQuestTargetX*>* PlayerCharacter_GetCurrentQuestTargets();
+    PlayerList<TESQuestTargetX*>* PlayerCharacter_GetCurrentTargetList();
 };
 
 // Sets a flag when the moving reference is the player or matches a quest target, or when the target's container holds the target's form ID.
 // @fnv 0x00952c30
 // src: XBOX_PDB 0x00952c30
+// pdb: PlayerCharacter::CheckForQuestTargetUpdate | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb params: apMovingRef
+// pdb locals: pTarget, tempAutoEvent, pList, ptargref, pCont, pinventory
 void FUN_00952c30_shell::PlayerCharacter_CheckForQuestTargetUpdate(TESObjectREFR* apMovingRef)
 {
     if (apMovingRef == _g_thePlayer)
@@ -28678,7 +28893,7 @@ void FUN_00952c30_shell::PlayerCharacter_CheckForQuestTargetUpdate(TESObjectREFR
             ((PlayerOps*)this)->PlayerCharacter_BuildPathToTarget(*(void**)((char*)this + 0x6f4), (char*)this + 0x6f8, 0);
         *((bool*)this + 0x206) = true;
     }
-    PlayerList<TESQuestTargetX*>* pList = PlayerCharacter_GetCurrentQuestTargets();
+    PlayerList<TESQuestTargetX*>* pList = PlayerCharacter_GetCurrentTargetList();
     TESQuestTargetX* pTarget = 0;
     while (pList && *((QTNode*)pList)->_ref_006815c0() && !*((bool*)this + 0x206))
     {
@@ -28724,6 +28939,9 @@ struct FUN_00952d60_stand
 // Builds a path from the player to apTargetRef into apOutResultPath using BuildPathWithDoors, clearing it on failure.
 // @fnv 0x00952d60
 // src: XBOX_PDB 0x00952d60
+// pdb: PlayerCharacter::BuildPathToTarget | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb params: apTargetRef, apOutResultPath, abIgnoreLocks
+// pdb locals: targetLoc, playerLoc, playerLockData, pathToTarget
 void FUN_00952d60_stand::PlayerCharacter_BuildPathToTarget(TESObjectREFR* apTargetRef, PathingPath* apOutResultPath, bool abIgnoreLocks)
 {
     if (apTargetRef != 0 && apOutResultPath != 0)
@@ -28733,11 +28951,11 @@ void FUN_00952d60_stand::PlayerCharacter_BuildPathToTarget(TESObjectREFR* apTarg
         PathingPath pathToTarget;
         ActorData playerLockData(_g_thePlayer);
 
-        apOutResultPath->Clear();
+        apOutResultPath->TeleportPath_Clear();
 
         if (!BuildPathWithDoors(&playerLoc, &targetLoc, apOutResultPath, &playerLockData, 2))
         {
-            apOutResultPath->Clear();
+            apOutResultPath->TeleportPath_Clear();
         }
     }
 }
@@ -29234,26 +29452,29 @@ struct PlayerMarkerOwner
     MarkerRefStub* m_pMarkerReference;
     int unk6F8;
     void PlaceMarkerStub(MarkerRefStub* marker, int* data, int flag);
-    void PlaceMarker(NiPoint3 pos, MarkerFormStub* form);
+    void PlaceMarker(NiPoint3 aLocation, MarkerFormStub* apSpace);
 };
 
 // Creates m_pMarkerReference if null, sets its position, sets its cell from form for kinds 0x39 or 0x41, then calls PlaceMarkerStub.
 // @fnv 0x00952e60
-void PlayerMarkerOwner::PlaceMarker(NiPoint3 pos, MarkerFormStub* form)
+// pdb: PlayerCharacter::SetPlayerMapMarker | PlayerCharacter.obj | retail, call graph (shared callers), high
+// pdb params: aLocation, apSpace
+// pdb locals: pdummyCell
+void PlayerMarkerOwner::PlaceMarker(NiPoint3 aLocation, MarkerFormStub* apSpace)
 {
     if (m_pMarkerReference == 0)
     {
         m_pMarkerReference = new MarkerRefStub;
         m_pMarkerReference->SetBaseStub(DAT_011ca248);
     }
-    m_pMarkerReference->SetPosStub(pos);
-    if (form->GetFormKind() == 0x39)
+    m_pMarkerReference->SetPosStub(aLocation);
+    if (apSpace->GetFormKind() == 0x39)
     {
-        m_pMarkerReference->SetCellStub((TESObjectCELL*)form);
+        m_pMarkerReference->SetCellStub((TESObjectCELL*)apSpace);
     }
-    else if (form->GetFormKind() == 0x41)
+    else if (apSpace->GetFormKind() == 0x41)
     {
-        TESObjectCELL* cell = form->GetPersistentCellStub();
+        TESObjectCELL* cell = apSpace->GetPersistentCellStub();
         if (cell != 0)
             m_pMarkerReference->SetCellStub(cell);
     }
@@ -29579,25 +29800,25 @@ class xActor
     float m_f6e4;
 
     void PlayerCharacter_StopVanityMode();
-    void Show1stPerson(bool b);
+    void Show1stPerson(bool abFirstPerson);
     xCell* GetParentCell();
     xWorld* GetParentWorldSpace();
     bool IsTalkingActivator();
     xActor* GetProgress();
     void AddModAngle(float f);
-    void FUN_00931d30(float f);
+    void FUN_00931d30(float afModAngle);
     float GetLooking();
-    float GetAdjustedValue(int i);
-    void PlayerCharacter_SetFirstPerson(bool b);
+    float GetAdjustedValue(int abIgnoreImmobile);
+    void PlayerCharacter_SetFirstPerson(bool abFirst);
     void UpdateCameraMode();
     void PlayerCharacter_UpdateTemp3rdPerson();
-    void PickAnimations(float a, float b);
+    void PickAnimations(float afMoveScale, float afTurnScale);
     xAnim* GetAnimation(bool b);
-    void UpdateAnimationMovement(xAnim* pAnim, float f);
-    void UpdateFaceAnimation(float f);
-    float PlayerCharacter_SetFOV(float f);
+    void UpdateAnimationMovement(xAnim* apAnim, float f);
+    void UpdateFaceAnimation(float afDelta);
+    float PlayerCharacter_SetFOV(float afFOV);
     const char* GetNameX();
-    void PlayerCharacter_FocusOnActor(xActor* pActor, float fRate, bool bSkip);
+    void PlayerCharacter_FocusOnActor(xActor* apActor, float afZoomPercent, bool abOnlyZoom);
 };
 
 extern bool xFirstPerson;
@@ -29623,10 +29844,10 @@ extern float xLastHeading;
 extern float xLastLooking;
 
 const char* xHeadName();
-xNode* xGetObjectByName(xNode* pkRoot, const void* pName);
+xNode* xGetObjectByName(xNode* apScene, const void* apName);
 xNode* xDynamicCast(xRTTI* pRTTI, xNode* pkObj);
 xFaceGen* xFaceGenMgr();
-float xAtan(float f);
+float xAtan(float _X);
 float xMin(float a, float b);
 float xAbs(float f);
 float xAsin(float f);
@@ -29637,12 +29858,15 @@ void xUpdateShadows();
 // Eases pitch and yaw toward pActor's head node (or Bip01 Speaker), updates animations and shadows, and stores fRate in the focus global.
 // @fnv 0x00953060
 // src: EXE 0x00953060
-void xActor::PlayerCharacter_FocusOnActor(xActor* pActor, float fRate, bool bSkip)
+// pdb: PlayerCharacter::FocusOnActor | PlayerCharacter.obj | retail, string-set bridge, high
+// pdb params: apActor, afZoomPercent, abOnlyZoom
+// pdb locals: src, target, bcalculated, pav, bvalidTarget, pref, phead, pfaceGenHead, pSpeaker, headBound, pcam, UpdateData, f1stPersonFOVDelta, fworldFOVDelta, ffovMult, ftargetAngle, fangleDelta, fov
+void xActor::PlayerCharacter_FocusOnActor(xActor* apActor, float afZoomPercent, bool abOnlyZoom)
 {
-    if (!pActor)
+    if (!apActor)
         return;
-    fRate = fRate < 0.0 ? 0.0f : fRate;
-    fRate = fRate > 1.0 ? 1.0f : fRate;
+    afZoomPercent = afZoomPercent < 0.0 ? 0.0f : afZoomPercent;
+    afZoomPercent = afZoomPercent > 1.0 ? 1.0f : afZoomPercent;
     if (xFirstPerson)
     {
         PlayerCharacter_StopVanityMode();
@@ -29650,26 +29874,26 @@ void xActor::PlayerCharacter_FocusOnActor(xActor* pActor, float fRate, bool bSki
     }
     if (GetParentCell() && GetParentCell()->IsInterior())
     {
-        if (pActor->GetParentCell() != GetParentCell())
+        if (apActor->GetParentCell() != GetParentCell())
             return;
     }
-    else if (pActor->GetParentWorldSpace() != GetParentWorldSpace())
+    else if (apActor->GetParentWorldSpace() != GetParentWorldSpace())
         return;
     xPt3 qSVM = xCamera->GetWorldTranslate();
     xPt3 qpqRa;
     bool qrEZrs = false;
     xNode* qsSDDgz = 0;
-    if (pActor->IsTalkingActivator())
+    if (apActor->IsTalkingActivator())
     {
-        xActor* qxQHW = pActor->GetProgress();
+        xActor* qxQHW = apActor->GetProgress();
         qsSDDgz = qxQHW->Get3D();
     }
     else
-        qsSDDgz = pActor->Get3D();
+        qsSDDgz = apActor->Get3D();
     bool qfTOqo = true;
     if (qsSDDgz)
     {
-        xNode* qQMZREG = pActor->GetHead(0);
+        xNode* qQMZREG = apActor->GetHead(0);
         xNode* qxWmVch = 0;
         if (!qQMZREG)
             qxWmVch = xDynamicCast(&xNodeRTTI, xGetObjectByName(qsSDDgz, xHeadName()));
@@ -29718,14 +29942,14 @@ void xActor::PlayerCharacter_FocusOnActor(xActor* pActor, float fRate, bool bSki
         }
         else
         {
-            if (xLastActor != pActor)
+            if (xLastActor != apActor)
                 xWarning(
                     "DIALOGUE: PlayerCharacter::FocusOnActor( ): Attempting to talk to an object '%s' without a 'Bip01 Head'.",
-                    pActor->GetNameX());
-            xLastActor = pActor;
+                    apActor->GetNameX());
+            xLastActor = apActor;
             qfTOqo = false;
         }
-        if (!bSkip && qfTOqo)
+        if (!abOnlyZoom && qfTOqo)
         {
             float qYePyBl = m_f674 / *xS3150.Float();
             float qxDeKK = xAsin(qSVM.z / qSVM.Length());
@@ -29797,7 +30021,7 @@ void xActor::PlayerCharacter_FocusOnActor(xActor* pActor, float fRate, bool bSki
             PlayerCharacter_SetFOV((float)qBLsiu);
         }
     }
-    xFocus = fRate;
+    xFocus = afZoomPercent;
 }
 }  // namespace fnv_00953060
 
@@ -29808,6 +30032,7 @@ struct FUN_00953c20_shell
 // Returns the virtual node count of the PathingSolution at offset 0xd64, or 0 if that pointer is null.
 // @fnv 0x00953c20
 // src: XBOX_PDB 0x00953c20
+// pdb: PlayerCharacter::GetNumberActorsInCombat | PlayerCharacter.obj | debug, upstream name already matches, high
 unsigned int FUN_00953c20_shell::PlayerCharacter_GetNumberActorsInCombat()
 {
     if (*(PathingSolution**)((char*)this + 0xd64))
@@ -29844,7 +30069,7 @@ class C953C80Form;
 class C953C80Manager
 {
   public:
-    C953C80List* CollectActorsByPackage(C953C80Form* pkForm, unsigned int uiType, int iFlags);
+    C953C80List* CollectActorsByPackage(C953C80Form* apActor, unsigned int apType, int bOnlyHigh);
 };
 
 extern C953C80Manager g_kC953C80Manager;
@@ -29888,6 +30113,7 @@ struct FUN_00953d00_StandIn
 
 // Calls UpdatePlayerState when the byte at offset 0x6CC is set and the float at 0x6D0 exceeds DAT_01020998.
 // @fnv 0x00953d00
+// pdb: PlayerCharacter::CheckPlayerGreetFlag | PlayerCharacter.obj | debug, object-file run extension, low
 void FUN_00953d00_StandIn::UpdatePlayerStateIfActive()
 {
     if (*((unsigned char*)((char*)this + 0x6CC)) && (*(float*)((char*)this + 0x6D0) > DAT_01020998))
@@ -29905,6 +30131,9 @@ struct FUN_00953d40_class
 // If bFlag is set, adds the float returned by g_timeGlobal's GetStoredFloatValue to fValue.
 // @fnv 0x00953d40
 // src: COMMUNITY 0x00953d40
+// pdb: PlayerCharacter::IsAlarmForPlayerCharactaer | PlayerCharacter.obj | retail, object-file run extension, low
+// pdb note: debug build links it to PlayerCharacter::ModPlayerGreetTimer
+// pdb locals: plist, abflag
 void FUN_00953d40_class::PlayerCharacter_ModPlayerGreetTimer()
 {
     if (bFlag)
@@ -29931,7 +30160,7 @@ struct PackageStub
     void SetProcedureStub(unsigned int value);
 };
 
-PackageStub* __cdecl CreatePackageStandIn(int type);
+PackageStub* __cdecl CreatePackageStandIn(int aPackageType);
 
 struct ProcessStub
 {
@@ -30482,7 +30711,7 @@ struct PlayerStub
     bool IsSomethingStub();
     void SetUnderAIControl(bool value);
     bool ResetStub(bool value);
-    void GoToLocation(void* ref);
+    void PlayerCharacter_InitiateSitSleepPackage(void* apCurrentFurniture);
 };
 
 void __fastcall ClearFormStub(int form);
@@ -30491,7 +30720,11 @@ extern PlayerCharacter* g_thePlayer;
 
 // Sets under-AI control (clearing a form first unless IsSomethingStub), resets at process level 7, then adds a must-complete package located at ref.
 // @fnv 0x00953d80
-void PlayerStub::GoToLocation(void* apReference)
+// src: XBOX_RETAIL_PDB 0x00953d80
+// pdb: PlayerCharacter::InitiateSitSleepPackage | PlayerCharacter.obj | retail, object-file run extension, high
+// pdb params: apCurrentFurniture
+// pdb locals: ploc, ppack
+void PlayerStub::PlayerCharacter_InitiateSitSleepPackage(void* apCurrentFurniture)
 {
     if (!((PlayerStub*)g_thePlayer)->IsSomethingStub())
         ClearFormStub(((PlayerStub*)g_thePlayer)->unk190);
@@ -30506,7 +30739,7 @@ void PlayerStub::GoToLocation(void* apReference)
     package->SetMustReachLocation(false);
     package->SetMustComplete(true);
     PackageLocStub* loc = new PackageLocStub;
-    loc->AssignReference(apReference);
+    loc->AssignReference(apCurrentFurniture);
     package->SetLocation(loc);
     delete loc;
     package->SetProcedureStub(0);
@@ -30541,6 +30774,7 @@ struct FUN_00953f80_Class
 // Sets byte at offset 0x6d8 to 1 and calls AddToField(4, 1) on the object.
 // @fnv 0x00953f80
 // src: XBOX_PDB 0x00953f80
+// pdb: PlayerCharacter::SetIsAMurderer | PlayerCharacter.obj | debug, upstream name already matches, high
 void FUN_00953f80_Class::PlayerCharacter_SetIsAMurderer()
 {
     ((char*)this)[0x6d8] = 1;
@@ -30568,7 +30802,7 @@ struct TransferForm
     bool AcceptAmmo();
     bool AcceptWeapon();
     bool IsEquipped();
-    TransferForm* Resolve(void* context);
+    TransferForm* Resolve(void* apWeaponHolder);
     double Condition(bool check);
 };
 struct TransferReference
@@ -30692,24 +30926,24 @@ struct TransferReference
     virtual void* Scene();
     TransferForm* Base();
     int InventoryKey();
-    void* Extra(int index);
+    void* Extra(int aiIndex);
     void* Container();
-    bool Owned(TransferOwner* owner, bool check);
+    bool Owned(TransferOwner* pOwner, bool check);
     bool Persistent();
-    bool Flag(int flag);
-    bool Exempt(bool check);
+    bool Flag(int type);
+    bool Exempt(bool apOwner);
     struct ReferenceState* State();
     void Clear();
 };
 struct ReferenceState
 {
-    void Set(void* value);
+    void Set(void* apOwner);
     void Reset();
 };
 struct TransferEntry
 {
     TransferReference* Reference();
-    void SetOwner(TransferOwner* owner);
+    void SetOwner(TransferOwner* apRef);
 };
 struct TransferNode
 {
@@ -31092,7 +31326,7 @@ struct TransferOwner
     int unk60;
     int unk64;
     TransferProcess* process;
-    void PlayerCharacter_PickUpObject(TransferReference* ref, int amount, bool notify);
+    void PlayerCharacter_PickUpObject(TransferReference* apobjREFR, int aicount, bool abflag);
     void Prepare(TransferForm*, bool, bool);
     void Transfer(TransferReference*, TransferForm*, int, int, void*);
     void Remove(TransferReference*, int, bool, bool);
@@ -31100,7 +31334,7 @@ struct TransferOwner
 };
 struct TransferManager
 {
-    TransferNode* Find(int key, TransferOwner* owner);
+    TransferNode* Find(int aId, TransferOwner* apActorPickup);
     TransferReference* FindOwner(TransferReference* ref);
 };
 extern TransferManager DAT_011e0e80;
@@ -31109,38 +31343,41 @@ extern void* DAT_011dea3c;
 extern double DAT_01012060;
 extern void UpdateScene(void*, bool, bool, bool);
 extern bool GlobalTest(int, int);
-extern bool GlobalTestA();
-extern bool GlobalTestB();
+extern bool Interface_ContainerIsBarter();
+extern bool Interface_ContainerIsRecipe();
 
 // Transfers ref out via Transfer and Remove, adjusts ammo counts, may re-equip the left item, and deletes ref when it is not persistent.
 // @fnv 0x00953ff0
 // src: XBOX_PDB 0x00953ff0
-void TransferOwner::PlayerCharacter_PickUpObject(TransferReference* ref, int amount, bool notify)
+// pdb: PlayerCharacter::PickUpObject | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb params: apobjREFR, aicount, abflag
+// pdb locals: pweapon, pfile, pammo, bdeleteReference, bwearit, apactorlist, pTemp, apactor, pownership
+void TransferOwner::PlayerCharacter_PickUpObject(TransferReference* apobjREFR, int aicount, bool abflag)
 {
     TransferForm* ammo = 0;
     TransferForm* weapon = 0;
     bool equipped = false;
-    switch (ref->Base()->Type())
+    switch (apobjREFR->Base()->Type())
     {
     case 0x29:
-        weapon = ref->Base();
+        weapon = apobjREFR->Base();
         if (!weapon->AcceptAmmo())
             return;
         break;
     case 0x28:
-        ammo = ref->Base();
+        ammo = apobjREFR->Base();
         if (!ammo->AcceptWeapon())
             return;
         break;
     }
-    Prepare(ref->Base(), true, false);
-    UpdateScene(ref->Scene(), true, true, false);
-    TransferNode* cursor = DAT_011e0e80.Find(ref->InventoryKey(), this);
+    Prepare(apobjREFR->Base(), true, false);
+    UpdateScene(apobjREFR->Scene(), true, true, false);
+    TransferNode* cursor = DAT_011e0e80.Find(apobjREFR->InventoryKey(), this);
     TransferNode* extra = cursor;
     while (cursor && *cursor->Data())
     {
         TransferEntry* entry = *cursor->Data();
-        if (entry && entry->Reference() == ref)
+        if (entry && entry->Reference() == apobjREFR)
             entry->SetOwner(this);
         else
             entry->SetOwner(0);
@@ -31151,66 +31388,66 @@ void TransferOwner::PlayerCharacter_PickUpObject(TransferReference* ref, int amo
         extra->Clear();
         delete extra;
     }
-    void* head = ref->Extra(-1);
-    if (!GlobalTest(0x3f1, 0) && !GlobalTestA() && !GlobalTestB())
+    void* head = apobjREFR->Extra(-1);
+    if (!GlobalTest(0x3f1, 0) && !Interface_ContainerIsBarter() && !Interface_ContainerIsRecipe())
     {
-        void* container = ref->Container();
-        if (container && !ref->Owned(this, true) && ref->Base()->Type() != 0x33)
+        void* container = apobjREFR->Container();
+        if (container && !apobjREFR->Owned(this, true) && apobjREFR->Base()->Type() != 0x33)
         {
-            DAT_011e07a4 = DAT_011e0e80.FindOwner(ref);
-            if (ref->Persistent() || head || ref->Flag(2))
-                Transfer(ref, ref->Base(), amount, 0, container);
+            DAT_011e07a4 = DAT_011e0e80.FindOwner(apobjREFR);
+            if (apobjREFR->Persistent() || head || apobjREFR->Flag(2))
+                Transfer(apobjREFR, apobjREFR->Base(), aicount, 0, container);
             else if (DAT_011e07a4)
-                Transfer(DAT_011e07a4, ref->Base(), amount, 0, container);
-            if (!ref->Exempt(false))
-                ref->State()->Set(container);
+                Transfer(DAT_011e07a4, apobjREFR->Base(), aicount, 0, container);
+            if (!apobjREFR->Exempt(false))
+                apobjREFR->State()->Set(container);
             else
-                ref->State()->Reset();
+                apobjREFR->State()->Reset();
         }
         else
-            ref->State()->Reset();
+            apobjREFR->State()->Reset();
     }
-    switch (ref->Base()->Type())
+    switch (apobjREFR->Base()->Type())
     {
     case 0x29:
-        notify = false;
+        abflag = false;
         break;
     case 0x28:
-        ammo = ref->Base();
+        ammo = apobjREFR->Base();
         if (ammo->IsEquipped() && process->Right() && ammo == process->Right()->Form())
         {
             if (process->Left())
-                process->Left()->SetCount(process->Left()->Count() + amount);
+                process->Left()->SetCount(process->Left()->Count() + aicount);
             if (process->Right())
-                process->Right()->SetCount(process->Right()->Count() + amount);
+                process->Right()->SetCount(process->Right()->Count() + aicount);
             equipped = true;
         }
         break;
     }
     bool destroy = false;
-    if (ref->Persistent() || head)
+    if (apobjREFR->Persistent() || head)
     {
-        ref->Clear();
-        Remove(ref, amount, notify, equipped);
+        apobjREFR->Clear();
+        Remove(apobjREFR, aicount, abflag, equipped);
     }
-    else if (ref->Flag(2))
+    else if (apobjREFR->Flag(2))
     {
-        ref->Clear();
-        Remove(ref, amount, false, equipped);
+        apobjREFR->Clear();
+        Remove(apobjREFR, aicount, false, equipped);
     }
     else
     {
-        Remove(ref, amount, false, equipped);
+        Remove(apobjREFR, aicount, false, equipped);
         destroy = true;
     }
-    if ((!process->Right() || !process->Right()->Count()) && process->Left() && ref &&
-        ref->Base() == process->Left()->Form()->Resolve(DAT_011dea3c) &&
+    if ((!process->Right() || !process->Right()->Count()) && process->Left() && apobjREFR &&
+        apobjREFR->Base() == process->Left()->Form()->Resolve(DAT_011dea3c) &&
         process->Left()->Form()->Condition(process->Left()->Flag(6)) <= DAT_01012060)
     {
         Equip(process->Left()->Form(), IsPlayer() ? 2 : 0, process->Left()->Flag(2), 0);
     }
     if (destroy)
-        delete ref;
+        delete apobjREFR;
 }
 }  // namespace fnv_00953ff0
 
@@ -31350,7 +31587,7 @@ class Obj
     virtual void v127();
     void QuitVATSPlayback(int a, int b);
     Obj* TESObjectCELL_GetLootBag();
-    Obj* CreateLootBagAtRef(void* a);
+    Obj* CreateLootBagAtRef(void* apRef);
     int FUN_00401170();
     Obj* TESObjectWEAP_GetCurrentAmmo();
     void FUN_006ecd40();
@@ -31501,7 +31738,7 @@ class FUN_00954610_cls
     int Actor_GetCurrentWeapon();
     Obj* FUN_008a1710b(int a);
     void* PlayerCharacter_Get3D_00950bb0(int a);
-    void PlayActorSound(void* a, int b, int c);
+    void PlayActorSound(void* apobjREFR, int abPickUp, int abUse);
     unsigned int unk004;
     unsigned int unk008;
     unsigned int unk00C;
@@ -32033,19 +32270,22 @@ class FUN_00954610_cls
     unsigned int unk844;
     unsigned int unk848;
     unsigned int unk84c;
-    void* PlayerCharacter_DropObject(Obj* a1, Obj* a2, void* a3, void* a4, void* a5);
+    void* PlayerCharacter_DropObject(Obj* apObject, Obj* apExtra, void* ainumber, void* apPoint, void* apRotate);
 };
 
 extern void* DAT_011dea3c;
 bool FUN_007043c0();
-void bhkWorld_Enable(void* a, int b, int c, int d);
+void bhkWorld_Enable(void* apObject, int abEnable, int abRecurse, int abForce);
 Obj* BSUtilities_GetObjectByName(void* a, const char* s);
 void bhkNiCollisionObject_ResetSim(void* a, int b);
-void bhkWorld_Activate(void* a, int b, int c, int d);
+void bhkWorld_Activate(void* apObject, int abActivate, int abRecurse, int d);
 
 // @fnv 0x00954610
 // src: XBOX_PDB 0x00954610
-void* FUN_00954610_cls::PlayerCharacter_DropObject(Obj* a1, Obj* a2, void* a3, void* a4, void* a5)
+// pdb: PlayerCharacter::DropObject | PlayerCharacter.obj | retail, string-set bridge, high
+// pdb params: apObject, apExtra, ainumber, apPoint, apRotate
+// pdb locals: pparentcell, pobjREFR, pboundobj, plootbag, pround, pav, shift, UpdateData, location
+void* FUN_00954610_cls::PlayerCharacter_DropObject(Obj* apObject, Obj* apExtra, void* ainumber, void* apPoint, void* apRotate)
 {
     Obj* a;
     Obj* B;
@@ -32068,12 +32308,12 @@ void* FUN_00954610_cls::PlayerCharacter_DropObject(Obj* a1, Obj* a2, void* a3, v
         }
         if (B != 0)
         {
-            this->v95((int)a1, (int)a2, (int)a3, 0, 0, (int)B, 0, 0, 1, 0);
+            this->v95((int)apObject, (int)apExtra, (int)ainumber, 0, 0, (int)B, 0, 0, 1, 0);
             return 0;
         }
     }
-    else if (a1->FUN_00401170() == 0x29 && this->Actor_GetCurrentWeapon() != 0 &&
-             this->FUN_008a1710b((int)DAT_011dea3c)->TESObjectWEAP_GetCurrentAmmo() == a1)
+    else if (apObject->FUN_00401170() == 0x29 && this->Actor_GetCurrentWeapon() != 0 &&
+             this->FUN_008a1710b((int)DAT_011dea3c)->TESObjectWEAP_GetCurrentAmmo() == apObject)
     {
         this->m_68->v83(0)->FUN_006ecd40();
         p14 = (Obj*)BSUtilities_GetObjectByName(this->PlayerCharacter_Get3D_00950bb0(0), "##NifRound");
@@ -32087,12 +32327,12 @@ void* FUN_00954610_cls::PlayerCharacter_DropObject(Obj* a1, Obj* a2, void* a3, v
             p14->FUN_00450f90(1);
         }
     }
-    if (this->m_1f0 != 0 && (void*)a1 == this->m_1f0 && a2 != 0 && a2->ExtraDataList_GetWorn(0))
+    if (this->m_1f0 != 0 && (void*)apObject == this->m_1f0 && apExtra != 0 && apExtra->ExtraDataList_GetWorn(0))
     {
         this->m_1f0 = 0;
     }
-    p4 = a1->v57() ? (void*)a1 : 0;
-    RU = this->v95((int)p4, (int)a2, (int)a3, 0, 1, 0, (int)a4, (int)a5, 1, 0);
+    p4 = apObject->v57() ? (void*)apObject : 0;
+    RU = this->v95((int)p4, (int)apExtra, (int)ainumber, 0, 1, 0, (int)apPoint, (int)apRotate, 1, 0);
     if (RU != 0)
     {
         X = RU->v116();
@@ -32142,6 +32382,9 @@ struct PlayerInteractionOperations : public PlayerCharacter
 // Returns true if apActor passes several state checks, its current AI package type is 1 or 7, and its process GetOwner is the player.
 // @fnv 0x009549a0
 // src: COMMUNITY 0x009549a0
+// pdb: PlayerCharacter::IsActorFollowingPlayer | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb params: apActor
+// pdb locals: bflag, pPack
 bool PlayerInteractionOperations::PlayerCharacter_IsActorFollowingPlayer(Actor* apActor)
 {
     bool bflag2 = false;
@@ -32300,8 +32543,8 @@ extern char str_01012c78[];
 extern char str_0108a8e0[];
 void* __cdecl TESForm_GetFormByNumericID(void* a1);
 int __cdecl ProgramFlow(const char* fmt, ...);
-unsigned short __cdecl GetAnimationSize(void* a1, void* a2);
-unsigned short __cdecl ActiveEffect_GetActiveEffectListSaveSize(void* a1, void* a2);
+unsigned short __cdecl Animation_GetAnimationSaveSize(void* a1, void* a2);
+unsigned short __cdecl ActiveEffect_GetActiveEffectListSaveSize(void* apActiveEffectList, void* apActor);
 int __cdecl EffectSettingCollection_GetKnownEffectsSaveSize();
 unsigned int __cdecl strlen(const char* s);
 struct This954
@@ -32852,6 +33095,9 @@ struct This954
 // Sums the byte sizes of fixed fields, version-gated fields and nested lists/objects (GetSaveSize among them) and returns the total.
 // @fnv 0x00954d40
 // src: XBOX_PDB 0x00954d40
+// pdb: PlayerCharacter::GetSaveSize | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb params: aiFlags
+// pdb locals: isize, itempStartSize, pheader, pform, pnpc, clength, pfullname, pclass, pcustomClass
 unsigned short This954::PlayerCharacter_GetSaveSize(int aiFlags)
 {
     TESWorldSpace* p3;
@@ -32903,7 +33149,7 @@ unsigned short This954::PlayerCharacter_GetSaveSize(int aiFlags)
         }
         if (aiFlags & 0x10000000)
         {
-            group += GetAnimationSize(this, unk690);
+            group += Animation_GetAnimationSaveSize(this, unk690);
         }
         group += 1;
         group += 1;
@@ -33621,20 +33867,22 @@ class FUN_00958ec0_cls
     Sub878 unk878;
     void Actor_FinishInitLoadGameTES(int a1, int a2);
     int PlayerCharacter_Get3D_00950bb0(int flag);
-    void PlayerCharacter_SetFirstPerson(bool flag);
+    void PlayerCharacter_SetFirstPerson(bool abFirst);
     void PlayerCharacter_ForceTemp3rdPerson(int flag);
-    void PlayerCharacter_CreateMouseSpring(int a1, int a2, float f);
+    void PlayerCharacter_CreateMouseSpring(int apObject, int aeGrabType, float afDistance);
     void PlayerCharacter_SetLastKnownGoodPosition();
-    float PlayerCharacter_SetFOV(float f);
+    float PlayerCharacter_SetFOV(float afFOV);
     void PlayerCharacter_FinishInitLoadGameTES(int a1, int a2);
 };
 
-extern "C" void __cdecl ActiveEffect_FinishInitLoadGameActiveEffectList(int a1, FUN_00958ec0_cls* self);
+extern "C" void __cdecl ActiveEffect_FinishInitLoadGameActiveEffectList(int apActiveEffectList, FUN_00958ec0_cls* apActor);
 extern "C" void __cdecl DetectLifeEffect_CheckPlayerRunningDetectLife();
 extern "C" void __cdecl UpdateImageSpaceEffectFromPlayerState();
 
 // @fnv 0x00958ec0
 // src: COMMUNITY 0x00958ec0
+// pdb: PlayerCharacter::FinishInitLoadGame | PlayerCharacter.obj | debug, object-file run extension, low
+// pdb params: aiFlags, aiOldFlags
 void FUN_00958ec0_cls::PlayerCharacter_FinishInitLoadGameTES(int a1, int a2)
 {
     Actor_FinishInitLoadGameTES(a1, a2);
@@ -33703,6 +33951,8 @@ struct PlayerCharacter_stand_in_0049
 // Runs helper calls, and if FUN_0055f5b0 on DAT_011de45c is true clears lists and updates the save timestamp; then calls TESForm::Revert with aiFlags.
 // @fnv 0x00958fc0
 // src: COMMUNITY 0x00958fc0
+// pdb: PlayerCharacter::Revert | PlayerCharacter.obj | debug, object-file run extension, low
+// pdb params: aiFlags
 void PlayerCharacter_stand_in_00958fc0::PlayerCharacter_RevertTES(unsigned int aiFlags)
 {
     reinterpret_cast<FUN_008d3330_shell*>(this)->Character_RevertTES(aiFlags);
@@ -33767,7 +34017,7 @@ struct BufferX
 {
     void SaveData(void* apData, int aiSize, int aiFlags);
     void SerializeFormData(void* apForm, int aiFlags);
-    void SaveVariableSizedValue_00865ff0(int aiCount, unsigned int auiPos);
+    void SaveVariableSizedValue_00865ff0(int aiVariableValue, unsigned int aiPosition);
     unsigned int StartVariableSizedValue();
     int GetHavokWorldObjectCountInSceneGraph_0084e3a0();
     FlagsX GetChangeFlags(unsigned int auiMask);
@@ -33959,7 +34209,7 @@ extern const NiPoint3 xDAT_011f426c;
 void* __fastcall xFUN_00575d70(RefX* apRef);
 char __fastcall xFUN_005dc980(ChallengeX* apChallenge);
 void* __fastcall xFUN_0044edb0(BGSQuestObjective* apPair);
-void xFUN_00806a10(BufferX* apBuffer, void* apData);
+void xFUN_00806a10(BufferX* apSaveGameBuffer, void* apActiveEffectList);
 float xFUN_008d1cf0();
 float xFUN_008d1d00();
 void xFUN_005aa930(BufferX* apBuffer);
@@ -34101,13 +34351,16 @@ struct PlayerX
     ArrayX kArraydf4;
     void SaveFormData(BufferX* apBuffer);
     char FUN_005a6050();
-    void* GetAtIfValid(int aiSlot);
+    void* GetAtIfValid(int aihotkey);
     void PlayerCharacter_SaveGame_009590f0(BufferX* apBuffer);
 };
 
 // Serializes fields and list entries to apBuffer, including perk lists and challenge entries.
 // @fnv 0x009590f0
 // src: XBOX_PDB 0x009590f0
+// pdb: PlayerCharacter::SaveGame | PlayerCharacter.obj | debug, object-file run extension, low
+// pdb params: apSaveGameBuffer
+// pdb locals: isize, igroupID, fcameraShakeMult, fcameraShakeCurrentTime, pplayerMarkerSpace, iNumHotKeys, playerMarkerLoc, i, iposition2, isizePosition, iposition1, icount, plist, isaveGameBufferPos, ptopic, isaveGameCount, pForm, pchange, pactorsNearPlayerData, pperkRank, pplayerAction, pcasinoData, pcaravanData, pstageItem ...
 void PlayerX::PlayerCharacter_SaveGame_009590f0(BufferX* apBuffer)
 {
     int iNumSlotsNew;
@@ -34753,8 +35006,8 @@ struct Target957
 };
 FOPipboyManager* Interface_GetPipboy();
 void Interface_SetDragDroppingState(int);
-void FUN_00806b50(Buffer957*, int);
-void Interface_ReinitialisePipboyManager();
+void FinishLoadActiveEffectList(Buffer957*, int);
+void Interface_ResetPipboy();
 struct Shell957
 {
     virtual void v0();
@@ -35473,11 +35726,13 @@ struct Shell957
 };
 // @fnv 0x0095c730
 // src: XBOX_PDB 0x0095c730
-void Shell957::PlayerCharacter_FinishLoadGame(Buffer957* buffer)
+// pdb: PlayerCharacter::FinishLoadGame | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb params: apLoadGameBuffer
+void Shell957::PlayerCharacter_FinishLoadGame(Buffer957* apLoadGameBuffer)
 {
-    FUN_008d34d0(buffer);
+    FUN_008d34d0(apLoadGameBuffer);
     Flags957 flags;
-    if (buffer->FUN_00428110(&flags)->FUN_004280f0(16))
+    if (apLoadGameBuffer->FUN_00428110(&flags)->FUN_004280f0(16))
         SetScale(GetScale());
     unk64c = unk64a;
     if (PlayerCharacter_Get3D_00950bb0(1))
@@ -35503,12 +35758,12 @@ void Shell957::PlayerCharacter_FinishLoadGame(Buffer957* buffer)
     }
     PlayerCharacter_SetLastKnownGoodPosition();
     PlayerCharacter_SetFOV(unk65c);
-    FUN_00806b50(buffer, unk210);
+    FinishLoadActiveEffectList(apLoadGameBuffer, unk210);
     PlayerCharacter_ResetAudioMarkerList();
     PlayerCharacter_ResetMapMarkerStructList();
     if (quest)
         quest->FUN_0060f110(&unk6c4, &unk6bc);
-    Interface_ReinitialisePipboyManager();
+    Interface_ResetPipboy();
     PlayerCharacter_UpdatePlayerCombat(0.0f);
     if (Actor_GetIronSights())
     {
@@ -35563,7 +35818,7 @@ struct ResetHandler
 };
 struct ResetMember
 {
-    void ProcessAndTransformResult_008d56a0(ResetFlagState*);
+    void CharacterProgression_Revert(ResetFlagState*);
 };
 extern unsigned DAT_011e0784, DAT_011e078c, DAT_011e0788;
 extern float DAT_011e07dc, DAT_011e0768, DAT_011a3b34;
@@ -35571,7 +35826,7 @@ extern bool DAT_011e0780, DAT_011f21d0;
 extern ResetSetting DAT_0120315c, DAT_01203168;
 extern ResetList DAT_011e0ae8;
 extern ResetHandler* DAT_011c3f2c;
-void SetTreeValue(void*, int);
+void bhkBlendCollisionObject_SetStoredWorld(void*, int);
 void FormHeapFreeAndLog_00401030(void*);
 void ActiveEffect_RevertActiveEffectList(ResetFlagState*, void*);
 void SortTopicList(int, void*);
@@ -36005,7 +36260,7 @@ struct ResetPlayer
     void PlayerCharacter_DestroyMouseSpring();
     void PlayerCharacter_ClearRockItLauncher();
     void PlayerCharacter_FreeCompassTargets();
-    void ClearHelper();
+    void PlayerCharacter_RemovePlayerMapMarker();
     void PlayerCharacter_SetInCharGen(int);
     void SetSightingNode(int);
     void* GetSelfOffset6A8();
@@ -36016,12 +36271,15 @@ struct ResetPlayer
 // Reverts and resets player fields, clears lists and arrays, and calls helper functions to restore default state.
 // @fnv 0x0095c9c0
 // src: XBOX_PDB 0x0095c9c0
+// pdb: PlayerCharacter::Revert | PlayerCharacter.obj | debug, object-file gap fill, medium
+// pdb params: apLoadGameBuffer
+// pdb locals: plist, pperkRankList, i, ptopic
 void ResetPlayer::PlayerCharacter_Revert(ResetFlagState* buffer)
 {
     RevertAndResetFields(buffer);
     if (buffer->BGSLoadFormBuffer_GetOldChangeFlags().FUN_004280f0(0x10000000) && unk690)
         unk690->Animation_Revert(buffer);
-    SetTreeValue(PlayerCharacter_Get3D_00950bb0(false), 0);
+    bhkBlendCollisionObject_SetStoredWorld(PlayerCharacter_Get3D_00950bb0(false), 0);
     if (buffer->BGSLoadFormBuffer_GetOldChangeFlags().FUN_004280f0(0x10))
         TESObjectREFR_SetScale(1.0f);
     DAT_011e0784 = 0;
@@ -36101,11 +36359,11 @@ void ResetPlayer::PlayerCharacter_Revert(ResetFlagState* buffer)
     unk6c4.FUN_00470470();
     PlayerCharacter_ClearRockItLauncher();
     PlayerCharacter_FreeCompassTargets();
-    unk878.ProcessAndTransformResult_008d56a0(buffer);
+    unk878.CharacterProgression_Revert(buffer);
     unk208 = 0;
     unk224 = 0;
     unk1f0 = 0;
-    ClearHelper();
+    PlayerCharacter_RemovePlayerMapMarker();
     unk604 = 0;
     PlayerCharacter_SetInCharGen(0);
     while (unk60c && *unk60c->FUN_006815c0())
@@ -36161,6 +36419,7 @@ struct FUN_0095d090_class
 };
 // @fnv 0x0095d090
 // src: COMMUNITY 0x0095d090
+// pdb: PlayerCharacter::CastEatDrinkItems | PlayerCharacter.obj | debug, upstream name already matches, high
 void FUN_0095d090_class::PlayerCharacter_CastEatDrinkItems()
 {
     ((List_009e03e0**)(char*)this)[0x238 / 4]->RemoveAll();
@@ -36181,7 +36440,11 @@ struct PlayerMagicItemOperations : public PlayerCharacter
 
 // Adds apItem to the list (type 7 items only while the count is under 100), then updates effects by flags and calls UpdateActiveEffects.
 // @fnv 0x0095d0b0
-bool PlayerCharacter::AddMagicItem(MagicItem* apItem)
+// src: XBOX_RETAIL_PDB 0x0095d0b0
+// pdb: PlayerCharacter::AddEatDrinkItem | PlayerCharacter.obj | retail, call graph (shared callers), high
+// pdb params: apItem
+// pdb locals: badded, imaxPotions
+bool PlayerCharacter::AddEatDrinkItem(MagicItem* apItem)
 {
     bool badded;
 
@@ -36205,7 +36468,7 @@ bool PlayerCharacter::AddMagicItem(MagicItem* apItem)
 
     if (badded != 0)
     {
-        reinterpret_cast<MagicTarget*>(reinterpret_cast<unsigned char*>(this) + 0x94)->UpdateEffectsByFlags(reinterpret_cast<unsigned int>(apItem));
+        reinterpret_cast<MagicTarget*>(reinterpret_cast<unsigned char*>(this) + 0x94)->StartSpell(reinterpret_cast<unsigned int>(apItem));
         reinterpret_cast<MagicTarget*>(reinterpret_cast<unsigned char*>(this) + 0x94)->MagicTarget_EvaluateSpellConditions();
         reinterpret_cast<MagicTarget*>(reinterpret_cast<unsigned char*>(this) + 0x94)->UpdateActiveEffects(0.01f);
     }
@@ -36226,6 +36489,8 @@ extern "C" void* __cdecl _alloca(unsigned int);
 // Counts type-7 magic items in activeSpells plus type-7 items from GetEffectList that are not in activeSpells.
 // @fnv 0x0095d160
 // src: COMMUNITY 0x0095d160
+// pdb: PlayerCharacter::GetCurrentPotionCount | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb locals: plist, peffectCounts, isum, imaxPotions, ppotions, peffects, i, pspell, balreadyCounted, bdone
 int PlayerMagicItemOperations::PlayerCharacter_GetCurrentPotionCount()
 {
     int count = 0;
@@ -36549,13 +36814,15 @@ class FUN_0095d3f0_cls
     virtual void v248();
     virtual void v249();
     virtual void v250(EffectTarget* target, int a2, unsigned char a3);
-    void PlayerCharacter_ReloadLoop(EffectTarget* target, int a2, unsigned char a3, unsigned char a4);
+    void PlayerCharacter_ReloadLoop(EffectTarget* target, int aiReloadAnim, unsigned char bUseModValue, unsigned char bFromInventory);
     void PlayerCharacter_ReloadAlt(EffectTarget* target, int a2, unsigned char a3, unsigned char a4);
 };
 
 // Calls FUN_0095d450 when target is non-null and CheckFlag is true, otherwise calls virtual v250 with target, a2 and a3.
 // @fnv 0x0095d3f0
 // src: COMMUNITY 0x0095d3f0
+// pdb: PlayerCharacter::ReloadWeaponNV | PlayerCharacter.obj | debug, object-file gap fill, medium
+// pdb params: apWeapon, aiReloadAnim, bUseModValue, bFromInventory
 void FUN_0095d3f0_cls::PlayerCharacter_ReloadAlt(EffectTarget* target, int a2, unsigned char a3, unsigned char a4)
 {
     if (target != 0 && target->CheckFlag())
@@ -36883,7 +37150,7 @@ struct RefWrap
     int field0;
     int field4;
     int field8;
-    RefWrap(TESBoundObject* obj, int value);
+    RefWrap(TESBoundObject* apObject, int aiNumber);
     unsigned int FUN_0044ddc0();
     int FUN_00726070();
     void FUN_006ecd40(unsigned int value);
@@ -36892,7 +37159,7 @@ struct RefWrap
 struct MgrObj
 {
     int FUN_004c8f30(TESBoundObject* obj);
-    GObj* InventoryChanges_GetInventoryItem(TESObjectWEAP* weap, int value);
+    GObj* InventoryChanges_GetInventoryItem(TESObjectWEAP* apObject, int aId);
 };
 struct GObj
 {
@@ -36901,9 +37168,9 @@ struct GObj
 };
 struct PlayerShell
 {
-    int GetAtIfValid(int value);
+    int GetAtIfValid(int aihotkey);
     void Actor_QueueEquipObject(TESBoundObject* obj, int value, ExtraDataList* extra, bool b1, bool b2, bool b3);
-    unsigned short Actor_GetAnimGroup(int value, int a2, int a3, Animation* anim);
+    unsigned short Actor_GetAnimGroup(int aeGroup, int apWeaponItem, int abCheckHandToHand, Animation* apAnim);
     void Actor_SetAnimAction(int value, BSAnimGroupSequence* seq);
 };
 struct AnimX
@@ -36919,19 +37186,22 @@ extern void* DAT_011dea3c;
 struct Host95 : MobileObject
 {
     Animation* FUN_00950a60(bool firstPerson);
-    bool PlayerCharacter_ReloadLoop(TESObjectWEAP* weap, int sel, unsigned char b10, unsigned char b14);
+    bool PlayerCharacter_ReloadLoop(TESObjectWEAP* weap, int aiReloadAnim, unsigned char bUseModValue, unsigned char bFromInventory);
 };
 
 // Resolves a form from weap, then for sel 0, 1 or 2 runs different follow-up calls and returns true; returns false in other cases.
 // @fnv 0x0095d450
 // src: XBOX_PDB 0x0095d450
-bool Host95::PlayerCharacter_ReloadLoop(TESObjectWEAP* apWeapon, int sel, unsigned char b10, unsigned char b14)
+// pdb: PlayerCharacter::ReloadLoop | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb params: apWeapon, aiReloadAnim, bUseModValue, bFromInventory
+// pdb locals: icount, pinventory, pammo, pweaponItem, pAmmoItem, panim, parrows, pAmmoOverride, iHK, pWeaponTest, iCurrentCount, eanimGroup, sanimGroup
+bool Host95::PlayerCharacter_ReloadLoop(TESObjectWEAP* apWeapon, int aiReloadAnim, unsigned char bUseModValue, unsigned char bFromInventory)
 {
     TESBoundObject* a = apWeapon->TESObjectWEAP_GetCurrentAmmo((PlayerCharacter*)DAT_011dea3c);
     MgrObj* b9 = FUN_004bf220((PlayerCharacter*)this);
     int h7 = b9->FUN_004c8f30(a);
-    RefWrap* y = reinterpret_cast<RefWrap*>(m_pBaseProcess->GetActiveWeapon());
-    RefWrap* e4 = reinterpret_cast<RefWrap*>(m_pBaseProcess->GetCurrentAmmo());
+    RefWrap* y = reinterpret_cast<RefWrap*>(pCurrentProcess->GetActiveWeapon());
+    RefWrap* e4 = reinterpret_cast<RefWrap*>(pCurrentProcess->GetCurrentAmmo());
     Animation* anim7 = FUN_00950a60(false);
     if (apWeapon != 0 && a != 0 && apWeapon != (TESObjectWEAP*)a)
     {
@@ -36950,8 +37220,8 @@ bool Host95::PlayerCharacter_ReloadLoop(TESObjectWEAP* apWeapon, int sel, unsign
     if (!e4 || (e4 && (TESBoundObject*)e4->FUN_0044ddc0() != a))
     {
         RefWrap* dB = new RefWrap(a, h7);
-        m_pBaseProcess->SetCurrentAmmunition(reinterpret_cast<InventoryStackRecord*>(dB));
-        reinterpret_cast<RefWrap*>(m_pBaseProcess->GetCurrentAmmo())->FUN_006ecd40(0);
+        pCurrentProcess->SetCurrentAmmunition(reinterpret_cast<InventoryStackRecord*>(dB));
+        reinterpret_cast<RefWrap*>(pCurrentProcess->GetCurrentAmmo())->FUN_006ecd40(0);
         e4 = dB;
     }
     if (y != 0 && 0 != e4)
@@ -36963,15 +37233,15 @@ bool Host95::PlayerCharacter_ReloadLoop(TESObjectWEAP* apWeapon, int sel, unsign
     }
     if (apWeapon != 0 && a != (TESBoundObject*)apWeapon)
     {
-        h7 = MinInt(h7, apWeapon->GetFlaggedValue(b10));
+        h7 = MinInt(h7, apWeapon->GetFlaggedValue(bUseModValue));
     }
-    switch (sel)
+    switch (aiReloadAnim)
     {
     case 0: {
         int q = 1;
-        if (reinterpret_cast<RefWrap*>(m_pBaseProcess->GetCurrentAmmo()))
-            q = reinterpret_cast<RefWrap*>(m_pBaseProcess->GetCurrentAmmo())->FUN_00726070() + 1;
-        if (b14)
+        if (reinterpret_cast<RefWrap*>(pCurrentProcess->GetCurrentAmmo()))
+            q = reinterpret_cast<RefWrap*>(pCurrentProcess->GetCurrentAmmo())->FUN_00726070() + 1;
+        if (bFromInventory)
             q = h7;
         ((PlayerShell*)this)->Actor_QueueEquipObject(a, q, 0, true, false, false);
         return true;
@@ -36979,7 +37249,7 @@ bool Host95::PlayerCharacter_ReloadLoop(TESObjectWEAP* apWeapon, int sel, unsign
     }
     case 1: {
         Animation* v = FUN_00950a60(false);
-        int f2 = apWeapon->FUN_0051e2a0(b10);
+        int f2 = apWeapon->FUN_0051e2a0(bUseModValue);
         f2 -= 0x17;
         unsigned short x = ((PlayerShell*)this)->Actor_GetAnimGroup(f2, 0, 0, v);
         if (TESAnimGroup::GetType(x) == (ANIM_GROUP_ENUM)f2)
@@ -36988,7 +37258,7 @@ bool Host95::PlayerCharacter_ReloadLoop(TESObjectWEAP* apWeapon, int sel, unsign
         break;
     }
     case 2: {
-        int f2 = apWeapon->FUN_0051e2a0(b10);
+        int f2 = apWeapon->FUN_0051e2a0(bUseModValue);
         f2 -= 0x17;
         unsigned short x = ((PlayerShell*)this)->Actor_GetAnimGroup(f2, 0, 0, 0);
         if (TESAnimGroup::GetType(x) == (ANIM_GROUP_ENUM)f2)
@@ -37013,8 +37283,8 @@ struct xFormX
 struct xWeap
 {
     int GetWeaponType();
-    xFormX* GetAmmo(void* pkActor);
-    int GetClipSize(bool b);
+    xFormX* GetAmmo(void* apWeaponHolder);
+    int GetClipSize(bool bModValue);
     int GetReloadAnimX(bool b);
     bool IsAutomaticX();
 };
@@ -37034,7 +37304,7 @@ struct xAmmoEntry
 struct xNewEntry
 {
     int m_kNextStreamField[3];
-    xNewEntry(xFormX* pkForm, int qSVM);
+    xNewEntry(xFormX* apObject, int aiNumber);
 };
 
 struct xProcess
@@ -37136,7 +37406,7 @@ struct xProcess
 struct xInventory
 {
     static xInventory* Get(void* pkRef);
-    InventoryStackRecord* GetItem(xWeap* pkWeap, int i);
+    InventoryStackRecord* GetItem(xWeap* apObject, int aId);
     int GetObjectCount(xFormX* pkForm);
 };
 
@@ -37144,7 +37414,7 @@ struct xAnimation
 {
     void* PlayGroup(unsigned short qJDuOZ, int a, int b, int c);
     void* GetControllerSequence(int i);
-    void BlendOut(int a, bool b);
+    void BlendOut(int aeSection, bool abIronSightsToggle);
     void SetQueued(unsigned short qJDuOZ);
 };
 
@@ -37471,33 +37741,36 @@ struct xPlayer
     virtual void SetAnimAction(unsigned short qJDuOZ, int i);
     char _pad04[0x64];
     xProcess* m_pProcess;
-    xFormX* GetAmmoForm(int i);
-    unsigned short GetAnimGroupX(int iGroup, InventoryStackRecord* qxQHW, bool b, xAnimation* pkAnim);
+    xFormX* GetAmmoForm(int aihotkey);
+    unsigned short GetAnimGroupX(int aeGroup, InventoryStackRecord* apWeaponItem, bool abCheckHandToHand, xAnimation* apAnim);
     xAnimation* GetAnimationX(bool b);
     void SetQueuedIdle(int a, void* p);
     void AddAmmo(xFormX* pkForm, int qSVM, int a, int b, int c, int d);
-    bool ReloadWeapon(xWeap* pkWeap, int iMode, bool bFlag);
+    bool ReloadWeapon(xWeap* apWeapon, int aiReloadAnim, bool bUseModValue);
 };
 
 // Resolves pkWeap's ammo form, updates the process ammo entry, adds ammo and plays reload animations depending on iMode; returns true if ammo was added.
 // @fnv 0x0095d850
-bool xPlayer::ReloadWeapon(xWeap* pkWeap, int iMode, bool bFlag)
+// pdb: PlayerCharacter::ReloadWeapon | PlayerCharacter.obj | retail, object-file run extension, high
+// pdb params: apWeapon, aiReloadAnim, bUseModValue
+// pdb locals: icount, pinventory, pammo, pweaponItem, pAmmoItem, pAmmoOverride, iHK, pWeaponTest, parrows, eanimGroup, sanimGroup, panim
+bool xPlayer::ReloadWeapon(xWeap* apWeapon, int aiReloadAnim, bool bUseModValue)
 {
-    xFormX* qrEZrs = pkWeap->GetAmmo(xg_pPlayer);
+    xFormX* qrEZrs = apWeapon->GetAmmo(xg_pPlayer);
     xEquipped* qsSDDgz = m_pProcess->GetEquippedWeapon();
     if (!qrEZrs)
     {
-        if (pkWeap->GetWeaponType() == 10 || pkWeap->GetWeaponType() == 11 || pkWeap->GetWeaponType() == 12 ||
-            pkWeap->GetWeaponType() == 13)
-            qrEZrs = (xFormX*)pkWeap;
+        if (apWeapon->GetWeaponType() == 10 || apWeapon->GetWeaponType() == 11 || apWeapon->GetWeaponType() == 12 ||
+            apWeapon->GetWeaponType() == 13)
+            qrEZrs = (xFormX*)apWeapon;
     }
     if (!qrEZrs)
         return false;
     xInventory* qpqRa = xInventory::Get(this);
-    if (pkWeap && qrEZrs && qrEZrs != (xFormX*)pkWeap)
+    if (apWeapon && qrEZrs && qrEZrs != (xFormX*)apWeapon)
     {
         xFormX* qArxcFu = 0;
-        InventoryStackRecord* qxQHW = qpqRa->GetItem(pkWeap, 0);
+        InventoryStackRecord* qxQHW = qpqRa->GetItem(apWeapon, 0);
         int qAhbO = qxQHW->GetIndex();
         if (qAhbO >= 0)
         {
@@ -37515,13 +37788,13 @@ bool xPlayer::ReloadWeapon(xWeap* pkWeap, int iMode, bool bFlag)
         m_pProcess->SetAmmoEntry(pkNewEntry);
         m_pProcess->GetAmmoEntry()->SetCount(0);
     }
-    if (pkWeap && qrEZrs != (xFormX*)pkWeap)
-        qSVM = xMin(qSVM, pkWeap->GetClipSize(bFlag));
-    if (iMode == 2 && m_pProcess->GetAmmoEntry() &&
-        pkWeap->GetClipSize(qsSDDgz->HasMod(2)) != m_pProcess->GetAmmoEntry()->GetCountX() &&
+    if (apWeapon && qrEZrs != (xFormX*)apWeapon)
+        qSVM = xMin(qSVM, apWeapon->GetClipSize(bUseModValue));
+    if (aiReloadAnim == 2 && m_pProcess->GetAmmoEntry() &&
+        apWeapon->GetClipSize(qsSDDgz->HasMod(2)) != m_pProcess->GetAmmoEntry()->GetCountX() &&
         qSVM != m_pProcess->GetAmmoEntry()->GetCountX())
     {
-        int qQMZREG = pkWeap->GetReloadAnimX(bFlag);
+        int qQMZREG = apWeapon->GetReloadAnimX(bUseModValue);
         unsigned short qJDuOZ = GetAnimGroupX(qQMZREG, 0, 0, 0);
         if (xGetGroupType(qJDuOZ) == qQMZREG)
         {
@@ -37532,10 +37805,10 @@ bool xPlayer::ReloadWeapon(xWeap* pkWeap, int iMode, bool bFlag)
         }
     }
     if (qSVM && (!m_pProcess->GetAmmoEntry()->GetCountX() ||
-                 (qsSDDgz && pkWeap->GetClipSize(qsSDDgz->HasMod(2)) != m_pProcess->GetAmmoEntry()->GetCountX() &&
+                 (qsSDDgz && apWeapon->GetClipSize(qsSDDgz->HasMod(2)) != m_pProcess->GetAmmoEntry()->GetCountX() &&
                   qSVM != m_pProcess->GetAmmoEntry()->GetCountX())))
     {
-        if (qrEZrs == (xFormX*)pkWeap)
+        if (qrEZrs == (xFormX*)apWeapon)
         {
             qrEZrs->SetType(0x29);
             if (!m_pProcess || m_pProcess->GetLevel() > 1 || xIsMenuMode() || xg_pSaveLoad->IsLoading())
@@ -37546,14 +37819,14 @@ bool xPlayer::ReloadWeapon(xWeap* pkWeap, int iMode, bool bFlag)
         {
             AddAmmo(qrEZrs, qSVM, 0, 1, 0, 0);
         }
-        if (iMode == 1)
+        if (aiReloadAnim == 1)
         {
             xAnimation* pkAnim2 = GetAnimationX(0);
-            int iAnim2 = pkWeap->GetReloadAnimX(bFlag);
+            int iAnim2 = apWeapon->GetReloadAnimX(bUseModValue);
             unsigned short usGroup2 = GetAnimGroupX(iAnim2, 0, 0, pkAnim2);
             if (xGetGroupType(usGroup2) == iAnim2)
             {
-                if (pkWeap->IsAutomaticX())
+                if (apWeapon->IsAutomaticX())
                 {
                     pkAnim2->BlendOut(5, 0);
                     pkAnim2->BlendOut(6, 0);
@@ -37616,19 +37889,22 @@ class C95DDC0Actor : public C95DDC0ActorBase
     int unk64;
     BaseProcess* m_pkProcess;
 
-    int PlayerCharacter_UseAmmo(int iType);
+    int PlayerCharacter_UseAmmo(int aiShotCount);
 };
 
 // Returns 0 if m_pkProcess is null or inactive, 100 if hardcore is on and not disabled, otherwise the base GetValue(iType).
 // @fnv 0x0095ddc0
 // src: COMMUNITY 0x0095ddc0
-int C95DDC0Actor::PlayerCharacter_UseAmmo(int iType)
+// pdb: PlayerCharacter::UseAmmo | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb params: aiShotCount
+// pdb locals: icount
+int C95DDC0Actor::PlayerCharacter_UseAmmo(int aiShotCount)
 {
     if (!m_pkProcess || !m_pkProcess->GetCurrentAmmo())
         return 0;
     if (C95DDC0IsHardcore() && !C95DDC0IsHardcoreDisabled())
         return 100;
-    int iValue = C95DDC0ActorBase::GetValue(iType);
+    int iValue = C95DDC0ActorBase::GetValue(aiShotCount);
     return iValue;
 }
 
@@ -37775,7 +38051,7 @@ struct FUN_0095edf0_cls
     int unk0218;
     FUN_00621440_cls* m_pHolder21c;
     FUN_008d6f30_cls* FUN_008d6f30();
-    void SyncHolderValue();
+    void PlayerCharacter_Setup3rdPersonCameraCaster();
 };
 
 struct FUN_004543c0_cls
@@ -37790,12 +38066,14 @@ struct FUN_008d6f30_cls : FUN_004543c0_cls
 struct FUN_00621440_cls
 {
     int CameraCaster_GetWorld();
-    void CameraCaster_Add(int value);
+    void CameraCaster_Add(int apWorld);
 };
 
 // If m_pHolder21c and FUN_008d6f30() are non-null, sets the holder to FUN_008d6f30()->FUN_004543c0() when its FUN_00621440 value differs.
 // @fnv 0x0095edf0
-void FUN_0095edf0_cls::SyncHolderValue()
+// src: XBOX_DEBUG_PDB 0x0095edf0
+// pdb: PlayerCharacter::Setup3rdPersonCameraCaster | PlayerCharacter.obj | debug, call graph, high
+void FUN_0095edf0_cls::PlayerCharacter_Setup3rdPersonCameraCaster()
 {
     if (m_pHolder21c != 0 && FUN_008d6f30() != 0)
     {
@@ -37810,6 +38088,7 @@ void __cdecl Interface_ForceReload();
 
 // @fnv 0x0095ee60
 // src: COMMUNITY 0x0095ee60
+// pdb: PlayerCharacter::ForceReload | PlayerCharacter.obj | debug, upstream name already matches, high
 void __cdecl PlayerCharacter_ForceReload()
 {
     Interface_ForceReload();
@@ -37822,6 +38101,7 @@ struct FUN_007d0b90_cls
 
 // @fnv 0x0095ee70
 // src: COMMUNITY 0x0095ee70
+// pdb: PlayerCharacter::ForceRestart | PlayerCharacter.obj | debug, upstream name already matches, high
 void PlayerCharacter_ForceRestart()
 {
     ((FUN_007d0b90_cls*)g_osGlobals)->kMainMenuFromIngameMenuRetnAddr();
@@ -37845,7 +38125,7 @@ struct IdleAnimationDirectoryEntry;
 
 struct IdleAnimationManager
 {
-    IdleAnimationDirectoryEntry* ClearIdleData(char const*, PlayerList<char const*>*, bool);
+    IdleAnimationDirectoryEntry* AddRootIdleArray(char const*, PlayerList<char const*>*, bool);
 };
 
 char* __cdecl strrchr_0040ab30(char*, int);
@@ -37862,12 +38142,15 @@ extern char const str_01016f58[];
 
 struct FUN_0095ee80_Class
 {
-    void ClearIdleAnims();
+    void PlayerCharacter_Preload1stPersonAnimsFileList();
 };
 
 // Clears idle animation data for the menu title and model file path directories using DAT_011cb6a0.
 // @fnv 0x0095ee80
-void FUN_0095ee80_Class::ClearIdleAnims()
+// src: XBOX_RETAIL_PDB 0x0095ee80
+// pdb: PlayerCharacter::Preload1stPersonAnimsFileList | PlayerCharacter.obj | retail, unique string literal, high
+// pdb locals: p1stPersonAnimsDirectory, tempMemContext, pslash
+void FUN_0095ee80_Class::PlayerCharacter_Preload1stPersonAnimsFileList()
 {
     char p1stPersonAnimsDirectory[260];
     AutoMemHelper tempMemContext(0x34, true, "D:\\_Fallout3\\Platforms\\Common\\Code\\Fallout\\AI\\PlayerCharacter.cpp",
@@ -37883,22 +38166,22 @@ void FUN_0095ee80_Class::ClearIdleAnims()
                                                _fnv_tesidlemanager_idle_anims);
     }
 
-    DAT_011cb6a0->ClearIdleData(p1stPersonAnimsDirectory, 0, false);
+    DAT_011cb6a0->AddRootIdleArray(p1stPersonAnimsDirectory, 0, false);
 
     TaskQueueInterface::CopyStringToBuffer(pslash, 0x104 - (pslash - p1stPersonAnimsDirectory) - 1, str_0108b3d8);
-    DAT_011cb6a0->ClearIdleData(p1stPersonAnimsDirectory, 0, false);
+    DAT_011cb6a0->AddRootIdleArray(p1stPersonAnimsDirectory, 0, false);
 
     TaskQueueInterface::CopyStringToBuffer(pslash, 0x104 - (pslash - p1stPersonAnimsDirectory) - 1, str_0108b3bc);
-    DAT_011cb6a0->ClearIdleData(p1stPersonAnimsDirectory, 0, false);
+    DAT_011cb6a0->AddRootIdleArray(p1stPersonAnimsDirectory, 0, false);
 
     TaskQueueInterface::CopyStringToBuffer(pslash, 0x104 - (pslash - p1stPersonAnimsDirectory) - 1, str_01016f1c);
-    DAT_011cb6a0->ClearIdleData(p1stPersonAnimsDirectory, 0, false);
+    DAT_011cb6a0->AddRootIdleArray(p1stPersonAnimsDirectory, 0, false);
 
     TaskQueueInterface::CopyStringToBuffer(pslash, 0x104 - (pslash - p1stPersonAnimsDirectory) - 1, str_01016f38);
-    DAT_011cb6a0->ClearIdleData(p1stPersonAnimsDirectory, 0, false);
+    DAT_011cb6a0->AddRootIdleArray(p1stPersonAnimsDirectory, 0, false);
 
     TaskQueueInterface::CopyStringToBuffer(pslash, 0x104 - (pslash - p1stPersonAnimsDirectory) - 1, str_0108b0d8);
-    DAT_011cb6a0->ClearIdleData(p1stPersonAnimsDirectory, 0, false);
+    DAT_011cb6a0->AddRootIdleArray(p1stPersonAnimsDirectory, 0, false);
 
     TaskQueueInterface::CopyStringToBuffer(p1stPersonAnimsDirectory, 0x104,
                                            reinterpret_cast<GM_008b2010*>(this)->GetModelFilePath());
@@ -37906,19 +38189,19 @@ void FUN_0095ee80_Class::ClearIdleAnims()
     pslash = strrchr_0040ab30(p1stPersonAnimsDirectory, '\\');
 
     TaskQueueInterface::CopyStringToBuffer(pslash, 0x104 - (pslash - p1stPersonAnimsDirectory) - 1, str_0108b3d8);
-    DAT_011cb6a0->ClearIdleData(p1stPersonAnimsDirectory, 0, false);
+    DAT_011cb6a0->AddRootIdleArray(p1stPersonAnimsDirectory, 0, false);
 
     TaskQueueInterface::CopyStringToBuffer(pslash, 0x104 - (pslash - p1stPersonAnimsDirectory) - 1, str_0108b3bc);
-    DAT_011cb6a0->ClearIdleData(p1stPersonAnimsDirectory, 0, false);
+    DAT_011cb6a0->AddRootIdleArray(p1stPersonAnimsDirectory, 0, false);
 
     TaskQueueInterface::CopyStringToBuffer(pslash, 0x104 - (pslash - p1stPersonAnimsDirectory) - 1, str_01016f1c);
-    DAT_011cb6a0->ClearIdleData(p1stPersonAnimsDirectory, 0, false);
+    DAT_011cb6a0->AddRootIdleArray(p1stPersonAnimsDirectory, 0, false);
 
     TaskQueueInterface::CopyStringToBuffer(pslash, 0x104 - (pslash - p1stPersonAnimsDirectory) - 1, str_01016f38);
-    DAT_011cb6a0->ClearIdleData(p1stPersonAnimsDirectory, 0, false);
+    DAT_011cb6a0->AddRootIdleArray(p1stPersonAnimsDirectory, 0, false);
 
     TaskQueueInterface::CopyStringToBuffer(pslash, 0x104 - (pslash - p1stPersonAnimsDirectory) - 1, str_01016f58);
-    DAT_011cb6a0->ClearIdleData(p1stPersonAnimsDirectory, 0, false);
+    DAT_011cb6a0->AddRootIdleArray(p1stPersonAnimsDirectory, 0, false);
 }
 }  // namespace fnv_0095ee80
 
@@ -37960,6 +38243,9 @@ struct PC7d : ActorV_S
 };
 // Sets the animation model path by sex, then queues loading of Locomotion IdleAnims model lists (Toddler if GetByteAt7C6, plus Female or Male) at priority.
 // @fnv 0x0095f210
+// pdb: PlayerCharacter::QueuePlayerAnims | PlayerCharacter.obj | debug, call graph, medium
+// pdb params: aePriority, apParent
+// pdb locals: plocomotionSexDirectory, pfileList, pnpc, tempMemContext, pslash
 void PC7d::LoadIdleAnimations(IO_TASK_PRIORITY priority, FUN_00441ba0_shell* task)
 {
     AutoMemContext h(static_cast<MEM_CONTEXT>(52), true,
@@ -38014,6 +38300,9 @@ struct FUN_0095f590_shell : public PlayerCharacter
 
 // @fnv 0x0095f590
 // src: XBOX_PDB 0x0095f590
+// pdb: PlayerCharacter::SetControlsDisabled | PlayerCharacter.obj | debug, object-file gap fill, medium
+// pdb params: aucDisabled
+// pdb locals: smoveMode
 void FUN_0095f590_shell::PlayerCharacter_SetControlsDisabled_0095f590(unsigned char flags)
 {
     unsigned short moveMode;
@@ -38073,7 +38362,7 @@ struct FUN_00961280_shell
 {
   public:
     void PlayerCharacter_DestroyMouseSpring();
-    void PlayerCharacter_RemovePlayerAction(int action, int unused);
+    void PlayerCharacter_RemovePlayerAction(int aeAction, int apActObject);
 
   private:
     unsigned char padding[0x634];
@@ -38085,6 +38374,8 @@ struct FUN_00961280_shell
 
 // @fnv 0x00961280
 // src: XBOX_PDB 0x00961280
+// pdb: PlayerCharacter::DestroyMouseSpring | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb locals: pcell, pw, phkbody
 void FUN_00961280_shell::PlayerCharacter_DestroyMouseSpring()
 {
     TESObjectCELL* pcell;
@@ -38137,7 +38428,7 @@ struct SpellSub
 
 struct VirtualInterface
 {
-    int Controls_GetUserAction(int a, int b);
+    int Controls_GetUserAction(int eAction, int toggleFlags);
 };
 
 int __fastcall Main_GetControls(int v);
@@ -38548,16 +38839,19 @@ class SpellProc
     int m63c;
 
     double TESObjectREFR_GetScale_00567400();
-    void PlayerCharacter_CreateMouseSpring(int a, int b, float c);
-    void PlayerCharacter_UpdateMouseSpring(float v);
+    void PlayerCharacter_CreateMouseSpring(int apObject, int aeGrabType, float afDistance);
+    void PlayerCharacter_UpdateMouseSpring(float afTimeDelta);
     void PlayerCharacter_DestroyMouseSpring();
-    bool PlayerCharacter_UpdateDropSpring(float arg);
+    bool PlayerCharacter_UpdateDropSpring(float afTimeDelta);
 };
 
 // If m63c is 2, may call FUN_0095f930, then FUN_00961280 or FUN_00960520(arg) depending on sub634 and FUN_00a24660 checks; returns whether m63c is 2.
 // @fnv 0x009613c0
 // src: COMMUNITY 0x009613c0
-bool SpellProc::PlayerCharacter_UpdateDropSpring(float afValue)
+// pdb: PlayerCharacter::UpdateDropSpring | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb params: afTimeDelta
+// pdb locals: pcontrols
+bool SpellProc::PlayerCharacter_UpdateDropSpring(float afTimeDelta)
 {
     if (m63c == 2)
     {
@@ -38574,7 +38868,7 @@ bool SpellProc::PlayerCharacter_UpdateDropSpring(float afValue)
             }
             else
             {
-                PlayerCharacter_UpdateMouseSpring(afValue);
+                PlayerCharacter_UpdateMouseSpring(afTimeDelta);
             }
         }
     }
@@ -38596,6 +38890,7 @@ struct FUN_00961f90_StandIn
 
 // @fnv 0x00961f90
 // src: COMMUNITY 0x00961f90
+// pdb: PlayerCharacter::ResetMagicCastSound | PlayerCharacter.obj | retail, upstream name already matches, high
 void FUN_00961f90_StandIn::PlayerCharacter_ResetMagicCastSound()
 {
     if (m_sound.IsValid())
@@ -39254,12 +39549,15 @@ class OwnerS
     int unk7FC;
     int unk800;
     BSSoundHandle sounds[4];
-    BSSoundHandle MakeSound(unsigned int formID, int a, int b, int c);
+    BSSoundHandle MakeSound(unsigned int aiSoundFormID, int abLoop, int aiSoundType, int abAllowCopy);
     void PlaySound(int index);
 };
 
 // If sounds[index] is valid, restarts it at the current position; otherwise creates it from the sound for index.
 // @fnv 0x00962030
+// pdb: PlayerCharacter::QueuePlayerAnims | PlayerCharacter.obj | retail, object-file run extension, low
+// pdb params: aePriority, apParent
+// pdb locals: plocomotionSexDirectory, pfileList, pnpc, tempMemContext, pslash
 void OwnerS::PlaySound(int index)
 {
     if (sounds[index].IsValid())
@@ -39290,7 +39588,7 @@ struct FNVReferenceIterator
 };
 struct FNVReferenceManager
 {
-    FNVReferenceIterator* CollectActorsByPackage(PlayerCharacter* player, int formType, int includeDisabled);
+    FNVReferenceIterator* CollectActorsByPackage(PlayerCharacter* apActor, int apType, int bOnlyHigh);
 };
 extern "C" PlayerCharacter* DAT_011dea3c;
 extern "C" FNVReferenceManager DAT_011e0e80;
@@ -39302,6 +39600,8 @@ typedef bool(__fastcall* FNVVirtualActorPredicate)(Actor*);
 // Sets player byte 0x7c4 to 1 if any collected reference is an Actor whose vtable slot 0xc1 returns true, otherwise 0; frees the list.
 // @fnv 0x00962190
 // src: XBOX_PDB 0x00962190
+// pdb: PlayerCharacter::CheckGetAwayFromGuards | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb locals: plist, preflist, pactor
 void FNVPlayerScanner::PlayerCharacter_CheckGetAwayFromGuards()
 {
     FNVReferenceIterator* first = DAT_011e0e80.CollectActorsByPackage(DAT_011dea3c, 18, 0);
@@ -39461,7 +39761,7 @@ class ThisCls_cls
     virtual void v7B();
     virtual void v7C();
     virtual int v7D();
-    void PlayerCharacter_PlayImpactBasedHitShader(ArgCls_cls* a1);
+    void PlayerCharacter_PlayImpactBasedHitShader(ArgCls_cls* apRef);
 };
 
 class ArgCls_cls
@@ -39614,27 +39914,30 @@ class Global_cls
 extern double DAT_01012060;
 float ComputeSettingLerp(float v);
 int TESImageSpaceModifier_GetGetHit();
-void FUN_005299a0(int a, float b, int c);
+void FUN_005299a0(int apMod, float afStrength, int apTarget);
 
 // If a1->v74() is non-zero, calls FUN_005299a0 when ComputeSettingLerp(...) exceeds DAT_01012060 and the FUN_0044ddc0 check on DAT_011f2250 is zero.
 // @fnv 0x00962290
 // src: XBOX_PDB 0x00962290
-void ThisCls_cls::PlayerCharacter_PlayImpactBasedHitShader(ArgCls_cls* a1)
+// pdb: PlayerCharacter::PlayImpactBasedHitShader | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb params: apRef
+// pdb locals: distance, famount
+void ThisCls_cls::PlayerCharacter_PlayImpactBasedHitShader(ArgCls_cls* apRef)
 {
     Vec3_cls tmp;
     float f;
-    if (a1 == 0 || !a1->v74())
+    if (apRef == 0 || !apRef->v74())
     {
         return;
     }
     {
-        a1->v7D(&tmp, this->v7D())->SubtractIntoVector();
+        apRef->v7D(&tmp, this->v7D())->SubtractIntoVector();
         f = ComputeSettingLerp(tmp.FUN_00457990());
         if (f > DAT_01012060)
         {
             if (!((Global_cls*)&DAT_011f2250)->FUN_0044ddc0())
             {
-                FUN_005299a0(TESImageSpaceModifier_GetGetHit(), f, a1->v74());
+                FUN_005299a0(TESImageSpaceModifier_GetGetHit(), f, apRef->v74());
             }
         }
     }
@@ -39773,8 +40076,8 @@ class DispatchNode
     void RemoveItem(DispatchItem** slot);
 };
 
-void StubCall_c6a350(int a, int b, int c, int d, int e);
-void StubCall_c6a270(int a, int b, int c, int d);
+void StubCall_c6a350(int apObject, int aeType, int abRecurse, int abForce, int abAllowActivate);
+void StubCall_c6a270(int apObject, int abActivate, int abRecurse, int d);
 
 class SpawnOwner
 {
@@ -39785,6 +40088,8 @@ class SpawnOwner
 // Walks the node list at offset 0x84c; for each item whose Unk_74() is non-zero, calls two stub helpers, removes it from the list and calls Destroy(0).
 // @fnv 0x00962350
 // src: COMMUNITY 0x00962350
+// pdb: PlayerCharacter::HavokActivateDroppedReference | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb locals: plast, pcurrent, pref
 void SpawnOwner::PlayerCharacter_HavokActivateDroppedReference(void)
 {
     if (!((DispatchNode*)((char*)this + 0x84c))->TestNode())
@@ -39831,6 +40136,8 @@ struct PC962 : MO962
 // Gets the physics character controller and, if present, calls FUN_00620ba0 on the Stand at offset 0x21c with the controller's FUN_00819250 result.
 // @fnv 0x00962450
 // src: XBOX_PDB 0x00962450
+// pdb: PlayerCharacter::ResetShapeCasterInfo | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb locals: pcon
 void PC962::PlayerCharacter_ResetShapeCasterInfo()
 {
     S819* pController = (S819*)GetPhysicsCharacterController();
@@ -40811,6 +41118,7 @@ struct FUN_00963730_cls
 // Returns m_0D2C if it is non-null and its v116() call is non-null, otherwise returns null.
 // @fnv 0x00963730
 // src: XBOX_PDB 0x00963730
+// pdb: PlayerCharacter::GetAutoAimActor | PlayerCharacter.obj | retail, upstream name already matches, high
 VTableTarget116* FUN_00963730_cls::PlayerCharacter_GetAutoAimActor()
 {
     return (m_0D2C != 0 && m_0D2C->v116() != 0) ? m_0D2C : 0;
@@ -40847,6 +41155,9 @@ struct FUN_00963790_Class
 
 // Sets the rank of apPerk in the alt or main list, updating or adding a FUN_00963790_PerkRankData entry and calling FUN_005eb6a0 on apPerk.
 // @fnv 0x00963790
+// pdb: PlayerCharacter::AddPerk | PlayerCharacter.obj | debug, object-file run extension, low
+// pdb params: apPerk, acRank, bAlt
+// pdb locals: plist, pperkRank
 void FUN_00963790_Class::SetPerkRank(BGSPerk* apPerk, unsigned char rank, bool bAlt)
 {
     PlayerList<BGSPerk*>* plist4;
@@ -40946,6 +41257,9 @@ struct FUN_00963900_cls : public PlayerCharacter
 
 // Finds perk in Perks (or m_kCompanionPerks if companion), calls perk->FUN_005eb800, removes its entry, then calls FUN_007dd710 and FUN_008c17c0.
 // @fnv 0x00963900
+// pdb: PlayerCharacter::RemovePerk | PlayerCharacter.obj | debug, object-file run extension, low
+// pdb params: apPerk, bAlt
+// pdb locals: plist, pperkRank, pcheck
 void FUN_00963900_cls::RemovePerk(PerkStandIn* perk, bool companion)
 {
     if (perk == 0)
@@ -40988,6 +41302,9 @@ struct FUN_009639e0_s
 // Searches the list at offset 0x87c (0xad4 if bAlt) for the entry whose first pointer equals apPerk and returns its byte at offset 4, or 0.
 // @fnv 0x009639e0
 // src: COMMUNITY 0x009639e0
+// pdb: PlayerCharacter::GetPerkRank | PlayerCharacter.obj | debug, upstream name already matches, high
+// pdb params: apPerk, bAlt
+// pdb locals: plist, pperkRank
 char FUN_009639e0_s::PlayerCharacter_GetPerkRank(BGSPerk* apPerk, bool bAlt)
 {
     FUN_006815c0* pList = reinterpret_cast<FUN_006815c0*>(reinterpret_cast<char*>(this) + 0x87c);
@@ -41045,6 +41362,9 @@ class FUN_00963a50_cls
 
 // If a1 has type 2 and flag below 0x4a, adds it to the slot at 0x884 (a2 false) or 0xadc (a2 true), then calls Release on DAT_011dea3c's item.
 // @fnv 0x00963a50
+// pdb: PlayerCharacter::AddPerkEntry | PlayerCharacter.obj | debug, object-file run extension, low
+// pdb params: apPerkEntry, bAlt
+// pdb locals: pinventory, pperkEntry, centryPoint
 void FUN_00963a50_cls::RegisterObject(FUN_00963a50_obj* apObject, bool a2)
 {
     if (apObject == 0 || apObject->Unk10() != 2)
@@ -42100,6 +42420,8 @@ struct FUN_00963bf0_cls
 
 // Removes items whose m_04 is at or below DAT_01012060 and whose m_00 is not 5 or 8, then decrements remaining items' m_04 by the global timer value.
 // @fnv 0x00963bf0
+// pdb: PlayerCharacter::UpdatePlayerActions | PlayerCharacter.obj | debug, object-file run extension, low
+// pdb locals: plist, pAction
 void FUN_00963bf0_cls::RemoveExpiredItems()
 {
     FUN_00963bf0_node* node = m_60c;
@@ -42143,6 +42465,9 @@ struct FUN_00963ce0_StandIn
 };
 // Returns true if any entry in m_pActionEntryList has a value equal to aeAction.
 // @fnv 0x00963ce0
+// pdb: PlayerCharacter::IsActionInList | PlayerCharacter.obj | debug, call graph, medium
+// pdb params: aeAction
+// pdb locals: plist, pAction, bexits
 bool FUN_00963ce0_StandIn::HasAction(int aeAction)
 {
     bool bexits = false;
@@ -42183,7 +42508,7 @@ class B63E00List
 class B63E00Owner
 {
   public:
-    void PlayerCharacter_RemovePlayerAction(void* pkForm, int iParam);
+    void PlayerCharacter_RemovePlayerAction(void* aeAction, int apActObject);
 
     int unk000;
     int unk004;
@@ -42578,7 +42903,10 @@ class B63E00Owner
 // Removes and deletes the first entry in m_pkEntryArray whose m_pkForm equals pkForm and whose m_iParam equals iParam (any if iParam is 0).
 // @fnv 0x00963e00
 // src: COMMUNITY 0x00963e00
-void B63E00Owner::PlayerCharacter_RemovePlayerAction(void* pkForm, int iParam)
+// pdb: PlayerCharacter::RemovePlayerAction | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb params: aeAction, apActObject
+// pdb locals: plist, pAction
+void B63E00Owner::PlayerCharacter_RemovePlayerAction(void* aeAction, int apActObject)
 {
     if (!m_pkEntryArray)
         return;
@@ -42588,7 +42916,7 @@ void B63E00Owner::PlayerCharacter_RemovePlayerAction(void* pkForm, int iParam)
     while (pkNode && *pkNode->GetItem())
     {
         pkEntry = *pkNode->GetItem();
-        if (pkEntry && pkEntry->m_pkForm == pkForm && (!iParam || iParam == pkEntry->m_iParam))
+        if (pkEntry && pkEntry->m_pkForm == aeAction && (!apActObject || apActObject == pkEntry->m_iParam))
         {
             pkNode->Remove(pkEntry);
             delete pkEntry;
@@ -43015,7 +43343,10 @@ struct PlayerView
 };
 // Returns early if FUN_00953c50 is true; otherwise finds or creates the record for key in effects, sets its value and source, and re-adds it.
 // @fnv 0x00963eb0
-void PlayerView::SetEffectValue(void* key, float value, EffectSource* source)
+// pdb: PlayerCharacter::AddPlayerAction | PlayerCharacter.obj | debug, call graph (shared callers), high
+// pdb params: aeAction, afTime, apActObject
+// pdb locals: plist, pobject, bsearch, pAction
+void PlayerView::SetEffectValue(void* aeAction, float afTime, EffectSource* apActObject)
 {
     bool blocked = false;
     if (PlayerCharacter_IsPlayerCharacterInCombat(&blocked))
@@ -43028,7 +43359,7 @@ void PlayerView::SetEffectValue(void* key, float value, EffectSource* source)
     while (node && *node->FUN_006815c0() && !record)
     {
         current = *node->FUN_006815c0();
-        if (current && current->key == key)
+        if (current && current->key == aeAction)
             record = current;
         node = node->FUN_00726070();
     }
@@ -43036,11 +43367,11 @@ void PlayerView::SetEffectValue(void* key, float value, EffectSource* source)
         record = new FUN_0078d900;
     else
         effects->RemoveMatchingItem(&record);
-    record->key = key;
-    record->value = value;
-    if (source)
-        source->TESObjectREFR_SetTargeted(true);
-    record->source = source;
+    record->key = aeAction;
+    record->value = afTime;
+    if (apActObject)
+        apActObject->TESObjectREFR_SetTargeted(true);
+    record->source = apActObject;
     effects->FUN_005ae3d0(&record);
 }
 }  // namespace fnv_00963eb0
@@ -43057,6 +43388,7 @@ struct FUN_009655a0_Class
 // If the pointer at offset 0x5ec is non-null, passes it to FUN_005293f0 and sets it to null.
 // @fnv 0x009655a0
 // src: COMMUNITY 0x009655a0
+// pdb: PlayerCharacter::StopIronSightsImageSpace | PlayerCharacter.obj | retail, upstream name already matches, high
 void FUN_009655a0_Class::PlayerCharacter_StopIronSightsImageSpace()
 {
     if (*(ImageSpaceModifierInstance**)((char*)this + 0x5ec))
@@ -43074,6 +43406,7 @@ void __cdecl ImageSpaceModifierInstance_Stop(ImageSpaceModifierInstance*);
 // If the pointer at offset 0x5f0 is non-null, passes it to FUN_005293f0 and sets it to null.
 // @fnv 0x009655e0
 // src: COMMUNITY 0x009655e0
+// pdb: PlayerCharacter::StopVatsImageSpace | PlayerCharacter.obj | debug, upstream name already matches, high
 void __thiscall ImageSpaceModifierInstance::PlayerCharacter_StopVatsImageSpace()
 {
     if (*(ImageSpaceModifierInstance**)((char*)this + 0x5f0))
@@ -44215,19 +44548,23 @@ struct AimPlayer
     AimObject* PlayerCharacter_GetAutoAimActor();
     AimObject* PlayerCharacter_Get3D_00950bb0(bool);
     bool PlayerCharacter_IsActually3rdPerson();
-    void UpdateAim(AimObject*, AimObject*, float*, float*, const AimVector*, float, float);
+    void PlayerCharacter_ApplyAutoAimActor(AimObject*, AimObject*, float*, float*, const AimVector*, float, float);
 };
 
 // Computes yaw and pitch deltas toward a target (explicit, source or camera), clamps them, and adds them to *yawOut and *pitchOut.
 // @fnv 0x00965620
-void AimPlayer::UpdateAim(AimObject* actor, AimObject* source, float* yawOut, float* pitchOut,
-                          const AimVector* explicitTarget, float baseYaw, float basePitch)
+// src: XBOX_RETAIL_PDB 0x00965620
+// pdb: PlayerCharacter::ApplyAutoAimActor | PlayerCharacter.obj | retail, string-set bridge, high
+// pdb params: apProjectile, apReleaseObj, apHeading, apLooking, apOrigin, afStartHeading, afStartLooking
+// pdb locals: bIgnoreReleaseObjectRotation, bvatsPlayback, fadditionalMissLooking, delta, startPos, fadditionalMissHeading, pcurrentVATSAction, pvatsTarget3d, ktargetLocation, pbodyPartData, pactor, pbodyPart, eTargetBodyPart, pname, ptargetBodyPart3d, pnode, localPoint, ptarget, fdistanceToTarget, ftargetRadius, frandomAngle, fdistanceToMissPoint, kdirection, fheading ...
+void AimPlayer::PlayerCharacter_ApplyAutoAimActor(AimObject* apProjectile, AimObject* apReleaseObj, float* apHeading, float* apLooking,
+                          const AimVector* apOrigin, float afStartHeading, float afStartLooking)
 {
     AimVector delta3 = DAT_011f426c;
     AimCameraInfo* camera3 = DAT_011f2250.VATS_GetCurrentAction();
     bool cameraAim = false;
     AimObject* target4 = 0;
-    AimVector point15 = explicitTarget ? *explicitTarget : (source ? source->NiAVObject_GetWorldTranslate() : DAT_011f426c);
+    AimVector point15 = apOrigin ? *apOrigin : (apReleaseObj ? apReleaseObj->NiAVObject_GetWorldTranslate() : DAT_011f426c);
     if (Actor_GetIronSights() && !DAT_011f2250.FUN_0044ddc0() && Actor_GetCurrentWeapon())
     {
         if (Actor_GetCurrentWeapon()->FUN_004ad030() && process && process->GetFlags() && process->GetFlags()->HasEffect(14))
@@ -44242,7 +44579,7 @@ void AimPlayer::UpdateAim(AimObject* actor, AimObject* source, float* yawOut, fl
     }
     float noiseYaw = 0.0f;
     float noisePitch50 = 0.0f;
-    if (!source || !Actor_GetCurrentWeapon() || Actor_GetCurrentWeapon()->TESObjectWEAP_IsMeleeWeapon())
+    if (!apReleaseObj || !Actor_GetCurrentWeapon() || Actor_GetCurrentWeapon()->TESObjectWEAP_IsMeleeWeapon())
     {
         if (PlayerCharacter_GetAutoAimActor())
             delta3 = PlayerCharacter_GetAutoAimActor()->GetRoot()->NiAVObject_GetWorldBound()->FUN_006815c0().SubtractIntoVector(
@@ -44252,7 +44589,7 @@ void AimPlayer::UpdateAim(AimObject* actor, AimObject* source, float* yawOut, fl
     }
     else if (cameraAim)
     {
-        if (camera3->target->IsActor() && (!actor || actor->FUN_00401170() != 62))
+        if (camera3->target->IsActor() && (!apProjectile || apProjectile->FUN_00401170() != 62))
         {
             AimObject* reference = camera3->target;
             AimBodyData* body = reference->FUN_004181e0()->GetBodyData();
@@ -44276,11 +44613,11 @@ void AimPlayer::UpdateAim(AimObject* actor, AimObject* source, float* yawOut, fl
         {
             void* opaque = target4->GetOpaque();
             AimVector offset = DAT_011f426c;
-            if (!actor || actor->FUN_00401170() != 62)
+            if (!apProjectile || apProjectile->FUN_00401170() != 62)
                 offset = TESHavokUtilities_GetLocalPointWithinCollision(target4);
-            if (actor && actor->MiddleHighProcess_GetCurrentFurniture())
+            if (apProjectile && apProjectile->MiddleHighProcess_GetCurrentFurniture())
             {
-                AimExtra* extra = actor->MiddleHighProcess_GetCurrentFurniture();
+                AimExtra* extra = apProjectile->MiddleHighProcess_GetCurrentFurniture();
                 extra->target = camera3->target;
                 extra->node.FUN_0066b0d0(target4);
                 extra->offset = offset;
@@ -44310,10 +44647,10 @@ void AimPlayer::UpdateAim(AimObject* actor, AimObject* source, float* yawOut, fl
     {
         if (PlayerCharacter_GetAutoAimActor())
             delta3 = PlayerCharacter_GetAutoAimActor()->GetRoot()->NiAVObject_GetWorldBound()->FUN_006815c0().SubtractIntoVector(point15);
-        else if (source && lastTarget.FUN_00439090(DAT_011f426c))
+        else if (apReleaseObj && lastTarget.FUN_00439090(DAT_011f426c))
             delta3 = lastTarget.SubtractIntoVector(point15);
     }
-    bool absolute = actor || (basePitch != 1.1754943508222875e-38 && baseYaw != 1.1754943508222875e-38);
+    bool absolute = apProjectile || (afStartLooking != 1.1754943508222875e-38 && afStartHeading != 1.1754943508222875e-38);
     if (delta3.FUN_00439090(DAT_011f426c))
     {
         AimVector direction5 = delta3;
@@ -44323,8 +44660,8 @@ void AimPlayer::UpdateAim(AimObject* actor, AimObject* source, float* yawOut, fl
         float yaw, pitch5;
         if (!absolute)
         {
-            if (source)
-                rotation20 = *source->NiAVObject_GetWorldRotate();
+            if (apReleaseObj)
+                rotation20 = *apReleaseObj->NiAVObject_GetWorldRotate();
             else
                 rotation20 = *PlayerCharacter_Get3D_00950bb0(false)->NiAVObject_GetWorldRotate();
             direction5 = rotation20.FUN_004b45b0().FUN_004b4500(direction5);
@@ -44336,12 +44673,12 @@ void AimPlayer::UpdateAim(AimObject* actor, AimObject* source, float* yawOut, fl
             yaw = 0.0f;
             pitch5 = 0.0f;
         }
-        else if (cameraAim && actor && actor->FUN_004181e0()->GetGravity_00966980() > 0.0)
+        else if (cameraAim && apProjectile && apProjectile->FUN_004181e0()->GetGravity_00966980() > 0.0)
         {
-            if (actor->FUN_00401170() == 62)
+            if (apProjectile->FUN_00401170() == 62)
             {
                 float minimum = sqrt_004019b0(delta3.FUN_00457990() * CombatUtilities_GetWorldGravity());
-                float maximum3 = actor->Projectile_GetSpeed() * 1.25;
+                float maximum3 = apProjectile->Projectile_GetSpeed() * 1.25;
                 float travelTime = 0.0f;
                 for (int pass = 1; travelTime == 0.0 && pass < 2; ++pass)
                 {
@@ -44356,23 +44693,23 @@ void AimPlayer::UpdateAim(AimObject* actor, AimObject* source, float* yawOut, fl
                                                      CombatUtilities_GetWorldGravity(), finalShot6);
                         AimObject* hitObject5 = 0;
                         bool hit =
-                            CombatUtilities_CalculateProjectileLOS(DAT_011dea3c, actor->FUN_004181e0(), speed, point15, end, 0, &hitObject5, 0);
+                            CombatUtilities_CalculateProjectileLOS(DAT_011dea3c, apProjectile->FUN_004181e0(), speed, point15, end, 0, &hitObject5, 0);
                         if (!hit || hitObject5 == camera3->target)
-                            travelTime = speed / actor->Projectile_GetSpeed();
+                            travelTime = speed / apProjectile->Projectile_GetSpeed();
                     }
                 }
                 if (travelTime != 0.0)
-                    actor->Projectile_SetSpeedMult(actor->FUN_00453700() * travelTime);
+                    apProjectile->Projectile_SetSpeedMult(apProjectile->FUN_00453700() * travelTime);
             }
             if (absolute)
             {
                 yaw = GetDirectionAngle(direction5);
-                pitch5 = -CombatUtilities_FindAngleOfProjectile(actor, delta3, 0.0f, 0);
+                pitch5 = -CombatUtilities_FindAngleOfProjectile(apProjectile, delta3, 0.0f, 0);
             }
             else
             {
                 yaw = atanf(direction5.x / direction5.y);
-                pitch5 = -CombatUtilities_FindAngleOfProjectile(actor, delta3, 0.0f, 0) - *pitchOut;
+                pitch5 = -CombatUtilities_FindAngleOfProjectile(apProjectile, delta3, 0.0f, 0) - *apLooking;
             }
         }
         else
@@ -44395,8 +44732,8 @@ void AimPlayer::UpdateAim(AimObject* actor, AimObject* source, float* yawOut, fl
                 pitch5 = 1.5533430576324463f;
             if (pitch5 < -1.5533430576324463)
                 pitch5 = -1.5533430576324463f;
-            float currentYaw = actor ? actor->GetYaw(0) : baseYaw;
-            float currentPitch25 = actor ? actor->FUN_00931d70() : basePitch;
+            float currentYaw = apProjectile ? apProjectile->GetYaw(0) : afStartHeading;
+            float currentPitch25 = apProjectile ? apProjectile->FUN_00931d70() : afStartLooking;
             while (currentYaw < -3.1415927410125732)
                 currentYaw += 6.2831854820251465;
             while (currentYaw > 3.1415927410125732)
@@ -44453,13 +44790,13 @@ void AimPlayer::UpdateAim(AimObject* actor, AimObject* source, float* yawOut, fl
                 DAT_011e09ec.NiMatrix3_GetCol(1, &axis);
                 deltaYaw4 += GetDirectionAngle(axis);
                 deltaPitch += -asinf_004b5530(axis.z);
-                deltaYaw4 += actor ? actor->GetFieldEC() : 0.0f;
-                deltaPitch += actor ? actor->Projectile_GetSpreadLooking() : 0.0f;
+                deltaYaw4 += apProjectile ? apProjectile->GetFieldEC() : 0.0f;
+                deltaPitch += apProjectile ? apProjectile->Projectile_GetSpreadLooking() : 0.0f;
             }
             else if (weapon3 && weapon3->FUN_00525b20(aiming, 0, DAT_011dea3c) > 1)
             {
-                deltaYaw4 += DAT_011cf9b0.Setting_Float_00403e20() * (actor ? actor->GetFieldEC() : 0.0f);
-                deltaPitch += DAT_011cf9b0.Setting_Float_00403e20() * (actor ? actor->Projectile_GetSpreadLooking() : 0.0f);
+                deltaYaw4 += DAT_011cf9b0.Setting_Float_00403e20() * (apProjectile ? apProjectile->GetFieldEC() : 0.0f);
+                deltaPitch += DAT_011cf9b0.Setting_Float_00403e20() * (apProjectile ? apProjectile->Projectile_GetSpreadLooking() : 0.0f);
             }
         }
         if (cameraAim && !camera3->useNodeOffset)
@@ -44476,16 +44813,16 @@ void AimPlayer::UpdateAim(AimObject* actor, AimObject* source, float* yawOut, fl
             deltaYaw4 += noiseYaw;
             deltaPitch += noisePitch50;
         }
-        *yawOut += deltaYaw4;
-        *pitchOut += deltaPitch;
-        while (*yawOut < -3.1415927410125732)
-            *yawOut += 6.2831854820251465;
-        while (*yawOut > 3.1415927410125732)
-            *yawOut -= 6.2831854820251465;
-        if (*pitchOut > 1.5533430576324463)
-            *pitchOut = 1.5533430576324463f;
-        if (*pitchOut < -1.5533430576324463)
-            *pitchOut = -1.5533430576324463f;
+        *apHeading += deltaYaw4;
+        *apLooking += deltaPitch;
+        while (*apHeading < -3.1415927410125732)
+            *apHeading += 6.2831854820251465;
+        while (*apHeading > 3.1415927410125732)
+            *apHeading -= 6.2831854820251465;
+        if (*apLooking > 1.5533430576324463)
+            *apLooking = 1.5533430576324463f;
+        if (*apLooking < -1.5533430576324463)
+            *apLooking = -1.5533430576324463f;
     }
 }
 }  // namespace fnv_00965620
@@ -44897,6 +45234,9 @@ struct PlayerNoteStub
 // Adds the note to noteList if not already present, then queues a UI message with the UIItemGenericUp sound.
 // @fnv 0x00966a70
 // src: XBOX_PDB 0x00966a70
+// pdb: PlayerCharacter::AddNote | PlayerCharacter.obj | retail, string-set bridge, high
+// pdb params: apNote, abVerbose
+// pdb locals: strtemp
 void PlayerNoteStub::PlayerCharacter_AddNote(BGSNote* note, bool abAdd)
 {
     ::BSStringT<char> text;
@@ -44936,34 +45276,37 @@ class PlayerTerminalOperations : public BGSTerminal
 public:
     BGSNote* GetAVEffect();
     bool BGSTerminal_IsUnlocked_00501ae0(TESObjectREFR* refr);
-    int BGSTerminal_GetRawDifficulty(Script* script);
-    bool IsSkillSufficient(TESObjectREFR* refr, float value);
+    int BGSTerminal_GetRawDifficulty(Script* apRef);
+    bool BGSTerminal_IsHackEligible(TESObjectREFR* refr, float value);
 };
 
 class MemberA4
 {
   public:
-    float FUN_0066ef50(int value);
+    float FUN_0066ef50(int aiWhich);
 };
 
 extern bool BGSTerminal_IsHacked(TESObjectREFR* refr);
-extern bool BGSTerminal_IsLockedOut(Script* script);
+extern bool BGSTerminal_IsLockedOut(Script* apRef);
 
 class PlayerCharShell
 {
   public:
-    bool FUN_00966c10(BGSNote* note);
-    int GetTerminalAccessResult(TESObjectREFR* refr);
+    bool FUN_00966c10(BGSNote* apNote);
+    int GetTerminalAccessResult(TESObjectREFR* apTerminalRef);
 };
 
 // Returns 4 if refr is not a terminal; otherwise 0, 1, 2 or 3 from the first passing check in order, else 4.
 // @fnv 0x00966c60
-int PlayerCharShell::GetTerminalAccessResult(TESObjectREFR* refr)
+// pdb: PlayerCharacter::GetTerminalAccess | PlayerCharacter.obj | retail, call graph, high
+// pdb params: apTerminalRef
+// pdb locals: pterminal
+int PlayerCharShell::GetTerminalAccessResult(TESObjectREFR* apTerminalRef)
 {
     BGSTerminal* terminal = 0;
-    if (refr != 0 && refr->GetObjectReference() != 0)
+    if (apTerminalRef != 0 && apTerminalRef->GetObjectReference() != 0)
     {
-        terminal = dynamic_cast<BGSTerminal*>(refr->GetObjectReference());
+        terminal = dynamic_cast<BGSTerminal*>(apTerminalRef->GetObjectReference());
     }
     if (terminal == 0)
     {
@@ -44973,15 +45316,15 @@ int PlayerCharShell::GetTerminalAccessResult(TESObjectREFR* refr)
     {
         return 0;
     }
-    else if (BGSTerminal_IsHacked(refr) || ((PlayerTerminalOperations*)terminal)->BGSTerminal_IsUnlocked_00501ae0(refr))
+    else if (BGSTerminal_IsHacked(apTerminalRef) || ((PlayerTerminalOperations*)terminal)->BGSTerminal_IsUnlocked_00501ae0(apTerminalRef))
     {
         return 1;
     }
-    else if (BGSTerminal_IsLockedOut((Script*)refr) || ((PlayerTerminalOperations*)terminal)->BGSTerminal_GetRawDifficulty((Script*)refr) == 5)
+    else if (BGSTerminal_IsLockedOut((Script*)apTerminalRef) || ((PlayerTerminalOperations*)terminal)->BGSTerminal_GetRawDifficulty((Script*)apTerminalRef) == 5)
     {
         return 2;
     }
-    else if (((PlayerTerminalOperations*)terminal)->IsSkillSufficient(refr, ((MemberA4*)((char*)this + 0xa4))->FUN_0066ef50(0x28)))
+    else if (((PlayerTerminalOperations*)terminal)->BGSTerminal_IsHackEligible(apTerminalRef, ((MemberA4*)((char*)this + 0xa4))->FUN_0066ef50(0x28)))
     {
         return 3;
     }
@@ -45003,7 +45346,7 @@ struct PC7dMap
 };
 extern PC7dMap* DAT_011c54c0;
 int __fastcall FUN_00401170(void* form);
-void __cdecl BGSTerminal_ResetState(void* script);
+void __cdecl BGSTerminal_ResetState(void* apRef);
 
 struct PC7d
 {
@@ -45013,6 +45356,8 @@ struct PC7d
 // Iterates DAT_011c54c0 and calls FUN_00501a10 on forms whose FUN_00401170 is 0x3a and whose FUN_007af430 result has FUN_00401170 0x17.
 // @fnv 0x00966d70
 // src: XBOX_PDB 0x00966d70
+// pdb: PlayerCharacter::DebugResetAllTerminals | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb locals: iter, iid, pform, pref
 void PC7d::PlayerCharacter_DebugResetAllTerminals()
 {
     void* pos = DAT_011c54c0->GetFirstPos();
@@ -45048,6 +45393,9 @@ struct FUN_00967090_t
 // Walks the PlayerList of ActorCombatEntry and returns the entry whose pActor matches apActor, or null if not found.
 // @fnv 0x00967090
 // src: XBOX_PDB 0x00967090
+// pdb: PlayerCharacter::IsActorPerceived | PlayerCharacter.obj | debug, upstream name already matches, high
+// pdb params: apActor
+// pdb locals: plist, pact
 ActorCombatEntry* FUN_00967090_t::PlayerCharacter_IsActorPerceived(Actor* apActor)
 {
     PlayerList<ActorCombatEntry*>* pCurrentElementNext = *(PlayerList<ActorCombatEntry*>**)((char*)this + 0xd48);
@@ -45079,7 +45427,7 @@ struct Holder
 class Cls
 {
   public:
-    bool PlayerCharacter_IsActorDetected(int id);
+    bool PlayerCharacter_IsActorDetected(int apActor);
 
   private:
     char m_auiShapeKeys[0xd48];
@@ -45089,13 +45437,16 @@ class Cls
 // Walks the m_pHolders list, finds the Thing whose m_00 matches id, and returns whether its m_05 byte is zero; returns false if not found.
 // @fnv 0x009670f0
 // src: XBOX_PDB 0x009670f0
-bool Cls::PlayerCharacter_IsActorDetected(int aiThingId)
+// pdb: PlayerCharacter::IsActorDetected | PlayerCharacter.obj | debug, upstream name already matches, high
+// pdb params: apActor
+// pdb locals: plist, pact
+bool Cls::PlayerCharacter_IsActorDetected(int apActor)
 {
     Holder* p = m_pHolders;
     while (p != 0 && *p->FUN_006815c0() != 0)
     {
         Thing* t = *p->FUN_006815c0();
-        if (t->m_00 == aiThingId)
+        if (t->m_00 == apActor)
             return t->m_05 == 0;
         p = p->FUN_00726070();
     }
@@ -45131,8 +45482,8 @@ class FUN_00967160_target
 {
   public:
     bool FUN_00566950();
-    unsigned char Actor_LineOfSight(int a, int b, int c, int d, int e);
-    int Actor_GetDetectionLevelAgainstActor(int a, int b, unsigned char* c, int d, int e, int f, int g);
+    unsigned char Actor_LineOfSight(int abRunFormula, int pTarget, int abUseEyeLevel, int aeInView, int abfull360);
+    int Actor_GetDetectionLevelAgainstActor(int abRunFormula, int apActor, unsigned char* abLineofSight, int binCombat, int abattacked, int abCombat, int ap360LineOfSight);
 };
 
 extern int DAT_011dea3c;
@@ -45997,6 +46348,8 @@ class FUN_00967160_cls
 // Returns true if a listed object's pTarget, other than pTarget, has FUN_00566950 false and FUN_008a0d10 greater than 0.
 // @fnv 0x00967160
 // src: COMMUNITY 0x00967160
+// pdb: PlayerCharacter::IsPlayerDetectedByNonTeammates | PlayerCharacter.obj | debug, object-file gap fill, medium
+// pdb locals: plist, pact, icurrentdetection, blineSight
 bool FUN_00967160_cls::PlayerCharacter_IsDetectedByCompassTargetExceptActor(FUN_00967160_target* pTarget)
 {
     FUN_00967160_node* node2 = m_pHead;
@@ -46031,13 +46384,16 @@ struct FUN_00967220_node
 class FUN_00967220_cls
 {
   public:
-    void PlayerCharacter_ChangePerceivedActorHostileStatus(unsigned int key, bool flag);
+    void PlayerCharacter_ChangePerceivedActorHostileStatus(unsigned int apActor, bool abHostile);
 };
 
 // Walks the linked list at offset 0xd48 and sets flag on the first item whose key matches.
 // @fnv 0x00967220
 // src: XBOX_PDB 0x00967220
-void FUN_00967220_cls::PlayerCharacter_ChangePerceivedActorHostileStatus(unsigned int key, bool flag)
+// pdb: PlayerCharacter::ChangePerceivedActorHostileStatus | PlayerCharacter.obj | debug, upstream name already matches, high
+// pdb params: apActor, abHostile
+// pdb locals: plist, pact
+void FUN_00967220_cls::PlayerCharacter_ChangePerceivedActorHostileStatus(unsigned int apActor, bool abHostile)
 {
     FUN_00967220_item* item5;
     FUN_00967220_node* cur = *(FUN_00967220_node**)((char*)this + 0xd48);
@@ -46045,9 +46401,9 @@ void FUN_00967220_cls::PlayerCharacter_ChangePerceivedActorHostileStatus(unsigne
     while (cur != 0 && *cur->GetSlot() != 0)
     {
         item5 = (FUN_00967220_item*)*cur->GetSlot();
-        if (item5->key == key)
+        if (item5->key == apActor)
         {
-            item5->flag = flag;
+            item5->flag = abHostile;
             return;
         }
         cur = cur->GetNext();
@@ -46920,20 +47276,23 @@ struct FUN_00967350_shell
     int unkd44;
     Node967* pList;
 
-    void PlayerCharacter_RemovePerceivedActor(int aiKey);
+    void PlayerCharacter_RemovePerceivedActor(int apActor);
 };
 
 // Walks the pList chain and deletes the first Item967 whose iKey matches aiKey, then calls FUN_0063f7b0 on its Node967.
 // @fnv 0x00967350
 // src: COMMUNITY 0x00967350
-void FUN_00967350_shell::PlayerCharacter_RemovePerceivedActor(int aiKey)
+// pdb: PlayerCharacter::RemovePerceivedActor | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb params: apActor
+// pdb locals: plist, pact
+void FUN_00967350_shell::PlayerCharacter_RemovePerceivedActor(int apActor)
 {
     Node967* pNode = pList;
     Item967* pItem = 0;
     while (pNode && *pNode->FUN_006815c0())
     {
         pItem = *pNode->FUN_006815c0();
-        if (pItem->iKey == aiKey)
+        if (pItem->iKey == apActor)
         {
             delete pItem;
             pNode->FUN_0063f7b0();
@@ -47841,13 +48200,16 @@ struct LightPlayer
     int unkd50;
     bool pressed;
     bool Disabled(unsigned int);
-    void PlayerCharacter_UpdateMenuModeButton(float delta);
+    void PlayerCharacter_UpdateMenuModeButton(float afTimeDelta);
 };
 extern LightPlayer* _g_thePlayer;
 // Updates the Pip-Boy light toggle based on input button state, elapsed time, and spell state, casting or dispelling the light spell as needed.
 // @fnv 0x009673d0
 // src: XBOX_PDB 0x009673d0
-void LightPlayer::PlayerCharacter_UpdateMenuModeButton(float delta)
+// pdb: PlayerCharacter::UpdateMenuModeButton | PlayerCharacter.obj | retail, string-set bridge, high
+// pdb params: afTimeDelta
+// pdb locals: pcontrols
+void LightPlayer::PlayerCharacter_UpdateMenuModeButton(float afTimeDelta)
 {
     LightInput* input = g_osGlobals->Input();
     if (!DAT_011e0d70 && input->Button(14, 2) && elapsed < *originalRuntimeFloatSetting241.Float())
@@ -47856,7 +48218,7 @@ void LightPlayer::PlayerCharacter_UpdateMenuModeButton(float delta)
     }
     else if (input->Button(14, 1) || input->Button(14, 0))
     {
-        elapsed += delta;
+        elapsed += afTimeDelta;
         if (!DAT_011e0d70 && Interface_GetPipboy()->State() && elapsed > *originalRuntimeFloatSetting241.Float())
         {
             if (target.HasSpell(MagicSystem::GetPipBoyLightSpell(), true))
@@ -48057,6 +48419,9 @@ struct RelationOwner
 // Clears the player's current if either ref is the player, else may set it to replacement based on FUN_005723b0 distances for both refs and the current.
 // @fnv 0x00967730
 // src: COMMUNITY 0x00967730
+// pdb: PlayerCharacter::CheckForClosesConversation | PlayerCharacter.obj | debug, object-file gap fill, medium
+// pdb params: apSpeaker, apTarget, apDialogPack
+// pdb locals: fdisttarg, fdistcloseconversation, fdistancespeaker, fdis
 void RelationOwner::PlayerCharacter_CheckForClosestConversation(RefDistance* firstRef, RefDistance* secondRef, Relationship* replacement)
 {
     float first;
@@ -48103,7 +48468,7 @@ struct SrcA
 {
     SrcB* bhkCharacterController_GetSupportBody();
 };
-SrcC* FUN_004b5a20(int id);
+SrcC* FUN_004b5a20(int apBody);
 SrcE* TESObjectREFR_FindReferenceFor3D(SrcD* d);
 struct SrcThis
 {
@@ -48113,6 +48478,8 @@ struct SrcThis
 // Follows a chain of nested lookups from FUN_009306d0 and returns true if the final object's FUN_00568680 returns true; otherwise false.
 // @fnv 0x009678a0
 // src: COMMUNITY 0x009678a0
+// pdb: PlayerCharacter::IsStandingOnFurniture | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb locals: bresult, pcon, pbody, pcol, pav, pref
 bool SrcThis::PlayerCharacter_IsStandingOnFurniture()
 {
     bool result3 = false;
@@ -48161,11 +48528,14 @@ struct TESObjectREFR_FindReference
 };
 struct FUN_00967950_class
 {
-    TESObjectREFR* GetReferenceFromPhysicsController();
+    TESObjectREFR* PlayerCharacter_GetBumpedRef();
 };
 // Returns the TESObjectREFR associated with the physics character controller's current rigid body, or null if unavailable.
 // @fnv 0x00967950
-TESObjectREFR* FUN_00967950_class::GetReferenceFromPhysicsController()
+// src: XBOX_RETAIL_PDB 0x00967950
+// pdb: PlayerCharacter::GetBumpedRef | PlayerCharacter.obj | retail, object-file run extension, high
+// pdb locals: pref, pcon, pbody, pcol, pav
+TESObjectREFR* FUN_00967950_class::PlayerCharacter_GetBumpedRef()
 {
     TESObjectREFR* pRef = 0;
     bhkCharacterController* controller8 = ((MobileObject_GetCharController*)this)->GetPhysicsCharacterController();
@@ -48198,12 +48568,15 @@ struct bhkCharacterController;
 class FUN_00967a00_Class
 {
   public:
-    TESObjectREFR* GetActorFromPhysicsController();
+    TESObjectREFR* PlayerCharacter_GetBumpedActor();
 };
 
 // Gets the physics character controller, resolves its reference via GetReferenceFromNiAVObject, and returns it if it is an actor, otherwise null.
 // @fnv 0x00967a00
-TESObjectREFR* FUN_00967a00_Class::GetActorFromPhysicsController()
+// src: XBOX_RETAIL_PDB 0x00967a00
+// pdb: PlayerCharacter::GetBumpedActor | PlayerCharacter.obj | retail, object-file run extension, high
+// pdb locals: pactor, pcon, pav, pcc, pref
+TESObjectREFR* FUN_00967a00_Class::PlayerCharacter_GetBumpedActor()
 {
     TESObjectREFR* pActor = 0;
     bhkCharacterController* controller8 = ((MobileObject*)this)->GetPhysicsCharacterController();
@@ -48226,6 +48599,8 @@ struct PlayerObject
 
 // @fnv 0x00967aa0
 // src: COMMUNITY 0x00967aa0
+// pdb: PlayerCharacter::SpeakDoneCallback | PlayerCharacter.obj | debug, upstream name already matches, high
+// pdb params: apUnused, abSucceeded
 void __cdecl PlayerCharacter_SpeakDoneCallback()
 {
     ((PlayerObject*)g_thePlayer)->PlayerCharacter_SetSpeaking(0);
@@ -48693,6 +49068,7 @@ class FUN_00967ae0_cls
 // Returns true if m_pSub690->M0(2)->M0()->M1() is 0xe2 or 0xf0, or if FUN_00705a00() returns true; otherwise false.
 // @fnv 0x00967ae0
 // src: XBOX_PDB 0x00967ae0
+// pdb: PlayerCharacter::IsPipboyActive | PlayerCharacter.obj | retail, upstream name already matches, high
 bool FUN_00967ae0_cls::PlayerCharacter_IsPipboyActive()
 {
     if (m_pSub690 != 0 && m_pSub690->M0(2) != 0)
@@ -48842,10 +49218,13 @@ struct Cls
 // Returns whether the argument passes per-type checks, switching on FUN_00401170() with extra conditions for 0x18, 0x28, 0x1a and 0x29; false by default.
 // @fnv 0x00967b70
 // src: XBOX_PDB 0x00967b70
-bool Cls::PlayerCharacter_CanEquipOrUseObject(ArgObj* arg)
+// pdb: PlayerCharacter::CanEquipOrUseObject | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb params: apItem
+// pdb locals: fhealth, bcanEquip, pextra, pobj, pHealth, pObj, pCurrWeapon, pAmmoList, pAmmo
+bool Cls::PlayerCharacter_CanEquipOrUseObject(ArgObj* apItem)
 {
     bool flag_ = true;
-    Obj8* obj2 = arg->FUN_0044ddc0();
+    Obj8* obj2 = apItem->FUN_0044ddc0();
     ObjC* slotC7;
     Extra* extra;
     float fres;
@@ -48853,7 +49232,7 @@ bool Cls::PlayerCharacter_CanEquipOrUseObject(ArgObj* arg)
     WeapObj* kObj18;
     void* formRes2;
     ScriptObj* scriptRes;
-    slotC7 = (arg->Modelloader_GetReferencedThis() && *arg->Modelloader_GetReferencedThis()->FUN_006815c0()) ? *arg->Modelloader_GetReferencedThis()->FUN_006815c0() : 0;
+    slotC7 = (apItem->Modelloader_GetReferencedThis() && *apItem->Modelloader_GetReferencedThis()->FUN_006815c0()) ? *apItem->Modelloader_GetReferencedThis()->FUN_006815c0() : 0;
     if (obj2->slot37())
     {
         if (!((obj2->FUN_00401170() == 0x28 || obj2->FUN_00401170() == 0x18) && obj2->IsFlag80Clear()))
@@ -48869,7 +49248,7 @@ bool Cls::PlayerCharacter_CanEquipOrUseObject(ArgObj* arg)
         fres = extra->f0c;
     else
         fres = (float)FUN_004873d0(obj2);
-    switch (arg->FUN_0044ddc0()->FUN_00401170())
+    switch (apItem->FUN_0044ddc0()->FUN_00401170())
     {
     case 0x18:
     case 0x28:
@@ -48887,7 +49266,7 @@ bool Cls::PlayerCharacter_CanEquipOrUseObject(ArgObj* arg)
         break;
     case 0x29:
         flag_ = true;
-        obj1c9 = arg->FUN_0044ddc0();
+        obj1c9 = apItem->FUN_0044ddc0();
         kObj18 = Actor_GetCurrentWeapon();
         if (kObj18 == 0 || obj1c9 == 0)
         {
@@ -48914,7 +49293,7 @@ bool Cls::PlayerCharacter_CanEquipOrUseObject(ArgObj* arg)
 
 
 
-void __cdecl UpdateRadiationHUD(float fScaledValue, float fCurrentAmountNext);
+void __cdecl HUDMainMenu_SetRadiationLevel(float fScaledValue, float fCurrentAmountNext);
 
 class B968730Actor
 {
@@ -48926,9 +49305,10 @@ class B968730Actor
 // Calls UpdateRadiationHUD with the process max value and the sum of the process bonus and base values.
 // @fnv 0x00968730
 // src: XBOX_PDB 0x00968730
+// pdb: PlayerCharacter::ReportRadiationChange | PlayerCharacter.obj | retail, upstream name already matches, high
 void B968730Actor::PlayerCharacter_ReportRadiationChange()
 {
-    UpdateRadiationHUD(GetProcess()->GetAnimationElapsedTime(), GetProcess()->GetControllerPhase() + GetProcess()->GetAnimationRemainingTime());
+    HUDMainMenu_SetRadiationLevel(GetProcess()->GetAnimationElapsedTime(), GetProcess()->GetControllerPhase() + GetProcess()->GetAnimationRemainingTime());
 }
 
 struct IRForm;
@@ -48964,7 +49344,7 @@ struct IRFormStack
     int iCount;
     IRForm* pType;
 
-    IRFormStack(IRForm* apType, int aiCount);
+    IRFormStack(IRForm* apObject, int aiNumber);
     IRExtraNode* GetExtendData();
     int GetCount();
     void SetCount(int aiCount);
@@ -48978,7 +49358,7 @@ struct IREntryArray
     void Remove(unsigned int auiIndex, bool abShrink);
 };
 
-float __cdecl IRGetItemWeight(IRForm* apItem, bool abHardcore);
+float __cdecl IRGetItemWeight(IRForm* apForm, bool abIsHardcore);
 
 struct IRContainer
 {
@@ -49882,28 +50262,31 @@ struct IRContainer
     float fWeight;
 
     bool IsHardcore();
-    IRFormStack* PlayerCharacter_RemoveRockItAmmo(IRForm* apItem, IRExtraList* apExtra, int aiCount, bool abReturnEntry);
+    IRFormStack* PlayerCharacter_RemoveRockItAmmo(IRForm* apObj, IRExtraList* apExtra, int aiNumRemoved, bool abReturnRemovedItem);
 };
 
 // Removes aiCount of apItem (and optionally apExtra) from kEntries, adjusting counts and weight, returning a new IRFormStack when abReturnEntry is true.
 // @fnv 0x00968be0
 // src: XBOX_PDB 0x00968be0
-IRFormStack* IRContainer::PlayerCharacter_RemoveRockItAmmo(IRForm* apItem, IRExtraList* apExtra, int aiCount, bool abReturnEntry)
+// pdb: PlayerCharacter::RemoveRockItAmmo | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb params: apObj, apExtra, aiNumRemoved, abReturnRemovedItem
+// pdb locals: bfoundMatch, preturnedItem, iamountToRemove, iitemCt, pitem, pextraObj, bremoveExtra, preturnedExtra
+IRFormStack* IRContainer::PlayerCharacter_RemoveRockItAmmo(IRForm* apObj, IRExtraList* apExtra, int aiNumRemoved, bool abReturnRemovedItem)
 {
     bool bDone8 = false;
     IRFormStack* pResultTmp = 0;
-    int iRemaining5 = aiCount;
+    int iRemaining5 = aiNumRemoved;
     for (unsigned int i = 0; !bDone8 && i < kEntries.GetSize(); i++)
     {
         IRFormStack* pEntry3 = kEntries.GetAt(i);
-        if (pEntry3->GetType() == apItem)
+        if (pEntry3->GetType() == apObj)
         {
             if (!apExtra)
             {
                 if (!pEntry3->GetExtendData() || !*pEntry3->GetExtendData()->GetItem())
                 {
-                    if (abReturnEntry)
-                        pResultTmp = new IRFormStack(apItem, iRemaining5);
+                    if (abReturnRemovedItem)
+                        pResultTmp = new IRFormStack(apObj, iRemaining5);
                     if (iRemaining5 >= pEntry3->GetCount())
                         kEntries.Remove(i, true);
                     else
@@ -49918,13 +50301,13 @@ IRFormStack* IRContainer::PlayerCharacter_RemoveRockItAmmo(IRForm* apItem, IRExt
                 {
                     if (*pNode->GetItem() == apExtra)
                     {
-                        bool bRemoveAll = apExtra->GetCount() <= aiCount;
+                        bool bRemoveAll = apExtra->GetCount() <= aiNumRemoved;
                         if (bRemoveAll)
                             iRemaining5 = apExtra->GetCount();
-                        if (abReturnEntry)
+                        if (abReturnRemovedItem)
                         {
                             IRExtraList* pNewExtraX = apExtra;
-                            pResultTmp = new IRFormStack(apItem, iRemaining5);
+                            pResultTmp = new IRFormStack(apObj, iRemaining5);
                             if (!bRemoveAll)
                             {
                                 pNewExtraX = new IRExtraList;
@@ -49935,13 +50318,13 @@ IRFormStack* IRContainer::PlayerCharacter_RemoveRockItAmmo(IRForm* apItem, IRExt
                         }
                         if (!bRemoveAll)
                         {
-                            apExtra->SetCount(apExtra->GetCount() - aiCount);
+                            apExtra->SetCount(apExtra->GetCount() - aiNumRemoved);
                         }
                         else
                         {
                             if (pEntry3->GetExtendData())
                                 pEntry3->GetExtendData()->Remove(apExtra);
-                            if (!abReturnEntry)
+                            if (!abReturnRemovedItem)
                             {
                                 delete apExtra;
                                 apExtra = 0;
@@ -49957,7 +50340,7 @@ IRFormStack* IRContainer::PlayerCharacter_RemoveRockItAmmo(IRForm* apItem, IRExt
             }
         }
     }
-    fWeight -= IRGetItemWeight(apItem, IsHardcore()) * iRemaining5;
+    fWeight -= IRGetItemWeight(apObj, IsHardcore()) * iRemaining5;
     return pResultTmp;
 }
 
@@ -49983,12 +50366,14 @@ class DialogueCollection
 class DialoguePlayer
 {
   public:
-    unsigned int PlayerCharacter_RemoveRockItAmmo(unsigned int selected);
+    unsigned int PlayerCharacter_RemoveRockItAmmo(unsigned int apObj);
     unsigned int PlayerCharacter_GetRandomRockItAmmoItem();
 };
 // If FUN_0076b610 is false, picks a random entry by index modulo count and returns FUN_00968be0 of its value; otherwise returns 0.
 // @fnv 0x00968f90
 // src: XBOX_PDB 0x00968f90
+// pdb: PlayerCharacter::GetRandomRockItAmmoItem | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb locals: preturnAmmo, prandomItem
 unsigned int DialoguePlayer::PlayerCharacter_GetRandomRockItAmmoItem()
 {
     unsigned int result = 0;
@@ -50028,6 +50413,8 @@ struct FUN_009690a0_shell
 // Clears the extra data list of each entry in the array at offset 0xdf4, then clears the array and calls FUN_00969110 with 0.
 // @fnv 0x009690a0
 // src: COMMUNITY 0x009690a0
+// pdb: PlayerCharacter::ClearRockItAmmo | PlayerCharacter.obj | debug, object-file gap fill, medium
+// pdb locals: i
 void FUN_009690a0_shell::PlayerCharacter_ClearRockItLauncher()
 {
     unsigned int i = 0;
@@ -50061,7 +50448,7 @@ struct Elem
     void* unkC;
 };
 
-double FUN_0048ebc0(int value, int flag);
+double FUN_0048ebc0(int apForm, int abIsHardcore);
 
 class TheClass
 {
@@ -50962,15 +51349,18 @@ class TheClass
     MObj m_kNode;
     float f_e04;
     bool PlayerCharacter_IsHardcore();
-    void PlayerCharacter_ResetRockItAmmoWeight(bool a1);
+    void PlayerCharacter_ResetRockItAmmoWeight(bool abRecalculateWeight);
 };
 
 // @fnv 0x00969110
 // src: COMMUNITY 0x00969110
-void TheClass::PlayerCharacter_ResetRockItAmmoWeight(bool a1)
+// pdb: PlayerCharacter::ResetRockItAmmoWeight | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb params: abRecalculateWeight
+// pdb locals: i
+void TheClass::PlayerCharacter_ResetRockItAmmoWeight(bool abRecalculateWeight)
 {
     f_e04 = 0.0f;
-    if (a1)
+    if (abRecalculateWeight)
     {
         for (unsigned int i = 0; i < m_kNode.FUN_0044ddc0(); ++i)
         {
@@ -51009,6 +51399,8 @@ extern TESObjectREFR* _g_thePlayer;
 // Creates InventoryChanges for the player, calls FUN_004c3380 on it for each entry at offset 0xdf4, clears that list, then calls FUN_00969110(false).
 // @fnv 0x009691d0
 // src: COMMUNITY 0x009691d0
+// pdb: PlayerCharacter::ReturnRockItAmmo | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb locals: pinventory, i
 void FUN_009691d0_S::PlayerCharacter_ReturnRockItAmmo()
 {
     InventoryChanges* changes = InventoryChanges::CreateForReference(_g_thePlayer);
@@ -51030,6 +51422,8 @@ struct FUN_00969700_StandIn : PlayerCharacter
 // Returns true when the player is under AI control and the current process package is of type 0x25.
 // @fnv 0x00969700
 // src: COMMUNITY 0x00969700
+// pdb: PlayerCharacter::GetSandman | PlayerCharacter.obj | retail, object-file run extension, high
+// pdb locals: ppack
 bool FUN_00969700_StandIn::PlayerCharacter_GetSandMan()
 {
     if (GetUnderAIControl())
@@ -51053,6 +51447,8 @@ struct PCStandIn
 // Returns true if the player is under AI control and their current process package type is 0x26.
 // @fnv 0x00969760
 // src: COMMUNITY 0x00969760
+// pdb: PlayerCharacter::GetCannibal | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb locals: ppack
 bool PCStandIn::PlayerCharacter_GetCannibal()
 {
     if (GetUnderAIControl())
@@ -51068,9 +51464,9 @@ bool PCStandIn::PlayerCharacter_GetCannibal()
 class FUN_009697c0_cls
 {
   public:
-    void PlayerCharacter_SetIsToddler(bool flag);
+    void PlayerCharacter_SetPCToddler(bool abVal);
     int FUN_00950a60(int a, int b);
-    void Actor_QueueReplacementLocomotion_1(int a, int b);
+    void Actor_QueueReplacementLocomotion(int abHurt, int apAnim);
 };
 
 
@@ -51079,17 +51475,19 @@ int __cdecl ConvertFromUni(int a, int b);
 
 // Sets the byte at offset 0x7c6 to flag if it differs, then calls FUN_008b73f0 with a value from FUN_00950a60 and DAT_011cdd78.
 // @fnv 0x009697c0
-// src: COMMUNITY 0x009697c0
-void FUN_009697c0_cls::PlayerCharacter_SetIsToddler(bool flag)
+// src: XBOX_DEBUG_PDB 0x009697c0 (was COMMUNITY)
+// pdb: PlayerCharacter::SetPCToddler | PlayerCharacter.obj | debug, call graph, high
+// pdb params: abVal
+void FUN_009697c0_cls::PlayerCharacter_SetPCToddler(bool abVal)
 {
-    if (*((unsigned char*)this + 0x7c6) == (unsigned char)flag)
+    if (*((unsigned char*)this + 0x7c6) == (unsigned char)abVal)
     {
         return;
     }
-    *((unsigned char*)this + 0x7c6) = (unsigned char)flag;
+    *((unsigned char*)this + 0x7c6) = (unsigned char)abVal;
     // Preserve this caller's extra stack argument and integer view of the string result.
     typedef int (Setting::*ReadMessageSetting)(int);
-    Actor_QueueReplacementLocomotion_1(0, FUN_00950a60(1, ConvertFromUni(
+    Actor_QueueReplacementLocomotion(0, FUN_00950a60(1, ConvertFromUni(
         (reinterpret_cast<Setting*>(&DAT_011cdd78)->*reinterpret_cast<ReadMessageSetting>(&Setting::FUN_00403df0))(0), 0)));
 }
 
@@ -51595,20 +51993,22 @@ class FUN_00969820_cls
     int unk7C0;
     unsigned char unk7C4;
     unsigned char m_7c5;
-    void Reset(bool b);
+    void Actor_QueueReplacementLocomotions(bool abForceReplaceAnimation);
     void Refresh();
-    void PlayerCharacter_SetPCYoung(bool flag);
+    void PlayerCharacter_SetPCYoung(bool abVal);
 };
 
 // Sets m_7c5 to flag if it differs, then calls Reset(false) and Refresh().
 // @fnv 0x00969820
 // src: COMMUNITY 0x00969820
-void FUN_00969820_cls::PlayerCharacter_SetPCYoung(bool flag)
+// pdb: PlayerCharacter::SetPCYoung | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb params: abVal
+void FUN_00969820_cls::PlayerCharacter_SetPCYoung(bool abVal)
 {
-    if (m_7c5 == flag)
+    if (m_7c5 == abVal)
         return;
-    m_7c5 = flag;
-    Reset(false);
+    m_7c5 = abVal;
+    Actor_QueueReplacementLocomotions(false);
     Refresh();
 }
 
@@ -51622,6 +52022,8 @@ struct FUN_00969860_Class
 // Returns true when m_pVoidPointer is non-null and the int at offset 0x94 of the pointed-to object is non-zero.
 // @fnv 0x00969860
 // src: XBOX_PDB 0x00969860
+// pdb: PlayerCharacter::SetCasinoAntiCheatTimer | PlayerCharacter.obj | retail, object-file run extension, low
+// pdb note: debug build links it to FakeModalAchievementMessageMenuCallback
 bool FUN_00969860_Class::PlayerCharacter_IsImportantConversationRunning()
 {
     bool bEnabled = false;
@@ -52044,6 +52446,8 @@ class PlayerNearbyRefs : public Character
 
 // @fnv 0x00969930
 // src: COMMUNITY 0x00969930
+// pdb: PlayerCharacter::GetClosestAudioMarkerInfo | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb locals: bInsideCurrent, dist, pList, pMarker, bInside, pAudioMarker, rad, ndist, Loc, Dist
 NearbyRefEntry* PlayerNearbyRefs::PlayerCharacter_GetClosestAudioMarkerInfo()
 {
     if (!closestNearbyRef)
@@ -52154,6 +52558,7 @@ struct TimeRefresh
 
 // @fnv 0x00969b20
 // src: COMMUNITY 0x00969b20
+// pdb: PlayerCharacter::SetCasinoAntiCheatTimer | PlayerCharacter.obj | debug, object-file run extension, low
 void TimeRefresh::SetLastAntiCheatTime()
 {
     DAT_011e07b4 = GetTickCount() / 1000;
@@ -52176,6 +52581,7 @@ struct TimeCounter
 // Returns DAT_011e07b4 plus the value from DAT_011d3570.FUN_0043d4d0() minus GetTickCount() / 1000.
 // @fnv 0x00969b40
 // src: COMMUNITY 0x00969b40
+// pdb: PlayerCharacter::GetCasinoCheatTimeRemaining | PlayerCharacter.obj | debug, object-file run extension, low
 unsigned int TimeCounter::GetAntiCheatTimeRemaining()
 {
     return DAT_011e07b4 + *DAT_011d3570.Setting_Int() - GetTickCount() / 1000u;
@@ -52193,6 +52599,7 @@ struct FUN_00969b80_class
 // Returns 1 if DAT_011e07ab is set and FUN_00969b40() is positive, otherwise calls FUN_00969b00() and FUN_00969ae0() and returns 0.
 // @fnv 0x00969b80
 // src: COMMUNITY 0x00969b80
+// pdb: PlayerCharacter::CasinoAntiCheatCheck | PlayerCharacter.obj | debug, object-file run extension, low
 char FUN_00969b80_class::IsCasinoAntiCheat()
 {
     if (DAT_011e07ab && GetAntiCheatTimeRemaining() > 0)
@@ -52224,6 +52631,8 @@ struct FUN_00969bc0_shell
 // Always returns true; if apCard is in neither list at 0x614/0x618, calls SetCantOpenDoors(false) on it and adds it to the head of the 0x614 list.
 // @fnv 0x00969bc0
 // src: XBOX_PDB 0x00969bc0
+// pdb: PlayerCharacter::AddCaravanCard | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb params: apCard
 bool FUN_00969bc0_shell::PlayerCharacter_AddCaravanCard(TESCaravanCard* apCard)
 {
     if (!(*(LH**)((char*)this + 0x614))->IsInList((Actor*&)apCard) &&
@@ -52315,6 +52724,8 @@ extern float DAT_011e0d7c, DAT_011e0d78, DAT_011e0d74;
 // Unless a player state flag is set, converts elapsed intervals into counts and calls ModifyValue on actor values 0x49, 0x4a and 0x4b.
 // @fnv 0x00969c30
 // src: COMMUNITY 0x00969c30
+// pdb: PlayerCharacter::UpdateHardcoreMode | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb locals: felaspedH20, fSLPTimer, fFODTimer, fTimeScale, felaspedSLP, felaspedFOD, fH20Timer, iDamageAmount
 void HardcorePlayer::PlayerCharacter_UpdateHardcoreMode()
 {
     if (DAT_011dea3c->FUN_005a03f0(4))
@@ -53130,19 +53541,22 @@ struct RMPlayer
     int iUnk7BC;
 
     RMExtraList* BSFile_GetDevice();
-    void PlayerCharacter_SetHardcore(int aiValue, bool abSkip);
+    void PlayerCharacter_SetHardcore(int aeHardcoreLevel, bool bIgnoreTracking);
 };
 
 // Calls FUN_00963b00 on the holder if any; if aiValue and abSkip are both 0, lowers actor values 0x49, 0x4b, 0x4a unless FUN_007d6e60() is true; saves aiValue.
 // @fnv 0x00969e90
 // src: XBOX_PDB 0x00969e90
-void RMPlayer::PlayerCharacter_SetHardcore(int aiValue, bool abSkip)
+// pdb: PlayerCharacter::SetHardcore | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb params: aeHardcoreLevel, bIgnoreTracking
+// pdb locals: pinventory
+void RMPlayer::PlayerCharacter_SetHardcore(int aeHardcoreLevel, bool bIgnoreTracking)
 {
     RMExtraHolder* pHolder = BSFile_GetDevice()->FUN_00418520();
     if (pHolder)
         pHolder->InventoryChanges_ForceWeightRecalculation();
 
-    if (!aiValue && !abSkip)
+    if (!aeHardcoreLevel && !bIgnoreTracking)
     {
         PlayerCharacter_DisableHardcoreTracking(this);
         if (!StartMenu_IsInitialLoading())
@@ -53152,7 +53566,7 @@ void RMPlayer::PlayerCharacter_SetHardcore(int aiValue, bool abSkip)
             ModActorValue(0x4a, -kAVOwner.GetActorValueModifierAmount(0x4a, 0));
         }
     }
-    iUnk7BC = aiValue;
+    iUnk7BC = aeHardcoreLevel;
 }
 
 struct FUN_009e16c0_Class
@@ -53185,8 +53599,8 @@ struct FormQ
 {
     bool FUN_00425fd0();
 };
-V3Q BackUpPackage_CalculateBackUpPointInterior(FormQ* a, FormQ* b);
-V3Q ComputeAdjustedTargetPosition(FormQ* a, FormQ* b);
+V3Q BackUpPackage_CalculateBackUpPointInterior(FormQ* apActor, FormQ* aptarget);
+V3Q BackUpPackage_CalculateBackUpPointExterior(FormQ* apActor, FormQ* aptarget);
 struct FUN_0067f030
 {
     int m0, m4, m8;
@@ -53220,33 +53634,36 @@ class SelfQ
     void FUN_00984f60(int n);
     SubQ* FUN_00671d10(FormQ* p);
     void SetFlag800(int n);
-    void BackUpPackage_InitializeBackUpPackage(FormQ* pkA, FormQ* pkB, FormQ* pkC);
+    void BackUpPackage_InitializeBackUpPackage(FormQ* apActor, FormQ* apcell, FormQ* apRef);
 };
 // Sets package type 0x27 and flag 800; if pkA is set, builds a helper from pkA/pkB/pkC, sets m_kPos, and calls several setup methods on the actor.
 // @fnv 0x009ed0d0
 // src: COMMUNITY 0x009ed0d0
-void SelfQ::BackUpPackage_InitializeBackUpPackage(FormQ* pkA, FormQ* pkB, FormQ* pkC)
+// pdb: BackUpPackage::InitializeBackUpPackage | BackUpPackage.obj | retail, upstream name already matches, high
+// pdb params: apActor, apcell, apRef
+// pdb locals: pnew, ploc
+void SelfQ::BackUpPackage_InitializeBackUpPackage(FormQ* apActor, FormQ* apcell, FormQ* apRef)
 {
     SetPackageType(0x27);
     FUN_00826b40(1);
     FUN_00826b90(1);
-    if (pkA)
+    if (apActor)
     {
         FUN_0067f030* pkX4 = new FUN_0067f030;
-        if (!pkB && !pkC)
-            pkX4->PackageLocation_SetLocReference(pkA);
-        else if (pkC)
-            pkX4->PackageLocation_SetLocReference(pkC);
-        else if (pkB)
-            pkX4->PackageLocation_SetLocCell(pkB);
+        if (!apcell && !apRef)
+            pkX4->PackageLocation_SetLocReference(apActor);
+        else if (apRef)
+            pkX4->PackageLocation_SetLocReference(apRef);
+        else if (apcell)
+            pkX4->PackageLocation_SetLocCell(apcell);
         pkX4->PackageLocation_SetRadius(0x32);
         m_kPos = DAT_011f426c;
-        if (pkB)
+        if (apcell)
         {
-            if (pkB->FUN_00425fd0())
-                m_kPos = BackUpPackage_CalculateBackUpPointInterior(pkA, pkC);
+            if (apcell->FUN_00425fd0())
+                m_kPos = BackUpPackage_CalculateBackUpPointInterior(apActor, apRef);
             else
-                m_kPos = ComputeAdjustedTargetPosition(pkA, pkC);
+                m_kPos = BackUpPackage_CalculateBackUpPointExterior(apActor, apRef);
         }
         SetPackageLocation(pkX4);
         delete pkX4;
@@ -53255,7 +53672,7 @@ void SelfQ::BackUpPackage_InitializeBackUpPackage(FormQ* pkA, FormQ* pkB, FormQ*
         delete pkY;
         FUN_00984f60(0x30);
         FUN_00671d10(0)->FUN_006800b0();
-        FUN_00671d10(pkA)->FUN_00680110();
+        FUN_00671d10(apActor)->FUN_00680110();
     }
     SetFlag800(1);
 }
@@ -53309,23 +53726,25 @@ class OSInputGlobals
     unsigned char m_aaucControls[4][0x1c];
 
     void HandleInputKey(unsigned char ucControl);
-    void Controls_ForceUserAction(int iControl);
+    void Controls_ForceUserAction(int aeAction);
 };
 
 // Sets the high bit of the mapped keyboard, mouse, joystick, or virtual key for the given control index, applying mouse button swap and joystick axis scaling.
 // @fnv 0x00a24280
 // src: XBOX_PDB 0x00a24280
-void OSInputGlobals::Controls_ForceUserAction(int iControl)
+// pdb: Controls::ForceUserAction | XControls.obj | debug, upstream name already matches, high
+// pdb params: aeAction
+void OSInputGlobals::Controls_ForceUserAction(int aeAction)
 {
-    if (iControl >= 0xd)
+    if (aeAction >= 0xd)
         return;
 
     int iControlSlot = 0;
-    if (m_aaucControls[iControlSlot][iControl] == 0xff)
+    if (m_aaucControls[iControlSlot][aeAction] == 0xff)
         iControlSlot++;
-    if (m_aaucControls[iControlSlot][iControl] == 0xff)
+    if (m_aaucControls[iControlSlot][aeAction] == 0xff)
         iControlSlot++;
-    if (m_aaucControls[iControlSlot][iControl] == 0xff)
+    if (m_aaucControls[iControlSlot][aeAction] == 0xff)
         return;
 
     if (DAT_011f35c8)
@@ -53334,10 +53753,10 @@ void OSInputGlobals::Controls_ForceUserAction(int iControl)
     switch (iControlSlot)
     {
     case 0:
-        m_acKeyboardState[m_aaucControls[iControlSlot][iControl]] |= 0x80;
+        m_acKeyboardState[m_aaucControls[iControlSlot][aeAction]] |= 0x80;
         break;
     case 1: {
-        unsigned char ucMouseButton = m_aaucControls[iControlSlot][iControl];
+        unsigned char ucMouseButton = m_aaucControls[iControlSlot][aeAction];
         if (ucMouseButton == 0 && m_iSwapMouseButtons)
             ucMouseButton = 1;
         else if (ucMouseButton == 1 && m_iSwapMouseButtons)
@@ -53346,22 +53765,22 @@ void OSInputGlobals::Controls_ForceUserAction(int iControl)
     }
     break;
     case 3:
-        HandleInputKey(m_aaucControls[3][iControl]);
+        HandleInputKey(m_aaucControls[3][aeAction]);
         break;
     case 0xff:
         break;
     default:
-        if (m_aaucControls[iControlSlot][iControl] < 0x20)
+        if (m_aaucControls[iControlSlot][aeAction] < 0x20)
         {
-            m_aucJoystickButtons[m_aaucControls[iControlSlot][iControl]] |= 0x80;
+            m_aucJoystickButtons[m_aaucControls[iControlSlot][aeAction]] |= 0x80;
         }
         else
         {
             int iAxisValue;
             int iPrevAxisValue = m_aiJoystickAxis[(
-                unsigned short)((((unsigned long)(m_aaucControls[iControlSlot][iControl])) >> 16) & 0xffff)];
+                unsigned short)((((unsigned long)(m_aaucControls[iControlSlot][aeAction])) >> 16) & 0xffff)];
             iAxisValue =
-                ((unsigned short)(((unsigned long)(m_aaucControls[iControlSlot][iControl])) & 0xffff) - 0x20) * 0x1194;
+                ((unsigned short)(((unsigned long)(m_aaucControls[iControlSlot][aeAction])) & 0xffff) - 0x20) * 0x1194;
             if (iPrevAxisValue != -1)
             {
                 int iAxisDelta = iPrevAxisValue - iAxisValue;
@@ -53370,7 +53789,7 @@ void OSInputGlobals::Controls_ForceUserAction(int iControl)
                 else if (FUN_00ec7d40(iAxisDelta) == 27000)
                     iAxisValue = 31500;
             }
-            m_aiJoystickAxis[(unsigned short)((((unsigned long)(m_aaucControls[iControlSlot][iControl])) >> 16) &
+            m_aiJoystickAxis[(unsigned short)((((unsigned long)(m_aaucControls[iControlSlot][aeAction])) >> 16) &
                                               0xffff)] = iAxisValue;
         }
         break;
@@ -54282,15 +54701,18 @@ float asin_004b5510(float);
 // Ray casts from an origin in rotated directions, sphere-tests each candidate, and writes a clear position to output, trying 10 alternate angles if search.
 // @fnv 0x009614b0
 // src: XBOX_PDB 0x009614b0
-bool Player::PlayerCharacter_GetDropPoint(Bound* object, V3* output, bool search, bool rotate)
+// pdb: PlayerCharacter::GetDropPoint | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb params: apObject, aPoint, abAllowBackupPoint, abAdvanceExtraRotate
+// pdb locals: bfoundPoint, inumBackups, dir, fmodelDiameter, fcharconRadius, origin, fpickLength, extraRot, i, pcollector, testDirection, bvalidDirection, filter, pd, frotate, backupTestRot, ffar, fpos, fdistance, differenceHoriz, collector, spshape, info, pphantom ...
+bool Player::PlayerCharacter_GetDropPoint(Bound* apObject, V3* aPoint, bool abAllowBackupPoint, bool abAdvanceExtraRotate)
 {
-    float size = object->TESBoundObject_GetBoundSize() * DAT_01011590;
+    float size = apObject->TESBoundObject_GetBoundSize() * DAT_01011590;
     float height = HK2NI(DAT_011dea3c->FUN_009306d0()->GetSettingFloat());
     float distance = TESObjectREFR_GetScale_00567400() * *DAT_011d0628.Setting_Float_00403e20();
     V3 origin, direction;
     GetCameraPosAndDir(&origin, &direction, true);
     Mat rotation;
-    if (rotate)
+    if (abAdvanceExtraRotate)
     {
         if (angle != 0.0)
         {
@@ -54298,7 +54720,7 @@ bool Player::PlayerCharacter_GetDropPoint(Bound* object, V3* output, bool search
         }
         rotation.FUN_004a0c90(angle);
         previousAngle = angle;
-        if (rotate)
+        if (abAdvanceExtraRotate)
         {
             angle += asin_004b5510(BSMIN(1.0f, float(size * 0.5 / distance)));
             if (angle > DAT_0101ff48)
@@ -54308,7 +54730,7 @@ bool Player::PlayerCharacter_GetDropPoint(Bound* object, V3* output, bool search
     else
         rotation.FUN_004a0c90(previousAngle);
     bool found = false;
-    int attempts = search ? 10 : 0;
+    int attempts = abAllowBackupPoint ? 10 : 0;
     for (int index = 0; !found && index <= attempts; ++index)
     {
         V3 offset = rotation.FUN_004b4500(&direction);
@@ -54338,7 +54760,7 @@ bool Player::PlayerCharacter_GetDropPoint(Bound* object, V3* output, bool search
             float hitDistance = (double)(distance + size) * collector.TESDataHandler_GetWorldSpaceList(0)->GetEntryAt()->fraction;
             float reach = hitDistance - size / 2.0f;
             offset *= reach;
-            *output = origin + offset;
+            *aPoint = origin + offset;
             V3 horizontal(offset.x, offset.y, 0.0f);
             float clearance = horizontal.Length() - size / 2.0;
             if (clearance - height > 0.0)
@@ -54347,7 +54769,7 @@ bool Player::PlayerCharacter_GetDropPoint(Bound* object, V3* output, bool search
         else
         {
             offset *= float(size / 2.0 + distance);
-            *output = origin + offset;
+            *aPoint = origin + offset;
             valid = true;
         }
         if (valid)
@@ -54361,7 +54783,7 @@ bool Player::PlayerCharacter_GetDropPoint(Bound* object, V3* output, bool search
             info.shape = ((Sphere*)sphere)->Bipedanim_GetReferenceFlagsOrZero();
             info.transform.bhkTransform_setIdentity();
             HV position;
-            Convert(position, *output);
+            Convert(position, *aPoint);
             info.transform.translation.SetQuaternionComponentsFromVector(&position);
             Body body(&info);
             body.bhkWorldObject_Add(FUN_008d6f30()->TESObjectCELL_GetbhkWorld());
@@ -54374,11 +54796,11 @@ bool Player::PlayerCharacter_GetDropPoint(Bound* object, V3* output, bool search
                 found = true;
         }
     }
-    if (!found && search)
+    if (!found && abAllowBackupPoint)
     {
         float rise = BSMIN(DAT_0101e6ec, float(size / 2.0));
-        *output = *FUN_00436aa0();
-        output->z += rise;
+        *aPoint = *FUN_00436aa0();
+        aPoint->z += rise;
         return true;
     }
     return found;
@@ -55695,7 +56117,7 @@ struct InputPlayer : InputCharacter
     int unk86c;
     float xInput;
     float yInput;
-    void PlayerCharacter_HandleFlycamMovement();
+    void PlayerCharacter_UpdateUFOCamera();
     int GetVtbl20Result();
     bool PlayerCharacter_UpdateHeadingAndLooking(float, int, unsigned short*, int);
     float FUN_00931d70();
@@ -55734,7 +56156,7 @@ struct InputPlayer : InputCharacter
     InputAnimation* FUN_00950a60(bool);
     void UpdateFaceAnimation(float);
     void Actor_UpdateAnimationMovement(InputAnimation*, float);
-    void ProcessEvents();
+    void Actor_HandlePostAnimationActions();
     void PlayerCharacter_UpdateFlyCamera(float, bool);
 };
 extern InputPlayer* DAT_011e07ec;
@@ -55754,7 +56176,10 @@ void Interface_SetInfoForRef(int, int, int);
 // Per-frame player input update: reads input keys, handles movement, stance, attack and activate actions, then updates the mover and animations.
 // @fnv 0x009466d0
 // src: XBOX_PDB 0x009466d0
-void InputPlayer::PlayerCharacter_UpdateFlyCamera(float dt, bool paused)
+// pdb: PlayerCharacter::UpdateFlyCamera | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb params: afDelta, abFreezeTime
+// pdb locals: slastMoveMode, ijoyY, pweapon, ijoyX, tempMemContext, pWorldRoot, smoveMode, pcontrols, buserInput, rotMod, currentMatrix, imouseX, bdropping, bmostlyForward, oldPos, fForward, motionVec, rot, imouseY, fLateral, panim1st, bresetWalkRunSpeed, imouseZ, currentPos ...
+void InputPlayer::PlayerCharacter_UpdateFlyCamera(float afDelta, bool abFreezeTime)
 {
     InputProfiler profile(52, 1, DAT_0108a8e0, 6051);
     InputKeys* input = reinterpret_cast<InputKeys*>(DAT_011dea0c->Main_GetControls());
@@ -55765,7 +56190,7 @@ void InputPlayer::PlayerCharacter_UpdateFlyCamera(float dt, bool paused)
     xInput = 0.0f;
     yInput = 0.0f;
     unk205 = 0;
-    PlayerCharacter_HandleFlycamMovement();
+    PlayerCharacter_UpdateUFOCamera();
     int axisX = 0;
     int axisY = 0;
     InterfaceManager_GetSingleton();
@@ -55774,13 +56199,13 @@ void InputPlayer::PlayerCharacter_UpdateFlyCamera(float dt, bool paused)
         axisX = input->GetAxisState(0, 7);
         axisY = input->GetAxisState(0, 8);
     }
-    if (!paused)
+    if (!abFreezeTime)
     {
         if (firstPerson)
             FUN_008d8520()->Refresh(this);
         unsigned short oldFlags3 = GetVtbl20Result();
         flags3 = oldFlags3 & 0xcc00;
-        if (DAT_011f2250.FUN_0044ddc0() && PlayerCharacter_UpdateHeadingAndLooking(dt, 0, &flags3, 0))
+        if (DAT_011f2250.FUN_0044ddc0() && PlayerCharacter_UpdateHeadingAndLooking(afDelta, 0, &flags3, 0))
             changed = true;
         InputMatrix velocity_;
         InputMatrix movement;
@@ -55797,7 +56222,7 @@ void InputPlayer::PlayerCharacter_UpdateFlyCamera(float dt, bool paused)
         {
             if (!FUN_005a03f0(8))
             {
-                DAT_011e07e0 += dt;
+                DAT_011e07e0 += afDelta;
                 if (Actor_CanMove() && GetAnimAction_008a7570() == -1)
                 {
                     if (!DAT_011e0bec &&
@@ -55869,7 +56294,7 @@ void InputPlayer::PlayerCharacter_UpdateFlyCamera(float dt, bool paused)
             view7.NiMatrix3_GetCol(0, right7);
         bool special3 = false;
         if (mode == 2)
-            special3 = PlayerCharacter_UpdateDropSpring(dt);
+            special3 = PlayerCharacter_UpdateDropSpring(afDelta);
         if (axisX)
         {
             if (axisX > 0)
@@ -55987,7 +56412,7 @@ void InputPlayer::PlayerCharacter_UpdateFlyCamera(float dt, bool paused)
             PlayerCharacter_PlayerSleep();
         FUN_00693ef0(0);
         mover->FUN_009ea570(right7);
-        mover->Update(dt);
+        mover->Update(afDelta);
         if (unusedX || unusedY || (flags3 & 15))
             changed = true;
         if (input->Controls_GetUserAction(5, 1) && !Interface_IsInMenuMode() && !FUN_005a03f0(1) && !Creature() && !special3)
@@ -56036,14 +56461,14 @@ void InputPlayer::PlayerCharacter_UpdateFlyCamera(float dt, bool paused)
         first_31->SetMoveSpeed(third7->GetMoveSpeed_009442a0());
         first_31->Animation_SetAttackSpeed(third7->Projectile_GetDistanceMoved());
         firstPerson = !firstPerson;
-        UpdateFaceAnimation(dt);
-        Actor_UpdateAnimationMovement(FUN_00950a60(!firstPerson), dt);
+        UpdateFaceAnimation(afDelta);
+        Actor_UpdateAnimationMovement(FUN_00950a60(!firstPerson), afDelta);
         firstPerson = !firstPerson;
-        UpdateFaceAnimation(dt);
-        Actor_UpdateAnimationMovement(FUN_00950a60(!firstPerson), dt);
-        ProcessEvents();
+        UpdateFaceAnimation(afDelta);
+        Actor_UpdateAnimationMovement(FUN_00950a60(!firstPerson), afDelta);
+        Actor_HandlePostAnimationActions();
         if (process->Extra())
-            process->Extra()->MuzzleFlash_Update(dt, this);
+            process->Extra()->MuzzleFlash_Update(afDelta, this);
     }
     if (input->Controls_GetUserAction(25, 1) && !DAT_011e0be5)
     {
@@ -56060,7 +56485,7 @@ void InputPlayer::PlayerCharacter_UpdateFlyCamera(float dt, bool paused)
 }
 
 TESForm* TESForm_GetFormByNumericID(void*);
-void* FUN_0040a250(void*);
+void* GetMagicItemByNumericID(void*);
 void* FUN_00825550(void*);
 struct SaveVersion
 {
@@ -56664,7 +57089,7 @@ struct PlayerLoadView
     PlayerLoadTail tail;
     void Character_InitLoadGame(void*, void*);
     void PlayerCharacter_SetSelectedSpell(MagicItem*);
-    void SetArg(void*);
+    void PlayerCharacter_SetSelectedScroll(void*);
     PlayerReferenceObject* BGSSaveFormBuffer_GetForm();
     void FUN_0093a5f0(bool);
     void PlayerCharacter_SetAIControlledFromPos(bool);
@@ -56674,6 +57099,9 @@ struct PlayerLoadView
 // Resolves saved form references (some gated by save version), refreshes the process, then calls tail.FUN_008d0600 with buffer and flags.
 // @fnv 0x00958990
 // src: XBOX_PDB 0x00958990
+// pdb: PlayerCharacter::InitLoadGame | PlayerCharacter.obj | debug, object-file run extension, low
+// pdb params: aiFlags, aiOldFlags
+// pdb locals: iprisonMarkerID, pnpc, idesiredTargetID, iselectedSpellID, iconversationID, icurrentSpellID, iselectedScrollID, idefaultClassID, ipendingPoisonID, pmagicItemForm, pmagicItemObject, pform, igrabbedObjectID, iprisonContainedID, plist, plastList, pref, irefID
 void PlayerLoadView::PlayerCharacter_InitLoadGame(void* buffer, void* flags)
 {
     Character_InitLoadGame(buffer, flags);
@@ -56697,13 +57125,13 @@ void PlayerLoadView::PlayerCharacter_InitLoadGame(void* buffer, void* flags)
     }
     void* saved214 = unk214;
     if (saved214)
-        unk214 = FUN_0040a250(saved214);
+        unk214 = GetMagicItemByNumericID(saved214);
     void* saved9 = unk218;
     if (saved9)
         unk218 = FUN_00825550(saved9);
     void* imageB = unk6f0;
     if (imageB)
-        SetArg(dynamic_cast<TESObjectBOOK*>(TESForm_GetFormByNumericID(imageB)));
+        PlayerCharacter_SetSelectedScroll(dynamic_cast<TESObjectBOOK*>(TESForm_GetFormByNumericID(imageB)));
     void* playerClass4 = unk73c;
     if (playerClass4)
         unk73c = dynamic_cast<TESClass*>(TESForm_GetFormByNumericID(playerClass4));
@@ -56949,7 +57377,7 @@ struct WkMgr
 };
 struct WkCG
 {
-    void* FindByKey(int id);
+    void* FindByKey(int aiGroupID);
 };
 struct WkActProc
 {
@@ -56973,7 +57401,7 @@ TESForm* TESForm_GetFormByNumericID(unsigned int id);
 
 void* FUN_00ec43fb(void* p, int d, void* s, void* t, int r);
 void SortTopicList(int a, void* list);
-void FUN_00806a90(WkBuf* buf, int v);
+void FUN_00806a90(WkBuf* apLoadGameBuffer, int apActiveEffectList);
 void SetCameraShakeData(float a, float b);
 void LoadReferenceLists(WkBuf* buf);
 struct WkPV
@@ -58125,19 +58553,22 @@ struct PlayerLoadState : PlayerCharacter
     void* BGSSaveFormBuffer_GetForm();
     WkActProc* FUN_004181e0();
     WkProc* FUN_008d8520();
-    void PlaceMarker(WkPt pos, void* form);
-    void PlayerCharacter_ResetRockItAmmoWeight(int a);
+    void PlaceMarker(WkPt aLocation, void* apSpace);
+    void PlayerCharacter_ResetRockItAmmoWeight(int abRecalculateWeight);
     void PlayerCharacter_FreeCompassTargets();
     void SetDAT_011e07ab_00969ac0();
-    void PlayerCharacter_SetHardcore(unsigned char a, int b);
+    void PlayerCharacter_SetHardcore(unsigned char aeHardcoreLevel, int bIgnoreTracking);
     void PlayerCharacter_DisableHardcoreTracking();
-    void SetIdleAt(int i, void* form);
-    void PlayerCharacter_AmmoSwapHelper(int a, int b);
+    void PlayerCharacter_SetAmmoForHotKey(int aihotkey, void* apAmmo);
+    void PlayerCharacter_AmmoSwapHelper(int abStartReloadAnimation, int bOnlyIfEmpty);
 };
 
 // Reads the player save state from buf, restoring actor values, form references, perk and quest lists, and version-gated fields.
 // @fnv 0x0095a3b0
 // src: XBOX_PDB 0x0095a3b0
+// pdb: PlayerCharacter::LoadGame | PlayerCharacter.obj | debug, object-file run extension, low
+// pdb params: apLoadGameBuffer
+// pdb locals: isize, igroupID, bwasYoung, pplayerMarkerSpace, playerMarkerLoc, poccupiedRegionWeather, i, pplayerNPC, isaveGameCount, iloop, pForm, pchange, pactorsNearPlayerData, pperkRank, plist, plastList, bremove, pplayerAction, pcasinoData, pcaravanData, cstageIndex, pquest, cstageitemIndex, pstage ...
 void PlayerLoadState::PlayerCharacter_LoadGame_0095a3b0(WkBuf* buf)
 {
     PlayerCharacter_SetNeedResetHardcoreTimer(1);
@@ -58574,7 +59005,7 @@ void PlayerLoadState::PlayerCharacter_LoadGame_0095a3b0(WkBuf* buf)
             buf->Read(&slotForm, 4);
             if (slotForm)
                 slotId = TESForm_GetFormByNumericID(slotForm);
-            SetIdleAt(s, slotId);
+            PlayerCharacter_SetAmmoForHotKey(s, slotId);
         }
         if (FUN_008d8520() && FUN_008d8520()->v148())
         {
@@ -58594,7 +59025,7 @@ struct FloatMatrix3
     float m20, m21, m22;
     void FUN_006815c0();
     void DecomposeToEulerAngles(float* x, float* y, float* z);
-    void FUN_00a59540(float x, float y, float z);
+    void FUN_00a59540(float fXAngle, float fYAngle, float fZAngle);
     FloatMatrix3 FUN_0043f8d0(const FloatMatrix3& input);
 };
 struct ConditionCheck;
@@ -58894,7 +59325,7 @@ struct Emitter
 struct AudioSource
 {
     void* NiAVObject_GetCollisionObject();
-    void AttachTarget(void* object);
+    void AttachTarget(void* pkCollisionObject);
 };
 struct AudioNode
 {
@@ -58920,7 +59351,7 @@ struct AudioNode
     unsigned int unk4C;
     static void* operator new(unsigned int size);
     AudioNode();
-    void bhkBlendCollisionObjectAddRotation_CopyFrom(void* object);
+    void bhkBlendCollisionObjectAddRotation_CopyFrom(void* apBlendObj);
 };
 struct SoundObject
 {
@@ -58930,7 +59361,7 @@ struct SoundEngine
 {
     int PlayerCharacter_Get3D_00950bb0(int type);
     int PlayerCharacter_GetAutoAimActor();
-    void UpdateAim(int channel, int sound, float* x, float* z, int flags, float initial, float final);
+    void PlayerCharacter_ApplyAutoAimActor(int apProjectile, int apReleaseObj, float* apHeading, float* apLooking, int apOrigin, float afStartHeading, float afStartLooking);
 };
 struct FrameClock
 {
@@ -59704,11 +60135,11 @@ struct PlayerAudio : Character
     InputEvent* Actor_GetCurrentWeapon();
     Emitter* Actor_GetAnimation();
     int TESObjectREFR_Get3D();
-    float GetCachedSpeed(int type);
+    float Actor_GetGunSkill(int aeType);
     bool Actor_IsAttacking();
     bool Actor_GetIronSights();
     void AddModAngle(float value);
-    void FUN_00931d30(float value);
+    void FUN_00931d30(float afModAngle);
     void PlayerCharacter_AddGunWobble();
 };
 
@@ -59727,15 +60158,17 @@ extern int DAT_0118a838[];
 extern char DAT_0102cb10;
 extern char DAT_01020594;
 extern char DAT_01267e64;
-extern char DAT_012681cc;
+extern char bhkBlendCollisionObjectAddRotation_ms_RTTI; // src: XBOX_RETAIL_PDB 0x012681cc (old: DAT_012681cc/g_012681cc)
 int __cdecl BSUtilities_GetObjectByName(int handle, void* resource);
-void* __cdecl ComputeRelativeRotation(int sound, float angle, FloatMatrix3* rotation);
+void* __cdecl GetGunWobble(int aeWeaponType, float afTime, FloatMatrix3* apReturnWobble);
 double __cdecl FUN_00408840(float x);
 void* __cdecl Object_DispatchCommandFour(unsigned int nbytes);
 void* __cdecl NiObject_DynamicCast(void* key, void* tree);
 // Per frame, updates two sets of audio sources, smoothing the first set's volume and setting rotation transforms on their sound objects.
 // @fnv 0x00962de0
 // src: XBOX_PDB 0x00962de0
+// pdb: PlayerCharacter::AddGunWobble | PlayerCharacter.obj | retail, string-set bridge, high
+// pdb locals: gunWobble, pweapon, pwobbleNodeName, fdrift, eweaponType, panim, fdeltaHeading, pprojectile, fdeltaLooking, pwobbleObj, pblendColObj, fdelta, fstep, battacking, pnewBlendCol, pblendCol, fy, addRot, fz, fx, fVal
 void PlayerAudio::PlayerCharacter_AddGunWobble()
 {
     float volume;
@@ -59746,14 +60179,14 @@ void PlayerAudio::PlayerCharacter_AddGunWobble()
         {
             FloatMatrix3 rotation;
             rotation.FUN_006815c0();
-            if (m_pBaseProcess && reinterpret_cast<WobbleProcess*>(m_pBaseProcess)->IsActive())
+            if (pCurrentProcess && reinterpret_cast<WobbleProcess*>(pCurrentProcess)->IsActive())
             {
                 Emitter* value = Actor_GetAnimation();
                 int slot = 0;
                 if (event && !event->TESObjectWEAP_IsMeleeWeapon())
                 {
                     slot = event->FUN_00446390();
-                    selection = ComputeRelativeRotation(DAT_0118a838[slot], value->FUN_00453700(), &rotation);
+                    selection = GetGunWobble(DAT_0118a838[slot], value->FUN_00453700(), &rotation);
                 }
                 else
                 {
@@ -59765,7 +60198,7 @@ void PlayerAudio::PlayerCharacter_AddGunWobble()
                     if (reinterpret_cast<SoundEngine*>(DAT_011dea3c)->PlayerCharacter_GetAutoAimActor())
                     {
                         reinterpret_cast<SoundEngine*>(DAT_011dea3c)
-                            ->UpdateAim(0, handle, &x3, &z6, 0, DAT_0102efc4, DAT_0102efc4);
+                            ->PlayerCharacter_ApplyAutoAimActor(0, handle, &x3, &z6, 0, DAT_0102efc4, DAT_0102efc4);
                     }
                     DAT_011e0d6c -=
                         ((double)(DAT_011e0d6c - x3) * DAT_011f6394.FUN_0084d030()) * *DAT_011ce960.Setting_Float_00403e20();
@@ -59784,7 +60217,7 @@ void PlayerAudio::PlayerCharacter_AddGunWobble()
                     if (first)
                     {
                         if (event && !event->TESObjectWEAP_IsMeleeWeapon())
-                            volume = GetCachedSpeed(2);
+                            volume = Actor_GetGunSkill(2);
                         else
                             volume = 1.0f;
                         bool active8 = Actor_IsAttacking();
@@ -59827,14 +60260,14 @@ void PlayerAudio::PlayerCharacter_AddGunWobble()
                         else
                         {
                             void* parent = NiObject_DynamicCast(&DAT_01267e64, first->NiAVObject_GetCollisionObject());
-                            if (parent && !NiObject_DynamicCast(&DAT_012681cc, parent))
+                            if (parent && !NiObject_DynamicCast(&bhkBlendCollisionObjectAddRotation_ms_RTTI, parent))
                             {
                                 AudioNode* node = new AudioNode;
                                 node->bhkBlendCollisionObjectAddRotation_CopyFrom(parent);
                                 first->AttachTarget(node);
                             }
                         }
-                        void* finalNode = NiObject_DynamicCast(&DAT_012681cc, first->NiAVObject_GetCollisionObject());
+                        void* finalNode = NiObject_DynamicCast(&bhkBlendCollisionObjectAddRotation_ms_RTTI, first->NiAVObject_GetCollisionObject());
                         if (finalNode)
                         {
                             FloatMatrix3 transformed = DAT_011a9448;
@@ -59848,22 +60281,22 @@ void PlayerAudio::PlayerCharacter_AddGunWobble()
                 }
             }
             DAT_011e09ec = DAT_011a9448;
-            if (m_pBaseProcess && event && reinterpret_cast<WobbleProcess*>(m_pBaseProcess)->IsActive())
+            if (pCurrentProcess && event && reinterpret_cast<WobbleProcess*>(pCurrentProcess)->IsActive())
             {
                 int secondSelection = DAT_0118a838[event->FUN_00446390()];
                 if (Actor_GetIronSights() && reinterpret_cast<ConditionCheck*>(event->TESCasino_GetData())->FUN_0048cee0())
                 {
                     void* argument;
                     if (!event->FUN_004ad030() ||
-                        reinterpret_cast<WobbleProcess*>(m_pBaseProcess)->GetAction(0xe, &argument)->FUN_004bd8d0())
+                        reinterpret_cast<WobbleProcess*>(pCurrentProcess)->GetAction(0xe, &argument)->FUN_004bd8d0())
                         secondSelection = 0;
                 }
-                selection = ComputeRelativeRotation((int)secondSelection, firstPersonEmitter->FUN_00453700(), &rotation);
+                selection = GetGunWobble((int)secondSelection, firstPersonEmitter->FUN_00453700(), &rotation);
                 if (selection)
                 {
                     if (!secondSelection)
                     {
-                        volume = GetCachedSpeed(0);
+                        volume = Actor_GetGunSkill(0);
                         volume *= *DAT_011cf718.Setting_Float_00403e20();
                         float zTmp, x, y_;
                         rotation.DecomposeToEulerAngles(&x, &y_, &zTmp);
@@ -59886,7 +60319,7 @@ void PlayerAudio::PlayerCharacter_AddGunWobble()
                                 AudioNode* attachedNode = new AudioNode;
                                 second->AttachTarget(attachedNode);
                             }
-                            void* finalNode = NiObject_DynamicCast(&DAT_012681cc, second->NiAVObject_GetCollisionObject());
+                            void* finalNode = NiObject_DynamicCast(&bhkBlendCollisionObjectAddRotation_ms_RTTI, second->NiAVObject_GetCollisionObject());
                             if (finalNode)
                             {
                                 float zTmp, x, y_;
@@ -59914,16 +60347,18 @@ class AnimData
 class PlayerCharacterOps : public PlayerCharacter
 {
   public:
-    void PlayerCharacter_SetMoveMode(int flags, bool enable);
+    void PlayerCharacter_SetMoveMode(int aiMoveMode, bool abValue);
 };
 
 // Forwards flags and enable to the player's actor mover; if flags has 0x400 and animation group 4 is an aim type, blends out group 4.
 // @fnv 0x00966ea0
 // src: XBOX_PDB 0x00966ea0
-void PlayerCharacterOps::PlayerCharacter_SetMoveMode(int flags, bool enable)
+// pdb: PlayerCharacter::SetMoveMode | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb params: aiMoveMode, abValue
+void PlayerCharacterOps::PlayerCharacter_SetMoveMode(int aiMoveMode, bool abValue)
 {
-    static_cast<PlayerMover*>(_g_thePlayer->m_pActorMover)->UpdatePlayerStatus(flags, enable);
-    if (flags & 0x400)
+    static_cast<PlayerMover*>(_g_thePlayer->pActorMover)->UpdatePlayerStatus(aiMoveMode, abValue);
+    if (aiMoveMode & 0x400)
     {
         if (GetAnimation(false) != 0)
         {
@@ -60798,31 +61233,34 @@ struct TeammateOwner
     int unkD44;
     PlayerList<TeammateEntry*>* teammates;
     TeammateEntry* FindEntry(Actor* actor);
-    void PlayerCharacter_InsertPerceivedActor(Actor* actor, bool flag04, bool flag05);
+    void PlayerCharacter_InsertPerceivedActor(Actor* apActor, bool abAttack, bool abHasLineSightNotDetection);
 };
 
 // Adds or updates a TeammateEntry for the given actor in the teammates list, storing flag04 and flag05.
 // @fnv 0x00966f20
 // src: COMMUNITY 0x00966f20
-void TeammateOwner::PlayerCharacter_InsertPerceivedActor(Actor* actor, bool flag04, bool flag05)
+// pdb: PlayerCharacter::InsertPerceivedActor | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb params: apActor, abAttack, abHasLineSightNotDetection
+// pdb locals: pdata, pData
+void TeammateOwner::PlayerCharacter_InsertPerceivedActor(Actor* apActor, bool abAttack, bool abHasLineSightNotDetection)
 {
-    if (((const TESActorBaseData*)((char*)actor->GetActorBase() + 0x30))->GetIsGhost() || actor->HasHealth(false))
+    if (((const TESActorBaseData*)((char*)apActor->GetActorBase() + 0x30))->GetIsGhost() || apActor->HasHealth(false))
         return;
-    TeammateEntry* found = FindEntry(actor);
+    TeammateEntry* found = FindEntry(apActor);
     if (!found)
     {
         if (!teammates)
             teammates = new PlayerList<TeammateEntry*>;
         TeammateEntry* entry = new TeammateEntry;
-        entry->actor = actor;
-        entry->flag04 = flag04;
-        entry->flag05 = flag05;
+        entry->actor = apActor;
+        entry->flag04 = abAttack;
+        entry->flag05 = abHasLineSightNotDetection;
         teammates->AddHead(entry);
     }
     else
     {
-        found->flag05 = flag05;
-        found->flag04 = flag04;
+        found->flag05 = abHasLineSightNotDetection;
+        found->flag04 = abAttack;
     }
 }
 
@@ -60834,9 +61272,9 @@ class QuestStageForm;
 class SaveQuestOps
 {
   public:
-    void SetObjectives(void* pTargets, void* pObjectives);  // 0x60f110
-    QuestStageForm* GetStage(unsigned char stage);          // 0x60db40
-    void* GetObjective(int index);                          // 0x60c8e0
+    void SetObjectives(void* apListToFill, void* apPlayerObjectiveList);  // 0x60f110
+    QuestStageForm* GetStage(unsigned char acIndex);          // 0x60db40
+    void* GetObjective(int aiIndex);                          // 0x60c8e0
 };
 class QuestStageForm
 {
@@ -60862,7 +61300,7 @@ class SaveLoadGame
 {
   public:
     bool IsLoading();                             // 0x862110
-    void ReadData(void* dst, unsigned int size);  // 0x8579e0
+    void ReadData(void* apData, unsigned int aiSize);  // 0x8579e0
     LoadingFormInfo* GetLoadingForm();            // 0x4fd3c0
     unsigned char GetVersion();                   // 0x8df040
     unsigned int GetOffset();                     // 0x825c00
@@ -60933,13 +61371,13 @@ struct SaveBlob
 class SaveMagicList
 {
   public:
-    void Load(class PlayerLoadStateQ* player);  // 0x609f60
+    void Load(class PlayerLoadStateQ* apCharacter);  // 0x609f60
 };
 
 class SaveTextHolder
 {
   public:
-    void Set(const char* text);  // 0x489100
+    void Set(const char* apFullName);  // 0x489100
 };
 
 class SaveMagicNameView
@@ -61003,7 +61441,7 @@ class SaveMagicNameView
 class SaveFormOwner
 {
   public:
-    void Add(TESForm* form);  // 0x601c70
+    void Add(TESForm* apClass);  // 0x601c70
 };
 
 class SaveIdSource
@@ -61364,15 +61802,15 @@ class PlayerLoadStateQ
     void ReadData(void* dst, unsigned int size);          // 0x484d00
     void ReadRef(void* dst, unsigned int size);           // 0x484d40
     void LoadBase(unsigned int flags, unsigned int arg);  // 0x8d3310
-    void SetHardcore(unsigned char value, int a, int b);  // 0x8bb650
+    void SetHardcore(unsigned char abIronSights, int abPostAnim, int abCheckAnimBlendOut);  // 0x8bb650
     void ResolveEntries();                                // 0x969ac0
     void Update94c8e0(int value);                         // 0x94c8e0
     void Set93a7a0(TESRegion* form);                      // 0x93a7a0
-    void Set952e60(SavePosition pos, TESForm* form);      // 0x952e60
+    void Set952e60(SavePosition aLocation, TESForm* apSpace);      // 0x952e60
     int Get464e30();                                      // 0x464e30
     char* GetMagic();                                     // 0x7af430
     SaveFormOwner* GetOwner();                            // 0x4181e0
-    void PlayerCharacter_LoadGame(unsigned int flags, unsigned int arg);
+    void PlayerCharacter_LoadGame(unsigned int aiFlags, unsigned int aiCurrentFlags);
 };
 
 extern int DAT_011e07b4;
@@ -61381,15 +61819,18 @@ extern SaveIdSource DAT_011d0a9c;
 
 TESForm* LookupFormByID(unsigned int formID);  // 0x4839c0
 void SaveLog(const char* format, ...);         // 0x5b5e40
-void Fixup49ab00(PlayerLoadStateQ* player, unsigned int value);
+void Animation_LoadAnimation(PlayerLoadStateQ* player, unsigned int value);
 void FixupBlob(SaveBlob* blob);  // 0x4d5f20
-void Register805d40(unsigned int value, PlayerLoadStateQ* player);
+void Register805d40(unsigned int apActiveEffectList, PlayerLoadStateQ* player);
 void Notify61a5a0(int a, int b);
 
 // Reads player character save data from the load stream, dispatching to LoadBase and version-gated sub-blocks.
 // @fnv 0x00956f70
 // src: XBOX_PDB 0x00956f70
-void PlayerLoadStateQ::PlayerCharacter_LoadGame(unsigned int flags, unsigned int arg)
+// pdb: PlayerCharacter::LoadGame | PlayerCharacter.obj | retail, string-set bridge, high
+// pdb params: aiFlags, aiCurrentFlags
+// pdb locals: istartBufferPosition, iblockSize, iblockHeader, pheader, pform, icurrentBufferPosition, playerMarkerLoc, pMiscStats, bironSights, sizeoflist, icasinochipID, cd, i, icardID, iprisonMarkerID, idesiredTargetID, iselectedSpellID, iconversationID, ioccupiedRegionID, icurrentSpellID, iselectedScrollID, idefaultClassID, ipendingPoisonID, ilastKnownGoodLocationID ...
+void PlayerLoadStateQ::PlayerCharacter_LoadGame(unsigned int aiFlags, unsigned int aiCurrentFlags)
 {
     unsigned short blockSize2 = 0;
     unsigned int blockStart = 0;
@@ -61478,7 +61919,7 @@ void PlayerLoadStateQ::PlayerCharacter_LoadGame(unsigned int flags, unsigned int
         }
     }
 
-    LoadBase(flags, arg);
+    LoadBase(aiFlags, aiCurrentFlags);
     {
 
         unsigned short block2Size3 = 0;
@@ -61510,8 +61951,8 @@ void PlayerLoadStateQ::PlayerCharacter_LoadGame(unsigned int flags, unsigned int
             ((SaveLoadGame*)DAT_011de45c)->ReadData(&block2Size3, 2);
         }
 
-        if (flags & 0x10000000)
-            Fixup49ab00(this, unk690);
+        if (aiFlags & 0x10000000)
+            Animation_LoadAnimation(this, unk690);
 
         SavePosition position;
         ReadData(&unk64A, 1);
@@ -61747,7 +62188,7 @@ void PlayerLoadStateQ::PlayerCharacter_LoadGame(unsigned int flags, unsigned int
             }
         }
         Register805d40(unk210, this);
-        sub878.LoadGame(flags, arg);
+        sub878.LoadGame(aiFlags, aiCurrentFlags);
 
         {
             unsigned int questRef;
@@ -62214,10 +62655,10 @@ struct FUN_008d34b0_shell
 };
 struct FUN_0084aa90_shell
 {
-    unsigned int FUN_0084aa90(unsigned int id);
+    unsigned int GetChangedFormID(unsigned int id);
 };
 
-void __cdecl InitLoadGameForEffects(Actor* actor, PlayerList<ActiveEffect*>* list);
+void __cdecl ActiveEffect_InitLoadActiveEffectList(Actor* apLoadGameBuffer, PlayerList<ActiveEffect*>* apActiveEffectList);
 struct Caller_0095f590
 {
     BGSCameraPath* PlayerCharacter_SetControlsDisabled_0095f590(unsigned int disabled);
@@ -62252,7 +62693,7 @@ struct TESObjectREFR_Helper : public TESObjectREFR
 class LoadActorBaseView
 {
   public:
-    void InitDefaultWorn(PlayerCharacter* player, int a1, int a2, int a3, int a4);
+    void InitDefaultWorn(PlayerCharacter* apRef, int a1, int a2, int a3, int a4);
 };
 
 struct PCStandin
@@ -63152,6 +63593,9 @@ public:
 
 // @fnv 0x0095c0a0
 // src: COMMUNITY 0x0095c0a0
+// pdb: PlayerCharacter::InitLoadGame | PlayerCharacter.obj | debug, object-file run extension, low
+// pdb params: apLoadGameBuffer
+// pdb locals: fhealthRatio, iclosestConversationID, iAIConversationRunningID, plist, plastList, pactorsNearPlayerData, bremove, pplayerAction, pperkRank, pnpc
 void PlayerLoadResolutionOperations::PlayerCharacter_InitLoadGame_0095c0a0(BGSLoadFormBuffer* buffer)
 {
     unsigned int formID;
@@ -63169,12 +63613,12 @@ void PlayerLoadResolutionOperations::PlayerCharacter_InitLoadGame_0095c0a0(BGSLo
 
     reinterpret_cast<FUN_008d34b0_shell*>(this)->FUN_008d34b0(buffer);
     formID = reinterpret_cast<FUN_0084aa90_shell*>(g_BGSSaveLoadGame)
-                 ->FUN_0084aa90(reinterpret_cast<unsigned int>(reinterpret_cast<PCStandin*>(this)->unk208));
+                 ->GetChangedFormID(reinterpret_cast<unsigned int>(reinterpret_cast<PCStandin*>(this)->unk208));
     reinterpret_cast<PCStandin*>(this)->unk208 = formID ? dynamic_cast<DialoguePackage*>(TESForm_GetFormByNumericID(formID)) : 0;
     if (buffer->GetVersion() >= 0x12)
     {
         aBMid = reinterpret_cast<FUN_0084aa90_shell*>(g_BGSSaveLoadGame)
-                    ->FUN_0084aa90(reinterpret_cast<unsigned int>(reinterpret_cast<PCStandin*>(this)->unk224));
+                    ->GetChangedFormID(reinterpret_cast<unsigned int>(reinterpret_cast<PCStandin*>(this)->unk224));
         reinterpret_cast<PCStandin*>(this)->unk224 = aBMid ? dynamic_cast<DialoguePackage*>(TESForm_GetFormByNumericID(aBMid)) : 0;
     }
     reinterpret_cast<PCStandin*>(this)->unk638 =
@@ -63253,7 +63697,7 @@ void PlayerLoadResolutionOperations::PlayerCharacter_InitLoadGame_0095c0a0(BGSLo
         kPNode2 = kPNode2->GetNext();
     }
     reinterpret_cast<Caller_0095f590*>(this)->PlayerCharacter_SetControlsDisabled_0095f590(this->m_ucValueAt680);
-    InitLoadGameForEffects(reinterpret_cast<Actor*>(buffer),
+    ActiveEffect_InitLoadActiveEffectList(reinterpret_cast<Actor*>(buffer),
                  reinterpret_cast<PlayerList<ActiveEffect*>*>(reinterpret_cast<PCStandin*>(this)->unk210));
     spNode3_2 = reinterpret_cast<PlayerList<PerkForm*>*>(&this->Perks);
     while (spNode3_2)
@@ -63730,14 +64174,14 @@ struct PlayerSandmanPackageOperations : public PlayerCharacter
     void F5cc7a0(int a);
     void F950340(int a);
     AIProcStandIn* F8d8520();
-    void PlayerCharacter_InitiateSandmanPackage(struct SandmanTargetActor* a1, int a2, int a3, bool a4);
+    void PlayerCharacter_InitiateSandmanPackage(struct SandmanTargetActor* apTarget, int apfurniture, int aMarker, bool auiIndex);
 };
 
 
 struct PkgData
 {
     void F6800b0(int a);
-    void F680110(SandmanTargetActor* a);
+    void F680110(SandmanTargetActor* apRef);
     void F403550(int a);
 };
 
@@ -63773,23 +64217,26 @@ public:
     void F984f60(int arg);
 };
 
-TESPackage* CreatePackageStandIn(int type);
+TESPackage* CreatePackageStandIn(int aPackageType);
 
 struct SandmanTargetActor
 {
-    void F8a8060();
+    void Actor_InitiateDoNothingPackage();
 };
 
 // Builds a package of type 0x25 located at this actor, passes it to vf2f4 after virtual calls on unk68, then calls F8a8060 on a1.
 // @fnv 0x00969260
 // src: XBOX_PDB 0x00969260
-void PlayerSandmanPackageOperations::PlayerCharacter_InitiateSandmanPackage(SandmanTargetActor* apSandmanTarget, int a2, int a3, bool a4)
+// pdb: PlayerCharacter::InitiateSandmanPackage | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb params: apTarget, apfurniture, aMarker, auiIndex
+// pdb locals: pnew, ploc, ppack
+void PlayerSandmanPackageOperations::PlayerCharacter_InitiateSandmanPackage(SandmanTargetActor* apTarget, int apfurniture, int aMarker, bool auiIndex)
 {
-    layoutPadding1C8[13] = reinterpret_cast<ProcessLists*>(&DAT_011e0e80)->GetHighestDetectionValue(static_cast<PlayerCharacter*>(g_thePlayer), 0);
+    layoutPadding1C8[13] = reinterpret_cast<ProcessLists*>(&DAT_011e0e80)->GetHighestDetectionLevelForActor(static_cast<PlayerCharacter*>(g_thePlayer), 0);
     F5cc7a0(1);
     F950340(1);
-    reinterpret_cast<ProcStandIn*>(m_pBaseProcess)->vf210(0, this);
-    reinterpret_cast<ProcStandIn*>(m_pBaseProcess)->vf644(0);
+    reinterpret_cast<ProcStandIn*>(pCurrentProcess)->vf210(0, this);
+    reinterpret_cast<ProcStandIn*>(pCurrentProcess)->vf644(0);
     TESPackage* pkg = CreatePackageStandIn(0x25);
     pkg->SetMustReachLocation(true);
     pkg->SetMustComplete(true);
@@ -63803,13 +64250,13 @@ void PlayerSandmanPackageOperations::PlayerCharacter_InitiateSandmanPackage(Sand
     delete tgt;
     static_cast<PlayerPackageOperations*>(pkg)->F984f60(0x1d);
     pkg->GetData()->F6800b0(0);
-    pkg->GetData()->F680110(apSandmanTarget);
+    pkg->GetData()->F680110(apTarget);
     pkg->GetData()->F403550(0);
     F8d8520()->vf28();
     reinterpret_cast<void (__thiscall*)(PlayerCharacter*, int)>((*reinterpret_cast<void***>(this))[0xDC])(this, 1);
-    reinterpret_cast<ProcStandIn*>(m_pBaseProcess)->vf540(a2, a4, a3);
+    reinterpret_cast<ProcStandIn*>(pCurrentProcess)->vf540(apfurniture, auiIndex, aMarker);
     reinterpret_cast<void (__thiscall*)(PlayerCharacter*, TESPackage*, int, int)>((*reinterpret_cast<void***>(this))[0xBD])(this, pkg, 0, 1);
-    apSandmanTarget->F8a8060();
+    apTarget->Actor_InitiateDoNothingPackage();
 }
 
 // Constructor: clear the state fields and start the timer value at -infinity.
@@ -63851,6 +64298,7 @@ class FUN_009eb420
 
 // Constructor: sets integer fields to 0 or -1, clears the flags, and sets m_kTime's value to the negation of DAT_01092b60.
 // @fnv 0x009eb420
+// pdb: Crime::Crime | AlarmPackage.obj | debug, object-file run extension, low
 FUN_009eb420::FUN_009eb420()
 {
     m_iTarget = 0;
@@ -64410,6 +64858,8 @@ struct PlayerAIControl : PlayerCharacter
 // Stores enabled in underAIControl, then calls SetControl(0) if FUN_0093a740() is true, otherwise SetControl(1).
 // @fnv 0x0093a6f0
 // src: COMMUNITY 0x0093a6f0
+// pdb: PlayerCharacter::SetAIControlledFromPosition | PlayerCharacter.obj | debug, call graph, medium
+// pdb params: abTF
 void PlayerAIControl::PlayerCharacter_SetAIControlledFromPos(char abUnderAIControl)
 {
     reinterpret_cast<PlayerAIControlFields*>(this)->underAIControl = abUnderAIControl;
@@ -64445,6 +64895,8 @@ struct PlayerProgressionEntry : PlayerCharacter
 
 // @fnv 0x0094fd10
 // src: COMMUNITY 0x0094fd10
+// pdb: PlayerCharacter::RewardExperience | PlayerCharacter.obj | debug, object-file gap fill, medium
+// pdb params: aiAmount
 void PlayerProgressionEntry::PlayerCharacter_RewardXP(int a)
 {
     reinterpret_cast<PlayerXP_*>(&reinterpret_cast<FUN_0093bea0_cls*>(this)->unk878)->AddExperience(a);
@@ -64465,6 +64917,7 @@ class VanityModePlayer : public PlayerCharacter
 // Clears several DAT_ flags and float globals, copies DAT_011e07bc to DAT_011e0b5c if DAT_011e07b9 is set, and calls HUDMainMenu::UpdateVisibilityState(1).
 // @fnv 0x009500a0
 // src: XBOX_PDB 0x009500a0
+// pdb: PlayerCharacter::StopVanityMode | PlayerCharacter.obj | retail, upstream name already matches, high
 void VanityModePlayer::PlayerCharacter_StopVanityMode()
 {
     if (DAT_011e07b9)
@@ -64519,6 +64972,7 @@ struct PickPocketWarningState : Character
 // Increments warningCount and, if warningDelay equals -1.0, sets it to the float value of originalRuntimeFloatSetting250.
 // @fnv 0x00966e50
 // src: XBOX_PDB 0x00966e50
+// pdb: PlayerCharacter::ModPickPocketWarning | PlayerCharacter.obj | debug, upstream name already matches, high
 void PickPocketWarningState::PlayerCharacter_ModPickPocketWarning()
 {
     ++warningCount;
@@ -64546,6 +65000,8 @@ struct PlayerView : IRContainer
 // Sums the FUN_00726070 result of each entry in kEntries and returns the total.
 // @fnv 0x00969040
 // src: XBOX_PDB 0x00969040
+// pdb: PlayerCharacter::GetNumRockItAmmo | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb locals: iammoCt, iitemCt
 int PlayerView::PlayerCharacter_GetNumRockItAmmo()
 {
     int iTotalCount = 0;
@@ -64577,10 +65033,11 @@ struct GetUpPackagePlayer : PlayerCharacter
 // If FUN_008b3bb0 is false on the player, calls FUN_009daf80 on its actor mover; then calls FUN_0093a6f0(1) and FUN_008a75a0.
 // @fnv 0x00953ee0
 // src: COMMUNITY 0x00953ee0
+// pdb: PlayerCharacter::InitiateGetUpPackage | PlayerCharacter.obj | retail, upstream name already matches, high
 void GetUpPackagePlayer::PlayerCharacter_InitiateGetUpPackage()
 {
     if (!reinterpret_cast<PathingCalls*>(_g_thePlayer)->FUN_008b3bb0())
-        reinterpret_cast<MoverCalls*>(_g_thePlayer->m_pActorMover)->ActorMover_ClearCurrentData();
+        reinterpret_cast<MoverCalls*>(_g_thePlayer->pActorMover)->ActorMover_ClearCurrentData();
     PlayerCharacter_SetAIControlledFromPos(1);
     EnsurePackage26();
 }
@@ -64600,15 +65057,17 @@ void PlayerFormFlagSetter::TESForm_SetBeingDropped(bool enabled)
 void __cdecl MapMenu_ResetCurrentNoteIfEqualTo_(int);
 struct PlayerNoteRemoval : PlayerCharacter
 {
-    void __thiscall PlayerCharacter_RemoveNote(void* note);
+    void __thiscall PlayerCharacter_RemoveNote(void* apNote);
 };
 // Calls FUN_00704470 on the note, then removes it from the list at offset 0x5E4.
 // @fnv 0x00966b80
 // src: COMMUNITY 0x00966b80
-void __thiscall PlayerNoteRemoval::PlayerCharacter_RemoveNote(void* note)
+// pdb: PlayerCharacter::RemoveNote | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb params: apNote
+void __thiscall PlayerNoteRemoval::PlayerCharacter_RemoveNote(void* apNote)
 {
-    MapMenu_ResetCurrentNoteIfEqualTo_(reinterpret_cast<int>(note));
-    reinterpret_cast<PlayerList<void*>*>(layoutPadding5E4)->Remove(note);
+    MapMenu_ResetCurrentNoteIfEqualTo_(reinterpret_cast<int>(apNote));
+    reinterpret_cast<PlayerList<void*>*>(layoutPadding5E4)->Remove(apNote);
 }
 
 struct StealWarningState : Character
@@ -64645,6 +65104,7 @@ struct StealWarningState : Character
 // Increments warningCount and sets warningDelay to the runtime float setting 250 when warningDelay is -1.0.
 // @fnv 0x00966e00
 // src: COMMUNITY 0x00966e00
+// pdb: PlayerCharacter::ModStealWarning | PlayerCharacter.obj | debug, object-file gap fill, medium
 void StealWarningState::PlayerCharacter_IssueStealWarning()
 {
     ++warningCount;
@@ -64659,6 +65119,8 @@ struct PlayerListCleanup : ::FUN_0093bea0_cls
 // Frees every BGSPerk in the PlayerList at unk7C8, then clears the list and zeroes unk7D0.
 // @fnv 0x00948050
 // src: COMMUNITY 0x00948050
+// pdb: PlayerCharacter::ClearMapMarkerStructList | PlayerCharacter.obj | retail, upstream name already matches, high
+// pdb locals: plist, pdata
 void PlayerListCleanup::PlayerCharacter_ClearMapMarkerStructList()
 {
     ::PlayerList< ::BGSPerk*>* node = reinterpret_cast< ::PlayerList< ::BGSPerk*>*>(&unk7C8);

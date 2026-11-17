@@ -15,6 +15,7 @@ struct LimbListM;
 struct TargetListM;
 
 
+// pdb: class VATSMenu, size 0x144, bases: Menu, 26 members
 class VATSMenu : public Menu
 {
 public:
@@ -65,35 +66,35 @@ public:
         char layoutExtension_pad28[128];
         Tile* m_pTiles[32];
     };
-    void* m_pAdditionalHudTile;
-    bool m_bStateFlag8;
+    void* pActive; // src: XBOX_RETAIL_PDB +0xa8 (old: m_pAdditionalHudTile)
+    bool bDebounceMenuButton; // src: XBOX_RETAIL_PDB +0xac (old: m_bStateFlag8)
     char layoutExtension_padad[3];
-    ActionList m_acMenuText;
-    float m_fOverrideActionPoints;
-    float m_fValue1;
-    float m_fValue2;
-    float m_fValue3;
-    float m_fValue4;
-    float m_fValue5;
-    bool m_bFirstFlag;
-    bool m_bStateFlag1;
-    bool m_bStateFlag2;
-    bool m_bStateFlag3;
-    float m_fHitChance;
-    void* m_pTargetChance;
-    bool m_bStateFlag4;
+    ActionList lbActions; // src: XBOX_RETAIL_PDB +0xb0 (old: m_acMenuText)
+    float fActionPoints; // src: XBOX_RETAIL_PDB +0xe0 (old: m_fOverrideActionPoints)
+    float fActionPointsBase; // src: XBOX_RETAIL_PDB +0xe4 (old: m_fValue1)
+    float fClipAmmo; // src: XBOX_RETAIL_PDB +0xe8 (old: m_fValue2)
+    float fTotalAmmo; // src: XBOX_RETAIL_PDB +0xec (old: m_fValue3)
+    float fQueuedClipAmmo; // src: XBOX_RETAIL_PDB +0xf0 (old: m_fValue4)
+    float fQueuedTotalAmmo; // src: XBOX_RETAIL_PDB +0xf4 (old: m_fValue5)
+    bool bHeadingReached; // src: XBOX_RETAIL_PDB +0xf8 (old: m_bFirstFlag)
+    bool bMetersShown; // src: XBOX_RETAIL_PDB +0xf9 (old: m_bStateFlag1)
+    bool bTargetsLit; // src: XBOX_RETAIL_PDB +0xfa (old: m_bStateFlag2)
+    bool bClosing; // src: XBOX_RETAIL_PDB +0xfb (old: m_bStateFlag3)
+    float fProbableEnemyDamage; // src: XBOX_RETAIL_PDB +0xfc (old: m_fHitChance)
+    void* pCurrentLimb; // src: XBOX_RETAIL_PDB +0x100 (old: m_pTargetChance)
+    bool bConcentratedFirePerk; // src: XBOX_RETAIL_PDB +0x104 (old: m_bStateFlag4)
     char layoutExtension_pad105[3];
-    void* m_pSelectedChance;
-    bool m_bStateFlag5;
-    bool m_bStateFlag9;
-    bool m_bAdditionalStateFlag;
-    bool m_bStateFlag10;
-    bool m_bStateFlag6;
+    void* pLastLimb; // src: XBOX_RETAIL_PDB +0x108 (old: m_pSelectedChance)
+    bool bStickReset; // src: XBOX_RETAIL_PDB +0x10c (old: m_bStateFlag5)
+    bool bTargetStickReset; // src: XBOX_RETAIL_PDB +0x10d (old: m_bStateFlag9)
+    bool bMouseOverButton; // src: XBOX_RETAIL_PDB +0x10e (old: m_bAdditionalStateFlag)
+    bool bSelectLeftHeld; // src: XBOX_RETAIL_PDB +0x10f (old: m_bStateFlag10)
+    bool bSelectRightHeld; // src: XBOX_RETAIL_PDB +0x110 (old: m_bStateFlag6)
     char layoutExtension_pad111[3];
-    unsigned int m_uiTargetCount;
-    bool m_bStateFlag7;
+    unsigned int uiSelectTimer; // src: XBOX_RETAIL_PDB +0x114 (old: m_uiTargetCount)
+    bool bDataInTemporaryVATSCommand; // src: XBOX_RETAIL_PDB +0x118 (old: m_bStateFlag7)
     char layoutExtension_pad119[3];
-    TargetCommand m_acTargetText;
+    TargetCommand pTemporaryVATSCommand; // src: XBOX_RETAIL_PDB +0x11c (old: m_acTargetText)
 
     VATSMenu();
     void AttachTileByID(int aiID, Tile* apTile);
@@ -113,18 +114,18 @@ public:
 
     BSSimpleList<TargetX*>* FindListEntryForTarget(ActorX* apTarget);
     TargetListM* FindListEntryForTarget(ActorM* apTarget);
-    void AssignActionTiles(BSSimpleList<TargetX*>* apNode);
+    void BuildMetersForTarget(BSSimpleList<TargetX*>* apTarget);
     BSSimpleList<ChanceX*>* FindEntryForRef();
     LimbListM* FindListEntryByValue(int aiLimb);
     void UpdateLimbHighlight();
-    void UpdateQueueEntry(TargetCommand* apCmd, bool abArg2, bool abArg3);
+    void UpdateQueuedActionList(TargetCommand* apCommand, bool abForcedReload, bool bSpecialAttack);
     float CalculateProbableEnemyHealth();
-    void UpdateHitChanceDisplay();
+    void SetMeterChance();
     bool UpdateVatsTargeting();
     void VATSMenu_SetTargetLimb();
     bool UpdateAmmo();
     bool VATSMenu_PickNewTarget();
-    int VATSMenu_GetActorValueFromBodyPart(int aiLimb);
+    int VATSMenu_GetActorValueFromBodyPart(int aeBodyPart);
     int GetConsecutiveMatchCount();
     void UpdateLimbTiles();
     float CalculateVATSChance(LimbListM* apTarget);

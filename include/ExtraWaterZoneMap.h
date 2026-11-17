@@ -5,6 +5,7 @@
 
 class TESForm;
 
+// pdb: class ExtraWaterZoneMap, size 0x20, bases: BSExtraData, 2 members
 class ExtraWaterZoneMap : public BSExtraData
 {
 public:

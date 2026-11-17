@@ -2,6 +2,7 @@
 #include "niparallelupdatetaskmanager_inl_decls.h"
 
 // @fnv 0x00872ad0
+// pdb: Main::DrawWorld_WaitForParallelUpdate | Main.obj | debug, call graph, medium
 void NiParallelUpdateTaskManager::SetupTaskWorkers()
 {
     if (NiParallelUpdateTaskManager_Get()) {

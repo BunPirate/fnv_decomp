@@ -6,12 +6,13 @@
 #include "../../../../include/NiStream.h"
 #include "../../../../include/NiPSysVolumeEmitter.h"
 
+// pdb: class NiPSysSphereEmitter, size 0x5c, bases: NiPSysVolumeEmitter, 1 members
 class NiPSysSphereEmitter : public NiPSysVolumeEmitter
 {
   public:
-    float m_fBoundRadius;
-    virtual void LoadBinary(NiStream& stream);
-    virtual void SaveBinary(NiStream& stream);
+    float m_fEmitterRadius; // src: XBOX_RETAIL_PDB +0x58 (old: m_fBoundRadius)
+    virtual void LoadBinary(NiStream& kStream);
+    virtual void SaveBinary(NiStream& kStream);
 };
 inline void __fastcall ReadBinaryValue(NiStream& stream, float& value)
 {

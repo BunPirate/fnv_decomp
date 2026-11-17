@@ -11,6 +11,7 @@
 #include "../../include/NiDX9RenderState.h"
 
 // TileShader has no shared header yet; +0x28 is its shader declaration, +0x70/+0x7C its program arrays.
+// pdb: class TileShader, size 0x90, bases: BSShader, 5 members
 class TileShader : public BSShader
 {
   public:
@@ -19,10 +20,10 @@ class TileShader : public BSShader
     void RebuildPrograms();
     void NiDX9FragmentShader_RecreateRendererData();
 
-    NiD3DPass* m_pTilePass;
-    NiD3DVertexShader* m_apVertexShaders[3];
-    NiD3DPixelShader* m_apPixelShaders[3];
-    void* m_apDeclarations[2];
+    NiD3DPass* spTileShaderPass; // src: XBOX_RETAIL_PDB +0x6c (old: m_pTilePass)
+    NiD3DVertexShader* spTileVertexShader[3]; // src: XBOX_RETAIL_PDB +0x70 (old: m_apVertexShaders)
+    NiD3DPixelShader* spTilePixelShader[3]; // src: XBOX_RETAIL_PDB +0x7c (old: m_apPixelShaders)
+    void* spShaderDecl[2]; // src: XBOX_RETAIL_PDB +0x88 (old: m_apDeclarations)
 };
 
 void AddToCounterIfIdle(unsigned int, unsigned int);

@@ -35,6 +35,7 @@ inline void TallGrassFree(void* data)
 {
     MemoryManager::Instance().Deallocate(data);
 }
+// pdb: class TallGrassShaderProperty, size 0x98 (here 0x1), bases: BSShaderLightingProperty, 6 members
 class TallGrassShaderProperty
 {
   public:
@@ -51,7 +52,7 @@ class TallGrassShaderProperty
     static unsigned long GetCacheIdentifier();
     __declspec(noalias) static NiTMapBase<NiTPointerAllocator<unsigned int>, unsigned long,
                                           TallGrassCacheData*>* GetCacheDataMap();
-    static void ClearCacheData();
+    static void RemoveAllGrass();
     class GeometryCacheEntry;
     __declspec(noalias) static NiTMapBase<NiTPointerAllocator<unsigned int>, const char*,
                                           NiPointer<GeometryCacheEntry> >* GetGeometryCacheMap();

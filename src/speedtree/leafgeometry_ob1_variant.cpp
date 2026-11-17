@@ -104,17 +104,17 @@ public:
     void Unitize_004a0c10();
     float FUN_004a7290();
     float FUN_004a7290() const;
-    LocalVec3 FUN_004b3800(const LocalVec3& other) const;
+    LocalVec3 FUN_004b3800(const LocalVec3& pt) const;
     LocalVec3 ProcessAndReturnValue_0053d280(float divisor);
     float NiPoint3_XYLength();
     float NiPoint3_XYLength() const;
     void ComputeValue_0063c8a0(const LocalVec3* other);
     void ComputeValue_0063c8a0(void* other);
     void FUN_006815c0();
-    float CVec3_Distance(LocalVec3* other);
-    float CVec3_Distance(const LocalVec3& other) const;
-    LocalVec3 TransformPointByMatrix4(const Mat& matrix);
-    LocalVec3 TransformPointByMatrix4(const Matrix4* matrix);
+    float CVec3_Distance(LocalVec3* cVec);
+    float CVec3_Distance(const LocalVec3& cVec) const;
+    LocalVec3 TransformPointByMatrix4(const Mat& cTransform);
+    LocalVec3 TransformPointByMatrix4(const Matrix4* cTransform);
     void Normalize_00b12790();
     LocalVec3 Diff_00b13040(void* other);
     LocalVec3 Diff_00b13040(const LocalVec3& other) const;
@@ -169,7 +169,7 @@ struct FUN_00b28720_Class
     int unk10;
     float* m_pLeafTable;
 
-    void SetLeafTableEntry(int nLeaf, const float* pSrc);
+    void CLeafGeometry_SetTextureCoords(int nLeafMapIndex, const float* pTexCoords);
 };
 struct LodB28
 {
@@ -184,7 +184,7 @@ struct CB28
     unsigned short count;
     char pad2[2];
     LodB28* lods;
-    void FreeLodBuffers();
+    void CLeafGeometry_FreeLODDataArrays();
 };
 
 __forceinline void LocalVec3::Set(float a, float b, float c)
@@ -206,10 +206,10 @@ __forceinline float& LocalVec3::operator[](int n)
     return (&x)[n];
 }
 // src: COMMUNITY 0x00b04d40
-inline float LocalVec3::CVec3_Distance(const LocalVec3& other) const
+inline float LocalVec3::CVec3_Distance(const LocalVec3& cVec) const
 {
-    float squared = (other.x - x) * (other.x - x) + (other.y - y) * (other.y - y) +
-                    (other.z - z) * (other.z - z);
+    float squared = (cVec.x - x) * (cVec.x - x) + (cVec.y - y) * (cVec.y - y) +
+                    (cVec.z - z) * (cVec.z - z);
     int bits = (*reinterpret_cast<int*>(&squared) >> 1) + 0x1fc00000;
     return *reinterpret_cast<float*>(&bits);
 }
@@ -221,26 +221,27 @@ struct GlobalObject_00b3f100
 };
 // SpeedTree idv CRegion: min/max as variable-length CVec (float[5] + size; dtor 0x00b3f100); FUN_00b3caa0 grows it
 // by a point, FUN_00b3c9a0 by another region. Not the shared 16-byte-aligned Bounds.
+// pdb: class CRegion, size 0x30, 2 members
 struct CRegion
 {
-    GlobalObject_00b3f100 lo, hi;
+    GlobalObject_00b3f100 m_cMin, m_cMax; // src: XBOX_RETAIL_PDB m_cMax +0x18 (old: hi); m_cMin +0x0 (old: lo)
     CRegion();
 // src: GUESS 0x00b3caa0 (confidence: low)
     inline CRegion ComputeValue_00b3caa0(const LocalVec3& p) const
     {
         CRegion result = *this;
-        if (p.x < result.lo.values[0])
-            result.lo.values[0] = p.x;
-        if (p.y < result.lo.values[1])
-            result.lo.values[1] = p.y;
-        if (p.z < result.lo.values[2])
-            result.lo.values[2] = p.z;
-        if (p.x > result.hi.values[0])
-            result.hi.values[0] = p.x;
-        if (p.y > result.hi.values[1])
-            result.hi.values[1] = p.y;
-        if (p.z > result.hi.values[2])
-            result.hi.values[2] = p.z;
+        if (p.x < result.m_cMin.values[0])
+            result.m_cMin.values[0] = p.x;
+        if (p.y < result.m_cMin.values[1])
+            result.m_cMin.values[1] = p.y;
+        if (p.z < result.m_cMin.values[2])
+            result.m_cMin.values[2] = p.z;
+        if (p.x > result.m_cMax.values[0])
+            result.m_cMax.values[0] = p.x;
+        if (p.y > result.m_cMax.values[1])
+            result.m_cMax.values[1] = p.y;
+        if (p.z > result.m_cMax.values[2])
+            result.m_cMax.values[2] = p.z;
         return result;
     }
 // src: GUESS 0x00b3c9a0 (confidence: low)
@@ -249,10 +250,10 @@ struct CRegion
         CRegion result = *this;
         for (int i = 0; i < 3; ++i)
         {
-            if (b.lo.values[i] < lo.values[i])
-                result.lo.values[i] = b.lo.values[i];
-            if (b.hi.values[i] > hi.values[i])
-                result.hi.values[i] = b.hi.values[i];
+            if (b.m_cMin.values[i] < m_cMin.values[i])
+                result.m_cMin.values[i] = b.m_cMin.values[i];
+            if (b.m_cMax.values[i] > m_cMax.values[i])
+                result.m_cMax.values[i] = b.m_cMax.values[i];
         }
         return result;
     }
@@ -398,11 +399,14 @@ struct LeafGeometry
     LocalVec3* origins;
     unsigned short lodCount, unk2a;
     LeafRecord* lods;
-    void CLeafGeometry_ComputeExtents(CRegion& output);
+    void CLeafGeometry_ComputeExtents(CRegion& cExtents);
 };
 // @fnv 0x00b27910
 // src: COMMUNITY 0x00b27910
-void LeafGeometry::CLeafGeometry_ComputeExtents(CRegion& output)
+// pdb: CLeafGeometry::ComputeExtents | LeafGeometry.obj | retail, upstream name already matches, high
+// pdb params: cExtents
+// pdb locals: vLongestDiagonal, i, fLongest, cScaledOrigin, nLod, pLod, j, pPos, fLongestSide, cLeafSwingExtents, cCenter
+void LeafGeometry::CLeafGeometry_ComputeExtents(CRegion& cExtents)
 {
     if (origins && sizes && lods)
     {
@@ -436,7 +440,7 @@ void LeafGeometry::CLeafGeometry_ComputeExtents(CRegion& output)
                 bounds = bounds.ComputeValue_00b3caa0(LocalVec3(position.x, position.y - radius, position.z));
                 bounds = bounds.ComputeValue_00b3caa0(LocalVec3(position.x, position.y, position.z + radius));
                 bounds = bounds.ComputeValue_00b3caa0(LocalVec3(position.x, position.y, position.z - radius));
-                output = output.ProcessEntries_00b3c9a0(bounds);
+                cExtents = cExtents.ProcessEntries_00b3c9a0(bounds);
             }
         }
     }
@@ -543,12 +547,15 @@ struct S00b28280_Leaf
     short unk2a;
     S00b28280_Lod* m_pLeafLod;
 
-    void ProcessEntries_00b28280(const Matrix4f& cTransform);
+    void CLeafGeometry_Transform(const Matrix4f& cTransform);
 };
 
 // @fnv 0x00b28280
-// src: GUESS 0x00b28280 (confidence: low)
-void S00b28280_Leaf::ProcessEntries_00b28280(const Matrix4f& cTransform)
+// src: XBOX_RETAIL_PDB 0x00b28280
+// pdb: CLeafGeometry::Transform | LeafGeometry.obj | retail, call graph, high
+// pdb params: cTransform
+// pdb locals: fScalar, nLod, pLod, i, cCoord, pCoord, cOrigCoord, pOrigCoord, j
+void S00b28280_Leaf::CLeafGeometry_Transform(const Matrix4f& cTransform)
 {
     if (m_pLeafLod && m_pRockingGroups)
     {
@@ -661,29 +668,32 @@ struct LeafGeometryB28480
     unsigned short unk1E;
     CVec3* m_pPositions;
     CVec3* m_pLeafVectors;
-    void CLeafGeometry_InitLods(unsigned short usLod, int nSeed);
-    void CLeafGeometry_Init(unsigned short usLod, int nSeed, const LeafSourceB28480* pSource);
+    void CLeafGeometry_InitLods(unsigned short usNumLeafLods, int pvLeafLods);
+    void CLeafGeometry_Init(unsigned short usNumLeafLods, int pvLeafLods, const LeafSourceB28480* sLeafInfo);
 };
 
 // @fnv 0x00b28480
 // src: COMMUNITY 0x00b28480
-void LeafGeometryB28480::CLeafGeometry_Init(unsigned short usLod, int nSeed, const LeafSourceB28480* pSource)
+// pdb: CLeafGeometry::Init | LeafGeometry.obj | retail, upstream name already matches, high
+// pdb params: usNumLeafLods, pvLeafLods, sLeafInfo
+// pdb locals: nSize, i
+void LeafGeometryB28480::CLeafGeometry_Init(unsigned short usNumLeafLods, int pvLeafLods, const LeafSourceB28480* sLeafInfo)
 {
-    m_usValueAt28 = pSource->m_usValueAt28;
-    m_nStyle = pSource->m_nStyle;
-    m_nTextureWidth = pSource->m_nTextureWidth;
-    m_nTextureHeight = pSource->m_nTextureHeight;
-    m_usNumLeaves = pSource->m_vLeaves.size();
+    m_usValueAt28 = sLeafInfo->m_usValueAt28;
+    m_nStyle = sLeafInfo->m_nStyle;
+    m_nTextureWidth = sLeafInfo->m_nTextureWidth;
+    m_nTextureHeight = sLeafInfo->m_nTextureHeight;
+    m_usNumLeaves = sLeafInfo->m_vLeaves.size();
     m_pPositions = new CVec3[m_usNumLeaves];
     m_pLeafVectors = new CVec3[m_usNumLeaves];
     for (int i = 0; i < m_usNumLeaves; ++i)
     {
-        m_pPositions[i] = pSource->m_vLeaves[i].m_kTranslation;
-        m_pLeafVectors[i] = pSource->m_vLeaves[i].m_kFirstVector;
+        m_pPositions[i] = sLeafInfo->m_vLeaves[i].m_kTranslation;
+        m_pLeafVectors[i] = sLeafInfo->m_vLeaves[i].m_kFirstVector;
     }
     int nNumTexCoords = m_usNumLeaves * m_usValueAt28 * 2 * 4 * 4;
     m_pfTexCoords = new float[nNumTexCoords];
-    CLeafGeometry_InitLods(usLod, nSeed);
+    CLeafGeometry_InitLods(usNumLeafLods, pvLeafLods);
 }
 
 namespace LeafMatrices {
@@ -749,12 +759,15 @@ struct LeafBuilder
     unsigned short usUnk2A;
     LeafEntry* pEntries;
 
-    void CLeafGeometry_ComputeWindEffect(unsigned short ausIndex);
+    void CLeafGeometry_ComputeWindEffect(unsigned short nLodLevel);
     void CLeafGeometry_Update_(LeafData* apOut, unsigned short ausIndex, int aiUnused1, int aiUnused2, float afScale);
 };
 
 // @fnv 0x00b288f0
 // src: COMMUNITY 0x00b288f0
+// pdb: CLeafGeometry::Update | LeafGeometry.obj | debug, object-file gap fill, medium
+// pdb params: sGeometry, usLodLevel, fAzimuth, fPitch, fSizeIncreaseFactor
+// pdb locals: pLod, fSizeMultiplier, acRawCorners, acBillboardedCorners, i, cOrigin, afP4, cSize, afP1, afP2, afP3, j, pBillboard
 void LeafBuilder::CLeafGeometry_Update_(LeafData* apOut, unsigned short ausIndex, int aiUnused1, int aiUnused2, float afScale)
 {
     if (pEntries && ausIndex < usEntryCount && ppMatrices && pPositions && pDirections && pSettings && pUnk0C)
@@ -893,16 +906,19 @@ class CLeafGeometryWind
     unsigned short unk2a;
     SLeafLod* m_pLeafLod;
 
-    void CLeafGeometry_ComputeWindEffect(unsigned short usLod);
+    void CLeafGeometry_ComputeWindEffect(unsigned short nLodLevel);
 };
 
 // @fnv 0x00b29190
 // src: COMMUNITY 0x00b29190
-void CLeafGeometryWind::CLeafGeometry_ComputeWindEffect(unsigned short usLod)
+// pdb: CLeafGeometry::ComputeWindEffect | LeafGeometry.obj | retail, upstream name already matches, high
+// pdb params: nLodLevel
+// pdb locals: pLod, cInterpWindEffect, cFullWindEffect, i, fWeight, ucWindGroup, pOrigCoord
+void CLeafGeometryWind::CLeafGeometry_ComputeWindEffect(unsigned short nLodLevel)
 {
     SLeafLod* pLod;
 
-    if (m_pLeafTreeRuntime && usLod < m_usValueAt28 && m_bWindEnabled && m_pLeafLod && (pLod = m_pLeafLod + usLod) &&
+    if (m_pLeafTreeRuntime && nLodLevel < m_usValueAt28 && m_bWindEnabled && m_pLeafLod && (pLod = m_pLeafLod + nLodLevel) &&
         pLod->m_pOrigCoordCenterCoords && pLod->m_pFloatArrayAt18)
     {
         CVec3 cPos;

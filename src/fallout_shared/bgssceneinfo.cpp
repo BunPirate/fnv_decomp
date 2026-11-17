@@ -80,12 +80,14 @@ struct Flt
 
 struct FUN_004a8070_shell
 {
-    int GetScriptText();
+    int NiGeometry_GetTextures();
 };
 
 // Calls GetText on the Script pointer stored at offset 0xb8 of this object and returns the result.
 // @fnv 0x004a8070
-int FUN_004a8070_shell::GetScriptText()
+// src: XBOX_DEBUG_PDB 0x004a8070
+// pdb: NiGeometry::GetTextures | BGSSceneInfo.obj | debug, call graph, high
+int FUN_004a8070_shell::NiGeometry_GetTextures()
 {
     return (int)((Script*)((unsigned int)(*(Flt*)((char*)this + 0xb8))))->GetText();
 }
@@ -101,6 +103,8 @@ unsigned char __cdecl BGSSceneInfo_GetAggregateInstances()
 
 // Returns the smaller of the two integer arguments.
 // @fnv 0x004a8f20
+// pdb: TESObjectWEAP::GetFormWeight | InventoryChanges.obj | debug, call graph, medium
+// pdb params: bModValue
 int __cdecl MinInt(int iA, int iB)
 {
     int result;
@@ -119,6 +123,7 @@ struct FUN_004a8f50_shell
 
 // @fnv 0x004a8f50
 // src: XBOX_PDB 0x004a8f50
+// pdb: BGSTextureUseMap::BGSTextureUseMap | BGSSceneInfo.obj | retail, upstream name already matches, high
 void* __thiscall FUN_004a8f50_shell::BGSTextureUseMap_BGSTextureUseMap()
 {
     ((FUN_004a8f50_shell*)((char*)this + 4))->NiTMap_NiTexture_TEX_USER_DATA_NiTMap(0x25);
@@ -139,6 +144,7 @@ GlobalObject2_0045cfe0 g_011c59e0;
 
 // @fnv 0x004a9100
 // src: XBOX_PDB 0x004a9100
+// pdb: BGSSceneInfo::GetActorMemoryBudgetCap | BGSSceneInfo.obj | debug, upstream name already matches, high
 int BGSSceneInfo_GetActorMemoryBudgetCap()
 {
     return *g_011c59e0.Int();
@@ -164,6 +170,7 @@ struct FUN_004a9850_shell
 void __cdecl _Deallocate(void* p);
 
 // @fnv 0x004a9630
+// pdb: NiTMap<NiTexture *,TEX_USER_DATA *>::`scalar deleting destructor' | BGSSceneInfo.obj | retail, vtable slot, high
 void* FUN_004a9630_shell::FUN_004a9630(unsigned int flags)
 {
     ((FUN_004a9850_shell*)this)->FUN_004a9850();
@@ -213,6 +220,7 @@ struct BGSSceneInfo_shell
 };
 // Calls FUN_004a7cd0, then deallocates this when flags has bit 0 set, and returns this.
 // @fnv 0x004a7ca0
+// pdb: BGSSceneInfo::`scalar deleting destructor' | BGSSceneInfo.obj | retail, vtable slot, high
 void* BGSSceneInfo_shell::Destroy(unsigned int flags)
 {
     SetField0000();
@@ -243,6 +251,7 @@ struct FUN_004a8030_shell
 // Returns the thread ID of the BSThread stored at offset 0xb8 of this object.
 // @fnv 0x004a8030
 // src: XBOX_PDB 0x004a8030
+// pdb: NiGeometry::GetNormals | BGSSceneInfo.obj | debug, upstream name already matches, high
 unsigned int FUN_004a8030_shell::NiGeometry_GetNormals()
 {
     return ((BSThread*)((Flt*)((char*)this + 0xb8))->operator unsigned int())->GetThreadID();
@@ -258,6 +267,7 @@ struct This_004a8050
 };
 // Returns the result of GetNext() on the Proc_S pointer stored at offset 0xB8 of this object.
 // @fnv 0x004a8050
+// pdb: NiGeometry::GetColors | BGSSceneInfo.obj | debug, call graph, high
 void* This_004a8050::GetNextProc()
 {
     return ((Proc_S*)(unsigned int)*(Flt*)((char*)this + 0xB8))->GetNext();
@@ -307,6 +317,7 @@ struct FUN_004a9970_shell
 
 // Calls FUN_004a9970, then deallocates this when flags has bit 1 set, and returns this.
 // @fnv 0x004a9660
+// pdb: NiTMap<TESObjectCELL *,bool>::`scalar deleting destructor' | BGSSceneInfo.obj | retail, vtable slot, high
 void* FUN_004a9970_shell::FUN_004a9660(unsigned int flags)
 {
     FUN_004a9970();
@@ -362,6 +373,7 @@ struct FUN_004a8090_shell
     int CallTargetV36();
 };
 // @fnv 0x004a8090
+// pdb: NiGeometry::GetActiveVertexCount | BGSSceneInfo.obj | debug, call graph, high
 int FUN_004a8090_shell::CallTargetV36()
 {
     return ((Target*)(unsigned int)m_kHandle)->v36();
@@ -371,6 +383,8 @@ int FUN_004a8090_shell::CallTargetV36()
 
 // @fnv 0x004a8fe0
 // src: COMMUNITY 0x004a8fe0
+// pdb: BGSSceneInfo::ReloadBudgetCaps | BGSSceneInfo.obj | retail, upstream name already matches, high
+// pdb locals: i
 void __cdecl BGSSceneInfo_ReloadBudgetCaps()
 {
     int i;
@@ -395,6 +409,8 @@ extern GlobalObject2_0045cfe0 g_011c5c04;
 extern int g_TES;
 // @fnv 0x004a9050
 // src: XBOX_PDB 0x004a9050
+// pdb: BGSSceneInfo::GetLoadedAreaNonActorMemoryBudgetCap | BGSSceneInfo.obj | retail, upstream name already matches, high
+// pdb locals: ival, pLODworld, pworld, iadjust
 int BGSSceneInfo_GetLoadedAreaNonActorMemoryBudgetCap()
 {
     int iValue = *g_011c5b20.Int();
@@ -444,22 +460,25 @@ extern unsigned char DAT_0118868d;
 struct FUN_004a8230_shell
 {
     void LoadSceneModels();
-    void AccumulateSceneStatistics(NiNode* node, void* data, bool trackActors, bool extra);
-    void ResetAndProcessNode(NiNode* node, bool includeAddonNodes, bool trackActors);
+    void BGSSceneInfo_CollectSceneDataRecursive(NiNode* ap3D, void* pStructToFill, bool abTrackActors, bool apParent);
+    void BGSSceneInfo_CollectSceneDataFromNode(NiNode* apNode, bool abIncludeAddonNodes, bool abTrackActors);
 };
 
 // @fnv 0x004a8230
-void FUN_004a8230_shell::ResetAndProcessNode(NiNode* node, bool includeAddonNodes, bool trackActors)
+// src: XBOX_DEBUG_PDB 0x004a8230
+// pdb: BGSSceneInfo::CollectSceneDataFromNode | BGSSceneInfo.obj | debug, call graph, high
+// pdb params: apNode, abIncludeAddonNodes, abTrackActors
+void FUN_004a8230_shell::BGSSceneInfo_CollectSceneDataFromNode(NiNode* apNode, bool abIncludeAddonNodes, bool abTrackActors)
 {
     g_011c5be8.RemoveAll();
     g_011c5ad0.RemoveAll();
 
-    if (includeAddonNodes && DAT_0118868d && DAT_011c5ab4.GetSize() == 0)
+    if (abIncludeAddonNodes && DAT_0118868d && DAT_011c5ab4.GetSize() == 0)
         this->LoadSceneModels();
 
     memset((char*)this + 4, 0, 0x40);
 
-    this->AccumulateSceneStatistics(node, (char*)this + 4, trackActors, 0);
+    this->BGSSceneInfo_CollectSceneDataRecursive(apNode, (char*)this + 4, abTrackActors, 0);
 
     if (BGSSceneInfo_GetAggregateInstances())
         g_011c5c40.RemoveAll();
@@ -511,11 +530,13 @@ void* __cdecl NiObject_DynamicCast(const void*, void*);
 bool __cdecl BSParticleSystemManager_IsValidMasterParticleSystem(void*);
 struct LoadScenes
 {
-    void AccumulateSceneStatistics(void*, void*, int, int);
+    void BGSSceneInfo_CollectSceneDataRecursive(void*, void*, int, int);
     void LoadSceneModels();
 };
 // Iterates all scenes, fills a SceneInfo per index, builds a model path from the scene description name, loads it, and registers it unless already loaded.
 // @fnv 0x004a80c0
+// pdb: BGSSceneInfo::CollectSceneDataFromAddonNodes | BGSSceneInfo.obj | debug, object-file run extension, low
+// pdb locals: iaddonNodeCount, i, paddonNode, sdis, bmaster, pav, ptemp
 void LoadScenes::LoadSceneModels()
 {
     unsigned int count = DAT_011c3f2c->FUN_0045a120();
@@ -537,7 +558,7 @@ void LoadScenes::LoadSceneModels()
                 if (model)
                 {
                     if (!BSParticleSystemManager_IsValidMasterParticleSystem(model))
-                        AccumulateSceneStatistics(NiObject_DynamicCast(&DAT_011f4428, model),
+                        BGSSceneInfo_CollectSceneDataRecursive(NiObject_DynamicCast(&DAT_011f4428, model),
                                                   &DAT_011c5ab4.GetAt(uiSceneIndex), 0, 0);
                     DAT_011c3b3c->ModelLoader_ReleaseFile(cPath);
                 }
@@ -554,6 +575,9 @@ unsigned int __fastcall GetSceneArrayGrowth(BSSimpleArray<SceneInfo, 1024>* arra
 void __fastcall FreeSceneArrayStorage(BSSimpleArray<SceneInfo, 1024>* array);
 
 // @fnv 0x004a9690
+// pdb: NiTMapBase<DFALL<NiTMapItem<ShadowSceneLight *,int> >,ShadowSceneLight *,int>::GetAt | BGSSceneInfo.obj | debug, object-file run extension, low
+// pdb params: key, val
+// pdb locals: pkItem, uiIndex
 template <>
 void BSSimpleArray<SceneInfo, 1024>::Insert(unsigned int index, SceneInfo& value)
 {
@@ -637,7 +661,7 @@ struct ScriptProgram
     int FUN_0049ec60();
     int GetNextProc();
     int NiGeometry_GetNormals();
-    int GetScriptText();
+    int NiGeometry_GetTextures();
 };
 struct MeshPart
 {
@@ -794,11 +818,15 @@ struct SceneCounter
     int count;
     int unk28, unk2c;
     int bytes;
-    void AccumulateSceneStats(SceneOwner* owner);
+    void BGSSceneInfo_CollectWaterSceneDataFromCell(SceneOwner* apCell);
 };
 // Walks the scene's outer and item lists counting items owned by owner, then walks the owner's mesh nodes summing per-part byte sizes into bytes.
 // @fnv 0x004a7d20
-void SceneCounter::AccumulateSceneStats(SceneOwner* owner)
+// src: XBOX_DEBUG_PDB 0x004a7d20
+// pdb: BGSSceneInfo::CollectWaterSceneDataFromCell | BGSSceneInfo.obj | debug, call graph, high
+// pdb params: apCell
+// pdb locals: plist, CellMap, preflist, next, RefMap, iter, pgroup, wnext, icellcount, bunused, witer, pref, ulmem, apRef, p3d, ptrigeom, pgeom, ivertcount, itotalsize
+void SceneCounter::BGSSceneInfo_CollectWaterSceneDataFromCell(SceneOwner* apCell)
 {
     OuterList* j = DAT_011dea10->DetailedActorPathHandler_GetCurrentNodeIndex()->ComputeValue_005a8080();
     FUN_004a9600 e(0x25);
@@ -823,7 +851,7 @@ void SceneCounter::AccumulateSceneStats(SceneOwner* owner)
                     SceneItem* i = *q->items.AddEight(s);
                     if (!e.NiTMapBase_NiTPointerAllocator_unsigned_int_TESObjectREFR_bool_GetAt(i->FUN_008d6f30(), &f))
                         ++eb;
-                    if (!k.NiTMapBase_NiTPointerAllocator_unsigned_int_TESObjectREFR_bool_GetAt(i, &f) && i->FUN_008d6f30() == owner)
+                    if (!k.NiTMapBase_NiTPointerAllocator_unsigned_int_TESObjectREFR_bool_GetAt(i, &f) && i->FUN_008d6f30() == apCell)
                     {
                         ++this->count;
                         k.NiTMapBase_NiTPointerAllocator_unsigned_int_TESObjectREFR_bool_SetAt(i, 1);
@@ -831,7 +859,7 @@ void SceneCounter::AccumulateSceneStats(SceneOwner* owner)
                     e.NiTMapBase_NiTPointerAllocator_unsigned_int_TESObjectREFR_bool_SetAt(i->FUN_008d6f30(), 1);
                     s = cf;
                 }
-                if (e.NiTMapBase_NiTPointerAllocator_unsigned_int_TESObjectREFR_bool_GetAt(owner, &f))
+                if (e.NiTMapBase_NiTPointerAllocator_unsigned_int_TESObjectREFR_bool_GetAt(apCell, &f))
                 {
                     int a = 0;
                 }
@@ -840,7 +868,7 @@ void SceneCounter::AccumulateSceneStats(SceneOwner* owner)
         e.FUN_00438af0();
         ba = l;
     }
-    MeshNode* c = owner->TESObjectCELL_GetPlaceableWatersList();
+    MeshNode* c = apCell->TESObjectCELL_GetPlaceableWatersList();
     while (c && *c->FUN_006815c0())
     {
         MeshObject* h = *c->FUN_006815c0();
@@ -859,7 +887,7 @@ void SceneCounter::AccumulateSceneStats(SceneOwner* owner)
                     e2 += j2 * 16;
                 if (b->NiGeometry_GetNormals())
                     e2 += j2 * 12;
-                if (b->GetScriptText())
+                if (b->NiGeometry_GetTextures())
                     e2 += j2 * 8;
                 this->bytes += e2;
             }
@@ -939,7 +967,7 @@ struct ScriptExecutionContext
     void* FUN_0049ec60();
     void* GetNextProc();
     void* NiGeometry_GetNormals();
-    void* GetScriptText();
+    void* NiGeometry_GetTextures();
 };
 struct StatBlocks
 {
@@ -1014,7 +1042,7 @@ struct StatObject
 };
 struct StatDetector
 {
-    void ClearQueuedFile();
+    void TES_UnloadAddonNodes();
 };
 extern StatDetector* DAT_011dea10;
 
@@ -1034,22 +1062,26 @@ struct SceneStatistics
 {
     int unk00;
     int counters[16];
-    void AccumulateSceneStatistics(StatObject* object, int* output, bool trackActors, StatObject* parent);
+    void BGSSceneInfo_CollectSceneDataRecursive(StatObject* ap3D, int* pStructToFill, bool abTrackActors, StatObject* apParent);
 };
 // Walks the scene object tree and accumulates per-category counts into output or counters, then calls DAT_011dea10->ClearQueuedFile().
 // @fnv 0x004a82d0
-void SceneStatistics::AccumulateSceneStatistics(StatObject* object, int* output, bool trackActors, StatObject* parent)
+// src: XBOX_RETAIL_PDB 0x004a82d0
+// pdb: BGSSceneInfo::CollectSceneDataRecursive | BGSSceneInfo.obj | retail, string-set bridge, high
+// pdb params: ap3D, pStructToFill, abTrackActors, apParent
+// pdb locals: psceneDataToFill, bfound, pnode, bignore, pfadenode, bisactor, pref, ival, pvalueNode, i, plist, pcol, pcoll, pwo, pshape, icount, pchild, pniParticleSystem, pgeom, ppplprop, ptrigeom, pbssprop, pprop, kparam ...
+void SceneStatistics::BGSSceneInfo_CollectSceneDataRecursive(StatObject* ap3D, int* pStructToFill, bool abTrackActors, StatObject* apParent)
 {
     int* counts;
-    if (output)
-        counts = output;
+    if (pStructToFill)
+        counts = pStructToFill;
     else
         counts = counters;
-    if (object)
+    if (ap3D)
     {
         bool addon = false;
         bool actorNode = false;
-        StatObject* node3 = object->AsNode();
+        StatObject* node3 = ap3D->AsNode();
         if (node3)
         {
             if (node3->FUN_00413f40()->FUN_0043b1b0() &&
@@ -1086,7 +1118,7 @@ void SceneStatistics::AccumulateSceneStatistics(StatObject* object, int* output,
             if (fade && (reference = fade->QUserData()) && !reference->TESObjectREFR_IsMarker() && (!actorNode || !addon))
             {
                 counts[0]++;
-                if (TESObjectREFR_HasTimeControllers(object))
+                if (TESObjectREFR_HasTimeControllers(ap3D))
                 {
                     counts[2]++;
                     if (!DAT_011c5b30.BSSimpleList_TESLevSpell_IsInList(reference->BGSSaveFormBuffer_GetForm()->GetHavokWorldObjectCountInSceneGraph_0084e3a0()))
@@ -1111,7 +1143,7 @@ void SceneStatistics::AccumulateSceneStatistics(StatObject* object, int* output,
                     isActor2 = true;
                     break;
                 }
-                StatActor* actor = bhkNiCollisionObject_GetbhkNiCollisionObject(object);
+                StatActor* actor = bhkNiCollisionObject_GetbhkNiCollisionObject(ap3D);
                 if (actor)
                 {
                     StatKeyHolder* holder = actor->bhkNiCollisionObject_GetWorldObject();
@@ -1121,7 +1153,7 @@ void SceneStatistics::AccumulateSceneStatistics(StatObject* object, int* output,
                         counts[15] += BGSSceneInfo_GetHavokFaceCount(form1);
                 }
             }
-            if (isActor2 && !trackActors)
+            if (isActor2 && !abTrackActors)
                 return;
             if (!actorNode || !addon)
             {
@@ -1129,13 +1161,13 @@ void SceneStatistics::AccumulateSceneStatistics(StatObject* object, int* output,
                 for (unsigned int child = 0; child < childCount; child++)
                 {
                     StatObject* next = node3->FUN_0043b4a0(child);
-                    AccumulateSceneStatistics(next, output, false, node3);
+                    BGSSceneInfo_CollectSceneDataRecursive(next, pStructToFill, false, node3);
                 }
             }
         }
         else
         {
-            StatObject* geometry = object->AsGeometry();
+            StatObject* geometry = ap3D->AsGeometry();
             if (geometry)
             {
                 bool addonGeometry = false;
@@ -1149,7 +1181,7 @@ void SceneStatistics::AccumulateSceneStatistics(StatObject* object, int* output,
                     {
                         int* textureCount = &counts[10];
                         textureProperty1->Visit(AddToRefCountIfNotFlagged, &textureCount);
-                        if ((parent && NiObject_IsKindOf(&DAT_011c7d34, parent)) || textureProperty1->FUN_004a2020(26) ||
+                        if ((apParent && NiObject_IsKindOf(&DAT_011c7d34, apParent)) || textureProperty1->FUN_004a2020(26) ||
                             textureProperty1->FUN_004a2020(27))
                             counts[14]++;
                     }
@@ -1187,7 +1219,7 @@ void SceneStatistics::AccumulateSceneStatistics(StatObject* object, int* output,
                             bytes += vertices * 16;
                         if (data->NiGeometry_GetNormals())
                             bytes += vertices * 12;
-                        if (data->GetScriptText())
+                        if (data->NiGeometry_GetTextures())
                             bytes += vertices * 8;
                         counts[9] += bytes;
                     }
@@ -1205,7 +1237,7 @@ void SceneStatistics::AccumulateSceneStatistics(StatObject* object, int* output,
             }
             else
             {
-                StatObject* particle = (StatObject*)NiObject_DynamicCast(&DAT_011f4a28, object);
+                StatObject* particle = (StatObject*)NiObject_DynamicCast(&DAT_011f4a28, ap3D);
                 if (particle)
                 {
                     StatObject* manager = FUN_00450b80(0);
@@ -1213,7 +1245,7 @@ void SceneStatistics::AccumulateSceneStatistics(StatObject* object, int* output,
                         counts[12]++;
                 }
             }
-            StatObject* lines1 = (StatObject*)NiObject_DynamicCast(&DAT_012024e0, object);
+            StatObject* lines1 = (StatObject*)NiObject_DynamicCast(&DAT_012024e0, ap3D);
             if (lines1)
             {
                 counts[5]++;
@@ -1221,7 +1253,7 @@ void SceneStatistics::AccumulateSceneStatistics(StatObject* object, int* output,
             }
         }
     }
-    DAT_011dea10->ClearQueuedFile();
+    DAT_011dea10->TES_UnloadAddonNodes();
 }
 }  // namespace fnv_004a82d0
 
@@ -1237,8 +1269,8 @@ struct FUN_004a7c40
         unk44;
     FUN_004a7c40();
     void SetDifficultyLevel(Cell245*);
-    void ResetAndProcessNode(NiNode*, bool, bool);
-    void AccumulateSceneStats(Cell245*);
+    void BGSSceneInfo_CollectSceneDataFromNode(NiNode*, bool, bool);
+    void BGSSceneInfo_CollectWaterSceneDataFromCell(Cell245*);
     unsigned int GetValueAt(int);
     float GetScaledSlotValue(int);
 };
@@ -1247,7 +1279,7 @@ struct FUN_004aa340
     int unk00, unk04, unk08, unk0c, unk10;
     FUN_004aa340();
     ~FUN_004aa340();
-    void SetValueAndCall(NiNode*, Cell245*, int);
+    void CollectTexUseData(NiNode*, Cell245*, int);
     unsigned int BGSTextureUseMap_GetTotalTextureSize();
 };
 struct GlobalObject2_0096a2d0
@@ -1283,6 +1315,9 @@ void* __cdecl operator new(unsigned int);
 // Accumulates cost and count over the interior cell or nearby exterior cells, adding the list total when include is set, then calls FUN_00438af0.
 // @fnv 0x004a8bb0
 // src: XBOX_PDB 0x004a8bb0
+// pdb: BGSSceneInfo::CollectSceneDataForLoadedArea | BGSSceneInfo.obj | retail, upstream name already matches, high
+// pdb params: afOutTNumber, afOutMNumber, abCollectTextures, abIncludeAddonNodes
+// pdb locals: ulwatermem, tempAutoEvent, cellinfolist, textureusemap, pcell, pinfo, icenter, imin, imax, ix, iy, pgridcell, i
 void __cdecl BGSSceneInfo_CollectSceneDataForLoadedArea(float* cost, float* count, bool include, bool addons)
 {
     *cost = 0.0f;
@@ -1295,9 +1330,9 @@ void __cdecl BGSSceneInfo_CollectSceneDataForLoadedArea(float* cost, float* coun
         Cell245* cell = DAT_011dea10->GetInteriorCell();
         FUN_004a7c40* scene = new FUN_004a7c40;
         scene->SetDifficultyLevel(cell);
-        scene->ResetAndProcessNode(cell->Get3D_00545cb0(), addons, false);
-        scene->AccumulateSceneStats(cell);
-        list.SetValueAndCall(cell->Get3D_00545cb0(), cell, 0);
+        scene->BGSSceneInfo_CollectSceneDataFromNode(cell->Get3D_00545cb0(), addons, false);
+        scene->BGSSceneInfo_CollectWaterSceneDataFromCell(cell);
+        list.CollectTexUseData(cell->Get3D_00545cb0(), cell, 0);
         map.FUN_005ae3d0(scene);
     }
     else
@@ -1315,9 +1350,9 @@ void __cdecl BGSSceneInfo_CollectSceneDataForLoadedArea(float* cost, float* coun
                     Cell245* scene2 = *entry;
                     FUN_004a7c40* cell2 = new FUN_004a7c40;
                     cell2->SetDifficultyLevel(scene2);
-                    cell2->ResetAndProcessNode(scene2->Get3D_00545cb0(), addons, false);
-                    list.SetValueAndCall(scene2->Get3D_00545cb0(), scene2, 0);
-                    cell2->AccumulateSceneStats(scene2);
+                    cell2->BGSSceneInfo_CollectSceneDataFromNode(scene2->Get3D_00545cb0(), addons, false);
+                    list.CollectTexUseData(scene2->Get3D_00545cb0(), scene2, 0);
+                    cell2->BGSSceneInfo_CollectWaterSceneDataFromCell(scene2);
                     map.FUN_005ae3d0(cell2);
                 }
             }
@@ -1369,6 +1404,9 @@ class A8F70Owner
 
 // Returns the slot value multiplied by the slot's multiplier float, or 0.0f if the slot index is out of range or has no multiplier.
 // @fnv 0x004a8f70
+// pdb: BGSSceneInfo::CollectSceneDataFromNode | BGSSceneInfo.obj | retail, object-file run extension, low
+// pdb note: debug build links it to BGSSceneInfo::GetBudgetCap
+// pdb params: apNode, abIncludeAddonNodes, abTrackActors
 float A8F70Owner::GetScaledSlotValue(int iSlot)
 {
     if (iSlot >= 0 && iSlot < 16 && g_akA8F70Slots[iSlot].m_pkMultiplier)
@@ -1382,29 +1420,33 @@ int __cdecl FormatString(char* buffer, const char* format, ...);
 
 // @fnv 0x004a9120
 // src: XBOX_PDB 0x004a9120
-void __cdecl BGSSceneInfo_BuildMNumberString(float fUsed, char* buffer, bool abUseFirstTotal)
+// pdb: BGSSceneInfo::BuildMNumberString | BGSSceneInfo.obj | retail, string-set bridge, high
+// pdb params: afMnumber, aOutText, abForActor
+// pdb locals: fmax, fpercent
+void __cdecl BGSSceneInfo_BuildMNumberString(float afMnumber, char* aOutText, bool abForActor)
 {
-    float fTotal = abUseFirstTotal ? (float)(unsigned int)BGSSceneInfo_GetActorMemoryBudgetCap() : (float)(unsigned int)BGSSceneInfo_GetLoadedAreaNonActorMemoryBudgetCap();
-    float fPercent2 = fUsed * 100.0 / fTotal;
+    float fTotal = abForActor ? (float)(unsigned int)BGSSceneInfo_GetActorMemoryBudgetCap() : (float)(unsigned int)BGSSceneInfo_GetLoadedAreaNonActorMemoryBudgetCap();
+    float fPercent2 = afMnumber * 100.0 / fTotal;
     fTotal = fTotal / 1048576.0;
-    if (fUsed > 1048576.0)
+    if (afMnumber > 1048576.0)
     {
-        fUsed = fUsed / 1048576.0;
-        FormatString(buffer, "%.2f%% (%.2f MB / %.2f MB)", fPercent2, fUsed, fTotal);
+        afMnumber = afMnumber / 1048576.0;
+        FormatString(aOutText, "%.2f%% (%.2f MB / %.2f MB)", fPercent2, afMnumber, fTotal);
     }
-    else if (fUsed > 1024.0)
+    else if (afMnumber > 1024.0)
     {
-        fUsed = fUsed / 1024.0;
-        FormatString(buffer, "%.2f%% (%.2f KB / %.2f MB)", fPercent2, fUsed, fTotal);
+        afMnumber = afMnumber / 1024.0;
+        FormatString(aOutText, "%.2f%% (%.2f KB / %.2f MB)", fPercent2, afMnumber, fTotal);
     }
     else
     {
-        FormatString(buffer, "%.2f%% (%.0f bytes / %.2f MB)", fPercent2, fUsed, fTotal);
+        FormatString(aOutText, "%.2f%% (%.0f bytes / %.2f MB)", fPercent2, afMnumber, fTotal);
     }
 }
 
 // RTTI at vftable 0x0101ed0c identifies NiTMap<TESObjectCELL*, bool>.
 // @fnv 0x004a9970
+// pdb: NiTMap<TESObjectCELL *,bool>::~NiTMap<TESObjectCELL *,bool> | BGSSceneInfo.obj | debug, call graph, high
 template <>
 NiTMap<TESObjectCELL*, bool>::~NiTMap()
 {

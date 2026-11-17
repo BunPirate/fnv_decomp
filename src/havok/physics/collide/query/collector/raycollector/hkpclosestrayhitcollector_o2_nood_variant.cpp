@@ -6,7 +6,7 @@
 // src/havok/physics/collide/query/collector/raycollector/hkpclosestrayhitcollector.cpp - unit created 2026-10-16 from the whole-binary attribution (360 source path: d:/projects/fallout/code/havok/source/physics/collide/query/collector/raycollector/hkpclosestrayhitcollector.cpp).
 // Functions are listed by their @fnv annotations; compile flags inferred from the PC code.
 extern void __cdecl operator delete(void*);
-void __fastcall Object_UpdateFields_0059cf00(void*);
+void __fastcall hkpClosestRayHitCollector_dtor(void*);
 struct HKPCloseStrayHitCollector
 {
     void* __thiscall Destroy(unsigned int flags);
@@ -55,25 +55,27 @@ struct FUN_00ca9440_cls
     unsigned int m_5c;
     HKPCloseNode* m_60;
 
-    void hkpClosestRayHitCollector_addRayHit(HKPCloseNode* node, FUN_00ca9440_src* src);
+    void hkpClosestRayHitCollector_addRayHit(HKPCloseNode* cdBody, FUN_00ca9440_src* hitInfo);
 };
 
 // @fnv 0x00ca9440
 // src: XBOX_PDB 0x00ca9440
-void FUN_00ca9440_cls::hkpClosestRayHitCollector_addRayHit(HKPCloseNode* node, FUN_00ca9440_src* src)
+// pdb: hkpClosestRayHitCollector::addRayHit | hkpClosestRayHitCollector.obj | retail, upstream name already matches, high
+// pdb params: cdBody, hitInfo
+void FUN_00ca9440_cls::hkpClosestRayHitCollector_addRayHit(HKPCloseNode* cdBody, FUN_00ca9440_src* hitInfo)
 {
-    if (src->m_10 < m_20)
+    if (hitInfo->m_10 < m_20)
     {
-        m_10 = src->m_00;
-        m_20 = src->m_10;
-        m_24 = src->m_14;
-        m_28 = src->m_18;
-        m_2c = src->m_1c;
-        CollectValuesReversed(&m_30, 8, node);
-        HKPCloseNode* last = node;
+        m_10 = hitInfo->m_00;
+        m_20 = hitInfo->m_10;
+        m_24 = hitInfo->m_14;
+        m_28 = hitInfo->m_18;
+        m_2c = hitInfo->m_1c;
+        CollectValuesReversed(&m_30, 8, cdBody);
+        HKPCloseNode* last = cdBody;
         while (last->m_0c)
             last = last->m_0c;
         m_60 = last;
-        m_04 = src->m_10;
+        m_04 = hitInfo->m_10;
     }
 }

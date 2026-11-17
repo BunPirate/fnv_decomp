@@ -40,6 +40,7 @@ struct FUN_00508920_obj
 
 // @fnv 0x00508920
 // src: XBOX_PDB 0x00508920
+// pdb: TESFlora::Save | TESFlora.obj | retail, upstream name already matches, high
 void FUN_00508920_obj::TESFlora_Save()
 {
     reinterpret_cast<FUN_004855a0*>(this)->M();
@@ -59,6 +60,9 @@ struct FloraFormCopy
 };
 // @fnv 0x00508990
 // src: XBOX_PDB 0x00508990
+// pdb: TESFlora::Copy | TESFlora.obj | retail, vtable slot, high
+// pdb params: apCopy
+// pdb locals: pcopy
 void TESFlora::Copy_00508990(TESForm* apCopy)
 {
     TESFlora* pcopy = dynamic_cast<TESFlora*>(apCopy);
@@ -92,7 +96,7 @@ struct S_005085b0_Prim
     virtual void vf00();
     int unk04;
     int unk08;
-    void ResolveIngredient(S_005085b0_Sec* s);
+    void InitItem(S_005085b0_Sec* apOwner);
 };
 struct S_005085b0_Sec
 {
@@ -108,6 +112,7 @@ struct S_005085b0_D : S_005085b0_Prim, S_005085b0_Sec
 // If FUN_004013e0 returns 0, calls FUN_00510770, invokes ResolveIngredient on the containing object, then FUN_00484ab0(1).
 // @fnv 0x005085b0
 // src: XBOX_PDB 0x005085b0
+// pdb: TESFlora::InitItem | TESFlora.obj | retail, upstream name already matches, high
 void S_005085b0_Sec::TESFlora_InitItem()
 {
     if (FUN_004013e0() != 0)
@@ -115,7 +120,7 @@ void S_005085b0_Sec::TESFlora_InitItem()
         return;
     }
     TESObjectACTI_InitItem();
-    ((S_005085b0_D*)((char*)this - 0xc))->ResolveIngredient((S_005085b0_D*)((char*)this - 0xc));
+    ((S_005085b0_D*)((char*)this - 0xc))->InitItem((S_005085b0_D*)((char*)this - 0xc));
     FUN_00484ab0(1);
 }
 
@@ -126,7 +131,7 @@ struct FloraFile
     unsigned int GetField25C();
     int TESFile_GetTESChunk();
     bool FUN_004726f0();
-    void FUN_00472890(void* pvBuffer, unsigned int uiSize);
+    void FUN_00472890(void* pdata, unsigned int maxSize);
     void ReadChunkInt(unsigned int* puiFormID);
     unsigned short FUN_00403570();
 };
@@ -136,7 +141,7 @@ struct FloraProduce
     virtual void p00();
     int unk04, unk08;
     void FUN_006ecd40(unsigned int auiFormId);
-    void CopyFromSource(void* pvData);
+    void SetAllProductionChances(void* apiChances);
 };
 
 struct FloraFormBase;
@@ -147,13 +152,13 @@ struct FloraFullName
 struct FloraModel
 {
     int unk00[8];
-    void LoadTextureSwapList(char* pcData, unsigned int uiSize, unsigned short usVersion);
+    void UnpackTextureSwapChunkData(char* pcData, unsigned int uiSize, unsigned short usVersion);
 };
 struct FloraScript
 {
     int unk00, unk04, unk08;
     void FUN_006ecd40(unsigned int auiFormId);
-    void FUN_0048cd90(FloraFormBase* pkOwner);
+    void FUN_0048cd90(FloraFormBase* apOwner);
 };
 struct FloraDestructible
 {
@@ -162,7 +167,7 @@ struct FloraDestructible
 
 void __cdecl ReadFullName(FloraFullName* pkFullName, FloraFile* pkFile);
 void __cdecl FUN_004892d0(FloraModel* pkModel, FloraFile* pkFile);
-void __cdecl BGSDestructibleObjectForm_LoadChunk(FloraDestructible* pkDestructible, FloraFile* pkFile);
+void __cdecl BGSDestructibleObjectForm_LoadChunk(FloraDestructible* apDestruct, FloraFile* apFile);
 
 struct FloraFormBase
 {
@@ -247,78 +252,81 @@ struct FloraFormBase
     virtual void SetEditorID(const char* pcEditorID);
     int unk04[0x2c / 4];
 
-    void CallWithThis(FloraFile* pkFile);
+    void CallWithThis(FloraFile* apFile);
     void FUN_00484ab0(int i);
     virtual bool TESFlora_Load(FloraFile* pkFile) = 0;
 };
 
 struct FloraFull : FloraProduce, FloraFormBase, FloraFullName, FloraModel, FloraScript, FloraDestructible
 {
-    virtual bool TESFlora_Load(FloraFile* pkFile);
+    virtual bool TESFlora_Load(FloraFile* apFile);
 };
 
 // Reads chunk records from pkFile, dispatching each chunk tag to the matching loader and returning true.
 // @fnv 0x00508610
 // src: XBOX_PDB 0x00508610
-bool FloraFull::TESFlora_Load(FloraFile* pkFile)
+// pdb: TESFlora::Load | TESFlora.obj | retail, upstream name already matches, high
+// pdb params: apFile
+// pdb locals: chunkid, pMessage, isize, pdata, tempint, tempChances
+bool FloraFull::TESFlora_Load(FloraFile* apFile)
 {
-    FloraFormBase::CallWithThis(pkFile);
+    FloraFormBase::CallWithThis(apFile);
     FloraFormBase::FUN_00484ab0(0);
     int iChunk;
-    while ((iChunk = pkFile->TESFile_GetTESChunk()) != 0)
+    while ((iChunk = apFile->TESFile_GetTESChunk()) != 0)
     {
         switch (iChunk)
         {
         case 0x44494445: {
-            char* pcEditorID = (char*)_alloca(pkFile->GetField25C());
-            pkFile->FUN_00472890(pcEditorID, 0x200);
+            char* pcEditorID = (char*)_alloca(apFile->GetField25C());
+            apFile->FUN_00472890(pcEditorID, 0x200);
             SetEditorID(pcEditorID);
             break;
         }
         case 0x444e424f:
-            LoadBounds(pkFile);
+            LoadBounds(apFile);
             break;
         case 0x4c4c5546:
-            ReadFullName(this, pkFile);
+            ReadFullName(this, apFile);
             break;
         case 0x4c444f4d:
         case 0x54444f4d:
         case 0x44444f4d:
         case 0x44534f4d:
-            FUN_004892d0(this, pkFile);
+            FUN_004892d0(this, apFile);
             break;
         case 0x53444f4d: {
-            unsigned int uiSizeX = pkFile->GetField25C();
+            unsigned int uiSizeX = apFile->GetField25C();
             char* pcDataZ = (char*)_alloca(uiSizeX);
-            pkFile->FUN_00472890(pcDataZ, uiSizeX);
-            FloraModel::LoadTextureSwapList(pcDataZ, uiSizeX, pkFile->FUN_00403570());
+            apFile->FUN_00472890(pcDataZ, uiSizeX);
+            FloraModel::UnpackTextureSwapChunkData(pcDataZ, uiSizeX, apFile->FUN_00403570());
             break;
         }
         case 0x49524353: {
             unsigned int uiScript = 0;
-            pkFile->ReadChunkInt(&uiScript);
+            apFile->ReadChunkInt(&uiScript);
             FloraScript::FUN_006ecd40(uiScript);
             FloraScript::FUN_0048cd90(this);
             break;
         }
         case 0x47494650: {
             unsigned int uiIngredient = 0;
-            pkFile->ReadChunkInt(&uiIngredient);
+            apFile->ReadChunkInt(&uiIngredient);
             FloraProduce::FUN_006ecd40(uiIngredient);
             break;
         }
         case 0x43504650: {
             int m_ucSortOrder;
-            pkFile->FUN_00472890(&m_ucSortOrder, 4);
-            FloraProduce::CopyFromSource(&m_ucSortOrder);
+            apFile->FUN_00472890(&m_ucSortOrder, 4);
+            FloraProduce::SetAllProductionChances(&m_ucSortOrder);
             break;
         }
         case 0x44545344:
         case 0x54534544:
-            BGSDestructibleObjectForm_LoadChunk(this, pkFile);
+            BGSDestructibleObjectForm_LoadChunk(this, apFile);
             break;
         }
-        if (!pkFile->FUN_004726f0())
+        if (!apFile->FUN_004726f0())
             break;
     }
     return true;
@@ -331,16 +339,19 @@ void* __cdecl FUN_00ec43fb(void* apObject, long alDelta, void* apSourceType, voi
 
 struct FUN_005089d0_cls
 {
-    bool TESForm_CompareAllComponents(void* apChild);
-    bool TESFlora_Compare(void* apObject);
+    bool TESForm_CompareAllComponents(void* apCompare);
+    bool TESFlora_Compare(void* apCompare);
 };
 
 // @fnv 0x005089d0
 // src: XBOX_PDB 0x005089d0
-bool FUN_005089d0_cls::TESFlora_Compare(void* apObject)
+// pdb: TESFlora::Compare | TESFlora.obj | retail, upstream name already matches, high
+// pdb params: apCompare
+// pdb locals: pcomp
+bool FUN_005089d0_cls::TESFlora_Compare(void* apCompare)
 {
     void* pFound;
-    pFound = FUN_00ec43fb(apObject, 0, &DAT_01183028, &DAT_01189f7c, 0);
+    pFound = FUN_00ec43fb(apCompare, 0, &DAT_01183028, &DAT_01189f7c, 0);
     if (pFound == 0)
     {
         return true;

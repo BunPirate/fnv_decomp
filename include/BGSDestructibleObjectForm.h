@@ -22,6 +22,7 @@ enum IO_TASK_PRIORITY;
 template <class T, unsigned int Growth> class BSSimpleArray;
 template <class Key, class Value> class NiTMap;
 
+// pdb: class BGSDestructibleObjectForm, size 0x8, bases: BaseFormComponent, 1 members
 class BGSDestructibleObjectForm : public BaseFormComponent
 {
 public:
@@ -37,12 +38,12 @@ public:
 
     void InitializeComponent();
     void ClearComponent();
-    void BaseFormRecord(BaseFormComponent* component);
-    bool IsEqualToBase(BaseFormComponent* component);
+    void BaseFormRecord(BaseFormComponent* apCopyFC);
+    bool IsEqualToBase(BaseFormComponent* apCompareFC);
 
     void Save();
-    static void LoadDestructibleData(BGSDestructibleObjectForm* form, TESFile* file);
-    void InitItem(TESForm* form);
+    static void LoadDestructibleData(BGSDestructibleObjectForm* apDestruct, TESFile* apFile);
+    void InitItem(TESForm* apOwner);
     CollisionComponent* GetData();
     DestructionStageData* GetStage(unsigned int stage);
     unsigned char GetStageCount();
@@ -54,11 +55,11 @@ public:
     static unsigned int GetDestructionStageCount(TESForm* form);
     static BGSDestructibleObjectForm* GetDestructibleObjectForm(TESForm* form);
     static int GetModelSwapIndex(TESForm* form, TESModel* model);
-    static TESModel* GetModelSwap(TESForm* form, int index);
+    static TESModel* GetModelSwap(TESForm* apForm, int aiModelSwapIndex);
     bool HasValidStages();
     bool GetTargetableInVATS();
     void SetTargetableInVATS(bool targetable);
-    unsigned int GetMaxHealth(TESObjectREFR* reference);
+    unsigned int GetMaxHealth(TESObjectREFR* apRef);
     void DamageObject(TESObjectREFR* reference, float damage, bool terminal);
     unsigned int SpawnExplosionsAtBlastNodes(NiAVObject*, BGSExplosion*, unsigned int, TESObjectREFR*);
     void SpawnExplosionAtBlastNode(NiAVObject*, unsigned int, void*);
@@ -73,12 +74,12 @@ public:
     void ApplyTerminalDamage(TESObjectREFR*);
     void FindModelSwapNodes(NiAVObject*, void*);
     void FindModelSwapNodes(NiAVObject*, BSSimpleArray<NiNode*, 1024>&);
-    static void UpdateDestructionMap();
+    static void UpdateDestructibleObjects();
     static void UpdateTargetHealthBar(TESObjectREFR*);
     static int GetDestructionStageIndex(TESObjectREFR*);
     static bool IsDestructionStageNode(NiAVObject*);
     void QueueResourceLoad(TESBoundObject*, int, QueuedFile*);
-    void QueueResourceLoad(TESBoundObject*, IO_TASK_PRIORITY, QueuedFile*);
+    void QueueFiles(TESBoundObject*, IO_TASK_PRIORITY, QueuedFile*);
     void PreloadReplacementModels(TESBoundObject*);
     void UnloadReplacementModels();
     static bool IsDangerousObject(TESForm*);
@@ -99,6 +100,6 @@ public:
     void EnsureCurrentEntry();
     DestructionStage** AllocateSpawnedItemArray(unsigned int);
     void BGSDestructibleObjectForm_RemoveData();
-    void FUN_004786e0(BaseFormComponent* source);
+    void FUN_004786e0(BaseFormComponent* apCopyFC);
     DestructibleData* FUN_00726070();
 };

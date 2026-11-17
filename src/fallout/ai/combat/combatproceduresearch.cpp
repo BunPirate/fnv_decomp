@@ -31,6 +31,7 @@ void __cdecl operator delete(void*);
 
 // Calls FUN_009d8c40, frees this with operator delete when flags has bit 0 set, and returns this.
 // @fnv 0x009d8c10
+// pdb: CombatProcedureSearch::`scalar deleting destructor' | CombatProcedureSearch.obj | debug, vtable slot, medium
 void* CombatProcedureSearch::Destroy(unsigned int flags)
 {
     this->CombatProcedureSearch::~CombatProcedureSearch();
@@ -55,11 +56,12 @@ void FUN_009d8d00_shell::SetFieldEC(int aiValue)
 void CombatProcedureSearch::ClearRefIfMatches(TESObjectREFR* apRef, TESBoundObject* apObject, int aiCount,
                                            bool abActivatedScriptOnly)
 {
-    if (m_pReference == apRef)
-        m_pReference = 0;
+    if (pSearchDoor == apRef)
+        pSearchDoor = 0;
 }
 
 // @fnv 0x009d8c40
+// pdb: CombatProcedureSearch::~CombatProcedureSearch | CombatProcedureSearch.obj | debug, upstream name already matches, high
 CombatProcedureSearch::~CombatProcedureSearch()
 {
 }
@@ -78,6 +80,7 @@ struct FUN_009da570_shell
 };
 // Returns the radius of the AvoidSphere referenced at offset 0xd4, or -1.0f when that pointer is null.
 // @fnv 0x009da570
+// pdb: CombatGroup::GetSearchPercent | CombatProcedureSearch.obj | debug, object-file run extension, low
 float FUN_009da570_shell::GetAvoidRadius() const
 {
     return reinterpret_cast<Flt*>(reinterpret_cast<char*>(const_cast<FUN_009da570_shell*>(this)) + 0xd4)
@@ -93,47 +96,55 @@ float FUN_009da570_shell::GetAvoidRadius() const
 
 // Saves the combat procedure search state to the buffer: base data, a 4-byte field at 0x10, sub-objects at 0x2c/0x1c/0x14/0x24, and a pointer at 0x3c.
 // @fnv 0x009da5c0
-void CombatProcedureSearch::SaveGame(BGSSaveFormBuffer* buffer)
+// pdb: CombatProcedureSearch::SaveGame | CombatProcedureSearch.obj | retail, upstream name already matches, high
+// pdb params: apSaveGameBuffer
+void CombatProcedureSearch::SaveGame(BGSSaveFormBuffer* apSaveGameBuffer)
 {
-    CombatProcedure::SaveGame(buffer);
-    buffer->SaveData(&state, 4, 0);
-    location.BGSWorldLocation_SaveGame(buffer);
-    timer1c.SaveGame(buffer);
-    timer14.SaveGame(buffer);
-    timer24.SaveGame(buffer);
-    buffer->SerializeFormData(m_pReference, 0);
+    CombatProcedure::SaveGame(apSaveGameBuffer);
+    apSaveGameBuffer->SaveData(&eState, 4, 0);
+    InvestigateLocation.BGSWorldLocation_SaveGame(apSaveGameBuffer);
+    LookingTimer.SaveGame(apSaveGameBuffer);
+    CheckDestinationTimer.SaveGame(apSaveGameBuffer);
+    CheckSearchDoorTimer.SaveGame(apSaveGameBuffer);
+    apSaveGameBuffer->SerializeFormData(pSearchDoor, 0);
 }
 
 // Loads the base CombatProcedure state, then reads a 4-byte field and loads four sub-objects and a bool from the buffer.
 // @fnv 0x009da640
-void CombatProcedureSearch::LoadGame(BGSLoadFormBuffer* buffer)
+// pdb: CombatProcedureSearch::LoadGame | CombatProcedureSearch.obj | retail, upstream name already matches, high
+// pdb params: apLoadGameBuffer
+void CombatProcedureSearch::LoadGame(BGSLoadFormBuffer* apLoadGameBuffer)
 {
-    CombatProcedure::LoadGame(buffer);
-    buffer->ReadTypedData(static_cast<void*>(&state), 4u);
-    location.BGSLoadGameBuffer_LoadBGSWorldLocation(buffer);
-    timer1c.LoadGame(buffer);
-    timer14.LoadGame(buffer);
-    timer24.LoadGame(buffer);
-    buffer->ReadFormIdentifier(&m_pReference);
+    CombatProcedure::LoadGame(apLoadGameBuffer);
+    apLoadGameBuffer->ReadTypedData(static_cast<void*>(&eState), 4u);
+    InvestigateLocation.BGSWorldLocation_LoadGame(apLoadGameBuffer);
+    LookingTimer.LoadGame(apLoadGameBuffer);
+    CheckDestinationTimer.LoadGame(apLoadGameBuffer);
+    CheckSearchDoorTimer.LoadGame(apLoadGameBuffer);
+    apLoadGameBuffer->ReadFormIdentifier(&pSearchDoor);
 }
 
 // @fnv 0x009da6c0
+// pdb: CombatProcedureSearch::InitLoadGame | CombatProcedureSearch.obj | retail, vtable slot, high
+// pdb params: apLoadGameBuffer
 void __thiscall CombatProcedureSearch::RevertAndResolveRef(BGSLoadFormBuffer* apLoadGameBuffer)
 {
     ((TESForm*)this)->TESForm::Revert((unsigned int)apLoadGameBuffer);
-    m_pReference =
-        m_pReference ? dynamic_cast<TESObjectREFR*>(TESForm::GetFormByID((unsigned int)m_pReference)) : 0;
+    pSearchDoor =
+        pSearchDoor ? dynamic_cast<TESObjectREFR*>(TESForm::GetFormByID((unsigned int)pSearchDoor)) : 0;
 }
 
 struct FUN_0098c780_shell
 {
-    void ClearReservedFlag(int);
+    void CombatGroup_UnreserveSearchDoor(int);
 };
 struct FUN_009d8d20_Class
 {
     int GetFieldEC();
 };
 // @fnv 0x009d8c60
+// pdb: CombatProcedureSearch::Shutdown | CombatProcedureSearch.obj | retail, vtable slot, high
+// pdb locals: pcombatGroup, pattacker
 void __thiscall CombatProcedureSearch::UpdateEngageTarget()
 {
     Actor* pattacker = CombatProcedure_GetAttacker();
@@ -142,18 +153,19 @@ void __thiscall CombatProcedureSearch::UpdateEngageTarget()
         ((FUN_009d8d00_shell*)pcombatGroup)->SetFieldEC(0);
     pattacker->StopMoving();
     ClearMoveMode();
-    if (state == 5 || state == 4)
+    if (eState == 5 || eState == 4)
         pattacker->FadeIn_008bcd20();
-    if (state == 2 && pcombatGroup && m_pReference)
-        ((FUN_0098c780_shell*)pcombatGroup)->ClearReservedFlag((int)m_pReference);
+    if (eState == 2 && pcombatGroup && pSearchDoor)
+        ((FUN_0098c780_shell*)pcombatGroup)->CombatGroup_UnreserveSearchDoor((int)pSearchDoor);
 }
 
 // Initializes the base, search state, timers, location, and stored reference.
 // @fnv 0x009d8b60
-CombatProcedureSearch::CombatProcedureSearch() : state(0)
+// pdb: CombatProcedureSearch::CombatProcedureSearch | CombatProcedureSearch.obj | debug, upstream name already matches, high
+CombatProcedureSearch::CombatProcedureSearch() : eState(0)
 {
-    location.Init();
-    m_pReference = 0;
+    InvestigateLocation.Init();
+    pSearchDoor = 0;
 }
 
 struct FUN_009da550_val
@@ -281,75 +293,78 @@ struct Output
 };
 
 // @fnv 0x009d9fd0
-void CombatProcedureSearch::PrintDebugInfo(Output* output, int x, int y)
+// pdb: CombatProcedureSearch::DisplayDebugText | CombatProcedureSearch.obj | retail, string-set bridge, high
+// pdb params: apDebugText, aeLocation, aeJustify
+// pdb locals: pgroup, fsearchPercent, pattacker
+void CombatProcedureSearch::PrintDebugInfo(Output* apDebugText, int aeLocation, int aeJustify)
 {
     using namespace SearchDiagnostics;
     Reference* actor = reinterpret_cast<Reference*>(CombatProcedure_GetAttacker());
-    SearchDiagnostics::Context* context = reinterpret_cast<SearchDiagnostics::Owner*>(m_pCombatController)->FUN_004fb070();
-    switch (state)
+    SearchDiagnostics::Context* context = reinterpret_cast<SearchDiagnostics::Owner*>(pCombatController)->FUN_004fb070();
+    switch (eState)
     {
     case 0:
-        output->Print(x, y, DAT_01090b68);
+        apDebugText->Print(aeLocation, aeJustify, DAT_01090b68);
         break;
     case 1:
-        output->Print(x, y, DAT_01092078);
-        output->Print(x, y, DAT_0109205c,
-                      reinterpret_cast<const NiPoint3*>(location.FUN_006815c0())->x,
-                      reinterpret_cast<const NiPoint3*>(location.FUN_006815c0())->y,
-                      reinterpret_cast<const NiPoint3*>(location.FUN_006815c0())->z);
-        output->Print(x, y, DAT_0108cfe4, reinterpret_cast<TESObjectREFR*>(location.GetHavokWorldObjectCountInSceneGraph_0084e3a0())->GetName());
+        apDebugText->Print(aeLocation, aeJustify, DAT_01092078);
+        apDebugText->Print(aeLocation, aeJustify, DAT_0109205c,
+                      reinterpret_cast<const NiPoint3*>(InvestigateLocation.FUN_006815c0())->x,
+                      reinterpret_cast<const NiPoint3*>(InvestigateLocation.FUN_006815c0())->y,
+                      reinterpret_cast<const NiPoint3*>(InvestigateLocation.FUN_006815c0())->z);
+        apDebugText->Print(aeLocation, aeJustify, DAT_0108cfe4, reinterpret_cast<TESObjectREFR*>(InvestigateLocation.GetHavokWorldObjectCountInSceneGraph_0084e3a0())->GetName());
         break;
     case 2:
-        output->Print(x, y, DAT_0109204c);
-        if (m_pReference)
-            output->Print(x, y, DAT_0109202c, m_pReference->GetName(),
-                          static_cast<const TESObjectREFR*>(m_pReference)->GetPos()->x,
-                          static_cast<const TESObjectREFR*>(m_pReference)->GetPos()->y,
-                          static_cast<const TESObjectREFR*>(m_pReference)->GetPos()->z);
+        apDebugText->Print(aeLocation, aeJustify, DAT_0109204c);
+        if (pSearchDoor)
+            apDebugText->Print(aeLocation, aeJustify, DAT_0109202c, pSearchDoor->GetName(),
+                          static_cast<const TESObjectREFR*>(pSearchDoor)->GetPos()->x,
+                          static_cast<const TESObjectREFR*>(pSearchDoor)->GetPos()->y,
+                          static_cast<const TESObjectREFR*>(pSearchDoor)->GetPos()->z);
         break;
     case 3:
-        output->Print(x, y, DAT_01092020);
+        apDebugText->Print(aeLocation, aeJustify, DAT_01092020);
         break;
     case 4:
-        output->Print(x, y, DAT_0109200c);
-        output->Print(x, y, DAT_01091ff0,
-                      reinterpret_cast<SearchDiagnostics::Range&>(timer1c).FUN_00435e00(),
-                      reinterpret_cast<SearchDiagnostics::Range&>(timer1c).CombatTimer_GetTargetTime());
+        apDebugText->Print(aeLocation, aeJustify, DAT_0109200c);
+        apDebugText->Print(aeLocation, aeJustify, DAT_01091ff0,
+                      reinterpret_cast<SearchDiagnostics::Range&>(LookingTimer).FUN_00435e00(),
+                      reinterpret_cast<SearchDiagnostics::Range&>(LookingTimer).CombatTimer_GetTargetTime());
         break;
     case 5:
-        output->Print(x, y, DAT_01091fe0);
-        output->Print(x, y, DAT_01091ff0,
-                      reinterpret_cast<SearchDiagnostics::Range&>(timer1c).FUN_00435e00(),
-                      reinterpret_cast<SearchDiagnostics::Range&>(timer1c).CombatTimer_GetTargetTime());
+        apDebugText->Print(aeLocation, aeJustify, DAT_01091fe0);
+        apDebugText->Print(aeLocation, aeJustify, DAT_01091ff0,
+                      reinterpret_cast<SearchDiagnostics::Range&>(LookingTimer).FUN_00435e00(),
+                      reinterpret_cast<SearchDiagnostics::Range&>(LookingTimer).CombatTimer_GetTargetTime());
         break;
     case 6:
-        output->Print(x, y, DAT_01091fd8);
-        output->Print(x, y, DAT_01091ff0,
-                      reinterpret_cast<SearchDiagnostics::Range&>(timer1c).FUN_00435e00(),
-                      reinterpret_cast<SearchDiagnostics::Range&>(timer1c).CombatTimer_GetTargetTime());
+        apDebugText->Print(aeLocation, aeJustify, DAT_01091fd8);
+        apDebugText->Print(aeLocation, aeJustify, DAT_01091ff0,
+                      reinterpret_cast<SearchDiagnostics::Range&>(LookingTimer).FUN_00435e00(),
+                      reinterpret_cast<SearchDiagnostics::Range&>(LookingTimer).CombatTimer_GetTargetTime());
         break;
     case 7:
-        output->Print(x, y, DAT_01091fb0);
-        output->Print(x, y, DAT_01091ff0,
-                      reinterpret_cast<SearchDiagnostics::Range&>(timer1c).FUN_00435e00(),
-                      reinterpret_cast<SearchDiagnostics::Range&>(timer1c).CombatTimer_GetTargetTime());
-        if (context->CombatGroup_GetLastSearchAreaUpdateTimer()->AStarSearch_EvaluateValue_006a7f50() < reinterpret_cast<SearchDiagnostics::Range&>(timer1c).AStarSearch_EvaluateValue_006a7f50() &&
+        apDebugText->Print(aeLocation, aeJustify, DAT_01091fb0);
+        apDebugText->Print(aeLocation, aeJustify, DAT_01091ff0,
+                      reinterpret_cast<SearchDiagnostics::Range&>(LookingTimer).FUN_00435e00(),
+                      reinterpret_cast<SearchDiagnostics::Range&>(LookingTimer).CombatTimer_GetTargetTime());
+        if (context->CombatGroup_GetLastSearchAreaUpdateTimer()->AStarSearch_EvaluateValue_006a7f50() < reinterpret_cast<SearchDiagnostics::Range&>(LookingTimer).AStarSearch_EvaluateValue_006a7f50() &&
             context->CombatGroup_GetSearchCenter().GetHavokWorldObjectCountInSceneGraph_0084e3a0() != actor->TESObjectREFR_GetSpace())
-            output->Print(x, y, DAT_01091f88, context->CombatGroup_GetLastSearchAreaUpdateTimer()->FUN_00435e00(),
+            apDebugText->Print(aeLocation, aeJustify, DAT_01091f88, context->CombatGroup_GetLastSearchAreaUpdateTimer()->FUN_00435e00(),
                           context->CombatGroup_GetLastSearchAreaUpdateTimer()->CombatTimer_GetTargetTime());
         break;
     case 8:
-        output->Print(x, y, DAT_01091f60);
-        output->Print(x, y, DAT_0109205c,
-                      reinterpret_cast<const NiPoint3*>(location.FUN_006815c0())->x,
-                      reinterpret_cast<const NiPoint3*>(location.FUN_006815c0())->y,
-                      reinterpret_cast<const NiPoint3*>(location.FUN_006815c0())->z);
-        output->Print(x, y, DAT_0108cfe4, reinterpret_cast<TESObjectREFR*>(location.GetHavokWorldObjectCountInSceneGraph_0084e3a0())->GetName());
+        apDebugText->Print(aeLocation, aeJustify, DAT_01091f60);
+        apDebugText->Print(aeLocation, aeJustify, DAT_0109205c,
+                      reinterpret_cast<const NiPoint3*>(InvestigateLocation.FUN_006815c0())->x,
+                      reinterpret_cast<const NiPoint3*>(InvestigateLocation.FUN_006815c0())->y,
+                      reinterpret_cast<const NiPoint3*>(InvestigateLocation.FUN_006815c0())->z);
+        apDebugText->Print(aeLocation, aeJustify, DAT_0108cfe4, reinterpret_cast<TESObjectREFR*>(InvestigateLocation.GetHavokWorldObjectCountInSceneGraph_0084e3a0())->GetName());
         break;
     }
     float confidence = context->GetAvoidRadius();
     if (confidence >= DAT_01012060)
-        output->Print(x, y, DAT_01091f40, context->GetFieldD0(), context->GetMoveSpeed_009442a0(), confidence * DAT_01017a40,
+        apDebugText->Print(aeLocation, aeJustify, DAT_01091f40, context->GetFieldD0(), context->GetMoveSpeed_009442a0(), confidence * DAT_01017a40,
                       context->GetValue().GetClampedDifference());
 }
 
@@ -441,14 +456,14 @@ struct ContextSub
 {
     BSPortalGraphSub* GetPortalGraph_009d9f20();
     bool CombatGroup_IsSearching();
-    SearchRef* FindBestItem(void*, int, int);
+    SearchRef* CombatGroup_FindSearchLocation(void*, int, int);
     SearchRef* FindNearestCombatNode(void*, float, int);
     void CombatGroup_ReserveSearchDoor(void*);
     Location16 CombatGroup_GetSearchCenter();
     void* GetFieldEC();
     bool CheckOtherEntriesForTarget(void*, Obj0049f1c0*);
     void SetFieldEC(void*);
-    void UpdateProximityTimers(Location16*);
+    void CombatGroup_InvestigatedSearchLocation(Location16*);
     void CombatGroup_FailedToInvestigateSearchDoor(void*);
     void CombatGroup_InvestigatedSearchDoor(void*);
     void MiddleHighProcess_SetWantWeaponDrawn(int);
@@ -575,13 +590,15 @@ struct ActorSub : Actor
     bool Actor_IsPathValid();
     SearchRef* Actor_GetFailedPathDestination();
     void Actor_FadeOut();
-    double GetMagicProcessValue();
+    double Actor_GetFadePercent();
     bool Actor_GetCurrentPathfindingGoal_008b3860(void*);
     bool Actor_SetPathfindingFlee(void*);
     void TESObjectREFR_SetAngleOnReferenceZ(float);
 };
 
 // @fnv 0x009d8d40
+// pdb: CombatProcedureSearch::Update | CombatProcedureSearch.obj | retail, unique string literal, high
+// pdb locals: pcombatGroup, ptarget, pcombatState, eprocessLevel, psearchLOSGridMap, pattacker, psearchLocation, request, pdoor, teleportRotation, searchCenter, attackerWorldLoc, psearchingMember, losRequest, plocationTarget, ignoreLocations, bforceComplete, investigatePathingLocation, pteleportData, pfailedPathDestination, searchDestination, fsquaredDistance, vec, spmesh ...
 void CombatProcedureSearch::UpdateSearchState()
 {
     ActorSub* pActor2;
@@ -594,23 +611,23 @@ void CombatProcedureSearch::UpdateSearchState()
     pActor2 = static_cast<ActorSub*>(this->CombatProcedure_GetAttacker());
     pUnk7 = this->GetTarget_00996e00();
     hasTarget_2 = pActor2->FUN_00931850();
-    pContext = reinterpret_cast<OwnerSub*>(this->m_pCombatController)->FUN_004fb070();
+    pContext = reinterpret_cast<OwnerSub*>(this->pCombatController)->FUN_004fb070();
     m_pPortalConnectivityGraphInfo = pContext->GetPortalGraph_009d9f20();
-    pTile2 = reinterpret_cast<OwnerSub*>(this->m_pCombatController)->CombatController_GetCombatState();
+    pTile2 = reinterpret_cast<OwnerSub*>(this->pCombatController)->CombatController_GetCombatState();
 
-    switch (this->state)
+    switch (this->eState)
     {
     case 0:
-        if (!hasTarget_2 && reinterpret_cast<OwnerSub*>(this->m_pCombatController)->Projectile_GetSecondaryItemChange() == 4)
+        if (!hasTarget_2 && reinterpret_cast<OwnerSub*>(this->pCombatController)->Projectile_GetSecondaryItemChange() == 4)
         {
-            this->state = 7;
-            this->timer1c.Start(DAT_010162c0);
+            this->eState = 7;
+            this->LookingTimer.Start(DAT_010162c0);
             break;
         }
-        this->m_pReference = 0;
+        this->pSearchDoor = 0;
         if (pContext->CombatGroup_IsSearching())
         {
-            SearchRef* pObj28 = pContext->FindBestItem(pActor2, 0, 0);
+            SearchRef* pObj28 = pContext->CombatGroup_FindSearchLocation(pActor2, 0, 0);
             if (pObj28 && pObj28->CombatSearchLocation_GetScore() > DAT_0101db88)
             {
                 PathingRequestHelper req;
@@ -621,9 +638,9 @@ void CombatProcedureSearch::UpdateSearchState()
                     this->CombatProcedure_SetFailed("Cannot setup path to investigate point");
                     break;
                 }
-                this->state = 1;
-                this->timer14.Start(originalRuntimeFloatSetting461.Float()[0]);
-                this->location = *(CombatProcedureSearch::Location*)pObj28;
+                this->eState = 1;
+                this->CheckDestinationTimer.Start(originalRuntimeFloatSetting461.Float()[0]);
+                this->InvestigateLocation = *(CombatProcedureSearch::Location*)pObj28;
             }
             else
             {
@@ -643,8 +660,8 @@ void CombatProcedureSearch::UpdateSearchState()
                         this->CombatProcedure_SetFailed("Cannot setup path to search door");
                         break;
                     }
-                    this->state = 2;
-                    this->m_pReference = reinterpret_cast<TESObjectREFR*>(pObjE0);
+                    this->eState = 2;
+                    this->pSearchDoor = reinterpret_cast<TESObjectREFR*>(pObjE0);
                     pContext->CombatGroup_ReserveSearchDoor(pObjE0);
                 }
                 else
@@ -665,14 +682,14 @@ void CombatProcedureSearch::UpdateSearchState()
                                     this->CombatProcedure_SetFailed("Cannot setup path to search center");
                                     break;
                                 }
-                                this->location = reinterpret_cast<CombatProcedureSearch::Location&>(loc1ac);
-                                this->state = 8;
+                                this->InvestigateLocation = reinterpret_cast<CombatProcedureSearch::Location&>(loc1ac);
+                                this->eState = 8;
                             }
                         }
                         else
                         {
-                            this->state = 6;
-                            this->timer1c.Start(1.0f);
+                            this->eState = 6;
+                            this->LookingTimer.Start(1.0f);
                         }
                     }
                     else
@@ -683,7 +700,7 @@ void CombatProcedureSearch::UpdateSearchState()
                             break;
                         }
                         PathingRequestLOS losReq;
-                        losReq.InitFromActor(pActor2);
+                        losReq.PathingRequest_SetOrigin(pActor2);
                         if (pActor2->IsCreature())
                         {
                             losReq.SetCantOpenDoors(((ActorBaseImpl*)pActor2->GetActorBase())->sub.v10());
@@ -715,9 +732,9 @@ void CombatProcedureSearch::UpdateSearchState()
                             break;
                         }
                         pContext->SetFieldEC(pActor2);
-                        this->timer14.Start(g_011cecc4.Float()[0]);
-                        this->state = 3;
-                        this->timer24.Start(originalRuntimeFloatSetting465.Float()[0]);
+                        this->CheckDestinationTimer.Start(g_011cecc4.Float()[0]);
+                        this->eState = 3;
+                        this->CheckSearchDoorTimer.Start(originalRuntimeFloatSetting465.Float()[0]);
                     }
                 }
             }
@@ -731,7 +748,7 @@ void CombatProcedureSearch::UpdateSearchState()
         {
             if (!pActor2->Actor_IsPathValid())
             {
-                pTile2->SetNodeBlockAndTimestamp(reinterpret_cast<Location16&>(this->location));
+                pTile2->SetNodeBlockAndTimestamp(reinterpret_cast<Location16&>(this->InvestigateLocation));
             }
             this->CombatProcedure_SetFailed(pActor2->Actor_IsPathValid() ? "Pathing failed while moving to destination"
                                                        : "Path Building failed to destination");
@@ -739,19 +756,19 @@ void CombatProcedureSearch::UpdateSearchState()
         }
         {
             bool bFlag361 = false;
-            if (this->state == 1 && this->timer14.Expired())
+            if (this->eState == 1 && this->CheckDestinationTimer.Expired())
             {
                 Location16 loc374 = pActor2->TESObjectREFR_GetWorldLocation();
-                if (loc374.BGSWorldLocation_GetDistanceSquared(reinterpret_cast<Location16*>(&this->location)) <
+                if (loc374.BGSWorldLocation_GetDistanceSquared(reinterpret_cast<Location16*>(&this->InvestigateLocation)) <
                     originalRuntimeFloatSetting460.Float()[0] * originalRuntimeFloatSetting460.Float()[0])
                 {
-                    PathingLocation loc39c(reinterpret_cast<Location16*>(&this->location));
+                    PathingLocation loc39c(reinterpret_cast<Location16*>(&this->InvestigateLocation));
                     if (FUN_006d7490(&loc39c, loc374.FUN_006815c0(), 0, 0))
                     {
                         bFlag361 = true;
                     }
                 }
-                this->timer14.Start(g_011cfad4.Float()[0]);
+                this->CheckDestinationTimer.Start(g_011cfad4.Float()[0]);
             }
             if (bFlag361 || pActor2->FUN_008b3bb0())
             {
@@ -759,9 +776,9 @@ void CombatProcedureSearch::UpdateSearchState()
                 {
                     pActor2->StopMoving();
                 }
-                pContext->UpdateProximityTimers(reinterpret_cast<Location16*>(&this->location));
-                this->state = 6;
-                this->timer1c.Start(1.0f);
+                pContext->CombatGroup_InvestigatedSearchLocation(reinterpret_cast<Location16*>(&this->InvestigateLocation));
+                this->eState = 6;
+                this->LookingTimer.Start(1.0f);
             }
         }
         break;
@@ -769,10 +786,10 @@ void CombatProcedureSearch::UpdateSearchState()
     case 2:
         if (pActor2->DidPathingFail())
         {
-            if (!pActor2->Actor_IsPathValid() && this->m_pReference)
+            if (!pActor2->Actor_IsPathValid() && this->pSearchDoor)
             {
-                pTile2->SetNodeBlockAndTimestamp(reinterpret_cast<SearchRef*>(this->m_pReference)->TESObjectREFR_GetWorldLocation());
-                pContext->CombatGroup_FailedToInvestigateSearchDoor(this->m_pReference);
+                pTile2->SetNodeBlockAndTimestamp(reinterpret_cast<SearchRef*>(this->pSearchDoor)->TESObjectREFR_GetWorldLocation());
+                pContext->CombatGroup_FailedToInvestigateSearchDoor(this->pSearchDoor);
             }
             this->CombatProcedure_SetFailed(pActor2->Actor_IsPathValid() ? "Pathing failed while moving to search door"
                                                        : "Path Building failed to search door");
@@ -780,19 +797,19 @@ void CombatProcedureSearch::UpdateSearchState()
         }
         if (pActor2->FUN_008b3bb0())
         {
-            if (this->m_pReference)
+            if (this->pSearchDoor)
             {
-                pContext->CombatGroup_InvestigatedSearchDoor(this->m_pReference);
+                pContext->CombatGroup_InvestigatedSearchDoor(this->pSearchDoor);
                 if (!hasTarget_2)
                 {
                     pActor2->Actor_FadeOut();
-                    this->state = 4;
-                    this->timer1c.Start(DAT_01017718);
+                    this->eState = 4;
+                    this->LookingTimer.Start(DAT_01017718);
                 }
                 else
                 {
                     PathingRequestHelper req;
-                    SearchRef* p3a0 = (SearchRef*)reinterpret_cast<SearchRef*>(this->m_pReference)->FUN_00568e50();
+                    SearchRef* p3a0 = (SearchRef*)reinterpret_cast<SearchRef*>(this->pSearchDoor)->FUN_00568e50();
                     if (!p3a0)
                     {
                         break;
@@ -803,14 +820,14 @@ void CombatProcedureSearch::UpdateSearchState()
                         this->CombatProcedure_SetFailed("Cannot setup path through search door");
                         break;
                     }
-                    this->state = 2;
+                    this->eState = 2;
                 }
-                this->m_pReference = 0;
+                this->pSearchDoor = 0;
             }
             else
             {
-                this->state = 6;
-                this->timer1c.Start(1.0f);
+                this->eState = 6;
+                this->LookingTimer.Start(1.0f);
             }
         }
         break;
@@ -833,9 +850,9 @@ void CombatProcedureSearch::UpdateSearchState()
                                                        : "Path Building failed to search");
             break;
         }
-        if (this->timer24.Expired() && !hasTarget_2)
+        if (this->CheckSearchDoorTimer.Expired() && !hasTarget_2)
         {
-            this->timer24.Start(originalRuntimeFloatSetting465.Float()[0]);
+            this->CheckSearchDoorTimer.Start(originalRuntimeFloatSetting465.Float()[0]);
             SearchRef* pObj460 = pContext->FindNearestCombatNode(pActor2, originalRuntimeFloatSetting463.Float()[0], 1);
             if (pObj460)
             {
@@ -843,8 +860,8 @@ void CombatProcedureSearch::UpdateSearchState()
                 pActor2->BuildPathingRequest(&req, (void*)pObj460->TESObjectREFR_GetLinkedDoorTeleportPosition(), pObj460->TESObjectREFR_GetSpace(), 0.0f, 0);
                 if (pActor2->SetPathingRequestAvoidNodes(&req))
                 {
-                    this->state = 2;
-                    this->m_pReference = reinterpret_cast<TESObjectREFR*>(pObj460);
+                    this->eState = 2;
+                    this->pSearchDoor = reinterpret_cast<TESObjectREFR*>(pObj460);
                     pContext->CombatGroup_ReserveSearchDoor(pObj460);
                     break;
                 }
@@ -852,7 +869,7 @@ void CombatProcedureSearch::UpdateSearchState()
         }
         {
             bFlag455 = false;
-            if (m_pPortalConnectivityGraphInfo && this->timer14.Expired())
+            if (m_pPortalConnectivityGraphInfo && this->CheckDestinationTimer.Expired())
             {
                 PathingLocation loc53c;
                 if (pActor2->Actor_GetCurrentPathfindingGoal_008b3860(&loc53c))
@@ -885,58 +902,58 @@ void CombatProcedureSearch::UpdateSearchState()
                         }
                     }
                 }
-                this->timer14.Start(g_011cecc4.Float()[0]);
+                this->CheckDestinationTimer.Start(g_011cecc4.Float()[0]);
             }
             if (bFlag455 || pActor2->FUN_008b3bb0())
             {
-                this->state = 6;
-                this->timer1c.Start(1.0f);
+                this->eState = 6;
+                this->LookingTimer.Start(1.0f);
             }
         }
         break;
     }
 
     case 4:
-        if (pActor2->GetMagicProcessValue() <= DAT_01012060)
+        if (pActor2->Actor_GetFadePercent() <= DAT_01012060)
         {
-            if (this->m_pReference)
+            if (this->pSearchDoor)
             {
-                NiPoint3 rot = *reinterpret_cast<SearchRef*>(this->m_pReference)->TESObjectREFR_GetLinkedDoorTeleportRotation();
+                NiPoint3 rot = *reinterpret_cast<SearchRef*>(this->pSearchDoor)->TESObjectREFR_GetLinkedDoorTeleportRotation();
                 pActor2->TESObjectREFR_SetAngleOnReferenceZ(WrapAngle(rot.z));
             }
-            this->state = 5;
+            this->eState = 5;
         }
         break;
 
     case 5:
-        if (this->timer1c.Expired())
+        if (this->LookingTimer.Expired())
         {
-            if (pActor2->GetMagicProcessValue() < DAT_01012070)
+            if (pActor2->Actor_GetFadePercent() < DAT_01012070)
             {
                 pActor2->FadeIn_008bcd20();
             }
-            this->state = 0;
+            this->eState = 0;
         }
         break;
 
     case 6:
-        if (this->timer1c.Expired())
+        if (this->LookingTimer.Expired())
         {
-            this->state = 0;
+            this->eState = 0;
         }
         break;
 
     case 7:
-        if (pContext->CombatGroup_GetLastSearchAreaUpdateTimer()->AStarSearch_EvaluateValue_006a7f50() < reinterpret_cast<SearchTimer&>(this->timer1c).AStarSearch_EvaluateValue_006a7f50())
+        if (pContext->CombatGroup_GetLastSearchAreaUpdateTimer()->AStarSearch_EvaluateValue_006a7f50() < reinterpret_cast<SearchTimer&>(this->LookingTimer).AStarSearch_EvaluateValue_006a7f50())
         {
             if (pContext->CombatGroup_GetSearchCenter().GetHavokWorldObjectCountInSceneGraph_0084e3a0() != pActor2->TESObjectREFR_GetSpace())
             {
                 break;
             }
         }
-        if (this->timer1c.Expired())
+        if (this->LookingTimer.Expired())
         {
-            this->state = 0;
+            this->eState = 0;
         }
         break;
     }

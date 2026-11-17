@@ -16,6 +16,7 @@ class SwizzledMatrix;
 class BSShaderParam;
 struct _D3DXMACRO;
 
+// pdb: class BSShader, size 0x6c, bases: NiD3DDefaultShader, 4 members
 class BSShader : public NiD3DDefaultShader
 {
 public:
@@ -44,12 +45,12 @@ public:
     virtual void Func_78(unsigned int* apeType, int a2);
 
     static void __cdecl GetShaderPath(const char* source, char* output);
-    NiD3DVertexShader* CompileVertexShader(const char* path, const _D3DXMACRO* macros,
-                                         const char* profile, const char* output);
+    NiD3DVertexShader* CompileVertexShader(const char* apFilename, const _D3DXMACRO* apMacro,
+                                         const char* apTarget, const char* apCacheName);
     NiD3DPixelShader* CompilePixelShader(const char* path, const _D3DXMACRO* macros,
                                        const char* profile, const char* output);
     BSTexture* GetTexture(BSGeom* apGeom, int aiIndex);
-    void SetupCamera(BSCamera* apCamera, BSTransform* apTransform);
+    void SetupCamera(BSCamera* apGeometry, BSTransform* aWorld);
     void SetupMatrix(SwizzledMatrix* apMatrix, float afScale, int aiValue);
     void SetupShaderPasses(BSShaderParam* apParam);
 

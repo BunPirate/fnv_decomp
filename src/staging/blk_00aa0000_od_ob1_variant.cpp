@@ -120,17 +120,17 @@ public:
     void Unitize_004a0c10();
     float FUN_004a7290();
     float FUN_004a7290() const;
-    LocalVec3 FUN_004b3800(const LocalVec3& other) const;
+    LocalVec3 FUN_004b3800(const LocalVec3& pt) const;
     LocalVec3 ProcessAndReturnValue_0053d280(float divisor);
     float NiPoint3_XYLength();
     float NiPoint3_XYLength() const;
     void ComputeValue_0063c8a0(const LocalVec3* other);
     void ComputeValue_0063c8a0(void* other);
     void FUN_006815c0();
-    float CVec3_Distance(LocalVec3* other);
-    float CVec3_Distance(const LocalVec3& other) const;
-    LocalVec3 TransformPointByMatrix4(const Mat& matrix);
-    LocalVec3 TransformPointByMatrix4(const Matrix4* matrix);
+    float CVec3_Distance(LocalVec3* cVec);
+    float CVec3_Distance(const LocalVec3& cVec) const;
+    LocalVec3 TransformPointByMatrix4(const Mat& cTransform);
+    LocalVec3 TransformPointByMatrix4(const Matrix4* cTransform);
     void Normalize_00b12790();
     LocalVec3 Diff_00b13040(void* other);
     LocalVec3 Diff_00b13040(const LocalVec3& other) const;
@@ -160,7 +160,7 @@ extern "C" void __cdecl free(void*);
 struct FUN_00aa4790_Class
 {
     void __thiscall MemoryManager_GetHeapStats(int, unsigned char, int);
-    void __thiscall MemoryManager_GetDefaultHeapStats(int a, int b, int c);
+    void __thiscall MemoryManager_GetDefaultHeapStats(int aiDefaultHeapIndex, int abFullBlockInfo, int apStats);
 };
 void SetByteAtOffset(char* p, char c);
 struct FUN_00aa4c10_class
@@ -171,7 +171,7 @@ extern "C" void __cdecl BSCoreMessage_IsWarningDisabled(int);
 extern "C" void __cdecl SetByteAtOffset(int, int);
 struct FUN_00aa4c40_class
 {
-    void __thiscall BSCoreMessage_DisableContextMessages(int a);
+    void __thiscall BSCoreMessage_DisableContextMessages(int aWarningContext);
 };
 extern "C" void* DAT_010a2708;
 struct FUN_00aa4c60_class
@@ -218,7 +218,7 @@ struct FUN_00aa8b00_Class
     void* __thiscall BSMap_unsigned_int_ScrapHeap_NewItem();
 };
 void __cdecl FNV_Warning(const char* fmt, ...);
-void __cdecl ReportFr2Error(const char* a, int b, const char* c);
+void __cdecl ReportFr2Error(const char* fname, int line, const char* msg);
 struct FUN_00aa41e0_Class
 {
     void* __thiscall FUN_00aa41e0(unsigned int a, unsigned int b);
@@ -241,7 +241,7 @@ struct FUN_00aa45a0_Class
     unsigned short m_uiItemCount;
     unsigned int m_unknown;
     FUN_00aa45a0_vt** m_items;
-    FUN_00aa45a0_vt* __thiscall FindItemByArg(int arg);
+    FUN_00aa45a0_vt* __thiscall FindItemByArg(int apMem);
 };
 struct FUN_00aa46a0_holder
 {
@@ -249,7 +249,7 @@ struct FUN_00aa46a0_holder
 };
 struct FUN_00aa4710_Class
 {
-    char __thiscall MemoryManager_GetHeapStats(int a, unsigned char b, int c);
+    char __thiscall MemoryManager_GetHeapStats(int aiIndex, unsigned char abFullBlockInfo, int apStats);
 };
 struct FUN_00aa4b20_Class
 {
@@ -257,7 +257,7 @@ struct FUN_00aa4b20_Class
 };
 struct FUN_00aa50f0_Class
 {
-    void __thiscall BSTimer_Init(unsigned int a);
+    void __thiscall BSTimer_Init(unsigned int aiTime);
 };
 struct FUN_00aa8b80_class
 {
@@ -313,7 +313,7 @@ struct FUN_00aba370_s
     unsigned int m_10;
     unsigned int m_14;
     void __thiscall EraseRange(unsigned int a, unsigned int b);
-    void __thiscall AppendChars(unsigned int a, unsigned char b);
+    void __thiscall AppendChars(unsigned int _Count, unsigned char _Ch);
     void __thiscall ResizeStringRange(unsigned int pos, unsigned char b);
 };
 extern unsigned int DAT_010173f0;
@@ -338,7 +338,7 @@ struct FUN_00aa4760_Class : public FUN_00aa4710_Class
 {
     char CallBaseWithOffset(int a, unsigned char b, int c);
 };
-unsigned char __cdecl BSCoreMessage_IsWarningDisabled(char* p);
+unsigned char __cdecl BSCoreMessage_IsWarningDisabled(char* aWarningContext);
 struct FUN_00aa4ca0_class
 {
     void __thiscall ProcessState_00aa4ca0(unsigned int a, unsigned int b, float c, unsigned int d, unsigned int e);
@@ -480,7 +480,7 @@ class AA4610Allocator
     int unk120;
     AA4610Pool** m_ppkPools;
 
-    AA4610Pool* FindPoolContaining(void* pvMem);
+    AA4610Pool* FindPoolContaining(void* apMem);
 };
 extern unsigned int DAT_011f69f8;
 void* MemoryPool_GetClosestPoolForSize(unsigned int size);
@@ -514,6 +514,7 @@ struct ScrapHeapEntry
     void* m_pBuffer;
     unsigned int m_iElementCount;
 };
+// pdb: class ScrapHeapManager, size 0x210 (here 0x208), 4 members
 struct ScrapHeapManager
 {
     ScrapHeapEntry m_entries[64];
@@ -723,7 +724,7 @@ struct S_00aadd20_Vector
 S_00aadd20_Vector* __cdecl Object_ComputeValue_00aadd20(S_00aadd20_Vector* out, S_00aadd20_Vector* in);
 struct FUN_00aadda0_Class
 {
-    void __thiscall BuildScaledValues(int a, float b);
+    void __thiscall BuildScaledValues(int d, float b);
     int __thiscall BuildReciprocalScaledValues(int a, float b);
 };
 // Candidate: FUN_00aafa30
@@ -989,7 +990,7 @@ class S_00aadeb0_Class
     unsigned int m_14;
     unsigned int m_18;
 
-    S_00aadeb0_Class* AppendChars(unsigned int count, unsigned char ch);
+    S_00aadeb0_Class* AppendChars(unsigned int _Count, unsigned char _Ch);
 };
 struct S_00aae180_Class
 {
@@ -1040,6 +1041,8 @@ struct FUN_00aa7400 : HeapBlockBase
 };
 
 // @fnv 0x00aa7400
+// pdb: ZeroOverheadHeap::ZeroOverheadHeap | ZeroOverheadHeap.obj | debug, object-file run extension, low
+// pdb params: aiSize, apName
 FUN_00aa7400::FUN_00aa7400(unsigned int a, unsigned int b) : m_04(a), m_08(b), m_14(0)
 {
     m_0c = DAT_011f6238.DoSystemAllocation(a, true);
@@ -1061,6 +1064,9 @@ struct FUN_00aa74c0 : AA74C0Base
 };
 
 // @fnv 0x00aa74c0
+// pdb: ZeroOverheadHeap::ZeroOverheadHeap | ZeroOverheadHeap.obj | retail, object-file run extension, low
+// pdb note: debug build links it to ZeroOverheadHeap::~ZeroOverheadHeap
+// pdb params: aiSize, apName
 FUN_00aa74c0::~FUN_00aa74c0()
 {
     DAT_011f6238.DoSystemDeallocation(m_0c, true);
@@ -1131,6 +1137,8 @@ extern ShutdownHandle* DAT_011f6bf8;
 extern ShutdownHandle* DAT_011f6c08;
 // @fnv 0x00aa81d0
 // src: COMMUNITY 0x00aa81d0
+// pdb: OEI::IO::terminate | oei_io_thread.obj | retail, upstream name already matches, high
+// pdb locals: exit_request
 void __cdecl OEI_IO_terminate()
 {
     ShutdownMessage message;
@@ -1175,6 +1183,7 @@ struct Derived
 };
 
 // @fnv 0x00aa88d0
+// pdb: BSList<OEI::IO::IO_Request *>::`scalar deleting destructor' | oei_io_thread.obj | debug, object-file run extension, low
 void* Derived::FUN_00aa88d0(unsigned int flags)
 {
     m_vtbl = &DAT_010a29a0;
@@ -1269,7 +1278,7 @@ struct ClearStorage : StorageWrapper
 };
 struct TmpArr : ClearStorage
 {
-    TmpArr operator*(float f);
+    TmpArr operator*(float d);
     ~TmpArr()
     {}
 };
@@ -1283,7 +1292,7 @@ struct Curve20
     int unk14;
     int unk18;
     int unk1c;
-    TmpArr Transpose();
+    TmpArr FR2MatrixVTC_float_transpose();
 };
 struct Out40
 {
@@ -1725,6 +1734,9 @@ struct Mixer
 };
 // @fnv 0x00aacf40
 // src: GUESS 0x00aacf40 (confidence: low)
+// pdb: FanGenCtlsGrpC::setRace | FanControls.obj | debug, object-file run extension, low
+// pdb params: race1, race2, val, coord
+// pdb locals: delta, tt
 void Mixer::ProcessEntries_00aacf40(int a, int b, float t, Out40* out)
 {
     a < 5 ? (void)0
@@ -1738,7 +1750,7 @@ void Mixer::ProcessEntries_00aacf40(int a, int b, float t, Out40* out)
     {
         float f = (t - ProcessEntries_00aacdb0(a, b, out)) * rows[a].entries[b].scale;
         for (unsigned int i = 0; i < 2; i++)
-            out[i] = rows[a].entries[b].curves[i].Transpose() * f;
+            out[i] = rows[a].entries[b].curves[i].FR2MatrixVTC_float_transpose() * f;
     }
 }
 
@@ -1802,6 +1814,9 @@ struct FanControls
 };
 // @fnv 0x00aad890
 // src: GUESS 0x00aad890 (confidence: low)
+// pdb: FanGenCtlsGrpC::reflect | FanControls.obj | debug, object-file run extension, low
+// pdb params: race, coord
+// pdb locals: tt
 void FanControls::ProcessEntries_00aad890(int index, ImagePair* input)
 {
     if (index < 5)
@@ -2503,6 +2518,7 @@ struct FUN_00aa3880
 };
 
 // @fnv 0x00aa3880
+// pdb: MemoryManager::MemoryManager | MemoryManager.obj | debug, object-file run extension, low
 FUN_00aa3880::FUN_00aa3880()
     : m_bShaderEnabled(false), m_sCount(0), m_sIndex(0), m_iFlags(0), m_iActive(0), m_bEnableState(true),
       m_bVisible(true), m_iFirst(0), m_iSecond(0), m_iThird(0)
@@ -2563,6 +2579,9 @@ extern __declspec(thread) int tlsHeapIndex;
 
 // @fnv 0x00aa3e40
 // src: COMMUNITY 0x00aa3e40
+// pdb: MemoryManager::Allocate | MemoryManager.obj | debug, object-file gap fill, medium
+// pdb params: aSize
+// pdb locals: imemoryPass, pheap, pdefaultHeap, econtext, bfromSystem, pcontextHeap, ballowSystemAlloc, original_size, pmem, ppool
 void* MemoryManager::Game_DoHeapAlloc(unsigned int size)
 {
     if (!bInitialized)
@@ -2618,7 +2637,7 @@ void* MemoryManager::Game_DoHeapAlloc(unsigned int size)
         }
         if (!result2)
         {
-            attempt2 = HandleAllocationFailure(threadHeapB ? threadHeapB : mainHeap, attempt2, &retry2);
+            attempt2 = ProcessMemoryProblem(threadHeapB ? threadHeapB : mainHeap, attempt2, &retry2);
             if (retry2)
             {
                 result2 = DoSystemAllocation(size, false);
@@ -2855,7 +2874,7 @@ struct Obj00aaa730
     Str a;
     Str b;
     int unk3c;
-    Obj00aaa730(Str key);
+    Obj00aaa730(Str a_fileId);
     bool ProcessAndReturnValue_00ac3fe0(const char* name);
 };
 
@@ -2864,6 +2883,9 @@ inline Obj00aaa730::~Obj00aaa730()
 
 // @fnv 0x00aaa730
 // src: GUESS 0x00aaa730 (confidence: low)
+// pdb: fanIsCtlFile | FanCtlFile.obj | debug, object-file run extension, low
+// pdb params: fname
+// pdb locals: bfile
 bool Runtime_EvaluateValue_00aaa730(const char* name)
 {
     Obj00aaa730 obj(Str("FRCTL001"));
@@ -2908,6 +2930,7 @@ struct FUN_00aaaa80 : S00aaaa80_Body
 };
 
 // @fnv 0x00aaaa80
+// pdb: FutBinaryFileC::~FutBinaryFileC | FanCtlFile.obj | retail, call graph, high
 FUN_00aaaa80::~FUN_00aaaa80()
 {
     FutBinaryFileC_close();
@@ -3048,6 +3071,7 @@ struct ReaderObject
     virtual ~ReaderObject();
 };
 
+// pdb: class LoadedFile, size 0x10 (here 0x1), bases: NiMemObject, 5 members
 struct LoadedFile
 {
     void LoadedFile_DecRefCount();
@@ -3081,6 +3105,7 @@ struct DerivedReader : FUN_00aaaa80
 };
 
 // @fnv 0x00aaab90
+// pdb: BSFaceGenBinaryFile::`scalar deleting destructor' | FanCtlFile.obj | retail, vtable slot, high
 DerivedReader* DerivedReader::FUN_00aaab90(unsigned int flags)
 {
     this->DerivedReader::~DerivedReader();
@@ -3188,7 +3213,10 @@ struct AAOwner
 };
 // @fnv 0x00aaac10
 // src: COMMUNITY 0x00aaac10
-bool AAOwner::FanLinCtlGrpS_readFromFile(AAStream* stream, unsigned int (*lengths)[2])
+// pdb: FanLinCtlGrpS::readFromFile | FanControls.obj | retail, upstream name already matches, high
+// pdb params: file, dims
+// pdb locals: numCtls, labSize, tt, ss, ii
+bool AAOwner::FanLinCtlGrpS_readFromFile(AAStream* file, unsigned int (*dims)[2])
 {
     unsigned int count, length;
     DA();
@@ -3196,18 +3224,18 @@ bool AAOwner::FanLinCtlGrpS_readFromFile(AAStream* stream, unsigned int (*length
     {
         for (unsigned int j = 0; j < 2; j++)
         {
-            if (!stream->Read(&length, 4, 1))
+            if (!file->Read(&length, 4, 1))
                 return false;
             elems[i][j].ProcessState_00aadde0(length);
             for (unsigned int k = 0; k < length; k++)
             {
-                elems[i][j].at(k).resize(1, lengths[i][j]);
-                if (!stream->Read(&elems[i][j].at(k).ForwardCall_0060b370(0)[0], 4, lengths[i][j]))
+                elems[i][j].at(k).resize(1, dims[i][j]);
+                if (!file->Read(&elems[i][j].at(k).ForwardCall_0060b370(0)[0], 4, dims[i][j]))
                     return false;
-                if (!stream->Read(&count, 4, 1))
+                if (!file->Read(&count, 4, 1))
                     return false;
                 elems[i][j].at(k).name.resize(count);
-                if (!stream->Read(&elems[i][j].at(k).name.at(0), 1, count))
+                if (!file->Read(&elems[i][j].at(k).name.at(0), 1, count))
                     return false;
             }
         }
@@ -3265,7 +3293,7 @@ struct VectorBF : CleanupBF
 struct SourceBF
 {
     int m_00, m_04, m_08, m_0c, m_10, m_14, m_18, m_1c, m_20, m_24;
-    VectorBF Transpose();
+    VectorBF FR2MatrixVTC_float_transpose();
 };
 struct DestBF
 {
@@ -3389,6 +3417,9 @@ struct SubBF
 };
 // @fnv 0x00aabf30
 // src: GUESS 0x00aabf30 (confidence: low)
+// pdb: FanGenCtlsGrpC::setAttribute | FanControls.obj | debug, object-file gap fill, medium
+// pdb params: race, att, type, val, coord
+// pdb locals: attBoundHi, delta, vectDiff, newVal, attBoundLo, valDiff
 void SubBF::UpdateState_00aabf30(int ia, int ib, int ic, float value, DestBF* dest)
 {
     if (ia < 5)
@@ -3410,7 +3441,7 @@ void SubBF::UpdateState_00aabf30(int ia, int ib, int ic, float value, DestBF* de
     ((float*)&i)[ib] = p;
     PairBF s;
     Runtime_UpdateState_00aaf2b0(&s, &m_fcc[ia][ic][0], &i);
-    dest[ic].AddMatrix(m_324[ia][ib][ic].Transpose().BuildScaledValues(((float*)&s)[ib]));
+    dest[ic].AddMatrix(m_324[ia][ib][ic].FR2MatrixVTC_float_transpose().BuildScaledValues(((float*)&s)[ib]));
 }
 
 namespace fnv_00aac170 {
@@ -3548,32 +3579,32 @@ struct MM
         }
         return 0;
     }
-    void Deallocate(void* pointer)
+    void Deallocate(void* apMem)
     {
-        if (!pointer)
+        if (!apMem)
             return;
         if (!active)
         {
-            FreePointer(pointer, 0);
+            FreePointer(apMem, 0);
             return;
         }
         void* currentPool = current;
         if (!currentPool)
         {
-            FreePointer(pointer, 0);
+            FreePointer(apMem, 0);
             return;
         }
-        MatrixPool* pool = DAT_011f63b8[(unsigned int)pointer >> 24];
-        if (pool && pool->Contains(pointer))
+        MatrixPool* pool = DAT_011f63b8[(unsigned int)apMem >> 24];
+        if (pool && pool->Contains(apMem))
         {
-            pool->MemoryPool_Free(pointer);
+            pool->MemoryPool_Free(apMem);
             return;
         }
-        MatrixHeap* heap = FindItemByArg(pointer);
+        MatrixHeap* heap = FindItemByArg(apMem);
         if (heap)
-            heap->Free(pointer, 0);
+            heap->Free(apMem, 0);
         else
-            FreePointer(pointer, 0);
+            FreePointer(apMem, 0);
     }
 };
 extern MM _g_memoryManager;
@@ -3622,20 +3653,20 @@ struct MatrixCore : MatrixStorage
 };
 struct LocalMatrix : MatrixCore
 {
-    LocalMatrix BuildScaledValues(float scale);
+    LocalMatrix BuildScaledValues(float d);
     __forceinline ~LocalMatrix()
     {}
 };
 struct SourceMatrix : LocalMatrix
 {
     unsigned int unk20, unk24;
-    LocalMatrix Transpose();
+    LocalMatrix FR2MatrixVTC_float_transpose();
 };
 struct OutputMatrix
 {
     unsigned int unk00, unk04, unk08, unk0c, unk10, unk14, unk18, unk1c;
     unsigned int unk20, unk24, unk28, unk2c, unk30, unk34, unk38, unk3c;
-    void AddMatrix(const LocalMatrix& rhs);
+    void AddMatrix(const LocalMatrix& m);
 };
 struct TransformMatrix
 {
@@ -4472,13 +4503,16 @@ struct Sub_00aabdb0
     unsigned int unkfc8;
     TransformMatrix transforms[5][2];
     float FanGenCtlsGrpC_getAttribute(int, int, int, int);
-    void FanGenCtlsGrpC_setAttributes(int group, int kind, const float* input, OutputMatrix* output);
+    void FanGenCtlsGrpC_setAttributes(int race, int kind, const float* val, OutputMatrix* coord);
 };
 // @fnv 0x00aac170
 // src: COMMUNITY 0x00aac170
-void Sub_00aabdb0::FanGenCtlsGrpC_setAttributes(int group, int kind, const float* input, OutputMatrix* output)
+// pdb: FanGenCtlsGrpC::setAttributes | FanControls.obj | retail, upstream name already matches, high
+// pdb params: race, type, val, coord
+// pdb locals: attBoundHi, delta, attBoundLo, valDiff, aa, newVal
+void Sub_00aabdb0::FanGenCtlsGrpC_setAttributes(int race, int kind, const float* val, OutputMatrix* coord)
 {
-    if (group < 5)
+    if (race < 5)
     {
     }
     else
@@ -4493,17 +4527,17 @@ void Sub_00aabdb0::FanGenCtlsGrpC_setAttributes(int group, int kind, const float
     unsigned int i;
     for (i = 0; i < 2; i++)
     {
-        float value = input[i];
+        float value = val[i];
         if (value < transformed[i])
             value = transformed[i];
         if (value > lower[i])
             value = lower[i];
-        (&upper.x)[i] = value - FanGenCtlsGrpC_getAttribute(group, i, kind, (int)output);
+        (&upper.x)[i] = value - FanGenCtlsGrpC_getAttribute(race, i, kind, (int)coord);
     }
-    PairVector delta = Runtime_UpdateState_00aaf2b0(transforms[group][kind], upper);
+    PairVector delta = Runtime_UpdateState_00aaf2b0(transforms[race][kind], upper);
     for (i = 0; i < 2; i++)
     {
-        output[kind].AddMatrix(components[group][i][kind].Transpose().BuildScaledValues((&delta.x)[i]));
+        coord[kind].AddMatrix(components[race][i][kind].FR2MatrixVTC_float_transpose().BuildScaledValues((&delta.x)[i]));
     }
 }
 }  // namespace fnv_00aac170
@@ -4562,6 +4596,9 @@ struct NoiseGridBuilder
 
 // @fnv 0x00aad6b0
 // src: GUESS 0x00aad6b0 (confidence: low)
+// pdb: FanGenCtlsGrpC::geneticRandomSymmetrical | FanControls.obj | debug, object-file run extension, low
+// pdb params: randomness, currCoord, outCoord
+// pdb locals: type, symm, rr, cc, delta
 void NoiseGridBuilder::ProcessEntries_00aad6b0(float magnitude, NoiseGrid input[2][2], NoiseGrid output[2][2])
 {
     for (int group = 0; group < 2; group = group + 1)
@@ -4642,6 +4679,9 @@ struct BlendOwner
 };
 // @fnv 0x00aadac0
 // src: GUESS 0x00aadac0 (confidence: low)
+// pdb: FanGenCtlsGrpC::tween | FanControls.obj | debug, object-file run extension, low
+// pdb params: type, symm, ratio, parent1, parent2, child
+// pdb locals: caric, caric1, caric2
 void BlendOwner::UpdateFields_00aadac0(int row, int col, float t, BlendValue (*a)[2], BlendValue (*b)[2], BlendValue (*out)[2])
 {
     float second = ProcessEntries_00aac3f0(0, row, col, a);
@@ -5081,6 +5121,9 @@ inline float S00aaf2b0_Dot(const float* m, unsigned int row, const float* v)
 
 // @fnv 0x00aaf2b0
 // src: GUESS 0x00aaf2b0 (confidence: low)
+// pdb: operator*<float> | FanControls.obj | debug, object-file run extension, low
+// pdb params: m, v
+// pdb locals: v2
 float* Runtime_UpdateState_00aaf2b0(float* out, float* m, float* v)
 {
     float r0 = 0.0f;
@@ -5169,7 +5212,7 @@ inline void Dead13()
 {
     int a[13];
 }
-void __cdecl ReportAssertionViolation(const char* file, int line);
+void __cdecl ReportAssertionViolation(const char* fname, int line);
 extern "C" void* __cdecl memcpy(void*, const void*, unsigned int);
 struct FGValueQ
 {
@@ -5237,6 +5280,9 @@ struct FGMatQ : FGBaseQ
 };
 // @fnv 0x00aaf330
 // src: GUESS 0x00aaf330 (confidence: low)
+// pdb: concatCols<float> | FanControls.obj | debug, object-file run extension, low
+// pdb params: matU, matL
+// pdb locals: retval, emptyU, emptyL
 FGMatQ Runtime_CopyMemory_00aaf330(const FGMatQ& a, FGMatQ& b)
 {
     bool aEmpty = a.empty();
@@ -5647,7 +5693,7 @@ ElemMOVE* __cdecl Object_ProcessAndReturnValue_00aaf7e0(ElemMOVE* _First, ElemMO
 
 struct PoolX
 {
-    void MemoryManager_Deallocate(void* p);
+    void MemoryManager_Deallocate(void* apMem);
 };
 extern "C" PoolX g_pool_011f6238;
 struct FUN_00aaec10
@@ -5715,7 +5761,7 @@ void Object_ProcessEntries_00aaf8a0(FUN_00aaec10* first, unsigned int count, con
 namespace fnv_00aafa80 {
 struct PoolX
 {
-    void MemoryManager_Deallocate(void* p);
+    void MemoryManager_Deallocate(void* apMem);
 };
 extern "C" PoolX g_pool_011f6238;
 inline void operator delete(void*, void*)
@@ -5865,6 +5911,9 @@ typedef basic_string<char, char_traits<char>, allocator<char> > string;
 }
 // @fnv 0x00aafbe0
 // src: GUESS 0x00aafbe0 (confidence: low)
+// pdb: std::vector<FffModeGS,std::allocator<FffModeGS> >::resize | EgmFileIO.obj | retail, object-file run extension, low
+// pdb note: debug build links it to fffIsEgmFile
+// pdb params: _Newsize
 char __cdecl Object_ProcessAndReturnValue_00aafbe0(const std::string& name)
 {
     FutBinaryFileC obj(std::string("FREGM002"));
@@ -6256,33 +6305,33 @@ struct MMDealloc
         return 0;
     }
 // src: XBOX_PDB 0x00aa4060
-    void MemoryManager_Deallocate(void* p)
+    void MemoryManager_Deallocate(void* apMem)
     {
-        if (!p)
+        if (!apMem)
             return;
         if (!active)
         {
-            FreePointer(p, 0);
+            FreePointer(apMem, 0);
             return;
         }
         DeallocHeap* fallback = defaultHeap;
         DeallocHeap* defaultAllocator = fallback;
         if (!defaultAllocator)
         {
-            FreePointer(p, 0);
+            FreePointer(apMem, 0);
             return;
         }
-        DeallocPool* pool = DAT_011f63b8[(unsigned int)p >> 24];
-        if (pool && pool->contains(p))
+        DeallocPool* pool = DAT_011f63b8[(unsigned int)apMem >> 24];
+        if (pool && pool->contains(apMem))
         {
-            pool->MemoryPool_Free(p);
+            pool->MemoryPool_Free(apMem);
             return;
         }
-        DeallocHeap* heap = FindItemByArg(p);
+        DeallocHeap* heap = FindItemByArg(apMem);
         if (heap)
-            heap->Free(p, 0);
+            heap->Free(apMem, 0);
         else
-            FreePointer(p, 0);
+            FreePointer(apMem, 0);
     }
 };
 extern MemoryManager g_memoryManager;
@@ -6437,7 +6486,7 @@ struct FUN_00ac5490 : FUN_00aaaa80
 {
     int m40;
     int m44;
-    FUN_00ac5490(std::Str s) : FUN_00aaaa80(s), m40(0), m44(0)
+    FUN_00ac5490(std::Str apString) : FUN_00aaaa80(apString), m40(0), m44(0)
     {}
     virtual ~FUN_00ac5490()
     {
@@ -6458,10 +6507,10 @@ struct FUN_00ac5490 : FUN_00aaaa80
         }
     }
 // src: XBOX_PDB 0x00ac5540
-    unsigned char BSFaceGenBinaryFile_openForRead(std::Str s, int z)
+    unsigned char BSFaceGenBinaryFile_openForRead(std::Str apFileName, int abCTLFile)
     {
-        int mode = z ? 0x100 : 1;
-        ReaderRef reference(readerDirectory ? readerDirectory->Find(s._Myptr()) : 0);
+        int mode = abCTLFile ? 0x100 : 1;
+        ReaderRef reference(readerDirectory ? readerDirectory->Find(apFileName._Myptr()) : 0);
         if (reference.p)
         {
             m44 = (int)reference.p;
@@ -6470,10 +6519,10 @@ struct FUN_00ac5490 : FUN_00aaaa80
             m40 = (int)reference.p->stream;
         }
         else
-            m40 = (int)OpenReaderStream(s._Myptr(), 0, 0x2800, mode);
+            m40 = (int)OpenReaderStream(apFileName._Myptr(), 0, 0x2800, mode);
         if (!m40)
         {
-            ReportReaderError(4, s);
+            ReportReaderError(4, apFileName);
             return 0;
         }
         ReaderChars raw(path.size() + 1);
@@ -6483,35 +6532,38 @@ struct FUN_00ac5490 : FUN_00aaaa80
         signature[5] = path[5];
         if (path.compare(0, path.size(), signature.begin(), ReaderStringLength(signature.begin())) != 0)
         {
-            ReportReaderError(2, s);
+            ReportReaderError(2, apFileName);
             ClearHolders();
             return 0;
         }
         if (raw[5] > '0' && path[5] != raw[5])
         {
-            ReportReaderError(4, s);
+            ReportReaderError(4, apFileName);
             ClearHolders();
             return 0;
         }
         path[5] = raw[5];
-        name.assign(s, 0, DAT_010173f0);
+        name.assign(apFileName, 0, DAT_010173f0);
         return m40 != 0;
     }
-    unsigned char BSFaceGenBinaryFile_readHeader(void* buf, int a, int b);
-    unsigned char BSFaceGenBinaryFile_read(void* buf, int a, int b);
+    unsigned char BSFaceGenBinaryFile_readHeader(void* buf, int a, int num);
+    unsigned char BSFaceGenBinaryFile_read(void* data, int size, int num);
     unsigned char UpdateState_00ac5c70(void* buf, int n);
 };
 static const char signatureText[] = "FREGM002";
 // @fnv 0x00aafc80
 // src: COMMUNITY 0x00aafc80
-unsigned char __cdecl fffReadEgmFile(const std::Str& pStr, int* pOut, Arr28* pA, Arr28* pB)
+// pdb: fffReadEgmFile | EgmFileIO.obj | retail, upstream name already matches, high
+// pdb params: fname, basisKey, symm, asym
+// pdb locals: hdr, bfile, stmp, scale, mode, pt
+unsigned char __cdecl fffReadEgmFile(const std::Str& fname, int* basisKey, Arr28* symm, Arr28* asym)
 {
     float val;
     long p2;
     unsigned short* _res;
     {
         FUN_00ac5490 obj4((std::Str(signatureText)));
-        if (!obj4.BSFaceGenBinaryFile_openForRead(pStr, 0))
+        if (!obj4.BSFaceGenBinaryFile_openForRead(fname, 0))
         {
             return 0;
         }
@@ -6521,20 +6573,20 @@ unsigned char __cdecl fffReadEgmFile(const std::Str& pStr, int* pOut, Arr28* pA,
             return 0;
         }
         hdr.nullsub_320();
-        *pOut = hdr.fC;
-        pA->ClearAllElements();
-        pB->ClearAllElements();
-        pA->std_vector_FffModeGS_std_allocator_FffModeGS_resize(hdr.f4);
-        pB->std_vector_FffModeGS_std_allocator_FffModeGS_resize(hdr.f8);
+        *basisKey = hdr.fC;
+        symm->ClearAllElements();
+        asym->ClearAllElements();
+        symm->std_vector_FffModeGS_std_allocator_FffModeGS_resize(hdr.f4);
+        asym->std_vector_FffModeGS_std_allocator_FffModeGS_resize(hdr.f8);
         {
             _res = (unsigned short*)AllocateBytes(hdr.f0 * 6);
             for (p2 = 0; p2 < hdr.f4; ++p2)
             {
-                Elem28* e = &(*pA)[p2];
-                (*pA)[p2].arr.resize(hdr.f0);
+                Elem28* e = &(*symm)[p2];
+                (*symm)[p2].arr.resize(hdr.f0);
                 if (!obj4.BSFaceGenBinaryFile_read(&val, 4, 1))
                     return 0;
-                (*pA)[p2].f = val;
+                (*symm)[p2].f = val;
                 if (!obj4.UpdateState_00ac5c70(_res, hdr.f0 * 3))
                     return 0;
                 unsigned int index;
@@ -6566,7 +6618,7 @@ unsigned char __cdecl fffReadEgmFile(const std::Str& pStr, int* pOut, Arr28* pA,
             }
             for (p2 = 0; p2 < hdr.f8; ++p2)
             {
-                Elem28* e = &(*pB)[p2];
+                Elem28* e = &(*asym)[p2];
                 e->arr.resize(hdr.f0);
                 if (!obj4.BSFaceGenBinaryFile_read(&val, 4, 1))
                     return 0;
@@ -6812,6 +6864,8 @@ inline void Ab0a30Owner::UpdateState_00ab0d50(int arg, Ab0a30Msg msg)
 }
 // @fnv 0x00ab0a30
 // src: COMMUNITY 0x00ab0a30
+// pdb: BSStream::Endian | EgmFileIO.obj | debug, object-file run extension, low
+// pdb params: arVal
 void Ab0a30Owner::std_vector_FffModeGS_std_allocator_FffModeGS_resize(int a0)
 {
     this->UpdateState_00ab0d50(a0, Ab0a30Msg());
@@ -6956,6 +7010,8 @@ struct FUN_00ab0a80 : VectorVal<Short3, GameAlloc<Short3> >
     FUN_00ab0a80();
 };
 // @fnv 0x00ab0a80
+// pdb: std::vector<FR2Vect3TC<short>,std::allocator<FR2Vect3TC<short> > >::resize | EgmFileIO.obj | debug, object-file run extension, low
+// pdb params: _Newsize
 FUN_00ab0a80::FUN_00ab0a80() : VectorVal<Short3, GameAlloc<Short3> >()
 {
     ProcessAndReturnValue_0065f380(0);
@@ -7031,6 +7087,8 @@ inline CItQ_ab0b60_ab0b60::CItQ_ab0b60_ab0b60(ElQ_ab0b60* _Ptr, const VecQ_ab0b6
 }
 // @fnv 0x00ab0b60
 // src: GUESS 0x00ab0b60 (confidence: low)
+// pdb: std::vector<FffModeGS,std::allocator<FffModeGS> >::resize | EgmFileIO.obj | debug, object-file run extension, low
+// pdb params: _Newsize
 void VecQ_ab0b60::ProcessState_00ab0b60(unsigned int _Newsize, ElQ_ab0b60 _Val)
 {
 
@@ -8730,6 +8788,10 @@ struct Cls_ab5ce0
 };
 // @fnv 0x00ab5ce0
 // src: GUESS 0x00ab5ce0 (confidence: low)
+// pdb: std::vector<FffTriDiffMorphS,std::allocator<FffTriDiffMorphS> >::reserve | TriFileIO.obj | retail, object-file run extension, low
+// pdb note: debug build links it to FffTriFileDataS::extractVtxLblPts
+// pdb params: _Count
+// pdb locals: _Size, _Ptr
 void Cls_ab5ce0::ProcessEntries_00ab5ce0(VecA_ab5ce0& out)
 {
     out.ProcessEntireVectorRange();
@@ -8760,7 +8822,7 @@ struct NameString
 struct NamedRecord
 {
     char name[0x40];
-    NamedRecord(NameString name);
+    NamedRecord(NameString a_fileId);
     ~NamedRecord();
     bool Test(int value);
 };
@@ -8806,6 +8868,9 @@ inline void ReservePad()
 
 // @fnv 0x00ab5e20
 // src: GUESS 0x00ab5e20 (confidence: low)
+// pdb: std::vector<FffTriDiffMorphS,std::allocator<FffTriDiffMorphS> >::resize | TriFileIO.obj | retail, object-file run extension, low
+// pdb note: debug build links it to fffIsTriFile
+// pdb params: _Newsize
 bool Object_ProcessAndReturnValue_00ab5e20(int arg)
 {
 
@@ -9647,6 +9712,8 @@ struct FUN_00aba0d0 : AbaVal<char, AbaAlloc<char> >
     explicit FUN_00aba0d0(unsigned int count);
 };
 // @fnv 0x00aba0d0
+// pdb: std::vector<signed char,std::allocator<signed char> >::resize | EgtFileIO_Sdk.obj | retail, call graph, medium
+// pdb params: _Newsize
 FUN_00aba0d0::FUN_00aba0d0(unsigned int count) : AbaVal<char, AbaAlloc<char> >()
 {
     InitializeFilledElements(count, char());
@@ -10883,7 +10950,7 @@ extern MemoryManager DAT_011f6238;
 
 struct S00abb930_Pool
 {
-    void MemoryManager_Deallocate(void* p);
+    void MemoryManager_Deallocate(void* apMem);
 };
 
 struct S00abb930_Elem
@@ -11581,7 +11648,7 @@ ElemBF50& FUN_00abbf50_Iterator::EvaluateValue_00abbf50() const
 
 struct S00abc120_shell
 {
-    void __thiscall MemoryManager_Deallocate(void* p);
+    void __thiscall MemoryManager_Deallocate(void* apMem);
 };
 
 struct S00abc120_ptr
@@ -14217,9 +14284,9 @@ struct FGMatrix : FGVector
         return out;
     }
     float FUN_006588a0();
-    FGMatrix BuildScaledValues(float scale);
+    FGMatrix BuildScaledValues(float d);
     FGMatrix BuildReciprocalScaledValues(float scale);
-    FGMatrix Transpose();
+    FGMatrix FR2MatrixVTC_float_transpose();
     FGMatrix FUN_00658360(const FGMatrix&);
     FGMatrix ProcessEntries_00aaed70(const FGMatrix&);
     FGMatrix& FUN_006581e0(const FGMatrix&);
@@ -14365,12 +14432,15 @@ struct FGModel
 
     FGSmall small[5][2];
 
-    bool FanGenCtlsGrpC_readFromFile(FGReader* file, FGSize* sizes);
+    bool FanGenCtlsGrpC_readFromFile(FGReader* file, FGSize* dims);
 };
 
 // @fnv 0x00aaaf10
 // src: COMMUNITY 0x00aaaf10
-bool FGModel::FanGenCtlsGrpC_readFromFile(FGReader* file, FGSize* sizes)
+// pdb: FanGenCtlsGrpC::readFromFile | FanControls.obj | retail, upstream name already matches, high
+// pdb params: file, dims
+// pdb locals: rr, dim, aa, tt, rr2, ftmp, ns, ctlLen, ctlDotProd, aa2
+bool FGModel::FanGenCtlsGrpC_readFromFile(FGReader* file, FGSize* dims)
 {
 
     unsigned int total2;
@@ -14386,9 +14456,9 @@ bool FGModel::FanGenCtlsGrpC_readFromFile(FGReader* file, FGSize* sizes)
             for (unsigned int k = 0; k < 2; ++k)
             {
 
-                bases[i][j][k].resize(1, sizes[k].count);
+                bases[i][j][k].resize(1, dims[k].count);
 
-                if (!file->read(&bases[i][j][k].ForwardCall_0060b370(0)[0], 4, sizes[k].count))
+                if (!file->read(&bases[i][j][k].ForwardCall_0060b370(0)[0], 4, dims[k].count))
                     return false;
 
                 if (!file->read(&bases[i][j][k].weight, 4, 1))
@@ -14413,9 +14483,9 @@ bool FGModel::FanGenCtlsGrpC_readFromFile(FGReader* file, FGSize* sizes)
                 for (unsigned int k = 0; k < 2; ++k)
                 {
 
-                    cross[i][j].vectors[k].resize(1, sizes[k].count);
+                    cross[i][j].vectors[k].resize(1, dims[k].count);
 
-                    if (!file->read(&cross[i][j].vectors[k].ForwardCall_0060b370(0)[0], 4, sizes[k].count))
+                    if (!file->read(&cross[i][j].vectors[k].ForwardCall_0060b370(0)[0], 4, dims[k].count))
                         return false;
 
                     sum4 += cross[i][j].vectors[k].FUN_006588a0();
@@ -14429,7 +14499,7 @@ bool FGModel::FanGenCtlsGrpC_readFromFile(FGReader* file, FGSize* sizes)
         }
     }
 
-    total2 = sizes[0].count + sizes[1].count;
+    total2 = dims[0].count + dims[1].count;
 
     for (i = 0; i < 5; ++i)
     {
@@ -14439,7 +14509,7 @@ bool FGModel::FanGenCtlsGrpC_readFromFile(FGReader* file, FGSize* sizes)
         for (j = 0; j < 2; ++j)
         {
 
-            unsigned int n = sizes[j].count;
+            unsigned int n = dims[j].count;
 
             matrices[i].first[j].resize(n, 1);
 
@@ -14455,7 +14525,7 @@ bool FGModel::FanGenCtlsGrpC_readFromFile(FGReader* file, FGSize* sizes)
         for (j = 0; j < 2; ++j)
         {
 
-            unsigned int n = sizes[j].count;
+            unsigned int n = dims[j].count;
 
             matrices[i].second[j].resize(n, n);
 
@@ -14482,7 +14552,7 @@ bool FGModel::FanGenCtlsGrpC_readFromFile(FGReader* file, FGSize* sizes)
 
             normalized[i][j].first.FUN_006581e0((const FGMatrix&)bases[i][0][j].BuildReciprocalScaledValues(norm5));
 
-            dot4 = bases[i][1][j].FUN_00658360(normalized[i][j].first.Transpose()).ForwardCall_0060b370(0)[0];
+            dot4 = bases[i][1][j].FUN_00658360(normalized[i][j].first.FR2MatrixVTC_float_transpose()).ForwardCall_0060b370(0)[0];
 
             normalized[i][j].second.FUN_006581e0(
                 bases[i][1][j].ProcessEntries_00aaed70(normalized[i][j].first.BuildScaledValues(dot4)));
@@ -14520,7 +14590,7 @@ bool FGModel::FanGenCtlsGrpC_readFromFile(FGReader* file, FGSize* sizes)
                 {
 
                     small[i][j].at(k, l) +=
-                        bases[i][k][j].FUN_00658360(bases[i][l][j].Transpose()).ForwardCall_0060b370(0)[0];
+                        bases[i][k][j].FUN_00658360(bases[i][l][j].FR2MatrixVTC_float_transpose()).ForwardCall_0060b370(0)[0];
                 }
             }
 
@@ -14543,7 +14613,7 @@ template <int N> __forceinline void UnusedInlineLocals()
 }
 
 double FUN_00ec6054(double x);
-void __cdecl ReportAssertionViolation(const char* file, int line);
+void __cdecl ReportAssertionViolation(const char* fname, int line);
 
 inline double FgSqrtf(float value)
 {
@@ -14602,7 +14672,7 @@ struct FgMatT
     unsigned int m_rows;
     unsigned int m_cols;
     FgCoord ForwardCall_0060b370(int idx);
-    FgMatT BuildScaledValues(float val);
+    FgMatT BuildScaledValues(float d);
 };
 
 struct FgMat
@@ -14634,8 +14704,8 @@ struct FgMat
         return FgCoord(GetElementPointerChecked(0) + row * m_cols, m_cols);
     }
     float FUN_006588a0();
-    FgMat ProcessEntries_00aaed70(const FgMat& rhs);
-    FgMat FUN_00658360(const FgMat& rhs);
+    FgMat ProcessEntries_00aaed70(const FgMat& m);
+    FgMat FUN_00658360(const FgMat& m);
     void ProcessEntries_00aaef90(const FgMatT& rhs);
 };
 
@@ -14655,8 +14725,8 @@ struct FgMatD
     int unk14;
     unsigned int m_rows;
     unsigned int m_cols;
-    FgMatT FUN_00658360(const FgMat& rhs);
-    FgMatT Transpose();
+    FgMatT FUN_00658360(const FgMat& m);
+    FgMatT FR2MatrixVTC_float_transpose();
 };
 
 struct FanControls
@@ -15323,6 +15393,9 @@ struct FanControls
 
 // @fnv 0x00aac3f0
 // src: GUESS 0x00aac3f0 (confidence: low)
+// pdb: FanGenCtlsGrpC::getCaricature | FanControls.obj | debug, object-file run extension, low
+// pdb params: race, type, symm, coord
+// pdb locals: mCoord, residual, aa, dotProd
 float FanControls::ProcessEntries_00aac3f0(int arg1, int arg2, int arg3, FgMat (*arg4)[2])
 {
 
@@ -15364,7 +15437,7 @@ float FanControls::ProcessEntries_00aac3f0(int arg1, int arg2, int arg3, FgMat (
         {
 
             float coord2 = m_matrices_d4c[arg1][arg2][i].FUN_00658360(mat5).ForwardCall_0060b370(0)[0];
-            mat5.ProcessEntries_00aaef90(m_matrices_d4c[arg1][arg2][i].Transpose().BuildScaledValues(coord2));
+            mat5.ProcessEntries_00aaef90(m_matrices_d4c[arg1][arg2][i].FR2MatrixVTC_float_transpose().BuildScaledValues(coord2));
         }
 
         UnusedInlineLocals<21>();
@@ -15500,8 +15573,8 @@ struct FgMat : FgCore
     FgMat ProcessEntries_00aaed70(const FgMat& m);
     FgMat FUN_00658360(const FgMat& m);
     FgRow ForwardCall_0060b370(int r);
-    FgMat Transpose();
-    FgMat BuildScaledValues(float s);
+    FgMat FR2MatrixVTC_float_transpose();
+    FgMat BuildScaledValues(float d);
     void AddMatrix(const FgMat& m);
     void ProcessEntries_00aaef90(const FgMat& m);
     FgMat AddMatrixElements(const FgMat& m);
@@ -16175,6 +16248,9 @@ struct FanControls
 
 // @fnv 0x00aac820
 // src: GUESS 0x00aac820 (confidence: low)
+// pdb: FanGenCtlsGrpC::setCaricature | FanControls.obj | debug, object-file run extension, low
+// pdb params: race, type, symm, val, coord
+// pdb locals: oldCaric, residual, projection, aa, dotProd
 void FanControls::ProcessEntries_00aac820(int model, int category, int channel, float amount, FgParams* params)
 {
     if (model < 5)
@@ -16224,7 +16300,7 @@ void FanControls::ProcessEntries_00aac820(int model, int category, int channel, 
         {
             float weight = bases[model][category][axis].FUN_00658360(centered).ForwardCall_0060b370(0)[0];
             fgDead64();
-            projection.AddMatrix(bases[model][category][axis].Transpose().BuildScaledValues(weight));
+            projection.AddMatrix(bases[model][category][axis].FR2MatrixVTC_float_transpose().BuildScaledValues(weight));
         }
         centered.ProcessEntries_00aaef90(projection);
         float scale3 = ProcessEntries_00aac3f0(model, category, channel, params);
@@ -16243,7 +16319,7 @@ void FanControls::ProcessEntries_00aac820(int model, int category, int channel, 
 }  // namespace fnv_00aac820
 
 namespace fnv_00aacdb0 {
-void __cdecl ReportAssertionViolation(const char* pcFile, int iLine);
+void __cdecl ReportAssertionViolation(const char* fname, int line);
 
 extern MemoryManager g_kMemoryAACDB0;
 struct ProxyAACDB0
@@ -16359,7 +16435,7 @@ struct FgCoordinates
 };
 struct FgCoordinateBasis
 {
-    FgMatrix Transform(const FgCoordinates& kCoords) const;
+    FgMatrix Transform(const FgCoordinates& m) const;
     int unk00;
     int unk04;
     int unk08;
@@ -16787,6 +16863,9 @@ struct FanControls
 
 // @fnv 0x00aacdb0
 // src: GUESS 0x00aacdb0 (confidence: low)
+// pdb: FanGenCtlsGrpC::getRace | FanControls.obj | debug, object-file run extension, low
+// pdb params: race1, race2, coord
+// pdb locals: retval, tt
 float FanControls::ProcessEntries_00aacdb0(int iFrom, int iTo, const FgCoordinates* pkCoords)
 {
     if (iFrom < 5)
@@ -18285,12 +18364,15 @@ struct FUN_00aba0d0 : VectorVal<char>
 void __cdecl futSetLastError(int, TriString);
 // @fnv 0x00ab5ec0
 // src: COMMUNITY 0x00ab5ec0
-bool __cdecl fffReadTriFile(const TriString& filename, Geometry* geometry)
+// pdb: fffReadTriFile | TriFileIO.obj | retail, upstream name already matches, high
+// pdb params: fname, triData
+// pdb locals: morphVtxOffset, ii, file, triHdr, nn, vec, xx, scale, vtx, deltas
+bool __cdecl fffReadTriFile(const TriString& fname, Geometry* geometry)
 {
     TriHeader triHeader;
     fnv_zlib_memset(&triHeader, 0, 56);
     FUN_00ac5490 reader("FRTRI003");
-    if (!reader.BSFaceGenBinaryFile_openForRead(filename, 0))
+    if (!reader.BSFaceGenBinaryFile_openForRead(fname, 0))
         return false;
     if (!reader.BSFaceGenBinaryFile_readHeader(&triHeader, 1, 56))
         return false;
@@ -18447,7 +18529,7 @@ bool __cdecl fffReadTriFile(const TriString& filename, Geometry* geometry)
     }
     if (accumulated != triHeader.vertices + triHeader.extraVertices)
     {
-        futSetLastError(1, filename);
+        futSetLastError(1, fname);
         return false;
     }
     return true;
@@ -18560,18 +18642,21 @@ struct FanControlsV7
     bool enabled;
     ControlSetV7 controls[5];
     MatrixEntry entries[5][2][2];
-    float FanGenCtlsGrpC_getAttribute(int a1, int a2, int a3, const ImagePairV7* a4);
+    float FanGenCtlsGrpC_getAttribute(int race, int att, int a3, const ImagePairV7* coord);
 };
 // @fnv 0x00aabdb0
 // src: COMMUNITY 0x00aabdb0
-float FanControlsV7::FanGenCtlsGrpC_getAttribute(int a1, int a2, int a3, const ImagePairV7* a4)
+// pdb: FanGenCtlsGrpC::getAttribute | FanControls.obj | retail, upstream name already matches, high
+// pdb params: race, att, type, coord
+// pdb locals: retval
+float FanControlsV7::FanGenCtlsGrpC_getAttribute(int race, int att, int a3, const ImagePairV7* coord)
 {
-    if (a1 < 5)
+    if (race < 5)
     {
     }
     else
         ReportAssertionViolation("D:\\_Fallout3\\Platforms\\Common\\Code\\SDK\\FaceGen\\FanControls.cpp", 0xc6);
-    if (a2 < 2)
+    if (att < 2)
     {
     }
     else
@@ -18584,8 +18669,8 @@ float FanControlsV7::FanGenCtlsGrpC_getAttribute(int a1, int a2, int a3, const I
     if (!enabled)
         return 0.0f;
     float val = 0.0f;
-    val = entries[a1][a2][a3].FUN_00658360(&a4[a3]).ForwardCall_0060b370(0)[0];
-    val += entries[a1][a2][a3].bias;
+    val = entries[race][att][a3].FUN_00658360(&coord[a3]).ForwardCall_0060b370(0)[0];
+    val += entries[race][att][a3].bias;
     return val;
 }
 
@@ -19321,14 +19406,14 @@ struct IOThread
     unsigned long creatorId;
     bool running;
     void FUN_00aa6560(int);
-    void FUN_00aa6430(int stackSize, const char* name, bool suspended)
+    void FUN_00aa6430(int aeStackSize, const char* apName, bool bSuspend)
     {
         IOThread* self = this;
         if (self->worker)
             return;
         self->creator = GetCurrentThread();
         self->creatorId = GetCurrentThreadId();
-        self->worker = CreateThread(0, stackSize, RunThreadProc, self, suspended ? 4 : 0, &self->workerId);
+        self->worker = CreateThread(0, aeStackSize, RunThreadProc, self, bSuspend ? 4 : 0, &self->workerId);
         DAT_00fdf05c(&self->critical);
         self->FUN_00aa6560(-1);
         self->running = true;
@@ -19351,6 +19436,8 @@ extern "C" GlobalObject_0078d3b0* DAT_011f6c08;
 }
 // @fnv 0x00aa7eb0
 // src: COMMUNITY 0x00aa7eb0
+// pdb: OEI::IO::initialize | oei_io_thread.obj | retail, upstream name already matches, high
+// pdb locals: i
 void OEI_IO_initialize()
 {
     unsigned int i;
@@ -19424,6 +19511,9 @@ struct ReworkModel : FGModel
 };
 // @fnv 0x00aad140
 // src: GUESS 0x00aad140 (confidence: low)
+// pdb: FanGenCtlsGrpC::random | FanControls.obj | debug, object-file run extension, low
+// pdb params: race, coord
+// pdb locals: pos, s1, s2, tt, ss, bb
 void ReworkModel::ProcessEntries_00aad140(int idx, ReworkPair* bases)
 {
     if (idx < 5)
@@ -21197,7 +21287,7 @@ class FUN_0044a4c0 : public StringVal<char, allocator<char> >
 }
 typedef TriWriterTypes::FUN_0044a4c0 WriterString;
 
-void __cdecl ReportError(int code, WriterString msg);
+void __cdecl ReportError(int err, WriterString txt);
 
 struct V3
 {
@@ -21249,9 +21339,9 @@ struct Tri : Vector_TriWriterRework<E0>
     Vector_TriWriterRework<EA8> va8;
     Vector_TriWriterRework<EC0> vc0;
     Vector_TriWriterRework<ED8> vd8;
-    unsigned int ProcessEntries_0065a5a0() const;
-// src: GUESS 0x0065a5a0 (confidence: low)
-    unsigned int ProcessEntries_0065a5a0()
+    unsigned int FffTriFileDataS_numModelVtx() const;
+// src: XBOX_DEBUG_PDB 0x0065a5a0
+    unsigned int FffTriFileDataS_numModelVtx()
     {
         unsigned int n = size();
         for (unsigned int i = 0; i < vd8.size(); i++)
@@ -21268,13 +21358,16 @@ struct Writer
     virtual void v04();
     virtual void v08();
     virtual bool Write(const void* p, unsigned int size, unsigned int count);
-    bool FutBinaryFileC_writeHeader(const void* p, unsigned int size, unsigned int count);
+    bool FutBinaryFileC_writeHeader(const void* p, unsigned int size, unsigned int num);
 };
 
 }
 // @fnv 0x00ab7f40
 // src: XBOX_PDB 0x00ab7f40
-bool __cdecl fffWriteTriFile(TriWriterRework::Writer* w, TriWriterRework::Tri* t)
+// pdb: fffWriteTriFile | TriFileIO.obj | debug, unique string literal, high
+// pdb params: file, triData
+// pdb locals: hdr, ii, totalStatMorphVtx, nn, vec, xx, vtx, scale, stmp
+bool __cdecl fffWriteTriFile(TriWriterRework::Writer* file, TriWriterRework::Tri* triData)
 {
     using namespace TriWriterRework;
     union
@@ -21285,67 +21378,67 @@ bool __cdecl fffWriteTriFile(TriWriterRework::Writer* w, TriWriterRework::Tri* t
     unsigned int total;
     unsigned int el;
     fnv_zlib_memset(hdr.bytes, 0, 0x38);
-    hdr.counts[0] = t->ProcessEntries_0065a5a0();
-    hdr.counts[1] = t->v18.size();
-    hdr.counts[2] = t->v30.size();
-    hdr.counts[3] = t->v90.size();
-    hdr.counts[4] = t->va8.size();
-    hdr.counts[7] = t->vc0.size();
-    hdr.counts[8] = t->vd8.size();
-    hdr.counts[9] = t->size() - ((const Tri*)t)->ProcessEntries_0065a5a0();
-    if (t->v48.size() == hdr.counts[0] && t->v60.size() == 0 && t->v78.size() == 0)
+    hdr.counts[0] = triData->FffTriFileDataS_numModelVtx();
+    hdr.counts[1] = triData->v18.size();
+    hdr.counts[2] = triData->v30.size();
+    hdr.counts[3] = triData->v90.size();
+    hdr.counts[4] = triData->va8.size();
+    hdr.counts[7] = triData->vc0.size();
+    hdr.counts[8] = triData->vd8.size();
+    hdr.counts[9] = triData->size() - ((const Tri*)triData)->FffTriFileDataS_numModelVtx();
+    if (triData->v48.size() == hdr.counts[0] && triData->v60.size() == 0 && triData->v78.size() == 0)
     {
         hdr.counts[6] |= 1;
         hdr.counts[5] = 0;
     }
-    else if (t->v48.size() != 0 && t->v60.size() == hdr.counts[1] && t->v78.size() == hdr.counts[2])
+    else if (triData->v48.size() != 0 && triData->v60.size() == hdr.counts[1] && triData->v78.size() == hdr.counts[2])
     {
         hdr.counts[6] |= 1;
-        hdr.counts[5] = t->v48.size();
+        hdr.counts[5] = triData->v48.size();
     }
     else
     {
         hdr.counts[6] &= ~1;
         hdr.counts[5] = 0;
     }
-    if (!w->FutBinaryFileC_writeHeader(hdr.bytes, 0x38, 1))
+    if (!file->FutBinaryFileC_writeHeader(hdr.bytes, 0x38, 1))
         return false;
-    if (hdr.counts[0] + hdr.counts[9] != 0 && !w->Write(&(*t)[0], 12, hdr.counts[0] + hdr.counts[9]))
+    if (hdr.counts[0] + hdr.counts[9] != 0 && !file->Write(&(*triData)[0], 12, hdr.counts[0] + hdr.counts[9]))
         return false;
-    if (hdr.counts[1] != 0 && !w->Write(&t->v18[0], 12, hdr.counts[1]))
+    if (hdr.counts[1] != 0 && !file->Write(&triData->v18[0], 12, hdr.counts[1]))
         return false;
-    if (hdr.counts[2] != 0 && !w->Write(&t->v30[0], 16, hdr.counts[2]))
+    if (hdr.counts[2] != 0 && !file->Write(&triData->v30[0], 16, hdr.counts[2]))
         return false;
     for (el = 0; el < hdr.counts[3]; el++)
     {
-        if (!w->Write(&t->v90[el].id, 4, 1))
+        if (!file->Write(&triData->v90[el].id, 4, 1))
             return false;
-        unsigned int n11 = t->v90[el].name.size() + 1;
-        if (!w->Write(&n11, 4, 1))
+        unsigned int n11 = triData->v90[el].name.size() + 1;
+        if (!file->Write(&n11, 4, 1))
             return false;
         Buf bufferA(n11);
         for (unsigned int j = 0; j < n11 - 1; j++)
-            bufferA[j] = t->v90[el].name[j];
+            bufferA[j] = triData->v90[el].name[j];
         bufferA[n11 - 1] = 0;
-        if (!w->Write(&bufferA[0], 1, n11))
+        if (!file->Write(&bufferA[0], 1, n11))
         {
             return false;
         }
     }
     for (el = 0; el < hdr.counts[4]; el++)
     {
-        if (!w->Write(&t->va8[el].id, 4, 1))
+        if (!file->Write(&triData->va8[el].id, 4, 1))
             return false;
-        if (!w->Write(&t->va8[el].pos, 12, 1))
+        if (!file->Write(&triData->va8[el].pos, 12, 1))
             return false;
-        unsigned int n11 = t->va8[el].name.size() + 1;
-        if (!w->Write(&n11, 4, 1))
+        unsigned int n11 = triData->va8[el].name.size() + 1;
+        if (!file->Write(&n11, 4, 1))
             return false;
         Buf bufferA(n11);
         for (unsigned int j = 0; j < n11 - 1; j++)
-            bufferA[j] = t->va8[el].name[j];
+            bufferA[j] = triData->va8[el].name[j];
         bufferA[n11 - 1] = 0;
-        if (!w->Write(&bufferA[0], 1, n11))
+        if (!file->Write(&bufferA[0], 1, n11))
         {
             return false;
         }
@@ -21354,30 +21447,30 @@ bool __cdecl fffWriteTriFile(TriWriterRework::Writer* w, TriWriterRework::Tri* t
     {
         if (hdr.counts[5] == 0)
         {
-            if (!w->Write(&t->v48[0], 8, hdr.counts[0]))
+            if (!file->Write(&triData->v48[0], 8, hdr.counts[0]))
                 return false;
         }
         else
         {
-            if (!w->Write(&t->v48[0], 8, hdr.counts[5]))
+            if (!file->Write(&triData->v48[0], 8, hdr.counts[5]))
                 return false;
-            if (!w->Write(&t->v60[0], 12, hdr.counts[1]))
+            if (!file->Write(&triData->v60[0], 12, hdr.counts[1]))
                 return false;
-            if (!w->Write(&t->v78[0], 16, hdr.counts[2]))
+            if (!file->Write(&triData->v78[0], 16, hdr.counts[2]))
                 return false;
         }
     }
     for (el = 0; el < hdr.counts[7]; el++)
     {
-        unsigned int n11 = t->vc0[el].name.size() + 1;
-        if (!w->Write(&n11, 4, 1))
+        unsigned int n11 = triData->vc0[el].name.size() + 1;
+        if (!file->Write(&n11, 4, 1))
             return false;
         Buf bufferA(n11);
         for (unsigned int j = 0; j < n11 - 1; j++)
-            bufferA[j] = t->vc0[el].name[j];
+            bufferA[j] = triData->vc0[el].name[j];
         bufferA[n11 - 1] = 0;
         {
-            if (!w->Write(&bufferA[0], 1, n11))
+            if (!file->Write(&bufferA[0], 1, n11))
             {
                 return false;
             }
@@ -21386,47 +21479,47 @@ bool __cdecl fffWriteTriFile(TriWriterRework::Writer* w, TriWriterRework::Tri* t
         unsigned int k;
         for (k = 0; k < hdr.counts[0]; k++)
         {
-            if (scale < fabs(t->vc0[el].verts[k].x))
-                scale = fabs(t->vc0[el].verts[k].x);
-            if (scale < fabs(t->vc0[el].verts[k].y))
-                scale = fabs(t->vc0[el].verts[k].y);
-            if (scale < fabs(t->vc0[el].verts[k].z))
-                scale = fabs(t->vc0[el].verts[k].z);
+            if (scale < fabs(triData->vc0[el].verts[k].x))
+                scale = fabs(triData->vc0[el].verts[k].x);
+            if (scale < fabs(triData->vc0[el].verts[k].y))
+                scale = fabs(triData->vc0[el].verts[k].y);
+            if (scale < fabs(triData->vc0[el].verts[k].z))
+                scale = fabs(triData->vc0[el].verts[k].z);
         }
         scale = scale / 32767.0;
-        if (!w->Write(&scale, 4, 1))
+        if (!file->Write(&scale, 4, 1))
             return false;
         scale = 1.0f / scale;
         for (k = 0; k < hdr.counts[0]; k++)
         {
             short s[3];
-            s[0] = (short)FUN_00ec6940(t->vc0[el].verts[k].x * scale + 0.5);
-            s[1] = (short)FUN_00ec6940(t->vc0[el].verts[k].y * scale + 0.5);
-            s[2] = (short)FUN_00ec6940(t->vc0[el].verts[k].z * scale + 0.5);
-            if (!w->Write(s, 2, 3))
+            s[0] = (short)FUN_00ec6940(triData->vc0[el].verts[k].x * scale + 0.5);
+            s[1] = (short)FUN_00ec6940(triData->vc0[el].verts[k].y * scale + 0.5);
+            s[2] = (short)FUN_00ec6940(triData->vc0[el].verts[k].z * scale + 0.5);
+            if (!file->Write(s, 2, 3))
                 return false;
         }
     }
     total = 0;
     for (el = 0; el < hdr.counts[8]; el++)
     {
-        unsigned int n11 = t->vd8[el].name.size() + 1;
-        if (!w->Write(&n11, 4, 1))
+        unsigned int n11 = triData->vd8[el].name.size() + 1;
+        if (!file->Write(&n11, 4, 1))
             return false;
         Buf bufferA(n11);
         for (unsigned int j = 0; j < n11 - 1; j++)
-            bufferA[j] = t->vd8[el].name[j];
+            bufferA[j] = triData->vd8[el].name[j];
         bufferA[n11 - 1] = 0;
         {
-            if (!w->Write(&bufferA[0], 1, n11))
+            if (!file->Write(&bufferA[0], 1, n11))
             {
                 return false;
             }
         }
-        n11 = t->vd8[el].idx.size();
-        if (!w->Write(&n11, 4, 1))
+        n11 = triData->vd8[el].idx.size();
+        if (!file->Write(&n11, 4, 1))
             return false;
-        if (n11 != 0 && !w->Write(&t->vd8[el].idx[0], 4, n11))
+        if (n11 != 0 && !file->Write(&triData->vd8[el].idx[0], 4, n11))
             return false;
         total += n11;
     }
@@ -21889,36 +21982,39 @@ struct ImageHeader
     void nullsub_322();
 };
 // @fnv 0x00ab2640
-// src: GUESS 0x00ab2640 (confidence: low)
-bool __cdecl Object_ProcessEntries_00ab2640(const ReaderString& filename, unsigned int* format, Images* first, Images* second)
+// src: XBOX_RETAIL_PDB 0x00ab2640
+// pdb: fffReadEgtFile | EgtFileIO_Sdk.obj | retail, string-set bridge, high
+// pdb params: fname, basisKey, symm, asym
+// pdb locals: rowSize, jj, hdr, bfile, ii, kk, bytesPerPix, rowPad, totalSize, ptr
+bool __cdecl fffReadEgtFile(const ReaderString& fname, unsigned int* basisKey, Images* symm, Images* asym)
 {
     FUN_00ac5490 stream3((ReaderString(&DAT_010a2d3c)));
-    if (!stream3.BSFaceGenBinaryFile_openForRead(filename, 0))
+    if (!stream3.BSFaceGenBinaryFile_openForRead(fname, 0))
         return false;
     ImageHeader kHeader;
     if (!stream3.BSFaceGenBinaryFile_readHeader(&kHeader, 1, 56))
         return false;
     kHeader.nullsub_322();
-    *format = kHeader.format;
-    first->std_vector_FffModeTexS_std_allocator_FffModeTexS_clear();
-    second->std_vector_FffModeTexS_std_allocator_FffModeTexS_clear();
+    *basisKey = kHeader.format;
+    symm->std_vector_FffModeTexS_std_allocator_FffModeTexS_clear();
+    asym->std_vector_FffModeTexS_std_allocator_FffModeTexS_clear();
     unsigned int stride6 = 1;
     unsigned int padding3 = ((kHeader.width * stride6 + 7) & ~7u) / stride6 - kHeader.width;
     unsigned int rowSize = kHeader.width + padding3;
     unsigned int size7 = rowSize * kHeader.height;
-    first->resize(kHeader.count1);
+    symm->resize(kHeader.count1);
     unsigned int i3, j2, k;
     for (i3 = 0; i3 < kHeader.count1; i3++)
     {
-        if (!stream3.BSFaceGenBinaryFile_read(&(*first)[i3], 4, 1))
+        if (!stream3.BSFaceGenBinaryFile_read(&(*symm)[i3], 4, 1))
             return false;
-        (*first)[i3].m4 = kHeader.width;
-        (*first)[i3].m8 = kHeader.height;
-        (*first)[i3].mC = padding3;
+        (*symm)[i3].m4 = kHeader.width;
+        (*symm)[i3].m8 = kHeader.height;
+        (*symm)[i3].mC = padding3;
         for (j2 = 0; j2 < 3; j2++)
         {
-            ((TextureChannel&)(*first)[i3].m10[j2]).resize(size7);
-            unsigned char* row = &((TextureChannel&)(*first)[i3].m10[j2])[size7 - rowSize];
+            ((TextureChannel&)(*symm)[i3].m10[j2]).resize(size7);
+            unsigned char* row = &((TextureChannel&)(*symm)[i3].m10[j2])[size7 - rowSize];
             for (k = 0; k < kHeader.height; k++)
             {
                 if (!stream3.BSFaceGenBinaryFile_read(row, stride6, kHeader.width))
@@ -21927,18 +22023,18 @@ bool __cdecl Object_ProcessEntries_00ab2640(const ReaderString& filename, unsign
             }
         }
     }
-    second->resize(kHeader.count2);
+    asym->resize(kHeader.count2);
     for (i3 = 0; i3 < kHeader.count2; i3++)
     {
-        if (!stream3.BSFaceGenBinaryFile_read(&(*second)[i3], 4, 1))
+        if (!stream3.BSFaceGenBinaryFile_read(&(*asym)[i3], 4, 1))
             return false;
-        (*second)[i3].m4 = kHeader.width;
-        (*second)[i3].m8 = kHeader.height;
-        (*second)[i3].mC = padding3;
+        (*asym)[i3].m4 = kHeader.width;
+        (*asym)[i3].m8 = kHeader.height;
+        (*asym)[i3].mC = padding3;
         for (j2 = 0; j2 < 3; j2++)
         {
-            ((TextureChannel&)(*second)[i3].m10[j2]).resize(size7);
-            unsigned char* row = ((TextureChannel&)(*second)[i3].m10[j2]).GetElementChecked_0065cc70(size7 - rowSize);
+            ((TextureChannel&)(*asym)[i3].m10[j2]).resize(size7);
+            unsigned char* row = ((TextureChannel&)(*asym)[i3].m10[j2]).GetElementChecked_0065cc70(size7 - rowSize);
             for (k = 0; k < kHeader.height; k++)
             {
                 if (!stream3.BSFaceGenBinaryFile_read(row, stride6, kHeader.width))

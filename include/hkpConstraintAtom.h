@@ -2,6 +2,7 @@
 
 #include "FinishingFlag.h"
 
+// pdb: structure hkpConstraintAtom, size 0x2, 1 members
 class hkpConstraintAtom
 {
 public:

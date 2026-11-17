@@ -5,6 +5,7 @@
 class TESForm;
 class TESObjectWEAP;
 
+// pdb: class CombatProcedureSwitchWeapon, size 0x18, bases: CombatProcedure, 2 members
 class CombatProcedureSwitchWeapon : public CombatProcedure
 {
 public:
@@ -12,12 +13,12 @@ public:
     virtual ~CombatProcedureSwitchWeapon();
     virtual void Unk04();
     virtual int GetType();
-    virtual void SaveGame(BGSSaveFormBuffer* apBuffer);
+    virtual void SaveGame(BGSSaveFormBuffer* apSaveGameBuffer);
     virtual void LoadGame(BGSLoadFormBuffer* apBuffer);
 
     void* DestroyIfFlagged(unsigned int flags);
     void UpdateWeaponDraw();
 
     TESForm* pWeapon;
-    bool m_ucWeaponState;
+    bool bEquipQueued; // src: XBOX_RETAIL_PDB +0x14 (old: m_ucWeaponState)
 };

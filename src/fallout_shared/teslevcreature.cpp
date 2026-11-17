@@ -3,44 +3,47 @@
 #include "../../include/TESLevCreature.h"
 #include "teslevcreature_decls.h"
 // @fnv 0x0050af60
-bool TESLevCreature::Load(TESFile* file)
+// pdb: TESLevCreature::Load | TESLevCreature.obj | retail, upstream name already matches, high
+// pdb params: apFile
+// pdb locals: formid, pMessage, fileLevObj, pextra, cdata, itempint, isize, pdata
+bool TESLevCreature::Load(TESFile* apFile)
 {
-    unsigned char type = file->GetTESForm();
+    unsigned char type = apFile->GetTESForm();
     if (type != 44)
         return false;
-    LoadRecordHeader(file);
+    LoadRecordHeader(apFile);
     do
     {
-        switch ((int)file->GetChunkID())
+        switch ((int)apFile->GetChunkID())
         {
         case 0x44494445: {
-            char* uiGlobalId = (char*)_alloca(file->GetChunkSize());
-            file->GetChunkData(uiGlobalId, 512);
+            char* uiGlobalId = (char*)_alloca(apFile->GetChunkSize());
+            apFile->GetChunkData(uiGlobalId, 512);
             SetEditorID_AtRuntime(uiGlobalId);
             break;
         }
         case 0x444e424f:
-            readOBNDSubRecord(file);
+            readOBNDSubRecord(apFile);
             break;
         case 0x4f4c564c:
         case 0x44454f43:
-            switch ((int)file->GetChunkID())
+            switch ((int)apFile->GetChunkID())
             {
             case 0x4f4c564c: {
                 LeveledObject leveledEntry;
                 memset(&leveledEntry, 0, 12);
-                file->GetChunkData(&leveledEntry, 12);
-                if (file->IsEndianConversionRequired())
-                    leveledEntry.SwapEndian();
+                apFile->GetChunkData(&leveledEntry, 12);
+                if (apFile->IsEndianConversionRequired())
+                    leveledEntry.LEVELED_OBJECT_FILE_Endian();
                 DAT_011c8eec =
-                    (LeveledEntry*)CreateLeveledObject(leveledEntry.level, leveledEntry.count, leveledEntry.form, 0);
+                    (LeveledEntry*)AddLeveledObject(leveledEntry.level, leveledEntry.count, leveledEntry.form, 0);
                 break;
             }
             case 0x44454f43:
                 if (DAT_011c8eec)
                 {
                     ContainerItemExtra* extra = new ContainerItemExtra;
-                    extra->Load(file);
+                    extra->Load(apFile);
                     DAT_011c8eec->extra = extra;
                     DAT_011c8eec = 0;
                 }
@@ -49,24 +52,24 @@ bool TESLevCreature::Load(TESFile* file)
             break;
         case 0x444c564c: {
             unsigned char chance = 0;
-            file->GetChunkData(&chance, 0);
+            apFile->GetChunkData(&chance, 0);
             ExtraWeaponModFlags_SetWeaponModFlags(chance);
             break;
         }
         case 0x464c564c:
-            file->GetChunkData(&m_ucChanceNone, 0);
+            apFile->GetChunkData(&cLLFlags, 0);
             break;
         case 0x474c564c: {
             unsigned int uiGlobalId = 0;
-            file->GetChunkData(&uiGlobalId);
-            m_pLevelGlobal = (TESGlobal*)uiGlobalId;
+            apFile->GetChunkData(&uiGlobalId);
+            pChanceGlobal = (TESGlobal*)uiGlobalId;
             break;
         }
         case 0x4c444f4d:
         case 0x54444f4d:
         case 0x44444f4d:
         case 0x44534f4d:
-            TESModel::LoadModelData(this, file);
+            TESModel::LoadModelData(this, apFile);
             break;
         case 0x53444f4d: {
             struct
@@ -74,19 +77,20 @@ bool TESLevCreature::Load(TESFile* file)
                 unsigned int size;
                 void* data;
             } chunk;
-            chunk.size = file->GetChunkSize();
+            chunk.size = apFile->GetChunkSize();
             chunk.data = _alloca(chunk.size);
-            file->GetChunkData(chunk.data, chunk.size);
-            ParseTextureSwapData(chunk.data, chunk.size, file->GetFormVersion());
+            apFile->GetChunkData(chunk.data, chunk.size);
+            UnpackTextureSwapChunkData(chunk.data, chunk.size, apFile->GetFormVersion());
             break;
         }
         }
-    } while (file->NextChunk());
+    } while (apFile->NextChunk());
     SetInitializationState(false);
     return true;
 }
 
 // @fnv 0x0050adf0
+// pdb: TESLevCreature::TESLevCreature | TESLevCreature.obj | retail, upstream name already matches, high
 TESLevCreature::TESLevCreature()
 {
     SetFormType((ENUM_FORM_ID)0x2c);
@@ -95,6 +99,7 @@ TESLevCreature::TESLevCreature()
 }
 
 // @fnv 0x0050aed0
+// pdb: TESLevCreature::~TESLevCreature | TESLevCreature.obj | retail, upstream name already matches, high
 TESLevCreature::~TESLevCreature()
 {}
 
@@ -104,6 +109,7 @@ struct LevCreatureDeletion : public TESLevCreature
 };
 
 // @fnv 0x0050aea0
+// pdb: TESLevCreature::`scalar deleting destructor' | TESLevCreature.obj | retail, vtable slot, high
 void* LevCreatureDeletion::Destroy(unsigned int flags)
 {
     TESLevCreature::~TESLevCreature();
@@ -124,6 +130,7 @@ struct LevCreatureSerialization : public TESLevCreature
 };
 
 // @fnv 0x0050a8e0
+// pdb: TESLevCreature::Save | TESLevCreature.obj | retail, vtable slot, high
 void LevCreatureSerialization::SaveForm()
 {
     TESForm::BeginFormRecord();
@@ -143,13 +150,16 @@ struct Entry : public TESLevCreature
 // Casts source to TESLevCreature and, if valid, calls FUN_004851b0 to copy data from it.
 // @fnv 0x0050b2e0
 // src: XBOX_PDB 0x0050b2e0
-void Entry::TESLevCreature_Copy(TESForm* source)
+// pdb: TESLevCreature::Copy | TESLevCreature.obj | retail, upstream name already matches, high
+// pdb params: apCopy
+// pdb locals: pllcopy
+void Entry::TESLevCreature_Copy(TESForm* apCopy)
 {
     TESLevCreature* creature;
-    creature = dynamic_cast<TESLevCreature*>(source);
+    creature = dynamic_cast<TESLevCreature*>(apCopy);
     if (!creature)
         return;
-    TESForm::CopyFrom(source);
+    TESForm::CopyFrom(apCopy);
 }
 
 }
@@ -164,10 +174,13 @@ struct Entry : public TESLevCreature
 // Returns true if the other form is not a TESLevCreature or if FUN_00485270(creature) is true, otherwise false.
 // @fnv 0x0050b320
 // src: XBOX_PDB 0x0050b320
-bool Entry::TESLevCreature_Compare(TESForm* other)
+// pdb: TESLevCreature::Compare | TESLevCreature.obj | retail, upstream name already matches, high
+// pdb params: apCompare
+// pdb locals: pcomp
+bool Entry::TESLevCreature_Compare(TESForm* apCompare)
 {
     TESLevCreature* creature;
-    creature = dynamic_cast<TESLevCreature*>(other);
+    creature = dynamic_cast<TESLevCreature*>(apCompare);
     if (!creature)
         return true;
     if (TESForm::Compare(creature))

@@ -39,7 +39,7 @@ struct FUN_00d21ce0_cls
     void* m_pConstraintData;
     void hkpBridgeConstraintAtom_init(void* data);
 };
-int __cdecl hkpModifierConstraintAtom_addAllModifierDataToConstraintInfo(void* pNode, void* a, void* b);
+int __cdecl hkpModifierConstraintAtom_addAllModifierDataToConstraintInfo(void* modifier, void* cinfo, void* usedFlagsOut);
 void __stdcall nullsub_31(int, int, int, int, int, int);
 struct FUN_00d21de0_cls
 {

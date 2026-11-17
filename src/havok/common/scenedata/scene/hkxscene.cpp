@@ -279,6 +279,7 @@ struct Mesh_e4a4
 // Calls each entry destructor, invokes FUN_00cb0c00 on m_name, releases the slot ID, index, and entry arrays, then updates m_vtbl.
 // @fnv 0x00e4a460
 // src: GUESS 0x00e4a460 (confidence: medium)
+// pdb: hkMemoryMeshShape::~hkMemoryMeshShape | hkMemoryMeshShape.obj | retail, object-file run extension, low
 void Mesh_e4a4::ReleaseEntriesAndIndexArrays()
 {
     m_vtbl = &DAT_010e929c;

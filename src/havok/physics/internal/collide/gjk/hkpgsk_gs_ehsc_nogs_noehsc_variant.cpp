@@ -158,7 +158,7 @@ struct SolverOutput
 
 extern const float runtimeFloatSettingDefault726;
 
-int __cdecl TestPenetration(void*, void*, const Transform*, float, SimplexVectorCallLocal_00daa7e0*, SimplexVectorCallLocal_00daa7e0*, SimplexVectorCallLocal_00daa7e0*, int, SolverOutput*);
+int __cdecl hkCalculatePenetrationDepth(void*, void*, const Transform*, float, SimplexVectorCallLocal_00daa7e0*, SimplexVectorCallLocal_00daa7e0*, SimplexVectorCallLocal_00daa7e0*, int, SolverOutput*);
 
 void __cdecl hkLineSegmentUtil_closestLineSegLineSeg(SimplexVectorCallLocal_00daa7e0*, SimplexVectorCallLocal_00daa7e0*, SimplexVectorCallLocal_00daa7e0*, SimplexVectorCallLocal_00daa7e0*, SimplexVectorCallLocal_00daa7e0*);
 
@@ -189,6 +189,9 @@ static __forceinline SimplexVectorCallLocal_00daa7e0 copyVector(const PlainVecto
 
 // @fnv 0x00daa7e0
 // src: XBOX_PDB 0x00daa7e0
+// pdb: hkpGsk::processEdgeTriangle | hkpGsk.obj | retail, upstream name already matches, high
+// pdb params: vertexA, vertexB, dimA, dimB, comingFromEdgeEdge, supportType
+// pdb locals: edge1, edge0, pointOnSurface, result0, result1, edgeA, oldDots
 void Simplex::hkpGsk_processEdgeTriangle(void* arg1, void* arg2, const Transform* transform)
 {
 
@@ -261,7 +264,7 @@ void Simplex::hkpGsk_processEdgeTriangle(void* arg1, void* arg2, const Transform
     for (int i = 0; i < count; ++i)
         differences[i].q = _mm_sub_ps(a[i].q, verticesB[i].q);
 
-    if (TestPenetration(arg1, arg2, transform, runtimeFloatSettingDefault726, a, verticesB + 4, differences, count,
+    if (hkCalculatePenetrationDepth(arg1, arg2, transform, runtimeFloatSettingDefault726, a, verticesB + 4, differences, count,
                         &output) == 1)
     {
 

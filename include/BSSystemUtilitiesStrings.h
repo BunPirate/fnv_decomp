@@ -1,9 +1,10 @@
 #pragma once
 
+// pdb: class BSSystemUtilitiesStrings, size 0x24, 1 members
 class BSSystemUtilitiesStrings
 {
 public:
-    char* m_pStringFunctions[8];
+    char* pcStrings[8]; // src: XBOX_RETAIL_PDB +0x4 (old: m_pStringFunctions)
 
     virtual ~BSSystemUtilitiesStrings();
     virtual void Initialize();

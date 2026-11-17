@@ -26,6 +26,7 @@ struct _LODMultType
 };
 typedef _LODMultType::Type LOD_MULT_TYPE;
 
+// pdb: class BSFadeNode, size 0x110 (here 0xe4), bases: NiNode, 12 members
 class BSFadeNode : public NiNode
 {
   public:

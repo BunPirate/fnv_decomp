@@ -18,6 +18,8 @@ struct RTTIEntry
 };
 // @fnv 0x0061bcf0
 // src: GUESS 0x0061bcf0 (confidence: low)
+// pdb: BSSimpleArray<INFO_LINK_ELEMENT,1024>::GetAt | TESTopic.obj | debug, object-file run extension, low
+// pdb params: aiIndex
 void RTTIEntry::UpdateState_0061bcf0()
 {
     name = DAT_0104d448;

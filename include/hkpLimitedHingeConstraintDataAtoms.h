@@ -5,19 +5,20 @@
 #include "hkpBallSocketConstraintAtom.h"
 #include "hkBool.h"
 
+// pdb: structure hkpAngMotorConstraintAtom, size 0x14, bases: hkpConstraintAtom, 7 members
 class hkpAngMotorConstraintAtom : public hkpConstraintAtom
 {
 public:
     hkpAngMotorConstraintAtom() : hkpConstraintAtom(FinishingFlag()) {}
 
-    hkBool m_bLimitEnabled;
-    unsigned char m_ucMotorAxis;
-    short m_iInitializedOffset;
-    short m_iPreviousTargetAngleOffset;
-    short m_iCorrespondingAngLimitSolverResultOffset;
+    hkBool m_isEnabled; // src: XBOX_RETAIL_PDB +0x2 (old: m_bLimitEnabled)
+    unsigned char m_motorAxis; // src: XBOX_RETAIL_PDB +0x3 (old: m_ucMotorAxis)
+    short m_initializedOffset; // src: XBOX_RETAIL_PDB +0x4 (old: m_iInitializedOffset)
+    short m_previousTargetAngleOffset; // src: XBOX_RETAIL_PDB +0x6 (old: m_iPreviousTargetAngleOffset)
+    short m_correspondingAngLimitSolverResultOffset; // src: XBOX_RETAIL_PDB +0x8 (old: m_iCorrespondingAngLimitSolverResultOffset)
     char unk0A[2];
-    float m_fTargetAngle;
-    void* m_pMotor;
+    float m_targetAngle; // src: XBOX_RETAIL_PDB +0xc (old: m_fTargetAngle)
+    void* m_motor; // src: XBOX_RETAIL_PDB +0x10 (old: m_pMotor)
 };
 
 #include "hkpAngLimitConstraintAtom.h"

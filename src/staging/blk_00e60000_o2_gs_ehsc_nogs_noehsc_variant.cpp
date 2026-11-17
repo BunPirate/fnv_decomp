@@ -52,10 +52,10 @@ struct MM
     void Deallocate(void*);
 };
 extern MM g_memoryManager;
-void __cdecl DestroyArrayElements(void*);
+void __cdecl NiTNewInterface_NiD3DRenderStateGroup_Deallocate(void*);
 struct FUN_00e7f790_Class
 {
-    void __thiscall DestroyList();
+    void __thiscall NiTPoolContainer_NiD3DRenderStateGroup_NiTNewInterface_NiD3DRenderStateGroup_dtor();
 };
 int __cdecl Runtime_EvaluateValue_00e60c70(int a);
 struct FUN_00e67fd0_cls
@@ -120,7 +120,7 @@ struct FUN_00e7efc0_List
     int _z;
     int count;
     FUN_00e7efc0_Node* head;
-    FUN_00e7efc0_Node* __thiscall NiD3DRenderStateGroup_RemoveRSEntryFromSavedList(FUN_00e7efc0_Node* node);
+    FUN_00e7efc0_Node* __thiscall NiD3DRenderStateGroup_RemoveRSEntryFromSavedList(FUN_00e7efc0_Node* pkEntry);
 };
 struct DX9SurfaceDesc_00e68530
 {
@@ -294,7 +294,7 @@ struct FUN_00e7ef80_List
     int _x;
     int count;
     FUN_00e7ef80_Node* head;
-    FUN_00e7ef80_Node* __thiscall NiD3DRenderStateGroup_RemoveRSEntryFromNoSaveList(FUN_00e7ef80_Node* node);
+    FUN_00e7ef80_Node* __thiscall NiD3DRenderStateGroup_RemoveRSEntryFromNoSaveList(FUN_00e7ef80_Node* pkEntry);
 };
 class D3DRenderStateGroup
 {
@@ -302,7 +302,7 @@ class D3DRenderStateGroup
     ~D3DRenderStateGroup();
 };
 void __cdecl _FUN_00aa1490(void* p, int size);
-void __cdecl DestroyArrayElements(void* p);
+void __cdecl NiTNewInterface_NiD3DRenderStateGroup_Deallocate(void* pArray);
 struct FUN_00e611d0_Object
 {
     unsigned char unk00;
@@ -1336,7 +1336,7 @@ class FUN_00e67660_cls
     int unkdd8;
     int unkddc;
     FnvNode67* m_de0[100];
-    int hkWingedEdge_findVisibleTriangles(FnvNode67* a1, int a2, int* a3, FnvEnt67** a4);
+    int hkWingedEdge_findVisibleTriangles(FnvNode67* initialTriangle, int pointOfView, int* chainLength, FnvEnt67** edgeChain);
 };
 extern float DAT_0104da48;
 void* __cdecl _memmove(void*, const void*, unsigned);
@@ -2558,7 +2558,7 @@ struct S_00e7c610_Object
     unsigned char unk5e;
     unsigned char unk5f;
 };
-void __stdcall NiD3DDefaultShader_PackTextureTransform(float* pValue, S_00e7c610_Object* pObject);
+void __stdcall NiD3DDefaultShader_PackTextureTransform(float* kTexMatrix, S_00e7c610_Object* pkStage);
 class FUN_00e7cc90_cls
 {
   public:
@@ -2793,7 +2793,7 @@ void* __cdecl NiDX9ImplicitDepthStencilBufferData_GetRTTI(void);
 class BE7F610Heap
 {
   public:
-    void Deallocate(void* pvMem);
+    void Deallocate(void* apMem);
 };
 extern BE7F610Heap g_kE7F610Heap;
 void __cdecl _NiFree_00aa10f0(void* pvMem);
@@ -2847,7 +2847,7 @@ template <class T> class BE7F610Queue : public BE7F610Object
 };
 extern BE7F610Queue<BE7F610Worker>* g_pkE7F610WorkerQueue;
 extern BE7F610Queue<BE7F610Buffer>* g_pkE7F610BufferQueue;
-void __cdecl DestroyGlobalQueues();
+void __cdecl NiD3DRenderStateGroup_ShutdownPools();
 extern int DAT_0126f728;
 int __cdecl NiD3DPass_GetD3DRenderState();
 struct Q74
@@ -3032,7 +3032,7 @@ struct E74Accumulator
 };
 struct FUN_00e74a40_shell : E74Accumulator
 {
-    void AddGeometryToBatch(E74Geometry* pkGeom);
+    void NiXenonRenderer_AddToBatch(E74Geometry* pkGeometry);
 };
 struct FUN_00e74c00_cls
 {
@@ -4014,7 +4014,7 @@ struct IndexAllocator
     int unk00;
 };
 struct IndexArray;
-void __cdecl hkArrayUtil__reserve(IndexAllocator* alloc, IndexArray* arr, int newCap, int elemSize);
+void __cdecl hkArrayUtil__reserve(IndexAllocator* mem, IndexArray* array, int numElem, int sizeElem);
 void* __cdecl hkString_memCpy(void* dst, const void* src, unsigned int n);
 struct IndexArray
 {
@@ -4035,7 +4035,7 @@ inline hkMemoryRouter* getRouter() throw()
 {
     return &hkMemoryRouter::getInstance();
 }
-void __cdecl ResizeAudioStream(HeapAlloc* alloc, void* arr, int elemSize);
+void __cdecl ResizeAudioStream(HeapAlloc* mem, void* array, int sizeElem);
 template <class T> inline void construct(T* p, int n, const T& t)
 {
     for (int i = 0; i < n; i++)
@@ -5213,7 +5213,7 @@ struct Tex
 {
     void SetValues(unsigned, unsigned);
 };
-const char* FUN_00e7a9a0(int);
+const char* NiXenonRenderer_GetD3DFormatString(int);
 void Object_DoNothing(const char*, ...);
 extern int DAT_0126f580;
 extern int DAT_0126f590;
@@ -5860,12 +5860,15 @@ struct MoppFindAllVirtualMachine
 
     hkArray<unsigned int>* results;
 
-    void hkpMoppFindAllVirtualMachine_queryOnTreeLeft(const MoppState* state, const unsigned char* code);
+    void hkpMoppFindAllVirtualMachine_queryOnTreeLeft(const MoppState* query, const unsigned char* PC);
 };
 
 // @fnv 0x00e66600
 // src: HAVOK_LIB 0x00e66600
-void MoppFindAllVirtualMachine::hkpMoppFindAllVirtualMachine_queryOnTreeLeft(const MoppState* state, const unsigned char* code)
+// pdb: hkpMoppFindAllVirtualMachine::queryOnTreeLeft | hkpMoppFindAllVirtualMachine.obj | retail, upstream name already matches, high
+// pdb params: query, PC
+// pdb locals: scaledQuery, assertBuf, ostr
+void MoppFindAllVirtualMachine::hkpMoppFindAllVirtualMachine_queryOnTreeLeft(const MoppState* query, const unsigned char* PC)
 
 {
 
@@ -5876,7 +5879,7 @@ void MoppFindAllVirtualMachine::hkpMoppFindAllVirtualMachine_queryOnTreeLeft(con
     for (;;)
     {
 
-        unsigned int command = *code;
+        unsigned int command = *PC;
 
         switch (command)
         {
@@ -5905,53 +5908,53 @@ void MoppFindAllVirtualMachine::hkpMoppFindAllVirtualMachine_queryOnTreeLeft(con
         case 0x1b:
         case 0x1c:
 
-            code += 4;
+            PC += 4;
             continue;
 
         case 0x23:
         case 0x24:
         case 0x25:
 
-            code += (code[3] << 8) + code[4] + 7;
+            PC += (PC[3] << 8) + PC[4] + 7;
             continue;
 
         case 0x29:
         case 0x2a:
         case 0x2b:
 
-            code += 7;
+            PC += 7;
             continue;
 
         case 5:
 
-            code += code[1] + 2;
+            PC += PC[1] + 2;
             continue;
 
         case 6:
 
-            code += (code[1] << 8) + code[2] + 3;
+            PC += (PC[1] << 8) + PC[2] + 3;
             continue;
 
         case 7:
 
-            code += ((code[1] << 8) + code[2] << 8) + code[3] + 4;
+            PC += ((PC[1] << 8) + PC[2] << 8) + PC[3] + 4;
             continue;
 
         case 9:
 
         {
 
-            unsigned int offset = code[1];
+            unsigned int offset = PC[1];
 
-            if (state != &localState)
+            if (query != &localState)
             {
-                localState = *state;
-                state = &localState;
+                localState = *query;
+                query = &localState;
             }
 
             localState.primitiveOffset += offset;
 
-            code += 2;
+            PC += 2;
             continue;
         }
 
@@ -5959,17 +5962,17 @@ void MoppFindAllVirtualMachine::hkpMoppFindAllVirtualMachine_queryOnTreeLeft(con
 
         {
 
-            unsigned int offset = (code[1] << 8) + code[2];
+            unsigned int offset = (PC[1] << 8) + PC[2];
 
-            if (state != &localState)
+            if (query != &localState)
             {
-                localState = *state;
-                state = &localState;
+                localState = *query;
+                query = &localState;
             }
 
             localState.primitiveOffset += offset;
 
-            code += 3;
+            PC += 3;
             continue;
         }
 
@@ -5977,17 +5980,17 @@ void MoppFindAllVirtualMachine::hkpMoppFindAllVirtualMachine_queryOnTreeLeft(con
 
         {
 
-            unsigned int offset = ((((code[1] << 8) + code[2]) << 8) + code[3] << 8) + code[4];
+            unsigned int offset = ((((PC[1] << 8) + PC[2]) << 8) + PC[3] << 8) + PC[4];
 
-            if (state != &localState)
+            if (query != &localState)
             {
-                localState = *state;
-                state = &localState;
+                localState = *query;
+                query = &localState;
             }
 
             localState.primitiveOffset = offset;
 
-            code += 5;
+            PC += 5;
             continue;
         }
 
@@ -5998,7 +6001,7 @@ void MoppFindAllVirtualMachine::hkpMoppFindAllVirtualMachine_queryOnTreeLeft(con
         case 0x27:
         case 0x28:
 
-            code += 3;
+            PC += 3;
             continue;
 
         case 0x60:
@@ -6008,9 +6011,9 @@ void MoppFindAllVirtualMachine::hkpMoppFindAllVirtualMachine_queryOnTreeLeft(con
 
         {
 
-            unsigned int value = code[1];
+            unsigned int value = PC[1];
 
-            code += 2;
+            PC += 2;
 
             localState.properties[command - 0x60] = value;
 
@@ -6022,9 +6025,9 @@ void MoppFindAllVirtualMachine::hkpMoppFindAllVirtualMachine_queryOnTreeLeft(con
         case 0x66:
         case 0x67:
 
-            localState.properties[command - 0x64] = (code[1] << 8) + code[2];
+            localState.properties[command - 0x64] = (PC[1] << 8) + PC[2];
 
-            code += 3;
+            PC += 3;
             goto property;
 
         case 0x68:
@@ -6032,9 +6035,9 @@ void MoppFindAllVirtualMachine::hkpMoppFindAllVirtualMachine_queryOnTreeLeft(con
         case 0x6a:
         case 0x6b:
 
-            localState.properties[command - 0x68] = ((((code[1] << 8) + code[2]) << 8) + code[3] << 8) + code[4];
+            localState.properties[command - 0x68] = ((((PC[1] << 8) + PC[2]) << 8) + PC[3] << 8) + PC[4];
 
-            code += 5;
+            PC += 5;
 
         property:
 
@@ -6042,10 +6045,10 @@ void MoppFindAllVirtualMachine::hkpMoppFindAllVirtualMachine_queryOnTreeLeft(con
 
             unsigned int propertyValue = localState.properties[0];
 
-            if (state != &localState)
+            if (query != &localState)
             {
-                localState = *state;
-                state = &localState;
+                localState = *query;
+                query = &localState;
             }
 
             localState.properties[0] = propertyValue;
@@ -6079,25 +6082,25 @@ void MoppFindAllVirtualMachine::hkpMoppFindAllVirtualMachine_queryOnTreeLeft(con
 
         case 0x50:
 
-            primitive = code[1];
+            primitive = PC[1];
             goto append;
 
         case 0x51:
 
-            primitive = (code[1] << 8) + code[2];
+            primitive = (PC[1] << 8) + PC[2];
             goto append;
 
         case 0x52:
 
-            primitive = ((code[1] << 8) + code[2] << 8) + code[3];
+            primitive = ((PC[1] << 8) + PC[2] << 8) + PC[3];
             goto append;
 
         case 0x53: {
-            primitive = code[1] << 24;
-            unsigned int part = code[2] << 16;
+            primitive = PC[1] << 24;
+            unsigned int part = PC[2] << 16;
             primitive += part;
-            part = code[3];
-            primitive = code[4] + primitive;
+            part = PC[3];
+            primitive = PC[4] + primitive;
             part <<= 8;
             primitive += part;
             goto append;
@@ -6149,7 +6152,7 @@ void MoppFindAllVirtualMachine::hkpMoppFindAllVirtualMachine_queryOnTreeLeft(con
 
 append:
 
-    primitive += state->primitiveOffset;
+    primitive += query->primitiveOffset;
 
     hkArray<unsigned int>* output = results;
 

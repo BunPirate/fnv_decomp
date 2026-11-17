@@ -16,7 +16,7 @@ struct PixelData
     unsigned int faces;
     int unk70;
     static void* operator new(unsigned int n);
-    PixelData(unsigned int w, unsigned int h, const NiPixelFormat& f, unsigned int m, unsigned int n) throw();
+    PixelData(unsigned int uiWidth, unsigned int uiHeight, const NiPixelFormat& kFormat, unsigned int uiMipmapLevels, unsigned int uiFaces) throw();
 };
 extern NiPixelFormat DAT_011aa2a0;
 

@@ -5,6 +5,7 @@
 
 class BipedAnim;
 
+// pdb: class QueuedHelmet, size 0x128, bases: QueuedFile, 6 members
 class QueuedHelmet : public QueuedFile
 {
 public:
@@ -30,11 +31,11 @@ public:
     void PostProcess();
     void Finish_0043f2b0();
 
-    BipedAnim* pExistingBipedAnim;
-    unsigned char unused2[0x50];
-    GO m_kQueuedModels[20];
-    GO m_kQueuedModelsSecondary[20];
+    BipedAnim* pBipedAnim; // src: XBOX_RETAIL_PDB +0x28 (old: pExistingBipedAnim)
+    unsigned char spQueuedHelmetModel[0x50]; // src: XBOX_RETAIL_PDB +0x2c (old: unused2)
+    GO spHelmetFaceGenModel[20]; // src: XBOX_RETAIL_PDB +0x7c (old: m_kQueuedModels)
+    GO spClonedHelmetNode[20]; // src: XBOX_RETAIL_PDB +0xcc (old: m_kQueuedModelsSecondary)
     int pRef;
-    int unk120;
+    int cFlags; // src: XBOX_RETAIL_PDB +0x120 (old: unk120)
     int unk124;
 };

@@ -24,6 +24,9 @@ void NoiseImageSpaceEffect::Setup(ImageSpaceManager* manager, ImageSpaceEffectPa
 
 // Allocates an 8-byte parameter from two ints and stores it at uiIndex in the array at pThis+0x38.
 // @fnv 0x00ba3b10
+// pdb: ImageSpaceEffect::SetEffectInputs | ImageSpaceEffect.obj | retail, object-file run extension, low
+// pdb params: aiEffectIndex, aiInput1, aiFilterMode1
+// pdb locals: piinputtex
 void __fastcall SetEffectParamAt(char* pThis, int, unsigned int uiIndex, int a2, int a3)
 {
     int* p = (int*)g_memoryManager.Allocate(8);

@@ -17,17 +17,20 @@ CombatProcedure::COMBAT_PROCEDURES CombatProcedureHideFromTarget::GetType_009d60
 }
 
 // @fnv 0x009d6120
+// pdb: CombatProcedureHideFromTarget::~CombatProcedureHideFromTarget | CombatProcedureHideFromTarget.obj | debug, upstream name already matches, high
 CombatProcedureHideFromTarget::~CombatProcedureHideFromTarget()
 {
 }
 
 // @fnv 0x009d6030
-CombatProcedureHideFromTarget::CombatProcedureHideFromTarget(int aiValue, float afValue, bool abFlag1, bool abFlag2)
-    : state(0), duration(afValue)
+// pdb: CombatProcedureHideFromTarget::CombatProcedureHideFromTarget | CombatProcedureHideFromTarget.obj | debug, upstream name already matches, high
+// pdb params: apCombatCoverLocation, afNumSeconds, abIgnoreLOS, abClearCoverWhenFinished
+CombatProcedureHideFromTarget::CombatProcedureHideFromTarget(int apCombatCoverLocation, float afNumSeconds, bool abIgnoreLOS, bool abClearCoverWhenFinished)
+    : state(0), duration(afNumSeconds)
 {
-    m_38 = aiValue;
-    keep = abFlag1;
-    reset = abFlag2;
+    m_38 = apCombatCoverLocation;
+    keep = abIgnoreLOS;
+    reset = abClearCoverWhenFinished;
 }
 
 class Output
@@ -43,19 +46,21 @@ public:
 };
 
 // @fnv 0x009d6750
-void CombatProcedureHideFromTarget::PrintState(Output* out, int x, int y)
+// pdb: CombatProcedureHideFromTarget::DisplayDebugText | CombatProcedureHideFromTarget.obj | retail, string-set bridge, high
+// pdb params: apDebugText, aeLocation, aeJustify
+void CombatProcedureHideFromTarget::PrintState(Output* apDebugText, int aeLocation, int aeJustify)
 {
     switch (m_uiContentCount)
     {
     case 0:
-        out->Printf(x, y, "INITIALIZING");
+        apDebugText->Printf(aeLocation, aeJustify, "INITIALIZING");
         break;
     case 1:
-        out->Printf(x, y, "MOVING_TO_COVER");
+        apDebugText->Printf(aeLocation, aeJustify, "MOVING_TO_COVER");
         break;
     case 2:
-        out->Printf(x, y, "HIDING");
-        out->Printf(x, y, "Hiding Timer: %.02f/%.02f", clock.FUN_00435e00(), clock.CombatTimer_GetTargetTime());
+        apDebugText->Printf(aeLocation, aeJustify, "HIDING");
+        apDebugText->Printf(aeLocation, aeJustify, "Hiding Timer: %.02f/%.02f", HidingTimer.FUN_00435e00(), HidingTimer.CombatTimer_GetTargetTime());
         break;
     }
 }
@@ -71,25 +76,28 @@ struct FUN_0097fb60_shell
 unsigned int __fastcall GetFieldValue(void* object);
 // Reads the hide target fields and restores the hiding handle from the trailing tag.
 // @fnv 0x009d6900
-void CombatProcedureHideFromTarget::LoadGame(BGSLoadFormBuffer* stream)
+// pdb: CombatProcedureHideFromTarget::LoadGame | CombatProcedureHideFromTarget.obj | retail, upstream name already matches, high
+// pdb params: apLoadGameBuffer
+// pdb locals: ccoverLocation
+void CombatProcedureHideFromTarget::LoadGame(BGSLoadFormBuffer* apLoadGameBuffer)
 {
-    CombatProcedure::LoadGame_00996ef0(stream);
-    stream->LoadData(&state, 4);
-    stream->LoadData(&duration, 4);
-    clock.FUN_009a5f20(stream);
-    stream->LoadData(&destination, 12);
-    stream->LoadData(&rotation, 12);
-    stream->LoadData(&keep, 1);
-    stream->LoadData(&reset, 1);
+    CombatProcedure::LoadGame_00996ef0(apLoadGameBuffer);
+    apLoadGameBuffer->LoadData(&state, 4);
+    apLoadGameBuffer->LoadData(&duration, 4);
+    HidingTimer.FUN_009a5f20(apLoadGameBuffer);
+    apLoadGameBuffer->LoadData(&HidePosition, 12);
+    apLoadGameBuffer->LoadData(&LookAtPosition, 12);
+    apLoadGameBuffer->LoadData(&keep, 1);
+    apLoadGameBuffer->LoadData(&reset, 1);
     unsigned char tag = 0;
-    stream->LoadData(&tag, 1);
+    apLoadGameBuffer->LoadData(&tag, 1);
     if (tag == 2)
     {
-        m_38 = ((FUN_0097fb60_shell*)reinterpret_cast<FUN_009d6c80_shell*>(m_pCombatController)->CombatController_GetCombatState())->GetFieldAtE8();
+        m_38 = ((FUN_0097fb60_shell*)reinterpret_cast<FUN_009d6c80_shell*>(pCombatController)->CombatController_GetCombatState())->GetFieldAtE8();
     }
     else if (tag == 1)
     {
-        m_38 = GetFieldValue(reinterpret_cast<FUN_009d6c80_shell*>(m_pCombatController)->CombatController_GetCombatState());
+        m_38 = GetFieldValue(reinterpret_cast<FUN_009d6c80_shell*>(pCombatController)->CombatController_GetCombatState());
     }
 }
 
@@ -105,23 +113,26 @@ struct Owner04
 
 // Serializes the procedure fields and writes a tag identifying the hiding handle.
 // @fnv 0x009d6820
-void CombatProcedureHideFromTarget::SaveGame(BGSSaveFormBuffer* apArchive)
+// pdb: CombatProcedureHideFromTarget::SaveGame | CombatProcedureHideFromTarget.obj | retail, upstream name already matches, high
+// pdb params: apSaveGameBuffer
+// pdb locals: ccoverLocation
+void CombatProcedureHideFromTarget::SaveGame(BGSSaveFormBuffer* apSaveGameBuffer)
 {
     unsigned char tag;
-    this->SaveToBuffer(apArchive);
-    apArchive->FUN_00865e50(&state, 4, 0);
-    apArchive->FUN_00865e50(&duration, 4, 0);
-    clock.FUN_009a5eb0(apArchive);
-    apArchive->FUN_00865e50(&destination, 12, 0);
-    apArchive->FUN_00865e50(&rotation, 12, 0);
-    apArchive->FUN_00865e50(&keep, 1, 0);
-    apArchive->FUN_00865e50(&reset, 1, 0);
+    this->SaveToBuffer(apSaveGameBuffer);
+    apSaveGameBuffer->FUN_00865e50(&state, 4, 0);
+    apSaveGameBuffer->FUN_00865e50(&duration, 4, 0);
+    HidingTimer.FUN_009a5eb0(apSaveGameBuffer);
+    apSaveGameBuffer->FUN_00865e50(&HidePosition, 12, 0);
+    apSaveGameBuffer->FUN_00865e50(&LookAtPosition, 12, 0);
+    apSaveGameBuffer->FUN_00865e50(&keep, 1, 0);
+    apSaveGameBuffer->FUN_00865e50(&reset, 1, 0);
     tag = 0;
     if (unk38 != 0)
     {
-        tag = (unk38 == reinterpret_cast<Owner04*>(m_pCombatController)->CombatController_GetCombatState()->GetFieldAtE8()) ? 2 : 1;
+        tag = (unk38 == reinterpret_cast<Owner04*>(pCombatController)->CombatController_GetCombatState()->GetFieldAtE8()) ? 2 : 1;
     }
-    apArchive->FUN_00865e50(&tag, 1, 0);
+    apSaveGameBuffer->FUN_00865e50(&tag, 1, 0);
 }
 
 struct WorldPos
@@ -429,15 +440,17 @@ struct OwnerStub
 };
 float height(void*, int, int);
 void location(OwnerStub*, Hiding*, NiPoint3*, NiPoint3*);
-NiPoint3 angle(ActorView*, int);
+NiPoint3 CombatUtilities_GetTargetFiringLocation(ActorView*, int);
 float CombatTimer_GetTimer();
 extern Setting originalRuntimeFloatSetting431;
 // @fnv 0x009d6140
+// pdb: CombatProcedureHideFromTarget::Update | CombatProcedureHideFromTarget.obj | retail, string-set bridge, high
+// pdb locals: ptarget, pcombatState, pattacker, hideVector, bcoverValid, request, bcheckHiding, fhidingTime, plocationTarget, attackerWorldLoc, targetWorldLoc
 void CombatProcedureHideFromTarget::Update()
 {
-    ActorView* actor2 = reinterpret_cast<OwnerStub*>(m_pCombatController)->GetFieldBC();
-    ActorView* enemy2 = reinterpret_cast<OwnerStub*>(m_pCombatController)->target();
-    StateStub* target7 = reinterpret_cast<OwnerStub*>(m_pCombatController)->CombatController_GetCombatState();
+    ActorView* actor2 = reinterpret_cast<OwnerStub*>(pCombatController)->GetFieldBC();
+    ActorView* enemy2 = reinterpret_cast<OwnerStub*>(pCombatController)->target();
+    StateStub* target7 = reinterpret_cast<OwnerStub*>(pCombatController)->CombatController_GetCombatState();
     switch (state)
     {
     case 0: {
@@ -445,21 +458,21 @@ void CombatProcedureHideFromTarget::Update()
         if (found7)
         {
             hiding->active = true;
-            location(reinterpret_cast<OwnerStub*>(m_pCombatController), hiding, &destination, &rotation);
-            rotation.z += height(enemy2 ? enemy2 : actor2, 2, 0);
+            location(reinterpret_cast<OwnerStub*>(pCombatController), hiding, &HidePosition, &LookAtPosition);
+            LookAtPosition.z += height(enemy2 ? enemy2 : actor2, 2, 0);
         }
         else
         {
-            destination = actor2->position();
+            HidePosition = actor2->position();
             if (enemy2)
-                rotation = angle(enemy2, 2);
+                LookAtPosition = CombatUtilities_GetTargetFiringLocation(enemy2, 2);
         }
-        NiPoint3 delta7 = actor2->position() - destination;
+        NiPoint3 delta7 = actor2->position() - HidePosition;
         if (found7 && static_cast<const NiPoint3&>(delta7).FUN_004a7290() > 625.0)
         {
             SetMoveMode_00996e20(3);
             Request request2;
-            actor2->setup(&request2, &destination, actor2->FUN_008d6f30(), actor2->TESObjectREFR_GetWorldSpace(), 0.0f, 0);
+            actor2->setup(&request2, &HidePosition, actor2->FUN_008d6f30(), actor2->TESObjectREFR_GetWorldSpace(), 0.0f, 0);
             request2.SetInitialPathHeading(actor2->speed(0));
             if (!actor2->path(&request2))
             {
@@ -470,9 +483,9 @@ void CombatProcedureHideFromTarget::Update()
         }
         else
         {
-            clock.FUN_008d7f40(duration);
+            HidingTimer.FUN_008d7f40(duration);
             if (enemy2)
-                SetLookAtPoint(rotation, 3);
+                SetLookAtPoint(LookAtPosition, 3);
             SetMoveMode_00996e20(2);
             state = 2;
         }
@@ -488,14 +501,14 @@ void CombatProcedureHideFromTarget::Update()
         }
         if (actor2->arrived())
         {
-            clock.FUN_008d7f40(duration);
-            SetLookAtPoint(rotation, 3);
+            HidingTimer.FUN_008d7f40(duration);
+            SetLookAtPoint(LookAtPosition, 3);
             SetMoveMode_00996e20(2);
             state = 2;
         }
         break;
     case 2:
-        if (clock.expired())
+        if (HidingTimer.expired())
         {
             if (reset)
                 target7->CombatState_ClearCoverLocation(0);
@@ -504,7 +517,7 @@ void CombatProcedureHideFromTarget::Update()
         }
         {
             bool shouldEnd3 = false;
-            float time7 = clock.elapsed() + 1.0;
+            float time7 = HidingTimer.elapsed() + 1.0;
             if (time7 < CombatTimer_GetTimer())
                 shouldEnd3 = true;
             if (shouldEnd3)
@@ -519,7 +532,7 @@ void CombatProcedureHideFromTarget::Update()
                 {
                     if (!keep)
                     {
-                        reinterpret_cast<OwnerStub*>(m_pCombatController)->CombatController_GetCombatState()->CombatState_ClearCoverLocation(1);
+                        reinterpret_cast<OwnerStub*>(pCombatController)->CombatController_GetCombatState()->CombatState_ClearCoverLocation(1);
                         target7->turn(false);
                         SetState();
                         return;
@@ -531,7 +544,7 @@ void CombatProcedureHideFromTarget::Update()
                         if (actorPosition.distance(targetPosition) <
                             *originalRuntimeFloatSetting431.Float() * *originalRuntimeFloatSetting431.Float())
                         {
-                            reinterpret_cast<OwnerStub*>(m_pCombatController)->CombatController_GetCombatState()->CombatState_ClearCoverLocation(1);
+                            reinterpret_cast<OwnerStub*>(pCombatController)->CombatController_GetCombatState()->CombatState_ClearCoverLocation(1);
                             target7->turn(false);
                             SetState();
                             return;
@@ -540,7 +553,7 @@ void CombatProcedureHideFromTarget::Update()
                 }
                 if (time7 < target7->timer().elapsed())
                 {
-                    reinterpret_cast<OwnerStub*>(m_pCombatController)->CombatController_GetCombatState()->CombatState_ClearCoverLocation(1);
+                    reinterpret_cast<OwnerStub*>(pCombatController)->CombatController_GetCombatState()->CombatState_ClearCoverLocation(1);
                     target7->turn(false);
                     SetState();
                 }

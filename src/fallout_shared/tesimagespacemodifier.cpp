@@ -64,212 +64,215 @@ extern TESImageSpaceModifier DAT_011c9750;
 int __cdecl Warning(const char*, ...);
 // Loads an IMAD record: reads the header, EDID/OBND/DNAM chunks and per-chunk arrays of entries, converting endianness and filling the linked lists.
 // @fnv 0x0052d510
-bool TESImageSpaceModifier::Load(TESFile* file)
+// pdb: TESImageSpaceModifier::Load | TESImageSpaceModifier.obj | retail, upstream name already matches, high
+// pdb params: apFile
+// pdb locals: chunkid, bdataread, formid, pMessage, uisize, pendianData, i, itempint, iindex, iop
+bool TESImageSpaceModifier::Load(TESFile* apFile)
 {
     bool loadedData;
-    unsigned char form = file->GetTESForm();
+    unsigned char form = apFile->GetTESForm();
     if (form != ENUM_FORM_ID_IMAD_ID)
         return false;
-    LoadRecordHeader(file);
+    LoadRecordHeader(apFile);
     SetInitializationState(false);
     loadedData = false;
-    while (int chunk = file->GetChunkID())
+    while (int chunk = apFile->GetChunkID())
     {
         switch (chunk)
         {
         case CHUNK_ID_EDID_ID: {
-            char* editorID = (char*)_alloca(file->GetChunkSize());
-            file->GetChunkData(editorID, 512);
+            char* editorID = (char*)_alloca(apFile->GetChunkSize());
+            apFile->GetChunkData(editorID, 512);
             SetEditorID_AtRuntime(editorID);
             break;
         }
         case CHUNK_ID_OBND_ID:
-            readOBNDSubRecord(file);
+            readOBNDSubRecord(apFile);
             break;
         case CHUNK_ID_DNAM_ID:
-            file->GetChunkData(&Data, sizeof(Data));
-            if (file->IsEndianConversionRequired())
+            apFile->GetChunkData(&Data, sizeof(Data));
+            if (apFile->IsEndianConversionRequired())
                 Data.Endian();
             loadedData = true;
             break;
         case CHUNK_ID_BNAM_ID: {
             unsigned int count = Data.m_uiEffectEntryCountSecond;
-            pSecondEffectEntries = new TimedFloatKey[count];
-            file->GetChunkData(pSecondEffectEntries, count * sizeof(TimedFloatKey));
-            if (file->IsEndianConversionRequired())
+            pBlurFloatKey = new TimedFloatKey[count];
+            apFile->GetChunkData(pBlurFloatKey, count * sizeof(TimedFloatKey));
+            if (apFile->IsEndianConversionRequired())
             {
-                unsigned int* words = (unsigned int*)pSecondEffectEntries;
+                unsigned int* words = (unsigned int*)pBlurFloatKey;
                 for (unsigned int i = 0; i < count * sizeof(TimedFloatKey) / sizeof(unsigned int); ++i)
                     BSEndian(&words[i], EndianSizeTag<4>());
             }
-            m_kFloatInterpolatorOne.SetAnimationKeys(pSecondEffectEntries, count, NiAnimationKey::LINKEY);
+            BlurInterpolator.SetAnimationKeys(pBlurFloatKey, count, NiAnimationKey::LINKEY);
             break;
         }
         case CHUNK_ID_VNAM_ID: {
             unsigned int count = Data.m_uiEffectEntryCountThird;
-            pThirdEffectEntries = new TimedFloatKey[count];
-            file->GetChunkData(pThirdEffectEntries, count * sizeof(TimedFloatKey));
-            if (file->IsEndianConversionRequired())
+            pDoubleFloatKey = new TimedFloatKey[count];
+            apFile->GetChunkData(pDoubleFloatKey, count * sizeof(TimedFloatKey));
+            if (apFile->IsEndianConversionRequired())
             {
-                unsigned int* words = (unsigned int*)pThirdEffectEntries;
+                unsigned int* words = (unsigned int*)pDoubleFloatKey;
                 for (unsigned int i = 0; i < count * sizeof(TimedFloatKey) / sizeof(unsigned int); ++i)
                     BSEndian(&words[i], EndianSizeTag<4>());
             }
-            m_kFloatInterpolatorTwo.SetAnimationKeys(pThirdEffectEntries, count, NiAnimationKey::LINKEY);
+            DoubleInterpolator.SetAnimationKeys(pDoubleFloatKey, count, NiAnimationKey::LINKEY);
             break;
         }
         case CHUNK_ID_RNAM_ID: {
             unsigned int count = Data.m_uiEffectEntryCountFourth;
-            pTenthEffectEntries = new TimedFloatKey[count];
-            file->GetChunkData(pTenthEffectEntries, count * sizeof(TimedFloatKey));
-            if (file->IsEndianConversionRequired())
+            pRadialBlurStrengthFloatKey = new TimedFloatKey[count];
+            apFile->GetChunkData(pRadialBlurStrengthFloatKey, count * sizeof(TimedFloatKey));
+            if (apFile->IsEndianConversionRequired())
             {
-                unsigned int* words = (unsigned int*)pTenthEffectEntries;
+                unsigned int* words = (unsigned int*)pRadialBlurStrengthFloatKey;
                 for (unsigned int i = 0; i < count * sizeof(TimedFloatKey) / sizeof(unsigned int); ++i)
                     BSEndian(&words[i], EndianSizeTag<4>());
             }
-            m_kFloatInterpolatorNine.SetAnimationKeys(pTenthEffectEntries, count, NiAnimationKey::LINKEY);
+            RadialBlurStrengthInterpolator.SetAnimationKeys(pRadialBlurStrengthFloatKey, count, NiAnimationKey::LINKEY);
             break;
         }
         case CHUNK_ID_SNAM_ID: {
             unsigned int count = Data.m_uiEffectEntryCountFifth;
-            pEleventhEffectEntries = new TimedFloatKey[count];
-            file->GetChunkData(pEleventhEffectEntries, count * sizeof(TimedFloatKey));
-            if (file->IsEndianConversionRequired())
+            pRadialBlurRampupFloatKey = new TimedFloatKey[count];
+            apFile->GetChunkData(pRadialBlurRampupFloatKey, count * sizeof(TimedFloatKey));
+            if (apFile->IsEndianConversionRequired())
             {
-                unsigned int* words = (unsigned int*)pEleventhEffectEntries;
+                unsigned int* words = (unsigned int*)pRadialBlurRampupFloatKey;
                 for (unsigned int i = 0; i < count * sizeof(TimedFloatKey) / sizeof(unsigned int); ++i)
                     BSEndian(&words[i], EndianSizeTag<4>());
             }
-            m_kFloatInterpolatorTen.SetAnimationKeys(pEleventhEffectEntries, count, NiAnimationKey::LINKEY);
+            RadialBlurRampupInterpolator.SetAnimationKeys(pRadialBlurRampupFloatKey, count, NiAnimationKey::LINKEY);
             break;
         }
         case CHUNK_ID_UNAM_ID: {
             unsigned int count = Data.m_uiEffectEntryCountSixth;
-            pTwelfthEffectEntries = new TimedFloatKey[count];
-            file->GetChunkData(pTwelfthEffectEntries, count * sizeof(TimedFloatKey));
-            if (file->IsEndianConversionRequired())
+            pRadialBlurStartFloatKey = new TimedFloatKey[count];
+            apFile->GetChunkData(pRadialBlurStartFloatKey, count * sizeof(TimedFloatKey));
+            if (apFile->IsEndianConversionRequired())
             {
-                unsigned int* words = (unsigned int*)pTwelfthEffectEntries;
+                unsigned int* words = (unsigned int*)pRadialBlurStartFloatKey;
                 for (unsigned int i = 0; i < count * sizeof(TimedFloatKey) / sizeof(unsigned int); ++i)
                     BSEndian(&words[i], EndianSizeTag<4>());
             }
-            m_kFloatInterpolatorEleven.SetAnimationKeys(pTwelfthEffectEntries, count, NiAnimationKey::LINKEY);
+            RadialBlurStartInterpolator.SetAnimationKeys(pRadialBlurStartFloatKey, count, NiAnimationKey::LINKEY);
             break;
         }
         case CHUNK_ID_NAM1_ID: {
             unsigned int count = Data.m_uiEffectEntryCountTenth;
-            pFourthEffectEntries = new TimedFloatKey[count];
-            file->GetChunkData(pFourthEffectEntries, count * sizeof(TimedFloatKey));
-            if (file->IsEndianConversionRequired())
+            pRadialBlurRampDownFloatKey = new TimedFloatKey[count];
+            apFile->GetChunkData(pRadialBlurRampDownFloatKey, count * sizeof(TimedFloatKey));
+            if (apFile->IsEndianConversionRequired())
             {
-                unsigned int* words = (unsigned int*)pFourthEffectEntries;
+                unsigned int* words = (unsigned int*)pRadialBlurRampDownFloatKey;
                 for (unsigned int i = 0; i < count * sizeof(TimedFloatKey) / sizeof(unsigned int); ++i)
                     BSEndian(&words[i], EndianSizeTag<4>());
             }
-            m_kFloatInterpolatorThree.SetAnimationKeys(pFourthEffectEntries, count, NiAnimationKey::LINKEY);
+            RadialBlurRampDownInterpolator.SetAnimationKeys(pRadialBlurRampDownFloatKey, count, NiAnimationKey::LINKEY);
             break;
         }
         case CHUNK_ID_NAM2_ID: {
             unsigned int count = Data.m_uiEffectEntryCountEleventh;
-            pFifthEffectEntries = new TimedFloatKey[count];
-            file->GetChunkData(pFifthEffectEntries, count * sizeof(TimedFloatKey));
-            if (file->IsEndianConversionRequired())
+            pRadialBlurDownStartFloatKey = new TimedFloatKey[count];
+            apFile->GetChunkData(pRadialBlurDownStartFloatKey, count * sizeof(TimedFloatKey));
+            if (apFile->IsEndianConversionRequired())
             {
-                unsigned int* words = (unsigned int*)pFifthEffectEntries;
+                unsigned int* words = (unsigned int*)pRadialBlurDownStartFloatKey;
                 for (unsigned int i = 0; i < count * sizeof(TimedFloatKey) / sizeof(unsigned int); ++i)
                     BSEndian(&words[i], EndianSizeTag<4>());
             }
-            m_kFloatInterpolatorFour.SetAnimationKeys(pFifthEffectEntries, count, NiAnimationKey::LINKEY);
+            RadialBlurDownStartInterpolator.SetAnimationKeys(pRadialBlurDownStartFloatKey, count, NiAnimationKey::LINKEY);
             break;
         }
         case CHUNK_ID_TNAM_ID: {
             unsigned int count = Data.m_uiEffectEntryCountFirst;
-            pFirstEffectRecordArray = new AlphaColor[count];
-            file->GetChunkData(pFirstEffectRecordArray, count * sizeof(AlphaColor));
-            if (file->IsEndianConversionRequired())
+            pTintColorKey = new AlphaColor[count];
+            apFile->GetChunkData(pTintColorKey, count * sizeof(AlphaColor));
+            if (apFile->IsEndianConversionRequired())
             {
-                unsigned int* words = (unsigned int*)pFirstEffectRecordArray;
+                unsigned int* words = (unsigned int*)pTintColorKey;
                 for (unsigned int i = 0; i < count * sizeof(AlphaColor) / sizeof(unsigned int); ++i)
                     BSEndian(&words[i], EndianSizeTag<4>());
             }
-            m_kColorInterpolatorOne.SetAnimationKeys(pFirstEffectRecordArray, count, NiAnimationKey::LINKEY);
+            TintColorInterpolator.ReplaceKeys(pTintColorKey, count, NiAnimationKey::LINKEY);
             break;
         }
         case CHUNK_ID_NAM3_ID: {
             unsigned int count = Data.m_uiEffectEntryCountTwelfth;
-            pSecondEffectRecordArray = new AlphaColor[count];
-            file->GetChunkData(pSecondEffectRecordArray, count * sizeof(AlphaColor));
-            if (file->IsEndianConversionRequired())
+            pFadeColorKey = new AlphaColor[count];
+            apFile->GetChunkData(pFadeColorKey, count * sizeof(AlphaColor));
+            if (apFile->IsEndianConversionRequired())
             {
-                unsigned int* words = (unsigned int*)pSecondEffectRecordArray;
+                unsigned int* words = (unsigned int*)pFadeColorKey;
                 for (unsigned int i = 0; i < count * sizeof(AlphaColor) / sizeof(unsigned int); ++i)
                     BSEndian(&words[i], EndianSizeTag<4>());
             }
-            m_kColorInterpolatorTwo.SetAnimationKeys(pSecondEffectRecordArray, count, NiAnimationKey::LINKEY);
+            FadeColorInterpolator.ReplaceKeys(pFadeColorKey, count, NiAnimationKey::LINKEY);
             break;
         }
         case CHUNK_ID_WNAM_ID: {
             unsigned int count = Data.m_uiEffectEntryCountSeventh;
-            pSeventhEffectEntries = new TimedFloatKey[count];
-            file->GetChunkData(pSeventhEffectEntries, count * sizeof(TimedFloatKey));
-            if (file->IsEndianConversionRequired())
+            pDepthOfFieldStrengthFloatKey = new TimedFloatKey[count];
+            apFile->GetChunkData(pDepthOfFieldStrengthFloatKey, count * sizeof(TimedFloatKey));
+            if (apFile->IsEndianConversionRequired())
             {
-                unsigned int* words = (unsigned int*)pSeventhEffectEntries;
+                unsigned int* words = (unsigned int*)pDepthOfFieldStrengthFloatKey;
                 for (unsigned int i = 0; i < count * sizeof(TimedFloatKey) / sizeof(unsigned int); ++i)
                     BSEndian(&words[i], EndianSizeTag<4>());
             }
-            m_kFloatInterpolatorFive.SetAnimationKeys(pSeventhEffectEntries, count, NiAnimationKey::LINKEY);
+            DepthOfFieldStrengthInterpolator.SetAnimationKeys(pDepthOfFieldStrengthFloatKey, count, NiAnimationKey::LINKEY);
             break;
         }
         case CHUNK_ID_XNAM_ID: {
             unsigned int count = Data.m_uiEffectEntryCountEighth;
-            pEighthEffectEntries = new TimedFloatKey[count];
-            file->GetChunkData(pEighthEffectEntries, count * sizeof(TimedFloatKey));
-            if (file->IsEndianConversionRequired())
+            pDepthOfFieldDistanceFloatKey = new TimedFloatKey[count];
+            apFile->GetChunkData(pDepthOfFieldDistanceFloatKey, count * sizeof(TimedFloatKey));
+            if (apFile->IsEndianConversionRequired())
             {
-                unsigned int* words = (unsigned int*)pEighthEffectEntries;
+                unsigned int* words = (unsigned int*)pDepthOfFieldDistanceFloatKey;
                 for (unsigned int i = 0; i < count * sizeof(TimedFloatKey) / sizeof(unsigned int); ++i)
                     BSEndian(&words[i], EndianSizeTag<4>());
             }
-            m_kFloatInterpolatorSix.SetAnimationKeys(pEighthEffectEntries, count, NiAnimationKey::LINKEY);
+            DepthOfFieldDistanceInterpolator.SetAnimationKeys(pDepthOfFieldDistanceFloatKey, count, NiAnimationKey::LINKEY);
             break;
         }
         case CHUNK_ID_YNAM_ID: {
             unsigned int count = Data.m_uiEffectEntryCountNinth;
-            pNinthEffectEntries = new TimedFloatKey[count];
-            file->GetChunkData(pNinthEffectEntries, count * sizeof(TimedFloatKey));
-            if (file->IsEndianConversionRequired())
+            pDepthOfFieldRangeFloatKey = new TimedFloatKey[count];
+            apFile->GetChunkData(pDepthOfFieldRangeFloatKey, count * sizeof(TimedFloatKey));
+            if (apFile->IsEndianConversionRequired())
             {
-                unsigned int* words = (unsigned int*)pNinthEffectEntries;
+                unsigned int* words = (unsigned int*)pDepthOfFieldRangeFloatKey;
                 for (unsigned int i = 0; i < count * sizeof(TimedFloatKey) / sizeof(unsigned int); ++i)
                     BSEndian(&words[i], EndianSizeTag<4>());
             }
-            m_kFloatInterpolatorSeven.SetAnimationKeys(pNinthEffectEntries, count, NiAnimationKey::LINKEY);
+            DepthOfFieldRangeInterpolator.SetAnimationKeys(pDepthOfFieldRangeFloatKey, count, NiAnimationKey::LINKEY);
             break;
         }
         case CHUNK_ID_NAM4_ID: {
             unsigned int count = Data.m_uiEffectEntryCountThirteenth;
-            pSixthEffectEntries = new TimedFloatKey[count];
-            file->GetChunkData(pSixthEffectEntries, count * sizeof(TimedFloatKey));
-            if (file->IsEndianConversionRequired())
+            pMotionBlurStrengthFloatKey = new TimedFloatKey[count];
+            apFile->GetChunkData(pMotionBlurStrengthFloatKey, count * sizeof(TimedFloatKey));
+            if (apFile->IsEndianConversionRequired())
             {
-                unsigned int* words = (unsigned int*)pSixthEffectEntries;
+                unsigned int* words = (unsigned int*)pMotionBlurStrengthFloatKey;
                 for (unsigned int i = 0; i < count * sizeof(TimedFloatKey) / sizeof(unsigned int); ++i)
                     BSEndian(&words[i], EndianSizeTag<4>());
             }
-            m_kFloatInterpolatorEight.SetAnimationKeys(pSixthEffectEntries, count, NiAnimationKey::LINKEY);
+            MotionBlurStrengthInterpolator.SetAnimationKeys(pMotionBlurStrengthFloatKey, count, NiAnimationKey::LINKEY);
             break;
         }
         case CHUNK_ID_RDSD_ID: {
             unsigned int sound = 0;
-            file->GetChunkData(&sound);
+            apFile->GetChunkData(&sound);
             pIntroSound = (TESSound*)sound;
             break;
         }
         case CHUNK_ID_RDSI_ID: {
             unsigned int sound = 0;
-            file->GetChunkData(&sound);
+            apFile->GetChunkData(&sound);
             pOutroSound = (TESSound*)sound;
             break;
         }
@@ -282,8 +285,8 @@ bool TESImageSpaceModifier::Load(TESFile* file)
                 column = (chunk & 0xc0) >> 6;
                 count = Data.m_auiKeyframeCountsByTypeAndChannel[row][column];
                 pEffectEntryTable[row][column] = new TimedFloatKey[count];
-                file->GetChunkData(pEffectEntryTable[row][column], count * sizeof(TimedFloatKey));
-                if (file->IsEndianConversionRequired())
+                apFile->GetChunkData(pEffectEntryTable[row][column], count * sizeof(TimedFloatKey));
+                if (apFile->IsEndianConversionRequired())
                 {
                     unsigned int* words = (unsigned int*)pEffectEntryTable[row][column];
                     for (unsigned int i = 0; i < count * sizeof(TimedFloatKey) / sizeof(unsigned int); ++i)
@@ -294,13 +297,15 @@ bool TESImageSpaceModifier::Load(TESFile* file)
             }
             break;
         }
-        if (!file->NextChunk())
+        if (!apFile->NextChunk())
             break;
     }
     return true;
 }
 
 // @fnv 0x0052bd40
+// pdb: TESImageSpaceModifier::InitializeData | TESImageSpaceModifier.obj | retail, vtable slot, high
+// pdb locals: j, k, i
 void TESImageSpaceModifier::ResetFormData()
 {
     int i, j, kKey;
@@ -325,131 +330,134 @@ void TESImageSpaceModifier::ResetFormData()
                 pEffectEntryTable[i][j], Data.m_auiKeyframeCountsByTypeAndChannel[i][j], NiAnimationKey::LINKEY);
         }
     Data.m_uiEffectEntryCountFirst = 2;
-    pFirstEffectRecordArray = new AlphaColor[2];
+    pTintColorKey = new AlphaColor[2];
     for (i = 0; i < 2; ++i)
     {
-        pFirstEffectRecordArray[i].TESRegionPoint_SetX(DAT_0118aba0[i]);
-        pFirstEffectRecordArray[i].NiColorKey_SetColor(NiColorA(1.0f, 1.0f, 1.0f, 0.0f));
+        pTintColorKey[i].TESRegionPoint_SetX(DAT_0118aba0[i]);
+        pTintColorKey[i].NiColorKey_SetColor(NiColorA(1.0f, 1.0f, 1.0f, 0.0f));
     }
-    m_kColorInterpolatorOne.SetAnimationKeys(pFirstEffectRecordArray, Data.m_uiEffectEntryCountFirst,
+    TintColorInterpolator.ReplaceKeys(pTintColorKey, Data.m_uiEffectEntryCountFirst,
                                              NiAnimationKey::LINKEY);
     Data.m_uiEffectEntryCountTwelfth = 2;
-    pSecondEffectRecordArray = new AlphaColor[2];
+    pFadeColorKey = new AlphaColor[2];
     for (i = 0; i < 2; ++i)
     {
-        pSecondEffectRecordArray[i].TESRegionPoint_SetX(DAT_0118aba0[i]);
-        pSecondEffectRecordArray[i].NiColorKey_SetColor(NiColorA(1.0f, 1.0f, 1.0f, 0.0f));
+        pFadeColorKey[i].TESRegionPoint_SetX(DAT_0118aba0[i]);
+        pFadeColorKey[i].NiColorKey_SetColor(NiColorA(1.0f, 1.0f, 1.0f, 0.0f));
     }
-    m_kColorInterpolatorTwo.SetAnimationKeys(pSecondEffectRecordArray, Data.m_uiEffectEntryCountTwelfth,
+    FadeColorInterpolator.ReplaceKeys(pFadeColorKey, Data.m_uiEffectEntryCountTwelfth,
                                              NiAnimationKey::LINKEY);
     Data.m_uiEffectEntryCountSecond = 2;
-    pSecondEffectEntries = new TimedFloatKey[2];
+    pBlurFloatKey = new TimedFloatKey[2];
     for (i = 0; i < 2; ++i)
     {
-        pSecondEffectEntries[i].TESRegionPoint_SetX(DAT_0118aba0[i]);
-        pSecondEffectEntries[i].FUN_004f5d90(0.0f);
+        pBlurFloatKey[i].TESRegionPoint_SetX(DAT_0118aba0[i]);
+        pBlurFloatKey[i].FUN_004f5d90(0.0f);
     }
-    m_kFloatInterpolatorOne.SetAnimationKeys(pSecondEffectEntries, Data.m_uiEffectEntryCountSecond,
+    BlurInterpolator.SetAnimationKeys(pBlurFloatKey, Data.m_uiEffectEntryCountSecond,
                                              NiAnimationKey::LINKEY);
     Data.m_uiEffectEntryCountThird = 2;
-    pThirdEffectEntries = new TimedFloatKey[2];
+    pDoubleFloatKey = new TimedFloatKey[2];
     for (i = 0; i < 2; ++i)
     {
-        pThirdEffectEntries[i].TESRegionPoint_SetX(DAT_0118aba0[i]);
-        pThirdEffectEntries[i].FUN_004f5d90(0.0f);
+        pDoubleFloatKey[i].TESRegionPoint_SetX(DAT_0118aba0[i]);
+        pDoubleFloatKey[i].FUN_004f5d90(0.0f);
     }
-    m_kFloatInterpolatorTwo.SetAnimationKeys(pThirdEffectEntries, Data.m_uiEffectEntryCountThird, NiAnimationKey::LINKEY);
+    DoubleInterpolator.SetAnimationKeys(pDoubleFloatKey, Data.m_uiEffectEntryCountThird, NiAnimationKey::LINKEY);
     Data.m_uiEffectEntryCountFourth = 2;
-    pTenthEffectEntries = new TimedFloatKey[2];
+    pRadialBlurStrengthFloatKey = new TimedFloatKey[2];
     for (i = 0; i < 2; ++i)
     {
-        pTenthEffectEntries[i].TESRegionPoint_SetX(DAT_0118aba0[i]);
-        pTenthEffectEntries[i].FUN_004f5d90(0.0f);
+        pRadialBlurStrengthFloatKey[i].TESRegionPoint_SetX(DAT_0118aba0[i]);
+        pRadialBlurStrengthFloatKey[i].FUN_004f5d90(0.0f);
     }
-    m_kFloatInterpolatorNine.SetAnimationKeys(pTenthEffectEntries, Data.m_uiEffectEntryCountFourth,
+    RadialBlurStrengthInterpolator.SetAnimationKeys(pRadialBlurStrengthFloatKey, Data.m_uiEffectEntryCountFourth,
                                               NiAnimationKey::LINKEY);
     Data.m_uiEffectEntryCountFifth = 2;
-    pEleventhEffectEntries = new TimedFloatKey[2];
+    pRadialBlurRampupFloatKey = new TimedFloatKey[2];
     for (i = 0; i < 2; ++i)
     {
-        pEleventhEffectEntries[i].TESRegionPoint_SetX(DAT_0118aba0[i]);
-        pEleventhEffectEntries[i].FUN_004f5d90(0.0f);
+        pRadialBlurRampupFloatKey[i].TESRegionPoint_SetX(DAT_0118aba0[i]);
+        pRadialBlurRampupFloatKey[i].FUN_004f5d90(0.0f);
     }
-    m_kFloatInterpolatorTen.SetAnimationKeys(pEleventhEffectEntries, Data.m_uiEffectEntryCountFifth,
+    RadialBlurRampupInterpolator.SetAnimationKeys(pRadialBlurRampupFloatKey, Data.m_uiEffectEntryCountFifth,
                                              NiAnimationKey::LINKEY);
     Data.m_uiEffectEntryCountSixth = 2;
-    pTwelfthEffectEntries = new TimedFloatKey[2];
+    pRadialBlurStartFloatKey = new TimedFloatKey[2];
     for (i = 0; i < 2; ++i)
     {
-        pTwelfthEffectEntries[i].TESRegionPoint_SetX(DAT_0118aba0[i]);
-        pTwelfthEffectEntries[i].FUN_004f5d90(0.0f);
+        pRadialBlurStartFloatKey[i].TESRegionPoint_SetX(DAT_0118aba0[i]);
+        pRadialBlurStartFloatKey[i].FUN_004f5d90(0.0f);
     }
-    m_kFloatInterpolatorEleven.SetAnimationKeys(pTwelfthEffectEntries, Data.m_uiEffectEntryCountSixth,
+    RadialBlurStartInterpolator.SetAnimationKeys(pRadialBlurStartFloatKey, Data.m_uiEffectEntryCountSixth,
                                                 NiAnimationKey::LINKEY);
     Data.m_uiEffectEntryCountTenth = 2;
-    pFourthEffectEntries = new TimedFloatKey[2];
+    pRadialBlurRampDownFloatKey = new TimedFloatKey[2];
     for (i = 0; i < 2; ++i)
     {
-        pFourthEffectEntries[i].TESRegionPoint_SetX(DAT_0118aba0[i]);
-        pFourthEffectEntries[i].FUN_004f5d90(0.0f);
+        pRadialBlurRampDownFloatKey[i].TESRegionPoint_SetX(DAT_0118aba0[i]);
+        pRadialBlurRampDownFloatKey[i].FUN_004f5d90(0.0f);
     }
-    m_kFloatInterpolatorThree.SetAnimationKeys(pFourthEffectEntries, Data.m_uiEffectEntryCountTenth,
+    RadialBlurRampDownInterpolator.SetAnimationKeys(pRadialBlurRampDownFloatKey, Data.m_uiEffectEntryCountTenth,
                                                NiAnimationKey::LINKEY);
     Data.m_uiEffectEntryCountEleventh = 2;
-    pFifthEffectEntries = new TimedFloatKey[2];
+    pRadialBlurDownStartFloatKey = new TimedFloatKey[2];
     for (i = 0; i < 2; ++i)
     {
-        pFifthEffectEntries[i].TESRegionPoint_SetX(DAT_0118aba0[i]);
-        pFifthEffectEntries[i].FUN_004f5d90(0.0f);
+        pRadialBlurDownStartFloatKey[i].TESRegionPoint_SetX(DAT_0118aba0[i]);
+        pRadialBlurDownStartFloatKey[i].FUN_004f5d90(0.0f);
     }
-    m_kFloatInterpolatorFour.SetAnimationKeys(pFifthEffectEntries, Data.m_uiEffectEntryCountEleventh,
+    RadialBlurDownStartInterpolator.SetAnimationKeys(pRadialBlurDownStartFloatKey, Data.m_uiEffectEntryCountEleventh,
                                               NiAnimationKey::LINKEY);
     Data.m_uiEffectEntryCountSeventh = 2;
-    pSeventhEffectEntries = new TimedFloatKey[2];
+    pDepthOfFieldStrengthFloatKey = new TimedFloatKey[2];
     for (i = 0; i < 2; ++i)
     {
-        pSeventhEffectEntries[i].TESRegionPoint_SetX(DAT_0118aba0[i]);
-        pSeventhEffectEntries[i].FUN_004f5d90(0.0f);
+        pDepthOfFieldStrengthFloatKey[i].TESRegionPoint_SetX(DAT_0118aba0[i]);
+        pDepthOfFieldStrengthFloatKey[i].FUN_004f5d90(0.0f);
     }
-    m_kFloatInterpolatorFive.SetAnimationKeys(pSeventhEffectEntries, Data.m_uiEffectEntryCountSeventh,
+    DepthOfFieldStrengthInterpolator.SetAnimationKeys(pDepthOfFieldStrengthFloatKey, Data.m_uiEffectEntryCountSeventh,
                                               NiAnimationKey::LINKEY);
     Data.m_uiEffectEntryCountEighth = 2;
-    pEighthEffectEntries = new TimedFloatKey[2];
+    pDepthOfFieldDistanceFloatKey = new TimedFloatKey[2];
     for (i = 0; i < 2; ++i)
     {
-        pEighthEffectEntries[i].TESRegionPoint_SetX(DAT_0118aba0[i]);
-        pEighthEffectEntries[i].FUN_004f5d90(0.0f);
+        pDepthOfFieldDistanceFloatKey[i].TESRegionPoint_SetX(DAT_0118aba0[i]);
+        pDepthOfFieldDistanceFloatKey[i].FUN_004f5d90(0.0f);
     }
-    m_kFloatInterpolatorSix.SetAnimationKeys(pEighthEffectEntries, Data.m_uiEffectEntryCountEighth,
+    DepthOfFieldDistanceInterpolator.SetAnimationKeys(pDepthOfFieldDistanceFloatKey, Data.m_uiEffectEntryCountEighth,
                                              NiAnimationKey::LINKEY);
     Data.m_uiEffectEntryCountNinth = 2;
-    pNinthEffectEntries = new TimedFloatKey[2];
+    pDepthOfFieldRangeFloatKey = new TimedFloatKey[2];
     for (i = 0; i < 2; ++i)
     {
-        pNinthEffectEntries[i].TESRegionPoint_SetX(DAT_0118aba0[i]);
-        pNinthEffectEntries[i].FUN_004f5d90(0.0f);
+        pDepthOfFieldRangeFloatKey[i].TESRegionPoint_SetX(DAT_0118aba0[i]);
+        pDepthOfFieldRangeFloatKey[i].FUN_004f5d90(0.0f);
     }
-    m_kFloatInterpolatorSeven.SetAnimationKeys(pNinthEffectEntries, Data.m_uiEffectEntryCountNinth,
+    DepthOfFieldRangeInterpolator.SetAnimationKeys(pDepthOfFieldRangeFloatKey, Data.m_uiEffectEntryCountNinth,
                                                NiAnimationKey::LINKEY);
     Data.m_uiEffectEntryCountThirteenth = 2;
-    pSixthEffectEntries = new TimedFloatKey[2];
+    pMotionBlurStrengthFloatKey = new TimedFloatKey[2];
     for (i = 0; i < 2; ++i)
     {
-        pSixthEffectEntries[i].TESRegionPoint_SetX(DAT_0118aba0[i]);
-        pSixthEffectEntries[i].FUN_004f5d90(0.0f);
+        pMotionBlurStrengthFloatKey[i].TESRegionPoint_SetX(DAT_0118aba0[i]);
+        pMotionBlurStrengthFloatKey[i].FUN_004f5d90(0.0f);
     }
-    m_kFloatInterpolatorEight.SetAnimationKeys(pSixthEffectEntries, Data.m_uiEffectEntryCountThirteenth,
+    MotionBlurStrengthInterpolator.SetAnimationKeys(pMotionBlurStrengthFloatKey, Data.m_uiEffectEntryCountThirteenth,
                                                NiAnimationKey::LINKEY);
     pIntroSound = 0;
     pOutroSound = 0;
 }
 
 // @fnv 0x00531720
-void TESImageSpaceModifier::Apply(float startTime, float strength, NiAVObject* target)
+// pdb: TESImageSpaceModifier::Apply | TESImageSpaceModifier.obj | retail, upstream name already matches, high
+// pdb params: afStartTime, afStrength, apTarget
+// pdb locals: pmanager, fmbstr, fradialblurrampdown, fradialblurstart, ftime, fradialblurrampup, fdofrange, fdoubleval, fradialblurstr, fdofdistance, fradialblurdownstart, fval, fdofstrength, colval, fblurval, i, j
+void TESImageSpaceModifier::Apply(float afStartTime, float afStrength, NiAVObject* apTarget)
 {
     float effectTime;
     if (Data.m_bOverride)
-        effectTime = (DAT_011c96fc - startTime) / Data.fDuration;
+        effectTime = (DAT_011c96fc - afStartTime) / Data.fDuration;
     else
         effectTime = 0.0f;
     BSClamp_float(effectTime, 0.0f, 1.0f);
@@ -460,78 +468,81 @@ void TESImageSpaceModifier::Apply(float startTime, float strength, NiAVObject* t
         for (int j = 0; j < 2; ++j)
             m_akFloatInterpolators[i][j].UpdateFloat(effectTime, 0, pfParameterValues[j]);
         if (i >= 0 && i <= 13)
-            pManager->ApplyParamModifier_00b8cb30(1, i, pfParameterValues, strength);
+            pManager->ApplyParamModifier_00b8cb30(1, i, pfParameterValues, afStrength);
         if (i >= 14 && i <= 16)
-            pManager->ApplyParamModifier_00b8cb30(0, i - 14, pfParameterValues, strength);
+            pManager->ApplyParamModifier_00b8cb30(0, i - 14, pfParameterValues, afStrength);
         if (i >= 17 && i <= 20)
-            pManager->ApplyParamModifier_00b8cb30(3, i - 17, pfParameterValues, strength);
+            pManager->ApplyParamModifier_00b8cb30(3, i - 17, pfParameterValues, afStrength);
     }
     NiColorA kCurrentColor(0.0f, 0.0f, 0.0f, 0.0f);
-    m_kColorInterpolatorOne.UpdateColorA(effectTime, 0, kCurrentColor);
-    kCurrentColor.a *= strength;
+    TintColorInterpolator.UpdateColorA(effectTime, 0, kCurrentColor);
+    kCurrentColor.a *= afStrength;
     BSClamp_float(kCurrentColor.a, 0.0f, 1.0f);
     pManager->FUN_00b8b540(kCurrentColor);
-    m_kColorInterpolatorTwo.UpdateColorA(effectTime, 0, kCurrentColor);
-    kCurrentColor.a *= strength;
+    FadeColorInterpolator.UpdateColorA(effectTime, 0, kCurrentColor);
+    kCurrentColor.a *= afStrength;
     BSClamp_float(kCurrentColor.a, 0.0f, 1.0f);
     pManager->FUN_00b8b610(kCurrentColor);
     float interpolatedBlur;
-    m_kFloatInterpolatorOne.UpdateFloat(effectTime, 0, interpolatedBlur);
+    BlurInterpolator.UpdateFloat(effectTime, 0, interpolatedBlur);
     float localDouble;
-    m_kFloatInterpolatorTwo.UpdateFloat(effectTime, 0, localDouble);
+    DoubleInterpolator.UpdateFloat(effectTime, 0, localDouble);
     float interpolatedRadialBlurStrength;
-    m_kFloatInterpolatorNine.UpdateFloat(effectTime, 0, interpolatedRadialBlurStrength);
+    RadialBlurStrengthInterpolator.UpdateFloat(effectTime, 0, interpolatedRadialBlurStrength);
     float fRadialBlurRampupResult;
-    m_kFloatInterpolatorTen.UpdateFloat(effectTime, 0, fRadialBlurRampupResult);
+    RadialBlurRampupInterpolator.UpdateFloat(effectTime, 0, fRadialBlurRampupResult);
     float radialBlurStartOutput;
-    m_kFloatInterpolatorEleven.UpdateFloat(effectTime, 0, radialBlurStartOutput);
+    RadialBlurStartInterpolator.UpdateFloat(effectTime, 0, radialBlurStartOutput);
     float fRadialBlurRampDownSample;
-    m_kFloatInterpolatorThree.UpdateFloat(effectTime, 0, fRadialBlurRampDownSample);
+    RadialBlurRampDownInterpolator.UpdateFloat(effectTime, 0, fRadialBlurRampDownSample);
     float radialBlurDownStartParameter;
-    m_kFloatInterpolatorFour.UpdateFloat(effectTime, 0, radialBlurDownStartParameter);
+    RadialBlurDownStartInterpolator.UpdateFloat(effectTime, 0, radialBlurDownStartParameter);
     float sampledDepthOfFieldStrength;
-    m_kFloatInterpolatorFive.UpdateFloat(effectTime, 0, sampledDepthOfFieldStrength);
+    DepthOfFieldStrengthInterpolator.UpdateFloat(effectTime, 0, sampledDepthOfFieldStrength);
     float fDepthOfFieldDistanceOutput;
-    m_kFloatInterpolatorSix.UpdateFloat(effectTime, 0, fDepthOfFieldDistanceOutput);
+    DepthOfFieldDistanceInterpolator.UpdateFloat(effectTime, 0, fDepthOfFieldDistanceOutput);
     float fCurrentDepthOfFieldRange;
-    m_kFloatInterpolatorSeven.UpdateFloat(effectTime, 0, fCurrentDepthOfFieldRange);
+    DepthOfFieldRangeInterpolator.UpdateFloat(effectTime, 0, fCurrentDepthOfFieldRange);
     float motionBlurSample;
-    m_kFloatInterpolatorEight.UpdateFloat(effectTime, 0, motionBlurSample);
-    interpolatedBlur *= strength;
+    MotionBlurStrengthInterpolator.UpdateFloat(effectTime, 0, motionBlurSample);
+    interpolatedBlur *= afStrength;
     BSClamp_float(interpolatedBlur, 0.0f, DAT_01018f98);
     pManager->RaiseHighestBlurRadius(interpolatedBlur);
-    pManager->ApplyDoubleVisionParamModifier_00b8afb0(localDouble * strength);
-    if (Data.m_bUseRadialBlur && target)
+    pManager->ApplyDoubleVisionParamModifier_00b8afb0(localDouble * afStrength);
+    if (Data.m_bUseRadialBlur && apTarget)
     {
-        target->UpdateWorldBound();
-        pManager->ApplyRadialBlurParamModifier(interpolatedRadialBlurStrength * strength, fRadialBlurRampupResult,
+        apTarget->UpdateWorldBound();
+        pManager->ApplyRadialBlurParamModifier(interpolatedRadialBlurStrength * afStrength, fRadialBlurRampupResult,
                                radialBlurStartOutput, fRadialBlurRampDownSample, radialBlurDownStartParameter,
-                               target->NiAVObject_GetWorldBound());
+                               apTarget->NiAVObject_GetWorldBound());
     }
     else if (Data.m_bUseRadialBlur)
-        pManager->SetRadialBlurParameters(interpolatedRadialBlurStrength * strength, fRadialBlurRampupResult,
+        pManager->SetRadialBlurParameters(interpolatedRadialBlurStrength * afStrength, fRadialBlurRampupResult,
                                           radialBlurStartOutput, fRadialBlurRampDownSample,
                                           radialBlurDownStartParameter, NiPoint2(0.5f, 0.5f));
     else
-        pManager->SetRadialBlurParameters(interpolatedRadialBlurStrength * strength, fRadialBlurRampupResult,
+        pManager->SetRadialBlurParameters(interpolatedRadialBlurStrength * afStrength, fRadialBlurRampupResult,
                                           radialBlurStartOutput, fRadialBlurRampDownSample,
                                           radialBlurDownStartParameter, Data.m_kRadialBlurCenter);
-    if (Data.m_bUseEffectEntries && target)
+    if (Data.m_bUseEffectEntries && apTarget)
     {
-        target->UpdateWorldBound();
-        pManager->SetDistanceEffect(sampledDepthOfFieldStrength * strength, Data.m_ucEffectMode, 0.0f,
-                                    target->NiAVObject_GetWorldBound());
+        apTarget->UpdateWorldBound();
+        pManager->SetDistanceEffect(sampledDepthOfFieldStrength * afStrength, Data.m_ucEffectMode, 0.0f,
+                                    apTarget->NiAVObject_GetWorldBound());
     }
     else if (Data.m_bUseEffectEntries)
-        pManager->SetDepthOfFieldParameters(sampledDepthOfFieldStrength * strength, Data.m_ucEffectMode, 0.0f, 0.0f,
+        pManager->SetDepthOfFieldParameters(sampledDepthOfFieldStrength * afStrength, Data.m_ucEffectMode, 0.0f, 0.0f,
                                             1.0f);
     else
-        pManager->SetDepthOfFieldParameters(sampledDepthOfFieldStrength * strength, Data.m_ucEffectMode, 0.0f,
+        pManager->SetDepthOfFieldParameters(sampledDepthOfFieldStrength * afStrength, Data.m_ucEffectMode, 0.0f,
                                             fDepthOfFieldDistanceOutput, fCurrentDepthOfFieldRange);
     pManager->RaiseBlurRadius(motionBlurSample);
 }
 
 // @fnv 0x00531d20
+// pdb: TESImageSpaceModifier::ApplyWeather | TESImageSpaceModifier.obj | debug, object-file run extension, low
+// pdb params: afStartTime, afStrength
+// pdb locals: pmanager, fmbstr, fradialblurrampdown, fradialblurstart, ftime, fradialblurrampup, fdofrange, fdoubleval, fradialblurstr, fdofdistance, fradialblurdownstart, fval, fdofstrength, colval, fblurval, i, j
 void TESImageSpaceModifier::EvaluateInterpolators(float startTime, float strength)
 {
     float effectTime;
@@ -553,34 +564,34 @@ void TESImageSpaceModifier::EvaluateInterpolators(float startTime, float strengt
             pManager->AccumulateComponentValues(3, i - 17, pfParameterValues, strength);
     }
     NiColorA kCurrentColor(0.0f, 0.0f, 0.0f, 0.0f);
-    m_kColorInterpolatorOne.UpdateColorA(effectTime, 0, kCurrentColor);
+    TintColorInterpolator.UpdateColorA(effectTime, 0, kCurrentColor);
     kCurrentColor *= strength;
     pManager->FUN_00b8b5c0(kCurrentColor);
-    m_kColorInterpolatorTwo.UpdateColorA(effectTime, 0, kCurrentColor);
+    FadeColorInterpolator.UpdateColorA(effectTime, 0, kCurrentColor);
     kCurrentColor *= strength;
     pManager->FUN_00b8b690(kCurrentColor);
     float interpolatedBlur;
-    m_kFloatInterpolatorOne.UpdateFloat(effectTime, 0, interpolatedBlur);
+    BlurInterpolator.UpdateFloat(effectTime, 0, interpolatedBlur);
     float localDouble;
-    m_kFloatInterpolatorTwo.UpdateFloat(effectTime, 0, localDouble);
+    DoubleInterpolator.UpdateFloat(effectTime, 0, localDouble);
     float interpolatedRadialBlurStrength;
-    m_kFloatInterpolatorNine.UpdateFloat(effectTime, 0, interpolatedRadialBlurStrength);
+    RadialBlurStrengthInterpolator.UpdateFloat(effectTime, 0, interpolatedRadialBlurStrength);
     float fRadialBlurRampupResult;
-    m_kFloatInterpolatorTen.UpdateFloat(effectTime, 0, fRadialBlurRampupResult);
+    RadialBlurRampupInterpolator.UpdateFloat(effectTime, 0, fRadialBlurRampupResult);
     float radialBlurStartOutput;
-    m_kFloatInterpolatorEleven.UpdateFloat(effectTime, 0, radialBlurStartOutput);
+    RadialBlurStartInterpolator.UpdateFloat(effectTime, 0, radialBlurStartOutput);
     float fRadialBlurRampDownSample;
-    m_kFloatInterpolatorThree.UpdateFloat(effectTime, 0, fRadialBlurRampDownSample);
+    RadialBlurRampDownInterpolator.UpdateFloat(effectTime, 0, fRadialBlurRampDownSample);
     float radialBlurDownStartParameter;
-    m_kFloatInterpolatorFour.UpdateFloat(effectTime, 0, radialBlurDownStartParameter);
+    RadialBlurDownStartInterpolator.UpdateFloat(effectTime, 0, radialBlurDownStartParameter);
     float sampledDepthOfFieldStrength;
-    m_kFloatInterpolatorFive.UpdateFloat(effectTime, 0, sampledDepthOfFieldStrength);
+    DepthOfFieldStrengthInterpolator.UpdateFloat(effectTime, 0, sampledDepthOfFieldStrength);
     float fDepthOfFieldDistanceOutput;
-    m_kFloatInterpolatorSix.UpdateFloat(effectTime, 0, fDepthOfFieldDistanceOutput);
+    DepthOfFieldDistanceInterpolator.UpdateFloat(effectTime, 0, fDepthOfFieldDistanceOutput);
     float fCurrentDepthOfFieldRange;
-    m_kFloatInterpolatorSeven.UpdateFloat(effectTime, 0, fCurrentDepthOfFieldRange);
+    DepthOfFieldRangeInterpolator.UpdateFloat(effectTime, 0, fCurrentDepthOfFieldRange);
     float motionBlurSample;
-    m_kFloatInterpolatorEight.UpdateFloat(effectTime, 0, motionBlurSample);
+    MotionBlurStrengthInterpolator.UpdateFloat(effectTime, 0, motionBlurSample);
     pManager->ApplyBlurRadiusParamModifierWeather_00b8af40(interpolatedBlur * strength);
     pManager->AddDoubleVision(localDouble * strength);
     pManager->FUN_00b8b6e0(interpolatedRadialBlurStrength * strength, fRadialBlurRampupResult * strength,
@@ -593,11 +604,12 @@ void TESImageSpaceModifier::EvaluateInterpolators(float startTime, float strengt
 
 // Sets the form type to IMAD, calls the initializer, and if this is the global instance DAT_011c9750 calls the second initializer.
 // @fnv 0x0052b8f0
+// pdb: TESImageSpaceModifier::TESImageSpaceModifier | TESImageSpaceModifier.obj | retail, upstream name already matches, high
 TESImageSpaceModifier::TESImageSpaceModifier()
-    : m_kFloatInterpolatorOne(0), m_kFloatInterpolatorTwo(0),
-      m_kFloatInterpolatorNine(0), m_kFloatInterpolatorTen(0), m_kFloatInterpolatorEleven(0),
-      m_kFloatInterpolatorThree(0), m_kFloatInterpolatorFour(0), m_kFloatInterpolatorFive(0),
-      m_kFloatInterpolatorSix(0), m_kFloatInterpolatorSeven(0), m_kFloatInterpolatorEight(0)
+    : BlurInterpolator(0), DoubleInterpolator(0),
+      RadialBlurStrengthInterpolator(0), RadialBlurRampupInterpolator(0), RadialBlurStartInterpolator(0),
+      RadialBlurRampDownInterpolator(0), RadialBlurDownStartInterpolator(0), DepthOfFieldStrengthInterpolator(0),
+      DepthOfFieldDistanceInterpolator(0), DepthOfFieldRangeInterpolator(0), MotionBlurStrengthInterpolator(0)
 {
     SetFormType(ENUM_FORM_ID_IMAD_ID);
     ResetFormData();
@@ -605,29 +617,33 @@ TESImageSpaceModifier::TESImageSpaceModifier()
         NotifySaveLoadGameOfFormChange();
 }
 // @fnv 0x0052d260
+// pdb: TESImageSpaceModifier::ClearData | TESImageSpaceModifier.obj | retail, upstream name already matches, high
+// pdb locals: i, j
 void TESImageSpaceModifier::ClearData()
 {
     for (int i = 0; i < 21; ++i)
         for (int j = 0; j < 2; ++j)
             m_akFloatInterpolators[i][j].FUN_007fc2b0(0);
-    m_kColorInterpolatorOne.SetColorData(0);
-    m_kColorInterpolatorTwo.SetColorData(0);
-    m_kFloatInterpolatorOne.FUN_007fc2b0(0);
-    m_kFloatInterpolatorTwo.FUN_007fc2b0(0);
-    m_kFloatInterpolatorNine.FUN_007fc2b0(0);
-    m_kFloatInterpolatorTen.FUN_007fc2b0(0);
-    m_kFloatInterpolatorEleven.FUN_007fc2b0(0);
-    m_kFloatInterpolatorThree.FUN_007fc2b0(0);
-    m_kFloatInterpolatorFour.FUN_007fc2b0(0);
-    m_kFloatInterpolatorFive.FUN_007fc2b0(0);
-    m_kFloatInterpolatorSix.FUN_007fc2b0(0);
-    m_kFloatInterpolatorSeven.FUN_007fc2b0(0);
-    m_kFloatInterpolatorEight.FUN_007fc2b0(0);
+    TintColorInterpolator.SetColorData(0);
+    FadeColorInterpolator.SetColorData(0);
+    BlurInterpolator.FUN_007fc2b0(0);
+    DoubleInterpolator.FUN_007fc2b0(0);
+    RadialBlurStrengthInterpolator.FUN_007fc2b0(0);
+    RadialBlurRampupInterpolator.FUN_007fc2b0(0);
+    RadialBlurStartInterpolator.FUN_007fc2b0(0);
+    RadialBlurRampDownInterpolator.FUN_007fc2b0(0);
+    RadialBlurDownStartInterpolator.FUN_007fc2b0(0);
+    DepthOfFieldStrengthInterpolator.FUN_007fc2b0(0);
+    DepthOfFieldDistanceInterpolator.FUN_007fc2b0(0);
+    DepthOfFieldRangeInterpolator.FUN_007fc2b0(0);
+    MotionBlurStrengthInterpolator.FUN_007fc2b0(0);
     TESForm::ClearData();
     pIntroSound = 0;
     pOutroSound = 0;
 }
 // @fnv 0x0052d3d0
+// pdb: TESImageSpaceModifier::InitItem | TESImageSpaceModifier.obj | retail, string-set bridge, high
+// pdb locals: itempint
 void TESImageSpaceModifier::InitItem()
 {
     if (IsFormInitialized())
@@ -662,11 +678,12 @@ bool TESImageSpaceModifier::IsExpired(float startTime)
     return DAT_011c96fc - startTime > Data.fDuration;
 }
 // @fnv 0x005330a0
+// pdb: OBJ_LAND::Endian | TESLand.obj | debug, object-file run extension, low
 void TESImageSpaceModifier::InitializeModifierData()
 {
     InitializeComponent();
     Data.m_bOverride = true;
-    pThirdEffectEntries->FUN_004f5d90(0.005f);
+    pDoubleFloatKey->FUN_004f5d90(0.005f);
 }
 
 // NiColorA::operator*=(float) (community FalloutNV.pdb public symbol at this address).
@@ -680,12 +697,15 @@ NiColorA& NiColorA::operator*=(float scale)
     return *this;
 }
 // @fnv 0x0052bad0
+// pdb: TESImageSpaceModifier::ImageSpaceModifierData::ImageSpaceModifierData | TESImageSpaceModifier.obj | debug, object-file run extension, low
 ImageSpaceModifierEffectData::ImageSpaceModifierEffectData()
 {}
 // @fnv 0x0052d3b0
-void NiColorInterpolator::SetColorData(NiColorData* apColorData)
+// pdb: NiColorInterpolator::SetColorData | TESImageSpaceModifier.obj | debug, upstream name already matches, high
+// pdb params: pkColorData
+void NiColorInterpolator::SetColorData(NiColorData* pkColorData)
 {
-    reinterpret_cast<TESImageSpaceColorDataPointer&>(m_spColorData) = apColorData;
+    reinterpret_cast<TESImageSpaceColorDataPointer&>(m_spColorData) = pkColorData;
 }
 // @fnv 0x00532fd0
 NiPoint2 operator*(float scale, const NiPoint2& arPoint)
@@ -711,6 +731,8 @@ struct blob64
 // Multiplies the point pt by the 3x3 matrix mat and stores the result in pOut, returning pOut.
 // @fnv 0x004b3ae0
 // src: GUESS 0x004b3ae0 (confidence: medium)
+// pdb: operator* | GlobalFunc.obj | debug, call graph, medium
+// pdb params: pt, mat
 NiPoint3* NiPoint3_TransformByMatrix3(NiPoint3* pOut, const NiPoint3& pt, const float* mat)
 {
     pOut->Set(pt.x * mat[0] + pt.y * mat[3] + pt.z * mat[6],
@@ -720,6 +742,7 @@ NiPoint3* NiPoint3_TransformByMatrix3(NiPoint3* pOut, const NiPoint3& pt, const 
 }
 
 // @fnv 0x0052baf0
+// pdb: NiFloatInterpolator::`default constructor closure' | TESImageSpaceModifier.obj | debug, object-file run extension, low
 void __fastcall ConstructFloatInterpolator(NiFloatInterpolator* pThis)
 {
     pThis->NiFloatInterpolator::NiFloatInterpolator(0);
@@ -736,6 +759,7 @@ struct Obj52 : NiMemObject
 };
 // Calls FUN_00a3cc80, deletes this with size 0x18 when flags has bit 0 set, and returns this.
 // @fnv 0x0052cf90
+// pdb: NiFloatData::`scalar deleting destructor' | TESImageSpaceModifier.obj | retail, vtable slot, high
 void* Obj52::FUN_0052cf90(unsigned int flags)
 {
     FUN_00a3cc80();
@@ -751,6 +775,7 @@ struct ImageSpaceColorData : NiColorData
 };
 
 // @fnv 0x0052d130
+// pdb: NiColorData::`scalar deleting destructor' | TESImageSpaceModifier.obj | retail, vtable slot, high
 void* ImageSpaceColorData::Destroy(unsigned int flags)
 {
     NiColorData::~NiColorData();
@@ -762,6 +787,7 @@ void* ImageSpaceColorData::Destroy(unsigned int flags)
 // Clamps the float pointed to by aVal to the range [aMin, aMax], writing the bound back when it is out of range.
 // @fnv 0x005330e0
 // src: XBOX_PDB 0x005330e0
+// pdb: HGT_STRUCT::Endian | TESLand.obj | debug, object-file run extension, low
 void __cdecl BSClamp_float(float* aVal, float aMin, float aMax)
 {
     if (*aVal > aMax)
@@ -771,7 +797,7 @@ void __cdecl BSClamp_float(float* aVal, float aMin, float aMax)
 }
 
 struct GlobalObjectO2_00a7b610;
-extern GlobalObjectO2_00a7b610 g_011f3748;
+extern GlobalObjectO2_00a7b610 NiFloatData_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f3748 (old: g_011f3748)
 
 struct FUN_0052cf80_shell
 {
@@ -781,15 +807,15 @@ struct FUN_0052cf80_shell
 // @fnv 0x0052cf80
 GlobalObjectO2_00a7b610* FUN_0052cf80_shell::GetGlobalObject()
 {
-    return &g_011f3748;
+    return &NiFloatData_ms_RTTI;
 }
 
-extern NiRTTI g_011f3750;
+extern NiRTTI NiColorData_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f3750 (old: DAT_011f3750/g_011f3750)
 
 // @fnv 0x0052d120
 const NiRTTI* NiColorData::GetRTTI() const
 {
-    return &g_011f3750;
+    return &NiColorData_ms_RTTI;
 }
 
 struct ImageSpaceModifierDeleting : TESImageSpaceModifier
@@ -801,6 +827,7 @@ extern void* __cdecl _Deallocate(void*);
 
 // Runs the destructor, frees this with _Deallocate when flags has bit 0 set, and returns this.
 // @fnv 0x0052baa0
+// pdb: TESImageSpaceModifier::`scalar deleting destructor' | TESImageSpaceModifier.obj | retail, vtable slot, high
 void* __thiscall ImageSpaceModifierDeleting::Destroy(unsigned int flags)
 {
     TESImageSpaceModifier::~TESImageSpaceModifier();
@@ -854,6 +881,7 @@ void* FUN_00533000_shell::NiFloatInterpolator_GetKeys_0(void** a, void** b, char
 
 // Destructor that calls TESImageSpaceModifier::ClearData on this object.
 // @fnv 0x0052bbd0
+// pdb: TESImageSpaceModifier::~TESImageSpaceModifier | TESImageSpaceModifier.obj | retail, upstream name already matches, high
 TESImageSpaceModifier::~TESImageSpaceModifier()
 {
     TESImageSpaceModifier::ClearData();
@@ -904,7 +932,7 @@ FUN_00532ec0_v4* FUN_00532ec0::SUB(FUN_00532ec0_v4* result, const FUN_00532ec0_v
     return result;
 }
 
-extern "C" void __fastcall CacheObjectValues(TESImageSpaceModifier*);
+extern "C" void __fastcall TESImageSpaceModifier_FlushData(TESImageSpaceModifier*);
 
 int __cdecl _memcmp(const void* left, const void* right, unsigned int count);
 void* __cdecl FUN_00ec43fb(void* object, unsigned int type, void* data, const void* typeInfo, unsigned char option);
@@ -912,6 +940,9 @@ extern char _DAT_01183028;
 
 // Looks up the TESImageSpaceModifier matching form, updates both objects, and returns false only if all compared fields and arrays are identical.
 // @fnv 0x005310b0
+// pdb: TESImageSpaceModifier::Compare | TESImageSpaceModifier.obj | retail, upstream name already matches, high
+// pdb params: apCompare
+// pdb locals: pcomp, i, j
 bool TESImageSpaceModifier::Compare(TESForm* form)
 {
     TESImageSpaceModifier* imageSpaceModifier;
@@ -924,8 +955,8 @@ bool TESImageSpaceModifier::Compare(TESForm* form)
     if (!imageSpaceModifier)
         return true;
 
-    CacheObjectValues(this);
-    CacheObjectValues(imageSpaceModifier);
+    TESImageSpaceModifier_FlushData(this);
+    TESImageSpaceModifier_FlushData(imageSpaceModifier);
 
     if (pIntroSound !=
         imageSpaceModifier->pIntroSound)
@@ -941,68 +972,68 @@ bool TESImageSpaceModifier::Compare(TESForm* form)
     if (_memcmp(&Data, &imageSpaceModifier->Data, 0xf4))
         return true;
 
-    if (_memcmp(pSecondEffectEntries,
-                imageSpaceModifier->pSecondEffectEntries,
+    if (_memcmp(pBlurFloatKey,
+                imageSpaceModifier->pBlurFloatKey,
                 Data.m_uiEffectEntryCountSecond * 8))
         return true;
 
-    if (_memcmp(pThirdEffectEntries,
-                imageSpaceModifier->pThirdEffectEntries,
+    if (_memcmp(pDoubleFloatKey,
+                imageSpaceModifier->pDoubleFloatKey,
                 Data.m_uiEffectEntryCountThird * 8))
         return true;
 
-    if (_memcmp(pFirstEffectRecordArray,
-                imageSpaceModifier->pFirstEffectRecordArray,
+    if (_memcmp(pTintColorKey,
+                imageSpaceModifier->pTintColorKey,
                 Data.m_uiEffectEntryCountFirst * 0x14))
         return true;
 
-    if (_memcmp(pSecondEffectRecordArray,
-                imageSpaceModifier->pSecondEffectRecordArray,
+    if (_memcmp(pFadeColorKey,
+                imageSpaceModifier->pFadeColorKey,
                 Data.m_uiEffectEntryCountTwelfth * 0x14))
         return true;
 
-    if (_memcmp(pTenthEffectEntries,
-                imageSpaceModifier->pTenthEffectEntries,
+    if (_memcmp(pRadialBlurStrengthFloatKey,
+                imageSpaceModifier->pRadialBlurStrengthFloatKey,
                 Data.m_uiEffectEntryCountFourth * 8))
         return true;
 
-    if (_memcmp(pEleventhEffectEntries,
-                imageSpaceModifier->pEleventhEffectEntries,
+    if (_memcmp(pRadialBlurRampupFloatKey,
+                imageSpaceModifier->pRadialBlurRampupFloatKey,
                 Data.m_uiEffectEntryCountFifth * 8))
         return true;
 
-    if (_memcmp(pTwelfthEffectEntries,
-                imageSpaceModifier->pTwelfthEffectEntries,
+    if (_memcmp(pRadialBlurStartFloatKey,
+                imageSpaceModifier->pRadialBlurStartFloatKey,
                 Data.m_uiEffectEntryCountSixth * 8))
         return true;
 
-    if (_memcmp(pFourthEffectEntries,
-                imageSpaceModifier->pFourthEffectEntries,
+    if (_memcmp(pRadialBlurRampDownFloatKey,
+                imageSpaceModifier->pRadialBlurRampDownFloatKey,
                 Data.m_uiEffectEntryCountTenth * 8))
         return true;
 
-    if (_memcmp(pFifthEffectEntries,
-                imageSpaceModifier->pFifthEffectEntries,
+    if (_memcmp(pRadialBlurDownStartFloatKey,
+                imageSpaceModifier->pRadialBlurDownStartFloatKey,
                 Data.m_uiEffectEntryCountEleventh * 8))
         return true;
 
-    if (_memcmp(pSeventhEffectEntries,
-                imageSpaceModifier->pSeventhEffectEntries,
+    if (_memcmp(pDepthOfFieldStrengthFloatKey,
+                imageSpaceModifier->pDepthOfFieldStrengthFloatKey,
                 Data.m_uiEffectEntryCountSeventh * 8))
         return true;
 
-    if (_memcmp(pEighthEffectEntries,
-                imageSpaceModifier->pEighthEffectEntries,
+    if (_memcmp(pDepthOfFieldDistanceFloatKey,
+                imageSpaceModifier->pDepthOfFieldDistanceFloatKey,
                 Data.m_uiEffectEntryCountEighth * 8))
         return true;
 
-    if (_memcmp(pNinthEffectEntries,
-                imageSpaceModifier->pNinthEffectEntries,
+    if (_memcmp(pDepthOfFieldRangeFloatKey,
+                imageSpaceModifier->pDepthOfFieldRangeFloatKey,
                 Data.m_uiEffectEntryCountNinth * 8))
         return true;
 
-    if (_memcmp(pSixthEffectEntries,
-                imageSpaceModifier->pSixthEffectEntries,
+    if (_memcmp(pMotionBlurStrengthFloatKey,
+                imageSpaceModifier->pMotionBlurStrengthFloatKey,
                 Data.m_uiEffectEntryCountThirteenth * 8))
         return true;
 
@@ -1021,6 +1052,8 @@ bool TESImageSpaceModifier::Compare(TESForm* form)
 }
 
 // @fnv 0x00531490
+// pdb: TESImageSpaceModifier::ImageSpaceModifierData::Endian | TESImageSpaceModifier.obj | retail, call graph (shared callers), medium
+// pdb locals: j, i
 void ImageSpaceModifierEffectData::Endian()
 {
     int j;
@@ -1083,6 +1116,7 @@ FUN_00a3ca30::~FUN_00a3ca30()
 {}
 
 // @fnv 0x0052bb10
+// pdb: NiFloatInterpolator::~NiFloatInterpolator | TESImageSpaceModifier.obj | retail, call graph, medium
 FUN_0052bb10::~FUN_0052bb10()
 {}
 
@@ -1110,6 +1144,7 @@ struct FUN_0052bb70 : InterpolatorBase
 };
 // Destructor for an interpolator that owns a ColorDataReference; the body is empty.
 // @fnv 0x0052bb70
+// pdb: NiColorInterpolator::~NiColorInterpolator | TESImageSpaceModifier.obj | retail, call graph, medium
 FUN_0052bb70::~FUN_0052bb70()
 {}
 }
@@ -1160,7 +1195,10 @@ FUN_00532f60_vec4* FUN_00532f60_cls::ScaleVector4(FUN_00532f60_vec4* out, float 
 
 // Caches the key counts and arrays from the shared interpolators.
 // @fnv 0x0052ed90
-extern "C" void __fastcall CacheObjectValues(TESImageSpaceModifier* modifier)
+// src: XBOX_RETAIL_PDB 0x0052ed90
+// pdb: TESImageSpaceModifier::FlushData | TESImageSpaceModifier.obj | retail, call graph (shared callers), high
+// pdb locals: i, j
+extern "C" void __fastcall TESImageSpaceModifier_FlushData(TESImageSpaceModifier* modifier)
 {
     for (int i = 0; i < 21; i++)
     {
@@ -1170,32 +1208,32 @@ extern "C" void __fastcall CacheObjectValues(TESImageSpaceModifier* modifier)
             modifier->pEffectEntryTable[i][j] = (TimedFloatKey*)modifier->m_akFloatInterpolators[i][j].GetChannelKeys(0);
         }
     }
-    modifier->Data.m_uiEffectEntryCountSecond = modifier->m_kFloatInterpolatorOne.GetColorKeyCount(0);
-    modifier->pSecondEffectEntries = (TimedFloatKey*)modifier->m_kFloatInterpolatorOne.GetChannelKeys(0);
-    modifier->Data.m_uiEffectEntryCountThird = modifier->m_kFloatInterpolatorTwo.GetColorKeyCount(0);
-    modifier->pThirdEffectEntries = (TimedFloatKey*)modifier->m_kFloatInterpolatorTwo.GetChannelKeys(0);
-    modifier->Data.m_uiEffectEntryCountFirst = modifier->m_kColorInterpolatorOne.GetColorKeyCount(0);
-    modifier->pFirstEffectRecordArray = (AlphaColor*)modifier->m_kColorInterpolatorOne.GetChannelKeys(0);
-    modifier->Data.m_uiEffectEntryCountTwelfth = modifier->m_kColorInterpolatorTwo.GetColorKeyCount(0);
-    modifier->pSecondEffectRecordArray = (AlphaColor*)modifier->m_kColorInterpolatorTwo.GetChannelKeys(0);
-    modifier->Data.m_uiEffectEntryCountFourth = modifier->m_kFloatInterpolatorNine.GetColorKeyCount(0);
-    modifier->pTenthEffectEntries = (TimedFloatKey*)modifier->m_kFloatInterpolatorNine.GetChannelKeys(0);
-    modifier->Data.m_uiEffectEntryCountFifth = modifier->m_kFloatInterpolatorTen.GetColorKeyCount(0);
-    modifier->pEleventhEffectEntries = (TimedFloatKey*)modifier->m_kFloatInterpolatorTen.GetChannelKeys(0);
-    modifier->Data.m_uiEffectEntryCountSixth = modifier->m_kFloatInterpolatorEleven.GetColorKeyCount(0);
-    modifier->pTwelfthEffectEntries = (TimedFloatKey*)modifier->m_kFloatInterpolatorEleven.GetChannelKeys(0);
-    modifier->Data.m_uiEffectEntryCountTenth = modifier->m_kFloatInterpolatorThree.GetColorKeyCount(0);
-    modifier->pFourthEffectEntries = (TimedFloatKey*)modifier->m_kFloatInterpolatorThree.GetChannelKeys(0);
-    modifier->Data.m_uiEffectEntryCountEleventh = modifier->m_kFloatInterpolatorFour.GetColorKeyCount(0);
-    modifier->pFifthEffectEntries = (TimedFloatKey*)modifier->m_kFloatInterpolatorFour.GetChannelKeys(0);
-    modifier->Data.m_uiEffectEntryCountSeventh = modifier->m_kFloatInterpolatorFive.GetColorKeyCount(0);
-    modifier->pSeventhEffectEntries = (TimedFloatKey*)modifier->m_kFloatInterpolatorFive.GetChannelKeys(0);
-    modifier->Data.m_uiEffectEntryCountEighth = modifier->m_kFloatInterpolatorSix.GetColorKeyCount(0);
-    modifier->pEighthEffectEntries = (TimedFloatKey*)modifier->m_kFloatInterpolatorSix.GetChannelKeys(0);
-    modifier->Data.m_uiEffectEntryCountNinth = modifier->m_kFloatInterpolatorSeven.GetColorKeyCount(0);
-    modifier->pNinthEffectEntries = (TimedFloatKey*)modifier->m_kFloatInterpolatorSeven.GetChannelKeys(0);
-    modifier->Data.m_uiEffectEntryCountThirteenth = modifier->m_kFloatInterpolatorEight.GetColorKeyCount(0);
-    modifier->pSixthEffectEntries = (TimedFloatKey*)modifier->m_kFloatInterpolatorEight.GetChannelKeys(0);
+    modifier->Data.m_uiEffectEntryCountSecond = modifier->BlurInterpolator.GetColorKeyCount(0);
+    modifier->pBlurFloatKey = (TimedFloatKey*)modifier->BlurInterpolator.GetChannelKeys(0);
+    modifier->Data.m_uiEffectEntryCountThird = modifier->DoubleInterpolator.GetColorKeyCount(0);
+    modifier->pDoubleFloatKey = (TimedFloatKey*)modifier->DoubleInterpolator.GetChannelKeys(0);
+    modifier->Data.m_uiEffectEntryCountFirst = modifier->TintColorInterpolator.GetColorKeyCount(0);
+    modifier->pTintColorKey = (AlphaColor*)modifier->TintColorInterpolator.GetChannelKeys(0);
+    modifier->Data.m_uiEffectEntryCountTwelfth = modifier->FadeColorInterpolator.GetColorKeyCount(0);
+    modifier->pFadeColorKey = (AlphaColor*)modifier->FadeColorInterpolator.GetChannelKeys(0);
+    modifier->Data.m_uiEffectEntryCountFourth = modifier->RadialBlurStrengthInterpolator.GetColorKeyCount(0);
+    modifier->pRadialBlurStrengthFloatKey = (TimedFloatKey*)modifier->RadialBlurStrengthInterpolator.GetChannelKeys(0);
+    modifier->Data.m_uiEffectEntryCountFifth = modifier->RadialBlurRampupInterpolator.GetColorKeyCount(0);
+    modifier->pRadialBlurRampupFloatKey = (TimedFloatKey*)modifier->RadialBlurRampupInterpolator.GetChannelKeys(0);
+    modifier->Data.m_uiEffectEntryCountSixth = modifier->RadialBlurStartInterpolator.GetColorKeyCount(0);
+    modifier->pRadialBlurStartFloatKey = (TimedFloatKey*)modifier->RadialBlurStartInterpolator.GetChannelKeys(0);
+    modifier->Data.m_uiEffectEntryCountTenth = modifier->RadialBlurRampDownInterpolator.GetColorKeyCount(0);
+    modifier->pRadialBlurRampDownFloatKey = (TimedFloatKey*)modifier->RadialBlurRampDownInterpolator.GetChannelKeys(0);
+    modifier->Data.m_uiEffectEntryCountEleventh = modifier->RadialBlurDownStartInterpolator.GetColorKeyCount(0);
+    modifier->pRadialBlurDownStartFloatKey = (TimedFloatKey*)modifier->RadialBlurDownStartInterpolator.GetChannelKeys(0);
+    modifier->Data.m_uiEffectEntryCountSeventh = modifier->DepthOfFieldStrengthInterpolator.GetColorKeyCount(0);
+    modifier->pDepthOfFieldStrengthFloatKey = (TimedFloatKey*)modifier->DepthOfFieldStrengthInterpolator.GetChannelKeys(0);
+    modifier->Data.m_uiEffectEntryCountEighth = modifier->DepthOfFieldDistanceInterpolator.GetColorKeyCount(0);
+    modifier->pDepthOfFieldDistanceFloatKey = (TimedFloatKey*)modifier->DepthOfFieldDistanceInterpolator.GetChannelKeys(0);
+    modifier->Data.m_uiEffectEntryCountNinth = modifier->DepthOfFieldRangeInterpolator.GetColorKeyCount(0);
+    modifier->pDepthOfFieldRangeFloatKey = (TimedFloatKey*)modifier->DepthOfFieldRangeInterpolator.GetChannelKeys(0);
+    modifier->Data.m_uiEffectEntryCountThirteenth = modifier->MotionBlurStrengthInterpolator.GetColorKeyCount(0);
+    modifier->pMotionBlurStrengthFloatKey = (TimedFloatKey*)modifier->MotionBlurStrengthInterpolator.GetChannelKeys(0);
 }
 
 bool TESForm_QEndianSwapOnSave();
@@ -1204,10 +1242,12 @@ void TESForm_AddChunk_00485910(unsigned int, unsigned int);
 void* __memcpy(void*, const void*, unsigned int);
 // Serializes the image space modifier: writes a header, then each data array (endian-swapped when needed) with its tag, plus intro/outro sound form IDs.
 // @fnv 0x0052f250
+// pdb: TESImageSpaceModifier::Save | TESImageSpaceModifier.obj | retail, upstream name already matches, high
+// pdb locals: itypesizeM, pendiandataM, iendiansizeM, iM, i, j, chunkid, itempint
 void TESImageSpaceModifier::Save()
 {
     TESForm::BeginFormRecord();
-    CacheObjectValues(this);
+    TESImageSpaceModifier_FlushData(this);
     if (TESForm_QEndianSwapOnSave())
         Data.Endian();
     AppendChunk(0x4d414e44, &Data, 0xf4);
@@ -1217,7 +1257,7 @@ void TESImageSpaceModifier::Save()
         unsigned int size = 8;
         unsigned int count = size * Data.m_uiEffectEntryCountSecond / 4;
         unsigned int* dataTmp = new unsigned int[count];
-        __memcpy(dataTmp, pSecondEffectEntries, count * 4);
+        __memcpy(dataTmp, pBlurFloatKey, count * 4);
         if (TESForm_QEndianSwapOnSave())
             for (unsigned int idx = 0; idx < count; idx++)
                 BSEndian(dataTmp + idx, EndianSizeTag<4>());
@@ -1228,7 +1268,7 @@ void TESImageSpaceModifier::Save()
         unsigned int size = 8;
         unsigned int count = size * Data.m_uiEffectEntryCountThird / 4;
         unsigned int* dataTmp = new unsigned int[count];
-        __memcpy(dataTmp, pThirdEffectEntries, count * 4);
+        __memcpy(dataTmp, pDoubleFloatKey, count * 4);
         if (TESForm_QEndianSwapOnSave())
             for (unsigned int idx = 0; idx < count; idx++)
                 BSEndian(dataTmp + idx, EndianSizeTag<4>());
@@ -1239,7 +1279,7 @@ void TESImageSpaceModifier::Save()
         unsigned int size = 20;
         unsigned int count = size * Data.m_uiEffectEntryCountFirst / 4;
         unsigned int* dataTmp = new unsigned int[count];
-        __memcpy(dataTmp, pFirstEffectRecordArray, count * 4);
+        __memcpy(dataTmp, pTintColorKey, count * 4);
         if (TESForm_QEndianSwapOnSave())
             for (unsigned int idx = 0; idx < count; idx++)
                 BSEndian(dataTmp + idx, EndianSizeTag<4>());
@@ -1250,7 +1290,7 @@ void TESImageSpaceModifier::Save()
         unsigned int size = 20;
         unsigned int count = size * Data.m_uiEffectEntryCountTwelfth / 4;
         unsigned int* dataTmp = new unsigned int[count];
-        __memcpy(dataTmp, pSecondEffectRecordArray, count * 4);
+        __memcpy(dataTmp, pFadeColorKey, count * 4);
         if (TESForm_QEndianSwapOnSave())
             for (unsigned int idx = 0; idx < count; idx++)
                 BSEndian(dataTmp + idx, EndianSizeTag<4>());
@@ -1261,7 +1301,7 @@ void TESImageSpaceModifier::Save()
         unsigned int size = 8;
         unsigned int count = size * Data.m_uiEffectEntryCountFourth / 4;
         unsigned int* dataTmp = new unsigned int[count];
-        __memcpy(dataTmp, pTenthEffectEntries, count * 4);
+        __memcpy(dataTmp, pRadialBlurStrengthFloatKey, count * 4);
         if (TESForm_QEndianSwapOnSave())
             for (unsigned int idx = 0; idx < count; idx++)
                 BSEndian(dataTmp + idx, EndianSizeTag<4>());
@@ -1272,7 +1312,7 @@ void TESImageSpaceModifier::Save()
         unsigned int size = 8;
         unsigned int count = size * Data.m_uiEffectEntryCountFifth / 4;
         unsigned int* dataTmp = new unsigned int[count];
-        __memcpy(dataTmp, pEleventhEffectEntries, count * 4);
+        __memcpy(dataTmp, pRadialBlurRampupFloatKey, count * 4);
         if (TESForm_QEndianSwapOnSave())
             for (unsigned int idx = 0; idx < count; idx++)
                 BSEndian(dataTmp + idx, EndianSizeTag<4>());
@@ -1283,7 +1323,7 @@ void TESImageSpaceModifier::Save()
         unsigned int size = 8;
         unsigned int count = size * Data.m_uiEffectEntryCountSixth / 4;
         unsigned int* dataTmp = new unsigned int[count];
-        __memcpy(dataTmp, pTwelfthEffectEntries, count * 4);
+        __memcpy(dataTmp, pRadialBlurStartFloatKey, count * 4);
         if (TESForm_QEndianSwapOnSave())
             for (unsigned int idx = 0; idx < count; idx++)
                 BSEndian(dataTmp + idx, EndianSizeTag<4>());
@@ -1294,7 +1334,7 @@ void TESImageSpaceModifier::Save()
         unsigned int size = 8;
         unsigned int count = size * Data.m_uiEffectEntryCountTenth / 4;
         unsigned int* dataTmp = new unsigned int[count];
-        __memcpy(dataTmp, pFourthEffectEntries, count * 4);
+        __memcpy(dataTmp, pRadialBlurRampDownFloatKey, count * 4);
         if (TESForm_QEndianSwapOnSave())
             for (unsigned int idx = 0; idx < count; idx++)
                 BSEndian(dataTmp + idx, EndianSizeTag<4>());
@@ -1305,7 +1345,7 @@ void TESImageSpaceModifier::Save()
         unsigned int size = 8;
         unsigned int count = size * Data.m_uiEffectEntryCountEleventh / 4;
         unsigned int* dataTmp = new unsigned int[count];
-        __memcpy(dataTmp, pFifthEffectEntries, count * 4);
+        __memcpy(dataTmp, pRadialBlurDownStartFloatKey, count * 4);
         if (TESForm_QEndianSwapOnSave())
             for (unsigned int idx = 0; idx < count; idx++)
                 BSEndian(dataTmp + idx, EndianSizeTag<4>());
@@ -1316,7 +1356,7 @@ void TESImageSpaceModifier::Save()
         unsigned int size = 8;
         unsigned int count = size * Data.m_uiEffectEntryCountSeventh / 4;
         unsigned int* dataTmp = new unsigned int[count];
-        __memcpy(dataTmp, pSeventhEffectEntries, count * 4);
+        __memcpy(dataTmp, pDepthOfFieldStrengthFloatKey, count * 4);
         if (TESForm_QEndianSwapOnSave())
             for (unsigned int idx = 0; idx < count; idx++)
                 BSEndian(dataTmp + idx, EndianSizeTag<4>());
@@ -1327,7 +1367,7 @@ void TESImageSpaceModifier::Save()
         unsigned int size = 8;
         unsigned int count = size * Data.m_uiEffectEntryCountEighth / 4;
         unsigned int* dataTmp = new unsigned int[count];
-        __memcpy(dataTmp, pEighthEffectEntries, count * 4);
+        __memcpy(dataTmp, pDepthOfFieldDistanceFloatKey, count * 4);
         if (TESForm_QEndianSwapOnSave())
             for (unsigned int idx = 0; idx < count; idx++)
                 BSEndian(dataTmp + idx, EndianSizeTag<4>());
@@ -1338,7 +1378,7 @@ void TESImageSpaceModifier::Save()
         unsigned int size = 8;
         unsigned int count = size * Data.m_uiEffectEntryCountNinth / 4;
         unsigned int* dataTmp = new unsigned int[count];
-        __memcpy(dataTmp, pNinthEffectEntries, count * 4);
+        __memcpy(dataTmp, pDepthOfFieldRangeFloatKey, count * 4);
         if (TESForm_QEndianSwapOnSave())
             for (unsigned int idx = 0; idx < count; idx++)
                 BSEndian(dataTmp + idx, EndianSizeTag<4>());
@@ -1349,7 +1389,7 @@ void TESImageSpaceModifier::Save()
         unsigned int size = 8;
         unsigned int count = size * Data.m_uiEffectEntryCountThirteenth / 4;
         unsigned int* dataTmp = new unsigned int[count];
-        __memcpy(dataTmp, pSixthEffectEntries, count * 4);
+        __memcpy(dataTmp, pMotionBlurStrengthFloatKey, count * 4);
         if (TESForm_QEndianSwapOnSave())
             for (unsigned int idx = 0; idx < count; idx++)
                 BSEndian(dataTmp + idx, EndianSizeTag<4>());
@@ -1392,70 +1432,73 @@ struct PassPtr
 extern "C" void __fastcall TESForm_CopyAllComponents(TESImageSpaceModifier*, PassPtr);
 // Looks up a TESImageSpaceModifier by form, clears this object's data, then copies its sounds, Data struct and all list arrays into newly allocated storage.
 // @fnv 0x00530160
+// pdb: TESImageSpaceModifier::Copy | TESImageSpaceModifier.obj | retail, upstream name already matches, high
+// pdb params: apCopy
+// pdb locals: j, pcopy, uisize, i
 void TESImageSpaceModifier::Copy(TESForm* form)
 {
     unsigned int count;
     TESImageSpaceModifier* source = (TESImageSpaceModifier*)FUN_00ec43fb(form, 0, &_DAT_01183028, &_DAT_011862b8, 0);
     if (!source)
         return;
-    CacheObjectValues(source);
+    TESImageSpaceModifier_FlushData(source);
     TESForm_CopyAllComponents(this, *(PassPtr*)&source);
     ClearData();
     pIntroSound = source->pIntroSound;
     pOutroSound = source->pOutroSound;
     FUN_00401460(&Data, &source->Data, sizeof(Data));
     count = Data.m_uiEffectEntryCountSecond;
-    pSecondEffectEntries = new TimedFloatKey[count];
-    FUN_00401460(pSecondEffectEntries, source->pSecondEffectEntries, count * sizeof(TimedFloatKey));
-    m_kFloatInterpolatorOne.SetAnimationKeys(pSecondEffectEntries, count, NiAnimationKey::LINKEY);
+    pBlurFloatKey = new TimedFloatKey[count];
+    FUN_00401460(pBlurFloatKey, source->pBlurFloatKey, count * sizeof(TimedFloatKey));
+    BlurInterpolator.SetAnimationKeys(pBlurFloatKey, count, NiAnimationKey::LINKEY);
     count = Data.m_uiEffectEntryCountThird;
-    pThirdEffectEntries = new TimedFloatKey[count];
-    FUN_00401460(pThirdEffectEntries, source->pThirdEffectEntries, count * sizeof(TimedFloatKey));
-    m_kFloatInterpolatorTwo.SetAnimationKeys(pThirdEffectEntries, count, NiAnimationKey::LINKEY);
+    pDoubleFloatKey = new TimedFloatKey[count];
+    FUN_00401460(pDoubleFloatKey, source->pDoubleFloatKey, count * sizeof(TimedFloatKey));
+    DoubleInterpolator.SetAnimationKeys(pDoubleFloatKey, count, NiAnimationKey::LINKEY);
     count = Data.m_uiEffectEntryCountFirst;
-    pFirstEffectRecordArray = new AlphaColor[count];
-    FUN_00401460(pFirstEffectRecordArray, source->pFirstEffectRecordArray, count * sizeof(AlphaColor));
-    m_kColorInterpolatorOne.SetAnimationKeys(pFirstEffectRecordArray, count, NiAnimationKey::LINKEY);
+    pTintColorKey = new AlphaColor[count];
+    FUN_00401460(pTintColorKey, source->pTintColorKey, count * sizeof(AlphaColor));
+    TintColorInterpolator.ReplaceKeys(pTintColorKey, count, NiAnimationKey::LINKEY);
     count = Data.m_uiEffectEntryCountTwelfth;
-    pSecondEffectRecordArray = new AlphaColor[count];
-    FUN_00401460(pSecondEffectRecordArray, source->pSecondEffectRecordArray, count * sizeof(AlphaColor));
-    m_kColorInterpolatorTwo.SetAnimationKeys(pSecondEffectRecordArray, count, NiAnimationKey::LINKEY);
+    pFadeColorKey = new AlphaColor[count];
+    FUN_00401460(pFadeColorKey, source->pFadeColorKey, count * sizeof(AlphaColor));
+    FadeColorInterpolator.ReplaceKeys(pFadeColorKey, count, NiAnimationKey::LINKEY);
     count = Data.m_uiEffectEntryCountFourth;
-    pTenthEffectEntries = new TimedFloatKey[count];
-    FUN_00401460(pTenthEffectEntries, source->pTenthEffectEntries, count * sizeof(TimedFloatKey));
-    m_kFloatInterpolatorNine.SetAnimationKeys(pTenthEffectEntries, count, NiAnimationKey::LINKEY);
+    pRadialBlurStrengthFloatKey = new TimedFloatKey[count];
+    FUN_00401460(pRadialBlurStrengthFloatKey, source->pRadialBlurStrengthFloatKey, count * sizeof(TimedFloatKey));
+    RadialBlurStrengthInterpolator.SetAnimationKeys(pRadialBlurStrengthFloatKey, count, NiAnimationKey::LINKEY);
     count = Data.m_uiEffectEntryCountFifth;
-    pEleventhEffectEntries = new TimedFloatKey[count];
-    FUN_00401460(pEleventhEffectEntries, source->pEleventhEffectEntries, count * sizeof(TimedFloatKey));
-    m_kFloatInterpolatorTen.SetAnimationKeys(pEleventhEffectEntries, count, NiAnimationKey::LINKEY);
+    pRadialBlurRampupFloatKey = new TimedFloatKey[count];
+    FUN_00401460(pRadialBlurRampupFloatKey, source->pRadialBlurRampupFloatKey, count * sizeof(TimedFloatKey));
+    RadialBlurRampupInterpolator.SetAnimationKeys(pRadialBlurRampupFloatKey, count, NiAnimationKey::LINKEY);
     count = Data.m_uiEffectEntryCountSixth;
-    pTwelfthEffectEntries = new TimedFloatKey[count];
-    FUN_00401460(pTwelfthEffectEntries, source->pTwelfthEffectEntries, count * sizeof(TimedFloatKey));
-    m_kFloatInterpolatorEleven.SetAnimationKeys(pTwelfthEffectEntries, count, NiAnimationKey::LINKEY);
+    pRadialBlurStartFloatKey = new TimedFloatKey[count];
+    FUN_00401460(pRadialBlurStartFloatKey, source->pRadialBlurStartFloatKey, count * sizeof(TimedFloatKey));
+    RadialBlurStartInterpolator.SetAnimationKeys(pRadialBlurStartFloatKey, count, NiAnimationKey::LINKEY);
     count = Data.m_uiEffectEntryCountTenth;
-    pFourthEffectEntries = new TimedFloatKey[count];
-    FUN_00401460(pFourthEffectEntries, source->pFourthEffectEntries, count * sizeof(TimedFloatKey));
-    m_kFloatInterpolatorThree.SetAnimationKeys(pFourthEffectEntries, count, NiAnimationKey::LINKEY);
+    pRadialBlurRampDownFloatKey = new TimedFloatKey[count];
+    FUN_00401460(pRadialBlurRampDownFloatKey, source->pRadialBlurRampDownFloatKey, count * sizeof(TimedFloatKey));
+    RadialBlurRampDownInterpolator.SetAnimationKeys(pRadialBlurRampDownFloatKey, count, NiAnimationKey::LINKEY);
     count = Data.m_uiEffectEntryCountEleventh;
-    pFifthEffectEntries = new TimedFloatKey[count];
-    FUN_00401460(pFifthEffectEntries, source->pFifthEffectEntries, count * sizeof(TimedFloatKey));
-    m_kFloatInterpolatorFour.SetAnimationKeys(pFifthEffectEntries, count, NiAnimationKey::LINKEY);
+    pRadialBlurDownStartFloatKey = new TimedFloatKey[count];
+    FUN_00401460(pRadialBlurDownStartFloatKey, source->pRadialBlurDownStartFloatKey, count * sizeof(TimedFloatKey));
+    RadialBlurDownStartInterpolator.SetAnimationKeys(pRadialBlurDownStartFloatKey, count, NiAnimationKey::LINKEY);
     count = Data.m_uiEffectEntryCountSeventh;
-    pSeventhEffectEntries = new TimedFloatKey[count];
-    FUN_00401460(pSeventhEffectEntries, source->pSeventhEffectEntries, count * sizeof(TimedFloatKey));
-    m_kFloatInterpolatorFive.SetAnimationKeys(pSeventhEffectEntries, count, NiAnimationKey::LINKEY);
+    pDepthOfFieldStrengthFloatKey = new TimedFloatKey[count];
+    FUN_00401460(pDepthOfFieldStrengthFloatKey, source->pDepthOfFieldStrengthFloatKey, count * sizeof(TimedFloatKey));
+    DepthOfFieldStrengthInterpolator.SetAnimationKeys(pDepthOfFieldStrengthFloatKey, count, NiAnimationKey::LINKEY);
     count = Data.m_uiEffectEntryCountEighth;
-    pEighthEffectEntries = new TimedFloatKey[count];
-    FUN_00401460(pEighthEffectEntries, source->pEighthEffectEntries, count * sizeof(TimedFloatKey));
-    m_kFloatInterpolatorSix.SetAnimationKeys(pEighthEffectEntries, count, NiAnimationKey::LINKEY);
+    pDepthOfFieldDistanceFloatKey = new TimedFloatKey[count];
+    FUN_00401460(pDepthOfFieldDistanceFloatKey, source->pDepthOfFieldDistanceFloatKey, count * sizeof(TimedFloatKey));
+    DepthOfFieldDistanceInterpolator.SetAnimationKeys(pDepthOfFieldDistanceFloatKey, count, NiAnimationKey::LINKEY);
     count = Data.m_uiEffectEntryCountNinth;
-    pNinthEffectEntries = new TimedFloatKey[count];
-    FUN_00401460(pNinthEffectEntries, source->pNinthEffectEntries, count * sizeof(TimedFloatKey));
-    m_kFloatInterpolatorSeven.SetAnimationKeys(pNinthEffectEntries, count, NiAnimationKey::LINKEY);
+    pDepthOfFieldRangeFloatKey = new TimedFloatKey[count];
+    FUN_00401460(pDepthOfFieldRangeFloatKey, source->pDepthOfFieldRangeFloatKey, count * sizeof(TimedFloatKey));
+    DepthOfFieldRangeInterpolator.SetAnimationKeys(pDepthOfFieldRangeFloatKey, count, NiAnimationKey::LINKEY);
     count = Data.m_uiEffectEntryCountThirteenth;
-    pSixthEffectEntries = new TimedFloatKey[count];
-    FUN_00401460(pSixthEffectEntries, source->pSixthEffectEntries, count * sizeof(TimedFloatKey));
-    m_kFloatInterpolatorEight.SetAnimationKeys(pSixthEffectEntries, count, NiAnimationKey::LINKEY);
+    pMotionBlurStrengthFloatKey = new TimedFloatKey[count];
+    FUN_00401460(pMotionBlurStrengthFloatKey, source->pMotionBlurStrengthFloatKey, count * sizeof(TimedFloatKey));
+    MotionBlurStrengthInterpolator.SetAnimationKeys(pMotionBlurStrengthFloatKey, count, NiAnimationKey::LINKEY);
     {
         int j;
         for (int i = 0; i < 21; ++i)
@@ -1519,50 +1562,50 @@ void TESImageSpaceModifier::BlendModifiers(float blend, TESImageSpaceModifier* p
             manager4->ApplyParamModifier_00b8cb30(3, i - 17, values, strength_15);
     }
     BlendColor color(0, 0, 0, 0), aFirstColor(0, 0, 0, 0), secondColor(0, 0, 0, 0);
-    pPreviousModifier->m_kColorInterpolatorOne.UpdateColorA(time, 0, (NiColorA&)aFirstColor);
-    pNextModifier->m_kColorInterpolatorOne.UpdateColorA(time, 0, (NiColorA&)secondColor);
+    pPreviousModifier->TintColorInterpolator.UpdateColorA(time, 0, (NiColorA&)aFirstColor);
+    pNextModifier->TintColorInterpolator.UpdateColorA(time, 0, (NiColorA&)secondColor);
     color = aFirstColor.AddDelta(Object_ProcessAndReturnValue_00532f40(blend, secondColor.FUN_00532ec0(aFirstColor)));
     color.a *= strength_15;
     BSClamp_float(color.a, 0.0f, 1.0f);
     manager4->FUN_00b8b540((NiColorA&)color);
-    pPreviousModifier->m_kColorInterpolatorTwo.UpdateColorA(time, 0, (NiColorA&)aFirstColor);
-    pNextModifier->m_kColorInterpolatorTwo.UpdateColorA(time, 0, (NiColorA&)secondColor);
+    pPreviousModifier->FadeColorInterpolator.UpdateColorA(time, 0, (NiColorA&)aFirstColor);
+    pNextModifier->FadeColorInterpolator.UpdateColorA(time, 0, (NiColorA&)secondColor);
     color = aFirstColor.AddDelta(Object_ProcessAndReturnValue_00532f40(blend, secondColor.FUN_00532ec0(aFirstColor)));
     color.a *= strength_15;
     BSClamp_float(color.a, 0.0f, 1.0f);
     manager4->FUN_00b8b610((NiColorA&)color);
     float firstValue, secondValue3;
-    pPreviousModifier->m_kFloatInterpolatorOne.UpdateFloat(time, 0, firstValue);
-    pNextModifier->m_kFloatInterpolatorOne.UpdateFloat(time, 0, secondValue3);
+    pPreviousModifier->BlurInterpolator.UpdateFloat(time, 0, firstValue);
+    pNextModifier->BlurInterpolator.UpdateFloat(time, 0, secondValue3);
     float blur2 = firstValue + blend * (secondValue3 - firstValue);
-    pPreviousModifier->m_kFloatInterpolatorTwo.UpdateFloat(time, 0, firstValue);
-    pNextModifier->m_kFloatInterpolatorTwo.UpdateFloat(time, 0, secondValue3);
+    pPreviousModifier->DoubleInterpolator.UpdateFloat(time, 0, firstValue);
+    pNextModifier->DoubleInterpolator.UpdateFloat(time, 0, secondValue3);
     float doubleVision = firstValue + blend * (secondValue3 - firstValue);
-    pPreviousModifier->m_kFloatInterpolatorNine.UpdateFloat(time, 0, firstValue);
-    pNextModifier->m_kFloatInterpolatorNine.UpdateFloat(time, 0, secondValue3);
+    pPreviousModifier->RadialBlurStrengthInterpolator.UpdateFloat(time, 0, firstValue);
+    pNextModifier->RadialBlurStrengthInterpolator.UpdateFloat(time, 0, secondValue3);
     float kRadialStrength = firstValue + blend * (secondValue3 - firstValue);
-    pPreviousModifier->m_kFloatInterpolatorTen.UpdateFloat(time, 0, firstValue);
-    pNextModifier->m_kFloatInterpolatorTen.UpdateFloat(time, 0, secondValue3);
+    pPreviousModifier->RadialBlurRampupInterpolator.UpdateFloat(time, 0, firstValue);
+    pNextModifier->RadialBlurRampupInterpolator.UpdateFloat(time, 0, secondValue3);
     float radialRampUp_19 = firstValue + blend * (secondValue3 - firstValue);
-    pPreviousModifier->m_kFloatInterpolatorEleven.UpdateFloat(time, 0, firstValue);
-    pNextModifier->m_kFloatInterpolatorEleven.UpdateFloat(time, 0, secondValue3);
+    pPreviousModifier->RadialBlurStartInterpolator.UpdateFloat(time, 0, firstValue);
+    pNextModifier->RadialBlurStartInterpolator.UpdateFloat(time, 0, secondValue3);
     float radialStart_8 = firstValue + blend * (secondValue3 - firstValue);
-    pPreviousModifier->m_kFloatInterpolatorThree.UpdateFloat(time, 0, firstValue);
-    pNextModifier->m_kFloatInterpolatorThree.UpdateFloat(time, 0, secondValue3);
+    pPreviousModifier->RadialBlurRampDownInterpolator.UpdateFloat(time, 0, firstValue);
+    pNextModifier->RadialBlurRampDownInterpolator.UpdateFloat(time, 0, secondValue3);
     float radialRampDown_15 = firstValue + blend * (secondValue3 - firstValue);
-    pPreviousModifier->m_kFloatInterpolatorFour.UpdateFloat(time, 0, firstValue);
-    pNextModifier->m_kFloatInterpolatorFour.UpdateFloat(time, 0, secondValue3);
+    pPreviousModifier->RadialBlurDownStartInterpolator.UpdateFloat(time, 0, firstValue);
+    pNextModifier->RadialBlurDownStartInterpolator.UpdateFloat(time, 0, secondValue3);
     float radialDownStart_3 = firstValue + blend * (secondValue3 - firstValue);
-    pPreviousModifier->m_kFloatInterpolatorFive.UpdateFloat(time, 0, firstValue);
-    pNextModifier->m_kFloatInterpolatorFive.UpdateFloat(time, 0, secondValue3);
+    pPreviousModifier->DepthOfFieldStrengthInterpolator.UpdateFloat(time, 0, firstValue);
+    pNextModifier->DepthOfFieldStrengthInterpolator.UpdateFloat(time, 0, secondValue3);
     float depthStrength_4 = firstValue + blend * (secondValue3 - firstValue);
     float firstDepthDistance_, secondDepthDistance, firstDepthRange_2, secondDepthRange_12;
-    pPreviousModifier->m_kFloatInterpolatorSix.UpdateFloat(time, 0, firstDepthDistance_);
-    pNextModifier->m_kFloatInterpolatorSix.UpdateFloat(time, 0, secondDepthDistance);
-    pPreviousModifier->m_kFloatInterpolatorSeven.UpdateFloat(time, 0, firstDepthRange_2);
-    pNextModifier->m_kFloatInterpolatorSeven.UpdateFloat(time, 0, secondDepthRange_12);
-    pPreviousModifier->m_kFloatInterpolatorEight.UpdateFloat(time, 0, firstValue);
-    pNextModifier->m_kFloatInterpolatorEight.UpdateFloat(time, 0, secondValue3);
+    pPreviousModifier->DepthOfFieldDistanceInterpolator.UpdateFloat(time, 0, firstDepthDistance_);
+    pNextModifier->DepthOfFieldDistanceInterpolator.UpdateFloat(time, 0, secondDepthDistance);
+    pPreviousModifier->DepthOfFieldRangeInterpolator.UpdateFloat(time, 0, firstDepthRange_2);
+    pNextModifier->DepthOfFieldRangeInterpolator.UpdateFloat(time, 0, secondDepthRange_12);
+    pPreviousModifier->MotionBlurStrengthInterpolator.UpdateFloat(time, 0, firstValue);
+    pNextModifier->MotionBlurStrengthInterpolator.UpdateFloat(time, 0, secondValue3);
     float motion_24 = firstValue + blend * (secondValue3 - firstValue);
     blur2 *= strength_15;
     BSClamp_float(blur2, 0.0f, 7.0f);

@@ -19,44 +19,60 @@ extern "C" LocalM128 _mm_setzero_ps();
 
 
 // @fnv 0x00d1df70
+// pdb: hkpKeyframedRigidMotion::setStoredMotion | hkpKeyframedRigidMotion.obj | retail, vtable slot, high
+// pdb params: savedMotion
 void __fastcall SetAndAddReference(hkpKeyframedRigidMotion* motion, void*, hkReferencedObject* apObject)
 {
     if (apObject)
         apObject->addReference();
-    if (motion->m_pSavedMotion)
-        reinterpret_cast<hkReferencedObject*>(motion->m_pSavedMotion)->removeReference();
-    motion->m_pSavedMotion = reinterpret_cast<hkpMaxSizeMotion*>(apObject);
+    if (motion->m_savedMotion)
+        reinterpret_cast<hkReferencedObject*>(motion->m_savedMotion)->removeReference();
+    motion->m_savedMotion = reinterpret_cast<hkpMaxSizeMotion*>(apObject);
 }
 
 extern int DAT_010c6bec;
 extern int _DAT_0102e388;
 // Sets the vtable to DAT_010c6bec, releases the reference at offset 0x118 if present, then sets the vtable to _DAT_0102e388.
 // @fnv 0x00d1dff0
-void __fastcall ReleaseSavedMotion(hkpKeyframedRigidMotion* motion, void*)
+// src: XBOX_RETAIL_PDB 0x00d1dff0
+// pdb: hkpKeyframedRigidMotion::~hkpKeyframedRigidMotion | hkpKeyframedRigidMotion.obj | retail, call graph (shared callers), high
+void __fastcall hkpKeyframedRigidMotion_dtor(hkpKeyframedRigidMotion* motion, void*)
 {
     *reinterpret_cast<void**>(motion) = (void*)&DAT_010c6bec;
-    if (motion->m_pSavedMotion)
-        reinterpret_cast<hkReferencedObject*>(motion->m_pSavedMotion)->removeReference();
+    if (motion->m_savedMotion)
+        reinterpret_cast<hkReferencedObject*>(motion->m_savedMotion)->removeReference();
     *reinterpret_cast<void**>(motion) = (void*)&_DAT_0102e388;
 }
 
 // @fnv 0x00d1dec0
 // src: COMMUNITY 0x00d1dec0
+// pdb: hkpKeyframedRigidMotion::setMass | hkpKeyframedRigidMotion.obj | debug, vtable slot, medium
+// pdb params: m
+// pdb locals: assertBuf, ostr
 void __stdcall nullsub_38(int)
 {}
 
 // @fnv 0x00d1ded0
 // src: COMMUNITY 0x00d1ded0
+// pdb: hkpKeyframedRigidMotion::setMassInv | hkpKeyframedRigidMotion.obj | debug, vtable slot, medium
+// pdb params: mInv
+// pdb locals: assertBuf, ostr
 void __stdcall nullsub_39(int)
 {}
 
 // @fnv 0x00d1dee0
 // src: COMMUNITY 0x00d1dee0
+// pdb: hkpKeyframedRigidMotion::setInertiaLocal | hkpKeyframedRigidMotion.obj | debug, vtable slot, medium
+// pdb params: inertia
+// pdb locals: assertBuf, ostr
 void __stdcall nullsub_40(int)
 {}
 
 // @fnv 0x00d1def0
 // src: COMMUNITY 0x00d1def0
+// pdb: hkpKeyframedRigidMotion::setInertiaInvLocal | hkpKeyframedRigidMotion.obj | debug, vtable slot, medium
+// pdb params: inertiaInv
+// pdb locals: assertBuf, ostr
 void __stdcall nullsub_41(int)
 {}
 
@@ -106,12 +122,14 @@ __forceinline void hkVector4::setZero4()
 
 // Calls hkpMotion(kPosition, kRotationBasis, false), zeroes the saved-motion fields and inverse inertia, and selects keyframed motion.
 // @fnv 0x00d1dfa0
-hkpKeyframedRigidMotion::hkpKeyframedRigidMotion(const hkVector4& kPosition, const hkQuaternion& kRotationBasis) throw()
-    : hkpMotion(kPosition, kRotationBasis, false)
+// pdb: hkpKeyframedRigidMotion::hkpKeyframedRigidMotion | hkpKeyframedRigidMotion.obj | retail, upstream name already matches, high
+// pdb params: position, rotation
+hkpKeyframedRigidMotion::hkpKeyframedRigidMotion(const hkVector4& position, const hkQuaternion& rotation) throw()
+    : hkpMotion(position, rotation, false)
 {
-    m_pSavedMotion = 0;
-    m_savedMotionSize = 0;
-    m_kInertiaAndMassInv.setZero4();
+    m_savedMotion = 0;
+    m_savedQualityTypeIndex = 0;
+    m_inertiaAndMassInv.setZero4();
     m_type = MOTION_KEYFRAMED;
 }
 

@@ -5,6 +5,8 @@
 #include "../../include/QueuedChildren.h"
 
 // @fnv 0x0043bde0
+// pdb: QueuedFile::NotifyChildFinished | ModelLoader.obj | debug, vtable slot, medium
+// pdb params: apChild
 void QueuedFile::HandleChildCompletion(QueuedFile* apChild)
 {
     pChildren->AddFinishedChild();
@@ -13,11 +15,13 @@ void QueuedFile::HandleChildCompletion(QueuedFile* apChild)
 
 // Stores apParent as this object's parent and, if non-null, registers this object as a child of that parent.
 // @fnv 0x00443aa0
+// pdb: QueuedFile::SetParent | ModelLoader.obj | debug, upstream name already matches, high
+// pdb params: apParent
 void QueuedFile::SetParent(QueuedFile* apParent)
 {
-    m_pParent = apParent;
-    if (m_pParent)
-        ((QueuedFile*)m_pParent)->AddChild(this);
+    spParent = apParent;
+    if (spParent)
+        ((QueuedFile*)spParent)->AddChild(this);
 }
 
 extern MemoryManager g_memoryManager;
@@ -26,18 +30,21 @@ int __cdecl _strcpy_s(char*, unsigned int, const char*);
 // Copies apName into a newly allocated buffer stored in pFileName, using strlen(apName)+1 bytes.
 // @fnv 0x00c3cee0
 // src: XBOX_PDB 0x00c3cee0
-void QueuedFileEntry::SetFileName_00c3cee0(const char* apName)
+// pdb: QueuedFileEntry::SetFileName | QueuedFiles.obj | retail, call graph, high
+// pdb params: apFileName
+// pdb locals: iFilenameLen
+void QueuedFileEntry::SetFileName_00c3cee0(const char* apFileName)
 {
     unsigned int uiLen;
-    if (apName)
+    if (apFileName)
     {
         char* p;
         char* dst;
-        uiLen = _strlen(apName) + 1;
+        uiLen = _strlen(apFileName) + 1;
         p = (char*)g_memoryManager.Allocate(uiLen);
         pFileName = p;
         dst = pFileName;
-        _strcpy_s(dst, uiLen, apName);
+        _strcpy_s(dst, uiLen, apFileName);
     }
 }
 
@@ -74,7 +81,10 @@ struct ArchiveManager
 
 // Builds the lookup file name for aeArchive, hashes it into directory and file hashes, queries ArchiveManager and stores the resulting BSFileEntry.
 // @fnv 0x00c3cf60
-void QueuedFileEntry::LookupFileEntryByArchive(int aeArchive)
+// pdb: QueuedFileEntry::LookupFileEntry | QueuedFiles.obj | retail, call graph, high
+// pdb params: aeArchiveTypeIndex
+// pdb locals: plookupFileName, directoryHash, pfileEntry, fileHash
+void QueuedFileEntry::LookupFileEntryByArchive(int aeArchiveTypeIndex)
 {
     using namespace fnv_00c3cf60;
     if (pFileName)
@@ -83,17 +93,19 @@ void QueuedFileEntry::LookupFileEntryByArchive(int aeArchive)
         FileNameHash dirHash;
         FileNameHash fileHash;
         BSFileEntry* pEntry;
-        GetLookupFileName(aeArchive, acName);
+        GetLookupFileName(aeArchiveTypeIndex, acName);
         FileNameHash::CreateDirectoryAndFileHashes(acName, &dirHash, &fileHash);
-        pEntry = ArchiveManager::FindFileEntry(aeArchive, dirHash, fileHash, acName);
+        pEntry = ArchiveManager::FindFileEntry(aeArchiveTypeIndex, dirHash, fileHash, acName);
         SetFileEntry(pEntry);
     }
 }
 // @fnv 0x00c3ce60
+// pdb: BSSimpleArray<NiPointer<QueuedFile>,1024>::~BSSimpleArray<NiPointer<QueuedFile>,1024> | QueuedFiles.obj | retail, object-file run extension, low
+// pdb note: debug build links it to QueuedFileEntry::QueuedFileEntry
 QueuedFileEntry::QueuedFileEntry(int aePriority) : QueuedFile(aePriority)
 {
     pFileName = 0;
-    m_pFileEntry = 0;
+    pFileEntry = 0;
 }
 
 struct FUN_00905ba0 : QueuedFileEntry
@@ -120,6 +132,7 @@ static __forceinline void DeallocateFileName(void* pointer) throw()
 
 // Frees the file name buffer through the memory manager.
 // @fnv 0x00c3cea0
+// pdb: QueuedFileEntry::~QueuedFileEntry | QueuedFiles.obj | retail, upstream name already matches, high
 QueuedFileEntry::~QueuedFileEntry()
 {
     char* name = pFileName;
@@ -243,6 +256,8 @@ struct FUN_00c3c700_cls : public QueuedFile
 
 // @fnv 0x00c3c700
 // src: COMMUNITY 0x00c3c700
+// pdb: QueuedFile::AddChild | QueuedFiles.obj | retail, upstream name already matches, high
+// pdb params: apChild
 void FUN_00c3c700_cls::QueuedFile_AddChild(QueuedFile* apChild)
 {
     if (pChildren == 0)
@@ -379,6 +394,8 @@ inline PointerC3& PointerC3::operator=(ObjectC3* rhs)
 }
 // When a parent pointer exists and this object and its children are finished, notifies the parent pointers, deletes the parents array, then calls FUN_0044dd60().
 // @fnv 0x00c3c930
+// pdb: QueuedFile::CheckFinished | QueuedFiles.obj | retail, vtable slot, high
+// pdb locals: i, padditionalParent
 void ObjectC3::NotifyParents()
 {
     if ((parent || parents) && IsFinished() && AllFinished())
@@ -452,6 +469,7 @@ struct FUN_00c3d440_cls
 
 // @fnv 0x00c3d440
 // src: XBOX_PDB 0x00c3d440
+// pdb: QueuedFileEntry::GenerateKey | QueuedFiles.obj | retail, upstream name already matches, high
 void FUN_00c3d440_cls::QueuedFileEntry_GenerateKey()
 {
     if (m_pSrc != 0)

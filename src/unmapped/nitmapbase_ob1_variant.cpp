@@ -145,7 +145,7 @@ typedef void* NiTMapIterator;
 
 struct HeapManager
 {
-    void Deallocate(void* p);
+    void Deallocate(void* apMem);
 };
 extern HeapManager g_memoryManager;
 
@@ -216,6 +216,8 @@ struct MapOwnerStandIn
 
 // @fnv 0x00ec2e50
 // src: GUESS 0x00ec2e50 (confidence: low)
+// pdb: MoviePlayer::DeleteBinkPaths | MoviePlayer.obj | debug, object-file run extension, low
+// pdb locals: it, pfileName, ppath
 void MapOwnerStandIn::ReleaseStorage_00ec2e50()
 {
     NiTMapIterator pos = m_kFormatEntries.GetFirstPos();

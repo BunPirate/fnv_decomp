@@ -32,6 +32,9 @@ static __forceinline LocalM128 inverseSpan(LocalM128 a, LocalM128 b)
 }
 // @fnv 0x00e33760
 // src: GUESS 0x00e33760 (confidence: low)
+// pdb: hkaSplineCompressedAnimation::evaluateSimple | hkaSplineCompressedAnimation.obj | retail, object-file run extension, low
+// pdb params: u, p, U, P, out
+// pdb locals: N, right, left
 void Object_UpdateFields_00e33760(float t, int unused, const float* knots, const LocalM128* ctrl, LocalM128* out)
 {
     float f;

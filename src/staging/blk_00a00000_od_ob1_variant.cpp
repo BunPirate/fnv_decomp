@@ -353,6 +353,7 @@ struct S00a0d7f0 : S00a0d390
 };
 
 // @fnv 0x00a0d7f0
+// pdb: NiTMapBase<NiTPointerAllocator<unsigned int>,int,int>::`scalar deleting destructor' | Tile.obj | retail, vtable slot, high
 void* __thiscall S00a0d7f0::FUN_00a0d7f0(unsigned int flags)
 {
     m_vtbl = (int*)&DAT_01094e5c;
@@ -374,6 +375,10 @@ inline void NiFixedString::operator delete(void* pvMem)
 
 // @fnv 0x00a1c790
 // src: GUESS 0x00a1c790 (confidence: low)
+// pdb: Menu::StripFileName | Menu.obj | retail, object-file run extension, low
+// pdb note: debug build links it to Menu::KillSDM
+// pdb params: apFilename
+// pdb locals: pshort, plastBackslash, pstart
 void __cdecl Runtime_ReleaseStorage_00a1c790()
 {
     delete DAT_011f34cc;
@@ -417,7 +422,7 @@ FUN_00a0bc80::FUN_00a0bc80()
 {
     int aiD[7];
     Dead2();
-    m_pRenderedNodeEntry = 0;
+    spModel = 0;
     m_pParent = 0;
     unk3C = 0;
 }
@@ -504,6 +509,9 @@ struct FUN_00a1bc70_Base
     unsigned int m_08;
     unsigned int m_0c;
 // @fnv 0x00a1bc70
+// pdb: FontManager::TextPage::TextPage | Font.obj | debug, call graph, medium
+// pdb params: apDoc, apChar, aiPageWidth, aiPageHeight
+// pdb locals: a
     FUN_00a1bc70_Base()
     {
         m_08 = 0;
@@ -684,6 +692,8 @@ class FUN_00a1e900 : public PointerMapE900
 };
 
 // @fnv 0x00a1e900
+// pdb: NiTStringTemplateMap<NiTPointerMap<char const *,XMLStorage *>,XMLStorage *>::~NiTStringTemplateMap<NiTPointerMap<char const *,XMLStorage *>,XMLStorage *> | Menu.obj | retail, call graph, medium
+// pdb locals: i, pkItem, pkSave
 FUN_00a1e900::~FUN_00a1e900()
 {
     if (m_bCopy)
@@ -805,6 +815,8 @@ struct FUN_00a1ec70 : KeyMapBase
 };
 
 // @fnv 0x00a1ec70
+// pdb: NiTStringTemplateMap<NiTPointerMap<char const *,Tile::BuildStorage *>,Tile::BuildStorage *>::~NiTStringTemplateMap<NiTPointerMap<char const *,Tile::BuildStorage *>,Tile::BuildStorage *> | Menu.obj | retail, call graph, medium
+// pdb locals: i, pkItem, pkSave
 FUN_00a1ec70::~FUN_00a1ec70()
 {
     if (freeKeys)
@@ -886,6 +898,7 @@ class FUN_00a0d4d0
     }
 
 // @fnv 0x00a0d4d0
+// pdb: NiTMapBase<NiTPointerAllocator<unsigned int>,char const *,int>::`scalar deleting destructor' | Tile.obj | retail, vtable slot, high
     virtual ~FUN_00a0d4d0()
     {
         RemoveAll();
@@ -967,6 +980,7 @@ class MapBaseD520
 class FUN_00a0d520 : public MapBaseD520
 {
 // @fnv 0x00a0d520
+// pdb: NiTPointerMap<char const *,int>::`scalar deleting destructor' | Tile.obj | retail, vtable slot, high
   public:
     __forceinline FUN_00a0d520()
     {}
@@ -1025,6 +1039,7 @@ class MapBaseD840
 class FUN_00a0d840 : public MapBaseD840
 {
 // @fnv 0x00a0d840
+// pdb: NiTPointerMap<Tile::Value *,Tile::Reaction *>::`scalar deleting destructor' | Tile.obj | retail, vtable slot, high
   public:
     __forceinline FUN_00a0d840()
     {}
@@ -1083,6 +1098,7 @@ class MapBaseE7E0
 class FUN_00a1e7e0 : public MapBaseE7E0
 {
 // @fnv 0x00a1e7e0
+// pdb: NiTPointerMap<char const *,XMLStorage *>::`scalar deleting destructor' | Menu.obj | retail, vtable slot, high
   public:
     __forceinline FUN_00a1e7e0()
     {}
@@ -1111,6 +1127,7 @@ class FUN_00a1e8b0
     }
 
 // @fnv 0x00a1e8b0
+// pdb: NiTMapBase<NiTPointerAllocator<unsigned int>,char const *,XMLStorage *>::`scalar deleting destructor' | Menu.obj | retail, vtable slot, high
     virtual ~FUN_00a1e8b0()
     {
         RemoveAll();
@@ -1186,6 +1203,7 @@ inline void operator delete(void* p)
 struct FUN_00a1eb20 : C_00a1eb20
 {
 // @fnv 0x00a1eb20
+// pdb: NiTPointerMap<char const *,Tile::BuildStorage *>::`scalar deleting destructor' | Menu.obj | retail, vtable slot, high
     virtual ~FUN_00a1eb20()
     {
         RemoveAll();
@@ -1200,16 +1218,16 @@ void make_00a1eb20()
 #include <string.h>
 unsigned int __cdecl BSStringLength(const char*);
 unsigned int __cdecl BSStringCapacityMaximum(unsigned int, unsigned int);
-inline bool StrMem::Set(const char* source, unsigned int requested)
+inline bool StrMem::Set(const char* apString, unsigned int aiMaxLen)
 {
-    unsigned int len = source ? BSStringLength(source) : 0;
-    unsigned int max = BSStringCapacityMaximum(len, requested);
+    unsigned int len = apString ? BSStringLength(apString) : 0;
+    unsigned int max = BSStringCapacityMaximum(len, aiMaxLen);
     if (max <= MaxLength())
     {
         if (max)
         {
-            if (source)
-                memcpy(text, source, len + 1);
+            if (apString)
+                memcpy(text, apString, len + 1);
             else
                 text[0] = 0;
         }
@@ -1229,8 +1247,8 @@ inline bool StrMem::Set(const char* source, unsigned int requested)
     {
         char* old = text;
         text = new char[max + 1];
-        if (source)
-            memcpy(text, source, len + 1);
+        if (apString)
+            memcpy(text, apString, len + 1);
         else
             text[0] = 0;
         if (old)
@@ -1255,6 +1273,7 @@ class FUN_00a0bb50
     ~FUN_00a0bb50();
 };
 // @fnv 0x00a0bb50
+// pdb: Tile::TextureAtlasEntry::`scalar deleting destructor' | Tile.obj | debug, object-file run extension, low
 FUN_00a0bb50::~FUN_00a0bb50()
 {}
 
@@ -1286,6 +1305,7 @@ struct Base670
 struct FUN_00a0d670 : Base670
 {
 // @fnv 0x00a0d670
+// pdb: NiTPointerMap<int,int>::`scalar deleting destructor' | Tile.obj | retail, vtable slot, high
     virtual ~FUN_00a0d670()
     {
         ClearAll();

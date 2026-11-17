@@ -4,6 +4,7 @@
 #include "NiColor.h"
 #include "NiPoint3.h"
 
+// pdb: class NiPSysGravityFieldModifier, size 0x48 (here 0x68), bases: NiPSysFieldModifier, 2 members
 class NiPSysGravityFieldModifier : public NiPSysFieldModifier
 {
 public:
@@ -11,10 +12,10 @@ public:
     virtual ~NiPSysGravityFieldModifier();
 
     virtual NiObject* MakeClone(CloningProcess& process);
-    virtual void LoadBinary(NiStream& stream);
-    virtual void SaveBinary(NiStream& stream);
+    virtual void LoadBinary(NiStream& kStream);
+    virtual void SaveBinary(NiStream& kStream);
     virtual bool IsEqual(NiObject* object) const;
-    virtual void GetViewerStrings(NiViewerStringsArray* strings);
+    virtual void GetViewerStrings(NiViewerStringsArray* pkStrings);
     virtual void Update(float time, NiPSysData* data);
 
     char IsEqual_00c26db0(NiPSysGravityFieldModifier* other);

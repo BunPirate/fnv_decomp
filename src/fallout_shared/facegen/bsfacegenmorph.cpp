@@ -15,9 +15,11 @@ BSFaceGenMorph::~BSFaceGenMorph()
 {}
 
 // @fnv 0x00660700
-BSFaceGenMorphDifferential::BSFaceGenMorphDifferential(unsigned int count)
+// pdb: BSFaceGenMorphDifferential::BSFaceGenMorphDifferential | BSFaceGenMorph.obj | retail, upstream name already matches, high
+// pdb params: aiVertsCount
+BSFaceGenMorphDifferential::BSFaceGenMorphDifferential(unsigned int aiVertsCount)
 {
-    data[1] = count;
+    data[1] = aiVertsCount;
     if (data[1])
         data[0] = (unsigned int)new NiPoint3[data[1]];
     else
@@ -25,6 +27,7 @@ BSFaceGenMorphDifferential::BSFaceGenMorphDifferential(unsigned int count)
 }
 
 // @fnv 0x00660820
+// pdb: BSFaceGenMorphDifferential::~BSFaceGenMorphDifferential | BSFaceGenMorph.obj | debug, upstream name already matches, high
 BSFaceGenMorphDifferential::~BSFaceGenMorphDifferential()
 {
     if (data[0] != 0)
@@ -35,10 +38,12 @@ BSFaceGenMorphDifferential::~BSFaceGenMorphDifferential()
 }
 
 // @fnv 0x00660970
-BSFaceGenMorphStatistical::BSFaceGenMorphStatistical(unsigned int count, unsigned int firstIndex)
+// pdb: BSFaceGenMorphStatistical::BSFaceGenMorphStatistical | BSFaceGenMorph.obj | retail, upstream name already matches, high
+// pdb params: aiVertsCount, aiFirstIndex
+BSFaceGenMorphStatistical::BSFaceGenMorphStatistical(unsigned int aiVertsCount, unsigned int aiFirstIndex)
 {
-    data[1] = count;
-    this->extra = firstIndex;
+    data[1] = aiVertsCount;
+    this->iFirstIndex = aiFirstIndex;
     if (data[1])
         data[0] = (unsigned int)new unsigned long[data[1]];
     else
@@ -46,6 +51,7 @@ BSFaceGenMorphStatistical::BSFaceGenMorphStatistical(unsigned int count, unsigne
 }
 
 // @fnv 0x00660a50
+// pdb: BSFaceGenMorphStatistical::~BSFaceGenMorphStatistical | BSFaceGenMorph.obj | debug, upstream name already matches, high
 BSFaceGenMorphStatistical::~BSFaceGenMorphStatistical()
 {
     if (data[0] != 0)
@@ -66,12 +72,15 @@ void GeometryVertexBuffer::SetVertex(unsigned int index, const NiPoint3& vertex)
 
 // Applies a weighted morph differential to the geometry's vertex positions when geom is valid and weight is in (0,1].
 // @fnv 0x00660860
-void BSFaceGenMorphDifferential::ApplyDifferentialMorph(NiTriBasedGeom* geom, BSFaceGenBaseMorphExtraData* extra,
-                                                        float weight)
+// pdb: BSFaceGenMorphDifferential::ApplyMorph | BSFaceGenMorph.obj | retail, vtable slot, high
+// pdb params: apGeom, apExtraData, afModifierValue
+// pdb locals: pdest, istride, vmodifier, pmorphmodeldata, iter, pskinInstance, ppartition, uipartitionCount, ppartitions, pskinPartition, ipartition, imorphIndex, iverts, pbufferdata, pggroup, uistreamCount, i, ivert, psrc, vvertexData, vfirstVert, val
+void BSFaceGenMorphDifferential::ApplyDifferentialMorph(NiTriBasedGeom* apGeom, BSFaceGenBaseMorphExtraData* apExtraData,
+                                                        float afModifierValue)
 {
-    if (!geom || weight <= 0.0 || weight > 1.0)
+    if (!apGeom || afModifierValue <= 0.0 || afModifierValue > 1.0)
         return;
-    NiGeometryData* pData = geom->NiGeometry_GetModelData();
+    NiGeometryData* pData = apGeom->NiGeometry_GetModelData();
     GeometryVertexBuffer localC;
     pData->NiGeometryData_GetVerticesIterator(localC);
     NiPoint3 localD;
@@ -79,19 +88,22 @@ void BSFaceGenMorphDifferential::ApplyDifferentialMorph(NiTriBasedGeom* geom, BS
     for (unsigned int i = 0; i < ItemUpdateArray; ++i, localC.AddToA())
     {
         localC.CopyV3(localD);
-        localD.ComputeValue_0063c8a0(((NiPoint3*)data[0])[i] * weight);
+        localD.ComputeValue_0063c8a0(((NiPoint3*)data[0])[i] * afModifierValue);
         localC.SetPoint(localD);
     }
 }
 
 // @fnv 0x00660a90
-void BSFaceGenMorphStatistical::ApplyDifferentialMorph(NiTriBasedGeom* geom, BSFaceGenBaseMorphExtraData* extra,
-                                                       float weight)
+// pdb: BSFaceGenMorphStatistical::ApplyMorph | BSFaceGenMorph.obj | retail, vtable slot, high
+// pdb params: apGeom, apExtraData, afModifierValue
+// pdb locals: pskinInstance, istride, vModifier, pmorphmodeldata, pverts, pmorphedVertsSrc, iter, pmorphedVertsDest, pskinPartition, ivertCount, uipartitionCount, ppartitions, vertexMap, itotalVerts, ipartition, pbufferdata, ppartition, ivert, pggroup, uistreamCount, i, result, imemIndex, iwhichvert ...
+void BSFaceGenMorphStatistical::ApplyDifferentialMorph(NiTriBasedGeom* apGeom, BSFaceGenBaseMorphExtraData* apExtraData,
+                                                       float afModifierValue)
 {
-    if (!geom || weight <= 0.0 || weight > 1.0 || !extra->GetVertices())
+    if (!apGeom || afModifierValue <= 0.0 || afModifierValue > 1.0 || !apExtraData->GetVertices())
         return;
-    NiPoint3* pData = extra->GetVertices();
-    NiGeometryData* pGeomData = geom->NiGeometry_GetModelData();
+    NiPoint3* pData = apExtraData->GetVertices();
+    NiGeometryData* pGeomData = apGeom->NiGeometry_GetModelData();
     GeometryVertexBuffer localC;
     pGeomData->NiGeometryData_GetVerticesIterator(localC);
     NiPoint3 localD;
@@ -100,13 +112,15 @@ void BSFaceGenMorphStatistical::ApplyDifferentialMorph(NiTriBasedGeom* geom, BSF
     {
         ItemUpdateArray = ((unsigned long*)data[0])[i];
         localC.NiGeometryDataIteratorNiPoint3_Get(ItemUpdateArray, localD);
-        localD.ComputeValue_0063c8a0((pData[this->extra + i] - pData[ItemUpdateArray]) * weight);
+        localD.ComputeValue_0063c8a0((pData[this->iFirstIndex + i] - pData[ItemUpdateArray]) * afModifierValue);
         localC.SetVertex(ItemUpdateArray, localD);
     }
 }
 
 // Returns the smaller of a 16-bit value and a 32-bit value, comparing them as unsigned integers.
 // @fnv 0x00660940
+// pdb: GPU_CONVERT_CPU_TO_CPU_CACHED_READONLY_ADDRESS | BSFaceGenMorph.obj | debug, object-file gap fill, medium
+// pdb params: CpuAddress
 unsigned int __cdecl MinUnsigned(unsigned short ausValue, unsigned int auValue)
 {
     return ausValue < auValue ? ausValue : auValue;

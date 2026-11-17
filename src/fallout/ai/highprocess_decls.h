@@ -315,18 +315,19 @@ class DetectionViewData
     bool b360view, m_bCombatState, m_bHasLineOfSight, m_bIsDetected;
     int m_iDetectionValue;
     DetectionViewData();
-    void LoadGame(BGSLoadGameBuffer*);
+    void DetectionState_LoadGame(BGSLoadGameBuffer*);
     void ResolveActorFormId();
 };
 // include/ has no DetectionEvent.h yet; keep the one checked 0x1c-byte layout here.
+// pdb: structure DetectionEvent, size 0x1c, 5 members
 class DetectionEvent
 {
   public:
-    int type;
-    NiPoint3 position;
-    CombatTargetTimestamp time;
-    int state;
-    TESObjectREFR* source;
+    int iActionValue; // src: XBOX_RETAIL_PDB +0x0 (old: type)
+    NiPoint3 Location; // src: XBOX_RETAIL_PDB +0x4 (old: position)
+    CombatTargetTimestamp fTimeStamp; // src: XBOX_RETAIL_PDB +0x10 (old: time)
+    int eEventType; // src: XBOX_RETAIL_PDB +0x14 (old: state)
+    TESObjectREFR* pRef; // src: XBOX_RETAIL_PDB +0x18 (old: source)
     DetectionEvent();
     void LoadFields_008d72e0(BGSLoadFormBuffer*);
     void SetTargetReference(BGSLoadFormBuffer*);
@@ -342,6 +343,7 @@ class TopicInfoRecord
 
 extern BGSSaveLoadGame* g_BGSSaveLoadGame;
 #include "../../../include/FADER_ENUM.h"
+// pdb: class FaderManager, size 0x8 (here 0x1), 2 members
 class FaderManager
 {
   public:
@@ -357,6 +359,7 @@ extern GlobalObject_0045d260 g_011e0246;
 extern bool DAT_011f1221;
 #include "../../../include/PTYPE.h"
 
+// pdb: class Calendar, size 0x1c (here 0x1), 7 members
 class Calendar
 {
   public:
@@ -393,6 +396,7 @@ class IdleAnimationManager
 extern IdleAnimationManager* DAT_011cb6a0;
 extern BSSimpleArray<unsigned int, 1024> DAT_011f2250;
 
+// pdb: class Animation, size 0x13c (here 0x1), 33 members
 class Animation
 {
   public:
@@ -440,6 +444,7 @@ class DecalDataDeleter
   public:
     void* DeleteThis(int);
 };
+// pdb: class MuzzleFlash, size 0x20 (here 0x1), 10 members
 class MuzzleFlash
 {
   public:
@@ -488,7 +493,7 @@ class Biped;
 #include "../../../include/Interface.h"
 bool BSShaderManager_IsRefractionEnabled();
 void AttachControllerManager(NiAVObject*, NiAVObjectPalette*);
-void SetObjectFormID(NiAVObject*, unsigned int);
+void SetReferenceIDOnScenegraph(NiAVObject*, unsigned int);
 extern bool DAT_011c5cb4;
 
 

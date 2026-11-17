@@ -101,7 +101,7 @@ struct SoundEntry
 struct Receiver
 {
     void __thiscall FUN_009ba760(void* sound);
-    void __thiscall FUN_009ba780(void* description);
+    void __thiscall hkDataObject_ctor(void* o);
 };
 struct Description
 {
@@ -206,7 +206,7 @@ struct CallbackTarget
     virtual void Complete()
     {}
 };
-int __stdcall WriteAudioObject(int value, CallbackTarget* target, int source);
+int __stdcall WriteAudioObject(int obj, CallbackTarget* stream, int userListener);
 struct Obj
 {
     void __thiscall hkOArchive_write8u(unsigned char);
@@ -311,7 +311,7 @@ struct Rec_00dbf0d0
     int unk08;             // capacity (low 30 bits) + flags
     void __thiscall PackBitsToBytes(unsigned char* dest);
 };
-void __cdecl fnv_grow_00c908c0(int audioD, Rec_00dbf0d0* self, int newCap, int flag);
+void __cdecl fnv_grow_00c908c0(int mem, Rec_00dbf0d0* array, int numElem, int sizeElem);
 void __cdecl fnv_memset_00ec61c0(void* dest, int ch, int count);
 extern int DAT_01011584;
 struct S_00dc0500_Flag
@@ -342,11 +342,11 @@ struct S_00dc0500_Str
     int unk04;
     int unk08;
     int unk0c;
-    void __thiscall hkCachedHashMap_hkStringMapOperations_hkContainerHeapAllocator_insert(int* s, int n);
+    void __thiscall hkCachedHashMap_hkStringMapOperations_hkContainerHeapAllocator_insert(int* key, int val);
 };
 struct FUN_00d87790 : S_00dc0500_Str
 {
-    FUN_00d87790(S_00dc0500_Flag f);
+    FUN_00d87790(S_00dc0500_Flag ops);
 };
 struct S_00dc0500_Holder : UnkHolder
 {
@@ -387,7 +387,7 @@ struct S_dbf1a0_Map
     int unk00;
     int unk04;
     int __thiscall GetValue(const char* name, int defValue) throw();
-    void __thiscall hkCachedHashMap_hkStringMapOperations_hkContainerHeapAllocator_insert(const char* name, int value) throw();
+    void __thiscall hkCachedHashMap_hkStringMapOperations_hkContainerHeapAllocator_insert(const char* key, int val) throw();
 };
 struct S_dbf1a0_Handle
 {
@@ -567,7 +567,7 @@ struct ObjC
 {
     void* m_00;
     __declspec(nothrow) int ForwardCall_00dba730();
-    __declspec(nothrow) void DispatchItems(hkArrayBase<Rec>& a);
+    __declspec(nothrow) void hkDataClass_getAllMemberInfo(hkArrayBase<Rec>& minfos);
     __declspec(nothrow) void Object_DoNothing_00dba660();
     ~ObjC()
     {
@@ -617,7 +617,7 @@ __forceinline void initializeRecords(hkArrayBase<Rec>& out,int n)
     for (int k = 0; k < capacity; ++k)
         new (data + k) Rec;
 }
-extern "C" void __cdecl hkArrayUtil__reserve(void* owner, hkArrayBase<Rec>* arr, int newCap, int stride);
+extern "C" void __cdecl hkArrayUtil__reserve(void* mem, hkArrayBase<Rec>* array, int numElem, int sizeElem);
 struct Host
 {
     __declspec(nothrow) void WriteArray(const Wrap& arg0, int count);
@@ -737,7 +737,7 @@ __forceinline MemRouter& router()
 {
     return *(MemRouter*)hkMemoryRouter_getInstance();
 }
-void __cdecl ResizeAudioStream(ContainerHeap& heap, void* arr, int elemSize);
+void __cdecl ResizeAudioStream(ContainerHeap& mem, void* array, int sizeElem);
 struct HandleMap
 {
     int m_kPrimitiveElement, m_iCapacityFlags, m_iPairCount;

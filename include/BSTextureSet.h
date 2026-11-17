@@ -6,6 +6,7 @@
 class NiTexture;
 template <class T> class NiPointer;
 
+// pdb: class BSTextureSet, size 0x8, bases: NiObject, 0 members
 class BSTextureSet : public NiObject
 {
   public:

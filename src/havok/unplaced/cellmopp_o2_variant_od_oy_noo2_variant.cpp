@@ -67,8 +67,8 @@ struct This
     virtual void v43();
     virtual void v44();
     virtual Result* GetResult(char* output);
-    void bhkBvTreeShape_CopyMembers(int first, int second);
-    void bhkShape_CopyMembers(int first, int second);
+    void bhkBvTreeShape_CopyMembers(int apDest, int arCloneData);
+    void bhkShape_CopyMembers(int apDest, int arCloneData);
 };
 struct Resolved
 {
@@ -189,11 +189,11 @@ struct S_00ca4ec0_Base
     virtual void vac();
     virtual void vb0();
     virtual S_00ca4ec0_Out* vb4(int* out);
-    void bhkShape_LoadBinary(S_00ca4ec0_Stream& kStream);
+    void bhkShape_LoadBinary(S_00ca4ec0_Stream& arStream);
 };
 struct S_00ca4ec0 : S_00ca4ec0_Base
 {
-    void bhkBvTreeShape_LoadBinary(S_00ca4ec0_Stream& kStream);
+    void bhkBvTreeShape_LoadBinary(S_00ca4ec0_Stream& arStream);
 };
 struct NiStream;
 struct FirstInterface
@@ -245,7 +245,7 @@ struct HC1Base
     int unk14;
     int unk18;
     bool __thiscall BSPackedAdditionalGeometryData_RegisterStreamables(NiStream* stream);
-    void __thiscall bhkBvTreeShape_RegisterStreamables(NiStream* stream);
+    void __thiscall bhkBvTreeShape_RegisterStreamables(NiStream* arStream);
 };
 struct Link
 {
@@ -343,7 +343,7 @@ struct FUN_00cb0780_class
     int unk04;
     int unk08;
     void* memory;
-    void bhkTriSampledHeightFieldBvTreeShape_KillCinfo(bool release);
+    void bhkTriSampledHeightFieldBvTreeShape_KillCinfo(bool abCreated);
 };
 struct ThreadState
 {
@@ -538,12 +538,12 @@ struct GlobalString
 {
     const char* value;
 };
-extern GlobalString g_01268350;
+extern GlobalString bhkTriSampledHeightFieldBvTreeShape_ms_RTTI; // src: XBOX_RETAIL_PDB 0x01268350 (old: g_01268350)
 char* __cdecl NiViewerStrings_NiGetViewerString_Title(const char* text);
 struct StringBuilder
 {
-    void bhkBvTreeShape_GetViewerStrings(NiStringArray* array);
-    void bhkTriSampledHeightFieldBvTreeShape_GetViewerStrings(NiStringArray* array);
+    void bhkBvTreeShape_GetViewerStrings(NiStringArray* apStrings);
+    void bhkTriSampledHeightFieldBvTreeShape_GetViewerStrings(NiStringArray* apStrings);
 };
 struct ThreadStateGuard
 {
@@ -662,7 +662,7 @@ struct QTF
     virtual void f44();
     virtual int M45(void* p);
     void __thiscall bhkShape_LinkObject(EP* p);
-    void bhkBvTreeShape_LinkObject(EP* a1);
+    void bhkBvTreeShape_LinkObject(EP* arStream);
 };
 struct FUN_00ca4fd0_Value
 {
@@ -728,7 +728,7 @@ class FUN_00ca4fd0_cls
     int unk04;
     Node* m_pReferencedNode;
 
-    void bhkBvTreeShape_BuildDisplayGeometry(int first, int second);
+    void bhkBvTreeShape_BuildDisplayGeometry(int apNode, int arDefColor);
 };
 extern "C" __declspec(dllimport) long __stdcall InterlockedIncrement(long volatile* lpAddend);
 void bhkBvTreeShape_RembhkShapeRef();
@@ -740,7 +740,7 @@ struct RefCounted
 struct Owner_Ext : public Owner
 {
     void bhkShape_Link(bool flag);
-    void bhkBvTreeShape_Link(bool flag);
+    void bhkBvTreeShape_Link(bool abAttach);
 };
 extern "C" void* __cdecl Object_DispatchCommandFour(unsigned int);
 extern "C" void __cdecl bhkSerializable_CloneCritLock();
@@ -827,7 +827,7 @@ struct FUN_00cb05d0_cls
     virtual void v47();
     virtual void v48();
     virtual void v49(SpawnedObject* obj, int a1);
-    SpawnedObject* bhkTriSampledHeightFieldBvTreeShape_CreateClone(int a1);
+    SpawnedObject* bhkTriSampledHeightFieldBvTreeShape_CreateClone(int arCloneData);
 };
 struct FUN_00cb06c0_Alloc
 {
@@ -853,7 +853,7 @@ struct FUN_00cb06c0_cls
     void* unk08;
     void* unk0c;
     void UpdateState_00cb0030(void* value);
-    void* bhkTriSampledHeightFieldBvTreeShape_CreateCinfo(bool* out);
+    void* bhkTriSampledHeightFieldBvTreeShape_CreateCinfo(bool* arCreated);
 };
 struct S00cb0820_Alloc
 {
@@ -973,7 +973,7 @@ struct S00cb0820_Obj40 : S00cb0820_Ref
     int unk34;
     int unk38;
     int unk3c;
-    S00cb0820_Obj40(S00cb0820_Shape70* shape, float value);
+    S00cb0820_Obj40(S00cb0820_Shape70* shape, float radius);
 };
 struct S00cb0820_Tag
 {
@@ -995,7 +995,7 @@ struct S00cb0820_Obj30 : S00cb0820_Ref
     int unk24;
     int unk28;
     int unk2c;
-    S00cb0820_Obj30(S00cb0820_Obj40* body, S00cb0820_Tag tag);
+    S00cb0820_Obj30(S00cb0820_Obj40* body, S00cb0820_Tag doAabbRejection);
 };
 struct S00cb0820_World
 {
@@ -1047,7 +1047,7 @@ struct S00cb0820_World
     virtual void v45();
     virtual void v46();
     virtual void v47(S00cb0820_Outer* a1);
-    void bhkTriSampledHeightFieldBvTreeShape_Init(S00cb0820_Outer* a1);
+    void bhkTriSampledHeightFieldBvTreeShape_Init(S00cb0820_Outer* arInfo);
 };
 
 union __declspec(align(16)) xM128
@@ -1138,17 +1138,20 @@ struct xMgr
 {
     int m_iWordAt00, m_iWordAt04;
     xList m_8;
-    bool FUN_00622470();
-    bool CellMopp_Create(xRef** apList, unsigned int auiCount, float afVal);
+    bool QCreated();
+    bool CellMopp_Create(xRef** appStripArray, unsigned int aiCount, float afOffset);
 };
 // @fnv 0x00621f60
 // src: XBOX_PDB 0x00621f60
-bool xMgr::CellMopp_Create(xRef** apList, unsigned int auiCount, float afVal)
+// pdb: CellMopp::Create | CellMopp.obj | retail, upstream name already matches, high
+// pdb params: appStripArray, aiCount, afOffset
+// pdb locals: bres, icf, rbinfo, i, pstrips, spshape, prb, ci
+bool xMgr::CellMopp_Create(xRef** appStripArray, unsigned int aiCount, float afOffset)
 {
     bool RESULT = false;
-    if (!FUN_00622470())
+    if (!QCreated())
     {
-        if (apList)
+        if (appStripArray)
         {
             xPhantomCinfo CI;
             CI.PathingRequestClosePoint_SetMinDistance(0.0f);
@@ -1156,16 +1159,16 @@ bool xMgr::CellMopp_Create(xRef** apList, unsigned int auiCount, float afVal)
             CI.PathingRequestCoveredMove_SetAttackerHealth(*xg_11cc1d8.Setting_Float_00403e20());
             xFilter FILTER(0x11, 1, 0);
             CI.bhkRigidBodyCinfo_SetCollisionFilter(FILTER.Modelloader_GetReferencedThis());
-            for (unsigned int I = 0; I < auiCount; I++)
+            for (unsigned int I = 0; I < aiCount; I++)
             {
-                xRef* REF = apList[I];
+                xRef* REF = appStripArray[I];
                 if (REF)
                 {
                     xShapeCinfo SC;
                     SC.m_20 = SC.m_24 = 0x11;
                     SC.m_10.FUN_004b4d50(xFUN_004a3e90(128.0f), xFUN_004a3e90(1.0f), xFUN_004a3e90(128.0f), 0.0f);
                     SC.m_40 = REF->FUN_0049ec60();
-                    SC.m_44 = afVal;
+                    SC.m_44 = afOffset;
                     SC.m_10.UpdateBoundsFromElements();
                     xPtr SHAPE(new xShape(&SC));
                     CI.bhkRigidBodyCinfo_SetShape_0(xFUN_00620b80(SHAPE.Modelloader_GetReferencedThis()));

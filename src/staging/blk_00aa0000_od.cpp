@@ -15,9 +15,12 @@ extern "C" void* __cdecl _malloc(unsigned int);
 
 // Allocates size bytes with _malloc and returns the resulting pointer.
 // @fnv 0x00aa4290
-void* __thiscall MemoryManager::DoSystemAllocation(unsigned int size, bool aligned)
+// pdb: MemoryManager::DoSystemAllocation | MemoryManager.obj | debug, upstream name already matches, high
+// pdb params: aSize, abLog
+// pdb locals: pmem
+void* __thiscall MemoryManager::DoSystemAllocation(unsigned int aSize, bool abLog)
 {
-    void* buffer = _malloc(size);
+    void* buffer = _malloc(aSize);
     void* result = buffer;
     return result;
 }
@@ -25,6 +28,9 @@ void* __thiscall MemoryManager::DoSystemAllocation(unsigned int size, bool align
 extern "C" void __cdecl free(void*);
 
 // @fnv 0x00aa42c0
+// pdb: free | free.obj | retail, call graph, low
+// pdb note: debug build links it to MemoryManager::DoSystemDeallocation
+// pdb params: pUserData
 void __thiscall MemoryManager::DoSystemDeallocation(void* p, bool aligned)
 {
     free(p);
@@ -33,18 +39,22 @@ void __thiscall MemoryManager::DoSystemDeallocation(void* p, bool aligned)
 struct FUN_00aa4790_Class
 {
     void __thiscall MemoryManager_GetHeapStats(int, unsigned char, int);
-    void __thiscall MemoryManager_GetDefaultHeapStats(int a, int b, int c);
+    void __thiscall MemoryManager_GetDefaultHeapStats(int aiDefaultHeapIndex, int abFullBlockInfo, int apStats);
 };
 
 // Calls FUN_00aa4710 with a, the low byte of b, and c.
 // @fnv 0x00aa4790
 // src: COMMUNITY 0x00aa4790
-void __thiscall FUN_00aa4790_Class::MemoryManager_GetDefaultHeapStats(int a, int b, int c)
+// pdb: MemoryManager::GetDefaultHeapStats | MemoryManager.obj | debug, upstream name already matches, high
+// pdb params: aiDefaultHeapIndex, abFullBlockInfo, apStats
+void __thiscall FUN_00aa4790_Class::MemoryManager_GetDefaultHeapStats(int aiDefaultHeapIndex, int abFullBlockInfo, int apStats)
 {
-    MemoryManager_GetHeapStats(a, (unsigned char)b, c);
+    MemoryManager_GetHeapStats(aiDefaultHeapIndex, (unsigned char)abFullBlockInfo, apStats);
 }
 
 // @fnv 0x00aa4bf0
+// pdb: BSCoreMessage::SetWarningDisabled | BSCoreMessage.obj | debug, object-file gap fill, medium
+// pdb params: aWarningContext, abValue
 void SetByteAtOffset(char* p, char c)
 {
     p[(int)DAT_011f6370] = c;
@@ -60,6 +70,9 @@ extern "C" void __cdecl BSCoreMessage_IsWarningDisabled(int);
 // Passes arg to FUN_00aa4be0 via a local copy.
 // @fnv 0x00aa4c10
 // src: GUESS 0x00aa4c10 (confidence: medium)
+// pdb: BSCoreMessage::CheckWarningContexts | BSCoreMessage.obj | debug, object-file gap fill, medium
+// pdb params: aWarningContext
+// pdb locals: i
 void __thiscall FUN_00aa4c10_class::CheckWarningDisabled(int arg)
 {
     int local = arg;
@@ -70,14 +83,16 @@ extern "C" void __cdecl SetByteAtOffset(int, int);
 
 struct FUN_00aa4c40_class
 {
-    void __thiscall BSCoreMessage_DisableContextMessages(int a);
+    void __thiscall BSCoreMessage_DisableContextMessages(int aWarningContext);
 };
 
 // @fnv 0x00aa4c40
 // src: COMMUNITY 0x00aa4c40
-void __thiscall FUN_00aa4c40_class::BSCoreMessage_DisableContextMessages(int a)
+// pdb: BSCoreMessage::DisableContextMessages | BSCoreMessage.obj | debug, upstream name already matches, high
+// pdb params: aWarningContext
+void __thiscall FUN_00aa4c40_class::BSCoreMessage_DisableContextMessages(int aWarningContext)
 {
-    SetByteAtOffset(a, 1);
+    SetByteAtOffset(aWarningContext, 1);
 }
 
 extern "C" void* DAT_010a2708;
@@ -90,6 +105,7 @@ struct FUN_00aa4c60_class
 
 // @fnv 0x00aa4c60
 // src: COMMUNITY 0x00aa4c60
+// pdb: BSCoreMessage::BSCoreMessage | BSCoreMessage.obj | debug, upstream name already matches, high
 void* FUN_00aa4c60_class::BSCoreMessage_BSCoreMessage()
 {
     m_p = &DAT_010a2708;
@@ -107,6 +123,7 @@ struct FUN_00aa4c80_class
 
 // @fnv 0x00aa4c80
 // src: GUESS 0x00aa4c80 (confidence: low)
+// pdb: BSCoreMessage::~BSCoreMessage | BSCoreMessage.obj | debug, call graph, medium
 void FUN_00aa4c80_class::UpdateFields_00aa4c80()
 {
     m_p = &DAT_010a2708;
@@ -120,6 +137,7 @@ struct AbstractHeapLogger
 extern AbstractHeapLogger* DAT_011f6388;
 // @fnv 0x00aa4ce0
 // src: GUESS 0x00aa4ce0 (confidence: low)
+// pdb: BSCoreMessage::StatusOff | BSCoreMessage.obj | debug, object-file run extension, low
 void AbstractHeapLogger::ProcessState_00aa4ce0()
 {
     if (DAT_011f6388)
@@ -135,6 +153,9 @@ struct FUN_00aa6950_Class
 
 // Clears the entry at index a >> 2 in the DAT_011f67b8 pool array.
 // @fnv 0x00aa6950
+// pdb: MemoryPool::RemovePoolAsBlockSize | MemoryPool.obj | debug, object-file gap fill, medium
+// pdb params: aiSize
+// pdb locals: isizeIndex
 void __thiscall FUN_00aa6950_Class::ClearPoolSlot(unsigned int uiIndex)
 {
     unsigned int idx = uiIndex >> 2;
@@ -142,6 +163,7 @@ void __thiscall FUN_00aa6950_Class::ClearPoolSlot(unsigned int uiIndex)
 }
 
 // @fnv 0x00aa7e50
+// pdb: AbstractHeap::GetName | MemoryHeap.obj | debug, upstream name already matches, high
 const char* AbstractHeap::GetName()
 {
     return pName;
@@ -156,6 +178,7 @@ struct FUN_00aa8410 : BSThread
 };
 
 // @fnv 0x00aa8410
+// pdb: OEI::IO::IO_Thread::IO_Thread | oei_io_thread.obj | debug, object-file gap fill, medium
 FUN_00aa8410::FUN_00aa8410()
 {}
 
@@ -206,28 +229,39 @@ void* __thiscall FUN_00aa8b00_Class::BSMap_unsigned_int_ScrapHeap_NewItem()
 void __cdecl FNV_Warning(const char* fmt, ...);
 
 // @fnv 0x00aafbb0
-void __cdecl ReportFr2Error(const char* pcFile, int iLine, const char* pcMessage)
+// pdb: fr2Error | assert.obj | debug, unique string literal, high
+// pdb params: fname, line, msg
+void __cdecl ReportFr2Error(const char* fname, int line, const char* msg)
 {
-    FNV_Warning("DEFAULT: FR2 ERROR in %s line %i : '%s'. Code may crash.", pcFile, iLine, pcMessage);
+    FNV_Warning("DEFAULT: FR2 ERROR in %s line %i : '%s'. Code may crash.", fname, line, msg);
 }
 
 // @fnv 0x00aa41e0
-void* __thiscall MemoryManager::AllocatePhysical(unsigned int a, unsigned long b)
+// pdb: MemoryManager::AllocatePhysical | MemoryManager.obj | retail, upstream name already matches, high
+// pdb params: aSize, aiAttributes
+// pdb locals: imemoryPass, pheap, econtext, attributes, bmemFromSystem, ballowSystemAlloc, pmem, ptr
+void* __thiscall MemoryManager::AllocatePhysical(unsigned int aSize, unsigned long aiAttributes)
 {
     return 0;
 }
 
 // @fnv 0x00aa41f0
-void MemoryManager::DeallocatePhysical(void* a, unsigned long b, unsigned long c)
+// pdb: MemoryManager::DeallocatePhysical | MemoryManager.obj | retail, upstream name already matches, high
+// pdb params: apMem, aiAttributes, aiSize
+// pdb locals: pheap, pattributes, found, i
+void MemoryManager::DeallocatePhysical(void* apMem, unsigned long aiAttributes, unsigned long aiSize)
 {}
 
 // @fnv 0x00aa45a0
-IMemoryHeap* MemoryManager::GetHeapForPointer(void* arg)
+// pdb: MemoryManager::GetHeapForPointer | MemoryManager.obj | retail, upstream name already matches, high
+// pdb params: apMem
+// pdb locals: i, pm
+IMemoryHeap* MemoryManager::GetHeapForPointer(void* apMem)
 {
     for (unsigned short i = 0; i < iNumHeaps; ++i)
     {
         IMemoryHeap* item = ppHeaps[i];
-        if (item->ContainsBlockImpl(arg))
+        if (item->ContainsBlockImpl(apMem))
             return item;
     }
     return 0;
@@ -239,18 +273,21 @@ struct FUN_00aa46a0_holder
 };
 struct FUN_00aa4710_Class
 {
-    char __thiscall MemoryManager_GetHeapStats(int a, unsigned char b, int c);
+    char __thiscall MemoryManager_GetHeapStats(int aiIndex, unsigned char abFullBlockInfo, int apStats);
 };
 // @fnv 0x00aa4710
 // src: COMMUNITY 0x00aa4710
-char __thiscall FUN_00aa4710_Class::MemoryManager_GetHeapStats(int a, unsigned char b, int c)
+// pdb: MemoryManager::GetHeapStats | MemoryManager.obj | retail, upstream name already matches, high
+// pdb params: aiIndex, abFullBlockInfo, apStats
+// pdb locals: pheap, bstatus
+char __thiscall FUN_00aa4710_Class::MemoryManager_GetHeapStats(int aiIndex, unsigned char abFullBlockInfo, int apStats)
 {
     char flag_ = 0;
-    void* p2 = ((FUN_00aa46a0_holder*)this)->GetEntryAt((unsigned int)a);
+    void* p2 = ((FUN_00aa46a0_holder*)this)->GetEntryAt((unsigned int)aiIndex);
     if (p2)
     {
         flag_ = 1;
-        ((void(__thiscall*)(void*, int, unsigned char))(*(void***)p2)[6])(p2, c, b);
+        ((void(__thiscall*)(void*, int, unsigned char))(*(void***)p2)[6])(p2, apStats, abFullBlockInfo);
     }
     return flag_;
 }
@@ -297,19 +334,21 @@ void* __thiscall FUN_00aa4b50_Class::Destroy(unsigned int flags)
 
 struct FUN_00aa50f0_Class
 {
-    void __thiscall BSTimer_Init(unsigned int a);
+    void __thiscall BSTimer_Init(unsigned int aiTime);
 };
 // Zeroes the object's byte, floats and int fields, stores the given value at offset 24, and clears the bytes at offsets 28 and 29.
 // @fnv 0x00aa50f0
 // src: COMMUNITY 0x00aa50f0
-void __thiscall FUN_00aa50f0_Class::BSTimer_Init(unsigned int uiValue)
+// pdb: BSTimer::Init | BSTimer.obj | debug, upstream name already matches, high
+// pdb params: aiTime
+void __thiscall FUN_00aa50f0_Class::BSTimer_Init(unsigned int aiTime)
 {
     *(unsigned char*)this = 0;
     *(float*)(this + 4) = 0.0f;
     *(float*)(this + 8) = 0.0f;
     *(float*)(this + 12) = 0.0f;
     *(int*)(this + 20) = 0;
-    *(unsigned int*)(this + 24) = uiValue;
+    *(unsigned int*)(this + 24) = aiTime;
     *(unsigned char*)(this + 29) = 0;
     *(unsigned char*)(this + 28) = 0;
 }
@@ -404,6 +443,8 @@ struct FUN_00aa9d20_Class
 
 // @fnv 0x00aa9d20
 // src: COMMUNITY 0x00aa9d20
+// pdb: AbstractHeap::AddDelayedFreeBlock | AbstractHeap.obj | debug, object-file gap fill, medium
+// pdb params: apBlock
 void FUN_00aa9d20_Class::nullsub_317(int arg)
 {}
 
@@ -425,6 +466,8 @@ struct FUN_00aaa6e0_Class
     void __thiscall SetFlags(unsigned int flags, int unused);
 };
 // @fnv 0x00aaa6e0
+// pdb: HeapBlock::Init | HeapBlocks.obj | debug, call graph, medium
+// pdb params: aiSize, apLogItem
 void __thiscall FUN_00aaa6e0_Class::SetFlags(unsigned int flags, int unused)
 {
     m4 = 0;
@@ -446,6 +489,9 @@ struct FUN_00aa47e0_Class
 // Initializes the object with a count, allocates count*4 bytes zeroed into m8, and returns this.
 // @fnv 0x00aa47e0
 // src: COMMUNITY 0x00aa47e0
+// pdb: BSMapBase<unsigned long,ScrapHeap *>::BSMapBase<unsigned long,ScrapHeap *> | MemoryManager.obj | debug, object-file run extension, low
+// pdb params: uiHashSize
+// pdb locals: uiSize
 FUN_00aa47e0_Class* FUN_00aa47e0_Class::BSMapBase_unsigned_int_ScrapHeap_BSMapBase_unsigned_int_ScrapHeap(unsigned int count)
 {
     unsigned int bytes;
@@ -472,7 +518,7 @@ struct FUN_00aba370_s
     unsigned int m_10;
     unsigned int m_14;
     void __thiscall EraseRange(unsigned int a, unsigned int b);
-    void __thiscall AppendChars(unsigned int a, unsigned char b);
+    void __thiscall AppendChars(unsigned int _Count, unsigned char _Ch);
     void __thiscall ResizeStringRange(unsigned int pos, unsigned char b);
 };
 extern unsigned int DAT_010173f0;
@@ -526,6 +572,8 @@ struct FUN_00abbf00_Class
 
 // Calls FUN_00ec7c56 unless m0 is nonzero and equal to other's m0, then returns whether m4 equals other's m4.
 // @fnv 0x00abbf00
+// pdb: TESRegionPointList::ScaleResult::Matches | TESRegionPointList.obj | retail, upstream name already matches, high, not renamed: the link is the existing name itself, so its spelling stays
+// pdb params: apPoint, afDistance
 char FUN_00abbf00_Class::Matches(FUN_00abbf00_Class* other)
 {
     if (!static_cast<bool>(static_cast<int>(this->m0 != 0)) ||
@@ -540,6 +588,8 @@ struct FUN_00aa4760_Class : public FUN_00aa4710_Class
 };
 // Calls the base-class method with the first argument offset by the 16-bit value at this+2, passing b and c through.
 // @fnv 0x00aa4760
+// pdb: MemoryManager::GetPhysicalHeapStats | MemoryManager.obj | debug, object-file gap fill, medium
+// pdb params: aiPhysicalHeapIndex, abFullBlockInfo, apStats
 char FUN_00aa4760_Class::CallBaseWithOffset(int aiValue, unsigned char b, int c)
 {
     return MemoryManager_GetHeapStats(aiValue + *(unsigned short*)((char*)this + 2), b, c);
@@ -547,9 +597,11 @@ char FUN_00aa4760_Class::CallBaseWithOffset(int aiValue, unsigned char b, int c)
 
 // @fnv 0x00aa4be0
 // src: COMMUNITY 0x00aa4be0
-unsigned char __cdecl BSCoreMessage_IsWarningDisabled(char* p)
+// pdb: BSCoreMessage::IsWarningDisabled | BSCoreMessage.obj | debug, upstream name already matches, high
+// pdb params: aWarningContext
+unsigned char __cdecl BSCoreMessage_IsWarningDisabled(char* aWarningContext)
 {
-    return p[(int)DAT_011f6370];
+    return aWarningContext[(int)DAT_011f6370];
 }
 
 struct FUN_00aa4ca0_class
@@ -559,6 +611,8 @@ struct FUN_00aa4ca0_class
 
 // @fnv 0x00aa4ca0
 // src: GUESS 0x00aa4ca0 (confidence: low)
+// pdb: BSCoreMessage::StatusOn | BSCoreMessage.obj | debug, object-file run extension, low
+// pdb params: apcText, apcCaption, afMinTime, auiTextID, auiCaptionID
 void __thiscall FUN_00aa4ca0_class::ProcessState_00aa4ca0(unsigned int a, unsigned int b, float c, unsigned int d,
                                                  unsigned int e)
 {
@@ -574,6 +628,7 @@ struct FUN_00aa5fc0_Class
 };
 // Sets the two int fields at offsets 0 and 4 of this object to zero and returns this.
 // @fnv 0x00aa5fc0
+// pdb: BSReadWriteLock::BSReadWriteLock | BSReadWriteLock.obj | debug, call graph, medium
 int FUN_00aa5fc0_Class::ClearFields()
 {
     *(int*)this = 0;
@@ -587,6 +642,9 @@ struct FUN_00aa6920_Class
 };
 // Stores this object into the DAT_011f67b8 pool array at slot index >> 2.
 // @fnv 0x00aa6920
+// pdb: MemoryPool::AddPoolAsBlockSize | MemoryPool.obj | debug, object-file gap fill, medium
+// pdb params: aiSize
+// pdb locals: isizeIndex
 void __thiscall FUN_00aa6920_Class::RegisterInPool(unsigned int index)
 {
     unsigned int i = index >> 2;
@@ -621,6 +679,8 @@ void __thiscall FUN_00aa8a40_Class::BSList_BSSemaphore_AddHead(FUN_00aa8a40_Node
 }
 
 // @fnv 0x00aa8ea0
+// pdb: AbstractHeap::DeleteHeap | AbstractHeap.obj | debug, object-file run extension, low
+// pdb locals: icnt, plist
 void AbstractHeap::Clear()
 {
     for (int i = 0; i < 0x400; ++i)
@@ -651,6 +711,7 @@ struct FUN_00aaaa80_Class
 };
 
 // @fnv 0x00aaab00
+// pdb: FutBinaryFileC::`scalar deleting destructor' | FanCtlFile.obj | retail, vtable slot, high
 void* FUN_00aaaa80_Class::DestroyWithFlags(unsigned int flags)
 {
     int a, b, c, d, e, f, g, h, i, j;
@@ -686,12 +747,15 @@ FUN_00ab2e40::FUN_00ab2e40()
 
 // Scans the pool array and returns the first pool whose Contains check accepts pvMem, or null if none does.
 // @fnv 0x00aa4610
-IMemoryHeap* MemoryManager::GetHeapForPhysicalPointer(void* pvMem)
+// pdb: MemoryManager::GetHeapForPhysicalPointer | MemoryManager.obj | retail, upstream name already matches, high
+// pdb params: apMem
+// pdb locals: pheap, i
+IMemoryHeap* MemoryManager::GetHeapForPhysicalPointer(void* apMem)
 {
     IMemoryHeap* pkFound = 0;
     for (unsigned short i = 0; i < iNumPhysicalHeaps && !pkFound; i++)
     {
-        if (ppPhysicalHeaps[i]->ContainsBlockImpl(pvMem))
+        if (ppPhysicalHeaps[i]->ContainsBlockImpl(apMem))
             pkFound = ppPhysicalHeaps[i];
     }
     return pkFound;
@@ -701,6 +765,8 @@ extern unsigned int DAT_011f69f8;
 
 // @fnv 0x00aa4960
 // src: COMMUNITY 0x00aa4960
+// pdb: MemoryPool::GetPoolForSize | MemoryManager.obj | debug, call graph, medium
+// pdb params: aiBlockSize
 void* MemoryPool_GetClosestPoolForSize(unsigned int size)
 {
     unsigned int result = 0;
@@ -792,6 +858,8 @@ extern float DAT_011ac39c;
 
 // Queries the performance counter frequency and stores it divided by DAT_01017b70 as a float in DAT_011ac39c.
 // @fnv 0x00aa4d50
+// pdb: BSPrecisionTimer::Initialize | BSPrecisionTimer.obj | debug, object-file run extension, low
+// pdb locals: iperformanceCounterFrequency
 void __cdecl InitPerformanceFrequency(void)
 {
     __int64 frequency;
@@ -805,6 +873,7 @@ struct ScrapHeapEntry
     unsigned int m_iElementCount;
 };
 
+// pdb: class ScrapHeapManager, size 0x210 (here 0x208), 4 members
 struct ScrapHeapManager
 {
     ScrapHeapEntry m_entries[64];
@@ -815,6 +884,8 @@ struct ScrapHeapManager
 
 // Decrements the entry count, subtracts the removed entry's size from m_totalSize, and moves the last entry into the freed slot if it is not the last one.
 // @fnv 0x00aa5f50
+// pdb: ScrapHeapManager::RemoveBuffer | ScrapHeap.obj | debug, object-file run extension, low
+// pdb params: aiIndex
 void ScrapHeapManager::RemoveEntry(unsigned int index)
 {
     m_uiItemCount = m_uiItemCount - 1;
@@ -840,6 +911,8 @@ extern "C" __declspec(dllimport) long __stdcall InterlockedCompareExchange(volat
 
 // @fnv 0x00aa5ff0
 // src: XBOX_PDB 0x00aa5ff0
+// pdb: BSReadWriteLock::LockForRead | BSReadWriteLock.obj | retail, upstream name already matches, high
+// pdb locals: uicurrentThread, uioldLockCount
 void __thiscall FUN_00aa5ff0_Class::BSReadWriteLock_LockForRead()
 {
     unsigned long threadId = GetCurrentThreadId();
@@ -885,6 +958,7 @@ struct FUN_00aa6680_class
     void __thiscall FreeAllocation();
 };
 // @fnv 0x00aa6680
+// pdb: MemoryPool::PlatformReleaseHeap | MemoryPool.obj | debug, object-file gap fill, medium
 void FUN_00aa6680_class::FreeAllocation()
 {
     VirtualFree(allocation, 0, 0x8000);
@@ -901,6 +975,9 @@ struct NodeSorter
 };
 // Bottom-up merge sort of a doubly linked list by node address, relinking previous/next pointers and returning the new head.
 // @fnv 0x00aa70c0
+// pdb: MemoryPool::MergeSortList | MemoryPool.obj | debug, object-file run extension, low
+// pdb params: apList
+// pdb locals: ptail, pfirstList, isecondListSize, ifirstListSize, psecondList, imergeSize, inumMerges, pelement, i
 LinkedNode* NodeSorter::SortList(LinkedNode* head)
 {
     LinkedNode *left, *tail, *p, *tailPtr;
@@ -1017,6 +1094,8 @@ struct FUN_00aa7300_Obj
 
 // @fnv 0x00aa7370
 // src: COMMUNITY 0x00aa7370
+// pdb: MemoryPool::CheckPools | MemoryPool.obj | debug, upstream name already matches, high
+// pdb locals: i, pcurrentPool
 void MemoryPool_CheckPools(void)
 {
     if ((DAT_011f6bec & 1) == 0)
@@ -1071,6 +1150,9 @@ struct AllocBlock
 struct FUN_00aa8b80_class;
 
 // @fnv 0x00aa86b0
+// pdb: BSListBase<OEI::IO::IO_Request *>::`scalar deleting destructor' | oei_io_thread.obj | retail, object-file run extension, low
+// pdb note: debug build links it to OEI::IO::fread
+// pdb params: this
 void __cdecl SetBlockValue(int aiValue)
 {
     void* lock = DAT_011f6bfc;
@@ -1160,6 +1242,8 @@ extern "C" void __cdecl FUN_00ec61c0(void* p, int value, unsigned int size);
 extern "C" void __stdcall FUN_00eccec5(int code);
 
 // @fnv 0x00aa8dd0
+// pdb: AbstractHeap::InitHeap | AbstractHeap.obj | debug, object-file run extension, low
+// pdb locals: ibucketsPerSubBucket, icnt
 void AbstractHeap::ResetHeap()
 {
     pMemHeap = (char*)AllocateHeapMemory(MemHeapSize, iCurrentSize);
@@ -1185,6 +1269,7 @@ struct FUN_00aa9d00_cls
 
 // @fnv 0x00aa9d00
 // src: COMMUNITY 0x00aa9d00
+// pdb: AbstractHeap::FreeDelayedFreeBlocks | AbstractHeap.obj | debug, object-file gap fill, medium
 void FUN_00aa9d00_cls::nullsub_318()
 {}
 
@@ -1226,6 +1311,7 @@ struct FUN_00aaab30_cls : FUN_00aaab30_base
 
 // Destructor that calls unk04() on the object.
 // @fnv 0x00aaab30
+// pdb: BSFaceGenBinaryFile::~BSFaceGenBinaryFile | FanCtlFile.obj | debug, object-file gap fill, medium
 FUN_00aaab30_cls::~FUN_00aaab30_cls()
 {
     FrameBlock40 blk;
@@ -1242,6 +1328,8 @@ struct S_00aadd20_Vector
 
 // @fnv 0x00aadd20
 // src: GUESS 0x00aadd20 (confidence: low)
+// pdb: futMatInverse | FanControls.obj | debug, call graph, medium
+// pdb params: m
 S_00aadd20_Vector* __cdecl Object_ComputeValue_00aadd20(S_00aadd20_Vector* out, S_00aadd20_Vector* in)
 {
     float v = in->x * in->w - in->y * in->z;
@@ -1259,13 +1347,15 @@ S_00aadd20_Vector* __cdecl Object_ComputeValue_00aadd20(S_00aadd20_Vector* out, 
 
 struct FUN_00aadda0_Class
 {
-    void __thiscall BuildScaledValues(int a, float b);
+    void __thiscall BuildScaledValues(int d, float b);
     int __thiscall BuildReciprocalScaledValues(int a, float b);
 };
 
 // Calls BuildScaledValues with the reciprocal of b, sets bit 0 of flags, and returns a.
 // @fnv 0x00aadda0
 // src: GUESS 0x00aadda0 (confidence: medium)
+// pdb: FR2MatrixVTC<float>::operator/ | FanControls.obj | debug, call graph, medium
+// pdb params: v
 int FUN_00aadda0_Class::BuildReciprocalScaledValues(int a, float b)
 {
     int flags = 0;
@@ -1633,6 +1723,8 @@ struct FUN_00aa6650_Class
 };
 // Releases the memory block at p with VirtualFree using MEM_DECOMMIT and returns whether the call succeeded.
 // @fnv 0x00aa6650
+// pdb: MemoryPool::PlatformDecommitPage | MemoryPool.obj | debug, object-file gap fill, medium
+// pdb params: auiPageIndex, apPageAddress
 bool FUN_00aa6650_Class::FreeMemory(unsigned int size, void* pMemory)
 {
     return VirtualFree(pMemory, 0x1000, 0x4000) != 0;
@@ -1676,6 +1768,8 @@ class FUN_00aa7300_cls
 
 // @fnv 0x00aa7300
 // src: COMMUNITY 0x00aa7300
+// pdb: MemoryPool::CheckFreeBlocks | MemoryPool.obj | debug, upstream name already matches, high
+// pdb locals: pcurrentBlock
 void FUN_00aa7300_cls::MemoryPool_CheckFreeBlocks()
 {
     int scratch0;
@@ -1739,6 +1833,8 @@ extern "C" void(__stdcall* DAT_00fdf1c8)(void*, int);
 extern PoolA* DAT_011f6c04;
 
 // @fnv 0x00aa8740
+// pdb: OEI::IO::add_work_item_to_queue_and_wait | oei_io_thread.obj | retail, object-file run extension, low
+// pdb params: new_request
 void __cdecl CompleteJob(JobA* job)
 {
     JobA* value;
@@ -1838,6 +1934,8 @@ struct FUN_00aa6800_class
 };
 
 // @fnv 0x00aa68a0
+// pdb: MemoryPool::DeletePools | MemoryPool.obj | debug, object-file gap fill, medium
+// pdb locals: i
 void __cdecl DestroyMemoryPools()
 {
     unsigned int i;
@@ -1882,7 +1980,7 @@ class S_00aadeb0_Class
     unsigned int m_14;
     unsigned int m_18;
 
-    S_00aadeb0_Class* AppendChars(unsigned int count, unsigned char ch);
+    S_00aadeb0_Class* AppendChars(unsigned int _Count, unsigned char _Ch);
 };
 
 struct S_00aae180_Class
@@ -1907,20 +2005,22 @@ struct S_00aadeb0_pad
 
 // Appends count copies of ch to the string, growing the buffer and null-terminating it, and returns this.
 // @fnv 0x00aadeb0
-S_00aadeb0_Class* S_00aadeb0_Class::AppendChars(unsigned int count, unsigned char ch)
+// pdb: std::basic_string<char,std::char_traits<char>,std::allocator<char> >::append | FanControls.obj | retail, call graph, high
+// pdb params: _Ptr
+S_00aadeb0_Class* S_00aadeb0_Class::AppendChars(unsigned int _Count, unsigned char _Ch)
 {
     S_00aadeb0_pad pad;
     unsigned int newsize;
     __declspec(align(4)) unsigned char zero;
 
-    if (DAT_010173f0 - m_14 <= count)
+    if (DAT_010173f0 - m_14 <= _Count)
         _Xlen();
-    if (count > 0)
+    if (_Count > 0)
     {
-        newsize = m_14 + count;
+        newsize = m_14 + _Count;
         if (((S_0044a8d0_Class*)this)->std_basic_string_char_std_char_traits_char_std_allocator_char_Grow(newsize, 0))
         {
-            ((S_00aae180_Class*)this)->WriteBufferValue(m_14, count, ch);
+            ((S_00aae180_Class*)this)->WriteBufferValue(m_14, _Count, _Ch);
             zero = 0;
             m_14 = newsize;
             (m_18 >= 16 ? m_04 : (char*)this + 4)[newsize] = zero;
@@ -1960,6 +2060,9 @@ struct FaceGenBasisOwner
 
 // @fnv 0x00aad500
 // src: GUESS 0x00aad500 (confidence: low)
+// pdb: FanGenCtlsGrpC::geneticRandom | FanControls.obj | debug, object-file run extension, low
+// pdb params: randomness, currCoord, outCoord
+// pdb locals: type, symm, rr, cc, delta
 void FaceGenBasisOwner::ProcessEntries_00aad500(float scale, FaceGenCoordinateBasis (*src)[2], FaceGenCoordinateBasis (*dst)[2])
 {
     int pad2;
@@ -2153,6 +2256,9 @@ struct VectorOwnedItem
 
 // If flags & 2 runs FUN_00ec5fce over the array elements, else closes handle; with flags & 1 deallocates the block via DAT_011f6238; returns the block pointer.
 // @fnv 0x00aa8850
+// pdb: CloseHandle | closehandle.obj | retail, call graph, low
+// pdb note: debug build links it to BSSemaphore::`vector deleting destructor'
+// pdb params: hObject
 void* VectorOwnedItem::FUN_00aa8850(unsigned int flags)
 {
     if (flags & 2)
@@ -2424,6 +2530,8 @@ extern unsigned int DAT_010173f0;
 // For each element in [first, last), applies FUN_006581e0 with val's m00 and assigns a substring of val's m20 (from 0, DAT_010173f0 chars).
 // @fnv 0x00aaf6f0
 // src: GUESS 0x00aaf6f0 (confidence: medium)
+// pdb: std::_Uninitialized_default_fill_n<FanLinCtlS *,unsigned int,FanLinCtlS,std::allocator<FanLinCtlS> > | FanControls.obj | debug, object-file run extension, low
+// pdb params: _First, _Count, _Pval, _Al
 void Runtime_AssignRangeElementStrings(Element_00aaf6f0* first, Element_00aaf6f0* last, const Element_00aaf6f0* val)
 {
     char pad[73];
@@ -2497,6 +2605,8 @@ class VirtualReservationSearch
 
 // @fnv 0x00aa65b0
 // src: COMMUNITY 0x00aa65b0
+// pdb: MemoryPool::PlatformReserveHeap | MemoryPool.obj | retail, upstream name already matches, high
+// pdb locals: iaddressIndex
 void VirtualReservationSearch::MemoryPool_PlatformReserveHeap()
 {
     unsigned int i = 1;
@@ -2524,6 +2634,8 @@ int FUN_00ec658f(void(__cdecl* fn)());
 // Initializes the lock on first call, then under the lock calls FUN_00aa6f90 on each non-null entry of the 256-entry table DAT_011f67b8.
 // @fnv 0x00aa7030
 // src: COMMUNITY 0x00aa7030
+// pdb: MemoryLevelManager::CleanUpHeaps | MemoryLevelManager.obj | retail, call graph, medium
+// pdb locals: pmip1heap_0, ptexheap, bfreed, psoundheap, tempAutoEvent, idefaultcount, pmip1heap_4
 void MemoryPool_FreeUnusedPagesForAllPools_00aa7030()
 {
     if ((DAT_011f6bd0 & 1) == 0)
@@ -2548,6 +2660,8 @@ __declspec(dllimport) int __stdcall QueryPerformanceCounter(FNVInt64* counter);
 // Reads the high-resolution performance counter via QueryPerformanceCounter and returns the raw tick value.
 // @fnv 0x00aa4d80
 // src: COMMUNITY 0x00aa4d80
+// pdb: BSPrecisionTimer::GetTimer | BSPrecisionTimer.obj | retail, upstream name already matches, high
+// pdb locals: itimer
 unsigned long long BSPrecisionTimer_GetTimer()
 {
     FNVInt64 counter = 0;

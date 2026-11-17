@@ -42,10 +42,13 @@ struct LocalObj
 
 // @fnv 0x00c812d0
 // src: COMMUNITY 0x00c812d0
-int __cdecl bhkUtilFunctions_FindCollisionObjectBFS(void* a1, void* a2)
+// pdb: bhkUtilFunctions::FindCollisionObjectBFS | bhkUtilFunctions.obj | retail, upstream name already matches, high
+// pdb params: apObject, auiMaxLevel
+// pdb locals: bfsQueueA
+int __cdecl bhkUtilFunctions_FindCollisionObjectBFS(void* apObject, void* auiMaxLevel)
 {
     LocalObj local;
-    return bhkUtilFunctions_FindCollisionObjectBFSRec(a1, &local, a2, 0);
+    return bhkUtilFunctions_FindCollisionObjectBFSRec(apObject, &local, auiMaxLevel, 0);
 }
 
 class NiAVObject;
@@ -69,7 +72,7 @@ struct C6A350Properties
     int unkValue;
     unsigned int m_uiValue1;
 };
-extern "C" C6A350Properties* GetExtraDataChecked(NiAVObject* pkObject);
+extern "C" C6A350Properties* GetExtraDataChecked(NiAVObject* apObject);
 static inline unsigned int C6A350IsEnabled(NiAVObject* pkObject)
 {
     C6A350Properties* pkProps = GetExtraDataChecked(pkObject);
@@ -77,26 +80,29 @@ static inline unsigned int C6A350IsEnabled(NiAVObject* pkObject)
 }
 
 typedef void (*CollisionObjectCountCallback)(NiCollisionObject*, CollisionObjectCountContext*);
-void bhkWorld_DoObjectRec(NiAVObject* pkObject, CollisionObjectCountContext* pkContext,
-                  CollisionObjectCountCallback pfnCallback);
+void bhkWorld_DoObjectRec(NiAVObject* apObject, CollisionObjectCountContext* arData,
+                  CollisionObjectCountCallback apFunc);
 extern CollisionObjectCountCallback DAT_011afe9c;
 
 // @fnv 0x00c6a350
 // src: XBOX_PDB 0x00c6a350
-bool bhkWorld_SetMotion(NiAVObject* pkObject, int iValue, bool bRecurse, bool bForce, bool bOption)
+// pdb: bhkWorld::SetMotion | bhkWorld.obj | retail, upstream name already matches, high
+// pdb params: apObject, aeType, abRecurse, abForce, abAllowActivate
+// pdb locals: bres, recData
+bool bhkWorld_SetMotion(NiAVObject* apObject, int aeType, bool abRecurse, bool abForce, bool abAllowActivate)
 {
     bool bResult = false;
-    if (pkObject && (bForce || C6A350IsEnabled(pkObject)))
+    if (apObject && (abForce || C6A350IsEnabled(apObject)))
     {
         CollisionObjectCountContext kContext;
         bResult = true;
         kContext.pCurrentObject = 0;
-        kContext.bRecurse = bRecurse;
+        kContext.bRecurse = abRecurse;
         kContext.uiTraversalFlags = 5;
-        kContext.iValue = iValue;
-        kContext.iOption = bOption;
+        kContext.iValue = aeType;
+        kContext.iOption = abAllowActivate;
         if (DAT_011afe9c)
-            bhkWorld_DoObjectRec(pkObject, &kContext, DAT_011afe9c);
+            bhkWorld_DoObjectRec(apObject, &kContext, DAT_011afe9c);
     }
     return bResult;
 }

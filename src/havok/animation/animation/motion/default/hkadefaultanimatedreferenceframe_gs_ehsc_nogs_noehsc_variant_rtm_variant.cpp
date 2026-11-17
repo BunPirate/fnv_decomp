@@ -98,7 +98,7 @@ struct Motion363
     __m128 vector;
     hkQuaternion angular;
 };
-void hkaDefaultAnimatedReferenceFrame_project(Projection363_Owner* a, Motion363* __restrict b, Projection363_Input* c, hkVector4* out);
+void hkaDefaultAnimatedReferenceFrame_project(Projection363_Owner* options, Motion363* __restrict transform, Projection363_Input* previousProjection, hkVector4* projectionOut);
 inline hkVector4::hkVector4(const hkVector4& a)
 {
     memcpy(m_f, a.m_f, sizeof(m_f));
@@ -127,9 +127,9 @@ inline void hkVector4::setMul4(const hkVector4& a, const hkVector4& b)
 {
     m_vComponents = _mm_mul_ps(a.m_vComponents, b.m_vComponents);
 }
-inline void hkVector4::setAddMul4(const hkVector4& a, const hkVector4& b, const hkVector4& c)
+inline void hkVector4::setAddMul4(const hkVector4& a, const hkVector4& b, const hkVector4& r)
 {
-    m_vComponents = _mm_add_ps(a.m_vComponents, _mm_mul_ps(b.m_vComponents, c.m_vComponents));
+    m_vComponents = _mm_add_ps(a.m_vComponents, _mm_mul_ps(b.m_vComponents, r.m_vComponents));
 }
 inline void hkVector4::addMul4(const hkVector4& a, const hkVector4& b)
 {
@@ -173,9 +173,9 @@ inline void hkVector4::setBroadcast(const hkVector4& a, int i)
     else if (i == 3)
         m_vComponents = _mm_shuffle_ps(a.m_vComponents, a.m_vComponents, 0xff);
 }
-inline hkSimdReal hkVector4::dot3(const hkVector4& a) const
+inline hkSimdReal hkVector4::dot3(const hkVector4& x) const
 {
-    __m128 prod = _mm_mul_ps(m_vComponents, a.m_vComponents);
+    __m128 prod = _mm_mul_ps(m_vComponents, x.m_vComponents);
     __m128 xy = _mm_add_ss(_mm_shuffle_ps(prod, prod, 0x55), prod);
     return _mm_add_ss(_mm_shuffle_ps(prod, prod, 0xaa), xy);
 }
@@ -220,11 +220,11 @@ inline void hkVector4::setNeg3(const hkVector4& a)
 }
 inline const hkVector4& hkQuaternion::getImag() const
 {
-    return *reinterpret_cast<const hkVector4*>(&unk00);
+    return *reinterpret_cast<const hkVector4*>(&m_vec);
 }
 inline void hkQuaternion::SetConjugate(const hkQuaternion& q)
 {
-    reinterpret_cast<hkVector4*>(&unk00)->setNeg3(q.getImag());
+    reinterpret_cast<hkVector4*>(&m_vec)->setNeg3(q.getImag());
 }
 // src: COMMUNITY 0x00c66320
 inline void hkQuaternion::setMul(const hkQuaternion& a, const hkQuaternion& b)
@@ -242,7 +242,7 @@ inline void hkQuaternion::setMul(const hkQuaternion& a, const hkQuaternion& b)
     hkVector4 product;
     product.setMul4(a.getImag(), b.getImag());
     product.sub4(dot);
-    reinterpret_cast<hkVector4*>(&unk00)->setXYZW(imaginary, product);
+    reinterpret_cast<hkVector4*>(&m_vec)->setXYZW(imaginary, product);
 }
 __forceinline void hkVector4::SetRotatedDirection(const hkQuaternion& q, const hkVector4& direction)
 {
@@ -310,12 +310,15 @@ struct S00e41100_LinearKeyTrack
     int m_numKeys;
     int m_iCapacityState;
 
-    void hkaDefaultAnimatedReferenceFrame_getReferenceFrame(float time, hkQsTransform& out);
+    void hkaDefaultAnimatedReferenceFrame_getReferenceFrame(float time, hkQsTransform& motionOut);
 };
 
 // @fnv 0x00e41100
 // src: HAVOK_SRC 0x00e41100
-void S00e41100_LinearKeyTrack::hkaDefaultAnimatedReferenceFrame_getReferenceFrame(float time, hkQsTransform& out)
+// pdb: hkaDefaultAnimatedReferenceFrame::getReferenceFrame | hkaDefaultAnimatedReferenceFrame.obj | retail, upstream name already matches, high
+// pdb params: time, motionOut
+// pdb locals: motionOut_v, delta
+void S00e41100_LinearKeyTrack::hkaDefaultAnimatedReferenceFrame_getReferenceFrame(float time, hkQsTransform& motionOut)
 {
     int last = m_numKeys - 1;
     float dt = m_fAnimationDuration / last;
@@ -342,7 +345,7 @@ void S00e41100_LinearKeyTrack::hkaDefaultAnimatedReferenceFrame_getReferenceFram
         t = _mm_shuffle_ps(t, t, 0);
         v = _mm_add_ps(_mm_mul_ps(_mm_sub_ps(DAT_010ec7f0, t), a.getQuad()), _mm_mul_ps(b.getQuad(), t));
     }
-    out.m_vTranslation.getQuad() = v;
-    out.m_rotation.hkQuaternion_setAxisAngle(m_kAxisEndPoints, v.m128_f32[3]);
-    out.m_vScale.getQuad() = _mm_set_ps1(1.0f);
+    motionOut.m_vTranslation.getQuad() = v;
+    motionOut.m_rotation.hkQuaternion_setAxisAngle(m_kAxisEndPoints, v.m128_f32[3]);
+    motionOut.m_vScale.getQuad() = _mm_set_ps1(1.0f);
 }

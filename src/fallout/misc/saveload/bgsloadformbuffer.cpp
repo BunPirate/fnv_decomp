@@ -13,6 +13,7 @@ unsigned char BGSLoadFormBuffer::GetVersion()
 
 // Initializes the load form buffer by zeroing iFormID, iSize, pForm and iFlags.
 // @fnv 0x008643b0
+// pdb: BGSLoadFormBuffer::BGSLoadFormBuffer | BGSLoadFormBuffer.obj | retail, upstream name already matches, high
 BGSLoadFormBuffer::BGSLoadFormBuffer()
 {
     iFormID = 0;
@@ -24,6 +25,8 @@ BGSLoadFormBuffer::BGSLoadFormBuffer()
 }
 
 // @fnv 0x00864610
+// pdb: BGSLoadFormBuffer::GetReference | BGSLoadFormBuffer.obj | retail, upstream name already matches, high
+// pdb locals: pform
 TESObjectREFR* BGSLoadFormBuffer::GetReference()
 {
     TESForm* form = GetForm();
@@ -33,6 +36,8 @@ TESObjectREFR* BGSLoadFormBuffer::GetReference()
 }
 
 // @fnv 0x00864660
+// pdb: BGSLoadFormBuffer::GetActor | BGSLoadFormBuffer.obj | retail, upstream name already matches, high
+// pdb locals: pref
 Actor* BGSLoadFormBuffer::GetActor()
 {
     TESForm* form = reinterpret_cast<TESForm*>(GetReference());
@@ -42,6 +47,7 @@ Actor* BGSLoadFormBuffer::GetActor()
 }
 
 // @fnv 0x008645b0
+// pdb: BGSLoadFormBuffer::GetForm | BGSLoadFormBuffer.obj | retail, upstream name already matches, high
 TESForm* BGSLoadFormBuffer::GetForm()
 {
     if (!pForm && IsFlag2Set())
@@ -50,11 +56,14 @@ TESForm* BGSLoadFormBuffer::GetForm()
 }
 
 // @fnv 0x00864580
+// pdb: BGSLoadFormBuffer::LoadDataFromFile | BGSLoadFormBuffer.obj | retail, object-file run extension, low
+// pdb note: debug build links it to BGSLoadFormBuffer::SkipData
+// pdb params: apFile
 void BGSLoadFormBuffer::SkipData(SaveLoadFile* file, unsigned int size)
 {
     unsigned int remaining;
     if (remaining = iSize - size)
-        file->AdvancePosition(iSize - size);
+        file->BGSSaveLoadFile_SeekCurrent(iSize - size);
 }
 
 struct Dummy84eaf0
@@ -69,6 +78,7 @@ struct Dummy864490
 
 // @fnv 0x00864450
 // src: COMMUNITY 0x00864450
+// pdb: BGSSaveLoadFormHeader::BGSSaveLoadFormHeader | BGSLoadFormBuffer.obj | debug, upstream name already matches, high
 FormLoadContext* __fastcall BGSSaveLoadFormHeader_BGSSaveLoadFormHeader(FormLoadContext* apObject)
 {
     reinterpret_cast<Dummy84eaf0*>(apObject)->ClearNumericIDIndex();
@@ -87,7 +97,7 @@ char* __fastcall MOVABLE_STATIC_DATA_MOVABLE_STATIC_DATA(char* p)
 }
 
 #include "../../../../include/SIZE_TYPE.h"
-unsigned int __cdecl ReadSizedUnsignedInt(SaveLoadFile*, unsigned int&, SIZE_TYPE);
+unsigned int __cdecl LoadGameSizeFromFile(SaveLoadFile*, unsigned int&, SIZE_TYPE);
 unsigned int __fastcall BGSNumericIDIndex_GetNumericID(void*);
 SIZE_TYPE __fastcall BGSSaveLoadFormInfo_GetSizeType(void*);
 
@@ -97,6 +107,9 @@ struct BGSSaveLoadFile_Read_shell : public SaveLoadFile
 };
 
 // @fnv 0x008644b0
+// pdb: BGSLoadFormBuffer::LoadHeader | BGSLoadFormBuffer.obj | retail, upstream name already matches, high
+// pdb params: apFile
+// pdb locals: esizeType
 int BGSLoadFormBuffer::LoadHeader(SaveLoadFile* apFile)
 {
     SIZE_TYPE esizeType;
@@ -105,7 +118,7 @@ int BGSLoadFormBuffer::LoadHeader(SaveLoadFile* apFile)
     ((BGSSaveLoadFile_Read_shell*)apFile)->Read(Header, 9);
     iFormID = BGSNumericIDIndex_GetNumericID(Header);
     esizeType = BGSSaveLoadFormInfo_GetSizeType(Header + 7);
-    iLoadedSize = ReadSizedUnsignedInt(apFile, iSize, esizeType);
+    iLoadedSize = LoadGameSizeFromFile(apFile, iSize, esizeType);
     if (iLoadedSize != iSize)
         return -1;
     return iLoadedSize;
@@ -118,12 +131,15 @@ struct FUN_00864520_shell : public BGSSaveLoadFormInfo
 
 // @fnv 0x00864520
 // src: XBOX_PDB 0x00864520
+// pdb: BGSSaveLoadFormHeader::Endian | BGSLoadFormBuffer.obj | debug, call graph, medium
 int FUN_00864520_shell::BGSSaveLoadFormInfo_GetSizeType()
 {
     return *(unsigned char*)this >> 6;
 }
 
 // @fnv 0x00864540
+// pdb: BGSLoadFormBuffer::LoadDataFromFile | BGSLoadFormBuffer.obj | debug, object-file gap fill, medium
+// pdb params: apFile
 int BGSLoadFormBuffer::ReadFormData(SaveLoadFile* file)
 {
     int r = Load(file, iSize);

@@ -25,24 +25,28 @@ inline NiFixedString::operator const char*() const
 
 
 // @fnv 0x00a5bba0
-bool NiObjectNET::ResizeExtraData(unsigned short usCapacity)
+// src: XBOX_RETAIL_PDB 0x00a5bba0
+// pdb: NiObjectNET::SetExtraDataSize | NiObjectNET.obj | retail, object-file run extension, high
+// pdb params: usSize
+// pdb locals: uiDestSize, ppkNewExtra
+bool NiObjectNET::SetExtraDataSize(unsigned short usSize)
 {
-    if (usCapacity == 0)
+    if (usSize == 0)
         return false;
 
     EnterCriticalSection(&g_NiObjectNETExtraDataLock);
 
     if (m_usMaxSize == 0)
     {
-        m_usMaxSize = usCapacity;
-        m_ppkExtra = (NiExtraData**)_NiMalloc(usCapacity * sizeof(NiExtraData*));
+        m_usMaxSize = usSize;
+        m_ppkExtra = (NiExtraData**)_NiMalloc(usSize * sizeof(NiExtraData*));
         m_usExtraDataSize = 0;
         LeaveCriticalSection(&g_NiObjectNETExtraDataLock);
         return true;
     }
 
-    m_usMaxSize = usCapacity;
-    NiExtraData** pNewExtraData = (NiExtraData**)_NiMalloc(usCapacity * sizeof(NiExtraData*));
+    m_usMaxSize = usSize;
+    NiExtraData** pNewExtraData = (NiExtraData**)_NiMalloc(usSize * sizeof(NiExtraData*));
     fnv_zlib_memcpy(pNewExtraData, m_ppkExtra, m_usExtraDataSize * sizeof(NiExtraData*));
     NiFree(m_ppkExtra);
     m_ppkExtra = pNewExtraData;
@@ -51,6 +55,8 @@ bool NiObjectNET::ResizeExtraData(unsigned short usCapacity)
 }
 
 // @fnv 0x00a5c080
+// pdb: NiObjectNET::LoadBinary | NiObjectNET.obj | retail, upstream name already matches, high
+// pdb params: kStream
 void NiObjectNET::LoadBinary(NiStream& kStream)
 {
     NiObject::LoadBinary(kStream);
@@ -74,6 +80,7 @@ void NiObjectNET::LoadBinary(NiStream& kStream)
 
 #pragma optimize("", off)
 // @fnv 0x0043b480
+// pdb: NiNode::GetArrayCount | ModelLoader.obj | debug, call graph, medium
 unsigned int NiNode::GetNumChildren()
 {
     return m_kChildren.GetSize();
@@ -82,24 +89,30 @@ unsigned int NiNode::GetNumChildren()
 
 // Calls NiObject::ProcessClone, then ProcessClone on each extra data entry and on the time controller.
 // @fnv 0x00a5b8f0
-void NiObjectNET::ProcessClone(CloningProcess& kProcess)
+// pdb: NiObjectNET::ProcessClone | NiObjectNET.obj | retail, upstream name already matches, high
+// pdb params: kCloning
+// pdb locals: i, pkExtra
+void NiObjectNET::ProcessClone(CloningProcess& kCloning)
 {
-    NiObject::ProcessClone(kProcess);
+    NiObject::ProcessClone(kCloning);
 
     for (unsigned short i = 0; i < m_usExtraDataSize; ++i)
     {
         NiExtraData* pExtraData = m_ppkExtra[i];
         if (pExtraData)
-            pExtraData->ProcessClone(kProcess);
+            pExtraData->ProcessClone(kCloning);
     }
 
     NiTimeController* pController = m_spControllers;
     if (pController)
-        pController->ProcessClone(kProcess);
+        pController->ProcessClone(kCloning);
 }
 
 // Links the object's extra data list and time controller from the stream, handling both legacy and current stream versions.
 // @fnv 0x00a5c0e0
+// pdb: NiObjectNET::LinkObject | NiObjectNET.obj | retail, upstream name already matches, high
+// pdb params: kStream
+// pdb locals: uiSize, i, pkNewExtra
 void NiObjectNET::LinkObject(NiStream& kStream)
 {
     NiObject::LinkObject(kStream);
@@ -111,7 +124,7 @@ void NiObjectNET::LinkObject(NiStream& kStream)
     else
     {
         unsigned int ItemUpdateArray = kStream.GetLinkID();
-        ResizeExtraData((unsigned short)ItemUpdateArray);
+        SetExtraDataSize((unsigned short)ItemUpdateArray);
 
         while (ItemUpdateArray > 0)
         {
@@ -135,48 +148,56 @@ void NiObjectNET::LinkObject(NiStream& kStream)
 
 // Assigns pInterpolator to the interpolator field, releasing the old one and adding a reference to the new one.
 // @fnv 0x00a5c000
+// pdb: NiObjectNET::SetControllers | NiObjectNET.obj | debug, call graph (shared callers), medium
+// pdb params: pkControl
 void NiMorphData::MorphTarget::SetTargetInterpolator(NiInterpolator* pInterpolator)
 {
-    if (m_spTargetInterpolator.m_pObject != pInterpolator)
+    if (m_spLegacyInterpolator.m_pObject != pInterpolator)
     {
-        if (m_spTargetInterpolator.m_pObject)
-            m_spTargetInterpolator.m_pObject->NiRefObject::DecRefCount();
+        if (m_spLegacyInterpolator.m_pObject)
+            m_spLegacyInterpolator.m_pObject->NiRefObject::DecRefCount();
 
-        m_spTargetInterpolator.m_pObject = pInterpolator;
+        m_spLegacyInterpolator.m_pObject = pInterpolator;
 
-        if (m_spTargetInterpolator.m_pObject)
-            m_spTargetInterpolator.m_pObject->NiRefObject::IncRefCount();
+        if (m_spLegacyInterpolator.m_pObject)
+            m_spLegacyInterpolator.m_pObject->NiRefObject::IncRefCount();
     }
 }
 
 #pragma optimize("", off)
 // Sets the flags on this object by calling FUN_00439360 with mask 0x1c00 and shift 10.
 // @fnv 0x004393e0
-void NiObjectNET::SetFlags(unsigned short flags)
+// src: XBOX_DEBUG_PDB 0x004393e0
+// pdb: NiAlphaProperty::SetTestMode | MultiBoundMarkerData.obj | debug, call graph (shared callers), high
+// pdb params: eTestFunc
+void NiObjectNET::NiAlphaProperty_SetTestMode(unsigned short eTestFunc)
 {
-    SetField_00439360(flags, 0x1c00, 10);
+    SetField_00439360(eTestFunc, 0x1c00, 10);
 }
 #pragma optimize("", on)
 
 // @fnv 0x00a5c400
-void NiObjectNET::AddController(NiTimeController* controller)
+// src: XBOX_RETAIL_PDB 0x00a5c400
+// pdb: NiObjectNET::PrependController | NiObjectNET.obj | retail, call graph, high
+// pdb params: pkControl
+void NiObjectNET::PrependController(NiTimeController* pkControl)
 {
-    if (controller)
+    if (pkControl)
     {
         NiTimeController* next = m_spControllers;
-        if (controller->m_spNextController.m_pObject != next)
+        if (pkControl->m_spNext.m_pObject != next)
         {
-            if (controller->m_spNextController.m_pObject)
-                controller->m_spNextController.m_pObject->DecRefCount();
-            controller->m_spNextController.m_pObject = next;
-            if (controller->m_spNextController.m_pObject)
-                controller->m_spNextController.m_pObject->IncRefCount();
+            if (pkControl->m_spNext.m_pObject)
+                pkControl->m_spNext.m_pObject->DecRefCount();
+            pkControl->m_spNext.m_pObject = next;
+            if (pkControl->m_spNext.m_pObject)
+                pkControl->m_spNext.m_pObject->IncRefCount();
         }
-        if (m_spControllers != controller)
+        if (m_spControllers != pkControl)
         {
             if (m_spControllers)
                 m_spControllers->DecRefCount();
-            m_spControllers = controller;
+            m_spControllers = pkControl;
             if (m_spControllers)
                 m_spControllers->IncRefCount();
         }
@@ -186,15 +207,17 @@ void NiObjectNET::AddController(NiTimeController* controller)
 #pragma optimize("", off)
 // Increments DAT_01268280 and passes the radius, converted via FUN_004a3e90 when convert is set, to FUN_0056ea00.
 // @fnv 0x0056e950
-bhkSphereShape::bhkSphereShape(float radius, bool convert)
+// pdb: bhkSphereShape::bhkSphereShape | TESObjectREFR.obj | retail, call graph, high
+bhkSphereShape::bhkSphereShape(float afRadius, bool abBS)
 {
     DAT_01268280 = DAT_01268280 + 1;
-    bhkSphereShape_Init(convert ? NI2HK_004a3e90(radius) : radius);
+    bhkSphereShape_Init(abBS ? NI2HK_004a3e90(afRadius) : afRadius);
 }
 #pragma optimize("", on)
 
 // @fnv 0x00a5c050
 // src: GAMEBRYO_LIB 0x00a5c050
+// pdb: NiObjectNET::RemoveAllControllers | NiObjectNET.obj | retail, upstream name already matches, high
 void NiObjectNET::RemoveAllControllers()
 {
     if (m_spControllers)
@@ -206,6 +229,7 @@ void NiObjectNET::RemoveAllControllers()
 
 // Looks up extra data by name on the target NiAVObject and updates the cached reference, adjusting ref counts when it changes.
 // @fnv 0x00a57240
+// pdb: NiExtraDataController::GetExtraDataPointerFromName | NiExtraDataController.obj | debug, call graph, medium
 void NiObjectNET::RefreshExtraData()
 {
     NiAVObject* target = *(NiAVObject**)((char*)this + 0x2c);
@@ -254,6 +278,8 @@ struct NiExtraDataDeleteProxy : public NiObjectNET
 
 // Under the extra-data lock, deletes all extra data entries, frees the extra data array, and resets the count and max size.
 // @fnv 0x00a5bfa0
+// pdb: NiObjectNET::RemoveAllExtraData | NiObjectNET.obj | retail, call graph (shared callers), medium
+// pdb locals: i
 void FUN_00a5bfa0_shell::ClearExtraData()
 {
     EnterCriticalSection(&g_NiObjectNETExtraDataLock);
@@ -343,6 +369,9 @@ struct NiObjectBase
 };
 // @fnv 0x00a5c180
 // src: XBOX_PDB 0x00a5c180
+// pdb: NiObjectNET::RegisterStreamables | NiObjectNET.obj | retail, upstream name already matches, high
+// pdb params: kStream
+// pdb locals: i, pkExtra
 bool __fastcall NiObjectNET_RegisterStreamables(void* thisp, int, NiStream* kStream)
 {
     char* self = reinterpret_cast<char*>(thisp);
@@ -483,6 +512,9 @@ struct NiObjSave
     void SaveBinaryX();
 };
 // @fnv 0x00a5c5b0
+// pdb: NiObjectNET::SaveBinary | NiObjectNET.obj | retail, call graph, high
+// pdb params: kStream
+// pdb locals: uiExtraDataSize, pkController, i, pkExtra, j
 void __fastcall SaveNiObjectLinks(char* self, int, VStream* kStream)
 {
     reinterpret_cast<NiObject*>(self)->NiObject::LinkObject(*reinterpret_cast<NiStream*>(kStream));
@@ -594,6 +626,9 @@ struct VObj
 // Clones the object's name, extra data and time controller onto pkDest according to the cloning flags in kCloning.
 // @fnv 0x00a5c290
 // src: XBOX_PDB 0x00a5c290
+// pdb: NiObjectNET::CopyMembers | NiObjectNET.obj | retail, upstream name already matches, high
+// pdb params: pkDest, kCloning
+// pdb locals: pcNamePlus, iQuantity, i, pkExtra, pkNewExtra
 void FUN_00a5c290_shell::NiObjectNET_CopyMembers(NiObjectNET* pkDest, CloningProcess* kCloning)
 {
     char* pcSuffixedName;
@@ -672,49 +707,52 @@ struct ControllerLinkProxy
 };
 struct ControllerOwner : NiObjectNET
 {
-    void NiObjectNET_RemoveController(NiTimeController* controller);
+    void NiObjectNET_RemoveController(NiTimeController* pkControl);
 };
 // Removes controller from the owner's controller list, unlinking it and releasing references, or does nothing if it is not present.
 // @fnv 0x00a5c480
 // src: GAMEBRYO_LIB 0x00a5c480
-void ControllerOwner::NiObjectNET_RemoveController(NiTimeController* controller)
+// pdb: NiObjectNET::RemoveController | NiObjectNET.obj | retail, upstream name already matches, high
+// pdb params: pkControl
+// pdb locals: spSave, pkPrev, pkCurr
+void ControllerOwner::NiObjectNET_RemoveController(NiTimeController* pkControl)
 {
-    if (!controller || !m_spControllers)
+    if (!pkControl || !m_spControllers)
         return;
     NiTimeController* current = m_spControllers;
-    if (current == controller)
+    if (current == pkControl)
     {
-        volatile long* refCount = reinterpret_cast<volatile long*>(&controller->m_uiRefCount);
+        volatile long* refCount = reinterpret_cast<volatile long*>(&pkControl->m_uiRefCount);
         InterlockedIncrement(refCount);
-        reinterpret_cast<ControllerPointerProxy*>(&m_spControllers)->FUN_00a5f860(controller->m_spNextController.m_pObject);
-        NiTimeController* following = controller->m_spNextController.m_pObject;
+        reinterpret_cast<ControllerPointerProxy*>(&m_spControllers)->FUN_00a5f860(pkControl->m_spNext.m_pObject);
+        NiTimeController* following = pkControl->m_spNext.m_pObject;
         if (following)
         {
             if (InterlockedDecrement(reinterpret_cast<volatile long*>(&following->m_uiRefCount)) == 0)
                 following->DeleteThis();
-            controller->m_spNextController.m_pObject = 0;
+            pkControl->m_spNext.m_pObject = 0;
         }
         if (InterlockedDecrement(refCount) == 0)
-            controller->DeleteThis();
+            pkControl->DeleteThis();
         return;
     }
-    NiTimeController* following = current->m_spNextController.m_pObject;
-    while (following && following != controller)
+    NiTimeController* following = current->m_spNext.m_pObject;
+    while (following && following != pkControl)
     {
         current = following;
-        following = following->m_spNextController.m_pObject;
+        following = following->m_spNext.m_pObject;
     }
     if (following)
     {
-        ControllerPointerProxy retainedProxy = {controller};
-        InterlockedIncrement(reinterpret_cast<volatile long*>(&controller->m_uiRefCount));
-        reinterpret_cast<ControllerLinkProxy*>(current)->FUN_00a67260(controller->m_spNextController.m_pObject);
-        NiTimeController* tail = controller->m_spNextController.m_pObject;
+        ControllerPointerProxy retainedProxy = {pkControl};
+        InterlockedIncrement(reinterpret_cast<volatile long*>(&pkControl->m_uiRefCount));
+        reinterpret_cast<ControllerLinkProxy*>(current)->FUN_00a67260(pkControl->m_spNext.m_pObject);
+        NiTimeController* tail = pkControl->m_spNext.m_pObject;
         if (tail)
         {
             if (InterlockedDecrement(reinterpret_cast<volatile long*>(&tail->m_uiRefCount)) == 0)
                 tail->DeleteThis();
-            controller->m_spNextController.m_pObject = 0;
+            pkControl->m_spNext.m_pObject = 0;
         }
         retainedProxy.FUN_0045cec0();
     }
@@ -958,19 +996,22 @@ struct CountController : NiTimeController
 // Compares two NiObjectNET objects by checking name handle, geometry controller extra data, and time controller lists for equality.
 // @fnv 0x00a5c820
 // src: XBOX_PDB 0x00a5c820
-bool NetEqual::NiObjectNET_IsEqual(NiObjectNET* other)
+// pdb: NiObjectNET::IsEqual | NiObjectNET.obj | retail, upstream name already matches, high
+// pdb params: pkObject
+// pdb locals: uiControlCount1, kSelfEntries, uiControlCount0, pkControl0, i, kOtherEntries, pkControl1, pkNET
+bool NetEqual::NiObjectNET_IsEqual(NiObjectNET* pkObject)
 {
-    if (!IsSameAs(other))
+    if (!IsSameAs(pkObject))
         return false;
-    if (m_kName.m_kHandle != other->m_kName.m_kHandle)
+    if (m_kName.m_kHandle != pkObject->m_kName.m_kHandle)
         return false;
     ShortArray first, second;
     unsigned short countA;
     for (countA = 0; countA < m_usExtraDataSize; ++countA)
         if (((VExtra*)m_ppkExtra[countA])->IsGeometryController())
             first.Add(countA);
-    for (countA = 0; countA < other->m_usExtraDataSize; ++countA)
-        if (((VExtra*)other->m_ppkExtra[countA])->IsGeometryController())
+    for (countA = 0; countA < pkObject->m_usExtraDataSize; ++countA)
+        if (((VExtra*)pkObject->m_ppkExtra[countA])->IsGeometryController())
             second.Add(countA);
     if (first.m_usSize != second.m_usSize)
     {
@@ -981,7 +1022,7 @@ bool NetEqual::NiObjectNET_IsEqual(NiObjectNET* other)
     for (unsigned short j = 0; j < first.m_usSize; ++j)
     {
         EqObject* o1 = (EqObject*)m_ppkExtra[first.m_pBase[j]];
-        EqObject* o2 = (EqObject*)other->m_ppkExtra[second.m_pBase[j]];
+        EqObject* o2 = (EqObject*)pkObject->m_ppkExtra[second.m_pBase[j]];
         if (!o1->Equal(o2))
         {
             NiFree(second.m_pBase);
@@ -989,7 +1030,7 @@ bool NetEqual::NiObjectNET_IsEqual(NiObjectNET* other)
             return false;
         }
     }
-    NiTimeController* pOtherController = other->m_spControllers;
+    NiTimeController* pOtherController = pkObject->m_spControllers;
     NiTimeController* pController = m_spControllers;
     unsigned int i = pController ? ((CountController*)pController)->NiTimeController_ItemsInList() : 0;
     unsigned int uiOtherControllerCount = pOtherController ? ((CountController*)pOtherController)->NiTimeController_ItemsInList() : 0;
@@ -1003,8 +1044,8 @@ bool NetEqual::NiObjectNET_IsEqual(NiObjectNET* other)
             NiFree(first.m_pBase);
             return false;
         }
-        pController = pController->m_spNextController.m_pObject;
-        pOtherController = pOtherController->m_spNextController.m_pObject;
+        pController = pController->m_spNext.m_pObject;
+        pOtherController = pOtherController->m_spNext.m_pObject;
     }
     NiFree(second.m_pBase);
     NiFree(first.m_pBase);
@@ -1039,7 +1080,7 @@ struct LinkObjectA5 : LinkBaseA5
     unsigned short m_iElementCount;
     unsigned short m_pRayCursor;
     bool AddExtraData(LinkExtraA5* extra);
-    void DeleteExtraData(unsigned short index);
+    void DeleteExtraData(unsigned short usExtraDataIndex);
     void RemoveExtraDataByName(unsigned short index)
     {
         void(__stdcall * leaveLock)(void*) = LeaveCriticalSection;
@@ -1049,7 +1090,7 @@ struct LinkObjectA5 : LinkBaseA5
             DeleteExtraData(index);
         leaveLock(&g_NiObjectNETExtraDataLock);
     }
-    void NiObjectNET_PostLinkObject(NiStream& stream);
+    void NiObjectNET_PostLinkObject(NiStream& kStream);
 };
 inline bool IsExactTypeA5(const void* type, const LinkExtraA5* object)
 {
@@ -1061,10 +1102,13 @@ inline bool IsExactTypeA5(const void* type, const LinkExtraA5* object)
 // Links the object from the stream, transfers the old-version extra-data chain, and removes entries whose RTTI pointer equals g_ExtraTypeA5.
 // @fnv 0x00a5c6a0
 // src: XBOX_PDB 0x00a5c6a0
-void LinkObjectA5::NiObjectNET_PostLinkObject(NiStream& stream)
+// pdb: NiObjectNET::PostLinkObject | NiObjectNET.obj | retail, upstream name already matches, high
+// pdb params: kStream
+// pdb locals: pkExtra, pkNextExtra, i, pkExtraData
+void LinkObjectA5::NiObjectNET_PostLinkObject(NiStream& kStream)
 {
-    LinkBaseA5::LinkObject(stream);
-    if (stream.m_uiNifFileVersion < 0x0500000b)
+    LinkBaseA5::LinkObject(kStream);
+    if (kStream.m_uiNifFileVersion < 0x0500000b)
     {
         LinkExtraA5* extra = reinterpret_cast<LinkExtraA5*>(m_extra);
         if (extra)
@@ -1123,19 +1167,21 @@ struct S
     {
         return unk08;
     }
-    void AppendCameraPathEntries(StrArray* arr);
-    void NiObjectNET_GetViewerStrings(StrArray* arr);
+    void AppendCameraPathEntries(StrArray* pStrings);
+    void NiObjectNET_GetViewerStrings(StrArray* pkStrings);
 };
 // Appends camera path entries, a string from DAT_011f4304, and a formatted m_kName string to the given StrArray.
 // @fnv 0x00a5ca80
 // src: XBOX_PDB 0x00a5ca80
-void S::NiObjectNET_GetViewerStrings(StrArray* apArray)
+// pdb: NiObjectNET::GetViewerStrings | NiObjectNET.obj | retail, string-set bridge, high
+// pdb params: pkStrings
+void S::NiObjectNET_GetViewerStrings(StrArray* pkStrings)
 {
-    AppendCameraPathEntries(apArray);
+    AppendCameraPathEntries(pkStrings);
     char* str = NiViewerStrings_NiGetViewerString_Title(DAT_011f4304);
-    apArray->Add(str);
+    pkStrings->Add(str);
     str = NiGetViewerString_00a7d5e0("m_kName", GetUnk08());
-    apArray->Add(str);
+    pkStrings->Add(str);
 }
 
 #include <string.h>
@@ -1154,7 +1200,7 @@ struct NamedObj
 class NiTexture;
 struct Holder
 {
-    bool NiObjectNET_AddExtraData(NiTexture*);
+    bool NiObjectNET_InsertExtraData(NiTexture*);
 };
 struct RTTIName
 {
@@ -1174,6 +1220,9 @@ void NiFree(void*);
 
 // When the shader filename is empty, derives a name from RTTI and an index, sets it, then returns FUN_00a5ba40's result.
 // @fnv 0x00a5bca0
+// pdb: NiObjectNET::AddExtraData | NiObjectNET.obj | retail, string-set bridge, medium
+// pdb note: debug build links it to NiExtraDataController::SetExtraDataName
+// pdb params: kKey, pkExtra
 bool FUN_00a5bca0_shell::SetExtraDataName(NiExtraData* pkExtra)
 {
     if (!pkExtra)
@@ -1197,7 +1246,7 @@ bool FUN_00a5bca0_shell::SetExtraDataName(NiExtraData* pkExtra)
             NiFree(pcGeneratedKey);
         }
     }
-    return ((Holder*)this)->NiObjectNET_AddExtraData((NiTexture*)pkExtra);
+    return ((Holder*)this)->NiObjectNET_InsertExtraData((NiTexture*)pkExtra);
 }
 
 struct FUN_00a5be90_shell : public NiObjectNET
@@ -1207,6 +1256,9 @@ struct FUN_00a5be90_shell : public NiObjectNET
 
 // Binary-searches m_ppkExtra using filename pointer ordering and deletes an entry when its filename pointer equals kKey.
 // @fnv 0x00a5be90
+// pdb: NiObjectNET::RemoveExtraData | NiObjectNET.obj | retail, call graph, high
+// pdb params: kKey
+// pdb locals: sBottom, sTop, sMiddle, dtCompare
 bool FUN_00a5be90_shell::DeleteExtraDataByKey(const NiFixedString& kKey)
 {
     if (m_usExtraDataSize == 0)

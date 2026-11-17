@@ -5,5 +5,5 @@
 // @fnv 0x004a7bd0
 float BSMultiBoundSphere::GetRadius() const
 {
-    return radius;
+    return Radius;
 }

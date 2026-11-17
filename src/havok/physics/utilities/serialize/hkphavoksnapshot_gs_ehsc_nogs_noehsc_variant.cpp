@@ -26,7 +26,7 @@ struct Object
 {
     void* unk00;
     unsigned short unk04;
-    void ProcessEntries_00cc0ae0();
+    void hkpHavokSnapshot_ConvertListener_dtor();
     Object* FUN_00cc0dd0(unsigned int flags);
 };
 struct D481D0StringPtr
@@ -72,7 +72,7 @@ struct CC0D30Registry
 extern CC0D30Registry g_CC0D30DefaultRegistry;
 CC0D30Result __cdecl hkpHavokSnapshot_saveUnderRootLevel(const void* data, const CC0D30Registry& registry, const void* pClassInfo, void* out,
                                   int flags);
-CC0D30Result __cdecl hkpHavokSnapshot_save_00cc0d30(const void* data, const void* pClassInfo, void* out, int flags);
+CC0D30Result __cdecl hkpHavokSnapshot_save_00cc0d30(const void* data, const void* writer, void* binaryFormat, int targetLayout);
 struct S_00cc0d60_A
 {
     int unk0;
@@ -82,7 +82,7 @@ struct S_00cc0d60_A
     int unk10;
     int unk14;
     void FUN_00d4c220();
-    void hkpPhysicsData_populateFromWorld(void* a, int b);
+    void hkpPhysicsData_populateFromWorld(void* world, int saveContactPoints);
     void FUN_00d4c250();
 };
 hkBool* hkpHavokSnapshot_save_00cc0d30(void** pa, S_00cc0d60_A* a, void* b, int c, int d);
@@ -93,7 +93,7 @@ struct Allocator
     virtual void* allocate(unsigned int size);
 };
 struct PtrList;
-void __cdecl ResizeAudioStream(void* a, PtrList* l, unsigned int n);
+void __cdecl ResizeAudioStream(void* mem, PtrList* array, unsigned int sizeElem);
 struct PtrList
 {
     void** m_00;
@@ -133,7 +133,7 @@ struct Obj80
 };
 struct TypeMatcher
 {
-    hkBool hkClass_isSuperClass(void* v);
+    hkBool hkClass_isSuperClass(void* k);
 };
 struct GlobalObjectO2_00d472a0 : TypeMatcher
 {
@@ -142,16 +142,16 @@ extern GlobalObjectO2_00d472a0 g_01268f2c;
 extern GlobalObjectO2_00d472a0 g_01268e24;
 extern GlobalObjectO2_00d472a0 g_01268c5c;
 extern GlobalObjectO2_00d472a0 g_01268bcc;
-extern GlobalObjectO2_00d472a0 g_01268eb4;
-extern GlobalObjectO2_00d472a0 g_01268d4c;
-extern GlobalObjectO2_00d472a0 g_01268c14;
+extern GlobalObjectO2_00d472a0 hkpStorageMeshShapeClass; // src: XBOX_RETAIL_PDB 0x01268eb4 (old: g_01268eb4/g_unk01268eb4)
+extern GlobalObjectO2_00d472a0 hkpStorageExtendedMeshShapeClass; // src: XBOX_RETAIL_PDB 0x01268d4c (old: DAT_01268d4c/g_01268d4c)
+extern GlobalObjectO2_00d472a0 hkpStorageSampledHeightFieldShapeClass; // src: XBOX_RETAIL_PDB 0x01268c14 (old: DAT_01268c14/g_01268c14)
 struct FUN_00cc08f0_cls
 {
     unsigned int unk00;
     unsigned int unk04;
     PtrList m_08;
 
-    void hkpHavokSnapshot_ConvertListener_addObjectCallback(void** a1, void** a2);
+    void hkpHavokSnapshot_ConvertListener_addObjectCallback(void** p, void** k);
 };
 
 #include <windows.h>
@@ -348,11 +348,14 @@ enum DirectoryResult
 
 // @fnv 0x00da25a0
 // src: HAVOK_LIB 0x00da25a0
-DirectoryResult __cdecl hkWin32ListDirectory(const char* input, DirectoryOutput& listing)
+// pdb: hkWin32ListDirectory | hkWin32ListDirectory.obj | retail, upstream name already matches, high
+// pdb params: pathIn, directoryListingOut
+// pdb locals: path, fdata, tmp
+DirectoryResult __cdecl hkWin32ListDirectory(const char* pathIn, DirectoryOutput& directoryListingOut)
 {
     InitBuffer path;
     {
-        FUN_00d61a50 normalized(input);
+        FUN_00d61a50 normalized(pathIn);
         if (normalized.length() > 0)
         {
             normalized.ReplaceChar('\\', '/', 1);
@@ -379,14 +382,14 @@ DirectoryResult __cdecl hkWin32ListDirectory(const char* input, DirectoryOutput&
             bool directory = (found.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0;
             if (directory)
             {
-                listing.addDirectory(found.cFileName);
+                directoryListingOut.addDirectory(found.cFileName);
             }
             else
             {
                 LARGE_INTEGER epoch = {0};
                 epoch.QuadPart = 0x19db1ded53e8000LL;
                 __int64 seconds = (*(__int64*)&found.ftLastWriteTime - epoch.QuadPart) / 10000000;
-                listing.addFile(found.cFileName, (unsigned)seconds);
+                directoryListingOut.addFile(found.cFileName, (unsigned)seconds);
             }
         }
         more = FindNextFileA(handle, &found) != 0;

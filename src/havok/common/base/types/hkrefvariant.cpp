@@ -12,6 +12,8 @@ struct FUN_00d47770
 };
 
 // @fnv 0x00d47770
+// pdb: hkRefVariant::set | hkRefVariant.obj | debug, call graph, medium
+// pdb params: o, k
 void __thiscall FUN_00d47770::SetObject(hkReferencedObject* object, int extra)
 {
     if (object)
@@ -31,6 +33,7 @@ struct ReferencedObjectHolder
 
 // @fnv 0x00d477a0
 // src: HAVOK_LIB 0x00d477a0
+// pdb: hkRefVariant::getClass | hkRefVariant.obj | debug, upstream name already matches, high
 void* ReferencedObjectHolder::hkRefVariant_getClass()
 {
     hkReferencedObject* object = m_pObject;
@@ -60,8 +63,10 @@ extern "C" int stub_c(void);
 // convention for the out-of-line body above.
 // If enable is set, builds a SetBlk with f06=1 and f00 pointing to DAT_010cf9c8, then calls DAT_010cf9d4; otherwise returns 1.
 // @fnv 0x00d48560
-// src: GUESS 0x00d48560 (confidence: low)
-static __declspec(noinline) int Object_ProcessAndReturnValue_00d48560(int enable, int extra, int value)
+// src: XBOX_RETAIL_PDB 0x00d48560
+// pdb: _saveTagfile | hkSerializeUtil.obj | retail, object-file gap fill, high
+// pdb params: object, writer, binary, listener
+static __declspec(noinline) int _saveTagfile(int enable, int extra, int value)
 {
     SetBlk v;
     if (enable)
@@ -75,12 +80,12 @@ static __declspec(noinline) int Object_ProcessAndReturnValue_00d48560(int enable
 
 int stub_caller(void)
 {
-    return Object_ProcessAndReturnValue_00d48560(stub_a(), stub_b(), stub_c());
+    return _saveTagfile(stub_a(), stub_b(), stub_c());
 }
 
 // @fnv 0x00d48620
 // src: GUESS 0x00d48620 (confidence: low)
 int __cdecl Object_ForwardCall_00d48620(int iThirdArg, int iFirstArg, int iUnused)
 {
-    return Object_ProcessAndReturnValue_00d48560(iFirstArg, 0, iThirdArg);
+    return _saveTagfile(iFirstArg, 0, iThirdArg);
 }

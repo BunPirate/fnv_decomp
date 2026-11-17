@@ -10,15 +10,17 @@
 
 // Reads fields at offsets 0x20, 0x28, 0x4a and 0x24 from the pointer at this+0x48 into the out params and returns the 0x24 value, or zeros if null.
 // @fnv 0x00a45a90
+// pdb: NiPointer<NiUVData>::NiPointer<NiUVData> | NiUVController.obj | debug, object-file run extension, low
+// pdb params: pObject
 int __thiscall NiUVController::GetSomeValues(int* piValue1, int* piValue2, char* c)
 {
-    NiUVData* p = m_pData.m_pObject;
+    NiUVData* p = m_spUVData.m_pObject;
     if (p)
     {
         *piValue1 = p->m_uiNumUTilingKeys;
-        *piValue2 = p->m_uiUTilingKeyStride;
-        *c = p->m_ucByte4A;
-        return (int)p->m_pUTilingKeys;
+        *piValue2 = p->m_eUTilingType;
+        *c = p->m_ucUTilingSize;
+        return (int)p->m_pkUTilingKeys;
     }
     else
     {
@@ -39,15 +41,17 @@ int* __cdecl NiUVController_GetRTTI()
 }
 
 // @fnv 0x00a459f0
+// pdb: NiUVController::GetViewerStrings | NiUVController.obj | debug, object-file run extension, low
+// pdb params: pStrings
 int __thiscall NiUVController::GetDataFromMember(int* piValue1, int* piValue2, char* c)
 {
-    NiUVData* p = m_pData.m_pObject;
+    NiUVData* p = m_spUVData.m_pObject;
     if (p)
     {
         *piValue1 = p->m_uiNumUOffsetKeys;
-        *piValue2 = p->m_uiUOffsetKeyStride;
-        *c = p->m_ucByte48;
-        return (int)p->m_pUOffsetKeys;
+        *piValue2 = p->m_eUOffsetType;
+        *c = p->m_ucUOffsetSize;
+        return (int)p->m_pkUOffsetKeys;
     }
     else
     {
@@ -60,15 +64,16 @@ int __thiscall NiUVController::GetDataFromMember(int* piValue1, int* piValue2, c
 
 // Reads three ints and a byte from the object at this+0x48 into the out params and returns another int, or zeroes them if that pointer is null.
 // @fnv 0x00a45ae0
+// pdb: NiPointer<NiUVData>::~NiPointer<NiUVData> | NiUVController.obj | debug, object-file run extension, low
 int __thiscall NiUVController::GetSomePtrValues(int* piValue1, int* piValue2, char* c)
 {
-    NiUVData* p = m_pData.m_pObject;
+    NiUVData* p = m_spUVData.m_pObject;
     if (p)
     {
         *piValue1 = p->m_uiNumVTilingKeys;
-        *piValue2 = p->m_uiVTilingKeyStride;
-        *c = p->m_ucByte4B;
-        return (int)p->m_pVTilingKeys;
+        *piValue2 = p->m_eVTilingType;
+        *c = p->m_ucVTilingSize;
+        return (int)p->m_pkVTilingKeys;
     }
     else
     {
@@ -81,15 +86,16 @@ int __thiscall NiUVController::GetSomePtrValues(int* piValue1, int* piValue2, ch
 
 // Reads fields from the object at this+0x48 (offset 0x14) into the three out-params and returns q[1], or zeroes them and returns 0 when that pointer is null.
 // @fnv 0x00a45a40
+// pdb: NiUVController::`scalar deleting destructor' | NiUVController.obj | debug, object-file run extension, low
 int __thiscall NiUVController::GetSomeData(int* piFirst, int* piSecond, char* c)
 {
-    NiUVData* p = m_pData.m_pObject;
+    NiUVData* p = m_spUVData.m_pObject;
     if (p)
     {
         *piFirst = p->m_uiNumVOffsetKeys;
-        *piSecond = p->m_uiVOffsetKeyStride;
-        *c = p->m_ucByte49;
-        return (int)p->m_pVOffsetKeys;
+        *piSecond = p->m_eVOffsetType;
+        *c = p->m_ucVOffsetSize;
+        return (int)p->m_pkVOffsetKeys;
     }
     else
     {
@@ -148,7 +154,7 @@ struct MyStream
 struct Base44
 {
     void FUN_00a6d730(MyStream* kStream);
-    void FUN_00a6d5e0(MyStreamWriter* stream);
+    void FUN_00a6d5e0(MyStreamWriter* kStream);
     bool RegisterStreamables(void* stream);
     void LinkObject(void* stream);
 };
@@ -158,8 +164,8 @@ struct Base44
 void __fastcall SaveUVController(NiUVController* controller, void*, MyStream* kStream)
 {
     ((Base44*)controller)->FUN_00a6d730(kStream);
-    kStream->m_pBackingStream->Write(&controller->m_usValue, 2);
-    kStream->SaveObject(controller->m_pData.m_pObject);
+    kStream->m_pBackingStream->Write(&controller->m_usTextureSet, 2);
+    kStream->SaveObject(controller->m_spUVData.m_pObject);
 }
 
 struct BaseCall
@@ -192,7 +198,7 @@ bool __thiscall NiUVController::RegisterStreamables_00a45970(void* stream)
     NiStream& kStream = *(NiStream*)stream;
     if (!((Base44*)this)->RegisterStreamables(stream))
         return false;
-    NiUVData* pkUVData = m_pData.m_pObject;
+    NiUVData* pkUVData = m_spUVData.m_pObject;
     if (pkUVData)
         pkUVData->RegisterStreamables(kStream);
     return true;
@@ -211,35 +217,38 @@ extern "C" __declspec(dllimport) long __stdcall InterlockedDecrement(volatile lo
 
 // Replaces the UV data reference, clears the cached key indices, and updates the time bounds.
 // @fnv 0x00a45fa0
+// pdb: NiUVController::`scalar deleting destructor' | NiUVController.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiUVController::LoadBinary
 void __thiscall NiUVController::AssignRefObj(NiUVData* apRefObj)
 {
-    if (m_pData.m_pObject != apRefObj)
+    if (m_spUVData.m_pObject != apRefObj)
     {
-        NiUVData* pOld = m_pData.m_pObject;
+        NiUVData* pOld = m_spUVData.m_pObject;
         if (pOld)
         {
             if (!InterlockedDecrement((volatile long*)&pOld->m_uiRefCount))
                 pOld->DeleteThis();
         }
-        m_pData.m_pObject = apRefObj;
+        m_spUVData.m_pObject = apRefObj;
         if (apRefObj)
             InterlockedIncrement((volatile long*)&apRefObj->m_uiRefCount);
     }
-    m_uiLastIdx0 = 0;
-    m_uiLastIdx2 = 0;
-    m_uiLastIdx1 = 0;
-    m_uiLastIdx3 = 0;
+    m_uiLastUOffsetIdx = 0;
+    m_uiLastVOffsetIdx = 0;
+    m_uiLastUTilingIdx = 0;
+    m_uiLastVTilingIdx = 0;
     ResetKeyTimeExtrema();
 }
 
 // Links the controller to the stream, replacing its UV data pointer with the stream's object and updating reference counts.
 // @fnv 0x00a45910
+// pdb: NiUVData::`scalar deleting destructor' | NiUVData.obj | debug, object-file run extension, low
 void NiUVController::LinkUVData(void* stream)
 {
     NiStream& kStream = *(NiStream*)stream;
     ((Base44*)this)->LinkObject(stream);
     NiUVData* pkData = (NiUVData*)kStream.GetLoadedObject();
-    NiUVData* pOld = m_pData.m_pObject;
+    NiUVData* pOld = m_spUVData.m_pObject;
     if (pOld != pkData)
     {
         if (pOld)
@@ -247,7 +256,7 @@ void NiUVController::LinkUVData(void* stream)
             if (InterlockedDecrement((volatile long*)&pOld->m_uiRefCount) == 0)
                 pOld->DeleteThis();
         }
-        m_pData.m_pObject = pkData;
+        m_spUVData.m_pObject = pkData;
         if (pkData)
             InterlockedIncrement((volatile long*)&pkData->m_uiRefCount);
     }
@@ -256,11 +265,11 @@ void NiUVController::LinkUVData(void* stream)
 // @fnv 0x00a45b40
 void NiUVController::ResetRefObject()
 {
-    NiUVData* p = m_pData.m_pObject;
-    *(float*)&p->unk38 = 0.0f;
-    *(float*)&p->unk3C = 0.0f;
-    *(float*)&p->unk40 = 1.0f;
-    *(float*)&p->unk44 = 1.0f;
+    NiUVData* p = m_spUVData.m_pObject;
+    *(float*)&p->m_fLastUOffset = 0.0f;
+    *(float*)&p->m_fLastVOffset = 0.0f;
+    *(float*)&p->m_fLastUTiling = 1.0f;
+    *(float*)&p->m_fLastVTiling = 1.0f;
     ResetControllerState();
 }
 
@@ -307,7 +316,7 @@ extern "C" void _ReadWriteBarrier();
 int __thiscall NiUVController::ProcessAndReturnValue_00a45b60()
 {
     *(void**)this = &DAT_01098064;
-    SharedRef* owner = (SharedRef*)&m_pData;
+    SharedRef* owner = (SharedRef*)&m_spUVData;
     owner->Reset();
     // Preserve the separate member-destruction read used by the original destructor.
     _ReadWriteBarrier();
@@ -334,19 +343,21 @@ struct UVControllerConstruction : NiUVController
     UVControllerConstruction() throw()
     {
         *(void**)this = &DAT_01098064;
-        *(void* volatile*)&m_pData.m_pObject = 0;
+        *(void* volatile*)&m_spUVData.m_pObject = 0;
         _ReadWriteBarrier();
-        *(unsigned short volatile*)&m_usValue = 0;
-        m_uiLastIdx0 = 0;
-        m_uiLastIdx2 = 0;
-        m_uiLastIdx1 = 0;
-        m_uiLastIdx3 = 0;
+        *(unsigned short volatile*)&m_usTextureSet = 0;
+        m_uiLastUOffsetIdx = 0;
+        m_uiLastVOffsetIdx = 0;
+        m_uiLastUTilingIdx = 0;
+        m_uiLastVTilingIdx = 0;
         m_bChanged = 0;
     }
 };
 
 // @fnv 0x00a45f50
 // src: EXE 0x00a45f50
+// pdb: NiUVController::CreateObject | NiUVController.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 NiUVController* __cdecl NiUVController_CreateObject() throw()
 {
     NiUVController* p = new UVControllerConstruction;
@@ -380,7 +391,7 @@ struct MyStreamWriter : MyStream
 void NiUVController::WriteToStream(MyStreamWriter* stream)
 {
     ((Base44*)this)->FUN_00a6d5e0(stream);
-    stream->Output()->Write(&m_usValue, sizeof(m_usValue));
+    stream->Output()->Write(&m_usTextureSet, sizeof(m_usTextureSet));
     stream->ReadLinkID();
 }
 
@@ -402,19 +413,22 @@ inline bool operator==(const NiPointer<NiUVData>& pointer, const NiUVData* objec
 }
 
 // @fnv 0x00a459a0
+// pdb: NiUVController::IsEqual | NiUVController.obj | retail, upstream name already matches, high
+// pdb params: pkObject
+// pdb locals: pkCtrl
 bool NiUVController::IsEqual(NiObject* pkObject) const
 {
     NiUVController* pkOther = (NiUVController*)pkObject;
     if (!((UVControllerBaseComparison*)this)->IsEqual((UVControllerBaseComparison*)pkOther))
         return false;
 
-    if (m_usValue != pkOther->m_usValue)
+    if (m_usTextureSet != pkOther->m_usTextureSet)
         return false;
 
-    if ((m_pData == 0) != (pkOther->m_pData == 0))
+    if ((m_spUVData == 0) != (pkOther->m_spUVData == 0))
         return false;
 
-    if (m_pData && !static_cast<const NiObject*>((NiUVData*)m_pData)->IsEqual((NiUVData*)pkOther->m_pData))
+    if (m_spUVData && !static_cast<const NiObject*>((NiUVData*)m_spUVData)->IsEqual((NiUVData*)pkOther->m_spUVData))
         return false;
 
     return true;
@@ -434,15 +448,15 @@ unsigned int* __thiscall NiUVController::CloneUVData(unsigned int flags)
 
     ((CloneableObj*)this)->FUN_00a6cfe0(pUVData, flags);
 
-    pUVData->m_uiLastIdx0 = m_uiLastIdx0;
-    pUVData->m_uiLastIdx2 = m_uiLastIdx2;
-    pUVData->m_uiLastIdx1 = m_uiLastIdx1;
-    pUVData->m_uiLastIdx3 = m_uiLastIdx3;
-    pUVData->m_usValue = m_usValue;
+    pUVData->m_uiLastUOffsetIdx = m_uiLastUOffsetIdx;
+    pUVData->m_uiLastVOffsetIdx = m_uiLastVOffsetIdx;
+    pUVData->m_uiLastUTilingIdx = m_uiLastUTilingIdx;
+    pUVData->m_uiLastVTilingIdx = m_uiLastVTilingIdx;
+    pUVData->m_usTextureSet = m_usTextureSet;
 
-    if (m_pData.m_pObject)
+    if (m_spUVData.m_pObject)
     {
-        pUVData->AssignRefObj(m_pData.m_pObject);
+        pUVData->AssignRefObj(m_spUVData.m_pObject);
     }
 
     return reinterpret_cast<unsigned int*>(pUVData);
@@ -454,16 +468,18 @@ extern float DAT_01015f5c;
 // Computes the time bounds from the first and last keys of each UV channel.
 // @fnv 0x00a45bc0
 // src: XBOX_PDB 0x00a45bc0
+// pdb: NiUVController::ResetKeyTimeExtrema | NiUVController.obj | debug, upstream name already matches, high
+// pdb locals: uiNumKeys, uiNumKeysM1, pkKeys, ucSize, eType
 void __thiscall NiUVController::ResetKeyTimeExtrema()
 {
     m_fLoKeyTime = DAT_01016970;
     m_fHiKeyTime = DAT_01015f5c;
-    NiUVData* pChan = m_pData.m_pObject;
+    NiUVData* pChan = m_spUVData.m_pObject;
     if (pChan)
     {
-        float* pData = (float*)pChan->m_pUOffsetKeys;
+        float* pData = (float*)pChan->m_pkUOffsetKeys;
         int iCount = (int)pChan->m_uiNumUOffsetKeys;
-        unsigned char s = pChan->m_ucByte48;
+        unsigned char s = pChan->m_ucUOffsetSize;
         if (pData)
         {
             if (pData[0] < 3.4028234663852886e+38)
@@ -473,12 +489,12 @@ void __thiscall NiUVController::ResetKeyTimeExtrema()
                 m_fHiKeyTime = *(float*)((char*)pData + s * iCount);
         }
     }
-    pChan = m_pData.m_pObject;
+    pChan = m_spUVData.m_pObject;
     if (pChan)
     {
-        float* pData = (float*)pChan->m_pVOffsetKeys;
+        float* pData = (float*)pChan->m_pkVOffsetKeys;
         int iCount = (int)pChan->m_uiNumVOffsetKeys;
-        unsigned char s = pChan->m_ucByte49;
+        unsigned char s = pChan->m_ucVOffsetSize;
         if (pData)
         {
             if (pData[0] < m_fLoKeyTime)
@@ -488,12 +504,12 @@ void __thiscall NiUVController::ResetKeyTimeExtrema()
                 m_fHiKeyTime = *(float*)((char*)pData + s * iCount);
         }
     }
-    pChan = m_pData.m_pObject;
+    pChan = m_spUVData.m_pObject;
     if (pChan)
     {
-        float* pData = (float*)pChan->m_pUTilingKeys;
+        float* pData = (float*)pChan->m_pkUTilingKeys;
         int iCount = (int)pChan->m_uiNumUTilingKeys;
-        unsigned char s = pChan->m_ucByte4A;
+        unsigned char s = pChan->m_ucUTilingSize;
         if (pData)
         {
             if (pData[0] < m_fLoKeyTime)
@@ -503,12 +519,12 @@ void __thiscall NiUVController::ResetKeyTimeExtrema()
                 m_fHiKeyTime = *(float*)((char*)pData + s * iCount);
         }
     }
-    pChan = m_pData.m_pObject;
+    pChan = m_spUVData.m_pObject;
     if (pChan)
     {
         int iCount = (int)pChan->m_uiNumVTilingKeys;
-        unsigned char s = pChan->m_ucByte4B;
-        float* pData = (float*)pChan->m_pVTilingKeys;
+        unsigned char s = pChan->m_ucVTilingSize;
+        float* pData = (float*)pChan->m_pkVTilingKeys;
         if (pData)
         {
             if (pData[0] < m_fLoKeyTime)
@@ -596,13 +612,15 @@ struct UVGeom
 
 // Applies animated UV offset and tiling to the target geometry's texture coordinates when m_bChanged is set.
 // @fnv 0x00a45d10
+// pdb: NiUVController::OnPreDisplay | NiUVController.obj | retail, object-file run extension, low
+// pdb locals: uiNumKeys, fUOffset, pkKeys, fVOffsetDiff, fVTilingDiff, fVOffset, fUTilingDiff, fVTiling, fUOffsetDiff, ucSize, kDiff, pkTargetData, fUTiling, pkTextureSet, eType, usNumPoints, i
 void NiUVController::UpdateUVTransform()
 {
     if (!m_bChanged)
         return;
 
     UVGeomData* pkData = ((UVGeom*)m_pkTarget)->m_spGeometryData;
-    if (m_usValue >= pkData->GetTextureSets())
+    if (m_usTextureSet >= pkData->GetTextureSets())
         return;
 
     float fAnimOffsetU, fAnimOffsetV, fAnimTilingU, fAnimTilingV;
@@ -615,30 +633,30 @@ void NiUVController::UpdateUVTransform()
         fAnimOffsetU = 0.0f;
         pkKeys = GetDataFromMember(uiNumKeys, eType, ucSize);
         if (pkKeys)
-            fAnimOffsetU = InterpolateKey(m_fControllerTime, pkKeys, eType, uiNumKeys, &m_uiLastIdx0, ucSize);
+            fAnimOffsetU = InterpolateKey(m_fScaledTime, pkKeys, eType, uiNumKeys, &m_uiLastUOffsetIdx, ucSize);
 
         fAnimOffsetV = 0.0f;
         pkKeys = GetSomeData(uiNumKeys, eType, ucSize);
         if (pkKeys)
-            fAnimOffsetV = InterpolateKey(m_fControllerTime, pkKeys, eType, uiNumKeys, &m_uiLastIdx2, ucSize);
+            fAnimOffsetV = InterpolateKey(m_fScaledTime, pkKeys, eType, uiNumKeys, &m_uiLastVOffsetIdx, ucSize);
 
         fAnimTilingU = 1.0f;
         pkKeys = GetSomeValues(uiNumKeys, eType, ucSize);
         if (pkKeys)
-            fAnimTilingU = InterpolateKey(m_fControllerTime, pkKeys, eType, uiNumKeys, &m_uiLastIdx1, ucSize);
+            fAnimTilingU = InterpolateKey(m_fScaledTime, pkKeys, eType, uiNumKeys, &m_uiLastUTilingIdx, ucSize);
 
         fAnimTilingV = 1.0f;
         pkKeys = GetSomePtrValues(uiNumKeys, eType, ucSize);
         if (pkKeys)
-            fAnimTilingV = InterpolateKey(m_fControllerTime, pkKeys, eType, uiNumKeys, &m_uiLastIdx3, ucSize);
+            fAnimTilingV = InterpolateKey(m_fScaledTime, pkKeys, eType, uiNumKeys, &m_uiLastVTilingIdx, ucSize);
     }
 
-    float fScaleU = fAnimTilingU / (*(float*)&m_pData.m_pObject->unk40);
-    float fPrevOffsetU = (*(float*)&m_pData.m_pObject->unk38);
-    float fScaleV = fAnimTilingV / (*(float*)&m_pData.m_pObject->unk44);
-    float fPrevOffsetV = (*(float*)&m_pData.m_pObject->unk3C);
+    float fScaleU = fAnimTilingU / (*(float*)&m_spUVData.m_pObject->m_fLastUTiling);
+    float fPrevOffsetU = (*(float*)&m_spUVData.m_pObject->m_fLastUOffset);
+    float fScaleV = fAnimTilingV / (*(float*)&m_spUVData.m_pObject->m_fLastVTiling);
+    float fPrevOffsetV = (*(float*)&m_spUVData.m_pObject->m_fLastVOffset);
 
-    UVPoint* pkTex = pkData->NiGeometryData_GetTextureSet(m_usValue);
+    UVPoint* pkTex = pkData->NiGeometryData_GetTextureSet(m_usTextureSet);
 
     float fDeltaU = fAnimOffsetU - fPrevOffsetU * fScaleU;
     float fDeltaV = fAnimOffsetV - fPrevOffsetV * fScaleV;
@@ -653,11 +671,11 @@ void NiUVController::UpdateUVTransform()
         pkTex[i].y = pkTex[i].y * fScaleV + kTrans.y;
     }
 
-    NiUVData* pkUV = m_pData.m_pObject;
-    (*(float*)&pkUV->unk38) = fAnimOffsetU;
-    (*(float*)&pkUV->unk3C) = fAnimOffsetV;
-    (*(float*)&pkUV->unk40) = fAnimTilingU;
-    (*(float*)&pkUV->unk44) = fAnimTilingV;
+    NiUVData* pkUV = m_spUVData.m_pObject;
+    (*(float*)&pkUV->m_fLastUOffset) = fAnimOffsetU;
+    (*(float*)&pkUV->m_fLastVOffset) = fAnimOffsetV;
+    (*(float*)&pkUV->m_fLastUTiling) = fAnimTilingU;
+    (*(float*)&pkUV->m_fLastVTiling) = fAnimTilingV;
 
     pkData->FUN_00a67090(8);
     m_bChanged = false;

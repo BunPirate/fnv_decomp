@@ -2,6 +2,7 @@
 
 #include "NiSearchPath.h"
 
+// pdb: class BSSearchPath, size 0x210, bases: NiSearchPath, 0 members
 class BSSearchPath : public NiSearchPath
 {
 public:

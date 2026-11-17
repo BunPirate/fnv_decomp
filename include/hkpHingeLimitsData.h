@@ -43,6 +43,7 @@ public:
     char unk84[0xC];
 };
 
+// pdb: class hkpHingeLimitsData, size 0xa0, bases: hkpConstraintData, 1 members
 class hkpHingeLimitsData : public hkpConstraintData
 {
 public:
@@ -55,5 +56,5 @@ public:
     hkReal getMinAngularLimit() const;
 
     char padC[0x4];
-    hkpHingeLimitsDataAtoms m_kBridgeAtoms;
+    hkpHingeLimitsDataAtoms m_atoms; // src: XBOX_RETAIL_PDB +0x10 (old: m_kBridgeAtoms)
 };

@@ -26,7 +26,7 @@ class ObstacleTask
     OBSTACLE_TASK_TYPE eType;
     OBSTACLE_TASK_RESULT m_kResult;
     NavMeshPtr apSearchNavMesh;
-    ObstacleTask(const NiPointer<ObstacleData>& obstacle, OBSTACLE_TASK_TYPE type, const NavMeshPtr& navMesh);
+    ObstacleTask(const NiPointer<ObstacleData>& apObstacle, OBSTACLE_TASK_TYPE aeType, const NavMeshPtr& aspNavMesh);
 };
 
 FNV_STATIC_ASSERT(sizeof(ObstacleTask) == 0x10);

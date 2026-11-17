@@ -11,18 +11,24 @@ static inline void AssignCollisionObject(NiAVObject* object, NiCollisionObject* 
 }
 
 // @fnv 0x00a80fd0
-void NiCollisionObject::LoadBinary(NiStream& stream)
+// pdb: NiCollisionObject::LoadBinary | NiCollisionObject.obj | debug, upstream name already matches, high
+// pdb params: kStream
+void NiCollisionObject::LoadBinary(NiStream& kStream)
 {
-    NiObject::LoadBinary(stream);
-    stream.ResetStreamState();
+    NiObject::LoadBinary(kStream);
+    kStream.ResetStreamState();
 }
 // @fnv 0x00a80ff0
-void NiCollisionObject::LinkObject(NiStream& stream)
+// pdb: NiCollisionObject::LinkObject | NiCollisionObject.obj | retail, upstream name already matches, high
+// pdb params: kStream
+void NiCollisionObject::LinkObject(NiStream& kStream)
 {
-    NiObject::LinkObject(stream);
-    m_pkSceneObject = static_cast<NiAVObject*>(stream.GetLoadedObject());
+    NiObject::LinkObject(kStream);
+    m_pkSceneObject = static_cast<NiAVObject*>(kStream.GetLoadedObject());
 }
 // @fnv 0x00a810b0
+// pdb: NiCollisionObject::SetSceneGraphObject | NiCollisionObject.obj | debug, call graph (shared callers), medium
+// pdb params: pkSceneObject
 void NiCollisionObject::SetSceneObject(NiAVObject* object)
 {
     m_pkSceneObject = object;
@@ -46,23 +52,29 @@ char const* const* __cdecl NiCollisionObject_GetRTTI()
 }
 
 // @fnv 0x00a81010
-bool NiCollisionObject::RegisterStreamables(NiStream& kStrm)
+// pdb: NiCollisionObject::RegisterStreamables | NiCollisionObject.obj | retail, upstream name already matches, high
+// pdb params: kStream
+bool NiCollisionObject::RegisterStreamables(NiStream& kStream)
 {
-    if (!NiObject::RegisterStreamables(kStrm))
+    if (!NiObject::RegisterStreamables(kStream))
         return false;
     if (m_pkSceneObject != 0)
-        m_pkSceneObject->RegisterStreamables(kStrm);
+        m_pkSceneObject->RegisterStreamables(kStream);
     return true;
 }
 
 // @fnv 0x00a81040
-void NiCollisionObject::SaveBinary(NiStream& kStrm)
+// pdb: NiCollisionObject::SaveBinary | NiCollisionObject.obj | retail, upstream name already matches, high
+// pdb params: kStream
+void NiCollisionObject::SaveBinary(NiStream& kStream)
 {
-    NiObject::LinkObject(kStrm);
-    kStrm.SaveLinkID(m_pkSceneObject);
+    NiObject::LinkObject(kStream);
+    kStream.SaveLinkID(m_pkSceneObject);
 }
 
 // @fnv 0x00a81060
+// pdb: NiCollisionObject::IsEqual | NiCollisionObject.obj | retail, upstream name already matches, high
+// pdb params: pkObject
 bool NiCollisionObject::IsEqual(NiObject* pkObject) const
 {
     if (!NiObject::IsEqual(pkObject))
@@ -91,9 +103,11 @@ template <class T, class TAlloc> inline unsigned int NiTArray<T, TAlloc>::Add(co
 
 extern const char* g_pcA81100Name;
 const char* __cdecl NiViewerStrings_NiGetViewerString_Title(const char* pcString);
-const char* __cdecl NiGetViewerString_00a7d5a0(char const* pcName, void* pvObj);
+const char* __cdecl NiGetViewerString_00a7d5a0(char const* pcPrefix, void* pvValue);
 
 // @fnv 0x00a81100
+// pdb: NiCollisionObject::GetViewerStrings | NiCollisionObject.obj | retail, upstream name already matches, high
+// pdb params: pkStrings
 void NiCollisionObject::GetViewerStrings(NiViewerStringsArray* pkStrings)
 {
     NiObject::AddViewerStrings(pkStrings);
@@ -102,6 +116,8 @@ void NiCollisionObject::GetViewerStrings(NiViewerStringsArray* pkStrings)
 }
 
 // @fnv 0x00a81160
+// pdb: NiCollisionObject::AddViewerStrings | NiCollisionObject.obj | retail, string-set bridge, high
+// pdb params: pkStrings
 void NiCollisionObject::AddViewerStrings(NiViewerStringsArray* pkStrings)
 {
     {

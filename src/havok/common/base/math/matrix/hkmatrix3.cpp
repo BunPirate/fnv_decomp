@@ -73,6 +73,7 @@ struct CD4AF0Vector4
 
 // @fnv 0x00cd4af0
 // src: HAVOK_LIB 0x00cd4af0
+// pdb: bhkCharacterStateOnGround::`scalar deleting destructor' | bhkCharacterStateOnGround.obj | debug, object-file run extension, low
 hkBool hkMatrix3::isOk_00cd4af0() const
 {
     return reinterpret_cast<const CD4AF0Vector4&>(m_kColumn0).IsStreamValid() && reinterpret_cast<const CD4AF0Vector4&>(m_kColumn1).IsStreamValid() && reinterpret_cast<const CD4AF0Vector4&>(m_kColumn2).IsStreamValid();
@@ -140,6 +141,9 @@ class CMatrixOps
 };
 // @fnv 0x00cd4e90
 // src: HAVOK_LIB 0x00cd4e90
+// pdb: hkMatrix3::isSymmetric | hkMatrix3.obj | retail, upstream name already matches, high
+// pdb params: epsilon
+// pdb locals: T
 bool CMatrixOps::hkMatrix3_isSymmetric(float epsilon)
 {
     __declspec(align(16)) Matrix3x4 temp;
@@ -244,15 +248,17 @@ struct Mat34
 // Computes the c, s, p, q of a Jacobi rotation that zeroes a.m[p][q] of a 3x4 matrix, storing the result in outp.
 // @fnv 0x00cd5270
 // src: HAVOK_LIB 0x00cd5270
-static __declspec(noinline) void _constructSchurMatrix(const Mat34& apMatrix, int q, int p, JacobiRot* apOut)
+// pdb: _constructSchurMatrix | hkMatrix3.obj | debug, upstream name already matches, high
+// pdb params: M, p, q, S
+static __declspec(noinline) void _constructSchurMatrix(const Mat34& M, int q, int p, JacobiRot* S)
 {
-    JacobiRot* out = apOut;
-    JacobiRot** ppOut = &apOut;
+    JacobiRot* out = S;
+    JacobiRot** ppOut = &S;
     out->q = q;
     out->p = p;
-    if (apMatrix.m[p][q] != 0.0f)
+    if (M.m[p][q] != 0.0f)
     {
-        float theta = (apMatrix.m[p][p] - apMatrix.m[q][q]) / (2.0f * apMatrix.m[p][q]);
+        float theta = (M.m[p][p] - M.m[q][q]) / (2.0f * M.m[p][q]);
         float r = sqrtf(theta * theta + 1.0f);
         r = 1.0f / (theta >= 0.0f ? theta + r : theta - r);
         float c = 1.0f / sqrtf(r * r + 1.0f);
@@ -294,10 +300,12 @@ struct Mat
 // Computes the Euclidean norm of the 3x3 block formed by the first three entries of each row.
 // @fnv 0x00cd5340
 // src: HAVOK_LIB 0x00cd5340
-static __declspec(noinline) float _frobeniusNorm(const Mat* apMatrix)
+// pdb: _frobeniusNorm | hkMatrix3.obj | debug, upstream name already matches, high
+// pdb params: M
+static __declspec(noinline) float _frobeniusNorm(const Mat* M)
 {
     float sum = 0.0f;
-    const float* q = &apMatrix->f00 + 8;
+    const float* q = &M->f00 + 8;
     for (int i = 3; i != 0; --i)
     {
         sum = q[-8] * q[-8] + sum;
@@ -322,6 +330,8 @@ struct S_00cd53a0_Matrix3
 // Computes the Frobenius norm of the 3x3 matrix by summing the squares of the off-diagonal elements and returning the square root.
 // @fnv 0x00cd53a0
 // src: HAVOK_LIB 0x00cd53a0
+// pdb: _offDiagNorm | hkMatrix3.obj | debug, object-file gap fill, medium
+// pdb params: M
 float S_00cd53a0_Matrix3::_offDiagNorm()
 {
     float sum = 0.0f;
@@ -346,7 +356,9 @@ __forceinline float& hkMatrix3::operator()(int row, int col)
 // Finds the element with the largest absolute value in the upper triangle of m and stores its row and column indices.
 // @fnv 0x00cd5400
 // src: HAVOK_LIB 0x00cd5400
-static void _findLargestOffDiagEntry(hkMatrix3& m, int& rowOut, int& colOut)
+// pdb: _findLargestOffDiagEntry | hkMatrix3.obj | debug, upstream name already matches, high
+// pdb params: M, p, q
+static void _findLargestOffDiagEntry(hkMatrix3& M, int& p, int& q)
 {
     float maxVal = 0.0f;
     for (int i = 0; i < 3; i++)
@@ -355,12 +367,12 @@ static void _findLargestOffDiagEntry(hkMatrix3& m, int& rowOut, int& colOut)
         {
             if (i < j)
             {
-                float v = fabsf(m(i, j));
+                float v = fabsf(M(i, j));
                 if (v >= maxVal)
                 {
-                    rowOut = i;
+                    p = i;
                     maxVal = v;
-                    colOut = j;
+                    q = j;
                 }
             }
         }
@@ -400,17 +412,19 @@ struct VProduct
 struct MProduct
 {
     VProduct columns[3];
-    void hkMatrix3_setMul(const MProduct& a, const MProduct& b);
+    void hkMatrix3_setMul(const MProduct& aTb, const MProduct& bTc);
 };
 // Computes the matrix product of a and b, storing the result in columns.
 // @fnv 0x00cd55b0
 // src: XBOX_PDB 0x00cd55b0
-void MProduct::hkMatrix3_setMul(const MProduct& aLeft, const MProduct& aRight)
+// pdb: hkMatrix3::setMul | hkMatrix3.obj | debug, upstream name already matches, high
+// pdb params: aTb, bTc
+void MProduct::hkMatrix3_setMul(const MProduct& aTb, const MProduct& bTc)
 {
-    MProduct m = aLeft;
+    MProduct m = aTb;
     for (int i = 2; i >= 0; --i)
     {
-        const VProduct& v = aRight.columns[i];
+        const VProduct& v = bTc.columns[i];
         VProduct x, y, z;
         x.broadcast<0>(v);
         y.broadcast<85>(v);
@@ -674,7 +688,7 @@ class DiagMat
     }
     int DiagonalizeMatrixJacobi(DiagMat& vectors, DiagVec& values, int maxIter, float epsilon) const;
     void hkMatrix3f_mul(const DiagMat& other);
-    void hkMatrix3_setMul(const DiagMat& a, const DiagMat& b);
+    void hkMatrix3_setMul(const DiagMat& aTb, const DiagMat& bTc);
     void FUN_00cd4b60();
     float offnorm()
     {
@@ -758,6 +772,8 @@ extern "C" __declspec(align(16)) const LocalM128 g_signClear;
 // Compares each column of m_mat against other within epsilon and stores the result as a byte in out.
 // @fnv 0x00cd4e00
 // src: GUESS 0x00cd4e00 (confidence: medium)
+// pdb: hkMatrix3::isOk | hkMatrix3.obj | retail, object-file run extension, low
+// pdb note: debug build links it to hkMatrix3::setMulInverseMul
 unsigned char* CMatrixOps::CompareMatrixColumnsWithinTolerance(unsigned char* apResult, const Matrix3x4* other, float epsilon)
 {
     const hkMatrix3& lhs = *reinterpret_cast<const hkMatrix3*>(&m_mat);
@@ -803,7 +819,7 @@ extern "C" LocalM128 _mm_load_ps(float const* p);
 
 struct FUN_00cd55b0_cls
 {
-    void hkMatrix3_setMul(const void* src, int arg);
+    void hkMatrix3_setMul(const void* aTb, int bTc);
 };
 
 struct FUN_00cd5680_cls
@@ -1140,6 +1156,9 @@ struct ProbeRow
 // Fills ProbeRow output with lower, diag, and upper matrices by computing paired and shared Jacobian terms over ChainBody offsets.
 // @fnv 0x00dd0660
 // src: GUESS 0x00dd0660 (confidence: medium)
+// pdb: buildConstraintMatrixLuDecompositionForBallAndSocketChain | hkpChainBuildJacobian.obj | retail, object-file run extension, low
+// pdb params: numConstraints, cfm, j, va, accumBase, triple, bufferSize
+// pdb locals: mtxPrevOffdiag, triplePrevUpper, assertBuf, ostr, row, mtxNextOffdiag, tmp, mtxDiag
 static __declspec(noinline) void Object_BuildChainJacobianMatrices(int aiRowCount, float regularizer, ProbeJac* apJacobian,
                                               ProbeOffset* offsets, const ChainBody* bodies, ProbeRow* output,
                                               int bufferSize)

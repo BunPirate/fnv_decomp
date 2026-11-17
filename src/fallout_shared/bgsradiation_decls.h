@@ -5,7 +5,7 @@
 extern unsigned int DAT_011ca87c;
 extern BGSRadiationStage** DAT_011ca880;
 BGSRadiationStage* BGSRadiationStage_GetStage(unsigned int index);
-void InsertRadiationStage(BGSRadiationStage* stage);
+void BGSRadiationStage_AddStage(BGSRadiationStage* apNewStage);
 extern "C" void* __cdecl __RTDynamicCast(void* source, long vfDelta, void* sourceType, void* targetType,
                                          int isReference);
 #endif

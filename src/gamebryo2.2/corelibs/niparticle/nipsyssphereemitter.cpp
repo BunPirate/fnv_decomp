@@ -4,12 +4,14 @@
 #include "../../../../include/BSFadeNode.h"
 // Calls the base LoadBinary, then reads a 4-byte value from the stream into a member and advances the stream position.
 // @fnv 0x00c20040
-void NiPSysSphereEmitter::LoadBinary(NiStream& stream)
+// pdb: NiPSysSphereEmitter::LoadBinary | NiPSysSphereEmitter.obj | retail, upstream name already matches, high
+// pdb params: kStream
+void NiPSysSphereEmitter::LoadBinary(NiStream& kStream)
 {
-    NiPSysVolumeEmitter::LoadBinary(stream);
-    NiBinaryStream* __restrict input = stream.m_pkIstr;
+    NiPSysVolumeEmitter::LoadBinary(kStream);
+    NiBinaryStream* __restrict input = kStream.m_pkIstr;
     unsigned int size = 4;
-    input->m_uiAbsoluteCurrentPos += input->m_pfnRead(input, &m_fBoundRadius, 4, &size, 1);
+    input->m_uiAbsoluteCurrentPos += input->m_pfnRead(input, &m_fEmitterRadius, 4, &size, 1);
 }
 
 struct GlobalObjectO2_00a7b610;
@@ -25,6 +27,8 @@ GlobalObjectO2_00a7b610* __cdecl NiPSysSphereEmitter_GetRTTI()
 extern int DAT_010bd974;
 // @fnv 0x00c1fff0
 // src: EXE 0x00c1fff0
+// pdb: NiPSysSphereEmitter::CreateObject | NiPSysSphereEmitter.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 BSFadeNode* __cdecl NiPSysSphereEmitter_CreateObject()
 {
     BSFadeNode* p = static_cast<BSFadeNode*>(BSFadeNode::operator new(0x5c));
@@ -49,6 +53,7 @@ struct Holder20020
 };
 // Calls FUN_00c31750 on this, then deletes this with size 0x5c when bit 0 of f is set, and returns this.
 // @fnv 0x00c20020
+// pdb: NiPSysSphereEmitter::`scalar deleting destructor' | NiPSysSphereEmitter.obj | retail, object-file gap fill, high
 void* Holder20020::FUN_00c20020(unsigned int auiFlags)
 {
     ((Holder31750*)this)->FUN_00c31750();
@@ -66,6 +71,9 @@ struct Holder00c1fde0 : NiPSysVolumeEmitter
 };
 // @fnv 0x00c1fde0
 // src: XBOX_PDB 0x00c1fde0
+// pdb: NiPSysSphereEmitter::IsEqual | NiPSysSphereEmitter.obj | retail, upstream name already matches, high
+// pdb params: pkObject
+// pdb locals: pkDest
 bool __thiscall Holder00c1fde0::NiPSysSphereEmitter_IsEqual(void* pkObject)
 {
     Holder00c1fde0* pkDest = (Holder00c1fde0*)pkObject;
@@ -79,11 +87,15 @@ bool __thiscall Holder00c1fde0::NiPSysSphereEmitter_IsEqual(void* pkObject)
 
 struct SphereEmitterCloneView
 {
-    void* NiPSysVolumeEmitter_CopyMembers(BSFadeNode* pkObject, void* pkCloningProcess);
+    void* NiPSysVolumeEmitter_CopyMembers(BSFadeNode* pkDest, void* kCloning);
     BSFadeNode* CreateFadeNode(void* pkCloningProcess);
 };
 
 // @fnv 0x00c1ffa0
+// pdb: NiPSysSphereEmitter::CreateClone | NiPSysSphereEmitter.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiPSysSphereEmitter::ProcessClone
+// pdb params: kCloning
+// pdb locals: pkObject
 BSFadeNode* SphereEmitterCloneView::CreateFadeNode(void* pkCloningProcess)
 {
     BSFadeNode* pkObject = static_cast<BSFadeNode*>(BSFadeNode::operator new(0x5c));
@@ -107,13 +119,15 @@ BSFadeNode* SphereEmitterCloneView::CreateFadeNode(void* pkCloningProcess)
 extern "C" void __cdecl NiPSysVolumeEmitter_SaveBinary();
 
 // @fnv 0x00c20080
-void NiPSysSphereEmitter::SaveBinary(NiStream& stream)
+// pdb: NiPSysSphereEmitter::SaveBinary | NiPSysSphereEmitter.obj | retail, upstream name already matches, high
+// pdb params: kStream
+void NiPSysSphereEmitter::SaveBinary(NiStream& kStream)
 {
-    reinterpret_cast<void (__thiscall*)(NiPSysVolumeEmitter*, NiStream&)>(&NiPSysVolumeEmitter_SaveBinary)(this, stream);
-    NiBinaryStream* input = stream.m_pkOstr;
+    reinterpret_cast<void (__thiscall*)(NiPSysVolumeEmitter*, NiStream&)>(&NiPSysVolumeEmitter_SaveBinary)(this, kStream);
+    NiBinaryStream* input = kStream.m_pkOstr;
     {
         unsigned int size = 4;
-        input->m_uiAbsoluteCurrentPos += input->m_pfnWrite(input, &m_fBoundRadius, 4, &size, 1);
+        input->m_uiAbsoluteCurrentPos += input->m_pfnWrite(input, &m_fEmitterRadius, 4, &size, 1);
     }
 }
 
@@ -129,7 +143,7 @@ struct FUN_00c200c0_Arr
     void __thiscall FUN_0096ae90(unsigned int n, unsigned int* p);
 };
 
-extern "C" void __stdcall FUN_00c31db0(FUN_00c200c0_Arr* p);
+extern "C" void __stdcall FUN_00c31db0(FUN_00c200c0_Arr* pkStrings);
 extern "C" unsigned int __cdecl NiViewerStrings_NiGetViewerString_Title(unsigned int v);
 extern "C" unsigned int __cdecl NiGetViewerString_00a7d550(const void* p, float f);
 extern "C" unsigned int DAT_01202510;
@@ -144,6 +158,9 @@ struct Emitter00c200c0
 
 // Appends a value derived from DAT_01202510 and a value computed from m_f58 into the array p, growing it when full.
 // @fnv 0x00c200c0
+// pdb: NiPSysSphereEmitter::GetViewerStrings | NiPSysSphereEmitter.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiPSysBoxEmitter::CopyMembers
+// pdb params: pkStrings
 void __thiscall Emitter00c200c0::AppendTwoValues(FUN_00c200c0_Arr* p)
 {
     FUN_00c31db0(p);
@@ -164,9 +181,11 @@ void __thiscall Emitter00c200c0::AppendTwoValues(FUN_00c200c0_Arr* p)
 }
 
 // @fnv 0x00c31af0
+// pdb: NiPSysVolumeEmitter::NiPSysVolumeEmitter | NiPSysVolumeEmitter.obj | retail, upstream name already matches, high
+// pdb params: pcName, pkEmitterObj, fSpeed, fSpeedVar, fDeclination, fDeclinationVar, fPlanarAngle, fPlanarAngleVar, kInitialColor, fInitialRadius, fLifeSpan, fLifeSpanVar, fRadiusVar
 NiPSysVolumeEmitter::NiPSysVolumeEmitter() : NiPSysEmitter()
 {
-    m_pkEmitterObject = 0;
+    m_pkEmitterObj = 0;
 }
 
 extern "C" int __cdecl rand();
@@ -198,10 +217,13 @@ static inline float UnitRandom()
 }
 
 // @fnv 0x00c1fe20
+// pdb: NiPSysSphereEmitter::ComputeVolumeInitialPositionAndVelocity | NiPSysSphereEmitter.obj | retail, object-file run extension, low
+// pdb params: kEmitterToPSys, kPosition, kVelocity
+// pdb locals: fTheta, fCosTheta, fSinTheta, fCosPhi, fPhi, fSinPhi, fRadius
 void SphereEmitter00c1fe20::GenerateSpherePoint(SphereMatrix3& kRotate, SpherePoint3& kPosition,
                                                 SpherePoint3& kMotionVelocity)
 {
-    float fRadius = m_fBoundRadius * UnitRandom();
+    float fRadius = m_fEmitterRadius * UnitRandom();
     float fAngle1 = g_fTwoPi * UnitRandom();
     float fAngle2 = g_fTwoPi * UnitRandom();
     int i1 = (int)(fAngle1 * (512.0 / g_fTwoPi)) & 0x1ff;

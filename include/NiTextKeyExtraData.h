@@ -4,6 +4,7 @@
 
 class TimedTextEntry;
 
+// pdb: class NiTextKeyExtraData, size 0x14, bases: NiExtraData, 2 members
 class NiTextKeyExtraData : public NiExtraData
 {
   public:

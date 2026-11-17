@@ -60,6 +60,8 @@ struct MessageMenuEntry;
 struct PerkActivation;
 
 // @fnv 0x007ab590
+// pdb: BSSimpleArray<MessageMenu::MessageMenuEntry *,1024>::_Reallocate | MessageMenu.obj | debug, object-file run extension, low
+// pdb params: apBuffer, aiNewSizeInItem
 template <>
 BSSimpleArray<MessageMenuEntry*, 1024>::BSSimpleArray()
 {
@@ -67,6 +69,8 @@ BSSimpleArray<MessageMenuEntry*, 1024>::BSSimpleArray()
 }
 
 // @fnv 0x007ab610
+// pdb: BSSimpleArray<MessageMenu::PerkActivation *,1024>::_Reallocate | MessageMenu.obj | debug, object-file run extension, low
+// pdb params: apBuffer, aiNewSizeInItem
 template <>
 BSSimpleArray<PerkActivation*, 1024>::BSSimpleArray()
 {
@@ -81,6 +85,7 @@ BSSimpleArray<MessageMenuEntry*, 1024>::~BSSimpleArray()
 }
 
 // @fnv 0x007ab670
+// pdb: BSSimpleArray<MessageMenu::PerkActivation *,1024>::~BSSimpleArray<MessageMenu::PerkActivation *,1024> | MessageMenu.obj | debug, object-file run extension, low
 template <>
 BSSimpleArray<PerkActivation*, 1024>::~BSSimpleArray()
 {
@@ -120,6 +125,7 @@ struct FUN_007b52a0_class
 
 // @fnv 0x007b52a0
 // src: COMMUNITY 0x007b52a0
+// pdb: BSStringT<char>::MakeUpper | RaceSexMenu.obj | debug, call graph, high
 void __thiscall FUN_007b52a0_class::BSStringT_MakeUpper()
 {
     if (m_ptr)
@@ -130,15 +136,18 @@ extern MapMenu* DAT_011da368;
 // The parent-world accessor shares 0x004fd380 with EffectSetting::GetLight (pointer at offset 0xc0).
 // @fnv 0x007a1880
 // src: XBOX_PDB 0x007a1880
-void __cdecl MapMenu_SetRootMapSpace(TESWorldSpace* worldspace)
+// pdb: MapMenu::SetRootMapSpace | MapMenu.obj | retail, upstream name already matches, high
+// pdb params: apNewSpace
+// pdb locals: porigRootSpace
+void __cdecl MapMenu_SetRootMapSpace(TESWorldSpace* apNewSpace)
 {
     if (DAT_011da368)
     {
-        TESWorldSpace* previous = DAT_011da368->m_pCurrentWorldspace;
-        DAT_011da368->m_pCurrentWorldspace = worldspace;
-        while (DAT_011da368->m_pCurrentWorldspace && reinterpret_cast<EffectSetting*>(DAT_011da368->m_pCurrentWorldspace)->GetLight())
-            DAT_011da368->m_pCurrentWorldspace = reinterpret_cast<TESWorldSpace*>(reinterpret_cast<EffectSetting*>(DAT_011da368->m_pCurrentWorldspace)->GetLight());
-        DAT_011da368->m_bLocalMapMode = previous != DAT_011da368->m_pCurrentWorldspace;
+        TESWorldSpace* previous = DAT_011da368->pRootMapSpace;
+        DAT_011da368->pRootMapSpace = apNewSpace;
+        while (DAT_011da368->pRootMapSpace && reinterpret_cast<EffectSetting*>(DAT_011da368->pRootMapSpace)->GetLight())
+            DAT_011da368->pRootMapSpace = reinterpret_cast<TESWorldSpace*>(reinterpret_cast<EffectSetting*>(DAT_011da368->pRootMapSpace)->GetLight());
+        DAT_011da368->bRootSpaceChanged = previous != DAT_011da368->pRootMapSpace;
     }
 }
 
@@ -181,6 +190,7 @@ struct FUN_007a62b0_Class : FUN_007a8030_Class
 // Calls FUN_007a8030 with 0, subtracts 1 from the result, and passes it to FUN_007a8030_v5.
 // @fnv 0x007a62b0
 // src: XBOX_PDB 0x007a62b0
+// pdb: ListBox<TESChallenge *>::GetLastItem | MapMenu.obj | debug, call graph, high
 void FUN_007a62b0_Class::ListBox_TESChallenge_GetLastItem()
 {
     FUN_007a8030_v5(ListBox_TESChallenge_NumUnfiltered(0) - 1);
@@ -189,6 +199,7 @@ void FUN_007a62b0_Class::ListBox_TESChallenge_GetLastItem()
 
 // Destructs the object and, if bit 0 of flags is set, frees its memory, then returns the pointer.
 // @fnv 0x007a86b0
+// pdb: BSSimpleList<ListBoxItem<TESChallenge *> *>::~BSSimpleList<ListBoxItem<TESChallenge *> *> | MapMenu.obj | debug, object-file run extension, low
 template <> BSStringT<char>* BSStringT<char>::FUN_007a86b0(unsigned int flags)
 {
     this->~BSStringT();
@@ -223,6 +234,9 @@ struct NavMeshListNode
 };
 // @fnv 0x007a19a0
 // src: XBOX_PDB 0x007a19a0
+// pdb: BSSimpleList<BSSoundHandle>::AddTail | MapMenu.obj | debug, object-file run extension, low
+// pdb params: item
+// pdb locals: pkCur
 void NavMeshListNode::BSSimpleList_BSSoundHandle_AddTail(NavMeshPayload* payload)
 {
     if (payload->Equals(0))
@@ -248,10 +262,11 @@ struct FUN_007a28c0
     void ClearEntries();
 };
 
-void __cdecl InterfaceManager_UnregisterListBox(FUN_007a28c0* object);
+void __cdecl InterfaceManager_UnregisterListBox(FUN_007a28c0* apLB);
 
 // Calls ClearEntries, then passes this to FUN_007211c0 as part of destruction.
 // @fnv 0x007a28c0
+// pdb: ListBox<BGSNote *>::~ListBox<BGSNote *> | MapMenu.obj | debug, call graph (shared callers), medium
 FUN_007a28c0::~FUN_007a28c0()
 {
     ClearEntries();
@@ -274,9 +289,10 @@ class FUN_007a37b0
     ~FUN_007a37b0();
 };
 
-void __cdecl ReleaseObject(FUN_007a37b0* p);
+void __cdecl ReleaseObject(FUN_007a37b0* apLB);
 
 // @fnv 0x007a37b0
+// pdb: ListBox<TESObjectREFR *>::~ListBox<TESObjectREFR *> | MapMenu.obj | debug, call graph (shared callers), medium
 FUN_007a37b0::~FUN_007a37b0()
 {
     Cleanup();
@@ -298,10 +314,11 @@ class FUN_007a4470_cls
     FUN_007a4470_sub m_04;
 };
 
-void __cdecl InterfaceManager_UnregisterListBox(FUN_007a4470_cls* p);
+void __cdecl InterfaceManager_UnregisterListBox(FUN_007a4470_cls* apLB);
 
 // Calls Step, then passes this to FUN_007211c0 during destruction.
 // @fnv 0x007a4470
+// pdb: ListBox<BGSQuestObjective *>::~ListBox<BGSQuestObjective *> | MapMenu.obj | debug, call graph (shared callers), medium
 FUN_007a4470_cls::~FUN_007a4470_cls()
 {
     Step();
@@ -314,7 +331,7 @@ struct FUN_007a51c0_m4
     ~FUN_007a51c0_m4();
 };
 
-void __cdecl InterfaceManager_UnregisterListBox(void* p);
+void __cdecl InterfaceManager_UnregisterListBox(void* apLB);
 
 struct FUN_007a51c0_cls
 {
@@ -325,6 +342,7 @@ struct FUN_007a51c0_cls
 };
 
 // @fnv 0x007a51c0
+// pdb: ListBox<TESChallenge *>::~ListBox<TESChallenge *> | MapMenu.obj | debug, call graph (shared callers), medium
 FUN_007a51c0_cls::~FUN_007a51c0_cls()
 {
     ReleaseStorage_007a54d0();
@@ -348,6 +366,7 @@ struct FUN_007a6220_class
 // Calls GetUnfilteredCount with 0, subtracts 1 from the result, and passes it to FUN_007a6220_v6.
 // @fnv 0x007a6220
 // src: XBOX_PDB 0x007a6220
+// pdb: ListBox<BGSNote *>::GetLastItem | MapMenu.obj | debug, call graph, medium
 void __thiscall FUN_007a6220_class::ListBox_BGSNote_GetLastItem()
 {
     FUN_007a6220_v6(GetUnfilteredCount(0) - 1);
@@ -403,14 +422,17 @@ struct FUN_007a80e0_cls
     unsigned short unk1e;
     float m_20;
 
-    void AccumulateTileHeight(SceneThing* thing);
+    void AccumulateTileHeight(SceneThing* apNewTile);
     void ListBox_TESChallenge_SetTotalListHeight();
     void UpdateHighlight();
-    void InitSceneNodes();
+    void ListBox_TESChallenge_Synchronize();
 };
 
 // @fnv 0x007a80e0
-void FUN_007a80e0_cls::InitSceneNodes()
+// src: XBOX_RETAIL_PDB 0x007a80e0
+// pdb: ListBox<TESChallenge *>::Synchronize | MapMenu.obj | retail, call graph, high
+// pdb locals: pnode
+void FUN_007a80e0_cls::ListBox_TESChallenge_Synchronize()
 {
     this->m_1c = 0;
     this->m_20 = 0.0f;
@@ -456,6 +478,7 @@ class FUN_007a8960_cls : public ManagedSubObject
 };
 
 // @fnv 0x007a8960
+// pdb: MessageMenu::MessageMenuEntry::~MessageMenuEntry | MessageMenu.obj | debug, object-file gap fill, medium
 FUN_007a8960_cls::~FUN_007a8960_cls()
 {
     void* p = m_08;
@@ -575,6 +598,7 @@ struct FUN_007ac9f0 : Base7ac9f0
 };
 
 // @fnv 0x007ac9f0
+// pdb: FORenderedMenuRaceSex::FORenderedMenuRaceSex | RaceSexMenu.obj | debug, object-file run extension, low
 FUN_007ac9f0::FUN_007ac9f0() : spObj0(0), spObj1(0), spObj2(0), spObj3(0), spObj4(0), spObj5(0)
 {}
 
@@ -590,11 +614,14 @@ struct ActiveEffectCollection
     float rate;
     int Modelloader_GetReferencedThis();
     ActiveEffectEntry*** NiTPointerListBase_NiTPointerAllocator_unsigned_int_Tile_GetNext(int* iterator);
-    void RaceSexMenu_MenuOptionList_ScrollBy(int amount);
+    void RaceSexMenu_MenuOptionList_ScrollBy(int aiDelta);
 };
 // @fnv 0x007b4530
 // src: XBOX_PDB 0x007b4530
-void ActiveEffectCollection::RaceSexMenu_MenuOptionList_ScrollBy(int amount)
+// pdb: RaceSexMenu::MenuOptionList::ScrollBy | RaceSexMenu.obj | retail, upstream name already matches, high
+// pdb params: aiDelta
+// pdb locals: piter, fy, ptile
+void ActiveEffectCollection::RaceSexMenu_MenuOptionList_ScrollBy(int aiDelta)
 {
     if (rate <= DAT_01012060)
         return;
@@ -603,7 +630,7 @@ void ActiveEffectCollection::RaceSexMenu_MenuOptionList_ScrollBy(int amount)
     {
         ActiveEffectEntry* pEffect = **NiTPointerListBase_NiTPointerAllocator_unsigned_int_Tile_GetNext(&it);
         float fAmount = pEffect->FUN_00a011b0(4002);
-        fAmount = (float)amount * rate + fAmount;
+        fAmount = (float)aiDelta * rate + fAmount;
         pEffect->Tile_Set(4002, fAmount, true);
     }
 }
@@ -615,6 +642,7 @@ struct FUN_007b52d0_cls
 
 // Returns the pointer stored at pParam when pParam is non-null, otherwise returns null.
 // @fnv 0x007b52d0
+// pdb: NiTPointerListBase<NiTPointerAllocator<unsigned int>,RaceSexMenu::MenuOption *>::~NiTPointerListBase<NiTPointerAllocator<unsigned int>,RaceSexMenu::MenuOption *> | RaceSexMenu.obj | debug, object-file run extension, low
 int* FUN_007b52d0_cls::DereferenceIfNotNull(int** pParam)
 {
     return pParam != 0 ? *pParam : (int*)0;
@@ -656,19 +684,21 @@ struct Item
 };
 // @fnv 0x007a7260
 // src: GUESS 0x007a7260 (confidence: low)
+// pdb: ListBox<TESObjectREFR *>::Synchronize | MapMenu.obj | retail, call graph, medium
+// pdb locals: pnode
 void Menu::ProcessEntries_007a7260()
 {
     // Preserve the original word/float accesses at 0x1c/0x20 and list head at 0x04.
-    *reinterpret_cast<unsigned short*>(&m_bIsSpecial) = 0;
-    *reinterpret_cast<float*>(&m_iMenuId) = 0.0f;
+    *reinterpret_cast<unsigned short*>(&bRenderedMenu) = 0;
+    *reinterpret_cast<float*>(&iClass) = 0.0f;
     for (SL* it = this ? reinterpret_cast<SL*>(&pMenu) : 0; it && it->FUN_006815c0(); it = it->FUN_00726070())
     {
         if (!it->FUN_006815c0()->m_bSkip)
         {
-            it->FUN_006815c0()->m_pFlagTarget->FUN_00700320(0xfac, (*reinterpret_cast<unsigned short*>(&m_bIsSpecial))++);
+            it->FUN_006815c0()->m_pFlagTarget->FUN_00700320(0xfac, (*reinterpret_cast<unsigned short*>(&bRenderedMenu))++);
             AccumulateTileHeight(it->FUN_006815c0()->m_pFlagTarget);
         }
     }
-    UpdateScrollTraits_007a7700();
+    ListBox_TESObjectREFR_SetTotalListHeight();
     UpdateHighlightTraits_007a73e0();
 }

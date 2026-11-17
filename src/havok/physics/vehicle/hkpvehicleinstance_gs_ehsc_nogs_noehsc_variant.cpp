@@ -21,7 +21,7 @@ extern "C" void _mm_store_ss(float*, __m128);
 struct WVec4
 {
     __m128 m_vComponents;
-    void hkVector4_setRotatedDir(const struct hkRotation& r, const WVec4& v);
+    void hkVector4_setRotatedDir(const struct hkRotation& quat, const WVec4& direction);
     float dot3(const WVec4& a) const
     {
         __m128 x2 = _mm_mul_ps(m_vComponents, a.m_vComponents);
@@ -368,24 +368,27 @@ struct WVehicle
     hkpVehicleFrictionStatus m_kFrictionStatus;
     int unk9c;
     hkBool* m_kSecondRealArray;
-    void ProcessEntries_00e38310(float deltaTime, const int* groundBody, const WGround* ground);
+    void hkpVehicleInstance_applyResultsToWheelInfo(float deltaTime, const int* groundBody, const WGround* frictionParams);
 };
 
 // @fnv 0x00e38310
-// src: GUESS 0x00e38310 (confidence: low)
-void WVehicle::ProcessEntries_00e38310(float deltaTime, const int* groundBody, const WGround* ground)
+// src: XBOX_RETAIL_PDB 0x00e38310
+// pdb: hkpVehicleInstance::applyResultsToWheelInfo | hkpVehicleInstance.obj | retail, object-file gap fill, high
+// pdb params: deltaTime, groundBody, frictionParams
+// pdb locals: forward_ws
+void WVehicle::hkpVehicleInstance_applyResultsToWheelInfo(float deltaTime, const int* groundBody, const WGround* frictionParams)
 {
     for (int w = 0; w < m_data->m_iWheelCount; ++w)
     {
         WWheelInfo& wheel = m_kWheelInfoArray[w];
         const int axle = m_data->m_kWheelParams[w].m_iAxle;
-        const hkpVehicleFrictionStatus::AxisStatus& status = m_kFrictionStatus.m_kAxisEndPoints[axle];
+        const hkpVehicleFrictionStatus::AxisStatus& status = m_kFrictionStatus.m_axis[axle];
 
         wheel.m_fSkidEnergyDensity =
-            (wheel.m_pUserData != 0 && wheel.m_pUserData->m_bFlag == 5) ? status.m_fAxisStatusMetric3 : 0.0f;
-        wheel.m_fSideForce = status.m_fAxisStatusMetric4;
-        wheel.m_fForwardForce = status.m_fAxisStatusMetric2;
-        wheel.m_fSuspensionForce = status.m_fAxisStatusMetric1;
+            (wheel.m_pUserData != 0 && wheel.m_pUserData->m_bFlag == 5) ? status.m_skid_energy_density : 0.0f;
+        wheel.m_fSideForce = status.m_side_force;
+        wheel.m_fForwardForce = status.m_side_slip_velocity;
+        wheel.m_fSuspensionForce = status.m_forward_slip_velocity;
 
         WVec4 forward;
         forward.hkVector4_setRotatedDir(m_pEntity->m_rotation, m_data->m_chassisOrientation1);
@@ -397,7 +400,7 @@ void WVehicle::ProcessEntries_00e38310(float deltaTime, const int* groundBody, c
             float forwardVel = linVel;
             if (groundBody[axle] != 0)
             {
-                WVec4 groundVel = ground[axle].m_accumulator->m_vLinearVelocity;
+                WVec4 groundVel = frictionParams[axle].m_accumulator->m_vLinearVelocity;
                 forwardVel = linVel - forward.dot3(groundVel);
             }
             wheel.m_fValueAtOffsetC0 = forwardVel / m_data->m_kWheelParams[w].m_fSphereRadius;

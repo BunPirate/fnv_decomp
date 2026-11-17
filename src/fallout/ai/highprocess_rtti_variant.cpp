@@ -148,7 +148,7 @@ struct Request
     unsigned int unkdc;
     Request();
     ~Request();
-    void InitFromActor(Actor*);
+    void PathingRequest_SetOrigin(Actor*);
     void SetCantOpenDoors(bool);
     void SetPathingLocation(const Location&);
     void PathingRequestHide_SetMinHideDistance(float);
@@ -174,7 +174,10 @@ extern double DAT_0102e430, DAT_010240c0;
 
 // @fnv 0x008db810
 // src: XBOX_PDB 0x008db810
-void Actor::HighProcess_ProcessObserveCombat(Actor* actor)
+// pdb: HighProcess::ProcessObserveCombat | HighProcess.obj | retail, upstream name already matches, high
+// pdb params: apActor
+// pdb locals: imove, pcell, pspecPack, fendDist, fdistance, eventCenter, newPoint, bWithinSpectatorDist, pbasepack, fdistFromEventCenter, threats, isize, pflee, i, itime, pavoidNodeArray, location, goalPoint, hideRequest, fdistancedest
+void Actor::HighProcess_ProcessObserveCombat(Actor* apActor)
 {
     using namespace PackagePathing;
     // The shared hierarchy lacks these two virtual signatures; retain their calling conventions here.
@@ -187,17 +190,17 @@ void Actor::HighProcess_ProcessObserveCombat(Actor* actor)
         package = current;
     if (!package)
         return;
-    if (DAT_011f1958->Actor_CheckAttackDisarm(actor, 0) || actor->GetActorValue(static_cast<ActorValue::Index>(1)) <= 0)
+    if (DAT_011f1958->Actor_CheckAttackDisarm(apActor, 0) || apActor->GetActorValue(static_cast<ActorValue::Index>(1)) <= 0)
     {
         List targetsSlot0;
         package->SpectatorPackage_CopyThreatInfoList(&targetsSlot0);
         int count = targetsSlot0.FUN_0044ddc0();
         if (count > 0)
         {
-            actor->Actor_EndInterruptPackage(0);
-            reinterpret_cast<StartCall>((*reinterpret_cast<void***>(actor))[0x410 / 4])(
-                actor, *targetsSlot0.BSSimpleArray_NiAVObject_1024_GetAt(0), 1, 1, 1, 0, 0, DAT_01012054, DAT_01012054);
-            ::FleePackage* following = dynamic_cast< ::FleePackage*>(reinterpret_cast<TESPackage*>(actor->FUN_009344a0()));
+            apActor->Actor_EndInterruptPackage(0);
+            reinterpret_cast<StartCall>((*reinterpret_cast<void***>(apActor))[0x410 / 4])(
+                apActor, *targetsSlot0.BSSimpleArray_NiAVObject_1024_GetAt(0), 1, 1, 1, 0, 0, DAT_01012054, DAT_01012054);
+            ::FleePackage* following = dynamic_cast< ::FleePackage*>(reinterpret_cast<TESPackage*>(apActor->FUN_009344a0()));
             if (following)
             {
                 for (int index = 0; index < count; index++)
@@ -208,7 +211,7 @@ void Actor::HighProcess_ProcessObserveCombat(Actor* actor)
     }
     if (package->SpectatorPackage_IsComplete())
     {
-        actor->Actor_EndInterruptPackage(0);
+        apActor->Actor_EndInterruptPackage(0);
         return;
     }
     float nearDistanceSlot10 = 0.0f;
@@ -216,8 +219,8 @@ void Actor::HighProcess_ProcessObserveCombat(Actor* actor)
     NiPoint3 unusedSlot11;
     int flagsSlot15 = 513;
     NiPoint3 pointSlot13 = package->SpectatorPackage_GetEventCenter();
-    float distanceSlot14 = actor->GetLightLevelAtPoint(pointSlot13);
-    Cell* cell = reinterpret_cast<Cell*>(actor->FUN_008d6f30());
+    float distanceSlot14 = apActor->GetLightLevelAtPoint(pointSlot13);
+    Cell* cell = reinterpret_cast<Cell*>(apActor->FUN_008d6f30());
     bool nearSlot19 = false;
     if (cell && cell->FUN_00425fd0())
     {
@@ -233,47 +236,47 @@ void Actor::HighProcess_ProcessObserveCombat(Actor* actor)
         if (distanceSlot14 < farDistanceSlot35)
             nearSlot19 = true;
     }
-    package->SpectatorPackage_Update(actor);
-    if (actor->FUN_008b3bb0())
+    package->SpectatorPackage_Update(apActor);
+    if (apActor->FUN_008b3bb0())
     {
-        package->SpectatorPackage_LookAtCombatants(actor, 1);
-        package->SpectatorPackage_MakeCombatComment(actor, 1);
+        package->SpectatorPackage_LookAtCombatants(apActor, 1);
+        package->SpectatorPackage_MakeCombatComment(apActor, 1);
         unsigned int time = DAT_011f6394.FUN_00825c00();
         if (time > package->FUN_004fb070() + 1500)
         {
             package->SetWaterForm(time);
-            NiPoint3 oldSlot17Slot17 = *reinterpret_cast<const NiPoint3*>(static_cast<const Actor*>(actor)->GetPos());
+            NiPoint3 oldSlot17Slot17 = *reinterpret_cast<const NiPoint3*>(static_cast<const Actor*>(apActor)->GetPos());
             PackagePathing::Request requestSlot13;
-            requestSlot13.InitFromActor(actor);
-            if (actor->IsCreature())
-                requestSlot13.SetCantOpenDoors(reinterpret_cast<PackagePathing::Base*>(actor->FUN_004181e0())->race.Flag());
-            requestSlot13.SetPathingLocation(Location(package->SpectatorPackage_GetEventCenter(), actor));
+            requestSlot13.PathingRequest_SetOrigin(apActor);
+            if (apActor->IsCreature())
+                requestSlot13.SetCantOpenDoors(reinterpret_cast<PackagePathing::Base*>(apActor->FUN_004181e0())->race.Flag());
+            requestSlot13.SetPathingLocation(Location(package->SpectatorPackage_GetEventCenter(), apActor));
             requestSlot13.PathingRequestHide_SetMinHideDistance(package->BGSProjectile_GetMuzzleFlashDuration() + DAT_0102e430);
             requestSlot13.FUN_006d3b00(DAT_0101e6ec);
             int mode = package->SpectatorPackage_CreateAvoidNodeArray();
             requestSlot13.FUN_006d61e0(mode);
-            if (!actor->Actor_SetPathfindingFlee(reinterpret_cast<PathingRequest*>(&requestSlot13)))
+            if (!apActor->Actor_SetPathfindingFlee(reinterpret_cast<PathingRequest*>(&requestSlot13)))
                 return;
-            if (actor->GetBlocked())
-                actor->Actor_SetBlock(0);
-            actor->Actor_SetMoveMode(512);
+            if (apActor->GetBlocked())
+                apActor->Actor_SetBlock(0);
+            apActor->Actor_SetMoveMode(512);
             NiPoint3 targetSlot6Slot10;
-            if (reinterpret_cast<PackagePathing::Process*>(actor->m_pActorMover)->GetPathCoordinate(&targetSlot6Slot10))
+            if (reinterpret_cast<PackagePathing::Process*>(apActor->pActorMover)->GetPathCoordinate(&targetSlot6Slot10))
             {
-                float targetDistanceSlot1 = actor->GetLightLevelAtPoint(targetSlot6Slot10);
+                float targetDistanceSlot1 = apActor->GetLightLevelAtPoint(targetSlot6Slot10);
                 if (targetDistanceSlot1 <= DAT_010240c0)
                     flagsSlot15 = 257;
                 // 0x008dbcfc: slot 0xD4 on the process (this), BaseProcess::SetActorDetectionState; this unit names the process class Actor
-                reinterpret_cast< ::BaseProcess*>(this)->SetActorDetectionState(actor, flagsSlot15, 1);
+                reinterpret_cast< ::BaseProcess*>(this)->SetActorDetectionState(apActor, flagsSlot15, 1);
             }
         }
     }
-    else if (actor->IsCharacter())
+    else if (apActor->IsCharacter())
     {
-        package->SpectatorPackage_LookAtCombatants(actor, 1);
-        package->SpectatorPackage_MakeCombatComment(actor, 1);
+        package->SpectatorPackage_LookAtCombatants(apActor, 1);
+        package->SpectatorPackage_MakeCombatComment(apActor, 1);
     }
-    if (actor->DidPathingFail())
+    if (apActor->DidPathingFail())
         return;
     if (distanceSlot14 > farDistanceSlot35 * 2.0f)
     {

@@ -110,7 +110,7 @@ class Ring216
 
     void AddValueToColumnRange(float v);
     void BoltShaderProperty_CleanupSegments(int idx);
-    void BoltShaderProperty_ExtendSegments(int idx);
+    void BoltShaderProperty_ExtendSegments(int aiNewSegments);
     void RemoveFromEnd(int idx);
 
     void AddValue(float p1, float p2, float p3, float p4);
@@ -132,6 +132,9 @@ void Ring216::BoltShaderProperty_CleanupSegments(int idx)
 }
 // Uses p1 and p3 to update the column range, then adjusts ring indices using p2 and stored bounds.
 // @fnv 0x00bc2740
+// pdb: BoltShaderProperty::UpdateAndMoveBolt | BoltShaderProperty.obj | retail, object-file run extension, low
+// pdb params: afTimeDelta, afDesiredBoltDistance, afSpeed, abCleanup
+// pdb locals: fmove, fsegRemove, fsegAdd
 void Ring216::AddValue(float afValue, float p2, float afScale, float afUnused)
 {
     float fScaledValue = ((double)afValue > DAT_0101ffa0) ? DAT_0101e2bc : afValue;

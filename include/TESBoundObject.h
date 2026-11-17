@@ -5,6 +5,7 @@
 
 class NiPoint3;
 
+// pdb: class TESBoundObject, size 0x30, bases: TESObject, 1 members
 class TESBoundObject : public TESObject
 {
 public:
@@ -23,9 +24,9 @@ public:
     void TESBoundObject_GetBoundMax(NiPoint3* point);
     NiPoint3* TESBoundObject_GetBoundMin(NiPoint3* point);
     TESBoundObject* BGSSaveFormBuffer_GetForm();
-    void LoadBoundData(TESFile* file);
-    NiAVObject* Get3DObject(TESObjectREFR* reference);
-    NiNode* Get3DObject(TESObjectREFR* reference, bool firstPerson);
+    void LoadBoundData(TESFile* apFile);
+    NiAVObject* Get3DObject(TESObjectREFR* apRef);
+    NiNode* Get3DObject(TESObjectREFR* pRequester, bool deepCopy);
     unsigned int ID();
 
     struct Bounds

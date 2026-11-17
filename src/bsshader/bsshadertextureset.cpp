@@ -42,19 +42,22 @@ void BSShaderTextureSet::GetTexture(BSShaderProperty::TextureTypeEnum textureTyp
 }
 
 // @fnv 0x00ba88d0
-void BSShaderTextureSet::LoadBinary(NiStream& stream)
+// pdb: BSShaderTextureSet::LoadBinary | BSShaderTextureSet.obj | retail, upstream name already matches, high
+// pdb params: kStream
+// pdb locals: index, pcstring, count, i
+void BSShaderTextureSet::LoadBinary(NiStream& kStream)
 {
-    NiObject::LoadBinary(stream);
+    NiObject::LoadBinary(kStream);
     int count = 0;
     char* pcstring = 0;
-    NiBinaryStream* pkStream = stream.m_pkIstr;
+    NiBinaryStream* pkStream = kStream.m_pkIstr;
     {
         unsigned int uiBytesRead = 4;
         pkStream->m_uiAbsoluteCurrentPos += pkStream->m_pfnRead(pkStream, &count, 4, &uiBytesRead, 1);
     }
     for (int i = 0; i < count; ++i)
     {
-        stream.ReadStreamString(pcstring);
+        kStream.ReadStreamString(pcstring);
         if (i >= 0)
         {
             reinterpret_cast<BSStringT<char>*>(names)[i].Set(pcstring, 0);
@@ -65,12 +68,17 @@ void BSShaderTextureSet::LoadBinary(NiStream& stream)
 }
 
 // @fnv 0x00ba89e0
+// pdb: BSShaderTextureSet::SetTextureFilename | BSShaderTextureSet.obj | debug, vtable slot, medium
+// pdb params: aiType, apFilename
 void BSShaderTextureSet::SetTexture(BSShaderProperty::TextureTypeEnum aiType, const char* apFilename)
 {
     reinterpret_cast<BSStringT<char>*>(names)[aiType].Set(apFilename, 0);
 }
 
 // @fnv 0x00ba87e0
+// pdb: BSShaderTextureSet::GetTexture | BSShaderTextureSet.obj | retail, upstream name already matches, high
+// pdb params: aiType, aspTexture
+// pdb locals: sptexture, pcfilename
 const char* BSShaderTextureSet::GetTexture(BSShaderProperty::TextureTypeEnum textureType)
 {
     return reinterpret_cast<BSStringT<char>*>(names)[textureType].pString;
@@ -79,15 +87,19 @@ const char* BSShaderTextureSet::GetTexture(BSShaderProperty::TextureTypeEnum tex
 void __cdecl _MyHelper00a5d2f0(int a);
 // @fnv 0x00a81fe0
 // src: XBOX_PDB 0x00a81fe0
-void __cdecl BSTextureSet_RegisterStreamables(int a)
+// pdb: BSTextureSet::RegisterStreamables | BSShaderTextureSet.obj | debug, upstream name already matches, high
+// pdb params: kStream
+void __cdecl BSTextureSet_RegisterStreamables(int kStream)
 {
-    _MyHelper00a5d2f0(a);
+    _MyHelper00a5d2f0(kStream);
 }
 
 void nullsub_3();
 
 // @fnv 0x00a724d0
 // src: COMMUNITY 0x00a724d0
+// pdb: NiInterpolator::LinkObject | NiInterpolator.obj | debug, upstream name already matches, high
+// pdb params: kStream
 void NiInterpolator_LinkObject()
 {
     nullsub_3();
@@ -101,13 +113,16 @@ template <class T> inline void NiStreamSaveBinaryBA89(NiBinaryStream* pkStream, 
 
 // Links the object into the stream, writes the texture count 6, and writes each of the six texture name strings to the stream.
 // @fnv 0x00ba8970
-void BSShaderTextureSet::SaveBinary(NiStream& stream)
+// pdb: BSShaderTextureSet::SaveBinary | BSShaderTextureSet.obj | retail, upstream name already matches, high
+// pdb params: kStream
+// pdb locals: i
+void BSShaderTextureSet::SaveBinary(NiStream& kStream)
 {
-    NiObject::SaveBinary(stream);
+    NiObject::SaveBinary(kStream);
 
     unsigned int uiTextureCount = 6;
-    NiStreamSaveBinaryBA89(stream.m_pkOstr, uiTextureCount);
+    NiStreamSaveBinaryBA89(kStream.m_pkOstr, uiTextureCount);
 
     for (int i = 0; i < 6; i++)
-        stream.WriteStreamString(reinterpret_cast<BSStringT<char>*>(names)[i].pString);
+        kStream.WriteStreamString(reinterpret_cast<BSStringT<char>*>(names)[i].pString);
 }

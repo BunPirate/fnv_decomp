@@ -55,8 +55,8 @@ struct BlockPoolMemoryRouter {
     BlockPoolAllocator& heap() { return *m_pStreamAllocator; }
 };
 extern "C" BlockPoolMemoryRouter& __cdecl hkMemoryRouter_getInstance();
-void __cdecl hkArrayUtil__reserve(BlockPoolAllocator* alloc, void* array, int numElements, int sizeElem);
-void __cdecl ResizeAudioStream(void* alloc, void* array, int sizeElem);
+void __cdecl hkArrayUtil__reserve(BlockPoolAllocator* mem, void* array, int numElem, int sizeElem);
+void __cdecl ResizeAudioStream(void* mem, void* array, int sizeElem);
 struct BlockPoolBlock {
     int unk00;
     int unk04;
@@ -291,7 +291,7 @@ __forceinline static void streamCopy(void* dst, const void* src, int count) {
 }
 void __cdecl hkMemUtil_memMove(void*, const void*, unsigned int);
 typedef unsigned char* (__cdecl *StreamTransform)(void*, unsigned char*, unsigned char*);
-void hkAgent1nMachine_VisitAllAgents(int array_arg, int header_arg, void* callback);
+void hkAgent1nMachine_VisitAllAgents(int agentTrack, int vin, void* visitor);
 
 typedef float hkReal;
 typedef unsigned char hkUchar;
@@ -369,21 +369,21 @@ typedef hkUint16 hkContactPointId;
 
 __forceinline hkContactPoint& hkContactPoint::operator=(const hkContactPoint& other)
 {
-m_vContactPosition.m_vComponents=other.m_vContactPosition.m_vComponents;
-m_vSeparatingNormal.m_vComponents=other.m_vSeparatingNormal.m_vComponents;
+m_position.m_vComponents=other.m_position.m_vComponents;
+m_separatingNormal.m_vComponents=other.m_separatingNormal.m_vComponents;
 return *this;
 }
 inline const hkVector4&hkContactPoint::getPosition()const
 {
-return m_vContactPosition;
+return m_position;
 }
 inline const hkVector4&hkContactPoint::getNormal()const
 {
-return m_vSeparatingNormal;
+return m_separatingNormal;
 }
 inline hkReal hkContactPoint::getDistance()const
 {
-return reinterpret_cast<const hkReal*>(&m_vSeparatingNormal.m_vComponents)[3];
+return reinterpret_cast<const hkReal*>(&m_separatingNormal.m_vComponents)[3];
 }
 class Vector4WithInt24W:public hkVector4_S
 {
@@ -407,21 +407,21 @@ return *reinterpret_cast<const hkpShapeType*>(&m_type);
 __forceinline const hkTransform&hkpCdBody::getTransform()const
 {
 ;
-return*static_cast<const hkTransform*>(m_pMotionState);
+return*static_cast<const hkTransform*>(m_motion);
 }
 __forceinline const hkpShape*hkpCdBody::getShape()const
 {
-return m_pCollisionShape;
+return m_shape;
 }
 __forceinline hkpCdBody::hkpCdBody(const hkpCdBody*parent)
 {
 m_parent=parent;
-m_pMotionState=parent->m_pMotionState;
+m_motion=parent->m_motion;
 }
 __forceinline void hkpCdBody::SetCollisionShapeAndKey(const hkpShape*shape,hkpShapeKey key)
 {
-m_pCollisionShape=shape;
-m_uiCollisionShapeKey=key;
+m_shape=shape;
+m_shapeKey=key;
 }
 struct GskAgentInput;
 struct WorldOperationEntry;
@@ -496,7 +496,7 @@ class ConvexFeaturePairCache
 public:
 __forceinline void*__cdecl operator new(hk_size_t nbytes){;void*obj=hkMemoryRouter::getInstance().heap().blockAlloc(static_cast<int>(nbytes));;return obj;}
 public:
-void init(const hkpConvexShape*shapeA,const hkpConvexShape*shapeB,const hkTransform&btoa);};
+void init(const hkpConvexShape*shapeA,const hkpConvexShape*shapeB,const hkTransform&aTb);};
 __declspec(align(16))class HeapContactFeatureCache:public ConvexFeaturePairCache
 {
 public:
@@ -629,7 +629,7 @@ return HK_CONTACT_PAIR_CONFLICT;
 hkReal minDeltaDistanceToAcceptNewPoint=0.0f;
 if(referenceCdPoint.m_usContactPointId !=(0xffff))
 {
-minDeltaDistanceToAcceptNewPoint=qi.m_fMinimumCollisionSeparation*0.05f;
+minDeltaDistanceToAcceptNewPoint=qi.m_keepContact*0.05f;
 }
 if(pointToCheck.getDistance()<=referencePoint->getDistance()-minDeltaDistanceToAcceptNewPoint)
 {
@@ -638,6 +638,9 @@ return HK_CONTACT_PAIR_NO_CONFLICT;
 return HK_CONTACT_PAIR_REJECT_NEW;}
 // @fnv 0x00da3930
 // src: GUESS 0x00da3930 (confidence: low)
+// pdb: hkAgent1nMachine_Weld | hkpAgent1nMachine.obj | retail, object-file run extension, low
+// pdb params: input, shapeCollection, output
+// pdb locals: shapeBuffer, conflictContacts, newIds, modifiedBodyB, points, shapesB, shapeBuffer2
 void __cdecl hkpAgent3Input_ProcessEntries_00da3930(hkpAgent3Input&input,const hkpShapeContainer*shapeCollection,WorldOperationEntry&output)
 {
 int numConflictContacts=0;
@@ -646,7 +649,7 @@ hkUint16 newIds[HK_MAX_CONTACT_POINT];
 hkpShapeBuffer shapeBuffer;
 WorldOperationEntry::ContactPointBuffer*potentialContacts=output.m_akContactRecords;
 {
-const hkpConvexShape*shapeA=static_cast<const hkpConvexShape*>(input.m_pBodyA->getShape());
+const hkpConvexShape*shapeA=static_cast<const hkpConvexShape*>(input.m_bodyA->getShape());
 WorldOperationEntry::ContactPointAgentEntry*contactRefPtr=&potentialContacts->m_akContactRecords[0];
 for(int i=0;contactRefPtr<potentialContacts->m_pFirstFreeContactPoint;i++,contactRefPtr++)
 {
@@ -660,7 +663,7 @@ ContactPointWithId*ref=*pref;
 if(check !=ref)
 {
 hkReal radiusB=0.0f;
-hkContactPairCompare contactPairCheckResult=contactPointIsValid(shapeA->getRadius(),check->m_kPoint,*reinterpret_cast<const GskAgentInput*>(input.m_pRayCastInput.val())->m_pCollisionQualityInfo.val(),radiusB,*ref);
+hkContactPairCompare contactPairCheckResult=contactPointIsValid(shapeA->getRadius(),check->m_kPoint,*reinterpret_cast<const GskAgentInput*>(input.m_input.val())->m_pCollisionQualityInfo.val(),radiusB,*ref);
 if(contactPairCheckResult !=HK_CONTACT_PAIR_NO_CONFLICT)
 {
 if(contactPairCheckResult==HK_CONTACT_PAIR_REJECT_NEW)
@@ -680,19 +683,19 @@ conflictContacts[numConflictContacts++]=hkUint16(i);
 WorldOperationEntry::ContactPointAgentEntry*toCommit=&potentialContacts->m_akContactRecords[i];
 ShapeKeyAgentEntry*entry=reinterpret_cast<ShapeKeyAgentEntry*>(toCommit->m_pAgentEntry);
 const hkpShape*shape=shapeCollection->GetShapeForKey(entry->m_kShapeKeyPair.m_uiShapeKeyB,shapeBuffer);
-hkpCdBody modifiedBodyB(input.m_pBodyB);
+hkpCdBody modifiedBodyB(input.m_bodyB);
 modifiedBodyB.SetCollisionShapeAndKey(shape,entry->m_kShapeKeyPair.m_uiShapeKeyB);
-newIds[i]=input.m_pContactManager->addContactPoint(*input.m_pBodyA,modifiedBodyB,*reinterpret_cast<const GskAgentInput*>(input.m_pRayCastInput.val()),output,0,toCommit->m_vContactPoint->m_kPoint);
+newIds[i]=input.m_contactMgr->addContactPoint(*input.m_bodyA,modifiedBodyB,*reinterpret_cast<const GskAgentInput*>(input.m_input.val()),output,0,toCommit->m_vContactPoint->m_kPoint);
 if(newIds[i]!=(0xffff))
 {
-input.m_pContactManager->ReserveContactPoints(-1);
+input.m_contactMgr->ReserveContactPoints(-1);
 }
 }
 tryNextPoint:;
 }
 }
 {
-hkpCollisionDispatcher*dis=reinterpret_cast<const GskAgentInput*>(input.m_pRayCastInput.val())->m_pCollisionDispatcher;
+hkpCollisionDispatcher*dis=reinterpret_cast<const GskAgentInput*>(input.m_input.val())->m_dispatcher;
 for(int a=0;a<numConflictContacts;a++)
 {
 int i=conflictContacts[a];
@@ -727,16 +730,16 @@ WorldOperationEntry::ContactPointAgentEntry*ref0=&potentialContacts->m_akContact
 WorldOperationEntry::ContactPointAgentEntry*ref1=&potentialContacts->m_akContactRecords[conflictContacts[p1]];
 ShapeKeyAgentEntry*header0=reinterpret_cast<ShapeKeyAgentEntry*>(ref0->m_pAgentEntry);
 ShapeKeyAgentEntry*header1=reinterpret_cast<ShapeKeyAgentEntry*>(ref1->m_pAgentEntry);
-const hkpConvexShape*shapeA=static_cast<const hkpConvexShape*>(input.m_pBodyA->getShape());
-if(!reinterpret_cast<const GskAgentInput*>(input.m_pRayCastInput.val())->m_pCollisionDispatcher->hasAlternateType(shapeA->getType(),HK_SHAPE_CONVEX)){break;}
+const hkpConvexShape*shapeA=static_cast<const hkpConvexShape*>(input.m_bodyA->getShape());
+if(!reinterpret_cast<const GskAgentInput*>(input.m_input.val())->m_dispatcher->hasAlternateType(shapeA->getType(),HK_SHAPE_CONVEX)){break;}
 const hkpConvexShape*shape0=static_cast<const hkpConvexShape*>(shapeCollection->GetShapeForKey(header0->m_kShapeKeyPair.m_uiShapeKeyB,shapeBuffer));
-if(!reinterpret_cast<const GskAgentInput*>(input.m_pRayCastInput.val())->m_pCollisionDispatcher->hasAlternateType(shape0->getType(),HK_SHAPE_CONVEX)){break;}
+if(!reinterpret_cast<const GskAgentInput*>(input.m_input.val())->m_dispatcher->hasAlternateType(shape0->getType(),HK_SHAPE_CONVEX)){break;}
 hkpShapeBuffer shapeBuffer2;
 const hkpConvexShape*shape1=static_cast<const hkpConvexShape*>(shapeCollection->GetShapeForKey(header1->m_kShapeKeyPair.m_uiShapeKeyB,shapeBuffer2));
-if(!reinterpret_cast<const GskAgentInput*>(input.m_pRayCastInput.val())->m_pCollisionDispatcher->hasAlternateType(shape1->getType(),HK_SHAPE_CONVEX)){break;}
+if(!reinterpret_cast<const GskAgentInput*>(input.m_input.val())->m_dispatcher->hasAlternateType(shape1->getType(),HK_SHAPE_CONVEX)){break;}
 const hkpConvexShape*shapesB[2]={shape0,shape1};
 hkContactPoint*points[2]={&ref0->m_vContactPoint->m_kPoint,&ref1->m_vContactPoint->m_kPoint};
-FindContactsAgainstConvexShapes(input.m_pBodyA->getTransform(),shapeA,shapesB,2,input.m_kTransform,points);
+FindContactsAgainstConvexShapes(input.m_bodyA->getTransform(),shapeA,shapesB,2,input.m_aTb,points);
 }
 conflictContacts[p1]=conflictContacts[--numConflictContacts];
 conflictContacts[p0]=conflictContacts[--numConflictContacts];
@@ -746,13 +749,13 @@ if(numConflictContacts)
 {
 if(newIds[conflictContacts[0]]!=(0xffff))
 {
-input.m_pContactManager->removeContactPoint(newIds[conflictContacts[0]],*output.m_pConstraintOwner.val());
+input.m_contactMgr->removeContactPoint(newIds[conflictContacts[0]],*output.m_pConstraintOwner.val());
 newIds[conflictContacts[0]]=(0xffff);
-input.m_pContactManager->ReserveContactPoints(1);
+input.m_contactMgr->ReserveContactPoints(1);
 }
 }
 {
-hkpCollisionDispatcher*dis=reinterpret_cast<const GskAgentInput*>(input.m_pRayCastInput.val())->m_pCollisionDispatcher;
+hkpCollisionDispatcher*dis=reinterpret_cast<const GskAgentInput*>(input.m_input.val())->m_dispatcher;
 WorldOperationEntry::ContactPointAgentEntry*cr=potentialContacts->m_pFirstFreeContactPoint;
 int numPotential=int(cr-&potentialContacts->m_akContactRecords[0]);
 for(int i=numPotential-1;i>=0;i--)
@@ -766,7 +769,7 @@ cr->m_vContactPoint->m_usContactPointId=iContactPointId;
 }
 else
 {
-input.m_pContactManager->ReserveContactPoints(-1);
+input.m_contactMgr->ReserveContactPoints(-1);
 dis->getAgent3RemovePointFunc(cr->m_pAgentEntry->m_ucNnTrackType)(cr->m_pAgentEntry,cr->m_pUserData,iContactPointId);
 output.m_pAlignedPairData=output.m_pAlignedPairData-1;
 *cr->m_vContactPoint=*output.m_pAlignedPairData;

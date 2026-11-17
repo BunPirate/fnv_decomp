@@ -38,7 +38,7 @@ inline hkMemoryRouter* audio()
     return hkMemoryRouter_getInstance();
 }
 
-__declspec(nothrow) void __cdecl hkArrayUtil__reserve(hkMemoryAllocator& alloc, void* arr, int numElem, int sizeElem);
+__declspec(nothrow) void __cdecl hkArrayUtil__reserve(hkMemoryAllocator& mem, void* array, int numElem, int sizeElem);
 
 inline void* operator new(unsigned int, void* p)
 {
@@ -113,6 +113,9 @@ struct FUN_00d1fa50 : RefObj
 };
 
 // @fnv 0x00d1fa50
+// pdb: hkaDetectRagdollPenetration::hkaDetectRagdollPenetration | hkaDetectRagdollPenetration.obj | retail, object-file run extension, low
+// pdb params: setup
+// pdb locals: assertBuf, ostr
 FUN_00d1fa50::FUN_00d1fa50(const Desc& d)
 {
     m_vtbl = DAT_010ce1a8;
@@ -163,7 +166,7 @@ struct hkAllocVt
     virtual void ReturnMemory(void* p, int numBytes) throw();
 };
 
-__declspec(nothrow) void __cdecl ResizeAudioStream(void* alloc, void* arr, int sizeElem);
+__declspec(nothrow) void __cdecl ResizeAudioStream(void* mem, void* array, int sizeElem);
 
 // hkArray bodies (allocator = the memory router's heap).
 __forceinline hkMemoryAllocator& hkContainerHeapAllocator::get(const void*)
@@ -203,7 +206,7 @@ struct BoxSet
     BoxEntry* m_boxes;
     int unk14, unk18;
     int* m_flags;
-    const hkVector4& hkaPose_calculateBoneModelSpace(int idx) throw();
+    const hkVector4& hkaPose_calculateBoneModelSpace(int theBoneIdx) throw();
     __forceinline const hkVector4& GetBoxVector(int idx)
     {
         if (!(m_flags[idx] & 2))
@@ -230,7 +233,7 @@ struct PairRecord
 
 struct AabbSink
 {
-    void hkpAabbPhantom_setAabb(const hkAabb& aabb) throw();
+    void hkpAabbPhantom_setAabb(const hkAabb& newAabb) throw();
 };
 
 struct PairTester
@@ -249,15 +252,18 @@ struct PairFinder : RefObj
     int m_uiItemCount;
     hkIntArrayLocalForm m_aiIndexedValues;
     bool m_flag;
-    hkBool hkaDetectRagdollPenetration_detectPenetration(BoxSet* boxes, hkArray<PairRecord>* out);
+    hkBool hkaDetectRagdollPenetration_detectPenetration(BoxSet* ragdollPoseIn, hkArray<PairRecord>* output);
 };
 
 // Tests box pairs against m_tester, collects matching PairRecords into out, and marks reachable nodes in m_aiIndexedValues.
 // @fnv 0x00d1fb00
 // src: COMMUNITY 0x00d1fb00
-hkBool PairFinder::hkaDetectRagdollPenetration_detectPenetration(BoxSet* boxes, hkArray<PairRecord>* out)
+// pdb: hkaDetectRagdollPenetration::detectPenetration | hkaDetectRagdollPenetration.obj | retail, upstream name already matches, high
+// pdb params: ragdollPoseIn, output
+// pdb locals: bonePointFrom, bonePointTo, hitNormal, hitPoint, aabb, properHit, bp, descendantBones
+hkBool PairFinder::hkaDetectRagdollPenetration_detectPenetration(BoxSet* ragdollPoseIn, hkArray<PairRecord>* output)
 {
-    out->m_iElementCount = 0;
+    output->m_iElementCount = 0;
     if (!m_flag)
     {
         {
@@ -270,9 +276,9 @@ hkBool PairFinder::hkaDetectRagdollPenetration_detectPenetration(BoxSet* boxes, 
                 if (m_aiIndexedValues.m_data[idx])
                 {
                     hkVector4 a;
-                    a = boxes->GetBoxVector(idx);
+                    a = ragdollPoseIn->GetBoxVector(idx);
                     hkVector4 b;
-                    b = boxes->GetBoxVector(i);
+                    b = ragdollPoseIn->GetBoxVector(i);
                     aabb.includePoint(a);
                     aabb.includePoint(b);
                 }
@@ -286,8 +292,8 @@ hkBool PairFinder::hkaDetectRagdollPenetration_detectPenetration(BoxSet* boxes, 
             short idx = m_info->m_idx[i];
             if (m_aiIndexedValues.m_data[idx])
             {
-                a = boxes->GetBoxVector(idx);
-                b = boxes->GetBoxVector(i);
+                a = ragdollPoseIn->GetBoxVector(idx);
+                b = ragdollPoseIn->GetBoxVector(i);
                 hkBool res = m_tester->test(m_sink, a, b, p0, p1);
                 if (res)
                 {
@@ -296,21 +302,21 @@ hkBool PairFinder::hkaDetectRagdollPenetration_detectPenetration(BoxSet* boxes, 
                     rec.m_kPointA = idx;
                     rec.m_kPointB = i;
                     rec.m_p1 = p1;
-                    out->pushBack(rec);
+                    output->pushBack(rec);
                 }
             }
         }
     }
     for (int k = 0; k < m_aiIndexedValues.m_iElementCount; k++)
         m_aiIndexedValues.m_data[k] = 0;
-    if (out->m_iElementCount == 0)
+    if (output->m_iElementCount == 0)
     {
         m_flag = true;
         return false;
     }
-    for (int j = 0; j < out->m_iElementCount; j++)
+    for (int j = 0; j < output->m_iElementCount; j++)
     {
-        short c = out->m_data[j].m_kPointA;
+        short c = output->m_data[j].m_kPointA;
         if (m_aiIndexedValues.m_data[c] != 2)
             m_aiIndexedValues.m_data[c] = 1;
         hkArray<short> list;
@@ -350,6 +356,7 @@ struct FUN_00d1fe70_cls
 
 // Frees the m_p18 array, resets its state, restores the vtable, and optionally frees this when acFlags bit 0 is set.
 // @fnv 0x00d1fe70
+// pdb: hkaDetectRagdollPenetration::`scalar deleting destructor' | hkaDetectRagdollPenetration.obj | retail, vtable slot, high
 FUN_00d1fe70_cls* FUN_00d1fe70_cls::FUN_00d1fe70(unsigned char acFlags)
 {
     hkMemoryRouter* pHolder = hkMemoryRouter_getInstance();

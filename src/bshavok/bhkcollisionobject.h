@@ -14,6 +14,9 @@ const NiRTTI* bhkCollisionObject::GetRTTI() const
 }
 
 // @fnv 0x0043b610
+// pdb: bhkCollisionObject::GetbhkCollisionObject | ModelLoader.obj | debug, call graph, medium
+// pdb params: apObject
+// pdb locals: pc
 bhkCollisionObject* bhkCollisionObject::GetFromNiAVObject(NiAVObject* object)
 {
     const char* collision = reinterpret_cast<BGSBodyPart*>(object)->GetPartName();
@@ -22,9 +25,12 @@ bhkCollisionObject* bhkCollisionObject::GetFromNiAVObject(NiAVObject* object)
 }
 
 // @fnv 0x004b5a20
-bhkCollisionObject* bhkCollisionObject::GetFromRigidBody(const hkpRigidBody* body)
+// pdb: bhkCollisionObject::Getbhk | GlobalFunc.obj | debug, call graph, high
+// pdb params: apBody
+// pdb locals: pc
+bhkCollisionObject* bhkCollisionObject::GetFromRigidBody(const hkpRigidBody* apBody)
 {
-    NiAVObject* collision = NiShader::DynamicCast(reinterpret_cast<NiAVObject*>(const_cast<hkpRigidBody*>(body)));
+    NiAVObject* collision = NiShader::DynamicCast(reinterpret_cast<NiAVObject*>(const_cast<hkpRigidBody*>(apBody)));
     return reinterpret_cast<bhkCollisionObject*>(
         DynamicCastByRTTI(const_cast<NiRTTI*>(&ms_kRTTI), reinterpret_cast<NiNode*>(collision)));
 }

@@ -450,7 +450,7 @@ struct ThunkSecondaryBase
 struct ThunkDerived : public ThunkPrimaryBase, public ThunkSecondaryBase
 {
     ThunkDerived();
-    virtual void FUN_005160d0(int flag, int value);  // declared, never defined
+    virtual void FUN_005160d0(int aiFlags, int aiCurrentFlags);  // declared, never defined
 };
 
 ThunkPrimaryBase::ThunkPrimaryBase()

@@ -14,6 +14,7 @@ struct FUN_00dd97c0
     FUN_00dd97c0(char f);
 };
 // @fnv 0x00dd97c0
+// pdb: hkDebugDisplayHandler::`scalar deleting destructor' | hkServerDebugDisplayHandler.obj | retail, vtable slot, high
 FUN_00dd97c0::FUN_00dd97c0(char acFlags)
 {
     m_p = &DAT_010d7cfc;
@@ -25,7 +26,7 @@ extern "C" __declspec(dllimport) void __stdcall _fnv_EnterCriticalSection(void* 
 extern "C" __declspec(dllimport) void __stdcall _fnv_LeaveCriticalSection(void* section);
 struct FUN_00d605d0_Class
 {
-    void hkOArchive_write32u(unsigned int value);
+    void hkOArchive_write32u(unsigned int u);
     void hkOArchive_write8u(unsigned int value);
     void hkDisplaySerializeOStream_writeQuadVector4(unsigned int value);
     void hkOArchive_WriteBinaryData_Thunk_00d609e0(__int64 value);
@@ -37,28 +38,30 @@ struct Record
     int unk00;
     FUN_00d605d0_Class* config;
     void* criticalSection;
-    bool SetConfigValues(unsigned int a, unsigned int b, unsigned int c, int d, unsigned int e);
+    bool SetConfigValues(unsigned int start, unsigned int end, unsigned int color, int id, unsigned int tag);
 };
 // Locks the critical section, writes five values to config, reads back a string, and returns whether the read-back string is empty.
 // @fnv 0x00dd9b40
-bool Record::SetConfigValues(unsigned int uiValueA, unsigned int uiValueB, unsigned int uiValueC, int iValueD,
-                             unsigned int uiValueE)
+// pdb: hkServerDebugDisplayHandler::displayLine | hkServerDebugDisplayHandler.obj | retail, vtable slot, high
+// pdb params: start, end, color, id, tag
+bool Record::SetConfigValues(unsigned int start, unsigned int end, unsigned int color, int id,
+                             unsigned int tag)
 {
     _fnv_EnterCriticalSection(criticalSection);
     if (config)
     {
         config->hkOArchive_write32u(0x29);
         config->hkOArchive_write8u(8);
-        config->hkDisplaySerializeOStream_writeQuadVector4(uiValueA);
-        config->hkDisplaySerializeOStream_writeQuadVector4(uiValueB);
-        config->hkOArchive_write32u(uiValueC);
-        config->hkOArchive_WriteBinaryData_Thunk_00d609e0(iValueD);
-        config->WriteInt(uiValueE);
+        config->hkDisplaySerializeOStream_writeQuadVector4(start);
+        config->hkDisplaySerializeOStream_writeQuadVector4(end);
+        config->hkOArchive_write32u(color);
+        config->hkOArchive_WriteBinaryData_Thunk_00d609e0(id);
+        config->WriteInt(tag);
     }
     bool hasValue;
     if (config)
     {
-        const char* value = config->ForwardValueToObject(&uiValueA);
+        const char* value = config->ForwardValueToObject(&start);
         if (value[0] == 0)
             goto noValue;
         hasValue = true;
@@ -78,12 +81,14 @@ struct FUN_00dd9ab0_cls
     int unk00;
     FUN_00d605d0_Class* m_pConfiguration;
     void* m_pWorldLock;
-    bool hkServerDebugDisplayHandler_displayPoint(unsigned int a1, unsigned int a2, int a3, unsigned int a4);
+    bool hkServerDebugDisplayHandler_displayPoint(unsigned int position, unsigned int color, int id, unsigned int tag);
 };
 
 // @fnv 0x00dd9ab0
 // src: HAVOK_LIB 0x00dd9ab0
-bool FUN_00dd9ab0_cls::hkServerDebugDisplayHandler_displayPoint(unsigned int a1, unsigned int a2, int a3, unsigned int a4)
+// pdb: hkServerDebugDisplayHandler::displayPoint | hkServerDebugDisplayHandler.obj | retail, upstream name already matches, high
+// pdb params: position, color, id, tag
+bool FUN_00dd9ab0_cls::hkServerDebugDisplayHandler_displayPoint(unsigned int position, unsigned int color, int id, unsigned int tag)
 {
     bool ok;
     _fnv_EnterCriticalSection(m_pWorldLock);
@@ -91,17 +96,17 @@ bool FUN_00dd9ab0_cls::hkServerDebugDisplayHandler_displayPoint(unsigned int a1,
     {
         m_pConfiguration->hkOArchive_write32u(0x1d);
         m_pConfiguration->hkOArchive_write8u(7);
-        m_pConfiguration->hkDisplaySerializeOStream_writeQuadVector4(a1);
-        m_pConfiguration->hkOArchive_write32u(a2);
-        m_pConfiguration->hkOArchive_WriteBinaryData_Thunk_00d609e0(a3);
-        m_pConfiguration->WriteInt(a4);
+        m_pConfiguration->hkDisplaySerializeOStream_writeQuadVector4(position);
+        m_pConfiguration->hkOArchive_write32u(color);
+        m_pConfiguration->hkOArchive_WriteBinaryData_Thunk_00d609e0(id);
+        m_pConfiguration->WriteInt(tag);
     }
     if (m_pConfiguration == 0)
     {
         goto not_found;
     }
     {
-        const char* s = m_pConfiguration->ForwardValueToObject(&a1);
+        const char* s = m_pConfiguration->ForwardValueToObject(&position);
         if (*s != 0)
         {
             ok = true;
@@ -125,26 +130,28 @@ struct FUN_00dd9be0_cls
     int unk00;
     FUN_00d605d0_Class* m_pConfiguration;
     void* m_cs;
-    bool hkServerDebugDisplayHandler_sendMemStatsDump(unsigned int a, unsigned int b);
+    bool hkServerDebugDisplayHandler_sendMemStatsDump(unsigned int data, unsigned int length);
 };
 
 // @fnv 0x00dd9be0
 // src: HAVOK_LIB 0x00dd9be0
-bool FUN_00dd9be0_cls::hkServerDebugDisplayHandler_sendMemStatsDump(unsigned int auiValue, unsigned int auiParam)
+// pdb: hkServerDebugDisplayHandler::sendMemStatsDump | hkServerDebugDisplayHandler.obj | retail, upstream name already matches, high
+// pdb params: data, length
+bool FUN_00dd9be0_cls::hkServerDebugDisplayHandler_sendMemStatsDump(unsigned int data, unsigned int length)
 {
     _fnv_EnterCriticalSection(m_cs);
     if (m_pConfiguration != 0)
     {
-        unsigned int v = auiParam;
+        unsigned int v = length;
         m_pConfiguration->hkOArchive_write32u(v + 5);
         m_pConfiguration->hkOArchive_write8u(0xf);
         m_pConfiguration->WriteInt(v);
-        ((ConfigExt*)m_pConfiguration)->unk607b0(auiValue, v);
+        ((ConfigExt*)m_pConfiguration)->unk607b0(data, v);
     }
     bool result;
     if (m_pConfiguration != 0)
     {
-        const char* s = m_pConfiguration->ForwardValueToObject(&auiParam);
+        const char* s = m_pConfiguration->ForwardValueToObject(&length);
         if (*s == 0)
         {
             goto zero;
@@ -168,6 +175,7 @@ struct S_00dd9c60
 };
 // @fnv 0x00dd9c60
 // src: HAVOK_LIB 0x00dd9c60
+// pdb: hkServerDebugDisplayHandler::holdImmediate | hkServerDebugDisplayHandler.obj | retail, upstream name already matches, high
 bool S_00dd9c60::hkServerDebugDisplayHandler_holdImmediate()
 {
     _fnv_EnterCriticalSection(unk08);
@@ -192,12 +200,14 @@ typedef hkArray<const char*> DD9D70StringArray;
 
 // @fnv 0x00dd9d70
 // src: HAVOK_LIB 0x00dd9d70
-static __declspec(noinline) int _getGeometryByteSize(const DD9D70StringArray& strings)
+// pdb: _getGeometryByteSize | hkServerDebugDisplayHandler.obj | retail, upstream name already matches, high
+// pdb params: geometries
+static __declspec(noinline) int _getGeometryByteSize(const DD9D70StringArray& geometries)
 {
     int size = 4;
-    for (int i = 0; i < strings.m_iElementCount; i++)
+    for (int i = 0; i < geometries.m_iElementCount; i++)
     {
-        const char* const& s = strings.m_data[i];
+        const char* const& s = geometries.m_data[i];
         size += hkDisplaySerializeOStream_computeBytesRequired_00dda850(s);
     }
     return size;
@@ -233,19 +243,22 @@ class FUN_00dd9da0_cls
     FUN_00d605d0_Class* m_pConfig;
     void* m_pUserData;
 
-    void ApplyItemList(ItemList* pList);
+    void hkServerDebugDisplayHandler_sendGeometryData(ItemList* geometries);
 };
 
 // @fnv 0x00dd9da0
-void FUN_00dd9da0_cls::ApplyItemList(ItemList* pItemList)
+// src: XBOX_RETAIL_PDB 0x00dd9da0
+// pdb: hkServerDebugDisplayHandler::sendGeometryData | hkServerDebugDisplayHandler.obj | retail, call graph, high
+// pdb params: geometries
+void FUN_00dd9da0_cls::hkServerDebugDisplayHandler_sendGeometryData(ItemList* geometries)
 {
     int i;
 
     _fnv_EnterCriticalSection(m_pUserData);
-    m_pConfig->WriteInt(pItemList->m_iArrayLength);
-    for (i = 0; i < pItemList->m_iArrayLength; i++)
+    m_pConfig->WriteInt(geometries->m_iArrayLength);
+    for (i = 0; i < geometries->m_iArrayLength; i++)
     {
-        ((ConfigStub*)m_pConfig)->WriteShape(pItemList->m_pItems[i]);
+        ((ConfigStub*)m_pConfig)->WriteShape(geometries->m_pItems[i]);
     }
     _fnv_LeaveCriticalSection(m_pUserData);
 }
@@ -258,12 +271,12 @@ extern "C" __declspec(dllimport) void __stdcall _fnv_LeaveCriticalSection(void* 
 
 struct ParentRec
 {
-    void ApplyItemList(unsigned int value);
+    void hkServerDebugDisplayHandler_sendGeometryData(unsigned int geometries);
 };
 
 struct ConfigAux
 {
-    void WriteTransform(unsigned int value);
+    void hkDisplaySerializeOStream_writeTransform(unsigned int value);
 };
 
 unsigned int _getGeometryByteSize();
@@ -273,32 +286,34 @@ struct FUN_00dd9df0_cls
     int unk00;
     FUN_00d605d0_Class* config;
     void* criticalSection;
-    bool hkServerDebugDisplayHandler_addGeometry(unsigned int a1, unsigned int a2, unsigned int a3, unsigned int a4, unsigned int a5);
+    bool hkServerDebugDisplayHandler_addGeometry(unsigned int geometries, unsigned int transform, unsigned int id, unsigned int tag, unsigned int shapeIdHint);
 };
 
 // Locks the critical section, applies the given values to config and parent, then returns whether the config's check fails.
 // @fnv 0x00dd9df0
 // src: HAVOK_LIB 0x00dd9df0
-bool FUN_00dd9df0_cls::hkServerDebugDisplayHandler_addGeometry(unsigned int a1, unsigned int a2, unsigned int a3, unsigned int a4, unsigned int a5)
+// pdb: hkServerDebugDisplayHandler::addGeometry | hkServerDebugDisplayHandler.obj | retail, upstream name already matches, high
+// pdb params: geometries, transform, id, tag, shapeIdHint
+bool FUN_00dd9df0_cls::hkServerDebugDisplayHandler_addGeometry(unsigned int geometries, unsigned int transform, unsigned int id, unsigned int tag, unsigned int shapeIdHint)
 {
     _fnv_EnterCriticalSection(this->criticalSection);
     if (this->config != 0)
     {
-        unsigned int uiValue1Copy = a1;
+        unsigned int uiValue1Copy = geometries;
         unsigned int v = _getGeometryByteSize();
         this->config->WriteInt(v + 0x29);
         this->config->hkOArchive_write8u(1);
-        ((ParentRec*)((char*)this - 8))->ApplyItemList(uiValue1Copy);
-        ((ConfigAux*)this->config)->WriteTransform(a2);
-        this->config->hkOArchive_WriteBinaryData_Thunk_00d609e0(a3);
-        this->config->WriteInt(a4);
+        ((ParentRec*)((char*)this - 8))->hkServerDebugDisplayHandler_sendGeometryData(uiValue1Copy);
+        ((ConfigAux*)this->config)->hkDisplaySerializeOStream_writeTransform(transform);
+        this->config->hkOArchive_WriteBinaryData_Thunk_00d609e0(id);
+        this->config->WriteInt(tag);
     }
     bool ok;
     if (this->config == 0)
     {
         goto notok;
     }
-    if (*this->config->ForwardValueToObject(&a1) != 0)
+    if (*this->config->ForwardValueToObject(&geometries) != 0)
     {
         ok = true;
         goto done;
@@ -314,7 +329,7 @@ unsigned int _getGeometryByteSize();
 
 struct FUN_00dd9da0_ext
 {
-    void ApplyItemList(unsigned int value);
+    void hkServerDebugDisplayHandler_sendGeometryData(unsigned int geometries);
 };
 
 struct FUN_00dd9f40_cls
@@ -322,30 +337,32 @@ struct FUN_00dd9f40_cls
     int unk00;
     FUN_00d605d0_Class* m_pConfiguration;
     void* m_pWorldLock;
-    bool SetAndCheck(unsigned int a1, unsigned int a2, int a3, unsigned int a4);
+    bool SetAndCheck(unsigned int geometries, unsigned int color, int id, unsigned int tag);
 };
 
 // @fnv 0x00dd9f40
-bool FUN_00dd9f40_cls::SetAndCheck(unsigned int uiValue, unsigned int a2, int a3, unsigned int a4)
+// pdb: hkServerDebugDisplayHandler::displayGeometry | hkServerDebugDisplayHandler.obj | retail, vtable slot, high
+// pdb params: geometries, transform, color, id, tag
+bool FUN_00dd9f40_cls::SetAndCheck(unsigned int geometries, unsigned int color, int id, unsigned int tag)
 {
     bool ok;
     _fnv_EnterCriticalSection(m_pWorldLock);
     if (m_pConfiguration != 0)
     {
-        unsigned int v = uiValue;
+        unsigned int v = geometries;
         m_pConfiguration->WriteInt(_getGeometryByteSize() + 0x11);
         m_pConfiguration->hkOArchive_write8u(6);
-        reinterpret_cast<FUN_00dd9da0_ext*>((char*)this - 8)->ApplyItemList(v);
-        m_pConfiguration->hkOArchive_write32u(a2);
-        m_pConfiguration->hkOArchive_WriteBinaryData_Thunk_00d609e0((__int64)a3);
-        m_pConfiguration->WriteInt(a4);
+        reinterpret_cast<FUN_00dd9da0_ext*>((char*)this - 8)->hkServerDebugDisplayHandler_sendGeometryData(v);
+        m_pConfiguration->hkOArchive_write32u(color);
+        m_pConfiguration->hkOArchive_WriteBinaryData_Thunk_00d609e0((__int64)id);
+        m_pConfiguration->WriteInt(tag);
     }
     if (m_pConfiguration == 0)
     {
         goto not_found;
     }
     {
-        const char* s = m_pConfiguration->ForwardValueToObject(&uiValue);
+        const char* s = m_pConfiguration->ForwardValueToObject(&geometries);
         if (*s != 0)
         {
             ok = true;
@@ -372,28 +389,30 @@ struct FUN_00dda0e0_cls
     int unk00;
     FUN_00d605d0_Class* config;
     void* criticalSection;
-    int hkServerDebugDisplayHandler_displayText(unsigned int a, unsigned int b, int c, unsigned int d);
+    int hkServerDebugDisplayHandler_displayText(unsigned int text, unsigned int color, int id, unsigned int tag);
 };
 
 // @fnv 0x00dda0e0
 // src: HAVOK_LIB 0x00dda0e0
-int FUN_00dda0e0_cls::hkServerDebugDisplayHandler_displayText(volatile unsigned int auiValue, unsigned int b, int c, unsigned int d)
+// pdb: hkServerDebugDisplayHandler::displayText | hkServerDebugDisplayHandler.obj | retail, upstream name already matches, high
+// pdb params: text, color, id, tag
+int FUN_00dda0e0_cls::hkServerDebugDisplayHandler_displayText(volatile unsigned int text, unsigned int color, int id, unsigned int tag)
 {
     _fnv_EnterCriticalSection(criticalSection);
     if (config != 0)
     {
-        unsigned int v = auiValue;
+        unsigned int v = text;
         int len = hkString_strLen(v);
         int n = (len < 0xffff) ? len : 0xffff;
         config->hkOArchive_write32u(n + 0x13);
         config->hkOArchive_write8u(9);
         reinterpret_cast<FUN_00d605d0_ext*>(config)->WriteUInt16(n);
         reinterpret_cast<FUN_00d605d0_ext*>(config)->hkOArchive_writeRaw(v, n);
-        config->WriteInt(b);
-        config->hkOArchive_WriteBinaryData_Thunk_00d609e0((__int64)c);
-        config->WriteInt(d);
+        config->WriteInt(color);
+        config->hkOArchive_WriteBinaryData_Thunk_00d609e0((__int64)id);
+        config->WriteInt(tag);
     }
-    bool ok = (config != 0) && (config->ForwardValueToObject((unsigned int*)&auiValue)[0] != 0);
+    bool ok = (config != 0) && (config->ForwardValueToObject((unsigned int*)&text)[0] != 0);
     _fnv_LeaveCriticalSection(criticalSection);
     return !ok;
 }
@@ -413,12 +432,14 @@ struct FUN_00dda1a0_cls
     FUN_00d605d0_Class* config;
     void* criticalSection;
 
-    bool WriteConfigEntry(const char* name, const float* vec, unsigned int a, int b, unsigned int c);
+    bool WriteConfigEntry(const char* name, const float* pos, unsigned int color, int b, unsigned int tag);
 };
 
 // @fnv 0x00dda1a0
-bool FUN_00dda1a0_cls::WriteConfigEntry(const char* name, const float* vec, unsigned int uiValueA, int iValueB,
-                                        unsigned int uiValueC)
+// pdb: hkServerDebugDisplayHandler::display3dText | hkServerDebugDisplayHandler.obj | retail, vtable slot, high
+// pdb params: text, pos, color, id, tag
+bool FUN_00dda1a0_cls::WriteConfigEntry(const char* name, const float* pos, unsigned int color, int iValueB,
+                                        unsigned int tag)
 {
     _fnv_EnterCriticalSection(criticalSection);
     if (config != 0)
@@ -429,12 +450,12 @@ bool FUN_00dda1a0_cls::WriteConfigEntry(const char* name, const float* vec, unsi
         config->hkOArchive_write8u(0x11);
         reinterpret_cast<FUN_00d605d0_ext_cls*>(config)->WriteUInt16(length);
         reinterpret_cast<FUN_00d605d0_ext_cls*>(config)->hkOArchive_writeRaw(name, length);
-        config->WriteInt(uiValueA);
+        config->WriteInt(color);
         config->hkOArchive_WriteBinaryData_Thunk_00d609e0((__int64)iValueB);
-        config->WriteInt(uiValueC);
-        reinterpret_cast<FUN_00d605d0_ext_cls*>(config)->HashUInt(vec[0]);
-        reinterpret_cast<FUN_00d605d0_ext_cls*>(config)->HashUInt(vec[1]);
-        reinterpret_cast<FUN_00d605d0_ext_cls*>(config)->HashUInt(vec[2]);
+        config->WriteInt(tag);
+        reinterpret_cast<FUN_00d605d0_ext_cls*>(config)->HashUInt(pos[0]);
+        reinterpret_cast<FUN_00d605d0_ext_cls*>(config)->HashUInt(pos[1]);
+        reinterpret_cast<FUN_00d605d0_ext_cls*>(config)->HashUInt(pos[2]);
     }
     bool result;
     if (config == 0)
@@ -470,26 +491,28 @@ struct FUN_00dda290_cls
     int unk00;
     FUN_00d605d0_Class* config;
     void* criticalSection;
-    int WriteConfigValue(unsigned int a, int b, unsigned int c);
+    int WriteConfigValue(unsigned int text, int id, unsigned int tag);
 };
 
 // @fnv 0x00dda290
-int FUN_00dda290_cls::WriteConfigValue(volatile unsigned int a, int aiValue, unsigned int c)
+// pdb: hkServerDebugDisplayHandler::displayAnnotation | hkServerDebugDisplayHandler.obj | retail, vtable slot, high
+// pdb params: text, id, tag
+int FUN_00dda290_cls::WriteConfigValue(volatile unsigned int text, int id, unsigned int tag)
 {
     _fnv_EnterCriticalSection(criticalSection);
     if (config != 0)
     {
-        unsigned int v = a;
+        unsigned int v = text;
         int len = hkString_strLen(v);
         int n = (len < 0xffff) ? len : 0xffff;
         config->hkOArchive_write32u(n + 0xf);
         config->hkOArchive_write8u(0x14);
         reinterpret_cast<FUN_00dda290_ext*>(config)->WriteUInt16(n);
         reinterpret_cast<FUN_00dda290_ext*>(config)->hkOArchive_writeRaw(v, n);
-        config->hkOArchive_WriteBinaryData_Thunk_00d609e0((__int64)aiValue);
-        config->WriteInt(c);
+        config->hkOArchive_WriteBinaryData_Thunk_00d609e0((__int64)id);
+        config->WriteInt(tag);
     }
-    bool ok = (config != 0) && (config->ForwardValueToObject((unsigned int*)&a)[0] != 0);
+    bool ok = (config != 0) && (config->ForwardValueToObject((unsigned int*)&text)[0] != 0);
     _fnv_LeaveCriticalSection(criticalSection);
     return !ok;
 }
@@ -549,13 +572,15 @@ struct DD97E0DisplayHandler
     DD97E0OStream* m_pDisplayStream;
     DD97E0CriticalSection* m_pSynchronizationLock;
 
-    int hkServerDebugDisplayHandler_addGeometryInstance(int a, int b, int c, int d, int e);
+    int hkServerDebugDisplayHandler_addGeometryInstance(int originalInstanceID, int transform, int id, int tag, int shapeIdHint);
 };
 
 // Locks m_pSynchronizationLock, checks m_pDisplayStream and its IsStreamValid, then returns 0 if valid or 1 otherwise.
 // @fnv 0x00dd97e0
 // src: HAVOK_LIB 0x00dd97e0
-int DD97E0DisplayHandler::hkServerDebugDisplayHandler_addGeometryInstance(int aUnused, int bUnused, int c, int dUnused, int eUnused)
+// pdb: hkServerDebugDisplayHandler::addGeometryInstance | hkServerDebugDisplayHandler.obj | retail, upstream name already matches, high
+// pdb params: originalInstanceID, transform, id, tag, shapeIdHint
+int DD97E0DisplayHandler::hkServerDebugDisplayHandler_addGeometryInstance(int originalInstanceID, int transform, int id, int tag, int shapeIdHint)
 {
     m_pSynchronizationLock->enter();
     bool ok = m_pDisplayStream && m_pDisplayStream->IsStreamValid();
@@ -582,18 +607,20 @@ struct Output
 };
 // Under the lock, writes command 17, count 3, and the three arguments, then returns the negation of the forwarded value's first byte.
 // @fnv 0x00dd9830
-int Output::WriteRecord(unsigned int first, unsigned int second, unsigned int third)
+// pdb: hkServerDebugDisplayHandler::setGeometryColor | hkServerDebugDisplayHandler.obj | retail, vtable slot, high
+// pdb params: color, id, tag
+int Output::WriteRecord(unsigned int color, unsigned int id, unsigned int tag)
 {
     EnterCriticalSection(lock);
     if (stream)
     {
         stream->hkOArchive_write32u(17);
         stream->hkOArchive_write8u(3);
-        stream->hkOArchive_write32u(first);
-        stream->hkOArchive_WriteBinaryData_Thunk_00d609e0(second, 0);
-        ((FUN_00d60940_Class*)stream)->WriteInt(third);
+        stream->hkOArchive_write32u(color);
+        stream->hkOArchive_WriteBinaryData_Thunk_00d609e0(id, 0);
+        ((FUN_00d60940_Class*)stream)->WriteInt(tag);
     }
-    bool failed = stream && *stream->ForwardValueToObject(&first);
+    bool failed = stream && *stream->ForwardValueToObject(&color);
     LeaveCriticalSection(lock);
     return !failed;
 }
@@ -611,9 +638,9 @@ struct S_00dd98c0_Bool
 };
 struct S_00dd98c0_Target
 {
-    void hkOArchive_write32u(int a);
+    void hkOArchive_write32u(int u);
     void hkOArchive_write8u(int a);
-    void WriteTransform(int a);
+    void hkDisplaySerializeOStream_writeTransform(int a);
     void hkOArchive_WriteBinaryData_Thunk_00d609e0(int a, int b);
     void WriteInt(int a);
     S_00dd98c0_Bool ForwardValueToObject();
@@ -623,20 +650,22 @@ struct S_00dd98c0
     int unk0;
     S_00dd98c0_Target* unk4;
     CRITICAL_SECTION* unk8;
-    S_00dd98c0_Result WriteValue(int a1, int a2, int a3);
+    S_00dd98c0_Result WriteValue(int transform, int id, int tag);
 };
 // Writes a1, a2, a3 to unk4 under unk8, then returns SUCCESS if unk4 and ForwardValueToObject() are true, else FAILURE.
 // @fnv 0x00dd98c0
-S_00dd98c0_Result S_00dd98c0::WriteValue(int a1, int a2, int a3)
+// pdb: hkServerDebugDisplayHandler::updateGeometry | hkServerDebugDisplayHandler.obj | retail, vtable slot, high
+// pdb params: transform, id, tag
+S_00dd98c0_Result S_00dd98c0::WriteValue(int transform, int id, int tag)
 {
     EnterCriticalSection(unk8);
     if (unk4)
     {
         unk4->hkOArchive_write32u(0x29);
         unk4->hkOArchive_write8u(2);
-        unk4->WriteTransform(a1);
-        unk4->hkOArchive_WriteBinaryData_Thunk_00d609e0(a2, 0);
-        unk4->WriteInt(a3);
+        unk4->hkDisplaySerializeOStream_writeTransform(transform);
+        unk4->hkOArchive_WriteBinaryData_Thunk_00d609e0(id, 0);
+        unk4->WriteInt(tag);
     }
     bool ok = unk4 && unk4->ForwardValueToObject().m_cBooleanValue;
     LeaveCriticalSection(unk8);
@@ -679,7 +708,7 @@ struct DD9950CriticalSection
 
 struct DD9950OArchive
 {
-    void WriteUint8(unsigned char v);
+    void WriteUint8(unsigned char u);
     void WriteUint32(unsigned int v);
     void WriteUint64(unsigned __int64 v);
     void WriteInt32(int v);
@@ -697,6 +726,8 @@ struct DD9950DisplayServer
 
 // @fnv 0x00dd9950
 // src: HAVOK_LIB 0x00dd9950
+// pdb: hkServerDebugDisplayHandler::removeGeometry | hkServerDebugDisplayHandler.obj | retail, upstream name already matches, high
+// pdb params: id, tag, shapeIdHint
 DD9950Result DD9950DisplayServer::hkServerDebugDisplayHandler_removeGeometry(unsigned long id, int tag, unsigned long shapeIdHint)
 {
     m_outStreamLock->enter();
@@ -725,7 +756,7 @@ struct DD99D0Bool
 
 struct DD99D0OStream
 {
-    void writeUint32(unsigned int value);
+    void writeUint32(unsigned int u);
     void writeCommand(unsigned int value);
     void writeVector(const void* v);
     void writeFloat(float value);
@@ -756,28 +787,30 @@ struct DD99D0DisplayHandler
     DD99D0OStream* m_pDisplayStream;
     DD99D0CriticalSection* m_pSynchronizationLock;
 
-    int WriteDisplayCommand(const void* a, const void* b, const void* c, float x, float y, float z, const char* text);
+    int WriteDisplayCommand(const void* from, const void* to, const void* up, float nearPlane, float farPlane, float fov, const char* name);
 };
 
 // Writes a display command with three vectors, three floats, and a text string to m_pDisplayStream under m_pSynchronizationLock.
 // @fnv 0x00dd99d0
-int DD99D0DisplayHandler::WriteDisplayCommand(const void* apVector1, const void* apVector2, const void* apVector3,
-                                              float x, float y, float z, const char* text)
+// pdb: hkServerDebugDisplayHandler::updateCamera | hkServerDebugDisplayHandler.obj | retail, vtable slot, high
+// pdb params: from, to, up, nearPlane, farPlane, fov, name
+int DD99D0DisplayHandler::WriteDisplayCommand(const void* from, const void* to, const void* up,
+                                              float nearPlane, float farPlane, float fov, const char* name)
 {
     m_pSynchronizationLock->enter();
     if (m_pDisplayStream)
     {
-        int length = hkString_strLen(text);
+        int length = hkString_strLen(name);
         m_pDisplayStream->writeUint32(length + 0x33);
         m_pDisplayStream->writeCommand(0xd);
-        m_pDisplayStream->writeVector(apVector1);
-        m_pDisplayStream->writeVector(apVector2);
-        m_pDisplayStream->writeVector(apVector3);
-        m_pDisplayStream->writeFloat(x);
-        m_pDisplayStream->writeFloat(y);
-        m_pDisplayStream->writeFloat(z);
+        m_pDisplayStream->writeVector(from);
+        m_pDisplayStream->writeVector(to);
+        m_pDisplayStream->writeVector(up);
+        m_pDisplayStream->writeFloat(nearPlane);
+        m_pDisplayStream->writeFloat(farPlane);
+        m_pDisplayStream->writeFloat(fov);
         m_pDisplayStream->writeInt32(length);
-        m_pDisplayStream->WriteByteArray(text, length);
+        m_pDisplayStream->WriteByteArray(name, length);
     }
     bool ok = m_pDisplayStream && m_pDisplayStream->IsStreamValid();
     m_pSynchronizationLock->leave();
@@ -810,7 +843,7 @@ struct DD9FE0Bool
 
 struct DD9FE0OStream
 {
-    void writeCommand(unsigned int value);
+    void writeCommand(unsigned int u);
     void writeCount(unsigned int value);
     void writeVector(const DD9FE0Point& v);
     void writeUint64(unsigned __int64 value);
@@ -844,6 +877,9 @@ struct DD9FE0DisplayHandler
 
 // Writes three line segments forming a triangle to the display stream under a critical section, returning 0 on success or 1 if the stream is missing or invalid.
 // @fnv 0x00dd9fe0
+// pdb: hkServerDebugDisplayHandler::displayTriangle | hkServerDebugDisplayHandler.obj | retail, vtable slot, high
+// pdb params: a, b, c, color, id, tag
+// pdb locals: p
 int DD9FE0DisplayHandler::WriteTriangle(const DD9FE0Vector4& a, const DD9FE0Vector4& b, const DD9FE0Vector4& c,
                                         unsigned int color, int id, int tag)
 {
@@ -908,7 +944,7 @@ struct ThreadMemory_dda340
 };
 
 ThreadMemory_dda340* hkMemoryRouter_getInstance();
-void __cdecl ResizeAudioStream(void* allocator, void* array, int elemSize);
+void __cdecl ResizeAudioStream(void* mem, void* array, int sizeElem);
 
 
 
@@ -949,7 +985,7 @@ struct Config_dda340 : public FUN_00d605d0_Class
 {
     void WriteUInt16(unsigned int value);
     void hkOArchive_writeRaw(const char* text, unsigned int length);
-    void WriteTransform(const Transform_dda340* t);
+    void hkDisplaySerializeOStream_writeTransform(const Transform_dda340* t);
 };
 
 // 0x00dda340 serializes behavior arrays via the display stream at +4 under the lock at +8.
@@ -959,32 +995,35 @@ struct BehaviorGraphDisplaySerializer
     Config_dda340* config;
     void* criticalSection;
 
-    bool Write(const hkArrayBase<unsigned int>& a1, const hkArrayBase<unsigned int>& a2,
-               const hkArrayBase<unsigned int>& a3, const hkArrayBase<Vec4>& a4,
-               const hkArrayBase<const char*>& a5, const hkArrayBase<unsigned int>& a6,
-               const hkArrayBase<unsigned int>& a7, const hkArrayBase<QsTransform_dda340>& a8);
+    bool Write(const hkArrayBase<unsigned int>& wordVarIdx, const hkArrayBase<unsigned int>& wordStack,
+               const hkArrayBase<unsigned int>& quadVarIdx, const hkArrayBase<Vec4>& quadStack,
+               const hkArrayBase<const char*>& activeNodes, const hkArrayBase<unsigned int>& activeStateIds,
+               const hkArrayBase<unsigned int>& activeTransitions, const hkArrayBase<QsTransform_dda340>& transforms);
 };
 
 // Writes supplied data when a config exists; returns false only when the forwarded value is nonzero.
 // @fnv 0x00dda340
-bool BehaviorGraphDisplaySerializer::Write(const hkArrayBase<unsigned int>& a1, const hkArrayBase<unsigned int>& a2,
-                          const hkArrayBase<unsigned int>& a3, const hkArrayBase<Vec4>& a4,
-                          const hkArrayBase<const char*>& a5, const hkArrayBase<unsigned int>& a6,
-                          const hkArrayBase<unsigned int>& a7, const hkArrayBase<QsTransform_dda340>& a8)
+// pdb: hkServerDebugDisplayHandler::updateBehavior | hkServerDebugDisplayHandler.obj | retail, vtable slot, high
+// pdb params: wordVarIdx, wordStack, quadVarIdx, quadStack, activeNodes, activeStateIds, activeTransitions, transforms
+// pdb locals: strsizes, ss, t
+bool BehaviorGraphDisplaySerializer::Write(const hkArrayBase<unsigned int>& wordVarIdx, const hkArrayBase<unsigned int>& wordStack,
+                          const hkArrayBase<unsigned int>& quadVarIdx, const hkArrayBase<Vec4>& quadStack,
+                          const hkArrayBase<const char*>& activeNodes, const hkArrayBase<unsigned int>& activeStateIds,
+                          const hkArrayBase<unsigned int>& activeTransitions, const hkArrayBase<QsTransform_dda340>& transforms)
 {
     _fnv_EnterCriticalSection(this->criticalSection);
     if (this->config)
     {
-        int size2 = a2.m_iElementCount;
-        int iVec4Count = a4.m_iElementCount;
-        int totalSize = ((size2 + iVec4Count * 2) * 2 + a8.m_iElementCount * 7 + a6.m_iElementCount + a7.m_iElementCount) * 4 + 25;
+        int size2 = wordStack.m_iElementCount;
+        int iVec4Count = quadStack.m_iElementCount;
+        int totalSize = ((size2 + iVec4Count * 2) * 2 + transforms.m_iElementCount * 7 + activeStateIds.m_iElementCount + activeTransitions.m_iElementCount) * 4 + 25;
         Array_dda340LocalForm stringLengths;
-        for (int i = 0; i < a5.m_iElementCount; ++i)
+        for (int i = 0; i < activeNodes.m_iElementCount; ++i)
         {
-            if (a5.m_data[i] != 0)
+            if (activeNodes.m_data[i] != 0)
             {
                 totalSize += 2;
-                int len = hkString_strLen(a5.m_data[i]);
+                int len = hkString_strLen(activeNodes.m_data[i]);
                 stringLengths.AddBack(len);
                 totalSize += len;
             }
@@ -998,53 +1037,53 @@ bool BehaviorGraphDisplaySerializer::Write(const hkArrayBase<unsigned int>& a1, 
         this->config->hkOArchive_write8u(0x12);
         this->config->hkOArchive_write32u(size2);
 
-        for (int i = 0; i < a2.m_iElementCount; ++i)
+        for (int i = 0; i < wordStack.m_iElementCount; ++i)
         {
-            this->config->hkOArchive_write32u(a1.m_data[i]);
-            this->config->hkOArchive_write32u(a2.m_data[i]);
+            this->config->hkOArchive_write32u(wordVarIdx.m_data[i]);
+            this->config->hkOArchive_write32u(wordStack.m_data[i]);
         }
 
         this->config->hkOArchive_write32u(iVec4Count);
 
-        for (int i = 0; i < a4.m_iElementCount; ++i)
+        for (int i = 0; i < quadStack.m_iElementCount; ++i)
         {
-            this->config->hkOArchive_write32u(a3.m_data[i]);
-            this->config->hkDisplaySerializeOStream_writeQuadVector4((unsigned int)&a4.m_data[i]);
+            this->config->hkOArchive_write32u(quadVarIdx.m_data[i]);
+            this->config->hkDisplaySerializeOStream_writeQuadVector4((unsigned int)&quadStack.m_data[i]);
         }
 
-        this->config->hkOArchive_write32u((unsigned short)a5.m_iElementCount);
+        this->config->hkOArchive_write32u((unsigned short)activeNodes.m_iElementCount);
 
-        for (int i = 0; i < a5.m_iElementCount; ++i)
+        for (int i = 0; i < activeNodes.m_iElementCount; ++i)
         {
-            if (a5.m_data[i] != 0)
+            if (activeNodes.m_data[i] != 0)
             {
                 unsigned int len = stringLengths.m_data[i];
                 this->config->WriteUInt16(len);
-                this->config->hkOArchive_writeRaw(a5.m_data[i], len);
+                this->config->hkOArchive_writeRaw(activeNodes.m_data[i], len);
             }
         }
 
-        this->config->hkOArchive_write32u(a8.m_iElementCount);
+        this->config->hkOArchive_write32u(transforms.m_iElementCount);
 
-        for (int i = 0; i < a8.m_iElementCount; ++i)
+        for (int i = 0; i < transforms.m_iElementCount; ++i)
         {
             Transform_dda340 t;
-            a8.m_data[i].Object_ForwardCall_00ce5300(&t);
-            this->config->WriteTransform(&t);
+            transforms.m_data[i].Object_ForwardCall_00ce5300(&t);
+            this->config->hkDisplaySerializeOStream_writeTransform(&t);
         }
 
-        this->config->hkOArchive_write32u(a6.m_iElementCount);
+        this->config->hkOArchive_write32u(activeStateIds.m_iElementCount);
 
-        for (int i = 0; i < a6.m_iElementCount; ++i)
+        for (int i = 0; i < activeStateIds.m_iElementCount; ++i)
         {
-            this->config->hkOArchive_write32u(a6.m_data[i]);
+            this->config->hkOArchive_write32u(activeStateIds.m_data[i]);
         }
 
-        this->config->hkOArchive_write32u(a7.m_iElementCount);
+        this->config->hkOArchive_write32u(activeTransitions.m_iElementCount);
 
-        for (int i = 0; i < a7.m_iElementCount; ++i)
+        for (int i = 0; i < activeTransitions.m_iElementCount; ++i)
         {
-            this->config->hkOArchive_write32u(a7.m_data[i]);
+            this->config->hkOArchive_write32u(activeTransitions.m_data[i]);
         }
 
         stringLengths.ClearAndRelease();
@@ -1127,6 +1166,7 @@ struct FUN_00dda660
 
 // The constructor has an empty body.
 // @fnv 0x00dda660
+// pdb: hkServerDebugDisplayHandler::`scalar deleting destructor' | hkServerDebugDisplayHandler.obj | retail, vtable slot, high
 FUN_00dda660::FUN_00dda660()
 {}
 }  // namespace fnv_00dda660
@@ -1135,13 +1175,13 @@ unsigned int _getGeometryByteSize();
 
 struct FUN_00dd9da0_owner
 {
-    void ApplyItemList(unsigned int value);
+    void hkServerDebugDisplayHandler_sendGeometryData(unsigned int geometries);
 };
 
 struct ConfigQ : FUN_00d605d0_Class
 {
     void WriteInt(unsigned int value);
-    void WriteTransform(unsigned int value);
+    void hkDisplaySerializeOStream_writeTransform(unsigned int value);
     const char* ForwardValueToObject(unsigned int* value);
 };
 
@@ -1151,27 +1191,29 @@ struct SecondaryDisplay
     ConfigQ* config;
     void* criticalSection;
 
-    bool hkServerDebugDisplayHandler_displayGeometry(unsigned int a, unsigned int b, unsigned int c, int d, unsigned int e);
+    bool hkServerDebugDisplayHandler_displayGeometry(unsigned int geometries, unsigned int transform, unsigned int color, int id, unsigned int tag);
 };
 
 // Locks criticalSection, writes values through config when present, and returns true if config is absent or the returned first character is zero.
 // @fnv 0x00dd9e90
 // src: HAVOK_LIB 0x00dd9e90
-bool SecondaryDisplay::hkServerDebugDisplayHandler_displayGeometry(unsigned int a, unsigned int b, unsigned int c, int d, unsigned int e)
+// pdb: hkServerDebugDisplayHandler::displayGeometry | hkServerDebugDisplayHandler.obj | retail, vtable slot, high
+// pdb params: geometries, transform, color, id, tag
+bool SecondaryDisplay::hkServerDebugDisplayHandler_displayGeometry(unsigned int geometries, unsigned int transform, unsigned int color, int id, unsigned int tag)
 {
     _fnv_EnterCriticalSection(criticalSection);
     if (config)
     {
-        unsigned int a2 = a;
+        unsigned int a2 = geometries;
         config->WriteInt(_getGeometryByteSize() + 0x2d);
         config->hkOArchive_write8u(5);
-        reinterpret_cast<FUN_00dd9da0_owner*>((char*)this - 8)->ApplyItemList(a2);
-        config->WriteTransform(b);
-        config->hkOArchive_write32u(c);
-        config->hkOArchive_WriteBinaryData_Thunk_00d609e0((__int64)d);
-        config->WriteInt(e);
+        reinterpret_cast<FUN_00dd9da0_owner*>((char*)this - 8)->hkServerDebugDisplayHandler_sendGeometryData(a2);
+        config->hkDisplaySerializeOStream_writeTransform(transform);
+        config->hkOArchive_write32u(color);
+        config->hkOArchive_WriteBinaryData_Thunk_00d609e0((__int64)id);
+        config->WriteInt(tag);
     }
-    bool ok = config != 0 && config->ForwardValueToObject(&a)[0] != 0;
+    bool ok = config != 0 && config->ForwardValueToObject(&geometries)[0] != 0;
     _fnv_LeaveCriticalSection(criticalSection);
     return !ok;
 }

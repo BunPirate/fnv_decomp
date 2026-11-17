@@ -129,7 +129,7 @@ struct Node_00c658c0
     __m128 m_kPointA;
     __m128 m_kPointB;
     void OnTrigger(const __m128* v);
-    void hkpRigidBody_setAngularVelocity(const __m128* v);
+    void hkpRigidBody_setAngularVelocity(const __m128* newVel);
 };
 
 struct Owner_00c658c0
@@ -152,6 +152,8 @@ struct Cls_00c658c0
 
 // @fnv 0x00c658c0
 // src: XBOX_PDB 0x00c658c0
+// pdb: bhkCollisionObject::ClearVelocities | bhkCollisionObject.obj | retail, upstream name already matches, high
+// pdb locals: prb
 void Cls_00c658c0::bhkCollisionObject_ClearVelocities()
 {
     Owner_00c658c0* o = m_pOwnerObject;
@@ -198,7 +200,7 @@ struct Quaternion
 struct __declspec(align(16)) HavokQuaternion
 {
     float x, y, z, w;
-    void normalize_005611c0();
+    void hkQuaternion_normalize();
 };
 void __cdecl NI2HK(hkVector4*, const NiPoint3*);
 struct MotionData
@@ -414,7 +416,7 @@ struct CollisionSync
     NiAVObject* node;
     unsigned short flags;
     Body* body;
-    bool bhkCollisionObject_GetUseVelocity();
+    bool bhkCollisionObject_QUseVel();
     unsigned char flagSet(unsigned bit) const
     {
         return (flags >> bit) & 1;
@@ -454,6 +456,8 @@ __declspec(noinline) hkVector4* Body::bhkRigidBody_GetAngularVelocity()
 }
 // @fnv 0x00c65b00
 // src: XBOX_PDB 0x00c65b00
+// pdb: bhkCollisionObject::NitohkTransform | bhkCollisionObject.obj | retail, upstream name already matches, high
+// pdb locals: prb, pobj, emt, pbody, niq, nit, hkr, hkv, bodyTrans, deltaPos, hkpos
 void CollisionSync::bhkCollisionObject_NitohkTransform()
 {
 
@@ -491,7 +495,7 @@ void CollisionSync::bhkCollisionObject_NitohkTransform()
         forcedQ.y = rot.y;
         forcedQ.z = rot.z;
         forcedQ.w = rot.w;
-        forcedQ.normalize_005611c0();
+        forcedQ.hkQuaternion_normalize();
         DAT_01267b80.BSSpinLock_Lock(0);
         b->vtable->SetGeometryTransform(b, reinterpret_cast<hkVector4*>(&forcedPos), &forcedQ);
         DAT_01267b80.unlock();
@@ -509,7 +513,7 @@ void CollisionSync::bhkCollisionObject_NitohkTransform()
         _mm_store_ss(&dist, _mm_add_ss(z, _mm_add_ss(y, sq)));
         if (dist > 1.0f)
         {
-            if (bhkCollisionObject_GetUseVelocity())
+            if (bhkCollisionObject_QUseVel())
             {
                 b->bhkRigidBody_ApplyHardKeyframe(&world->m_Translate, &rot, &DAT_01267b80);
                 return;
@@ -527,7 +531,7 @@ void CollisionSync::bhkCollisionObject_NitohkTransform()
             nearQ.y = rot.y;
             nearQ.z = rot.z;
             nearQ.w = rot.w;
-            nearQ.normalize_005611c0();
+            nearQ.hkQuaternion_normalize();
             DAT_01267b80.BSSpinLock_Lock(0);
             b->vtable->SetGeometryTransform(b, reinterpret_cast<hkVector4*>(&nearPos), &nearQ);
             DAT_01267b80.unlock();
@@ -549,7 +553,7 @@ void CollisionSync::bhkCollisionObject_NitohkTransform()
     }
     else
     {
-        if (bhkCollisionObject_GetUseVelocity())
+        if (bhkCollisionObject_QUseVel())
         {
             b->bhkRigidBody_ApplyHardKeyframe(&world->m_Translate, &rot, &DAT_01267b80);
             return;
@@ -566,7 +570,7 @@ void CollisionSync::bhkCollisionObject_NitohkTransform()
         flaggedQ.y = rot.y;
         flaggedQ.z = rot.z;
         flaggedQ.w = rot.w;
-        flaggedQ.normalize_005611c0();
+        flaggedQ.hkQuaternion_normalize();
         DAT_01267b80.BSSpinLock_Lock(0);
         b->vtable->SetGeometryTransform(b, reinterpret_cast<hkVector4*>(&flaggedPos), &flaggedQ);
         DAT_01267b80.unlock();

@@ -4,6 +4,7 @@
 
 class FourByteState;
 
+// pdb: structure hkpAgent1nSector, size 0x200 (here 0x10), 5 members
 class hkpAgent1nSector
 {
 public:

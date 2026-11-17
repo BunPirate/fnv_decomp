@@ -4,6 +4,7 @@
 
 #include "../../../../include/NiTriShapeData.h"
 
+// pdb: class NiTriShapeDynamicData, size 0x5c (here 0x4), bases: NiTriShapeData, 2 members
 struct NiTriShapeDynamicData
 {
     unsigned short m_usActiveVertices;
@@ -40,6 +41,8 @@ struct NiTriShapeDynamicData
 
 // @fnv 0x00a81820
 // src: XBOX_PDB 0x00a81820
+// pdb: NiTriStripsDynamicData::SetActiveTriangleCount | NiTriStripsDynamicData.obj | debug, upstream name already matches, high
+// pdb params: usActiveTriangles
 void __thiscall NiTriShapeDynamicData::SetActiveTriangleCount(unsigned short usActiveTriangles)
 {
     *(unsigned short*)((char*)this + 0x5a) = usActiveTriangles;
@@ -55,10 +58,13 @@ struct NiTriShapeDynamicDataShell : NiTriShapeData
 // Compares this shape data with another via FUN_00a7b7e0 and checks that the active vertex and triangle counts match.
 // @fnv 0x00a817c0
 // src: XBOX_PDB 0x00a817c0
-bool NiTriShapeDynamicDataShell::NiTriShapeDynamicData_IsEqual(const NiTriShapeDynamicDataShell* other)
+// pdb: NiTriShapeDynamicData::IsEqual | NiTriShapeDynamicData.obj | retail, upstream name already matches, high
+// pdb params: pkObject
+// pdb locals: pkData
+bool NiTriShapeDynamicDataShell::NiTriShapeDynamicData_IsEqual(const NiTriShapeDynamicDataShell* pkObject)
 {
-    if (IsEqual_00a7b7e0(other) && *(unsigned short*)((char*)this + 0x58) == *(unsigned short*)((char*)other + 0x58) &&
-        *(unsigned short*)((char*)this + 0x5a) == *(unsigned short*)((char*)other + 0x5a))
+    if (IsEqual_00a7b7e0(pkObject) && *(unsigned short*)((char*)this + 0x58) == *(unsigned short*)((char*)pkObject + 0x58) &&
+        *(unsigned short*)((char*)this + 0x5a) == *(unsigned short*)((char*)pkObject + 0x5a))
         return true;
     return false;
 }
@@ -110,22 +116,24 @@ static __forceinline void S_BinRead(S_00a818b0_Bin* bin, void* v, unsigned int b
 struct FUN_00a818b0_cls
 {
     void FUN_00a7bbe0(void* pOther);
-    void NiTriShapeDynamicData_SaveBinary(void* pOther);
+    void NiTriShapeDynamicData_SaveBinary(void* kStream);
 };
 // Calls FUN_00a7bbe0, then reads two 2-byte values from the stream at pOther+0x250 into this+0x58 and this+0x5a.
 // @fnv 0x00a818b0
 // src: XBOX_PDB 0x00a818b0
-void FUN_00a818b0_cls::NiTriShapeDynamicData_SaveBinary(void* pOther)
+// pdb: NiTriShapeDynamicData::SaveBinary | NiTriShapeDynamicData.obj | retail, upstream name already matches, high
+// pdb params: kStream
+void FUN_00a818b0_cls::NiTriShapeDynamicData_SaveBinary(void* kStream)
 {
-    char* pObj = (char*)pOther;
-    FUN_00a7bbe0(pOther);
+    char* pObj = (char*)kStream;
+    FUN_00a7bbe0(kStream);
     S_BinRead(*(S_00a818b0_Bin**)(pObj + 0x250), (char*)this + 0x58, 2);
     S_BinRead(*(S_00a818b0_Bin**)(pObj + 0x250), (char*)this + 0x5a, 2);
 }
 
 extern void* g_011f5af4;
 void* __cdecl NiViewerStrings_NiGetViewerString_Title(void* p);
-void* __cdecl NiGetViewerString_00a7d490(const char* name, unsigned int value);
+void* __cdecl NiGetViewerString_00a7d490(const char* pcPrefix, unsigned int usValue);
 
 struct NiArr
 {
@@ -185,6 +193,9 @@ struct FUN_00a81910_cls
 
 // Calls AppendTriListInfo, then appends the result of FUN_00a7d330(g_011f5af4) and two named values m_usActiveVertices and m_usActiveTriangles to the array.
 // @fnv 0x00a81910
+// pdb: NiTriShapeDynamicData::GetViewerStrings | NiTriShapeDynamicData.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiParallelUpdateTaskManager::Initialize
+// pdb params: pkStrings
 void FUN_00a81910_cls::AddActiveCounts(NiArr* a)
 {
     AppendTriListInfo(a);
@@ -263,6 +274,7 @@ unsigned short A81720Owner::NiTriShapeDynamicData_GetActiveTriangleCount()
     return unk5a;
 }
 
+// pdb: structure Reader, size 0x3c (here 0xc), 6 members
 struct Reader
 {
     unsigned int unk00;
@@ -460,9 +472,11 @@ static __forceinline void ReadBytes(Reader* bin, void* v, unsigned int bytes)
 }
 // @fnv 0x00a81850
 // src: XBOX_PDB 0x00a81850
-void Dynamic::NiTriShapeDynamicData_LoadBinary(Stream* pStream)
+// pdb: NiTriShapeDynamicData::LoadBinary | NiTriShapeDynamicData.obj | retail, upstream name already matches, high
+// pdb params: kStream
+void Dynamic::NiTriShapeDynamicData_LoadBinary(Stream* kStream)
 {
-    Stream* s = pStream;
+    Stream* s = kStream;
     FUN_00a7b940(s);
     ReadBytes(s->m_pReader, &m_usActiveVertices, 2);
     ReadBytes(s->m_pReader, &m_usActiveTriangles, 2);

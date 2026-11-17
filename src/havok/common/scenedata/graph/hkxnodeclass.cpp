@@ -87,6 +87,7 @@ class FUN_00dfd840 : public DFD840Base
 };
 
 // @fnv 0x00dfd840
+// pdb: hkxAttributeGroup::~hkxAttributeGroup | hkxNodeClass.obj | retail, object-file run extension, low
 FUN_00dfd840::~FUN_00dfd840() throw()
 {}
 
@@ -113,6 +114,7 @@ struct CpuObject
     CpuObject* FUN_00dfd900(unsigned int flags);
 };
 // @fnv 0x00dfd900
+// pdb: hkxNode::`scalar deleting destructor' | hkxNodeClass.obj | retail, vtable slot, high
 CpuObject* CpuObject::FUN_00dfd900(unsigned int flags)
 {
     FUN_00e3ed80();
@@ -164,6 +166,7 @@ struct FUN_00dfd8d0
 };
 
 // @fnv 0x00dfd8d0
+// pdb: hkxAttributeHolder::`scalar deleting destructor' | hkxNodeClass.obj | retail, vtable slot, high
 FUN_00dfd8d0::FUN_00dfd8d0()
 {}
 }  // namespace fnv_00dfd8d0

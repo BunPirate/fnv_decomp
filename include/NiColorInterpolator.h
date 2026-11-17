@@ -9,6 +9,7 @@ class ColorAnimationKey;
 
 #include "NiAnimationKey.h"
 
+// pdb: class NiColorInterpolator, size 0x24, bases: NiKeyBasedInterpolator, 3 members
 class NiColorInterpolator : public NiKeyBasedInterpolator
 {
   public:
@@ -42,7 +43,7 @@ class NiColorInterpolator : public NiKeyBasedInterpolator
     NiColorData* GetColorData() const;
     void SetColorData(NiColorData*);
     void SetColorValue(NiColorA);
-    void SetAnimationKeys(ColorAnimationKey*, unsigned int, NiAnimationKey::KeyType);
+    void ReplaceKeys(ColorAnimationKey*, unsigned int, NiAnimationKey::KeyType);
     NiAnimationKey::KeyContent GetColorKeyContent(unsigned short) const;
     NiAnimationKey::KeyType GetColorKeyType(unsigned short) const;
     bool IsColorConstant(unsigned short) const;
@@ -50,5 +51,5 @@ class NiColorInterpolator : public NiKeyBasedInterpolator
 
     NiColorA m_kColorValue;
     NiPointer<NiColorData> m_spColorData;
-    unsigned int m_uiLastKeyIndex;
+    unsigned int m_uiLastIdx; // src: XBOX_RETAIL_PDB +0x20 (old: m_uiLastKeyIndex)
 };

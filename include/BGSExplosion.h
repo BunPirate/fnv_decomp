@@ -26,9 +26,9 @@ public:
     virtual void InitItem();
 
     void ResetFormData();
-    bool Load(TESFile* file);
+    bool Load(TESFile* apFile);
     // TESForm vtable slot 8 (vftable 0x1024a94 slot 8 = 0x4fb0d0)
-    bool LoadForm(TESFile* file);
+    bool LoadForm(TESFile* apFile);
     float __thiscall GetScaledValue();
     ExplosionEffectSettings* GetData_004fadc0();
     BGSImpactDataSet* BGSExplosion_GetImpactDataSet();
@@ -39,6 +39,6 @@ public:
     void SetImpactDataSet(BGSImpactDataSet* value);
     void SetSecondaryImpactSound(TESSound* value);
 
-    TESBoundObject* m_pExplosionBoundObject;
+    TESBoundObject* pImpactPlacedObject; // src: XBOX_RETAIL_PDB +0x70 (old: m_pExplosionBoundObject)
     ExplosionEffectSettings Data;
 };

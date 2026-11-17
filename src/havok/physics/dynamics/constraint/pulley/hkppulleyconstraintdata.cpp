@@ -4,7 +4,7 @@
 
 #include "../../../../../../include/hkpPulleyConstraintData.h"
 
-void __cdecl hkpConstraintData_getConstraintInfoUtil(void* a, int b, int c);
+void __cdecl hkpConstraintData_getConstraintInfoUtil(void* a, int b, int infoOut);
 
 // @fnv 0x00deef40
 void hkpPulleyConstraintData::vf15(int a)

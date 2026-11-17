@@ -7,7 +7,10 @@
 
 // @fnv 0x004abd30
 // src: XBOX_PDB 0x004abd30
-void BipedAnim::QueueBipedParts(IO_TASK_PRIORITY priority, NiPointer<QueuedHelmet>& queuedHelmet, QueuedFile* file)
+// pdb: BipedAnim::QueueBipedParts | BipedAnim.obj | retail, upstream name already matches, high
+// pdb params: aePriority, aspQueuedHelmet, apParent
+// pdb locals: iskinFlags, pnpc, spqueuedHelmet, n, pbipedModel, pmodel, pconstaint
+void BipedAnim::QueueBipedParts(IO_TASK_PRIORITY aePriority, NiPointer<QueuedHelmet>& aspQueuedHelmet, QueuedFile* apParent)
 {
     unsigned int modelFlags;
     TESNPC* npc;
@@ -25,28 +28,28 @@ void BipedAnim::QueueBipedParts(IO_TASK_PRIORITY priority, NiPointer<QueuedHelme
                 if (IsSlotHidden((BIPED_OBJECT)i) && *DAT_011c5ef0.Bool() && BSFaceGenManager_GetUseFaceGenHeads() &&
                     CanLoadHiddenBipedObjects())
                 {
-                    RequestModelLoad(priority, file, pHelmetQueueEntry, (BIPED_OBJECT)i);
+                    RequestModelLoad(aePriority, apParent, pHelmetQueueEntry, (BIPED_OBJECT)i);
                 }
                 else
                 {
                     if (m_pActor == g_thePlayer)
                     {
-                        TESModel* firstPersonModel = GetModelForSlot((BIPED_OBJECT)i, object[i].m_pModel);
+                        TESModel* firstPersonModel = Get1stPersonModel((BIPED_OBJECT)i, object[i].m_pModel);
                         if (firstPersonModel != object[i].m_pModel)
-                            g_modelLoader->ProcessModelRequest(firstPersonModel, priority, file, 3, true, false, false);
+                            g_modelLoader->ProcessModelRequest(firstPersonModel, aePriority, apParent, 3, true, false, false);
                     }
-                    g_modelLoader->ProcessModelRequest(object[i].m_pModel, priority, file, 3, true, false, false);
+                    g_modelLoader->ProcessModelRequest(object[i].m_pModel, aePriority, apParent, 3, true, false, false);
                     TESBipedModelForm* biped = TESBipedModelForm::GetFormAsBipedModel(object[i].pParent);
                     if (biped)
                     {
                         const char* path = reinterpret_cast<const char*>(biped->GetBipedConstraint());
                         if (*path)
-                            g_modelLoader->QueueFile(path, priority, file, 3, true, false, false);
+                            g_modelLoader->QueueFile(path, aePriority, apParent, 3, true, false, false);
                     }
                 }
             }
         }
     }
-    queuedHelmet = pHelmetQueueEntry;
-    QueueBipedObjectLoads(modelFlags, priority, file);
+    aspQueuedHelmet = pHelmetQueueEntry;
+    QueueSkinTextures(modelFlags, aePriority, apParent);
 }

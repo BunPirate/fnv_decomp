@@ -1,5 +1,6 @@
 #pragma once
 
+// pdb: class BSTaskletData, size 0x8, 1 members
 class BSTaskletData
 {
 public:
@@ -9,7 +10,7 @@ public:
     virtual void Process();
     virtual void OnComplete();
 
-    bool m_bTaskYielded;
+    bool bYielding; // src: XBOX_RETAIL_PDB +0x4 (old: m_bTaskYielded)
 
     void TaskYield();
     void* DestroyIfFlagged(unsigned int flags);

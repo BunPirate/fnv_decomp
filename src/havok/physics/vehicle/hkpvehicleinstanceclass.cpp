@@ -10,6 +10,7 @@ void __cdecl DestroyVehicleInstance();
 
 // Destroys the vehicle, optionally frees its allocation, and returns its address.
 // @fnv 0x00dfbe50
+// pdb: hkpVehicleInstance::`scalar deleting destructor' | hkpVehicleInstanceClass.obj | retail, vtable slot, high
 hkpVehicleInstance* __fastcall DeleteVehicleInstance(hkpVehicleInstance* pInstance, void*, unsigned char acFlags)
 {
     typedef void (__thiscall* DestroyFunction)(hkpVehicleInstance*);
@@ -19,7 +20,7 @@ hkpVehicleInstance* __fastcall DeleteVehicleInstance(hkpVehicleInstance* pInstan
         hkMemoryRouter* pHolder = hkMemoryRouter_getInstance();
         hkMemoryAllocator* pAllocator = reinterpret_cast<hkMemoryAllocator*>(pHolder->m_heap);
         typedef void (__thiscall* FreeFunction)(hkMemoryAllocator*, void*, unsigned int);
-        reinterpret_cast<FreeFunction>((*reinterpret_cast<void***>(pAllocator))[2])(pAllocator, pInstance, pInstance->m_usMemSizeAndFlags);
+        reinterpret_cast<FreeFunction>((*reinterpret_cast<void***>(pAllocator))[2])(pAllocator, pInstance, pInstance->m_memSizeAndFlags);
     }
     return pInstance;
 }

@@ -12,7 +12,7 @@ class InterfaceH_loadingmenu
 public:
     static bool __cdecl GetSelectedTargetIndex(int);
     static void SetQuestTarget(TESForm*, bool);
-    static void SetLookAtReference(TESObjectREFR*);
+    static void Interface_SetCrosshairTargetType(TESObjectREFR*);
     static double GetFourthInterfaceFloat();
     static double GetThirdInterfaceFloat();
     static bool IsSaveLoadActive();
@@ -135,11 +135,13 @@ class DurationData
 extern bool DAT_011d8907;
 class NavMeshInfo;
 // @fnv 0x0078d2d0
+// pdb: LoadingMenu::SetupForStartMenu | LoadingMenu.obj | debug, object-file gap fill, medium
+// pdb params: abCreate
 void LoadingMenu::HideTile()
 {
     if (BSSystemUtility::s_iUpdateEnabled)
         reinterpret_cast<LoadingMenu*>(BSSystemUtility::s_iUpdateEnabled)
-            ->SetTileVisible((LoadingMenu::TileIndex)0, false);
+            ->HideAllBut((LoadingMenu::TileIndex)0, false);
 }
 
 // Sets or clears the bit at index in usFlags according to set.
@@ -153,17 +155,22 @@ void LoadingMenu::SetFloatFlag(int index, bool set)
 }
 
 // @fnv 0x0078cbd0
-void LoadingMenu::SetTileVisible(LoadingMenu::TileIndex tileIndex, bool doSwap)
+// src: XBOX_RETAIL_PDB 0x0078cbd0
+// pdb: LoadingMenu::HideAllBut | LoadingMenu.obj | retail, call graph, high
+// pdb params: aeTileIndex, abShowPlayerTiles
+// pdb locals: i
+void LoadingMenu::HideAllBut(LoadingMenu::TileIndex aeTileIndex, bool abShowPlayerTiles)
 {
     for (int i = 0; i < 38; ++i)
     {
-        m_pTiles[i]->Set(0xFA3, (float)(i == (int)tileIndex || (tileIndex == 0 && (i == 32 || i == 33))), false);
+        m_pTiles[i]->Set(0xFA3, (float)(i == (int)aeTileIndex || (aeTileIndex == 0 && (i == 32 || i == 33))), false);
     }
-    SetFloatFlag(6, doSwap);
+    SetFloatFlag(6, abShowPlayerTiles);
 }
 
 // Initializes the loading menu thread: clears the three flags, sets its name, initializes the stack, and sets priority.
 // @fnv 0x0078d2f0
+// pdb: LoadingMenuThread::LoadingMenuThread | LoadingMenu.obj | retail, string-set bridge, high
 LoadingMenuThread::LoadingMenuThread() : BSThread(), m_kFirstSemaphore(), m_kSecondSemaphore()
 {
     m_bFirstThreadFlag = false;
@@ -176,6 +183,7 @@ LoadingMenuThread::LoadingMenuThread() : BSThread(), m_kFirstSemaphore(), m_kSec
 }
 
 // @fnv 0x0078cfc0
+// pdb: LoadingMenu::SuspendBackgroundThread | LoadingMenu.obj | retail, call graph, high
 void LoadingMenu::UpdateLoadingScreenThread()
 {
     if (BSSystemUtility::s_iUpdateEnabled && BSSystemUtility::ms_pSystemUtility &&
@@ -189,6 +197,9 @@ void LoadingMenu::UpdateLoadingScreenThread()
 }
 
 // @fnv 0x00717740
+// pdb: InterfaceManager::SetCursorAlpha | InterfaceManager.obj | debug, object-file gap fill, medium
+// pdb params: iAlpha
+// pdb locals: pmodel, pnode, pcursor, pmaterial
 void LoadingMenu::SetLoadingScreenVisible(int visible)
 {
     NiGeometry* object;
@@ -210,6 +221,8 @@ void LoadingMenu::SetLoadingScreenVisible(int visible)
 
 // Computes a delay from one of three sources depending on state, converts it to milliseconds, and stores the next tip time as the current tick plus that delay.
 // @fnv 0x0078abd0
+// pdb: LoadingMenu::NextSwap | LoadingMenu.obj | debug, call graph, high
+// pdb locals: finterval
 void LoadingMenu::UpdateLoadingScreenTip()
 {
     float delay = 0.0f;
@@ -223,6 +236,9 @@ void LoadingMenu::UpdateLoadingScreenTip()
 }
 
 // @fnv 0x0078ab20
+// pdb: LoadingMenu::OK2Add | LoadingMenu.obj | debug, object-file gap fill, medium
+// pdb params: apLoadScreen
+// pdb locals: bok, pnode
 bool LoadingMenu::IsLoadScreenValid(TESLoadScreen* screen)
 {
     bool valid = screen && screen->GetFormType() == ENUM_FORM_ID_LSCR_ID;
@@ -234,6 +250,7 @@ bool LoadingMenu::IsLoadScreenValid(TESLoadScreen* screen)
 }
 
 // @fnv 0x0078aec0
+// pdb: LoadingMenu::PrepPlayerTiles | LoadingMenu.obj | debug, object-file gap fill, medium
 void LoadingMenu::RefreshLoadingScreen()
 {
     if (!g_BGSSaveLoadGame || !g_BGSSaveLoadGame->BGSSaveLoadGame_GetSaveGameLoading())
@@ -249,6 +266,8 @@ void LoadingMenu::RefreshLoadingScreen()
 }
 
 // @fnv 0x0078d490
+// pdb: LoadingMenuThread::ThreadProc | LoadingMenu.obj | retail, upstream name already matches, high
+// pdb locals: uiticks2wait, uinext
 unsigned int LoadingMenuThread::ThreadProc()
 {
     unsigned int interval = gm_GetTickCount();
@@ -279,6 +298,9 @@ unsigned int LoadingMenuThread::ThreadProc()
 
 // Picks random load screens from array into m_kLoadScreenItems until the candidate count reaches the game-setting count, removing each picked entry.
 // @fnv 0x0078adc0
+// pdb: LoadingMenu::AddCandidates | LoadingMenu.obj | debug, object-file gap fill, medium
+// pdb params: aCandidateList
+// pdb locals: isize, icnt, i
 void LoadingMenu::SelectLoadScreens(BSSimpleArray<TESLoadScreen*, 1024>& aLoadScreens)
 {
     unsigned int count = *reinterpret_cast<unsigned int*>(reinterpret_cast<SettingT_GameSettingCollection_*>(&g_011da138)->Int());
@@ -305,19 +327,22 @@ void LoadingMenu::SelectLoadScreens(BSSimpleArray<TESLoadScreen*, 1024>& aLoadSc
 
 // Reads quest, objective, and load-screen data from the buffer, stores them in globals, and updates the loading menu UI.
 // @fnv 0x0078d770
-void LoadingMenu::LoadGame(BGSLoadGameBuffer* buffer)
+// pdb: LoadingMenu::LoadGame | LoadingMenu.obj | retail, upstream name already matches, high
+// pdb params: apLoadGameBuffer
+// pdb locals: iindex, pquest, buseLocationSpecificScreensOnly
+void LoadingMenu::LoadGame(BGSLoadGameBuffer* apLoadGameBuffer)
 {
     TESQuest* b = 0;     // saved quest
     unsigned int c = 0;  // saved objective ID
-    b = dynamic_cast<TESQuest*>(TESForm::GetFormByID(buffer->ReadFormIdentifier()));
-    buffer->ReadDataBlock(&c, 4);
+    b = dynamic_cast<TESQuest*>(TESForm::GetFormByID(apLoadGameBuffer->ReadFormIdentifier()));
+    apLoadGameBuffer->ReadDataBlock(&c, 4);
     g_011da168.objective = b ? b->GetObjective(c) : 0;
-    buffer->ReadDataBlock(&DAT_011da16c, 4);
-    buffer->ReadDataBlock(&DAT_011da170, 4);
+    apLoadGameBuffer->ReadDataBlock(&DAT_011da16c, 4);
+    apLoadGameBuffer->ReadDataBlock(&DAT_011da170, 4);
     if ((unsigned int)DAT_011da170 >= *reinterpret_cast<unsigned int*>(reinterpret_cast<SettingT_GameSettingCollection_*>(&g_011d0c60)->Int()))
         DAT_011da16c = 0.0f;
     bool a = false;  // location-specific screens only
-    buffer->ReadDataBlock(&a, 1);
+    apLoadGameBuffer->ReadDataBlock(&a, 1);
     TESLoadScreenFlags::SetUseLocationSpecificScreensOnly(a);
     if (BSSystemUtility::s_iUpdateEnabled)
     {
@@ -328,6 +353,9 @@ void LoadingMenu::LoadGame(BGSLoadGameBuffer* buffer)
 }
 
 // @fnv 0x0078ac60
+// pdb: LoadingMenu::BuildCandidateList | LoadingMenu.obj | debug, object-file gap fill, medium
+// pdb params: aListOut
+// pdb locals: pnode, nIndex, eCurrentType
 void LoadingMenu::CollectLoadScreens(BSSimpleArray<TESLoadScreen*, 1024>& aLoadScreens)
 {
     reinterpret_cast<BSSimpleArray<unsigned short, 1024>*>(&aLoadScreens)->Clear(false);
@@ -352,6 +380,10 @@ void LoadingMenu::CollectLoadScreens(BSSimpleArray<TESLoadScreen*, 1024>& aLoadS
 }
 
 // @fnv 0x0078afc0
+// pdb: LoadingMenu::BuildCandidateList | LoadingMenu.obj | retail, object-file run extension, low
+// pdb note: debug build links it to LoadingMenu::UpdatePlayerTileAlphas
+// pdb params: aListOut
+// pdb locals: pnode, nIndex, eCurrentType
 void LoadingMenu::UpdateLoadScreen(TESLoadScreen* screen, float alpha, int mode)
 {
     if (!GetFloat(6))
@@ -377,15 +409,15 @@ void LoadingMenu::UpdateLoadScreen(TESLoadScreen* screen, float alpha, int mode)
             break;
         case 3:
             tiles = reinterpret_cast<Tile**>(reinterpret_cast<char*>(this) + 0xf4);
-            FadeSlideTiles(alpha, mode);
+            UpdateTipTilesAlphas(alpha, mode);
             break;
         case 1:
             tiles = reinterpret_cast<Tile**>(reinterpret_cast<char*>(this) + 0xe8);
-            UpdateLoadingTiles(alpha, mode);
+            UpdateXPProgressTilesAlphas(alpha, mode);
             break;
         case 2:
             tiles = reinterpret_cast<Tile**>(reinterpret_cast<char*>(this) + 0xdc);
-            UpdateTiles(alpha, mode);
+            UpdateObjectiveTilesAlphas(alpha, mode);
             break;
         }
     }
@@ -393,6 +425,8 @@ void LoadingMenu::UpdateLoadScreen(TESLoadScreen* screen, float alpha, int mode)
 
 // @fnv 0x004581c0
 // src: XBOX_PDB 0x004581c0
+// pdb: LoadingMenu::FlagReset | LoadingMenu.obj | debug, upstream name already matches, high
+// pdb params: abOn
 void __cdecl LoadingMenu_FlagReset(bool abOn)
 {
     if (BSSystemUtility::s_iUpdateEnabled)
@@ -409,6 +443,7 @@ struct SubObj
 // Calls s.FUN_004ed900, then passes &a and &b to s.FUN_004ed8c0 in turn.
 // @fnv 0x00788f30
 // src: COMMUNITY 0x00788f30
+// pdb: LoadingMenu::InitStatsTilesList | LoadingMenu.obj | retail, upstream name already matches, high
 void LoadingMenu::InitStatsTilesList()
 {
     reinterpret_cast<SubObj*>(&m_kFirstTileList)->FUN_004ed900();
@@ -424,6 +459,7 @@ struct FUN_Sub
 // Calls FUN_004ed900 on the FUN_Sub at self+0xdc, then FUN_004ed8c0 with self+0x94, self+0x34 and self+0x60.
 // @fnv 0x00788f80
 // src: COMMUNITY 0x00788f80
+// pdb: LoadingMenu::InitObjectiveTilesList | LoadingMenu.obj | retail, upstream name already matches, high
 void __fastcall LoadingMenu_InitObjectiveTilesList(char* self)
 {
     ((FUN_Sub*)(self + 0xdc))->FUN_004ed900();
@@ -440,6 +476,7 @@ struct M788
 // Calls m.FUN_004ed900, then passes six member addresses (offsets 0x68, 0x98, 0x9c, 0x64, 0x50, 0xa0) to m.FUN_004ed8c0.
 // @fnv 0x00788fe0
 // src: COMMUNITY 0x00788fe0
+// pdb: LoadingMenu::InitXPProgressTilesList | LoadingMenu.obj | retail, upstream name already matches, high
 void LoadingMenu::InitXPProgressTilesList()
 {
     reinterpret_cast<M788*>(&m_kThirdTileList)->FUN_004ed900();
@@ -462,6 +499,7 @@ struct SubObj
 // Calls FUN_004ed900 then FUN_004ed8c0 on s1 with &a and on s2 with &b.
 // @fnv 0x00789080
 // src: COMMUNITY 0x00789080
+// pdb: LoadingMenu::InitTipTilesList | LoadingMenu.obj | retail, upstream name already matches, high
 void LoadingMenu::InitTipTilesList()
 {
     reinterpret_cast<fnv_00789080::SubObj*>(&m_kFourthTileList)->FUN_004ed900();
@@ -480,6 +518,7 @@ void LoadingMenu::ToggleFlagBit(int aBit)
 // Returns true if pSequence is set and its GetState() equals 1.
 // @fnv 0x0078a1f0
 // src: XBOX_PDB 0x0078a1f0
+// pdb: Tile3D::IsPlaying | LoadingMenu.obj | debug, upstream name already matches, high
 bool Tile::Tile3D_IsPlaying()
 {
     return *reinterpret_cast<NiControllerSequence**>(reinterpret_cast<char*>(this) + 0x3c) &&
@@ -489,15 +528,16 @@ bool Tile::Tile3D_IsPlaying()
 // Tile3D does not yet declare this animation-update entry point.
 struct LoadingTileAnimation : Tile3D
 {
-    void UpdateAnimation(float a1, int a2);
+    void Tile3D_UpdateSequence(float afValue, int abIsPercentage);
 };
 
 // Calls UpdateAnimation on the object at offset 0x54 with -1.0f and 0.
 // @fnv 0x0078a230
-// src: COMMUNITY 0x0078a230
-void LoadingMenu::ResetLoadingPinwheelAnimation()
+// src: XBOX_DEBUG_PDB 0x0078a230 (was COMMUNITY)
+// pdb: LoadingMenu::UpdateWheel | LoadingMenu.obj | debug, call graph, high
+void LoadingMenu::UpdateWheel()
 {
-    (*reinterpret_cast<LoadingTileAnimation**>(reinterpret_cast<char*>(this) + 0x54))->UpdateAnimation(-1.0f, 0);
+    (*reinterpret_cast<LoadingTileAnimation**>(reinterpret_cast<char*>(this) + 0x54))->Tile3D_UpdateSequence(-1.0f, 0);
 }
 
 extern SettingT_GameSettingCollection_** _DAT_011c6d50[];
@@ -524,6 +564,8 @@ void __fastcall FUN_00470470(void*);
 
 // @fnv 0x0078a940
 // src: XBOX_PDB 0x0078a940
+// pdb: LoadingMenu::FlushLoadScreenList | LoadingMenu.obj | retail, upstream name already matches, high
+// pdb locals: pnode
 void __fastcall LoadingMenu_FlushLoadScreenList(char* this_ptr)
 {
     for (void* pIter = this_ptr + 0x1d0; pIter && *_ref_006815c0(pIter); pIter = _ref_00726070(pIter))
@@ -538,6 +580,7 @@ void __fastcall LoadingMenu_FlushLoadScreenList(char* this_ptr)
 }
 
 // @fnv 0x0078ada0
+// pdb: TESLoadScreen::GetDisplaysOnMainMenu | LoadingMenu.obj | debug, object-file gap fill, medium
 bool TESLoadScreen::IsRefFlag400Set()
 {
     return (((TESObjectREFR*)this)->GetFlags() & 0x400) != 0;
@@ -545,6 +588,8 @@ bool TESLoadScreen::IsRefFlag400Set()
 
 // @fnv 0x0078afa0
 // src: COMMUNITY 0x0078afa0
+// pdb: LoadingMenu::ShowPlayerTiles | LoadingMenu.obj | debug, upstream name already matches, high
+// pdb params: abShow
 void LoadingMenu::ShowPlayerTiles(bool abShow)
 {
     SetFloatFlag(6, abShow);
@@ -561,12 +606,15 @@ struct ListH
 // Iterates the tile list from lst and calls Set(0xfa3, b) on each tile.
 // @fnv 0x0078b650
 // src: COMMUNITY 0x0078b650
-void LoadingMenu::UpdateStatsTilesVisibilities(bool b)
+// pdb: LoadingMenu::UpdateStatsTilesVisibilities | LoadingMenu.obj | retail, upstream name already matches, high
+// pdb params: bVisible
+// pdb locals: piter
+void LoadingMenu::UpdateStatsTilesVisibilities(bool bVisible)
 {
     void* pos = (void*)(const char*)*reinterpret_cast<StrH*>(&m_kFirstTileList);
     while (pos)
     {
-        reinterpret_cast<ListH*>(&m_kFirstTileList)->GetNext(pos)->Set(0xfa3, b);
+        reinterpret_cast<ListH*>(&m_kFirstTileList)->GetNext(pos)->Set(0xfa3, bVisible);
     }
 }
 
@@ -584,12 +632,15 @@ struct ListH
 // Iterates the tile list starting at lst and calls Set(0xfa3, b) on each tile.
 // @fnv 0x0078b6a0
 // src: COMMUNITY 0x0078b6a0
-void LoadingMenu::UpdateObjectiveTilesVisibilities(bool b)
+// pdb: LoadingMenu::UpdateObjectiveTilesVisibilities | LoadingMenu.obj | retail, upstream name already matches, high
+// pdb params: bVisible
+// pdb locals: piter
+void LoadingMenu::UpdateObjectiveTilesVisibilities(bool bVisible)
 {
     void* pos = (void*)(const char*)*reinterpret_cast<fnv_0078b6a0::StrH*>(&m_kSecondTileList);
     while (pos)
     {
-        reinterpret_cast<fnv_0078b6a0::ListH*>(&m_kSecondTileList)->GetNext(pos)->Set(0xfa3, b);
+        reinterpret_cast<fnv_0078b6a0::ListH*>(&m_kSecondTileList)->GetNext(pos)->Set(0xfa3, bVisible);
     }
 }
 
@@ -601,24 +652,27 @@ struct TL
 // Sets property 0xfa3 to b on every tile in both lists l1 and l2 and on t1 and t2.
 // @fnv 0x0078b6f0
 // src: COMMUNITY 0x0078b6f0
-void LoadingMenu::UpdateTipTilesVisibilities(bool b)
+// pdb: LoadingMenu::UpdateTipTilesVisibilities | LoadingMenu.obj | retail, upstream name already matches, high
+// pdb params: bVisible
+// pdb locals: piter, pTile
+void LoadingMenu::UpdateTipTilesVisibilities(bool bVisible)
 {
     void* pos = reinterpret_cast<TL*>(&m_kFourthTileList)->GetHead();
     while (pos)
     {
         Tile* pTile = reinterpret_cast<TL*>(&m_kFourthTileList)->GetNext(pos);
         if (pTile)
-            pTile->Set(0xfa3, b);
+            pTile->Set(0xfa3, bVisible);
     }
     pos = reinterpret_cast<TL*>(&m_kFifthTileList)->GetHead();
     while (pos)
     {
         Tile* pTile = reinterpret_cast<TL*>(&m_kFifthTileList)->GetNext(pos);
         if (pTile)
-            pTile->Set(0xfa3, b);
+            pTile->Set(0xfa3, bVisible);
     }
-    m_pTiles[36]->Set(0xfa3, b);
-    m_pTiles[37]->Set(0xfa3, b);
+    m_pTiles[36]->Set(0xfa3, bVisible);
+    m_pTiles[37]->Set(0xfa3, bVisible);
 }
 
 namespace fnv_0078b7c0 {
@@ -635,12 +689,15 @@ struct ListH
 // Iterates the tile list starting at lst and calls Set(0xfa3, b) on each tile.
 // @fnv 0x0078b7c0
 // src: COMMUNITY 0x0078b7c0
-void LoadingMenu::UpdateXPProgressTilesVisibilities(bool b)
+// pdb: LoadingMenu::UpdateXPProgressTilesVisibilities | LoadingMenu.obj | retail, upstream name already matches, high
+// pdb params: bVisible
+// pdb locals: piter
+void LoadingMenu::UpdateXPProgressTilesVisibilities(bool bVisible)
 {
     void* pos = (void*)(const char*)*reinterpret_cast<fnv_0078b7c0::StrH*>(&m_kThirdTileList);
     while (pos)
     {
-        reinterpret_cast<fnv_0078b7c0::ListH*>(&m_kThirdTileList)->GetNext(pos)->Set(0xfa3, b);
+        reinterpret_cast<fnv_0078b7c0::ListH*>(&m_kThirdTileList)->GetNext(pos)->Set(0xfa3, bVisible);
     }
 }
 
@@ -668,8 +725,11 @@ float __cdecl InterfaceManager_GetScreenSafeY(void);
 extern const double DAT_0106e7f8;
 
 // @fnv 0x0078b9b0
-// src: EXE 0x0078b9b0
-void LoadingMenu::CalcLoadScreenTypeTextWindowVerts(void* apData)
+// src: XBOX_RETAIL_PDB 0x0078b9b0 (was EXE)
+// pdb: LoadingMenu::CalcLoadScreenTypeTextWindowFaces | LoadingMenu.obj | retail, object-file run extension, high; confirmed by the debug build, whose CalcLoadScreenTypeTextWindowFaces prints the same warning (the message keeps the older name CalcLoadScreenTypeTextWindowVerts; neither PDB has a Verts function)
+// pdb params: apData
+// pdb locals: fSafeWidth, fConvertedYPos, fSafeHeight, fConvertedHeight, fCurrentScreenWidth, fCurrentScreenHeight, fConvertedWidth, fConvertedXPos
+void LoadingMenu::CalcLoadScreenTypeTextWindowFaces(void* apData)
 {
     if (apData == 0)
     {
@@ -706,6 +766,7 @@ void LoadingMenu::CalcLoadScreenTypeTextWindowVerts(void* apData)
 
 // @fnv 0x0078bb40
 // src: XBOX_PDB 0x0078bb40
+// pdb: LoadingMenu::InitPlayerTileSettings | LoadingMenu.obj | debug, upstream name already matches, high
 void LoadingMenu::InitPlayerTileSettings()
 {
     UpdatePlayerTileSettings((int)m_pCurrentLoadScreen);
@@ -752,6 +813,8 @@ extern bool DAT_011c70f8;
 
 // @fnv 0x0078d080
 // src: XBOX_PDB 0x0078d080
+// pdb: LoadingMenu::ShowChanges | LoadingMenu.obj | retail, upstream name already matches, high
+// pdb locals: pTileCritSect, i
 void __cdecl LoadingMenu_ShowChanges(void)
 {
     NiXenonRenderer_GetRenderer()->StartScene();
@@ -803,6 +866,10 @@ void __cdecl LoadingMenu_ShowChanges(void)
 extern void*(__stdcall* DAT_00fdf0b4)(void*, long, long, const char*);
 
 // @fnv 0x0078d3b0
+// pdb: CreateSemaphoreA | synch.obj | retail, call graph, low
+// pdb note: debug build links it to BSSemaphore::BSSemaphore
+// pdb params: lpSemaphoreAttributes, lInitialCount, lMaximumCount, lpName
+// pdb locals: Obja, ObjectName, Handle
 CountingSemaphore* __fastcall InitSemaphore(CountingSemaphore* pThis)
 {
     pThis->iCount = 0;
@@ -812,14 +879,15 @@ CountingSemaphore* __fastcall InitSemaphore(CountingSemaphore* pThis)
 }
 
 extern PlayerCharacter* pPlayer;
-float __cdecl GetLevelProgress();
+float __cdecl LoadingMenu_GetPlayerLevelProgress();
 // Stores the player's FindAudioEntry result, GetLevelProgress result and level into g_011da168, DAT_011da16c and DAT_011da170.
 // @fnv 0x0078d670
 // src: XBOX_PDB 0x0078d670
+// pdb: LoadingMenu::FillDisplayData | LoadingMenu.obj | debug, upstream name already matches, high
 void LoadingMenu_FillDisplayData()
 {
     *(int*)&g_011da168 = pPlayer->FindAudioEntry();
-    DAT_011da16c = GetLevelProgress();
+    DAT_011da16c = LoadingMenu_GetPlayerLevelProgress();
     DAT_011da170 = pPlayer->GetLevel();
 }
 
@@ -829,6 +897,7 @@ extern int DAT_0107410c;
 
 // @fnv 0x0078d880
 // src: COMMUNITY 0x0078d880
+// pdb: BSSimpleArray<TESLoadScreen *,1024>::BSSimpleArray<TESLoadScreen *,1024> | LoadingMenu.obj | debug, call graph, high
 void* __fastcall BSSimpleArray_TESLoadScreen_1024_BSSimpleArray_TESLoadScreen_1024(void* pThis)
 {
     *reinterpret_cast<int**>(pThis) = &DAT_0107410c;
@@ -846,8 +915,9 @@ class GlobalObject_00869f00
 };
 
 // @fnv 0x0078d8b0
-// src: GUESS 0x0078d8b0 (confidence: low)
-void __fastcall LoadingMenu_UpdateState_0078d8b0(GlobalObject_00869f00* pThis)
+// src: XBOX_DEBUG_PDB 0x0078d8b0
+// pdb: BSSimpleArray<TESLoadScreen *,1024>::~BSSimpleArray<TESLoadScreen *,1024> | LoadingMenu.obj | debug, call graph (shared callers), high
+void __fastcall BSSimpleArray_TESLoadScreen_1024_dtor(GlobalObject_00869f00* pThis)
 {
     *(int**)pThis = &DAT_0107410c;
     pThis->Clear(true);
@@ -865,6 +935,7 @@ struct DelStandIn
 };
 // Runs the destructor, then frees this object if the flags bit 0 is set, and returns this.
 // @fnv 0x00788770
+// pdb: LoadingMenu::`scalar deleting destructor' | LoadingMenu.obj | retail, vtable slot, high
 void* DelStandIn::DestroyAndFree(unsigned int flags)
 {
     ((DtorStandIn*)this)->FUN_0083dec0();
@@ -1041,7 +1112,11 @@ void __cdecl _FNV_Warning(int, const char*, ...);
 } // namespace fnv_007890e0
 
 // @fnv 0x007890e0
-void LoadingMenu::InitLoadingMenu(TESForm* apLocation)
+// src: XBOX_RETAIL_PDB 0x007890e0
+// pdb: LoadingMenu::_Create | LoadingMenu.obj | retail, unique string literal, high
+// pdb params: apLocation
+// pdb locals: psleep, data, pav, pnode, p3dtile
+void LoadingMenu::_Create(TESForm* apLocation)
 {
     Menu* psleep;
 
@@ -1057,7 +1132,7 @@ void LoadingMenu::InitLoadingMenu(TESForm* apLocation)
 
     HUDMainMenu::UpdateVisibilityState(5);
     HUDMainMenu::UpdateTargetReference(0, false, false);
-    InterfaceH_loadingmenu::SetLookAtReference(0);
+    InterfaceH_loadingmenu::Interface_SetCrosshairTargetType(0);
 
     if (fnv_007890e0::g_thePlayer && !fnv_007890e0::DAT_0126fac4->IsPlaying())
         fnv_007890e0::DAT_0126fac4->RequestInterruption();
@@ -1070,13 +1145,13 @@ void LoadingMenu::InitLoadingMenu(TESForm* apLocation)
 
     if (DAT_011a0294 || fnv_007890e0::DAT_011c3f3c->GetValue() != fnv_007890e0::gModifierZero)
     {
-        this->SetTileVisible(0, false);
+        this->HideAllBut(0, false);
     }
     else if (DAT_011d8907 || ((fnv_007890e0::OSGlobalsH*)g_osGlobals)->Main_GameReset())
     {
         this->ShowPlayerTiles(false);
         ((fnv_007890e0::NiRendererH*)fnv_007890e0::NiXenonRenderer_GetRenderer())->StartScene();
-        this->ResetLoadingPinwheelAnimation();
+        this->UpdateWheel();
         ((fnv_007890e0::NiRendererH*)fnv_007890e0::NiXenonRenderer_GetRenderer())->FinishScene();
     }
     else
@@ -1104,7 +1179,7 @@ void LoadingMenu::InitLoadingMenu(TESForm* apLocation)
         }
         if (this->GetFloat(9))
         {
-            this->SetTileVisible(0xb, false);
+            this->HideAllBut(0xb, false);
             this->SetFloatFlag(4, false);
             *(unsigned int*)((char*)this + 0x1e4) = gm_GetTickCount();
             fnv_007890e0::DAT_011a0295 = true;
@@ -1115,7 +1190,7 @@ void LoadingMenu::InitLoadingMenu(TESForm* apLocation)
             this->RefreshLoadingScreen();
         }
         ((fnv_007890e0::NiRendererH*)fnv_007890e0::NiXenonRenderer_GetRenderer())->StartScene();
-        this->ResetLoadingPinwheelAnimation();
+        this->UpdateWheel();
         ((fnv_007890e0::NiRendererH*)fnv_007890e0::NiXenonRenderer_GetRenderer())->FinishScene();
     }
 
@@ -1156,7 +1231,7 @@ void LoadingMenu::InitLoadingMenu(TESForm* apLocation)
             *(NiProperty**)((char*)this + 0x1f0) = pav->GetProperty(fnv_007890e0::NiShadeProperty_GetType());
         }
 
-        this->UpdateLoadingScreens();
+        this->MakeLoadScreenList();
         if (!DAT_011a0294)
         {
             this->UpdateLoadingScreenText(false);
@@ -1196,7 +1271,7 @@ void LoadingMenu::InitLoadingMenu(TESForm* apLocation)
             BSAudio::GetSingleton()->SetUseMultipleThreads(true);
             this->SetFloatFlag(2, true);
         }
-        BSAudio::GetSingleton()->SetAudioProperty(2, 1000, 6000);
+        BSAudio::GetSingleton()->MuteType(2, 1000, 6000);
     }
 
     *(unsigned int*)((char*)this + 0x5b4) = 0;
@@ -1220,6 +1295,8 @@ struct LoadingTileSettings
 };
 // Applies the loading tile settings (justify, alpha, visibility, colour) to every tile in two tile lists, computing X/Y positions from this menu's bounds.
 // @fnv 0x0078c770
+// pdb: LoadingMenu::ResetPlayerTileSettingsToDefaults | LoadingMenu.obj | debug, object-file run extension, low
+// pdb locals: pStatTilesIter, pTipTilesIter, pTipTilesIter02, pXPProgressTilesIter, pStatsTile, pXPProgressTile, pTipTile, bMatchFound, i, pTipTile02
 void LoadingMenu::ApplySettingsToTiles(LoadingTileSettings* apSettings)
 {
     void* pos = ((::TileList*)&m_kFourthTileList)->GetHeadPos();
@@ -1350,6 +1427,7 @@ class TESGlobalValueReader
 extern TESGlobalValueReader* DAT_011c3f3c;
 
 extern BGSMoviePlayer* DAT_0126fac4;
+// pdb: class FalloutAudioMedia, size 0x1, 0 members
 struct FalloutAudioMedia
 {
     static void Update();
@@ -1368,6 +1446,8 @@ struct BSSimpleListTESRaceSize
 
 // @fnv 0x00789820
 // src: XBOX_PDB 0x00789820
+// pdb: LoadingMenu::Update | LoadingMenu.obj | retail, string-set bridge, high
+// pdb locals: CurrTime, CrossTime, fTileAlpha, fSlide02Alpha, fSlide01Alpha, cfilename, p3dtile, data
 void LoadingMenu::Update_00789820()
 {
 
@@ -1522,7 +1602,7 @@ void LoadingMenu::Update_00789820()
     }
 
     if (((Tile*)this->m_pTiles[11])->IsVisible())
-        this->ResetLoadingPinwheelAnimation();
+        this->UpdateWheel();
     BSAudio::GetSingleton()->Update(true);
     FalloutAudioMedia::Update();
 }
@@ -1550,9 +1630,12 @@ struct TL
 // When aiState is 1, walks the tile list at this+0xd0, sets flag 0xfa3 to 1 on tiles where it is 0, and calls SetTileAlpha on each tile with afTime.
 // @fnv 0x0078b100
 // src: COMMUNITY 0x0078b100
-void LoadingMenu::UpdateStatsTilesAlphas(float afTime, int aiState)
+// pdb: LoadingMenu::UpdateStatsTilesAlphas | LoadingMenu.obj | retail, upstream name already matches, high
+// pdb params: afAlpha, anSlide
+// pdb locals: piter, pTile
+void LoadingMenu::UpdateStatsTilesAlphas(float afAlpha, int anSlide)
 {
-    if (aiState == 1)
+    if (anSlide == 1)
     {
         void* pos = (void*)(unsigned int)*(fnv_0078b100::Flt*)((char*)this + 0xd0);
         while (pos)
@@ -1562,7 +1645,7 @@ void LoadingMenu::UpdateStatsTilesAlphas(float afTime, int aiState)
             {
                 if (((Tile*)pTile)->GetFloat(0xfa3) == 0.0)
                     pTile->Set(0xfa3, 1);
-                SetTileAlpha(pTile, afTime);
+                SetTileAlpha(pTile, afAlpha);
             }
         }
     }
@@ -1581,9 +1664,13 @@ struct TL
 
 // When aiState is 1, walks the tile list at this+0xdc, sets tile flag 0xfa3 to 1 if it is 0, and calls SetTileAlpha on each tile with afTime.
 // @fnv 0x0078b190
-void LoadingMenu::UpdateTiles(float afTime, int aiState)
+// src: XBOX_RETAIL_PDB 0x0078b190
+// pdb: LoadingMenu::UpdateObjectiveTilesAlphas | LoadingMenu.obj | retail, object-file run extension, high
+// pdb params: afAlpha, anSlide
+// pdb locals: piter, pTile
+void LoadingMenu::UpdateObjectiveTilesAlphas(float afAlpha, int anSlide)
 {
-    if (aiState == 1)
+    if (anSlide == 1)
     {
         void* pos = (void*)(unsigned int)*(fnv_0078b190::Flt*)((char*)this + 0xdc);
         while (pos)
@@ -1593,7 +1680,7 @@ void LoadingMenu::UpdateTiles(float afTime, int aiState)
             {
                 if (((Tile*)pTile)->GetFloat(0xfa3) == 0.0)
                     pTile->Set(0xfa3, 1);
-                SetTileAlpha(pTile, afTime);
+                SetTileAlpha(pTile, afAlpha);
             }
         }
     }
@@ -1612,7 +1699,11 @@ struct TL
 
 // For slide 1 or 2, iterates the slide's tile list, marks each tile's 0xfa3 float as 1 if zero, and applies afAlpha to it and the slide's extra tile.
 // @fnv 0x0078b220
-void LoadingMenu::FadeSlideTiles(float afAlpha, int anSlide)
+// src: XBOX_RETAIL_PDB 0x0078b220
+// pdb: LoadingMenu::UpdateTipTilesAlphas | LoadingMenu.obj | retail, object-file run extension, high
+// pdb params: afAlpha, anSlide
+// pdb locals: piter, pTile
+void LoadingMenu::UpdateTipTilesAlphas(float afAlpha, int anSlide)
 {
     void* piter;
     if (anSlide == 1)
@@ -1660,9 +1751,13 @@ struct TL
 
 // When aiState is 1, walks the tile list at this+0xe8, sets flag 0xfa3 to 1 on tiles where it is 0, and calls SetTileAlpha on each tile with afTime.
 // @fnv 0x0078b360
-void LoadingMenu::UpdateLoadingTiles(float afTime, int aiState)
+// src: XBOX_RETAIL_PDB 0x0078b360
+// pdb: LoadingMenu::UpdateXPProgressTilesAlphas | LoadingMenu.obj | retail, object-file run extension, high
+// pdb params: afAlpha, anSlide
+// pdb locals: piter, pTile
+void LoadingMenu::UpdateXPProgressTilesAlphas(float afAlpha, int anSlide)
 {
-    if (aiState == 1)
+    if (anSlide == 1)
     {
         void* pos = (void*)(unsigned int)*(fnv_0078b360::Flt*)((char*)this + 0xe8);
         while (pos)
@@ -1672,13 +1767,15 @@ void LoadingMenu::UpdateLoadingTiles(float afTime, int aiState)
             {
                 if (((Tile*)pTile)->GetFloat(0xfa3) == 0.0)
                     pTile->Set(0xfa3, 1);
-                SetTileAlpha(pTile, afTime);
+                SetTileAlpha(pTile, afAlpha);
             }
         }
     }
 }
 
-void LoadingMenu::CopyTileLayout()
+// src: XBOX_RETAIL_PDB 0x0078b810
+// pdb: LoadingMenu::GetPlayerTileDefaultSettings | LoadingMenu.obj | retail, call graph (anchored callee segments), high
+void LoadingMenu::GetPlayerTileDefaultSettings()
 {
     for (int i = 0; i < 38; i++)
     {
@@ -1712,7 +1809,11 @@ void LoadingMenu_FillDisplayData();
 extern float DAT_011da16c;
 extern int DAT_011da170;
 // @fnv 0x0078d6b0
-void SaveLoadScreenData(BGSSaveFormBuffer* apSaveGameBuffer)
+// src: XBOX_RETAIL_PDB 0x0078d6b0
+// pdb: LoadingMenu::SaveGame | LoadingMenu.obj | retail, object-file run extension, high
+// pdb params: apSaveGameBuffer
+// pdb locals: iindex, pquest, buseLocationSpecificScreensOnly
+void LoadingMenu_SaveGame(BGSSaveFormBuffer* apSaveGameBuffer)
 {
     unsigned int iElementIndex;
     void* pquest;
@@ -1730,6 +1831,8 @@ void SaveLoadScreenData(BGSSaveFormBuffer* apSaveGameBuffer)
 
 // @fnv 0x0078d280
 // src: COMMUNITY 0x0078d280
+// pdb: LoadingMenu::SetupForMainMenu | LoadingMenu.obj | retail, upstream name already matches, high
+// pdb params: abCreate
 void LoadingMenu_SetupForMainMenu(bool abCreate)
 {
     if (BSSystemUtility::s_iUpdateEnabled)
@@ -1737,7 +1840,7 @@ void LoadingMenu_SetupForMainMenu(bool abCreate)
     else if (abCreate)
         LoadingMenu::Create(0, false, false);
     if (BSSystemUtility::s_iUpdateEnabled)
-        ((LoadingMenu*&)BSSystemUtility::s_iUpdateEnabled)->SetTileVisible(LoadingMenu::eBackground, false);
+        ((LoadingMenu*&)BSSystemUtility::s_iUpdateEnabled)->HideAllBut(LoadingMenu::eBackground, false);
 }
 
 void _Deallocate(void*);
@@ -1748,6 +1851,7 @@ struct S0078d3f0
 };
 // Calls FUN_0078d420 on this, deallocates this when flags has bit 0 set, and returns this.
 // @fnv 0x0078d3f0
+// pdb: LoadingMenuThread::`scalar deleting destructor' | LoadingMenu.obj | retail, vtable slot, high
 void* S0078d3f0::FUN_0078d3f0(unsigned int flags)
 {
     this->FUN_0078d420();
@@ -1847,6 +1951,7 @@ struct RendX
 } // namespace fnv_007887a0
 
 // @fnv 0x007887a0
+// pdb: LoadingMenu::~LoadingMenu | LoadingMenu.obj | retail, upstream name already matches, high
 LoadingMenu::~LoadingMenu()
 {
     LoadingMenu::UpdateLoadingScreenThread();
@@ -1899,6 +2004,9 @@ struct LoadScreenNode_r8a280
 
 // Hashes the current candidate's full name, then sets the description and game-setting text on menu tiles and marks DAT_011a0295 true.
 // @fnv 0x0078a280
+// pdb: LoadingMenu::SetScreenInfo | LoadingMenu.obj | debug, call graph, medium
+// pdb params: abRefreshCurrent
+// pdb locals: pnext, iplateno
 void LoadingMenu::UpdateLoadingScreenText(bool abRefreshCurrent)
 {
     unsigned int iplateno = 0;
@@ -2015,6 +2123,9 @@ int sprintf_s(char* apBuffer, unsigned int auiSize, const char* apFormat, ...);
 
 // Iterates the tile list, setting XP bar, text and box tile values from the loading settings and XP counters, then applies alpha to the XP box.
 // @fnv 0x0078c210
+// pdb: LoadingMenu::InitTipTilesSettings | LoadingMenu.obj | debug, object-file run extension, low
+// pdb params: apData
+// pdb locals: piter, pTile, fX
 void LoadingMenu::ApplyXPBarSettings(LoadingTileSettingsX* apSettings)
 {
     void* pos = reinterpret_cast<fnv_0078c210::TileListX*>(&m_kThirdTileList)->GetHeadPos();
@@ -2113,6 +2224,9 @@ class FUN_0078d420 : public Base_b7116
 
 // Destructor for the class; destroys the two Sub_b7116 members unk3c and unk30.
 // @fnv 0x0078d420
+// pdb: LoadingMenu::GetPlayerLevelProgress | LoadingMenu.obj | retail, object-file run extension, low
+// pdb note: debug build links it to LoadingMenuThread::~LoadingMenuThread
+// pdb locals: fhave, ilow, ihigh, ilevel
 FUN_0078d420::~FUN_0078d420()
 {}
 
@@ -2137,6 +2251,9 @@ void* __cdecl operator new(unsigned int);
 
 // Looks up a loading-menu tile by id; if missing, loads loading_menu.xml, initialises the menu, creates the thread and returns the tile.
 // @fnv 0x00788cc0
+// pdb: LoadingMenu::Create | LoadingMenu.obj | retail, call graph, high
+// pdb params: apLocation, abBackgroundUpdate
+// pdb locals: pmenu, ptile, pold_menu_tile
 LoadingMenuCreateTile* __cdecl CreateLoadingMenuTile(TESForm* form, bool refresh, bool visible)
 {
     LoadingMenuCreateTile* menu = Tile_GetMenuByClass(LoadingMenu_GetClassStatic());
@@ -2158,7 +2275,7 @@ LoadingMenuCreateTile* __cdecl CreateLoadingMenuTile(TESForm* form, bool refresh
         FUN_00717740(0);
         tile->FUN_00a1dc70(reinterpret_cast<TileMenu*>(existing), false);
         DAT_011da0c0 = tile;
-        DAT_011da0c0->CopyTileLayout();
+        DAT_011da0c0->GetPlayerTileDefaultSettings();
         DAT_011da0c0->InitStatsTilesList();
         DAT_011da0c0->LoadingMenu_InitObjectiveTilesList();
         DAT_011da0c0->InitTipTilesList();
@@ -2167,7 +2284,7 @@ LoadingMenuCreateTile* __cdecl CreateLoadingMenuTile(TESForm* form, bool refresh
         DAT_011da0c0->UpdateTipTilesVisibilities(false);
         DAT_011da0c0->UpdateStatsTilesVisibilities(false);
         DAT_011da0c0->UpdateXPProgressTilesVisibilities(false);
-        DAT_011da0c0->InitLoadingMenu(form);
+        DAT_011da0c0->_Create(form);
         DAT_011da0c0->FUN_00458080(10, visible);
         if (!DAT_011da0c4)
             DAT_011da0c4 = new LoadingMenuThread;
@@ -2218,7 +2335,10 @@ int IsSpecial(const char*);
 void NextScreen(int*, int);
 // Clears and rebuilds the loading screen list from settings or gathered entries, adds a fallback entry, refreshes the menu and selects the first entry.
 // @fnv 0x0078a5a0
-void LoadingMenu::UpdateLoadingScreens()
+// src: XBOX_RETAIL_PDB 0x0078a5a0
+// pdb: LoadingMenu::MakeLoadScreenList | LoadingMenu.obj | retail, unique string literal, high
+// pdb locals: breset, eid, pnew, pfolder, candidateList
+void LoadingMenu::MakeLoadScreenList()
 {
     bool cleared = false;
     if (!((ScreenList*)&m_kLoadScreenItems)->Empty())
@@ -2299,6 +2419,9 @@ struct LoadingStatsSettings
     } second;
 };
 // @fnv 0x0078bc80
+// pdb: LoadingMenu::InitObjectiveTilesSettings | LoadingMenu.obj | debug, object-file run extension, low
+// pdb params: apData
+// pdb locals: fFontHeight, piter, pTile, fX, fWrapWidth, fY, nip3Dims
 void LoadingMenu::ApplySettings(LoadingStatsSettings* settings)
 {
     static_cast<LoadingStatsTile*>(m_pTiles[31])->Set(0xfa1, float(m_kTileRectangle.left), true);
@@ -2315,13 +2438,13 @@ void LoadingMenu::ApplySettings(LoadingStatsSettings* settings)
     static_cast<LoadingStatsTile*>(m_pTiles[17])->Set(0xfb4, settings->second.fBlue, true);
     float spacing = static_cast<LoadingStatsTile*>(m_pTiles[31])->FUN_00a011b0(0xfb0) / settings->second.count;
     float y = 0.0f;
-    NiTListItem<Tile*>* secondPos = reinterpret_cast<LoadingStatsTileList<Tile*>*>(&static_cast<LoadingStatsTile*>(m_pTiles[17])->m_kChildTileList)->FUN_00726070();
-    NiTListItem<Tile*>* pos2 = reinterpret_cast<LoadingStatsTileList<Tile*>*>(&static_cast<LoadingStatsTile*>(m_pTiles[18])->m_kChildTileList)->FUN_00726070();
+    NiTListItem<Tile*>* secondPos = reinterpret_cast<LoadingStatsTileList<Tile*>*>(&static_cast<LoadingStatsTile*>(m_pTiles[17])->xChildren)->FUN_00726070();
+    NiTListItem<Tile*>* pos2 = reinterpret_cast<LoadingStatsTileList<Tile*>*>(&static_cast<LoadingStatsTile*>(m_pTiles[18])->xChildren)->FUN_00726070();
     unsigned int uiIndex = 1;
     while (secondPos && pos2)
     {
-        Tile* firstTile = reinterpret_cast<LoadingStatsTileList<Tile*>*>(&static_cast<LoadingStatsTile*>(m_pTiles[17])->m_kChildTileList)->GetPrev(secondPos);
-        Tile* secondTile = reinterpret_cast<LoadingStatsTileList<Tile*>*>(&static_cast<LoadingStatsTile*>(m_pTiles[18])->m_kChildTileList)->GetPrev(pos2);
+        Tile* firstTile = reinterpret_cast<LoadingStatsTileList<Tile*>*>(&static_cast<LoadingStatsTile*>(m_pTiles[17])->xChildren)->GetPrev(secondPos);
+        Tile* secondTile = reinterpret_cast<LoadingStatsTileList<Tile*>*>(&static_cast<LoadingStatsTile*>(m_pTiles[18])->xChildren)->GetPrev(pos2);
         if (firstTile && secondTile)
         {
             bool visible = true;
@@ -2379,6 +2502,9 @@ struct Options
 };
 // Measures the selected font, configures the primary and secondary tiles from options, sets the primary tile's alpha and finishes it.
 // @fnv 0x0078bf80
+// pdb: LoadingMenu::InitXPProgressTilesSettings | LoadingMenu.obj | debug, object-file run extension, low
+// pdb params: apData
+// pdb locals: piter, pTile, fX, fHeight, nip3Dims, cCurrentLevel, fNextLevelWidth, fCurrLevelWidth, cNextLevel
 void LoadingMenu::UpdateMenuTiles(Options* options)
 {
     float fontHeight = FUN_005bd5b0()->fonts[options->font]->Height();
@@ -2431,26 +2557,28 @@ void LoadingMenu::UpdateMenuTiles(Options* options)
 }
 
 // @fnv 0x0078ce10
-void LoadingMenu::SetTileAlpha(void* pkTile, float fAlpha)
+// pdb: LoadingMenu::FadeIn | LoadingMenu.obj | retail, call graph, high
+// pdb locals: ftotalticks, iticksremaining
+void LoadingMenu::SetTileAlpha(void* apTile, float afPct)
 {
-    if (!pkTile)
+    if (!apTile)
         return;
-    if (pkTile == m_pTiles[33])
+    if (apTile == m_pTiles[33])
         return;
-    fAlpha = BSMIN(fAlpha, 1.0f);
-    fAlpha = BSMAX_00404010(fAlpha, 0.0f);
-    if (((Tile*)pkTile)->GetType() == 0x388)
+    afPct = BSMIN(afPct, 1.0f);
+    afPct = BSMAX_00404010(afPct, 0.0f);
+    if (((Tile*)apTile)->GetType() == 0x388)
     {
-        SetAlphaRecursive(((Tile*)pkTile)->GetModel_0056c7f0(), fAlpha);
+        SetAlphaRecursive(((Tile*)apTile)->GetModel_0056c7f0(), afPct);
         return;
     }
-    if (pkTile == m_pTiles[12])
-        fAlpha = 1.0f - fAlpha;
-    static_cast<Tile*>(pkTile)->Set(0xfa9, fAlpha * 255.0, true);
+    if (apTile == m_pTiles[12])
+        afPct = 1.0f - afPct;
+    static_cast<Tile*>(apTile)->Set(0xfa9, afPct * 255.0, true);
     DAT_011a0295 = true;
-    void* pPos = ((::TileList*)((char*)pkTile + 4))->GetHeadPos();
+    void* pPos = ((::TileList*)((char*)apTile + 4))->GetHeadPos();
     while (pPos)
-        SetTileAlpha(((::TileList*)((char*)pkTile + 4))->GetNext(pPos), fAlpha);
+        SetTileAlpha(((::TileList*)((char*)apTile + 4))->GetNext(pPos), afPct);
 }
 
 namespace fnv_0078bb60 {
@@ -2466,24 +2594,27 @@ struct PerkEntryX : BGSPerkEntry
 // Applies the selected perk entry's settings to the loading menu tiles, XP bar, or menu tiles based on its type, then clears DAT_011a0296.
 // @fnv 0x0078bb60
 // src: XBOX_PDB 0x0078bb60
-void LoadingMenu::UpdatePlayerTileSettings(BGSPerkEntry* entry)
+// pdb: LoadingMenu::UpdatePlayerTileSettings | LoadingMenu.obj | retail, upstream name already matches, high
+// pdb params: pLoadScreen
+// pdb locals: pData
+void LoadingMenu::UpdatePlayerTileSettings(BGSPerkEntry* pLoadScreen)
 {
     if (!FUN_00458110(6))
         return;
-    if (entry == 0)
+    if (pLoadScreen == 0)
     {
         if (m_pkLoadScreenList)
-            entry = reinterpret_cast<BGSPerkEntry*>(m_pkLoadScreenList->GetItem());
+            pLoadScreen = reinterpret_cast<BGSPerkEntry*>(m_pkLoadScreenList->GetItem());
         else
-            entry = reinterpret_cast<BGSPerkEntry*>(m_kLoadScreenItems.GetItem());
-        if (entry == 0)
+            pLoadScreen = reinterpret_cast<BGSPerkEntry*>(m_kLoadScreenItems.GetItem());
+        if (pLoadScreen == 0)
             return;
     }
-    if (((fnv_0078bb60::PerkEntryX*)entry)->FUN_005f36f0())
+    if (((fnv_0078bb60::PerkEntryX*)pLoadScreen)->FUN_005f36f0())
     {
-        int x = ((fnv_0078bb60::PerkEntryX*)entry)->TESLoadScreen_GetTypeData();
-        CalcLoadScreenTypeTextWindowVerts(x);
-        switch (((fnv_0078bb60::PerkEntryX*)entry)->FUN_005a7130())
+        int x = ((fnv_0078bb60::PerkEntryX*)pLoadScreen)->TESLoadScreen_GetTypeData();
+        CalcLoadScreenTypeTextWindowFaces(x);
+        switch (((fnv_0078bb60::PerkEntryX*)pLoadScreen)->FUN_005a7130())
         {
         case 4:
             ApplySettings(x);
@@ -2519,6 +2650,8 @@ unsigned int Cmd_GetSessionTime_Execute();
 
 // @fnv 0x0078cc50
 // src: XBOX_PDB 0x0078cc50
+// pdb: LoadingMenu::FadeIn | LoadingMenu.obj | debug, object-file gap fill, medium
+// pdb locals: ftotalticks, iticksremaining
 inline void LoadingMenu::FadeIn()
 {
     static float s_fDuration = reinterpret_cast<Tile*>(pMenu)->FUN_00a011b0(0xfc1) * 1000.0;
@@ -2527,7 +2660,7 @@ inline void LoadingMenu::FadeIn()
     {
         if (s78cc50::DAT_011dea0c->FUN_0078cdf0() || s78cc50::DAT_011a0294)
         {
-            reinterpret_cast<TileMenu*>(m_pTiles[12])->FUN_00a20610(s78cc50::DAT_011dea0c->FUN_0078cdf0());
+            reinterpret_cast<TileMenu*>(m_pTiles[12])->SetSourceTexture(s78cc50::DAT_011dea0c->FUN_0078cdf0());
             LoadScreenData = (unsigned int)(s78cc50::Cmd_GetSessionTime_Execute() + s_fDuration);
         }
         else
@@ -2554,6 +2687,8 @@ unsigned int gm_GetTickCount();
 
 // If DAT_011a0294 is set, GetFloat(0) is zero, and p3dtile->FUN_0078a1f0() is false, advance m_pkLoadScreenList and apply the loading texture.
 // @fnv 0x0078aa90
+// pdb: LoadingMenu::ForceFinish | LoadingMenu.obj | debug, object-file gap fill, medium
+// pdb locals: p3dtile
 bool LoadingMenu::UpdateLoadingScreen()
 {
     Tile* p3dtile = m_pTiles[0];
@@ -2574,7 +2709,9 @@ bool LoadingMenu::UpdateLoadingScreen()
 // For a selected screen with bShow true, dispatches settings by screen type; otherwise passes bShow to all four methods.
 // @fnv 0x0078b3f0
 // src: XBOX_PDB 0x0078b3f0
-void LoadingMenu::UpdatePlayerTileVisibilities(TESLoadScreen* pLoadScreen, bool bShow)
+// pdb: LoadingMenu::UpdatePlayerTileVisibilities | LoadingMenu.obj | retail, upstream name already matches, high
+// pdb params: pLoadScreen, bVisible
+void LoadingMenu::UpdatePlayerTileVisibilities(TESLoadScreen* pLoadScreen, bool bVisible)
 {
     if (!GetFloat(6))
     {
@@ -2595,33 +2732,33 @@ void LoadingMenu::UpdatePlayerTileVisibilities(TESLoadScreen* pLoadScreen, bool 
             return;
         }
     }
-    if (pLoadScreen && bShow)
+    if (pLoadScreen && bVisible)
     {
         switch (pLoadScreen->GetLoadScreenTypeDataType())
         {
         case 2:
-            UpdateObjectiveTilesVisibilities(bShow);
-            UpdateStatsTilesVisibilities(!bShow);
-            UpdateTipTilesVisibilities(!bShow);
-            UpdateXPProgressTilesVisibilities(!bShow);
+            UpdateObjectiveTilesVisibilities(bVisible);
+            UpdateStatsTilesVisibilities(!bVisible);
+            UpdateTipTilesVisibilities(!bVisible);
+            UpdateXPProgressTilesVisibilities(!bVisible);
             break;
         case 4:
-            UpdateObjectiveTilesVisibilities(!bShow);
-            UpdateStatsTilesVisibilities(bShow);
-            UpdateTipTilesVisibilities(!bShow);
-            UpdateXPProgressTilesVisibilities(!bShow);
+            UpdateObjectiveTilesVisibilities(!bVisible);
+            UpdateStatsTilesVisibilities(bVisible);
+            UpdateTipTilesVisibilities(!bVisible);
+            UpdateXPProgressTilesVisibilities(!bVisible);
             break;
         case 3:
-            UpdateObjectiveTilesVisibilities(!bShow);
-            UpdateStatsTilesVisibilities(!bShow);
-            UpdateTipTilesVisibilities(bShow);
-            UpdateXPProgressTilesVisibilities(!bShow);
+            UpdateObjectiveTilesVisibilities(!bVisible);
+            UpdateStatsTilesVisibilities(!bVisible);
+            UpdateTipTilesVisibilities(bVisible);
+            UpdateXPProgressTilesVisibilities(!bVisible);
             break;
         case 1:
-            UpdateObjectiveTilesVisibilities(!bShow);
-            UpdateStatsTilesVisibilities(!bShow);
-            UpdateTipTilesVisibilities(!bShow);
-            UpdateXPProgressTilesVisibilities(bShow);
+            UpdateObjectiveTilesVisibilities(!bVisible);
+            UpdateStatsTilesVisibilities(!bVisible);
+            UpdateTipTilesVisibilities(!bVisible);
+            UpdateXPProgressTilesVisibilities(bVisible);
             break;
         default:
             UpdateObjectiveTilesVisibilities(false);
@@ -2633,10 +2770,10 @@ void LoadingMenu::UpdatePlayerTileVisibilities(TESLoadScreen* pLoadScreen, bool 
     }
     else
     {
-        UpdateObjectiveTilesVisibilities(bShow);
-        UpdateStatsTilesVisibilities(bShow);
-        UpdateTipTilesVisibilities(bShow);
-        UpdateXPProgressTilesVisibilities(bShow);
+        UpdateObjectiveTilesVisibilities(bVisible);
+        UpdateStatsTilesVisibilities(bVisible);
+        UpdateTipTilesVisibilities(bVisible);
+        UpdateXPProgressTilesVisibilities(bVisible);
     }
 }
 
@@ -2674,6 +2811,9 @@ struct S00788ab0_OSQuery
 // When GetFloat(3) is nonzero, updates timers and menu state, configures tiles, and assigns value to pLocation.
 // @fnv 0x00788ab0
 // src: COMMUNITY 0x00788ab0
+// pdb: LoadingMenu::Reset | LoadingMenu.obj | debug, object-file run extension, low
+// pdb params: apLocation
+// pdb locals: pstartMenu
 void LoadingMenu::Reset_00788ab0(int aiExtraCandidates)
 {
     if (GetFloat(3))
@@ -2698,7 +2838,7 @@ void LoadingMenu::Reset_00788ab0(int aiExtraCandidates)
             FUN_0078aec0();
         }
         pLocation = (TESForm*)aiExtraCandidates;
-        UpdateLoadingScreens();
+        MakeLoadScreenList();
         pLocation = (TESForm*)aiExtraCandidates;
         m_uiLoadScreenIndex = gm_GetTickCount();
         ++m_uiSecondStateValue;
@@ -2716,7 +2856,7 @@ void LoadingMenu::Reset_00788ab0(int aiExtraCandidates)
         if (!((Tile*)m_pTiles[11])->IsVisible())
         {
             m_pTiles[11]->Set(4003, 1);
-            this->ResetLoadingPinwheelAnimation();
+            this->UpdateWheel();
         }
         InterfaceManager_GetSingleton()->GetParent()->Set(4003, 0);
         fnv_00788ab0::Tile_UpdateAll(true);

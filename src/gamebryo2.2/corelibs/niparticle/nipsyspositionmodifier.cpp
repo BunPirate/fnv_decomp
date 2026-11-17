@@ -18,7 +18,7 @@ public:
     void AppendString(StrArr* strings);
     void AppendModifierStrings(StrArr* strings);
     PositionModifierOperations* Clone(CloningProcess& process);
-    void CopyPositionMembers(PositionModifierOperations* destination, CloningProcess& process);
+    void CopyMembers(PositionModifierOperations* destination, CloningProcess& process);
 };
 
 // @fnv 0x00c31720
@@ -34,13 +34,13 @@ PositionModifierOperations* PositionModifierOperations::Initialize() throw()
     return this;
 }
 
-extern "C" void* g_012026b8;
+extern "C" void* NiPSysPositionModifier_ms_RTTI; // src: XBOX_RETAIL_PDB 0x012026b8 (old: g_012026b8)
 
 // @fnv 0x00c28b90
 // src: COMMUNITY 0x00c28b90
 void* __cdecl NiPSysPositionModifier_GetRTTI()
 {
-    return &g_012026b8;
+    return &NiPSysPositionModifier_ms_RTTI;
 }
 
 void __cdecl FUN_00c31750(void);
@@ -64,7 +64,7 @@ char* __cdecl NiViewerStrings_NiGetViewerString_Title(const char*);
 void PositionModifierOperations::AppendString(StrArr* pkStrings)
 {
     AppendModifierStrings(pkStrings);
-    char* pcStr = NiViewerStrings_NiGetViewerString_Title((const char*)g_012026b8);
+    char* pcStr = NiViewerStrings_NiGetViewerString_Title((const char*)NiPSysPositionModifier_ms_RTTI);
     unsigned int uiIdx = pkStrings->m_usSize;
     if (uiIdx >= pkStrings->m_usMaxSize)
         pkStrings->SetSize(uiIdx + pkStrings->m_usGrowBy);
@@ -207,20 +207,24 @@ PositionModifierOperations* PositionModifierOperations::Clone(CloningProcess& kC
 {
     void* memory = NiPSysModifier::operator new(sizeof(NiPSysModifier));
     PositionModifierOperations* pkClone = memory ? ConstructPositionModifier(memory) : 0;
-    CopyPositionMembers(pkClone, kCloning);
+    CopyMembers(pkClone, kCloning);
     return pkClone;
 }
 
 // @fnv 0x00c28b50
 // src: XBOX_PDB 0x00c28b50
-void NiPSysModifier::NiPSysPositionModifier_LoadBinary(NiStream& a1)
+// pdb: NiPSysPositionModifier::LoadBinary | NiPSysPositionModifier.obj | debug, upstream name already matches, high
+// pdb params: kStream
+void NiPSysModifier::NiPSysPositionModifier_LoadBinary(NiStream& kStream)
 {
-    NiPSysModifier::LoadBinary(a1);
+    NiPSysModifier::LoadBinary(kStream);
 }
 
 void __cdecl FUN_00c31830();
 // @fnv 0x00c28b80
 // src: XBOX_PDB 0x00c28b80
+// pdb: NiPSysPositionModifier::IsEqual | NiPSysPositionModifier.obj | debug, upstream name already matches, high
+// pdb params: pkObject
 void __cdecl NiPSysPositionModifier_IsEqual()
 {
     FUN_00c31830();
@@ -230,6 +234,8 @@ void __cdecl FUN_00c31950();
 
 // @fnv 0x00c28b70
 // src: XBOX_PDB 0x00c28b70
+// pdb: NiPSysPositionModifier::SaveBinary | NiPSysPositionModifier.obj | debug, upstream name already matches, high
+// pdb params: kStream
 void __cdecl NiPSysPositionModifier_SaveBinary()
 {
     FUN_00c31950();

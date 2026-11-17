@@ -172,7 +172,7 @@ struct InterpStub_00a2fac0
     virtual void v45() = 0;
     virtual bool IsCorrectType() = 0;  // +0xB8
 };
-bool __stdcall NiMultiTargetTransformController_InterpolatorIsCorrectType(InterpStub_00a2fac0* apInterpolator, unsigned short ausIndex);
+bool __stdcall NiMultiTargetTransformController_InterpolatorIsCorrectType(InterpStub_00a2fac0* pkInterpolator, unsigned short usIndex);
 // FUN_00a35900 : BSMultiTargetTreadTransfController entry getter.
 // Returns &m_pEntries[usIndex]; the stride is sizeof(TreadEntry) = 0x34.
 struct FUN_00a35900_cls
@@ -219,8 +219,8 @@ struct TreadInterpolator : NiInterpController
 };
 struct TreadController
 {
-    TreadInterpolator* __thiscall CreateInterpolator(unsigned int index);
-    void __thiscall BSMultiTargetTreadTransfController_CopyMembers(TreadInterpolator* interp, unsigned int index);
+    TreadInterpolator* __thiscall CreateInterpolator(unsigned int kCloning);
+    void __thiscall BSMultiTargetTreadTransfController_CopyMembers(TreadInterpolator* pkDest, unsigned int kCloning);
 };
 struct TreadElem_00a35b90
 {
@@ -277,7 +277,7 @@ struct FUN_00a35fe0_shell
     Entry_00a35fe0** unk3C;
     unsigned short unk40;
 
-    unsigned short __thiscall BSMultiTargetTreadTransfController_AddInterpolatorTarget(Target_00a35fe0* target, unsigned short id, void* value);
+    unsigned short __thiscall BSMultiTargetTreadTransfController_AddInterpolatorTarget(Target_00a35fe0* apTarget, unsigned short ausBlendIdx, void* apLink);
 };
 extern unsigned short DAT_01096320;
 extern "C" __declspec(dllimport) long __stdcall InterlockedIncrement(long volatile*);
@@ -361,7 +361,7 @@ void Holder::AssignInterpolatorRef(unsigned int idx, SmartPtr<RefObj>& out) thro
 }
 struct NiStream;
 extern void __cdecl LoadBinary(NiStream*);
-void __cdecl BSMultiTargetTreadTransfController_LoadBinary(NiStream* stream);
+void __cdecl BSMultiTargetTreadTransfController_LoadBinary(NiStream* arStream);
 struct Mat112
 {
     float xx, xy, xz, yx, yy, yz, zx, zy, zz;
@@ -450,7 +450,7 @@ struct Controller112
     unsigned short count, field3a;
     Link112** links;
     unsigned short linkCount;
-    void BSMultiTargetTreadTransfController_Update(float* time);
+    void BSMultiTargetTreadTransfController_Update(float* UpdateData);
 };
 
 struct ArrayCount
@@ -536,18 +536,21 @@ struct TargetA35
 };
 // @fnv 0x00a35a80
 // src: XBOX_PDB 0x00a35a80
-void TargetA35::BSMultiTargetTreadTransfController_AllocateStorage(unsigned short n, unsigned short m)
+// pdb: BSMultiTargetTreadTransfController::AllocateStorage | BSMultiTargetTreadTransfController.obj | retail, upstream name already matches, high
+// pdb params: usCount, ausLinkCount
+// pdb locals: us
+void TargetA35::BSMultiTargetTreadTransfController_AllocateStorage(unsigned short usCount, unsigned short ausLinkCount)
 {
-    count = n;
-    nodeCount = m;
-    if (n)
+    count = usCount;
+    nodeCount = ausLinkCount;
+    if (usCount)
     {
-        entries = new (ArrayCount(n)) FUN_00a42f60[n];
-        for (unsigned short i = 0; i < n; ++i)
+        entries = new (ArrayCount(usCount)) FUN_00a42f60[usCount];
+        for (unsigned short i = 0; i < usCount; ++i)
             InterlockedIncrement(&entries[i].refs);
-        nodes = (NodeA35**)_NiMalloc_00aa1070(sizeof(NodeA35*) * m);
-        FUN_00ec61c0(nodes, 0, sizeof(NodeA35*) * m);
-        for (unsigned short i = 0; i < m; ++i)
+        nodes = (NodeA35**)_NiMalloc_00aa1070(sizeof(NodeA35*) * ausLinkCount);
+        FUN_00ec61c0(nodes, 0, sizeof(NodeA35*) * ausLinkCount);
+        for (unsigned short i = 0; i < ausLinkCount; ++i)
             nodes[i] = new NodeA35();
     }
 }

@@ -43,7 +43,7 @@ struct FUN_0042f4e0_class
 {
     void* m_vtbl;
     void __thiscall NiTMapBase_DFALL_NiTMapItem_TESObjectREFR_bool_TESObjectREFR_bool_NiTMapBase_DFALL_NiTMapItem_TESObjectREFR_bool_TESObjectREFR_bool(void* arg);
-    void* __thiscall SetVirtualTable_0042f4e0(void* arg);
+    void* __thiscall NiTMap_TESObjectREFR_bool_ctor(void* uiHashSize);
 };
 struct FUN_0042ff10_cls
 {
@@ -139,10 +139,11 @@ struct FUN_0043b260_Class
     unsigned short m_0018;
     bool __thiscall NiZBufferProperty_IsEqualFast(unsigned short* pArg);
 };
+// pdb: class TaskQueueInterface, size 0x10 (here 0x1), 4 members
 struct TaskQueueInterface
 {
     void SetTaskFlagDWord(bool, unsigned int);
-    void NiAVObject_SetSelectiveUpdateTransformsOverride(bool enabled);
+    void NiAVObject_SetSelectiveUpdateTransformsOverride(bool bOverride);
 };
 struct FUN_0043b5b0_shell
 {
@@ -154,11 +155,11 @@ struct FUN_0043ba10_shell
 };
 struct FUN_0043b9f0_shell
 {
-    void NiControllerSequence_SetName(FUN_0043ba10_shell* p);
+    void NiControllerSequence_SetName(FUN_0043ba10_shell* kName);
 };
 struct FUN_0043baa0_class
 {
-    void BSAnimGroupSequence_SetAnimGroup(void* p);
+    void BSAnimGroupSequence_SetAnimGroup(void* apAnimGroup);
 };
 bool __cdecl MLGetFlag_1(unsigned char);
 struct FUN_0043fab0_class
@@ -272,7 +273,7 @@ void Deallocate(void*);
 void ResetVirtualTableAndClear_004385a0();
 struct FUN_00438970_class
 {
-    void __thiscall ResetVirtualTableAndClear_004385a0();
+    void __thiscall BSSimpleArray_DismemberedLimb_1024_dtor();
     void* __thiscall FUN_00438970(unsigned int flags);
 };
 struct FUN_004389a0_Class
@@ -348,11 +349,11 @@ struct ExtraListHelper
 };
 struct FUN_0042dee0_shell
 {
-    void __thiscall ExtraDataList_SetInfoGeneralTopic(int v);
+    void __thiscall ExtraDataList_SetInfoGeneralTopic(int apItem);
 };
 struct FUN_0042df90_shell
 {
-    ExtraLock* ExtraDataList_GetInfoGeneralTopic(int a);
+    ExtraLock* ExtraDataList_GetInfoGeneralTopic(int apSpeaker);
 };
 extern int DAT_01015980;
 struct FUN_0042e210_Class : public BE
@@ -371,7 +372,7 @@ struct FUN_0042e650_class : BE
     int a;
     int b;
     unsigned char c;
-    FUN_0042e650_class(unsigned char c);
+    FUN_0042e650_class(unsigned char bMod);
 };
 struct G00559a40
 {
@@ -405,12 +406,12 @@ extern void* _EmptyFS;
 void* __cdecl NiGlobalStringTable_GetRealBufferStart(void*);
 void __cdecl FinishScriptRunLock(void*);
 void NiGlobalStringTable_DecRefCount(void* p);
-int __cdecl NiGlobalStringTable_GetRealBufferStart(int* p);
+int __cdecl NiGlobalStringTable_GetRealBufferStart(int* kHandle);
 extern int DAT_01016024;
 struct FUN_00438660_class
 {
     void* vtable;
-    FUN_00438660_class* SetVirtualTableAndProcessState_00438660();
+    FUN_00438660_class* BSSimpleArray_unsigned_int_1024_ctor();
 };
 extern void* DAT_01016058;
 void __cdecl Deallocate(void*);
@@ -464,7 +465,7 @@ struct FUN_004396b0_class
 };
 struct FUN_00439f50_class
 {
-    void NiMatrix3_GetCol(unsigned int col, NiPoint3* out);
+    void NiMatrix3_GetCol(unsigned int uiCol, NiPoint3* col);
 };
 struct Node
 {
@@ -509,13 +510,13 @@ struct FUN_0043a9a0_class
     unsigned int x;
     unsigned int y;
     unsigned int z;
-    void __thiscall LoadFields();
+    void __thiscall DoorTeleportData_LoadGame();
 };
 struct S_0043b320
 {
     char _pad0[0x38];
     TaskQueueInterface** arr;
-    void __thiscall NiMultiTargetTransformController_SetInterpolatorTarget(unsigned short a, TaskQueueInterface* b);
+    void __thiscall NiMultiTargetTransformController_SetInterpolatorTarget(unsigned short a, TaskQueueInterface* pkTarget);
 };
 struct FUN_00435820 : public BSExtraData
 {
@@ -528,13 +529,13 @@ struct FUN_00420e00_cls : public BaseExtraList
     BSExtraData* GetExtraData(unsigned char);
     BSExtraData* AddExtra(BSExtraData*);
     void RemoveExtra(unsigned char);
-    void ExtraDataList_SetPortal(void* p);
+    void ExtraDataList_SetPortal(void* apPortal);
 };
 struct FUN_00421600_Class
 {
     BSExtraData* GetExtraData(unsigned char);
     BSExtraData* AddExtra(BSExtraData*);
-    void ExtraDataList_SetNoRumors(unsigned char val);
+    void ExtraDataList_SetNoRumors(unsigned char abVal);
 };
 extern int DAT_01015cd8;
 struct ListX
@@ -568,7 +569,7 @@ struct BaseExtraList2
 };
 struct FUN_0042e5a0_class
 {
-    void ExtraDataList_SetIsModding(unsigned char type);
+    void ExtraDataList_SetIsModding(unsigned char bModding);
 };
 extern int DAT_01016038;
 void* __cdecl NiMalloc(unsigned int);
@@ -600,7 +601,7 @@ struct LH
 };
 struct FUN_00420440_Class
 {
-    void ExtraDataList_SetRoomLinkedRefData(void* pObject);
+    void ExtraDataList_SetRoomLinkedRefData(void* apData);
 };
 struct FUN_00416b80
 {
@@ -614,7 +615,7 @@ struct FUN_00416b80
 };
 struct FUN_00420c10_Class : public FUN_004207e0Class
 {
-    void ExtraDataList_AddRoomLinkedRoomRef(int value);
+    void ExtraDataList_AddRoomLinkedRoomRef(int apRef);
 };
 void* __cdecl operator new(unsigned int size);
 struct FUN_0042cca0 : public BSExtraData
@@ -657,7 +658,7 @@ struct AC_0042f730
 {
     void* vtbl;
     void __fastcall ActorCause_DecRefCount();
-    void __fastcall ReleaseReferencedObject();
+    void __fastcall NiPointer_ActorCause_dtor();
 };
 struct BSExtraDataHelper
 {
@@ -686,13 +687,14 @@ extern int DAT_01188f7c;
 extern void* DAT_011c5f54;
 extern void* DAT_011c5f58;
 void NiTAbstractPoolAllocator_unsigned_int_CreateFreeMem();
+// pdb: class Date, size 0x4 (here 0x1), 2 members
 struct Date
 {
     ~Date();
 };
 struct ExtraListShell
 {
-    void BaseExtraList_RemoveExtra_00410140(unsigned char type);
+    void BaseExtraList_RemoveExtra_00410140(unsigned char acType);
     void ExtraDataList_ClearRumorsExtra();
 };
 extern "C" void* DAT_0101598c;
@@ -732,14 +734,14 @@ struct FUN_00436b20
     unsigned int unk04;
     unsigned int unk08;
     unsigned int unk0c;
-    FUN_00436b20(unsigned int a, unsigned int b);
+    FUN_00436b20(unsigned int apTalkAct, unsigned int apRef);
 };
 struct FUN_0042e060_class
 {
     void* __thiscall BaseExtraList_GetExtraData(unsigned char type);
     void __thiscall BaseExtraList_RemoveExtra(void* extra, bool remove);
     void __thiscall BaseExtraList_AddExtra(void* extra);
-    void __thiscall ExtraDataList_SetTalkingActorExtra(unsigned int a, unsigned int b);
+    void __thiscall ExtraDataList_SetTalkingActorExtra(unsigned int apTalkAct, unsigned int apRef);
 };
 void* __cdecl operator new(unsigned int uiSize, void* pvMem);
 void __cdecl operator delete(void* pvObject, void* pvMem);
@@ -752,7 +754,7 @@ struct B42FA60Entry
 class B42FA60Allocator
 {
   public:
-    void BSSimpleArray_NavMeshPtr_1024_ConstructItems(B42FA60Entry* pkArray, unsigned int ItemUpdateArray);
+    void BSSimpleArray_NavMeshPtr_1024_ConstructItems(B42FA60Entry* apFirstAddr, unsigned int aiCount);
 };
 class B42FE80MapBase
 {
@@ -1627,7 +1629,7 @@ extern CloneProcessLists DAT_011e0e80;
 extern "C" CloneRef* g_thePlayer;
 struct CloneFactory
 {
-    CloneRef* ExtraTalkingActor_CreateLocalMobileObjectCopy(void* pBase, CloneSource* pSource);
+    CloneRef* ExtraTalkingActor_CreateLocalMobileObjectCopy(void* apTalkact, CloneSource* apRef);
 };
 struct GcItem
 {
@@ -1697,12 +1699,12 @@ class FUN_004391c0 : public NiSpawnBase
     FUN_004391c0();
     virtual void v00();
     void Init0(unsigned int a);
-    void Init1(unsigned int a);
-    void Init2(unsigned int a);
+    void Init1(unsigned int bAlpha);
+    void NiAlphaProperty_SetTestMode(unsigned int eTestFunc);
     void Init3(unsigned int a);
     void Init4(unsigned int a);
-    void Init5(unsigned short a);
-    void Init6(unsigned int a);
+    void Init5(unsigned short eSrcBlend);
+    void Init6(unsigned int eDestBlend);
     unsigned short m_0018;
 };
 // NiProperty's constructor: calls the primary base constructor, installs the
@@ -1732,7 +1734,7 @@ struct FUN_00c36310 : Bound
     int unk24, unk28, unk2c, unk30, unk34, unk38, unk3c, unk40, unk44;
     FUN_00c36310();
 };
-BSMultiBound* __cdecl MultiBoundMarkerData_CreateMultiBoundForRef(TESObjectREFR* reference);
+BSMultiBound* __cdecl MultiBoundMarkerData_CreateMultiBoundForRef(TESObjectREFR* apRef);
 int __cdecl NiZBufferProperty_GetType();
 extern "C" long __stdcall InterlockedCompareExchange(long volatile* Destination, long Exchange, long Comparand);
 typedef long(__stdcall* InterlockedCompareExchange_t)(long volatile*, long, long);
@@ -1983,7 +1985,7 @@ struct AnimController : AnimMemObject
     AnimController();
     void SetData(AnimBlendData* apData);
 };
-AnimController* __cdecl MultiBoundMarkerData_CreateRoomForRef(AnimSource* apSource);
+AnimController* __cdecl MultiBoundMarkerData_CreateRoomForRef(AnimSource* apRef);
 struct RefCountedObject
 {
     void IncRefCount();
@@ -2016,7 +2018,7 @@ class AttachedNode
 class AttachTarget
 {
   public:
-    void BSAnimGroupSequence_SetAnimGroup(AttachedNode* pkNode);
+    void BSAnimGroupSequence_SetAnimGroup(AttachedNode* apAnimGroup);
 };
 class NamedObjectPtr
 {
@@ -2044,7 +2046,7 @@ class NamedObjectLoader
     AttachedNodePtr m_spNode;            // +0x08
 
     AttachTarget* SkyObject_GetNiNode();
-    void KFModel_InitSequence(const char* pcName);
+    void KFModel_InitSequence(const char* apFilename);
 };
 class MenuTopic;
 class ExtraBase437510
@@ -2075,6 +2077,8 @@ class FUN_0043a9f0_C
 
 // @fnv 0x0043a9f0
 // src: XBOX_PDB 0x0043a9f0
+// pdb: DoorTeleportData::InitLoadGame | TeleportData.obj | debug, object-file gap fill, medium
+// pdb locals: ilinkedDoorID
 void FUN_0043a9f0_C::DoorTeleportData_InitLoadGame()
 {
     unsigned int auiFormId = (unsigned int)m_pkRef;

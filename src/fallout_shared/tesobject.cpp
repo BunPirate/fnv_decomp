@@ -17,17 +17,20 @@ NiNode* TESObject::_CreateNiNode(TESObjectREFR* reference, bool arg1)
 }
 
 // @fnv 0x0050edd0
-void TESBoundObject::LoadBoundData(TESFile* file)
+// pdb: TESBoundObject::LoadObjectBound | TESObject.obj | retail, vtable slot, high
+// pdb params: apFile
+void TESBoundObject::LoadBoundData(TESFile* apFile)
 {
-    if (file && file->GetChunkID() == 0x444e424f)
+    if (apFile && apFile->GetChunkID() == 0x444e424f)
     {
-        file->GetChunkData(&TESBoundObjectBounds, 12);
-        if (file->IsEndianConversionRequired())
-            ((TESObjectBound*)&TESBoundObjectBounds)->TESBoundObject_BOUND_DATA_SwapEndian();
+        apFile->GetChunkData(&TESBoundObjectBounds, 12);
+        if (apFile->IsEndianConversionRequired())
+            ((TESObjectBound*)&TESBoundObjectBounds)->TESBoundObject_BOUND_DATA_Endian();
     }
 }
 
 // @fnv 0x0050e820
+// pdb: TESBoundObject::TESBoundObject | TESObject.obj | retail, upstream name already matches, high
 TESBoundObject::TESBoundObject()
 {
     ((TESObjectBound*)&TESBoundObjectBounds)->TESBoundObject_BOUND_DATA_BOUND_DATA();
@@ -36,6 +39,8 @@ TESBoundObject::TESBoundObject()
 }
 
 // @fnv 0x005101e0
+// pdb: TESObjectList::lnk_Place | TESObject.obj | debug, object-file run extension, low
+// pdb params: lpNode, lpNew
 TESObject* TESFormList::InsertObjectAfter(TESObject* after, TESObject* object)
 {
     if (this == (TESFormList*)g_dataHandler->GetNext())
@@ -63,6 +68,7 @@ TESObject* TESFormList::InsertObjectAfter(TESObject* after, TESObject* object)
 }
 
 // @fnv 0x0050f9e0
+// pdb: TESObject::IsMarker | TESObject.obj | retail, string-set bridge, high
 bool TESObject::HasLoaded3D()
 {
     if (!this)
@@ -121,18 +127,21 @@ bool TESObject::HasLoaded3D()
 }
 
 // @fnv 0x00605410
-NiNode* TESCreature::Create3DModel(TESObjectREFR* reference)
+// pdb: TESNPC::Clone3D | TESNPC.obj | retail, vtable slot, high
+// pdb params: apRef
+// pdb locals: pClone, pBipedAnim, UpdateData
+NiNode* TESCreature::Create3DModel(TESObjectREFR* apRef)
 {
-    if (GetUsesLeveledTemplate() && reference && !reference->HasLeveledCreatureCalced())
+    if (GetUsesLeveledTemplate() && apRef && !apRef->HasLeveledCreatureCalced())
     {
-        SetTemplateReference(reference);
-        return reference->GetObjectReference()->Clone3DAlt(reference);
+        CalcTemplateForRef(apRef);
+        return apRef->GetObjectReference()->Clone3DAlt(apRef);
     }
     NiNode* node = 0;
-    if (reference)
+    if (apRef)
     {
-        BipedAnim* biped = ((TESObjectREFRBipedSlots*)reference)->GetBipedAnim();
-        node = Get3DObject(reference, false);
+        BipedAnim* biped = ((TESObjectREFRBipedSlots*)apRef)->GetBipedAnim();
+        node = Get3DObject(apRef, false);
         if (biped)
         {
             if (SceneObjectLookup::GetObjectByName(node, "Bip01"))
@@ -145,8 +154,8 @@ NiNode* TESCreature::Create3DModel(TESObjectREFR* reference)
         }
         else if (SceneObjectLookup::GetObjectByName(node, "Bip01"))
         {
-            biped = new BipedAnim(reference, node);
-            ((TESObjectREFRBipedSlots*)reference)->SetBipedAnim(biped);
+            biped = new BipedAnim(apRef, node);
+            ((TESObjectREFRBipedSlots*)apRef)->SetBipedAnim(biped);
             node->UpdateSceneObject();
             NiUpdateData update(0.0f, false, false);
             node->Update(update);
@@ -156,16 +165,19 @@ NiNode* TESCreature::Create3DModel(TESObjectREFR* reference)
 }
 
 // @fnv 0x00519040
-NiNode* TESObjectDOOR::Create3DModel(TESObjectREFR* reference)
+// pdb: TESObjectDOOR::Clone3D | TESObjectDOOR.obj | retail, vtable slot, high
+// pdb params: apRequester
+// pdb locals: p3D, pcon, pextra, pcontrol
+NiNode* TESObjectDOOR::Create3DModel(TESObjectREFR* apRequester)
 {
-    NiNode* node = TESBoundObject::Clone3DAlt(reference);
+    NiNode* node = TESBoundObject::Clone3DAlt(apRequester);
     if (((TESChallenge*)this)->GetFormTwo() && !BSAudio::GetSingleton()->TESRegionData_GetPriority())
         BSAudio::GetSingleton()->Precache(((TESSound*)((TESChallenge*)this)->GetFormTwo())->TESSound_GetFilename(), 0x121,
                                           ((TESChallenge*)this)->GetFormTwo());
     if (node)
     {
         NiTimeController* controller = node->GetController((const NiRTTI*)&g_011dfeac);
-        if (IsAutomaticDoor() && (!reference || !reference->FUN_00477ba0()))
+        if (IsAutomaticDoor() && (!apRequester || !apRequester->FUN_00477ba0()))
         {
             if (!controller)
             {
@@ -179,7 +191,7 @@ NiNode* TESObjectDOOR::Create3DModel(TESObjectREFR* reference)
             if (!extra)
             {
                 extra = new BSXFlags;
-                node->AddExtraData(BSXFlags_Tag(), extra);
+                node->NiObjectNET_AddExtraData(BSXFlags_Tag(), extra);
             }
             static_cast<BSXFlags*>(extra)->BSXFlags_SetFlags(true, true);
         }
@@ -193,11 +205,14 @@ NiNode* TESObjectDOOR::Create3DModel(TESObjectREFR* reference)
 
 // Builds a NiNode from the reference's model, names it with the editor ID, applies scale, and returns the node or null.
 // @fnv 0x0050d250
-NiNode* TESObjectLIGH::Create3DModel(TESObjectREFR* reference)
+// pdb: TESObjectLIGH::Clone3D | TESLight.obj | retail, vtable slot, high
+// pdb params: pRequester
+// pdb locals: pModel, spData3D, spClone, cloneData, message, iMessageLen, fscale
+NiNode* TESObjectLIGH::Create3DModel(TESObjectREFR* pRequester)
 {
     NiNode* node = 0;
     NiPointer<NiAVObject> empty(0);
-    NiPointer<NiAVObject> source(CreateNiNode(reference));
+    NiPointer<NiAVObject> source(CreateNiNode(pRequester));
     if (((NiPointer<NiNode>*)&source)->operator->())
     {
         unsigned int size = ((BGSCameraPath*)this)->HasNameForWarning() + 16;
@@ -208,11 +223,11 @@ NiNode* TESObjectLIGH::Create3DModel(TESObjectREFR* reference)
             if (node)
                 node->SetName(NiFixedString(static_cast<const char*>(GetName())));
         }
-        if (((PlayerCharacter*)this)->FUN_0050d4a0() && reference)
-            reference->FUN_00693ef0(true);
+        if (((PlayerCharacter*)this)->FUN_0050d4a0() && pRequester)
+            pRequester->FUN_00693ef0(true);
         float scale = 1.0f;
-        if (reference)
-            scale = ((PlayerCharacter*)reference)->GetScale();
+        if (pRequester)
+            scale = ((PlayerCharacter*)pRequester)->GetScale();
         {
             CloningProcess process(scale);
             if (TESModel::GetModelLength())
@@ -223,7 +238,7 @@ NiNode* TESObjectLIGH::Create3DModel(TESObjectREFR* reference)
             {
                 node = new BSFadeNode;
             }
-            CreateLight(reference, node, false);
+            GenDynamic(pRequester, node, false);
             node->UpdateSceneObject();
             return node;
         }
@@ -279,6 +294,9 @@ struct FUN_0044a580_cls : public Str
 };
 // Copies up to _Count characters starting at _Roff from _Right into this string, handling self-assignment by shifting in place.
 // @fnv 0x0044a580
+// pdb: std::basic_string<char,std::char_traits<char>,std::allocator<char> >::assign | TESObject.obj | retail, call graph, low
+// pdb note: debug build links it to std::basic_string<char,std::char_traits<char>,std::allocator<char> >::basic_string<char,std::char_traits<char>,std::allocator<char> >
+// pdb params: _Ptr
 FUN_0044a580_cls* FUN_0044a580_cls::AssignSubstring(Str& _Right, unsigned int _Roff, unsigned int _Count)
 {
     if (((AnimIdle*)&_Right)->GetSection() < _Roff)
@@ -359,6 +377,8 @@ void __cdecl std_char_traits_char_assign(char&, const char&);
 
 // Sets the string's size field to _Newsize and writes a null terminator at the new end of the buffer.
 // @fnv 0x0044a880
+// pdb: std::basic_string<char,std::char_traits<char>,std::allocator<char> >::operator+= | Tile.obj | debug, object-file run extension, low
+// pdb params: _Ptr
 template <>
 void std::basic_string<char, std::char_traits<char>, std::allocator<char> >::ResizeString(unsigned int _Newsize)
 {
@@ -411,6 +431,7 @@ void __fastcall _ref_006815c0(void* pThis);
 // Calls _ref_006815c0 on pThis and on pThis + 6, then returns pThis.
 // @fnv 0x0050e9c0
 // src: COMMUNITY 0x0050e9c0
+// pdb: TESBoundObject::BOUND_DATA::BOUND_DATA | TESObject.obj | debug, upstream name already matches, high
 void* __fastcall TESBoundObject_BOUND_DATA_BOUND_DATA(char* pThis)
 {
     _ref_006815c0(pThis);
@@ -420,15 +441,16 @@ void* __fastcall TESBoundObject_BOUND_DATA_BOUND_DATA(char* pThis)
 
 struct FUN_0050e9f0_shell : public TESBoundObject
 {
-    void UpdateState_0050e9f0();
+    void TESBoundObject_dtor();
 };
 
 extern const void* const vftable_TESBoundObject[];
 void __fastcall FUN_0050f930(void*);
 
 // @fnv 0x0050e9f0
-// src: GUESS 0x0050e9f0 (confidence: low)
-void FUN_0050e9f0_shell::UpdateState_0050e9f0()
+// src: XBOX_RETAIL_PDB 0x0050e9f0
+// pdb: TESBoundObject::~TESBoundObject | TESObject.obj | retail, call graph, high
+void FUN_0050e9f0_shell::TESBoundObject_dtor()
 {
     *reinterpret_cast<const void* const**>(this) = vftable_TESBoundObject;
     FUN_0050f930(this);
@@ -443,6 +465,8 @@ struct FUN_0050ea10_class
     // Computes the box minimum corner by subtracting m_kExtents from m_kCenter and stores it in arPoint.
 // @fnv 0x0050ea10
 // src: COMMUNITY 0x0050ea10
+// pdb: TESBoundTreeObject::TESBoundTreeObject | TESObject.obj | retail, object-file run extension, low
+// pdb note: debug build links it to BSBound::GetBoundMin
     void BSBound_GetBoundMin(NiPoint3& arMinCorner) const
     {
         arMinCorner = m_kCenter - m_kExtents;
@@ -461,6 +485,8 @@ void* __cdecl memcpy(void*, const void*, unsigned int);
 // Copies 0xc bytes from offset 0x24 of apCopy into offset 0x24 of this object.
 // @fnv 0x0050eaa0
 // src: COMMUNITY 0x0050eaa0
+// pdb: TESBoundObject::CopyBoundData | TESObject.obj | debug, upstream name already matches, high
+// pdb params: apCopy
 void FUN_0050eaa0_shell::TESBoundObject_CopyBoundData(TESBoundObject* apCopy)
 {
     memcpy((char*)this + 0x24, (char*)apCopy + 0x24, 0xc);
@@ -488,6 +514,7 @@ double __fastcall NiNPShortPoint3_Length(const ActorValueShortVector*);
 // Subtracts the ActorValueShortVector at offset 0x2a from the one at 0x24, passes the result to FUN_0050ec80, and scales it by DAT_01011588.
 // @fnv 0x0050ebf0
 // src: XBOX_PDB 0x0050ebf0
+// pdb: TESBoundObject::GetBoundSize | TESObject.obj | debug, upstream name already matches, high
 float FUN_0050ebf0_shell::TESBoundObject_GetBoundSize()
 {
     return NiNPShortPoint3_Length(&(((ActorValueShortVector*)((char*)this + 0x24))
@@ -521,6 +548,8 @@ struct FUN_0050ee20_shell : public TESBoundAnimObject
 // Calls the virtual function at vtable offset 0x14c with pfilename and 0, returning its bool result.
 // @fnv 0x0050ee20
 // src: XBOX_PDB 0x0050ee20
+// pdb: TESBoundObject::Clone3D | TESObject.obj | debug, object-file gap fill, medium
+// pdb params: pRequester
 bool FUN_0050ee20_shell::TESBoundObject_Clone3D(char* pfilename)
 {
     return (this->*(*(bool(FUN_0050ee20_shell::***)(char*, int))this)[0x14c / 4])(pfilename, 0);
@@ -531,6 +560,7 @@ extern int DAT_0106c92c;
 
 // @fnv 0x0050f6f0
 // src: EXE 0x0050f6f0
+// pdb: TESBoundAnimObject::TESBoundAnimObject | TESObject.obj | retail, upstream name already matches, high
 void* __fastcall TESBoundAnimObject_TESBoundAnimObject(void* pThis)
 {
     FindTriangleForLocationFilter_FindTriangleForLocationFilter(pThis);
@@ -544,14 +574,15 @@ struct FUN_0050f740_shell : public TESBoundAnimObject
 };
 
 extern void* vftable_TESBoundAnimObject;
-void __fastcall UpdateState_0050e9f0(void*);
+void __fastcall TESBoundObject_dtor(void*);
 
 // @fnv 0x0050f740
 // src: GUESS 0x0050f740 (confidence: low)
+// pdb: TESBoundAnimObject::~TESBoundAnimObject | TESObject.obj | debug, call graph, medium
 void FUN_0050f740_shell::UpdateFields_0050f740()
 {
     *(void**)this = &vftable_TESBoundAnimObject;
-    UpdateState_0050e9f0(this);
+    TESBoundObject_dtor(this);
 }
 
 namespace fnv_0050f7a0 {
@@ -559,8 +590,9 @@ void __fastcall FindTriangleForLocationFilter_FindTriangleForLocationFilter(void
 extern int DAT_0106c92c;
 
 // @fnv 0x0050f7a0
-// src: GUESS 0x0050f7a0 (confidence: low)
-void* __fastcall Object_InitializeFields_0050f7a0(void* pThis)
+// src: XBOX_DEBUG_PDB 0x0050f7a0
+// pdb: TESBoundTreeObject::TESBoundTreeObject | TESObject.obj | debug, call graph, high
+void* __fastcall TESBoundTreeObject_ctor(void* pThis)
 {
     FindTriangleForLocationFilter_FindTriangleForLocationFilter(pThis);
     *(int**)pThis = &DAT_0106c92c;
@@ -573,6 +605,7 @@ void __fastcall FUN_00483370(void*);
 
 // @fnv 0x0050f8c0
 // src: EXE 0x0050f8c0
+// pdb: TESObject::TESObject | TESObject.obj | debug, upstream name already matches, high
 TESObject* __fastcall TESObject_TESObject(TESObject* apObject)
 {
     FUN_00483370(apObject);
@@ -590,17 +623,20 @@ struct TESObjectREFR_s
 const char* __cdecl TESBipedModelForm_GetWorldModel(void*, TESObject*);
 struct FUN_0050fd90_cls
 {
-    const char* GetModelPathHook(TESObject* apObject);
+    const char* GetModelPathHook(TESObject* apRef);
 };
 // @fnv 0x0050fd90
 // src: COMMUNITY 0x0050fd90
-const char* FUN_0050fd90_cls::GetModelPathHook(TESObject* apObject)
+// pdb: TESObject::GetModelFileName | TESObject.obj | debug, call graph, high
+// pdb params: apRef
+// pdb locals: pworldFilename
+const char* FUN_0050fd90_cls::GetModelPathHook(TESObject* apRef)
 {
     const char* result = 0;
-    if (apObject)
-        result = ((TESObjectREFR_s*)apObject)->GetModelFilePath();
+    if (apRef)
+        result = ((TESObjectREFR_s*)apRef)->GetModelFilePath();
     if (!result)
-        result = TESBipedModelForm_GetWorldModel(this, apObject);
+        result = TESBipedModelForm_GetWorldModel(this, apRef);
     if (!result)
         result = TESModel::GetModelFilePath((TESObject*)this);
     return result;
@@ -615,13 +651,16 @@ int __cdecl TruncateFloatToInt(float);
 int __cdecl sprintf_s(char*, unsigned int, const char*, ...);
 struct FUN_0050fdf0_cls
 {
-    void FormatScaledName(PlayerCharacter* apPlayer, char* apBuffer);
+    void FormatScaledName(PlayerCharacter* apRef, char* apScaledFileName);
 };
 // @fnv 0x0050fdf0
-void FUN_0050fdf0_cls::FormatScaledName(PlayerCharacter* apPlayer, char* apBuffer)
+// pdb: TESObject::GetScaledModelFileName | TESObject.obj | retail, string-set bridge, high
+// pdb params: apRef, apScaledFileName
+// pdb locals: pworldFilename
+void FUN_0050fdf0_cls::FormatScaledName(PlayerCharacter* apRef, char* apScaledFileName)
 {
-    const char* name = ((FUN_0050fd90_stub*)this)->GetModelPathHook(apPlayer);
-    sprintf_s(apBuffer, 260, "%s%i", name, TruncateFloatToInt((float)(apPlayer->GetScale() * g_d100)));
+    const char* name = ((FUN_0050fd90_stub*)this)->GetModelPathHook(apRef);
+    sprintf_s(apScaledFileName, 260, "%s%i", name, TruncateFloatToInt((float)(apRef->GetScale() * g_d100)));
 }
 
 struct FUN_005100d0_s
@@ -653,6 +692,8 @@ struct FUN_005102b0_shell : public TESFormList
 // Calls a helper with the object and returns the resulting TESObject pointer.
 // @fnv 0x005102b0
 // src: XBOX_PDB 0x005102b0
+// pdb: TESObjectList::lnk_Append | TESObject.obj | debug, upstream name already matches, high
+// pdb params: lpNew
 TESObject* FUN_005102b0_shell::TESObjectList_lnk_Append(TESObject* lpNew)
 {
     lpNew = InsertObjectAfter(m_pSecondObject, lpNew);
@@ -688,7 +729,7 @@ void __cdecl Object_DispatchIteratorRange_0044d580(void* apArg1, void* apArg2, v
 }
 }  // namespace fnv_0044d580
 
-void __fastcall UpdateState_0050e9f0(void*);
+void __fastcall TESBoundObject_dtor(void*);
 void __cdecl _Deallocate(void*);
 
 struct FUN_0050e990
@@ -699,7 +740,7 @@ struct FUN_0050e990
 // @fnv 0x0050e990
 void* FUN_0050e990::DeleteThis(unsigned int flags)
 {
-    UpdateState_0050e9f0(this);
+    TESBoundObject_dtor(this);
     if (flags & 1)
         _Deallocate(this);
     return this;
@@ -773,6 +814,7 @@ void* _Deallocate(void* p);
 
 // Calls FUN_0050f740, then deallocates this when flags has bit 0 set, and returns this.
 // @fnv 0x0050f710
+// pdb: TESBoundAnimObject::`scalar deleting destructor' | TESObject.obj | debug, object-file gap fill, medium
 void* FUN_0050f740_shell::FUN_0050f710(unsigned int flags)
 {
     UpdateFields_0050f740();
@@ -792,6 +834,7 @@ struct FUN_0050f900_Class
 
 // Calls FUN_0050f930 on this, deallocates this when bit 0 of flags is set, and returns this.
 // @fnv 0x0050f900
+// pdb: TESObject::`scalar deleting destructor' | TESObject.obj | debug, object-file run extension, low
 void* __thiscall FUN_0050f900_Class::FUN_0050f900(unsigned int flags)
 {
     FUN_0050f930(this);
@@ -814,27 +857,32 @@ float ShortPoint3::GetFloatZ()
 
 struct FUN_0059b820_class : TESBoundObject
 {
-    NiNode* TESCaravanCard_Clone3D(TESObjectREFR* reference, bool flag);
+    NiNode* TESCaravanCard_Clone3D(TESObjectREFR* pRequester, bool deepCopy);
 };
 
 // @fnv 0x0059b820
 // src: XBOX_PDB 0x0059b820
-NiNode* FUN_0059b820_class::TESCaravanCard_Clone3D(TESObjectREFR* reference, bool flag)
+// pdb: TESCaravanCard::Clone3D | TESCaravan.obj | debug, upstream name already matches, high
+// pdb params: pRequester, deepCopy
+// pdb locals: pobj
+NiNode* FUN_0059b820_class::TESCaravanCard_Clone3D(TESObjectREFR* pRequester, bool deepCopy)
 {
-    NiAVObject* result = Get3DObject(reference, flag);
+    NiAVObject* result = Get3DObject(pRequester, deepCopy);
     return static_cast<NiNode*>(result);
 }
 
 struct FUN_006055d0_class
 {
     void TESObject_UnClone3D(int);
-    void TESNPC_UnClone3D(int a);
+    void TESNPC_UnClone3D(int apRequester);
 };
 // @fnv 0x006055d0
 // src: XBOX_PDB 0x006055d0
-void FUN_006055d0_class::TESNPC_UnClone3D(int a)
+// pdb: TESNPC::UnClone3D | TESNPC.obj | debug, upstream name already matches, high
+// pdb params: apRequester
+void FUN_006055d0_class::TESNPC_UnClone3D(int apRequester)
 {
-    TESObject_UnClone3D(a);
+    TESObject_UnClone3D(apRequester);
 }
 
 extern "C" void __cdecl FUN_00ec3205(int);
@@ -849,6 +897,7 @@ struct FUN_00aca4b0_class
 
 // @fnv 0x00aca4b0
 // src: GUESS 0x00aca4b0 (confidence: low)
+// pdb: std::ios_base::operator! | algs.obj | debug, call graph (shared callers), low
 void __thiscall FUN_00aca4b0_class::SetVtableAndProcessState_00aca4b0()
 {
     vtbl = &DAT_010a2fa4;
@@ -864,9 +913,11 @@ struct S_4029f0
 // Calls FUN_00402a20 with index 1 and the inverse of b.
 // @fnv 0x004029f0
 // src: COMMUNITY 0x004029f0
-void __thiscall S_4029f0::AlchemyItem_SetAutoCalc(bool b)
+// pdb: AlchemyItem::SetAutoCalc | AlchemyItem.obj | debug, upstream name already matches, high
+// pdb params: abValue
+void __thiscall S_4029f0::AlchemyItem_SetAutoCalc(bool abValue)
 {
-    AlchemyItem_SetFlag(1, !b);
+    AlchemyItem_SetFlag(1, !abValue);
 }
 
 struct FUN_00409aa0_shell
@@ -877,6 +928,7 @@ struct FUN_00409aa0_shell
 // Calls FUN_00409aa0 with 1 and the inverse of b.
 // @fnv 0x00409a70
 // src: COMMUNITY 0x00409a70
+// pdb: IngredientItem::`scalar deleting destructor' | IngredientItem.obj | debug, object-file run extension, low
 void FUN_00409aa0_shell::IngredientItem_SetAutoCalc_0(bool b)
 {
     IngredientItem_SetFlag(1, !b);
@@ -984,6 +1036,7 @@ struct Holder
 };
 // @fnv 0x0050f5d0
 // src: XBOX_PDB 0x0050f5d0
+// pdb: TESBoundObject::ReplaceModel | TESObject.obj | retail, vtable slot, high
 void Holder::TESBoundObject_ReplaceModel()
 {
     vt(TESModel::GetModelFilePath((TESObject*)this));
@@ -1003,6 +1056,8 @@ struct FUN_0044a8d0_Class : FUN_0044a9d0_Class
 };
 // @fnv 0x0044a8d0
 // src: COMMUNITY 0x0044a8d0
+// pdb: std::basic_string<char,std::char_traits<char>,std::allocator<char> >::_Grow | TESObject.obj | retail, call graph (shared callers), medium
+// pdb params: _Newsize, _Trim
 bool FUN_0044a8d0_Class::std_basic_string_char_std_char_traits_char_std_allocator_char_Grow(unsigned int uiNewSize, bool bTrim)
 {
     if (GetAllocatorLimitMinusTerminator() < uiNewSize)
@@ -1024,12 +1079,13 @@ void __cdecl BSEndian(unsigned char*, EndianSizeTag<10>);
 
 struct FUN_0050ed30_class
 {
-    void TESBoundObject_BOUND_DATA_SwapEndian();
+    void TESBoundObject_BOUND_DATA_Endian();
 };
 
 // @fnv 0x0050ed30
-// src: COMMUNITY 0x0050ed30
-void FUN_0050ed30_class::TESBoundObject_BOUND_DATA_SwapEndian()
+// src: XBOX_DEBUG_PDB 0x0050ed30 (was COMMUNITY)
+// pdb: TESBoundObject::BOUND_DATA::Endian | TESObject.obj | debug, call graph (shared callers), high
+void FUN_0050ed30_class::TESBoundObject_BOUND_DATA_Endian()
 {
     BSEndian((unsigned char*)this + 6, EndianSizeTag<10>());
     BSEndian((unsigned char*)this + 8, EndianSizeTag<10>());
@@ -1050,6 +1106,8 @@ struct FUN_005f6ed0_Class
 // Computes a size starting at 30, adding the length of the full names of the FNStub objects at offsets 24 and 44 when present.
 // @fnv 0x005f6ed0
 // src: GUESS 0x005f6ed0 (confidence: medium)
+// pdb: TESClass::GetSaveSize | TESClass.obj | debug, object-file run extension, low
+// pdb locals: isize
 unsigned short FUN_005f6ed0_Class::GetSizeWithFullNames()
 {
     unsigned short size = 0;
@@ -1074,13 +1132,14 @@ void __cdecl AppendChunk(char*, char*, int);
 // Calls FUN_00401500 twice around a AppendChunk call on the bound member with 0xc, invoking bound.FUN_0050ed30 when it returns true.
 // @fnv 0x0050ece0
 // src: XBOX_PDB 0x0050ece0
+// pdb: TESBoundObject::SaveObjectBound | TESObject.obj | retail, upstream name already matches, high
 void FUN_0050ece0_class::TESBoundObject_SaveObjectBound()
 {
     if (TESForm_QEndianSwapOnSave())
-        bound.TESBoundObject_BOUND_DATA_SwapEndian();
+        bound.TESBoundObject_BOUND_DATA_Endian();
     AppendChunk((char*)0x444e424f, (char*)&bound, 0xc);
     if (TESForm_QEndianSwapOnSave())
-        bound.TESBoundObject_BOUND_DATA_SwapEndian();
+        bound.TESBoundObject_BOUND_DATA_Endian();
 }
 
 namespace fnv_0050ea50 {
@@ -1092,15 +1151,17 @@ class Target_0050ea50
     NiPoint3 point1;
     NiPoint3 point2;
 
-    void BSBound_GetBoundMax(NiPoint3& result);
+    void BSBound_GetBoundMax(NiPoint3& arPoint);
 };
 
 // Adds point1 and point2 and stores the sum in result.
 // @fnv 0x0050ea50
 // src: COMMUNITY 0x0050ea50
-void Target_0050ea50::BSBound_GetBoundMax(NiPoint3& result)
+// pdb: BSBound::GetBoundMax | TESObject.obj | debug, upstream name already matches, high
+// pdb params: arPoint
+void Target_0050ea50::BSBound_GetBoundMax(NiPoint3& arPoint)
 {
-    result = point1 + point2;
+    arPoint = point1 + point2;
 }
 }  // namespace fnv_0050ea50
 
@@ -1114,6 +1175,7 @@ void __cdecl _Deallocate(void* p);
 
 // Calls FUN_0050f7f0, frees this with _Deallocate when flags has bit 1 set, and returns this.
 // @fnv 0x0050f7c0
+// pdb: TESBoundTreeObject::`scalar deleting destructor' | TESObject.obj | debug, object-file run extension, low
 void* FUN_0050f7c0_Class::DestroyIfFlagged(unsigned int flags)
 {
     SetVtableAndProcessState_0050f7f0();
@@ -1127,12 +1189,15 @@ struct FUN_005e7f90_class : public TESForm
 {
   public:
 
-    NiAVObject* CreateFadeNode(const char* pfilename);
+    NiAVObject* CreateFadeNode(const char* apRequester);
 };
 
 // Creates a new BSFadeNode, sets its name from this object's model name, and returns it.
 // @fnv 0x005e7f90
-NiAVObject* FUN_005e7f90_class::CreateFadeNode(const char* pfilename)
+// pdb: BGSIdleMarker::Clone3D | BGSIdleMarker.obj | retail, vtable slot, high
+// pdb params: apRequester
+// pdb locals: pnode
+NiAVObject* FUN_005e7f90_class::CreateFadeNode(const char* apRequester)
 {
     NiAVObject* pData3D = 0;
     pData3D = new BSFadeNode;
@@ -1204,18 +1269,21 @@ extern Fb990Target* DAT_011c3b3c;
 class FUN_004fb990_cls
 {
   public:
-    void Fallback(Fb990Arg* a);
-    void ApplyIfReady(Fb990Arg* a);
+    void Fallback(Fb990Arg* apRequester);
+    void ApplyIfReady(Fb990Arg* apRequester);
 };
 
 // If the argument is ready, reads Slot05 from DAT_011ca284->m_3c and passes it to DAT_011c3b3c->Apply; otherwise calls Fallback.
 // @fnv 0x004fb990
-void FUN_004fb990_cls::ApplyIfReady(Fb990Arg* a)
+// pdb: BGSExplosion::UnClone3D | BGSExplosion.obj | retail, vtable slot, high
+// pdb params: apRequester
+// pdb locals: pexplosion, pfilename
+void FUN_004fb990_cls::ApplyIfReady(Fb990Arg* apRequester)
 {
-    Fb990Arg* p = a;
+    Fb990Arg* p = apRequester;
     if (!p->IsReady())
     {
-        this->Fallback(a);
+        this->Fallback(apRequester);
     }
     else
     {
@@ -1351,10 +1419,13 @@ struct Shell503
     Root503* GetRootAndRemoveChildren(Ref503*, bool);
 };
 // @fnv 0x00503820
-Root503* Shell503::GetRootAndRemoveChildren(Ref503* ref, bool flag)
+// pdb: TESAmmo::Clone3D | TESAmmo.obj | retail, string-set bridge, high
+// pdb params: pRequester, deepCopy
+// pdb locals: icount, pobj, pchild, n, arrowName
+Root503* Shell503::GetRootAndRemoveChildren(Ref503* pRequester, bool deepCopy)
 {
-    Root503* count = TESBoundObject_Clone3D_0050ee50(ref, flag);
-    int root = ref ? ref->BSFile_GetDevice()->ExtraDataList_GetCount() : 1;
+    Root503* count = TESBoundObject_Clone3D_0050ee50(pRequester, deepCopy);
+    int root = pRequester ? pRequester->BSFile_GetDevice()->ExtraDataList_GetCount() : 1;
     if (count && root < *g_011c846c.Setting_Int())
     {
         Child503* child;
@@ -1418,12 +1489,14 @@ struct FUN_0050d600_shell
     int unk38;
     FUN_0048cee0_class unk3c;
 
-    void __thiscall TESObjectLIGH_UnClone3D(int value);
+    void __thiscall TESObjectLIGH_UnClone3D(int pRequester);
 };
 
 // @fnv 0x0050d600
 // src: XBOX_PDB 0x0050d600
-void __thiscall FUN_0050d600_shell::TESObjectLIGH_UnClone3D(int value)
+// pdb: TESObjectLIGH::UnClone3D | TESLight.obj | retail, upstream name already matches, high
+// pdb params: pRequester
+void __thiscall FUN_0050d600_shell::TESObjectLIGH_UnClone3D(int pRequester)
 {
     if (unk3c.FUN_0048cee0())
     {
@@ -1477,6 +1550,8 @@ class FUN_0050ead0_cls
 // Returns a Vec3Ret built from the A, B and C values of the Bound24 at offset 0x24 of this object.
 // @fnv 0x0050ead0
 // src: COMMUNITY 0x0050ead0
+// pdb: TESBoundObject::GetBoundMin | TESObject.obj | debug, upstream name already matches, high
+// pdb locals: pt
 Vec3Ret FUN_0050ead0_cls::TESBoundObject_GetBoundMin()
 {
     Vec3Ret r(((Bound24*)((char*)this + 0x24))->GetA(), ((Bound24*)((char*)this + 0x24))->GetB(),
@@ -1491,7 +1566,7 @@ float ShortPoint3::GetFloatY()
 }
 
 extern char DAT_01029994;
-extern void __fastcall UpdateState_0050e9f0(void*);
+extern void __fastcall TESBoundObject_dtor(void*);
 
 struct FUN_0050f7f0_shell
 {
@@ -1500,10 +1575,11 @@ struct FUN_0050f7f0_shell
 
 // @fnv 0x0050f7f0
 // src: GUESS 0x0050f7f0 (confidence: low)
+// pdb: TESBoundTreeObject::~TESBoundTreeObject | TESObject.obj | debug, object-file run extension, low
 void FUN_0050f7f0_shell::SetVtableAndProcessState_0050f7f0()
 {
     *reinterpret_cast<void**>(this) = reinterpret_cast<void*>(&DAT_01029994);
-    UpdateState_0050e9f0(this);
+    TESBoundObject_dtor(this);
 }
 
 struct Owner;
@@ -1688,23 +1764,26 @@ struct Owner
     virtual void slot_17c();
     virtual void Notify(Record*);
     int FUN_00401170();
-    Record* CreateRecord(Param* target, int unused);
+    Record* CreateRecord(Param* pRequester, int deepCopy);
 };
 void* __cdecl BSTreeManager_GetInstance(unsigned int);
 // If FUN_00401170 returns 0x25, creates a Record via CreateTreeInstance, notifies it, and passes its secondary effect's FUN_008d6f30 result to target.
 // @fnv 0x0050f810
-Record* Owner::CreateRecord(Param* target, int unused)
+// pdb: TESBoundTreeObject::Clone3D | TESObject.obj | retail, vtable slot, high
+// pdb params: pRequester, deepCopy
+// pdb locals: pnode
+Record* Owner::CreateRecord(Param* pRequester, int deepCopy)
 {
     Record* created = 0;
     if (FUN_00401170() != 0x25)
         return 0;
     if (BSTreeManager_GetInstance(1))
     {
-        created = static_cast<FUN_00664f50_class*>(BSTreeManager_GetInstance(1))->CreateTreeInstance(target, this);
+        created = static_cast<FUN_00664f50_class*>(BSTreeManager_GetInstance(1))->CreateTreeInstance(pRequester, this);
     }
     Notify(created);
-    if (created && created->GetSecondary() && target)
-        target->TESObjectREFR_SetExtraSeed(created->GetSecondary()->FUN_008d6f30());
+    if (created && created->GetSecondary() && pRequester)
+        pRequester->TESObjectREFR_SetExtraSeed(created->GetSecondary()->FUN_008d6f30());
     return created;
 }
 
@@ -1731,6 +1810,7 @@ struct FUN_0050f930 : S_0050f930_Base
 
 // Destructor that, if unk18 is set, calls RemoveNode on it passing this.
 // @fnv 0x0050f930
+// pdb: TESObject::~TESObject | TESObject.obj | debug, object-file run extension, low
 FUN_0050f930::~FUN_0050f930()
 {
     if (unk18)
@@ -1775,11 +1855,14 @@ struct ModelOwner
 };
 unsigned int TES_GetLODMult(ModelOwner*);
 // @fnv 0x0050fe50
-NiNode* ModelOwner::GetModelNode(ModelReference* reference)
+// pdb: TESObject::LoadGraphics | TESObject.obj | retail, vtable slot, high
+// pdb params: apRef
+// pdb locals: pworldFilename, pData3D, spmodel, elod, pscaledFilename
+NiNode* ModelOwner::GetModelNode(ModelReference* apRef)
 {
-    const char* pModelName = GetModelPathHook(reference);
+    const char* pModelName = GetModelPathHook(apRef);
     NiNode* pNode = 0;
-    if (reference && reference->TESObjectREFR_IsMarker() && reference->BGSSaveFormBuffer_GetForm()->FUN_00401170() != 30)
+    if (apRef && apRef->TESObjectREFR_IsMarker() && apRef->BGSSaveFormBuffer_GetForm()->FUN_00401170() != 30)
     {
         CachedModelPointer cachedModel(0);
         DAT_011c3b3c->ModelLoader_FindModel(pModelName, &cachedModel);
@@ -1790,10 +1873,10 @@ NiNode* ModelOwner::GetModelNode(ModelReference* reference)
     else
     {
         unsigned int flags = TES_GetLODMult(this);
-        if (reference && reference->TESObjectREFR_GetScale_00567400() != 1.0)
+        if (apRef && apRef->TESObjectREFR_GetScale_00567400() != 1.0)
         {
             char scaledName[260];
-            FormatScaledName(reference, scaledName);
+            FormatScaledName(apRef, scaledName);
             CachedModelPointer cachedScaled(0);
             DAT_011c3b3c->ModelLoader_FindModel(scaledName, &cachedScaled);
             if (cachedScaled.Modelloader_GetReferencedThis())
@@ -1823,6 +1906,8 @@ struct Ev510Obj : TESObject
 
 // @fnv 0x00510080
 // src: XBOX_PDB 0x00510080
+// pdb: TESObject::ReplaceModel | TESObject.obj | retail, upstream name already matches, high
+// pdb locals: UpdateData, pData3D
 bool Ev510Obj::TESObject_ReplaceModel()
 {
     Ev510Node* p = (Ev510Node*)CreateNiNode(0);
@@ -1835,7 +1920,7 @@ bool Ev510Obj::TESObject_ReplaceModel()
 class FUN_005f0d30_sub
 {
   public:
-    void Apply(int a, unsigned char b, int c);
+    void Apply(int aiFlag, unsigned char abVal, int abAddChange);
 };
 
 class FUN_005f0d30_cls
@@ -1847,6 +1932,8 @@ class FUN_005f0d30_cls
 
 // If Probe() returns 0x2a, calls Apply(0x10, flag, 1) on the sub-object at offset 0x30.
 // @fnv 0x005f0d30
+// pdb: TESActorBase::SetAutoCalc | TESActorBase.obj | debug, object-file gap fill, medium
+// pdb params: abAC
 void FUN_005f0d30_cls::ApplyFlagIfProbeMatches(unsigned char flag)
 {
     if (Probe() == 0x2a)
@@ -1857,7 +1944,7 @@ void FUN_005f0d30_cls::ApplyFlagIfProbeMatches(unsigned char flag)
 
 struct FUN_0050ee50_obj
 {
-    void TESBoundObject_Clone3D_0050ee50(TESObjectREFR* a1, int a2);
+    void TESBoundObject_Clone3D_0050ee50(TESObjectREFR* pRequester, int deepCopy);
 };
 
 struct FUN_007af430_ref
@@ -1966,20 +2053,22 @@ struct FUN_005f8bf0_form
 
 struct FUN_005f8bf0_shell : public TESCreature
 {
-    void CalcLeveledCreature(TESObjectREFR* pRef);
+    void CalcLeveledCreature(TESObjectREFR* apRequester);
 };
 
 // @fnv 0x005f8bf0
-void FUN_005f8bf0_shell::CalcLeveledCreature(TESObjectREFR* pRef)
+// pdb: TESCreature::Clone3D | TESCreature.obj | retail, vtable slot, high
+// pdb params: apRequester
+void FUN_005f8bf0_shell::CalcLeveledCreature(TESObjectREFR* apRequester)
 {
-    if (GetUsesLeveledTemplate() && pRef && !pRef->HasLeveledCreatureCalced())
+    if (GetUsesLeveledTemplate() && apRequester && !apRequester->HasLeveledCreatureCalced())
     {
-        SetTemplateReference(pRef);
-        reinterpret_cast<FUN_005f8bf0_form*>(reinterpret_cast<FUN_007af430_ref*>(pRef)->BGSSaveFormBuffer_GetForm())->slot94(pRef);
+        CalcTemplateForRef(apRequester);
+        reinterpret_cast<FUN_005f8bf0_form*>(reinterpret_cast<FUN_007af430_ref*>(apRequester)->BGSSaveFormBuffer_GetForm())->slot94(apRequester);
     }
     else
     {
-        reinterpret_cast<FUN_0050ee50_obj*>(this)->TESBoundObject_Clone3D_0050ee50(pRef, 0);
+        reinterpret_cast<FUN_0050ee50_obj*>(this)->TESBoundObject_Clone3D_0050ee50(apRequester, 0);
     }
 }
 
@@ -2017,12 +2106,15 @@ class FUN_005f8c70_cls
     SubObj m_dc;
     char unkE0[0x118 - 0xe0];
     void TESObject_UnClone3D(int);
-    void TESCreature_UnClone3D(int arg);
+    void TESCreature_UnClone3D(int apRequester);
 };
 
 // @fnv 0x005f8c70
 // src: XBOX_PDB 0x005f8c70
-void FUN_005f8c70_cls::TESCreature_UnClone3D(int arg)
+// pdb: TESCreature::UnClone3D | TESCreature.obj | retail, upstream name already matches, high
+// pdb params: apRequester
+// pdb locals: pcreatureFileList, pfullPathFilename, pslash
+void FUN_005f8c70_cls::TESCreature_UnClone3D(int apRequester)
 {
     char acBuffer[0x104];
     char* pcInsert;
@@ -2035,7 +2127,7 @@ void FUN_005f8c70_cls::TESCreature_UnClone3D(int arg)
         DAT_011c3b3c->ModelLoader_ReleaseFile(acBuffer);
         p = p->FUN_00726070();
     }
-    TESObject_UnClone3D(arg);
+    TESObject_UnClone3D(apRequester);
 }
 }  // namespace fnv_005f8c70
 
@@ -2177,6 +2269,7 @@ struct FUN_00ac5430_cls
 
 // @fnv 0x00ac5430
 // src: XBOX_PDB 0x00ac5430
+// pdb: FutBinaryFileC::close | binaryFile.obj | retail, upstream name already matches, high
 void FUN_00ac5430_cls::FutBinaryFileC_close()
 {
     if (m_3c != 0)
@@ -2452,20 +2545,22 @@ struct CloneObject17 : TESBoundObject
 };
 // @fnv 0x0050ee50
 // src: XBOX_PDB 0x0050ee50
-NiAVObject* CloneObject17::TESBoundObject_Clone3D_0050ee50(TESObjectREFR* reference, bool forceClone)
+// pdb: TESBoundObject::Clone3D | TESObject.obj | retail, string-set bridge, high
+// pdb params: pRequester
+NiAVObject* CloneObject17::TESBoundObject_Clone3D_0050ee50(TESObjectREFR* pRequester, bool deepCopy)
 {
     NiAVObject* p = 0;
     if (this == (TESBoundObject*)DAT_011ca220 || this == (TESBoundObject*)DAT_011ca250)
-        reference = 0;
-    NiNode* h = CreateNiNode(reference);
-    if (reference && ((RefOps*)reference)->TESObjectREFR_IsMarker() &&
-        ((ObjectOps*)((RefOps*)reference)->BGSSaveFormBuffer_GetForm())->FUN_00401170() != 30)
+        pRequester = 0;
+    NiNode* h = CreateNiNode(pRequester);
+    if (pRequester && ((RefOps*)pRequester)->TESObjectREFR_IsMarker() &&
+        ((ObjectOps*)((RefOps*)pRequester)->BGSSaveFormBuffer_GetForm())->FUN_00401170() != 30)
         return h;
     if (h)
     {
-        if (((ObjectOps*)this)->FUN_0050d4a0() && reference)
-            ((RefOps*)reference)->FUN_00693ef0(true);
-        if (!forceClone && ((NodeOps*)h)->FUN_00726070() == 1)
+        if (((ObjectOps*)this)->FUN_0050d4a0() && pRequester)
+            ((RefOps*)pRequester)->FUN_00693ef0(true);
+        if (!deepCopy && ((NodeOps*)h)->FUN_00726070() == 1)
         {
             bool canReuse = false;
             switch (((ObjectOps*)this)->FUN_00401170())
@@ -2473,7 +2568,7 @@ NiAVObject* CloneObject17::TESBoundObject_Clone3D_0050ee50(TESObjectREFR* refere
             case 21:
             case 43:
                 if (HasMorpherController(h))
-                    forceClone = true;
+                    deepCopy = true;
             case 40:
             case 41:
             case 42:
@@ -2495,7 +2590,7 @@ NiAVObject* CloneObject17::TESBoundObject_Clone3D_0050ee50(TESObjectREFR* refere
                 break;
             }
             default:
-                canReuse = !TESHavokUtilities_Should3DRagDoll(reference, h);
+                canReuse = !TESHavokUtilities_Should3DRagDoll(pRequester, h);
                 break;
             }
             if (canReuse)
@@ -2508,31 +2603,31 @@ NiAVObject* CloneObject17::TESBoundObject_Clone3D_0050ee50(TESObjectREFR* refere
                         canReuse = false;
                 }
             }
-            if (canReuse && TESModelTextureSwap_HasTextureSwap(this, reference))
+            if (canReuse && TESModelTextureSwap_HasTextureSwap(this, pRequester))
                 canReuse = false;
             if (canReuse && FindEmittanceProperty(h))
                 canReuse = false;
             if (canReuse)
             {
-                if (!reference || ((RefOps*)reference)->TESObjectREFR_GetScale_00567400() == ((NodeOps*)h)->GetFloatAt64())
+                if (!pRequester || ((RefOps*)pRequester)->TESObjectREFR_GetScale_00567400() == ((NodeOps*)h)->GetFloatAt64())
                     p = h;
             }
         }
         if (!p)
         {
             float scale = 1.0f;
-            if (reference)
-                scale = ((RefOps*)reference)->TESObjectREFR_GetScale_00567400();
+            if (pRequester)
+                scale = ((RefOps*)pRequester)->TESObjectREFR_GetScale_00567400();
             if (scale == ((NodeOps*)h)->GetFloatAt64())
                 scale = 1.0f;
             if (scale == 0.0)
             {
                 Warning_005b5e40("MODELS: %s has a scale of 0.  Change it in the editor.",
-                             ((RefOps*)reference)->TESObjectREFR_GetFullName());
+                             ((RefOps*)pRequester)->TESObjectREFR_GetFullName());
                 scale = 1.0f;
             }
             CloningProcess process(scale);
-            if (forceClone)
+            if (deepCopy)
             {
                 NodeOps* pCachedNode = DAT_011dea10->TES_CreateDeepCopySameTextures(h, process);
                 if (pCachedNode && pCachedNode->asNode())
@@ -2550,7 +2645,7 @@ NiAVObject* CloneObject17::TESBoundObject_Clone3D_0050ee50(TESObjectREFR* refere
             {
                 ((NodeOps*)p)->NiAVObject_SetScale(scale);
                 char filename[260];
-                ((ObjectOps*)this)->FormatScaledName(reference, filename);
+                ((ObjectOps*)this)->FormatScaledName(pRequester, filename);
                 NiPointer<Model> model(0);
                 DAT_011c3b3c->ModelLoader_FindModel(filename, model);
                 if (!((ModelPointerOps*)&model)->Modelloader_GetReferencedThis())
@@ -2572,9 +2667,9 @@ NiAVObject* CloneObject17::TESBoundObject_Clone3D_0050ee50(TESObjectREFR* refere
                 {
                     if (((ModelPointerOps*)&model)->Modelloader_GetReferencedThis()->NiObjectNET_GetControllers() &&
                         ((NodeOps*)((ModelPointerOps*)&model)->Modelloader_GetReferencedThis()->NiObjectNET_GetControllers())->GetFloatAt64() ==
-                            ((RefOps*)reference)->TESObjectREFR_GetScale_00567400())
+                            ((RefOps*)pRequester)->TESObjectREFR_GetScale_00567400())
                     {
-                        NiAVObject* replacement = _CreateNiNode(reference, forceClone);
+                        NiAVObject* replacement = _CreateNiNode(pRequester, deepCopy);
                         return replacement;
                     }
                     else
@@ -2610,21 +2705,22 @@ struct ModelPtr0050fbf0
 };
 
 // ModelLoader: singleton 0x011c3b3c, methods 0x0045a5e0/0x004472a0; include/ModelLoader.h is not available yet.
+// pdb: class ModelLoader, size 0x30 (here 0x1), 12 members
 class ModelLoader
 {
   public:
     void QueueModelLoad(const char* apPath);
-    bool GetModelFilePath(const char* apPath, ModelPtr0050fbf0& arModel);
+    bool GetModelFilePath(const char* apFilename, ModelPtr0050fbf0& aspOutModel);
 };
 
 class ModelForm0050fbf0
 {
   public:
-    const char* GetModelPath(PlayerCharacter* apPlayer);
-    void GetScaledModelPath(PlayerCharacter* apPlayer, char* apBuffer);
+    const char* GetModelPath(PlayerCharacter* apRef);
+    void GetScaledModelPath(PlayerCharacter* apRef, char* apScaledFileName);
     int GetFormType();
     void TESNPC_ClearFaceGenModels();
-    void TESObject_UnClone3D(PlayerCharacter* apPlayer);
+    void TESObject_UnClone3D(PlayerCharacter* apRequester);
 };
 
 extern ModelForm0050fbf0* g_pSkipModelFormA;
@@ -2635,18 +2731,21 @@ extern int g_iKeptModelCount;
 
 // @fnv 0x0050fbf0
 // src: XBOX_PDB 0x0050fbf0
-void ModelForm0050fbf0::TESObject_UnClone3D(PlayerCharacter* apPlayer)
+// pdb: TESObject::UnClone3D | TESObject.obj | retail, upstream name already matches, high
+// pdb params: apRequester
+// pdb locals: pworldFilename, pscaledFileName, blastCopy, spmodel
+void ModelForm0050fbf0::TESObject_UnClone3D(PlayerCharacter* apRequester)
 {
     if (this == g_pSkipModelFormA || this == g_pSkipModelFormB)
-        apPlayer = 0;
+        apRequester = 0;
 
-    const char* pModelPath = GetModelPath(apPlayer);
+    const char* pModelPath = GetModelPath(apRequester);
     if (pModelPath && *pModelPath)
     {
-        if (apPlayer && apPlayer->GetScale() != 1.0)
+        if (apRequester && apRequester->GetScale() != 1.0)
         {
             char acScaledPath5[260];
-            GetScaledModelPath(apPlayer, acScaledPath5);
+            GetScaledModelPath(apRequester, acScaledPath5);
             g_pModelLoader->QueueModelLoad(acScaledPath5);
             bool bRelease = true;
             ModelPtr0050fbf0 modelPtr(0);
@@ -2763,6 +2862,8 @@ struct FUN_0050eb90_Class
 // Builds a Point3 from the component's three float accessors and returns it.
 // @fnv 0x0050eb90
 // src: COMMUNITY 0x0050eb90
+// pdb: TESBoundObject::GetBoundMax | TESObject.obj | debug, upstream name already matches, high
+// pdb locals: pt
 FUN_0050eb90_Point3 FUN_0050eb90_Class::TESBoundObject_GetBoundMax()
 {
     FUN_0050eb90_Point3 result;
@@ -2922,7 +3023,7 @@ void GrowString::ResizeBuffer(unsigned int requested, unsigned int oldSize)
 namespace fnv_004fd440 {
 struct NiModelData
 {
-    const char* GetModelPathHook(int a);
+    const char* GetModelPathHook(int apRef);
 };
 struct BaseModelForm
 {
@@ -2936,23 +3037,26 @@ extern ModelLoader* DAT_011c3b3c;
 struct ProjectileShell
 {
     int BGSProjectile_GetMotionType();
-    void TESObject_UnClone3D(RefTarget* arg);
-    void LoadModel(RefTarget* arg);
+    void TESObject_UnClone3D(RefTarget* apRequester);
+    void LoadModel(RefTarget* apRequester);
 };
 // For a non-null reference, passes its model name to the loader or calls FUN_0050fbf0 on selected paths.
 // @fnv 0x004fd440
-void ProjectileShell::LoadModel(RefTarget* apRef)
+// pdb: BGSProjectile::UnClone3D | BGSProjectile.obj | retail, vtable slot, high
+// pdb params: apRequester
+// pdb locals: pprojectile, pfilename
+void ProjectileShell::LoadModel(RefTarget* apRequester)
 {
-    if (apRef)
+    if (apRequester)
     {
         switch (BGSProjectile_GetMotionType())
         {
         case 0x40000:
         case 0x100000:
-            TESObject_UnClone3D(apRef);
+            TESObject_UnClone3D(apRequester);
             break;
         default:
-            RefTarget* ref = apRef;
+            RefTarget* ref = apRequester;
             if (ref && ref->Projectile_GetSecondaryItemChange() && ref->Projectile_GetSecondaryItemChange()->FUN_0044ddc0())
             {
                 const char* name = ref->Projectile_GetSecondaryItemChange()->FUN_0044ddc0()->GetModelPathHook(0);
@@ -2960,7 +3064,7 @@ void ProjectileShell::LoadModel(RefTarget* apRef)
             }
             else
             {
-                TESObject_UnClone3D(apRef);
+                TESObject_UnClone3D(apRequester);
             }
             break;
         }

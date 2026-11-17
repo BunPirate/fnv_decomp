@@ -62,6 +62,7 @@ struct S_00ddfcd0_Obj : S_00ddfcd0_RefObj
 // Allocates and constructs a new S_00ddfcd0_Obj through the router's heap and returns it as a S_00ddfcd0_RefObj pointer.
 // @fnv 0x00ddfcd0
 // src: XBOX_PDB 0x00ddfcd0
+// pdb: hkpUserShapeDisplayBuildercreate | hkpShapeDisplayBuilder.obj | retail, upstream name already matches, high
 S_00ddfcd0_RefObj* hkpUserShapeDisplayBuildercreate()
 {
     return new S_00ddfcd0_Obj;
@@ -104,7 +105,7 @@ struct HkDisplayConvexObj
     HkDisplayConvexObj* FUN_00de1d20(HkArrayPairBlock* a1);
 };
 
-void __cdecl FUN_00c90940(HkAllocator* a1, HkArrayRaw* a2, int a3);
+void __cdecl FUN_00c90940(HkAllocator* mem, HkArrayRaw* array, int sizeElem);
 
 struct FUN_00ddfc30_cls
 {
@@ -114,13 +115,15 @@ struct FUN_00ddfc30_cls
     int unk0C;
     HkDisplayConvexObj* m_pConvex;
 
-    HkDisplayConvexObj* hkpShapeDisplayBuilder_getCurrentRawGeometry(HkArrayRaw* a1);
+    HkDisplayConvexObj* hkpShapeDisplayBuilder_getCurrentRawGeometry(HkArrayRaw* displayGeometries);
 };
 
 // If m_pConvex is null, allocates a pair block and a 0x60-byte object, stores it in m_pConvex and appends it to a1's array; returns m_pConvex.
 // @fnv 0x00ddfc30
 // src: HAVOK_LIB 0x00ddfc30
-HkDisplayConvexObj* FUN_00ddfc30_cls::hkpShapeDisplayBuilder_getCurrentRawGeometry(HkArrayRaw* apArray)
+// pdb: hkpShapeDisplayBuilder::getCurrentRawGeometry | hkpShapeDisplayBuilder.obj | retail, upstream name already matches, high
+// pdb params: displayGeometries
+HkDisplayConvexObj* FUN_00ddfc30_cls::hkpShapeDisplayBuilder_getCurrentRawGeometry(HkArrayRaw* displayGeometries)
 {
     int zero = 0;
     if (m_pConvex == (HkDisplayConvexObj*)zero)
@@ -147,15 +150,15 @@ HkDisplayConvexObj* FUN_00ddfc30_cls::hkpShapeDisplayBuilder_getCurrentRawGeomet
         m_pConvex = ((HkDisplayConvexObj*)mem)->FUN_00de1d20(pBlock);
 
         pHolder = (HkAllocHolder*)hkMemoryRouter_getInstance();
-        if (apArray->m_iArrayLength == (int)(apArray->m_uCapFlags & 0x3fffffffu))
+        if (displayGeometries->m_iArrayLength == (int)(displayGeometries->m_uCapFlags & 0x3fffffffu))
         {
-            FUN_00c90940(pHolder->m_pAllocator, apArray, 4);
+            FUN_00c90940(pHolder->m_pAllocator, displayGeometries, 4);
         }
-        int idx = apArray->m_iArrayLength;
-        HkDisplayConvexObj** pArrayData = (HkDisplayConvexObj**)apArray->m_pData;
+        int idx = displayGeometries->m_iArrayLength;
+        HkDisplayConvexObj** pArrayData = (HkDisplayConvexObj**)displayGeometries->m_pData;
         HkDisplayConvexObj** slot = pArrayData + idx;
         *slot = *(HkDisplayConvexObj* volatile*)&m_pConvex;
-        apArray->m_iArrayLength++;
+        displayGeometries->m_iArrayLength++;
     }
     return m_pConvex;
 }

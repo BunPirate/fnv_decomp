@@ -213,8 +213,8 @@ KdTreeNode*m_pTreeNode;
 };
 struct WorkingSet
 {
-FieldlessRecord*m_pProjectedEntryBegin;
-FieldlessRecord*m_pProjectedEntryEnd;
+FieldlessRecord*m_entriesIn; // src: XBOX_RETAIL_PDB +0x0 (old: m_pProjectedEntryBegin)
+FieldlessRecord*m_entriesOut; // src: XBOX_RETAIL_PDB +0x4 (old: m_pProjectedEntryEnd)
 };
 struct ProjectedBoundsContext
 {
@@ -292,7 +292,7 @@ __declspec(align(128))int distOut[64][4];
 MemoryUtils::memClear16(distIn,64);
 MemoryUtils::memClear16(distOut,64);
 ProjectedEntryDirectReadIterator entry;
-initializeIterator(entry,buffersIn.m_pProjectedEntryBegin);
+initializeIterator(entry,buffersIn.m_entriesIn);
 int skip=1;
 if(numPrimitives>10)
 skip=2;
@@ -427,8 +427,8 @@ max[3]=bounds.m_kMinimumCorner[splitAxis];
 int splittingValue0=(splitPlaneMidLeft+1)<<10;
 int splittingValue1=(splitPlaneMid+1)<<10;
 int splittingValue2=(splitPlaneMidRight+1)<<10;
-initializeIterator(entry,buffersIn.m_pProjectedEntryBegin);
-FieldlessRecord*endEntry=buffersIn.m_pProjectedEntryBegin+numPrimitives;
+initializeIterator(entry,buffersIn.m_entriesIn);
+FieldlessRecord*endEntry=buffersIn.m_entriesIn+numPrimitives;
 hkBool fullyBalancedFallback=(numPartitioned[0]==0 || numPartitioned[1]==0 || numPartitioned[2]==0 || numPartitioned[3]==0);
 if(fullyBalancedFallback)
 {
@@ -443,9 +443,9 @@ if(treeSize<KdTree::getSizeForFastBuild(evenJobSize)*4+8)
 if(1){char assertBuf[512];hkErrStream ostr(assertBuf,sizeof(assertBuf));static_cast<hkOstream&>(ostr)<<DAT_010da240;if(hkError::GetMonitorStream().message(hkError::MESSAGE_ERROR,0x5010d60c,assertBuf,DAT_010da21c,408)){fnv_Breakpoint();}}else;
 }
 FieldlessRecord*endEntries[4];
-endEntries[0]=buffersIn.m_pProjectedEntryBegin+evenJobSize;
-endEntries[1]=buffersIn.m_pProjectedEntryBegin+evenJobSize*2;
-endEntries[2]=buffersIn.m_pProjectedEntryBegin+evenJobSize*3;
+endEntries[0]=buffersIn.m_entriesIn+evenJobSize;
+endEntries[1]=buffersIn.m_entriesIn+evenJobSize*2;
+endEntries[2]=buffersIn.m_entriesIn+evenJobSize*3;
 endEntries[3]=endEntry;
 for(int j=0;j<4;j++)
 {
@@ -507,7 +507,7 @@ jobSize[0]=0;
 jobSize[1]=0;
 jobSize[2]=0;
 jobSize[3]=0;
-initializeIterator(entry,buffersIn.m_pProjectedEntryBegin);
+initializeIterator(entry,buffersIn.m_entriesIn);
 goto fullyBalancedFallbackJump;
 }
 }
@@ -521,18 +521,18 @@ ProjectedEntryDirectWriteIterator dest0;
 ProjectedEntryDirectWriteIterator dest1;
 ProjectedEntryDirectWriteIterator dest2;
 ProjectedEntryDirectWriteIterator dest3;
-initializeIterator(dest0,buffersIn.m_pProjectedEntryEnd);
-initializeIterator(dest1,buffersIn.m_pProjectedEntryEnd+jobSize[0]);
-initializeIterator(dest2,buffersIn.m_pProjectedEntryEnd+jobSize[0]+jobSize[1]);
-initializeIterator(dest3,buffersIn.m_pProjectedEntryEnd+jobSize[0]+jobSize[1]+jobSize[2]);
-initializeIterator(entry,buffersIn.m_pProjectedEntryBegin);
+initializeIterator(dest0,buffersIn.m_entriesOut);
+initializeIterator(dest1,buffersIn.m_entriesOut+jobSize[0]);
+initializeIterator(dest2,buffersIn.m_entriesOut+jobSize[0]+jobSize[1]);
+initializeIterator(dest3,buffersIn.m_entriesOut+jobSize[0]+jobSize[1]+jobSize[2]);
+initializeIterator(entry,buffersIn.m_entriesIn);
 if(fullyBalancedFallback)
 {
 int evenJobSize=numPrimitives / 4;
 FieldlessRecord*endEntries[4];
-endEntries[0]=buffersIn.m_pProjectedEntryBegin+evenJobSize;
-endEntries[1]=buffersIn.m_pProjectedEntryBegin+evenJobSize*2;
-endEntries[2]=buffersIn.m_pProjectedEntryBegin+evenJobSize*3;
+endEntries[0]=buffersIn.m_entriesIn+evenJobSize;
+endEntries[1]=buffersIn.m_entriesIn+evenJobSize*2;
+endEntries[2]=buffersIn.m_entriesIn+evenJobSize*3;
 endEntries[3]=endEntry;
 while(entry<endEntries[0])
 {
@@ -612,8 +612,8 @@ thisNode.setLeftAndRightByteOffset(24);
 WRITE_NODE_WITH_MANAGER(treeOut,3,thisNode,&sparseWriter);
 }
 hkKdTreeBuildInput::WorkingSet buffersOut;
-buffersOut.m_pProjectedEntryEnd=buffersIn.m_pProjectedEntryBegin;
-buffersOut.m_pProjectedEntryBegin=buffersIn.m_pProjectedEntryEnd;
+buffersOut.m_entriesOut=buffersIn.m_entriesIn;
+buffersOut.m_entriesIn=buffersIn.m_entriesOut;
 int count=0;
 for(int i=0;i<4;i++)
 {

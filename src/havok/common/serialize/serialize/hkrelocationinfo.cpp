@@ -73,6 +73,7 @@ struct FUN_00e028e0
 
 // Destructor that deletes the owned m_obj object; the array members are destroyed automatically afterwards.
 // @fnv 0x00e028e0
+// pdb: hkRelocationInfo::~hkRelocationInfo | hkRelocationInfo.obj | retail, call graph, high
 FUN_00e028e0::~FUN_00e028e0() throw()
 {
     delete m_obj;
@@ -94,6 +95,7 @@ void CallSwappedArgs(unsigned int a1, int a2);
 // Iterates handles from FUN_00d87410, passing each item with the holder's allocator to CallSwappedArgs, then returns ClearEntries().
 // @fnv 0x00e029d0
 // src: HAVOK_LIB 0x00e029d0
+// pdb: hkStorageStringMap<int,hkContainerHeapAllocator>::clear | hkRelocationInfo.obj | retail, call graph, high
 unsigned int FUN_00e029d0_cls::hkStorageStringMap_int_struct_hkContainerHeapAllocator_clear()
 {
     unsigned int handle = hkCachedHashMap_hkStringMapOperations_hkContainerHeapAllocator_getIterator();

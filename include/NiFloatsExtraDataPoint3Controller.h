@@ -3,6 +3,7 @@
 #include "NiExtraDataController.h"
 #include "NiFixedString.h"
 
+// pdb: class NiFloatsExtraDataPoint3Controller, size 0x48, bases: NiExtraDataController, 2 members
 class NiFloatsExtraDataPoint3Controller : public NiExtraDataController
 {
 public:

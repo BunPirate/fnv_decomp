@@ -24,6 +24,10 @@ void __fastcall ConstructGeometryData(NiGeometryData* data);
 extern char* DAT_010a05e4;
 
 // @fnv 0x00a963f0
+// pdb: NiParticlesData::NiParticlesData | NiParticlesData.obj | retail, call graph, medium
+// pdb note: debug build links it to NiPSysData::NiPSysData
+// pdb params: usVertices, pkVertex, pkNormal, pkColor, pkRots, pfRotationAngles, pkRotationAxes
+// pdb locals: us
 NiParticlesData* __fastcall ConstructParticlesData(NiParticlesData* data)
 {
     ConstructGeometryData(data);
@@ -37,7 +41,7 @@ NiParticlesData* __fastcall ConstructParticlesData(NiParticlesData* data)
     data->m_pucTextureIndices = 0;
     data->m_pkSubTextureOffsets = 0;
     data->m_ucSubTextureOffsetCount = 0;
-    data->m_bHasRadii = false;
+    data->m_bIsOldRotatingParticlesObject = false;
     data->SetDataConsistency(0);
     data->m_bSaveVertexData = false;
     return data;
@@ -54,6 +58,9 @@ void __fastcall SetActiveParticleCount(NiParticlesData* data, void*, unsigned sh
 }
 
 // @fnv 0x00c24cc0
+// pdb: NiPSysData::RemoveParticle | NiPSysData.obj | retail, object-file gap fill, high
+// pdb params: usParticle
+// pdb locals: usLastParticle
 void NiPSysData::vf41(unsigned short usParticle)
 {
     unsigned short usLastParticle = m_usActive - 1;
@@ -83,6 +90,7 @@ void _delete(void*, unsigned int);
 void __fastcall DestroyParticlesData(NiParticlesData* data);
 
 // @fnv 0x00c25280
+// pdb: NiPSysData::`scalar deleting destructor' | NiPSysData.obj | retail, object-file run extension, low
 void* __fastcall DeleteParticleData(NiPSysData* data, void*, unsigned int flags)
 {
     *(void**)data = (void*)&DAT_010be254;
@@ -95,6 +103,7 @@ void* __fastcall DeleteParticleData(NiPSysData* data, void*, unsigned int flags)
 }
 
 // @fnv 0x00c24ef0
+// pdb: NiPSysData::~NiPSysData | NiPSysData.obj | retail, object-file run extension, low
 void __fastcall DestroyParticleData(NiPSysData* data)
 {
     *(void**)data = (void*)&DAT_010be254;
@@ -123,51 +132,58 @@ void __fastcall DestroyParticleData(NiPSysData* data)
 
 // @fnv 0x00c24d20
 // src: XBOX_PDB 0x00c24d20
+// pdb: NiPSysData::ResolveAddedParticles | NiPSysData.obj | retail, upstream name already matches, high
+// pdb locals: usIndex
 void NiPSysData::ResolveAddedParticles()
 {
-    if (m_usActive < m_usNumParticles)
+    if (m_usActive < m_usAddedParticlesBase)
     {
         unsigned short i = m_usActive;
-        m_usActive = m_usNumActive + m_usNumParticles;
+        m_usActive = m_usNumAddedParticles + m_usAddedParticlesBase;
 
-        while (i < m_usNumParticles)
+        while (i < m_usAddedParticlesBase)
         {
-            if (m_usActive <= m_usNumParticles)
+            if (m_usActive <= m_usAddedParticlesBase)
                 break;
             vf41(i);
             ++i;
         }
 
-        if (i < m_usNumParticles)
+        if (i < m_usAddedParticlesBase)
         {
             m_usActive = i;
         }
     }
     else
     {
-        m_usActive = m_usNumActive + m_usActive;
+        m_usActive = m_usNumAddedParticles + m_usActive;
     }
 
-    m_usNumActive = 0;
-    m_usNumParticles = m_usActive;
+    m_usNumAddedParticles = 0;
+    m_usAddedParticlesBase = m_usActive;
 }
 
 NiPSysData::NiPSysData() throw()
-    : m_pkParticleInfo(0), m_pfRotationSpeeds(0), m_usNumActive(0), m_usNumParticles(0)
+    : m_pkParticleInfo(0), m_pfRotationSpeeds(0), m_usNumAddedParticles(0), m_usAddedParticlesBase(0)
 {}
 
 // @fnv 0x00c24da0
 // src: EXE 0x00c24da0
+// pdb: NiPSysData::CreateObject | NiPSysData.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 NiPSysData* __cdecl NiPSysData_CreateObject()
 {
     return new NiPSysData;
 }
 
 // @fnv 0x00c24de0
-bool NiPSysData::IsEqual(NiObject* object) const
+// pdb: NiPSysData::IsEqual | NiPSysData.obj | retail, upstream name already matches, high
+// pdb params: pkObject
+// pdb locals: pkDest, us
+bool NiPSysData::IsEqual(NiObject* pkObject) const
 {
-    const NiPSysData* other = static_cast<const NiPSysData*>(object);
-    if (!NiParticlesData::IsEqual(object))
+    const NiPSysData* other = static_cast<const NiPSysData*>(pkObject);
+    if (!NiParticlesData::IsEqual(pkObject))
     {
         return false;
     }
@@ -195,7 +211,7 @@ bool NiPSysData::IsEqual(NiObject* object) const
         }
         i++;
     }
-    if (m_usNumActive != other->m_usNumActive || m_usNumParticles != other->m_usNumParticles)
+    if (m_usNumAddedParticles != other->m_usNumAddedParticles || m_usAddedParticlesBase != other->m_usAddedParticlesBase)
     {
         return false;
     }
@@ -206,33 +222,36 @@ bool NiPSysData::IsEqual(NiObject* object) const
 // @fnv 0x00c24ea0
 unsigned int __fastcall GetAvailableParticleIndex(NiPSysData* data)
 {
-    unsigned short count = data->m_usNumActive;
+    unsigned short count = data->m_usNumAddedParticles;
     if (count == 0)
     {
         unsigned short first = data->m_usActive;
-        data->m_usNumParticles = first;
+        data->m_usAddedParticlesBase = first;
         if (first < data->m_usVertices)
         {
-            return (unsigned short)(first + data->m_usNumActive++);
+            return (unsigned short)(first + data->m_usNumAddedParticles++);
         }
     }
     else
     {
-        unsigned short base = data->m_usNumParticles;
-        if (data->m_usNumParticles + data->m_usNumActive < data->m_usVertices)
+        unsigned short base = data->m_usAddedParticlesBase;
+        if (data->m_usAddedParticlesBase + data->m_usNumAddedParticles < data->m_usVertices)
         {
-            return (unsigned short)(base + data->m_usNumActive++);
+            return (unsigned short)(base + data->m_usNumAddedParticles++);
         }
     }
     return 0xffff;
 }
 
 // @fnv 0x00c25560
-void NiPSysData::SaveBinary(NiStream& stream)
+// pdb: NiPSysData::SaveBinary | NiPSysData.obj | retail, upstream name already matches, high
+// pdb params: kStream
+// pdb locals: bHasRotationSpeeds
+void NiPSysData::SaveBinary(NiStream& kStream)
 {
-    NiParticlesData::SaveBinary(stream);
+    NiParticlesData::SaveBinary(kStream);
     bool hasRotationSpeeds = m_pfRotationSpeeds != 0;
-    NiBinaryStream* output = stream.m_pkOstr;
+    NiBinaryStream* output = kStream.m_pkOstr;
     unsigned int(__cdecl * writer)(NiBinaryStream*, const void*, unsigned int, unsigned int*, unsigned int) =
         output->m_pfnWrite;
     unsigned int count = 1;
@@ -265,6 +284,7 @@ struct FUN_00c25850_cls
 
 // @fnv 0x00c25850
 // src: EXE 0x00c25850
+// pdb: NiPSysUpdateTask::NiPSysUpdateTask | NiPSysUpdateTask.obj | debug, upstream name already matches, high
 FUN_00c25850_cls* FUN_00c25850_cls::NiPSysUpdateTask_NiPSysUpdateTask()
 {
     BaseCtor();
@@ -291,15 +311,17 @@ extern const char DAT_010be32c[];
 extern const char DAT_010be318[];
 extern const char DAT_010be304[];
 // @fnv 0x00c255b0
-void NiPSysData::GetViewerStrings(NiViewerStringsArray* viewerStrings)
+// pdb: NiPSysData::GetViewerStrings | NiPSysData.obj | retail, string-set bridge, high
+// pdb params: pkStrings
+void NiPSysData::GetViewerStrings(NiViewerStringsArray* pkStrings)
 {
-    StrArr* strings = reinterpret_cast<StrArr*>(viewerStrings);
-    NiParticlesData::GetViewerStrings(viewerStrings);
+    StrArr* strings = reinterpret_cast<StrArr*>(pkStrings);
+    NiParticlesData::GetViewerStrings(pkStrings);
     strings->AppendInline(NiViewerStrings_NiGetViewerString_Title(g_01202680_arg1));
     strings->AppendInline(NiGetViewerString_00a7d5a0(DAT_010be340, m_pkParticleInfo));
     strings->AppendInline(NiGetViewerString_00a7d5a0(DAT_010be32c, m_pfRotationSpeeds));
-    strings->AppendInline(NiGetViewerString_00a7d490(DAT_010be318, m_usNumActive));
-    strings->AppendInline(NiGetViewerString_00a7d490(DAT_010be304, m_usNumParticles));
+    strings->AppendInline(NiGetViewerString_00a7d490(DAT_010be318, m_usNumAddedParticles));
+    strings->AppendInline(NiGetViewerString_00a7d490(DAT_010be304, m_usAddedParticlesBase));
 }
 
 __declspec(noinline) Point3ParameterData::Point3ParameterData() throw()
@@ -353,7 +375,7 @@ struct ParticleDataOperations : NiPSysData
     void Replace(unsigned short usVertices, NiPoint3* pkVertex, NiPoint3* pkNormal, NiColorA* pkColor, void* pkTexture,
                  unsigned short usNumTextureSets, void* pkNormalBuffer) throw();
     void ReplaceSizes(float* pfSizes) throw();
-    void ReplaceRadii(float* pfRadii) throw();
+    void NiParticlesData_ReplaceRadii(float* pfRadii) throw();
     void ReplaceRotationAngles(float* pfRotationAngles) throw();
     void ReplaceRotationAxes(NiPoint3* pkRotationAxes) throw();
     void ReplaceTextureIndices(unsigned char* pucTextureIndices) throw();
@@ -378,6 +400,9 @@ static inline void SetCenterAndRadius(NiBound& kBound, const NiPoint3& kTargetCe
     kBound.m_fBoundRadius = fRadius;
 }
 // @fnv 0x00c24f20
+// pdb: NiPSysData::CopyMembers | NiPSysData.obj | retail, object-file run extension, low
+// pdb params: pkDest, kCloning
+// pdb locals: pkNormal, pkVertex, pfRotationSpeeds, pkRotations, pkParticleInfo, uiByteSize, pfSizes, pfRadii, pkColor, pfAngles, pfAxes, pucTextureIndices, pkSubTextureOffsets
 void NiPSysData::CopyMemberData(NiPSysData* destination, CloningProcess& kCloning)
 {
     ParticleDataOperations* pkDest = static_cast<ParticleDataOperations*>(destination);
@@ -418,7 +443,7 @@ void NiPSysData::CopyMemberData(NiPSysData* destination, CloningProcess& kClonin
 
     float* pfRadii = (float*)_NiMalloc(sizeof(float) * m_usVertices);
     _fnv_zlib_memcpy(pfRadii, m_pfRadii, uiFloatSize);
-    pkDest->ReplaceRadii(pfRadii);
+    pkDest->NiParticlesData_ReplaceRadii(pfRadii);
 
     pkDest->m_usActive = m_usActive;
 
@@ -466,8 +491,8 @@ void NiPSysData::CopyMemberData(NiPSysData* destination, CloningProcess& kClonin
     }
     pkDest->ReplaceParticleRotationSpeeds(pfRotationSpeeds);
 
-    pkDest->m_usNumActive = m_usNumActive;
-    pkDest->m_usNumParticles = m_usNumParticles;
+    pkDest->m_usNumAddedParticles = m_usNumAddedParticles;
+    pkDest->m_usAddedParticlesBase = m_usAddedParticlesBase;
 
     SetCenterAndRadius(pkDest->m_kBound, m_kBound.m_kCenter, m_kBound.m_fBoundRadius);
 }
@@ -503,10 +528,13 @@ static inline void ReadParticleStream(NiBinaryStream* input, void* destination, 
 }
 
 // @fnv 0x00c25340
-void NiPSysData::LoadBinary(NiStream& stream)
+// pdb: NiPSysData::LoadBinary | NiPSysData.obj | retail, upstream name already matches, high
+// pdb params: kStream
+// pdb locals: us, bHasRotationSpeeds
+void NiPSysData::LoadBinary(NiStream& kStream)
 {
-    NiParticlesData::LoadBinary(stream);
-    if (stream.m_uiNifFileVersion < 0x0a030005 && m_pkRotations)
+    NiParticlesData::LoadBinary(kStream);
+    if (kStream.m_uiNifFileVersion < 0x0a030005 && m_pkRotations)
     {
         m_pfRotationAngles = (float*)_NiMalloc(m_usVertices * 4);
         m_pkRotationAxes = (NiPoint3*)new (g_memoryManager) S00c25340_Pt3[m_usVertices];
@@ -515,18 +543,18 @@ void NiPSysData::LoadBinary(NiStream& stream)
         SetRotations(0);
     }
     m_pkParticleInfo = (Point3ParameterData*)new (g_memoryManager) S00c25340_Info[m_usVertices];
-    if (stream.m_kHeader.m_uiVersion < 0x13)
+    if (kStream.m_BSStreamHeader.uiVersion < 0x13)
         for (unsigned short i = 0; i < m_usVertices; ++i)
-            m_pkParticleInfo[i].LoadBinary(stream);
-    if (stream.m_uiNifFileVersion >= 0x14000002)
+            m_pkParticleInfo[i].LoadBinary(kStream);
+    if (kStream.m_uiNifFileVersion >= 0x14000002)
     {
         unsigned char res;
-        ReadParticleStream(stream.m_pkIstr, &res, 1, 1);
+        ReadParticleStream(kStream.m_pkIstr, &res, 1, 1);
         if (res)
         {
             m_pfRotationSpeeds = (float*)_NiMalloc(m_usVertices * 4);
-            if (stream.m_kHeader.m_uiVersion < 0x13)
-                ReadParticleStream(stream.m_pkIstr, m_pfRotationSpeeds, m_usVertices * 4, 4);
+            if (kStream.m_BSStreamHeader.uiVersion < 0x13)
+                ReadParticleStream(kStream.m_pkIstr, m_pfRotationSpeeds, m_usVertices * 4, 4);
         }
     }
     else if (m_pfRotationAngles)
@@ -534,16 +562,19 @@ void NiPSysData::LoadBinary(NiStream& stream)
         m_pfRotationSpeeds = (float*)_NiMalloc(m_usVertices * 4);
         fnv_zlib_memset(m_pfRotationSpeeds, 0, m_usVertices * 4);
     }
-    if (stream.m_kHeader.m_uiVersion < 0x13)
+    if (kStream.m_BSStreamHeader.uiVersion < 0x13)
     {
-        ReadParticleStream(stream.m_pkIstr, &m_usNumActive, 2, 2);
-        ReadParticleStream(stream.m_pkIstr, &m_usNumParticles, 2, 2);
+        ReadParticleStream(kStream.m_pkIstr, &m_usNumAddedParticles, 2, 2);
+        ReadParticleStream(kStream.m_pkIstr, &m_usAddedParticlesBase, 2, 2);
     }
 }
 
 extern int DAT_010be254;
 
 // @fnv 0x00c252d0
+// pdb: NiPSysData::CreateClone | NiPSysData.obj | retail, object-file run extension, low
+// pdb params: kCloning
+// pdb locals: pkObject
 NiPSysData* __fastcall CloneParticleData(NiPSysData* source, void*, CloningProcess& kCloning)
 {
     NiPSysData* pkClone = new NiPSysData;

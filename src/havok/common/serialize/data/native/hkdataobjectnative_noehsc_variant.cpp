@@ -46,6 +46,7 @@ class NativeClassLookupMap
 };
 
 // No approved include/hkDataWorldNative.h exists yet; retain the destructor's required layout locally.
+// pdb: class hkDataWorldNative, size 0x28 (here 0x1c), bases: hkDataWorld, 4 members
 class hkDataWorldNative : public hkReferencedObject
 {
   public:
@@ -57,6 +58,7 @@ class hkDataWorldNative : public hkReferencedObject
 };
 
 // @fnv 0x00dbb3f0
+// pdb: hkDataWorldNative::~hkDataWorldNative | hkDataObjectNative.obj | retail, upstream name already matches, high
 hkDataWorldNative::~hkDataWorldNative()
 {
     char valid;

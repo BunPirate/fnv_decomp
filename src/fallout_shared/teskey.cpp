@@ -8,6 +8,7 @@ extern "C" void __cdecl _Deallocate(void*);
 
 // Destroys the key, then frees this with _Deallocate when flags has bit 0 set, and returns this.
 // @fnv 0x0050a670
+// pdb: TESKey::`scalar deleting destructor' | TESKey.obj | retail, vtable slot, high
 void* TESKey::Destroy(unsigned int flags)
 {
     TESKey::~TESKey();
@@ -17,6 +18,7 @@ void* TESKey::Destroy(unsigned int flags)
 }
 
 // @fnv 0x0050a6a0
+// pdb: TESKey::~TESKey | TESKey.obj | retail, upstream name already matches, high
 TESKey::~TESKey()
 {
     TESForm::ClearData();

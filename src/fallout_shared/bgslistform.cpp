@@ -6,6 +6,7 @@
 #include "../../include/BGSSaveFormBuffer.h"
 
 // @fnv 0x0058FB00
+// pdb: BGSListForm::ClearData | BGSListForm.obj | retail, upstream name already matches, high
 void BGSListForm::ClearData()
 {
     GetList()->RemoveAll();
@@ -13,21 +14,26 @@ void BGSListForm::ClearData()
 }
 
 // @fnv 0x005901C0
-void BGSListForm::Revert(BGSLoadFormBuffer* buffer)
+// pdb: BGSListForm::Revert | BGSListForm.obj | retail, upstream name already matches, high
+// pdb params: apLoadGameBuffer
+void BGSListForm::Revert(BGSLoadFormBuffer* apLoadGameBuffer)
 {
-    TESForm::Revert(buffer);
-    if (buffer->GetOldChangeFlags(0x80000000).operator bool())
-        ClearFormList();
+    TESForm::Revert(apLoadGameBuffer);
+    if (apLoadGameBuffer->GetOldChangeFlags(0x80000000).operator bool())
+        RemoveAllScriptAddedForms();
 }
 
 // @fnv 0x00590010
-void BGSListForm::IncludeForm(TESForm* form)
+// src: XBOX_RETAIL_PDB 0x00590010
+// pdb: BGSListForm::AddScriptAddedForm | BGSListForm.obj | retail, call graph, high
+// pdb params: apAddedForm
+void BGSListForm::AddScriptAddedForm(TESForm* apAddedForm)
 {
-    if (form != 0)
+    if (apAddedForm != 0)
     {
-        if (!GetList()->IsInList(form))
+        if (!GetList()->IsInList(apAddedForm))
         {
-            GetList()->AddHead(form);
+            GetList()->AddHead(apAddedForm);
             ++m_uiFormCount;
             MarkAsModified(0x80000000);
         }
@@ -35,6 +41,7 @@ void BGSListForm::IncludeForm(TESForm* form)
 }
 
 // @fnv 0x00591B70
+// pdb: BGSRadiationStage::BGSRadiationStage | BGSRadiation.obj | retail, upstream name already matches, high
 BGSRadiationStage::BGSRadiationStage()
 {
     reinterpret_cast<BSSimpleList<TESForm*>*>(reinterpret_cast<unsigned char*>(this) + 0x18)->FUN_004019f0();
@@ -43,47 +50,53 @@ BGSRadiationStage::BGSRadiationStage()
 }
 
 // @fnv 0x00590120
-void BGSListForm::LoadGame(BGSLoadFormBuffer* buffer)
+// pdb: BGSListForm::LoadGame | BGSListForm.obj | retail, upstream name already matches, high
+// pdb params: apLoadGameBuffer
+// pdb locals: iscriptAddedFormCount, i, pform
+void BGSListForm::LoadGame(BGSLoadFormBuffer* apLoadGameBuffer)
 {
-    TESForm::LoadGame(buffer);
-    if (buffer->GetChangeFlags(0x80000000).operator bool())
+    TESForm::LoadGame(apLoadGameBuffer);
+    if (apLoadGameBuffer->GetChangeFlags(0x80000000).operator bool())
     {
         if (m_uiFormCount != 0)
-            ClearFormList();
+            RemoveAllScriptAddedForms();
 
         unsigned int formCount = 0;
-        buffer->ReadTypedData(static_cast<void*>(&formCount), 4u);
+        apLoadGameBuffer->ReadTypedData(static_cast<void*>(&formCount), 4u);
         for (unsigned int index = 0; index < formCount; ++index)
         {
-            TESForm* form = TESForm::GetFormByID(buffer->BGSLoadGameBuffer::ReadFormIdentifier());
-            IncludeForm(form);
+            TESForm* form = TESForm::GetFormByID(apLoadGameBuffer->BGSLoadGameBuffer::ReadFormIdentifier());
+            AddScriptAddedForm(form);
         }
     }
 }
 
 // @fnv 0x0058FD40
-bool BGSListForm::Load(TESFile* file)
+// pdb: BGSListForm::Load | BGSListForm.obj | retail, upstream name already matches, high
+// pdb params: apFile
+// pdb locals: chunkid, pMessage, itempint
+bool BGSListForm::Load(TESFile* apFile)
 {
-    LoadRecordHeader(file);
+    LoadRecordHeader(apFile);
     SetInitializationState(false);
 
     unsigned int chunkID;
-    while ((chunkID = file->GetChunkID()) != 0)
+    while ((chunkID = apFile->GetChunkID()) != 0)
     {
         switch (chunkID)
         {
         case 0x44494445: {
-            char* editorID = (char*)_alloca(file->GetChunkSize());
-            file->GetChunkData(editorID, 0x200);
+            char* editorID = (char*)_alloca(apFile->GetChunkSize());
+            apFile->GetChunkData(editorID, 0x200);
             SetEditorID_AtRuntime(editorID);
             break;
         }
         case 0x444e424f:
-            readOBNDSubRecord(file);
+            readOBNDSubRecord(apFile);
             break;
         case 0x4d414e4c: {
             unsigned int formID = 0;
-            file->GetChunkData(&formID);
+            apFile->GetChunkData(&formID);
             {
                 GetList()->AddTail((TESForm*)formID);
             }
@@ -92,13 +105,15 @@ bool BGSListForm::Load(TESFile* file)
         default:
             break;
         }
-        if (!file->NextChunk())
+        if (!apFile->NextChunk())
             break;
     }
     return true;
 }
 
 // @fnv 0x0058FE50
+// pdb: BGSListForm::InitItem | BGSListForm.obj | retail, string-set bridge, high
+// pdb locals: plist, plastlist, itempint, pform
 void BGSListForm::InitItem()
 {
     if (static_cast<const TESForm*>(this)->GetInitialized())
@@ -135,7 +150,9 @@ void BGSListForm::InitItem()
 }
 
 // @fnv 0x0058ffd0
-void BGSListForm::ClearFormList()
+// src: XBOX_RETAIL_PDB 0x0058ffd0
+// pdb: BGSListForm::RemoveAllScriptAddedForms | BGSListForm.obj | retail, call graph (shared callers), high
+void BGSListForm::RemoveAllScriptAddedForms()
 {
     while (m_uiFormCount != 0)
     {
@@ -147,6 +164,8 @@ void BGSListForm::ClearFormList()
 void _FUN_00485910(unsigned int, unsigned int);
 // @fnv 0x0058fcc0
 // src: XBOX_PDB 0x0058fcc0
+// pdb: BGSListForm::Save | BGSListForm.obj | retail, vtable slot, high
+// pdb locals: plist, tempint, pform
 void BGSListForm::Save_0058fcc0()
 {
     reinterpret_cast<TESForm*>(this)->BeginFormRecord();
@@ -162,6 +181,9 @@ void BGSListForm::Save_0058fcc0()
 }
 
 // @fnv 0x0058fbc0
+// pdb: BGSListForm::Compare | BGSListForm.obj | retail, vtable slot, high
+// pdb params: apCompare
+// pdb locals: plist, pcomplist, pcompare
 bool BGSListForm::IsNotEqual(TESForm* apCompare)
 {
     BGSListForm* pcompare = dynamic_cast<BGSListForm*>(apCompare);
@@ -186,6 +208,9 @@ bool BGSListForm::IsNotEqual(TESForm* apCompare)
 
 // Appends the source list entries, then copies the common form data.
 // @fnv 0x0058fb30
+// pdb: BGSListForm::Copy | BGSListForm.obj | retail, vtable slot, high
+// pdb params: apCopy
+// pdb locals: plist, pcopy, pform
 void BGSListForm::CopyConditionsFromListForm(TESForm* apCopy)
 {
     BGSListForm* pListForm = dynamic_cast<BGSListForm*>(apCopy);
@@ -202,6 +227,9 @@ void BGSListForm::CopyConditionsFromListForm(TESForm* apCopy)
 }
 
 // @fnv 0x0058ff60
+// pdb: BGSListForm::GetItemIndex | BGSListForm.obj | debug, call graph, high
+// pdb params: apForm
+// pdb locals: plist, iindex
 int BGSListForm::GetConditionIndex(TESForm* apForm)
 {
     int iElementIndex = 0;
@@ -219,6 +247,9 @@ int BGSListForm::GetConditionIndex(TESForm* apForm)
 }
 
 // @fnv 0x00590080
+// pdb: BGSListForm::SaveGame | BGSListForm.obj | retail, vtable slot, high
+// pdb params: apSaveGameBuffer
+// pdb locals: plist, i, pform
 void BGSListForm::SaveFormList(BGSSaveFormBuffer* apSaveGameBuffer)
 {
     TESForm::SaveGame(apSaveGameBuffer);
@@ -237,6 +268,7 @@ void BGSListForm::SaveFormList(BGSSaveFormBuffer* apSaveGameBuffer)
 
 // Initializes the list form and clears its added-form count.
 // @fnv 0x0058f9d0
+// pdb: BGSListForm::BGSListForm | BGSListForm.obj | retail, upstream name already matches, high
 BGSListForm::BGSListForm()
 {
     ClearFormData();
@@ -245,6 +277,7 @@ BGSListForm::BGSListForm()
 }
 
 // @fnv 0x0058fa90
+// pdb: BGSListForm::~BGSListForm | BGSListForm.obj | debug, upstream name already matches, high
 BGSListForm::~BGSListForm()
 {
     BGSListForm::ClearData();
@@ -271,6 +304,7 @@ class FUN_005effc0 : public TESForm
 
 // Initializes the form type and clears its flag.
 // @fnv 0x005effc0
+// pdb: BGSVoiceType::BGSVoiceType | BGSVoiceType.obj | retail, call graph, high
 FUN_005effc0::FUN_005effc0()
 {
     SetFormType((ENUM_FORM_ID)0x5d);

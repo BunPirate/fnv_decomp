@@ -8,19 +8,20 @@
 
 class TESFile;
 
+// pdb: class GameSettingCollection, size 0x120 (here 0x10c), bases: SettingCollectionMap<Setting>, 0 members
 class GameSettingCollection : public SettingCollectionMap<Setting>
 {
 public:
     virtual float GetFloat(unsigned int index);
-    virtual bool ReadSetting(Setting& setting);
+    virtual bool ReadSetting(Setting& arSetting);
     virtual bool Open(bool create);
     virtual bool Close();
-    virtual bool ReadSetting(TESFile* file, const char* key);
+    virtual bool ReadSetting(TESFile* apFile, const char* apKey);
 
     static GameSettingCollection* __cdecl Instance();
-    bool GetSetting(const char* key, SettingT_GameSettingCollection_** setting);
+    bool GetSetting(const char* apID, SettingT_GameSettingCollection_** arpGS);
     TESFile* GameSettingCollection_File();
-    Setting* SettingCollectionMap_Setting_GetPtr(const char* key);
+    Setting* SettingCollectionMap_Setting_GetPtr(const char* apID);
     void SetField108(TESFile* file);
     SETTING_VALUE* __thiscall Bool();
     SETTING_VALUE* __thiscall Int();

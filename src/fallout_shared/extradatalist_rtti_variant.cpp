@@ -119,28 +119,31 @@ struct ResQ
 {
     void FUN_00483710();
 };
-void __cdecl ActiveEffect_FinishInitLoadGameActiveEffectList(int a, int b);
+void __cdecl ActiveEffect_FinishInitLoadGameActiveEffectList(int apActiveEffectList, int apActor);
 struct OwnQ
 {
     ResQ* ExtraDataList_GetTeleport();
     BSExtraData* BaseExtraList_GetExtraData(int iType);
-    void ExtraDataList_FinishInitLoadGame(unsigned int uiFlags, int a2, P3Q* p3);
+    void ExtraDataList_FinishInitLoadGame(unsigned int aiFlags, int aiOldFlags, P3Q* apRef);
 };
 // @fnv 0x00426720
 // src: XBOX_PDB 0x00426720
-void OwnQ::ExtraDataList_FinishInitLoadGame(unsigned int uiFlags, int a2, P3Q* p3)
+// pdb: ExtraDataList::FinishInitLoadGame | ExtraDataList.obj | retail, upstream name already matches, high
+// pdb params: aiFlags, aiOldFlags, apRef
+// pdb locals: bisActor, pteleport, pnonactorTarget
+void OwnQ::ExtraDataList_FinishInitLoadGame(unsigned int aiFlags, int aiOldFlags, P3Q* apRef)
 {
     bool bSkip = false;
-    if (p3 && p3->IsX())
+    if (apRef && apRef->IsX())
         bSkip = true;
     if (!bSkip)
     {
-        if (uiFlags & 0x20000)
+        if (aiFlags & 0x20000)
         {
             ResQ* pRes = ExtraDataList_GetTeleport();
             pRes->FUN_00483710();
         }
-        if (uiFlags & 0)
+        if (aiFlags & 0)
         {
             NonActorMagicTarget* pTarget = dynamic_cast<NonActorMagicTarget*>(BaseExtraList_GetExtraData(0x33));
             if (pTarget)
@@ -331,7 +334,7 @@ class LoadRef
     virtual void v133();
     virtual bool v134();
     unsigned int GetFormID();        // 0x84e3a0
-    void Fn8b6820();                 // 0x8b6820
+    void Actor_ClearDismemberedLimbs();                 // 0x8b6820
     void Fn8b6ae0();                 // 0x8b6ae0
     RefSub* GetSub();                // 0x5d43c0
     void Fn8adc50();                 // 0x8adc50
@@ -658,7 +661,7 @@ class FormArray
     unsigned int unk08;
     unsigned int unk0C;
     void Resize(unsigned int count, int flag);   // 0x6f2290
-    void Resize2(unsigned int count, int flag);  // 0x42f5f0
+    void Resize2(unsigned int aiNewSize, int abFreeMemory);  // 0x42f5f0
     void** GetAt(unsigned int i);                // 0x6a7ad0
     unsigned int GetCount();                     // 0x44ddc0
     void RemoveAt(unsigned int i, int n);        // 0x9a4320
@@ -666,7 +669,7 @@ class FormArray
 class AnimItem
 {
   public:
-    void LoadGame(LoadBuffer* buf);  // 0x9a5ff0
+    void LoadGame(LoadBuffer* apLoadGameBuffer);  // 0x9a5ff0
 };
 class IdList
 {
@@ -697,12 +700,12 @@ class XObj20
     unsigned int unk14;
     unsigned int unk18;
     unsigned int unk1C;
-    void LoadGame(LoadBuffer* buf);  // 0x43aaa0
+    void DoorTeleportData_LoadGame(LoadBuffer* apLoadGameBuffer);  // 0x43aaa0
 };
 class XScriptState
 {
   public:
-    void LoadGame(LoadBuffer* buf);  // 0x83fbe0
+    void LoadGame(LoadBuffer* apLoadGameBuffer);  // 0x83fbe0
 };
 struct XKeyData
 {
@@ -750,7 +753,7 @@ class CrimeList
 class DataHandler
 {
   public:
-    void SetMapping(int id, unsigned int formID);  // 0x84aa30
+    void AddChangedFormID(int id, unsigned int formID);  // 0x84aa30
     bool IsBusy();                                 // 0x42ce10
 };
 class ProcMgr
@@ -764,15 +767,15 @@ extern ProcMgr* DAT_011c3f2c;
 extern CrimeList DAT_011e0e80;
 TESForm* __cdecl LookupFormByID(unsigned int id);                 // 0x4839c0
 void __cdecl LogMessage(const char* fmt, ...);                    // 0x845cc0
-void* __cdecl FindVoiceEntry(LoadRef* ref, float f);              // 0x477bc0
-void __cdecl ApplyVoiceEntry(LoadRef* ref, void* entry);          // 0x477ce0
-TESForm* __cdecl CreateFormForSlot(TESForm* form, int value);     // 0x4759a0
+void* __cdecl BGSDestructibleObjectForm_GetSelfDamage(LoadRef* apRef, float afHealth);              // 0x477bc0
+void __cdecl BGSDestructibleObjectForm_SetSelfDamage(LoadRef* apRef, void* aiSelfDamage);          // 0x477ce0
+TESForm* __cdecl BGSDestructibleObjectForm_GetModelSwap(TESForm* apForm, int aiModelSwapIndex);     // 0x4759a0
 void* __cdecl GetScriptOwner();                                   // 0x42ce00
-LoadForm* __cdecl CreateFormForType(int type);                    // 0x670b90
-MagicItem* __cdecl GetMagicItem(void* form);                      // 0x40a250
-void* __cdecl LookupIdItem(int id);                               // 0x66e330
-LoadObj70* __cdecl CreateObj70(int c);                            // 0x8c6ca0
-void __cdecl LoadExtra33(LoadBuffer* buf, void* dst);             // 0x806a90
+LoadForm* __cdecl CreateFormForType(int aPackageType);                    // 0x670b90
+MagicItem* __cdecl GetMagicItemByNumericID(void* aiFormID);                      // 0x40a250
+void* __cdecl ActorCause_GetActorCauseByID(int aiActorCauseID);                               // 0x66e330
+LoadObj70* __cdecl CreateActorPackageData(int aPackageType);                            // 0x8c6ca0
+void __cdecl LoadExtra33(LoadBuffer* apLoadGameBuffer, void* apActiveEffectList);             // 0x806a90
 DelObj* __cdecl CreateBaseObj(TESActorBase* a, TESActorBase* b);  // 0x47d130
 RefProc* __cdecl GetRefProc(LoadRef* ref);                        // 0x4bf220
 class X24 : public ExtraData110
@@ -1160,20 +1163,23 @@ class ExtraDataLoader : public ExtraDataList
   public:
     BSExtraData* GetByType(unsigned char type);    // 0x410220
     ExtraData110* AddData(ExtraData110* data);     // 0x40ff60
-    void RemoveByType(unsigned char type);         // 0x410140
+    void RemoveByType(unsigned char acType);         // 0x410140
     void RemoveData(ExtraData110* data, int del);  // 0x410020
-    void ResetA(bool a, bool b);                   // 0x41aa20
+    void ResetA(bool a, bool abwearleft);                   // 0x41aa20
     void ResetB(bool a);                           // 0x41ab70
-    void ResetC(bool a);                           // 0x41a960
+    void ExtraDataList_SetGhost(bool a);                           // 0x41a960
     void ResetD();                                 // 0x422670
-    void ExtraDataList_LoadGame_00428150(LoadBuffer* buf);
+    void ExtraDataList_LoadGame_00428150(LoadBuffer* apLoadGameBuffer);
 };
 // @fnv 0x00428150
 // src: EXE 0x00428150
-void ExtraDataLoader::ExtraDataList_LoadGame_00428150(LoadBuffer* buf)
+// pdb: ExtraDataList::LoadGame | ExtraDataList.obj | retail, unique string literal, high
+// pdb params: aiFlags, aiCurrentFlags, apRef
+// pdb locals: icount, istartBufferPosition, iblockSize, bloadedScriptExtra, pactor, i, bimmediatelyRestoreSavedMovementData, iblockHeader, pheader, pform, cextratype, inum, fhealth, cuses, cWeaponModFlags, ftimeleft, fcharge, plock, ikeyID, itrapID, fscale, iownerID, pglobal, iglobalID ...
+void ExtraDataLoader::ExtraDataList_LoadGame_00428150(LoadBuffer* apLoadGameBuffer)
 {
-    LoadRef* pRef = buf->GetRef();
-    LoadRef* actor = buf->GetActor();
+    LoadRef* pRef = apLoadGameBuffer->GetRef();
+    LoadRef* actor = apLoadGameBuffer->GetActor();
     {
         bool abHas[0x93];
         memset(abHas, 0, 0x93);
@@ -1181,17 +1187,17 @@ void ExtraDataLoader::ExtraDataList_LoadGame_00428150(LoadBuffer* buf)
         while (iter6 != 0)
         {
             unsigned char cIterType = iter6->GetType();
-            if (DAT_01183d30[cIterType] != 0 && buf->GetFlags().IsSet(DAT_01183d30[cIterType]))
+            if (DAT_01183d30[cIterType] != 0 && apLoadGameBuffer->GetFlags().IsSet(DAT_01183d30[cIterType]))
             {
                 abHas[cIterType] = 1;
             }
             iter6 = iter6->GetNext();
         }
-        unsigned int ItemUpdateArray = buf->ReadCount();
+        unsigned int ItemUpdateArray = apLoadGameBuffer->ReadCount();
         for (unsigned int i = 0; i < ItemUpdateArray; i++)
         {
             unsigned char cType = 0;
-            buf->Read(&cType, 1);
+            apLoadGameBuffer->Read(&cType, 1);
             switch (cType)
             {
             case 0x16:
@@ -1202,93 +1208,93 @@ void ExtraDataLoader::ExtraDataList_LoadGame_00428150(LoadBuffer* buf)
                 break;
             case 0x24: {
                 X24* p24 = (X24*)(abHas[cType] ? GetByType(cType) : AddData(new X24));
-                buf->Read(&p24->u0C, 2);
+                apLoadGameBuffer->Read(&p24->u0C, 2);
                 break;
             }
             case 0x25: {
                 X25* p25 = (X25*)(abHas[cType] ? GetByType(cType) : AddData(new X25));
-                buf->Read(&p25->u0C, 4);
+                apLoadGameBuffer->Read(&p25->u0C, 4);
                 break;
             }
             case 0x8d: {
                 X8D* p8D = (X8D*)(abHas[cType] ? GetByType(cType) : AddData(new X8D));
-                buf->Read(&p8D->b0C, 1);
+                apLoadGameBuffer->Read(&p8D->b0C, 1);
                 break;
             }
             case 0x30: {
                 X30* p30 = (X30*)(abHas[cType] ? GetByType(cType) : AddData(new X30));
-                buf->Read(&p30->u0C, 4);
+                apLoadGameBuffer->Read(&p30->u0C, 4);
                 break;
             }
             case 0x21: {
                 X21* p21 = (X21*)(abHas[cType] ? GetByType(cType) : AddData(new X21));
-                p21->pForm = LookupFormByID(buf->GetRefID());
+                p21->pForm = LookupFormByID(apLoadGameBuffer->GetRefID());
                 break;
             }
             case 0x23: {
                 X23* p23 = (X23*)(abHas[cType] ? GetByType(cType) : AddData(new X23));
-                buf->Read(&p23->u0C, 4);
+                apLoadGameBuffer->Read(&p23->u0C, 4);
                 break;
             }
             case 0x22: {
                 X22* p22 = (X22*)(abHas[cType] ? GetByType(cType) : AddData(new X22));
-                p22->pForm = dynamic_cast<TESGlobal*>(LookupFormByID(buf->GetRefID()));
+                p22->pForm = dynamic_cast<TESGlobal*>(LookupFormByID(apLoadGameBuffer->GetRefID()));
                 break;
             }
             case 0x1c: {
                 X1C* p1C = (X1C*)(abHas[cType] ? GetByType(cType) : AddData(new X1C));
-                buf->ReadRefID(&p1C->u0C);
+                apLoadGameBuffer->ReadRefID(&p1C->u0C);
                 break;
             }
             case 0x49: {
                 X49* p49 = (X49*)(abHas[cType] ? GetByType(cType) : AddData(new X49));
-                p49->pForm = LookupFormByID(buf->GetRefID());
+                p49->pForm = LookupFormByID(apLoadGameBuffer->GetRefID());
                 break;
             }
             case 0x56: {
                 X56* p56 = (X56*)(abHas[cType] ? GetByType(cType) : AddData(new X56));
-                buf->Read(&p56->f0C, 4);
-                void* value = FindVoiceEntry(pRef, p56->f0C);
+                apLoadGameBuffer->Read(&p56->f0C, 4);
+                void* value = BGSDestructibleObjectForm_GetSelfDamage(pRef, p56->f0C);
                 if (value != 0)
                 {
-                    ApplyVoiceEntry(pRef, value);
+                    BGSDestructibleObjectForm_SetSelfDamage(pRef, value);
                 }
                 break;
             }
             case 0x0d: {
                 X0D* p0D = (X0D*)(abHas[cType] ? GetByType(cType) : AddData(new X0D));
-                p0D->pScript = dynamic_cast<Script*>(LookupFormByID(buf->GetRefID()));
+                p0D->pScript = dynamic_cast<Script*>(LookupFormByID(apLoadGameBuffer->GetRefID()));
                 if (p0D->pEventList == 0)
                 {
                     p0D->pEventList = p0D->pScript ? p0D->pScript->CreateEventList() : 0;
                 }
                 if (pRef == 0)
                 {
-                    buf->SetForm(GetScriptOwner());
+                    apLoadGameBuffer->SetForm(GetScriptOwner());
                 }
                 if (p0D->pEventList == 0)
                 {
                     ScriptEventList kTemp;
-                    kTemp.LoadGame(buf);
+                    kTemp.LoadGame(apLoadGameBuffer);
                 }
                 else
                 {
-                    p0D->pEventList->LoadGame(buf);
+                    p0D->pEventList->LoadGame(apLoadGameBuffer);
                 }
                 if (pRef == 0)
                 {
-                    buf->SetForm(0);
+                    apLoadGameBuffer->SetForm(0);
                 }
                 break;
             }
             case 0x5b: {
                 X5B* p5B = (X5B*)(abHas[cType] ? GetByType(cType) : AddData(new X5B));
-                p5B->pForm = LookupFormByID(buf->GetRefID());
+                p5B->pForm = LookupFormByID(apLoadGameBuffer->GetRefID());
                 int iValue = -1;
-                buf->Read(&iValue, 4);
+                apLoadGameBuffer->Read(&iValue, 4);
                 if (p5B->pForm != 0)
                 {
-                    p5B->pItem = CreateFormForSlot(p5B->pForm, iValue);
+                    p5B->pItem = BGSDestructibleObjectForm_GetModelSwap(p5B->pForm, iValue);
                 }
                 if (p5B->pForm != 0 && p5B->pItem != 0)
                 {
@@ -1305,83 +1311,83 @@ void ExtraDataLoader::ExtraDataList_LoadGame_00428150(LoadBuffer* buf)
             }
             case 0x19: {
                 X19* p19 = (X19*)(abHas[cType] ? GetByType(cType) : AddData(new X19));
-                buf->ReadRefID(&p19->u0C);
-                buf->ReadRefID(&p19->u14);
-                buf->Read(&p19->u10, 4);
-                buf->Read(&p19->b18, 1);
-                buf->Read(&p19->b19, 1);
-                buf->Read(&p19->b1A, 1);
+                apLoadGameBuffer->ReadRefID(&p19->u0C);
+                apLoadGameBuffer->ReadRefID(&p19->u14);
+                apLoadGameBuffer->Read(&p19->u10, 4);
+                apLoadGameBuffer->Read(&p19->b18, 1);
+                apLoadGameBuffer->Read(&p19->b19, 1);
+                apLoadGameBuffer->Read(&p19->b1A, 1);
                 break;
             }
             case 0x18: {
                 X18* p18 = (X18*)(abHas[cType] ? GetByType(cType) : AddData(new X18));
-                p18->pForm = LookupFormByID(buf->GetRefID());
-                buf->Read(p18->pos, 0xc);
-                buf->Read(&p18->u1C, 4);
+                p18->pForm = LookupFormByID(apLoadGameBuffer->GetRefID());
+                apLoadGameBuffer->Read(p18->pos, 0xc);
+                apLoadGameBuffer->Read(&p18->u1C, 4);
                 break;
             }
             case 0x1b: {
                 X1B* extra_ = (X1B*)(abHas[cType] ? GetByType(cType) : AddData(new X1B));
-                unsigned int uiPkgCount = buf->ReadCount();
+                unsigned int uiPkgCount = apLoadGameBuffer->ReadCount();
                 for (unsigned int j = 0; j < uiPkgCount; j++)
                 {
                     XPackEntry* pEntry = new XPackEntry;
-                    pEntry->pForm = dynamic_cast<TESPackage*>(LookupFormByID(buf->GetRefID()));
-                    buf->Read(&pEntry->b04, 1);
+                    pEntry->pForm = dynamic_cast<TESPackage*>(LookupFormByID(apLoadGameBuffer->GetRefID()));
+                    apLoadGameBuffer->Read(&pEntry->b04, 1);
                     extra_->pList->AddHead(pEntry);
                 }
                 break;
             }
             case 0x1d: {
                 X1D* p1D = (X1D*)(abHas[cType] ? GetByType(cType) : AddData(new X1D));
-                unsigned int uiIdCount = buf->ReadCount();
+                unsigned int uiIdCount = apLoadGameBuffer->ReadCount();
                 for (unsigned int j = 0; j < uiIdCount; j++)
                 {
                     void* pId = 0;
-                    buf->ReadRefID(&pId);
+                    apLoadGameBuffer->ReadRefID(&pId);
                     p1D->pList->AddHead(pId);
                 }
                 break;
             }
             case 0x6c: {
                 X6C* p6C = (X6C*)(abHas[cType] ? GetByType(cType) : AddData(new X6C));
-                buf->ReadRefID(&p6C->u0C);
+                apLoadGameBuffer->ReadRefID(&p6C->u0C);
                 break;
             }
             case 0x73: {
                 X73* extra_ = (X73*)(abHas[cType] ? GetByType(cType) : AddData(new X73));
-                unsigned int uiTopicCount = buf->ReadCount();
+                unsigned int uiTopicCount = apLoadGameBuffer->ReadCount();
                 for (unsigned int j = 0; j < uiTopicCount; j++)
                 {
                     XTopicEntry* pTopic = new XTopicEntry;
-                    pTopic->pInfo = dynamic_cast<TESTopicInfo*>(LookupFormByID(buf->GetRefID()));
-                    buf->Read(&pTopic->u04, 4);
-                    buf->Read(&pTopic->u08, 4);
+                    pTopic->pInfo = dynamic_cast<TESTopicInfo*>(LookupFormByID(apLoadGameBuffer->GetRefID()));
+                    apLoadGameBuffer->Read(&pTopic->u04, 4);
+                    apLoadGameBuffer->Read(&pTopic->u08, 4);
                     extra_->pList->AddHead(pTopic);
                 }
                 break;
             }
             case 0x75: {
                 X75* p75 = (X75*)(abHas[cType] ? GetByType(cType) : AddData(new X75));
-                p75->pTopic = dynamic_cast<TESTopic*>(LookupFormByID(buf->GetRefID()));
-                p75->pInfo = dynamic_cast<TESTopicInfo*>(LookupFormByID(buf->GetRefID()));
-                buf->Read(&p75->b18, 1);
+                p75->pTopic = dynamic_cast<TESTopic*>(LookupFormByID(apLoadGameBuffer->GetRefID()));
+                p75->pInfo = dynamic_cast<TESTopicInfo*>(LookupFormByID(apLoadGameBuffer->GetRefID()));
+                apLoadGameBuffer->Read(&p75->b18, 1);
                 break;
             }
             case 0x4a: {
                 X4A* p4A = (X4A*)(abHas[cType] ? GetByType(cType) : AddData(new X4A));
-                buf->Read(&p4A->b0C, 1);
+                apLoadGameBuffer->Read(&p4A->b0C, 1);
                 break;
             }
             case 0x35: {
                 X35* extra_ = (X35*)(abHas[cType] ? GetByType(cType) : AddData(new X35));
-                unsigned int uiCrimeCount = buf->ReadCount();
+                unsigned int uiCrimeCount = apLoadGameBuffer->ReadCount();
                 for (unsigned int j = 0; j < uiCrimeCount; j++)
                 {
                     int iCrimeID = 0;
                     int iCrimeType = -1;
-                    buf->Read(&iCrimeID, 4);
-                    buf->Read(&iCrimeType, 4);
+                    apLoadGameBuffer->Read(&iCrimeID, 4);
+                    apLoadGameBuffer->Read(&iCrimeType, 4);
                     void* pInventoryObject = DAT_011e0e80.Find(iCrimeType, iCrimeID);
                     if (pInventoryObject != 0)
                     {
@@ -1402,12 +1408,12 @@ void ExtraDataLoader::ExtraDataList_LoadGame_00428150(LoadBuffer* buf)
             }
             case 0x45: {
                 X45* extra_ = (X45*)(abHas[cType] ? GetByType(cType) : AddData(new X45));
-                unsigned int uiAnimCount = buf->ReadCount();
+                unsigned int uiAnimCount = apLoadGameBuffer->ReadCount();
                 extra_->kArray.Resize2(uiAnimCount, 1);
                 for (unsigned int j = 0; j < uiAnimCount; j++)
                 {
                     AnimItem* pAnim = (AnimItem*)extra_->kArray.GetAt(j);
-                    pAnim->LoadGame(buf);
+                    pAnim->LoadGame(apLoadGameBuffer);
                 }
                 if (extra_->kArray.GetCount() == 0)
                 {
@@ -1417,12 +1423,12 @@ void ExtraDataLoader::ExtraDataList_LoadGame_00428150(LoadBuffer* buf)
             }
             case 0x5e: {
                 X5E* extra_ = (X5E*)(abHas[cType] ? GetByType(cType) : AddData(new X5E));
-                unsigned int uiFactionCount = buf->ReadCount();
+                unsigned int uiFactionCount = apLoadGameBuffer->ReadCount();
                 for (unsigned int j = 0; j < uiFactionCount; j++)
                 {
                     XPackEntry* pRank = new XPackEntry;
-                    pRank->pForm = dynamic_cast<TESFaction*>(LookupFormByID(buf->GetRefID()));
-                    buf->Read(&pRank->b04, 1);
+                    pRank->pForm = dynamic_cast<TESFaction*>(LookupFormByID(apLoadGameBuffer->GetRefID()));
+                    apLoadGameBuffer->Read(&pRank->b04, 1);
                     extra_->pList->AddHead(pRank);
                 }
                 {
@@ -1468,17 +1474,17 @@ void ExtraDataLoader::ExtraDataList_LoadGame_00428150(LoadBuffer* buf)
             case 0x70: {
                 X70* p70 = (X70*)(abHas[cType] ? GetByType(cType) : AddData(new X70));
                 char cObj = -1;
-                buf->Read(&cObj, 1);
+                apLoadGameBuffer->Read(&cObj, 1);
                 if (cObj != -1)
                 {
-                    p70->pObj = CreateObj70(cObj);
-                    p70->pObj->LoadGame(buf);
+                    p70->pObj = CreateActorPackageData(cObj);
+                    p70->pObj->LoadGame(apLoadGameBuffer);
                 }
                 break;
             }
             case 0x2c: {
                 unsigned char cValue = 0;
-                buf->Read(&cValue, 1);
+                apLoadGameBuffer->Read(&cValue, 1);
                 X2C* extra_ = (X2C*)(abHas[cType] ? GetByType(cType) : 0);
                 if (extra_ != 0 && extra_->pSub != 0)
                 {
@@ -1491,126 +1497,126 @@ void ExtraDataLoader::ExtraDataList_LoadGame_00428150(LoadBuffer* buf)
                 break;
             case 0x7c: {
                 X7C* extra_ = (X7C*)(abHas[cType] ? GetByType(cType) : AddData(new X7C));
-                unsigned int count = buf->ReadCount();
+                unsigned int count = apLoadGameBuffer->ReadCount();
                 extra_->kArray.Resize(count, 1);
                 for (unsigned int j = 0; j < count; j++)
                 {
                     void** ppRef = extra_->kArray.GetAt(j);
-                    buf->ReadRefID(ppRef);
+                    apLoadGameBuffer->ReadRefID(ppRef);
                 }
                 break;
             }
             case 0x74: {
                 X74* p74 = (X74*)(abHas[cType] ? GetByType(cType) : AddData(new X74));
-                p74->m_pEncounterZone = dynamic_cast<BGSEncounterZone*>(LookupFormByID(buf->GetRefID()));
+                p74->m_pEncounterZone = dynamic_cast<BGSEncounterZone*>(LookupFormByID(apLoadGameBuffer->GetRefID()));
                 break;
             }
             case 0x5c: {
                 X5C* p5C = (X5C*)(abHas[cType] ? GetByType(cType) : AddData(new X5C));
-                buf->Read(&p5C->u0C, 4);
+                apLoadGameBuffer->Read(&p5C->u0C, 4);
                 break;
             }
             case 0x5d: {
                 X5D* p5D = (X5D*)(abHas[cType] ? GetByType(cType) : AddData(new X5D));
-                buf->Read(&p5D->u0C, 4);
+                apLoadGameBuffer->Read(&p5D->u0C, 4);
                 break;
             }
             case 0x6e: {
                 X6E* p6E = (X6E*)(abHas[cType] ? GetByType(cType) : AddData(new X6E));
-                p6E->pAmmo = dynamic_cast<TESAmmo*>(LookupFormByID(buf->GetRefID()));
-                buf->Read(&p6E->u10, 4);
+                p6E->pAmmo = dynamic_cast<TESAmmo*>(LookupFormByID(apLoadGameBuffer->GetRefID()));
+                apLoadGameBuffer->Read(&p6E->u10, 4);
                 break;
             }
             case 0x1e: {
                 X1E* p1E = (X1E*)(abHas[cType] ? GetByType(cType) : AddData(new X1E));
-                buf->Read(&p1E->u0C, 4);
+                apLoadGameBuffer->Read(&p1E->u0C, 4);
                 break;
             }
             case 0x1a: {
                 X1A* p1A = (X1A*)(abHas[cType] ? GetByType(cType) : AddData(new X1A));
                 int iMapID = 0;
-                buf->ReadRefID(&iMapID);
+                apLoadGameBuffer->ReadRefID(&iMapID);
                 if (iMapID != 0)
                 {
                     p1A->pForm = CreateFormForType(0x17);
-                    DAT_011ddf38->SetMapping(iMapID, p1A->pForm->GetFormID());
-                    p1A->pForm->LoadGame(buf);
+                    DAT_011ddf38->AddChangedFormID(iMapID, p1A->pForm->GetFormID());
+                    p1A->pForm->LoadGame(apLoadGameBuffer);
                 }
                 break;
             }
             case 0x1f:
-                ResetC(1);
+                ExtraDataList_SetGhost(1);
                 break;
             case 0x26: {
                 X26* p26 = (X26*)(abHas[cType] ? GetByType(cType) : AddData(new X26));
-                buf->Read(&p26->b0C, 1);
+                apLoadGameBuffer->Read(&p26->b0C, 1);
                 break;
             }
             case 0x27: {
                 X27* p27 = (X27*)(abHas[cType] ? GetByType(cType) : AddData(new X27));
-                buf->Read(&p27->u0C, 4);
+                apLoadGameBuffer->Read(&p27->u0C, 4);
                 break;
             }
             case 0x28: {
                 X28* p28 = (X28*)(abHas[cType] ? GetByType(cType) : AddData(new X28));
-                buf->Read(&p28->u0C, 4);
+                apLoadGameBuffer->Read(&p28->u0C, 4);
                 break;
             }
             case 0x2a: {
                 X2A* p2A = (X2A*)(abHas[cType] ? GetByType(cType) : AddData(new X2A));
-                buf->Read(&p2A->pData->b00, 1);
-                buf->Read(&p2A->pData->b08, 1);
-                p2A->pData->pKey = dynamic_cast<TESKey*>(LookupFormByID(buf->GetRefID()));
-                if (buf->GetVersion() >= 0x10)
+                apLoadGameBuffer->Read(&p2A->pData->b00, 1);
+                apLoadGameBuffer->Read(&p2A->pData->b08, 1);
+                p2A->pData->pKey = dynamic_cast<TESKey*>(LookupFormByID(apLoadGameBuffer->GetRefID()));
+                if (apLoadGameBuffer->GetVersion() >= 0x10)
                 {
-                    buf->Read(&p2A->pData->u0C, 4);
-                    buf->Read(&p2A->pData->u10, 4);
+                    apLoadGameBuffer->Read(&p2A->pData->u0C, 4);
+                    apLoadGameBuffer->Read(&p2A->pData->u10, 4);
                 }
                 break;
             }
             case 0x2f: {
                 X2F* p2F = (X2F*)(abHas[cType] ? GetByType(cType) : AddData(new X2F));
-                buf->Read(&p2F->u0C, 4);
-                buf->Read(&p2F->b10, 1);
+                apLoadGameBuffer->Read(&p2F->u0C, 4);
+                apLoadGameBuffer->Read(&p2F->b10, 1);
                 break;
             }
             case 0x32: {
                 X32* p32 = (X32*)(abHas[cType] ? GetByType(cType) : AddData(new X32));
-                buf->ReadRefID(&p32->u18);
-                buf->ReadRefID(&p32->u1C);
-                buf->ReadRefID(&p32->u20);
+                apLoadGameBuffer->ReadRefID(&p32->u18);
+                apLoadGameBuffer->ReadRefID(&p32->u1C);
+                apLoadGameBuffer->ReadRefID(&p32->u20);
                 break;
             }
             case 0x33: {
                 X33* p33 = (X33*)(abHas[cType] ? GetByType(cType) : AddData(new X33));
-                buf->ReadRefID(&p33->u1C);
-                LoadExtra33(buf, &p33->u20);
+                apLoadGameBuffer->ReadRefID(&p33->u1C);
+                LoadExtra33(apLoadGameBuffer, &p33->u20);
                 break;
             }
             case 0x39: {
                 X39* p39 = (X39*)(abHas[cType] ? GetByType(cType) : AddData(new X39));
-                buf->ReadRefID(&p39->u0C);
+                apLoadGameBuffer->ReadRefID(&p39->u0C);
                 break;
             }
             case 0x3f: {
                 X3F* p3F = (X3F*)(abHas[cType] ? GetByType(cType) : AddData(new X3F));
-                buf->ReadRefID(&p3F->pItem);
-                p3F->pItem = dynamic_cast<AlchemyItem*>(GetMagicItem(p3F->pItem));
+                apLoadGameBuffer->ReadRefID(&p3F->pItem);
+                p3F->pItem = dynamic_cast<AlchemyItem*>(GetMagicItemByNumericID(p3F->pItem));
                 break;
             }
             case 0x46: {
                 X46* p46 = (X46*)(abHas[cType] ? GetByType(cType) : AddData(new X46));
-                buf->ReadRefID(&p46->u0C);
+                apLoadGameBuffer->ReadRefID(&p46->u0C);
                 break;
             }
             case 0x4d: {
                 X4D* p4D = (X4D*)(abHas[cType] ? GetByType(cType) : AddData(new X4D));
-                p4D->pState->LoadGame(buf);
+                p4D->pState->LoadGame(apLoadGameBuffer);
                 break;
             }
             case 0x4e: {
                 X4E* p4E = (X4E*)(abHas[cType] ? GetByType(cType) : AddData(new X4E));
-                buf->Read(&p4E->b0C, 1);
+                apLoadGameBuffer->Read(&p4E->b0C, 1);
                 break;
             }
             case 0x5f: {
@@ -1619,38 +1625,38 @@ void ExtraDataLoader::ExtraDataList_LoadGame_00428150(LoadBuffer* buf)
                 {
                     RemoveData(pOld5F, 0);
                 }
-                else if (buf->GetFlags2().IsSet(0x20000))
+                else if (apLoadGameBuffer->GetFlags2().IsSet(0x20000))
                 {
                     if (actor->v116())
                     {
-                        actor->Fn8b6820();
+                        actor->Actor_ClearDismemberedLimbs();
                     }
                 }
                 X5F* extra_ = new X5F;
-                buf->Read(&extra_->u0C, 2);
-                buf->Read(&extra_->u10, 4);
-                buf->Read(&extra_->u18, 4);
-                buf->Read(&extra_->b1C, 1);
-                buf->ReadRefID(&extra_->u14);
-                unsigned int count_ = buf->ReadCount();
+                apLoadGameBuffer->Read(&extra_->u0C, 2);
+                apLoadGameBuffer->Read(&extra_->u10, 4);
+                apLoadGameBuffer->Read(&extra_->u18, 4);
+                apLoadGameBuffer->Read(&extra_->b1C, 1);
+                apLoadGameBuffer->ReadRefID(&extra_->u14);
+                unsigned int count_ = apLoadGameBuffer->ReadCount();
                 extra_->kArray.Resize(count_, 1);
                 for (unsigned int j = 0; j < count_; j++)
                 {
                     XListEntry** ppList = (XListEntry**)extra_->kArray.GetAt(j);
                     *ppList = new XListEntry;
-                    buf->Read(&(*ppList)->b00, 1);
-                    buf->Read(&(*ppList)->b01, 1);
-                    buf->Read(&(*ppList)->b02, 1);
-                    if (buf->GetVersion() >= 0x10)
+                    apLoadGameBuffer->Read(&(*ppList)->b00, 1);
+                    apLoadGameBuffer->Read(&(*ppList)->b01, 1);
+                    apLoadGameBuffer->Read(&(*ppList)->b02, 1);
+                    if (apLoadGameBuffer->GetVersion() >= 0x10)
                     {
-                        buf->Read(&(*ppList)->b03, 1);
+                        apLoadGameBuffer->Read(&(*ppList)->b03, 1);
                     }
-                    unsigned int uCount = buf->ReadCount();
+                    unsigned int uCount = apLoadGameBuffer->ReadCount();
                     (*ppList)->kItems.Resize(uCount, 1);
                     for (unsigned int k = 0; k < uCount; k++)
                     {
                         void** ppItem = (*ppList)->kItems.GetAt(k);
-                        buf->ReadRefID(ppItem);
+                        apLoadGameBuffer->ReadRefID(ppItem);
                     }
                     {
                         unsigned int uiValid = (*ppList)->kItems.GetCount();
@@ -1682,7 +1688,7 @@ void ExtraDataLoader::ExtraDataList_LoadGame_00428150(LoadBuffer* buf)
                     }
                     else
                     {
-                        actor->Fn8b6820();
+                        actor->Actor_ClearDismemberedLimbs();
                     }
                     delete pOld5F;
                 }
@@ -1695,14 +1701,14 @@ void ExtraDataLoader::ExtraDataList_LoadGame_00428150(LoadBuffer* buf)
             }
             case 0x55: {
                 X55* p55 = (X55*)(abHas[cType] ? GetByType(cType) : AddData(new X55));
-                buf->ReadRefID(&p55->u0C);
+                apLoadGameBuffer->ReadRefID(&p55->u0C);
                 break;
             }
             case 0x60: {
                 X60* extra8 = (X60*)(abHas[cType] ? GetByType(cType) : AddData(new X60));
                 int iItemID = -1;
-                buf->Read(&iItemID, 4);
-                extra8->kList.Add(LookupIdItem(iItemID));
+                apLoadGameBuffer->Read(&iItemID, 4);
+                extra8->kList.Add(ActorCause_GetActorCauseByID(iItemID));
                 if (!extra8->kList.Count())
                 {
                     RemoveByType(0x60);
@@ -1715,22 +1721,22 @@ void ExtraDataLoader::ExtraDataList_LoadGame_00428150(LoadBuffer* buf)
                 {
                     p2B->pObj = new XObj20;
                 }
-                p2B->pObj->LoadGame(buf);
+                p2B->pObj->DoorTeleportData_LoadGame(apLoadGameBuffer);
                 break;
             }
             case 0x3c: {
                 X3C* p3C = (X3C*)(abHas[cType] ? GetByType(cType) : AddData(new X3C));
-                buf->ReadRefID(&p3C->u0C);
+                apLoadGameBuffer->ReadRefID(&p3C->u0C);
                 break;
             }
             case 0x2e: {
                 X2E* _extra = (X2E*)(abHas[cType] ? GetByType(cType) : AddData(new X2E));
                 TESActorBase* base8 = _extra->pBase;
                 TESActorBase* fBase = _extra->pBase2;
-                _extra->pBase = dynamic_cast<TESActorBase*>(LookupFormByID(buf->GetRefID()));
-                _extra->pBase2 = dynamic_cast<TESActorBase*>(LookupFormByID(buf->GetRefID()));
+                _extra->pBase = dynamic_cast<TESActorBase*>(LookupFormByID(apLoadGameBuffer->GetRefID()));
+                _extra->pBase2 = dynamic_cast<TESActorBase*>(LookupFormByID(apLoadGameBuffer->GetRefID()));
                 int iFlags = 0;
-                buf->Read(&iFlags, 4);
+                apLoadGameBuffer->Read(&iFlags, 4);
                 if (actor != 0 && actor->v116() && fBase != 0 && _extra->pBase2 != fBase)
                 {
                     actor->v115(0, 0);
@@ -1742,7 +1748,7 @@ void ExtraDataLoader::ExtraDataList_LoadGame_00428150(LoadBuffer* buf)
                 DelObj* kObj = 0;
                 bool bActive3 = false;
                 bool bFound0 = false;
-                if (fBase != _extra->pBase2 && !buf->GetFlags().IsSet(0x8000020))
+                if (fBase != _extra->pBase2 && !apLoadGameBuffer->GetFlags().IsSet(0x8000020))
                 {
                     bFound0 = true;
                 }
@@ -1786,17 +1792,17 @@ void ExtraDataLoader::ExtraDataList_LoadGame_00428150(LoadBuffer* buf)
                     kObj = actor->v134() ? (DelObj*)new DelObj20C : (DelObj*)new DelObj160;
                     bActive3 = true;
                 }
-                LoadFlags saved = buf->GetFlags();
-                LoadFlags saved_ = buf->GetFlags2();
-                unsigned char _saved = buf->GetFlagByte();
-                buf->SetFlags(iFlags);
-                buf->SetFlags2(0);
-                buf->SetFlagByte(0);
-                kObj->LoadGame(buf);
+                LoadFlags saved = apLoadGameBuffer->GetFlags();
+                LoadFlags saved_ = apLoadGameBuffer->GetFlags2();
+                unsigned char _saved = apLoadGameBuffer->GetFlagByte();
+                apLoadGameBuffer->SetFlags(iFlags);
+                apLoadGameBuffer->SetFlags2(0);
+                apLoadGameBuffer->SetFlagByte(0);
+                kObj->LoadGame(apLoadGameBuffer);
                 kObj->kData30.Set(iFlags);
-                buf->SetFlags(saved);
-                buf->SetFlags2(saved_);
-                buf->SetFlagByte(_saved);
+                apLoadGameBuffer->SetFlags(saved);
+                apLoadGameBuffer->SetFlags2(saved_);
+                apLoadGameBuffer->SetFlagByte(_saved);
                 if (bActive3)
                 {
                     delete kObj;
@@ -1807,61 +1813,61 @@ void ExtraDataLoader::ExtraDataList_LoadGame_00428150(LoadBuffer* buf)
                 X54* p54 = (X54*)(abHas[cType] ? GetByType(cType) : 0);
                 if (p54 != 0)
                 {
-                    buf->Read(&p54->u14, 4);
+                    apLoadGameBuffer->Read(&p54->u14, 4);
                 }
                 else
                 {
                     int iDummy;
-                    buf->Read(&iDummy, 4);
+                    apLoadGameBuffer->Read(&iDummy, 4);
                 }
                 break;
             }
             case 0x50: {
                 X50* p50 = (X50*)(abHas[cType] ? GetByType(cType) : AddData(new X50));
-                buf->Read(&p50->b0C, 1);
-                buf->Read(&p50->b0D, 1);
+                apLoadGameBuffer->Read(&p50->b0C, 1);
+                apLoadGameBuffer->Read(&p50->b0D, 1);
                 break;
             }
             case 0x89: {
                 X89* p89 = (X89*)(abHas[cType] ? GetByType(cType) : AddData(new X89));
-                buf->ReadRefID(&p89->u0C);
+                apLoadGameBuffer->ReadRefID(&p89->u0C);
                 break;
             }
             case 0x8b: {
                 X8B* p8B = (X8B*)(abHas[cType] ? GetByType(cType) : AddData(new X8B));
-                buf->Read(p8B->u10, 0xc);
-                if (buf->GetVersion() >= 0x12)
+                apLoadGameBuffer->Read(p8B->u10, 0xc);
+                if (apLoadGameBuffer->GetVersion() >= 0x12)
                 {
-                    buf->ReadRefID(&p8B->u1C);
+                    apLoadGameBuffer->ReadRefID(&p8B->u1C);
                 }
                 else
                 {
-                    buf->Read(&p8B->u1C, 4);
+                    apLoadGameBuffer->Read(&p8B->u1C, 4);
                 }
-                buf->Read(&p8B->u0C, 4);
-                unsigned int uiEntryCount = buf->ReadCount();
+                apLoadGameBuffer->Read(&p8B->u0C, 4);
+                unsigned int uiEntryCount = apLoadGameBuffer->ReadCount();
                 for (unsigned int j = 0; j < uiEntryCount; j++)
                 {
                     XEntry24* pE = new XEntry24;
-                    buf->Read(pE, 0xc);
-                    if (buf->GetVersion() >= 0x12)
+                    apLoadGameBuffer->Read(pE, 0xc);
+                    if (apLoadGameBuffer->GetVersion() >= 0x12)
                     {
-                        buf->ReadRefID(&pE->u0C);
+                        apLoadGameBuffer->ReadRefID(&pE->u0C);
                     }
                     else
                     {
-                        buf->Read(&pE->u0C, 4);
+                        apLoadGameBuffer->Read(&pE->u0C, 4);
                     }
-                    buf->Read(pE->f10, 0xc);
-                    if (buf->GetVersion() >= 0x12)
+                    apLoadGameBuffer->Read(pE->f10, 0xc);
+                    if (apLoadGameBuffer->GetVersion() >= 0x12)
                     {
-                        buf->ReadRefID(&pE->u1C);
+                        apLoadGameBuffer->ReadRefID(&pE->u1C);
                     }
                     else
                     {
-                        buf->Read(&pE->u1C, 4);
+                        apLoadGameBuffer->Read(&pE->u1C, 4);
                     }
-                    buf->Read(&pE->b20, 1);
+                    apLoadGameBuffer->Read(&pE->b20, 1);
                     p8B->kList.AddHead(pE);
                 }
                 break;
@@ -1869,17 +1875,17 @@ void ExtraDataLoader::ExtraDataList_LoadGame_00428150(LoadBuffer* buf)
             case 0x8f: {
                 X8F* p8F = (X8F*)(abHas[cType] ? GetByType(cType) : AddData(new X8F));
                 char acName[0x100];
-                buf->ReadString(acName);
+                apLoadGameBuffer->ReadString(acName);
                 p8F->SetName(acName);
-                buf->ReadString(acName);
+                apLoadGameBuffer->ReadString(acName);
                 p8F->SetText(acName);
                 break;
             }
             case 0x92: {
                 ExtraSpecialRenderFlags* p92 = (ExtraSpecialRenderFlags*)(abHas[cType] ? GetByType(cType) : AddData((ExtraData110*)new LoadableSpecialRenderFlags));
                 unsigned int uiRender;
-                buf->Read(&uiRender, 4);
-                buf->Read(&p92->m_fRenderValue, 4);
+                apLoadGameBuffer->Read(&uiRender, 4);
+                apLoadGameBuffer->Read(&p92->m_fRenderValue, 4);
                 p92->SetFlags(uiRender);
                 break;
             }

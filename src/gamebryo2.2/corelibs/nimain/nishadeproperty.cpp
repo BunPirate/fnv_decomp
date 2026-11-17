@@ -11,6 +11,8 @@
 extern int DAT_0109e274;
 
 // @fnv 0x00a814e0
+// pdb: NiShadeProperty::CreateObject | NiShadeProperty.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 NiObject* NiShadeProperty::CreateObject()
 {
     NiShadeProperty* node = static_cast<NiShadeProperty*>(NiProperty::operator new(0x20));
@@ -31,6 +33,9 @@ inline void* __cdecl operator new(unsigned int, void* p)
 }
 // @fnv 0x00a81480
 // src: XBOX_PDB 0x00a81480
+// pdb: NiShadeProperty::CreateClone | NiShadeProperty.obj | retail, object-file run extension, low
+// pdb params: kCloning
+// pdb locals: pkObject
 NiObject* NiShadeProperty::CreateClone_00a81480(CloningProcess& kCloning)
 {
     NiShadeProperty* pkObject = (NiShadeProperty*)NiProperty::operator new(32);
@@ -54,11 +59,13 @@ NiObject* NiShadeProperty::CreateClone_00a81480(CloningProcess& kCloning)
 struct PropertyRoutines
 {
     void SaveBinary(NiStream& stream);
-    bool IsEqual(NiObject* object);
+    bool IsEqual(NiObject* pObject);
     void GetViewerStrings(void* strings);
 };
 
 // @fnv 0x00a815c0
+// pdb: NiShadeProperty::SaveBinary | NiShadeProperty.obj | debug, upstream name already matches, high
+// pdb params: kStream
 void NiShadeProperty::SaveBinary(NiStream& kStream)
 {
     reinterpret_cast<PropertyRoutines*>(this)->SaveBinary(kStream);
@@ -78,6 +85,8 @@ inline unsigned int NiBinaryStream::Read(void* pvBuffer, unsigned int uiSize)
 
 // @fnv 0x00a95190
 // src: XBOX_PDB 0x00a95190
+// pdb: NiDitherProperty::LoadBinary | NiDitherProperty.obj | retail, upstream name already matches, high
+// pdb params: kStream
 void NiShadeProperty::NiDitherProperty_LoadBinary(NiStream& kStream)
 {
     NiProperty::LoadBinary(kStream);
@@ -93,6 +102,9 @@ void NiShadeProperty::NiDitherProperty_LoadBinary(NiStream& kStream)
 
 // @fnv 0x00a9a5b0
 // src: XBOX_PDB 0x00a9a5b0
+// pdb: NiCullingProperty::IsEqual | NiCullingProperty.obj | retail, upstream name already matches, high
+// pdb params: pkObject
+// pdb locals: pkCulling
 bool NiShadeProperty::NiCullingProperty_IsEqual(NiObject* pkObject)
 {
     if (!reinterpret_cast<PropertyRoutines*>(this)->IsEqual(pkObject))
@@ -135,6 +147,7 @@ extern PropertyHolder DAT_011f5ae8;
 // Creates the default shade property and retains it in DAT_011f5ae8.
 // @fnv 0x00a81520
 // src: XBOX_PDB 0x00a81520
+// pdb: NiShadeProperty::_SDMInit | NiShadeProperty.obj | retail, upstream name already matches, high
 void __cdecl NiShadeProperty__SDMInit()
 {
     void* allocation = Object_DispatchCommandFour(32);
@@ -160,6 +173,7 @@ extern NiShadeProperty* DAT_011f5ae8;
 // If the global object pointer is set, decrements its reference count and clears the pointer.
 // @fnv 0x00a81590
 // src: COMMUNITY 0x00a81590
+// pdb: NiShadeProperty::_SDMShutdown | NiShadeProperty.obj | retail, upstream name already matches, high
 void NiShadeProperty__SDMShutdown()
 {
     if (DAT_011f5ae8)
@@ -172,7 +186,7 @@ void NiShadeProperty__SDMShutdown()
 
 extern void* DAT_011f5ae0;
 void* __cdecl NiViewerStrings_NiGetViewerString_Title(void* p);
-void* __cdecl NiGetViewerString(const char* name, bool value);
+void* __cdecl NiGetViewerString(const char* pcPrefix, bool bValue);
 struct NiArr
 {
     unsigned int m_00;
@@ -192,9 +206,11 @@ struct NiArr
     }
 };
 // @fnv 0x00a81600
-void NiShadeProperty::GetViewerStrings(NiViewerStringsArray* strings)
+// pdb: NiShadeProperty::GetViewerStrings | NiShadeProperty.obj | retail, string-set bridge, high
+// pdb params: pkStrings
+void NiShadeProperty::GetViewerStrings(NiViewerStringsArray* pkStrings)
 {
-    NiArr* a = reinterpret_cast<NiArr*>(strings);
+    NiArr* a = reinterpret_cast<NiArr*>(pkStrings);
     reinterpret_cast<PropertyRoutines*>(this)->GetViewerStrings(a);
     a->Add(NiViewerStrings_NiGetViewerString_Title(DAT_011f5ae0));
     bool b = (m_uFlags & 1) != 0;

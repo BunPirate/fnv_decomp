@@ -5,6 +5,7 @@
 
 class hkVector4_S;
 
+// pdb: class hkpWeldingUtility, size 0x1, 0 members
 class hkpWeldingUtility
 {
 public:
@@ -17,6 +18,7 @@ public:
     };
 };
 
+// pdb: class hkpTriangleShape, size 0x60, bases: hkpConvexShape, 7 members
 class hkpTriangleShape : public hkpConvexShape
 {
 public:
@@ -52,9 +54,9 @@ public:
     __forceinline float getRadius() const;
     void setType();
 
-    unsigned short m_kWeldingInfo;
-    hkEnum<hkpWeldingUtility::WeldingType, hkUint8> m_eWeldingType;
-    hkUint8 m_ucWeldingPadding;
+    unsigned short m_weldingInfo; // src: XBOX_RETAIL_PDB +0x14 (old: m_kWeldingInfo)
+    hkEnum<hkpWeldingUtility::WeldingType, hkUint8> m_weldingType; // src: XBOX_RETAIL_PDB +0x16 (old: m_eWeldingType)
+    hkUint8 m_isExtruded; // src: XBOX_RETAIL_PDB +0x17 (old: m_ucWeldingPadding)
     char pad18[0x8];
     union
     {
@@ -69,5 +71,5 @@ public:
             hkVector4 m_kVertices[3];
         };
     };
-    hkVector4 m_kVertexTransform;
+    hkVector4 m_extrusion; // src: XBOX_RETAIL_PDB +0x50 (old: m_kVertexTransform)
 };

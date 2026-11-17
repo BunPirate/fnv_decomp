@@ -43,6 +43,9 @@ typedef bool(__cdecl* SortElemLess)(const SortElem16& a, const SortElem16& b);
 
 // @fnv 0x00cf83c0
 // src: HAVOK_LIB 0x00cf83c0
+// pdb: hkAlgorithm::quickSortRecursive<hkpBodyOperationEntry,bool (__cdecl*)(hkpBodyOperationEntry const &,hkpBodyOperationEntry const &)> | hkpWorldOperationQueue.obj | retail, object-file run extension, low
+// pdb params: pArr, d, h, cmpLess
+// pdb locals: str, zal
 void __cdecl hkAlgorithm_quickSortRecursive_struct_hkpBodyOperationEntry_bool(SortElem16* pArr, int d, int h, SortElemLess cmpLess)
 {
     int i, j;
@@ -218,6 +221,8 @@ struct Cls
 
 // @fnv 0x00ce4a50
 // src: GUESS 0x00ce4a50 (confidence: low)
+// pdb: hkaSkeletonMapper::operator delete | hkaSkeletonMapper.obj | debug, object-file run extension, low
+// pdb params: p
 Cls* Cls::InitializeFields_00ce4a50(Cls* src)
 {
     m0 = src->m0;
@@ -248,6 +253,9 @@ void __cdecl FUN_00ce245a(SortRec* a, int low, int high, SortCmp cmp);
 
 // @fnv 0x00cf8510
 // src: COMMUNITY 0x00cf8510
+// pdb: hkAlgorithm::quickSortRecursive<hkWorldOperation::BiggestOperation,hkBool (__cdecl*)(hkWorldOperation::BiggestOperation const &,hkWorldOperation::BiggestOperation const &)> | hkpWorldOperationQueue.obj | retail, object-file run extension, low
+// pdb params: pArr, d, h, cmpLess
+// pdb locals: str, zal
 void __cdecl hkAlgorithm_quickSortRecursive(SortRec* a, int low, int high, SortCmp cmp)
 {
     char tagLo;
@@ -373,8 +381,8 @@ static inline void S00cfac20_release(hkMemoryRouter* stack, char* p)
 }
 struct S00cfac20_Grp
 {
-    void RecordAndDispatch(S00cfac20_Builder* b, S00cfac20_Ray* ray, void* ctx, void* mem, char* out);
-    void ProcessEntries_00cfac20(S00cfac20_Builder* b, S00cfac20_Ray* rays, int count, void* ctx, char* out);
+    void hkpSimpleWorldRayCaster_castRay(S00cfac20_Builder* broadphase, S00cfac20_Ray* input, void* filter, void* cache, char* output);
+    void hkpSimpleWorldRayCaster_castRayGroup(S00cfac20_Builder* broadphase, S00cfac20_Ray* inputArray, int numRays, void* filter, char* outputs);
 };
 static inline void S00cfac20_timer(const char* name)
 {
@@ -412,8 +420,11 @@ static __forceinline void S00cfac20_calcAabb(const S00cfac20_Ray* rays, int coun
     }
 }
 // @fnv 0x00cfac20
-// src: GUESS 0x00cfac20 (confidence: low)
-void S00cfac20_Grp::ProcessEntries_00cfac20(S00cfac20_Builder* b, S00cfac20_Ray* rays, int count, void* ctx, char* out)
+// src: XBOX_RETAIL_PDB 0x00cfac20
+// pdb: hkpSimpleWorldRayCaster::castRayGroup | hkpSimpleWorldRayCaster.obj | retail, string-set bridge, high
+// pdb params: broadphase, inputArray, numRays, filter, outputs
+// pdb locals: aabb
+void S00cfac20_Grp::hkpSimpleWorldRayCaster_castRayGroup(S00cfac20_Builder* broadphase, S00cfac20_Ray* inputArray, int numRays, void* filter, char* outputs)
 {
     char* dst;
     int j;
@@ -431,14 +442,14 @@ void S00cfac20_Grp::ProcessEntries_00cfac20(S00cfac20_Builder* b, S00cfac20_Ray*
         }
     }
     S00cfac20_Aabb aabb;
-    S00cfac20_calcAabb(rays, count, aabb);
-    char* mem = S00cfac20_alloc(static_cast<hkMemoryRouter*>(hkMemoryRouter_getInstance()), b->GetLogicalSize());
-    b->init(&aabb, mem);
-    S00cfac20_Ray* r = rays;
-    dst = out;
-    for (j = count - 1; j >= 0; --j)
+    S00cfac20_calcAabb(inputArray, numRays, aabb);
+    char* mem = S00cfac20_alloc(static_cast<hkMemoryRouter*>(hkMemoryRouter_getInstance()), broadphase->GetLogicalSize());
+    broadphase->init(&aabb, mem);
+    S00cfac20_Ray* r = inputArray;
+    dst = outputs;
+    for (j = numRays - 1; j >= 0; --j)
     {
-        RecordAndDispatch(b, r++, ctx, mem, dst);
+        hkpSimpleWorldRayCaster_castRay(broadphase, r++, filter, mem, dst);
         dst += 0x60;
     }
     S00cfac20_release(static_cast<hkMemoryRouter*>(hkMemoryRouter_getInstance()), mem);
@@ -500,7 +511,7 @@ __forceinline hkMemoryAllocator& containerHeap()
     return static_cast<hkMemoryRouter*>(hkMemoryRouter_getInstance())->heap();
 }
 
-void __cdecl hkArrayUtil__reserve(hkMemoryAllocator& alloc, void* array, int reqCapacity, int sizeElem);
+void __cdecl hkArrayUtil__reserve(hkMemoryAllocator& mem, void* array, int numElem, int sizeElem);
 
 template <typename T> __forceinline void hkConstructWithArray(T* t, int n, const T* tcopy)
 {
@@ -633,6 +644,8 @@ struct ShapeData
 
 // @fnv 0x00ce4ae0
 // src: GUESS 0x00ce4ae0 (confidence: low)
+// pdb: hkaSkeletonMapperData::operator= | hkaSkeletonMapper.obj | retail, object-file run extension, low
+// pdb params: __that
 ShapeData& ShapeData::AssignFields_00ce4ae0(const ShapeData& other)
 {
     m_kFirstReferencedObject = other.m_kFirstReferencedObject;

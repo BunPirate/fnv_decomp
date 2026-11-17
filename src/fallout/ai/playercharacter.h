@@ -5,6 +5,9 @@
 #include "playercharacter_decls.h"
 
 // @fnv 0x009520f0
+// pdb: PlayerCharacter::StartAnimOn1stPerson | PlayerCharacter.obj | debug, object-file gap fill, medium
+// pdb params: asAnimGroup, aeFlags
+// pdb locals: bsynced, eanimGroup, panim1st, panim, pseq, ebestGroup
 void PlayerCharacter::SetActionGroupFlags(unsigned short group, ACTION_FLAGS flags)
 {
     if (group & 0x8000)
@@ -43,6 +46,8 @@ void PlayerCharacter::SetActionGroupFlags(unsigned short group, ACTION_FLAGS fla
 }
 
 // @fnv 0x0095ed80
+// pdb: PlayerCharacter::Setup3rdPersonCameraCaster | PlayerCharacter.obj | retail, object-file run extension, low
+// pdb note: debug build links it to PlayerCharacter::CheckTempModifiers
 void PlayerCharacter::ResetActorValueModifiers()
 {
     for (int i = 0; i < 77; ++i)

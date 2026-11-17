@@ -9,6 +9,7 @@ class TESIdleForm;
 class TESObjectREFR;
 template <class T, unsigned int N> class BSSimpleArray;
 
+// pdb: class BGSIdleCollection, size 0x10, bases: BaseFormComponent, 4 members
 class BGSIdleCollection : public BaseFormComponent
 {
 public:
@@ -18,19 +19,19 @@ public:
     virtual void Init();
     virtual void Free();
     virtual void CopyFromBase(BaseFormComponent* component);
-    virtual bool CompareWithBase(BaseFormComponent* component);
+    virtual bool CompareWithBase(BaseFormComponent* apCompareFC);
 
     unsigned int GetAvailableIdles(Actor* actor, TESObjectREFR* target,
                                    BSSimpleArray<TESIdleForm*, 1024>* idles);
-    void Load(TESFile* file);
+    void Load(TESFile* apFile);
     void InitializeComponent();
-    void InitItem(TESForm* form);
+    void InitItem(TESForm* apOwner);
     void RemoveIdleEntry(unsigned int index);
     int GetPickType();
 
-    unsigned char m_ucIdleCount;
-    unsigned char m_ucPickType;
+    unsigned char cIdleFlags; // src: XBOX_RETAIL_PDB +0x4 (old: m_ucIdleCount)
+    unsigned char cIdleCount; // src: XBOX_RETAIL_PDB +0x5 (old: m_ucPickType)
     unsigned char layoutPadding6[2];
-    TESIdleForm** m_ppIdleForms;
-    float m_fIdleChance;
+    TESIdleForm** pIdleArray; // src: XBOX_RETAIL_PDB +0x8 (old: m_ppIdleForms)
+    float fTimerCheckForIdle; // src: XBOX_RETAIL_PDB +0xc (old: m_fIdleChance)
 };

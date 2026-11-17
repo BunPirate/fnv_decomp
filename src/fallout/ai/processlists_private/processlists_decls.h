@@ -24,6 +24,7 @@ extern double DAT_0108c160;
 extern "C" int FNV_IsNaN(double);
 extern "C" int FNV_Finite(double);
 // No checked include/Crime.h exists yet; keep its method declarations together.
+// pdb: class Crime, size 0x3c (here 0x1), 14 members
 class Crime
 {
   public:

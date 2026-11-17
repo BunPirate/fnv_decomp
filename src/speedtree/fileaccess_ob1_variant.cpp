@@ -149,6 +149,8 @@ struct SpeedTreeFileInput
 };
 // @fnv 0x00b3ee40
 // src: COMMUNITY 0x00b3ee40
+// pdb: CTreeFileAccess::ParseString | FileAccess.obj | retail, upstream name already matches, high
+// pdb locals: nLength, strReturn, i
 Str_00b3ee40 SpeedTreeFileInput::CTreeFileAccess_ParseString()
 {
     Str_00b3ee40 s;

@@ -26,7 +26,8 @@ extern int DAT_010a2480;
 void* __cdecl operator new(unsigned int);
 void __cdecl operator delete(void*);
 void __cdecl ReadSaveFileHeader(void*, void*);
-NiTexture* __cdecl LoadTextureFromFile(SaveLoadHeader*, unsigned int, unsigned int, unsigned int);
+NiTexture* __cdecl BGSSaveLoadHeader_LoadHeaderScreenshot(SaveLoadHeader*, unsigned int, unsigned int, unsigned int);
+// pdb: class TaskQueueInterface, size 0x10 (here 0x1), 4 members
 class TaskQueueInterface
 {
   public:
@@ -41,22 +42,27 @@ bool BGSSaveLoadFileEntry::IsAutoSave()
 }
 
 // @fnv 0x00846b30
-bool BGSSaveLoadFileEntry::IsSaveEntryValid()
+// src: XBOX_RETAIL_PDB 0x00846b30
+// pdb: BGSSaveLoadFileEntry::IsCorrupt | BGSSaveLoadFile.obj | retail, call graph (shared callers), high
+bool BGSSaveLoadFileEntry::IsCorrupt()
 {
     if (m_bSaveEntryValid)
         return true;
-    ReadTypedData();
+    LoadData();
     return m_bSaveEntryValid;
 }
 
 // Forwards a read of size bytes into buffer to the object's pFile stream and returns the result.
 // @fnv 0x00846300
-unsigned int SaveLoadFile::Read(void* buffer, unsigned int size)
+// pdb: BGSSaveLoadFile::Read | BGSSaveLoadFile.obj | retail, call graph (shared callers), high
+// pdb params: apBuffer, aiBytes
+unsigned int SaveLoadFile::Read(void* apBuffer, unsigned int aiBytes)
 {
-    return pFile->Read(buffer, size);
+    return pFile->Read(apBuffer, aiBytes);
 }
 
 // @fnv 0x00846400
+// pdb: SaveGameFormInfo::SaveGameFormInfo | BGSSaveLoadGame.obj | debug, call graph, medium
 unsigned int SaveLoadFile::GetFilePosition()
 {
     if (DAT_011de134->InterfaceManager_GetMenuMode())
@@ -65,16 +71,22 @@ unsigned int SaveLoadFile::GetFilePosition()
 }
 
 // @fnv 0x00846440
-void SaveLoadFile::SetFilePosition(int position)
+// src: XBOX_DEBUG_PDB 0x00846440
+// pdb: BGSSaveLoadFile::SeekSet | BGSSaveLoadFile.obj | debug, call graph, high
+// pdb params: aiPosition
+void SaveLoadFile::SeekSet(int aiPosition)
 {
     if (DAT_011de134->InterfaceManager_GetMenuMode())
-        m_uiFilePosition = position;
+        m_uiFilePosition = aiPosition;
     else
-        pFile->Seek(position, DAT_010a2480);
+        pFile->Seek(aiPosition, DAT_010a2480);
 }
 
 // @fnv 0x00846820
-NiTexture* BGSSaveLoadFileEntry::ReadScreenshotFromFile()
+// src: XBOX_DEBUG_PDB 0x00846820
+// pdb: BGSSaveLoadFileEntry::GetScreenshot | BGSSaveLoadFile.obj | debug, call graph, high
+// pdb locals: ptexture, pfile
+NiTexture* BGSSaveLoadFileEntry::GetScreenshot()
 {
     NiTexture* screenshot = 0;
     void* header = DAT_011de134->ReadHeaderFromFile(pFileName, 0, 0, m_iScreenshotOffset);
@@ -91,12 +103,14 @@ NiTexture* BGSSaveLoadFileEntry::ReadScreenshotFromFile()
     }
     if (m_uiHeaderRecordValue && m_uiFileSize)
         screenshot =
-            LoadTextureFromFile((SaveLoadHeader*)header, SaveFileMetadata, m_uiHeaderRecordValue, m_uiFileSize);
+            BGSSaveLoadHeader_LoadHeaderScreenshot((SaveLoadHeader*)header, SaveFileMetadata, m_uiHeaderRecordValue, m_uiFileSize);
     DAT_011de134->CloseSaveFile((SaveLoadHeader*)header, 0);
     return screenshot;
 }
 
 // @fnv 0x008461e0
+// pdb: BGSSaveLoadFile::BGSSaveLoadFile | BGSSaveLoadFile.obj | debug, object-file run extension, low
+// pdb params: apFileName, abWrite, aiBufferSize
 SaveLoadFile::SaveLoadFile(const char* fileName, bool flag, unsigned int size)
 {
     pFile = 0;
@@ -108,7 +122,10 @@ SaveLoadFile::SaveLoadFile(const char* fileName, bool flag, unsigned int size)
 }
 
 // @fnv 0x00846900
-void BGSSaveLoadFileEntry::ReadTypedData()
+// src: XBOX_DEBUG_PDB 0x00846900
+// pdb: BGSSaveLoadFileEntry::LoadData | BGSSaveLoadFile.obj | debug, call graph (shared callers), high
+// pdb locals: pfile, ilength
+void BGSSaveLoadFileEntry::LoadData()
 {
     if (m_bHeaderParsed || m_bSaveEntryValid)
         return;
@@ -139,6 +156,7 @@ void BGSSaveLoadFileEntry::ReadTypedData()
 // Deletes the BSFile object stored at offset 0x104 of pThis.
 // @fnv 0x008462c0
 // src: GUESS 0x008462c0 (confidence: low)
+// pdb: BGSSaveLoadFile::~BGSSaveLoadFile | BGSSaveLoadFile.obj | debug, object-file run extension, low
 void __fastcall Object_ProcessState_008462c0(char* pThis)
 {
     delete *reinterpret_cast<BSFile**>(pThis + 0x104);
@@ -152,6 +170,7 @@ struct UnknownOwner008463c0
 
 // @fnv 0x008463c0
 // src: COMMUNITY 0x008463c0
+// pdb: BGSSaveLoadFile::Open | BGSSaveLoadFile.obj | debug, upstream name already matches, high
 bool __fastcall BGSSaveLoadFile_Open(UnknownOwner008463c0* _this)
 {
     if (DAT_011de134->InterfaceManager_GetMenuMode())
@@ -167,20 +186,23 @@ struct FUN_00846490_t
     BSFile* file;
     int unk_108;
     int pos_10c;
-    void AdvancePosition(int offset);
+    void BGSSaveLoadFile_SeekCurrent(int aiPosition);
 };
 
 // If DAT_011de134->FUN_00424940() is true, adds offset to pos_10c; otherwise seeks file by offset using DAT_010a2484.
 // @fnv 0x00846490
-void FUN_00846490_t::AdvancePosition(int offset)
+// src: XBOX_DEBUG_PDB 0x00846490
+// pdb: BGSSaveLoadFile::SeekCurrent | BGSSaveLoadFile.obj | debug, call graph (shared callers), high
+// pdb params: aiPosition
+void FUN_00846490_t::BGSSaveLoadFile_SeekCurrent(int aiPosition)
 {
     if (DAT_011de134->InterfaceManager_GetMenuMode())
     {
-        pos_10c += offset;
+        pos_10c += aiPosition;
     }
     else
     {
-        file->Seek(offset, DAT_010a2484);
+        file->Seek(aiPosition, DAT_010a2484);
     }
 }
 
@@ -191,6 +213,8 @@ struct FUN_008464f0_arg
 
 // @fnv 0x008464f0
 // src: COMMUNITY 0x008464f0
+// pdb: BGSSaveLoadFile::SetSaveFileName | BGSSaveLoadFile.obj | debug, upstream name already matches, high
+// pdb params: apFileName
 void __fastcall BGSSaveLoadFile_SetSaveFileName(char* pThis, FUN_008464f0_arg aStringArg)
 {
     TaskQueueInterface::CopyStringToBuffer(pThis, 0x104, aStringArg.str);
@@ -199,6 +223,8 @@ void __fastcall BGSSaveLoadFile_SetSaveFileName(char* pThis, FUN_008464f0_arg aS
 // Allocates and constructs a new object from a name string, a bool flag and an unsigned int value, returning the new instance.
 // @fnv 0x00846520
 // src: COMMUNITY 0x00846520
+// pdb: BGSSaveLoadFile::CreateFileA | BGSSaveLoadFile.obj | debug, object-file gap fill, medium
+// pdb params: apFileName, abWrite, aiBufferSize
 SaveLoadFile* __cdecl BGSSaveLoadFile_Create(const char* apName, bool abFlag, unsigned int auiValue)
 {
     return new SaveLoadFile(apName, abFlag, auiValue);
@@ -207,6 +233,7 @@ SaveLoadFile* __cdecl BGSSaveLoadFile_Create(const char* apName, bool abFlag, un
 // Deletes the objects stored at indices 0, 6, 5, 3 and 4 of the array pointed to by pThis.
 // @fnv 0x00846690
 // src: GUESS 0x00846690 (confidence: low)
+// pdb: BGSSaveLoadFileEntry::~BGSSaveLoadFileEntry | BGSSaveLoadFile.obj | debug, object-file gap fill, medium
 void __fastcall Bgssaveloadfile_ReleaseStorage_00846690(void** pThis)
 {
     delete pThis[0];
@@ -222,6 +249,7 @@ struct FUN_008467b0_shell : public BGSSaveLoadFileEntry
 };
 
 // @fnv 0x008467b0
+// pdb: BGSSaveLoadFileEntry::LoadGame | BGSSaveLoadFile.obj | debug, object-file gap fill, medium
 bool FUN_008467b0_shell::LoadSaveEntry()
 {
     return DAT_011de134->LoadGame(*(const char**)this, *(int*)((char*)this + 0x34), false, false);
@@ -252,6 +280,7 @@ __declspec(dllimport) void* __stdcall FindFirstFileA(const char*, _WIN32_FIND_DA
 __declspec(dllimport) int __stdcall FindClose(void*);
 
 // @fnv 0x00846a20
+// pdb: BGSSaveLoadFileEntry::CalculateFileTime | BGSSaveLoadFile.obj | debug, object-file gap fill, medium
 void __fastcall UpdateFileWriteTime(char* pThis)
 {
     if (*(unsigned int*)(pThis + 0x30) == 0 && *(unsigned int*)(pThis + 0x2c) == 0)
@@ -272,6 +301,7 @@ void __fastcall UpdateFileWriteTime(char* pThis)
 namespace fnv_00846ad0 {
 // @fnv 0x00846ad0
 // src: XBOX_PDB 0x00846ad0
+// pdb: BGSSaveLoadFileEntry::IsQuicksave | BGSSaveLoadFile.obj | debug, upstream name already matches, high
 bool __fastcall BGSSaveLoadFileEntry_IsQuicksave(const char** pThis)
 {
     return DAT_011de134->IsQuickSaveFileName(*pThis);
@@ -280,9 +310,10 @@ bool __fastcall BGSSaveLoadFileEntry_IsQuicksave(const char** pThis)
 
 namespace fnv_00846af0 {
 // @fnv 0x00846af0
+// pdb: BGSSaveLoadFileEntry::IsAutosave | BGSSaveLoadFile.obj | debug, call graph (shared callers), high
 bool __fastcall IsLegacyAutosaveFileName(const char** apFileName)
 {
-    return DAT_011de134->IsSaveFileNameLegacyAutosave(*apFileName);
+    return DAT_011de134->IsSaveFileNameAutosave(*apFileName);
 }
 }  // namespace fnv_00846af0
 
@@ -305,6 +336,9 @@ struct FUN_008465b0_stub
 };
 // Zeroes the fields, stores p in f34, allocates a buffer for src, copies src into name, and clears blk.
 // @fnv 0x008465b0
+// pdb: BGSSaveLoadHeader::LoadHeaderData | BGSSaveLoadHeader.obj | retail, call graph (shared callers), low
+// pdb params: apFile, apFileEntry
+// pdb locals: isaveGameNumber, apLoadGameBuffer, iversion, iscreenshotWidth, loadBuffer, pheaderString, iscreenshotHeight, lname, iplayerLevel
 FUN_008465b0_stub::FUN_008465b0_stub(const char* pcName, int p)
 {
     f4 = 0;
@@ -328,10 +362,14 @@ FUN_008465b0_stub::FUN_008465b0_stub(const char* pcName, int p)
 
 struct FUN_00846330_shell
 {
-    unsigned int WriteToFile(const void* apBuffer, unsigned int aiBytes);
+    unsigned int BGSSaveLoadFile_Write(const void* apBuffer, unsigned int aiBytes);
 };
 // @fnv 0x00846330
-unsigned int FUN_00846330_shell::WriteToFile(const void* apBuffer, unsigned int aiBytes)
+// src: XBOX_RETAIL_PDB 0x00846330
+// pdb: BGSSaveLoadFile::Write | BGSSaveLoadFile.obj | retail, object-file run extension, high
+// pdb params: apBuffer, aiBytes
+// pdb locals: ifileSizePositionDiff
+unsigned int FUN_00846330_shell::BGSSaveLoadFile_Write(const void* apBuffer, unsigned int aiBytes)
 {
     if (DAT_011de134->InterfaceManager_GetMenuMode())
     {
@@ -347,20 +385,21 @@ unsigned int FUN_00846330_shell::WriteToFile(const void* apBuffer, unsigned int 
 
 struct FUN_00846710_cls : public BGSSaveLoadFileEntry
 {
-    void DispatchEvent();
+    void BGSSaveLoadFileEntry_DeleteGame();
     bool BGSSaveLoadFileEntry_DeleteSave();
 };
 
 // @fnv 0x00846710
 // src: COMMUNITY 0x00846710
+// pdb: BGSSaveLoadFileEntry::SaveGame | BGSSaveLoadFile.obj | debug, object-file gap fill, medium
 bool FUN_00846710_cls::BGSSaveLoadFileEntry_DeleteSave()
 {
-    if (DAT_011de134->IsSaveFileNameDefault(pFileName) ||
-        DAT_011de134->IsSaveFileNameLegacyAutosave(pFileName))
+    if (DAT_011de134->IsSaveFileNameGenerated(pFileName) ||
+        DAT_011de134->IsSaveFileNameAutosave(pFileName))
     {
         if (DAT_011de134->SaveGame_008503b0(0, m_iScreenshotOffset, 0))
         {
-            DispatchEvent();
+            BGSSaveLoadFileEntry_DeleteGame();
             return true;
         }
     }
@@ -393,11 +432,13 @@ class C8467E0Event
     int unk30;
     int m_iData;
 
-    void DispatchEvent();
+    void BGSSaveLoadFileEntry_DeleteGame();
 };
 
 // @fnv 0x008467e0
-void C8467E0Event::DispatchEvent()
+// src: XBOX_DEBUG_PDB 0x008467e0
+// pdb: BGSSaveLoadFileEntry::DeleteGame | BGSSaveLoadFile.obj | debug, call graph, high
+void C8467E0Event::BGSSaveLoadFileEntry_DeleteGame()
 {
     static_cast<SaveLoadManagerFileOperations*>(DAT_011de134)->DeleteWeaponFile(m_uiType, m_iData);
     static_cast<SaveLoadManagerFileOperations*>(DAT_011de134)->RemoveAndDelete(this);
@@ -405,7 +446,7 @@ void C8467E0Event::DispatchEvent()
 
 struct FUN_00850330_class
 {
-    char* FUN_00850330(unsigned int);
+    char* BGSSaveLoadFile_ScalarDtor(unsigned int);
 };
 struct GlobalObject_0045cfe0
 {
@@ -424,7 +465,10 @@ struct FUN_006815c0_Class
 // Builds successive .bak paths, deletes an existing destination, and calls FUN_00ec862c with source and destination paths.
 // @fnv 0x00850100
 // src: COMMUNITY 0x00850100
-void BGSSaveLoadManager::CloseSaveFile(SaveLoadHeader* header, int abRotate)
+// pdb: BGSSaveLoadManager::CloseSaveFile | BGSSaveLoadManager.obj | retail, upstream name already matches, high
+// pdb params: apFile, abWrite
+// pdb locals: pfileName, psaveFileName
+void BGSSaveLoadManager::CloseSaveFile(SaveLoadHeader* apFile, int abWrite)
 {
     FUN_00850330_class* p2;
     FUN_00850330_class* p1;
@@ -437,14 +481,14 @@ void BGSSaveLoadManager::CloseSaveFile(SaveLoadHeader* header, int abRotate)
     char bufA3[260];
     char* filename9;
 
-    filename9 = (char*)((FUN_006815c0_Class*)header)->FUN_006815c0();
+    filename9 = (char*)((FUN_006815c0_Class*)apFile)->FUN_006815c0();
     strcpy_s(bufA3, 260, filename9);
-    p1 = (FUN_00850330_class*)header;
+    p1 = (FUN_00850330_class*)apFile;
     p2 = p1;
-    (p2 ? p2->FUN_00850330(1) : (char*)0);
-    if (*(unsigned char*)&abRotate)
+    (p2 ? p2->BGSSaveLoadFile_ScalarDtor(1) : (char*)0);
+    if (*(unsigned char*)&abWrite)
     {
-        GetFullPath(bufA3, bufB, *(bool*)&abRotate);
+        GetFullPath(bufA3, bufB, *(bool*)&abWrite);
         strcpy_s(bufC4, 260, bufB);
         bufC4[BSStringLength(bufC4) - 4] = 0;
         for (count2 = *DAT_011de2c8.Int() - 1; count2 >= 0; count2--)

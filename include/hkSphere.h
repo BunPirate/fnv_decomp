@@ -5,6 +5,7 @@
 
 typedef std::size_t hk_size_t;
 
+// pdb: class hkSphere, size 0x10, 1 members
 class hkSphere
 {
 public:

@@ -8,6 +8,7 @@ class RefStub;
 class TESObjectREFR;
 template <class T> class BSSimpleList;
 
+// pdb: class BGSTalkingActivator, size 0x98, bases: TESObjectACTI, 2 members
 class BGSTalkingActivator : public TESObjectACTI
 {
 public:
@@ -21,7 +22,7 @@ public:
     virtual bool GetReflectedByAutoWater() const;
 
     void ResetFormData();
-    bool Load(TESFile* file);
+    bool Load(TESFile* apFile);
     void SetRadioTemplate(TESSound* apSound);
     void SetVoiceType(BGSVoiceType* apVoice);
     bool IsRadioStation();
@@ -29,16 +30,16 @@ public:
     TESObjectREFR* GetTempRef() const;
     RefStub* GetTempRef();
 
-    static bool IsRadioStation(TESForm* form, unsigned int flags);
-    static void AddRadioStation(TESObjectREFR* reference);
-    static void FindRadioStations(TESObjectREFR* reference,
-                                  BSSimpleList<TESObjectREFR*>* stations,
-                                  BSSimpleList<float>* distances);
-    static void FindRadioStations(TESObjectREFR* reference,
-                                  BSSimpleList<RadioStationRef*>* stations,
-                                  BSSimpleList<float>* distances);
+    static bool IsRadioStation(TESForm* apForm, unsigned int aiData);
+    static void AddRadioStation(TESObjectREFR* apRef);
+    static void FindRadioStations(TESObjectREFR* apListenRef,
+                                  BSSimpleList<TESObjectREFR*>* apOutList,
+                                  BSSimpleList<float>* apDistancesList);
+    static void FindRadioStations(TESObjectREFR* apListenRef,
+                                  BSSimpleList<RadioStationRef*>* apOutList,
+                                  BSSimpleList<float>* apDistancesList);
     static BSSimpleList<TESObjectREFR*> ms_kRadioStations;
 
-    TESObjectREFR* m_pTempRef;    // 0x90
-    BGSVoiceType* m_kFactionList; // 0x94
+    TESObjectREFR* pTempRef;    // 0x90 // src: XBOX_RETAIL_PDB +0x90 (old: m_pTempRef)
+    BGSVoiceType* pVoiceType; // 0x94 // src: XBOX_RETAIL_PDB +0x94 (old: m_kFactionList)
 };

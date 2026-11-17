@@ -20,6 +20,7 @@ namespace TESDataHandlerTypes
     class TESFaction;
 }
 
+// pdb: class TESActorBaseData, size 0x34, bases: BaseFormComponent, 6 members
 class TESActorBaseData : public BaseFormComponent
 {
 public:
@@ -45,7 +46,7 @@ public:
     virtual void Init();
     virtual void Free();
     virtual void CopyFromBase(BaseFormComponent* component);
-    virtual bool CompareWithBase(BaseFormComponent* component);
+    virtual bool CompareWithBase(BaseFormComponent* apCompareFC);
     virtual void CopyFromTemplateForm(TESActorBase* form);
     virtual bool GetNoVATSmelee() const;
     virtual bool GetNoVATSranged() const;
@@ -75,7 +76,7 @@ public:
     void Save();
     void BaseFormRecord(BaseFormComponent* component);
     bool IsEqualToBase(BaseFormComponent* component);
-    void InitItem(TESForm* form);
+    void InitItem(TESForm* apOwner);
     bool QCopiedTemplate();
     void SetCopiedTemplate(bool value);
     void SetTemplateUseFlag(TEMPLATE_USE_FLAG flag, bool value);
@@ -88,7 +89,7 @@ public:
     void SetTemplateUseFlags(unsigned short flags);
     bool __thiscall GetUsesLeveledTemplate();
     bool IsTemplateLeveled();
-    void SetTemplateReference(TESObjectREFR* reference);
+    void CalcTemplateForRef(TESObjectREFR* apRef);
     static TESActorBase* GetTemplateForActorBase(TESActorBase*, TESActorBase*);
     static bool HasCircularTemplateHierarchy(TESActorBase*);
     static bool IsActorBaseInTemplateHierarchy(TESActorBase*, TESActorBase*);
@@ -98,15 +99,15 @@ public:
     void SetFlags(int flags);
     bool GetFlag(unsigned int flag) const;
     bool GetFlagBit(int flag);
-    void UpdateFlagBit(int flag, bool value, bool addChange);
-    void UpdateFlagBit(int flag, bool value);
-    void UpdateFlagBit(bool value, bool addChange);
+    void UpdateFlagBit(int aiFlag, bool abVal, bool abAddChange);
+    void UpdateFlagBit(int abVal, bool abAddChange);
+    void UpdateFlagBit(bool abVal, bool abAddChange);
     bool IsEssentialActor();
-    void SetEssential(bool value);
+    void SetEssential(bool abVal);
     bool GetRespawn();
     void SetRespawn(bool value);
     bool GetRunsInLow();
-    void UpdateRunsInLow(bool value, bool addChange);
+    void UpdateRunsInLow(bool abVal, bool abAddChange);
     bool GetKnockedDowns();
     void SetKnockedDowns(bool value);
     bool GetNotPushable();
@@ -114,7 +115,7 @@ public:
     bool GetNoRotatingToHeadtrack();
     void SetNoRotatingToHeadtrack(bool value);
     bool GetMatchesPCLevel();
-    void SetMatchesPCLevel(bool value);
+    void SetMatchesPCLevel(bool abVal);
     bool GetSummonable();
     void SetSummonable(bool value);
     bool GetNoRumors();
@@ -129,22 +130,22 @@ public:
     void SetAutoCalcServiceFlags(bool value);
     unsigned short GetLevelExact();
     unsigned short GetLevel();
-    void SetLevel(unsigned short value);
+    void SetLevel(unsigned short asValue);
     unsigned short GetCalcLevelMin();
-    void SetCalcLevelMin(unsigned short value);
+    void SetCalcLevelMin(unsigned short asVal);
     unsigned short GetCalcLevelMax();
-    void SetCalcLevelMax(unsigned short value);
+    void SetCalcLevelMax(unsigned short asVal);
     unsigned short GetBaseDisposition();
-    void SetBaseDisposition(unsigned short value);
+    void SetBaseDisposition(unsigned short asVal);
     TESLevItem* GetDeathItem();
     void SetDeathItem(TESLevItem* item);
-    void SetFatigue(unsigned short value);
+    void SetFatigue(unsigned short ausFatigue);
     static int ConvertToInteger(float value);
-    static char* GetActorDisplayName(Actor* actor);
+    static char* GetActorDisplayName(Actor* apActor);
     void SetKarmaValue(float value);
     void ModKarma(float value);
     unsigned short GetBarterGold();
-    void SetBarterGold(unsigned short value);
+    void SetBarterGold(unsigned short ausNewgold);
     int GetFactionReaction(TESActorBase*, int*);
     int GetFactionReaction(TESActorBase*, int&);
     int GetFactionRank(TESFaction*, bool);
@@ -159,18 +160,18 @@ public:
     void SetSpeedMult(unsigned short value);
     void SetVoiceType(BGSVoiceType* voiceType);
     void AddFormChange(int flags);
-    void RemoveFormChange(int flags);
+    void RemoveFormChange(int aiChangeFlags);
     void AddFormChangeFlags(int flags);
     void ClearChangeFlags(int flags);
     int GetChangeFlags();
     unsigned short GetSaveSize(unsigned int flags);
     void SaveGame(BGSSaveFormBuffer* buffer);
-    void SaveGame(unsigned int flags);
-    void LoadGame(BGSLoadFormBuffer* buffer);
+    void SaveGame(unsigned int aiFlags);
+    void LoadGame(BGSLoadFormBuffer* apLoadGameBuffer);
     void LoadGame(unsigned int, unsigned int);
-    void SetPCFactionFlags(int flags);
+    void SetPCFactionFlags(int aeflag);
     bool HasFaction(TESFaction* faction);
-    void RemoveAllFactions();
+    void ClearFactionList();
     void CopyFactionList(TESActorBaseData* source);
     TESActorBaseData& operator=(const TESActorBaseData& other);
 
@@ -178,9 +179,9 @@ public:
     unsigned short GetCalcLevelMin_0047d390();
     unsigned short GetAnimGroupType_0047d3b0();
     unsigned short TESActorBaseData_GetLevel();
-    void LoadGame_0047ea70(BGSLoadFormBuffer* buffer);
+    void LoadGame_0047ea70(BGSLoadFormBuffer* apLoadGameBuffer);
     void FUN_0050f9a0(TESLevItem* item);
-    void TESCreature_SetNoBloodSpray(bool value);
+    void TESCreature_SetNoBloodSpray(bool abVal);
 
     bool GetVATSmeleeDisabled();
     bool GetNoVATSranged();
@@ -204,9 +205,9 @@ public:
     BGSVoiceType* GetVoiceType();
 
     ActorBaseAttributes actorData;
-    TESLevItem* m_pBaseTemplateForm;
-    BGSVoiceType* m_kFactionList;
-    TESForm* m_ppTemplateForms;
-    int m_pDeathItem;
-    BSSimpleList<FactionReaction*> m_pVoiceType;
+    TESLevItem* pDeathItem; // src: XBOX_RETAIL_PDB +0x1c (old: m_pBaseTemplateForm)
+    BGSVoiceType* pVoiceType; // src: XBOX_RETAIL_PDB +0x20 (old: m_kFactionList)
+    TESForm* pTemplateForm; // src: XBOX_RETAIL_PDB +0x24 (old: m_ppTemplateForms)
+    int iChangeFlags; // src: XBOX_RETAIL_PDB +0x28 (old: m_pDeathItem)
+    BSSimpleList<FactionReaction*> listFactions; // src: XBOX_RETAIL_PDB +0x2c (old: m_pVoiceType)
 };

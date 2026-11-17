@@ -252,7 +252,7 @@ class B9F30Owner
     int unk148;
     B9F30Property* m_pkProperty;
 
-    B9F30Property* WaterShaderProperty_GetWaterPass(B9F30Geometry* pkGeometry);
+    B9F30Property* WaterShaderProperty_GetWaterPass(B9F30Geometry* apGeometry);
 };
 
 struct B006815c0
@@ -294,6 +294,9 @@ struct WaterPlaneHost
 };
 // @fnv 0x004ecef0
 // src: COMMUNITY 0x004ecef0
+// pdb: TESWaterSystem::SetClipPlane | TESWater.obj | retail, upstream name already matches, high
+// pdb params: afData, aiPlane
+// pdb locals: kD3DView, kplane, kclipplane, kD3DProj, kview, kinv, koutplane, kprojection, kworldtoclip
 void WaterPlaneHost::TESWaterSystem_SetClipPlane(float x, float y, float z, float w, int unused)
 {
     B006815c0 view, projection, inverse;

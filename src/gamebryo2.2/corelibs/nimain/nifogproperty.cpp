@@ -14,6 +14,7 @@ extern "C" __declspec(dllimport) long __stdcall InterlockedDecrement(long volati
 // Releases the global fog property and clears the pointer.
 // @fnv 0x00a9a120
 // src: COMMUNITY 0x00a9a120
+// pdb: NiFogProperty::_SDMShutdown | NiFogProperty.obj | retail, upstream name already matches, high
 void NiFogProperty__SDMShutdown()
 {
     if (DAT_011f5f3c)
@@ -32,11 +33,12 @@ inline NiColor::NiColor(float red, float green, float blue) : r(red), g(green), 
 {}
 
 // @fnv 0x00a99ed0
-NiFogProperty::NiFogProperty() : m_kFogTint(0.0f, 0.0f, 0.0f)
+// pdb: NiFogProperty::NiFogProperty | BSFogProperty.obj | retail, upstream name already matches, high
+NiFogProperty::NiFogProperty() : m_kColor(0.0f, 0.0f, 0.0f)
 {
-    m_uiObjectFlags = 0;
-    m_fFogDepth = 1.0f;
-    m_kFogTint = DAT_011f4998;
+    m_uFlags = 0;
+    m_fDepth = 1.0f;
+    m_kColor = DAT_011f4998;
 }
 
 enum FogFunction
@@ -52,7 +54,11 @@ char* __cdecl NiSprintf(char*, unsigned int, const char*, ...);
 
 // Allocates a string of strlen(pcPrefix)+20 bytes and formats pcPrefix with the name of the given fog function.
 // @fnv 0x00a99e50
-char* FormatFogFunction(const char* pcPrefix, FogFunction eFunc)
+// src: XBOX_RETAIL_PDB 0x00a99e50
+// pdb: NiFogProperty::GetViewerString | NiFogProperty.obj | retail, string-set bridge, high
+// pdb params: pcPrefix, eFunc
+// pdb locals: pcString, uiLen
+char* NiFogProperty_GetViewerString(const char* pcPrefix, FogFunction eFunc)
 {
     char* pcString;
     unsigned int uiLen = strlen(pcPrefix);
@@ -83,16 +89,16 @@ struct FogPropertyRoutines
 {
     bool GetFog() const
     {
-        return (reinterpret_cast<const NiFogProperty*>(this)->m_uiObjectFlags & 1) != 0;
+        return (reinterpret_cast<const NiFogProperty*>(this)->m_uFlags & 1) != 0;
     }
     FogFunction GetFogFunction() const
     {
-        return (FogFunction)((reinterpret_cast<const NiFogProperty*>(this)->m_uiObjectFlags >> 1) & 3);
+        return (FogFunction)((reinterpret_cast<const NiFogProperty*>(this)->m_uFlags >> 1) & 3);
     }
     void* Clone(int arg);
     bool IsEqual(NiFogProperty* other);
-    void LoadPropertyData(NiStream* stream);
-    void GetViewerStrings(struct ViewerStrings* strings);
+    void LoadPropertyData(NiStream* kStream);
+    void GetViewerStrings(struct ViewerStrings* pkStrings);
     void SaveBinary(NiStream& stream);
 };
 
@@ -126,10 +132,10 @@ void* FogPropertyRoutines::Clone(int arg)
             esi = 0;
         }
         ((PropertyCloneRoutines*)this)->NiProperty_CopyMembers(esi, arg);
-        unsigned short cx = self->m_uiObjectFlags;
-        esi->m_uiObjectFlags = cx;
-        esi->m_fFogDepth = self->m_fFogDepth;
-        esi->m_kFogTint = self->m_kFogTint;
+        unsigned short cx = self->m_uFlags;
+        esi->m_uFlags = cx;
+        esi->m_fDepth = self->m_fDepth;
+        esi->m_kColor = self->m_kColor;
         return esi;
     }
     else
@@ -147,10 +153,10 @@ __forceinline void ConstructFogPropertyInPlace(NiFogProperty* property)
 {
     property->NiProperty::NiProperty();
     *reinterpret_cast<void**>(property) = NiFogPropertyVTable;
-    property->m_kFogTint.NiColor::NiColor(0.0f, 0.0f, 0.0f);
-    property->m_uiObjectFlags = 0;
-    property->m_fFogDepth = 1.0f;
-    property->m_kFogTint = DAT_011f4998;
+    property->m_kColor.NiColor::NiColor(0.0f, 0.0f, 0.0f);
+    property->m_uFlags = 0;
+    property->m_fDepth = 1.0f;
+    property->m_kColor = DAT_011f4998;
 }
 
 // Allocates memory for a NiFogProperty and constructs it in place, returning the new object or null on allocation failure.
@@ -169,7 +175,7 @@ NiFogProperty* __cdecl CreateNiFogProperty()
 
 struct EqBase
 {
-    bool __thiscall NiSequenceStreamHelper_IsEqual(NiObject* object);
+    bool __thiscall NiSequenceStreamHelper_IsEqual(NiObject* pObject);
 };
 
 // @fnv 0x00a9a030
@@ -180,17 +186,17 @@ bool __thiscall FogPropertyRoutines::IsEqual(NiFogProperty* other)
 
     if (base->NiSequenceStreamHelper_IsEqual(reinterpret_cast<NiObject*>(other)))
     {
-        volatile unsigned char* ownFlags = reinterpret_cast<volatile unsigned char*>(&self->m_uiObjectFlags);
-        unsigned char* otherFlags = reinterpret_cast<unsigned char*>(&other->m_uiObjectFlags);
+        volatile unsigned char* ownFlags = reinterpret_cast<volatile unsigned char*>(&self->m_uFlags);
+        unsigned char* otherFlags = reinterpret_cast<unsigned char*>(&other->m_uFlags);
 
         if (((*ownFlags ^ *otherFlags) & 1) == 0)
         {
-            if (self->m_fFogDepth == other->m_fFogDepth)
+            if (self->m_fDepth == other->m_fDepth)
             {
                 if (((*ownFlags ^ *otherFlags) & 6) == 0)
                 {
-                    NiPlane* color = reinterpret_cast<NiPlane*>(&self->m_kFogTint);
-                    const NiPlane* otherColor = reinterpret_cast<const NiPlane*>(&other->m_kFogTint);
+                    NiPlane* color = reinterpret_cast<NiPlane*>(&self->m_kColor);
+                    const NiPlane* otherColor = reinterpret_cast<const NiPlane*>(&other->m_kColor);
 
                     if (!color->FUN_00439090(otherColor))
                         return true;
@@ -216,15 +222,18 @@ struct PropertyFlagWord
 void __stdcall FUN_00a5d7f0(NiStream*);
 // Loads property flags and extra data from the stream based on version, then loads the sub-object at offset 0x20.
 // @fnv 0x00a9a150
-void FogPropertyRoutines::LoadPropertyData(NiStream* stream)
+// pdb: NiFogProperty::LoadBinary | NiFogProperty.obj | retail, object-file gap fill, high
+// pdb params: kStream
+// pdb locals: bFog, eFunc
+void FogPropertyRoutines::LoadPropertyData(NiStream* kStream)
 {
     NiFogProperty* self = reinterpret_cast<NiFogProperty*>(this);
-    NiStream* original = stream;
+    NiStream* original = kStream;
     FUN_00a5d7f0(original);
     if (original->m_uiNifFileVersion < 0x0a000102)
     {
         unsigned raw = original->m_usNiPropertyFlags;
-        self->m_uiObjectFlags = (unsigned short)raw;
+        self->m_uFlags = (unsigned short)raw;
         if (original->m_uiNifFileVersion < 0x05000016)
         {
             unsigned char bit = (unsigned char)raw;
@@ -232,34 +241,34 @@ void FogPropertyRoutines::LoadPropertyData(NiStream* stream)
             bit &= 1;
             raw >>= 3;
             raw &= 3;
-            self->m_uiObjectFlags = 0;
+            self->m_uFlags = 0;
             if (bit)
-                self->m_uiObjectFlags = 1;
+                self->m_uFlags = 1;
             else
-                self->m_uiObjectFlags = 0;
-            reinterpret_cast<PropertyFlagWord*>(&self->m_uiObjectFlags)->Merge(raw);
+                self->m_uFlags = 0;
+            reinterpret_cast<PropertyFlagWord*>(&self->m_uFlags)->Merge(raw);
         }
         else
         {
-            self->m_uiObjectFlags = (unsigned short)(raw & 7);
+            self->m_uFlags = (unsigned short)(raw & 7);
         }
     }
     else
     {
         NiBinaryStream* pReader = original->m_pkIstr;
         NiBinaryStream::NIBINARYSTREAM_READFN pReadFn = pReader->m_pfnRead;
-        unsigned& amount = *(unsigned*)&stream;
+        unsigned& amount = *(unsigned*)&kStream;
         amount = 2;
-        int count = pReadFn(pReader, &self->m_uiObjectFlags, 2, &amount, 1);
+        int count = pReadFn(pReader, &self->m_uFlags, 2, &amount, 1);
         pReader->m_uiAbsoluteCurrentPos += count;
     }
     NiBinaryStream* pReader = original->m_pkIstr;
     NiBinaryStream::NIBINARYSTREAM_READFN pReadFn = pReader->m_pfnRead;
-    unsigned& amount = *(unsigned*)&stream;
+    unsigned& amount = *(unsigned*)&kStream;
     amount = 4;
-    int count = pReadFn(pReader, reinterpret_cast<unsigned*>(&self->m_fFogDepth), 4, &amount, 1);
+    int count = pReadFn(pReader, reinterpret_cast<unsigned*>(&self->m_fDepth), 4, &amount, 1);
     pReader->m_uiAbsoluteCurrentPos += count;
-    self->m_kFogTint.LoadBinary(*original);
+    self->m_kColor.LoadBinary(*original);
 }
 
 struct ViewerStrings
@@ -299,15 +308,17 @@ struct PropertyBase
 };
 
 // @fnv 0x00a9a2a0
-void FogPropertyRoutines::GetViewerStrings(ViewerStrings* pViewerStrings)
+// pdb: NiFogProperty::GetViewerStrings | NiFogProperty.obj | retail, string-set bridge, high
+// pdb params: pkStrings
+void FogPropertyRoutines::GetViewerStrings(ViewerStrings* pkStrings)
 {
     NiFogProperty* self = reinterpret_cast<NiFogProperty*>(this);
-    reinterpret_cast<PropertyBase*>(this)->GetViewerStringsBase(pViewerStrings);
-    pViewerStrings->Add(MakeViewerString(g_fogRTTI.m_pcName));
-    pViewerStrings->Add(MakeViewerString("Enable", GetFog()));
-    pViewerStrings->Add(MakeViewerString("Depth", self->m_fFogDepth));
-    pViewerStrings->Add(FormatFogFunction("Function", GetFogFunction()));
-    pViewerStrings->Add(self->m_kFogTint.GetFormattedString("Color"));
+    reinterpret_cast<PropertyBase*>(this)->GetViewerStringsBase(pkStrings);
+    pkStrings->Add(MakeViewerString(g_fogRTTI.m_pcName));
+    pkStrings->Add(MakeViewerString("Enable", GetFog()));
+    pkStrings->Add(MakeViewerString("Depth", self->m_fDepth));
+    pkStrings->Add(NiFogProperty_GetViewerString("Function", GetFogFunction()));
+    pkStrings->Add(self->m_kColor.GetViewerString("Color"));
 }
 
 inline unsigned int NiBinaryStream::BinaryWrite(const void* pvBuffer, unsigned int uiTotalBytes,
@@ -337,13 +348,15 @@ class PropertySaveRoutines
 
 // Saves the base property, flags, depth and RGB tint to the output stream.
 // @fnv 0x00a9a230
+// pdb: NiFogProperty::SaveBinary | NiFogProperty.obj | retail, object-file gap fill, high
+// pdb params: kStream
 void FogPropertyRoutines::SaveBinary(NiStream& kStream)
 {
     NiFogProperty* self = reinterpret_cast<NiFogProperty*>(this);
     reinterpret_cast<PropertySaveRoutines*>(this)->NiSequenceStreamHelper_SaveBinary(kStream);
-    WriteBinaryValue(kStream, self->m_uiObjectFlags);
-    WriteBinaryValue(kStream, self->m_fFogDepth);
-    self->m_kFogTint.SaveBinary(kStream);
+    WriteBinaryValue(kStream, self->m_uFlags);
+    WriteBinaryValue(kStream, self->m_fDepth);
+    self->m_kColor.SaveBinary(kStream);
 }
 
 extern "C" __declspec(dllimport) long __stdcall InterlockedIncrement(long volatile*);
@@ -378,6 +391,7 @@ template <class T> struct PtrRef
 // Allocates a NiFogProperty and assigns it to DAT_011f5f3c through a reference-counting smart pointer.
 // @fnv 0x00a9a090
 // src: COMMUNITY 0x00a9a090
+// pdb: NiFogProperty::_SDMInit | NiFogProperty.obj | retail, upstream name already matches, high
 void NiFogProperty__SDMInit()
 {
     PtrRef<NiFogProperty> r(DAT_011f5f3c);

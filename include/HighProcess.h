@@ -40,156 +40,157 @@ enum ACTOR_AGGRESSION;
 enum ACTOR_SOUND_HANDLE;
 
 #pragma pack(push, 4)
+// pdb: class HighProcess, size 0x46c, bases: MiddleHighProcess, 121 members
 class HighProcess : public MiddleHighProcess
 {
 public:
-    BSSimpleList<TESTopicInfo*>* pDetectionEventList;        // +0x25c
-    BSSimpleList<TESTopicInfo*>* m_pDetectionEventList;      // +0x260
-    BSSimpleList<TESTopicInfo*>* m_pAuxiliaryList;           // +0x264
-    BSSimpleList<TESTopicInfo*>* m_pDetectionList;           // +0x268
-    BSSimpleList<TESTopicInfo*>* m_pSecondaryDetectionList;  // +0x26c
-    bool m_bHasActorGroupState;                              // +0x270
+    BSSimpleList<TESTopicInfo*>* pDetectedActorList;        // +0x25c // src: XBOX_RETAIL_PDB +0x25c (old: pDetectionEventList)
+    BSSimpleList<TESTopicInfo*>* pActorsWhoDetectMeList;      // +0x260 // src: XBOX_RETAIL_PDB +0x260 (old: m_pDetectionEventList)
+    BSSimpleList<TESTopicInfo*>* pLastSpokeToList;           // +0x264 // src: XBOX_RETAIL_PDB +0x264 (old: m_pAuxiliaryList)
+    BSSimpleList<TESTopicInfo*>* pThreadDetectList;           // +0x268 // src: XBOX_RETAIL_PDB +0x268 (old: m_pDetectionList)
+    BSSimpleList<TESTopicInfo*>* pTempActorsWhoDetectMeList;  // +0x26c // src: XBOX_RETAIL_PDB +0x26c (old: m_pSecondaryDetectionList)
+    bool bEvaluateDetection;                              // +0x270 // src: XBOX_RETAIL_PDB +0x270 (old: m_bHasActorGroupState)
     unsigned char layoutGap_271[3];
-    BSSimpleList<TESTopicInfo*> m_kPrimaryDetectionList;    // +0x274
-    BSSimpleList<TESTopicInfo*> m_kActorGroupStateList;     // +0x27c
-    BSSimpleList<TESTopicInfo*> m_kSecondaryDetectionList;  // +0x284
-    BSSimpleList<TESTopicInfo*> m_kActorGroupEntries;       // +0x28c
-    float m_fFirstDialogueValue;                            // +0x294
-    float m_fSecondDialogueValue;                           // +0x298
-    bool m_bDialogueStateEnabled;                           // +0x29c
-    bool m_bHasSavedTarget;                                 // +0x29d
+    BSSimpleList<TESTopicInfo*> AggroList;    // +0x274 // src: XBOX_RETAIL_PDB +0x274 (old: m_kPrimaryDetectionList)
+    BSSimpleList<TESTopicInfo*> GroupsToHelpList;     // +0x27c // src: XBOX_RETAIL_PDB +0x27c (old: m_kActorGroupStateList)
+    BSSimpleList<TESTopicInfo*> TargetToAddList;  // +0x284 // src: XBOX_RETAIL_PDB +0x284 (old: m_kSecondaryDetectionList)
+    BSSimpleList<TESTopicInfo*> SpectatorList;       // +0x28c // src: XBOX_RETAIL_PDB +0x28c (old: m_kActorGroupEntries)
+    float fDetectListTimer;                            // +0x294 // src: XBOX_RETAIL_PDB +0x294 (old: m_fFirstDialogueValue)
+    float fIdleChatterTimer;                           // +0x298 // src: XBOX_RETAIL_PDB +0x298 (old: m_fSecondDialogueValue)
+    bool bSayGoodByePlayer;                           // +0x29c // src: XBOX_RETAIL_PDB +0x29c (old: m_bDialogueStateEnabled)
+    bool bProcessGreetSayTo;                                 // +0x29d // src: XBOX_RETAIL_PDB +0x29d (old: m_bHasSavedTarget)
     unsigned char layoutGap_29e[2];
-    float m_fSavedTargetDistance;             // +0x2a0
-    TESObjectREFR* m_pSavedTargetReference;   // +0x2a4
-    float m_fFirstReferenceTimer;             // +0x2a8
-    TESObjectREFR* m_pTrackedReference;       // +0x2ac
-    float m_fAnimationScale;                  // +0x2b0
-    float m_fAnimationBlendValue;             // +0x2b4
-    float m_fSecondAnimationValue;            // +0x2b8
-    float m_fFirstAnimationValue;             // +0x2bc
-    short m_sFirstIndex;                      // +0x2c0
-    short m_sSecondIndex;                     // +0x2c2
-    short m_sThirdIndex;                      // +0x2c4
-    bool m_bImpactState;                      // +0x2c6
-    bool m_kFirstAdditionalHighProcessField;  // +0x2c7
-    float m_fImpactValue;                     // +0x2c8
+    float fClearTalkToListTimer;             // +0x2a0 // src: XBOX_RETAIL_PDB +0x2a0 (old: m_fSavedTargetDistance)
+    TESObjectREFR* plastDetected;   // +0x2a4 // src: XBOX_RETAIL_PDB +0x2a4 (old: m_pSavedTargetReference)
+    float fTalkTimer;             // +0x2a8 // src: XBOX_RETAIL_PDB +0x2a8 (old: m_fFirstReferenceTimer)
+    TESObjectREFR* pPathLookAtTarget;       // +0x2ac // src: XBOX_RETAIL_PDB +0x2ac (old: m_pTrackedReference)
+    float fMaxAlpha;                  // +0x2b0 // src: XBOX_RETAIL_PDB +0x2b0 (old: m_fAnimationScale)
+    float fPackageEvalTimer;             // +0x2b4 // src: XBOX_RETAIL_PDB +0x2b4 (old: m_fAnimationBlendValue)
+    float fUseItemTimer;            // +0x2b8 // src: XBOX_RETAIL_PDB +0x2b8 (old: m_fSecondAnimationValue)
+    float fHoldAttackTimer;             // +0x2bc // src: XBOX_RETAIL_PDB +0x2bc (old: m_fFirstAnimationValue)
+    short sShotsFired;                      // +0x2c0 // src: XBOX_RETAIL_PDB +0x2c0 (old: m_sFirstIndex)
+    short sShotsToFire;                     // +0x2c2 // src: XBOX_RETAIL_PDB +0x2c2 (old: m_sSecondIndex)
+    short sBurstsFired;                      // +0x2c4 // src: XBOX_RETAIL_PDB +0x2c4 (old: m_sThirdIndex)
+    bool bCheckDeadTalk;                      // +0x2c6 // src: XBOX_RETAIL_PDB +0x2c6 (old: m_bImpactState)
+    bool bSkippedUpdate;  // +0x2c7 // src: XBOX_RETAIL_PDB +0x2c7 (old: m_kFirstAdditionalHighProcessField)
+    float fCheckToTalkTimer;                     // +0x2c8 // src: XBOX_RETAIL_PDB +0x2c8 (old: m_fImpactValue)
     NiNode* pNode;                            // +0x2cc
-    float m_fImpactForceScale;                // +0x2d0
-    float m_fImpactForce;                     // +0x2d4
-    float fElapsedAnimationTime;              // +0x2d8
-    char m_cDialogueState;                    // +0x2dc
+    float fDelayTimer;                // +0x2d0 // src: XBOX_RETAIL_PDB +0x2d0 (old: m_fImpactForceScale)
+    float fDistanceMoved;                     // +0x2d4 // src: XBOX_RETAIL_PDB +0x2d4 (old: m_fImpactForce)
+    float fTurnTime;              // +0x2d8 // src: XBOX_RETAIL_PDB +0x2d8 (old: fElapsedAnimationTime)
+    char cLastTurnDir;                    // +0x2dc // src: XBOX_RETAIL_PDB +0x2dc (old: m_cDialogueState)
     unsigned char layoutGap_2dd[3];
-    float m_fAnimationTimer;                      // +0x2e0
-    NiBSBoneLODController* m_pBoneLODController;  // +0x2e4
-    int m_iAnimationGroup;                        // +0x2e8
-    short m_sAnimationSequenceGroup;              // +0x2ec
+    float fEvaluateAcquireTimer;                      // +0x2e0 // src: XBOX_RETAIL_PDB +0x2e0 (old: m_fAnimationTimer)
+    NiBSBoneLODController* pBoneLOD;  // +0x2e4 // src: XBOX_RETAIL_PDB +0x2e4 (old: m_pBoneLODController)
+    int iLastBoneLOD;                        // +0x2e8 // src: XBOX_RETAIL_PDB +0x2e8 (old: m_iAnimationGroup)
+    short sAnimAction;              // +0x2ec // src: XBOX_RETAIL_PDB +0x2ec (old: m_sAnimationSequenceGroup)
     unsigned char layoutGap_2ee[2];
-    BSAnimGroupSequence* m_pAnimationSequence;  // +0x2f0
-    bool m_bAnimationActive;                    // +0x2f4
+    BSAnimGroupSequence* pAnimSeq;  // +0x2f0 // src: XBOX_RETAIL_PDB +0x2f0 (old: m_pAnimationSequence)
+    bool bAutomaticFireAtLeastOne;                    // +0x2f4 // src: XBOX_RETAIL_PDB +0x2f4 (old: m_bAnimationActive)
     unsigned char layoutGap_2f5[3];
-    float m_fSocialTalkDelay;  // +0x2f8
-    short m_sAnimationState;   // +0x2fc
+    float fDetectionTimer;  // +0x2f8 // src: XBOX_RETAIL_PDB +0x2f8 (old: m_fSocialTalkDelay)
+    short iLastDetection;   // +0x2fc // src: XBOX_RETAIL_PDB +0x2fc (old: m_sAnimationState)
     unsigned char layoutGap_2fe[2];
-    NiPoint3 m_kSocialTalkPosition;      // +0x300
-    TESObjectREFR* m_pSocialTalkTarget;  // +0x30c
-    float m_fReferenceTimer;             // +0x310
-    BSSoundHandle AudioPlaybackHandle[2];        // +0x314
-    bool iProcessIndex;                  // +0x32c
+    NiPoint3 WeaponLastPos;      // +0x300 // src: XBOX_RETAIL_PDB +0x300 (old: m_kSocialTalkPosition)
+    TESObjectREFR* pGreetActor;  // +0x30c // src: XBOX_RETAIL_PDB +0x30c (old: m_pSocialTalkTarget)
+    float fSoundDelay;             // +0x310 // src: XBOX_RETAIL_PDB +0x310 (old: m_fReferenceTimer)
+    BSSoundHandle SoundHandle[2];        // +0x314 // src: XBOX_RETAIL_PDB +0x314 (old: AudioPlaybackHandle)
+    bool bGreetingFlag;                  // +0x32c // src: XBOX_RETAIL_PDB +0x32c (old: iProcessIndex)
     unsigned char layoutGap_32d[3];
-    float m_fFirstProcessValue;   // +0x330
-    float m_fSecondProcessValue;  // +0x334
-    float m_fAwarenessDelay;      // +0x338
-    float m_fAwarenessValue;      // +0x33c
-    bool bCanDetectAlert;         // +0x340
+    float fGreetingTimer;   // +0x330 // src: XBOX_RETAIL_PDB +0x330 (old: m_fFirstProcessValue)
+    float fIdleTimer;  // +0x334 // src: XBOX_RETAIL_PDB +0x334 (old: m_fSecondProcessValue)
+    float fDetectGreetTimer;      // +0x338 // src: XBOX_RETAIL_PDB +0x338 (old: m_fAwarenessDelay)
+    float fBreathTimer;      // +0x33c // src: XBOX_RETAIL_PDB +0x33c (old: m_fAwarenessValue)
+    bool bHeadTrack;         // +0x340 // src: XBOX_RETAIL_PDB +0x340 (old: bCanDetectAlert)
     unsigned char layoutGap_341[3];
-    float m_fFirstSerializedValue;  // +0x344
-    bool m_bAlertState;             // +0x348
+    float fVoiceTimer;  // +0x344 // src: XBOX_RETAIL_PDB +0x344 (old: m_fFirstSerializedValue)
+    bool bLipQuequed;             // +0x348 // src: XBOX_RETAIL_PDB +0x348 (old: m_bAlertState)
     bool bWeaponAlertDrawn;         // +0x349
     unsigned char layoutGap_34a[2];
     float fAwarePlayerTimer;                  // +0x34c
-    TESIdleForm* iAnimationStateCode;         // +0x350
-    NiPointer<NiTexture> iLocalValue[2];      // +0x354
-    NiPointer<KFModel> m_kKeyframeModels[2];  // +0x35c
-    bool m_bSpellState;                       // +0x364
+    TESIdleForm* pIdleToPlay;         // +0x350 // src: XBOX_RETAIL_PDB +0x350 (old: iAnimationStateCode)
+    NiPointer<NiTexture> spAnimIdleToPlay[2];      // +0x354 // src: XBOX_RETAIL_PDB +0x354 (old: iLocalValue)
+    NiPointer<KFModel> spAnimIdleKF[2];  // +0x35c // src: XBOX_RETAIL_PDB +0x35c (old: m_kKeyframeModels)
+    bool bDialoguewithPlayer;                       // +0x364 // src: XBOX_RETAIL_PDB +0x364 (old: m_bSpellState)
     unsigned char layoutGap_365[3];
-    DialogueItem* pOwnedObject;        // +0x368
-    DIALOGUE_EMOTION m_iProcessState;  // +0x36c
-    MobileObject* m_pSavedReference;   // +0x370
-    bool m_bSavedReferenceFlag;        // +0x374
-    bool m_bDialogueFlag;              // +0x375
+    DialogueItem* pGreetTopic;        // +0x368 // src: XBOX_RETAIL_PDB +0x368 (old: pOwnedObject)
+    DIALOGUE_EMOTION eLastSpeakingEmotion;  // +0x36c // src: XBOX_RETAIL_PDB +0x36c (old: m_iProcessState)
+    MobileObject* pDialogTarget;   // +0x370 // src: XBOX_RETAIL_PDB +0x370 (old: m_pSavedReference)
+    bool bContinuingPackageforPC;        // +0x374 // src: XBOX_RETAIL_PDB +0x374 (old: m_bSavedReferenceFlag)
+    bool bActivateAnim;              // +0x375 // src: XBOX_RETAIL_PDB +0x375 (old: m_bDialogueFlag)
     unsigned char layoutGap_376[2];
-    float m_fDialogueDelay;                                   // +0x378
-    float m_fFirstDialogueParameter;                          // +0x37c
-    NiPointer<NiTexture> m_kSixthAdditionalHighProcessField;  // +0x380
-    float fCurrentValue;                                      // +0x384
-    float m_fSecondDialogueParameter;                         // +0x388
-    BSSimpleList<TESTopicInfo*> m_kPrimaryTopicList;          // +0x38c
-    BSSimpleList<TESTopicInfo*> m_kSecondaryTopicList;        // +0x394
-    int m_iDialogueTopicCount;                                // +0x39c
+    float fScriptPackageEndTime;                                   // +0x378 // src: XBOX_RETAIL_PDB +0x378 (old: m_fDialogueDelay)
+    float fHealthBarAlphaValue;                          // +0x37c // src: XBOX_RETAIL_PDB +0x37c (old: m_fFirstDialogueParameter)
+    NiPointer<NiTexture> spHealthBarNode;  // +0x380 // src: XBOX_RETAIL_PDB +0x380 (old: m_kSixthAdditionalHighProcessField)
+    float fActorHealthPercentage;                                      // +0x384 // src: XBOX_RETAIL_PDB +0x384 (old: fCurrentValue)
+    float fHealthBarEmittanceValue;                         // +0x388 // src: XBOX_RETAIL_PDB +0x388 (old: m_fSecondDialogueParameter)
+    BSSimpleList<TESTopicInfo*> AggroRadiusList;          // +0x38c // src: XBOX_RETAIL_PDB +0x38c (old: m_kPrimaryTopicList)
+    BSSimpleList<TESTopicInfo*> AvoidActorList;        // +0x394 // src: XBOX_RETAIL_PDB +0x394 (old: m_kSecondaryTopicList)
+    int iNumberGuardsPersuing;                                // +0x39c // src: XBOX_RETAIL_PDB +0x39c (old: m_iDialogueTopicCount)
     bool bStop;                                               // +0x3a0
     unsigned char layoutGap_3a1[3];
-    float m_fThirdDialogueParameter;  // +0x3a4
-    bool fScale;                      // +0x3a8
+    float fReEquipArmorTimer;  // +0x3a4 // src: XBOX_RETAIL_PDB +0x3a4 (old: m_fThirdDialogueParameter)
+    bool bUnequippedArmorToSwim;                      // +0x3a8 // src: XBOX_RETAIL_PDB +0x3a8 (old: fScale)
     unsigned char layoutGap_3a9[3];
-    int m_iFirstSpellIndex;                   // +0x3ac
-    int m_iSecondSpellIndex;                  // +0x3b0
-    BSSimpleList<SpellItem*>* m_pkSpellList;  // +0x3b4
-    char iValue;                              // +0x3b8
-    bool iLocalState;                         // +0x3b9
+    int iHasHealingSpell;                   // +0x3ac // src: XBOX_RETAIL_PDB +0x3ac (old: m_iFirstSpellIndex)
+    int iHasHealingPotion;                  // +0x3b0 // src: XBOX_RETAIL_PDB +0x3b0 (old: m_iSecondSpellIndex)
+    BSSimpleList<SpellItem*>* pLeveledSpellList;  // +0x3b4 // src: XBOX_RETAIL_PDB +0x3b4 (old: m_pkSpellList)
+    char cLastTurn;                              // +0x3b8 // src: XBOX_RETAIL_PDB +0x3b8 (old: iValue)
+    bool bCurrentlyReanimating;                         // +0x3b9 // src: XBOX_RETAIL_PDB +0x3b9 (old: iLocalState)
     unsigned char layoutGap_3ba[2];
-    float m_fFirstLipSyncParameter;       // +0x3bc
-    float m_fSecondLipSyncParameter;      // +0x3c0
-    float m_fLipSyncTimer;                // +0x3c4
-    float m_fLipSyncValue;                // +0x3c8
-    LipSyncAnimation* pLipSyncAnimation;  // +0x3cc
-    bool m_bLipSyncEnabled;               // +0x3d0
-    bool m_bLipSyncPlaying;               // +0x3d1
+    float fDetectionModifer;       // +0x3bc // src: XBOX_RETAIL_PDB +0x3bc (old: m_fFirstLipSyncParameter)
+    float fDetectionModifierTimer;      // +0x3c0 // src: XBOX_RETAIL_PDB +0x3c0 (old: m_fSecondLipSyncParameter)
+    float fLightLevel;                // +0x3c4 // src: XBOX_RETAIL_PDB +0x3c4 (old: m_fLipSyncTimer)
+    float fLightLevelTimer;                // +0x3c8 // src: XBOX_RETAIL_PDB +0x3c8 (old: m_fLipSyncValue)
+    LipSyncAnimation* pLipSynicAnim;  // +0x3cc // src: XBOX_RETAIL_PDB +0x3cc (old: pLipSyncAnimation)
+    bool bWaitingForLipFile;               // +0x3d0 // src: XBOX_RETAIL_PDB +0x3d0 (old: m_bLipSyncEnabled)
+    bool bLipFileFailed;               // +0x3d1 // src: XBOX_RETAIL_PDB +0x3d1 (old: m_bLipSyncPlaying)
     unsigned char layoutGap_3d2[2];
-    MuzzleFlash* m_pMuzzleFlash;        // +0x3d4
-    unsigned int m_uiMuzzleFlashIndex;  // +0x3d8
-    DetectionEvent* m_pDetectionEvent;  // +0x3dc
-    bool m_bTrackedReferenceFlag;       // +0x3e0
+    MuzzleFlash* pCurrentMuzzleFlash;        // +0x3d4 // src: XBOX_RETAIL_PDB +0x3d4 (old: m_pMuzzleFlash)
+    unsigned int iDetectionCounter;  // +0x3d8 // src: XBOX_RETAIL_PDB +0x3d8 (old: m_uiMuzzleFlashIndex)
+    DetectionEvent* pActorsGeneratedDetectionEvent;  // +0x3dc // src: XBOX_RETAIL_PDB +0x3dc (old: m_pDetectionEvent)
+    bool bFinishingCombatPackage;       // +0x3e0 // src: XBOX_RETAIL_PDB +0x3e0 (old: m_bTrackedReferenceFlag)
     unsigned char layoutGap_3e1[3];
-    DialogueItem* m_pQueuedDialogueItem;               // +0x3e4
-    BaseProcess::FADE_STATE m_iSecondSerializedValue;  // +0x3e8
+    DialogueItem* m_pSayToDialogueTopic;               // +0x3e4 // src: XBOX_RETAIL_PDB +0x3e4 (old: m_pQueuedDialogueItem)
+    BaseProcess::FADE_STATE eFadeState;  // +0x3e8 // src: XBOX_RETAIL_PDB +0x3e8 (old: m_iSecondSerializedValue)
     float fFadeAlpha;                                  // +0x3ec
-    TESObjectREFR* m_pFadeReference;                   // +0x3f0
-    DetectionEventData* pDetectionEventData;           // +0x3f4
-    TESObjectREFR* m_pRecentReferences[6];             // +0x3f8
-    bool m_bReferenceFlags[6];                         // +0x410
+    TESObjectREFR* pTeleportFadeRef;                   // +0x3f0 // src: XBOX_RETAIL_PDB +0x3f0 (old: m_pFadeReference)
+    DetectionEventData* pMoveToFadeStruct;           // +0x3f4 // src: XBOX_RETAIL_PDB +0x3f4 (old: pDetectionEventData)
+    TESObjectREFR* HeadTrackingTargets[6];             // +0x3f8 // src: XBOX_RETAIL_PDB +0x3f8 (old: m_pRecentReferences)
+    bool HeadTrackingTargetFlags[6];                         // +0x410 // src: XBOX_RETAIL_PDB +0x410 (old: m_bReferenceFlags)
     unsigned char layoutGap_416[2];
-    float m_fReferencePriority;  // +0x418
-    TESObjectREFR* coordinate;   // +0x41c
-    bool m_bDetectionFlag;       // +0x420
+    float fHeadTrackTargetTimer;  // +0x418 // src: XBOX_RETAIL_PDB +0x418 (old: m_fReferencePriority)
+    TESObjectREFR* pLastTarget;   // +0x41c // src: XBOX_RETAIL_PDB +0x41c (old: coordinate)
+    bool bForceRotate;       // +0x420 // src: XBOX_RETAIL_PDB +0x420 (old: m_bDetectionFlag)
     unsigned char layoutGap_421[3];
-    BaseProcess::POSTANIM_ACTION m_ePendingPostAnimationActions;  // +0x424
-    ActorValueStore* m_pRevertibleObject;                         // +0x428
-    float m_kSecondAdditionalHighProcessField;                    // +0x42c
-    int m_iDialogueState;                                         // +0x430
-    NiPointer<NiTexture> m_kNinthAdditionalHighProcessField;      // +0x434
-    float m_kThirdAdditionalHighProcessField;                     // +0x438
-    float m_fFirstReferenceValue;                                 // +0x43c
-    float m_fSecondReferenceValue;                                // +0x440
-    bool iCount;                                                  // +0x444
-    bool pTargetObject;                                           // +0x445
+    BaseProcess::POSTANIM_ACTION ePostAnimActon;  // +0x424 // src: XBOX_RETAIL_PDB +0x424 (old: m_ePendingPostAnimationActions)
+    ActorValueStore* pActorValueCache;                         // +0x428 // src: XBOX_RETAIL_PDB +0x428 (old: m_pRevertibleObject)
+    float fCachedActorHeight;                    // +0x42c // src: XBOX_RETAIL_PDB +0x42c (old: m_kSecondAdditionalHighProcessField)
+    int eSpecialIdleType;                                         // +0x430 // src: XBOX_RETAIL_PDB +0x430 (old: m_iDialogueState)
+    NiPointer<NiTexture> spShapePhantom;      // +0x434 // src: XBOX_RETAIL_PDB +0x434 (old: m_kNinthAdditionalHighProcessField)
+    float fDetectDoorForPathingTimer;                     // +0x438 // src: XBOX_RETAIL_PDB +0x438 (old: m_kThirdAdditionalHighProcessField)
+    float fRadiationTimer;                                 // +0x43c // src: XBOX_RETAIL_PDB +0x43c (old: m_fFirstReferenceValue)
+    float fHighestRadiation;                                // +0x440 // src: XBOX_RETAIL_PDB +0x440 (old: m_fSecondReferenceValue)
+    bool bPlantedExplosive;                                                  // +0x444 // src: XBOX_RETAIL_PDB +0x444 (old: iCount)
+    bool bNeedTalkPlayer;                                           // +0x445 // src: XBOX_RETAIL_PDB +0x445 (old: pTargetObject)
     unsigned char layoutGap_446[2];
-    float m_fDialogueTimer;                          // +0x448
-    BSSimpleList<TESTopicInfo*>* m_pkTopicInfoList;  // +0x44c
-    float m_fDialogueConditionValue;                           // +0x450
-    DialogueItem* m_pCurrentDialogueItem;            // +0x454
-    bool bHasSubtitle;                               // +0x458
-    bool m_bSubtitleActive;                          // +0x459
+    float fTakeBackTimer;                          // +0x448 // src: XBOX_RETAIL_PDB +0x448 (old: m_fDialogueTimer)
+    BSSimpleList<TESTopicInfo*>* pListOfAvoidAreas;  // +0x44c // src: XBOX_RETAIL_PDB +0x44c (old: m_pkTopicInfoList)
+    float fAvoidWaitTimer;                           // +0x450 // src: XBOX_RETAIL_PDB +0x450 (old: m_fDialogueConditionValue)
+    DialogueItem* pSubtitleVoice;            // +0x454 // src: XBOX_RETAIL_PDB +0x454 (old: m_pCurrentDialogueItem)
+    bool bHiding;                               // +0x458 // src: XBOX_RETAIL_PDB +0x458 (old: bHasSubtitle)
+    bool bIsDoingSayTo;                          // +0x459 // src: XBOX_RETAIL_PDB +0x459 (old: m_bSubtitleActive)
     unsigned char layoutGap_45a[2];
-    NiPointer<NiTexture> m_kEighthAdditionalHighProcessField;                  // +0x45c
-    NiPointer<NiTexture> m_kFifthAdditionalHighProcessField;                   // +0x460
-    NiPointer<ActorPathingMessageQueue> m_kSeventhAdditionalHighProcessField;  // +0x464
-    NiPointer<ActorPathingMessageQueue> m_kFourthAdditionalHighProcessField;   // +0x468
+    NiPointer<NiTexture> spMeToGoalRequest;                  // +0x45c // src: XBOX_RETAIL_PDB +0x45c (old: m_kEighthAdditionalHighProcessField)
+    NiPointer<NiTexture> spEscortedToGoalRequest;                   // +0x460 // src: XBOX_RETAIL_PDB +0x460 (old: m_kFifthAdditionalHighProcessField)
+    NiPointer<ActorPathingMessageQueue> spMeToGoalMessageQueue;  // +0x464 // src: XBOX_RETAIL_PDB +0x464 (old: m_kSeventhAdditionalHighProcessField)
+    NiPointer<ActorPathingMessageQueue> spEscortedToGoalMessageQueue;   // +0x468 // src: XBOX_RETAIL_PDB +0x468 (old: m_kFourthAdditionalHighProcessField)
 
     void Revert(BGSLoadFormBuffer*);
     void LoadGame(BGSLoadFormBuffer*);
     void InitLoadGame(BGSLoadFormBuffer*);
     void ClearAndDeleteList();
-    bool ClearProcessState(Actor*);
+    bool FadeUpdate(Actor*);
     void ProcessActorWithFlag(Actor*, bool);
     bool HighProcess_DoesFadeProhibitAction();
     void EvaluateBoneLod(Actor*);
@@ -241,7 +242,7 @@ public:
     virtual void ProcessAmbushWait(Actor*); // RTTI slot 501                                         // 0x008ee3e0 (slot 501)
     virtual void vfn_7b4(Actor*); // RTTI slot 493                                                   // 0x008dfa10 (slot 493)
     virtual void ProcessAccompany(Actor*); // RTTI slot 499                                          // 0x008e0b00 (slot 499)
-    bool CheckTargetAndCombat(Actor*, float, bool);                         // 0x008f31d0
+    bool ProcessFollowOneHour(Actor*, float, bool);                         // 0x008f31d0
     bool ProcessEscortOneHour(Actor*, float);                                       // 0x008f2610
     virtual void ProcessCannibal(Actor* apActor);                           // slot 32 override, 0x00904da0
     virtual int GetActorReferenceState(Actor* apActor, TESObjectREFR* apTarget);   // slot 185 override, 0x008f6ef0
@@ -254,7 +255,7 @@ public:
     virtual bool ProcessUseItemAt(Actor*); // RTTI slot 502                                          // 0x008f9320 (slot 502)
     void MiddleHighProcess_FindBedChairs(Actor*, int, int);                                    // 0x00922670
     ActorPackageData* FUN_008d0430();                                       // 0x008d0430
-    void HighProcess_ProcessGuardStartTravelToLocation(Actor*, void*);                                       // 0x00902640
+    void ProcessGuardInit(Actor*, void*);                                       // 0x00902640
     void HighProcess_ProcessGuardWaitToAttack(Actor*, void*);                                       // 0x00902c80
     virtual unsigned int GetAttackChance(Actor* apActor, float afDistanceSq, float afShortDistSq, float afLongDistSq, bool abAlarmOrCombat, bool abPureTravel) const; // RTTI slot 211 // 0x008daa20 (slot 211)
     virtual bool ShouldAttackTarget(Actor*, Actor*, bool, bool, ActorCombatGroup*, bool, bool, bool, bool, bool, bool, bool, TESPackage*); // RTTI slot 207                                   // 0x009001c0 (slot 207)
@@ -263,13 +264,13 @@ public:
     virtual bool ProcessActivate(Actor*, bool); // RTTI slot 498
     virtual void UpdateActorStateWithOptions(Actor* apActor, bool abNewPackage, bool abIterateIndex, unsigned int aeMoveMode, bool abSecondLoc); // RTTI slot 175   // 0x008e5e90 (override)
     virtual void ProcessDialogueTopic(Actor* apActor, TESTopic* apTopic, bool abForceSub, bool abStop, bool abQueue, bool abSayCallBack); // RTTI slot 169
-    virtual void RunDetection(Actor* apActor, float afTimeDelta); // RTTI slot 188
+    virtual void RunDetection(Actor* apActor, float fnumber); // RTTI slot 188
     bool IsActorFriendlyToActor(Actor*, Actor*);
     bool CanDetectTarget(Actor*, Actor*);
     virtual bool ShouldProcessActor(Actor* apActor); // RTTI slot 26
     virtual void ProcessEat(Actor*, TESForm*); // RTTI slot 495
     void ActorEntity(TESObjectREFR*, Actor*, bool&, DetectionParameters*, ACTOR_AGGRESSION, float, float);
-    bool HasGroupEntry(ActorCombatGroup*);
+    bool IsGroupAlreadyInList(ActorCombatGroup*);
     void ProcessDetectionTarget(Actor*, Actor*);
     HighProcess();
     void RefreshActorState(Actor*);
@@ -291,12 +292,12 @@ public:
     virtual void OnPackageStart(Actor*, TESPackage*);
     virtual void OnPackageEnd(Actor* apActor, TESPackage* apPackage); // RTTI slot 360
     void RefreshTargetState();
-    virtual bool IsTalking(MobileObject* apTarget) const; // RTTI slot 302   // 0x008f6fc0: override of BaseProcess slot 302
+    virtual bool IsTalking(MobileObject* apActor) const; // RTTI slot 302   // 0x008f6fc0: override of BaseProcess slot 302
     virtual void ProcessActorIdle(Actor* apActor); // RTTI slot 54
     virtual void ResetCurrentPackage(); // RTTI slot 145
     void ClearTrackedActorEntries();
     virtual void SetActorDetectionState(Actor* apActor, unsigned int aeMoveMode, bool abCheckAlwaysRun); // RTTI slot 212
-    virtual DetectionViewData* GetDetectionState(Actor* apTarget, DetectionListType aeType) const; // RTTI slot 321
+    virtual DetectionViewData* GetDetectionState(Actor* apActor, DetectionListType abWhichList) const; // RTTI slot 321
     virtual void RestorePreviousReference(bool abHoldDefault); // RTTI slot 404
     virtual void ClearCachedTargetReferences(bool abHoldDefault); // RTTI slot 401
     virtual void SetCombatActive(bool abHoldDefault); // RTTI slot 402
@@ -308,7 +309,7 @@ public:
     virtual bool IsActorVisibleToActor(Actor* apActor, Actor* apTarget, DetectionListType aeType, bool abFullTest); // RTTI slot 179 // slot 179 override, 0x008f6930
     void ResetTargetReferences();
     virtual TESObjectREFR* GetPrimaryTargetReference(); // RTTI slot 414
-    virtual void ClearHighProcessState(TESObjectREFR* apTarget); // RTTI slot 397
+    virtual void ClearHighProcessState(TESObjectREFR* apRef); // RTTI slot 397
     virtual void SetActorProcessState(TESObjectREFR* apTarget); // RTTI slot 394
     virtual void ClearIdleAnimation(); // RTTI slot 18
     void SetAnimation(Animation*);
@@ -317,8 +318,8 @@ public:
     int GetActorValue(TESActorBase*, ActorValue::Index, Actor*);
     virtual bool CanUsePlayerAction(Actor* apActor) const; // RTTI slot 28
     virtual void StopActorMovement(Actor* apActor); // RTTI slot 165
-    virtual void SetDiveBreathLevel(float afVal); // RTTI slot 297
-    virtual void SetAnimAction(ProcessAnimationAction aeAnimationAction, BSAnimGroupSequence* apSequence); // RTTI slot 251
+    virtual void SetDiveBreathLevel(float afvalue); // RTTI slot 297
+    virtual void SetAnimAction(ProcessAnimationAction aeAction, BSAnimGroupSequence* apAnimSeq); // RTTI slot 251
     virtual void UpdatePlayerAwarenessTimer(); // RTTI slot 406
     virtual void ResetDetectionState(); // RTTI slot 190
     virtual void AddPostAnimAction(PostAnimAction aeFlag); // RTTI slot 389
@@ -394,11 +395,11 @@ public:
     void RefreshProcessState(Actor*, TESObjectREFR*, float, float, float);
     void SetMaxAlpha(float fAlpha);
     virtual void* vf540();
-    unsigned char FindSpecialIdletoPlay(Actor* actor, int param, Actor* target);   // 0x008ff0b0
+    unsigned char FindSpecialIdletoPlay(Actor* apActor, int apObject, Actor* apRef);   // 0x008ff0b0
     virtual void SetActorProcessTime(Actor* apActor, float afTimeDelta);   // slot 184: 0x00900830 (RTTI HighProcess vftable 0x01087864)
     virtual void vfn_800(Actor* apTarget);   // slot 512: 0x00900020 (RTTI HighProcess vftable 0x01087864)
     virtual bool ProcessUseWeapon(Actor* apActor);   // slot 503: 0x008f7730 (RTTI HighProcess vftable 0x01087864)
-    bool UpdateCombatTarget(Actor* apActor, TESObjectREFR* apTarget, bool abForce);   // 0x008f74c0
+    bool UpdateCombatTarget(Actor* apActor, TESObjectREFR* apTarget, bool abHighArc);   // 0x008f74c0
     void UpdateActorBehavior(Actor* apActor);                                         // 0x008f9180
     virtual void ProcessFleeNonCombat(Actor* apActor); // slot 505: 0x008ddac0
     InventoryStackRecord* CreateWeaponAcquireList(Actor*, unsigned int); // 0x008eebf0
@@ -416,9 +417,9 @@ public:
     void FUN_0090dc60(Actor*, int, int, int); // 0x0090dc60: folded stack arguments
     void FUN_008f3fe0(Actor*, float); // 0x008f3fe0
     void FUN_008eeac0(Actor*); // 0x008eeac0
-    void FUN_008f36c0(Actor*, float); // 0x008f36c0
+    void ProcessWanderOneHour(Actor*, float); // 0x008f36c0
     bool HighProcess_ProcessSleepOneHour(Actor*, float); // 0x008f3550
-    bool FUN_008f3600(Actor*, float); // 0x008f3600
+    bool ProcessEatOneHour(Actor*, float); // 0x008f3600
     void HighProcess_ProcessPatrolOneHour(Actor*, float); // 0x008f4000
     void ChangeWeapon(Actor* apActor, TESObjectWEAP* apWeapon);                       // 0x009037e0
 };

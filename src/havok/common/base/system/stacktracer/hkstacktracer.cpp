@@ -3,7 +3,9 @@
 
 // @fnv 0x00da2b20
 // src: XBOX_PDB 0x00da2b20
-int __stdcall hkStackTracer_getStackTrace(int arg0, int arg1)
+// pdb: hkStackTracer::getStackTrace | hkStackTracer.obj | debug, upstream name already matches, high
+// pdb params: trace, maxtrace
+int __stdcall hkStackTracer_getStackTrace(int trace, int maxtrace)
 {
     return 0;
 }

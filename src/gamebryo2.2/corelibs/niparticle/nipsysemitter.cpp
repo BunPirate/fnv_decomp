@@ -21,21 +21,23 @@ inline void ReadFloat(NiStream& s, float& f)
 }
 
 // @fnv 0x00c223b0
-void NiPSysEmitter::LoadBinary(NiStream& stream)
+// pdb: NiPSysEmitter::LoadBinary | NiPSysEmitter.obj | retail, upstream name already matches, high
+// pdb params: kStream
+void NiPSysEmitter::LoadBinary(NiStream& kStream)
 {
-    NiPSysModifier::LoadBinary(stream);
-    ReadFloat(stream, m_fEmissionSpeed);
-    ReadFloat(stream, m_fSpeedVariation);
-    ReadFloat(stream, m_fEmissionDeclination);
-    ReadFloat(stream, m_fDeclinationVariation);
-    ReadFloat(stream, m_fEmissionPlanarAngle);
-    ReadFloat(stream, m_fPlanarAngleVariation);
-    m_kParticleColor.LoadBinary(stream);
-    ReadFloat(stream, m_fEmissionRadius);
-    if (*reinterpret_cast<unsigned int*>(reinterpret_cast<char*>(&stream) + 0xd8) >= 0x0A030002)
-        ReadFloat(stream, m_fRadiusVariation);
-    ReadFloat(stream, m_fYValue);
-    ReadFloat(stream, m_fLifeSpanVariation);
+    NiPSysModifier::LoadBinary(kStream);
+    ReadFloat(kStream, m_fSpeed);
+    ReadFloat(kStream, m_fSpeedVar);
+    ReadFloat(kStream, m_fDeclination);
+    ReadFloat(kStream, m_fDeclinationVar);
+    ReadFloat(kStream, m_fPlanarAngle);
+    ReadFloat(kStream, m_fPlanarAngleVar);
+    m_kInitialColor.LoadBinary(kStream);
+    ReadFloat(kStream, m_fInitialRadius);
+    if (*reinterpret_cast<unsigned int*>(reinterpret_cast<char*>(&kStream) + 0xd8) >= 0x0A030002)
+        ReadFloat(kStream, m_fRadiusVar);
+    ReadFloat(kStream, m_fLifeSpan);
+    ReadFloat(kStream, m_fLifeSpanVar);
 }
 
 void __cdecl FUN_00c31750(void);
@@ -102,6 +104,8 @@ struct FUN_00c22780_shell : public Base00c319e0
 
 // @fnv 0x00c22780
 // src: XBOX_PDB 0x00c22780
+// pdb: NiPSysEmitter::GetViewerStrings | NiPSysEmitter.obj | retail, string-set bridge, high
+// pdb params: pkStrings
 void FUN_00c22780_shell::NiPSysEmitter_GetViewerStrings(StrArr* pkStrings)
 {
     char* pString;
@@ -215,15 +219,18 @@ class FUN_00c226a0_cls
     float m_48;
     float m_4c;
     bool unk00c31830(FUN_00c226a0_cls* other);
-    bool Equals(FUN_00c226a0_cls* other);
+    bool Equals(FUN_00c226a0_cls* pkObject);
 };
 
 // @fnv 0x00c226a0
-bool FUN_00c226a0_cls::Equals(FUN_00c226a0_cls* other)
+// pdb: NiPSysEmitter::IsEqual | NiPSysEmitter.obj | retail, object-file gap fill, high
+// pdb params: pkObject
+// pdb locals: pkDest
+bool FUN_00c226a0_cls::Equals(FUN_00c226a0_cls* pkObject)
 {
-    if (unk00c31830(other) && other->m_18 == m_18 && other->m_1c == m_1c && other->m_20 == m_20 &&
-        other->m_24 == m_24 && other->m_28 == m_28 && other->m_2c == m_2c && !other->m_30.unk4a4c90(&m_30) &&
-        other->m_40 == m_40 && other->m_44 == m_44 && other->m_48 == m_48 && other->m_4c == m_4c)
+    if (unk00c31830(pkObject) && pkObject->m_18 == m_18 && pkObject->m_1c == m_1c && pkObject->m_20 == m_20 &&
+        pkObject->m_24 == m_24 && pkObject->m_28 == m_28 && pkObject->m_2c == m_2c && !pkObject->m_30.unk4a4c90(&m_30) &&
+        pkObject->m_40 == m_40 && pkObject->m_44 == m_44 && pkObject->m_48 == m_48 && pkObject->m_4c == m_4c)
         return true;
     return false;
 }
@@ -273,7 +280,7 @@ struct Point3ParameterData
 class Emitter : public NiPSysEmitter
 {
   public:
-    void NiPSysEmitter_EmitParticles(float fTime, unsigned short usNumParticles, const float* afAges);
+    void NiPSysEmitter_EmitParticles(float fTime, unsigned short usNumParticles, const float* pfAges);
 };
 inline float NiFastSin(float fAngleDifference)
 {
@@ -285,7 +292,10 @@ inline float NiFastCos(float fAngleDifference)
 }
 // @fnv 0x00c220c0
 // src: XBOX_PDB 0x00c220c0
-void Emitter::NiPSysEmitter_EmitParticles(float fTime, unsigned short usNumParticles, const float* afAges)
+// pdb: NiPSysEmitter::EmitParticles | NiPSysEmitter.obj | retail, upstream name already matches, high
+// pdb params: fTime, usNumParticles, pfAges
+// pdb locals: pkVertex, pucTextureIndex, pkData, pfSize, pfRadii, pkColor, ucsubTexCount, us, fAge, kDir, fSinDec, fPlan, fLifeSpan, fDec, usNewIndex, pkNewParticle, fSpeed
+void Emitter::NiPSysEmitter_EmitParticles(float fTime, unsigned short usNumParticles, const float* pfAges)
 {
     NiPSysData* pkData = reinterpret_cast<NiPSysData*>(m_pkTarget->m_spModelData.m_pObject);
     NiPoint3* pkVertex = pkData->m_pkVertex;
@@ -296,17 +306,17 @@ void Emitter::NiPSysEmitter_EmitParticles(float fTime, unsigned short usNumParti
     unsigned char ucTexCount = pkData->m_ucSubTextureOffsetCount;
     for (unsigned short us = 0; us < usNumParticles; us++)
     {
-        float m_fFirstFloatValue = afAges[us];
-        float fLifeSpan = m_fYValue + (RandomFloat0To1() - 0.5) * m_fLifeSpanVariation;
+        float m_fFirstFloatValue = pfAges[us];
+        float fLifeSpan = m_fLifeSpan + (RandomFloat0To1() - 0.5) * m_fLifeSpanVar;
         if (m_fFirstFloatValue > fLifeSpan)
             continue;
         unsigned short usNew = pkData->GetParticleVertexCount();
         if (usNew == DAT_010be248)
             break;
         Point3ParameterData* pkInfo = &pkData->m_pkParticleInfo[usNew];
-        float fSpeed = m_fEmissionSpeed + (RandomFloat0To1() - 0.5) * m_fSpeedVariation;
-        float fDec = m_fEmissionDeclination + m_fDeclinationVariation * NiSymmetricRandom();
-        float fPlanar = m_fEmissionPlanarAngle + m_fPlanarAngleVariation * NiSymmetricRandom();
+        float fSpeed = m_fSpeed + (RandomFloat0To1() - 0.5) * m_fSpeedVar;
+        float fDec = m_fDeclination + m_fDeclinationVar * NiSymmetricRandom();
+        float fPlanar = m_fPlanarAngle + m_fPlanarAngleVar * NiSymmetricRandom();
         float fSinDec = NiFastSin(fDec);
         NiPoint3 kWorldPosition(NiFastCos(fPlanar) * fSinDec, fSinDec * NiFastSin(fPlanar), NiFastCos(fDec));
         pkInfo->m_kValue = kWorldPosition * fSpeed;
@@ -315,9 +325,9 @@ void Emitter::NiPSysEmitter_EmitParticles(float fTime, unsigned short usNumParti
         pkInfo->m_usFlags = 0;
         GetPositionAndDirection(pkVertex[usNew], pkInfo->m_kValue);
         if (pkColor)
-            pkColor[usNew] = m_kParticleColor;
+            pkColor[usNew] = m_kInitialColor;
         if (pfRadii)
-            pfRadii[usNew] = (m_fEmissionRadius + m_fRadiusVariation * NiSymmetricRandom()) * m_fScale;
+            pfRadii[usNew] = (m_fInitialRadius + m_fRadiusVar * NiSymmetricRandom()) * m_fScale;
         if (pfSizes)
             pfSizes[usNew] = 1.0f;
         if (pucTex)
@@ -345,11 +355,11 @@ NiPSysEmitter::NiPSysEmitter(const char* pcName, unsigned int uiOrder, float fEm
                                    float fDeclination, float fDeclinationVar, float fPlanarAngle, float fPlanarAngleVar,
                                    NiColorA kInitialColor, float fInitialRadius, float fLifeSpan,
                                    float fLifeSpanVar, float fRadiusVar)
-    : NiPSysModifier(pcName, uiOrder), m_fEmissionSpeed(fEmissionSpeed), m_fSpeedVariation(fSpeedVar),
-      m_fEmissionDeclination(fDeclination), m_fDeclinationVariation(fDeclinationVar),
-      m_fEmissionPlanarAngle(fPlanarAngle), m_fPlanarAngleVariation(fPlanarAngleVar), m_kParticleColor(kInitialColor),
-      m_fEmissionRadius(fInitialRadius), m_fRadiusVariation(fRadiusVar), m_fYValue(fLifeSpan),
-      m_fLifeSpanVariation(fLifeSpanVar), m_fScale(1.0f)
+    : NiPSysModifier(pcName, uiOrder), m_fSpeed(fEmissionSpeed), m_fSpeedVar(fSpeedVar),
+      m_fDeclination(fDeclination), m_fDeclinationVar(fDeclinationVar),
+      m_fPlanarAngle(fPlanarAngle), m_fPlanarAngleVar(fPlanarAngleVar), m_kInitialColor(kInitialColor),
+      m_fInitialRadius(fInitialRadius), m_fRadiusVar(fRadiusVar), m_fLifeSpan(fLifeSpan),
+      m_fLifeSpanVar(fLifeSpanVar), m_fScale(1.0f)
 {}
 
 struct EmitterColorWriter
@@ -377,24 +387,26 @@ inline void S_00c22530_ReadFloat(S_00c22530_Stream& s, float& f)
 }
 struct S_00c22530_Emitter : NiPSysEmitter
 {
-    void FUN_00c31950(NiStream& stream);
-    void NiPSysEmitter_SaveBinary(S_00c22530_Stream& stream);
+    void FUN_00c31950(NiStream& kStream);
+    void NiPSysEmitter_SaveBinary(S_00c22530_Stream& kStream);
 };
 // Calls FUN_00c31950, then reads emitter fields and particle color from the stream.
 // @fnv 0x00c22530
 // src: XBOX_PDB 0x00c22530
-void S_00c22530_Emitter::NiPSysEmitter_SaveBinary(S_00c22530_Stream& stream)
+// pdb: NiPSysEmitter::SaveBinary | NiPSysEmitter.obj | retail, upstream name already matches, high
+// pdb params: kStream
+void S_00c22530_Emitter::NiPSysEmitter_SaveBinary(S_00c22530_Stream& kStream)
 {
-    FUN_00c31950(stream);
-    S_00c22530_ReadFloat(stream, m_fEmissionSpeed);
-    S_00c22530_ReadFloat(stream, m_fSpeedVariation);
-    S_00c22530_ReadFloat(stream, m_fEmissionDeclination);
-    S_00c22530_ReadFloat(stream, m_fDeclinationVariation);
-    S_00c22530_ReadFloat(stream, m_fEmissionPlanarAngle);
-    S_00c22530_ReadFloat(stream, m_fPlanarAngleVariation);
-    reinterpret_cast<EmitterColorWriter*>(&m_kParticleColor)->FUN_00a698a0(stream);
-    S_00c22530_ReadFloat(stream, m_fEmissionRadius);
-    S_00c22530_ReadFloat(stream, m_fRadiusVariation);
-    S_00c22530_ReadFloat(stream, m_fYValue);
-    S_00c22530_ReadFloat(stream, m_fLifeSpanVariation);
+    FUN_00c31950(kStream);
+    S_00c22530_ReadFloat(kStream, m_fSpeed);
+    S_00c22530_ReadFloat(kStream, m_fSpeedVar);
+    S_00c22530_ReadFloat(kStream, m_fDeclination);
+    S_00c22530_ReadFloat(kStream, m_fDeclinationVar);
+    S_00c22530_ReadFloat(kStream, m_fPlanarAngle);
+    S_00c22530_ReadFloat(kStream, m_fPlanarAngleVar);
+    reinterpret_cast<EmitterColorWriter*>(&m_kInitialColor)->FUN_00a698a0(kStream);
+    S_00c22530_ReadFloat(kStream, m_fInitialRadius);
+    S_00c22530_ReadFloat(kStream, m_fRadiusVar);
+    S_00c22530_ReadFloat(kStream, m_fLifeSpan);
+    S_00c22530_ReadFloat(kStream, m_fLifeSpanVar);
 }

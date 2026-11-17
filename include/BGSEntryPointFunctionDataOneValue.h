@@ -2,6 +2,7 @@
 
 #include "BGSEntryPointFunctionData.h"
 
+// pdb: class BGSEntryPointFunctionDataOneValue, size 0x8, bases: BGSEntryPointFunctionData, 1 members
 class BGSEntryPointFunctionDataOneValue : public BGSEntryPointFunctionData
 {
 public:

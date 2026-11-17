@@ -4,21 +4,24 @@
 
 #include "../../../../../../include/hkReferencedObject.h"
 
+// pdb: class hkpCharacterStateManager, size 0x34 (here 0x88), bases: hkReferencedObject, 1 members
 struct hkpCharacterStateManager
 {
     int m_auiShapeKeys[2];
     hkReferencedObject* m_states[32];
-    void registerState(hkReferencedObject* object, int index);
+    void registerState(hkReferencedObject* state, int stateType);
 };
 
 // @fnv 0x00cbc4e0
 // src: HAVOK_LIB 0x00cbc4e0
-void hkpCharacterStateManager::registerState(hkReferencedObject* object, int index)
+// pdb: hkpCharacterStateManager::registerState | hkpCharacterStateManager.obj | retail, upstream name already matches, high
+// pdb params: state, stateType
+void hkpCharacterStateManager::registerState(hkReferencedObject* state, int stateType)
 {
-    object->addReference();
-    if (m_states[index])
-        m_states[index]->removeReference();
-    m_states[index] = object;
+    state->addReference();
+    if (m_states[stateType])
+        m_states[stateType]->removeReference();
+    m_states[stateType] = state;
 }
 
 extern int DAT_010c9194;
@@ -34,6 +37,7 @@ struct FUN_00cbc4a0
 };
 
 // @fnv 0x00cbc4a0
+// pdb: hkpCharacterStateManager::~hkpCharacterStateManager | hkpCharacterStateManager.obj | retail, object-file run extension, low
 FUN_00cbc4a0::~FUN_00cbc4a0()
 {
     m_ppVirtualMethodTable = reinterpret_cast<int*>(&DAT_010c9194);
@@ -89,6 +93,7 @@ struct FnvCpu_FUN_00cbc520_CpuObject
     FnvCpu_FUN_00cbc520_CpuObject* FUN_00cbc520(unsigned int flags);
 };
 // @fnv 0x00cbc520
+// pdb: hkpCharacterStateManager::`scalar deleting destructor' | hkpCharacterStateManager.obj | retail, vtable slot, high
 FnvCpu_FUN_00cbc520_CpuObject* FnvCpu_FUN_00cbc520_CpuObject::FUN_00cbc520(unsigned int flags)
 {
     FUN_00cbc4a0();

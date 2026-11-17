@@ -67,7 +67,7 @@ class D3DRenderStateGroup
 {
   public:
     static D3DRenderStateGroup* GetCurrentRenderStateGroup();
-    static void ReleaseRenderStateGroup(D3DRenderStateGroup* group);
+    static void ReleaseRenderStateGroup(D3DRenderStateGroup* pkGroup);
 };
 struct NiD3DPassRefObject
 {

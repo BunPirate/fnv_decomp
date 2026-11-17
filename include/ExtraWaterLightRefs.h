@@ -5,6 +5,7 @@
 
 class BSExtraDataEx;
 
+// pdb: class ExtraWaterLightRefs, size 0x14, bases: BSExtraData, 1 members
 class ExtraWaterLightRefs : public BSExtraData
 {
 public:

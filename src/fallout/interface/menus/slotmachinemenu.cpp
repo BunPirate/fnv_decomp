@@ -10,7 +10,7 @@ public:
     bool IsRenderTargetId(unsigned int value);
     static void InitializeMultiBounds();
     static void SetRenderCamera(NiCamera* camera, BSShaderAccumulator* accumulator, bool unused);
-    static void SetRenderCamera(AnimIdle* camera, AnimIdle* accumulator, bool unused);
+    static void SetRenderCamera(AnimIdle* apCamera, AnimIdle* apAccumulator, bool abUseSPU);
     static void SetRenderCamera(void* camera, unsigned int accumulator, bool unused);
     static void SetAlphaOnNode(NiNode* node, float alpha);
 };
@@ -32,13 +32,13 @@ class AudioMgr_BSAudio
 {
 public:
     static AudioMgr_BSAudio* Get();
-    AudioPlaybackHandle Make(int id, SndForm* form);
+    AudioPlaybackHandle Make(int apFilename, SndForm* aiTypeFlags);
     AudioPlaybackHandle Make2(int id);
-    bool PlayAt(void* node, float f, int flags);
-    AudioPlaybackHandle GetHandle(const char* name, int flags, int a);
-    AudioPlaybackHandle GetSoundByEditorID(const char* editorID, int flags, int a);
+    bool PlayAt(void* apObj, float afFadeSeconds, int aiFlags);
+    AudioPlaybackHandle GetHandle(const char* apSoundName, int aiTypeFlags, int a);
+    AudioPlaybackHandle GetSoundByEditorID(const char* apSoundName, int aiTypeFlags, int a);
     AudioPlaybackHandle GetSoundByEditorID(const char* editorID, int flags);
-    Snd Make(void* a, SndSrc* b);
+    Snd Make(void* apFilename, SndSrc* aiTypeFlags);
 };
 #include "../../../../include/BSAudio.h"
 #include "../../../../include/BSSoundHandle.h"
@@ -194,8 +194,10 @@ extern GlobalObject_00633c90 g_011da9d0;
 extern const float g_011db5ec_arg1;
 
 // @fnv 0x007c19c0
-// src: COMMUNITY 0x007c19c0
-void SlotMachineMenu_DrawScene()
+// src: XBOX_RETAIL_PDB 0x007c19c0 (was COMMUNITY)
+// pdb: SlotMachineMenu::Draw3DElements | SlotMachineMenu.obj | retail, object-file run extension, high
+// pdb locals: spaccum, apCuller, pcam, pcamera, apSceneGraph
+void SlotMachineMenu_Draw3DElements()
 {
     NiXenonRenderer_GetRenderer()->RendererClearBufferHook(0, 4);
 
@@ -336,7 +338,10 @@ extern float DAT_0107678c;
 void __cdecl NiTimeController_StartAnimations(AVObj*);
 static const char kPayoutIn[] = "Payout_In";
 // @fnv 0x007c1af0
-void SlotMachineMenu::InitPayoutMenu()
+// src: XBOX_RETAIL_PDB 0x007c1af0
+// pdb: SlotMachineMenu::Prepare3DElements | SlotMachineMenu.obj | retail, string-set bridge, high
+// pdb locals: matZ, pMachineAnimController, fradius, matX, pReelAnimController, UpdateData1, pSpinAnimManager, UpdateData2, i
+void SlotMachineMenu::Prepare3DElements()
 {
     ((GO&)g_011da9fc) = new FUN_00a5ecb0(0);
     ((GObjW7*)(void*)&g_011da9fc)->Modelloader_GetReferencedThis()->Vf55(m_104, 1);
@@ -404,6 +409,8 @@ int __cdecl FUN_00944460(int, int);
 
 // @fnv 0x007c56e0
 // src: GUESS 0x007c56e0 (confidence: medium)
+// pdb: SlotMachineMenu::SpinReels | SlotMachineMenu.obj | retail, object-file run extension, low
+// pdb locals: i
 void SlotMachineMenu::SelectSpinResults()
 {
     for (int i = 0; i < 3; ++i)
@@ -431,6 +438,7 @@ struct SlotModelList
     SlotModelSource* TESCasino_GetModel(int index);
 };
 
+// pdb: class ModelLoader, size 0x30 (here 0x1), 12 members
 struct ModelLoader
 {
     void ModelLoader_ReleaseFile(const char* path);
@@ -513,6 +521,8 @@ struct NiNodeRef
 
 // The compiler emits the scalar deleting destructor at 0x007c0840.
 // @fnv 0x007c0870
+// pdb: SlotMachineMenu::~SlotMachineMenu | SlotMachineMenu.obj | retail, string-set bridge, high
+// pdb locals: i
 SlotMachineMenu::~SlotMachineMenu()
 {
     g_thePlayer->SetLastAntiCheatTime();
@@ -775,6 +785,9 @@ extern const char DAT_010765d8[];
 // Validates casino wager/limit/threshold, finds or creates the casino record, opens the casino menu and fills its tiles, returning the menu tile or null.
 // @fnv 0x007c0a40
 // src: COMMUNITY 0x007c0a40
+// pdb: SlotMachineMenu::Create | SlotMachineMenu.obj | retail, upstream name already matches, high
+// pdb params: apCasino, aiMinBet, aiMaxBet, aiMinWinnings, abDebugMode
+// pdb locals: cl, pin, ptile, pold_menu_tile, cd, strMessage, strtemp
 GameTile* __cdecl SlotMachineMenu_Create(char* casino, int wager, int mode, int threshold)
 {
     SlotMachineMenu* oldMenu = (SlotMachineMenu*)Tile_GetMenuByClass(0x438);
@@ -885,12 +898,12 @@ GameTile* __cdecl SlotMachineMenu_Create(char* casino, int wager, int mode, int 
         DAT_011da9a4->tilec4->Tile_Set_00a01350(0xfc4, DAT_011d387c.FUN_00403df0(), true);
         if (DAT_011da9a4->tilec0)
             DAT_011da9a4->tilec0->Tile_Set_00a01350(0xfc4, DAT_011d33fc.FUN_00403df0(), true);
-        if (!DAT_011da9a4->LoadAssets())
+        if (!DAT_011da9a4->InitializeCasinoData())
         {
             SlotMachineMenu_SetShouldExit();
             return 0;
         }
-        DAT_011da9a4->InitPayoutMenu();
+        DAT_011da9a4->Prepare3DElements();
         DAT_011da9a4->FUN_00a1dc20(0);
         return manager;
     }
@@ -906,7 +919,7 @@ struct MenuTile
     float GetFloat(int id);
     void SetFloat(int id, float v);
     void SetInt(int id, int v);
-    void SetString(int id, const char* s, int propagate);
+    void SetString(int id, const char* apString, int propagate);
     void SetAlpha(float v, int propagate);
 };
 
@@ -963,7 +976,7 @@ struct PlayerData
 
 struct ProgressObj
 {
-    void Show(int b);
+    void Show(int abEnabled);
 };
 
 struct Player
@@ -1085,7 +1098,7 @@ struct CapsChange
     CapsChange();
     ~CapsChange();
     void Init(int item, int count, int a);
-    void Apply(DataHandler* h, int b);
+    void Apply(DataHandler* apRef, int abSilent);
 };
 
 AudioMgr_BSAudio* GetAudioMgr();
@@ -1099,7 +1112,7 @@ struct Anim
 {
     void Deactivate(AnimSeq* s, float t);
     void Activate(AnimSeq* s, int a, int b, float w, float t, int c);
-    void SetTime(float t);
+    void SetTime(float fEaseOutTime);
 };
 
 unsigned char __cdecl IsMenuVisible(void* tile);
@@ -1130,6 +1143,8 @@ extern GameSetting DAT_011d2424;
 }  // namespace fnv_007c2c70
 
 // @fnv 0x007c2c70
+// pdb: SlotMachineMenu::DoIdle | SlotMachineMenu.obj | retail, unique string literal, high
+// pdb locals: ielaspedMillis, bisMenuOnTop, iDebugAxis, fxAxisRatio, i, pstring, tempcont, pScript, UpdateData4, UpdateData3, UpdateData1, UpdateData2, iWinningLevel, iMax, iCurrentWinnings, winnings, winmsg, strMessage
 void SlotMachineMenu::Update()
 {
     using namespace fnv_007c2c70;
@@ -1561,6 +1576,8 @@ int _sprintf_s(char*, unsigned int, const char*, ...);
 // For each reel whose current result differs from the saved result, computes texture indices and sets the texture on the Cylinder nodes' property.
 // @fnv 0x007c40b0
 // src: COMMUNITY 0x007c40b0
+// pdb: SlotMachineMenu::SwapBackfacingTextures | SlotMachineMenu.obj | retail, upstream name already matches, high
+// pdb locals: i, diff, i2, i7, i4, i3, pavobj, strtmp, i5, i6, i9, pFaceShader, i8
 void SlotMachineMenu::SwapBackfacingTextures()
 {
     int reel4, delta8, a6, b, c3, d_, e, f7, g2, _h;
@@ -1793,6 +1810,8 @@ ReelNode* FindReelNode(void*, const char*);
 // For each of the 3 reels whose current value changed, computes cylinder indices and sets the texture on each matching reel node property.
 // @fnv 0x007c4d70
 // src: COMMUNITY 0x007c4d70
+// pdb: SlotMachineMenu::SwapFrontfacingTextures | SlotMachineMenu.obj | retail, upstream name already matches, high
+// pdb locals: i, diff, pavobj, ic, it2, ib1, strtmp, ib2, it1, it3, pFaceShader
 void SlotMachineMenu::SwapFrontfacingTextures()
 {
     using namespace fnv_007c4d70;
@@ -1921,7 +1940,10 @@ bool QueueUIMessage(const char*, int, const char*, const char*, float, bool);
 void SlotMachineMenu_SetShouldExit();
 int _sprintf_s(char*, unsigned int, const char*, ...);
 // @fnv 0x007c16b0
-bool SlotMachineMenu::InitReels()
+// src: XBOX_RETAIL_PDB 0x007c16b0
+// pdb: SlotMachineMenu::SetupActiveReels | SlotMachineMenu.obj | retail, string-set bridge, high
+// pdb locals: iActive, index, activelist, eSymbol, i, indcheck, strMessage
+bool SlotMachineMenu::SetupActiveReels()
 {
     int filled = 0;
     {
@@ -2026,7 +2048,10 @@ extern SlotModelLoader* DAT_011c3b3c;
 void BSsprintf(char*, unsigned int, const char*, ...);
 void FUN_004b7240(const char*, char*, unsigned int);
 // @fnv 0x007c1490
-bool SlotMachineMenu::LoadAssets()
+// src: XBOX_RETAIL_PDB 0x007c1490
+// pdb: SlotMachineMenu::InitializeCasinoData | SlotMachineMenu.obj | retail, unique string literal, high
+// pdb locals: strtmp, pfilepath, i
+bool SlotMachineMenu::InitializeCasinoData()
 {
     if (DAT_011da9ac)
     {
@@ -2054,7 +2079,7 @@ bool SlotMachineMenu::LoadAssets()
         reel3 = DAT_011c3b3c->ModelLoader_LoadFile("Meshes\\terminals\\NV_SlotMachine\\NV_SlotMachine-Reel03.NIF", 0, true,
                                            false, false, false);
         loading = false;
-        return InitReels();
+        return SetupActiveReels();
     }
     return false;
 }
@@ -2235,12 +2260,15 @@ SlotsAudio* BSAudio_QInstance();
 
 // @fnv 0x007c2460
 // src: XBOX_PDB 0x007c2460
-void SlotMachineMenu::DoClick_007c2460(int action, void* target)
+// pdb: SlotMachineMenu::DoClick | SlotMachineMenu.obj | retail, string-set bridge, high
+// pdb params: aiID, apTarget
+// pdb locals: iprevbet, audiosound
+void SlotMachineMenu::DoClick_007c2460(int aiID, void* apTarget)
 {
     using namespace fnv_007c2460;
     if (state == 6)
     {
-        switch (action)
+        switch (aiID)
         {
         case 8:
             fnv_007c2460::SlotMachineMenu_SetShouldExit();

@@ -45,12 +45,15 @@ struct FNV_Owner
     hkpShapeCollection* p20;
     int* p24;
     int n28;
-    void ProcessEntries_00e608d0(hkVector4* pA, hkVector4* pOut);
+    void ProcessEntries_00e608d0(hkVector4* dir, hkVector4* supportingVertex);
 };
 
 // @fnv 0x00e608d0
 // src: GUESS 0x00e608d0 (confidence: low)
-void FNV_Owner::ProcessEntries_00e608d0(hkVector4* pA, hkVector4* pOut)
+// pdb: hkpConvexPieceShape::getSupportingVertexImpl | hkpConvexPieceShape.obj | retail, vtable slot, high
+// pdb params: dir, supportingVertex
+// pdb locals: triangleBuffer, support
+void FNV_Owner::ProcessEntries_00e608d0(hkVector4* dir, hkVector4* supportingVertex)
 {
     ShapeBuffer338 big;
     hkVector4 buf;
@@ -61,8 +64,8 @@ void FNV_Owner::ProcessEntries_00e608d0(hkVector4* pA, hkVector4* pOut)
     {
         const hkpConvexShape* r = static_cast<const hkpConvexShape*>(
             p20->GetShapeForKey(p24[i], reinterpret_cast<hkpShapeBuffer&>(big)));
-        r->GetSupportVertex(*pA, reinterpret_cast<Vector4WithInt24W&>(buf));
-        __m128 prod = _mm_mul_ps(*(const __m128*)pA, *(const __m128*)&buf);
+        r->GetSupportVertex(*dir, reinterpret_cast<Vector4WithInt24W&>(buf));
+        __m128 prod = _mm_mul_ps(*(const __m128*)dir, *(const __m128*)&buf);
         __m128 s1 = _mm_add_ss(_mm_shuffle_ps(prod, prod, 0x55), prod);
         float d;
         _mm_store_ss(&d, _mm_add_ss(_mm_shuffle_ps(prod, prod, 0xaa), s1));
@@ -71,15 +74,15 @@ void FNV_Owner::ProcessEntries_00e608d0(hkVector4* pA, hkVector4* pOut)
             best = d;
             int t = buf.m_vComponents.m128_i32[3] & 0xc0ffffff;
             idx = t / 16 + i * 3;
-            *(__m128*)pOut = *(const __m128*)&buf;
+            *(__m128*)supportingVertex = *(const __m128*)&buf;
         }
     }
-    pOut->m_vComponents.m128_i32[3] = idx | 0x3f000000;
+    supportingVertex->m_vComponents.m128_i32[3] = idx | 0x3f000000;
 }
 
 extern "C" void __debugbreak();
 extern const unsigned int DAT_01017d10[4];
-void __cdecl ResizeAudioStream(void* alloc, void* array, int elemSize);
+void __cdecl ResizeAudioStream(void* mem, void* array, int sizeElem);
 
 inline void* operator new(unsigned int, void* p)
 {
@@ -127,9 +130,9 @@ inline hkSimdReal::operator float() const
     return fLane;
 }
 
-inline hkSimdReal hkVector4::dot3(const hkVector4& kRhs) const
+inline hkSimdReal hkVector4::dot3(const hkVector4& x) const
 {
-    __m128 vProd = _mm_mul_ps(m_vComponents, kRhs.m_vComponents);
+    __m128 vProd = _mm_mul_ps(m_vComponents, x.m_vComponents);
     __m128 vSum01 = _mm_add_ss(_mm_shuffle_ps(vProd, vProd, _MM_SHUFFLE(1, 1, 1, 1)), vProd);
     return _mm_add_ss(_mm_shuffle_ps(vProd, vProd, _MM_SHUFFLE(2, 2, 2, 2)), vSum01);
 }
@@ -270,6 +273,9 @@ class S5fb50_FloatAabbVm : public S5fb50_MoppVm
 
 // @fnv 0x00e5fb50
 // src: GUESS 0x00e5fb50 (confidence: low)
+// pdb: hkpMoppUsingFloatAabbVirtualMachine<hkSphere,hkMoppSphereQueryObjectOptimized>::queryMoppTree | hkpMoppMachine.obj | retail, object-file run extension, low
+// pdb params: query, PC, fQueryL
+// pdb locals: scaledQuery, fQueryR, assertBuf, ostr
 void S5fb50_FloatAabbVm::ProcessEntries_00e5fb50(const S5fb50_Query* query, const unsigned char* PC, TempAabb& aabb)
 {
     S5fb50_Query localQuery;

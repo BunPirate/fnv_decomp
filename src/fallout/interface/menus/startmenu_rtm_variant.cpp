@@ -48,7 +48,7 @@ void __cdecl FUN_008304c0();
 void __cdecl Interface_HideMenus();
 void __cdecl Interface_CloseAllSupportMenus(int);
 void __cdecl FalloutAudio_SetMainMenuMusic(bool);
-void __cdecl ResetTaskQueueGlobals();
+void __cdecl FalloutAudioMedia_MediaClear();
 BGSSaveLoadUI_startmenu_rtm_variant* __cdecl XGamerProfile_Instance();
 extern StartMenu* DAT_011daac0;
 extern bool DAT_011daacd;
@@ -58,6 +58,8 @@ extern PlayerCharacter* g_thePlayer;
 
 // @fnv 0x007d0a70
 // src: XBOX_PDB 0x007d0a70
+// pdb: StartMenu::ChooseMainMenu | StartMenu.obj | retail, upstream name already matches, high
+// pdb locals: playersController, cfilename
 void StartMenu_ChooseMainMenu()
 {
     char acMusicPath[64];
@@ -65,7 +67,7 @@ void StartMenu_ChooseMainMenu()
     Interface_HideMenus();
     Interface_CloseAllSupportMenus(0);
     ((MainMenuAudioAccess*)BSAudio_QInstance())->BSAudio_KillAllOfType(-1, false);
-    ResetTaskQueueGlobals();
+    FalloutAudioMedia_MediaClear();
     {
         int bIsChild = ((PlayerMediaAccessor)&GetMediaLocationController)(g_thePlayer);
         bIsChild = 0;

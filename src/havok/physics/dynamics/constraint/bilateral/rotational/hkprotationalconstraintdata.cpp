@@ -7,6 +7,8 @@
 // Writes 3 and 0x18 into out[1] and out[0] when flag is set, otherwise writes 0 into both.
 // @fnv 0x00e3b520
 // src: HAVOK_LIB 0x00e3b520
+// pdb: hkpRotationalConstraintData::setInWorldSpace | hkpRotationalConstraintData.obj | retail, object-file run extension, low
+// pdb params: bodyARotation, bodyBRotation
 void __stdcall hkpRotationalConstraintData_getRuntimeInfo(char flag, int* out)
 {
     if (flag)
@@ -62,9 +64,10 @@ struct hkpRotationalConstraintDataHelper : public hkpRotationalConstraintData
 
 // @fnv 0x00e3b550
 // src: XBOX_PDB 0x00e3b550
+// pdb: hkpRotationalConstraintData::isValid | hkpRotationalConstraintData.obj | retail, upstream name already matches, high
 hkBool_ret __thiscall hkpRotationalConstraintDataHelper::hkpRotationalConstraintData_isValid()
 {
     float eps = 0.001f;
-    return ((RotationHelper*)&m_kBridgeAtoms.m_kLocalRotations.m_kRotationA)->IsOrthonormal(eps).m_cBooleanValue &&
-           ((RotationHelper*)&m_kBridgeAtoms.m_kLocalRotations.m_kRotationB)->IsOrthonormal(eps).m_cBooleanValue;
+    return ((RotationHelper*)&m_atoms.m_kLocalRotations.m_rotationA)->IsOrthonormal(eps).m_cBooleanValue &&
+           ((RotationHelper*)&m_atoms.m_kLocalRotations.m_rotationB)->IsOrthonormal(eps).m_cBooleanValue;
 }

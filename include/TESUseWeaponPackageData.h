@@ -7,6 +7,7 @@ class LocationDescriptor;
 class TESObjectWEAP;
 class TESForm;
 
+// pdb: class TESUseWeaponPackageData, size 0x24, bases: TESPackageData, 14 members
 class TESUseWeaponPackageData : public TESPackageData
 {
 public:
@@ -55,34 +56,34 @@ public:
     virtual void Copy(TESPatrolPackageData* source);
     virtual bool vf02(TESPackageData* other);
     virtual void vf03();
-    virtual void InitItem(TESForm* item);
+    virtual void InitItem(TESForm* apOwner);
     virtual void SaveToBuffer(BGSSaveFormBuffer* buffer);
     virtual void vf06(BGSLoadFormBuffer* buffer);
     virtual void vf07(BGSLoadFormBuffer* buffer);
 
     PackageTargetRecord* m_pUseTarget;
-    LocationDescriptor* m_pTargetLocation;
-    bool m_bFlag1;
-    bool m_bFlag2;
-    bool m_bFlag3;
-    bool m_bFlag4;
-    bool m_bFlag5;
-    bool m_bFlag6;
-    unsigned short m_usValue1;
-    unsigned short m_usValue2;
-    unsigned short m_usValue3;
-    float m_fValue1;
-    float m_fValue2;
+    LocationDescriptor* pTargetLocation; // src: XBOX_RETAIL_PDB +0x8 (old: m_pTargetLocation)
+    bool bAlwaysHit; // src: XBOX_RETAIL_PDB +0xc (old: m_bFlag1)
+    bool bDoNoDamage; // src: XBOX_RETAIL_PDB +0xd (old: m_bFlag2)
+    bool bCrouch; // src: XBOX_RETAIL_PDB +0xe (old: m_bFlag3)
+    bool bHoldFire; // src: XBOX_RETAIL_PDB +0xf (old: m_bFlag4)
+    bool bVolleyFire; // src: XBOX_RETAIL_PDB +0x10 (old: m_bFlag5)
+    bool bRepeatFire; // src: XBOX_RETAIL_PDB +0x11 (old: m_bFlag6)
+    unsigned short sBurstCount; // src: XBOX_RETAIL_PDB +0x12 (old: m_usValue1)
+    unsigned short sVolleyShotsMin; // src: XBOX_RETAIL_PDB +0x14 (old: m_usValue2)
+    unsigned short sVolleyShotsMax; // src: XBOX_RETAIL_PDB +0x16 (old: m_usValue3)
+    float fVolleyWaitMin; // src: XBOX_RETAIL_PDB +0x18 (old: m_fValue1)
+    float fVolleyWaitMax; // src: XBOX_RETAIL_PDB +0x1c (old: m_fValue2)
     TESObjectWEAP* pWeapon;
 
     TESUseWeaponPackageData* __thiscall InitializeFields_0067caa0();
     void* DestroyIfFlagged(unsigned int flags);
-    void Copy(TESPackageData* source);
+    void Copy(TESPackageData* apCopy);
     void Copy_0067cd90(TESPackageData* apSource);
     bool Compare_0067cfc0(TESPackageData* apCompare);
     void Save_0067d350();
-    void SaveGame_0067d550(BGSSaveFormBuffer* buffer);
-    void LoadUseWeaponData(BGSLoadFormBuffer* buffer);
+    void SaveGame_0067d550(BGSSaveFormBuffer* apSaveGameBuffer);
+    void LoadUseWeaponData(BGSLoadFormBuffer* apLoadGameBuffer);
     void LoadForm(BGSLoadFormBuffer* apLoadGameBuffer);
 
     // Out-of-line accessors (HighProcess::ProcessUseWeapon); names from the UseWeapon package flags.

@@ -47,6 +47,8 @@ struct FUN_00df72c0_class
     void ForwardToBase(volatile CastRecord20* value);
 };
 // @fnv 0x00df72c0
+// pdb: hkCpuWorldLinearCastCollector::addLeaf | hkpCpuWorldLinearCastJob.obj | debug, vtable slot, medium
+// pdb params: leaf
 void FUN_00df72c0_class::ForwardToBase(volatile CastRecord20* value)
 {
     value = value->value;
@@ -69,6 +71,8 @@ struct This
 };
 // @fnv 0x00df72e0
 // src: HAVOK_LIB 0x00df72e0
+// pdb: hkCpuWorldLinearCastCollector::addLeaf | hkpCpuWorldLinearCastJob.obj | debug, vtable slot, medium
+// pdb params: leaf
 int This::hkCpuWorldLinearCastCollector_addLeaf(Param* pParam)
 {
     Param* pNext = pParam;
@@ -84,6 +88,8 @@ struct This
     bool* SetResultTrue(bool*, Param*);
 };
 // @fnv 0x00df7300
+// pdb: hkCpuWorldLinearCastCollector::addMidPhaseHit | hkpCpuWorldLinearCastJob.obj | retail, vtable slot, high
+// pdb params: primId
 bool* This::SetResultTrue(bool* pbResult, Param* pParam)
 {
     ((This*)((char*)this - 4))->CastAgainstCollidable(pParam);
@@ -291,6 +297,8 @@ struct DF7230CastCollector
 };
 
 // @fnv 0x00df7230
+// pdb: hkCpuWorldLinearCastCollector::testCollidable | hkpCpuWorldLinearCastJob.obj | debug, call graph (shared callers), medium
+// pdb params: collidable
 float DF7230CastCollector::CastAgainstCollidable(const DF7230Collidable* collidableB)
 {
     const DF7230Shape* shapeB = collidableB->m_pCollisionShape;
@@ -341,6 +349,8 @@ struct FUN_00df7320_Collector
 
 // @fnv 0x00df7320
 // src: GUESS 0x00df7320 (confidence: low)
+// pdb: hkCpuWorldLinearCastCollector::addBroadPhaseHandle | hkpCpuWorldLinearCastJob.obj | debug, vtable slot, medium
+// pdb params: broadPhaseHandle, castIndex
 float FUN_00df7320_Collector::ProcessAndReturnValue_00df7320(FUN_00df7320_Shape* shape, FUN_00df7320_Shape* other)
 {
     FUN_00df7320_Shape* target = (FUN_00df7320_Shape*)((char*)shape + shape->unk05);
@@ -500,6 +510,7 @@ struct FUN_00df71d0 : S_00df71d0_B0, S_00df71d0_B1, S_00df71d0_B2, S_00df71d0_B3
     int unk8c;
     FUN_00df71d0();
 // @fnv 0x00df71d0
+// pdb: hkCpuWorldLinearCastCollector::`scalar deleting destructor' | hkpCpuWorldLinearCastJob.obj | retail, vtable slot, high
     virtual ~FUN_00df71d0()
     {}
     static void operator delete(void* p, unsigned int n)

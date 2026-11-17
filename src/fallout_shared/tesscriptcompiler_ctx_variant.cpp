@@ -54,21 +54,24 @@ unsigned int BSstrtoul(const char*, char**, int);
 void ReportScriptError(CStringArgument*, const char*, ...);
 // @fnv 0x005afad0
 // src: XBOX_PDB 0x005afad0
-bool CStringArgument::ScriptCompileData_GetReferencedObject(ScriptToken* token, bool variable, bool allowUnknown)
+// pdb: ScriptCompileData::GetReferencedObject | TESScriptCompiler.obj | retail, upstream name already matches, high
+// pdb params: apCurrentWord, abAddRefVariable, abAllowUnknownRef
+// pdb locals: bFound, pList, n, pRefObject, pstop, iNumericID, pTestRef
+bool CStringArgument::ScriptCompileData_GetReferencedObject(ScriptToken* apCurrentWord, bool abAddRefVariable, bool abAllowUnknownRef)
 {
     bool result = false;
     unsigned int index = 1;
     BSSimpleList<ScriptReferencedObject*>* entry = &refVars;
     while (entry && entry->GetItem())
     {
-        if (!reinterpret_cast<const ::BSStringT<char>*>(&entry->GetItem()->m_kFormName)->StrCmp(token->name, true))
+        if (!reinterpret_cast<const ::BSStringT<char>*>(&entry->GetItem()->m_kFormName)->StrCmp(apCurrentWord->name, true))
         {
-            token->refIndex = index;
-            token->form = entry->GetItem()->pForm;
-            if (variable)
-                entry->GetItem()->m_uiFormID = token->variableID;
+            apCurrentWord->refIndex = index;
+            apCurrentWord->form = entry->GetItem()->pForm;
+            if (abAddRefVariable)
+                entry->GetItem()->m_uiFormID = apCurrentWord->variableID;
             else
-                token->variableID = entry->GetItem()->m_uiFormID;
+                apCurrentWord->variableID = entry->GetItem()->m_uiFormID;
             result = true;
             break;
         }
@@ -78,18 +81,18 @@ bool CStringArgument::ScriptCompileData_GetReferencedObject(ScriptToken* token, 
     if (!result)
     {
         ScriptReferencedObject* reference = new ScriptReferencedObject;
-        if (variable)
+        if (abAddRefVariable)
             result = true;
         else
         {
-            if (!BSstricmp(token->name, "Player"))
+            if (!BSstricmp(apCurrentWord->name, "Player"))
             {
                 reference->pForm = g_thePlayer;
                 result = true;
             }
             if (!result)
             {
-                reference->pForm = FUN_00483a00(token->name);
+                reference->pForm = FUN_00483a00(apCurrentWord->name);
                 if (reference->pForm)
                 {
                     if (reference->pForm->FUN_00401170() == 3)
@@ -101,7 +104,7 @@ bool CStringArgument::ScriptCompileData_GetReferencedObject(ScriptToken* token, 
             if (!result)
             {
                 char* end = 0;
-                unsigned int formID = BSstrtoul(token->name, &end, 16);
+                unsigned int formID = BSstrtoul(apCurrentWord->name, &end, 16);
                 if (formID && end && !*end)
                 {
                     reference->pForm = TESForm_GetFormByNumericID(formID);
@@ -114,28 +117,28 @@ bool CStringArgument::ScriptCompileData_GetReferencedObject(ScriptToken* token, 
                 TESObjectREFR* refr = dynamic_cast<TESObjectREFR*>(reference->pForm);
                 if (refr && !refr->TESObjectREFR_GetRefPersists_005653d0())
                 {
-                    ReportScriptError(this, "Non-persistent reference '%s' cannot be used in a script.", token->name);
+                    ReportScriptError(this, "Non-persistent reference '%s' cannot be used in a script.", apCurrentWord->name);
                     result = false;
                 }
             }
         }
-        if (result || allowUnknown)
+        if (result || abAllowUnknownRef)
         {
             result = true;
-            if (variable)
+            if (abAddRefVariable)
             {
                 reference->pForm = 0;
-                reference->m_uiFormID = token->variableID;
+                reference->m_uiFormID = apCurrentWord->variableID;
             }
             else
             {
-                token->form = reference->pForm;
+                apCurrentWord->form = reference->pForm;
                 reference->m_uiFormID = 0;
             }
-            reinterpret_cast<::BSStringT<char>*>(&reference->m_kFormName)->Set(token->name, 0);
+            reinterpret_cast<::BSStringT<char>*>(&reference->m_kFormName)->Set(apCurrentWord->name, 0);
             info.m_uiReferenceID++;
             BSFile_GetDevice()->AddTail(reference);
-            token->refIndex = info.m_uiReferenceID;
+            apCurrentWord->refIndex = info.m_uiReferenceID;
         }
         else
             delete reference;
@@ -285,15 +288,18 @@ struct CompileExpression
 
 struct LineCompiler
 {
-    int CountLinesInBeginBlock(CompileState*, CompileLine*);
-    int ScanBlockLines(CompileState*, CompileLine*);
-    int CompileScriptLine(CompileState*, CompileLine*, const char*, char*);
+    int ScriptCompiler_CountBlockLines(CompileState*, CompileLine*);
+    int ScriptCompiler_CountIfLines(CompileState*, CompileLine*);
+    int ScriptCompiler_ReplaceVariablesAndFunctions(CompileState*, CompileLine*, const char*, char*);
     bool ScriptCompiler_CompileLine(CompileScript*, CompileState*, CompileLine*);
 };
 
 // @fnv 0x005aff40
 // src: COMMUNITY 0x005aff40
-bool LineCompiler::ScriptCompiler_CompileLine(CompileScript* script, CompileState* compiler, CompileLine* line)
+// pdb: ScriptCompiler::CompileLine | TESScriptCompiler.obj | retail, upstream name already matches, high
+// pdb params: apScript, apCompileData, apScriptLine
+// pdb locals: ce, postfix, uiOffset, scriptWord, bFound, n, pFunctionDef, lines, pParameterDef, tempLine, sCount, pCompile, ibeginEndJumpDelta, pvarname, pNewVariable, expLine, scriptWord2, uiSize, pRefTest, pScriptRefObj
+bool LineCompiler::ScriptCompiler_CompileLine(CompileScript* apScript, CompileState* apCompileData, CompileLine* apScriptLine)
 {
     CompileWord word6;
 
@@ -302,16 +308,16 @@ bool LineCompiler::ScriptCompiler_CompileLine(CompileScript* script, CompileStat
     CompileExpression expression5;
     char* expressionCodeVal9;
 
-    line->outputSize = 0;
-    line->inputOffset = 0;
+    apScriptLine->outputSize = 0;
+    apScriptLine->inputOffset = 0;
 
-    switch (line->kind)
+    switch (apScriptLine->kind)
     {
     case 29:
         break;
 
     case 16:
-        if (ScriptCompiler_GetNextWord(compiler, &word6, line->input, &line->inputOffset, 0, 0))
+        if (ScriptCompiler_GetNextWord(apCompileData, &word6, apScriptLine->input, &apScriptLine->inputOffset, 0, 0))
         {
             int i;
             bool found7 = false;
@@ -326,30 +332,30 @@ bool LineCompiler::ScriptCompiler_CompileLine(CompileScript* script, CompileStat
             }
             if (found7)
             {
-                *(unsigned short*)(line->output + line->outputSize) = (unsigned short)(DAT_0118e2f0[i].opcode);
-                line->outputSize += 2;
+                *(unsigned short*)(apScriptLine->output + apScriptLine->outputSize) = (unsigned short)(DAT_0118e2f0[i].opcode);
+                apScriptLine->outputSize += 2;
 
                 int length = 0;
-                length = CountLinesInBeginBlock(compiler, line);
+                length = ScriptCompiler_CountBlockLines(apCompileData, apScriptLine);
 
                 if (length == -1)
                 {
-                    ReportScriptError(compiler, "Mismatched begin/end block.");
+                    ReportScriptError(apCompileData, "Mismatched begin/end block.");
                     return false;
                 }
-                *(unsigned*)(line->output + line->outputSize) = 0x55555555;
+                *(unsigned*)(apScriptLine->output + apScriptLine->outputSize) = 0x55555555;
 
-                DAT_011cadbc = compiler->outputSize + line->outputSize;
+                DAT_011cadbc = apCompileData->outputSize + apScriptLine->outputSize;
 
-                line->outputSize += 4;
+                apScriptLine->outputSize += 4;
 
                 CompileCommand* command = &DAT_0118e2f0[i];
 
                 if (command)
                 {
-                    if (command->requiresReference && compiler->partial)
+                    if (command->requiresReference && apCompileData->partial)
                     {
-                        ReportScriptError(compiler, "Invalid block type for quest script.");
+                        ReportScriptError(apCompileData, "Invalid block type for quest script.");
                         return false;
                     }
                     if (command && command->parameters)
@@ -362,35 +368,35 @@ bool LineCompiler::ScriptCompiler_CompileLine(CompileScript* script, CompileStat
 
                         CompileLine parametersLine;
 
-                        FUN_00406d30(parametersLine.input, 512, line->input + line->inputOffset);
+                        FUN_00406d30(parametersLine.input, 512, apScriptLine->input + apScriptLine->inputOffset);
 
                         parametersLine.outputSize = 0;
 
-                        parametersLine.lineNumber = line->lineNumber;
+                        parametersLine.lineNumber = apScriptLine->lineNumber;
 
-                        if (!blockCallback11(count, blockParameters0, &parametersLine, compiler))
+                        if (!blockCallback11(count, blockParameters0, &parametersLine, apCompileData))
                             return false;
 
-                        FUN_00401460(line->output + line->outputSize, parametersLine.output, parametersLine.outputSize);
+                        FUN_00401460(apScriptLine->output + apScriptLine->outputSize, parametersLine.output, parametersLine.outputSize);
 
-                        line->outputSize += parametersLine.outputSize;
+                        apScriptLine->outputSize += parametersLine.outputSize;
                     }
                 }
                 if (DAT_011cadbc)
                 {
-                    *(unsigned*)(line->output + (DAT_011cadbc - compiler->outputSize)) =
-                        compiler->outputSize + line->outputSize;
+                    *(unsigned*)(apScriptLine->output + (DAT_011cadbc - apCompileData->outputSize)) =
+                        apCompileData->outputSize + apScriptLine->outputSize;
                 }
             }
             else
             {
-                ReportScriptError(compiler, "Syntax Error.  Invalid block type in 'begin' command.");
+                ReportScriptError(apCompileData, "Syntax Error.  Invalid block type in 'begin' command.");
                 return false;
             }
         }
         else
         {
-            ReportScriptError(compiler, "Syntax Error.  Missing block type in 'begin' command.");
+            ReportScriptError(apCompileData, "Syntax Error.  Missing block type in 'begin' command.");
             return false;
         }
         break;
@@ -398,14 +404,14 @@ bool LineCompiler::ScriptCompiler_CompileLine(CompileScript* script, CompileStat
     case 17:
         if (DAT_011cadbc)
         {
-            unsigned start6 = *(unsigned*)(compiler->output + (DAT_011cadbc + 4));
+            unsigned start6 = *(unsigned*)(apCompileData->output + (DAT_011cadbc + 4));
 
-            *(unsigned*)(compiler->output + (DAT_011cadbc + 4)) = compiler->outputSize - start6;
+            *(unsigned*)(apCompileData->output + (DAT_011cadbc + 4)) = apCompileData->outputSize - start6;
             DAT_011cadbc = 0;
         }
         else
         {
-            ReportScriptError(compiler, "Syntax Error.  Failed to store the 'begin' 'end' jump block.");
+            ReportScriptError(apCompileData, "Syntax Error.  Failed to store the 'begin' 'end' jump block.");
             return false;
         }
     case 30:
@@ -414,116 +420,116 @@ bool LineCompiler::ScriptCompiler_CompileLine(CompileScript* script, CompileStat
     case 19:
     case 20:
     case 31:
-        if (ScriptCompiler_GetNextWord(compiler, &word6, line->input, &line->inputOffset, 0, 0))
+        if (ScriptCompiler_GetNextWord(apCompileData, &word6, apScriptLine->input, &apScriptLine->inputOffset, 0, 0))
         {
             const char* variableName1 = word6.text;
 
             if (!ScriptCompiler_IsValidVariableName(variableName1))
             {
-                ReportScriptError(compiler, "Invalid variable name '%s'.\r\nCompiled script not saved!", variableName1);
+                ReportScriptError(apCompileData, "Invalid variable name '%s'.\r\nCompiled script not saved!", variableName1);
                 return false;
             }
             CompileVariable* variableInfo0 = new CompileVariable;
 
-            variableInfo0->integer = (line->kind != 20 && line->kind != 31) ? 1 : 0;
+            variableInfo0->integer = (apScriptLine->kind != 20 && apScriptLine->kind != 31) ? 1 : 0;
 
             variableInfo0->name.Set(variableName1, 0);
 
-            if (script->FUN_005ac6a0(variableInfo0->name.String(), variableInfo0))
+            if (apScript->FUN_005ac6a0(variableInfo0->name.String(), variableInfo0))
             {
             }
             else
             {
-                compiler->variableCount++;
-                variableInfo0->id = compiler->variableCount;
+                apCompileData->variableCount++;
+                variableInfo0->id = apCompileData->variableCount;
             }
-            compiler->ComputeValue_005a8080()->AddTail(variableInfo0);
+            apCompileData->ComputeValue_005a8080()->AddTail(variableInfo0);
 
-            if (line->kind == 31)
+            if (apScriptLine->kind == 31)
             {
                 word6.variableID = variableInfo0->id;
-                compiler->ScriptCompileData_GetReferencedObject(&word6, true, false);
+                apCompileData->ScriptCompileData_GetReferencedObject(&word6, true, false);
             }
         }
         else
         {
-            ReportScriptError(compiler, "Missing variable name in variable declaration.");
+            ReportScriptError(apCompileData, "Missing variable name in variable declaration.");
             return false;
         }
         break;
 
     case 21: {
-        if (!ScriptCompiler_GetNextWord(compiler, &word6, line->input, &line->inputOffset, 1, 1))
+        if (!ScriptCompiler_GetNextWord(apCompileData, &word6, apScriptLine->input, &apScriptLine->inputOffset, 1, 1))
         {
-            ReportScriptError(compiler, "Missing variable name in set command.");
+            ReportScriptError(apCompileData, "Missing variable name in set command.");
             return false;
         }
         if (!word6.variableType || word6.variableType == 'X')
         {
-            ReportScriptError(compiler, "Unknown variable '%s'.", &word6);
+            ReportScriptError(apCompileData, "Unknown variable '%s'.", &word6);
             return false;
         }
         CompileWord setWord20;
 
-        ScriptCompiler_GetNextWord(compiler, &setWord20, line->input, &line->inputOffset, 0, 0);
+        ScriptCompiler_GetNextWord(apCompileData, &setWord20, apScriptLine->input, &apScriptLine->inputOffset, 0, 0);
 
         if (tolower(setWord20.text[0]) != 't' || tolower(setWord20.text[1]) != 'o')
         {
-            ReportScriptError(compiler, "Syntax Error.  Missing \"to\" in set command.");
+            ReportScriptError(apCompileData, "Syntax Error.  Missing \"to\" in set command.");
             return false;
         }
         if (word6.refIndex > 0)
         {
             if (word6.variableType == 'G')
             {
-                line->output[line->outputSize] = 'G';
-                line->outputSize++;
+                apScriptLine->output[apScriptLine->outputSize] = 'G';
+                apScriptLine->outputSize++;
             }
             else
             {
-                line->output[line->outputSize] = 'r';
-                line->outputSize++;
+                apScriptLine->output[apScriptLine->outputSize] = 'r';
+                apScriptLine->outputSize++;
             }
-            *(unsigned short*)(line->output + line->outputSize) = (unsigned short)(word6.refIndex);
-            line->outputSize += 2;
+            *(unsigned short*)(apScriptLine->output + apScriptLine->outputSize) = (unsigned short)(word6.refIndex);
+            apScriptLine->outputSize += 2;
         }
         if (word6.variableID > 0)
         {
-            line->output[line->outputSize] = word6.variableType;
-            line->outputSize++;
-            *(unsigned short*)(line->output + line->outputSize) = (unsigned short)(word6.variableID);
-            line->outputSize += 2;
+            apScriptLine->output[apScriptLine->outputSize] = word6.variableType;
+            apScriptLine->outputSize++;
+            *(unsigned short*)(apScriptLine->output + apScriptLine->outputSize) = (unsigned short)(word6.variableID);
+            apScriptLine->outputSize += 2;
         }
-        if (!ScriptCompiler_CheckParentheses(line->input, line->inputOffset))
+        if (!ScriptCompiler_CheckParentheses(apScriptLine->input, apScriptLine->inputOffset))
         {
-            ReportScriptError(compiler, "Syntax Error.  Mismatched parentheses in set command.");
+            ReportScriptError(apCompileData, "Syntax Error.  Mismatched parentheses in set command.");
             return false;
         }
-        ScriptCompiler_SkipWhiteSpace(line->input, &line->inputOffset);
+        ScriptCompiler_SkipWhiteSpace(apScriptLine->input, &apScriptLine->inputOffset);
 
         char setText20[512];
         ourMemset(setText20, 0, 512);
 
         int setLength1 = 0;
-        setLength1 = CompileScriptLine(compiler, line, line->input + line->inputOffset, setText20);
+        setLength1 = ScriptCompiler_ReplaceVariablesAndFunctions(apCompileData, apScriptLine, apScriptLine->input + apScriptLine->inputOffset, setText20);
 
         if (!setLength1)
         {
-            ReportScriptError(compiler, missingSetExpression);
+            ReportScriptError(apCompileData, missingSetExpression);
             return false;
         }
         expressionCodeVal9 = expression5.ConvertToPostfix(setText20, &setLength1);
 
         if (expression5.Modelloader_GetReferencedThis())
         {
-            ReportScriptError(compiler, "InfixToPostfix Error.");
+            ReportScriptError(apCompileData, "InfixToPostfix Error.");
             return false;
         }
-        *(unsigned short*)(line->output + line->outputSize) = (unsigned short)(setLength1);
-        line->outputSize += 2;
+        *(unsigned short*)(apScriptLine->output + apScriptLine->outputSize) = (unsigned short)(setLength1);
+        apScriptLine->outputSize += 2;
 
-        FUN_00401460(line->output + line->outputSize, expressionCodeVal9, setLength1);
-        line->outputSize += setLength1;
+        FUN_00401460(apScriptLine->output + apScriptLine->outputSize, expressionCodeVal9, setLength1);
+        apScriptLine->outputSize += setLength1;
     }
     break;
 
@@ -531,18 +537,18 @@ bool LineCompiler::ScriptCompiler_CompileLine(CompileScript* script, CompileStat
     case 24: {
         offset_2 = 0;
 
-        if (!ScriptCompiler_CheckParentheses(line->input, offset_2))
+        if (!ScriptCompiler_CheckParentheses(apScriptLine->input, offset_2))
         {
-            ReportScriptError(compiler, "Mismatched parentheses.");
+            ReportScriptError(apCompileData, "Mismatched parentheses.");
             return false;
         }
-        ScriptCompiler_SkipWhiteSpace(line->input, &offset_2);
+        ScriptCompiler_SkipWhiteSpace(apScriptLine->input, &offset_2);
 
         char branchText7[512];
         ourMemset(branchText7, 0, 512);
 
         int branchLength10 = 0;
-        branchLength10 = CompileScriptLine(compiler, line, line->input + offset_2, branchText7);
+        branchLength10 = ScriptCompiler_ReplaceVariablesAndFunctions(apCompileData, apScriptLine, apScriptLine->input + offset_2, branchText7);
 
         if (!branchLength10)
             return false;
@@ -551,37 +557,37 @@ bool LineCompiler::ScriptCompiler_CompileLine(CompileScript* script, CompileStat
 
         if (expression5.Modelloader_GetReferencedThis())
         {
-            ReportScriptError(compiler, DAT_0118c594[expression5.Modelloader_GetReferencedThis()]);
+            ReportScriptError(apCompileData, DAT_0118c594[expression5.Modelloader_GetReferencedThis()]);
             return false;
         }
-        int branchJump11 = ScanBlockLines(compiler, line);
+        int branchJump11 = ScriptCompiler_CountIfLines(apCompileData, apScriptLine);
 
         if (branchJump11 == -1)
         {
-            ReportScriptError(compiler, "Mismatched if/then/else block.");
+            ReportScriptError(apCompileData, "Mismatched if/then/else block.");
             return false;
         }
-        *(unsigned short*)(line->output + line->outputSize) = (unsigned short)(branchJump11);
-        line->outputSize += 2;
-        *(unsigned short*)(line->output + line->outputSize) = (unsigned short)(branchLength10);
-        line->outputSize += 2;
+        *(unsigned short*)(apScriptLine->output + apScriptLine->outputSize) = (unsigned short)(branchJump11);
+        apScriptLine->outputSize += 2;
+        *(unsigned short*)(apScriptLine->output + apScriptLine->outputSize) = (unsigned short)(branchLength10);
+        apScriptLine->outputSize += 2;
 
-        FUN_00401460(line->output + line->outputSize, expressionCodeVal9, branchLength10);
-        line->outputSize += branchLength10;
+        FUN_00401460(apScriptLine->output + apScriptLine->outputSize, expressionCodeVal9, branchLength10);
+        apScriptLine->outputSize += branchLength10;
     }
     break;
 
     case 23: {
         int jump = 0;
-        jump = ScanBlockLines(compiler, line);
+        jump = ScriptCompiler_CountIfLines(apCompileData, apScriptLine);
 
         if (jump == -1)
         {
-            ReportScriptError(compiler, "Mismatched if/then/else block.");
+            ReportScriptError(apCompileData, "Mismatched if/then/else block.");
             return false;
         }
-        *(unsigned short*)(line->output + line->outputSize) = (unsigned short)(jump);
-        line->outputSize += 2;
+        *(unsigned short*)(apScriptLine->output + apScriptLine->outputSize) = (unsigned short)(jump);
+        apScriptLine->outputSize += 2;
     }
     break;
 
@@ -592,30 +598,30 @@ bool LineCompiler::ScriptCompiler_CompileLine(CompileScript* script, CompileStat
         break;
 
     default: {
-        CompileCommand* command = FUN_005b1120(line->kind);
+        CompileCommand* command = FUN_005b1120(apScriptLine->kind);
 
         if (!command)
         {
-            ReportScriptError(compiler, "Unknown function code %d.", line->kind);
+            ReportScriptError(apCompileData, "Unknown function code %d.", apScriptLine->kind);
             return false;
         }
         if (command)
         {
-            if (command->requiresReference && compiler->partial && !line->refIndex)
+            if (command->requiresReference && apCompileData->partial && !apScriptLine->refIndex)
             {
-                ReportScriptError(compiler, "Reference function requires explicit reference in quest script.");
+                ReportScriptError(apCompileData, "Reference function requires explicit reference in quest script.");
                 return false;
             }
-            if (command->requiresReference && line->refIndex > 0)
+            if (command->requiresReference && apScriptLine->refIndex > 0)
             {
-                ScriptReferencedObject* ref2 = compiler->GetNodeValue(line->refIndex);
+                ScriptReferencedObject* ref2 = apCompileData->GetNodeValue(apScriptLine->refIndex);
 
                 TESObjectREFR* object = dynamic_cast<TESObjectREFR*>(ref2->pForm);
 
                 if (!object && !ref2->m_uiFormID)
                 {
                     ReportScriptError(
-                        compiler,
+                        apCompileData,
                         "Syntax error.  Invalid reference '%s' (only object references and reference variables are allowed in this context).",
                         reinterpret_cast<::BSStringT<char>*>(&ref2->m_kFormName)->String());
                     return false;
@@ -629,14 +635,14 @@ bool LineCompiler::ScriptCompiler_CompileLine(CompileScript* script, CompileStat
 
                 unsigned short commandCount3 = command->parameterCount;
 
-                if (!commandCallback1(commandCount3, commandParameters0, line, compiler))
+                if (!commandCallback1(commandCount3, commandParameters0, apScriptLine, apCompileData))
                     return false;
             }
         }
     }
     break;
     }
-    switch (line->kind)
+    switch (apScriptLine->kind)
     {
     case 18:
     case 19:
@@ -645,25 +651,25 @@ bool LineCompiler::ScriptCompiler_CompileLine(CompileScript* script, CompileStat
         break;
 
     default:
-        if (compiler->outputSize + line->outputSize + 10 >= 0x4000)
+        if (apCompileData->outputSize + apScriptLine->outputSize + 10 >= 0x4000)
         {
-            ReportScriptError(compiler, "MAX_SCRIPT_SIZE exceeded.\r\nCompiled script not saved!");
+            ReportScriptError(apCompileData, "MAX_SCRIPT_SIZE exceeded.\r\nCompiled script not saved!");
             return false;
         }
-        if (line->refIndex > 0)
+        if (apScriptLine->refIndex > 0)
         {
-            *(unsigned short*)(compiler->output + compiler->outputSize) = (unsigned short)(28);
-            compiler->outputSize += 2;
-            *(unsigned short*)(compiler->output + compiler->outputSize) = (unsigned short)(line->refIndex);
-            compiler->outputSize += 2;
+            *(unsigned short*)(apCompileData->output + apCompileData->outputSize) = (unsigned short)(28);
+            apCompileData->outputSize += 2;
+            *(unsigned short*)(apCompileData->output + apCompileData->outputSize) = (unsigned short)(apScriptLine->refIndex);
+            apCompileData->outputSize += 2;
         }
-        *(unsigned short*)(compiler->output + compiler->outputSize) = (unsigned short)(line->kind);
-        compiler->outputSize += 2;
-        *(unsigned short*)(compiler->output + compiler->outputSize) = (unsigned short)(line->outputSize);
-        compiler->outputSize += 2;
+        *(unsigned short*)(apCompileData->output + apCompileData->outputSize) = (unsigned short)(apScriptLine->kind);
+        apCompileData->outputSize += 2;
+        *(unsigned short*)(apCompileData->output + apCompileData->outputSize) = (unsigned short)(apScriptLine->outputSize);
+        apCompileData->outputSize += 2;
 
-        FUN_00401460(compiler->output + compiler->outputSize, line->output, line->outputSize);
-        compiler->outputSize += line->outputSize;
+        FUN_00401460(apCompileData->output + apCompileData->outputSize, apScriptLine->output, apScriptLine->outputSize);
+        apCompileData->outputSize += apScriptLine->outputSize;
     }
     return true;
 }

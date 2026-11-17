@@ -7,35 +7,37 @@
 // src/gamebryo2.2/corelibs/nimain/nivectorextradata.cpp - unit created 2026-10-16 from the whole-binary attribution (360 source path: d:/_fallout3/platforms/common/code/gamebryo2.2/corelibs/nimain/nivectorextradata.cpp).
 // Functions are listed by their @fnv annotations; compile flags inferred from the PC code.
 
-extern int g_011f5e84;
+extern int NiVectorExtraData_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f5e84 (old: g_011f5e84)
 
 // @fnv 0x00a92070
 // src: COMMUNITY 0x00a92070
 int* __cdecl NiVectorExtraData_GetRTTI()
 {
-    return &g_011f5e84;
+    return &NiVectorExtraData_ms_RTTI;
 }
 
+// pdb: class NiVectorExtraData, size 0x1c, bases: NiExtraData, 1 members
 struct NiVectorExtraData : NiExtraData
 {
-    float m_afVectorComponents[4];
+    float m_afVector[4]; // src: XBOX_RETAIL_PDB +0xc (old: m_afVectorComponents)
     bool IsEqual_00a92020(NiObject* pObject);
 };
 
 // @fnv 0x00a92020
 // src: XBOX_PDB 0x00a92020
+// pdb: NiVectorExtraData::`scalar deleting destructor' | NiVectorExtraData.obj | retail, object-file run extension, low
 bool NiVectorExtraData::IsEqual_00a92020(NiObject* pObject)
 {
     if (pObject)
     {
         NiVectorExtraData* pExtra = static_cast<NiVectorExtraData*>(pObject);
-        if (m_afVectorComponents[0] != pExtra->m_afVectorComponents[0])
+        if (m_afVector[0] != pExtra->m_afVector[0])
             return false;
-        if (m_afVectorComponents[1] != pExtra->m_afVectorComponents[1])
+        if (m_afVector[1] != pExtra->m_afVector[1])
             return false;
-        if (m_afVectorComponents[2] != pExtra->m_afVectorComponents[2])
+        if (m_afVector[2] != pExtra->m_afVector[2])
             return false;
-        if (m_afVectorComponents[3] != pExtra->m_afVectorComponents[3])
+        if (m_afVector[3] != pExtra->m_afVector[3])
             return false;
         return true;
     }
@@ -70,6 +72,9 @@ struct FUN_00a920b0_shell : NiVectorExtraData
 // Allocates a NiVectorExtraData, initialises its four floats to zero, copies this object's four floats into it and returns it.
 // @fnv 0x00a920b0
 // src: XBOX_PDB 0x00a920b0
+// pdb: NiVectorExtraData::CreateClone | NiVectorExtraData.obj | retail, upstream name already matches, high
+// pdb params: kCloning
+// pdb locals: pkObject
 NiObject* FUN_00a920b0_shell::NiVectorExtraData_CreateClone(CloningProcess& kCloning)
 {
     NiVectorExtraData* pkObject = (NiVectorExtraData*)BSFadeNode::operator new(sizeof(NiVectorExtraData));
@@ -77,18 +82,18 @@ NiObject* FUN_00a920b0_shell::NiVectorExtraData_CreateClone(CloningProcess& kClo
     {
         ((NiExtraData*)pkObject)->FUN_00a7b2e0();
         *(void**)pkObject = (void*)&DAT_0109fb94;
-        pkObject->m_afVectorComponents[0] = pkObject->m_afVectorComponents[1] = pkObject->m_afVectorComponents[2] =
-            pkObject->m_afVectorComponents[3] = 0.0f;
+        pkObject->m_afVector[0] = pkObject->m_afVector[1] = pkObject->m_afVector[2] =
+            pkObject->m_afVector[3] = 0.0f;
     }
     else
     {
         pkObject = 0;
     }
     ((NiExtraData*)this)->CopyMembers_00a7b330(pkObject, &kCloning);
-    pkObject->m_afVectorComponents[0] = m_afVectorComponents[0];
-    pkObject->m_afVectorComponents[1] = m_afVectorComponents[1];
-    pkObject->m_afVectorComponents[2] = m_afVectorComponents[2];
-    pkObject->m_afVectorComponents[3] = m_afVectorComponents[3];
+    pkObject->m_afVector[0] = m_afVector[0];
+    pkObject->m_afVector[1] = m_afVector[1];
+    pkObject->m_afVector[2] = m_afVector[2];
+    pkObject->m_afVector[3] = m_afVector[3];
     return pkObject;
 }
 
@@ -101,11 +106,14 @@ int __cdecl _NiSprintf(char* pBuffer, unsigned int uiSize, const char* pFormat, 
                        double fSecondFunctionValue, double fValue3, double fValue4);
 
 // @fnv 0x00a92290
+// pdb: NiVectorExtraData::GetViewerStrings | NiVectorExtraData.obj | retail, string-set bridge, high
+// pdb params: pStrings
+// pdb locals: pcVectorString
 void __fastcall AppendVectorViewerStrings(NiVectorExtraData* self, void* unused, StrArr* pStringArray)
 {
     GetExtraDataViewerStrings(self, unused, pStringArray);
 
-    char* pcVectorString = _FUN_00a7d330(reinterpret_cast<char*>(g_011f5e84));
+    char* pcVectorString = _FUN_00a7d330(reinterpret_cast<char*>(NiVectorExtraData_ms_RTTI));
 
     unsigned int uiIndex = pStringArray->m_usSize;
     unsigned int ItemUpdateArray = pStringArray->m_usMaxSize;
@@ -117,8 +125,8 @@ void __fastcall AppendVectorViewerStrings(NiVectorExtraData* self, void* unused,
 
     pcVectorString = static_cast<char*>(_NiMalloc(0x37));
 
-    _NiSprintf(pcVectorString, 0x37, "Vector = (%5.3f,%5.3f,%5.3f,%5.3f)", self->m_afVectorComponents[0],
-               self->m_afVectorComponents[1], self->m_afVectorComponents[2], self->m_afVectorComponents[3]);
+    _NiSprintf(pcVectorString, 0x37, "Vector = (%5.3f,%5.3f,%5.3f,%5.3f)", self->m_afVector[0],
+               self->m_afVector[1], self->m_afVector[2], self->m_afVector[3]);
 
     uiIndex = pStringArray->m_usSize;
     ItemUpdateArray = pStringArray->m_usMaxSize;
@@ -306,17 +314,19 @@ static __forceinline void S_00a921f0_SaveFloat(S_00a921f0_Stream& s, const float
 class FUN_00a921f0_cls : public NiVectorExtraData
 {
   public:
-    void SaveToStream(S_00a921f0_Stream& s);
+    void SaveToStream(S_00a921f0_Stream& kStream);
 };
 
 // @fnv 0x00a921f0
-void FUN_00a921f0_cls::SaveToStream(S_00a921f0_Stream& aStream)
+// pdb: NiVectorExtraData::SaveBinary | NiVectorExtraData.obj | retail, object-file gap fill, high
+// pdb params: kStream
+void FUN_00a921f0_cls::SaveToStream(S_00a921f0_Stream& kStream)
 {
-    NiExtraData::SaveBinary(reinterpret_cast<NiStream&>(aStream));
-    S_00a921f0_SaveFloat(aStream, &m_afVectorComponents[0]);
-    S_00a921f0_SaveFloat(aStream, &m_afVectorComponents[1]);
-    S_00a921f0_SaveFloat(aStream, &m_afVectorComponents[2]);
-    S_00a921f0_SaveFloat(aStream, &m_afVectorComponents[3]);
+    NiExtraData::SaveBinary(reinterpret_cast<NiStream&>(kStream));
+    S_00a921f0_SaveFloat(kStream, &m_afVector[0]);
+    S_00a921f0_SaveFloat(kStream, &m_afVector[1]);
+    S_00a921f0_SaveFloat(kStream, &m_afVector[2]);
+    S_00a921f0_SaveFloat(kStream, &m_afVector[3]);
 }
 
 struct S_00a92110_File
@@ -343,26 +353,29 @@ struct FUN_00a59be0_tmp
 class FUN_00a92110_cls : public NiVectorExtraData
 {
   public:
-    void NiVectorExtraData_LoadBinary(S_00a921f0_Stream* s);
+    void NiVectorExtraData_LoadBinary(S_00a921f0_Stream* kStream);
 };
 
 // @fnv 0x00a92110
 // src: XBOX_PDB 0x00a92110
-void FUN_00a92110_cls::NiVectorExtraData_LoadBinary(S_00a921f0_Stream* s)
+// pdb: NiVectorExtraData::LoadBinary | NiVectorExtraData.obj | retail, upstream name already matches, high
+// pdb params: kStream
+// pdb locals: kTmpVector3
+void FUN_00a92110_cls::NiVectorExtraData_LoadBinary(S_00a921f0_Stream* kStream)
 {
-    NiExtraData::LoadBinary(reinterpret_cast<NiStream&>(*s));
-    if ((unsigned int)s->unk0d8 < 0x500000e)
+    NiExtraData::LoadBinary(reinterpret_cast<NiStream&>(*kStream));
+    if ((unsigned int)kStream->unk0d8 < 0x500000e)
     {
         FUN_00a59be0_tmp tmp;
-        tmp.FUN_00a59be0(s);
-        m_afVectorComponents[0] = tmp.v[0];
-        m_afVectorComponents[1] = tmp.v[1];
-        m_afVectorComponents[2] = tmp.v[2];
-        m_afVectorComponents[3] = 0.0f;
+        tmp.FUN_00a59be0(kStream);
+        m_afVector[0] = tmp.v[0];
+        m_afVector[1] = tmp.v[1];
+        m_afVector[2] = tmp.v[2];
+        m_afVector[3] = 0.0f;
         return;
     }
-    reinterpret_cast<S_00a92110_File*>(s->unk24c)->Write(&m_afVectorComponents[0], 4, 4, 1);
-    reinterpret_cast<S_00a92110_File*>(s->unk24c)->Write(&m_afVectorComponents[1], 4, 4, 1);
-    reinterpret_cast<S_00a92110_File*>(s->unk24c)->Write(&m_afVectorComponents[2], 4, 4, 1);
-    reinterpret_cast<S_00a92110_File*>(s->unk24c)->Write(&m_afVectorComponents[3], 4, 4, 1);
+    reinterpret_cast<S_00a92110_File*>(kStream->unk24c)->Write(&m_afVector[0], 4, 4, 1);
+    reinterpret_cast<S_00a92110_File*>(kStream->unk24c)->Write(&m_afVector[1], 4, 4, 1);
+    reinterpret_cast<S_00a92110_File*>(kStream->unk24c)->Write(&m_afVector[2], 4, 4, 1);
+    reinterpret_cast<S_00a92110_File*>(kStream->unk24c)->Write(&m_afVector[3], 4, 4, 1);
 }

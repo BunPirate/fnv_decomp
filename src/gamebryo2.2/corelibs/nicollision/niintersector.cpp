@@ -12,9 +12,11 @@ struct VTableObject
 };
 // @fnv 0x00eae6e0
 // src: GAMEBRYO_SRC 0x00eae6e0
-void __fastcall NiIntersector_Test(VTableObject* object, int value)
+// pdb: NiIntersector::Test | NiIntersector.obj | debug, upstream name already matches, high
+// pdb params: kV0, kV1
+void __fastcall NiIntersector_Test(VTableObject* kV0, int kV1)
 {
-    object->Release(value);
+    kV0->Release(kV1);
 }
 
 static const float g_fltDefault = 3.402823466e+38f;
@@ -154,6 +156,9 @@ struct S_00eae7a0_Solver
 
 // Uses finite-difference slope estimates to update x, then stores a result and status in m_fResult and m_iResult.
 // @fnv 0x00eae7a0
+// pdb: NiIntersector::Find | NiIntersector.obj | debug, call graph (shared callers), low
+// pdb params: kV0, kV1
+// pdb locals: fF1, fT0, fF0, fFDer0, fF2, fT1, fFDer1, i
 void S_00eae7a0_Solver::Solve(const S_00eae7a0_Point& apPointA, const S_00eae7a0_Point& apPointB)
 {
     float x = 0.0f;

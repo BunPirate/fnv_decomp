@@ -9,6 +9,7 @@ class NiSkinInstance;
 class NiPropertyState;
 class NiDynamicEffectState;
 
+// pdb: class NiSingleShaderMaterial, size 0x18, bases: NiMaterial, 3 members
 class NiSingleShaderMaterial : public NiMaterial
 {
 public:
@@ -34,7 +35,7 @@ public:
                                                  const NiPropertyState* pkPropertyState,
                                                  const NiDynamicEffectState* pkDynamicEffectState,
                                                  unsigned int uiMaterialExtraData);
-    virtual NiShader* GetCurrentShader(int a, int b, int c, int d, int key);
+    virtual NiShader* GetCurrentShader(int pkGeom, int pkSkin, int pkPropState, int pkEffectState, int uiMaterialExtraData);
     virtual void ReleaseShader();
     virtual void vf21();
 
@@ -43,8 +44,8 @@ public:
     void BaseCleanup();
 
     unsigned int unk08;
-    NiFixedString m_kShaderFilename;
-    NiShader* m_sp;
-    bool m_bManual;
+    NiFixedString m_kShaderName; // src: XBOX_RETAIL_PDB +0xc (old: m_kShaderFilename)
+    NiShader* m_spCachedShader; // src: XBOX_RETAIL_PDB +0x10 (old: m_sp)
+    bool m_bManualShaderManagement; // src: XBOX_RETAIL_PDB +0x14 (old: m_bManual)
     unsigned char unk15[3];
 };

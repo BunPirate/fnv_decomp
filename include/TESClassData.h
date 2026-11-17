@@ -16,5 +16,5 @@ public:
     unsigned char m_ucField0D;
     unsigned char layoutPadding1A[2];
 
-    void SwapEndian();
+    void CLASS_DATA_Endian();
 };

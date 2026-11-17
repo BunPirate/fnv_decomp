@@ -108,17 +108,17 @@ public:
     void Unitize_004a0c10();
     float FUN_004a7290();
     float FUN_004a7290() const;
-    LocalVec3 FUN_004b3800(const LocalVec3& other) const;
+    LocalVec3 FUN_004b3800(const LocalVec3& pt) const;
     LocalVec3 ProcessAndReturnValue_0053d280(float divisor);
     float NiPoint3_XYLength();
     float NiPoint3_XYLength() const;
     void ComputeValue_0063c8a0(const LocalVec3* other);
     void ComputeValue_0063c8a0(void* other);
     void FUN_006815c0();
-    float CVec3_Distance(LocalVec3* other);
-    float CVec3_Distance(const LocalVec3& other) const;
-    LocalVec3 TransformPointByMatrix4(const Mat& matrix);
-    LocalVec3 TransformPointByMatrix4(const Matrix4* matrix);
+    float CVec3_Distance(LocalVec3* cVec);
+    float CVec3_Distance(const LocalVec3& cVec) const;
+    LocalVec3 TransformPointByMatrix4(const Mat& cTransform);
+    LocalVec3 TransformPointByMatrix4(const Matrix4* cTransform);
     void Normalize_00b12790();
     LocalVec3 Diff_00b13040(void* other);
     LocalVec3 Diff_00b13040(const LocalVec3& other) const;
@@ -145,12 +145,14 @@ extern float DAT_0126fa78;
 // Stores f and the three components of p into globals and returns a pointer to DAT_0126fa68.
 // @fnv 0x00e9c7d0
 // src: GAMEBRYO_LIB 0x00e9c7d0
-int* __cdecl NiCollisionConvert_ConvertToSphereBV_Fast(float afValue, int* apComponents)
+// pdb: NiCollisionConvert::ConvertToSphereBV_Fast | NiCollision.obj | debug, upstream name already matches, high
+// pdb params: fRadius, kCenter
+int* __cdecl NiCollisionConvert_ConvertToSphereBV_Fast(float fRadius, int* kCenter)
 {
-    DAT_0126fa78 = afValue;
-    DAT_0126fa6c = apComponents[0];
-    DAT_0126fa70 = apComponents[1];
-    DAT_0126fa74 = apComponents[2];
+    DAT_0126fa78 = fRadius;
+    DAT_0126fa6c = kCenter[0];
+    DAT_0126fa70 = kCenter[1];
+    DAT_0126fa74 = kCenter[2];
     return &DAT_0126fa68;
 }
 
@@ -171,7 +173,10 @@ struct Obj
 };
 // @fnv 0x00e9c800
 // src: COMMUNITY 0x00e9c800
-Obj* NiCollisionConvert_ConvertToSphereBV_Safe(float afValue, int* p)
+// pdb: NiCollisionConvert::ConvertToSphereBV_Safe | NiCollision.obj | retail, upstream name already matches, high
+// pdb params: fRadius, kCenter
+// pdb locals: pkSphereBV
+Obj* NiCollisionConvert_ConvertToSphereBV_Safe(float fRadius, int* kCenter)
 {
     void* pMemory = g_memoryManager.Allocate(20);
     Obj* pObj;
@@ -179,10 +184,10 @@ Obj* NiCollisionConvert_ConvertToSphereBV_Safe(float afValue, int* p)
         pObj = ((Obj*)pMemory)->InitFromParams(1.0f, &_NiPoint3_ZERO);
     else
         pObj = 0;
-    pObj->f10 = afValue;
-    pObj->f4 = p[0];
-    pObj->f8 = p[1];
-    pObj->fC = p[2];
+    pObj->f10 = fRadius;
+    pObj->f4 = kCenter[0];
+    pObj->f8 = kCenter[1];
+    pObj->fC = kCenter[2];
     return pObj;
 }
 
@@ -253,37 +258,40 @@ struct ItemOwner
     int m_uiEdgeIndex;
 };
 
-bool __cdecl NiCollisionTraversals_FindIntersections(int a1, int a2, SpawnParam* p, int item);
+bool __cdecl NiCollisionTraversals_FindIntersections(int kOrigin, int kDir, SpawnParam* kPick, int pkRoot);
 
 // @fnv 0x00e9c680
 // src: COMMUNITY 0x00e9c680
-bool __cdecl NiCollisionTraversals_FindIntersectionsSwitchNode(int a1, int a2, SpawnParam* p, ItemOwner* owner)
+// pdb: NiCollisionTraversals::FindIntersectionsSwitchNode | NiCollisionTraversals.obj | retail, upstream name already matches, high
+// pdb params: kOrigin, kDir, kPick, pkSwitch
+// pdb locals: bFound, pkChild
+bool __cdecl NiCollisionTraversals_FindIntersectionsSwitchNode(int kOrigin, int kDir, SpawnParam* kPick, ItemOwner* pkSwitch)
 {
     bool result = false;
-    int idx = owner->m_uiEdgeIndex;
+    int idx = pkSwitch->m_uiEdgeIndex;
     if (idx < 0)
     {
         goto done;
     }
-    if (p->m_iType == 1 && p->m_iSub == 1 && p->unk28 != 0)
+    if (kPick->m_iType == 1 && kPick->m_iSub == 1 && kPick->unk28 != 0)
     {
         return true;
     }
-    if (owner->m_uiEdgeIndex < 0)
+    if (pkSwitch->m_uiEdgeIndex < 0)
     {
         goto done;
     }
-    if (idx >= owner->m_uiItemCount)
+    if (idx >= pkSwitch->m_uiItemCount)
     {
         goto done;
     }
     {
-        int item = owner->m_pItems[idx];
+        int item = pkSwitch->m_pItems[idx];
         if (item == 0)
         {
             goto done;
         }
-        if (NiCollisionTraversals_FindIntersections(a1, a2, p, item))
+        if (NiCollisionTraversals_FindIntersections(kOrigin, kDir, kPick, item))
         {
             result = true;
         }
@@ -353,7 +361,7 @@ struct ItemOwner
 
 struct Dispatch
 {
-    void Run(ItemOwner* owner);
+    void Run(ItemOwner* pObject);
 };
 
 struct SpawnParam
@@ -371,29 +379,32 @@ struct SpawnParam
     int unk28;
 };
 
-bool __cdecl NiCollisionTraversals_FindIntersections(int a1, int a2, SpawnParam* p, int item);
-bool __cdecl NiCollisionTraversals_FindIntersectionsSwitchNode(int a1, int a2, SpawnParam* p, ItemOwner* owner);
+bool __cdecl NiCollisionTraversals_FindIntersections(int kOrigin, int kDir, SpawnParam* kPick, int pkRoot);
+bool __cdecl NiCollisionTraversals_FindIntersectionsSwitchNode(int kOrigin, int kDir, SpawnParam* kPick, ItemOwner* pkSwitch);
 
 // @fnv 0x00e9c6f0
 // src: COMMUNITY 0x00e9c6f0
-bool __cdecl NiCollisionTraversals_FindIntersectionsNode(int a1, int a2, SpawnParam* pSpawnParam, ItemOwner* owner)
+// pdb: NiCollisionTraversals::FindIntersectionsNode | NiCollisionTraversals.obj | retail, upstream name already matches, high
+// pdb params: kOrigin, kDir, kPick, pkNode
+// pdb locals: bFound, i, pkChild
+bool __cdecl NiCollisionTraversals_FindIntersectionsNode(int kOrigin, int kDir, SpawnParam* kPick, ItemOwner* pkNode)
 {
-    if (pSpawnParam->unk08 == 0 && pSpawnParam->m_iType == 1)
+    if (kPick->unk08 == 0 && kPick->m_iType == 1)
     {
-        pSpawnParam->m_sub.Run(owner);
+        kPick->m_sub.Run(pkNode);
         return true;
     }
 
-    if (owner != 0)
+    if (pkNode != 0)
     {
-        NicollisiontraversalsListNodeView* node = owner->v08();
+        NicollisiontraversalsListNodeView* node = pkNode->v08();
         if (node != 0)
         {
             do
             {
                 if (node == (NicollisiontraversalsListNodeView*)&DAT_011f5eb4)
                 {
-                    return NiCollisionTraversals_FindIntersectionsSwitchNode(a1, a2, pSpawnParam, owner);
+                    return NiCollisionTraversals_FindIntersectionsSwitchNode(kOrigin, kDir, kPick, pkNode);
                 }
                 node = node->m_pNext;
             } while (node != 0);
@@ -401,16 +412,16 @@ bool __cdecl NiCollisionTraversals_FindIntersectionsNode(int a1, int a2, SpawnPa
     }
 
     bool result = false;
-    for (unsigned int i = 0; i < owner->m_uiItemCount; ++i)
+    for (unsigned int i = 0; i < pkNode->m_uiItemCount; ++i)
     {
-        if (pSpawnParam->m_iType == 1 && pSpawnParam->m_iSub == 1 && pSpawnParam->unk28 != 0)
+        if (kPick->m_iType == 1 && kPick->m_iSub == 1 && kPick->unk28 != 0)
         {
             return true;
         }
-        int item = owner->m_pItems[i];
+        int item = pkNode->m_pItems[i];
         if (item != 0)
         {
-            if (NiCollisionTraversals_FindIntersections(a1, a2, pSpawnParam, item))
+            if (NiCollisionTraversals_FindIntersections(kOrigin, kDir, kPick, item))
             {
                 result = true;
             }
@@ -430,7 +441,7 @@ struct S_00e9c490_Entry
 struct S_00e9c490_Pool
 {
     int unk00;
-    S_00e9c490_Entry* GetTexture(void* node);
+    S_00e9c490_Entry* GetTexture(void* pObject);
 };
 struct S_00e9c490_Ctx
 {
@@ -508,55 +519,58 @@ struct S_00e9c490_Node
 };
 extern char DAT_0126fa64;
 extern char DAT_0126fa65;
-extern int DAT_011f4a48;
+extern int NiLines_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f4a48 (old: DAT_011f4a48/g_011f4a48)
 extern int DAT_011f5f64;
 static const float DAT_01011d78 = 0.0f;
 bool __cdecl RayIntersectsBound(S_00e9c490_Node* node, NiPoint3* p1, NiPoint3* p2);
-bool __cdecl NiCollisionTraversals_FindIntersectionsNode(NiPoint3* p1, NiPoint3* p2, S_00e9c490_Ctx* ctx, S_00e9c490_Node* node);
-bool __cdecl RaycastShape(NiPoint3* p1, NiPoint3* p2, S_00e9c490_Ctx* ctx, S_00e9c490_Node* node);
+bool __cdecl NiCollisionTraversals_FindIntersectionsNode(NiPoint3* kOrigin, NiPoint3* kDir, S_00e9c490_Ctx* kPick, S_00e9c490_Node* pkNode);
+bool __cdecl NiCollisionTraversals_FindIntersectionsTriBasedGeom(NiPoint3* kOrigin, NiPoint3* kDir, S_00e9c490_Ctx* kPick, S_00e9c490_Node* pkTBG);
 bool __cdecl NiObject_IsKindOf(const void* rtti, S_00e9c490_Node* node);
 
 // @fnv 0x00e9c490
 // src: COMMUNITY 0x00e9c490
-bool __cdecl NiCollisionTraversals_FindIntersections(NiPoint3* pPoint1, NiPoint3* pPoint2, S_00e9c490_Ctx* pContext,
-                          S_00e9c490_Node* node)
+// pdb: NiCollisionTraversals::FindIntersections | NiCollisionTraversals.obj | retail, upstream name already matches, high
+// pdb params: kOrigin, kDir, kPick, pkRoot
+// pdb locals: pnode, pkRecord, distance
+bool __cdecl NiCollisionTraversals_FindIntersections(NiPoint3* kOrigin, NiPoint3* kDir, S_00e9c490_Ctx* kPick,
+                          S_00e9c490_Node* pkRoot)
 {
-    if (!node)
+    if (!pkRoot)
         return false;
-    if (pContext->unk11 && (node->unk30 & 1))
+    if (kPick->unk11 && (pkRoot->unk30 & 1))
         return false;
-    S_00e9c490_Ref* ref = node->v3();
+    S_00e9c490_Ref* ref = pkRoot->v3();
     if (ref && (unsigned char)(ref->unk30 >> 21) & 1)
         return false;
-    if (RayIntersectsBound(node, pPoint1, pPoint2) || (ref && (unsigned char)(ref->unk30 >> 13) & 1))
+    if (RayIntersectsBound(pkRoot, kOrigin, kDir) || (ref && (unsigned char)(ref->unk30 >> 13) & 1))
     {
         if (ref)
-            return NiCollisionTraversals_FindIntersectionsNode(pPoint1, pPoint2, pContext, node);
-        if (node->v7())
-            return RaycastShape(pPoint1, pPoint2, pContext, node);
-        if (DAT_0126fa65 && NiObject_IsKindOf(&DAT_011f4a48, node))
+            return NiCollisionTraversals_FindIntersectionsNode(kOrigin, kDir, kPick, pkRoot);
+        if (pkRoot->v7())
+            return NiCollisionTraversals_FindIntersectionsTriBasedGeom(kOrigin, kDir, kPick, pkRoot);
+        if (DAT_0126fa65 && NiObject_IsKindOf(&NiLines_ms_RTTI, pkRoot))
         {
-            NiPoint3 d = node->unk8c.SubtractIntoVector(*pPoint1);
-            if (pPoint2->DotProduct(d) < DAT_01011d78)
+            NiPoint3 d = pkRoot->unk8c.SubtractIntoVector(*kOrigin);
+            if (kDir->DotProduct(d) < DAT_01011d78)
                 return false;
             float len = d.FUN_00457990();
-            pContext->unk18.GetTexture(node)->unk14 = len;
+            kPick->unk18.GetTexture(pkRoot)->unk14 = len;
             return false;
         }
-        if (DAT_0126fa64 && NiObject_IsKindOf(&DAT_011f5f64, node))
+        if (DAT_0126fa64 && NiObject_IsKindOf(&DAT_011f5f64, pkRoot))
         {
-            NiPoint3 d = node->unk8c.SubtractIntoVector(*pPoint1);
-            if (pPoint2->DotProduct(d) < DAT_01011d78)
+            NiPoint3 d = pkRoot->unk8c.SubtractIntoVector(*kOrigin);
+            if (kDir->DotProduct(d) < DAT_01011d78)
                 return false;
-            S_00e9c490_Entry* pEntry = pContext->unk18.GetTexture(node);
+            S_00e9c490_Entry* pEntry = kPick->unk18.GetTexture(pkRoot);
             float len = d.FUN_00457990();
             pEntry->unk14 = len;
-            if (pContext->unk08 == 1)
+            if (kPick->unk08 == 1)
             {
                 // Use the scalar multiply ABI with an explicit result buffer to reuse d.
                 typedef NiPoint3* (NiPoint3::*ScaleInto)(NiPoint3*, float) const;
-                pEntry->unk08 = pPoint1->FUN_00439e90(
-                    *(pPoint2->*reinterpret_cast<ScaleInto>(&NiPoint3::ApplyScaled))(&d, len));
+                pEntry->unk08 = kOrigin->FUN_00439e90(
+                    *(kDir->*reinterpret_cast<ScaleInto>(&NiPoint3::ApplyScaled))(&d, len));
             }
             return false;
         }
@@ -787,9 +801,9 @@ struct GeometryData
     bool FUN_00a67360(bool);
     void NiGeometryData_UnlockPackedVertexData();
     void NiGeometryData_GetVerticesIterator(Buffer*);
-    void GetBounds(Buffer*);
-    void NiGeometryData_GetAdditionalColorData(Buffer*);
-    void GetKeyAndMode(unsigned, Buffer*);
+    void NiGeometryData_GetNormalsIterator(Buffer*);
+    void NiGeometryData_GetColorsIterator(Buffer*);
+    void NiGeometryData_GetTextureSetIterator(unsigned, Buffer*);
     unsigned short* FUN_00a7b850();
 };
 struct Provider
@@ -919,25 +933,29 @@ struct Pick
 bool __cdecl FUN_00eadb90(const RaycastPoint*, const RaycastPoint*, const RaycastPoint*, const RaycastPoint*, const RaycastPoint*, bool, RaycastPoint*, float*, float*, float*);
 // Tests a ray against geometry triangles when available and fills hit data, including optional interpolated attributes.
 // @fnv 0x00e9a280
-bool __cdecl RaycastGeometry(const RaycastPoint* origin, const RaycastPoint* direction, Pick* pick, Geometry* geometry)
+// src: XBOX_RETAIL_PDB 0x00e9a280
+// pdb: NiCollisionTraversals::FindIntersectionsTriShapeFastPath | NiCollisionTraversals.obj | retail, object-file gap fill, high
+// pdb params: kOrigin, kDir, kPick, pkTBG
+// pdb locals: kVert0, kModelOrigin, bFound, istride, pkVertex, fInvWorldScale, kVert2, usTris, psrc, pkModelData, VertexIterator, kWorld, kDiff, kModelDir, bLocked, pusTriIndices, kVert1, pkAGD, pkRecord, distance, i, i2, j0, fTriParam2 ...
+bool __cdecl NiCollisionTraversals_FindIntersectionsTriShapeFastPath(const RaycastPoint* kOrigin, const RaycastPoint* kDir, Pick* kPick, Geometry* pkTBG)
 {
-    Transform& worldTransform = geometry->World();
+    Transform& worldTransform = pkTBG->World();
     RaycastPoint delta;
-    delta = *origin - *reinterpret_cast<const RaycastPoint*>(&worldTransform.position);
+    delta = *kOrigin - *reinterpret_cast<const RaycastPoint*>(&worldTransform.position);
     float inverseScale;
     inverseScale = 1.0f / worldTransform.scale;
     RaycastPoint localOrigin = reinterpret_cast<Matrix&>(worldTransform.rotation).InverseRotatePoint(delta) * inverseScale;
     const Matrix& rotation = reinterpret_cast<Matrix&>(worldTransform.rotation);
-    RaycastPoint localDirection = rotation.InverseRotateVector(*direction) * inverseScale;
+    RaycastPoint localDirection = rotation.InverseRotateVector(*kDir) * inverseScale;
     bool found = false;
     unsigned short count;
-    count = geometry->data->GetTriangleTotal();
+    count = pkTBG->data->GetTriangleTotal();
     bool locked = false;
-    GeometryData* data = geometry->data;
+    GeometryData* data = pkTBG->data;
     Buffer positionBuffer;
     RaycastPoint p0, p1, p2;
     RaycastPoint normal;
-    RaycastPoint* positions = geometry->data->positions;
+    RaycastPoint* positions = pkTBG->data->positions;
     if (!positions)
     {
         Provider* provider = data->provider;
@@ -951,8 +969,8 @@ bool __cdecl RaycastGeometry(const RaycastPoint* origin, const RaycastPoint* dir
     if (!triangles || (!positions && !positionBuffer.data))
     {
         Hit* hit;
-        hit = pick->hits.GetTexture(geometry);
-        RaycastPoint offset = *reinterpret_cast<const RaycastPoint*>(&geometry->World().position) - *origin;
+        hit = kPick->hits.GetTexture(pkTBG);
+        RaycastPoint offset = *reinterpret_cast<const RaycastPoint*>(&pkTBG->World().position) - *kOrigin;
         float distance;
         float squared = offset.x * offset.x + offset.y * offset.y + offset.z * offset.z;
         distance = (float)sqrt(squared);
@@ -982,12 +1000,12 @@ bool __cdecl RaycastGeometry(const RaycastPoint* origin, const RaycastPoint* dir
         }
         RaycastPoint intersection;
         float distance, b1, b2;
-        if (!FUN_00eadb90(&localOrigin, &localDirection, &p0, &p1, &p2, pick->GetFrontOnly(), &intersection, &distance,
+        if (!FUN_00eadb90(&localOrigin, &localDirection, &p0, &p1, &p2, kPick->GetFrontOnly(), &intersection, &distance,
                           &b1, &b2))
             continue;
         found = true;
-        Hit* hit = pick->hits.GetTexture(geometry);
-        if (pick->coordinates == 1)
+        Hit* hit = kPick->hits.GetTexture(pkTBG);
+        if (kPick->coordinates == 1)
             intersection =
                 *reinterpret_cast<const RaycastPoint*>(&worldTransform.position) + reinterpret_cast<Matrix&>(worldTransform.rotation).Apply(intersection) * worldTransform.scale;
         hit->point = intersection;
@@ -998,10 +1016,10 @@ bool __cdecl RaycastGeometry(const RaycastPoint* origin, const RaycastPoint* dir
         hit->i2 = i2;
         float b0;
         b0 = 1.0f - (b1 + b2);
-        if (pick->GetUV())
+        if (kPick->GetUV())
         {
             Buffer uv;
-            data->GetKeyAndMode(0, &uv);
+            data->NiGeometryData_GetTextureSetIterator(0, &uv);
             if (uv.data)
             {
                 const NiPoint2& uv0 = uv.UV(i0);
@@ -1011,7 +1029,7 @@ bool __cdecl RaycastGeometry(const RaycastPoint* origin, const RaycastPoint* dir
             }
             else
             {
-                NiPoint2* coords = geometry->data->texcoords;
+                NiPoint2* coords = pkTBG->data->texcoords;
                 if (coords)
                     hit->uv = coords[i0] * b0 + coords[i1] * b1 + coords[i2] * b2;
                 else
@@ -1020,19 +1038,19 @@ bool __cdecl RaycastGeometry(const RaycastPoint* origin, const RaycastPoint* dir
         }
         else
             hit->uv = DAT_011f4980;
-        if (pick->GetPlaneNormal())
+        if (kPick->GetPlaneNormal())
         {
             Buffer normalBuffer;
-            data->GetBounds(&normalBuffer);
+            data->NiGeometryData_GetNormalsIterator(&normalBuffer);
             if (normalBuffer.data)
             {
                 RaycastPoint n0 = normalBuffer.Point(i0), n1 = normalBuffer.Point(i1), n2 = normalBuffer.Point(i2);
                 normal = n0 * b0 + n1 * b1 + n2 * b2;
             }
-            else if (pick->interpolateNormal && geometry->data->normals)
+            else if (kPick->interpolateNormal && pkTBG->data->normals)
             {
                 RaycastPoint* normals;
-                normals = geometry->data->normals;
+                normals = pkTBG->data->normals;
                 normal = normals[i0] * b0 + normals[i1] * b1 + normals[i2] * b2;
             }
             else
@@ -1044,16 +1062,16 @@ bool __cdecl RaycastGeometry(const RaycastPoint* origin, const RaycastPoint* dir
                 normal = edge1.Cross(edge2);
             }
             normal.Unitize_004a0c10();
-            if (pick->coordinates == 1)
+            if (kPick->coordinates == 1)
                 normal = reinterpret_cast<Matrix&>(worldTransform.rotation).FUN_004b4500(&normal);
             hit->normal = normal;
         }
         else
             hit->normal = *reinterpret_cast<const RaycastPoint*>(&_NiPoint3_ZERO);
-        if (pick->GetColor())
+        if (kPick->GetColor())
         {
             Buffer colorBuffer;
-            data->NiGeometryData_GetAdditionalColorData(&colorBuffer);
+            data->NiGeometryData_GetColorsIterator(&colorBuffer);
             if (colorBuffer.data)
             {
                 P4 c0, c1, c2;
@@ -1064,7 +1082,7 @@ bool __cdecl RaycastGeometry(const RaycastPoint* origin, const RaycastPoint* dir
             }
             else
             {
-                P4* colors = geometry->data->colors;
+                P4* colors = pkTBG->data->colors;
                 if (colors)
                 {
                     P4 blended = Object_ProcessAndReturnValue_00532f40(b0, colors[i0])
@@ -1078,7 +1096,7 @@ bool __cdecl RaycastGeometry(const RaycastPoint* origin, const RaycastPoint* dir
         }
         else
             hit->color = DAT_011a9be0;
-        if (1 == pick->mode && pick->sort == 1)
+        if (1 == kPick->mode && kPick->sort == 1)
         {
             if (locked)
                 data->NiGeometryData_UnlockPackedVertexData();
@@ -1512,11 +1530,11 @@ struct Mesh
 
     void NiGeometryData_UnlockPackedVertexData();
 
-    void GetKeyAndMode(int, BufferView*);
+    void NiGeometryData_GetTextureSetIterator(int, BufferView*);
 
-    void GetBounds(BufferView*);
+    void NiGeometryData_GetNormalsIterator(BufferView*);
 
-    void NiGeometryData_GetAdditionalColorData(BufferView*);
+    void NiGeometryData_GetColorsIterator(BufferView*);
 };
 
 struct Shape
@@ -1550,25 +1568,29 @@ extern Vec4 DAT_011a9be0;
 extern LocalVec3 DAT_011f426c;
 extern Vec2 DAT_011f4980;
 // @fnv 0x00e993d0
-bool __cdecl IntersectShape(const LocalVec3* rayStart, const LocalVec3* rayDirection, Options* options, Shape* shape)
+// src: XBOX_RETAIL_PDB 0x00e993d0
+// pdb: NiCollisionTraversals::FindIntersectionsOneStripFastPath | NiCollisionTraversals.obj | retail, object-file gap fill, high
+// pdb params: kOrigin, kDir, kPick, pkTBG
+// pdb locals: kVert0, kModelOrigin, bFound, istride, pkVertex, fInvWorldScale, kVert2, usTris, psrc, pkModelData, VertexIterator, kWorld, kDiff, kModelDir, bLocked, pusStripLists, kVert1, pkAGD, pkRecord, distance, i, i2, fTriParam2, kIntersect ...
+bool __cdecl NiCollisionTraversals_FindIntersectionsOneStripFastPath(const LocalVec3* kOrigin, const LocalVec3* kDir, Options* kPick, Shape* pkTBG)
 {
-    const Transform& xform = shape->World();
+    const Transform& xform = pkTBG->World();
     double cachedm01 = reinterpret_cast<const Mat3&>(xform.rotation).m01;
     double cachedm02 = reinterpret_cast<const Mat3&>(xform.rotation).m02;
     double cachedm10 = reinterpret_cast<const Mat3&>(xform.rotation).m10;
-    LocalVec3 difference = *rayStart - *reinterpret_cast<const LocalVec3*>(&xform.position);
+    LocalVec3 difference = *kOrigin - *reinterpret_cast<const LocalVec3*>(&xform.position);
     float invScale = 1.0f / xform.scale;
     CopyVector(difference, *reinterpret_cast<const LocalVec3*>(
         &reinterpret_cast<const Mat3LocalView&>(xform.rotation).InverseRotate(difference.x, difference.y, difference.z)));
     LocalVec3 localStart = difference * invScale;
     CopyVector(difference, *reinterpret_cast<const LocalVec3*>(
         &reinterpret_cast<const Mat3LocalView&>(xform.rotation).RotateCaptured(
-            *reinterpret_cast<const ::LocalVec3*>(rayDirection), cachedm01, cachedm02, cachedm10)));
+            *reinterpret_cast<const ::LocalVec3*>(kDir), cachedm01, cachedm02, cachedm10)));
     LocalVec3 localDirection = difference * invScale;
     bool anyHit = false;
-    const unsigned short triangleCount = shape->mesh->GetTriangleTotal();
+    const unsigned short triangleCount = pkTBG->mesh->GetTriangleTotal();
     bool ownsPositions = false;
-    Mesh* mesh = shape->mesh;
+    Mesh* mesh = pkTBG->mesh;
     BufferView positions = {0, 0, false};
     LocalVec3* directVertices = mesh->vertices;
     if (!directVertices)
@@ -1617,12 +1639,12 @@ bool __cdecl IntersectShape(const LocalVec3* rayStart, const LocalVec3* rayDirec
             }
             LocalVec3 point;
             float distance, u, v;
-            bool frontOnly = options->unk10;
+            bool frontOnly = kPick->unk10;
             if (!FUN_00eadb90(&localStart, &localDirection, &va, &vb, &vc, frontOnly, &point, &distance, &u, &v))
                 continue;
             anyHit = true;
-            QueryResult* result = options->output.GetTexture(shape);
-            if (options->coordinateMode == 1)
+            QueryResult* result = kPick->output.GetTexture(pkTBG);
+            if (kPick->coordinateMode == 1)
             {
                 const LocalVec3& rotated = *reinterpret_cast<const LocalVec3*>(
                     &reinterpret_cast<const Mat3LocalView&>(xform.rotation).FUN_004b4500(
@@ -1638,10 +1660,10 @@ bool __cdecl IntersectShape(const LocalVec3* rayStart, const LocalVec3* rayDirec
             result->b = b;
             result->c = c;
             float weight = 1.0f - (u + v);
-            if (options->needsUV)
+            if (kPick->needsUV)
             {
                 BufferView uv = {0, 0, false};
-                mesh->GetKeyAndMode(0, &uv);
+                mesh->NiGeometryData_GetTextureSetIterator(0, &uv);
                 if (uv.data)
                 {
                     const Vec2* pa = (Vec2*)((unsigned char*)uv.data + a * uv.stride);
@@ -1661,7 +1683,7 @@ bool __cdecl IntersectShape(const LocalVec3* rayStart, const LocalVec3* rayDirec
                 }
                 else
                 {
-                    Vec2* texcoords = shape->mesh->texcoords;
+                    Vec2* texcoords = pkTBG->mesh->texcoords;
                     if (texcoords)
                     {
                         Vec2 sum = FUN_00532fd0(weight, texcoords[a]) + FUN_00532fd0(u, texcoords[b]) +
@@ -1676,10 +1698,10 @@ bool __cdecl IntersectShape(const LocalVec3* rayStart, const LocalVec3* rayDirec
             {
                 result->uv = DAT_011f4980;
             }
-            if (options->needsNormal)
+            if (kPick->needsNormal)
             {
                 BufferView normals = {0, 0, false};
-                mesh->GetBounds(&normals);
+                mesh->NiGeometryData_GetNormalsIterator(&normals);
                 LocalVec3 normal;
                 if (normals.data)
                 {
@@ -1692,7 +1714,7 @@ bool __cdecl IntersectShape(const LocalVec3* rayStart, const LocalVec3* rayDirec
                 else
                 {
                     LocalVec3* directNormals;
-                    if (options->needsTangent && (directNormals = shape->mesh->normals) != 0)
+                    if (kPick->needsTangent && (directNormals = pkTBG->mesh->normals) != 0)
                         CopyVector(normal, FUN_004a3760(weight, directNormals[a]) + FUN_004a3760(u, directNormals[b]) +
                                  FUN_004a3760(v, directNormals[c]));
                     else
@@ -1704,7 +1726,7 @@ bool __cdecl IntersectShape(const LocalVec3* rayStart, const LocalVec3* rayDirec
                     }
                 }
                 reinterpret_cast<RaycastPoint&>(normal).Unitize_004a0c10();
-                if (options->coordinateMode == 1)
+                if (kPick->coordinateMode == 1)
                     CopyVector(normal, *reinterpret_cast<const LocalVec3*>(
                         &reinterpret_cast<const Mat3LocalView&>(xform.rotation).FUN_004b4500(
                             *reinterpret_cast<const ::LocalVec3*>(&normal))));
@@ -1712,10 +1734,10 @@ bool __cdecl IntersectShape(const LocalVec3* rayStart, const LocalVec3* rayDirec
             }
             else
                 CopyVector(result->normal, DAT_011f426c);
-            if (options->needsColor)
+            if (kPick->needsColor)
             {
                 BufferView colors = {0, 0, false};
-                mesh->NiGeometryData_GetAdditionalColorData(&colors);
+                mesh->NiGeometryData_GetColorsIterator(&colors);
                 if (colors.data)
                 {
                     Vec4 ca, cb, cc;
@@ -1727,7 +1749,7 @@ bool __cdecl IntersectShape(const LocalVec3* rayStart, const LocalVec3* rayDirec
                 }
                 else
                 {
-                    Vec4* directColors = shape->mesh->colors;
+                    Vec4* directColors = pkTBG->mesh->colors;
                     if (directColors)
                     {
                         Vec4 sum = Object_ProcessAndReturnValue_00532f40(weight, directColors[a]) + Object_ProcessAndReturnValue_00532f40(u, directColors[b]) +
@@ -1740,7 +1762,7 @@ bool __cdecl IntersectShape(const LocalVec3* rayStart, const LocalVec3* rayDirec
             }
             else
                 result->tangent = DAT_011a9be0;
-            if (options->mode == 1 && options->stopAtFirst == 1)
+            if (kPick->mode == 1 && kPick->stopAtFirst == 1)
             {
                 if (ownsPositions)
                     mesh->NiGeometryData_UnlockPackedVertexData();
@@ -1752,8 +1774,8 @@ bool __cdecl IntersectShape(const LocalVec3* rayStart, const LocalVec3* rayDirec
         return anyHit;
     }
 
-    QueryResult* result = options->output.GetTexture(shape);
-    LocalVec3 delta = *reinterpret_cast<const LocalVec3*>(&shape->World().position) - *rayStart;
+    QueryResult* result = kPick->output.GetTexture(pkTBG);
+    LocalVec3 delta = *reinterpret_cast<const LocalVec3*>(&pkTBG->World().position) - *kOrigin;
     float squared = delta.y * delta.y + delta.x * delta.x + delta.z * delta.z;
     squared = sqrt(squared);
     result->distance = squared;
@@ -1950,9 +1972,9 @@ struct Mesh
     bool FUN_00a67360(int);
     void NiGeometryData_GetVerticesIterator(BufferView*);
     void NiGeometryData_UnlockPackedVertexData();
-    void GetKeyAndMode(int, BufferView*);
-    void GetBounds(BufferView*);
-    void NiGeometryData_GetAdditionalColorData(BufferView*);
+    void NiGeometryData_GetTextureSetIterator(int, BufferView*);
+    void NiGeometryData_GetNormalsIterator(BufferView*);
+    void NiGeometryData_GetColorsIterator(BufferView*);
 };
 
 struct RTTI
@@ -1987,8 +2009,8 @@ class GlobalObjectO2_00a7b610;
 extern GlobalObjectO2_00a7b610 g_011f4a20;
 extern GlobalObjectO2_00a7b610 g_011f4a40;
 bool NiObject_IsKindOf(const void*, Shape*);
-bool __cdecl RaycastGeometry(const NiPoint3*, const NiPoint3*, Options*, Shape*);
-bool __cdecl IntersectShape(const NiPoint3*, const NiPoint3*, Options*, Shape*);
+bool __cdecl NiCollisionTraversals_FindIntersectionsTriShapeFastPath(const NiPoint3*, const NiPoint3*, Options*, Shape*);
+bool __cdecl NiCollisionTraversals_FindIntersectionsOneStripFastPath(const NiPoint3*, const NiPoint3*, Options*, Shape*);
 
 extern bool __cdecl FUN_00eadb90(const NiPoint3*, const NiPoint3*, const NiPoint3*, const NiPoint3*, const NiPoint3*,
                                  bool, NiPoint3*, float*, float*, float*);
@@ -2008,28 +2030,32 @@ inline bool IsKindOfType(const void* rtti, Shape* shape)
 
 // Tests the ray against a shape's mesh or bound data and writes distance plus mesh hit attributes when available.
 // @fnv 0x00e9b4f0
-bool __cdecl RaycastShape(const NiPoint3* rayStart, const NiPoint3* rayDirection, Options* options, Shape* shape)
+// src: XBOX_RETAIL_PDB 0x00e9b4f0
+// pdb: NiCollisionTraversals::FindIntersectionsTriBasedGeom | NiCollisionTraversals.obj | retail, object-file gap fill, high
+// pdb params: kOrigin, kDir, kPick, pkTBG
+// pdb locals: kVert0, kModelOrigin, bFound, istride, pkVertex, fInvWorldScale, kVert2, usTris, psrc, pkModelData, VertexIterator, kWorld, kDiff, kModelDir, bLocked, kVert1, pkRecord, distance, pkStripsData, pkAGD, i, i2, fTriParam2, kIntersect ...
+bool __cdecl NiCollisionTraversals_FindIntersectionsTriBasedGeom(const NiPoint3* kOrigin, const NiPoint3* kDir, Options* kPick, Shape* pkTBG)
 {
     NiPoint3 va, vb, vc;
     NiPoint3 normal;
-    if (options->unk08 && !shape->unkBC)
+    if (kPick->unk08 && !pkTBG->unkBC)
     {
-        if (IsKindOfType(&g_011f4a20, shape))
+        if (IsKindOfType(&g_011f4a20, pkTBG))
         {
-            if (shape->mesh->unk44 == 1)
-                return IntersectShape(rayStart, rayDirection, options, shape);
+            if (pkTBG->mesh->unk44 == 1)
+                return NiCollisionTraversals_FindIntersectionsOneStripFastPath(kOrigin, kDir, kPick, pkTBG);
         }
-        else if (NiObject_IsKindOf(&g_011f4a40, shape))
-            return RaycastGeometry(rayStart, rayDirection, options, shape);
-        const Transform& xform = shape->World();
-        NiPoint3 difference = *rayStart - *reinterpret_cast<const NiPoint3*>(&xform.position);
+        else if (NiObject_IsKindOf(&g_011f4a40, pkTBG))
+            return NiCollisionTraversals_FindIntersectionsTriShapeFastPath(kOrigin, kDir, kPick, pkTBG);
+        const Transform& xform = pkTBG->World();
+        NiPoint3 difference = *kOrigin - *reinterpret_cast<const NiPoint3*>(&xform.position);
         float invScale = (float)(1.0f / xform.scale);
         NiPoint3 localStart = NiPoint3_TransformByMatrix3(difference, &reinterpret_cast<const Mat3&>(xform.rotation).m00) * invScale;
-        NiPoint3 localDirection = NiPoint3_TransformByMatrix3(*rayDirection, &reinterpret_cast<const Mat3&>(xform.rotation).m00) * invScale;
+        NiPoint3 localDirection = NiPoint3_TransformByMatrix3(*kDir, &reinterpret_cast<const Mat3&>(xform.rotation).m00) * invScale;
         bool anyHit = false;
-        const unsigned short triangleCount = shape->mesh->GetTriangleTotal();
+        const unsigned short triangleCount = pkTBG->mesh->GetTriangleTotal();
         bool ownsPositions = false;
-        Mesh* mesh = shape->mesh;
+        Mesh* mesh = pkTBG->mesh;
         BufferView positions = {0, 0, false};
         NiPoint3* directVertices = mesh->vertices;
         if (!directVertices)
@@ -2042,8 +2068,8 @@ bool __cdecl RaycastShape(const NiPoint3* rayStart, const NiPoint3* rayDirection
             }
             if (!positions.data)
             {
-                QueryResult* result = options->output.GetTexture(shape);
-                NiPoint3 offset = reinterpret_cast<const NiPoint3*>(&shape->World().position)->SubtractIntoVector(*rayStart);
+                QueryResult* result = kPick->output.GetTexture(pkTBG);
+                NiPoint3 offset = reinterpret_cast<const NiPoint3*>(&pkTBG->World().position)->SubtractIntoVector(*kOrigin);
                 result->distance = offset.FUN_00457990();
                 return true;
             }
@@ -2051,7 +2077,7 @@ bool __cdecl RaycastShape(const NiPoint3* rayStart, const NiPoint3* rayDirection
         for (unsigned short tri = 0; tri < triangleCount; ++tri)
         {
             unsigned short a, b, c;
-            shape->mesh->GetTriangle(tri, &a, &b, &c);
+            pkTBG->mesh->GetTriangle(tri, &a, &b, &c);
             if (!directVertices)
             {
                 va = *(NiPoint3*)((unsigned char*)positions.data + a * positions.stride);
@@ -2066,12 +2092,12 @@ bool __cdecl RaycastShape(const NiPoint3* rayStart, const NiPoint3* rayDirection
             }
             NiPoint3 point;
             float distance, u, v;
-            bool frontOnly = options->unk10;
+            bool frontOnly = kPick->unk10;
             if (FUN_00eadb90(&localStart, &localDirection, &va, &vb, &vc, frontOnly, &point, &distance, &u, &v))
             {
                 anyHit = true;
-                QueryResult* result = options->output.GetTexture(shape);
-                if (options->coordinateMode == 1)
+                QueryResult* result = kPick->output.GetTexture(pkTBG);
+                if (kPick->coordinateMode == 1)
                 {
                     point = ScalePoint(xform.scale, *reinterpret_cast<const NiPoint3*>(
                         &reinterpret_cast<const Mat3&>(xform.rotation).FUN_004b4500(
@@ -2083,10 +2109,10 @@ bool __cdecl RaycastShape(const NiPoint3* rayStart, const NiPoint3* rayDirection
                 result->triangle = tri;
                 result->SetVertices(a, b, c);
                 float weight = 1.0f - (u + v);
-                if (options->needsUV)
+                if (kPick->needsUV)
                 {
                     BufferView uv = {0, 0, false};
-                    mesh->GetKeyAndMode(0, &uv);
+                    mesh->NiGeometryData_GetTextureSetIterator(0, &uv);
                     if (uv.data)
                     {
                         const Vec2* pa = (Vec2*)((unsigned char*)uv.data + a * uv.stride);
@@ -2106,7 +2132,7 @@ bool __cdecl RaycastShape(const NiPoint3* rayStart, const NiPoint3* rayDirection
                     }
                     else
                     {
-                        Vec2* texcoords = shape->mesh->texcoords;
+                        Vec2* texcoords = pkTBG->mesh->texcoords;
                         if (texcoords)
                         {
                             Vec2 sum = FUN_00532fd0(weight, texcoords[a]) + FUN_00532fd0(u, texcoords[b]) +
@@ -2121,10 +2147,10 @@ bool __cdecl RaycastShape(const NiPoint3* rayStart, const NiPoint3* rayDirection
                 {
                     result->uv = DAT_011f4980;
                 }
-                if (options->needsNormal)
+                if (kPick->needsNormal)
                 {
                     BufferView normals = {0, 0, false};
-                    mesh->GetBounds(&normals);
+                    mesh->NiGeometryData_GetNormalsIterator(&normals);
                     if (normals.data)
                     {
                         NiPoint3 na = *(NiPoint3*)((unsigned char*)normals.data + a * normals.stride);
@@ -2135,7 +2161,7 @@ bool __cdecl RaycastShape(const NiPoint3* rayStart, const NiPoint3* rayDirection
                     else
                     {
                         NiPoint3* directNormals;
-                        if (options->needsTangent && (directNormals = shape->mesh->normals) != 0)
+                        if (kPick->needsTangent && (directNormals = pkTBG->mesh->normals) != 0)
                             normal = FUN_004a3760(weight, directNormals[a])
                                          .FUN_00439e90(FUN_004a3760(u, directNormals[b]))
                                          .FUN_00439e90(FUN_004a3760(v, directNormals[c]));
@@ -2149,7 +2175,7 @@ bool __cdecl RaycastShape(const NiPoint3* rayStart, const NiPoint3* rayDirection
                     }
                     // RaycastPoint declares the same normalize routine with its noalias contract.
                     reinterpret_cast<RaycastPoint&>(normal).Unitize_004a0c10();
-                    if (options->coordinateMode == 1)
+                    if (kPick->coordinateMode == 1)
                         normal = *reinterpret_cast<const NiPoint3*>(
                             &reinterpret_cast<const Mat3&>(xform.rotation).FUN_004b4500(
                                 reinterpret_cast<const ::NiPoint3*>(&normal)));
@@ -2157,10 +2183,10 @@ bool __cdecl RaycastShape(const NiPoint3* rayStart, const NiPoint3* rayDirection
                 }
                 else
                     result->normal = DAT_011f426c;
-                if (options->needsColor)
+                if (kPick->needsColor)
                 {
                     BufferView colors = {0, 0, false};
-                    mesh->NiGeometryData_GetAdditionalColorData(&colors);
+                    mesh->NiGeometryData_GetColorsIterator(&colors);
                     if (colors.data)
                     {
                         // Preserve zero initialization and trivial copies for color samples.
@@ -2175,7 +2201,7 @@ bool __cdecl RaycastShape(const NiPoint3* rayStart, const NiPoint3* rayDirection
                     }
                     else
                     {
-                        Vec4* directColors = shape->mesh->colors;
+                        Vec4* directColors = pkTBG->mesh->colors;
                         if (directColors)
                         {
                             Vec4 sum = Object_ProcessAndReturnValue_00532f40(weight, directColors[a]) + Object_ProcessAndReturnValue_00532f40(u, directColors[b]) +
@@ -2186,7 +2212,7 @@ bool __cdecl RaycastShape(const NiPoint3* rayStart, const NiPoint3* rayDirection
                 }
                 else
                     result->tangent = DAT_011a9be0;
-                if (options->mode == 1 && options->stopAtFirst == 1)
+                if (kPick->mode == 1 && kPick->stopAtFirst == 1)
                 {
                     if (ownsPositions)
                         mesh->NiGeometryData_UnlockPackedVertexData();
@@ -2199,21 +2225,21 @@ bool __cdecl RaycastShape(const NiPoint3* rayStart, const NiPoint3* rayDirection
         return anyHit;
     }
 
-    Bound sphere = shape->bound ? *shape->bound : DAT_011f4288;
-    normal = *reinterpret_cast<const NiPoint3*>(&sphere.x) - *rayStart;
-    float along = rayDirection->y * normal.y + normal.x * rayDirection->x + normal.z * rayDirection->z;
+    Bound sphere = pkTBG->bound ? *pkTBG->bound : DAT_011f4288;
+    normal = *reinterpret_cast<const NiPoint3*>(&sphere.x) - *kOrigin;
+    float along = kDir->y * normal.y + normal.x * kDir->x + normal.z * kDir->z;
     if (along < 0.0f)
         return false;
-    QueryResult* result = options->output.GetTexture(shape);
+    QueryResult* result = kPick->output.GetTexture(pkTBG);
     along = normal.x * normal.x + normal.y * normal.y + normal.z * normal.z;
     result->distance = (float)sqrt((double)along);
-    if (options->unk08 == 1)
+    if (kPick->unk08 == 1)
     {
-        NiPoint3 offset = *rayDirection * result->distance;
+        NiPoint3 offset = *kDir * result->distance;
         NiPoint3 hit;
-        hit.x = rayStart->x + offset.x;
-        hit.y = rayStart->y + offset.y;
-        hit.z = offset.z + rayStart->z;
+        hit.x = kOrigin->x + offset.x;
+        hit.y = kOrigin->y + offset.y;
+        hit.z = offset.z + kOrigin->z;
         result->point = hit;
     }
     return true;
@@ -2252,12 +2278,15 @@ struct Helper
 // Builds temporary bounds from code and point, allocates a NiBoundingVolume, then copies the bounds into it.
 // @fnv 0x00e9c850
 // src: COMMUNITY 0x00e9c850
-NiBoundingVolume* __cdecl NiCollisionConvert_ConvertToBoxBV(unsigned int code, int* point)
+// pdb: NiCollisionConvert::ConvertToBoxBV | NiCollision.obj | retail, upstream name already matches, high
+// pdb params: usQuantity, pkVertex
+// pdb locals: kBox, pkBoxBV
+NiBoundingVolume* __cdecl NiCollisionConvert_ConvertToBoxBV(unsigned int usQuantity, int* pkVertex)
 {
-    if ((unsigned short)code == 0 || point == 0)
+    if ((unsigned short)usQuantity == 0 || pkVertex == 0)
         return 0;
     TempBounds stBounds;
-    stBounds.ComputeFromPoints(code, point);
+    stBounds.ComputeFromPoints(usQuantity, pkVertex);
     NiBoundingVolume* result = (NiBoundingVolume*)g_memoryManager.Allocate(0x40);
     if (result != 0)
         result = ((Helper*)result)

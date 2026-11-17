@@ -9,19 +9,22 @@ extern int DAT_0107f494;
 struct FUN_0084b4e0_shell
 {
     void FUN_0084b750(void* arg);
-    int NiTMap_int64_int_NiTMap(void* arg);
+    int NiTMap_int64_int_ctor(void* uiHashSize);
 };
 
 // Calls FUN_0084b750 with arg, stores the address of DAT_0107f494 into this, and returns this.
 // @fnv 0x0084b4e0
-// src: EXE 0x0084b4e0
-int FUN_0084b4e0_shell::NiTMap_int64_int_NiTMap(void* arg)
+// src: XBOX_DEBUG_PDB 0x0084b4e0 (was EXE)
+// pdb: NiTMap<__int64,int>::NiTMap<__int64,int> | BGSSaveLoadGame.obj | debug, call graph, high
+// pdb params: uiHashSize
+int FUN_0084b4e0_shell::NiTMap_int64_int_ctor(void* uiHashSize)
 {
-    FUN_0084b750(arg);
+    FUN_0084b750(uiHashSize);
     *(int*)this = (int)&DAT_0107f494;
     return (int)this;
 }
 
+// pdb: structure BGSSaveLoadFormInfo, size 0x1 (here 0x4), 1 members
 struct BGSSaveLoadFormInfo
 {
     int dummy;
@@ -44,6 +47,8 @@ unsigned int __fastcall BGSSaveLoadFormInfo_GetSizeType(void*);
 // If pBuffer is set, computes a size from the header via FUN_00864520 and FUN_00845d70 and returns pBuffer plus that size plus 2; otherwise returns 0.
 // @fnv 0x00866390
 // src: XBOX_PDB 0x00866390
+// pdb: BGSUnloadedFormBuffer::GetAdvancedBuffer | BGSUnloadedFormBuffer.obj | retail, upstream name already matches, high
+// pdb locals: punloadedHeader, isizeTypeSize
 char* FormBufferContext::BGSUnloadedFormBuffer_GetAdvancedBuffer()
 {
     FormInfoRecord* punloadedHeader;
@@ -63,6 +68,7 @@ SIZE_TYPE __fastcall BGSSaveLoadFormInfo_GetSizeType(void*);
 
 // @fnv 0x00866430
 // src: COMMUNITY 0x00866430
+// pdb: BGSUnloadedFormBuffer::GetSizeType | BGSUnloadedFormBuffer.obj | debug, upstream name already matches, high
 SIZE_TYPE __fastcall BGSUnloadedFormBuffer_GetSizeType(void* a)
 {
     return BGSSaveLoadFormInfo_GetSizeType(*(void**)a);
@@ -78,6 +84,8 @@ unsigned int __cdecl GetSizeTypeSize(unsigned int);
 
 // Calls FUN_00845d70 on the result of FUN_00866430 and returns that value plus 9.
 // @fnv 0x00866450
+// pdb: BGSUnloadedFormBuffer::GetOverhead | BGSUnloadedFormBuffer.obj | debug, object-file run extension, low
+// pdb locals: isizeTypeSize
 unsigned int __thiscall FUN_00866450_shell::GetAdjustedValue()
 {
     unsigned int result = GetSizeTypeSize(BGSUnloadedFormBuffer_GetSizeType());
@@ -92,6 +100,8 @@ struct FUN_008663e0_shell
 };
 // @fnv 0x008663e0
 // src: COMMUNITY 0x008663e0
+// pdb: BGSUnloadedFormBuffer::GetSize | BGSUnloadedFormBuffer.obj | retail, upstream name already matches, high
+// pdb locals: esizeType, padvancedBuffer, isize
 unsigned int FUN_008663e0_shell::BGSUnloadedFormBuffer_GetSize()
 {
     unsigned int uiOut;
@@ -123,6 +133,8 @@ struct FUN_00866480_shell : FormBufferContext
 
 // @fnv 0x00866480
 // src: COMMUNITY 0x00866480
+// pdb: BGSUnloadedFormBuffer::CreateLoadFormBuffer | BGSUnloadedFormBuffer.obj | debug, object-file run extension, low
+// pdb locals: esizeType, padvancedBuffer, isize, iposition, ploadFormBuffer
 BGSLoadFormBuffer* FUN_00866480_shell::BGSUnloadedFormBuffer_FillLoadFormBuffer()
 {
     SIZE_TYPE esizeType;
@@ -208,10 +220,10 @@ class Header866
 class SaveFile866
 {
   public:
-    unsigned int Read(void* pvBuffer, unsigned int uiSize);
+    unsigned int Read(void* apBuffer, unsigned int aiBytes);
 };
 
-int __cdecl ReadLength866(SaveFile866* pkFile, unsigned int* puiLength, int iFormat);
+int __cdecl LoadGameSizeFromFile(SaveFile866* apFile, unsigned int* ariSize, int aeSizeType);
 void __cdecl PrepareBuffer866(void* pvBuffer, unsigned int uiLength, int iFormat);
 
 class Buffer866
@@ -219,11 +231,15 @@ class Buffer866
   public:
     char* m_pcData;
 
-    void ReadBuffer(SaveFile866* pkFile);
+    void BGSUnloadedFormBuffer_Load(SaveFile866* apFile);
 };
 
 // @fnv 0x008662c0
-void Buffer866::ReadBuffer(SaveFile866* pkFile)
+// src: XBOX_RETAIL_PDB 0x008662c0
+// pdb: BGSUnloadedFormBuffer::Load | BGSUnloadedFormBuffer.obj | retail, object-file gap fill, high
+// pdb params: apFile
+// pdb locals: header, pbuffer, esizeType, isize, punloadedHeader, isizeTypeSize, idataSize
+void Buffer866::BGSUnloadedFormBuffer_Load(SaveFile866* apFile)
 {
     unsigned int uiLength_;
     int iExtra;
@@ -233,10 +249,10 @@ void Buffer866::ReadBuffer(SaveFile866* pkFile)
     char* pcCur6;
     Header866 kHeader5;
 
-    pkFile->Read(&kHeader5, 9);
+    apFile->Read(&kHeader5, 9);
     iFormat2 = kHeader5.m_kVersion.GetFormat();
     uiLength_ = 0;
-    iExtra = ReadLength866(pkFile, &uiLength_, iFormat2);
+    iExtra = LoadGameSizeFromFile(apFile, &uiLength_, iFormat2);
     uiSize = uiLength_ + iExtra + 2;
     m_pcData = new char[uiSize];
     pcCur6 = m_pcData;
@@ -247,5 +263,5 @@ void Buffer866::ReadBuffer(SaveFile866* pkFile)
     PrepareBuffer866(pcCur6, uiLength_, iFormat2);
     pcCur6 += iExtra;
     if (uiLength_)
-        pkFile->Read(pcCur6, uiLength_);
+        apFile->Read(pcCur6, uiLength_);
 }

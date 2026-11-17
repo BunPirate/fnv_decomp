@@ -38,7 +38,7 @@ inline FNVVec3 operator*(float s, const FNVVec3& b)
 }
 inline int NiPlane::Side(const FNVVec3& p) const
 {
-    float d = x * p.x + y * p.y + z * p.z - c;
+    float d = m_kNormal * p.x + y * p.y + z * p.z - m_fConstant;
     if (d < 0.0f)
         return 2;
     else if (d > 0.0f)
@@ -47,11 +47,11 @@ inline int NiPlane::Side(const FNVVec3& p) const
 }
 inline float NiPlane::Distance(const FNVVec3& p) const
 {
-    return x * p.x + y * p.y + z * p.z - c;
+    return m_kNormal * p.x + y * p.y + z * p.z - m_fConstant;
 }
 inline int Classify(const NiPlane& q, const FNVVec3& p)
 {
-    float d = q.x * p.x + q.y * p.y + q.z * p.z - q.c;
+    float d = q.m_kNormal * p.x + q.y * p.y + q.z * p.z - q.m_fConstant;
     if (d < 0.0f)
         return 2;
     else if (d > 0.0f)
@@ -173,37 +173,40 @@ struct FUN_00a69400 : FUN_00a693e0
 };
 // @fnv 0x00b9c020
 // src: COMMUNITY 0x00b9c020
-unsigned char __stdcall ShadowSceneLight_FrustumFrustumIntersection(FNVCuboid* p1, FNVCuboid* p2)
+// pdb: ShadowSceneLight::FrustumFrustumIntersection | ShadowSceneLight.obj | retail, upstream name already matches, high
+// pdb params: apCamera1, apCamera2
+// pdb locals: U, kcullproc, pfrustpoints, R, kconnection, kFrust1Points, V, kcamera1Planes, pfrustplanes, P, kFrust2Points, kcamera2Planes, frad, ifrust, ipt, binside, ipl, iside, ied, b, a, aside, bside, t ...
+unsigned char __stdcall ShadowSceneLight_FrustumFrustumIntersection(FNVCuboid* apCamera1, FNVCuboid* apCamera2)
 {
     unsigned char adjacency[8][2] = {{0, 1}, {0, 2}, {0, 3}, {0, 4}, {1, 2}, {1, 3}, {2, 4}, {3, 4}};
     FNVPlaneArray first, second;
     FNVVec3 vertsA[5], vertsB[5];
-    FNVVec3 forward = p1->Forward();
-    FNVVec3 pos = p1->position;
+    FNVVec3 forward = apCamera1->Forward();
+    FNVVec3 pos = apCamera1->position;
     vertsA[0] = pos;
-    FNVVec3 up = p1->fe4 * p1->Up();
-    FNVVec3 right = p1->fe0 * p1->Right();
-    float farDist = p1->ff0;
+    FNVVec3 up = apCamera1->fe4 * apCamera1->Up();
+    FNVVec3 right = apCamera1->fe0 * apCamera1->Right();
+    float farDist = apCamera1->ff0;
     vertsA[1] = pos + farDist * forward + farDist * up + farDist * right;
     vertsA[2] = pos + farDist * forward + farDist * up - farDist * right;
     vertsA[3] = pos + farDist * forward - farDist * up + farDist * right;
     vertsA[4] = pos + farDist * forward - farDist * up - farDist * right;
-    pos = p2->position;
-    forward = p2->Forward();
+    pos = apCamera2->position;
+    forward = apCamera2->Forward();
     vertsB[0] = pos;
-    up = p2->fe4 * p2->Up();
-    right = p2->fe0 * p2->Right();
-    farDist = p2->ff0;
+    up = apCamera2->fe4 * apCamera2->Up();
+    right = apCamera2->fe0 * apCamera2->Right();
+    farDist = apCamera2->ff0;
     vertsB[1] = pos + farDist * forward + farDist * up + farDist * right;
     vertsB[2] = pos + farDist * forward + farDist * up - farDist * right;
     vertsB[3] = pos + farDist * forward - farDist * up + farDist * right;
     vertsB[4] = pos + farDist * forward - farDist * up - farDist * right;
     FUN_00a69400 scratch(0);
-    scratch.camera = p1;
-    scratch.NiCullingProcess_SetFrustum(&p1->fdc);
+    scratch.camera = apCamera1;
+    scratch.NiCullingProcess_SetFrustum(&apCamera1->fdc);
     first = scratch.poly;
-    scratch.camera = p2;
-    scratch.NiCullingProcess_SetFrustum(&p2->fdc);
+    scratch.camera = apCamera2;
+    scratch.NiCullingProcess_SetFrustum(&apCamera2->fdc);
     second = scratch.poly;
     FNVPlaneArray active;
     FNVVec3* verts = 0;
@@ -255,8 +258,8 @@ unsigned char __stdcall ShadowSceneLight_FrustumFrustumIntersection(FNVCuboid* p
                 int r2 = active.faces[plane].Side(v2);
                 if (r1 != r2)
                 {
-                    FNVVec3 normal = *reinterpret_cast<const FNVVec3*>(&active.faces[plane].x);
-                    FNVVec3 delta = normal * active.faces[plane].c - v1;
+                    FNVVec3 normal = *reinterpret_cast<const FNVVec3*>(&active.faces[plane].m_kNormal);
+                    FNVVec3 delta = normal * active.faces[plane].m_fConstant - v1;
                     FNVVec3 direction = v2 - v1;
                     float fraction = (normal * delta) / (normal * direction);
                     FNVVec3 point = v1 + fraction * (v2 - v1);

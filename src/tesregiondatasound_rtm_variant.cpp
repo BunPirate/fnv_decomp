@@ -22,6 +22,8 @@ struct FUN_004f4f90_shell : TESRegionDataSound
 
 // @fnv 0x004f4f90
 // src: XBOX_PDB 0x004f4f90
+// pdb: TESRegionDataSound::GetMediaSetBattle | TESRegionDataSound.obj | retail, upstream name already matches, high
+// pdb locals: pItem, pList
 int FUN_004f4f90_shell::TESRegionDataSound_GetMediaSetBattle()
 {
     unsigned int found;

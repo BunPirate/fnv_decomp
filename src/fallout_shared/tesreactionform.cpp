@@ -8,6 +8,7 @@
 #include "tesreactionform_decls.h"
 
 // Reaction entries are 12 bytes: form at 0, reaction at 4, fight reaction at 8; no shared header exists yet.
+// pdb: structure GROUP_REACTION, size 0xc, 3 members
 struct GROUP_REACTION
 {
     TESForm* pForm;
@@ -27,13 +28,17 @@ void TESReactionForm::InitializeComponent()
 }
 
 // @fnv 0x0048baf0
+// pdb: TESReactionForm::ClearDataComponent | TESReactionForm.obj | debug, vtable slot, medium
 void TESReactionForm::ClearComponent()
 {
-    ClearReactionList();
+    FreeReactionList();
 }
 
 // @fnv 0x0048bb10
-void TESReactionForm::ClearReactionList()
+// src: XBOX_RETAIL_PDB 0x0048bb10
+// pdb: TESReactionForm::FreeReactionList | TESReactionForm.obj | retail, call graph (shared callers), high
+// pdb locals: reaction
+void TESReactionForm::FreeReactionList()
 {
     while (reinterpret_cast<BSSimpleList<GROUP_REACTION*>*>(GetReactionList())
                ->GetItem() != 0)
@@ -51,11 +56,16 @@ void TESReactionForm::ClearReactionList()
 // Constructs the map base by forwarding the given size to the TESReactionMapStorage base constructor.
 // Constructs a BSMapBase<int, DistantTreeTextureInfo*> with the given size, delegating to TESReactionMapStorage.
 // @fnv 0x0048b380
+// pdb: BSMap<int,TEX_SWAP *>::BSMap<int,TEX_SWAP *> | TESModelTextureSwap.obj | debug, object-file gap fill, medium
+// pdb params: uiHashSize
 template <> BSMapBase<int, DistantTreeTextureInfo*>::BSMapBase(unsigned int size) : TESReactionMapStorage(size)
 {}
 
 // On load, walks the reaction list and drops entries whose formID no longer resolves, unlinking them from the list.
 // @fnv 0x0048cb40
+// pdb: TESReactionForm::InitLoadGame | TESReactionForm.obj | debug, object-file run extension, low
+// pdb params: apLoadGameBuffer
+// pdb locals: plist, plastList, preaction, bremove
 void TESReactionForm::InitLoadGame(BGSLoadFormBuffer* buffer)
 {
     if (static_cast<const FormChangeMask&>(buffer->GetChangeFlags(4u)))
@@ -104,14 +114,17 @@ void TESReactionForm::InitLoadGame(BGSLoadFormBuffer* buffer)
 
 // Resolves each reaction entry's formID against the given form's file, warns and removes entries whose form cannot be found.
 // @fnv 0x0048bc30
-void TESReactionForm::InitItem(TESForm* form)
+// pdb: TESReactionForm::InitItem | TESReactionForm.obj | retail, string-set bridge, high
+// pdb params: apOwner
+// pdb locals: pList, pLastList, pownerFile, reaction, tempID
+void TESReactionForm::InitItem(TESForm* apOwner)
 {
     // Local names preserve the original MSVC9 stack allocation.
     TESFile* pPrev;
     BSSimpleList<GROUP_REACTION*>* pList =
         reinterpret_cast<BSSimpleList<GROUP_REACTION*>*>(GetReactionList());
     BSSimpleList<GROUP_REACTION*>* pFile = 0;
-    pPrev = form ? form->GetFile(-1) : 0;
+    pPrev = apOwner ? apOwner->GetFile(-1) : 0;
     while (pList && pList->GetItem())
     {
         GROUP_REACTION* reaction = pList->GetItem();
@@ -125,7 +138,7 @@ void TESReactionForm::InitItem(TESForm* form)
         else
         {
             Warning("MASTERFILE: Form (%08X) not found for reaction of pForm (%08X) '%s'.\r\n", formID,
-                    form->GetFormID(), form->GetName());
+                    apOwner->GetFormID(), apOwner->GetName());
             if (pList->GetNext() || !pFile)
             {
                 pList->RemoveHead();
@@ -142,6 +155,9 @@ void TESReactionForm::InitItem(TESForm* form)
 
 // Searches the reaction list for a matching form and returns its fight reaction, or 0 if not found.
 // @fnv 0x0048c1b0
+// pdb: TESReactionForm::GetFactionCombatRelation | TESReactionForm.obj | debug, upstream name already matches, high
+// pdb params: apForm
+// pdb locals: pList, fr
 int TESReactionForm::GetFactionCombatRelation(TESForm* apForm)
 {
     if (apForm != 0)
@@ -159,6 +175,9 @@ int TESReactionForm::GetFactionCombatRelation(TESForm* apForm)
 }
 
 // @fnv 0x0048bfc0
+// pdb: TESReactionForm::SetReaction | TESReactionForm.obj | retail, call graph (shared callers), high
+// pdb params: apForm, aiReaction
+// pdb locals: foundit, pList, fr
 void TESReactionForm::SetReactionValue(TESForm* apForm, int aiReaction)
 {
     if (!apForm)
@@ -194,12 +213,14 @@ void TESReactionForm::SetReactionValue(TESForm* apForm, int aiReaction)
 }
 
 // @fnv 0x0048ba00
+// pdb: TESReactionForm::TESReactionForm | TESReactionForm.obj | debug, upstream name already matches, high
 TESReactionForm::TESReactionForm()
 {
     InitializeComponent();
 }
 
 // @fnv 0x0048ba70
+// pdb: TESReactionForm::~TESReactionForm | TESReactionForm.obj | retail, upstream name already matches, high
 TESReactionForm::~TESReactionForm()
 {
     ClearComponent();
@@ -208,11 +229,15 @@ TESReactionForm::~TESReactionForm()
 void __cdecl operator delete(void*);
 void* __cdecl operator new(unsigned int);
 // @fnv 0x0048ca90
+// pdb: TESReactionForm::InitLoadGame | TESReactionForm.obj | retail, object-file run extension, low
+// pdb note: debug build links it to TESReactionForm::LoadGame
+// pdb params: aiFlags, aiOldFlags
+// pdb locals: plist, plastList, preaction, iformID
 void TESReactionForm::LoadGame(BGSLoadFormBuffer* buffer)
 {
     if (static_cast<const FormChangeMask&>(buffer->GetChangeFlags(4u)))
     {
-        ClearReactionList();
+        FreeReactionList();
         unsigned int count = buffer->ReadElementCount();
         for (unsigned int i = 0; i < count; ++i)
         {
@@ -229,6 +254,8 @@ bool TESForm_QEndianSwapOnSave();
 void AppendChunk(unsigned int, void*, unsigned int);
 
 // @fnv 0x0048bb70
+// pdb: TESReactionForm::Save | TESReactionForm.obj | retail, upstream name already matches, high
+// pdb locals: pList, fr, fileReact
 void TESReactionForm::Save()
 {
     BSSimpleList<GROUP_REACTION*>* current = (BSSimpleList<GROUP_REACTION*>*)GetReactionList();
@@ -263,14 +290,17 @@ extern int DAT_01186b30;
 void* __cdecl FUN_00ec43fb(TESForm* form, unsigned int a, void* b, void* c, unsigned int d);
 
 // @fnv 0x0048bd50
-void TESReactionForm::BaseFormRecord(BaseFormComponent* form)
+// pdb: TESReactionForm::CopyComponent | TESReactionForm.obj | retail, vtable slot, high
+// pdb params: apCopyFC
+// pdb locals: reaction, pReactionList, pCopyReactionList, pCopy, newreaction
+void TESReactionForm::BaseFormRecord(BaseFormComponent* apCopyFC)
 {
-    TESReactionForm* p = (TESReactionForm*)FUN_00ec43fb(reinterpret_cast<TESForm*>(form), 0, &DAT_01183040, &DAT_01186b30, 0);
+    TESReactionForm* p = (TESReactionForm*)FUN_00ec43fb(reinterpret_cast<TESForm*>(apCopyFC), 0, &DAT_01183040, &DAT_01186b30, 0);
     if (p == 0)
     {
         return;
     }
-    this->ClearReactionList();
+    this->FreeReactionList();
     BSSimpleList<GROUP_REACTION*>* cur5;
     BSSimpleList<GROUP_REACTION*>* dst;
     dst = reinterpret_cast<BSSimpleList<GROUP_REACTION*>*>(GetReactionList());
@@ -293,9 +323,12 @@ void TESReactionForm::BaseFormRecord(BaseFormComponent* form)
 
 // Compares this reaction form's list against another TESReactionForm's list entry by entry, returning true when they differ or the other list is longer.
 // @fnv 0x0048be40
-bool TESReactionForm::IsEqualToBase(BaseFormComponent* component)
+// pdb: TESReactionForm::CompareComponent | TESReactionForm.obj | retail, vtable slot, high
+// pdb params: apCompareFC
+// pdb locals: pCompare, pCompList, pList, reaction, compReaction
+bool TESReactionForm::IsEqualToBase(BaseFormComponent* apCompareFC)
 {
-    TESReactionForm* right = dynamic_cast<TESReactionForm*>(component);
+    TESReactionForm* right = dynamic_cast<TESReactionForm*>(apCompareFC);
     if (!right)
         return true;
     BSSimpleList<GROUP_REACTION*>* other = reinterpret_cast<BSSimpleList<GROUP_REACTION*>*>(GetReactionList());
@@ -328,9 +361,12 @@ bool TESReactionForm::IsEqualToBase(BaseFormComponent* component)
 // Adjust the stored count for a form: add a new entry if missing, remove the entry when its count reaches zero.
 
 // @fnv 0x0048c0b0
-void TESReactionForm::ModReaction(TESForm* pkForm, int iDelta)
+// pdb: TESReactionForm::ModReaction | TESReactionForm.obj | retail, upstream name already matches, high
+// pdb params: apForm, aiReaction
+// pdb locals: bFound, fr, pList
+void TESReactionForm::ModReaction(TESForm* apForm, int aiReaction)
 {
-    if (!pkForm || !iDelta)
+    if (!apForm || !aiReaction)
         return;
 
     GROUP_REACTION* pkEntry = 0;
@@ -339,7 +375,7 @@ void TESReactionForm::ModReaction(TESForm* pkForm, int iDelta)
     while (pkIter && pkIter->GetItem())
     {
         pkEntry = pkIter->GetItem();
-        if (pkEntry->pForm == pkForm)
+        if (pkEntry->pForm == apForm)
         {
             bFound = true;
             break;
@@ -350,13 +386,13 @@ void TESReactionForm::ModReaction(TESForm* pkForm, int iDelta)
     if (!bFound)
     {
         pkEntry = new GROUP_REACTION;
-        pkEntry->pForm = pkForm;
-        pkEntry->iReaction = iDelta;
+        pkEntry->pForm = apForm;
+        pkEntry->iReaction = aiReaction;
         reinterpret_cast<BSSimpleList<GROUP_REACTION*>*>(GetReactionList())->AddTail(pkEntry);
     }
     else
     {
-        pkEntry->iReaction += iDelta;
+        pkEntry->iReaction += aiReaction;
         if (!pkEntry->iReaction)
         {
             reinterpret_cast<BSSimpleList<GROUP_REACTION*>*>(GetReactionList())->Remove(pkEntry);
@@ -367,7 +403,10 @@ void TESReactionForm::ModReaction(TESForm* pkForm, int iDelta)
 
 // If apForm is non-null, updates the matching list entry's reaction or appends a new entry when aiReaction is non-zero.
 // @fnv 0x0048c220
-void TESReactionForm::SetFightReaction(TESForm* apForm, int aiReaction)
+// pdb: TESReactionForm::SetFightReaction | TESReactionForm.obj | retail, upstream name already matches, high
+// pdb params: apForm, aiFightReaction
+// pdb locals: foundit, pList, fr
+void TESReactionForm::SetFightReaction(TESForm* apForm, int aiFightReaction)
 {
     if (apForm == 0)
     {
@@ -380,18 +419,18 @@ void TESReactionForm::SetFightReaction(TESForm* apForm, int aiReaction)
         GROUP_REACTION* pItem = static_cast<BSSimpleList<GROUP_REACTION*>*>(pNode)->GetItem();
         if (pItem->pForm == apForm)
         {
-            pItem->iFightReaction = aiReaction;
+            pItem->iFightReaction = aiFightReaction;
             bFound = true;
             break;
         }
         pNode = static_cast<BSSimpleList<GROUP_REACTION*>*>(pNode)->GetNext();
     }
-    if (!bFound && aiReaction != 0)
+    if (!bFound && aiFightReaction != 0)
     {
         GROUP_REACTION* newItem = new GROUP_REACTION;
         newItem->pForm = apForm;
         newItem->iReaction = 0;
-        newItem->iFightReaction = aiReaction;
+        newItem->iFightReaction = aiFightReaction;
         static_cast<BSSimpleList<GROUP_REACTION*>*>(GetReactionList())->AddTail(newItem);
     }
 }
@@ -418,10 +457,13 @@ void __cdecl ProgramFlow(const char*, ...);
 
 // Computes the serialized size of the reaction data when flag bit 4 is set.
 // @fnv 0x0048c2e0
-unsigned short TESReactionForm::GetSaveSize(unsigned int flags)
+// pdb: TESReactionForm::GetSaveSize | TESReactionForm.obj | retail, upstream name already matches, high
+// pdb params: aiFlags
+// pdb locals: isize, itempStartSize, plist, pheader, pform
+unsigned short TESReactionForm::GetSaveSize(unsigned int aiFlags)
 {
     unsigned short count = 0;
-    if ((flags & 4) != 0)
+    if ((aiFlags & 4) != 0)
     {
         unsigned short start = count;
         if (((fnv_0048c2e0::Global_011de45c*)fnv_0048c2e0::DAT_011de45c)->TESSaveLoadGame_UseSaveGameBlocks())
@@ -479,9 +521,12 @@ void __cdecl ProgramFlow(const char*, ...);
 int Warning(const char*, ...);
 
 // @fnv 0x0048c400
-void TESReactionForm::SaveGame(unsigned int auiFlags)
+// pdb: TESReactionForm::SaveGame | TESReactionForm.obj | retail, object-file run extension, high
+// pdb params: aiFlags
+// pdb locals: icount, plist, itempStartPosition, iblockSize, pcount, pblockSize, iblockHeader, preaction, iformID, icurrentBufferPosition, pheader, pform, istartBufferPosition
+void TESReactionForm::SaveGame(unsigned int aiFlags)
 {
-    if (auiFlags & 4)
+    if (aiFlags & 4)
     {
         unsigned short sizeWord = 0;
         unsigned int posSize4 = 0;
@@ -556,7 +601,7 @@ struct SaveLoadFormInfo
 struct SaveLoadGameStub
 {
     bool TESSaveLoadGame_UseSaveGameBlocks();
-    void ReadTypedData(void* apData, unsigned int auiSize);
+    void ReadTypedData(void* apData, unsigned int aiSize);
     void ReadFormIdentifier(unsigned int* apID, int aiSize);
     SaveLoadFormInfo* GetCurrentFormInfo();
     unsigned int GetBufferPosition();
@@ -567,9 +612,12 @@ extern SaveLoadGameStub* g_TESSaveLoadGame;
 TESForm* LookupFormByID(unsigned int auiFormID);
 
 // @fnv 0x0048c640
-void TESReactionForm::LoadGame(unsigned int auiChangeFlags, unsigned int unused)
+// pdb: TESReactionForm::LoadGame | TESReactionForm.obj | retail, string-set bridge, high
+// pdb params: aiFlags, aiCurrentFlags
+// pdb locals: icount, istartBufferPosition, iblockSize, iblockHeader, pheader, pform, i, iformID, ireaction, icurrentBufferPosition
+void TESReactionForm::LoadGame(unsigned int aiFlags, unsigned int aiCurrentFlags)
 {
-    if (auiChangeFlags & 4)
+    if (aiFlags & 4)
     {
         unsigned short usLength = 0;
         unsigned int dwStart = 0;
@@ -600,7 +648,7 @@ void TESReactionForm::LoadGame(unsigned int auiChangeFlags, unsigned int unused)
             dwStart = g_TESSaveLoadGame->GetBufferPosition();
             g_TESSaveLoadGame->ReadTypedData(&usLength, 2);
         }
-        ClearReactionList();
+        FreeReactionList();
         g_TESSaveLoadGame->ReadTypedData(&usNum, 2);
         for (unsigned int i = 0; i < usNum; i++)
         {
@@ -665,6 +713,9 @@ unsigned int __cdecl _ref_004839c0(unsigned int aFormID);
 
 // When flags has bit 4, walks the list, resolves each entry's pForm via _ref_004839c0, and deletes entries whose form resolves to null.
 // @fnv 0x0048c930
+// pdb: TESReactionForm::InitLoadGame | TESReactionForm.obj | retail, object-file run extension, low
+// pdb params: aiFlags, aiOldFlags
+// pdb locals: plist, plastList, preaction, iformID
 void TESReactionForm::InitLoadGame(unsigned int flags, unsigned int unused)
 {
     if (flags & 4)
@@ -708,10 +759,14 @@ struct FUN_0048c9d0_SaveBuffer
     unsigned int StartVariableSizedValue();
     void FUN_00865df0(int value, int flag);
     void FUN_00865e50(void* data, unsigned int size, int flag);
-    void SaveVariableSizedValue_00865ff0(int count, unsigned int value);
+    void SaveVariableSizedValue_00865ff0(int aiVariableValue, unsigned int aiPosition);
 };
 
 // @fnv 0x0048c9d0
+// pdb: TESReactionForm::LoadGame | TESReactionForm.obj | retail, object-file run extension, low
+// pdb note: debug build links it to TESReactionForm::SaveGame
+// pdb params: aiFlags, aiCurrentFlags
+// pdb locals: icount, istartBufferPosition, iblockSize, iblockHeader, pheader, pform, i, iformID, ireaction, icurrentBufferPosition
 void TESReactionForm::SaveGame(BGSSaveFormBuffer* apBuffer)
 {
     void* item;

@@ -110,6 +110,9 @@ __forceinline int read32(const Byte* p) { return ((int(p[0])*256+p[1])*256+p[2])
 
 // @fnv 0x00e66950
 // src: HAVOK_LIB 0x00e66950
+// pdb: hkpMoppModifyVirtualMachine::queryModicationPointsRecursive | hkpMoppModifyVirtualMachine.obj | retail, upstream name already matches, high
+// pdb params: query, PC, chunkOffset
+// pdb locals: scaledQuery, assertBuf, ostr
 BoolResult* Interpreter::hkpMoppModifyVirtualMachine_queryModicationPointsRecursive(BoolResult* result, const VMState* state, const Byte* code, int codeOffset)
 
 {
@@ -443,6 +446,9 @@ struct S00e67230_Machine {
 
 // @fnv 0x00e67230
 // src: HAVOK_LIB 0x00e67230
+// pdb: hkpMoppModifyVirtualMachine::queryAabb | hkpMoppModifyVirtualMachine.obj | retail, upstream name already matches, high
+// pdb params: code, aabb, modifierOut
+// pdb locals: query, shouldRemove
 void S00e67230_Machine::hkpMoppModifyVirtualMachine_queryAabb(const S00e67230_Code* codeIn, const S00e67230_Aabb& aabb, Visitor* modifierOut)
 {
     if (!DAT_0126efbc) {

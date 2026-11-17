@@ -54,6 +54,7 @@ struct Owner
     Owner* FUN_00dfe620(unsigned int flags);
 };
 // @fnv 0x00dfe620
+// pdb: hkaBoneAttachment::`scalar deleting destructor' | hkaBoneAttachmentClass.obj | retail, vtable slot, high
 Owner* Owner::FUN_00dfe620(unsigned int flags)
 {
     child54.Object_UpdateFields_00cb0c00();

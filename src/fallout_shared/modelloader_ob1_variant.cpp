@@ -92,14 +92,17 @@ struct Fg_aaed70_Mat
         unsigned int n = m1c * m18;
         data.resize(n, 0.0f);
     }
-    Fg_aaed70_Mat ProcessEntries_00aaed70(const Fg_aaed70_Mat& other) const;
+    Fg_aaed70_Mat ProcessEntries_00aaed70(const Fg_aaed70_Mat& m) const;
 };
 
 // @fnv 0x00aaed70
 // src: GUESS 0x00aaed70 (confidence: low)
-Fg_aaed70_Mat Fg_aaed70_Mat::ProcessEntries_00aaed70(const Fg_aaed70_Mat& other) const
+// pdb: FR2MatrixVTC<float>::operator- | FanControls.obj | debug, call graph, high
+// pdb params: m
+// pdb locals: d1, newMat, d2, nd
+Fg_aaed70_Mat Fg_aaed70_Mat::ProcessEntries_00aaed70(const Fg_aaed70_Mat& m) const
 {
-    if (m18 == other.m18 && m1c == other.m1c)
+    if (m18 == m.m18 && m1c == m.m1c)
     {
     }
     else
@@ -109,7 +112,7 @@ Fg_aaed70_Mat Fg_aaed70_Mat::ProcessEntries_00aaed70(const Fg_aaed70_Mat& other)
     Fg_aaed70_Mat ret(m18, m1c);
     Fg_aaed70_Iter it3(ret.data._Myfirst, &ret.data);
     Fg_aaed70_CIter it9(data._Myfirst, &data);
-    Fg_aaed70_CIter it2(other.data._Myfirst, &other.data);
+    Fg_aaed70_CIter it2(m.data._Myfirst, &m.data);
     for (; it9.IsNotIdentical(data.end()); it9++, it2++, it3++)
     {
         *it3 = it9.ProcessEntries_0064dda0() - it2.ProcessEntries_0064dda0();
@@ -123,7 +126,7 @@ struct RttiX
     const RttiX* m_pkBase;
 };
 extern RttiX DAT_011f4280;
-extern RttiX DAT_011f49a4;
+extern RttiX NiTexturingProperty_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f49a4 (old: DAT_011f49a4/g_011f49a4/g_kTexturingPropertyRTTI)
 struct ObjX;
 struct MapX
 {
@@ -228,49 +231,52 @@ class WalkX
   public:
     char pad[0x5c4];
     MapX* m_pTaskMap;
-    void BSStream_ObjectRefRec(ObjX* pkObj, unsigned int uiFlags);
+    void BSStream_ObjectRefRec(ObjX* apObject, unsigned int aiLevels);
 };
 // @fnv 0x00c3a9c0
 // src: XBOX_PDB 0x00c3a9c0
-void WalkX::BSStream_ObjectRefRec(ObjX* pkObj, unsigned int uiFlags)
+// pdb: BSStream::ObjectRefRec | BSStream.obj | debug, upstream name already matches, high
+// pdb params: apObject, aiLevels
+// pdb locals: pname, pn, pav, pnode, iter, pprop, I, pchild, ptexProp, ptex
+void WalkX::BSStream_ObjectRefRec(ObjX* apObject, unsigned int aiLevels)
 {
     if (m_pTaskMap)
     {
-        void* pkKey = pkObj->GetM8();
+        void* pkKey = apObject->GetM8();
         if (pkKey)
         {
-            if (uiFlags & 0x80)
+            if (aiLevels & 0x80)
             {
                 void* pkVal;
                 if (!m_pTaskMap->FUN_00853130(pkKey, &pkVal))
-                    m_pTaskMap->AddOrUpdate(pkKey, pkObj);
+                    m_pTaskMap->AddOrUpdate(pkKey, apObject);
             }
             else
             {
                 m_pTaskMap->RemoveKey(pkKey);
             }
         }
-        if (uiFlags & 0x1f)
+        if (aiLevels & 0x1f)
         {
             NodeX* pkNode;
-            if (!pkObj)
+            if (!apObject)
                 pkNode = 0;
             else
-                pkNode = (NodeX*)(pkObj->NiObject_IsKindOf_006532c0(&DAT_011f4280) ? pkObj : 0);
+                pkNode = (NodeX*)(apObject->NiObject_IsKindOf_006532c0(&DAT_011f4280) ? apObject : 0);
             if (pkNode)
             {
-                if (uiFlags & 4)
+                if (aiLevels & 4)
                 {
                     LNodeX* pos = pkNode->GetHeadPos();
                     while (pos)
                     {
                         ObjX* pkChild = pkNode->GetNext(pos);
                         if (pkChild)
-                            BSStream_ObjectRefRec(pkChild, uiFlags);
+                            BSStream_ObjectRefRec(pkChild, aiLevels);
                     }
                 }
-                ArrHolderX* pkHolder = (ArrHolderX*)pkObj->GetChildHolder();
-                if (pkHolder && (uiFlags & 1))
+                ArrHolderX* pkHolder = (ArrHolderX*)apObject->GetChildHolder();
+                if (pkHolder && (aiLevels & 1))
                 {
                     unsigned int i = pkHolder->m_usSize;
                     while (i--)
@@ -278,24 +284,24 @@ void WalkX::BSStream_ObjectRefRec(ObjX* pkObj, unsigned int uiFlags)
                         ObjX* pkChild = pkHolder->GetAt(i);
                         if (pkChild)
                         {
-                            if (!(uiFlags & 3) || pkChild->GetChildHolder())
-                                BSStream_ObjectRefRec(pkChild, uiFlags);
+                            if (!(aiLevels & 3) || pkChild->GetChildHolder())
+                                BSStream_ObjectRefRec(pkChild, aiLevels);
                         }
                     }
                 }
             }
-            else if (uiFlags & 0x10)
+            else if (aiLevels & 0x10)
             {
                 ExtraX* pkExtra;
-                if (!pkObj)
+                if (!apObject)
                     pkExtra = 0;
                 else
-                    pkExtra = (ExtraX*)(pkObj->IsKindOfX(&DAT_011f49a4) ? pkObj : 0);
+                    pkExtra = (ExtraX*)(apObject->IsKindOfX(&NiTexturingProperty_ms_RTTI) ? apObject : 0);
                 if (pkExtra)
                 {
                     ObjX* pkChild = pkExtra->GetFirst(0);
                     if (pkChild)
-                        BSStream_ObjectRefRec(pkChild, uiFlags);
+                        BSStream_ObjectRefRec(pkChild, aiLevels);
                 }
             }
         }
@@ -752,7 +758,7 @@ struct TargetStream
     DummyPointerMap* map;
     void FUN_00a644f0();
     bool LoadRTTIAndObjects();
-    void LoadGroups();
+    void LoadObjectGroups();
     void NiStream_SetSelectiveUpdateFlagsForOldVersions();
     void Clear();
     bool NiStream_LoadStream();
@@ -775,6 +781,8 @@ struct TargetStream
 };
 // @fnv 0x00c3ac10
 // src: XBOX_PDB 0x00c3ac10
+// pdb: BSStream::LoadStream | BSStream.obj | retail, string-set bridge, high
+// pdb locals: pObject, uiObjects, bNew, pn
 bool TargetStream::BSStream_LoadStream()
 {
     if (map)
@@ -799,7 +807,7 @@ bool TargetStream::BSStream_LoadStream()
         {
             unsigned int aVersion = version;
             if (aVersion >= NiStream_GetVersionFromString("5.0.0.6"))
-                LoadGroups();
+                LoadObjectGroups();
         }
         count = objectCount;
         for (; loadIndex < count; ++loadIndex)
@@ -958,7 +966,7 @@ struct ArrY
 class WalkY;
 struct HelperY
 {
-    void BSNodeReferences_AddParentRef(WalkY* p, ObjY* o);
+    void BSNodeReferences_AddParentRef(WalkY* arStream, ObjY* apObject);
     void Do(WalkY* p, ObjY* o)
     {
         int aiD0;
@@ -1335,7 +1343,7 @@ class WalkY
     int unk5c0;
     MapY* m_pTaskMap;
     HelperY* m_pkHelper;
-    bool AddObject(ObjY* p);
+    bool AddObject(ObjY* pkObject);
     void* Lookup(ObjY* object)
     {
         void* aVal = object->m8;
@@ -1344,25 +1352,28 @@ class WalkY
             m_pTaskMap->FUN_00853130(aVal, &aItem);
         return aItem;
     }
-    bool BSStream_RegisterSaveObject(ObjY* pkObj);
+    bool BSStream_RegisterSaveObject(ObjY* apObject);
 };
 
 // @fnv 0x00c3afc0
 // src: XBOX_PDB 0x00c3afc0
-bool WalkY::BSStream_RegisterSaveObject(ObjY* pkObj)
+// pdb: BSStream::RegisterSaveObject | BSStream.obj | retail, upstream name already matches, high
+// pdb params: apObject
+// pdb locals: pn, uiLinkID, spref, obj2
+bool WalkY::BSStream_RegisterSaveObject(ObjY* apObject)
 {
     if (m_pTaskMap)
     {
-        RefY* pkCur = pkObj;
+        RefY* pkCur = apObject;
         unsigned int uiIndexVal;
-        if (m_kFormatEntries.FUN_00a53c30(pkObj, &uiIndexVal))
+        if (m_kFormatEntries.FUN_00a53c30(apObject, &uiIndexVal))
             return false;
         SpY spNew9;
         ObjY* pkNode2;
-        if (!pkObj)
+        if (!apObject)
             pkNode2 = 0;
         else
-            pkNode2 = (ObjY*)(pkObj->NiObject_IsKindOf_006532c0(&DAT_011f4304) ? pkObj : 0);
+            pkNode2 = (ObjY*)(apObject->NiObject_IsKindOf_006532c0(&DAT_011f4304) ? apObject : 0);
         if (pkNode2 && Lookup(pkNode2))
         {
             spNew9.AssignReferencedObject(new Z(pkNode2->m8));
@@ -1370,16 +1381,16 @@ bool WalkY::BSStream_RegisterSaveObject(ObjY* pkObj)
         }
         else
         {
-            m_pkHelper->Do(this, pkObj);
+            m_pkHelper->Do(this, apObject);
         }
         uiIndexVal = m_kArr.GetSize();
-        m_kFormatEntries.InsertOrUpdate(pkObj, uiIndexVal);
+        m_kFormatEntries.InsertOrUpdate(apObject, uiIndexVal);
         m_kArr.Add(pkCur);
         return true;
     }
     else
     {
-        return AddObject(pkObj);
+        return AddObject(apObject);
     }
 }
 }  // namespace fnv_00c3afc0
@@ -1668,11 +1679,11 @@ class C3B270_SubBase
     void** data;
     unsigned short capacity, size, live, grow;
 // src: COMMUNITY 0x0068ac40
-    void NiTArray_NiAVObject_NiTMallocInterface_NiAVObject_NiTArray_NiAVObject_NiTMallocInterface_NiAVObject(unsigned int a, unsigned int b)
+    void NiTArray_NiAVObject_NiTMallocInterface_NiAVObject_NiTArray_NiAVObject_NiTMallocInterface_NiAVObject(unsigned int uiMaxSize, unsigned int uiGrowBy)
     {
         table = &DAT_01069d7c;
-        capacity = (unsigned short)a;
-        grow = (unsigned short)b;
+        capacity = (unsigned short)uiMaxSize;
+        grow = (unsigned short)uiGrowBy;
         size = 0;
         live = 0;
         unsigned int count = capacity;
@@ -1691,23 +1702,24 @@ class C3B270_Sub : public C3B270_SubBase
         table = &DAT_01069d84;
     }
 };
-class C3B270_Object : public FUN_00a5d3a0
+// pdb: class BSNodeReferences, size 0x18, bases: NiObject, 1 members
+class BSNodeReferences : public FUN_00a5d3a0 // src: EXE 0x010c13f4 (vtable; old: C3B270_Object)
 {
   public:
-    C3B270_Sub m_08;
+    C3B270_Sub RefNodeA; // src: XBOX_RETAIL_PDB +0x8 (old: m_08)
     static void* operator new(unsigned int size)
     {
         return Object_DispatchCommandFour(size);
     }
     virtual void vf00();
-    __forceinline C3B270_Object()
+    __forceinline BSNodeReferences()
     {}
 };
 struct C3B270_Ref
 {
-    C3B270_Object* m_pObject;
+    BSNodeReferences* m_pObject;
 // src: GUESS 0x00c3b970 (confidence: high)
-    C3B270_Ref& AssignReferencedObject(C3B270_Object* object)
+    C3B270_Ref& AssignReferencedObject(BSNodeReferences* object)
     {
         if (m_pObject != object)
         {
@@ -1719,7 +1731,7 @@ struct C3B270_Ref
         }
         return *this;
     }
-    __forceinline operator C3B270_Object*() const
+    __forceinline operator BSNodeReferences*() const
     {
         return m_pObject;
     }
@@ -2097,17 +2109,19 @@ struct C3B270_Owner
     int unk5C0;
     int m_5C4;
     C3B270_Ref m_5C8;
-    void FUN_00a66370(C3B270_Object* object);
+    void FUN_00a66370(BSNodeReferences* pkObject);
     bool NiStream_SaveStream();
     bool BSStream_SaveStream();
 };
 // @fnv 0x00c3b270
 // src: XBOX_PDB 0x00c3b270
+// pdb: BSStream::SaveStream | BSStream.obj | retail, upstream name already matches, high
+// pdb locals: bres
 bool C3B270_Owner::BSStream_SaveStream()
 {
     if (m_5C4)
     {
-        m_5C8.AssignReferencedObject(new C3B270_Object);
+        m_5C8.AssignReferencedObject(new BSNodeReferences);
         FUN_00a66370(m_5C8);
     }
     bool result = NiStream_SaveStream();
@@ -2307,5 +2321,7 @@ struct FUN_00aade20 : Aade20Matrix
     FUN_00aade20();
 };
 // @fnv 0x00aade20
+// pdb: std::allocator<FanLinCtlS>::allocate | FanControls.obj | retail, object-file run extension, low
+// pdb params: _Count
 FUN_00aade20::FUN_00aade20()
 {}

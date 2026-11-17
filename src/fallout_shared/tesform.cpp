@@ -47,7 +47,10 @@ FNV_STATIC_ASSERT(offsetof(TESValueForm, uiValue) == 4);
 
 // Walks the source-file list, returning the last non-null TESFile, or the one at fileIndex when fileIndex is not -1.
 // @fnv 0x00484e60
-TESFile* TESForm::GetFile(int fileIndex)
+// pdb: TESForm::GetFile | TESForm.obj | debug, upstream name already matches, high
+// pdb params: aiIndex
+// pdb locals: pLast, pList, index, pFile
+TESFile* TESForm::GetFile(int aiIndex)
 {
     TESFile* sourceFile;
     int index;
@@ -64,10 +67,10 @@ TESFile* TESForm::GetFile(int fileIndex)
         if (sourceFile)
         {
             selected = sourceFile;
-            if (fileIndex != -1)
+            if (aiIndex != -1)
             {
                 ++index;
-                if (index > fileIndex)
+                if (index > aiIndex)
                 {
                     break;
                 }
@@ -89,16 +92,18 @@ bool TESForm::GetDisabled() const
     return (iFormFlags & 0x800);
 }
 // @fnv 0x00483710
+// pdb: TutorialMenu::DoIdle | TutorialMenu.obj | retail, vtable slot, high
 void TESForm::ClearData()
 {}
 // @fnv 0x00484490
+// pdb: TESForm::SetTemporary | TESForm.obj | retail, object-file run extension, high
 void TESForm::NotifySaveLoadGameOfFormChange()
 {
     UpdateFormChangeFlags();
     if (g_TESSaveLoadGame)
         g_TESSaveLoadGame->HasFormChanges(this, false);
     if (g_BGSSaveLoadGame)
-        g_BGSSaveLoadGame->HasFormChanges(this);
+        g_BGSSaveLoadGame->RemoveChanges(this);
     iFormFlags |= 0x4000;
 }
 
@@ -112,9 +117,11 @@ void TESForm::SetMasterFile(bool set)
 }
 
 // @fnv 0x00484530
-void TESForm::MarkForDeletion(bool set)
+// pdb: TESForm::SetDelete | TESForm.obj | debug, call graph, high
+// pdb params: abDeleted
+void TESForm::MarkForDeletion(bool abDeleted)
 {
-    if (set)
+    if (abDeleted)
         iFormFlags |= 0x20;
     else
         iFormFlags &= ~0x20;
@@ -122,9 +129,11 @@ void TESForm::MarkForDeletion(bool set)
 }
 
 // @fnv 0x00484650
-void TESForm::SetDestroyed(bool abDestroyed)
+// pdb: TESForm::SetDestroyed | TESForm.obj | debug, upstream name already matches, high
+// pdb params: abVal
+void TESForm::SetDestroyed(bool abVal)
 {
-    if (abDestroyed)
+    if (abVal)
         iFormFlags |= 0x800000;
     else
         iFormFlags &= ~0x800000;
@@ -141,6 +150,8 @@ void TESForm::SetDestructible(bool set)
 }
 
 // @fnv 0x004848b0
+// pdb: TESForm::SetHasSpokenFlag | TESForm.obj | debug, object-file gap fill, medium
+// pdb params: abSpoke
 void TESForm::SetFormFlag40(bool set)
 {
     if (set)
@@ -151,9 +162,11 @@ void TESForm::SetFormFlag40(bool set)
 }
 
 // @fnv 0x00484900
-void TESForm::SetHavokDeath(bool set)
+// pdb: TESForm::SetHavokDeath | TESForm.obj | debug, upstream name already matches, high
+// pdb params: abDeath
+void TESForm::SetHavokDeath(bool abDeath)
 {
-    if (set)
+    if (abDeath)
         iFormFlags |= 0x10000;
     else
         iFormFlags &= ~0x10000;
@@ -196,35 +209,45 @@ bool TESForm::IsReservedFormID(unsigned int formID)
         return false;
 }
 // @fnv 0x00484e40
+// pdb: TESForm::IsDefaultForm | TESForm.obj | debug, call graph (shared callers), high
 bool TESForm::IsReservedFormID()
 {
     return IsReservedFormID(GetFormID());
 }
 // @fnv 0x00484b60
-void TESForm::MarkAsModified(unsigned int flags)
+// pdb: TESForm::AddChange | TESForm.obj | retail, vtable slot, high
+// pdb params: aiChangeFlags
+void TESForm::MarkAsModified(unsigned int aiChangeFlags)
 {
-    g_BGSSaveLoadGame->NotifyFormIDChanged(this, flags, false);
+    g_BGSSaveLoadGame->NotifyFormIDChanged(this, aiChangeFlags, false);
 }
 // Forwards this form and the given flags to g_BGSSaveLoadGame's handler with the third argument set to true.
 // @fnv 0x00484b90
-void TESForm::SetFormFlags(int flags)
+// pdb: TESForm::ForceChange | TESForm.obj | retail, call graph (shared callers), high
+// pdb params: aiChangeFlags
+void TESForm::SetFormFlags(int aiChangeFlags)
 {
-    g_BGSSaveLoadGame->NotifyFormIDChanged(this, flags, true);
+    g_BGSSaveLoadGame->NotifyFormIDChanged(this, aiChangeFlags, true);
 }
 // @fnv 0x00484bc0
-void TESForm::MarkAsUnmodified(unsigned int flags)
+// pdb: TESForm::RemoveChange | TESForm.obj | retail, vtable slot, high
+// pdb params: aiChangeFlags
+void TESForm::MarkAsUnmodified(unsigned int aiChangeFlags)
 {
-    g_BGSSaveLoadGame->ClearFormChangeFlags(this, flags);
+    g_BGSSaveLoadGame->ClearFormChangeFlags(this, aiChangeFlags);
 }
 // Reads 4 bytes of change flags from the load buffer when flag 1 is set and merges the masked bits into the form's flags field.
 // @fnv 0x00484da0
-void TESForm::LoadGame(BGSLoadFormBuffer* apLoadBuffer)
+// pdb: TESForm::LoadGame | TESForm.obj | retail, vtable slot, high
+// pdb params: aiFlags, aiCurrentFlags
+// pdb locals: pref, itempFormFlags
+void TESForm::LoadGame(BGSLoadFormBuffer* apLoadGameBuffer)
 {
     // Select the original bool conversion, rather than the non-const int overload.
-    if (static_cast<BGSLoadFormBuffer*>(apLoadBuffer)->GetChangeFlags(1u).operator bool())
+    if (static_cast<BGSLoadFormBuffer*>(apLoadGameBuffer)->GetChangeFlags(1u).operator bool())
     {
         unsigned int flags = 0;
-        static_cast<BGSLoadFormBuffer*>(apLoadBuffer)->ReadTypedData(static_cast<void*>(&flags), 4u);
+        static_cast<BGSLoadFormBuffer*>(apLoadGameBuffer)->ReadTypedData(static_cast<void*>(&flags), 4u);
         if (GetIsReference())
             iFormFlags = (iFormFlags & 0xff6ed79f) | (flags & 0x00912860);
         else
@@ -233,15 +256,19 @@ void TESForm::LoadGame(BGSLoadFormBuffer* apLoadBuffer)
 }
 // Stores value in uiValue and, if this is a TESForm, marks it as modified with flag 2.
 // @fnv 0x0048e960
-void TESValueForm::SetFormValue(unsigned int value)
+// pdb: TESValueForm::SetFormValue | TESValueForm.obj | retail, upstream name already matches, high
+// pdb params: aiValue
+// pdb locals: pform
+void TESValueForm::SetFormValue(unsigned int aiValue)
 {
-    uiValue = value;
+    uiValue = aiValue;
     TESForm* form = dynamic_cast<TESForm*>(this);
     if (form)
         form->MarkAsModified(2);
 }
 // Stores item into m_item when item is non-null; returns early otherwise.
 // @fnv 0x00726c60
+// pdb: MovingText::MovingText | MovingText.obj | debug, object-file run extension, low
 template <> void BSSimpleList<TESFile*>::SetItem(TESFile* const& apFile)
 {
     if (!apFile)
@@ -249,6 +276,8 @@ template <> void BSSimpleList<TESFile*>::SetItem(TESFile* const& apFile)
     m_item = apFile;
 }
 // @fnv 0x00484ee0
+// pdb: TESForm::GetOwnerMaster | TESForm.obj | retail, upstream name already matches, high
+// pdb locals: plist, pbestESM, pfile
 TESFile* TESForm::GetOwnerMaster()
 {
     BSSimpleList<TESFile*>* pFileNode = GetSourceFiles();
@@ -265,10 +294,13 @@ TESFile* TESForm::GetOwnerMaster()
 
 // Looks up editorID in the form table and returns the matching TESForm, or null if editorID is empty or not found.
 // @fnv 0x00483a00
-TESForm* TESForm::LookupFormByEditorID(const char* editorID)
+// pdb: TESForm::GetFormByEditorID | TESForm.obj | retail, call graph, high
+// pdb params: apSearchID
+// pdb locals: pTempForm
+TESForm* TESForm::LookupFormByEditorID(const char* apSearchID)
 {
     TESForm* form = 0;
-    if (editorID && *editorID && ms_pEditorIDMap && ms_pEditorIDMap->GetAt(editorID, form))
+    if (apSearchID && *apSearchID && ms_pEditorIDMap && ms_pEditorIDMap->GetAt(apSearchID, form))
     {
         return form;
     }
@@ -297,14 +329,17 @@ void TESForm::InitializeFormIDMap()
 }
 
 // @fnv 0x00484f50
-void TESForm::SetFile(TESFile* file)
+// pdb: TESForm::SetFile | TESForm.obj | retail, upstream name already matches, high
+// pdb params: apFile
+// pdb locals: pparent, pList, pLastList, pfilelist, plastlist, pfile, plistFile
+void TESForm::SetFile(TESFile* apFile)
 {
-    TESFile* parentFile = file ? file->GetThreadSafeRootFile() : 0;
+    TESFile* parentFile = apFile ? apFile->GetThreadSafeRootFile() : 0;
     if (parentFile)
     {
-        file = parentFile;
+        apFile = parentFile;
     }
-    if (!file)
+    if (!apFile)
     {
         BSSimpleList<TESFile*>* source = GetSourceFiles();
         BSSimpleList<TESFile*>* lastSource = 0;
@@ -325,7 +360,7 @@ void TESForm::SetFile(TESFile* file)
             GetSourceFiles()->RemoveHead();
         }
     }
-    else if (file->IsMasterFile())
+    else if (apFile->IsMasterFile())
     {
         BSSimpleList<TESFile*>* source = GetSourceFiles();
         BSSimpleList<TESFile*>* lastMaster = 0;
@@ -350,7 +385,7 @@ void TESForm::SetFile(TESFile* file)
                 }
             }
         }
-        GetSourceFiles()->AddTail(file);
+        GetSourceFiles()->AddTail(apFile);
     }
     else
     {
@@ -362,7 +397,7 @@ void TESForm::SetFile(TESFile* file)
             if (sourceFile)
             {
                 lastSource = source;
-                if (sourceFile == file)
+                if (sourceFile == apFile)
                 {
                     return;
                 }
@@ -371,11 +406,11 @@ void TESForm::SetFile(TESFile* file)
         }
         if (lastSource)
         {
-            lastSource->AddTail(file);
+            lastSource->AddTail(apFile);
         }
         else
         {
-            GetSourceFiles()->AddHead(file);
+            GetSourceFiles()->AddHead(apFile);
         }
     }
 }
@@ -383,7 +418,7 @@ void TESForm::SetFile(TESFile* file)
 // @fnv 0x00467bb0
 unsigned int TESFile::GetOffset()
 {
-    return m_uiRecordSize;
+    return m_fileoffset;
 }
 
 extern int DAT_01014210;
@@ -398,7 +433,7 @@ void __fastcall TESForm_UpdateState_0040ecb0(int* p)
 // @fnv 0x00471d60
 bool TESFile::GetActive()
 {
-    if (m_uiFileCount & 8)
+    if (m_Flags & 8)
     {
         return true;
     }
@@ -416,12 +451,14 @@ unsigned int __fastcall GetField20C(char* pThis)
 
 struct S00485110
 {
-    void CallWithThis(TESFile* f);
+    void CallWithThis(TESFile* apFile);
 };
 // @fnv 0x00485110
-void S00485110::CallWithThis(TESFile* apTarget)
+// pdb: TESForm::LoadForm | TESForm.obj | debug, call graph, high
+// pdb params: apFile
+void S00485110::CallWithThis(TESFile* apFile)
 {
-    apTarget->LoadForm(reinterpret_cast<TESForm*>(this));
+    apFile->LoadForm(reinterpret_cast<TESForm*>(this));
 }
 
 // Returns the smaller of two unsigned short values.
@@ -443,6 +480,9 @@ extern int DAT_011c54f0;
 extern unsigned int DAT_011c54f4;
 
 // @fnv 0x00486890
+// pdb: TESForm::RunPostDuplicateProcess | TESForm.obj | debug, object-file gap fill, medium
+// pdb params: apCopyMap
+// pdb locals: iter, pcopy, porig
 int __cdecl FindFormEnumIndex(unsigned int aiFormString)
 {
     if (aiFormString == DAT_011c54f4)
@@ -462,6 +502,8 @@ int __cdecl FindFormEnumIndex(unsigned int aiFormString)
 }
 
 // @fnv 0x00486930
+// pdb: NiTPointerMap<unsigned int,TESForm *>::NiTPointerMap<unsigned int,TESForm *> | TESForm.obj | debug, object-file gap fill, medium
+// pdb params: uiHashSize
 template <>
 NiTPointerMap<unsigned int, TESForm*>::NiTPointerMap(unsigned int uiHashSize)
     : NiTMapBase<NiTPointerAllocator<unsigned int>, unsigned int, TESForm*>(uiHashSize)
@@ -519,6 +561,7 @@ struct FUN_00483630_holder
     virtual ~FUN_00483630_holder();
 };
 // @fnv 0x00483630
+// pdb: TESForm::~TESForm | TESForm.obj | retail, call graph, high
 FUN_00483630_holder::~FUN_00483630_holder()
 {
     ((TESForm*)this)->UpdateFormChangeFlags();
@@ -529,7 +572,7 @@ FUN_00483630_holder::~FUN_00483630_holder()
         g_TESSaveLoadGame->FinalizeForm((TESForm*)this);
     }
     if (!((TESForm*)this)->IsTemporary() && g_BGSSaveLoadGame)
-        g_BGSSaveLoadGame->HasFormChanges((TESForm*)this);
+        g_BGSSaveLoadGame->RemoveChanges((TESForm*)this);
     if (--DAT_011c54bc == 0)
         TESForm_ReleaseFormDataStructures();
 }
@@ -542,6 +585,8 @@ struct FUN_00483c70_shell : public TESForm
 extern TESDataHandler* g_dataHandler;
 // @fnv 0x00483c70
 // src: XBOX_PDB 0x00483c70
+// pdb: TESForm::RemoveFromDataStructures | TESForm.obj | retail, upstream name already matches, high
+// pdb locals: iIndex
 void FUN_00483c70_shell::TESForm_RemoveFromDataStructures()
 {
     if (IsTemporary())
@@ -561,6 +606,9 @@ void FUN_00483c70_shell::TESForm_RemoveFromDataStructures()
 }
 
 // @fnv 0x00485d50
+// pdb: TESForm::AddCompileIndex | TESForm.obj | retail, call graph, high
+// pdb params: aiID, apFile
+// pdb locals: pMaster
 void ResolveFormID(unsigned int* aiID, TESFile* apFile)
 {
     if (g_TESSaveLoadGame->GetLoading())
@@ -626,6 +674,8 @@ struct FUN_005ffbf0_shell : public IdleAnimationManager
 };
 
 // @fnv 0x005ffbf0
+// pdb: TESIdleManager::AddLoadedIdle | TESIdleManager.obj | debug, object-file gap fill, medium
+// pdb params: apIdle
 void FUN_005ffbf0_shell::AddIdleToArray(TESIdleForm* apIdle)
 {
     if (apIdle)
@@ -938,6 +988,7 @@ extern "C" int __cdecl GetEntryByIndex(int);
 
 // @fnv 0x00408a40
 // src: COMMUNITY 0x00408a40
+// pdb: EffectSetting::GetObjectTypeName | EffectSetting.obj | debug, upstream name already matches, high
 int S3c60::EffectSetting_GetObjectTypeName()
 {
     return GetEntryByIndex(GetArchetype());
@@ -966,6 +1017,7 @@ struct FUN_00483600_holder : Base5a
 
 // Runs the base destructor, frees this via Deallocate when flags has bit 0 set, and returns this.
 // @fnv 0x00483600
+// pdb: TESForm::`scalar deleting destructor' | TESForm.obj | retail, vtable slot, high
 void* FUN_00483600_holder::DestroyHolder(unsigned int flags)
 {
     Base5a::~Base5a();
@@ -1033,6 +1085,9 @@ struct FUN_004854e0_shell : TESForm
 
 // Returns true if apGroupFORM is a group form with form ID 0 whose flags match the value indexed by this form's type.
 // @fnv 0x004854e0
+// pdb: TESForm::BelongsInGroup | TESForm.obj | debug, object-file gap fill, medium
+// pdb params: apGroupFORM, abAllowParentGroups, abCurrentOnly
+// pdb locals: bretval
 bool FUN_004854e0_shell::IsGroupFormOfType(FormRecordHeader* apGroupFORM, bool abAllowParentGroups, bool abCurrentOnly)
 {
     bool bretval = false;
@@ -1048,6 +1103,8 @@ extern "C" void __cdecl AppendChunk(int, int, int);
 
 // @fnv 0x004856d0
 // src: XBOX_PDB 0x004856d0
+// pdb: TESForm::AddChunk | TESForm.obj | debug, call graph, medium
+// pdb params: aeChunkID
 void __cdecl TESForm_AddChunk(int arg)
 {
     AppendChunk(arg, 0, 0);
@@ -1057,18 +1114,22 @@ void __cdecl AppendChunk(void* a1, void* a2, void* a3);
 
 // @fnv 0x004856f0
 // src: XBOX_PDB 0x004856f0
-void __cdecl TESForm_AddChunkArray(void* apArg1, void* apArg2, void* apArg3)
+// pdb: TESForm::AddChunkArray | TESForm.obj | debug, call graph, high
+// pdb params: aeChunkID, apData, aiSize
+void __cdecl TESForm_AddChunkArray(void* aeChunkID, void* apData, void* aiSize)
 {
-    AppendChunk(apArg1, apArg2, apArg3);
+    AppendChunk(aeChunkID, apData, aiSize);
 }
 
-void __cdecl TESForm_AddChunkArray32(void* arg0, void* arg1, void* arg2);
+void __cdecl TESForm_AddChunkArray32(void* aeChunkID, void* apData, void* arg2);
 
 // @fnv 0x00485710
 // src: XBOX_PDB 0x00485710
-void __cdecl TESForm_AddChunkArray_00485710(void* arg0, void* arg1, void* arg2)
+// pdb: TESForm::AddChunkArray | TESForm.obj | debug, call graph, high
+// pdb params: aeChunkID, apData, aiCount
+void __cdecl TESForm_AddChunkArray_00485710(void* aeChunkID, void* apData, void* aiCount)
 {
-    TESForm_AddChunkArray32(arg0, arg1, arg2);
+    TESForm_AddChunkArray32(aeChunkID, apData, aiCount);
 }
 
 extern void __cdecl TESForm_AddChunkArray16(void*, void*, void*);
@@ -1085,12 +1146,14 @@ void __cdecl Deallocate(void*);
 
 struct FUN_00485b30_shell
 {
-    void ResetGlobalPointer();
+    void TESForm_FreeFormBuffer();
 };
 
 // Frees the pointer stored in DAT_011c54cc and sets it to null.
 // @fnv 0x00485b30
-void FUN_00485b30_shell::ResetGlobalPointer()
+// src: XBOX_RETAIL_PDB 0x00485b30
+// pdb: TESForm::FreeFormBuffer | TESForm.obj | retail, call graph (shared callers), high
+void FUN_00485b30_shell::TESForm_FreeFormBuffer()
 {
     Deallocate(DAT_011c54cc);
     DAT_011c54cc = 0;
@@ -1104,6 +1167,7 @@ struct FUN_00485e00_shell
 
 // @fnv 0x00485e00
 // src: COMMUNITY 0x00485e00
+// pdb: TESForm::SaveData | TESForm.obj | debug, upstream name already matches, high
 void __thiscall FUN_00485e00_shell::TESForm_SaveData()
 {
     TESForm___SaveData(0, 0);
@@ -1144,6 +1208,7 @@ struct FUN_005516c0
 
 // Returns true if GetFlags() has bit 0x400 set, otherwise false.
 // @fnv 0x005516c0
+// pdb: TESObjectCELL::GetPersistentCell | TESObjectCELL.obj | debug, call graph, high
 bool FUN_005516c0::IsCellPersistent()
 {
     if (((TesformOffset08View*)this)->GetFlags() & 0x400)
@@ -1160,28 +1225,32 @@ extern "C" void __cdecl TESObjectCELL_IsFormTypeCellChild(int);
 
 struct FUN_00554880_shell
 {
-    void __thiscall TESObjectCELL_IsFormTypeChild(unsigned char arg);
+    void __thiscall TESObjectCELL_IsFormTypeChild(unsigned char aeType);
 };
 
 // @fnv 0x00554880
 // src: COMMUNITY 0x00554880
-void __thiscall FUN_00554880_shell::TESObjectCELL_IsFormTypeChild(unsigned char arg)
+// pdb: TESObjectCELL::IsFormTypeChild | TESObjectCELL.obj | debug, upstream name already matches, high
+// pdb params: aeType
+void __thiscall FUN_00554880_shell::TESObjectCELL_IsFormTypeChild(unsigned char aeType)
 {
-    TESObjectCELL_IsFormTypeCellChild(arg);
+    TESObjectCELL_IsFormTypeCellChild(aeType);
 }
 
 extern unsigned char __cdecl TESWorldSpace_IsFormTypeWorldChild(unsigned char);
 
 struct FUN_00588a40_shell
 {
-    unsigned char __thiscall TESWorldSpace_IsFormTypeChild(unsigned char arg);
+    unsigned char __thiscall TESWorldSpace_IsFormTypeChild(unsigned char aeType);
 };
 
 // @fnv 0x00588a40
 // src: COMMUNITY 0x00588a40
-unsigned char __thiscall FUN_00588a40_shell::TESWorldSpace_IsFormTypeChild(unsigned char arg)
+// pdb: TESWorldSpace::IsFormTypeChild | TESWorldSpace.obj | debug, upstream name already matches, high
+// pdb params: aeType
+unsigned char __thiscall FUN_00588a40_shell::TESWorldSpace_IsFormTypeChild(unsigned char aeType)
 {
-    return TESWorldSpace_IsFormTypeWorldChild(arg);
+    return TESWorldSpace_IsFormTypeWorldChild(aeType);
 }
 
 namespace fnv_005e9690 {
@@ -1194,6 +1263,7 @@ struct FUN_005e9690_shell
 
 // @fnv 0x005e9690
 // src: XBOX_PDB 0x005e9690
+// pdb: BGSPerkEntry::FinishPerkEntry | BGSPerk.obj | debug, upstream name already matches, high
 void __thiscall FUN_005e9690_shell::BGSPerkEntry_FinishPerkEntry()
 {
     TESForm_AddChunk(0x464b5250);
@@ -1202,16 +1272,18 @@ void __thiscall FUN_005e9690_shell::BGSPerkEntry_FinishPerkEntry()
 
 struct FUN_0061bbd0_shell
 {
-    unsigned char __thiscall TESTopic_IsFormTypeChild(unsigned char param);
+    unsigned char __thiscall TESTopic_IsFormTypeChild(unsigned char aeType);
 };
 
 extern unsigned char __cdecl TESTopic_IsFormTypeDialogueChild(unsigned char);
 
 // @fnv 0x0061bbd0
 // src: COMMUNITY 0x0061bbd0
-unsigned char __thiscall FUN_0061bbd0_shell::TESTopic_IsFormTypeChild(unsigned char param)
+// pdb: TESTopic::IsFormTypeChild | TESTopic.obj | debug, upstream name already matches, high
+// pdb params: aeType
+unsigned char __thiscall FUN_0061bbd0_shell::TESTopic_IsFormTypeChild(unsigned char aeType)
 {
-    return TESTopic_IsFormTypeDialogueChild(param);
+    return TESTopic_IsFormTypeDialogueChild(aeType);
 }
 
 struct FUN_00621b00_shell
@@ -1229,7 +1301,7 @@ float __thiscall FUN_00621b00_shell::ActorPackage_GetPackageStartTime()
 // @fnv 0x008df040
 unsigned char TESSaveLoadGame::GetCurrentVersion()
 {
-    return m_ucCurrentVersion;
+    return m_cCurrentVersion;
 }
 
 struct FUN_004011b0_shell
@@ -1299,6 +1371,7 @@ struct FUN_004362a0 : BSExtraData
 };
 // Destructor that calls TESForm::ClearData on the _c member.
 // @fnv 0x004362a0
+// pdb: ExtraCreatureAwakeSound::~ExtraCreatureAwakeSound | ExtraDataObjects.obj | debug, object-file gap fill, medium
 FUN_004362a0::~FUN_004362a0()
 {
     ((TESForm*)&_c)->TESForm::ClearData();
@@ -1314,6 +1387,7 @@ struct FUN_004363c0
     ~FUN_004363c0();
 };
 // @fnv 0x004363c0
+// pdb: ExtraCreatureMovementSound::~ExtraCreatureMovementSound | ExtraDataObjects.obj | debug, object-file gap fill, medium
 FUN_004363c0::~FUN_004363c0()
 {
     ((TESForm*)((char*)this + 12))->TESForm::ClearData();
@@ -1328,6 +1402,7 @@ struct FUN_004364e0 : BSExtraData
 };
 // Destructor for a BSExtraData-derived object; destroys its member and the base class.
 // @fnv 0x004364e0
+// pdb: ExtraWeaponIdleSound::~ExtraWeaponIdleSound | ExtraDataObjects.obj | debug, object-file gap fill, medium
 FUN_004364e0::~FUN_004364e0()
 {}
 }  // namespace fnv_004364e0
@@ -1338,6 +1413,7 @@ struct FUN_00436600 : BSExtraData
     ~FUN_00436600();
 };
 // @fnv 0x00436600
+// pdb: ExtraWeaponAttackSound::~ExtraWeaponAttackSound | ExtraDataObjects.obj | debug, object-file gap fill, medium
 FUN_00436600::~FUN_00436600()
 {
     ((TESForm*)((char*)this + 12))->TESForm::ClearData();
@@ -1351,6 +1427,7 @@ struct FUN_00436720 : BSExtraData
     ~FUN_00436720();
 };
 // @fnv 0x00436720
+// pdb: ExtraActivateLoopSound::~ExtraActivateLoopSound | ExtraDataObjects.obj | debug, object-file gap fill, medium
 FUN_00436720::~FUN_00436720()
 {
     ((TESForm*)&_f0c)->TESForm::ClearData();
@@ -1376,6 +1453,7 @@ void __cdecl BSEndian(unsigned char*, EndianSizeTag<1>);
 void __cdecl BSEndian(unsigned short*, EndianSizeTag<2>);
 void __cdecl BSEndian(int*, EndianSizeTag<4>);
 // @fnv 0x00470650
+// pdb: FORM::Endian | TESFile.obj | debug, call graph (shared callers), medium
 void __fastcall ConvertFormRecordEndian(FormRecordHeader* record)
 {
     BSEndian((unsigned char*)record, EndianSizeTag<1>());
@@ -1390,6 +1468,9 @@ void __fastcall ConvertFormRecordEndian(FormRecordHeader* record)
 // Looks up aiSearchID in the form map and returns the stored TESForm pointer, or 0 if the map is null or has no entry.
 // @fnv 0x004839c0
 // src: XBOX_PDB 0x004839c0
+// pdb: TESForm::GetFormByNumericID | TESForm.obj | retail, upstream name already matches, high
+// pdb params: aiSearchID
+// pdb locals: pTempForm
 TESForm* TESForm_GetFormByNumericID(unsigned int aiSearchID)
 {
     TESForm* pTempForm = 0;
@@ -1405,6 +1486,9 @@ struct FUN_00483d20_shell : TESForm
     unsigned char SaveIfNotTemporary(TESFile* apFile);
 };
 // @fnv 0x00483d20
+// pdb: TESForm::Save | TESForm.obj | retail, vtable slot, high
+// pdb params: apFile
+// pdb locals: eRetVal
 unsigned char FUN_00483d20_shell::SaveIfNotTemporary(TESFile* apFile)
 {
     TES_RETURN_CODE eRetVal;
@@ -1420,6 +1504,8 @@ struct FUN_00483fc0_shell : TESForm
     bool WriteToFile(TESFile* apFile);
 };
 // @fnv 0x00483fc0
+// pdb: TESForm::SaveEdit | TESForm.obj | retail, vtable slot, high
+// pdb params: apFile
 bool FUN_00483fc0_shell::WriteToFile(TESFile* apFile)
 {
     if (IsTemporary())
@@ -1480,6 +1566,8 @@ struct Fake84860
 // Sets or clears bit 0x400 in _flags according to abQuest, then calls v18(1).
 // @fnv 0x00484860
 // src: XBOX_PDB 0x00484860
+// pdb: TESForm::SetQuestObject | TESForm.obj | debug, upstream name already matches, high
+// pdb params: abQuest
 void Fake84860::TESForm_SetQuestObject(bool abQuest)
 {
     if (abQuest)
@@ -1501,6 +1589,8 @@ struct PC7d
 // If bit 0 of aiFlags is set, calls FUN_00484ce0 on the object at this+8 with 4.
 // @fnv 0x00484c20
 // src: XBOX_PDB 0x00484c20
+// pdb: TESForm::SaveGame | TESForm.obj | debug, call graph, medium
+// pdb params: aiFlags
 void PC7d::TESForm_SaveGame(unsigned int aiFlags)
 {
     if (aiFlags & 1)
@@ -1514,6 +1604,8 @@ struct FUN_00484d40_Host
 // Forwards the numeric ID buffer and its size to the save/load game object's handler.
 // @fnv 0x00484d40
 // src: XBOX_PDB 0x00484d40
+// pdb: TESForm::LoadNumericID | TESForm.obj | debug, upstream name already matches, high
+// pdb params: apNumericID, aiSize
 void __thiscall FUN_00484d40_Host::TESForm_LoadNumericID(unsigned int* apNumericID, int aiSize)
 {
     g_TESSaveLoadGame->FUN_00857aa0(apNumericID, aiSize);
@@ -1527,6 +1619,8 @@ struct FakeForm
 };
 // If the form buffer reports change flags for bit 1, saves the 4-byte value at _v08 into the buffer.
 // @fnv 0x00484d60
+// pdb: TESForm::SaveGame | TESForm.obj | debug, call graph, medium
+// pdb params: apSaveGameBuffer
 void FakeForm::SaveIfChanged(BGSSaveFormBuffer* buffer)
 {
     // Select the original bool conversion, rather than the non-const int overload.
@@ -1545,6 +1639,8 @@ struct TESForm_Proxy40e30
 int _FNV_Warning(char const*, char const*, char const*);
 // Logs a warning that copying the given form is unsupported, printing its name and type name.
 // @fnv 0x00485130
+// pdb: TESForm::Copy | TESForm.obj | retail, string-set bridge, high
+// pdb params: apCopy
 void FUN_00485130_shell::WarnCopyUnsupported(TESForm* apCopy)
 {
     _FNV_Warning("FORMS: Trying to copy form \"%s\".\r\nNo copy function for %s form types.\r\n", apCopy->GetName(),
@@ -1563,6 +1659,8 @@ struct Mid485170
 // Warns that no compare function exists for the form types and returns false.
 // @fnv 0x00485170
 // src: XBOX_PDB 0x00485170
+// pdb: TESForm::Compare | TESForm.obj | retail, string-set bridge, high
+// pdb params: apCopy
 bool Mid485170::TESForm_Compare(TESForm* apCopy)
 {
     _FNV_Warning("FORMS: Trying to compare form \"%s\".\r\nNo compare function for %s form types.\r\n",
@@ -1579,6 +1677,8 @@ struct Holder : public TESForm
 };
 // @fnv 0x00485680
 // src: GUESS 0x00485680 (confidence: medium)
+// pdb: TESForm::CloseForm | TESForm.obj | debug, call graph, medium
+// pdb locals: pForm
 void Holder::FinishFormRecord()
 {
     FormRecordHeader* pForm;
@@ -1598,6 +1698,8 @@ struct FUN_00485b60
 // Returns true when the low 24 bits of aiID equal the value returned by FUN_00485bc0, otherwise false.
 // @fnv 0x00485be0
 // src: XBOX_PDB 0x00485be0
+// pdb: TESForm::FormIDMatchesWithoutIndex | TESForm.obj | debug, upstream name already matches, high
+// pdb params: aiID
 bool FUN_00485b60::TESForm_FormIDMatchesWithoutIndex(unsigned int aiID)
 {
     if ((aiID & 0x00FFFFFF) != TESForm_GetFormIDWithoutIndex())
@@ -1631,6 +1733,7 @@ struct FUN_00549580_shell
 
 // @fnv 0x00549580
 // src: XBOX_PDB 0x00549580
+// pdb: TESObjectCELL::LightMarkerNode | TESObjectCELL.obj | debug, object-file run extension, low
 bool FUN_00549580_shell::TESForm_GetHasSpokenFlag() const
 {
     return (((const TESForm*)this)->iFormFlags & 64) ? true : false;
@@ -1648,6 +1751,8 @@ TESForm* __cdecl GetFormByID(unsigned int);
 
 // @fnv 0x009f9720
 // src: XBOX_PDB 0x009f9720
+// pdb: TrespassPackage::InitLoadGame | TrespassPackage.obj | retail, vtable slot, high
+// pdb locals: iobjectOwnedID, iownerID
 void FUN_009f87b0_shell::TrespassPackage_InitLoadGame()
 {
     TESPackage_InitLoadGame();
@@ -1686,9 +1791,11 @@ struct FUN_004846e0_shell
 };
 // @fnv 0x004846e0
 // src: COMMUNITY 0x004846e0
-void FUN_004846e0_shell::TESForm_SetVATSTargetOverride(bool abSet)
+// pdb: TESForm::SetVATSTargetOverride | TESForm.obj | debug, upstream name already matches, high
+// pdb params: abVal
+void FUN_004846e0_shell::TESForm_SetVATSTargetOverride(bool abVal)
 {
-    if (abSet)
+    if (abVal)
         _8 |= 0x4000000;
     else
         _8 &= 0xFBFFFFFF;
@@ -1768,10 +1875,12 @@ struct FUN_0047c050
     FUN_0047c050();
     ~FUN_0047c050();
     void InitializeFromForm(TESForm*);
-    void CallElements();
+    void FormComponentCollection_InitializeDataAllComponents();
 };
 
 // @fnv 0x00483720
+// pdb: TESForm::InitializeDataAllComponents | TESForm.obj | retail, call graph, high
+// pdb locals: pthiscell, components
 void FUN_00483720_shell::ClearFormData()
 {
     switch (GetFormType())
@@ -1799,7 +1908,7 @@ void FUN_00483720_shell::ClearFormData()
     default: {
         FUN_0047c050 components;
         components.InitializeFromForm(this);
-        components.CallElements();
+        components.FormComponentCollection_InitializeDataAllComponents();
         break;
     }
     }
@@ -1885,6 +1994,8 @@ struct FUN_0047c050
 
 // @fnv 0x00483870
 // src: COMMUNITY 0x00483870
+// pdb: TESForm::ClearDataAllComponents | TESForm.obj | retail, upstream name already matches, high
+// pdb locals: pthiscell, components
 void FUN_00483870_shell::TESForm_ClearDataAllComponents()
 {
     switch (GetFormType())
@@ -1934,6 +2045,9 @@ struct FUN_00484730_shell : public TESForm
 
 // @fnv 0x00484730
 // src: XBOX_PDB 0x00484730
+// pdb: TESForm::SetAltered | TESForm.obj | retail, upstream name already matches, high
+// pdb params: abAltered
+// pdb locals: bAddToList, iIndex
 void FUN_00484730_shell::TESForm_SetAltered(bool abAltered)
 {
     if (abAltered)
@@ -1988,6 +2102,8 @@ struct FUN_00486620_shell : public TESForm
 // Sums the save sizes contributed by the form's Uses, Value, Health, Weight, Quality, AttackDamage, Attributes and ClipRounds components.
 // @fnv 0x00486620
 // src: XBOX_PDB 0x00486620
+// pdb: TESForm::GetDataSizeAdded | TESForm.obj | retail, upstream name already matches, high
+// pdb locals: pAttributes, pClipRounds, pUses, pQuality, pWeight, pAttack, pValue, iretsize, pHealth
 unsigned int FUN_00486620_shell::TESForm_GetDataSizeAdded()
 {
     TESAttributes* pAttributes;
@@ -2030,6 +2146,7 @@ unsigned int FUN_00486620_shell::TESForm_GetDataSizeAdded()
 
 // @fnv 0x00483b80
 // src: XBOX_PDB 0x00483b80
+// pdb: TESForm::ReleaseFormDataStructures | TESForm.obj | retail, upstream name already matches, high
 void TESForm_ReleaseFormDataStructures()
 {
     if (TESForm::ms_pFormIDMap)
@@ -2066,6 +2183,9 @@ struct FUN_00485340_shell : public TESForm
 // Copies the form type, flags and a pathing state from apCopyFC into this form, marking it altered when the pathing state differs.
 // @fnv 0x00485340
 // src: XBOX_PDB 0x00485340
+// pdb: TESForm::CopyComponent | TESForm.obj | retail, upstream name already matches, high
+// pdb params: apCopyFC
+// pdb locals: pCopy
 void FUN_00485340_shell::TESForm_CopyComponent(BaseFormComponent* apCopyFC)
 {
     TESForm* pCopy = dynamic_cast<TESForm*>(apCopyFC);
@@ -2086,6 +2206,7 @@ struct FUN_00436180 : BSExtraData
 };
 // Destructor that calls ClearData on the object at offset 0xc.
 // @fnv 0x00436180
+// pdb: ExtraSound::~ExtraSound | ExtraDataObjects.obj | debug, object-file gap fill, medium
 FUN_00436180::~FUN_00436180()
 {
     ((FUN_00436180*)((char*)this + 0xc))->ClearData();
@@ -2094,14 +2215,16 @@ FUN_00436180::~FUN_00436180()
 
 struct FUN_00484580_shell : TESForm
 {
-    void TESForm_SetEmpty(bool set);
+    void TESForm_SetEmpty(bool abEmpty);
 };
 
 // @fnv 0x00484580
 // src: XBOX_PDB 0x00484580
-void FUN_00484580_shell::TESForm_SetEmpty(bool set)
+// pdb: TESForm::SetEmpty | TESForm.obj | retail, upstream name already matches, high
+// pdb params: abEmpty
+void FUN_00484580_shell::TESForm_SetEmpty(bool abEmpty)
 {
-    if (set)
+    if (abEmpty)
     {
         if (!g_TESSaveLoadGame->GetLoading())
             MarkAsModified(0x200000);
@@ -2126,6 +2249,8 @@ struct FUN_00485530_shell : TESForm
     void InitGroupForm(FormRecordHeader* apOutGroupFORM, GroupData* apParentGroup);
 };
 // @fnv 0x00485530
+// pdb: TESForm::CreateGroupData | TESForm.obj | debug, object-file gap fill, medium
+// pdb params: apOutGroupFORM, apParentGroup
 void FUN_00485530_shell::InitGroupForm(FormRecordHeader* apOutGroupFORM, GroupData* apParentGroup)
 {
     if (apOutGroupFORM && !apParentGroup)
@@ -2143,6 +2268,9 @@ void FUN_00485530_shell::InitGroupForm(FormRecordHeader* apOutGroupFORM, GroupDa
 extern "C" void* __cdecl _NiMalloc(unsigned int size);
 extern "C" void* __cdecl memset(void* dest, int value, unsigned int count);
 // @fnv 0x00486990
+// pdb: NiTStringTemplateMap<NiTMap<char const *,TESForm *>,TESForm *>::NiTStringTemplateMap<NiTMap<char const *,TESForm *>,TESForm *> | TESForm.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiTMapBase<NiTPointerAllocator<unsigned int>,unsigned int,TESForm *>::NiTMapBase<NiTPointerAllocator<unsigned int>,unsigned int,TESForm *>
+// pdb params: uiHashSize, bCopy
 template <>
 NiTMapBase<NiTPointerAllocator<unsigned int>, unsigned int, TESForm*>::NiTMapBase(unsigned int uiHashSize)
 {
@@ -2184,6 +2312,8 @@ int __cdecl return15();
 
 // @fnv 0x004855a0
 // src: GUESS 0x004855a0 (confidence: medium)
+// pdb: TESForm::StartForm | TESForm.obj | retail, call graph, high
+// pdb locals: pForm
 void TesformOffset08View::BeginFormRecord()
 {
     FormRecordHeader* pForm;
@@ -2223,6 +2353,9 @@ struct FUN_004141e0_class
 };
 
 // @fnv 0x00485990
+// pdb: TESForm::__AddChunkData | TESForm.obj | debug, object-file gap fill, medium
+// pdb params: aeChunkID, apData, aiSize
+// pdb locals: pChunk, pChunkData, pChunkHeader, sSize, iStartingSize
 void AppendChunk(unsigned int chunk, const void* data, unsigned int size)
 {
     unsigned int offset;
@@ -2291,6 +2424,9 @@ int DAT_011c54d0;
 
 // @fnv 0x00485a70
 // src: COMMUNITY 0x00485a70
+// pdb: TESForm::ExpandChunk | TESForm.obj | retail, upstream name already matches, high
+// pdb params: apChunk, asExpandSize
+// pdb locals: bendian
 bool FUN_00485a70_class::TESForm_ExpandChunk(CHUNK* apChunk, unsigned short asExpandSize)
 {
     bool bendian = false;
@@ -2373,8 +2509,8 @@ struct FUN_0047c050
     unsigned int unk94;
     FUN_0047c050();
     ~FUN_0047c050();
-    void FUN_0047c070(void* value);
-    void FormComponentCollection_CopyAllComponents(FUN_0047c050* other);
+    void FUN_0047c070(void* apForm);
+    void FormComponentCollection_CopyAllComponents(FUN_0047c050* apFCC);
 };
 struct FormCloneOperation
 {
@@ -2382,6 +2518,9 @@ struct FormCloneOperation
 };
 // @fnv 0x004851b0
 // src: XBOX_PDB 0x004851b0
+// pdb: TESForm::CopyAllComponents | TESForm.obj | retail, upstream name already matches, high
+// pdb params: apCopy
+// pdb locals: components, copyComponents
 void FormCloneOperation::TESForm_CopyAllComponents(void* targetForm)
 {
     FUN_0047c050 z;
@@ -2397,9 +2536,9 @@ struct FUN_00509540_obj
 {
     FUN_00509540_obj();
     ~FUN_00509540_obj();
-    void FUN_0047c070(void* apOther);
+    void FUN_0047c070(void* apForm);
     bool CompareComponents(FUN_00509540_obj* apOther);
-    bool TESForm_CompareAllComponents(TESForm* apArg);
+    bool TESForm_CompareAllComponents(TESForm* apCompare);
     int unk00;
     int unk04;
     int unk08;
@@ -2442,20 +2581,23 @@ struct FUN_00509540_obj
 
 // @fnv 0x00485270
 // src: XBOX_PDB 0x00485270
-bool FUN_00509540_obj::TESForm_CompareAllComponents(TESForm* apArg)
+// pdb: TESForm::CompareAllComponents | TESForm.obj | retail, upstream name already matches, high
+// pdb params: apCompare
+// pdb locals: compareComponents, components
+bool FUN_00509540_obj::TESForm_CompareAllComponents(TESForm* apCompare)
 {
-    if (apArg == 0)
+    if (apCompare == 0)
         return true;
     FUN_00509540_obj p;
     FUN_00509540_obj a;
     p.FUN_0047c070(this);
-    a.FUN_0047c070(apArg);
+    a.FUN_0047c070(apCompare);
     return p.CompareComponents(&a);
 }
 
 struct CompareForm : TESForm
 {
-    bool TESForm_CompareComponent(BaseFormComponent* rhs);
+    bool TESForm_CompareComponent(BaseFormComponent* apCompareFC);
     int GetFormEditorIDLength();
     unsigned int FUN_0044ddc0();
 };
@@ -2463,9 +2605,12 @@ extern "C" int __cdecl BSstricmp(const char*, const char*);
 
 // @fnv 0x004853e0
 // src: XBOX_PDB 0x004853e0
-bool CompareForm::TESForm_CompareComponent(BaseFormComponent* apOther)
+// pdb: TESForm::CompareComponent | TESForm.obj | retail, upstream name already matches, high
+// pdb params: apCompareFC
+// pdb locals: iTempFlags, pCompare, iCompareTempFlags
+bool CompareForm::TESForm_CompareComponent(BaseFormComponent* apCompareFC)
 {
-    TESForm* otherForm = dynamic_cast<TESForm*>(apOther);
+    TESForm* otherForm = dynamic_cast<TESForm*>(apCompareFC);
     if (!otherForm)
         return true;
 
@@ -2589,7 +2734,7 @@ struct FUN_004867a0_cls : FUN_004867a0_vbase
 {
     void* GetA();
     void* GetB();
-    void* TESForm_CreateDuplicateForm(void* unused, void* arg);
+    void* TESForm_CreateDuplicateForm(void* abCreateEditorID, void* apCopyMap);
 };
 
 struct FUN_004867a0_arg
@@ -2597,13 +2742,16 @@ struct FUN_004867a0_arg
     void FUN_00844700(void* a, void* b);
 };
 
-void* FUN_00465110(void* p);
+void* CreateFormOfType(void* aType);
 
 // @fnv 0x004867a0
 // src: XBOX_PDB 0x004867a0
-void* FUN_004867a0_cls::TESForm_CreateDuplicateForm(void* unused, void* arg)
+// pdb: TESForm::CreateDuplicateForm | TESForm.obj | retail, upstream name already matches, high
+// pdb params: abCreateEditorID, apCopyMap
+// pdb locals: pdupform, tempstr
+void* FUN_004867a0_cls::TESForm_CreateDuplicateForm(void* abCreateEditorID, void* apCopyMap)
 {
-    FUN_004867a0_vbase* obj = (FUN_004867a0_vbase*)FUN_00465110(GetA());
+    FUN_004867a0_vbase* obj = (FUN_004867a0_vbase*)CreateFormOfType(GetA());
     if (obj != 0)
     {
         FUN_004867a0_holder holder(GetB());
@@ -2614,9 +2762,9 @@ void* FUN_004867a0_cls::TESForm_CreateDuplicateForm(void* unused, void* arg)
             this->v4D(holder.GetItem());
         }
     }
-    if (obj != 0 && arg != 0)
+    if (obj != 0 && apCopyMap != 0)
     {
-        ((FUN_004867a0_arg*)arg)->FUN_00844700(this, obj);
+        ((FUN_004867a0_arg*)apCopyMap)->FUN_00844700(this, obj);
     }
     return obj;
 }
@@ -2626,16 +2774,18 @@ struct S4868f0_host
     unsigned int GetHavokWorldObjectCountInSceneGraph_0084e3a0();
     unsigned int retn_empty_string();
     unsigned int TESForm_GetFormTypeString();
-    void TESForm_GetFormDetailedString(unsigned int a);
+    void TESForm_GetFormDetailedString(unsigned int aString);
 };
 
 extern "C" int __cdecl BSStringT_char_SPrintF(unsigned int, const char*, unsigned int, unsigned int, unsigned int);
 
 // @fnv 0x004868f0
 // src: XBOX_PDB 0x004868f0
-void S4868f0_host::TESForm_GetFormDetailedString(unsigned int a)
+// pdb: TESForm::GetFormDetailedString | TESForm.obj | debug, upstream name already matches, high
+// pdb params: aString
+void S4868f0_host::TESForm_GetFormDetailedString(unsigned int aString)
 {
-    BSStringT_char_SPrintF(a, "%s Form '%s' (%08X)", TESForm_GetFormTypeString(), retn_empty_string(), GetHavokWorldObjectCountInSceneGraph_0084e3a0());
+    BSStringT_char_SPrintF(aString, "%s Form '%s' (%08X)", TESForm_GetFormTypeString(), retn_empty_string(), GetHavokWorldObjectCountInSceneGraph_0084e3a0());
 }
 
 extern char DAT_011841cc;
@@ -2651,17 +2801,20 @@ typedef void(__thiscall* ActionHandler)(ActionObject* self, int target, void* da
 
 struct ActionCaller
 {
-    bool InvokeAction(int target, void* key, unsigned char mode, int unused, void* data);
+    bool InvokeAction(int apItemActivated, void* apActionRef, unsigned char abIdFlag, int apObjecttoGet, void* aicount);
 };
 
 // @fnv 0x0050f670
-bool ActionCaller::InvokeAction(int target, void* key, unsigned char mode, int unused, void* data)
+// pdb: TESBoundObject::Activate | TESObject.obj | retail, vtable slot, high
+// pdb params: apItemActivated, apActionRef, abIdFlag, apObjecttoGet, aicount
+// pdb locals: pActionActor, icount
+bool ActionCaller::InvokeAction(int apItemActivated, void* apActionRef, unsigned char abIdFlag, int apObjecttoGet, void* aicount)
 {
-    ActionObject* object = (ActionObject*)FUN_00ec43fb(key, 0, &DAT_011841cc, &DAT_011846d4, 0);
-    if (object != 0 && target != 0)
+    ActionObject* object = (ActionObject*)FUN_00ec43fb(apActionRef, 0, &DAT_011841cc, &DAT_011846d4, 0);
+    if (object != 0 && apItemActivated != 0)
     {
-        void* savedData = data;
-        ((ActionHandler)object->methods[244])(object, target, savedData, mode);
+        void* savedData = aicount;
+        ((ActionHandler)object->methods[244])(object, apItemActivated, savedData, abIdFlag);
         return true;
     }
     return false;
@@ -2674,6 +2827,8 @@ struct FUN_0050f780_Class
 };
 
 // @fnv 0x0050f780
+// pdb: TESBoundAnimObject::Set3D | TESObject.obj | debug, object-file gap fill, medium
+// pdb params: apObject, abTestProcessLevel
 void FUN_0050f780_Class::ForwardTo008d0600(int arg1, unsigned char arg2)
 {
     FUN_008d0600(arg1, arg2);
@@ -2693,16 +2848,19 @@ struct FUN_005e9620_class
     unsigned int unk00;
     unsigned char unk04;
     unsigned char unk05;
-    void __thiscall BGSPerkEntry_StartPerkEntry(unsigned char value);
+    void __thiscall BGSPerkEntry_StartPerkEntry(unsigned char aePerkEntryType);
 };
 // @fnv 0x005e9620
 // src: XBOX_PDB 0x005e9620
-void __thiscall FUN_005e9620_class::BGSPerkEntry_StartPerkEntry(unsigned char value)
+// pdb: BGSPerkEntry::StartPerkEntry | BGSPerk.obj | debug, upstream name already matches, high
+// pdb params: aePerkEntryType
+// pdb locals: saveData
+void __thiscall FUN_005e9620_class::BGSPerkEntry_StartPerkEntry(unsigned char aePerkEntryType)
 {
     Record data;
     data.field2 = unk05;
     data.field1 = unk04;
-    data.field0 = value;
+    data.field0 = aePerkEntryType;
     if (TESForm_QEndianSwapOnSave())
     {
         data.FUN_00483710();
@@ -2725,6 +2883,8 @@ struct C67ACD0Package
 };
 
 // @fnv 0x0067acd0
+// pdb: GetTypeName | vdeclval.obj | debug, upstream name already matches, high
+// pdb params: Type
 const char* C67ACD0Package::GetTypeName()
 {
     return g_packageTypeNames[GetType()];
@@ -2756,7 +2916,10 @@ extern "C" int __cdecl FUN_00b47370(CompressionStream*);
 // b = stored original size, q = input size, cf = zlib stream,
 // eb = compression capacity, f = compressed size.
 // @fnv 0x00483d70
-void CompressSaveLoadRecord()
+// src: XBOX_RETAIL_PDB 0x00483d70
+// pdb: TESForm::CompressSaveBuffer | TESForm.obj | retail, object-file gap fill, high
+// pdb locals: pbuffer, pnewformbuffer, pFORM, ret, inewbuffersize, pcompressionbuffer, itempsize, ioriginalsize, zstream, icompbuffsize, icompressedsize
+void TESForm_CompressSaveBuffer()
 {
     if (DAT_011c54cc && (unsigned int)DAT_011c54d0 > 24)
     {
@@ -2926,13 +3089,16 @@ struct FUN_00485c10_shell : public TESForm
 {
     bool TESForm_GetTemporary();
     const char* TESForm_GetFormTypeString();
-    void TESForm_SetFormID(unsigned int id, bool notify);
+    void TESForm_SetFormID(unsigned int aiID, bool abUpdateFile);
 };
 // @fnv 0x00485c10
 // src: XBOX_PDB 0x00485c10
-void FUN_00485c10_shell::TESForm_SetFormID(unsigned int id, bool notify)
+// pdb: TESForm::SetFormID | TESForm.obj | retail, upstream name already matches, high
+// pdb params: aiID, abUpdateFile
+// pdb locals: apOldForm, forminfo
+void FUN_00485c10_shell::TESForm_SetFormID(unsigned int aiID, bool abUpdateFile)
 {
-    if (id == iFormID)
+    if (aiID == iFormID)
         return;
     if (!TESForm_GetTemporary())
     {
@@ -2947,19 +3113,19 @@ void FUN_00485c10_shell::TESForm_SetFormID(unsigned int id, bool notify)
             MessageHandler_ForceNextWarningToDisplay();
             BSStringT<char> details;
             debug->GetDebugInfo(&details);
-            _FNV_Warning(DAT_0101c9c8, id, TESForm_GetFormTypeString(), details.String());
+            _FNV_Warning(DAT_0101c9c8, aiID, TESForm_GetFormTypeString(), details.String());
             DAT_011c54b9 = 1;
         }
-        else if (notify && iFormID != 0)
+        else if (abUpdateFile && iFormID != 0)
         {
             g_dataHandler->RemoveIDFromDataHandler(iFormID);
         }
-        if (id != 0)
+        if (aiID != 0)
         {
-            reinterpret_cast<FormMap*>(TESForm::ms_pFormIDMap)->FUN_00844700(id, this);
+            reinterpret_cast<FormMap*>(TESForm::ms_pFormIDMap)->FUN_00844700(aiID, this);
         }
     }
-    iFormID = id;
+    iFormID = aiID;
 }
 
 struct SDEndianTag
@@ -2985,14 +3151,17 @@ struct SDSaveForm : TESForm
     int GetSaveOffset();
     char* GetSaveBuffer();
     bool ReserveSaveData(char* apStart, unsigned short ausSize);
-    void TESForm___SaveData(const void* apData, unsigned int auiSize);
+    void TESForm___SaveData(const void* apData, unsigned int aiSize);
 };
 
 // @fnv 0x00485e20
 // src: XBOX_PDB 0x00485e20
-void SDSaveForm::TESForm___SaveData(const void* apData, unsigned int auiSize)
+// pdb: TESForm::__SaveData | TESForm.obj | retail, string-set bridge, high
+// pdb params: apData, aiSize
+// pdb locals: pAttributes, pClipRounds, pUses, pQuality, pChunk, pWeight, iBufferSize, pAttack, pValue, sSize, pHealth, pData, ftemp
+void SDSaveForm::TESForm___SaveData(const void* apData, unsigned int aiSize)
 {
-    if (auiSize > 0xffff)
+    if (aiSize > 0xffff)
     {
         SDWarning("MASTERFILE: Trying to SaveData that's too large.");
         return;
@@ -3000,7 +3169,7 @@ void SDSaveForm::TESForm___SaveData(const void* apData, unsigned int auiSize)
 
     unsigned short usSize9 = 0;
     int _iOffset = GetSaveOffset();
-    SDWriteChunk('ATAD', apData, auiSize);
+    SDWriteChunk('ATAD', apData, aiSize);
     char* pStart = GetSaveBuffer() + _iOffset;
 
     TESUsesForm* pUses7 = dynamic_cast<TESUsesForm*>(static_cast<TESForm*>(this));
@@ -3121,6 +3290,8 @@ struct FUN_00483370 : BaseFC
     FUN_00483370();
 };
 // @fnv 0x00483370
+// pdb: TESForm::TESForm | TESForm.obj | retail, unique string literal, high
+// pdb locals: bStop, n, m
 FUN_00483370::FUN_00483370()
 {
     if (DAT_011c54bc == 0)
@@ -3197,7 +3368,10 @@ struct Slot4
 // When FUN_00401500() is true, copies arg1 into a temporary array, calls FUN_00401080 on each element with false, then appends it.
 // @fnv 0x00485750
 // src: XBOX_PDB 0x00485750
-void __cdecl TESForm_AddChunkArray32(void* apDestination, void* apSource, void* aiCount)
+// pdb: TESForm::AddChunkArray32 | TESForm.obj | retail, upstream name already matches, high
+// pdb params: aeChunkID, apData, aiCount
+// pdb locals: idatasize, pdata, i
+void __cdecl TESForm_AddChunkArray32(void* aeChunkID, void* apData, void* aiCount)
 {
     Slot4* p4;
     unsigned int bytes7 = (unsigned int)aiCount * 4;
@@ -3206,18 +3380,18 @@ void __cdecl TESForm_AddChunkArray32(void* apDestination, void* apSource, void* 
     {
         unsigned int i;
         p4 = new Slot4[(unsigned int)aiCount];
-        FUN_00401460(p4, apSource, bytes7);
+        FUN_00401460(p4, apData, bytes7);
         for (i = 0; i < (unsigned int)aiCount; ++i)
         {
 
             BSEndian_00401080(&p4[i], BoolBox().value);
         }
-        AppendChunk(apDestination, p4, (void*)bytes7);
+        AppendChunk(aeChunkID, p4, (void*)bytes7);
         delete[] p4;
     }
     else
     {
-        AppendChunk(apDestination, apSource, (void*)bytes7);
+        AppendChunk(aeChunkID, apData, (void*)bytes7);
     }
 }
 
@@ -3321,12 +3495,14 @@ int __cdecl FindFormEnumIndex(unsigned int);
 
 struct FUN_00484150_shell : public TESForm
 {
-    bool IsFormTypeBelowThreshold(FormRecordHeader* apGroupForm);
+    bool IsFormTypeBelowThreshold(FormRecordHeader* apGroupFORM);
 };
 
 // Checks if a group form's form type is below a threshold based on its iFormID, returning true if the type index is less than the threshold.
 // @fnv 0x00484150
-bool FUN_00484150_shell::IsFormTypeBelowThreshold(FormRecordHeader* apGroupForm)
+// pdb: TESForm::SavesBefore | TESForm.obj | retail, vtable slot, high
+// pdb params: apForm
+bool FUN_00484150_shell::IsFormTypeBelowThreshold(FormRecordHeader* apGroupFORM)
 {
     bool bResultTmp = false;
     unsigned int v1;
@@ -3335,12 +3511,12 @@ bool FUN_00484150_shell::IsFormTypeBelowThreshold(FormRecordHeader* apGroupForm)
     unsigned int v8;
     unsigned int v7;
 
-    if (apGroupForm && apGroupForm->form == kGroupFormType)
+    if (apGroupFORM && apGroupFORM->form == kGroupFormType)
     {
-        switch (apGroupForm->iFormID)
+        switch (apGroupFORM->iFormID)
         {
         case 0:
-            v2 = FindFormEnumIndex(apGroupForm->flags);
+            v2 = FindFormEnumIndex(apGroupFORM->flags);
             v1 = GetFormType();
             switch (v2)
             {
@@ -3490,13 +3666,16 @@ void __cdecl BSEndian_00407a90(short* p, Swap_004861f0 b) throw();
 
 struct Form_004861f0 : TESForm
 {
-    void TESForm_LoadData(TESFile* file, void* dest, unsigned short count);
+    void TESForm_LoadData(TESFile* apFile, void* apData, unsigned short asSize);
 };
 
 // Reads a chunk from the file into a stack buffer, copies it to dest, and parses form fields into the component objects.
 // @fnv 0x004861f0
 // src: XBOX_PDB 0x004861f0
-void Form_004861f0::TESForm_LoadData(TESFile* file, void* dest, unsigned short count)
+// pdb: TESForm::LoadData | TESForm.obj | retail, upstream name already matches, high
+// pdb params: apFile, apData, asSize
+// pdb locals: pAttributes, pClipRounds, pUses, pQuality, sOffset, pWeight, pAttack, pValue, sSize, ivalue, pData, pHealth, svalue, fvalue, pTemp
+void Form_004861f0::TESForm_LoadData(TESFile* apFile, void* apData, unsigned short asSize)
 {
     TESAttributes* pAttr9;
     BGSClipRoundsForm* pClip;
@@ -3513,11 +3692,11 @@ void Form_004861f0::TESForm_LoadData(TESFile* file, void* dest, unsigned short c
     short damage9;
     float fval;
 
-    chunkSize3 = file->GetChunkSize();
-    pos4 = count;
+    chunkSize3 = apFile->GetChunkSize();
+    pos4 = asSize;
     buffer2 = (char*)_alloca(chunkSize3);
-    file->GetChunkData(buffer2, chunkSize3);
-    memcpy(dest, buffer2, MinUnsignedShort(chunkSize3, count));
+    apFile->GetChunkData(buffer2, chunkSize3);
+    memcpy(apData, buffer2, MinUnsignedShort(chunkSize3, asSize));
 
     pUses = (TESUsesForm*)FUN_00ec43fb((TESForm*)this, 0, &DAT_01183028, &DAT_01186b88, 0);
     pValue = (TESValueForm*)FUN_00ec43fb((TESForm*)this, 0, &DAT_01183028, &DAT_01186b6c, 0);
@@ -3537,7 +3716,7 @@ void Form_004861f0::TESForm_LoadData(TESFile* file, void* dest, unsigned short c
     {
         val3 = *(int*)(buffer2 + pos4);
         pos4 += 4;
-        if (file->IsEndianConversionRequired())
+        if (apFile->IsEndianConversionRequired())
             BSEndian_00401080(&val3, Swap_004861f0());
         pValue->SetFormValue(static_cast<unsigned int>(val3));
     }
@@ -3545,7 +3724,7 @@ void Form_004861f0::TESForm_LoadData(TESFile* file, void* dest, unsigned short c
     {
         val3 = *(int*)(buffer2 + pos4);
         pos4 += 4;
-        if (file->IsEndianConversionRequired())
+        if (apFile->IsEndianConversionRequired())
             BSEndian_00401080(&val3, Swap_004861f0());
         pHealth4->SetFormHealth(val3);
     }
@@ -3555,7 +3734,7 @@ void Form_004861f0::TESForm_LoadData(TESFile* file, void* dest, unsigned short c
         memcpy(&weight, buffer2 + pos4, 4);
         fval = weight;
         pos4 += 4;
-        if (file->IsEndianConversionRequired())
+        if (apFile->IsEndianConversionRequired())
             BSEndian_00401080((int*)&fval, Swap_004861f0());
         pWeightFormTmp->SetFormWeight(fval);
     }
@@ -3565,7 +3744,7 @@ void Form_004861f0::TESForm_LoadData(TESFile* file, void* dest, unsigned short c
         memcpy(&quality, buffer2 + pos4, 4);
         fval = quality;
         pos4 += 4;
-        if (file->IsEndianConversionRequired())
+        if (apFile->IsEndianConversionRequired())
             BSEndian_00401080((int*)&fval, Swap_004861f0());
         pQuality->SetFormQuality((unsigned char)fval);
     }
@@ -3573,7 +3752,7 @@ void Form_004861f0::TESForm_LoadData(TESFile* file, void* dest, unsigned short c
     {
         damage9 = *(short*)(buffer2 + pos4);
         pos4 += 2;
-        if (file->IsEndianConversionRequired())
+        if (apFile->IsEndianConversionRequired())
             BSEndian_00407a90(&damage9, Swap_004861f0());
         pDamage5->SetAttackDamage(damage9);
     }
@@ -3604,12 +3783,15 @@ struct TESFormLoadProxy : public ::TESForm
 // When bit 0 of flags is set, reads a value into itempFormFlags and merges masked bits into iFormFlags according to whether pref is nonnull.
 // @fnv 0x00484c50
 // src: XBOX_PDB 0x00484c50
-void TESFormLoadProxy::TESForm_LoadGame(unsigned int flags, unsigned int currentFlags)
+// pdb: TESForm::LoadGame | TESForm.obj | retail, vtable slot, high
+// pdb params: aiFlags, aiCurrentFlags
+// pdb locals: pref, itempFormFlags
+void TESFormLoadProxy::TESForm_LoadGame(unsigned int aiFlags, unsigned int aiCurrentFlags)
 {
     ::TESObjectREFR* pref;
     unsigned int itempFormFlags;
 
-    if (flags & 1)
+    if (aiFlags & 1)
     {
         TESForm_LoadGameDataOLD(&itempFormFlags, 4);
         pref = (::TESObjectREFR*)FUN_00ec43fb(this, 0, &DAT_01183028, &DAT_011841cc, 0);

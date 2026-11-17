@@ -4,18 +4,20 @@
 // Returns value multiplied or offset by a small factor depending on mode, or 0 for unknown modes.
 // @fnv 0x00e60cb0
 // src: XBOX_PDB 0x00e60cb0
-int __cdecl hkMeshPrimitiveUtil_calculateNumIndices(int mode, int value)
+// pdb: hkMeshPrimitiveUtil::calculateNumIndices | hkMeshPrimitiveUtil.obj | debug, upstream name already matches, high
+// pdb params: type, numPrims
+int __cdecl hkMeshPrimitiveUtil_calculateNumIndices(int mode, int numPrims)
 {
     switch (mode)
     {
     case 1:
-        return value;
+        return numPrims;
     case 2:
-        return value * 2;
+        return numPrims * 2;
     case 3:
-        return value * 3;
+        return numPrims * 3;
     case 4:
-        return value + 2;
+        return numPrims + 2;
     default:
         return 0;
     }

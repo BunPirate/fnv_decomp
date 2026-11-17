@@ -135,6 +135,7 @@ void InitializeRuntimeFloatCall24()
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_01013418) * fnvFloat_01013418)) * fnvFloat_0101341c;
 }
 // @fnv 0x00f361a0
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | MagicItem.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall25()
 {
     fnvFloat_011c3518 = fnvFloat_01013618 / sqrt_004019b0(fnvFloat_01013614);
@@ -223,6 +224,7 @@ void InitializeRuntimeFloatCall40()
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_01015af8) * fnvFloat_01015af8)) * fnvFloat_01015afc;
 }
 // @fnv 0x00f37a10
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | ExtraDataObjects.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall41()
 {
     fnvFloat_011c3ad4 = fnvFloat_01016288 / sqrt_004019b0(fnvFloat_01016284);
@@ -267,6 +269,7 @@ void InitializeRuntimeFloatCall48()
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_01016598) * fnvFloat_01016598)) * fnvFloat_0101659c;
 }
 // @fnv 0x00f38010
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | ModelLoader.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall49()
 {
     fnvFloat_011c3d58 = fnvFloat_010177fc / sqrt_004019b0(fnvFloat_010177f8);
@@ -278,6 +281,7 @@ void InitializeRuntimeFloatCall50()
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_010177f8) * fnvFloat_010177f8)) * fnvFloat_010177fc;
 }
 // @fnv 0x00f38bf0
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | TES.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall51()
 {
     fnvFloat_011c3fb8 = fnvFloat_010185ac / sqrt_004019b0(fnvFloat_010185a8);
@@ -388,6 +392,7 @@ void InitializeRuntimeFloatCall70()
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_0101b0a8) * fnvFloat_0101b0a8)) * fnvFloat_0101b0ac;
 }
 // @fnv 0x00f3b590
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | TESActorBaseData.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall71()
 {
     fnvFloat_011c531c = fnvFloat_0101be6c / sqrt_004019b0(fnvFloat_0101be68);
@@ -399,6 +404,7 @@ void InitializeRuntimeFloatCall72()
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_0101be68) * fnvFloat_0101be68)) * fnvFloat_0101be6c;
 }
 // @fnv 0x00f3b910
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | TESAIForm.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall73()
 {
     fnvFloat_011c5388 = fnvFloat_0101bf48 / sqrt_004019b0(fnvFloat_0101bf44);
@@ -575,6 +581,7 @@ void InitializeRuntimeFloatCall104()
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_0101d898) * fnvFloat_0101d898)) * fnvFloat_0101d89c;
 }
 // @fnv 0x00f3d1f0
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | Animation.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall105()
 {
     fnvFloat_011c57c4 = fnvFloat_0101dfe8 / sqrt_004019b0(fnvFloat_0101dfe4);
@@ -597,6 +604,7 @@ void InitializeRuntimeFloatCall108()
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_0101e148) * fnvFloat_0101e148)) * fnvFloat_0101e14c;
 }
 // @fnv 0x00f3d8a0
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | BGSDecalManager.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall109()
 {
     fnvFloat_011c5934 = fnvFloat_0101e724 / sqrt_004019b0(fnvFloat_0101e720);
@@ -619,6 +627,7 @@ void InitializeRuntimeFloatCall112()
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_0101ec38) * fnvFloat_0101ec38)) * fnvFloat_0101ec3c;
 }
 // @fnv 0x00f3e630
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | BGSSceneInfo.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall113()
 {
     fnvFloat_011c5ca0 = fnvFloat_0101f4f8 / sqrt_004019b0(fnvFloat_0101f4f4);
@@ -674,6 +683,7 @@ void InitializeRuntimeFloatCall122()
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_0101ff08) * fnvFloat_0101ff08)) * fnvFloat_0101ff0c;
 }
 // @fnv 0x00f3eed0
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | GlobalFunc.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall123()
 {
     fnvFloat_011c63a0 = fnvFloat_0102062c / sqrt_004019b0(fnvFloat_01020628);
@@ -696,6 +706,7 @@ void InitializeRuntimeFloatCall126()
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_01020668) * fnvFloat_01020668)) * fnvFloat_0102066c;
 }
 // @fnv 0x00f3f200
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | GridCell.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall127()
 {
     fnvFloat_011c648c = fnvFloat_0102072c / sqrt_004019b0(fnvFloat_01020728);
@@ -712,12 +723,14 @@ void InitializeRuntimeFloatCall129()
     fnvFloat_011c6540 = fnvFloat_01020990 / sqrt_004019b0(fnvFloat_0102098c);
 }
 // @fnv 0x00f3f500
+// pdb: `dynamic initializer for 'ISQRT_FACTOR'' | LipSynchAnim.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall130()
 {
     fnvFloat_011c6518 =
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_0102098c) * fnvFloat_0102098c)) * fnvFloat_01020990;
 }
 // @fnv 0x00f3f600
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | LipSynchAnim.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall131()
 {
     fnvFloat_011c6e08 = fnvFloat_01020d54 / sqrt_004019b0(fnvFloat_01020d50);
@@ -762,22 +775,26 @@ void InitializeRuntimeFloatCall138()
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_01021098) * fnvFloat_01021098)) * fnvFloat_0102109c;
 }
 // @fnv 0x00f41640
+// pdb: `dynamic initializer for 'ISQRT_ADDITIVE_CONSTANT'' | ScreenCustomSplatter.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall139()
 {
     fnvFloat_011c7814 = fnvFloat_01022894 / sqrt_004019b0(fnvFloat_01022890);
 }
 // @fnv 0x00f41670
+// pdb: `dynamic initializer for 'ISQRT_FACTOR'' | ScreenCustomSplatter.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall140()
 {
     fnvFloat_011c7800 =
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_01022890) * fnvFloat_01022890)) * fnvFloat_01022894;
 }
 // @fnv 0x00f417a0
+// pdb: `dynamic initializer for 'ISQRT_ADDITIVE_CONSTANT'' | ScreenSplatter.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall141()
 {
     fnvFloat_011c7858 = fnvFloat_01022a14 / sqrt_004019b0(fnvFloat_01022a10);
 }
 // @fnv 0x00f417d0
+// pdb: `dynamic initializer for 'ISQRT_FACTOR'' | ScreenSplatter.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall142()
 {
     fnvFloat_011c783c =
@@ -800,6 +817,7 @@ void InitializeRuntimeFloatCall145()
     fnvFloat_011c7d30 = fnvFloat_0102372c / sqrt_004019b0(fnvFloat_01023728);
 }
 // @fnv 0x00f42b50
+// pdb: `dynamic initializer for 'ISQRT_FACTOR'' | BGSDecalNode.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall146()
 {
     fnvFloat_011c7d2c =
@@ -817,6 +835,7 @@ void InitializeRuntimeFloatCall148()
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_01023858) * fnvFloat_01023858)) * fnvFloat_0102385c;
 }
 // @fnv 0x00f42e80
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | BSAnimGroupSequence.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall149()
 {
     fnvFloat_011c7dd8 = fnvFloat_0102390c / sqrt_004019b0(fnvFloat_01023908);
@@ -949,11 +968,13 @@ void InitializeRuntimeFloatCall172()
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_01024154) * fnvFloat_01024154)) * fnvFloat_01024158;
 }
 // @fnv 0x00f43da0
+// pdb: `dynamic initializer for 'ISQRT_ADDITIVE_CONSTANT'' | BGSAddonNode.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall173()
 {
     fnvFloat_011c8064 = fnvFloat_010241e8 / sqrt_004019b0(fnvFloat_010241e4);
 }
 // @fnv 0x00f43dd0
+// pdb: `dynamic initializer for 'ISQRT_FACTOR'' | BGSAddonNode.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall174()
 {
     fnvFloat_011c8060 =
@@ -1037,6 +1058,7 @@ void InitializeRuntimeFloatCall188()
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_01025858) * fnvFloat_01025858)) * fnvFloat_0102585c;
 }
 // @fnv 0x00f44fd0
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | BGSTerminal.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall189()
 {
     fnvFloat_011c8410 = fnvFloat_01025f1c / sqrt_004019b0(fnvFloat_01025f18);
@@ -1103,6 +1125,7 @@ void InitializeRuntimeFloatCall200()
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_010269a8) * fnvFloat_010269a8)) * fnvFloat_010269ac;
 }
 // @fnv 0x00f45a80
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | TESFlora.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall201()
 {
     fnvFloat_011c89ec = fnvFloat_01026c6c / sqrt_004019b0(fnvFloat_01026c68);
@@ -1114,6 +1137,7 @@ void InitializeRuntimeFloatCall202()
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_01026c68) * fnvFloat_01026c68)) * fnvFloat_01026c6c;
 }
 // @fnv 0x00f47ae0
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | TESFurniture.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall203()
 {
     fnvFloat_011c8dc4 = fnvFloat_01028120 / sqrt_004019b0(fnvFloat_0102811c);
@@ -1136,6 +1160,7 @@ void InitializeRuntimeFloatCall206()
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_010285d8) * fnvFloat_010285d8)) * fnvFloat_010285dc;
 }
 // @fnv 0x00f47e80
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | TESLevCharacter.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall207()
 {
     fnvFloat_011c8ea0 = fnvFloat_010287fc / sqrt_004019b0(fnvFloat_010287f8);
@@ -1147,6 +1172,7 @@ void InitializeRuntimeFloatCall208()
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_010287f8) * fnvFloat_010287f8)) * fnvFloat_010287fc;
 }
 // @fnv 0x00f48110
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | TESLevCreature.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall209()
 {
     fnvFloat_011c8f10 = fnvFloat_01028a18 / sqrt_004019b0(fnvFloat_01028a14);
@@ -1202,11 +1228,13 @@ void InitializeRuntimeFloatCall218()
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_01029cb8) * fnvFloat_01029cb8)) * fnvFloat_01029cbc;
 }
 // @fnv 0x00f48e90
+// pdb: `dynamic initializer for 'ISQRT_ADDITIVE_CONSTANT'' | TESObjectARMO.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall219()
 {
     fnvFloat_011c9228 = fnvFloat_0102a4f8 / sqrt_004019b0(fnvFloat_0102a4f4);
 }
 // @fnv 0x00f48ec0
+// pdb: `dynamic initializer for 'ISQRT_FACTOR'' | TESObjectARMO.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall220()
 {
     fnvFloat_011c91dc =
@@ -1246,6 +1274,7 @@ void InitializeRuntimeFloatCall226()
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_0102b158) * fnvFloat_0102b158)) * fnvFloat_0102b15c;
 }
 // @fnv 0x00f49900
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | TESObjectDOOR.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall227()
 {
     fnvFloat_011c9400 = fnvFloat_0102b488 / sqrt_004019b0(fnvFloat_0102b484);
@@ -1301,6 +1330,7 @@ void InitializeRuntimeFloatCall236()
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_0102c348) * fnvFloat_0102c348)) * fnvFloat_0102c34c;
 }
 // @fnv 0x00f49ff0
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | TESObjectWEAP.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall237()
 {
     fnvFloat_011c9564 = fnvFloat_0102cb8c / sqrt_004019b0(fnvFloat_0102cb88);
@@ -1312,6 +1342,7 @@ void InitializeRuntimeFloatCall238()
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_0102cb88) * fnvFloat_0102cb88)) * fnvFloat_0102cb8c;
 }
 // @fnv 0x00f4a280
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | BGSEncounterZone.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall239()
 {
     fnvFloat_011c95b8 = fnvFloat_0102cd68 / sqrt_004019b0(fnvFloat_0102cd64);
@@ -1444,6 +1475,7 @@ void InitializeRuntimeFloatCall262()
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_0102e968) * fnvFloat_0102e968)) * fnvFloat_0102e96c;
 }
 // @fnv 0x00f4b930
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | TESObjectCELL.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall263()
 {
     fnvFloat_011ca338 = fnvFloat_0102f51c / sqrt_004019b0(fnvFloat_0102f518);
@@ -1466,6 +1498,7 @@ void InitializeRuntimeFloatCall266()
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_010310a8) * fnvFloat_010310a8)) * fnvFloat_010310ac;
 }
 // @fnv 0x00f4c3f0
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | TESTerrainLODManager.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall267()
 {
     fnvFloat_011ca580 = fnvFloat_010313ac / sqrt_004019b0(fnvFloat_010313a8);
@@ -1477,6 +1510,7 @@ void InitializeRuntimeFloatCall268()
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_010313a8) * fnvFloat_010313a8)) * fnvFloat_010313ac;
 }
 // @fnv 0x00f4c680
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | TESWaterForm.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall269()
 {
     fnvFloat_011ca5cc = fnvFloat_0103166c / sqrt_004019b0(fnvFloat_01031668);
@@ -1719,6 +1753,7 @@ void InitializeRuntimeFloatCall312()
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_01036d28) * fnvFloat_01036d28)) * fnvFloat_01036d2c;
 }
 // @fnv 0x00f4eb10
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | TESScript.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall313()
 {
     fnvFloat_011cad7c = fnvFloat_0103742c / sqrt_004019b0(fnvFloat_01037428);
@@ -1774,6 +1809,7 @@ void InitializeRuntimeFloatCall322()
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_01044f88) * fnvFloat_01044f88)) * fnvFloat_01044f8c;
 }
 // @fnv 0x00f4f680
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | TESSound.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall323()
 {
     fnvFloat_011cafe0 = fnvFloat_010453d8 / sqrt_004019b0(fnvFloat_010453d4);
@@ -1939,6 +1975,7 @@ void InitializeRuntimeFloatCall352()
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_01048d58) * fnvFloat_01048d58)) * fnvFloat_01048d5c;
 }
 // @fnv 0x00f51eb0
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | TESCreature.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall353()
 {
     fnvFloat_011cb60c = fnvFloat_010496d8 / sqrt_004019b0(fnvFloat_010496d4);
@@ -1994,6 +2031,7 @@ void InitializeRuntimeFloatCall362()
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_0104a108) * fnvFloat_0104a108)) * fnvFloat_0104a10c;
 }
 // @fnv 0x00f527d0
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | TESNPC.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall363()
 {
     fnvFloat_011cb828 = fnvFloat_0104abcc / sqrt_004019b0(fnvFloat_0104abc8);
@@ -2005,6 +2043,7 @@ void InitializeRuntimeFloatCall364()
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_0104abc8) * fnvFloat_0104abc8)) * fnvFloat_0104abcc;
 }
 // @fnv 0x00f52a60
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | TESQuest.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall365()
 {
     fnvFloat_011cb8ac = fnvFloat_0104ae2c / sqrt_004019b0(fnvFloat_0104ae28);
@@ -2038,6 +2077,7 @@ void InitializeRuntimeFloatCall370()
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_0104b428) * fnvFloat_0104b428)) * fnvFloat_0104b42c;
 }
 // @fnv 0x00f53210
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | TESRace.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall371()
 {
     fnvFloat_011cbc14 = fnvFloat_0104b9ac / sqrt_004019b0(fnvFloat_0104b9a8);
@@ -2049,6 +2089,7 @@ void InitializeRuntimeFloatCall372()
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_0104b9a8) * fnvFloat_0104b9a8)) * fnvFloat_0104b9ac;
 }
 // @fnv 0x00f54130
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | TESReputation.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall373()
 {
     fnvFloat_011cbe00 = fnvFloat_0104c94c / sqrt_004019b0(fnvFloat_0104c948);
@@ -2060,6 +2101,7 @@ void InitializeRuntimeFloatCall374()
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_0104c948) * fnvFloat_0104c948)) * fnvFloat_0104c94c;
 }
 // @fnv 0x00f54480
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | TESResponse.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall375()
 {
     fnvFloat_011cbe84 = fnvFloat_0104cba8 / sqrt_004019b0(fnvFloat_0104cba4);
@@ -2126,6 +2168,7 @@ void InitializeRuntimeFloatCall386()
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_0104d9f8) * fnvFloat_0104d9f8)) * fnvFloat_0104d9fc;
 }
 // @fnv 0x00f55270
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | CameraCaster.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall387()
 {
     fnvFloat_011cc1e8 = fnvFloat_0104daa8 / sqrt_004019b0(fnvFloat_0104daa4);
@@ -2159,6 +2202,7 @@ void InitializeRuntimeFloatCall392()
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_0104dd28) * fnvFloat_0104dd28)) * fnvFloat_0104dd2c;
 }
 // @fnv 0x00f55730
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | FOCollisionListener.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall393()
 {
     fnvFloat_011cc2bc = fnvFloat_0104ddd8 / sqrt_004019b0(fnvFloat_0104ddd4);
@@ -2258,6 +2302,7 @@ void InitializeRuntimeFloatCall410()
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_0104e428) * fnvFloat_0104e428)) * fnvFloat_0104e42c;
 }
 // @fnv 0x00f56870
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | TESWaterListener.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall411()
 {
     fnvFloat_011cc63c = fnvFloat_0104e55c / sqrt_004019b0(fnvFloat_0104e558);
@@ -2269,6 +2314,7 @@ void InitializeRuntimeFloatCall412()
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_0104e558) * fnvFloat_0104e558)) * fnvFloat_0104e55c;
 }
 // @fnv 0x00f56b90
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | ViewCaster.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall413()
 {
     fnvFloat_011cc7d4 = fnvFloat_0104e698 / sqrt_004019b0(fnvFloat_0104e694);
@@ -2302,6 +2348,7 @@ void InitializeRuntimeFloatCall418()
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_0104ebd8) * fnvFloat_0104ebd8)) * fnvFloat_0104ebdc;
 }
 // @fnv 0x00f57ca0
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | Clouds.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall419()
 {
     fnvFloat_011ccab8 = fnvFloat_0104ec5c / sqrt_004019b0(fnvFloat_0104ec58);
@@ -2368,6 +2415,7 @@ void InitializeRuntimeFloatCall430()
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_0104f1a8) * fnvFloat_0104f1a8)) * fnvFloat_0104f1ac;
 }
 // @fnv 0x00f58e20
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | Stars.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall431()
 {
     fnvFloat_011ccecc = fnvFloat_0104f26c / sqrt_004019b0(fnvFloat_0104f268);
@@ -2379,6 +2427,7 @@ void InitializeRuntimeFloatCall432()
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_0104f268) * fnvFloat_0104f268)) * fnvFloat_0104f26c;
 }
 // @fnv 0x00f59200
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | Sun.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall433()
 {
     fnvFloat_011cd7d4 = fnvFloat_0104f3bc / sqrt_004019b0(fnvFloat_0104f3b8);
@@ -2390,6 +2439,7 @@ void InitializeRuntimeFloatCall434()
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_0104f3b8) * fnvFloat_0104f3b8)) * fnvFloat_0104f3bc;
 }
 // @fnv 0x00f5d620
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | AiFormulas.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall435()
 {
     fnvFloat_011cefc8 = fnvFloat_0105164c / sqrt_004019b0(fnvFloat_01051648);
@@ -2406,17 +2456,20 @@ void InitializeRuntimeFloatCall437()
     fnvFloat_011d0b20 = fnvFloat_01055f78 / sqrt_004019b0(fnvFloat_01055f74);
 }
 // @fnv 0x00f65080
+// pdb: `dynamic initializer for 'ISQRT_FACTOR'' | GamePlayFormulas.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall438()
 {
     fnvFloat_011d01d4 =
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_01055f74) * fnvFloat_01055f74)) * fnvFloat_01055f78;
 }
 // @fnv 0x00f6abe0
+// pdb: `dynamic initializer for 'ISQRT_ADDITIVE_CONSTANT'' | MagicFormulas.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall439()
 {
     fnvFloat_011d19a4 = fnvFloat_01058b78 / sqrt_004019b0(fnvFloat_01058b74);
 }
 // @fnv 0x00f6ac10
+// pdb: `dynamic initializer for 'ISQRT_FACTOR'' | MagicFormulas.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall440()
 {
     fnvFloat_011d1664 =
@@ -2434,6 +2487,7 @@ void InitializeRuntimeFloatCall442()
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_01064de8) * fnvFloat_01064de8)) * fnvFloat_01064dec;
 }
 // @fnv 0x00f81540
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | BSFaceGenAnimationData.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall443()
 {
     fnvFloat_011d59bc = fnvFloat_01065398 / sqrt_004019b0(fnvFloat_01065394);
@@ -2467,6 +2521,7 @@ void InitializeRuntimeFloatCall448()
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_01065648) * fnvFloat_01065648)) * fnvFloat_0106564c;
 }
 // @fnv 0x00f81c70
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | BSFaceGenManager.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall449()
 {
     fnvFloat_011d5b6c = fnvFloat_01065ac8 / sqrt_004019b0(fnvFloat_01065ac4);
@@ -2478,6 +2533,7 @@ void InitializeRuntimeFloatCall450()
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_01065ac4) * fnvFloat_01065ac4)) * fnvFloat_01065ac8;
 }
 // @fnv 0x00f81d90
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | BSFaceGenModel.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall451()
 {
     fnvFloat_011d5b80 = fnvFloat_01065cb0 / sqrt_004019b0(fnvFloat_01065cac);
@@ -2489,17 +2545,20 @@ void InitializeRuntimeFloatCall452()
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_01065cac) * fnvFloat_01065cac)) * fnvFloat_01065cb0;
 }
 // @fnv 0x00f81e30
+// pdb: `dynamic initializer for 'ISQRT_ADDITIVE_CONSTANT'' | BSFaceGenMorphData.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall453()
 {
     fnvFloat_011d5bb0 = fnvFloat_01065ce4 / sqrt_004019b0(fnvFloat_01065ce0);
 }
 // @fnv 0x00f81e60
+// pdb: `dynamic initializer for 'ISQRT_FACTOR'' | BSFaceGenMorphData.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall454()
 {
     fnvFloat_011d5b9c =
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_01065ce0) * fnvFloat_01065ce0)) * fnvFloat_01065ce4;
 }
 // @fnv 0x00f81f50
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | BSFaceGenMorphData.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall455()
 {
     fnvFloat_011d5c00 = fnvFloat_010660ac / sqrt_004019b0(fnvFloat_010660a8);
@@ -2511,6 +2570,7 @@ void InitializeRuntimeFloatCall456()
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_010660a8) * fnvFloat_010660a8)) * fnvFloat_010660ac;
 }
 // @fnv 0x00f821d0
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | BSFaceGenNiNode.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall457()
 {
     fnvFloat_011d5cf8 = fnvFloat_0106636c / sqrt_004019b0(fnvFloat_01066368);
@@ -2522,6 +2582,7 @@ void InitializeRuntimeFloatCall458()
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_01066368) * fnvFloat_01066368)) * fnvFloat_0106636c;
 }
 // @fnv 0x00f82840
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | BSTreeManager.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall459()
 {
     fnvFloat_011d5e24 = fnvFloat_01066738 / sqrt_004019b0(fnvFloat_01066734);
@@ -2555,6 +2616,7 @@ void InitializeRuntimeFloatCall464()
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_01066fa8) * fnvFloat_01066fa8)) * fnvFloat_01066fac;
 }
 // @fnv 0x00f83510
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | ActionPoints.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall465()
 {
     fnvFloat_011d6104 = fnvFloat_010673ac / sqrt_004019b0(fnvFloat_010673a8);
@@ -2709,6 +2771,7 @@ void InitializeRuntimeFloatCall492()
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_01069838) * fnvFloat_01069838)) * fnvFloat_0106983c;
 }
 // @fnv 0x00f85d90
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | BSTempEffectDebris.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall493()
 {
     fnvFloat_011d6b24 = fnvFloat_0106998c / sqrt_004019b0(fnvFloat_01069988);
@@ -2720,6 +2783,7 @@ void InitializeRuntimeFloatCall494()
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_01069988) * fnvFloat_01069988)) * fnvFloat_0106998c;
 }
 // @fnv 0x00f86010
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | BSTempEffectGeometryDecal.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall495()
 {
     fnvFloat_011d6ba0 = fnvFloat_01069c2c / sqrt_004019b0(fnvFloat_01069c28);
@@ -2731,6 +2795,7 @@ void InitializeRuntimeFloatCall496()
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_01069c28) * fnvFloat_01069c28)) * fnvFloat_01069c2c;
 }
 // @fnv 0x00f86290
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | BSTempEffectParticle.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall497()
 {
     fnvFloat_011d6c24 = fnvFloat_01069dac / sqrt_004019b0(fnvFloat_01069da8);
@@ -3061,22 +3126,26 @@ void InitializeRuntimeFloatCall556()
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_0106c36c) * fnvFloat_0106c36c)) * fnvFloat_0106c390;
 }
 // @fnv 0x00f88eb0
+// pdb: `dynamic initializer for 'NiColorKeyregisterloaderreturn'' | PathBuilder.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall557()
 {
     fnvFloat_011d73b4 = fnvFloat_0106c7e0 / sqrt_004019b0(fnvFloat_0106c7bc);
 }
 // @fnv 0x00f88ee0
+// pdb: `dynamic initializer for 'NiEulerRotKeyregisterloaderreturn'' | PathBuilder.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall558()
 {
     fnvFloat_011d73a8 =
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_0106c7bc) * fnvFloat_0106c7bc)) * fnvFloat_0106c7e0;
 }
 // @fnv 0x00f89010
+// pdb: `dynamic initializer for 'NiStepColorKeyregisterloaderreturn'' | PathBuilder.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall559()
 {
     fnvFloat_011d7414 = fnvFloat_0106c920 / sqrt_004019b0(fnvFloat_0106c8fc);
 }
 // @fnv 0x00f89040
+// pdb: `dynamic initializer for 'NiStepFloatKeyregisterloaderreturn'' | PathBuilder.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall560()
 {
     fnvFloat_011d73fc =
@@ -3358,11 +3427,13 @@ void InitializeRuntimeFloatCall610()
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_0106e7e4) * fnvFloat_0106e7e4)) * fnvFloat_0106e7e8;
 }
 // @fnv 0x00f8bfc0
+// pdb: `dynamic initializer for 'ISQRT_ADDITIVE_CONSTANT'' | BGSMenuPacker.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall611()
 {
     fnvFloat_011d87e8 = fnvFloat_0106e7f4 / sqrt_004019b0(fnvFloat_0106e7f0);
 }
 // @fnv 0x00f8bff0
+// pdb: `dynamic initializer for 'ISQRT_FACTOR'' | BGSMenuPacker.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall612()
 {
     fnvFloat_011d87d8 =
@@ -3413,6 +3484,7 @@ void InitializeRuntimeFloatCall620()
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_0106ef08) * fnvFloat_0106ef08)) * fnvFloat_0106ef0c;
 }
 // @fnv 0x00f8d0f0
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | InterfaceManager.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall621()
 {
     fnvFloat_011d8ca0 = fnvFloat_0106f808 / sqrt_004019b0(fnvFloat_0106f804);
@@ -3578,6 +3650,7 @@ void InitializeRuntimeFloatCall650()
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_01072328) * fnvFloat_01072328)) * fnvFloat_0107232c;
 }
 // @fnv 0x00f8f110
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | CreditsMenu.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall651()
 {
     fnvFloat_011d9554 = fnvFloat_0107254c / sqrt_004019b0(fnvFloat_01072548);
@@ -3644,6 +3717,7 @@ void InitializeRuntimeFloatCall662()
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_01073c88) * fnvFloat_01073c88)) * fnvFloat_01073c8c;
 }
 // @fnv 0x00f90250
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | LevelUpMenu.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall663()
 {
     fnvFloat_011da130 = fnvFloat_01073e8c / sqrt_004019b0(fnvFloat_01073e88);
@@ -3655,6 +3729,7 @@ void InitializeRuntimeFloatCall664()
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_01073e88) * fnvFloat_01073e88)) * fnvFloat_01073e8c;
 }
 // @fnv 0x00f90730
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | LoadingMenu.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall665()
 {
     fnvFloat_011da248 = fnvFloat_0107436c / sqrt_004019b0(fnvFloat_01074368);
@@ -3688,6 +3763,7 @@ void InitializeRuntimeFloatCall670()
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_01074cf8) * fnvFloat_01074cf8)) * fnvFloat_01074cfc;
 }
 // @fnv 0x00f90fa0
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | MapMenu.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall671()
 {
     fnvFloat_011da54c = fnvFloat_0107563c / sqrt_004019b0(fnvFloat_01075638);
@@ -3831,6 +3907,7 @@ void InitializeRuntimeFloatCall696()
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_01077628) * fnvFloat_01077628)) * fnvFloat_0107762c;
 }
 // @fnv 0x00f934d0
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | SurgeryMenu.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall697()
 {
     fnvFloat_011daed0 = fnvFloat_0107790c / sqrt_004019b0(fnvFloat_01077908);
@@ -3875,11 +3952,13 @@ void InitializeRuntimeFloatCall704()
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_01077a88) * fnvFloat_01077a88)) * fnvFloat_01077a8c;
 }
 // @fnv 0x00f93cd0
+// pdb: `dynamic initializer for 'ISQRT_ADDITIVE_CONSTANT'' | TutorialMenu.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall705()
 {
     fnvFloat_011db0a0 = fnvFloat_01077b5c / sqrt_004019b0(fnvFloat_01077b58);
 }
 // @fnv 0x00f93d00
+// pdb: `dynamic initializer for 'ISQRT_FACTOR'' | TutorialMenu.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall706()
 {
     fnvFloat_011db090 =
@@ -3902,6 +3981,7 @@ void InitializeRuntimeFloatCall709()
     fnvFloat_011db230 = fnvFloat_01077ed8 / sqrt_004019b0(fnvFloat_01077ed4);
 }
 // @fnv 0x00f94100
+// pdb: `dynamic initializer for 'ISQRT_FACTOR'' | FOHUDEffectManager.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall710()
 {
     fnvFloat_011db1fc =
@@ -3919,6 +3999,7 @@ void InitializeRuntimeFloatCall712()
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_01078078) * fnvFloat_01078078)) * fnvFloat_0107807c;
 }
 // @fnv 0x00f94820
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | FOPipboyManager.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall713()
 {
     fnvFloat_011db47c = fnvFloat_010783ec / sqrt_004019b0(fnvFloat_010783e8);
@@ -3930,6 +4011,7 @@ void InitializeRuntimeFloatCall714()
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_010783e8) * fnvFloat_010783e8)) * fnvFloat_010783ec;
 }
 // @fnv 0x00f94f90
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | FORenderedMenu.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall715()
 {
     fnvFloat_011db580 = fnvFloat_010789cc / sqrt_004019b0(fnvFloat_010789c8);
@@ -3946,6 +4028,7 @@ void InitializeRuntimeFloatCall717()
     fnvFloat_011db638 = fnvFloat_01078bac / sqrt_004019b0(fnvFloat_01078ba8);
 }
 // @fnv 0x00f95310
+// pdb: `dynamic initializer for 'ISQRT_FACTOR'' | FORenderedTerminal.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall718()
 {
     fnvFloat_011db604 =
@@ -3963,6 +4046,7 @@ void InitializeRuntimeFloatCall720()
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_01078da8) * fnvFloat_01078da8)) * fnvFloat_01078dac;
 }
 // @fnv 0x00f95bd0
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | FOVATSEffectManager.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall721()
 {
     fnvFloat_011db7f8 = fnvFloat_01079158 / sqrt_004019b0(fnvFloat_01079154);
@@ -4062,6 +4146,7 @@ void InitializeRuntimeFloatCall738()
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_01079588) * fnvFloat_01079588)) * fnvFloat_0107958c;
 }
 // @fnv 0x00f96c80
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | bhkCharacterListenerSpell.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall739()
 {
     fnvFloat_011dbb3c = fnvFloat_0107970c / sqrt_004019b0(fnvFloat_01079708);
@@ -4337,6 +4422,7 @@ void InitializeRuntimeFloatCall788()
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_0107b0b8) * fnvFloat_0107b0b8)) * fnvFloat_0107b0bc;
 }
 // @fnv 0x00f9aab0
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | MagicHitEffect.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall789()
 {
     fnvFloat_011dc6e4 = fnvFloat_0107b1e8 / sqrt_004019b0(fnvFloat_0107b1e4);
@@ -4359,6 +4445,7 @@ void InitializeRuntimeFloatCall792()
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_0107b218) * fnvFloat_0107b218)) * fnvFloat_0107b21c;
 }
 // @fnv 0x00f9ae30
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | MagicModelHitEffect.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall793()
 {
     fnvFloat_011dc7b0 = fnvFloat_0107b35c / sqrt_004019b0(fnvFloat_0107b358);
@@ -4381,6 +4468,7 @@ void InitializeRuntimeFloatCall796()
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_0107b6d8) * fnvFloat_0107b6d8)) * fnvFloat_0107b6dc;
 }
 // @fnv 0x00f9b310
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | MagicShaderHitEffect.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall797()
 {
     fnvFloat_011dc8a8 = fnvFloat_0107b88c / sqrt_004019b0(fnvFloat_0107b888);
@@ -4579,6 +4667,7 @@ void InitializeRuntimeFloatCall832()
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_0107c828) * fnvFloat_0107c828)) * fnvFloat_0107c82c;
 }
 // @fnv 0x00f9de90
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | FalloutAudio.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall833()
 {
     fnvFloat_011dd3bc = fnvFloat_0107cb9c / sqrt_004019b0(fnvFloat_0107cb98);
@@ -4601,6 +4690,7 @@ void InitializeRuntimeFloatCall836()
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_0107cde8) * fnvFloat_0107cde8)) * fnvFloat_0107cdec;
 }
 // @fnv 0x00f9e580
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | FalloutRadio.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall837()
 {
     fnvFloat_011dd978 = fnvFloat_0107d07c / sqrt_004019b0(fnvFloat_0107d078);
@@ -4733,6 +4823,7 @@ void InitializeRuntimeFloatCall860()
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_0107fa88) * fnvFloat_0107fa88)) * fnvFloat_0107fa8c;
 }
 // @fnv 0x00fa06d0
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | BGSSaveLoadManager.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall861()
 {
     fnvFloat_011de354 = fnvFloat_0107fec8 / sqrt_004019b0(fnvFloat_0107fec4);
@@ -4766,6 +4857,7 @@ void InitializeRuntimeFloatCall866()
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_01080478) * fnvFloat_01080478)) * fnvFloat_0108047c;
 }
 // @fnv 0x00fa0ce0
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | TESSaveLoadGame.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall867()
 {
     fnvFloat_011de53c = fnvFloat_01081ffc / sqrt_004019b0(fnvFloat_01081ff8);
@@ -4832,11 +4924,13 @@ void InitializeRuntimeFloatCall878()
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_01082348) * fnvFloat_01082348)) * fnvFloat_0108234c;
 }
 // @fnv 0x00fa17e0
+// pdb: `dynamic initializer for 'ISQRT_ADDITIVE_CONSTANT'' | BGSMoviePlayer.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall879()
 {
     fnvFloat_011de738 = fnvFloat_01082514 / sqrt_004019b0(fnvFloat_01082510);
 }
 // @fnv 0x00fa1810
+// pdb: `dynamic initializer for 'ISQRT_FACTOR'' | BGSMoviePlayer.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall880()
 {
     fnvFloat_011de728 =
@@ -4876,17 +4970,20 @@ void InitializeRuntimeFloatCall886()
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_01082888) * fnvFloat_01082888)) * fnvFloat_0108288c;
 }
 // @fnv 0x00fa3400
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | Main.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall887()
 {
     fnvFloat_011df028 = fnvFloat_01083a9c / sqrt_004019b0(fnvFloat_01083a98);
 }
 // @fnv 0x00fa3430
+// pdb: `dynamic initializer for 'std::num_get<char,std::istreambuf_iterator<char,std::char_traits<char> > >::id'' | Main.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall888()
 {
     fnvFloat_011defd0 =
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_01083a98) * fnvFloat_01083a98)) * fnvFloat_01083a9c;
 }
 // @fnv 0x00fa36b0
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | MemoryLevelManager.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall889()
 {
     fnvFloat_011df0a0 = fnvFloat_01083b2c / sqrt_004019b0(fnvFloat_01083b28);
@@ -4898,6 +4995,7 @@ void InitializeRuntimeFloatCall890()
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_01083b28) * fnvFloat_01083b28)) * fnvFloat_01083b2c;
 }
 // @fnv 0x00fa3930
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | SceneGraph.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall891()
 {
     fnvFloat_011df138 = fnvFloat_01083c8c / sqrt_004019b0(fnvFloat_01083c88);
@@ -4931,6 +5029,7 @@ void InitializeRuntimeFloatCall896()
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_01084028) * fnvFloat_01084028)) * fnvFloat_0108402c;
 }
 // @fnv 0x00fa4080
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | TaskQueueInterface.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall897()
 {
     fnvFloat_011df76c = fnvFloat_0108410c / sqrt_004019b0(fnvFloat_01084108);
@@ -4986,6 +5085,7 @@ void InitializeRuntimeFloatCall906()
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_01085608) * fnvFloat_01085608)) * fnvFloat_0108560c;
 }
 // @fnv 0x00fa5430
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | AILinearTaskThreadManager.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall907()
 {
     fnvFloat_011dfc20 = fnvFloat_010856fc / sqrt_004019b0(fnvFloat_010856f8);
@@ -5052,6 +5152,7 @@ void InitializeRuntimeFloatCall918()
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_010867c8) * fnvFloat_010867c8)) * fnvFloat_010867cc;
 }
 // @fnv 0x00fa62b0
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | BSPlayerDistanceCheckController.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall919()
 {
     fnvFloat_011dfee4 = fnvFloat_010868d8 / sqrt_004019b0(fnvFloat_010868d4);
@@ -5162,6 +5263,7 @@ void InitializeRuntimeFloatCall938()
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_010886a8) * fnvFloat_010886a8)) * fnvFloat_010886ac;
 }
 // @fnv 0x00fa7ab0
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | LowProcess.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall939()
 {
     fnvFloat_011e046c = fnvFloat_0108901c / sqrt_004019b0(fnvFloat_01089018);
@@ -5173,6 +5275,7 @@ void InitializeRuntimeFloatCall940()
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_01089018) * fnvFloat_01089018)) * fnvFloat_0108901c;
 }
 // @fnv 0x00fa7e00
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | MiddleHighProcess.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall941()
 {
     fnvFloat_011e0504 = fnvFloat_01089b9c / sqrt_004019b0(fnvFloat_01089b98);
@@ -5184,6 +5287,7 @@ void InitializeRuntimeFloatCall942()
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_01089b98) * fnvFloat_01089b98)) * fnvFloat_01089b9c;
 }
 // @fnv 0x00fa8080
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | MiddleLowProcess.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall943()
 {
     fnvFloat_011e0594 = fnvFloat_0108a45c / sqrt_004019b0(fnvFloat_0108a458);
@@ -5206,6 +5310,7 @@ void InitializeRuntimeFloatCall946()
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_0108a8a8) * fnvFloat_0108a8a8)) * fnvFloat_0108a8ac;
 }
 // @fnv 0x00fa92c0
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | PlayerCharacter.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall947()
 {
     fnvFloat_011e0dc4 = fnvFloat_0108c09c / sqrt_004019b0(fnvFloat_0108c098);
@@ -5228,6 +5333,7 @@ void InitializeRuntimeFloatCall950()
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_0108c0e8) * fnvFloat_0108c0e8)) * fnvFloat_0108c0ec;
 }
 // @fnv 0x00fa98f0
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | ProcessLists.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall951()
 {
     fnvFloat_011f1314 = fnvFloat_0108c34c / sqrt_004019b0(fnvFloat_0108c348);
@@ -5283,6 +5389,7 @@ void InitializeRuntimeFloatCall960()
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_0108ce38) * fnvFloat_0108ce38)) * fnvFloat_0108ce3c;
 }
 // @fnv 0x00faa680
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | CombatController.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall961()
 {
     fnvFloat_011f16a0 = fnvFloat_0108d0ac / sqrt_004019b0(fnvFloat_0108d0a8);
@@ -5305,6 +5412,7 @@ void InitializeRuntimeFloatCall964()
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_0108d218) * fnvFloat_0108d218)) * fnvFloat_0108d21c;
 }
 // @fnv 0x00faad20
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | CombatDialogueManager.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall965()
 {
     fnvFloat_011f17e8 = fnvFloat_0108d438 / sqrt_004019b0(fnvFloat_0108d434);
@@ -5327,6 +5435,7 @@ void InitializeRuntimeFloatCall968()
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_0108d570) * fnvFloat_0108d570)) * fnvFloat_0108d574;
 }
 // @fnv 0x00fab170
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | CombatGroup.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall969()
 {
     fnvFloat_011f1908 = fnvFloat_0108d8cc / sqrt_004019b0(fnvFloat_0108d8c8);
@@ -5349,6 +5458,7 @@ void InitializeRuntimeFloatCall972()
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_0108d9b8) * fnvFloat_0108d9b8)) * fnvFloat_0108d9bc;
 }
 // @fnv 0x00fab750
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | CombatManager.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall973()
 {
     fnvFloat_011f19f0 = fnvFloat_0108dba4 / sqrt_004019b0(fnvFloat_0108dba0);
@@ -5393,6 +5503,7 @@ void InitializeRuntimeFloatCall980()
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_0108df78) * fnvFloat_0108df78)) * fnvFloat_0108df7c;
 }
 // @fnv 0x00fabd70
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | CombatState.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall981()
 {
     fnvFloat_011f1b20 = fnvFloat_0108e1bc / sqrt_004019b0(fnvFloat_0108e1b8);
@@ -5525,6 +5636,7 @@ void InitializeRuntimeFloatCall1004()
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_01090058) * fnvFloat_01090058)) * fnvFloat_0109005c;
 }
 // @fnv 0x00fadca0
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | Projectile.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall1005()
 {
     fnvFloat_011f2174 = fnvFloat_0109053c / sqrt_004019b0(fnvFloat_01090538);
@@ -5547,6 +5659,7 @@ void InitializeRuntimeFloatCall1008()
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_01090678) * fnvFloat_01090678)) * fnvFloat_0109067c;
 }
 // @fnv 0x00fae360
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | VATS.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall1009()
 {
     fnvFloat_011f235c = fnvFloat_010907fc / sqrt_004019b0(fnvFloat_010907f8);
@@ -5723,6 +5836,7 @@ void InitializeRuntimeFloatCall1040()
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_010923a8) * fnvFloat_010923a8)) * fnvFloat_010923ac;
 }
 // @fnv 0x00fb1120
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | DetailedActorPathHandler.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall1041()
 {
     fnvFloat_011f2c60 = fnvFloat_0109294c / sqrt_004019b0(fnvFloat_01092948);
@@ -5855,6 +5969,7 @@ void InitializeRuntimeFloatCall1064()
         (fnvDouble_01011598 / (sqrt_004019b0(fnvFloat_010937e8) * fnvFloat_010937e8)) * fnvFloat_010937ec;
 }
 // @fnv 0x00fb2f50
+// pdb: `dynamic initializer for 'std::numpunct<char>::id'' | SpectatorPackage.obj | debug, object-file run extension, low
 void InitializeRuntimeFloatCall1065()
 {
     fnvFloat_011f3254 = fnvFloat_010939bc / sqrt_004019b0(fnvFloat_010939b8);

@@ -25,13 +25,16 @@ void __fastcall ApplySphereForce(hkpSphereMotion* motion, void*, float dt, const
     v.m_vComponents = _mm_mul_ps(_mm_shuffle_ps(time, time, 0), force.m_vComponents);
     _ReadWriteBarrier();
     hkVector4 change;
-    __m128 mass = _mm_load_ps(&motion->m_kInertiaAndMassInv.x);
+    __m128 mass = _mm_load_ps(&motion->m_inertiaAndMassInv.x);
     __m128 inverseMass = _mm_shuffle_ps(mass, mass, 255);
     change.m_vComponents = _mm_mul_ps(_mm_shuffle_ps(inverseMass, inverseMass, 0), v.m_vComponents);
     motion->m_kTranslationalVelocity.add4(change);
 }
 
 // @fnv 0x00d1e520
+// pdb: hkpSphereMotion::applyForce | hkpSphereMotion.obj | retail, vtable slot, high
+// pdb params: deltaTime, force, p
+// pdb locals: impulse
 void __fastcall ApplySphereForceAtPoint(hkpSphereMotion* motion, void*, float dt,
                                       const hkVector4& force, const hkVector4& point)
 {

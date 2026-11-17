@@ -19,6 +19,7 @@ template <class T> class ChildArray;
 #include "NiTNewInterface.h"
 #include "NiTObjectArray.h"
 
+// pdb: class NiNode, size 0xd0 (here 0xac), bases: NiAVObject, 1 members
 class NiNode : public NiAVObject
 {
   public:
@@ -26,18 +27,18 @@ class NiNode : public NiAVObject
     virtual ~NiNode();
 
     virtual void LoadBinary(NiStream& stream);
-    virtual void LinkObject(NiStream& stream);
+    virtual void LinkObject(NiStream& kStream);
     virtual void SaveBinary(NiStream& stream);
     virtual void ProcessClone(CloningProcess& process);
-    virtual NiAVObject* GetObjectByName(const NiFixedString& name) const;
-    virtual void UpdateDownwardPass(NiUpdateData& data, unsigned int flags);
-    virtual void UpdateSelectedDownwardPass(NiUpdateData& data, unsigned int flags);
-    virtual void UpdatePropertiesDownwardPass(NiPropertyState* state);
+    virtual NiAVObject* GetObjectByName(const NiFixedString& kName) const;
+    virtual void UpdateDownwardPass(NiUpdateData& UpdateData, unsigned int uFlags);
+    virtual void UpdateSelectedDownwardPass(NiUpdateData& UpdateData, unsigned int uFlags);
+    virtual void UpdatePropertiesDownwardPass(NiPropertyState* pkParentState);
     virtual void UpdateWorldBound();
-    virtual void UpdateTransformAndBounds(NiUpdateData& data);
+    virtual void UpdateTransformAndBounds(NiUpdateData& UpdateData);
     virtual void OnVisible(NiCullingProcess& culler);
 
-    virtual void AttachChildInAvailableSlot(NiAVObject* child, bool firstAvailable);
+    virtual void AttachChildInAvailableSlot(NiAVObject* child, bool bFirstAvail);
     virtual void AddObjectAt(unsigned int index, NiAVObject* object);
     virtual void RemoveObject2(NiAVObject* object, NiAVObject** removed);
     virtual void RemoveObject(NiAVObject* object);
@@ -71,18 +72,18 @@ class NiNode : public NiAVObject
     using NiAVObject::SetSelectiveUpdateFlags;
     void CopyMemberData(NiNode* source, CloningProcess& process);
     using NiAVObject::CopyMemberData;
-    void ReadChildListFromStream(NiStream& stream);
-    void ReadChildListFromStream(void* stream);
+    void ReadChildListFromStream(NiStream& kStream);
+    void ReadChildListFromStream(void* kStream);
 
-    void NiAVObject_AttachProperty(NiNode* child);
+    void NiAVObject_AttachProperty(NiNode* pkProperty);
     using NiAVObject::NiAVObject_AttachProperty;
     NiBound* NiAVObject_GetWorldBound();
     using NiAVObject::NiAVObject_GetWorldBound;
-    NiAVObject* NiNode_GetAtChecked(unsigned int index);
+    NiAVObject* NiNode_GetAtChecked(unsigned int i);
     using NiAVObject::NiNode_GetAtChecked;
     unsigned int NiNode_GetChildCount();
     unsigned int FUN_0043b480();
-    NiAVObject* FUN_0043b4a0(unsigned int index);
+    NiAVObject* FUN_0043b4a0(unsigned int i);
 
     void BSShaderPPLightingProperty_SetLODTexParams(float x, float y, float z);
     bool PathingSolution_IsValid();
@@ -98,14 +99,14 @@ class NiNode : public NiAVObject
     NiAVObject* NiAVObject_GetWorldRotate(bool flag);
     using NiAVObject::NiAVObject_GetWorldRotate;
     void NiAVObject_SetDisplayObject(bool enabled);
-    void FUN_006404b0(float angle, float x, float y, float z);
+    void FUN_006404b0(float fAngle, float x, float y, float z);
     NiTimeController* NiObjectNET_GetController(NiRTTI* rtti);
     void UpdateDownwardPass_00a7dae0(NiUpdateData& data, unsigned int flags);
-    void BSMultiBoundNode_LoadBinary(NiStream& stream);
+    void BSMultiBoundNode_LoadBinary(NiStream& arStream);
 
     unsigned int GetNumChildren();
-    NiAVObject* GetAt(unsigned int index);
-    NiAVObject* GetChildAt(unsigned int index);
+    NiAVObject* GetAt(unsigned int i);
+    NiAVObject* GetChildAt(unsigned int i);
     ChildArray<ChildPtr<NiAVObject> >& GetChildren();
     void DetachAllChildren();
     NiPoint3& GetLocalTranslate();
@@ -114,7 +115,7 @@ class NiNode : public NiAVObject
     using NiAVObject::GetBoundingVolume;
     using NiAVObject::GetParent;
     using NiAVObject::GetName;
-    void AttachProperty(NiObject* property);
+    void AttachProperty(NiObject* pkProperty);
     using NiAVObject::AttachProperty;
     NiObject* GetControllers();
     using NiAVObject::GetControllers;
@@ -123,7 +124,7 @@ class NiNode : public NiAVObject
     void ApplyRDTNodeScales();
     NiAVObject* operator->();
 
-    void AttachChildInAvailableSlot(NiNode* child, bool firstAvailable);
+    void AttachChildInAvailableSlot(NiNode* child, bool bFirstAvail);
     void AttachChildInAvailableSlot(NiPointLight* child, bool firstAvailable);
     void AttachChildInAvailableSlot(NiObject* child, bool firstAvailable);
     void AddObject(NiAVObject* object, bool firstAvailable);
@@ -137,7 +138,7 @@ class NiNode : public NiAVObject
     void InsertChild(const char* child);
     void DetachChildAtAlt(unsigned int index, NiPointer<NiAVObject>& removed);
     void RemoveChildAt(unsigned int index);
-    void SetAtAlt(unsigned int index, NiAVObject* child, NiPointer<NiAVObject>& removed);
+    void SetAtAlt(unsigned int index, NiAVObject* child, NiPointer<NiAVObject>& aspAVObject);
     void SetAt(unsigned int index, NiAVObject* child);
     NiAVObject* GetObjectByBone(int bone);
     using NiAVObject::MakeClone;

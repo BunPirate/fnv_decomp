@@ -23,7 +23,7 @@ typedef hkArrayBase<S_d2f5a0_Entry> S_d2f5a0_Array;
 struct S_d2f5a0 {
     int unk0; int unk4; int unk8;
     S_d2f5a0_Array m_aiIndexedValues;
-    void hkpBvTreeAgent_invalidateTim(int a);
+    void hkpBvTreeAgent_invalidateTim(int input);
 };
 struct TargetObject {
     virtual void v00();
@@ -45,7 +45,7 @@ struct ValueSource {
     int unk04;
     float m_fAmount;
 };
-void __cdecl ApplyTransformToTarget(Holder* apFirst, Holder* apSecond, ValueSource* apValue, void* apContext);
+void __cdecl hkpBvTreeAgent_staticCalcAabb(Holder* bodyA, Holder* bodyB, ValueSource* input, void* aabbOut);
 struct Allocator {
     virtual void* release();
     virtual void* allocate(int size);
@@ -53,11 +53,11 @@ struct Allocator {
 struct Global { int unk00; int unk04; int unk08; int unk0c; Allocator* allocator; };
 struct Built { int field00; short field04; int field08; void __thiscall FUN_00d2f980(int); };
 extern "C" Global* __cdecl hkMemoryRouter_getInstance();
-void __cdecl hkpBvTreeAgent_createShapeBvAgent(int arg1, int arg2, int arg3, int arg4);
+void __cdecl hkpBvTreeAgent_createShapeBvAgent(int bodyA, int bodyB, int input, int mgr);
 void __cdecl hkpBvTreeAgent_staticLinearCast(void* apFirst, void* apSecond, void* apThird,
                           void* apFourth, void* apFifth);
 void __stdcall hkpBvTreeAgent_linearCast(void* apFirst, void* apSecond, void* apThird, void* apFourth, void* apFifth);
-extern "C" void __cdecl hkpBvTreeAgent_staticGetClosestPoints(void* arg0, void* arg1, void* arg2, void* arg3);
+extern "C" void __cdecl hkpBvTreeAgent_staticGetClosestPoints(void* bodyA, void* arg1, void* arg2, void* collector);
 // @fnv 0x00d315d0
 // src: HAVOK_SRC 0x00d315d0
 extern "C" void __stdcall hkpBvTreeAgent_getClosestPoints(void* arg0, void* arg1, void* arg2, void* arg3)
@@ -120,7 +120,7 @@ public:
 D2FA00Agent* __cdecl hkpBvTreeAgent_createBvTreeShapeAgent(const void* bodyA, const void* bodyB, const void* input, void* mgr);
 extern char str_010ce9a4[];
 extern char str_010ce9ac[];
-extern "C" void* __cdecl hkStatisticsCollector_getAllocatedSize(void* apBuffer, int aiCount);
+extern "C" void* __cdecl hkStatisticsCollector_getAllocatedSize(void* p, int size);
 struct S_00d2f8f0_Elem {
     int unk00;
     int unk04;
@@ -155,7 +155,7 @@ struct S_00d2f8f0 {
     S_00d2f8f0_Array m_aiIndexedValues;
     int m_iFlags;
 
-    void WriteToStream(S_00d2f8f0_Arg* apStream, int aiUnused);
+    void WriteToStream(S_00d2f8f0_Arg* collector, int cls);
 };
 class ListenerD2F5 {
 public:
@@ -175,7 +175,7 @@ public:
     int unk04[2];
     hkArray<EntryD2F5> m_entries;
 
-    void hkpBvTreeAgent_cleanup(void* pArg);
+    void hkpBvTreeAgent_cleanup(void* info);
 };
 #include <xmmintrin.h>
 class SlotObj {
@@ -247,7 +247,7 @@ struct SlotBox {
     __m128 lo;
     __m128 hi;
 };
-void hkpBvTreeAgent_calcAabbLinearCast(SlotRef* a, SlotRef* b, SlotParam* p, SlotBox* box);
+void hkpBvTreeAgent_calcAabbLinearCast(SlotRef* bodyA, SlotRef* bodyB, SlotParam* input, SlotBox* aabbOut);
 class SolBool {
     char state;
 public:
@@ -992,11 +992,11 @@ class EnumD3
 #include "../../../../../../../include/hkpCdBody.h"
 
 
-inline const hkTransform& hkpCdBody::getTransform() const { return *reinterpret_cast<const hkTransform*>( m_pMotionState ); }
-inline const hkMotionState* hkpCdBody::GetMotionState() const { return static_cast<const hkMotionState*>( m_pMotionState ); }
-inline const hkpShape* hkpCdBody::getShape() const { return m_pCollisionShape; }
-inline void hkpCdBody::SetCollisionShapeAndKey( const hkpShape* shape, KeyD3 key ) { m_pCollisionShape = shape; m_uiCollisionShapeKey = key; }
-inline hkpCdBody::hkpCdBody( const hkpCdBody* parent ) { m_parent = parent; m_pMotionState = parent->m_pMotionState; }
+inline const hkTransform& hkpCdBody::getTransform() const { return *reinterpret_cast<const hkTransform*>( m_motion ); }
+inline const hkMotionState* hkpCdBody::GetMotionState() const { return static_cast<const hkMotionState*>( m_motion ); }
+inline const hkpShape* hkpCdBody::getShape() const { return m_shape; }
+inline void hkpCdBody::SetCollisionShapeAndKey( const hkpShape* shape, KeyD3 key ) { m_shape = shape; m_shapeKey = key; }
+inline hkpCdBody::hkpCdBody( const hkpCdBody* parent ) { m_parent = parent; m_motion = parent->m_motion; }
 
 class AllocatorD3
 {
@@ -1107,7 +1107,7 @@ template <> struct PodTraitD3<unsigned int> { typedef IsPodTagD3 type; };
 class ArrayUtilD3
 {
 	public:
-		static void __cdecl hkArrayUtil__reserve( AllocatorD3& a, void* arr, int reqElem, int sizeElem );
+		static void __cdecl hkArrayUtil__reserve( AllocatorD3& mem, void* array, int numElem, int sizeElem );
 		template <typename T>
 		static __forceinline void __cdecl construct( T* t, int n, IsPodTagD3 ) {}
 		template <typename T>
@@ -1954,7 +1954,7 @@ inline ResultD3 __cdecl BvTreeAgentD3::BuildCollisionHitList( const hkpCdBody& b
 				{
 					Vec4D3 relPos; relPos.setSub4( massCenterAinB, msB->getSweptTransform().m_vCenterOfMassLocal );
 					Vec4D3 offsetOut; offsetOut.setCross( relPos, msB->m_kDeltaAngle );
-					RealD3 f = input.m_pStepInfo.m_fTimeStep * msB->getSweptTransform().getInvDeltaTime();
+					RealD3 f = input.m_pStepInfo.m_deltaTime * msB->getSweptTransform().getInvDeltaTime();
 					timInfo.addMul4( f, offsetOut );
 				}
 				Vec4D3 zero; zero.setZero4();
@@ -2018,7 +2018,7 @@ inline void BvTreeAgentD3::prepareCollisionPartnersProcess( const hkpCdBody& bod
 		{
 			const MotionStateD3* msA = reinterpret_cast<const MotionStateD3*>(bodyA.GetMotionState());
 			const MotionStateD3* msB = reinterpret_cast<const MotionStateD3*>(bodyB.GetMotionState());
-			SweptUtilD3::calcTimInfo( *msA, *msB, input.m_pStepInfo.m_fTimeStep, linearTimInfo );
+			SweptUtilD3::calcTimInfo( *msA, *msB, input.m_pStepInfo.m_deltaTime, linearTimInfo );
 		}
 		AabbD3* cachedAabb = ( reinterpret_cast<const BoolD3&>(DAT_011b4284) ) ? &m_kBoundingBox : 0;
 		prepareSuccessfull = BuildCollisionHitList( bodyA, bodyB, bTa, linearTimInfo, input, cachedAabb, hitList );
@@ -2049,6 +2049,9 @@ inline void BvTreeAgentD3::prepareCollisionPartnersProcess( const hkpCdBody& bod
 
 // @fnv 0x00d302d0
 // src: HAVOK_SRC 0x00d302d0
+// pdb: hkpBvTreeAgent::processCollision | hkpBvTreeAgent.obj | retail, upstream name already matches, high
+// pdb params: bodyA, bodyB, input, result
+// pdb locals: modifiedBodyB, shapeBuffer, assertBuf, ostr
 void BvTreeAgentD3::hkpBvTreeAgent_processCollision( const hkpCdBody& bodyA, const hkpCdBody& bodyB, const ProcessInputD3& input, ProcessOutputD3& result )
 {
 	{

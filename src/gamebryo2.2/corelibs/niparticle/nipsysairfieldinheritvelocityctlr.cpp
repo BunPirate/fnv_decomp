@@ -19,6 +19,7 @@ void* __cdecl NiPSysAirFieldInheritVelocityCtlr_GetRTTI()
     return &g_012027b0;
 }
 
+// pdb: class NiPSysAirFieldInheritVelocityCtlr, size 0x40, bases: NiPSysModifierFloatCtlr, 0 members
 struct NiPSysAirFieldInheritVelocityCtlr : NiPSysModifierFloatCtlr
 {
     void GetTargetFloatValue_00c30640(float& fValue);
@@ -31,7 +32,7 @@ struct NiPSysAirFieldInheritVelocityCtlr : NiPSysModifierFloatCtlr
 // src: XBOX_PDB 0x00c30640
 void __thiscall NiPSysAirFieldInheritVelocityCtlr::GetTargetFloatValue_00c30640(float& fValue)
 {
-    float* p = reinterpret_cast<float*>(m_pkTargetModifier);
+    float* p = reinterpret_cast<float*>(m_pkModifier);
     fValue = p[0x5c / 4];
 }
 
@@ -72,9 +73,11 @@ struct S_00c30650_Mod
 };
 // Clamps fValue to [0,1] via the modifier's Set and stores it.
 // @fnv 0x00c30650
+// pdb: NiPSysAirFieldInheritVelocityCtlr::RegisterStreamables | NiPSysAirFieldInheritVelocityCtlr.obj | debug, object-file run extension, low
+// pdb params: kStream
 void NiPSysAirFieldInheritVelocityCtlr::SetModValue(float fValue)
 {
-    reinterpret_cast<S_00c30650_Mod*>(m_pkTargetModifier)->Set(fValue);
+    reinterpret_cast<S_00c30650_Mod*>(m_pkModifier)->Set(fValue);
 }
 
 extern "C" char DAT_010c05e4;
@@ -82,6 +85,8 @@ extern "C" void* __cdecl Object_DispatchCommandFour(unsigned int size);
 
 // Allocates and initialises a controller, copies its members, and returns it.
 // @fnv 0x00c306a0
+// pdb: NiPSysAirFieldInheritVelocityCtlr::SaveBinary | NiPSysAirFieldInheritVelocityCtlr.obj | debug, object-file run extension, low
+// pdb params: kStream
 NiPSysModifierFloatCtlr* NiPSysAirFieldInheritVelocityCtlr::CreateSpawnedCtlr(void* a1)
 {
     NiPSysModifierFloatCtlr* obj = (NiPSysModifierFloatCtlr*)Object_DispatchCommandFour(0x40);
@@ -103,13 +108,15 @@ void __stdcall NiPSysModifierFloatCtlr_GetViewerStrings(StrArr*);
 // Grows the array if its index has reached capacity, then stores the string returned by FUN_00a7d330 at that index.
 // @fnv 0x00c30740
 // src: XBOX_PDB 0x00c30740
-void __stdcall NiPSysAirFieldInheritVelocityCtlr_GetViewerStrings(StrArr* array)
+// pdb: NiPSysAirFieldInheritVelocityCtlr::GetViewerStrings | NiPSysAirFieldInheritVelocityCtlr.obj | retail, upstream name already matches, high
+// pdb params: pkStrings
+void __stdcall NiPSysAirFieldInheritVelocityCtlr_GetViewerStrings(StrArr* pkStrings)
 {
-    NiPSysModifierFloatCtlr_GetViewerStrings(array);
+    NiPSysModifierFloatCtlr_GetViewerStrings(pkStrings);
     char* value = NiViewerStrings_NiGetViewerString_Title(static_cast<char*>(g_012027b0));
-    unsigned int index = array->m_usSize;
-    unsigned int capacity = array->m_usMaxSize;
+    unsigned int index = pkStrings->m_usSize;
+    unsigned int capacity = pkStrings->m_usMaxSize;
     if (index >= capacity)
-        array->SetSize(index + array->m_usGrowBy);
-    array->SetAt(index, value);
+        pkStrings->SetSize(index + pkStrings->m_usGrowBy);
+    pkStrings->SetAt(index, value);
 }

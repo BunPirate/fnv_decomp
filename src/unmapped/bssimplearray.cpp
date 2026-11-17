@@ -10,6 +10,7 @@
 #include "../../include/CombatSearchDoor.h"
 
 // Owner of the nested element type needed in this unit.
+// pdb: class PathSmoother, size 0xb8 (here 0x1), 15 members
 class PathSmoother
 {
 public:
@@ -28,29 +29,32 @@ struct FUN_006cf9d0
 {
     int* vfptr;
     void BSSimpleArray_WeaponData_1024_InitialSetup(unsigned int maxSize, unsigned int growBy);
-    FUN_006cf9d0(unsigned int maxSize, unsigned int growBy);
+    FUN_006cf9d0(unsigned int aiReserveSize, unsigned int aiInitialSize);
 };
 
 // Initializes the object's vfptr to DAT_0106b8a0 and calls FUN_009a3d00 with maxSize and growBy.
 // @fnv 0x006cf9d0
-FUN_006cf9d0::FUN_006cf9d0(unsigned int maxSize, unsigned int growBy) : vfptr(&DAT_0106b8a0)
+// pdb: BSSimpleArray<NavMeshSearchNode,1024>::BSSimpleArray<NavMeshSearchNode,1024> | PathBuilder.obj | debug, call graph, high
+// pdb params: aiReserveSize, aiInitialSize
+FUN_006cf9d0::FUN_006cf9d0(unsigned int aiReserveSize, unsigned int aiInitialSize) : vfptr(&DAT_0106b8a0)
 {
-    this->BSSimpleArray_WeaponData_1024_InitialSetup(maxSize, growBy);
+    this->BSSimpleArray_WeaponData_1024_InitialSetup(aiReserveSize, aiInitialSize);
 }
 
 extern int DAT_0106b91c;
 struct FUN_006cf180
 {
     void* vfptr;
-    void ResizeAndConstruct(int a, int b);
+    void BSSimpleArray_PathingLocation_1024__InitialSetup(int aiReserveSize, int aiInitialSize);
     FUN_006cf180();
 };
 // Sets the vtable pointer to DAT_0106b91c and calls ResizeAndConstruct with 0, 0.
 // @fnv 0x006cf180
+// pdb: BSSimpleArray<PathingLocation,1024>::BSSimpleArray<PathingLocation,1024> | PathBuilder.obj | debug, object-file gap fill, medium
 FUN_006cf180::FUN_006cf180()
 {
     vfptr = &DAT_0106b91c;
-    ResizeAndConstruct(0, 0);
+    BSSimpleArray_PathingLocation_1024__InitialSetup(0, 0);
 }
 
 struct FUN_006cf250_Class
@@ -60,6 +64,9 @@ struct FUN_006cf250_Class
 
 // Allocates count * 0x18 bytes with operator new and returns the pointer.
 // @fnv 0x006cf250
+// pdb: BSSimpleArray<NavMeshEdgeLocation,1024>::_Allocate | PathBuilder.obj | debug, vtable slot, medium
+// pdb params: aiSizeInItem
+// pdb locals: pnewBuffer
 void* __thiscall FUN_006cf250_Class::AllocateBuffer(unsigned int count)
 {
     void* buffer = operator new(count * 0x18);
@@ -73,12 +80,16 @@ struct FUN_006cf280_Class
 };
 // @fnv 0x006cf280
 // src: GUESS 0x006cf280 (confidence: medium)
+// pdb: BSSimpleArray<NavMeshEdgeLocation,1024>::_Reallocate | PathBuilder.obj | debug, vtable slot, medium
+// pdb params: apBuffer, aiNewSizeInItem
 void* __thiscall FUN_006cf280_Class::_Reallocate_Thunk_006cf280(void* p, unsigned int n)
 {
     return _Reallocate(p, n * 0x18);
 }
 
 // @fnv 0x006cf760
+// pdb: BSSimpleArray<PathBuilder::VirtualNodeSegment,1024>::_Reallocate | PathBuilder.obj | debug, object-file run extension, low
+// pdb params: apBuffer, aiNewSizeInItem
 bool AreBytesEqual(const unsigned char* pucA, const unsigned char* pucB)
 {
     return *pucA == *pucB;
@@ -92,14 +103,16 @@ struct Dummy_0061bf20
 struct FUN_006cf9a0 : Dummy_0061bf20
 {
     int* vfptr;
-    FUN_006cf9a0(int maxSize, int growBy);
+    FUN_006cf9a0(int aiReserveSize, int aiInitialSize);
 };
 // Sets the vtable pointer to DAT_0106b8c8 and forwards maxSize and growBy to FUN_006b3f40.
 // @fnv 0x006cf9a0
-FUN_006cf9a0::FUN_006cf9a0(int maxSize, int growBy)
+// pdb: BSSimpleArray<NavMeshSearchLink,1024>::BSSimpleArray<NavMeshSearchLink,1024> | PathBuilder.obj | debug, call graph, high
+// pdb params: aiReserveSize, aiInitialSize
+FUN_006cf9a0::FUN_006cf9a0(int aiReserveSize, int aiInitialSize)
 {
     vfptr = &DAT_0106b8c8;
-    BSSimpleArray_NavMeshPOVSearchNode_1024_InitialSetup(maxSize, growBy);
+    BSSimpleArray_NavMeshPOVSearchNode_1024_InitialSetup(aiReserveSize, aiInitialSize);
 }
 
 extern int DAT_0106c9e0;
@@ -114,6 +127,7 @@ struct FUN_006cfaa0
 };
 // @fnv 0x006cfaa0
 // src: GUESS 0x006cfaa0 (confidence: medium)
+// pdb: BSSimpleArray<FastNavMeshTriHandle,1024>::~BSSimpleArray<FastNavMeshTriHandle,1024> | PathBuilder.obj | debug, call graph (shared callers), medium
 void FUN_006cfaa0::ResetVirtualTableAndClear_006cfaa0()
 {
     vfptr = &DAT_0106c9e0;
@@ -127,6 +141,9 @@ struct FUN_006e91e0_cls
 
 // Allocates count * 0x30 bytes with operator new and returns the pointer.
 // @fnv 0x006e91e0
+// pdb: BSSimpleArray<VirtualPathingNode,1024>::_Allocate | PathingSolution.obj | debug, vtable slot, medium
+// pdb params: aiSizeInItem
+// pdb locals: pnewBuffer
 void* __thiscall FUN_006e91e0_cls::AllocateBlock(int count)
 {
     void* p = operator new(count * 0x30);
@@ -141,6 +158,8 @@ struct FUN_006e9210
 };
 
 // @fnv 0x006e9210
+// pdb: BSSimpleArray<VirtualPathingNode,1024>::_Reallocate | PathingSolution.obj | debug, vtable slot, medium
+// pdb params: apBuffer, aiNewSizeInItem
 void FUN_006e9210::Reallocate(void* p, unsigned int auiCount)
 {
     _Reallocate(p, auiCount * 0x30);
@@ -155,6 +174,7 @@ struct FUN_006e9230_class
 };
 // Sets the vtable pointer to DAT_0106d4e8 and calls FUN_006e97a0 with 0, 0.
 // @fnv 0x006e9230
+// pdb: BSSimpleArray<PathingNode,1024>::BSSimpleArray<PathingNode,1024> | PathingSolution.obj | debug, object-file gap fill, medium
 FUN_006e9230_class::FUN_006e9230_class()
 {
     vfptr = &DAT_0106d4e8;
@@ -169,11 +189,12 @@ struct PSNodeStub
 };
 struct FUN_006e9260Class : PSNodeStub
 {
-    void SetVirtualTableAndProcessState_006e9260();
+    void BSSimpleArray_PathingNode_1024_dtor();
 };
 // @fnv 0x006e9260
-// src: GUESS 0x006e9260 (confidence: low)
-void FUN_006e9260Class::SetVirtualTableAndProcessState_006e9260()
+// src: XBOX_RETAIL_PDB 0x006e9260
+// pdb: BSSimpleArray<PathingNode,1024>::~BSSimpleArray<PathingNode,1024> | PathingSolution.obj | retail, call graph (shared callers), high
+void FUN_006e9260Class::BSSimpleArray_PathingNode_1024_dtor()
 {
     vfptr = (int*)&DAT_0106d4e8;
     FUN_006cf120(true);
@@ -181,6 +202,9 @@ void FUN_006e9260Class::SetVirtualTableAndProcessState_006e9260()
 
 // Allocates count * 0x3c bytes with operator new and returns the resulting pointer.
 // @fnv 0x006e93c0
+// pdb: BSSimpleArray<PathingNode,1024>::_Allocate | PathingSolution.obj | debug, vtable slot, medium
+// pdb params: aiSizeInItem
+// pdb locals: pnewBuffer
 template <>
 PathingGraphNode* BSSimpleArray<PathingGraphNode, 1024>::_Allocate(unsigned int count)
 {
@@ -197,6 +221,8 @@ struct FUN_006e93f0
 
 // @fnv 0x006e93f0
 // src: GUESS 0x006e93f0 (confidence: medium)
+// pdb: BSSimpleArray<PathingNode,1024>::_Reallocate | PathingSolution.obj | debug, vtable slot, medium
+// pdb params: apBuffer, aiNewSizeInItem
 void* __thiscall FUN_006e93f0::Reallocate_Thunk(void* p, int aiCount)
 {
     return Reallocate(p, aiCount * 0x3c);
@@ -205,6 +231,7 @@ void* __thiscall FUN_006e93f0::Reallocate_Thunk(void* p, int aiCount)
 // Returns true if this point's x, y and z are all equal to the corresponding components of a.
 // @fnv 0x004390c0
 // src: GUESS 0x004390c0 (confidence: high)
+// pdb: MultiBoundMarkerData::IsDefault | MultiBoundMarkerData.obj | debug, object-file run extension, low
 bool NiPoint3::HasEqualComponents(const NiPoint3& aPoint)
 {
     return x == aPoint.x && y == aPoint.y && z == aPoint.z;
@@ -231,6 +258,10 @@ struct PacketNodeRecord
     void FUN_006a8500();
 };
 // @fnv 0x006cefa0
+// pdb: BSSimpleArray<VirtualPathingNode,1024>::_DestructItems | PathBuilder.obj | retail, call graph, low
+// pdb note: debug build links it to BSSimpleArray<VirtualPathingNode,1024>::Clear
+// pdb params: apFirstAddr, aiCount
+// pdb locals: i
 template <>
 void BSSimpleArray<PacketNodeRecord, 1024>::Clear(bool abFreeMemory)
 {
@@ -248,6 +279,10 @@ void BSSimpleArray<PacketNodeRecord, 1024>::Clear(bool abFreeMemory)
 }
 
 // @fnv 0x006cf120
+// pdb: BSSimpleArray<PathingNode,1024>::_DestructItems | PathBuilder.obj | retail, call graph, low
+// pdb note: debug build links it to BSSimpleArray<PathingNode,1024>::Clear
+// pdb params: apFirstAddr, aiCount
+// pdb locals: i
 template <>
 void BSSimpleArray<PathingGraphNode, 1024>::Clear(bool bFreeStorage)
 {
@@ -267,6 +302,9 @@ void BSSimpleArray<PathingGraphNode, 1024>::Clear(bool bFreeStorage)
 
 // Appends a copy of aValue to the array at the next free index and returns that index.
 // @fnv 0x006cf1b0
+// pdb: BSSimpleArray<PathingLocation,1024>::Add | PathBuilder.obj | debug, call graph (shared callers), high
+// pdb params: aValue
+// pdb locals: iindex
 template <>
 unsigned int BSSimpleArray<PathingLocation, 1024>::Append(const PathingLocation& aValue)
 {
@@ -290,6 +328,7 @@ struct FUN_006cf340 : PolyDetailedPathInfos
 };
 // Destructor that calls Clear(true) on the PolyDetailedPathInfos base.
 // @fnv 0x006cf340
+// pdb: BSScrapArray<NavMeshInfo const *,1024>::~BSScrapArray<NavMeshInfo const *,1024> | PathBuilder.obj | debug, call graph (shared callers), high
 FUN_006cf340::~FUN_006cf340()
 {
     Clear(true);
@@ -308,11 +347,13 @@ struct FUN_006cf440 : _Mem_20a4
     virtual ~FUN_006cf440();
 };
 // @fnv 0x006cf440
+// pdb: BSScrapArray<TESObjectREFR *,1024>::~BSScrapArray<TESObjectREFR *,1024> | PathBuilder.obj | debug, call graph (shared callers), high
 FUN_006cf440::~FUN_006cf440()
 {
     ((GlobalObject_00869f00*)this)->Clear(true);
 }
 
+// pdb: structure ParentSpaceNode, size 0xc, 3 members
 struct ParentSpaceNode
 {
     bool m_bIsWorldspace;
@@ -336,6 +377,8 @@ struct FUN_006cf4c0_Array
 };
 // @fnv 0x006cf4c0
 // src: XBOX_PDB 0x006cf4c0
+// pdb: BSSimpleArray<PathBuilder::VirtualNodeSegment,1024>::Clear | PathBuilder.obj | debug, object-file run extension, low
+// pdb params: abFreeMemory
 unsigned int FUN_006cf4c0_Array::BSSimpleArray_ParentSpaceNode_1024_Add(const ParentSpaceNode& aValue)
 {
     unsigned int iElementIndex = ((S5460*)this)->BSSimpleArray_NiPoint3_1024_AddUninitialized();
@@ -356,11 +399,13 @@ struct FUN_006cf610 : FUN_0069b1d0
 };
 // Destructor that calls Clear(true) on the base object.
 // @fnv 0x006cf610
+// pdb: BSScrapArray<bool,1024>::~BSScrapArray<bool,1024> | PathBuilder.obj | debug, object-file run extension, low
 FUN_006cf610::~FUN_006cf610()
 {
     Clear(true);
 }
 
+// pdb: structure ScrapHeapBuffer, size 0x8 (here 0x1), 2 members
 struct ScrapHeapBuffer
 {
     void* Allocate(unsigned int, unsigned int);
@@ -375,23 +420,29 @@ extern unsigned int DAT_010a2720;
 void* __cdecl __memcpy(void* dst, const void* src, unsigned int size);
 // Allocates size bytes from the allocator at this+0x10, copies GetFlags() bytes from src into it, frees src, and returns the new buffer.
 // @fnv 0x006cf6a0
+// pdb: BSScrapArray<bool,1024>::_Reallocate | PathBuilder.obj | retail, vtable slot, high
+// pdb params: apBuffer, aiNewSizeInItem
+// pdb locals: pnewBuffer
 template <>
-unsigned char* BSScrapArray<unsigned char>::_Reallocate(unsigned char* src, unsigned int size)
+unsigned char* BSScrapArray<unsigned char>::_Reallocate(unsigned char* apBuffer, unsigned int aiNewSizeInItem)
 {
-    void* result = m_pPoolBase->Allocate(size, DAT_010a2720);
-    __memcpy(result, src, reinterpret_cast<BssimplearrayOffset08View*>(this)->GetFlags());
-    m_pPoolBase->Deallocate(src);
+    void* result = m_pPoolBase->Allocate(aiNewSizeInItem, DAT_010a2720);
+    __memcpy(result, apBuffer, reinterpret_cast<BssimplearrayOffset08View*>(this)->GetFlags());
+    m_pPoolBase->Deallocate(apBuffer);
     return static_cast<unsigned char*>(result);
 }
 
 // Allocates count*4 bytes, copies GetFlags()*4 bytes from src, frees src, and returns the new buffer.
 // @fnv 0x006cfc20
+// pdb: BSScrapArray<CombatPlanNode *,1024>::_Reallocate | CombatPlanner.obj | retail, vtable slot, high
+// pdb params: apBuffer, aiNewSizeInItem
+// pdb locals: pnewBuffer
 template <>
-unsigned int* BSScrapArray<unsigned int>::_Reallocate(unsigned int* src, unsigned int count)
+unsigned int* BSScrapArray<unsigned int>::_Reallocate(unsigned int* apBuffer, unsigned int aiNewSizeInItem)
 {
-    void* p = m_pPoolBase->Allocate(count * 4, DAT_010a2720);
-    __memcpy(p, src, ((BssimplearrayOffset08View*)this)->GetFlags() * 4);
-    m_pPoolBase->Deallocate((void*)src);
+    void* p = m_pPoolBase->Allocate(aiNewSizeInItem * 4, DAT_010a2720);
+    __memcpy(p, apBuffer, ((BssimplearrayOffset08View*)this)->GetFlags() * 4);
+    m_pPoolBase->Deallocate((void*)apBuffer);
     return static_cast<unsigned int*>(p);
 }
 
@@ -409,6 +460,7 @@ struct FUN_006cfc80_Class
 
 // Calls FUN_006cf230 on this, then deallocates this when flags has bit 0 set, and returns this.
 // @fnv 0x006cfc80
+// pdb: BSSimpleArray<NavMeshEdgeLocation,1024>::`scalar deleting destructor' | PathBuilder.obj | retail, vtable slot, high
 void* __thiscall FUN_006cfc80_Class::FUN_006cfc80(unsigned int flags)
 {
     ((FUN_006cf230_Class*)this)->FUN_006cf230();
@@ -428,6 +480,7 @@ struct FUN_006cfcb0_Class
 };
 // Calls FUN_006cf340 on this, then frees this when flags has bit 0 set, and returns this.
 // @fnv 0x006cfcb0
+// pdb: BSScrapArray<NavMeshInfo const *,1024>::`scalar deleting destructor' | PathBuilder.obj | retail, vtable slot, high
 void* __thiscall FUN_006cfcb0_Class::FUN_006cfcb0(unsigned int flags)
 {
     ((FUN_006cf340_Class*)this)->FUN_006cf340();
@@ -447,6 +500,7 @@ struct FUN_006cfce0_class
     void* __thiscall FUN_006cfce0(unsigned int flags);
 };
 // @fnv 0x006cfce0
+// pdb: BSScrapArray<TESObjectREFR *,1024>::`scalar deleting destructor' | PathBuilder.obj | retail, vtable slot, high
 void* __thiscall FUN_006cfce0_class::FUN_006cfce0(unsigned int flags)
 {
     ((FUN_006cf440_class*)this)->FUN_006cf440();
@@ -471,6 +525,7 @@ struct FUN_006cfd10_Class
 
 // Calls FUN_006cf820 on this, frees this when flags has bit 0 set, and returns this.
 // @fnv 0x006cfd10
+// pdb: BSSimpleArray<PathBuilder::VirtualNodeSegment,1024>::`scalar deleting destructor' | PathBuilder.obj | retail, vtable slot, high
 void* __thiscall FUN_006cfd10_Class::FUN_006cfd10(unsigned int flags)
 {
     reinterpret_cast<FUN_006cf820_Class*>(this)->FUN_006cf820();
@@ -488,6 +543,7 @@ struct FUN_006cfd40_Class
 };
 // Calls FUN_006cf610, deletes this when flags has bit 0 set, and returns this.
 // @fnv 0x006cfd40
+// pdb: BSScrapArray<bool,1024>::`scalar deleting destructor' | PathBuilder.obj | retail, vtable slot, high
 void* __thiscall FUN_006cfd40_Class::FUN_006cfd40(unsigned int flags)
 {
     FUN_006cf610();
@@ -511,6 +567,9 @@ struct FUN_006e9410_class
 };
 // @fnv 0x006e9410
 // src: COMMUNITY 0x006e9410
+// pdb: BSSimpleArray<VirtualPathingNode,1024>::CopyTo<1024> | PathingSolution.obj | retail, object-file run extension, low
+// pdb params: aDestArray
+// pdb locals: i
 void __thiscall FUN_006e9410_class::BSSimpleArray_VirtualPathingNode_1024_Copy(void* arg)
 {
     ((FUN_006e9410_shell*)arg)->FUN_006e90a0(*(int*)((char*)this + 8), 1);
@@ -537,6 +596,10 @@ struct FUN_007a1c30_holder
     void ClearBuffer(bool freeStorage);
 };
 // @fnv 0x007a1c30
+// pdb: BSSimpleArray<BSStringT<char>,1024>::_DestructItems | MapMenu.obj | retail, call graph (shared callers), low
+// pdb note: debug build links it to NiXenonRenderer::ClearBuffer
+// pdb params: apFirstAddr, aiCount
+// pdb locals: i
 void FUN_007a1c30_holder::ClearBuffer(bool freeStorage)
 {
     if (pBuffer)
@@ -567,6 +630,8 @@ struct FUN_008454f0
     void Clear(bool freeStorage);
 };
 // @fnv 0x008454f0
+// pdb: BSSimpleArray<TESObjectWEAP *,1024>::Clear | CombatState.obj | debug, call graph, medium
+// pdb params: abFreeMemory
 void FUN_008454f0::Clear(bool freeStorage)
 {
     if (pBuffer)
@@ -587,26 +652,29 @@ void* __cdecl FUN_00ec7230(char* dst, const char* src, unsigned int size);
 
 struct FUN_006dc6e0_Class
 {
-    void __thiscall BSSimpleArray_BSCompoundFrustum_FunctionOp_1024_MoveItems(char* a, char* b, unsigned int count);
+    void __thiscall BSSimpleArray_BSCompoundFrustum_FunctionOp_1024_MoveItems(char* apDestAddr, char* apSrcAddr, unsigned int aiCount);
 };
 
 // @fnv 0x006dc6e0
 // src: XBOX_PDB 0x006dc6e0
-void __thiscall FUN_006dc6e0_Class::BSSimpleArray_BSCompoundFrustum_FunctionOp_1024_MoveItems(char* pDst, char* pSrc, unsigned int count)
+// pdb: BSSimpleArray<CombatSearchDoor,1024>::_MoveItems | CombatGroup.obj | retail, call graph (shared callers), high
+// pdb params: apDestAddr, apSrcAddr, aiCount
+// pdb locals: i
+void __thiscall FUN_006dc6e0_Class::BSSimpleArray_BSCompoundFrustum_FunctionOp_1024_MoveItems(char* apDestAddr, char* apSrcAddr, unsigned int aiCount)
 {
-    if (count <= 0)
+    if (aiCount <= 0)
         return;
-    if (pDst < pSrc)
+    if (apDestAddr < apSrcAddr)
     {
-        for (unsigned int i = 0; i < count; ++i)
-            FUN_00ec7230(pDst + i * 0xc, pSrc + i * 0xc, 0xc);
+        for (unsigned int i = 0; i < aiCount; ++i)
+            FUN_00ec7230(apDestAddr + i * 0xc, apSrcAddr + i * 0xc, 0xc);
     }
     else
     {
-        if (pDst > pSrc)
+        if (apDestAddr > apSrcAddr)
         {
-            for (int i = (int)count - 1; i >= 0; --i)
-                FUN_00ec7230(pDst + i * 0xc, pSrc + i * 0xc, 0xc);
+            for (int i = (int)aiCount - 1; i >= 0; --i)
+                FUN_00ec7230(apDestAddr + i * 0xc, apSrcAddr + i * 0xc, 0xc);
         }
     }
 }
@@ -621,6 +689,9 @@ struct FUN_006cf840 : FUN_006cf820
 };
 // Destructor that calls Clear(true) on the object at this address.
 // @fnv 0x006cf840
+// pdb: BSScrapArray<PathBuilder::VirtualNodeSegment,1024>::_Reallocate | PathBuilder.obj | debug, object-file run extension, low
+// pdb params: apBuffer, aiNewSizeInItem
+// pdb locals: pnewBuffer
 FUN_006cf840::~FUN_006cf840()
 {
     reinterpret_cast<GlobalObject_00869f00*>(this)->Clear(true);
@@ -641,6 +712,9 @@ struct FUN_006dc590
 };
 // @fnv 0x006dc590
 // src: GUESS 0x006dc590 (confidence: low)
+// pdb: BSSimpleArray<CombatSearchDoor,1024>::_ReallocateBuffer | CombatGroup.obj | retail, call graph (shared callers), high
+// pdb params: aiNewSize, aiCopyCount
+// pdb locals: pnewBuffer
 void __thiscall FUN_006dc590::UpdateState_006dc590(unsigned int aiNewSize, unsigned int aiCopyCount)
 {
     if (pBuffer)
@@ -684,6 +758,8 @@ struct FUN_006f9790_class
 };
 // @fnv 0x006f9790
 // src: COMMUNITY 0x006f9790
+// pdb: BSSimpleArray<BGSDistantTreeBlock::InstanceData,1024>::SetReservedSize | BGSDistantTreeBlock.obj | debug, object-file run extension, low
+// pdb params: aiReserveSize
 void FUN_006f9790_class::BSSimpleArray_SetAllocSize(unsigned int aiReserveSize)
 {
     if (aiReserveSize == SimpleArrayStorage)
@@ -722,6 +798,9 @@ struct FUN_0084b5c0_Array
 
 // @fnv 0x0084b5c0
 // src: XBOX_PDB 0x0084b5c0
+// pdb: BSSimpleArray<Actor *,1024>::SetReservedSize | SpectatorPackage.obj | retail, call graph (shared callers), low
+// pdb note: debug build links it to BSSimpleArray<BGSLoadFormBuffer *,1024>::SetReservedSize
+// pdb params: aiReserveSize
 void FUN_0084b5c0_Array::BSSimpleArray_TESObjectREFR_1024_SetReservedSize(unsigned int aiReserveSize)
 {
     if (aiReserveSize == SimpleArrayStorage)
@@ -758,6 +837,10 @@ struct FUN_009a4320_arr
 // Removes aiHowMany elements at aiIndex from the buffer, shifting the trailing elements down and shrinking iSize.
 // @fnv 0x009a4320
 // src: XBOX_PDB 0x009a4320
+// pdb: BSSimpleArray<Actor *,1024>::RemoveFast | CombatTargetMap.obj | retail, call graph, low
+// pdb note: debug build links it to BSSimpleArray<unsigned int,1024>::RemoveFast
+// pdb params: aiIndex, aiHowMany
+// pdb locals: iitemsToMove
 void FUN_009a4320_arr::BSSimpleArray_Actor_1024_RemoveFast(unsigned int aiIndex, unsigned int aiHowMany)
 {
     unsigned int iitemsToMove = FUN_0042f5a0(iSize - aiIndex - aiHowMany, aiHowMany);
@@ -785,6 +868,9 @@ struct FUN_009f6540_Class
 };
 // @fnv 0x009f6540
 // src: XBOX_PDB 0x009f6540
+// pdb: BSSimpleArray<SandBoxChoiceListItem,1024>::_ReallocateBuffer | SandBoxPackage.obj | retail, call graph (shared callers), medium
+// pdb params: aiNewSize, aiCopyCount
+// pdb locals: pnewBuffer
 void FUN_009f6540_Class::BSSimpleArray_TeleportLink_1024_ReallocateBuffer(unsigned int aiNewSize, unsigned int aiCopyCount)
 {
     if (pBuffer)
@@ -826,6 +912,9 @@ struct FUN_006d0450_Class
 
 // @fnv 0x006cf520
 // src: COMMUNITY 0x006cf520
+// pdb: BSSimpleArray<bool,1024>::Add | PathBuilder.obj | debug, object-file run extension, low
+// pdb params: aValue
+// pdb locals: iindex
 int __thiscall FUN_006cf520_Class::BSScrapArray_bool_1024_Add(const unsigned char* aValue)
 {
     int iVar1;
@@ -837,6 +926,8 @@ int __thiscall FUN_006cf520_Class::BSScrapArray_bool_1024_Add(const unsigned cha
 
 
 // @fnv 0x005eee80
+// pdb: BSSimpleArray<unsigned short,1024>::SetSize | NavMesh_LoadSave.obj | retail, call graph (shared callers), medium
+// pdb params: aiNewSize, abFreeMemory
 template <>
 void BSSimpleArray<unsigned short, 1024>::SetSize(unsigned int aiNewSize, bool abFreeMemory)
 {
@@ -881,6 +972,9 @@ void BSSimpleArray<unsigned short, 1024>::SetSize(unsigned int aiNewSize, bool a
 void* __cdecl operator new(unsigned int, void*);
 
 // @fnv 0x005ef650
+// pdb: BSSimpleArray<char const *,1024>::_ConstructItems | BGSRagdoll.obj | debug, object-file run extension, low
+// pdb params: apFirstAddr, aiCount
+// pdb locals: i
 template <>
 void BSSimpleArray<unsigned short, 1024>::InitializeItems(unsigned short* items, unsigned int growBy)
 {
@@ -917,6 +1011,10 @@ typedef BSSimpleArray<NavMeshEdgeReference, 1024> FUN_0061bf70_Class;
 
 
 // @fnv 0x0061bf70
+// pdb: BSSimpleArray<NavMeshEdgeHandle,1024>::Remove | NavMeshObstacleCutter.obj | retail, call graph (shared callers), low
+// pdb note: debug build links it to BSSimpleList<DialogueItem *>::AddTail
+// pdb params: aiIndex, abShrink
+// pdb locals: inewSize, pnewBuffer
 template <> void BSSimpleArray<NavMeshEdgeReference, 1024>::RemoveAt(unsigned int aiIndex, bool abShrink)
 {
     unsigned int inewSize;
@@ -957,6 +1055,8 @@ template <> void BSSimpleArray<NavMeshEdgeReference, 1024>::RemoveAt(unsigned in
 
 
 // @fnv 0x0069cea0
+// pdb: BSSimpleArray<NiPoint3,1024>::SetSize | NavMeshBounds.obj | debug, call graph, medium
+// pdb params: aiNewSize, abFreeMemory
 template <>
 void __thiscall BSSimpleArray<CombatSearchDoor, 1024>::SetSize(unsigned int aiNewSize, bool abFreeMemory)
 {
@@ -1000,6 +1100,8 @@ void __thiscall BSSimpleArray<CombatSearchDoor, 1024>::SetSize(unsigned int aiNe
 
 
 // @fnv 0x006a6660
+// pdb: BSSimpleArray<NiColorA,1024>::SetSize | NavMeshRender.obj | debug, object-file run extension, low
+// pdb params: aiNewSize, abFreeMemory
 template <>
 void BSSimpleArray<NiColorA, 1024>::SetSize(unsigned int newSize, bool freeMemory)
 {
@@ -1054,6 +1156,7 @@ struct FUN_006cf200
 };
 
 // @fnv 0x006cf200
+// pdb: BSSimpleArray<NavMeshEdgeLocation,1024>::BSSimpleArray<NavMeshEdgeLocation,1024> | PathBuilder.obj | debug, call graph, high
 FUN_006cf200::FUN_006cf200()
 {
     vfptr = (int*)&DAT_0106c954;
@@ -1061,6 +1164,9 @@ FUN_006cf200::FUN_006cf200()
 }
 
 // @fnv 0x006cf670
+// pdb: BSScrapArray<bool,1024>::_Allocate | PathBuilder.obj | debug, vtable slot, medium
+// pdb params: aiSizeInItem
+// pdb locals: pnewBuffer
 template <>
 // src: XBOX_PDB 0x006cf670
 void* __thiscall BSScrapArray<unsigned char>::BSScrapArray_bool_1024_Allocate(unsigned int size)
@@ -1071,6 +1177,8 @@ void* __thiscall BSScrapArray<unsigned char>::BSScrapArray_bool_1024_Allocate(un
 }
 
 // @fnv 0x006cf820
+// pdb: BSScrapArray<PathBuilder::VirtualNodeSegment,1024>::_Deallocate | PathBuilder.obj | debug, object-file run extension, low
+// pdb params: apBuffer
 template <>
 BSSimpleArray<PathBuilder::VirtualNodeSegment, 1024>::~BSSimpleArray()
 {
@@ -1102,6 +1210,8 @@ struct FUN_006cf900_Class : EH
 // Copies the base EH part and the m_Location sub-object from aLocation into this object and returns *this.
 // @fnv 0x006cf900
 // src: GUESS 0x006cf900 (confidence: medium)
+// pdb: FastNavMeshEdgeLocation::operator= | NavMeshPOVSearch.obj | debug, call graph, medium
+// pdb params: aLocation
 FUN_006cf900_Class& FUN_006cf900_Class::CopyFields_006cf900(const FUN_006cf900_Class* aLocation)
 {
     EH::operator=(*aLocation);
@@ -1116,18 +1226,20 @@ struct PSClearStub
 
 struct SaveGameSizeState
 {
-    void __thiscall BSSimpleArray_VirtualPathingNode_1024_ConstructItems(unsigned int pBuffer, unsigned int ItemUpdateArray);
+    void __thiscall BSSimpleArray_VirtualPathingNode_1024_ConstructItems(unsigned int apFirstAddr, unsigned int aiCount);
 };
 
 struct S5460Helper
 {
-    void __thiscall BSSimpleArray_VirtualPathingNode_1024_ReallocateBuffer(unsigned int aiNewSize, unsigned int uiOldSize);
+    void __thiscall BSSimpleArray_VirtualPathingNode_1024_ReallocateBuffer(unsigned int aiNewSize, unsigned int aiCopyCount);
 };
 
 typedef BSSimpleArray<PacketNodeRecord, 1024> FUN_006e90a0_class;
 
 
 // @fnv 0x006e90a0
+// pdb: BSSimpleArray<VirtualPathingNode,1024>::SetSize | PathingSolution.obj | retail, object-file run extension, high
+// pdb params: aiNewSize, abFreeMemory
 template <> void BSSimpleArray<PacketNodeRecord, 1024>::SetSize(unsigned int aiNewSize, bool abFreeMemory)
 {
     if (aiNewSize == 0)
@@ -1180,6 +1292,7 @@ struct FUN_006e94d0 : FUN_006e9080
     void* FUN_006e94d0_006e94d0(unsigned int flags);
 };
 // @fnv 0x006e94d0
+// pdb: BSSimpleArray<VirtualPathingNode,1024>::`scalar deleting destructor' | PathingSolution.obj | retail, vtable slot, high
 void* FUN_006e94d0::FUN_006e94d0_006e94d0(unsigned int flags)
 {
     this->FUN_006e9080::~FUN_006e9080();
@@ -1191,6 +1304,8 @@ void* FUN_006e94d0::FUN_006e94d0_006e94d0(unsigned int flags)
 class NavMeshInfo;
 
 // @fnv 0x006f2290
+// pdb: BSSimpleArray<unsigned int,1024>::SetSize | ExtraDataList.obj | debug, call graph, medium
+// pdb params: aiNewSize, abFreeMemory
 template <>
 void BSSimpleArray<NavMeshInfo*, 1024>::SetSize(unsigned int aiNewSize, bool abFreeMemory)
 {
@@ -1300,6 +1415,9 @@ struct FUN_006bf8f0_Class
 // Removes the element at aiIndex from the buffer, optionally reallocating to a smaller size and shifting the remaining elements down.
 // @fnv 0x006bf8f0
 // src: XBOX_PDB 0x006bf8f0
+// pdb: BSSimpleArray<ItemChange *,1024>::Remove | PlayerCharacter.obj | retail, call graph, medium
+// pdb params: aiIndex, abShrink
+// pdb locals: inewSize, pnewBuffer
 void __thiscall FUN_006bf8f0_Class::BSSimpleArray_HUDMainMenu_SubtitleData_1024_Remove(unsigned int aiIndex, bool abShrink)
 {
     unsigned int inewSize;
@@ -1335,27 +1453,30 @@ void __thiscall FUN_006bf8f0_Class::BSSimpleArray_HUDMainMenu_SubtitleData_1024_
 
 struct FUN_006a2270_class
 {
-    void BSSimpleArray_PathingNode_1024_CopyItems(char* pDest, char* pSource, unsigned int ItemUpdateArray);
+    void BSSimpleArray_PathingNode_1024_CopyItems(char* apDestAddr, char* apSrcAddr, unsigned int aiCount);
 };
 
 // @fnv 0x006cf000
+// pdb: BSSimpleArray<PathingNode,1024>::Remove | PathBuilder.obj | debug, call graph (shared callers), high
+// pdb params: aiIndex, abShrink
+// pdb locals: inewSize, pnewBuffer
 template <>
-void BSSimpleArray<PathingGraphNode, 1024>::RemoveAt(unsigned int uiIndex, bool bCondition)
+void BSSimpleArray<PathingGraphNode, 1024>::RemoveAt(unsigned int aiIndex, bool abShrink)
 {
     PathingGraphNode* newBuffer;
 
-    if (bCondition && reinterpret_cast<FUN_006f3170_Class*>(this)->BSSimpleArray_HasSufficientCapacity())
+    if (abShrink && reinterpret_cast<FUN_006f3170_Class*>(this)->BSSimpleArray_HasSufficientCapacity())
     {
         unsigned int newSize = reinterpret_cast<FUN_00869600_Class*>(this)->BSSimpleArray_GetOptimalCapacity();
         newBuffer = this->_Allocate(newSize);
 
         reinterpret_cast<FUN_006a2270_class*>(this)->BSSimpleArray_PathingNode_1024_CopyItems(reinterpret_cast<char*>(newBuffer),
-                                                                  reinterpret_cast<char*>(this->pBuffer), uiIndex);
+                                                                  reinterpret_cast<char*>(this->pBuffer), aiIndex);
 
-        ReleaseElements(this->pBuffer + uiIndex, 1);
+        ReleaseElements(this->pBuffer + aiIndex, 1);
 
-        reinterpret_cast<FUN_006a2270_class*>(this)->BSSimpleArray_PathingNode_1024_CopyItems(reinterpret_cast<char*>(newBuffer + uiIndex),
-                                                                  reinterpret_cast<char*>(this->pBuffer + uiIndex + 1),
+        reinterpret_cast<FUN_006a2270_class*>(this)->BSSimpleArray_PathingNode_1024_CopyItems(reinterpret_cast<char*>(newBuffer + aiIndex),
+                                                                  reinterpret_cast<char*>(this->pBuffer + aiIndex + 1),
                                                                   this->iSize - 1);
 
         FreeSimpleArrayStorage(this);
@@ -1365,11 +1486,11 @@ void BSSimpleArray<PathingGraphNode, 1024>::RemoveAt(unsigned int uiIndex, bool 
     }
     else
     {
-        ReleaseElements(this->pBuffer + uiIndex, 1);
+        ReleaseElements(this->pBuffer + aiIndex, 1);
 
-        reinterpret_cast<FUN_006a2270_class*>(this)->BSSimpleArray_PathingNode_1024_CopyItems(reinterpret_cast<char*>(this->pBuffer + uiIndex),
-                                                                  reinterpret_cast<char*>(this->pBuffer + uiIndex + 1),
-                                                                  this->iSize - uiIndex - 1);
+        reinterpret_cast<FUN_006a2270_class*>(this)->BSSimpleArray_PathingNode_1024_CopyItems(reinterpret_cast<char*>(this->pBuffer + aiIndex),
+                                                                  reinterpret_cast<char*>(this->pBuffer + aiIndex + 1),
+                                                                  this->iSize - aiIndex - 1);
     }
 
     this->iSize = this->iSize - 1;
@@ -1377,7 +1498,7 @@ void BSSimpleArray<PathingGraphNode, 1024>::RemoveAt(unsigned int uiIndex, bool 
 
 struct S5460_FUN_006e3d30_Helper
 {
-    void* __thiscall BSSimpleArray_PathingAvoidNode_1024_ReallocateBuffer(unsigned int newSize, unsigned int oldSize);
+    void* __thiscall BSSimpleArray_PathingAvoidNode_1024_ReallocateBuffer(unsigned int aiNewSize, unsigned int aiCopyCount);
 };
 
 struct BSSimpleArray_PathingAvoidNode_1024
@@ -1390,11 +1511,14 @@ struct BSSimpleArray_PathingAvoidNode_1024
     unsigned int SimpleArrayStorage;
 
     void InitializeItems(PathingAvoidNode* pItems, unsigned int ItemUpdateArray);
-    void SetSize(unsigned int aiNewSize, bool abFreeMemory);
+    void BSSimpleArray_PathingAvoidNode_1024_SetSize(unsigned int aiNewSize, bool abFreeMemory);
 };
 
 // @fnv 0x006e3ad0
-void BSSimpleArray_PathingAvoidNode_1024::SetSize(unsigned int aiNewSize, bool abFreeMemory)
+// src: XBOX_RETAIL_PDB 0x006e3ad0
+// pdb: BSSimpleArray<PathingAvoidNode,1024>::SetSize | PathingRequest.obj | retail, call graph (shared callers), high
+// pdb params: aiNewSize, abFreeMemory
+void BSSimpleArray_PathingAvoidNode_1024::BSSimpleArray_PathingAvoidNode_1024_SetSize(unsigned int aiNewSize, bool abFreeMemory)
 {
     if (aiNewSize == 0)
     {
@@ -1465,6 +1589,8 @@ struct FUN_009f6200_Class
 
 // @fnv 0x009f6200
 // src: XBOX_PDB 0x009f6200
+// pdb: BSSimpleArray<SandBoxChoiceListItem,1024>::SetSize | SandBoxPackage.obj | debug, call graph, high
+// pdb params: aiNewSize, abFreeMemory
 void FUN_009f6200_Class::BSSimpleArray_SandBoxChoiceListItem_1024_SetSize(unsigned int aiNewSize, bool abFreeMemory)
 {
     if (aiNewSize == 0)
@@ -1528,16 +1654,19 @@ struct FUN_0069cfe0_cls
     FUN_0069cfe0_Elem* m_04;
     unsigned int m_08;
 
-    void CopyElementsTo(FUN_0069cfe0_Dst* dst);
+    void CopyElementsTo(FUN_0069cfe0_Dst* aDestArray);
 };
 
 // @fnv 0x0069cfe0
-void FUN_0069cfe0_cls::CopyElementsTo(FUN_0069cfe0_Dst* dst)
+// pdb: BSSimpleArray<NiPoint3,1024>::CopyTo<1024> | NavMeshBounds.obj | retail, call graph (shared callers), high
+// pdb params: aDestArray
+// pdb locals: i
+void FUN_0069cfe0_cls::CopyElementsTo(FUN_0069cfe0_Dst* aDestArray)
 {
-    dst->FUN_0069cea0(this->m_08, 1);
+    aDestArray->FUN_0069cea0(this->m_08, 1);
     for (unsigned int i = 0; i < this->m_08; i++)
     {
-        *dst->Object_GetIndexedValue_006a1440(i) = *(this->m_04 + i);
+        *aDestArray->Object_GetIndexedValue_006a1440(i) = *(this->m_04 + i);
     }
 }
 
@@ -1563,17 +1692,19 @@ HeapProvider* __cdecl MemoryManager_Instance();
 struct FUN_006cf2a0 : FUN_005e0510
 {
     void* m_pStreamAllocator;
-    FUN_006cf2a0(int first, int second, void* heap);
+    FUN_006cf2a0(int aiReserveSize, int aiInitialSize, void* apHeap);
     void BSSimpleArray_float_1024_InitialSetup(int first, int second);
 };
 
 // Sets the vtable, stores heap or a default heap from FUN_00401020, then calls FUN_006b3eb0 with first and second.
 // @fnv 0x006cf2a0
-FUN_006cf2a0::FUN_006cf2a0(int first, int second, void* heap)
+// pdb: BSScrapArray<NavMeshInfo const *,1024>::BSScrapArray<NavMeshInfo const *,1024> | PathBuilder.obj | debug, call graph, high
+// pdb params: aiReserveSize, aiInitialSize, apHeap
+FUN_006cf2a0::FUN_006cf2a0(int aiReserveSize, int aiInitialSize, void* apHeap)
 {
     m_vftable = &DAT_0106c968;
-    m_pStreamAllocator = heap ? heap : MemoryManager_Instance()->FUN_00aa42e0();
-    BSSimpleArray_float_1024_InitialSetup(first, second);
+    m_pStreamAllocator = apHeap ? apHeap : MemoryManager_Instance()->FUN_00aa42e0();
+    BSSimpleArray_float_1024_InitialSetup(aiReserveSize, aiInitialSize);
 }
 
 namespace fnv_006cf3a0 {
@@ -1593,15 +1724,17 @@ struct FUN_006cf3a0 : FUN_005e04c0
     int unk08;
     int unk0c;
     void* unk10;
-    FUN_006cf3a0(int arg1, int arg2, void* source);
+    FUN_006cf3a0(int aiReserveSize, int aiInitialSize, void* apHeap);
     virtual ~FUN_006cf3a0();
     void BSSimpleArray_float_1024_InitialSetup(int arg1, int arg2);
 };
 // @fnv 0x006cf3a0
-FUN_006cf3a0::FUN_006cf3a0(int arg1, int arg2, void* source) : FUN_005e04c0()
+// pdb: BSScrapArray<TESObjectREFR *,1024>::BSScrapArray<TESObjectREFR *,1024> | PathBuilder.obj | debug, call graph, high
+// pdb params: aiReserveSize, aiInitialSize, apHeap
+FUN_006cf3a0::FUN_006cf3a0(int aiReserveSize, int aiInitialSize, void* apHeap) : FUN_005e04c0()
 {
-    unk10 = source ? source : MemoryManager_Instance()->FUN_00aa42e0();
-    BSSimpleArray_float_1024_InitialSetup(arg1, arg2);
+    unk10 = apHeap ? apHeap : MemoryManager_Instance()->FUN_00aa42e0();
+    BSSimpleArray_float_1024_InitialSetup(aiReserveSize, aiInitialSize);
 }
 }  // namespace fnv_006cf3a0
 
@@ -1615,6 +1748,9 @@ struct FUN_006cf700_cls
 
 // Scans indices from start up to m_08 and returns the first i where pred(m_04 + i, a) is true, or -1 if none match.
 // @fnv 0x006cf700
+// pdb: BSScrapArray<PathBuilder::VirtualNodeSegment,1024>::BSScrapArray<PathBuilder::VirtualNodeSegment,1024> | PathBuilder.obj | retail, object-file run extension, low
+// pdb note: debug build links it to BSSimpleArray<bool,1024>::Find<bool>
+// pdb params: aiReserveSize, aiInitialSize, apHeap
 int FUN_006cf700_cls::FindIndexIf(int aiValue, unsigned int start, bool (*pred)(int, int))
 {
     unsigned int i;
@@ -1658,17 +1794,20 @@ struct FUN_006cf8a0_cls
     ItemRaw* pItems;
     unsigned int iCount;
 
-    void ProcessItems(ParamHost* p);
+    void ProcessItems(ParamHost* aDestArray);
 };
 
 // Calls Prepare with iCount and 1, then for each item calls ProcessItem and invokes FUN_006cf900 on the result.
 // @fnv 0x006cf8a0
-void FUN_006cf8a0_cls::ProcessItems(ParamHost* pHost)
+// pdb: BSSimpleArray<NavMeshEdgeLocation,1024>::CopyTo<1024> | PathBuilder.obj | debug, call graph (shared callers), high
+// pdb params: aDestArray
+// pdb locals: i
+void FUN_006cf8a0_cls::ProcessItems(ParamHost* aDestArray)
 {
-    pHost->Prepare(iCount, 1);
+    aDestArray->Prepare(iCount, 1);
     for (unsigned int i = 0; i < iCount; i++)
     {
-        ((ItemFinish*)pHost->ProcessItem(i, &pItems[i]))->CopyFields_006cf900();
+        ((ItemFinish*)aDestArray->ProcessItem(i, &pItems[i]))->CopyFields_006cf900();
     }
 }
 
@@ -1689,17 +1828,20 @@ struct FUN_006cf940_cls
     char* m_04;
     unsigned int m_08;
 
-    void BSSimpleArray_CopyTo_0(FUN_006cf940_Owner* a1);
+    void BSSimpleArray_CopyTo_0(FUN_006cf940_Owner* aDestArray);
 };
 
 // @fnv 0x006cf940
 // src: COMMUNITY 0x006cf940
-void FUN_006cf940_cls::BSSimpleArray_CopyTo_0(FUN_006cf940_Owner* pOwner)
+// pdb: BSSimpleArray<PathingLocation,1024>::CopyTo<1024> | PathBuilder.obj | debug, call graph, high
+// pdb params: aDestArray
+// pdb locals: i
+void FUN_006cf940_cls::BSSimpleArray_CopyTo_0(FUN_006cf940_Owner* aDestArray)
 {
-    pOwner->ResizeArrayStorage(this->m_08, 1);
+    aDestArray->ResizeArrayStorage(this->m_08, 1);
     for (unsigned int i = 0; i < this->m_08; ++i)
     {
-        pOwner->FUN_00691750(i, this->m_04 + i * 0x28)->FUN_006dcce0();
+        aDestArray->FUN_00691750(i, this->m_04 + i * 0x28)->FUN_006dcce0();
     }
 }
 
@@ -1737,6 +1879,8 @@ class FUN_006cfa00 : public FUN_006cfa00_base
 
 // Sets m_10 to a3, or to the result of FUN_00aa42e0 when a3 is zero, then calls FUN_006dc440 with a1 and a2.
 // @fnv 0x006cfa00
+// pdb: BSScrapArray<FastNavMeshTriHandle,1024>::BSScrapArray<FastNavMeshTriHandle,1024> | PathBuilder.obj | debug, object-file run extension, low
+// pdb params: aiReserveSize, aiInitialSize, apHeap
 FUN_006cfa00::FUN_006cfa00(int aiFirst, int aiSecond, int aiValue)
 {
     m_10 = (aiValue != 0) ? aiValue : ((FUN_00aa42e0_cls*)MemoryManager_Instance())->FUN_00aa42e0();
@@ -1758,6 +1902,7 @@ struct FUN_006cfac0_cls : FUN_006cfac0_base
 
 // Destructor that calls FUN_008454f0 with flag 1.
 // @fnv 0x006cfac0
+// pdb: BSScrapArray<FastNavMeshTriHandle,1024>::~BSScrapArray<FastNavMeshTriHandle,1024> | PathBuilder.obj | debug, call graph (shared callers), medium
 FUN_006cfac0_cls::~FUN_006cfac0_cls()
 {
     this->FUN_008454f0(1);
@@ -1793,6 +1938,8 @@ struct FUN_006cfb20_cls : FUN_00694de0_base
 
 // Constructor: sets vfptr, stores c (or a default from FUN_00401020) in m_10, then calls FUN_006b3eb0(a, b).
 // @fnv 0x006cfb20
+// pdb: BSScrapArray<int,1024>::BSScrapArray<int,1024> | PathBuilder.obj | debug, object-file run extension, low
+// pdb params: aiReserveSize, aiInitialSize, apHeap
 FUN_006cfb20_cls::FUN_006cfb20_cls(int aiArg1, int aiArg2, void* apData)
 {
     vfptr = (int*)&DAT_0106c9f4;
@@ -1817,31 +1964,34 @@ struct FUN_006d0540_shell
 
 struct FUN_006cfe70_Class : public FUN_006d0540_shell
 {
-    void __thiscall BSSimpleArray_VirtualPathingNode_1024_ReallocateBuffer(int value, int count);
+    void __thiscall BSSimpleArray_VirtualPathingNode_1024_ReallocateBuffer(int aiNewSize, int aiCopyCount);
 };
 
 // @fnv 0x006cfe70
 // src: COMMUNITY 0x006cfe70
-void __thiscall FUN_006cfe70_Class::BSSimpleArray_VirtualPathingNode_1024_ReallocateBuffer(int value, int count)
+// pdb: BSSimpleArray<VirtualPathingNode,1024>::_ReallocateBuffer | PathBuilder.obj | debug, call graph, high
+// pdb params: aiNewSize, aiCopyCount
+// pdb locals: pnewBuffer
+void __thiscall FUN_006cfe70_Class::BSSimpleArray_VirtualPathingNode_1024_ReallocateBuffer(int aiNewSize, int aiCopyCount)
 {
     if (this->unk04 != 0)
     {
-        if (count == this->unk0c)
+        if (aiCopyCount == this->unk0c)
         {
-            this->unk04 = this->vf0c(this->unk04, value);
+            this->unk04 = this->vf0c(this->unk04, aiNewSize);
         }
         else
         {
-            void* newItem = this->vf04(value);
-            this->CopyOverlappingElements30(newItem, this->unk04, count);
+            void* newItem = this->vf04(aiNewSize);
+            this->CopyOverlappingElements30(newItem, this->unk04, aiCopyCount);
             FreeSimpleArrayStorage(this);
             this->unk04 = newItem;
         }
     }
     else
     {
-        this->unk04 = this->vf04(value);
-        this->unk0c = value;
+        this->unk04 = this->vf04(aiNewSize);
+        this->unk0c = aiNewSize;
     }
 }
 
@@ -1870,6 +2020,8 @@ struct FUN_006e3c90_cls
 
 // Placement-constructs count SpawnedObject9 instances at 0x24-byte strides starting at base.
 // @fnv 0x006e3c90
+// pdb: BSSimpleArrayRefCounted<PathingAvoidNode,1024>::~BSSimpleArrayRefCounted<PathingAvoidNode,1024> | PathingRequest.obj | retail, object-file run extension, low
+// pdb note: debug build links it to BSSimpleArray<PathingAvoidNode,1024>::_ConstructItems
 void FUN_006e3c90_cls::ConstructSpawnedObjects(char* base, unsigned int count)
 {
     for (unsigned int i = 0; i < count; i++)
@@ -1880,7 +2032,7 @@ void FUN_006e3c90_cls::ConstructSpawnedObjects(char* base, unsigned int count)
 
 struct FUN_006e9470_Helper
 {
-    void BSSimpleArray_PathingNode_1024_SetSize(unsigned int count, int flag);
+    void BSSimpleArray_PathingNode_1024_SetSize(unsigned int aiNewSize, int abFreeMemory);
     void* GetPathingGraphNodeAddress(int index, void* item);
 };
 
@@ -1900,6 +2052,9 @@ struct FUN_006e9470_cls
 
 // @fnv 0x006e9470
 // src: COMMUNITY 0x006e9470
+// pdb: BSSimpleArray<PathingNode,1024>::CopyTo<1024> | PathingSolution.obj | retail, object-file run extension, low
+// pdb params: aDestArray
+// pdb locals: i
 void FUN_006e9470_cls::BSSimpleArray_PathingNode_1024_Copy(FUN_006e9470_Helper* pHelper)
 {
     pHelper->BSSimpleArray_PathingNode_1024_SetSize(m_08, 1);
@@ -1968,6 +2123,7 @@ struct FUN_006cf230
 };
 
 // @fnv 0x006cf230
+// pdb: BSSimpleArray<NavMeshEdgeLocation,1024>::~BSSimpleArray<NavMeshEdgeLocation,1024> | PathBuilder.obj | debug, call graph (shared callers), high
 FUN_006cf230::~FUN_006cf230()
 {
     Clear(true);
@@ -1997,6 +2153,9 @@ class FUN_006cf780_Pool : public ContainerBase6CF
 
 // Stores the given allocator, or the memory manager's default allocator when none is given, then initializes the pool with the capacity and grow-by values.
 // @fnv 0x006cf780
+// pdb: BSScrapArray<PathBuilder::VirtualNodeSegment,1024>::_Allocate | PathBuilder.obj | debug, object-file run extension, low
+// pdb params: aiSizeInItem
+// pdb locals: pnewBuffer
 FUN_006cf780_Pool::FUN_006cf780_Pool(int iCapacity, int iGrowBy, ScrapHeapBuffer* pkAllocator)
 {
     m_pHeapAllocator = pkAllocator ? pkAllocator : MemoryManager::GetSingleton().GetGeneralAllocator();
@@ -2021,6 +2180,7 @@ class FUN_006cfbc0 : public CFBC0Base
 
 // Destructor that calls Clear(true) to free the object's resources.
 // @fnv 0x006cfbc0
+// pdb: BSScrapArray<int,1024>::~BSScrapArray<int,1024> | PathBuilder.obj | debug, call graph, high
 FUN_006cfbc0::~FUN_006cfbc0()
 {
     Clear(true);
@@ -2037,49 +2197,51 @@ struct FUN_006e9280_shell
     FUN_006e9280_Item* m_pBuffer;
     unsigned int m_uiSize;
     unsigned int m_uiCapacity;
-    void BSSimpleArray_PathingNode_1024_ReallocateBuffer(unsigned int uiNewAlloc, unsigned int uiCopy);
-    void ConstructArray(FUN_006e9280_Item* pItems, unsigned int ItemUpdateArray);
-    void FUN_006cff20(FUN_006e9280_Item* pItems, unsigned int ItemUpdateArray);
-    void BSSimpleArray_PathingNode_1024_SetSize(unsigned int uiNewSize, bool bShrink);
+    void BSSimpleArray_PathingNode_1024_ReallocateBuffer(unsigned int aiNewSize, unsigned int aiCopyCount);
+    void BSSimpleArray_PathingNode_1024__ConstructItems(FUN_006e9280_Item* apFirstAddr, unsigned int aiCount);
+    void FUN_006cff20(FUN_006e9280_Item* apFirstAddr, unsigned int aiCount);
+    void BSSimpleArray_PathingNode_1024_SetSize(unsigned int aiNewSize, bool abFreeMemory);
 };
 
 // @fnv 0x006e9280
 // src: XBOX_PDB 0x006e9280
-void FUN_006e9280_shell::BSSimpleArray_PathingNode_1024_SetSize(unsigned int uiNewSize, bool bShrink)
+// pdb: BSSimpleArray<PathingNode,1024>::SetSize | PathingSolution.obj | retail, object-file run extension, high
+// pdb params: aiNewSize, abFreeMemory
+void FUN_006e9280_shell::BSSimpleArray_PathingNode_1024_SetSize(unsigned int aiNewSize, bool abFreeMemory)
 {
-    if (uiNewSize == 0)
+    if (aiNewSize == 0)
     {
-        ((PSNodeStub*)this)->FUN_006cf120(bShrink);
+        ((PSNodeStub*)this)->FUN_006cf120(abFreeMemory);
     }
-    else if (uiNewSize > m_uiCapacity)
+    else if (aiNewSize > m_uiCapacity)
     {
         if (m_uiCapacity == 0)
         {
-            m_pBuffer = Allocate(uiNewSize);
-            m_uiCapacity = uiNewSize;
+            m_pBuffer = Allocate(aiNewSize);
+            m_uiCapacity = aiNewSize;
         }
         else
         {
-            BSSimpleArray_PathingNode_1024_ReallocateBuffer(uiNewSize, m_uiSize);
-            m_uiCapacity = uiNewSize;
+            BSSimpleArray_PathingNode_1024_ReallocateBuffer(aiNewSize, m_uiSize);
+            m_uiCapacity = aiNewSize;
         }
-        ConstructArray(&m_pBuffer[m_uiSize], uiNewSize - m_uiSize);
-        m_uiSize = uiNewSize;
+        BSSimpleArray_PathingNode_1024__ConstructItems(&m_pBuffer[m_uiSize], aiNewSize - m_uiSize);
+        m_uiSize = aiNewSize;
     }
-    else if (uiNewSize < m_uiSize)
+    else if (aiNewSize < m_uiSize)
     {
-        FUN_006cff20(&m_pBuffer[uiNewSize], m_uiSize - uiNewSize);
-        m_uiSize = uiNewSize;
-        if (bShrink && uiNewSize <= m_uiCapacity >> 2)
+        FUN_006cff20(&m_pBuffer[aiNewSize], m_uiSize - aiNewSize);
+        m_uiSize = aiNewSize;
+        if (abFreeMemory && aiNewSize <= m_uiCapacity >> 2)
         {
-            BSSimpleArray_PathingNode_1024_ReallocateBuffer(uiNewSize, uiNewSize);
-            m_uiCapacity = uiNewSize;
+            BSSimpleArray_PathingNode_1024_ReallocateBuffer(aiNewSize, aiNewSize);
+            m_uiCapacity = aiNewSize;
         }
     }
     else
     {
-        ConstructArray(&m_pBuffer[m_uiSize], uiNewSize - m_uiSize);
-        m_uiSize = uiNewSize;
+        BSSimpleArray_PathingNode_1024__ConstructItems(&m_pBuffer[m_uiSize], aiNewSize - m_uiSize);
+        m_uiSize = aiNewSize;
     }
 }
 
@@ -2099,6 +2261,8 @@ struct FUN_006cf570 : FUN_006d0420_Base
     void __thiscall BSSimpleArray_char_1024_InitialSetup(unsigned int initialSize, unsigned int growth);
 };
 // @fnv 0x006cf570
+// pdb: BSScrapArray<bool,1024>::BSScrapArray<bool,1024> | PathBuilder.obj | debug, object-file run extension, low
+// pdb params: aiReserveSize, aiInitialSize, apHeap
 FUN_006cf570::FUN_006cf570(unsigned int initialSize, unsigned int growth, void* allocator) : FUN_006d0420_Base()
 {
     m_pThreadAllocator = allocator ? allocator : MemoryManager_Instance()->FUN_00aa42e0();
@@ -2107,7 +2271,7 @@ FUN_006cf570::FUN_006cf570(unsigned int initialSize, unsigned int growth, void* 
 
 struct FUN_0069f920_Sub
 {
-    void* __thiscall ProcessAndReturnValue_006a1920();
+    void* __thiscall BSSimpleArray_PathingNode_1024_AddUninitialized();
     void* __thiscall GetPathingGraphNodeAddress(unsigned int);
 };
 struct FUN_006e2280
@@ -2127,11 +2291,14 @@ struct FUN_0069f920_cls
 // Calls unk20.FUN_006a1920 for a node, constructs FUN_006e2280(a, b) at the address FUN_006e8f80 returns for it, and returns the node.
 // @fnv 0x0069f920
 // src: COMMUNITY 0x0069f920
-void* __thiscall FUN_0069f920_cls::PathingSolution_AddPathingNode(int aiArg1, int aiArg2)
+// pdb: PathingSolution::AddPathingNode | NavMeshPOVSearch.obj | debug, upstream name already matches, high
+// pdb params: aLocation, aTangent
+// pdb locals: pnode, inewNodeIndex
+void* __thiscall FUN_0069f920_cls::PathingSolution_AddPathingNode(int aLocation, int aTangent)
 {
-    void* pNode = unk20.ProcessAndReturnValue_006a1920();
+    void* pNode = unk20.BSSimpleArray_PathingNode_1024_AddUninitialized();
     void* pPlace = unk20.GetPathingGraphNodeAddress((unsigned int)pNode);
-    new (pPlace) FUN_006e2280(aiArg1, aiArg2);
+    new (pPlace) FUN_006e2280(aLocation, aTangent);
     return pNode;
 }
 
@@ -2144,10 +2311,13 @@ struct FUN_009f6500
 // Calls the FUN_009f6500 placement constructor on each 16-byte element of the arr array, count times.
 // @fnv 0x009f6460
 // src: XBOX_PDB 0x009f6460
-void Host9f6340::BSSimpleArray_SandBoxChoiceListItem_1024_ConstructItems(int arr, int count)
+// pdb: BSSimpleArray<SandBoxChoiceListItem,1024>::_ConstructItems | SandBoxPackage.obj | debug, call graph (shared callers), high
+// pdb params: apFirstAddr, aiCount
+// pdb locals: i
+void Host9f6340::BSSimpleArray_SandBoxChoiceListItem_1024_ConstructItems(int apFirstAddr, int aiCount)
 {
-    for (unsigned int i = 0; i < (unsigned int)count; ++i)
+    for (unsigned int i = 0; i < (unsigned int)aiCount; ++i)
     {
-        new ((void*)(arr + i * 16)) FUN_009f6500();
+        new ((void*)(apFirstAddr + i * 16)) FUN_009f6500();
     }
 }

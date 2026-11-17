@@ -29,7 +29,7 @@ public:
 class TESTextureLoader
 {
   public:
-    static void ReadTextureData(TESTexture* texture, TESFile* file);
+    static void ReadTextureData(TESTexture* apTexture, TESFile* apFile);
 };
 
 // TESFileFormInt_teshair_decls: local type (was include/TESFileFormInt.h, which had no evidence of one real class); its methods are 0x00472660 TESFile::GetTESForm

@@ -10,12 +10,13 @@ struct SplatterWordsView
 
 struct OpacityFadeState;
 
+// pdb: class BSCustomSplatterExtraData, size 0x1c, bases: NiExtraData, 1 members
 class BSCustomSplatterExtraData : public NiExtraData
 {
 public:
-    SplatterWordsView q;
+    SplatterWordsView SplatterData; // src: XBOX_RETAIL_PDB +0xc (old: q)
 
-    BSCustomSplatterExtraData(SplatterWordsView* source);
+    BSCustomSplatterExtraData(SplatterWordsView* aSplatterData);
     virtual const NiRTTI* GetRTTI() const override;
 
     void ForwardCall_004deb10();

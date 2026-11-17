@@ -34,6 +34,9 @@ void SetTargetMaskForSelection(unsigned int selectedIndex, unsigned __int64 ullT
 
 // Applies the perk entry-point functions for an actor's entry point, validating filter parameters and function arguments first.
 // @fnv 0x005e58f0
+// pdb: BGSEntryPoint::HandleEntryPoint | BGSEntryPoint.obj | retail, string-set bridge, high
+// pdb params: aeEntryPoint, apPerkOwner, plist
+// pdb locals: bAlt, pRealOwner, efunctionType, argList, bargumentsValid, cargumentNum, cparameterNum, bparametersValid, pfilterForms, pfunctionArguments, i, pentry
 void ApplyPerkModifiers(int entryPoint, Actor* actor, ...)
 {
     if (!actor || entryPoint >= 74)
@@ -114,6 +117,7 @@ void ApplyPerkModifiers(int entryPoint, Actor* actor, ...)
 
 // Initializes the EffectSetting data fields to defaults, reads two game-setting floats, and sets the form type to 0x10.
 // @fnv 0x00407020
+// pdb: EffectSetting::EffectSetting | EffectSetting.obj | retail, upstream name already matches, high
 EffectSetting::EffectSetting()
 {
     data.iFlags = 0;
@@ -142,18 +146,19 @@ EffectSetting::EffectSetting()
 }
 
 // @fnv 0x007f7610
-FOHUDEffectManager::FOHUDEffectManager() : spEffect(0)
+// pdb: FOHUDEffectManager::FOHUDEffectManager | FOHUDEffectManager.obj | retail, upstream name already matches, high
+FOHUDEffectManager::FOHUDEffectManager() : spPartialScreenGeometry(0)
 {
-    pShaderParam = new ImageSpaceShaderParam;
-    pShaderParam->AllocateShaderConstants(0, 0);
-    pShaderParam->m_bTextureFlags[1] = false;
-    pShaderParam->m_bTextureFlags[2] = false;
-    pShaderParam->m_eShaderFilterMode = (NiTexturingProperty::FilterMode)1;
-    spEffect = 0;
+    pUnpackShaderParams = new ImageSpaceShaderParam;
+    pUnpackShaderParams->AllocateShaderConstants(0, 0);
+    pUnpackShaderParams->m_bTextureFlags[1] = false;
+    pUnpackShaderParams->m_bTextureFlags[2] = false;
+    pUnpackShaderParams->m_eShaderFilterMode = (NiTexturingProperty::FilterMode)1;
+    spPartialScreenGeometry = 0;
     bShudderActive = false;
-    kShudderOffset = DAT_011f4980;
-    bFlag54 = false;
-    fScanlineFrequency = ((SettingT_GameSettingCollection_&)g_011db25c).Float()->f;
-    fBlurIntensity = ((SettingT_GameSettingCollection_&)g_011db238).Float()->f;
-    fBlurRadius = ((SettingT_GameSettingCollection_&)g_011db200).Float()->f;
+    ShudderCurrentPosition = DAT_011f4980;
+    bHideHUD = false;
+    fCurrentScanlineFrequencyHUD = ((SettingT_GameSettingCollection_&)g_011db25c).Float()->f;
+    fCurrentBlurIntensityHUD = ((SettingT_GameSettingCollection_&)g_011db238).Float()->f;
+    fCurrentBlurRadiusHUD = ((SettingT_GameSettingCollection_&)g_011db200).Float()->f;
 }

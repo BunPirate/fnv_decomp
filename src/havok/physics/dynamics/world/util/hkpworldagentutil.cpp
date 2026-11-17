@@ -180,10 +180,12 @@ struct S_00cc10b0_Agent
 };
 
 S_00cc10b0_Island* __cdecl PickIslandByValue(S_00cc10b0_Agent* agent, S_00cc10b0_Island* a, S_00cc10b0_Island* b);
-void __cdecl hkAgentNnMachine_DestroyAgent(int* p, S_00cc10b0_Agent* agent, int w, S_00cc10b0_Island* island);
+void __cdecl hkAgentNnMachine_DestroyAgent(int* p, S_00cc10b0_Agent* agent, int dispatcher, S_00cc10b0_Island* island);
 
 // @fnv 0x00cc10b0
 // src: HAVOK_LIB 0x00cc10b0
+// pdb: hkpWorldAgentUtil::removeAgent | hkpWorldAgentUtil.obj | retail, upstream name already matches, high
+// pdb params: agent
 void __cdecl hkpWorldAgentUtil_removeAgent(S_00cc10b0_Agent* agent)
 {
     S_00cc10b0_Entity* entityA = agent->m_pCollidableA->getOwner();
@@ -315,9 +317,11 @@ void __cdecl hkpWorldAgentUtil_removeAgent(Owner* owner);
 // Calls Invoke on the interface object reached through root's displacement-indexed entry, then calls FUN_00cc10b0.
 // @fnv 0x00cc1160
 // src: HAVOK_LIB 0x00cc1160
-void __cdecl hkpWorldAgentUtil_removeAgentAndItsToiEvents(Owner* owner)
+// pdb: hkpWorldAgentUtil::removeAgentAndItsToiEvents | hkpWorldAgentUtil.obj | retail, upstream name already matches, high
+// pdb params: agent
+void __cdecl hkpWorldAgentUtil_removeAgentAndItsToiEvents(Owner* agent)
 {
-    Owner* pOwner = owner;
+    Owner* pOwner = agent;
     char* pRootBase = (char*)pOwner->root;
     int iDisplacement = ((signed char*)pRootBase)[0x10];
     Entry* entry = *(Entry**)(pRootBase + iDisplacement + 0xcc);
@@ -362,7 +366,7 @@ struct EventArray
 };
 struct SourceObject
 {
-    void __thiscall CopyAndSortGeometryList(EventArray* events);
+    void __thiscall hkpLinkedCollidable_getCollisionEntriesSorted(EventArray* entries);
 };
 struct EventSource
 {
@@ -387,13 +391,16 @@ struct MemoryAllocator
 };
 extern BSAudio* __cdecl hkMemoryRouter_getInstance();
 // @fnv 0x00cc1190
+// pdb: hkpWorldAgentUtil::updateEntityShapeCollectionFilter | hkpWorldAgentUtil.obj | retail, object-file run extension, low
+// pdb params: entity, collisionInput
+// pdb locals: collisionEntriesTmp
 void __cdecl DispatchEvents(EventSource* source, DispatchContext* context)
 {
     EventArray events;
     events.data = 0;
     events.count = 0;
     events.capacity = (int)0x80000000;
-    source->events.CopyAndSortGeometryList(&events);
+    source->events.hkpLinkedCollidable_getCollisionEntriesSorted(&events);
     int index = 0;
     if (events.count > 0)
     {
@@ -460,15 +467,17 @@ struct ItemOwner
     int m_iArrayLength;
 };
 
-void __cdecl hkAgentNnMachine_InvalidateTimInAgent(void* pItem, void* pContext);
+void __cdecl hkAgentNnMachine_InvalidateTimInAgent(void* entry, void* pContext);
 
 // @fnv 0x00cc0ea0
 // src: HAVOK_LIB 0x00cc0ea0
-void __cdecl hkpWorldAgentUtil_invalidateTim(ItemOwner* pOwner, void* pContext)
+// pdb: hkpWorldAgentUtil::invalidateTim | hkpWorldAgentUtil.obj | retail, upstream name already matches, high
+// pdb params: entity, collisionInput
+void __cdecl hkpWorldAgentUtil_invalidateTim(ItemOwner* entity, void* collisionInput)
 {
-    for (int i = 0; i < pOwner->m_iArrayLength; ++i)
+    for (int i = 0; i < entity->m_iArrayLength; ++i)
     {
-        hkAgentNnMachine_InvalidateTimInAgent(pOwner->m_pEntries[i].m_pInventoryEntryData, pContext);
+        hkAgentNnMachine_InvalidateTimInAgent(entity->m_pEntries[i].m_pInventoryEntryData, collisionInput);
     }
 }
 
@@ -512,19 +521,22 @@ void __cdecl DispatchSlotCallback(S_00cc0ed0_Rec* r, float a, float b, int c);
 
 // Iterates over the block pointers in m5c, calling DispatchSlotCallback on each record up to the block end (m58 for the last block, 0x200 otherwise).
 // @fnv 0x00cc0ed0
-void __cdecl ProcessBlocks(S_00cc0ed0_Blocks* s, float a2, float a3, int a4)
+// src: XBOX_RETAIL_PDB 0x00cc0ed0
+// pdb: hkpWorldAgentUtil::warpTime | hkpWorldAgentUtil.obj | retail, call graph, high
+// pdb params: island, oldTime, newTime, collisionInput
+void __cdecl hkpWorldAgentUtil_warpTime(S_00cc0ed0_Blocks* island, float oldTime, float newTime, int collisionInput)
 {
     int i = 0;
-    if (s->m60 > 0)
+    if (island->m60 > 0)
     {
         do
         {
-            S_00cc0ed0_Rec* p = s->m5c[i];
+            S_00cc0ed0_Rec* p = island->m5c[i];
             i++;
             char* end;
-            if (i == s->m60)
+            if (i == island->m60)
             {
-                end = (char*)p + s->m58;
+                end = (char*)p + island->m58;
             }
             else
             {
@@ -532,10 +544,10 @@ void __cdecl ProcessBlocks(S_00cc0ed0_Blocks* s, float a2, float a3, int a4)
             }
             while ((char*)p < end)
             {
-                DispatchSlotCallback(p, a2, a3, a4);
+                DispatchSlotCallback(p, oldTime, newTime, collisionInput);
                 p = (S_00cc0ed0_Rec*)((char*)p + p->size);
             }
-        } while (i < s->m60);
+        } while (i < island->m60);
     }
 }
 
@@ -650,18 +662,21 @@ struct S_00cc0f40_In
 {
     S_00cc0f40_Tbl* table;
 };
-void __cdecl hkpWorldOperationUtil_mergeIslands(int a, S_00cc0f40_Body* b, S_00cc0f40_Body* c);
-S_00cc0f40_Coll* __cdecl hkAgentMachine_processTransformedShapes(S_00cc0f40_Coll* c, void* o1, void* o2, int n, char* flag);
+void __cdecl hkpWorldOperationUtil_mergeIslands(int a, S_00cc0f40_Body* entityA, S_00cc0f40_Body* entityB);
+S_00cc0f40_Coll* __cdecl hkAgentMachine_processTransformedShapes(S_00cc0f40_Coll* cdBody, void* newCdBodies, void* newMotionStates, int numSlots, char* cdBodyHasTransformFlag);
 void __cdecl GetNodePairValue(S_00cc0f40_Coll* a, S_00cc0f40_Coll* b, S_00cc0f40_In* in, int* o1, int* o2);
-void __cdecl hkAgentNnMachine_CreateAgent(S_00cc0f40_Body* z, S_00cc0f40_Coll* a, S_00cc0f40_Coll* b, S_00cc0f40_Coll* c,
-                          S_00cc0f40_Coll* d, S_00cc0f40_Flag flag, int v, S_00cc0f40_In* in, int r);
+void __cdecl hkAgentNnMachine_CreateAgent(S_00cc0f40_Body* track, S_00cc0f40_Coll* collA, S_00cc0f40_Coll* firstNonTransformBodyA, S_00cc0f40_Coll* collB,
+                          S_00cc0f40_Coll* firstNonTransformBodyB, S_00cc0f40_Flag cdBodyHasTransformFlag, int v, S_00cc0f40_In* in, int mgr);
 // Resolves the bodies behind two collision objects, swaps them if needed, calls the table's v3 handler and passes the result to FUN_00cfe8a0.
 // @fnv 0x00cc0f40
 // src: HAVOK_LIB 0x00cc0f40
-void __cdecl hkpWorldAgentUtil_addAgent(S_00cc0f40_Coll* pCollA, S_00cc0f40_Coll* pCollB, S_00cc0f40_In* in)
+// pdb: hkpWorldAgentUtil::addAgent | hkpWorldAgentUtil.obj | retail, upstream name already matches, high
+// pdb params: collA, collB, input
+// pdb locals: modBodyB, isFlipped, cdBodyHasTransformFlag, agentType, modMotionB, modBodyA, modMotionA, assertBuf, ostr
+void __cdecl hkpWorldAgentUtil_addAgent(S_00cc0f40_Coll* collA, S_00cc0f40_Coll* collB, S_00cc0f40_In* input)
 {
-    S_00cc0f40_Body* a = (S_00cc0f40_Body*)((char*)pCollA + pCollA->off);
-    S_00cc0f40_Body* b = (S_00cc0f40_Body*)((char*)pCollB + pCollB->off);
+    S_00cc0f40_Body* a = (S_00cc0f40_Body*)((char*)collA + collA->off);
+    S_00cc0f40_Body* b = (S_00cc0f40_Body*)((char*)collB + collB->off);
     if (a->kind != 5 && b->kind != 5 && a->prop != b->prop)
         hkpWorldOperationUtil_mergeIslands((int)a->unk08, a, b);
     S_00cc0f40_Prop* pPropA = a->prop;
@@ -669,29 +684,29 @@ void __cdecl hkpWorldAgentUtil_addAgent(S_00cc0f40_Coll* pCollA, S_00cc0f40_Coll
     S_00cc0f40_Prop* z = pPropA->w20 == 0xffff ? (pPropB->w20 == 0xffff ? pPropA : pPropB) : pPropA;
     S_00cc0f40_Flag flag;
     flag.v = 0;
-    S_00cc0f40_Coll* s1 = pCollA;
-    S_00cc0f40_Coll* s2 = pCollB;
+    S_00cc0f40_Coll* s1 = collA;
+    S_00cc0f40_Coll* s2 = collB;
     __declspec(align(16)) unsigned int bufA[0x2b4 / 4];
     __declspec(align(16)) unsigned int bufB[0x2b4 / 4];
     unsigned int outA[16];
     unsigned int outB[16];
-    if (pCollA->type->kind == 0xf)
-        s1 = hkAgentMachine_processTransformedShapes(pCollA, outA, bufA, 4, &flag.v);
-    if (pCollB->type->kind == 0xf)
-        s2 = hkAgentMachine_processTransformedShapes(pCollB, outB, bufB, 4, &flag.v);
+    if (collA->type->kind == 0xf)
+        s1 = hkAgentMachine_processTransformedShapes(collA, outA, bufA, 4, &flag.v);
+    if (collB->type->kind == 0xf)
+        s2 = hkAgentMachine_processTransformedShapes(collB, outB, bufB, 4, &flag.v);
     int swap, o;
-    GetNodePairValue(s1, s2, in, &o, &swap);
+    GetNodePairValue(s1, s2, input, &o, &swap);
     if (swap)
     {
-        S_00cc0f40_Coll* pTemp = pCollA;
-        pCollA = pCollB;
-        pCollB = pTemp;
+        S_00cc0f40_Coll* pTemp = collA;
+        collA = collB;
+        collB = pTemp;
         pTemp = s1;
         s1 = s2;
         s2 = pTemp;
     }
-    int r = in->table->fn[a->b8c * 8 + b->b8c]->v3(pCollA, pCollB, in);
-    hkAgentNnMachine_CreateAgent((S_00cc0f40_Body*)((char*)z + 0x58), pCollA, s1, pCollB, s2, flag, o, in, r);
+    int r = input->table->fn[a->b8c * 8 + b->b8c]->v3(collA, collB, input);
+    hkAgentNnMachine_CreateAgent((S_00cc0f40_Body*)((char*)z + 0x58), collA, s1, collB, s2, flag, o, input, r);
 }
 
 struct Island
@@ -703,6 +718,8 @@ struct Island
 
 // Returns the island with the smaller count if val falls within 0x200 of an entry in its array, otherwise the island with the larger count.
 // @fnv 0x00cc0e20
+// pdb: hkpWorldAgentUtil::getIslandFromAgentEntry | hkpWorldAgentUtil.obj | retail, call graph, medium
+// pdb params: entry, candidateA, candidateB
 Island* __cdecl PickIslandByValue(unsigned int val, Island* apIslandA, Island* apIslandB)
 {
     bool less = apIslandA->count <= apIslandB->count;

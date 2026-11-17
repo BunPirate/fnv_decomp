@@ -40,6 +40,8 @@ extern void* DAT_01097e8c;
 // Allocates and initializes a visibility controller, returning zero on allocation failure.
 // @fnv 0x00a44f10
 // src: EXE 0x00a44f10
+// pdb: NiVisController::CreateObject | NiVisController.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 void* __cdecl NiVisController_CreateObject()
 {
     void* mem = BSFadeNode::operator new(0x38);
@@ -73,9 +75,11 @@ const char* const* __cdecl NiBoolInterpController_GetRTTI()
 void __stdcall FUN_00a57c70(void*);
 // @fnv 0x00a44d20
 // src: XBOX_PDB 0x00a44d20
-void __stdcall BSFrustumFOVController_LoadBinary(void* stream)
+// pdb: BSFrustumFOVController::LoadBinary | BSFrustumFOVController.obj | debug, upstream name already matches, high
+// pdb params: kStream
+void __stdcall BSFrustumFOVController_LoadBinary(void* kStream)
 {
-    NiStream* pStream = static_cast<NiStream*>(stream);
+    NiStream* pStream = static_cast<NiStream*>(kStream);
     FUN_00a57c70(pStream);
     if (pStream->m_uiNifFileVersion < 0xa010068)
         pStream->ResetStreamState();
@@ -95,7 +99,7 @@ bool NiTransformController::IsTargetOfType(NiObjectNET* pkTarget) const
             {
                 if (pkRTTI == &g_011f4428_arg1)
                     return true;
-                pkRTTI = pkRTTI->m_pBaseRTTI;
+                pkRTTI = pkRTTI->m_pkBaseRTTI;
             } while (pkRTTI);
         }
     }
@@ -108,6 +112,7 @@ typedef void (__thiscall* InterpControllerBaseInitializer)(NiTimeController*);
 
 extern void* DAT_0109ab44;
 // @fnv 0x00a57640
+// pdb: NiFloatInterpController::NiFloatInterpController | NiFloatInterpController.obj | retail, call graph, medium
 NiInterpController* __fastcall ConstructInterpController(NiInterpController* controller, void*)
 {
     reinterpret_cast<InterpControllerBaseInitializer>(&InitializeInterpControllerBase)(controller);
@@ -118,6 +123,7 @@ NiInterpController* __fastcall ConstructInterpController(NiInterpController* con
 extern int DAT_0109ac54;
 
 // @fnv 0x00a57790
+// pdb: NiBoolInterpController::NiBoolInterpController | NiBoolInterpController.obj | retail, call graph, medium
 NiBoolInterpController* __fastcall ConstructBoolInterpController(NiBoolInterpController* controller, void*)
 {
     reinterpret_cast<InterpControllerBaseInitializer>(&InitializeInterpControllerBase)(controller);
@@ -131,6 +137,8 @@ char* __cdecl _FUN_00a7d330(void*);
 
 // @fnv 0x00a44f40
 // src: XBOX_PDB 0x00a44f40
+// pdb: NiVisController::GetViewerStrings | NiVisController.obj | retail, upstream name already matches, high
+// pdb params: pkStrings
 void __stdcall NiVisController_GetViewerStrings(StrArr* pkStrings)
 {
     NiBoolInterpController_GetViewerStrings(pkStrings);
@@ -187,8 +195,8 @@ void __fastcall LinkBoolInterpolator(NiVisController* controller, void*, NiStrea
     if (kStream.m_uiNifFileVersion < 0x0A010068)
     {
         NiObject* pkData = kStream.GetLoadedObject();
-        controller->m_spControllerInterpolator = new NiBoolInterpolator(pkData);
-        controller->m_spControllerInterpolator->Collapse();
+        controller->m_spInterpolator = new NiBoolInterpolator(pkData);
+        controller->m_spInterpolator->Collapse();
     }
 }
 
@@ -205,6 +213,10 @@ __forceinline NiVisController* InitializeVisController(void* memory)
 
 // Allocates and initializes a visibility controller, then copies its members.
 // @fnv 0x00a44ec0
+// pdb: NiVisController::CreateClone | NiVisController.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiVisController::CopyMembers
+// pdb params: kCloning
+// pdb locals: pkObject
 NiVisController* __fastcall CloneVisController(NiVisController* controller, void*, unsigned int uiArg)
 {
     void* pMem = BSFaceGenMorphData::operator new(0x38);
@@ -213,7 +225,7 @@ NiVisController* __fastcall CloneVisController(NiVisController* controller, void
     return pkCtl;
 }
 
-extern const float DAT_01096324;
+extern const float NiInterpController_INVALID_TIME; // src: XBOX_RETAIL_PDB 0x01096324 (old: DAT_01096324/INVALID_TIME_A4F/g_fInvalidTimeBC3/kInvalidTime)
 
 inline bool GetVisManagerControlled(const NiVisController* controller)
 {
@@ -238,18 +250,18 @@ void __fastcall UpdateVisController(NiVisController* controller, void*, NiUpdate
 {
     if (GetVisManagerControlled(controller))
     {
-        controller->m_fControllerTime = DAT_01096324;
+        controller->m_fScaledTime = NiInterpController_INVALID_TIME;
     }
     else if (controller->DontDoUpdate(kUpdateData.fTime) &&
-             (!controller->m_spControllerInterpolator.m_pObject || !controller->m_spControllerInterpolator.m_pObject->AlwaysUpdate()))
+             (!controller->m_spInterpolator.m_pObject || !controller->m_spInterpolator.m_pObject->AlwaysUpdate()))
     {
         return;
     }
 
-    if (controller->m_spControllerInterpolator.m_pObject)
+    if (controller->m_spInterpolator.m_pObject)
     {
         bool bValue;
-        if (controller->m_spControllerInterpolator.m_pObject->UpdateBool(controller->m_fControllerTime, controller->m_pkTarget, bValue))
+        if (controller->m_spInterpolator.m_pObject->UpdateBool(controller->m_fScaledTime, controller->m_pkTarget, bValue))
         {
             NiAVObject* target = static_cast<NiAVObject*>(controller->m_pkTarget);
             bool bOld = GetVisAppCulled(target);

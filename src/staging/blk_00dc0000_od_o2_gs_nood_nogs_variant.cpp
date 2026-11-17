@@ -35,7 +35,7 @@ inline hkSimdReal::operator float() const
     return s;
 }
 
-extern void __cdecl ResizeAudioStream(void* heap, void* array, int elemSize) throw();
+extern void __cdecl ResizeAudioStream(void* mem, void* array, int sizeElem) throw();
 
 #include "../../include/hkArray.h"
 // hkArray<T>::pushBack as this unit's original inlines it: the router's heap pointer is read only on the grow path.
@@ -121,11 +121,13 @@ static inline float Dot3(__m128 a, __m128 b)
 
 // @fnv 0x00ddd5a0
 // src: COMMUNITY 0x00ddd5a0
-void __cdecl hkpMeshWeldingUtility_calcAngleForEdge(const float* a, const float* b, const float* c)
+// pdb: hkpMeshWeldingUtility::calcAngleForEdge | hkpMeshWeldingUtility.obj | retail, upstream name already matches, high
+// pdb params: edgeNormal, edgeOrtho, triangleNormal
+void __cdecl hkpMeshWeldingUtility_calcAngleForEdge(const float* edgeNormal, const float* edgeOrtho, const float* triangleNormal)
 {
-    __m128 scale = _mm_load_ps(c);
-    float fB = Dot3(_mm_load_ps(b), scale);
-    float fA = Dot3(_mm_load_ps(a), scale);
+    __m128 scale = _mm_load_ps(triangleNormal);
+    float fB = Dot3(_mm_load_ps(edgeOrtho), scale);
+    float fA = Dot3(_mm_load_ps(edgeNormal), scale);
     Atan2(fB, fA);
 }
 

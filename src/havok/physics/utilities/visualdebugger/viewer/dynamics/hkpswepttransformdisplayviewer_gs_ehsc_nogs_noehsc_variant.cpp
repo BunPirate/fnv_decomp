@@ -63,9 +63,9 @@ struct SweptArrayPolicy
 };
 void __cdecl ResizeAudioStream(void *,void *,int);
 struct FUN_008cd6a0_Class { void hkRotation_set(void *); };
-struct ErrBuf { void FUN_00cb1600(char* b, int n); void ProcessAndReturnValue_00cc01c0(const char* s); void FUN_00cc00e0(); int unk00; int unk04; int unk08; };
+struct ErrBuf { void FUN_00cb1600(char* buf, int bufSize); void ProcessAndReturnValue_00cc01c0(const char* s); void FUN_00cc00e0(); int unk00; int unk04; int unk08; };
 struct TmpA { void hkpShapeDisplayBuilder_hkpShapeDisplayBuilderEnvironment_hkpShapeDisplayBuilderEnvironment(); int unk00; int unk04; };
-struct TmpB { void hkpShapeDisplayBuilder_hkpShapeDisplayBuilder(TmpA* a); void UpdateState_00de0f90(int a, void* b); int unk00; int unk04; int unk08; int unk0c; int unk10; };
+struct TmpB { void hkpShapeDisplayBuilder_hkpShapeDisplayBuilder(TmpA* a); void hkpShapeDisplayBuilder_buildDisplayGeometries(int a, void* displayGeometries); int unk00; int unk04; int unk08; int unk0c; int unk10; };
 struct Reporter { virtual void v0(); virtual void v1(); virtual void v2(); virtual void report(int a, int b, const char* msg, const char* file, int line); };
 extern Reporter* DAT_01268360;
 extern int DAT_01268fd0; extern int DAT_01268fd4; extern int DAT_01268fd8;
@@ -157,6 +157,9 @@ struct Arg {
 // The unused EDX parameter preserves the ECX receiver and stack argument.
 // @fnv 0x00d642c0
 // src: XBOX_PDB 0x00d642c0
+// pdb: hkpSweptTransformDisplayViewer::entityAddedCallback | hkpSweptTransformDisplayViewer.obj | retail, string-set bridge, high
+// pdb params: entity
+// pdb locals: displayGeometries, shapeBuilder, env, reportBuf, ostr, t0, t1, id
 void __fastcall hkpSweptTransformDisplayViewer_entityAddedCallback(hkpEntityListener* listener, void*, Arg* a)
 {
      
@@ -167,7 +170,7 @@ void __fastcall hkpSweptTransformDisplayViewer_entityAddedCallback(hkpEntityList
     Entry* e; e = (*(Entry***)((char*)listener + 8))[idx];
     list.m_data = 0; list.m_iElementCount = 0; list.m_iCapacityState = 0x80000000; TmpA ta; ta.hkpShapeDisplayBuilder_hkpShapeDisplayBuilderEnvironment_hkpShapeDisplayBuilderEnvironment();
     TmpB tb; tb.hkpShapeDisplayBuilder_hkpShapeDisplayBuilder(&ta);
-    tb.UpdateState_00de0f90(a->unk10, &list);
+    tb.hkpShapeDisplayBuilder_buildDisplayGeometries(a->unk10, &list);
     for (int j = list.m_iElementCount - 1; j >= 0; j--) { Shape* s = (Shape*)list.m_data[j];
         if (s->unk50 == 6 && 0 == s->unk08) {
             char buf[512];
@@ -198,17 +201,17 @@ void __fastcall hkpSweptTransformDisplayViewer_entityAddedCallback(hkpEntityList
         __m128 p2r = _mm_sub_ps(a->position1,
             _mm_add_ps(_mm_mul_ps(_mm_shuffle_ps(w, w, 0xaa), _mm_load_ps(&m2.c0)), _mm_add_ps(_mm_mul_ps(_mm_load_ps(&m2.b0), _mm_shuffle_ps(w, w, 0x55)), _mm_mul_ps(_mm_load_ps(&m2.a0), _mm_shuffle_ps(w, w, 0)))));
                 _mm_store_ps(&m2.d0, p2r);
-        Disp* d = ((Disp*)((hkpSweptTransformDisplayViewer*)((char*)listener - 0x28))->hkProcess::unk10); d->add(&list, &m1, id1, DAT_01268fd0, 0);
-        d = ((Disp*)((hkpSweptTransformDisplayViewer*)((char*)listener - 0x28))->hkProcess::unk10);
+        Disp* d = ((Disp*)((hkpSweptTransformDisplayViewer*)((char*)listener - 0x28))->hkProcess::m_displayHandler); d->add(&list, &m1, id1, DAT_01268fd0, 0);
+        d = ((Disp*)((hkpSweptTransformDisplayViewer*)((char*)listener - 0x28))->hkProcess::m_displayHandler);
         d->tag(DAT_01268fd8, id1, DAT_01268fd0);
         unsigned char* id2 = &a->unk12;
         b = &hkMemoryRouter_getInstance();
         if (ids->m_iElementCount == (ids->m_iCapacityState & 0x3fffffff)) ResizeAudioStream(b->m_pStreamAllocator, ids, 4);
         int* slot2 = ids->m_data + ids->m_iElementCount;
         for (int k = 0; k < 1; ++k) slot2[k] = (int)id2; ++ids->m_iElementCount;
-        d = ((Disp*)((hkpSweptTransformDisplayViewer*)((char*)listener - 0x28))->hkProcess::unk10);
+        d = ((Disp*)((hkpSweptTransformDisplayViewer*)((char*)listener - 0x28))->hkProcess::m_displayHandler);
         d->add(&list, &m2, id2, DAT_01268fd0, 0);
-        d = ((Disp*)((hkpSweptTransformDisplayViewer*)((char*)listener - 0x28))->hkProcess::unk10);
+        d = ((Disp*)((hkpSweptTransformDisplayViewer*)((char*)listener - 0x28))->hkProcess::m_displayHandler);
         d->tag(DAT_01268fd4, id2, DAT_01268fd0);
     }
     for (int i = 0; i < list.m_iElementCount; i++) { Shape* s = (Shape*)list.m_data[i];
@@ -409,6 +412,9 @@ struct S_00d63e40_WorldPad {
 
 // @fnv 0x00d63e40
 // src: XBOX_PDB 0x00d63e40
+// pdb: hkpSweptTransformDisplayViewer::postSimulationCallback | hkpSweptTransformDisplayViewer.obj | retail, string-set bridge, high
+// pdb params: world
+// pdb locals: t0, t1
 void __fastcall hkpSweptTransformDisplayViewer_postSimulationCallback(hkpWorldPostSimulationListener* listener, void*, S_00d63e40_WorldPad world)
 {
     hkpSweptTransformDisplayViewer* viewer = (hkpSweptTransformDisplayViewer*)((char*)listener - 0x20);
@@ -424,12 +430,12 @@ void __fastcall hkpSweptTransformDisplayViewer_postSimulationCallback(hkpWorldPo
             __m128 c = e->com.q();
             __m128 r = _mm_add_ps(_mm_add_ps(_mm_mul_ps(_mm_shuffle_ps(c, c, 0x55), m.c1.q()), _mm_mul_ps(_mm_shuffle_ps(c, c, 0), m.c0.q())), _mm_mul_ps(_mm_shuffle_ps(c, c, 0xaa), m.c2.q()));
             m.t.q() = _mm_sub_ps(e->pos0.q(), r);
-            ((S_00d63e40_Handler*)viewer->hkProcess::unk04)->display(&m, &e->id0, DAT_01268fd0);
+            ((S_00d63e40_Handler*)viewer->hkProcess::m_selectable)->display(&m, &e->id0, DAT_01268fd0);
             m.hkRotation_set(&e->rot1);
             c = e->com.q();
             r = _mm_add_ps(_mm_add_ps(_mm_mul_ps(_mm_shuffle_ps(c, c, 0x55), m.c1.q()), _mm_mul_ps(_mm_shuffle_ps(c, c, 0), m.c0.q())), _mm_mul_ps(_mm_shuffle_ps(c, c, 0xaa), m.c2.q()));
             m.t.q() = _mm_sub_ps(e->pos1.q(), r);
-            ((S_00d63e40_Handler*)viewer->hkProcess::unk04)->display(&m, &e->id1, DAT_01268fd0);
+            ((S_00d63e40_Handler*)viewer->hkProcess::m_selectable)->display(&m, &e->id1, DAT_01268fd0);
         }
     }
     S_00d63e40_Timer("Et");

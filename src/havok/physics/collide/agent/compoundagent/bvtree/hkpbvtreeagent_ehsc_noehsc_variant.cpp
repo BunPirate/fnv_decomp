@@ -34,7 +34,7 @@ struct S_d2f5a0
     int unk4;
     int unk8;
     S_d2f5a0_Array m_aiIndexedValues;
-    void hkpBvTreeAgent_invalidateTim(int a);
+    void hkpBvTreeAgent_invalidateTim(int input);
 };
 struct TargetObject
 {
@@ -59,7 +59,7 @@ struct ValueSource
     int unk04;
     float m_fAmount;
 };
-void __cdecl ApplyTransformToTarget(Holder* apFirst, Holder* apSecond, ValueSource* apValue, void* apContext);
+void __cdecl hkpBvTreeAgent_staticCalcAabb(Holder* bodyA, Holder* bodyB, ValueSource* input, void* aabbOut);
 struct Allocator
 {
     virtual void* release();
@@ -81,10 +81,10 @@ struct Built
     void __thiscall FUN_00d2f980(int);
 };
 extern "C" Global* __cdecl hkMemoryRouter_getInstance();
-void __cdecl hkpBvTreeAgent_createShapeBvAgent(int arg1, int arg2, int arg3, int arg4);
+void __cdecl hkpBvTreeAgent_createShapeBvAgent(int bodyA, int bodyB, int input, int mgr);
 void __cdecl hkpBvTreeAgent_staticLinearCast(void* apFirst, void* apSecond, void* apThird, void* apFourth, void* apFifth);
 void __stdcall hkpBvTreeAgent_linearCast(void* apFirst, void* apSecond, void* apThird, void* apFourth, void* apFifth);
-extern "C" void __cdecl hkpBvTreeAgent_staticGetClosestPoints(void* arg0, void* arg1, void* arg2, void* arg3);
+extern "C" void __cdecl hkpBvTreeAgent_staticGetClosestPoints(void* bodyA, void* arg1, void* arg2, void* collector);
 // @fnv 0x00d315d0
 // src: HAVOK_SRC 0x00d315d0
 extern "C" void __stdcall hkpBvTreeAgent_getClosestPoints(void* arg0, void* arg1, void* arg2, void* arg3)
@@ -161,7 +161,7 @@ class D2FA00ShapeAgent : public D2FA00Agent
 D2FA00Agent* __cdecl hkpBvTreeAgent_createBvTreeShapeAgent(const void* bodyA, const void* bodyB, const void* input, void* mgr);
 extern char str_010ce9a4[];
 extern char str_010ce9ac[];
-extern "C" void* __cdecl hkStatisticsCollector_getAllocatedSize(void* apBuffer, int aiCount);
+extern "C" void* __cdecl hkStatisticsCollector_getAllocatedSize(void* p, int size);
 struct S_00d2f8f0_Elem
 {
     int unk00;
@@ -207,7 +207,7 @@ struct S_00d2f8f0
     S_00d2f8f0_Array m_aiIndexedValues;
     int m_iFlags;
 
-    void WriteToStream(S_00d2f8f0_Arg* apStream, int aiUnused);
+    void WriteToStream(S_00d2f8f0_Arg* collector, int cls);
 };
 class ListenerD2F5
 {
@@ -235,7 +235,7 @@ class OwnerD2F5
     int unk04[2];
     hkArray<EntryD2F5> m_entries;
 
-    void hkpBvTreeAgent_cleanup(void* pArg);
+    void hkpBvTreeAgent_cleanup(void* info);
 };
 
 #include <windows.h>
@@ -398,6 +398,9 @@ inline void S312_dealloc(S312_Alloc* al, int* p, int n)
 
 // @fnv 0x00d312f0
 // src: HAVOK_LIB 0x00d312f0
+// pdb: hkpBvTreeAgent::staticGetPenetrations | hkpBvTreeAgent.obj | retail, upstream name already matches, high
+// pdb params: bodyA, bodyB, input, collector
+// pdb locals: aabb, hitList, modifiedBodyB, shapeBuffer
 void __cdecl hkpBvTreeAgent_staticGetPenetrations(void* apA, void* apB, void* apC, void* apD)
 {
     S312_Body& bodyA = *(S312_Body*)apA;
@@ -419,7 +422,7 @@ void __cdecl hkpBvTreeAgent_staticGetPenetrations(void* apA, void* apB, void* ap
         }
     }
     S312_Aabb aabb;
-    ApplyTransformToTarget((Holder*)apA, (Holder*)apB, (ValueSource*)apC, &aabb);
+    hkpBvTreeAgent_staticCalcAabb((Holder*)apA, (Holder*)apB, (ValueSource*)apC, &aabb);
     S312_BvTree* bvB = (S312_BvTree*)bodyB.m_pCollisionShape;
     S312_InplaceArray hitList;
     bvB->GetAabbHits(&aabb, &hitList);

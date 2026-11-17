@@ -39,7 +39,7 @@ struct ArrD
     unsigned int sz;
     unsigned int res;
     void* alloc;
-    ArrD(int a, int b, void* c);
+    ArrD(int aiReserveSize, int aiInitialSize, void* apHeap);
     ~ArrD();
     unsigned int FUN_0044ddc0();
     Elem20* GetIndexedValue_006b3160(int idx);
@@ -51,7 +51,7 @@ struct ArrE
     unsigned int sz;
     unsigned int res;
     void* alloc;
-    ArrE(int a, int b, void* c);
+    ArrE(int aiReserveSize, int aiInitialSize, void* apHeap);
     ~ArrE();
 };
 struct BigSearch
@@ -580,7 +580,7 @@ struct BigSearch
     unsigned int unk2090, unk2094, unk2098, unk209c;
     BigSearch();
     ~BigSearch();
-    bool Search(void* req, Info* info, ArrD* d, ArrE* e);
+    bool NavMeshSearchClosePoint_BuildNodePath(void* apRequest, Info* aStartNode, ArrD* apReturnNodeArray, ArrE* apReturnLinkArray);
 };
 struct Ctx12
 {
@@ -589,17 +589,20 @@ struct Ctx12
     float z;
     float w;
 };
-NiPoint3 __cdecl NavMeshMath_RandomPointOnTriangle(NiPoint3* a, NiPoint3* b, NiPoint3* c);
+NiPoint3 __cdecl NavMeshMath_RandomPointOnTriangle(NiPoint3* aVert0, NiPoint3* aVert1, NiPoint3* aVert2);
 
 // @fnv 0x006d34d0
 // src: XBOX_PDB 0x006d34d0
-bool __cdecl Pathing_FindClosePointViaNavMesh(void* req, NiPoint3* out)
+// pdb: Pathing::FindClosePointViaNavMesh | Pathfind.obj | retail, upstream name already matches, high
+// pdb params: apRequest, apRetPt
+// pdb locals: closePointSearch, nodes, ptri, stri, verts, startNode, links, endNode, spNavMesh
+bool __cdecl Pathing_FindClosePointViaNavMesh(void* apRequest, NiPoint3* apRetPt)
 {
-    if (!((PathingRequest*)req)->GetOffsetC().HasValidTriangle())
+    if (!((PathingRequest*)apRequest)->GetOffsetC().HasValidTriangle())
         return false;
     NavMeshPtr navPtr;
     unsigned short tri3 = 0xffff;
-    if (!((PathingRequest*)req)->GetOffsetC().FindNavMeshTriangle(navPtr, tri3))
+    if (!((PathingRequest*)apRequest)->GetOffsetC().FindNavMeshTriangle(navPtr, tri3))
         return false;
     Info info2;
     info2.mesh = navPtr.AnimatingText_GetFullText();
@@ -607,7 +610,7 @@ bool __cdecl Pathing_FindClosePointViaNavMesh(void* req, NiPoint3* out)
     BigSearch big3;
     ArrD arrD3(0x20, 0, 0);
     ArrE arrE3(0x20, 0, 0);
-    if (!big3.Search(req, &info2, &arrD3, &arrE3))
+    if (!big3.NavMeshSearchClosePoint_BuildNodePath(apRequest, &info2, &arrD3, &arrE3))
         return false;
     Elem20 elem = *arrD3.GetIndexedValue_006b3160(arrD3.FUN_0044ddc0() - 1);
     NiPoint3 pts[3];
@@ -615,6 +618,6 @@ bool __cdecl Pathing_FindClosePointViaNavMesh(void* req, NiPoint3* out)
     *(NiPoint3*)&pts[0] = ((MeshX*)elem.mesh)->GetVertex_0068f0a0(triPtr7->GetVert_005582d0(0));
     *(NiPoint3*)&pts[1] = ((MeshX*)elem.mesh)->GetVertex_0068f0a0(triPtr7->GetVert_005582d0(1));
     *(NiPoint3*)&pts[2] = ((MeshX*)elem.mesh)->GetVertex_0068f0a0(triPtr7->GetVert_005582d0(2));
-    *out = (const NiPoint3&)NavMeshMath_RandomPointOnTriangle((NiPoint3*)&pts[0], (NiPoint3*)&pts[1], (NiPoint3*)&pts[2]);
+    *apRetPt = (const NiPoint3&)NavMeshMath_RandomPointOnTriangle((NiPoint3*)&pts[0], (NiPoint3*)&pts[1], (NiPoint3*)&pts[2]);
     return true;
 }

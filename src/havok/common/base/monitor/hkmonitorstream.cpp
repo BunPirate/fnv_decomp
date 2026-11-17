@@ -48,7 +48,10 @@ hkMemoryRouter* hkMemoryRouter_getInstance();  // hkMemoryRouter::getInstancePtr
 void hkMonitorStream_quit(SpawnedBuffer* buf);
 
 // @fnv 0x00cb0e50
-void ResizeBuffer(SpawnedBuffer* pBuffer, int iSize)
+// src: XBOX_RETAIL_PDB 0x00cb0e50
+// pdb: hkMonitorStream::resize | hkMonitorStream.obj | retail, object-file run extension, high
+// pdb params: newSize
+void hkMonitorStream_resize(SpawnedBuffer* pBuffer, int iSize)
 {
     char* begin = pBuffer->m_00;
     char* end = pBuffer->m_08;
@@ -101,6 +104,7 @@ struct SpawnedObject
 // Allocates a SpawnedObject from the router's debug allocator (blockAlloc), stores it in TLS, and zeroes its fields.
 // @fnv 0x00cb0db0
 // src: HAVOK_LIB 0x00cb0db0
+// pdb: hkMonitorStream::init | hkMonitorStream.obj | retail, upstream name already matches, high
 void __cdecl hkMonitorStream_init()
 {
     hkMemoryRouter* holder = hkMemoryRouter_getInstance();
@@ -134,6 +138,7 @@ struct GrowBuffer
 // Frees the owned record buffer (bufFree) and the TLS block (blockFree) through the debug allocator, then clears the TLS slot.
 // @fnv 0x00cb0df0
 // src: HAVOK_LIB 0x00cb0df0
+// pdb: hkMonitorStream::quit | hkMonitorStream.obj | retail, upstream name already matches, high
 void __cdecl hkMonitorStream_quit(GrowBuffer* apBuffer)
 {
     void* pThreadData = TlsGetValue(DAT_0126835c);

@@ -46,27 +46,27 @@ inline const hkVector4& hkTransform::getTranslation() const { return *(const hkV
 inline hkpCdBody::hkpCdBody(const hkpCdBody* parent, const void* motion)
 {
     m_parent = parent;
-    m_pMotionState = motion;
+    m_motion = motion;
 }
-inline const hkpShape* hkpCdBody::getShape() const { return m_pCollisionShape; }
+inline const hkpShape* hkpCdBody::getShape() const { return m_shape; }
 inline const hkMotionState* hkpCdBody::GetMotionState() const
 {
-    return (const hkMotionState*)m_pMotionState;
+    return (const hkMotionState*)m_motion;
 }
 inline const hkTransform& hkpCdBody::getTransform() const
 {
-    return *(const hkTransform*)m_pMotionState;
+    return *(const hkTransform*)m_motion;
 }
 inline void hkpCdBody::SetCollisionShapeAndKey(const hkpShape* shape, unsigned int key)
 {
-    m_pCollisionShape = shape;
-    m_uiCollisionShapeKey = key;
+    m_shape = shape;
+    m_shapeKey = key;
 }
 inline float& hkVector4::operator()(int i) { return m_vComponents.m128_f32[i]; }
 inline const float& hkVector4::operator()(int i) const { return m_vComponents.m128_f32[i]; }
 
 
-inline hkpCollisionAgent::hkpCollisionAgent(hkpContactMgr* manager) : m_pContactManager(manager) {}
+inline hkpCollisionAgent::hkpCollisionAgent(hkpContactMgr* manager) : m_contactMgr(manager) {}
 inline hkpCollisionAgent::~hkpCollisionAgent() throw() {}
 
 class CollisionAgentContext;
@@ -116,10 +116,12 @@ struct Dispatcher
 };
 // Calls Notify(value) on every entry's listener, then calls Finish(1).
 // @fnv 0x00d443a0
-void Dispatcher::NotifyAll(unsigned int value)
+// pdb: hkpMultiSphereAgent::cleanup | hkpMultiSphereAgent.obj | retail, vtable slot, high
+// pdb params: info
+void Dispatcher::NotifyAll(unsigned int info)
 {
     for (int i = 0; i < count; ++i)
-        static_cast<CollisionQueryAgent*>(entries[i].listener)->cleanup(value);
+        static_cast<CollisionQueryAgent*>(entries[i].listener)->cleanup(info);
     Finish(1);
 }
 
@@ -140,6 +142,7 @@ struct CollisionAgentMapRecord
     hkpCollisionAgent* m_pCollisionAgent;
 };
 
+// pdb: class hkpMultiSphereAgent, size 0x38 (here 0x14), bases: hkpCollisionAgent, 1 members
 class hkpMultiSphereAgent
 {
   public:
@@ -154,6 +157,9 @@ class hkpMultiSphereAgent
 
 // For each stored sphere pair, transforms the sphere centre into world space, sets its radius and queries the agent's getPenetrations against bodyB.
 // @fnv 0x00d444f0
+// pdb: hkpMultiSphereAgent::getClosestPoints | hkpMultiSphereAgent.obj | retail, vtable slot, high
+// pdb params: bodyA, bodyB, input, collector
+// pdb locals: sphereShape, ms, newOperandA
 void hkpMultiSphereAgent::GetPenetrations(const hkpCdBody& bodyA, const hkpCdBody& bodyB,
                                           const CollisionAgentContext& input, hkpCdBodyPairCollector& collector)
 {
@@ -170,17 +176,17 @@ void hkpMultiSphereAgent::GetPenetrations(const hkpCdBody& bodyA, const hkpCdBod
     const CollisionAgentMapRecord* pair = m_pAgents;
     for (int i = m_iElementCount - 1; i >= 0; pair++, i--)
     {
-        const hkVector4& b = msA->m_kSpheres[pair->m_key];
-        const hkTransform& r = ms.m_kMotionTransform;
+        const hkVector4& b = msA->m_spheres[pair->m_key];
+        const hkTransform& r = ms.m_transform;
         LocalM128 b0 = _mm_shuffle_ps(b.m_vComponents, b.m_vComponents, 0x00);
         LocalM128 r0 = _mm_mul_ps(b0, r.m_row0);
         LocalM128 b1 = _mm_shuffle_ps(b.m_vComponents, b.m_vComponents, 0x55);
         LocalM128 r1 = _mm_mul_ps(b1, r.m_row1);
         LocalM128 b2 = _mm_shuffle_ps(b.m_vComponents, b.m_vComponents, 0xaa);
         LocalM128 r2 = _mm_mul_ps(b2, r.m_row2);
-        ms.m_kMotionTransform.m_row3 =
+        ms.m_transform.m_row3 =
             _mm_add_ps(_mm_add_ps(_mm_add_ps(r1, r0), r2), bodyA.getTransform().m_row3);
-        sphereShape.m_fSphereRadius = b(3);
+        sphereShape.m_radius = b(3);
         newOperandA.SetCollisionShapeAndKey(&sphereShape, i);
         static_cast<CollisionQueryAgent*>(pair->m_pCollisionAgent)->getPenetrations(newOperandA, bodyB, input, collector);
     }
@@ -201,31 +207,37 @@ void hkpMultiSphereAgent_staticGetClosestPoints(void* b, void* a, void* c, S_00d
 
 // Constructs a collector with the given filter and runs FUN_00d445e0 over b, a and c with it.
 // @fnv 0x00d44e20
-// src: GUESS 0x00d44e20 (confidence: low)
-void Object_ProcessState_00d44e20(void* apFirst, void* apSecond, void* apThird, int filter)
+// src: XBOX_RETAIL_PDB 0x00d44e20
+// pdb: hkpSymmetricAgentLinearCast<hkpMultiSphereAgent>::staticGetClosestPoints | hkpMultiSphereAgent.obj | retail, object-file gap fill, high
+// pdb params: bodyA, bodyB, input, collector
+// pdb locals: flip
+void hkpSymmetricAgentLinearCast_hkpMultiSphereAgent_staticGetClosestPoints(void* bodyA, void* bodyB, void* input, int filter)
 {
     S_00d44e20_Collector collector(filter);
-    hkpMultiSphereAgent_staticGetClosestPoints(apSecond, apFirst, apThird, &collector);
+    hkpMultiSphereAgent_staticGetClosestPoints(bodyB, bodyA, input, &collector);
 }
 
 extern char DAT_010ce81c;
 
 struct S_00d44f50
 {
-    void ProcessSpheres(void* a, void* b, void* c, hkpSymmetricAgentFlipBodyCollector* collector);
-    void RunWithCollector(void* a, void* b, void* c, int value);
+    void ProcessSpheres(void* bodyA, void* bodyB, void* c, hkpSymmetricAgentFlipBodyCollector* collector);
+    void RunWithCollector(void* bodyA, void* bodyB, void* input, int value);
 };
 
 // Constructs a collector holding value and forwards it with the reordered arguments to ProcessSpheres.
 // @fnv 0x00d44f50
-void S_00d44f50::RunWithCollector(void* pFirst, void* pSecond, void* pThird, int value)
+// pdb: hkpSymmetricAgentLinearCast<hkpMultiSphereAgent>::getPenetrations | hkpMultiSphereAgent.obj | retail, vtable slot, high
+// pdb params: bodyA, bodyB, input, collector
+// pdb locals: flip
+void S_00d44f50::RunWithCollector(void* bodyA, void* bodyB, void* input, int value)
 {
     void* collectorStorage[sizeof(hkpSymmetricAgentFlipBodyCollector) / sizeof(void*)];
     hkpSymmetricAgentFlipBodyCollector& collector = *(hkpSymmetricAgentFlipBodyCollector*)collectorStorage;
-    collector.payload = (void*)value;
+    collector.m_collector = (void*)value;
     collector.unk04[0] = 0;
     *(void**)&collector = &DAT_010ce81c;
-    ProcessSpheres(pSecond, pFirst, pThird, &collector);
+    ProcessSpheres(bodyB, bodyA, input, &collector);
 }
 
 extern float DAT_0104da48;
@@ -241,19 +253,22 @@ struct FUN_00d44f90_Data
 struct FUN_00d44f90_Class
 {
     void GetPenetrations(void* first, void* second, void* third, FUN_00d44f90_Data* data);
-    void UpdateState_00d44f90(void* first, void* second, void* third, unsigned int value);
+    void UpdateState_00d44f90(void* bodyA, void* bodyB, void* input, unsigned int collector);
 };
 
 // Builds a data record from value, DAT_0104da48 and DAT_010ce7fc, then calls GetPenetrations with second, first and third.
 // @fnv 0x00d44f90
 // src: GUESS 0x00d44f90 (confidence: low)
-void FUN_00d44f90_Class::UpdateState_00d44f90(void* first, void* second, void* third, unsigned int value)
+// pdb: hkpSymmetricAgentLinearCast<hkpMultiSphereAgent>::getClosestPoints | hkpMultiSphereAgent.obj | retail, vtable slot, high
+// pdb params: bodyA, bodyB, input, collector
+// pdb locals: flip
+void FUN_00d44f90_Class::UpdateState_00d44f90(void* bodyA, void* bodyB, void* input, unsigned int collector)
 {
     FUN_00d44f90_Data data;
-    data.value = value;
+    data.value = collector;
     data.bound = DAT_0104da48;
     data.descriptor = (unsigned int)&DAT_010ce7fc;
-    GetPenetrations(second, first, third, &data);
+    GetPenetrations(bodyB, bodyA, input, &data);
 }
 
 struct Allocator
@@ -282,20 +297,22 @@ struct SpawnedObject
     int unk30;
     int unk34;
 
-    void Init(int a, int b, int c, int d);
+    void Init(int bodyA, int bodyB, int input, int mgr);
 };
 
 hkMemoryRouter* hkMemoryRouter_getInstance();
 
 // @fnv 0x00d44d00
-// src: GUESS 0x00d44d00 (confidence: medium)
-void* Object_AllocateStorage_00d44d00(int aiArg1, int aiArg2, int aiArg3, int aiArg4)
+// src: XBOX_RETAIL_PDB 0x00d44d00
+// pdb: hkpMultiSphereAgent::createListBAgent | hkpMultiSphereAgent.obj | retail, object-file gap fill, high
+// pdb params: bodyA, bodyB, input, mgr
+void* hkpMultiSphereAgent_createListBAgent(int bodyA, int bodyB, int input, int mgr)
 {
     hkMemoryRouter* pAllocHolder = hkMemoryRouter_getInstance();
     Allocator* pAllocator = reinterpret_cast<Allocator*>(pAllocHolder->m_heap);
     SpawnedObject* obj = (SpawnedObject*)pAllocator->Alloc(0x38);
     obj->m_iElementCount = 0x38;
-    obj->Init(aiArg2, aiArg1, aiArg3, aiArg4);
+    obj->Init(bodyB, bodyA, input, mgr);
     *(void* volatile*)obj = (void*)DAT_010cf390;
     return obj;
 }
@@ -312,56 +329,63 @@ struct FnTable
 
 struct RegistryOwner
 {
-    void RegisterTable(FnTable* table, int a, int b);
+    void RegisterTable(FnTable* f, int typeA, int typeB);
 };
 
-void Object_AllocateStorage_00d44d00();
-void Object_UpdateFields_00d44de0();
-void Object_ProcessState_00d44e20();
-void Object_ProcessNegatedMultiSphereInput();
-void Object_AllocateStorage_00d44cc0();
-void hkpCdBody_AllocateStorage_00d449f0();
+void hkpMultiSphereAgent_createListBAgent();
+void hkpSymmetricAgentLinearCast_hkpMultiSphereAgent_staticGetPenetrations();
+void hkpSymmetricAgentLinearCast_hkpMultiSphereAgent_staticGetClosestPoints();
+void hkpSymmetricAgentLinearCast_hkpMultiSphereAgent_staticLinearCast();
+void hkpMultiSphereAgent_createListAAgent();
+void hkpMultiSphereAgent_staticGetPenetrations();
 void hkpMultiSphereAgent_staticGetClosestPoints();
-void ProcessMultiSphereCollision();
+void hkpMultiSphereAgent_staticLinearCast();
 
 // Fills a FnTable with four function pointers and two flags, registers it with (-1, 0x15), then fills it with another set and registers it with (0x15, -1).
 // @fnv 0x00d44d50
-void RegisterTwoTables(RegistryOwner* apOwner)
+// src: XBOX_RETAIL_PDB 0x00d44d50
+// pdb: hkpMultiSphereAgent::registerAgent | hkpMultiSphereAgent.obj | retail, object-file gap fill, high
+// pdb params: dispatcher
+// pdb locals: af
+void hkpMultiSphereAgent_registerAgent(RegistryOwner* dispatcher)
 {
     FnTable table;
-    table.m_fn00 = Object_AllocateStorage_00d44d00;
-    table.m_fn04 = Object_UpdateFields_00d44de0;
-    table.m_fn08 = Object_ProcessState_00d44e20;
-    table.m_fn0C = Object_ProcessNegatedMultiSphereInput;
+    table.m_fn00 = hkpMultiSphereAgent_createListBAgent;
+    table.m_fn04 = hkpSymmetricAgentLinearCast_hkpMultiSphereAgent_staticGetPenetrations;
+    table.m_fn08 = hkpSymmetricAgentLinearCast_hkpMultiSphereAgent_staticGetClosestPoints;
+    table.m_fn0C = hkpSymmetricAgentLinearCast_hkpMultiSphereAgent_staticLinearCast;
     table.m_flag10 = 1;
     table.m_flag11 = 1;
-    apOwner->RegisterTable(&table, -1, 0x15);
+    dispatcher->RegisterTable(&table, -1, 0x15);
 
-    table.m_fn00 = Object_AllocateStorage_00d44cc0;
-    table.m_fn04 = hkpCdBody_AllocateStorage_00d449f0;
+    table.m_fn00 = hkpMultiSphereAgent_createListAAgent;
+    table.m_fn04 = hkpMultiSphereAgent_staticGetPenetrations;
     table.m_fn08 = hkpMultiSphereAgent_staticGetClosestPoints;
-    table.m_fn0C = ProcessMultiSphereCollision;
+    table.m_fn0C = hkpMultiSphereAgent_staticLinearCast;
     table.m_flag10 = 0;
     table.m_flag11 = 1;
-    apOwner->RegisterTable(&table, 0x15, -1);
+    dispatcher->RegisterTable(&table, 0x15, -1);
 }
 
 extern char DAT_010ce81c;
 
 
-void __cdecl hkpCdBody_AllocateStorage_00d449f0(void* a, void* b, void* c, void* d);
+void __cdecl hkpMultiSphereAgent_staticGetPenetrations(void* a, void* b, void* c, void* d);
 
 // Builds a temporary object holding a4 and a cleared flag, then calls FUN_00d449f0 with a2, a1, a3 and that object.
 // @fnv 0x00d44de0
-// src: GUESS 0x00d44de0 (confidence: low)
-void __cdecl Object_UpdateFields_00d44de0(void* apArg1, void* apArg2, void* apArg3, unsigned int a4)
+// src: XBOX_RETAIL_PDB 0x00d44de0
+// pdb: hkpSymmetricAgentLinearCast<hkpMultiSphereAgent>::staticGetPenetrations | hkpMultiSphereAgent.obj | retail, object-file gap fill, high
+// pdb params: bodyA, bodyB, input, collector
+// pdb locals: flip
+void __cdecl hkpSymmetricAgentLinearCast_hkpMultiSphereAgent_staticGetPenetrations(void* bodyA, void* bodyB, void* input, unsigned int collector)
 {
     void* collectorStorage[sizeof(hkpSymmetricAgentFlipBodyCollector) / sizeof(void*)];
     hkpSymmetricAgentFlipBodyCollector& t = *(hkpSymmetricAgentFlipBodyCollector*)collectorStorage;
-    t.payload = (void*)a4;
+    t.m_collector = (void*)collector;
     t.unk04[0] = 0;
     *(void**)&t = &DAT_010ce81c;
-    hkpCdBody_AllocateStorage_00d449f0(apArg2, apArg1, apArg3, &t);
+    hkpMultiSphereAgent_staticGetPenetrations(bodyB, bodyA, input, &t);
 }
 
 namespace fnv_00d450f0 {
@@ -383,6 +407,8 @@ struct FUN_00d450f0_cls
 
 // Frees the object's data array through the audio allocator, resets its fields, and optionally frees the object itself when acFlags bit 0 is set.
 // @fnv 0x00d450f0
+// pdb: hkpMultiSphereAgent::`scalar deleting destructor' | hkpMultiSphereAgent.obj | retail, vtable slot, high
+// pdb params: this
 FUN_00d450f0_cls* FUN_00d450f0_cls::Destroy(unsigned char acFlags)
 {
     hkMemoryRouter* pAudioHolder = hkMemoryRouter_getInstance();
@@ -412,8 +438,12 @@ class CollisionAgentContext
     hkpCollisionDispatcher* dispatcher;
 };
 // @fnv 0x00d447f0
-void __cdecl ProcessMultiSphereCollision(const hkpCdBody& bodyA, const hkpCdBody& bodyB,
-                                         const CollisionAgentContext& input, void* output, void* manager)
+// src: XBOX_RETAIL_PDB 0x00d447f0
+// pdb: hkpMultiSphereAgent::staticLinearCast | hkpMultiSphereAgent.obj | retail, object-file gap fill, high
+// pdb params: bodyA, bodyB, input, collector, startCollector
+// pdb locals: typeB, sphereShape, ms, newOperandA
+void __cdecl hkpMultiSphereAgent_staticLinearCast(const hkpCdBody& bodyA, const hkpCdBody& bodyB,
+                                         const CollisionAgentContext& input, void* collector, void* startCollector)
 {
     const hkpMultiSphereShape* shape = (const hkpMultiSphereShape*)bodyA.getShape();
     LocalM128 motionStorage[sizeof(hkMotionState) / sizeof(LocalM128)];
@@ -425,29 +455,29 @@ void __cdecl ProcessMultiSphereCollision(const hkpCdBody& bodyA, const hkpCdBody
     hkpCdBody childBody(&bodyA, &motion);
     int typeB = bodyB.getShape()->getType();
     int index = 0;
-    if (index < shape->m_iSphereCount)
+    if (index < shape->m_numSpheres)
     {
-        const hkVector4* vector = shape->m_kSpheres;
+        const hkVector4* vector = shape->m_spheres;
         do
         {
             LocalM128 point = vector->m_vComponents;
             LocalM128 rotatedPoint =
                 _mm_add_ps(_mm_add_ps(_mm_mul_ps(_mm_shuffle_ps(point, point, 0x55),
-                                                 motion.m_kMotionTransform.m_row1),
+                                                 motion.m_transform.m_row1),
                                       _mm_mul_ps(_mm_shuffle_ps(point, point, 0),
-                                                 motion.m_kMotionTransform.m_row0)),
+                                                 motion.m_transform.m_row0)),
                            _mm_mul_ps(_mm_shuffle_ps(point, point, 0xaa),
-                                      motion.m_kMotionTransform.m_row2));
-            motion.m_kMotionTransform.m_row3 =
+                                      motion.m_transform.m_row2));
+            motion.m_transform.m_row3 =
                 _mm_add_ps(rotatedPoint, bodyA.getTransform().m_row3);
-            sphere.m_fSphereRadius = vector->m_vComponents.m128_f32[3];
+            sphere.m_radius = vector->m_vComponents.m128_f32[3];
             childBody.SetCollisionShapeAndKey(&sphere, index);
             ((void (__cdecl*)(const hkpCdBody&, const hkpCdBody&, const CollisionAgentContext&, void*, void*))
                 input.dispatcher->m_agent2Funcs[input.dispatcher->m_agent2TypeMap[sphere.getType()][typeB]].m_pLinearCastFunc)(childBody, bodyB, input,
-                                                                                             output, manager);
+                                                                                             collector, startCollector);
             ++index;
             ++vector;
-        } while (index < shape->m_iSphereCount);
+        } while (index < shape->m_numSpheres);
     }
 }
 
@@ -464,34 +494,37 @@ struct SphereDispatch
     void ProcessSpheres(const hkpCdBody&, const hkpCdBody&, const CollisionAgentContext&, hkpCdBodyPairCollector&);
 };
 // @fnv 0x00d44900
-void SphereDispatch::ProcessSpheres(const hkpCdBody& aBody, const hkpCdBody& aOtherBody,
+// pdb: hkpMultiSphereAgent::getPenetrations | hkpMultiSphereAgent.obj | retail, vtable slot, high
+// pdb params: bodyA, bodyB, input, collector
+// pdb locals: sphereShape, ms, newOperandA
+void SphereDispatch::ProcessSpheres(const hkpCdBody& bodyA, const hkpCdBody& bodyB,
                                     const CollisionAgentContext& input, hkpCdBodyPairCollector& collector)
 {
-    const hkpMultiSphereShape* shape = (const hkpMultiSphereShape*)aBody.getShape();
+    const hkpMultiSphereShape* shape = (const hkpMultiSphereShape*)bodyA.getShape();
     LocalM128 motionStateStorage[sizeof(hkMotionState) / sizeof(LocalM128)];
-    ::new (motionStateStorage) hkMotionState(*aBody.GetMotionState());
+    ::new (motionStateStorage) hkMotionState(*bodyA.GetMotionState());
     hkMotionState& motionState = *(hkMotionState*)motionStateStorage;
     LocalM128 sphereStorage[(sizeof(hkpSphereShape) + sizeof(LocalM128) - 1) / sizeof(LocalM128)];
     InitSphereShape((hkpSphereShape*)sphereStorage, 0.0f);
     hkpSphereShape& sphere = *(hkpSphereShape*)sphereStorage;
-    hkpCdBody cdBodyProxy(&aBody, &motionState);
+    hkpCdBody cdBodyProxy(&bodyA, &motionState);
     SphereChildEntry* entry = entries;
     for (int remaining = count - 1; remaining >= 0; remaining--)
     {
-        const hkVector4& point = shape->m_kSpheres[entry->key];
+        const hkVector4& point = shape->m_spheres[entry->key];
         LocalM128 value = point.m_vComponents;
         LocalM128 worldPoint = _mm_add_ps(
             _mm_add_ps(_mm_add_ps(_mm_mul_ps(_mm_shuffle_ps(value, value, 0x55),
-                                             motionState.m_kMotionTransform.m_row1),
+                                             motionState.m_transform.m_row1),
                                   _mm_mul_ps(_mm_shuffle_ps(value, value, 0),
-                                             motionState.m_kMotionTransform.m_row0)),
+                                             motionState.m_transform.m_row0)),
                        _mm_mul_ps(_mm_shuffle_ps(value, value, 0xaa),
-                                  motionState.m_kMotionTransform.m_row2)),
-            aBody.getTransform().m_row3);
-        motionState.m_kMotionTransform.m_row3 = worldPoint;
-        sphere.m_fSphereRadius = point.m_vComponents.m128_f32[3];
+                                  motionState.m_transform.m_row2)),
+            bodyA.getTransform().m_row3);
+        motionState.m_transform.m_row3 = worldPoint;
+        sphere.m_radius = point.m_vComponents.m128_f32[3];
         cdBodyProxy.SetCollisionShapeAndKey(&sphere, remaining);
-        static_cast<CollisionQueryAgent*>(entry->agent)->getClosestPoints(cdBodyProxy, aOtherBody, input, collector);
+        static_cast<CollisionQueryAgent*>(entry->agent)->getClosestPoints(cdBodyProxy, bodyB, input, collector);
         if (CollectorEarlyOut(collector))
             break;
         entry++;
@@ -499,13 +532,15 @@ void SphereDispatch::ProcessSpheres(const hkpCdBody& aBody, const hkpCdBody& aOt
 }
 
 // @fnv 0x00d44cc0
-// src: GUESS 0x00d44cc0 (confidence: medium)
-void Object_AllocateStorage_00d44cc0(int a1, int a2, int a3, int a4)
+// src: XBOX_RETAIL_PDB 0x00d44cc0
+// pdb: hkpMultiSphereAgent::createListAAgent | hkpMultiSphereAgent.obj | retail, object-file gap fill, high
+// pdb params: bodyA, bodyB, input, mgr
+void hkpMultiSphereAgent_createListAAgent(int bodyA, int bodyB, int input, int mgr)
 {
     hkMemoryRouter* pAllocHolder = hkMemoryRouter_getInstance();
     SpawnedObject* obj = (SpawnedObject*)pAllocHolder->m_heap->blockAlloc(0x38);
     obj->m_iElementCount = 0x38;
-    obj->Init(a1, a2, a3, a4);
+    obj->Init(bodyA, bodyB, input, mgr);
 }
 
 extern "C" LocalM128 _mm_xor_ps(LocalM128 _A, LocalM128 _B);
@@ -571,45 +606,48 @@ class S_00d45160_Owner
   public:
     void Spawn(unsigned int a2, unsigned int a1, S_00d45160_Input* input, S_00d45160_Collector* out,
                S_00d45160_Collector* opt);
-    void SpawnWithCollectors(unsigned int a1, unsigned int a2, const S_00d45160_Input* a3, unsigned int a4,
-                             unsigned int a5);
+    void SpawnWithCollectors(unsigned int bodyA, unsigned int bodyB, const S_00d45160_Input* input, unsigned int collector,
+                             unsigned int startCollector);
 };
 
 // @fnv 0x00d45160
-void S_00d45160_Owner::SpawnWithCollectors(unsigned int a1, unsigned int a2, const S_00d45160_Input* pInput,
-                                           unsigned int uiKey1, unsigned int uiKey2)
+// pdb: hkpSymmetricAgent<hkpMultiSphereAgent>::linearCast | hkpMultiSphereAgent.obj | retail, vtable slot, high
+// pdb params: bodyA, bodyB, input, collector, startCollector
+// pdb locals: flip, flippedInput, startFlip
+void S_00d45160_Owner::SpawnWithCollectors(unsigned int bodyA, unsigned int bodyB, const S_00d45160_Input* input,
+                                           unsigned int collector, unsigned int startCollector)
 {
     S_00d45160_Collector collector1;
     S_00d45160_Collector collector2;
     collector1.m_fHitDistance = DAT_0104da48;
-    S_00d45160_Input inputCopy = *pInput;
-    memcpy(&collector1.m_vec, &pInput->m_vec, 16);
-    inputCopy.m_vec.m_vComponents = _mm_xor_ps(pInput->m_vec.m_vComponents, DAT_010c44d0);
-    collector1.m_key = uiKey1;
+    S_00d45160_Input inputCopy = *input;
+    memcpy(&collector1.m_vec, &input->m_vec, 16);
+    inputCopy.m_vec.m_vComponents = _mm_xor_ps(input->m_vec.m_vComponents, DAT_010c44d0);
+    collector1.m_key = collector;
     collector1.m_vtbl = (void*)&DAT_010ce80c;
-    if (uiKey2 != 0)
+    if (startCollector != 0)
     {
         collector2.m_vtbl = (void*)&DAT_010ce80c;
         collector2.m_fHitDistance = DAT_0104da48;
-        memcpy(&collector2.m_vec, &pInput->m_vec, 16);
-        collector2.m_key = uiKey2;
-        Spawn(a2, a1, &inputCopy, &collector1, &collector2);
+        memcpy(&collector2.m_vec, &input->m_vec, 16);
+        collector2.m_key = startCollector;
+        Spawn(bodyB, bodyA, &inputCopy, &collector1, &collector2);
     }
     else
     {
-        Spawn(a2, a1, &inputCopy, &collector1, 0);
+        Spawn(bodyB, bodyA, &inputCopy, &collector1, 0);
     }
 }
 
 extern "C" LocalM128 _mm_load_ps(const float*);
 struct S00d44fd0_Base
 {
-    void hkpMultiSphereAgent_processCollision(int a, int b, int c, unsigned char* obj);
+    void hkpMultiSphereAgent_processCollision(int bodyA, int bodyB, int input, unsigned char* result);
 };
 
 struct S00d44fd0_Agent : S00d44fd0_Base
 {
-    void ProcessEntries_00d44fd0(int a1, int a2, int a3, unsigned char* obj);
+    void ProcessEntries_00d44fd0(int bodyA, int bodyB, int input, unsigned char* result);
 };
 extern LocalM128 DAT_010c4c00;
 
@@ -663,22 +701,24 @@ struct S00d44fd0_Vert
 // Calls FUN_00d443e0, then for each new vertex adds nrm*nrm.w to pos and negates nrm; if obj+0x3030 changed, negates obj+0x3020 and swaps fields of obj+0x3040.
 // @fnv 0x00d44fd0
 // src: GUESS 0x00d44fd0 (confidence: low)
-void S00d44fd0_Agent::ProcessEntries_00d44fd0(int a1, int a2, int a3, unsigned char* obj)
+// pdb: hkpSymmetricAgentLinearCast<hkpMultiSphereAgent>::processCollision | hkpMultiSphereAgent.obj | retail, vtable slot, high
+// pdb params: bodyA, bodyB, input, result
+void S00d44fd0_Agent::ProcessEntries_00d44fd0(int bodyA, int bodyB, int input, unsigned char* result)
 {
-    float saved = *(float*)(obj + 0x3030);
-    S00d44fd0_Vert* pVert = *(S00d44fd0_Vert**)obj;
-    S00d44fd0_Base::hkpMultiSphereAgent_processCollision(a2, a1, a3, obj);
-    for (; pVert < *(S00d44fd0_Vert**)obj; pVert++)
+    float saved = *(float*)(result + 0x3030);
+    S00d44fd0_Vert* pVert = *(S00d44fd0_Vert**)result;
+    S00d44fd0_Base::hkpMultiSphereAgent_processCollision(bodyB, bodyA, input, result);
+    for (; pVert < *(S00d44fd0_Vert**)result; pVert++)
     {
         pVert->pos.addMul4(BroadcastW(pVert->nrm), pVert->nrm);
         pVert->nrm.setNeg4(pVert->nrm);
     }
-    if (saved != *(float*)(obj + 0x3030))
+    if (saved != *(float*)(result + 0x3030))
     {
-        hkVector4* v = (hkVector4*)(obj + 0x3020);
+        hkVector4* v = (hkVector4*)(result + 0x3020);
         LocalM128 n = _mm_load_ps((const float*)v);
         v->m_vComponents = _mm_xor_ps(n, DAT_010c4c00);
-        S00d44fd0_Cache* c = (S00d44fd0_Cache*)(obj + 0x3040);
+        S00d44fd0_Cache* c = (S00d44fd0_Cache*)(result + 0x3040);
         unsigned char nlo = c->lo;
         c->lo = c->hi;
         c->hi = nlo;
@@ -720,6 +760,9 @@ class Q_MultiSphereAgent
 // Iterates each sphere in the multi-sphere shape, transforms it into world space, and delegates a linear cast to the per-sphere collision agent.
 // @fnv 0x00d446f0
 // src: HAVOK_SRC 0x00d446f0
+// pdb: hkpMultiSphereAgent::linearCast | hkpMultiSphereAgent.obj | retail, upstream name already matches, high
+// pdb params: bodyA, bodyB, input, collector, startCollector
+// pdb locals: sphereShape, ms, newOperandA
 void Q_MultiSphereAgent::hkpMultiSphereAgent_linearCast(const hkpCdBody& bodyA, const hkpCdBody& bodyB,
                                       const CollisionAgentContext& input, hkpCdPointCollector& collector,
                                       hkpCdPointCollector* startCollector)
@@ -737,17 +780,17 @@ void Q_MultiSphereAgent::hkpMultiSphereAgent_linearCast(const hkpCdBody& bodyA, 
 
     for (int i = m_iElementCount - 1; i >= 0; i--)
     {
-        const hkVector4& b = msA->m_kSpheres[i];
-        const hkRotation& r = ms.m_kMotionTransform.getRotation();
+        const hkVector4& b = msA->m_spheres[i];
+        const hkRotation& r = ms.m_transform.getRotation();
         LocalM128 b0 = _mm_shuffle_ps(b.m_vComponents, b.m_vComponents, 0x00);
         LocalM128 b1 = _mm_shuffle_ps(b.m_vComponents, b.m_vComponents, 0x55);
         LocalM128 b2 = _mm_shuffle_ps(b.m_vComponents, b.m_vComponents, 0xaa);
         LocalM128 r0 = _mm_mul_ps(r.m_kColumn0.m_vComponents, b0);
         LocalM128 r1 = _mm_mul_ps(r.m_kColumn1.m_vComponents, b1);
         LocalM128 r2 = _mm_mul_ps(r.m_kColumn2.m_vComponents, b2);
-        ms.m_kMotionTransform.getTranslation().m_vComponents =
+        ms.m_transform.getTranslation().m_vComponents =
             _mm_add_ps(_mm_add_ps(_mm_add_ps(r1, r0), r2), bodyA.getTransform().getTranslation().m_vComponents);
-        sphereShape.m_fSphereRadius = b(3);
+        sphereShape.m_radius = b(3);
         newOperandA.SetCollisionShapeAndKey(&sphereShape, i);
         static_cast<CollisionQueryAgent*>(agents->m_pCollisionAgent)->linearCast(newOperandA, bodyB, input, collector, startCollector);
     }
@@ -783,12 +826,15 @@ struct Record_d2e9
     int m_uiFilterValue;
 };
 
-void __cdecl ProcessMultiSphereCollision(int a1, int a2, Input_d2e9* input, Record_d2e9* rec, Record_d2e9* optRec);
+void __cdecl hkpMultiSphereAgent_staticLinearCast(int a1, int a2, Input_d2e9* input, Record_d2e9* collector, Record_d2e9* startCollector);
 
 // Copies input with its vector negated, builds a record from a4 (and a second from a5 if non-zero), and calls ProcessMultiSphereCollision(a1, a2, ...).
 // @fnv 0x00d44e60
-// src: GUESS 0x00d44e60 (confidence: medium)
-void __cdecl Object_ProcessNegatedMultiSphereInput(int a2, int a1, const Input_d2e9* input, int a4, int a5)
+// src: XBOX_RETAIL_PDB 0x00d44e60
+// pdb: hkpSymmetricAgentLinearCast<hkpMultiSphereAgent>::staticLinearCast | hkpMultiSphereAgent.obj | retail, object-file gap fill, high
+// pdb params: bodyA, bodyB, input, collector, startCollector
+// pdb locals: flip, flippedInput, startFlip
+void __cdecl hkpSymmetricAgentLinearCast_hkpMultiSphereAgent_staticLinearCast(int bodyA, int bodyB, const Input_d2e9* input, int collector, int startCollector)
 {
     Input_d2e9 localInput = *input;
     localInput.m_vComponents = _mm_xor_ps(input->m_vComponents, DAT_010c44d0);
@@ -797,20 +843,20 @@ void __cdecl Object_ProcessNegatedMultiSphereInput(int a2, int a1, const Input_d
     rec.m_vtbl = &DAT_010ce80c;
     rec.m_fScalar = DAT_0104da48;
     rec.m_key = input->m_key;
-    rec.m_uiFilterValue = a4;
+    rec.m_uiFilterValue = collector;
 
-    if (a5 != 0)
+    if (startCollector != 0)
     {
         Record_d2e9 rec2;
         rec2.m_vtbl = &DAT_010ce80c;
         rec2.m_fScalar = DAT_0104da48;
         rec2.m_key = input->m_key;
-        rec2.m_uiFilterValue = a5;
-        ProcessMultiSphereCollision(a1, a2, &localInput, &rec, &rec2);
+        rec2.m_uiFilterValue = startCollector;
+        hkpMultiSphereAgent_staticLinearCast(bodyB, bodyA, &localInput, &rec, &rec2);
     }
     else
     {
-        ProcessMultiSphereCollision(a1, a2, &localInput, &rec, 0);
+        hkpMultiSphereAgent_staticLinearCast(bodyB, bodyA, &localInput, &rec, 0);
     }
 }
 
@@ -829,7 +875,7 @@ struct LocalHolder : hkMemoryRouter
     }
 };
 struct S_00d44b00_Arr;
-extern void hkArrayUtil__reserve(hkMemoryAllocator* a, S_00d44b00_Arr* arr, int n, int elemSize);
+extern void hkArrayUtil__reserve(hkMemoryAllocator* mem, S_00d44b00_Arr* array, int numElem, int sizeElem);
 struct S_00d44b00_Arr
 {
     S_00d44b00_Elem* m_data;
@@ -886,39 +932,42 @@ struct FUN_00d44b00 : hkpCollisionAgent
 {
     virtual ~FUN_00d44b00() throw();
     S_00d44b00_Inplace arr;
-    FUN_00d44b00(const hkpCdBody& src, const hkpCdBody& pb, const S_00d44b00_A& a, void* c);
+    FUN_00d44b00(const hkpCdBody& bodyA, const hkpCdBody& bodyB, const S_00d44b00_A& input, void* mgr);
 };
 // Reserves n entries, then for each of mesh's n vectors builds a transformed body context and stores the agent from a.disp->getNewAgent with key i.
 // @fnv 0x00d44b00
-FUN_00d44b00::FUN_00d44b00(const hkpCdBody& src, const hkpCdBody& pb, const S_00d44b00_A& a, void* c)
-    : hkpCollisionAgent((hkpContactMgr*)c)
+// pdb: hkpMultiSphereAgent::hkpMultiSphereAgent | hkpMultiSphereAgent.obj | retail, object-file gap fill, high
+// pdb params: bodyA, bodyB, input, mgr
+// pdb locals: sphereShape, ms, numChildren, newOperandA
+FUN_00d44b00::FUN_00d44b00(const hkpCdBody& bodyA, const hkpCdBody& bodyB, const S_00d44b00_A& input, void* mgr)
+    : hkpCollisionAgent((hkpContactMgr*)mgr)
 {
-    const hkpMultiSphereShape* mesh = (const hkpMultiSphereShape*)src.getShape();
-    int n = mesh->m_iSphereCount;
+    const hkpMultiSphereShape* mesh = (const hkpMultiSphereShape*)bodyA.getShape();
+    int n = mesh->m_numSpheres;
     arr.reserve(((LocalHolder*)hkMemoryRouter_getInstance())->heap(), n);
     LocalM128 shapeStorage[(sizeof(hkpSphereShape) + sizeof(LocalM128) - 1) / sizeof(LocalM128)];
     InitSphereShape((hkpSphereShape*)shapeStorage, 0.0f);
     hkpSphereShape& shape = *(hkpSphereShape*)shapeStorage;
     LocalM128 triStorage[sizeof(hkMotionState) / sizeof(LocalM128)];
-    ::new (triStorage) hkMotionState(*(const hkMotionState*)src.m_pMotionState);
+    ::new (triStorage) hkMotionState(*(const hkMotionState*)bodyA.m_motion);
     hkMotionState& tri = *(hkMotionState*)triStorage;
-    hkpCdBody ctx(&src, &tri);
-    const hkVector4* v = mesh->m_kSpheres;
+    hkpCdBody ctx(&bodyA, &tri);
+    const hkVector4* v = mesh->m_spheres;
     for (int i = 0; i < n; i++)
     {
         LocalM128 q = *(LocalM128*)v;
-        const hkMotionState* xf = (const hkMotionState*)src.m_pMotionState;
-        LocalM128 p = _mm_add_ps(_mm_mul_ps(_mm_shuffle_ps(q, q, 0x55), *(LocalM128*)&tri.m_kMotionTransform.m_row1),
-                              _mm_mul_ps(_mm_shuffle_ps(q, q, 0x00), *(LocalM128*)&tri.m_kMotionTransform.m_row0));
-        p = _mm_add_ps(p, _mm_mul_ps(_mm_shuffle_ps(q, q, 0xaa), *(LocalM128*)&tri.m_kMotionTransform.m_row2));
-        *(LocalM128*)&tri.m_kMotionTransform.m_row3 = _mm_add_ps(*(LocalM128*)&xf->m_kMotionTransform.m_row3, p);
-        *(LocalM128*)&tri.m_kSweptTransform.m_vCenterOfMass0 = _mm_add_ps(*(LocalM128*)&xf->m_kSweptTransform.m_vCenterOfMass0, p);
+        const hkMotionState* xf = (const hkMotionState*)bodyA.m_motion;
+        LocalM128 p = _mm_add_ps(_mm_mul_ps(_mm_shuffle_ps(q, q, 0x55), *(LocalM128*)&tri.m_transform.m_row1),
+                              _mm_mul_ps(_mm_shuffle_ps(q, q, 0x00), *(LocalM128*)&tri.m_transform.m_row0));
+        p = _mm_add_ps(p, _mm_mul_ps(_mm_shuffle_ps(q, q, 0xaa), *(LocalM128*)&tri.m_transform.m_row2));
+        *(LocalM128*)&tri.m_transform.m_row3 = _mm_add_ps(*(LocalM128*)&xf->m_transform.m_row3, p);
+        *(LocalM128*)&tri.m_kSweptTransform.m_centerOfMass0 = _mm_add_ps(*(LocalM128*)&xf->m_kSweptTransform.m_centerOfMass0, p);
         *(LocalM128*)&tri.m_kSweptTransform.m_vCenterOfMass1 = _mm_add_ps(*(LocalM128*)&xf->m_kSweptTransform.m_vCenterOfMass1, p);
-        shape.m_fSphereRadius = v->w;
+        shape.m_radius = v->w;
         ctx.SetCollisionShapeAndKey(&shape, i);
         {
             S_00d44b00_Elem& e = *arr.expandByUnchecked(1);
-            e.second = GetNewAgent(*a.disp, ctx, pb, a, c);
+            e.second = GetNewAgent(*input.disp, ctx, bodyB, input, mgr);
             e.first = i;
         }
         v++;
@@ -941,41 +990,44 @@ struct S00d443e0_S_Owner
     int unk8;
     S00d443e0_S_Entry* arr;
     int count;
-    void hkpMultiSphereAgent_processCollision(hkpCdBody* in, int a, int b, int d);
+    void hkpMultiSphereAgent_processCollision(hkpCdBody* bodyA, int bodyB, int input, int result);
 };
 
 // Iterates entries in reverse, adds a rotation term to the input copy, and dispatches each child's v6 with a shared context.
 // @fnv 0x00d443e0
 // src: HAVOK_SRC 0x00d443e0
-void S00d443e0_S_Owner::hkpMultiSphereAgent_processCollision(hkpCdBody* in, int a, int b, int d)
+// pdb: hkpMultiSphereAgent::processCollision | hkpMultiSphereAgent.obj | retail, upstream name already matches, high
+// pdb params: bodyA, bodyB, input, result
+// pdb locals: sphereShape, ms, newOperandA, assertBuf, ostr
+void S00d443e0_S_Owner::hkpMultiSphereAgent_processCollision(hkpCdBody* bodyA, int bodyB, int input, int result)
 {
-    const hkpMultiSphereShape* base = static_cast<const hkpMultiSphereShape*>(in->getShape());
+    const hkpMultiSphereShape* base = static_cast<const hkpMultiSphereShape*>(bodyA->getShape());
     LocalM128 copyStorage[sizeof(hkMotionState) / sizeof(LocalM128)];
-    ::new (copyStorage) hkMotionState(*in->GetMotionState());
+    ::new (copyStorage) hkMotionState(*bodyA->GetMotionState());
     hkMotionState& copy = *(hkMotionState*)copyStorage;
     LocalM128 collStorage[(sizeof(hkpSphereShape) + sizeof(LocalM128) - 1) / sizeof(LocalM128)];
     InitSphereShape((hkpSphereShape*)collStorage, 0.0f);
     hkpSphereShape& coll = *(hkpSphereShape*)collStorage;
-    hkpCdBody ctx(in, &copy);
+    hkpCdBody ctx(bodyA, &copy);
     S00d443e0_S_Entry* e = arr;
     for (int i = count - 1; i >= 0; --i)
     {
-        const hkVector4& v = base->m_kSpheres[e->off];
-        LocalM128 c0 = _mm_load_ps(&copy.m_kMotionTransform.m_row0.m128_f32[0]);
-        LocalM128 c1 = _mm_load_ps(&copy.m_kMotionTransform.m_row1.m128_f32[0]);
-        LocalM128 c2 = _mm_load_ps(&copy.m_kMotionTransform.m_row2.m128_f32[0]);
+        const hkVector4& v = base->m_spheres[e->off];
+        LocalM128 c0 = _mm_load_ps(&copy.m_transform.m_row0.m128_f32[0]);
+        LocalM128 c1 = _mm_load_ps(&copy.m_transform.m_row1.m128_f32[0]);
+        LocalM128 c2 = _mm_load_ps(&copy.m_transform.m_row2.m128_f32[0]);
         LocalM128 vq = _mm_load_ps(&v.x);
         LocalM128 rot = _mm_add_ps(
             _mm_add_ps(_mm_mul_ps(_mm_shuffle_ps(vq, vq, 0x55), c1), _mm_mul_ps(_mm_shuffle_ps(vq, vq, 0), c0)),
             _mm_mul_ps(_mm_shuffle_ps(vq, vq, 0xaa), c2));
-        const hkMotionState* t = in->GetMotionState();
-        _mm_store_ps(&copy.m_kMotionTransform.m_row3.m128_f32[0], _mm_add_ps(_mm_load_ps(&t->m_kMotionTransform.m_row3.m128_f32[0]), rot));
-        _mm_store_ps(&copy.m_kSweptTransform.m_vCenterOfMass0.m_vComponents.m128_f32[0], _mm_add_ps(_mm_load_ps(&t->m_kSweptTransform.m_vCenterOfMass0.m_vComponents.m128_f32[0]), rot));
+        const hkMotionState* t = bodyA->GetMotionState();
+        _mm_store_ps(&copy.m_transform.m_row3.m128_f32[0], _mm_add_ps(_mm_load_ps(&t->m_transform.m_row3.m128_f32[0]), rot));
+        _mm_store_ps(&copy.m_kSweptTransform.m_centerOfMass0.m_vComponents.m128_f32[0], _mm_add_ps(_mm_load_ps(&t->m_kSweptTransform.m_centerOfMass0.m_vComponents.m128_f32[0]), rot));
         _mm_store_ps(&copy.m_kSweptTransform.m_vCenterOfMass1.m_vComponents.m128_f32[0], _mm_add_ps(_mm_load_ps(&t->m_kSweptTransform.m_vCenterOfMass1.m_vComponents.m128_f32[0]), rot));
-        coll.m_fSphereRadius = v.w;
-        ctx.m_pCollisionShape = (const hkpShape*)&coll;
-        ctx.m_uiCollisionShapeKey = i;
-        static_cast<CollisionQueryAgent*>(e->child)->processCollision(&ctx, a, b, d);
+        coll.m_radius = v.w;
+        ctx.m_shape = (const hkpShape*)&coll;
+        ctx.m_shapeKey = i;
+        static_cast<CollisionQueryAgent*>(e->child)->processCollision(&ctx, bodyB, input, result);
         e++;
     }
 }
@@ -990,6 +1042,9 @@ typedef void(__cdecl* GetPenetrationsFunc)(const hkpCdBody& a, const hkpCdBody& 
 // Iterates over each sphere of a multi-sphere shape, transforms it into world space, and dispatches penetration queries against bodyB.
 // @fnv 0x00d445e0
 // src: XBOX_PDB 0x00d445e0
+// pdb: hkpMultiSphereAgent::staticGetClosestPoints | hkpMultiSphereAgent.obj | retail, upstream name already matches, high
+// pdb params: bodyA, bodyB, input, collector
+// pdb locals: typeB, sphereShape, ms, newOperandA
 void hkpMultiSphereAgent_staticGetClosestPoints(const hkpCdBody& bodyA, const hkpCdBody& bodyB, const CollisionAgentContext& input,
                   hkpCdBodyPairCollector& collector)
 {
@@ -1004,19 +1059,19 @@ void hkpMultiSphereAgent_staticGetClosestPoints(const hkpCdBody& bodyA, const hk
     hkpCdBody newOperandA(&bodyA, &ms);
 
     int typeB = bodyB.getShape()->getType();
-    for (int i = 0; i < msA->m_iSphereCount; i++)
+    for (int i = 0; i < msA->m_numSpheres; i++)
     {
-        const hkVector4& b = msA->m_kSpheres[i];
-        const hkTransform& r = ms.m_kMotionTransform;
+        const hkVector4& b = msA->m_spheres[i];
+        const hkTransform& r = ms.m_transform;
         LocalM128 b0 = _mm_shuffle_ps(b.m_vComponents, b.m_vComponents, 0x00);
         LocalM128 r0 = _mm_mul_ps(b0, r.m_row0);
         LocalM128 b1 = _mm_shuffle_ps(b.m_vComponents, b.m_vComponents, 0x55);
         LocalM128 r1 = _mm_mul_ps(b1, r.m_row1);
         LocalM128 b2 = _mm_shuffle_ps(b.m_vComponents, b.m_vComponents, 0xaa);
         LocalM128 r2 = _mm_mul_ps(b2, r.m_row2);
-        ms.m_kMotionTransform.m_row3 =
+        ms.m_transform.m_row3 =
             _mm_add_ps(_mm_add_ps(_mm_add_ps(r1, r0), r2), bodyA.getTransform().m_row3);
-        sphereShape.m_fSphereRadius = b(3);
+        sphereShape.m_radius = b(3);
         newOperandA.SetCollisionShapeAndKey(&sphereShape, i);
         GetPenetrationsFunc func =
             (GetPenetrationsFunc)input.dispatcher->m_agent2Funcs[input.dispatcher->m_agent2TypeMap[sphereShape.getType()][typeB]].m_pGetPenetrationsFunc;
@@ -1033,8 +1088,11 @@ typedef void(__cdecl* GetPenetrationsFunc)(const hkpCdBody& a, const hkpCdBody& 
 
 // Iterates over each sphere in a multi-sphere shape, transforms it, and queries penetrations against bodyB via the dispatcher's per-type collision function.
 // @fnv 0x00d449f0
-// src: GUESS 0x00d449f0 (confidence: low)
-void hkpCdBody_AllocateStorage_00d449f0(const hkpCdBody& bodyA, const hkpCdBody& bodyB, const CollisionAgentContext& input,
+// src: XBOX_RETAIL_PDB 0x00d449f0
+// pdb: hkpMultiSphereAgent::staticGetPenetrations | hkpMultiSphereAgent.obj | retail, object-file gap fill, high
+// pdb params: bodyA, bodyB, input, collector
+// pdb locals: typeB, MultiSphere, sphereShape, ms, newOperandA
+void hkpMultiSphereAgent_staticGetPenetrations(const hkpCdBody& bodyA, const hkpCdBody& bodyB, const CollisionAgentContext& input,
                   hkpCdBodyPairCollector& collector)
 {
     const hkpMultiSphereShape* msA = static_cast<const hkpMultiSphereShape*>(bodyA.getShape());
@@ -1048,19 +1106,19 @@ void hkpCdBody_AllocateStorage_00d449f0(const hkpCdBody& bodyA, const hkpCdBody&
     hkpCdBody newOperandA(&bodyA, &ms);
 
     int typeB = bodyB.getShape()->getType();
-    for (int i = 0; i < msA->m_iSphereCount; i++)
+    for (int i = 0; i < msA->m_numSpheres; i++)
     {
-        const hkVector4& b = msA->m_kSpheres[i];
-        const hkTransform& r = ms.m_kMotionTransform;
+        const hkVector4& b = msA->m_spheres[i];
+        const hkTransform& r = ms.m_transform;
         LocalM128 b0 = _mm_shuffle_ps(b.m_vComponents, b.m_vComponents, 0x00);
         LocalM128 r0 = _mm_mul_ps(b0, r.m_row0);
         LocalM128 b1 = _mm_shuffle_ps(b.m_vComponents, b.m_vComponents, 0x55);
         LocalM128 r1 = _mm_mul_ps(b1, r.m_row1);
         LocalM128 b2 = _mm_shuffle_ps(b.m_vComponents, b.m_vComponents, 0xaa);
         LocalM128 r2 = _mm_mul_ps(b2, r.m_row2);
-        ms.m_kMotionTransform.m_row3 =
+        ms.m_transform.m_row3 =
             _mm_add_ps(_mm_add_ps(_mm_add_ps(r1, r0), r2), bodyA.getTransform().m_row3);
-        sphereShape.m_fSphereRadius = b(3);
+        sphereShape.m_radius = b(3);
         newOperandA.SetCollisionShapeAndKey(&sphereShape, i);
         GetPenetrationsFunc func =
             input.dispatcher->m_agent2Funcs[input.dispatcher->m_agent2TypeMap[sphereShape.getType()][typeB]].m_pQueryPenetrationsFunc;

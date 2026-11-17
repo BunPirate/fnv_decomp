@@ -3,6 +3,7 @@
 #include "NiBinaryStream.h"
 #include <stdio.h>
 
+// pdb: class NiFile, size 0x74 (here 0x30), bases: NiBinaryStream, 17 members
 class NiFile : public NiBinaryStream
 {
   public:
@@ -25,8 +26,8 @@ class NiFile : public NiBinaryStream
     bool Flush();
     unsigned int FileRead(void*, unsigned int);
 
-    static NiFile* __cdecl GetFile(const char* pcName, OpenMode eMode, unsigned int uiBufferSize);
-    static NiFile* __cdecl GetFile(const char* pcName, int eMode, unsigned int uiBufferSize);
+    static NiFile* __cdecl GetFile(const char* pcName, OpenMode eMode, unsigned int uiSize);
+    static NiFile* __cdecl GetFile(const char* pcName, int eMode, unsigned int uiSize);
     static unsigned int RequestFileAccess(const char*, unsigned int, unsigned int);
     static unsigned int __cdecl WriteBytesToFile(const void*, unsigned int, unsigned int, FILE*);
 

@@ -18,7 +18,7 @@ class hkpShapeCollection_L
     virtual int hkpShapeCollection_getContainer();
 };
 extern char const* const DAT_01268910;
-void __cdecl hkReferencedObject_calcContentStatistics(char const* const* first, char const* const* second);
+void __cdecl hkReferencedObject_calcContentStatistics(char const* const* collector, char const* const* cls);
 void __cdecl hkpShapeCollection_calcContentStatistics(char const* const* first, char const* const* ignored);
 void __stdcall nullsub_53(int, int);
 void __stdcall nullsub_52(int a1);
@@ -142,11 +142,14 @@ extern char DAT_010c41f8;
 class CollectionAabb : public hkpShapeCollection
 {
   public:
-    void hkpShapeCollection_getAabb(const hkTransform& transform, float tolerance, Aabb& out) const;
+    void hkpShapeCollection_getAabb(const hkTransform& localToWorld, float tolerance, Aabb& out) const;
 };
 // @fnv 0x00d215d0
 // src: EXE 0x00d215d0
-void CollectionAabb::hkpShapeCollection_getAabb(const hkTransform& transform, float tolerance, Aabb& out) const
+// pdb: hkpShapeCollection::getAabbImpl | hkpShapeCollection.obj | retail, string-set bridge, high
+// pdb params: localToWorld, tolerance, out
+// pdb locals: aabb, shapeBuffer
+void CollectionAabb::hkpShapeCollection_getAabb(const hkTransform& localToWorld, float tolerance, Aabb& out) const
 {
     hkMonitorStream* stream = (hkMonitorStream*)TlsGetValue(DAT_0126835c);
     char* event = stream->m_end.m_storage;
@@ -166,7 +169,7 @@ void CollectionAabb::hkpShapeCollection_getAabb(const hkTransform& transform, fl
         __declspec(align(16)) char buffer[512];
         Aabb child;
         const hkpShape* shape = GetShapeForKey(key, reinterpret_cast<hkpShapeBuffer&>(buffer));
-        shape->CalculateAabb(transform, tolerance, reinterpret_cast<hkAabb&>(child));
+        shape->CalculateAabb(localToWorld, tolerance, reinterpret_cast<hkAabb&>(child));
         out.minimum = _mm_min_ps(out.minimum, child.minimum);
         out.maximum = _mm_max_ps(out.maximum, child.maximum);
         key = GetNextShapeKey(key);

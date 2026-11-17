@@ -21,6 +21,7 @@ template <typename T> inline T& routerHeap(hkMemoryRouter& router)
 // src/havok/physics/dynamics/world/util/kdtree/hkpkdtreeworldmanager.cpp - unit created 2026-10-16 from the whole-binary attribution (360 source path: d:/projects/fallout/code/havok/source/physics/dynamics/world/util/kdtree/hkpkdtreeworldmanager.cpp).
 // Functions are listed by their @fnv annotations; compile flags inferred from the PC code.
 
+// pdb: class hkpKdTreeWorldManager, size 0x24 (here 0x10), bases: hkpTreeWorldManager, hkpEntityListener, hkpPhantomListener, 3 members
 struct hkpKdTreeWorldManager
 {
     int m_kPointA;
@@ -92,7 +93,7 @@ struct FUN_00c917f0_shell
 
 struct FUN_00d97850_shell
 {
-    void ClearBuffers();
+    void hkKdTree_dtor();
 };
 
 void* __cdecl _D1A0E0GetMemoryRouter();
@@ -116,6 +117,7 @@ struct FUN_00d0a4f0
 };
 
 // @fnv 0x00d0a4f0
+// pdb: hkpKdTreeWorldManager::~hkpKdTreeWorldManager | hkpKdTreeWorldManager.obj | retail, object-file gap fill, high
 FUN_00d0a4f0::~FUN_00d0a4f0()
 {
     *(int*)this = (int)&DAT_010cd278;
@@ -128,7 +130,7 @@ FUN_00d0a4f0::~FUN_00d0a4f0()
     void* p = *(void**)((char*)this + 0x10);
     if (p)
     {
-        ((FUN_00d97850_shell*)p)->ClearBuffers();
+        ((FUN_00d97850_shell*)p)->hkKdTree_dtor();
         void* router = _D1A0E0GetMemoryRouter();
         void* mgr = *(void**)((char*)router + 0x10);
         void** vtbl = *(void***)mgr;
@@ -368,7 +370,7 @@ struct D0A6A0_World
     D0A6A0_EntityArray m_kPhantoms;
 };
 
-void hkArrayUtil__reserve(hkMemoryAllocator& alloc, void* arr, int numElem, int sizeElem);
+void hkArrayUtil__reserve(hkMemoryAllocator& mem, void* array, int numElem, int sizeElem);
 
 static __forceinline void D0A6A0_CollidableArray_reserve(hkArrayBase<D0A6A0_Collidable*>& self, hkMemoryAllocator& alloc, int n)
 {
@@ -400,15 +402,18 @@ struct D0A6A0_Manager
     int unk18;
     D0A6A0_World* m_pOwningWorld;
 
-    void CollectCollidables(hkArrayBase<D0A6A0_Collidable*>& out);
+    void hkpKdTreeWorldManager_gatherCollidablesFromWorld(hkArrayBase<D0A6A0_Collidable*>& collidables);
 };
 
 // @fnv 0x00d0a6a0
-void D0A6A0_Manager::CollectCollidables(hkArrayBase<D0A6A0_Collidable*>& aCollidables)
+// src: XBOX_RETAIL_PDB 0x00d0a6a0
+// pdb: hkpKdTreeWorldManager::gatherCollidablesFromWorld | hkpKdTreeWorldManager.obj | retail, object-file gap fill, high
+// pdb params: collidables
+void D0A6A0_Manager::hkpKdTreeWorldManager_gatherCollidablesFromWorld(hkArrayBase<D0A6A0_Collidable*>& collidables)
 {
-    aCollidables.m_iElementCount = 0;
+    collidables.m_iElementCount = 0;
     int n = m_pOwningWorld->m_pJobSemaphore->GetBroadphaseType();
-    D0A6A0_CollidableArray_reserve(aCollidables, routerHeap<hkMemoryAllocator>(hkMemoryRouter_getInstance()), n);
+    D0A6A0_CollidableArray_reserve(collidables, routerHeap<hkMemoryAllocator>(hkMemoryRouter_getInstance()), n);
 
     {
         D0A6A0_IslandArray& islands = m_pOwningWorld->m_activeIslands;
@@ -416,7 +421,7 @@ void D0A6A0_Manager::CollectCollidables(hkArrayBase<D0A6A0_Collidable*>& aCollid
         {
             for (int j = 0; j < islands.m_data[i]->m_iActorEntryCount; j++)
             {
-                D0A6A0_CollidableArray_pushBackUnchecked(aCollidables, &islands.m_data[i]->m_kActorEntries[j]->m_kCollidable);
+                D0A6A0_CollidableArray_pushBackUnchecked(collidables, &islands.m_data[i]->m_kActorEntries[j]->m_kCollidable);
             }
         }
     }
@@ -426,7 +431,7 @@ void D0A6A0_Manager::CollectCollidables(hkArrayBase<D0A6A0_Collidable*>& aCollid
         {
             for (int j = 0; j < islands.m_data[i]->m_iActorEntryCount; j++)
             {
-                D0A6A0_CollidableArray_pushBackUnchecked(aCollidables, &islands.m_data[i]->m_kActorEntries[j]->m_kCollidable);
+                D0A6A0_CollidableArray_pushBackUnchecked(collidables, &islands.m_data[i]->m_kActorEntries[j]->m_kCollidable);
             }
         }
     }
@@ -437,7 +442,7 @@ void D0A6A0_Manager::CollectCollidables(hkArrayBase<D0A6A0_Collidable*>& aCollid
             D0A6A0_Collidable* c = &phantoms.m_data[i]->m_kCollidable;
             if (c->unk00 != 0)
             {
-                D0A6A0_CollidableArray_pushBackUnchecked(aCollidables, c);
+                D0A6A0_CollidableArray_pushBackUnchecked(collidables, c);
             }
         }
     }
@@ -449,7 +454,7 @@ void D0A6A0_Manager::CollectCollidables(hkArrayBase<D0A6A0_Collidable*>& aCollid
             D0A6A0_Entity* pEntity = pFixedIsland->m_kActorEntries[i];
             if (pEntity != fixedBody)
             {
-                D0A6A0_CollidableArray_pushBackUnchecked(aCollidables, &pEntity->m_kCollidable);
+                D0A6A0_CollidableArray_pushBackUnchecked(collidables, &pEntity->m_kCollidable);
             }
         }
     }
@@ -457,8 +462,8 @@ void D0A6A0_Manager::CollectCollidables(hkArrayBase<D0A6A0_Collidable*>& aCollid
 
 struct FUN_00d0ac40_Owner
 {
-    void hkpKdTreeWorldManager_buildTreeDistributed(int a, int b, int c, int d);
-    void hkpKdTreeWorldManager_buildTreeSingleThreaded(int a, int b);
+    void hkpKdTreeWorldManager_buildTreeDistributed(int a, int collidables, int jobQueue, int jobThreadPool);
+    void hkpKdTreeWorldManager_buildTreeSingleThreaded(int tree, int collidables);
     void hkpKdTreeWorldManager_buildTree(int a, int b, int c, int d);
 };
 // Calls FUN_00d0a810 with all four arguments when c and d are both nonzero, otherwise calls FUN_00d0a560 with a and b.
@@ -496,6 +501,7 @@ class hkObjD0AD : public FUN_00d0a4f0
 
 // Runs the base destructor, and if bit 0 of uiFlags is set, frees this object through the heap allocator; returns this.
 // @fnv 0x00d0adc0
+// pdb: hkpKdTreeWorldManager::`scalar deleting destructor' | hkpKdTreeWorldManager.obj | retail, vtable slot, high
 hkObjD0AD* hkObjD0AD::FUN_00d0adc0(unsigned int uiFlags) throw()
 {
     this->FUN_00d0a4f0::~FUN_00d0a4f0();
@@ -510,6 +516,8 @@ BSAudio* __cdecl hkMemoryRouter_getInstance();
 
 // Allocates two buffers of index * 16 bytes through the router heap and stores their addresses in paiOut.
 // @fnv 0x00d9d800
+// pdb: hkKdTreeBuildingUtils::allocateBuffers | hkKdTreeBuildingUtils.obj | retail, call graph, low
+// pdb params: buffersOut, numPrimitives
 void __cdecl GetAudioPair(int* paiOut, int index)
 {
     BSAudio* a = hkMemoryRouter_getInstance();
@@ -571,14 +579,17 @@ class hkQueryD0A3
     int unk00[4];
     void* m_pOwningWorld;
 
-    void RayCast(hkInputD0A3* input, hkPhantomD0A3* phantom, int filter);
+    void RayCast(hkInputD0A3* input, hkPhantomD0A3* phantom, int output);
 };
 
 // Creates a collector with the given input, phantom and filter, then calls FUN_00d98ca0 on m_pOwningWorld to perform the ray cast.
 // @fnv 0x00d0a390
-void hkQueryD0A3::RayCast(hkInputD0A3* input, hkPhantomD0A3* phantom, int filter)
+// pdb: hkpKdTreeWorldManager::castRay | hkpKdTreeWorldManager.obj | retail, vtable slot, high
+// pdb params: input, filter, output
+// pdb locals: rayCaster
+void hkQueryD0A3::RayCast(hkInputD0A3* input, hkPhantomD0A3* phantom, int output)
 {
-    hkCollectorD0A3 collector(input, phantom, filter);
+    hkCollectorD0A3 collector(input, phantom, output);
     hkKdTreeUtils_castRayIterative(m_pOwningWorld, input, &input->m_10, &collector);
 }
 
@@ -659,17 +670,20 @@ struct RayCasterD0A4
     int unk08;
     int unk0c;
     void* m_pkShape;
-    void CastRay(const RayInputD0A4* pkInput, QueryD0A4* pkQuery, int iUser);
+    void CastRay(const RayInputD0A4* input, QueryD0A4* filter, int collector);
 };
 
 // Creates a RayCollectorD0A4 and RayCastOutputD0A4, then calls FUN_00d98ca0 to cast a ray against m_pkShape using pkInput and pkQuery.
 // @fnv 0x00d0a400
-void RayCasterD0A4::CastRay(const RayInputD0A4* pkInput, QueryD0A4* pkQuery, int iUser)
+// pdb: hkpKdTreeWorldManager::castRay | hkpKdTreeWorldManager.obj | retail, vtable slot, high
+// pdb params: input, filter, output
+// pdb locals: rayCaster
+void RayCasterD0A4::CastRay(const RayInputD0A4* input, QueryD0A4* filter, int collector)
 {
-    RayCollectorD0A4 kCollector(pkInput, pkQuery, iUser, 0);
+    RayCollectorD0A4 kCollector(input, filter, collector, 0);
     RayCastOutputD0A4 kOutput;
     kCollector.m_pkOutput = &kOutput;
-    hkKdTreeUtils_castRayIterative(m_pkShape, pkInput, &pkInput->m_vTo, &kCollector);
+    hkKdTreeUtils_castRayIterative(m_pkShape, input, &input->m_vTo, &kCollector);
 }
 
 extern "C" __declspec(dllimport) void* __stdcall TlsGetValue(unsigned long);
@@ -724,13 +738,16 @@ struct D0AObj
     int unk18;
     int unk1c;
     char m_flag;
-    void CollectCollidables(D0ARange*);
+    void hkpKdTreeWorldManager_gatherCollidablesFromWorld(D0ARange*);
     void hkpKdTreeWorldManager_buildTree(D0ASub*, D0ARange*, int, int);
-    void CollectAndProcessCollidables(int a, int b);
+    void CollectAndProcessCollidables(int jobQueue, int jobThreadPool);
 };
 // Records timing markers, collects collidables into a range, processes them via FUN_00d0ac40, and frees the result buffer if it was heap-allocated.
 // @fnv 0x00d0ac70
-void D0AObj::CollectAndProcessCollidables(int a, int b)
+// pdb: hkpKdTreeWorldManager::updateFromWorld | hkpKdTreeWorldManager.obj | retail, string-set bridge, high
+// pdb params: jobQueue, jobThreadPool
+// pdb locals: collidables
+void D0AObj::CollectAndProcessCollidables(int jobQueue, int jobThreadPool)
 {
     {
         D0AMon* mon = (D0AMon*)TlsGetValue(DAT_0126835c);
@@ -751,7 +768,7 @@ void D0AObj::CollectAndProcessCollidables(int a, int b)
     r.m_kPointA = 0;
     r.m_kPointB = 0;
     r.m_iThirdValue = (int)0x80000000;
-    CollectCollidables(&r);
+    hkpKdTreeWorldManager_gatherCollidablesFromWorld(&r);
     {
         D0AMon* mon = (D0AMon*)TlsGetValue(DAT_0126835c);
         char* pos = mon->m_kRayEnd;
@@ -766,7 +783,7 @@ void D0AObj::CollectAndProcessCollidables(int a, int b)
             mon->m_kRayEnd = pos + sizeof(D0ATimer12);
         }
     }
-    hkpKdTreeWorldManager_buildTree(&m_sub, &r, a, b);
+    hkpKdTreeWorldManager_buildTree(&m_sub, &r, jobQueue, jobThreadPool);
     m_flag = 0;
     {
         D0AMon* mon = (D0AMon*)TlsGetValue(DAT_0126835c);
@@ -821,8 +838,8 @@ class WorldHolderD0A
 class WorldD0A
 {
   public:
-    void hkpWorld_addEntityListener(hkpEntityListener* pkListener);
-    void hkpWorld_addPhantomListener(hkpPhantomListener* pkListener);
+    void hkpWorld_addEntityListener(hkpEntityListener* worldListener);
+    void hkpWorld_addPhantomListener(hkpPhantomListener* worldListener);
 };
 
 class FUN_00d0a2d0 : public WorldD0A
@@ -900,7 +917,7 @@ struct FUN_00d976d0_Obj
 
 struct FUN_00d97850_Obj
 {
-    void ClearBuffers();
+    void hkKdTree_dtor();
 };
 
 struct FUN_00d97970_Obj
@@ -1008,20 +1025,23 @@ struct S00d0a560_Owner
     int unk18;
     S00d0a560_Holder* unk1C;
 
-    void __thiscall hkpKdTreeWorldManager_buildTreeSingleThreaded(int* out, int ch);
+    void __thiscall hkpKdTreeWorldManager_buildTreeSingleThreaded(int* tree, int collidables);
 };
 
 // Frees the object at *out, builds a new one via Init, then calls GetAudioPair, FillAabbArray, DrawIfCountPositive and FreeBufferPair between two timer records.
 // @fnv 0x00d0a560
 // src: HAVOK_LIB 0x00d0a560
-void S00d0a560_Owner::hkpKdTreeWorldManager_buildTreeSingleThreaded(int* out, int ch)
+// pdb: hkpKdTreeWorldManager::buildTreeSingleThreaded | hkpKdTreeWorldManager.obj | retail, string-set bridge, high
+// pdb params: tree, collidables
+// pdb locals: mediator, cinfo, set
+void S00d0a560_Owner::hkpKdTreeWorldManager_buildTreeSingleThreaded(int* tree, int collidables)
 {
     S00d0a560_Frame f;
-    ((FUN_00d9df50_Obj*)&f.s24)->InitWalker(ch, unk1C);
-    FUN_00d97850_Obj* v = (FUN_00d97850_Obj*)*out;
+    ((FUN_00d9df50_Obj*)&f.s24)->InitWalker(collidables, unk1C);
+    FUN_00d97850_Obj* v = (FUN_00d97850_Obj*)*tree;
     if (v != 0)
     {
-        v->ClearBuffers();
+        v->hkKdTree_dtor();
         audioHeap(fnvc_adapt::hkMemoryRouter_getInstance()).blockFree(v, 0x50);
     }
     int t2 = f.s24.hkpCollidableMediator_getNumPrimitives();
@@ -1030,7 +1050,7 @@ void S00d0a560_Owner::hkpKdTreeWorldManager_buildTreeSingleThreaded(int* out, in
     f.s30.unk00 = t2;
     f.s30.unk05 = 0;
     FUN_00d97970_Obj* p = (FUN_00d97970_Obj*)audioHeap(fnvc_adapt::hkMemoryRouter_getInstance()).blockAlloc(0x50);
-    *out = p ? p->Init(&f.s30) : 0;
+    *tree = p ? p->Init(&f.s30) : 0;
     S00d0a560_TimerBuf* pTimerBuf = (S00d0a560_TimerBuf*)TlsGetValue(DAT_0126835c);
     S00d0a560_Timer* c = pTimerBuf->cur;
     if (c < pTimerBuf->end)
@@ -1043,7 +1063,7 @@ void S00d0a560_Owner::hkpKdTreeWorldManager_buildTreeSingleThreaded(int* out, in
     }
     GetAudioPair(&f.l1c, t2);
     FillAabbArray(&f.s24, 0, t2, f.l1c.unk00);
-    DrawIfCountPositive(&f.l1c, *out);
+    DrawIfCountPositive(&f.l1c, *tree);
     FreeBufferPair(&f.l1c, t2);
     pTimerBuf = (S00d0a560_TimerBuf*)TlsGetValue(DAT_0126835c);
     c = pTimerBuf->cur;
@@ -1148,7 +1168,7 @@ struct Tree
     {
         return extra + size;
     }
-    void ClearBuffers();
+    void hkKdTree_dtor();
     Tree* Init(TreeInfo*);
 };
 // hkpWorld::m_broadPhase (World +0x58): an hkpBroadPhase seen through its extents getter (virtual slot 16,
@@ -1202,7 +1222,7 @@ struct Counter
 struct Semaphore
 {
     void* handle;
-    Semaphore* Create(int, int);
+    Semaphore* hkSemaphore_ctor(int, int);
     void ForwardCall_00d04370();
     void hkSemaphore_acquire();
 };
@@ -1315,12 +1335,15 @@ struct Manager
 };
 // @fnv 0x00d0a810
 // src: HAVOK_LIB 0x00d0a810
-void Manager::hkpKdTreeWorldManager_buildTreeDistributed(Tree** tree, Input* input, Queue* queue, Workers* workers)
+// pdb: hkpKdTreeWorldManager::buildTreeDistributed | hkpKdTreeWorldManager.obj | retail, string-set bridge, high
+// pdb params: tree, collidables, jobQueue, jobThreadPool
+// pdb locals: buildJob, cinfo, set
+void Manager::hkpKdTreeWorldManager_buildTreeDistributed(Tree** tree, Input* collidables, Queue* jobQueue, Workers* jobThreadPool)
 {
     Tree* oldTree = *tree;
     if (oldTree)
     {
-        oldTree->ClearBuffers();
+        oldTree->hkKdTree_dtor();
         reinterpret_cast<hkMemoryAllocator*>(getRouter()->m_heap)->blockFree(oldTree, 0x50);
     }
     struct Frame
@@ -1346,7 +1369,7 @@ void Manager::hkpKdTreeWorldManager_buildTreeDistributed(Tree** tree, Input* inp
         Counter* volatile counter;
         int* volatile firstData;
     } tail;
-    int count = input->count;
+    int count = collidables->count;
     tail.count = count;
     job.hkKdTreeCinfo_hkKdTreeCinfo();
     job.count = count;
@@ -1369,7 +1392,7 @@ void Manager::hkpKdTreeWorldManager_buildTreeDistributed(Tree** tree, Input* inp
     Semaphore* semaphore;
     storage = reinterpret_cast<hkMemoryAllocator*>(getRouter()->m_heap)->blockAlloc(4);
     if (storage)
-        semaphore = static_cast<Semaphore*>(storage)->Create(0, 1000);
+        semaphore = static_cast<Semaphore*>(storage)->hkSemaphore_ctor(0, 1000);
     else
         semaphore = 0;
     info.affinity = -1;
@@ -1382,7 +1405,7 @@ void Manager::hkpKdTreeWorldManager_buildTreeDistributed(Tree** tree, Input* inp
     info.type = 6;
     info.bytes = 0x60;
     info.context = world->context;
-    info.objects = input->objects;
+    info.objects = collidables->objects;
     info.scratchFirst = scratch.first;
     info.first = firstData;
     info.semaphore = semaphore;
@@ -1406,10 +1429,10 @@ void Manager::hkpKdTreeWorldManager_buildTreeDistributed(Tree** tree, Input* inp
             stream->current = reinterpret_cast<char*>(record) + 16;
         }
     }
-    queue->hkJobQueue_addJob(&info, 0);
+    jobQueue->hkJobQueue_addJob(&info, 0);
     timerEvent(str_010cd0f4);
-    workers->start(queue, 3);
-    queue->hkJobQueue_processAllJobs();
+    jobThreadPool->start(jobQueue, 3);
+    jobQueue->hkJobQueue_processAllJobs();
     {
         TimerStream* stream = static_cast<TimerStream*>(TlsGetValue(DAT_0126835c));
         char* cur = stream->current;
@@ -1424,7 +1447,7 @@ void Manager::hkpKdTreeWorldManager_buildTreeDistributed(Tree** tree, Input* inp
             stream->current = r + 12;
         }
     }
-    workers->wait();
+    jobThreadPool->wait();
     timerEvent(str_010cd0d0);
     semaphore->hkSemaphore_acquire();
     timerEvent(str_010cd0c4);

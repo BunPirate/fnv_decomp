@@ -135,17 +135,17 @@ public:
     void Unitize_004a0c10();
     float FUN_004a7290();
     float FUN_004a7290() const;
-    LocalVec3 FUN_004b3800(const LocalVec3& other) const;
+    LocalVec3 FUN_004b3800(const LocalVec3& pt) const;
     LocalVec3 ProcessAndReturnValue_0053d280(float divisor);
     float NiPoint3_XYLength();
     float NiPoint3_XYLength() const;
     void ComputeValue_0063c8a0(const LocalVec3* other);
     void ComputeValue_0063c8a0(void* other);
     void FUN_006815c0();
-    float CVec3_Distance(LocalVec3* other);
-    float CVec3_Distance(const LocalVec3& other) const;
-    LocalVec3 TransformPointByMatrix4(const Mat& matrix);
-    LocalVec3 TransformPointByMatrix4(const Matrix4* matrix);
+    float CVec3_Distance(LocalVec3* cVec);
+    float CVec3_Distance(const LocalVec3& cVec) const;
+    LocalVec3 TransformPointByMatrix4(const Mat& cTransform);
+    LocalVec3 TransformPointByMatrix4(const Matrix4* cTransform);
     void Normalize_00b12790();
     LocalVec3 Diff_00b13040(void* other);
     LocalVec3 Diff_00b13040(const LocalVec3& other) const;
@@ -332,6 +332,8 @@ struct FUN_00eb60e0_t
 // Compares the six floats of p and q and returns 1 if all are equal, otherwise 0.
 // @fnv 0x00eb60e0
 // src: GUESS 0x00eb60e0 (confidence: high)
+// pdb: NiSegment::operator== | NiSegment.obj | debug, object-file run extension, low
+// pdb params: kSegment
 int __fastcall Object_HasEqualSixFloats(FUN_00eb60e0_t* p, int, FUN_00eb60e0_t* q)
 {
     if (!(p->a[0] != q->a[0] || p->a[1] != q->a[1] || p->a[2] != q->a[2] || p->a[3] != q->a[3] || p->a[4] != q->a[4] ||
@@ -413,6 +415,9 @@ struct FUN_00eae9e0_cls
 };
 
 // @fnv 0x00eae9e0
+// pdb: NiCapsuleSphereIntersector::NiCapsuleSphereIntersector | NiCapsuleSphereIntersector.obj | retail, object-file run extension, low
+// pdb params: kCapsule, kSphere, fMaxTime, fDerivativeTimeStep, fPseudodistanceThreshold, iMaxIterations
+// pdb locals: fRadiusSum
 FUN_00eae9e0_cls* FUN_00eae9e0_cls::InitFromParams(S_00eae9e0_P1* a1, S_00eae9e0_P2* a2, float a3, float a4, float a5,
                                                    int a6)
 {
@@ -462,6 +467,10 @@ struct FNVRegion
     FNVRegion* InitRegion(void* owner, FNVVectorParameter* bounds, float x, float y, float z, void* userdata);
 };
 // @fnv 0x00eb3c40
+// pdb: NiBoxSphereIntersector::NiBoxSphereIntersector | NiBoxSphereIntersector.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiBoxCapsuleIntersector::`scalar deleting destructor'
+// pdb params: kBox, kSphere, fMaxTime, fDerivativeTimeStep, fPseudodistanceThreshold, iMaxIterations
+// pdb locals: i
 FNVRegion* FNVRegion::InitRegion(void* owner, FNVVectorParameter* bounds, float x, float y, float z, void* userdata)
 {
     FUN_00eae720(x, y, z, userdata);
@@ -580,26 +589,27 @@ struct S_00eb5e30_Base
     int unk34;
     S_00eb5e30_Base(float a, float b, float c, int d);
 };
-struct FUN_00eb5e30 : S_00eb5e30_Base
+// pdb: class NiSphereTriIntersector, size 0x6c, bases: NiIntersector, 5 members
+struct NiSphereTriIntersector : S_00eb5e30_Base // src: EXE 0x010f1b2c (vtable; old: FUN_00eb5e30)
 {
-    S_00eb5e30_Obj* unk38;
-    NiPoint3 unk3c;
+    S_00eb5e30_Obj* m_kSphere; // src: XBOX_RETAIL_PDB +0x38 (old: unk38)
+    NiPoint3 m_kTri; // src: XBOX_RETAIL_PDB +0x3c (old: unk3c)
     NiPoint3 unk48;
     NiPoint3 unk54;
-    float unk60;
-    float unk64;
-    float unk68;
-    FUN_00eb5e30(S_00eb5e30_Obj* o, const NiPoint3* p0, const NiPoint3* p1, const NiPoint3* p2, float a,
+    float m_fInvRadiusSqr; // src: XBOX_RETAIL_PDB +0x60 (old: unk60)
+    float m_fParameter0; // src: XBOX_RETAIL_PDB +0x64 (old: unk64)
+    float m_fParameter1; // src: XBOX_RETAIL_PDB +0x68 (old: unk68)
+    NiSphereTriIntersector(S_00eb5e30_Obj* o, const NiPoint3* p0, const NiPoint3* p1, const NiPoint3* p2, float a,
                  float b, float c, int d);
 };
 static float DAT_010f1b24 = 3.4028234663852886e+38f;
 // @fnv 0x00eb5e30
-FUN_00eb5e30::FUN_00eb5e30(S_00eb5e30_Obj* pObj, const NiPoint3* pOrigin, const NiPoint3* pPoint1,
+NiSphereTriIntersector::NiSphereTriIntersector(S_00eb5e30_Obj* pObj, const NiPoint3* pOrigin, const NiPoint3* pPoint1,
                            const NiPoint3* pPoint2, float a, float b, float c, int d)
     : S_00eb5e30_Base(a, b, c, d)
 {
-    unk38 = pObj;
-    unk3c = *pOrigin;
+    m_kSphere = pObj;
+    m_kTri = *pOrigin;
     NiPoint3 vEdge1;
     vEdge1.x = pPoint1->x - pOrigin->x;
     vEdge1.y = pPoint1->y - pOrigin->y;
@@ -610,13 +620,13 @@ FUN_00eb5e30::FUN_00eb5e30(S_00eb5e30_Obj* pObj, const NiPoint3* pOrigin, const 
     vEdge2.y = pPoint2->y - pOrigin->y;
     vEdge2.z = pPoint2->z - pOrigin->z;
     unk54 = vEdge2;
-    unk60 = 1.0f / (pObj->unk10 * pObj->unk10);
-    unk68 = unk64 = DAT_010f1b24;
+    m_fInvRadiusSqr = 1.0f / (pObj->unk10 * pObj->unk10);
+    m_fParameter1 = m_fParameter0 = DAT_010f1b24;
 }
 
 struct FUN_00aa4060_Class
 {
-    void* __thiscall MemoryManager_Deallocate(void* object);
+    void* __thiscall MemoryManager_Deallocate(void* apMem);
 };
 
 extern FUN_00aa4060_Class DAT_011f6238;
@@ -687,6 +697,7 @@ class FUN_00eb8ab0
 
 // Destructor that deletes m_pkPrimary and, if it was non-null, also deletes m_pkSecondary.
 // @fnv 0x00eb8ab0
+// pdb: NiOBBLeaf::`scalar deleting destructor' | NiOBBLeaf.obj | debug, object-file run extension, low
 FUN_00eb8ab0::~FUN_00eb8ab0()
 {
     if (m_pkPrimary)
@@ -1096,6 +1107,7 @@ struct S_00eaedc0_Class
 
 // Sets m_38 and m_3c from a1/a2, computes m_40 as the inverse squared sum of their 0x38 fields, and initializes m_44/m_48 to FLT_MAX.
 // @fnv 0x00eaedc0
+// pdb: NiCapsuleSphereIntersector::`scalar deleting destructor' | NiCapsuleSphereIntersector.obj | debug, object-file run extension, low
 S_00eaedc0_Class* S_00eaedc0_Class::Initialize(int a1, int a2, float a3, float a4, float a5, int a6)
 {
     FUN_00eae720(a3, a4, a5, a6);
@@ -1133,6 +1145,9 @@ float __cdecl NiSqrDistance_Compute(const OriginDirectionPair& kSeg0, const Orig
 float __cdecl NiSqrDistance_Compute_00eb6150(const NiPoint3& kPnt, const TrianglePointSet& kPgm, float& fPgmParam0, float& fPgmParam1);
 // @fnv 0x00eaff20
 // src: GAMEBRYO_LIB 0x00eaff20
+// pdb: NiSqrDistance::Compute | NiDistSegPgm.obj | retail, call graph, low
+// pdb params: kPoint, kBox, fBoxParam0, fBoxParam1, fBoxParam2
+// pdb locals: kClosest, fSqrDistance, kDiff, i, fDelta
 float __cdecl NiSqrDistance_Compute_00eaff20(const OriginDirectionPair& kSeg, const TrianglePointSet& kPgm, float& fR, float& fS,
                            float& fT)
 {
@@ -2358,74 +2373,77 @@ struct S00eb4de0_Box
 // Clamps a point into a box along a direction, accumulating squared distance and computing the line parameter.
 // @fnv 0x00eb4de0
 // src: GAMEBRYO_LIB 0x00eb4de0
-static __declspec(noinline) void Case0(const S00eb4de0_Box& rkBox, int aiAxis0, int aiAxis1, int aiAxis2,
-                                              NiPoint3& rkPnt, const NiPoint3& rkDir, float* pfLParam,
+// pdb: Case0 | NiDistSegBox.obj | retail, upstream name already matches, high
+// pdb params: kBox, i0, i1, i2, rkPnt, rkDir, fLParam, rfSqrDistance
+// pdb locals: fProd1, fProd0, fInvLSqr, fDelta, fInv, fPmE0, fPmE1, fPpE1, fPpE0
+static __declspec(noinline) void Case0(const S00eb4de0_Box& kBox, int i0, int i1, int i2,
+                                              NiPoint3& rkPnt, const NiPoint3& rkDir, float* fLParam,
                                               float& rfSqrDistance)
 {
-    float fPmE0 = rkPnt[aiAxis0] - rkBox.extent[aiAxis0];
-    float fPmE1 = rkPnt[aiAxis1] - rkBox.extent[aiAxis1];
-    float fProd0 = rkDir.components[aiAxis1] * fPmE0;
-    float fProd1 = rkDir[aiAxis0] * fPmE1;
+    float fPmE0 = rkPnt[i0] - kBox.extent[i0];
+    float fPmE1 = rkPnt[i1] - kBox.extent[i1];
+    float fProd0 = rkDir.components[i1] * fPmE0;
+    float fProd1 = rkDir[i0] * fPmE1;
     float fTimeSinceScaleStart, fInvLSqr, fInv;
 
     if (fProd0 >= fProd1)
     {
-        rkPnt[aiAxis0] = rkBox.extent[aiAxis0];
+        rkPnt[i0] = kBox.extent[i0];
 
-        float fPpE1 = rkPnt[aiAxis1] + rkBox.extent[aiAxis1];
-        fTimeSinceScaleStart = fProd0 - rkDir[aiAxis0] * fPpE1;
+        float fPpE1 = rkPnt[i1] + kBox.extent[i1];
+        fTimeSinceScaleStart = fProd0 - rkDir[i0] * fPpE1;
         if (fTimeSinceScaleStart >= 0.0f)
         {
-            double fScaleMultiplier = rkDir[aiAxis0] * rkDir[aiAxis0];
-            fScaleMultiplier += rkDir[aiAxis1] * rkDir[aiAxis1];
+            double fScaleMultiplier = rkDir[i0] * rkDir[i0];
+            fScaleMultiplier += rkDir[i1] * rkDir[i1];
             fInvLSqr = 1.0f / fScaleMultiplier;
             rfSqrDistance += fTimeSinceScaleStart * fTimeSinceScaleStart * fInvLSqr;
-            rkPnt[aiAxis1] = -rkBox.extent[aiAxis1];
-            *pfLParam = -(rkDir[aiAxis0] * fPmE0 + rkDir[aiAxis1] * fPpE1) * fInvLSqr;
+            rkPnt[i1] = -kBox.extent[i1];
+            *fLParam = -(rkDir[i0] * fPmE0 + rkDir[i1] * fPpE1) * fInvLSqr;
         }
         else
         {
-            fInv = 1.0f / rkDir[aiAxis0];
-            rkPnt[aiAxis1] -= fProd0 * fInv;
-            *pfLParam = -fPmE0 * fInv;
+            fInv = 1.0f / rkDir[i0];
+            rkPnt[i1] -= fProd0 * fInv;
+            *fLParam = -fPmE0 * fInv;
         }
     }
     else
     {
-        rkPnt[aiAxis1] = rkBox.extent[aiAxis1];
+        rkPnt[i1] = kBox.extent[i1];
 
-        float fPpE0 = rkPnt[aiAxis0] + rkBox.extent[aiAxis0];
-        fTimeSinceScaleStart = fProd1 - rkDir[aiAxis1] * fPpE0;
+        float fPpE0 = rkPnt[i0] + kBox.extent[i0];
+        fTimeSinceScaleStart = fProd1 - rkDir[i1] * fPpE0;
         if (fTimeSinceScaleStart >= 0.0f)
         {
-            double fScaleMultiplier = rkDir[aiAxis0] * rkDir[aiAxis0];
-            fScaleMultiplier += rkDir[aiAxis1] * rkDir[aiAxis1];
+            double fScaleMultiplier = rkDir[i0] * rkDir[i0];
+            fScaleMultiplier += rkDir[i1] * rkDir[i1];
             fInvLSqr = 1.0f / fScaleMultiplier;
             rfSqrDistance += fTimeSinceScaleStart * fTimeSinceScaleStart * fInvLSqr;
-            rkPnt[aiAxis0] = -rkBox.extent[aiAxis0];
-            double fProjection = rkDir[aiAxis1] * fPmE1;
-            fProjection += rkDir[aiAxis0] * fPpE0;
-            *pfLParam = -fProjection * fInvLSqr;
+            rkPnt[i0] = -kBox.extent[i0];
+            double fProjection = rkDir[i1] * fPmE1;
+            fProjection += rkDir[i0] * fPpE0;
+            *fLParam = -fProjection * fInvLSqr;
         }
         else
         {
-            fInv = 1.0f / rkDir[aiAxis1];
-            rkPnt[aiAxis0] -= fProd1 * fInv;
-            *pfLParam = -fPmE1 * fInv;
+            fInv = 1.0f / rkDir[i1];
+            rkPnt[i0] -= fProd1 * fInv;
+            *fLParam = -fPmE1 * fInv;
         }
     }
 
-    if (rkPnt[aiAxis2] < -rkBox.extent[aiAxis2])
+    if (rkPnt[i2] < -kBox.extent[i2])
     {
-        fTimeSinceScaleStart = rkPnt[aiAxis2] + rkBox.extent[aiAxis2];
+        fTimeSinceScaleStart = rkPnt[i2] + kBox.extent[i2];
         rfSqrDistance += fTimeSinceScaleStart * fTimeSinceScaleStart;
-        rkPnt[aiAxis2] = -rkBox.extent[aiAxis2];
+        rkPnt[i2] = -kBox.extent[i2];
     }
-    else if (rkPnt[aiAxis2] > rkBox.extent[aiAxis2])
+    else if (rkPnt[i2] > kBox.extent[i2])
     {
-        fTimeSinceScaleStart = rkPnt[aiAxis2] - rkBox.extent[aiAxis2];
+        fTimeSinceScaleStart = rkPnt[i2] - kBox.extent[i2];
         rfSqrDistance += fTimeSinceScaleStart * fTimeSinceScaleStart;
-        rkPnt[aiAxis2] = rkBox.extent[aiAxis2];
+        rkPnt[i2] = kBox.extent[i2];
     }
 }
 
@@ -2522,37 +2540,40 @@ union AxisIndex
 // Clamps a point to an oriented box on two axes, accumulating squared distance, and stores the parameter along the first axis.
 // @fnv 0x00eb5010
 // src: GAMEBRYO_LIB 0x00eb5010
-static __declspec(noinline) void Case00(AxisValues* point, int axis1, int axis2, float* pfSqrDistance,
-                                              BoxInput boxArg, AxisIndex axisArg, const AxisValues* direction,
-                                              float* pfParam)
+// pdb: Case00 | NiDistSegBox.obj | retail, upstream name already matches, high
+// pdb params: kBox, i0, i1, i2, rkPnt, rkDir, fLParam, rfSqrDistance
+// pdb locals: fDelta
+static __declspec(noinline) void Case00(AxisValues* kBox, int i0, int i1, float* i2,
+                                              BoxInput rkPnt, AxisIndex rkDir, const AxisValues* fLParam,
+                                              float* rfSqrDistance)
 {
-    int axis0 = axisArg.value;
-    const ExtentBox* box = boxArg.value;
-    *pfParam = (box->extent[axis0] - point->value[axis0]) / direction->value[axis0];
-    point->value[axis0] = box->extent[axis0];
-    if (point->value[axis1] < -box->extentAt(axis1))
+    int axis0 = rkDir.value;
+    const ExtentBox* box = rkPnt.value;
+    *rfSqrDistance = (box->extent[axis0] - kBox->value[axis0]) / fLParam->value[axis0];
+    kBox->value[axis0] = box->extent[axis0];
+    if (kBox->value[i0] < -box->extentAt(i0))
     {
-        axisArg.delta = point->value[axis1] + box->extent[axis1];
-        *pfSqrDistance += axisArg.delta * axisArg.delta;
-        point->value[axis1] = -box->extent[axis1];
+        rkDir.delta = kBox->value[i0] + box->extent[i0];
+        *i2 += rkDir.delta * rkDir.delta;
+        kBox->value[i0] = -box->extent[i0];
     }
-    else if (point->value[axis1] > box->extent[axis1])
+    else if (kBox->value[i0] > box->extent[i0])
     {
-        axisArg.delta = point->value[axis1] - box->extent[axis1];
-        *pfSqrDistance += axisArg.delta * axisArg.delta;
-        point->value[axis1] = box->extent[axis1];
+        rkDir.delta = kBox->value[i0] - box->extent[i0];
+        *i2 += rkDir.delta * rkDir.delta;
+        kBox->value[i0] = box->extent[i0];
     }
-    if (point->value[axis2] < -box->extent[axis2])
+    if (kBox->value[i1] < -box->extent[i1])
     {
-        axisArg.delta = point->value[axis2] + box->extent[axis2];
-        *pfSqrDistance += axisArg.delta * axisArg.delta;
-        point->value[axis2] = -box->extent[axis2];
+        rkDir.delta = kBox->value[i1] + box->extent[i1];
+        *i2 += rkDir.delta * rkDir.delta;
+        kBox->value[i1] = -box->extent[i1];
     }
-    else if (point->value[axis2] > box->extent[axis2])
+    else if (kBox->value[i1] > box->extent[i1])
     {
-        axisArg.delta = point->value[axis2] - box->extent[axis2];
-        *pfSqrDistance += axisArg.delta * axisArg.delta;
-        point->value[axis2] = box->extent[axis2];
+        rkDir.delta = kBox->value[i1] - box->extent[i1];
+        *i2 += rkDir.delta * rkDir.delta;
+        kBox->value[i1] = box->extent[i1];
     }
 }
 extern AxisValues* volatile probePoint;
@@ -2627,6 +2648,9 @@ struct FUN_00eba1b0
 };
 // Computes each triangle's area and centroid from indices and vertices, then calls BuildNode with them plus temporary order and scratch arrays.
 // @fnv 0x00eba1b0
+// pdb: NiOBBNode::CreateRecursive | NiOBBNode.obj | retail, object-file run extension, low
+// pdb params: pRoot, pTriList, pVertex, pWVertex, pArea, pCentroid, i0, i1, pISplit, pOSplit, iBinSize
+// pdb locals: j0, j1
 FUN_00eba1b0::FUN_00eba1b0(int arg1, unsigned short count, const unsigned short* indices, const NiPoint3* vertices,
                            int arg5, int arg6)
 {
@@ -2853,13 +2877,16 @@ static void Face_00eb4590(const LBBox& rkBox, int i0, int i1, int i2, LBPoint3& 
 // Compares products of rkDir and rkPnt minus box extents to choose an axis order, then calls FUN_00eb4590 with it.
 // @fnv 0x00eb4cd0
 // src: GAMEBRYO_LIB 0x00eb4cd0
-static void CaseNoZeros(LBPoint3& rkPnt, const LBPoint3& rkDir, const LBBox& rkBox, float* pfLParam,
+// pdb: CaseNoZeros | NiDistSegBox.obj | retail, upstream name already matches, high
+// pdb params: kBox, rkPnt, rkDir, fLParam, rfSqrDistance
+// pdb locals: kPmE, fProdDyPx, fProdDyPz, fProdDxPz, fProdDzPx, fProdDxPy, fProdDzPy
+static void CaseNoZeros(LBPoint3& kBox, const LBPoint3& rkDir, const LBBox& rkBox, float* fLParam,
                          float& rfSqrDistance)
 {
     LBPoint3 kPmE;
-    kPmE.x = rkPnt.x - rkBox.m_afExtents[0];
-    kPmE.y = rkPnt.y - rkBox.m_afExtents[1];
-    kPmE.z = rkPnt.z - rkBox.m_afExtents[2];
+    kPmE.x = kBox.x - rkBox.m_afExtents[0];
+    kPmE.y = kBox.y - rkBox.m_afExtents[1];
+    kPmE.z = kBox.z - rkBox.m_afExtents[2];
 
     float fProdDxPy = rkDir.x * kPmE.y;
     float fProdDyPx = rkDir.y * kPmE.x;
@@ -2870,18 +2897,18 @@ static void CaseNoZeros(LBPoint3& rkPnt, const LBPoint3& rkDir, const LBBox& rkB
         fProdDzPx = rkDir.z * kPmE.x;
         fProdDxPz = rkDir.x * kPmE.z;
         if (fProdDzPx >= fProdDxPz)
-            Face_00eb4590(rkBox, 0, 1, 2, rkPnt, rkDir, kPmE, pfLParam, rfSqrDistance);
+            Face_00eb4590(rkBox, 0, 1, 2, kBox, rkDir, kPmE, fLParam, rfSqrDistance);
         else
-            Face_00eb4590(rkBox, 2, 0, 1, rkPnt, rkDir, kPmE, pfLParam, rfSqrDistance);
+            Face_00eb4590(rkBox, 2, 0, 1, kBox, rkDir, kPmE, fLParam, rfSqrDistance);
     }
     else
     {
         fProdDzPy = rkDir.z * kPmE.y;
         fProdDyPz = rkDir.y * kPmE.z;
         if (fProdDzPy >= fProdDyPz)
-            Face_00eb4590(rkBox, 1, 2, 0, rkPnt, rkDir, kPmE, pfLParam, rfSqrDistance);
+            Face_00eb4590(rkBox, 1, 2, 0, kBox, rkDir, kPmE, fLParam, rfSqrDistance);
         else
-            Face_00eb4590(rkBox, 2, 0, 1, rkPnt, rkDir, kPmE, pfLParam, rfSqrDistance);
+            Face_00eb4590(rkBox, 2, 0, 1, kBox, rkDir, kPmE, fLParam, rfSqrDistance);
     }
 }
 
@@ -3550,14 +3577,14 @@ struct DirArg
     const BoxVec3* p;
 };
 // src: GAMEBRYO_LIB 0x00eb4cd0
-static void CaseNoZeros(const OrientedBox& rkBox, PointArg pArg, DirArg dArg, float& rfLParam, float& rfSqrDistance)
+static void CaseNoZeros(const OrientedBox& kBox, PointArg pArg, DirArg dArg, float& fLParam, float& rfSqrDistance)
 {
     BoxVec3& rkPnt = *pArg.p;
     const BoxVec3& rkDir = *dArg.p;
     BoxVec3 kPmE;
-    kPmE.x = rkPnt.x - rkBox.extent0;
-    kPmE.y = rkPnt.y - rkBox.extent1;
-    kPmE.z = rkPnt.z - rkBox.extent2;
+    kPmE.x = rkPnt.x - kBox.extent0;
+    kPmE.y = rkPnt.y - kBox.extent1;
+    kPmE.z = rkPnt.z - kBox.extent2;
 
     float fProdDxPy = rkDir.x * kPmE.y;
     float fProdDyPx = rkDir.y * kPmE.x;
@@ -3568,35 +3595,35 @@ static void CaseNoZeros(const OrientedBox& rkBox, PointArg pArg, DirArg dArg, fl
         fProdDzPx = rkDir.z * kPmE.x;
         fProdDxPz = rkDir.x * kPmE.z;
         if (fProdDzPx >= fProdDxPz)
-            Face_00eb4590(rkBox, MakeSArg1(0), 1, 2, rkPnt, rkDir, kPmE, rfLParam, rfSqrDistance);
+            Face_00eb4590(kBox, MakeSArg1(0), 1, 2, rkPnt, rkDir, kPmE, fLParam, rfSqrDistance);
         else
-            Face_00eb4590(rkBox, MakeSArg1(2), 0, 1, rkPnt, rkDir, kPmE, rfLParam, rfSqrDistance);
+            Face_00eb4590(kBox, MakeSArg1(2), 0, 1, rkPnt, rkDir, kPmE, fLParam, rfSqrDistance);
     }
     else
     {
         fProdDzPy = rkDir.z * kPmE.y;
         fProdDyPz = rkDir.y * kPmE.z;
         if (fProdDzPy >= fProdDyPz)
-            Face_00eb4590(rkBox, MakeSArg1(1), 2, 0, rkPnt, rkDir, kPmE, rfLParam, rfSqrDistance);
+            Face_00eb4590(kBox, MakeSArg1(1), 2, 0, rkPnt, rkDir, kPmE, fLParam, rfSqrDistance);
         else
-            Face_00eb4590(rkBox, MakeSArg1(2), 0, 1, rkPnt, rkDir, kPmE, rfLParam, rfSqrDistance);
+            Face_00eb4590(kBox, MakeSArg1(2), 0, 1, rkPnt, rkDir, kPmE, fLParam, rfSqrDistance);
     }
 }
 
 // src: GAMEBRYO_LIB 0x00eb4de0
-static void Case0(const OrientedBox& rkBox, int i0, int i1, int i2, BoxVec3& rkPnt, const BoxVec3& rkDir,
-                         float& rfLParam, float& rfSqrDistance)
+static void Case0(const OrientedBox& kBox, int i0, int i1, int i2, BoxVec3& rkPnt, const BoxVec3& rkDir,
+                         float& fLParam, float& rfSqrDistance)
 {
-    float fPmE0 = S00eb50f0_At(rkPnt, i0) - S00eb50f0_Ext(rkBox, i0);
-    float fPmE1 = S00eb50f0_At(rkPnt, i1) - S00eb50f0_Ext(rkBox, i1);
+    float fPmE0 = S00eb50f0_At(rkPnt, i0) - S00eb50f0_Ext(kBox, i0);
+    float fPmE1 = S00eb50f0_At(rkPnt, i1) - S00eb50f0_Ext(kBox, i1);
     float fProd0 = S00eb50f0_At(rkDir, i1) * fPmE0;
     float fProd1 = S00eb50f0_At(rkDir, i0) * fPmE1;
     float fTimeSinceScaleStart, fInvLSqr, fInv;
 
     if (fProd0 >= fProd1)
     {
-        S00eb50f0_At(rkPnt, i0) = S00eb50f0_Ext(rkBox, i0);
-        float fPpE1 = S00eb50f0_At(rkPnt, i1) + S00eb50f0_Ext(rkBox, i1);
+        S00eb50f0_At(rkPnt, i0) = S00eb50f0_Ext(kBox, i0);
+        float fPpE1 = S00eb50f0_At(rkPnt, i1) + S00eb50f0_Ext(kBox, i1);
         fTimeSinceScaleStart = fProd0 - S00eb50f0_At(rkDir, i0) * fPpE1;
         if (fTimeSinceScaleStart >= 0.0f)
         {
@@ -3604,8 +3631,8 @@ static void Case0(const OrientedBox& rkBox, int i0, int i1, int i2, BoxVec3& rkP
                                S00eb50f0_At(rkDir, i1) * S00eb50f0_At(rkDir, i1));
             rfSqrDistance += fTimeSinceScaleStart * fTimeSinceScaleStart * fInvLSqr;
             {
-                S00eb50f0_At(rkPnt, i1) = -S00eb50f0_Ext(rkBox, i1);
-                rfLParam = -(S00eb50f0_At(rkDir, i0) * fPmE0 + S00eb50f0_At(rkDir, i1) * fPpE1) * fInvLSqr;
+                S00eb50f0_At(rkPnt, i1) = -S00eb50f0_Ext(kBox, i1);
+                fLParam = -(S00eb50f0_At(rkDir, i0) * fPmE0 + S00eb50f0_At(rkDir, i1) * fPpE1) * fInvLSqr;
             }
         }
         else
@@ -3613,14 +3640,14 @@ static void Case0(const OrientedBox& rkBox, int i0, int i1, int i2, BoxVec3& rkP
             {
                 fInv = 1.0f / S00eb50f0_At(rkDir, i0);
                 S00eb50f0_At(rkPnt, i1) -= fProd0 * fInv;
-                rfLParam = -fPmE0 * fInv;
+                fLParam = -fPmE0 * fInv;
             }
         }
     }
     else
     {
-        S00eb50f0_At(rkPnt, i1) = S00eb50f0_Ext(rkBox, i1);
-        float fPpE0 = S00eb50f0_At(rkPnt, i0) + S00eb50f0_Ext(rkBox, i0);
+        S00eb50f0_At(rkPnt, i1) = S00eb50f0_Ext(kBox, i1);
+        float fPpE0 = S00eb50f0_At(rkPnt, i0) + S00eb50f0_Ext(kBox, i0);
         fTimeSinceScaleStart = fProd1 - S00eb50f0_At(rkDir, i1) * fPpE0;
         if (fTimeSinceScaleStart >= 0.0f)
         {
@@ -3628,8 +3655,8 @@ static void Case0(const OrientedBox& rkBox, int i0, int i1, int i2, BoxVec3& rkP
                                S00eb50f0_At(rkDir, i1) * S00eb50f0_At(rkDir, i1));
             rfSqrDistance += fTimeSinceScaleStart * fTimeSinceScaleStart * fInvLSqr;
             {
-                S00eb50f0_At(rkPnt, i0) = -S00eb50f0_Ext(rkBox, i0);
-                rfLParam = -(S00eb50f0_At(rkDir, i0) * fPpE0 + S00eb50f0_At(rkDir, i1) * fPmE1) * fInvLSqr;
+                S00eb50f0_At(rkPnt, i0) = -S00eb50f0_Ext(kBox, i0);
+                fLParam = -(S00eb50f0_At(rkDir, i0) * fPpE0 + S00eb50f0_At(rkDir, i1) * fPmE1) * fInvLSqr;
             }
         }
         else
@@ -3637,59 +3664,59 @@ static void Case0(const OrientedBox& rkBox, int i0, int i1, int i2, BoxVec3& rkP
             {
                 fInv = 1.0f / S00eb50f0_At(rkDir, i1);
                 S00eb50f0_At(rkPnt, i0) -= fProd1 * fInv;
-                rfLParam = -fPmE1 * fInv;
+                fLParam = -fPmE1 * fInv;
             }
         }
     }
 
-    if (S00eb50f0_At(rkPnt, i2) < -S00eb50f0_Ext(rkBox, i2))
+    if (S00eb50f0_At(rkPnt, i2) < -S00eb50f0_Ext(kBox, i2))
     {
-        fTimeSinceScaleStart = S00eb50f0_At(rkPnt, i2) + S00eb50f0_Ext(rkBox, i2);
+        fTimeSinceScaleStart = S00eb50f0_At(rkPnt, i2) + S00eb50f0_Ext(kBox, i2);
         rfSqrDistance += fTimeSinceScaleStart * fTimeSinceScaleStart;
-        S00eb50f0_At(rkPnt, i2) = -S00eb50f0_Ext(rkBox, i2);
+        S00eb50f0_At(rkPnt, i2) = -S00eb50f0_Ext(kBox, i2);
     }
-    else if (S00eb50f0_At(rkPnt, i2) > S00eb50f0_Ext(rkBox, i2))
+    else if (S00eb50f0_At(rkPnt, i2) > S00eb50f0_Ext(kBox, i2))
     {
-        fTimeSinceScaleStart = S00eb50f0_At(rkPnt, i2) - S00eb50f0_Ext(rkBox, i2);
+        fTimeSinceScaleStart = S00eb50f0_At(rkPnt, i2) - S00eb50f0_Ext(kBox, i2);
         rfSqrDistance += fTimeSinceScaleStart * fTimeSinceScaleStart;
-        S00eb50f0_At(rkPnt, i2) = S00eb50f0_Ext(rkBox, i2);
+        S00eb50f0_At(rkPnt, i2) = S00eb50f0_Ext(kBox, i2);
     }
 }
 
 // src: GAMEBRYO_LIB 0x00eb5010
-static void Case00(const OrientedBox& rkBox, int i0, int i1, int i2, BoxVec3& rkPnt, const BoxVec3& rkDir,
-                         float& rfLParam, float& rfSqrDistance)
+static void Case00(const OrientedBox& kBox, int i0, int i1, int i2, BoxVec3& rkPnt, const BoxVec3& rkDir,
+                         float& fLParam, float& rfSqrDistance)
 {
     float fTimeSinceScaleStart;
 
-    rfLParam = (S00eb50f0_Ext(rkBox, i0) - S00eb50f0_At(rkPnt, i0)) / S00eb50f0_At(rkDir, i0);
+    fLParam = (S00eb50f0_Ext(kBox, i0) - S00eb50f0_At(rkPnt, i0)) / S00eb50f0_At(rkDir, i0);
 
-    S00eb50f0_At(rkPnt, i0) = S00eb50f0_Ext(rkBox, i0);
+    S00eb50f0_At(rkPnt, i0) = S00eb50f0_Ext(kBox, i0);
 
-    if (S00eb50f0_At(rkPnt, i1) < -S00eb50f0_Ext(rkBox, i1))
+    if (S00eb50f0_At(rkPnt, i1) < -S00eb50f0_Ext(kBox, i1))
     {
-        fTimeSinceScaleStart = S00eb50f0_At(rkPnt, i1) + S00eb50f0_Ext(rkBox, i1);
+        fTimeSinceScaleStart = S00eb50f0_At(rkPnt, i1) + S00eb50f0_Ext(kBox, i1);
         rfSqrDistance += fTimeSinceScaleStart * fTimeSinceScaleStart;
-        S00eb50f0_At(rkPnt, i1) = -S00eb50f0_Ext(rkBox, i1);
+        S00eb50f0_At(rkPnt, i1) = -S00eb50f0_Ext(kBox, i1);
     }
-    else if (S00eb50f0_At(rkPnt, i1) > S00eb50f0_Ext(rkBox, i1))
+    else if (S00eb50f0_At(rkPnt, i1) > S00eb50f0_Ext(kBox, i1))
     {
-        fTimeSinceScaleStart = S00eb50f0_At(rkPnt, i1) - S00eb50f0_Ext(rkBox, i1);
+        fTimeSinceScaleStart = S00eb50f0_At(rkPnt, i1) - S00eb50f0_Ext(kBox, i1);
         rfSqrDistance += fTimeSinceScaleStart * fTimeSinceScaleStart;
-        S00eb50f0_At(rkPnt, i1) = S00eb50f0_Ext(rkBox, i1);
+        S00eb50f0_At(rkPnt, i1) = S00eb50f0_Ext(kBox, i1);
     }
 
-    if (S00eb50f0_At(rkPnt, i2) < -S00eb50f0_Ext(rkBox, i2))
+    if (S00eb50f0_At(rkPnt, i2) < -S00eb50f0_Ext(kBox, i2))
     {
-        fTimeSinceScaleStart = S00eb50f0_At(rkPnt, i2) + S00eb50f0_Ext(rkBox, i2);
+        fTimeSinceScaleStart = S00eb50f0_At(rkPnt, i2) + S00eb50f0_Ext(kBox, i2);
         rfSqrDistance += fTimeSinceScaleStart * fTimeSinceScaleStart;
-        S00eb50f0_At(rkPnt, i2) = -S00eb50f0_Ext(rkBox, i2);
+        S00eb50f0_At(rkPnt, i2) = -S00eb50f0_Ext(kBox, i2);
     }
-    else if (S00eb50f0_At(rkPnt, i2) > S00eb50f0_Ext(rkBox, i2))
+    else if (S00eb50f0_At(rkPnt, i2) > S00eb50f0_Ext(kBox, i2))
     {
-        fTimeSinceScaleStart = S00eb50f0_At(rkPnt, i2) - S00eb50f0_Ext(rkBox, i2);
+        fTimeSinceScaleStart = S00eb50f0_At(rkPnt, i2) - S00eb50f0_Ext(kBox, i2);
         rfSqrDistance += fTimeSinceScaleStart * fTimeSinceScaleStart;
-        S00eb50f0_At(rkPnt, i2) = S00eb50f0_Ext(rkBox, i2);
+        S00eb50f0_At(rkPnt, i2) = S00eb50f0_Ext(kBox, i2);
     }
 }
 
@@ -3740,6 +3767,9 @@ static void ClampPointToBox(const OrientedBox& rkBox, BoxVec3& rkPnt, float& rfS
 // Moves the segment into the box frame, finds the squared distance from it to the box, writes segment and box parameters through the pointers, and returns it.
 // @fnv 0x00eb50f0
 // src: GAMEBRYO_LIB 0x00eb50f0
+// pdb: NiSqrDistance::Compute | NiDistSegBox.obj | retail, object-file run extension, low
+// pdb params: kPoint, kBox, fBoxParam0, fBoxParam1, fBoxParam2
+// pdb locals: kClosest, fSqrDistance, kDiff, i, fDelta
 float __cdecl NiSqrDistance_Compute_00eb50f0(const S00eb50f0_Seg* apSegment, const OrientedBox* box, float* pfLParam, float* pfBParam0,
                            float* pfBParam1, float* pfBParam2)
 {
@@ -3874,6 +3904,10 @@ class PortBox
 // For axis order i0,i1,i2, moves origin to a box point and updates lineParam and sqrDistance from direction, PmE and the box extents.
 // @fnv 0x00eb4590
 // src: GAMEBRYO_LIB 0x00eb4590
+// pdb: Face | NiDistSegBox.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiSqrDistance::Compute
+// pdb params: kBox, i0, i1, i2, rkPnt, rkDir, rkPmE, fLParam, rfSqrDistance
+// pdb locals: fT, fParam, fDelta, fTmp, kPpE, fInv, fLSqr
 static __declspec(noinline) void Face_00eb4590(const PortBox& box, int aiAxis0, int aiAxis1, int aiAxis2,
                                               PortPoint& origin, const PortPoint& direction, const PortPoint& PmE,
                                               float& lineParam, float& sqrDistance)
@@ -4087,28 +4121,31 @@ class SpawnedBase
     SpawnedBase(float a, float b, float c, void* d);
 };
 
-class FUN_00eb3750 : public SpawnedBase
+// pdb: class NiCapsuleTriIntersector, size 0x6c, bases: NiIntersector, 5 members
+class NiCapsuleTriIntersector : public SpawnedBase // src: EXE 0x010f1ad8 (vtable; old: FUN_00eb3750)
 {
   public:
-    float* m_38;
-    FloatVec3Local m_3c;
+    float* m_kCapsule; // src: XBOX_RETAIL_PDB +0x38 (old: m_38)
+    FloatVec3Local m_kTri; // src: XBOX_RETAIL_PDB +0x3c (old: m_3c)
     FloatVec3Local m_48;
     FloatVec3Local m_54;
-    float m_60;
-    float m_64;
-    float m_68;
-    FUN_00eb3750(float* a1, FloatVec3Local* a2, FloatVec3Local* a3, FloatVec3Local* a4, float a5, float a6, float a7,
+    float m_fInvRadiusSqr; // src: XBOX_RETAIL_PDB +0x60 (old: m_60)
+    float m_fParameter0; // src: XBOX_RETAIL_PDB +0x64 (old: m_64)
+    float m_fParameter1; // src: XBOX_RETAIL_PDB +0x68 (old: m_68)
+    NiCapsuleTriIntersector(float* a1, FloatVec3Local* a2, FloatVec3Local* a3, FloatVec3Local* a4, float a5, float a6, float a7,
                  void* a8);
 };
 
 // Stores a1 and *a2, stores a3-a2 and a4-a2, sets m_60 to 1/(a1[14]*a1[14]) and sets m_64 and m_68 to the float max constant.
 // @fnv 0x00eb3750
-FUN_00eb3750::FUN_00eb3750(float* apFloats, FloatVec3Local* apVecA, FloatVec3Local* apVecB, FloatVec3Local* apVecC,
+// pdb: NiTrigon::GetPoint | NiTrigon.obj | debug, object-file run extension, low
+// pdb params: fS0, fS1
+NiCapsuleTriIntersector::NiCapsuleTriIntersector(float* apFloats, FloatVec3Local* apVecA, FloatVec3Local* apVecB, FloatVec3Local* apVecC,
                            float a5, float a6, float a7, void* a8)
     : SpawnedBase(a5, a6, a7, a8)
 {
-    m_38 = apFloats;
-    m_3c = *apVecA;
+    m_kCapsule = apFloats;
+    m_kTri = *apVecA;
     {
         FloatVec3Local d;
         d.x = apVecB->x - apVecA->x;
@@ -4123,8 +4160,8 @@ FUN_00eb3750::FUN_00eb3750(float* apFloats, FloatVec3Local* apVecA, FloatVec3Loc
         d.z = apVecC->z - apVecA->z;
         m_54 = d;
     }
-    m_60 = 1.0f / (apFloats[14] * apFloats[14]);
-    m_68 = m_64 = fltmax_eb3750::DAT_010f1ad0;
+    m_fInvRadiusSqr = 1.0f / (apFloats[14] * apFloats[14]);
+    m_fParameter1 = m_fParameter0 = fltmax_eb3750::DAT_010f1ad0;
 }
 
 extern NiPoint3 DAT_011a9490;
@@ -4149,6 +4186,8 @@ struct MemoryManagerAllocHelper
 // Allocates 0x40 bytes, builds a NiBoundingVolume via FUN_00ea0820 from five global NiPoint3 values, calls LoadBinary(apStream) and returns it.
 // @fnv 0x00ea7490
 // src: COMMUNITY 0x00ea7490
+// pdb: NiBoxBV::Clone | NiBoxBV.obj | debug, object-file run extension, low
+// pdb locals: pkClone
 NiBoundingVolume* __cdecl NiRegisterBVStream(void* apStream)
 {
     Helper* pkHelper = (Helper*)((MemoryManagerAllocHelper*)&_g_memoryManager)->Allocate(0x40);

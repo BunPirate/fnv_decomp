@@ -44,7 +44,7 @@ struct FUN_00869f00_shell
 
 extern int DAT_012024d4;
 void __cdecl NiStaticDataManager_AddLibrary(void*, void*);
-void __cdecl RegisterParticleSystems();
+void __cdecl NiParticleSDM_Init();
 void __cdecl NiParticleSDM_Shutdown();
 
 struct FUN_00c1ad50_class
@@ -54,11 +54,12 @@ struct FUN_00c1ad50_class
 
 // @fnv 0x00c1ad50
 // src: COMMUNITY 0x00c1ad50
+// pdb: NiParticleSDM::NiParticleSDM | NiParticleSDM.obj | retail, upstream name already matches, high
 void* FUN_00c1ad50_class::NiParticleSDM_NiParticleSDM()
 {
     int count = DAT_012024d4;
     ++DAT_012024d4;
     if (!count)
-        NiStaticDataManager_AddLibrary((void*)&RegisterParticleSystems, (void*)&NiParticleSDM_Shutdown);
+        NiStaticDataManager_AddLibrary((void*)&NiParticleSDM_Init, (void*)&NiParticleSDM_Shutdown);
     return this;
 }

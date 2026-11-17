@@ -79,7 +79,7 @@ struct FUN_00cb0a70
 {
     void __thiscall m_00cb0a70(int);
 };
-void __cdecl finishLoadedObjecthkpPhysicsSystemWithContacts(int* a, int b);
+void __cdecl finishLoadedObjecthkpPhysicsSystemWithContacts(int* p, int finishing);
 struct FUN_00dff340_Class
 {
     void* m_p;
@@ -207,7 +207,7 @@ struct FUN_00cb0a70_m_helper
 {
     void __thiscall m(int);
 };
-void __cdecl finishLoadedObjecthkpMouseSpringAction(void* a, void* b);
+void __cdecl finishLoadedObjecthkpMouseSpringAction(void* p, void* finishing);
 typedef void(__thiscall* VTableFn)(void*, int);
 void __cdecl Object_ProcessState_00dff3c0(void* p);
 extern int DAT_010e75cc;
@@ -418,7 +418,7 @@ struct FUN_00dfe4e0_vt
 void __cdecl Object_InvokeVirtualMethod_00dfe4e0(FUN_00dfe4e0_vt* p);
 void __cdecl Runtime_UpdateState_00dfe590(void* p);
 extern int DAT_010e587c;
-void __cdecl finishLoadedObjecthkaBoneAttachment(void* a, int b);
+void __cdecl finishLoadedObjecthkaBoneAttachment(void* p, int finishing);
 extern int DAT_010e5a58;
 void __cdecl Object_UpdateState_00dfe990(void* a, int b);
 void __cdecl Object_UpdateFields_00dfeb40(void* p);
@@ -919,18 +919,18 @@ class FUN_00de5360_cls
 };
 extern void* DAT_01269ce8;
 int __cdecl Runtime_EvaluateValue_00de8150();
-extern int DAT_01269d18;
+extern int hkpBridgeConstraintAtomClass; // src: XBOX_RETAIL_PDB 0x01269d18 (old: DAT_01269d18/g_01269d18)
 int* __cdecl Runtime_GetDAT01269d18Address();
-extern int DAT_01269d48;
+extern int hkpBridgeAtomsClass; // src: XBOX_RETAIL_PDB 0x01269d48 (old: DAT_01269d48/g_01269d48)
 void* Runtime_GetDAT01269d48Address();
-extern int g_unk01269d78;
+extern int hkpSimpleContactConstraintAtomClass; // src: XBOX_RETAIL_PDB 0x01269d78 (old: g_01269d78/g_unk01269d78)
 void* __cdecl Runtime_GetUnk01269d78Address();
 struct CpuOpaque;
-extern CpuOpaque DAT_01269da8;
+extern CpuOpaque hkpBallSocketConstraintAtomClass; // src: XBOX_RETAIL_PDB 0x01269da8 (old: DAT_01269da8/g_01269da8)
 CpuOpaque* __cdecl Runtime_GetDAT01269da8Address();
-extern int DAT_01269dd8;
+extern int hkpStiffSpringConstraintAtomClass; // src: XBOX_RETAIL_PDB 0x01269dd8 (old: DAT_01269dd8/g_01269dd8)
 void* __cdecl Runtime_GetDAT01269dd8Address();
-extern int g_unk01269e08;
+extern int hkpSetLocalTransformsConstraintAtomClass; // src: XBOX_RETAIL_PDB 0x01269e08 (old: g_01269e08/g_unk01269e08)
 int* Runtime_GetUnk01269e08Address();
 struct GlobalObject
 {
@@ -939,55 +939,55 @@ struct GlobalObject
 extern GlobalObject g_global;
 GlobalObject* __cdecl Runtime_GetGlobalAddress();
 struct CpuOpaque;
-extern CpuOpaque DAT_01269e68;
+extern CpuOpaque hkpSetLocalRotationsConstraintAtomClass; // src: XBOX_RETAIL_PDB 0x01269e68 (old: DAT_01269e68/g_01269e68)
 CpuOpaque* __cdecl Runtime_GetDAT01269e68Address();
-extern int g_unk01269e98;
+extern int hkpOverwritePivotConstraintAtomClass; // src: XBOX_RETAIL_PDB 0x01269e98 (old: g_01269e98/g_unk01269e98)
 void* __cdecl Runtime_GetUnk01269e98Address();
-extern int g_unk01269ec8;
+extern int hkpLinConstraintAtomClass; // src: XBOX_RETAIL_PDB 0x01269ec8 (old: g_01269ec8/g_unk01269ec8)
 void* __cdecl Runtime_GetUnk01269ec8Address();
 class GlobalObjectO2_00d472a0;
-extern GlobalObjectO2_00d472a0 g_01269ef8;
+extern GlobalObjectO2_00d472a0 hkpLinSoftConstraintAtomClass; // src: XBOX_RETAIL_PDB 0x01269ef8 (old: g_01269ef8)
 GlobalObjectO2_00d472a0* __cdecl Runtime_GetField01269ef8Address();
-extern int DAT_01269f28;
+extern int hkpLinLimitConstraintAtomClass; // src: XBOX_RETAIL_PDB 0x01269f28 (old: DAT_01269f28/g_01269f28)
 void* __cdecl Runtime_GetDAT01269f28Address();
-extern int g_unkGlobal01269f58;
+extern int hkp2dAngConstraintAtomClass; // src: XBOX_RETAIL_PDB 0x01269f58 (old: g_01269f58/g_unkGlobal01269f58)
 void* __cdecl Runtime_GetUnkGlobal01269f58Address();
-extern int DAT_01269f88;
+extern int hkpAngConstraintAtomClass; // src: XBOX_RETAIL_PDB 0x01269f88 (old: DAT_01269f88/g_01269f88)
 void* __cdecl Runtime_GetDAT01269f88Address();
 // FUN_00de8350 : a one-line function - getter
-extern int g_target_00de8350;
+extern int hkpAngLimitConstraintAtomClass; // src: XBOX_RETAIL_PDB 0x01269fb8 (old: g_01269fb8/g_target_00de8350)
 void* Runtime_GetTarget00de8350Address();
-extern int DAT_0126a018;
+extern int hkpConeLimitConstraintAtomClass; // src: XBOX_RETAIL_PDB 0x0126a018 (old: DAT_0126a018/g_0126a018)
 void* __cdecl Runtime_GetDAT0126a018Address();
-extern int DAT_0126a048;
+extern int hkpAngFrictionConstraintAtomClass; // src: XBOX_RETAIL_PDB 0x0126a048 (old: DAT_0126a048/g_0126a048)
 int* Runtime_GetDAT0126a048Address();
 struct CpuOpaque;
-extern CpuOpaque DAT_0126a078;
+extern CpuOpaque hkpAngMotorConstraintAtomClass; // src: XBOX_RETAIL_PDB 0x0126a078 (old: DAT_0126a078/g_0126a078)
 CpuOpaque* __cdecl Runtime_GetDAT0126a078Address();
-extern int DAT_0126a0a8;
+extern int hkpRagdollMotorConstraintAtomClass; // src: XBOX_RETAIL_PDB 0x0126a0a8 (old: DAT_0126a0a8/g_0126a0a8)
 void* __cdecl Runtime_GetDAT0126a0a8Address();
-extern int DAT_0126a0d8;
+extern int hkpLinFrictionConstraintAtomClass; // src: XBOX_RETAIL_PDB 0x0126a0d8 (old: DAT_0126a0d8/g_0126a0d8)
 void* __cdecl Runtime_GetDAT0126a0d8Address();
-extern int DAT_0126a108;
+extern int hkpLinMotorConstraintAtomClass; // src: XBOX_RETAIL_PDB 0x0126a108 (old: DAT_0126a108/g_0126a108)
 int* __cdecl Runtime_GetDAT0126a108Address();
-extern int DAT_0126a138;
+extern int hkpPulleyConstraintAtomClass; // src: XBOX_RETAIL_PDB 0x0126a138 (old: DAT_0126a138/g_0126a138)
 void* __cdecl Runtime_GetDAT0126a138Address();
 extern int DAT_0126a168;
 void* __cdecl Runtime_GetDAT0126a168Address();
-extern int DAT_0126a198;
+extern int hkpSoftContactModifierConstraintAtomClass; // src: XBOX_RETAIL_PDB 0x0126a198 (old: DAT_0126a198/g_0126a198)
 int* __cdecl Runtime_GetDAT0126a198Address();
-extern int DAT_0126a1c8;
+extern int hkpMassChangerModifierConstraintAtomClass; // src: XBOX_RETAIL_PDB 0x0126a1c8 (old: DAT_0126a1c8/g_0126a1c8)
 void* __cdecl Runtime_GetDAT0126a1c8Address();
-extern FUN_00de87c0_class DAT_0126a1f8;
+extern FUN_00de87c0_class hkpCenterOfMassChangerModifierConstraintAtomClass; // src: XBOX_RETAIL_PDB 0x0126a1f8 (old: DAT_0126a1f8/g_0126a1f8)
 FUN_00de87c0_class* __cdecl Runtime_GetDAT0126a1f8Address();
 // FUN_00de84f0 : returns the address of a global data object.
 // Original: mov eax, offset DAT_0126a228 ; ret
-extern int DAT_0126a228;
+extern int hkpViscousSurfaceModifierConstraintAtomClass; // src: XBOX_RETAIL_PDB 0x0126a228 (old: DAT_0126a228/g_0126a228)
 int* __cdecl Runtime_GetDAT0126a228Address();
 struct CpuOpaque;
-extern CpuOpaque DAT_0126a258;
+extern CpuOpaque hkpMovingSurfaceModifierConstraintAtomClass; // src: XBOX_RETAIL_PDB 0x0126a258 (old: DAT_0126a258/g_0126a258)
 CpuOpaque* __cdecl Runtime_GetDAT0126a258Address();
-extern int g_0126a288;
+extern int hkpIgnoreModifierConstraintAtomClass; // src: XBOX_RETAIL_PDB 0x0126a288 (old: g_0126a288)
 int* __cdecl Runtime_GetField0126a288Address();
 struct FUN_00de8570_cls
 {
@@ -997,9 +997,9 @@ struct FUN_00de8570_cls
     void __thiscall hkpBridgeConstraintAtom_init(int value);
 };
 void __cdecl hkpBridgeConstraintAtom_init_ProcessState_00de8570(FUN_00de8570_cls* pTarget, int nIndex);
-extern int DAT_0126a378;
+extern int hkAabbClass; // src: XBOX_RETAIL_PDB 0x0126a378 (old: DAT_0126a378/g_0126a378)
 void* __cdecl Runtime_GetDAT0126a378Address();
-extern int g_unk126a3a8;
+extern int hkAabbUint32Class; // src: XBOX_RETAIL_PDB 0x0126a3a8 (old: g_0126a3a8/g_unk126a3a8)
 void* __cdecl Runtime_GetUnk126a3a8Address();
 class FUN_00de8780_cls
 {
@@ -1069,7 +1069,7 @@ struct DF25D0Owner
     int unk2C;
     DF25D0State* m_pkState;
 };
-void __cdecl hkpWorldOperationUtil_addConstraintToCriticalLockedIsland(void* pkItem, DF25D0Owner* pkOwner);
+void __cdecl hkpWorldOperationUtil_addConstraintToCriticalLockedIsland(void* pkItem, DF25D0Owner* constraint);
 static void SetOwnerStateFlags(void* pkItem, DF25D0Owner* pkOwner, unsigned char m_ucEntryType);
 void DF25D0Attach(void* pkItem, DF25D0Owner* pkOwner, unsigned char m_ucEntryType);
 class FUN_00df3110
@@ -1154,9 +1154,9 @@ struct Handler_cls
     void __thiscall Handle(int value);
 };
 void __cdecl Object_ProcessState_00df6440(Handler_cls* pHandler, int value);
-extern int g_0126a430;
+extern int hkpWorldClass; // src: XBOX_RETAIL_PDB 0x0126a430 (old: g_0126a430)
 int* __cdecl Runtime_GetField0126a430Address();
-extern int DAT_0126a478;
+extern int hkpCollidableBoundingVolumeDataClass; // src: XBOX_RETAIL_PDB 0x0126a478 (old: DAT_0126a478/g_0126a478)
 void* __cdecl Runtime_GetDAT0126a478Address();
 extern "C" int DAT_0126a4a8;
 // @fnv 0x00df64c0
@@ -1195,45 +1195,45 @@ struct FloatPair
     int __thiscall hkWingedEdge_findVisibilityBoundaryEdges(ParserContext*, int, int*, ParserContext**);
 };
 struct CpuOpaque;
-extern CpuOpaque DAT_0126a5f8;
+extern CpuOpaque hkpVehicleSuspensionSuspensionWheelParametersClass; // src: XBOX_RETAIL_PDB 0x0126a5f8 (old: DAT_0126a5f8/g_0126a5f8)
 CpuOpaque* __cdecl Object_GetGlobalObjectAddress_00dfb260();
-extern int g_unk0126aa18;
+extern int hkpMoppBvTreeShapeClass; // src: XBOX_RETAIL_PDB 0x0126aa18 (old: g_0126aa18/g_unk0126aa18)
 int* __cdecl Object_GetGlobalObjectAddress_00dfb280();
 struct FUN_00dfb2d0_class
 {
     void __thiscall FUN_00dfb2d0(int a);
 };
 void __cdecl Object_ProcessState_00dfb290(FUN_00dfb2d0_class* p, int a);
-extern int DAT_0126aac0;
+extern int hkMeshSectionClass; // src: XBOX_RETAIL_PDB 0x0126aac0 (old: DAT_0126aac0/g_0126aac0)
 int* __cdecl Object_GetGlobalObjectAddress_00dfb360();
-extern int DAT_0126aaf0;
+extern int hkMeshSectionCinfoClass; // src: XBOX_RETAIL_PDB 0x0126aaf0 (old: DAT_0126aaf0/g_0126aaf0)
 void* __cdecl Object_GetGlobalObjectAddress_00dfb380();
-extern int DAT_0126abe0;
+extern int hkMemoryResourceHandleExternalLinkClass; // src: XBOX_RETAIL_PDB 0x0126abe0 (old: DAT_0126abe0/g_0126abe0)
 int* __cdecl Object_GetGlobalObjectAddress_00dfb3c0(void);
 // Null-guarded forwarder: the first argument is an object pointer; when it
 // is non-null the second argument is forwarded to a member function of that
 // object (ecx = object, one stack argument).
 struct FUN_00dfb3d0_cls
 {
-    void __thiscall hkaMeshBinding_hkaMeshBinding(int a1);
+    void __thiscall hkMemoryResourceHandle_ctor(int flag);
 };
 void __cdecl Object_ProcessState_00dfb3d0(FUN_00dfb3d0_cls* pObject, int a1);
-extern unsigned char DAT_0126ac10;
+extern unsigned char hkMemoryResourceHandleClass; // src: XBOX_RETAIL_PDB 0x0126ac10 (old: DAT_0126ac10/g_0126ac10)
 void* __cdecl Object_GetGlobalObjectAddress_00dfb420();
 struct FUN_00e2ebc0_cls
 {
-    void __thiscall Init(void* a);
+    void __thiscall hkMemoryResourceContainer_ctor(void* flag);
 };
 void __cdecl Object_ProcessState_00dfb430(FUN_00e2ebc0_cls* pObject, void* pArg);
-extern "C" int DAT_0126ac58;
+extern "C" int hkMemoryResourceContainerClass; // src: XBOX_RETAIL_PDB 0x0126ac58 (old: DAT_0126ac58/g_0126ac58)
 int* __cdecl Object_GetGlobalObjectAddress_00dfb480(void);
-extern int DAT_0126acd0;
+extern int hkaKeyFrameHierarchyUtilityControlDataClass; // src: XBOX_RETAIL_PDB 0x0126acd0 (old: DAT_0126acd0/g_0126acd0)
 int __cdecl Runtime_EvaluateValue_00dfb4d0();
-extern int DAT_0126ad00;
+extern int hkaKeyFrameHierarchyUtilityClass; // src: XBOX_RETAIL_PDB 0x0126ad00 (old: DAT_0126ad00/g_0126ad00)
 void* __cdecl Runtime_GetDAT0126ad00Address();
-extern int DAT_0126ad30;
+extern int hkaWaveletCompressedAnimationCompressionParamsClass; // src: XBOX_RETAIL_PDB 0x0126ad30 (old: DAT_0126ad30/g_0126ad30)
 void* __cdecl Runtime_GetDAT0126ad30Address();
-extern void* DAT_0126ad60;
+extern void* hkaWaveletCompressedAnimationQuantizationFormatClass; // src: XBOX_RETAIL_PDB 0x0126ad60 (old: DAT_0126ad60/g_0126ad60)
 int __cdecl Object_ComputeValue_00dfb540();
 class DFB550Object
 {
@@ -1241,7 +1241,7 @@ class DFB550Object
     virtual ~DFB550Object();
 };
 void Runtime_DestroySubobject_00dfb550(DFB550Object* pkObject);
-extern int DAT_0126ad90;
+extern int hkaWaveletCompressedAnimationClass; // src: XBOX_RETAIL_PDB 0x0126ad90 (old: DAT_0126ad90/g_0126ad90)
 int* __cdecl Object_GetGlobalObjectAddress_00dfb560();
 inline void* operator new(unsigned int, void* pvWhere) throw()
 {
@@ -1267,12 +1267,12 @@ class DFB570Object
 void Runtime_AllocateStorage_00dfb570(void* p, int finishing);
 extern int DAT_010ddc5c;
 void* __cdecl Runtime_GetDAT010ddc5cAddress();
-extern int DAT_0126add8;
+extern int hkaSplineCompressedAnimationTrackCompressionParamsClass; // src: XBOX_RETAIL_PDB 0x0126add8 (old: DAT_0126add8/g_0126add8)
 int* __cdecl Object_GetGlobalObjectAddress_00dfb860();
-extern unsigned char g_fnvDat0126ae08;
+extern unsigned char hkaSplineCompressedAnimationAnimationCompressionParamsClass; // src: XBOX_RETAIL_PDB 0x0126ae08 (old: g_0126ae08/g_fnvDat0126ae08)
 void* Object_GetGlobalObjectAddress_00dfb880();
 // FUN_00dfb8a0 : a one-line function - getter
-extern int g_target_00dfb8a0;
+extern int hkaSplineCompressedAnimationClass; // src: XBOX_RETAIL_PDB 0x0126ae38 (old: g_0126ae38/g_target_00dfb8a0)
 void* Object_GetGlobalObjectAddress_00dfb8a0();
 // ResetVTable -- installs a fixed vtable on an object and, when the second
 // argument is set, runs the object's update step afterwards.
@@ -1290,9 +1290,9 @@ void __cdecl ResetVTable(ResetVTableObj* p, int bUpdate);
 extern int DAT_010de0ec;
 void* Runtime_GetDAT010de0ecAddress();
 struct CpuOpaque;
-extern CpuOpaque DAT_0126ae80;
+extern CpuOpaque hkaSkeletonMapperDataSimpleMappingClass; // src: XBOX_RETAIL_PDB 0x0126ae80 (old: DAT_0126ae80/g_0126ae80)
 CpuOpaque* __cdecl Object_GetGlobalObjectAddress_00dfb920();
-extern int DAT_0126aeb0;
+extern int hkaSkeletonMapperDataChainMappingClass; // src: XBOX_RETAIL_PDB 0x0126aeb0 (old: DAT_0126aeb0/g_0126aeb0)
 void* __cdecl Object_GetGlobalObjectAddress_00dfb940();
 class CalleeObj
 {
@@ -1300,14 +1300,14 @@ class CalleeObj
     void ComputeValue_00ce5360(void* pParam);
 };
 void __cdecl Runtime_ProcessState_00dfb950(CalleeObj* pFirst, void* pSecond);
-extern int DAT_0126aee0;
+extern int hkaSkeletonMapperDataClass; // src: XBOX_RETAIL_PDB 0x0126aee0 (old: DAT_0126aee0/g_0126aee0)
 int* __cdecl Runtime_GetDAT0126aee0Address();
 struct FUN_00ce5370_cls
 {
     void __thiscall UpdateState_00ce5370();
 };
 void __cdecl Object_ForwardCall_00dfb980(FUN_00ce5370_cls* p);
-extern int DAT_0126af10;
+extern int hkaSkeletonLocalFrameOnBoneClass; // src: XBOX_RETAIL_PDB 0x0126af10 (old: DAT_0126af10/g_0126af10)
 int* __cdecl Runtime_GetDAT0126af10Address();
 // FUN_00dfb9a0 : __cdecl, 13 bytes
 //   mov ecx, dword ptr [esp + 4]
@@ -1322,9 +1322,9 @@ struct FUN_00dfb9a0_cls
     virtual int v00(int a);
 };
 int __cdecl Object_InvokeVirtualMethod_00dfb9a0(FUN_00dfb9a0_cls* pObj);
-extern int DAT_0126af40;
+extern int hkaSkeletonClass; // src: XBOX_RETAIL_PDB 0x0126af40 (old: DAT_0126af40/g_0126af40)
 int* __cdecl Runtime_GetDAT0126af40Address(void);
-extern int DAT_0126af88;
+extern int hkaMeshBindingMappingClass; // src: XBOX_RETAIL_PDB 0x0126af88 (old: DAT_0126af88/g_0126af88)
 int* Object_GetGlobalObjectAddress_00dfba40();
 // FUN_00dfba50: null-guarded forwarding of a second argument to a
 // member function of the first (object) argument.
@@ -1334,12 +1334,12 @@ class FUN_00dfba50_cls
     void FUN_00e34800(int a1);
 };
 void __cdecl Object_ProcessState_00dfba50(FUN_00dfba50_cls* pObject, int a1);
-extern int g_unk0126afb8;
+extern int hkaMeshBindingClass; // src: XBOX_RETAIL_PDB 0x0126afb8 (old: g_0126afb8/g_unk0126afb8)
 void* __cdecl Object_GetGlobalObjectAddress_00dfbaa0();
 struct CpuOpaque;
-extern CpuOpaque DAT_0126b000;
+extern CpuOpaque hkaDeltaCompressedAnimationQuantizationFormatClass; // src: XBOX_RETAIL_PDB 0x0126b000 (old: DAT_0126b000/g_0126b000)
 CpuOpaque* __cdecl Object_GetGlobalObjectAddress_00dfbb20();
-extern int DAT_0126b030;
+extern int hkaDeltaCompressedAnimationClass; // src: XBOX_RETAIL_PDB 0x0126b030 (old: DAT_0126b030/g_0126b030)
 void* __cdecl Object_GetGlobalObjectAddress_00dfbb40();
 // FUN_00dfbb50 : installs the class vtable into the object and, when the
 // second argument is non-zero, tail-calls the routine at FUN_00e35050 with
@@ -1353,19 +1353,19 @@ struct FUN_00dfbb50_cls
 void __cdecl Object_UpdateState_00dfbb50(FUN_00dfbb50_cls* p, int a);
 extern int DAT_010de90c;
 void* __cdecl Runtime_GetDAT010de90cAddress();
-extern "C" int DAT_0126b078;
+extern "C" int hkaBoneClass; // src: XBOX_RETAIL_PDB 0x0126b078 (old: DAT_0126b078/g_0126b078)
 // @fnv 0x00dfbc10
 // src: GUESS 0x00dfbc10 (confidence: low)
 extern "C" void* __cdecl Runtime_GetGlobal0126B078Address()
 {
-    return &DAT_0126b078;
+    return &hkaBoneClass;
 }
 struct CpuOpaque;
-extern CpuOpaque DAT_0126b0a8;
+extern CpuOpaque hkaAnnotationTrackAnnotationClass; // src: XBOX_RETAIL_PDB 0x0126b0a8 (old: DAT_0126b0a8/g_0126b0a8)
 CpuOpaque* __cdecl Runtime_GetDAT0126b0a8Address();
-extern int DAT_0126b0d8;
+extern int hkaAnnotationTrackClass; // src: XBOX_RETAIL_PDB 0x0126b0d8 (old: DAT_0126b0d8/g_0126b0d8)
 int* __cdecl Object_GetGlobalObjectAddress_00dfbc60();
-extern int DAT_0126b138;
+extern int hkpVehicleLinearCastWheelCollideClass; // src: XBOX_RETAIL_PDB 0x0126b138 (old: DAT_0126b138/g_0126b138)
 void* __cdecl Object_GetGlobalObjectAddress_00dfbce0();
 // InitVTable : __cdecl initializer for an object with several vtable slots.
 // The first vtable is installed, a flag byte at +9 is cleared when the flag is
@@ -1394,40 +1394,40 @@ struct FUN_00dfbcf0_obj
 void __cdecl InitVTable(FUN_00dfbcf0_obj* self, int flag);
 extern int DAT_010dec3c;
 void* __cdecl Runtime_GetDAT010dec3cAddress();
-extern int DAT_0126b180;
+extern int hkpVehicleInstanceWheelInfoClass; // src: XBOX_RETAIL_PDB 0x0126b180 (old: DAT_0126b180/g_0126b180)
 void* __cdecl Object_GetGlobalObjectAddress_00dfbdc0();
-extern int DAT_0126b1b0;
+extern int hkpVehicleInstanceClass; // src: XBOX_RETAIL_PDB 0x0126b1b0 (old: DAT_0126b1b0/g_0126b1b0)
 void* __cdecl Object_GetGlobalObjectAddress_00dfbde0();
-extern int DAT_0126b1f8;
+extern int hkpVehicleFrictionDescriptionAxisDescriptionClass; // src: XBOX_RETAIL_PDB 0x0126b1f8 (old: DAT_0126b1f8/g_0126b1f8)
 void* __cdecl Runtime_GetDAT0126b1f8Address();
-extern unsigned char DAT_0126b228;
+extern unsigned char hkpVehicleFrictionDescriptionClass; // src: XBOX_RETAIL_PDB 0x0126b228 (old: DAT_0126b228/g_0126b228)
 void* __cdecl Runtime_GetDAT0126b228Address();
-extern int DAT_0126b258;
+extern int hkpVehicleFrictionStatusAxisStatusClass; // src: XBOX_RETAIL_PDB 0x0126b258 (old: DAT_0126b258/g_0126b258)
 void* __cdecl Runtime_GetDAT0126b258Address();
 struct CpuOpaque;
-extern CpuOpaque DAT_0126b288;
+extern CpuOpaque hkpVehicleFrictionStatusClass; // src: XBOX_RETAIL_PDB 0x0126b288 (old: DAT_0126b288/g_0126b288)
 CpuOpaque* __cdecl Runtime_GetDAT0126b288Address();
-extern int DAT_0126b2b8;
+extern int hkpVehicleDefaultSuspensionWheelSpringSuspensionParametersClass; // src: XBOX_RETAIL_PDB 0x0126b2b8 (old: DAT_0126b2b8/g_0126b2b8)
 void* __cdecl Object_GetGlobalObjectAddress_00dfbf20();
 struct FUN_00dfbf30_class
 {
     virtual void m0(int);
 };
 void __cdecl Runtime_ForwardCall_00dfbf30(void* p);
-extern int DAT_0126b2e8;
+extern int hkpVehicleDefaultSuspensionClass; // src: XBOX_RETAIL_PDB 0x0126b2e8 (old: DAT_0126b2e8/g_0126b2e8)
 int* __cdecl Object_GetGlobalObjectAddress_00dfbf40();
 int* __cdecl Object_GetGlobalObjectAddress_00dfbf60();
-extern int DAT_0126b330;
+extern int hkpVehicleDefaultBrakeWheelBrakingPropertiesClass; // src: XBOX_RETAIL_PDB 0x0126b330 (old: DAT_0126b330/g_0126b330)
 void* __cdecl Runtime_GetDAT0126b330Address();
 // FUN_00dfc050 : a constant getter - MSVC emits mov eax, OFFSET <global> ; ret.
 // The global is declared extern so the store becomes a relocation; the checker
 // binds it to the original's own immediate.
-extern int g_target_FUN_00dfc050;
+extern int hkpVehicleDefaultBrakeClass; // src: XBOX_RETAIL_PDB 0x0126b360 (old: g_0126b360/g_target_FUN_00dfc050)
 void* __cdecl Runtime_GetTargetFUN00dfc050Address();
 // FUN_00dfc070 : a one-line function - getter
 extern int g_target_00dfc070;
 void* Runtime_GetTarget00dfc070Address();
-extern int DAT_0126b3a8;
+extern int hkpVehicleDataWheelComponentParamsClass; // src: XBOX_RETAIL_PDB 0x0126b3a8 (old: DAT_0126b3a8/g_0126b3a8)
 int* __cdecl Object_GetGlobalObjectAddress_00dfc100();
 struct S_00dfc110_vt
 {
@@ -1436,13 +1436,13 @@ struct S_00dfc110_vt
 void __thiscall S_00dfc110_vt::m0(int)
 {}
 void __cdecl Runtime_ForwardCall_00dfc110(void* p);
-extern int g_0126b3d8;
+extern int hkpVehicleDataClass; // src: XBOX_RETAIL_PDB 0x0126b3d8 (old: g_0126b3d8)
 int* __cdecl Object_GetGlobalObjectAddress_00dfc120();
 extern int DAT_010dff44;
 int* __cdecl Object_GetGlobalObjectAddress_00dfc140();
-extern unsigned char DAT_0126b420;
+extern unsigned char hkpTyremarkPointClass; // src: XBOX_RETAIL_PDB 0x0126b420 (old: DAT_0126b420/g_0126b420)
 void* __cdecl Object_GetGlobalObjectAddress_00dfc220();
-extern char DAT_0126b498;
+extern char hkpTyremarksInfoClass; // src: XBOX_RETAIL_PDB 0x0126b498 (old: DAT_0126b498/g_0126b498)
 char* __cdecl Object_GetGlobalObjectAddress_00dfc260();
 extern int DAT_010e00cc;
 void* Runtime_GetDAT010e00ccAddress();
@@ -1451,9 +1451,9 @@ int* __cdecl Runtime_GetDAT010e00dcAddress();
 // FUN_00dfc360: cdecl no-arg getter returning the address of a global.
 extern int DAT_0126b528;
 int* __cdecl Object_GetGlobalObjectAddress_00dfc360();
-extern int g_unk0126b4e0;
+extern int hkpSerializedSubTrack1nInfoClass; // src: XBOX_RETAIL_PDB 0x0126b4e0 (old: g_0126b4e0/g_unk0126b4e0)
 void* __cdecl Runtime_GetUnk0126b4e0Address();
-extern void* DAT_0126b558;
+extern void* hkpSerializedAgentNnEntryClass; // src: XBOX_RETAIL_PDB 0x0126b558 (old: DAT_0126b558/g_0126b558)
 void* Runtime_GetDAT0126b558Address();
 struct FUN_00e05c20_class
 {
@@ -1466,7 +1466,7 @@ struct FUN_00dfc3b0_target
 };
 void __cdecl Runtime_ForwardCall_00dfc3b0(FUN_00dfc3b0_target* pTarget);
 // FUN_00dfc440 : a one-line function - getter
-extern int g_target_00dfc440;
+extern int hkpSerializedDisplayRbTransformsDisplayTransformPairClass; // src: XBOX_RETAIL_PDB 0x0126b5d0 (old: g_0126b5d0/g_target_00dfc440)
 void* Object_GetGlobalObjectAddress_00dfc440();
 class VirtualDispatchObj
 {
@@ -1474,64 +1474,64 @@ class VirtualDispatchObj
     virtual void Invoke0(int arg);
 };
 void __cdecl Runtime_ForwardCall_00dfc450(VirtualDispatchObj* p);
-extern void* DAT_0126b588;
+extern void* hkpSerializedDisplayRbTransformsClass; // src: XBOX_RETAIL_PDB 0x0126b588 (old: DAT_0126b588/g_0126b588)
 int __cdecl Object_ComputeValue_00dfc460();
 extern int DAT_010e04ac;
 void* __cdecl Object_GetGlobalObjectAddress_00dfc480();
-extern int g_unk0126b678;
+extern int hkpPoweredChainMapperTargetClass; // src: XBOX_RETAIL_PDB 0x0126b678 (old: g_0126b678/g_unk0126b678)
 void* __cdecl Runtime_GetUnk0126b678Address();
-extern int DAT_0126b648;
+extern int hkpPoweredChainMapperLinkInfoClass; // src: XBOX_RETAIL_PDB 0x0126b648 (old: DAT_0126b648/g_0126b648)
 int* __cdecl Runtime_GetDAT0126b648Address();
-extern int DAT_0126b600;
+extern int hkpPoweredChainMapperClass; // src: XBOX_RETAIL_PDB 0x0126b600 (old: DAT_0126b600/g_0126b600)
 int* __cdecl Runtime_GetDAT0126b600Address();
 extern int DAT_010e0654;
 int* __cdecl Runtime_GetDAT010e0654Address();
-extern int DAT_0126b6a8;
+extern int hkpMassPropertiesClass; // src: XBOX_RETAIL_PDB 0x0126b6a8 (old: DAT_0126b6a8/g_0126b6a8)
 int* __cdecl Runtime_GetDAT0126b6a8Address(void);
 // FUN_00dfc5b0 : a one-line function - getter
-extern int g_target_00dfc5b0;
+extern int hkpCharacterProxyCinfoClass; // src: XBOX_RETAIL_PDB 0x0126b6d8 (old: g_0126b6d8/g_target_00dfc5b0)
 void* Runtime_GetTarget00dfc5b0Address();
-extern int DAT_0126b708;
+extern int hkpMoppCodeReindexedTerminalClass; // src: XBOX_RETAIL_PDB 0x0126b708 (old: DAT_0126b708/g_0126b708)
 int* __cdecl Runtime_GetDAT0126b708Address();
-extern int DAT_0126b738;
+extern int hkpMoppCodeCodeInfoClass; // src: XBOX_RETAIL_PDB 0x0126b738 (old: DAT_0126b738/g_0126b738)
 void* __cdecl Runtime_GetDAT0126b738Address();
 struct FUN_00dfc600_vt
 {
     virtual void __thiscall m0(int);
 };
 void __cdecl Object_InvokeVirtualMethod_00dfc600(FUN_00dfc600_vt* p);
-extern unsigned char DAT_0126b768;
+extern unsigned char hkpMoppCodeClass; // src: XBOX_RETAIL_PDB 0x0126b768 (old: DAT_0126b768/g_0126b768)
 void* __cdecl Runtime_GetDAT0126b768Address();
 extern int DAT_0102e368;
 int* __cdecl Runtime_GetDAT0102e368Address();
-extern int DAT_0126b7b0;
+extern int hkpSimpleContactConstraintDataInfoClass; // src: XBOX_RETAIL_PDB 0x0126b7b0 (old: DAT_0126b7b0/g_0126b7b0)
 int* __cdecl Object_GetGlobalObjectAddress_00dfc660();
 // FUN_00dfc680 : a one-line function - getter
-extern int g_target_00dfc680;
+extern int hkpWheelConstraintDataAtomsClass; // src: XBOX_RETAIL_PDB 0x0126b7e0 (old: g_0126b7e0/g_target_00dfc680)
 void* Object_GetGlobalObjectAddress_00dfc680();
 struct FUN_00dfc690_vt
 {
     virtual void m0(int);
 };
 void __cdecl Runtime_ForwardCall_00dfc690(FUN_00dfc690_vt* p);
-extern int DAT_0126b810;
+extern int hkpWheelConstraintDataClass; // src: XBOX_RETAIL_PDB 0x0126b810 (old: DAT_0126b810/g_0126b810)
 void* __cdecl Object_GetGlobalObjectAddress_00dfc6a0();
 extern int DAT_010d0a64;
 int* __cdecl Runtime_GetDAT010d0a64Address();
-extern char DAT_0126b858;
+extern char hkpStiffSpringConstraintDataAtomsClass; // src: XBOX_RETAIL_PDB 0x0126b858 (old: DAT_0126b858/g_0126b858)
 void* Runtime_GetDAT0126b858Address();
 class GlobalObjectO2_00d472a0;
-extern GlobalObjectO2_00d472a0 g_0126b888;
+extern GlobalObjectO2_00d472a0 hkpStiffSpringConstraintDataClass; // src: XBOX_RETAIL_PDB 0x0126b888 (old: g_0126b888)
 GlobalObjectO2_00d472a0* __cdecl Runtime_GetField0126b888Address();
 extern int DAT_010d0aac;
 int* __cdecl Object_GetGlobalObjectAddress_00dfc740();
-extern int g_unk0126b8d0;
+extern int hkpStiffSpringChainDataConstraintInfoClass; // src: XBOX_RETAIL_PDB 0x0126b8d0 (old: g_0126b8d0/g_unk0126b8d0)
 int* __cdecl Object_GetGlobalObjectAddress_00dfc760();
-extern int g_0126b900;
+extern int hkpStiffSpringChainDataClass; // src: XBOX_RETAIL_PDB 0x0126b900 (old: g_0126b900)
 int* __cdecl Object_GetGlobalObjectAddress_00dfc7c0();
-extern int DAT_0126b948;
+extern int hkpSimpleShapePhantomCollisionDetailClass; // src: XBOX_RETAIL_PDB 0x0126b948 (old: DAT_0126b948/g_0126b948)
 int* __cdecl Object_GetGlobalObjectAddress_00dfc7e0();
-extern int DAT_0126b978;
+extern int hkpSimpleShapePhantomClass; // src: XBOX_RETAIL_PDB 0x0126b978 (old: DAT_0126b978/g_0126b978)
 void* __cdecl Object_GetGlobalObjectAddress_00dfc800();
 class DFC810Object
 {
@@ -1655,20 +1655,20 @@ class FUN_00dfc850 : public SpawnedBase, public SpawnedMid
     virtual ~FUN_00dfc850();
     FUN_00dfc850(int a1);
 };
-extern int DAT_0126b9c0;
+extern int hkpRotationalConstraintDataAtomsClass; // src: XBOX_RETAIL_PDB 0x0126b9c0 (old: DAT_0126b9c0/g_0126b9c0)
 int* __cdecl Object_GetGlobalObjectAddress_00dfc8c0();
-extern int g_unk0126b9f0;
+extern int hkpRotationalConstraintDataClass; // src: XBOX_RETAIL_PDB 0x0126b9f0 (old: g_0126b9f0/g_unk0126b9f0)
 int* __cdecl Object_GetGlobalObjectAddress_00dfc8e0();
 extern int DAT_010e11ec;
 int* __cdecl Runtime_GetDAT010e11ecAddress();
-extern int g_0126ba38;
+extern int hkpRagdollLimitsDataAtomsClass; // src: XBOX_RETAIL_PDB 0x0126ba38 (old: g_0126ba38)
 int* __cdecl Runtime_GetField0126ba38Address();
 struct FUN_00dfc940_class
 {
     virtual void m0(int);
 };
 void __cdecl Object_InvokeVirtualMethod_00dfc940(FUN_00dfc940_class* p);
-extern int DAT_0126ba68;
+extern int hkpRagdollLimitsDataClass; // src: XBOX_RETAIL_PDB 0x0126ba68 (old: DAT_0126ba68/g_0126ba68)
 void* __cdecl Runtime_GetDAT0126ba68Address();
 extern int DAT_010d0af4;
 struct S_00dfc970_Flag
@@ -1727,10 +1727,10 @@ struct S_00dfc970_Obj
     char unk9a;
     void hkpRagdollLimitsData_setConeLimitStabilization(S_00dfc970_Flag f);
 };
-void __cdecl finishLoadedObjecthkpRagdollLimitsData(S_00dfc970_Obj* p, int flag);
+void __cdecl finishLoadedObjecthkpRagdollLimitsData(S_00dfc970_Obj* p, int finishing);
 extern int DAT_010d0af4;
 int* __cdecl Object_GetGlobalObjectAddress_00dfc9a0();
-extern int DAT_0126bab0;
+extern int hkpRagdollConstraintDataAtomsClass; // src: XBOX_RETAIL_PDB 0x0126bab0 (old: DAT_0126bab0/g_0126bab0)
 int* __cdecl Object_GetGlobalObjectAddress_00dfc9c0();
 class DFC9D0Object
 {
@@ -1738,11 +1738,11 @@ class DFC9D0Object
     virtual ~DFC9D0Object();
 };
 void Runtime_DestroySubobject_00dfc9d0(DFC9D0Object* pkObject);
-extern int DAT_0126bae0;
+extern int hkpRagdollConstraintDataClass; // src: XBOX_RETAIL_PDB 0x0126bae0 (old: DAT_0126bae0/g_0126bae0)
 int* __cdecl Object_GetGlobalObjectAddress_00dfc9e0();
 extern int DAT_010cb71c;
 void* __cdecl Runtime_GetDAT010cb71cAddress();
-extern int DAT_0126bb28;
+extern int hkpPulleyConstraintDataAtomsClass; // src: XBOX_RETAIL_PDB 0x0126bb28 (old: DAT_0126bb28/g_0126bb28)
 void* __cdecl Runtime_GetDAT0126bb28Address();
 class DFCA60Object
 {
@@ -1750,17 +1750,17 @@ class DFCA60Object
     virtual ~DFCA60Object();
 };
 void Object_InvokeVirtualMethod_00dfca60(DFCA60Object* pkObject);
-extern char g_unk0126bb58;
+extern char hkpPulleyConstraintDataClass; // src: XBOX_RETAIL_PDB 0x0126bb58 (old: g_0126bb58/g_unk0126bb58)
 void* __cdecl Runtime_GetUnk0126bb58Address();
 extern int DAT_010da04c;
 int* __cdecl Object_GetGlobalObjectAddress_00dfcaa0();
-extern int DAT_0126bba0;
+extern int hkpPrismaticConstraintDataAtomsClass; // src: XBOX_RETAIL_PDB 0x0126bba0 (old: DAT_0126bba0/g_0126bba0)
 int* __cdecl Object_GetGlobalObjectAddress_00dfcac0();
-extern void* DAT_0126bbd0;
+extern void* hkpPrismaticConstraintDataClass; // src: XBOX_RETAIL_PDB 0x0126bbd0 (old: DAT_0126bbd0/g_0126bbd0)
 int __cdecl Object_ComputeValue_00dfcae0();
 extern int DAT_010d0b3c;
 int* __cdecl Runtime_GetDAT010d0b3cAddress();
-extern int DAT_0126bc18;
+extern int hkpPoweredChainDataConstraintInfoClass; // src: XBOX_RETAIL_PDB 0x0126bc18 (old: DAT_0126bc18/g_0126bc18)
 void* __cdecl Runtime_GetDAT0126bc18Address();
 extern int DAT_0126bc48;
 int* __cdecl Runtime_GetDAT0126bc48Address();
@@ -1777,18 +1777,18 @@ void* __cdecl Runtime_GetDAT0126bcc0Address();
 extern void* DAT_010d37e4;
 void** __cdecl Object_GetGlobalObjectAddress_00dfcc00();
 // FUN_00dfcc20 : a one-line function - getter
-extern int g_target_00dfcc20;
+extern int hkpLimitedHingeConstraintDataAtomsClass; // src: XBOX_RETAIL_PDB 0x0126bd08 (old: g_0126bd08/g_target_00dfcc20)
 void* Object_GetGlobalObjectAddress_00dfcc20();
 struct S_00dfcc40_Obj
 {
     int unk00;
 };
-extern S_00dfcc40_Obj DAT_0126bd38;
+extern S_00dfcc40_Obj hkpLimitedHingeConstraintDataClass; // src: XBOX_RETAIL_PDB 0x0126bd38 (old: DAT_0126bd38/g_0126bd38)
 S_00dfcc40_Obj* __cdecl Object_GetGlobalObjectAddress_00dfcc40();
 // FUN_00dfcc70 : a one-line function - getter
 extern int g_target_00dfcc70;
 void* Runtime_GetTarget00dfcc70Address();
-extern int DAT_0126bd80;
+extern int hkpHingeLimitsDataAtomsClass; // src: XBOX_RETAIL_PDB 0x0126bd80 (old: DAT_0126bd80/g_0126bd80)
 int* __cdecl Runtime_GetDAT0126bd80Address();
 // Forwarder: takes the object pointer, calls its first virtual slot with a
 // literal 0 argument (push 0; call through the vtable entry).
@@ -1798,47 +1798,47 @@ struct VtblForwarder
 };
 int __cdecl Object_InvokeVirtualMethod_00dfcca0(VtblForwarder* p);
 // FUN_00dfccb0 : a one-line function - getter
-extern int g_target_00dfccb0;
+extern int hkpHingeLimitsDataClass; // src: XBOX_RETAIL_PDB 0x0126bdb0 (old: g_0126bdb0/g_target_00dfccb0)
 void* Runtime_GetTarget00dfccb0Address();
 extern int DAT_010d0be4;
 void* __cdecl Object_GetGlobalObjectAddress_00dfcce0();
-extern int DAT_0126bdf8;
+extern int hkpHingeConstraintDataAtomsClass; // src: XBOX_RETAIL_PDB 0x0126bdf8 (old: DAT_0126bdf8/g_0126bdf8)
 void* __cdecl Object_GetGlobalObjectAddress_00dfcd00();
 struct CpuOpaque;
-extern CpuOpaque DAT_0126be28;
+extern CpuOpaque hkpHingeConstraintDataClass; // src: XBOX_RETAIL_PDB 0x0126be28 (old: DAT_0126be28/g_0126be28)
 CpuOpaque* __cdecl Object_GetGlobalObjectAddress_00dfcd20();
 extern int DAT_010c91ec;
 int* Runtime_GetDAT010c91ecAddress();
-extern int DAT_0126be70;
+extern int hkpGenericConstraintDataSchemeConstraintInfoClass; // src: XBOX_RETAIL_PDB 0x0126be70 (old: DAT_0126be70/g_0126be70)
 int* __cdecl Runtime_GetDAT0126be70Address();
-extern int DAT_0126bea0;
+extern int hkpGenericConstraintDataSchemeClass; // src: XBOX_RETAIL_PDB 0x0126bea0 (old: DAT_0126bea0/g_0126bea0)
 void* __cdecl Object_GetGlobalObjectAddress_00dfcda0();
 struct FUN_00dfcdb0_target
 {
-    void Run();
+    void hkpGenericConstraintDataScheme_dtor();
 };
 void __cdecl Runtime_ForwardCall_00dfcdb0(FUN_00dfcdb0_target* pTarget);
-extern char DAT_0126bed0;
+extern char hkpBallSocketChainDataConstraintInfoClass; // src: XBOX_RETAIL_PDB 0x0126bed0 (old: DAT_0126bed0/g_0126bed0)
 void* __cdecl Runtime_GetDAT0126bed0Address();
 struct DFD5E0
 {
-    void __thiscall FUN_00d53df0(void* p);
+    void __thiscall FUN_00d53df0(void* f);
 };
 void __cdecl Object_ProcessState_00dfcde0(void* a, void* b);
-extern int DAT_0126bf00;
+extern int hkpBallSocketChainDataClass; // src: XBOX_RETAIL_PDB 0x0126bf00 (old: DAT_0126bf00/g_0126bf00)
 void* __cdecl Runtime_GetDAT0126bf00Address();
-extern int DAT_0126bf48;
+extern int hkpBallAndSocketConstraintDataAtomsClass; // src: XBOX_RETAIL_PDB 0x0126bf48 (old: DAT_0126bf48/g_0126bf48)
 int* __cdecl Runtime_GetDAT0126bf48Address();
-extern int DAT_0126bf78;
+extern int hkpBallAndSocketConstraintDataClass; // src: XBOX_RETAIL_PDB 0x0126bf78 (old: DAT_0126bf78/g_0126bf78)
 void* __cdecl Runtime_GetDAT0126bf78Address();
 extern int DAT_010d0cd4;
 int* __cdecl Object_GetGlobalObjectAddress_00dfcea0();
 struct CpuOpaque;
-extern CpuOpaque DAT_0126bfc0;
+extern CpuOpaque hkpTypedBroadPhaseHandleClass; // src: XBOX_RETAIL_PDB 0x0126bfc0 (old: DAT_0126bfc0/g_0126bfc0)
 CpuOpaque* __cdecl Object_GetGlobalObjectAddress_00dfcec0();
-extern int DAT_0126bff0;
+extern int hkpSimpleMeshShapeTriangleClass; // src: XBOX_RETAIL_PDB 0x0126bff0 (old: DAT_0126bff0/g_0126bff0)
 void* __cdecl Runtime_GetDAT0126bff0Address();
-extern int DAT_0126c020;
+extern int hkpSimpleMeshShapeClass; // src: XBOX_RETAIL_PDB 0x0126c020 (old: DAT_0126c020/g_0126c020)
 void* __cdecl Runtime_GetDAT0126c020Address();
 struct FUN_00dfcf20_cls
 {
@@ -1865,21 +1865,21 @@ struct FUN_00dfcf60_cls
 
     FUN_00dfcf60_cls* InitializeVtables(int flag);
 };
-extern int DAT_0126c068;
+extern int hkpMultiRayShapeRayClass; // src: XBOX_RETAIL_PDB 0x0126c068 (old: DAT_0126c068/g_0126c068)
 void* Object_GetGlobalObjectAddress_00dfd0c0();
 struct FUN_00dfd0d0_cls
 {
     virtual void Call(int a);
 };
 void Runtime_ForwardCall_00dfd0d0(FUN_00dfd0d0_cls* pTarget);
-extern int DAT_0126c098;
+extern int hkpMultiRayShapeClass; // src: XBOX_RETAIL_PDB 0x0126c098 (old: DAT_0126c098/g_0126c098)
 void* Object_GetGlobalObjectAddress_00dfd0e0();
 extern "C" void* DAT_010e222c;
 void* __cdecl Object_GetGlobalObjectAddress_00dfd120();
-extern unsigned char DAT_0126c0e0;
+extern unsigned char hkpListShapeChildInfoClass; // src: XBOX_RETAIL_PDB 0x0126c0e0 (old: DAT_0126c0e0/g_0126c0e0)
 unsigned char* __cdecl Runtime_GetDAT0126c0e0Address();
 void __cdecl Object_ProcessAndTransformResult_00dfd1c0(void* p);
-extern int DAT_0126c110;
+extern int hkpListShapeClass; // src: XBOX_RETAIL_PDB 0x0126c110 (old: DAT_0126c110/g_0126c110)
 void* __cdecl Runtime_GetDAT0126c110Address();
 // FUN_00dfd1e0: null-guarded forwarding of a second argument to a
 // member function of the first (object) argument.
@@ -1889,22 +1889,22 @@ class FUN_00dfd1e0_cls
     void Forward(int a1);
 };
 void __cdecl Object_ProcessState_00dfd1e0(FUN_00dfd1e0_cls* pObject, int a1);
-extern int DAT_0126c158;
+extern int hkpConvexVerticesShapeFourVectorsClass; // src: XBOX_RETAIL_PDB 0x0126c158 (old: DAT_0126c158/g_0126c158)
 int* __cdecl Runtime_GetDAT0126c158Address();
 // FUN_00dfd250 : a one-line function - getter
-extern int g_target_00dfd250;
+extern int hkpConvexVerticesShapeClass; // src: XBOX_RETAIL_PDB 0x0126c188 (old: g_0126c188/g_target_00dfd250)
 void* Runtime_GetTarget00dfd250Address();
 struct S_00dfd260_Foo
 {
     void __thiscall FUN_00d59830(int arg);
 };
 void __cdecl Object_ProcessState_00dfd260(S_00dfd260_Foo* self, int arg);
-extern int DAT_0126c1d0;
+extern int hkpCompressedMeshShapeChunkClass; // src: XBOX_RETAIL_PDB 0x0126c1d0 (old: DAT_0126c1d0/g_0126c1d0)
 int* __cdecl Object_GetGlobalObjectAddress_00dfd2a0();
-extern int DAT_0126c200;
+extern int hkpCompressedMeshShapeBigTriangleClass; // src: XBOX_RETAIL_PDB 0x0126c200 (old: DAT_0126c200/g_0126c200)
 int* __cdecl Object_GetGlobalObjectAddress_00dfd2c0();
 class GlobalObjectO2_00d472a0;
-extern GlobalObjectO2_00d472a0 g_0126c230;
+extern GlobalObjectO2_00d472a0 hkpCompressedMeshShapeConvexPieceClass; // src: XBOX_RETAIL_PDB 0x0126c230 (old: g_0126c230)
 GlobalObjectO2_00d472a0* __cdecl Runtime_GetField0126c230Address();
 struct FUN_00dfd2e0_Class
 {
@@ -1912,7 +1912,7 @@ struct FUN_00dfd2e0_Class
 };
 void __cdecl Object_InvokeVirtualMethod_00dfd2e0(FUN_00dfd2e0_Class* param_1);
 // FUN_00dfd2f0 : a one-line function - getter
-extern int g_target_00dfd2f0;
+extern int hkpCompressedMeshShapeClass; // src: XBOX_RETAIL_PDB 0x0126c260 (old: g_0126c260/g_target_00dfd2f0)
 void* Runtime_GetTarget00dfd2f0Address();
 struct FUN_00e3dbd0_class
 {
@@ -1935,9 +1935,9 @@ void* Object_GetGlobalObjectAddress_00dfd4e0();
 extern int DAT_0126c2d8;
 void* __cdecl Object_GetGlobalObjectAddress_00dfd500();
 struct CpuOpaque;
-extern CpuOpaque DAT_0126c308;
+extern CpuOpaque hkpAgent1nSectorClass; // src: XBOX_RETAIL_PDB 0x0126c308 (old: DAT_0126c308/g_0126c308)
 CpuOpaque* __cdecl Object_GetGlobalObjectAddress_00dfd540();
-extern int DAT_0126c338;
+extern int hkxVertexDescriptionElementDeclClass; // src: XBOX_RETAIL_PDB 0x0126c338 (old: DAT_0126c338/g_0126c338)
 int* __cdecl Object_GetGlobalObjectAddress_00dfd560();
 // FUN_00dfd570: null-guarded forwarder. The first argument (an object
 // pointer) is loaded and tested; when it is not null the second argument
@@ -1948,26 +1948,26 @@ class FUN_00dfd570_cls
     void ReturnSelf(int a1);
 };
 void __cdecl Object_ProcessState_00dfd570(FUN_00dfd570_cls* pObject, int a1);
-extern int DAT_0126c368;
+extern int hkxVertexDescriptionClass; // src: XBOX_RETAIL_PDB 0x0126c368 (old: DAT_0126c368/g_0126c368)
 int* __cdecl Runtime_GetDAT0126c368Address();
-extern int DAT_0126c398;
+extern int hkxVertexBufferVertexDataClass; // src: XBOX_RETAIL_PDB 0x0126c398 (old: DAT_0126c398/g_0126c398)
 int __cdecl Runtime_EvaluateValue_00dfd5f0();
 class FUN_00dfd600_cls
 {
   public:
-    void Callee(unsigned int value);
+    void Callee(unsigned int f);
 };
 void __cdecl Object_ProcessState_00dfd600(FUN_00dfd600_cls* target, unsigned int value);
 // FUN_00dfd650 : a one-line function - getter
-extern int g_target_00dfd650;
+extern int hkxVertexBufferClass; // src: XBOX_RETAIL_PDB 0x0126c3c8 (old: g_0126c3c8/g_target_00dfd650)
 void* Runtime_GetTarget00dfd650Address();
-extern int DAT_0126c410;
+extern int hkxNodeAnnotationDataClass; // src: XBOX_RETAIL_PDB 0x0126c410 (old: DAT_0126c410/g_0126c410)
 int* __cdecl Runtime_GetDAT0126c410Address();
-extern int DAT_0126c440;
+extern int hkxNodeClass; // src: XBOX_RETAIL_PDB 0x0126c440 (old: DAT_0126c440/g_0126c440)
 void* __cdecl Runtime_GetDAT0126c440Address();
-extern int DAT_0126c488;
+extern int hkxMaterialTextureStageClass; // src: XBOX_RETAIL_PDB 0x0126c488 (old: DAT_0126c488/g_0126c488)
 void* __cdecl Runtime_GetDAT0126c488Address();
-extern int DAT_0126c4b8;
+extern int hkxMaterialClass; // src: XBOX_RETAIL_PDB 0x0126c4b8 (old: DAT_0126c4b8/g_0126c4b8)
 int* __cdecl Runtime_GetDAT0126c4b8Address();
 extern int DAT_010e33dc;
 struct FUN_00dfd990_class
@@ -1980,14 +1980,14 @@ struct FUN_00dfd990_class
     FUN_00cb0a70_class field14;
 };
 void __cdecl Runtime_SetVtableAndProcessState_00dfd990(FUN_00dfd990_class* object, int value);
-extern int DAT_0126c500;
+extern int hkxEnvironmentVariableClass; // src: XBOX_RETAIL_PDB 0x0126c500 (old: DAT_0126c500/g_0126c500)
 void* Object_GetGlobalObjectAddress_00dfda40();
 struct S_00e3f510_Foo
 {
     void __thiscall SetVptr_00e3f510(int);
 };
 void __cdecl Object_ProcessState_00dfda50(void* p, int a);
-extern int DAT_0126c530;
+extern int hkxEnvironmentClass; // src: XBOX_RETAIL_PDB 0x0126c530 (old: DAT_0126c530/g_0126c530)
 int* __cdecl Object_GetGlobalObjectAddress_00dfdaa0();
 struct AdjacentObjects
 {
@@ -1995,27 +1995,27 @@ struct AdjacentObjects
     __declspec(align(4)) FUN_00cb0c00_class second;
 };
 void __cdecl Runtime_ProcessState_00dfdab0(AdjacentObjects* objects);
-extern int DAT_0126c578;
+extern int hkxEnumItemClass; // src: XBOX_RETAIL_PDB 0x0126c578 (old: DAT_0126c578/g_0126c578)
 void* __cdecl Runtime_GetDAT0126c578Address();
 // FUN_00dfdb10 : a one-line function - getter
-extern int g_target_00dfdb10;
+extern int hkxEnumClass; // src: XBOX_RETAIL_PDB 0x0126c5a8 (old: g_0126c5a8/g_target_00dfdb10)
 void* Runtime_GetTarget00dfdb10Address();
-extern int DAT_0126c5f0;
+extern int hkxSparselyAnimatedEnumClass; // src: XBOX_RETAIL_PDB 0x0126c5f0 (old: DAT_0126c5f0/g_0126c5f0)
 void* __cdecl Runtime_GetDAT0126c5f0Address();
 extern int DAT_010e351c;
 int* __cdecl Object_GetGlobalObjectAddress_00dfdb60();
 extern "C" void* DAT_010e352c;
 void* __cdecl Object_GetGlobalObjectAddress_00dfdb80();
-extern int DAT_0126c638;
+extern int hkxAttributeGroupClass; // src: XBOX_RETAIL_PDB 0x0126c638 (old: DAT_0126c638/g_0126c638)
 int* Object_GetGlobalObjectAddress_00dfdd20();
-extern int DAT_0126c668;
+extern int hkxAttributeClass; // src: XBOX_RETAIL_PDB 0x0126c668 (old: DAT_0126c668/g_0126c668)
 int __cdecl Object_ComputeValue_00dfdd80();
-extern int DAT_0126c698;
+extern int hkPackfileSectionHeaderClass; // src: XBOX_RETAIL_PDB 0x0126c698 (old: DAT_0126c698/g_0126c698)
 int* __cdecl Object_GetGlobalObjectAddress_00dfddc0();
-extern int DAT_0126c6c8;
+extern int hkPackfileHeaderClass; // src: XBOX_RETAIL_PDB 0x0126c6c8 (old: DAT_0126c6c8/g_0126c6c8)
 void* Object_GetGlobalObjectAddress_00dfdde0();
 struct CpuOpaque;
-extern CpuOpaque DAT_0126c6f8;
+extern CpuOpaque hkTraceStreamTitleClass; // src: XBOX_RETAIL_PDB 0x0126c6f8 (old: DAT_0126c6f8/g_0126c6f8)
 CpuOpaque* __cdecl Object_GetGlobalObjectAddress_00dfde00();
 struct FUN_00dfde10_vtable
 {
@@ -2023,16 +2023,16 @@ struct FUN_00dfde10_vtable
     {}
 };
 void __cdecl Runtime_ForwardCall_00dfde10(void* p);
-extern int DAT_0126c728;
+extern int hkTraceStreamClass; // src: XBOX_RETAIL_PDB 0x0126c728 (old: DAT_0126c728/g_0126c728)
 int __cdecl Object_ComputeValue_00dfde20();
 extern int DAT_010d3cc0;
 int* __cdecl Runtime_GetDAT010d3cc0Address();
-extern char DAT_0126c770;
+extern char hkSweptTransformClass; // src: XBOX_RETAIL_PDB 0x0126c770 (old: DAT_0126c770/g_0126c770)
 char* __cdecl Runtime_GetDAT0126c770Address(void);
-extern int DAT_0126c7a0;
+extern int hkSphereClass; // src: XBOX_RETAIL_PDB 0x0126c7a0 (old: DAT_0126c7a0/g_0126c7a0)
 void* __cdecl Runtime_GetDAT0126c7a0Address();
 struct CpuOpaque;
-extern CpuOpaque DAT_0126c7d0;
+extern CpuOpaque hkMotionStateClass; // src: XBOX_RETAIL_PDB 0x0126c7d0 (old: DAT_0126c7d0/g_0126c7d0)
 CpuOpaque* __cdecl Runtime_GetDAT0126c7d0Address();
 // FUN_00dfdec0: null-guarded forwarding of a second argument to a
 // member function of the first (object) argument.
@@ -2042,7 +2042,7 @@ class FUN_00dfdec0_cls
     void hkMonitorStreamStringMap_StringMap_StringMap(int a1);
 };
 void __cdecl Object_ProcessState_00dfdec0(FUN_00dfdec0_cls* pObject, int a1);
-extern unsigned char DAT_0126c800;
+extern unsigned char hkMonitorStreamStringMapStringMapClass; // src: XBOX_RETAIL_PDB 0x0126c800 (old: DAT_0126c800/g_0126c800)
 void* __cdecl Object_GetGlobalObjectAddress_00dfdee0();
 // FUN_00dfdef0: null-guarded forwarding of a second argument to a
 // member function of the first (object) argument.
@@ -2052,12 +2052,12 @@ class FUN_00dfdef0_cls
     void GetSelf_00e0f700(int a1);
 };
 void __cdecl Object_ProcessState_00dfdef0(FUN_00dfdef0_cls* pObject, int a1);
-extern int g_unk0126c830;
+extern int hkMonitorStreamStringMapClass; // src: XBOX_RETAIL_PDB 0x0126c830 (old: DAT_0126c830/g_0126c830/g_unk0126c830)
 void* __cdecl Runtime_GetUnk0126c830Address();
-extern int DAT_0126c860;
+extern int hkMonitorStreamFrameInfoClass; // src: XBOX_RETAIL_PDB 0x0126c860 (old: DAT_0126c860/g_0126c860)
 int* __cdecl Runtime_GetDAT0126c860Address();
 struct CpuOpaque;
-extern CpuOpaque DAT_0126c890;
+extern CpuOpaque hkMonitorStreamColorTableColorPairClass; // src: XBOX_RETAIL_PDB 0x0126c890 (old: DAT_0126c890/g_0126c890)
 CpuOpaque* __cdecl Object_GetGlobalObjectAddress_00dfdf40();
 class DFDF50Object
 {
@@ -2065,7 +2065,7 @@ class DFDF50Object
     virtual ~DFDF50Object();
 };
 void __cdecl Runtime_DestroySubobject_00dfdf50(DFDF50Object* pkObject);
-extern int DAT_0126c8c0;
+extern int hkMonitorStreamColorTableClass; // src: XBOX_RETAIL_PDB 0x0126c8c0 (old: DAT_0126c8c0/g_0126c8c0)
 int* __cdecl Object_GetGlobalObjectAddress_00dfdf60();
 extern int DAT_010e3e5c;
 int* __cdecl Object_GetGlobalObjectAddress_00dfdfc0();
@@ -2074,21 +2074,21 @@ struct FUN_00ddc870_class
     void __thiscall ProcessEntries_00ddc870();
 };
 void __cdecl Object_ForwardCall_00dfdfd0(FUN_00ddc870_class* self);
-extern int DAT_0126c908;
+extern int hkGeometryTriangleClass; // src: XBOX_RETAIL_PDB 0x0126c908 (old: DAT_0126c908/g_0126c908)
 int* __cdecl Runtime_GetDAT0126c908Address();
-extern int DAT_0126c938;
+extern int hkGeometryClass; // src: XBOX_RETAIL_PDB 0x0126c938 (old: DAT_0126c938/g_0126c938)
 void* __cdecl Object_GetGlobalObjectAddress_00dfe0a0();
-extern int DAT_0126c968;
+extern int hkCustomAttributesAttributeClass; // src: XBOX_RETAIL_PDB 0x0126c968 (old: DAT_0126c968/g_0126c968)
 void* __cdecl Object_GetGlobalObjectAddress_00dfe0e0();
-extern int DAT_0126c998;
+extern int hkCustomAttributesClass; // src: XBOX_RETAIL_PDB 0x0126c998 (old: DAT_0126c998/g_0126c998)
 void* __cdecl Object_GetGlobalObjectAddress_00dfe100();
 // FUN_00dfe120 : a one-line function - getter
-extern int g_target_00dfe120;
+extern int hkContactPointMaterialClass; // src: XBOX_RETAIL_PDB 0x0126c9c8 (old: g_0126c9c8/g_target_00dfe120)
 void* Object_GetGlobalObjectAddress_00dfe120();
-extern int DAT_0126c9f8;
+extern int hkContactPointClass; // src: XBOX_RETAIL_PDB 0x0126c9f8 (old: DAT_0126c9f8/g_0126c9f8)
 void* __cdecl Object_GetGlobalObjectAddress_00dfe140();
 // FUN_00dfe160 : a one-line function - getter
-extern int g_target_00dfe160;
+extern int hkColorClass; // src: XBOX_RETAIL_PDB 0x0126ca28 (old: g_0126ca28/g_target_00dfe160)
 void* Object_GetGlobalObjectAddress_00dfe160();
 extern int DAT_0126ca58;
 int* __cdecl Object_GetGlobalObjectAddress_00dfe180();
@@ -2098,7 +2098,7 @@ extern int DAT_0126cab8;
 int* __cdecl Object_GetGlobalObjectAddress_00dfe1c0();
 extern int DAT_0126cae8;
 void* __cdecl Object_GetGlobalObjectAddress_00dfe1e0();
-extern int DAT_0126cb18;
+extern int hkBitFieldClass; // src: XBOX_RETAIL_PDB 0x0126cb18 (old: DAT_0126cb18/g_0126cb18)
 void* __cdecl Runtime_GetDAT0126cb18Address();
 // FUN_00dfe250: null-guarded forwarding of a second argument to a
 // non-virtual member function of the first (object) argument.
@@ -2109,12 +2109,12 @@ class FUN_00dfe250_cls
 };
 void __cdecl Object_ProcessState_00dfe250(FUN_00dfe250_cls* pObject, int a1);
 // FUN_00dfe2a0: cdecl, returns the address of a global object.
-extern char g_unk0126cb48;
+extern char hkaRagdollInstanceClass; // src: XBOX_RETAIL_PDB 0x0126cb48 (old: g_0126cb48/g_unk0126cb48)
 void* __cdecl Object_GetGlobalObjectAddress_00dfe2a0();
-extern void* DAT_0126cb90;
+extern void* hkaSkeletonMapperClass; // src: XBOX_RETAIL_PDB 0x0126cb90 (old: DAT_0126cb90/g_0126cb90)
 int __cdecl Object_ComputeValue_00dfe2c0();
 // FUN_00dfe330 : a one-line function - getter
-extern int g_target_00dfe330;
+extern int hkaInterleavedUncompressedAnimationClass; // src: XBOX_RETAIL_PDB 0x0126cbd8 (old: g_0126cbd8/g_target_00dfe330)
 void* Runtime_GetTarget00dfe330Address();
 extern int DAT_010e5474;
 unsigned int __cdecl Runtime_EvaluateValue_00dfe350();
@@ -2125,21 +2125,21 @@ struct FUN_00cb0a70_obj
 };
 void __cdecl Object_ProcessState_00dfe410(FUN_00cb0a70_obj* pObject, int value);
 // FUN_00dfe460 : a one-line function - getter
-extern int g_target_00dfe460;
+extern int hkaFootstepAnalysisInfoClass; // src: XBOX_RETAIL_PDB 0x0126cc20 (old: g_0126cc20/g_target_00dfe460)
 void* Object_GetGlobalObjectAddress_00dfe460();
 void __cdecl Runtime_ForwardCall_00dfe470(FUN_00dfe430_class* p);
-extern int DAT_0126cc68;
+extern int hkaFootstepAnalysisInfoContainerClass; // src: XBOX_RETAIL_PDB 0x0126cc68 (old: DAT_0126cc68/g_0126cc68)
 void* __cdecl Object_GetGlobalObjectAddress_00dfe480();
 // FUN_00dfe4f0: cdecl, returns the address of a global object.
-extern char g_unk0126ccb0;
+extern char hkaDefaultAnimatedReferenceFrameClass; // src: XBOX_RETAIL_PDB 0x0126ccb0 (old: g_0126ccb0/g_unk0126ccb0)
 void* __cdecl Runtime_GetUnk0126ccb0Address();
 extern int DAT_010e57a4;
 int* Runtime_GetDAT010e57a4Address();
 // FUN_00dfe5a0: cdecl, returns the address of a global object.
-extern char g_unk0126ccf8;
+extern char hkaBoneAttachmentClass; // src: XBOX_RETAIL_PDB 0x0126ccf8 (old: g_0126ccf8/g_unk0126ccf8)
 void* __cdecl Object_GetGlobalObjectAddress_00dfe5a0();
 struct CpuOpaque;
-extern CpuOpaque DAT_0126cd40;
+extern CpuOpaque hkaAnimationPreviewColorContainerClass; // src: XBOX_RETAIL_PDB 0x0126cd40 (old: DAT_0126cd40/g_0126cd40)
 CpuOpaque* __cdecl Object_GetGlobalObjectAddress_00dfe680();
 extern int DAT_010e58c8;
 int* __cdecl Object_GetGlobalObjectAddress_00dfe6a0();
@@ -2148,7 +2148,7 @@ struct FUN_00dfe6e0_Class
     virtual void vf00(int value);
 };
 void __cdecl Object_InvokeVirtualMethod_00dfe6e0(FUN_00dfe6e0_Class* param_1);
-extern unsigned char DAT_0126cd88;
+extern unsigned char hkaAnimationContainerClass; // src: XBOX_RETAIL_PDB 0x0126cd88 (old: DAT_0126cd88/g_0126cd88)
 void* __cdecl Runtime_GetDAT0126cd88Address();
 extern int DAT_010e59ac;
 int __cdecl Runtime_EvaluateValue_00dfe710();
@@ -2157,9 +2157,9 @@ struct FUN_00dfe970_class
     virtual void __thiscall m_iWordAt00(int);
 };
 void __cdecl Runtime_ForwardCall_00dfe970(FUN_00dfe970_class* p);
-extern int g_unk0126cdd0;
+extern int hkaAnimationBindingClass; // src: XBOX_RETAIL_PDB 0x0126cdd0 (old: g_0126cdd0/g_unk0126cdd0)
 void* __cdecl Object_GetGlobalObjectAddress_00dfe980();
-extern int DAT_0126ce18;
+extern int hkpVehicleRayCastWheelCollideClass; // src: XBOX_RETAIL_PDB 0x0126ce18 (old: DAT_0126ce18/g_0126ce18)
 int __cdecl Runtime_EvaluateValue_00dfeab0();
 extern int DAT_010dec04;
 extern int DAT_010e5ae4;
@@ -2169,7 +2169,7 @@ extern int DAT_010debe4;
 void __cdecl InitObjectVtables(int* p, int b);
 extern int DAT_010e5ae4;
 int* Object_GetGlobalObjectAddress_00dfeb00();
-extern int DAT_0126ce60;
+extern int hkpVehicleRayCastBatchingManagerClass; // src: XBOX_RETAIL_PDB 0x0126ce60 (old: DAT_0126ce60/g_0126ce60)
 int* __cdecl Runtime_GetDAT0126ce60Address();
 extern int DAT_010e5b68;
 int* __cdecl Runtime_GetDAT010e5b68Address();
@@ -2177,14 +2177,14 @@ extern int DAT_0126cea8;
 int* __cdecl Object_GetGlobalObjectAddress_00dfebc0();
 extern int DAT_010e5b4c;
 int* __cdecl Object_GetGlobalObjectAddress_00dfebe0();
-extern int DAT_0126cef0;
+extern int hkpVehicleLinearCastBatchingManagerClass; // src: XBOX_RETAIL_PDB 0x0126cef0 (old: DAT_0126cef0/g_0126cef0)
 int* __cdecl Object_GetGlobalObjectAddress_00dfec00();
 extern int DAT_010e5bfc;
 int* __cdecl Object_GetGlobalObjectAddress_00dfec20();
 // FUN_00dfec40 : a constant getter - MSVC emits mov eax, OFFSET <global> ; ret.
 // The global is declared extern so the store becomes a relocation; the checker
 // binds it to the original's own immediate.
-extern int g_target_FUN_00dfec40;
+extern int hkpVehicleDriverInputAnalogStatusClass; // src: XBOX_RETAIL_PDB 0x0126cf38 (old: g_0126cf38/g_target_FUN_00dfec40)
 void* __cdecl Object_GetGlobalObjectAddress_00dfec40();
 class DFEC50Object
 {
@@ -2193,34 +2193,34 @@ class DFEC50Object
 };
 void __cdecl Runtime_DestroySubobject_00dfec50(DFEC50Object* pkObject);
 // FUN_00dfec60 : a one-line function - getter
-extern int g_target_00dfec60;
+extern int hkpVehicleDefaultAnalogDriverInputClass; // src: XBOX_RETAIL_PDB 0x0126cf80 (old: g_0126cf80/g_target_00dfec60)
 void* Object_GetGlobalObjectAddress_00dfec60();
 // FUN_00dfec80: cdecl, returns the address of a global data symbol.
 extern int DAT_010e5d94;
 int* __cdecl Object_GetGlobalObjectAddress_00dfec80();
 extern int DAT_010e5da8;
 void* __cdecl Object_GetGlobalObjectAddress_00dfeca0();
-extern int DAT_0126cfc8;
+extern int hkpVehicleDefaultVelocityDamperClass; // src: XBOX_RETAIL_PDB 0x0126cfc8 (old: DAT_0126cfc8/g_0126cfc8)
 void* __cdecl Object_GetGlobalObjectAddress_00dfecc0();
 extern int DAT_010e5e9c;
 int* __cdecl Object_GetGlobalObjectAddress_00dfece0();
 // FUN_00dfed00 : a one-line function - getter
-extern int g_target_00dfed00;
+extern int hkpVehicleDefaultTransmissionClass; // src: XBOX_RETAIL_PDB 0x0126d010 (old: g_0126d010/g_target_00dfed00)
 void* Object_GetGlobalObjectAddress_00dfed00();
 int* Object_GetGlobalObjectAddress_00dfed20();
-extern int DAT_0126d058;
+extern int hkpVehicleDefaultSteeringClass; // src: XBOX_RETAIL_PDB 0x0126d058 (old: DAT_0126d058/g_0126d058)
 int __cdecl Runtime_EvaluateValue_00dfedf0();
 extern int DAT_010e60c4;
 int* __cdecl Runtime_GetDAT010e60c4Address();
-extern int DAT_0126d0a0;
+extern int hkpVehicleDefaultEngineClass; // src: XBOX_RETAIL_PDB 0x0126d0a0 (old: DAT_0126d0a0/g_0126d0a0)
 int* __cdecl Runtime_GetDAT0126d0a0Address();
 extern int DAT_010e62a4;
 void* __cdecl Runtime_GetDAT010e62a4Address();
-extern int DAT_0126d0e8;
+extern int hkpVehicleDefaultAerodynamicsClass; // src: XBOX_RETAIL_PDB 0x0126d0e8 (old: DAT_0126d0e8/g_0126d0e8)
 int __cdecl Runtime_EvaluateValue_00dfeed0();
 extern int DAT_010e6394;
 int* __cdecl Runtime_GetDAT010e6394Address();
-extern int DAT_0126d130;
+extern int hkpRejectChassisListenerClass; // src: XBOX_RETAIL_PDB 0x0126d130 (old: DAT_0126d130/g_0126d130)
 void* __cdecl Runtime_GetDAT0126d130Address();
 extern int DAT_010debf4;
 int __cdecl Object_ComputeValue_00dfef40();
@@ -2231,7 +2231,7 @@ class DFEF80Object
 };
 void Object_InvokeVirtualMethod_00dfef80(DFEF80Object* pkObject);
 // FUN_00dfefc0: returns the address of the global object at DAT_0126d190.
-extern int DAT_0126d190;
+extern int hkpSpringActionClass; // src: XBOX_RETAIL_PDB 0x0126d190 (old: DAT_0126d190/g_0126d190)
 int* Object_GetGlobalObjectAddress_00dfefc0();
 // FUN_00dfefd0 : cdecl, 13 bytes
 // Calls slot 0 of the object's vtable with the argument 0 and returns the result.
@@ -2240,7 +2240,7 @@ struct FUN_00dfefd0_cls
     virtual int v00(int a);
 };
 int __cdecl Runtime_ForwardCall_00dfefd0(FUN_00dfefd0_cls* pObj);
-extern int DAT_0126d1d8;
+extern int hkpSerializedDisplayMarkerListClass; // src: XBOX_RETAIL_PDB 0x0126d1d8 (old: DAT_0126d1d8/g_0126d1d8)
 void* __cdecl Object_GetGlobalObjectAddress_00dfefe0();
 extern int DAT_010e66fc;
 int* __cdecl Object_GetGlobalObjectAddress_00dff000();
@@ -2249,7 +2249,7 @@ struct FUN_00dff0b0_class
     virtual void m0(int);
 };
 void __cdecl Runtime_ForwardCall_00dff0b0(FUN_00dff0b0_class* p);
-extern int DAT_0126d220;
+extern int hkpSerializedDisplayMarkerClass; // src: XBOX_RETAIL_PDB 0x0126d220 (old: DAT_0126d220/g_0126d220)
 void* __cdecl Object_GetGlobalObjectAddress_00dff0c0();
 extern int DAT_010e676c;
 int* __cdecl Object_GetGlobalObjectAddress_00dff0e0();
@@ -2259,13 +2259,13 @@ struct FUN_00dff120_Class
 };
 void __cdecl Object_InvokeVirtualMethod_00dff120(FUN_00dff120_Class* param_1);
 // Getter returning the address of a global object.
-extern int DAT_0126d268;
+extern int hkpReorientActionClass; // src: XBOX_RETAIL_PDB 0x0126d268 (old: DAT_0126d268/g_0126d268)
 int* __cdecl Object_GetGlobalObjectAddress_00dff160();
 // Null-guarded forwarder: the first argument is an object pointer; when it is
 // non-null the second argument is passed to a member function of that object.
 struct FUN_00dff170_cls
 {
-    void __thiscall FUN_00e45010(int a1);
+    void __thiscall FUN_00e45010(int flag);
 };
 void __cdecl Object_ProcessState_00dff170(FUN_00dff170_cls* pObject, int a1);
 struct FUN_00dff190_cls
@@ -2273,16 +2273,16 @@ struct FUN_00dff190_cls
     virtual void m_v00(int arg);
 };
 void __cdecl Object_ForwardCall_00dff190(FUN_00dff190_cls* pObject);
-extern int DAT_0126d298;
+extern int hkpProjectileGunClass; // src: XBOX_RETAIL_PDB 0x0126d298 (old: DAT_0126d298/g_0126d298)
 int __cdecl Object_ComputeValue_00dff1c0();
-extern int DAT_0126d2f8;
+extern int hkpPhysicsSystemWithContactsClass; // src: XBOX_RETAIL_PDB 0x0126d2f8 (old: DAT_0126d2f8/g_0126d2f8)
 int __cdecl Object_ComputeValue_00dff1e0();
 struct FUN_00dff250_class
 {
     virtual void m0(int);
 };
 void __cdecl Runtime_ForwardCall_00dff250(FUN_00dff250_class* p);
-extern int DAT_0126d328;
+extern int hkpMouseSpringActionClass; // src: XBOX_RETAIL_PDB 0x0126d328 (old: DAT_0126d328/g_0126d328)
 void* __cdecl Object_GetGlobalObjectAddress_00dff260();
 struct DFF2E0FinishFlag
 {
@@ -2299,11 +2299,11 @@ class DFF2E0Object
     }
 };
 void Object_ConstructInPlace(void* p, int finishing);
-extern int DAT_0126d370;
+extern int hkpMountedBallGunClass; // src: XBOX_RETAIL_PDB 0x0126d370 (old: DAT_0126d370/g_0126d370)
 int* __cdecl Runtime_GetDAT0126d370Address();
-extern int DAT_0126d3d0;
+extern int hkpMotorActionClass; // src: XBOX_RETAIL_PDB 0x0126d3d0 (old: DAT_0126d3d0/g_0126d3d0)
 int __cdecl Runtime_EvaluateValue_00dff3b0();
-extern int DAT_0126d418;
+extern int hkpGroupCollisionFilterClass; // src: XBOX_RETAIL_PDB 0x0126d418 (old: DAT_0126d418/g_0126d418)
 int* __cdecl Runtime_GetDAT0126d418Address();
 struct CpuOpaque;
 extern CpuOpaque DAT_010e6dec;
@@ -2318,7 +2318,7 @@ struct DFF4E0Object
     virtual void Destroy(bool bFree);
 };
 void Object_Destroy_Thunk(DFF4E0Object* pkObject);
-extern unsigned char DAT_0126d448;
+extern unsigned char hkpGravityGunClass; // src: XBOX_RETAIL_PDB 0x0126d448 (old: DAT_0126d448/g_0126d448)
 void* __cdecl Runtime_GetDAT0126d448Address();
 struct DFF520FinishFlag
 {
@@ -2338,12 +2338,12 @@ void Object_ConstructInPlace_00dff520(void* p, int finishing);
 extern int DAT_0126d490;
 int __cdecl Runtime_EvaluateValue_00dff570();
 struct CpuOpaque;
-extern CpuOpaque DAT_0126d4d8;
+extern CpuOpaque hkpDisplayBindingDataRigidBodyClass; // src: XBOX_RETAIL_PDB 0x0126d4d8 (old: DAT_0126d4d8/g_0126d4d8)
 CpuOpaque* __cdecl Runtime_GetDAT0126d4d8Address();
 struct CpuOpaque;
-extern CpuOpaque DAT_0126d508;
+extern CpuOpaque hkpDisplayBindingDataPhysicsSystemClass; // src: XBOX_RETAIL_PDB 0x0126d508 (old: DAT_0126d508/g_0126d508)
 CpuOpaque* __cdecl Runtime_GetDAT0126d508Address();
-extern int DAT_0126d550;
+extern int hkpDisplayBindingDataClass; // src: XBOX_RETAIL_PDB 0x0126d550 (old: DAT_0126d550/g_0126d550)
 void* __cdecl Runtime_GetDAT0126d550Address();
 extern int DAT_010e75cc;
 int* __cdecl Runtime_GetDAT010e75ccAddress();
@@ -2358,7 +2358,7 @@ class FUN_00dff870_cls
     virtual int v0(int a) = 0;
 };
 int __cdecl Runtime_ForwardCall_00dff870(FUN_00dff870_cls* p);
-extern int DAT_0126d5c8;
+extern int hkpDisableEntityCollisionFilterClass; // src: XBOX_RETAIL_PDB 0x0126d5c8 (old: DAT_0126d5c8/g_0126d5c8)
 int* __cdecl Object_GetGlobalObjectAddress_00dff880();
 // FUN_00dff890: forwards a second argument to a method of the first argument
 // when that pointer is non-null.
@@ -2395,9 +2395,9 @@ struct FNVRecordPointers
     void* volatile m30;
     FNVRecordPointers* __thiscall InitializeRecordPointers(int unused);
 };
-extern int DAT_0126d610;
+extern int hkpDashpotActionClass; // src: XBOX_RETAIL_PDB 0x0126d610 (old: DAT_0126d610/g_0126d610)
 void* __cdecl Object_GetGlobalObjectAddress_00dffa20();
-extern int g_unk0126d658;
+extern int hkpConstrainedSystemFilterClass; // src: XBOX_RETAIL_PDB 0x0126d658 (old: g_0126d658/g_unk0126d658)
 void* __cdecl Object_GetGlobalObjectAddress_00dffa40();
 // FUN_00dffa50: forwards a value to a helper on the passed-in object
 // when that object is present.
@@ -2481,27 +2481,27 @@ class FUN_00dffba0_cls
 void __cdecl Object_InvokeVirtualMethod_00dffba0(FUN_00dffba0_cls* p);
 extern int DAT_0126d688;
 int* __cdecl Runtime_GetDAT0126d688Address();
-extern int DAT_0126d6e8;
+extern int hkpAngularDashpotActionClass; // src: XBOX_RETAIL_PDB 0x0126d6e8 (old: DAT_0126d6e8/g_0126d6e8)
 void* __cdecl Runtime_GetDAT0126d6e8Address();
 struct CpuOpaque;
-extern CpuOpaque DAT_0126d718;
+extern CpuOpaque hkpConvexPieceStreamDataClass; // src: XBOX_RETAIL_PDB 0x0126d718 (old: DAT_0126d718/g_0126d718)
 CpuOpaque* __cdecl Runtime_GetDAT0126d718Address();
 extern int DAT_010e7c24;
 int* __cdecl Runtime_GetDAT010e7c24Address();
-extern int DAT_0126d760;
+extern int hkpVelocityConstraintMotorClass; // src: XBOX_RETAIL_PDB 0x0126d760 (old: DAT_0126d760/g_0126d760)
 void* Runtime_GetDAT0126d760Address();
 extern int DAT_010cc0d8;
 int* __cdecl Runtime_GetDAT010cc0d8Address();
 // FUN_00dffdd0 : a one-line function - getter
-extern int g_target_00dffdd0;
+extern int hkpThinBoxMotionClass; // src: XBOX_RETAIL_PDB 0x0126d7a8 (old: g_0126d7a8/g_target_00dffdd0)
 void* Runtime_GetTarget00dffdd0Address();
 extern int DAT_010c6e34;
 void* Runtime_GetDAT010c6e34Address();
-extern int DAT_0126d7f0;
+extern int hkpSpringDamperConstraintMotorClass; // src: XBOX_RETAIL_PDB 0x0126d7f0 (old: DAT_0126d7f0/g_0126d7f0)
 void* __cdecl Runtime_GetDAT0126d7f0Address();
 extern int DAT_010d3838;
 void* __cdecl Runtime_GetDAT010d3838Address();
-extern char g_unk0126d838;
+extern char hkpSphereMotionClass; // src: XBOX_RETAIL_PDB 0x0126d838 (old: g_0126d838/g_unk0126d838)
 void* __cdecl Runtime_GetUnk0126d838Address();
 extern void* DAT_010c59f4;
 extern void* DAT_010c6d54;
@@ -2513,7 +2513,7 @@ class FUN_00dffec0_cls
     virtual int v0(int a) = 0;
 };
 int __cdecl Object_InvokeVirtualMethod_00dffec0(FUN_00dffec0_cls* p);
-extern int DAT_0126d880;
+extern int hkpPositionConstraintMotorClass; // src: XBOX_RETAIL_PDB 0x0126d880 (old: DAT_0126d880/g_0126d880)
 void* __cdecl Runtime_GetDAT0126d880Address();
 extern int DAT_010cb798;
 int* __cdecl Runtime_GetDAT010cb798Address();
@@ -2537,7 +2537,7 @@ struct SpawnedObject
 void __cdecl InitSpawnedObject(SpawnedObject* p, int flag);
 extern int DAT_010da004;
 int* __cdecl Runtime_GetDAT010da004Address();
-extern int DAT_0126d910;
+extern int hkpMalleableConstraintDataClass; // src: XBOX_RETAIL_PDB 0x0126d910 (old: DAT_0126d910/g_0126d910)
 int* __cdecl Runtime_GetDAT0126d910Address();
 struct S_00dfff80_Foo
 {
@@ -2545,7 +2545,7 @@ struct S_00dfff80_Foo
 };
 void __cdecl CallFooMethodIfNotNull(S_00dfff80_Foo* p, int a);
 // FUN_00dfffd0 : a one-line function - getter
-extern int g_target_00dfffd0;
+extern int hkpLinearParametricCurveClass; // src: XBOX_RETAIL_PDB 0x0126d958 (old: g_0126d958/g_target_00dfffd0)
 void* Runtime_GetTarget00dfffd0Address();
 extern void* DAT_010e80b4;
 void** __cdecl Runtime_GetDAT010e80b4Address();
@@ -2892,7 +2892,7 @@ class BDFCA00Object
     short unk114;
     bool m_bModifierActive;
 };
-void __cdecl finishLoadedObjecthkpRagdollConstraintData(void* pvObject, int iFinishing);
+void __cdecl finishLoadedObjecthkpRagdollConstraintData(void* p, int finishing);
 struct FnvCpu_FUN_00de1150_CpuObject
 {
     char* EvaluateValue_00de1150();
@@ -3045,10 +3045,10 @@ struct KdJob
 };
 struct KdQueue
 {
-    int FinishJob(const KdJob* a, const KdJob* b, int flag);
+    int FinishJob(const KdJob* oldJob, const KdJob* jobOut, int waitStatus);
 };
-void __cdecl MixChannels(KdPair* p, int a2, int a3, int a4, int a5, int a6, int* out);
-int __cdecl FinishJobWithPair(KdQueue* queue, KdJob* job);
+void __cdecl hkKdTreeBuildingUtils_buildTree(KdPair* buffers, int treeOut, int projEntOut, int treeSize, int numPrims, int _numAvailableEmptyNodes, int* maxDepth);
+int __cdecl hkCpuKdTreeBuildJobFast(KdQueue* jobQueue, KdJob* nextJobOut);
 struct FnvCpu_FUN_00df8920_CpuObject
 {
     unsigned int unk00;
@@ -3194,7 +3194,7 @@ struct S00de0fe0_Obj10
     int unk0c;
     int unk10;
     void __thiscall hkpShapeDisplayBuilder_hkpShapeDisplayBuilder(int* value);
-    void __thiscall UpdateState_00de0f90(int count, S00de0fe0_Element*** array);
+    void __thiscall hkpShapeDisplayBuilder_buildDisplayGeometries(int count, S00de0fe0_Element*** displayGeometries);
 };
 struct S00de0fe0_Local
 {
@@ -3213,7 +3213,7 @@ __declspec(noinline) void S00de0fe0_Arr::hkpShapeDisplayBuilder_hkpShapeDisplayB
 }
 void __cdecl hkpShapeDisplayBuilder_addObjectToDebugDisplay(int arg1, int arg2, int arg3, int arg4);
 class GlobalObjectO2_00d472a0;
-extern GlobalObjectO2_00d472a0 g_01269fe8;
+extern GlobalObjectO2_00d472a0 hkpTwistLimitConstraintAtomClass; // src: XBOX_RETAIL_PDB 0x01269fe8 (old: g_01269fe8)
 GlobalObjectO2_00d472a0* __cdecl Runtime_GetField01269fe8Address();
 struct cls_d530
 {
@@ -3271,13 +3271,13 @@ struct WorkQueue
 };
 struct ExecutionContext
 {
-    void ProcessCallback(WorkQueue* source, WorkQueue* target, int flags);
+    void ProcessCallback(WorkQueue* oldJob, WorkQueue* jobOut, int waitStatus);
 };
 extern unsigned long DAT_0126835c;
 extern "C" const char str_010db918[];
 extern "C" const char str_010c41f8[];
-int __cdecl hkKdTreeAabbQueryUtils_queryAabbIterative_00d1b930(void* processor, WorkItem* item, unsigned int* value, int remaining);
-void __cdecl ProcessWorkQueue(ExecutionContext* context, WorkQueue* queue);
+int __cdecl hkKdTreeAabbQueryUtils_queryAabbIterative_00d1b930(void* processor, WorkItem* aabbIn, unsigned int* hitsOut, int maxHits);
+void __cdecl hkCpuKdTreeAabbJob(ExecutionContext* jobQueue, WorkQueue* nextJobOut);
 extern "C" __declspec(dllimport) void* __stdcall TlsGetValue(unsigned long dwTlsIndex);
 extern "C" unsigned long DAT_0126835c;
 inline hkMonitorStream& hkMonitorStream::getInstance()
@@ -3297,6 +3297,7 @@ static inline void TimerMark(const char* name)
         s->m_end.m_storage = (char*)(h + 1);
     }
 }
+// pdb: class Key, size 0x8 (here 0x2), 2 members
 struct Key
 {
     unsigned char m_type;
@@ -3312,12 +3313,12 @@ struct Job
     int m_28;
     int m_2c;
 };
-void __cdecl hkCpuPairGetClosestPointsImplementation(Job* job, int a, int b, int c);
+void __cdecl hkCpuPairGetClosestPointsImplementation(Job* pairGetClosestPointsJob, int collisionInput, int commandsBase, int numCommands);
 struct Scheduler
 {
-    int ProcessCallback(Key* key, int b, int a);
+    int ProcessCallback(Key* oldJob, int jobOut, int waitStatus);
 };
-void __cdecl hkCpuPairGetClosestPointsJob(Scheduler* self, Job* job);
+void __cdecl hkCpuPairGetClosestPointsJob(Scheduler* jobQueue, Job* nextJobOut);
 struct FUN_00df9840_Class
 {
     int unk00;

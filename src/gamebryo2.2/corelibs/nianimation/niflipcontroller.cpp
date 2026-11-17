@@ -17,10 +17,10 @@
 // @fnv 0x00a4f300
 void* NiFlipController::GetEntryAt(int uiIndex)
 {
-    unsigned short size = m_kTextureSwapList.m_usSize;
+    unsigned short size = m_kTextures.m_usSize;
     if ((unsigned int)uiIndex < size)
     {
-        NiPointer<NiTexture>* arr = m_kTextureSwapList.m_pBase;
+        NiPointer<NiTexture>* arr = m_kTextures.m_pBase;
         return arr[uiIndex].m_pObject;
     }
     return 0;
@@ -50,18 +50,18 @@ int __cdecl _NiSprintf(char*, unsigned int, const char*, ...);
 // @fnv 0x00a4f320
 const char* __thiscall NiFlipController::GetFormattedValue()
 {
-    char* pcFormattedValue = (char*)m_pkBuf;
+    char* pcFormattedValue = (char*)m_pcCtlrID;
     if (!pcFormattedValue)
     {
         pcFormattedValue = (char*)_NiMalloc(15);
-        m_pkBuf = pcFormattedValue;
-        _NiSprintf(pcFormattedValue, 15, "%d", m_eAffectedMap);
-        pcFormattedValue = (char*)m_pkBuf;
+        m_pcCtlrID = pcFormattedValue;
+        _NiSprintf(pcFormattedValue, 15, "%d", m_uiAffectedMap);
+        pcFormattedValue = (char*)m_pcCtlrID;
     }
     return pcFormattedValue;
 }
 
-extern NiRTTI g_011f49a4;
+extern NiRTTI NiTexturingProperty_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f49a4 (old: DAT_011f49a4/g_011f49a4/g_kTexturingPropertyRTTI)
 
 // Walks pkTarget's NiRTTI base chain and returns true if it reaches g_011f49a4, false for a null target or RTTI.
 // @fnv 0x00a4f5e0
@@ -75,17 +75,17 @@ bool __stdcall Object_HasRTTIInBaseChain(NiObjectNET* pkTarget)
         return false;
     while (pkRTTI)
     {
-        if (pkRTTI == &g_011f49a4)
+        if (pkRTTI == &NiTexturingProperty_ms_RTTI)
             return true;
-        pkRTTI = pkRTTI->m_pBaseRTTI;
+        pkRTTI = pkRTTI->m_pkBaseRTTI;
     }
     return false;
 }
 
 inline void* NiFlipController::GetSrc(unsigned int i)
 {
-    unsigned short cnt = m_kTextureSwapList.m_usSize;
-    NiPointer<NiTexture>* arr = m_kTextureSwapList.m_pBase;
+    unsigned short cnt = m_kTextures.m_usSize;
+    NiPointer<NiTexture>* arr = m_kTextures.m_pBase;
     if (i < cnt)
         return arr[i].m_pObject;
     return 0;
@@ -94,11 +94,15 @@ inline void* NiFlipController::GetSrc(unsigned int i)
 // Calls the base copy, copies the int at offset 0x4c to dst, then copies each source entry via GetSrc and FUN_00a4f8a0.
 // @fnv 0x00a4f920
 // src: GAMEBRYO_LIB 0x00a4f920
+// pdb: NiFlipController::CopyMembers | NiFlipController.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiFlipController::DetachTexture
+// pdb params: pkDest, kCloning
+// pdb locals: uiI, pkTexture
 void __thiscall NiFlipController::CopyMembers_00a4f920(NiAlphaController* dst, CloningProcess& proc)
 {
     NiFloatInterpController::CopyMemberData(dst, &proc);
-    ((NiFlipController*)dst)->m_eAffectedMap = m_eAffectedMap;
-    for (unsigned int i = 0; i < m_kTextureSwapList.m_usSize; ++i)
+    ((NiFlipController*)dst)->m_uiAffectedMap = m_uiAffectedMap;
+    for (unsigned int i = 0; i < m_kTextures.m_usSize; ++i)
     {
         void* e = this->GetSrc(i);
         ((NiFlipController*)dst)->AttachTexture(e, i);
@@ -118,6 +122,9 @@ struct FUN_00a40520
 };
 // @fnv 0x00a4f2c0
 // src: XBOX_PDB 0x00a4f2c0
+// pdb: NiFlipController::CreateBlendInterpolator | NiFlipController.obj | retail, upstream name already matches, high
+// pdb params: usIndex, bManagerControlled, bAccumulateAnimations, fWeightThreshold, ucArraySize
+// pdb locals: pkInterp
 FUN_00a40520* __stdcall NiFlipController_CreateBlendInterpolator(unsigned short usIndex, bool bManagerControlled, bool bAccumulateAnimations,
                                      float fWeightThreshold, unsigned char ucArraySize)
 {
@@ -132,12 +139,12 @@ bool NiFlipController::RegisterStreamables_00a4f350(NiStream& kStream)
 {
     if (!NiFloatInterpController::RegisterStreamables(kStream))
         return false;
-    unsigned int uiSize = m_kTextureSwapList.m_usSize;
+    unsigned int uiSize = m_kTextures.m_usSize;
     unsigned int uiIndex;
     NiTexture* pkTexture;
     for (uiIndex = 0; uiIndex < uiSize; ++uiIndex)
     {
-        pkTexture = m_kTextureSwapList.m_pBase[uiIndex].m_pObject;
+        pkTexture = m_kTextures.m_pBase[uiIndex].m_pObject;
         if (pkTexture)
             ((NiObject*)pkTexture)->RegisterStreamables(kStream);
     }
@@ -160,12 +167,13 @@ void* NiFlipController::CreateFlipController(CloningProcess& kCloning)
 // @fnv 0x00a4f270
 void NiFlipController::GetFloatValue(float* pfOut)
 {
-    *pfOut = (float)m_uiPosition;
+    *pfOut = (float)m_uiIndex;
 }
 
 // Compares the base controller and affected map.
 // @fnv 0x00a4f290
 // src: GAMEBRYO_LIB 0x00a4f290
+// pdb: NiFlipController::~NiFlipController | NiFlipController.obj | debug, object-file run extension, low
 unsigned char NiFlipController::IsEqual_00a4f290(NiFlipController* param)
 {
     if (!NiFloatInterpController::IsEqual(param))
@@ -173,7 +181,7 @@ unsigned char NiFlipController::IsEqual_00a4f290(NiFlipController* param)
         return 0;
     }
 
-    return m_eAffectedMap == param->m_eAffectedMap;
+    return m_uiAffectedMap == param->m_uiAffectedMap;
 }
 
 struct FNVWriter
@@ -195,9 +203,9 @@ void __thiscall NiFlipController::SaveToStream(NiStream* stream)
 {
     NiFloatInterpController::SaveBinary(*stream);
     FNVWriter* writer = *(FNVWriter**)((char*)stream + 0x250);
-    writer->SaveResult(&m_eAffectedMap);
+    writer->SaveResult(&m_uiAffectedMap);
 
-    unsigned int count = m_kTextureSwapList.m_usSize;
+    unsigned int count = m_kTextures.m_usSize;
     writer = *(FNVWriter**)((char*)stream + 0x250);
     {
         unsigned int bytes = 4;
@@ -205,7 +213,7 @@ void __thiscall NiFlipController::SaveToStream(NiStream* stream)
     }
     for (unsigned int i = 0; i < count; ++i)
     {
-        void* object = m_kTextureSwapList.m_pBase[i].m_pObject;
+        void* object = m_kTextures.m_pBase[i].m_pObject;
         stream->SaveLinkID(reinterpret_cast<const NiObject*>(object));
     }
 }
@@ -231,11 +239,12 @@ inline NiTPrimitiveArray<T>::NiTPrimitiveArray(unsigned int uiMaxSize, unsigned 
 {}
 
 // @fnv 0x00a4f820
-NiFlipController::NiFlipController() : m_kTextureSwapList(1, 1)
+// pdb: NiFlipController::NiFlipController | NiFlipController.obj | debug, upstream name already matches, high
+NiFlipController::NiFlipController() : m_kTextures(1, 1)
 {
-    m_uiPosition = 0;
-    m_eAffectedMap = 0;
-    m_pkBuf = 0;
+    m_uiIndex = 0;
+    m_uiAffectedMap = 0;
+    m_pcCtlrID = 0;
 }
 
 void* _NiMalloc_00aa1070(unsigned int uiSize);
@@ -291,22 +300,23 @@ struct Map_a4d : MapMid_a4d
     virtual void v00();
 };
 
-struct FUN_00a4da20_cls : FUN_00a6d220
+// pdb: class NiKeyframeManager, size 0x48, bases: NiTimeController, 1 members
+struct NiKeyframeManager : FUN_00a6d220 // src: EXE 0x01098f4c (vtable; old: FUN_00a4da20_cls)
 {
-    FUN_00a4da20_cls();
+    NiKeyframeManager();
     virtual void v00();
-    Map_a4d kMap;
+    Map_a4d m_kMap; // src: XBOX_RETAIL_PDB +0x34 (old: kMap)
 };
 
 // Default constructor for a class that embeds a Map_a4d, which initialises its hash table with the default size.
 // @fnv 0x00a4da20
-FUN_00a4da20_cls::FUN_00a4da20_cls()
+NiKeyframeManager::NiKeyframeManager()
 {}
 
 // NiFlipController::Update: advance the interpolator, round its value to a texture index, clamp it,
 // and assign that texture to the affected map (regular map slot, or shader map at index - 0x400).
 
-extern float DAT_01096324;         // NiTimeController::INVALID_TIME
+extern float NiInterpController_INVALID_TIME;         // NiTimeController::INVALID_TIME // src: XBOX_RETAIL_PDB 0x01096324 (old: DAT_01096324/INVALID_TIME_A4F/g_fInvalidTimeBC3/kInvalidTime)
 extern const double DAT_01016408;  // 0.5
 struct NiUpdateDataF
 {
@@ -356,37 +366,37 @@ void NiFlipController::UpdateFlipController(NiUpdateDataF& kUpdate)
 {
     if (GetManagerControlled())
     {
-        m_fControllerTime = DAT_01096324;
+        m_fScaledTime = NiInterpController_INVALID_TIME;
     }
     else if (AdvanceController(kUpdate.m_fTime) &&
-             (!m_spControllerInterpolator.m_pObject || !m_spControllerInterpolator.m_pObject->AlwaysUpdate()))
+             (!m_spInterpolator.m_pObject || !m_spInterpolator.m_pObject->AlwaysUpdate()))
     {
         return;
     }
 
-    if (m_spControllerInterpolator.m_pObject)
+    if (m_spInterpolator.m_pObject)
     {
         float fValue;
-        if (m_spControllerInterpolator.m_pObject->UpdateFloat(m_fControllerTime, m_pkTarget, fValue))
+        if (m_spInterpolator.m_pObject->UpdateFloat(m_fScaledTime, m_pkTarget, fValue))
         {
-            unsigned int uiSize = m_kTextureSwapList.m_usSize;
-            m_uiPosition = (unsigned int)(fValue + DAT_01016408);
-            if (m_uiPosition >= uiSize)
-                m_uiPosition = uiSize - 1;
+            unsigned int uiSize = m_kTextures.m_usSize;
+            m_uiIndex = (unsigned int)(fValue + DAT_01016408);
+            if (m_uiIndex >= uiSize)
+                m_uiIndex = uiSize - 1;
 
             NiTexturingPropertyF* pkProp = (NiTexturingPropertyF*)m_pkTarget;
             if (pkProp)
             {
-                if (m_eAffectedMap < pkProp->m_usMapsSize && pkProp->m_aMapsBase[m_eAffectedMap])
+                if (m_uiAffectedMap < pkProp->m_usMapsSize && pkProp->m_aMapsBase[m_uiAffectedMap])
                 {
-                    pkProp->m_aMapsBase[m_eAffectedMap]->SetTexture(m_kTextureSwapList.m_pBase[m_uiPosition].m_pObject);
+                    pkProp->m_aMapsBase[m_uiAffectedMap]->SetTexture(m_kTextures.m_pBase[m_uiIndex].m_pObject);
                 }
                 else
                 {
-                    unsigned int uiShaderMapIndex = m_eAffectedMap - 0x400;
+                    unsigned int uiShaderMapIndex = m_uiAffectedMap - 0x400;
                     if (uiShaderMapIndex < pkProp->GetShaderMapCount() && pkProp->GetShaderMap(uiShaderMapIndex))
                     {
-                        pkProp->GetShaderMap(uiShaderMapIndex)->SetTexture(m_kTextureSwapList.m_pBase[m_uiPosition].m_pObject);
+                        pkProp->GetShaderMap(uiShaderMapIndex)->SetTexture(m_kTextures.m_pBase[m_uiIndex].m_pObject);
                     }
                 }
             }
@@ -411,12 +421,12 @@ extern const void* g_NiFlipControllerVTable;
 // @fnv 0x00a4f570
 void __fastcall DestroyNiFlipController(NiFlipController* controller, void*)
 {
-    void* buffer = controller->m_pkBuf;
+    void* buffer = controller->m_pcCtlrID;
     *(const void**)controller = &g_NiFlipControllerVTable;
     NiFree(buffer);
-    controller->m_pkBuf = 0;
-    controller->m_kTextureSwapList.NiTArray<NiPointer<NiTexture>, NiTMallocInterface<NiPointer<NiTexture> > >::~NiTArray();
-    NiInterpolator* interpolator = controller->m_spControllerInterpolator.m_pObject;
+    controller->m_pcCtlrID = 0;
+    controller->m_kTextures.NiTArray<NiPointer<NiTexture>, NiTMallocInterface<NiPointer<NiTexture> > >::~NiTArray();
+    NiInterpolator* interpolator = controller->m_spInterpolator.m_pObject;
     if (interpolator)
     {
         if (InterlockedDecrement((long*)&interpolator->m_uiRefCount) == 0)
@@ -462,9 +472,9 @@ extern MemoryManager DAT_011f6238;
 __declspec(nothrow) inline NiFloatData::NiFloatData()
 {
     m_uiNumKeys = 0;
-    m_pKeyArray = 0;
-    m_eRequestType = (NiAnimationKey::KeyType)0;
-    m_ucKeyDataSize = 0;
+    m_pkKeys = 0;
+    m_eType = (NiAnimationKey::KeyType)0;
+    m_ucKeySize = 0;
 }
 
 struct KeyPair
@@ -484,19 +494,21 @@ void* operator new[](unsigned int size)
 // Grows the array if needed, increments the reference count of p, stores a copy of p in the array slot, then decrements the count and releases if zero.
 // @fnv 0x00a4f8a0
 // src: COMMUNITY 0x00a4f8a0
-void __thiscall NiFlipController::AttachTexture(void* apRef, unsigned int aiIndex)
+// pdb: NiFlipController::AttachTexture | NiFlipController.obj | retail, upstream name already matches, high
+// pdb params: pkTexture, uiIndex
+void __thiscall NiFlipController::AttachTexture(void* pkTexture, unsigned int uiIndex)
 {
-    if (m_kTextureSwapList.m_usSize <= aiIndex)
-        m_kTextureSwapList.SetSize(aiIndex + 1);
-    NiTexture* pRef = (NiTexture*)apRef;
-    apRef = pRef;
-    void* slot = apRef;
+    if (m_kTextures.m_usSize <= uiIndex)
+        m_kTextures.SetSize(uiIndex + 1);
+    NiTexture* pRef = (NiTexture*)pkTexture;
+    pkTexture = pRef;
+    void* slot = pkTexture;
     if (pRef != 0)
         InterlockedIncrement((long*)&pRef->m_uiRefCount);
-    NiTPrimitiveArray<NiPointer<NiTexture> >* pArr = &m_kTextureSwapList;
-    if (aiIndex >= pArr->m_usMaxSize)
-        pArr->SetSize(aiIndex + pArr->m_usGrowBy);
-    pArr->NiTArray<NiPointer<NiTexture>, NiTMallocInterface<NiPointer<NiTexture> > >::SetAt(aiIndex, *(NiPointer<NiTexture>*)&slot);
+    NiTPrimitiveArray<NiPointer<NiTexture> >* pArr = &m_kTextures;
+    if (uiIndex >= pArr->m_usMaxSize)
+        pArr->SetSize(uiIndex + pArr->m_usGrowBy);
+    pArr->NiTArray<NiPointer<NiTexture>, NiTMallocInterface<NiPointer<NiTexture> > >::SetAt(uiIndex, *(NiPointer<NiTexture>*)&slot);
     if (pRef != 0)
     {
         if (InterlockedDecrement((long*)&pRef->m_uiRefCount) == 0)
@@ -513,14 +525,14 @@ void NiFlipController::LinkObject_00a4f990(NiStream& kStream) throw()
     if (m_pkTarget)
     {
         unsigned int uiSize = kStream.GetLinkID();
-        m_kTextureSwapList.SetSize(uiSize);
+        m_kTextures.SetSize(uiSize);
         for (unsigned int i = 0; i < uiSize; i++)
         {
             NiTexture* pkTex = (NiTexture*)kStream.GetLoadedObject();
             NiTexture* spTex = pkTex;
             if (pkTex)
                 InterlockedIncrement((long*)&pkTex->m_uiRefCount);
-            m_kTextureSwapList.NiTArray<NiPointer<NiTexture>, NiTMallocInterface<NiPointer<NiTexture> > >::SetAt(i, *(NiPointer<NiTexture>*)&spTex);
+            m_kTextures.NiTArray<NiPointer<NiTexture>, NiTMallocInterface<NiPointer<NiTexture> > >::SetAt(i, *(NiPointer<NiTexture>*)&spTex);
             if (pkTex)
             {
                 if (InterlockedDecrement((long*)&pkTex->m_uiRefCount) == 0)

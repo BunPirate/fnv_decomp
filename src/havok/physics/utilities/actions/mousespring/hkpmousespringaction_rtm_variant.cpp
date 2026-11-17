@@ -301,7 +301,7 @@ struct Cls
     int m_58;
     int m_5c;
     Cls* FUN_00cbb8b0(int flags);
-    void ReleaseReference_00d2b2b0();
+    void hkpUnaryAction_dtor();
 };
 extern "C"
 {
@@ -372,7 +372,7 @@ struct FUN_00cbb4e0
     hkReal m_fTau;
     unsigned int m_uiCollisionShapeKey;
     hkArray<char> m_kAppliedCallbacks;
-    FUN_00cbb4e0(int arg);
+    FUN_00cbb4e0(int rb);
 };
 extern float DAT_01016248, DAT_01017870, DAT_0101ffc0;
 
@@ -532,8 +532,8 @@ struct RigidBodyExt : FUN_00ca86c0_class
     MotionExt m_pMotionState;
 
     void __thiscall OnTrigger(const hkVector4* linVel);
-    void __thiscall hkpRigidBody_setAngularVelocity(const hkVector4* velDiff);
-    void __thiscall hkpRigidBody_getPointVelocity(const hkVector4* point, hkVector4* outVel);
+    void __thiscall hkpRigidBody_setAngularVelocity(const hkVector4* newVel);
+    void __thiscall hkpRigidBody_getPointVelocity(const hkVector4* p, hkVector4* vecOut);
     void __thiscall activate_00c9c1d0();
 };
 
@@ -548,6 +548,9 @@ struct MouseSpringActionExt : hkpMouseSpringAction
 
 // @fnv 0x00cbb1e0
 // src: HAVOK_SRC 0x00cbb1e0
+// pdb: hkpMouseSpringAction::applyAction | hkpMouseSpringAction.obj | retail, upstream name already matches, high
+// pdb params: stepInfo
+// pdb locals: angularVelocity, pRb, jacobian, delta, impulse, linearVelocity, r, inertialInvWorld, temp2, rhat, temp, relVel, factor
 void __thiscall MouseSpringActionExt::hkpMouseSpringAction_applyAction(const hkStepInfo& stepInfo)
 {
     Vector4Ext impulse;
@@ -571,11 +574,11 @@ void __thiscall MouseSpringActionExt::hkpMouseSpringAction_applyAction(const hkS
     float maxImpulse;
     float lenSq;
 
-    RigidBodyExt* rb = (RigidBodyExt*)m_pEntity;
+    RigidBodyExt* rb = (RigidBodyExt*)m_entity;
 
-    worldPos.setTransformedPos_00c7f640(&rb->m_pMotionState.m_kMotionTransform, &m_kMousePositionInWorld);
+    worldPos.setTransformedPos_00c7f640(&rb->m_pMotionState.m_kMotionTransform, &m_positionInRbLocal);
 
-    *(LocalM128*)&deltaPos = _mm_sub_ps(*(LocalM128*)&worldPos, *(LocalM128*)&m_kGrabPointInBodySpace);
+    *(LocalM128*)&deltaPos = _mm_sub_ps(*(LocalM128*)&worldPos, *(LocalM128*)&m_mousePositionInWorld);
 
     MotionExt* motion = rb->hkpRigidBody_getStoredDynamicMotion_00ca86c0() ? (MotionExt*)rb->hkpRigidBody_getStoredDynamicMotion_00ca86c0() : &rb->m_pMotionState;
 
@@ -604,24 +607,24 @@ void __thiscall MouseSpringActionExt::hkpMouseSpringAction_applyAction(const hkS
     if (work.K.invert_00cd4f10(DAT_0106c288) == 0)
     {
         *(LocalM128*)&work.lin = *(LocalM128*)&rb->m_pMotionState.m_kTranslationalVelocity;
-        LocalM128 dampLoad1 = _mm_load_ss(&m_fTau);
+        LocalM128 dampLoad1 = _mm_load_ss(&m_objectDamping);
         LocalM128 dampSplat1 = _mm_shuffle_ps(dampLoad1, dampLoad1, 0);
         *(LocalM128*)&work.lin = _mm_mul_ps(*(LocalM128*)&work.lin, dampSplat1);
         rb->OnTrigger(&work.lin);
 
         *(LocalM128*)&work.ang = *(LocalM128*)&rb->m_pMotionState.m_kAngularVelocity;
-        LocalM128 dampLoad2 = _mm_load_ss(&m_fTau);
+        LocalM128 dampLoad2 = _mm_load_ss(&m_objectDamping);
         LocalM128 dampSplat2 = _mm_shuffle_ps(dampLoad2, dampLoad2, 0);
         *(LocalM128*)&work.ang = _mm_mul_ps(*(LocalM128*)&work.ang, dampSplat2);
         rb->hkpRigidBody_setAngularVelocity(&work.ang);
 
         rb->hkpRigidBody_getPointVelocity(&worldPos, &r);
 
-        float springFactor = m_fSpringElasticity * stepInfo.m_fInverseDeltaTime;
+        float springFactor = m_springElasticity * stepInfo.m_invDeltaTime;
         LocalM128 term1 =
             _mm_mul_ps(_mm_shuffle_ps(_mm_load_ss(&springFactor), _mm_load_ss(&springFactor), 0), *(LocalM128*)&deltaPos);
         *(LocalM128*)&angVel = term1;
-        LocalM128 sdLoad = _mm_load_ss(&m_fSpringDamping);
+        LocalM128 sdLoad = _mm_load_ss(&m_springDamping);
         LocalM128 sdSplat = _mm_shuffle_ps(sdLoad, sdLoad, 0);
         LocalM128 term2 = _mm_mul_ps(sdSplat, *(LocalM128*)&r);
         *(LocalM128*)&angVel = _mm_add_ps(term2, term1);
@@ -638,7 +641,7 @@ void __thiscall MouseSpringActionExt::hkpMouseSpringAction_applyAction(const hkS
         _mm_store_ss(&lenSq, xyz);
 
         maxImpulse = motion->FUN_00c86430();
-        maxImpulse = stepInfo.m_fTimeStep * maxImpulse * m_fMaxRelativeForce;
+        maxImpulse = stepInfo.m_deltaTime * maxImpulse * m_maxRelativeForce;
 
         if (lenSq > maxImpulse * maxImpulse)
         {
@@ -652,9 +655,9 @@ void __thiscall MouseSpringActionExt::hkpMouseSpringAction_applyAction(const hkS
         rb->activate_00c9c1d0();
         rb->m_pMotionState.ApplyImpulseAtPoint(&impulse, &worldPos);
 
-        for (int i = 0; i < m_kAppliedCallbacks.m_iElementCount; ++i)
+        for (int i = 0; i < m_applyCallbacks.m_iElementCount; ++i)
         {
-            ((MouseSpringCallback*)m_kAppliedCallbacks.m_data)[i](this, stepInfo, impulse);
+            ((MouseSpringCallback*)m_applyCallbacks.m_data)[i](this, stepInfo, impulse);
         }
     }
 }

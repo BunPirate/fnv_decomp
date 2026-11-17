@@ -4,7 +4,7 @@
 
 struct HkHolder;
 HkHolder* hkMemoryRouter_getInstance();
-void ResizeAudioStream(void* allocator, void* list, unsigned int elemSize);
+void ResizeAudioStream(void* mem, void* array, unsigned int sizeElem);
 
 struct HkHolder
 {
@@ -45,12 +45,14 @@ struct FUN_00cb7550_cls
     int unk04;
     TailPairArray m_08;
 
-    void AppendTailPair(HkpallcdbodypaircollectorListNodeView* a, HkpallcdbodypaircollectorListNodeView* b);
+    void AppendTailPair(HkpallcdbodypaircollectorListNodeView* bodyA, HkpallcdbodypaircollectorListNodeView* bodyB);
 };
 
 // Grows the TailPairArray if full, then appends a slot holding the tail node and value of each of the two lists.
 // @fnv 0x00cb7550
-void FUN_00cb7550_cls::AppendTailPair(HkpallcdbodypaircollectorListNodeView* a, HkpallcdbodypaircollectorListNodeView* b)
+// pdb: hkpAllCdBodyPairCollector::addCdBodyPair | hkpAllCdBodyPairCollector.obj | retail, vtable slot, high
+// pdb params: bodyA, bodyB
+void FUN_00cb7550_cls::AppendTailPair(HkpallcdbodypaircollectorListNodeView* bodyA, HkpallcdbodypaircollectorListNodeView* bodyB)
 {
     TailPairArray* list = &m_08;
     HkHolder* holder = reinterpret_cast<HkHolder*>(hkMemoryRouter_getInstance());
@@ -61,19 +63,19 @@ void FUN_00cb7550_cls::AppendTailPair(HkpallcdbodypaircollectorListNodeView* a, 
     TailPair* slot = list->m_pData + list->m_iArrayLength;
     list->m_iArrayLength++;
 
-    HkpallcdbodypaircollectorListNodeView* tailA = a;
+    HkpallcdbodypaircollectorListNodeView* tailA = bodyA;
     while (tailA->m_0C != 0)
     {
         tailA = tailA->m_0C;
     }
     slot->m_firstTail = tailA;
-    slot->m_firstVal = a->m_04;
+    slot->m_firstVal = bodyA->m_04;
 
-    HkpallcdbodypaircollectorListNodeView* tailB = b;
+    HkpallcdbodypaircollectorListNodeView* tailB = bodyB;
     while (tailB->m_0C != 0)
     {
         tailB = tailB->m_0C;
     }
     slot->m_secondTail = tailB;
-    slot->m_secondVal = b->m_04;
+    slot->m_secondVal = bodyB->m_04;
 }

@@ -82,7 +82,10 @@ struct Vec3Arg
 
 // @fnv 0x0062b930
 // src: COMMUNITY 0x0062b930
-void __cdecl TESHavokUtilities_AddVelocity_0(NiAVObject* apObject, Vec3Arg* apVec, bool abFlag)
+// pdb: TESHavokUtilities::AddVelocity | TEShavokUtilities.obj | debug, call graph, high
+// pdb params: apObject, aVelocity, abReset
+// pdb locals: pcol, pnode, prb, velocity, I, pchild
+void __cdecl TESHavokUtilities_AddVelocity_0(NiAVObject* apObject, Vec3Arg* aVelocity, bool abReset)
 {
     if (apObject)
     {
@@ -96,8 +99,8 @@ void __cdecl TESHavokUtilities_AddVelocity_0(NiAVObject* apObject, Vec3Arg* apVe
                 if (bhkRigidBody_IsMotionTypeDynamic(&c))
                 {
                     LocalVec4_0062b930 l;
-                    l.Set(*apVec->FUN_00560d30(0), *apVec->FUN_00560d30(1), *apVec->FUN_00560d30(2), 0.0f);
-                    if (!abFlag)
+                    l.Set(*aVelocity->FUN_00560d30(0), *aVelocity->FUN_00560d30(1), *aVelocity->FUN_00560d30(2), 0.0f);
+                    if (!abReset)
                     {
                         l.hkVector4_add4(e->bhkRigidBody_GetLinearVelocity_00560d80());
                     }
@@ -111,7 +114,7 @@ void __cdecl TESHavokUtilities_AddVelocity_0(NiAVObject* apObject, Vec3Arg* apVe
             for (unsigned int ba = 0; ba < k->FUN_0043b480(); ba++)
             {
                 NiAVObject* b = k->FUN_0043b4a0(ba);
-                TESHavokUtilities_AddVelocity_0(b, apVec, abFlag);
+                TESHavokUtilities_AddVelocity_0(b, aVelocity, abReset);
             }
         }
     }
@@ -344,6 +347,8 @@ struct xRef
 
 // @fnv 0x009ae280
 // src: COMMUNITY 0x009ae280
+// pdb: Explosion::InitHavok | Explosion.obj | retail, upstream name already matches, high
+// pdb locals: info, pshape
 void xRef::Explosion_InitHavok()
 {
     if (m_a0 == 0 && FUN_008d6f30() && xFUN_004543c0(FUN_008d6f30()))
@@ -384,7 +389,7 @@ class Filter9BE
 class Entity9BE
 {
   public:
-    void SetLinearVelocity(const hkVector4& kMotionVelocity);
+    void SetLinearVelocity(const hkVector4& newVel);
 };
 
 class WorldObject9BE
@@ -403,7 +408,7 @@ class Shape9BE
   public:
     static void* operator new(unsigned int uiSize);
     static void operator delete(void* pvMem);
-    Shape9BE(float fRadius, int iType);
+    Shape9BE(float afRadius, int abBS);
     int unk00;
     int unk04;
     int unk08;
@@ -473,16 +478,16 @@ class World9BE
 class ControllerInfo9BE
 {
   public:
-    ControllerInfo9BE(int iType);
+    ControllerInfo9BE(int abDefaultStates);
     ~ControllerInfo9BE();
     void SetScale(float fScale);
     void SetNode(NiAVObject* pkNode);
-    void SetPosition(const NiPoint3* pkPos);
+    void SetPosition(const NiPoint3* arPos);
     void SetWorld(World9BE* pkWorld);
     void SetHeight(float m_fGlyphExtent);
     void SetShape(Shape9BE* pkShape);
     void SetFlags(int iFlags);
-    void SetFilter(int iIndex, unsigned int uiFilterInfo);
+    void SetFilter(int aeLayer, unsigned int aiGroup);
     void SetLayer(int iLayer);
     void SetMode(int iMode);
     __m128 m_q00;
@@ -559,17 +564,17 @@ class Controller9BE
     virtual void SetState(int iState);
     static void* operator new(unsigned int uiSize);
     static void operator delete(void* pvMem);
-    Controller9BE(ControllerInfo9BE& kInfo, ProjectilePhysicsReference* pkActor);
-    void SetEnabled(bool bEnabled);
-    void SetMode(int iMode);
+    Controller9BE(ControllerInfo9BE& arInfo, ProjectilePhysicsReference* apProjectile);
+    void SetEnabled(bool abTF);
+    void SetMode(int abTF);
     void SetUp(const hkVector4& kUp);
-    void SetActor(ProjectilePhysicsReference* pkActor);
+    void SetActor(ProjectilePhysicsReference* apObject);
     void SetFallDistance(float fDistance);
     World9BE* GetWorld();
-    void SetWorld(World9BE* pkWorld);
+    void SetWorld(World9BE* apWorld);
     NiAVObject* GetNode();
-    void SetNode(NiAVObject* pkNode);
-    void SetPosition(NiPoint3& kPos);
+    void SetNode(NiAVObject* apObject);
+    void SetPosition(NiPoint3& arPos);
     Filter9BE GetFilter();
     unsigned int unk04;
     unsigned int unk08;
@@ -1557,23 +1562,25 @@ extern const float g_fMaxFallDistance9BE;
 extern const float g_fMaxValue9BE;
 
 bhkCollisionObject* __cdecl bhkNiCollisionObject_GetbhkNiCollisionObject(NiAVObject* pkNode);
-bhkCollisionObject* __cdecl FindFirstCollisionObject(NiAVObject* pkNode);
-WorldObject9BE* __cdecl bhkEntity_Getbhk(Entity9BE* pkEntity);
+bhkCollisionObject* __cdecl FindFirstCollisionObject(NiAVObject* ap3D);
+WorldObject9BE* __cdecl bhkEntity_Getbhk(Entity9BE* apEnt);
 bool __cdecl Main_GetSceneIsComplex();
 float __cdecl FUN_00716440();
-void __cdecl NiMatrix3_TransformVertices(const Matrix9BE& kRot, const NiPoint3& kIn, int iFlag, NiPoint3& kA, NiPoint3& kB);
+void __cdecl NiMatrix3_TransformVertices(const Matrix9BE& rot, const NiPoint3& trn, int uiVertexCount, NiPoint3& pInVertex, NiPoint3& pOutVertex);
 void __cdecl CopyBlock48(NiAVObject* pkNode, int iFlag);
-void __cdecl bhkWorld_EnableCollision(NiAVObject* pkNode, int iA, int iB, int iC);
-void __cdecl SetSelectionValue(NiAVObject* pkNode, float fValue, int iA, int iB);
-void __cdecl ApplyCollisionObjectCount(NiAVObject* pkNode, float fValue, int iA, int iB);
-void __cdecl bhkWorld_SetMotion(NiAVObject* pkNode, int iA, int iB, int iC, int iD);
-void __cdecl bhkWorld_SetGroup(NiAVObject* pkNode, unsigned int uiFilterInfo, int iA, int iB);
+void __cdecl bhkWorld_EnableCollision(NiAVObject* apObject, int abEnable, int abRecurse, int abForce);
+void __cdecl bhkWorld_SetRestitution(NiAVObject* apObject, float afRestitution, int abRecurse, int abForce);
+void __cdecl bhkWorld_SetFriction(NiAVObject* apObject, float afFriction, int abRecurse, int abForce);
+void __cdecl bhkWorld_SetMotion(NiAVObject* apObject, int aeType, int abRecurse, int abForce, int abAllowActivate);
+void __cdecl bhkWorld_SetGroup(NiAVObject* apObject, unsigned int aiGroup, int abRecurse, int iB);
 void __cdecl TraverseObject(NiAVObject* pkNode, int iA, int iB, int iC, int iD);
-void __cdecl bhkWorld_RemoveObjects(NiAVObject* pkNode, int iA, int iB);
-void __cdecl bhkWorld_UpdatePosition(NiAVObject* pkNode, int iA, int iB);
+void __cdecl bhkWorld_RemoveObjects(NiAVObject* apObject, int abRecurse, int abForce);
+void __cdecl bhkWorld_UpdatePosition(NiAVObject* apObject, int abRecurse, int abForce);
 
 // @fnv 0x009be0a0
 // src: COMMUNITY 0x009be0a0
+// pdb: Projectile::InitHavok | Projectile.obj | retail, upstream name already matches, high
+// pdb locals: pcell, pw, p3d, pcol, pRigid, pcon, hkRigid, pactor, pobject, pFade, i, pchild, pIn, extraTorque, pOut, mRot, info, fGravity, startVelocity, pos, poldW, poldAV, badd, icolFilter ...
 void ProjectilePhysicsReference::Projectile_InitHavok()
 {
     NiAVObject* pkNode = Get3D();
@@ -1598,12 +1605,12 @@ void ProjectilePhysicsReference::Projectile_InitHavok()
             if (*g_kSettingA9BE.GetFloat() != 0.0)
             {
                 if (GetBaseObject()->GetScale() > 0.0)
-                    SetSelectionValue(pkNode, *g_kSettingA9BE.GetFloat() * GetBaseObject()->GetScale(), 1, 0);
+                    bhkWorld_SetRestitution(pkNode, *g_kSettingA9BE.GetFloat() * GetBaseObject()->GetScale(), 1, 0);
                 else
-                    SetSelectionValue(pkNode, *g_kSettingA9BE.GetFloat(), 1, 0);
+                    bhkWorld_SetRestitution(pkNode, *g_kSettingA9BE.GetFloat(), 1, 0);
             }
             if (*g_kSettingB9BE.GetFloat() != 0.0)
-                ApplyCollisionObjectCount(pkNode, *g_kSettingB9BE.GetFloat(), 1, 0);
+                bhkWorld_SetFriction(pkNode, *g_kSettingB9BE.GetFloat(), 1, 0);
             TraverseObject(pkNode, 6, 0, 1, 0);
             if (GetOwner())
             {

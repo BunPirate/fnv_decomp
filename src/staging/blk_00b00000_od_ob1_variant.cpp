@@ -65,7 +65,7 @@ struct TaskletManager
     int* __thiscall FUN_00b00a00();
 };
 TaskletManager& __cdecl GetTaskletManager();
-char QueueTasklet(int param_1);
+char BSTaskletManager_RegisterOnExitCallback(int apCallback);
 struct FUN_00b130a0
 {
     float a, b, c;
@@ -83,7 +83,7 @@ struct FUN_00b00900
     int m8;
     char mc;
     int OpenFile(int arg);
-    FUN_00b00900(int a, int b, int c, char d);
+    FUN_00b00900(int apName, int aeAccessMode, int aeOpenMode, char abAllowAsync);
 };
 struct FUN_00b00cf0_vt
 {
@@ -109,7 +109,7 @@ struct FUN_00b00c90_vt
 void __fastcall CallVfn1OnAllEntries(int param_1);
 extern int DAT_011f8af0;
 extern int DAT_011f8af8[16];
-char BSTaskletManager_RegisterOnStartupCallback(int param_1);
+char BSTaskletManager_RegisterOnStartupCallback(int apCallback);
 struct FUN_00b01020
 {
     virtual ~FUN_00b01020();
@@ -145,7 +145,7 @@ struct FUN_00b00820_tail
 };
 struct FUN_00b00820_shell
 {
-    FUN_00b00820_shell* BSSystemDir_BSSystemDir(unsigned int value);
+    FUN_00b00820_shell* BSSystemDir_BSSystemDir(unsigned int apcPath);
     void FUN_00b006b0(unsigned int value);
 };
 struct FUN_00b00880_cls
@@ -168,7 +168,7 @@ struct FUN_00b00ae0_class
     virtual void virtual4();
     virtual bool virtual5(void* value);
     bool enabled;
-    bool __thiscall BSTaskletManager_OpenTaskGroup(void** value);
+    bool __thiscall BSTaskletManager_OpenTaskGroup(void** aGroup);
 };
 class FUN_00b00b40_cls
 {
@@ -204,7 +204,7 @@ class B00C20Pool
     virtual void vfn1C();
     virtual void FreeItem(B00C20Item* pkItem);
 
-    void ReleaseItem(B00C20Item*& rpkItem);
+    void BSTaskletManager_DestroyTaskGroup(B00C20Item*& aGroup);
 };
 extern "C" __declspec(dllimport) int __stdcall ReleaseSemaphore(void* hSemaphore, long lReleaseCount,
                                                                 long* lpPreviousCount);
@@ -231,7 +231,7 @@ class FUN_00b00df0_cls
     unsigned char m_06;
     unsigned char m_07;
     FUN_00b00df0_sub m_08;
-    void ReleaseAndSignal();
+    void BSTaskletManager_SignalInstanceAvailable();
 };
 extern "C" __declspec(dllimport) long __stdcall InterlockedCompareExchange(long volatile* destination, long exchange,
                                                                            long comparand);
@@ -259,7 +259,7 @@ struct FUN_00b01510_cls
     virtual void vfn_4();
     virtual void vfn_5();
     virtual int vfn_6(char* data);
-    bool __thiscall Archive_PlatformGetLastWriteTime(int arg);
+    bool __thiscall Archive_PlatformGetLastWriteTime(int apResult);
 };
 extern "C" void(__stdcall* fnv_EnterCriticalSection)(void* pkSection);
 extern "C" void(__stdcall* fnv_LeaveCriticalSection)(void* pkSection);
@@ -362,7 +362,7 @@ extern "C" double __cdecl cos(double);
 extern double DAT_010a4d90;
 struct RotationMatrix : Mat3
 {
-    void __thiscall SetRotationAxisAngle(float angle, float x, float y, float z);
+    void __thiscall RotateAxisFromIdentity(float fAngle, float cAxis, float y, float z);
 };
 struct Vec3f
 {
@@ -497,7 +497,7 @@ struct StripDestination
     unsigned int unk00, unk04, unk08, unk0c, unk10, unk14, unk18, unk1c, unk20;
     unsigned short unk24;
     unsigned short stripCount;
-    void CIndexedGeometry_AddStrip(unsigned short id, unsigned short* step, unsigned short indices);
+    void CIndexedGeometry_AddStrip(unsigned short nLodLevel, unsigned short* pStrip, unsigned short nStripLength);
 };
 struct StripBuilder
 {
@@ -553,7 +553,7 @@ struct OwnerRefB0
     ~OwnerRefB0()
     {}
 };
-struct FUN_00b02860 : ThreadBaseE8
+struct BSWin32TaskletGroupData : ThreadBaseE8 // src: EXE 0x010a48d8 (vtable; old: FUN_00b02860)
 {
     unsigned char m_bStopped;
     int unk08;
@@ -561,10 +561,10 @@ struct FUN_00b02860 : ThreadBaseE8
     int unk10;
     CSHolderB0 m_kCS;
     virtual void Stop(int a);
-    virtual ~FUN_00b02860();
+    virtual ~BSWin32TaskletGroupData();
 };
 // @fnv 0x00b02860
-FUN_00b02860::~FUN_00b02860()
+BSWin32TaskletGroupData::~BSWin32TaskletGroupData()
 {
     OwnerPtrB0 kPtr;
     unsigned char bStopped;
@@ -572,9 +572,9 @@ FUN_00b02860::~FUN_00b02860()
     OwnerRefB0 rRef(kPtr);
     if (rRef.m_r->m_p)
     {
-        bStopped = ((FUN_00b02860*)rRef.m_r->m_p)->m_bStopped;
+        bStopped = ((BSWin32TaskletGroupData*)rRef.m_r->m_p)->m_bStopped;
         if (!bStopped)
-            ((FUN_00b02860*)rRef.m_r->m_p)->Stop(0);
+            ((BSWin32TaskletGroupData*)rRef.m_r->m_p)->Stop(0);
     }
 }
 
@@ -836,6 +836,8 @@ struct FUN_00b10e90
     ~FUN_00b10e90();
 };
 // @fnv 0x00b10e90
+// pdb: CIdvBranch::~CIdvBranch | Branch.obj | debug, object-file gap fill, medium
+// pdb locals: i
 FUN_00b10e90::~FUN_00b10e90()
 {
     delete (char*)owned;
@@ -1207,6 +1209,8 @@ class FUN_00b0dc10_Vector : public vectorS<int>
 
 // @fnv 0x00b0dc10
 // src: GUESS 0x00b0dc10 (confidence: high)
+// pdb: std::vector<std::vector<unsigned short,std::allocator<unsigned short> >,std::allocator<std::vector<unsigned short,std::allocator<unsigned short> > > >::operator[] | SpeedTreeRT.obj | debug, object-file run extension, low
+// pdb params: _Pos
 void FUN_00b0dc10_Vector::ClearAllElements()
 {
     erase(begin(), end());
@@ -1340,6 +1344,8 @@ struct FUN_00b0dce0 : DceVal
 };
 
 // @fnv 0x00b0dce0
+// pdb: std::vector<std::vector<unsigned short *,std::allocator<unsigned short *> >,std::allocator<std::vector<unsigned short *,std::allocator<unsigned short *> > > >::operator[] | SpeedTreeRT.obj | debug, object-file run extension, low
+// pdb params: _Pos
 FUN_00b0dce0::FUN_00b0dce0() : DceVal()
 {
     UpdateState_00b0e730(0);
@@ -1990,8 +1996,8 @@ class exception
     virtual const char* what() const;
 
   private:
-    const char* message;
-    int ownsMessage;
+    const char* _Mywhat; // src: XBOX_RETAIL_PDB +0x4 (old: message)
+    int _Mydofree; // src: XBOX_RETAIL_PDB +0x8 (old: ownsMessage)
 };
 class bad_alloc : public exception
 {
@@ -3679,22 +3685,25 @@ inline Mat3 Mat3::Multiply(const Mat3& rhs) const
 
 struct Mat3Rot : Mat3
 {
-    void UpdateFields_00b12c00(float a, float b);
+    void RotateYZ(float fYangle, float fZangle);
 };
 
 // @fnv 0x00b12c00
-// src: GUESS 0x00b12c00 (confidence: low)
-void Mat3Rot::UpdateFields_00b12c00(float a, float b)
+// src: XBOX_RETAIL_PDB 0x00b12c00
+// pdb: CRotTransform::RotateYZ | Branch.obj | retail, object-file run extension, high
+// pdb params: fYangle, fZangle
+// pdb locals: fCosineY, cRotMatrix, fSineZ, fCosineZ, fSineY
+void Mat3Rot::RotateYZ(float fYangle, float fZangle)
 {
     Mat3 rot;
     float fCY;
     float fSinY;
     float cs;
     float fSZ;
-    fCY = (float)((double)(float)FUN_00ec9f30((float)(a / DAT_010a4d90)));
-    fSinY = (float)((double)(float)FUN_00eca060((float)(a / DAT_010a4d90)));
-    cs = (float)((double)(float)FUN_00ec9f30((float)(b / DAT_010a4d90)));
-    fSZ = (float)((double)(float)FUN_00eca060((float)(b / DAT_010a4d90)));
+    fCY = (float)((double)(float)FUN_00ec9f30((float)(fYangle / DAT_010a4d90)));
+    fSinY = (float)((double)(float)FUN_00eca060((float)(fYangle / DAT_010a4d90)));
+    cs = (float)((double)(float)FUN_00ec9f30((float)(fZangle / DAT_010a4d90)));
+    fSZ = (float)((double)(float)FUN_00eca060((float)(fZangle / DAT_010a4d90)));
     rot.m00 = fCY * cs;
     rot.m01 = fCY * fSZ;
     rot.m02 = -fSinY;
@@ -3710,6 +3719,8 @@ void Mat3Rot::UpdateFields_00b12c00(float a, float b)
 
 // @fnv 0x00b13040
 // src: COMMUNITY 0x00b13040
+// pdb: CVec3::operator- | FrondEngine.obj | debug, call graph, medium
+// pdb params: cVec
 inline CVec3 CVec3::Diff_00b13040(const CVec3& pt) const
 {
     return CVec3(x - pt.x, y - pt.y, z - pt.z);
@@ -3754,12 +3765,12 @@ inline void InitializeVector(CVec3* vector)
 struct FloatMatrix3
 {
     float m00, m01, m02, m10, m11, m12, m20, m21, m22;
-    CVec3 TransformVector(const CVec3& v) const
+    CVec3 TransformVector(const CVec3& cVec3) const
     {
-        return CVec3(v.z * m02 + (v.y * m01 + v.x * m00), v.z * m12 + (v.y * m11 + v.x * m10),
-                       v.z * m22 + (v.y * m21 + v.x * m20));
+        return CVec3(cVec3.z * m02 + (cVec3.y * m01 + cVec3.x * m00), cVec3.z * m12 + (cVec3.y * m11 + cVec3.x * m10),
+                       cVec3.z * m22 + (cVec3.y * m21 + cVec3.x * m20));
     }
-    void UpdateState_00b12d50(float, CVec3);
+    void RotateAxis(float, CVec3);
     FloatMatrix3() : m00(1), m01(0), m02(0), m10(0), m11(1), m12(0), m20(0), m21(0), m22(1)
     {}
     FloatMatrix3 Multiply(const FloatMatrix3&) const;
@@ -3781,10 +3792,10 @@ struct FloatMatrix3
         *this = spin.Multiply(*this);
     }
 };
-inline CVec3 CVec3::FUN_00b12890(const FloatMatrix3& m) const
+inline CVec3 CVec3::FUN_00b12890(const FloatMatrix3& cTransform) const
 {
-    return CVec3(m.m20 * z + (m.m10 * y + m.m00 * x), m.m21 * z + (m.m11 * y + m.m01 * x),
-                   m.m22 * z + (m.m12 * y + m.m02 * x));
+    return CVec3(cTransform.m20 * z + (cTransform.m10 * y + cTransform.m00 * x), cTransform.m21 * z + (cTransform.m11 * y + cTransform.m01 * x),
+                   cTransform.m22 * z + (cTransform.m12 * y + cTransform.m02 * x));
 }
 namespace fnv_00b13100 {
 namespace TransformRecord {
@@ -3864,25 +3875,28 @@ struct Effect
 {
     void CIdvBranch_ComputeBud(ParentNode*, float, unsigned int, const CVec3&, float, const FloatMatrix3&, const CVec3&, int,
                       float, int);
-    void AllocateStorage_00b13c10(const CVec3&, float, Effect*, const CVec3&, const CVec3&, float, int, int);
+    void CIdvBranch_MakeLeaf(const CVec3&, float, Effect*, const CVec3&, const CVec3&, float, int, int);
 };
 // @fnv 0x00b13100
 // src: XBOX_PDB 0x00b13100
-void Effect::CIdvBranch_ComputeBud(ParentNode* node, float amount, unsigned int index, const CVec3& position, float time,
-                          const FloatMatrix3& rotation, const CVec3& axis, int flags, float speed, int mode)
+// pdb: CIdvBranch::ComputeBud | Branch.obj | retail, upstream name already matches, high
+// pdb params: pParent, fSize, nLevel, cBasePos, fPercentOfParent, cBaseTransform, cZAxis, vLeaves, fWindWeight, nWindGroup
+// pdb locals: pFirstVertex, c_nBudVertexCount, cParentDir, pVertex, acVertices, c_fStartAngle, sInfo, fLength, cNormal, fSegmentLength, cRotAxis, fAzimuth, cBase, pBranch, nLevels
+void Effect::CIdvBranch_ComputeBud(ParentNode* pParent, float fSize, unsigned int nLevel, const CVec3& cBasePos, float fPercentOfParent,
+                          const FloatMatrix3& cBaseTransform, const CVec3& cZAxis, int vLeaves, float fWindWeight, int nWindGroup)
 {
-    Config* profile = DAT_011f8c58[index];
+    Config* profile = DAT_011f8c58[nLevel];
     float arc = 60.0f;
     const int samplesCount = 2;
     TransformRecord::TransformData transforms[samplesCount];
-    float distance = profile->GetCurve()->CIdvBezierSpline_Evaluate(time) * amount;
+    float distance = profile->GetCurve()->CIdvBezierSpline_Evaluate(fPercentOfParent) * fSize;
     float step = max_value(distance / profile->count, 0.01f);
     float randomAngle = DAT_011f8c05.FUN_00b3f130(-180.0f, 180.0f);
-    CVec3 rotated = rotation.TransformVector(axis);
+    CVec3 rotated = cBaseTransform.TransformVector(cZAxis);
     TransformRecord::TransformData* from = &transforms[0];
-    from->position = position;
-    from->rotation = rotation;
-    from->rotation.UpdateState_00b12d50(randomAngle, rotated);
+    from->position = cBasePos;
+    from->rotation = cBaseTransform;
+    from->rotation.RotateAxis(randomAngle, rotated);
     from->rotation.UpdateState_00b134d0(arc);
     from->direction = DAT_011f8c40.FUN_00b12890(from->rotation);
     TransformRecord::TransformData* pOther = &transforms[1];
@@ -3891,17 +3905,17 @@ void Effect::CIdvBranch_ComputeBud(ParentNode* node, float amount, unsigned int 
     forward.Normalize_00b12790();
     CVec3 towardParent;
     InitializeVector(&towardParent);
-    if (!node || !node->enabled)
+    if (!pParent || !pParent->enabled)
     {
         towardParent = forward;
     }
     else
     {
-        CVec3 origin = node->transform->position;
+        CVec3 origin = pParent->transform->position;
         if (DAT_011f8bf4->parentDepth != 0)
         {
             int level = 0;
-            ParentNode* parent = node;
+            ParentNode* parent = pParent;
             while (parent && level < DAT_011f8bf4->parentDepth)
             {
                 parent = parent->parent;
@@ -3913,7 +3927,7 @@ void Effect::CIdvBranch_ComputeBud(ParentNode* node, float amount, unsigned int 
         towardParent = transforms[1].position.Diff_00b13040(origin);
     }
     towardParent.Normalize_00b12790();
-    AllocateStorage_00b13c10(transforms[1].position, time, this, forward, towardParent, speed, mode, flags);
+    CIdvBranch_MakeLeaf(transforms[1].position, fPercentOfParent, this, forward, towardParent, fWindWeight, nWindGroup, vLeaves);
     DeadEnd();
 }
 }  // namespace fnv_00b13100
@@ -3973,16 +3987,19 @@ struct SceneNode
     int unk04;
     NodeVec<ChildNode> children;
 
-    void CIdvBranch_BuildBranchVector(NodeVec<SceneNode*>* arg);
+    void CIdvBranch_BuildBranchVector(NodeVec<SceneNode*>* vAllBranches);
 };
 
 // @fnv 0x00b13820
 // src: COMMUNITY 0x00b13820
-void SceneNode::CIdvBranch_BuildBranchVector(NodeVec<SceneNode*>* arg)
+// pdb: CIdvBranch::BuildBranchVector | Branch.obj | retail, upstream name already matches, high
+// pdb params: vAllBranches
+// pdb locals: i
+void SceneNode::CIdvBranch_BuildBranchVector(NodeVec<SceneNode*>* vAllBranches)
 {
-    arg->push_back(this);
+    vAllBranches->push_back(this);
     for (unsigned int i = 0; i < children.size(); ++i)
-        children[i].child->CIdvBranch_BuildBranchVector(arg);
+        children[i].child->CIdvBranch_BuildBranchVector(vAllBranches);
 }
 }  // namespace fnv_00b13820
 
@@ -4067,20 +4084,22 @@ inline void Runtime_UpdateState_00b16950(unsigned int a, unsigned int b, unsigne
 
 // @fnv 0x00b138c0
 // src: COMMUNITY 0x00b138c0
-void CIdvBranch_SortBranchVector(CheckedRange* p)
+// pdb: CIdvBranch::SortBranchVector | Branch.obj | retail, upstream name already matches, high
+// pdb params: vAllBranches
+void CIdvBranch_SortBranchVector(CheckedRange* vAllBranches)
 {
     RangeTag tag = {};
-    unsigned int hi = p->end;
+    unsigned int hi = vAllBranches->end;
     unsigned int firstB = 0;
-    if (!p || p->begin > hi || hi > p->end)
+    if (!vAllBranches || vAllBranches->begin > hi || hi > vAllBranches->end)
         FUN_00ec7c56();
-    firstB = p->owner;
+    firstB = vAllBranches->owner;
     unsigned int loTmp = hi;
-    unsigned int mc = p->begin;
+    unsigned int mc = vAllBranches->begin;
     unsigned int second = 0;
-    if (!p || p->begin > mc || mc > p->end)
+    if (!vAllBranches || vAllBranches->begin > mc || mc > vAllBranches->end)
         FUN_00ec7c56();
-    second = p->owner;
+    second = vAllBranches->owner;
     unsigned int mc5 = mc;
     Runtime_UpdateState_00b16950(second, mc5, firstB, loTmp, tag);
 }
@@ -11560,6 +11579,8 @@ struct YRotationMatrix : Mat3
 
 // @fnv 0x00b134d0
 // src: GUESS 0x00b134d0 (confidence: low)
+// pdb: CIdvBranch::~CIdvBranch | Branch.obj | retail, object-file run extension, low
+// pdb locals: i
 void YRotationMatrix::UpdateState_00b134d0(float angle)
 {
     Mat3 kRotationBasis;
@@ -14305,13 +14326,15 @@ class FUN_00b00bc0_cls
     {
         return *value;
     }
-    bool BSTaskletManager_CloseTaskGroup(void** value);
+    bool BSTaskletManager_CloseTaskGroup(void** aGroup);
 };
 // @fnv 0x00b00bc0
 // src: COMMUNITY 0x00b00bc0
-bool FUN_00b00bc0_cls::BSTaskletManager_CloseTaskGroup(void** value)
+// pdb: BSTaskletManager::CloseTaskGroup | BSTaskletManager.obj | debug, upstream name already matches, high
+// pdb params: aGroup
+bool FUN_00b00bc0_cls::BSTaskletManager_CloseTaskGroup(void** aGroup)
 {
-    return IsEnabled() && Get(value) ? v1c(Get(value)) : false;
+    return IsEnabled() && Get(aGroup) ? v1c(Get(aGroup)) : false;
 }
 
 namespace fnv_00b0e730 {
@@ -14999,17 +15022,20 @@ struct MatrixOwner : Mat3
 {
     // This call must remain out of line; the local Mat3::Multiply body is inline.
     Mat3 Multiply(const Mat3& rhs) const;
-    void UpdateState_00b12d50(float angle, float x, float y, float z);
+    void RotateAxis(float fAngle, float cAxis, float y, float z);
 };
 // @fnv 0x00b12d50
-// src: GUESS 0x00b12d50 (confidence: low)
-void MatrixOwner::UpdateState_00b12d50(float angle, float x, float y, float z)
+// src: XBOX_RETAIL_PDB 0x00b12d50
+// pdb: CRotTransform::RotateAxis | Branch.obj | retail, object-file run extension, high
+// pdb params: fAngle, cAxis
+// pdb locals: cRotMatrix, t, c, z, s, x, y
+void MatrixOwner::RotateAxis(float fAngle, float cAxis, float y, float z)
 {
     MatrixOwner rot;
-    float s = (double)(float)FUN_00eca060((double)(float)(angle / DAT_010a4d90));
-    float CD = (double)(float)FUN_00ec9f30((double)(float)(angle / DAT_010a4d90));
+    float s = (double)(float)FUN_00eca060((double)(float)(fAngle / DAT_010a4d90));
+    float CD = (double)(float)FUN_00ec9f30((double)(float)(fAngle / DAT_010a4d90));
     float TQ = 1.0f - CD;
-    float u = x;
+    float u = cAxis;
     float v = y;
     float RW = z;
     rot.m00 = TQ * u * u + CD;
@@ -15348,6 +15374,8 @@ struct OwnedPointerSequence
 
 // @fnv 0x00b17f50
 // src: GUESS 0x00b17f50 (confidence: low)
+// pdb: std::_Destroy_range<std::allocator<std::vector<SFrondGuide,std::allocator<SFrondGuide> > > > | FrondEngine.obj | retail, object-file run extension, low
+// pdb params: _First, _Last, _Al
 void OwnedPointerSequence::UpdateState_00b17f50()
 {
     if (_Myfirst != 0)
@@ -15472,7 +15500,7 @@ struct SplineCurve
     int unk7C;
     int unk80;
 
-    SplineCurve(const std::string& text);
+    SplineCurve(const std::string& strInput);
     static void* operator new(unsigned int size);
     static void operator delete(void* p);
 };
@@ -15502,6 +15530,7 @@ class FUN_00b17fd0
 };
 
 // @fnv 0x00b17fd0
+// pdb: CFrondEngine::CFrondEngine | FrondEngine.obj | retail, string-set bridge, high
 FUN_00b17fd0::FUN_00b17fd0()
     : unk00(0), unk04(0), unk38(1), unk3C(2), unk44(4), unk48(1), unk4C(false), unk68(4), unk6C(1.0f), unk70(0.0f),
       unk74(0.0f), unk78(0.05f), unk7C(2), unk80(1)

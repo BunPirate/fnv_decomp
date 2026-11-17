@@ -45,6 +45,7 @@ struct FUN_00c31e50_cls
 
 // Initializes the point from DAT_011f426c and sets the three floats and two shorts to zero.
 // @fnv 0x00c31e50
+// pdb: NiPSysVolumeEmitter::`scalar deleting destructor' | NiPSysVolumeEmitter.obj | debug, object-file run extension, low
 FUN_00c31e50_cls::FUN_00c31e50_cls()
 {
     m_kValue = DAT_011f426c;

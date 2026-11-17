@@ -13,6 +13,7 @@ struct FUN_00ba8690
 };
 
 // @fnv 0x00ba8690
+// pdb: SpeedTreeBillboardShaderProperty::~SpeedTreeBillboardShaderProperty | SpeedTreeBillboardShaderProperty.obj | debug, object-file run extension, low
 FUN_00ba8690::FUN_00ba8690(int flags)
 {
     m_p = (void*)&DAT_010b8330;
@@ -57,27 +58,30 @@ struct FUN_00ba8630 : S_00ba8630_Base
 
 // Initializes the object: sets unk58 to 1 and unk1C to 0xb.
 // @fnv 0x00ba8630
+// pdb: SpeedTreeBillboardShaderProperty::SpeedTreeBillboardShaderProperty | SpeedTreeBillboardShaderProperty.obj | retail, call graph, medium
 FUN_00ba8630::FUN_00ba8630() : unk58(1)
 {
     unk1C = 0xb;
 }
 
-extern int DAT_0120043c;
+extern int SpeedTreeBillboardShaderProperty_ms_RTTI; // src: XBOX_RETAIL_PDB 0x0120043c (old: DAT_0120043c/g_0120043c)
 
 // @fnv 0x00ba8680
 // src: COMMUNITY 0x00ba8680
 int* __cdecl SpeedTreeBillboardShaderProperty_GetRTTI()
 {
-    return &DAT_0120043c;
+    return &SpeedTreeBillboardShaderProperty_ms_RTTI;
 }
 
-void __stdcall BSShaderPPLightingProperty_IsEqual(void* apValue);
+void __stdcall BSShaderPPLightingProperty_IsEqual(void* pkObject);
 
 // @fnv 0x00ba8670
 // src: COMMUNITY 0x00ba8670
-bool __stdcall SpeedTreeBillboardShaderProperty_IsEqual(void* apValue)
+// pdb: SpeedTreeBillboardShaderProperty::IsEqual | SpeedTreeBillboardShaderProperty.obj | retail, upstream name already matches, high
+// pdb params: pkObject
+bool __stdcall SpeedTreeBillboardShaderProperty_IsEqual(void* pkObject)
 {
-    BSShaderPPLightingProperty_IsEqual(apValue);
+    BSShaderPPLightingProperty_IsEqual(pkObject);
     return false;
 }
 
@@ -138,16 +142,19 @@ struct BA86C0Owner
     int unkA8;
     int* unkAC;
 
-    int SpeedTreeBillboardShaderProperty_ClarifyShader(A5A040Cls* pArg, int arg2, int arg3);
+    int SpeedTreeBillboardShaderProperty_ClarifyShader(A5A040Cls* apGeometry, int abForceShader, int abAllow30Shaders);
 };
 
 // Calls FUN_00a5a040 when pArg+0x9c is null and clears unk58 when *unkAC is zero, then returns 0.
 // @fnv 0x00ba86c0
 // src: XBOX_PDB 0x00ba86c0
-int BA86C0Owner::SpeedTreeBillboardShaderProperty_ClarifyShader(A5A040Cls* pArg, int arg2, int arg3)
+// pdb: SpeedTreeBillboardShaderProperty::ClarifyShader | SpeedTreeBillboardShaderProperty.obj | retail, upstream name already matches, high
+// pdb params: apGeometry, abForceShader, abAllow30Shaders
+// pdb locals: ppropstate
+int BA86C0Owner::SpeedTreeBillboardShaderProperty_ClarifyShader(A5A040Cls* apGeometry, int abForceShader, int abAllow30Shaders)
 {
-    if ((char*)pArg + 0x9c == 0)
-        pArg->UpdateProperties();
+    if ((char*)apGeometry + 0x9c == 0)
+        apGeometry->UpdateProperties();
     if (*unkAC == 0)
         unk58 = 0;
     return 0;
@@ -243,19 +250,23 @@ struct SpawnedObject : SpawnedBase
 struct SpawnerHost
 {
     void Lighting30ShaderProperty_CopyMembers(SpawnedObject* obj, int flags);
-    int* CreateSpawnedObject(int a1);
+    int* SpeedTreeBillboardShaderProperty_CreateClone(int kCloning);
 };
 
 // Allocates a SpawnedObject, passes it with a1 to FUN_00b665d0, and returns the object as an int pointer.
 // @fnv 0x00ba86f0
-int* SpawnerHost::CreateSpawnedObject(int aiFlags)
+// src: XBOX_RETAIL_PDB 0x00ba86f0
+// pdb: SpeedTreeBillboardShaderProperty::CreateClone | SpeedTreeBillboardShaderProperty.obj | retail, object-file gap fill, high
+// pdb params: kCloning
+// pdb locals: pkObject
+int* SpawnerHost::SpeedTreeBillboardShaderProperty_CreateClone(int kCloning)
 {
     SpawnedObject* p = new SpawnedObject();
-    this->Lighting30ShaderProperty_CopyMembers(p, aiFlags);
+    this->Lighting30ShaderProperty_CopyMembers(p, kCloning);
     return (int*)p;
 }
 
-extern int DAT_0120043c;
+extern int SpeedTreeBillboardShaderProperty_ms_RTTI; // src: XBOX_RETAIL_PDB 0x0120043c (old: DAT_0120043c/g_0120043c)
 void __stdcall BSShaderPPLightingProperty_GetViewerStrings(void* p);
 void* __cdecl NiViewerStrings_NiGetViewerString_Title(int v);
 
@@ -273,11 +284,13 @@ struct ObjHdr
 
 // @fnv 0x00ba8780
 // src: COMMUNITY 0x00ba8780
-void __stdcall SpeedTreeBillboardShaderProperty_GetViewerStrings(ObjHdr* apObj)
+// pdb: SpeedTreeBillboardShaderProperty::GetViewerStrings | SpeedTreeBillboardShaderProperty.obj | retail, upstream name already matches, high
+// pdb params: apStrings
+void __stdcall SpeedTreeBillboardShaderProperty_GetViewerStrings(ObjHdr* apStrings)
 {
-    ObjHdr* pObj = apObj;
+    ObjHdr* pObj = apStrings;
     BSShaderPPLightingProperty_GetViewerStrings(pObj);
-    void* pValue = NiViewerStrings_NiGetViewerString_Title(DAT_0120043c);
+    void* pValue = NiViewerStrings_NiGetViewerString_Title(SpeedTreeBillboardShaderProperty_ms_RTTI);
     unsigned int count = pObj->unkA;
     if (count >= pObj->unk8)
     {

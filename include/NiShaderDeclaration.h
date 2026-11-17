@@ -2,6 +2,7 @@
 
 #include "NiObject.h"
 
+// pdb: class NiShaderDeclaration, size 0x8, bases: NiObject, 0 members
 class NiShaderDeclaration : public NiObject
 {
 public:

@@ -7,6 +7,8 @@ extern "C" void __cdecl __Dummy_00b6fef0(void* ptr, unsigned int flags);
 void __cdecl FUN_00e989c0();
 
 // @fnv 0x00e98a70
+// pdb: NiD3DShaderConstantManager::SetVertexShaderConstantB | NiD3DShaderConstantManager.obj | debug, object-file run extension, low
+// pdb params: uiStartRegister, pbConstantData, uiBoolCount, bSave
 void* __thiscall NiD3DShaderConstantManager::Destroy(unsigned int flags)
 {
     FUN_00e989c0();

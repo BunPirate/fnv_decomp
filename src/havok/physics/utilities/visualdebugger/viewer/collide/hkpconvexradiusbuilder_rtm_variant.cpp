@@ -44,12 +44,15 @@ struct PlaneArray
 };
 // @fnv 0x00de3200
 // src: XBOX_PDB 0x00de3200
-static __declspec(noinline) void _addBoundingPlanes(Shape* shape, PlaneArray* planes, float radius)
+// pdb: _addBoundingPlanes | hkpConvexRadiusBuilder.obj | retail, object-file gap fill, high
+// pdb params: s, extraRadius, planes
+// pdb locals: aabb
+static __declspec(noinline) void _addBoundingPlanes(Shape* s, PlaneArray* planes, float radius)
 {
     // getBounds fills uninitialized output storage; do not invoke hkAabb::hkAabb().
     __m128 boundsStorage[sizeof(hkAabb) / sizeof(__m128)];
     hkAabb& bounds = *reinterpret_cast<hkAabb*>(boundsStorage);
-    shape->getBounds(&DAT_01268370, radius, &bounds);
+    s->getBounds(&DAT_01268370, radius, &bounds);
     Holder* holder = hkMemoryRouter_getInstance();
     Allocator* allocationHeap = holder->allocator;
     int wanted = planes->size + 6;

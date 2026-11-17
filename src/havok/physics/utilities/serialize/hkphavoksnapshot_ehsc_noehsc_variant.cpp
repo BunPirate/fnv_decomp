@@ -22,7 +22,7 @@ inline hkMemoryRouter* getRouter()
     return hkMemoryRouter_getInstance();
 }
 
-void __cdecl ResizeAudioStream(void* alloc, void* arr, int elemSize);
+void __cdecl ResizeAudioStream(void* mem, void* array, int sizeElem);
 
 __forceinline hkRefVariant::~hkRefVariant() throw()
 {
@@ -83,16 +83,19 @@ __forceinline T& hkArrayBase<T>::_expandOne(hkMemoryAllocator& a)
     new (m_data + m_iElementCount) T();
     return m_data[m_iElementCount++];
 }
-extern int DAT_01268b54;
+extern int hkRootLevelContainerClass; // src: XBOX_RETAIL_PDB 0x01268b54 (old: DAT_01268b54/g_01268b54)
 // The game ABI passes aggregate result storage as the first stack argument.
 void __cdecl hkpHavokSnapshot_save(hkResult* result, const void* object, const void* pClassInfo, int a3, int a4, int a5, int a6);
 
 // @fnv 0x00cc0bc0
 // src: HAVOK_LIB 0x00cc0bc0
+// pdb: hkpHavokSnapshot::saveUnderRootLevel | hkpHavokSnapshot.obj | retail, upstream name already matches, high
+// pdb params: data, dataClass, writer, binaryFormat, targetLayout
+// pdb locals: container
 hkResult* __cdecl hkpHavokSnapshot_saveUnderRootLevel(hkResult* result, const void* object, const hkClass& pClassInfo, int a3, int a4, int a5)
 {
     hkRootLevelContainer container;
-    container.m_kNamedVariants.expandOne().set(pClassInfo.getName(), object, &pClassInfo);
-    hkpHavokSnapshot_save(result, &container, &DAT_01268b54, a3, a4, a5, 0);
+    container.m_namedVariants.expandOne().set(pClassInfo.getName(), object, &pClassInfo);
+    hkpHavokSnapshot_save(result, &container, &hkRootLevelContainerClass, a3, a4, a5, 0);
     return result;
 }

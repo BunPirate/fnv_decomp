@@ -2,6 +2,7 @@
 
 #include <stddef.h>
 
+// pdb: class NiPoint4, size 0x10, 2 members
 class NiPoint4
 {
 public:

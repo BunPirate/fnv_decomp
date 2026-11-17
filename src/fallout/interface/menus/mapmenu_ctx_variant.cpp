@@ -45,7 +45,10 @@ extern "C" int __cdecl _mbsnicmp(const char*, const char*, size_t);
 
 // @fnv 0x007984d0
 // src: XBOX_PDB 0x007984d0
-TESWorldSpace* MapMenu::CalculatePlayerMarkerSpace(NiPoint3 pt)
+// pdb: MapMenu::CalculatePlayerMarkerSpace | MapMenu.obj | retail, string-set bridge, high
+// pdb params: aWorldPos
+// pdb locals: fshortestDist, presult, apworldObj, adjustedCoord, strName, destination, pcurrWorld
+TESWorldSpace* MapMenu::CalculatePlayerMarkerSpace(NiPoint3 aWorldPos)
 {
     TESWorldSpace* result5 = 0;
     float maxDist = 3.402823466e+38F;
@@ -54,23 +57,23 @@ TESWorldSpace* MapMenu::CalculatePlayerMarkerSpace(NiPoint3 pt)
     {
         TESWorldSpace* ws4 = node2->GetItem();
         const char* name = ws4->GetFullName();
-        NiPoint3 ptCopy3 = pt;
+        NiPoint3 ptCopy3 = aWorldPos;
         PathingLocation loc4;
         if (!name || !*name || FindString(name, "test") == name ||
             reinterpret_cast<bool (__thiscall*)(TESWorldSpace*)>(WorldSpaceHasFlag2)(ws4))
         {
             continue;
         }
-        ws4->GetCellAtPosition(ptCopy3, true);
+        ws4->AdjustMapMarkerCoord(ptCopy3, true);
         loc4 = PathingLocation(&ptCopy3, ws4);
-        if (loc4.FUN_006de250() && this->m_pCurrentWorldspace && ws4)
+        if (loc4.FUN_006de250() && this->pRootMapSpace && ws4)
         {
-            if (BSStringLength(this->m_pCurrentWorldspace->GetWorldMapTextureName()) < 31 ||
+            if (BSStringLength(this->pRootMapSpace->GetWorldMapTextureName()) < 31 ||
                 BSStringLength(ws4->GetWorldMapTextureName()) < 31)
             {
                 continue;
             }
-            if (_mbsnicmp(this->m_pCurrentWorldspace->GetWorldMapTextureName() + 29,
+            if (_mbsnicmp(this->pRootMapSpace->GetWorldMapTextureName() + 29,
                           ws4->GetWorldMapTextureName() + 29, 3) == 0)
             {
                 result5 = ws4;

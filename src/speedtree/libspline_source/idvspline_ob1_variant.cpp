@@ -179,22 +179,25 @@ class IdvSpline
     FUN_00b3c4b0_class ProcessAndReturnValue_00b38f40(FUN_00b3c4b0_class* p0, FUN_00b3c4b0_class* p1, FUN_00b3c4b0_class* p2,
                                     FUN_00b3c4b0_class* p3, float t);
 
-    FUN_00b3c4b0_class ProcessEntries_00b38b50(float t);
+    FUN_00b3c4b0_class CIdvBezierSpline_EvaluateRawPoint(float fPercent);
 };
 
 // @fnv 0x00b38b50
-// src: GUESS 0x00b38b50 (confidence: low)
-FUN_00b3c4b0_class IdvSpline::ProcessEntries_00b38b50(float t)
+// src: XBOX_DEBUG_PDB 0x00b38b50
+// pdb: CIdvBezierSpline::EvaluateRawPoint | IdvSpline.obj | debug, call graph, high
+// pdb params: fPercent
+// pdb locals: cValue, nSize, bDetermined, fFraction, i
+FUN_00b3c4b0_class IdvSpline::CIdvBezierSpline_EvaluateRawPoint(float fPercent)
 {
     FUN_00b3c4b0_class result(2);
 
     int count = m_kPoints.size();
     if (count > 1)
     {
-        t = (std::max)(0.0f, t);
-        t = (std::min)(t, 1.0f);
-        t *= (float)(count - 1);
-        float fract = t - (float)(int)t;
+        fPercent = (std::max)(0.0f, fPercent);
+        fPercent = (std::min)(fPercent, 1.0f);
+        fPercent *= (float)(count - 1);
+        float fract = fPercent - (float)(int)fPercent;
         bool bFound = false;
         for (int i = 0; i < count && !bFound; ++i)
         {
@@ -203,7 +206,7 @@ FUN_00b3c4b0_class IdvSpline::ProcessEntries_00b38b50(float t)
                 result = m_kPoints.at(i);
                 bFound = true;
             }
-            else if (t >= (float)i && (float)(i + 1) > t)
+            else if (fPercent >= (float)i && (float)(i + 1) > fPercent)
             {
                 result = ProcessAndReturnValue_00b38f40(&m_tangents.at(i * 3), &m_tangents.at(i * 3 + 1), &m_tangents.at(i * 3 + 2),
                                       &m_tangents.at(i * 3 + 3), fract);
@@ -636,9 +639,9 @@ struct FUN_00b37660
     FUN_00449fd0 unk3c;
     FUN_00b31270 unk54;
     FUN_00b31270 unk6c;
-    FUN_00b37660(InputB37* name);
-    void CIdvBezierSpline_Parse(InputB37* name);
-    void CIdvBezierSpline_CreateEvenlySpacedPoints(int n);
+    FUN_00b37660(InputB37* strInput);
+    void CIdvBezierSpline_Parse(InputB37* strInput);
+    void CIdvBezierSpline_CreateEvenlySpacedPoints(int nNumPoints);
     void ProcessAndReturnValue_00b1c7a0(FUN_00b377c0* src);
 };
 inline void S00b37660_Pad()
@@ -646,15 +649,16 @@ inline void S00b37660_Pad()
     int buf[65];
 }
 // @fnv 0x00b37660
-FUN_00b37660::FUN_00b37660(InputB37* name)
+// pdb: CIdvBezierSpline::CIdvBezierSpline | IdvSpline.obj | retail, call graph (shared callers), high
+FUN_00b37660::FUN_00b37660(InputB37* strInput)
 {
-    FUN_00b377c0* pCached = DAT_011f8e2c.UpdateState_00b39210(name);
+    FUN_00b377c0* pCached = DAT_011f8e2c.UpdateState_00b39210(strInput);
     if (!pCached)
     {
-        CIdvBezierSpline_Parse(name);
+        CIdvBezierSpline_Parse(strInput);
         CIdvBezierSpline_CreateEvenlySpacedPoints(500);
         FUN_00b377c0* pNew = new FUN_00b377c0(this);
-        DAT_011f8e2c.UpdateState_00b39210(name) = pNew;
+        DAT_011f8e2c.UpdateState_00b39210(strInput) = pNew;
         S00b37660_Pad();
     }
     else
@@ -783,6 +787,7 @@ class FUN_00b37880_class
     ~FUN_00b37880_class();
 };
 // @fnv 0x00b37880
+// pdb: CIdvBezierSpline::~CIdvBezierSpline | IdvSpline.obj | retail, call graph (shared callers), low
 FUN_00b37880_class::~FUN_00b37880_class()
 {}
 
@@ -910,6 +915,8 @@ extern Map_b37a DAT_011f8e2c;
 
 // @fnv 0x00b37a00
 // src: COMMUNITY 0x00b37a00
+// pdb: CIdvBezierSpline::ClearCache | IdvSpline.obj | retail, upstream name already matches, high
+// pdb locals: i
 void __cdecl CIdvBezierSpline_ClearCache()
 {
     for (MapIter_b37a it = DAT_011f8e2c.GetVtblAndValue(); it.AreValuesEqual_00b16830(DAT_011f8e2c.end()); it.ProcessAndReturnValue_00b3b100())
@@ -971,21 +978,24 @@ inline void FrameB380()
 }
 // @fnv 0x00b380e0
 // src: COMMUNITY 0x00b380e0
-void OwnerB380::CIdvBezierSpline_AddControlPoint(VecB37* first, VecB37* second, float scale)
+// pdb: CIdvBezierSpline::AddControlPoint | IdvSpline.obj | retail, upstream name already matches, high
+// pdb params: afPoint, afTangent, fTangentLength
+// pdb locals: cTangent, cPoint, nLastEntry
+void OwnerB380::CIdvBezierSpline_AddControlPoint(VecB37* afPoint, VecB37* afTangent, float fTangentLength)
 {
-    ValueB380 a(first->x, first->y);
-    ValueB380 direction(second->x, second->y);
+    ValueB380 a(afPoint->x, afPoint->y);
+    ValueB380 direction(afTangent->x, afTangent->y);
     direction.NormalizeData();
     if (!m0c.empty())
     {
         unsigned index = m0c.size() - 1;
         m6c.UpdateFields_00b39100(m0c.at(index).ProcessEntries_00b3c660(m24.at(index).ScaleData(m3c.at(index))));
-        m6c.UpdateFields_00b39100(a.Subtract(direction.ScaleData(scale)));
+        m6c.UpdateFields_00b39100(a.Subtract(direction.ScaleData(fTangentLength)));
     }
     m0c.UpdateFields_00b39100(a);
     m6c.UpdateFields_00b39100(a);
     m24.UpdateFields_00b39100(direction);
-    m3c.PushBack(scale);
+    m3c.PushBack(fTangentLength);
     FrameB380();
 }
 
@@ -1016,6 +1026,9 @@ class Spl_b38f40
 
 // @fnv 0x00b38f40
 // src: GUESS 0x00b38f40 (confidence: low)
+// pdb: CIdvBezierSpline::SplineInterpolate | IdvSpline.obj | debug, object-file run extension, low
+// pdb params: cVec1, cVec2, cVec3, cVec4, x
+// pdb locals: c23, c34, c2334, c12, c1223
 Pos_b38f40 Spl_b38f40::ProcessAndReturnValue_00b38f40(Pt_b38f40* p0, Pt_b38f40* p1, Pt_b38f40* p2, Pt_b38f40* p3, float t)
 {
     float g = Lerp_b38f40(p0->x, p1->x, t);
@@ -1888,6 +1901,7 @@ PairQ TreeQ::ProcessEntries_00b3a9b0(const ValQ& _Val)
 }
 }  // namespace fnv_00b3a9b0
 
+// pdb: class Key, size 0x8 (here 0x1c), 2 members
 struct Key
 {
     char allocator;
@@ -2400,6 +2414,7 @@ class FUN_00b3b090_Iterator : public _Tree_const_iteratorS<ValT>
 
 // @fnv 0x00b3b090
 // src: GUESS 0x00b3b090 (confidence: low)
+// pdb: std::_Tree_iterator<std::_Tree_val<std::_Tmap_traits<std::basic_string<char,std::char_traits<char>,std::allocator<char> >,CIdvBezierSpline *,std::less<std::basic_string<char,std::char_traits<char>,std::allocator<char> > >,std::allocator<std::pair<std::basic_string<char,std::char_traits<char>,std::allocator<char> > const ,CIdvBezierSpline *> >,0> > >::~_Tree_iterator<std::_Tree_val<std::_Tmap_traits<std::basic_string<char,std::char_traits<char>,std::allocator<char> >,CIdvBezierSpline *,std::less<std::basic_string<char,std::char_traits<char>,std::allocator<char> > >,std::allocator<std::pair<std::basic_string<char,std::char_traits<char>,std::allocator<char> > const ,CIdvBezierSpline *> >,0> > > | IdvSpline.obj | debug, call graph (shared callers), low
 const ValT& FUN_00b3b090_Iterator::EvaluateValue_00b3b090() const
 {
     if (!(this->_Has_container()))
@@ -3893,8 +3908,8 @@ class exception
   public:
     virtual ~exception();
     virtual const char* what() const;
-    const char* _m_what;
-    int _m_doFree;
+    const char* _Mywhat; // src: XBOX_RETAIL_PDB +0x4 (old: _m_what)
+    int _Mydofree; // src: XBOX_RETAIL_PDB +0x8 (old: _m_doFree)
 };
 class logic_error : public exception
 {
@@ -4129,6 +4144,8 @@ template <class Value> struct EraseTree
 };
 // @fnv 0x00b3bd80
 // src: GUESS 0x00b3bd80 (confidence: low)
+// pdb: std::_Tree<std::_Tmap_traits<std::basic_string<char,std::char_traits<char>,std::allocator<char> >,CIdvBezierSpline *,std::less<std::basic_string<char,std::char_traits<char>,std::allocator<char> > >,std::allocator<std::pair<std::basic_string<char,std::char_traits<char>,std::allocator<char> > const ,CIdvBezierSpline *> >,0> >::erase | IdvSpline.obj | retail, unique string literal, high
+// pdb params: _First, _Last
 template <class Value> typename EraseTree<Value>::iterator EraseTree<Value>::ReleaseEntries_00b3bd80(const_iterator _Where)
 
 {  // erase element at _Where
@@ -4339,12 +4356,15 @@ struct FUN_00b37ad0_class
     int unk50;
     SplineVec m_vec;
 
-    float CIdvBezierSpline_Evaluate(float a2);
+    float CIdvBezierSpline_Evaluate(float fPercent);
 };
 
 // @fnv 0x00b37ad0
 // src: COMMUNITY 0x00b37ad0
-float FUN_00b37ad0_class::CIdvBezierSpline_Evaluate(float a2)
+// pdb: CIdvBezierSpline::Evaluate | IdvSpline.obj | retail, upstream name already matches, high
+// pdb params: fPercent
+// pdb locals: fValue, nClosest, fInterpPercent
+float FUN_00b37ad0_class::CIdvBezierSpline_Evaluate(float fPercent)
 {
     float pItem;
     pItem = 0.0f;
@@ -4355,7 +4375,7 @@ float FUN_00b37ad0_class::CIdvBezierSpline_Evaluate(float a2)
         curve = &m_vec;
         if (curve->m_kRayEnd - curve->m_kRayStart == 500)
         {
-            idx = (int)(a2 * 499.0);
+            idx = (int)(fPercent * 499.0);
             if (idx == 499)
             {
                 SplineVec* samples;
@@ -4368,7 +4388,7 @@ float FUN_00b37ad0_class::CIdvBezierSpline_Evaluate(float a2)
             }
             else
             {
-                fraction = (a2 - (float)idx * kStep) / kStep;
+                fraction = (fPercent - (float)idx * kStep) / kStep;
                 unsigned long pCurr = 1 + idx;
                 SplineVec* index = &m_vec;
                 if ((unsigned int)pCurr >= (unsigned int)(index->m_kRayEnd - index->m_kRayStart))
@@ -5379,8 +5399,8 @@ struct SplinePath
     SplinePointVector tangents;
     SplinePointVector scratch;
     SplinePointVector samples;
-    SplinePoint ProcessEntries_00b38b50(float);
-    void CIdvBezierSpline_CreateEvenlySpacedPoints(unsigned int count);
+    SplinePoint CIdvBezierSpline_EvaluateRawPoint(float);
+    void CIdvBezierSpline_CreateEvenlySpacedPoints(unsigned int nNumPoints);
 };
 __forceinline void padQ()
 {
@@ -5396,20 +5416,23 @@ __forceinline void padQ()
 }
 // @fnv 0x00b38430
 // src: COMMUNITY 0x00b38430
-void SplinePath::CIdvBezierSpline_CreateEvenlySpacedPoints(unsigned int count)
+// pdb: CIdvBezierSpline::CreateEvenlySpacedPoints | IdvSpline.obj | retail, upstream name already matches, high
+// pdb params: nNumPoints
+// pdb locals: nIndex, vRawPoints, i, fPercent, cOut, j
+void SplinePath::CIdvBezierSpline_CreateEvenlySpacedPoints(unsigned int nNumPoints)
 {
     SplinePointVector sampled;
-    sampled.resizeA(count);
-    for (unsigned int i = 0; i < count; ++i)
-        sampled[i] = ProcessEntries_00b38b50(float(i) / count);
+    sampled.resizeA(nNumPoints);
+    for (unsigned int i = 0; i < nNumPoints; ++i)
+        sampled[i] = CIdvBezierSpline_EvaluateRawPoint(float(i) / nNumPoints);
     samples.ClearAllElements();
-    samples.resizeB(count);
+    samples.resizeB(nNumPoints);
     unsigned int segment = 0;
     samples[0] = controlPoints[0];
-    for (unsigned int j = 1; j < count - 1; ++j)
+    for (unsigned int j = 1; j < nNumPoints - 1; ++j)
     {
-        float position = float(j) / count;
-        for (unsigned int k = segment; k < count - 1; ++k)
+        float position = float(j) / nNumPoints;
+        for (unsigned int k = segment; k < nNumPoints - 1; ++k)
         {
             if (position >= sampled[k][0] && position < sampled[k + 1][0])
             {
@@ -5422,7 +5445,7 @@ void SplinePath::CIdvBezierSpline_CreateEvenlySpacedPoints(unsigned int count)
         point[1] = Interpolate(sampled[segment][1], sampled[segment + 1][1], position);
         samples[j] = point;
     }
-    samples[count - 1] = controlPoints[controlPoints.size() - 1];
+    samples[nNumPoints - 1] = controlPoints[controlPoints.size() - 1];
     padQ();
 }
 }  // namespace fnv_00b38430

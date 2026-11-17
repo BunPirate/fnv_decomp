@@ -28,12 +28,14 @@ struct S00e39e90_Info
     int unk0C;
     hkArray<hkpTyremarksWheel*> m_kTyremarksWheels;
 
-    void __thiscall hkpTyremarksInfo_getWheelTyremarksStrips(int arg1, int wheelIndex, hkpTyremark* out);
+    void __thiscall hkpTyremarksInfo_getWheelTyremarksStrips(int vehicle, int wheelIndex, hkpTyremark* strips_out);
 };
 
 // @fnv 0x00e39e90
 // src: HAVOK_SRC 0x00e39e90
-void __thiscall S00e39e90_Info::hkpTyremarksInfo_getWheelTyremarksStrips(int arg1, int wheelIndex, hkpTyremark* out)
+// pdb: hkpTyremarksInfo::getWheelTyremarksStrips | hkpTyremarksInfo.obj | debug, upstream name already matches, high
+// pdb params: vehicle, wheel, strips_out
+void __thiscall S00e39e90_Info::hkpTyremarksInfo_getWheelTyremarksStrips(int vehicle, int wheelIndex, hkpTyremark* strips_out)
 {
     hkpTyremarksWheel* wheel = m_kTyremarksWheels.m_data[wheelIndex];
     int n = wheel->m_numTyremarks;
@@ -41,7 +43,7 @@ void __thiscall S00e39e90_Info::hkpTyremarksInfo_getWheelTyremarksStrips(int arg
 
     if (n > 0)
     {
-        hkpTyremark* dst = out;
+        hkpTyremark* dst = strips_out;
 
         do
         {

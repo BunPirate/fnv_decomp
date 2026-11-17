@@ -5,9 +5,9 @@
 class ActorPackageCall
 {
   public:
-    void SetPackageAndTarget(TESPackage*, TESObjectREFR*);
+    void ActorPackage_InitFromPackage(TESPackage*, TESObjectREFR*);
     void LoadGame(BGSLoadFormBuffer*);
-    void ApplyLoadBuffer(BGSLoadFormBuffer*);
+    void ActorPackage_FinishLoadGame(BGSLoadFormBuffer*);
     void FUN_008c6970(BGSLoadFormBuffer*);
     void FUN_008c6c80(BGSLoadFormBuffer*);
 };

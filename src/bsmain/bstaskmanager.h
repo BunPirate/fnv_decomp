@@ -3,8 +3,10 @@
 #include "bstaskmanager_types.h"
 
 // @fnv 0x00440540
-IOTask::IOTask(IO_TASK_PRIORITY priority) : BSTask<__int64>()
+// pdb: IOTask::IOTask | ModelLoader.obj | debug, upstream name already matches, high
+// pdb params: aePriority
+IOTask::IOTask(IO_TASK_PRIORITY aePriority) : BSTask<__int64>()
 {
-    SetIOTaskPriority(priority);
+    SetIOTaskPriority(aePriority);
 }
 #endif

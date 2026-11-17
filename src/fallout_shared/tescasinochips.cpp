@@ -8,6 +8,7 @@
 
 // Constructor: sets the form type to ENUM_FORM_ID_CHIP_ID and clears the object's data.
 // @fnv 0x00503bd0
+// pdb: TESCasinoChips::TESCasinoChips | TESCasinoChips.obj | retail, upstream name already matches, high
 TESCasinoChips::TESCasinoChips()
 {
     SetFormType(ENUM_FORM_ID_CHIP_ID);
@@ -15,13 +16,15 @@ TESCasinoChips::TESCasinoChips()
 }
 
 // @fnv 0x00503e70
+// pdb: TESCasinoChips::ClearData | TESCasinoChips.obj | debug, upstream name already matches, high
 void TESCasinoChips::ClearData()
 {
-    m_kPrimaryString.Set(0, 0);
+    cDesc.Set(0, 0);
 }
 
 // If the form is not already initialized, initializes the destructible object, model texture swap and pickup/putdown sounds components, then marks it initialized.
 // @fnv 0x00503e90
+// pdb: TESCasinoChips::InitItem | TESCasinoChips.obj | retail, upstream name already matches, high
 void TESCasinoChips::InitItem()
 {
     if (static_cast<TESFormInitFlag*>(static_cast<TESForm*>(this))->IsFormInitialized())
@@ -34,6 +37,9 @@ void TESCasinoChips::InitItem()
 
 // Reads a TESFile record: checks form type 108, loads the record header, then dispatches chunk handlers until no more chunks, returning true.
 // @fnv 0x00503ef0
+// pdb: TESCasinoChips::Load | TESCasinoChips.obj | retail, vtable slot, high
+// pdb params: apFile
+// pdb locals: chunkid, formid, pMessage, isize, pdata, itempint, ptemp
 bool TESCasinoChips::LoadForm(TESFile* apFile)
 {
     unsigned char type = apFile->GetTESForm();
@@ -70,7 +76,7 @@ bool TESCasinoChips::LoadForm(TESFile* apFile)
                 unsigned int size = apFile->GetChunkSize();
                 swapBuffer = (char*)_alloca(size);
                 apFile->GetChunkData(swapBuffer, size);
-                ParseTextureSwapData(swapBuffer, size, static_cast<TESFileFormVersion*>(apFile)->GetFormVersion());
+                UnpackTextureSwapChunkData(swapBuffer, size, static_cast<TESFileFormVersion*>(apFile)->GetFormVersion());
             }
             break;
         }
@@ -99,7 +105,7 @@ bool TESCasinoChips::LoadForm(TESFile* apFile)
         case 0x4d414e4f: {
             char* b = (char*)_alloca(apFile->GetChunkSize());
             apFile->GetChunkData(b, 0);
-            m_kPrimaryString.Set(b, 0);
+            cDesc.Set(b, 0);
             break;
         }
         }
@@ -110,6 +116,9 @@ bool TESCasinoChips::LoadForm(TESFile* apFile)
 }
 
 // @fnv 0x005048d0
+// pdb: TESCasino::Load | TESCasinoChips.obj | retail, vtable slot, high
+// pdb params: apFile
+// pdb locals: chunkid, m_index1, data_index, t_index2, s_index, formid, t_index1, pMessage, pmessage
 bool TESCasino::LoadForm(TESFile* apFile)
 {
     unsigned char type = apFile->GetTESForm();
@@ -142,38 +151,38 @@ bool TESCasino::LoadForm(TESFile* apFile)
         case 0x4c444f4d: {
             char* b = (char*)_alloca(apFile->GetChunkSize());
             apFile->GetChunkData(b, 0);
-            m_kModelTextureSwaps[unused2].SetModelFilePath(b);
-            TESModel::LoadTextureSwapData(&m_kModelTextureSwaps[unused2], apFile);
+            modelArrayList[unused2].SetModelFilePath(b);
+            TESModel::LoadTextureSwapData(&modelArrayList[unused2], apFile);
             ++unused2;
             break;
         }
         case 0x32444f4d: {
             char* b = (char*)_alloca(apFile->GetChunkSize());
             apFile->GetChunkData(b, 0);
-            m_kModelTextureSwaps[7].SetModelFilePath(b);
-            TESModel::LoadTextureSwapData(&m_kModelTextureSwaps[7], apFile);
+            modelArrayList[7].SetModelFilePath(b);
+            TESModel::LoadTextureSwapData(&modelArrayList[7], apFile);
             break;
         }
         case 0x33444f4d: {
             char* b = (char*)_alloca(apFile->GetChunkSize());
             apFile->GetChunkData(b, 0);
-            m_kModelTextureSwaps[8].SetModelFilePath(b);
-            TESModel::LoadTextureSwapData(&m_kModelTextureSwaps[8], apFile);
+            modelArrayList[8].SetModelFilePath(b);
+            TESModel::LoadTextureSwapData(&modelArrayList[8], apFile);
             break;
         }
         case 0x34444f4d: {
             char* b = (char*)_alloca(apFile->GetChunkSize());
             apFile->GetChunkData(b, 0);
-            m_kModelTextureSwaps[9].SetModelFilePath(b);
-            TESModel::LoadTextureSwapData(&m_kModelTextureSwaps[9], apFile);
+            modelArrayList[9].SetModelFilePath(b);
+            TESModel::LoadTextureSwapData(&modelArrayList[9], apFile);
             break;
         }
         case 0x4e4f4349:
-            TESTextureLoader::ReadTextureData(&m_kIconTextures[icon2], apFile);
+            TESTextureLoader::ReadTextureData(&textureArrayList[icon2], apFile);
             ++icon2;
             break;
         case 0x324f4349:
-            TESTextureLoader::ReadTextureData(&m_kIconTextures[model], apFile);
+            TESTextureLoader::ReadTextureData(&textureArrayList[model], apFile);
             ++model;
             break;
         case 0x41544144:
@@ -199,6 +208,7 @@ struct FUN_00504480 : public TESForm, public TESFullName
 
 // Initializes the form by setting its form type to 0x6d.
 // @fnv 0x00504480
+// pdb: TESCasino::TESCasino | TESCasinoChips.obj | retail, call graph, high
 FUN_00504480::FUN_00504480()
 {
     SetFormType(static_cast<ENUM_FORM_ID>(0x6d));
@@ -226,6 +236,7 @@ struct TESCasinoChips_shell
 
 // Calls FUN_00503d40, then frees this with Deallocate when flags has bit 0 set, and returns this.
 // @fnv 0x00503d10
+// pdb: TESCasinoChips::`scalar deleting destructor' | TESCasinoChips.obj | retail, vtable slot, high
 void* __thiscall TESCasinoChips_shell::Destroy(unsigned int flags)
 {
     FUN_00503d40();
@@ -243,6 +254,7 @@ struct FUN_00504620_shell
 
 // Zeroes 0x38 bytes starting at offset 0x1e8 of this object via memset.
 // @fnv 0x00504620
+// pdb: TESCasino::ClearData | TESCasinoChips.obj | debug, object-file gap fill, medium
 void __thiscall FUN_00504620_shell::ClearFields()
 {
     memset(this + 0x1e8, 0, 0x38);
@@ -284,6 +296,7 @@ struct FUN_00504e40_shell
 
 // @fnv 0x00504e40
 // src: XBOX_PDB 0x00504e40
+// pdb: TESCasino::GetQuest | TESCasinoChips.obj | debug, upstream name already matches, high
 TESForm* __thiscall FUN_00504e40_shell::TESCasino_GetQuest()
 {
     return GetFormByID(*(unsigned int*)((char*)this + 0x218));
@@ -308,6 +321,7 @@ struct S504540
     void* DestroyIfFlagged(unsigned int);
 };
 // @fnv 0x00504540
+// pdb: TESCasino::`scalar deleting destructor' | TESCasinoChips.obj | retail, vtable slot, high
 void* S504540::DestroyIfFlagged(unsigned int flags)
 {
     FUN_00504570();
@@ -401,6 +415,9 @@ struct Casino_504cc0
 
 // Copies model names, full names and data from a TESCasino into this object, then sets the form type.
 // @fnv 0x00504cc0
+// pdb: TESCasino::Copy | TESCasinoChips.obj | retail, vtable slot, high
+// pdb params: apCopy
+// pdb locals: pCopy, i
 void Casino_504cc0::CopyFromCasino(TESForm* apCopy)
 {
     TESCasino* pSourceCasino = dynamic_cast<TESCasino*>(apCopy);
@@ -443,6 +460,7 @@ struct FUN_00503d40_shell : public TESBoundObject,
 
 // Destructor that calls TESCasinoChips::ClearData on this object to release its data.
 // @fnv 0x00503d40
+// pdb: TESCasinoChips::~TESCasinoChips | TESCasinoChips.obj | debug, object-file gap fill, medium
 FUN_00503d40_shell::~FUN_00503d40_shell()
 {
     reinterpret_cast<TESCasinoChips*>(this)->TESCasinoChips::ClearData();
@@ -480,7 +498,7 @@ struct DoorPart68
 
 struct FUN_0047b560_holder
 {
-    void LogFormIDs();
+    void BGSPickupPutdownSounds_Save();
 };
 
 struct S7010
@@ -502,6 +520,7 @@ void TESForm_AddChunkArray(unsigned int, void*, unsigned int);
 
 // @fnv 0x00504280
 // src: XBOX_PDB 0x00504280
+// pdb: TESCasinoChips::Save | TESCasinoChips.obj | retail, upstream name already matches, high
 void FUN_00504280_shell::TESCasinoChips_Save()
 {
     reinterpret_cast<struct FUN_004855a0*>(this)->M();
@@ -511,7 +530,7 @@ void FUN_00504280_shell::TESCasinoChips_Save()
     reinterpret_cast<FUN_0048e370_obj*>(reinterpret_cast<char*>(this) + 0x5c)->TESTexture_Save(0x4e4f4349);
     reinterpret_cast<FUN_0047a240_shell*>(reinterpret_cast<char*>(this) + 0x68)->FUN_0047a240(0x4f43494d);
     reinterpret_cast<DoorPart68*>(reinterpret_cast<char*>(this) + 0x80)->FUN_00477f20();
-    reinterpret_cast<FUN_0047b560_holder*>(reinterpret_cast<char*>(this) + 0x88)->LogFormIDs();
+    reinterpret_cast<FUN_0047b560_holder*>(reinterpret_cast<char*>(this) + 0x88)->BGSPickupPutdownSounds_Save();
 
     if (reinterpret_cast<S7010*>(reinterpret_cast<char*>(this) + 0x94)->Length())
     {
@@ -553,6 +572,8 @@ struct FUN_00504640_shell
 // Zeroes the data block, then calls Init on all 10 Model entries and all 11 Texture entries.
 // @fnv 0x00504640
 // src: COMMUNITY 0x00504640
+// pdb: TESCasino::InitializeData | TESCasinoChips.obj | retail, vtable slot, high
+// pdb locals: i
 void FUN_00504640_shell::TESCasino_SetDefault()
 {
     memset(this->data, 0, sizeof(this->data));
@@ -610,6 +631,8 @@ struct FUN_00504710_shell : public TESCasino
 
 // @fnv 0x00504710
 // src: XBOX_PDB 0x00504710
+// pdb: TESCasino::Save | TESCasinoChips.obj | retail, upstream name already matches, high
+// pdb locals: i
 void FUN_00504710_shell::TESCasino_Save()
 {
     reinterpret_cast<struct FUN_004855a0*>(this)->M();
@@ -687,18 +710,21 @@ struct FUN_00504340_shell : public TESCasinoChips
     void CopyBoundObject(TESForm* pkForm);
     unsigned int GetChipsFormType();
     void SetChipsFormType(unsigned int eType);
-    void CopyFromChipsForm(TESForm* pkForm);
+    void CopyFromChipsForm(TESForm* apCopy);
 };
 
 // @fnv 0x00504340
-void FUN_00504340_shell::CopyFromChipsForm(TESForm* pkForm)
+// pdb: TESCasinoChips::Copy | TESCasinoChips.obj | retail, vtable slot, high
+// pdb params: apCopy
+// pdb locals: pCopy
+void FUN_00504340_shell::CopyFromChipsForm(TESForm* apCopy)
 {
-    TESCasinoChips* pkChips = dynamic_cast<TESCasinoChips*>(pkForm);
+    TESCasinoChips* pkChips = dynamic_cast<TESCasinoChips*>(apCopy);
     if (!pkChips)
         return;
     CopyBoundObject(pkChips);
     SetChipsFormType(static_cast<FUN_00504340_shell*>(pkChips)->GetChipsFormType());
-    m_kPrimaryString.Set(pkChips->m_kPrimaryString.String(), 0);
+    cDesc.Set(pkChips->cDesc.String(), 0);
 }
 
 struct EndianFlag
@@ -729,6 +755,8 @@ struct IntFieldContainer
 
 // Byte-swaps each of the 13 int fields from unk00 through unk30 by calling SwapDword on each.
 // @fnv 0x004faaa0
+// pdb: CASINO_DATA::Endian | TESCasinoChips.obj | retail, call graph (shared callers), low
+// pdb note: debug build links it to BGSExplosionData::Endian
 void IntFieldContainer::SwapAllFields()
 {
     SwapDword(&unk00);
@@ -797,6 +825,7 @@ struct FUN_00504570_cls : Primary_504570, Secondary_504570
     ~FUN_00504570_cls();
 };
 // @fnv 0x00504570
+// pdb: TESCasino::~TESCasino | TESCasinoChips.obj | debug, object-file gap fill, medium
 FUN_00504570_cls::~FUN_00504570_cls()
 {
     ClearFields();
@@ -815,28 +844,31 @@ struct CasinoAccess : TESCasino
     TESForm* TESCasino_GetQuest();
     void* TESCasino_GetData();
     bool TESForm_CompareAllComponents(TESForm*);
-    bool TESCasino_Compare(TESForm* form);
+    bool TESCasino_Compare(TESForm* apCompare);
 };
 // Returns true when the cast fails or any subsequent comparison check returns nonzero.
 // @fnv 0x00504e80
 // src: XBOX_PDB 0x00504e80
-bool CasinoAccess::TESCasino_Compare(TESForm* form)
+// pdb: TESCasino::Compare | TESCasinoChips.obj | retail, upstream name already matches, high
+// pdb params: apCompare
+// pdb locals: pComp, i
+bool CasinoAccess::TESCasino_Compare(TESForm* apCompare)
 {
-    TESCasino* other = dynamic_cast<TESCasino*>(form);
+    TESCasino* other = dynamic_cast<TESCasino*>(apCompare);
     if (!other)
         return true;
     if (TESForm_CompareAllComponents(other))
         return true;
     for (int i = 0; i < 11; i++)
     {
-        if (BSstrcmp(reinterpret_cast<TextureAccess*>(&m_kIconTextures[i])->TESModel_GetModel(),
+        if (BSstrcmp(reinterpret_cast<TextureAccess*>(&textureArrayList[i])->TESModel_GetModel(),
                          reinterpret_cast<TextureAccess*>(reinterpret_cast<CasinoAccess*>(other)->TESCasino_GetNthSlotReel(i))
                              ->TESModel_GetModel()))
             return true;
     }
     for (int j = 0; j < 10; j++)
     {
-        if (BSstrcmp(m_kModelTextureSwaps[j].GetModelFilePath(),
+        if (BSstrcmp(modelArrayList[j].GetModelFilePath(),
                          reinterpret_cast<CasinoAccess*>(other)->TESCasino_GetModel(j)->GetModelFilePath()))
             return true;
     }
@@ -858,19 +890,22 @@ struct CasinoChipStringCompareCall
 
 struct CasinoChipCompareView : public ::TESCasinoChips
 {
-    bool TESCasinoChips_Compare(::TESForm* form);
+    bool TESCasinoChips_Compare(::TESForm* apCompare);
 };
 
 // @fnv 0x005043b0
 // src: XBOX_PDB 0x005043b0
-bool CasinoChipCompareView::TESCasinoChips_Compare(::TESForm* form)
+// pdb: TESCasinoChips::Compare | TESCasinoChips.obj | retail, upstream name already matches, high
+// pdb params: apCompare
+// pdb locals: pComp
+bool CasinoChipCompareView::TESCasinoChips_Compare(::TESForm* apCompare)
 {
-    ::TESCasinoChips* chip = dynamic_cast< ::TESCasinoChips*>(form);
+    ::TESCasinoChips* chip = dynamic_cast< ::TESCasinoChips*>(apCompare);
     if (!chip)
         return true;
     if (reinterpret_cast<CasinoChipFormCompareCall*>(this)->TESForm_CompareAllComponents(chip))
         return true;
-    if (reinterpret_cast<CasinoChipStringCompareCall*>(&m_kPrimaryString)->CompareString(&chip->m_kPrimaryString, true))
+    if (reinterpret_cast<CasinoChipStringCompareCall*>(&cDesc)->CompareString(&chip->cDesc, true))
         return true;
     return false;
 }

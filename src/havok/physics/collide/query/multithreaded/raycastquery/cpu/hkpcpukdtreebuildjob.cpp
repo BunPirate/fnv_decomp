@@ -168,12 +168,12 @@ __forceinline void FillChild(OutElem& out, const InElem& in, ArgStruct* arg, int
 }
 struct Ctx
 {
-    int hkJobQueue_lockQueue(void* p);
-    int InsertItemAndNotify(int h, void* p, int z);
-    void hkJobQueue_unlockQueue(int h);
-    int ProcessCallback(ArgStruct* a, ArgStruct* b, int z);
+    int hkJobQueue_lockQueue(void* dynamicDataStorage);
+    int hkJobQueue_addJobQueueLocked(int data, void* job, int priority);
+    void hkJobQueue_unlockQueue(int dynamicDataStorage);
+    int ProcessCallback(ArgStruct* oldJob, ArgStruct* jobOut, int waitStatus);
 };
-extern "C" void __cdecl MixChannels(Head* a1, char* a2, int a3, int a4, int a5, int a6, DWORD* a7);
+extern "C" void __cdecl hkKdTreeBuildingUtils_buildTree(Head* buffers, char* treeOut, int projEntOut, int treeSize, int numPrims, int _numAvailableEmptyNodes, DWORD* maxDepth);
 extern "C" void __cdecl ProcessEntries_00df37b0(Head* a1, char* a2, int a3, int a4, void* a5, int* a6, unsigned short* a7);
 struct ContextHandle
 {
@@ -197,7 +197,11 @@ struct ArgHandle
 };
 // If arg->m_38 < 8 calls MixChannels, else calls FUN_00df37b0 and queues four child elements on ctx, with trace records around it and a final ProcessCallback call.
 // @fnv 0x00df7e20
-int __cdecl BuildKdTreeDistributed(ContextHandle ctx, ArgStruct* input, ...)
+// src: XBOX_RETAIL_PDB 0x00df7e20
+// pdb: hkCpuKdTreeBuildFastDistributedJob | hkpCpuKdTreeBuildJob.obj | retail, string-set bridge, high
+// pdb params: jobQueue, nextJobOut
+// pdb locals: workingSet, maxDepth, buildSubJob, buffers, bounds, subJobs, dynamicDataStorage
+int __cdecl hkCpuKdTreeBuildFastDistributedJob(ContextHandle jobQueue, ArgStruct* nextJobOut, ...)
 {
     ScratchWord scratch;
     TraceBuffer* pTraceBuf = (TraceBuffer*)TlsGetValue(DAT_0126835c);
@@ -210,7 +214,7 @@ int __cdecl BuildKdTreeDistributed(ContextHandle ctx, ArgStruct* input, ...)
         pTraceRec->m_dwTime = *(volatile DWORD*)&scratch.value;
         pTraceBuf->m_pCurrent = pTraceRec + 1;
     }
-    ArgStruct* arg = input;
+    ArgStruct* arg = nextJobOut;
     int zero;
     Head head;
     head.m_20 = arg->m_20;
@@ -218,7 +222,7 @@ int __cdecl BuildKdTreeDistributed(ContextHandle ctx, ArgStruct* input, ...)
     int result;
     if (8 > arg->m_38)
     {
-        MixChannels(&head, arg->m_28, arg->m_2c, arg->m_3c, arg->m_38, arg->m_40, &scratch.value);
+        hkKdTreeBuildingUtils_buildTree(&head, arg->m_28, arg->m_2c, arg->m_3c, arg->m_38, arg->m_40, &scratch.value);
         result = 0;
         int* p30 = arg->m_30;
         if (p30 != 0)
@@ -368,15 +372,15 @@ int __cdecl BuildKdTreeDistributed(ContextHandle ctx, ArgStruct* input, ...)
             DWORD unk168;
             DWORD unk16c;
         } buf;
-        int h = ctx->hkJobQueue_lockQueue(&buf);
-        ctx->InsertItemAndNotify(h, &out[0], result);
-        ctx->InsertItemAndNotify(h, &out[1], result);
-        ctx->InsertItemAndNotify(h, &out[2], result);
-        ctx->InsertItemAndNotify(h, &out[3], result);
-        ctx->hkJobQueue_unlockQueue(h);
+        int h = jobQueue->hkJobQueue_lockQueue(&buf);
+        jobQueue->hkJobQueue_addJobQueueLocked(h, &out[0], result);
+        jobQueue->hkJobQueue_addJobQueueLocked(h, &out[1], result);
+        jobQueue->hkJobQueue_addJobQueueLocked(h, &out[2], result);
+        jobQueue->hkJobQueue_addJobQueueLocked(h, &out[3], result);
+        jobQueue->hkJobQueue_unlockQueue(h);
         (void)buf;
     }
-    zero = ctx->ProcessCallback(arg, arg, result);
+    zero = jobQueue->ProcessCallback(arg, arg, result);
     TraceBuffer* pTraceBuf2 = (TraceBuffer*)TlsGetValue(DAT_0126835c);
     if (pTraceBuf2->m_pCurrent < pTraceBuf2->m_pRecordEnd)
     {
@@ -560,8 +564,8 @@ struct S00d947e0_Cmd : S00d947e0_DynJob
 
 struct S00d947e0_Queue
 {
-    void hkJobQueue_addJob(const S00d947e0_Job& job, int a);
-    void ProcessCallback(S00d947e0_Data* a, S00d947e0_Data* b, int c);
+    void hkJobQueue_addJob(const S00d947e0_Job& job, int priority);
+    void ProcessCallback(S00d947e0_Data* oldJob, S00d947e0_Data* jobOut, int waitStatus);
 };
 
 static __forceinline void S00d947e0_memClear16(int* p, int n)
@@ -582,7 +586,10 @@ void __cdecl hkExportImpulsesAndRhs(void* a, int b, int c, int d);
 // Writes profiler records, clears a buffer, calls FUN_00d8d030, queues an S00d947e0_Cmd via a2->FUN_00d04b50, calls FUN_00df0680, then calls a2->ProcessCallback.
 // @fnv 0x00d947e0
 // src: HAVOK_LIB 0x00d947e0
-void __cdecl hkCpuSolveConstraintsJob(S00d947e0_Obj** a1, S00d947e0_Queue* apQueue, S00d947e0_Data* apData)
+// pdb: hkCpuSolveConstraintsJob | hkpCpuSolveConstraintsJobs.obj | retail, string-set bridge, high
+// pdb params: tl, jobQueue, jobInOut
+// pdb locals: zero, assertBuf, ostr, jobBuffer
+void __cdecl hkCpuSolveConstraintsJob(S00d947e0_Obj** tl, S00d947e0_Queue* jobQueue, S00d947e0_Data* jobInOut)
 {
     volatile unsigned int tb;
 
@@ -598,16 +605,16 @@ void __cdecl hkCpuSolveConstraintsJob(S00d947e0_Obj** a1, S00d947e0_Queue* apQue
         tls->unk04 = cur + 0x10;
     }
 
-    int base = apData->unk20;
-    int p28 = apData->unk28 + base;
-    int p2c = apData->unk2c + base;
-    int p30 = apData->unk30 + base;
-    unsigned int bytes = (apData->unk38 * 4 + 15) & 0xfffffff0u;
+    int base = jobInOut->unk20;
+    int p28 = jobInOut->unk28 + base;
+    int p2c = jobInOut->unk2c + base;
+    int p30 = jobInOut->unk30 + base;
+    unsigned int bytes = (jobInOut->unk38 * 4 + 15) & 0xfffffff0u;
     S00d947e0_memClear16((int*)p30, bytes / 16);
-    hkSolveConstraints(&(*a1)->unk000 + 0x1e0, p2c, p28, p30);
+    hkSolveConstraints(&(*tl)->unk000 + 0x1e0, p2c, p28, p30);
 
-    S00d947e0_Info* info = apData->unk18;
-    apQueue->hkJobQueue_addJob(S00d947e0_Cmd(*apData, info), 0);
+    S00d947e0_Info* info = jobInOut->unk18;
+    jobQueue->hkJobQueue_addJob(S00d947e0_Cmd(*jobInOut, info), 0);
 
     tls = (S00d947e0_Tls*)TlsGetValue(DAT_0126835c);
     cur = tls->unk04;
@@ -620,7 +627,7 @@ void __cdecl hkCpuSolveConstraintsJob(S00d947e0_Obj** a1, S00d947e0_Queue* apQue
         tls->unk04 = cur + 0xc;
     }
 
-    hkExportImpulsesAndRhs(&(*a1)->unk000 + 0x1e0, info->unk40, info->unk3c, info->unk30);
+    hkExportImpulsesAndRhs(&(*tl)->unk000 + 0x1e0, info->unk40, info->unk3c, info->unk30);
 
     tls = (S00d947e0_Tls*)TlsGetValue(DAT_0126835c);
     cur = tls->unk04;
@@ -633,5 +640,5 @@ void __cdecl hkCpuSolveConstraintsJob(S00d947e0_Obj** a1, S00d947e0_Queue* apQue
         tls->unk04 = cur + 0xc;
     }
 
-    apQueue->ProcessCallback(apData, apData, 0);
+    jobQueue->ProcessCallback(jobInOut, jobInOut, 0);
 }

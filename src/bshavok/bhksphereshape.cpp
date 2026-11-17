@@ -10,5 +10,5 @@
 // @fnv 0x0056e9f0
 const NiRTTI* bhkSphereShape::GetRTTI() const
 {
-    return &ms_kRTTI;
+    return &bhkSphereShape_ms_RTTI;
 }

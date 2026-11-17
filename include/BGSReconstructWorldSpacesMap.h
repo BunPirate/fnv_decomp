@@ -4,6 +4,7 @@
 
 class BGSReconstructCellBlocksMap;
 
+// pdb: class BGSReconstructWorldSpacesMap, size 0x10, bases: NiTMap<unsigned int, 0 members
 class BGSReconstructWorldSpacesMap : public NiTMap<unsigned int, BGSReconstructCellBlocksMap*>
 {
 public:

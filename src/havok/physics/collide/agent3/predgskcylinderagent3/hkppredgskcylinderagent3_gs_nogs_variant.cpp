@@ -59,7 +59,7 @@ struct Node
     short unk06;
     int unk08;
     int unk0c;
-    Node* Init(void* p1, void* p2, float val);
+    Node* Init(void* vertexA, void* vertexB, float val);
 };
 struct ExtendedRecord : FNVTypeRecord
 {
@@ -86,7 +86,7 @@ struct __declspec(align(16)) FNVResult
 };
 struct ExtendedFlags : FNVFlags
 {
-    void Init(void* p1, void* p2, void* p3);
+    void Init(void* shapeA, void* shapeB, void* aTb);
 };
 struct __declspec(align(16)) LocalSource
 {
@@ -140,7 +140,7 @@ struct D40AF0Mask
 static void convertCylinderCacheToCapsuleCache(D40AF0State* s, D40AF0Mask* m);
 void D40AF0Caller(D40AF0State* s, D40AF0Mask* m);
 void __fastcall FUN_00c905b0(void* selfVal);
-static void restoreOriginalShapesInCdBodies(void** vals, void** slots);
+static void restoreOriginalShapesInCdBodies(void** cdBodies, void** originalCdBodies);
 extern void** volatile g_d409d0_vals;
 extern void** volatile g_d409d0_slots;
 void d409d0_probe_caller(void);
@@ -187,7 +187,7 @@ struct D40A10Node
     short unk06;
     int unk08;
     int unk0c;
-    D40A10Node* FUN_00d22590(float* p1, float* p2, float val);
+    D40A10Node* FUN_00d22590(float* vertexA, float* vertexB, float val);
 };
 struct D40A10Entry
 {
@@ -202,7 +202,7 @@ struct D40A10Entry
         m_data = data;
     }
 };
-static void replaceCylindersWithCapsulesInCdBodies(int* a, FNVTypeRecord** b, FNVObject** objs, D40A10Entry* out);
+static void replaceCylindersWithCapsulesInCdBodies(int* cdBodies, FNVTypeRecord** isReplacedWithCapsule, FNVObject** temporaryCdBodies, D40A10Entry* originalCdBodies);
 void D40A10Caller(int* a, FNVTypeRecord** b, FNVObject** objs, D40A10Entry* out);
 
 extern "C" unsigned __int64 __rdtsc(void);
@@ -3526,7 +3526,7 @@ struct VectorOps
     void hkVector4_setRotatedDir(Transform*, CylAgentVector4*);
 };
 
-void ReleaseAllEntries(void*, void*, void*);
+void hkGskManifold_cleanup(void*, void*, void*);
 
 void hk4dGskCollideCalcToi(Agent3ProcessInput*, float, float, float, Cache*, CylAgentVector4*, Output*);
 
@@ -3583,7 +3583,10 @@ struct VecArg
 };
 // @fnv 0x00d40d80
 // src: COMMUNITY 0x00d40d80
-Cache* __cdecl hkPredGskCylinderAgent3_process(Agent3ProcessInput* pair, State* state, Cache* cache, VecArg normal, Output* output)
+// pdb: hkPredGskCylinderAgent3::process | hkpPredGskCylinderAgent3.obj | retail, upstream name already matches, high
+// pdb params: input, entry, agentData, separatingNormal, output
+// pdb locals: cdBodies, isCylinder, temporaryCdBodies, isReplacedWithCapsule, originalCdBodies, checkForCylinderSeparatingNormal, axis, assertBuf, ostr, work, tmpGskCache
+Cache* __cdecl hkPredGskCylinderAgent3_process(Agent3ProcessInput* input, State* entry, Cache* agentData, VecArg separatingNormal, Output* output)
 {
     Trace* stampTrace;
     volatile unsigned int* stampCursor;
@@ -3648,25 +3651,25 @@ Cache* __cdecl hkPredGskCylinderAgent3_process(Agent3ProcessInput* pair, State* 
     (void)sharedAxis.cw1.value;
     Frame frames[2];
 
-    float len = pair->tolerance;
+    float len = input->tolerance;
 
-    bodies[0] = &pair->body[0];
-    bodies[1] = &pair->body[1];
+    bodies[0] = &input->body[0];
+    bodies[1] = &input->body[1];
 
-    lateScratch.absolute[0] = cache->feature.flags & 1;
-    lateScratch.absolute[1] = cache->feature.flags & 2;
+    lateScratch.absolute[0] = agentData->feature.flags & 1;
+    lateScratch.absolute[1] = agentData->feature.flags & 2;
 
-    sharedActive.active[0] = cache->feature.flags & 4;
-    sharedActive.active[1] = cache->feature.flags & 8;
+    sharedActive.active[0] = agentData->feature.flags & 4;
+    sharedActive.active[1] = agentData->feature.flags & 8;
 
     saved[0] = 0;
     saved[1] = 0;
 
     CylAgentVector4 direction;
 
-    hkPredGskAgent3_sepNormal(pair, state, cache, &direction);
+    hkPredGskAgent3_sepNormal(input, entry, agentData, &direction);
 
-    ContactData* contact = &cache->contactData;
+    ContactData* contact = &agentData->contactData;
     for (int i = 0; i < 2; ++i)
         if (lateScratch.absolute[i])
         {
@@ -3699,38 +3702,38 @@ Cache* __cdecl hkPredGskCylinderAgent3_process(Agent3ProcessInput* pair, State* 
             if (sharedActive.active[i])
             {
 
-                if (magnitude > double(0.1f) && ComputeExtendedResult((LocalSource*)pair, state, (FNVFlags*)cache) < 0)
+                if (magnitude > double(0.1f) && ComputeExtendedResult((LocalSource*)input, entry, (FNVFlags*)agentData) < 0)
                 {
                     sharedActive.active[i] = 0;
-                    cache->feature.flags &= ~(4 << i);
-                    ReleaseAllEntries(&contact->numA, pair->manager, output->stream);
-                    state->numContacts = contact->numContacts;
+                    agentData->feature.flags &= ~(4 << i);
+                    hkGskManifold_cleanup(&contact->numA, input->manager, output->stream);
+                    entry->numContacts = contact->numContacts;
                 }
             }
             else if (magnitude < 0.05000000074505806 ||
-                     ComputeExtendedResult((LocalSource*)pair, state, (FNVFlags*)cache) > 0.01f)
+                     ComputeExtendedResult((LocalSource*)input, entry, (FNVFlags*)agentData) > 0.01f)
             {
 
                 sharedActive.active[i] = 1;
-                cache->feature.flags |= 4 << i;
-                ReleaseAllEntries(&contact->numA, pair->manager, output->stream);
-                state->numContacts = contact->numContacts;
+                agentData->feature.flags |= 4 << i;
+                hkGskManifold_cleanup(&contact->numA, input->manager, output->stream);
+                entry->numContacts = contact->numContacts;
             }
         }
 
-    Info* info = pair->info;
+    Info* info = input->info;
     Settings* settings = info->settings;
 
     if (settings->enabled)
     {
 
-        Body* a = pair->body[0];
+        Body* a = input->body[0];
         while (a->parent)
             a = a->parent;
 
         float radiusA = a->rootRadius;
 
-        scalarScratch.b = pair->body[1];
+        scalarScratch.b = input->body[1];
         while (scalarScratch.b->parent)
             scalarScratch.b = scalarScratch.b->parent;
 
@@ -3738,7 +3741,7 @@ Cache* __cdecl hkPredGskCylinderAgent3_process(Agent3ProcessInput* pair, State* 
 
         float radius = smaller(radiusA, scalarScratch.radiusB);
 
-        float depth = normal->w;
+        float depth = separatingNormal->w;
 
         scalarScratch.minArg = settings->factor * radius;
         float threshold = smaller(scalarScratch.minArg, settings->offset * radius + depth);
@@ -3752,15 +3755,15 @@ Cache* __cdecl hkPredGskCylinderAgent3_process(Agent3ProcessInput* pair, State* 
             scalarScratch.minArg = settings->otherOffset * radius + depth;
             float other = smaller(leftMin, scalarScratch.minArg);
 
-            hk4dGskCollideCalcToi(pair, radius, len, other, cache, normal, output);
+            hk4dGskCollideCalcToi(input, radius, len, other, agentData, separatingNormal, output);
             goto distant;
         }
     }
 
-    if (settings->limit < len && !(cache->feature.flags & 16) && direction.w < info->distance)
+    if (settings->limit < len && !(agentData->feature.flags & 16) && direction.w < info->distance)
     {
 
-        normal->w = len;
+        separatingNormal->w = len;
 
         if (!contact->numContacts)
             goto cleanup;
@@ -3801,10 +3804,10 @@ Cache* __cdecl hkPredGskCylinderAgent3_process(Agent3ProcessInput* pair, State* 
         {
 
             VertexData tracker;
-            Agent3ProcessInput* reloadPair = pair;
+            Agent3ProcessInput* reloadPair = input;
             Body** bodyBSlot = &reloadPair->body[1];
-            Info* workInfo = pair->info;
-            Body* bodyA = pair->body[0];
+            Info* workInfo = input->info;
+            Body* bodyA = input->body[0];
             lateScratch.otherBody = *bodyBSlot;
             scalarScratch.b = bodyA;
             tracker.tolerance = workInfo->distance;
@@ -3812,7 +3815,7 @@ Cache* __cdecl hkPredGskCylinderAgent3_process(Agent3ProcessInput* pair, State* 
             Shape* shapeA = scalarScratch.b->shape;
             tracker.radiusA = shapeA->radius;
             volatile float& radiusB = shapeB->radius;
-            __m128 normalCopy = normal->value;
+            __m128 normalCopy = separatingNormal->value;
             unsigned char contactCount = contact->numContacts;
             tracker.radiusB = radiusB;
             double acc = tracker.tolerance;
@@ -3875,7 +3878,7 @@ Cache* __cdecl hkPredGskCylinderAgent3_process(Agent3ProcessInput* pair, State* 
                 }
             }
 
-            hkGskManifold_verifyAndGetPoints(&contact->numA, &tracker, 0, output, pair->manager);
+            hkGskManifold_verifyAndGetPoints(&contact->numA, &tracker, 0, output, input->manager);
 
             if (contact->numContacts)
             {
@@ -3895,7 +3898,7 @@ Cache* __cdecl hkPredGskCylinderAgent3_process(Agent3ProcessInput* pair, State* 
 
 distant:
 
-    if (direction.w < pair->info->distance)
+    if (direction.w < input->info->distance)
     {
 
         for (int k = 0; k < 2; ++k)
@@ -3925,13 +3928,13 @@ distant:
             else
                 saved[k] = 0;
 
-        Feature* feature = &cache->feature;
+        Feature* feature = &agentData->feature;
 
         if (sharedActive.active[0] || sharedActive.active[1])
         {
 
             feature = &sharedCopy.copy;
-            sharedCopy.copy = cache->feature;
+            sharedCopy.copy = agentData->feature;
 
             if (sharedActive.active[0])
             {
@@ -3962,12 +3965,12 @@ distant:
             }
         }
 
-        ProcessCollision(pair, state, cache, feature, &contact->numA, normal, output);
+        ProcessCollision(input, entry, agentData, feature, &contact->numA, separatingNormal, output);
     }
     else if (contact->numContacts)
-        ReleaseAllEntries(&contact->numA, pair->manager, output->stream);
+        hkGskManifold_cleanup(&contact->numA, input->manager, output->stream);
 
-    normal->value = direction.value;
+    separatingNormal->value = direction.value;
 
 cleanup:
 
@@ -3978,7 +3981,7 @@ cleanup:
             *bodies[m] = saved[m];
         }
 
-    state->numContacts = contact->numContacts;
+    entry->numContacts = contact->numContacts;
 
     stampTrace = (Trace*)TlsGetValue(DAT_0126835c);
     stampCursor = stampTrace->current;
@@ -3993,7 +3996,7 @@ cleanup:
     }
 
     return (
-        Cache*)((char*)cache +
-                ((2 * (cache->contactData.numB + 4 * cache->contactData.numContacts + cache->contactData.numA) + 31) &
+        Cache*)((char*)agentData +
+                ((2 * (agentData->contactData.numB + 4 * agentData->contactData.numContacts + agentData->contactData.numA) + 31) &
                  ~15));
 }

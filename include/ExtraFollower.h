@@ -5,6 +5,7 @@
 class Actor;
 template <class T> class BSSimpleList;
 
+// pdb: class ExtraFollower, size 0x10, bases: BSExtraData, 1 members
 class ExtraFollower : public BSExtraData
 {
 public:

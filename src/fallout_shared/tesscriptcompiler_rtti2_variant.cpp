@@ -137,7 +137,7 @@ int FUN_004b1230(const char*);
 
 int FUN_0066eb40(const char*);
 
-int FUN_004d5eb0(const char*);
+int MiscStatManager_GetIDByName(const char*);
 
 extern const char* DAT_01186cf4[];
 
@@ -170,36 +170,39 @@ extern unsigned char DAT_0118a598[];
 
 // @fnv 0x005b1ba0
 // src: EXE 0x005b1ba0
-bool __cdecl ScriptCompiler_StandardCompile(unsigned short count, const EncodeParameter* parameters, ScriptLineBuffer* line,
-                          EncodeCompiler* compiler)
+// pdb: ScriptCompiler::StandardCompile | TESScriptCompiler.obj | retail, upstream name already matches, high
+// pdb params: asParamCount, apParameters, apScriptLine, apCompileData
+// pdb locals: sCurrentParam, pActualParams, bLookForVariable, size, currentWord, pOutput, pRef, pCell, pzone, pidle, pformlist, picon, pperk, index, speed, efindActorValue, sval, eid, axis, eSex, egroup, animGroup, etype, iobj
+bool __cdecl ScriptCompiler_StandardCompile(unsigned short asParamCount, const EncodeParameter* apParameters, ScriptLineBuffer* apScriptLine,
+                          EncodeCompiler* apCompileData)
 
 {
 
-    line->uiElapsedMilliseconds = 0;
+    apScriptLine->uiElapsedMilliseconds = 0;
 
-    char* countDestinationTmp = &line->cOutput[line->m_uiValueAfterSecondBuffer];
+    char* countDestinationTmp = &apScriptLine->cOutput[apScriptLine->m_uiValueAfterSecondBuffer];
 
-    *(unsigned short*)countDestinationTmp = count;
+    *(unsigned short*)countDestinationTmp = asParamCount;
 
-    line->m_uiValueAfterSecondBuffer += 2;
+    apScriptLine->m_uiValueAfterSecondBuffer += 2;
 
     short index4;
 
-    for (index4 = 0; index4 < count; ++index4)
+    for (index4 = 0; index4 < asParamCount; ++index4)
     {
 
-        unsigned char kindX = DAT_0118cdd0[parameters[index4].type].kind;
+        unsigned char kindX = DAT_0118cdd0[apParameters[index4].type].kind;
 
         EncodeWord word7;
 
-        int lengthVal = ScriptCompiler_GetNextWord(compiler, &word7, line->cLine, &line->uiElapsedMilliseconds, kindX, 0);
+        int lengthVal = ScriptCompiler_GetNextWord(apCompileData, &word7, apScriptLine->cLine, &apScriptLine->uiElapsedMilliseconds, kindX, 0);
 
         if (!lengthVal)
         {
 
-            if (!parameters[index4].optional)
+            if (!apParameters[index4].optional)
             {
-                FUN_005aea90(compiler, "Missing parameter %s.\r\nCompiled script not saved!", parameters[index4].name);
+                FUN_005aea90(apCompileData, "Missing parameter %s.\r\nCompiled script not saved!", apParameters[index4].name);
                 return false;
             }
 
@@ -212,32 +215,32 @@ bool __cdecl ScriptCompiler_StandardCompile(unsigned short count, const EncodePa
 
         if (kindX == 0 && (word7.refIndex > 0 || word7.variableType != 0))
         {
-            FUN_005aea90(compiler, "Parameter %s may not be a variable.\r\nCompiled script not saved!",
-                         parameters[index4].name);
+            FUN_005aea90(apCompileData, "Parameter %s may not be a variable.\r\nCompiled script not saved!",
+                         apParameters[index4].name);
             return false;
         }
 
-        if (DAT_0118cdd0[parameters[index4].type].isReference &&
-            (!compiler->ScriptCompileData_GetReferencedObject(&word7, false, false) || !word7.refIndex))
+        if (DAT_0118cdd0[apParameters[index4].type].isReference &&
+            (!apCompileData->ScriptCompileData_GetReferencedObject(&word7, false, false) || !word7.refIndex))
         {
-            FUN_005aea90(compiler, "Item '%s' not found for parameter %s.\r\nCompiled script not saved!", &word7,
-                         parameters[index4].name);
+            FUN_005aea90(apCompileData, "Item '%s' not found for parameter %s.\r\nCompiled script not saved!", &word7,
+                         apParameters[index4].name);
             return false;
         }
 
-        if (DAT_0118cdd0[parameters[index4].type].isReference)
+        if (DAT_0118cdd0[apParameters[index4].type].isReference)
         {
 
-            switch (parameters[index4].type)
+            switch (apParameters[index4].type)
             {
 
             case 3: {
 
                 if (!word7.variableID && (!word7.form || !FUN_00481f30(word7.form->FUN_00401170())))
                 {
-                    FUN_005aea90(compiler,
+                    FUN_005aea90(apCompileData,
                                  "Invalid inventory object '%s' for parameter %s.\r\nCompiled script not saved!",
-                                 &word7, parameters[index4].name);
+                                 &word7, apParameters[index4].name);
                     return false;
                 }
             }
@@ -248,9 +251,9 @@ bool __cdecl ScriptCompiler_StandardCompile(unsigned short count, const EncodePa
                 if (!word7.variableID &&
                     (!word7.form || (!FUN_00481f30(word7.form->FUN_00401170()) && word7.form->FUN_00401170() != 85)))
                 {
-                    FUN_005aea90(compiler,
+                    FUN_005aea90(apCompileData,
                                  "Invalid inventory object '%s' for parameter %s.\r\nCompiled script not saved!",
-                                 &word7, parameters[index4].name);
+                                 &word7, apParameters[index4].name);
                     return false;
                 }
             }
@@ -262,8 +265,8 @@ bool __cdecl ScriptCompiler_StandardCompile(unsigned short count, const EncodePa
                     (!word7.form || (!word7.form->IsBoundObject() &&
                                      word7.form->FUN_00401170() != 85)))
                 {
-                    FUN_005aea90(compiler, "Invalid object '%s' for parameter %s.\r\nCompiled script not saved!",
-                                 &word7, parameters[index4].name);
+                    FUN_005aea90(apCompileData, "Invalid object '%s' for parameter %s.\r\nCompiled script not saved!",
+                                 &word7, apParameters[index4].name);
                     return false;
                 }
             }
@@ -281,22 +284,22 @@ bool __cdecl ScriptCompiler_StandardCompile(unsigned short count, const EncodePa
 
                     if (!reference)
                     {
-                        FUN_005aea90(compiler,
+                        FUN_005aea90(apCompileData,
                                      "Invalid object reference '%s' for parameter %s.\r\nCompiled script not saved!",
-                                     &word7, parameters[index4].name);
+                                     &word7, apParameters[index4].name);
                         return false;
                     }
 
-                    switch (parameters[index4].type)
+                    switch (apParameters[index4].type)
                     {
 
                     case 26:
                         if (!reference->TESObjectREFR_HasContainer())
                         {
                             FUN_005aea90(
-                                compiler,
+                                apCompileData,
                                 "Invalid container reference '%s' for parameter %s.\r\nCompiled script not saved!",
-                                &word7, parameters[index4].name);
+                                &word7, apParameters[index4].name);
                             return false;
                         }
                         break;
@@ -304,9 +307,9 @@ bool __cdecl ScriptCompiler_StandardCompile(unsigned short count, const EncodePa
                     case 24:
                         if (reference->BGSSaveFormBuffer_GetForm() != DAT_011ca224)
                         {
-                            FUN_005aea90(compiler,
+                            FUN_005aea90(apCompileData,
                                          "Invalid map marker '%s' for parameter %s.\r\nCompiled script not saved!",
-                                         &word7, parameters[index4].name);
+                                         &word7, apParameters[index4].name);
                             return false;
                         }
                         break;
@@ -314,8 +317,8 @@ bool __cdecl ScriptCompiler_StandardCompile(unsigned short count, const EncodePa
                     case 6:
                         if (!reference->IsActor())
                         {
-                            FUN_005aea90(compiler, "Invalid actor '%s' for parameter %s.\r\nCompiled script not saved!",
-                                         &word7, parameters[index4].name);
+                            FUN_005aea90(apCompileData, "Invalid actor '%s' for parameter %s.\r\nCompiled script not saved!",
+                                         &word7, apParameters[index4].name);
                             return false;
                         }
                         break;
@@ -330,8 +333,8 @@ bool __cdecl ScriptCompiler_StandardCompile(unsigned short count, const EncodePa
                     (!word7.form || (!(SpellItem*)_FNV_DynamicCast(word7.form, 0, DAT_01183028, DAT_01183060, 0) &&
                                      !(TESObjectBOOK*)_FNV_DynamicCast(word7.form, 0, DAT_01183028, DAT_0118a650, 0))))
                 {
-                    FUN_005aea90(compiler, "Invalid spell item '%s' for parameter %s.\r\nCompiled script not saved!",
-                                 &word7, parameters[index4].name);
+                    FUN_005aea90(apCompileData, "Invalid spell item '%s' for parameter %s.\r\nCompiled script not saved!",
+                                 &word7, apParameters[index4].name);
                     return false;
                 }
             }
@@ -344,8 +347,8 @@ bool __cdecl ScriptCompiler_StandardCompile(unsigned short count, const EncodePa
 
                 if (!word7.variableID && (!object || !object->FUN_00425fd0()))
                 {
-                    FUN_005aea90(compiler, "Invalid interior cell '%s' for parameter %s.\r\nCompiled script not saved!",
-                                 &word7, parameters[index4].name);
+                    FUN_005aea90(apCompileData, "Invalid interior cell '%s' for parameter %s.\r\nCompiled script not saved!",
+                                 &word7, apParameters[index4].name);
                     return false;
                 }
             }
@@ -358,9 +361,9 @@ bool __cdecl ScriptCompiler_StandardCompile(unsigned short count, const EncodePa
 
                 if (!word7.variableID && !object)
                 {
-                    FUN_005aea90(compiler,
+                    FUN_005aea90(apCompileData,
                                  "Invalid encounter zone '%s' for parameter %s.\r\nCompiled script not saved!", &word7,
-                                 parameters[index4].name);
+                                 apParameters[index4].name);
                     return false;
                 }
             }
@@ -372,8 +375,8 @@ bool __cdecl ScriptCompiler_StandardCompile(unsigned short count, const EncodePa
 
                 if (!word7.variableID && !object)
                 {
-                    FUN_005aea90(compiler, "Invalid Idle form'%s' for parameter %s.\r\nCompiled script not saved!",
-                                 &word7, parameters[index4].name);
+                    FUN_005aea90(apCompileData, "Invalid Idle form'%s' for parameter %s.\r\nCompiled script not saved!",
+                                 &word7, apParameters[index4].name);
                     return false;
                 }
             }
@@ -385,8 +388,8 @@ bool __cdecl ScriptCompiler_StandardCompile(unsigned short count, const EncodePa
 
                 if (!word7.variableID && !object)
                 {
-                    FUN_005aea90(compiler, "Invalid form list '%s' for parameter %s.\r\nCompiled script not saved!",
-                                 &word7, parameters[index4].name);
+                    FUN_005aea90(apCompileData, "Invalid form list '%s' for parameter %s.\r\nCompiled script not saved!",
+                                 &word7, apParameters[index4].name);
                     return false;
                 }
             }
@@ -398,8 +401,8 @@ bool __cdecl ScriptCompiler_StandardCompile(unsigned short count, const EncodePa
 
                 if (!word7.variableID && !object)
                 {
-                    FUN_005aea90(compiler, "Invalid menu icon '%s' for parameter %s.\r\nCompiled script not saved!",
-                                 &word7, parameters[index4].name);
+                    FUN_005aea90(apCompileData, "Invalid menu icon '%s' for parameter %s.\r\nCompiled script not saved!",
+                                 &word7, apParameters[index4].name);
                     return false;
                 }
             }
@@ -411,8 +414,8 @@ bool __cdecl ScriptCompiler_StandardCompile(unsigned short count, const EncodePa
 
                 if (!word7.variableID && !object)
                 {
-                    FUN_005aea90(compiler, "Invalid perk '%s' for parameter %s.\r\nCompiled script not saved!", &word7,
-                                 parameters[index4].name);
+                    FUN_005aea90(apCompileData, "Invalid perk '%s' for parameter %s.\r\nCompiled script not saved!", &word7,
+                                 apParameters[index4].name);
                     return false;
                 }
             }
@@ -424,8 +427,8 @@ bool __cdecl ScriptCompiler_StandardCompile(unsigned short count, const EncodePa
 
                 if (!word7.variableID && !object)
                 {
-                    FUN_005aea90(compiler, "Invalid note '%s' for parameter %s.\r\nCompiled script not saved!", &word7,
-                                 parameters[index4].name);
+                    FUN_005aea90(apCompileData, "Invalid note '%s' for parameter %s.\r\nCompiled script not saved!", &word7,
+                                 apParameters[index4].name);
                     return false;
                 }
             }
@@ -436,8 +439,8 @@ bool __cdecl ScriptCompiler_StandardCompile(unsigned short count, const EncodePa
                 if (!word7.variableID &&
                     (!word7.form || !(TESWorldSpace*)_FNV_DynamicCast(word7.form, 0, DAT_01183028, DAT_01183fd0, 0)))
                 {
-                    FUN_005aea90(compiler, "Invalid worldspace '%s' for parameter %s.\r\nCompiled script not saved!",
-                                 &word7, parameters[index4].name);
+                    FUN_005aea90(apCompileData, "Invalid worldspace '%s' for parameter %s.\r\nCompiled script not saved!",
+                                 &word7, apParameters[index4].name);
                     return false;
                 }
             }
@@ -448,8 +451,8 @@ bool __cdecl ScriptCompiler_StandardCompile(unsigned short count, const EncodePa
                 if (!word7.variableID &&
                     (!word7.form || !(MagicItem*)_FNV_DynamicCast(word7.form, 0, DAT_01183028, DAT_01183140, 0)))
                 {
-                    FUN_005aea90(compiler, "Invalid magic item '%s' for parameter %s.\r\nCompiled script not saved!",
-                                 &word7, parameters[index4].name);
+                    FUN_005aea90(apCompileData, "Invalid magic item '%s' for parameter %s.\r\nCompiled script not saved!",
+                                 &word7, apParameters[index4].name);
                     return false;
                 }
             }
@@ -460,9 +463,9 @@ bool __cdecl ScriptCompiler_StandardCompile(unsigned short count, const EncodePa
                 if (!word7.variableID &&
                     (!word7.form || !(EffectSetting*)_FNV_DynamicCast(word7.form, 0, DAT_01183028, DAT_011837c4, 0)))
                 {
-                    FUN_005aea90(compiler,
+                    FUN_005aea90(apCompileData,
                                  "Invalid effect setting '%s' for parameter %s.\r\nCompiled script not saved!", &word7,
-                                 parameters[index4].name);
+                                 apParameters[index4].name);
                     return false;
                 }
             }
@@ -472,8 +475,8 @@ bool __cdecl ScriptCompiler_StandardCompile(unsigned short count, const EncodePa
 
                 if (!word7.variableID && (!word7.form || (word7.form->FUN_00401170() != 13)))
                 {
-                    FUN_005aea90(compiler, "Invalid sound '%s' for parameter %s.\r\nCompiled script not saved!", &word7,
-                                 parameters[index4].name);
+                    FUN_005aea90(apCompileData, "Invalid sound '%s' for parameter %s.\r\nCompiled script not saved!", &word7,
+                                 apParameters[index4].name);
                     return false;
                 }
             }
@@ -483,8 +486,8 @@ bool __cdecl ScriptCompiler_StandardCompile(unsigned short count, const EncodePa
 
                 if (!word7.variableID && (!word7.form || (word7.form->FUN_00401170() != 102)))
                 {
-                    FUN_005aea90(compiler, "Invalid music type '%s' for parameter %s.\r\nCompiled script not saved!",
-                                 &word7, parameters[index4].name);
+                    FUN_005aea90(apCompileData, "Invalid music type '%s' for parameter %s.\r\nCompiled script not saved!",
+                                 &word7, apParameters[index4].name);
                     return false;
                 }
             }
@@ -494,8 +497,8 @@ bool __cdecl ScriptCompiler_StandardCompile(unsigned short count, const EncodePa
 
                 if (!word7.variableID && (!word7.form || (word7.form->FUN_00401170() != 69)))
                 {
-                    FUN_005aea90(compiler, "Invalid topic '%s' for parameter %s.\r\nCompiled script not saved!", &word7,
-                                 parameters[index4].name);
+                    FUN_005aea90(apCompileData, "Invalid topic '%s' for parameter %s.\r\nCompiled script not saved!", &word7,
+                                 apParameters[index4].name);
                     return false;
                 }
             }
@@ -505,8 +508,8 @@ bool __cdecl ScriptCompiler_StandardCompile(unsigned short count, const EncodePa
 
                 if (!word7.variableID && (!word7.form || (word7.form->FUN_00401170() != 71)))
                 {
-                    FUN_005aea90(compiler, "Invalid info '%s' for parameter %s.\r\nCompiled script not saved!", &word7,
-                                 parameters[index4].name);
+                    FUN_005aea90(apCompileData, "Invalid info '%s' for parameter %s.\r\nCompiled script not saved!", &word7,
+                                 apParameters[index4].name);
                     return false;
                 }
             }
@@ -516,8 +519,8 @@ bool __cdecl ScriptCompiler_StandardCompile(unsigned short count, const EncodePa
 
                 if (!word7.variableID && (!word7.form || (word7.form->FUN_00401170() != 12)))
                 {
-                    FUN_005aea90(compiler, "Invalid race '%s' for parameter %s.\r\nCompiled script not saved!", &word7,
-                                 parameters[index4].name);
+                    FUN_005aea90(apCompileData, "Invalid race '%s' for parameter %s.\r\nCompiled script not saved!", &word7,
+                                 apParameters[index4].name);
                     return false;
                 }
             }
@@ -527,8 +530,8 @@ bool __cdecl ScriptCompiler_StandardCompile(unsigned short count, const EncodePa
 
                 if (!word7.variableID && (!word7.form || (word7.form->FUN_00401170() != 7)))
                 {
-                    FUN_005aea90(compiler, "Invalid class '%s' for parameter %s.\r\nCompiled script not saved!", &word7,
-                                 parameters[index4].name);
+                    FUN_005aea90(apCompileData, "Invalid class '%s' for parameter %s.\r\nCompiled script not saved!", &word7,
+                                 apParameters[index4].name);
                     return false;
                 }
             }
@@ -538,8 +541,8 @@ bool __cdecl ScriptCompiler_StandardCompile(unsigned short count, const EncodePa
 
                 if (!word7.variableID && (!word7.form || (word7.form->FUN_00401170() != 8)))
                 {
-                    FUN_005aea90(compiler, "Invalid faction '%s' for parameter %s.\r\nCompiled script not saved!",
-                                 &word7, parameters[index4].name);
+                    FUN_005aea90(apCompileData, "Invalid faction '%s' for parameter %s.\r\nCompiled script not saved!",
+                                 &word7, apParameters[index4].name);
                     return false;
                 }
             }
@@ -549,8 +552,8 @@ bool __cdecl ScriptCompiler_StandardCompile(unsigned short count, const EncodePa
 
                 if (!word7.variableID && (!word7.form || (word7.form->FUN_00401170() != 104)))
                 {
-                    FUN_005aea90(compiler, "Invalid reputation '%s' for parameter %s.\r\nCompiled script not saved!",
-                                 &word7, parameters[index4].name);
+                    FUN_005aea90(apCompileData, "Invalid reputation '%s' for parameter %s.\r\nCompiled script not saved!",
+                                 &word7, apParameters[index4].name);
                     return false;
                 }
             }
@@ -560,8 +563,8 @@ bool __cdecl ScriptCompiler_StandardCompile(unsigned short count, const EncodePa
 
                 if (!word7.variableID && (!word7.form || (word7.form->FUN_00401170() != 113)))
                 {
-                    FUN_005aea90(compiler, "Invalid challenge '%s' for parameter %s.\r\nCompiled script not saved!",
-                                 &word7, parameters[index4].name);
+                    FUN_005aea90(apCompileData, "Invalid challenge '%s' for parameter %s.\r\nCompiled script not saved!",
+                                 &word7, apParameters[index4].name);
                     return false;
                 }
             }
@@ -571,8 +574,8 @@ bool __cdecl ScriptCompiler_StandardCompile(unsigned short count, const EncodePa
 
                 if (!word7.variableID && (!word7.form || (word7.form->FUN_00401170() != 109)))
                 {
-                    FUN_005aea90(compiler, "Invalid casino '%s' for parameter %s.\r\nCompiled script not saved!",
-                                 &word7, parameters[index4].name);
+                    FUN_005aea90(apCompileData, "Invalid casino '%s' for parameter %s.\r\nCompiled script not saved!",
+                                 &word7, apParameters[index4].name);
                     return false;
                 }
             }
@@ -582,8 +585,8 @@ bool __cdecl ScriptCompiler_StandardCompile(unsigned short count, const EncodePa
 
                 if (!word7.variableID && (!word7.form || (word7.form->FUN_00401170() != 108)))
                 {
-                    FUN_005aea90(compiler, "Invalid casino chip '%s' for parameter %s.\r\nCompiled script not saved!",
-                                 &word7, parameters[index4].name);
+                    FUN_005aea90(apCompileData, "Invalid casino chip '%s' for parameter %s.\r\nCompiled script not saved!",
+                                 &word7, apParameters[index4].name);
                     return false;
                 }
             }
@@ -593,8 +596,8 @@ bool __cdecl ScriptCompiler_StandardCompile(unsigned short count, const EncodePa
 
                 if (!word7.variableID && (!word7.form || (word7.form->FUN_00401170() != 116)))
                 {
-                    FUN_005aea90(compiler, "Invalid caravan money '%s' for parameter %s.\r\nCompiled script not saved!",
-                                 &word7, parameters[index4].name);
+                    FUN_005aea90(apCompileData, "Invalid caravan money '%s' for parameter %s.\r\nCompiled script not saved!",
+                                 &word7, apParameters[index4].name);
                     return false;
                 }
             }
@@ -604,8 +607,8 @@ bool __cdecl ScriptCompiler_StandardCompile(unsigned short count, const EncodePa
 
                 if (!word7.variableID && (!word7.form || (word7.form->FUN_00401170() != 115)))
                 {
-                    FUN_005aea90(compiler, "Invalid caravan card '%s' for parameter %s.\r\nCompiled script not saved!",
-                                 &word7, parameters[index4].name);
+                    FUN_005aea90(apCompileData, "Invalid caravan card '%s' for parameter %s.\r\nCompiled script not saved!",
+                                 &word7, apParameters[index4].name);
                     return false;
                 }
             }
@@ -615,8 +618,8 @@ bool __cdecl ScriptCompiler_StandardCompile(unsigned short count, const EncodePa
 
                 if (!word7.variableID && (!word7.form || (word7.form->FUN_00401170() != 117)))
                 {
-                    FUN_005aea90(compiler, "Invalid caravan card '%s' for parameter %s.\r\nCompiled script not saved!",
-                                 &word7, parameters[index4].name);
+                    FUN_005aea90(apCompileData, "Invalid caravan card '%s' for parameter %s.\r\nCompiled script not saved!",
+                                 &word7, apParameters[index4].name);
                     return false;
                 }
             }
@@ -626,8 +629,8 @@ bool __cdecl ScriptCompiler_StandardCompile(unsigned short count, const EncodePa
 
                 if (!word7.variableID && (!word7.form || (word7.form->FUN_00401170() != 55)))
                 {
-                    FUN_005aea90(compiler, "Invalid region '%s' for parameter %s.\r\nCompiled script not saved!",
-                                 &word7, parameters[index4].name);
+                    FUN_005aea90(apCompileData, "Invalid region '%s' for parameter %s.\r\nCompiled script not saved!",
+                                 &word7, apParameters[index4].name);
                     return false;
                 }
             }
@@ -637,8 +640,8 @@ bool __cdecl ScriptCompiler_StandardCompile(unsigned short count, const EncodePa
 
                 if (!word7.variableID && (!word7.form || (word7.form->FUN_00401170() != 6)))
                 {
-                    FUN_005aea90(compiler, "Invalid global '%s' for parameter %s.\r\nCompiled script not saved!",
-                                 &word7, parameters[index4].name);
+                    FUN_005aea90(apCompileData, "Invalid global '%s' for parameter %s.\r\nCompiled script not saved!",
+                                 &word7, apParameters[index4].name);
                     return false;
                 }
             }
@@ -649,9 +652,9 @@ bool __cdecl ScriptCompiler_StandardCompile(unsigned short count, const EncodePa
                 if (!word7.variableID &&
                     (!word7.form || (word7.form->FUN_00401170() != 39 && word7.form->FUN_00401170() != 85)))
                 {
-                    FUN_005aea90(compiler,
+                    FUN_005aea90(apCompileData,
                                  "Invalid furniture object/list '%s' for parameter %s.\r\nCompiled script not saved!",
-                                 &word7, parameters[index4].name);
+                                 &word7, apParameters[index4].name);
                     return false;
                 }
             }
@@ -662,8 +665,8 @@ bool __cdecl ScriptCompiler_StandardCompile(unsigned short count, const EncodePa
                 if (!word7.variableID &&
                     (!word7.form || !(TESObject*)_FNV_DynamicCast(word7.form, 0, DAT_01183028, DAT_01183128, 0)))
                 {
-                    FUN_005aea90(compiler, "Invalid object '%s' for parameter %s.\r\nCompiled script not saved!",
-                                 &word7, parameters[index4].name);
+                    FUN_005aea90(apCompileData, "Invalid object '%s' for parameter %s.\r\nCompiled script not saved!",
+                                 &word7, apParameters[index4].name);
                     return false;
                 }
             }
@@ -674,8 +677,8 @@ bool __cdecl ScriptCompiler_StandardCompile(unsigned short count, const EncodePa
                 if (!word7.variableID &&
                     (!word7.form || !(TESActorBase*)_FNV_DynamicCast(word7.form, 0, DAT_01183028, DAT_011846e8, 0)))
                 {
-                    FUN_005aea90(compiler, "Invalid actor base '%s' for parameter %s.\r\nCompiled script not saved!",
-                                 &word7, parameters[index4].name);
+                    FUN_005aea90(apCompileData, "Invalid actor base '%s' for parameter %s.\r\nCompiled script not saved!",
+                                 &word7, apParameters[index4].name);
                     return false;
                 }
             }
@@ -686,8 +689,8 @@ bool __cdecl ScriptCompiler_StandardCompile(unsigned short count, const EncodePa
                 if (!word7.variableID &&
                     (!word7.form || !(TESPackage*)_FNV_DynamicCast(word7.form, 0, DAT_01183028, DAT_011846a0, 0)))
                 {
-                    FUN_005aea90(compiler, "Invalid package '%s' for parameter %s.\r\nCompiled script not saved!",
-                                 &word7, parameters[index4].name);
+                    FUN_005aea90(apCompileData, "Invalid package '%s' for parameter %s.\r\nCompiled script not saved!",
+                                 &word7, apParameters[index4].name);
                     return false;
                 }
             }
@@ -698,8 +701,8 @@ bool __cdecl ScriptCompiler_StandardCompile(unsigned short count, const EncodePa
                 if (!word7.variableID &&
                     (!word7.form || !(TESCombatStyle*)_FNV_DynamicCast(word7.form, 0, DAT_01183028, DAT_0118627c, 0)))
                 {
-                    FUN_005aea90(compiler, "Invalid combat style '%s' for parameter %s.\r\nCompiled script not saved!",
-                                 &word7, parameters[index4].name);
+                    FUN_005aea90(apCompileData, "Invalid combat style '%s' for parameter %s.\r\nCompiled script not saved!",
+                                 &word7, apParameters[index4].name);
                     return false;
                 }
             }
@@ -709,8 +712,8 @@ bool __cdecl ScriptCompiler_StandardCompile(unsigned short count, const EncodePa
 
                 if (!word7.variableID && (!word7.form || (word7.form->FUN_00401170() != 53)))
                 {
-                    FUN_005aea90(compiler, "Invalid weather '%s' for parameter %s.\r\nCompiled script not saved!",
-                                 &word7, parameters[index4].name);
+                    FUN_005aea90(apCompileData, "Invalid weather '%s' for parameter %s.\r\nCompiled script not saved!",
+                                 &word7, apParameters[index4].name);
                     return false;
                 }
             }
@@ -720,9 +723,9 @@ bool __cdecl ScriptCompiler_StandardCompile(unsigned short count, const EncodePa
 
                 if (!word7.variableID && (!word7.form || (word7.form->FUN_00401170() != 84)))
                 {
-                    FUN_005aea90(compiler,
+                    FUN_005aea90(apCompileData,
                                  "Invalid Imagespace Modifier '%s' for parameter %s.\r\nCompiled script not saved!",
-                                 &word7, parameters[index4].name);
+                                 &word7, apParameters[index4].name);
                     return false;
                 }
             }
@@ -732,8 +735,8 @@ bool __cdecl ScriptCompiler_StandardCompile(unsigned short count, const EncodePa
 
                 if (!word7.variableID && (!word7.form || (word7.form->FUN_00401170() != 83)))
                 {
-                    FUN_005aea90(compiler, "Invalid Imagespace '%s' for parameter %s.\r\nCompiled script not saved!",
-                                 &word7, parameters[index4].name);
+                    FUN_005aea90(apCompileData, "Invalid Imagespace '%s' for parameter %s.\r\nCompiled script not saved!",
+                                 &word7, apParameters[index4].name);
                     return false;
                 }
             }
@@ -743,8 +746,8 @@ bool __cdecl ScriptCompiler_StandardCompile(unsigned short count, const EncodePa
 
                 if (!word7.variableID && (!word7.form || (word7.form->FUN_00401170() != 42)))
                 {
-                    FUN_005aea90(compiler, "Invalid NPC '%s' for parameter %s.\r\nCompiled script not saved!", &word7,
-                                 parameters[index4].name);
+                    FUN_005aea90(apCompileData, "Invalid NPC '%s' for parameter %s.\r\nCompiled script not saved!", &word7,
+                                 apParameters[index4].name);
                     return false;
                 }
             }
@@ -755,8 +758,8 @@ bool __cdecl ScriptCompiler_StandardCompile(unsigned short count, const EncodePa
                 if (!word7.variableID &&
                     (!word7.form || (word7.form->FUN_00401170() != 42 && word7.form->FUN_00401170() != 8)))
                 {
-                    FUN_005aea90(compiler, "Invalid owner '%s' for parameter %s.\r\nCompiled script not saved!", &word7,
-                                 parameters[index4].name);
+                    FUN_005aea90(apCompileData, "Invalid owner '%s' for parameter %s.\r\nCompiled script not saved!", &word7,
+                                 apParameters[index4].name);
                     return false;
                 }
             }
@@ -766,8 +769,8 @@ bool __cdecl ScriptCompiler_StandardCompile(unsigned short count, const EncodePa
 
                 if (!word7.variableID && (!word7.form || (word7.form->FUN_00401170() != 79)))
                 {
-                    FUN_005aea90(compiler, "Invalid Effect Shader '%s' for parameter %s.\r\nCompiled script not saved!",
-                                 &word7, parameters[index4].name);
+                    FUN_005aea90(apCompileData, "Invalid Effect Shader '%s' for parameter %s.\r\nCompiled script not saved!",
+                                 &word7, apParameters[index4].name);
                     return false;
                 }
             }
@@ -777,8 +780,8 @@ bool __cdecl ScriptCompiler_StandardCompile(unsigned short count, const EncodePa
 
                 if (!word7.variableID && (!word7.form || (word7.form->FUN_00401170() != 98)))
                 {
-                    FUN_005aea90(compiler, "Invalid message '%s' for parameter %s.\r\nCompiled script not saved!",
-                                 &word7, parameters[index4].name);
+                    FUN_005aea90(apCompileData, "Invalid message '%s' for parameter %s.\r\nCompiled script not saved!",
+                                 &word7, apParameters[index4].name);
                     return false;
                 }
             }
@@ -789,9 +792,9 @@ bool __cdecl ScriptCompiler_StandardCompile(unsigned short count, const EncodePa
                 if (!word7.variableID &&
                     (!word7.form || (word7.form->FUN_00401170() != 42 && word7.form->FUN_00401170() != 45)))
                 {
-                    FUN_005aea90(compiler,
+                    FUN_005aea90(apCompileData,
                                  "Invalid NPC or LeveledCharacter '%s' for parameter %s.\r\nCompiled script not saved!",
-                                 &word7, parameters[index4].name);
+                                 &word7, apParameters[index4].name);
                     return false;
                 }
             }
@@ -803,9 +806,9 @@ bool __cdecl ScriptCompiler_StandardCompile(unsigned short count, const EncodePa
                     (!word7.form || (word7.form->FUN_00401170() != 43 && word7.form->FUN_00401170() != 44)))
                 {
                     FUN_005aea90(
-                        compiler,
+                        apCompileData,
                         "Invalid Creature or LeveledCreature '%s' for parameter %s.\r\nCompiled script not saved!",
-                        &word7, parameters[index4].name);
+                        &word7, apParameters[index4].name);
                     return false;
                 }
             }
@@ -815,9 +818,9 @@ bool __cdecl ScriptCompiler_StandardCompile(unsigned short count, const EncodePa
 
                 if (!word7.variableID && (!word7.form || (word7.form->FUN_00401170() != 45)))
                 {
-                    FUN_005aea90(compiler,
+                    FUN_005aea90(apCompileData,
                                  "Invalid LeveledCharacter '%s' for parameter %s.\r\nCompiled script not saved!",
-                                 &word7, parameters[index4].name);
+                                 &word7, apParameters[index4].name);
                     return false;
                 }
             }
@@ -827,9 +830,9 @@ bool __cdecl ScriptCompiler_StandardCompile(unsigned short count, const EncodePa
 
                 if (!word7.variableID && (!word7.form || (word7.form->FUN_00401170() != 44)))
                 {
-                    FUN_005aea90(compiler,
+                    FUN_005aea90(apCompileData,
                                  "Invalid LeveledCreature '%s' for parameter %s.\r\nCompiled script not saved!", &word7,
-                                 parameters[index4].name);
+                                 apParameters[index4].name);
                     return false;
                 }
             }
@@ -839,8 +842,8 @@ bool __cdecl ScriptCompiler_StandardCompile(unsigned short count, const EncodePa
 
                 if (!word7.variableID && (!word7.form || (word7.form->FUN_00401170() != 52)))
                 {
-                    FUN_005aea90(compiler, "Invalid LeveledItem '%s' for parameter %s.\r\nCompiled script not saved!",
-                                 &word7, parameters[index4].name);
+                    FUN_005aea90(apCompileData, "Invalid LeveledItem '%s' for parameter %s.\r\nCompiled script not saved!",
+                                 &word7, apParameters[index4].name);
                     return false;
                 }
             }
@@ -850,8 +853,8 @@ bool __cdecl ScriptCompiler_StandardCompile(unsigned short count, const EncodePa
 
                 if (!word7.variableID && !word7.form)
                 {
-                    FUN_005aea90(compiler, "Invalid form '%s' for parameter %s.\r\nCompiled script not saved!", &word7,
-                                 parameters[index4].name);
+                    FUN_005aea90(apCompileData, "Invalid form '%s' for parameter %s.\r\nCompiled script not saved!", &word7,
+                                 apParameters[index4].name);
                     return false;
                 }
             }
@@ -860,32 +863,32 @@ bool __cdecl ScriptCompiler_StandardCompile(unsigned short count, const EncodePa
             default:
                 Warning_005b5e40(
                     "SCRIPTS: Param type '%d' (referenced object) unimplemented in ScriptCompiler::StandardCompile.",
-                    parameters[index4].type);
+                    apParameters[index4].type);
                 return false;
             }
 
-            char* output = line->cOutput;
+            char* output = apScriptLine->cOutput;
 
-            output[line->m_uiValueAfterSecondBuffer] = 'r';
-            line->m_uiValueAfterSecondBuffer++;
+            output[apScriptLine->m_uiValueAfterSecondBuffer] = 'r';
+            apScriptLine->m_uiValueAfterSecondBuffer++;
 
-            *(unsigned short*)(output + line->m_uiValueAfterSecondBuffer) = (unsigned short)word7.refIndex;
+            *(unsigned short*)(output + apScriptLine->m_uiValueAfterSecondBuffer) = (unsigned short)word7.refIndex;
 
-            line->m_uiValueAfterSecondBuffer += 2;
+            apScriptLine->m_uiValueAfterSecondBuffer += 2;
         }
         else
-            switch (parameters[index4].type)
+            switch (apParameters[index4].type)
             {
 
             case 0:
 
-                *(unsigned short*)(line->cOutput + line->m_uiValueAfterSecondBuffer) = (unsigned short)lengthVal;
+                *(unsigned short*)(apScriptLine->cOutput + apScriptLine->m_uiValueAfterSecondBuffer) = (unsigned short)lengthVal;
 
-                line->m_uiValueAfterSecondBuffer += 2;
+                apScriptLine->m_uiValueAfterSecondBuffer += 2;
 
-                FUN_00401460(line->cOutput + line->m_uiValueAfterSecondBuffer, &word7, lengthVal);
+                FUN_00401460(apScriptLine->cOutput + apScriptLine->m_uiValueAfterSecondBuffer, &word7, lengthVal);
 
-                line->m_uiValueAfterSecondBuffer += lengthVal;
+                apScriptLine->m_uiValueAfterSecondBuffer += lengthVal;
 
                 break;
 
@@ -893,24 +896,24 @@ bool __cdecl ScriptCompiler_StandardCompile(unsigned short count, const EncodePa
             case 2:
             case 23: {
 
-                char* output = line->cOutput;
+                char* output = apScriptLine->cOutput;
 
                 if (word7.refIndex > 0)
                 {
 
                     if (word7.variableType == 'G')
                     {
-                        output[line->m_uiValueAfterSecondBuffer] = 'G';
-                        line->m_uiValueAfterSecondBuffer++;
+                        output[apScriptLine->m_uiValueAfterSecondBuffer] = 'G';
+                        apScriptLine->m_uiValueAfterSecondBuffer++;
                     }
                     else
                     {
-                        output[line->m_uiValueAfterSecondBuffer] = 'r';
-                        line->m_uiValueAfterSecondBuffer++;
+                        output[apScriptLine->m_uiValueAfterSecondBuffer] = 'r';
+                        apScriptLine->m_uiValueAfterSecondBuffer++;
                     }
 
-                    *(unsigned short*)(output + line->m_uiValueAfterSecondBuffer) = (unsigned short)word7.refIndex;
-                    line->m_uiValueAfterSecondBuffer += 2;
+                    *(unsigned short*)(output + apScriptLine->m_uiValueAfterSecondBuffer) = (unsigned short)word7.refIndex;
+                    apScriptLine->m_uiValueAfterSecondBuffer += 2;
                 }
 
                 if (word7.variableType != 'G')
@@ -919,33 +922,33 @@ bool __cdecl ScriptCompiler_StandardCompile(unsigned short count, const EncodePa
                     if (word7.variableID > 0)
                     {
 
-                        output[line->m_uiValueAfterSecondBuffer] = word7.variableType;
-                        line->m_uiValueAfterSecondBuffer++;
+                        output[apScriptLine->m_uiValueAfterSecondBuffer] = word7.variableType;
+                        apScriptLine->m_uiValueAfterSecondBuffer++;
 
-                        *(unsigned short*)(output + line->m_uiValueAfterSecondBuffer) =
+                        *(unsigned short*)(output + apScriptLine->m_uiValueAfterSecondBuffer) =
                             (unsigned short)word7.variableID;
-                        line->m_uiValueAfterSecondBuffer += 2;
+                        apScriptLine->m_uiValueAfterSecondBuffer += 2;
                     }
-                    else if (parameters[index4].type == 1 || parameters[index4].type == 23)
+                    else if (apParameters[index4].type == 1 || apParameters[index4].type == 23)
                     {
 
                         if (!FUN_004b1230(word7.text))
                         {
-                            FUN_005aea90(compiler,
+                            FUN_005aea90(apCompileData,
                                          "Unknown variable '%s' for parameter %s.\r\nCompiled script not saved!",
-                                         &word7, parameters[index4].name);
+                                         &word7, apParameters[index4].name);
                             return false;
                         }
                         else
                         {
 
-                            output[line->m_uiValueAfterSecondBuffer] = 'n';
-                            line->m_uiValueAfterSecondBuffer++;
+                            output[apScriptLine->m_uiValueAfterSecondBuffer] = 'n';
+                            apScriptLine->m_uiValueAfterSecondBuffer++;
 
                             int value = atol(word7.text);
 
-                            *(int*)(output + line->m_uiValueAfterSecondBuffer) = value;
-                            line->m_uiValueAfterSecondBuffer += 4;
+                            *(int*)(output + apScriptLine->m_uiValueAfterSecondBuffer) = value;
+                            apScriptLine->m_uiValueAfterSecondBuffer += 4;
                         }
                     }
                     else
@@ -953,21 +956,21 @@ bool __cdecl ScriptCompiler_StandardCompile(unsigned short count, const EncodePa
 
                         if (!IsAFloat(word7.text))
                         {
-                            FUN_005aea90(compiler,
+                            FUN_005aea90(apCompileData,
                                          "Unknown variable '%s' for parameter %s.\r\nCompiled script not saved!",
-                                         &word7, parameters[index4].name);
+                                         &word7, apParameters[index4].name);
                             return false;
                         }
                         else
                         {
 
-                            output[line->m_uiValueAfterSecondBuffer] = 'z';
-                            line->m_uiValueAfterSecondBuffer++;
+                            output[apScriptLine->m_uiValueAfterSecondBuffer] = 'z';
+                            apScriptLine->m_uiValueAfterSecondBuffer++;
 
                             double value = atof(word7.text);
 
-                            *(double*)(output + line->m_uiValueAfterSecondBuffer) = value;
-                            line->m_uiValueAfterSecondBuffer += 8;
+                            *(double*)(output + apScriptLine->m_uiValueAfterSecondBuffer) = value;
+                            apScriptLine->m_uiValueAfterSecondBuffer += 8;
                         }
                     }
                 }
@@ -981,15 +984,15 @@ bool __cdecl ScriptCompiler_StandardCompile(unsigned short count, const EncodePa
                 if (value != 77)
                 {
 
-                    char* output = line->cOutput;
+                    char* output = apScriptLine->cOutput;
 
-                    *(unsigned short*)(output + line->m_uiValueAfterSecondBuffer) = (unsigned short)value;
-                    line->m_uiValueAfterSecondBuffer += 2;
+                    *(unsigned short*)(output + apScriptLine->m_uiValueAfterSecondBuffer) = (unsigned short)value;
+                    apScriptLine->m_uiValueAfterSecondBuffer += 2;
                 }
                 else
                 {
-                    FUN_005aea90(compiler, "Invalid actor value '%s' for parameter %s.\r\nCompiled script not saved!",
-                                 &word7, parameters[index4].name);
+                    FUN_005aea90(apCompileData, "Invalid actor value '%s' for parameter %s.\r\nCompiled script not saved!",
+                                 &word7, apParameters[index4].name);
                     return false;
                 }
             }
@@ -1007,15 +1010,15 @@ bool __cdecl ScriptCompiler_StandardCompile(unsigned short count, const EncodePa
 
                 if (value != 5)
                 {
-                    char* output = line->cOutput;
-                    *(unsigned short*)(output + line->m_uiValueAfterSecondBuffer) = (unsigned short)value;
-                    line->m_uiValueAfterSecondBuffer += 2;
+                    char* output = apScriptLine->cOutput;
+                    *(unsigned short*)(output + apScriptLine->m_uiValueAfterSecondBuffer) = (unsigned short)value;
+                    apScriptLine->m_uiValueAfterSecondBuffer += 2;
                 }
 
                 else
                 {
-                    FUN_005aea90(compiler, "Invalid alignment '%s' for parameter %s.\r\nCompiled script not saved!",
-                                 &word7, parameters[index4].name);
+                    FUN_005aea90(apCompileData, "Invalid alignment '%s' for parameter %s.\r\nCompiled script not saved!",
+                                 &word7, apParameters[index4].name);
                     return false;
                 }
             }
@@ -1033,15 +1036,15 @@ bool __cdecl ScriptCompiler_StandardCompile(unsigned short count, const EncodePa
 
                 if (value != 5)
                 {
-                    char* output = line->cOutput;
-                    *(unsigned short*)(output + line->m_uiValueAfterSecondBuffer) = (unsigned short)value;
-                    line->m_uiValueAfterSecondBuffer += 2;
+                    char* output = apScriptLine->cOutput;
+                    *(unsigned short*)(output + apScriptLine->m_uiValueAfterSecondBuffer) = (unsigned short)value;
+                    apScriptLine->m_uiValueAfterSecondBuffer += 2;
                 }
 
                 else
                 {
-                    FUN_005aea90(compiler, "Invalid CriticalStage '%s' for parameter %s.\r\nCompiled script not saved!",
-                                 &word7, parameters[index4].name);
+                    FUN_005aea90(apCompileData, "Invalid CriticalStage '%s' for parameter %s.\r\nCompiled script not saved!",
+                                 &word7, apParameters[index4].name);
                     return false;
                 }
             }
@@ -1059,15 +1062,15 @@ bool __cdecl ScriptCompiler_StandardCompile(unsigned short count, const EncodePa
 
                 if (value != 14)
                 {
-                    char* output = line->cOutput;
-                    *(unsigned short*)(output + line->m_uiValueAfterSecondBuffer) = (unsigned short)value;
-                    line->m_uiValueAfterSecondBuffer += 2;
+                    char* output = apScriptLine->cOutput;
+                    *(unsigned short*)(output + apScriptLine->m_uiValueAfterSecondBuffer) = (unsigned short)value;
+                    apScriptLine->m_uiValueAfterSecondBuffer += 2;
                 }
 
                 else
                 {
-                    FUN_005aea90(compiler, "Invalid EquipType '%s' for parameter %s.\r\nCompiled script not saved!",
-                                 &word7, parameters[index4].name);
+                    FUN_005aea90(apCompileData, "Invalid EquipType '%s' for parameter %s.\r\nCompiled script not saved!",
+                                 &word7, apParameters[index4].name);
                     return false;
                 }
             }
@@ -1075,20 +1078,20 @@ bool __cdecl ScriptCompiler_StandardCompile(unsigned short count, const EncodePa
 
             case 41: {
 
-                int value = FUN_004d5eb0(word7.text);
+                int value = MiscStatManager_GetIDByName(word7.text);
 
                 if (value == 43)
                 {
-                    FUN_005aea90(compiler, "Invalid misc stat '%s' for parameter %s.\r\nCompiled script not saved!",
-                                 &word7, parameters[index4].name);
+                    FUN_005aea90(apCompileData, "Invalid misc stat '%s' for parameter %s.\r\nCompiled script not saved!",
+                                 &word7, apParameters[index4].name);
                     return false;
                 }
                 else
                 {
 
-                    char* output = line->cOutput;
-                    *(unsigned short*)(output + line->m_uiValueAfterSecondBuffer) = (unsigned short)value;
-                    line->m_uiValueAfterSecondBuffer += 2;
+                    char* output = apScriptLine->cOutput;
+                    *(unsigned short*)(output + apScriptLine->m_uiValueAfterSecondBuffer) = (unsigned short)value;
+                    apScriptLine->m_uiValueAfterSecondBuffer += 2;
                 }
             }
             break;
@@ -1098,9 +1101,9 @@ bool __cdecl ScriptCompiler_StandardCompile(unsigned short count, const EncodePa
                 if (!FUN_004b1230(word7.text))
                 {
                     FUN_005aea90(
-                        compiler,
+                        apCompileData,
                         "Invalid crime type '%s' for parameter %s.  Crime type must be a numeric value from 0-%d.\r\nCompiled script not saved!",
-                        &word7, parameters[index4].name, 4);
+                        &word7, apParameters[index4].name, 4);
                     return false;
                 }
 
@@ -1109,15 +1112,15 @@ bool __cdecl ScriptCompiler_StandardCompile(unsigned short count, const EncodePa
                 if (value < 0 || value >= 5)
                 {
                     FUN_005aea90(
-                        compiler,
+                        apCompileData,
                         "Invalid crime type '%s' for parameter %s.  Crime type must be a numeric value from 0-%d.\r\nCompiled script not saved!",
-                        &word7, parameters[index4].name, 4);
+                        &word7, apParameters[index4].name, 4);
                     return false;
                 }
 
-                char* output = line->cOutput;
-                *(unsigned short*)(output + line->m_uiValueAfterSecondBuffer) = (unsigned short)value;
-                line->m_uiValueAfterSecondBuffer += 2;
+                char* output = apScriptLine->cOutput;
+                *(unsigned short*)(output + apScriptLine->m_uiValueAfterSecondBuffer) = (unsigned short)value;
+                apScriptLine->m_uiValueAfterSecondBuffer += 2;
             }
             break;
 
@@ -1127,14 +1130,14 @@ bool __cdecl ScriptCompiler_StandardCompile(unsigned short count, const EncodePa
 
                 if (axis4Probe2 != 'X' && axis4Probe2 != 'Y' && axis4Probe2 != 'Z')
                 {
-                    FUN_005aea90(compiler, "Axis (X,Y,Z) required for parameter %s.\r\nCompiled script not saved!",
-                                 parameters[index4].name);
+                    FUN_005aea90(apCompileData, "Axis (X,Y,Z) required for parameter %s.\r\nCompiled script not saved!",
+                                 apParameters[index4].name);
                     return false;
                 }
 
-                char* output = line->cOutput;
-                output[line->m_uiValueAfterSecondBuffer] = axis4Probe2;
-                line->m_uiValueAfterSecondBuffer++;
+                char* output = apScriptLine->cOutput;
+                output[apScriptLine->m_uiValueAfterSecondBuffer] = axis4Probe2;
+                apScriptLine->m_uiValueAfterSecondBuffer++;
             }
             break;
 
@@ -1150,15 +1153,15 @@ bool __cdecl ScriptCompiler_StandardCompile(unsigned short count, const EncodePa
 
                 if (value == 2)
                 {
-                    FUN_005aea90(compiler,
+                    FUN_005aea90(apCompileData,
                                  "Sex (Male, Female) required for parameter %s.\r\nCompiled script not saved!",
-                                 parameters[index4].name);
+                                 apParameters[index4].name);
                     return false;
                 }
 
-                char* output = line->cOutput;
-                *(unsigned short*)(output + line->m_uiValueAfterSecondBuffer) = (unsigned short)value;
-                line->m_uiValueAfterSecondBuffer += 2;
+                char* output = apScriptLine->cOutput;
+                *(unsigned short*)(output + apScriptLine->m_uiValueAfterSecondBuffer) = (unsigned short)value;
+                apScriptLine->m_uiValueAfterSecondBuffer += 2;
             }
             break;
 
@@ -1179,15 +1182,15 @@ bool __cdecl ScriptCompiler_StandardCompile(unsigned short count, const EncodePa
 
                 if (value == 255)
                 {
-                    FUN_005aea90(compiler,
+                    FUN_005aea90(apCompileData,
                                  "Animation group \"%s\" not found for parameter %s.\r\nCompiled script not saved!",
-                                 &word7, parameters[index4].name);
+                                 &word7, apParameters[index4].name);
                     return false;
                 }
 
-                char* output = line->cOutput;
-                *(unsigned short*)(output + line->m_uiValueAfterSecondBuffer) = (unsigned short)value;
-                line->m_uiValueAfterSecondBuffer += 2;
+                char* output = apScriptLine->cOutput;
+                *(unsigned short*)(output + apScriptLine->m_uiValueAfterSecondBuffer) = (unsigned short)value;
+                apScriptLine->m_uiValueAfterSecondBuffer += 2;
             }
             break;
 
@@ -1206,27 +1209,27 @@ bool __cdecl ScriptCompiler_StandardCompile(unsigned short count, const EncodePa
 
                 if (!value)
                 {
-                    FUN_005aea90(compiler, "Form Type \"%s\" not found for parameter %s.\r\nCompiled script not saved!",
-                                 &word7, parameters[index4].name);
+                    FUN_005aea90(apCompileData, "Form Type \"%s\" not found for parameter %s.\r\nCompiled script not saved!",
+                                 &word7, apParameters[index4].name);
                     return false;
                 }
 
-                char* output = line->cOutput;
-                *(unsigned short*)(output + line->m_uiValueAfterSecondBuffer) = (unsigned short)value;
-                line->m_uiValueAfterSecondBuffer += 2;
+                char* output = apScriptLine->cOutput;
+                *(unsigned short*)(output + apScriptLine->m_uiValueAfterSecondBuffer) = (unsigned short)value;
+                apScriptLine->m_uiValueAfterSecondBuffer += 2;
             }
             break;
 
             default:
                 Warning_005b5e40("SCRIPTS: Param type '%d' unimplemented in ScriptCompiler::StandardCompile.",
-                             parameters[index4].type);
+                             apParameters[index4].type);
                 return false;
             }
     }
 
-    if (line->uiElapsedMilliseconds < line->uiSize)
+    if (apScriptLine->uiElapsedMilliseconds < apScriptLine->uiSize)
     {
-        FUN_005aea90(compiler, "Expected end of line.\r\nCompiled script not saved!", parameters[index4].name);
+        FUN_005aea90(apCompileData, "Expected end of line.\r\nCompiled script not saved!", apParameters[index4].name);
         return false;
     }
 

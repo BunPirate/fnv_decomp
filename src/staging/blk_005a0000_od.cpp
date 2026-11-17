@@ -32,11 +32,13 @@ struct FUN_005a3790Class
 // Sets result to 0.0, then to 1.0 if the reference's FUN_005a3790 check succeeds, and returns true.
 // @fnv 0x005a3760
 // src: XBOX_PDB 0x005a3760
-bool __cdecl Script_GetIgnoreFriendlyHitsConditionFunction(void* reference, void* b, void* c, double& result)
+// pdb: Script::GetIgnoreFriendlyHitsConditionFunction | TESConditionFunctions.obj | debug, upstream name already matches, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+bool __cdecl Script_GetIgnoreFriendlyHitsConditionFunction(void* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
-    result = 0.0;
-    if (((FUN_005a3790Class*)reference)->TESForm_GetIgnoreFriendlyHits())
-        result = 1.0;
+    afReturnValue = 0.0;
+    if (((FUN_005a3790Class*)apRefObject)->TESForm_GetIgnoreFriendlyHits())
+        afReturnValue = 1.0;
     return true;
 }
 
@@ -55,14 +57,14 @@ void FUN_005a7840_Class::ClearFlag(unsigned char bFlag)
 // @fnv 0x005a8040
 void TESRecipe::SetCategory(TESRecipeCategory* apCategory)
 {
-    pCategory = apCategory;
+    pRecipeCat = apCategory;
 }
 
 // @fnv 0x005a8080
 // src: GUESS 0x005a8080 (confidence: low)
 BSSimpleList<RecipeItem*>* TESRecipe::ComputeValue_005a8080()
 {
-    return reinterpret_cast<BSSimpleList<RecipeItem*>*>(&kIngredients);
+    return reinterpret_cast<BSSimpleList<RecipeItem*>*>(&ingredientlist);
 }
 
 extern unsigned char DAT_0118c684;
@@ -172,17 +174,19 @@ struct BSSimpleListBase
 
 struct FUN_005a7c00_class : public BSSimpleListBase
 {
-    char __thiscall TESRecipeComponent_Compare(BSSimpleListBase* other);
+    char __thiscall TESRecipeComponent_Compare(BSSimpleListBase* apCompare);
 };
 
 // Compares this list node's value and next pointer against another's, returning 1 if either differs, else 0.
 // @fnv 0x005a7c00
 // src: COMMUNITY 0x005a7c00
-char __thiscall FUN_005a7c00_class::TESRecipeComponent_Compare(BSSimpleListBase* other)
+// pdb: TESRecipeComponent::Compare | TESRecipe.obj | debug, upstream name already matches, high
+// pdb params: apCompare
+char __thiscall FUN_005a7c00_class::TESRecipeComponent_Compare(BSSimpleListBase* apCompare)
 {
-    if (reinterpret_cast<Flt*>(this)->operator unsigned int() != reinterpret_cast<Flt*>(other)->operator unsigned int())
+    if (reinterpret_cast<Flt*>(this)->operator unsigned int() != reinterpret_cast<Flt*>(apCompare)->operator unsigned int())
         return 1;
-    if (this->GetNext() != other->GetNext())
+    if (this->GetNext() != apCompare->GetNext())
         return 1;
     return 0;
 }
@@ -190,17 +194,20 @@ char __thiscall FUN_005a7c00_class::TESRecipeComponent_Compare(BSSimpleListBase*
 struct FUN_005a8e20_cls
 {
     int __thiscall ScriptLocals_GetActionObject(void* param, bool flag);
-    void __thiscall AttachScriptLocals(void* param);
-    char __thiscall ScriptLocals_CheckActionFlag(int param_2, int param_3);
+    void __thiscall AttachScriptLocals(void* apActionForm);
+    char __thiscall ScriptLocals_CheckActionFlag(int apActionForm, int aiFlag);
 };
 // @fnv 0x005a8ef0
 // src: COMMUNITY 0x005a8ef0
-char __thiscall FUN_005a8e20_cls::ScriptLocals_CheckActionFlag(int param_2, int param_3)
+// pdb: ScriptLocals::CheckActionFlag | TESScript.obj | retail, upstream name already matches, high
+// pdb params: apActionForm, aiFlag
+// pdb locals: action
+char __thiscall FUN_005a8e20_cls::ScriptLocals_CheckActionFlag(int apActionForm, int aiFlag)
 {
-    int result = ScriptLocals_GetActionObject((void*)param_2, false);
+    int result = ScriptLocals_GetActionObject((void*)apActionForm, false);
     if (!result)
-        AttachScriptLocals((void*)param_2);
-    else if (*(int*)((char*)result + 4) & param_3)
+        AttachScriptLocals((void*)apActionForm);
+    else if (*(int*)((char*)result + 4) & aiFlag)
         return 1;
     return 0;
 }
@@ -231,6 +238,7 @@ extern Flt g_011c786c;
 // Returns false if g_011c786c is null, otherwise returns whether its FUN_00453470 result is greater than zero.
 // @fnv 0x005bac20
 // src: COMMUNITY 0x005bac20
+// pdb: ScreenSplatter::IsActiveSplatter | Main.obj | debug, upstream name already matches, high
 bool __cdecl ScreenSplatter_IsActiveSplatter()
 {
     if ((unsigned int)g_011c786c == 0)
@@ -247,6 +255,7 @@ struct Flt
 extern Flt g_011c786c;
 // @fnv 0x005bac50
 // src: COMMUNITY 0x005bac50
+// pdb: ScreenSplatter::GetCurrentRoot | Main.obj | debug, call graph, medium
 unsigned int ScreenSplatter_GetRoot()
 {
     return g_011c786c;
@@ -257,6 +266,7 @@ extern NiPointer<NiNode> g_011dee84;
 
 // @fnv 0x005bac60
 // src: COMMUNITY 0x005bac60
+// pdb: Main::MenuRootNode | InterfaceManager.obj | debug, call graph, medium
 NiNode* TESMain_GetMenuRoot()
 {
     return g_011dee84.operator->();
@@ -269,6 +279,7 @@ struct GlobalObject_00633c90
 extern GlobalObject_00633c90 g_011deca4;
 // @fnv 0x005bac70
 // src: COMMUNITY 0x005bac70
+// pdb: Main::MenuRootNode3D | InterfaceManager.obj | debug, call graph, medium
 void* TESMain_Get3DMenuRoot()
 {
     return g_011deca4.operator->();
@@ -308,6 +319,7 @@ struct FUN_00402d00
 };
 // Constructs the object and calls FUN_004f15a0 with 0x6a.
 // @fnv 0x005a7c50
+// pdb: TESRecipe::TESRecipe | TESRecipe.obj | retail, upstream name already matches, high
 TESRecipe::TESRecipe()
 {
     FUN_004f15a0(0x6a);
@@ -348,6 +360,7 @@ struct FUN_005a77b0 : FUN_00483370, FUN_00402d00
 };
 // Constructor that calls FUN_004f15a0 with 0x6b and ClearFlag with 1 on this object.
 // @fnv 0x005a77b0
+// pdb: TESRecipeCategory::TESRecipeCategory | TESRecipe.obj | retail, call graph, medium
 FUN_005a77b0::FUN_005a77b0()
 {
     ((TESRecipe*)this)->FUN_004f15a0(0x6b);
@@ -360,6 +373,7 @@ struct FUN_005a78a0 : FUN_00483370, FUN_00402d00
     virtual ~FUN_005a78a0();
 };
 // @fnv 0x005a78a0
+// pdb: TESRecipeCategory::~TESRecipeCategory | TESRecipe.obj | debug, object-file gap fill, medium
 FUN_005a78a0::~FUN_005a78a0()
 {}
 
@@ -392,6 +406,7 @@ struct FUN_005a7a90_shell
 
 // @fnv 0x005a7a90
 // src: COMMUNITY 0x005a7a90
+// pdb: TESRecipeCategory::Save | TESRecipe.obj | retail, vtable slot, high
 void FUN_005a7a90_shell::TESRecipeCategory_SaveAlt()
 {
     ((TESForm*)this)->BeginFormRecord();
@@ -435,17 +450,20 @@ struct FUN_005a7b00_Class
     unsigned int unk20;
     unsigned int m_24;
     void TESForm_CopyAllComponents(unsigned int id);
-    void InitializeFromRecord(unsigned int id);
+    void InitializeFromRecord(unsigned int apCopy);
 };
 // Looks up a record by id, copies its m_24 field into this object's m_24, then calls FUN_004851b0 with the id.
 // @fnv 0x005a7b00
-void FUN_005a7b00_Class::InitializeFromRecord(unsigned int id)
+// pdb: TESRecipeCategory::Copy | TESRecipe.obj | retail, vtable slot, high
+// pdb params: apCopy
+// pdb locals: pmisc
+void FUN_005a7b00_Class::InitializeFromRecord(unsigned int apCopy)
 {
-    FUN_005a7b00_Record* record = FUN_00ec43fb(id, 0, &DAT_01183028, &DAT_01186490, 0);
+    FUN_005a7b00_Record* record = FUN_00ec43fb(apCopy, 0, &DAT_01183028, &DAT_01186490, 0);
     if (record == 0)
         return;
     FUN_00401460(&m_24, &record->m_24, 1);
-    TESForm_CopyAllComponents(id);
+    TESForm_CopyAllComponents(apCopy);
 }
 
 namespace fnv_005a8660 {
@@ -470,7 +488,7 @@ struct CopyList
 };
 struct CopyString
 {
-    void CopyConditions(CopyString*, int);
+    void Copy(CopyString*, int);
 };
 struct CopyForm
 {
@@ -493,14 +511,17 @@ void* __cdecl FUN_00ec43fb(void*, int, void*, void*, int);
 void* __cdecl memcpy(void*, const void*, unsigned int);
 // Copies data from the form returned by FUN_00ec43fb into this form, cloning its two node lists and copying several fields.
 // @fnv 0x005a8660
-void CopyForm::CopyFrom(void* apSource)
+// pdb: TESRecipe::Copy | TESRecipe.obj | retail, vtable slot, high
+// pdb params: apCopy
+// pdb locals: plist, pmisc, pComp, pNew
+void CopyForm::CopyFrom(void* apCopy)
 {
-    CopyForm* source3 = (CopyForm*)FUN_00ec43fb(apSource, 0, &DAT_01183028, &DAT_011864b0, 0);
+    CopyForm* source3 = (CopyForm*)FUN_00ec43fb(apCopy, 0, &DAT_01183028, &DAT_011864b0, 0);
     if (!source3)
         return;
-    NiAVObject_GetRotate_006a9540()->CopyConditions(source3->NiAVObject_GetRotate_006a9540(), 0);
+    NiAVObject_GetRotate_006a9540()->Copy(source3->NiAVObject_GetRotate_006a9540(), 0);
     memcpy(data + 0x24, source3->data + 0x24, 0x10);
-    TESForm_CopyAllComponents(apSource);
+    TESForm_CopyAllComponents(apCopy);
     while (!ComputeValue_005a8080()->FUN_008256d0())
         ComputeValue_005a8080()->FUN_0063f7b0();
     CopyList* iter = source3->ComputeValue_005a8080();
@@ -565,9 +586,12 @@ struct SubChallenge
 };
 // Resolves input to a SubChallenge and returns true if any field, string, list size or list element differs from this object's, false if all match.
 // @fnv 0x005a8910
-bool SubChallenge::IsNotEqual(void* input)
+// pdb: TESRecipe::Compare | TESRecipe.obj | retail, vtable slot, high
+// pdb params: apCompare
+// pdb locals: pcomp, copyoutput, output, ingredients, copyingredients, pRecipeComponent, pRecipeComponentCopy
+bool SubChallenge::IsNotEqual(void* apCompare)
 {
-    SubChallenge* other = (SubChallenge*)FUN_00ec43fb(input, 0, &DAT_01183028, &DAT_011864b0, 0);
+    SubChallenge* other = (SubChallenge*)FUN_00ec43fb(apCompare, 0, &DAT_01183028, &DAT_011864b0, 0);
     if (!other)
         return true;
     if (GetField54() != other->GetField54())
@@ -631,7 +655,7 @@ class FUN_008ad910_ref
 class FUN_005e79a0_t
 {
   public:
-    bool TESForm_CompareAllComponents(TESForm* pkForm);
+    bool TESForm_CompareAllComponents(TESForm* apCompare);
 };
 
 class FUN_005a7b60_cls
@@ -640,15 +664,18 @@ class FUN_005a7b60_cls
     int unk00, unk04, unk08, unk0C, unk10, unk14, unk18, unk1C, unk20;
     unsigned char m_data;
 
-    bool TESRecipeCategory_Compare(TESForm* pkForm);
+    bool TESRecipeCategory_Compare(TESForm* apCompare);
 };
 
 // Returns true if pkForm is not a TESRecipeCategory, its first data byte differs from m_data, or FUN_00485270 returns true; otherwise false.
 // @fnv 0x005a7b60
 // src: XBOX_PDB 0x005a7b60
-bool FUN_005a7b60_cls::TESRecipeCategory_Compare(TESForm* pkForm)
+// pdb: TESRecipeCategory::Compare | TESRecipe.obj | retail, upstream name already matches, high
+// pdb params: apCompare
+// pdb locals: pcomp
+bool FUN_005a7b60_cls::TESRecipeCategory_Compare(TESForm* apCompare)
 {
-    TESRecipeCategory* pkCategory = dynamic_cast<TESRecipeCategory*>(pkForm);
+    TESRecipeCategory* pkCategory = dynamic_cast<TESRecipeCategory*>(apCompare);
     if (!pkCategory)
         return true;
     if (memcmp(&m_data, reinterpret_cast<FUN_008ad910_ref*>(pkCategory)->GetData(), 1))
@@ -666,6 +693,7 @@ struct DeletingObject
 };
 // Calls FUN_005a7d40, then frees this via operator delete when the low bit of flags is set, and returns this.
 // @fnv 0x005a7d10
+// pdb: TESRecipe::`scalar deleting destructor' | TESRecipe.obj | retail, vtable slot, high
 void* DeletingObject::Destroy(unsigned int flags)
 {
     FUN_005a7d40();
@@ -685,7 +713,7 @@ struct RecipeItemProcessor
 {
     unsigned int unk00;
     unsigned int unk04;
-    void ProcessItems();
+    void Save();
 };
 struct RecipeData
 {
@@ -699,18 +727,20 @@ void TESForm_AddChunk_00485910(unsigned int type, unsigned int value);
 // Stores category and subcategory form IDs, then calls FUN_00485910 with the form ID and count of each ingredient and each output item.
 // @fnv 0x005a8490
 // src: COMMUNITY 0x005a8490
+// pdb: TESRecipe::Save | TESRecipe.obj | retail, vtable slot, high
+// pdb locals: pComponent, pCompList
 void TESRecipe::SaveAlt_005a8490()
 {
     BeginFormRecord();
     TESFullName::Save_00487010();
-    NiAVObject_GetRotate_006a9540()->ProcessItems();
+    NiAVObject_GetRotate_006a9540()->Save();
     FUN_00430830()->category = reinterpret_cast<TESForm*>(GetField54() ? GetField54()->GetFormID() : 0);
     FUN_00430830()->subcategory = reinterpret_cast<TESForm*>(FUN_006286d0() ? FUN_006286d0()->GetFormID() : 0);
     if (TESForm_QEndianSwapOnSave())
-        reinterpret_cast<RecipeData*>(&kData)->SCRIPT_HEADER_Endian();
-    TESForm___SaveData(&kData, 16);
+        reinterpret_cast<RecipeData*>(&data)->SCRIPT_HEADER_Endian();
+    TESForm___SaveData(&data, 16);
     if (TESForm_QEndianSwapOnSave())
-        reinterpret_cast<RecipeData*>(&kData)->SCRIPT_HEADER_Endian();
+        reinterpret_cast<RecipeData*>(&data)->SCRIPT_HEADER_Endian();
     BSSimpleList<RecipeItem*>* iter = ComputeValue_005a8080();
     RecipeItem* item = 0;
     while (iter && iter->GetItem())
@@ -738,6 +768,7 @@ struct FUN_005a7870_cls
 };
 
 // @fnv 0x005a7870
+// pdb: TESRecipeCategory::`scalar deleting destructor' | TESRecipe.obj | retail, vtable slot, high
 FUN_005a7870_cls::~FUN_005a7870_cls()
 {}
 

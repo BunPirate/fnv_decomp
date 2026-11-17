@@ -27,38 +27,42 @@
 int __fastcall GetNextKey(hkpShapeContainer* self, void*, int key)
 {
     ++key;
-    if (key >= reinterpret_cast<hkpConvexListShape*>(reinterpret_cast<char*>(self) - sizeof(hkpConvexShape))->m_kChildShapes.m_iElementCount)
+    if (key >= reinterpret_cast<hkpConvexListShape*>(reinterpret_cast<char*>(self) - sizeof(hkpConvexShape))->m_childShapes.m_iElementCount)
         key = -1;
     return key;
 }
 
 // Iterates the objects in the array at offset 0x44 up to the count at 0x48, calling each object's virtual method at vtable offset 0x2c and summing the results.
 // @fnv 0x00d5e190
+// pdb: hkpConvexListShape::getNumCollisionSpheresImpl | hkpConvexListShape.obj | retail, vtable slot, high
 int __fastcall SumVirtualResults(hkpConvexListShape* self)
 {
     int iTotal = 0;
     int i = 0;
-    if (self->m_kChildShapes.m_iElementCount > 0)
+    if (self->m_childShapes.m_iElementCount > 0)
     {
         do
         {
-            hkpConvexShape* shape = self->m_kChildShapes.m_data[i];
+            hkpConvexShape* shape = self->m_childShapes.m_data[i];
             iTotal += shape->GetNumCollisionSpheres();
             i++;
-        } while (i < self->m_kChildShapes.m_iElementCount);
+        } while (i < self->m_childShapes.m_iElementCount);
     }
     return iTotal;
 }
 
 // @fnv 0x00d5e2f0
 // src: HAVOK_LIB 0x00d5e2f0
+// pdb: hkpConvexListShape::getChildShape | hkpConvexListShape.obj | debug, upstream name already matches, high
+// pdb params: key, buffer
 const hkpShape* __fastcall hkpConvexListShape_getChildShape(hkpShapeContainer* self, int edx, int key, int pad)
 {
-    return reinterpret_cast<hkpConvexListShape*>(reinterpret_cast<char*>(self) - sizeof(hkpConvexShape))->m_kChildShapes.m_data[key];
+    return reinterpret_cast<hkpConvexListShape*>(reinterpret_cast<char*>(self) - sizeof(hkpConvexShape))->m_childShapes.m_data[key];
 }
 
 // Calls the convex-list destructor and optionally releases its allocation using m_usMemSizeAndFlags.
 // @fnv 0x00d5e850
+// pdb: hkpConvexListShape::`scalar deleting destructor' | hkpConvexListShape.obj | retail, vtable slot, high
 hkReferencedObject* __fastcall DestroyConvexListShape(hkReferencedObject* self, void*, int flags)
 {
     static_cast<hkpConvexListShape*>(self)->hkpConvexListShape::~hkpConvexListShape();
@@ -66,7 +70,7 @@ hkReferencedObject* __fastcall DestroyConvexListShape(hkReferencedObject* self, 
     if (flags & 1)
     {
         hkMemoryRouter& router = hkMemoryRouter::getInstance();
-        router.m_heap->blockFree(self, self->m_usMemSizeAndFlags);
+        router.m_heap->blockFree(self, self->m_memSizeAndFlags);
     }
 
     return self;
@@ -87,25 +91,32 @@ int __cdecl hkpConvexListShape_ReturnZero()
 
 // @fnv 0x00d5e0e0
 // src: GUESS 0x00d5e0e0 (confidence: high)
+// pdb: hkpConvexListShape::getCollisionFilterInfo | hkpConvexListShape.obj | debug, vtable slot, medium
+// pdb params: key
+// pdb locals: assertBuf, ostr
 int __stdcall Object_ReturnZero_00d5e0e0(int)
 {
     return 0;
 }
 
 // @fnv 0x00d5e180
+// pdb: hkpConvexListShape::getFirstVertex | hkpConvexListShape.obj | debug, vtable slot, medium
+// pdb params: v
 void __fastcall GetConvexListFirstVertex(hkpConvexListShape* self, void*, hkVector4& vertex)
 {
-    self->m_kChildShapes.m_data[0]->GetFirstVertex(vertex);
+    self->m_childShapes.m_data[0]->GetFirstVertex(vertex);
 }
 
 // Writes each element's data into destination, advancing the cursor by each element's element count times 16 bytes.
 // @fnv 0x00d5e1c0
+// pdb: hkpConvexListShape::getCollisionSpheresImpl | hkpConvexListShape.obj | retail, vtable slot, high
+// pdb params: sphereBuffer
 void* __fastcall WriteToBuffer(hkpConvexListShape* self, void*, void* destination)
 {
     char* cursor = (char*)destination;
-    for (int i = 0; i < self->m_kChildShapes.m_iElementCount; ++i)
+    for (int i = 0; i < self->m_childShapes.m_iElementCount; ++i)
     {
-        hkpConvexShape* element = self->m_kChildShapes.m_data[i];
+        hkpConvexShape* element = self->m_childShapes.m_data[i];
         element->GetCollisionSpheres(reinterpret_cast<hkSphere*>(cursor));
         cursor += element->GetNumCollisionSpheres() * 16;
     }
@@ -115,35 +126,42 @@ void* __fastcall WriteToBuffer(hkpConvexListShape* self, void*, void* destinatio
 // @fnv 0x00d5e2d0
 int __fastcall GetConvexListChildCount(hkpShapeContainer* self)
 {
-    return reinterpret_cast<hkpConvexListShape*>(reinterpret_cast<char*>(self) - sizeof(hkpConvexShape))->m_kChildShapes.m_iElementCount;
+    return reinterpret_cast<hkpConvexListShape*>(reinterpret_cast<char*>(self) - sizeof(hkpConvexShape))->m_childShapes.m_iElementCount;
 }
 
 // @fnv 0x00d5e6e0
-void hkpConvexListShape::SetChildren(hkpConvexShape** children, int numChildren) throw()
+// src: XBOX_RETAIL_PDB 0x00d5e6e0
+// pdb: hkpConvexListShape::setShapesAndRadius | hkpConvexListShape.obj | retail, object-file gap fill, high
+// pdb params: shapeArray, numShapes
+// pdb locals: assertBuf, ostr
+void hkpConvexListShape::setShapesAndRadius(hkpConvexShape** shapeArray, int numShapes) throw()
 {
-    hkArray<hkpConvexShape*>* pChildrenArray = &m_kChildShapes;
+    hkArray<hkpConvexShape*>* pChildrenArray = &m_childShapes;
     hkMemoryRouter& router = hkMemoryRouter::getInstance();
     hkMemoryAllocator& allocator = *router.m_heap;
     int iCapacity = pChildrenArray->m_iCapacityState & 0x3fffffff;
-    if (iCapacity < numChildren)
+    if (iCapacity < numShapes)
     {
         iCapacity *= 2;
-        if (numChildren >= iCapacity)
+        if (numShapes >= iCapacity)
         {
-            iCapacity = numChildren;
+            iCapacity = numShapes;
         }
         hkArrayUtil::_reserve(allocator, pChildrenArray, iCapacity, sizeof(hkpConvexShape*));
     }
-    pChildrenArray->m_iElementCount = numChildren;
-    m_fSphereRadius = children[0]->m_fSphereRadius;
-    for (int i = 0; i < numChildren; i++)
+    pChildrenArray->m_iElementCount = numShapes;
+    m_radius = shapeArray[0]->m_radius;
+    for (int i = 0; i < numShapes; i++)
     {
-        pChildrenArray->m_data[i] = children[i];
-        children[i]->addReference();
+        pChildrenArray->m_data[i] = shapeArray[i];
+        shapeArray[i]->addReference();
     }
 }
 
 // @fnv 0x00d5e100
+// pdb: hkpConvexListShape::convertVertexIdsToVerticesImpl | hkpConvexListShape.obj | retail, vtable slot, high
+// pdb params: ids, numIds, verticesOut
+// pdb locals: id
 void __fastcall GetChildData(hkpConvexListShape* self, void*, const unsigned short* keys, int numKeys, hkVector4q* out)
 {
     for (int i = 0; i < numKeys; i++)
@@ -151,7 +169,7 @@ void __fastcall GetChildData(hkpConvexListShape* self, void*, const unsigned sho
         int key = keys[0];
         int childIdx = (unsigned short)key >> 8;
         int childKey = key & 0xff;
-        self->m_kChildShapes.m_data[childIdx]->GetVerticesFromIds(reinterpret_cast<const hkpVertexId*>(&childKey), 1,
+        self->m_childShapes.m_data[childIdx]->GetVerticesFromIds(reinterpret_cast<const hkpVertexId*>(&childKey), 1,
                                                    reinterpret_cast<Vector4WithInt24W*>(out));
         out->m_vComponents.m128_u32[3] = ((out->m_vComponents.m128_u32[3] & 0xc0ffffff) + ((unsigned int)childIdx << 8)) | 0x3f000000;
         keys++;
@@ -241,30 +259,34 @@ extern hkTransform DAT_01268370;
 
 // Stores bUseCachedAabb and, when true, computes m_kAabbCenter and m_kAabbHalfExtents from the union of child shape AABBs.
 // @fnv 0x00d5e210
-void hkpConvexListShape::UpdateCachedAabb(bool bUseCachedAabb) throw()
+// src: XBOX_RETAIL_PDB 0x00d5e210
+// pdb: hkpConvexListShape::setUseCachedAabb | hkpConvexListShape.obj | retail, call graph, high
+// pdb params: useCachedAabb
+// pdb locals: aabb, localAabb
+void hkpConvexListShape::setUseCachedAabb(bool useCachedAabb) throw()
 {
-    m_bUseCachedAabb = bUseCachedAabb;
-    if (bUseCachedAabb)
+    m_useCachedAabb = useCachedAabb;
+    if (useCachedAabb)
     {
         hkAabb kAabb;
         kAabb.m_kMinimumCorner.m_vComponents = _mm_load_ps1(&DAT_0104da48);
         kAabb.m_kMaximumCorner.m_vComponents = _mm_load_ps1(&DAT_0104e148);
-        for (int i = 0; i < m_kChildShapes.GetLogicalSize(); i++)
+        for (int i = 0; i < m_childShapes.GetLogicalSize(); i++)
         {
             hkAabb kChildAabb;
-            m_kChildShapes[i]->CalculateAabb(DAT_01268370, 0.0f, kChildAabb);
+            m_childShapes[i]->CalculateAabb(DAT_01268370, 0.0f, kChildAabb);
             includeAabb(kAabb, kChildAabb);
         }
         hkVector4q kTargetCenter;
         kTargetCenter.setAdd4(reinterpret_cast<const hkVector4q&>(kAabb.m_kMinimumCorner),
                               reinterpret_cast<const hkVector4q&>(kAabb.m_kMaximumCorner));
         kTargetCenter.m_vComponents = _mm_mul_ps(kTargetCenter.m_vComponents, DAT_010c71d0);
-        m_kAabbCenter.m_vComponents = kTargetCenter.m_vComponents;
+        m_aabbCenter.m_vComponents = kTargetCenter.m_vComponents;
         hkVector4q m_kPoint2;
         m_kPoint2.setSub4(reinterpret_cast<const hkVector4q&>(kAabb.m_kMaximumCorner),
                          reinterpret_cast<const hkVector4q&>(kAabb.m_kMinimumCorner));
         m_kPoint2.m_vComponents = _mm_mul_ps(m_kPoint2.m_vComponents, DAT_010c71d0);
-        m_kAabbHalfExtents.m_vComponents = m_kPoint2.m_vComponents;
+        m_aabbHalfExtents.m_vComponents = m_kPoint2.m_vComponents;
     }
 }
 
@@ -275,20 +297,23 @@ void __cdecl hkAabbUtil_calcAabb_00d26230(const hkTransform& kLocalToWorld, cons
 
 // Computes the world-space AABB of a convex list shape, using cached extents when available or merging child shape AABBs otherwise.
 // @fnv 0x00d5e3c0
+// pdb: hkpConvexListShape::getAabbImpl | hkpConvexListShape.obj | retail, vtable slot, high
+// pdb params: localToWorld, tolerance, out
+// pdb locals: t
 void __fastcall CalculateConvexListAabb(const hkpConvexListShape* self, void*,
                                           const hkTransform& kLocalToWorld, float fTolerance, hkAabb& kOut)
 {
-    if (self->m_bUseCachedAabb)
+    if (self->m_useCachedAabb)
     {
-        hkAabbUtil_calcAabb_00d26230(kLocalToWorld, self->m_kAabbHalfExtents, self->m_kAabbCenter, self->m_fSphereRadius + fTolerance, kOut);
+        hkAabbUtil_calcAabb_00d26230(kLocalToWorld, self->m_aabbHalfExtents, self->m_aabbCenter, self->m_radius + fTolerance, kOut);
         return;
     }
 
-    self->m_kChildShapes[0]->CalculateAabb(kLocalToWorld, fTolerance, kOut);
+    self->m_childShapes[0]->CalculateAabb(kLocalToWorld, fTolerance, kOut);
     hkAabb kTemp;
-    for (int i = 1; i < self->m_kChildShapes.GetLogicalSize(); i++)
+    for (int i = 1; i < self->m_childShapes.GetLogicalSize(); i++)
     {
-        self->m_kChildShapes[i]->CalculateAabb(kLocalToWorld, fTolerance, kTemp);
+        self->m_childShapes[i]->CalculateAabb(kLocalToWorld, fTolerance, kTemp);
         includeAabb(kOut, kTemp);
     }
 }
@@ -298,24 +323,27 @@ void __fastcall CalculateConvexListAabb(const hkpConvexListShape* self, void*,
 template <typename ENUM, typename STORAGE>
 inline hkEnum<ENUM, STORAGE>::hkEnum() {}
 
-inline hkpShape::hkpShape(hkpShapeType type) : m_ulUserData(0)
+inline hkpShape::hkpShape(hkpShapeType type) : m_userData(0)
 {
     *reinterpret_cast<hkUint32*>(&m_type) = type;
 }
 inline hkpConvexShape::hkpConvexShape(int type, float radius)
     : hkpShape(static_cast<hkpShapeType>(type))
 {
-    m_fSphereRadius = radius;
+    m_radius = radius;
 }
 inline hkpShapeContainer::~hkpShapeContainer() {}
 
 // @fnv 0x00d5e750
-hkpConvexListShape::hkpConvexListShape(hkpConvexShape** children, int numChildren) throw()
+// pdb: hkpConvexListShape::hkpConvexListShape | hkpConvexListShape.obj | retail, upstream name already matches, high
+// pdb params: shapeArray, numShapes
+// pdb locals: assertBuf, ostr
+hkpConvexListShape::hkpConvexListShape(hkpConvexShape** shapeArray, int numShapes) throw()
     : hkpConvexShape(0x16, 0.0f)
 {
     m_fMaximumRadius = 1.0f;
-    SetChildren(children, numChildren);
-    UpdateCachedAabb(true);
+    setShapesAndRadius(shapeArray, numShapes);
+    setUseCachedAabb(true);
 }
 
 
@@ -341,11 +369,12 @@ __forceinline hkArray<T, Allocator>::~hkArray()
 }
 
 // @fnv 0x00d5e7c0
+// pdb: hkpConvexListShape::~hkpConvexListShape | hkpConvexListShape.obj | retail, upstream name already matches, high
 hkpConvexListShape::~hkpConvexListShape() throw()
 {
-    for (int i = 0; i < m_kChildShapes.GetLogicalSize(); i++)
+    for (int i = 0; i < m_childShapes.GetLogicalSize(); i++)
     {
-        m_kChildShapes.m_data[i]->removeReference();
+        m_childShapes.m_data[i]->removeReference();
     }
 }
 
@@ -355,27 +384,29 @@ extern const char str_010cc3a4[];
 
 // @fnv 0x00d5e480
 // src: HAVOK_LIB 0x00d5e480
-void hkpConvexListShape::calcContentStatistics_00d5e480(hkStatisticsCollector* visitor, int)
+// pdb: hkpConvexListShape::calcContentStatistics | hkpConvexListShape.obj | retail, string-set bridge, high
+// pdb params: collector, cls
+void hkpConvexListShape::calcContentStatistics_00d5e480(hkStatisticsCollector* collector, int)
 {
-    const int& capacity = m_kChildShapes.m_iCapacityState;
-    if (!(capacity & 0x80000000) || visitor->m_reportInplaceAllocations != 0)
+    const int& capacity = m_childShapes.m_iCapacityState;
+    if (!(capacity & 0x80000000) || collector->m_includeUnmanagedArrayMemory != 0)
     {
-        hkpConvexShape** childArray = m_kChildShapes.m_data;
+        hkpConvexShape** childArray = m_childShapes.m_data;
         int allocationSize = (capacity & 0x3fffffff) * 4;
         int allocated = _FUN_00d06f80(childArray, allocationSize);
-        visitor->AddMemoryChunk(3, str_010cc3a4, m_kChildShapes.m_data, m_kChildShapes.m_iElementCount * 4, allocated);
+        collector->AddMemoryChunk(3, str_010cc3a4, m_childShapes.m_data, m_childShapes.m_iElementCount * 4, allocated);
     }
 
     {
         int index = 0;
-        while (index < m_kChildShapes.m_iElementCount)
+        while (index < m_childShapes.m_iElementCount)
         {
-            visitor->beginObject(0, reinterpret_cast<const hkClass*>(m_kChildShapes.m_data[index]), 0);
+            collector->beginObject(0, reinterpret_cast<const hkClass*>(m_childShapes.m_data[index]), 0);
             ++index;
         }
     }
 
-    hkReferencedObject_calcContentStatistics(visitor, &DAT_01268940);
+    hkReferencedObject_calcContentStatistics(collector, &DAT_01268940);
 }
 
 
@@ -423,6 +454,9 @@ struct __declspec(align(16)) Buf
 // Recursively searches coll children for a match, records the selected id in st->slots, and sets *result to whether one was found.
 // @fnv 0x00d5e500
 // src: HAVOK_LIB 0x00d5e500
+// pdb: hkpConvexListShape::castRayImpl | hkpConvexListShape.obj | retail, string-set bridge, high
+// pdb params: input, results
+// pdb locals: shapeBuffer
 bool* Node::hkpConvexListShape_castRayImpl(bool* __restrict result, void* other, State* st)
 {
     Buf buf;
@@ -505,17 +539,20 @@ struct hkpRayHitCollector;
 inline hkpCdBody::hkpCdBody(const hkpCdBody* parent)
 {
     m_parent = parent;
-    m_pMotionState = parent->m_pMotionState;
+    m_motion = parent->m_motion;
 }
 
 inline void hkpCdBody::SetCollisionShapeAndKey(const hkpShape* shape, hkUint32 key)
 {
-    m_pCollisionShape = shape;
-    m_uiCollisionShapeKey = key;
+    m_shape = shape;
+    m_shapeKey = key;
 }
 
 // Iterates child shape keys, builds a child hkpCdBody for each, and calls castRayWithCollector on every child shape.
 // @fnv 0x00d5e600
+// pdb: hkpConvexListShape::castRayWithCollectorImpl | hkpConvexListShape.obj | retail, vtable slot, high
+// pdb params: input, cdBody, collector
+// pdb locals: shapeBuffer, assertBuf, ostr, childBody
 void __fastcall CastConvexListRayWithCollector(const hkpConvexListShape* self, void*,
                                       const ShapeRayCastQuery& input, const hkpCdBody& cdBody, hkpRayHitCollector& collector)
 {
@@ -582,15 +619,18 @@ Derived::Derived()
 
 // Finds the child convex shape with the maximum dot product against direction, sets supportingVertex, and encodes the child index into the vertex's w component.
 // @fnv 0x00d5e300
+// pdb: hkpConvexListShape::getSupportingVertexImpl | hkpConvexListShape.obj | retail, vtable slot, high
+// pdb params: dir, supportingVertexOut
+// pdb locals: support, assertBuf, ostr
 void __fastcall GetConvexListSupportVertex(const hkpConvexListShape* self, void*,
                                                  const hkVector4q& direction, hkVector4q& supportingVertex)
 {
     hkReal maxDot = DAT_0104e148;
     int subShape = 0;
-    for (int i = 0; i < self->m_kChildShapes.m_iElementCount; i++)
+    for (int i = 0; i < self->m_childShapes.m_iElementCount; i++)
     {
         hkVector4q support;
-        const hkpConvexShape* shape = self->m_kChildShapes.m_data[i];
+        const hkpConvexShape* shape = self->m_childShapes.m_data[i];
         shape->GetSupportVertex(reinterpret_cast<const hkVector4&>(direction),
                                 reinterpret_cast<Vector4WithInt24W&>(support));
         hkReal dot = support.dot3(direction);

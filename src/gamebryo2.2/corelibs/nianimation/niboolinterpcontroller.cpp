@@ -12,11 +12,13 @@
 NiBlendInterpolator* __fastcall ConstructBlendInterpolator(NiBlendInterpolator*, int, int, float, int);
 // @fnv 0x00a57750
 // src: XBOX_PDB 0x00a57750
-NiBlendInterpolator* __stdcall NiBoolInterpController_CreateBlendInterpolator(int aiUnused, int aiArg, int aiUnused2, float a4, int a5)
+// pdb: NiBoolInterpController::CreateBlendInterpolator | NiBoolInterpController.obj | debug, upstream name already matches, high
+// pdb params: usIndex, bManagerControlled, bAccumulateAnimations, fWeightThreshold, ucArraySize
+NiBlendInterpolator* __stdcall NiBoolInterpController_CreateBlendInterpolator(int usIndex, int bManagerControlled, int bAccumulateAnimations, float fWeightThreshold, int ucArraySize)
 {
     void* pMemory = NiMemObject::operator new(0x34);
     if (pMemory)
-        return ConstructBlendInterpolator((NiBlendInterpolator*)pMemory, aiArg, aiArg, a4, a5);
+        return ConstructBlendInterpolator((NiBlendInterpolator*)pMemory, bManagerControlled, bManagerControlled, fWeightThreshold, ucArraySize);
     return 0;
 }
 
@@ -26,20 +28,25 @@ char* __cdecl NiViewerStrings_NiGetViewerString_Title(const char*);
 // Appends the string returned by FUN_00a7d330(g_011f3f08_arg1) to the StrArr at index e, growing it by the value at offset 14 plus e when e >= c.
 // @fnv 0x00a57800
 // src: XBOX_PDB 0x00a57800
-void __stdcall NiBoolInterpController_GetViewerStrings(StrArr* apStrings)
+// pdb: NiBoolInterpController::GetViewerStrings | NiBoolInterpController.obj | retail, upstream name already matches, high
+// pdb params: pkStrings
+void __stdcall NiBoolInterpController_GetViewerStrings(StrArr* pkStrings)
 {
-    FUN_00a390a0(apStrings);
+    FUN_00a390a0(pkStrings);
     char* pString = NiViewerStrings_NiGetViewerString_Title(g_011f3f08_arg1);
-    unsigned int e = apStrings->m_usSize;
-    unsigned int c = apStrings->m_usMaxSize;
+    unsigned int e = pkStrings->m_usSize;
+    unsigned int c = pkStrings->m_usMaxSize;
     if (e >= c)
-        apStrings->SetSize(apStrings->m_usGrowBy + e);
-    apStrings->SetAt(e, pString);
+        pkStrings->SetSize(pkStrings->m_usGrowBy + e);
+    pkStrings->SetAt(e, pString);
 }
 
 extern unsigned int DAT_011f404c;
 // Casts pkInterp to a NiBoolInterpolator, reads the pose value and passes it to the interpolator's setter.
 // @fnv 0x00a577c0
+// pdb: NiBoolInterpController::SynchronizePoseInterpolator | NiBoolInterpController.obj | retail, object-file run extension, low
+// pdb params: pkInterp, usIndex
+// pdb locals: bValue, pkBoolInterp
 void NiBoolInterpController::SetBoolInterpolatorValue(NiInterpolator* pkInterp, unsigned short usIndex)
 {
     bool bPoseValue;
@@ -49,10 +56,11 @@ void NiBoolInterpController::SetBoolInterpolatorValue(NiInterpolator* pkInterp, 
     else
         pkBoolInterp = (NiBoolInterpolator*)pkInterp->DynamicCast((const NiRTTI*)&DAT_011f404c);
     GetPoseValue(bPoseValue);
-    pkBoolInterp->SetBoolValue(bPoseValue);
+    pkBoolInterp->SetPoseValue(bPoseValue);
 }
 
 // @fnv 0x00a57710
+// pdb: NiFloatInterpController::`scalar deleting destructor' | NiFloatInterpController.obj | debug, object-file run extension, low
 NiInterpolator* NiBoolInterpController::GetInterpolatorAtIndex(unsigned short usIndex)
 {
     bool bPoseValue;
@@ -61,7 +69,9 @@ NiInterpolator* NiBoolInterpController::GetInterpolatorAtIndex(unsigned short us
 }
 
 // @fnv 0x00a57c10
-bool NiBoolInterpController::IsEqual(NiObject* object) const
+// pdb: NiBoolInterpController::IsEqual | NiBoolInterpController.obj | debug, upstream name already matches, high
+// pdb params: pkObject
+bool NiBoolInterpController::IsEqual(NiObject* pkObject) const
 {
-    return NiSingleInterpController::IsEqual(object);
+    return NiSingleInterpController::IsEqual(pkObject);
 }

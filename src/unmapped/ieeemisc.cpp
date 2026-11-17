@@ -4,11 +4,14 @@
 int FUN_00ec75b1(double value);
 int FUN_00ec7595(double value);
 double FUN_00ec6cde(double value);
-void ReportAssertionViolation(const char* file, int line);
+void ReportAssertionViolation(const char* fname, int line);
 extern float DAT_01016970;
 extern float DAT_01015f5c;
 // @fnv 0x00ac79e0
 // src: GUESS 0x00ac79e0 (confidence: low)
+// pdb: fr2AddSaturated<float> | algs.obj | debug, object-file run extension, low
+// pdb params: val1, val2
+// pdb locals: r
 float Object_ProcessAndReturnValue_00ac79e0(float a, float b)
 {
     float fSum;

@@ -34,6 +34,7 @@ struct FUN_00e05140_Class
 };
 // @fnv 0x00e05140
 // src: XBOX_PDB 0x00e05140
+// pdb: hkPackfileData::getContentsTypeName | hkPackfileData.obj | debug, upstream name already matches, high
 unsigned long FUN_00e05140_Class::hkPackfileData_getContentsTypeName()
 {
     if (m_iThirdValue)
@@ -48,6 +49,8 @@ struct hkPackFileData
 };
 
 // @fnv 0x00e05160
+// pdb: hkPackfileData::setPackfileClassNameRegistry | hkPackfileData.obj | debug, object-file gap fill, medium
+// pdb params: classReg
 void hkPackFileData::SetObject(hkReferencedObject* pObject)
 {
     if (pObject)
@@ -84,7 +87,7 @@ int FUN_00e05950_class::FindFirstNonEmptySlot()
 }
 
 void* hkMemoryRouter_getInstance();
-void ResizeAudioStream(void* a, void* b, int c);
+void ResizeAudioStream(void* mem, void* array, int sizeElem);
 struct UnkRet
 {
     int a;
@@ -104,12 +107,15 @@ struct UnkHolder
     int pad;
     int pad2;
     UnkRet* hkMemoryRouter_getInstance();
-    void hkPackfileData_addImport(UnkRet* r, int v);
+    void hkPackfileData_addImport(UnkRet* symbolName, int location);
 };
 // Appends a two-int entry (r, v) to the array at this+0x58, growing it via ResizeAudioStream when full, and increments the count.
 // @fnv 0x00e055a0
 // src: XBOX_PDB 0x00e055a0
-void UnkHolder::hkPackfileData_addImport(UnkRet* r, int v)
+// pdb: hkPackfileData::addImport | hkPackfileData.obj | retail, upstream name already matches, high
+// pdb params: symbolName, location
+// pdb locals: assertBuf, ostr
+void UnkHolder::hkPackfileData_addImport(UnkRet* symbolName, int location)
 {
     UnkRet* slot = (UnkRet*)((char*)this + 0x58);
     UnkRet* pTemp = hkMemoryRouter_getInstance();
@@ -117,8 +123,8 @@ void UnkHolder::hkPackfileData_addImport(UnkRet* r, int v)
         ResizeAudioStream((void*)pTemp->e, slot, 8);
     UnkRet* p = (UnkRet*)((char*)slot->a + slot->b * 8);
     slot->b++;
-    p->a = (int)r;
-    p->b = v;
+    p->a = (int)symbolName;
+    p->b = location;
 }
 
 struct FUN_00e05550_Class
@@ -127,14 +133,17 @@ struct FUN_00e05550_Class
     int* m_data;
     int m_uiItemCount;
     int m_pRayCursor;
-    void AppendPair(int a, int b);
+    void hkPackfileData_addExport(int symbolName, int object);
 };
 
 void* __cdecl _D1A0E0GetMemoryRouter();
 
 // Appends the pair (a, b) to the array at this+0x4c, growing it via the memory router when full, and increments the count.
 // @fnv 0x00e05550
-void FUN_00e05550_Class::AppendPair(int aiFirst, int aiSecond)
+// src: XBOX_RETAIL_PDB 0x00e05550
+// pdb: hkPackfileData::addExport | hkPackfileData.obj | retail, object-file gap fill, high
+// pdb params: symbolName, object
+void FUN_00e05550_Class::hkPackfileData_addExport(int symbolName, int object)
 {
     int* p = (int*)((char*)this + 0x4c);
     void* router = _D1A0E0GetMemoryRouter();
@@ -144,8 +153,8 @@ void FUN_00e05550_Class::AppendPair(int aiFirst, int aiSecond)
     int iIndex = p[1];
     int* slot = (int*)(p[0] + iIndex * 8);
     p[1] = iIndex + 1;
-    slot[0] = aiFirst;
-    slot[1] = aiSecond;
+    slot[0] = symbolName;
+    slot[1] = object;
 }
 
 struct FUN_00e05250_Archive
@@ -171,72 +180,74 @@ struct FUN_00e05250_Class
     int m_importsSize;
     int m_importsHashSize;
 
-    void WriteSections(FUN_00e05250_Archive* pArchive, int unused);
+    void WriteSections(FUN_00e05250_Archive* collector, int cls);
 };
 
 typedef void(__thiscall* FUN_00e05250_Write)(FUN_00e05250_Archive*, int, const char*, void*, int, int);
 
-int __cdecl _FUN_00d06f80(void* data, int size);
+int __cdecl _FUN_00d06f80(void* p, int size);
 
 // @fnv 0x00e05250
-void FUN_00e05250_Class::WriteSections(FUN_00e05250_Archive* pArchive, int)
+// pdb: hkPackfileData::calcContentStatistics | hkPackfileData.obj | retail, string-set bridge, high
+// pdb params: collector, cls
+void FUN_00e05250_Class::WriteSections(FUN_00e05250_Archive* collector, int)
 {
-    if ((m_memoryHashSize & 0x80000000) == 0 || pArchive->m_flag != 0)
+    if ((m_memoryHashSize & 0x80000000) == 0 || collector->m_flag != 0)
     {
         void* data = m_memoryData;
         int size = (m_memoryHashSize & 0x3fffffff) * 4;
         int hash = _FUN_00d06f80(data, size);
 
-        FUN_00e05250_Write write = reinterpret_cast<FUN_00e05250_Write>(pArchive->m_ppVirtualMethodTable[5]);
+        FUN_00e05250_Write write = reinterpret_cast<FUN_00e05250_Write>(collector->m_ppVirtualMethodTable[5]);
 
-        write(pArchive, 3, "memory", m_memoryData, m_memorySize * 4, hash);
+        write(collector, 3, "memory", m_memoryData, m_memorySize * 4, hash);
     }
 
-    if ((m_chunksHashSize & 0x80000000) == 0 || pArchive->m_flag != 0)
+    if ((m_chunksHashSize & 0x80000000) == 0 || collector->m_flag != 0)
     {
         void* data = m_chunksData;
         int size = (m_chunksHashSize & 0x3fffffff) * 12;
         int hash = _FUN_00d06f80(data, size);
 
-        FUN_00e05250_Write write = reinterpret_cast<FUN_00e05250_Write>(pArchive->m_ppVirtualMethodTable[5]);
+        FUN_00e05250_Write write = reinterpret_cast<FUN_00e05250_Write>(collector->m_ppVirtualMethodTable[5]);
 
-        write(pArchive, 3, "chunks", m_chunksData, m_chunksSize * 12, hash);
+        write(collector, 3, "chunks", m_chunksData, m_chunksSize * 12, hash);
     }
 
-    if ((m_exportsHashSize & 0x80000000) == 0 || pArchive->m_flag != 0)
+    if ((m_exportsHashSize & 0x80000000) == 0 || collector->m_flag != 0)
     {
         void* data = m_exportsData;
         int size = (m_exportsHashSize & 0x3fffffff) * 8;
         int hash = _FUN_00d06f80(data, size);
 
-        FUN_00e05250_Write write = reinterpret_cast<FUN_00e05250_Write>(pArchive->m_ppVirtualMethodTable[5]);
+        FUN_00e05250_Write write = reinterpret_cast<FUN_00e05250_Write>(collector->m_ppVirtualMethodTable[5]);
 
-        write(pArchive, 3, "exports", m_exportsData, m_exportsSize * 8, hash);
+        write(collector, 3, "exports", m_exportsData, m_exportsSize * 8, hash);
     }
 
-    if ((m_importsHashSize & 0x80000000) == 0 || pArchive->m_flag != 0)
+    if ((m_importsHashSize & 0x80000000) == 0 || collector->m_flag != 0)
     {
         void* data = m_importsData;
         int size = (m_importsHashSize & 0x3fffffff) * 8;
         int hash = _FUN_00d06f80(data, size);
 
-        FUN_00e05250_Write write = reinterpret_cast<FUN_00e05250_Write>(pArchive->m_ppVirtualMethodTable[5]);
+        FUN_00e05250_Write write = reinterpret_cast<FUN_00e05250_Write>(collector->m_ppVirtualMethodTable[5]);
 
-        write(pArchive, 3, "imports", m_importsData, m_importsSize * 8, hash);
+        write(collector, 3, "imports", m_importsData, m_importsSize * 8, hash);
     }
 }
 
 struct ByteSink
 {
-    void PutBytePair(char a, char b);
+    void PutBytePair(char code, char param);
 };
 struct E06C20Writer
 {
-    void hkpMoppCodeGenerator_addCommand32(int a, void* b);
+    void hkpMoppCodeGenerator_addCommand32(int code, void* param);
 };
 struct FUN_00e06800_Class
 {
-    void hkpMoppCodeGenerator_addCommand16(int a, void* b);
+    void hkpMoppCodeGenerator_addCommand16(int code, void* param);
 };
 
 struct FUN_00e06d70_Class
@@ -294,7 +305,7 @@ bool FUN_00e05240_cls::hkPackfileData_finishedObjects()
     return m_20 != 0;
 }
 
-void __cdecl hkArrayUtil__reserve(hkMemoryAllocator& kAlloc, void* apvArray, int aiNumElements, int iSizeElem) throw();
+void __cdecl hkArrayUtil__reserve(hkMemoryAllocator& mem, void* array, int numElem, int sizeElem) throw();
 
 inline void* __cdecl operator new(unsigned int, void* p) throw()
 {
@@ -366,15 +377,17 @@ class FUN_00e05410_Owner
     hkArray<PackfileExport> m_iSecondInteger;
     hkArray<PackfileImport> m_pHeadNode;
 
-    void CopyPairArrays(hkArray<PackfileImport>& kFirstOut, hkArray<PackfileExport>& kSecondOut) const throw();
+    void CopyPairArrays(hkArray<PackfileImport>& impOut, hkArray<PackfileExport>& expOut) const throw();
 };
 
 // @fnv 0x00e05410
-void FUN_00e05410_Owner::CopyPairArrays(hkArray<PackfileImport>& kFirstOut, hkArray<PackfileExport>& kSecondOut) const
+// pdb: hkPackfileData::getImportsExports | hkPackfileData.obj | retail, vtable slot, high
+// pdb params: impOut, expOut
+void FUN_00e05410_Owner::CopyPairArrays(hkArray<PackfileImport>& impOut, hkArray<PackfileExport>& expOut) const
     throw()
 {
-    kFirstOut = m_pHeadNode;
-    kSecondOut = m_iSecondInteger;
+    impOut = m_pHeadNode;
+    expOut = m_iSecondInteger;
 }
 
 struct FUN_00dce8d0_class
@@ -384,7 +397,7 @@ struct FUN_00dce8d0_class
 
 struct FUN_00d874d0_s
 {
-    void hkCachedHashMap_hkStringMapOperations_hkContainerHeapAllocator_insert(const char* pcKey, int iValue);
+    void hkCachedHashMap_hkStringMapOperations_hkContainerHeapAllocator_insert(const char* key, int val);
 };
 
 class hkClassRegistryE055
@@ -440,6 +453,7 @@ struct hkPointerMapE055 : public FUN_00e05950_class
 };
 
 // Retained locally: include/ has no hkPackfileData.h yet.
+// pdb: class hkPackfileData, size 0x64 (here 0x30), bases: hkResource, 10 members
 class hkPackfileData
 {
   public:
@@ -453,26 +467,29 @@ class hkPackfileData
     hkClassRegistryE055* m_pkClassRegistry;
 
     int hkPackfileData_finishedObjects();
-    void* getContentsPointer(const char* pcExpectedClassName, const hkFinishRegistryE055* pkFinish);
+    void* getContentsPointer(const char* typeName, const hkFinishRegistryE055* typeRegistry);
 };
 
 // @fnv 0x00e055f0
 // src: XBOX_PDB 0x00e055f0
-void* hkPackfileData::getContentsPointer(const char* pcExpectedClassName, const hkFinishRegistryE055* pkFinish)
+// pdb: hkPackfileData::getContentsPointer | hkPackfileData.obj | retail, upstream name already matches, high
+// pdb params: typeName, typeRegistry
+// pdb locals: assertBuf, ostr
+void* hkPackfileData::getContentsPointer(const char* typeName, const hkFinishRegistryE055* typeRegistry)
 {
     if (m_pvTopLevelObject)
     {
         const char* pcTopClassName =
             (const char*)((FUN_00dce8d0_class*)&m_kTrackedTypes)->LookupHashEntry((unsigned long)m_pvTopLevelObject, 0);
-        if (pcExpectedClassName)
+        if (typeName)
         {
             const hkClassRegistryE055* pkRegistry = m_pkClassRegistry;
             const hkClass* pkTopClass = pkRegistry->GetClassByName(pcTopClassName);
-            const hkClass* pkExpected = pkRegistry->GetClassByName(pcExpectedClassName);
+            const hkClass* pkExpected = pkRegistry->GetClassByName(typeName);
             if (!pkExpected->hkClass_isSuperClass(*pkTopClass).m_cBooleanValue)
                 goto fail;
         }
-        if (hkPackfileData_finishedObjects() == 0 && pkFinish)
+        if (hkPackfileData_finishedObjects() == 0 && typeRegistry)
         {
             bool bFailed = false;
             for (int i = m_kTrackedTypes.FindFirstNonEmptySlot(); m_kTrackedTypes.isValid(i);
@@ -480,7 +497,7 @@ void* hkPackfileData::getContentsPointer(const char* pcExpectedClassName, const 
             {
                 void* pvObject = (void*)m_kTrackedTypes.GetIteratorKey(i);
                 const char* pcClassName = (const char*)m_kTrackedTypes.getValue(i);
-                int iInfo = pkFinish->RegisterLoadedObject(pvObject, pcClassName);
+                int iInfo = typeRegistry->RegisterLoadedObject(pvObject, pcClassName);
                 if (iInfo)
                     m_kFinishedTypes.hkCachedHashMap_hkStringMapOperations_hkContainerHeapAllocator_insert(pcClassName, iInfo);
                 else
@@ -566,6 +583,7 @@ struct FUN_00e057c0_Class
 
 // @fnv 0x00e057c0
 // src: GUESS 0x00e057c0 (confidence: low)
+// pdb: hkPackfileData::~hkPackfileData | hkPackfileData.obj | retail, object-file run extension, low
 void FUN_00e057c0_Class::ReleaseEntries_00e057c0()
 {
     this->vtable = &DAT_010ea51c;
@@ -641,6 +659,7 @@ class hkObje05970 : public FUN_00e057c0
 
 // Calls the base destructor, then deletes this object via hkObje05970::operator delete when uiFlags has bit 0 set, and returns this.
 // @fnv 0x00e05970
+// pdb: hkPackfileData::`scalar deleting destructor' | hkPackfileData.obj | retail, vtable slot, high
 hkObje05970* hkObje05970::FUN_00e05970(unsigned int uiFlags) throw()
 {
     this->FUN_00e057c0::~FUN_00e057c0();
@@ -695,17 +714,19 @@ class hkListenerE051
     int unk00[19];
     hkArray<PackfileExport> m_entries;
 
-    void hkPackfileData_removeExport(int key);
+    void hkPackfileData_removeExport(int object);
 };
 
 // Removes exports whose data pointer matches key; these 8-byte entries are not the 12-byte hkEntry type.
 // @fnv 0x00e05190
 // src: XBOX_PDB 0x00e05190
-void hkListenerE051::hkPackfileData_removeExport(int key)
+// pdb: hkPackfileData::removeExport | hkPackfileData.obj | debug, upstream name already matches, high
+// pdb params: object
+void hkListenerE051::hkPackfileData_removeExport(int object)
 {
     for (int i = m_entries.m_iElementCount - 1; i >= 0; i--)
     {
-        if (m_entries.m_data[i].data == (void*)key)
+        if (m_entries.m_data[i].data == (void*)object)
             m_entries.removeAt(i);
     }
 }
@@ -776,6 +797,8 @@ struct FUN_00e05370_Class
 };
 // Invokes each registered callback with its entry id, then resets field08 and clears the list and map.
 // @fnv 0x00e05370
+// pdb: hkPackfileData::callDestructors | hkPackfileData.obj | retail, vtable slot, high
+// pdb locals: assertBuf, ostr
 void FUN_00e05370_Class::Clear()
 {
     if (map.table && map.count > 0)
@@ -811,7 +834,7 @@ struct FUN_00cb1fe0_Class
 
 struct FUN_00d87790_Class
 {
-    void __thiscall FUN_00d87790(int arg);
+    void __thiscall FUN_00d87790(int ops);
 };
 
 struct FUN_01268B08_Obj
@@ -868,6 +891,7 @@ struct S00e05700_Class
 // Initializes fields, resets four arrays, and assigns DAT_01268b08->vf10()'s result to unk2C.
 // @fnv 0x00e05700
 // src: XBOX_PDB 0x00e05700
+// pdb: hkPackfileData::hkPackfileData | hkPackfileData.obj | retail, upstream name already matches, high
 S00e05700_Class* __thiscall S00e05700_Class::hkPackfileData_hkPackfileData()
 {
     int zero = 0;

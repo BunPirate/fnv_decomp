@@ -20,7 +20,7 @@ struct VecList
 };
 
 hkMemoryRouter* __cdecl hkMemoryRouter_getInstance();
-void __cdecl ResizeAudioStream(void* allocator, VecList* list, unsigned int elemSize);
+void __cdecl ResizeAudioStream(void* mem, VecList* array, unsigned int sizeElem);
 
 struct FUN_00e3afb0_cls
 {
@@ -37,6 +37,8 @@ struct FUN_00e3afb0_cls
 
 // Grows the VecList if full, then appends a VecElem built from two __m128 values and a float.
 // @fnv 0x00e3afb0
+// pdb: hkpStiffSpringChainData::addConstraintInfoInBodySpace | hkpStiffSpringChainData.obj | retail, object-file run extension, low
+// pdb params: pivotInA, pivotInB, springLength
 void FUN_00e3afb0_cls::Push(const __m128* apFirst, const __m128* apSecond, float afValue)
 {
     VecList* list = &m_kNode;
@@ -85,6 +87,7 @@ struct FUN_00dfbff0
 
 // Empty default constructor; the class's operator delete releases the block through the heap allocator of FUN_00c85750.
 // @fnv 0x00dfbff0
+// pdb: hkpVehicleDefaultSuspension::`scalar deleting destructor' | hkpVehicleDefaultSuspensionClass.obj | retail, vtable slot, high
 FUN_00dfbff0::FUN_00dfbff0()
 {}
 }  // namespace fnv_00dfbff0

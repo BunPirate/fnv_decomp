@@ -13,6 +13,7 @@
 extern "C" void __cdecl __Dummy_00b6fef0(void* p, unsigned int size);
 
 // @fnv 0x006e5fd0
+// pdb: PathingRequestSafeStraightLine::`scalar deleting destructor' | PathingRequestSafeStraightLine.obj | retail, vtable slot, high
 void* PathingRequestSafeStraightLine::FUN_006e5fd0(unsigned int flags)
 {
     this->PathingRequestSafeStraightLine::~PathingRequestSafeStraightLine();
@@ -29,6 +30,8 @@ void __thiscall PathingRequestSafeStraightLine::SetTarget_006e60c0(int a1)
 }
 
 // @fnv 0x006e60e0
+// pdb: PathingRequestSafeStraightLine::SaveGame | PathingRequestSafeStraightLine.obj | retail, vtable slot, high
+// pdb params: apSaveGameBuffer
 void __thiscall PathingRequestSafeStraightLine::SaveToBuffer(BGSSaveFormBuffer* apSaveGameBuffer)
 {
     PathingRequestOptimalLocation_SaveGame(apSaveGameBuffer);
@@ -38,14 +41,19 @@ void __thiscall PathingRequestSafeStraightLine::SaveToBuffer(BGSSaveFormBuffer* 
 // Calls the base load routine on buffer, then loads the field at offset 0xb8 from the buffer.
 // @fnv 0x006e6110
 // src: XBOX_PDB 0x006e6110
-void PathingRequestSafeStraightLine::LoadGame_006e6110(BGSLoadFormBuffer* buffer)
+// pdb: PathingRequestSafeStraightLine::LoadGame | PathingRequestSafeStraightLine.obj | retail, vtable slot, high
+// pdb params: apLoadGameBuffer
+void PathingRequestSafeStraightLine::LoadGame_006e6110(BGSLoadFormBuffer* apLoadGameBuffer)
 {
-    PathingRequestClosePoint::PathingRequestOptimalLocation_LoadGame(buffer);
-    buffer->ReadFormIdentifier((void*)&pTarget);
+    PathingRequestClosePoint::PathingRequestOptimalLocation_LoadGame(apLoadGameBuffer);
+    apLoadGameBuffer->ReadFormIdentifier((void*)&pTarget);
 }
 
 // @fnv 0x006e6080
 // src: XBOX_PDB 0x006e6080
+// pdb: PathingRequestSafeStraightLine::CopyTo | PathingRequestSafeStraightLine.obj | debug, vtable slot, medium
+// pdb params: apDest
+// pdb locals: pdest
 void __thiscall PathingRequestSafeStraightLine::CopyTo_006e6080(PathingRequest* apDest)
 {
     PathingRequestSafeStraightLine* pdest = (PathingRequestSafeStraightLine*)apDest;
@@ -69,17 +77,21 @@ struct FUN_006e6010 : FUN_006e3fb0_base
 {
     char _pad[0xB4];
     int pTarget;
-    FUN_006e6010(int ai);
+    FUN_006e6010(int aRequest);
     ~FUN_006e6010();
 };
 // Constructs the base with ai and stores the result of FUN_004036b0 called on ai into pTarget.
 // @fnv 0x006e6010
-FUN_006e6010::FUN_006e6010(int ai) : FUN_006e3fb0_base(ai)
+// pdb: PathingRequestSafeStraightLine::PathingRequestSafeStraightLine | PathingRequestSafeStraightLine.obj | debug, call graph, high
+// pdb params: aRequest
+FUN_006e6010::FUN_006e6010(int aRequest) : FUN_006e3fb0_base(aRequest)
 {
-    pTarget = ((S_004036b0*)(void*)ai)->TES_QPlaceableWaterCount();
+    pTarget = ((S_004036b0*)(void*)aRequest)->TES_QPlaceableWaterCount();
 }
 
 // @fnv 0x006e6140
+// pdb: PathingRequestSafeStraightLine::InitLoadGame | PathingRequestSafeStraightLine.obj | retail, vtable slot, high
+// pdb params: apLoadGameBuffer
 void __thiscall PathingRequestSafeStraightLine::ResolveReference(BGSLoadFormBuffer* apLoadGameBuffer)
 {
     pTarget = pTarget

@@ -16,18 +16,23 @@ __forceinline void* BSFile::operator new(size_t size)
 
 // Returns the file location from g_fileFinder's lookup for fileName, or NOTFOUND when g_fileFinder is null.
 // @fnv 0x00456a20
-FileFinder::FILE_LOCATION __cdecl FileFinder::Exist(const char* fileName, char* filePath, unsigned int flags,
-                                                    unsigned int archiveType)
+// pdb: FileFinder::Exist | FileFinder.obj | retail, upstream name already matches, high
+// pdb params: apName, apFilePath, aiFlags, aiArchiveType
+// pdb locals: pexistFileName, eres, pext, cpext, ilen
+FileFinder::FILE_LOCATION __cdecl FileFinder::Exist(const char* apName, char* apFilePath, unsigned int aiFlags,
+                                                    unsigned int aiArchiveType)
 {
     FILE_LOCATION result;
     if (g_fileFinder)
-        result = g_fileFinder->GetFileLocation((char*)fileName, filePath, flags, archiveType);
+        result = g_fileFinder->GetFileLocation((char*)apName, apFilePath, aiFlags, aiArchiveType);
     else
         result = NOTFOUND;
     return result;
 }
 
 // @fnv 0x00afe0d0
+// pdb: FileFinder::Locate | TES.obj | debug, call graph, medium
+// pdb params: apName, apFilePath, aiFlags, aiArchiveType
 FileFinder::FILE_LOCATION FileFinder::GetFileLocation(char* fileName, char* filePath, unsigned int flags,
                                                       unsigned int archiveType)
 {
@@ -70,7 +75,9 @@ FileFinder::FILE_LOCATION FileFinder::GetFileLocation(char* fileName, char* file
 
 // Resolves name through g_fileFinder and returns a BSFile or archive file for the given mode, buffer size and archive type, or null.
 // @fnv 0x00afdf20
-NiFile* FileFinder::GetFile(const char* name, NiFile::OpenMode mode, unsigned int bufferSize, unsigned int archiveType)
+// pdb: FileFinder::GetFile | FileFinder.obj | retail, upstream name already matches, high
+// pdb params: apName, aeMode, aiSize
+NiFile* FileFinder::GetFile(const char* apName, NiFile::OpenMode aeMode, unsigned int aiSize, unsigned int aiArchiveType)
 {
     // These local identifiers preserve MSVC9 stack-slot ordering.
     bool bFileFound;
@@ -79,26 +86,26 @@ NiFile* FileFinder::GetFile(const char* name, NiFile::OpenMode mode, unsigned in
     char cFileName[780];
     if (g_fileFinder)
     {
-        if (mode == 1)
+        if (aeMode == 1)
         {
-            pInputFile = new BSFile(name, (int)mode, bufferSize, false);
+            pInputFile = new BSFile(apName, (int)aeMode, aiSize, false);
         }
         else
         {
-            pFile = g_fileFinder->GetFileLocation((char*)name, cFileName, 0, archiveType);
+            pFile = g_fileFinder->GetFileLocation((char*)apName, cFileName, 0, aiArchiveType);
             bFileFound = false;
             if (pFile != NOTFOUND)
             {
                 if (pFile == ARCHIVE)
                 {
                     if (!pInputFile)
-                        pInputFile = ArchiveManager::GetFile(cFileName, bufferSize, archiveType);
+                        pInputFile = ArchiveManager::GetFile(cFileName, aiSize, aiArchiveType);
                     else
                         bFileFound = true;
                 }
                 else
                 {
-                    pInputFile = new BSFile(cFileName, (int)mode, bufferSize, false);
+                    pInputFile = new BSFile(cFileName, (int)aeMode, aiSize, false);
                     static_cast<BSFile*>(pInputFile)->Open(false, false);
                 }
             }
@@ -144,6 +151,8 @@ struct FinderCalls_S
 
 // @fnv 0x00afe220
 // src: COMMUNITY 0x00afe220
+// pdb: FileFinder::LookForFile | FileFinder.obj | retail, upstream name already matches, high
+// pdb params: apFilePath, aiFlags
 int FUN_00afe220_shell::FileFinder_LookForFile(char* apFilePath, unsigned int aiFlags, unsigned int aiArchiveType)
 {
     char acFullPath[260];
@@ -230,7 +239,7 @@ unsigned int FUN_00afe1f0_shell::FindFile(char* pcPath, unsigned int uiFlags)
     return this->FileFinder_LookForFile(pcPath, uiFlags, 0xffff);
 }
 
-int __cdecl FileFinder_BuildFileList(int a1, int a2, int a3, int a4);
+int __cdecl FileFinder_BuildFileList(int apSearchName, int apBaseFilename, int aiArchiveType, int apFileList);
 
 // @fnv 0x00afe400
 // src: COMMUNITY 0x00afe400
@@ -248,6 +257,7 @@ int __cdecl FileFinder_BuildSingleFileList_1(int a1, int a2, int a3)
     return FileFinder_BuildFileList(a1, a2, 0xffffu, a3);
 }
 
+// pdb: structure _FILETIME, size 0x8, 2 members
 struct _FILETIME
 {
     unsigned long dwLowDateTime;
@@ -281,17 +291,19 @@ struct FileEntryTmp
     virtual void f5();
     virtual const char* f6();
 };
-FileEntryTmp* __cdecl FindArchiveForFile(const char*, unsigned int);
-bool __cdecl File_GetLastWriteTime(const char*, _FILETIME*);
+FileEntryTmp* __cdecl ArchiveManager_GetArchiveForFile(const char*, unsigned int);
+bool __cdecl FileFinder_PlatformGetFileTime(const char*, _FILETIME*);
 // @fnv 0x00afe7d0
 // src: COMMUNITY 0x00afe7d0
-bool __cdecl ArchiveManager_GetLastWriteTimeForFile(const char* apFileName, _FILETIME& arFileTime, unsigned int aiMode)
+// pdb: FileFinder::GetFileTime | FileFinder.obj | retail, call graph, high
+// pdb params: apFileName, arFileTime
+bool __cdecl ArchiveManager_GetLastWriteTimeForFile(const char* apFileName, _FILETIME& arFileTime, unsigned int aiArchiveType)
 {
     _fnv_zlib_memset(&arFileTime, 0, 8);
-    FileEntryTmp* pkEntry = FindArchiveForFile(apFileName, aiMode);
+    FileEntryTmp* pkEntry = ArchiveManager_GetArchiveForFile(apFileName, aiArchiveType);
     if (pkEntry)
         apFileName = pkEntry->f6();
-    return File_GetLastWriteTime(apFileName, &arFileTime);
+    return FileFinder_PlatformGetFileTime(apFileName, &arFileTime);
 }
 }  // namespace fnv_00afe7d0
 
@@ -326,27 +338,29 @@ inline void CatQ(char* d, unsigned int n, const char* s)
 // Validates a path and name, builds a combined string, adds it to a BSSimpleList, and returns the list or null if empty.
 // @fnv 0x00afe5b0
 // src: COMMUNITY 0x00afe5b0
-BSSimpleList<Actor*>* __cdecl FileFinder_BuildSingleFileList(const char* path, const char* name, int x, BSSimpleList<Actor*>* apList)
+// pdb: FileFinder::BuildSingleFileList | FileFinder.obj | retail, upstream name already matches, high
+// pdb params: apSearchName, apBaseFilename, apFileList
+BSSimpleList<Actor*>* __cdecl FileFinder_BuildSingleFileList(const char* apSearchName, const char* apBaseFilename, int aiArchiveType, BSSimpleList<Actor*>* apFileList)
 {
-    BSSimpleList<Actor*>* list7 = apList;
+    BSSimpleList<Actor*>* list7 = apFileList;
     if (!list7)
         list7 = new BSSimpleList<Actor*>;
     bool ok = false;
     if (!DAT_011acdf8 || DAT_011acdf9)
-        ok = FileFinder_PlatformFindSingleFile(path);
+        ok = FileFinder_PlatformFindSingleFile(apSearchName);
     if (!ok)
-        ok = ArchiveManager_FindFile((int)path, x);
+        ok = ArchiveManager_FindFile((int)apSearchName, aiArchiveType);
     if (ok)
     {
-        unsigned int len5 = strlen(name);
-        const char* s6 = strrchr(name, '\\');
-        const char* sA = strrchr(path, '\\');
+        unsigned int len5 = strlen(apBaseFilename);
+        const char* s6 = strrchr(apBaseFilename, '\\');
+        const char* sA = strrchr(apSearchName, '\\');
         if (s6 && sA)
         {
             len5 -= strlen(s6 + 1);
             unsigned int total = len5 + strlen(sA + 1) + 1;
             char* buf = new char[total];
-            CopyQ(buf, name, len5);
+            CopyQ(buf, apBaseFilename, len5);
             buf[len5] = 0;
             CatQ(buf, total, sA + 1);
             list7->AddHead((Actor* const&)buf);
@@ -405,18 +419,20 @@ void ArchiveManager_AddToFileList(FileMatchList*, const char*, const char*, unsi
 // Finds files matching a pattern in a directory, using wildcards or exact match, and returns a list of matches.
 // @fnv 0x00afe420
 // src: COMMUNITY 0x00afe420
-FileMatchList* FileFinder_BuildFileList(const char* pattern, const char* directory, unsigned int flags, FileMatchList* existing)
+// pdb: FileFinder::BuildFileList | FileFinder.obj | retail, upstream name already matches, high
+// pdb params: apSearchName, apBaseFilename
+FileMatchList* FileFinder_BuildFileList(const char* apSearchName, const char* apBaseFilename, unsigned int aiArchiveType, FileMatchList* apFileList)
 {
-    if (!pattern || !directory)
+    if (!apSearchName || !apBaseFilename)
         return 0;
-    if (!strstr(pattern, "*") && !strstr(pattern, "?"))
-        return FileFinder_BuildSingleFileList(pattern, directory, flags, existing);
-    FileMatchList* matches = existing;
+    if (!strstr(apSearchName, "*") && !strstr(apSearchName, "?"))
+        return FileFinder_BuildSingleFileList(apSearchName, apBaseFilename, aiArchiveType, apFileList);
+    FileMatchList* matches = apFileList;
     if (!matches)
         matches = new FileMatchList;
     if (!DAT_011acdf8 || DAT_011acdf9)
-        CollectDirectoryEntries(pattern, directory, matches);
-    ArchiveManager_AddToFileList(matches, pattern, directory, flags);
+        CollectDirectoryEntries(apSearchName, apBaseFilename, matches);
+    ArchiveManager_AddToFileList(matches, apSearchName, apBaseFilename, aiArchiveType);
     if (matches->IsEmpty())
     {
         delete matches;

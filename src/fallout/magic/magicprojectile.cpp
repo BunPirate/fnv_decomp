@@ -63,7 +63,7 @@ FUN_0081aa80_shell* FUN_0081aa80_shell::ComputeValue_0081aa80(void* pFirst, void
 
 struct Call741e0
 {
-    void FUN_00c741e0(int a);
+    void FUN_00c741e0(int arInfo);
 };
 extern int DAT_010795b8;
 extern int DAT_010795d4;
@@ -92,10 +92,13 @@ struct MobileSaveRecord
 
 // Computes a save record size: adds the result of FUN_00931ff0(a) plus 12, and 4 more each when the save version is at least 0x48 and 0x64.
 // @fnv 0x0081e830
-unsigned short MagicProjectile::GetSaveRecordSize(unsigned int a)
+// pdb: MagicProjectile::GetSaveSize | MagicProjectile.obj | retail, vtable slot, high
+// pdb params: aiFlags
+// pdb locals: isize
+unsigned short MagicProjectile::GetSaveRecordSize(unsigned int aiFlags)
 {
     unsigned short usSize = 0;
-    usSize += (unsigned short)reinterpret_cast<MobileSaveRecord*>(this)->MobileObject_GetSaveSize(a);
+    usSize += (unsigned short)reinterpret_cast<MobileSaveRecord*>(this)->MobileObject_GetSaveSize(aiFlags);
     usSize += 4;
     usSize += 4;
     usSize += 4;
@@ -123,6 +126,9 @@ unsigned int __fastcall GetMagicItemID(MagicItem* item);
 
 // @fnv 0x0081e8c0
 // src: XBOX_PDB 0x0081e8c0
+// pdb: MagicProjectile::SaveGame | MagicProjectile.obj | retail, vtable slot, high
+// pdb params: aiFlags
+// pdb locals: ispellID, icasterID
 void MagicProjectile::SaveGame_0081e8c0(unsigned int aiFlags)
 {
     reinterpret_cast<FUN_00932070_shell*>(this)->SaveProcess(aiFlags);
@@ -156,9 +162,12 @@ struct MobileLoadRecord
 
 // @fnv 0x0081e980
 // src: XBOX_PDB 0x0081e980
-void __thiscall MagicProjectile::LoadGame_0081e980(unsigned int a, unsigned int b)
+// pdb: MagicProjectile::LoadGame | MagicProjectile.obj | retail, vtable slot, high
+// pdb params: aiFlags, aiCurrentFlags
+// pdb locals: ispellID, icasterID
+void __thiscall MagicProjectile::LoadGame_0081e980(unsigned int aiFlags, unsigned int aiCurrentFlags)
 {
-    reinterpret_cast<MobileLoadRecord*>(this)->SetProcessLevel(a, b);
+    reinterpret_cast<MobileLoadRecord*>(this)->SetProcessLevel(aiFlags, aiCurrentFlags);
     unsigned int icasterID;
     ((FUN_00484d40_Host*)this)->TESForm_LoadNumericID(&icasterID, 4);
     m_magicCaster = reinterpret_cast<MagicCaster*>(icasterID);
@@ -199,23 +208,26 @@ struct S3c60
     FUN_0081aa80* m_pEntries;
 
     int GetArchetype();
-    bool AddAudioFormEntry(Form* pForm, MagicprojectileOffset08View* pAudio);
+    bool AddAudioFormEntry(Form* apSpellTarget, MagicprojectileOffset08View* apEffect);
 };
 
 unsigned int __fastcall _ref_0084e3a0(MagicprojectileOffset08View* pAudio);
 void* __cdecl operator new(unsigned int);
 
 // @fnv 0x0081a960
-bool S3c60::AddAudioFormEntry(Form* pForm, MagicprojectileOffset08View* pAudio)
+// pdb: MagicFogProjectile::CheckAddTarget | MagicFogProjectile.obj | retail, vtable slot, high
+// pdb params: apSpellTarget, apEffect
+// pdb locals: plist, ptarget, pnewEntry, peffect
+bool S3c60::AddAudioFormEntry(Form* apSpellTarget, MagicprojectileOffset08View* apEffect)
 {
-    if (!pForm || !pAudio)
+    if (!apSpellTarget || !apEffect)
         return false;
 
-    if (pAudio->GetFlags() != GetArchetype())
+    if (apEffect->GetFlags() != GetArchetype())
         return true;
 
-    Form* form = pForm->FUN_00800004();
-    unsigned int value = _ref_0084e3a0(pAudio);
+    Form* form = apSpellTarget->FUN_00800004();
+    unsigned int value = _ref_0084e3a0(apEffect);
 
     FUN_0081aa80* node = m_pEntries;
     while (node)
@@ -352,6 +364,7 @@ struct AreaDisplayObject
     virtual void v058(AreaDisplayObject*);
 };
 
+// pdb: class Calendar, size 0x1c (here 0x4), 7 members
 struct Calendar : public AreaDisplayObject
 {
     Calendar* GetDaysPassed();
@@ -368,6 +381,8 @@ void AreaDisplayObject::v058(AreaDisplayObject*)
 // Gets the "MagicAreaDisplay" child node and, if its GetDaysPassed() returns a node, passes the child to that node's v058.
 // @fnv 0x0081e730
 // src: COMMUNITY 0x0081e730
+// pdb: MagicProjectile::KillAreaEffectGeometry | MagicProjectile.obj | retail, upstream name already matches, high
+// pdb locals: pav
 void MagicProjectile::KillAreaEffectGeometry()
 {
     AreaDisplayObject* pAreaDisplay = GetNiNode() ? reinterpret_cast<AreaDisplayObject*>(GetNiNode())->v039(NiFixedString("MagicAreaDisplay")) : 0;
@@ -393,6 +408,9 @@ extern SaveManager* DAT_011de45c;
 }  // namespace fnv_0081ea40
 
 // @fnv 0x0081ea40
+// pdb: MagicProjectile::InitLoadGame | MagicProjectile.obj | retail, vtable slot, high
+// pdb params: aiFlags, aiOldFlags
+// pdb locals: ispellID, icasterID
 void MagicProjectile::ResolveMagicReferences(unsigned int aiFlags, unsigned int aiOldFlags)
 {
     using namespace fnv_0081ea40;
@@ -403,9 +421,9 @@ void MagicProjectile::ResolveMagicReferences(unsigned int aiFlags, unsigned int 
     m_magicCaster = MagicCaster::GetCasterByHandle(icasterID);
 
     ispellID = reinterpret_cast<unsigned int>(m_magicItem);
-    m_magicItem = MagicItem::GetMagicItemByID(ispellID);
+    m_magicItem = MagicItem::GetMagicItemByNumericID(ispellID);
 
-    m_effectItem = m_magicItem->FindCostliestEffectItem(2, 0);
+    m_effectItem = m_magicItem->GetCostliestEffect(2, 0);
     m_avEffect = m_magicItem->GetEffectSettingForRange(MagicSystem::SELF);
 
     this->GenerateNiNode(false);
@@ -426,7 +444,7 @@ void MagicProjectile::ResolveMagicReferences(unsigned int aiFlags, unsigned int 
 struct EventData
 {
     bool HasDetrimentalEffect();
-    bool HasNonDetrimentalEffect();
+    bool HasTargetEffect();
 };
 struct Event
 {
@@ -473,25 +491,27 @@ extern "C" void* __cdecl FUN_00ec43fb(Event*, int, const char*, const char*, int
 // Checks evt->data, dispatches by evt->GetType() to Handle4/Handle1/Handle10, else logs errors and calls SetEvent/SetValue then HandleYes or HandleNo.
 // @fnv 0x00815480
 // src: XBOX_PDB 0x00815480
-bool Handler::MagicCaster_CastSpell(Event* pEvent, int value, bool flag)
+// pdb: MagicCaster::CastSpell | MagicCaster.obj | retail, upstream name already matches, high
+// pdb params: apSpell, apDesiredTarget, abLoadCast
+bool Handler::MagicCaster_CastSpell(Event* apSpell, int apDesiredTarget, bool abLoadCast)
 {
-    if (pEvent->data.HasDetrimentalEffect())
+    if (apSpell->data.HasDetrimentalEffect())
     {
         FUN_00818af0(5, DAT_0107acc8);
         return false;
     }
-    switch (pEvent->GetType())
+    switch (apSpell->GetType())
     {
     case 4:
-        Handle4(FUN_00ec43fb(pEvent, 0, DAT_01183140, DAT_01183060, 0), flag);
+        Handle4(FUN_00ec43fb(apSpell, 0, DAT_01183140, DAT_01183060, 0), abLoadCast);
         return true;
         break;
     case 1:
-        Handle1(FUN_00ec43fb(pEvent, 0, DAT_01183140, DAT_01183060, 0), value, flag);
+        Handle1(FUN_00ec43fb(apSpell, 0, DAT_01183140, DAT_01183060, 0), apDesiredTarget, abLoadCast);
         return true;
         break;
     case 10:
-        Handle10(FUN_00ec43fb(pEvent, 0, DAT_01183140, DAT_01183060, 0), flag);
+        Handle10(FUN_00ec43fb(apSpell, 0, DAT_01183140, DAT_01183060, 0), abLoadCast);
         return true;
     }
     if (HasError())
@@ -499,9 +519,9 @@ bool Handler::MagicCaster_CastSpell(Event* pEvent, int value, bool flag)
         FUN_00818af0(6, DAT_0107acac);
         return false;
     }
-    SetEvent(pEvent);
-    SetValue(value);
-    if (pEvent->data.HasNonDetrimentalEffect() && value)
+    SetEvent(apSpell);
+    SetValue(apDesiredTarget);
+    if (apSpell->data.HasTargetEffect() && apDesiredTarget)
     {
         HandleYes();
     }
@@ -523,6 +543,7 @@ struct FUN_0081dbb0 : MobileObject
 
 // Initializes the object, zeroes its float and int fields, allocates a HighProcess, and calls FUN_00575690 with the result of FUN_007af430.
 // @fnv 0x0081dbb0
+// pdb: MagicProjectile::MagicProjectile | MagicProjectile.obj | debug, object-file run extension, low
 FUN_0081dbb0::FUN_0081dbb0()
 {
     FUN_0046a010(true);
@@ -533,7 +554,7 @@ FUN_0081dbb0::FUN_0081dbb0()
     unka0 = 0;
     unk88 = 0.0f;
     unk8c = 0.0f;
-    m_pBaseProcess = new HighProcess;
+    pCurrentProcess = new HighProcess;
     TESObjectREFR_SetObjectReference(BGSSaveFormBuffer_GetForm());
 }
 
@@ -565,7 +586,7 @@ struct MarkerErrorObj
 
 struct MarkerErrorMgr
 {
-    void FUN_004603b0(MarkerErrorObj* pObj);
+    void FUN_004603b0(MarkerErrorObj* pNew);
 };
 
 extern MarkerErrorObj* DAT_011dc774;
@@ -573,6 +594,8 @@ extern MarkerErrorMgr* DAT_011c3f2c;
 
 // Creates the marker_error.nif object on first call, registers it with DAT_011c3f2c, and returns the cached DAT_011dc774 instance.
 // @fnv 0x0081e310
+// pdb: MagicProjectile::GetDummyObjectReference | MagicProjectile.obj | retail, string-set bridge, high
+// pdb locals: pammoObject
 MarkerErrorObj* __cdecl GetMarkerErrorObj()
 {
     if (DAT_011dc774 == 0)
@@ -613,7 +636,7 @@ struct MADObject
     float GetFloatAt64();
     void AssignFixedString(const MADName& kName);
     void NiAVObject_SetTranslate(const void* pData);
-    void NiAVObject_AttachProperty(FUN_00a75650* pProperty);
+    void NiAVObject_AttachProperty(FUN_00a75650* pkProperty);
 };
 struct MADNode : MADObject
 {
@@ -638,7 +661,7 @@ struct MADHandle
     void* m_pObject;
     MADHandle& operator=(const MADHandle& kOther);
 };
-MADObject* __cdecl BSTestObjects_CreateSphere(float fRadius, int iSlices, int iStacks, int iUnk);
+MADObject* __cdecl BSTestObjects_CreateSphere(float afRadius, int aiSlices, int aiStacks, int apColor);
 void __cdecl GetLayerColor(void* pObject, const NiPoint3& kPoint);
 struct MagicAreaOwner
 {
@@ -661,6 +684,8 @@ struct MagicAreaOwner
 };
 // Builds a sphere node named "MagicAreaDisplay" sized from the magic area count and setting, applies a material, and attaches it to the 3D root's node.
 // @fnv 0x0081aab0
+// pdb: MagicFogProjectile::BuildAreaEffectGeometry | MagicFogProjectile.obj | retail, vtable slot, high
+// pdb locals: pav, pnode, clr, pdebugSphere, pmat, farea
 void MagicAreaOwner::CreateMagicAreaDisplay()
 {
     MADObject* pRoot = Get3D();
@@ -700,7 +725,10 @@ extern const double DAT_010290d0;
 
 // Computes clamped delta time from the global clock, accumulates it into unk90, and calls Update when the interface check passes.
 // @fnv 0x0081df60
-void MagicProjectile::Process(int param_1)
+// pdb: MagicProjectile::Process | MagicProjectile.obj | retail, upstream name already matches, high
+// pdb params: afDelta
+// pdb locals: fcurrentTime, fdeltaTime
+void MagicProjectile::Process(int afDelta)
 {
     float dt3;
     float time = DAT_011e0e80.ProcessLists_GetSystemTimeClock();
@@ -735,28 +763,28 @@ struct FUN_0080f810
 {
     unsigned char m_data[0xc4];
 
-    FUN_0080f810(void* a, int b, GameTimerRecord* c, unsigned int d, NiPoint3 e, NiPoint3 f, unsigned int g, unsigned int h);
+    FUN_0080f810(void* apCaster, int apSpell, GameTimerRecord* apDominantEffect, unsigned int apAVEffect, NiPoint3 aOrigin, NiPoint3 aRotation, unsigned int apData3D, unsigned int apLight);
 };
 
 struct FUN_00811980
 {
     unsigned char m_data[0xd8];
 
-    FUN_00811980(void* a, int b, GameTimerRecord* c, unsigned int d, NiPoint3 e, NiPoint3 f);
+    FUN_00811980(void* apCaster, int apSpell, GameTimerRecord* apDominantEffect, unsigned int apAVEffect, NiPoint3 aOrigin, NiPoint3 aRotation);
 };
 
 struct FUN_00819360
 {
     unsigned char m_data[0xd0];
 
-    FUN_00819360(void* a, int b, GameTimerRecord* c, unsigned int d, NiPoint3 e, NiPoint3 f, unsigned int g, unsigned int h);
+    FUN_00819360(void* apCaster, int apSpell, GameTimerRecord* apDominantEffect, unsigned int apAVEffect, NiPoint3 aOrigin, NiPoint3 aRotation, unsigned int apData3D, unsigned int apLight);
 };
 
 struct FUN_00822920
 {
     unsigned char m_data[0xa8];
 
-    FUN_00822920(void* a, int b, GameTimerRecord* c, unsigned int d, NiPoint3 e, NiPoint3 f);
+    FUN_00822920(void* apCaster, int apSpell, GameTimerRecord* apDominantEffect, unsigned int apAVEffect, NiPoint3 aOrigin, NiPoint3 aRotation);
 };
 
 FUN_0080f810::FUN_0080f810(void*, int, GameTimerRecord*, unsigned int, NiPoint3, NiPoint3, unsigned int, unsigned int)
@@ -774,30 +802,33 @@ FUN_00822920::FUN_00822920(void*, int, GameTimerRecord*, unsigned int, NiPoint3,
 // Constructs one of four class instances based on projectile->FUN_004086a0() and passes it to DAT_011e0e80.
 // @fnv 0x0081e040
 // src: XBOX_PDB 0x0081e040
-void __cdecl MagicProjectile_Launch(void* a, unsigned int b, unsigned int c, int d, GameTimerRecord* timer, S86a0* projectile,
-                          NiPoint3 first, NiPoint3 second)
+// pdb: MagicProjectile::Launch | MagicProjectile.obj | retail, upstream name already matches, high
+// pdb params: apCaster, apData3D, apLight, apSpell, apDominantEffect, apAVEffect, aOrigin, aRotation
+// pdb locals: pprojectile, pavEffect
+void __cdecl MagicProjectile_Launch(void* apCaster, unsigned int apData3D, unsigned int apLight, int apSpell, GameTimerRecord* apDominantEffect, S86a0* apAVEffect,
+                          NiPoint3 aOrigin, NiPoint3 aRotation)
 {
     void* result = 0;
     unsigned int currentTime;
 
-    currentTime = projectile ? (unsigned int)projectile : timer->GetTime();
+    currentTime = apAVEffect ? (unsigned int)apAVEffect : apDominantEffect->GetTime();
 
-    switch (projectile->FUN_004086a0())
+    switch (apAVEffect->FUN_004086a0())
     {
     case 0:
-        result = new FUN_0080f810(a, d, timer, currentTime, first, second, b, c);
+        result = new FUN_0080f810(apCaster, apSpell, apDominantEffect, currentTime, aOrigin, aRotation, apData3D, apLight);
         break;
 
     case 1:
-        result = new FUN_00811980(a, d, timer, currentTime, first, second);
+        result = new FUN_00811980(apCaster, apSpell, apDominantEffect, currentTime, aOrigin, aRotation);
         break;
 
     case 3:
-        result = new FUN_00819360(a, d, timer, currentTime, first, second, b, c);
+        result = new FUN_00819360(apCaster, apSpell, apDominantEffect, currentTime, aOrigin, aRotation, apData3D, apLight);
         break;
 
     case 2:
-        result = new FUN_00822920(a, d, timer, currentTime, first, second);
+        result = new FUN_00822920(apCaster, apSpell, apDominantEffect, currentTime, aOrigin, aRotation);
         break;
     }
 

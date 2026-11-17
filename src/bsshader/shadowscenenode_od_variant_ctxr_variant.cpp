@@ -8,7 +8,7 @@
 
 struct FUN_00c5b5a0_cls
 {
-    int __thiscall BSPortalGraph_GetAlwaysRenderAt(int idx);
+    int __thiscall BSPortalGraph_GetAlwaysRenderAt(int i);
 };
 extern "C" char DAT_01203144, DAT_01203150, DAT_011f9426, DAT_011f9434, DAT_01016264, DAT_01023128, DAT_01070c80,
     DAT_01070c70;
@@ -442,29 +442,32 @@ struct UpdateOwner
     unsigned TESDataHandler_GetRegionList();
     void FUN_00603ad0(UpdatePacket&);
     void CreatePartTexture(unsigned, LocalNodePtr&);
-    void TESNPC_FixNPCNormals(UpdateObject* object);
+    void TESNPC_FixNPCNormals(UpdateObject* apRef);
 };
 bool FUN_00605d20();
 const void* TESRace_GetHeadPartNodeName(unsigned);
 bool General_bFaceGenTexturing_Get();
 UpdateObject* BSUtilities_GetObjectByName(UpdateObject*, const void*);
 UpdateObject* NiObject_DynamicCast(void*, unsigned);
-bool MatchGeometryVertices(UpdateObject*, UpdateObject*, float, bool, unsigned);
-void ApplyFaceGenTextures(UpdateObject*, UpdatePacket&);
+bool FixNormals(UpdateObject*, UpdateObject*, float, bool, unsigned);
+void BSFaceGenManager_PrepareHeadForShaders(UpdateObject*, UpdatePacket&);
 extern unsigned DAT_0101f5f8;
-extern unsigned DAT_011f4a5c;
+extern unsigned NiMaterialProperty_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f4a5c (old: DAT_011f4a5c/g_011f4a5c)
 extern char DAT_0104a7bc;
 extern float DAT_01016248;
 extern "C" int __cdecl strncmp_r006056f0(const char*, const char*, unsigned);
 // @fnv 0x006056f0
 // src: COMMUNITY 0x006056f0
-void UpdateOwner::TESNPC_FixNPCNormals(UpdateObject* object)
+// pdb: TESNPC::FixNPCNormals | TESNPC.obj | retail, string-set bridge, high
+// pdb params: apRef
+// pdb locals: pface, ichildren, phead, pnode, pshape, pobj, pmat, pupperbody, pprop, ptemp, i, npcdata, ipart, spTempTexture
+void UpdateOwner::TESNPC_FixNPCNormals(UpdateObject* apRef)
 {
-    if (!object || !FUN_00605d20())
+    if (!apRef || !FUN_00605d20())
         return;
-    UpdateObject* rootNode = object->GetRoot();
+    UpdateObject* rootNode = apRef->GetRoot();
     unsigned entry = 0;
-    UpdateObject* currentNode = current.FUN_0066b0d0(object->GetRenderNode(0)).Modelloader_GetReferencedThis();
+    UpdateObject* currentNode = current.FUN_0066b0d0(apRef->GetRenderNode(0)).Modelloader_GetReferencedThis();
     UpdateObject* found = BSUtilities_GetObjectByName(rootNode, TESRace_GetHeadPartNodeName(0));
     UpdateObject* node = found ? found->GetNode() : 0;
     if (!node || !currentNode)
@@ -496,10 +499,10 @@ void UpdateOwner::TESNPC_FixNPCNormals(UpdateObject* object)
                             if (root)
                             {
                                 count = root->FUN_00a59d30(2);
-                                key = NiObject_DynamicCast(&DAT_011f4a5c, count);
+                                key = NiObject_DynamicCast(&NiMaterialProperty_ms_RTTI, count);
                                 if (key && !strncmp_r006056f0(key->FUN_00413f40()->FUN_0043b1b0(), &DAT_0104a7bc, 4))
                                 {
-                                    if (MatchGeometryVertices(root, node, DAT_01016248, true, 0))
+                                    if (FixNormals(root, node, DAT_01016248, true, 0))
                                     {
                                         currentNode->SetReady(true);
                                         break;
@@ -519,10 +522,10 @@ void UpdateOwner::TESNPC_FixNPCNormals(UpdateObject* object)
                         if (root)
                         {
                             count = root->FUN_00a59d30(2);
-                            key = NiObject_DynamicCast(&DAT_011f4a5c, count);
+                            key = NiObject_DynamicCast(&NiMaterialProperty_ms_RTTI, count);
                             if (key && !strncmp_r006056f0(key->FUN_00413f40()->FUN_0043b1b0(), &DAT_0104a7bc, 4))
                             {
-                                if (MatchGeometryVertices(root, node, DAT_01016248, true, 0))
+                                if (FixNormals(root, node, DAT_01016248, true, 0))
                                 {
                                     currentNode->SetReady(true);
                                     break;
@@ -562,7 +565,7 @@ void UpdateOwner::TESNPC_FixNPCNormals(UpdateObject* object)
         }
         references.FUN_00726070();
         packet.enabled = General_bFaceGenTexturing_Get();
-        ApplyFaceGenTextures(previous.Modelloader_GetReferencedThis(), packet);
-        ApplyFaceGenTextures(current.Modelloader_GetReferencedThis(), packet);
+        BSFaceGenManager_PrepareHeadForShaders(previous.Modelloader_GetReferencedThis(), packet);
+        BSFaceGenManager_PrepareHeadForShaders(current.Modelloader_GetReferencedThis(), packet);
     }
 }

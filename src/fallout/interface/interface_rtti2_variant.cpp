@@ -27,7 +27,10 @@ bool __cdecl Interface_IsMenuIDVisible(int, int);
 
 // @fnv 0x00704e10
 // src: XBOX_PDB 0x00704e10
-void __cdecl Interface_UpdateActorValue(int id)
+// pdb: Interface::UpdateActorValue | Interface.obj | retail, upstream name already matches, high
+// pdb params: aeWhich
+// pdb locals: bStatsMenuVisible, pstat, ptile
+void __cdecl Interface_UpdateActorValue(int aeWhich)
 {
     if (InterfaceManager_GetSingleton() && ((InterfaceGate704*)InterfaceManager_GetSingleton())->TESTextureList_GetTextureCount())
     {
@@ -38,13 +41,13 @@ void __cdecl Interface_UpdateActorValue(int id)
             ::StatsMenu* result = menu ? dynamic_cast< ::StatsMenu*>(((MenuLookup704*)menu)->Tile_GetMenu()) : 0;
             if (result)
             {
-                if (id == 0x4d)
+                if (aeWhich == 0x4d)
                 {
-                    result->UpdateActorValueTiles();
+                    result->UpdateAllActorValues();
                 }
                 else
                 {
-                    result->RefreshActorValueTile(static_cast<ActorValue::Index>(id));
+                    result->RefreshActorValueTile(static_cast<ActorValue::Index>(aeWhich));
                 }
             }
         }

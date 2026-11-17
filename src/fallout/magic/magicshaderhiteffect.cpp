@@ -73,6 +73,7 @@ struct BipedObject
     unsigned int unknown[2];
     NiAVObject* object;
 };
+// pdb: class BipedAnim, size 0x2b4 (here 0x1), 6 members
 class BipedAnim
 {
   public:
@@ -84,6 +85,7 @@ class InventoryItem
     TESBoundObject* GetObject();
 };
 
+// pdb: class ParticleShaderProperty, size 0x14c (here 0x1), bases: BSShaderProperty, 41 members
 class ParticleShaderProperty
 {
   public:
@@ -96,6 +98,7 @@ class ParticleShaderProperty
     void SetParticleTime(float);
     void UpdateParticlesAtTime(float, bool, bool);
 };
+// pdb: class ParticleShader, size 0x12c (here 0x1), bases: BSShader, 13 members
 class ParticleShader
 {
   public:
@@ -116,15 +119,18 @@ template <class T> class WeightedResultList
     void AddWeightedItem(T, unsigned int);
     T FindFirstItemExceedingRemaining();
 };
+// pdb: class Model, size 0x10 (here 0x18), 4 members
 class Model : public NiObjectNET
 {
 };
+// pdb: class ModelLoader, size 0x30 (here 0x1), 12 members
 class ModelLoader
 {
   public:
     NiNode* LoadFile(const char*, int, bool, bool, bool, bool);
     void LoadModel(const char*, NiPointer<Model>&);
 };
+// pdb: class TaskQueueInterface, size 0x10 (here 0x1), 4 members
 class TaskQueueInterface
 {
   public:
@@ -146,6 +152,8 @@ template <class T> struct ShaderPointerComparison : NiPointer<T>
 };
 
 // @fnv 0x0081FC70
+// pdb: MagicShaderHitEffect::Init | MagicShaderHitEffect.obj | retail, upstream name already matches, high
+// pdb locals: bactorRoot, bsword, switching, fswordLength, pparticleRoot, pmembraneRoot, b3rd, bdoParticles, handle, loc, sptexture, texname, imaxParticles, iparticlesPerPass, ipassCount, particleProperty, i, pactivator, spblockoutTexture, randomDebris, pdebrisList, pparticleProp, pobject, spmodel ...
 bool MagicShaderHitEffect::Init()
 {
     if (GetEffect())
@@ -293,7 +301,7 @@ bool MagicShaderHitEffect::Init()
                     ((Actor*)pTarget)->UpdateActorPresentation();
                 }
             }
-            m_pEffectShader->ApplyShaderToTree(scenegraph.shaders, spTexEffectData);
+            m_pEffectShader->StartTextureShader(scenegraph.shaders, spTexEffectData);
         }
         if (!bResetParticles && !m_kAddonModelObjects.GetSize() && m_pEffectShader &&
             m_pEffectShader->GetAddonModels() && m_kParticleShaderProperties.GetSize() > 0 &&
@@ -348,6 +356,9 @@ bool MagicShaderHitEffect::Init()
 }
 
 // @fnv 0x00820C10
+// pdb: MagicShaderHitEffect::GetAffectedScenegraph | MagicShaderHitEffect.obj | debug, object-file run extension, low
+// pdb params: abActorRoot, abSword, afSwordLength, apMembraneRoot, apParticleRoot
+// pdb locals: binventoryEnchantment, disintigrateArmor, pav, pbiped, bdisintigrateWeapon, pactor, pprocess, peffect, parmor, pbipObj, pweapon, diff, UpdateData
 void MagicShaderHitEffect::GetSceneGraphData(bool& isActor, bool& isWeapon, float& extent, NiAVObject*& shaderObject,
                                              NiAVObject*& particleObject)
 {
@@ -423,6 +434,7 @@ void MagicShaderHitEffect::GetSceneGraphData(bool& isActor, bool& isWeapon, floa
 
 // Releases the array storage through its virtual deallocator.
 // @fnv 0x006a8500
+// pdb: BSSimpleArray<CombatSearchDoor,1024>::_DeallocateBuffer | CombatGroup.obj | debug, call graph, medium
 void __fastcall FreeShaderArrayStorage(BSSimpleArray<NiPointer<ParticleShaderProperty> >* pThis)
 {
     pThis->_Deallocate(pThis->pBuffer);
@@ -439,6 +451,9 @@ struct S2f850
 };
 // @fnv 0x006c61b0
 // src: XBOX_PDB 0x006c61b0
+// pdb: BSSimpleArray<NiPointer<ObstacleUndoData>,1024>::Add | NavMesh_Util.obj | debug, call graph, medium
+// pdb params: aValue
+// pdb locals: iindex
 unsigned int S2f850::BSSimpleArray_NiPointer_NiAVObject_1024_Add(const NavMeshPtr& aValue)
 {
     unsigned int uiIndex = FUN_00761540();
@@ -448,6 +463,8 @@ unsigned int S2f850::BSSimpleArray_NiPointer_NiAVObject_1024_Add(const NavMeshPt
 }
 
 // @fnv 0x006c6200
+// pdb: BSSimpleArray<NiPointer<NiNode>,1024>::Clear | TaskQueueInterface.obj | debug, call graph, medium
+// pdb params: abFreeMemory
 template <> void BSSimpleArray<NiPointer<ParticleShaderProperty> >::RemoveAll(bool abFreeStorage)
 {
     if (pBuffer)
@@ -472,6 +489,7 @@ struct FUN_0081f320_helper
 
 // Calls FUN_0081f770 on this, then deletes this with NiMemObject::operator delete when flags has bit 0 set, and returns this.
 // @fnv 0x0081f320
+// pdb: MagicShaderHitEffect::`scalar deleting destructor' | MagicShaderHitEffect.obj | debug, object-file run extension, low
 void* FUN_0081f320_helper::FUN_0081f320(unsigned int flags)
 {
     FUN_0081f770(this);
@@ -490,8 +508,9 @@ struct Dummy0042f800
 };
 
 // @fnv 0x00822580
-// src: GUESS 0x00822580 (confidence: low)
-void* __fastcall Object_ProcessAndReturnValue_00822580(int** ppObject)
+// src: XBOX_DEBUG_PDB 0x00822580
+// pdb: BSSimpleArray<NiPointer<NiAVObject>,1024>::BSSimpleArray<NiPointer<NiAVObject>,1024> | MagicShaderHitEffect.obj | debug, call graph, high
+void* __fastcall BSSimpleArray_NiPointer_NiAVObject_1024_ctor(int** ppObject)
 {
     *ppObject = &DAT_010159d4;
     reinterpret_cast<Dummy0042f800*>(ppObject)->FUN_0042fcb0(0, 0);
@@ -500,6 +519,7 @@ void* __fastcall Object_ProcessAndReturnValue_00822580(int** ppObject)
 
 // Releases each particle shader property held by the array.
 // @fnv 0x00822820
+// pdb: NiPointer<ObstacleUndoData>::~NiPointer<ObstacleUndoData> | NavMesh.obj | debug, object-file run extension, low
 template <> void BSSimpleArray<NiPointer<ParticleShaderProperty> >::ReleaseElements(
     NiPointer<ParticleShaderProperty>* apElems, unsigned int auiCount)
 {
@@ -527,6 +547,9 @@ struct AX
 };
 // @fnv 0x00822860
 // src: XBOX_PDB 0x00822860
+// pdb: BSSimpleArray<NavMeshStaticAvoidNode,1024>::_DestructItems | NavMesh.obj | debug, object-file run extension, low
+// pdb params: apFirstAddr, aiCount
+// pdb locals: i
 void __fastcall BSSimpleArray_NiPointer_ObstacleUndoData_1024_InitialSetup(AX* self, UW uiMaxSize, UW uiSize)
 {
     self->data = 0;
@@ -638,6 +661,9 @@ extern TESSaveLoadGame* g_TESSaveLoadGame;
 
 // Computes the save size for an active effect: base size from GetSaveSize plus 4, and if the save version is at least 0x37, adds 1 and 4 more.
 // @fnv 0x00821dd0
+// pdb: MagicShaderHitEffect::GetSaveSize | MagicShaderHitEffect.obj | debug, object-file run extension, low
+// pdb params: apEffect, apTarget
+// pdb locals: isize
 unsigned short MagicShaderHitEffect::GetEffectSaveSize(ActiveEffect* aEffect, TESObjectREFR* aRefr)
 {
     unsigned short isize = 0;
@@ -666,6 +692,7 @@ struct FUN_008225b0_shell : Arr3520
 
 // @fnv 0x008225b0
 // src: GUESS 0x008225b0 (confidence: low)
+// pdb: BSSimpleArray<NiPointer<NiAVObject>,1024>::~BSSimpleArray<NiPointer<NiAVObject>,1024> | MagicShaderHitEffect.obj | debug, object-file run extension, low
 void FUN_008225b0_shell::UpdateState_008225b0()
 {
     m_data = &DAT_010159d4;
@@ -706,6 +733,7 @@ struct FUN_00822600_shell : AX
 
 // Sets the object's vtable to DAT_0107b84c, calls FUN_006b3eb0 with 0, 0, and returns this as an AX pointer.
 // @fnv 0x00822600
+// pdb: BSSimpleArray<char *,1024>::BSSimpleArray<char *,1024> | MagicShaderHitEffect.obj | debug, object-file run extension, low
 AX* __thiscall FUN_00822600_shell::InitVtable()
 {
     vtable = (unsigned int)&DAT_0107b84c;
@@ -725,6 +753,7 @@ extern int DAT_0107b84c;
 
 // @fnv 0x00822630
 // src: GUESS 0x00822630 (confidence: low)
+// pdb: BSSimpleArray<char *,1024>::~BSSimpleArray<char *,1024> | MagicShaderHitEffect.obj | debug, call graph, medium
 void GlobalObject_00869f00::UpdateState_00822630()
 {
     m_data = &DAT_0107b84c;
@@ -758,6 +787,7 @@ struct FUN_00822530_shell
 // Sets the object's vtable to DAT_0107b824, calls FUN_00822860 with 0 and false, and returns this.
 // @fnv 0x00822530
 // src: GUESS 0x00822530 (confidence: medium)
+// pdb: BSSimpleArray<NiPointer<ParticleShaderProperty>,1024>::BSSimpleArray<NiPointer<ParticleShaderProperty>,1024> | MagicShaderHitEffect.obj | debug, call graph, medium
 FUN_00822530_shell* FUN_00822530_shell::InitializeArrayView()
 {
     vtable = &DAT_0107b824;
@@ -772,6 +802,7 @@ struct S008226F0
     void* FUN_008226f0(unsigned int);
 };
 // @fnv 0x008226f0
+// pdb: BSSimpleArray<NiPointer<ParticleShaderProperty>,1024>::`scalar deleting destructor' | MagicShaderHitEffect.obj | retail, vtable slot, high
 void* S008226F0::FUN_008226f0(unsigned int flags)
 {
     Object_ResetVirtualTableAndRemoveAll(this);
@@ -788,6 +819,7 @@ struct ThisHolder
 };
 // Calls FUN_008225b0, then deallocates this when flags has bit 0 set, and returns this.
 // @fnv 0x00822720
+// pdb: BSSimpleArray<NiPointer<NiAVObject>,1024>::`scalar deleting destructor' | MagicShaderHitEffect.obj | retail, vtable slot, high
 void* ThisHolder::FUN_00822720(unsigned int flags)
 {
     UpdateState_008225b0();
@@ -804,6 +836,7 @@ struct Struct00822750
 void __cdecl _Deallocate(void*);
 // Calls FUN_00822630, deallocates this when flags has bit 0 set, and returns this.
 // @fnv 0x00822750
+// pdb: BSSimpleArray<char *,1024>::`scalar deleting destructor' | MagicShaderHitEffect.obj | retail, vtable slot, high
 void* Struct00822750::FUN_00822750(unsigned int flags)
 {
     UpdateState_00822630();
@@ -827,6 +860,8 @@ struct FUN_0087d230 : FUN_008225b0
     virtual ~FUN_0087d230();
 };
 // @fnv 0x0087d230
+// pdb: operator delete | BGSDehydration.obj | debug, call graph (shared callers), medium
+// pdb params: apPtr
 FUN_0087d230::~FUN_0087d230()
 {
     Arr3520::RemoveAll(true);
@@ -880,9 +915,10 @@ unsigned short MagicShaderHitEffect::GetReferenceSaveSize()
 // Returns the process light intensity when a process is set, otherwise returns 1.0f.
 // @fnv 0x008c4850
 // src: XBOX_PDB 0x008c4850
+// pdb: Actor::GetAlphaMult | Actor_Magic.obj | debug, upstream name already matches, high
 float Actor::GetAlphaMult()
 {
-    return m_pBaseProcess ? m_pBaseProcess->GetLightIntensity() : 1.0f;
+    return pCurrentProcess ? pCurrentProcess->GetLightIntensity() : 1.0f;
 }
 
 struct ShaderBaseSave
@@ -899,6 +935,9 @@ extern TESSaveLoadGame* g_TESSaveLoadGame;
 
 // @fnv 0x00821e40
 // src: COMMUNITY 0x00821e40
+// pdb: MagicShaderHitEffect::SaveGame | MagicShaderHitEffect.obj | debug, object-file run extension, low
+// pdb params: apEffect, apTarget
+// pdb locals: iwornObjectID
 void MagicShaderHitEffect::SaveGame_00821e40(ActiveEffect* pEffect, TESObjectREFR* a2)
 {
     reinterpret_cast<ShaderBaseSave*>(this)->MagicHitEffect_SaveGame(pEffect, a2);
@@ -948,6 +987,8 @@ struct FUN_00822650_shell : InventoryItem
 };
 
 // @fnv 0x00822650
+// pdb: BSSimpleArray<NiPointer<NiAVObject>,1024>::~BSSimpleArray<NiPointer<NiAVObject>,1024> | MagicShaderHitEffect.obj | retail, object-file run extension, low
+// pdb note: debug build links it to BSWeightedRandom<char *>::PickResult
 unsigned int FUN_00822650_shell::FindFirstItemExceedingRemaining()
 {
     unsigned int result = 0;
@@ -1012,6 +1053,9 @@ struct FUN_00695230_shell
 // Resizes the container to index elements: clears when index is 0, grows or shrinks the buffer and adjusts count and capacity.
 // @fnv 0x00695230
 // src: COMMUNITY 0x00695230
+// pdb: BSSimpleArray<NavMeshTriangleDoorPortal,1024>::Remove | NavMesh_LoadSave.obj | debug, object-file run extension, low
+// pdb params: aiIndex, abShrink
+// pdb locals: inewSize, pnewBuffer
 void FUN_00695230_shell::BSSimpleArray_NiPointer_1024_SetSize(unsigned int uiNewSize, bool flag)
 {
     if (uiNewSize == 0)
@@ -1105,10 +1149,11 @@ void MagicShaderHitEffect::InitHitEffect(ActiveEffect* apEffect, TESObjectREFR* 
 
 // Initializes an effect-shader hit effect: stores the shader and duration, sets up third-person state for the player, and loads the shader's addon models.
 // @fnv 0x0081f580
-MagicShaderHitEffect::MagicShaderHitEffect(TESObjectREFR* apTarget, TESEffectShader* apShader, float afDuration)
+// pdb: MagicShaderHitEffect::MagicShaderHitEffect | MagicShaderHitEffect.obj | retail, call graph, high
+MagicShaderHitEffect::MagicShaderHitEffect(TESObjectREFR* apTarget, TESEffectShader* apEffectData, float afTime)
     : MagicHitEffect(apTarget, 0), m_pParticleShaderNode(0), spTexEffectData(0)
 {
-    m_pEffectShader = apShader;
+    m_pEffectShader = apEffectData;
     m_fEffectShaderScale = 0.0f;
     spTexEffectData = 0;
     m_pParticleShaderNode = 0;
@@ -1124,13 +1169,13 @@ MagicShaderHitEffect::MagicShaderHitEffect(TESObjectREFR* apTarget, TESEffectSha
     {
         b3rdPerson = false;
     }
-    if (afDuration < 0.0)
+    if (afTime < 0.0)
     {
         m_fParticleParameter5 = 3.402823466e+38f;
     }
     else
     {
-        m_fParticleParameter5 = afDuration;
+        m_fParticleParameter5 = afTime;
     }
     if (m_pEffectShader && m_pEffectShader->GetAddonModels())
     {
@@ -1145,7 +1190,7 @@ MagicShaderHitEffect::MagicShaderHitEffect(TESObjectREFR* apTarget, TESEffectSha
 
 struct FUN_008220c0_mgr
 {
-    void TESSaveLoadGame_SaveNumericID(unsigned int* p, int n);
+    void TESSaveLoadGame_SaveNumericID(unsigned int* apFormID, int aiSize);
 };
 extern FUN_008220c0_mgr* DAT_011de45c;
 unsigned int __fastcall GetHavokWorldObjectCountInSceneGraph_0084e3a0(void* p);
@@ -1209,6 +1254,7 @@ struct HitEffActiveEffect : ActiveEffect
 
 
 // @fnv 0x0081f350
+// pdb: MagicShaderHitEffect::MagicShaderHitEffect | MagicShaderHitEffect.obj | retail, object-file run extension, low
 MagicShaderHitEffect::MagicShaderHitEffect(TESObjectREFR* apTarget, ActiveEffect* apEffect)
     : MagicHitEffect(apTarget, apEffect), m_pParticleShaderNode(0), spTexEffectData(0)
 {
@@ -1357,7 +1403,7 @@ template <class T> struct xArr2
 struct xAudio
 {
     static xAudio* Get();
-    void Play(NiNode* n, float f, int i);
+    void Play(NiNode* apObj, float afFadeSeconds, int aiFlags);
 };
 
 struct xLoader
@@ -1395,6 +1441,9 @@ extern xLoader* xg_pLoader;
 extern "C" int __cdecl sprintf_s(char* buf, unsigned int size, const char* fmt, ...);
 
 // @fnv 0x0081f770
+// pdb: LoadingMenu::SetNextSlide | LoadingMenu.obj | retail, string-set bridge, high
+// pdb params: apTSP
+// pdb locals: spTempSourceTextureTile, tempMemContext
 FUN_0081f770::~FUN_0081f770()
 {
     if (!GetID() & (m_pReference != g_thePlayer))
@@ -1444,12 +1493,12 @@ FUN_0081f770::~FUN_0081f770()
         if (m_pForm->GetFieldAt158()->GetTextureResourceName())
         {
             sprintf_s(acPath, 0x104, "%s\\%s", "Textures", m_pForm->GetFieldAt158()->GetTextureResourceName());
-            g_TES->LoadCanopyShadowTexture(static_cast<const char*>(acPath), 0);
+            g_TES->RemoveTextureImage(static_cast<const char*>(acPath), 0);
         }
         if (m_pForm->GetFieldAt14C()->GetTextureNameLength() > 0)
         {
             sprintf_s(acPath, 0x104, "%s\\%s", "Textures", m_pForm->GetFieldAt14C()->GetTextureResourceName());
-            g_TES->LoadCanopyShadowTexture(static_cast<const char*>(acPath), 0);
+            g_TES->RemoveTextureImage(static_cast<const char*>(acPath), 0);
         }
         if (m_pForm && m_pForm->GetAddonModels())
         {
@@ -1516,7 +1565,7 @@ extern float DAT_0106682c, DAT_01013ea4;
 unsigned int FUN_00ba52d0();
 float BSMIN(float, float);
 float BSMAX_00404010(float, float);
-void FUN_00b6bb30(NiNode*, float);
+void RecursiveSetPropertyFadeAlpha(NiNode*, float);
 
 }  // namespace ParticleUpdate
 
@@ -1527,14 +1576,17 @@ struct ShaderHitEffectUpdateBase
 
 // Advances the effect timer, updates properties, addons and texture, and finishes the effect when all parts are done.
 // @fnv 0x00820f30
-bool MagicShaderHitEffect::Update(float afDeltaTime)
+// pdb: MagicShaderHitEffect::Update | MagicShaderHitEffect.obj | retail, upstream name already matches, high
+// pdb params: afTimeDelta
+// pdb locals: bdone, falpha, pref3D, fmult, pfadeNode, fparticleCount, flastParticleCount, i, fparticleCountForThisPass, pparticleProp, fscaleHigh, fscale, ffadeRate, fscaleLow
+bool MagicShaderHitEffect::Update(float afTimeDelta)
 {
-    if (!reinterpret_cast<ShaderHitEffectUpdateBase*>(this)->UpdateMagicHitEffect(afDeltaTime) || !pTarget || !pTarget->GetNiNode())
+    if (!reinterpret_cast<ShaderHitEffectUpdateBase*>(this)->UpdateMagicHitEffect(afTimeDelta) || !pTarget || !pTarget->GetNiNode())
     {
         ResetTargetPointer();
         return false;
     }
-    m_fEffectShaderScale += afDeltaTime;
+    m_fEffectShaderScale += afTimeDelta;
     bool done = bWasPlaying;
     AttachToTarget();
     float multiplier = 1.0f;
@@ -1567,7 +1619,7 @@ bool MagicShaderHitEffect::Update(float afDeltaTime)
         float total = 0.0f;
         for (unsigned int index = 0; index < m_kParticleShaderProperties.GetSize(); index++)
             total += reinterpret_cast<ParticleUpdate::Property*>(static_cast<ParticleShaderProperty*>(m_kParticleShaderProperties.GetAt(index)))->FUN_006a78f0() * ParticleUpdate::FUN_00ba52d0();
-        float available = static_cast<ParticleUpdate::EffectShaderUpdateView*>(m_pEffectShader)->TESEffectShader_BirthParticles(total, afDeltaTime, m_fEffectShaderScale, bWasPlaying);
+        float available = static_cast<ParticleUpdate::EffectShaderUpdateView*>(m_pEffectShader)->TESEffectShader_BirthParticles(total, afTimeDelta, m_fEffectShaderScale, bWasPlaying);
         if (available > ParticleUpdate::DAT_01012060)
             done = false;
         for (unsigned int index2 = 0; index2 < m_kParticleShaderProperties.GetSize(); index2++)
@@ -1583,11 +1635,11 @@ bool MagicShaderHitEffect::Update(float afDeltaTime)
         }
         if (m_kAddonModelObjects.GetSize() > 0)
         {
-            float delta = afDeltaTime / (!bWasPlaying ? static_cast<ParticleUpdate::EffectShaderUpdateView*>(m_pEffectShader)->TESObjectWEAP_GetShotsPerSecond() : static_cast<ParticleUpdate::EffectShaderUpdateView*>(m_pEffectShader)->GetFootWeight() * ParticleUpdate::DAT_0101a6b0);
+            float delta = afTimeDelta / (!bWasPlaying ? static_cast<ParticleUpdate::EffectShaderUpdateView*>(m_pEffectShader)->TESObjectWEAP_GetShotsPerSecond() : static_cast<ParticleUpdate::EffectShaderUpdateView*>(m_pEffectShader)->GetFootWeight() * ParticleUpdate::DAT_0101a6b0);
             m_fAddonModelTimer = ParticleUpdate::BSMAX_00404010(0.0f, ParticleUpdate::BSMIN(1.0f, m_fAddonModelTimer + delta));
             if (m_fAddonModelTimer > ParticleUpdate::DAT_01012060)
                 done = false;
-            delta = afDeltaTime / (!bWasPlaying ? static_cast<ParticleUpdate::EffectShaderUpdateView*>(m_pEffectShader)->GetFloatAt144() : static_cast<ParticleUpdate::EffectShaderUpdateView*>(m_pEffectShader)->GetValue() * ParticleUpdate::DAT_0101a6b0);
+            delta = afTimeDelta / (!bWasPlaying ? static_cast<ParticleUpdate::EffectShaderUpdateView*>(m_pEffectShader)->GetFloatAt144() : static_cast<ParticleUpdate::EffectShaderUpdateView*>(m_pEffectShader)->GetValue() * ParticleUpdate::DAT_0101a6b0);
             m_fAddonModelScale = ParticleUpdate::BSMAX_00404010(0.0f, ParticleUpdate::BSMIN(1.0f, m_fAddonModelScale + delta));
             float maximumSlot16 = 1.0f;
             float minimum = !bWasPlaying ? ParticleUpdate::BSMAX_00404010(ParticleUpdate::DAT_01013ea4, static_cast<ParticleUpdate::EffectShaderUpdateView*>(m_pEffectShader)->TESEffectShader_GetAddOnScaleStart())
@@ -1595,14 +1647,14 @@ bool MagicShaderHitEffect::Update(float afDeltaTime)
             float factorSlot13 = minimum + (maximumSlot16 - minimum) * m_fAddonModelScale;
             for (unsigned int index3 = 0; index3 < m_kAddonModelObjects.GetSize(); index3++)
             {
-                ParticleUpdate::FUN_00b6bb30(static_cast<NiAVObject*>(m_kAddonModelObjects.GetAt(index3))->IsSceneNode(), m_fAddonModelTimer);
+                ParticleUpdate::RecursiveSetPropertyFadeAlpha(static_cast<NiAVObject*>(m_kAddonModelObjects.GetAt(index3))->IsSceneNode(), m_fAddonModelTimer);
                 static_cast<NiAVObject*>(m_kAddonModelObjects.GetAt(index3))->NiAVObject_SetScale(factorSlot13);
             }
         }
     }
     if (static_cast<BSShaderPPLightingProperty::TextureEffectData*>(spTexEffectData))
     {
-        static_cast<ParticleUpdate::EffectShaderUpdateView*>(m_pEffectShader)->UpdateShaderState(static_cast<BSShaderPPLightingProperty::TextureEffectData*>(spTexEffectData), afDeltaTime, m_fEffectShaderScale, m_fFirstFloatValue, bWasPlaying);
+        static_cast<ParticleUpdate::EffectShaderUpdateView*>(m_pEffectShader)->UpdateShaderState(static_cast<BSShaderPPLightingProperty::TextureEffectData*>(spTexEffectData), afTimeDelta, m_fEffectShaderScale, m_fFirstFloatValue, bWasPlaying);
         *reinterpret_cast<float*>(static_cast<BSShaderPPLightingProperty::TextureEffectData*>(spTexEffectData)->data + 0x18) *= multiplier;
         *reinterpret_cast<float*>(static_cast<BSShaderPPLightingProperty::TextureEffectData*>(spTexEffectData)->data + 0x28) *= multiplier;
         if (*reinterpret_cast<float*>(static_cast<BSShaderPPLightingProperty::TextureEffectData*>(spTexEffectData)->data + 0x48) > ParticleUpdate::DAT_01012060 || *reinterpret_cast<float*>(static_cast<BSShaderPPLightingProperty::TextureEffectData*>(spTexEffectData)->data + 0x38) > ParticleUpdate::DAT_01012060)
@@ -1634,6 +1686,8 @@ struct BSAudioX_821bd0
 
 // Applies the shader effect to the target's nodes, plays a sound for certain shader types, then clears the effect data and target.
 // @fnv 0x00821bd0
+// pdb: MagicShaderHitEffect::ClearTarget | MagicShaderHitEffect.obj | debug, object-file run extension, low
+// pdb locals: pav, i
 void MagicShaderHitEffect::ApplyAndCleanup()
 {
     if (pTarget && m_pEffectShader &&
@@ -1698,6 +1752,8 @@ class EffView : public MagicShaderHitEffect
 };
 
 // @fnv 0x008217e0
+// pdb: MagicShaderHitEffect::UpdatePosition | MagicShaderHitEffect.obj | debug, object-file run extension, low
+// pdb locals: bplayer, ptarget, b1stPerson, binventory, pparticleTarget, pmembraneTarget, bunused, funused, targetRot, pnode, UpdateData
 void __fastcall UpdateEffectNode(EffView* pEffectView)
 {
     bool bInitTmp = (pEffectView->GetTarget() == g_thePlayer);
@@ -1844,6 +1900,9 @@ class ArrX
     void ConstructElements(FUN_006e6da0* pData, unsigned int ItemUpdateArray);
 };
 // @fnv 0x00822780
+// pdb: BSSimpleArray<NiPointer<ObstacleUndoData>,1024>::_ConstructItems | NavMesh.obj | debug, call graph, medium
+// pdb params: apFirstAddr, aiCount
+// pdb locals: i
 void ArrX::ConstructElements(FUN_006e6da0* pData, unsigned int ItemUpdateArray)
 {
     for (unsigned int i = 0; i < ItemUpdateArray; i++)
@@ -1859,6 +1918,9 @@ extern TESSaveLoadGame* g_TESSaveLoadGame;
 // Reads effect shader scale, particle effects flag, and affected armor object ID from the save stream.
 // @fnv 0x00821ed0
 // src: XBOX_PDB 0x00821ed0
+// pdb: MagicShaderHitEffect::LoadGame | MagicShaderHitEffect.obj | debug, object-file run extension, low
+// pdb params: apEffect, apTarget
+// pdb locals: iwornObjectID
 void MagicShaderHitEffect::LoadGame_00821ed0(ActiveEffect* effect, TESObjectREFR* target)
 {
     reinterpret_cast<ShaderBaseLoad*>(this)->SaveLoad(effect, target);

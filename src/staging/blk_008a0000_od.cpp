@@ -34,9 +34,11 @@ struct FUN_008a1a40_shell : Actor
 };
 // @fnv 0x008a1a40
 // src: COMMUNITY 0x008a1a40
+// pdb: Actor::SetCriticalStage | Actor.obj | debug, upstream name already matches, high
+// pdb params: aeStage
 void FUN_008a1a40_shell::Actor_SetCriticalStage(Actor* apActor)
 {
-    *reinterpret_cast<Actor**>(&m_eCriticalStage) = apActor;
+    *reinterpret_cast<Actor**>(&eCriticalStage) = apActor;
     ProcessQueuedActorUpdate();
 }
 
@@ -176,6 +178,7 @@ struct FUN_008b3af0_Class
 
 // @fnv 0x008b3af0
 // src: XBOX_PDB 0x008b3af0
+// pdb: Actor::ResumeMoving | Actor.obj | debug, upstream name already matches, high
 void FUN_008b3af0_Class::Actor_ResumeMoving()
 {
     ((FUN_008b3b10_Class*)m_190)->ActorMover_ResumeMoving();
@@ -242,6 +245,7 @@ struct FUN_008beae0 : FUN_008beae0_vt
     void ProcessCoverLOSResult();
 };
 // @fnv 0x008beae0
+// pdb: Actor::GetActorAssistance | Actor.obj | debug, call graph, medium
 void FUN_008beae0::ProcessCoverLOSResult()
 {
     if (*(FUN_00884920_holder**)((char*)this + 0x68) && (*(FUN_00884920_holder**)((char*)this + 0x68))->BaseProcess_HasCachedValues())
@@ -349,6 +353,8 @@ struct FUN_008a88b0_class
 
 // Returns the next node of the list obtained from m_068, or -1 if that list is null.
 // @fnv 0x008a88b0
+// pdb: Actor::GetCurrentAmmoClipCount | Actor.obj | debug, object-file gap fill, medium
+// pdb locals: pammoItem
 BSSimpleList<int>* FUN_008a88b0_class::GetNextListItem()
 {
     BSSimpleList<int>* result = m_068->GetNextListItem();
@@ -369,6 +375,8 @@ struct FUN_008b3a80_Class
 };
 // Calls virtual method v2 on the object stored at this+0x190, passing arg through.
 // @fnv 0x008b3a80
+// pdb: Actor::ClearMoveMode | Actor.obj | debug, call graph, medium
+// pdb params: auiMoveMode
 void FUN_008b3a80_Class::ForwardToVtSlot(void* arg)
 {
     ((FUN_008b3a80_vt*)*(void**)((char*)this + 0x190))->v2(arg);
@@ -755,13 +763,16 @@ struct FUN_008a81e0_Class
 // If unk068 is set, calls its FUN_008a81e0_FieldCall with param and 0 and returns unk04 of the result, otherwise returns 0.
 // @fnv 0x008a81e0
 // src: XBOX_PDB 0x008a81e0
-int FUN_008a81e0_Class::Actor_GetDetectionLevelValue(int param)
+// pdb: Actor::GetDetectionLevelValue | Actor.obj | retail, upstream name already matches, high
+// pdb params: apActor
+// pdb locals: ivalue, pstate
+int FUN_008a81e0_Class::Actor_GetDetectionLevelValue(int apActor)
 {
     int result = 0;
 
     if (unk068 != 0)
     {
-        FUN_008a81e0_Result* value = unk068->FUN_008a81e0_FieldCall(param, 0);
+        FUN_008a81e0_Result* value = unk068->FUN_008a81e0_FieldCall(apActor, 0);
         if (value != 0)
         {
             result = value->unk04;
@@ -836,10 +847,13 @@ class B9565Outer
 
 // @fnv 0x008bc270
 // src: COMMUNITY 0x008bc270
-void Actor_HandleGrabIKNote(B9565Outer* pOuter, B9565Obj* pObj)
+// pdb: Actor::HandleGrabIKNote | Actor.obj | retail, upstream name already matches, high
+// pdb params: apObjRefr, apNote
+// pdb locals: pactor, pgrabNote, earm
+void Actor_HandleGrabIKNote(B9565Outer* apObjRefr, B9565Obj* apNote)
 {
-    B9565Outer* a = pOuter;
-    B9565Obj* b5 = pObj;
+    B9565Outer* a = apObjRefr;
+    B9565Obj* b5 = apNote;
     void* p2;
     if (a->m_ac != 0)
     {
@@ -881,14 +895,16 @@ struct FUN_008be220_cls
     int unk24;
     int unk28;
     FUN_008be220_obj* m_2c;
-    float BaseProcess_GetCachedRadius(FUN_008be220_vt* a1);
+    float BaseProcess_GetCachedRadius(FUN_008be220_vt* apOwner);
 };
 
 // @fnv 0x008be220
 // src: XBOX_PDB 0x008be220
-float FUN_008be220_cls::BaseProcess_GetCachedRadius(FUN_008be220_vt* apVt)
+// pdb: BaseProcess::GetCachedRadius | DebugTextActor.obj | debug, upstream name already matches, high
+// pdb params: apOwner
+float FUN_008be220_cls::BaseProcess_GetCachedRadius(FUN_008be220_vt* apOwner)
 {
-    return m_2c == 0 ? 0.0f : (!m_2c->CachedValues_IsDirty(1) ? m_2c->m_uiFilterValue : apVt->v0());
+    return m_2c == 0 ? 0.0f : (!m_2c->CachedValues_IsDirty(1) ? m_2c->m_uiFilterValue : apOwner->v0());
 }
 
 class Fun008be490Inner
@@ -925,15 +941,17 @@ class FUN_008be490_cls
     int unk24;
     int unk28;
     Fun008be490Inner* m_pInner;
-    float BaseProcess_GetCachedForwardLength(Fun008be490Arg* arg);
+    float BaseProcess_GetCachedForwardLength(Fun008be490Arg* apOwner);
 };
 
 // Returns 0 if m_pInner is null, m_pInner->m_f0c if its Check(0x8000) fails, otherwise arg->GetValue().
 // @fnv 0x008be490
 // src: XBOX_PDB 0x008be490
-float FUN_008be490_cls::BaseProcess_GetCachedForwardLength(Fun008be490Arg* arg)
+// pdb: BaseProcess::GetCachedForwardLength | Actor.obj | debug, upstream name already matches, high
+// pdb params: apOwner
+float FUN_008be490_cls::BaseProcess_GetCachedForwardLength(Fun008be490Arg* apOwner)
 {
-    return m_pInner == 0 ? 0.0f : (!m_pInner->Check(0x8000) ? m_pInner->m_f0c : arg->GetValue());
+    return m_pInner == 0 ? 0.0f : (!m_pInner->Check(0x8000) ? m_pInner->m_f0c : apOwner->GetValue());
 }
 
 class C8BEB50Source
@@ -992,15 +1010,17 @@ class C8BEB50Holder
     int unk28;
     C8BEB50Data* m_pUserData;
 
-    int BaseProcess_GetCachedActorAssistance(C8BEB50Source* pkSource);
+    int BaseProcess_GetCachedActorAssistance(C8BEB50Source* apOwner);
 };
 
 // Returns 0 if the data pointer is null, the data's m_iValue if flag 0x800 is clear, otherwise the source's GetValue().
 // @fnv 0x008beb50
 // src: XBOX_PDB 0x008beb50
-int C8BEB50Holder::BaseProcess_GetCachedActorAssistance(C8BEB50Source* pkSource)
+// pdb: BaseProcess::GetCachedActorAssistance | DebugTextActor.obj | debug, upstream name already matches, high
+// pdb params: apOwner
+int C8BEB50Holder::BaseProcess_GetCachedActorAssistance(C8BEB50Source* apOwner)
 {
-    return !m_pUserData ? 0 : (!m_pUserData->IsFlagSet(0x800) ? m_pUserData->m_iValue : pkSource->GetValue());
+    return !m_pUserData ? 0 : (!m_pUserData->IsFlagSet(0x800) ? m_pUserData->m_iValue : apOwner->GetValue());
 }
 
 struct ActorSubObject_bebb0
@@ -1016,7 +1036,7 @@ struct ActorSubObject_bebb0
 struct HolderBebb0
 {
     bool Probe();
-    void Attach(void* p);
+    void Attach(void* apOwner);
 };
 
 struct FUN_008bebb0_cls
@@ -1069,6 +1089,7 @@ struct FUN_008bebb0_cls
 
 // If m_68 exists and Probe succeeds, attaches &m_a8 to it; otherwise calls m_a8.v5().
 // @fnv 0x008bebb0
+// pdb: Actor::GetMedicineEffectivenessMultiplier | Actor.obj | debug, call graph (shared callers), medium
 void FUN_008bebb0_cls::AttachSubObject()
 {
     if (m_68 != 0 && m_68->Probe())
@@ -1119,22 +1140,24 @@ class FUN_008bec20_cls
     int unk24;
     int unk28;
     Fun008bec20Inner* m_pInner;
-    float BaseProcess_GetCachedMedicineEffectivenessMult(Fun008bec20Arg* arg);
+    float BaseProcess_GetCachedMedicineEffectivenessMult(Fun008bec20Arg* apOwner);
 };
 
 // Returns 0.0f if m_pInner is null, otherwise m_pInner->m_f14 unless IsSomething(16) is set, in which case it returns arg->GetValue().
 // @fnv 0x008bec20
 // src: XBOX_PDB 0x008bec20
-float FUN_008bec20_cls::BaseProcess_GetCachedMedicineEffectivenessMult(Fun008bec20Arg* arg)
+// pdb: BaseProcess::GetCachedMedicineEffectivenessMult | DebugTextActor.obj | debug, upstream name already matches, high
+// pdb params: apOwner
+float FUN_008bec20_cls::BaseProcess_GetCachedMedicineEffectivenessMult(Fun008bec20Arg* apOwner)
 {
-    return m_pInner == 0 ? 0.0f : (!m_pInner->IsSomething(16) ? m_pInner->m_f14 : arg->GetValue());
+    return m_pInner == 0 ? 0.0f : (!m_pInner->IsSomething(16) ? m_pInner->m_f14 : apOwner->GetValue());
 }
 
 struct S_008bec80_Base;
 struct S_008bec80_Tgt
 {
     bool BaseProcess_HasCachedValues();
-    void BaseProcess_GetCachedSurvivalEffectivenessMult(S_008bec80_Base* p);
+    void BaseProcess_GetCachedSurvivalEffectivenessMult(S_008bec80_Base* apOwner);
 };
 struct S_008bec80_Base
 {
@@ -1198,6 +1221,7 @@ struct S_008bec80 : S_008bec80_Head, S_008bec80_Base
 // If unk68 exists and its FUN_00884920 returns true, calls unk68->FUN_008becf0(this); otherwise calls v6().
 // @fnv 0x008bec80
 // src: XBOX_PDB 0x008bec80
+// pdb: Actor::GetSurvivalEffectivenessMultiplier | Actor.obj | debug, upstream name already matches, high
 void S_008bec80::Actor_GetSurvivalEffectivenessMultiplier()
 {
     if (unk68 && unk68->BaseProcess_HasCachedValues())
@@ -1254,14 +1278,16 @@ struct FUN_008becf0_cls
     unsigned int unk28;
     FUN_008becf0_Shape* m_2c;
 
-    float BaseProcess_GetCachedSurvivalEffectivenessMult(FUN_008becf0_ParamObj* param);
+    float BaseProcess_GetCachedSurvivalEffectivenessMult(FUN_008becf0_ParamObj* apOwner);
 };
 
 // @fnv 0x008becf0
 // src: XBOX_PDB 0x008becf0
-float FUN_008becf0_cls::BaseProcess_GetCachedSurvivalEffectivenessMult(FUN_008becf0_ParamObj* param)
+// pdb: BaseProcess::GetCachedSurvivalEffectivenessMult | Actor.obj | debug, upstream name already matches, high
+// pdb params: apOwner
+float FUN_008becf0_cls::BaseProcess_GetCachedSurvivalEffectivenessMult(FUN_008becf0_ParamObj* apOwner)
 {
-    return (m_2c == 0) ? 0.0f : ((!m_2c->CachedValues_IsDirty(0x80000000)) ? m_2c->m_18 : param->v6());
+    return (m_2c == 0) ? 0.0f : ((!m_2c->CachedValues_IsDirty(0x80000000)) ? m_2c->m_18 : apOwner->v6());
 }
 
 struct PkgData
@@ -2128,12 +2154,15 @@ struct Me : MeBase
     bool Actor_IsInCombat();
     Proc* FUN_008d8520();
     CurPkg* GetCurrentPackage();
-    void Actor_InitiatePickPocketWarning(void* arg);
+    void Actor_InitiatePickPocketWarning(void* apActor);
 };
 
 // @fnv 0x008bf500
 // src: XBOX_PDB 0x008bf500
-void Me::Actor_InitiatePickPocketWarning(void* arg)
+// pdb: Actor::InitiatePickPocketWarning | Actor.obj | retail, upstream name already matches, high
+// pdb params: apActor
+// pdb locals: pnew, pTempPack, ploc, ppack
+void Me::Actor_InitiatePickPocketWarning(void* apActor)
 {
     if (Actor_IsInCombat())
         return;
@@ -2147,7 +2176,7 @@ void Me::Actor_InitiatePickPocketWarning(void* arg)
     pNewPkg->SetMustReachLocation(true);
     pNewPkg->SetMustComplete(true);
     PkgLoc* pLocation = new PkgLoc;
-    pLocation->PackageLocation_SetLocReference(arg);
+    pLocation->PackageLocation_SetLocReference(apActor);
     pNewPkg->SetPackageLocation(pLocation);
     delete pLocation;
     PkgTarget* target = new PkgTarget;
@@ -2155,7 +2184,7 @@ void Me::Actor_InitiatePickPocketWarning(void* arg)
     delete target;
     pNewPkg->FUN_00984f60(0x2b);
     pNewPkg->GetData()->FUN_006800b0(0);
-    pNewPkg->GetData()->FUN_00680110(arg);
+    pNewPkg->GetData()->FUN_00680110(apActor);
     pNewPkg->GetData()->FUN_00403550(0);
     if (pCurPkg)
         pNewPkg->SetFlag200000(pCurPkg->FUN_00441b00());
@@ -2212,7 +2241,7 @@ struct NameObj
 };
 struct MidObj
 {
-    void FUN_004fa6f0(int a, NiPoint3* p, unsigned char c, float f);
+    void FUN_004fa6f0(int apCell, NiPoint3* arLocation, unsigned char aiNumParticles, float afScale);
 };
 struct P2
 {
@@ -2234,7 +2263,7 @@ template <class T> struct TrivialValue
 {
     unsigned char data[sizeof(T)];
 };
-void CreateProjectileRef(int a, int b, int c, int d, NiPoint3 pt, TrivialValue<NiMatrix3> mat);
+void CreateProjectileRef(int apExplosionBase, int apOwnerRef, int apExplodedRef, int apCell, NiPoint3 aOrigin, TrivialValue<NiMatrix3> aRotation);
 struct BaseObj
 {
     virtual void v0();
@@ -2457,12 +2486,16 @@ struct ThisC
     BaseObj* FUN_004181e0();
     int FUN_008d6f30();
     double TESObjectREFR_GetScale_00567400();
-    ResObj* CreateNodeFromTransform(void* a1, A2* a2, A3* a3, unsigned char a4);
+    ResObj* Actor_ExplodeLimb(void* aeLimbIndex, A2* apOldLimb, A3* aTrans, unsigned char abSpawnEffects);
 };
 
 // @fnv 0x008b3fe0
-ResObj* ThisC::CreateNodeFromTransform(void* pLookupKey, A2* pTransformSource, A3* pPlacement,
-                                       unsigned char bApplyTransform)
+// src: XBOX_DEBUG_PDB 0x008b3fe0
+// pdb: Actor::ExplodeLimb | Actor.obj | debug, call graph, high
+// pdb params: aeLimbIndex, apOldLimb, aTrans, abSpawnEffects
+// pdb locals: pbodyPartData, presult, pbodyPart, p3D, rotMult, rot, cloneProcess
+ResObj* ThisC::Actor_ExplodeLimb(void* aeLimbIndex, A2* apOldLimb, A3* aTrans,
+                                       unsigned char abSpawnEffects)
 {
     ResObj* retValA;
     retValA = 0;
@@ -2473,30 +2506,30 @@ ResObj* ThisC::CreateNodeFromTransform(void* pLookupKey, A2* pTransformSource, A
         if (FUN_008d6f30() != 0)
         {
             P2* p4;
-            p4 = p9->GetValueByIndex(pLookupKey);
+            p4 = p9->GetValueByIndex(aeLimbIndex);
             if (p4 != 0)
             {
                 if (p4->BGSBodyPart_IsExplodablePart())
                 {
-                    if (bApplyTransform != 0)
+                    if (abSpawnEffects != 0)
                     {
                         if (p4->FUN_005e3fa0() != 0)
                         {
-                            CreateProjectileRef(p4->FUN_005e3fa0(), 0, 0, FUN_008d6f30(), pPlacement->m_24,
-                                                reinterpret_cast<const TrivialValue<NiMatrix3>&>(pTransformSource->NiAVObject_GetWorldRotate()->m_Rotate));
+                            CreateProjectileRef(p4->FUN_005e3fa0(), 0, 0, FUN_008d6f30(), aTrans->m_24,
+                                                reinterpret_cast<const TrivialValue<NiMatrix3>&>(apOldLimb->NiAVObject_GetWorldRotate()->m_Rotate));
                         }
                         if (p4->FUN_008d8520() != 0)
                         {
                             if (p4->GetUnk66() > 0)
                             {
-                                p4->FUN_008d8520()->FUN_004fa6f0(FUN_008d6f30(), &pPlacement->m_24, p4->GetUnk66(),
+                                p4->FUN_008d8520()->FUN_004fa6f0(FUN_008d6f30(), &aTrans->m_24, p4->GetUnk66(),
                                                                  (float)(TESObjectREFR_GetScale_00567400() * p4->FUN_009b0bd0()));
                             }
                         }
                     }
                     if (p4->FUN_005d8a70()->FUN_0048cee0() > 0)
                     {
-                        if (pTransformSource != 0)
+                        if (apOldLimb != 0)
                         {
                             NodeObj* u;
                             u = DAT_011c3b3c->ModelLoader_LoadFile(p4->FUN_005d8a70()->GetNameV5(), 0, 1, 0, 0, 0);
@@ -2507,7 +2540,7 @@ ResObj* ThisC::CreateNodeFromTransform(void* pLookupKey, A2* pTransformSource, A
                                 NiTransform t1;
                                 NiTransform t2;
                                 GetR116(&t1)->NiAVObject_GetWorldRotate()->InvertTransform();
-                                t2 = t1 * *pTransformSource->NiAVObject_GetWorldRotate();
+                                t2 = t1 * *apOldLimb->NiAVObject_GetWorldRotate();
                                 retValA->NiAVObject_SetTranslate(t2.m_Translate);
                                 retValA->SetRotate_0043fa80(&t2);
                                 retValA->NiAVObject_SetScale(p4->LowProcess_GetPlayerDamageDealt());
@@ -3185,7 +3218,10 @@ int __cdecl GetTopicSubTypeName(int, int);
 void __cdecl SetTlsInt(int);
 
 // @fnv 0x008bfa40
-void Actor::StealAlarm(TESObjectREFR* apSource, int a2, int aiArg3, int aiArg4, TESForm* apForm)
+// pdb: Actor::StealAlarm | Actor.obj | retail, upstream name already matches, high
+// pdb params: apRef, apObj, ainumb, aiTotal, apowner
+// pdb locals: bkarma, powner, ptargactor, fweight, bsendwarning, pactor, pfaction, pnpc, ealign, blinesight, idetection, pTopic, pcrime, battack, iday
+void Actor::StealAlarm(TESObjectREFR* apRef, int apObj, int ainumb, int aiTotal, TESForm* apowner)
 {
     bool h = false; /* -0x11  bFlag  bucket 14 */
     RefObj* p = 0;  /* -0x10  pRes   bucket 15 */
@@ -3211,17 +3247,17 @@ void Actor::StealAlarm(TESObjectREFR* apSource, int a2, int aiArg3, int aiArg4, 
             h = true;
     }
     if (this == DAT_011dea3c)
-        static_cast<TheftAlarmRuntimeCalls*>(DAT_011dea3c)->AddToField(0, aiArg3);
+        static_cast<TheftAlarmRuntimeCalls*>(DAT_011dea3c)->AddToField(0, ainumb);
     else if (this->GetActorValue(static_cast<ActorValue::Index>(0x2a)) >= 100)
         return;
     i = 0;
     f = false;
-    if (reinterpret_cast<RefObj*>(apSource)->r64())
-        i = reinterpret_cast<RefObj*>(apSource);
-    s = apForm;
+    if (reinterpret_cast<RefObj*>(apRef)->r64())
+        i = reinterpret_cast<RefObj*>(apRef);
+    s = apowner;
     if (!s && i)
         s = i->GetOwner();
-    a = FUN_0048ebc0(a2, PlayerCharacter_IsHardcore(DAT_011dea3c));
+    a = FUN_0048ebc0(apObj, PlayerCharacter_IsHardcore(DAT_011dea3c));
     if (a > DAT_01012060)
     {
         a = a * ((FloatSetting*)&DAT_011cdf84)->Float()->f;
@@ -3252,25 +3288,25 @@ void Actor::StealAlarm(TESObjectREFR* apSource, int a2, int aiArg3, int aiArg4, 
     if (p && !p->r200() && (b = p->Actor_GetDetectionLevelAgainstActor(0, this, &ak, 0, 0, 0, 0)) > 0)
     {
         k = 0;
-        if (a2)
-            k = new NewObj(0, reinterpret_cast<RefObj*>(apSource), this, a2, aiArg3, apForm);
+        if (apObj)
+            k = new NewObj(0, reinterpret_cast<RefObj*>(apRef), this, apObj, ainumb, apowner);
         else
-            k = new NewObj(0, reinterpret_cast<RefObj*>(apSource), this, a2, aiArg4, apForm);
+            k = new NewObj(0, reinterpret_cast<RefObj*>(apRef), this, apObj, aiTotal, apowner);
         p->GetExtraData()->AddOrCreateExtraItem(k, ((G67*)&DAT_011de7b8)->FUN_00867da0());
         p->Actor_IncrementMinorCrimes();
         p->Actor_AddFactionMinorCrime(1, 1);
         ((Z*)&DAT_011e0e80)->AddObjectToList(k);
         k->AddActor(p);
-        if (this->m_bActorListValid)
+        if (this->bAttackOnNextTheft)
         {
             c = true;
-            if (this->m_iIntegerAfterActorListValid > 0)
+            if (this->iThiefCrimeStamp > 0)
             {
-                e = this->m_iIntegerAfterActorListValid & 0x1ff;
+                e = this->iThiefCrimeStamp & 0x1ff;
                 if (e != (signed char)((G67*)&DAT_011de7b8)->FUN_00867d60())
                 {
                     c = false;
-                    this->m_bActorListValid = 0;
+                    this->bAttackOnNextTheft = 0;
                 }
             }
             if (c)
@@ -3283,15 +3319,15 @@ void Actor::StealAlarm(TESObjectREFR* apSource, int a2, int aiArg3, int aiArg4, 
         {
             if (!static_cast<TheftAlarmRuntimeCalls*>(DAT_011dea3c)->PlayerCharacter_GetPlayerAction(5))
             {
-                this->m_bActorListValid = 1;
-                this->m_iIntegerAfterActorListValid = (((G67*)&DAT_011de7b8)->FUN_00867d20() << 9) |
+                this->bAttackOnNextTheft = 1;
+                this->iThiefCrimeStamp = (((G67*)&DAT_011de7b8)->FUN_00867d20() << 9) |
                              (signed char)((G67*)&DAT_011de7b8)->FUN_00867d60() |
                              (((G67*)&DAT_011de7b8)->Calendar_GetYear() << 13);
             }
         }
         if (h)
         {
-            p->Actor_InitiateStealWarning(this, apForm);
+            p->Actor_InitiateStealWarning(this, apowner);
             return;
         }
         SetTlsInt((int)s);

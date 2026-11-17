@@ -144,17 +144,20 @@ struct SkeletonPoseData
     {
         arrayElement(m_pBoneFlags, i) &= ~f;
     }
-    const hkQsTransform& hkaPose_calculateBoneModelSpace(int boneIdx);
+    const hkQsTransform& hkaPose_calculateBoneModelSpace(int theBoneIdx);
 };
 
 // @fnv 0x00cda180
 // src: COMMUNITY 0x00cda180
-const hkQsTransform& SkeletonPoseData::hkaPose_calculateBoneModelSpace(int boneIdx)
+// pdb: hkaPose::calculateBoneModelSpace | hkaPose.obj | retail, upstream name already matches, high
+// pdb params: theBoneIdx
+// pdb locals: assertBuf, ostr
+const hkQsTransform& SkeletonPoseData::hkaPose_calculateBoneModelSpace(int theBoneIdx)
 {
-    int ancestorIdx = boneIdx;
+    int ancestorIdx = theBoneIdx;
     while (isFlagOn(ancestorIdx, F_BONE_MODEL_DIRTY))
     {
-        const hkInt16 parentIdx = arrayElement(m_pSkeleton->m_kParentIndices, ancestorIdx);
+        const hkInt16 parentIdx = arrayElement(m_pSkeleton->m_parentIndices, ancestorIdx);
         if (parentIdx == -1)
         {
             arrayElement(m_pModelPose, ancestorIdx) = arrayElement(m_pLocalPose, ancestorIdx);
@@ -165,14 +168,14 @@ const hkQsTransform& SkeletonPoseData::hkaPose_calculateBoneModelSpace(int boneI
         ancestorIdx = parentIdx;
     }
 
-    for (int i = ancestorIdx + 1; i <= boneIdx; ++i)
+    for (int i = ancestorIdx + 1; i <= theBoneIdx; ++i)
     {
         if (isFlagOn(i, F_BONE_INTERNAL_FLAG1))
         {
-            const hkInt16 parentIdx = arrayElement(m_pSkeleton->m_kParentIndices, i);
+            const hkInt16 parentIdx = arrayElement(m_pSkeleton->m_parentIndices, i);
             arrayElement(m_pModelPose, i).SetProduct(arrayElement(m_pModelPose, parentIdx), arrayElement(m_pLocalPose, i));
             clearFlag(i, F_BONE_MODEL_DIRTY | F_BONE_INTERNAL_FLAG1);
         }
     }
-    return arrayElement(m_pModelPose, boneIdx);
+    return arrayElement(m_pModelPose, theBoneIdx);
 }

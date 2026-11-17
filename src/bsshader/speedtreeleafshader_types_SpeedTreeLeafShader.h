@@ -5,11 +5,12 @@
 #include <stddef.h>
 
 #pragma pack(push, 4)
+// pdb: class SpeedTreeLeafShader, size 0x38c, bases: BSShader, 4 members
 class SpeedTreeLeafShader : public BSShader
 {
   public:
     SpeedTreeLeafShader();
-    void UpdateShaderConstants();
+    void CreateConstantMaps();
     float m_afShaderConstants[48][4];               // +0x6C, 768 bytes
     NiPointer<NiD3DVertexShader> pVertexShader[4];  // +0x36C, 16 bytes
     NiPointer<NiD3DPixelShader> pPixelShader[2];    // +0x37C, 8 bytes

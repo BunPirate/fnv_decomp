@@ -6,6 +6,7 @@
 class hkTransform;
 class hkpRigidBody;
 
+// pdb: class hkpShapePhantom, size 0x160, bases: hkpPhantom, 1 members
 class hkpShapePhantom : public hkpPhantom
 {
 public:
@@ -14,10 +15,10 @@ public:
     virtual void vf16();
     virtual void vf17();
 
-    void hkpShapePhantom_setTransform(const hkTransform& t);
-    void __thiscall SetWorldPosition(void* body, float pos);
-    void __thiscall SetWorldPosition(hkpRigidBody* body, float pos);
+    void hkpShapePhantom_setTransform(const hkTransform& transform);
+    void __thiscall SetWorldPosition(void* position, float extraTolerance);
+    void __thiscall SetWorldPosition(hkpRigidBody* position, float extraTolerance);
 
     char padA4[0xC];
-    hkMotionState m_kMotionState;
+    hkMotionState m_motionState; // src: XBOX_RETAIL_PDB +0xb0 (old: m_kMotionState)
 };

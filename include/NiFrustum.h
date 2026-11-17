@@ -1,5 +1,6 @@
 #pragma once
 
+// pdb: class NiFrustum, size 0x1c, 7 members
 class NiFrustum
 {
 public:

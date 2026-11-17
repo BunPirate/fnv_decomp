@@ -30,57 +30,60 @@ struct ReputationOperations : TESReputation
     // The shared declaration returns int; this unit requires the original byte return.
     unsigned char GetReputationRank(int kind);
     unsigned short GetReputationSaveSize(unsigned int flags);
-    void SaveToBuffer(BGSSaveFormBuffer* buffer);
-    void LoadFromBuffer(BGSLoadFormBuffer* buffer);
+    void SaveToBuffer(BGSSaveFormBuffer* apSaveGameBuffer);
+    void LoadFromBuffer(BGSLoadFormBuffer* apLoadGameBuffer);
     void SaveRecord();
     ReputationLimitData* GetReputationData();
-    bool CompareBase(TESForm* other);
-    bool CompareReputation(TESForm* other);
-    void CopyReputation(TESForm* source);
+    bool CompareBase(TESForm* apCompare);
+    bool CompareReputation(TESForm* apCompare);
+    void CopyReputation(TESForm* apCopy);
 };
 
 // @fnv 0x00615560
 void TESReputation::ResetFormData()
 {
-    m_fFirstReputationValue = 0.0f;
-    m_fSecondReputationValue = 0.0f;
+    fPositiveValue = 0.0f;
+    fNegativeValue = 0.0f;
 }
 
 // @fnv 0x00616290
-bool TESReputation::Load(TESFile* file)
+// pdb: TESReputation::Load | TESReputation.obj | retail, upstream name already matches, high
+// pdb params: apFile
+// pdb locals: chunkid, pMessage
+bool TESReputation::Load(TESFile* apFile)
 {
-    LoadRecordHeader(file);
+    LoadRecordHeader(apFile);
     SetInitializationState(false);
     int chunk;
-    while ((chunk = file->GetChunkID()) != 0)
+    while ((chunk = apFile->GetChunkID()) != 0)
     {
         switch (chunk)
         {
         case 'DIDE': {
-            char* buffer = static_cast<char*>(_alloca(file->GetChunkSize()));
-            file->GetChunkData(buffer, 0x200);
+            char* buffer = static_cast<char*>(_alloca(apFile->GetChunkSize()));
+            apFile->GetChunkData(buffer, 0x200);
             SetEditorID_AtRuntime(buffer);
             break;
         }
         case 'DNBO':
-            readOBNDSubRecord(file);
+            readOBNDSubRecord(apFile);
             break;
         case 'LLUF':
-            TESFullName::LoadFullNameChunk(this, file);
+            TESFullName::LoadFullNameChunk(this, apFile);
             break;
         case 'NOCI':
-            TESTexture::ReadTextureData(this, file);
+            TESTexture::ReadTextureData(this, apFile);
             break;
         case 'OCIM':
-            BGSMessageIcon::LoadMessageIconChunk(this, file);
+            BGSMessageIcon::LoadMessageIconChunk(this, apFile);
             break;
         case 'ATAD':
-            ReadTypedData(file, &data, sizeof(data));
-            if (file->IsEndianConversionRequired())
+            ReadTypedData(apFile, &data, sizeof(data));
+            if (apFile->IsEndianConversionRequired())
                 data.Endian();
             break;
         }
-        if (!file->NextChunk())
+        if (!apFile->NextChunk())
             break;
     }
     return true;
@@ -98,15 +101,16 @@ float TESReputation::GetUnsignedIntegerPointer(ReputationType type)
 {
     if (type == ReputationType_REPUTATION_POSITIVE)
     {
-        return m_fFirstReputationValue;
+        return fPositiveValue;
     }
     else
     {
-        return m_fSecondReputationValue;
+        return fNegativeValue;
     }
 }
 
 // @fnv 0x006153c0
+// pdb: TESReputation::TESReputation | TESReputation.obj | retail, upstream name already matches, high
 TESReputation::TESReputation()
 {
     TESReputation::ResetFormData();
@@ -118,6 +122,7 @@ extern char DAT_0119a0bc;
 
 // @fnv 0x00615720
 // src: COMMUNITY 0x00615720
+// pdb: FakeModalMessageMenuCallback | TESReputation.obj | retail, upstream name already matches, high
 void __cdecl FakeModalMessageMenuCallback(void)
 {
     DAT_0119a0bc = ConsumeByteAtE4();
@@ -130,6 +135,7 @@ struct PlayerReputationQueue : PlayerCharacter
 };
 
 // @fnv 0x006159e0
+// pdb: TESFullName::GetFullName | EffectSettingCollection.obj | debug, call graph (shared callers), low
 void PlayerReputationQueue::SetValue(TESReputation* reputation)
 {
     *(TESReputation**)((char*)this + 0xe0c) = reputation;
@@ -151,6 +157,9 @@ struct FUN_00484bf0
 
 // Returns the save size: the result of GetSaveSize(aiFlags) plus 8 bytes.
 // @fnv 0x006165f0
+// pdb: TESReputation::GetSaveSize | TESReputation.obj | retail, vtable slot, high
+// pdb params: aiFlags
+// pdb locals: isize
 unsigned short __thiscall ReputationOperations::GetReputationSaveSize(unsigned int aiFlags)
 {
     unsigned short isize = 0;
@@ -161,11 +170,13 @@ unsigned short __thiscall ReputationOperations::GetReputationSaveSize(unsigned i
 }
 
 // @fnv 0x006166a0
-void ReputationOperations::LoadFromBuffer(BGSLoadFormBuffer* buffer)
+// pdb: TESReputation::LoadGame | TESReputation.obj | retail, vtable slot, high
+// pdb params: aiFlags, aiCurrentFlags
+void ReputationOperations::LoadFromBuffer(BGSLoadFormBuffer* apLoadGameBuffer)
 {
-    TESForm::LoadGame(buffer);
-    buffer->ReadTypedData(&m_fFirstReputationValue, 4u);
-    buffer->ReadTypedData(&m_fSecondReputationValue, 4u);
+    TESForm::LoadGame(apLoadGameBuffer);
+    apLoadGameBuffer->ReadTypedData(&fPositiveValue, 4u);
+    apLoadGameBuffer->ReadTypedData(&fNegativeValue, 4u);
 }
 
 struct S_00487010
@@ -186,6 +197,7 @@ struct FUN_00485e00_shell
 };
 unsigned char __cdecl TESForm_QEndianSwapOnSave(void);
 // @fnv 0x00616470
+// pdb: TESReputation::Save | TESReputation.obj | retail, vtable slot, high
 void __thiscall ReputationOperations::SaveRecord()
 {
     TESForm::BeginFormRecord();
@@ -203,12 +215,14 @@ void __thiscall ReputationOperations::SaveRecord()
 // Stores the selected reputation value and marks the form as modified.
 // @fnv 0x00615580
 // src: COMMUNITY 0x00615580
+// pdb: TESReputation::SetReputationValue | TESReputation.obj | debug, call graph, low
+// pdb params: RepType, fValue
 void TESReputation::SetReputation_00615580(int a, float afValue)
 {
     if (a == 1)
-        m_fFirstReputationValue = afValue;
+        fPositiveValue = afValue;
     else
-        m_fSecondReputationValue = afValue;
+        fNegativeValue = afValue;
     MarkAsModified(2);
 }
 
@@ -219,11 +233,13 @@ struct FUN_00484d60_holder
 
 // Saves the base form and both reputation values to the buffer.
 // @fnv 0x00616660
-void __thiscall ReputationOperations::SaveToBuffer(BGSSaveFormBuffer* buffer)
+// pdb: TESReputation::SaveGame | TESReputation.obj | retail, vtable slot, high
+// pdb params: aiFlags
+void __thiscall ReputationOperations::SaveToBuffer(BGSSaveFormBuffer* apSaveGameBuffer)
 {
-    ((FUN_00484d60_holder*)this)->SaveIfChanged((unsigned int)buffer);
-    buffer->SaveData(&m_fFirstReputationValue, 4, 0);
-    buffer->SaveData(&m_fSecondReputationValue, 4, 0);
+    ((FUN_00484d60_holder*)this)->SaveIfChanged((unsigned int)apSaveGameBuffer);
+    apSaveGameBuffer->SaveData(&fPositiveValue, 4, 0);
+    apSaveGameBuffer->SaveData(&fNegativeValue, 4, 0);
 }
 
 struct TutorialState
@@ -241,16 +257,19 @@ void __cdecl Interface_CreateMessageMenuSound(const char*, const char*, const ch
                           const char*, int);
 
 // @fnv 0x006155f0
-void TESReputation::ShowMessageBox(void)
+// src: XBOX_DEBUG_PDB 0x006155f0
+// pdb: TESReputation::DisplayReputationTitleChange | TESReputation.obj | debug, call graph (shared callers), high
+// pdb locals: repDesc
+void TESReputation::DisplayReputationTitleChange(void)
 {
     char buffer[0x200];
 
-    _sprintf_s(buffer, 0x200, "%s\n%s", FUN_00616710(), GetSelectedSettingString());
+    _sprintf_s(buffer, 0x200, "%s\n%s", GetReputationTitle(), GetReputationDesc());
 
     reinterpret_cast<TutorialState*>(reinterpret_cast<unsigned char*>(_FUN_004b7210()) + 0x4d4)
         ->ShowMessage(0x27, 0, 0x1f4);
 
-    if (m_eReputationType == ReputationType_REPUTATION_POSITIVE)
+    if (rSound == ReputationType_REPUTATION_POSITIVE)
     {
         Interface_CreateMessageMenuSound(buffer, TESReputation_GetThresholdIcon(), TESFullName::GetFullName(),
                      reinterpret_cast<Setting*>(&g_011cbcb0)->String(), FakeModalMessageMenuCallback, 1, 0x17, 0.0f, 0.0f,
@@ -265,6 +284,7 @@ void TESReputation::ShowMessageBox(void)
 }
 
 // @fnv 0x006154b0
+// pdb: TESReputation::~TESReputation | TESReputation.obj | retail, upstream name already matches, high
 TESReputation::~TESReputation()
 {
     TESForm::ClearData();
@@ -274,6 +294,9 @@ extern Setting DAT_011cba7c;
 extern Setting DAT_011cbc70;
 extern Setting DAT_011cbd68;
 // @fnv 0x00616950
+// pdb: TESReputation::DisplayReputationTitleChange | TESReputation.obj | retail, call graph (shared callers), low
+// pdb note: debug build links it to TESReputation::GetReputationLevel
+// pdb locals: repDesc
 unsigned char ReputationOperations::GetReputationRank(int kind)
 {
     float value = 0.0f;
@@ -346,6 +369,7 @@ struct FUN_00617da0 : public BaseComponentA, public BaseComponentB, public BaseC
 
 // Initializes the object by calling unk60 with 15 and then unk64.
 // @fnv 0x00617da0
+// pdb: TESSkill::TESSkill | TESSkill.obj | retail, call graph, high
 FUN_00617da0::FUN_00617da0()
 {
     unk60(15);
@@ -380,6 +404,7 @@ struct FUN_00617f40 : FUN_00617f40_Primary, FUN_00617f40_Base18, FUN_00617f40_Ba
 };
 
 // @fnv 0x00617f40
+// pdb: TESSkill::~TESSkill | TESSkill.obj | debug, object-file gap fill, medium
 FUN_00617f40::~FUN_00617f40()
 {}
 
@@ -390,6 +415,9 @@ bool __cdecl QueueUIMessage(const char*, int, const char*, const char*, float, b
 int __cdecl _sprintf_s(char*, unsigned int, const char*, ...);
 // @fnv 0x00615a00
 // src: COMMUNITY 0x00615a00
+// pdb: TESReputation::RemoveReputationValue | TESReputation.obj | debug, object-file run extension, low
+// pdb params: RepType, fValue
+// pdb locals: cLevel, cNewLevel, repGain, bChangeLevel
 void TESReputation::RemoveReputationExact(int kind, float amount)
 {
     bool changed = false;
@@ -399,32 +427,32 @@ void TESReputation::RemoveReputationExact(int kind, float amount)
     oldRank = static_cast<ReputationOperations&>(*this).GetReputationRank(kind);
     if (kind == 1)
     {
-        m_fFirstReputationValue -= amount;
-        m_fFirstReputationValue = m_fFirstReputationValue < 0.0 ? 0.0f : m_fFirstReputationValue;
+        fPositiveValue -= amount;
+        fPositiveValue = fPositiveValue < 0.0 ? 0.0f : fPositiveValue;
         _sprintf_s(message3, 250, "%s\n%s", TESFullName::GetFullName(), DAT_011cbb98.FUN_00403df0());
         newRank = static_cast<ReputationOperations&>(*this).GetReputationRank(1);
         if (newRank != oldRank)
         {
-            m_eReputationType = ReputationType_REPUTATION_NEGATIVE;
+            rSound = ReputationType_REPUTATION_NEGATIVE;
             changed = true;
         }
         QueueUIMessage(message3, 0, DAT_011cbc34.FUN_00403df0(), 0, 2.0f, false);
     }
     else
     {
-        m_fSecondReputationValue -= amount;
-        m_fSecondReputationValue = m_fSecondReputationValue < 0.0 ? 0.0f : m_fSecondReputationValue;
+        fNegativeValue -= amount;
+        fNegativeValue = fNegativeValue < 0.0 ? 0.0f : fNegativeValue;
         _sprintf_s(message3, 250, "%s\n%s", TESFullName::GetFullName(), DAT_011cba94.FUN_00403df0());
         newRank = static_cast<ReputationOperations&>(*this).GetReputationRank(0);
         if (newRank != oldRank)
         {
-            m_eReputationType = ReputationType_REPUTATION_POSITIVE;
+            rSound = ReputationType_REPUTATION_POSITIVE;
             changed = true;
         }
         QueueUIMessage(message3, 0, DAT_011cba00.FUN_00403df0(), 0, 2.0f, false);
     }
     if (changed && !_g_thePlayer->PlayerCharacter_IsPlayerCharacterInCombat(0) && !IsInDialog())
-        ShowMessageBox();
+        DisplayReputationTitleChange();
     else if (changed)
         static_cast<PlayerReputationQueue*>(_g_thePlayer)->SetValue(this);
     MarkAsModified(2);
@@ -443,6 +471,9 @@ extern PlayerCharacter* DAT_011dea3c;
 bool __cdecl Interface_InDialog();
 bool __cdecl DispatchMessageToSink(const char*, int, const char*, const char*, float, bool);
 // @fnv 0x00615c90
+// pdb: TESReputation::AddReputationValueByLevel | TESReputation.obj | debug, object-file run extension, low
+// pdb params: RepType, iValue
+// pdb locals: cLevel, fRepValues, cNewLevel, repGain, bChangeLevel
 void TESReputation::ApplyReputationChange(int iReputationType, int amount)
 {
     if (amount <= 0 || amount >= 6)
@@ -455,34 +486,34 @@ void TESReputation::ApplyReputationChange(int iReputationType, int amount)
     j = static_cast<ReputationOperations&>(*this).GetReputationRank(iReputationType);
     if (iReputationType == 1)
     {
-        m_fFirstReputationValue += *e[amount - 1]->Setting_Float_00403e20();
-        m_fFirstReputationValue =
-            m_fFirstReputationValue > data.m_fMaximumReputation ? data.m_fMaximumReputation : m_fFirstReputationValue;
+        fPositiveValue += *e[amount - 1]->Setting_Float_00403e20();
+        fPositiveValue =
+            fPositiveValue > data.m_fMaximumReputation ? data.m_fMaximumReputation : fPositiveValue;
         _sprintf_s(l, 250, "%s\n%s", TESFullName::GetFullName(), DAT_011cbac0.FUN_00403df0());
         c = static_cast<ReputationOperations&>(*this).GetReputationRank(1);
         if (c != j)
         {
-            m_eReputationType = ReputationType_REPUTATION_POSITIVE;
+            rSound = ReputationType_REPUTATION_POSITIVE;
             p = true;
         }
         DispatchMessageToSink(l, 0, DAT_011cbd5c.FUN_00403df0(), 0, 2.0f, false);
     }
     else
     {
-        m_fSecondReputationValue += *e[amount - 1]->Setting_Float_00403e20();
-        m_fSecondReputationValue =
-            m_fSecondReputationValue > data.m_fMaximumReputation ? data.m_fMaximumReputation : m_fSecondReputationValue;
+        fNegativeValue += *e[amount - 1]->Setting_Float_00403e20();
+        fNegativeValue =
+            fNegativeValue > data.m_fMaximumReputation ? data.m_fMaximumReputation : fNegativeValue;
         _sprintf_s(l, 250, "%s\n%s", TESFullName::GetFullName(), DAT_011cba58.FUN_00403df0());
         c = static_cast<ReputationOperations&>(*this).GetReputationRank(0);
         if (c != j)
         {
-            m_eReputationType = ReputationType_REPUTATION_NEGATIVE;
+            rSound = ReputationType_REPUTATION_NEGATIVE;
             p = true;
         }
         DispatchMessageToSink(l, 0, DAT_011cbad0.FUN_00403df0(), 0, 2.0f, false);
     }
     if (p && !DAT_011dea3c->PlayerCharacter_IsPlayerCharacterInCombat(0) && !Interface_InDialog())
-        ShowMessageBox();
+        DisplayReputationTitleChange();
     else if (p)
         static_cast<PlayerReputationQueue*>(DAT_011dea3c)->SetValue(this);
     MarkAsModified(2);
@@ -500,6 +531,10 @@ int _sprintf_s(char*, unsigned int, const char*, ...);
 
 // @fnv 0x00615fa0
 // src: COMMUNITY 0x00615fa0
+// pdb: TESReputation::RemoveReputationValue | TESReputation.obj | retail, call graph, low
+// pdb note: debug build links it to TESReputation::RemoveReputationValueByLevel
+// pdb params: RepType, fValue
+// pdb locals: cLevel, cNewLevel, repGain, bChangeLevel
 void TESReputation::RemoveReputation(int kind, int amount)
 {
     bool changed = false;
@@ -513,32 +548,32 @@ void TESReputation::RemoveReputation(int kind, int amount)
     oldRank = static_cast<ReputationOperations&>(*this).GetReputationRank(kind);
     if (kind == 1)
     {
-        m_fFirstReputationValue -= *settings3[amount - 1]->Float();
-        m_fFirstReputationValue = m_fFirstReputationValue < 0.0 ? 0.0f : m_fFirstReputationValue;
+        fPositiveValue -= *settings3[amount - 1]->Float();
+        fPositiveValue = fPositiveValue < 0.0 ? 0.0f : fPositiveValue;
         fnv_00615fa0::_sprintf_s(message3, 250, "%s\n%s", TESFullName::GetFullName(), fnv_00615fa0::g_011cbb98.String());
         newRank = static_cast<ReputationOperations&>(*this).GetReputationRank(1);
         if (newRank != oldRank)
         {
-            m_eReputationType = ReputationType_REPUTATION_NEGATIVE;
+            rSound = ReputationType_REPUTATION_NEGATIVE;
             changed = true;
         }
         fnv_00615fa0::QueueUIMessage(message3, 0, fnv_00615fa0::g_011cbc34.String(), 0, 2.0f, false);
     }
     else
     {
-        m_fSecondReputationValue -= *settings3[amount - 1]->Float();
-        m_fSecondReputationValue = m_fSecondReputationValue < 0.0 ? 0.0f : m_fSecondReputationValue;
+        fNegativeValue -= *settings3[amount - 1]->Float();
+        fNegativeValue = fNegativeValue < 0.0 ? 0.0f : fNegativeValue;
         fnv_00615fa0::_sprintf_s(message3, 250, "%s\n%s", TESFullName::GetFullName(), fnv_00615fa0::g_011cba94.String());
         newRank = static_cast<ReputationOperations&>(*this).GetReputationRank(0);
         if (newRank != oldRank)
         {
-            m_eReputationType = ReputationType_REPUTATION_POSITIVE;
+            rSound = ReputationType_REPUTATION_POSITIVE;
             changed = true;
         }
         fnv_00615fa0::QueueUIMessage(message3, 0, fnv_00615fa0::g_011cbad0.String(), 0, 2.0f, false);
     }
     if (changed && !fnv_00615fa0::_g_thePlayer->PlayerCharacter_IsPlayerCharacterInCombat(0) && !fnv_00615fa0::IsInDialog())
-        ShowMessageBox();
+        DisplayReputationTitleChange();
     else if (changed)
         static_cast<PlayerReputationQueue*>(fnv_00615fa0::_g_thePlayer)->SetValue(this);
     MarkAsModified(2);
@@ -559,7 +594,10 @@ extern PlayerCharacter* g_thePlayer;
 
 // @fnv 0x00615730
 // src: XBOX_PDB 0x00615730
-void TESReputation::AddReputationValue(int kind, float delta)
+// pdb: TESReputation::AddReputationValue | TESReputation.obj | retail, upstream name already matches, high
+// pdb params: RepType, fValue
+// pdb locals: cLevel, cNewLevel, repGain, bChangeLevel
+void TESReputation::AddReputationValue(int RepType, float fValue)
 {
     signed char val;
     bool changed;
@@ -568,38 +606,38 @@ void TESReputation::AddReputationValue(int kind, float delta)
     changed = false;
     val = 0;
     after = 0;
-    val = (char)static_cast<ReputationOperations&>(*this).GetReputationRank(kind);
-    if (kind == 1)
+    val = (char)static_cast<ReputationOperations&>(*this).GetReputationRank(RepType);
+    if (RepType == 1)
     {
-        m_fFirstReputationValue += delta;
-        m_fFirstReputationValue = (m_fFirstReputationValue > data.m_fMaximumReputation) ? (float)data.m_fMaximumReputation
-                                                                                   : (float)m_fFirstReputationValue;
+        fPositiveValue += fValue;
+        fPositiveValue = (fPositiveValue > data.m_fMaximumReputation) ? (float)data.m_fMaximumReputation
+                                                                                   : (float)fPositiveValue;
         _sprintf_s(i, 250, "%s\n%s", TESFullName::GetFullName(), g_011cbac0.String());
         after = (char)static_cast<ReputationOperations&>(*this).GetReputationRank(1);
         if (after != val)
         {
-            m_eReputationType = ReputationType_REPUTATION_POSITIVE;
+            rSound = ReputationType_REPUTATION_POSITIVE;
             changed = true;
         }
         TesreputationInterfaceView::ShowMessage(i, 0, g_011cbd5c.String(), 0, 2.0f, false);
     }
     else
     {
-        m_fSecondReputationValue += delta;
-        m_fSecondReputationValue = (m_fSecondReputationValue > data.m_fMaximumReputation) ? (float)data.m_fMaximumReputation
-                                                                                     : (float)m_fSecondReputationValue;
+        fNegativeValue += fValue;
+        fNegativeValue = (fNegativeValue > data.m_fMaximumReputation) ? (float)data.m_fMaximumReputation
+                                                                                     : (float)fNegativeValue;
         _sprintf_s(i, 250, "%s\n%s", TESFullName::GetFullName(), g_011cba58.String());
         after = (char)static_cast<ReputationOperations&>(*this).GetReputationRank(0);
         if (after != val)
         {
             changed = true;
-            m_eReputationType = ReputationType_REPUTATION_NEGATIVE;
+            rSound = ReputationType_REPUTATION_NEGATIVE;
         }
         TesreputationInterfaceView::ShowMessage(i, 0, g_011cbad0.String(), 0, 2.0f, false);
     }
     if (changed && !g_thePlayer->PlayerCharacter_IsPlayerCharacterInCombat(0) && !TesreputationInterfaceView::IsInDialog())
     {
-        ShowMessageBox();
+        DisplayReputationTitleChange();
     }
     else if (changed)
     {
@@ -611,9 +649,12 @@ void TESReputation::AddReputationValue(int kind, float delta)
 extern "C" int __cdecl _memcmp(const void*, const void*, unsigned int);
 
 // @fnv 0x00616570
-bool ReputationOperations::CompareReputation(TESForm* other)
+// pdb: TESReputation::Compare | TESReputation.obj | retail, vtable slot, high
+// pdb params: apCompare
+// pdb locals: pcomp
+bool ReputationOperations::CompareReputation(TESForm* apCompare)
 {
-    TESReputation* pOtherReputation = dynamic_cast<TESReputation*>(other);
+    TESReputation* pOtherReputation = dynamic_cast<TESReputation*>(apCompare);
     if (!pOtherReputation)
         return true;
     if (_memcmp(&data, static_cast<ReputationOperations*>(pOtherReputation)->GetReputationData(),
@@ -633,14 +674,17 @@ struct ReputationComponentCopy
 
 // Copies the two reputation values and the data block from source (cast to TESReputation) into this object, then calls FUN_004851b0 with source.
 // @fnv 0x00616500
-void ReputationOperations::CopyReputation(TESForm* source)
+// pdb: TESReputation::Copy | TESReputation.obj | retail, vtable slot, high
+// pdb params: apCopy
+// pdb locals: pmisc
+void ReputationOperations::CopyReputation(TESForm* apCopy)
 {
-    TESReputation* reputation = dynamic_cast<TESReputation*>(source);
+    TESReputation* reputation = dynamic_cast<TESReputation*>(apCopy);
     if (!reputation)
         return;
 
-    m_fSecondReputationValue = reputation->m_fSecondReputationValue;
-    m_fFirstReputationValue = reputation->m_fFirstReputationValue;
+    fNegativeValue = reputation->fNegativeValue;
+    fPositiveValue = reputation->fPositiveValue;
     _memcpy(&data, &reputation->data, sizeof(data));
-    reinterpret_cast<ReputationComponentCopy*>(this)->TESForm_CopyAllComponents(source);
+    reinterpret_cast<ReputationComponentCopy*>(this)->TESForm_CopyAllComponents(apCopy);
 }

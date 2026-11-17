@@ -22,6 +22,7 @@ class SELF
 
 // Calls FUN_00e36b80, and if bit 0 of flag is set, calls PV2 on the object at offset 0x10 of FUN_00c85750's result with this and w, then returns this.
 // @fnv 0x00dfbd80
+// pdb: hkpVehicleLinearCastWheelCollide::`scalar deleting destructor' | hkpVehicleLinearCastWheelCollideClass.obj | retail, vtable slot, high
 SELF* SELF::FUN_00dfbd80(unsigned char flag)
 {
     FUN_00e36b80();

@@ -27,7 +27,7 @@ public:
     hkBool IsEqualWithinTolerance(const hkRotation& other, float epsilon) const;
 
     void hkRotation_set(const hkQuaternion& q);
-    void FUN_00cb2e30(const hkVector4* axis, float angle);
+    void setAxisAngle(const hkVector4* axis, float angle);
 
     static void* __cdecl operator new(size_t nbytes);
 };

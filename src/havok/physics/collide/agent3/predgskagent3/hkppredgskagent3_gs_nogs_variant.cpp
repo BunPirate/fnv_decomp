@@ -45,8 +45,8 @@ struct ResultData
     char unk0A;
     unsigned char unk0B;
     int unk0C;
-    void __thiscall hkpGskCache_initTriangle(void* a, void* b, void* c);
-    void __thiscall hkpGskCache_init(void* a, void* b, void* c);
+    void __thiscall hkpGskCache_initTriangle(void* shapeA, void* shapeB, void* btoa);
+    void __thiscall hkpGskCache_init(void* shapeA, void* shapeB, void* aTb);
 };
 void* __cdecl DispatchInputRecord(InputData* input, unsigned char* status, ResultData* result);
 // Stand-ins for the script handler functions whose addresses are stored in the
@@ -55,8 +55,8 @@ extern "C" void __cdecl RemoveEntryById(int a, int b, int c, int d);
 extern "C" void __cdecl InsertSlotId(int a, int b, int c, int d);
 extern "C" void __cdecl FindEntryByKey(int a, int b, int c, int d);
 extern "C" void __cdecl ConvertPairFlags(int a, int b, int c, int d);
-extern "C" void __cdecl hkPredGskAgent3_sepNormal(int a, int b, int c, int d);
-extern "C" void __cdecl hkPredGskCylinderAgent3_process(int a, int b, int c, int d);
+extern "C" void __cdecl hkPredGskAgent3_sepNormal(int a, int entry, int agentData, int separatingNormalOut);
+extern "C" void __cdecl hkPredGskCylinderAgent3_process(int input, int entry, int agentData, int separatingNormal);
 // The handler table that is handed to CScript::RegisterHandler.  It is kept
 // 16 byte aligned, which is what makes the compiler emit the aligned frame
 // prologue of this function.
@@ -86,9 +86,9 @@ struct __declspec(align(16)) HandlerTable
 class CScript
 {
   public:
-    void __thiscall RegisterHandler(HandlerTable* handler, int a, int b);
+    void __thiscall hkpCollisionDispatcher_registerAgent3(HandlerTable* f, int typeA, int typeB);
 };
-void __cdecl RegisterScriptHandlers(void* pScript);
+void __cdecl hkPredGskCylinderAgent3_registerAgent3(void* dispatcher);
 struct S_00d417b0_Entry
 {
     short unk00;
@@ -162,14 +162,14 @@ int __cdecl FindEntryByKey(int unused, FUN_00d41830_table* table, unsigned short
 // void return the whole size computation is dead code and MSVC 2008 deletes
 // it, so the value is handed back to the caller from a symbol whose name
 // still contains the required tag "FUN_00d41860".
-extern "C" void __cdecl ReleaseAllEntries(void* p, int obj, int data);
+extern "C" void __cdecl hkGskManifold_cleanup(void* manifold, int mgr, int constraintOwner);
 // @fnv 0x00d41860
 // src: GUESS 0x00d41860 (confidence: low)
 extern "C" int __cdecl Object_ProcessAndReturnValue_00d41860(int a, int b, int c, int d)
 {
     unsigned char* rec = (unsigned char*)b + 0x0C;
 
-    ReleaseAllEntries(rec, c, d);
+    hkGskManifold_cleanup(rec, c, d);
 
     unsigned int count = rec[0] + rec[1] + rec[2] * 4;
 
@@ -366,23 +366,26 @@ struct SeparatingNormal
 
 // @fnv 0x00d41930
 // src: XBOX_PDB 0x00d41930
-void __cdecl hkPredGskAgent3_sepNormal(Input_s* input, int unused, hkpGskCache_s* cache, Output_s* output)
+// pdb: hkPredGskAgent3::sepNormal | hkpPredGskAgent3.obj | retail, upstream name already matches, high
+// pdb params: input, entry, agentData, separatingNormalOut
+// pdb locals: separatingNormal, gsk
+void __cdecl hkPredGskAgent3_sepNormal(Input_s* input, int entry, hkpGskCache_s* agentData, Output_s* separatingNormalOut)
 {
     hkpConvexShape_s* shapeA = input->m_pBodyA->m_pCollisionShape;
     hkpConvexShape_s* shapeB = input->m_pBodyB->m_pCollisionShape;
     SeparatingNormal norm;
     Gsk_s gsk;
     gsk.m_unk10 = 0;
-    gsk.m_ucDimensionB = cache->m_ucDimensionB;
-    gsk.m_ucDimensionA = cache->m_ucDimensionA;
-    gsk.m_numA = cache->m_verticesDim & 0xf;
-    gsk.m_numB = cache->m_verticesDim >> 4;
+    gsk.m_ucDimensionB = agentData->m_ucDimensionB;
+    gsk.m_ucDimensionA = agentData->m_ucDimensionA;
+    gsk.m_numA = agentData->m_verticesDim & 0xf;
+    gsk.m_numB = agentData->m_verticesDim >> 4;
     gsk.m_cacheChanged = 0;
-    shapeA->GetVerticesForIds(cache->m_kVertices, gsk.m_ucDimensionA, &gsk.unk20);
-    shapeB->GetVerticesForIds(&cache->m_kVertices[gsk.m_ucDimensionA], gsk.m_ucDimensionB, &gsk.unkE0);
+    shapeA->GetVerticesForIds(agentData->m_kVertices, gsk.m_ucDimensionA, &gsk.unk20);
+    shapeB->GetVerticesForIds(&agentData->m_kVertices[gsk.m_ucDimensionA], gsk.m_ucDimensionB, &gsk.unkE0);
     gsk.ComputeClosestPoints(shapeA, shapeB, &input->m_kMotionTransform, &norm);
     if (gsk.m_cacheChanged)
-        gsk.writeToCache(cache);
+        gsk.writeToCache(agentData);
     const float* rot = (const float*)input->m_pBodyA->m_kMotionState;
     __m128 n = _mm_load_ps(&norm.x);
     __m128 c0 = _mm_load_ps(rot);
@@ -392,6 +395,6 @@ void __cdecl hkPredGskAgent3_sepNormal(Input_s* input, int unused, hkpGskCache_s
     __m128 nx = _mm_shuffle_ps(n, n, 0x00);
     __m128 nz = _mm_shuffle_ps(n, n, 0xaa);
     __m128 res = _mm_add_ps(_mm_add_ps(_mm_mul_ps(ny, c1), _mm_mul_ps(nx, c0)), _mm_mul_ps(nz, c2));
-    output->v = res;
-    output->m_fClosestPointDistanceSquared = norm.w - (shapeB->m_fSphereRadius + shapeA->m_fSphereRadius);
+    separatingNormalOut->v = res;
+    separatingNormalOut->m_fClosestPointDistanceSquared = norm.w - (shapeB->m_fSphereRadius + shapeA->m_fSphereRadius);
 }

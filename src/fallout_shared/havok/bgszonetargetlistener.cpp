@@ -11,7 +11,7 @@ extern int DAT_0104d9e0;
 void* __fastcall ConstructZoneTargetListener(BGSZoneTargetListener* listener)
 {
     *reinterpret_cast<void**>(listener) = &DAT_0104d9e0;
-    listener->m_flags = 0;
+    listener->pZones = 0;
     return listener;
 }
 
@@ -19,6 +19,7 @@ void __cdecl _Deallocate(void* p);
 
 // Calls FUN_00620110, then deallocates this if flags has bit 0 set, and returns this.
 // @fnv 0x006200e0
+// pdb: BGSZoneTargetListener::`scalar deleting destructor' | BGSZoneTargetListener.obj | retail, vtable slot, high
 void* __thiscall BGSZoneTargetListener::Destroy(unsigned int flags)
 {
     this->~BGSZoneTargetListener();
@@ -45,8 +46,10 @@ void ZoneLink::SetValue(int flags, bool set)
         unk00 &= ~flags;
 }
 
-void ourMemalignFree(int param);
+void ourMemalignFree(int apPtr);
 // @fnv 0x0087e9b0
+// pdb: TargetEntry::operator delete | BGSZoneTargetListener.obj | debug, call graph, medium
+// pdb params: ptr
 void CallWithParam(int param)
 {
     ourMemalignFree(param);
@@ -56,7 +59,7 @@ struct FUN_0061fc10_shell
 {
     void* m_iWordAt00;
     void* m_iWordAt04;
-    void __thiscall FUN_0061fc10(unsigned int a, unsigned int b);
+    void __thiscall FUN_0061fc10(unsigned int apRef, unsigned int apCol);
 };
 
 extern void* DAT_0104e3e8;
@@ -65,15 +68,17 @@ struct FUN_0062d840_shell
 {
     void* m_iWordAt00;
     void* m_iWordAt04;
-    void* __thiscall TrapEntry_TrapEntry(unsigned int a, unsigned int b);
+    void* __thiscall TrapEntry_TrapEntry(unsigned int apRef, unsigned int apCol);
 };
 
 // Calls FUN_0061fc10 with a and b, sets the first field to point at DAT_0104e3e8, and returns this.
 // @fnv 0x0062d840
 // src: EXE 0x0062d840
-void* __thiscall FUN_0062d840_shell::TrapEntry_TrapEntry(unsigned int a, unsigned int b)
+// pdb: TrapEntry::TrapEntry | TESTrapListener.obj | debug, upstream name already matches, high
+// pdb params: apRef, apCol
+void* __thiscall FUN_0062d840_shell::TrapEntry_TrapEntry(unsigned int apRef, unsigned int apCol)
 {
-    ((FUN_0061fc10_shell*)this)->FUN_0061fc10(a, b);
+    ((FUN_0061fc10_shell*)this)->FUN_0061fc10(apRef, apCol);
     m_iWordAt00 = &DAT_0104e3e8;
     return this;
 }
@@ -88,13 +93,15 @@ struct FUN_0061fc10
     void* m0;
     char _4[16];
     int _14;
-    FUN_0061fc10(unsigned int a, unsigned int b);
+    FUN_0061fc10(unsigned int apRef, unsigned int apCol);
 };
 // Calls FUN_00620720 on the member at offset 4 with a and b, then sets m0 to DAT_0104d9cc and _14 to 0.
 // @fnv 0x0061fc10
-FUN_0061fc10::FUN_0061fc10(unsigned int uiFirst, unsigned int uiSecond)
+// pdb: ZoneEntry::ZoneEntry | BGSZoneTargetListener.obj | debug, call graph (shared callers), high
+// pdb params: apRef, apCol
+FUN_0061fc10::FUN_0061fc10(unsigned int apRef, unsigned int apCol)
 {
-    ((Member140*)((char*)this + 4))->bhkTTNode_TESObjectREFR_bhkTTNode_TESObjectREFR(uiFirst, uiSecond);
+    ((Member140*)((char*)this + 4))->bhkTTNode_TESObjectREFR_bhkTTNode_TESObjectREFR(apRef, apCol);
     m0 = DAT_0104d9cc;
     _14 = 0;
 }
@@ -104,11 +111,13 @@ struct FUN_0061fe70_shell
 {
     void* m_iWordAt00;
     void* m_iWordAt04;
-    void __thiscall TargetEntry_TargetEntry(unsigned int a, unsigned int b);
+    void __thiscall TargetEntry_TargetEntry(unsigned int apRef, unsigned int apCol);
     void* __thiscall Construct(unsigned int a, unsigned int b);
 };
 // Calls FUN_0061fba0 with a and b, stores the address of DAT_0104d9d8 at this, and returns this.
 // @fnv 0x0061fe70
+// pdb: TrapTargetEntry::TrapTargetEntry | BGSZoneTargetListener.obj | debug, object-file run extension, low
+// pdb params: apRef, apCol
 void* __thiscall FUN_0061fe70_shell::Construct(unsigned int a, unsigned int b)
 {
     TargetEntry_TargetEntry(a, b);
@@ -148,6 +157,8 @@ struct FUN_0061fea0_shell
     void ClearList();
 };
 // @fnv 0x0061fea0
+// pdb: ZoneEntry::EmptyList | BGSZoneTargetListener.obj | debug, object-file run extension, low
+// pdb locals: pa, pnext
 void FUN_0061fea0_shell::ClearList()
 {
     void* pNode;
@@ -166,9 +177,11 @@ void FUN_0061fea0_shell::ClearList()
 
 // Allocates and constructs a new FUN_0061fc10 object from the two unsigned int arguments and returns it.
 // @fnv 0x0061ffe0
-void* BGSZoneTargetListener::Create(unsigned int uiFirst, unsigned int uiSecond)
+// pdb: BGSZoneTargetListener::CreateZoneEntry | BGSZoneTargetListener.obj | retail, vtable slot, high
+// pdb params: apZone, apCol
+void* BGSZoneTargetListener::Create(unsigned int apZone, unsigned int apCol)
 {
-    return new FUN_0061fc10(uiFirst, uiSecond);
+    return new FUN_0061fc10(apZone, apCol);
 }
 
 struct ZoneBase
@@ -197,7 +210,7 @@ struct ZoneNode : ZoneBase, ZoneLink
     int unk4C;
     static void* operator new(unsigned int size);
     static void operator delete(void*);
-    ZoneNode(unsigned int a, unsigned int b);
+    ZoneNode(unsigned int apRef, unsigned int apCol);
 };
 
 struct ZoneList
@@ -208,19 +221,22 @@ struct ZoneList
     int unk0C;
     int unk10;
     ZoneNode* head;
-    ZoneNode* Find(unsigned int key);
-    ZoneNode* FindOrCreateNode(unsigned int key, unsigned int data, int value);
+    ZoneNode* Find(unsigned int apTarget);
+    ZoneNode* FindOrCreateNode(unsigned int apTarget, unsigned int apCol, int aiFlags);
 };
 
 // Looks up a node by key in the list, creating, initializing and prepending a new one if not found, then returns it.
 // @fnv 0x0061fc70
-ZoneNode* ZoneList::FindOrCreateNode(unsigned int key, unsigned int data, int value)
+// pdb: ZoneEntry::AddTarget | BGSZoneTargetListener.obj | retail, vtable slot, high
+// pdb params: apTarget, apCol, aiFlags
+// pdb locals: pa
+ZoneNode* ZoneList::FindOrCreateNode(unsigned int apTarget, unsigned int apCol, int aiFlags)
 {
-    ZoneNode* node = head ? Find(key) : 0;
+    ZoneNode* node = head ? Find(apTarget) : 0;
     if (!node)
     {
-        node = new ZoneNode(key, data);
-        node->SetValue(value, 1);
+        node = new ZoneNode(apTarget, apCol);
+        node->SetValue(aiFlags, 1);
         node->Attach(head);
         head = node;
     }
@@ -249,18 +265,20 @@ struct Holder
     int unk0c;
     int unk10;
     Node* node14;
-    void __thiscall ZoneEntry_RemoveTargetEntry(Node* node);
+    void __thiscall ZoneEntry_RemoveTargetEntry(Node* apTarget);
 };
 void CallWithParam(int value);
 
 // @fnv 0x0061ff30
 // src: COMMUNITY 0x0061ff30
-void Holder::ZoneEntry_RemoveTargetEntry(Node* node)
+// pdb: ZoneEntry::RemoveTargetEntry | BGSZoneTargetListener.obj | retail, upstream name already matches, high
+// pdb params: apTarget
+void Holder::ZoneEntry_RemoveTargetEntry(Node* apTarget)
 {
-    if (node == 0)
+    if (apTarget == 0)
         return;
-    node14 = static_cast<Node*>(node->bhkTTNode_RemoveFromList(node14));
-    Node* toRelease = node;
+    node14 = static_cast<Node*>(apTarget->bhkTTNode_RemoveFromList(node14));
+    Node* toRelease = apTarget;
     CallWithParam((int)toRelease);
 }
 
@@ -289,14 +307,16 @@ struct ZoneTargetNode
 
     static void* __cdecl operator new(unsigned int size);
     static void operator delete(void*);
-    ZoneTargetNode(unsigned int a, unsigned int b);
+    ZoneTargetNode(unsigned int apRef, unsigned int apCol);
 };
 
 // Allocates and constructs a ZoneTargetNode from the two given values and returns it.
 // @fnv 0x00620060
-void* BGSZoneTargetListener::CreateZoneTargetNode(unsigned int uiFirst, unsigned int uiSecond)
+// pdb: BGSZoneTargetListener::CreateTargetEntry | BGSZoneTargetListener.obj | retail, vtable slot, high
+// pdb params: apZone, apCol
+void* BGSZoneTargetListener::CreateZoneTargetNode(unsigned int apZone, unsigned int apCol)
 {
-    return new ZoneTargetNode(uiFirst, uiSecond);
+    return new ZoneTargetNode(apZone, apCol);
 }
 
 extern int DAT_0104d9c4;
@@ -329,14 +349,16 @@ struct S_0061fba0_Obj
     S_0061fba0_Sub m_20;
     S_0061fba0_Sub m_30;
     int unk40;
-    S_0061fba0_Obj* __thiscall TargetEntry_TargetEntry(unsigned int a, unsigned int b);
+    S_0061fba0_Obj* __thiscall TargetEntry_TargetEntry(unsigned int apRef, unsigned int apCol);
 };
 
 // @fnv 0x0061fba0
 // src: XBOX_PDB 0x0061fba0
-S_0061fba0_Obj* __thiscall S_0061fba0_Obj::TargetEntry_TargetEntry(unsigned int a, unsigned int b)
+// pdb: TargetEntry::TargetEntry | BGSZoneTargetListener.obj | debug, upstream name already matches, high
+// pdb params: apRef, apCol
+S_0061fba0_Obj* __thiscall S_0061fba0_Obj::TargetEntry_TargetEntry(unsigned int apRef, unsigned int apCol)
 {
-    m_10.bhkTTNode_TESObjectREFR_bhkTTNode_TESObjectREFR(a, b);
+    m_10.bhkTTNode_TESObjectREFR_bhkTTNode_TESObjectREFR(apRef, apCol);
     vtbl = (const void*)&DAT_0104d9c4;
     m_20.FUN_006815c0();
     m_30.FUN_006815c0();
@@ -367,6 +389,10 @@ struct LinkedOwnerLayout : OwnerPrefix, EmbeddedLink
 // Returns the embedded link call result cast to LinkedOwnerLayout*.
 // @fnv 0x0061fef0
 // src: XBOX_PDB 0x0061fef0
+// pdb: ExtraDataList::GetInWaterZone | ExtraDataList.obj | retail, call graph, low
+// pdb note: debug build links it to TargetEntry::QNextEntry
+// pdb params: apZone
+// pdb locals: icount, pextra
 void* FUN_0061fef0_Node::TargetEntry_QNextEntry()
 {
     return static_cast<LinkedOwnerLayout*>(reinterpret_cast<LinkedOwnerLayout*>(this)->FUN_00726070());
@@ -385,19 +411,22 @@ struct FUN_0057b700_class
     int unk0c;
     int unk10;
     ZoneNode* unk14;
-    ZoneNode* __thiscall ZoneEntry_AddTrapTarget(unsigned int key, unsigned int arg2, unsigned int arg3);
+    ZoneNode* __thiscall ZoneEntry_AddTrapTarget(unsigned int apTarget, unsigned int apCol, unsigned int aiFlags);
 };
 
 // Finds a ZoneNode by key in the list, or creates and attaches a new FUN_0061fe70 node with the given key, arg2, and arg3 values.
 // @fnv 0x0061fd70
 // src: COMMUNITY 0x0061fd70
-ZoneNode* FUN_0057b700_class::ZoneEntry_AddTrapTarget(unsigned int key, unsigned int auiData, unsigned int auiValue)
+// pdb: ZoneEntry::AddTrapTarget | BGSZoneTargetListener.obj | retail, upstream name already matches, high
+// pdb params: apTarget, apCol, aiFlags
+// pdb locals: pa
+ZoneNode* FUN_0057b700_class::ZoneEntry_AddTrapTarget(unsigned int apTarget, unsigned int apCol, unsigned int aiFlags)
 {
-    ZoneNode* result = (unk14 != 0) ? ((ZoneList*)this)->Find(key) : 0;
+    ZoneNode* result = (unk14 != 0) ? ((ZoneList*)this)->Find(apTarget) : 0;
     if (result == 0)
     {
-        result = new Construct(key, auiData);
-        result->SetValue(auiValue, 1);
+        result = new Construct(apTarget, apCol);
+        result->SetValue(aiFlags, 1);
         result->Attach((ZoneLink*)unk14);
         unk14 = result;
     }

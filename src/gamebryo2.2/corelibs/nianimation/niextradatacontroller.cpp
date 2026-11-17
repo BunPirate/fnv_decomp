@@ -16,17 +16,21 @@ inline unsigned int NiStream::version()
 void __fastcall RefreshExtraData(NiExtraDataController* self);
 
 // @fnv 0x00a571a0
-void NiPSysModifierCtlr::LoadBinary(NiStream& stream)
+// pdb: NiPSysModifierCtlr::LoadBinary | NiPSysModifierCtlr.obj | retail, upstream name already matches, high
+// pdb params: kStream
+void NiPSysModifierCtlr::LoadBinary(NiStream& kStream)
 {
-    NiSingleInterpController::LoadBinary(stream);
-    if (stream.version() < 0x14010001)
-        stream.ReadFixedString(m_kTargetModifierName);
+    NiSingleInterpController::LoadBinary(kStream);
+    if (kStream.version() < 0x14010001)
+        kStream.ReadFixedString(m_kModifierName);
     else
-        stream.ReadStringTableEntry(m_kTargetModifierName);
+        kStream.ReadStringTableEntry(m_kModifierName);
 }
 
 // @fnv 0x00a57400
 // src: XBOX_PDB 0x00a57400
+// pdb: NiExtraDataController::PostLinkObject | NiExtraDataController.obj | retail, object-file gap fill, high
+// pdb params: kStream
 void NiExtraDataController::PostLinkObject_00a57400(NiStream& kStream)
 {
     NiObject::LinkObject(kStream);
@@ -36,25 +40,28 @@ void NiExtraDataController::PostLinkObject_00a57400(NiStream& kStream)
 
 // Registers the base streamables and then the extra-data name.
 // @fnv 0x00a57100
+// pdb: NiInterpolator::`scalar deleting destructor' | NiInterpolator.obj | debug, object-file run extension, low
 bool __fastcall RegisterExtraDataStreamables(NiExtraDataController* self, int, NiStream& kStream)
 {
     if (!self->NiSingleInterpController::RegisterStreamables(kStream))
         return false;
-    kStream.RegisterFixedString(self->m_kDataName);
+    kStream.RegisterFixedString(self->m_kExtraDataName);
     return true;
 }
 
 __declspec(dllimport) long __stdcall InterlockedDecrement(volatile long*);
 // Releases the extra data and resolves it again after changing the target.
 // @fnv 0x00a57330
+// pdb: NiExtraDataController::SetTarget | NiExtraDataController.obj | retail, object-file gap fill, high
+// pdb params: pkTarget
 void __fastcall SetExtraDataTarget(NiExtraDataController* self, int, NiObjectNET* pkTarget)
 {
-    NiExtraData* p = self->m_pExtraData.m_pObject;
+    NiExtraData* p = self->m_spExtraData.m_pObject;
     if (p)
     {
         if (InterlockedDecrement((volatile long*)&p->m_uiRefCount) == 0)
             p->DeleteThis();
-        self->m_pExtraData.m_pObject = 0;
+        self->m_spExtraData.m_pObject = 0;
     }
     self->NiTimeController::SetTarget(pkTarget);
     if (self->m_pkTarget)
@@ -65,9 +72,11 @@ extern char const* const g_011f3e6c_arg1;
 
 void __stdcall _FUN_00a390a0(StrArr* array);
 void* __cdecl _FUN_00a7d330(void* value);
-char* __cdecl NiGetViewerString_00a7d5e0(char const* lhs, char const* rhs);
+char* __cdecl NiGetViewerString_00a7d5e0(char const* pcPrefix, char const* pcValue);
 
 // @fnv 0x00a57420
+// pdb: NiExtraDataController::GetViewerStrings | NiExtraDataController.obj | retail, string-set bridge, high
+// pdb params: pkStrings
 void __fastcall GetExtraDataViewerStrings(NiExtraDataController* self, int, StrArr* strings)
 {
     StrArr* array = strings;
@@ -81,7 +90,7 @@ void __fastcall GetExtraDataViewerStrings(NiExtraDataController* self, int, StrA
         array->SetSize(index + array->m_usGrowBy);
     array->SetAt(index, value);
 
-    char const* pcExtraDataName = self->m_kDataName.m_kHandle;
+    char const* pcExtraDataName = self->m_kExtraDataName.m_kHandle;
     value = NiGetViewerString_00a7d5e0("Extra Data Name", pcExtraDataName);
 
     index = array->m_usSize;
@@ -113,8 +122,8 @@ void __fastcall ProcessExtraDataClone(NiExtraDataController* self, int, void* ar
         {
             NiExtraDataController* other = (NiExtraDataController*)arg;
             FUN_00a57150_obj53* o2 = (FUN_00a57150_obj53*)*(void**)src;
-            o2->FUN_00a53c30(self->m_pExtraData.m_pObject, &arg);
-            FUN_00a57150_obj66* p = (FUN_00a57150_obj66*)&other->m_pExtraData;
+            o2->FUN_00a53c30(self->m_spExtraData.m_pObject, &arg);
+            FUN_00a57150_obj66* p = (FUN_00a57150_obj66*)&other->m_spExtraData;
             p->FUN_0066b0d0(arg);
         }
     }
@@ -132,18 +141,21 @@ template <class T> inline T* NiPointer<T>::operator->() const
 
 // The original entry point returns a byte rather than the shared bool signature.
 // @fnv 0x00a571e0
+// pdb: NiExtraDataController::IsEqual | NiExtraDataController.obj | debug, call graph (shared callers), medium
+// pdb params: pkObject
+// pdb locals: pkControl
 unsigned char __fastcall IsExtraDataEquivalent(NiExtraDataController* self, int,
                                                NiExtraDataController* other)
 {
     if (!((const NiSingleInterpController*)self)->NiSingleInterpController::IsEqual(other))
         return false;
-    if ((self->m_pExtraData && !other->m_pExtraData) ||
-        (!self->m_pExtraData && other->m_pExtraData))
+    if ((self->m_spExtraData && !other->m_spExtraData) ||
+        (!self->m_spExtraData && other->m_spExtraData))
         return false;
-    if (self->m_pExtraData && other->m_pExtraData &&
-        !((const NiObject*)self->m_pExtraData.operator->())->IsEqual(other->m_pExtraData))
+    if (self->m_spExtraData && other->m_spExtraData &&
+        !((const NiObject*)self->m_spExtraData.operator->())->IsEqual(other->m_spExtraData))
         return false;
-    return other->m_kDataName.m_kHandle == self->m_kDataName.m_kHandle;
+    return other->m_kExtraDataName.m_kHandle == self->m_kExtraDataName.m_kHandle;
 }
 
 struct TypeRecord;
@@ -174,16 +186,19 @@ static __forceinline bool HasTargetType(NiObjectNET* arg)
     return false;
 }
 // @fnv 0x00a57380
+// pdb: NiExtraDataController::InterpTargetIsCorrectType | NiExtraDataController.obj | retail, object-file gap fill, high
+// pdb params: pkTarget
+// pdb locals: ui, kExtraDataName, pkExtraData
 bool __fastcall HasMatchingExtraData(NiExtraDataController* self, int, NiObjectNET* pCandidate)
 {
     if (!HasTargetType(pCandidate))
         return false;
-    if ((unsigned int)self->m_kDataName.m_kHandle == g_0109b220)
+    if ((unsigned int)self->m_kExtraDataName.m_kHandle == g_0109b220)
         return false;
     for (unsigned int uiIndex = 0; uiIndex < pCandidate->m_usExtraDataSize; ++uiIndex)
     {
         void* pResolved = GetFilename_00a62660(pCandidate->m_ppkExtra[(unsigned short)uiIndex]);
-        if (*(void**)pResolved == self->m_kDataName.m_kHandle)
+        if (*(void**)pResolved == self->m_kExtraDataName.m_kHandle)
             return true;
     }
     return false;

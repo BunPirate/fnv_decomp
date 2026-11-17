@@ -6,6 +6,7 @@ typedef float hkReal;
 struct VectorQ;
 class hkBoolC;
 
+// pdb: class hkpParametricCurve, size 0x8, bases: hkReferencedObject, 0 members
 class hkpParametricCurve : public hkReferencedObject
 {
 public:

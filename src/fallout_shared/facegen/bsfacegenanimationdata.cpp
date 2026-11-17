@@ -26,6 +26,7 @@
 
 // Deletes the target object if present and sets the target pointer to null.
 // @fnv 0x0064b5e0
+// pdb: BSFaceGenAnimationData::ClearExpressionTarget | BSFaceGenAnimationData.obj | debug, object-file run extension, low
 void BSFaceGenAnimationData::ClearTransitionTarget()
 {
     if (target)
@@ -34,12 +35,16 @@ void BSFaceGenAnimationData::ClearTransitionTarget()
 }
 // Forwards the four boolean arguments to the virtual functions at vtable slots 0x100 and 0x104.
 // @fnv 0x0064ae60
+// pdb: BSFaceGenAnimationData::ClearKeyframeLists | BSFaceGenAnimationData.obj | debug, call graph, medium
+// pdb params: abClearExpression, abClearPhonemes, abClearModifiers, abClearCustomMorphs
 void BSFaceGenAnimationData::SetMorphFlags(bool abArg1, bool abArg2, bool abArg3, bool abArg4)
 {
     vfn_100(abArg1, abArg2, abArg3, abArg4);
     vfn_104(abArg1, abArg2, abArg3, abArg4);
 }
 // @fnv 0x0064a920
+// pdb: BSFaceGenAnimationData::SetDead | BSFaceGenAnimationData.obj | debug, object-file run extension, low
+// pdb params: abDead, abInstant
 void BSFaceGenAnimationData::SetStateFlags(bool abDead, bool b)
 {
     if (abDead && !dead)
@@ -57,6 +62,9 @@ void BSFaceGenAnimationData::SetStateFlags(bool abDead, bool b)
     }
 }
 // @fnv 0x0064ab40
+// pdb: BSFaceGenAnimationData::AddModifiersKeyframe | BSFaceGenAnimationData.obj | debug, object-file run extension, low
+// pdb params: apQuantities, afTime
+// pdb locals: morph, i
 void BSFaceGenAnimationData::AddModifierKeyframe(float* values, float time)
 {
     BSFaceGenKeyframeMultiple frame(BS_FACEGEN_MORPH_TYPE_BS_FG_MORPH_MODIFIER, 17);
@@ -68,6 +76,9 @@ void BSFaceGenAnimationData::AddModifierKeyframe(float* values, float time)
     frame.InsertIntoKeyframeList((NiTPointerList<BSFaceGenKeyframe*>*)((char*)this + 0x88));
 }
 // @fnv 0x0064ad20
+// pdb: BSFaceGenAnimationData::AddSpeechEmptyKeyframe | BSFaceGenAnimationData.obj | debug, object-file run extension, low
+// pdb params: aeType, afTime, abForceZero
+// pdb locals: morph
 void BSFaceGenAnimationData::AddKeyframe(BS_FACEGEN_MORPH_TYPE type, float time, bool unused)
 {
     if (dead)
@@ -95,6 +106,9 @@ void BSFaceGenAnimationData::AddKeyframe(BS_FACEGEN_MORPH_TYPE type, float time,
     }
 }
 // @fnv 0x0064aa00
+// pdb: BSFaceGenAnimationData::AddPhonemeKeyframe | BSFaceGenAnimationData.obj | debug, object-file run extension, low
+// pdb params: apQuantities, afTime
+// pdb locals: morph, i
 void BSFaceGenAnimationData::InsertPhonemeKeyframe(float* values, float time)
 {
     BSFaceGenKeyframeMultiple frame(BS_FACEGEN_MORPH_TYPE_BS_FG_MORPH_PHONEME, 16);
@@ -112,6 +126,8 @@ void BSFaceGenAnimationData::InsertPhonemeKeyframe(float* values, float time)
     frame.InsertIntoKeyframeList((NiTPointerList<BSFaceGenKeyframe*>*)((char*)this + 0xbc));
 }
 // @fnv 0x0064b2b0
+// pdb: BSFaceGenAnimationData::SetExpressionTarget | BSFaceGenAnimationData.obj | debug, object-file run extension, low
+// pdb params: aeExpression, afValue
 void BSFaceGenAnimationData::SetExpressionWeight(int expression, float quantity)
 {
     if (expression < -1 || expression > 15 || quantity < 0.0 || quantity > 1.0)
@@ -131,6 +147,9 @@ void BSFaceGenAnimationData::SetExpressionWeight(int expression, float quantity)
 }
 // Reads three rotation values, clamps each to a range, stores them into the quaternion, and returns whether it differs from identity.
 // @fnv 0x0064a100
+// pdb: BSFaceGenAnimationData::GetModifierValuesAsRotation | BSFaceGenAnimationData.obj | debug, object-file run extension, low
+// pdb params: arQuat
+// pdb locals: froll, fpitch, fyaw
 bool BSFaceGenAnimationData::CalculateRotationQuaternion(NiQuaternion& rotation)
 {
     float fX = ((BSFaceGenKeyframeMultiple*)((char*)this + 0xa8))->BSFaceGenKeyframeMultiple_GetQuantity(16);
@@ -149,6 +168,8 @@ bool BSFaceGenAnimationData::CalculateRotationQuaternion(NiQuaternion& rotation)
     return rotation != NiQuaternion::IDENTITY;
 }
 // @fnv 0x0064a770
+// pdb: BSFaceGenAnimationData::ResetAnimCurrentMorphs | BSFaceGenAnimationData.obj | debug, object-file run extension, low
+// pdb params: afTime, abResetExpression, abResetPhoneme, abResetModifier, abResetCustomMorph
 void BSFaceGenAnimationData::FadeOutMorphs(float time, bool expression, bool phoneme, bool modifier, bool custom)
 {
     vfn_104(expression, phoneme, modifier, custom);
@@ -190,9 +211,9 @@ void BSFaceGenAnimationData::FadeOutMorphs(float time, bool expression, bool pho
 // src: XBOX_PDB 0x0064a4d0
 bool BSFaceGenKeyframeMultiple::SetQuantity_0064a4d0(unsigned int index, float value)
 {
-    if (index < m_uiFaceGenValueCount && m_pfFaceGenValues[index] != value)
+    if (index < iNumQuantities && pQuantities[index] != value)
     {
-        m_pfFaceGenValues[index] = value;
+        pQuantities[index] = value;
         return true;
     }
     return false;
@@ -202,8 +223,9 @@ extern NiFixedString* DAT_011d5744;
 
 // Allocates the "FAD" fixed string and stores it in DAT_011d5744.
 // @fnv 0x00649e40
-// src: COMMUNITY 0x00649e40
-void BSFaceGenAnimationData_InitTag()
+// src: XBOX_RETAIL_PDB 0x00649e40 (was COMMUNITY)
+// pdb: BSFaceGenAnimationData::InitSDM | BSFaceGenAnimationData.obj | retail, call graph, high
+void BSFaceGenAnimationData_InitSDM()
 {
     DAT_011d5744 = ::new NiFixedString("FAD");
 }
@@ -265,6 +287,9 @@ void BSFaceGenAnimationData::ResetFaceGenAnimationData(float afTime, bool abRese
 extern double _gModifierZero;
 
 // @fnv 0x0064a520
+// pdb: BSFaceGenAnimationData::ResetSpeechCurrentMorphs | BSFaceGenAnimationData.obj | debug, object-file run extension, low
+// pdb params: afTime, abResetExpression, abResetPhoneme, abResetModifier, abResetCustomMorph, abForDeath
+// pdb locals: pmods
 void BSFaceGenAnimationData::ResetFaceGenData(float afTime, bool abResetExpression, bool abResetPhoneme,
                                           bool abResetModifier, bool abResetCustomMorph, bool abForDeath)
 {
@@ -362,6 +387,8 @@ void BSFaceGenAnimationData::ResetFaceGenData(float afTime, bool abResetExpressi
 }
 
 // @fnv 0x0064b400
+// pdb: BSFaceGenAnimationData::SetExpressionTargetFromMood | BSFaceGenAnimationData.obj | debug, object-file run extension, low
+// pdb params: aiMoodindex, abTalking
 void BSFaceGenAnimationData::SetMoodExpression(int aiMoodindex, bool abTalking)
 {
     if (*reinterpret_cast<BSFaceGenKeyframeMultiple**>(reinterpret_cast<char*>(this) + 0x0c) != 0)
@@ -419,6 +446,8 @@ class Script;
 namespace facegen_script_list {
 // Removes the head node from the list, fixes up head/tail links, deletes the node, decrements the count and returns its Script element.
 // @fnv 0x007b5390
+// pdb: NiTPointerListBase<NiTPointerAllocator<unsigned int>,Tile *>::RemoveHead | Interface.obj | debug, call graph, medium
+// pdb locals: pkNode, element
 Script* __fastcall PopFrontScript(NiTPointerListBase<NiTPointerAllocator<unsigned int>, Script*>* pThis)
 {
     NiTListItem<Script*>* pkNode = pThis->m_pkHead;
@@ -438,20 +467,25 @@ Script* __fastcall PopFrontScript(NiTPointerListBase<NiTPointerAllocator<unsigne
 extern Setting originalRuntimeFloatSetting1271;
 extern const double DAT_01023128;
 // @fnv 0x00649f00
-void ComputeAngleRange(float* afMin, float* afMax)
+// src: XBOX_DEBUG_PDB 0x00649f00
+// pdb: BSFaceGenAnimationData::GetTrackEyeXYMinMax | BSFaceGenAnimationData.obj | debug, call graph (shared callers), high
+// pdb params: afMinOut, afMaxOut
+void BSFaceGenAnimationData_GetTrackEyeXYMinMax(float* afMinOut, float* afMaxOut)
 {
-    *afMax = *originalRuntimeFloatSetting1271.Float() * DAT_01023128;
-    if (*afMax < _gModifierZero)
-        *afMax = 0.0f;
-    if (*afMax > DAT_01064f50)
-        *afMax = 1.5707964f;
-    *afMin = *afMax * -1.0;
+    *afMaxOut = *originalRuntimeFloatSetting1271.Float() * DAT_01023128;
+    if (*afMaxOut < _gModifierZero)
+        *afMaxOut = 0.0f;
+    if (*afMaxOut > DAT_01064f50)
+        *afMaxOut = 1.5707964f;
+    *afMinOut = *afMaxOut * -1.0;
 }
 
 namespace fnv_00649f70 {
 extern Setting originalRuntimeFloatSetting1271;
 extern const double DAT_01023128;
 // @fnv 0x00649f70
+// pdb: BSFaceGenAnimationData::GetTrackEyeZMinMax | BSFaceGenAnimationData.obj | debug, object-file gap fill, medium
+// pdb params: afMinOut, afMaxOut
 void ClampMinMaxFromSetting(float* afMin, float* afMax)
 {
     *afMax = *originalRuntimeFloatSetting1271.Float() * DAT_01023128;
@@ -466,22 +500,25 @@ void ClampMinMaxFromSetting(float* afMin, float* afMax)
 extern SettingT<GameSettingCollection> originalRuntimeFloatSetting1273;
 extern const double DAT_01023128;
 extern double _gModifierZero;
-void __cdecl ComputeAngleRange(float*, float*);
+void __cdecl BSFaceGenAnimationData_GetTrackEyeXYMinMax(float*, float*);
 // @fnv 0x00649fe0
 // src: COMMUNITY 0x00649fe0
-void BSFaceGenAnimationData_GetTrackDeadZoneXYMinMax(float* afMin, float* afMax)
+// pdb: BSFaceGenAnimationData::GetTrackDeadZoneXYMinMax | BSFaceGenAnimationData.obj | debug, upstream name already matches, high
+// pdb params: afMinOut, afMaxOut
+// pdb locals: fminEye, fmaxEye
+void BSFaceGenAnimationData_GetTrackDeadZoneXYMinMax(float* afMinOut, float* afMaxOut)
 {
     float fMin;
     float fScaledValue;
-    *afMax = *originalRuntimeFloatSetting1273.Float() * DAT_01023128;
-    if (*afMax < _gModifierZero)
-        *afMax = 0.0f;
-    if (*afMax > DAT_01064f50)
-        *afMax = 1.5707964f;
-    ComputeAngleRange(&fMin, &fScaledValue);
-    if (*afMax > fScaledValue)
-        *afMax = fScaledValue;
-    *afMin = *afMax * -1.0;
+    *afMaxOut = *originalRuntimeFloatSetting1273.Float() * DAT_01023128;
+    if (*afMaxOut < _gModifierZero)
+        *afMaxOut = 0.0f;
+    if (*afMaxOut > DAT_01064f50)
+        *afMaxOut = 1.5707964f;
+    BSFaceGenAnimationData_GetTrackEyeXYMinMax(&fMin, &fScaledValue);
+    if (*afMaxOut > fScaledValue)
+        *afMaxOut = fScaledValue;
+    *afMinOut = *afMaxOut * -1.0;
 }
 
 extern const double DAT_01023128;
@@ -492,6 +529,9 @@ void __cdecl ClampMinMaxFromSetting(float*, float*);
 
 // Computes a clamped max eye angle from a runtime float setting and writes its negation as the min angle.
 // @fnv 0x0064a070
+// pdb: BSFaceGenAnimationData::GetTrackDeadZoneZMinMax | BSFaceGenAnimationData.obj | debug, object-file run extension, low
+// pdb params: afMinOut, afMaxOut
+// pdb locals: fminEye, fmaxEye
 void __cdecl GetEyeAngleLimits(float* afMinOut, float* afMaxOut)
 {
     float fminEye;
@@ -546,6 +586,9 @@ bool AdvanceKeyframe(float, NiTPointerList<BSFaceGenKeyframe*>*, FaceGenKeyframe
 }  // namespace fnv_0064b630
 
 // @fnv 0x0064b630
+// pdb: BSFaceGenAnimationData::Update | BSFaceGenAnimationData.obj | debug, object-file run extension, low
+// pdb params: afTime
+// pdb locals: delta, bchangedSpeech, ftime, bchangedExp, flookdown, bchangedAnim, bchangedCust, bchangedMod, bchangedPhon, fblinkdelay, pmods
 bool BSFaceGenAnimationData::UpdateFaceGenAnimation(float afTime)
 {
     using namespace fnv_0064b630;
@@ -707,6 +750,8 @@ void __fastcall SetFaceGenArrayElement(BSFaceGenKeyframeMultiple*, FaceGenArrayI
 // If the modifier index is below 0x11, forwards the index and value to the object at offset 0x38.
 // @fnv 0x00649c10
 // src: GUESS 0x00649c10 (confidence: medium)
+// pdb: BSFaceGenAnimationData::SetAnimCustomMorphValue | BSFaceGenAnimationData.obj | debug, object-file run extension, low
+// pdb params: aeCustomMorph, afValue
 void BSFaceGenAnimationData::SetModifierKeyframeValue(BS_FACEGEN_MODIFIER aeModifier, float afValue)
 {
     if (aeModifier.m < 0x11)
@@ -718,6 +763,8 @@ void BSFaceGenAnimationData::SetModifierKeyframeValue(BS_FACEGEN_MODIFIER aeModi
 // If aeExpression is below 15, forwards aeExpression and afValue to the contained SetArrayElement handler.
 // @fnv 0x00649a20
 // src: COMMUNITY 0x00649a20
+// pdb: BSFaceGenAnimationData::SetExpressionValue | BSFaceGenAnimationData.obj | debug, upstream name already matches, high
+// pdb params: aeExpression, afValue
 void BSFaceGenAnimationData::SetExpressionValue(int aeExpression, float afValue)
 {
     if (aeExpression < 15)
@@ -727,6 +774,8 @@ void BSFaceGenAnimationData::SetExpressionValue(int aeExpression, float afValue)
 // Forwards aeModifier and afValue to the SetArrayElement handler at offset 0x94 when aeModifier is below 0x11.
 // @fnv 0x00649a70
 // src: COMMUNITY 0x00649a70
+// pdb: BSFaceGenAnimationData::SetModifierValue | BSFaceGenAnimationData.obj | debug, upstream name already matches, high
+// pdb params: aeModifier, afValue
 void BSFaceGenAnimationData::SetModifierValue(int aeModifier, float afValue)
 {
     if (aeModifier < 0x11)
@@ -736,6 +785,8 @@ void BSFaceGenAnimationData::SetModifierValue(int aeModifier, float afValue)
 // If aePhoneme is below 0x10, forwards aePhoneme and afValue to m.SetArrayElement.
 // @fnv 0x00649ae0
 // src: COMMUNITY 0x00649ae0
+// pdb: BSFaceGenAnimationData::SetPhonemeValue | BSFaceGenAnimationData.obj | debug, upstream name already matches, high
+// pdb params: aePhoneme, afValue
 void BSFaceGenAnimationData::SetPhonemeValue(int aePhoneme, float afValue)
 {
     if (aePhoneme < 0x10)
@@ -748,6 +799,8 @@ void BSFaceGenAnimationData::SetPhonemeValue(int aePhoneme, float afValue)
 
 // @fnv 0x00649b50
 // src: COMMUNITY 0x00649b50
+// pdb: BSFaceGenAnimationData::SetCustomMorphValue | BSFaceGenAnimationData.obj | debug, upstream name already matches, high
+// pdb params: aeCustomMorph, afValue
 void BSFaceGenAnimationData::SetCustomMorphValue(BS_FACEGEN_CUSTOM_MORPH aeCustomMorph, float afValue)
 {
     if (aeCustomMorph < 1)
@@ -757,6 +810,8 @@ void BSFaceGenAnimationData::SetCustomMorphValue(BS_FACEGEN_CUSTOM_MORPH aeCusto
 // If aeExpression is below 15, forwards aeExpression and afValue to SetArrayElement on the member object.
 // @fnv 0x00649be0
 // src: GUESS 0x00649be0 (confidence: medium)
+// pdb: BSFaceGenAnimationData::SetAnimPhonemeValue | BSFaceGenAnimationData.obj | debug, object-file run extension, low
+// pdb params: aePhoneme, afValue
 void BSFaceGenAnimationData::SetExpressionValue_00649be0(int aeExpression, float afValue)
 {
     if (aeExpression < 15)
@@ -766,6 +821,7 @@ void BSFaceGenAnimationData::SetExpressionValue_00649be0(int aeExpression, float
 // If aePhoneme is below 0x10, forwards the phoneme index and value to the SetArrayElement object at offset 0x4C.
 // @fnv 0x00649c40
 // src: GUESS 0x00649c40 (confidence: medium)
+// pdb: BSFaceGenAnimationData::`scalar deleting destructor' | BSFaceGenAnimationData.obj | debug, object-file run extension, low
 void BSFaceGenAnimationData::SetPhonemeValue_00649c40(int aePhoneme, float afValue)
 {
     if (aePhoneme < 0x10)
@@ -777,6 +833,7 @@ void BSFaceGenAnimationData::SetPhonemeValue_00649c40(int aePhoneme, float afVal
 // If aeCustomMorph is less than 1, forwards aeCustomMorph and afValue to m.SetArrayElement.
 // @fnv 0x00649c70
 // src: GUESS 0x00649c70 (confidence: medium)
+// pdb: NiTPointerList<BSFaceGenKeyframe *>::NiTPointerList<BSFaceGenKeyframe *> | BSFaceGenAnimationData.obj | debug, object-file run extension, low
 void BSFaceGenAnimationData::SetCustomMorphKeyframeValue(int aeCustomMorph, float afValue)
 {
     if (aeCustomMorph < 1)
@@ -790,6 +847,7 @@ extern NiFixedString* DAT_011d5744;
 // Clears DAT_011d5744, deleting the previous fixed string if non-null.
 // @fnv 0x00649ec0
 // src: GUESS 0x00649ec0 (confidence: low)
+// pdb: BSFaceGenAnimationData::KillSDM | BSFaceGenAnimationData.obj | debug, call graph, medium
 void Object_UpdateFields_00649ec0()
 {
     NiFixedString* b = DAT_011d5744;
@@ -797,7 +855,7 @@ void Object_UpdateFields_00649ec0()
     void* c;
     a = b;
     if (a)
-        c = a->FUN_004b9900(1);
+        c = a->NiFixedString_ScalarDtor(1);
     else
         c = 0;
     DAT_011d5744 = 0;
@@ -815,13 +873,14 @@ const NiRTTI* BSFaceGenAnimationData::GetRTTI() const
 // @fnv 0x00649a50
 void __fastcall SetFaceGenArrayElement(BSFaceGenKeyframeMultiple* frame, FaceGenArrayIndex aiIndex, float afValue)
 {
-    frame->m_pfFaceGenValues[aiIndex.value] = afValue;
+    frame->pQuantities[aiIndex.value] = afValue;
 }
 
 extern NiPoint3 _NiPoint3_ZERO;
 
 // Resets the point to zero and stores the given flag in bFull.
 // @fnv 0x0064bd60
+// pdb: BSFaceGenAnimationData::ClearExpressionTarget | BSFaceGenAnimationData.obj | retail, object-file run extension, low
 void BSFaceGenAnimationData::Reset(bool abInstant)
 {
     unk124.pt = _NiPoint3_ZERO;
@@ -833,6 +892,8 @@ extern NiPoint3 _NiPoint3_ZERO;
 // Tests the stored plane and the incoming point against zero, updates the flag at 0x174 and value at 0x178, stores the point at 0x124 and sets the byte at 0x189.
 // @fnv 0x0064bcc0
 // src: COMMUNITY 0x0064bcc0
+// pdb: BSFaceGenAnimationData::SetHeadTrackVector | BSFaceGenAnimationData.obj | debug, upstream name already matches, high
+// pdb params: aPoint, abInstant
 void BSFaceGenAnimationData::SetHeadTrackVector(float afX, float afY, float afZ, int)
 {
     if (((NiPlane*)((char*)this + 0x124))->HasEqualComponents(_NiPoint3_ZERO))
@@ -852,6 +913,9 @@ void BSFaceGenAnimationData::SetHeadTrackVector(float afX, float afY, float afZ,
 extern unsigned int _data_011c16bc;
 
 // @fnv 0x0064b160
+// pdb: BSFaceGenAnimationData::SetExpressionTarget | BSFaceGenAnimationData.obj | debug, object-file run extension, low
+// pdb params: apQuantities
+// pdb locals: iexp
 void BSFaceGenAnimationData::SetExpressionKeyframes(float* apQuantities)
 {
     if (dead || apQuantities == 0)
@@ -874,6 +938,7 @@ void BSFaceGenAnimationData::SetExpressionKeyframes(float* apQuantities)
 
 // Destructor that calls the cleanup routine with all four flags set to true.
 // @fnv 0x00649ce0
+// pdb: BSFaceGenAnimationData::~BSFaceGenAnimationData | BSFaceGenAnimationData.obj | retail, upstream name already matches, high
 BSFaceGenAnimationData::~BSFaceGenAnimationData()
 {
     BSFaceGenAnimationData::SetMorphFlags(true, true, true, true);
@@ -882,6 +947,9 @@ BSFaceGenAnimationData::~BSFaceGenAnimationData()
 extern const double DAT_01012060;
 
 // @fnv 0x0064ac30
+// pdb: BSFaceGenAnimationData::AddCustomMorphKeyframe | BSFaceGenAnimationData.obj | debug, object-file run extension, low
+// pdb params: apQuantities, afTime
+// pdb locals: morph, i
 void BSFaceGenAnimationData::SetKeyframeQuantities(float* quantities, float time)
 {
     BSFaceGenKeyframeMultiple keyframe(BS_FACEGEN_MORPH_TYPE_BS_FG_MORPH_CUSTOM, 1);
@@ -903,6 +971,9 @@ void BSFaceGenAnimationData::SetKeyframeQuantities(float* quantities, float time
 
 // Optionally calls vfn_120, then for each enabled flag drains and deletes every item from the corresponding list (blk88, blkbc, blkf0).
 // @fnv 0x0064aec0
+// pdb: BSFaceGenAnimationData::ClearSpeechKeyframeLists | BSFaceGenAnimationData.obj | debug, object-file run extension, low
+// pdb params: abClearExpression, abClearPhonemes, abClearModifiers, abClearCustomMorphs
+// pdb locals: pdelete
 void BSFaceGenAnimationData::ClearLists(bool abCallVirtual, bool abClearListBc, bool abClearList88, bool abClearListF0)
 {
     if (abCallVirtual)
@@ -944,6 +1015,8 @@ void BSFaceGenAnimationData::ClearLists(bool abCallVirtual, bool abClearListBc, 
 
 // Switches on aiMode and returns whether the matching member's Call() returns 0, or 1 for other modes.
 // @fnv 0x0064b0f0
+// pdb: BSFaceGenAnimationData::IsSpeechKeyframeListEmpty | BSFaceGenAnimationData.obj | debug, object-file run extension, low
+// pdb params: aeType
 unsigned char BSFaceGenAnimationData::Check(int aiMode)
 {
     switch (aiMode)
@@ -962,7 +1035,7 @@ unsigned char BSFaceGenAnimationData::Check(int aiMode)
 }
 
 unsigned char BSFaceGenManager_GetUseProceduralEyeBlinking();
-void ComputeAngleRange(float*, float*);
+void BSFaceGenAnimationData_GetTrackEyeXYMinMax(float*, float*);
 void ClampMinMaxFromSetting(float*, float*);
 void BSClamp_float(float&, float, float);
 
@@ -1052,6 +1125,9 @@ class BSFaceGenEyeData
 
 // Clamps heading and pitch to the eye limits, writes the normalized values into modifier slots 8-11, and stores eyeHeading and eyePitch.
 // @fnv 0x0064c410
+// pdb: BSFaceGenAnimationData::SetEyePosition | BSFaceGenAnimationData.obj | debug, object-file gap fill, medium
+// pdb params: afHeading, afPitch
+// pdb locals: fmaxEyePitch, fminEyeHeading, fmaxEyeHeading, fminEyePitch
 void BSFaceGenEyeData::SetEyeHeadingAndPitch(float heading, float pitch)
 {
     float maxPitch6;
@@ -1060,7 +1136,7 @@ void BSFaceGenEyeData::SetEyeHeadingAndPitch(float heading, float pitch)
     float minPitch;
     if (!BSFaceGenManager_GetUseProceduralEyeBlinking())
         return;
-    ComputeAngleRange(&minHeading3, &maxHeading9);
+    BSFaceGenAnimationData_GetTrackEyeXYMinMax(&minHeading3, &maxHeading9);
     ClampMinMaxFromSetting(&maxPitch6, &minPitch);
     BSClamp_float(heading, minHeading3, maxHeading9);
     BSClamp_float(pitch, maxPitch6, minPitch);
@@ -1092,6 +1168,8 @@ void BSFaceGenEyeData::SetEyeHeadingAndPitch(float heading, float pitch)
 // Four stack arguments: time, list, keyframe, and the interpolation flag.
 
 // @fnv 0x0064ca60
+// pdb: BSFaceGenAnimationData::ModifyEyeHeadingAndPitchBasedOnExpression | BSFaceGenAnimationData.obj | retail, object-file run extension, low
+// pdb params: aexp, afHeading, afPitch, afTime
 // Typed vtable calls retain the signatures of the shared base's placeholder slots.
 bool AdvanceKeyframe(float afTime, NiTPointerList<BSFaceGenKeyframe*>* list, BSFaceGenKeyframe* key, bool flag)
 {
@@ -1142,6 +1220,7 @@ extern const NiPoint3 NiPoint3_ZERO;
 
 #pragma inline_depth(0)
 // @fnv 0x00649680
+// pdb: BSFaceGenAnimationData::BSFaceGenAnimationData | BSFaceGenAnimationData.obj | retail, upstream name already matches, high
 BSFaceGenAnimationData::BSFaceGenAnimationData()
     : NiExtraData(Get_Ni_FAD()), kf10(BS_FACEGEN_MORPH_TYPE_BS_FG_MORPH_EXPRESSION, 15), kf24(BS_FACEGEN_MORPH_TYPE_BS_FG_MORPH_EXPRESSION, 15), kf38(BS_FACEGEN_MORPH_TYPE_BS_FG_MORPH_MODIFIER, 17), kf4c(BS_FACEGEN_MORPH_TYPE_BS_FG_MORPH_PHONEME, 16),
       kf60(BS_FACEGEN_MORPH_TYPE_BS_FG_MORPH_CUSTOM, 1), kf74(BS_FACEGEN_MORPH_TYPE_BS_FG_MORPH_EXPRESSION, 15), obj88(), kf94(BS_FACEGEN_MORPH_TYPE_BS_FG_MORPH_MODIFIER, 17), kfa8(BS_FACEGEN_MORPH_TYPE_BS_FG_MORPH_MODIFIER, 17), objbc(),

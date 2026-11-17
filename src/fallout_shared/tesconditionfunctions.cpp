@@ -70,7 +70,7 @@
 class ActorValueUtility_tesconditionfunctions
 {
 public:
-    static int __cdecl ConvertActorValue(int);
+    static int __cdecl GamePlayFormulas_GetRequiredExperiencePoints(int);
 };
 #include "../../include/BGSQuestObjective.h"
 #include "../../include/BaseExtraList.h"
@@ -96,7 +96,7 @@ public:
 // Condition-only declarations absent from the shared interfaces; no additional object data.
 struct ConditionActorVATSVisibility : Actor
 {
-    double Actor_GetVATSTargetVisible(TESObjectREFR* target, float value);
+    double Actor_GetVATSTargetVisible(TESObjectREFR* target, float afAngle);
 };
 struct ConditionSky : Sky
 {
@@ -428,14 +428,18 @@ struct PlayerCharacterMovingStateView
 
 // Sets result to 1.0 when the reference is an actor that is essential, otherwise leaves it at 0.0, and returns true.
 // @fnv 0x005a3980
-bool __cdecl GetEssentialConditionFunction(TESObjectREFR* reference, void* arg1, void* arg2, double& result)
+// src: XBOX_RETAIL_PDB 0x005a3980
+// pdb: Script::IsEssentialConditionFunction | TESConditionFunctions.obj | retail, object-file gap fill, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pact
+bool __cdecl Script_IsEssentialConditionFunction(TESObjectREFR* reference, void* apParam1, void* apParam2, double& afReturnValue)
 {
-    result = 0.0;
+    afReturnValue = 0.0;
     if (reference->IsActor())
     {
         Actor* actor = (Actor*)reference;
         if (actor->IsEssentialActor())
-            result = 1.0;
+            afReturnValue = 1.0;
     }
     return true;
 }
@@ -452,14 +456,18 @@ bool __cdecl IsPlayerEnteringSpaceConditionFunction(TESObjectREFR* reference, vo
 }
 
 // @fnv 0x005a3c30
-bool GetLastHitLocationConditionFunction(TESObjectREFR* reference, void* arg1, void* arg2, double& result)
+// src: XBOX_RETAIL_PDB 0x005a3c30
+// pdb: Script::GetHitLocationConditionFunction | TESConditionFunctions.obj | retail, object-file gap fill, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pactor
+bool Script_GetHitLocationConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
-    result = -1.0;
-    if (reference && reference->IsActor())
+    afReturnValue = -1.0;
+    if (apRefObject && apRefObject->IsActor())
     {
-        Actor* actor = (Actor*)reference;
+        Actor* actor = (Actor*)apRefObject;
         if (reinterpret_cast<Actor*>(actor)->RefreshActorRuntimeData())
-            result = reinterpret_cast<Actor*>(actor)->RefreshActorRuntimeData()->location;
+            afReturnValue = reinterpret_cast<Actor*>(actor)->RefreshActorRuntimeData()->location;
     }
     return true;
 }
@@ -483,9 +491,11 @@ bool BGSQuestObjective::GetDisplayed() const
 }
 
 // @fnv 0x0059f770
-bool __cdecl Script::GetPCIsSexConditionFunction(TESObjectREFR* reference, void* arg1, void* arg2, double& result)
+// pdb: Script::GetPCIsSexConditionFunction | TESConditionFunctions.obj | debug, upstream name already matches, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+bool __cdecl Script::GetPCIsSexConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
-    return IsSexConditionFunction((TESObjectREFR*)g_thePlayer, arg1, arg2, result);
+    return IsSexConditionFunction((TESObjectREFR*)g_thePlayer, apParam1, apParam2, afReturnValue);
 }
 
 // @fnv 0x005a2270
@@ -502,20 +512,23 @@ bool TESClass::IsTagSkill(ActorValue::Index aeSkill) const
 }
 
 // @fnv 0x005a40d0
-bool __cdecl Script::GetActorSexConditionFunction(TESObjectREFR* reference, void* arg1, void* arg2, double& result)
+// pdb: Script::GetIsMovingConditionFunction | TESConditionFunctions.obj | retail, object-file run extension, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: imode
+bool __cdecl Script::GetActorSexConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
-    result = 0.0;
-    if (reference && reference->IsActor())
+    afReturnValue = 0.0;
+    if (apRefObject && apRefObject->IsActor())
     {
-        unsigned int mode = ((Actor*)reference)->GetActorStateFlags() & 15;
+        unsigned int mode = ((Actor*)apRefObject)->GetActorStateFlags() & 15;
         if (mode & 1)
-            result = 1.0;
+            afReturnValue = 1.0;
         else if (mode & 2)
-            result = 2.0;
+            afReturnValue = 2.0;
         else if (mode & 4)
-            result = 3.0;
+            afReturnValue = 3.0;
         else if (mode & 8)
-            result = 4.0;
+            afReturnValue = 4.0;
     }
     return true;
 }
@@ -523,7 +536,7 @@ bool __cdecl Script::GetActorSexConditionFunction(TESObjectREFR* reference, void
 // @fnv 0x005a4520
 bool MobileObject::GetShouldUseEmotionAnimation() const
 {
-    return m_bTenthFlag;
+    return bUseEmotion;
 }
 
 
@@ -531,7 +544,7 @@ bool MobileObject::GetShouldUseEmotionAnimation() const
 // src: XBOX_PDB 0x004fd380
 TESObjectREFR* Actor::EffectSetting_GetLight()
 {
-    return reinterpret_cast<TESObjectREFR*>(m_pMobileObject);
+    return reinterpret_cast<TESObjectREFR*>(pDialogueItemTarget);
 }
 
 void __cdecl DebugLog(char const*, ...);
@@ -558,7 +571,11 @@ __declspec(thread) unsigned char g_bConsoleOutput[0x269];
 
 // Reads the reference's position via its vtable and writes the X, Y or Z component into afReturnValue, logging it when console output is enabled.
 // @fnv 0x0059c0c0
-bool __cdecl GetPositionComponent(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
+// src: XBOX_RETAIL_PDB 0x0059c0c0
+// pdb: Script::GetPosConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: iAxis, pos
+bool __cdecl Script_GetPosConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
     int iAxis = (int)apParam1;
     if (apRefObject)
@@ -601,6 +618,9 @@ __declspec(thread) extern bool bConsoleOutput_0059c170;
 
 // @fnv 0x0059c170
 // src: XBOX_PDB 0x0059c170
+// pdb: Script::GetAngleConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: iAxis, pos
 bool __cdecl Script_GetAngleConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
     int iAxis = (int)apParam1;
@@ -639,6 +659,9 @@ extern __declspec(thread) bool bEchoConsole;
 
 // @fnv 0x0059c430
 // src: XBOX_PDB 0x0059c430
+// pdb: Script::GetSecondsPassedConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pscript
 bool __cdecl Script_GetSecondsPassedConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
     Script* pscript = static_cast<Script*>(apParam1);
@@ -675,7 +698,10 @@ __declspec(thread) extern unsigned char tls_pad[0x269];
 // Reads an actor value from the reference (or its actor base if disabled) into result and logs it when the TLS flag is set; returns true.
 // @fnv 0x0059c4f0
 // src: XBOX_PDB 0x0059c4f0
-bool __cdecl Script_GetActorValueConditionFunction(TESObjectREFR* reference, void* uiAvCode, void* pUnused, double& result)
+// pdb: Script::GetActorValueConditionFunction | TESConditionFunctions.obj | retail, upstream name already matches, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pActor, iActorValueIndex
+bool __cdecl Script_GetActorValueConditionFunction(TESObjectREFR* reference, void* uiAvCode, void* apParam2, double& afReturnValue)
 {
     unsigned int avCode = (unsigned int)uiAvCode;
     Actor* actor = 0;
@@ -687,22 +713,22 @@ bool __cdecl Script_GetActorValueConditionFunction(TESObjectREFR* reference, voi
     {
         if (!actor->GetDisabled())
         {
-            result = ((ActorValueOwner_vtable*)((char*)actor + 0xa4))->GetActorValueF(avCode);
+            afReturnValue = ((ActorValueOwner_vtable*)((char*)actor + 0xa4))->GetActorValueF(avCode);
         }
         else
         {
             ActorValueOwner_vtable* pActorValueOwner = (ActorValueOwner_vtable*)((char*)actor->GetActorBase() + 0x100);
-            result = pActorValueOwner->GetActorValueF(avCode);
+            afReturnValue = pActorValueOwner->GetActorValueF(avCode);
         }
         if (tls_pad[0x268])
         {
-            DebugLog("GetActorValue: %s >> %0.2f", ActorValue_GetActorValueScriptName(avCode), result);
+            DebugLog("GetActorValue: %s >> %0.2f", ActorValue_GetActorValueScriptName(avCode), afReturnValue);
         }
     }
     return true;
 }
 
-float __fastcall GetHealthFraction(Actor* pActor);
+float __fastcall GetHealthPercentage(Actor* pActor);
 void __cdecl DebugLog(char const*, ...);
 
 namespace fnv_anon_tesconditionfunctions {}
@@ -715,6 +741,9 @@ __declspec(thread) bool bVerboseMode;
 // If the reference is an Actor, stores its health percentage in afReturnValue and logs it when verbose mode is on; always returns true.
 // @fnv 0x0059c7e0
 // src: XBOX_PDB 0x0059c7e0
+// pdb: Script::GetHealthPercentageConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pActor
 bool __cdecl Script_GetHealthPercentageConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
     Actor* pActor = 0;
@@ -724,7 +753,7 @@ bool __cdecl Script_GetHealthPercentageConditionFunction(TESObjectREFR* apRefObj
     }
     if (pActor)
     {
-        afReturnValue = GetHealthFraction(pActor);
+        afReturnValue = GetHealthPercentage(pActor);
         if (bVerboseMode)
         {
             DebugLog("GetHealthPercentage >> %0.2f", afReturnValue);
@@ -733,6 +762,7 @@ bool __cdecl Script_GetHealthPercentageConditionFunction(TESObjectREFR* apRefObj
     return true;
 }
 
+// pdb: class Calendar, size 0x1c (here 0x1), 7 members
 class Calendar
 {
   public:
@@ -752,6 +782,8 @@ __declspec(thread) TLSData_0059c8e0 g_tlsData_0059c8e0;
 // Stores the calendar's current time into afReturnValue, logs it when console echo is enabled, and returns true.
 // @fnv 0x0059c8e0
 // src: XBOX_PDB 0x0059c8e0
+// pdb: Script::GetCurrentTimeConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
 bool __cdecl Script_GetCurrentTimeConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
     afReturnValue = g_calendar.GetGameTime();
@@ -762,6 +794,7 @@ bool __cdecl Script_GetCurrentTimeConditionFunction(TESObjectREFR* apRefObject, 
     return true;
 }
 
+// pdb: class CFilter, size 0x4, 1 members
 struct CFilter
 {
     bool QLinkedGroup();
@@ -900,21 +933,23 @@ void FUN_0059ceb0_shell::bhkPickData_SetClosestCollector(hkpClosestRayHitCollect
     m_pAllCollector = 0;
 }
 
-void __fastcall Object_UpdateFields_0059cf00(void* this_ptr);
+void __fastcall hkpClosestRayHitCollector_dtor(void* this_ptr);
 
 // @fnv 0x0059cee0
-// src: GUESS 0x0059cee0 (confidence: low)
-void __fastcall Object_ForwardCall_0059cee0(void* this_ptr)
+// src: XBOX_DEBUG_PDB 0x0059cee0
+// pdb: SpecificItemCollector::~SpecificItemCollector | TESConditionFunctions.obj | debug, call graph, high
+void __fastcall SpecificItemCollector_dtor(void* this_ptr)
 {
-    Object_UpdateFields_0059cf00(this_ptr);
+    hkpClosestRayHitCollector_dtor(this_ptr);
 }
 
 extern int DAT_01034ec4;
 void __fastcall SetVirtualTable_004a3ae0(void*);
 
 // @fnv 0x0059cf00
-// src: GUESS 0x0059cf00 (confidence: low)
-void __fastcall Object_UpdateFields_0059cf00(void** pThis)
+// src: XBOX_DEBUG_PDB 0x0059cf00
+// pdb: hkpClosestRayHitCollector::~hkpClosestRayHitCollector | TESConditionFunctions.obj | debug, call graph (shared callers), high
+void __fastcall hkpClosestRayHitCollector_dtor(void** pThis)
 {
     *pThis = &DAT_01034ec4;
     SetVirtualTable_004a3ae0(pThis);
@@ -940,6 +975,9 @@ __declspec(thread) bool bConsoleEcho;
 // Sets afReturnValue to 1.0 if apRefObject is an Actor whose vtable call at 0x22c returns true, else 0.0, and logs it when console echo is on.
 // @fnv 0x0059d840
 // src: XBOX_PDB 0x0059d840
+// pdb: Script::GetDeadConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pactor
 bool __cdecl Script_GetDeadConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
     afReturnValue = 0.0;
@@ -969,29 +1007,32 @@ __declspec(thread) extern bool g_bConditionConsoleEcho;
 // Accumulates a score from the actor's state via a virtual call and logs it when console echo is enabled; always returns true.
 // @fnv 0x0059dc90
 // src: XBOX_PDB 0x0059dc90
-bool __cdecl Script_GetSleepingConditionFunction(TESObjectREFR* reference, void* apUnused1, void* apUnused2, double& result)
+// pdb: Script::GetSleepingConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pactor
+bool __cdecl Script_GetSleepingConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
-    result = 0.0;
+    afReturnValue = 0.0;
     Actor* pactor = 0;
-    if (reference && reference->IsActor())
-        pactor = (Actor*)reference;
+    if (apRefObject && apRefObject->IsActor())
+        pactor = (Actor*)apRefObject;
     if (pactor)
     {
         switch ((*(unsigned int(__thiscall**)(Actor*))(*(unsigned int*)pactor + 0x214))(pactor))
         {
         case 10:
-            result += 1.0;
+            afReturnValue += 1.0;
         case 9:
-            result += 1.0;
+            afReturnValue += 1.0;
         case 7:
         case 8:
-            result += 1.0;
+            afReturnValue += 1.0;
         case 6:
-            result += 1.0;
+            afReturnValue += 1.0;
         }
     }
     if (g_bConditionConsoleEcho)
-        DebugLog("GetSleeping >> %0.2f", result);
+        DebugLog("GetSleeping >> %0.2f", afReturnValue);
     return true;
 }
 
@@ -1209,29 +1250,32 @@ struct SitActor
 };
 // @fnv 0x0059dd90
 // src: XBOX_PDB 0x0059dd90
-bool __cdecl Script_GetSittingConditionFunction(TESObjectREFR* reference, void* arg1, void* arg2, double& result)
+// pdb: Script::GetSittingConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pactor
+bool __cdecl Script_GetSittingConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
-    result = 0.0;
+    afReturnValue = 0.0;
     SitActor* pactor = 0;
-    if (reference && ((SitRef*)reference)->IsActor())
-        pactor = (SitActor*)reference;
+    if (apRefObject && ((SitRef*)apRefObject)->IsActor())
+        pactor = (SitActor*)apRefObject;
     if (pactor)
     {
         switch (pactor->GetActorStateFlags())
         {
         case 5:
-            result += 1.0;
+            afReturnValue += 1.0;
         case 4:
-            result += 1.0;
+            afReturnValue += 1.0;
         case 2:
         case 3:
-            result += 1.0;
+            afReturnValue += 1.0;
         case 1:
-            result += 1.0;
+            afReturnValue += 1.0;
         }
     }
     if (g_sitTls.flag)
-        DebugLog("GetSitting >> %0.2f", result);
+        DebugLog("GetSitting >> %0.2f", afReturnValue);
     return true;
 }
 
@@ -1622,6 +1666,9 @@ struct VTable_4C4
 // If apRefObject is an actor, stores its furniture marker ID into afReturnValue, logs it when bEcho is set, and returns true.
 // @fnv 0x0059de90
 // src: XBOX_PDB 0x0059de90
+// pdb: Script::GetFurnitureMarkerIDConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pactor
 bool __cdecl Script_GetFurnitureMarkerIDConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
     afReturnValue = 0.0;
@@ -1651,25 +1698,28 @@ __declspec(thread) bool tls_bEcho;
 
 // @fnv 0x0059df40
 // src: XBOX_PDB 0x0059df40
-bool __cdecl Script_IsCurrentFurnitureRefConditionFunction(TESObjectREFR* reference, void* pMatchValue, void* pUnused, double& result)
+// pdb: Script::IsCurrentFurnitureRefConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pactor
+bool __cdecl Script_IsCurrentFurnitureRefConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
-    result = 0.0;
+    afReturnValue = 0.0;
     Actor* pactor = 0;
-    if (reference && reference->IsActor())
+    if (apRefObject && apRefObject->IsActor())
     {
-        pactor = (Actor*)reference;
+        pactor = (Actor*)apRefObject;
     }
     if (pactor)
     {
         Sky* p = reinterpret_cast<Sky*>(((TES*)pactor)->GetLogDate());
-        if ((*(VTable0x4c8**)p)->fn4c8(p) == pMatchValue)
+        if ((*(VTable0x4c8**)p)->fn4c8(p) == apParam1)
         {
-            result = 1.0;
+            afReturnValue = 1.0;
         }
     }
     if (tls_bEcho)
     {
-        DebugLog("IsCurrentFurnitureRef>> %0.2f", result);
+        DebugLog("IsCurrentFurnitureRef>> %0.2f", afReturnValue);
     }
     return true;
 }
@@ -1693,6 +1743,9 @@ __declspec(thread) extern bool g_bConsoleOutput_flag;
 
 // @fnv 0x0059dfe0
 // src: XBOX_PDB 0x0059dfe0
+// pdb: Script::IsCurrentFurnitureObjConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pactor, pform, pref, plistform
 bool __cdecl Script_IsCurrentFurnitureObjConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
     TESForm* pform;
@@ -1749,6 +1802,9 @@ __declspec(thread) TLSData_0059e0f0 g_tlsData_0059e0f0;
 
 // @fnv 0x0059e0f0
 // src: EXE 0x0059e0f0
+// pdb: Script::GetTalkedToPCConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pActor
 bool __cdecl Cmd_Shared_Eval_59e0f0(TESObjectREFR* apRefObject, TESObjectREFR* apParam1, void* apParam2,
                           double& afReturnValue)
 {
@@ -1790,6 +1846,9 @@ __declspec(thread) extern bool bConsoleEcho;
 // Sets afReturnValue to 1.0 if apParam1 is a completed TESQuest, otherwise 0.0, logs it when console echo is on, and returns true.
 // @fnv 0x0059e390
 // src: XBOX_PDB 0x0059e390
+// pdb: Script::GetQuestCompletedConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pQuest
 bool __cdecl Script_GetQuestCompletedConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
     afReturnValue = 0.0;
@@ -1811,6 +1870,7 @@ bool __cdecl Script_GetQuestCompletedConditionFunction(TESObjectREFR* apRefObjec
 
 
 // @fnv 0x0059e400
+// pdb: TESQuest::GetCompleted | TESConditionFunctions.obj | debug, upstream name already matches, high
 bool TESQuest::GetCompleted()
 {
     return (static_cast<ConditionQuest*>(this)->GetQuestData()->m_ucEntryType & 2) != 0;
@@ -1832,7 +1892,11 @@ extern __declspec(thread) TLSData g_tlsData;
 
 // Sets afReturnValue to the quest's stage (or 0 if no quest), logs it when console echo is on, and returns true.
 // @fnv 0x0059e420
-bool __cdecl GetQuestStage(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
+// src: XBOX_RETAIL_PDB 0x0059e420
+// pdb: Script::GetStageConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pQuest
+bool __cdecl Script_GetStageConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
     afReturnValue = 0.0;
     if (TESQuest* pQuest = apParam1 ? static_cast<TESQuest*>(apParam1) : 0)
@@ -1855,13 +1919,16 @@ __declspec(thread) extern bool g_consoleEcho;
 
 // Writes 1.0 or 0.0 to result depending on whether Sky::GetInstance()->IsRaining() is true, logs it when console echo is on, and returns true.
 // @fnv 0x0059e8e0
-// src: EXE 0x0059e8e0
-bool __cdecl Cmd_IsRaining_Eval(TESObjectREFR* reference, void* arg1, void* arg2, double& result)
+// src: XBOX_RETAIL_PDB 0x0059e8e0 (was EXE)
+// pdb: Script::GetIsRainingConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pSky
+bool __cdecl Script_GetIsRainingConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
     Sky* pWeatherSky = Sky::GetInstance();
-    result = pWeatherSky->IsRaining() ? 1.0f : 0.0f;
+    afReturnValue = pWeatherSky->IsRaining() ? 1.0f : 0.0f;
     if (g_consoleEcho)
-        DebugLog("GetIsRaining >> %0.2f", result);
+        DebugLog("GetIsRaining >> %0.2f", afReturnValue);
     return true;
 }
 }  // namespace fnv_0059e8e0
@@ -1877,6 +1944,9 @@ __declspec(thread) extern bool tls_bEchoConsole;
 // Sets the return value to 1.0 if the reference (or apParam2 if it is a reference) is in the world space given by apParam1, and logs the result.
 // @fnv 0x0059f0c0
 // src: XBOX_PDB 0x0059f0c0
+// pdb: Script::GetInWorldspaceConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pworld, pref
 bool __cdecl Script_GetInWorldspaceConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double* afReturnValue)
 {
     *afReturnValue = 0.0;
@@ -1933,6 +2003,9 @@ __declspec(thread) extern bool bConsoleOutput;
 // Sets afReturnValue to 1.0 when apRefObject's next form is an actor base whose sex matches apParam1, logs the result, and returns true.
 // @fnv 0x0059f3c0
 // src: XBOX_PDB 0x0059f3c0
+// pdb: Script::GetIsSexConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pnpc
 bool __cdecl Script_GetIsSexConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
     afReturnValue = 0.0;
@@ -1970,6 +2043,9 @@ __declspec(thread) extern TLSData_0059f7b0 tls_0059f7b0;
 // Sets afReturnValue to 1.0 if the reference's bound object matches apParam1, otherwise 0.0, and logs the result when console output is enabled.
 // @fnv 0x0059f7b0
 // src: XBOX_PDB 0x0059f7b0
+// pdb: Script::GetIsIDConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pobject, pcompobj
 bool __cdecl Script_GetIsIDConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
     afReturnValue = 0.0;
@@ -2024,8 +2100,10 @@ __declspec(thread) extern unsigned char tls_pad_0059f940[0x269];
 
 // Sets afReturnValue to 1.0 if apRefObject's vtable IsChild returns true, otherwise 0.0, logs it when TLS flag is set, and returns true.
 // @fnv 0x0059f940
-// src: EXE 0x0059f940
-bool __cdecl Cmd_IsChild_Eval(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
+// src: XBOX_RETAIL_PDB 0x0059f940 (was EXE)
+// pdb: Script::GetIsChildConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+bool __cdecl Script_GetIsChildConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
     afReturnValue = 0.0;
     if (apRefObject != 0)
@@ -2061,6 +2139,9 @@ __declspec(thread) extern ConsoleEchoTLS tls_consoleEcho;
 
 // @fnv 0x0059fa90
 // src: XBOX_PDB 0x0059fa90
+// pdb: Script::GetIsUsedItemTypeConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: formtype
 bool __cdecl Script_GetIsUsedItemTypeConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
     afReturnValue = 0.0;
@@ -2097,6 +2178,8 @@ __declspec(thread) TLSData268 g_tlsData268;
 // Sets afReturnValue to 1.0 when GetUsedItemActivate is true (else 0.0), logs it if tracing, and returns true.
 // @fnv 0x0059fb50
 // src: XBOX_PDB 0x0059fb50
+// pdb: Script::GetUsedItemActivateConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
 bool __cdecl Script_GetUsedItemActivateConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
     afReturnValue = 0.0;
@@ -2117,8 +2200,11 @@ void __cdecl DebugLog(char const*, ...);
 extern __declspec(thread) bool bVerboseMode_tls[0x269];
 
 // @fnv 0x0059fbb0
-// src: EXE 0x0059fbb0
-bool __cdecl Cmd_GetIsReference_Eval(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
+// src: XBOX_RETAIL_PDB 0x0059fbb0 (was EXE)
+// pdb: Script::GetIsRefConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pobjRef
+bool __cdecl Script_GetIsRefConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
     afReturnValue = 0.0;
     TESObjectREFR* pobjRef = 0;
@@ -2160,6 +2246,9 @@ __declspec(thread) extern unsigned char g_bConditionTrace[0x269];
 
 // @fnv 0x0059fd30
 // src: XBOX_PDB 0x0059fd30
+// pdb: Script::GetGlobalValueConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pglobal
 bool __cdecl Script_GetGlobalValueConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
     afReturnValue = -1.0;
@@ -2184,25 +2273,28 @@ extern __declspec(thread) bool g_bEchoConsole;
 // Sets result to 1.0 if the reference is an actor that is unconscious, logs the state when console echo is on, and returns true.
 // @fnv 0x0059fee0
 // src: XBOX_PDB 0x0059fee0
-bool __cdecl Script_GetUnconsciousConditionFunction(TESObjectREFR* reference, void* arg1, void* arg2, double& result)
+// pdb: Script::GetUnconsciousConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pactor
+bool __cdecl Script_GetUnconsciousConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
-    result = 0.0;
+    afReturnValue = 0.0;
     Actor* pactor = 0;
-    if (reference && reference->IsActor())
+    if (apRefObject && apRefObject->IsActor())
     {
-        pactor = reinterpret_cast<Actor*>(reference);
+        pactor = reinterpret_cast<Actor*>(apRefObject);
     }
 
     if (pactor)
     {
         if (reinterpret_cast<Actor*>(pactor)->Actor_IsUnConscious())
         {
-            result = 1.0;
+            afReturnValue = 1.0;
         }
 
         if (g_bEchoConsole)
         {
-            if (result != 0.0)
+            if (afReturnValue != 0.0)
             {
                 DebugLog("%s is unconscious", reinterpret_cast<MobileObject*>(pactor)->GetFullName());
             }
@@ -2226,11 +2318,13 @@ extern __declspec(thread) struct
 // Stores a random percentage from FUN_005a00a0(100) into result, logs it when tlsData.dbg is set, and returns true.
 // @fnv 0x005a0040
 // src: XBOX_PDB 0x005a0040
-bool __cdecl Script_GetRandomPercentConditionFunction(TESObjectREFR* ref, void* apUnused1, void* apUnused2, double& result)
+// pdb: Script::GetRandomPercentConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+bool __cdecl Script_GetRandomPercentConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
-    result = (double)RandomUnsignedInt(100);
+    afReturnValue = (double)RandomUnsignedInt(100);
     if (tlsData.dbg)
-        DebugLog("GetRandomPercent >> %0.2f", result);
+        DebugLog("GetRandomPercent >> %0.2f", afReturnValue);
     return true;
 }
 
@@ -2243,6 +2337,8 @@ class MersenneTwister
 
 // @fnv 0x005a00a0
 // src: XBOX_PDB 0x005a00a0
+// pdb: RandomUnsignedInt | TESConditionFunctions.obj | debug, call graph, medium
+// pdb params: aiMax
 unsigned int RandomUnsignedInt(unsigned int aiMax)
 {
     return MersenneTwister::GetRandomGenerator()->GetRandomUInt(aiMax);
@@ -2255,21 +2351,24 @@ __declspec(thread) extern bool tls_conditionEcho;
 // Sets result to the reference's actor level (0 if not an actor) and logs it when tls_conditionEcho is set; returns true.
 // @fnv 0x005a00c0
 // src: XBOX_PDB 0x005a00c0
-bool __cdecl Script_GetLevelConditionFunction(TESObjectREFR* reference, void* arg1, void* arg2, double& result)
+// pdb: Script::GetLevelConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pactor
+bool __cdecl Script_GetLevelConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
-    result = 0.0;
+    afReturnValue = 0.0;
     Actor* pactor = 0;
-    if (reference && reference->IsActor())
+    if (apRefObject && apRefObject->IsActor())
     {
-        pactor = (Actor*)reference;
+        pactor = (Actor*)apRefObject;
     }
     if (pactor)
     {
-        result = (double)pactor->GetLevel();
+        afReturnValue = (double)pactor->GetLevel();
     }
     if (tls_conditionEcho)
     {
-        DebugLog("GetLevel >> %0.2f", result);
+        DebugLog("GetLevel >> %0.2f", afReturnValue);
     }
     return true;
 }
@@ -2289,6 +2388,9 @@ __declspec(thread) extern TLSDataView g_tlsView;
 // Sets afReturnValue to 0, then if apParam1 is non-null stores the result of FindActorBaseValue on g_TES and logs it when condition tracing is on; returns true.
 // @fnv 0x005a01f0
 // src: XBOX_PDB 0x005a01f0
+// pdb: Script::GetDeadCountConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: ptarget
 bool __cdecl Script_GetDeadCountConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
     afReturnValue = 0.0;
@@ -2318,6 +2420,9 @@ __declspec(thread) extern unsigned char g_bConditionTrace[0x269];
 // Sets afReturnValue to 1.0 when apRefObject is an actor for which FUN_008a16d0 is true, otherwise 0.0, and logs the result when g_bConditionTrace[0x268] is set.
 // @fnv 0x005a0550
 // src: XBOX_PDB 0x005a0550
+// pdb: Script::IsWeaponOutConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pactor
 bool __cdecl Script_IsWeaponOutConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
     afReturnValue = 0.0;
@@ -2341,6 +2446,7 @@ struct NiControllerManager;
 struct NiControllerSequence;
 struct TESAnimGroup;
 struct TESIdleForm;
+// pdb: class Animation, size 0x13c, 33 members
 struct Animation
 {
     void SetField(unsigned char, unsigned char, unsigned char);
@@ -2466,42 +2572,42 @@ struct Animation
     bool GetDelayUpdateScenegraph();
     void SetDelayUpdateScenegraph(bool);
     void* __vecDelDtor(unsigned int);
-    unsigned char m_uiObjectFlags;
+    unsigned char m_uFlags; // src: XBOX_RETAIL_PDB +0x0 (old: m_uiObjectFlags)
     char _pad_1[3];
-    TESObjectREFR* m_pAttachedReference;
-    char m_acHeaderData[4];
-    NiNode* m_pObjectNode;
-    NiPoint3 m_kNodeTranslation;
-    NiPoint3 m_kRootTranslation;
-    char m_acNodeName[32];
-    float m_fAnimationAmount;
+    TESObjectREFR* pActorRef; // src: XBOX_RETAIL_PDB +0x4 (old: m_pAttachedReference)
+    char pAnimRoot[4]; // src: XBOX_RETAIL_PDB +0x8 (old: m_acHeaderData)
+    NiNode* pAccumRoot; // src: XBOX_RETAIL_PDB +0xc (old: m_pObjectNode)
+    NiPoint3 movementDelta; // src: XBOX_RETAIL_PDB +0x10 (old: m_kNodeTranslation)
+    NiPoint3 AccumRootTranslate; // src: XBOX_RETAIL_PDB +0x1c (old: m_kRootTranslation)
+    char pSoundPriorityBone[32]; // src: XBOX_RETAIL_PDB +0x28 (old: m_acNodeName)
+    float m_fLooking; // src: XBOX_RETAIL_PDB +0x48 (old: m_fAnimationAmount)
     char group[16];
     char action[32];
-    char m_acTargetName[32];
-    char usReloadGroup[16];
-    char m_acAnimationName[32];
-    char m_cState;
-    bool m_bIsPlaying;
+    char loopCount[32]; // src: XBOX_RETAIL_PDB +0x7c (old: m_acTargetName)
+    char nextGroup[16]; // src: XBOX_RETAIL_PDB +0x9c (old: usReloadGroup)
+    char nextLoops[32]; // src: XBOX_RETAIL_PDB +0xac (old: m_acAnimationName)
+    char cSkipUpdate; // src: XBOX_RETAIL_PDB +0xcc (old: m_cState)
+    bool bShutDown; // src: XBOX_RETAIL_PDB +0xcd (old: m_bIsPlaying)
     char _pad_ce[2];
     float time;
-    float m_fTimeOffset;
-    char m_acReservedBytes[4];
-    void* m_pOwnerReference;
-    char m_pChildTile[32];
-    BSAnimGroupSequence* m_pCurrentSequence;
+    float fLipTime; // src: XBOX_RETAIL_PDB +0xd4 (old: m_fTimeOffset)
+    char spManager[4]; // src: XBOX_RETAIL_PDB +0xd8 (old: m_acReservedBytes)
+    void* pAnimSequenceMap; // src: XBOX_RETAIL_PDB +0xdc (old: m_pOwnerReference)
+    char pCurrentSequence[32]; // src: XBOX_RETAIL_PDB +0xe0 (old: m_pChildTile)
+    BSAnimGroupSequence* pLastMovementSequence; // src: XBOX_RETAIL_PDB +0x100 (old: m_pCurrentSequence)
     char kfModelList[8];
-    float m_fMovementRate;
-    float m_fCombatAnimationRate;
-    float m_fEquipAnimationRate;
-    float m_fReloadAnimationRate;
-    float m_fAnimationTimeScale;
-    char m_cSkipNextBlend;
+    float m_fMoveSpeed; // src: XBOX_RETAIL_PDB +0x10c (old: m_fMovementRate)
+    float m_fAttackSpeed; // src: XBOX_RETAIL_PDB +0x110 (old: m_fCombatAnimationRate)
+    float m_fGlobalTimeMultiplier; // src: XBOX_RETAIL_PDB +0x114 (old: m_fEquipAnimationRate)
+    float m_fReloadModifier; // src: XBOX_RETAIL_PDB +0x118 (old: m_fReloadAnimationRate)
+    float m_fEquipModifier; // src: XBOX_RETAIL_PDB +0x11c (old: m_fAnimationTimeScale)
+    char cSkipNextBlend; // src: XBOX_RETAIL_PDB +0x120 (old: m_cSkipNextBlend)
     char _pad_121[1];
-    unsigned short m_usQueuedGroup;
-    char LocalInput[4];
-    char LocalStateValue[4];
-    char LocalOutput[8];
-    char m_acTrailingData[8];
+    unsigned short sQueuedReloadGroup; // src: XBOX_RETAIL_PDB +0x122 (old: m_usQueuedGroup)
+    char spAnimIdle[4]; // src: XBOX_RETAIL_PDB +0x124 (old: LocalInput)
+    char spAnimIdleQueued[4]; // src: XBOX_RETAIL_PDB +0x128 (old: LocalStateValue)
+    char spAnimIdleFreeWhenInactiveA[8]; // src: XBOX_RETAIL_PDB +0x12c (old: LocalOutput)
+    char replayDelayList[8]; // src: XBOX_RETAIL_PDB +0x134 (old: m_acTrailingData)
 };
 typedef char _sizecheck_Animation[sizeof(Animation) == 316 ? 1 : -1];
 
@@ -2518,6 +2624,9 @@ __declspec(thread) TLSData_005a0f10 g_tlsData_005a0f10;
 
 // @fnv 0x005a0f10
 // src: XBOX_PDB 0x005a0f10
+// pdb: Script::IsIdlePlayingConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: panim
 bool __cdecl Script_IsIdlePlayingConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double* afReturnValue)
 {
     *afReturnValue = 0.0;
@@ -2541,7 +2650,7 @@ bool __cdecl Script_IsIdlePlayingConditionFunction(TESObjectREFR* apRefObject, v
 
 void __cdecl DebugLog(char const*, ...);
 bool __fastcall Actor_IsTalking(Actor*);
-MobileObject* __fastcall FUN_00578970(TESObjectREFR*);
+MobileObject* __fastcall TESObjectREFR_GetMobileObjectExtra(TESObjectREFR*);
 bool __fastcall MobileObject_IsTalking(MobileObject*);
 
 struct TLSData_005a1150
@@ -2552,7 +2661,11 @@ struct TLSData_005a1150
 __declspec(thread) TLSData_005a1150 g_tls_005a1150;
 
 // @fnv 0x005a1150
-bool __cdecl GetTalkingValue(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
+// src: XBOX_RETAIL_PDB 0x005a1150
+// pdb: Script::IsTalkingConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pactor, pmob
+bool __cdecl Script_IsTalkingConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
     afReturnValue = 0.0;
     Actor* pactor = 0;
@@ -2565,7 +2678,7 @@ bool __cdecl GetTalkingValue(TESObjectREFR* apRefObject, void* apParam1, void* a
     }
     else
     {
-        MobileObject* pmob = FUN_00578970(apRefObject);
+        MobileObject* pmob = TESObjectREFR_GetMobileObjectExtra(apRefObject);
         if (pmob && MobileObject_IsTalking(pmob))
             afReturnValue = 1.0;
     }
@@ -2587,6 +2700,9 @@ __declspec(thread) extern bool tls_bEcho;
 // Returns 1.0 in afReturnValue when the actor's current package matches the given package form, else 0.0; logs the result if tls_bEcho is set.
 // @fnv 0x005a1c90
 // src: XBOX_PDB 0x005a1c90
+// pdb: Script::GetIsCurrentPackageConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: ppackage, pactor, pactorpack
 bool __cdecl Script_GetIsCurrentPackageConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
     afReturnValue = 0.0;
@@ -2650,13 +2766,15 @@ extern __declspec(thread) TLSData g_tlsData;
 // Sets result to the calendar's day-of-week value, logs it when TLS echo is enabled, and returns true.
 // @fnv 0x005a1d80
 // src: XBOX_PDB 0x005a1d80
-bool __cdecl Script_GetDayOfWeekConditionFunction(TESObjectREFR* reference, void* apUnused1, void* apUnused2, double& result)
+// pdb: Script::GetDayOfWeekConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+bool __cdecl Script_GetDayOfWeekConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
-    result = 0.0;
-    result = g_calendar.GetGameDayOfWeek();
+    afReturnValue = 0.0;
+    afReturnValue = g_calendar.GetGameDayOfWeek();
     if (g_tlsData.bEcho)
     {
-        DebugLog("GetDayOfWeek >> %0.2f", result);
+        DebugLog("GetDayOfWeek >> %0.2f", afReturnValue);
     }
     return true;
 }
@@ -2678,17 +2796,19 @@ void __cdecl DebugLog(char const*, ...);
 // Sets result to 1.0 if the player is sleeping, otherwise 0.0, logs it when tlsData.dbg is set, and returns true.
 // @fnv 0x005a1de0
 // src: XBOX_PDB 0x005a1de0
-bool __cdecl Script_IsPCSleepingConditionFunction(TESObjectREFR* ref, void* a1, void* a2, double& result)
+// pdb: Script::IsPCSleepingConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+bool __cdecl Script_IsPCSleepingConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
-    result = 0.0;
+    afReturnValue = 0.0;
     float fValue;
     if (pPlayer->PlayerCharacter_IsSleeping())
         fValue = 1.0f;
     else
         fValue = 0.0f;
-    result = fValue;
+    afReturnValue = fValue;
     if (tlsData.dbg)
-        DebugLog("IsPlayerSleeping >> %0.2f", result);
+        DebugLog("IsPlayerSleeping >> %0.2f", afReturnValue);
     return true;
 }
 }  // namespace fnv_005a1de0
@@ -2705,7 +2825,7 @@ bool __fastcall PlayerCharacter_IsSleeping(const bool* self)
 // src: XBOX_PDB 0x005a2030
 bool Actor::IsSwimming_005a2030()
 {
-    return m_bSecondActorFlag;
+    return bSwimming;
 }
 
 void __cdecl DebugLog(char const*, ...);
@@ -2724,7 +2844,11 @@ __declspec(thread) ConditionPacketTlsLayout g_conditionPacketTls;
 
 // Sets afReturnValue to 1.0 if the given faction considers the player an enemy, otherwise 0.0, and logs the result when verbose.
 // @fnv 0x005a21f0
-bool __cdecl GetPCIsEnemyOfFaction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
+// src: XBOX_RETAIL_PDB 0x005a21f0
+// pdb: Script::GetPlayerEnemyofFactionConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pFaction
+bool __cdecl Script_GetPlayerEnemyofFactionConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
     afReturnValue = 0.0;
     TESFaction* pFaction = static_cast<TESFaction*>(apParam1);
@@ -2752,13 +2876,15 @@ extern __declspec(thread) struct
 // Sets result to 1.0 if ref is valid and FUN_00477ba0 returns true, otherwise 0.0, logs it when tlsData.dbg is set, and returns true.
 // @fnv 0x005a2330
 // src: XBOX_PDB 0x005a2330
-bool __cdecl Script_GetDestroyedConditionFunction(TESObjectREFR* ref, void* a1, void* a2, double& result)
+// pdb: Script::GetDestroyedConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+bool __cdecl Script_GetDestroyedConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
-    result = 0.0;
-    if (ref && ref->FUN_00477ba0())
-        result = 1.0;
+    afReturnValue = 0.0;
+    if (apRefObject && apRefObject->FUN_00477ba0())
+        afReturnValue = 1.0;
     if (tlsData.dbg)
-        DebugLog("GetDestroyed >> %.0f", result);
+        DebugLog("GetDestroyed >> %.0f", afReturnValue);
     return true;
 }
 }  // namespace fnv_005a2330
@@ -2883,7 +3009,11 @@ struct VTableStub_005a2390
 };
 
 // @fnv 0x005a2390
-bool __cdecl HasMagicEffect(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
+// src: XBOX_RETAIL_PDB 0x005a2390
+// pdb: Script::HasMagicEffectConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pactor, peffectSetting
+bool __cdecl Script_HasMagicEffectConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
     afReturnValue = 0.0;
     VTableStub_005a2390* pactor = 0;
@@ -2920,6 +3050,8 @@ __declspec(thread) TlsBlock_005a2890 tls_005a2890;
 // Zeroes afReturnValue, sets it from a PlayerCharacter virtual call when apRefObject is the player, logs it if console echo is on, and returns true.
 // @fnv 0x005a2890
 // src: XBOX_PDB 0x005a2890
+// pdb: Script::GetCannibalConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
 bool __cdecl Script_GetCannibalConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
     afReturnValue = 0.0;
@@ -2940,7 +3072,11 @@ __declspec(thread) bool bConsoleEcho_tls_dummy[0x269];
 
 // Sets afReturnValue to 1.0 if apRefObject is an Actor for which GetExtraDataVersion returns true, otherwise 0.0, and logs the result when console echo is enabled.
 // @fnv 0x005a29d0
-bool __cdecl CheckActorEaten(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
+// src: XBOX_RETAIL_PDB 0x005a29d0
+// pdb: Script::HasBeenEatenConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pact
+bool __cdecl Script_HasBeenEatenConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
     afReturnValue = 0.0;
     if (apRefObject->IsActor())
@@ -2970,21 +3106,24 @@ extern __declspec(thread) bool bConditionPrint;
 
 
 // @fnv 0x005a2e20
-// src: GUESS 0x005a2e20 (confidence: low)
-bool __cdecl TESObjectREFR_ProcessAndReturnValue_005a2e20(TESObjectREFR* reference, void* pOwner, void* pUnused, double& result)
+// src: XBOX_RETAIL_PDB 0x005a2e20
+// pdb: Script::GetOwnershipConditionFunction | TESConditionFunctions.obj | retail, object-file run extension, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: powner
+bool __cdecl Script_GetOwnershipConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
-    TESForm* owner = static_cast<TESForm*>(pOwner);
+    TESForm* owner = static_cast<TESForm*>(apParam1);
     if (!owner)
     {
         owner = reinterpret_cast<TESObject*>(pPlayer)->GetNext();
     }
-    if (reference && owner && static_cast<ExtraDataList*>(reference->GetExtraData())->GetOwner() == owner)
+    if (apRefObject && owner && static_cast<ExtraDataList*>(apRefObject->GetExtraData())->GetOwner() == owner)
     {
-        result = 1.0;
+        afReturnValue = 1.0;
     }
     if (bConditionPrint)
     {
-        if (result != 0.0)
+        if (afReturnValue != 0.0)
         {
             DebugLog("%s is the owner", TESFullName::GetFullName(owner));
         }
@@ -3008,6 +3147,9 @@ extern char const*(__cdecl* volatile pfn_TESFullName_GetFullName)(TESForm*);
 
 // @fnv 0x005a2f60
 // src: XBOX_PDB 0x005a2f60
+// pdb: Script::IsSneakingConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pact
 bool __cdecl Script_IsSneakingConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
     afReturnValue = 0.0;
@@ -3049,6 +3191,9 @@ __declspec(thread) extern bool bConsoleOutput;
 // Sets afReturnValue to 1.0 if the reference is an actor that is running, logs the result when console output is enabled, and returns true.
 // @fnv 0x005a3010
 // src: XBOX_PDB 0x005a3010
+// pdb: Script::IsRunningConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pact
 bool __cdecl Script_IsRunningConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
     afReturnValue = 0.0;
@@ -3089,7 +3234,10 @@ static __declspec(thread) TLSData s_tlsData;
 
 // Sets afReturnValue to 1.0 if apRefObject's parent cell passes FUN_00425fd0, else 0.0, logs the result when verbose, and returns true.
 // @fnv 0x005a3270
-bool __cdecl IsInInterior(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
+// src: XBOX_RETAIL_PDB 0x005a3270
+// pdb: Script::IsInInteriorConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+bool __cdecl Script_IsInInteriorConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
     afReturnValue = 0.0;
     if (apRefObject && apRefObject->GetParentCell() && FUN_00425fd0(apRefObject->GetParentCell()))
@@ -3125,13 +3273,17 @@ void __cdecl DebugLog(const char*, ...);
 
 // Computes a player misc stat value from arg1 into result, logs it when console output is enabled, and returns true.
 // @fnv 0x005a3310
-bool __cdecl GetPlayerMiscStatValue(TESObjectREFR* reference, void* aiStat, void* apUnused, double& result)
+// src: XBOX_RETAIL_PDB 0x005a3310
+// pdb: Script::GetPCMiscStatConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: eid
+bool __cdecl Script_GetPCMiscStatConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
-    int stat = (int)aiStat;
-    result = MiscStatManager_GetVal(stat);
+    int stat = (int)apParam1;
+    afReturnValue = MiscStatManager_GetVal(stat);
     if (g_tlsData.consoleOutput)
     {
-        DebugLog("Player misc stat value %.02f", result);
+        DebugLog("Player misc stat value %.02f", afReturnValue);
     }
     return true;
 }
@@ -3166,6 +3318,7 @@ extern float DAT_011cab20;
 // Sets a block of global ints and floats to zero.
 // @fnv 0x005a38e0
 // src: COMMUNITY 0x005a38e0
+// pdb: Script::ClearCachedValues | TESConditionFunctions.obj | retail, upstream name already matches, high
 void __cdecl Script_ClearCachedValues()
 {
     DAT_011caae8 = 0;
@@ -3192,13 +3345,16 @@ extern PlayerCharacter* pPlayer;
 
 // Sets result to 1.0 if pPlayer has the BGSNote passed in arg1, otherwise leaves it at 0.0, and returns true.
 // @fnv 0x005a3bf0
-// src: EXE 0x005a3bf0
-bool __cdecl Cmd_GetHasNote_Eval(TESObjectREFR* reference, void* pNote, void* pUnused, double& result)
+// src: XBOX_RETAIL_PDB 0x005a3bf0 (was EXE)
+// pdb: Script::GetHasNoteConditionFunction | TESConditionFunctions.obj | retail, object-file gap fill, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pnote
+bool __cdecl Script_GetHasNoteConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
-    result = 0.0;
-    BGSNote* note = (BGSNote*)pNote;
+    afReturnValue = 0.0;
+    BGSNote* note = (BGSNote*)apParam1;
     if (pPlayer->HasNote(note))
-        result = 1.0;
+        afReturnValue = 1.0;
     return true;
 }
 
@@ -3209,6 +3365,9 @@ extern __declspec(thread) bool bEchoConsole;
 // Sets result to -1.0, or to FUN_005730d0 of the reference when it is an Actor, logs it if bEchoConsole, and returns true.
 // @fnv 0x005a3d30
 // src: XBOX_PDB 0x005a3d30
+// pdb: Script::GetCauseofDeathConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pactor
 bool __cdecl Script_GetCauseofDeathConditionFunction(TESObjectREFR* reference, void* arg1, void* arg2, double& result)
 {
     result = -1.0;
@@ -3227,6 +3386,7 @@ bool __cdecl Script_GetCauseofDeathConditionFunction(TESObjectREFR* reference, v
 
 // @fnv 0x005a4320
 // src: XBOX_PDB 0x005a4320
+// pdb: PathingSolution::GetVirtualNodeCount | PathBuilder.obj | debug, upstream name already matches, high
 unsigned int __fastcall PathingSolution_GetVirtualNodeCount(char* this_ptr)
 {
     return ((TESObjectREFR*)(this_ptr + 8))->GetFlags();
@@ -3470,6 +3630,9 @@ struct Vtable388
 // Sets result to 0.0, then if reference is an actor with a non-null GetLogDate, stores the result of v226() from that object; always returns true.
 // @fnv 0x005a4340
 // src: EXE 0x005a4340
+// pdb: Script::GetPlantedExplosiveConditionFunction | TESConditionFunctions.obj | retail, object-file run extension, low
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pactor
 bool __cdecl Cmd_GetPlantedExplosive_Eval(TESObjectREFR* reference, void* arg1, void* arg2, double& result)
 {
     result = 0.0;
@@ -3492,6 +3655,9 @@ extern ProcessLists DAT_011e0e80;
 // Sets result to 0.0, then if reference is an actor stores whether it is talking through an activator; always returns true.
 // @fnv 0x005a43b0
 // src: EXE 0x005a43b0
+// pdb: Script::IsActorTalkingThroughActivatorConditionFunction | TESConditionFunctions.obj | retail, object-file run extension, low
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pactor
 bool __cdecl Cmd_IsActorTalkingThroughActivator_Eval(TESObjectREFR* reference, void* arg1, void* arg2, double& result)
 {
     result = 0.0;
@@ -3701,6 +3867,9 @@ struct MobileObjectEmotionView
 // Writes the reference's dialogue emotion into afReturnValue (or -1.0 if emotion animation is disabled) and logs it when debug is enabled; always returns true.
 // @fnv 0x005a4480
 // src: XBOX_PDB 0x005a4480
+// pdb: Script::GetDialogueEmotionConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pmob
 bool __cdecl Script_GetDialogueEmotionConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double* afReturnValue)
 {
     *afReturnValue = 0.0;
@@ -3965,20 +4134,24 @@ struct VTableCall_38c
 __declspec(thread) extern unsigned char tls_pad_268[0x269];
 
 // @fnv 0x005a4780
-bool __cdecl CheckLastPlayedIdle(TESObjectREFR* reference, void* arg1, void* pUnused, double& result)
+// src: XBOX_RETAIL_PDB 0x005a4780
+// pdb: Script::IsLastPlayedIdleConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pidle, pactor
+bool __cdecl Script_IsLastPlayedIdleConditionFunction(TESObjectREFR* reference, void* apParam1, void* apParam2, double& afReturnValue)
 {
-    result = 0.0;
+    afReturnValue = 0.0;
     if (reference && reference->IsActor())
     {
         Actor* pactor = (Actor*)reference;
-        TESIdleForm* pidle = (TESIdleForm*)arg1;
+        TESIdleForm* pidle = (TESIdleForm*)apParam1;
         if (((VTableCall_38c*)((TES*)pactor)->GetLogDate())->GetLastPlayedIdle() == pidle)
         {
-            result = 1.0;
+            afReturnValue = 1.0;
         }
         if (tls_pad_268[0x268])
         {
-            DebugLog("The last idle played was  >> %d", result);
+            DebugLog("The last idle played was  >> %d", afReturnValue);
         }
     }
     return true;
@@ -4000,6 +4173,9 @@ __declspec(thread) TLSData_005a49f0 tls_005a49f0;
 // Sets afReturnValue to 1.0 if the actor's faction is hostile to the player due to crime, and logs the result when console echo is enabled.
 // @fnv 0x005a49f0
 // src: XBOX_PDB 0x005a49f0
+// pdb: Script::GetActorFactionPlayerEnemyConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: ptarg, bcrime, pactor
 bool __cdecl Script_GetActorFactionPlayerEnemyConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
     afReturnValue = 0.0;
@@ -4041,6 +4217,9 @@ __declspec(thread) bool bVerboseMode;
 
 // @fnv 0x005a51e0
 // src: XBOX_PDB 0x005a51e0
+// pdb: Script::GetMapMarkerVisibleConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pmarkerdata
 bool __cdecl Script_GetMapMarkerVisibleConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
     afReturnValue = 0.0;
@@ -4078,6 +4257,9 @@ __declspec(thread) extern bool tls_0268;
 // Sets afReturnValue to 1.0 if apRefObject is an actor whose GetLogDate() passes vfn_30c() and whose GetLight() equals pPlayer, then logs the result.
 // @fnv 0x005a5330
 // src: XBOX_PDB 0x005a5330
+// pdb: Script::IsGreetingPlayerConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pact
 bool __cdecl Script_IsGreetingPlayerConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
     afReturnValue = 0.0;
@@ -4166,8 +4348,10 @@ struct TLSDataPad
 
 // Stores whether the player is in hardcore mode into afReturnValue and logs it when console output is enabled; always returns true.
 // @fnv 0x005a5f90
-// src: EXE 0x005a5f90
-bool __cdecl Cmd_IsHardcore_Eval(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
+// src: XBOX_RETAIL_PDB 0x005a5f90 (was EXE)
+// pdb: Script::IsHardcoreConditionalFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+bool __cdecl Script_IsHardcoreConditionalFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
     if (pPlayer != 0)
     {
@@ -4207,6 +4391,9 @@ extern __declspec(thread) unsigned char g_tlsFlag;
 // Sets afReturnValue to 1.0 if apRefObject and apParam1 (when a reference form) share the same parent cell, otherwise 0.0, and returns true.
 // @fnv 0x0059ee80
 // src: XBOX_PDB 0x0059ee80
+// pdb: Script::GetInSameCellConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: ptestref, prefcell, ptestcell
 bool Script_GetInSameCellConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double* afReturnValue)
 {
     *afReturnValue = 0.0;
@@ -4253,6 +4440,9 @@ void DebugLog(const char*, ...);
 extern __declspec(thread) unsigned char g_tlsFlag;
 // @fnv 0x0059fc50
 // src: XBOX_PDB 0x0059fc50
+// pdb: Script::GetFactionRankConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pact, pactorbase, pfac
 bool Script_GetFactionRankConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double* afReturnValue)
 {
     *afReturnValue = -1.0;
@@ -4277,6 +4467,9 @@ extern __declspec(thread) unsigned char g_tlsFlag;
 // Sets the return value to 0, then if the reference is valid and passes a check, queries its perk rank and sets the return value to 1 when the rank is nonzero.
 // @fnv 0x005a4630
 // src: XBOX_PDB 0x005a4630
+// pdb: Script::HasPerkConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: bAlt, pactor, irank
 bool Script_HasPerkConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double* afReturnValue)
 {
     *afReturnValue = 0.0;
@@ -4301,7 +4494,11 @@ struct ActorH
 void DebugLog(const char*, ...);
 extern __declspec(thread) unsigned char g_tlsFlag;
 // @fnv 0x005a46d0
-bool GetFactionRelation(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double* afReturnValue)
+// src: XBOX_RETAIL_PDB 0x005a46d0
+// pdb: Script::GetFactionRelationConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: ptarg, bcrime, pactor
+bool Script_GetFactionRelationConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double* afReturnValue)
 {
     *afReturnValue = 0.0;
     if (apRefObject && ((unsigned char(__thiscall*)(void*))(*(void***)apRefObject)[0x40])(apRefObject))
@@ -4334,6 +4531,9 @@ void DebugLog(const char*, ...);
 extern __declspec(thread) unsigned char g_tlsFlag;
 // @fnv 0x005a5270
 // src: XBOX_PDB 0x005a5270
+// pdb: Script::GetWeaponHealthPercConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pactor, pweapon
 bool Script_GetWeaponHealthPercConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double* afReturnValue)
 {
     if (apRefObject && ((unsigned char(__thiscall*)(void*))(*(void***)apRefObject)[0x40])(apRefObject))
@@ -4378,6 +4578,9 @@ extern __declspec(thread) bool DAT_01272268;
 
 // @fnv 0x0059cf50
 // src: XBOX_PDB 0x0059cf50
+// pdb: Script::GetDisabledConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pScriptLocals
 bool __cdecl Script_GetDisabledConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double* afReturnValue)
 {
     ScriptLocals* m_pScriptLocals = (ScriptLocals*)apParam1;
@@ -4390,7 +4593,7 @@ bool __cdecl Script_GetDisabledConditionFunction(TESObjectREFR* apRefObject, voi
     }
     else if (m_pScriptLocals)
     {
-        *afReturnValue = (m_pScriptLocals->m_cActionFlags & 1) ? true : false;
+        *afReturnValue = (m_pScriptLocals->m_cFlags & 1) ? true : false;
     }
     if (DAT_01272268)
         DebugLog("GetDisabled >> %0.f", *afReturnValue);
@@ -4467,6 +4670,9 @@ struct P01TermA
 };
 // @fnv 0x0059d010
 // src: XBOX_PDB 0x0059d010
+// pdb: Script::GetLockedConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pLock, pterm
 bool Script_GetLockedConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double* afReturnValue)
 {
     *afReturnValue = 0.0;
@@ -4504,6 +4710,9 @@ extern __declspec(thread) bool bPrintConditionDebug;
 // Sets the return value to 1.0 if the quest passed in apParam1 is enabled, otherwise 0.0, and logs it when condition debug printing is on.
 // @fnv 0x0059e320
 // src: XBOX_PDB 0x0059e320
+// pdb: Script::GetQuestRunningConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pQuest
 bool Script_GetQuestRunningConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double* afReturnValue)
 {
     *afReturnValue = 0.0;
@@ -4591,7 +4800,11 @@ void __cdecl DebugLog(char const*, ...);
 __declspec(thread) extern unsigned char g_tlsDebugFlags[0x300];
 
 // @fnv 0x0059c380
-bool __cdecl GetMenuModeValue(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double* afReturnValue)
+// src: XBOX_RETAIL_PDB 0x0059c380
+// pdb: Script::GetMenuModeConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: eMenuMode
+bool __cdecl Script_GetMenuModeConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double* afReturnValue)
 {
     *afReturnValue = 0.0;
     TesconditionfunctionsInterfaceView::enumMenus eMenuId = (TesconditionfunctionsInterfaceView::enumMenus)(int)apParam1;
@@ -4627,7 +4840,11 @@ extern PlayerCharacter* g_thePlayer;
 
 // Sets the return value to 1.0 if the reference is an actor in combat, or to the player's combat check result, and logs the state when debug flags are set.
 // @fnv 0x005a3180
-bool __cdecl GetActorInCombat(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double* afReturnValue)
+// src: XBOX_RETAIL_PDB 0x005a3180
+// pdb: Script::IsInCombatConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pact, bsearch
+bool __cdecl Script_IsInCombatConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double* afReturnValue)
 {
     *afReturnValue = 0.0;
     Actor* pact = 0;
@@ -4653,6 +4870,8 @@ bool __cdecl Script_SameFactionConditionFunction(TESObjectREFR* reference, void*
 
 // @fnv 0x0059d3a0
 // src: EXE 0x0059d3a0
+// pdb: Script::SameFactionAsPCConditionFunction | TESConditionFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
 bool __cdecl Cmd_SameFactionAsPC_Eval(void* apReference, void* apUnused, void* apUnused2, double* result)
 {
     return Script_SameFactionConditionFunction((TESObjectREFR*)apReference, g_thePlayer, 0, *result);
@@ -4666,13 +4885,15 @@ struct ConditionWeather : TESWeather
 // @fnv 0x0059eb40
 bool __thiscall ConditionWeather::GetFlag()
 {
-    return (m_aucWeatherFlags[11] & 8) != 0;
+    return (ucWeatherData[11] & 8) != 0;
 }
 
 extern bool __cdecl Script_GetIsClassConditionFunction(PlayerCharacter* reference, void* arg1, void* arg2, double& result);
 
 // @fnv 0x0059f730
 // src: EXE 0x0059f730
+// pdb: Script::GetPCIsClassConditionFunction | TESConditionFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
 bool __cdecl Cmd_GetPCIsClass_Eval(TESObjectREFR* reference, void* arg1, void* arg2, double& result)
 {
     return Script_GetIsClassConditionFunction(g_thePlayer, arg1, arg2, result);
@@ -4681,6 +4902,8 @@ bool __cdecl Cmd_GetPCIsClass_Eval(TESObjectREFR* reference, void* arg1, void* a
 bool __cdecl Script_GetIsRaceConditionFunction(PlayerCharacter* reference, void* arg1, void* arg2, double& result);
 // @fnv 0x0059f750
 // src: EXE 0x0059f750
+// pdb: Script::GetPCIsRaceConditionFunction | TESConditionFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
 bool __cdecl Cmd_GetPCIsRace_Eval(TESObjectREFR* reference, void* arg1, void* arg2, double& result)
 {
     return Script_GetIsRaceConditionFunction(g_thePlayer, arg1, arg2, result);
@@ -4722,6 +4945,8 @@ void __cdecl DebugLog(char const*, ...);
 // Sets afReturnValue to 1.0 when the player is sleeping or resting, logs whether time is passing if the debug flag is set, and returns true.
 // @fnv 0x005a2c70
 // src: XBOX_PDB 0x005a2c70
+// pdb: Script::IsTimePassingConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
 bool __cdecl Script_IsTimePassingConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
     if (((PlayerCharacter*)g_thePlayer)->IsSleepingOrResting())
@@ -4760,6 +4985,8 @@ bool __cdecl Cmd_WhichServiceMenu_Eval(TESObjectREFR* apRefObject, void* apParam
 // Sets afReturnValue to 1.0 when the player fails the check FUN_004eaf60, otherwise leaves it at 0.0, and returns true.
 // @fnv 0x005a3d00
 // src: XBOX_PDB 0x005a3d00
+// pdb: Script::IsPC1stPersonConditionFunction | TESConditionFunctions.obj | debug, upstream name already matches, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
 bool __cdecl Script_IsPC1stPersonConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
     afReturnValue = 0.0;
@@ -4808,6 +5035,8 @@ extern bool __cdecl Script_SameRaceConditionFunction(void* ref, void* arg1, void
 
 // @fnv 0x0059d3c0
 // src: EXE 0x0059d3c0
+// pdb: Script::SameRaceAsPCConditionFunction | TESConditionFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
 bool __cdecl Cmd_SameRaceAsPC_Eval(void* ref, void* arg1, void* arg2, double& result)
 {
     return Script_SameRaceConditionFunction(ref, g_thePlayer, 0, &result);
@@ -4816,6 +5045,8 @@ bool __cdecl Cmd_SameRaceAsPC_Eval(void* ref, void* arg1, void* arg2, double& re
 // Sets afReturnValue to 1.0 if apRefObject is an actor, otherwise 0.0, and returns true.
 // @fnv 0x005a39d0
 // src: XBOX_PDB 0x005a39d0
+// pdb: Script::IsActorConditionFunction | TESConditionFunctions.obj | retail, upstream name already matches, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
 bool __cdecl Script_IsActorConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
     afReturnValue = 0.0;
@@ -4828,16 +5059,19 @@ namespace fnv_005a3b90 {
 
 // Sets *result to 1.0 if object's next form is a talking activator whose temp ref equals reference, otherwise 0.0; always returns true.
 // @fnv 0x005a3b90
-// src: EXE 0x005a3b90
-bool __cdecl Cmd_IsTalkingActivatorActor_Eval(TESObject* object, TESObjectREFR* reference, TESObjectREFR* pUnused, double* pfResult)
+// src: XBOX_RETAIL_PDB 0x005a3b90 (was EXE)
+// pdb: Script::GetTalkingActivatorActorConditionFunction | TESConditionFunctions.obj | retail, object-file gap fill, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pact, pTalkingact
+bool __cdecl Script_GetTalkingActivatorActorConditionFunction(TESObject* apRefObject, TESObjectREFR* reference, TESObjectREFR* apParam2, double* afReturnValue)
 {
-    *pfResult = 0.0;
+    *afReturnValue = 0.0;
     TESObjectREFR* pRef = reference;
-    if (object && object->GetNext()->GetFormType() == 0x16)
+    if (apRefObject && apRefObject->GetNext()->GetFormType() == 0x16)
     {
-        TESObjectREFR* next = reinterpret_cast<TESObjectREFR*>(object->GetNext());
+        TESObjectREFR* next = reinterpret_cast<TESObjectREFR*>(apRefObject->GetNext());
         if (reinterpret_cast<const BGSTalkingActivator*>(next)->GetTempRef() == pRef)
-            *pfResult = 1.0;
+            *afReturnValue = 1.0;
     }
     return true;
 }
@@ -4927,11 +5161,13 @@ bool ConditionFaction::IsFlag40Set()
 
 // Sets result to zero, then stores the player's value from GetActionObjectItemId into result and returns true.
 // @fnv 0x005a3af0
-// src: EXE 0x005a3af0
-bool __cdecl Cmd_GetLastPlayerAction_Eval(TESObjectREFR* reference, void* arg1, void* arg2, double& result)
+// src: XBOX_RETAIL_PDB 0x005a3af0 (was EXE)
+// pdb: Script::GetLastPlayerActionConditionFunction | TESConditionFunctions.obj | retail, object-file gap fill, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+bool __cdecl Script_GetLastPlayerActionConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
-    result = 0.0;
-    result = ((ConditionPlayerCharacter*)g_thePlayer)->GetActionObjectItemId();
+    afReturnValue = 0.0;
+    afReturnValue = ((ConditionPlayerCharacter*)g_thePlayer)->GetActionObjectItemId();
     return true;
 }
 
@@ -4959,7 +5195,7 @@ struct ConditionActorCrime : Actor
 // @fnv 0x005a4c00
 unsigned int ConditionActorCrime::GetMaskedCrimeCount() const
 {
-    return m_uiActorFlags & 0x3fffffff;
+    return iMajorCrimes & 0x3fffffff;
 }
 
 struct FUN_005a5bb0Class
@@ -5021,6 +5257,9 @@ struct FUN_008256d0_list
 
 // @fnv 0x0059d8e0
 // src: XBOX_PDB 0x0059d8e0
+// pdb: Script::GetItemCountConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pobject, ptarget, pchange, pform, plist, pformlist, pcheckform
 bool Script_GetItemCountConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double* afReturnValue)
 {
     *afReturnValue = 0.0;
@@ -5088,6 +5327,9 @@ void DebugLog(const char*, ...);
 extern __declspec(thread) unsigned char FUN_0059da90_tls[0x269];
 // @fnv 0x0059da90
 // src: XBOX_PDB 0x0059da90
+// pdb: Script::GetEquippedConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: ptarget, pform, plist, plistform, pchange, pobject
 bool __cdecl Script_GetEquippedConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
     Actor* ptarget;
@@ -5420,6 +5662,9 @@ struct ActorVStand
 };
 // @fnv 0x0059ed30
 // src: XBOX_PDB 0x0059ed30
+// pdb: Script::GetShouldAttackConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pact, pactor, ainumber, bcombat, aidisp, ereaction, bcrime, idispcombat, ireaction
 bool Script_GetShouldAttackConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double* afReturnValue)
 {
     int ainumber = 0;
@@ -5474,6 +5719,9 @@ extern __declspec(thread) FUN_0059ef60_TLS g_FUN_0059ef60_TLS;
 
 // @fnv 0x0059ef60
 // src: EXE 0x0059ef60
+// pdb: Script::GetInCellConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pcell, pref, prefcell
 bool Cmd_Shared_Eval_59ef60(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double* afReturnValue)
 {
     *afReturnValue = 0.0;
@@ -5538,6 +5786,9 @@ __declspec(thread) FUN_005a0410_TLS g_tls_005a0410;
 // Computes the angle from the reference to the target reference, normalizes it into range, scales it, and optionally logs it.
 // @fnv 0x005a0410
 // src: XBOX_PDB 0x005a0410
+// pdb: Script::GetHeadingAngleConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pmobile, ptarget, ftargetAngle, headingToTarget
 bool Script_GetHeadingAngleConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double* afReturnValue)
 {
     *afReturnValue = 0;
@@ -5657,6 +5908,9 @@ extern __declspec(thread) bool g_bConditionDebugOutput;
 
 // @fnv 0x0059d400
 // src: XBOX_PDB 0x0059d400
+// pdb: Script::SameFactionConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pactorbase1, pact, pactorbase2, pacttar, plist, pfac1
 bool Script_SameFactionConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
     afReturnValue = 0.0;
@@ -5695,34 +5949,37 @@ __declspec(thread) bool g_bDebugLogEnabled;
 // Sets result to 1.0 if reference and actor1 are both NPCs of form type 0x2a with equal sex, logs the value, and returns true.
 // @fnv 0x0059d610
 // src: XBOX_PDB 0x0059d610
-bool __cdecl Script_SameSexConditionFunction(TESObject* reference, TESObject* actor1, TESObject* actor2, double& result)
+// pdb: Script::SameSexConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pnpc1, pnpc2
+bool __cdecl Script_SameSexConditionFunction(TESObject* apRefObject, TESObject* apParam1, TESObject* apParam2, double& afReturnValue)
 {
     TESNPC* pnpc1;
     TESNPC* pnpc2;
-    result = 0.0;
+    afReturnValue = 0.0;
     pnpc1 = 0;
-    if (reference)
+    if (apRefObject)
     {
-        if (((TESForm*)reference->GetNext())->_FNV_GetFormType() == 0x2a)
+        if (((TESForm*)apRefObject->GetNext())->_FNV_GetFormType() == 0x2a)
         {
-            pnpc1 = (TESNPC*)reference->GetNext();
+            pnpc1 = (TESNPC*)apRefObject->GetNext();
         }
     }
     pnpc2 = 0;
-    if (actor1)
+    if (apParam1)
     {
-        if (((TESForm*)actor1->GetNext())->_FNV_GetFormType() == 0x2a)
+        if (((TESForm*)apParam1->GetNext())->_FNV_GetFormType() == 0x2a)
         {
-            pnpc2 = (TESNPC*)actor1->GetNext();
+            pnpc2 = (TESNPC*)apParam1->GetNext();
         }
     }
     if (pnpc1 && pnpc2 && pnpc1->TESActorBase::GetSex() == pnpc2->TESActorBase::GetSex())
     {
-        result = 1.0;
+        afReturnValue = 1.0;
     }
     if (g_bDebugLogEnabled)
     {
-        _DebugLog("SameSex >> %0.2f", result);
+        _DebugLog("SameSex >> %0.2f", afReturnValue);
     }
     return true;
 }
@@ -6275,6 +6532,9 @@ extern __declspec(thread) bool g_bDebugLogDetect;
 // Checks whether apRefObject (an actor) detects apParam1, sets afReturnValue to 1 when detection succeeds, and logs the result and light level.
 // @fnv 0x0059d6e0
 // src: XBOX_PDB 0x0059d6e0
+// pdb: Script::GetDetectedConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: inumber, ilight, pdetector, pactor, blinesight, bincombat, bsearch
 bool Script_GetDetectedConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
     int iCount;
@@ -6331,11 +6591,11 @@ typedef char _sizecheck_ItemChange[sizeof(InventoryStackRecord) == 12 ? 1 : -1];
 
 
 unsigned int __fastcall _FNV_GetFormType(TESForm* form);
-::ScriptLocals* __fastcall FUN_004bdea0(InventoryStackRecord* item);
+::ScriptLocals* __fastcall GetScriptLocals(InventoryStackRecord* item);
 
 struct TESObjectREFR_Helper
 {
-    InventoryStackRecord* call_576260(TESObject* obj, unsigned int formID);
+    InventoryStackRecord* call_576260(TESObject* apObject, unsigned int aId);
 };
 static InventoryStackRecord* (__thiscall TESObjectREFR_Helper::*volatile _force_576260)(TESObject*, unsigned int) =
     &TESObjectREFR_Helper::call_576260;
@@ -6358,6 +6618,9 @@ struct ItemChange_WithDtor : public InventoryStackRecord
 
 // @fnv 0x0059e1a0
 // src: EXE 0x0059e1a0
+// pdb: Script::GetScriptVariableConditionFunction | TESConditionFunctions.obj | retail, object-file run extension, low
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pForm, pScriptLocals, pRef, pitem, pContainerRef, pQuest
 bool __cdecl Cmd_Shared_Eval_59e1a0(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
     afReturnValue = 0.0;
@@ -6385,7 +6648,7 @@ bool __cdecl Cmd_Shared_Eval_59e1a0(TESObjectREFR* apRefObject, void* apParam1, 
                         ->call_576260(reinterpret_cast<TESObject*>(pRef)->GetNext(), pRef->GetFormID());
                 if (pItemChange)
                 {
-                    m_pScriptLocals = FUN_004bdea0(pItemChange);
+                    m_pScriptLocals = GetScriptLocals(pItemChange);
                 }
                 delete static_cast<ItemChange_WithDtor*>(pItemChange);
             }
@@ -6404,7 +6667,7 @@ bool __cdecl Cmd_Shared_Eval_59e1a0(TESObjectREFR* apRefObject, void* apParam1, 
             break;
         }
         }
-        if (m_pScriptLocals && ((ScriptLocals*)m_pScriptLocals)->m_pOwnerScript)
+        if (m_pScriptLocals && ((ScriptLocals*)m_pScriptLocals)->m_pMasterScript)
         {
             afReturnValue = reinterpret_cast<ScriptLocals_Helper*>(m_pScriptLocals)->call_5a9140(apParam2, 0);
         }
@@ -6424,8 +6687,11 @@ struct FUN_0059e7d0_Class
 void _DebugLog(const char* fmt, ...);
 __declspec(thread) bool _DebugLogEnabled;
 // @fnv 0x0059e700
-// src: EXE 0x0059e700
-bool Cmd_IsPleasant_Eval(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
+// src: XBOX_RETAIL_PDB 0x0059e700 (was EXE)
+// pdb: Script::GetIsPleasantConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pSky
+bool Script_GetIsPleasantConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
     Sky* pWeatherSky = Sky::GetInstance();
     afReturnValue =
@@ -6450,8 +6716,11 @@ struct FUN_0059e8c0_Class
 void _DebugLog(const char*, ...);
 __declspec(thread) bool g_pLogDebug;
 // @fnv 0x0059e7f0
-// src: EXE 0x0059e7f0
-bool __cdecl Cmd_IsCloudy_Eval(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
+// src: XBOX_RETAIL_PDB 0x0059e7f0 (was EXE)
+// pdb: Script::GetIsCloudyConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pSky
+bool __cdecl Script_GetIsCloudyConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
     Sky* pWeatherSky = Sky::GetInstance();
     afReturnValue =
@@ -6475,19 +6744,22 @@ __declspec(thread) unsigned char g_theDebugLevel;
 // Sets result to 1.0 if the reference is an actor that is restrained, logs the state when debug logging is enabled, and returns true.
 // @fnv 0x0059ff90
 // src: XBOX_PDB 0x0059ff90
-bool __cdecl Script_GetRestrainedConditionFunction(TESObjectREFR* reference, void* apUnused1, void* apUnused2, double& result)
+// pdb: Script::GetRestrainedConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pactor
+bool __cdecl Script_GetRestrainedConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
-    result = 0.0;
+    afReturnValue = 0.0;
     Actor* actor = 0;
-    if (reference && reference->IsActor())
-        actor = (Actor*)reference;
+    if (apRefObject && apRefObject->IsActor())
+        actor = (Actor*)apRefObject;
     if (actor)
     {
         if (actor->Actor_IsRestrained())
-            result = 1.0;
+            afReturnValue = 1.0;
         if (g_theDebugLevel)
         {
-            if (result != 0.0)
+            if (afReturnValue != 0.0)
                 _DebugLog("%s is restrained", ((MobileObject*)actor)->GetFullName());
             else
                 _DebugLog("%s is not restrained", ((MobileObject*)actor)->GetFullName());
@@ -6507,6 +6779,9 @@ __declspec(thread) unsigned char pDebugLog;
 // Sets afReturnValue to 1.0 if the player's control bit for apParam1 is disabled, else 0.0, and logs each control's state when pDebugLog is set.
 // @fnv 0x005a02f0
 // src: XBOX_PDB 0x005a02f0
+// pdb: Script::GetPlayerControlsDisabledConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: ibit, cdisabled, n
 bool __cdecl Script_GetPlayerControlsDisabledConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
     afReturnValue = 0.0;
@@ -6551,6 +6826,9 @@ extern __declspec(thread) bool bLogConditionFunctions;
 
 // @fnv 0x005a05e0
 // src: XBOX_PDB 0x005a05e0
+// pdb: Script::IsWeaponInListConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pactor, pformlist, pweapdata, pweap
 bool __cdecl Script_IsWeaponInListConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
     afReturnValue = 0.0;
@@ -6588,17 +6866,20 @@ __declspec(thread) unsigned char g_DebugLogFlag;
 // Sets result to 1.0 when reference is an actor whose parent cell reports it as owned, otherwise 0.0, and logs the value when debug logging is enabled.
 // @fnv 0x005a19a0
 // src: XBOX_PDB 0x005a19a0
-bool __cdecl Script_IsInMyOwnedCellConditionFunction(TESObjectREFR* reference, void* arg1, void* arg2, double& result)
+// pdb: Script::IsInMyOwnedCellConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pactor
+bool __cdecl Script_IsInMyOwnedCellConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
-    result = 0.0;
+    afReturnValue = 0.0;
     TESObjectREFR* owner = 0;
-    if (reference && reference->IsActor())
-        owner = reference;
+    if (apRefObject && apRefObject->IsActor())
+        owner = apRefObject;
     if (owner && owner->GetParentCell() &&
         reinterpret_cast<OwnedCellOwner*>(owner->GetParentCell())->IsActorCellOwner(owner))
-        result = 1.0;
+        afReturnValue = 1.0;
     if (g_DebugLogFlag)
-        _DebugLog("Is in owned cell value %0.2f", result);
+        _DebugLog("Is in owned cell value %0.2f", afReturnValue);
     return true;
 }
 
@@ -6677,17 +6958,20 @@ struct TESObjectREFR_VTable
 };
 __declspec(thread) bool g_bConditionFunctionFlags[57];
 // @fnv 0x005a2a60
-// src: EXE 0x005a2a60
-bool __cdecl Cmd_GetIsGhost_Eval(TESObjectREFR* reference, void* arg1, void* arg2, double& result)
+// src: XBOX_RETAIL_PDB 0x005a2a60 (was EXE)
+// pdb: Script::GetGhostConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pactor
+bool __cdecl Script_GetGhostConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
-    result = 0.0;
+    afReturnValue = 0.0;
     TESObjectREFR* actor = 0;
-    if (reference && ((TESObjectREFR_VTable*)reference)->vfn_100())
-        actor = reference;
+    if (apRefObject && ((TESObjectREFR_VTable*)apRefObject)->vfn_100())
+        actor = apRefObject;
     if (actor && ((GhostH*)actor)->GetGhost())
-        result = 1.0;
+        afReturnValue = 1.0;
     if (g_bConditionFunctionFlags[56])
-        _DebugLog("GetGhost >> %0.2f", result);
+        _DebugLog("GetGhost >> %0.2f", afReturnValue);
     return true;
 }
 
@@ -6704,16 +6988,19 @@ struct FUN_005a3740_shell
 // Sets result to 1.0 when reference is an actor in a parent cell whose water form reports true, otherwise leaves result at 0.0, and returns true.
 // @fnv 0x005a36b0
 // src: XBOX_PDB 0x005a36b0
-bool __cdecl Script_IsInDangerousWaterConditionFunction(TESObjectREFR* reference, void* arg1, void* arg2, double& result)
+// pdb: Script::IsInDangerousWaterConditionFunction | TESConditionFunctions.obj | retail, upstream name already matches, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pactor
+bool __cdecl Script_IsInDangerousWaterConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
-    result = 0.0;
-    if (reference && reference->IsActor())
+    afReturnValue = 0.0;
+    if (apRefObject && apRefObject->IsActor())
     {
-        TESObjectREFR* actor = reference;
+        TESObjectREFR* actor = apRefObject;
         if (actor && ((FUN_005a3740_cls*)actor)->GetByteAt14C() && actor->GetParentCell() &&
             ((TESObjectCELL*)actor->GetParentCell())->Actor_GetRadiationLevel() &&
             ((TESObjectCELL*)actor->GetParentCell())->Actor_GetRadiationLevel()->HasFlag1())
-            result = 1.0;
+            afReturnValue = 1.0;
     }
     return true;
 }
@@ -6732,7 +7019,10 @@ struct ThreadLocalFlags
 __declspec(thread) ThreadLocalFlags g_threadLocalFlags;
 // If apRefObject is non-null, stores its GetScale result in afReturnValue and, when debug logging is on, logs it with the base scale; returns true.
 // @fnv 0x0059c930
-bool __cdecl GetObjectScale(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
+// src: XBOX_RETAIL_PDB 0x0059c930
+// pdb: Script::GetScaleConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+bool __cdecl Script_GetScaleConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
     if (apRefObject)
     {
@@ -6758,20 +7048,23 @@ __declspec(thread) bool g_debugLog;
 // Sets result to 0, or to the lock's broken flag if the reference has a lock, logs it, and returns true.
 // @fnv 0x0059d1d0
 // src: XBOX_PDB 0x0059d1d0
-bool __cdecl Script_GetIsLockBrokenConditionFunction(TESObjectREFR* reference, void* apUnused1, void* apUnused2, double& result)
+// pdb: Script::GetIsLockBrokenConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pLock
+bool __cdecl Script_GetIsLockBrokenConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
-    result = 0.0;
-    if (reference)
+    afReturnValue = 0.0;
+    if (apRefObject)
     {
-        LockExtraData* lock = ((P01RefA*)reference)->GetLock();
+        LockExtraData* lock = ((P01RefA*)apRefObject)->GetLock();
         if (lock)
         {
             int broken = lock->MeetsMinimumLockLevel();
-            result = broken;
+            afReturnValue = broken;
         }
     }
     if (g_debugLog)
-        _DebugLog("GetIsLockBroken >> %0.f", result);
+        _DebugLog("GetIsLockBroken >> %0.f", afReturnValue);
     return true;
 }
 }  // namespace fnv_0059d1d0
@@ -6783,6 +7076,8 @@ extern "C" int __cdecl _DebugLog(const char*, ...);
 // Stores the value returned by FUN_00600910 in afReturnValue, logs it when g_tlsDebugFlag is set, and returns true.
 // @fnv 0x0059fb00
 // src: XBOX_PDB 0x0059fb00
+// pdb: Script::GetUsedItemLevelConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
 bool __cdecl Script_GetUsedItemLevelConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
     afReturnValue = TESIdleManager_GetUsedItemLevel();
@@ -6801,14 +7096,16 @@ extern __declspec(thread) unsigned char g_DebugLogFlag;
 // Sets result to the sky's wind speed and returns true when the TES log date is available, otherwise returns false; logs the value if debug logging is enabled.
 // @fnv 0x005a1880
 // src: XBOX_PDB 0x005a1880
-bool __cdecl Script_GetWindSpeedConditionFunction(TESObjectREFR* reference, void* apUnused1, void* apUnused2, double& result)
+// pdb: Script::GetWindSpeedConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+bool __cdecl Script_GetWindSpeedConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
-    result = 0.0;
+    afReturnValue = 0.0;
     if (!(g_TES && ((TES*)g_TES)->GetLogDate()))
         return false;
-    result = ((Sky*)((TES*)g_TES)->GetLogDate())->GetFieldCC();
+    afReturnValue = ((Sky*)((TES*)g_TES)->GetLogDate())->GetFieldCC();
     if (g_DebugLogFlag)
-        _DebugLog("GetWindSpeed >> %0.2f", result);
+        _DebugLog("GetWindSpeed >> %0.2f", afReturnValue);
     return true;
 }
 }  // namespace fnv_005a1880
@@ -6820,13 +7117,15 @@ __declspec(thread) bool g_bDebugLogging;
 // Zeroes result, stores GetOpenState(reference) when reference is non-null, logs it if debug logging is on, and returns true.
 // @fnv 0x005a1c30
 // src: XBOX_PDB 0x005a1c30
-bool __cdecl Script_GetOpenStateConditionFunction(TESObjectREFR* reference, void* apUnused1, void* apUnused2, double& result)
+// pdb: Script::GetOpenStateConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+bool __cdecl Script_GetOpenStateConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
-    result = 0.0;
-    if (reference)
-        result = BGSOpenCloseForm::GetOpenState(reference);
+    afReturnValue = 0.0;
+    if (apRefObject)
+        afReturnValue = BGSOpenCloseForm::GetOpenState(apRefObject);
     if (g_bDebugLogging)
-        _DebugLog("GetOpenState >> %0.2f", result);
+        _DebugLog("GetOpenState >> %0.2f", afReturnValue);
     return true;
 }
 }  // namespace fnv_005a1c30
@@ -6839,6 +7138,9 @@ __declspec(thread) unsigned char g_tlsDebugFlag;
 // Sets afReturnValue to 1.0 if the faction in apParam1 reports the PC is expelled, otherwise 0.0, and logs the result when debug logging is enabled.
 // @fnv 0x005a20d0
 // src: XBOX_PDB 0x005a20d0
+// pdb: Script::GetPCExpelledConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pFaction
 bool __cdecl Script_GetPCExpelledConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
     afReturnValue = 0.0;
@@ -6863,15 +7165,18 @@ __declspec(thread) unsigned char g_tlsFlag;
 // Sets result to 1.0 if the faction object reports a murder, otherwise 0.0, and logs the outcome when the TLS flag is set; always returns true.
 // @fnv 0x005a2150
 // src: XBOX_PDB 0x005a2150
-bool Script_GetPCFactionMurderConditionFunction(TESObjectREFR* ref, void* apFaction, void* apUnused, double& result)
+// pdb: Script::GetPCFactionMurderConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pFaction
+bool Script_GetPCFactionMurderConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
-    result = 0.0;
-    ConditionFaction* faction = (ConditionFaction*)apFaction;
+    afReturnValue = 0.0;
+    ConditionFaction* faction = (ConditionFaction*)apParam1;
     if (faction && faction->IsFlag40Set())
-        result = 1.0;
+        afReturnValue = 1.0;
     if (g_tlsFlag)
     {
-        if (result != 0.0)
+        if (afReturnValue != 0.0)
             _DebugLog("PC murdered a faction member.");
         else
             _DebugLog("PC did not Murder a faction member.");
@@ -6888,6 +7193,9 @@ __declspec(thread) bool g_tlsDebugLogging;
 // Sets afReturnValue to 1.0 if apParam1 is a faction that passes IsFlag20Set, logs the result when debug logging is on, and returns true.
 // @fnv 0x005a2290
 // src: XBOX_PDB 0x005a2290
+// pdb: Script::GetPCFactionAttackConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pFaction
 bool __cdecl Script_GetPCFactionAttackConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
     afReturnValue = 0.0;
@@ -6917,12 +7225,14 @@ __declspec(thread) unsigned char g_tlsFlag;
 // Sets result to the flags of DAT_011f2250 as a double, logs it when g_tlsFlag is set, and returns true.
 // @fnv 0x005a2590
 // src: XBOX_PDB 0x005a2590
-bool __cdecl Script_GetVATSModeConditionFunction(TESObjectREFR* reference, void* apUnused1, void* apUnused2, double& result)
+// pdb: Script::GetVATSModeConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+bool __cdecl Script_GetVATSModeConditionFunction(TESObjectREFR* reference, void* apParam1, void* apParam2, double& afReturnValue)
 {
-    result = 0.0;
-    result = (double)(int)DAT_011f2250.GetFlags();
+    afReturnValue = 0.0;
+    afReturnValue = (double)(int)DAT_011f2250.GetFlags();
     if (g_tlsFlag)
-        _DebugLog("VATS Mode >> %0.2f", result);
+        _DebugLog("VATS Mode >> %0.2f", afReturnValue);
     return true;
 }
 }  // namespace fnv_005a2590
@@ -6961,8 +7271,11 @@ struct LogDate
 
 // Sets result to 0.0, then to 1.0 if reference is an actor whose log date passes v060; always returns true.
 // @fnv 0x005a3570
-// src: EXE 0x005a3570
-bool __cdecl Cmd_GetIdleDoneOnce_Eval(TESObjectREFR* reference, void* arg1, void* arg2, double& result)
+// src: XBOX_RETAIL_PDB 0x005a3570 (was EXE)
+// pdb: Script::GetIdleDoneOnceConditionFunction | TESConditionFunctions.obj | retail, object-file gap fill, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pactor
+bool __cdecl Script_GetIdleDoneOnceConditionFunction(TESObjectREFR* reference, void* arg1, void* arg2, double& result)
 {
     result = 0.0;
     TES* log = 0;
@@ -6980,19 +7293,22 @@ bool __cdecl Cmd_GetIdleDoneOnce_Eval(TESObjectREFR* reference, void* arg1, void
 
 struct ActorProxy
 {
-    bool HasNoRumors();
+    bool Actor_HasNoRumors();
 };
 // Sets result to 1.0 if reference is an actor whose HasNoRumors returns true, otherwise 0.0, and returns true.
 // @fnv 0x005a35f0
 // src: XBOX_PDB 0x005a35f0
-bool __cdecl Script_GetNoRumorsConditionFunction(TESObjectREFR* reference, void* arg1, void* arg2, double& result)
+// pdb: Script::GetNoRumorsConditionFunction | TESConditionFunctions.obj | retail, upstream name already matches, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pactor
+bool __cdecl Script_GetNoRumorsConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
-    result = 0.0;
+    afReturnValue = 0.0;
     ActorProxy* actor = 0;
-    if (reference && reference->IsActor())
-        actor = reinterpret_cast<ActorProxy*>(reference);
-    if (actor && actor->HasNoRumors())
-        result = 1.0;
+    if (apRefObject && apRefObject->IsActor())
+        actor = reinterpret_cast<ActorProxy*>(apRefObject);
+    if (actor && actor->Actor_HasNoRumors())
+        afReturnValue = 1.0;
     return true;
 }
 
@@ -7009,8 +7325,10 @@ struct DebugLogFlag
 __declspec(thread) DebugLogFlag g_DebugLogFlag;
 // Sets the return value to 0.0, optionally logs it when the debug log flag is set, and returns true.
 // @fnv 0x005a3820
-// src: EXE 0x005a3820
-bool __cdecl Cmd_IsPS3_Eval(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double* afReturnValue)
+// src: XBOX_RETAIL_PDB 0x005a3820 (was EXE)
+// pdb: Script::IsPS3ConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+bool __cdecl Script_IsPS3ConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double* afReturnValue)
 {
     *afReturnValue = 0.0;
     if (g_DebugLogFlag.flag)
@@ -7024,32 +7342,38 @@ bool __cdecl Cmd_IsPS3_Eval(TESObjectREFR* apRefObject, void* apParam1, void* ap
 // Sets result to 1.0 if reference is an actor whose limb is dismembered, otherwise 0.0, and returns true.
 // @fnv 0x005a3db0
 // src: XBOX_PDB 0x005a3db0
-bool __cdecl Script_IsLimbGoneConditionFunction(TESObjectREFR* reference, void* aiLimb, void* apUnused, double& result)
+// pdb: Script::IsLimbGoneConditionFunction | TESConditionFunctions.obj | retail, upstream name already matches, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: plimb, pactor
+bool __cdecl Script_IsLimbGoneConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
-    result = 0.0;
-    int limb = reinterpret_cast<int>(aiLimb);
-    if (reference && reference->IsActor())
+    afReturnValue = 0.0;
+    int limb = reinterpret_cast<int>(apParam1);
+    if (apRefObject && apRefObject->IsActor())
     {
-        TESObjectREFR* actor = static_cast<TESObjectREFR*>(reference);
-        if (actor->IsLimbMissing(limb))
-            result = 1.0;
+        TESObjectREFR* actor = static_cast<TESObjectREFR*>(apRefObject);
+        if (actor->GetDismembered(limb))
+            afReturnValue = 1.0;
     }
     return true;
 }
 
 
 // @fnv 0x005a4160
-// src: GUESS 0x005a4160 (confidence: low)
-bool TESObjectREFR_ProcessAndReturnValue_005a4160(TESObjectREFR* reference, void* arg1, void* arg2, double& result)
+// src: XBOX_RETAIL_PDB 0x005a4160
+// pdb: Script::GetIsTurningConditionFunction | TESConditionFunctions.obj | retail, object-file run extension, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: imode
+bool Script_GetIsTurningConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
-    result = 0.0;
-    if (reference && reference->IsActor())
+    afReturnValue = 0.0;
+    if (apRefObject && apRefObject->IsActor())
     {
-        unsigned int mode = ((const Actor*)reference)->GetActorStateFlags() & 0x30;
+        unsigned int mode = ((const Actor*)apRefObject)->GetActorStateFlags() & 0x30;
         if (mode & 0x10)
-            result = 1.0;
+            afReturnValue = 1.0;
         else if (mode & 0x20)
-            result = 2.0;
+            afReturnValue = 2.0;
     }
     return true;
 }
@@ -7196,12 +7520,14 @@ struct AnimActionObject
 // Sets result to -1.0, then if reference is non-null and IsMoving() is true, stores GetAnimAction() into result; returns true.
 // @fnv 0x005a41c0
 // src: XBOX_PDB 0x005a41c0
-bool __cdecl Script_GetAnimActionConditionFunction(TESObjectREFR* reference, void* apUnused1, void* apUnused2, double& result)
+// pdb: Script::GetAnimActionConditionFunction | TESConditionFunctions.obj | retail, upstream name already matches, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+bool __cdecl Script_GetAnimActionConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
-    result = -1.0;
-    if (reference && reinterpret_cast<AnimActionObject*>(reference)->IsMoving())
+    afReturnValue = -1.0;
+    if (apRefObject && reinterpret_cast<AnimActionObject*>(apRefObject)->IsMoving())
     {
-        result = reinterpret_cast<AnimActionObject*>(reference)->GetAnimAction();
+        afReturnValue = reinterpret_cast<AnimActionObject*>(apRefObject)->GetAnimAction();
     }
     return true;
 }
@@ -7216,6 +7542,8 @@ __declspec(thread) bool g_bDebugLoggingEnabled = false;
 // Stores the player's teammate count into result, optionally logs it, and returns true.
 // @fnv 0x005a48a0
 // src: XBOX_PDB 0x005a48a0
+// pdb: Script::GetPlayerTeammateCountConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
 bool Script_GetPlayerTeammateCountConditionFunction(TESObjectREFR* reference, void* arg1, void* arg2, double& result)
 {
     result = 0.0;
@@ -7234,13 +7562,15 @@ void __cdecl _DebugLog(const char* fmt, ...);
 __declspec(thread) bool g_DebugFlag;
 // @fnv 0x005a4c60
 // src: XBOX_PDB 0x005a4c60
-bool __cdecl Script_GetDestructionStageConditionFunction(TESObjectREFR* ref, void* apUnused1, void* apUnused2, double& afDestructionStage)
+// pdb: Script::GetDestructionStageConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+bool __cdecl Script_GetDestructionStageConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
-    afDestructionStage = -1.0;
-    if (ref)
-        afDestructionStage = (double)FUN_00477430::GetDestructionStageIndex(ref);
+    afReturnValue = -1.0;
+    if (apRefObject)
+        afReturnValue = (double)FUN_00477430::GetDestructionStageIndex(apRefObject);
     if (g_DebugFlag)
-        _DebugLog("GetDestructionStage >> %.2f", afDestructionStage);
+        _DebugLog("GetDestructionStage >> %.2f", afReturnValue);
     return true;
 }
 
@@ -7255,6 +7585,9 @@ __declspec(thread) unsigned char g_tlsFlag;
 
 // @fnv 0x005a57b0
 // src: XBOX_PDB 0x005a57b0
+// pdb: Script::GetVATSBackTargetVisibleConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: ptargetRef
 bool __cdecl Script_GetVATSBackTargetVisibleConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
     afReturnValue = 0.0;
@@ -7273,7 +7606,7 @@ namespace fnv_005a5840 {
 extern "C" void __cdecl _DebugLog(const char* fmt, ...);
 struct VATSActor
 {
-    double __thiscall Actor_GetVATSTargetVisible(TESObjectREFR* ref, float value);
+    double __thiscall Actor_GetVATSTargetVisible(TESObjectREFR* ref, float afAngle);
     virtual bool v000();
     virtual void v004();
     virtual void v008();
@@ -7344,14 +7677,17 @@ __declspec(thread) bool g_debugFlag = false;
 // Resets result to 0, computes it from ref's VATS visibility check against arg1 when ref is valid, logs it if g_debugFlag is set, and returns true.
 // @fnv 0x005a5840
 // src: XBOX_PDB 0x005a5840
-bool __cdecl Script_GetVATSFrontTargetVisibleConditionFunction(TESObjectREFR* ref, void* pTarget, void* pUnused, double& result)
+// pdb: Script::GetVATSFrontTargetVisibleConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: ptargetRef
+bool __cdecl Script_GetVATSFrontTargetVisibleConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
-    result = 0.0;
-    TESObjectREFR* target = (TESObjectREFR*)pTarget;
-    if (ref && ((VATSActor*)ref)->v100())
-        result = ((VATSActor*)ref)->Actor_GetVATSTargetVisible(target, 0.0f);
+    afReturnValue = 0.0;
+    TESObjectREFR* target = (TESObjectREFR*)apParam1;
+    if (apRefObject && ((VATSActor*)apRefObject)->v100())
+        afReturnValue = ((VATSActor*)apRefObject)->Actor_GetVATSTargetVisible(target, 0.0f);
     if (g_debugFlag)
-        _DebugLog("VATSFrontTargetVisible >> %.2f", result);
+        _DebugLog("VATSFrontTargetVisible >> %.2f", afReturnValue);
     return true;
 }
 }  // namespace fnv_005a5840
@@ -7366,13 +7702,15 @@ extern __declspec(thread) bool _tlsDebugLogEnabled;
 // Sets result to 1.0 when the global bool is 1, logs it if debug logging is enabled, and returns true.
 // @fnv 0x005a5a50
 // src: XBOX_PDB 0x005a5a50
-bool __cdecl Script_IsGoreDisabledConditionFunction(TESObjectREFR* reference, void* apUnused1, void* apUnused2, double& result)
+// pdb: Script::IsGoreDisabledConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+bool __cdecl Script_IsGoreDisabledConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
-    result = 0.0;
+    afReturnValue = 0.0;
     if (*g_011df7f8.Bool() == 1)
-        result = 1.0;
+        afReturnValue = 1.0;
     if (_tlsDebugLogEnabled)
-        _DebugLog("IsGoreDisabled >> %0.2f", result);
+        _DebugLog("IsGoreDisabled >> %0.2f", afReturnValue);
     return true;
 }
 
@@ -7386,7 +7724,10 @@ void _DebugLog(const char* fmt, ...);
 __declspec(thread) unsigned char g_tlsDebugLogEnabled;
 // If apRefObject is an actor, stores its force-hit-reaction value in afReturnValue and optionally logs the actor's full name and value; returns true.
 // @fnv 0x005a5b30
-bool __cdecl GetForceHitReactionCondition(TESObjectREFR* apRefObject, void* apParam1, void* apParam2,
+// src: XBOX_RETAIL_PDB 0x005a5b30
+// pdb: Script::GetForceHitReactionConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+bool __cdecl Script_GetForceHitReactionConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2,
                                           double& afReturnValue)
 {
     if (apRefObject && apRefObject->IsActor())
@@ -7408,13 +7749,15 @@ __declspec(thread) unsigned char g_tlsFlag;
 
 // Stores the player's field value into result, logs it when the TLS flag is set, and returns true.
 // @fnv 0x005a5ff0
-// src: EXE 0x005a5ff0
-bool __cdecl Cmd_IsAlwaysHardcore_Eval(TESObjectREFR* reference, void* arg1, void* arg2, double& result)
+// src: XBOX_RETAIL_PDB 0x005a5ff0 (was EXE)
+// pdb: Script::IsAlwaysHardcoreConditionalFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+bool __cdecl Script_IsAlwaysHardcoreConditionalFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
     if (_g_thePlayer)
-        result = _g_thePlayer->GetField();
+        afReturnValue = _g_thePlayer->GetField();
     if (g_tlsFlag)
-        _DebugLog("GetAlwaysHardcore? >> %f", result);
+        _DebugLog("GetAlwaysHardcore? >> %f", afReturnValue);
     return true;
 }
 }  // namespace fnv_005a5ff0
@@ -7424,16 +7767,20 @@ void __cdecl DebugLog(const char*, ...);
 __declspec(thread) bool g_bDebugLoggingEnabled;
 // Reads the unlocked value from the TESChallenge in arg1 into result, logs it when debug logging is enabled, and returns true.
 // @fnv 0x005a6070
-bool __cdecl GetChallengeUnlockedValue(TESObjectREFR* reference, void* pChallenge, void* pUnused, double& result)
+// src: XBOX_RETAIL_PDB 0x005a6070
+// pdb: Script::ChallengeLockedConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pChallenge
+bool __cdecl Script_ChallengeLockedConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
-    TESChallenge* challenge = static_cast<TESChallenge*>(pChallenge);
+    TESChallenge* challenge = static_cast<TESChallenge*>(apParam1);
     if (challenge)
     {
         int value = challenge->GetUnlocked();
-        result = value;
+        afReturnValue = value;
     }
     if (g_bDebugLoggingEnabled)
-        DebugLog("ChallengeLocked? >> %f", result);
+        DebugLog("ChallengeLocked? >> %f", afReturnValue);
     return true;
 }
 
@@ -7447,17 +7794,20 @@ extern "C" void _DebugLog(const char* fmt, ...);
 // Reads the challenge's completed count into result when a challenge is given, logs it if the TLS flag is set, and returns true.
 // @fnv 0x005a60f0
 // src: XBOX_PDB 0x005a60f0
-bool __cdecl Script_GetChallengeCompletedConditionFunction(TESObjectREFR* reference, void* pChallenge, void* pUnused, double& result)
+// pdb: Script::GetChallengeCompletedConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pChallenge
+bool __cdecl Script_GetChallengeCompletedConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
-    TESChallenge* challenge = static_cast<TESChallenge*>(pChallenge);
+    TESChallenge* challenge = static_cast<TESChallenge*>(apParam1);
     if (challenge)
     {
         int completed = challenge->GetCompleted();
-        result = completed;
+        afReturnValue = completed;
     }
     if (g_tlsFlag[0x268])
     {
-        _DebugLog("ChallengeComplete? >> %f", result);
+        _DebugLog("ChallengeComplete? >> %f", afReturnValue);
     }
     return true;
 }
@@ -7473,10 +7823,13 @@ __declspec(thread) unsigned char g_sDebugLogState[0x268 + 1];
 // Sets result to the reference's inventory count of form 15 (gold), logs it when debug logging is on, and returns true.
 // @fnv 0x0059dbe0
 // src: XBOX_PDB 0x0059dbe0
-bool Script_GetGoldConditionFunction(TESObjectREFR* reference, void* arg1, void* arg2, double& result)
+// pdb: Script::GetGoldConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: ptarget, pform, pobject, pCont, pchange
+bool Script_GetGoldConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
-    result = 0.0;
-    TESObjectREFR* ptarget = reference;
+    afReturnValue = 0.0;
+    TESObjectREFR* ptarget = apRefObject;
     TESForm* pform = (TESForm*)_ref_004839c0(15);
     if (ptarget && pform)
     {
@@ -7487,12 +7840,12 @@ bool Script_GetGoldConditionFunction(TESObjectREFR* reference, void* arg1, void*
             InventoryChanges* pchange = InventoryChanges::CreateForReference(ptarget);
             if (pchange)
             {
-                result = (double)pchange->GetObjectCount(pobject);
+                afReturnValue = (double)pchange->GetObjectCount(pobject);
             }
         }
     }
     if (g_sDebugLogState[0x268])
-        _DebugLog("GetGold >> %0.2f", result);
+        _DebugLog("GetGold >> %0.2f", afReturnValue);
     return true;
 }
 }  // namespace fnv_0059dbe0
@@ -7510,18 +7863,21 @@ extern __declspec(thread) bool g_bDebugLogEnabled;
 
 // Sets result to 1.0 if reference is an actor that is offering services, logs the outcome when debug logging is enabled, and returns true.
 // @fnv 0x005a2af0
-// src: EXE 0x005a2af0
-bool __cdecl Cmd_GetOffersServicesNow_Eval(TESObjectREFR* reference, void* arg1, void* arg2, double& result)
+// src: XBOX_RETAIL_PDB 0x005a2af0 (was EXE)
+// pdb: Script::GetOffersServiceConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pactor
+bool __cdecl Script_GetOffersServiceConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
-    result = 0.0;
+    afReturnValue = 0.0;
     ActorServiceStandIn* actor = 0;
-    if (reference && reference->IsActor())
-        actor = reinterpret_cast<ActorServiceStandIn*>(reference);
+    if (apRefObject && apRefObject->IsActor())
+        actor = reinterpret_cast<ActorServiceStandIn*>(apRefObject);
     if (actor && actor->Actor_OffersServicesPackage())
-        result = 1.0;
+        afReturnValue = 1.0;
     if (g_bDebugLogEnabled)
     {
-        if (result != 0.0)
+        if (afReturnValue != 0.0)
             _DebugLog("%s  is offering services", reinterpret_cast<MobileObject*>(actor)->GetFullName());
         else
             _DebugLog("%s is not offering services", reinterpret_cast<MobileObject*>(actor)->GetFullName());
@@ -7547,17 +7903,20 @@ const char* __cdecl GetFullName(void* form);
 // Stores the actor's hit count from its extra data into result and, in debug mode, logs the player, actor and count.
 // @fnv 0x005a30c0
 // src: XBOX_PDB 0x005a30c0
-bool __cdecl Script_GetFriendHitConditionFunction(TESObjectREFR* reference, void* apUnused1, void* apUnused2, double& adHitCount)
+// pdb: Script::GetFriendHitConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pact
+bool __cdecl Script_GetFriendHitConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
-    adHitCount = 0.0;
+    afReturnValue = 0.0;
     Actor* actor = 0;
-    if (reference && reference->IsActor())
-        actor = (Actor*)reference;
+    if (apRefObject && apRefObject->IsActor())
+        actor = (Actor*)apRefObject;
     if (!actor)
         return true;
-    adHitCount = (double)ExtraDataList_GetFriendHitCount(((TESObjectREFR*)actor)->GetExtraData());
+    afReturnValue = (double)ExtraDataList_GetFriendHitCount(((TESObjectREFR*)actor)->GetExtraData());
     if (FUN_005a30c0_tlsVar.bDebug)
-        _DebugLog("%s has hit %s %0.2f times", GetFullName(g_thePlayer), GetFullName(actor), adHitCount);
+        _DebugLog("%s has hit %s %0.2f times", GetFullName(g_thePlayer), GetFullName(actor), afReturnValue);
     return true;
 }
 }  // namespace fnv_005a30c0
@@ -7685,12 +8044,14 @@ struct FUN_0059c4c0_VTable
 
 // Sets result to 0.0, then to 1.0 if reference is non-null and its virtual f116 returns nonzero; always returns true.
 // @fnv 0x0059c4c0
-// src: EXE 0x0059c4c0
-bool __cdecl Cmd_HasLoaded3D_Eval(TESObjectREFR* reference, void* apUnused1, void* apUnused2, double& result)
+// src: XBOX_RETAIL_PDB 0x0059c4c0 (was EXE)
+// pdb: Script::HasLoaded3DConditionFunction | TESConditionFunctions.obj | retail, object-file gap fill, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+bool __cdecl Script_HasLoaded3DConditionFunction(TESObjectREFR* reference, void* apParam1, void* apParam2, double& afReturnValue)
 {
-    result = 0.0;
+    afReturnValue = 0.0;
     if (reference && reinterpret_cast<FUN_0059c4c0_VTable*>(reference)->f116())
-        result = 1.0;
+        afReturnValue = 1.0;
     return true;
 }
 
@@ -7783,6 +8144,9 @@ extern __declspec(thread) FUN_0059c5d0_TLSData FUN_0059c5d0_TLSData;
 // If apRefObject is an actor, stores its base actor value for the given index in afReturnValue and logs it when TLS logging is enabled; returns true.
 // @fnv 0x0059c5d0
 // src: XBOX_PDB 0x0059c5d0
+// pdb: Script::GetBaseActorValueConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pActor, iActorValueIndex
 bool __cdecl Script_GetBaseActorValueConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
     int iActorValueIndex = reinterpret_cast<unsigned int>(apParam1);
@@ -7954,6 +8318,9 @@ __declspec(thread) FUN_0059c760_tls DAT_0059c760_tls;
 // If apRefObject is an Actor, stores its fatigue percentage in afReturnValue and logs it when TLS logging is enabled; returns true.
 // @fnv 0x0059c760
 // src: XBOX_PDB 0x0059c760
+// pdb: Script::GetFatiguePercentageConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pActor
 bool __cdecl Script_GetFatiguePercentageConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
     Actor* pActor;
@@ -8253,25 +8620,28 @@ static __declspec(thread) FUN_0059c860_TLSData DAT_0059c864;
 // If reference is an Actor, stores its walk speed in result and optionally logs it via _DebugLog; always returns true.
 // @fnv 0x0059c860
 // src: XBOX_PDB 0x0059c860
-bool __cdecl Script_GetWalkSpeedConditionFunction(TESObjectREFR* reference, void* apUnused1, void* apUnused2, double& result)
+// pdb: Script::GetWalkSpeedConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pActor
+bool __cdecl Script_GetWalkSpeedConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
     Actor* pActor = 0;
 
-    if (reference)
+    if (apRefObject)
     {
-        if (reinterpret_cast<FUN_0059c860_VirtualHelper*>(reference)->f064())
+        if (reinterpret_cast<FUN_0059c860_VirtualHelper*>(apRefObject)->f064())
         {
-            pActor = reinterpret_cast<Actor*>(reference);
+            pActor = reinterpret_cast<Actor*>(apRefObject);
         }
     }
 
     if (pActor)
     {
-        result = reinterpret_cast<Actor*>(pActor)->GetWalkSpeed();
+        afReturnValue = reinterpret_cast<Actor*>(pActor)->GetWalkSpeed();
 
         if (DAT_0059c864.enabled)
         {
-            _DebugLog("GetWalkSpeed >> %0.2f", result);
+            _DebugLog("GetWalkSpeed >> %0.2f", afReturnValue);
         }
     }
 
@@ -8310,6 +8680,9 @@ extern unsigned int __tls_index;
 
 // Declares the thread-local data block for this function, with a byte flag at offset 0x268.
 // @fnv 0x0059d100
+// pdb: Script::GetLockLevelConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pLock, pterminal
 __declspec(thread) struct FUN_0059d100_TLS_DATA
 {
     unsigned char padding[0x268];
@@ -8317,18 +8690,18 @@ __declspec(thread) struct FUN_0059d100_TLS_DATA
 } FUN_0059d100_tls_data;
 
 // src: XBOX_PDB 0x0059d100
-bool __cdecl Script_GetLockLevelConditionFunction(TESObjectREFR* reference, void* param1, void* param2, double& result)
+bool __cdecl Script_GetLockLevelConditionFunction(TESObjectREFR* reference, void* apParam1, void* apParam2, double& afReturnValue)
 {
     LockExtraData* pLock;
 
-    result = 0.0;
+    afReturnValue = 0.0;
 
     if (reference != 0)
     {
         pLock = reinterpret_cast<P01RefA*>(reference)->GetLock();
         if (pLock != 0)
         {
-            result = pLock->GetLevel(reference);
+            afReturnValue = pLock->GetLevel(reference);
         }
         else
         {
@@ -8341,11 +8714,11 @@ bool __cdecl Script_GetLockLevelConditionFunction(TESObjectREFR* reference, void
 
                 if (pterminal->BGSTerminal_IsUnlocked_00501ae0(reference))
                 {
-                    result = -1.0;
+                    afReturnValue = -1.0;
                 }
                 else
                 {
-                    result = pterminal->BGSTerminal_GetHackDifficultyLockLevel(reference);
+                    afReturnValue = pterminal->BGSTerminal_GetHackDifficultyLockLevel(reference);
                 }
             }
         }
@@ -8353,7 +8726,7 @@ bool __cdecl Script_GetLockLevelConditionFunction(TESObjectREFR* reference, void
 
     if (FUN_0059d100_tls_data.enabled)
     {
-        _DebugLog("GetLockLevel >> %0.f", result);
+        _DebugLog("GetLockLevel >> %0.f", afReturnValue);
     }
 
     return true;
@@ -8365,6 +8738,8 @@ bool __cdecl Script_SameSexConditionFunction(TESObjectREFR*, void*, void*, doubl
 
 // @fnv 0x0059d3e0
 // src: EXE 0x0059d3e0
+// pdb: Script::SameSexAsPCConditionFunction | TESConditionFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
 bool __cdecl Cmd_SameSexAsPC_Eval(TESObjectREFR* reference, void* arg1, void* arg2, double& result)
 {
     return Script_SameSexConditionFunction(reference, _g_thePlayer, 0, result);
@@ -8387,6 +8762,9 @@ __declspec(thread) bool bDebug;
 // Sets afReturnValue to 1.0 when both references resolve to TESNPCs sharing the same race, otherwise 0.0, and logs the result if bDebug is set.
 // @fnv 0x0059d540
 // src: XBOX_PDB 0x0059d540
+// pdb: Script::SameRaceConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pnpc1, pnpc2
 bool __cdecl Script_SameRaceConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
     afReturnValue = 0.0;
@@ -8504,6 +8882,9 @@ extern __declspec(thread) unsigned char FUN_0059e510_tls[0x269];
 
 // @fnv 0x0059e510
 // src: XBOX_PDB 0x0059e510
+// pdb: Script::GetFactionRankDifferenceConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pactorbase1, pact, pactorbase2, pfac, pacttar, irank1, irank2
 bool __cdecl Script_GetFactionRankDifferenceConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
     int pactorbase1;
@@ -8640,6 +9021,9 @@ struct FUN_0059e650_Actor : FUN_0059e650_VTableBase
 
 // @fnv 0x0059e650
 // src: XBOX_PDB 0x0059e650
+// pdb: Script::GetAlarmedConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pactor
 bool __cdecl Script_GetAlarmedConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
     Actor* pactor;
@@ -8689,6 +9073,9 @@ void __cdecl _DebugLog(const char* format, ...);
 // Returns 1.0 in afReturnValue if apRefObject is a TESWeather matching the Sky instance's current weather, otherwise 0.0; logs the result when enabled.
 // @fnv 0x0059ebb0
 // src: XBOX_PDB 0x0059ebb0
+// pdb: Script::GetIsCurrentWeatherConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pweather
 bool __cdecl Script_GetIsCurrentWeatherConditionFunction(void* apParam1, TESObjectREFR* apRefObject, void* apParam2, double& afReturnValue)
 {
     TESWeather* pweather;
@@ -9873,6 +10260,9 @@ struct FUN_0059ec30Actor : public FUN_0059ec30Base
 // If apRefObject is an actor, stores its d220() value into afReturnValue, optionally debug-logs it, and returns true.
 // @fnv 0x0059ec30
 // src: XBOX_PDB 0x0059ec30
+// pdb: Script::GetAttackedConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pactor
 bool __cdecl Script_GetAttackedConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
     Actor* pactor = 0;
@@ -9910,6 +10300,9 @@ void __cdecl _DebugLog(const char* format, double value);
 // Sets afReturnValue to 1.0 when apRefObject's TESNPC has the same TESClass as apParam1, logs the result if TLS flag 0x268 is set, and returns true.
 // @fnv 0x0059f180
 // src: XBOX_PDB 0x0059f180
+// pdb: Script::GetIsClassConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pnpc, pclass
 bool __cdecl Script_GetIsClassConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
     afReturnValue = 0.0;
@@ -9958,6 +10351,9 @@ __declspec(thread) FUN_0059f240_ThreadLocal FUN_0059f240_ThreadLocalData;
 // Sets afReturnValue to 1.0 if apRefObject's TESNPC race matches apParam1's TESRace, else 0.0, and logs the result when thread-local logging is enabled.
 // @fnv 0x0059f240
 // src: XBOX_PDB 0x0059f240
+// pdb: Script::GetIsRaceConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pnpc, prace
 bool __cdecl Script_GetIsRaceConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
     afReturnValue = 0.0;
@@ -10005,6 +10401,9 @@ extern __declspec(thread) unsigned char g_bDebugLog;
 // Sets afReturnValue to 1.0 if apRefObject's next form is a creature whose creature type equals apParam1, else 0.0, and logs the result when g_bDebugLog is set.
 // @fnv 0x0059f300
 // src: XBOX_PDB 0x0059f300
+// pdb: Script::GetIsCreatureTypeConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pcreature, itype
 bool __cdecl Script_GetIsCreatureTypeConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
     TESCreature* pcreature;
@@ -10113,8 +10512,11 @@ struct TESObjectREFRVirtualHelper
 void __cdecl _DebugLog(const char* format, double value);
 
 // @fnv 0x005a0260
-// src: EXE 0x005a0260
-bool __cdecl Cmd_GetIsAlerted_Eval(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
+// src: XBOX_RETAIL_PDB 0x005a0260 (was EXE)
+// pdb: Script::GetAlertConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pactor
+bool __cdecl Script_GetAlertConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
     afReturnValue = 0.0;
 
@@ -10173,23 +10575,26 @@ struct TLSData
 __declspec(thread) TLSData g_tlsData;
 
 NiFixedString* __cdecl FixedStrings_QBip01Spine(void);
-bool __cdecl bhkNiCollisionObject_GetFaceUp(NiAVObject* object, int unused);
+bool __cdecl bhkNiCollisionObject_GetFaceUp(NiAVObject* apRoot, int apName);
 void __cdecl _DebugLog(char const* format, double value);
 
 // Sets result to 1.0 when the reference is an actor whose spine node is missing or passes FUN_00c6b7b0, logs it if TLS enabled, and returns true.
 // @fnv 0x005a0710
 // src: XBOX_PDB 0x005a0710
-bool Script_IsFacingUpConditionFunction(TESObjectREFR* reference, void* arg1, void* arg2, double& result)
+// pdb: Script::IsFacingUpConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pactor, proot, p3d
+bool Script_IsFacingUpConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
     Actor* pactor;
 
-    result = 0.0;
+    afReturnValue = 0.0;
     pactor = 0;
 
-    if (reference)
+    if (apRefObject)
     {
-        if (reference->IsActor())
-            pactor = reinterpret_cast<Actor*>(reference);
+        if (apRefObject->IsActor())
+            pactor = reinterpret_cast<Actor*>(apRefObject);
     }
 
     if (pactor)
@@ -10204,11 +10609,11 @@ bool Script_IsFacingUpConditionFunction(TESObjectREFR* reference, void* arg1, vo
             p3d4 = reinterpret_cast<TESObjectREFR_AnimationExt*>(pactor)->TESObjectREFR_GetActorBone(reinterpret_cast<NiNode*>(proot), "Bip01 Spine01");
 
         if (!p3d4 || bhkNiCollisionObject_GetFaceUp(p3d4, 0))
-            result = 1.0;
+            afReturnValue = 1.0;
     }
 
     if (g_tlsData.enabled)
-        _DebugLog("Is Facing Up >> %0.2f", result);
+        _DebugLog("Is Facing Up >> %0.2f", afReturnValue);
 
     return true;
 }
@@ -10310,6 +10715,9 @@ extern __declspec(thread) bool g_bIsLeftUp;
 
 // @fnv 0x005a0800
 // src: XBOX_PDB 0x005a0800
+// pdb: Script::IsLeftUpConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pactor, proot, p3d
 bool __cdecl Script_IsLeftUpConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
     int pactor;
@@ -10701,6 +11109,9 @@ extern __declspec(thread) unsigned char DAT_tls_data[0x269];
 
 // @fnv 0x005a09b0
 // src: XBOX_PDB 0x005a09b0
+// pdb: Script::GetWeaponAnimTypeConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pactor, pweapdata, pweap
 bool __cdecl Script_GetWeaponAnimTypeConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
     Actor* pactor;
@@ -11030,9 +11441,12 @@ struct FUN_005a1900_VTable
 // Sets result to 1.0 if the reference is an Actor whose Probe274 check passes, otherwise 0.0, and logs the value when the TLS debug flag is set.
 // @fnv 0x005a1900
 // src: XBOX_PDB 0x005a1900
-bool __cdecl Script_IsTrespassingConditionFunction(TESObjectREFR* reference, void* apUnused1, void* apUnused2, double& result)
+// pdb: Script::IsTrespassingConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pactor
+bool __cdecl Script_IsTrespassingConditionFunction(TESObjectREFR* reference, void* apUnused1, void* apUnused2, double& afReturnValue)
 {
-    result = 0.0;
+    afReturnValue = 0.0;
 
     Actor* pactor = 0;
 
@@ -11048,13 +11462,13 @@ bool __cdecl Script_IsTrespassingConditionFunction(TESObjectREFR* reference, voi
     {
         if (reinterpret_cast<FUN_005a1900_VTable*>(pactor)->Probe274())
         {
-            result = 1.0;
+            afReturnValue = 1.0;
         }
     }
 
     if (FUN_005a1900_tls[0x268] != 0)
     {
-        _DebugLog("Is Trespassing Value %0.2f", result);
+        _DebugLog("Is Trespassing Value %0.2f", afReturnValue);
     }
 
     return true;
@@ -11329,6 +11743,9 @@ __declspec(thread) bool bConditionFunctionDebug;
 
 // @fnv 0x005a1a40
 // src: XBOX_PDB 0x005a1a40
+// pdb: Script::IsContinuingPackagePCNearConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pactor
 bool __cdecl Script_IsContinuingPackagePCNearConditionFunction(TESObjectREFR* apRefObject, void*, void*, double& afReturnValue)
 {
     afReturnValue = 0.0;
@@ -11370,6 +11787,9 @@ __declspec(thread) FUN_005a1ad0_ThreadData g_FUN_005a1ad0_ThreadData;
 
 // @fnv 0x005a1ad0
 // src: XBOX_PDB 0x005a1ad0
+// pdb: Script::CanHaveFlamesConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pextra, pbsx
 bool __cdecl Script_CanHaveFlamesConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
     NiExtraData* pExtraData;
@@ -11396,11 +11816,11 @@ bool __cdecl Script_CanHaveFlamesConditionFunction(TESObjectREFR* apRefObject, v
 
 struct ConditionActorDetection : Actor
 {
-    int Actor_GetDetectionLevelValue(Actor* target);
+    int Actor_GetDetectionLevelValue(Actor* apActor);
 };
 
 // src: XBOX_PDB 0x008a81e0
-int ConditionActorDetection::Actor_GetDetectionLevelValue(Actor* target)
+int ConditionActorDetection::Actor_GetDetectionLevelValue(Actor* apActor)
 {
     return 0;
 }
@@ -11424,6 +11844,9 @@ __declspec(thread) unsigned char g_tlsDebugEnabled[0x269];
 
 // @fnv 0x005a1ee0
 // src: XBOX_PDB 0x005a1ee0
+// pdb: Script::GetDetectionLevelConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pActor, pTarget
 bool __cdecl Script_GetDetectionLevelConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
     afReturnValue = 0.0;
@@ -11463,6 +11886,9 @@ extern void __cdecl _DebugLog(char const*, ...);
 // Sets afReturnValue to 1.0 when apRefObject is an actor whose FUN_005a2030 returns true, logs the result if the TLS flag is set, and returns true.
 // @fnv 0x005a1fa0
 // src: XBOX_PDB 0x005a1fa0
+// pdb: Script::IsSwimmingConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pact
 bool __cdecl Script_IsSwimmingConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
     afReturnValue = 0.0;
@@ -11496,20 +11922,23 @@ void __cdecl _DebugLog(const char*, ...);
 
 // @fnv 0x005a2440
 // src: XBOX_PDB 0x005a2440
-bool __cdecl Script_IsSpellTargetConditionFunction(TESObjectREFR* reference, void* apMagicItem, void* apUnused, double& result)
+// pdb: Script::IsSpellTargetConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pmagicItem, pactor
+bool __cdecl Script_IsSpellTargetConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
     Actor* pactorTarget;
 
-    result = 0.0;
+    afReturnValue = 0.0;
     pactorTarget = 0;
 
-    if (reference && reference->IsActor())
+    if (apRefObject && apRefObject->IsActor())
     {
-        pactorTarget = reinterpret_cast<Actor*>(reference);
+        pactorTarget = reinterpret_cast<Actor*>(apRefObject);
     }
 
     {
-        MagicItem* pmagicItem = reinterpret_cast<MagicItem*>(apMagicItem);
+        MagicItem* pmagicItem = reinterpret_cast<MagicItem*>(apParam1);
         // TESObjectREFR::Unk_67 is the virtual magic-target getter, but the
         // shared declaration currently returns void. Keep its original slot.
         typedef MagicTarget* (__thiscall* GetMagicTargetFunction)(Actor*);
@@ -11518,13 +11947,13 @@ bool __cdecl Script_IsSpellTargetConditionFunction(TESObjectREFR* reference, voi
             reinterpret_cast<GetMagicTargetFunction>((*reinterpret_cast<void***>(pactorTarget))[103])(pactorTarget)
                 ->HasSpell(pmagicItem, true))
         {
-            result = 1.0;
+            afReturnValue = 1.0;
         }
     }
 
     if (tlsData.debugEnabled)
     {
-        _DebugLog("Is Spell Target >> %0.2f", result);
+        _DebugLog("Is Spell Target >> %0.2f", afReturnValue);
     }
 
     return true;
@@ -11611,8 +12040,11 @@ extern int __tls_index;
 extern void __cdecl _DebugLog(const char*, ...);
 
 // @fnv 0x005a24f0
-// src: EXE 0x005a24f0
-bool __cdecl Cmd_GetSpellUsageNum_Eval(TESObjectREFR* reference, void* pMagicItem, void* pUnused, double& result)
+// src: XBOX_RETAIL_PDB 0x005a24f0 (was EXE)
+// pdb: Script::GetSpellUsageNumberConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pmagicItem, pactor
+bool __cdecl Script_GetSpellUsageNumberConditionFunction(TESObjectREFR* reference, void* pMagicItem, void* pUnused, double& result)
 {
     Actor* pactor;
 
@@ -11639,10 +12071,10 @@ bool __cdecl Cmd_GetSpellUsageNum_Eval(TESObjectREFR* reference, void* pMagicIte
 
 struct TESObjectREFR_GetAction : TESObjectREFR
 {
-    bool GetAction(int action);
+    bool GetAction(int type);
 };
 
-bool TESObjectREFR_GetAction::GetAction(int action)
+bool TESObjectREFR_GetAction::GetAction(int type)
 {
     return false;
 }
@@ -11650,6 +12082,8 @@ bool TESObjectREFR_GetAction::GetAction(int action)
 // Returns false if apRefObject is null; otherwise sets afReturnValue to 1.0 when GetAction(8) succeeds, else 0.0, and returns true.
 // @fnv 0x005a27e0
 // src: XBOX_PDB 0x005a27e0
+// pdb: Script::GetDefaultOpenConditionFunction | TESConditionFunctions.obj | retail, upstream name already matches, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
 bool __cdecl Script_GetDefaultOpenConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
     if (apRefObject == 0)
@@ -11665,15 +12099,18 @@ bool __cdecl Script_GetDefaultOpenConditionFunction(TESObjectREFR* apRefObject, 
 // If reference is non-null and passes the virtual check at vtable offset 0x40, stores it in actor; sets result to 0.0 and returns true.
 // @fnv 0x005a2c30
 // src: XBOX_PDB 0x005a2c30
-bool __cdecl Script_IsActorUsingATorchConditionFunction(TESObjectREFR* reference, void* arg1, void* arg2, double& result)
+// pdb: Script::IsActorUsingATorchConditionFunction | TESConditionFunctions.obj | retail, upstream name already matches, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pactor
+bool __cdecl Script_IsActorUsingATorchConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
     TESObjectREFR* actor = 0;
-    if (reference &&
-        reinterpret_cast<bool(__thiscall*)(TESObjectREFR*)>(reinterpret_cast<void***>(reference)[0][0x40])(reference))
+    if (apRefObject &&
+        reinterpret_cast<bool(__thiscall*)(TESObjectREFR*)>(reinterpret_cast<void***>(apRefObject)[0][0x40])(apRefObject))
     {
-        actor = reference;
+        actor = apRefObject;
     }
-    result = 0.0;
+    afReturnValue = 0.0;
     return true;
 }
 
@@ -11691,18 +12128,21 @@ struct FUN_005a2ed0_TLSData
 extern __declspec(thread) FUN_005a2ed0_TLSData FUN_005a2ed0_TLSData;
 
 // @fnv 0x005a2ed0
-// src: EXE 0x005a2ed0
-bool __cdecl Cmd_IsCellOwner_Eval(TESObjectREFR* reference, void* arg1, void* arg2, double& result)
+// src: XBOX_RETAIL_PDB 0x005a2ed0 (was EXE)
+// pdb: Script::GetCellOwnershipConditionFunction | TESConditionFunctions.obj | retail, object-file run extension, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pcell, powner
+bool __cdecl Script_GetCellOwnershipConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
-    TESObjectCELL* m_pSourceCell = static_cast<TESObjectCELL*>(arg1);
-    TESForm* pOwner = static_cast<TESForm*>(arg2);
+    TESObjectCELL* m_pSourceCell = static_cast<TESObjectCELL*>(apParam1);
+    TESForm* pOwner = static_cast<TESForm*>(apParam2);
 
     if (m_pSourceCell->GetOwner() == pOwner)
-        result = 1.0;
+        afReturnValue = 1.0;
 
     if (FUN_005a2ed0_TLSData.value)
     {
-        if (result != 0.0)
+        if (afReturnValue != 0.0)
             _DebugLog("%s is the owner", TESFullName_GetFullName(pOwner));
         else
             _DebugLog("%s is not the owner", TESFullName_GetFullName(pOwner));
@@ -11789,8 +12229,11 @@ struct FUN_005a3670_Probe : public FUN_005a3670_ProbeBase
 
 // Zeroes afReturnValue, then sets pactor to apRefObject if it is non-null and its V64() check passes; always returns true.
 // @fnv 0x005a3670
-// src: EXE 0x005a3670
-bool Cmd_IsRidingHorse_Eval(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
+// src: XBOX_RETAIL_PDB 0x005a3670 (was EXE)
+// pdb: Script::IsActorRidingHorseConditionFunction | TESConditionFunctions.obj | retail, object-file run extension, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pactor
+bool Script_IsActorRidingHorseConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
     afReturnValue = 0.0;
     Actor* pactor = 0;
@@ -11989,6 +12432,9 @@ class FUN_005a3a30_Object : public FUN_005a3a30_ObjectBase
 
 // @fnv 0x005a3a30
 // src: XBOX_PDB 0x005a3a30
+// pdb: Script::GetTimeDeadConditionFunction | TESConditionFunctions.obj | retail, upstream name already matches, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pactor, fdeadtime, fcurrtime
 bool Script_GetTimeDeadConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double* afReturnValue)
 {
     Actor* pactor;
@@ -12029,6 +12475,9 @@ int __fastcall TESObjectREFR_GetLastHitLimb(int thisPointer);
 
 // @fnv 0x005a3e10
 // src: XBOX_PDB 0x005a3e10
+// pdb: Script::GetKillingBlowLimbConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pactor
 bool __cdecl Script_GetKillingBlowLimbConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
     afReturnValue = -1.0;
@@ -12195,8 +12644,11 @@ struct FUN_005a3f00_Proxy
 };
 
 // @fnv 0x005a3f00
-// src: EXE 0x005a3f00
-bool __cdecl Cmd_IsKiller_Eval(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double* afReturnValue)
+// src: XBOX_RETAIL_PDB 0x005a3f00 (was EXE)
+// pdb: Script::GetKillerConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pactor, pact
+bool __cdecl Script_GetKillerConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double* afReturnValue)
 {
     Actor* pactor;
     Actor* pact;
@@ -12243,16 +12695,19 @@ struct ScriptFactionSubAccess
 
 // If both the script and faction are non-null, stores the faction's combat reaction value into result and returns true.
 // @fnv 0x005a4090
-// src: EXE 0x005a4090
-bool __cdecl Cmd_GetFactionCombatReaction_Eval(TESObjectREFR* reference, void* pScript, void* pFaction, double& result)
+// src: XBOX_RETAIL_PDB 0x005a4090 (was EXE)
+// pdb: Script::GetFactionCombatReactionConditionFunction | TESConditionFunctions.obj | retail, object-file run extension, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pFaction, pFactionTarget
+bool __cdecl Script_GetFactionCombatReactionConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
-    ScriptFactionSubAccess* script = reinterpret_cast<ScriptFactionSubAccess*>(pScript);
-    TESForm* faction = reinterpret_cast<TESForm*>(pFaction);
+    ScriptFactionSubAccess* script = reinterpret_cast<ScriptFactionSubAccess*>(apParam1);
+    TESForm* faction = reinterpret_cast<TESForm*>(apParam2);
 
     if (faction && script)
     {
         int combatReaction = script->factionSub.FUN_0048c1b0(faction);
-        result = combatReaction;
+        afReturnValue = combatReaction;
     }
 
     return true;
@@ -12411,6 +12866,9 @@ void __cdecl _DebugLog(const char* format, ...);
 // Sets afReturnValue to the major crime count of apRefObject (via the player's own state or FUN_008b7f00) and logs it when debug logging is enabled; returns true.
 // @fnv 0x005a4b60
 // src: XBOX_PDB 0x005a4b60
+// pdb: Script::GetMajorCrimeCountConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pactor
 bool __cdecl Script_GetMajorCrimeCountConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
     Actor* pactor;
@@ -12456,6 +12914,9 @@ extern FUN_0089f4e0_shell* _g_thePlayer;
 
 // Sets result to 1.0 when arg1 equals the player reference, otherwise leaves it at 0.0, and returns true.
 // @fnv 0x005a4c20
+// pdb: Script::IsPlayerGrabbedRefConditionFunction | TESConditionFunctions.obj | debug, call graph, medium
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pref
 bool IsPlayerReference(TESObjectREFR* reference, void* apReference, void* apUnused, double& result)
 {
     TESObjectREFR* ref;
@@ -12626,6 +13087,9 @@ static __declspec(thread) FUN_005a53e0_tls_data FUN_005a53e0_tls;
 // Sets afReturnValue to 1.0 if apRefObject blocks post-anim and its check against apParam1 succeeds, logs the result, and returns true.
 // @fnv 0x005a53e0
 // src: XBOX_PDB 0x005a53e0
+// pdb: Script::IsCombatTargetConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pact
 bool Script_IsCombatTargetConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
     afReturnValue = 0.0;
@@ -12655,12 +13119,15 @@ __declspec(thread) unsigned char FUN_005a5460_tlsData[0x269];
 
 struct ConditionActorVATSArea : Actor
 {
-    float Actor_GetVATSAreaFree(TESObjectREFR* target, float value);
+    float Actor_GetVATSAreaFree(TESObjectREFR* apTarget, float afAngle);
 };
 
 // Computes a value from apRefObject against apParam1, stores it in afReturnValue, logs it when the TLS flag is set, and returns true.
 // @fnv 0x005a5460
 // src: XBOX_PDB 0x005a5460
+// pdb: Script::GetVATSRightAreaFreeConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: ptargetRef
 bool __cdecl Script_GetVATSRightAreaFreeConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
     TESObjectREFR* ptargetRef;
@@ -12753,7 +13220,7 @@ struct FUN_005a54f0_Object
 
 struct FUN_008bd830_Caller
 {
-    float Actor_GetVATSAreaFree(TESObjectREFR* target, float value);
+    float Actor_GetVATSAreaFree(TESObjectREFR* apTarget, float afAngle);
 };
 
 void __cdecl _DebugLog(const char* format, double value);
@@ -12761,6 +13228,9 @@ void __cdecl _DebugLog(const char* format, double value);
 // Computes the left-area-free value for the reference via FUN_008bd830 with 4.71238899f, stores it in afReturnValue, optionally logs it, and returns true.
 // @fnv 0x005a54f0
 // src: XBOX_PDB 0x005a54f0
+// pdb: Script::GetVATSLeftAreaFreeConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: ptargetRef
 bool __cdecl Script_GetVATSLeftAreaFreeConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
     TESObjectREFR* ptargetRef;
@@ -12862,6 +13332,9 @@ struct VirtualActor
 // Computes the front-area-free value for apRefObject against ptargetRef, stores it in afReturnValue, optionally logs it, and returns true.
 // @fnv 0x005a5610
 // src: XBOX_PDB 0x005a5610
+// pdb: Script::GetVATSFrontAreaFreeConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: ptargetRef
 bool __cdecl Script_GetVATSFrontAreaFreeConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
     TESObjectREFR* ptargetRef;
@@ -12896,6 +13369,9 @@ static __declspec(thread) FUN_005a5720_TLS FUN_005a5720_tls;
 // Computes a value for apRefObject against apParam1 at 4.712389 radians, stores it in afReturnValue, logs it when TLS enabled, and returns true.
 // @fnv 0x005a5720
 // src: XBOX_PDB 0x005a5720
+// pdb: Script::GetVATSLeftTargetVisibleConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: ptargetRef
 bool __cdecl Script_GetVATSLeftTargetVisibleConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
     afReturnValue = 0.0;
@@ -12948,6 +13424,9 @@ unsigned short ActorLevelAccess::GetLevel()
 // Returns true and sets afReturnValue to the XP still needed for the next level, or 0 when the player is already at max level.
 // @fnv 0x005a58c0
 // src: XBOX_PDB 0x005a58c0
+// pdb: Script::GetXPForNextLevelConditionFunction | TESConditionFunctions.obj | retail, upstream name already matches, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: iplayerLevel, inextThreshold, icurrentXP
 bool __cdecl Script_GetXPForNextLevelConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
     int iplayerLevel;
@@ -12968,7 +13447,7 @@ bool __cdecl Script_GetXPForNextLevelConditionFunction(TESObjectREFR* apRefObjec
 
     icurrentXP =
         reinterpret_cast<PlayerStatAccess*>(reinterpret_cast<unsigned char*>(_g_thePlayer) + 0xa4)->GetStat(0x18);
-    inextThreshold = ActorValueUtility_tesconditionfunctions::ConvertActorValue(iplayerLevel + 1);
+    inextThreshold = ActorValueUtility_tesconditionfunctions::GamePlayFormulas_GetRequiredExperiencePoints(iplayerLevel + 1);
     afReturnValue = inextThreshold - icurrentXP;
 
     if (g_005a58c0_tlsFlag)
@@ -13202,6 +13681,9 @@ struct FUN_005a59a0_actor_view
 // Sets afReturnValue to 1.0 if apRefObject is an Actor whose GetIgnoreCrime is true, logs the result, and returns true.
 // @fnv 0x005a59a0
 // src: XBOX_PDB 0x005a59a0
+// pdb: Script::GetIgnoreCrimeConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pactor
 bool __cdecl Script_GetIgnoreCrimeConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
     Actor* pactor;
@@ -13243,9 +13725,12 @@ extern void __cdecl LogPositionCondition(const char* message, ...);
 
 // @fnv 0x0059c230
 // src: XBOX_PDB 0x0059c230
-bool __cdecl Script_GetStartingPosConditionFunction(FNVPositionReference* reference, int coordinate, void* unused, double& result)
+// pdb: Script::GetStartingPosConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: iAxis, pos
+bool __cdecl Script_GetStartingPosConditionFunction(FNVPositionReference* reference, int apParam1, void* apParam2, double& afReturnValue)
 {
-    int iCoordinate = coordinate;
+    int iCoordinate = apParam1;
     if (reference != 0)
     {
         FNVPosition3 position;
@@ -13253,17 +13738,17 @@ bool __cdecl Script_GetStartingPosConditionFunction(FNVPositionReference* refere
         switch (iCoordinate)
         {
         case 'X':
-            result = position.x;
+            afReturnValue = position.x;
             break;
         case 'Y':
-            result = position.y;
+            afReturnValue = position.y;
             break;
         case 'Z':
-            result = position.z;
+            afReturnValue = position.z;
             break;
         }
         if (gTracePositionConditions)
-            LogPositionCondition("GetStartingPos: %c >> %0.2f", iCoordinate, result);
+            LogPositionCondition("GetStartingPos: %c >> %0.2f", iCoordinate, afReturnValue);
     }
     return true;
 }
@@ -13300,12 +13785,14 @@ extern __declspec(thread) AudioTlsState g_threadData;
 // Sets result to 0.0, logs an unimplemented GetDisease message when thread debug output is enabled, and returns true.
 // @fnv 0x0059d250
 // src: XBOX_PDB 0x0059d250
-bool __cdecl Script_GetDiseaseConditionFunction(TESObjectREFR* reference, void* arg1, void* arg2, double& result)
+// pdb: Script::GetDiseaseConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+bool __cdecl Script_GetDiseaseConditionFunction(TESObjectREFR* reference, void* apParam1, void* apParam2, double& afReturnValue)
 {
-    result = 0.0;
+    afReturnValue = 0.0;
     if (g_threadData.bDebugOutput)
     {
-        DebugLog("UNIMPLEMENTED: GetDisease >> %0.2f", result);
+        DebugLog("UNIMPLEMENTED: GetDisease >> %0.2f", afReturnValue);
     }
     return true;
 }
@@ -13316,16 +13803,18 @@ void __cdecl DebugLog(char const*, ...);
 
 // @fnv 0x0059d2a0
 // src: XBOX_PDB 0x0059d2a0
-bool __cdecl Script_GetVampireConditionFunction(TESObjectREFR* reference, void* apUnused1, void* apUnused2, double& result)
+// pdb: Script::GetVampireConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+bool __cdecl Script_GetVampireConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
-    result = 0.0;
-    if (reference && reference->IsActor() && reinterpret_cast<ConditionBipedModelForm*>(reference)->IsLoading())
+    afReturnValue = 0.0;
+    if (apRefObject && apRefObject->IsActor() && reinterpret_cast<ConditionBipedModelForm*>(apRefObject)->IsLoading())
     {
-        result = 1.0;
+        afReturnValue = 1.0;
     }
     if (g_bShowConditionDebug)
     {
-        DebugLog("GetVampire >> %0.2f", result);
+        DebugLog("GetVampire >> %0.2f", afReturnValue);
     }
     return true;
 }
@@ -13337,13 +13826,16 @@ extern const char str_010351ec[];
 void __cdecl Interface_PrintLine(const char*, double);
 // Reads the sky state, writes 1.0 or 0.0 to output depending on FUN_0059ea80, logs it when tlsBytes[0x268] is set, and returns true.
 // @fnv 0x0059ea10
-// src: EXE 0x0059ea10
-bool __cdecl Cmd_IsSnowing_Eval(int first, int second, int third, double* output)
+// src: XBOX_RETAIL_PDB 0x0059ea10 (was EXE)
+// pdb: Script::GetIsSnowingConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pSky
+bool __cdecl Script_GetIsSnowingConditionFunction(int apRefObject, int apParam1, int apParam2, double* afReturnValue)
 {
     ConditionSky* sky = reinterpret_cast<ConditionSky*>(Sky::GetInstance());
-    *output = sky->IsSnowing() ? 1.0f : 0.0f;
+    *afReturnValue = sky->IsSnowing() ? 1.0f : 0.0f;
     if (tlsBytes[0x268])
-        Interface_PrintLine(str_010351ec, *output);
+        Interface_PrintLine(str_010351ec, *afReturnValue);
     return true;
 }
 
@@ -13355,19 +13847,21 @@ void __cdecl Interface_PrintLine(const char* text, double result);
 // Sets result to 1.0 when reference's mode equals 0x2b, logs the result if traceState[0x268] is set, and returns true.
 // @fnv 0x0059ecc0
 // src: XBOX_PDB 0x0059ecc0
-bool __cdecl Script_GetIsCreatureConditionFunction(TESObjectREFR* reference, void* arg1, void* arg2, double& result)
+// pdb: Script::GetIsCreatureConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+bool __cdecl Script_GetIsCreatureConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
-    result = 0.0;
-    if (reference != 0)
+    afReturnValue = 0.0;
+    if (apRefObject != 0)
     {
-        if (reference->BGSSaveFormBuffer_GetForm()->FUN_00401170() == 0x2b)
+        if (apRefObject->BGSSaveFormBuffer_GetForm()->FUN_00401170() == 0x2b)
         {
-            result = 1.0;
+            afReturnValue = 1.0;
         }
     }
     if (traceState[0x268] != 0)
     {
-        Interface_PrintLine(DAT_01035260, result);
+        Interface_PrintLine(DAT_01035260, afReturnValue);
     }
     return true;
 }
@@ -13406,13 +13900,16 @@ float fLastDisposition;
 // Computes the disposition of reference toward arg1 when both are actors, caching the last actor/target pair, and logs it when bDebugConditions is set.
 // @fnv 0x0059fdb0
 // src: XBOX_PDB 0x0059fdb0
-bool __cdecl Script_GetDispositionConditionFunction(TESObjectREFR* reference, void* apTargetRef, void* apUnused, double& result)
+// pdb: Script::GetDispositionConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: ptarget, pactor, pRefTarget
+bool __cdecl Script_GetDispositionConditionFunction(TESObjectREFR* reference, void* apParam1, void* apParam2, double& afReturnValue)
 {
-    result = 0.0;
+    afReturnValue = 0.0;
     DispositionActor* actor = 0;
     if (reference && reference->IsActor())
         actor = (DispositionActor*)reference;
-    TESObjectREFR* targetRef7 = (TESObjectREFR*)apTargetRef;
+    TESObjectREFR* targetRef7 = (TESObjectREFR*)apParam1;
     DispositionActor* target = 0;
     if (targetRef7 && targetRef7->IsActor())
         target = (DispositionActor*)targetRef7;
@@ -13420,17 +13917,17 @@ bool __cdecl Script_GetDispositionConditionFunction(TESObjectREFR* reference, vo
     {
         if (actor == pLastDispositionActor && target == pLastDispositionTarget)
         {
-            result = fLastDisposition;
+            afReturnValue = fLastDisposition;
         }
         else
         {
-            result = actor->GetDisposition(target, 0);
+            afReturnValue = actor->GetDisposition(target, 0);
             pLastDispositionTarget = target;
             pLastDispositionActor = actor;
-            fLastDisposition = result;
+            fLastDisposition = afReturnValue;
         }
         if (bDebugConditions)
-            DebugLog("%.20s disposition to %.20s is %.1f", actor->GetFullName(), target->GetFullName(), result);
+            DebugLog("%.20s disposition to %.20s is %.1f", actor->GetFullName(), target->GetFullName(), afReturnValue);
     }
     return true;
 }
@@ -13452,29 +13949,33 @@ int __fastcall FNV_GetFormType(TESForm* form);
 void __cdecl DebugLog(char const* fmt, ...);
 
 // @fnv 0x005a0ab0
-bool __cdecl IsWeaponSkillType(TESObjectREFR* reference, void* aiSkillType, void* apUnused, double& result)
+// src: XBOX_RETAIL_PDB 0x005a0ab0
+// pdb: Script::IsWeaponSkillTypeConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pweap
+bool __cdecl Script_IsWeaponSkillTypeConditionFunction(TESObjectREFR* reference, void* apParam1, void* apParam2, double& afReturnValue)
 {
     TESForm* weapon = 0;
-    result = 0.0;
+    afReturnValue = 0.0;
     if (FNV_GetFormType(reinterpret_cast<P01ObjA*>(reference)->GetNext()) == 40)
     {
         weapon = reinterpret_cast<P01ObjA*>(reference)->GetNext();
     }
-    if (weapon == 0 && reinterpret_cast<int>(aiSkillType) == 45)
+    if (weapon == 0 && reinterpret_cast<int>(apParam1) == 45)
     {
-        result = 1.0;
+        afReturnValue = 1.0;
     }
     else if (weapon == 0)
     {
         return false;
     }
-    if (weapon != 0 && reinterpret_cast<int>(aiSkillType) == reinterpret_cast<FUN_008d85e0_Obj*>(weapon)->GetUnk15C())
+    if (weapon != 0 && reinterpret_cast<int>(apParam1) == reinterpret_cast<FUN_008d85e0_Obj*>(weapon)->GetUnk15C())
     {
-        result = 1.0;
+        afReturnValue = 1.0;
     }
     if (tls_conditionEcho)
     {
-        DebugLog("Is Weapon Skill Type >> %0.2f", result);
+        DebugLog("Is Weapon Skill Type >> %0.2f", afReturnValue);
     }
     return true;
 }
@@ -13495,29 +13996,32 @@ void __cdecl Interface_PrintLine(const char* format, ...);
 // Sets result to 1.0 when the reference's base form is type 42 and its class passes a check, then optionally logs the value and returns true.
 // @fnv 0x005a10b0
 // src: XBOX_PDB 0x005a10b0
-bool __cdecl Script_IsGuardConditionFunction(TESObjectREFR* reference, void* arg1, void* arg2, double& result)
+// pdb: Script::IsGuardConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pNPC
+bool __cdecl Script_IsGuardConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
-    result = 0.0;
-    if (reference)
+    afReturnValue = 0.0;
+    if (apRefObject)
     {
         TESForm* actorBase = 0;
-        if (((TESForm*)((TESObjectREFR*)reference)->BGSSaveFormBuffer_GetForm())->FUN_00401170() == 42)
-            actorBase = ((TESObjectREFR*)reference)->BGSSaveFormBuffer_GetForm();
+        if (((TESForm*)((TESObjectREFR*)apRefObject)->BGSSaveFormBuffer_GetForm())->FUN_00401170() == 42)
+            actorBase = ((TESObjectREFR*)apRefObject)->BGSSaveFormBuffer_GetForm();
         if (actorBase)
         {
             if (((ActorOps*)actorBase)->FUN_00502430() &&
                 ((ClassOps*)((ActorOps*)actorBase)->FUN_00502430())->FUN_005f6e60())
-                result = 1.0;
+                afReturnValue = 1.0;
         }
     }
     if (tls_conditionEcho)
-        Interface_PrintLine("Is Guard >> %0.2f", result);
+        Interface_PrintLine("Is Guard >> %0.2f", afReturnValue);
     return true;
 }
 
 extern __declspec(thread) bool bPrintConditionDebug;
 void __cdecl DebugLog(char const* fmt, ...);
-bool __cdecl TESObjectREFR_HasAddonNodes(int state);
+bool __cdecl TESObjectREFR_HasAddonNodes(int apNode);
 
 class FlameObjectLocal
 {
@@ -13785,6 +14289,9 @@ FlameObjectLocal* SourceLocal::GetFlameObject()
 // Sets *result to 1.0 if source has a flame object whose state passes FUN_00578400, else 0.0, logs it when debug printing is on, and returns true.
 // @fnv 0x005a1b80
 // src: XBOX_PDB 0x005a1b80
+// pdb: Script::HasFlamesConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pav
 bool __cdecl Script_HasFlamesConditionFunction(SourceLocal* source, unsigned int arg1, unsigned int arg2, double* result)
 {
     *result = 0.0;
@@ -13822,12 +14329,14 @@ __declspec(thread) bool g_DebugLogFlag;
 // Sets result to 1.0 if the player is a murderer, otherwise 0.0, logs it when debug logging is enabled, and returns true.
 // @fnv 0x005a1e70
 // src: XBOX_PDB 0x005a1e70
-bool Script_IsPCAMurdererConditionFunction(TESObjectREFR* reference, void* arg1, void* arg2, double& result)
+// pdb: Script::IsPCAMurdererConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+bool Script_IsPCAMurdererConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
-    result = 0.0;
-    result = ((ConditionPlayerCharacter*)g_thePlayer)->IsMurderer() ? 1.0f : 0.0f;
+    afReturnValue = 0.0;
+    afReturnValue = ((ConditionPlayerCharacter*)g_thePlayer)->IsMurderer() ? 1.0f : 0.0f;
     if (g_DebugLogFlag)
-        _DebugLog("IsPlayerAMurderer >> %0.2f", result);
+        _DebugLog("IsPlayerAMurderer >> %0.2f", afReturnValue);
     return true;
 }
 }  // namespace fnv_005a1e70
@@ -13840,13 +14349,15 @@ __declspec(thread) unsigned char g_tlsFlag;
 
 // Sets result to the value returned by the player's GetField6dc and logs it when g_tlsFlag is set, then returns true.
 // @fnv 0x005a2050
-// src: EXE 0x005a2050
-bool __cdecl Cmd_GetAmountSoldStolen_Eval(TESObjectREFR* reference, void* apUnused1, void* apUnused2, double& result)
+// src: XBOX_RETAIL_PDB 0x005a2050 (was EXE)
+// pdb: Script::GetAmountStolenSoldConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+bool __cdecl Script_GetAmountStolenSoldConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
-    result = 0.0;
-    result = (double)((ConditionPlayerCharacter*)g_thePlayer)->GetField6dc();
+    afReturnValue = 0.0;
+    afReturnValue = (double)((ConditionPlayerCharacter*)g_thePlayer)->GetField6dc();
     if (g_tlsFlag)
-        Interface_PrintLine(str_010359b4, result);
+        Interface_PrintLine(str_010359b4, afReturnValue);
     return true;
 }
 }  // namespace fnv_005a2050
@@ -13856,13 +14367,15 @@ void __cdecl _DebugLog(const char* apFormat, ...);
 __declspec(thread) unsigned char g_tlsFlags[0x269];
 // Sets result to 1.0 if HotkeyWheelProbeA() is true, otherwise 0.0, logs it when g_tlsFlags[0x268] is set, and returns true.
 // @fnv 0x005a37b0
-// src: EXE 0x005a37b0
-bool __cdecl Cmd_IsXBox_Eval(TESObjectREFR* reference, void* arg1, void* arg2, double& result)
+// src: XBOX_RETAIL_PDB 0x005a37b0 (was EXE)
+// pdb: Script::IsXboxConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+bool __cdecl Script_IsXboxConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
-    result = 0.0;
-    result = HotkeyWheelProbeA() ? 1.0f : 0.0f;
+    afReturnValue = 0.0;
+    afReturnValue = HotkeyWheelProbeA() ? 1.0f : 0.0f;
     if (g_tlsFlags[0x268])
-        _DebugLog("IsXBox >> %1.0f", result);
+        _DebugLog("IsXBox >> %1.0f", afReturnValue);
     return true;
 }
 
@@ -13879,14 +14392,17 @@ void DebugLog(const char* fmt, ...);
 // Sets result to 0.0, then stores g_thePlayer->HasAction(action) into result, logs it if tls_conditionEcho is set, and returns true.
 // @fnv 0x005a3b20
 // src: XBOX_PDB 0x005a3b20
-bool __cdecl Script_IsPlayerActionActiveConditionFunction(TESObjectREFR* reference, void* pAction, void* pUnused, double& result)
+// pdb: Script::IsPlayerActionActiveConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: iAction
+bool __cdecl Script_IsPlayerActionActiveConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
-    result = 0.0;
-    void* action = pAction;
-    result = g_thePlayer->HasAction(action);
+    afReturnValue = 0.0;
+    void* action = apParam1;
+    afReturnValue = g_thePlayer->HasAction(action);
     if (tls_conditionEcho)
     {
-        DebugLog("IsActionInList >> %0.2f", result);
+        DebugLog("IsActionInList >> %0.2f", afReturnValue);
     }
     return true;
 }
@@ -13968,9 +14484,12 @@ struct EssentialVirtualActor
 
 // @fnv 0x005a3c90
 // src: XBOX_PDB 0x005a3c90
-bool __cdecl Script_GetLastHitCriticalConditionFunction(TESObjectREFR* reference, void* arg1, void* arg2, double& result)
+// pdb: Script::GetLastHitCriticalConditionFunction | TESConditionFunctions.obj | retail, upstream name already matches, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pactor
+bool __cdecl Script_GetLastHitCriticalConditionFunction(TESObjectREFR* reference, void* apParam1, void* apParam2, double& afReturnValue)
 {
-    result = 0.0;
+    afReturnValue = 0.0;
     if (reference)
     {
         if (reinterpret_cast<EssentialVirtualActor*>(reference)->IsEssentialActor())
@@ -13978,7 +14497,7 @@ bool __cdecl Script_GetLastHitCriticalConditionFunction(TESObjectREFR* reference
             Actor* actor = reinterpret_cast<Actor*>(reference);
             if (reinterpret_cast<Actor*>(actor)->RefreshActorRuntimeData())
             {
-                result = reinterpret_cast<HitDataBoolFlag*>(reinterpret_cast<Actor*>(actor)->RefreshActorRuntimeData())->Flag(4) ? 1.0f : 0.0f;
+                afReturnValue = reinterpret_cast<HitDataBoolFlag*>(reinterpret_cast<Actor*>(actor)->RefreshActorRuntimeData())->Flag(4) ? 1.0f : 0.0f;
             }
         }
     }
@@ -14029,9 +14548,12 @@ extern char str_01035ee4[];
 // Sets result to 0.0, calls Unk_B6 on the reference if it is a mobile object, and logs result when the TLS flag is set; returns true.
 // @fnv 0x005a4540
 // src: XBOX_PDB 0x005a4540
-bool __cdecl Script_GetDialogueEmotionValueConditionFunction(TESObjectREFR* reference, void* apUnused1, void* apUnused2, double& result)
+// pdb: Script::GetDialogueEmotionValueConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pmob
+bool __cdecl Script_GetDialogueEmotionValueConditionFunction(TESObjectREFR* reference, void* apParam1, void* apParam2, double& afReturnValue)
 {
-    result = 0.0;
+    afReturnValue = 0.0;
     if (reference->IsMobileObject())
     {
         MobileObject* mobile = static_cast<MobileObject*>(reference);
@@ -14039,7 +14561,7 @@ bool __cdecl Script_GetDialogueEmotionValueConditionFunction(TESObjectREFR* refe
     }
     if (DAT_tls_0268[0x268])
     {
-        Interface_PrintLine(str_01035ee4, result);
+        Interface_PrintLine(str_01035ee4, afReturnValue);
     }
     return true;
 }
@@ -14056,16 +14578,19 @@ extern __declspec(thread) RuntimeState gRuntimeState;
 // Sets *out to 0.0, then to 1.0 if the actor is active and FUN_00566950 returns true; logs *out when gRuntimeState flag is set; returns 1.
 // @fnv 0x005a4820
 // src: XBOX_PDB 0x005a4820
-unsigned char __cdecl Script_GetPlayerTeammateConditionFunction(Actor* actor, unsigned int action, unsigned int flags, double* out)
+// pdb: Script::GetPlayerTeammateConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pactor
+unsigned char __cdecl Script_GetPlayerTeammateConditionFunction(Actor* apRefObject, unsigned int apParam1, unsigned int apParam2, double* afReturnValue)
 {
-    *out = 0.0;
-    if (actor && actor->IsActor())
+    *afReturnValue = 0.0;
+    if (apRefObject && apRefObject->IsActor())
     {
-        Actor* p = actor;
+        Actor* p = apRefObject;
         if (p->IsPlayerTeammate())
-            *out = 1.0;
+            *afReturnValue = 1.0;
         if (*((unsigned char*)&gRuntimeState + 0x268))
-            Interface_PrintLine(DAT_01035f64, (int)*out);
+            Interface_PrintLine(DAT_01035f64, (int)*afReturnValue);
     }
     return 1;
 }
@@ -14083,21 +14608,24 @@ extern __declspec(thread) bool g_bShowConditionDebug;
 // Sets result to 1.0 when the reference is an actor whose extra data passes FUN_0041cf00 and fails _ref_008256d0, logging the outcome when condition debug is on.
 // @fnv 0x005a4930
 // src: XBOX_PDB 0x005a4930
-bool __cdecl Script_GetActorCrimePlayerEnemyConditionFunction(TESObjectREFR* reference, void* arg1, void* arg2, double& result)
+// pdb: Script::GetActorCrimePlayerEnemyConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pactor
+bool __cdecl Script_GetActorCrimePlayerEnemyConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
-    result = 0.0;
-    if (reference && reference->IsActor())
+    afReturnValue = 0.0;
+    if (apRefObject && apRefObject->IsActor())
     {
-        TESObjectREFR* actor = reference;
+        TESObjectREFR* actor = apRefObject;
         if (((FUN_0041cf00_shell*)actor->GetExtraData())->ExtraDataList_GetPlayerCrimeList() &&
             !_ref_008256d0(((FUN_0041cf00_shell*)actor->GetExtraData())->ExtraDataList_GetPlayerCrimeList()))
         {
-            result = 1.0;
+            afReturnValue = 1.0;
         }
 
         if (g_bShowConditionDebug)
         {
-            if (result != 0.0)
+            if (afReturnValue != 0.0)
             {
                 DebugLog("This actor is an enemy of player because of crime");
             }
@@ -14282,21 +14810,24 @@ void __cdecl DebugLog(const char* fmt, ...);
 
 // @fnv 0x005a50f0
 // src: XBOX_PDB 0x005a50f0
-bool __cdecl Script_GetRadiationLevelConditionFunction(TESObjectREFR* reference, void* arg1, void* arg2, double& result)
+// pdb: Script::GetRadiationLevelConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pactor
+bool __cdecl Script_GetRadiationLevelConditionFunction(TESObjectREFR* reference, void* apParam1, void* apParam2, double& afReturnValue)
 {
-    result = 0.0;
+    afReturnValue = 0.0;
     if (reference && reference->IsActor())
     {
         Actor* actor = (Actor*)reference;
-        result = 0.0;
+        afReturnValue = 0.0;
         if (actor->GetCurrentProcess())
         {
-            result = actor->GetCurrentProcess()->GetControllerPhase() + actor->GetCurrentProcess()->GetAnimationElapsedTime() +
+            afReturnValue = actor->GetCurrentProcess()->GetControllerPhase() + actor->GetCurrentProcess()->GetAnimationElapsedTime() +
                      actor->GetCurrentProcess()->GetAnimationRemainingTime();
         }
         if (g_tls.debugLogging)
         {
-            DebugLog("%s radiation level is %.2f", ((MobileObject*)reference)->GetFullName(), result);
+            DebugLog("%s radiation level is %.2f", ((MobileObject*)reference)->GetFullName(), afReturnValue);
         }
     }
     return true;
@@ -14320,22 +14851,25 @@ class PC7d
 // Sets result to 1.0 when reference is an actor and the given skill is one of the player's tag skills, then logs the result if tls_conditionEcho is set.
 // @fnv 0x005a5e90
 // src: XBOX_PDB 0x005a5e90
-bool __cdecl Script_IsPlayerTagSkillConditionFunction(TESObjectREFR* reference, void* pSkillArg, void* pUnused, double& result)
+// pdb: Script::IsPlayerTagSkillConditionFunction | TESConditionFunctions.obj | retail, upstream name already matches, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: iActorValueIndex, pactor, eskill
+bool __cdecl Script_IsPlayerTagSkillConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
-    result = 0.0;
-    if (reference && reference->IsActor())
+    afReturnValue = 0.0;
+    if (apRefObject && apRefObject->IsActor())
     {
-        void* skillArg = pSkillArg;
-        TESObjectREFR* ref = reference;
+        void* skillArg = apParam1;
+        TESObjectREFR* ref = apRefObject;
         ActorValue::Index skill = static_cast<ActorValue::Index>(reinterpret_cast<int>(skillArg));
         if (ActorValue::IsSkill(skill) && reinterpret_cast<PC7d*>(g_thePlayer)->GetClass()->IsTagSkill(skill))
         {
-            result = 1.0;
+            afReturnValue = 1.0;
         }
     }
     if (tls_conditionEcho)
     {
-        DebugLog("IsPlayerTagSkill >> %.0f", result);
+        DebugLog("IsPlayerTagSkill >> %.0f", afReturnValue);
     }
     return true;
 }
@@ -14506,9 +15040,12 @@ class RefA
 // Converts the starting angle of a reference on the given axis from radians to degrees and stores it in result.
 // @fnv 0x0059c2d0
 // src: XBOX_PDB 0x0059c2d0
-bool Script_GetStartingAngleConditionFunction(RefA* reference, void* acAxis, void* apUnused, double& afAngle)
+// pdb: Script::GetStartingAngleConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: cAxis, pos
+bool Script_GetStartingAngleConditionFunction(RefA* reference, void* apParam1, void* apParam2, double& afReturnValue)
 {
-    int iAxis = (int)acAxis;
+    int iAxis = (int)apParam1;
     if (reference)
     {
         // The original local point was an uninitialized aggregate.
@@ -14517,17 +15054,17 @@ bool Script_GetStartingAngleConditionFunction(RefA* reference, void* acAxis, voi
         switch (iAxis)
         {
         case 'X':
-            afAngle = kAngle[0] * 57.2957763671875;
+            afReturnValue = kAngle[0] * 57.2957763671875;
             break;
         case 'Y':
-            afAngle = kAngle[1] * 57.2957763671875;
+            afReturnValue = kAngle[1] * 57.2957763671875;
             break;
         case 'Z':
-            afAngle = kAngle[2] * 57.2957763671875;
+            afReturnValue = kAngle[2] * 57.2957763671875;
             break;
         }
         if (DAT_0126fd98.bDebug)
-            Interface_PrintLine("GetStartingAngle: %c >> %0.2f", iAxis, afAngle);
+            Interface_PrintLine("GetStartingAngle: %c >> %0.2f", iAxis, afReturnValue);
     }
     return true;
 }
@@ -14740,23 +15277,26 @@ class ActorV
 // Gets the selected actor value from the actor or returned owner, stores it in result, and logs it when bDebug is set.
 // @fnv 0x0059c680
 // src: XBOX_PDB 0x0059c680
-bool Script_GetPermanentActorValueConditionFunction(ActorV* apActor, void* aiActorValue, void* apUnused, double& afValue)
+// pdb: Script::GetPermanentActorValueConditionFunction | TESConditionFunctions.obj | retail, upstream name already matches, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pActor, iActorValueIndex
+bool Script_GetPermanentActorValueConditionFunction(ActorV* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
-    int eAV = (int)aiActorValue;
+    int eAV = (int)apParam1;
     ActorV* pActor = 0;
-    if (apActor && apActor->IsActor())
-        pActor = apActor;
+    if (apRefObject && apRefObject->IsActor())
+        pActor = apRefObject;
     if (pActor)
     {
         if (!pActor->FUN_00440da0())
-            afValue = pActor->kAVOwner.GetActorValue(eAV);
+            afReturnValue = pActor->kAVOwner.GetActorValue(eAV);
         else
         {
             AVOwner* pOwner = &pActor->FUN_004181e0()->kOwner;
-            afValue = pOwner->GetActorValue(eAV);
+            afReturnValue = pOwner->GetActorValue(eAV);
         }
         if (DAT_0126fd98.bDebug)
-            Interface_PrintLine("GetActorValue: %s >> %0.2f", ActorValue_GetActorValueScriptName(eAV), afValue);
+            Interface_PrintLine("GetActorValue: %s >> %0.2f", ActorValue_GetActorValueScriptName(eAV), afReturnValue);
     }
     return true;
 }
@@ -14771,6 +15311,9 @@ void __cdecl _DebugLog(const char* fmt, ...);
 // Returns the clothing value of a Character via FUN_008d3110 when the TESObjectREFR is a form type 0x2a, otherwise leaves afReturnValue unchanged.
 // @fnv 0x0059d320
 // src: XBOX_PDB 0x0059d320
+// pdb: Script::GetClothingValueConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pactor
 bool __cdecl Script_GetClothingValueConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
     Character* pactor = 0;
@@ -14792,14 +15335,15 @@ namespace fnv_0059ea80 {
 extern float DAT_01017d00;
 
 // @fnv 0x0059ea80
+// pdb: Sky::IsSnowing | TESConditionFunctions.obj | debug, call graph, medium
 }  // namespace fnv_0059ea80
 
 bool ConditionSky::IsSnowing()
 {
-    return (m_pRegionWeather != 0 && static_cast<ConditionWeather*>(m_pRegionWeather)->GetFlag() &&
-            m_fWeatherBlend > m_pRegionWeather->GetWeatherData(6, 0.999000013f, 0.0f)) ||
-           (m_pPreviousWeather != 0 && static_cast<ConditionWeather*>(m_pPreviousWeather)->GetFlag() &&
-            m_fWeatherBlend < m_pPreviousWeather->GetWeatherData(7, 1.0f, fnv_0059ea80::DAT_01017d00));
+    return (pCurrentWeather != 0 && static_cast<ConditionWeather*>(pCurrentWeather)->GetFlag() &&
+            fCurrentWeatherPct > pCurrentWeather->GetWeatherData(6, 0.999000013f, 0.0f)) ||
+           (pLastWeather != 0 && static_cast<ConditionWeather*>(pLastWeather)->GetFlag() &&
+            fCurrentWeatherPct < pLastWeather->GetWeatherData(7, 1.0f, fnv_0059ea80::DAT_01017d00));
 }
 
 
@@ -14817,12 +15361,14 @@ void Interface_PrintLine(const char*, ...);
 
 // Reads the current weather percent from the Sky object, logs it when bDebug is set, and returns true.
 // @fnv 0x0059eb60
-// src: EXE 0x0059eb60
-bool Cmd_GetCurrentWeatherPercent_Eval(void* reference, void* arg1, void* arg2, double& afPercent)
+// src: XBOX_RETAIL_PDB 0x0059eb60 (was EXE)
+// pdb: Script::GetWeatherPercentConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+bool Script_GetWeatherPercentConditionFunction(void* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
-    afPercent = reinterpret_cast<ConditionSky*>(Sky::GetInstance())->GetCurrentWeatherPercent();
+    afReturnValue = reinterpret_cast<ConditionSky*>(Sky::GetInstance())->GetCurrentWeatherPercent();
     if (DAT_0126fd98.bDebug)
-        Interface_PrintLine("GetCurrentWeatherPercent >> %0.2f", afPercent);
+        Interface_PrintLine("GetCurrentWeatherPercent >> %0.2f", afReturnValue);
     return true;
 }
 }  // namespace fnv_0059eb60
@@ -14848,27 +15394,30 @@ extern float DAT_011cab20;
 // Caches the playable-race result by reference pointer, logs it when bDebug is set, and always returns true.
 // @fnv 0x0059f540
 // src: XBOX_PDB 0x0059f540
-bool Script_GetIsPlayableRaceConditionFunction(TESObjectREFR* reference, void* apUnused1, void* apUnused2, double& result)
+// pdb: Script::GetIsPlayableRaceConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pnpc, prace
+bool Script_GetIsPlayableRaceConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
-    if (DAT_011cab1c == reference)
-        result = DAT_011cab20;
+    if (DAT_011cab1c == apRefObject)
+        afReturnValue = DAT_011cab20;
     else
     {
-        result = 0;
+        afReturnValue = 0;
         TESNPC* pForm = 0;
-        if (reference && reference->BGSSaveFormBuffer_GetForm()->FUN_00401170() == 0x2a)
-            pForm = static_cast<TESNPC*>(reference->BGSSaveFormBuffer_GetForm());
+        if (apRefObject && apRefObject->BGSSaveFormBuffer_GetForm()->FUN_00401170() == 0x2a)
+            pForm = static_cast<TESNPC*>(apRefObject->BGSSaveFormBuffer_GetForm());
         if (pForm)
         {
             RaceP* pRace = reinterpret_cast<RaceP*>(pForm->TESNPC_GetRace());
             if (pRace && pRace->TESRace_GetPlayable())
-                result = 1;
+                afReturnValue = 1;
         }
-        DAT_011cab1c = reference;
-        DAT_011cab20 = result;
+        DAT_011cab1c = apRefObject;
+        DAT_011cab20 = afReturnValue;
     }
     if (DAT_0126fd98.bDebug)
-        Interface_PrintLine("GetIsPlayableRace >> %0.2f", result);
+        Interface_PrintLine("GetIsPlayableRace >> %0.2f", afReturnValue);
     return true;
 }
 }  // namespace fnv_0059f540
@@ -14975,24 +15524,27 @@ FormU* FUN_006008f0();
 // Sets result to 1 if the form is the current item or the two calls on it and the current item return true; logs the result.
 // @fnv 0x0059f9b0
 // src: XBOX_PDB 0x0059f9b0
-bool Script_GetIsUsedItemConditionFunction(void* reference, void* apForm, void* apUnused, double& result)
+// pdb: Script::GetIsUsedItemConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pform, plistform
+bool Script_GetIsUsedItemConditionFunction(void* reference, void* apParam1, void* apParam2, double& afReturnValue)
 {
-    result = 0;
-    FormU* pForm = (FormU*)apForm;
+    afReturnValue = 0;
+    FormU* pForm = (FormU*)apParam1;
     if (pForm)
     {
         if (pForm->IsItem() && FUN_006008f0() == pForm)
-            result = 1;
+            afReturnValue = 1;
         else if (pForm->FUN_00401170() == 0x55)
         {
             FormU* pList = pForm;
             FormU* pUsed = FUN_006008f0();
             if (pList->FUN_00500940(&pUsed)->BSSimpleList_TESLevSpell_IsInList())
-                result = 1;
+                afReturnValue = 1;
         }
     }
     if (DAT_0126fd98.bDebug)
-        Interface_PrintLine("GetIsUsedItem '%s' >> %0.2f", pForm ? pForm->GetName() : "UNKNOWN", result);
+        Interface_PrintLine("GetIsUsedItem '%s' >> %0.2f", pForm ? pForm->GetName() : "UNKNOWN", afReturnValue);
     return true;
 }
 }  // namespace fnv_0059f9b0
@@ -15128,17 +15680,20 @@ class ActorV
 // Stores actor value 0x12 in result for an actor and logs it when debug is enabled.
 // @fnv 0x005a0150
 // src: XBOX_PDB 0x005a0150
-bool Script_GetArmorRatingConditionFunction(ActorV* apActor, void* aUnused1, void* aUnused2, double& result)
+// pdb: Script::GetArmorRatingConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pactor
+bool Script_GetArmorRatingConditionFunction(ActorV* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
-    result = 0;
+    afReturnValue = 0;
     ActorV* pActor = 0;
-    if (apActor && apActor->IsActor())
-        pActor = apActor;
+    if (apRefObject && apRefObject->IsActor())
+        pActor = apRefObject;
     if (pActor)
     {
-        result = pActor->kAVOwner.GetActorValue(0x12);
+        afReturnValue = pActor->kAVOwner.GetActorValue(0x12);
         if (DAT_0126fd98.bDebug)
-            Interface_PrintLine("Armor Rating: %0.2f", result);
+            Interface_PrintLine("Armor Rating: %0.2f", afReturnValue);
     }
     return true;
 }
@@ -15227,16 +15782,19 @@ class ActorW
 // Checks if the given ActorW is waiting and stores the result in the output parameter, logging it in debug mode.
 // @fnv 0x005a0e80
 // src: XBOX_PDB 0x005a0e80
-bool Script_IsWaitingConditionFunction(ActorW* apActor, void* pUnused1, void* pUnused2, double& result)
+// pdb: Script::IsWaitingConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pactor
+bool Script_IsWaitingConditionFunction(ActorW* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
-    result = 0;
+    afReturnValue = 0;
     ActorW* pActor = 0;
-    if (apActor && apActor->IsActor())
-        pActor = apActor;
+    if (apRefObject && apRefObject->IsActor())
+        pActor = apRefObject;
     if (pActor && pActor->Actor_IsWaiting())
-        result = 1;
+        afReturnValue = 1;
     if (DAT_0126fd98.bDebug)
-        Interface_PrintLine("Is Waiting >> %0.2f", result);
+        Interface_PrintLine("Is Waiting >> %0.2f", afReturnValue);
     return true;
 }
 }  // namespace fnv_005a0e80
@@ -15324,20 +15882,23 @@ class ActorC
 class CrimeC
 {
   public:
-    bool HasMatchingCrime(ActorC*, TESForm*, ActorC*, int, int, int);
+    bool ProcessLists_IsCrimeinGlobalCrimeList(ActorC*, TESForm*, ActorC*, int, int, int);
 };
 extern CrimeC DAT_011e0e80;
 // Checks if a crime exists between the actor and victim using the crime type index, storing the result in the output parameter.
 // @fnv 0x005a0f90
 // src: XBOX_PDB 0x005a0f90
-bool Script_GetCrimeConditionFunction(ActorC* apActor, TESForm* apVictim, void* aiCrimeType, double& result)
+// pdb: Script::GetCrimeConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: icrime, ptarget, pcriminal
+bool Script_GetCrimeConditionFunction(ActorC* apRefObject, TESForm* apParam1, void* apParam2, double& afReturnValue)
 {
-    result = 0;
-    int e = (int)aiCrimeType;
+    afReturnValue = 0;
+    int e = (int)apParam2;
     TESForm* pVictim = 0;
-    if (apVictim)
+    if (apParam1)
     {
-        switch (static_cast<int>(apVictim->FUN_00401170()))
+        switch (static_cast<int>(apParam1->FUN_00401170()))
         {
         case 0x3a:
         case 0x3b:
@@ -15347,27 +15908,27 @@ bool Script_GetCrimeConditionFunction(ActorC* apActor, TESForm* apVictim, void* 
         case 0x3f:
         case 0x40:
         case 0x69:
-            pVictim = apVictim;
+            pVictim = apParam1;
         }
     }
     ActorC* pActor = 0;
-    if (apActor && apActor->IsActor())
-        pActor = apActor;
+    if (apRefObject && apRefObject->IsActor())
+        pActor = apRefObject;
     if (pActor && pVictim)
     {
         if (e > -1 && e < 5)
         {
-            if (DAT_011e0e80.HasMatchingCrime(pActor, pVictim, pActor, e, 0, -1))
-                result = 1;
+            if (DAT_011e0e80.ProcessLists_IsCrimeinGlobalCrimeList(pActor, pVictim, pActor, e, 0, -1))
+                afReturnValue = 1;
         }
         else
         {
-            if (DAT_011e0e80.HasMatchingCrime(pActor, pVictim, pActor, -1, 0, -1))
-                result = 1;
+            if (DAT_011e0e80.ProcessLists_IsCrimeinGlobalCrimeList(pActor, pVictim, pActor, -1, 0, -1))
+                afReturnValue = 1;
         }
     }
     if (DAT_0126fd98.bDebug)
-        Interface_PrintLine("GetCrime >> %0.2f", result);
+        Interface_PrintLine("GetCrime >> %0.2f", afReturnValue);
     return true;
 }
 }  // namespace fnv_005a0f90
@@ -15555,12 +16116,15 @@ class ItemZ
 // Reads a numeric value from the actor's item or procedure-related form into result and logs it when debug is enabled.
 // @fnv 0x005a1770
 // src: XBOX_PDB 0x005a1770
-bool Script_GetTrespassWarningLevelConditionFunction(Actor* apActor, void* apUnused1, void* apUnused2, double& result)
+// pdb: Script::GetTrespassWarningLevelConditionFunction | TESConditionFunctions.obj | retail, upstream name already matches, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pactor, pbasepack, ppack, pproc, pdata, pguardData
+bool Script_GetTrespassWarningLevelConditionFunction(Actor* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
-    result = -1.0;
+    afReturnValue = -1.0;
     Actor* pActor = 0;
-    if (apActor && apActor->IsActor())
-        pActor = apActor;
+    if (apRefObject && apRefObject->IsActor())
+        pActor = apRefObject;
     if (pActor)
     {
         ItemZ* pItem = reinterpret_cast<ItemZ*>(pActor->FUN_009344a0());
@@ -15570,7 +16134,7 @@ bool Script_GetTrespassWarningLevelConditionFunction(Actor* apActor, void* apUnu
             {
             case 0x17: {
                 ItemZ* pZ = pItem;
-                result = pZ->BGSProjectile_GetExplosion();
+                afReturnValue = pZ->BGSProjectile_GetExplosion();
                 break;
             }
             case 0xe: {
@@ -15581,7 +16145,7 @@ bool Script_GetTrespassWarningLevelConditionFunction(Actor* apActor, void* apUnu
                     if (pForm)
                     {
                         TESForm* pF = pForm;
-                        result = static_cast<int>(pF->GetHavokWorldObjectCountInSceneGraph_0084e3a0());
+                        afReturnValue = static_cast<int>(pF->GetHavokWorldObjectCountInSceneGraph_0084e3a0());
                     }
                 }
                 break;
@@ -15590,7 +16154,7 @@ bool Script_GetTrespassWarningLevelConditionFunction(Actor* apActor, void* apUnu
         }
     }
     if (DAT_0126fd98.bDebug)
-        Interface_PrintLine("Procedure >> %0.2f", result);
+        Interface_PrintLine("Procedure >> %0.2f", afReturnValue);
     return true;
 }
 }  // namespace fnv_005a1770
@@ -15883,9 +16447,12 @@ bool ActionPoints_IsAttackAction(int);
 // Returns the vertical height difference between the current VATS target's position and the player, using limb position when available.
 // @fnv 0x005a25f0
 // src: XBOX_PDB 0x005a25f0
-bool Script_GetVATSTargetHeightConditionFunction(void* reference, void* arg1, void* arg2, double& afHeight)
+// pdb: Script::GetVATSTargetHeightConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pcommand, etargetLimb, ptarget, ptarget3d, targetPos, btargetSet, pbodyPartData, pactor, pbodyPart
+bool Script_GetVATSTargetHeightConditionFunction(void* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
-    afHeight = 0;
+    afReturnValue = 0;
     if (DAT_011f2250.FUN_0044ddc0() == 4)
     {
         TgtH* pTarget = DAT_011f2250.VATS_GetCurrentAction();
@@ -15925,12 +16492,12 @@ bool Script_GetVATSTargetHeightConditionFunction(void* reference, void* arg1, vo
                     else
                         kPos = *dst->GetPos();
                 }
-                afHeight = kPos.z - DAT_011dea3c->GetPos()->z;
+                afReturnValue = kPos.z - DAT_011dea3c->GetPos()->z;
             }
         }
     }
     if (DAT_0126fd98.bDebug)
-        Interface_PrintLine("VATS Target Height >> %0.2f", afHeight);
+        Interface_PrintLine("VATS Target Height >> %0.2f", afReturnValue);
     return true;
 }
 }  // namespace fnv_005a25f0
@@ -16174,13 +16741,15 @@ extern PlayerS* DAT_011dea3c;
 // Checks if the given PlayerS is the global player and in Sandman, logs the result in debug mode, and always returns true.
 // @fnv 0x005a2810
 // src: XBOX_PDB 0x005a2810
-bool Script_GetSandmanConditionFunction(PlayerS* apPlayer, void* apUnused1, void* apUnused2, double& result)
+// pdb: Script::GetSandmanConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+bool Script_GetSandmanConditionFunction(PlayerS* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
-    result = 0;
-    if (apPlayer == DAT_011dea3c)
-        result = DAT_011dea3c->IsInSandman();
+    afReturnValue = 0;
+    if (apRefObject == DAT_011dea3c)
+        afReturnValue = DAT_011dea3c->IsInSandman();
     if (DAT_0126fd98.bDebug)
-        Interface_PrintLine("Player is in Sandman action >> %0.2f", result);
+        Interface_PrintLine("Player is in Sandman action >> %0.2f", afReturnValue);
     return true;
 }
 }  // namespace fnv_005a2810
@@ -16204,19 +16773,22 @@ struct CriticalStageCondition : Actor
 extern const char* DAT_0119bbb0[];
 // Checks if the actor is in the given stage and logs the result when debug is enabled.
 // @fnv 0x005a2910
-// src: EXE 0x005a2910
-bool Cmd_IsInCriticalStage_Eval(Actor* apActor, void* aiStage, void* apUnused, double& result)
+// src: XBOX_RETAIL_PDB 0x005a2910 (was EXE)
+// pdb: Script::IsInCritStageConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: estage, pact
+bool Script_IsInCritStageConditionFunction(Actor* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
-    result = 0;
-    int iStage = (int)aiStage;
-    if (apActor->IsActor())
+    afReturnValue = 0;
+    int iStage = (int)apParam1;
+    if (apRefObject->IsActor())
     {
-        Actor* pActor = apActor;
+        Actor* pActor = apRefObject;
         if (static_cast<CriticalStageCondition*>(pActor)->GetCriticalStage() == iStage)
-            result = 1;
+            afReturnValue = 1;
     }
     if (DAT_0126fd98.bDebug)
-        Interface_PrintLine("Actor %s in stage %s.", result == 1 ? "IS" : "IS NOT", DAT_0119bbb0[iStage]);
+        Interface_PrintLine("Actor %s in stage %s.", afReturnValue == 1 ? "IS" : "IS NOT", DAT_0119bbb0[iStage]);
     return true;
 }
 }  // namespace fnv_005a2910
@@ -16235,7 +16807,7 @@ void Interface_PrintLine(const char*, ...);
 class ArmorB
 {
   public:
-    bool FUN_00514410();
+    bool GetArmorWeight();
 };
 struct FUN_004459e0
 {
@@ -16252,16 +16824,19 @@ class InvB
 InvB* FUN_004bf220(Actor*);
 // Sets result to 1.0 for non-heavy armor or 2.0 for heavy armor when a type 0x18 entry is found; otherwise it remains 0.
 // @fnv 0x005a2ce0
-// src: EXE 0x005a2ce0
-bool Cmd_GetArmorRatingUpperBody_Eval(Actor* apActor, void* apUnused1, void* apUnused2, double& afRating)
+// src: XBOX_RETAIL_PDB 0x005a2ce0 (was EXE)
+// pdb: Script::GetArmorRatingUpperConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pactor, pchange, pitem, parmo, eweight
+bool Script_GetArmorRatingUpperConditionFunction(Actor* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
     Actor* pActor = 0;
-    if (apActor && apActor->IsActor())
-        pActor = apActor;
-    afRating = 0;
+    if (apRefObject && apRefObject->IsActor())
+        pActor = apRefObject;
+    afReturnValue = 0;
     if (pActor)
     {
-        InvB* pInv = FUN_004bf220(apActor);
+        InvB* pInv = FUN_004bf220(apRefObject);
         if (pInv)
         {
             FUN_004459e0* pInventoryEntry = pInv->InventoryChanges_GetWornItem(2, 0);
@@ -16272,18 +16847,18 @@ bool Cmd_GetArmorRatingUpperBody_Eval(Actor* apActor, void* apUnused1, void* apU
                     pArmor = (ArmorB*)pInventoryEntry->FUN_0044ddc0();
                 if (pArmor)
                 {
-                    bool bHeavy = pArmor->FUN_00514410();
+                    bool bHeavy = pArmor->GetArmorWeight();
                     if (!bHeavy)
-                        afRating = 1;
+                        afReturnValue = 1;
                     else
-                        afRating = 2.0;
+                        afReturnValue = 2.0;
                 }
                 delete pInventoryEntry;
             }
         }
     }
     if (DAT_0126fd98.bDebug)
-        Interface_PrintLine("Armor Rating upper body is %0.2f", afRating);
+        Interface_PrintLine("Armor Rating upper body is %0.2f", afReturnValue);
     return true;
 }
 }  // namespace fnv_005a2ce0
@@ -16372,17 +16947,20 @@ class ActorE
 // Checks if the reference is an actor and sets result to 1 if it is evil, logging the actor name when debug is enabled.
 // @fnv 0x005a3390
 // src: XBOX_PDB 0x005a3390
-bool Script_IsActorEvilConditionFunction(ActorE* apActor, void* apUnused1, void* apUnused2, double& result)
+// pdb: Script::IsActorEvilConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pactor
+bool Script_IsActorEvilConditionFunction(ActorE* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
     ActorE* pActor = 0;
-    if (apActor && apActor->IsActor())
-        pActor = apActor;
-    result = 0;
+    if (apRefObject && apRefObject->IsActor())
+        pActor = apRefObject;
+    afReturnValue = 0;
     if (pActor)
     {
         if (pActor->TESObjectREFR_IsPartofEvilFaction())
-            result = 1;
-        if (DAT_0126fd98.bDebug && result != 0)
+            afReturnValue = 1;
+        if (DAT_0126fd98.bDebug && afReturnValue != 0)
             Interface_PrintLine("%s  is evil ", pActor->TESObjectREFR_GetFullName());
         else if (DAT_0126fd98.bDebug)
             Interface_PrintLine("%s  is not evil ", pActor->TESObjectREFR_GetFullName());
@@ -16405,19 +16983,22 @@ void Interface_PrintLine(const char*, ...);
 
 // Checks if the reference actor is the current crime victim target and sets result to 1 or 0, logging the outcome in debug mode.
 // @fnv 0x005a3460
-// src: EXE 0x005a3460
-bool Cmd_IsActorAVictim_Eval(Actor* apActor, void* apUnused1, void* apUnused2, double& result)
+// src: XBOX_RETAIL_PDB 0x005a3460 (was EXE)
+// pdb: Script::IsActorVictimConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pactor, pNPC
+bool Script_IsActorVictimConditionFunction(Actor* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
     Actor* pActor = 0;
-    if (apActor && apActor->IsActor())
-        pActor = apActor;
-    result = 0;
+    if (apRefObject && apRefObject->IsActor())
+        pActor = apRefObject;
+    afReturnValue = 0;
     if (pActor && pActor->IsCharacter())
     {
         void* pTarget = pActor->BGSSaveFormBuffer_GetForm();
         if (pTarget && pTarget == DAT_0126fd98.pTarget)
-            result = 1;
-        if (DAT_0126fd98.bDebug && result != 0)
+            afReturnValue = 1;
+        if (DAT_0126fd98.bDebug && afReturnValue != 0)
             Interface_PrintLine("%s  crime victim ", pActor->TESObjectREFR_GetFullName());
         else if (DAT_0126fd98.bDebug)
             Interface_PrintLine("%s  is not a crime victim ", pActor->TESObjectREFR_GetFullName());
@@ -16439,13 +17020,15 @@ void Interface_PrintLine(const char*, ...);
 bool Interface_Has360Controller();
 // Stores a 0.0 or 1.0 value into result based on FUN_00709d40, logs it when bDebug is set, and returns true.
 // @fnv 0x005a3870
-// src: EXE 0x005a3870
-bool Cmd_IsWin32_Eval(void* reference, void* arg1, void* arg2, double& result)
+// src: XBOX_RETAIL_PDB 0x005a3870 (was EXE)
+// pdb: Script::IsPCConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+bool Script_IsPCConditionFunction(void* reference, void* apParam1, void* apParam2, double& afReturnValue)
 {
-    result = 1;
-    result = Interface_Has360Controller() ? 0.0f : 1.0f;
+    afReturnValue = 1;
+    afReturnValue = Interface_Has360Controller() ? 0.0f : 1.0f;
     if (DAT_0126fd98.bDebug)
-        Interface_PrintLine("IsPC >> %1.0f", result);
+        Interface_PrintLine("IsPC >> %1.0f", afReturnValue);
     return true;
 }
 }  // namespace fnv_005a3870
@@ -16461,17 +17044,20 @@ extern SettingT_GameSettingCollection_ DAT_011d0844;
 // Sets result to 1 when the actor's vfn_344 value against g_thePlayer is at least the DAT_011d0844 setting; otherwise it remains 0.
 // @fnv 0x005a3e90
 // src: XBOX_PDB 0x005a3e90
-bool __cdecl Script_HasFriendDispositionConditionFunction(TESObjectREFR* apActor, void* paramInfo, void* scriptData, double& result)
+// pdb: Script::HasFriendDispositionConditionFunction | TESConditionFunctions.obj | retail, upstream name already matches, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pactor, idispos
+bool __cdecl Script_HasFriendDispositionConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
-    result = 0;
-    if (apActor && apActor->IsActor())
+    afReturnValue = 0;
+    if (apRefObject && apRefObject->IsActor())
     {
-        TESObjectREFR* actor = apActor;
+        TESObjectREFR* actor = apRefObject;
         // The shared Actor slot 0x344 is still declared void with no arguments.
         typedef int (__thiscall* GetDispositionFunction)(TESObjectREFR*, PlayerCharacter*, int);
         int value = reinterpret_cast<GetDispositionFunction>((*reinterpret_cast<void***>(actor))[0x344 / 4])(actor, g_thePlayer, 0);
         if (value >= *reinterpret_cast<int*>(DAT_011d0844.Int()))
-            result = 1;
+            afReturnValue = 1;
     }
     return true;
 }
@@ -16658,10 +17244,13 @@ class ActorK
 };
 // Sets result to 1 when the actor checks pass and the list call's returned object passes its boolean check.
 // @fnv 0x005a3fa0
-// src: EXE 0x005a3fa0
-bool Cmd_IsKillerObject_Eval(ActorK* reference, void* apFormList, void* apUnused, double& result)
+// src: XBOX_RETAIL_PDB 0x005a3fa0 (was EXE)
+// pdb: Script::GetKillerObjectConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pactor, pformlist, pweap, pDeathStruct
+bool Script_GetKillerObjectConditionFunction(ActorK* reference, void* apParam1, void* apParam2, double& afReturnValue)
 {
-    FormK* pList = (FormK*)apFormList;
+    FormK* pList = (FormK*)apParam1;
     ActorK* pActor = 0;
     if (reference && reference->IsActor())
         pActor = reference;
@@ -16670,10 +17259,10 @@ bool Cmd_IsKillerObject_Eval(ActorK* reference, void* apFormList, void* apUnused
         CombatK* pCombat = pActor->BSFile_GetDevice()->FUN_0042e8c0();
         KillerK* pKillerEntry = pCombat->FUN_00825c00();
         if (pKillerEntry && pList->FUN_00500940(&pKillerEntry)->BSSimpleList_TESLevSpell_IsInList())
-            result = 1;
+            afReturnValue = 1;
     }
     if (DAT_0126fd98.bDebug)
-        Interface_PrintLine("IsKillerObject >> %0.2f", result);
+        Interface_PrintLine("IsKillerObject >> %0.2f", afReturnValue);
     return true;
 }
 }  // namespace fnv_005a3fa0
@@ -16780,14 +17369,17 @@ void Interface_PrintLine(const char*, ...);
 // Compares the reference's form type against arg1, stores 1 or 0 in result, and logs the value when bDebug is set.
 // @fnv 0x005a4410
 // src: XBOX_PDB 0x005a4410
-bool Script_GetIsObjectTypeConditionFunction(TESObjectREFR* reference, void* aiType, void* apUnused, double& result)
+// pdb: Script::GetIsObjectTypeConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: formtype
+bool Script_GetIsObjectTypeConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
-    result = 0;
-    int iType = (int)aiType;
-    if (reference->BGSSaveFormBuffer_GetForm()->FUN_00401170() == iType)
-        result = 1;
+    afReturnValue = 0;
+    int iType = (int)apParam1;
+    if (apRefObject->BGSSaveFormBuffer_GetForm()->FUN_00401170() == iType)
+        afReturnValue = 1;
     if (DAT_0126fd98.bDebug)
-        Interface_PrintLine("GetIsObjectType is  >> %0.2f", result);
+        Interface_PrintLine("GetIsObjectType is  >> %0.2f", afReturnValue);
     return true;
 }
 }  // namespace fnv_005a4410
@@ -16891,14 +17483,17 @@ FormW* FUN_006008f0();
 // Sets result to 1 when FUN_006008f0 returns a form with nonnull GetWater(), logs result when bDebug is set, and returns true.
 // @fnv 0x005a45c0
 // src: XBOX_PDB 0x005a45c0
-bool Script_IsWaterObjectConditionFunction(void* reference, void* arg1, void* arg2, double& result)
+// pdb: Script::IsWaterObjectConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pobject
+bool Script_IsWaterObjectConditionFunction(void* reference, void* apParam1, void* apParam2, double& afReturnValue)
 {
-    result = 0;
+    afReturnValue = 0;
     FormW* pForm = FUN_006008f0();
     if (pForm && pForm->GetWater())
-        result = 1;
+        afReturnValue = 1;
     if (DAT_0126fd98.bDebug)
-        Interface_PrintLine("IsWaterActivator >> %0.2f", result);
+        Interface_PrintLine("IsWaterActivator >> %0.2f", afReturnValue);
     return true;
 }
 }  // namespace fnv_005a45c0
@@ -17046,7 +17641,7 @@ class FUN_005a4b40Class
     virtual bool vf100();
 
     unsigned int Actor_GetMinorCrimesNumber();
-    int GetFactionRankSum();
+    int Actor_GetFactionMinorCrime();
 };
 
 bool FUN_005a4b40Class::vf100()
@@ -17060,7 +17655,8 @@ unsigned int FUN_005a4b40Class::Actor_GetMinorCrimesNumber()
     return 0;
 }
 
-int FUN_005a4b40Class::GetFactionRankSum()
+// src: XBOX_RETAIL_PDB 0x008b7e20
+int FUN_005a4b40Class::Actor_GetFactionMinorCrime()
 {
     return 0;
 }
@@ -17068,28 +17664,31 @@ int FUN_005a4b40Class::GetFactionRankSum()
 // Returns a true/false flag and sets result to the faction rank sum (or player value) of the actor, logging minor crimes when the crime flag is set.
 // @fnv 0x005a4aa0
 // src: XBOX_PDB 0x005a4aa0
-bool __cdecl Script_GetMinorCrimeCountConditionFunction(int actor, unsigned int arg2, unsigned int arg3, double& result)
+// pdb: Script::GetMinorCrimeCountConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pactor
+bool __cdecl Script_GetMinorCrimeCountConditionFunction(int apRefObject, unsigned int apParam1, unsigned int apParam2, double& afReturnValue)
 {
-    result = 0.0;
+    afReturnValue = 0.0;
 
-    if (actor != 0 && ((FUN_005a4b40Class*)actor)->vf100())
+    if (apRefObject != 0 && ((FUN_005a4b40Class*)apRefObject)->vf100())
     {
-        FUN_005a4b40Class* object = (FUN_005a4b40Class*)actor;
+        FUN_005a4b40Class* object = (FUN_005a4b40Class*)apRefObject;
 
         if (object == (FUN_005a4b40Class*)_g_thePlayer)
         {
             int value = (int)object->Actor_GetMinorCrimesNumber();
-            result = (double)value;
+            afReturnValue = (double)value;
         }
         else
         {
-            int value = object->GetFactionRankSum();
-            result = (double)value;
+            int value = object->Actor_GetFactionMinorCrime();
+            afReturnValue = (double)value;
         }
 
         if (tlsCrimeFlags[0x268] != 0)
         {
-            DebugLog(kMinorCrimesMsg, result);
+            DebugLog(kMinorCrimesMsg, afReturnValue);
         }
     }
 
@@ -17111,16 +17710,19 @@ void Interface_PrintLine(const char*, ...);
 // Computes the ratio of reference's modified damage per second to arg1's, storing it in result and logging the outcome in debug mode.
 // @fnv 0x005a4cd0
 // src: XBOX_PDB 0x005a4cd0
-bool Script_GetThreatRatioConditionFunction(Actor* reference, void* apTarget, void* apUnused, double& afRatio)
+// pdb: Script::GetThreatRatioConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: ptargetactor, pthisactor
+bool Script_GetThreatRatioConditionFunction(Actor* reference, void* apParam1, void* apParam2, double& afReturnValue)
 {
-    afRatio = 0;
-    Actor* pTarget = (Actor*)apTarget;
+    afReturnValue = 0;
+    Actor* pTarget = (Actor*)apParam1;
     if (reference && reference->IsActor() && pTarget)
     {
         Actor* pActor = reference;
-        afRatio = pActor->GetCombatRating(-1.0f) / pTarget->GetCombatRating(-1.0f);
+        afReturnValue = pActor->GetCombatRating(-1.0f) / pTarget->GetCombatRating(-1.0f);
         if (DAT_0126fd98.bDebug)
-            Interface_PrintLine("GetThreatRatio: '%s' to '%s' >> %.2f", pActor->GetName(), pTarget->GetName(), afRatio);
+            Interface_PrintLine("GetThreatRatio: '%s' to '%s' >> %.2f", pActor->GetName(), pTarget->GetName(), afReturnValue);
     }
     else if (DAT_0126fd98.bDebug)
         Interface_PrintLine("GetThreatRatio >> FAILED");
@@ -17261,18 +17863,21 @@ extern const char* DAT_01186cf4[];
 // Checks if the actor's alignment actor value matches the requested alignment index and logs the result in debug mode.
 // @fnv 0x005a4dd0
 // src: XBOX_PDB 0x005a4dd0
-bool Script_GetIsAlignmentConditionFunction(ActorV* apActor, void* aiAlignment, void* apUnused, double& result)
+// pdb: Script::GetIsAlignmentConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: echeck, pactor
+bool Script_GetIsAlignmentConditionFunction(ActorV* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
-    result = 0;
-    int iAlignment = (int)aiAlignment;
-    if (apActor && apActor->IsActor())
+    afReturnValue = 0;
+    int iAlignment = (int)apParam1;
+    if (apRefObject && apRefObject->IsActor())
     {
-        ActorV* pActor = apActor;
+        ActorV* pActor = apRefObject;
         if (TESActorBaseData_GetAlignmentForKarma(pActor->kAVOwner.GetActorValue(0x17)) == iAlignment)
-            result = 1;
+            afReturnValue = 1;
     }
     if (DAT_0126fd98.bDebug)
-        Interface_PrintLine("GetIsAlignment '%s' >> %s", DAT_01186cf4[iAlignment], result > 0 ? "true" : "false");
+        Interface_PrintLine("GetIsAlignment '%s' >> %s", DAT_01186cf4[iAlignment], afReturnValue > 0 ? "true" : "false");
     return true;
 }
 }  // namespace fnv_005a4dd0
@@ -17293,14 +17898,17 @@ extern const char* DAT_011869bc[];
 // Compares FUN_00479430(FUN_006008f0()) with arg1, stores 1 or 0 in result, and logs the indexed label in debug mode.
 // @fnv 0x005a4ea0
 // src: XBOX_PDB 0x005a4ea0
-bool Script_GetIsUsedItemEquipTypeConditionFunction(void* reference, void* aiEquipType, void* apUnused, double& result)
+// pdb: Script::GetIsUsedItemEquipTypeConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: echeck
+bool Script_GetIsUsedItemEquipTypeConditionFunction(void* reference, void* apParam1, void* apParam2, double& afReturnValue)
 {
-    result = 0;
-    int iType = (int)aiEquipType;
+    afReturnValue = 0;
+    int iType = (int)apParam1;
     if (FUN_006008f0() && FUN_00479430(FUN_006008f0()) == iType)
-        result = 1;
+        afReturnValue = 1;
     if (DAT_0126fd98.bDebug)
-        Interface_PrintLine("GetIsUsedItemEquipType '%s' >> %s", DAT_011869bc[iType], result > 0 ? "true" : "false");
+        Interface_PrintLine("GetIsUsedItemEquipType '%s' >> %s", DAT_011869bc[iType], afReturnValue > 0 ? "true" : "false");
     return true;
 }
 }  // namespace fnv_005a4ea0
@@ -17459,22 +18067,25 @@ class Proc
 
 // Sets result when the actor's package chain exists and the package method returns 0xe; logs a message when bDebug is set.
 // @fnv 0x005a4f30
-// src: EXE 0x005a4f30
-bool Cmd_GetActorAggroRadiusViolated_Eval(Actor* apActor, void* apUnused1, void* apUnused2, double& result)
+// src: XBOX_RETAIL_PDB 0x005a4f30 (was EXE)
+// pdb: Script::GetAggroRadiusViolatedConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pact
+bool Script_GetAggroRadiusViolatedConditionFunction(Actor* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
-    result = 0;
-    if (apActor && apActor->IsActor())
+    afReturnValue = 0;
+    if (apRefObject && apRefObject->IsActor())
     {
-        Actor* pActor = apActor;
+        Actor* pActor = apRefObject;
         if (reinterpret_cast<Proc*>(pActor->FUN_008d8520()) && reinterpret_cast<Proc*>(pActor->FUN_008d8520())->GetPkg() &&
             reinterpret_cast<Proc*>(pActor->FUN_008d8520())->GetPkg()->FUN_0041ca90() == 0xe)
-            result = 1;
+            afReturnValue = 1;
         if (DAT_0126fd98.bDebug)
         {
-            if (result > 0)
-                Interface_PrintLine("%s has his aggro radius violated ", apActor->TESObjectREFR_GetFullName());
+            if (afReturnValue > 0)
+                Interface_PrintLine("%s has his aggro radius violated ", apRefObject->TESObjectREFR_GetFullName());
             else
-                Interface_PrintLine("%s does not have his aggro radius violated ", apActor->TESObjectREFR_GetFullName());
+                Interface_PrintLine("%s does not have his aggro radius violated ", apRefObject->TESObjectREFR_GetFullName());
         }
     }
     return true;
@@ -17494,7 +18105,7 @@ void Interface_PrintLine(const char*, ...);
 class ProcC
 {
   public:
-    bool HasActiveEffectOfArchetype(int, int);
+    bool MagicTarget_IsEffectTarget(int, int);
 };
 class ActorC
 {
@@ -17607,20 +18218,23 @@ bool ConcussionEffect_GetCheckingConcussions();
 // When the reference passes the checks, tests for active effect archetype 0x21, stores 1 if present, and logs when bDebug is set.
 // @fnv 0x005a5020
 // src: XBOX_PDB 0x005a5020
-bool Script_GetConcussedConditionFunction(ActorC* apActor, void* apUnused1, void* apUnused2, double& afIsConcussed)
+// pdb: Script::GetConcussedConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pactor
+bool Script_GetConcussedConditionFunction(ActorC* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
-    afIsConcussed = 0;
-    if (apActor && apActor->IsActor() && ConcussionEffect_GetCheckingConcussions())
+    afReturnValue = 0;
+    if (apRefObject && apRefObject->IsActor() && ConcussionEffect_GetCheckingConcussions())
     {
-        ActorC* pActor = apActor;
-        if (pActor->kProc.HasActiveEffectOfArchetype(0x21, 0))
-            afIsConcussed = 1;
+        ActorC* pActor = apRefObject;
+        if (pActor->kProc.MagicTarget_IsEffectTarget(0x21, 0))
+            afReturnValue = 1;
         if (DAT_0126fd98.bDebug)
         {
-            if (afIsConcussed > 0)
-                Interface_PrintLine("%s is concussed", apActor->TESObjectREFR_GetFullName());
+            if (afReturnValue > 0)
+                Interface_PrintLine("%s is concussed", apRefObject->TESObjectREFR_GetFullName());
             else
-                Interface_PrintLine("%s is not concussed ", apActor->TESObjectREFR_GetFullName());
+                Interface_PrintLine("%s is not concussed ", apRefObject->TESObjectREFR_GetFullName());
         }
     }
     return true;
@@ -17695,7 +18309,7 @@ class refv_a5580
     virtual void v62(void);
     virtual void v63(void);
     virtual bool BackAreaFree(void);
-    double Actor_GetVATSAreaFree(unsigned int arg, float angle);
+    double Actor_GetVATSAreaFree(unsigned int apTarget, float afAngle);
 };
 
 struct tls_a5580
@@ -17710,20 +18324,23 @@ void __cdecl DebugLog(const char* fmt, ...);
 // If reference is non-null and BackAreaFree succeeds, writes FUN_008bd830's result; logs result when the TLS flag is set, then returns true.
 // @fnv 0x005a5580
 // src: XBOX_PDB 0x005a5580
-bool __cdecl Script_GetVATSBackAreaFreeConditionFunction(TESObjectREFR* reference, void* arg1, void* arg2, double& result)
+// pdb: Script::GetVATSBackAreaFreeConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: ptargetRef
+bool __cdecl Script_GetVATSBackAreaFreeConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
-    result = 0.0;
-    unsigned int arg = (unsigned int)arg1;
-    if (reference != 0)
+    afReturnValue = 0.0;
+    unsigned int arg = (unsigned int)apParam1;
+    if (apRefObject != 0)
     {
-        if (((refv_a5580*)reference)->BackAreaFree())
+        if (((refv_a5580*)apRefObject)->BackAreaFree())
         {
-            result = ((refv_a5580*)reference)->Actor_GetVATSAreaFree(arg, 3.14159274f);
+            afReturnValue = ((refv_a5580*)apRefObject)->Actor_GetVATSAreaFree(arg, 3.14159274f);
         }
     }
     if (tlsdata_a5580.f004)
     {
-        DebugLog("VATSBackAreaFree >> %.2f", result);
+        DebugLog("VATSBackAreaFree >> %.2f", afReturnValue);
     }
     return true;
 }
@@ -17732,7 +18349,7 @@ namespace fnv_005a5690 {
 // 0x008bdbd0 is the actor VATS visibility query; retain this call site's float result.
 struct RightTargetVisibilityCondition : Actor
 {
-    float GetTargetVisibility(Actor* target, float angle);
+    float GetTargetVisibility(Actor* target, float afAngle);
 };
 struct TlsData
 {
@@ -17747,14 +18364,17 @@ void Interface_PrintLine(const char*, ...);
 // Calls FUN_008bdbd0 on reference with arg1 and 1.5707964f, stores its return value, and logs it.
 // @fnv 0x005a5690
 // src: XBOX_PDB 0x005a5690
-bool Script_GetVATSRightTargetVisibleConditionFunction(Actor* reference, void* apTarget, void* apUnused, double& afVisibility)
+// pdb: Script::GetVATSRightTargetVisibleConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: ptargetRef
+bool Script_GetVATSRightTargetVisibleConditionFunction(Actor* reference, void* apParam1, void* apParam2, double& afReturnValue)
 {
-    afVisibility = 0;
-    Actor* pTarget = (Actor*)apTarget;
+    afReturnValue = 0;
+    Actor* pTarget = (Actor*)apParam1;
     if (reference && reference->IsActor())
-        afVisibility = static_cast<RightTargetVisibilityCondition*>(reference)->GetTargetVisibility(pTarget, 1.5707964f);
+        afReturnValue = static_cast<RightTargetVisibilityCondition*>(reference)->GetTargetVisibility(pTarget, 1.5707964f);
     if (DAT_0126fd98.bDebug)
-        Interface_PrintLine("VATSRightTargetVisible >> %.2f", afVisibility);
+        Interface_PrintLine("VATSRightTargetVisible >> %.2f", afReturnValue);
     return true;
 }
 }  // namespace fnv_005a5690
@@ -17778,12 +18398,14 @@ extern ProcMgr DAT_011e0e80;
 // Stores the value returned by DAT_011e0e80.GetFieldPointer into result and logs it when bDebug is set.
 // @fnv 0x005a5ab0
 // src: XBOX_PDB 0x005a5ab0
-bool Script_GetActorsInHighConditionFunction(void* reference, void* arg1, void* arg2, double& result)
+// pdb: Script::GetActorsInHighConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+bool Script_GetActorsInHighConditionFunction(void* reference, void* apParam1, void* apParam2, double& afReturnValue)
 {
-    result = 0;
-    result = DAT_011e0e80.GetFieldPointer();
+    afReturnValue = 0;
+    afReturnValue = DAT_011e0e80.GetFieldPointer();
     if (DAT_0126fd98.bDebug)
-        Interface_PrintLine("GetActorsInHigh >> %0.2f", result);
+        Interface_PrintLine("GetActorsInHigh >> %0.2f", afReturnValue);
     return true;
 }
 }  // namespace fnv_005a5ab0
@@ -18093,16 +18715,19 @@ static const char str_01034eb4[] = "%s sees %s";
 static const char str_01034ea4[] = "%s can't see %s";
 // Determines whether reference can see target, using a camera raycast for the player or a visibility check for other actors, and stores the result in result.
 // @fnv 0x0059c990
-// src: EXE 0x0059c990
-bool __cdecl Cmd_GetLineOfSight_Eval(TESObjectREFR* reference, void* target, void*, double& result)
+// src: XBOX_DEBUG_PDB 0x0059c990 (was EXE)
+// pdb: Script::GetLOSConditionFunction | TESConditionFunctions.obj | debug, unique string literal, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: bInSight, pTarget, pAttacker, pcamnode, bpick, pp, pcam, temp, collector, fltr, icolFilter, pickRes, fzs, pmob, position, destPoint, fTargetHeight, i, phitref, phit
+bool __cdecl Script_GetLOSConditionFunction(TESObjectREFR* reference, void* apParam1, void*, double& afReturnValue)
 {
-    result = 0.0;
+    afReturnValue = 0.0;
     if (reference)
     {
         VisibilityRef* actor = 0;
         if (reference && reference->IsActor())
             actor = reinterpret_cast<VisibilityRef*>(reference);
-        VisibilityRef* other = static_cast<VisibilityRef*>(target);
+        VisibilityRef* other = static_cast<VisibilityRef*>(apParam1);
         bool visible = false;
         if (actor && other)
         {
@@ -18162,18 +18787,18 @@ bool __cdecl Cmd_GetLineOfSight_Eval(TESObjectREFR* reference, void* target, voi
                         }
                     }
                     if (visible)
-                        result = 1.0;
+                        afReturnValue = 1.0;
                     else
-                        result = actor->Actor_LineOfSight(0, other, 1, 0, 0);
+                        afReturnValue = actor->Actor_LineOfSight(0, other, 1, 0, 0);
                 }
             }
             else
             {
-                result = actor->Actor_LineOfSight(0, other, 1, 0, 0);
+                afReturnValue = actor->Actor_LineOfSight(0, other, 1, 0, 0);
             }
             if (visibilityTls[0x268])
             {
-                if (result != 0.0)
+                if (afReturnValue != 0.0)
                     DebugLog(str_01034eb4, actor->TESObjectREFR_GetFullName(), other->TESObjectREFR_GetFullName());
                 else
                     DebugLog(str_01034ea4, actor->TESObjectREFR_GetFullName(), other->TESObjectREFR_GetFullName());
@@ -18220,20 +18845,23 @@ static const char s_szIsInListFormat[] = "IsInList >> %0.2f";
 // Checks if the actor's bound object is in the given form list, writing 1.0 or 0.0 to pdResult and echoing the result to the console when enabled.
 // @fnv 0x0059f890
 // src: XBOX_PDB 0x0059f890
-bool Script_IsInListConditionFunction(Actor* pkActor, ListForm* pkListArg, void* pvUnused, double* pdResult)
+// pdb: Script::IsInListConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pformlist, pobj
+bool Script_IsInListConditionFunction(Actor* apRefObject, ListForm* apParam1, void* apParam2, double* afReturnValue)
 {
-    *pdResult = 0.0;
-    ListForm* pkList = pkListArg;
-    if (pkActor && pkList)
+    *afReturnValue = 0.0;
+    ListForm* pkList = apParam1;
+    if (apRefObject && pkList)
     {
-        BoundObject* pkObject = reinterpret_cast<Process*>(pkActor->BSFile_GetDevice())->ExtraDataList_GetLevCreaOriginalBase();
+        BoundObject* pkObject = reinterpret_cast<Process*>(apRefObject->BSFile_GetDevice())->ExtraDataList_GetLevCreaOriginalBase();
         if (!pkObject)
-            pkObject = reinterpret_cast<BoundObject*>(pkActor->BGSSaveFormBuffer_GetForm());
+            pkObject = reinterpret_cast<BoundObject*>(apRefObject->BGSSaveFormBuffer_GetForm());
         if (pkObject && pkList->FUN_00500940()->BSSimpleList_TESLevSpell_IsInList(pkObject))
-            *pdResult = 1.0;
+            *afReturnValue = 1.0;
     }
     if (tls_bEchoConsole)
-        Interface_PrintLine(s_szIsInListFormat, *pdResult);
+        Interface_PrintLine(s_szIsInListFormat, *afReturnValue);
     return true;
 }
 
@@ -18261,12 +18889,15 @@ static const float flagResults[7] = {45.0f, 48.0f, 8.0f, 10.0f, 7.0f, 46.0f, 4.0
 // Maps the actor's current procedure code to a result value via a switch, adjusting for target type and flags when the procedure is 42.
 // @fnv 0x005a1210
 // src: XBOX_PDB 0x005a1210
-bool __cdecl Script_GetCurrentAIProcedureConditionFunction(TESObjectREFR* reference, void* apUnused1, void* apUnused2, double& result)
+// pdb: Script::GetCurrentAIProcedureConditionFunction | TESConditionFunctions.obj | retail, upstream name already matches, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pactor, iprocIndex, pproc, eproc, iprocType, ppack, pcombatController, psandData, esandState, uiproc
+bool __cdecl Script_GetCurrentAIProcedureConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
-    result = 0.0;
+    afReturnValue = 0.0;
     Actor* actor = 0;
-    if (reference && reference->IsActor())
-        actor = (Actor*)reference;
+    if (apRefObject && apRefObject->IsActor())
+        actor = (Actor*)apRefObject;
     {
         TESPackage* package;
         {
@@ -18293,137 +18924,137 @@ bool __cdecl Script_GetCurrentAIProcedureConditionFunction(TESObjectREFR* refere
                             switch (procedure)
                             {
                             case 0:
-                                result = 0.0;
+                                afReturnValue = 0.0;
                                 break;
                             case 2:
-                                result = 1.0;
+                                afReturnValue = 1.0;
                                 break;
                             case 3:
-                                result = 2.0;
+                                afReturnValue = 2.0;
                                 break;
                             case 13:
-                                result = 3.0;
+                                afReturnValue = 3.0;
                                 break;
                             case 12:
-                                result = 4.0;
+                                afReturnValue = 4.0;
                                 break;
                             case 16:
-                                result = 5.0;
+                                afReturnValue = 5.0;
                                 break;
                             case 20:
-                                result = 6.0;
+                                afReturnValue = 6.0;
                                 break;
                             case 1:
-                                result = 7.0;
+                                afReturnValue = 7.0;
                                 break;
                             case 4:
-                                result = 8.0;
+                                afReturnValue = 8.0;
                                 break;
                             case 18:
-                                result = 9.0;
+                                afReturnValue = 9.0;
                                 break;
                             case 5:
-                                result = 10.0;
+                                afReturnValue = 10.0;
                                 break;
                             case 6:
-                                result = 11.0;
+                                afReturnValue = 11.0;
                                 break;
                             case 7:
-                                result = 12.0;
+                                afReturnValue = 12.0;
                                 break;
                             case 9:
-                                result = 13.0;
+                                afReturnValue = 13.0;
                                 break;
                             case 8:
-                                result = 14.0;
+                                afReturnValue = 14.0;
                                 break;
                             case 15:
-                                result = 15.0;
+                                afReturnValue = 15.0;
                                 break;
                             case 10:
-                                result = 16.0;
+                                afReturnValue = 16.0;
                                 break;
                             case 54:
-                                result = 17.0;
+                                afReturnValue = 17.0;
                                 break;
                             case 11:
-                                result = 18.0;
+                                afReturnValue = 18.0;
                                 break;
                             case 14:
-                                result = 19.0;
+                                afReturnValue = 19.0;
                                 break;
                             case 17:
-                                result = 20.0;
+                                afReturnValue = 20.0;
                                 break;
                             case 22:
-                                result = 21.0;
+                                afReturnValue = 21.0;
                                 break;
                             case 23:
-                                result = 22.0;
+                                afReturnValue = 22.0;
                                 break;
                             case 24:
-                                result = 23.0;
+                                afReturnValue = 23.0;
                                 break;
                             case 25:
-                                result = 24.0;
+                                afReturnValue = 24.0;
                                 break;
                             case 27:
-                                result = 27.0;
+                                afReturnValue = 27.0;
                                 break;
                             case 28:
-                                result = 28.0;
+                                afReturnValue = 28.0;
                                 break;
                             case 29:
-                                result = 29.0;
+                                afReturnValue = 29.0;
                                 break;
                             case 30:
-                                result = 30.0;
+                                afReturnValue = 30.0;
                                 break;
                             case 31:
-                                result = 31.0;
+                                afReturnValue = 31.0;
                                 break;
                             case 32:
-                                result = 32.0;
+                                afReturnValue = 32.0;
                                 break;
                             case 33:
-                                result = 33.0;
+                                afReturnValue = 33.0;
                                 break;
                             case 34:
-                                result = 34.0;
+                                afReturnValue = 34.0;
                                 break;
                             case 35:
-                                result = 35.0;
+                                afReturnValue = 35.0;
                                 break;
                             case 36:
-                                result = 36.0;
+                                afReturnValue = 36.0;
                                 break;
                             case 37:
-                                result = 37.0;
+                                afReturnValue = 37.0;
                                 break;
                             case 38:
-                                result = 38.0;
+                                afReturnValue = 38.0;
                                 break;
                             case 39:
-                                result = 39.0;
+                                afReturnValue = 39.0;
                                 break;
                             case 40:
-                                result = 40.0;
+                                afReturnValue = 40.0;
                                 break;
                             case 44:
-                                result = 41.0;
+                                afReturnValue = 41.0;
                                 break;
                             case 50:
-                                result = 42.0;
+                                afReturnValue = 42.0;
                                 break;
                             case 49:
-                                result = 43.0;
+                                afReturnValue = 43.0;
                                 break;
                             case 47:
-                                result = 44.0;
+                                afReturnValue = 44.0;
                                 break;
                             case 42: {
                                 ProcedureTarget* target = reinterpret_cast<ProcedureTarget*>(process->GetCurrentPackageData());
-                                result = 45.0;
+                                afReturnValue = 45.0;
                                 if (target)
                                 {
                                     int targetType = target->type;
@@ -18431,29 +19062,29 @@ bool __cdecl Script_GetCurrentAIProcedureConditionFunction(TESObjectREFR* refere
                                     {
                                         unsigned int flagIndex = target->GetFlags() + 1;
                                         if (flagIndex < 7)
-                                            result = flagResults[flagIndex];
+                                            afReturnValue = flagResults[flagIndex];
                                     }
                                     else if (targetType >= 0 && (unsigned int)targetType < 4)
                                     {
-                                        result = targetTypeResults[targetType];
+                                        afReturnValue = targetTypeResults[targetType];
                                     }
                                 }
                                 break;
                             }
                             case 43:
-                                result = 46.0;
+                                afReturnValue = 46.0;
                                 break;
                             case 41:
-                                result = 47.0;
+                                afReturnValue = 47.0;
                                 break;
                             case 51:
-                                result = 49.0;
+                                afReturnValue = 49.0;
                                 break;
                             case 52:
-                                result = 50.0;
+                                afReturnValue = 50.0;
                                 break;
                             default:
-                                result = -1.0;
+                                afReturnValue = -1.0;
                                 break;
                             }
                         }
@@ -18463,7 +19094,7 @@ bool __cdecl Script_GetCurrentAIProcedureConditionFunction(TESObjectREFR* refere
         }
     }
     if (bPrintConditionDebug)
-        DebugLog("Procedure >> %0.2f", result);
+        DebugLog("Procedure >> %0.2f", afReturnValue);
     return true;
 }
 
@@ -18492,14 +19123,17 @@ void Log(const char* fmt, ...);
 // Maps sel->GetSub()->Index() to a numeric value in out when the object checks pass, then logs out when enabled.
 // @fnv 0x005a0b60
 // src: XBOX_PDB 0x005a0b60
-bool Script_GetCurrentAIPackageConditionFunction(Obj* obj, int aiUnused1, int aiUnused2, double* out)
+// pdb: Script::GetCurrentAIPackageConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pactor
+bool Script_GetCurrentAIPackageConditionFunction(Obj* apRefObject, int apParam1, int apParam2, double* afReturnValue)
 {
-    *out = 0.0;
+    *afReturnValue = 0.0;
     Obj* sel = 0;
     typedef unsigned char(__thiscall * VFn)(Obj*);
-    if (obj != 0 && ((VFn)((void**)(*(void**)obj))[64])(obj))
+    if (apRefObject != 0 && ((VFn)((void**)(*(void**)apRefObject))[64])(apRefObject))
     {
-        sel = obj;
+        sel = apRefObject;
     }
     if (sel != 0)
     {
@@ -18510,100 +19144,100 @@ bool Script_GetCurrentAIPackageConditionFunction(Obj* obj, int aiUnused1, int ai
                 switch (sel->GetSub()->Index())
                 {
                 case 0:
-                    *out = 0.0;
+                    *afReturnValue = 0.0;
                     break;
                 case 1:
-                    *out = 1.0;
+                    *afReturnValue = 1.0;
                     break;
                 case 2:
-                    *out = 2.0;
+                    *afReturnValue = 2.0;
                     break;
                 case 3:
-                    *out = 3.0;
+                    *afReturnValue = 3.0;
                     break;
                 case 4:
-                    *out = 4.0;
+                    *afReturnValue = 4.0;
                     break;
                 case 18:
-                    *out = 5.0;
+                    *afReturnValue = 5.0;
                     break;
                 case 28:
-                    *out = 6.0;
+                    *afReturnValue = 6.0;
                     break;
                 case 20:
-                    *out = 7.0;
+                    *afReturnValue = 7.0;
                     break;
                 case 21:
-                    *out = 8.0;
+                    *afReturnValue = 8.0;
                     break;
                 case 24:
-                    *out = 9.0;
+                    *afReturnValue = 9.0;
                     break;
                 case 22:
-                    *out = 10.0;
+                    *afReturnValue = 10.0;
                     break;
                 case 23:
-                    *out = 11.0;
+                    *afReturnValue = 11.0;
                     break;
                 case 25:
-                    *out = 12.0;
+                    *afReturnValue = 12.0;
                     break;
                 case 5:
-                    *out = 13.0;
+                    *afReturnValue = 13.0;
                     break;
                 case 6:
-                    *out = 14.0;
+                    *afReturnValue = 14.0;
                     break;
                 case 7:
-                    *out = 15.0;
+                    *afReturnValue = 15.0;
                     break;
                 case 8:
-                    *out = 16.0;
+                    *afReturnValue = 16.0;
                     break;
                 case 9:
-                    *out = 17.0;
+                    *afReturnValue = 17.0;
                     break;
                 case 10:
-                    *out = 18.0;
+                    *afReturnValue = 18.0;
                     break;
                 case 11:
-                    *out = 19.0;
+                    *afReturnValue = 19.0;
                     break;
                 case 19:
-                    *out = 20.0;
+                    *afReturnValue = 20.0;
                     break;
                 case 26:
-                    *out = 21.0;
+                    *afReturnValue = 21.0;
                     break;
                 case 27:
-                    *out = 24.0;
+                    *afReturnValue = 24.0;
                     break;
                 case 29:
-                    *out = 28.0;
+                    *afReturnValue = 28.0;
                     break;
                 case 30:
-                    *out = 29.0;
+                    *afReturnValue = 29.0;
                     break;
                 case 31:
-                    *out = 32.0;
+                    *afReturnValue = 32.0;
                     break;
                 case 16:
-                    *out = 33.0;
+                    *afReturnValue = 33.0;
                     break;
                 case 15:
-                    *out = 34.0;
+                    *afReturnValue = 34.0;
                     break;
                 case 14:
-                    *out = 35.0;
+                    *afReturnValue = 35.0;
                     break;
                 case 12:
-                    *out = 36.0;
+                    *afReturnValue = 36.0;
                     break;
                 case 13:
-                    *out = 37.0;
+                    *afReturnValue = 37.0;
                     break;
                 default:
-                    *out = -1.0;
+                    *afReturnValue = -1.0;
                     break;
                 }
             }
@@ -18611,7 +19245,7 @@ bool Script_GetCurrentAIPackageConditionFunction(Obj* obj, int aiUnused1, int ai
     }
     if (g_threadData.logEnabled)
     {
-        Log("Current Process >> %0.2f", *out);
+        Log("Current Process >> %0.2f", *afReturnValue);
     }
     return true;
 }
@@ -18629,6 +19263,9 @@ struct GetInFactionCache_0059f630
 // Checks if apRefObject is in the faction apParam1, using a static cache to avoid repeated HasFaction calls, and writes the result to afReturnValue.
 // @fnv 0x0059f630
 // src: XBOX_PDB 0x0059f630
+// pdb: Script::GetInFactionConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pfac, pact
 bool Script_GetInFactionConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double* afReturnValue)
 {
     *afReturnValue = 0.0;
@@ -18665,6 +19302,8 @@ static bool __cdecl InFactionConditionForPlayerCallee(TESObjectREFR* reference, 
 
 // @fnv 0x0059f790
 // src: EXE 0x0059f790
+// pdb: Script::GetPCInFactionConditionFunction | TESConditionFunctions.obj | debug, object-file gap fill, medium
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
 bool __cdecl Cmd_GetPCInFaction_Eval(TESObjectREFR* reference, void* arg1, void* arg2, double& result)
 {
     return InFactionConditionForPlayerCallee((TESObjectREFR*)g_thePlayer, arg1, arg2, result);
@@ -18684,6 +19323,9 @@ static __declspec(thread) unsigned char tlsBuffer[0x269];
 // Stores FUN_00884320() in afReturnValue for an actor and logs the value when tlsBuffer[0x268] is set.
 // @fnv 0x005a2ba0
 // src: XBOX_PDB 0x005a2ba0
+// pdb: Script::GetBarterGoldConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pactor
 bool Script_GetBarterGoldConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double& afReturnValue)
 {
     Actor* pactor = 0;
@@ -18881,6 +19523,9 @@ extern __declspec(thread) VoiceCondition59f450Thread voiceCondition59f450Thread;
 // Compares the selected voice type with apParam1 and stores the reference and voice type in two globals for reuse.
 // @fnv 0x0059f450
 // src: XBOX_PDB 0x0059f450
+// pdb: Script::GetIsVoiceTypeConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pcompvoice, pab, pta
 bool __cdecl Script_GetIsVoiceTypeConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double* afReturnValue)
 {
     *afReturnValue = 0.0;
@@ -19192,6 +19837,9 @@ struct P01Proc
 // Returns 1.0 if the actor's process reports an idle-animation stop state of 3 or 4, otherwise 0.0.
 // @fnv 0x005a08c0
 // src: XBOX_PDB 0x005a08c0
+// pdb: Script::GetKnockedStateConditionFunction | TESConditionFunctions.obj | retail, string-set bridge, high
+// pdb params: apRefObject, apParam1, apParam2, afReturnValue
+// pdb locals: pactor, pprocess
 bool Script_GetKnockedStateConditionFunction(TESObjectREFR* apRefObject, void* apParam1, void* apParam2, double* afReturnValue)
 {
     *afReturnValue = 0.0;

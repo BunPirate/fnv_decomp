@@ -65,9 +65,9 @@ public:
     virtual void InitItem();
 
     void ResetFormData();
-    bool Load(TESFile* file);
+    bool Load(TESFile* apFile);
     // TESForm vtable slot 8 (vftable 0x102c51c slot 8 = 0x51f630)
-    bool LoadForm(TESFile* file);
+    bool LoadForm(TESFile* apFile);
     void QueueResourceLoad(int priority, QueuedFile* file, bool flag);
     unsigned short GetShortAtOffset1C0();
     float GetField14C();
@@ -77,11 +77,11 @@ public:
     bool GetIsAutomaticWeapon();
     unsigned int FUN_0051f5f0(); // 0x0051f5f0
     bool GetBurstShot();
-    int GetClipRounds(bool extended);
-    TESAmmo* GetCurrentAmmo(Actor* actor);
-    BGSProjectile* GetProjectileData(Actor* actor);
+    int GetClipRounds(bool bModValue);
+    TESAmmo* GetCurrentAmmo(Actor* apWeaponHolder);
+    BGSProjectile* GetProjectileData(Actor* apWeaponHolder);
     float GetProjectileData();
-    unsigned char GetDamageForActor(bool split, bool unknown, Actor* actor);
+    unsigned char GetDamageForActor(bool bUseModValue, bool bIgnoreAmmo, Actor* apWeaponHolder);
     void SetModItem(unsigned int slot, TESObjectIMOD* item);
     void SetModItem(unsigned char slot, TESObjectIMOD* item);
     int GetWeaponType() const;
@@ -89,7 +89,7 @@ public:
     int GetCombatWeaponType();
     int TESObjectWEAP_GetCombatWeaponType();
     int GetReloadAnim(bool modded);
-    int GetFlaggedValue(unsigned char value);
+    int GetFlaggedValue(unsigned char bModValue);
     int GetField19C();
     bool GetHideBackpack();
     bool GetHasScope();
@@ -98,7 +98,7 @@ public:
     TESModel* GetModTESModel(unsigned char mods, bool flag);
     TESSound* GetField238();
     TESSound* GetField23C();
-    void Fire(TESObjectREFR* reference);
+    void Fire(TESObjectREFR* apSource);
     bool IsRanged();
     bool IsMelee();
     int GetModdedValue(bool flag);
@@ -133,13 +133,13 @@ public:
     float GetWeightForForm(bool modded);
 
     int FUN_00446390();
-    TESBoundObject* TESObjectWEAP_GetCurrentAmmo(PlayerCharacter* pc);
-    void* TESObjectWEAP_GetCurrentAmmo(int value);
+    TESBoundObject* TESObjectWEAP_GetCurrentAmmo(PlayerCharacter* apWeaponHolder);
+    void* TESObjectWEAP_GetCurrentAmmo(int apWeaponHolder);
     int FUN_0051e2a0(unsigned char value);
     float GetAttackSpeed(bool modded);
     float GetAmmoRegenRate(bool modded);
     float GetAmmoRegenRate(int value);
-    int FUN_00525b20(int first, int second, int third);
+    int FUN_00525b20(int bUseModValue, int bIgnoreAmmo, int apWeaponHolder);
     TESModel* TESCasino_GetData();
     bool FUN_004c94d0();
     bool IsTwoHandedWeapon();
@@ -153,24 +153,24 @@ public:
     void TESObjectWEAP_SetAttackLoop(TESSound* sound);
 
     WeaponProperties data;
-    WeaponCriticalData m_kCriticalData;
-    TESModel m_kModel;
-    TESModel m_kModel1stPerson;
-    TESModel m_kModel3rdPerson;
-    TESEffectShader* m_pWeaponEffectShader;
-    TESSound* m_pWeaponSound1;
-    TESSound* m_pWeaponSound2;
-    TESSound* m_pWeaponSound3;
-    TESSound* m_pWeaponSound4;
-    TESSound* m_pWeaponSound5;
-    TESSound* m_pWeaponSound6;
-    TESSound* m_pWeaponSound7;
-    TESSound* m_pWeaponSound8;
-    TESSound* m_pWeaponUnequipSound;
-    TESSound* m_pWeaponEquipSound;
-    TESSound* m_pWeaponPickupSound;
-    TESSound* m_pWeaponDropSound;
-    BGSImpactDataSet* m_pImpactDataSet;
+    WeaponCriticalData criticalData; // src: XBOX_RETAIL_PDB +0x1c0 (old: m_kCriticalData)
+    TESModel ShellCasingModel; // src: XBOX_RETAIL_PDB +0x1d0 (old: m_kModel)
+    TESModel ScopeModel; // src: XBOX_RETAIL_PDB +0x1e8 (old: m_kModel1stPerson)
+    TESModel WorldModel; // src: XBOX_RETAIL_PDB +0x200 (old: m_kModel3rdPerson)
+    TESEffectShader* pScopeEffect; // src: XBOX_RETAIL_PDB +0x218 (old: m_pWeaponEffectShader)
+    TESSound* pAttackSound; // src: XBOX_RETAIL_PDB +0x21c (old: m_pWeaponSound1)
+    TESSound* pAttackSound2; // src: XBOX_RETAIL_PDB +0x220 (old: m_pWeaponSound2)
+    TESSound* pAttackSound2D; // src: XBOX_RETAIL_PDB +0x224 (old: m_pWeaponSound3)
+    TESSound* pAttackLoop; // src: XBOX_RETAIL_PDB +0x228 (old: m_pWeaponSound4)
+    TESSound* pAttackFailSound; // src: XBOX_RETAIL_PDB +0x22c (old: m_pWeaponSound5)
+    TESSound* pMeleeBlockSound; // src: XBOX_RETAIL_PDB +0x230 (old: m_pWeaponSound6)
+    TESSound* pIdleSound; // src: XBOX_RETAIL_PDB +0x234 (old: m_pWeaponSound7)
+    TESSound* pEquipSound; // src: XBOX_RETAIL_PDB +0x238 (old: m_pWeaponSound8)
+    TESSound* pUnEquipSound; // src: XBOX_RETAIL_PDB +0x23c (old: m_pWeaponUnequipSound)
+    TESSound* pModSilencedSound; // src: XBOX_RETAIL_PDB +0x240 (old: m_pWeaponEquipSound)
+    TESSound* pModSilencedSound2; // src: XBOX_RETAIL_PDB +0x244 (old: m_pWeaponPickupSound)
+    TESSound* pModSilencedSound2D; // src: XBOX_RETAIL_PDB +0x248 (old: m_pWeaponDropSound)
+    BGSImpactDataSet* pImpactDataSet; // src: XBOX_RETAIL_PDB +0x24c (old: m_pImpactDataSet)
     TESObjectSTAT* p1stPersonObject;
     TESObjectSTAT* p1stPersonMod1Object;
     TESObjectSTAT* p1stPersonMod2Object;
@@ -179,20 +179,20 @@ public:
     TESObjectSTAT* p1stPersonMod23Object;
     TESObjectSTAT* p1stPersonMod13Object;
     TESObjectSTAT* p1stPersonMod123Object;
-    TESModelTextureSwap m_kWeaponModTextureSwap1;
-    TESModelTextureSwap m_kWeaponModTextureSwap2;
-    TESModelTextureSwap m_kWeaponModTextureSwap3;
-    TESModelTextureSwap m_kWeaponModTextureSwap4;
-    TESModelTextureSwap m_kWeaponModTextureSwap5;
-    TESModelTextureSwap m_kWeaponModTextureSwap6;
-    TESModelTextureSwap m_kWeaponModTextureSwap7;
-    TESObjectIMOD* m_pWeaponMod1;
-    TESObjectIMOD* m_pWeaponMod2;
-    TESObjectIMOD* m_pWeaponMod3;
-    BSStringT<char> m_kEmbeddedWeaponNodeName;
-    SOUND_LEVEL m_eSoundLevel;
+    TESModelTextureSwap WorldModelMod1; // src: XBOX_RETAIL_PDB +0x270 (old: m_kWeaponModTextureSwap1)
+    TESModelTextureSwap WorldModelMod2; // src: XBOX_RETAIL_PDB +0x290 (old: m_kWeaponModTextureSwap2)
+    TESModelTextureSwap WorldModelMod3; // src: XBOX_RETAIL_PDB +0x2b0 (old: m_kWeaponModTextureSwap3)
+    TESModelTextureSwap WorldModelMod12; // src: XBOX_RETAIL_PDB +0x2d0 (old: m_kWeaponModTextureSwap4)
+    TESModelTextureSwap WorldModelMod13; // src: XBOX_RETAIL_PDB +0x2f0 (old: m_kWeaponModTextureSwap5)
+    TESModelTextureSwap WorldModelMod23; // src: XBOX_RETAIL_PDB +0x310 (old: m_kWeaponModTextureSwap6)
+    TESModelTextureSwap WorldModelMod123; // src: XBOX_RETAIL_PDB +0x330 (old: m_kWeaponModTextureSwap7)
+    TESObjectIMOD* pModObjectOne; // src: XBOX_RETAIL_PDB +0x350 (old: m_pWeaponMod1)
+    TESObjectIMOD* pModObjectTwo; // src: XBOX_RETAIL_PDB +0x354 (old: m_pWeaponMod2)
+    TESObjectIMOD* pModObjectThree; // src: XBOX_RETAIL_PDB +0x358 (old: m_pWeaponMod3)
+    BSStringT<char> EmbeddedWeaponNode; // src: XBOX_RETAIL_PDB +0x35c (old: m_kEmbeddedWeaponNodeName)
+    SOUND_LEVEL eSoundLevel; // src: XBOX_RETAIL_PDB +0x364 (old: m_eSoundLevel)
     BSStringT<char> VATSAttackName;
-    WeaponVATSData m_kVATSData;
-    bool m_bHasReloadAnimation;
+    WeaponVATSData specialVATSData; // src: XBOX_RETAIL_PDB +0x370 (old: m_kVATSData)
+    bool bIsLoopingReload; // src: XBOX_RETAIL_PDB +0x384 (old: m_bHasReloadAnimation)
     unsigned char layoutPadding385[3];
 };

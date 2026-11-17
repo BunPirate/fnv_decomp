@@ -28,6 +28,8 @@ void BSShaderPPLightingProperty::EnsureNormalMap()
 
 // @fnv 0x00b67260
 // src: XBOX_PDB 0x00b67260
+// pdb: BSShaderPPLightingProperty::GetTexture | BSShaderPPLightingProperty.obj | debug, upstream name already matches, high
+// pdb params: aeType, aiIndex
 int __fastcall BSShaderPPLightingProperty_GetTexture(char* pThis, int, int idx1, int idx2)
 {
     return ((int**)(pThis + 0xAC))[idx1][idx2];
@@ -48,6 +50,9 @@ struct SelfStub
 };
 // @fnv 0x00b67610
 // src: XBOX_PDB 0x00b67610
+// pdb: BSShaderPPLightingProperty::CreateClone | BSShaderPPLightingProperty.obj | retail, upstream name already matches, high
+// pdb params: arCloneData
+// pdb locals: pprop
 NewObj* __fastcall BSShaderPPLightingProperty_CreateClone(SelfStub* self, int edx, int arg)
 {
     NewObj* pObj = new NewObj();
@@ -135,6 +140,8 @@ struct Container_00b67200
 
 // Assigns pObject into the smart-pointer array slot at [index1][index2], updating the reference count via SmartPtr assignment.
 // @fnv 0x00b67200
+// pdb: BSShaderPPLightingProperty::SetTexture | BSShaderPPLightingProperty.obj | debug, object-file run extension, low
+// pdb params: aeType, aiIndex, apTexture
 void __fastcall SetArrayElement(Container_00b67200* this_ptr, int unused_edx, unsigned int index1, unsigned int index2,
                                 NiRefObject* pObject)
 {
@@ -143,6 +150,7 @@ void __fastcall SetArrayElement(Container_00b67200* this_ptr, int unused_edx, un
 
 // @fnv 0x00b67280
 // src: XBOX_PDB 0x00b67280
+// pdb: BSShaderPPLightingProperty::GetBaseTexture | BSShaderPPLightingProperty.obj | debug, upstream name already matches, high
 int __fastcall BSShaderPPLightingProperty_GetBaseTexture(char* self, int)
 {
     return **reinterpret_cast<int**>(self + 0xac);
@@ -158,6 +166,8 @@ extern int(__stdcall* DAT_00fdf1c4)(void*);
 extern void(__stdcall* DAT_00fdf1c0)(void*);
 
 // @fnv 0x00b67290
+// pdb: BSShaderPPLightingProperty::SetDiffuseTexture | BSShaderPPLightingProperty.obj | debug, object-file run extension, low
+// pdb params: aiIndex, apTexture
 void __fastcall SetManagedObjectAt(ContainerClass* pThis, int, int index, NiRefObject* pNew)
 {
     NiRefObject** pSlot = &pThis->m_ppData[index];
@@ -182,6 +192,8 @@ extern int(__stdcall* DAT_00fdf1c4)(int*);
 extern void(__stdcall* DAT_00fdf1c0)(int*);
 
 // @fnv 0x00b672e0
+// pdb: BSShaderPPLightingProperty::SetNormalTexture | BSShaderPPLightingProperty.obj | debug, object-file run extension, low
+// pdb params: aiIndex, apTexture
 void __fastcall ReplaceArrayElement(void* pThis, int, int index, void* value)
 {
     void** arr = *(void***)((char*)pThis + 0xb0);
@@ -211,6 +223,8 @@ extern int(__stdcall* DAT_00fdf1c0)(unsigned int*);
 
 // Replaces the NiRefObject pointer at index idx in the array at self+0xb4, releasing the old object and retaining the new one.
 // @fnv 0x00b67330
+// pdb: BSShaderPPLightingProperty::SetSpecularTexture | BSShaderPPLightingProperty.obj | debug, object-file run extension, low
+// pdb params: aiIndex, apTexture
 void __fastcall SetRefAt(void* self, int, int idx, NiRefObject* pValue)
 {
     NiRefObject** arr = *(NiRefObject***)((char*)self + 0xb4);
@@ -310,6 +324,9 @@ struct TargetClass_00b683e0
 // Selects a renderer pointer based on particle shader settings, calls V40 with it, and returns the low 16 bits of the resulting local value.
 // @fnv 0x00b683e0
 // src: XBOX_PDB 0x00b683e0
+// pdb: BSShaderPPLightingProperty::GetNumberofPasses | BSShaderPPLightingProperty.obj | retail, upstream name already matches, high
+// pdb params: apGeometry
+// pdb locals: count
 unsigned short __fastcall BSShaderPPLightingProperty_GetNumberofPasses(TargetClass_00b683e0* this_ptr, int unused_edx, void* arg1)
 {
     unsigned int uiResult = 0;
@@ -345,17 +362,19 @@ struct FUN_00b675c0_shell
     int m_38;
     char _p1[0xDC - 0x38 - 4];
     NiRefObject* m_dc;
-    void AssignRefObj(NiRefObject* p);
+    void AssignRefObj(NiRefObject* apData);
 };
 // Releases the old m_dc reference, stores p and increments its ref count if different, then resets m_38 to 0.
 // @fnv 0x00b675c0
-void FUN_00b675c0_shell::AssignRefObj(NiRefObject* apRefObj)
+// pdb: BSShaderPPLightingProperty::SetTextureEffectData | BSShaderPPLightingProperty.obj | retail, call graph (shared callers), high
+// pdb params: apData
+void FUN_00b675c0_shell::AssignRefObj(NiRefObject* apData)
 {
-    if (m_dc != apRefObj)
+    if (m_dc != apData)
     {
         if (m_dc)
             m_dc->DecRefCount();
-        m_dc = apRefObj;
+        m_dc = apData;
         if (m_dc)
             m_dc->IncRefCount();
     }
@@ -728,6 +747,9 @@ struct CopyProperty
     void CopyTo(CopyProperty* dest);
 };
 // @fnv 0x00b676a0
+// pdb: BSShaderPPLightingProperty::CopyToMembers | BSShaderPPLightingProperty.obj | debug, object-file run extension, low
+// pdb params: pDest
+// pdb locals: ii, ij
 void CopyProperty::CopyTo(CopyProperty* dest)
 {
     if (dest->count != count)
@@ -834,36 +856,39 @@ struct TexSet_b68660
     bool* m_pbCC;
 
     void Grow();
-    void BSShaderPPLightingProperty_SetLandscapeTextureSet(unsigned int uiIndex, BSShaderTextureSet* pSource);
+    void BSShaderPPLightingProperty_SetLandscapeTextureSet(unsigned int aiIndex, BSShaderTextureSet* apTexSet);
 };
 
 // @fnv 0x00b68660
 // src: COMMUNITY 0x00b68660
-void TexSet_b68660::BSShaderPPLightingProperty_SetLandscapeTextureSet(unsigned int uiIndex, BSShaderTextureSet* pSource)
+// pdb: BSShaderPPLightingProperty::SetLandscapeTextureSet | BSShaderPPLightingProperty.obj | retail, upstream name already matches, high
+// pdb params: aiIndex, apTexSet
+// pdb locals: ustex, ii, etype, ptexture, eformat
+void TexSet_b68660::BSShaderPPLightingProperty_SetLandscapeTextureSet(unsigned int aiIndex, BSShaderTextureSet* apTexSet)
 {
     if (m_usCapacity < 10)
         Grow();
-    m_pbCC[uiIndex] = false;
-    m_pbC4[uiIndex] = false;
+    m_pbCC[aiIndex] = false;
+    m_pbC4[aiIndex] = false;
     for (int i = 0; i < 6; i++)
     {
         SmartPtr_00b67200<NiRefObject>** ppRow = &m_apTextures[i];
-        SmartPtr_00b67200<NiRefObject>* pSlot = &(*ppRow)[uiIndex];
-        if (pSource)
-            pSource->GetTexture(static_cast<BSShaderProperty::TextureTypeEnum>(i),
+        SmartPtr_00b67200<NiRefObject>* pSlot = &(*ppRow)[aiIndex];
+        if (apTexSet)
+            apTexSet->GetTexture(static_cast<BSShaderProperty::TextureTypeEnum>(i),
                                 *reinterpret_cast<NiPointer<NiTexture>*>(pSlot));
         else
             *pSlot = 0;
         if (i == 1)
         {
-            NiTexture* pTexture = (NiTexture*)(*ppRow)[uiIndex].m_pObject;
+            NiTexture* pTexture = (NiTexture*)(*ppRow)[aiIndex].m_pObject;
             if (pTexture && reinterpret_cast<TexData_b68660*>(pTexture->m_pkRendererData))
             {
                 TexFormat_b68660* pFormat = &reinterpret_cast<TexData_b68660*>(pTexture->m_pkRendererData)->m_eFormat;
                 if (pFormat)
                 {
                     int iType = pFormat->m_iType;
-                    m_pbCC[uiIndex] = iType == 5 || iType == 6 || iType == 1;
+                    m_pbCC[aiIndex] = iType == 5 || iType == 6 || iType == 1;
                 }
             }
         }
@@ -937,35 +962,38 @@ struct ShaderProp_b68770
     int unkDC;
     int unkE0;
     int iValueE4;
-    void SetFlag(unsigned int flag, bool on);
+    void SetFlag(unsigned int aiFlag, bool abSetFlag);
     void SetFloat(float v);
 };
 
 // Recursively applies shader flags 15, 16 and 36 and a float value to geometry objects whose shader type is 8-12, optionally setting iValueE4.
 // @fnv 0x00b68770
 // src: XBOX_PDB 0x00b68770
-void __cdecl BSShaderPPLightingProperty_SetRefractionRecurse(NiAVObject* obj, bool abFlag15, float afFloatValue, bool abFlag16, float afValueE4,
-                          bool abFlag36)
+// pdb: BSShaderPPLightingProperty::SetRefractionRecurse | BSShaderPPLightingProperty.obj | retail, upstream name already matches, high
+// pdb params: apObject, abEnable, afRefractionPower, abFire, afRefractionFirePeriod, abTinted
+// pdb locals: pgeometry, pproperty, ppplightingProperty, pnode, ucount, uindex, pchild
+void __cdecl BSShaderPPLightingProperty_SetRefractionRecurse(NiAVObject* apObject, bool abEnable, float afRefractionPower, bool abFire, float afRefractionFirePeriod,
+                          bool abTinted)
 {
-    if (!obj)
+    if (!apObject)
         return;
-    if (obj->IsTriBasedGeometry())
+    if (apObject->IsTriBasedGeometry())
     {
         ShaderProp_b68770* prop = reinterpret_cast<ShaderProp_b68770*>(
-            static_cast<NiGeometry*>(obj)->m_PropertyState.m_aspProps[NiProperty::SHADE]);
+            static_cast<NiGeometry*>(apObject)->m_PropertyState.m_aspProps[NiProperty::SHADE]);
         if (prop && prop->shaderType >= 8 && prop->shaderType <= 12)
         {
-            prop->SetFlag(15, abFlag15);
-            prop->SetFlag(16, abFlag15 && abFlag16);
-            prop->SetFlag(36, abFlag15 && abFlag36);
-            prop->SetFloat(afFloatValue);
-            if (abFlag16)
-                prop->iValueE4 = (int)afValueE4;
+            prop->SetFlag(15, abEnable);
+            prop->SetFlag(16, abEnable && abFire);
+            prop->SetFlag(36, abEnable && abTinted);
+            prop->SetFloat(afRefractionPower);
+            if (abFire)
+                prop->iValueE4 = (int)afRefractionFirePeriod;
         }
     }
     else
     {
-        NiNode* node = obj->IsSceneNode();
+        NiNode* node = apObject->IsSceneNode();
         if (node)
         {
             unsigned int count = node->m_kChildren.m_usSize;
@@ -973,7 +1001,7 @@ void __cdecl BSShaderPPLightingProperty_SetRefractionRecurse(NiAVObject* obj, bo
             {
                 NiAVObject* child = node->m_kChildren.m_pBase[i].m_pObject;
                 if (child)
-                    BSShaderPPLightingProperty_SetRefractionRecurse(child, abFlag15, afFloatValue, abFlag16, afValueE4, abFlag36);
+                    BSShaderPPLightingProperty_SetRefractionRecurse(child, abEnable, afRefractionPower, abFire, afRefractionFirePeriod, abTinted);
             }
         }
     }
@@ -1128,7 +1156,7 @@ struct FUN_00bb4540 : NiMemObject
 extern unsigned char DAT_011f94a6;
 extern char DAT_011f9422;
 extern int DAT_012007b0;
-extern int DAT_011f3728;
+extern int NiGeomMorpherController_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f3728 (old: DAT_011f3728/g_011f3728)
 bool __cdecl NiObject_IsExactKindOf(void*, void*);
 __pragma(comment(
     linker,
@@ -1171,13 +1199,16 @@ __pragma(comment(
 // Checks the PropObj's flags and alpha property and returns a new FUN_00bb4540 built from this, or null after updating m58/m38/m20.
 // @fnv 0x00b68880
 // src: XBOX_PDB 0x00b68880
-FUN_00bb4540* BSPPL_b68880::BSShaderPPLightingProperty_ClarifyShader(PropObj* pProp, int aiArg2, int aiArg3)
+// pdb: BSShaderPPLightingProperty::ClarifyShader | BSShaderPPLightingProperty.obj | retail, upstream name already matches, high
+// pdb params: apGeometry, abForceShader, abAllow30Shaders
+// pdb locals: buseDynamicAlpha, ppropstate, palphaprop, pbssprop, bspeculardecal, pcontroller
+FUN_00bb4540* BSPPL_b68880::BSShaderPPLightingProperty_ClarifyShader(PropObj* apGeometry, int abForceShader, int abAllow30Shaders)
 {
-    if (pProp && !pProp->vfn_30())
+    if (apGeometry && !apGeometry->vfn_30())
     {
-        NiAlphaProperty** sub9c = pProp->m9c_arr;
+        NiAlphaProperty** sub9c = apGeometry->m9c_arr;
         if (sub9c == 0)
-            pProp->UpdateProperties();
+            apGeometry->UpdateProperties();
         if ((unsigned)(m24 & 2) > 0 || (unsigned)(m20 & 0x4000) > 0)
         {
             m58 = 1;
@@ -1202,22 +1233,22 @@ FUN_00bb4540* BSPPL_b68880::BSShaderPPLightingProperty_ClarifyShader(PropObj* pP
             if (FUN_004a2020(0x12))
                 return new FUN_00bb4540(this);
             bool f13 = FUN_004a2020(0x13);
-            NiAlphaProperty* prop = pProp->FUN_00a59d30(0);
+            NiAlphaProperty* prop = apGeometry->FUN_00a59d30(0);
             if (!prop && !f13)
                 goto tail;
             if (!prop)
             {
                 NiAlphaProperty* alpha = new NiAlphaProperty();
-                alpha->m_usAlphaArg &= ~1;
+                alpha->m_uFlags &= ~1;
                 prop = alpha;
             }
-            if ((prop->m_usAlphaArg & 1) || FUN_004a2020(0x1a) || FUN_004a2020(0x1b))
+            if ((prop->m_uFlags & 1) || FUN_004a2020(0x1a) || FUN_004a2020(0x1b))
             {
                 if (!(m20b & 0x20))
                     m38 = 0;
                 m20 |= 0x20;
             }
-            if ((prop->m_usAlphaArg & 1) && DAT_011f9422)
+            if ((prop->m_uFlags & 1) && DAT_011f9422)
                 return new FUN_00bb4540(this);
         tail:
             if (FUN_004a2020(0x1a) || FUN_004a2020(0x1b))
@@ -1230,12 +1261,12 @@ FUN_00bb4540* BSPPL_b68880::BSShaderPPLightingProperty_ClarifyShader(PropObj* pP
             }
             if (DAT_011f94a6)
             {
-                Node* node = pProp->m0c;
+                Node* node = apGeometry->m0c;
                 if (node)
                 {
                     do
                     {
-                        NiObject_IsExactKindOf(&DAT_011f3728, node);
+                        NiObject_IsExactKindOf(&NiGeomMorpherController_ms_RTTI, node);
                         node = node->m30;
                     } while (node);
                 }
@@ -1331,8 +1362,8 @@ class ShaderProp_b68
     float m_fAlpha;
 
     void BSShaderProperty_PostLinkObject(ShaderProp_b68* apOther);
-    void BSShaderPPLightingProperty_LoadTextureSet(float* apAlpha, int aiFlag);
-    void BSShaderPPLightingProperty_PostLinkObject(ShaderProp_b68* apOther);
+    void BSShaderPPLightingProperty_LoadTextureSet(float* apcfilename, int apTextureSet);
+    void BSShaderPPLightingProperty_PostLinkObject(ShaderProp_b68* kStream);
 };
 
 template <class T> inline T Min_b68(T a, T b)
@@ -1354,14 +1385,16 @@ inline float NiClamp_b68(float fValue, float fMin, float fScaledValue)
 
 // @fnv 0x00b68fe0
 // src: XBOX_PDB 0x00b68fe0
-void ShaderProp_b68::BSShaderPPLightingProperty_PostLinkObject(ShaderProp_b68* apOther)
+// pdb: BSShaderPPLightingProperty::PostLinkObject | BSShaderPPLightingProperty.obj | retail, upstream name already matches, high
+// pdb params: kStream
+void ShaderProp_b68::BSShaderPPLightingProperty_PostLinkObject(ShaderProp_b68* kStream)
 {
-    BSShaderProperty_PostLinkObject(apOther);
+    BSShaderProperty_PostLinkObject(kStream);
     if (!((m_uiValue1 & (unsigned int)&DAT_01000000) > 0))
     {
         if (!m_spTextureSet)
             m_spTextureSet = new BSShaderTextureSet;
-        BSShaderPPLightingProperty_LoadTextureSet(&apOther->m_fAlpha, 0);
+        BSShaderPPLightingProperty_LoadTextureSet(&kStream->m_fAlpha, 0);
     }
     float fCurrentAlpha = m_fAlpha;
     float fTemp = fCurrentAlpha < DAT_01012060 ? 0.0f : fCurrentAlpha;
@@ -1551,6 +1584,9 @@ struct Target
 };
 // @fnv 0x00b690d0
 // src: XBOX_PDB 0x00b690d0
+// pdb: BSShaderPPLightingProperty::GetViewerStrings | BSShaderPPLightingProperty.obj | retail, upstream name already matches, high
+// pdb params: apStrings
+// pdb locals: pname, i
 void Target::BSShaderPPLightingProperty_GetViewerStrings(StrArr* apStrings)
 {
     char* value;
@@ -1938,6 +1974,8 @@ struct FUN_00b66f50 : FUN_00b71720
 
 // Initialises the object: allocates six texture pointer arrays of size count, two enabled/channels byte arrays, and sets default fields and flags.
 // @fnv 0x00b66f50
+// pdb: BSShaderPPLightingProperty::BSShaderPPLightingProperty | BSShaderPPLightingProperty.obj | retail, call graph, medium
+// pdb locals: ii, ij
 FUN_00b66f50::FUN_00b66f50()
 {
     count = 2;
@@ -1974,7 +2012,7 @@ extern "C" __declspec(dllimport) long __stdcall InterlockedDecrement(long volati
 struct Pool
 {
     void* Game_DoHeapAlloc(unsigned int uiSize);
-    void MemoryManager_Deallocate(void* p);
+    void MemoryManager_Deallocate(void* apMem);
 };
 extern Pool DAT_011f6238;
 
@@ -2028,6 +2066,8 @@ struct OwnerX
     void GrowArrays();
 };
 // @fnv 0x00b68450
+// pdb: BSShaderPPLightingProperty::SetForLandscapeTextures | BSShaderPPLightingProperty.obj | retail, object-file gap fill, high
+// pdb locals: ii, ij, pnewtexture
 void OwnerX::GrowArrays()
 {
     if (m_usSize >= 10)
@@ -2158,7 +2198,7 @@ struct CallerArg
     NiAlphaProperty* FUN_00a59d30(int);
 };
 extern NiRefObject* DAT_011f9528;
-extern char DAT_011f4aac;
+extern char BSPackedAdditionalGeometryData_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f4aac (old: DAT_011f4aac/g_011f4aac)
 extern int DAT_011f91c0;
 extern char DAT_010ae238;
 extern char DAT_010ae1f0;
@@ -2310,27 +2350,30 @@ struct SelfObj
     {
         return (secondaryFlags & mask) > 0;
     }
-    bool BSShaderPPLightingProperty_SetupGeometry(CallerArg* arg);
+    bool BSShaderPPLightingProperty_SetupGeometry(CallerArg* apGeometry);
 };
 // Checks and may create the argument's bounding volume, updates secondary flag 0x20, conditionally stores a handle, applies flag-gated updates, then refreshes.
 // @fnv 0x00b67a40
 // src: XBOX_PDB 0x00b67a40
-bool SelfObj::BSShaderPPLightingProperty_SetupGeometry(CallerArg* arg)
+// pdb: BSShaderPPLightingProperty::SetupGeometry | BSShaderPPLightingProperty.obj | retail, string-set bridge, high
+// pdb params: apGeometry
+// pdb locals: pnamedobj, bvertexcolors, pniagd, ppropstate, pbsagd, pgeomdata, ktangentSpaceMethod, ivcnt, bproblem, iv, perr, palpha, pdata
+bool SelfObj::BSShaderPPLightingProperty_SetupGeometry(CallerArg* apGeometry)
 {
-    if (arg->GetBoundingVolume() == 0)
-        arg->UpdateProperties();
-    bool b = arg->geometry->enabled || GetSecondaryFlag(0x20);
+    if (apGeometry->GetBoundingVolume() == 0)
+        apGeometry->UpdateProperties();
+    bool b = apGeometry->geometry->enabled || GetSecondaryFlag(0x20);
     if (b)
         SetSecondaryFlag(0x20, true);
     else
         SetSecondaryFlag(0x20, false);
-    Geometry* geom = arg->geometry;
+    Geometry* geom = apGeometry->geometry;
     if (geom && !activeHandle.ptr && !((primaryFlags & 0x1000) > 0))
     {
-        bool bSameKind = geom->property ? geom->property->IsSameKind(&DAT_011f4aac) : false;
+        bool bSameKind = geom->property ? geom->property->IsSameKind(&BSPackedAdditionalGeometryData_ms_RTTI) : false;
         if (!bSameKind && !(geom->typeFlags & 0xf000))
         {
-            activeHandle.FUN_0066b0d0(BSShaderManager_CreateTangentSpaceSimple(arg));
+            activeHandle.FUN_0066b0d0(BSShaderManager_CreateTangentSpaceSimple(apGeometry));
         }
     }
     if ((primaryFlags & 0x100000) > 0)
@@ -2340,11 +2383,11 @@ bool SelfObj::BSShaderPPLightingProperty_SetupGeometry(CallerArg* arg)
     }
     if ((primaryFlags & 0x40000) > 0)
     {
-        NiAlphaProperty* pAffectedObj = arg->FUN_00a59d30(0);
+        NiAlphaProperty* pAffectedObj = apGeometry->FUN_00a59d30(0);
         if (pAffectedObj && DAT_011f91c0 < 5)
         {
-            pAffectedObj->m_usAlphaArg &= 0xfffe;
-            pAffectedObj->m_ucAlphaArg2 = 0x80;
+            pAffectedObj->m_uFlags &= 0xfffe;
+            pAffectedObj->m_ucAlphaTestRef = 0x80;
         }
     }
     Refresh();
@@ -2353,14 +2396,14 @@ bool SelfObj::BSShaderPPLightingProperty_SetupGeometry(CallerArg* arg)
     {
         if ((flags & 0x10000000) <= 0 && geometry->opaqueTag)
         {
-            Warning_005b5e40(&DAT_010ae238, arg->debugName);
+            Warning_005b5e40(&DAT_010ae238, apGeometry->debugName);
             return true;
         }
     }
     if ((flags & 0x10000000) > 0 || (flags & 0x800) > 0)
     {
         if (!geometry->opaqueTag)
-            Warning_005b5e40(&DAT_010ae1f0, arg->debugName);
+            Warning_005b5e40(&DAT_010ae1f0, apGeometry->debugName);
     }
     return true;
 }
@@ -2582,6 +2625,7 @@ struct Passes
         return data[count - 1];
     }
 };
+// pdb: class Renderer, size 0x1 (here 0x1a4), 0 members
 struct Renderer
 {
     unsigned int unk000;
@@ -2888,15 +2932,15 @@ struct Shader
     unsigned int unk06c;
     unsigned int unk070;
     bool dirty;
-    void EnsureNewObj(int);
-    void EnsureBa9740Obj(int);
-    void EnsureAllocated(int);
-    void CreateSpawnedObjectIfMissing(int);
+    void BSShaderProperty_CheckCreateDepthMapRenderPassArray(int);
+    void BSShaderProperty_CheckCreateConstAlphaRenderPassArray(int);
+    void BSShaderProperty_CheckCreateLocalMapRenderPassArray(int);
+    void BSShaderProperty_CheckSilhouetteRenderPassArray(int);
     void FUN_00ba95e0(int);
     void BSShaderPPLightingProperty_AddDepthMapPass_2x(Geom*, bool, bool, Context*);
     void BSShaderProperty_AddConstAlphaPass(Geom*, bool, bool);
-    void SetPassEnabled(Geom*, bool, bool);
-    void AddPasses(Geom*, bool);
+    void BSShaderPPLightingProperty_AddLocalMapPass_2x(Geom*, bool, bool);
+    void BSShaderPPLightingProperty_AddSilhouettePass_2x(Geom*, bool);
     bool GetFlag(int n)
     {
         return ((Fake_FUN_004a2020*)this)->GetFlag(n);
@@ -2907,6 +2951,9 @@ struct Shader
 };
 // Selects a pass list by type and may update distance, material alpha, or pass IDs before returning it.
 // @fnv 0x00b67be0
+// pdb: BSShaderPPLightingProperty::GetRenderPasses | BSShaderPPLightingProperty.obj | retail, call graph, medium
+// pdb params: apGeom, aiEnabledPasses, asCount, auiRenderMode, apAccumulator, abUpdateList
+// pdb locals: bcheckEyeEnvMap, breflection, bcheckEnvMap, bcheckDecal, bcheckSpecular, foldCameraDistance, bdecal, ppropertyState, idebugPasses, kbound, ppass, balphatest, palphaprop, bskinned, pprop, i, prenderpass, keyepos, pmatprop, fnewAlpha
 Passes* Shader::GetPasses(Geom* geom, unsigned int pass, unsigned short* output, unsigned int type, Context* context,
                           unsigned char update)
 {
@@ -2917,7 +2964,7 @@ Passes* Shader::GetPasses(Geom* geom, unsigned int pass, unsigned short* output,
     {
         if ((flags & 0x8000) > 0 || (flags & 0x10000) > 0)
             return 0;
-        EnsureNewObj(1);
+        BSShaderProperty_CheckCreateDepthMapRenderPassArray(1);
         if (0 != special7->count)
         {
             Pass* firstPass = special7->data[0];
@@ -2929,7 +2976,7 @@ Passes* Shader::GetPasses(Geom* geom, unsigned int pass, unsigned short* output,
             NiAlphaProperty* prop = geom->FUN_00a59d30(0);
             if (prop == 0)
                 prop = properties->alpha;
-            bool alphaTest = prop && (bool)(int)((unsigned short)(prop->m_usAlphaArg >> 9) & 1);
+            bool alphaTest = prop && (bool)(int)((unsigned short)(prop->m_uFlags >> 9) & 1);
             BSShaderPPLightingProperty_AddDepthMapPass_2x(geom, geom->skin != 0, alphaTest, context);
         }
         return special7;
@@ -2938,7 +2985,7 @@ Passes* Shader::GetPasses(Geom* geom, unsigned int pass, unsigned short* output,
     {
         if ((flags & 0x8000) > 0 || (flags & 0x10000) > 0 || (flags2 & 0x10) > 0)
             return special8;
-        EnsureBa9740Obj(1);
+        BSShaderProperty_CheckCreateConstAlphaRenderPassArray(1);
         if ((bool)special8->count)
         {
             Pass* firstPass = special8->data[0];
@@ -2950,22 +2997,22 @@ Passes* Shader::GetPasses(Geom* geom, unsigned int pass, unsigned short* output,
             NiAlphaProperty* prop = geom->FUN_00a59d30(0);
             if (prop == 0)
                 prop = properties->alpha;
-            bool alphaTest = prop && (bool)(int)((unsigned short)(prop->m_usAlphaArg >> 9) & 1);
+            bool alphaTest = prop && (bool)(int)((unsigned short)(prop->m_uFlags >> 9) & 1);
             BSShaderProperty_AddConstAlphaPass(geom, geom->skin != 0, alphaTest);
         }
         return special8;
     }
     if (type == 9)
     {
-        EnsureAllocated(1);
-        SetPassEnabled(geom, (flags & 2) > 0, (flags & 0x100000) > 0);
+        BSShaderProperty_CheckCreateLocalMapRenderPassArray(1);
+        BSShaderPPLightingProperty_AddLocalMapPass_2x(geom, (flags & 2) > 0, (flags & 0x100000) > 0);
         return special9;
     }
     if (15 == type)
     {
-        CreateSpawnedObjectIfMissing(1);
+        BSShaderProperty_CheckSilhouetteRenderPassArray(1);
         if (!special15->count)
-            AddPasses(geom, geom->skin != 0);
+            BSShaderPPLightingProperty_AddSilhouettePass_2x(geom, geom->skin != 0);
         return special15;
     }
     FUN_00ba95e0(-1);
@@ -3048,7 +3095,7 @@ Passes* Shader::GetPasses(Geom* geom, unsigned int pass, unsigned short* output,
         dirty = false;
         _ReadWriteBarrier();  // Keep the dirty reset before inspecting rebuild flags.
         if ((((flags & 0x4000000) > 0 || GetFlag(5)) && (GetFlag(11) || GetFlag(28))) || GetFlag(5) ||
-            (geom->props.alpha->m_usAlphaArg & 1))
+            (geom->props.alpha->m_uFlags & 1))
             SortShadowSceneLights(&bound);
         if (updatePasses == true)
         {
@@ -3076,10 +3123,10 @@ Passes* Shader::GetPasses(Geom* geom, unsigned int pass, unsigned short* output,
                     NiAlphaProperty* prop = geom->FUN_00a59d30(0);
                     if (prop == 0)
                         prop = propertyRef->alpha;
-                    bool alphaTest = prop && (bool)(int)((unsigned short)(prop->m_usAlphaArg >> 9) & 1);
+                    bool alphaTest = prop && (bool)(int)((unsigned short)(prop->m_uFlags >> 9) & 1);
                     void* skin;
                     skin = geom->skin;
-                    EnsureNewObj(1);
+                    BSShaderProperty_CheckCreateDepthMapRenderPassArray(1);
                     special7->count = 0;
                     BSShaderPPLightingProperty_AddDepthMapPass_2x(geom, skin != 0, alphaTest, context);
                 }

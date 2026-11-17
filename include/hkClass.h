@@ -17,6 +17,7 @@ struct hkSimpleArray
     int m_iElementCount;
 };
 
+// pdb: class hkClass, size 0x30, 12 members
 class hkClass
 {
 public:
@@ -35,10 +36,10 @@ public:
     const hkClassMember& GetDeclaredMember(int i) const;
     void touch() const;
     hkBool GetLastNodeFlag() const;
-    hkBool hkClass_isSuperClass(const hkClass& kOther) const;
+    hkBool hkClass_isSuperClass(const hkClass& k) const;
     const char* getName() const;
     unsigned int CalculateDatabaseSignature(int iFlags) const throw();
-    const hkClassMember& __thiscall getMember(int i) const;
+    const hkClassMember& __thiscall getMember(int memberIndex) const;
     const char* FUN_00d46d40() const;
     const hkClass* FUN_00d46d50() const;
     int FUN_00d47120() const;
@@ -48,12 +49,12 @@ public:
 
     char* m_name;
     hkClass* m_parent;
-    hkInt32 m_iObjectSize;
-    hkInt32 m_iNumImplementedInterfaces;
-    hkSimpleArray<hkClassEnum> m_kDeclaredEnums;
-    hkSimpleArray<hkClassMember> m_kDeclaredMembers;
-    void* m_pDefaultObject;
-    hkCustomAttributes* m_pCustomAttributes;
+    hkInt32 m_objectSize; // src: XBOX_RETAIL_PDB +0x8 (old: m_iObjectSize)
+    hkInt32 m_numImplementedInterfaces; // src: XBOX_RETAIL_PDB +0xc (old: m_iNumImplementedInterfaces)
+    hkSimpleArray<hkClassEnum> m_declaredEnums; // src: XBOX_RETAIL_PDB +0x10 (old: m_kDeclaredEnums)
+    hkSimpleArray<hkClassMember> m_declaredMembers; // src: XBOX_RETAIL_PDB +0x18 (old: m_kDeclaredMembers)
+    void* m_defaults; // src: XBOX_RETAIL_PDB +0x20 (old: m_pDefaultObject)
+    hkCustomAttributes* m_attributes; // src: XBOX_RETAIL_PDB +0x24 (old: m_pCustomAttributes)
     hkUint32 m_flags;
-    hkInt32 m_iDescribedVersion;
+    hkInt32 m_describedVersion; // src: XBOX_RETAIL_PDB +0x2c (old: m_iDescribedVersion)
 };

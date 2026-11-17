@@ -5,6 +5,9 @@
 #include "../../../../include/StrArr.h"
 // Constructs a NiTriBasedGeomData by initializing the NiGeometryData base and storing the triangle count in m_usTriangles.
 // @fnv 0x00a8a920
+// pdb: NiTriBasedGeomData::NiTriBasedGeomData | NiTriBasedGeomData.obj | retail, call graph (shared callers), medium
+// pdb note: debug build links it to NiLinesData::`scalar deleting destructor'
+// pdb params: usVertices, pkVertex, pkNormal, pkColor, pkTexture, usNumTextureSets, eNBTMethod, usTriangles
 NiTriBasedGeomData::NiTriBasedGeomData(unsigned short ausVertexCount, NiPoint3* apVertices, NiPoint3* apNormals,
                                        NiColorA* d, NiPoint2* apTextureCoords, unsigned short f,
                                        NiGeometryData__DataFlags aeDataFlags, unsigned short ausTriangleCount)
@@ -16,6 +19,8 @@ void __fastcall FUN_00a67c00(void* pThis);
 extern void* vftable_NiTriBasedGeomData;
 
 // @fnv 0x00a8a970
+// pdb: NiTriBasedGeomData::NiTriBasedGeomData | NiTriBasedGeomData.obj | retail, call graph, medium
+// pdb params: usVertices, pkVertex, pkNormal, pkColor, pkTexture, usNumTextureSets, eNBTMethod, usTriangles
 NiTriBasedGeomData* __fastcall InitializeTriBasedGeomData(NiTriBasedGeomData* pThis)
 {
     FUN_00a67c00(pThis);
@@ -33,6 +38,8 @@ struct FakeBinaryStream
 
 // Loads NiGeometryData binary data from the stream, then reads 2 bytes from the stream's binary reader into this+0x40.
 // @fnv 0x00a8aa30
+// pdb: NiTriBasedGeomData::LoadBinary | NiTriBasedGeomData.obj | retail, upstream name already matches, high
+// pdb params: kStream
 void NiTriBasedGeomData::LoadBinary(NiStream& kStream)
 {
     NiGeometryData::LoadBinary(kStream);
@@ -51,6 +58,8 @@ struct NiBinaryStream_Save
 };
 
 // @fnv 0x00a8aa70
+// pdb: NiTriBasedGeomData::SaveBinary | NiTriBasedGeomData.obj | retail, upstream name already matches, high
+// pdb params: kStream
 void NiTriBasedGeomData::SaveBinary(NiStream& kStream)
 {
     NiGeometryData::SaveBinary(kStream);
@@ -77,10 +86,12 @@ typedef void (__thiscall* RegisterGeometryFieldsFn)(NiGeometryData*, NiTPrimitiv
 
 extern char const* const g_011f4a70_arg1;
 char* __cdecl _FUN_00a7d330(char const* pString);
-char* __cdecl NiGetViewerString_00a7d490(char const* pString, unsigned short usValue);
+char* __cdecl NiGetViewerString_00a7d490(char const* pcPrefix, unsigned short usValue);
 
 // Calls RegisterFields, then appends a string from g_011f4a70_arg1 and a formatted m_usTriangles entry to pkStrings, growing it when full.
 // @fnv 0x00a8aab0
+// pdb: NiTriBasedGeomData::GetViewerStrings | NiTriBasedGeomData.obj | retail, string-set bridge, high
+// pdb params: pkStrings
 void __fastcall AppendTrianglesInfo(NiTriBasedGeomData* pThis, void*, NiTPrimitiveArray<char*>* pkStrings)
 {
     reinterpret_cast<RegisterGeometryFieldsFn>(&RegisterGeometryFields)(pThis, pkStrings);
@@ -111,6 +122,7 @@ void __fastcall AppendTrianglesInfo(NiTriBasedGeomData* pThis, void*, NiTPrimiti
 }
 
 // @fnv 0x00a8a990
+// pdb: NiTriBasedGeomData::~NiTriBasedGeomData | NiTriBasedGeomData.obj | debug, upstream name already matches, high
 NiTriBasedGeomData::~NiTriBasedGeomData()
 {}
 
@@ -119,6 +131,9 @@ void GeometryDataIsEqual();
 typedef bool (__thiscall* GeometryDataIsEqualFn)(NiGeometryData*, const NiGeometryData*);
 
 // @fnv 0x00a8a9c0
+// pdb: NiTriBasedGeomData::IsEqual | NiTriBasedGeomData.obj | retail, call graph (shared callers), medium
+// pdb params: pkObject
+// pdb locals: pkData
 unsigned char __fastcall MatchesTriangleCount(NiTriBasedGeomData* pThis, void*, const NiGeometryData* pkObject)
 {
     if (!reinterpret_cast<GeometryDataIsEqualFn>(&GeometryDataIsEqual)(pThis, pkObject))
@@ -127,6 +142,8 @@ unsigned char __fastcall MatchesTriangleCount(NiTriBasedGeomData* pThis, void*, 
 }
 
 // @fnv 0x00a8a9b0
+// pdb: NiTriBasedGeomData::RegisterStreamables | NiTriBasedGeomData.obj | debug, upstream name already matches, high
+// pdb params: kStream
 bool NiTriBasedGeomData::RegisterStreamables(NiStream& kStream)
 {
     return NiGeometryData::RegisterStreamables(kStream);
@@ -137,6 +154,8 @@ void NiTriBasedGeomData::GetTriangles(unsigned short&, const unsigned short*&, c
 {}
 
 // @fnv 0x00a8a9a0
+// pdb: NiTriBasedGeomData::LinkObject | NiTriBasedGeomData.obj | debug, upstream name already matches, high
+// pdb params: kStream
 void NiTriBasedGeomData::LinkObject(NiStream& kStream)
 {
     NiGeometryData::LinkObject(kStream);

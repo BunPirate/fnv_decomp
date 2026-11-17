@@ -38,7 +38,7 @@ struct FUN_005631e0_shell
 float __cdecl NI2HK_004a3e90(float);
 struct FUN_0062e710_shell
 {
-    void __thiscall SetValueAt(float f, int a, int b);
+    void __thiscall TESWaterListener_SetWaterHeight(float afWaterHeight, int auX, int auY);
 };
 struct FUN_006310c0_shell
 {
@@ -46,8 +46,8 @@ struct FUN_006310c0_shell
 };
 struct FUN_00c9a460_shell
 {
-    void __thiscall AddObject(int a);
-    void __thiscall bhkEntityListener_entityAddedCallback(int a);
+    void __thiscall bhkEntityListener_AddEntity(int apEntity);
+    void __thiscall bhkEntityListener_entityAddedCallback(int apEntity);
 };
 
 #include <xmmintrin.h>
@@ -146,7 +146,7 @@ struct PhysicsBody
     virtual void GetBounds(PhysicsBounds*);
     bool IsNonZero(int);
     void SetFlag(int, bool);
-    void GetAabb(PhysicsBounds*);
+    void bhkRigidBody_GetAabbLocal(PhysicsBounds*);
 };
 struct PhysicsReference
 {
@@ -189,33 +189,36 @@ struct PhysicsController
 };
 // @fnv 0x00630170
 // src: COMMUNITY 0x00630170
-int PhysicsController::TESWaterListener_ProcessRigidBody(PhysicsReference* reference, float height, float deltaTime, bool alternate)
+// pdb: TESWaterListener::ProcessRigidBody | TESWaterListener.obj | retail, upstream name already matches, high
+// pdb params: phkBody, fwaterHeight, afTime, abPlaceableWater
+// pdb locals: abb, pb, iresult, position, eunderWaterFlag, pw, velocity, bdoVerticalDamping, fbuoyancy, forceLocation, fmass, fhighPoint, gravity, flowPoint, waterForce, fheight, antiGravity, fsubmergedPercent, localAabb, offset, iminor, dimensions, imajor, rotate ...
+int PhysicsController::TESWaterListener_ProcessRigidBody(PhysicsReference* phkBody, float fwaterHeight, float afTime, bool abPlaceableWater)
 {
     int result = 0;
     PhysicsVector position;
-    position.FUN_004a3c90(reference->hkpRigidBody_getPosition());
-    PhysicsBody* body = bhkEntity_Getbhk(reference);
+    position.FUN_004a3c90(phkBody->hkpRigidBody_getPosition());
+    PhysicsBody* body = bhkEntity_Getbhk(phkBody);
     PhysicsBounds bounds;
     bounds.FUN_00437c10();
     body->GetBounds(&bounds);
-    if (bounds.minimum.FUN_00560d30(2) <= height)
+    if (bounds.minimum.FUN_00560d30(2) <= fwaterHeight)
     {
-        int handle = reference->hkpRigidBody_getMotionType();
+        int handle = phkBody->hkpRigidBody_getMotionType();
         if (bhkRigidBody_IsMotionTypeDynamic(&handle))
         {
-            PhysicsReference* state = reference->FUN_0044ddc0();
+            PhysicsReference* state = phkBody->FUN_0044ddc0();
             if (state)
             {
                 state->FUN_00483710();
                 PhysicsVector direction;
                 direction.FUN_004a3c90(state->TESDataHandler_GetWorldSpaceList());
                 PhysicsVector velocity;
-                velocity.FUN_004a3c90(reference->hkpRigidBody_getLinearVelocity());
-                float mass = reference->hkpRigidBody_getMass();
+                velocity.FUN_004a3c90(phkBody->hkpRigidBody_getLinearVelocity());
+                float mass = phkBody->hkpRigidBody_getMass();
                 float extent = bounds.maximum.FUN_00560d30(2) - bounds.minimum.FUN_00560d30(2);
                 float lower = extent * 0.25 + bounds.minimum.FUN_00560d30(2);
                 float upper = extent * 0.8500000238418579 + bounds.minimum.FUN_00560d30(2);
-                float amount = (height - lower) / (upper - lower);
+                float amount = (fwaterHeight - lower) / (upper - lower);
                 if (amount <= 0.0)
                 {
                     state->FUN_00483710();
@@ -242,11 +245,11 @@ int PhysicsController::TESWaterListener_ProcessRigidBody(PhysicsReference* refer
                 force.FUN_00630ae0(&multiplier, &direction);
                 PhysicsVector torque;
                 torque.FUN_006815c0();
-                if (!reference->getNumConstraints())
+                if (!phkBody->getNumConstraints())
                 {
                     PhysicsBounds inertiaBounds;
                     inertiaBounds.FUN_00437c10();
-                    body->GetAabb(&inertiaBounds);
+                    body->bhkRigidBody_GetAabbLocal(&inertiaBounds);
                     PhysicsVector localTorque;
                     localTorque.hkVector4_hkVector4(0, 0, 0, 0);
                     PhysicsVector sizes;
@@ -266,60 +269,60 @@ int PhysicsController::TESWaterListener_ProcessRigidBody(PhysicsReference* refer
                         rotation.BGSPrimitive_EvaluateValue_006240d0();
                         body->GetRotation(&rotation);
                         torque.FUN_00630bb0(&rotation, &localTorque);
-                        torque.hkVector4_add4(reference->hkpRigidBody_getCenterOfMassInWorld());
+                        torque.hkVector4_add4(phkBody->hkpRigidBody_getCenterOfMassInWorld());
                     }
                     else
-                        torque.SetValue(reference->hkpRigidBody_getCenterOfMassInWorld());
+                        torque.SetValue(phkBody->hkpRigidBody_getCenterOfMassInWorld());
                 }
                 else
-                    torque.SetValue(reference->hkpRigidBody_getCenterOfMassInWorld());
+                    torque.SetValue(phkBody->hkpRigidBody_getCenterOfMassInWorld());
                 state->FUN_00483710();
-                reference->hkpRigidBody_applyForce_00631140(deltaTime, &force, &torque);
+                phkBody->hkpRigidBody_applyForce_00631140(afTime, &force, &torque);
                 PhysicsVector secondForce;
                 secondForce.FUN_006815c0();
                 FUN_005dbf20 secondMultiplier(mass * -1.0);
                 secondForce.FUN_00630ae0(&secondMultiplier, &direction);
-                reference->hkpRigidBody_applyForce(deltaTime, &secondForce);
+                phkBody->hkpRigidBody_applyForce(afTime, &secondForce);
                 state->FUN_00483710();
                 PhysicsVector linear;
-                linear.FUN_004a3c90(reference->hkpRigidBody_getLinearVelocity());
+                linear.FUN_004a3c90(phkBody->hkpRigidBody_getLinearVelocity());
                 float vertical = linear.FUN_00560d30(2);
                 linear.FUN_00560d30(2) = 0;
                 if (dampVertical)
                 {
-                    vertical *= exp_00630aa0(*DAT_011d0478.Setting_Float_00403e20() * -1.0 * deltaTime);
+                    vertical *= exp_00630aa0(*DAT_011d0478.Setting_Float_00403e20() * -1.0 * afTime);
                 }
                 PhysicsVector magnitude;
                 if (linear.FUN_00630b40(&magnitude)->EvaluateValue_004586d0() > *DAT_011d0cf0.Setting_Float_00403e20())
                 {
-                    FUN_005dbf20 factor(exp_00630aa0(*DAT_011d0ee8.Setting_Float_00403e20() * -1.0 * deltaTime));
+                    FUN_005dbf20 factor(exp_00630aa0(*DAT_011d0ee8.Setting_Float_00403e20() * -1.0 * afTime));
                     linear.hkVector4_mul4(&factor);
                 }
                 linear.FUN_00560d30(2) = vertical;
-                reference->OnTrigger(&linear);
+                phkBody->OnTrigger(&linear);
                 PhysicsVector angular;
-                angular.FUN_004a3c90(reference->hkpRigidBody_getAngularVelocity());
-                FUN_005dbf20 factor(exp_00630aa0(*DAT_011d0580.Setting_Float_00403e20() * -1.0 * deltaTime));
+                angular.FUN_004a3c90(phkBody->hkpRigidBody_getAngularVelocity());
+                FUN_005dbf20 factor(exp_00630aa0(*DAT_011d0580.Setting_Float_00403e20() * -1.0 * afTime));
                 angular.hkVector4_mul4(&factor);
-                reference->hkpRigidBody_setAngularVelocity(&angular);
+                phkBody->hkpRigidBody_setAngularVelocity(&angular);
                 state->FUN_00483710();
             }
         }
-        int flag = alternate ? 128 : 8;
+        int flag = abPlaceableWater ? 128 : 8;
         if (!body->IsNonZero(flag))
         {
             body->SetFlag(flag, true);
-            SpawnWaterSplash(body, HK2NI(height));
+            SpawnWaterSplash(body, HK2NI(fwaterHeight));
             result = 1;
         }
-        DAT_011cc584.NiTMapBase_NiTPointerAllocator_unsigned_int_TESObjectREFR_bool_SetAt(reference, true);
+        DAT_011cc584.NiTMapBase_NiTPointerAllocator_unsigned_int_TESObjectREFR_bool_SetAt(phkBody, true);
     }
     else
     {
-        int flag = alternate ? 128 : 8;
+        int flag = abPlaceableWater ? 128 : 8;
         if (body->IsNonZero(flag))
         {
-            SpawnWaterSplash(body, HK2NI(height));
+            SpawnWaterSplash(body, HK2NI(fwaterHeight));
             result = 2;
         }
         body->SetFlag(flag, false);

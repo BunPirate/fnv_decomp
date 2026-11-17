@@ -5,6 +5,7 @@
 
 struct StrArr;
 
+// pdb: class NiPSysBombModifier, size 0x38, bases: NiPSysModifier, 6 members
 class NiPSysBombModifier : public NiPSysModifier
 {
 public:
@@ -13,7 +14,7 @@ public:
     virtual const NiRTTI* GetRTTI() const;
     virtual NiObject* MakeClone(CloningProcess& process);
     virtual void LoadBinary(NiStream& stream);
-    virtual void LinkObject(NiStream& stream);
+    virtual void LinkObject(NiStream& kStream);
     virtual void SaveBinary(NiStream& stream);
     virtual bool IsEqual(NiObject* object) const;
     virtual void GetViewerStrings(NiViewerStringsArray* strings);
@@ -31,10 +32,10 @@ public:
     static const char* GetDecayTypeName(int type);
     static const char* GetSymmTypeName(int type);
 
-    NiObject* m_pkBombObject;
-    NiPoint3 m_kBombDirection;
-    float m_fDistanceDecay;
-    float m_fDeltaVelocity;
-    int m_eBombDecayType;
-    int m_eSymmetryType;
+    NiObject* m_pkBombObj; // src: XBOX_RETAIL_PDB +0x18 (old: m_pkBombObject)
+    NiPoint3 m_kBombAxis; // src: XBOX_RETAIL_PDB +0x1c (old: m_kBombDirection)
+    float m_fDecay; // src: XBOX_RETAIL_PDB +0x28 (old: m_fDistanceDecay)
+    float m_fDeltaV; // src: XBOX_RETAIL_PDB +0x2c (old: m_fDeltaVelocity)
+    int m_eDecayType; // src: XBOX_RETAIL_PDB +0x30 (old: m_eBombDecayType)
+    int m_eSymmType; // src: XBOX_RETAIL_PDB +0x34 (old: m_eSymmetryType)
 };

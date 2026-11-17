@@ -2,6 +2,7 @@
 
 #include "BSExtraData.h"
 
+// pdb: class ExtraRadiation, size 0x10, bases: BSExtraData, 1 members
 class ExtraRadiation : public BSExtraData
 {
 public:
@@ -12,5 +13,5 @@ public:
     ExtraRadiation(float afRadiation);
     bool Compare_00436c40(BSExtraData* apCompare);
 
-    float m_fRadiation;
+    float fRadiation; // src: XBOX_RETAIL_PDB +0xc (old: m_fRadiation)
 };

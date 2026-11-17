@@ -10,6 +10,7 @@ class hkOstream;
 // temp, heap, debug, solver and global allocators and m_userData). getInstance is 0x00c85750 (Xbox PDB), the
 // constructor 0x00c85770. The accessors are inline in the class as in Havok.
 // src: HAVOK_SRC (class name, member names, layout and method list; getInstance at 0x00c85750 per src: XBOX_PDB)
+// pdb: class hkMemoryRouter, size 0x24, 7 members
 class hkMemoryRouter
 {
 public:
@@ -41,7 +42,7 @@ public:
     // helpers over any allocator (aligned forms keep the offset in front of the block)
     static void* __cdecl easyAlloc(Allocator& kFrom, int iBytes);
     static void __cdecl easyFree(Allocator& kFrom, void* pMem);
-    static void* __cdecl alignedAlloc(Allocator& kFrom, int iBytes, int iAlignment);
+    static void* __cdecl alignedAlloc(Allocator& b, int nbytes, int alignment);
     static void __cdecl alignedFree(Allocator& kFrom, void* pMem);
 
     // src: HAVOK_SRC: data members and order; protected in Havok, public here because the units read the allocator

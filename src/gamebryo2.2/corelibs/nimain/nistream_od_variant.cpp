@@ -12,6 +12,7 @@ struct NiStream2
 };
 // @fnv 0x00c3b370
 // src: COMMUNITY 0x00c3b370
+// pdb: BSStream::FreeAllObjects | BSStream.obj | retail, upstream name already matches, high
 void NiStream2::BSStream_FreeAllObjects()
 {
     ClearTopLevelObjects();
@@ -99,15 +100,18 @@ struct S_Class
     int unk04;
     S_Arr unk08;
     void __thiscall nullsub_3(S_Stream* stream);
-    void __thiscall BSNodeReferences_LinkObject(S_Stream* stream);
+    void __thiscall BSNodeReferences_LinkObject(S_Stream* arStream);
 };
 
 // @fnv 0x00c64ad0
 // src: XBOX_PDB 0x00c64ad0
-void __thiscall S_Class::BSNodeReferences_LinkObject(S_Stream* stream)
+// pdb: BSNodeReferences::LinkObject | BSReference.obj | retail, upstream name already matches, high
+// pdb params: arStream
+// pdb locals: iIDs, I, pparent, pchild
+void __thiscall S_Class::BSNodeReferences_LinkObject(S_Stream* arStream)
 {
-    nullsub_3(stream);
-    unsigned int count = stream->FUN_00a63460();
+    nullsub_3(arStream);
+    unsigned int count = arStream->FUN_00a63460();
     if (count)
     {
         unk08.FUN_00c4c920(count);
@@ -117,8 +121,8 @@ void __thiscall S_Class::BSNodeReferences_LinkObject(S_Stream* stream)
             int pkParent[3];
             S_Obj* pkA;
             S_Obj* ref;
-            ref = stream->FUN_00a63430();
-            pkA = stream->FUN_00a63430();
+            ref = arStream->FUN_00a63430();
+            pkA = arStream->FUN_00a63430();
             if (ref && pkA)
             {
                 ref->vfn_dc(pkA, 0);

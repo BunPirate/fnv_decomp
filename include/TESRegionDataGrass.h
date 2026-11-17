@@ -5,6 +5,7 @@
 class TESFile;
 class TESRegionGrassObjectList;
 
+// pdb: class TESRegionDataGrass, size 0xc, bases: TESRegionData, 1 members
 class TESRegionDataGrass : public TESRegionData
 {
 public:

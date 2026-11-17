@@ -9,7 +9,7 @@
 #include "../../../../../include/hkTransform.h"
 
 struct hkMemoryAllocator;
-__declspec(nothrow) void __cdecl hkArrayUtil__reserve(hkMemoryAllocator& alloc, void* arr, int numElem, int sizeElem);
+__declspec(nothrow) void __cdecl hkArrayUtil__reserve(hkMemoryAllocator& mem, void* array, int numElem, int sizeElem);
 typedef hkArray<hkVector4> hkVector4Array;
 struct hkBoxGeometry
 {
@@ -158,6 +158,7 @@ struct BoxBuild2190BoxShell
 
 // @fnv 0x00de2190
 // src: HAVOK_SRC 0x00de2190
+// pdb: hkDisplayBox::buildGeometry | hkDisplayBox.obj | retail, upstream name already matches, high
 void BoxBuild2190BoxShell::hkDisplayBox_buildGeometry()
 {
     BoxBuild2190Router* router = hkMemoryRouter_getInstance();

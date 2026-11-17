@@ -41,19 +41,20 @@ enum CELL_ENVIRO_TYPE
     CELL_ENVIRO_TYPE_CET_COUNT = 31
 };
 
+// pdb: class BGSAcousticSpace, size 0x54, bases: TESBoundObject, 9 members
 class BGSAcousticSpace : public TESBoundObject
 {
 public:
-    bool m_bIsInterior;
+    bool bIsInterior; // src: XBOX_RETAIL_PDB +0x30 (old: m_bIsInterior)
     unsigned char layoutPadding31[3];
     TESSound* pDawnSound;
     TESSound* pNoonSound;
     TESSound* pDuskSound;
     TESSound* pNightSound;
     TESSound* pWallaSound;
-    TESRegion* pRegion;
-    CELL_ENVIRO_TYPE m_eCellEnvironmentType;
-    int m_iFlags;
+    TESRegion* pSoundRegion; // src: XBOX_RETAIL_PDB +0x48 (old: pRegion)
+    CELL_ENVIRO_TYPE eEnvType; // src: XBOX_RETAIL_PDB +0x4c (old: m_eCellEnvironmentType)
+    int iWallaPop; // src: XBOX_RETAIL_PDB +0x50 (old: m_iFlags)
 
     BGSAcousticSpace();
 
@@ -62,7 +63,7 @@ public:
     virtual void InitItem(void);
 
     void ResetFormData();
-    bool Load(TESFile* file);
+    bool Load(TESFile* apFile);
     void m_Virtual00();
     void m_Virtual04();
     void m_Virtual08();

@@ -36,9 +36,9 @@ inline const NiBound& NiBound::operator=(const NiBound& b)
 // @fnv 0x00a86530
 void NiScreenLODData::UpdateScreenBound(NiBound& bound)
 {
-    ScreenBone* bone = data->bones;
+    ScreenBone* bone = m_kBound->bones;
     bound.Update(bone->bound, reinterpret_cast<const NiTransform&>(objects[0]->world));
-    unsigned int count = data->count;
+    unsigned int count = m_kBound->count;
     for (unsigned int i = 1; i < count; i++)
     {
         const LocalNiTransform& transform = objects[i]->world;
@@ -54,7 +54,7 @@ void NiScreenLODData::UpdateScreenBound(NiBound& bound)
     }
     LocalNiTransform inverse;
     root->world.InvertTransform(inverse);
-    ScreenData* finalData = data;
+    ScreenData* finalData = m_kBound;
     inverse = finalData->transform * inverse;
     bound.TransformPoint(reinterpret_cast<const NiTransform&>(inverse));
 }
@@ -64,13 +64,13 @@ struct FUN_00a95cb0_shell : public NiScreenLODData
     void* NiScreenLODData_GetRTTI();
 };
 
-extern "C" void* g_011f5ee8;
+extern "C" void* NiScreenLODData_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f5ee8 (old: g_011f5ee8)
 
 // @fnv 0x00a95cb0
 // src: COMMUNITY 0x00a95cb0
 void* FUN_00a95cb0_shell::NiScreenLODData_GetRTTI()
 {
-    return &g_011f5ee8;
+    return &NiScreenLODData_ms_RTTI;
 }
 
 struct FUN_00a95c80_shell : public NiScreenLODData
@@ -103,6 +103,7 @@ struct Fake
 };
 // Sets the vtable, frees prop, calls FUN_00aa09c0, and if f has bit 0 set deletes this with size 0x30, returning this.
 // @fnv 0x00a95d20
+// pdb: NiScreenLODData::`scalar deleting destructor' | NiScreenLODData.obj | retail, object-file gap fill, low
 void* Fake::Destroy(unsigned int auiFlags)
 {
     vtable = (void*)&DAT_010a051c;
@@ -148,6 +149,9 @@ struct FUN_00a95d60_shell : public NiScreenLODData
 
 // Resizes the proportions array to count floats, copying the existing entries, or frees it and clears the count when count is zero.
 // @fnv 0x00a95d60
+// pdb: NiScreenLODData::SetNumProportions | NiScreenLODData.obj | retail, call graph, low
+// pdb params: uiNumProportions
+// pdb locals: pfNewProportions, uiDestSize
 void FUN_00a95d60_shell::SetProportionCount(unsigned int count)
 {
     if (count != *(unsigned int*)((char*)this + 0x28))
@@ -466,6 +470,9 @@ class A960A0Data : public A960A0Object
 // Saves the base object, both bounding spheres, the index count and each index to the stream.
 // @fnv 0x00a960a0
 // src: XBOX_PDB 0x00a960a0
+// pdb: NiScreenLODData::SaveBinary | NiScreenLODData.obj | retail, upstream name already matches, high
+// pdb params: kStream
+// pdb locals: i
 void A960A0Data::NiScreenLODData_SaveBinary(A960A0Stream& kStream)
 {
     A960A0Object::SaveBinary(kStream);
@@ -547,6 +554,7 @@ struct FUN_00a95cc0_shell : public NiScreenLODData
 };
 
 // @fnv 0x00a95cc0
+// pdb: NiScreenLODData::NiScreenLODData | NiScreenLODData.obj | retail, call graph, low
 FUN_00a95cc0_shell* FUN_00a95cc0_shell::InitializeScreenLODData()
 {
     S_00a95cc0_Foo* p = reinterpret_cast<S_00a95cc0_Foo*>(this);
@@ -590,6 +598,8 @@ void SetProportionCount(unsigned int count);
 
 // Allocates a new object, copies the NiBound center and radius, copies m_28 entries from m_2c, and returns the new object.
 // @fnv 0x00a96030
+// pdb: NiScreenLODData::Duplicate | NiScreenLODData.obj | retail, object-file run extension, low
+// pdb locals: pkData, uiDestSize
 void* FUN_00a96030_cls::CloneWithBounds(unsigned int unused)
 {
     FUN_00a96030_cls* result;
@@ -621,13 +631,15 @@ struct S_00a58160_Foo
 };
 struct FUN_00a95ca0_shell : public S_00a58160_Foo
 {
-    void NiKeyBasedInterpolator_LinkObject(S_00a58160_Stream& s);
+    void NiKeyBasedInterpolator_LinkObject(S_00a58160_Stream& kStream);
 };
 // @fnv 0x00a95ca0
 // src: COMMUNITY 0x00a95ca0
-void FUN_00a95ca0_shell::NiKeyBasedInterpolator_LinkObject(S_00a58160_Stream& s)
+// pdb: NiKeyBasedInterpolator::LinkObject | NiKeyBasedInterpolator.obj | debug, upstream name already matches, high
+// pdb params: kStream
+void FUN_00a95ca0_shell::NiKeyBasedInterpolator_LinkObject(S_00a58160_Stream& kStream)
 {
-    NiInterpolator_LinkObject(s);
+    NiInterpolator_LinkObject(kStream);
 }
 
 struct FUN_00a95f40_cls
@@ -836,6 +848,10 @@ struct FUN_00a961d0_cls
     void LoadFromStream(StreamOwner* owner);
 };
 // @fnv 0x00a961d0
+// pdb: NiScreenLODData::LoadBinary | NiScreenLODData.obj | retail, object-file run extension, low
+// pdb note: debug build links it to NiScreenLODData::IsEqual
+// pdb params: kStream
+// pdb locals: uiProportions, i
 void FUN_00a961d0_cls::LoadFromStream(StreamOwner* owner)
 {
     BSTextureSet_LoadBinary(owner);
@@ -919,9 +935,12 @@ struct Obj96270
 // Adds the global string, Bound and World Bound strings, and one formatted proportion string per m_28 entry into pkStrings.
 // @fnv 0x00a96270
 // src: XBOX_PDB 0x00a96270
+// pdb: NiScreenLODData::GetViewerStrings | NiScreenLODData.obj | retail, string-set bridge, high
+// pdb params: pkStrings
+// pdb locals: i, pcString
 void Obj96270::NiScreenLODData_GetViewerStrings(StrArray* pkStrings)
 {
-    pkStrings->AddCall(NiViewerStrings_NiGetViewerString_Title(*(const char**)&g_011f5ee8));
+    pkStrings->AddCall(NiViewerStrings_NiGetViewerString_Title(*(const char**)&NiScreenLODData_ms_RTTI));
     pkStrings->AddCall(m_08.GetViewerString_00a7fb20("Bound"));
     pkStrings->AddCall(m_18.GetViewerString_00a7fb20("World Bound"));
     for (unsigned int i = 0; i < m_28; i++)
@@ -1017,22 +1036,25 @@ struct WorkerScreen
 // Computes a camera-scaled extent from the radius and returns the first threshold value less than or equal to it.
 // @fnv 0x00a95de0
 // src: XBOX_PDB 0x00a95de0
-unsigned int WorkerScreen::NiScreenLODData_GetLODLevel(WorkerCamera* camera, int unused)
+// pdb: NiScreenLODData::GetLODLevel | NiScreenLODData.obj | debug, upstream name already matches, high
+// pdb params: pkCamera, pkLOD
+// pdb locals: fBoundViewDist, fInvMinScreenDimmension, fProportion, fRatio, kFrustum, uiIndex
+unsigned int WorkerScreen::NiScreenLODData_GetLODLevel(WorkerCamera* pkCamera, int pkLOD)
 {
-    NiPoint3 delta = position - camera->position;
+    NiPoint3 delta = position - pkCamera->position;
     float squared = delta.x * delta.x + delta.y * delta.y + delta.z * delta.z;
     float distance = (float)sqrt(squared);
     if (distance < radius || distance <= 0.000001f)
         return 0;
     float ratio;
-    if (camera->orthographic)
+    if (pkCamera->orthographic)
         ratio = radius;
     else
         ratio = radius / distance;
-    float width = (float)(2.0 / (camera->right - camera->left));
-    float height = (float)(2.0 / (camera->top - camera->bottom));
+    float width = (float)(2.0 / (pkCamera->right - pkCamera->left));
+    float height = (float)(2.0 / (pkCamera->top - pkCamera->bottom));
     float extent = width > height ? width : height;
-    float projected = extent * ratio * camera->scale;
+    float projected = extent * ratio * pkCamera->scale;
     unsigned int level = 0;
     while (level < count)
     {

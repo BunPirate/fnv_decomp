@@ -3,6 +3,7 @@
 #include "NiProperty.h"
 
 #pragma pack(push, 2)
+// pdb: class NiVertexColorProperty, size 0x1c (here 0x1a), bases: NiProperty, 1 members
 class NiVertexColorProperty : public NiProperty
 {
   public:

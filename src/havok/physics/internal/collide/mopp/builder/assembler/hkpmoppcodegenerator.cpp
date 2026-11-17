@@ -41,11 +41,13 @@ struct SomeClass
     int unk0c;
     void* unk10;
     hkArray<unsigned __int64> buffer;
-    void Destroy();
+    void hkpMoppCodeGenerator_dtor();
 };
 // Resets the vtable, frees unk10 through the allocator if set, clears buffer, then sets the vtable to DAT_0102e388.
 // @fnv 0x00e06650
-void SomeClass::Destroy()
+// src: XBOX_RETAIL_PDB 0x00e06650
+// pdb: hkpMoppCodeGenerator::~hkpMoppCodeGenerator | hkpMoppCodeGenerator.obj | retail, call graph (shared callers), high
+void SomeClass::hkpMoppCodeGenerator_dtor()
 {
     void* p = unk10;
     vtable = &DAT_010ea5b4;
@@ -77,6 +79,7 @@ struct E06490Stack
 };
 
 // @fnv 0x00e06490
+// pdb: hkpMoppCodeGenerator::resize | hkpMoppCodeGenerator.obj | retail, call graph, high
 void E06490Stack::GrowBuffer()
 {
     int newCapacity = m_pRayCursor * 2;
@@ -95,7 +98,7 @@ void* __cdecl hkAllocateE06(hkMemory* pkHeap, int iNumBytes) throw();
 class FUN_00e065f0 : public hkReferencedObject
 {
   public:
-    FUN_00e065f0(int iSize);
+    FUN_00e065f0(int size);
     virtual ~FUN_00e065f0();
 
     int m_uiLogicalSize;
@@ -105,11 +108,13 @@ class FUN_00e065f0 : public hkReferencedObject
 };
 
 // @fnv 0x00e065f0
-FUN_00e065f0::FUN_00e065f0(int iSize)
+// pdb: hkpMoppCodeGenerator::hkpMoppCodeGenerator | hkpMoppCodeGenerator.obj | retail, call graph, high
+// pdb params: size
+FUN_00e065f0::FUN_00e065f0(int size)
 {
     hkMemory* pkHeap = hkThreadMemory::GetMonitorStream()->m_pMemoryAllocator;
-    m_pData = hkAllocateE06(pkHeap, iSize);
-    m_uiLogicalSize = iSize;
+    m_pData = hkAllocateE06(pkHeap, size);
+    m_uiLogicalSize = size;
     m_iUsed = 0;
 }
 
@@ -119,7 +124,7 @@ extern "C" void __cdecl nullsub_26()
 {}
 
 #include <xmmintrin.h>
-extern "C" void __cdecl hkArrayUtil__reserve(void* heap, void* arr, int n, int elemSize);
+extern "C" void __cdecl hkArrayUtil__reserve(void* mem, void* array, int numElem, int sizeElem);
 extern "C" void __cdecl hkString_memCpy(void* dst, const void* src, int n);
 
 __forceinline hkMemoryAllocator& hkContainerHeapAllocator::get(const void*)
@@ -178,13 +183,14 @@ struct S_00e064f0_Obj : hkReferencedObject
 struct FUN_00e064f0_class
 {
     int unk00, unk04, unk08, unk0C, unk10;
-    S_00e064f0_Obj* AllocateStorage_00e064f0();
+    S_00e064f0_Obj* hkpMoppCodeGenerator_compileCode();
 };
 
 // Allocates an S_00e064f0_Obj, copies unk0C bytes from unk08+(unk10-unk0C) into its array, frees unk10, clears unk10 and unk0C, and sets unk08 to the old count.
 // @fnv 0x00e064f0
-// src: GUESS 0x00e064f0 (confidence: low)
-S_00e064f0_Obj* FUN_00e064f0_class::AllocateStorage_00e064f0()
+// src: XBOX_RETAIL_PDB 0x00e064f0
+// pdb: hkpMoppCodeGenerator::compileCode | hkpMoppCodeGenerator.obj | retail, object-file gap fill, high
+S_00e064f0_Obj* FUN_00e064f0_class::hkpMoppCodeGenerator_compileCode()
 {
     int n = unk0C;
     S_00e064f0_Obj* pNewObj = new S_00e064f0_Obj;
@@ -204,14 +210,15 @@ struct CpuObject
 {
     unsigned int unk00;
     unsigned short size;
-    void Destroy();
+    void hkpMoppCodeGenerator_dtor();
     CpuObject* FUN_00e066c0(unsigned int flags);
 };
 // Calls FUN_00e06650, then if the low bit of flags is set, invokes the global CpuAllocator with this and size, and returns this.
 // @fnv 0x00e066c0
+// pdb: hkpMoppCodeGenerator::`scalar deleting destructor' | hkpMoppCodeGenerator.obj | retail, vtable slot, high
 CpuObject* CpuObject::FUN_00e066c0(unsigned int flags)
 {
-    Destroy();
+    hkpMoppCodeGenerator_dtor();
     if (flags & 1)
     {
         hkThreadMemory& holder = GetMoppMemoryRouter();

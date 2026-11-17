@@ -12,18 +12,21 @@ int TruncateFloatToInt(float value);
 
 struct LandDuplicateCalls
 {
-    ::TESForm* TESForm_CreateDuplicateForm(bool createEditorID, void* copyMap);
+    ::TESForm* TESForm_CreateDuplicateForm(bool abCreateEditorID, void* apCopyMap);
 };
 struct LandDuplicateEntry : LandDuplicateCalls
 {
-    ::TESForm* TESObjectLAND_CreateDuplicateForm(bool createEditorID, void* copyMap);
+    ::TESForm* TESObjectLAND_CreateDuplicateForm(bool abCreateEditorID, void* apCopyMap);
 };
 // @fnv 0x00534880
 // src: XBOX_PDB 0x00534880
-::TESForm* LandDuplicateEntry::TESObjectLAND_CreateDuplicateForm(bool createEditorID, void* copyMap)
+// pdb: TESObjectLAND::CreateDuplicateForm | TESLand.obj | retail, upstream name already matches, high
+// pdb params: abCreateEditorID, apCopyMap
+// pdb locals: pdupland
+::TESForm* LandDuplicateEntry::TESObjectLAND_CreateDuplicateForm(bool abCreateEditorID, void* apCopyMap)
 {
     ::TESObjectLAND* duplicate;
-    duplicate = dynamic_cast< ::TESObjectLAND*>(TESForm_CreateDuplicateForm(false, copyMap));
+    duplicate = dynamic_cast< ::TESObjectLAND*>(TESForm_CreateDuplicateForm(false, apCopyMap));
     return duplicate;
 }
 
@@ -47,6 +50,9 @@ struct FUN_005391d0_class
 
 // @fnv 0x005391d0
 // src: XBOX_PDB 0x005391d0
+// pdb: TESObjectLAND::SavesBefore | TESLand.obj | retail, vtable slot, high
+// pdb params: apForm
+// pdb locals: bretval, pformcell, pcellchild, pref
 bool FUN_005391d0_class::TESObjectLAND_SavesBefore_005391d0(LandSaveGroup5391* apGroupFORM)
 {
     bool bretval = false;

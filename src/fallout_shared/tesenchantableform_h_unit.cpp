@@ -2,8 +2,11 @@
 #include "../../include/TESForm.h"
 
 // @fnv 0x004be330
-EnchantmentItem* TESEnchantableForm::FindFormEnchantment(TESForm* form)
+// pdb: TESEnchantableForm::GetFormEnchanting | InventoryChanges.obj | debug, call graph, high
+// pdb params: apForm
+// pdb locals: pEF
+EnchantmentItem* TESEnchantableForm::FindFormEnchantment(TESForm* apForm)
 {
-    TESEnchantableForm* enchantable = dynamic_cast<TESEnchantableForm*>(form);
+    TESEnchantableForm* enchantable = dynamic_cast<TESEnchantableForm*>(apForm);
     return enchantable ? enchantable->GetEnchantment() : 0;
 }

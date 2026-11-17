@@ -55,6 +55,8 @@ struct CF6DE0PhantomBroadPhaseListener
 
 // @fnv 0x00cf6de0
 // src: GUESS 0x00cf6de0 (confidence: low)
+// pdb: hkpPhantomBroadPhaseListener::addCollisionPair | hkpPhantomBroadPhaseListener.obj | retail, vtable slot, high
+// pdb params: pair
 void CF6DE0PhantomBroadPhaseListener::UpdateFields_00cf6de0(CF6DE0HandlePair& pair)
 {
     if (pair.m_kPointA->m_type == 2)
@@ -100,27 +102,29 @@ struct DispatchTarget
 
 // For each pair member whose tag is 2, resolves a relative target and calls its v24 with the other member's offset-adjusted pointer.
 // @fnv 0x00cf6e40
-void __stdcall DispatchPairTargets(RefPair* apPair)
+// pdb: hkpPhantomBroadPhaseListener::removeCollisionPair | hkpPhantomBroadPhaseListener.obj | retail, vtable slot, high
+// pdb params: pair
+void __stdcall DispatchPairTargets(RefPair* pair)
 {
-    if (apPair->pFirst->tag == 2)
+    if (pair->pFirst->tag == 2)
     {
-        RefRec* pA = apPair->pFirst;
+        RefRec* pA = pair->pFirst;
         char* pBase = (char*)pA + pA->off;
         int iRelOffset = *(signed char*)(pBase + 0x10);
-        RefRec* pB = apPair->pSecond;
+        RefRec* pB = pair->pSecond;
         void* arg = (char*)pB + pB->off;
         DispatchTarget* pTarget = (DispatchTarget*)(pBase + iRelOffset);
         pTarget->v24(arg);
     }
-    if (apPair->pSecond->tag == 2)
+    if (pair->pSecond->tag == 2)
     {
-        RefRec* pB = apPair->pSecond;
+        RefRec* pB = pair->pSecond;
         char* pBase = (char*)pB + pB->off;
         int iRelOffset = *(signed char*)(pBase + 0x10);
-        RefRec* pA = apPair->pFirst;
+        RefRec* pA = pair->pFirst;
         void* arg = (char*)pA + pA->off;
         DispatchTarget* pTarget = (DispatchTarget*)(pBase + iRelOffset);
-        apPair = (RefPair*)arg;
-        pTarget->v24(apPair);
+        pair = (RefPair*)arg;
+        pTarget->v24(pair);
     }
 }

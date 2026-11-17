@@ -10,12 +10,12 @@
 
 class NiPoint3;
 
-hkVector4& NI2HK(hkVector4& out, const NiPoint3& pt);
+hkVector4& NI2HK(hkVector4& arhkTran, const NiPoint3& arNiTran);
 
 class Obj554720
 {
   public:
-    void bhkWorldM_CheckForMove(const hkVector4& v);
+    void bhkWorldM_CheckForMove(const hkVector4& arPos);
     void bhkWorldM_NiCheckForMove(const NiPoint3& pt);
 };
 
@@ -23,6 +23,9 @@ class Obj554720
 #pragma strict_gs_check(push, on)
 // @fnv 0x00554720
 // src: COMMUNITY 0x00554720
+// pdb: bhkWorldM::CheckForMove | TESObjectCELL.obj | debug, object-file gap fill, medium
+// pdb params: arPos
+// pdb locals: pos
 void Obj554720::bhkWorldM_NiCheckForMove(const NiPoint3& pt)
 {
     hkVector4 v;

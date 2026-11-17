@@ -113,6 +113,7 @@ class ShaderPassRenderer;
 class GraphicsRenderer;
 class NiD3DVertexDeclaration;
 #pragma pack(push, 4)
+// pdb: class BSShaderNoLighting, size 0x1d8 (here 0x1b4), bases: BSShader, 22 members
 class BSShaderNoLighting : public BSShader
 {
   public:
@@ -136,10 +137,10 @@ class BSShaderNoLighting : public BSShader
     NiPointer<NiD3DVertexDeclaration> m_pkVertexDeclarationVariant10;  // +0x1A8, 4 bytes
     NiPointer<NiD3DVertexDeclaration> m_pkVertexDeclarationVariant11;  // +0x1AC, 4 bytes
     NiPointer<NiD3DVertexDeclaration> m_pkVertexDeclarationVariant12;  // +0x1B0, 4 bytes
-    BSShaderNoLighting(NiD3DVertexDeclaration* d0, NiD3DVertexDeclaration* d1, NiD3DVertexDeclaration* d2,
-                       NiD3DVertexDeclaration* d3, NiD3DVertexDeclaration* d4, NiD3DVertexDeclaration* d5,
-                       NiD3DVertexDeclaration* d6, NiD3DVertexDeclaration* d7, NiD3DVertexDeclaration* d8,
-                       NiD3DVertexDeclaration* d9, NiD3DVertexDeclaration* d10, NiD3DVertexDeclaration* d11);
+    BSShaderNoLighting(NiD3DVertexDeclaration* apDecl, NiD3DVertexDeclaration* apDeclVC, NiD3DVertexDeclaration* apDeclTexVC,
+                       NiD3DVertexDeclaration* apDeclN, NiD3DVertexDeclaration* apDeclVCN, NiD3DVertexDeclaration* apDeclTexVCN,
+                       NiD3DVertexDeclaration* apSkinDecl, NiD3DVertexDeclaration* apSkinDeclVC, NiD3DVertexDeclaration* apSkinDeclTexVC,
+                       NiD3DVertexDeclaration* apSkinDeclN, NiD3DVertexDeclaration* apSkinDeclVCN, NiD3DVertexDeclaration* apSkinDeclTexVCN);
     ~BSShaderNoLighting();
     static BSShader* CreateShader();
     void BSShaderNoLighting_LoadStagesAndPasses();
@@ -148,7 +149,7 @@ class BSShaderNoLighting : public BSShader
     void UpdateGlobalMatrix(const NiPropertyState*);
     void BSShaderNoLighting_SetupGeometryConstants_WaterFog();
     void UpdateMaterialColor(BSShaderNoLightingProperty*, NiMaterialProperty*);
-    void InitializeShaderData();
+    void LoadShaders();
     NiD3DShaderDeclaration* SelectVertexDeclaration(NiGeometry* pkGeometry, BSShaderProperty* pkShaderProperty);
     // const NiRTTI* __cdecl BSShaderNoLighting::*()
     // BSShaderNoLighting
@@ -210,10 +211,11 @@ class NiSkinInstance;
 class NiGeometryBufferData;
 class NiD3DShaderProgram;
 
+// pdb: class NiWireframeProperty, size 0x1c, bases: NiProperty, 1 members
 class NiWireframeProperty : public NiProperty
 {
   public:
-    unsigned short m_uiObjectFlags;
+    unsigned short m_uFlags; // src: XBOX_RETAIL_PDB +0x18 (old: m_uiObjectFlags)
 };
 
 class GraphicsRenderer

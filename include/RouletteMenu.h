@@ -8,6 +8,7 @@ class BSSimpleListTESRaceSize;
 class NiAVObject;
 class NiNode;
 
+// pdb: class RouletteMenu, size 0x4014, bases: Menu, 39 members
 class RouletteMenu : public Menu
 {
 public:
@@ -119,16 +120,16 @@ public:
     void* __thiscall Destroy(unsigned int flags);
     bool SetBet(int);
     bool IsEyesListBelowThreshold(int);
-    void ApplyValueToChain(int, float);
-    bool RemoveEntryById(int);
+    void SetTileTextAlpha(int, float);
+    bool RemoveBet(int);
     void HandleRouletteInput(int, Tile*);
     char HasAllTiles();
     void SetTileValue(int, Tile*);
-    void RotateRouletteWheelToResult(int);
+    void ShiftWheelTexture(int);
     void ResetSlotTransform(int);
-    void UpdateBetTileText();
-    void InitRouletteScene();
-    void InitRouletteWheel();
+    void UpdateEarningsString();
+    void Prepare3DElements();
+    void PrepareBetTiles();
     int GetBetIndex();
     void SpinWheel();
     void ResetBetChips();

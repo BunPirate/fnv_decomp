@@ -2,6 +2,7 @@
 
 #include "TESPackage.h"
 
+// pdb: class SpectatorPackage, size 0xb4 (here 0x80), bases: TESPackage, 8 members
 class SpectatorPackage : public TESPackage
 {
 public:

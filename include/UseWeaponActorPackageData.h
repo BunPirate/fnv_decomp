@@ -4,6 +4,7 @@
 
 class TESObjectREFR;
 
+// pdb: class UseWeaponActorPackageData, size 0x8, bases: ActorPackageData, 1 members
 class UseWeaponActorPackageData : public ActorPackageData
 {
 public:

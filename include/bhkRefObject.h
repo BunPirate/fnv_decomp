@@ -5,6 +5,7 @@
 
 class hkReferencedObject;
 
+// pdb: class bhkRefObject, size 0xc, bases: NiObject, 1 members
 class bhkRefObject : public NiObject
 {
 public:
@@ -19,5 +20,5 @@ public:
     void Destroy();
     void UpdateReference(bool);
 
-    hkReferencedObject* m_pHavokObject;
+    hkReferencedObject* phkObject; // src: XBOX_RETAIL_PDB +0x8 (old: m_pHavokObject)
 };

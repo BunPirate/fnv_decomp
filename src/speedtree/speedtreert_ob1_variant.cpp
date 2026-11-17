@@ -105,17 +105,17 @@ public:
     void Unitize_004a0c10();
     float FUN_004a7290();
     float FUN_004a7290() const;
-    LocalVec3 FUN_004b3800(const LocalVec3& other) const;
+    LocalVec3 FUN_004b3800(const LocalVec3& pt) const;
     LocalVec3 ProcessAndReturnValue_0053d280(float divisor);
     float NiPoint3_XYLength();
     float NiPoint3_XYLength() const;
     void ComputeValue_0063c8a0(const LocalVec3* other);
     void ComputeValue_0063c8a0(void* other);
     void FUN_006815c0();
-    float CVec3_Distance(LocalVec3* other);
-    float CVec3_Distance(const LocalVec3& other) const;
-    LocalVec3 TransformPointByMatrix4(const Mat& matrix);
-    LocalVec3 TransformPointByMatrix4(const Matrix4* matrix);
+    float CVec3_Distance(LocalVec3* cVec);
+    float CVec3_Distance(const LocalVec3& cVec) const;
+    LocalVec3 TransformPointByMatrix4(const Mat& cTransform);
+    LocalVec3 TransformPointByMatrix4(const Matrix4* cTransform);
     void Normalize_00b12790();
     LocalVec3 Diff_00b13040(void* other);
     LocalVec3 Diff_00b13040(const LocalVec3& other) const;
@@ -179,11 +179,11 @@ struct FUN_00b02e00_class
 struct FUN_00b2bcf0_shell
 {
     void CTreeEngine_GetSize(float*, float*);
-    void CSpeedTreeRT_GetTreeSize(float* a, float* b);
+    void CSpeedTreeRT_GetTreeSize(float* fSize, float* fVariance);
 };
 struct FUN_00b071c0_Class
 {
-    void __thiscall SetField14(int param);
+    void __thiscall CSpeedTreeRT_SetLeafRockingState(int bFlag);
 };
 struct FUN_00b07390_class
 {
@@ -207,7 +207,7 @@ struct FUN_00b074c0_class
 };
 struct FUN_00b074f0_obj
 {
-    void* GetNestedPointer();
+    void* CSpeedTreeRT_GetLeafWindMethod();
 };
 struct FUN_00b076c0_Class
 {
@@ -288,7 +288,7 @@ struct FUN_00b078e0_Class
     void* m_18;
     void* m_1c;
     void* m_20;
-    void* GetFieldAt0C();
+    void* CSpeedTreeRT_GetFrondWindMethod();
 };
 struct FUN_00b2bdc0_shell
 {
@@ -296,12 +296,13 @@ struct FUN_00b2bdc0_shell
 };
 struct FUN_00b08500_shell
 {
-    void CSpeedTreeRT_SetNearFarDists(float a, float b);
+    void CSpeedTreeRT_SetLodLimits(float fNear, float fFar);
 };
 struct FUN_00b086f0_class
 {
-    unsigned short __thiscall GetLowWordAtOffset0x78();
+    unsigned short __thiscall CSpeedTreeRT_GetNumBranchLodLevels();
 };
+// pdb: class CSpeedTreeRT, size 0xa0 (here 0x4), 31 members
 struct CSpeedTreeRT
 {
     void* m_pFirstPointer;
@@ -417,10 +418,10 @@ struct FUN_00b08440_shell
 extern unsigned char DAT_011f8b78;
 void CSpeedTreeRT_SetDropToBillboard(unsigned char param_1);
 void __cdecl _memmove(void* dst, const void* src, unsigned int size);
-void __cdecl AssignString(const char* s);
+void __cdecl CSpeedTreeRT_SetError(const char* pError);
 struct CSpeedTreeRT_GetBoundingBox
 {
-    void __thiscall CSpeedTreeRT_GetBoundingBox_00b08c80(float* dst);
+    void __thiscall CSpeedTreeRT_GetBoundingBox_00b08c80(float* pBounds);
 };
 struct FUN_00b0a260_Class
 {
@@ -447,7 +448,7 @@ struct FUN_00b0a260_Class
     void* m_50;
     void* m_54;
     void* m_58;
-    int __thiscall GetEntryCount();
+    int __thiscall CSpeedTreeRT_GetCollisionObjectCount();
 };
 extern unsigned char DAT_011f8b79;
 void CSpeedTreeRT_SetFlipTextures(unsigned char param_1);
@@ -560,7 +561,7 @@ struct FUN_00b08480_shell
     void* m_2c;
     void* m_30;
     void* m_34;
-    void CSpeedTreeRT_SetLodLevel(float f);
+    void CSpeedTreeRT_SetLodLevel(float fLevel);
 };
 struct FUN_00b02dc0_class
 {
@@ -583,12 +584,12 @@ struct FUN_00b053e0_shell
 struct FUN_00b073f0_class
 {
     void* m_p;  // +0x0
-    float GetNestedFloatOrZero();
+    float CSpeedTreeRT_GetTrunkWidth();
 };
 struct FUN_00b07440_Class
 {
     void* m_p;
-    float __thiscall GetNestedFloatOrZero_00b07440();
+    float __thiscall CSpeedTreeRT_GetTrunkLength();
 };
 namespace std {
 template <class _CharT> struct char_traits
@@ -686,11 +687,11 @@ struct std_string
 };
 extern std_string DAT_011f8ba4;
 unsigned int _strlen(const char*);
-void __cdecl AssignString(const char* s);
+void __cdecl CSpeedTreeRT_SetError(const char* pError);
 extern unsigned char DAT_011f8b78;
-void __cdecl AssignString(const char* s);
-void __cdecl CSpeedTreeRT_GetTransitionValues(float a, unsigned short n, float b, float c, float d, float e, float* pf1, float* pf2,
-                          short* ps1, short* ps2);
+void __cdecl CSpeedTreeRT_SetError(const char* pError);
+void __cdecl CSpeedTreeRT_GetTransitionValues(float fLodLevel, unsigned short usLodCount, float fOverlapRadius, float fTransitionFactor, float fCurveExponent, float fTargetAlphaValue, float* fHighValue, float* fLowValue,
+                          short* sHighLod, short* sLowLod);
 struct FUN_00b0b920_geo
 {
     char m_00[0xc];
@@ -710,9 +711,9 @@ struct FUN_00b0b920_engine
     int FUN_00b7b0();
     int FUN_00b830();
     int FUN_00b8b0();
-    unsigned short CIndexedGeometry_GetNumStrips(unsigned short i);
-    int CIndexedGeometry_GetStripLengthsPointer(unsigned short i);
-    int CIndexedGeometry_GetStripsPointer(unsigned short i);
+    unsigned short CIndexedGeometry_GetNumStrips(unsigned short sLodLevel);
+    int CIndexedGeometry_GetStripLengthsPointer(unsigned short sLodLevel);
+    int CIndexedGeometry_GetStripsPointer(unsigned short nLodLevel);
 };
 struct FUN_00b0b920_arg
 {
@@ -734,7 +735,7 @@ struct FUN_00b0b920_self
     unsigned short GetNumLeafLodLevels();
     short CSpeedTreeRT_GetDiscreteFrondLodLevel(float f);
     float CSpeedTreeRT_GetLodLevel();
-    void FillFrondGeometry(FUN_00b0b920_arg* arg, short type);
+    void CSpeedTreeRT_GetFrondGeometry(FUN_00b0b920_arg* sGeometry, short sOverrideLodValue);
 };
 struct HelperC780
 {
@@ -793,7 +794,7 @@ struct TreeC4
     unsigned char enabled;
     char p6e[2];
     int data;
-    void FillSpeedTreeOutput(OutC4* out);
+    void CSpeedTreeRT_GetSimpleBillboardGeometry(OutC4* sGeometry);
 };
 struct P8
 {
@@ -989,36 +990,39 @@ struct Cont
     {
         return It(pLast, this);
     }
-    void SCollisionObjects_TransformAll(const Mat& m);
+    void SCollisionObjects_TransformAll(const Mat& cTransform);
 };
 // @fnv 0x00b04db0
 // src: COMMUNITY 0x00b04db0
-void Cont::SCollisionObjects_TransformAll(const Mat& m)
+// pdb: SCollisionObjects::TransformAll | SpeedTreeRT.obj | debug, upstream name already matches, high
+// pdb params: cTransform
+// pdb locals: i, cPos
+void Cont::SCollisionObjects_TransformAll(const Mat& cTransform)
 {
     for (It it = Begin(); it != End(); it.ProcessEntries_00b0eb30())
     {
         LocalVec3 pos(it->x, it->y, it->z);
-        memcpy(&pos, &pos.TransformPointByMatrix4(m), sizeof(pos));
+        memcpy(&pos, &pos.TransformPointByMatrix4(cTransform), sizeof(pos));
         it.ProcessEntries_00b0ebb0().x = pos[0];
         it.ProcessEntries_00b0ebb0().y = pos[1];
         it.ProcessEntries_00b0ebb0().z = pos[2];
         Dead3();
         if (it->type == 0)
         {
-            it.ProcessEntries_00b0ebb0().f10 *= m.f0;
+            it.ProcessEntries_00b0ebb0().f10 *= cTransform.f0;
         }
         else if (it->type == 1)
         {
             Dead3();
-            it.ProcessEntries_00b0ebb0().f10 *= m.f0;
-            it.ProcessEntries_00b0ebb0().f14 *= m.f0;
+            it.ProcessEntries_00b0ebb0().f10 *= cTransform.f0;
+            it.ProcessEntries_00b0ebb0().f14 *= cTransform.f0;
         }
         else if (it->type == 2)
         {
             Dead3();
-            it.ProcessEntries_00b0ebb0().f10 *= m.f0;
-            it.ProcessEntries_00b0ebb0().f14 *= m.f14;
-            it.ProcessEntries_00b0ebb0().f18 *= m.f28;
+            it.ProcessEntries_00b0ebb0().f10 *= cTransform.f0;
+            it.ProcessEntries_00b0ebb0().f14 *= cTransform.f14;
+            it.ProcessEntries_00b0ebb0().f18 *= cTransform.f28;
         }
     }
 }
@@ -1061,6 +1065,8 @@ struct FUN_00b09480 : FUN_00b096a0
     virtual ~FUN_00b09480();
 };
 // @fnv 0x00b09480
+// pdb: std::basic_string<char,std::char_traits<char>,std::allocator<char> >::assign | TESObject.obj | retail, call graph, low
+// pdb params: _Ptr
 FUN_00b09480::FUN_00b09480(const FUN_0044a4c0& msg, bool bErrno)
     : FUN_00b096a0(TESObject_ConcatenateStrings(Object_ProcessAndReturnValue_00ad42e0(TESObject_ConcatenateStrings(msg, " ["),
                                              bErrno ? FUN_0044a4c0(FUN_00ecdb42(*FUN_00ec85e3())) : FUN_0044a4c0("")),
@@ -1107,6 +1113,7 @@ struct MyClass
 
 // @fnv 0x00b0b4b0
 // src: COMMUNITY 0x00b0b4b0
+// pdb: CIndexedGeometry::GetVertexColors | SpeedTreeRT.obj | debug, upstream name already matches, high
 int* MyClass::CIndexedGeometry_GetVertexColors()
 {
     return m_vec.empty() ? 0 : m_vec[0];
@@ -1247,6 +1254,7 @@ struct FUN_00b0b830_Class
 
 // @fnv 0x00b0b830
 // src: COMMUNITY 0x00b0b830
+// pdb: CIndexedGeometry::GetVertexWindWeights | SpeedTreeRT.obj | debug, upstream name already matches, high
 float* FUN_00b0b830_Class::CIndexedGeometry_GetVertexWindWeights()
 {
     return m_vec.empty() ? 0 : &m_vec[0];
@@ -1301,7 +1309,7 @@ struct StrQ : std::basic_string<char, std::char_traits<char>, std::allocator<cha
         _Tidy(true, 0);
     }
 };
-StrQ __cdecl IdvFormatString(const char* fmt, ...);
+StrQ __cdecl IdvFormatString(const char* pField, ...);
 inline void SetCurQ(void* p)
 {
     int pad[24];
@@ -1393,6 +1401,8 @@ struct FUN_00b02ef0
     FUN_00b02ef0();
 };
 // @fnv 0x00b02ef0
+// pdb: CSpeedTreeRT::CSpeedTreeRT | SpeedTreeRT.obj | debug, object-file run extension, low
+// pdb locals: i, cException
 FUN_00b02ef0::FUN_00b02ef0()
     : m00(0), m04(0), m08(0), m0c(0), m10(0), m14(0), m18(1), m1c(0.07f), m20(0.7f), m24(0.5f), m28(0.0f), m2c(0),
       m30(0), m34(0), m3c(-1), m40(0), m44('T'), m45(0), m48(-1), m4c(0), m50(0), m54(0), m58(0), m5c(0), m64(0),
@@ -1429,12 +1439,12 @@ FUN_00b02ef0::FUN_00b02ef0()
     }
     catch (ExcQ& e)
     {
-        AssignString(IdvFormatString("%s - failed [%s]", "CSpeedTreeRT::CSpeedTreeRT( )", e.what()).c_str());
+        CSpeedTreeRT_SetError(IdvFormatString("%s - failed [%s]", "CSpeedTreeRT::CSpeedTreeRT( )", e.what()).c_str());
         Dead5Q();
     }
     catch (...)
     {
-        AssignString(IdvFormatString("%s - threw an unknown system exception", "CSpeedTreeRT::CSpeedTreeRT( )").c_str());
+        CSpeedTreeRT_SetError(IdvFormatString("%s - threw an unknown system exception", "CSpeedTreeRT::CSpeedTreeRT( )").c_str());
         Dead5Q();
     }
 }
@@ -1473,8 +1483,8 @@ struct StrF
         return 16 <= uiRes ? kBx.pPtr : kBx.acBuf;
     }
 };
-StrF __cdecl IdvFormatString(const char* pFmt, ...);
-void __cdecl AssignString(const char* s);
+StrF __cdecl IdvFormatString(const char* pField, ...);
+void __cdecl CSpeedTreeRT_SetError(const char* pError);
 void* __cdecl FUN_00ec44d0(void*, const void*, unsigned);
 namespace std {
 class exception
@@ -1512,7 +1522,7 @@ struct V3Q
 struct V3B
 {
     float x, y, z;
-    float CVec3_Distance(const V3Q& v) const;
+    float CVec3_Distance(const V3Q& cVec) const;
     float Dist(const V3Q& v) const
     {
         Dead2();
@@ -1576,7 +1586,7 @@ struct TreeCQ
     {
         return iD8;
     }
-    void InitSeed(int);
+    void CTreeEngine_SetSeed(int);
     void CTreeEngine_Compute(float);
 };
 struct GeoQ
@@ -1594,8 +1604,8 @@ struct GeoQ
 struct BrQ
 {
     void CLeafGeometry_Init(unsigned short, int, O94Q*);
-    void SetLeafTableEntry(int, int*);
-    void ProcessEntries_00b28280(const MatQ&);
+    void CLeafGeometry_SetTextureCoords(int, int*);
+    void CLeafGeometry_Transform(const MatQ&);
     void CLeafGeometry_ComputeExtents(BoxQ&);
 };
 struct Cfg0cQ
@@ -1659,7 +1669,7 @@ struct SpdCompQ
     void ComputeLeafStaticLighting();
     void CSpeedTreeRT_ComputeSelfShadowTexCoords();
     void InitBoundingBoxCorners();
-    bool CSpeedTreeRT_Compute(const float* pTransform, int nSeed, bool bStrips);
+    bool CSpeedTreeRT_Compute(const float* pTransform, int nSeed, bool bCompositeStrips);
 };
 inline void SetCur(M5cQ* p)
 {
@@ -1675,14 +1685,17 @@ inline void InitBr(BrQ* b, O94Q* o, int ec, unsigned short d8)
 }
 // @fnv 0x00b044a0
 // src: EXE 0x00b044a0
-bool SpdCompQ::CSpeedTreeRT_Compute(const float* pTransform, int nSeed, bool bStrips)
+// pdb: CSpeedTreeRT::Compute | SpeedTreeRT.obj | retail, upstream name already matches, high
+// pdb params: pTransform, nSeed, bCompositeStrips
+// pdb locals: cOrigin, fDimension, sWindInfo, cExtents, i, cTransform, cException
+bool SpdCompQ::CSpeedTreeRT_Compute(const float* pTransform, int nSeed, bool bCompositeStrips)
 {
     try
     {
         if (!m_b45)
         {
             SetCur(m_p5c);
-            m_p0->InitSeed(nSeed);
+            m_p0->CTreeEngine_SetSeed(nSeed);
             m_p0->CTreeEngine_Compute(m_f24);
             m_p5c->CFrondEngine_Compute(m_p60, m_pC);
             m_w64 = m_p60->GetW20();
@@ -1695,11 +1708,11 @@ bool SpdCompQ::CSpeedTreeRT_Compute(const float* pTransform, int nSeed, bool bSt
             if (m_p4c)
             {
                 for (int i = 0; i < m_p4c->n0; ++i)
-                    m_p8->SetLeafTableEntry(i, &m_p4c->p4[i * 8]);
+                    m_p8->CLeafGeometry_SetTextureCoords(i, &m_p4c->p4[i * 8]);
                 for (int j = 0; j < m_p4c->n10; ++j)
                     m_p5c->CFrondEngine_SetTextureCoords(m_p60, j, &m_p4c->p14[j * 8], DAT_011f8b79);
             }
-            if (bStrips)
+            if (bCompositeStrips)
             {
                 m_p4->CIndexedGeometry_CombineStrips(0);
                 m_p60->CIndexedGeometry_CombineStrips(0);
@@ -1709,7 +1722,7 @@ bool SpdCompQ::CSpeedTreeRT_Compute(const float* pTransform, int nSeed, bool bSt
                 MatQ mat;
                 FUN_00ec44d0(&mat, pTransform, 0x40);
                 m_p4->CIndexedGeometry_Transform(mat);
-                m_p8->ProcessEntries_00b28280(mat);
+                m_p8->CLeafGeometry_Transform(mat);
                 m_p60->CIndexedGeometry_Transform(mat);
                 if (m_p58)
                     m_p58->SCollisionObjects_TransformAll(mat);
@@ -1744,16 +1757,16 @@ bool SpdCompQ::CSpeedTreeRT_Compute(const float* pTransform, int nSeed, bool bSt
         }
         else
         {
-            AssignString("Compute() called more than once for single tree model (ignored)");
+            CSpeedTreeRT_SetError("Compute() called more than once for single tree model (ignored)");
         }
     }
     catch (std::exception& exc)
     {
-        AssignString(IdvFormatString("%s - failed [%s]", "CSpeedTreeRT::Compute", exc.what()).c_str());
+        CSpeedTreeRT_SetError(IdvFormatString("%s - failed [%s]", "CSpeedTreeRT::Compute", exc.what()).c_str());
     }
     catch (...)
     {
-        AssignString(IdvFormatString("%s - threw an unknown system exception", "CSpeedTreeRT::Compute").c_str());
+        CSpeedTreeRT_SetError(IdvFormatString("%s - threw an unknown system exception", "CSpeedTreeRT::Compute").c_str());
         Dead1();
     }
     return m_b45;
@@ -1867,6 +1880,7 @@ struct FUN_00b05130
 };
 
 // @fnv 0x00b05130
+// pdb: SEmbeddedTexCoords::SEmbeddedTexCoords | SpeedTreeRT.obj | debug, call graph, medium
 FUN_00b05130::FUN_00b05130() : m_iValue00(0), m_iValue04(0), m_iValue08(0), m_iValue0C(0), m_iValue10(0), m_iValue14(0)
 {
     m_fValue34 = 1.0f;
@@ -1982,8 +1996,8 @@ struct StringB05210 : public StringValB05210
     unsigned int m_uiSize;
     unsigned int m_uiRes;
 };
-StringB05210 __cdecl IdvFormatString(const char* pcFormat, ...);
-void __cdecl AssignString(const char* pcMessage);
+StringB05210 __cdecl IdvFormatString(const char* pField, ...);
+void __cdecl CSpeedTreeRT_SetError(const char* pError);
 extern MemoryManager g_kMemoryB05210;
 struct SpeedTreeRTB05210
 {
@@ -2041,6 +2055,8 @@ struct SpeedTreeRTB05210
 
 // @fnv 0x00b05210
 // src: EXE 0x00b05210
+// pdb: CSpeedTreeRT::MakeInstance | SpeedTreeRT.obj | retail, upstream name already matches, high
+// pdb locals: pInstance, cException
 SpeedTreeRTB05210* SpeedTreeRTB05210::CSpeedTreeRT_MakeInstance()
 {
     SpeedTreeRTB05210* pInstance = 0;
@@ -2050,11 +2066,11 @@ SpeedTreeRTB05210* SpeedTreeRTB05210::CSpeedTreeRT_MakeInstance()
     }
     catch (std::exception& e)
     {
-        AssignString(IdvFormatString("%s - failed [%s]", "CSpeedTreeRT::MakeInstance", e.what()).c_str());
+        CSpeedTreeRT_SetError(IdvFormatString("%s - failed [%s]", "CSpeedTreeRT::MakeInstance", e.what()).c_str());
     }
     catch (...)
     {
-        AssignString(IdvFormatString("%s - threw an unknown system exception", "CSpeedTreeRT::MakeInstance").c_str());
+        CSpeedTreeRT_SetError(IdvFormatString("%s - threw an unknown system exception", "CSpeedTreeRT::MakeInstance").c_str());
     }
     return pInstance;
 }
@@ -2143,8 +2159,8 @@ struct StrF
         return 16 <= uiRes ? kBx.pPtr : kBx.acBuf;
     }
 };
-StrF __cdecl IdvFormatString(const char* pFmt, ...);
-void __cdecl AssignString(const char* s);
+StrF __cdecl IdvFormatString(const char* pField, ...);
+void __cdecl CSpeedTreeRT_SetError(const char* pError);
 extern "C" int* __cdecl FUN_00ec85e3();
 extern "C" char* __cdecl FUN_00ecdb42(int);
 void __stdcall FUN_00ec7894(void* p, void* t);
@@ -2267,7 +2283,7 @@ bool SpdLoadQ::CSpeedTreeRT_LoadTree(const char* path)
             file_cswij = 0;
         }
         contents_lmol = 0;
-        AssignString(IdvFormatString("CSpeedTreeRT::Load Tree - %s", e_jzu.what()).c_str());
+        CSpeedTreeRT_SetError(IdvFormatString("CSpeedTreeRT::Load Tree - %s", e_jzu.what()).c_str());
     }
     catch (...)
     {
@@ -2277,7 +2293,7 @@ bool SpdLoadQ::CSpeedTreeRT_LoadTree(const char* path)
             file_cswij = 0;
         }
         contents_lmol = 0;
-        AssignString(IdvFormatString("CSpeedTreeRT::LoadTree - threw an unknown system exception").c_str());
+        CSpeedTreeRT_SetError(IdvFormatString("CSpeedTreeRT::LoadTree - threw an unknown system exception").c_str());
     }
     return bOk_dt;
 }
@@ -2296,7 +2312,7 @@ struct Alloc59;
 
 struct Global59
 {
-    void MemoryManager_Deallocate(int allocation);
+    void MemoryManager_Deallocate(int apMem);
 };
 extern Global59 DAT_011f6238;
 struct Proxy59
@@ -2495,10 +2511,10 @@ struct Sub0
     {
         return f108;
     }
-    bool Parse_00b2b550(FUN_00b06090* r);
-    void ParseTextureControls(FUN_00b06090* r);
-    void ParseFlareInfo(FUN_00b06090* r);
-    void CTreeEngine_ParseFlareSeed(FUN_00b06090* r);
+    bool Parse_00b2b550(FUN_00b06090* cFile);
+    void ParseTextureControls(FUN_00b06090* cFile);
+    void ParseFlareInfo(FUN_00b06090* cFile);
+    void CTreeEngine_ParseFlareSeed(FUN_00b06090* cFile);
 };
 struct SubC
 {
@@ -2545,11 +2561,11 @@ struct SubC
     int unk70;
     int unk74;
     int f78;
-    void CLightingEngine_Parse(FUN_00b06090* r);
+    void CLightingEngine_Parse(FUN_00b06090* cFile);
 };
 struct Sub5c
 {
-    void CFrondEngine_Parse(FUN_00b06090* r);
+    void CFrondEngine_Parse(FUN_00b06090* cFile);
     int CFrondEngine_GetLevel();
 };
 struct Sub10
@@ -2612,13 +2628,13 @@ struct Tree59
     {
         return m_p0c;
     }
-    void CSpeedTreeRT_ParseLodInfo(FUN_00b06090* r);
-    void CSpeedTreeRT_ParseWindInfo(FUN_00b06090* r);
-    void CSpeedTreeRT_ParseTextureCoordInfo(FUN_00b06090* r);
-    void CSpeedTreeRT_ParseCollisionObjects(FUN_00b06090* r);
-    void CSpeedTreeRT_ParseShadowProjectionInfo(FUN_00b06090* r);
+    void CSpeedTreeRT_ParseLodInfo(FUN_00b06090* pFile);
+    void CSpeedTreeRT_ParseWindInfo(FUN_00b06090* pFile);
+    void CSpeedTreeRT_ParseTextureCoordInfo(FUN_00b06090* pFile);
+    void CSpeedTreeRT_ParseCollisionObjects(FUN_00b06090* pFile);
+    void CSpeedTreeRT_ParseShadowProjectionInfo(FUN_00b06090* pFile);
     void CSpeedTreeRT_ParseUserData(FUN_00b06090* r);
-    void CSpeedTreeRT_ParseSupplementalTexCoordInfo(FUN_00b06090* r);
+    void CSpeedTreeRT_ParseSupplementalTexCoordInfo(FUN_00b06090* pFile);
     void CSpeedTreeRT_SetBranchLightingMethod(int x);
     void CSpeedTreeRT_SetLeafLightingMethod(int x);
     void CSpeedTreeRT_SetFrondLightingMethod(int x);
@@ -2710,8 +2726,8 @@ struct Str59
         return c_str();
     }
 };
-Str59 __cdecl IdvFormatString(const char* fmt, ...);
-void __cdecl AssignString(const char* s);
+Str59 __cdecl IdvFormatString(const char* pField, ...);
+void __cdecl CSpeedTreeRT_SetError(const char* pError);
 struct StrCalls
 {
     int unk00;
@@ -2826,11 +2842,11 @@ bool Tree59::CSpeedTreeRT_LoadTree_00b059e0(int p1, int p2)
     }
     catch (Exc59& e)
     {
-        AssignString(IdvFormatString("%s - failed [%s]", "CSpeedTreeRT::LoadTree", e.Msg()));
+        CSpeedTreeRT_SetError(IdvFormatString("%s - failed [%s]", "CSpeedTreeRT::LoadTree", e.Msg()));
     }
     catch (...)
     {
-        AssignString(IdvFormatString("%s - threw an unknown system exception", "CSpeedTreeRT::LoadTree"));
+        CSpeedTreeRT_SetError(IdvFormatString("%s - threw an unknown system exception", "CSpeedTreeRT::LoadTree"));
     }
     return result5;
 }
@@ -3027,8 +3043,8 @@ struct StringB06280 : public StringValB06280
     unsigned int m_uiSize;
     unsigned int m_uiRes;
 };
-StringB06280 __cdecl IdvFormatString(const char* pcFormat, ...);
-void __cdecl AssignString(const char* pcMessage);
+StringB06280 __cdecl IdvFormatString(const char* pField, ...);
+void __cdecl CSpeedTreeRT_SetError(const char* pError);
 struct EngineB06280
 {
     int unk00;
@@ -3066,34 +3082,37 @@ struct EngineB06280
 struct SpeedTreeRTB06280
 {
     EngineB06280* m_pFirstPointer;
-    void CSpeedTreeRT_SetTreeSize(float fSize, float fVariance);
+    void CSpeedTreeRT_SetTreeSize(float fNewSize, float fNewVariance);
 };
 
 // @fnv 0x00b06280
 // src: COMMUNITY 0x00b06280
-void SpeedTreeRTB06280::CSpeedTreeRT_SetTreeSize(float fSize, float fVariance)
+// pdb: CSpeedTreeRT::SetTreeSize | SpeedTreeRT.obj | retail, upstream name already matches, high
+// pdb params: fNewSize, fNewVariance
+// pdb locals: cException
+void SpeedTreeRTB06280::CSpeedTreeRT_SetTreeSize(float fNewSize, float fNewVariance)
 {
     try
     {
         if (m_pFirstPointer->TransientDataOk())
         {
-            if (fSize > 0.0)
-                m_pFirstPointer->SetSize_00b2bd20(fSize, fVariance);
+            if (fNewSize > 0.0)
+                m_pFirstPointer->SetSize_00b2bd20(fNewSize, fNewVariance);
             else
-                AssignString("SetTreeSize() is only valid for size values greater than 0.0");
+                CSpeedTreeRT_SetError("SetTreeSize() is only valid for size values greater than 0.0");
         }
         else
         {
-            AssignString("SetTreeSize() has no effect after DeleteTransientData() has been called");
+            CSpeedTreeRT_SetError("SetTreeSize() has no effect after DeleteTransientData() has been called");
         }
     }
     catch (std::exception& e)
     {
-        AssignString(IdvFormatString("%s - failed [%s]", "CSpeedTreeRT::SetTreeSize", e.what()).c_str());
+        CSpeedTreeRT_SetError(IdvFormatString("%s - failed [%s]", "CSpeedTreeRT::SetTreeSize", e.what()).c_str());
     }
     catch (...)
     {
-        AssignString(IdvFormatString("%s - threw an unknown system exception", "CSpeedTreeRT::SetTreeSize").c_str());
+        CSpeedTreeRT_SetError(IdvFormatString("%s - threw an unknown system exception", "CSpeedTreeRT::SetTreeSize").c_str());
     }
 }
 }  // namespace fnv_00b06280
@@ -3201,8 +3220,8 @@ struct StringB06440 : public StringValB06440
     unsigned int m_uiSize;
     unsigned int m_uiRes;
 };
-StringB06440 __cdecl IdvFormatString(const char* pcFormat, ...);
-void __cdecl AssignString(const char* pcMessage);
+StringB06440 __cdecl IdvFormatString(const char* pField, ...);
+void __cdecl CSpeedTreeRT_SetError(const char* pError);
 struct EngineB06440
 {
     int unk00;
@@ -3244,6 +3263,8 @@ struct SpeedTreeRTB06440
 
 // @fnv 0x00b06440
 // src: COMMUNITY 0x00b06440
+// pdb: CSpeedTreeRT::GetSeed | SpeedTreeRT.obj | retail, upstream name already matches, high
+// pdb locals: nSeed, cException
 int SpeedTreeRTB06440::CSpeedTreeRT_GetSeed()
 {
     int iResult = 0;
@@ -3252,15 +3273,15 @@ int SpeedTreeRTB06440::CSpeedTreeRT_GetSeed()
         if (m_pFirstPointer->TransientDataOk())
             iResult = m_pFirstPointer->GetTreeSize();
         else
-            AssignString("SetTreeSize() has no effect after DeleteTransientData() has been called");
+            CSpeedTreeRT_SetError("SetTreeSize() has no effect after DeleteTransientData() has been called");
     }
     catch (std::exception& e)
     {
-        AssignString(IdvFormatString("%s - failed [%s]", "CSpeedTreeRT::SetTreeSize", e.what()).c_str());
+        CSpeedTreeRT_SetError(IdvFormatString("%s - failed [%s]", "CSpeedTreeRT::SetTreeSize", e.what()).c_str());
     }
     catch (...)
     {
-        AssignString(IdvFormatString("%s - threw an unknown system exception", "CSpeedTreeRT::SetTreeSize").c_str());
+        CSpeedTreeRT_SetError(IdvFormatString("%s - threw an unknown system exception", "CSpeedTreeRT::SetTreeSize").c_str());
     }
     return iResult;
 }
@@ -3369,8 +3390,8 @@ struct StringB06660 : public StringValB06660
     unsigned int m_uiSize;
     unsigned int m_uiRes;
 };
-StringB06660 __cdecl IdvFormatString(const char* pcFormat, ...);
-void __cdecl AssignString(const char* pcMessage);
+StringB06660 __cdecl IdvFormatString(const char* pField, ...);
+void __cdecl CSpeedTreeRT_SetError(const char* pError);
 struct EngineB06660
 {
     int unk00;
@@ -3416,6 +3437,9 @@ struct SpeedTreeRTB06660
 
 // @fnv 0x00b06660
 // src: EXE 0x00b06660
+// pdb: CSpeedTreeRT::SetBranchLightingMethod | SpeedTreeRT.obj | retail, upstream name already matches, high
+// pdb params: eMethod
+// pdb locals: cException
 void SpeedTreeRTB06660::CSpeedTreeRT_SetBranchLightingMethod(int eMethod)
 {
     try
@@ -3427,16 +3451,16 @@ void SpeedTreeRTB06660::CSpeedTreeRT_SetBranchLightingMethod(int eMethod)
         }
         else
         {
-            AssignString("SetBranchLightingMethod() has no effect after Compute() has been called");
+            CSpeedTreeRT_SetError("SetBranchLightingMethod() has no effect after Compute() has been called");
         }
     }
     catch (std::exception& e)
     {
-        AssignString(IdvFormatString("%s - failed [%s]", "CSpeedTreeRT::SetBranchLightingMethod", e.what()).c_str());
+        CSpeedTreeRT_SetError(IdvFormatString("%s - failed [%s]", "CSpeedTreeRT::SetBranchLightingMethod", e.what()).c_str());
     }
     catch (...)
     {
-        AssignString(
+        CSpeedTreeRT_SetError(
             IdvFormatString("%s - threw an unknown system exception", "CSpeedTreeRT::SetBranchLightingMethod").c_str());
     }
 }
@@ -3545,8 +3569,8 @@ struct StringB06810 : public StringValB06810
     unsigned int m_uiSize;
     unsigned int m_uiRes;
 };
-StringB06810 __cdecl IdvFormatString(const char* pcFormat, ...);
-void __cdecl AssignString(const char* pcMessage);
+StringB06810 __cdecl IdvFormatString(const char* pField, ...);
+void __cdecl CSpeedTreeRT_SetError(const char* pError);
 struct LeafLightingB06810
 {
     int unk00;
@@ -3604,6 +3628,9 @@ struct SpeedTreeRTB06810
 
 // @fnv 0x00b06810
 // src: EXE 0x00b06810
+// pdb: CSpeedTreeRT::SetLeafLightingMethod | SpeedTreeRT.obj | retail, upstream name already matches, high
+// pdb params: eMethod
+// pdb locals: cException
 void SpeedTreeRTB06810::CSpeedTreeRT_SetLeafLightingMethod(int eMethod)
 {
     try
@@ -3615,16 +3642,16 @@ void SpeedTreeRTB06810::CSpeedTreeRT_SetLeafLightingMethod(int eMethod)
         }
         else
         {
-            AssignString("SetLeafLightingMethod() has no effect after Compute() has been called");
+            CSpeedTreeRT_SetError("SetLeafLightingMethod() has no effect after Compute() has been called");
         }
     }
     catch (std::exception& e)
     {
-        AssignString(IdvFormatString("%s - failed [%s]", "CSpeedTreeRT::SetLeafLightingMethod", e.what()).c_str());
+        CSpeedTreeRT_SetError(IdvFormatString("%s - failed [%s]", "CSpeedTreeRT::SetLeafLightingMethod", e.what()).c_str());
     }
     catch (...)
     {
-        AssignString(
+        CSpeedTreeRT_SetError(
             IdvFormatString("%s - threw an unknown system exception", "CSpeedTreeRT::SetLeafLightingMethod").c_str());
     }
 }
@@ -3733,8 +3760,8 @@ struct StringB069C0 : public StringValB069C0
     unsigned int m_uiSize;
     unsigned int m_uiRes;
 };
-StringB069C0 __cdecl IdvFormatString(const char* pcFormat, ...);
-void __cdecl AssignString(const char* pcMessage);
+StringB069C0 __cdecl IdvFormatString(const char* pField, ...);
+void __cdecl CSpeedTreeRT_SetError(const char* pError);
 struct FrondFlagsB069C0
 {
     int unk00;
@@ -3818,6 +3845,9 @@ struct SpeedTreeRTB069C0
 
 // @fnv 0x00b069c0
 // src: EXE 0x00b069c0
+// pdb: CSpeedTreeRT::SetFrondLightingMethod | SpeedTreeRT.obj | retail, upstream name already matches, high
+// pdb params: eMethod
+// pdb locals: cException
 void SpeedTreeRTB069C0::CSpeedTreeRT_SetFrondLightingMethod(int eMethod)
 {
     try
@@ -3829,16 +3859,16 @@ void SpeedTreeRTB069C0::CSpeedTreeRT_SetFrondLightingMethod(int eMethod)
         }
         else
         {
-            AssignString("SetFrondLightingMethod() has no effect after Compute() has been called");
+            CSpeedTreeRT_SetError("SetFrondLightingMethod() has no effect after Compute() has been called");
         }
     }
     catch (std::exception& e)
     {
-        AssignString(IdvFormatString("%s - failed [%s]", "CSpeedTreeRT::SetFrondLightingMethod", e.what()).c_str());
+        CSpeedTreeRT_SetError(IdvFormatString("%s - failed [%s]", "CSpeedTreeRT::SetFrondLightingMethod", e.what()).c_str());
     }
     catch (...)
     {
-        AssignString(
+        CSpeedTreeRT_SetError(
             IdvFormatString("%s - threw an unknown system exception", "CSpeedTreeRT::SetFrondLightingMethod").c_str());
     }
 }
@@ -3872,8 +3902,8 @@ struct StrF
         return 16 <= uiRes ? kBx.pPtr : kBx.acBuf;
     }
 };
-StrF __cdecl IdvFormatString(const char* pFmt, ...);
-void __cdecl AssignString(const char* pMsg);
+StrF __cdecl IdvFormatString(const char* pField, ...);
+void __cdecl CSpeedTreeRT_SetError(const char* pError);
 struct CIdvException
 {
     virtual ~CIdvException();
@@ -3926,7 +3956,7 @@ extern float DAT_011ad11c;
 extern float DAT_011ad120;
 extern const float DAT_010a4d88;
 extern const float DAT_01023cd8;
-void __cdecl CSpeedTreeRT_NotifyAllTreesOfEvent(int i);
+void __cdecl CSpeedTreeRT_NotifyAllTreesOfEvent(int nMessage);
 void __cdecl FUN_00b27080(const CamV* p);
 float __cdecl FUN_00ec9610(double d);
 inline float RadToDeg(float fRad)
@@ -3939,22 +3969,25 @@ inline float VAsin(float f)
 }
 struct SpdTreeQ
 {
-    static void __cdecl CSpeedTreeRT_SetCamera(const float* pPos, const float* pDir);
+    static void __cdecl CSpeedTreeRT_SetCamera(const float* pPosition, const float* pDirection);
 };
 // @fnv 0x00b06c10
 // src: EXE 0x00b06c10
-void __cdecl SpdTreeQ::CSpeedTreeRT_SetCamera(const float* pPos, const float* pDir)
+// pdb: CSpeedTreeRT::SetCamera | SpeedTreeRT.obj | retail, upstream name already matches, high
+// pdb params: pPosition, pDirection
+// pdb locals: cNewDirection, cOldPosition, cNewPosition, cOldDirection, fPercent, fPitch, cAdjustedDirection, cException
+void __cdecl SpdTreeQ::CSpeedTreeRT_SetCamera(const float* pPosition, const float* pDirection)
 {
     try
     {
-        if (pPos && pDir)
+        if (pPosition && pDirection)
         {
             CamV c;
             CamV kOldPos;
             c = *(CamV*)&DAT_011f8e9c;
             kOldPos = *(CamV*)&DAT_011f8eac;
-            CamV kPos(pPos[0], pPos[1], pPos[2]);
-            CamV kWorldPosition(pDir[0], pDir[1], pDir[2]);
+            CamV kPos(pPosition[0], pPosition[1], pPosition[2]);
+            CamV kWorldPosition(pDirection[0], pDirection[1], pDirection[2]);
             if (c != kPos || kOldPos != kWorldPosition)
             {
                 *(CamV*)&DAT_011f8e9c = kPos;
@@ -3975,16 +4008,16 @@ void __cdecl SpdTreeQ::CSpeedTreeRT_SetCamera(const float* pPos, const float* pD
         }
         else
         {
-            AssignString("SetCamera() requires non-NULL position and direction values");
+            CSpeedTreeRT_SetError("SetCamera() requires non-NULL position and direction values");
         }
     }
     catch (CIdvException& e)
     {
-        AssignString(IdvFormatString("%s - failed [%s]", "CSpeedTreeRT::SetCamera", e.what()).c_str());
+        CSpeedTreeRT_SetError(IdvFormatString("%s - failed [%s]", "CSpeedTreeRT::SetCamera", e.what()).c_str());
     }
     catch (...)
     {
-        AssignString(IdvFormatString("%s - threw an unknown system exception", "CSpeedTreeRT::SetCamera").c_str());
+        CSpeedTreeRT_SetError(IdvFormatString("%s - threw an unknown system exception", "CSpeedTreeRT::SetCamera").c_str());
     }
 }
 }  // namespace fnv_00b06c10
@@ -4113,12 +4146,15 @@ class ExceptionB07
 };
 
 extern float g_fSpeedTreeTimeB07;
-void __cdecl CSpeedTreeRT_NotifyAllTreesOfEvent(int iValue);
-stdb07::string __cdecl IdvFormatString(const char* pcFormat, ...);
-void __cdecl AssignString(const char* pcError);
+void __cdecl CSpeedTreeRT_NotifyAllTreesOfEvent(int nMessage);
+stdb07::string __cdecl IdvFormatString(const char* pField, ...);
+void __cdecl CSpeedTreeRT_SetError(const char* pError);
 
 // @fnv 0x00b07060
 // src: XBOX_PDB 0x00b07060
+// pdb: CSpeedTreeRT::SetTime | SpeedTreeRT.obj | retail, upstream name already matches, high
+// pdb params: fTime
+// pdb locals: cException
 void __cdecl CSpeedTreeRT_SetTime(float fTime)
 {
     try
@@ -4128,11 +4164,11 @@ void __cdecl CSpeedTreeRT_SetTime(float fTime)
     }
     catch (ExceptionB07& e)
     {
-        AssignString(IdvFormatString("%s - failed [%s]", "CSpeedTreeRT::SetTime", e.what()).c_str());
+        CSpeedTreeRT_SetError(IdvFormatString("%s - failed [%s]", "CSpeedTreeRT::SetTime", e.what()).c_str());
     }
     catch (...)
     {
-        AssignString(IdvFormatString("%s - threw an unknown system exception", "CSpeedTreeRT::SetTime").c_str());
+        CSpeedTreeRT_SetError(IdvFormatString("%s - threw an unknown system exception", "CSpeedTreeRT::SetTime").c_str());
     }
 }
 }  // namespace fnv_00b07060
@@ -4240,8 +4276,8 @@ struct StringB071F0 : public StringValB071F0
     unsigned int m_uiSize;
     unsigned int m_uiRes;
 };
-StringB071F0 __cdecl IdvFormatString(const char* pcFormat, ...);
-void __cdecl AssignString(const char* pcMessage);
+StringB071F0 __cdecl IdvFormatString(const char* pField, ...);
+void __cdecl CSpeedTreeRT_SetError(const char* pError);
 struct EngineB071F0
 {
     int unk00;
@@ -4324,33 +4360,36 @@ struct SpeedTreeRTB071F0
     int unk40;
     char unk44;
     bool m_bComputed;
-    void CSpeedTreeRT_SetLeafRockingState(int iGroups);
+    void CSpeedTreeRT_SetNumLeafRockingGroups(int nRockingGroups);
 };
 
 // @fnv 0x00b071f0
-// src: EXE 0x00b071f0
-void SpeedTreeRTB071F0::CSpeedTreeRT_SetLeafRockingState(int iGroups)
+// src: XBOX_RETAIL_PDB 0x00b071f0 (was EXE)
+// pdb: CSpeedTreeRT::SetNumLeafRockingGroups | SpeedTreeRT.obj | retail, unique string literal, high
+// pdb params: nRockingGroups
+// pdb locals: cException
+void SpeedTreeRTB071F0::CSpeedTreeRT_SetNumLeafRockingGroups(int nRockingGroups)
 {
     try
     {
         if (!m_bComputed)
         {
-            if (iGroups == 0)
-                iGroups = 1;
-            m_pFirstPointer->SetNumLeafRockingGroups(iGroups);
+            if (nRockingGroups == 0)
+                nRockingGroups = 1;
+            m_pFirstPointer->SetNumLeafRockingGroups(nRockingGroups);
         }
         else
         {
-            AssignString("SetNumLeafRockingGroups() has no effect after Compute() has been called");
+            CSpeedTreeRT_SetError("SetNumLeafRockingGroups() has no effect after Compute() has been called");
         }
     }
     catch (std::exception& e)
     {
-        AssignString(IdvFormatString("%s - failed [%s]", "CSpeedTreeRT::SetLeafRockingState", e.what()).c_str());
+        CSpeedTreeRT_SetError(IdvFormatString("%s - failed [%s]", "CSpeedTreeRT::SetLeafRockingState", e.what()).c_str());
     }
     catch (...)
     {
-        AssignString(
+        CSpeedTreeRT_SetError(
             IdvFormatString("%s - threw an unknown system exception", "CSpeedTreeRT::SetLeafRockingState").c_str());
     }
 }
@@ -4459,8 +4498,8 @@ struct StringB07510 : public StringValB07510
     unsigned int m_uiSize;
     unsigned int m_uiRes;
 };
-StringB07510 __cdecl IdvFormatString(const char* pcFormat, ...);
-void __cdecl AssignString(const char* pcMessage);
+StringB07510 __cdecl IdvFormatString(const char* pField, ...);
+void __cdecl CSpeedTreeRT_SetError(const char* pError);
 struct Part007510
 {
     int unk00;
@@ -4504,32 +4543,35 @@ struct SpeedTreeRTB07510
     int unk40;
     char unk44;
     bool m_bComputed;
-    void CSpeedTreeRT_SetLeafWindMethod(int eMode);
+    void CSpeedTreeRT_SetLeafWindMethod(int eMethod);
 };
 
 // @fnv 0x00b07510
 // src: EXE 0x00b07510
-void SpeedTreeRTB07510::CSpeedTreeRT_SetLeafWindMethod(int eMode)
+// pdb: CSpeedTreeRT::SetLeafWindMethod | SpeedTreeRT.obj | retail, upstream name already matches, high
+// pdb params: eMethod
+// pdb locals: cException
+void SpeedTreeRTB07510::CSpeedTreeRT_SetLeafWindMethod(int eMethod)
 {
     try
     {
         if (!m_bComputed)
         {
-            m_p0->Set(eMode);
-            m_p1->Set(eMode != 2);
+            m_p0->Set(eMethod);
+            m_p1->Set(eMethod != 2);
         }
         else
         {
-            AssignString("SetLeafWindMethod() has no effect after Compute() has been called");
+            CSpeedTreeRT_SetError("SetLeafWindMethod() has no effect after Compute() has been called");
         }
     }
     catch (std::exception& e)
     {
-        AssignString(IdvFormatString("%s - failed [%s]", "CSpeedTreeRT::SetLeafWindMethod", e.what()).c_str());
+        CSpeedTreeRT_SetError(IdvFormatString("%s - failed [%s]", "CSpeedTreeRT::SetLeafWindMethod", e.what()).c_str());
     }
     catch (...)
     {
-        AssignString(IdvFormatString("%s - threw an unknown system exception", "CSpeedTreeRT::SetLeafWindMethod").c_str());
+        CSpeedTreeRT_SetError(IdvFormatString("%s - threw an unknown system exception", "CSpeedTreeRT::SetLeafWindMethod").c_str());
     }
 }
 }  // namespace fnv_00b07510
@@ -4637,8 +4679,8 @@ struct StringB076E0 : public StringValB076E0
     unsigned int m_uiSize;
     unsigned int m_uiRes;
 };
-StringB076E0 __cdecl IdvFormatString(const char* pcFormat, ...);
-void __cdecl AssignString(const char* pcMessage);
+StringB076E0 __cdecl IdvFormatString(const char* pField, ...);
+void __cdecl CSpeedTreeRT_SetError(const char* pError);
 struct WindB076E0
 {
     int unk00;
@@ -4679,7 +4721,7 @@ struct LeafB076E0
     {
         m_eMode14 = e;
     }
-    void CIndexedGeometry_ComputeWindEffect(int i);
+    void CIndexedGeometry_ComputeWindEffect(int nLodLevel);
 };
 
 struct SpeedTreeRTB076E0
@@ -4703,38 +4745,41 @@ struct SpeedTreeRTB076E0
     int unk40;
     char unk44;
     bool m_bComputed;
-    void CSpeedTreeRT_SetBranchWindMethod(int eMode);
+    void CSpeedTreeRT_SetBranchWindMethod(int eMethod);
 };
 
 // @fnv 0x00b076e0
 // src: EXE 0x00b076e0
-void SpeedTreeRTB076E0::CSpeedTreeRT_SetBranchWindMethod(int eMode)
+// pdb: CSpeedTreeRT::SetBranchWindMethod | SpeedTreeRT.obj | retail, upstream name already matches, high
+// pdb params: eMethod
+// pdb locals: cException
+void SpeedTreeRTB076E0::CSpeedTreeRT_SetBranchWindMethod(int eMethod)
 {
     try
     {
         if (!m_bComputed)
         {
-            if (eMode == 2 && m_pWind->GetMode() == 1)
+            if (eMethod == 2 && m_pWind->GetMode() == 1)
             {
                 m_pLeafData->SetFlag12(false);
                 m_pLeafData->CIndexedGeometry_ComputeWindEffect(0);
             }
-            m_pWind->SetMode(eMode);
-            m_pLeafData->SetFlag08(eMode != 2);
-            m_pLeafData->SetMode14(eMode);
+            m_pWind->SetMode(eMethod);
+            m_pLeafData->SetFlag08(eMethod != 2);
+            m_pLeafData->SetMode14(eMethod);
         }
         else
         {
-            AssignString("SetBranchWindMethod() has no effect after Compute() has been called");
+            CSpeedTreeRT_SetError("SetBranchWindMethod() has no effect after Compute() has been called");
         }
     }
     catch (std::exception& e)
     {
-        AssignString(IdvFormatString("%s - failed [%s]", "CSpeedTreeRT::SetBranchWindMethod", e.what()).c_str());
+        CSpeedTreeRT_SetError(IdvFormatString("%s - failed [%s]", "CSpeedTreeRT::SetBranchWindMethod", e.what()).c_str());
     }
     catch (...)
     {
-        AssignString(
+        CSpeedTreeRT_SetError(
             IdvFormatString("%s - threw an unknown system exception", "CSpeedTreeRT::SetBranchWindMethod").c_str());
     }
 }
@@ -4843,8 +4888,8 @@ struct StringB07900 : public StringValB07900
     unsigned int m_uiSize;
     unsigned int m_uiRes;
 };
-StringB07900 __cdecl IdvFormatString(const char* pcFormat, ...);
-void __cdecl AssignString(const char* pcMessage);
+StringB07900 __cdecl IdvFormatString(const char* pField, ...);
+void __cdecl CSpeedTreeRT_SetError(const char* pError);
 struct WindB07900
 {
     int unk00;
@@ -4886,7 +4931,7 @@ struct LeafB07900
     {
         m_eMode14 = e;
     }
-    void CIndexedGeometry_ComputeWindEffect(int i);
+    void CIndexedGeometry_ComputeWindEffect(int nLodLevel);
 };
 
 struct SpeedTreeRTB07900
@@ -4917,38 +4962,41 @@ struct SpeedTreeRTB07900
     int unk58;
     int unk5C;
     LeafB07900* m_pLeafData;
-    void CSpeedTreeRT_SetFrondWindMethod(int eMode);
+    void CSpeedTreeRT_SetFrondWindMethod(int eMethod);
 };
 
 // @fnv 0x00b07900
 // src: EXE 0x00b07900
-void SpeedTreeRTB07900::CSpeedTreeRT_SetFrondWindMethod(int eMode)
+// pdb: CSpeedTreeRT::SetFrondWindMethod | SpeedTreeRT.obj | retail, upstream name already matches, high
+// pdb params: eMethod
+// pdb locals: cException
+void SpeedTreeRTB07900::CSpeedTreeRT_SetFrondWindMethod(int eMethod)
 {
     try
     {
         if (!m_bComputed)
         {
-            if (eMode == 2 && m_pWind->GetMode() == 1)
+            if (eMethod == 2 && m_pWind->GetMode() == 1)
             {
                 m_pLeafData->SetFlag12(false);
                 m_pLeafData->CIndexedGeometry_ComputeWindEffect(0);
             }
-            m_pWind->SetMode(eMode);
-            m_pLeafData->SetFlag08(eMode != 2);
-            m_pLeafData->SetMode14(eMode);
+            m_pWind->SetMode(eMethod);
+            m_pLeafData->SetFlag08(eMethod != 2);
+            m_pLeafData->SetMode14(eMethod);
         }
         else
         {
-            AssignString("SetFrondWindMethod() has no effect after Compute() has been called");
+            CSpeedTreeRT_SetError("SetFrondWindMethod() has no effect after Compute() has been called");
         }
     }
     catch (std::exception& e)
     {
-        AssignString(IdvFormatString("%s - failed [%s]", "CSpeedTreeRT::SetFrondWindMethod", e.what()).c_str());
+        CSpeedTreeRT_SetError(IdvFormatString("%s - failed [%s]", "CSpeedTreeRT::SetFrondWindMethod", e.what()).c_str());
     }
     catch (...)
     {
-        AssignString(
+        CSpeedTreeRT_SetError(
             IdvFormatString("%s - threw an unknown system exception", "CSpeedTreeRT::SetFrondWindMethod").c_str());
     }
 }
@@ -4982,8 +5030,8 @@ struct StrF
         return 16 <= uiRes ? kBx.pPtr : kBx.acBuf;
     }
 };
-StrF __cdecl IdvFormatString(const char* pFmt, ...);
-void __cdecl AssignString(const char* pMsg);
+StrF __cdecl IdvFormatString(const char* pField, ...);
+void __cdecl CSpeedTreeRT_SetError(const char* pError);
 struct CIdvException
 {
     virtual ~CIdvException();
@@ -5024,47 +5072,50 @@ struct SpdTreeQ
     int ai[19];
     GeomQ* pFrond;
     int FUN_00b076c0();
-    int GetFieldAt0C();
-    int GetNestedPointer();
+    int CSpeedTreeRT_GetFrondWindMethod();
+    int CSpeedTreeRT_GetLeafWindMethod();
     bool WindB14() const
     {
         return pWind->b14;
     }
-    float CSpeedTreeRT_SetWindStrength(float fWaterLevelItem, float fLeaf, float fBranch);
+    float CSpeedTreeRT_SetWindStrength(float fNewStrength, float fOldStrength, float fFrequencyTimeOffset);
 };
 // @fnv 0x00b07b00
 // src: EXE 0x00b07b00
-float SpdTreeQ::CSpeedTreeRT_SetWindStrength(float fWaterLevelItem, float fLeaf, float fBranch)
+// pdb: CSpeedTreeRT::SetWindStrength | SpeedTreeRT.obj | retail, upstream name already matches, high
+// pdb params: fNewStrength, fOldStrength, fFrequencyTimeOffset
+// pdb locals: fNewFrequencyTimeShift, cException
+float SpdTreeQ::CSpeedTreeRT_SetWindStrength(float fNewStrength, float fOldStrength, float fFrequencyTimeOffset)
 {
     float fResult = 0.0f;
     try
     {
-        if (fWaterLevelItem >= 0.0)
+        if (fNewStrength >= 0.0)
         {
-            if (fLeaf == -1.0)
-                fLeaf = pWind->f4;
-            if (fBranch == -1.0)
-                fBranch = pWind->GetF0();
-            fResult = pWind->SetStrength(fWaterLevelItem, fLeaf, fBranch);
+            if (fOldStrength == -1.0)
+                fOldStrength = pWind->f4;
+            if (fFrequencyTimeOffset == -1.0)
+                fFrequencyTimeOffset = pWind->GetF0();
+            fResult = pWind->SetStrength(fNewStrength, fOldStrength, fFrequencyTimeOffset);
             if (FUN_00b076c0() == 1 && pBranch)
                 pBranch->SetB12(false);
-            if (GetFieldAt0C() == 1 && pFrond)
+            if (CSpeedTreeRT_GetFrondWindMethod() == 1 && pFrond)
                 pFrond->SetB12(false);
-            if (GetNestedPointer() == 1 || WindB14())
+            if (CSpeedTreeRT_GetLeafWindMethod() == 1 || WindB14())
                 pWind8->CLeafGeometry_Invalidate();
         }
         else
         {
-            AssignString("SetWindStrength() expects new wind strength >= 0.0");
+            CSpeedTreeRT_SetError("SetWindStrength() expects new wind strength >= 0.0");
         }
     }
     catch (CIdvException& e)
     {
-        AssignString(IdvFormatString("%s - failed [%s]", "CSpeedTreeRT::SetWindStrength", e.what()).c_str());
+        CSpeedTreeRT_SetError(IdvFormatString("%s - failed [%s]", "CSpeedTreeRT::SetWindStrength", e.what()).c_str());
     }
     catch (...)
     {
-        AssignString(IdvFormatString("%s - threw an unknown system exception", "CSpeedTreeRT::SetWindStrength").c_str());
+        CSpeedTreeRT_SetError(IdvFormatString("%s - threw an unknown system exception", "CSpeedTreeRT::SetWindStrength").c_str());
     }
     return fResult;
 }
@@ -5231,24 +5282,27 @@ class WindMatricesB07
     WindMatrixB07* m_pkMatrices;
 };
 extern WindMatricesB07 g_kWindMatricesB07;
-stdb07::string __cdecl IdvFormatString(const char* pcFormat, ...);
-void __cdecl AssignString(const char* pcError);
+stdb07::string __cdecl IdvFormatString(const char* pField, ...);
+void __cdecl CSpeedTreeRT_SetError(const char* pError);
 
 // @fnv 0x00b07db0
 // src: EXE 0x00b07db0
-void __cdecl CSpeedTreeRT_SetNumWindMatrices(unsigned short usMode)
+// pdb: CSpeedTreeRT::SetNumWindMatrices | SpeedTreeRT.obj | retail, upstream name already matches, high
+// pdb params: nNumMatrices
+// pdb locals: cException
+void __cdecl CSpeedTreeRT_SetNumWindMatrices(unsigned short nNumMatrices)
 {
     try
     {
-        g_kWindMatricesB07.SetNumWindMatrices(usMode);
+        g_kWindMatricesB07.SetNumWindMatrices(nNumMatrices);
     }
     catch (ExceptionB07& e)
     {
-        AssignString(IdvFormatString("%s - failed [%s]", "CSpeedTreeRT::SetNumWindMatrices", e.what()).c_str());
+        CSpeedTreeRT_SetError(IdvFormatString("%s - failed [%s]", "CSpeedTreeRT::SetNumWindMatrices", e.what()).c_str());
     }
     catch (...)
     {
-        AssignString(
+        CSpeedTreeRT_SetError(
             IdvFormatString("%s - threw an unknown system exception", "CSpeedTreeRT::SetNumWindMatrices").c_str());
     }
 }
@@ -5357,8 +5411,8 @@ struct StringB08050 : public StringValB08050
     unsigned int m_uiSize;
     unsigned int m_uiRes;
 };
-StringB08050 __cdecl IdvFormatString(const char* pcFormat, ...);
-void __cdecl AssignString(const char* pcMessage);
+StringB08050 __cdecl IdvFormatString(const char* pField, ...);
+void __cdecl CSpeedTreeRT_SetError(const char* pError);
 struct WindGroupsB08050
 {
     unsigned short m_usNumGroups;
@@ -5390,34 +5444,37 @@ struct SpeedTreeRTB08050
     int unk40;
     char unk44;
     bool m_bComputed;
-    void CSpeedTreeRT_SetLocalMatrices(unsigned int uiStart, unsigned int ItemUpdateArray);
+    void CSpeedTreeRT_SetLocalMatrices(unsigned int nStartingMatrix, unsigned int nMatrixSpan);
 };
 
 // @fnv 0x00b08050
 // src: EXE 0x00b08050
-void SpeedTreeRTB08050::CSpeedTreeRT_SetLocalMatrices(unsigned int uiStart, unsigned int ItemUpdateArray)
+// pdb: CSpeedTreeRT::SetLocalMatrices | SpeedTreeRT.obj | retail, upstream name already matches, high
+// pdb params: nStartingMatrix, nMatrixSpan
+// pdb locals: cException
+void SpeedTreeRTB08050::CSpeedTreeRT_SetLocalMatrices(unsigned int nStartingMatrix, unsigned int nMatrixSpan)
 {
     try
     {
         if (!m_bComputed)
         {
-            if (uiStart + ItemUpdateArray - 1 < g_kWindGroupsB08050.m_usNumGroups)
-                m_pLeafWind->SetMatrixRange(uiStart, ItemUpdateArray);
+            if (nStartingMatrix + nMatrixSpan - 1 < g_kWindGroupsB08050.m_usNumGroups)
+                m_pLeafWind->SetMatrixRange(nStartingMatrix, nMatrixSpan);
             else
-                AssignString("SetLocalMatrices() parameters exceed available wind matrices");
+                CSpeedTreeRT_SetError("SetLocalMatrices() parameters exceed available wind matrices");
         }
         else
         {
-            AssignString("SetLocalMatrices() has no effect after Compute() has been called");
+            CSpeedTreeRT_SetError("SetLocalMatrices() has no effect after Compute() has been called");
         }
     }
     catch (std::exception& e)
     {
-        AssignString(IdvFormatString("%s - failed [%s]", "CSpeedTreeRT::SetLocalMatrices", e.what()).c_str());
+        CSpeedTreeRT_SetError(IdvFormatString("%s - failed [%s]", "CSpeedTreeRT::SetLocalMatrices", e.what()).c_str());
     }
     catch (...)
     {
-        AssignString(IdvFormatString("%s - threw an unknown system exception", "CSpeedTreeRT::SetLocalMatrices").c_str());
+        CSpeedTreeRT_SetError(IdvFormatString("%s - threw an unknown system exception", "CSpeedTreeRT::SetLocalMatrices").c_str());
     }
 }
 }  // namespace fnv_00b08050
@@ -5450,8 +5507,8 @@ struct StrF
         return 16 <= uiRes ? kBx.pPtr : kBx.acBuf;
     }
 };
-StrF __cdecl IdvFormatString(const char* pFmt, ...);
-void __cdecl AssignString(const char* pMsg);
+StrF __cdecl IdvFormatString(const char* pField, ...);
+void __cdecl CSpeedTreeRT_SetError(const char* pError);
 struct CIdvException
 {
     virtual ~CIdvException();
@@ -5488,6 +5545,8 @@ struct SpdTreeQ
 };
 // @fnv 0x00b08200
 // src: EXE 0x00b08200
+// pdb: CSpeedTreeRT::ComputeLodLevel | SpeedTreeRT.obj | retail, upstream name already matches, high
+// pdb locals: cOldPosition, fOldLodLevel, cException
 void SpdTreeQ::CSpeedTreeRT_ComputeLodLevel()
 {
     try
@@ -5508,11 +5567,11 @@ void SpdTreeQ::CSpeedTreeRT_ComputeLodLevel()
     }
     catch (CIdvException& e)
     {
-        AssignString(IdvFormatString("%s - failed [%s]", "CSpeedTreeRT::ComputeLodLevel", e.what()).c_str());
+        CSpeedTreeRT_SetError(IdvFormatString("%s - failed [%s]", "CSpeedTreeRT::ComputeLodLevel", e.what()).c_str());
     }
     catch (...)
     {
-        AssignString(IdvFormatString("%s - threw an unknown system exception", "CSpeedTreeRT::ComputeLodLevel").c_str());
+        CSpeedTreeRT_SetError(IdvFormatString("%s - threw an unknown system exception", "CSpeedTreeRT::ComputeLodLevel").c_str());
     }
 }
 }  // namespace fnv_00b08200
@@ -5977,6 +6036,7 @@ class ListOwnerRefB087
 };
 // @fnv 0x00b08780
 // src: GUESS 0x00b08780 (confidence: low)
+// pdb: CSpeedTreeRT::FreeBranchWindData | SpeedTreeRT.obj | debug, call graph, medium
 void ListOwnerRefB087::ProcessState_00b08780()
 {
     if (m_pkOwnerManager)
@@ -6136,8 +6196,8 @@ class LodB08
     int m_iArrayLength;
 };
 
-stdb07::string __cdecl IdvFormatString(const char* pcFormat, ...);
-void __cdecl AssignString(const char* pcError);
+stdb07::string __cdecl IdvFormatString(const char* pField, ...);
+void __cdecl CSpeedTreeRT_SetError(const char* pError);
 
 // Local CSpeedTreeRT definition retained: include/CSpeedTreeRT.h is not available.
 class CSpeedTreeRT
@@ -6155,6 +6215,8 @@ class CSpeedTreeRT
 
 // @fnv 0x00b088d0
 // src: EXE 0x00b088d0
+// pdb: CSpeedTreeRT::DeleteBranchGeometry | SpeedTreeRT.obj | retail, upstream name already matches, high
+// pdb locals: cException
 void CSpeedTreeRT::DeleteBranchGeometry()
 {
     try
@@ -6169,11 +6231,11 @@ void CSpeedTreeRT::DeleteBranchGeometry()
     }
     catch (ExceptionB07& e)
     {
-        AssignString(IdvFormatString("%s - failed [%s]", "CSpeedTreeRT::DeleteBranchGeometry", e.what()).c_str());
+        CSpeedTreeRT_SetError(IdvFormatString("%s - failed [%s]", "CSpeedTreeRT::DeleteBranchGeometry", e.what()).c_str());
     }
     catch (...)
     {
-        AssignString(
+        CSpeedTreeRT_SetError(
             IdvFormatString("%s - threw an unknown system exception", "CSpeedTreeRT::DeleteBranchGeometry").c_str());
     }
 }
@@ -6282,8 +6344,8 @@ struct StringB08AF0 : public StringValB08AF0
     unsigned int m_uiSize;
     unsigned int m_uiRes;
 };
-StringB08AF0 __cdecl IdvFormatString(const char* pcFormat, ...);
-void __cdecl AssignString(const char* pcMessage);
+StringB08AF0 __cdecl IdvFormatString(const char* pField, ...);
+void __cdecl CSpeedTreeRT_SetError(const char* pError);
 struct LeafGeometryB08AF0
 {
     const float* CopyLodData(int iIndex);
@@ -6293,25 +6355,28 @@ struct SpeedTreeRTB08AF0
     int unk00;
     int unk04;
     LeafGeometryB08AF0* m_pLodData;
-    const float* CSpeedTreeRT_GetLeafBillboardTable(int iIndex);
+    const float* CSpeedTreeRT_GetLeafBillboardTable(int nEntryCount);
 };
 
 // @fnv 0x00b08af0
 // src: EXE 0x00b08af0
-const float* SpeedTreeRTB08AF0::CSpeedTreeRT_GetLeafBillboardTable(int iIndex)
+// pdb: CSpeedTreeRT::GetLeafBillboardTable | SpeedTreeRT.obj | retail, upstream name already matches, high
+// pdb params: nEntryCount
+// pdb locals: pBillboardTable, cException
+const float* SpeedTreeRTB08AF0::CSpeedTreeRT_GetLeafBillboardTable(int nEntryCount)
 {
     const float* pSearchEntries = 0;
     try
     {
-        pSearchEntries = m_pLodData->CopyLodData(iIndex);
+        pSearchEntries = m_pLodData->CopyLodData(nEntryCount);
     }
     catch (std::exception& e)
     {
-        AssignString(IdvFormatString("%s - failed [%s]", "CSpeedTreeRT::GetLeafBillboardTable", e.what()).c_str());
+        CSpeedTreeRT_SetError(IdvFormatString("%s - failed [%s]", "CSpeedTreeRT::GetLeafBillboardTable", e.what()).c_str());
     }
     catch (...)
     {
-        AssignString(
+        CSpeedTreeRT_SetError(
             IdvFormatString("%s - threw an unknown system exception", "CSpeedTreeRT::GetLeafBillboardTable").c_str());
     }
     return pSearchEntries;
@@ -6497,7 +6562,7 @@ struct S00b092a0_Reader
 
 struct S00b092a0_Child
 {
-    void Parse(S00b092a0_Reader* r);
+    void Parse(S00b092a0_Reader* cFile);
 };
 
 struct S00b092a0_cls
@@ -6512,41 +6577,44 @@ struct S00b092a0_cls
     float m1c;
     float m20;
     float m24;
-    void CSpeedTreeRT_ParseLodInfo(S00b092a0_Reader* r);
+    void CSpeedTreeRT_ParseLodInfo(S00b092a0_Reader* pFile);
 };
 
 // @fnv 0x00b092a0
 // src: XBOX_PDB 0x00b092a0
-void S00b092a0_cls::CSpeedTreeRT_ParseLodInfo(S00b092a0_Reader* r)
+// pdb: CSpeedTreeRT::ParseLodInfo | SpeedTreeRT.obj | retail, string-set bridge, high
+// pdb params: pFile
+// pdb locals: nToken
+void S00b092a0_cls::CSpeedTreeRT_ParseLodInfo(S00b092a0_Reader* pFile)
 {
-    r->Begin();
-    int tok = r->ReadInt();
+    pFile->Begin();
+    int tok = pFile->ReadInt();
     do
     {
         switch (tok)
         {
         case 0x232a:
-            m18 = r->ReadInt();
+            m18 = pFile->ReadInt();
             break;
         case 0x232b:
-            m1c = r->ReadFloat();
+            m1c = pFile->ReadFloat();
             break;
         case 0x232c:
-            m20 = r->ReadFloat();
+            m20 = pFile->ReadFloat();
             break;
         case 0x2331:
-            m24 = r->ReadFloat();
+            m24 = pFile->ReadFloat();
             break;
         case 0x232d:
-            m00->Parse(r);
+            m00->Parse(pFile);
             break;
         default:
             throw S00b092a0_Exc("malformed lod info", 0);
         }
-        if (r->AtEnd())
+        if (pFile->AtEnd())
             throw S00b092a0_Exc("premature end of file reached parsing new lod info", 0);
         else
-            tok = r->Next();
+            tok = pFile->Next();
     } while (tok != 0x2329);
 }
 
@@ -6940,28 +7008,31 @@ struct SpdWindInfo
 struct SpdWindReader
 {
     SpdWindInfo* m_pWind;
-    void CSpeedTreeRT_ParseWindInfo(SpdParser* pParser);
+    void CSpeedTreeRT_ParseWindInfo(SpdParser* pFile);
 };
 
 // @fnv 0x00b097e0
 // src: XBOX_PDB 0x00b097e0
-void SpdWindReader::CSpeedTreeRT_ParseWindInfo(SpdParser* pParser)
+// pdb: CSpeedTreeRT::ParseWindInfo | SpeedTreeRT.obj | retail, string-set bridge, high
+// pdb params: pFile
+// pdb locals: nToken
+void SpdWindReader::CSpeedTreeRT_ParseWindInfo(SpdParser* pFile)
 {
-    int nToken = pParser->ParseToken();
+    int nToken = pFile->ParseToken();
     do
     {
         switch (nToken)
         {
         case 0x2afa:
-            m_pWind->SetWindMatrixCount(pParser->ParseToken());
+            m_pWind->SetWindMatrixCount(pFile->ParseToken());
             break;
         default:
             throw SpdParseError("malformed new wind info", false);
         }
-        if (pParser->AtEnd())
+        if (pFile->AtEnd())
             throw SpdParseError("premature end of file reached parsing new wind info", false);
         else
-            nToken = pParser->ParseToken();
+            nToken = pFile->ParseToken();
     } while (nToken != 0x2af9);
 }
 
@@ -7248,11 +7319,13 @@ struct String : public StringVal
 extern "C" char* __cdecl strcpy(char* pcDst, const char* pcSrc);
 struct FUN_00b09ef0 : public String
 {
-    FUN_00b09ef0(String strName);
+    FUN_00b09ef0(String strFilename);
 };
 
 // @fnv 0x00b09ef0
-FUN_00b09ef0::FUN_00b09ef0(String strName) : String(strName)
+// pdb: CIdvFilename::CIdvFilename | SpeedTreeRT.obj | debug, call graph, high
+// pdb params: strFilename
+FUN_00b09ef0::FUN_00b09ef0(String strFilename) : String(strFilename)
 {}
 
 namespace fnv_00b09f90 {
@@ -7546,6 +7619,8 @@ struct IdvFilename : public String
 
 // @fnv 0x00b09f90
 // src: GUESS 0x00b09f90 (confidence: low)
+// pdb: CIdvFilename::NoPath | SpeedTreeRT.obj | debug, call graph, medium
+// pdb locals: nLength, szPath, i, j, k
 IdvFilename IdvFilename::ProcessEntries_00b09f90() const
 {
     char szBuffer[1024];
@@ -7662,8 +7737,8 @@ struct StringB0A2A0 : public StringValB0A2A0
     unsigned int m_uiSize;
     unsigned int m_uiRes;
 };
-StringB0A2A0 __cdecl IdvFormatString(const char* pcFormat, ...);
-void __cdecl AssignString(const char* pcMessage);
+StringB0A2A0 __cdecl IdvFormatString(const char* pField, ...);
+void __cdecl CSpeedTreeRT_SetError(const char* pError);
 void __cdecl FUN_00ec7c56();
 void* __cdecl memcpy(void* pvDst, const void* pvSrc, unsigned int ItemUpdateArray);
 inline void CopyFloat3B0A2A0(float* pDst, const float* pSrc)
@@ -7723,28 +7798,30 @@ struct SpeedTreeRTB0A2A0
     int unk50;
     int unk54;
     CollisionVectorB0A2A0* m_pCollisionVectors;
-    void CSpeedTreeRT_GetCollisionObject(unsigned int uiIndex, int& eType, float* pPosition, float* pDimensions);
+    void CSpeedTreeRT_GetCollisionObject(unsigned int nIndex, int& eType, float* pPosition, float* pDimensions);
 };
 
 // @fnv 0x00b0a2a0
 // src: XBOX_PDB 0x00b0a2a0
-void SpeedTreeRTB0A2A0::CSpeedTreeRT_GetCollisionObject(unsigned int uiIndex, int& eType, float* pPosition, float* pDimensions)
+// pdb: CSpeedTreeRT::GetCollisionObject | SpeedTreeRT.obj | retail, string-set bridge, high
+// pdb params: nIndex, eType, pPosition, pDimensions
+void SpeedTreeRTB0A2A0::CSpeedTreeRT_GetCollisionObject(unsigned int nIndex, int& eType, float* pPosition, float* pDimensions)
 {
     if (m_pCollisionVectors)
     {
-        if (uiIndex >= m_pCollisionVectors->size())
-            AssignString(IdvFormatString("collision object index (%d) exceeds maximum index (%d)", uiIndex,
+        if (nIndex >= m_pCollisionVectors->size())
+            CSpeedTreeRT_SetError(IdvFormatString("collision object index (%d) exceeds maximum index (%d)", nIndex,
                                       m_pCollisionVectors->size())
                              .c_str());
         else
         {
-            eType = (*m_pCollisionVectors)[uiIndex].m_eRequestType;
-            CopyFloat3B0A2A0(pPosition, (*m_pCollisionVectors)[uiIndex].m_afFirstVector);
-            CopyFloat3B0A2A0(pDimensions, (*m_pCollisionVectors)[uiIndex].m_afSecondVector);
+            eType = (*m_pCollisionVectors)[nIndex].m_eRequestType;
+            CopyFloat3B0A2A0(pPosition, (*m_pCollisionVectors)[nIndex].m_afFirstVector);
+            CopyFloat3B0A2A0(pDimensions, (*m_pCollisionVectors)[nIndex].m_afSecondVector);
         }
     }
     else
-        AssignString("no collision objects are stored with this tree");
+        CSpeedTreeRT_SetError("no collision objects are stored with this tree");
 }
 }  // namespace fnv_00b0a2a0
 
@@ -7851,8 +7928,8 @@ struct StringB0A7A0 : public StringValB0A7A0
     unsigned int m_uiSize;
     unsigned int m_uiRes;
 };
-StringB0A7A0 __cdecl IdvFormatString(const char* pcFormat, ...);
-void __cdecl AssignString(const char* pcMessage);
+StringB0A7A0 __cdecl IdvFormatString(const char* pField, ...);
+void __cdecl CSpeedTreeRT_SetError(const char* pError);
 extern MemoryManager g_kMemoryB0A7A0;
 struct FrondGeometryB0A7A0
 {
@@ -7901,6 +7978,8 @@ struct SpeedTreeRTB0A7A0
 
 // @fnv 0x00b0a7a0
 // src: EXE 0x00b0a7a0
+// pdb: CSpeedTreeRT::DeleteFrondGeometry | SpeedTreeRT.obj | retail, upstream name already matches, high
+// pdb locals: cException
 void SpeedTreeRTB0A7A0::CSpeedTreeRT_DeleteFrondGeometry()
 {
     try
@@ -7914,11 +7993,11 @@ void SpeedTreeRTB0A7A0::CSpeedTreeRT_DeleteFrondGeometry()
     }
     catch (std::exception& e)
     {
-        AssignString(IdvFormatString("%s - failed [%s]", "CSpeedTreeRT::DeleteFrondGeometry", e.what()).c_str());
+        CSpeedTreeRT_SetError(IdvFormatString("%s - failed [%s]", "CSpeedTreeRT::DeleteFrondGeometry", e.what()).c_str());
     }
     catch (...)
     {
-        AssignString(
+        CSpeedTreeRT_SetError(
             IdvFormatString("%s - threw an unknown system exception", "CSpeedTreeRT::DeleteFrondGeometry").c_str());
     }
 }
@@ -8222,7 +8301,7 @@ template <class _Ty> class vectorS : public _Vector_valS<_Ty>
 class FUN_00b0a9a0_Tree
 {
   public:
-    short CIndexedGeometry_GetNumStrips(short m_sIndex);
+    short CIndexedGeometry_GetNumStrips(short sLodLevel);
     int unk00;
     int unk04;
     int unk08;
@@ -8250,9 +8329,11 @@ class FUN_00b0a9a0_Tree
 
 // @fnv 0x00b0a9a0
 // src: XBOX_PDB 0x00b0a9a0
-short FUN_00b0a9a0_Tree::CIndexedGeometry_GetNumStrips(short m_sIndex)
+// pdb: CIndexedGeometry::GetNumStrips | SpeedTreeRT.obj | debug, upstream name already matches, high
+// pdb params: sLodLevel
+short FUN_00b0a9a0_Tree::CIndexedGeometry_GetNumStrips(short sLodLevel)
 {
-    return (m_sIndex > -1) ? (short)m_kLists[m_sIndex].size() : (short)0;
+    return (sLodLevel > -1) ? (short)m_kLists[sLodLevel].size() : (short)0;
 }
 }  // namespace fnv_00b0a9a0
 
@@ -8304,19 +8385,21 @@ struct SpeedTreeRTB0AA20
     int unk38;
     int unk3C;
     CheckedLodArray<CheckedLodArray<short> > m_vLodStrips;
-    const short* CIndexedGeometry_GetStripLengthsPointer(short nLod) const;
+    const short* CIndexedGeometry_GetStripLengthsPointer(short sLodLevel) const;
 };
 
 // @fnv 0x00b0aa20
 // src: XBOX_PDB 0x00b0aa20
-const short* SpeedTreeRTB0AA20::CIndexedGeometry_GetStripLengthsPointer(short nLod) const
+// pdb: CIndexedGeometry::GetStripLengthsPointer | SpeedTreeRT.obj | debug, upstream name already matches, high
+// pdb params: sLodLevel
+const short* SpeedTreeRTB0AA20::CIndexedGeometry_GetStripLengthsPointer(short sLodLevel) const
 {
-    return nLod >= 0 && nLod < m_usValueAt28 && !m_vLodStrips[nLod].empty() ? &m_vLodStrips[nLod][0] : 0;
+    return sLodLevel >= 0 && sLodLevel < m_usValueAt28 && !m_vLodStrips[sLodLevel].empty() ? &m_vLodStrips[sLodLevel][0] : 0;
 }
 
 struct Eng28
 {
-    void __thiscall SetLeafLodGeometry(void* block, unsigned short idx, float a, float b, float c);
+    void __thiscall CLeafGeometry_SmallUpdate(void* block, unsigned short idx, float a, float fPitch, float c);
 };
 struct OutAd00
 {
@@ -8433,11 +8516,14 @@ struct SelfAd00
     int m3c;
     int m40;
     unsigned char m44;
-    void __thiscall CSpeedTreeRT_GetBSGeometryLODData(OutAd00* out, float param);
+    void __thiscall CSpeedTreeRT_GetBSGeometryLODData(OutAd00* sGeometry, float afLODlevel);
 };
 // @fnv 0x00b0ad00
 // src: XBOX_PDB 0x00b0ad00
-void __thiscall SelfAd00::CSpeedTreeRT_GetBSGeometryLODData(OutAd00* out, float param)
+// pdb: CSpeedTreeRT::GetBSGeometryLODData | SpeedTreeRT.obj | retail, upstream name already matches, high
+// pdb params: sGeometry, afLODlevel
+// pdb locals: fHighLodAlphaValue, fLowLodAlphaValue, usLeafLodCount, fPitch, sLowLod, cAdjustedDirection, sHighLod, usLodStageCount, cCameraPos, cCameraDirection, fAzimuth, usDiscreteLodLevel
+void __thiscall SelfAd00::CSpeedTreeRT_GetBSGeometryLODData(OutAd00* sGeometry, float afLODlevel)
 {
     float asinRad;
     float t2;
@@ -8462,25 +8548,25 @@ void __thiscall SelfAd00::CSpeedTreeRT_GetBSGeometryLODData(OutAd00* out, float 
     pf9 = -1.0f;
     _s1 = -1;
     sZ = -1;
-    CSpeedTreeRT_GetTransitionValues(param, nW, m1c, m28, m20, (float)m44, &fPf1, &pf9, &_s1, &sZ);
+    CSpeedTreeRT_GetTransitionValues(afLODlevel, nW, m1c, m28, m20, (float)m44, &fPf1, &pf9, &_s1, &sZ);
     if (DAT_011f8b78)
     {
-        out->mfc = -1.0f;
+        sGeometry->mfc = -1.0f;
         if (_s1 == nW - 1)
         {
-            out->mfc = fPf1;
+            sGeometry->mfc = fPf1;
         }
         else if (sZ == nW - 1)
         {
-            out->mfc = pf9;
+            sGeometry->mfc = pf9;
         }
-        out->mf0 = (out->mfc != -1.0);
+        sGeometry->mf0 = (sGeometry->mfc != -1.0);
     }
     else
     {
-        out->mf0 = 0;
+        sGeometry->mf0 = 0;
     }
-    if (param < 0.0)
+    if (afLODlevel < 0.0)
     {
     }
     else
@@ -8489,20 +8575,20 @@ void __thiscall SelfAd00::CSpeedTreeRT_GetBSGeometryLODData(OutAd00* out, float 
         {
             if (_s1 == nW - 2)
             {
-                out->m38 = fPf1;
+                sGeometry->m38 = fPf1;
             }
             else if (_s1 == nW - 1)
             {
-                out->m38 = 255.0f;
+                sGeometry->m38 = 255.0f;
             }
             else
             {
-                out->m38 = (float)m44;
+                sGeometry->m38 = (float)m44;
             }
         }
         else
         {
-            out->m38 = (float)m44;
+            sGeometry->m38 = (float)m44;
         }
         vaTmp.z = 0.0f;
         vaTmp.y = 0.0f;
@@ -8527,37 +8613,37 @@ void __thiscall SelfAd00::CSpeedTreeRT_GetBSGeometryLODData(OutAd00* out, float 
         negDeg8 = -(float)(asinRad * 57.295780181884766);
         if (m18 == 1)
         {
-            m08->SetLeafLodGeometry(&out->m78, 0, deg4, negDeg8, m24);
-            out->m78 = (_s1 != -1 && _s1 < savedQ);
-            if (out->m78)
+            m08->CLeafGeometry_SmallUpdate(&sGeometry->m78, 0, deg4, negDeg8, m24);
+            sGeometry->m78 = (_s1 != -1 && _s1 < savedQ);
+            if (sGeometry->m78)
             {
-                m08->SetLeafLodGeometry(&out->m78, _s1, deg4, negDeg8, m24);
-                out->m7c = fPf1;
+                m08->CLeafGeometry_SmallUpdate(&sGeometry->m78, _s1, deg4, negDeg8, m24);
+                sGeometry->m7c = fPf1;
             }
-            out->mb4 = (sZ != -1 && sZ < savedQ);
-            if (out->mb4)
+            sGeometry->mb4 = (sZ != -1 && sZ < savedQ);
+            if (sGeometry->mb4)
             {
-                m08->SetLeafLodGeometry(&out->mb4, sZ, deg4, negDeg8, m24);
-                out->mb8 = pf9;
+                m08->CLeafGeometry_SmallUpdate(&sGeometry->mb4, sZ, deg4, negDeg8, m24);
+                sGeometry->mb8 = pf9;
             }
         }
         else if (m18 == 3)
         {
-            m08->SetLeafLodGeometry(&out->m78, 0, deg4, negDeg8, m24);
-            out->m78 = 1;
-            out->m7c = (float)m44;
-            out->mb4 = 0;
+            m08->CLeafGeometry_SmallUpdate(&sGeometry->m78, 0, deg4, negDeg8, m24);
+            sGeometry->m78 = 1;
+            sGeometry->m7c = (float)m44;
+            sGeometry->mb4 = 0;
         }
         else
         {
             tfbk = ((FUN_00b08610_shell*)this)->CSpeedTreeRT_GetDiscreteLeafLodLevel(-1.0f);
             if (tfbk < ((CSpeedTreeRT*)this)->GetNumLeafLodLevels())
             {
-                m08->SetLeafLodGeometry(&out->m78, tfbk, deg4, negDeg8, m24);
-                out->m78 = 1;
-                out->m7c = (float)m44;
+                m08->CLeafGeometry_SmallUpdate(&sGeometry->m78, tfbk, deg4, negDeg8, m24);
+                sGeometry->m78 = 1;
+                sGeometry->m7c = (float)m44;
             }
-            out->mb4 = 0;
+            sGeometry->mb4 = 0;
         }
     }
 }
@@ -8615,9 +8701,9 @@ struct E0b
     int CIndexedGeometry_GetVertexTexCoords1();
     int CIndexedGeometry_GetVertexWindWeights();
     int CIndexedGeometry_GetVertexWindMatrixIndices();
-    unsigned short CIndexedGeometry_GetNumStrips(unsigned short i);
-    int CIndexedGeometry_GetStripLengthsPointer(unsigned short i);
-    int CIndexedGeometry_GetStripsPointer(unsigned short i);
+    unsigned short CIndexedGeometry_GetNumStrips(unsigned short sLodLevel);
+    int CIndexedGeometry_GetStripLengthsPointer(unsigned short sLodLevel);
+    int CIndexedGeometry_GetStripsPointer(unsigned short nLodLevel);
 };
 struct I0b
 {
@@ -8640,18 +8726,21 @@ struct S0b
     float f28;
     char p2c[0x18];
     unsigned char ucMin;
-    short GetIndexFromLevel(float f);
+    short CSpeedTreeRT_GetDiscreteBranchLodLevel(float fLodLevel);
     unsigned short GetNumLeafLodLevels();
     float CSpeedTreeRT_GetLodLevel();
-    void CSpeedTreeRT_GetBranchGeometry(I0b* pArg, short sLod);
+    void CSpeedTreeRT_GetBranchGeometry(I0b* sGeometry, short sOverrideLodValue);
 };
 // @fnv 0x00b0b1d0
 // src: XBOX_PDB 0x00b0b1d0
-void S0b::CSpeedTreeRT_GetBranchGeometry(I0b* pArg, short sLod)
+// pdb: CSpeedTreeRT::GetBranchGeometry | SpeedTreeRT.obj | retail, string-set bridge, high
+// pdb params: sGeometry, sOverrideLodValue
+// pdb locals: sLodLevel, sBranches, fHighLodAlphaValue, fLowLodAlphaValue, sLowLod, sHighLod, usLodStageCount
+void S0b::CSpeedTreeRT_GetBranchGeometry(I0b* sGeometry, short sOverrideLodValue)
 {
     if (pEngine)
     {
-        I0b* pInfo = pArg;
+        I0b* pInfo = sGeometry;
         pInfo->m_usPassCountLocal = pEngine->geo.Count();
         DeadB();
         pInfo->i14 = pEngine->CIndexedGeometry_GetVertexColors();
@@ -8663,7 +8752,7 @@ void S0b::CSpeedTreeRT_GetBranchGeometry(I0b* pArg, short sLod)
         pInfo->i2c = pEngine->CIndexedGeometry_GetVertexTexCoords1();
         pInfo->i30 = pEngine->CIndexedGeometry_GetVertexWindWeights();
         pInfo->i34 = pEngine->CIndexedGeometry_GetVertexWindMatrixIndices();
-        short sLevel7 = sLod == -1 ? GetIndexFromLevel(-1.0f) : sLod;
+        short sLevel7 = sOverrideLodValue == -1 ? CSpeedTreeRT_GetDiscreteBranchLodLevel(-1.0f) : sOverrideLodValue;
         pInfo->iLod = sLevel7;
         pInfo->usA = pEngine->CIndexedGeometry_GetNumStrips(sLevel7);
         pInfo->i8 = pEngine->CIndexedGeometry_GetStripLengthsPointer(sLevel7);
@@ -8677,20 +8766,20 @@ void S0b::CSpeedTreeRT_GetBranchGeometry(I0b* pArg, short sLod)
             short s2 = -1;
             CSpeedTreeRT_GetTransitionValues(CSpeedTreeRT_GetLodLevel(), usN5, f1c, f28, f20, ucMin, &fW1, &fW3, &s5, &s2);
             if (s5 == usN5 - 2)
-                pArg->fAlpha = fW1;
+                sGeometry->fAlpha = fW1;
             else if (s5 == usN5 - 1)
             {
-                pArg->fAlpha = 255.0f;
+                sGeometry->fAlpha = 255.0f;
                 pInfo->iLod = -1;
             }
             else
-                pArg->fAlpha = ucMin;
+                sGeometry->fAlpha = ucMin;
         }
         else
-            pArg->fAlpha = ucMin;
+            sGeometry->fAlpha = ucMin;
     }
     else
-        AssignString("no branch geometry exists, possible prior call to DeleteBranchGeometry");
+        CSpeedTreeRT_SetError("no branch geometry exists, possible prior call to DeleteBranchGeometry");
 }
 
 void __cdecl InvalidParameterNoInfoB530();
@@ -8774,6 +8863,7 @@ class FUN_00b0b530_Tree
 
 // @fnv 0x00b0b530
 // src: COMMUNITY 0x00b0b530
+// pdb: CIndexedGeometry::GetVertexCoords | SpeedTreeRT.obj | debug, upstream name already matches, high
 float* FUN_00b0b530_Tree::CIndexedGeometry_GetVertexCoords()
 {
     return m_kValues.empty() ? 0 : &m_kValues[0];
@@ -8834,6 +8924,7 @@ class FUN_00b0b5b0_Tree
 
 // @fnv 0x00b0b5b0
 // src: COMMUNITY 0x00b0b5b0
+// pdb: CIndexedGeometry::GetVertexNormals | SpeedTreeRT.obj | debug, upstream name already matches, high
 float* FUN_00b0b5b0_Tree::CIndexedGeometry_GetVertexNormals()
 {
     return m_kValues.empty() ? 0 : &m_kValues[0];
@@ -8900,6 +8991,7 @@ class FUN_00b0b630_Tree
 
 // @fnv 0x00b0b630
 // src: COMMUNITY 0x00b0b630
+// pdb: CIndexedGeometry::GetVertexBinormals | SpeedTreeRT.obj | debug, upstream name already matches, high
 float* FUN_00b0b630_Tree::CIndexedGeometry_GetVertexBinormals()
 {
     return m_kValues.empty() ? 0 : &m_kValues[0];
@@ -8972,6 +9064,7 @@ class FUN_00b0b6b0_Tree
 
 // @fnv 0x00b0b6b0
 // src: COMMUNITY 0x00b0b6b0
+// pdb: CIndexedGeometry::GetVertexTangents | SpeedTreeRT.obj | debug, upstream name already matches, high
 float* FUN_00b0b6b0_Tree::CIndexedGeometry_GetVertexTangents()
 {
     return m_kValues.empty() ? 0 : &m_kValues[0];
@@ -9050,6 +9143,7 @@ class FUN_00b0b730_Tree
 
 // @fnv 0x00b0b730
 // src: COMMUNITY 0x00b0b730
+// pdb: CIndexedGeometry::GetVertexTexCoords0 | SpeedTreeRT.obj | debug, upstream name already matches, high
 float* FUN_00b0b730_Tree::CIndexedGeometry_GetVertexTexCoords0()
 {
     return m_kValues.empty() ? 0 : &m_kValues[0];
@@ -9146,6 +9240,7 @@ class FUN_00b0b7b0_Tree
 
 // @fnv 0x00b0b7b0
 // src: COMMUNITY 0x00b0b7b0
+// pdb: CIndexedGeometry::GetVertexTexCoords1 | SpeedTreeRT.obj | debug, upstream name already matches, high
 float* FUN_00b0b7b0_Tree::CIndexedGeometry_GetVertexTexCoords1()
 {
     return m_kValues.empty() ? 0 : &m_kValues[0];
@@ -9254,6 +9349,7 @@ class FUN_00b0b8b0_Tree
 
 // @fnv 0x00b0b8b0
 // src: COMMUNITY 0x00b0b8b0
+// pdb: CIndexedGeometry::GetVertexWindMatrixIndices | SpeedTreeRT.obj | debug, upstream name already matches, high
 unsigned char* FUN_00b0b8b0_Tree::CIndexedGeometry_GetVertexWindMatrixIndices()
 {
     return m_kValues.empty() ? 0 : &m_kValues[0];
@@ -9293,7 +9389,7 @@ struct TreeOutput
 struct TreeEngine
 {
     void CLeafGeometry_Update_(TreeGeometry*, unsigned short, float, float, float);
-    void SetLeafLodGeometry(TreeGeometry*, unsigned short, float, float, float);
+    void CLeafGeometry_SmallUpdate(TreeGeometry*, unsigned short, float, float, float);
 };
 void __cdecl CSpeedTreeRT_GetTransitionValues(float, unsigned short, float, float, float, float, float*, float*, short*, short*);
 struct TreeRuntime : CSpeedTreeRT
@@ -9311,7 +9407,10 @@ struct TreeRuntime : CSpeedTreeRT
 
 // @fnv 0x00b0bc00
 // src: COMMUNITY 0x00b0bc00
-void TreeRuntime::CSpeedTreeRT_GetLeafGeometry(TreeOutput* output, short forcedLod)
+// pdb: CSpeedTreeRT::GetLeafGeometry | SpeedTreeRT.obj | retail, upstream name already matches, high
+// pdb params: sGeometry, sOverrideLeafLodValue
+// pdb locals: usLodLevel, usLeafLodCount, fPitch, cAdjustedDirection, usLodStageCount, cCameraPos, cCameraDirection, fAzimuth, fHighLodAlphaValue, fLowLodAlphaValue, sLowLod, sHighLod, usDiscreteLodLevel
+void TreeRuntime::CSpeedTreeRT_GetLeafGeometry(TreeOutput* sGeometry, short sOverrideLeafLodValue)
 {
     float resultVal;
     float pointX;
@@ -9358,15 +9457,15 @@ void TreeRuntime::CSpeedTreeRT_GetLeafGeometry(TreeOutput* output, short forcedL
     index_ = 0;
     while (index_ < GetNumLeafLodLevels())
     {
-        geometry->CLeafGeometry_Update_(&output->first, index_, angleVal, angle5, scale);
+        geometry->CLeafGeometry_Update_(&sGeometry->first, index_, angleVal, angle5, scale);
         ++index_;
     }
-    if (forcedLod > -1)
+    if (sOverrideLeafLodValue > -1)
     {
-        geometry->SetLeafLodGeometry(&output->first, (unsigned short)forcedLod, angleVal, angle5, scale);
-        output->first.active = true;
-        output->first.alpha = (float)alpha;
-        output->second.active = false;
+        geometry->CLeafGeometry_SmallUpdate(&sGeometry->first, (unsigned short)sOverrideLeafLodValue, angleVal, angle5, scale);
+        sGeometry->first.active = true;
+        sGeometry->first.alpha = (float)alpha;
+        sGeometry->second.active = false;
     }
     else if (lodMode == 1)
     {
@@ -9376,41 +9475,41 @@ void TreeRuntime::CSpeedTreeRT_GetLeafGeometry(TreeOutput* output, short forcedL
         indexX = -1;
         CSpeedTreeRT_GetTransitionValues(reinterpret_cast<FUN_00b08440_shell*>(this)->CSpeedTreeRT_GetLodLevel(), count2, lodNear, lodTransition,
                      lodFar, (float)alpha, &aAngle, &angle3, &index6, &indexX);
-        output->first.active = index6 != -1 && index6 < count4;
-        if (output->first.active)
+        sGeometry->first.active = index6 != -1 && index6 < count4;
+        if (sGeometry->first.active)
         {
-            geometry->SetLeafLodGeometry(&output->first, (unsigned short)index6, angleVal, angle5, scale);
-            output->first.alpha = aAngle;
+            geometry->CLeafGeometry_SmallUpdate(&sGeometry->first, (unsigned short)index6, angleVal, angle5, scale);
+            sGeometry->first.alpha = aAngle;
         }
-        output->second.active = indexX != -1 && indexX < count4;
-        if (output->second.active)
+        sGeometry->second.active = indexX != -1 && indexX < count4;
+        if (sGeometry->second.active)
         {
-            geometry->SetLeafLodGeometry(&output->second, (unsigned short)indexX, angleVal, angle5, scale);
-            output->second.alpha = angle3;
+            geometry->CLeafGeometry_SmallUpdate(&sGeometry->second, (unsigned short)indexX, angleVal, angle5, scale);
+            sGeometry->second.alpha = angle3;
         }
     }
     else if (lodMode == 3)
     {
-        geometry->SetLeafLodGeometry(&output->first, 0, angleVal, angle5, scale);
-        output->first.active = true;
-        output->first.alpha = (float)alpha;
-        output->second.active = false;
+        geometry->CLeafGeometry_SmallUpdate(&sGeometry->first, 0, angleVal, angle5, scale);
+        sGeometry->first.active = true;
+        sGeometry->first.alpha = (float)alpha;
+        sGeometry->second.active = false;
     }
     else
     {
         indexVal = CSpeedTreeRT_GetDiscreteLeafLodLevel(-1.0f);
         if (indexVal < GetNumLeafLodLevels())
         {
-            geometry->SetLeafLodGeometry(&output->first, indexVal, angleVal, angle5, scale);
-            output->first.active = true;
-            output->first.alpha = (float)alpha;
+            geometry->CLeafGeometry_SmallUpdate(&sGeometry->first, indexVal, angleVal, angle5, scale);
+            sGeometry->first.active = true;
+            sGeometry->first.alpha = (float)alpha;
         }
-        output->second.active = false;
+        sGeometry->second.active = false;
     }
 }
 
 extern float DAT_01023cd8;
-float __cdecl ComputeAzimuth(const float* v);
+float __cdecl ComputeAzimuth(const float* pCameraDir);
 inline void Dead6()
 {
     int d0;
@@ -9462,17 +9561,20 @@ struct T0c
     L0c* pList;
     char p50[4];
     unsigned short m_usPassCountLocal;
-    void FillSpeedTreeOutput(O0c* out);
-    void CSpeedTreeRT_Get360BillboardGeometry(O0c* pOut, unsigned int uiFlags);
+    void CSpeedTreeRT_GetSimpleBillboardGeometry(O0c* sGeometry);
+    void CSpeedTreeRT_Get360BillboardGeometry(O0c* sGeometry, unsigned int ulBitVector);
 };
 // @fnv 0x00b0c050
 // src: COMMUNITY 0x00b0c050
-void T0c::CSpeedTreeRT_Get360BillboardGeometry(O0c* pOut, unsigned int uiFlags)
+// pdb: CSpeedTreeRT::Get360BillboardGeometry | SpeedTreeRT.obj | retail, upstream name already matches, high
+// pdb params: sGeometry, ulBitVector
+// pdb locals: fLodWidth, cCameraDir, fSecondaryLodAlphaValue, fLodValue, fPrimaryLodAlphaValue, fFade, sPrimaryLod, usLodStageCount, cCameraPos, fAzimuth, sSecondaryLod
+void T0c::CSpeedTreeRT_Get360BillboardGeometry(O0c* sGeometry, unsigned int ulBitVector)
 {
-    FillSpeedTreeOutput(pOut);
-    if (pOut->bActive && m_usPassCountLocal)
+    CSpeedTreeRT_GetSimpleBillboardGeometry(sGeometry);
+    if (sGeometry->bActive && m_usPassCountLocal)
     {
-        float fScale2 = (pOut->fWeight - ucMin) / (255.0 - ucMin);
+        float fScale2 = (sGeometry->fWeight - ucMin) / (255.0 - ucMin);
         LocalVec3 vA3;
         LocalVec3 vB9;
         memcpy(&vA3, &DAT_011f8e9c, sizeof(vA3));
@@ -9496,38 +9598,38 @@ void T0c::CSpeedTreeRT_Get360BillboardGeometry(O0c* pOut, unsigned int uiFlags)
             sA = sA - usN;
         while (s3 >= usN)
             s3 = s3 - usN;
-        if (uiFlags & 0x20)
+        if (ulBitVector & 0x20)
         {
-            pOut->bActive = 1;
+            sGeometry->bActive = 1;
             if (fW3 < fWTmp)
             {
-                pOut->pData = pList->data + sA * 8;
-                pOut->fWeight = Lerp1c(fScale2, ucMin);
-                pOut->bBlend = 0;
+                sGeometry->pData = pList->data + sA * 8;
+                sGeometry->fWeight = Lerp1c(fScale2, ucMin);
+                sGeometry->bBlend = 0;
             }
             else
             {
-                pOut->pData = pList->data + s3 * 8;
-                pOut->fWeight = Lerp1c(fScale2, ucMin);
-                pOut->bBlend = 0;
+                sGeometry->pData = pList->data + s3 * 8;
+                sGeometry->fWeight = Lerp1c(fScale2, ucMin);
+                sGeometry->bBlend = 0;
             }
         }
         else
         {
             if (pList)
-                pOut->pData = pList->data + sA * 8;
+                sGeometry->pData = pList->data + sA * 8;
             else
-                pOut->pData = 0;
-            pOut->fWeight = Lerp0c(fScale2, fW3, 255.0f);
-            pOut->m_sIndex = sA;
-            pOut->iValue2 = pOut->iValue;
+                sGeometry->pData = 0;
+            sGeometry->fWeight = Lerp0c(fScale2, fW3, 255.0f);
+            sGeometry->m_sIndex = sA;
+            sGeometry->iValue2 = sGeometry->iValue;
             if (pList)
-                pOut->pData2 = pList->data + s3 * 8;
+                sGeometry->pData2 = pList->data + s3 * 8;
             else
-                pOut->pData2 = 0;
-            pOut->sIndex2 = s3;
-            pOut->bBlend = 1;
-            pOut->fWeight2 = Lerp0c(fScale2, fWTmp, 255.0f);
+                sGeometry->pData2 = 0;
+            sGeometry->sIndex2 = s3;
+            sGeometry->bBlend = 1;
+            sGeometry->fWeight2 = Lerp0c(fScale2, fWTmp, 255.0f);
         }
     }
 }
@@ -9537,16 +9639,19 @@ extern const double DAT_010a4d90;
 
 // @fnv 0x00b0c470
 // src: COMMUNITY 0x00b0c470
-float __cdecl ComputeAzimuth(const float* p)
+// pdb: ComputeAzimuth | SpeedTreeRT.obj | debug, upstream name already matches, high
+// pdb params: pCameraDir
+// pdb locals: cAdjustedDirection
+float __cdecl ComputeAzimuth(const float* pCameraDir)
 {
     float local_z[3];
     local_z[2] = 0.0f;
     local_z[1] = 0.0f;
     local_z[0] = 0.0f;
 
-    local_z[0] = p[0];
-    local_z[1] = p[1];
-    local_z[2] = p[2];
+    local_z[0] = pCameraDir[0];
+    local_z[1] = pCameraDir[1];
+    local_z[2] = pCameraDir[2];
 
     float y = (*reinterpret_cast<const CVec3*>(local_z))[1];
     float x = (*reinterpret_cast<const CVec3*>(local_z))[0];
@@ -9569,16 +9674,19 @@ struct FrameC780
     {
         return m_bBuilt;
     }
-    FrameC780* CSimpleBillboard_GetBillboardCoords(float fScale, float m_fProjectionDepth);
+    FrameC780* CSimpleBillboard_GetBillboardCoords(float fWidth, float fHeight);
 };
 
 // @fnv 0x00b0c780
 // src: COMMUNITY 0x00b0c780
-FrameC780* FrameC780::CSimpleBillboard_GetBillboardCoords(float fScale, float m_fProjectionDepth)
+// pdb: CSimpleBillboard::GetBillboardCoords | SpeedTreeRT.obj | debug, upstream name already matches, high
+// pdb params: fWidth, fHeight
+// pdb locals: afScale
+FrameC780* FrameC780::CSimpleBillboard_GetBillboardCoords(float fWidth, float fHeight)
 {
     if (!IsBuilt())
     {
-        CVec3 kScale(fScale, fScale, m_fProjectionDepth);
+        CVec3 kScale(fWidth, fWidth, fHeight);
         m_akRows[0].x = kScale.x * g_akBasisC780[0][0];
         m_akRows[0].y = kScale.y * g_akBasisC780[0][1];
         m_akRows[0].z = kScale.z * g_akBasisC780[0][2];
@@ -9606,8 +9714,11 @@ extern "C" double __cdecl FUN_00ec6cde(double);
 extern "C" double __cdecl FUN_00ec9ac0(double, double);
 // @fnv 0x00b0c8d0
 // src: XBOX_PDB 0x00b0c8d0
-void __cdecl CSpeedTreeRT_GetTransitionValues(float a, unsigned short n, float fLimit, float fMin, float fExp, float fBase, float* pOut1,
-                          float* pOut2, short* pIdx1, short* pIdx2)
+// pdb: CSpeedTreeRT::GetTransitionValues | SpeedTreeRT.obj | retail, upstream name already matches, high
+// pdb params: fLodLevel, usLodCount, fOverlapRadius, fTransitionFactor, fCurveExponent, fTargetAlphaValue, fHighValue, fLowValue, sHighLod, sLowLod
+// pdb locals: fLodWidth, fDistanceToTransitionPoint, usDiscreteTransitionPoint, fAmountOfHigh, fAmountOfLow, fTransitionStage
+void __cdecl CSpeedTreeRT_GetTransitionValues(float fLodLevel, unsigned short usLodCount, float fOverlapRadius, float fTransitionFactor, float fCurveExponent, float fTargetAlphaValue, float* fHighValue,
+                          float* fLowValue, short* sHighLod, short* sLowLod)
 {
     unsigned short _us;
     {
@@ -9623,33 +9734,33 @@ void __cdecl CSpeedTreeRT_GetTransitionValues(float a, unsigned short n, float f
             float f5;
             {
                 float f2c5;
-                fPos4 = (1.0f - a) / (fStep4 = 1.0f / n);
+                fPos4 = (1.0f - fLodLevel) / (fStep4 = 1.0f / usLodCount);
                 i_ = (int)fPos4;
                 fFrac = fPos4 - i_;
                 if (fFrac >= 0.5)
                     i_++;
                 _us = (unsigned short)i_;
-                f6 = (1.0f - a) - _us * fStep4;
-                if (_us == 0 || _us == n || (float)FUN_00ec6cde(f6) > fLimit)
+                f6 = (1.0f - fLodLevel) - _us * fStep4;
+                if (_us == 0 || _us == usLodCount || (float)FUN_00ec6cde(f6) > fOverlapRadius)
                 {
-                    *pOut1 = fBase;
-                    *pIdx1 = (short)((1.0f - a) * n);
-                    *pIdx1 = *pIdx1 < (short)(n - 1) ? *pIdx1 : (short)(n - 1);
-                    *pOut2 = 255.0f;
-                    *pIdx2 = -1;
+                    *fHighValue = fTargetAlphaValue;
+                    *sHighLod = (short)((1.0f - fLodLevel) * usLodCount);
+                    *sHighLod = *sHighLod < (short)(usLodCount - 1) ? *sHighLod : (short)(usLodCount - 1);
+                    *fLowValue = 255.0f;
+                    *sLowLod = -1;
                     return;
                 }
-                fB = 1.0f - (fLimit - f6) / (2.0 * fLimit);
-                f4 = 1.0f - (fB - fMin) / (1.0f - fMin);
+                fB = 1.0f - (fOverlapRadius - f6) / (2.0 * fOverlapRadius);
+                f4 = 1.0f - (fB - fTransitionFactor) / (1.0f - fTransitionFactor);
                 f4 = f4 < 1.0 ? f4 : 1.0f;
-                *pIdx1 = _us - 1;
-                f5 = (float)(double)(float)FUN_00ec9ac0((float)(1.0f - f4), fExp);
-                *pOut1 = Lerp0c(f5, fBase, 255.0f);
-                fTmp = fB / (1.0f - fMin);
+                *sHighLod = _us - 1;
+                f5 = (float)(double)(float)FUN_00ec9ac0((float)(1.0f - f4), fCurveExponent);
+                *fHighValue = Lerp0c(f5, fTargetAlphaValue, 255.0f);
+                fTmp = fB / (1.0f - fTransitionFactor);
                 fTmp = fTmp < 1.0 ? fTmp : 1.0f;
-                *pIdx2 = _us;
-                f2c5 = (float)(double)(float)FUN_00ec9ac0((float)(1.0f - fTmp), fExp);
-                *pOut2 = Lerp0c(f2c5, fBase, 255.0f);
+                *sLowLod = _us;
+                f2c5 = (float)(double)(float)FUN_00ec9ac0((float)(1.0f - fTmp), fCurveExponent);
+                *fLowValue = Lerp0c(f2c5, fTargetAlphaValue, 255.0f);
             }
         }
     }
@@ -9684,8 +9795,8 @@ struct StrF
         return 16 <= uiRes ? kBx.pPtr : kBx.acBuf;
     }
 };
-StrF __cdecl IdvFormatString(const char* pFmt, ...);
-void __cdecl AssignString(const char* pMsg);
+StrF __cdecl IdvFormatString(const char* pField, ...);
+void __cdecl CSpeedTreeRT_SetError(const char* pError);
 struct CIdvException
 {
     virtual ~CIdvException();
@@ -9711,6 +9822,8 @@ struct SpdTreeQ
 };
 // @fnv 0x00b0cb10
 // src: EXE 0x00b0cb10
+// pdb: CSpeedTreeRT::GetLeafLodSizeAdjustments | SpeedTreeRT.obj | retail, upstream name already matches, high
+// pdb locals: nNumLods, i, cException
 const float* SpdTreeQ::CSpeedTreeRT_GetLeafLodSizeAdjustments()
 {
     try
@@ -9725,11 +9838,11 @@ const float* SpdTreeQ::CSpeedTreeRT_GetLeafLodSizeAdjustments()
     }
     catch (CIdvException& e)
     {
-        AssignString(IdvFormatString("%s - failed [%s]", "CSpeedTreeRT::GetLeafLodSizeAdjustments", e.what()).c_str());
+        CSpeedTreeRT_SetError(IdvFormatString("%s - failed [%s]", "CSpeedTreeRT::GetLeafLodSizeAdjustments", e.what()).c_str());
     }
     catch (...)
     {
-        AssignString(
+        CSpeedTreeRT_SetError(
             IdvFormatString("%s - threw an unknown system exception", "CSpeedTreeRT::GetLeafLodSizeAdjustments").c_str());
     }
     return pafLodSizes;
@@ -9747,7 +9860,7 @@ class Track_b0cd
 {
   public:
     Track_b0cd();
-    void ProcessEntries_00b3e750(int iValue);
+    void CProjectedShadow_Parse(int cFile);
     static void* operator new(unsigned int uiSize)
     {
         return g_kPoolB0CD.Game_DoHeapAlloc(uiSize);
@@ -9769,15 +9882,17 @@ class TrackOwner_b0cd
     int unk40, unk44, unk48, unk4c;
     Track_b0cd* m_pkTrack;
 
-    void CSpeedTreeRT_ParseShadowProjectionInfo(int iValue);
+    void CSpeedTreeRT_ParseShadowProjectionInfo(int pFile);
 };
 
 // @fnv 0x00b0cd40
 // src: COMMUNITY 0x00b0cd40
-void TrackOwner_b0cd::CSpeedTreeRT_ParseShadowProjectionInfo(int iValue)
+// pdb: CSpeedTreeRT::ParseShadowProjectionInfo | SpeedTreeRT.obj | retail, upstream name already matches, high
+// pdb params: pFile
+void TrackOwner_b0cd::CSpeedTreeRT_ParseShadowProjectionInfo(int pFile)
 {
     m_pkTrack = new Track_b0cd;
-    m_pkTrack->ProcessEntries_00b3e750(iValue);
+    m_pkTrack->CProjectedShadow_Parse(pFile);
 }
 
 inline void Dead8_acad60()
@@ -9869,6 +9984,9 @@ inline CItQ_acad60::CItQ_acad60(int* _Ptr, const VecQ_acad60* _Pvector) : _Myaux
 }
 // @fnv 0x00b0ddc0
 // src: COMMUNITY 0x00b0ddc0
+// pdb: std::vector<unsigned char,std::allocator<unsigned char> >::push_back | SpeedTreeRT.obj | debug, object-file run extension, low
+// pdb params: _Val
+// pdb locals: _Idx
 void VecQ_acad60::std_vector_push_back(const int& _Val)
 {
     if (size() < capacity())
@@ -10241,6 +10359,8 @@ class FUN_00b0df00_Vector : public vectorS<int>
 
 // @fnv 0x00b0df00
 // src: COMMUNITY 0x00b0df00
+// pdb: std::vector<unsigned char,std::allocator<unsigned char> >::resize | SpeedTreeRT.obj | debug, object-file run extension, low
+// pdb params: _Newsize
 FUN_00b0df00_Vector::iterator FUN_00b0df00_Vector::std_vector_erase(const_iterator _Where)
 {
     unchecked_copyS(_Where._Myptr + 1, _Mylast, _Where._Myptr);
@@ -10664,6 +10784,7 @@ class FUN_00b0ebb0_Iterator : public _Vector_const_iteratorS<ElemEBB0>
 
 // @fnv 0x00b0ebb0
 // src: GUESS 0x00b0ebb0 (confidence: low)
+// pdb: std::_Vector_iterator<std::_Vector_val<CSpeedTreeRT *,std::allocator<CSpeedTreeRT *> > >::operator* | SpeedTreeRT.obj | debug, call graph, medium
 ElemEBB0& FUN_00b0ebb0_Iterator::ProcessEntries_00b0ebb0() const
 {
     if (!(this->_Has_container()))
@@ -11002,6 +11123,7 @@ class FUN_00b06180_Reader
 
 // @fnv 0x00b06180
 // src: GUESS 0x00b06180 (confidence: low)
+// pdb: CTreeFileAccess::ParseBool | SpeedTreeRT.obj | debug, call graph, high
 bool FUN_00b06180_Reader::ProcessAndTransformResult_00b06180()
 {
     return m_kFlags[m_uiPosition++] != 0;
@@ -11896,6 +12018,9 @@ struct FUN_00b06090
     FUN_00b06090(const char* data, int size);
 };
 // @fnv 0x00b06090
+// pdb: CTreeFileAccess::CTreeFileAccess | SpeedTreeRT.obj | debug, object-file run extension, low
+// pdb params: pMemory, nNumBytes
+// pdb locals: i
 FUN_00b06090::FUN_00b06090(const char* data, int size) : unk00(0)
 {
     int p;
@@ -11957,7 +12082,7 @@ struct FUN_00b09480 : FUN_00b096a0
 };
 struct PathQ : FUN_0044a4c0
 {
-    PathQ(FUN_0044a4c0 s);
+    PathQ(FUN_0044a4c0 strFilename);
     FUN_0044a4c0 ProcessEntries_00b09f90();
 };
 struct ByteVec
@@ -12035,73 +12160,76 @@ struct Tree
     int aj[7];
     bool b6c;
     bool b6d;
-    void CSpeedTreeRT_ParseTextureCoordInfo(Parser* p);
+    void CSpeedTreeRT_ParseTextureCoordInfo(Parser* pFile);
 };
 // @fnv 0x00b09960
 // src: COMMUNITY 0x00b09960
-void Tree::CSpeedTreeRT_ParseTextureCoordInfo(Parser* p)
+// pdb: CSpeedTreeRT::ParseTextureCoordInfo | SpeedTreeRT.obj | retail, upstream name already matches, high
+// pdb params: pFile
+// pdb locals: nToken, i, j, cFile
+void Tree::CSpeedTreeRT_ParseTextureCoordInfo(Parser* pFile)
 {
     pTileTexture = new TexCoordQ;
-    int iToken = p->GetNextElement();
+    int iToken = pFile->GetNextElement();
     do
     {
         switch (iToken)
         {
         case 0x2712:
             Gap4();
-            pTileTexture->iA = p->GetNextElement();
+            pTileTexture->iA = pFile->GetNextElement();
             if (pTileTexture->iA > 0)
             {
                 pTileTexture->pA = new float[pTileTexture->iA * 8];
                 for (int i = 0; i < pTileTexture->iA; i++)
                     for (int j = 0; j < 8; j++)
-                        pTileTexture->pA[i * 8 + j] = p->CTreeFileAccess_ParseFloat();
+                        pTileTexture->pA[i * 8 + j] = pFile->CTreeFileAccess_ParseFloat();
             }
             break;
         case 0x2713:
-            pTileTexture->iB = p->GetNextElement();
+            pTileTexture->iB = pFile->GetNextElement();
             if (pTileTexture->iB > 0)
             {
                 pTileTexture->pB = new float[pTileTexture->iB * 8];
                 for (int i = 0; i < pTileTexture->iB; i++)
                     for (int j = 0; j < 8; j++)
                     {
-                        pTileTexture->pB[i * 8 + j] = p->CTreeFileAccess_ParseFloat();
+                        pTileTexture->pB[i * 8 + j] = pFile->CTreeFileAccess_ParseFloat();
                         if (j % 2 && DAT_011f8b79)
                             pTileTexture->pB[i * 8 + j] = -pTileTexture->pB[i * 8 + j];
                     }
             }
             break;
         case 0x2714:
-            pTileTexture->iC = p->GetNextElement();
+            pTileTexture->iC = pFile->GetNextElement();
             if (pTileTexture->iC > 0)
             {
                 pTileTexture->pC = new float[pTileTexture->iC * 8];
                 for (int i = 0; i < pTileTexture->iC; i++)
                     for (int j = 0; j < 8; j++)
-                        pTileTexture->pC[i * 8 + j] = p->CTreeFileAccess_ParseFloat();
+                        pTileTexture->pC[i * 8 + j] = pFile->CTreeFileAccess_ParseFloat();
             }
             break;
         case 0x2715: {
             Gap1();
 
-            PathQ kPath(p->CTreeFileAccess_ParseString());
+            PathQ kPath(pFile->CTreeFileAccess_ParseString());
             pTileTexture->strName = kPath.ProcessEntries_00b09f90();
             break;
         }
         case 0x2716:
-            b6d = p->ProcessAndTransformResult_00b06180();
+            b6d = pFile->ProcessAndTransformResult_00b06180();
             break;
         case 0x2717:
-            b6c = p->ProcessAndTransformResult_00b06180();
+            b6c = pFile->ProcessAndTransformResult_00b06180();
             break;
         default:
             throw FUN_00b09480("malformed texture coord info", false);
         }
-        if (p->AtEnd())
+        if (pFile->AtEnd())
             throw FUN_00b09480("premature end of file reached parsing texture coordinate info", false);
         else
-            iToken = p->GetNextElement();
+            iToken = pFile->GetNextElement();
     } while (iToken != 0x2711);
     DeadEnd();
 }
@@ -12203,14 +12331,17 @@ struct Tree
 {
     int ai[22];
     FUN_00b0dfb0* pColl;
-    void CSpeedTreeRT_ParseCollisionObjects(Parser* p);
+    void CSpeedTreeRT_ParseCollisionObjects(Parser* pFile);
 };
 // @fnv 0x00b0a490
 // src: XBOX_PDB 0x00b0a490
-void Tree::CSpeedTreeRT_ParseCollisionObjects(Parser* p)
+// pdb: CSpeedTreeRT::ParseCollisionObjects | SpeedTreeRT.obj | retail, string-set bridge, high
+// pdb params: pFile
+// pdb locals: nToken, sShape, afPosition
+void Tree::CSpeedTreeRT_ParseCollisionObjects(Parser* pFile)
 {
     pColl = new FUN_00b0dfb0;
-    int iToken3 = p->GetNextElement();
+    int iToken3 = pFile->GetNextElement();
     V3 kPos2;
     do
     {
@@ -12236,34 +12367,34 @@ void Tree::CSpeedTreeRT_ParseCollisionObjects(Parser* p)
         default:
             throw FUN_00b09480("malformed collision object info", false);
         }
-        kPos2.x = p->CTreeFileAccess_ParseFloat();
-        kPos2.y = p->CTreeFileAccess_ParseFloat();
-        kPos2.z = p->CTreeFileAccess_ParseFloat();
+        kPos2.x = pFile->CTreeFileAccess_ParseFloat();
+        kPos2.y = pFile->CTreeFileAccess_ParseFloat();
+        kPos2.z = pFile->CTreeFileAccess_ParseFloat();
         s.a.x = kPos2.x;
         s.a.y = kPos2.y;
         s.a.z = kPos2.z;
         switch (s.iType)
         {
         case 0:
-            s.b.x = p->CTreeFileAccess_ParseFloat();
+            s.b.x = pFile->CTreeFileAccess_ParseFloat();
             break;
         case 1:
-            s.b.x = p->CTreeFileAccess_ParseFloat();
-            s.b.y = p->CTreeFileAccess_ParseFloat();
+            s.b.x = pFile->CTreeFileAccess_ParseFloat();
+            s.b.y = pFile->CTreeFileAccess_ParseFloat();
             break;
         case 2:
-            s.b.x = p->CTreeFileAccess_ParseFloat();
-            s.b.y = p->CTreeFileAccess_ParseFloat();
-            s.b.z = p->CTreeFileAccess_ParseFloat();
+            s.b.x = pFile->CTreeFileAccess_ParseFloat();
+            s.b.y = pFile->CTreeFileAccess_ParseFloat();
+            s.b.z = pFile->CTreeFileAccess_ParseFloat();
             break;
         default:
             throw FUN_00b09480("unknown collision object type", false);
         }
         pColl->UpdateState_00b0e090(s);
-        if ((bool)(int)(p->uiPos >= p->kData.size()))
+        if ((bool)(int)(pFile->uiPos >= pFile->kData.size()))
             throw FUN_00b09480("premature end of file reached parsing collision object info", false);
         else
-            iToken3 = p->GetNextElement();
+            iToken3 = pFile->GetNextElement();
     } while (iToken3 != 0x2ee1);
     Dead40();
 }
@@ -12359,41 +12490,44 @@ struct Tree
     int aj[7];
     bool b6c;
     bool b6d;
-    void CSpeedTreeRT_ParseSupplementalTexCoordInfo(Parser* p);
+    void CSpeedTreeRT_ParseSupplementalTexCoordInfo(Parser* pFile);
 };
 // @fnv 0x00b0d810
 // src: COMMUNITY 0x00b0d810
-void Tree::CSpeedTreeRT_ParseSupplementalTexCoordInfo(Parser* p)
+// pdb: CSpeedTreeRT::ParseSupplementalTexCoordInfo | SpeedTreeRT.obj | retail, upstream name already matches, high
+// pdb params: pFile
+// pdb locals: nToken, cFile, i
+void Tree::CSpeedTreeRT_ParseSupplementalTexCoordInfo(Parser* pFile)
 {
     if (pTileTexture)
     {
-        int iToken = p->GetNextElement();
+        int iToken = pFile->GetNextElement();
         do
         {
             switch (iToken)
             {
             case 0x4e22: {
-                KP kPath(p->CTreeFileAccess_ParseString());
+                KP kPath(pFile->CTreeFileAccess_ParseString());
                 pTileTexture->strName = kPath.ProcessEntries_00b09f90();
                 break;
             }
             case 0x4e23:
-                b6d = p->ProcessAndTransformResult_00b06180();
+                b6d = pFile->ProcessAndTransformResult_00b06180();
                 break;
             case 0x4e24:
-                b6c = p->ProcessAndTransformResult_00b06180();
+                b6c = pFile->ProcessAndTransformResult_00b06180();
                 break;
             case 0x4e25:
                 for (int i = 0; i < 8; i++)
-                    pTileTexture->af[i] = p->CTreeFileAccess_ParseFloat();
+                    pTileTexture->af[i] = pFile->CTreeFileAccess_ParseFloat();
                 break;
             default:
                 throw FUN_00b09480("malformed texture coord info", false);
             }
-            if ((bool)(int)(p->uiPos >= p->kData.size()))
+            if ((bool)(int)(pFile->uiPos >= pFile->kData.size()))
                 throw FUN_00b09480("premature end of file reached parsing texture coordinate info", false);
             else
-                iToken = p->GetNextElement();
+                iToken = pFile->GetNextElement();
         } while (iToken != 0x4e21);
     }
     DeadEnd();
@@ -13379,6 +13513,8 @@ struct FUN_00b0dfb0 : GvVectorStore<BxString>
     FUN_00b0dfb0();
 };
 // @fnv 0x00b0dfb0
+// pdb: std::vector<unsigned char,std::allocator<unsigned char> >::operator[] | SpeedTreeRT.obj | debug, object-file run extension, low
+// pdb params: _Pos
 FUN_00b0dfb0::FUN_00b0dfb0() : GvVectorStore<BxString>()
 {
     _Buy(0);
@@ -13962,6 +14098,7 @@ struct TreeRuntimeQ
 
 // @fnv 0x00b087d0
 // src: GUESS 0x00b087d0 (confidence: low)
+// pdb: CSpeedTreeRT::FreeProjectedShadowData | SpeedTreeRT.obj | debug, call graph, medium
 void __thiscall TreeRuntimeQ::ReleaseStorage_00b087d0()
 {
     if (this->unk50 != 0)
@@ -13989,7 +14126,7 @@ class exception
 };
 }
 
-inline void __cdecl AssignString(const char* s)
+inline void __cdecl CSpeedTreeRT_SetError(const char* pError) // src: XBOX_DEBUG_PDB 0x00b09270
 {
     int d0, d1, d2, d3;
     for (int i = 0; i < 1; ++i)
@@ -14003,7 +14140,7 @@ inline void __cdecl AssignString(const char* s)
     d1 = d0 + d2 + d3;
     d2 = d1 + d3 + d0;
     d3 = d2 + d0 + d1;
-    d0 = d3 + d1 + (int)s;
+    d0 = d3 + d1 + (int)pError;
 }
 
 namespace st {
@@ -14072,7 +14209,7 @@ struct TreeEngine
 };
 struct LightingEngine
 {
-    void CLightingEngine_ComputeLeafStaticLighting(const CVec3& center, int a, unsigned short n);
+    void CLightingEngine_ComputeLeafStaticLighting(const CVec3& cTreeCenter, int pLeafLods, unsigned short nNumLeafLods);
 };
 struct CSpeedTreeRT
 {
@@ -14080,13 +14217,15 @@ struct CSpeedTreeRT
     void* m_04;
     void* m_08;
     LightingEngine* m_pLighting;
-    void CSpeedTreeRT_GetBoundingBox_00b08c80(float* box);
+    void CSpeedTreeRT_GetBoundingBox_00b08c80(float* pBounds);
     unsigned short GetNumLeafLodLevels();
     void ComputeLeafStaticLighting();
 };
 
 // @fnv 0x00b08cc0
 // src: EXE 0x00b08cc0
+// pdb: CSpeedTreeRT::ComputeLeafStaticLighting | SpeedTreeRT.obj | debug, call graph, medium
+// pdb locals: cTreeCenter, afBoundingBox, pAllLeaves, cException
 void CSpeedTreeRT::ComputeLeafStaticLighting()
 {
     int a;
@@ -14100,11 +14239,11 @@ void CSpeedTreeRT::ComputeLeafStaticLighting()
     }
     catch (std::exception& e)
     {
-        AssignString(IdvFormatString("%s - failed [%s]", "CSpeedTreeRT::ComputeLeafStaticLighting", e.what()).c_str());
+        CSpeedTreeRT_SetError(IdvFormatString("%s - failed [%s]", "CSpeedTreeRT::ComputeLeafStaticLighting", e.what()).c_str());
     }
     catch (...)
     {
-        AssignString(
+        CSpeedTreeRT_SetError(
             IdvFormatString("%s - threw an unknown system exception", "CSpeedTreeRT::ComputeLeafStaticLighting").c_str());
     }
 }
@@ -14125,10 +14264,10 @@ class exception
 // FUN_00b09270 is defined in this translation unit (error logger); under /Ob1
 // the compiler attempts to inline it at both catch sites and declines the
 // expansion, which is what reserves the dead slots the original frame shows.
-inline void AssignString(const char* s)
+inline void CSpeedTreeRT_SetError(const char* pError) // src: XBOX_DEBUG_PDB 0x00b09270
 {
     int d0, d1, d2, d3;
-    d0 = (int)(s != 0);
+    d0 = (int)(pError != 0);
     d1 = d0;
     d2 = d1;
     d3 = d2;
@@ -14157,54 +14296,57 @@ struct SpeedTreeImpl
     int unk60, unk64, unk68;
     unsigned char unk6c;
 
-    void CSpeedTreeRT_GetBranchGeometry(void* m_pShaderGeometry, unsigned short nBranchLodLevel);
-    void FillFrondGeometry(void* m_pShaderGeometry, unsigned short nFrondLodLevel);
-    void CSpeedTreeRT_GetLeafGeometry(void* m_pShaderGeometry, unsigned short nLeafLodLevel);
-    void CSpeedTreeRT_Get360BillboardGeometry(void* m_pShaderGeometry, unsigned long ulGeometryFlags);
-    void FillSpeedTreeOutput(void* m_pShaderGeometry);
+    void CSpeedTreeRT_GetBranchGeometry(void* sGeometry, unsigned short sOverrideLodValue);
+    void CSpeedTreeRT_GetFrondGeometry(void* sGeometry, unsigned short sOverrideLodValue);
+    void CSpeedTreeRT_GetLeafGeometry(void* sGeometry, unsigned short sOverrideLeafLodValue);
+    void CSpeedTreeRT_Get360BillboardGeometry(void* sGeometry, unsigned long ulBitVector);
+    void CSpeedTreeRT_GetSimpleBillboardGeometry(void* sGeometry);
 
-    void CSpeedTreeRT_GetGeometry(void* m_pShaderGeometry, unsigned long ulGeometryFlags, unsigned short nBranchLodLevel,
-                      unsigned short nFrondLodLevel, unsigned short nLeafLodLevel);
+    void CSpeedTreeRT_GetGeometry(void* sGeometry, unsigned long ulBitVector, unsigned short sOverrideBranchLodValue,
+                      unsigned short sOverrideFrondLodValue, unsigned short sOverrideLeafLodValue);
 };
 
 // @fnv 0x00b0ab20
 // src: EXE 0x00b0ab20
-void SpeedTreeImpl::CSpeedTreeRT_GetGeometry(void* m_pShaderGeometry, unsigned long ulGeometryFlags, unsigned short nBranchLodLevel,
-                                 unsigned short nFrondLodLevel, unsigned short nLeafLodLevel)
+// pdb: CSpeedTreeRT::GetGeometry | SpeedTreeRT.obj | retail, upstream name already matches, high
+// pdb params: sGeometry, ulBitVector, sOverrideBranchLodValue, sOverrideFrondLodValue, sOverrideLeafLodValue
+// pdb locals: cException
+void SpeedTreeImpl::CSpeedTreeRT_GetGeometry(void* sGeometry, unsigned long ulBitVector, unsigned short sOverrideBranchLodValue,
+                                 unsigned short sOverrideFrondLodValue, unsigned short sOverrideLeafLodValue)
 {
     try
     {
-        if (ulGeometryFlags & 1)
+        if (ulBitVector & 1)
         {
-            this->CSpeedTreeRT_GetBranchGeometry(m_pShaderGeometry, nBranchLodLevel);
+            this->CSpeedTreeRT_GetBranchGeometry(sGeometry, sOverrideBranchLodValue);
         }
-        if (ulGeometryFlags & 2)
+        if (ulBitVector & 2)
         {
-            this->FillFrondGeometry(m_pShaderGeometry, nFrondLodLevel);
+            this->CSpeedTreeRT_GetFrondGeometry(sGeometry, sOverrideFrondLodValue);
         }
-        if (ulGeometryFlags & 4)
+        if (ulBitVector & 4)
         {
-            this->CSpeedTreeRT_GetLeafGeometry(m_pShaderGeometry, nLeafLodLevel);
+            this->CSpeedTreeRT_GetLeafGeometry(sGeometry, sOverrideLeafLodValue);
         }
-        if (ulGeometryFlags & 8)
+        if (ulBitVector & 8)
         {
-            if (this->unk6c && !(ulGeometryFlags & 0x10))
+            if (this->unk6c && !(ulBitVector & 0x10))
             {
-                this->CSpeedTreeRT_Get360BillboardGeometry(m_pShaderGeometry, ulGeometryFlags);
+                this->CSpeedTreeRT_Get360BillboardGeometry(sGeometry, ulBitVector);
             }
             else
             {
-                this->FillSpeedTreeOutput(m_pShaderGeometry);
+                this->CSpeedTreeRT_GetSimpleBillboardGeometry(sGeometry);
             }
         }
     }
     catch (const std::exception& e)
     {
-        AssignString(IdvFormatString("%s - failed [%s]", "CSpeedTreeRT::GetGeometry", e.what()).c_str());
+        CSpeedTreeRT_SetError(IdvFormatString("%s - failed [%s]", "CSpeedTreeRT::GetGeometry", e.what()).c_str());
     }
     catch (...)
     {
-        AssignString(IdvFormatString("%s - threw an unknown system exception", "CSpeedTreeRT::GetGeometry").c_str());
+        CSpeedTreeRT_SetError(IdvFormatString("%s - threw an unknown system exception", "CSpeedTreeRT::GetGeometry").c_str());
     }
 }
 }  // namespace fnv_00b0ab20
@@ -14222,6 +14364,9 @@ struct UserDataOwner : FUN_00b0d5d0_Class
 
 // @fnv 0x00b0d500
 // src: COMMUNITY 0x00b0d500
+// pdb: CSpeedTreeRT::ParseUserData | SpeedTreeRT.obj | retail, upstream name already matches, high
+// pdb params: pFile
+// pdb locals: nToken
 void UserDataOwner::CSpeedTreeRT_ParseUserData(TreeFileReader* pFile)
 {
     int token = pFile->GetNextElement();
@@ -14288,11 +14433,11 @@ extern int DAT_011f8bec;
 
 struct BranchModeView
 {
-    void* GetFieldAt0C();
+    void* CSpeedTreeRT_GetFrondWindMethod();
 };
 struct LeafModeView
 {
-    void* GetNestedPointer();
+    void* CSpeedTreeRT_GetLeafWindMethod();
 };
 
 struct FUN_00b10430_class
@@ -14442,48 +14587,51 @@ struct Iterator
     }
 };
 
-inline void AssignString(const char* s)
+inline void CSpeedTreeRT_SetError(const char* pError) // src: XBOX_DEBUG_PDB 0x00b09270
 {
     ErrorStringView& target = *(ErrorStringView*)&DAT_011f8ba4;
-    unsigned count = _strlen(s);
-    if (target.inside(s))
+    unsigned count = _strlen(pError);
+    if (target.inside(pError))
     {
-        target.AssignSubstring(target, s - target.myptr(), count);
+        target.AssignSubstring(target, pError - target.myptr(), count);
     }
     else if (target.std_basic_string_char_std_char_traits_char_std_allocator_char_Grow(count))
     {
         char* destination = target.myptr();
         for (unsigned index = 0; index < count; ++index)
-            destination[index] = s[index];
+            destination[index] = pError[index];
         target.ResizeString(count);
     }
 }
 
 // @fnv 0x00b08ec0
 // src: EXE 0x00b08ec0
-void CSpeedTreeRT_NotifyAllTreesOfEvent(int param_1)
+// pdb: CSpeedTreeRT::NotifyAllTreesOfEvent | SpeedTreeRT.obj | retail, upstream name already matches, high
+// pdb params: nMessage
+// pdb locals: i, cException
+void CSpeedTreeRT_NotifyAllTreesOfEvent(int nMessage)
 {
     try
     {
         DAT_00fdf05c(&DAT_011f8bc4);
         for (Iterator it(DAT_011f8be8, &DAT_011f8bdc); it != Iterator(DAT_011f8bec, &DAT_011f8bdc); ++it)
         {
-            if (param_1 == 0)
+            if (nMessage == 0)
             {
                 if ((**it)->fun_00b076c0() == (void*)1)
                 {
                     field_m04(**it)->byte12 = 0;
                 }
-                if (((BranchModeView*)(**it))->GetFieldAt0C() == (void*)1)
+                if (((BranchModeView*)(**it))->CSpeedTreeRT_GetFrondWindMethod() == (void*)1)
                 {
                     field_m60(**it)->byte12 = 0;
                 }
-                if (((LeafModeView*)(**it))->GetNestedPointer() == (void*)1 || field_byte14(**it))
+                if (((LeafModeView*)(**it))->CSpeedTreeRT_GetLeafWindMethod() == (void*)1 || field_byte14(**it))
                 {
                     ((FUN_00b27820_class*)(**it)->m08)->CLeafGeometry_Invalidate();
                 }
             }
-            else if (param_1 == 1)
+            else if (nMessage == 1)
             {
                 ((FUN_00b27820_class*)(**it)->m08)->CLeafGeometry_Invalidate();
                 field_m14(**it)->byte30 = 0;
@@ -14493,11 +14641,11 @@ void CSpeedTreeRT_NotifyAllTreesOfEvent(int param_1)
     }
     catch (const std::exception& e)
     {
-        AssignString(IdvFormatString("%s - failed [%s]", "CSpeedTreeRT::NotifyAllTreesOfEvent", e.what()).c_str());
+        CSpeedTreeRT_SetError(IdvFormatString("%s - failed [%s]", "CSpeedTreeRT::NotifyAllTreesOfEvent", e.what()).c_str());
     }
     catch (...)
     {
-        AssignString(
+        CSpeedTreeRT_SetError(
             IdvFormatString("%s - threw an unknown system exception", "CSpeedTreeRT::NotifyAllTreesOfEvent").c_str());
     }
 }
@@ -14545,11 +14693,11 @@ struct String
         end(n);
     }
 };
-String __cdecl IdvFormatString(const char* format, ...);
+String __cdecl IdvFormatString(const char* pField, ...);
 }
 
 void* __cdecl FUN_00ec44d0(void*, const void*, unsigned int);
-void __cdecl AssignString(const char* s);
+void __cdecl CSpeedTreeRT_SetError(const char* pError);
 struct IdvException
 {
     virtual ~IdvException();
@@ -14650,13 +14798,13 @@ FUN_00b036d0::FUN_00b036d0(FUN_00b036d0* pNewInstance)
     }
     catch (IdvException& e)
     {
-        AssignString(
+        CSpeedTreeRT_SetError(
             CloneFormatting::IdvFormatString("%s - failed [%s]", "CSpeedTreeRT::CSpeedTreeRT(CSpeedTreeRT*)", e.what())
                 .c_str());
     }
     catch (...)
     {
-        AssignString(CloneFormatting::IdvFormatString("%s - threw an unknown system exception",
+        CSpeedTreeRT_SetError(CloneFormatting::IdvFormatString("%s - threw an unknown system exception",
                                                    "CSpeedTreeRT::CSpeedTreeRT(CSpeedTreeRT*)")
                          .c_str());
     }
@@ -14824,8 +14972,8 @@ inline void* operator new[](unsigned int uiSize)
     return g_kMemoryManagerD04.Allocate(uiSize);
 }
 
-stdb07::string __cdecl IdvFormatString(const char* pcFormat, ...);
-void __cdecl AssignString(const char* pcError);
+stdb07::string __cdecl IdvFormatString(const char* pField, ...);
+void __cdecl CSpeedTreeRT_SetError(const char* pError);
 
 struct SLeafTextureD04
 {
@@ -14901,6 +15049,9 @@ class CSpeedTreeRT
 
 // @fnv 0x00b0d040
 // src: EXE 0x00b0d040
+// pdb: CSpeedTreeRT::GetTextures | SpeedTreeRT.obj | debug, call graph, high
+// pdb params: sTextures
+// pdb locals: vLeaves, i, cException
 void CSpeedTreeRT::GetTextures_00b0d040(STexturesD04& sTextures)
 {
     try
@@ -14936,11 +15087,11 @@ void CSpeedTreeRT::GetTextures_00b0d040(STexturesD04& sTextures)
     }
     catch (ExceptionB07& e)
     {
-        AssignString(IdvFormatString("%s - failed [%s]", "CSpeedTreeRT::GetTextures", e.what()).c_str());
+        CSpeedTreeRT_SetError(IdvFormatString("%s - failed [%s]", "CSpeedTreeRT::GetTextures", e.what()).c_str());
     }
     catch (...)
     {
-        AssignString(IdvFormatString("%s - threw an unknown system exception", "CSpeedTreeRT::GetTextures").c_str());
+        CSpeedTreeRT_SetError(IdvFormatString("%s - threw an unknown system exception", "CSpeedTreeRT::GetTextures").c_str());
     }
 }
 }  // namespace fnv_00b0d040

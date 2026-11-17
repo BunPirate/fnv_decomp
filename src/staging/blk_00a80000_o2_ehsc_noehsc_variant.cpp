@@ -66,7 +66,7 @@ extern char DAT_011f5d30;
 int __cdecl GetGlobalDataPtr();
 extern int DAT_011f5e44;
 extern int DAT_011f5e4c;
-void ResetStreamLinkIDSet();
+void NiMaterialLibrary__SDMShutdown();
 extern int DAT_0109f814;
 struct FUN_00a8ff50 {
     int m_p;
@@ -81,29 +81,29 @@ void __cdecl NiFreeAlias(void*);
 struct FUN_00a96440_class {
     char m_auiShapeKeys[0x4c];
     void* m_pField;
-    void SetField(void* pNew);
+    void NiParticlesData_ReplaceRadii(void* pfRadii);
 };
 void NiFree(void*);
 struct FUN_00a96460_class {
     char pad[0x54];
     void* m_0x54;
-    void NiParticlesData_ReplaceSizes(void* p);
+    void NiParticlesData_ReplaceSizes(void* pfSizes);
 };
 void NiFreeAlias(void*);
 struct FUN_00a96480_Class {
     void* m_5c;
-    void NiParticlesData_ReplaceRotationAngles(void* p);
+    void NiParticlesData_ReplaceRotationAngles(void* pfRotationAngles);
 };
 extern "C" void __cdecl NiFreeAlias(void*);
 struct FUN_00a964a0_Class {
     void* m_p;
-    void NiParticlesData_ReplaceTextureIndices(void* p);
+    void NiParticlesData_ReplaceTextureIndices(void* pucTextureIndices);
 };
 struct CloningProcess;
 struct NiBinaryExtraData;
 struct NiFloatsExtraData;
 struct FUN_00a99c40_shell : public NiExtraData {
-    void NiIntegerExtraData_CopyMembers(NiBinaryExtraData* dst, CloningProcess* cp);
+    void NiIntegerExtraData_CopyMembers(NiBinaryExtraData* pDest, CloningProcess* kCloning);
 };
 extern const void* DAT_0109e47c;
 BSFadeNode* NiSkinPartition_CreateObject();
@@ -245,7 +245,7 @@ struct FUN_00a94c00_shell {
     float m_108;
     float m_10c;
     float m_110;
-    void NiSpotLight_CopyMembers(NiDirectionalLight* dst, CloningProcess& cp);
+    void NiSpotLight_CopyMembers(NiDirectionalLight* pDest, CloningProcess& kCloning);
 };
 extern MemoryManager g_memoryManager;
 extern char* DAT_010a05e4;
@@ -262,7 +262,7 @@ struct FUN_00a96800_shell {
     void* m_64;
     void* m_68;
     void ReleaseStorage_00a96800();
-    void DestroyGeometryData();
+    void NiGeometryData_dtor();
 };
 extern int DAT_0109e470;
 void NiFree(void*);
@@ -336,7 +336,7 @@ struct FUN_00a80580_sub {
     int unk14;
     int unk18;
 
-    void Cleanup();
+    void NiPropertyState_dtor();
 };
 struct FUN_00a80580_cls {
     void* m_vptr;
@@ -359,7 +359,7 @@ struct FUN_00a80fc0_class {
 extern float DAT_011ab3f8;
 static const float kPi = 3.1415927f;
 extern "C" double __cdecl fabs(double);
-float __cdecl NiFastATan2(float y, float x);
+float __cdecl NiFastATan2(float fY, float fX);
 void* __cdecl Object_DispatchCommandFour(unsigned int size);
 extern int DAT_0109e32c;
 struct FUN_00a81760_obj
@@ -369,7 +369,7 @@ struct FUN_00a81760_obj
     unsigned short m_58;
     unsigned short m_5a;
 
-    void FUN_00a7b690();
+    void NiTriShapeData_ctor();
 };
 FUN_00a81760_obj* __cdecl NiTriShapeDynamicData_CreateObject();
 struct S_a819e0_O {
@@ -584,7 +584,7 @@ struct FUN_00a87790_cls
     virtual void vd4();
     virtual void vd8();
     virtual void Tail(int a);
-    void NiScreenElements_Draw(int a);
+    void NiScreenElements_Draw(int pkRenderer);
 };
 struct FUN_00a88c60_Point2 {
     float unk00;
@@ -612,7 +612,7 @@ struct FUN_00a88c60_Class {
 
     int __thiscall ProcessAndReturnValue_00a88c60(FUN_00a88c60_Class* other);
 };
-void NiCompUtility_DecompressFloatArray(const short* psCompressed, unsigned int uiUnused, float fProjectionAlongAim, float fHalfRange, float* pfValues, unsigned int ItemUpdateArray);
+void NiCompUtility_DecompressFloatArray(const short* psSrcArray, unsigned int uiSrcCount, float fOffset, float fHalfRange, float* pfDestArray, unsigned int uiDestCount);
 struct FUN_00a89760_base {
     virtual ~FUN_00a89760_base();
 };
@@ -642,7 +642,7 @@ struct FUN_00a8a680_cls {
     int m_38;
     int m_3c;
     void* m_40;
-    void* InitWithBuffer(int a0, int a1, int a2, int a3, int a4, int a5, int a6);
+    void* NiLinesData_ctor(int usVertices, int pkVertex, int pkColor, int pkTexture, int usNumTextureSets, int eNBTMethod, int pkFlags);
 };
 struct DecodePair {unsigned char first,second;};
 struct Decoder {
@@ -698,7 +698,7 @@ public:
     int unk0c;
     NiRefObject* m_10;
 
-    void SetRefObject(NiRefObject* obj);
+    void SetRefObject(NiRefObject* pkRendererData);
 };
 struct S_00a8f2c0_Arg { int unk00; int unk04; int unk08; int unk0c; };
 extern const void* DAT_0109f4dc;
@@ -721,7 +721,7 @@ struct S_00a8f2c0_Obj {
         sub.unk00 = 0;
     }
     void FUN_00a5d3a0();
-    void SetRefObject(S_00a8f2c0_Arg* c);
+    void SetRefObject(S_00a8f2c0_Arg* pkRendererData);
 };
 S_00a8f2c0_Obj* __cdecl CreateFadeNodeFromArg(int a, int b, S_00a8f2c0_Arg* c);
 extern const void* DAT_0109f9bc;
@@ -732,7 +732,7 @@ struct FUN_00a910f0_class {
     FUN_00a910f0_class* FUN_00a910f0(unsigned char flags);
 };
 struct FUN_00aa4060_class {
-    void MemoryManager_Deallocate(void* object);
+    void MemoryManager_Deallocate(void* apMem);
 };
 extern FUN_00aa4060_class DAT_011f6238;
 struct NiParticleBase {
@@ -967,7 +967,7 @@ struct FnvQueueState {
     virtual void v98();
     virtual void v9c();
     virtual void va0(int a, void* p, int b, int c);
-    int Probe(int kind);
+    int Probe(int ePriority);
     unsigned int unk04;
     FnvRing m_r0;
     FnvRing m_r1;
@@ -1193,7 +1193,7 @@ struct FNVObj {
     const void* vft;
     unsigned int references;
     ReferenceHandle handle;
-    FNVObj* NiMaterialLibrary_NiMaterialLibrary(const ReferenceHandle& src);
+    FNVObj* NiMaterialLibrary_NiMaterialLibrary(const ReferenceHandle& kName);
 };
 extern "C" void* DAT_0109b220;
 extern "C" __declspec(dllimport) long __stdcall InterlockedIncrement(volatile long* value);
@@ -1484,7 +1484,7 @@ struct FUN_00a88970_q { float w, x, y, z; void Set(float fW, float fX, float fY,
 struct FUN_00a88970_v { void* m_pvVtbl; float x, y, z; };
 FUN_00a88970_q NiQuaternion_Exp(const FUN_00a88970_v& v);
 struct FUN_00a81a40_shell {
-    int __thiscall NiTaskManager_GetNumTasks(int ai);
+    int __thiscall NiTaskManager_GetNumTasks(int ePriority);
 };
 void* NiMalloc(unsigned int uiSize);
 struct FUN_00a8a620 {
@@ -1493,7 +1493,7 @@ struct FUN_00a8a620 {
     void* m_pCursor;
     int m_iUsed;
 
-    FUN_00a8a620(unsigned int uiSize);
+    FUN_00a8a620(unsigned int uiBytes);
 };
 
 struct P03MM { void* Allocate(unsigned int); };

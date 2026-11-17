@@ -20,7 +20,9 @@ inline void* InvisibilityEffect::operator new(unsigned int uiSize)
 }
 // Constructs the object by calling the ValueModifierEffect base constructor and installing the DAT_0107a21c vtable pointer.
 // @fnv 0x0080e030
-InvisibilityEffect::InvisibilityEffect(void* a, void* b, void* c) : ValueModifierEffect(a, b, c)
+// pdb: InvisibilityEffect::InvisibilityEffect | InvisibilityEffect.obj | debug, upstream name already matches, high
+// pdb params: apCaster, apSpell, apEffect
+InvisibilityEffect::InvisibilityEffect(void* apCaster, void* apSpell, void* apEffect) : ValueModifierEffect(apCaster, apSpell, apEffect)
 {
     *(int*)this = (int)&DAT_0107a21c;
 }
@@ -29,21 +31,25 @@ extern float DAT_0107a214;
 extern Actor* g_thePlayer;
 bool __cdecl BSShaderManager_IsRefractionEnabled(void);
 // @fnv 0x0080e540
-void __thiscall InvisibilityEffect::ApplyInvisibility(Actor* actor)
+// pdb: InvisibilityEffect::FinishInitLoadGame | InvisibilityEffect.obj | retail, vtable slot, high
+// pdb params: apActor
+void __thiscall InvisibilityEffect::ApplyInvisibility(Actor* apActor)
 {
-    ValueModifierEffect_FinishInitLoadGame(actor);
-    if (BSShaderManager_IsRefractionEnabled() && actor == g_thePlayer)
+    ValueModifierEffect_FinishInitLoadGame(apActor);
+    if (BSShaderManager_IsRefractionEnabled() && apActor == g_thePlayer)
     {
-        actor->SetAlpha(1.0f);
-        actor->Unk_E1(1, DAT_0107a214);
+        apActor->SetAlpha(1.0f);
+        apActor->Unk_E1(1, DAT_0107a214);
     }
     else
     {
-        actor->UpdateActorPresentation();
+        apActor->UpdateActorPresentation();
     }
 }
 
 // @fnv 0x0080e5b0
+// pdb: InvisibilityEffect::Revert | InvisibilityEffect.obj | retail, vtable slot, high
+// pdb params: apActor
 void InvisibilityEffect::RevertInvisibility(Actor* apActor)
 {
     reinterpret_cast<TESForm*>(this)->TESForm::Revert(reinterpret_cast<BGSLoadFormBuffer*>(apActor));
@@ -57,6 +63,8 @@ void InvisibilityEffect::RevertInvisibility(Actor* apActor)
 void* __cdecl FormHeap_Allocate(unsigned int uiSize);
 
 // @fnv 0x0080e060
+// pdb: InvisibilityEffect::Copy | InvisibilityEffect.obj | retail, vtable slot, high
+// pdb locals: presult
 InvisibilityEffect* InvisibilityEffect::CreateEffect()
 {
     InvisibilityEffect* pkEffect = new InvisibilityEffect(m_pEffectInstance, pSpell, pEffect);
@@ -95,6 +103,8 @@ struct Effect
 };
 // @fnv 0x0080e110
 // src: XBOX_PDB 0x0080e110
+// pdb: InvisibilityEffect::Start | InvisibilityEffect.obj | retail, upstream name already matches, high
+// pdb locals: ptargetActor, pprocess
 void Effect::InvisibilityEffect_Start()
 {
     Actor* actor = FUN_0059bb30() ? FUN_0059bb30()->FUN_00822b40() : 0;
@@ -117,6 +127,8 @@ void Effect::InvisibilityEffect_Start()
 
 // Allocates and constructs an InvisibilityEffect from the three given arguments.
 // @fnv 0x0080e4c0
+// pdb: InvisibilityEffect::Instantiate | InvisibilityEffect.obj | retail, object-file run extension, low
+// pdb params: apCaster, apSpell, apEffect
 void* __cdecl CreateExtraHealth(void* apArg1, void* apArg2, void* apArg3)
 {
     return new InvisibilityEffect(apArg1, apArg2, apArg3);
@@ -230,7 +242,7 @@ struct MVActiveEffect
 
 struct MVProcessLists
 {
-    void ProcessLists_AddTempEffect(MVActiveEffect* apEffect);
+    void ProcessLists_AddTempEffect(MVActiveEffect* apTempEffect);
 };
 
 extern Actor* g_pMVPlayer;
@@ -271,6 +283,8 @@ struct MVEffect
 
 // @fnv 0x0080e230
 // src: XBOX_PDB 0x0080e230
+// pdb: InvisibilityEffect::Finish | InvisibilityEffect.obj | retail, upstream name already matches, high
+// pdb locals: ptargetActor, fChameleon, peffect, pprocess, fRefractionPower
 void MVEffect::InvisibilityEffect_Finish()
 {
     ApplyEffect();

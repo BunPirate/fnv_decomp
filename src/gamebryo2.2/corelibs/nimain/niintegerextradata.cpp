@@ -15,10 +15,12 @@ __forceinline void NiBinaryStream::Read(void* data)
 
 // Calls NiExtraData::LoadBinary then reads m_iValue from the stream.
 // @fnv 0x00a99d30
-void NiIntegerExtraData::LoadBinary(NiStream& stream)
+// pdb: NiFloatExtraData::LoadBinary | NiFloatExtraData.obj | retail, vtable slot, high
+// pdb params: kStream
+void NiIntegerExtraData::LoadBinary(NiStream& kStream)
 {
-    NiExtraData::LoadBinary(stream);
-    stream.m_pkIstr->Read(&m_iValue);
+    NiExtraData::LoadBinary(kStream);
+    kStream.m_pkIstr->Read(&m_iValue);
 }
 
 extern char const* const g_01202de0_arg1;
@@ -43,6 +45,8 @@ void __fastcall DestroyIntegerExtraData(NiIntegerExtraData* data)
 
 // @fnv 0x00a99cd0
 // src: EXE 0x00a99cd0
+// pdb: NiIntegerExtraData::CreateObject | NiIntegerExtraData.obj | retail, upstream name already matches, high
+// pdb locals: pkObject
 NiExtraData* NiIntegerExtraData_CreateObject()
 {
     NiExtraData* pExtraData = static_cast<NiExtraData*>(BSFadeNode::operator new(0x10));
@@ -58,6 +62,7 @@ NiExtraData* NiIntegerExtraData_CreateObject()
 
 void __cdecl operator delete(void*, unsigned int);
 // @fnv 0x00a99d00
+// pdb: NiIntegerExtraData::`scalar deleting destructor' | BSXFlags.obj | debug, vtable slot, medium
 void* __fastcall DeleteIntegerExtraData(NiIntegerExtraData* data, void*, unsigned int auiFlags)
 {
     *reinterpret_cast<int**>(data) = &DAT_010a0d24;
@@ -75,6 +80,8 @@ char* __cdecl NiGetViewerString_00a7d4d0(char const*, int);
 
 // Appends the base viewer strings plus a formatted "m_iValue" entry to the string array, growing it as needed.
 // @fnv 0x00a99d70
+// pdb: NiIntegerExtraData::GetViewerStrings | NiIntegerExtraData.obj | retail, string-set bridge, high
+// pdb params: pStrings
 void __fastcall GetIntegerExtraDataViewerStrings(NiIntegerExtraData* data, void*, StrArr* apViewerStrings)
 {
     typedef void (__thiscall* GetBaseViewerStrings)(NiExtraData*, StrArr*);
@@ -97,6 +104,9 @@ void __fastcall GetIntegerExtraDataViewerStrings(NiIntegerExtraData* data, void*
 
 extern "C" void* __cdecl Object_DispatchCommandFour(unsigned int);
 // @fnv 0x00a99c80
+// pdb: NiIntegerExtraData::CreateClone | NiIntegerExtraData.obj | retail, vtable slot, high
+// pdb params: kCloning
+// pdb locals: pkObject
 NiIntegerExtraData* __fastcall CreateIntegerExtraData(NiIntegerExtraData* data, void*, unsigned int argument)
 {
     NiIntegerExtraData* result;

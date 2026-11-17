@@ -37,7 +37,10 @@ struct ClientHandler
     ClientProcess process;
 };
 // @fnv 0x00cd0ec0
-void hkVisualDebugger::step(float timeStep)
+// pdb: hkVisualDebugger::step | hkVisualDebugger.obj | retail, string-set bridge, high
+// pdb params: frameTimeInMs
+// pdb locals: reportBuf, ostr
+void hkVisualDebugger::step(float frameTimeInMs)
 {
     float stepTime = 16.0f;
     if (m_amTimingFrame)
@@ -53,9 +56,9 @@ void hkVisualDebugger::step(float timeStep)
         ++m_frameTimer.m_num_timings;
     }
     m_amTimingFrame = true;
-    float magnitude = (float)fabs(timeStep);
+    float magnitude = (float)fabs(frameTimeInMs);
     if (magnitude > 1.1920928955078125e-7f)
-        stepTime = timeStep;
+        stepTime = frameTimeInMs;
     pollForNewClients();
     for (int index = m_clients.m_size - 1; index >= 0; --index)
     {

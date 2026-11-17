@@ -1009,6 +1009,9 @@ __declspec(noinline) void __cdecl FUN_00458620(NiPoint3* result, const ParticleV
 }
 // @fnv 0x00c6f500
 // src: COMMUNITY 0x00c6f500
+// pdb: bhkCharacterController::characterInteractionCallback | bhkCharacterController.obj | retail, vtable slot, high
+// pdb params: __formal, apOtherProxy, arContact
+// pdb locals: mod, pcc, ip, isizeType, vel, flen, normal, velocity, fdor, toContact, freduce, headOnCheck, fheadOn, curDirection, fspeed, fscale, sideTest
 __declspec(noinline) void __fastcall bhkCharacterListener_characterInteractionCallback_0(ParticleController* self, void*, unsigned int mode, Source* source,
                                                   const ParticleVectorLocal_00c6f500* transform)
 {

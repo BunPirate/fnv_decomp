@@ -55,6 +55,9 @@ class DummyClass
 
 // @fnv 0x00c9e250
 // src: HAVOK_SRC 0x00c9e250
+// pdb: hkpConvexShape::getCentreImpl | hkpConvexShape.obj | retail, vtable slot, high
+// pdb params: centreOut
+// pdb locals: aabb
 void DummyClass::hkpConvexTransformShapeBase_getCentreImpl(CenterVector* centreOut)
 {
     CenterAabb aabb;

@@ -80,22 +80,25 @@ struct Node
 };
 // @fnv 0x00cfe1d0
 // src: XBOX_PDB 0x00cfe1d0
-Entry* __cdecl hkAgentMachine_processTransformedShapes(Entry* h, Entry* out, hkVector4* b, unsigned int n, unsigned char* c)
+// pdb: hkAgentMachine_processTransformedShapes | hkpAgentNnMachine.obj | retail, upstream name already matches, high
+// pdb params: cdBody, newCdBodies, newMotionStates, numSlots, cdBodyHasTransformFlag
+// pdb locals: assertBuf, ostr
+Entry* __cdecl hkAgentMachine_processTransformedShapes(Entry* cdBody, Entry* newCdBodies, hkVector4* newMotionStates, unsigned int numSlots, unsigned char* cdBodyHasTransformFlag)
 {
-    Node* node = h->node;
+    Node* node = cdBody->node;
     if (node->type == 0xf)
     {
-        hkVector4* dst = b + 6;
+        hkVector4* dst = newMotionStates + 6;
         do
         {
-            hkVector4* m = h->data;
+            hkVector4* m = cdBody->data;
             __m128 m0 = m[0].m_vComponents;
             __m128 m1 = m[1].m_vComponents;
             __m128 m2 = m[2].m_vComponents;
             char* rows = (char*)&node->rows;
             int cnt = 3;
             char* src = rows + 3 * sizeof(hkVector4);
-            int delta = (int)b;
+            int delta = (int)newMotionStates;
             do
             {
                 __m128 v = *(__m128*)src;
@@ -113,25 +116,25 @@ Entry* __cdecl hkAgentMachine_processTransformedShapes(Entry* h, Entry* out, hkV
             dst->setMul(m + 6, &node->v20);
             (dst + 1)->setMul(m + 7, &node->v20);
 
-            Entry* a = out;
+            Entry* a = newCdBodies;
             node->rows.inversePosition(dst[2], m[8]);
             dst[3].m_vComponents = m[9].m_vComponents;
             dst[4].x = m[10].x;
 
             if (a != 0)
             {
-                a->parent = h;
-                a->data = b;
+                a->parent = cdBody;
+                a->data = newMotionStates;
             }
             Node* next = node->next;
-            b += 11;
+            newMotionStates += 11;
             dst += 11;
             a->node = next;
             a->unk4 = 0;
-            h = out++;
-            node = h->node;
-            *c = 8;
+            cdBody = newCdBodies++;
+            node = cdBody->node;
+            *cdBodyHasTransformFlag = 8;
         } while (node->type == 0xf);
     }
-    return h;
+    return cdBody;
 }

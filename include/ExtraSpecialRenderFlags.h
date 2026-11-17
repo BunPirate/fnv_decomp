@@ -2,6 +2,7 @@
 
 #include "BSExtraData.h"
 
+// pdb: class ExtraSpecialRenderFlags, size 0x14, bases: BSExtraData, 2 members
 class ExtraSpecialRenderFlags : public BSExtraData
 {
 public:
@@ -14,6 +15,6 @@ public:
     unsigned int GetFlags();
     void SetFlags(unsigned int flags);
 
-    unsigned int uiFlags;
+    unsigned int m_flags; // src: XBOX_RETAIL_PDB +0xc (old: uiFlags)
     float m_fRenderValue;
 };

@@ -8,6 +8,7 @@ extern const float DAT_01015f5c;
 extern void* NiInterpolator_VTable[];
 
 // @fnv 0x00a56ff0
+// pdb: NiInterpolator::NiInterpolator | NiInterpolator.obj | retail, upstream name already matches, high
 NiInterpolator::NiInterpolator() : m_fLastTime(DAT_01015f5c)
 {
     *reinterpret_cast<void**>(this) = NiInterpolator_VTable;
@@ -54,6 +55,8 @@ char* _FUN_00a7d330(const char*);
 // Appends the string returned by _FUN_00a7d330(g_011f36fc_arg1) to pkStrings, growing the array when full.
 // @fnv 0x00a570b0
 // src: XBOX_PDB 0x00a570b0
+// pdb: NiInterpolator::GetViewerStrings | NiInterpolator.obj | retail, upstream name already matches, high
+// pdb params: pkStrings
 void __stdcall NiInterpolator_GetViewerStrings(NiTPrimitiveArray<char*>* pkStrings)
 {
     AppendCameraPathEntries(pkStrings);
@@ -131,7 +134,10 @@ extern "C" void* __cdecl FUN_00a5d680();
 
 // @fnv 0x00a57050
 // src: XBOX_PDB 0x00a57050
-NiAnimTarget* __stdcall NiInterpolator_GetSequenceInterpolator(int a, int b)
+// pdb: NiInterpolator::GetSequenceInterpolator | NiInterpolator.obj | retail, upstream name already matches, high
+// pdb params: fStartTime, fEndTime
+// pdb locals: pkInterp, bSetup
+NiAnimTarget* __stdcall NiInterpolator_GetSequenceInterpolator(int fStartTime, int fEndTime)
 {
     NiAnimTarget* p = (NiAnimTarget*)FUN_00a5d680();
     p->v52();
@@ -152,6 +158,8 @@ struct FUN_00a57080_Owner
 };
 // Sets the vtable to NiInterpolator, calls the NiRefObject destructor, and frees the object when a1 has bit 0 set.
 // @fnv 0x00a57080
+// pdb: NiInterpolator::IsEqual | NiInterpolator.obj | debug, object-file run extension, low
+// pdb params: pkObject
 void* FUN_00a57080_Owner::Destroy(unsigned int auiFlags)
 {
     *(void**)this = (void*)NiInterpolator_VTable;

@@ -89,7 +89,7 @@ hkArray<hkNamedVariantD47F>* __fastcall DestroyNamedVariantArray(hkArray<hkNamed
 inline void hkReferencedObject::operator delete(void* p)
 {
     reinterpret_cast<hkMemoryRouter*>(hkMemoryRouter_getInstance())
-        ->heap().blockFree(p, static_cast<hkReferencedObject*>(p)->m_usMemSizeAndFlags);
+        ->heap().blockFree(p, static_cast<hkReferencedObject*>(p)->m_memSizeAndFlags);
 }
 
 // The +0x10 field is the convex radius; the child container starts at +0x14.
@@ -104,12 +104,14 @@ class ConvexChildShapeOwner : public hkpConvexShape
 inline hkpShapeContainer::~hkpShapeContainer() {}
 inline hkpSingleShapeContainer::~hkpSingleShapeContainer()
 {
-    if (m_pContainedShape)
-        const_cast<hkpShape*>(m_pContainedShape)->removeReference();
+    if (m_childShape)
+        const_cast<hkpShape*>(m_childShape)->removeReference();
 }
 
 // Destroys the object and, when bit 0 of uiFlags is set, frees its memory via operator delete; returns this.
 // @fnv 0x00d5e070
+// pdb: hkpTriSampledHeightFieldBvTreeShape::`scalar deleting destructor' | hkpTriSampledHeightFieldBvTreeShape.obj | retail, vtable slot, high
+// pdb params: this
 ConvexChildShapeOwner* ConvexChildShapeOwner::FUN_00d5e070(unsigned int uiFlags) throw()
 {
     this->ConvexChildShapeOwner::~ConvexChildShapeOwner();

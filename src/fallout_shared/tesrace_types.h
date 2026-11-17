@@ -64,6 +64,7 @@ int __cdecl NormalizePartIndex(BIPED_OBJECT);
 class TESBoundObject;
 
 extern PlayerCharacter* g_thePlayer;
+// pdb: class TaskQueueInterface, size 0x10 (here 0x1), 4 members
 class TaskQueueInterface
 {
   public:

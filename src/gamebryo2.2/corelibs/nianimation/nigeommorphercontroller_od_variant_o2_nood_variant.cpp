@@ -21,7 +21,7 @@ NiFixedString::operator const char*() const
 char* NiViewerStrings_NiGetViewerString_Title(char*);
 char* NiGetViewerString_00a7d510(const char*, unsigned int);
 void* NiMalloc(unsigned int);
-extern char* DAT_011f3728;
+extern char* NiGeomMorpherController_ms_RTTI; // src: XBOX_RETAIL_PDB 0x011f3728 (old: DAT_011f3728/g_011f3728)
 extern NiRTTI DAT_011f3e58, DAT_011f3738;
 __forceinline void StrArr::append(char*& value)
 {
@@ -57,7 +57,7 @@ struct InterpolatorView : NiInterpolator
         {
             if (rtti == wanted)
                 return true;
-            rtti = rtti->m_pBaseRTTI;
+            rtti = rtti->m_pkBaseRTTI;
         }
         return false;
     }
@@ -77,7 +77,10 @@ struct MorphViewer : NiGeomMorpherController
 };
 // @fnv 0x00a3b700
 // src: XBOX_PDB 0x00a3b700
-void MorphViewer::NiGeomMorpherController_GetViewerStrings(StrArr* array)
+// pdb: NiGeomMorpherController::GetViewerStrings | NiGeomMorpherController.obj | retail, string-set bridge, high
+// pdb params: pkStrings
+// pdb locals: icount, n, pstring, pinterp, pblendFloatInterp, string, ptarget, uiLen, pfloatInterp
+void MorphViewer::NiGeomMorpherController_GetViewerStrings(StrArr* pkStrings)
 {
     union HeaderScratch
     {
@@ -85,17 +88,17 @@ void MorphViewer::NiGeomMorpherController_GetViewerStrings(StrArr* array)
         unsigned int count;
     } header;
     {
-        header.text = NiViewerStrings_NiGetViewerString_Title(DAT_011f3728);
-        array->append(header.text);
+        header.text = NiViewerStrings_NiGetViewerString_Title(NiGeomMorpherController_ms_RTTI);
+        pkStrings->append(header.text);
         header.text = NiGetViewerString_00a7d510("NumTargets",
-                                   m_spMorphTargetData.m_pObject ? m_spMorphTargetData.m_pObject->m_uiNumTargets : 0);
-        array->append(header.text);
+                                   m_spMorphData.m_pObject ? m_spMorphData.m_pObject->m_uiNumTargets : 0);
+        pkStrings->append(header.text);
         header.text =
             NiGetViewerString_00a7d510("NumVertsPerTarget",
-                         m_spMorphTargetData.m_pObject ? m_spMorphTargetData.m_pObject->m_uiNumVertsPerTarget : 0);
-        array->append(header.text);
+                         m_spMorphData.m_pObject ? m_spMorphData.m_pObject->m_uiNumVertsPerTarget : 0);
+        pkStrings->append(header.text);
     }
-    header.count = m_spMorphTargetData.m_pObject ? m_spMorphTargetData.m_pObject->m_uiNumTargets : 0;
+    header.count = m_spMorphData.m_pObject ? m_spMorphData.m_pObject->m_uiNumTargets : 0;
     float value;
     unsigned int i = 0;
     if (i < header.count)
@@ -104,9 +107,9 @@ void MorphViewer::NiGeomMorpherController_GetViewerStrings(StrArr* array)
         do
         {
             NiMorphData::MorphTarget* target =
-                i < m_spMorphTargetData.m_pObject->m_uiNumTargets
+                i < m_spMorphData.m_pObject->m_uiNumTargets
                     ? reinterpret_cast<NiMorphData::MorphTarget*>(
-                          reinterpret_cast<char*>(m_spMorphTargetData.m_pObject->m_pMorphTargets) + offset)
+                          reinterpret_cast<char*>(m_spMorphData.m_pObject->m_aMorphTargets) + offset)
                     : 0;
             InterpolatorView* interpolator = static_cast<InterpolatorView*>(GetInterpolator((unsigned short)i));
             char buffer[256];
@@ -137,24 +140,24 @@ void MorphViewer::NiGeomMorpherController_GetViewerStrings(StrArr* array)
             unsigned int bytes = strlen(buffer) + 3;
             char* copy = static_cast<char*>(NiMalloc(bytes));
             strcpy_s(copy, bytes, buffer);
-            unsigned int index = array->m_usSize;
-            if (index >= array->m_usMaxSize)
-                array->SetSize(index + array->m_usGrowBy);
-            if (index >= array->m_usSize)
+            unsigned int index = pkStrings->m_usSize;
+            if (index >= pkStrings->m_usMaxSize)
+                pkStrings->SetSize(index + pkStrings->m_usGrowBy);
+            if (index >= pkStrings->m_usSize)
             {
-                array->m_usSize = index + 1;
+                pkStrings->m_usSize = index + 1;
                 if (copy)
-                    ++array->m_usESize;
+                    ++pkStrings->m_usESize;
             }
             else if (copy)
             {
-                if (!array->m_pBase[index])
-                    ++array->m_usESize;
+                if (!pkStrings->m_pBase[index])
+                    ++pkStrings->m_usESize;
             }
-            else if (array->m_pBase[index])
-                array->m_usESize += 0xffff;
+            else if (pkStrings->m_pBase[index])
+                pkStrings->m_usESize += 0xffff;
             offset += sizeof(NiMorphData::MorphTarget);
-            array->m_pBase[index] = copy;
+            pkStrings->m_pBase[index] = copy;
             ++i;
         } while (i < header.count);
     }
